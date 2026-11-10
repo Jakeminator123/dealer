@@ -37,8 +37,10 @@ async function compile(source: string, destination: string, prefix = '') {
   await emit(destination, prefix + js);
 }
 const sourceCommit = execFileSync('git', ['rev-parse', 'HEAD'], { cwd: root, encoding: 'utf8' }).trim();
-// Never publish the user's modified file or unsaved browser draft by accident.
-const initialText = execFileSync('git', ['show', 'HEAD:placements/default.json'], { cwd: root, encoding: 'utf8' });
+// Publish the currently saved plan without changing it or reading browser drafts.
+const initialPlanPath = path.join(root, 'placements', 'default.json');
+const initialText = await readFile(initialPlanPath, 'utf8');
+const initialPlanSha256 = digest(initialText);
 const initialPlan = JSON.parse(initialText); validatePlan(initialPlan);
 await emit('data/default-plan.json', JSON.stringify({ plan: initialPlan, revision: digest(initialText) }));
 const library = JSON.parse(await readFile(path.join(root, 'data/library.json'), 'utf8'));
@@ -74,9 +76,13 @@ await emit('preview.html', '<!doctype html><html lang="sv"><meta charset="utf-8"
 await emit('robots.txt', 'User-agent: *\nDisallow: /\n');
 const totalBytes = files.reduce((total, file) => total + file.bytes, 0);
 if (totalBytes > 250_000_000) throw Error('Public bundle unexpectedly exceeds 250 MB.');
+if (digest(await readFile(initialPlanPath, 'utf8')) !== initialPlanSha256) {
+  await rm(output, { recursive: true, force: true });
+  throw Error('The saved placement plan changed during the build. Rebuild from its latest saved snapshot.');
+}
 await writeFile(path.join(output, 'config.json'), JSON.stringify({ version: 3 }, null, 2));
 await writeFile(path.join(deploy, 'package.json'), JSON.stringify({ private: true, name: 'dealer-public-output', version: '1.0.0' }));
 await writeFile(path.join(deploy, 'vercel.json'), JSON.stringify({ framework: null, buildCommand: null, installCommand: null }, null, 2));
-const receipt = { builtAt: new Date().toISOString(), sourceCommit, initialPlanSource: 'HEAD:placements/default.json', browserLocalWritesOnly: true, totalBytes, files };
+const receipt = { builtAt: new Date().toISOString(), sourceCommit, initialPlanSource: 'saved local snapshot', initialPlanPath: 'placements/default.json', initialPlanSha256, inputUnchangedDuringBuild: true, browserLocalWritesOnly: true, totalBytes, files };
 await writeFile(path.join(root, '.runtime', 'public-build.json'), JSON.stringify(receipt, null, 2));
-console.log(JSON.stringify({ output, files: files.length, totalBytes, sourceCommit, initialPlanSource: receipt.initialPlanSource }));
+console.log(JSON.stringify({ output, files: files.length, totalBytes, sourceCommit, initialPlanSource: receipt.initialPlanSource, initialPlanSha256 }));
