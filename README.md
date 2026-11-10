@@ -1,6 +1,6 @@
 # Dealer
 
-Självständig arbetsyta med V6 som Jakobs valda visuella referens. Målet är två kort till sju spelare och en dealer i Scoutgaming. En bildrutetidslinje styr; sekvenssträngar och en framtida nodvy beskriver samma metadata.
+Självständig arbetsyta med V6 som Jakobs valda visuella referens. Målet är två kort till sju spelare och en dealer i Scoutgaming. En bildrutetidslinje styr; sekvenssträngar och nodvyn beskriver samma metadata.
 
 | Läsning | Innehåll |
 | --- | --- |
@@ -10,13 +10,13 @@ Självständig arbetsyta med V6 som Jakobs valda visuella referens. Målet är t
 
 `motions/<clip-id>.json` är registrerade rörelsers statuskälla. `manifest.json` registrerar filproveniens/SHA-256; `evidence/` innehåller verifieringskvitton. Dokumenten länkar till dessa, utan egna konkurrerande statusregister.
 
-`data/library.json` är den lilla lokala filmkatalogen: två V6-referenser och ett diagnostiskt prov vars beslut hämtas från rörelseregistret. `placements/default.json` är placeringseditorns utkast för 16 kortplatser; det är ännu inte kalibrerat eller kopplat till Scout/V6-utdelningen.
+`data/library.json` är den lilla lokala filmkatalogen: två V6-referenser, ett diagnostiskt gul–gul-prov och tre avvisade P7/P6-pilotfilmer. Beslut hämtas från rörelseregistret; katalogen är ingen bank av färdiggodkända utdelningar. `placements/default.json` innehåller Jakobs placeringsutkast för 16 kortplatser; det är ännu inte kopplat till Scout/V6-utdelningen.
 
 ## Kör lokalt
 
 - Arbeta här. `node -p process.version` ska visa `v24.21.0` via Volta; `package.json` kräver `>=24.21.0 <25`. `npm ci` behövs om beroenden saknas.
 - `START.cmd`, `STATUS.cmd`, `STOPP.cmd` styr enbart `http://127.0.0.1:4319`. Återanvänd Codex WebView. Servern slutar 60 sekunder efter sista preview-fliken.
-- Öppna [placeringslabbet](http://127.0.0.1:4319/lab.html): 16 kortplatser och sko, separat dator/mobil, hand-/sidavsikt, materialpanel och filmkatalog. Sparning ändrar bara placeringsutkastet. Senaste UI-/API-kvittot finns i [evidence/placement-lab.json](evidence/placement-lab.json).
+- Öppna [placeringslabbet](http://127.0.0.1:4319/lab.html): 16 kortplatser och sko, separat dator/mobil, hand-/sidavsikt, nodvy, materialpanel och filmkatalog. Sparning ändrar bara placeringsutkastet. Grundkontroller finns i [evidence/placement-lab.json](evidence/placement-lab.json), senare vy-/nodkontroller i [evidence/plane-and-nodemap.json](evidence/plane-and-nodemap.json).
 - `npm run verify` kontrollerar registrerade lokala filer. `npm run verify -- --frames` återrenderar 18 kontrollrutor och kräver pixelidentitet.
 - `npm run render -- --render --take=02` startar ett nytt fullständigt försök med fyra arbetare. Välj alltid ett oanvänt tvåsiffrigt nummer; `take-01` är bevarat. Kräver FFmpeg/FFprobe via PATH eller `FFMPEG`/`FFPROBE`.
 

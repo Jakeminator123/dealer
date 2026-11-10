@@ -1,6 +1,6 @@
 # System och koordinater
 
-Beslut 2026-11-10, samordnat med TILLBAKA-2: behåll V6:s bildrutetidslinje som enda uppspelningsgrund. Engelska systemord, svensk förklaring. Sekvenssträngar och framtida nodvy är presentation av samma annoteringar, aldrig en andra motor. Nedanstående koordinat- och metadatakontrakt är dokumenterat men ännu inte implementerat för hela bordet.
+Beslut 2026-11-10, samordnat med TILLBAKA-2: behåll V6:s bildrutetidslinje som enda uppspelningsgrund. Engelska systemord, svensk förklaring. Sekvenssträngar och nodvy är presentation av samma metadata, aldrig en andra motor. Nodvyn visar planerad avsikt; den fastställer inte en källfilms händelser. Nedanstående koordinat- och metadatakontrakt är dokumenterat men ännu inte implementerat för hela bordets utdelning.
 
 ## Tre ytor, två format
 
@@ -69,6 +69,8 @@ P4.C2@VAR03 | TAKE(LH,BACK) > LAND(BACK) > RELEASE(LH) > RETURN(IDLE)
 - `KEYFRAME` är en källruta. `ANCHOR` är en utpekad källruta för exempelvis grepp, kantläge, kontakt, släpp eller vila: källhash + rutnummer. Saknad kunskap är `null`/`UNKNOWN`, inte uppskattade tider.
 - Bevisgrund `MEASURED/OBSERVED/REPORTED/HYPOTHESIS/UNKNOWN` skiljs från beslut `PENDING/ACCEPTED/REJECTED`. Rörelse, mask/geometri, scen och Scoutanslutning bedöms separat.
 - Maskkontrakt enligt TILLBAKA-2:s senaste användarkorrigering: CLOSED RGB `[255,255,0]`, OPEN `[0,0,255]`, bakgrund `[0,0,0]`, förlustfri mask; kontur separat. MP4 är visningsmaterial, inte exakt färgmask. Författad maskfärg bevisar inte originalets kortsida.
+
+Genererad gul/blå färg kan också vara fel trots en fysisk vändning. Bedöm först rörelsen och märk BACK/EDGE/FRONT från sammanhängande källrutor; lägg därefter lokalt kortutseende. En enfärgad rosa maskhjälpsyta är ett föreslaget framtida arbetsflöde, ännu inte verifierat. Filmklassning och beslut finns endast i motions-registret.
 
 ## Återbruk och införande
 

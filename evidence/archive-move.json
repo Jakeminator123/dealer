@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "completedAt": "2026-11-10T18:03:05.2122756Z",
+  "source": "C:/Users/jakem/dev/super-feature-sg/snyggare-dealer",
+  "destination": "D:/dealer-archive/snyggare-dealer",
+  "sourceExistsAfter": false,
+  "files": 194531,
+  "logicalBytes": 163182601679,
+  "verification": "SHA-256 matched for every regular file on both sides; directory inventory equal; source unchanged through final recheck",
+  "git": {
+    "head": "68c74bde6e977e2cda202d0501dcc419fc92864d",
+    "refsPreserved": true,
+    "indexPreserved": true,
+    "statusPreserved": true,
+    "modifiedTrackedPaths": 34,
+    "untrackedFiles": 410
+  },
+  "junction": {
+    "path": ".runtime/doc-version-check-facddb3ff3f3441791a225ae61c87417/.runtime/candidate-link",
+    "copyFollowedLink": false,
+    "archiveTarget": "D:/dealer-archive/snyggare-dealer/.runtime/doc-version-check-facddb3ff3f3441791a225ae61c87417/extra",
+    "sourceLinkRemovedBeforeRecursiveDelete": true
+  },
+  "privateEnvAclPreserved": true,
+  "oldServer": { "pid": 38944, "port": 4318, "stoppedThroughControlChannel": true, "exitAndPortReleaseVerified": true },
+  "newDealerPreviewUntouched": true,
+  "deleteErrors": 0,
+  "diskMeasurement": {
+    "freeCBeforeDeleteBytes": 20022525952,
+    "freeCAfterDeleteBytes": 114038935552,
+    "netFreeIncreaseBytes": 94016409600,
+    "limit": "Net Windows free-space change across deletion, not an NTFS allocation measurement. Logical file lengths include repeated content; old tools used hard links. Original link counts and physical allocation were not captured."
+  },
+  "fullReceipts": "D:/dealer-archive/receipts/20261110-snyggare-dealer",
+  "otherProjectDeletion": false,
+  "appsForceStopped": false
+}
