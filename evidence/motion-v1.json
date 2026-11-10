@@ -1,0 +1,884 @@
+{
+  "$schema": "urn:dealerlab:pamela-motion-contract:1.0.0",
+  "contractVersion": "1.0.0",
+  "dealerId": "pamela-pilot",
+  "bankId": "pamela-workspace-v1",
+  "revision": "local-candidates-20261109-r5",
+  "presentationPolicy": {
+    "preserveAlreadyDealtCards": true,
+    "automaticEmptyTableReset": false,
+    "automaticIdleLoop": false,
+    "appearanceOwnedByCaller": true,
+    "gameLogicIncluded": false
+  },
+  "assets": [
+    {
+      "id": "anchor-vila",
+      "path": "runs/20261109-pamela-reference-kit/original/pamela-vila-station.png",
+      "sha256": "ac2924b76ebab596918fa802b6145628ee805e0b37a04d1117c8dc4f4aae2621",
+      "kind": "image",
+      "width": 1536,
+      "height": 1024,
+      "fps": 0,
+      "frames": 1,
+      "role": "Reference image; pose compatibility unapproved"
+    },
+    {
+      "id": "anchor-redo",
+      "path": "runs/20261109-pamela-reference-kit/original/pamela-redo-station.png",
+      "sha256": "a9dd4882d84da1cc6f0fb3258d0fbd6d81fddac5a7f78efdaa225d6f9538576d",
+      "kind": "image",
+      "width": 1536,
+      "height": 1024,
+      "fps": 0,
+      "frames": 1,
+      "role": "Reference image; pose compatibility unapproved"
+    },
+    {
+      "id": "v6-native",
+      "path": "runs/20261109-pamela-v6-sequence/take-01/render/idle-deal-idle-native.mp4",
+      "sha256": "412a2fa01f9e852e8894002076b5771181bd6afd4ddeef1be76c0640d5853a2d",
+      "kind": "video",
+      "width": 1762,
+      "height": 1174,
+      "fps": 30,
+      "frames": 926,
+      "role": "Whole-scene review reference; two baked central cards, not a reusable foreground layer"
+    },
+    {
+      "id": "v6-portrait",
+      "path": "runs/20261109-pamela-v6-sequence/take-01/render/idle-deal-idle-portrait.mp4",
+      "sha256": "51a2d0c203f4981b812f503cb32c68413350b8f9c6e8ccaf80445a9359356d0b",
+      "kind": "video",
+      "width": 1080,
+      "height": 1920,
+      "fps": 30,
+      "frames": 926,
+      "role": "Same 926-frame review timeline in portrait; not an interchangeable presentation layer"
+    },
+    {
+      "id": "seat1-raw",
+      "path": "runs/20261109-pamela-seat-pilot-plan/original/pamela-seat-1-wan3.mp4",
+      "sha256": "5488934997d6311098680ee0d99a3273074e92d7e9ab981138d2a76950748abb",
+      "kind": "video",
+      "width": 1762,
+      "height": 1174,
+      "fps": 30,
+      "frames": 360,
+      "role": "Retain motion reference; bank use rejected for table and card-art drift"
+    },
+    {
+      "id": "continuous-idle-raw",
+      "path": "runs/20261109-pamela-continuous-idle/original/pamela-continuous-wan3.mp4",
+      "sha256": "213bf02130cf7e02fc9d68b9ddc6f34a08dff9c5cb22c537af82a0c56bffe3d8",
+      "kind": "video",
+      "width": 1762,
+      "height": 1174,
+      "fps": 30,
+      "frames": 360,
+      "role": "Uncut 360-frame source; proposed blink and side-glance windows require endpoint QA"
+    },
+    {
+      "id": "breath-raw",
+      "path": "runs/20261109-pamela-idle-pilot/original/pamela-breath-wan3.mp4",
+      "sha256": "ea74eb1c8724246571600648bf3acfccbadea5a8caf74d8963ba0d56be368049",
+      "kind": "video",
+      "width": 1762,
+      "height": 1174,
+      "fps": 30,
+      "frames": 180,
+      "role": "180-frame breathing candidate; loop continuity not approved"
+    },
+    {
+      "id": "approach-raw",
+      "path": "runs/20261109-pamela-reference-kit/original/pamela-vila-till-redo-wan3.mp4",
+      "sha256": "00efe62636916b79052b4cf9d5fa88ba1ad52c17d531f1dcc86875f94c91084c",
+      "kind": "video",
+      "width": 1762,
+      "height": 1174,
+      "fps": 30,
+      "frames": 90,
+      "role": "VILA to REDO candidate source"
+    },
+    {
+      "id": "retreat-raw",
+      "path": "runs/20261109-pamela-sequence/original/pamela-from-shoe-wan3.mp4",
+      "sha256": "81a63227a56531103bd9d86b364442869b72eef0ddd3be65e718f3494ee2147b",
+      "kind": "video",
+      "width": 1762,
+      "height": 1174,
+      "fps": 30,
+      "frames": 90,
+      "role": "REDO to VILA candidate source; raw table has no retained cards"
+    },
+    {
+      "id": "seat1-first-last-raw",
+      "path": "runs/20261109-pamela-seat-bank/original/pamela-seat-1-wan3-first-last.mp4",
+      "sha256": "5abd5dd1107d7433c8efc0d95164c2c7af3b2b9703f1123c87f8f02da378bc0b",
+      "kind": "video",
+      "width": 1762,
+      "height": 1174,
+      "fps": 30,
+      "frames": 360,
+      "role": "New green-table first+last raw candidate. Card disappears at source358–359; no runtime approval."
+    },
+    {
+      "id": "seat2-end-card-v1-raw",
+      "path": "runs/20261109-pamela-seat-bank/batches/middle-end-card-v1/original/pamela-seat-2-wan3-end-card-v1.mp4",
+      "sha256": "dc9e35760fd708a6b7c004e3bc255e9c5e8207aa6ddd5bc274c0e3c62dd3f001",
+      "kind": "video",
+      "width": 1762,
+      "height": 1174,
+      "fps": 30,
+      "frames": 360,
+      "role": "Green-table first+authored-card-last raw candidate. Neutral card persists after release; authored geometry is uncalibrated. No runtime approval."
+    },
+    {
+      "id": "seat3-end-card-v1-raw",
+      "path": "runs/20261109-pamela-seat-bank/batches/middle-end-card-v1/original/pamela-seat-3-wan3-end-card-v1.mp4",
+      "sha256": "312f8d9b612cf58cf7cf21a26c77b169bb930d00e3348ffe9fa1cdf0dc574eb9",
+      "kind": "video",
+      "width": 1762,
+      "height": 1174,
+      "fps": 30,
+      "frames": 360,
+      "role": "Green-table first+authored-card-last raw candidate. Neutral card persists after release; authored geometry is uncalibrated. No runtime approval."
+    },
+    {
+      "id": "seat4-end-card-v1-raw",
+      "path": "runs/20261109-pamela-seat-bank/batches/middle-end-card-v1/original/pamela-seat-4-wan3-end-card-v1.mp4",
+      "sha256": "4e252be2235ce42cec5de9d49b993d0ffed1c029de9890faea6686f46824f87c",
+      "kind": "video",
+      "width": 1762,
+      "height": 1174,
+      "fps": 30,
+      "frames": 360,
+      "role": "Green-table first+authored-card-last raw candidate. Neutral card persists after release; authored geometry is uncalibrated. No runtime approval."
+    },
+    {
+      "id": "seat5-end-card-v1-raw",
+      "path": "runs/20261109-pamela-seat-bank/batches/middle-end-card-v1/original/pamela-seat-5-wan3-end-card-v1.mp4",
+      "sha256": "edd74e2620327c41080d0f1610e2865d0ddfc44bd2b9e7bf56f114a408e26acf",
+      "kind": "video",
+      "width": 1762,
+      "height": 1174,
+      "fps": 30,
+      "frames": 360,
+      "role": "Green-table first+authored-card-last raw candidate. Neutral card persists after release; authored geometry is uncalibrated. No runtime approval."
+    },
+    {
+      "id": "seat6-end-card-v1-raw",
+      "path": "runs/20261109-pamela-seat-bank/batches/middle-end-card-v1/original/pamela-seat-6-wan3-end-card-v1.mp4",
+      "sha256": "dee43b673dbd3014efdcdccd4b5dbea9a4256a1bc33bf760b554d1fbcfe633bb",
+      "kind": "video",
+      "width": 1762,
+      "height": 1174,
+      "fps": 30,
+      "frames": 360,
+      "role": "Green-table first+authored-card-last raw candidate. Neutral card persists after release; authored geometry is uncalibrated. No runtime approval."
+    },
+    {
+      "id": "seat7-end-card-v3-raw",
+      "path": "runs/20261109-pamela-seat-bank/retakes/seat-7-end-card-v3/original/pamela-seat-7-wan3-end-card-v3.mp4",
+      "sha256": "b37dbc6cafa99378786eff51ac1e8cb69c3bb01824b2107d390ddd7032a4620e",
+      "kind": "video",
+      "width": 1762,
+      "height": 1174,
+      "fps": 30,
+      "frames": 360,
+      "role": "Green-table first+authored-card-last raw candidate. Neutral card persists after release; authored geometry is uncalibrated. No runtime approval."
+    },
+    {
+      "id": "seat1-symmetric-v2-raw",
+      "path": "runs/20261109-pamela-seat-bank/retakes/seat-1-symmetric-v2/original/pamela-seat-1-wan3-symmetric-v2.mp4",
+      "sha256": "8402ddfcaabf1356b25b28fc8e7e3ca59121260eee6b188b7bfed431b2af9307",
+      "kind": "video",
+      "width": 1762,
+      "height": 1174,
+      "fps": 30,
+      "frames": 360,
+      "role": "Green-table symmetric seat1 raw candidate. Clear hand at source194; card persists through359. Authored endpoint geometry, not calibrated physical scale. No runtime approval."
+    },
+    {
+      "id": "seat1-c2-bank-v2-raw",
+      "path": "runs/20261109-pamela-seat-bank/c2/bank-v2-stage-1/original/pamela-seat-1-wan3-c2-bank-v2.mp4",
+      "sha256": "98ff074a7815cf5ecb2e58a85748e9da79b8acd04a9a97048222ddb104bb6813",
+      "kind": "video",
+      "width": 1762,
+      "height": 1174,
+      "fps": 30,
+      "frames": 360,
+      "role": "Second-card raw motion candidate; source contains existing C1 and moving C2. Keep source C1 separate from caller overlay. No runtime approval."
+    },
+    {
+      "id": "seat2-c2-bank-v2-raw",
+      "path": "runs/20261109-pamela-seat-bank/c2/bank-v2-stage-2/original/pamela-seat-2-wan3-c2-bank-v2.mp4",
+      "sha256": "ba257d6f88f95536521fe3170f5c5517f53bb447ced7de908cea94683795d77c",
+      "kind": "video",
+      "width": 1762,
+      "height": 1174,
+      "fps": 30,
+      "frames": 360,
+      "role": "Second-card raw motion candidate; source contains existing C1 and moving C2. Keep source C1 separate from caller overlay. No runtime approval."
+    },
+    {
+      "id": "seat3-c2-bank-v2-raw",
+      "path": "runs/20261109-pamela-seat-bank/c2/bank-v2-stage-2/original/pamela-seat-3-wan3-c2-bank-v2.mp4",
+      "sha256": "bce1003fedde8573cfd85470367a16e439d40c230e3f526c5a51a105d151794b",
+      "kind": "video",
+      "width": 1762,
+      "height": 1174,
+      "fps": 30,
+      "frames": 360,
+      "role": "Second-card raw motion candidate; source contains existing C1 and moving C2. Keep source C1 separate from caller overlay. No runtime approval."
+    },
+    {
+      "id": "seat4-c2-bank-v2-raw",
+      "path": "runs/20261109-pamela-seat-bank/c2/bank-v2-stage-2/original/pamela-seat-4-wan3-c2-bank-v2.mp4",
+      "sha256": "67319ed86cde67cc7a7566553d451a89f8aac11384a55f8f8b460d1403d30167",
+      "kind": "video",
+      "width": 1762,
+      "height": 1174,
+      "fps": 30,
+      "frames": 360,
+      "role": "Second-card raw motion candidate; source contains existing C1 and moving C2. Keep source C1 separate from caller overlay. No runtime approval."
+    },
+    {
+      "id": "seat5-c2-bank-v2-raw",
+      "path": "runs/20261109-pamela-seat-bank/c2/bank-v2-stage-2/original/pamela-seat-5-wan3-c2-bank-v2.mp4",
+      "sha256": "9a73beb62ccaa93325c7f3d0a65feb3c767ad873d1d3678f9ad494e53a8b0a58",
+      "kind": "video",
+      "width": 1762,
+      "height": 1174,
+      "fps": 30,
+      "frames": 360,
+      "role": "Second-card raw motion candidate; source contains existing C1 and moving C2. Keep source C1 separate from caller overlay. No runtime approval."
+    },
+    {
+      "id": "seat6-c2-bank-v2-raw",
+      "path": "runs/20261109-pamela-seat-bank/c2/bank-v2-stage-2/original/pamela-seat-6-wan3-c2-bank-v2.mp4",
+      "sha256": "daf180780c20f398f123c30e966c1ab03e1698556ffd5dbfd2221da35f0538f5",
+      "kind": "video",
+      "width": 1762,
+      "height": 1174,
+      "fps": 30,
+      "frames": 360,
+      "role": "Second-card raw motion candidate; source contains existing C1 and moving C2. Keep source C1 separate from caller overlay. No runtime approval."
+    },
+    {
+      "id": "seat7-c2-bank-v2-raw",
+      "path": "runs/20261109-pamela-seat-bank/c2/bank-v2-stage-1/original/pamela-seat-7-wan3-c2-bank-v2.mp4",
+      "sha256": "d1ecb53516f3b5a4c7fd173a5129775845dbdfca4c35f495e0ac6d2378dd5dbf",
+      "kind": "video",
+      "width": 1762,
+      "height": 1174,
+      "fps": 30,
+      "frames": 360,
+      "role": "Second-card raw motion candidate; source contains existing C1 and moving C2. Keep source C1 separate from caller overlay. No runtime approval."
+    }
+  ],
+  "anchors": [
+    {
+      "id": "anchor.VILA",
+      "pose": "VILA",
+      "assetId": "anchor-vila",
+      "sha256": "ac2924b76ebab596918fa802b6145628ee805e0b37a04d1117c8dc4f4aae2621"
+    },
+    {
+      "id": "anchor.REDO",
+      "pose": "REDO",
+      "assetId": "anchor-redo",
+      "sha256": "a9dd4882d84da1cc6f0fb3258d0fbd6d81fddac5a7f78efdaa225d6f9538576d"
+    }
+  ],
+  "clips": [
+    {
+      "id": "idle.breath",
+      "label": "VILA · andning",
+      "kind": "idle",
+      "from": "VILA",
+      "to": "VILA",
+      "seat": null,
+      "ordinal": null,
+      "slotId": null,
+      "binding": {
+        "assetId": "breath-raw",
+        "sha256": "ea74eb1c8724246571600648bf3acfccbadea5a8caf74d8963ba0d56be368049",
+        "startFrame": 22,
+        "endFrameExclusive": 157,
+        "presentation": "raw-reference"
+      },
+      "qa": {
+        "status": "pending",
+        "evidence": {
+          "path": "runs/20261109-pamela-idle-loop-fit/review.json",
+          "sha256": "b9d5d2f0152688fbf795398db5d420ebac5f66def64e63b9be8bd06f5bdb8a42"
+        },
+        "reason": "Källrutorna är exportverifierade. Skarv i realtid, bryggor och utbytbara lager återstår."
+      },
+      "note": "Lugn bas: 135 originalrutor, 4,5 s, inga observerade blinkningar."
+    },
+    {
+      "id": "idle.blink",
+      "label": "VILA · blinkning",
+      "kind": "idle",
+      "from": "VILA",
+      "to": "VILA",
+      "seat": null,
+      "ordinal": null,
+      "slotId": null,
+      "binding": {
+        "assetId": "continuous-idle-raw",
+        "sha256": "213bf02130cf7e02fc9d68b9ddc6f34a08dff9c5cb22c537af82a0c56bffe3d8",
+        "startFrame": 279,
+        "endFrameExclusive": 357,
+        "presentation": "raw-reference"
+      },
+      "qa": {
+        "status": "pending",
+        "evidence": {
+          "path": "runs/20261109-pamela-idle-loop-fit/review.json",
+          "sha256": "b9d5d2f0152688fbf795398db5d420ebac5f66def64e63b9be8bd06f5bdb8a42"
+        },
+        "reason": "Källrutorna är exportverifierade. Skarv i realtid, bryggor och utbytbara lager återstår."
+      },
+      "note": "Sporadiskt instick: 2 observerade blinkningar. Ska inte spelas som ständig grundloop."
+    },
+    {
+      "id": "idle.side-glance",
+      "label": "VILA · sidoblick",
+      "kind": "idle",
+      "from": "VILA",
+      "to": "VILA",
+      "seat": null,
+      "ordinal": null,
+      "slotId": null,
+      "binding": {
+        "assetId": "continuous-idle-raw",
+        "sha256": "213bf02130cf7e02fc9d68b9ddc6f34a08dff9c5cb22c537af82a0c56bffe3d8",
+        "startFrame": 175,
+        "endFrameExclusive": 282,
+        "presentation": "raw-reference"
+      },
+      "qa": {
+        "status": "pending",
+        "evidence": {
+          "path": "runs/20261109-pamela-idle-loop-fit/review.json",
+          "sha256": "b9d5d2f0152688fbf795398db5d420ebac5f66def64e63b9be8bd06f5bdb8a42"
+        },
+        "reason": "Källrutorna är exportverifierade. Skarv i realtid, bryggor och utbytbara lager återstår."
+      },
+      "note": "Sporadiskt instick: 3 observerade blinkningar. Ska inte spelas som ständig grundloop."
+    },
+    {
+      "id": "bridge.to-redo",
+      "label": "VILA → REDO",
+      "kind": "bridge",
+      "from": "VILA",
+      "to": "REDO",
+      "seat": null,
+      "ordinal": null,
+      "slotId": null,
+      "binding": {
+        "assetId": "approach-raw",
+        "sha256": "00efe62636916b79052b4cf9d5fa88ba1ad52c17d531f1dcc86875f94c91084c",
+        "startFrame": 3,
+        "endFrameExclusive": 90,
+        "presentation": "raw-reference"
+      },
+      "qa": {
+        "status": "pending",
+        "evidence": {
+          "path": "runs/20261109-pamela-v6-sequence/take-01/sequence-evidence.json",
+          "sha256": "68ad65fddc447d05a3856d344868dfd3b3d78b5a7e9176fe3ff1efea32d4d018"
+        },
+        "reason": "Källrutor 3–89 används i V6; fristående lager och anslutningsgrind återstår."
+      },
+      "note": "Bordets externa kortinstanser måste bevaras genom hela rörelsen."
+    },
+    {
+      "id": "bridge.to-vila",
+      "label": "REDO → VILA",
+      "kind": "bridge",
+      "from": "REDO",
+      "to": "VILA",
+      "seat": null,
+      "ordinal": null,
+      "slotId": null,
+      "binding": {
+        "assetId": "retreat-raw",
+        "sha256": "81a63227a56531103bd9d86b364442869b72eef0ddd3be65e718f3494ee2147b",
+        "startFrame": 1,
+        "endFrameExclusive": 90,
+        "presentation": "raw-reference"
+      },
+      "qa": {
+        "status": "pending",
+        "evidence": {
+          "path": "runs/20261109-pamela-v6-sequence/take-01/sequence-evidence.json",
+          "sha256": "68ad65fddc447d05a3856d344868dfd3b3d78b5a7e9176fe3ff1efea32d4d018"
+        },
+        "reason": "Råkälla saknar landade kort. V6-kompositen visar bevarande men bevisar inte utbytbart lager."
+      },
+      "note": "Får inte återställa ett fyllt bord till källfilmens tomma bord."
+    },
+    {
+      "id": "deal.seat-1.first",
+      "label": "Plats 1 · första giv",
+      "kind": "deal",
+      "from": "REDO",
+      "to": "REDO",
+      "seat": 1,
+      "ordinal": 1,
+      "slotId": "seat-1.card-1",
+      "binding": {
+        "assetId": "seat1-symmetric-v2-raw",
+        "sha256": "8402ddfcaabf1356b25b28fc8e7e3ca59121260eee6b188b7bfed431b2af9307",
+        "startFrame": 0,
+        "endFrameExclusive": 360,
+        "presentation": "raw-reference"
+      },
+      "qa": {
+        "status": "pending",
+        "evidence": {
+          "path": "runs/20261109-pamela-seat-bank/retakes/seat-1-symmetric-v2/qa/seat-1/review.json",
+          "sha256": "e16744a22e3a15b1a86fd5f082b001f0b8c59f00403a99ec4172c565c9bd9c00"
+        },
+        "reason": "Symmetrisk P1-råkandidat. Kontakt kvar190, liten lucka192 och tydligt fri hand194; kortet ligger kvar till359. Författad geometri är inte fysisk skaleacceptans. Kortlager, handmatte och exakta skarvar återstår; ingen runtimeacceptans."
+      },
+      "note": "12 s symmetrisk råkandidat med hela0–359 utan tempoklippning. Tidigare P1-assets bevaras som historiska referenser. Anroparen äger kortutseende och redan lagda kort; detta är ingen färdig spelhandling."
+    },
+    {
+      "id": "deal.seat-1.second",
+      "label": "Plats 1 · andra giv",
+      "kind": "deal",
+      "from": "REDO",
+      "to": "REDO",
+      "seat": 1,
+      "ordinal": 2,
+      "slotId": "seat-1.card-2",
+      "binding": {
+        "assetId": "seat1-c2-bank-v2-raw",
+        "sha256": "98ff074a7815cf5ecb2e58a85748e9da79b8acd04a9a97048222ddb104bb6813",
+        "startFrame": 0,
+        "endFrameExclusive": 360,
+        "presentation": "raw-reference"
+      },
+      "qa": {
+        "status": "pending",
+        "evidence": {
+          "path": "runs/20261109-pamela-seat-bank/c2/bank-v2-stage-1/qa/seat-1/review.json",
+          "sha256": "d85db4f8d750be081bfdf4cbe590f6d1905290aa6db675e69dff9495ccc69caa"
+        },
+        "reason": "Rågranskning visar två kvarliggande konturer och fri hand vid 210. Kortvärden, separata tryckmasker, fysisk skala och exakta skarvar återstår."
+      },
+      "note": "12 s original på heltalsrutor0–359. Befintligt C1 ingår i råkällan och får inte samtidigt ritas dubbelt av anroparen. Två vita konturer är inte två färdiga separata trycklager. Äldre centralreferens bevaras i assets."
+    },
+    {
+      "id": "deal.seat-2.first",
+      "label": "Plats 2 · första giv",
+      "kind": "deal",
+      "from": "REDO",
+      "to": "REDO",
+      "seat": 2,
+      "ordinal": 1,
+      "slotId": "seat-2.card-1",
+      "binding": {
+        "assetId": "seat2-end-card-v1-raw",
+        "sha256": "dc9e35760fd708a6b7c004e3bc255e9c5e8207aa6ddd5bc274c0e3c62dd3f001",
+        "startFrame": 0,
+        "endFrameExclusive": 360,
+        "presentation": "raw-reference"
+      },
+      "qa": {
+        "status": "pending",
+        "evidence": {
+          "path": "runs/20261109-pamela-seat-bank/batches/middle-end-card-v1/qa/seat-2/review.json",
+          "sha256": "e10bf687c4fbbf6c124072a767b99eef2f45cfdc635d528751138fe76310c413"
+        },
+        "reason": "Råfilms-QA visar låst kamera, grön yta, release, tom återgång och vitt kort kvar sista60rutorna. Separata lager, kalibrerad geometri och exakt REDO-skarv återstår."
+      },
+      "note": "12 s råfilm, kandidatfönster0–359. Författat slutankare behåller ett separat vitt kort; inga produktionsgodkända utbytbara lager. Anroparen äger kortutseende och redan lagda kort."
+    },
+    {
+      "id": "deal.seat-2.second",
+      "label": "Plats 2 · andra giv",
+      "kind": "deal",
+      "from": "REDO",
+      "to": "REDO",
+      "seat": 2,
+      "ordinal": 2,
+      "slotId": "seat-2.card-2",
+      "binding": {
+        "assetId": "seat2-c2-bank-v2-raw",
+        "sha256": "ba257d6f88f95536521fe3170f5c5517f53bb447ced7de908cea94683795d77c",
+        "startFrame": 0,
+        "endFrameExclusive": 360,
+        "presentation": "raw-reference"
+      },
+      "qa": {
+        "status": "pending",
+        "evidence": {
+          "path": "runs/20261109-pamela-seat-bank/c2/bank-v2-stage-2/qa/seat-2/review.json",
+          "sha256": "de87c5d5bfcdb6ed3720e6d2f9b3c00ae263e19e52b76e86d5323a87d7454111"
+        },
+        "reason": "Rågranskning visar två kvarliggande konturer och fri hand vid 195. Kortvärden, separata tryckmasker, fysisk skala och exakta skarvar återstår."
+      },
+      "note": "12 s original på heltalsrutor0–359. Befintligt C1 ingår i råkällan och får inte samtidigt ritas dubbelt av anroparen. Två vita konturer är inte två färdiga separata trycklager. Äldre centralreferens bevaras i assets."
+    },
+    {
+      "id": "deal.seat-3.first",
+      "label": "Plats 3 · första giv",
+      "kind": "deal",
+      "from": "REDO",
+      "to": "REDO",
+      "seat": 3,
+      "ordinal": 1,
+      "slotId": "seat-3.card-1",
+      "binding": {
+        "assetId": "seat3-end-card-v1-raw",
+        "sha256": "312f8d9b612cf58cf7cf21a26c77b169bb930d00e3348ffe9fa1cdf0dc574eb9",
+        "startFrame": 0,
+        "endFrameExclusive": 360,
+        "presentation": "raw-reference"
+      },
+      "qa": {
+        "status": "pending",
+        "evidence": {
+          "path": "runs/20261109-pamela-seat-bank/batches/middle-end-card-v1/qa/seat-3/review.json",
+          "sha256": "5d99fa29ab22b0000d6b743c7e0404ab39f7ed10e09b7b103401e725494e6b92"
+        },
+        "reason": "Råfilms-QA visar låst kamera, grön yta, release, tom återgång och vitt kort kvar sista60rutorna. Separata lager, kalibrerad geometri och exakt REDO-skarv återstår."
+      },
+      "note": "12 s råfilm, kandidatfönster0–359. Författat slutankare behåller ett separat vitt kort; inga produktionsgodkända utbytbara lager. Anroparen äger kortutseende och redan lagda kort."
+    },
+    {
+      "id": "deal.seat-3.second",
+      "label": "Plats 3 · andra giv",
+      "kind": "deal",
+      "from": "REDO",
+      "to": "REDO",
+      "seat": 3,
+      "ordinal": 2,
+      "slotId": "seat-3.card-2",
+      "binding": {
+        "assetId": "seat3-c2-bank-v2-raw",
+        "sha256": "bce1003fedde8573cfd85470367a16e439d40c230e3f526c5a51a105d151794b",
+        "startFrame": 0,
+        "endFrameExclusive": 360,
+        "presentation": "raw-reference"
+      },
+      "qa": {
+        "status": "pending",
+        "evidence": {
+          "path": "runs/20261109-pamela-seat-bank/c2/bank-v2-stage-2/qa/seat-3/review.json",
+          "sha256": "e343e2b90d54f11f30eea476bf8da165b77fdc593d01d99284d67272afeccd91"
+        },
+        "reason": "Rågranskning visar två kvarliggande konturer och fri hand vid 156. Kortvärden, separata tryckmasker, fysisk skala och exakta skarvar återstår."
+      },
+      "note": "12 s original på heltalsrutor0–359. Befintligt C1 ingår i råkällan och får inte samtidigt ritas dubbelt av anroparen. Två vita konturer är inte två färdiga separata trycklager. Äldre centralreferens bevaras i assets."
+    },
+    {
+      "id": "deal.seat-4.first",
+      "label": "Plats 4 · första giv",
+      "kind": "deal",
+      "from": "REDO",
+      "to": "REDO",
+      "seat": 4,
+      "ordinal": 1,
+      "slotId": "seat-4.card-1",
+      "binding": {
+        "assetId": "seat4-end-card-v1-raw",
+        "sha256": "4e252be2235ce42cec5de9d49b993d0ffed1c029de9890faea6686f46824f87c",
+        "startFrame": 0,
+        "endFrameExclusive": 360,
+        "presentation": "raw-reference"
+      },
+      "qa": {
+        "status": "pending",
+        "evidence": {
+          "path": "runs/20261109-pamela-seat-bank/batches/middle-end-card-v1/qa/seat-4/review.json",
+          "sha256": "ec346c6295e4f0271da2200d4b6b73ac23cb7495a3e17bd05035ceaf5b518fc5"
+        },
+        "reason": "Råfilms-QA visar låst kamera, grön yta, release, tom återgång och vitt kort kvar sista60rutorna. Separata lager, kalibrerad geometri och exakt REDO-skarv återstår."
+      },
+      "note": "12 s råfilm, kandidatfönster0–359. Författat slutankare behåller ett separat vitt kort; inga produktionsgodkända utbytbara lager. Anroparen äger kortutseende och redan lagda kort."
+    },
+    {
+      "id": "deal.seat-4.second",
+      "label": "Plats 4 · andra giv",
+      "kind": "deal",
+      "from": "REDO",
+      "to": "REDO",
+      "seat": 4,
+      "ordinal": 2,
+      "slotId": "seat-4.card-2",
+      "binding": {
+        "assetId": "seat4-c2-bank-v2-raw",
+        "sha256": "67319ed86cde67cc7a7566553d451a89f8aac11384a55f8f8b460d1403d30167",
+        "startFrame": 0,
+        "endFrameExclusive": 360,
+        "presentation": "raw-reference"
+      },
+      "qa": {
+        "status": "pending",
+        "evidence": {
+          "path": "runs/20261109-pamela-seat-bank/c2/bank-v2-stage-2/qa/seat-4/review.json",
+          "sha256": "03897173561ff9e58250ba42fd78fb9a487dc3e81379c8257fbfcdb79cad7e73"
+        },
+        "reason": "Rågranskning visar två kvarliggande konturer och fri hand vid 225. Kortvärden, separata tryckmasker, fysisk skala och exakta skarvar återstår."
+      },
+      "note": "12 s original på heltalsrutor0–359. Befintligt C1 ingår i råkällan och får inte samtidigt ritas dubbelt av anroparen. Två vita konturer är inte två färdiga separata trycklager. Äldre centralreferens bevaras i assets."
+    },
+    {
+      "id": "deal.seat-5.first",
+      "label": "Plats 5 · första giv",
+      "kind": "deal",
+      "from": "REDO",
+      "to": "REDO",
+      "seat": 5,
+      "ordinal": 1,
+      "slotId": "seat-5.card-1",
+      "binding": {
+        "assetId": "seat5-end-card-v1-raw",
+        "sha256": "edd74e2620327c41080d0f1610e2865d0ddfc44bd2b9e7bf56f114a408e26acf",
+        "startFrame": 0,
+        "endFrameExclusive": 360,
+        "presentation": "raw-reference"
+      },
+      "qa": {
+        "status": "pending",
+        "evidence": {
+          "path": "runs/20261109-pamela-seat-bank/batches/middle-end-card-v1/qa/seat-5/review.json",
+          "sha256": "87d4dae0e204059e44ca24353e775335b57c712b6dc90b5486f10e4f725c895e"
+        },
+        "reason": "Råfilms-QA visar låst kamera, grön yta, release, tom återgång och vitt kort kvar sista60rutorna. Separata lager, kalibrerad geometri och exakt REDO-skarv återstår. Öppen hand överlappar kortets projektion efter release; handocklusion krävs."
+      },
+      "note": "12 s råfilm, kandidatfönster0–359. Författat slutankare behåller ett separat vitt kort; inga produktionsgodkända utbytbara lager. Anroparen äger kortutseende och redan lagda kort."
+    },
+    {
+      "id": "deal.seat-5.second",
+      "label": "Plats 5 · andra giv",
+      "kind": "deal",
+      "from": "REDO",
+      "to": "REDO",
+      "seat": 5,
+      "ordinal": 2,
+      "slotId": "seat-5.card-2",
+      "binding": {
+        "assetId": "seat5-c2-bank-v2-raw",
+        "sha256": "9a73beb62ccaa93325c7f3d0a65feb3c767ad873d1d3678f9ad494e53a8b0a58",
+        "startFrame": 0,
+        "endFrameExclusive": 360,
+        "presentation": "raw-reference"
+      },
+      "qa": {
+        "status": "pending",
+        "evidence": {
+          "path": "runs/20261109-pamela-seat-bank/c2/bank-v2-stage-2/qa/seat-5/review.json",
+          "sha256": "04a822db8b94a342c200f673da373abef802c779f58328a0cf07d810efd9909e"
+        },
+        "reason": "Rågranskning visar två kvarliggande konturer och fri hand vid 210. Kortvärden, separata tryckmasker, fysisk skala och exakta skarvar återstår."
+      },
+      "note": "12 s original på heltalsrutor0–359. Befintligt C1 ingår i råkällan och får inte samtidigt ritas dubbelt av anroparen. Två vita konturer är inte två färdiga separata trycklager. Äldre centralreferens bevaras i assets."
+    },
+    {
+      "id": "deal.seat-6.first",
+      "label": "Plats 6 · första giv",
+      "kind": "deal",
+      "from": "REDO",
+      "to": "REDO",
+      "seat": 6,
+      "ordinal": 1,
+      "slotId": "seat-6.card-1",
+      "binding": {
+        "assetId": "seat6-end-card-v1-raw",
+        "sha256": "dee43b673dbd3014efdcdccd4b5dbea9a4256a1bc33bf760b554d1fbcfe633bb",
+        "startFrame": 0,
+        "endFrameExclusive": 360,
+        "presentation": "raw-reference"
+      },
+      "qa": {
+        "status": "pending",
+        "evidence": {
+          "path": "runs/20261109-pamela-seat-bank/batches/middle-end-card-v1/qa/seat-6/review.json",
+          "sha256": "01ab06d76dd56e177749ba889f1bc9455e46c35cc04648f542349ba67a951781"
+        },
+        "reason": "Råfilms-QA visar låst kamera, grön yta, release, tom återgång och vitt kort kvar sista60rutorna. Separata lager, kalibrerad geometri och exakt REDO-skarv återstår."
+      },
+      "note": "12 s råfilm, kandidatfönster0–359. Författat slutankare behåller ett separat vitt kort; inga produktionsgodkända utbytbara lager. Anroparen äger kortutseende och redan lagda kort."
+    },
+    {
+      "id": "deal.seat-6.second",
+      "label": "Plats 6 · andra giv",
+      "kind": "deal",
+      "from": "REDO",
+      "to": "REDO",
+      "seat": 6,
+      "ordinal": 2,
+      "slotId": "seat-6.card-2",
+      "binding": {
+        "assetId": "seat6-c2-bank-v2-raw",
+        "sha256": "daf180780c20f398f123c30e966c1ab03e1698556ffd5dbfd2221da35f0538f5",
+        "startFrame": 0,
+        "endFrameExclusive": 360,
+        "presentation": "raw-reference"
+      },
+      "qa": {
+        "status": "pending",
+        "evidence": {
+          "path": "runs/20261109-pamela-seat-bank/c2/bank-v2-stage-2/qa/seat-6/review.json",
+          "sha256": "2282cf871662f6d8bd73fcedc00498c018f650ac0d821cba3a5c263c3429f1a1"
+        },
+        "reason": "Rågranskning visar två kvarliggande konturer och fri hand vid 216. Kortvärden, separata tryckmasker, fysisk skala och exakta skarvar återstår."
+      },
+      "note": "12 s original på heltalsrutor0–359. Befintligt C1 ingår i råkällan och får inte samtidigt ritas dubbelt av anroparen. Två vita konturer är inte två färdiga separata trycklager. Äldre centralreferens bevaras i assets."
+    },
+    {
+      "id": "deal.seat-7.first",
+      "label": "Plats 7 · första giv",
+      "kind": "deal",
+      "from": "REDO",
+      "to": "REDO",
+      "seat": 7,
+      "ordinal": 1,
+      "slotId": "seat-7.card-1",
+      "binding": {
+        "assetId": "seat7-end-card-v3-raw",
+        "sha256": "b37dbc6cafa99378786eff51ac1e8cb69c3bb01824b2107d390ddd7032a4620e",
+        "startFrame": 0,
+        "endFrameExclusive": 360,
+        "presentation": "raw-reference"
+      },
+      "qa": {
+        "status": "pending",
+        "evidence": {
+          "path": "runs/20261109-pamela-seat-bank/retakes/seat-7-end-card-v3/qa/seat-7/review.json",
+          "sha256": "a73fb99e1a8a931193c2bd85426906e58ae07aaaa382cf16f962678add06f0be"
+        },
+        "reason": "Råfilms-QA visar låst kamera, grön yta, release, tom återgång och vitt kort kvar sista60rutorna. Separata lager, kalibrerad geometri och exakt REDO-skarv återstår."
+      },
+      "note": "12 s råfilm, kandidatfönster0–359. Författat slutankare behåller ett separat vitt kort; inga produktionsgodkända utbytbara lager. Anroparen äger kortutseende och redan lagda kort."
+    },
+    {
+      "id": "deal.seat-7.second",
+      "label": "Plats 7 · andra giv",
+      "kind": "deal",
+      "from": "REDO",
+      "to": "REDO",
+      "seat": 7,
+      "ordinal": 2,
+      "slotId": "seat-7.card-2",
+      "binding": {
+        "assetId": "seat7-c2-bank-v2-raw",
+        "sha256": "d1ecb53516f3b5a4c7fd173a5129775845dbdfca4c35f495e0ac6d2378dd5dbf",
+        "startFrame": 0,
+        "endFrameExclusive": 360,
+        "presentation": "raw-reference"
+      },
+      "qa": {
+        "status": "pending",
+        "evidence": {
+          "path": "runs/20261109-pamela-seat-bank/c2/bank-v2-stage-1/qa/seat-7/review.json",
+          "sha256": "1c949ddb0996411c02f3ffc1863f27789ba90c95e28add45f3dc48a2d5655f5a"
+        },
+        "reason": "Rågranskning visar två kvarliggande konturer och fri hand vid 206. Kortvärden, separata tryckmasker, fysisk skala och exakta skarvar återstår."
+      },
+      "note": "12 s original på heltalsrutor0–359. Befintligt C1 ingår i råkällan och får inte samtidigt ritas dubbelt av anroparen. Två vita konturer är inte två färdiga separata trycklager. Äldre centralreferens bevaras i assets."
+    }
+  ],
+  "cardSlots": [
+    {
+      "id": "seat-1.card-1",
+      "seat": 1,
+      "ordinal": 1,
+      "presentationTemplateId": "pamela.presentation.seat-1.card-1"
+    },
+    {
+      "id": "seat-1.card-2",
+      "seat": 1,
+      "ordinal": 2,
+      "presentationTemplateId": "pamela.presentation.seat-1.card-2"
+    },
+    {
+      "id": "seat-2.card-1",
+      "seat": 2,
+      "ordinal": 1,
+      "presentationTemplateId": "pamela.presentation.seat-2.card-1"
+    },
+    {
+      "id": "seat-2.card-2",
+      "seat": 2,
+      "ordinal": 2,
+      "presentationTemplateId": "pamela.presentation.seat-2.card-2"
+    },
+    {
+      "id": "seat-3.card-1",
+      "seat": 3,
+      "ordinal": 1,
+      "presentationTemplateId": "pamela.presentation.seat-3.card-1"
+    },
+    {
+      "id": "seat-3.card-2",
+      "seat": 3,
+      "ordinal": 2,
+      "presentationTemplateId": "pamela.presentation.seat-3.card-2"
+    },
+    {
+      "id": "seat-4.card-1",
+      "seat": 4,
+      "ordinal": 1,
+      "presentationTemplateId": "pamela.presentation.seat-4.card-1"
+    },
+    {
+      "id": "seat-4.card-2",
+      "seat": 4,
+      "ordinal": 2,
+      "presentationTemplateId": "pamela.presentation.seat-4.card-2"
+    },
+    {
+      "id": "seat-5.card-1",
+      "seat": 5,
+      "ordinal": 1,
+      "presentationTemplateId": "pamela.presentation.seat-5.card-1"
+    },
+    {
+      "id": "seat-5.card-2",
+      "seat": 5,
+      "ordinal": 2,
+      "presentationTemplateId": "pamela.presentation.seat-5.card-2"
+    },
+    {
+      "id": "seat-6.card-1",
+      "seat": 6,
+      "ordinal": 1,
+      "presentationTemplateId": "pamela.presentation.seat-6.card-1"
+    },
+    {
+      "id": "seat-6.card-2",
+      "seat": 6,
+      "ordinal": 2,
+      "presentationTemplateId": "pamela.presentation.seat-6.card-2"
+    },
+    {
+      "id": "seat-7.card-1",
+      "seat": 7,
+      "ordinal": 1,
+      "presentationTemplateId": "pamela.presentation.seat-7.card-1"
+    },
+    {
+      "id": "seat-7.card-2",
+      "seat": 7,
+      "ordinal": 2,
+      "presentationTemplateId": "pamela.presentation.seat-7.card-2"
+    }
+  ],
+  "edgeGates": [],
+  "generationPlan": {
+    "status": "planning-only",
+    "newPaidJobsAuthorizedByContract": false,
+    "preferredRawSeconds": 12,
+    "cutRule": "original-integer-frames-only",
+    "note": "Alla14 givningshandlingar har källhashbundna råkandidater med heltalsrutor0–359. Tre VILA-klipp och två bryggor är bevarade. Lagerseparering, korttryck och exakta skarvar återstår. Kontraktet startar inga jobb och utökar ingen budget; kortvärden och spelregler ägs av anroparens motor."
+  }
+}

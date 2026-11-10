@@ -1,0 +1,20 @@
+{
+  "name": "dealer",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=24.21.0 <25"
+  },
+  "volta": {
+    "node": "24.21.0"
+  },
+  "scripts": {
+    "verify": "node tools/verify.ts",
+    "render": "node tools/render.ts",
+    "preview": "node tools/preview.ts"
+  },
+  "dependencies": {
+    "sharp": "0.35.5"
+  }
+}

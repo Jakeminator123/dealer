@@ -1,0 +1,52 @@
+{
+  "schemaVersion": 1,
+  "sourceRoot": "C:/Users/jakem/dev/super-feature-sg/new-front2",
+  "sourceGitRevision": "unknown-no-git-repository",
+  "sourcePage": "https://v0.app/jakeminator123s-projects/chat/v0-irl-event-landing-custom-3d-lanyard-7jJL5ubojlL",
+  "pageReadable": false,
+  "basis": "Local source code reviewed; remote v0 contents not verified",
+  "use": "Reference copies only; not imported, installed or executed in dealerlab.",
+  "files": [
+    {
+      "sourcePath": "components/house-of-cards/card-geometry.ts",
+      "copy": "references/card-materials/new-front2/card-geometry.ts",
+      "sha256": "34a38598c0bb0b8ea33553f232d3083b2639fe9d59fb34508db4bfc06ff7f5f8",
+      "bytes": 1686,
+      "sourceModifiedAt": "2026-11-08T02:25:19.000Z"
+    },
+    {
+      "sourcePath": "components/house-of-cards/playing-card-mesh.tsx",
+      "copy": "references/card-materials/new-front2/playing-card-mesh.tsx",
+      "sha256": "5a92052f80220e0aca92042d0ff2a17ff676f71fc66935e437659d27cfcd78c2",
+      "bytes": 2315,
+      "sourceModifiedAt": "2026-11-08T02:25:19.000Z"
+    },
+    {
+      "sourcePath": "components/house-of-cards/card-textures.ts",
+      "copy": "references/card-materials/new-front2/card-textures.ts",
+      "sha256": "de641ec2b648a0d6f55c94bc61eb3325d96be095196169778309cc5f2d969988",
+      "bytes": 12458,
+      "sourceModifiedAt": "2026-11-08T02:25:19.000Z"
+    }
+  ],
+  "sourceDeclaredDependencies": {
+    "three": "^0.167.1",
+    "fiber": "^9.5.0",
+    "drei": "^10.7.7"
+  },
+  "portableParts": [
+    "procedural geometry",
+    "face/back texture artwork",
+    "material setup"
+  ],
+  "excluded": [
+    "card-scene choreography and random deck",
+    "source page layout",
+    "source camera and parallax",
+    "game logic"
+  ],
+  "limitations": [
+    "Card meshes do not reconstruct finger occlusion or missing source pixels.",
+    "Texture code still references source-only types/helpers and browser Canvas; these copies are not a runnable integration."
+  ]
+}
