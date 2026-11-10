@@ -7569,6 +7569,62 @@
       "role": "placement-reference-still",
       "sourceSha256": "51a2d0c203f4981b812f503cb32c68413350b8f9c6e8ccaf80445a9359356d0b",
       "sourceFrame": 0
+    },
+    {
+      "path": "assets/motions/pamela-p7-c1-left-turn-pilot-01/start.png",
+      "sha256": "3050e9ccc0d624a1b45d49a67be1c38a8ef6a6038d2743585891dea44d5ffff0",
+      "bytes": 953140,
+      "source": "dealer:assets/motions/pamela-p4-c2-left-closed-closed/source.mp4#frame=0",
+      "role": "pilot-start-anchor"
+    },
+    {
+      "path": "assets/motions/pamela-p7-c1-left-turn-pilot-01/source.mp4",
+      "sha256": "f00262416a1b09dcf01ddb9e6c4b9d14ffeaf03745a2cb097682645ed9087751",
+      "bytes": 20509640,
+      "source": "runway-task:910b3d33-fb58-40ba-876b-d14bd82c12ee",
+      "role": "rejected-pilot-source"
+    },
+    {
+      "path": "assets/motions/pamela-p7-c1-left-turn-pilot-02/start.png",
+      "sha256": "3050e9ccc0d624a1b45d49a67be1c38a8ef6a6038d2743585891dea44d5ffff0",
+      "bytes": 953140,
+      "source": "dealer:assets/motions/pamela-p4-c2-left-closed-closed/source.mp4#frame=0",
+      "role": "pilot-start-anchor"
+    },
+    {
+      "path": "assets/motions/pamela-p7-c1-left-turn-pilot-02/end.png",
+      "sha256": "5c9de55375c9a12b3395af7e873f07c85b5b067c49b1d9b5a3aa4711e50fb0a6",
+      "bytes": 1264899,
+      "source": "dealer:assets/motions/pamela-p7-c1-left-turn-pilot-02/overlay-spec.json",
+      "role": "pilot-end-overlay-specification"
+    },
+    {
+      "path": "assets/motions/pamela-p7-c1-left-turn-pilot-02/source.mp4",
+      "sha256": "00a93efa3e7b8ccdadbafa57e8232a1eed479600c5f4c06d12faed9f74b1e334",
+      "bytes": 20926194,
+      "source": "runway-task:4f57a462-6df7-4beb-8fa0-db5d3eaf8357",
+      "role": "candidate-pilot-source"
+    },
+    {
+      "path": "assets/motions/pamela-p6-c1-left-turn-pilot-01/start.png",
+      "sha256": "3050e9ccc0d624a1b45d49a67be1c38a8ef6a6038d2743585891dea44d5ffff0",
+      "bytes": 953140,
+      "source": "dealer:assets/motions/pamela-p4-c2-left-closed-closed/source.mp4#frame=0",
+      "role": "pilot-start-anchor"
+    },
+    {
+      "path": "assets/motions/pamela-p6-c1-left-turn-pilot-01/end.png",
+      "sha256": "a08ba7353c1de4a5978365444a06bda8e13ee9447081f42efb661874b60bcfcf",
+      "bytes": 1264637,
+      "source": "dealer:assets/motions/pamela-p6-c1-left-turn-pilot-01/overlay-spec.json",
+      "role": "pilot-end-overlay-specification"
+    },
+    {
+      "path": "assets/motions/pamela-p6-c1-left-turn-pilot-01/source.mp4",
+      "sha256": "6386e401b1600263998e5a5e8facb180a46c000c13bb0ab76265d213a9703c34",
+      "bytes": 16269958,
+      "source": "runway-task:d4281d56-7b6f-4936-9c62-b203fd20ef58",
+      "role": "rejected-pilot-source"
     }
   ]
 }

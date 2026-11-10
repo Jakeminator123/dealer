@@ -1,0 +1,90 @@
+{
+  "createdAt": "2026-11-10T17:49:51.726Z",
+  "node": "v24.21.0",
+  "tests": {
+    "command": "node --test --test-concurrency=4 tools/placements.test.ts",
+    "passed": 9
+  },
+  "registeredFilesCheck": {
+    "command": "npm run verify",
+    "verifiedFiles": 1080,
+    "exitCode": 0
+  },
+  "ui": {
+    "theme": {
+      "body": "rgb(16, 13, 24)",
+      "header": "rgb(26, 21, 38)"
+    },
+    "draftSha256": "fdcfc238d14b1feef73108870c563c81b27d005922e8708d28130313ad065b7c",
+    "draftRoundTripByteIdentical": true,
+    "serverPlanNotSaved": true,
+    "snapTest": {
+      "before": {
+        "x": 1466,
+        "y": 951,
+        "angle": -1.5538680675564365
+      },
+      "snapped": {
+        "x": 1470,
+        "y": 950,
+        "angle": 0
+      },
+      "undone": true
+    },
+    "flatComparison": {
+      "p4CornersPreserved": true,
+      "allImageCentresPreserved": true,
+      "noPlanMutation": true,
+      "calibrated": false,
+      "userAccepted": false,
+      "userFeedback": "Outer cards still appear too skewed outward; this comparison is not a production calibration."
+    },
+    "nodeMap": {
+      "p7": [
+        "ready",
+        "take",
+        "turn",
+        "land",
+        "release",
+        "return"
+      ],
+      "p4Closed": [
+        "ready",
+        "take",
+        "land",
+        "release",
+        "return"
+      ]
+    },
+    "schematicEndColors": {
+      "p7": "#0000ff",
+      "p4Closed": "#ffff00"
+    },
+    "horizontalOverflow": false,
+    "consoleErrors": [],
+    "screenshot": ".runtime/plane-proof/lab-dark.png",
+    "library": {
+      "screenshot": ".runtime/plane-proof/library-final.png",
+      "newExperiments": 3,
+      "newExperimentsAccepted": 0,
+      "p7SecondAttemptStatusVisible": "AVVISAD",
+      "p7SecondAttemptNoteVisible": "BACK -> FRONT -> BACK; front is rendered yellow, back at landing is rendered blue; no local card overlay applied.",
+      "p7SecondAttemptPlayback": {"readyState": 4, "error": null, "observedTime": 7.8},
+      "p6Playback": {"readyState": 4, "error": null, "observedTime": 6, "ended": true},
+      "testTab7Closed": true,
+      "userDraftTabsPreserved": [3, 8]
+    }
+  },
+  "limitations": [
+    "Schematic hand marker, no generated human motion in the coordinate preview.",
+    "Shared plane is a P4-based comparison, not camera calibration.",
+    "Overlay contact with the real hand remains clip-specific.",
+    "One source colour alone cannot identify which physical card side is visible. Pink-source workflow is planned, not generated or verified.",
+    "A shared camera-angle control remains unimplemented; further lab expansion is paused."
+  ],
+  "endFrame": {
+    "path": "assets/motions/pamela-p7-c1-left-turn-pilot-02/end.png",
+    "changedPixels": 4253,
+    "changedOutsideCardBounds": 0
+  }
+}

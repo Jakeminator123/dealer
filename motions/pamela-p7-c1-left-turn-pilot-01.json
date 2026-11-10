@@ -1,0 +1,60 @@
+{
+  "schemaVersion": 1,
+  "id": "pamela-p7-c1-left-turn-pilot-01",
+  "dealer": "pamela",
+  "source": {
+    "path": "assets/motions/pamela-p7-c1-left-turn-pilot-01/source.mp4",
+    "sha256": "f00262416a1b09dcf01ddb9e6c4b9d14ffeaf03745a2cb097682645ed9087751",
+    "model": "wan3",
+    "provider": "Runway developer API",
+    "taskId": "910b3d33-fb58-40ba-876b-d14bd82c12ee",
+    "width": 1764,
+    "height": 1174,
+    "fps": 30,
+    "frames": 240
+  },
+  "intent": {
+    "takeHand": "LH",
+    "releaseHand": "LH",
+    "target": "P7.C1",
+    "physicalStartSide": "BACK",
+    "physicalEndSide": "FRONT",
+    "turn": true,
+    "pass": false
+  },
+  "observed": {
+    "startRenderedColor": "yellow",
+    "endRenderedColor": "yellow",
+    "briefUndersideVisible": {
+      "basis": "Jakob correction",
+      "reported": true,
+      "requiredColor": "blue",
+      "exactFrameAnnotation": "pending"
+    },
+    "landedNear": "P4.C1",
+    "endYellowBounds": {
+      "n": 7487,
+      "x0": 936,
+      "y0": 1008,
+      "x1": 1051,
+      "y1": 1079
+    },
+    "anchorMatched": false,
+    "shoeEndRenderedColor": "blue"
+  },
+  "review": {
+    "decision": "REJECTED",
+    "reviewer": "TILLBAKA-2",
+    "basis": "16 full-view and 48 consecutive sampled hand-region frames across all 8 seconds; final-frame colour bounds; corrected by Jakob: brief underside is visible mid-motion",
+    "reasons": [
+      "Jakob reports a brief underside view mid-motion: this should render blue. Yellow pixels alone do not prove absence of a physical turn.",
+      "Missed intended P7 landing position: yellow end card bounds x936..1051, y1008..1079; requested centre x1467,y950.",
+      "Shoe turns blue and return pose differs from start."
+    ],
+    "userApproved": false
+  },
+  "placementRef": null,
+  "viewProfileId": null,
+  "scoutIntegrated": false,
+  "published": false
+}

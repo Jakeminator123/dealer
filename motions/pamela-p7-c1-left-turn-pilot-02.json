@@ -1,0 +1,122 @@
+{
+  "schemaVersion": 1,
+  "id": "pamela-p7-c1-left-turn-pilot-02",
+  "dealer": "pamela",
+  "source": {
+    "path": "assets/motions/pamela-p7-c1-left-turn-pilot-02/source.mp4",
+    "sha256": "00a93efa3e7b8ccdadbafa57e8232a1eed479600c5f4c06d12faed9f74b1e334",
+    "model": "wan3",
+    "provider": "Runway developer API",
+    "taskId": "4f57a462-6df7-4beb-8fa0-db5d3eaf8357",
+    "width": 1764,
+    "height": 1174,
+    "fps": 30,
+    "frames": 240
+  },
+  "intent": {
+    "takeHand": "LH",
+    "releaseHand": "LH",
+    "target": "P7.C1",
+    "physicalStartSide": "BACK",
+    "physicalEndSide": "FRONT",
+    "turn": true,
+    "pass": false
+  },
+  "observed": {
+    "takeHand": "LH",
+    "releaseHand": "LH",
+    "turn": "Two side changes: front with rank symbols becomes visible after pickup; later wrist rotation exposes the back before landing.",
+    "landedAt": "P7.C1 source-image target",
+    "settledCardSamples": [
+      {
+        "second": 6,
+        "count": 4007,
+        "bounds": {
+          "x0": 1430,
+          "y0": 922,
+          "x1": 1501,
+          "y1": 979
+        },
+        "centre": {
+          "x": 1465.5,
+          "y": 950.5
+        }
+      },
+      {
+        "second": 6.5,
+        "count": 4047,
+        "bounds": {
+          "x0": 1430,
+          "y0": 922,
+          "x1": 1501,
+          "y1": 979
+        },
+        "centre": {
+          "x": 1465.5,
+          "y": 950.5
+        }
+      },
+      {
+        "second": 7,
+        "count": 4048,
+        "bounds": {
+          "x0": 1430,
+          "y0": 922,
+          "x1": 1501,
+          "y1": 979
+        },
+        "centre": {
+          "x": 1465.5,
+          "y": 950.5
+        }
+      },
+      {
+        "second": 7.5,
+        "count": 4042,
+        "bounds": {
+          "x0": 1430,
+          "y0": 922,
+          "x1": 1501,
+          "y1": 979
+        },
+        "centre": {
+          "x": 1465.5,
+          "y": 950.5
+        }
+      }
+    ],
+    "shoeRenderedColor": "yellow",
+    "returnsToShoe": true,
+    "anchorCutReady": false,
+    "physicalSequence": [
+      "BACK",
+      "FRONT",
+      "BACK"
+    ],
+    "physicalEndSide": "BACK",
+    "sideBasis": "Jakob supplied three screenshots and pointed out wrong colour at reveal and landing; reviewed against the continuous source sequence."
+  },
+  "review": {
+    "decision": "REJECTED",
+    "reviewer": "Jakob",
+    "userApproved": false,
+    "basis": "16 overview frames, 48 temporal hand crops and 10 close turn crops; four stationary-card samples",
+    "limitations": [
+      "Card is raised high and held before turning; naturalness needs Jakob review.",
+      "Generated yellow face has unwanted small printed marks; overlay must cover them.",
+      "Source-image position only; no final V6/Scout calibration or hand/contact masks.",
+      "Return pose is visually close, not verified as a seamless loop."
+    ],
+    "userReason": "P7 försök 2 blir ju fel",
+    "workflowCorrection": "Generate motion with a single mask-helper colour. Apply card appearance locally. Keep visible physical side separate from pixel colour.",
+    "reasons": [
+      "Front/rank face is rendered yellow but should be blue.",
+      "Opposite side exposed for landing is rendered blue but should be yellow.",
+      "Motion appears to end BACK, so it does not satisfy a BACK-to-FRONT deal."
+    ]
+  },
+  "placementRef": null,
+  "viewProfileId": null,
+  "scoutIntegrated": false,
+  "published": false
+}

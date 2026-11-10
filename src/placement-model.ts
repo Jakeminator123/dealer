@@ -18,6 +18,29 @@ export function angleToward(from: Point,to: Point,view: View): number {
  const degrees=Math.atan2(b.y-a.y,b.x-a.x)*180/Math.PI+90;
  return ((degrees+540)%360)-180;
 }
+// A single projective plane derived from P4. This is a comparison, not a
+// camera calibration: a real board needs measured correspondences later.
+export function flatQuad(g: Geometry, reference: Geometry, view: View, heading=0) {
+ const p=VIEWS[view],origin=toPixels(reference,view),wanted=toPixels(g,view);
+ const w=reference.width*(p.width-1)/2,h=reference.height*(p.height-1)/2;
+ const k=(reference.taper-1)/(reference.taper+1),roll=reference.angle*Math.PI/180,a=heading*Math.PI/180;
+ const project=(x:number,y:number)=>{const d=1+k*y,X=w*(1+k)*x/d,Y=h*(y+k)/d;return {x:origin.x+X*Math.cos(roll)-Y*Math.sin(roll),y:origin.y+X*Math.sin(roll)+Y*Math.cos(roll)};};
+ const dx=wanted.x-origin.x,dy=wanted.y-origin.y,lx=dx*Math.cos(roll)+dy*Math.sin(roll),ly=-dx*Math.sin(roll)+dy*Math.cos(roll);
+ let cy=(ly/h-k)/(1-k*ly/h),cx=lx*(1+k*cy)/(w*(1+k));
+ const corners=[[-1,-1],[1,-1],[1,1],[-1,1]].map(([x,y])=>({x:x*Math.cos(a)-y*Math.sin(a)/.714,y:x*Math.sin(a)*.714+y*Math.cos(a)}));
+ const shape=(x:number,y:number)=>corners.map(q=>project(x+q.x,y+q.y));
+ const centre=(x:number,y:number)=>shape(x,y).reduce((s,q)=>({x:s.x+q.x/4,y:s.y+q.y/4}),{x:0,y:0});
+ // Preserve the existing image centre, including P4's exact original corners.
+ for(let i=0;i<8;i++){const c=centre(cx,cy),ex=wanted.x-c.x,ey=wanted.y-c.y;if(Math.hypot(ex,ey)<1e-8)break;const e=.0001,px=centre(cx+e,cy),py=centre(cx,cy+e),xx=(px.x-c.x)/e,xy=(py.x-c.x)/e,yx=(px.y-c.y)/e,yy=(py.y-c.y)/e,d=xx*yy-xy*yx;cx+=(ex*yy-ey*xy)/d;cy+=(ey*xx-ex*yx)/d;}
+ return shape(cx,cy);
+}
+export function snapPoint(point: Point, view: View, step: number): Point {
+ if(step<=0)return {...point};const p=toPixels(point,view),v=VIEWS[view];
+ return fromPixels(Math.max(0,Math.min(v.width-1,Math.round(p.x/step)*step)),Math.max(0,Math.min(v.height-1,Math.round(p.y/step)*step)),view);
+}
+export function motionNodes(id:string,intent:Intent){const hand=intent.pass?otherHand(intent.takeHand):intent.takeHand;
+ return [{id:'ready',label:'SHOE_READY',detail:intent.startSide}, {id:'take',label:'TAKE',detail:intent.takeHand},...(intent.pass?[{id:'pass',label:'PASS',detail:`${intent.takeHand} → ${hand}`}]:[]),...(intent.turn?[{id:'turn',label:'TURN',detail:`${intent.startSide} → ${intent.endSide}`}]:[]),{id:'land',label:'LAND',detail:`${id} · ${intent.endSide}`},{id:'release',label:'RELEASE',detail:hand},{id:'return',label:'RETURN',detail:'SHOE_READY'}];
+}
 export function quad(g: Geometry, view: View) {
  const p=VIEWS[view],c=toPixels(g,view),w=g.width*(p.width-1)/2,h=g.height*(p.height-1)/2,a=g.angle*Math.PI/180;
  return [[-w*g.taper,-h],[w*g.taper,-h],[w,h],[-w,h]].map(([x,y])=>({x:c.x+x*Math.cos(a)-y*Math.sin(a),y:c.y+x*Math.sin(a)+y*Math.cos(a)}));
@@ -35,7 +58,7 @@ export function sequence(id: string, intent: Intent) {
 export function defaultPlan(): PlacementPlan {
  const targets: Record<string,Target>={};
  for(const id of TARGETS){const dealer=id[0]==='D',seat=dealer?3:Number(id[1])-1,second=id.endsWith('2'),v=.08+Math.abs(seat-3)*.025,closed=(dealer&&second)||id==='P4.C2';
-  targets[id]={geometry:{native:{u:dealer?.5+(second?.027:0):.13+seat*.12+(second?.025:0),v:dealer?.21:v+(second?.008:0),width:.041,height:.051,angle:dealer?0:(seat-3)*-7,taper:.9,reviewed:false},portrait:{u:dealer?.47+(second?.048:0):.10+seat*.125+(second?.035:0),v:dealer?.49:.16+Math.abs(seat-3)*.055+(second?.005:0),width:.06,height:.04,angle:dealer?0:(seat-3)*-7,taper:.9,reviewed:false}},intent:{takeHand:'LH',startSide:'BACK',endSide:closed?'BACK':'FRONT',pass:false,turn:!closed},material:{bend:.07,gloss:.35}};
+  targets[id]={geometry:{native:{u:dealer?.5+(second?.027:0):.13+seat*.12+(second?.025:0),v:dealer?.21:v+(second?.008:0),width:.041,height:.051,angle:0,taper:.9,reviewed:false},portrait:{u:dealer?.47+(second?.048:0):.10+seat*.125+(second?.035:0),v:dealer?.49:.16+Math.abs(seat-3)*.055+(second?.005:0),width:.06,height:.04,angle:0,taper:.9,reviewed:false}},intent:{takeHand:'LH',startSide:'BACK',endSide:closed?'BACK':'FRONT',pass:false,turn:!closed},material:{bend:.07,gloss:.35}};
  }
  return {schemaVersion:1,id:'pamela-table',space:'image-normalized-bottom-up',updatedAt:null,shoe:{native:{u:.733,v:.322},portrait:{u:.84,v:.58}},targets};
 }

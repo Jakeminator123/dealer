@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "id": "pamela-p6-c1-left-turn-pilot-01",
+  "dealer": "pamela",
+  "source": {
+    "path": "assets/motions/pamela-p6-c1-left-turn-pilot-01/source.mp4",
+    "sha256": "6386e401b1600263998e5a5e8facb180a46c000c13bb0ab76265d213a9703c34",
+    "model": "wan3",
+    "provider": "Runway developer API",
+    "taskId": "d4281d56-7b6f-4936-9c62-b203fd20ef58",
+    "width": 1764,
+    "height": 1174,
+    "fps": 30,
+    "frames": 180
+  },
+  "intent": {
+    "takeHand": "LH",
+    "releaseHand": "LH",
+    "target": "P6.C1",
+    "physicalStartSide": "BACK",
+    "physicalEndSide": "FRONT",
+    "turn": true,
+    "pass": false
+  },
+  "observed": {
+    "takeHand": "LH",
+    "releaseHand": "RH",
+    "pass": true,
+    "endAppearance": "printed court card, not the requested plain blue surface",
+    "landedNear": "P6.C1",
+    "returnsToShoe": true,
+    "anchorCutReady": false
+  },
+  "review": {
+    "decision": "REJECTED",
+    "reviewer": "TILLBAKA-2",
+    "userApproved": false,
+    "basis": "12 overview frames and 36 temporal hand-region crops",
+    "reasons": [
+      "Unrequested hand transfer: left hand takes, right hand releases.",
+      "Generated a printed face and did not preserve the plain colour surface."
+    ],
+    "workflowCorrection": "Mask-helper colour and physical side annotation must be separated from locally rendered appearance."
+  },
+  "placementRef": null,
+  "viewProfileId": null,
+  "scoutIntegrated": false,
+  "published": false
+}
