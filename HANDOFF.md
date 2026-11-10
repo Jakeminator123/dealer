@@ -15,6 +15,7 @@ Uppdaterad 2026-11-10. Fortsätt i denna checkout. Läs aktuell handoff och rele
 - `C:/Users/jakem/dev/super-feature-sg/dealer`, branch `jakob/test`, origin `git@github.com:Jakeminator123/dealer.git`.
 - Lokal preview **http://127.0.0.1:4319/lab.html**, behåll för Jakob. Codex WebView; bevara användarflikars arbete. `node tools/preview.ts --status`, stopp via kontrollkanal, aldrig processnamn/port.
 - Publikt **https://dealer-delta-eosin.vercel.app/**. Aktuell verifierad deployment, kod-SHA och uppspelningsbevis: `evidence/public-release.json`. Lokala ändringar är inte publika förrän detta kvitto uppdaterats.
+- Publicerat från `b65fd9b`: 22 filmer och 25/25 anonymt hashverifierade webbfiler. Nya P4.C1-provet och placeringsprovet02 har full uppspelning utan videofel. Det nya WAN-provet är SECONDARY eftersom underhandsnedläggningen missas; publicering ändrar inte rörelseacceptans. Senare kvittocommit ändrar bara dokumentation/publiceringsstatus.
 - Vercel `scoutgaming/dealer`, projekt `prj_7zd112w6MIX9YnpcR7Nj64Ke50yk`, team `team_Scxorb9qtZHjNae1YEQnFCaT`. Bindning `.runtime/public-deploy/.vercel/project.json`. Skyddade `dealer-scoutgaming.vercel.app` är inte publik granskningslänk.
 - Blob `dealer-media`, `store_qeojzIHuA5ewT4uO`. Lokal katalog `data/library.json`; publika motsvarigheter `data/public-media.json`. Aktuellt filantal/byte/hashkontroll i `evidence/public-media-verification.json`. Media/hemligheter aldrig i Git eller webbpaket.
 - **`placements/default.json` är Jakobs aktiva utkast. Återställ eller stage:a det inte.** Lokal sparning skriver dit; publik sparning är webbläsarlokal. Befintliga webbutkast skrivs inte över av deploy. Bygget fryser lokal fil/hash; generering kräver egen uttrycklig planbindning.
@@ -42,6 +43,7 @@ Biblioteket har kapitel, ±1 källruta, 0,25/0,5/1× och `?clip=...&frame=...`. 
 ## Exakta instruktioner och återbruk
 
 - `generation.html` visar faktiskt skickade bilder/prompt, båda nya filmerna och äldre promptar. JSON i `data/p4-generation-review.json`. Uppdatera med `node tools/build-generation-review.ts`; denna läsning gör inga API-anrop. Sidan länkas från filmbiblioteket.
+- `evidence/swarm-review-request.md` är Jakobs beställda granskningsprompt: tre avgränsade spår för API/indata, fysisk rörelse och koordinater/mask/sekvens. Läsgranskning med exakta bevis och ett föreslaget nästa experiment; inga nya betalda jobb startade av granskningen.
 - Astra 6 hög har slutfört `evidence/astra-archive-mask-audit.json`: V6-skuggor/fingermasker redan importerade (14/14 kontrollerade hashmatchningar), bankens riktade maskrättningar återfunna. V7 edge take-02 var uttryckligen REJECTED och ska inte importeras som förbättring.
 
 - Samma Runway developer-API och ignorerade `.env.local`-nyckelkälla; connectorns konto är inte bevisat samma. **V6-filmen skickades inte till kontrolljobben:** de fick två PNG-ankare och historisk textprompt. `tools/generate-p4-control.ts` visar exakt body; Kling utelämnar `ratio`, WAN3 använder `auto_1080p`.

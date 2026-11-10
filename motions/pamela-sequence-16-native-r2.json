@@ -3922,7 +3922,7 @@
     ]
   },
   "scoutIntegrated": false,
-  "published": false,
+  "published": true,
   "userClassification": {
     "role": "alternative",
     "basis": "Jakob says this is a different newer sequence with historical coordinates/format; retain as alternative",

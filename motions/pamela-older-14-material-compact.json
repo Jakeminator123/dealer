@@ -63,5 +63,5 @@
     "physicalSourceSide": "UNKNOWN; authored material-side schedule is not a physical-turn proof"
   },
   "scoutIntegrated": false,
-  "published": false
+  "published": true
 }

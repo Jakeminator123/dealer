@@ -49,5 +49,5 @@
   "postProcessing": "bounded projective foreground deformation; hand/card/shadow use one continuous map; no colour switch, generated pixels, retiming or pose interpolation",
   "generationRef": null,
   "scoutIntegrated": false,
-  "published": false
+  "published": true
 }

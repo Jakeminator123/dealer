@@ -36,5 +36,5 @@
     "limitations": "Physical semantics of old white source remain unannotated; full visual acceptance pending. V6 remains selected visual target."
   },
   "scoutIntegrated": false,
-  "published": false
+  "published": true
 }
