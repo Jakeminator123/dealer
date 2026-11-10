@@ -12,7 +12,7 @@ if(process.argv.includes('--stop')||process.argv.includes('--status')){
  if(!r.ok)throw Error('Preview control failed');console.log(await r.text());
 }else{
  const manifest=JSON.parse(await readFile('manifest.json','utf8'));
- const allowed=new Set(['preview.html','materials/kortmaterial.html','materials/markermaterial.html',...manifest.files.map((f:{path:string})=>f.path).filter((p:string)=>p.startsWith('assets/')||p.startsWith('materials/'))]);
+ const allowed=new Set(['preview.html','materials/kortmaterial.html','materials/markermaterial.html',...manifest.files.map((f:{path:string})=>f.path).filter((p:string)=>p.startsWith('assets/')||p.startsWith('materials/')||p.startsWith('output/v6/'))]);
  const token=randomUUID();let lastSeen=Date.now();
  const types:Record<string,string>={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.mp4':'video/mp4','.png':'image/png','.jpg':'image/jpeg','.json':'application/json'};
  const stop=()=>server.close();

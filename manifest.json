@@ -25,7 +25,8 @@
       "ffprobe"
     ],
     "readsOldProject": false,
-    "fullReproductionVerified": false
+    "fullReproductionVerified": true,
+    "verificationReceipt": "evidence/reproduction.json"
   },
   "motionSchema": {
     "v6": "frozen per-frame timeline; offline image compositing",
@@ -39,9 +40,12 @@
     "path": "assets/candidates/p4-left-c2.mp4",
     "sourceHand": "left",
     "perspective": "dealer anatomical left, viewer right",
-    "evidence": "sampled original frames; whole-clip motion acceptance pending",
+    "evidence": "sampled original frames and successful full playback; user says no wrist rotation",
     "targetPlayer": 4,
-    "approvedReplacement": false
+    "approvedReplacement": false,
+    "motion": "closed-to-closed",
+    "handRotationRequestedButNotFound": true,
+    "classificationSource": "Jakob corrected after playback on 2026-11-10"
   },
   "materialStudies": {
     "cards": "materials/kortmaterial.html",
@@ -7533,6 +7537,20 @@
       "bytes": 229577,
       "role": "relocated-timeline",
       "source": "frozen V6 timeline with registered local paths"
+    },
+    {
+      "path": "output/v6/take-01/render/idle-deal-idle-native.mp4",
+      "sha256": "412a2fa01f9e852e8894002076b5771181bd6afd4ddeef1be76c0640d5853a2d",
+      "bytes": 21108259,
+      "source": "new self-contained V6 reproduction",
+      "role": "verified-reproduction-native"
+    },
+    {
+      "path": "output/v6/take-01/render/idle-deal-idle-portrait.mp4",
+      "sha256": "51a2d0c203f4981b812f503cb32c68413350b8f9c6e8ccaf80445a9359356d0b",
+      "bytes": 17847045,
+      "source": "new self-contained V6 reproduction",
+      "role": "verified-reproduction-portrait"
     }
   ]
 }

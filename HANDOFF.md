@@ -1,30 +1,29 @@
 # TILLBAKA-1 → TILLBAKA-2
 
-Skapad 2026-11-10T16:33:35.573356+00:00. Aktuellt agentunderlag till 2026-11-10T17:33:35.573356+00:00; verifiera därefter änderliga fakta. V6 och originalbevis är permanenta referenser.
+Skapad 2026-11-10T16:40:35.855885+00:00. TTL för änderliga agentuppgifter: 2026-11-10T17:40:35.855885+00:00. V6 och källbevis är permanenta referenser.
 
-Jakob beställde en ren syskonmapp med eget Git, V6 som referens, vänsterarmskandidat och separata SG-kort/marker. Han vill fortsätta med en ny agent och mycket korta svenska svar. Nästa agent äger enbart denna nya mapp när mottagandet bekräftats. TILLBAKA-1 slutar då skriva här.
+Jakob har beställt den nya rena syskonmappen dealer och en ny agent. Detta är dess arbetsyta: C:/Users/jakem/dev/super-feature-sg/dealer. Gamla snyggare-dealer är bevarat. Slutmålet är Scoutgaming. Läs AGENTS.md, README.md och denna handoff; undvik bred historikläsning.
 
-## Överlämnat
+## Klart och verifierat
 
-Självständig filstruktur, 1068 hashregistrerade filer (~926 MB, främst nödvändiga PNG-rutor), fyra originalklipp, V6-film, bakgrund/matta, kortspår, mesh, hand-/nagel-/skokortsmasker. Åtta renderingsmoduler och enda körvägen tools/render.ts är hämtade från den frysta V6-snapshoten, med lokala sökvägar anpassade. Sharp installerad separat från lokal npm-cache. 18/18 okomprimerade kontrollrutor återrenderade pixelidentiskt, se evidence/frame-verification.json. Ingen full ny MP4-export ännu.
+- V6 är Jakobs valda visuella referens, inklusive samma hand, vridning, mattan, andra kortets förskjutning och mindre skugga. Native original: assets/reference/v6.mp4, SHA-256 412a2fa01f9e852e8894002076b5771181bd6afd4ddeef1be76c0640d5853a2d.
+- Självständig kod, eget Git på jakob/test, egen Sharp-installation och lokal preview. 1068 överförda registrerade filer (~926 MB; huvudsakligen de nödvändiga PNG-bildrutorna), fyra originalklipp, källrutor, masker, kortspår, mesh, rum/matta, referensfilm och separata materialprov. Inga runtime-läsningar från gamla labbet.
+- Hela V6 återrenderad: output/v6/take-01. 926 rutor, 30 fps, 30.866667 s, native 1762x1174 och porträtt1080x1920. BÅDA MP4-filerna är byteidentiska med de frysta historiska originalen. 18 kontrollrutor dessutom pixelidentiska. evidence/reproduction.json och evidence/frame-verification.json är kvitton. Renderingsarbetarna är avslutade.
+- Preview finns på http://127.0.0.1:4319/preview.html, med godkänd referens, ny byteidentisk rendering samt materiallänkar. SG-kortets fram/baksida och SG-markern är visuellt kontrollerade i WebView. Marker är separata prov, inte integrerade i V6-filmen.
+- V6 är offline-komposition med Sharp/FFmpeg och assets/timeline.json per bildruta. Historiska v1-kontraktet kopplar P4 till deal.player.centre/box3. Senare DL1/v2 och spelmotor är inte importerade. Materialproven är direkt Three.js r167; historiska React Three Fiber-källreferenser följer med separat.
 
-V6: assets/reference/v6.mp4, SHA-256 412a2fa01f9e852e8894002076b5771181bd6afd4ddeef1be76c0640d5853a2d. 926 rutor, 30 fps, 1762×1174. Andra givningen börjar 19,733 s; kortsläppet omkring 23 s. Båda korten kvar i slutvilan. V7-bildstudien är inte V6.
+## Jakobs senaste korrigering – nästa uppgift
 
-Kandidat: assets/candidates/p4-left-c2.mp4, SHA-256 67319ed86cde67cc7a7566553d451a89f8aac11384a55f8f8b460d1403d30167. 12 s, vänsterarm ur dealerns perspektiv/höger i bilden; ännu inte accepterad ersättare. Kontaktarket visar samma hand från sko till landning, men helklippet behöver granskas i rörelse.
+Den visade vänsterarmskandidaten assets/candidates/p4-left-c2.mp4 är INTE rätt vridningsrörelse. Jakob sa uttryckligen: hon vrider inte handen; closed/unrevealed → closed. Den är ommärkt och får inte beskrivas som accepterad ersättning. Källa SHA-256 67319ed86cde67cc7a7566553d451a89f8aac11384a55f8f8b460d1403d30167, 12 s. Vänster betyder hennes anatomiska vänster, höger i bild. Håll rörelsehand, kortsida och målplats separata.
 
-V6:s aktiva schema är assets/timeline.json, per bildruta. Det äldre externa motionskontraktet v1/deal.player.centre/box3 finns bara som historiskt bevis. Nyare DL1 v2, spelmotor och alternativa studios är inte införda. SG-kort och marker är separata Three.js-prov, med historiska React Three Fiber-referenser, inte inbyggda 3D-marker i filmen.
+Bekräfta först mottagande och ägarskap. Sök därefter avgränsat efter redan befintlig film med vänsterarm OCH tydlig handledsvridning från stängt till öppet kort, liknande den gillade V6-rörelsen. Ingen ny generering. Relevanta läsbara kandidatgrupper i gamla labbet: runs/20261109-pamela-sequence/original/pamela-central-base-wan3.mp4 (V6-källan finns även här i assets/originals/deal.mp4), runs/20261109-pamela-seat-bank, och runs/20261110-pamela-goal-pilot. Granska rörelsen i sammanhängande rutor och låt Jakob välja innan byte. Sök inte efter enbart ordet left och anta matchning.
 
-## Nästa avgränsade steg
+Själva utvalda V6-flytten är nu 100 % verifierad, ingen återstående flyttgrind. Att hitta/godkänna vänsterarm med vridning är nästa separat kvarvarande uppgift (0 % godkänt). Materialprovens medföljande TS-källor har ännu inte återbyggts till de frysta JS-bundlarna; det är en framtida materialredigeringskontroll, inte ett påstående om verifierad bundlingskedja. Ingen vidgad studio eller nytt rörelseschema behövs.
 
-1. Bekräfta mottagande och ägarskap. Läs README, manifestets sammanfattning och det aktuella verifieringskvittot; skanna inte hela gamla labbet.
-2. Återrendera V6 med npm run render -- --render --take=01, verifiera 926 rutor, tid, båda format, samtliga skarvar och kortsläpp. Visa resultatet bredvid referensen i befintlig enkel preview. Utöka inte till ny studio.
-3. Spela hela vänsterarmskandidaten och låt Jakob välja; koppla inte in den automatiskt. Bevara V6:s kamera, matta, kortgeometri och timing under flytten.
-4. Kort-/markerprovens frysta HTML/JS finns med. De medföljande TS-källornas återbyggnad till exakt dessa bundlar är ännu inte verifierad. Gör det först när materialredigering behövs.
+## Ägarskap och drift
 
-Full reproduktionsverifiering och rörelseacceptans återstår, cirka 20 % av denna första avgränsade extraktion (skattning). Ingen ny generering, publiksynk, push, integration eller massinventering. Gamla labbet är bevarat, inte återställt/raderat. Alla senare Scoutmotor-/D.C2-/REDO-resultat lämnas där för selektivt återbruk.
+TILLBAKA-2 tar över denna mapp när mottagandet bekräftas; TILLBAKA-1 slutar skriva efter överlämningen. Kort svenska svar, normalt <=120 ord. Ingen remote, push, deploy, betald generering, uppladdning eller integration i Scout. Inga underagenter.
 
-## Drift och återgång
+Ny preview 127.0.0.1:4319 stoppas med STOPP.cmd i dealer. Den får stå kvar för Jakob, autoavstängning efter 60 s utan preview-flik. Gamla begärda previewn 4318 styrs separat av snyggare-dealer/STOPP.cmd och får inte dödas tillsammans med andra Node-processer. Återanvänd verifierad server. Ingen ny server på samma port.
 
-Ny preview 127.0.0.1:4319, STOPP.cmd i denna mapp. Gamla begärda previewn 127.0.0.1:4318 hålls separat med gamla labbets STOPP.cmd. Inga renderingsarbetare är lämnade igång. En begärd preview kan stå kvar för Jakob. Inga underagenter.
-
-Gamla landmärket: C:/Users/jakem/dev/super-feature-sg/snyggare-dealer/.runtime/landmarks/P4-CENTRAL-MATTA-SG-20261109. Gamla före-granskning-checkpoint: .runtime/checkpoints/20261110T155513Z-TILLBAKA-1-before-review. Gamla HEAD: 68c74bde6e977e2cda202d0501dcc419fc92864d. Läs endast vid konkret behov.
+Gamla landmärket: C:/Users/jakem/dev/super-feature-sg/snyggare-dealer/.runtime/landmarks/P4-CENTRAL-MATTA-SG-20261109. Före-granskning-checkpoint: .runtime/checkpoints/20261110T155513Z-TILLBAKA-1-before-review. Gamla HEAD: 68c74bde6e977e2cda202d0501dcc419fc92864d. Alla nyare Scoutmotor-/D.C2-/REDO-resultat är bevarade i gamla labbet för selektivt återbruk. Inga återställningar/raderingar.

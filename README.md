@@ -22,10 +22,10 @@ Kör från denna mapp. `node -p process.version` ska visa v24.21.0. Vid behov: `
 
 ## Evidensgräns
 
-1068 registrerade filer verifierade; 18 av 18 kontrollrutor pixelidentiska i den nya självständiga mappen. En full ny filmexport har ännu inte körts. Att visa referensfilmen är inte likvärdigt med verifierad full reproduktion. V6 behåller sina kända begränsningar för fingermask, rörelsekanter och skarvar mellan källtagningar.
+1068 registrerade filer verifierade; 18 av 18 kontrollrutor pixelidentiska i den nya självständiga mappen. Hela V6 är nu återrenderad från denna mapp: 926 rutor, 30 fps, både liggande och porträtt. Båda MP4-filerna är byteidentiska med de historiska originalen, se evidence/reproduction.json. Att visa referensfilmen är inte likvärdigt med verifierad full reproduktion. V6 behåller sina kända begränsningar för fingermask, rörelsekanter och skarvar mellan källtagningar.
 
 V6 använder en fryst bildrutetidslinje och offline-komposition med Sharp/FFmpeg. Det äldre rörelsekontraktet är v1, med P4 kopplad till deal.player.centre/box3. Det senare DL1/v2-kontraktet har inte importerats. Manifestet här är ett filregister, inte en ny spelmotor.
 
-Vänsterarmskandidaten är P4 C2: hennes anatomiska vänster, till höger i bilden, 12 sekunder. Urvalet har bildgranskats; helklippet ska granskas i rörelse innan användning. Rörelsehand och målplats hålls separata.
+Vänsterarmskandidaten är P4 C2: hennes anatomiska vänster, till höger i bilden, 12 sekunder. Jakob har efter uppspelning klassat denna som closed → closed, utan önskad handledsvridning. Den är inte rätt svar på hans sökning efter vänsterarm med vridning. Rörelsehand och målplats hålls separata.
 
 Gamla snyggare-dealer, checkpoints, alla nya filmer, Scoutmotor-, D.C2- och REDO-arbeten är bevarade på ursprunglig plats. Ingen automatisk läsning av gammal kod eller node_modules. Ingen remote eller publicering.

@@ -1,0 +1,52 @@
+{
+  "verifiedAt": "2026-11-10T16:40:35.845517+00:00",
+  "scope": "full V6 reproduction from dealer local inputs and independent node_modules",
+  "outputs": {
+    "native": {
+      "path": "output/v6/take-01/render/idle-deal-idle-native.mp4",
+      "sha256": "412a2fa01f9e852e8894002076b5771181bd6afd4ddeef1be76c0640d5853a2d",
+      "width": 1762,
+      "height": 1174,
+      "fps": 30,
+      "frameCount": 926,
+      "duration": 30.866667
+    },
+    "portrait": {
+      "path": "output/v6/take-01/render/idle-deal-idle-portrait.mp4",
+      "sha256": "51a2d0c203f4981b812f503cb32c68413350b8f9c6e8ccaf80445a9359356d0b",
+      "width": 1080,
+      "height": 1920,
+      "fps": 30,
+      "frameCount": 926,
+      "duration": 30.866667
+    }
+  },
+  "bothFilesByteIdenticalToOriginalV6": true,
+  "timeline": {
+    "native": {
+      "frames": 926,
+      "zeroBasedPresentationTimesVerified": true,
+      "toleranceSeconds": 0.0001
+    },
+    "portrait": {
+      "frames": 926,
+      "zeroBasedPresentationTimesVerified": true,
+      "toleranceSeconds": 0.0001
+    }
+  },
+  "processing": {
+    "workers": 4,
+    "fps": 30,
+    "frames": 926,
+    "sharpThreads": 1,
+    "ffmpegThreads": 1,
+    "retime": false,
+    "crossfade": false,
+    "faceInterpolation": false,
+    "newPaidJobs": 0,
+    "retainsTwoCardsAtEnd": true
+  },
+  "inputs": 1068,
+  "pixelChecks": 18,
+  "completeEvidence": "output/v6/take-01/sequence-evidence.json"
+}
