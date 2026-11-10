@@ -167,11 +167,32 @@
     "url": "https://qeojzihua5ewt4uo.public.blob.vercel-storage.com/dealer/fd956e2537d100c9596366816c595e24caf1ab542451f788c426e7d4d3bf5809.mp4",
     "anonymousHashVerified": true
   },
-  "publicSitePlayback": null,
-  "tests": {
-    "passed": 19,
-    "failed": 0
+  "publicSitePlayback": {
+    "id": "pamela-p7-c1-left-direct-pilot-01",
+    "verifiedAt": "2026-11-10T18:54:25.548Z",
+    "method": "Codex WebView: clicked Spela filmen and observed HTMLVideoElement after normal playback",
+    "src": "https://qeojzihua5ewt4uo.public.blob.vercel-storage.com/dealer/fd956e2537d100c9596366816c595e24caf1ab542451f788c426e7d4d3bf5809.mp4",
+    "duration": 6,
+    "currentTime": 6,
+    "ended": true,
+    "error": null,
+    "readyState": 4,
+    "played": [
+      [
+        0,
+        6
+      ]
+    ],
+    "publicSite": "https://dealer-delta-eosin.vercel.app/?clip=pamela-p7-c1-left-direct-pilot-01"
   },
-  "manifestFilesVerified": 1088,
+  "tests": {
+    "command": "npm run check",
+    "sourceCommit": "6669c579263e410ebc87ba37f3aeca27915ef492",
+    "passed": 25,
+    "failed": 0,
+    "githubRun": "https://github.com/Jakeminator123/dealer/actions/runs/42879443620",
+    "githubConclusion": "success"
+  },
+  "manifestFilesVerified": 1092,
   "userDecision": "Retain in existing film library as secondary CLOSED→CLOSED alternative."
 }

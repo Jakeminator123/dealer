@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "recordedAt": "2026-11-10T18:23:56.9547085Z",
+  "recordedAt": "2026-11-10T18:52:30.998Z",
   "project": {
     "name": "dealer",
     "id": "prj_7zd112w6MIX9YnpcR7Nj64Ke50yk",
@@ -11,36 +11,36 @@
   },
   "publicUrl": "https://dealer-delta-eosin.vercel.app/",
   "deployment": {
-    "id": "dpl_DnChpA2tEKxUCh2UPR4X2ewgucbN",
-    "url": "https://dealer-6yzarfbbi-scoutgaming.vercel.app",
-    "inspectorUrl": "https://vercel.com/scoutgaming/dealer/DnChpA2tEKxUCh2UPR4X2ewgucbN",
+    "id": "dpl_BeHCenDsFxfwx9Qb19yKbLh8avij",
+    "url": "https://dealer-1rt0vbgrk-scoutgaming.vercel.app",
+    "inspectorUrl": "https://vercel.com/scoutgaming/dealer/BeHCenDsFxfwx9Qb19yKbLh8avij",
     "readyState": "READY",
     "target": "production",
-    "deploymentApiUrl": "https://api.vercel.com/v13/deployments/dpl_DnChpA2tEKxUCh2UPR4X2ewgucbN"
+    "deploymentApiUrl": "https://api.vercel.com/v13/deployments/dpl_BeHCenDsFxfwx9Qb19yKbLh8avij"
   },
   "build": {
-    "builtAt": "2026-11-10T18:20:10.259Z",
-    "sourceCommit": "f73cc776e3fc1bc51c60e613ff0726618c9d744d",
+    "builtAt": "2026-11-10T18:50:31.583Z",
+    "sourceCommit": "6669c579263e410ebc87ba37f3aeca27915ef492",
     "mediaMode": "vercel-blob",
-    "mediaManifestSha256": "7e9d13343f53a73a1fb883c1c7b9cb1e4c18c35f50555fe638c543054a87c4b3",
+    "mediaManifestSha256": "be12ba3d2efd8430f9f9adde5da14ad66e53fa900143374b8a6318c836b3d967",
     "mediaStoreId": "store_qeojzIHuA5ewT4uO",
-    "mediaCount": 7,
+    "mediaCount": 9,
     "initialPlanSource": "saved local snapshot",
     "initialPlanPath": "placements/default.json",
-    "initialPlanSha256": "59cc79dea158f3b47fae16df0312386fc79bb2d8662b865a1fe3551d63a61bad",
+    "initialPlanSha256": "80029048726834297422b7360b8f3ac3fdb1cc9d013039af2ea5cfb289f4dbe9",
     "inputUnchangedDuringBuild": true,
     "browserLocalWritesOnly": true,
-    "totalBytes": 4320080,
+    "totalBytes": 4322100,
     "files": [
       {
         "path": "data/default-plan.json",
-        "bytes": 6376,
-        "sha256": "8280d103b3135eaf34f081dabcb6f2ed4cbd6d70c05f039c744cfe1c427c24d6"
+        "bytes": 6422,
+        "sha256": "192b86815af05c844307b73d5aec3d0e13ba5a27fbe74610d0f051b836ed3518"
       },
       {
         "path": "data/public-library.json",
-        "bytes": 4898,
-        "sha256": "db87d55e519c6fdd60c6bd4b50deb023d901ebcf97bef1435c9755b91c8723eb"
+        "bytes": 6656,
+        "sha256": "eeea25814ae2734bf09189a070a2f537e648e57f3a4742a046538ef2aca85349"
       },
       {
         "path": "index.html",
@@ -54,13 +54,13 @@
       },
       {
         "path": "lab.css",
-        "bytes": 14769,
-        "sha256": "53638d82ed18459242c317e71bd9377a41c2271e5b61d2e4b64991fbbe8ddc85"
+        "bytes": 14816,
+        "sha256": "31b481a582215278be63cbbc9ffa45234bd5a2bb6597650488fb94bcf4e052d0"
       },
       {
         "path": "lab-ui.js",
-        "bytes": 25643,
-        "sha256": "7bee65900f1ed0a18bf8487199c269f7e94f9727afcff23d7be0ffbeaae2cb15"
+        "bytes": 25812,
+        "sha256": "26b4a36a2a0b4eab1c5fa22a9706ad18dc1c4ff32d17de06a36142dbe0dec2f8"
       },
       {
         "path": "placement-model.js",
@@ -130,25 +130,25 @@
     ]
   },
   "publicFileVerification": {
-    "verifiedAt": "2026-11-10T18:21:37.6473731Z",
+    "verifiedAt": "2026-11-10T18:52:30.998Z",
     "origin": "https://dealer-delta-eosin.vercel.app",
-    "sourceCommit": "f73cc776e3fc1bc51c60e613ff0726618c9d744d",
+    "sourceCommit": "6669c579263e410ebc87ba37f3aeca27915ef492",
     "files": 19,
-    "bytes": 4320080.0,
+    "bytes": 4322100,
     "allMatch": true,
     "checks": [
       {
         "path": "data/default-plan.json",
         "status": 200,
-        "bytes": 6376,
-        "sha256": "8280d103b3135eaf34f081dabcb6f2ed4cbd6d70c05f039c744cfe1c427c24d6",
+        "bytes": 6422,
+        "sha256": "192b86815af05c844307b73d5aec3d0e13ba5a27fbe74610d0f051b836ed3518",
         "matchesBuild": true
       },
       {
         "path": "data/public-library.json",
         "status": 200,
-        "bytes": 4898,
-        "sha256": "db87d55e519c6fdd60c6bd4b50deb023d901ebcf97bef1435c9755b91c8723eb",
+        "bytes": 6656,
+        "sha256": "eeea25814ae2734bf09189a070a2f537e648e57f3a4742a046538ef2aca85349",
         "matchesBuild": true
       },
       {
@@ -168,15 +168,15 @@
       {
         "path": "lab.css",
         "status": 200,
-        "bytes": 14769,
-        "sha256": "53638d82ed18459242c317e71bd9377a41c2271e5b61d2e4b64991fbbe8ddc85",
+        "bytes": 14816,
+        "sha256": "31b481a582215278be63cbbc9ffa45234bd5a2bb6597650488fb94bcf4e052d0",
         "matchesBuild": true
       },
       {
         "path": "lab-ui.js",
         "status": 200,
-        "bytes": 25643,
-        "sha256": "7bee65900f1ed0a18bf8487199c269f7e94f9727afcff23d7be0ffbeaae2cb15",
+        "bytes": 25812,
+        "sha256": "26b4a36a2a0b4eab1c5fa22a9706ad18dc1c4ff32d17de06a36142dbe0dec2f8",
         "matchesBuild": true
       },
       {
@@ -275,27 +275,39 @@
   "publicLibraryVerification": {
     "origin": "https://dealer-delta-eosin.vercel.app",
     "status": 200,
-    "sourceCommit": "f73cc776e3fc1bc51c60e613ff0726618c9d744d",
+    "sourceCommit": "6669c579263e410ebc87ba37f3aeca27915ef492",
     "labScriptHashMatches": true,
     "modelScriptHashMatches": true,
-    "films": 7,
+    "films": 9,
     "allFilmsUseBlob": true,
-    "snapshotRevision": "59cc79dea158f3b47fae16df0312386fc79bb2d8662b865a1fe3551d63a61bad"
+    "snapshotRevision": "80029048726834297422b7360b8f3ac3fdb1cc9d013039af2ea5cfb289f4dbe9",
+    "newFilms": [
+      {
+        "id": "pamela-p7-c1-left-direct-pilot-01",
+        "title": "P7 · stängt → stängt · sekundärt alternativ",
+        "decision": "REJECTED"
+      },
+      {
+        "id": "pamela-p7-c1-left-turn-pilot-03",
+        "title": "P7 · vändningsprov 3 · fel mål",
+        "decision": "REJECTED"
+      }
+    ]
   },
   "blobVerification": {
     "evidence": "evidence/public-media-verification.json",
     "manifest": "data/public-media.json",
     "storeId": "store_qeojzIHuA5ewT4uO",
     "access": "public",
-    "files": 7,
-    "totalBytes": 118426289,
+    "files": 9,
+    "totalBytes": 150508896,
     "verification": "Anonymous HTTPS GET, video/mp4, exact byte count and SHA-256 for every selected film"
   },
   "browserStorage": {
     "scope": "Each browser profile on the public origin",
     "writesToLocalRepository": false,
     "initialPlanSource": "saved local snapshot",
-    "initialPlanSha256": "59cc79dea158f3b47fae16df0312386fc79bb2d8662b865a1fe3551d63a61bad",
+    "initialPlanSha256": "80029048726834297422b7360b8f3ac3fdb1cc9d013039af2ea5cfb289f4dbe9",
     "unsavedLocalDraftsRead": false,
     "requiresWebLocksForWrites": true
   },
@@ -424,8 +436,80 @@
     "reasonNoGithubDeletion": "Old project has no Git integration and no separate unused repository was identified."
   },
   "browserVerification": {
+    "verifiedAt": "2026-11-10T18:54:25.548Z",
+    "sourceCommit": "6669c579263e410ebc87ba37f3aeca27915ef492",
+    "provider": "Codex WebView",
+    "newFilmPlayback": [
+      {
+        "id": "pamela-p7-c1-left-direct-pilot-01",
+        "verifiedAt": "2026-11-10T18:54:25.548Z",
+        "method": "Codex WebView: clicked Spela filmen and observed HTMLVideoElement after normal playback",
+        "src": "https://qeojzihua5ewt4uo.public.blob.vercel-storage.com/dealer/fd956e2537d100c9596366816c595e24caf1ab542451f788c426e7d4d3bf5809.mp4",
+        "duration": 6,
+        "currentTime": 6,
+        "ended": true,
+        "error": null,
+        "readyState": 4,
+        "played": [
+          [
+            0,
+            6
+          ]
+        ],
+        "publicSite": "https://dealer-delta-eosin.vercel.app/?clip=pamela-p7-c1-left-direct-pilot-01"
+      },
+      {
+        "id": "pamela-p7-c1-left-turn-pilot-03",
+        "verifiedAt": "2026-11-10T18:54:25.548Z",
+        "method": "Codex WebView: clicked Spela filmen and observed HTMLVideoElement after normal playback",
+        "src": "https://qeojzihua5ewt4uo.public.blob.vercel-storage.com/dealer/427a32f5ea55a64aa55b10c6e6e45f3b64fc887a22eb54f0bce06a675eb35f84.mp4",
+        "duration": 6,
+        "currentTime": 6,
+        "ended": true,
+        "error": null,
+        "readyState": 4,
+        "played": [
+          [
+            0,
+            6
+          ]
+        ],
+        "publicSite": "https://dealer-delta-eosin.vercel.app/?clip=pamela-p7-c1-left-turn-pilot-03"
+      }
+    ],
+    "screenshot": {
+      "path": ".runtime/public-qa/p7-review-published.png",
+      "sha256": "293fa67495ba073425a94acddffaebe976a89ce2271d8e952e4eecc755ad68e9"
+    },
+    "localUserDraftUnmodified": true,
+    "previewLeftForUser": true
+  },
+  "previousReleases": [
+    {
+      "recordedAt": "2026-11-10T18:23:56.9547085Z",
+      "deployment": {
+        "id": "dpl_DnChpA2tEKxUCh2UPR4X2ewgucbN",
+        "url": "https://dealer-6yzarfbbi-scoutgaming.vercel.app",
+        "inspectorUrl": "https://vercel.com/scoutgaming/dealer/DnChpA2tEKxUCh2UPR4X2ewgucbN",
+        "readyState": "READY",
+        "target": "production",
+        "deploymentApiUrl": "https://api.vercel.com/v13/deployments/dpl_DnChpA2tEKxUCh2UPR4X2ewgucbN"
+      },
+      "sourceCommit": "f73cc776e3fc1bc51c60e613ff0726618c9d744d",
+      "mediaCount": 7
+    }
+  ],
+  "previousBrowserVerification": {
     "evidence": "evidence/public-lab-review.json",
     "sha256": "376ffcc2e0c3dabd23911b0aa4d4c54e4992a2bbee24028539c05c9c2c2a593d",
     "suppliedBy": "root agent final Codex WebView review"
+  },
+  "githubVerification": {
+    "repository": "Jakeminator123/dealer",
+    "branch": "jakob/test",
+    "sourceCommit": "6669c579263e410ebc87ba37f3aeca27915ef492",
+    "remoteHeadMatches": true,
+    "ciRun": "https://github.com/Jakeminator123/dealer/actions/runs/42879443620",
+    "ciConclusion": "success"
   }
 }

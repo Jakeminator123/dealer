@@ -199,7 +199,7 @@
   },
   "viewProfileId": null,
   "scoutIntegrated": false,
-  "published": false,
+  "published": true,
   "publicReview": {
     "purpose": "review-only",
     "file": "assets/motions/pamela-p7-c1-left-direct-pilot-01/source.mp4",
@@ -207,6 +207,8 @@
     "url": "https://qeojzihua5ewt4uo.public.blob.vercel-storage.com/dealer/fd956e2537d100c9596366816c595e24caf1ab542451f788c426e7d4d3bf5809.mp4",
     "site": "https://dealer-delta-eosin.vercel.app/?clip=pamela-p7-c1-left-direct-pilot-01",
     "doesNotImplyApproval": true,
-    "siteVerified": false
+    "siteVerified": true,
+    "siteVerifiedAt": "2026-11-10T18:54:25.548Z",
+    "deploymentId": "dpl_BeHCenDsFxfwx9Qb19yKbLh8avij"
   }
 }
