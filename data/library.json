@@ -117,6 +117,21 @@
       "status": null,
       "motionRef": "motions/pamela-p7-c1-left-direct-pilot-01.json",
       "description": "SEKUNDÄRT ALTERNATIV enligt Jakob: stängt → stängt med samma vänsterhand, direkt P7-bana och retur till skon. Underkänt för den beställda vändningen till öppet. Originalet bevaras här i samma filmbibliotek. Rosa är maskhjälp; inget färdigt kortöverlägg eller produktionsgodkännande."
+    },
+    {
+      "id": "pamela-p7-c1-left-turn-pilot-03",
+      "title": "P7 · vändningsprov 3 · fel mål",
+      "path": "assets/motions/pamela-p7-c1-left-turn-pilot-03/source.mp4",
+      "sha256": "427a32f5ea55a64aa55b10c6e6e45f3b64fc887a22eb54f0bce06a675eb35f84",
+      "width": 1764,
+      "height": 1174,
+      "fps": 30,
+      "frameCount": 180,
+      "view": "source",
+      "kind": "candidate",
+      "status": null,
+      "motionRef": "motions/pamela-p7-c1-left-turn-pilot-03.json",
+      "description": "UNDERKÄNT: ett kort uppstår vid P7 utan handkontakt och kortet i handen landar nära mitten/P4. Skon blir blå under rörelsen. Bevarat för jämförelse av instruktioner, inte som godkänd P7-film. Gul/blå färg är genererad i originalet och bevisar inte fysisk sida."
     }
   ]
 }

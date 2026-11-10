@@ -1,0 +1,140 @@
+{
+  "schemaVersion": 1,
+  "id": "pamela-p7-c1-left-turn-pilot-03",
+  "dealer": "pamela",
+  "source": {
+    "path": "assets/motions/pamela-p7-c1-left-turn-pilot-03/source.mp4",
+    "sha256": "427a32f5ea55a64aa55b10c6e6e45f3b64fc887a22eb54f0bce06a675eb35f84",
+    "bytes": 16149774,
+    "provider": "Runway developer API",
+    "model": "wan3",
+    "taskId": "18b11157-288a-40e7-b667-a327506ed928",
+    "width": 1764,
+    "height": 1174,
+    "fps": 30,
+    "frames": 180
+  },
+  "generation": {
+    "promptText": "Locked camera, continuous six-second shot between these exact anchors. Same woman, left hand on SCREEN RIGHT, green studio and black shoe. A single rigid card has a YELLOW BACK and BLUE FRONT. At the outlet yellow is UP and blue is DOWN. Left index and middle fingers start ON TOP of yellow; thumb is underneath. Pull one card just clear of the outlet. Perform an UNDERHAND TURNOVER while moving directly to the lower-right landing spot: rotate the left forearm from PALM DOWN to PALM UP, turning the card over 180 degrees around its long edge. The yellow upper surface visibly rotates DOWN through an edge-on moment, revealing the blue underside, which becomes the UPWARD face. Finish the rotation with index and middle fingers UNDER the card supporting its yellow underside, and thumb above its blue face. Keep that palm-up grip until placement. Lower the card BLUE FACE UP at the new position in the last image and slide the supporting fingers OUT FROM UNDER it. Do not turn the wrist palm-down again until AFTER releasing the card. No palm pressing on top, no second turnover, no flat spin, no colour morph. One physical card, one turnover. Stay beside the shoe, no centre detour or hand transfer. By 5.3s return the empty left hand to its exact original shoe-ready pose and settle. The new blue card and old centre blue card remain still; the next shoe card stays yellow. Preserve natural gaze, fingers and framing.",
+    "duration": 6,
+    "ratio": "auto_1080p",
+    "audio": false,
+    "requestedAt": "2026-11-10T18:40:22.26Z",
+    "completedAt": "2026-11-10T18:43:55.538Z",
+    "start": {
+      "path": "assets/motions/pamela-p7-c1-left-turn-pilot-03/start.png",
+      "sha256": "3050e9ccc0d624a1b45d49a67be1c38a8ef6a6038d2743585891dea44d5ffff0"
+    },
+    "end": {
+      "path": "assets/motions/pamela-p7-c1-left-turn-pilot-03/end.png",
+      "sha256": "6dab51f1a0346051c2656a835e21ece48bfc7533395235e9010c4f64fa86e628"
+    },
+    "receipt": "assets/motions/pamela-p7-c1-left-turn-pilot-03/generation.json"
+  },
+  "intent": {
+    "takeHand": "LH",
+    "releaseHand": "LH",
+    "startSide": "BACK",
+    "endSide": "FRONT",
+    "turnCount": 1,
+    "pass": false,
+    "returnAnchor": "same shoe-ready pose, new card retained"
+  },
+  "plannedTarget": {
+    "id": "P7.C1",
+    "nativePoints": [
+      {
+        "x": 1417.6436706428956,
+        "y": 934.507750991647
+      },
+      {
+        "x": 1466.1559950355468,
+        "y": 934.507750991647
+      },
+      {
+        "x": 1515.7465848811341,
+        "y": 966.937257514583
+      },
+      {
+        "x": 1463.3203096661196,
+        "y": 966.937257514583
+      }
+    ],
+    "points": [
+      {
+        "x": 1419.253714561854,
+        "y": 934.507750991647
+      },
+      {
+        "x": 1467.8211352911237,
+        "y": 934.507750991647
+      },
+      {
+        "x": 1517.468046079182,
+        "y": 966.937257514583
+      },
+      {
+        "x": 1464.9822293818108,
+        "y": 966.937257514583
+      }
+    ],
+    "calibrated": false,
+    "mapping": {
+      "from": [
+        1762,
+        1174
+      ],
+      "to": [
+        1764,
+        1174
+      ],
+      "xScale": 1.0011357183418512,
+      "yScale": 1,
+      "method": "normalized pixel endpoints; provisional source-image mapping"
+    }
+  },
+  "proxySurface": {
+    "requestedRgb": null,
+    "bothSidesSame": false,
+    "physicalSideEncodedInColor": false
+  },
+  "observed": {
+    "takeHand": "LH",
+    "releaseHand": "LH",
+    "physicalEndSide": "UNKNOWN",
+    "verifiedTurnCount": null,
+    "anchorCutReady": false,
+    "landsNear": "P4 centre instead of P7",
+    "unrequestedEarlyTargetCard": true,
+    "shoeChangesColor": true
+  },
+  "review": {
+    "decision": "REJECTED",
+    "reviewer": "TILLBAKA-3",
+    "userApproved": false,
+    "basis": "12 full-frame samples show a premature P7 card and the held card landing beside the existing centre card. Requested P7 action fails.",
+    "limitations": [
+      "Wrong landing near P4, not the requested P7.",
+      "A card appears at P7 before contact; this is not a physically dealt card.",
+      "Shoe changes blue during the action.",
+      "Physical side/turn count not certified; generated colour is not side evidence.",
+      "Source yellow/blue was already submitted before Jakob clarified pink remains the mask method. Future mask trials should remain pink."
+    ]
+  },
+  "placementRef": {
+    "path": "placements/references/p7-direct-pilot-01.json",
+    "sha256": "a8389f0c5b588705a631102e2539a8c4079aa0e7fac16f841415fb463d5d8479"
+  },
+  "viewProfileId": null,
+  "scoutIntegrated": false,
+  "published": false,
+  "publicReview": {
+    "purpose": "review-only",
+    "file": "assets/motions/pamela-p7-c1-left-turn-pilot-03/source.mp4",
+    "sha256": "427a32f5ea55a64aa55b10c6e6e45f3b64fc887a22eb54f0bce06a675eb35f84",
+    "url": "https://qeojzihua5ewt4uo.public.blob.vercel-storage.com/dealer/427a32f5ea55a64aa55b10c6e6e45f3b64fc887a22eb54f0bce06a675eb35f84.mp4",
+    "site": "https://dealer-delta-eosin.vercel.app/?clip=pamela-p7-c1-left-turn-pilot-03",
+    "doesNotImplyApproval": true,
+    "siteVerified": false
+  }
+}

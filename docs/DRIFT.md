@@ -43,16 +43,19 @@ Endpoint/header följer [Runway API-referensen](https://docs.dev.runwayml.com/ap
 
 Nycklar skrivs aldrig i Git, manifest, dokument eller loggar. Blob/databas-/andra inloggningsuppgifter kopieras inte utan ett konkret integrationsbehov. GitHub CLI använder sin befintliga inloggning; ingen tokenfil behövs här.
 
+Separat från V6-källan finns den historiska P4-kortbanken: två 12-sekundersjobb utan uttryckligt handbyte eller vändningskrav. [Exakta API-payloads och materialreferenser](../evidence/historical-p4-generation-inputs.json) är återfunna och hashverifierade. Den cirka tre minuter långa filmen sammanfogades lokalt från korta tagningar. Förväxla inte denna bank med V6:s sexsekunders centerjobb eller efterlagda sidfärger.
+
 `.env.local` laddas inte automatiskt av befintliga Node-kommandon. Verktyg som behöver den körs uttryckligen med `node --env-file=.env.local <verktyg.ts>`. `DEALER_SCRATCH_ROOT=D:/dealer-scratch` och `DEALER_REMOTE_GENERATION_ENABLED=false` är deklarerad konfiguration; renderern läser dem ännu inte. Flaggan är alltså inte en implementerad generationsspärr.
 
 ## Publik granskningssida och Blob
 
 - Sida: `https://dealer-delta-eosin.vercel.app/`, team `scoutgaming`, projekt `dealer`, ID `prj_7zd112w6MIX9YnpcR7Nj64Ke50yk`. Canonisk lokal projektbindning: `.runtime/public-deploy/.vercel/project.json`.
-- Blob: `dealer-media`, ID `store_qeojzIHuA5ewT4uO`, public, region `arn1`. Sju granskningsfilmer, 118 426 289 byte, anonymt SHA-256-verifierade. [Manifest](../data/public-media.json), [kvitto](../evidence/public-media-verification.json).
-- `node tools/sync-public-media.ts` visar en plan utan uppladdning. `--upload` synkar det uttryckligen avgränsade biblioteket. Varje fil har innehållshash i namnet; befintliga objekt skrivs inte över. Verktygets sjufilsgräns måste granskas när biblioteket utökas.
+- Blob: `dealer-media`, ID `store_qeojzIHuA5ewT4uO`, public, region `arn1`. Nio granskningsfilmer, 150 508 896 byte, anonymt SHA-256-verifierade. [Manifest](../data/public-media.json), [kvitto](../evidence/public-media-verification.json).
+- `node tools/sync-public-media.ts` visar en plan utan uppladdning. `--upload` synkar det uttryckligen avgränsade biblioteket. Varje fil har innehållshash i namnet; befintliga objekt skrivs inte över. Verktygets avgränsning till åtta eller nio registrerade filmer måste granskas när biblioteket utökas.
 - Blob-nyckeln ligger enbart i Git-ignorerade `.runtime/blob-sync/.env.local`, skild från Runway-nyckeln. Ingen nyckel ska ligga i public-deploy eller byggpaketet. Den statiska sajten kräver ingen skrivnyckel.
 - `node tools/build-public.ts` bygger ett litet statiskt paket i `.runtime/public-deploy/.vercel/output`. MP4-filer ersätts med verifierade Blob-länkar. Bygget fryser den aktuella sparade `placements/default.json` och avbryter om den ändras under bygget. Webbläsarens osparade utkast är inte publiceringsunderlag.
 - Publik sparning använder den egna webbläsaren och säkra samtidighetskontroller. Den skriver inte till datorns placeringsfil eller en gemensam server. Export/import krävs för att flytta ändringar mellan publik och lokal vy.
+- Vid ett större nytt granskningssteg uppdateras både GitHub och Vercel enligt Jakobs uppdrag. Testa och pusha den granskade koden, bygg från den committade versionen, publicera och verifiera anonym åtkomst samt faktisk uppspelning. Ge Jakob commit och direktlänk till det aktuella klippet. En spelbar underkänd film behåller sitt underkända beslut.
 - Aliaset `dealer-scoutgaming.vercel.app` är skyddat och ska inte delas som publik länk. Den gamla sidans avvecklingsstatus och senaste deployment-kvitto finns i HANDOFF.
 - Gamla `scoutgaming/scout-dealerlab` (`prj_mQwHzspK3GrrJA04eFOorFxth0d5`) är borttaget efter verifierad ersättning och Jakobs delegerade beslut. API och gammal domän ger 404; nya projektet och sju Blob-filer är verifierat kvar. Inget separat gammalt GitHub-repo identifierades. Specialvyerna för äldre bildrute-/kortkontaktgranskning är bevarade i D:-arkivet. [Slutkvitto](../evidence/public-release.json).
 

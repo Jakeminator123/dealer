@@ -61,6 +61,13 @@
       "url": "https://qeojzihua5ewt4uo.public.blob.vercel-storage.com/dealer/fd956e2537d100c9596366816c595e24caf1ab542451f788c426e7d4d3bf5809.mp4",
       "sha256": "fd956e2537d100c9596366816c595e24caf1ab542451f788c426e7d4d3bf5809",
       "bytes": 15932833
+    },
+    {
+      "id": "pamela-p7-c1-left-turn-pilot-03",
+      "path": "assets/motions/pamela-p7-c1-left-turn-pilot-03/source.mp4",
+      "url": "https://qeojzihua5ewt4uo.public.blob.vercel-storage.com/dealer/427a32f5ea55a64aa55b10c6e6e45f3b64fc887a22eb54f0bce06a675eb35f84.mp4",
+      "sha256": "427a32f5ea55a64aa55b10c6e6e45f3b64fc887a22eb54f0bce06a675eb35f84",
+      "bytes": 16149774
     }
   ]
 }

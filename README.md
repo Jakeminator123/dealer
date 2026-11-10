@@ -2,7 +2,7 @@
 
 Självständig arbetsyta med V6 som Jakobs valda visuella referens. Målet är två kort till sju spelare och en dealer i Scoutgaming. En bildrutetidslinje styr; sekvenssträngar och nodvyn beskriver samma metadata.
 
-[Öppna det publika labbet](https://dealer-delta-eosin.vercel.app/). Den publika sidan sparar utkast i den egna webbläsaren; lokal preview sparar till placeringsfilen på datorn. Export/import flyttar ett utkast mellan dem. Sju utvalda granskningsfilmer ligger i separat Vercel Blob, inte i Git eller webbpaketet.
+[Öppna det publika labbet](https://dealer-delta-eosin.vercel.app/). Den publika sidan sparar utkast i den egna webbläsaren; lokal preview sparar till placeringsfilen på datorn. Export/import flyttar ett utkast mellan dem. Nio registrerade granskningsfilmer ligger i separat Vercel Blob, inte i Git eller webbpaketet. P7 direktprov är ett sekundärt CLOSED→CLOSED-alternativ; vändningsprov 3 är underkänt för fel mål. Besluten finns i samma rörelseregister och filmbibliotek.
 
 | Läsning | Innehåll |
 | --- | --- |

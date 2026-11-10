@@ -1,0 +1,1115 @@
+{
+  "schemaVersion": 1,
+  "createdAt": "2026-11-10T18:48:24.902Z",
+  "purpose": "Exact historical Runway prompts and material provenance for Jakob P4.C1/C2 comparison; no generation or production mutation.",
+  "archiveRoot": "D:/dealer-archive/snyggare-dealer",
+  "timeInterpretation": {
+    "timezone": "Europe/Stockholm",
+    "novemberUtcOffsetHours": 1,
+    "verifiedP4C1Submitted": "2026-11-09T17:31:05.721+01:00",
+    "verifiedP4C2Submitted": "2026-11-09T19:21:13.837+01:00",
+    "around04Reference": "The inspected card-side review manifest was created 2026-11-10T04:04:54.537Z (05:04 Swedish time); this is local review, not a new Runway P4 generation. Exact chat/proof intended by about 04:00 remains unconfirmed."
+  },
+  "findings": [
+    "P4.C1 and P4.C2 were separate 12-second Wan3 API generations with first and last image anchors.",
+    "Both original P4 prompts require plain-white card surfaces and a continuous draw/place/release; neither explicitly instructs a back-to-front turn.",
+    "P4.C2 local material rendering uses an observed thin passage and authored BACK/EDGE/FRONT display schedule. Original blank physical side remains UNKNOWN.",
+    "P4.C1 in the inspected two-sided-bank is authored FRONT for all 360 frames; this evidence does not establish a physical flip for P4.C1.",
+    "The 182.866667-second sequences are assembled locally from short sources, not one long API generation.",
+    "The V6 six-second central source explicitly requests dealer left-hand acquisition followed by transfer to right hand; the historical P4 bank prompts say shoe hand without explicit hand transfer."
+  ],
+  "generations": [
+    {
+      "id": "P4.C1-middle-end-card-v1",
+      "sourceMetadata": "D:/dealer-archive/snyggare-dealer/runs/20261109-pamela-seat-bank/batches/middle-end-card-v1/seat-4.json",
+      "requestFile": "D:/dealer-archive/snyggare-dealer/runs/20261109-pamela-seat-bank/batches/middle-end-card-v1/seat-4.request.json",
+      "requestSha256": "7a56c0fdcd629d53fe6659420d476d105f0a350801e6444f44dc864d95379422",
+      "requestHashMatchesMetadata": true,
+      "model": "wan3",
+      "ratio": "auto_1080p",
+      "durationSeconds": 12,
+      "audio": false,
+      "taskId": "93a92f79-6440-4f14-8bd0-8707a2edaf2f",
+      "state": "SUCCEEDED",
+      "submittedAtUtc": "2026-11-09T16:31:05.721Z",
+      "submittedAtStockholm": "2026-11-09T17:31:05.721+01:00",
+      "checkedAtUtc": "2026-11-09T16:36:08.649Z",
+      "exactPrompt": "One uninterrupted 12-second take from a completely stationary tripod camera. FIRST and LAST have the same framing. Keep the entire reference dealer, her head and both hands fully in view at the original scale throughout the action. Preserve her identity, black blazer and ivory blouse. Keep the black shoe, bright chroma-green background AND tabletop fixed in the original screen positions; only the natural dealing movement changes. No zoom, pan, tilt, crop, close-up, reframing or camera movement. [0-1s] Hold the FIRST REDO pose. [1-4s] The hand touching the shoe draws ONE rigid plain-white poker-size card, about 63 by 88 millimeters, and carries it toward player seat 4: center, straight forward toward the viewer. [4-5s] Lay it flat exactly where the separate white card is visible in the LAST image: center about 50 percent image width from LEFT and 89 percent image height from TOP; this is the distinct seat-4 position entirely on the green tabletop. Preserve the complete card and hand inside the fixed original frame. [5-6s] Open all fingers and lift the entire EMPTY hand clear, leaving visible green separation between every fingertip and the card. [6-9s] Return that visibly EMPTY hand to the original REDO position beside the shoe without touching the dealt card again. [9-12s] Hold the LAST reference pose with the dealt card still motionless on the table. Never retrieve, lift, erase, cover or return the placed card. The shoe and its white front insert remain unchanged; every visible card surface stays plain unprinted white without ranks, suits, text, pictures or colored artwork. The tabletop and background remain the original flat bright chroma green with constant lighting. One complete deal, natural anatomy, fixed camera and full dealer visible throughout.",
+      "first": {
+        "path": "D:/dealer-archive/snyggare-dealer/runs/20261109-pamela-reference-kit/original/pamela-redo-station.png",
+        "sha256": "a9dd4882d84da1cc6f0fb3258d0fbd6d81fddac5a7f78efdaa225d6f9538576d",
+        "width": 1536,
+        "height": 1024,
+        "bytes": 1365141,
+        "sha256Recorded": "a9dd4882d84da1cc6f0fb3258d0fbd6d81fddac5a7f78efdaa225d6f9538576d",
+        "hashMatchesRecorded": true
+      },
+      "last": {
+        "path": "D:/dealer-archive/snyggare-dealer/runs/20261109-pamela-seat-bank/batches/middle-end-card-v1/seat-4/pamela-redo-seat-4-end.png",
+        "sha256": "c412b2670b7176f360ff92fa2026f61513a8e70ade7d80bc26f297bae14f64be",
+        "width": 1536,
+        "height": 1024,
+        "bytes": 1336155,
+        "sha256Recorded": "c412b2670b7176f360ff92fa2026f61513a8e70ade7d80bc26f297bae14f64be",
+        "hashMatchesRecorded": true
+      },
+      "output": {
+        "path": "D:/dealer-archive/snyggare-dealer/runs/20261109-pamela-seat-bank/batches/middle-end-card-v1/original/pamela-seat-4-wan3-end-card-v1.mp4",
+        "sha256": "4e252be2235ce42cec5de9d49b993d0ffed1c029de9890faea6686f46824f87c",
+        "bytes": 31987524,
+        "probe": {
+          "programs": [],
+          "stream_groups": [],
+          "streams": [
+            {
+              "width": 1762,
+              "height": 1174,
+              "avg_frame_rate": "30/1",
+              "nb_read_frames": "360"
+            }
+          ],
+          "format": {
+            "duration": "12.000000"
+          }
+        },
+        "sha256Recorded": "4e252be2235ce42cec5de9d49b993d0ffed1c029de9890faea6686f46824f87c",
+        "hashMatchesRecorded": true
+      },
+      "decodedRequestInputs": [
+        {
+          "position": "first",
+          "encoding": "data:image/png;base64",
+          "decodedBytes": 1365141,
+          "decodedSha256": "a9dd4882d84da1cc6f0fb3258d0fbd6d81fddac5a7f78efdaa225d6f9538576d",
+          "anchorPath": "D:/dealer-archive/snyggare-dealer/runs/20261109-pamela-reference-kit/original/pamela-redo-station.png",
+          "equalsAnchorSha256": true
+        },
+        {
+          "position": "last",
+          "encoding": "data:image/png;base64",
+          "decodedBytes": 1336155,
+          "decodedSha256": "c412b2670b7176f360ff92fa2026f61513a8e70ade7d80bc26f297bae14f64be",
+          "anchorPath": "D:/dealer-archive/snyggare-dealer/runs/20261109-pamela-seat-bank/batches/middle-end-card-v1/seat-4/pamela-redo-seat-4-end.png",
+          "equalsAnchorSha256": true
+        }
+      ],
+      "productionAcceptedInHistoricalMetadata": false
+    },
+    {
+      "id": "P4.C2-bank-v2",
+      "sourceMetadata": "D:/dealer-archive/snyggare-dealer/runs/20261109-pamela-seat-bank/c2/bank-v2-stage-2/seat-4.json",
+      "requestFile": "D:/dealer-archive/snyggare-dealer/runs/20261109-pamela-seat-bank/c2/bank-v2-plan/seat-4/request.json",
+      "requestSha256": "0d6671bbf8c897031db00c61ba973b35690a213f9e2a45a5697378a3f239e222",
+      "requestHashMatchesMetadata": true,
+      "model": "wan3",
+      "ratio": "auto_1080p",
+      "durationSeconds": 12,
+      "audio": false,
+      "taskId": "96f6cfc3-5697-4e50-ac5f-a7b3fdc122d3",
+      "state": "SUCCEEDED",
+      "submittedAtUtc": "2026-11-09T18:21:13.837Z",
+      "submittedAtStockholm": "2026-11-09T19:21:13.837+01:00",
+      "checkedAtUtc": "2026-11-09T18:26:32.543Z",
+      "exactPrompt": "One uninterrupted 12-second take, completely fixed tripod camera and unchanged framing. Preserve the FIRST dealer, black blazer, ivory blouse, black shoe, all bright chroma-green background and tabletop. FIRST already contains exactly ONE blank white card C1. Keep C1 completely still at exactly that position, size and orientation for the whole take. [0-1s] Hold FIRST REDO. [1-4s] The shoe hand draws exactly ONE additional plain-white rigid card C2 and carries it toward the CENTER toward the viewer, to the existing C1 at seat 4. Keep C2 the same apparent card size as C1, with no stretching or extra cards. [4-6s] Place C2 flat over C1 in exactly the overlap, orientation and size shown in LAST. C2 center is approximately 51.4 percent image width from LEFT and 88.1 percent image height from TOP. LAST shows a deliberately offset pair: leave the exposed edge and end of C1 visibly separate, so both card contours can be read. Only a small contact shadow may appear where C2 overlaps C1; do not move, bend, resize or merge C1. [6-7s] Release C2 fully and lift every fingertip away from both cards. [7-10s] Return the visibly EMPTY hand to the original REDO position beside the shoe without touching the two cards again. [10-12s] Hold LAST REDO with both cards motionless and both contours visible through the final frame. Never retrieve, erase, dissolve, combine or return either dealt card. All card surfaces and the shoe insert remain plain unprinted white without ranks, suits, text or artwork. No zoom, pan, tilt, crop or reframing. Keep the whole head, both hands and shoe visible at the original scale. Natural hand anatomy, one complete additional deal, constant green scene.",
+      "first": {
+        "path": "D:/dealer-archive/snyggare-dealer/runs/20261109-pamela-seat-bank/c2/bank-v2-plan/seat-4/FIRST-redo-with-C1.png",
+        "sha256": "01c0147faecc55402343193cc9cb7ad9facc4950646ee3e2ac0b4b0457865ab7",
+        "sha256Recorded": "01c0147faecc55402343193cc9cb7ad9facc4950646ee3e2ac0b4b0457865ab7",
+        "bytes": 1385240,
+        "hashMatchesRecorded": true
+      },
+      "last": {
+        "path": "D:/dealer-archive/snyggare-dealer/runs/20261109-pamela-seat-bank/c2/bank-v2-plan/seat-4/LAST-redo-with-C1-C2.png",
+        "sha256": "b8bd0916b66bd98aac17af7384429cd5b2f5e325d4b442ff68eb18183fe51b4c",
+        "sha256Recorded": "b8bd0916b66bd98aac17af7384429cd5b2f5e325d4b442ff68eb18183fe51b4c",
+        "bytes": 1387776,
+        "hashMatchesRecorded": true
+      },
+      "output": {
+        "path": "D:/dealer-archive/snyggare-dealer/runs/20261109-pamela-seat-bank/c2/bank-v2-stage-2/original/pamela-seat-4-wan3-c2-bank-v2.mp4",
+        "sha256": "67319ed86cde67cc7a7566553d451a89f8aac11384a55f8f8b460d1403d30167",
+        "bytes": 31746670,
+        "probe": {
+          "programs": [],
+          "stream_groups": [],
+          "streams": [
+            {
+              "width": 1762,
+              "height": 1174,
+              "avg_frame_rate": "30/1",
+              "nb_read_frames": "360"
+            }
+          ],
+          "format": {
+            "duration": "12.000000"
+          }
+        },
+        "sha256Recorded": "67319ed86cde67cc7a7566553d451a89f8aac11384a55f8f8b460d1403d30167",
+        "hashMatchesRecorded": true
+      },
+      "decodedRequestInputs": [
+        {
+          "position": "first",
+          "encoding": "data:image/png;base64",
+          "decodedBytes": 1385240,
+          "decodedSha256": "01c0147faecc55402343193cc9cb7ad9facc4950646ee3e2ac0b4b0457865ab7",
+          "anchorPath": "D:/dealer-archive/snyggare-dealer/runs/20261109-pamela-seat-bank/c2/bank-v2-plan/seat-4/FIRST-redo-with-C1.png",
+          "equalsAnchorSha256": true
+        },
+        {
+          "position": "last",
+          "encoding": "data:image/png;base64",
+          "decodedBytes": 1387776,
+          "decodedSha256": "b8bd0916b66bd98aac17af7384429cd5b2f5e325d4b442ff68eb18183fe51b4c",
+          "anchorPath": "D:/dealer-archive/snyggare-dealer/runs/20261109-pamela-seat-bank/c2/bank-v2-plan/seat-4/LAST-redo-with-C1-C2.png",
+          "equalsAnchorSha256": true
+        }
+      ],
+      "productionAcceptedInHistoricalMetadata": false
+    },
+    {
+      "id": "V6-central-base",
+      "sourceMetadata": "D:/dealer-archive/snyggare-dealer/runs/20261109-pamela-sequence/central-base.json",
+      "requestFile": null,
+      "requestSha256": null,
+      "requestHashMatchesMetadata": null,
+      "model": "wan3",
+      "ratio": "auto_1080p",
+      "durationSeconds": 6,
+      "audio": null,
+      "taskId": "390ff634-df94-4666-b9bd-8951b2ac686a",
+      "state": "SUCCEEDED",
+      "submittedAtUtc": "2026-11-09T00:09:53.826Z",
+      "submittedAtStockholm": "2026-11-09T01:09:53.826+01:00",
+      "checkedAtUtc": "2026-11-09T00:12:09.689Z",
+      "exactPrompt": "Locked camera, one continuous six-second shot between the exact supplied REDO anchors. Preserve Pamela's mature identity, face, age, hair, black blazer, ivory blouse, body scale, the green studio and the black shoe in their exact positions. Start with her left hand (camera-right) touching the plain white card at the shoe outlet. Hold briefly. She smoothly draws exactly one rigid plain white unprinted card out of that actual outlet, brings it to her right hand near the middle, then her right hand makes one low controlled forward dealing action to the empty central foreground, directly below her resting-hand area. Place that same card flat exactly where it lies in the last image. It must remain a rigid perspective rectangle with its thin warm edge, with no rank, suit or symbol. Her fingertips visibly contact it until placement, then release it cleanly. The card stays stationary on the green surface for the rest of the shot. No appearing card, no fading, no card passing through fingers or the shoe. By 5.4 seconds her right hand returns to its original resting position and her left hand returns to the shoe outlet where the next card is seated, matching the last REDO pose and downward gaze. Exactly one new card remains on the table, and the shoe has the next card ready. Do not remove the landed card to match the hand pose. Preserve all fingers and complete arms inside the original frame throughout the full reach. No camera move, zoom, cuts, new table edge, torso drift or changed face. Settle naturally for the final half second.",
+      "first": {
+        "path": "D:/dealer-archive/snyggare-dealer/runs/20261109-pamela-reference-kit/original/pamela-redo-station.png",
+        "sha256": "a9dd4882d84da1cc6f0fb3258d0fbd6d81fddac5a7f78efdaa225d6f9538576d",
+        "width": 1536,
+        "height": 1024,
+        "bytes": 1365141,
+        "sha256Recorded": "a9dd4882d84da1cc6f0fb3258d0fbd6d81fddac5a7f78efdaa225d6f9538576d",
+        "hashMatchesRecorded": true
+      },
+      "last": {
+        "path": "D:/dealer-archive/snyggare-dealer/runs/20261109-pamela-sequence/original/pamela-redo-after-central.png",
+        "sha256": "f62974a66959462093fb2ecd5fa0c2470eb3cfbeece1726030218ae167f8daba",
+        "width": 1536,
+        "height": 1024,
+        "bytes": 1521480,
+        "sha256Recorded": "f62974a66959462093fb2ecd5fa0c2470eb3cfbeece1726030218ae167f8daba",
+        "hashMatchesRecorded": true
+      },
+      "output": {
+        "path": "D:/dealer-archive/snyggare-dealer/runs/20261109-pamela-sequence/original/pamela-central-base-wan3.mp4",
+        "sha256": "2445bb2ef5122fe558134d582533d277603da72c4b98b6c782be01a5bf06235a",
+        "bytes": 16802367,
+        "sha256Recorded": "2445bb2ef5122fe558134d582533d277603da72c4b98b6c782be01a5bf06235a",
+        "hashMatchesRecorded": true
+      },
+      "decodedRequestInputs": null,
+      "productionAcceptedInHistoricalMetadata": false
+    },
+    {
+      "id": "V6-from-shoe",
+      "sourceMetadata": "D:/dealer-archive/snyggare-dealer/runs/20261109-pamela-sequence/from-shoe.json",
+      "requestFile": null,
+      "requestSha256": null,
+      "requestHashMatchesMetadata": null,
+      "model": "wan3",
+      "ratio": "auto_1080p",
+      "durationSeconds": 3,
+      "audio": null,
+      "taskId": "d0f9d466-cd29-41ef-a2db-c9783bc78256",
+      "state": "SUCCEEDED",
+      "submittedAtUtc": "2026-11-09T00:09:24.615Z",
+      "submittedAtStockholm": "2026-11-09T01:09:24.615+01:00",
+      "checkedAtUtc": "2026-11-09T00:11:14.372Z",
+      "exactPrompt": "Locked camera, one continuous three-second transition between the supplied first REDO image and last VILA image. Preserve Pamela's exact mature face, age, hair, black blazer, ivory blouse, body scale and framing. Start with her left hand at the black shoe outlet. Without extracting or moving the white card, gently release contact and return the left hand to its exact resting position in the last VILA image. Her other hand stays in its original resting place. Her gaze calmly returns from the shoe toward the viewer. Keep the black shoe and its single white card completely stationary and unchanged. Preserve the green background and all props. Natural continuous shoulder, elbow, wrist and finger movement. Keep elbows and fingertips inside the frame. No camera movement, zoom, cut, new objects, additional cards, hand fading or extra fingers. Settle naturally into the exact final VILA pose.",
+      "first": {
+        "path": "D:/dealer-archive/snyggare-dealer/runs/20261109-pamela-reference-kit/original/pamela-redo-station.png",
+        "sha256": "a9dd4882d84da1cc6f0fb3258d0fbd6d81fddac5a7f78efdaa225d6f9538576d",
+        "width": 1536,
+        "height": 1024,
+        "bytes": 1365141,
+        "sha256Recorded": "a9dd4882d84da1cc6f0fb3258d0fbd6d81fddac5a7f78efdaa225d6f9538576d",
+        "hashMatchesRecorded": true
+      },
+      "last": {
+        "path": "D:/dealer-archive/snyggare-dealer/runs/20261109-pamela-reference-kit/original/pamela-vila-station.png",
+        "sha256": "ac2924b76ebab596918fa802b6145628ee805e0b37a04d1117c8dc4f4aae2621",
+        "width": 1536,
+        "height": 1024,
+        "bytes": 1376790,
+        "sha256Recorded": "ac2924b76ebab596918fa802b6145628ee805e0b37a04d1117c8dc4f4aae2621",
+        "hashMatchesRecorded": true
+      },
+      "output": {
+        "path": "D:/dealer-archive/snyggare-dealer/runs/20261109-pamela-sequence/original/pamela-from-shoe-wan3.mp4",
+        "sha256": "81a63227a56531103bd9d86b364442869b72eef0ddd3be65e718f3494ee2147b",
+        "bytes": 8455042,
+        "sha256Recorded": "81a63227a56531103bd9d86b364442869b72eef0ddd3be65e718f3494ee2147b",
+        "hashMatchesRecorded": true
+      },
+      "decodedRequestInputs": null,
+      "productionAcceptedInHistoricalMetadata": false
+    }
+  ],
+  "p4LocalMaterialProof": {
+    "c1": {
+      "source": {
+        "seat": 4,
+        "path": "D:/dealer-archive/snyggare-dealer/runs/20261109-pamela-seat-bank/batches/middle-end-card-v1/original/pamela-seat-4-wan3-end-card-v1.mp4",
+        "sha256": "4e252be2235ce42cec5de9d49b993d0ffed1c029de9890faea6686f46824f87c",
+        "frameDirectory": "runs/20261109-pamela-seat-bank/batches/middle-end-card-v1/qa/seat-4/frames",
+        "width": 1762,
+        "height": 1174,
+        "fps": 30,
+        "frames": 360,
+        "sha256Recorded": "4e252be2235ce42cec5de9d49b993d0ffed1c029de9890faea6686f46824f87c",
+        "bytes": 31987524,
+        "hashMatchesRecorded": true
+      },
+      "output": {
+        "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-two-sided-bank/take-02/render/C1-P4.mp4",
+        "sha256": "acd04f6cf5e5562233a81ff669245d5a2a895935851cc60d9d2789c674499a3b",
+        "probe": {
+          "programs": [],
+          "stream_groups": [],
+          "streams": [
+            {
+              "width": 1762,
+              "height": 1174,
+              "avg_frame_rate": "30/1",
+              "nb_read_frames": "360"
+            }
+          ],
+          "format": {
+            "duration": "12.000000"
+          }
+        },
+        "sha256Recorded": "acd04f6cf5e5562233a81ff669245d5a2a895935851cc60d9d2789c674499a3b",
+        "bytes": 5043510,
+        "hashMatchesRecorded": true
+      },
+      "selection": {
+        "id": "C1-P4",
+        "kind": "middle",
+        "evidence": {
+          "path": "runs/20261109-pamela-middle-card-track/take-07/p4-stable-integration/evidence.json",
+          "sha256": "7cf6d4a8891a613646ed978e575810d0812158174cbc064aa639643b035c0015"
+        },
+        "review": {
+          "path": "runs/20261109-pamela-middle-card-track/take-07/p4-stable-integration/visual-review.json",
+          "sha256": "45208894d5d114f898c86afaf8880cd6beba108d7b81dc859e95a20b1e189666"
+        },
+        "canonicalUvQuarterTurns": 0,
+        "sidePolicy": {
+          "sourceSha256": "4e252be2235ce42cec5de9d49b993d0ffed1c029de9890faea6686f46824f87c",
+          "physicalSide": "UNKNOWN",
+          "segments": [
+            {
+              "start": 0,
+              "end": 360,
+              "side": "FRONT"
+            }
+          ],
+          "basis": {
+            "path": "runs/20261109-pamela-side-bank-survey/review.json",
+            "sha256": "ffb63873fb30e5a75ac44e309bf5f960a8af42d9cf9b225c8f5ccc05cf8ac6f0"
+          }
+        }
+      }
+    },
+    "c2": {
+      "source": {
+        "path": "D:/dealer-archive/snyggare-dealer/runs/20261109-pamela-seat-bank/c2/bank-v2-stage-2/original/pamela-seat-4-wan3-c2-bank-v2.mp4",
+        "sha256": "67319ed86cde67cc7a7566553d451a89f8aac11384a55f8f8b460d1403d30167",
+        "bytes": 31746670,
+        "probe": {
+          "programs": [],
+          "stream_groups": [],
+          "streams": [
+            {
+              "width": 1762,
+              "height": 1174,
+              "avg_frame_rate": "30/1",
+              "nb_read_frames": "360"
+            }
+          ],
+          "format": {
+            "duration": "12.000000"
+          }
+        },
+        "sha256Recorded": "67319ed86cde67cc7a7566553d451a89f8aac11384a55f8f8b460d1403d30167",
+        "hashMatchesRecorded": true
+      },
+      "output": {
+        "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-two-sided-bank/take-02/render/C2-P4.mp4",
+        "sha256": "8abd1223edec6ba838dc6aa0df37cba4aa32a46a8b2809a78d1a5daed93bf225",
+        "probe": {
+          "programs": [],
+          "stream_groups": [],
+          "streams": [
+            {
+              "width": 1762,
+              "height": 1174,
+              "avg_frame_rate": "30/1",
+              "nb_read_frames": "360"
+            }
+          ],
+          "format": {
+            "duration": "12.000000"
+          }
+        },
+        "sha256Recorded": "8abd1223edec6ba838dc6aa0df37cba4aa32a46a8b2809a78d1a5daed93bf225",
+        "bytes": 4797460,
+        "hashMatchesRecorded": true
+      },
+      "selection": {
+        "id": "C2-P4",
+        "kind": "c2",
+        "evidence": {
+          "path": "runs/20261109-pamela-c2-motion-track/take-01/seat-4/draft-03/track.json",
+          "sha256": "5f7bdf302f9a1cc602c0addac3a691888af019fefede75d671fe59ccff1bb4d8"
+        },
+        "review": {
+          "path": "runs/20261109-pamela-c2-motion-track/take-01/seat-4/draft-03/review.json",
+          "sha256": "19321babe318833089da1a47ab7fdd0037af8ebdb952949b31ab7392e8a119ac"
+        },
+        "canonicalUvQuarterTurns": 0,
+        "sidePolicy": {
+          "sourceSha256": "67319ed86cde67cc7a7566553d451a89f8aac11384a55f8f8b460d1403d30167",
+          "physicalSide": "UNKNOWN",
+          "segments": [
+            {
+              "start": 0,
+              "end": 98,
+              "side": "BACK"
+            },
+            {
+              "start": 98,
+              "end": 99,
+              "side": "EDGE"
+            },
+            {
+              "start": 99,
+              "end": 360,
+              "side": "FRONT"
+            }
+          ],
+          "basis": {
+            "path": "runs/20261109-pamela-card-atlas/take-03/evidence.json",
+            "sha256": "d96a3094c39cc94e096847ea989ebe4edc85d1412304f6189e78a8584a86dddf"
+          }
+        },
+        "firstQuad": [
+          [
+            846,
+            1010
+          ],
+          [
+            917,
+            1010
+          ],
+          [
+            919,
+            1077
+          ],
+          [
+            842,
+            1077
+          ]
+        ],
+        "calibration": {
+          "evidence": {
+            "path": "runs/20261109-pamela-card-atlas/take-03/evidence.json",
+            "sha256": "d96a3094c39cc94e096847ea989ebe4edc85d1412304f6189e78a8584a86dddf"
+          },
+          "code": {
+            "path": "src/pamela-p4-card-calibration.ts",
+            "sha256": "558066eb08fb5404fed2fcc28a26365b5c907631515e2df696088a45dd3e2726"
+          },
+          "renderEvidence": {
+            "path": "runs/20261109-pamela-two-sided-flip/take-03/evidence.json",
+            "sha256": "fabf6f623d2064d3c40111742eb8a53d3f8d532d06bfbdd1c314c1b5e0a2385e"
+          }
+        }
+      }
+    },
+    "flipTake03": {
+      "sourceEvidence": "D:/dealer-archive/snyggare-dealer/runs/20261109-pamela-two-sided-flip/take-03/evidence.json",
+      "apiCalls": 0,
+      "sidePolicy": {
+        "back": [
+          0,
+          98
+        ],
+        "edge": [
+          98,
+          99
+        ],
+        "front": [
+          99,
+          360
+        ],
+        "semantics": "Authored semantic sides on blank source; thin passage observed in consecutive native frames. Engine reveal permission always overrides visible front."
+      },
+      "limitations": [
+        "Source-bound visible-paper masks; not a recovered 3D card",
+        "Thin green-reflected paper receives a bounded new source-pixel gate; 1-2px boundary uncertainty remains",
+        "No full hidden-hand reconstruction",
+        "Only C2/P4 is calibrated for this side schedule; other takes need independent side/UV QA"
+      ]
+    },
+    "productionAccepted": false,
+    "limitations": [
+      "Blank original semantic side UNKNOWN; display schedules are authored",
+      "C1 and C2 P6/P7 show a continuous broad face; no invented turn",
+      "P1 two passages are a limited optical candidate with a protected grip and mixed edge at115–118",
+      "Old outer idle/ready seams retained; new bridge is not accepted",
+      "No production engine, GPU or interchangeable shoe claim for this bank",
+      "Full round uses one design; the second design is independently checked in the preflight",
+      "Preliminary dealer matte and hard source pose seams remain",
+      "Compact display is re-encoded after whole-frame trimming",
+      "Numeric checks are not continuous perceptual acceptance"
+    ]
+  },
+  "longSequences": {
+    "plainFourteen": {
+      "evidence": "D:/dealer-archive/snyggare-dealer/runs/20261109-pamela-fourteen-full-loop/take-01/evidence.json",
+      "createdAt": "2026-11-09T18:46:09.366Z",
+      "output": {
+        "path": "D:/dealer-archive/snyggare-dealer/runs/20261109-pamela-fourteen-full-loop/take-01/render/vila-fourteen-deals-vila.mp4",
+        "sha256": "04e87ed67176399567136ab36ac289fbf3042e131fc0d8a823dc829a2630dd4c",
+        "probe": {
+          "programs": [],
+          "stream_groups": [],
+          "streams": [
+            {
+              "codec_name": "h264",
+              "profile": "High",
+              "width": 1762,
+              "height": 1174,
+              "level": 42,
+              "avg_frame_rate": "30/1",
+              "time_base": "1/15360",
+              "nb_read_frames": "5486",
+              "extradata_hash": "SHA256:b066bea0dca41dde715fd8ce260530cdf7f00d8d5956012c78fcdbfe91dc66a7"
+            }
+          ],
+          "format": {
+            "duration": "182.866667"
+          }
+        },
+        "sha256Recorded": "04e87ed67176399567136ab36ac289fbf3042e131fc0d8a823dc829a2630dd4c",
+        "bytes": 38635914,
+        "hashMatchesRecorded": true
+      },
+      "composition": [
+        {
+          "id": "opening-vila",
+          "source": "breath",
+          "start": 22,
+          "end": 157,
+          "frames": 135,
+          "cards": 0,
+          "outputStart": 0,
+          "outputEndExclusive": 135,
+          "path": "runs/20261109-pamela-fourteen-full-loop/take-01/render/opening-vila.mp4"
+        },
+        {
+          "id": "to-redo",
+          "source": "approach",
+          "start": 3,
+          "end": 90,
+          "frames": 87,
+          "cards": 0,
+          "outputStart": 135,
+          "outputEndExclusive": 222,
+          "path": "runs/20261109-pamela-fourteen-full-loop/take-01/render/to-redo.mp4"
+        },
+        {
+          "id": "fourteen-deals",
+          "source": "frozen-bank",
+          "start": 0,
+          "end": 5040,
+          "frames": 5040,
+          "cards": "0-to-14",
+          "outputStart": 222,
+          "outputEndExclusive": 5262,
+          "path": "runs/20261109-pamela-c2-bank-sequence/take-01/render/fourteen-deals.mp4"
+        },
+        {
+          "id": "to-vila",
+          "source": "retreat",
+          "start": 1,
+          "end": 90,
+          "frames": 89,
+          "cards": 14,
+          "outputStart": 5262,
+          "outputEndExclusive": 5351,
+          "path": "runs/20261109-pamela-fourteen-full-loop/take-01/render/to-vila.mp4"
+        },
+        {
+          "id": "closing-vila",
+          "source": "breath",
+          "start": 22,
+          "end": 157,
+          "frames": 135,
+          "cards": 14,
+          "outputStart": 5351,
+          "outputEndExclusive": 5486,
+          "path": "runs/20261109-pamela-fourteen-full-loop/take-01/render/closing-vila.mp4"
+        }
+      ],
+      "processing": "Hard cuts; original source indices preserved; no blend, optical flow, frame repeats, time warp or geometric transform. Bank video packets stream-copied. Seven card layers persist after bank.",
+      "newPaidJobs": 0,
+      "productionAccepted": false,
+      "verification": {
+        "entireFilmDecodeErrors": 0,
+        "frames": 5486,
+        "uniquePts": 5486,
+        "constantFrameStep": 0.03333333333333333,
+        "bankPacketsCopiedExactly": 5040,
+        "bankFileUnchanged": true,
+        "codecExtradataUnchanged": true,
+        "ownRenderedFrames": 446,
+        "cardCoreChanged": 0,
+        "faceCoreChanged": 0
+      },
+      "limitations": [
+        "Review film only; hard cuts retain visible source differences.",
+        "Existing preliminary key and blank card artwork remain unapproved.",
+        "Closing fourteen-card table must not automatically reset to the empty opening when playback loops."
+      ]
+    },
+    "materialFourteen": {
+      "evidence": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-two-sided-bank/take-02/evidence.json",
+      "full": {
+        "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-two-sided-bank/take-02/render/vila-fourteen-materials-vila.mp4",
+        "sha256": "a2a03846093ec7a53c16556b84be78c8c1047ae50a7219ca4ea58fa68d1cde45",
+        "probe": {
+          "programs": [],
+          "stream_groups": [],
+          "streams": [
+            {
+              "width": 1762,
+              "height": 1174,
+              "avg_frame_rate": "30/1",
+              "nb_read_frames": "5486"
+            }
+          ],
+          "format": {
+            "duration": "182.866667"
+          }
+        },
+        "sha256Recorded": "a2a03846093ec7a53c16556b84be78c8c1047ae50a7219ca4ea58fa68d1cde45",
+        "bytes": 74322687,
+        "hashMatchesRecorded": true
+      },
+      "compact": {
+        "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-two-sided-bank/take-02/render/vila-fourteen-materials-trim.mp4",
+        "sha256": "f5b0a602fe181661c9b76d380cdb667a6feae655a6a4dccbd61ab2ad1a24d4c6",
+        "probe": {
+          "programs": [],
+          "stream_groups": [],
+          "streams": [
+            {
+              "width": 1762,
+              "height": 1174,
+              "avg_frame_rate": "30/1",
+              "nb_read_frames": "4404"
+            }
+          ],
+          "format": {
+            "duration": "146.800000"
+          }
+        },
+        "sha256Recorded": "f5b0a602fe181661c9b76d380cdb667a6feae655a6a4dccbd61ab2ad1a24d4c6",
+        "bytes": 62758144,
+        "hashMatchesRecorded": true
+      },
+      "newApiJobs": 0,
+      "verification": {
+        "sourceRgbEqualFrames": 5040,
+        "printedOutsidePaperChanges": 0,
+        "priorCardCoreChanges": 0,
+        "distinctMaterials": 14,
+        "fullFrames": 5486,
+        "trimmedFrames": 4404
+      },
+      "productionAccepted": false,
+      "trim": {
+        "evidence": "D:/dealer-archive/snyggare-dealer/runs/20261109-pamela-fourteen-trim/take-01/evidence.json",
+        "sourceFrames": 5486,
+        "outputFrames": 4404,
+        "sourceSeconds": 182.86666666666667,
+        "outputSeconds": 146.8,
+        "savedFrames": 1082,
+        "savedSeconds": 36.06666666666667,
+        "noBlending": true,
+        "noRetime": true,
+        "intervals": [
+          {
+            "id": "C1-P1",
+            "startInclusive": 17,
+            "endExclusive": 338,
+            "sourceSha256": "8402ddfcaabf1356b25b28fc8e7e3ca59121260eee6b188b7bfed431b2af9307"
+          },
+          {
+            "id": "C1-P2",
+            "startInclusive": 30,
+            "endExclusive": 340,
+            "sourceSha256": "dc9e35760fd708a6b7c004e3bc255e9c5e8207aa6ddd5bc274c0e3c62dd3f001"
+          },
+          {
+            "id": "C1-P3",
+            "startInclusive": 30,
+            "endExclusive": 290,
+            "sourceSha256": "312f8d9b612cf58cf7cf21a26c77b169bb930d00e3348ffe9fa1cdf0dc574eb9"
+          },
+          {
+            "id": "C1-P4",
+            "startInclusive": 13,
+            "endExclusive": 336,
+            "sourceSha256": "4e252be2235ce42cec5de9d49b993d0ffed1c029de9890faea6686f46824f87c"
+          },
+          {
+            "id": "C1-P5",
+            "startInclusive": 30,
+            "endExclusive": 313,
+            "sourceSha256": "edd74e2620327c41080d0f1610e2865d0ddfc44bd2b9e7bf56f114a408e26acf"
+          },
+          {
+            "id": "C1-P6",
+            "startInclusive": 30,
+            "endExclusive": 261,
+            "sourceSha256": "dee43b673dbd3014efdcdccd4b5dbea9a4256a1bc33bf760b554d1fbcfe633bb"
+          },
+          {
+            "id": "C1-P7",
+            "startInclusive": 38,
+            "endExclusive": 286,
+            "sourceSha256": "b37dbc6cafa99378786eff51ac1e8cb69c3bb01824b2107d390ddd7032a4620e"
+          },
+          {
+            "id": "C2-P1",
+            "startInclusive": 22,
+            "endExclusive": 328,
+            "sourceSha256": "98ff074a7815cf5ecb2e58a85748e9da79b8acd04a9a97048222ddb104bb6813"
+          },
+          {
+            "id": "C2-P2",
+            "startInclusive": 12,
+            "endExclusive": 333,
+            "sourceSha256": "ba257d6f88f95536521fe3170f5c5517f53bb447ced7de908cea94683795d77c"
+          },
+          {
+            "id": "C2-P3",
+            "startInclusive": 15,
+            "endExclusive": 302,
+            "sourceSha256": "bce1003fedde8573cfd85470367a16e439d40c230e3f526c5a51a105d151794b"
+          },
+          {
+            "id": "C2-P4",
+            "startInclusive": 29,
+            "endExclusive": 323,
+            "sourceSha256": "67319ed86cde67cc7a7566553d451a89f8aac11384a55f8f8b460d1403d30167"
+          },
+          {
+            "id": "C2-P5",
+            "startInclusive": 30,
+            "endExclusive": 314,
+            "sourceSha256": "9a73beb62ccaa93325c7f3d0a65feb3c767ad873d1d3678f9ad494e53a8b0a58"
+          },
+          {
+            "id": "C2-P6",
+            "startInclusive": 60,
+            "endExclusive": 280,
+            "sourceSha256": "daf180780c20f398f123c30e966c1ab03e1698556ffd5dbfd2221da35f0538f5"
+          },
+          {
+            "id": "C2-P7",
+            "startInclusive": 22,
+            "endExclusive": 292,
+            "sourceSha256": "d1ecb53516f3b5a4c7fd173a5129775845dbdfca4c35f495e0ac6d2378dd5dbf"
+          }
+        ],
+        "review": {
+          "method": "Native crops and exact source-bound full frames. All14 start/end phase gates checked; first six internal face/shoe boundaries reuse the same selected frames from the frozen first-pass trim and are revalidated by all2520 source YUV hashes. New C1-to-C2 and C2 joins reviewed in consecutive face/shoe/resting-hand sheets. All four outer joins reviewed in face and both hand regions. No UI or continuous normal-speed playback was performed.",
+          "all13InternalJoinsChecked": true,
+          "all4OuterJoinsChecked": true,
+          "contactAndEmptyReturnPreserved": true,
+          "remaining": [
+            "Small face/eye/mouth/hand source differences remain at hard REDO joins. Local metric improvement is not a perceptual score.",
+            "The unchanged retreat-to-closing-VILA join retains a visible face/shoe registration change.",
+            "The frozen composite has the documented C2P3 paper-key hole during the retained action.",
+            "Visible card cores and exposed witness regions do not establish hidden pixels, independent artwork layers or physical card calibration."
+          ],
+          "preexistingDefect": {
+            "id": "C2-P3-paper-key-hole",
+            "originalRawFrame": 238,
+            "sourceFullFrame": 3700,
+            "outputFrame": 3048,
+            "original": {
+              "path": "runs/20261109-pamela-fourteen-trim/take-01/qa/critical-P3-original-238.png",
+              "sha256": "821d75c7483df7ee279bb6929cf2b56c302c5c4538ede184116316efdbe2c35a"
+            },
+            "compositeComparison": {
+              "path": "runs/20261109-pamela-fourteen-trim/take-01/qa/critical-P3-pair.png",
+              "sha256": "03f169f5d3ec0e119596d9ea86b16f05f5d2e0d07b17c8da20752951650f69a8"
+            },
+            "finding": "Small dark vertical hole visible on exposed C1 in the frozen full/bank composite, absent from the original raw frame238. It occurs inside a retained action and is preserved by identity trimming. Root separately identified the general green-key classification and owns a paper-key repair; no repair applied here.",
+            "cutResponse": "Initial C2P3 end238 superseded by end301, with next C2P4 start29. This avoids cutting on the visible hole and improves the same seam metric6.5%; it does not erase the earlier defect."
+          },
+          "productionAccepted": false,
+          "runtimeAccepted": false
+        },
+        "decodedPixelEquality": {
+          "compared": 4404,
+          "changedFrames": 0,
+          "sourceFrameHash": {
+            "path": "runs/20261109-pamela-fourteen-trim/take-01/qa/source-yuv.framehash",
+            "sha256": "b8c6023918a10efdcd1e0fd5bf4d935c390fcdd249c3c909c3341ea4e13b296f"
+          },
+          "outputFrameHash": {
+            "path": "runs/20261109-pamela-fourteen-trim/take-01/qa/trim-yuv.framehash",
+            "sha256": "e0d543b8364f7b949090d6530e20f186ca32d17dc929da0c5907d2dc287b27a5"
+          },
+          "firstPassOriginalFramesRevalidated": 2520
+        }
+      }
+    },
+    "v6": {
+      "manifest": "D:/dealer-archive/snyggare-dealer/runs/20261109-pamela-v6-sequence/take-01/manifest.json",
+      "startedAt": "2026-11-09T14:58:27.175Z",
+      "sources": [
+        {
+          "path": "runs/20261109-pamela-reference-kit/original/pamela-vila-till-redo-wan3.mp4",
+          "sha256": "00efe62636916b79052b4cf9d5fa88ba1ad52c17d531f1dcc86875f94c91084c"
+        },
+        {
+          "path": "runs/20261109-pamela-sequence/original/pamela-central-base-wan3.mp4",
+          "sha256": "2445bb2ef5122fe558134d582533d277603da72c4b98b6c782be01a5bf06235a"
+        },
+        {
+          "path": "runs/20261109-pamela-sequence/original/pamela-from-shoe-wan3.mp4",
+          "sha256": "81a63227a56531103bd9d86b364442869b72eef0ddd3be65e718f3494ee2147b"
+        },
+        {
+          "path": "runs/20261109-pamela-continuous-idle/original/pamela-continuous-wan3.mp4",
+          "sha256": "213bf02130cf7e02fc9d68b9ddc6f34a08dff9c5cb22c537af82a0c56bffe3d8"
+        }
+      ],
+      "joins": [
+        {
+          "outputFrame": 345,
+          "seconds": 11.5,
+          "from": {
+            "clip": "idle",
+            "sourceFrame": 344,
+            "dealOrdinal": 0,
+            "priorCards": 0,
+            "outputFrame": 344,
+            "sourceSha256": "213bf02130cf7e02fc9d68b9ddc6f34a08dff9c5cb22c537af82a0c56bffe3d8"
+          },
+          "to": {
+            "clip": "approach",
+            "sourceFrame": 3,
+            "dealOrdinal": 0,
+            "priorCards": 0,
+            "outputFrame": 345,
+            "sourceSha256": "00efe62636916b79052b4cf9d5fa88ba1ad52c17d531f1dcc86875f94c91084c"
+          }
+        },
+        {
+          "outputFrame": 432,
+          "seconds": 14.4,
+          "from": {
+            "clip": "approach",
+            "sourceFrame": 89,
+            "dealOrdinal": 0,
+            "priorCards": 0,
+            "outputFrame": 431,
+            "sourceSha256": "00efe62636916b79052b4cf9d5fa88ba1ad52c17d531f1dcc86875f94c91084c"
+          },
+          "to": {
+            "clip": "deal",
+            "sourceFrame": 20,
+            "dealOrdinal": 0,
+            "priorCards": 0,
+            "outputFrame": 432,
+            "sourceSha256": "2445bb2ef5122fe558134d582533d277603da72c4b98b6c782be01a5bf06235a"
+          }
+        },
+        {
+          "outputFrame": 592,
+          "seconds": 19.733333333333334,
+          "from": {
+            "clip": "deal",
+            "sourceFrame": 179,
+            "dealOrdinal": 0,
+            "priorCards": 0,
+            "outputFrame": 591,
+            "sourceSha256": "2445bb2ef5122fe558134d582533d277603da72c4b98b6c782be01a5bf06235a"
+          },
+          "to": {
+            "clip": "deal",
+            "sourceFrame": 15,
+            "dealOrdinal": 1,
+            "priorCards": 1,
+            "outputFrame": 592,
+            "sourceSha256": "2445bb2ef5122fe558134d582533d277603da72c4b98b6c782be01a5bf06235a"
+          }
+        },
+        {
+          "outputFrame": 747,
+          "seconds": 24.9,
+          "from": {
+            "clip": "deal",
+            "sourceFrame": 169,
+            "dealOrdinal": 1,
+            "priorCards": 1,
+            "outputFrame": 746,
+            "sourceSha256": "2445bb2ef5122fe558134d582533d277603da72c4b98b6c782be01a5bf06235a"
+          },
+          "to": {
+            "clip": "retreat",
+            "sourceFrame": 1,
+            "dealOrdinal": 0,
+            "priorCards": 2,
+            "outputFrame": 747,
+            "sourceSha256": "81a63227a56531103bd9d86b364442869b72eef0ddd3be65e718f3494ee2147b"
+          }
+        },
+        {
+          "outputFrame": 836,
+          "seconds": 27.866666666666667,
+          "from": {
+            "clip": "retreat",
+            "sourceFrame": 89,
+            "dealOrdinal": 0,
+            "priorCards": 2,
+            "outputFrame": 835,
+            "sourceSha256": "81a63227a56531103bd9d86b364442869b72eef0ddd3be65e718f3494ee2147b"
+          },
+          "to": {
+            "clip": "idle",
+            "sourceFrame": 1,
+            "dealOrdinal": 0,
+            "priorCards": 2,
+            "outputFrame": 836,
+            "sourceSha256": "213bf02130cf7e02fc9d68b9ddc6f34a08dff9c5cb22c537af82a0c56bffe3d8"
+          }
+        }
+      ],
+      "note": "The second deal reuses central-base source frames after the first deal. 926 frames / 30 fps = 30.866667 seconds."
+    },
+    "explanation": "The 182.866667-second full film consists of 14 separate continuous 12-second source deals (168 seconds total), plus 14.866667 seconds of opening idle, approach, retreat and closing idle. Full film preserves the 12-second per-deal source holds; compact film trims whole frames from each source and keeps hard seams. This is continuous motion within each take, not a single continuous 3-minute performance."
+  },
+  "around04Review": {
+    "manifest": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-card-side-review/take-01/manifest.json",
+    "createdAt": "2026-11-10T04:04:54.537Z",
+    "newApiJobs": 0,
+    "limitations": [
+      "C2-P1 authored FRONT/EDGE/BACK/EDGE/FRONT schedule retains both passages.",
+      "Original hand guards and existing approximate UV/blur boundaries are retained, not newly accepted.",
+      "No new physical two-colour source is generated.",
+      "CPU movies preserve native 1762x1174, all 360 integer source frames and 30 fps; images are not original replacements."
+    ]
+  },
+  "verification": {
+    "generationPromptsCopiedVerbatimFromRequestFiles": true,
+    "requestDataImagesDecodedAndComparedToAnchorHashes": true,
+    "listedPrimaryMediaFilesRehashed": true,
+    "mediaVisuallyReviewedInThisAudit": false,
+    "limitations": [
+      "No new continuous visual acceptance was performed. Archive acceptance fields are historical evidence, not a new rejection or approval of Jakobs visual preference.",
+      "The exact chat/clip remembered as about 04:00 has not been uniquely identified."
+    ]
+  },
+  "readOnlyArchiveFiles": [
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261109-pamela-seat-bank/batches/middle-end-card-v1/seat-4.json",
+      "sha256": "5c958daa7825fc761022c50f325b64f8e920411a525ec337944fa5be4a19a20c",
+      "bytes": 3291
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261109-pamela-seat-bank/batches/middle-end-card-v1/seat-4.request.json",
+      "sha256": "7a56c0fdcd629d53fe6659420d476d105f0a350801e6444f44dc864d95379422",
+      "bytes": 3603792
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261109-pamela-seat-bank/c2/bank-v2-stage-2/seat-4.json",
+      "sha256": "fe677c7d3083d62d21215728d16a1a5573eef480ab160f6c0d550f6162e9771b",
+      "bytes": 4597
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261109-pamela-seat-bank/c2/bank-v2-plan/seat-4/request.json",
+      "sha256": "0d6671bbf8c897031db00c61ba973b35690a213f9e2a45a5697378a3f239e222",
+      "bytes": 3699324
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261109-pamela-sequence/central-base.json",
+      "sha256": "74c064da55b9c4def8d12d36aa499dbc2dc578c3ba4bbafab0fb42869e7afdeb",
+      "bytes": 3609
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261109-pamela-sequence/from-shoe.json",
+      "sha256": "8fcf2fe5944f8ce5c9c09e5c81f46dcbdea041c2f5c3b72c76fc42a4f5ace672",
+      "bytes": 2743
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-two-sided-bank/take-02/C1-P4.json",
+      "sha256": "1c9fb2add1c07369f1227a0e730ba0f610fa0c7c453ae913156d41dbcb213834",
+      "bytes": 307359
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-two-sided-bank/take-02/C2-P4.json",
+      "sha256": "30855dab7601877714ec4fb3aba727e1742dae4050aa2404bcfd12123fb9bdfe",
+      "bytes": 436275
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-two-sided-bank/take-02/evidence.json",
+      "sha256": "fd9cd8078f35d52fbe1932cb484c0ebd60db60cf5e4a0ef1716237598867fd82",
+      "bytes": 149031
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261109-pamela-two-sided-flip/take-03/evidence.json",
+      "sha256": "fabf6f623d2064d3c40111742eb8a53d3f8d532d06bfbdd1c314c1b5e0a2385e",
+      "bytes": 1641064
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261109-pamela-fourteen-full-loop/take-01/evidence.json",
+      "sha256": "33084f366f7a2fbf343a924de921404f8ae501e9beff5fc28e1914b8fe5fff3b",
+      "bytes": 688831
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261109-pamela-fourteen-full-loop/take-01/plan.json",
+      "sha256": "c80942f1d4fce4d47bc04734eb5e1e708cfb993542a4ec7d6ec7e1902a344bd8",
+      "bytes": 16491
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261109-pamela-v6-sequence/take-01/manifest.json",
+      "sha256": "640f7ec684ab46cec22073d08763b63a9ea4e41c7955c8970cc1f5dd527d2938",
+      "bytes": 9215
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-card-side-review/take-01/manifest.json",
+      "sha256": "cf57437da49e14150abc31845e77f713e1f612538600d6e210c336ed080c5983",
+      "bytes": 1262894
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261109-pamela-sequence/central-input-contract.json",
+      "sha256": "9b3d3fab499ebf30eb62d27fa068325cc3007d7e5a60ab04d89aa797824dd6ab",
+      "bytes": 3906
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261109-pamela-c2-sequence/take-01/evidence.json",
+      "sha256": "4f68401bbc1c4ef070ed2ffc7a9c5c5b01414ab411e46b9e96114819fa304b8a",
+      "bytes": 4261
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261109-pamela-c2-bank-sequence/take-01/plan.json",
+      "sha256": "28db5153369a0b96eab7e0ed0d8776fe5ec78d8959c0ecb30210cc7cea6d9d2b",
+      "bytes": 81750
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261109-pamela-full-loop/take-02/evidence.json",
+      "sha256": "9a629f691d8f1732ecc3f0151f36b4e68e1c68054f0b3a5e6bdd0fd467415367",
+      "bytes": 680710
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-physical-c2-pilot/jobs/p1-c2-back-front-take-01/plan.json",
+      "sha256": "6f7b87de30af7f85fe1efc46228e048c22f8d8b8a17286cd948b178769f547ae",
+      "bytes": 3163
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-two-sided-bank/take-02/plan.json",
+      "sha256": "0bc91fb10ba7c77fa9ea4b2a121f8c14be9edffeceb19420849fc2753e443223",
+      "bytes": 31628
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261109-pamela-reference-kit/original/pamela-redo-station.png",
+      "sha256": "a9dd4882d84da1cc6f0fb3258d0fbd6d81fddac5a7f78efdaa225d6f9538576d",
+      "bytes": 1365141
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261109-pamela-seat-bank/batches/middle-end-card-v1/seat-4/pamela-redo-seat-4-end.png",
+      "sha256": "c412b2670b7176f360ff92fa2026f61513a8e70ade7d80bc26f297bae14f64be",
+      "bytes": 1336155
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261109-pamela-seat-bank/batches/middle-end-card-v1/original/pamela-seat-4-wan3-end-card-v1.mp4",
+      "sha256": "4e252be2235ce42cec5de9d49b993d0ffed1c029de9890faea6686f46824f87c",
+      "bytes": 31987524
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261109-pamela-seat-bank/c2/bank-v2-plan/seat-4/FIRST-redo-with-C1.png",
+      "sha256": "01c0147faecc55402343193cc9cb7ad9facc4950646ee3e2ac0b4b0457865ab7",
+      "bytes": 1385240
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261109-pamela-seat-bank/c2/bank-v2-plan/seat-4/LAST-redo-with-C1-C2.png",
+      "sha256": "b8bd0916b66bd98aac17af7384429cd5b2f5e325d4b442ff68eb18183fe51b4c",
+      "bytes": 1387776
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261109-pamela-seat-bank/c2/bank-v2-stage-2/original/pamela-seat-4-wan3-c2-bank-v2.mp4",
+      "sha256": "67319ed86cde67cc7a7566553d451a89f8aac11384a55f8f8b460d1403d30167",
+      "bytes": 31746670
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261109-pamela-sequence/original/pamela-redo-after-central.png",
+      "sha256": "f62974a66959462093fb2ecd5fa0c2470eb3cfbeece1726030218ae167f8daba",
+      "bytes": 1521480
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261109-pamela-sequence/original/pamela-central-base-wan3.mp4",
+      "sha256": "2445bb2ef5122fe558134d582533d277603da72c4b98b6c782be01a5bf06235a",
+      "bytes": 16802367
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261109-pamela-reference-kit/original/pamela-vila-station.png",
+      "sha256": "ac2924b76ebab596918fa802b6145628ee805e0b37a04d1117c8dc4f4aae2621",
+      "bytes": 1376790
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261109-pamela-sequence/original/pamela-from-shoe-wan3.mp4",
+      "sha256": "81a63227a56531103bd9d86b364442869b72eef0ddd3be65e718f3494ee2147b",
+      "bytes": 8455042
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-two-sided-bank/take-02/render/C1-P4.mp4",
+      "sha256": "acd04f6cf5e5562233a81ff669245d5a2a895935851cc60d9d2789c674499a3b",
+      "bytes": 5043510
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-two-sided-bank/take-02/render/C2-P4.mp4",
+      "sha256": "8abd1223edec6ba838dc6aa0df37cba4aa32a46a8b2809a78d1a5daed93bf225",
+      "bytes": 4797460
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261109-pamela-fourteen-full-loop/take-01/render/vila-fourteen-deals-vila.mp4",
+      "sha256": "04e87ed67176399567136ab36ac289fbf3042e131fc0d8a823dc829a2630dd4c",
+      "bytes": 38635914
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-two-sided-bank/take-02/render/vila-fourteen-materials-vila.mp4",
+      "sha256": "a2a03846093ec7a53c16556b84be78c8c1047ae50a7219ca4ea58fa68d1cde45",
+      "bytes": 74322687
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-two-sided-bank/take-02/render/vila-fourteen-materials-trim.mp4",
+      "sha256": "f5b0a602fe181661c9b76d380cdb667a6feae655a6a4dccbd61ab2ad1a24d4c6",
+      "bytes": 62758144
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261109-pamela-fourteen-trim/take-01/evidence.json",
+      "sha256": "6f7f16b96e45e3c2178ef7591ffe00d467e5d4c5c678fef0b7b3145fd394f34d",
+      "bytes": 22748
+    }
+  ]
+}

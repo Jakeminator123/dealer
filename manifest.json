@@ -7681,6 +7681,34 @@
       "bytes": 15932833,
       "source": "runway-task:37496e52-9a7a-4ed2-b2d5-46bead1e9214",
       "role": "pending-motion-only-pilot-source"
+    },
+    {
+      "path": "assets/motions/pamela-p7-c1-left-turn-pilot-03/start.png",
+      "sha256": "3050e9ccc0d624a1b45d49a67be1c38a8ef6a6038d2743585891dea44d5ffff0",
+      "bytes": 953140,
+      "source": "assets/motions/pamela-p7-c1-left-turn-pilot-02/start.png",
+      "role": "pilot-start-anchor"
+    },
+    {
+      "path": "assets/motions/pamela-p7-c1-left-turn-pilot-03/end.png",
+      "sha256": "6dab51f1a0346051c2656a835e21ece48bfc7533395235e9010c4f64fa86e628",
+      "bytes": 1265825,
+      "source": "tools/generate-p7-direct.ts",
+      "role": "pilot-geometric-end-anchor"
+    },
+    {
+      "path": "assets/motions/pamela-p7-c1-left-turn-pilot-03/placement-plan.json",
+      "sha256": "a8389f0c5b588705a631102e2539a8c4079aa0e7fac16f841415fb463d5d8479",
+      "bytes": 11725,
+      "source": ".runtime/public-qa/saved-flat-plan.json",
+      "role": "frozen-pilot-placement-plan"
+    },
+    {
+      "path": "assets/motions/pamela-p7-c1-left-turn-pilot-03/source.mp4",
+      "sha256": "427a32f5ea55a64aa55b10c6e6e45f3b64fc887a22eb54f0bce06a675eb35f84",
+      "bytes": 16149774,
+      "source": "runway-task:18b11157-288a-40e7-b667-a327506ed928",
+      "role": "pending-motion-only-pilot-source"
     }
   ]
 }

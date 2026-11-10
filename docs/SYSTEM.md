@@ -77,7 +77,15 @@ P4.C2@VAR03 | TAKE(LH,BACK) > LAND(BACK) > RELEASE(LH) > RETURN(IDLE)
 
 Genererad gul/blå färg kan också vara fel trots en fysisk vändning. Bedöm först rörelsen och märk BACK/EDGE/FRONT från sammanhängande källrutor; lägg därefter lokalt kortutseende. En rosa maskhjälpsyta provas i en separat filmkandidat; hela arbetsflödet är ännu inte verifierat. Filmklassning och beslut finns endast i motions-registret.
 
+## Vad labbet skickar till genereringen
+
+Placeringsvyn visar målgeometri och avsikt. Blå/gul i editorn hjälper granskaren att skilja avsedd fram-/baksida; rosa behövs inte där. Rosa i en källfilm är en hjälp för att senare hitta och ersätta kortytan. Det avgör inte vilken fysisk sida som syns. Three.js-materialet är fortfarande ett separat prov, inte ett automatiskt filmlager.
+
+De två senaste P7-jobben använder `tools/generate-p7-direct.ts`: en fryst placeringsplan ger målkortets hörn i slutbilden. API-anropet innehåller exakt textprompt, modell/längd/format och två PNG-bilder (första/sista). Varken hela labbskärmbilden, placerings-JSON, nodkartan eller 3D-materialet skickas till Runway. Ändringar i editorn beställer inga filmer. Jobbens fulla prompt och bildhashar finns i respektive `motions`-post; själva bilderna och API-kvittot ligger i `assets/motions/<clip-id>/`.
+
 ## Återbruk och införande
+
+Den historiska 182,867-sekundersfilmen byggdes av fjorton separata 12-sekunderstagningar plus vila/bryggor. Kortversionen 146,8 sekunder trimmade hela bildrutor utan retime/blend; rörelserna skapades alltså sammanhängande per utdelning och klipptes sedan ihop. P4.C1/C2-promptarna begärde vita kort och komplett dragning–placering–släpp–tom retur, ingen uttrycklig sidvändning. Den senare tvåsidiga visningen tilldelade kortsidor efteråt; originalets fysiska sida var UNKNOWN. Det bevarade sekvens-/ankararbetet är återbrukbart, men gamla kvitton dokumenterar skarv- och maskfel och ingen produktionsacceptans. Exakta instruktioner, start/slutbilder, källfilmer, trimintervall och hashkontroller: [historiskt underlag](../evidence/historical-p4-generation-inputs.json).
 
 `materials/source/references/card-materials/new-front2/` innehåller medföljande 3D-materialreferenser; `new-front2` är en läsbar syskonreferens, inte ett runtime-beroende. Namnen Pamela/Göran i äldre material måste kopplas till verifierad filhash/proveniens innan identitet antas. Nya läsningar från gamla labbet registreras; inga gamla node_modules eller junctions importeras.
 
