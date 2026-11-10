@@ -7625,6 +7625,34 @@
       "bytes": 16269958,
       "source": "runway-task:d4281d56-7b6f-4936-9c62-b203fd20ef58",
       "role": "rejected-pilot-source"
+    },
+    {
+      "path": "assets/motions/pamela-p7-c1-left-pink-pilot-01/start.png",
+      "sha256": "373dc2b2a9b1415c22da6ef8f466690eaff676507c418d16956e922717193e73",
+      "bytes": 1193058,
+      "source": "dealer:assets/motions/pamela-p4-c2-left-closed-closed/source.mp4#frame=0",
+      "role": "pilot-start-proxy-overlay"
+    },
+    {
+      "path": "assets/motions/pamela-p7-c1-left-pink-pilot-01/end.png",
+      "sha256": "deedd1c062779f13b8430da223510195c742d437473cd43739ea9b99c07ad5e2",
+      "bytes": 1254312,
+      "source": "dealer:assets/motions/pamela-p7-c1-left-pink-pilot-01/start.png",
+      "role": "pilot-end-proxy-overlay"
+    },
+    {
+      "path": "assets/motions/pamela-p7-c1-left-pink-pilot-01/input-mask.png",
+      "sha256": "36258bfeb83d56cd1addc5af013f7f587195b4d2e98c7b76c18d9e69bd14dd85",
+      "bytes": 7050,
+      "source": "dealer:assets/motions/pamela-p7-c1-left-pink-pilot-01/start.png",
+      "role": "input-still-card-core-mask"
+    },
+    {
+      "path": "assets/motions/pamela-p7-c1-left-pink-pilot-01/source.mp4",
+      "sha256": "41ac99c50cba24781f2d4461bed91c2c6b5e13beb6b761d8d6f09d13979bf20e",
+      "bytes": 16491760,
+      "source": "runway-task:d3ddd907-b892-48b1-b96e-f289656928dc",
+      "role": "pending-motion-only-pilot-source"
     }
   ]
 }

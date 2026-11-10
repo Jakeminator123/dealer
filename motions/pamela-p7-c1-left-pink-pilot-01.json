@@ -1,0 +1,88 @@
+{
+  "schemaVersion": 1,
+  "id": "pamela-p7-c1-left-pink-pilot-01",
+  "dealer": "pamela",
+  "source": {
+    "path": "assets/motions/pamela-p7-c1-left-pink-pilot-01/source.mp4",
+    "sha256": "41ac99c50cba24781f2d4461bed91c2c6b5e13beb6b761d8d6f09d13979bf20e",
+    "provider": "Runway developer API",
+    "model": "wan3",
+    "taskId": "d3ddd907-b892-48b1-b96e-f289656928dc",
+    "width": 1764,
+    "height": 1174,
+    "fps": 30,
+    "frames": 180
+  },
+  "intent": {
+    "takeHand": "LH",
+    "releaseHand": "LH",
+    "startSide": "BACK",
+    "endSide": "FRONT",
+    "turnCount": 1,
+    "pass": false
+  },
+  "plannedTarget": {
+    "id": "P7.C1",
+    "points": [
+      {
+        "x": 1434.2886500000002,
+        "y": 920.2185000000001
+      },
+      {
+        "x": 1499.34335,
+        "y": 920.2185000000001
+      },
+      {
+        "x": 1502.9575000000002,
+        "y": 980.0415000000002
+      },
+      {
+        "x": 1430.6744999999999,
+        "y": 980.0415000000002
+      }
+    ],
+    "calibrated": false
+  },
+  "proxySurface": {
+    "requestedRgb": [
+      255,
+      0,
+      255
+    ],
+    "bothSidesSame": true,
+    "physicalSideEncodedInColor": false,
+    "observed": "Magenta with generated shading/texture, not an exact RGB mask."
+  },
+  "observed": {
+    "takeHand": "LH",
+    "releaseHand": "LH",
+    "handTransfer": false,
+    "landsNear": "P7.C1 source-image target",
+    "route": "Draws from shoe, moves inward toward centre, then moves outward to P7 before releasing.",
+    "returnsToShoe": true,
+    "physicalStartSide": "BACK",
+    "physicalEndSide": "UNKNOWN",
+    "verifiedTurnCount": null,
+    "anchorCutReady": false
+  },
+  "review": {
+    "decision": "PENDING",
+    "reviewer": "TILLBAKA-2",
+    "userApproved": false,
+    "basis": "12 overview frames, 36 hand-sequence samples and 26 closer samples from 1.0 to 3.5 seconds.",
+    "limitations": [
+      "Unrequested detour toward centre before moving to P7.",
+      "A continuous corner/hand annotation is still required to establish physical side and turn count; proxy colour does not establish either.",
+      "No final foreground/hand alpha mask, no calibrated V6/Scout placement and no verified seamless return."
+    ],
+    "evidence": [
+      ".runtime/pink-proof/overview.jpg",
+      ".runtime/pink-proof/hand.jpg",
+      ".runtime/pink-proof/turn.jpg"
+    ]
+  },
+  "placementRef": null,
+  "viewProfileId": null,
+  "scoutIntegrated": false,
+  "published": false
+}

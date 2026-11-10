@@ -10,7 +10,7 @@ Självständig arbetsyta med V6 som Jakobs valda visuella referens. Målet är t
 
 `motions/<clip-id>.json` är registrerade rörelsers statuskälla. `manifest.json` registrerar filproveniens/SHA-256; `evidence/` innehåller verifieringskvitton. Dokumenten länkar till dessa, utan egna konkurrerande statusregister.
 
-`data/library.json` är den lilla lokala filmkatalogen: två V6-referenser, ett diagnostiskt gul–gul-prov och tre avvisade P7/P6-pilotfilmer. Beslut hämtas från rörelseregistret; katalogen är ingen bank av färdiggodkända utdelningar. `placements/default.json` innehåller Jakobs placeringsutkast för 16 kortplatser; det är ännu inte kopplat till Scout/V6-utdelningen.
+`data/library.json` är den lilla filmkatalogen med V6-referenser, diagnostiskt gul–gul-prov och registrerade pilotfilmer. Beslut hämtas från rörelseregistret; katalogen är ingen bank av färdiggodkända utdelningar. `placements/default.json` innehåller Jakobs placeringsutkast för 16 kortplatser; det är ännu inte kopplat till Scout/V6-utdelningen.
 
 ## Kör lokalt
 

@@ -87,6 +87,21 @@
       "status": null,
       "motionRef": "motions/pamela-p6-c1-left-turn-pilot-01.json",
       "description": "UNDERKÄNT FÖR DENNA PLAN: modellen byter från vänster till höger hand och skapar ett tryckt kort. Avsikten var samma vänsterhand genom rörelsen. Färgerna är genererade i källfilmen, inget lokalt kortöverlägg har lagts på."
+    },
+    {
+      "id": "pamela-p7-c1-left-pink-pilot-01",
+      "title": "P7 · rosa rörelseprov · granskas",
+      "path": "assets/motions/pamela-p7-c1-left-pink-pilot-01/source.mp4",
+      "sha256": "41ac99c50cba24781f2d4461bed91c2c6b5e13beb6b761d8d6f09d13979bf20e",
+      "width": 1764,
+      "height": 1174,
+      "fps": 30,
+      "frameCount": 180,
+      "view": "source",
+      "kind": "candidate",
+      "status": null,
+      "motionRef": "motions/pamela-p7-c1-left-pink-pilot-01.json",
+      "description": "GRANSKNINGSPROV: samma vänsterhand och rosa maskhjälpsyta. Handen tar en omväg via mitten före P7. Fysisk slutsida och antal vändningar är inte verifierade; rosa betyder varken öppet eller stängt. Inte godkänt för produktion och inget färdigt kortöverlägg."
     }
   ]
 }

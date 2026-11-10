@@ -70,7 +70,7 @@ P4.C2@VAR03 | TAKE(LH,BACK) > LAND(BACK) > RELEASE(LH) > RETURN(IDLE)
 - Bevisgrund `MEASURED/OBSERVED/REPORTED/HYPOTHESIS/UNKNOWN` skiljs från beslut `PENDING/ACCEPTED/REJECTED`. Rörelse, mask/geometri, scen och Scoutanslutning bedöms separat.
 - Maskkontrakt enligt TILLBAKA-2:s senaste användarkorrigering: CLOSED RGB `[255,255,0]`, OPEN `[0,0,255]`, bakgrund `[0,0,0]`, förlustfri mask; kontur separat. MP4 är visningsmaterial, inte exakt färgmask. Författad maskfärg bevisar inte originalets kortsida.
 
-Genererad gul/blå färg kan också vara fel trots en fysisk vändning. Bedöm först rörelsen och märk BACK/EDGE/FRONT från sammanhängande källrutor; lägg därefter lokalt kortutseende. En enfärgad rosa maskhjälpsyta är ett föreslaget framtida arbetsflöde, ännu inte verifierat. Filmklassning och beslut finns endast i motions-registret.
+Genererad gul/blå färg kan också vara fel trots en fysisk vändning. Bedöm först rörelsen och märk BACK/EDGE/FRONT från sammanhängande källrutor; lägg därefter lokalt kortutseende. En rosa maskhjälpsyta provas i en separat filmkandidat; hela arbetsflödet är ännu inte verifierat. Filmklassning och beslut finns endast i motions-registret.
 
 ## Återbruk och införande
 
