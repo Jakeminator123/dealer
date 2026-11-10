@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "id": "pamela-p4-c1-deal-calm-01",
+  "dealer": "pamela",
+  "source": {
+    "path": "assets/motions/pamela-p4-c1-deal-calm-01/source.mp4",
+    "sha256": "87d82c357d9c4239b1749bb92ad6dbb595afb97ae72cea85c378ad141a4d8572",
+    "bytes": 11243574,
+    "width": 1764,
+    "height": 1174,
+    "fps": 30,
+    "frames": 120,
+    "provider": "Runway developer API",
+    "model": "wan3"
+  },
+  "motion": {
+    "kind": "DEAL",
+    "from": "READY",
+    "to": "RELEASE(P4.C1)",
+    "takeHand": "LH",
+    "releaseHand": "LH",
+    "target": "P4.C1",
+    "physicalStartSide": "BACK",
+    "physicalEndSide": "FRONT",
+    "turn": true,
+    "pass": false,
+    "basis": "SOURCE_FRAME_REVIEW",
+    "evidence": "evidence/generation-method-audit.json"
+  },
+  "review": {
+    "decision": "PENDING",
+    "basis": "Samma vänsterhand. Gult smalnar f67–70, tunn kant f71–72, blått öppnar f73–80 utan enrutershopp. Plant f96, pekfinger på hörnet f96–114, släpp f115–117. Ingen gest efter släppet.",
+    "limitations": "Landar på gamla P4-platsen, 63 px från sparad plan. En tagning.",
+    "colorDoesNotProvePhysicalSide": true,
+    "userAccepted": false,
+    "productionReady": false
+  },
+  "placementRef": {
+    "basis": "historical P4 landing",
+    "currentDraftMatched": false
+  },
+  "postProcessing": "none",
+  "generationRef": "assets/motions/pamela-p4-c1-deal-calm-01/generation.json",
+  "jobRef": "data/clip-jobs.json",
+  "scoutIntegrated": false,
+  "published": false
+}

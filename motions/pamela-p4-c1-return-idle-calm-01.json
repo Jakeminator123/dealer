@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 1,
+  "id": "pamela-p4-c1-return-idle-calm-01",
+  "dealer": "pamela",
+  "source": {
+    "path": "assets/motions/pamela-p4-c1-return-idle-calm-01/source.mp4",
+    "sha256": "800158b08a65ecd684f3b0670b54291733b59b00c6136693f114a57408af7a22",
+    "bytes": 8250855,
+    "width": 1764,
+    "height": 1174,
+    "fps": 30,
+    "frames": 90,
+    "provider": "Runway developer API",
+    "model": "wan3"
+  },
+  "motion": {
+    "kind": "RETURN",
+    "from": "RELEASE(P4.C1)",
+    "to": "IDLE",
+    "hand": "LH",
+    "target": "P4.C1",
+    "pass": false,
+    "basis": "SOURCE_FRAME_REVIEW",
+    "evidence": "evidence/generation-method-audit.json"
+  },
+  "review": {
+    "decision": "PENDING",
+    "basis": "Samma återberöring f6–18, därefter rakt tillbaka till två vilande händer vid f42, håller till slutet.",
+    "limitations": "Samma klippkrav som READY-returen. Kortet ligger på gamla P4-platsen.",
+    "colorDoesNotProvePhysicalSide": true,
+    "userAccepted": false,
+    "productionReady": false
+  },
+  "placementRef": {
+    "basis": "historical P4 landing",
+    "currentDraftMatched": false
+  },
+  "postProcessing": "none",
+  "generationRef": "assets/motions/pamela-p4-c1-return-idle-calm-01/generation.json",
+  "jobRef": "data/clip-jobs.json",
+  "scoutIntegrated": false,
+  "published": false
+}

@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "id": "pamela-p7-c1-plan-deal-02",
+  "dealer": "pamela",
+  "source": {
+    "path": "assets/motions/pamela-p7-c1-plan-deal-02/source.mp4",
+    "sha256": "118ce7372e67af42ddcf53d868859774b6da862315b7b1a12887c38ce803b344",
+    "bytes": 11017150,
+    "width": 1764,
+    "height": 1174,
+    "fps": 30,
+    "frames": 120,
+    "provider": "Runway developer API",
+    "model": "wan3"
+  },
+  "motion": {
+    "kind": "DEAL",
+    "from": "READY",
+    "to": "LAND(P7.C1)",
+    "takeHand": "LH",
+    "releaseHand": "LH",
+    "target": "P7.C1",
+    "physicalStartSide": "BACK",
+    "physicalEndSide": "FRONT",
+    "turn": true,
+    "pass": false,
+    "basis": "SOURCE_FRAME_REVIEW",
+    "evidence": "evidence/generation-method-audit.json"
+  },
+  "review": {
+    "decision": "REJECTED",
+    "basis": "Gult kort läggs ner mitt på bordet f45–57, tas upp igen f60–63 och vänds vid skon f63–66 innan det läggs på P7.",
+    "limitations": "Mellanlandning. Använd plan-deal-01 eller beställ ny tagning.",
+    "colorDoesNotProvePhysicalSide": true,
+    "userAccepted": false,
+    "productionReady": false
+  },
+  "placementRef": {
+    "path": "assets/anchors/pamela-p7-c1-plan-land-04/placement-plan.json",
+    "sha256": "406acb69c086b51d166c0eba3e6bb2ce7e19b868b63546db04aa9562da7e7058",
+    "source": "placements/default.json",
+    "plannedTarget": "P7.C1"
+  },
+  "postProcessing": "none",
+  "generationRef": "assets/motions/pamela-p7-c1-plan-deal-02/generation.json",
+  "jobRef": "data/clip-jobs.json",
+  "scoutIntegrated": false,
+  "published": false
+}

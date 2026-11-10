@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "id": "pamela-p7-c1-plan-deal-01",
+  "dealer": "pamela",
+  "source": {
+    "path": "assets/motions/pamela-p7-c1-plan-deal-01/source.mp4",
+    "sha256": "a4ad1132fd8516e36e96275242b1809b8b8a33946d912cd2f2e99625018b9e4e",
+    "bytes": 10946323,
+    "width": 1764,
+    "height": 1174,
+    "fps": 30,
+    "frames": 120,
+    "provider": "Runway developer API",
+    "model": "wan3"
+  },
+  "motion": {
+    "kind": "DEAL",
+    "from": "READY",
+    "to": "LAND(P7.C1)",
+    "takeHand": "LH",
+    "releaseHand": "LH",
+    "target": "P7.C1",
+    "physicalStartSide": "BACK",
+    "physicalEndSide": "FRONT",
+    "turn": true,
+    "pass": false,
+    "basis": "SOURCE_FRAME_REVIEW",
+    "evidence": "evidence/generation-method-audit.json"
+  },
+  "review": {
+    "decision": "PENDING",
+    "basis": "Samma vänsterhand vänder direkt vid skon: kant f40–43, blått f44–51, läggs framför skon f80–92, platt hand på kortet till slutet.",
+    "limitations": "Liten röd markering på blå framsidan. Platt hand vid nedläggning. Slutbilden hade platt målad kortyta.",
+    "colorDoesNotProvePhysicalSide": true,
+    "userAccepted": false,
+    "productionReady": false
+  },
+  "placementRef": {
+    "path": "assets/anchors/pamela-p7-c1-plan-land-03/placement-plan.json",
+    "sha256": "406acb69c086b51d166c0eba3e6bb2ce7e19b868b63546db04aa9562da7e7058",
+    "source": "placements/default.json",
+    "plannedTarget": "P7.C1"
+  },
+  "postProcessing": "none",
+  "generationRef": "assets/motions/pamela-p7-c1-plan-deal-01/generation.json",
+  "jobRef": "data/clip-jobs.json",
+  "scoutIntegrated": false,
+  "published": false
+}

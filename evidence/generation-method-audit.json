@@ -1,0 +1,685 @@
+{
+  "schemaVersion": 1,
+  "recordedAt": "2026-11-10T21:57:37.045Z",
+  "question": "Why did Runway clips in this repo look worse than clips made in the old lab on 2026-11-10 06:30–12:00 CET?",
+  "answer": "The provider, key, model (wan3), ratio and request fields were identical. The method differed: the old lab ordered one action per clip between two real video frames; this repo ordered a whole deal-and-return in one 12 s clip whose last image was the start pose with a painted card.",
+  "basis": {
+    "verified": "Archived plans, receipts, start/end images and decoded frames read on 2026-11-10; batch results below reviewed frame by frame.",
+    "inferred": "That clip structure and end-image meaning are the cause. Sampling variance is real: byte-identical inputs gave an edge passage once and a colour morph once."
+  },
+  "methodDifferences": [
+    {
+      "aspect": "Shot structure",
+      "oldLab": "Entry 2 s, deal 4 s, return 2 s, continuation 3 s",
+      "thisRepoBefore": "Take, turn, land, return and hold in one 12 s clip"
+    },
+    {
+      "aspect": "First image",
+      "oldLab": "Real decoded frame, thumb and index pinch on the shoe card; only card pixels recoloured",
+      "thisRepoBefore": "Image-generated READY2, fingers flat on the card"
+    },
+    {
+      "aspect": "Last image",
+      "oldLab": "Real release frame with the hand at the card",
+      "thisRepoBefore": "Start pose plus a painted blue quad"
+    },
+    {
+      "aspect": "Chaining",
+      "oldLab": "Returns start from an exact decoded frame of the deal",
+      "thisRepoBefore": "None"
+    },
+    {
+      "aspect": "Volume",
+      "oldLab": "62 wan3 jobs for the turn bank, roughly one third rejected",
+      "thisRepoBefore": "One job per idea, never re-ordered"
+    },
+    {
+      "aspect": "What was watched",
+      "oldLab": "Cut at release, keyed and composited",
+      "thisRepoBefore": "Raw output"
+    }
+  ],
+  "findings": [
+    {
+      "id": "return-flourish-was-prompted",
+      "evidence": "runs/20261110-pamela-goal-pilot/p4-c1-returns-02/to-redo/plan.json",
+      "statement": "The raised-hand return in the old bank was requested: the prompt says to maintain height and travel in one high arc, and the return started at deal frame 93 where the hand was already raised."
+    },
+    {
+      "id": "hover-end-wastes-the-tail",
+      "evidence": "assets/motions/pamela-p4-c1-source-turn/source.mp4 frames 78–119 against center-arc-01/p4-c1/end.png",
+      "statement": "With a hover-after-release end image the deal finishes at 2.6 s and the model fills the rest with a lift to the chest and back."
+    },
+    {
+      "id": "old-bank-lands-on-a-line",
+      "evidence": "landings below",
+      "statement": "The old bank put every player card at y 1029–1045; the saved plan is an arc. No old deal lands within 14 px of the plan; P7 is 130–143 px off."
+    },
+    {
+      "id": "covered-start-never-existed",
+      "evidence": "runs/20261110-pamela-draw-pilot-prep/PILOTBRIEF.md",
+      "statement": "The covered start (card fully inside the shoe) was ordered in the old lab and listed as missing. READY2 was an image-generated attempt and is not user accepted."
+    },
+    {
+      "id": "kling4-middle-frames",
+      "evidence": "docs.dev.runwayml.com/openapi.json read 2026-11-10",
+      "statement": "kling_4 accepts first, up to eight middle and last images on /v1/image_to_video. The earlier contract dismissed it only because audio cannot be disabled. Not tested here."
+    }
+  ],
+  "userReview20261110": {
+    "source": "Jakob in chat after viewing the local comparison page",
+    "ratings": {
+      "v6-native-reference": "4/5, beautiful and turns the card, but changes hands",
+      "pamela-sequence-17-native-r2": "2.5/5, some one-hand turns, feels unnatural, P1 and P7 land in odd places",
+      "pamela-older-14-mask-refined": "3/5, best-looking whole sequence, but no closed-to-open turn and P1/P7 placement wrong",
+      "pamela-p4-c1-source-turn": "4.5/5, nothing major except no return to READY",
+      "pamela-p7-c1-left-direct-pilot-01": "3/5, acceptable closed-to-closed material",
+      "pamela-p4-c1-palm-up-01, pamela-p4-c1-ready2-01, pamela-p1-c1-ready2-01": "odd"
+    },
+    "alsoStated": "Wants two cards to each player and two to the dealer, separate returns from each card to IDLE, and remembers the slower tempo as better."
+  },
+  "batch1": {
+    "credits": 200,
+    "jobs": [
+      "pamela-p4-c1-deal-calm-01",
+      "pamela-p4-c1-return-ready-calm-01",
+      "pamela-p4-c1-return-idle-calm-01"
+    ],
+    "observed": {
+      "pamela-p4-c1-deal-calm-01": "Same left hand. Yellow narrows f67–70, thin edge f71–72, blue opens f73–80 with no one-frame snap. Flat on the table f96, index fingertip on the corner f96–114, release f115–117. No gesture after release.",
+      "pamela-p4-c1-return-ready-calm-01": "Index fingertip re-touches the card f6–18, lifts f21–24, travels at shoe-top height with a loose fist, pinch at the shoe f54–57 and holds.",
+      "pamela-p4-c1-return-idle-calm-01": "Same re-touch f6–18, then straight back to both hands resting by f42 and holds."
+    },
+    "seams": {
+      "deal f119 → return f0": "33 pixels over threshold at quarter size, but a double touch",
+      "deal f110 → return f7": "one touch and one release; about 600 pixels over threshold"
+    },
+    "limits": "One take each. The card lands at the old P4 position, 63 px from the plan. Not user reviewed yet."
+  },
+  "landings": [
+    {
+      "target": "P1.C1",
+      "clip": "jobs/p1-back-front-keyframes-take-02",
+      "releaseFrame": 95,
+      "side": "BACK_TO_FRONT",
+      "landed": {
+        "x": 177.7,
+        "y": 1033.4,
+        "box": [
+          130,
+          998,
+          223,
+          1069
+        ]
+      },
+      "plan": {
+        "x": 218.2,
+        "y": 996.1
+      },
+      "offsetPx": {
+        "dx": 40.5,
+        "dy": -37.3,
+        "distance": 55.1
+      },
+      "blueBlobs": 1
+    },
+    {
+      "target": "P2.C1",
+      "clip": "mid-arc-02/p2-c1",
+      "releaseFrame": 108,
+      "side": "BACK_TO_FRONT",
+      "landed": {
+        "x": 456.5,
+        "y": 1039.2,
+        "box": [
+          414,
+          1004,
+          497,
+          1073
+        ]
+      },
+      "plan": {
+        "x": 440.8,
+        "y": 1020.5
+      },
+      "offsetPx": {
+        "dx": -15.7,
+        "dy": -18.7,
+        "distance": 24.4
+      },
+      "blueBlobs": 1
+    },
+    {
+      "target": "P3.C1",
+      "clip": "center-arc-01/p3-c1",
+      "releaseFrame": 45,
+      "side": "BACK_TO_FRONT",
+      "landed": null,
+      "plan": {
+        "x": 643.3,
+        "y": 1044.9
+      },
+      "offsetPx": null,
+      "blueBlobs": 0
+    },
+    {
+      "target": "P4.C1",
+      "clip": "center-arc-01/p4-c1",
+      "releaseFrame": 78,
+      "side": "BACK_TO_FRONT",
+      "landed": {
+        "x": 881.2,
+        "y": 1045.1,
+        "box": [
+          842,
+          1010,
+          919,
+          1079
+        ]
+      },
+      "plan": {
+        "x": 852.5,
+        "y": 1100.9
+      },
+      "offsetPx": {
+        "dx": -28.7,
+        "dy": 55.8,
+        "distance": 62.7
+      },
+      "blueBlobs": 1
+    },
+    {
+      "target": "P5.C1",
+      "clip": "center-arc-01/p5-c1",
+      "releaseFrame": 83,
+      "side": "BACK_TO_FRONT",
+      "landed": {
+        "x": 1092.2,
+        "y": 1043.3,
+        "box": [
+          1050,
+          1010,
+          1135,
+          1077
+        ]
+      },
+      "plan": {
+        "x": 1086.7,
+        "y": 1058.7
+      },
+      "offsetPx": {
+        "dx": -5.5,
+        "dy": 15.4,
+        "distance": 16.4
+      },
+      "blueBlobs": 1
+    },
+    {
+      "target": "P6.C1",
+      "clip": "mid-arc-02/p2-c1",
+      "releaseFrame": 36,
+      "side": "BACK_TO_FRONT",
+      "landed": null,
+      "plan": {
+        "x": 1279,
+        "y": 1028.4
+      },
+      "offsetPx": null,
+      "blueBlobs": 0
+    },
+    {
+      "target": "P7.C1",
+      "clip": "20261110-pamela-goal-pilot/p7-c1-outer-01",
+      "releaseFrame": 88,
+      "side": "BACK_TO_FRONT",
+      "landed": {
+        "x": 1585,
+        "y": 1032.4,
+        "box": [
+          1538,
+          996,
+          1633,
+          1069
+        ]
+      },
+      "plan": {
+        "x": 1467.4,
+        "y": 950.7
+      },
+      "offsetPx": {
+        "dx": -117.6,
+        "dy": -81.7,
+        "distance": 143.2
+      },
+      "blueBlobs": 1
+    },
+    {
+      "target": "P1.C2",
+      "clip": "20261110-pamela-goal-pilot/p1-c2-samehand-01",
+      "releaseFrame": 108,
+      "side": "BACK_TO_FRONT",
+      "landed": {
+        "x": 191.5,
+        "y": 1029.1,
+        "box": [
+          128,
+          990,
+          251,
+          1069
+        ]
+      },
+      "plan": {
+        "x": 250.9,
+        "y": 983.8
+      },
+      "offsetPx": {
+        "dx": 59.4,
+        "dy": -45.3,
+        "distance": 74.7
+      },
+      "blueBlobs": 1
+    },
+    {
+      "target": "P2.C2",
+      "clip": "20261110-pamela-goal-pilot/p2-c2-mid-01",
+      "releaseFrame": 42,
+      "side": "BACK_TO_FRONT",
+      "landed": {
+        "x": 456.6,
+        "y": 1039.2,
+        "box": [
+          414,
+          1004,
+          497,
+          1073
+        ]
+      },
+      "plan": {
+        "x": 475.4,
+        "y": 996.3
+      },
+      "offsetPx": {
+        "dx": 18.8,
+        "dy": -42.9,
+        "distance": 46.8
+      },
+      "blueBlobs": 1
+    },
+    {
+      "target": "P3.C2",
+      "clip": "20261110-pamela-goal-pilot/p3-c2-mid-01",
+      "releaseFrame": 121,
+      "side": "BACK_TO_FRONT",
+      "landed": {
+        "x": 682.9,
+        "y": 1038.1,
+        "box": [
+          626,
+          998,
+          737,
+          1078
+        ]
+      },
+      "plan": {
+        "x": 696.8,
+        "y": 1039.5
+      },
+      "offsetPx": {
+        "dx": 13.9,
+        "dy": 1.4,
+        "distance": 14
+      },
+      "blueBlobs": 1
+    },
+    {
+      "target": "P4.C2",
+      "clip": "20261110-pamela-goal-pilot/p4-c2-center-01",
+      "releaseFrame": 116,
+      "side": "BACK_TO_FRONT",
+      "landed": {
+        "x": 894.5,
+        "y": 1040.9,
+        "box": [
+          842,
+          998,
+          945,
+          1079
+        ]
+      },
+      "plan": {
+        "x": 894.6,
+        "y": 1091.5
+      },
+      "offsetPx": {
+        "dx": 0.1,
+        "dy": 50.6,
+        "distance": 50.6
+      },
+      "blueBlobs": 1
+    },
+    {
+      "target": "P5.C2",
+      "clip": "20261110-pamela-goal-pilot/p5-c2-center-01",
+      "releaseFrame": 113,
+      "side": "BACK_TO_FRONT",
+      "landed": {
+        "x": 1101.4,
+        "y": 1037.9,
+        "box": [
+          1052,
+          998,
+          1155,
+          1077
+        ]
+      },
+      "plan": {
+        "x": 1128.8,
+        "y": 1039.5
+      },
+      "offsetPx": {
+        "dx": 27.4,
+        "dy": 1.6,
+        "distance": 27.4
+      },
+      "blueBlobs": 1
+    },
+    {
+      "target": "P6.C2",
+      "clip": "20261110-pamela-goal-pilot/p6-c2-mid-01",
+      "releaseFrame": 88,
+      "side": "BACK_TO_FRONT",
+      "landed": {
+        "x": 1315.1,
+        "y": 1033.8,
+        "box": [
+          1264,
+          994,
+          1369,
+          1073
+        ]
+      },
+      "plan": {
+        "x": 1297.4,
+        "y": 1014.1
+      },
+      "offsetPx": {
+        "dx": -17.7,
+        "dy": -19.7,
+        "distance": 26.5
+      },
+      "blueBlobs": 1
+    },
+    {
+      "target": "P7.C2",
+      "clip": "20261110-pamela-goal-pilot/p7-c2-outer-01",
+      "releaseFrame": 116,
+      "side": "BACK_TO_FRONT",
+      "landed": {
+        "x": 1595.3,
+        "y": 1028.7,
+        "box": [
+          1540,
+          984,
+          1653,
+          1069
+        ]
+      },
+      "plan": {
+        "x": 1505.5,
+        "y": 935.4
+      },
+      "offsetPx": {
+        "dx": -89.8,
+        "dy": -93.3,
+        "distance": 129.5
+      },
+      "blueBlobs": 1
+    },
+    {
+      "target": "D.C1",
+      "clip": "jobs/p1-back-front-keyframes-take-02",
+      "releaseFrame": 37,
+      "side": "BACK_TO_FRONT",
+      "landed": null,
+      "plan": {
+        "x": 881.5,
+        "y": 926.7
+      },
+      "offsetPx": null,
+      "blueBlobs": 0
+    },
+    {
+      "target": "D.C2",
+      "clip": "20261110-pamela-goal-pilot/dealer-hole-01",
+      "releaseFrame": 54,
+      "side": "BACK_TO_BACK",
+      "landed": {
+        "x": 855.1,
+        "y": 954.6,
+        "box": [
+          788,
+          922,
+          923,
+          985
+        ]
+      },
+      "plan": {
+        "x": 929.1,
+        "y": 926.7
+      },
+      "offsetPx": {
+        "dx": 74,
+        "dy": -27.9,
+        "distance": 79.1
+      },
+      "blueBlobs": 1
+    },
+    {
+      "target": "D.C3",
+      "clip": "20261110-pamela-goal-pilot/dealer-third-01",
+      "releaseFrame": 33,
+      "side": "BACK_TO_FRONT",
+      "landed": {
+        "x": 966.3,
+        "y": 947.9,
+        "box": [
+          904,
+          918,
+          1033,
+          979
+        ]
+      },
+      "plan": null,
+      "offsetPx": null,
+      "blueBlobs": 2
+    }
+  ],
+  "landingMethod": "blue mask B>90, B>1.5R, B>1.15G at the bank release frame; largest blob not already measured",
+  "delegatedArchiveReads": {
+    "by": "read-only forensic subagent, 2026-11-10",
+    "note": "Paths as reported by the subagent; not re-hashed here.",
+    "directories": [
+      "docs/",
+      "tools/",
+      "references/",
+      "runs/20261110-pamela-goal-pilot/",
+      "runs/20261110-pamela-physical-deal-pilot/",
+      "runs/20261110-pamela-physical-turn-audit/",
+      "runs/20261110-pamela-physical-return-pilot/",
+      "runs/20261110-pamela-physical-c2-samehand-pilot/",
+      "runs/20261110-pamela-draw-pilot-prep/",
+      "runs/20261110-pamela-scene-feedback/",
+      "runs/20261110-pamela-goal-delivery/",
+      "runs/20261110-pamela-goal-scene/",
+      "runs/20261109-pamela-sequence/",
+      "runs/20261109-pamela-seat-bank/",
+      "runs/20261109-pamela-idle-pilot/",
+      "runs/20261109-pamela-continuous-idle/"
+    ],
+    "scope": "plan.json, task.json, state.json, qa.json, receipts, manifests and two contact-sheet PNGs; no .env file, no writes, no external calls"
+  },
+  "archiveReads": [
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-draw-pilot-prep/PILOTBRIEF.md",
+      "sha256": "bda1bfd5e3bfbbafe555fbda8ab3f1953e5ff4de5b46b8866933c692263e150a",
+      "bytes": 6192,
+      "purpose": "Why the anchor changed: the covered start was ordered but never existed"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p7-c1-outer-01/plan.json",
+      "sha256": "c7d51aba7a69d9334a94171b005680ef10bd3db69c6e62052e0ce34bbed0f5f9",
+      "bytes": 4784,
+      "purpose": "Spot check of the one-hand pinch job: wan3, 4 s, first/last"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p7-c1-outer-01/start.png",
+      "sha256": "a2fc6d3565ca711015c9b547671bf33e97eea4c2281e75841690f8848b422f45",
+      "bytes": 1179028,
+      "purpose": "Old READY anchor viewed: real frame with thumb and index pinch"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p7-c1-outer-01/end.png",
+      "sha256": "27dbe51a353d3b5c008b23b1eb710e202c0711cf0937cab4024fd1354bdf9c09",
+      "bytes": 1375380,
+      "purpose": "Old end anchor viewed: real release frame"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p7-c1-outer-01/geometry.json",
+      "sha256": "890f097cef1b955b9b6fea177a333dd971da365a999caa6f31cf015cc0b01716",
+      "bytes": 5354,
+      "purpose": "Provenance of the old end anchor (white bank frame 188)"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p7-c1-outer-01/original.mp4",
+      "sha256": "e46ad3be0c88e140191b979aafd91ac28d5f5d61beb038e3e37ce82a7fbd4831",
+      "bytes": 11242012,
+      "purpose": "Candidate P7 base frames; rejected, release 130 px from the plan"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p4-c1-returns-02/to-redo/plan.json",
+      "sha256": "f1950bcc17b03da6030d6a55a246d6a994921f3577a097cdd4ebbcaa09ccfe34",
+      "bytes": 4982,
+      "purpose": "Old return prompt requests the high arc"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p4-c1-returns-02/direct/plan.json",
+      "sha256": "46b863dd02bfa7c6fcefdff65fa07a822fe312a84e0cc23c816e24ba6034b67b",
+      "bytes": 4968,
+      "purpose": "Old direct return prompt"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p4-c1-returns-01/to-redo/plan.json",
+      "sha256": "2647fb7448122e0a359299d9cf1a589322bb19eb2fe5452669523a2310c43f2c",
+      "bytes": 4065,
+      "purpose": "Provenance of the READY-with-card end image"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p4-c1-returns-01/to-redo/end.png",
+      "sha256": "ada31e674a37d6f4925df39a108c5738d6cff9064e27b6420ad09d0032d325b0",
+      "bytes": 1185996,
+      "purpose": "Submitted as last image of pamela-p4-c1-return-ready-calm-01"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p4-c1-returns-01/direct/end.png",
+      "sha256": "b9560b7992e018e8d0110a3bf58db95ee90c91cd8ef77c70f2e73323d51c24e7",
+      "bytes": 1689411,
+      "purpose": "Submitted as last image of pamela-p4-c1-return-idle-calm-01"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/center-arc-01/p4-c1/end.png",
+      "sha256": "c30be996971282c737825a9439e3d303728086c391d8bbb14a67a8fc826e784b",
+      "bytes": 1315858,
+      "purpose": "End anchor of the 4.5/5 clip compared with its last frame"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/center-arc-01/p4-c1/original.mp4",
+      "sha256": "4153a54702edd316744ae39a64d7b6094e5bcdcd2020a1852850a4c3a9aaa1fe",
+      "bytes": 11359929,
+      "purpose": "Byte identity with assets/motions/pamela-p4-c1-source-turn/source.mp4"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/direct-bank-03/bank.json",
+      "sha256": "4fa9c49e20f9c246576b3bd2642154e743617a7003073e703f06a78b56a32116",
+      "bytes": 132840,
+      "purpose": "Deal clip and release frame per target for the landing measurement"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-physical-deal-pilot/jobs/p1-back-front-keyframes-take-02/original.mp4",
+      "sha256": "678965c828751b080edd9c1c50d9a73e4bb649226c12ca4a92b5c7cae71c65d9",
+      "bytes": 11520157,
+      "purpose": "Frame 92 is the base of anchor pamela-p1-c1-plan-land-02"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/mid-arc-02/p2-c1/original.mp4",
+      "sha256": "ef48d5f3c2053c27e30563c98d95881d7afe563863bd85a920359a3ab24acc3c",
+      "bytes": 17296086,
+      "purpose": "Release frame decoded to measure where the old bank landed its card"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/center-arc-01/p3-c1/original.mp4",
+      "sha256": "7bd0d4d5e3e04307bc4738d6111ad08ff24546acd7ca92d1c73ba28d3097332e",
+      "bytes": 11410351,
+      "purpose": "Release frame decoded to measure where the old bank landed its card"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/center-arc-01/p5-c1/original.mp4",
+      "sha256": "f8b3d4859562a88c1261e50f86bd560939001169cc17d45340eeec36a4dc2b0d",
+      "bytes": 11138043,
+      "purpose": "Release frame decoded to measure where the old bank landed its card"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p1-c2-samehand-01/original.mp4",
+      "sha256": "4c1f804146e2a689a2ee2715befe5aa47fd51e3a9089fcbbf0d38bc79999bff5",
+      "bytes": 11469073,
+      "purpose": "Release frame decoded to measure where the old bank landed its card"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p2-c2-mid-01/original.mp4",
+      "sha256": "f6f9a8776ca9ef151148e2b04b11e3d61171e72bc7eb599be128c21b5d3cf0f6",
+      "bytes": 16508068,
+      "purpose": "Release frame decoded to measure where the old bank landed its card"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p3-c2-mid-01/original.mp4",
+      "sha256": "6474b8d6381f9efacff0928634f4f581e8eff7ce66ea6b7c02674a41e461c775",
+      "bytes": 16557059,
+      "purpose": "Release frame decoded to measure where the old bank landed its card"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p4-c2-center-01/original.mp4",
+      "sha256": "e3b38f89eb6cb14f8dc240c5fdecce814850bb87285ebe540084c33af82b2ad7",
+      "bytes": 11206879,
+      "purpose": "Release frame decoded to measure where the old bank landed its card"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p5-c2-center-01/original.mp4",
+      "sha256": "b1c85daa3703734b3a077ed71da5569d44e269952e85e7860ae3e8fc6e89efc7",
+      "bytes": 16279946,
+      "purpose": "Release frame decoded to measure where the old bank landed its card"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p6-c2-mid-01/original.mp4",
+      "sha256": "e6b82a321d7b51d4e25b9e4c06fd81c815dba1684828314040f53d708c20bb9d",
+      "bytes": 13784510,
+      "purpose": "Release frame decoded to measure where the old bank landed its card"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p7-c2-outer-01/original.mp4",
+      "sha256": "3ae8f41929fa6a01a3190c780307788e60f50242ecbe49f9e763171f866a0919",
+      "bytes": 11533987,
+      "purpose": "Release frame decoded to measure where the old bank landed its card"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/dealer-hole-01/original.mp4",
+      "sha256": "a41abd43d64f6c7daefc026b7ea2022d6bb39bda99a221d8d0da6d456e36fe39",
+      "bytes": 16165894,
+      "purpose": "Release frame decoded to measure where the old bank landed its card"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/dealer-third-01/original.mp4",
+      "sha256": "58ad446e06c28c4e0c78c48ea39ba96cc00428e12566e4192cdd6c72afd96aac",
+      "bytes": 13656939,
+      "purpose": "Release frame decoded to measure where the old bank landed its card"
+    }
+  ]
+}

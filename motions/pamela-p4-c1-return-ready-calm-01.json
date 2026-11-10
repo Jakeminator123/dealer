@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 1,
+  "id": "pamela-p4-c1-return-ready-calm-01",
+  "dealer": "pamela",
+  "source": {
+    "path": "assets/motions/pamela-p4-c1-return-ready-calm-01/source.mp4",
+    "sha256": "413d993b3e16c69246e443159d469d7bd19a6c99e73813fccc7be5fd6f9b5b33",
+    "bytes": 8377226,
+    "width": 1764,
+    "height": 1174,
+    "fps": 30,
+    "frames": 90,
+    "provider": "Runway developer API",
+    "model": "wan3"
+  },
+  "motion": {
+    "kind": "RETURN",
+    "from": "RELEASE(P4.C1)",
+    "to": "READY",
+    "hand": "LH",
+    "target": "P4.C1",
+    "pass": false,
+    "basis": "SOURCE_FRAME_REVIEW",
+    "evidence": "evidence/generation-method-audit.json"
+  },
+  "review": {
+    "decision": "PENDING",
+    "basis": "Pekfingret rör kortet igen f6–18, lyfter f21–24, går i höjd med skons överkant med lös näve, nyp vid skon f54–57 och håller. Ingen höjd över bröstet.",
+    "limitations": "Återberöringen kräver klipp mot givens f110 eller ny retur som startar med fingret på kortet. Kortet ligger på gamla P4-platsen.",
+    "colorDoesNotProvePhysicalSide": true,
+    "userAccepted": false,
+    "productionReady": false
+  },
+  "placementRef": {
+    "basis": "historical P4 landing",
+    "currentDraftMatched": false
+  },
+  "postProcessing": "none",
+  "generationRef": "assets/motions/pamela-p4-c1-return-ready-calm-01/generation.json",
+  "jobRef": "data/clip-jobs.json",
+  "scoutIntegrated": false,
+  "published": false
+}

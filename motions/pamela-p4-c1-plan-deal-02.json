@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "id": "pamela-p4-c1-plan-deal-02",
+  "dealer": "pamela",
+  "source": {
+    "path": "assets/motions/pamela-p4-c1-plan-deal-02/source.mp4",
+    "sha256": "68aa306dbe34a85b500a0147c2b481f4bd08717e146807f0d82bb9e51e4227df",
+    "bytes": 11309153,
+    "width": 1764,
+    "height": 1174,
+    "fps": 30,
+    "frames": 120,
+    "provider": "Runway developer API",
+    "model": "wan3"
+  },
+  "motion": {
+    "kind": "DEAL",
+    "from": "READY",
+    "to": "RELEASE(P4.C1)",
+    "takeHand": "LH",
+    "releaseHand": "LH",
+    "target": "P4.C1",
+    "physicalStartSide": "BACK",
+    "physicalEndSide": "FRONT",
+    "turn": true,
+    "pass": false,
+    "basis": "SOURCE_FRAME_REVIEW",
+    "evidence": "evidence/generation-method-audit.json"
+  },
+  "review": {
+    "decision": "PENDING",
+    "basis": "Samma vänsterhand. Gult smalnar f46–51, tunn kant f52–54, enfärgad blå framsida från f55. Plant på planens plats f93, pekfinger på hörnet f93–111, släpp f114–117.",
+    "limitations": "En tagning. Retur från denna given är inte beställd.",
+    "colorDoesNotProvePhysicalSide": true,
+    "userAccepted": false,
+    "productionReady": false
+  },
+  "placementRef": {
+    "path": "assets/anchors/pamela-p4-c1-plan-hover-03/placement-plan.json",
+    "sha256": "406acb69c086b51d166c0eba3e6bb2ce7e19b868b63546db04aa9562da7e7058",
+    "source": "placements/default.json",
+    "plannedTarget": "P4.C1"
+  },
+  "postProcessing": "none",
+  "generationRef": "assets/motions/pamela-p4-c1-plan-deal-02/generation.json",
+  "jobRef": "data/clip-jobs.json",
+  "scoutIntegrated": false,
+  "published": false
+}

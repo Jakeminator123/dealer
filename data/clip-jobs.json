@@ -1,0 +1,457 @@
+{
+  "schemaVersion": 1,
+  "budget": {
+    "maximumCredits": 1000
+  },
+  "anchors": [
+    {
+      "id": "pamela-p4-c1-plan-hover-02",
+      "purpose": "End image for a P4.C1 deal at the saved plan position. Real hover frame just after release from the calm deal; only the card moves 63 px to the planned quad.",
+      "base": {
+        "frame": {
+          "video": "assets/motions/pamela-p4-c1-deal-calm-01/source.mp4",
+          "videoSha256": "87d82c357d9c4239b1749bb92ad6dbb595afb97ae72cea85c378ad141a4d8572",
+          "index": 119
+        }
+      },
+      "erase": [
+        "blue"
+      ],
+      "paint": [
+        {
+          "target": "P4.C1",
+          "side": "FRONT"
+        }
+      ],
+      "plan": {
+        "path": "placements/default.json",
+        "sha256": "406acb69c086b51d166c0eba3e6bb2ce7e19b868b63546db04aa9562da7e7058"
+      }
+    },
+    {
+      "id": "pamela-p1-c1-plan-land-02",
+      "purpose": "End image for a P1.C1 deal at the saved plan position. Real landing frame from the old P1 deal: the index fingertip already rests where the plan puts the card, so only the card moves 55 px under it.",
+      "base": {
+        "frame": {
+          "video": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-physical-deal-pilot/jobs/p1-back-front-keyframes-take-02/original.mp4",
+          "videoSha256": "678965c828751b080edd9c1c50d9a73e4bb649226c12ca4a92b5c7cae71c65d9",
+          "index": 92
+        }
+      },
+      "erase": [
+        "blue"
+      ],
+      "paint": [
+        {
+          "target": "P1.C1",
+          "side": "FRONT"
+        }
+      ],
+      "plan": {
+        "path": "placements/default.json",
+        "sha256": "406acb69c086b51d166c0eba3e6bb2ce7e19b868b63546db04aa9562da7e7058"
+      }
+    },
+    {
+      "id": "pamela-p7-c1-plan-land-03",
+      "purpose": "End image for a P7.C1 deal at the saved plan position. Real landing frame from the earlier P7 direct trial, whose hand already lies at the planned spot. Its pink table cards are removed, the planned blue quad is painted, and the shoe window is restored from a real frame with the seated yellow card.",
+      "base": {
+        "frame": {
+          "video": "assets/motions/pamela-p7-c1-left-direct-pilot-01/source.mp4",
+          "videoSha256": "fd956e2537d100c9596366816c595e24caf1ab542451f788c426e7d4d3bf5809",
+          "index": 112
+        }
+      },
+      "erase": [
+        "magenta"
+      ],
+      "restore": [
+        {
+          "what": "shoe window with the seated yellow card",
+          "box": [
+            1180,
+            700,
+            1420,
+            900
+          ],
+          "plate": {
+            "frame": {
+              "video": "assets/motions/pamela-p4-c1-deal-calm-01/source.mp4",
+              "videoSha256": "87d82c357d9c4239b1749bb92ad6dbb595afb97ae72cea85c378ad141a4d8572",
+              "index": 119
+            }
+          }
+        }
+      ],
+      "paint": [
+        {
+          "target": "P7.C1",
+          "side": "FRONT"
+        }
+      ],
+      "plan": {
+        "path": "placements/default.json",
+        "sha256": "406acb69c086b51d166c0eba3e6bb2ce7e19b868b63546db04aa9562da7e7058"
+      }
+    },
+    {
+      "id": "pamela-p4-c1-plan-hover-03",
+      "purpose": "End image for a P4.C1 deal at the saved plan position. Real hover frame just after release from the calm deal; only the card moves 63 px to the planned quad. The planned card is the real rendered blue card from the calm deal, warped onto the planned quad, because a flat painted quad made the model invent a printed face.",
+      "base": {
+        "frame": {
+          "video": "assets/motions/pamela-p4-c1-deal-calm-01/source.mp4",
+          "videoSha256": "87d82c357d9c4239b1749bb92ad6dbb595afb97ae72cea85c378ad141a4d8572",
+          "index": 119
+        }
+      },
+      "erase": [
+        "blue"
+      ],
+      "paint": [
+        {
+          "target": "P4.C1",
+          "side": "FRONT"
+        }
+      ],
+      "plan": {
+        "path": "placements/default.json",
+        "sha256": "406acb69c086b51d166c0eba3e6bb2ce7e19b868b63546db04aa9562da7e7058"
+      },
+      "cardTexture": {
+        "frame": {
+          "video": "assets/motions/pamela-p4-c1-deal-calm-01/source.mp4",
+          "videoSha256": "87d82c357d9c4239b1749bb92ad6dbb595afb97ae72cea85c378ad141a4d8572",
+          "index": 119
+        }
+      }
+    },
+    {
+      "id": "pamela-p1-c1-plan-land-03",
+      "purpose": "End image for a P1.C1 deal at the saved plan position. Real landing frame from the old P1 deal: the index fingertip already rests where the plan puts the card, so only the card moves 55 px under it. The planned card is the real rendered blue card from the calm deal, warped onto the planned quad, because a flat painted quad made the model invent a printed face.",
+      "base": {
+        "frame": {
+          "video": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-physical-deal-pilot/jobs/p1-back-front-keyframes-take-02/original.mp4",
+          "videoSha256": "678965c828751b080edd9c1c50d9a73e4bb649226c12ca4a92b5c7cae71c65d9",
+          "index": 92
+        }
+      },
+      "erase": [
+        "blue"
+      ],
+      "paint": [
+        {
+          "target": "P1.C1",
+          "side": "FRONT"
+        }
+      ],
+      "plan": {
+        "path": "placements/default.json",
+        "sha256": "406acb69c086b51d166c0eba3e6bb2ce7e19b868b63546db04aa9562da7e7058"
+      },
+      "cardTexture": {
+        "frame": {
+          "video": "assets/motions/pamela-p4-c1-deal-calm-01/source.mp4",
+          "videoSha256": "87d82c357d9c4239b1749bb92ad6dbb595afb97ae72cea85c378ad141a4d8572",
+          "index": 119
+        }
+      }
+    },
+    {
+      "id": "pamela-p7-c1-plan-land-04",
+      "purpose": "End image for a P7.C1 deal at the saved plan position. Real landing frame from the earlier P7 direct trial, whose hand already lies at the planned spot. Its pink table cards are removed, the planned blue quad is painted, and the shoe window is restored from a real frame with the seated yellow card. The planned card is the real rendered blue card from the calm deal, warped onto the planned quad, because a flat painted quad made the model invent a printed face.",
+      "base": {
+        "frame": {
+          "video": "assets/motions/pamela-p7-c1-left-direct-pilot-01/source.mp4",
+          "videoSha256": "fd956e2537d100c9596366816c595e24caf1ab542451f788c426e7d4d3bf5809",
+          "index": 112
+        }
+      },
+      "erase": [
+        "magenta"
+      ],
+      "restore": [
+        {
+          "what": "shoe window with the seated yellow card",
+          "box": [
+            1180,
+            700,
+            1420,
+            900
+          ],
+          "plate": {
+            "frame": {
+              "video": "assets/motions/pamela-p4-c1-deal-calm-01/source.mp4",
+              "videoSha256": "87d82c357d9c4239b1749bb92ad6dbb595afb97ae72cea85c378ad141a4d8572",
+              "index": 119
+            }
+          }
+        }
+      ],
+      "paint": [
+        {
+          "target": "P7.C1",
+          "side": "FRONT"
+        }
+      ],
+      "plan": {
+        "path": "placements/default.json",
+        "sha256": "406acb69c086b51d166c0eba3e6bb2ce7e19b868b63546db04aa9562da7e7058"
+      },
+      "cardTexture": {
+        "frame": {
+          "video": "assets/motions/pamela-p4-c1-deal-calm-01/source.mp4",
+          "videoSha256": "87d82c357d9c4239b1749bb92ad6dbb595afb97ae72cea85c378ad141a4d8572",
+          "index": 119
+        }
+      }
+    }
+  ],
+  "jobs": [
+    {
+      "id": "pamela-p4-c1-return-ready-calm-01",
+      "kind": "RETURN",
+      "target": "P4.C1",
+      "from": "RELEASE(P4.C1)",
+      "to": "READY",
+      "model": "wan3",
+      "duration": 3,
+      "ratio": "auto_1080p",
+      "audio": false,
+      "promptText": "Locked camera on the same Pamela, black suit, green felt and fixed shoe. One blue card lies flat and still on the table in front of her. Her empty left hand has just released it and hovers low beside the card. In one calm, unhurried movement the hand glides low over the table straight toward the shoe on the right, staying below chest height the whole way, fingers relaxed and naturally curved. It arrives gently at the yellow card in the shoe and settles into the exact grip of the last image, thumb and index finger on the top edge of the yellow card. Her eyes follow the hand to the shoe. The other hand rests on the table throughout. The blue card stays flat and untouched. The yellow card stays fully seated in the shoe. No raised hand, fist, flourish, pause, recontact, extraction, handoff, camera motion or cut.",
+      "first": {
+        "frame": {
+          "video": "assets/motions/pamela-p4-c1-source-turn/source.mp4",
+          "videoSha256": "4153a54702edd316744ae39a64d7b6094e5bcdcd2020a1852850a4c3a9aaa1fe",
+          "index": 80
+        },
+        "note": "Real release frame of the accepted-quality P4.C1 deal: fingertips have just left the card, hand still low. The old lab started returns at f093 where the hand was already raised."
+      },
+      "last": {
+        "file": {
+          "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p4-c1-returns-01/to-redo/end.png",
+          "sha256": "ada31e674a37d6f4925df39a108c5738d6cff9064e27b6420ad09d0032d325b0"
+        },
+        "note": "Old lab READY anchor: pinch grip at the shoe with the landed P4.C1 card kept on the table."
+      },
+      "purpose": "Give the 4.5/5 P4.C1 deal its missing low, calm return to READY. Changed against the old return: start frame at the release instead of the raised hand, a low direct path instead of the requested high arc, 3 s instead of 2 s."
+    },
+    {
+      "id": "pamela-p4-c1-return-idle-calm-01",
+      "kind": "RETURN",
+      "target": "P4.C1",
+      "from": "RELEASE(P4.C1)",
+      "to": "IDLE",
+      "model": "wan3",
+      "duration": 3,
+      "ratio": "auto_1080p",
+      "audio": false,
+      "promptText": "Locked camera on the same Pamela, black suit, green felt and fixed shoe. One blue card lies flat and still on the table in front of her. Her empty left hand has just released it and hovers low beside the card. In one calm, unhurried movement she draws the hand low and straight back toward herself and lays it flat on the table in front of her, matching the last image: both hands resting side by side, shoulders level, upright posture. As the hand settles she lifts her head and looks into the camera with a slight friendly smile. The other hand rests on the table throughout. The blue card stays flat and untouched. The yellow card stays fully seated in the shoe. No raised hand, fist, flourish, reach toward the shoe, recontact, extra card, camera motion or cut.",
+      "first": {
+        "frame": {
+          "video": "assets/motions/pamela-p4-c1-source-turn/source.mp4",
+          "videoSha256": "4153a54702edd316744ae39a64d7b6094e5bcdcd2020a1852850a4c3a9aaa1fe",
+          "index": 80
+        },
+        "note": "Same real release frame as the READY return, so both returns share one cut point."
+      },
+      "last": {
+        "file": {
+          "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p4-c1-returns-01/direct/end.png",
+          "sha256": "b9560b7992e018e8d0110a3bf58db95ee90c91cd8ef77c70f2e73323d51c24e7"
+        },
+        "note": "Old lab IDLE anchor: both hands resting, eyes to camera, landed P4.C1 card kept on the table."
+      },
+      "purpose": "Separate return from the P4.C1 release straight to IDLE, as requested for every card."
+    },
+    {
+      "id": "pamela-p4-c1-deal-calm-01",
+      "kind": "DEAL",
+      "target": "P4.C1",
+      "from": "READY",
+      "to": "RELEASE(P4.C1)",
+      "model": "wan3",
+      "duration": 4,
+      "ratio": "auto_1080p",
+      "audio": false,
+      "promptText": "Same Pamela, black suit, green felt and fixed shoe in one locked wide shot. One continuous, calm and unhurried four-second deal directly in front, centred in the image. From the exact first pose her left hand removes one card, broad yellow back visible, and carries it low over the table. During the reach roll that same wrist once: yellow visibly narrows to a thin pale edge and the opposite blue face opens fully before table contact. The colours stay on opposite surfaces of the same physical card. Lay the card down gently at the exact blue footprint and angle in the last image. The clip ends at the moment of release: her fingertips have just left the card and the hand hovers low beside it, exactly as in the last image. The other hand rests. The next yellow card stays in the shoe. No slide, second touch, display gesture, handoff, second flip, colour swap, camera motion or cut.",
+      "first": {
+        "file": {
+          "path": "assets/motions/pamela-p4-c1-color-control-01/start.png",
+          "sha256": "a2fc6d3565ca711015c9b547671bf33e97eea4c2281e75841690f8848b422f45"
+        },
+        "note": "Proven READY anchor: real video frame with thumb and index pinch on the yellow card. Same start as the 4.5/5 clip."
+      },
+      "last": {
+        "frame": {
+          "video": "assets/motions/pamela-p4-c1-source-turn/source.mp4",
+          "videoSha256": "4153a54702edd316744ae39a64d7b6094e5bcdcd2020a1852850a4c3a9aaa1fe",
+          "index": 80
+        },
+        "note": "End AT the release instead of the old hover pose. The old end made the model finish the deal in 2.6 s and fill the rest with a raised-hand gesture."
+      },
+      "purpose": "Test the calmer tempo: same proven start and turn wording as the 4.5/5 clip, but the whole four seconds are spent on take, turn and land. Its last frame equals the first frame of both returns."
+    },
+    {
+      "id": "pamela-p4-c1-plan-deal-01",
+      "kind": "DEAL",
+      "target": "P4.C1",
+      "from": "READY",
+      "to": "RELEASE(P4.C1)",
+      "model": "wan3",
+      "duration": 4,
+      "ratio": "auto_1080p",
+      "audio": false,
+      "promptText": "Same Pamela, black suit, green felt and fixed shoe in one locked wide shot. One continuous, calm and unhurried four-second deal directly in front, centred in the image. From the exact first pose her left hand removes one card, broad yellow back visible, and carries it low over the table. During the reach roll that same wrist once: yellow visibly narrows to a thin pale edge and the opposite blue face opens fully before table contact. The colours stay on opposite surfaces of the same physical card. Lay the card down gently at the exact blue footprint and angle in the last image. The clip ends at the moment of release: her fingertips have just left the card and the hand hovers low beside it, exactly as in the last image. The other hand rests. The next yellow card stays in the shoe. No slide, second touch, display gesture, handoff, second flip, colour swap, camera motion or cut.",
+      "first": {
+        "file": {
+          "path": "assets/motions/pamela-p4-c1-color-control-01/start.png",
+          "sha256": "a2fc6d3565ca711015c9b547671bf33e97eea4c2281e75841690f8848b422f45"
+        },
+        "note": "Proven READY anchor: real video frame with thumb and index pinch on the yellow card."
+      },
+      "last": {
+        "file": {
+          "path": "assets/anchors/pamela-p4-c1-plan-hover-02/anchor.png",
+          "sha256": "c6a9b86d38f506903a04decbc1c30f3b9dff1396652dcc3b24c85a5d90e9f46f"
+        },
+        "note": "Real hover frame after release; only the card moved to the saved plan position for P4.C1."
+      },
+      "purpose": "Same wording and start as the calm deal that worked; the only change is the end image, where the card lies at the saved plan position (63 px from the old landing)."
+    },
+    {
+      "id": "pamela-p1-c1-plan-deal-01",
+      "kind": "DEAL",
+      "target": "P1.C1",
+      "from": "READY",
+      "to": "LAND(P1.C1)",
+      "model": "wan3",
+      "duration": 4,
+      "ratio": "auto_1080p",
+      "audio": false,
+      "promptText": "Locked camera. Same Pamela, black suit, green felt and fixed shoe. One continuous, calm and unhurried four-second deal to the far left of the image. From the exact first pose her left hand removes one card from the shoe, broad yellow back visible, and carries it low across the table in front of her to the far-left position of the last image. While carrying it she rolls that same wrist once: yellow visibly narrows to a thin pale edge and the opposite blue face opens fully before table contact. Yellow and blue stay on opposite surfaces of the same rigid card. She lays the blue-face-up card flat on the exact blue footprint of the last image and the clip ends there, her fingertips still resting lightly on the card as in the last image. The other hand rests throughout. The next yellow card stays in the shoe. No slide, second touch, display gesture, handoff, second flip, colour swap, camera motion or cut.",
+      "first": {
+        "file": {
+          "path": "assets/motions/pamela-p4-c1-color-control-01/start.png",
+          "sha256": "a2fc6d3565ca711015c9b547671bf33e97eea4c2281e75841690f8848b422f45"
+        },
+        "note": "Same proven READY anchor for every seat."
+      },
+      "last": {
+        "file": {
+          "path": "assets/anchors/pamela-p1-c1-plan-land-02/anchor.png",
+          "sha256": "60d039d79083704c44b10e5a7e414ee13c20a74354964f5c302992edbc076fcb"
+        },
+        "note": "Real landing frame from the old P1 deal with the fingertip resting on the card; only the card moved 55 px to the saved plan position."
+      },
+      "purpose": "First P1.C1 deal to the saved plan position. Ends at the landing with the fingertip on the card, so the later return can start from this clip's own last frame."
+    },
+    {
+      "id": "pamela-p7-c1-plan-deal-01",
+      "kind": "DEAL",
+      "target": "P7.C1",
+      "from": "READY",
+      "to": "LAND(P7.C1)",
+      "model": "wan3",
+      "duration": 4,
+      "ratio": "auto_1080p",
+      "audio": false,
+      "promptText": "Locked camera on the same Pamela, black suit, green felt and fixed shoe. One continuous, calm and unhurried four-second deal to the right side of the image, just in front of the shoe. Her left hand pinches one card at the shoe as in the first image, with its broad yellow back visible. As the same hand carries it out and down toward the table, she rolls the wrist through one deliberate half turn. The yellow face narrows to a thin pale edge, the edge is clearly visible, and the opposite blue face opens wider before reaching the table. Yellow and blue stay on opposite fixed surfaces. She lays the card flat on the exact angled blue footprint of the last image and the clip ends there, her fingertips still resting lightly on the card as in the last image. The other hand rests throughout. The next yellow card stays seated in the shoe. Keep the shoe in its place. No other deal, handoff, second flip, colour swap, intermediate landing, push, camera motion or cut.",
+      "first": {
+        "file": {
+          "path": "assets/motions/pamela-p4-c1-color-control-01/start.png",
+          "sha256": "a2fc6d3565ca711015c9b547671bf33e97eea4c2281e75841690f8848b422f45"
+        },
+        "note": "Same proven READY anchor for every seat."
+      },
+      "last": {
+        "file": {
+          "path": "assets/anchors/pamela-p7-c1-plan-land-03/anchor.png",
+          "sha256": "8339c144b544c6d172db58f57842c5977cdb62cbebf7d183571e55d4f1e69cd8"
+        },
+        "note": "Real landing frame from the earlier P7 trial, hand already at the saved plan position; old pink cards removed, planned blue quad painted, shoe window restored from a real frame."
+      },
+      "purpose": "First P7.C1 deal to the saved plan position, 143 px closer to the shoe than the old bank. Turn wording follows the old one-hand pinch clip."
+    },
+    {
+      "id": "pamela-p4-c1-plan-deal-02",
+      "kind": "DEAL",
+      "target": "P4.C1",
+      "from": "READY",
+      "to": "RELEASE(P4.C1)",
+      "model": "wan3",
+      "duration": 4,
+      "ratio": "auto_1080p",
+      "audio": false,
+      "promptText": "Same Pamela, black suit, green felt and fixed shoe in one locked wide shot. One continuous, calm and unhurried four-second deal directly in front, centred in the image. From the exact first pose her left hand removes one card, broad yellow back visible, and carries it low over the table. During the reach roll that same wrist once: yellow visibly narrows to a thin pale edge and the opposite blue face opens fully before table contact. The colours stay on opposite surfaces of the same physical card. Lay the card down gently at the exact blue footprint and angle in the last image. The clip ends at the moment of release: her fingertips have just left the card and the hand hovers low beside it, exactly as in the last image. Both faces of the card are blank: one plain solid yellow, the other plain solid blue, with no print, pips, pattern or picture. The other hand rests. The next yellow card stays in the shoe. No slide, second touch, display gesture, handoff, second flip, colour swap, camera motion or cut.",
+      "first": {
+        "file": {
+          "path": "assets/motions/pamela-p4-c1-color-control-01/start.png",
+          "sha256": "a2fc6d3565ca711015c9b547671bf33e97eea4c2281e75841690f8848b422f45"
+        },
+        "note": "Proven READY anchor: real video frame with thumb and index pinch on the yellow card."
+      },
+      "last": {
+        "file": {
+          "path": "assets/anchors/pamela-p4-c1-plan-hover-03/anchor.png",
+          "sha256": "37df22ef5c2ce7becedbe9bdf9f9b76d5312f2ebd7270d0ad6d2e33a97b95a07"
+        },
+        "note": "Real hover frame after release; only the card moved to the saved plan position for P4.C1. Card pixels are real rendered card pixels, not a flat fill."
+      },
+      "purpose": "Retake of pamela-p4-c1-plan-deal-01, whose turn was physical but whose face came out printed. Changed: real card pixels in the end image and one sentence stating that both faces are blank."
+    },
+    {
+      "id": "pamela-p1-c1-plan-deal-02",
+      "kind": "DEAL",
+      "target": "P1.C1",
+      "from": "READY",
+      "to": "LAND(P1.C1)",
+      "model": "wan3",
+      "duration": 4,
+      "ratio": "auto_1080p",
+      "audio": false,
+      "promptText": "Locked camera. Same Pamela, black suit, green felt and fixed shoe. One continuous, calm and unhurried four-second deal to the far left of the image. From the exact first pose her left hand removes one card from the shoe, broad yellow back visible, and carries it low across the table in front of her to the far-left position of the last image. While carrying it she rolls that same wrist once: yellow visibly narrows to a thin pale edge and the opposite blue face opens fully before table contact. Yellow and blue stay on opposite surfaces of the same rigid card. She lays the blue-face-up card flat on the exact blue footprint of the last image and the clip ends there, her fingertips still resting lightly on the card as in the last image. Both faces of the card are blank: one plain solid yellow, the other plain solid blue, with no print, pips, pattern or picture. The other hand rests throughout. The next yellow card stays in the shoe. No slide, second touch, display gesture, handoff, second flip, colour swap, camera motion or cut.",
+      "first": {
+        "file": {
+          "path": "assets/motions/pamela-p4-c1-color-control-01/start.png",
+          "sha256": "a2fc6d3565ca711015c9b547671bf33e97eea4c2281e75841690f8848b422f45"
+        },
+        "note": "Same proven READY anchor for every seat."
+      },
+      "last": {
+        "file": {
+          "path": "assets/anchors/pamela-p1-c1-plan-land-03/anchor.png",
+          "sha256": "b39254843185292bc6de4d7598bd6c9fc8e63aa6c5cf0d2556fd03e6cb1a92dd"
+        },
+        "note": "Real landing frame from the old P1 deal with the fingertip resting on the card; only the card moved 55 px to the saved plan position. Card pixels are real rendered card pixels, not a flat fill."
+      },
+      "purpose": "Retake of pamela-p1-c1-plan-deal-01, whose turn was physical but whose face came out printed. Changed: real card pixels in the end image and one sentence stating that both faces are blank."
+    },
+    {
+      "id": "pamela-p7-c1-plan-deal-02",
+      "kind": "DEAL",
+      "target": "P7.C1",
+      "from": "READY",
+      "to": "LAND(P7.C1)",
+      "model": "wan3",
+      "duration": 4,
+      "ratio": "auto_1080p",
+      "audio": false,
+      "promptText": "Locked camera on the same Pamela, black suit, green felt and fixed shoe. One continuous, calm and unhurried four-second deal to the right side of the image, just in front of the shoe. Her left hand pinches one card at the shoe as in the first image, with its broad yellow back visible. As the same hand carries it out and down toward the table, she rolls the wrist through one deliberate half turn. The yellow face narrows to a thin pale edge, the edge is clearly visible, and the opposite blue face opens wider before reaching the table. Yellow and blue stay on opposite fixed surfaces. She lays the card flat on the exact angled blue footprint of the last image and the clip ends there, her fingertips still resting lightly on the card as in the last image. Both faces of the card are blank: one plain solid yellow, the other plain solid blue, with no print, pips, pattern or picture. The other hand rests throughout. The next yellow card stays seated in the shoe. Keep the shoe in its place. No other deal, handoff, second flip, colour swap, intermediate landing, push, camera motion or cut.",
+      "first": {
+        "file": {
+          "path": "assets/motions/pamela-p4-c1-color-control-01/start.png",
+          "sha256": "a2fc6d3565ca711015c9b547671bf33e97eea4c2281e75841690f8848b422f45"
+        },
+        "note": "Same proven READY anchor for every seat."
+      },
+      "last": {
+        "file": {
+          "path": "assets/anchors/pamela-p7-c1-plan-land-04/anchor.png",
+          "sha256": "d7eeb71a7224492de3115a5241a54b7d1351944ba22dfa5aeebd07e8d9b67e6d"
+        },
+        "note": "Real landing frame from the earlier P7 trial, hand already at the saved plan position; old pink cards removed, planned blue quad painted, shoe window restored from a real frame. Card pixels are real rendered card pixels, not a flat fill."
+      },
+      "purpose": "Retake of pamela-p7-c1-plan-deal-01, whose turn was physical but whose face came out printed. Changed: real card pixels in the end image and one sentence stating that both faces are blank."
+    }
+  ]
+}
