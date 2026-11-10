@@ -77,7 +77,13 @@ for (const item of library.items) {
 await emit('data/public-library.json', JSON.stringify(library));
 // Exact submitted images/prompt are review material, not API credentials.
 const generationReview = JSON.parse(await readFile('data/p4-generation-review.json', 'utf8'));
-for (const input of [generationReview.jobs[0].start, generationReview.jobs[0].end,...(generationReview.palmExperiment?[generationReview.palmExperiment.start,generationReview.palmExperiment.end]:[])]) await copy(input.path, input.path, input.sha256);
+const copiedInputs = new Map<string, string>();
+for (const input of [generationReview.jobs[0].start, generationReview.jobs[0].end,...(generationReview.palmExperiment?[generationReview.palmExperiment.start,generationReview.palmExperiment.end]:[]),...(generationReview.ready2Experiments??[]).flatMap((job: any)=>[job.start,job.end]),...(generationReview.anchorStudy?[generationReview.anchorStudy.start,generationReview.anchorStudy.turn]:[])]) {
+  if (!/^[a-f0-9]{64}$/.test(input.sha256)) throw Error('Missing or invalid review image hash.');
+  const previous = copiedInputs.get(input.path);
+  if (previous && previous !== input.sha256) throw Error(`Conflicting review image hashes: ${input.path}`);
+  if (!previous) { await copy(input.path, input.path, input.sha256); copiedInputs.set(input.path, input.sha256); }
+}
 await copy('data/p4-generation-review.json');
 let generationHtml = await readFile('generation.html', 'utf8');
 generationHtml = generationHtml.replace('<script type="module" src="preview-ui.js"></script>', '');

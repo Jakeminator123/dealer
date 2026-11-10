@@ -30,6 +30,104 @@
       "motionRef": null
     },
     {
+      "id": "pamela-p4-c1-ready2-01",
+      "title": "READY 2 · P4.C1 · vändning, vitt bord",
+      "path": "assets/motions/pamela-p4-c1-ready2-01/source.mp4",
+      "sha256": "dabcde3588ca9626491ef1a3a179bdae4aefa7a4b6f3f054861031ba348649b6",
+      "width": 1764,
+      "height": 1174,
+      "fps": 30,
+      "frameCount": 360,
+      "view": "source",
+      "kind": "candidate",
+      "status": null,
+      "motionRef": "motions/pamela-p4-c1-ready2-01.json",
+      "description": "Samma vänsterhand drar ut kortet och visar gul sida → tunn kant → blå sida före landning. Släpp f255, tom retur omkring f288–297. Slutcentrum cirka 0,77 px från mål. Bordet blir vitt under större delen av filmen och rörelsen tar längre tid än promptens delmål. Sekundärt rörelseprov; inte färdigt produktionsmaterial.",
+      "chapters": [
+        {
+          "label": "READY 2",
+          "frame": 0
+        },
+        {
+          "label": "Utdrag",
+          "frame": 75
+        },
+        {
+          "label": "Kortkant",
+          "frame": 150
+        },
+        {
+          "label": "Blå sida",
+          "frame": 171
+        },
+        {
+          "label": "Landning",
+          "frame": 222
+        },
+        {
+          "label": "Släppt",
+          "frame": 255
+        },
+        {
+          "label": "Tillbaka READY",
+          "frame": 300
+        },
+        {
+          "label": "Slut",
+          "frame": 359
+        }
+      ]
+    },
+    {
+      "id": "pamela-p1-c1-ready2-01",
+      "title": "READY 2 · P1.C1 · vändning och retur",
+      "path": "assets/motions/pamela-p1-c1-ready2-01/source.mp4",
+      "sha256": "692500d39f8dcd0d36a61185dc0f6679611fffb66100729c18b8650e796acf00",
+      "width": 1764,
+      "height": 1174,
+      "fps": 30,
+      "frameCount": 360,
+      "view": "source",
+      "kind": "candidate",
+      "status": null,
+      "motionRef": "motions/pamela-p1-c1-ready2-01.json",
+      "description": "Samma vänsterhand drar ut kortet: gul yta f140–151 → kant f152–153 → blå framsida f154–169. Släpp senast f255, tom retur före f330. Slutcentrum cirka 0,69 px från mål. Gröna bordet bevaras, men nästa kort i skon blir tillfälligt vitt och promptens delmål är sena. Kandidat för granskning; inte godkänd för produktion.",
+      "chapters": [
+        {
+          "label": "READY 2",
+          "frame": 0
+        },
+        {
+          "label": "Utdrag",
+          "frame": 75
+        },
+        {
+          "label": "Kortkant",
+          "frame": 153
+        },
+        {
+          "label": "Blå sida",
+          "frame": 169
+        },
+        {
+          "label": "Landning",
+          "frame": 210
+        },
+        {
+          "label": "Släppt",
+          "frame": 255
+        },
+        {
+          "label": "Tillbaka READY",
+          "frame": 330
+        },
+        {
+          "label": "Slut",
+          "frame": 359
+        }
+      ]
+    },
+    {
       "id": "pamela-p4-c1-palm-up-01",
       "title": "P4.C1 · nytt WAN · vändning, släpp ovanifrån",
       "path": "assets/motions/pamela-p4-c1-palm-up-01/source.mp4",

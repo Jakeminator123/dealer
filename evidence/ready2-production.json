@@ -1,0 +1,95 @@
+{
+  "schemaVersion": 1,
+  "recordedAt": "2026-11-10T20:54:13.040Z",
+  "purpose": "The two explicitly requested READY2 to P4.C1 and P1.C1 trials; no automatic retries.",
+  "estimatedCreditsTotal": 480,
+  "postProcessing": "none",
+  "jobs": [
+    {
+      "id": "pamela-p4-c1-ready2-01",
+      "target": "P4.C1",
+      "taskId": "f3bed7bd-7557-439b-aa6d-166840f6ef3d",
+      "model": "wan3",
+      "requestedAt": "2026-11-10T20:49:47.363Z",
+      "completedAt": "2026-11-10T20:54:02.289Z",
+      "durationRequested": 12,
+      "estimatedCredits": 240,
+      "start": {
+        "path": "assets/motions/pamela-p4-c1-shoe-contact-01/ready-02.png",
+        "sha256": "8309fdadbbced3b72d84053232f8cddda8080e9df7674d76873d436935de3eb7",
+        "position": "first"
+      },
+      "end": {
+        "path": "assets/motions/pamela-p4-c1-ready2-01/end.png",
+        "sha256": "54ca6bda789f987b1cdbf95ca826b91953ddb4306e8b345f66da903f008dd06f",
+        "position": "last"
+      },
+      "placementRef": {
+        "path": "assets/motions/pamela-p4-c1-ready2-01/placement-plan.json",
+        "sha256": "406acb69c086b51d166c0eba3e6bb2ce7e19b868b63546db04aa9562da7e7058",
+        "source": "placements/default.json",
+        "updatedAt": "2026-11-10T19:31:41.273Z",
+        "plannedTarget": "P4.C1"
+      },
+      "output": {
+        "path": "assets/motions/pamela-p4-c1-ready2-01/source.mp4",
+        "sha256": "dabcde3588ca9626491ef1a3a179bdae4aefa7a4b6f3f054861031ba348649b6",
+        "bytes": 29006387,
+        "width": 1764,
+        "height": 1174,
+        "fps": 30,
+        "frames": 360,
+        "provider": "Runway developer API",
+        "model": "wan3"
+      },
+      "acceptance": "SECONDARY",
+      "exactInputs": "data/p4-generation-review.json",
+      "visualReview": "evidence/ready2-p4-visual-review.json",
+      "reviewSummary": "Samma vänsterhand drar ut kortet och visar gul sida → tunn kant → blå sida före landning. Släpp f255, tom retur omkring f288–297. Slutcentrum cirka 0,77 px från mål. Bordet blir vitt under större delen av filmen och rörelsen tar längre tid än promptens delmål. Sekundärt rörelseprov; inte färdigt produktionsmaterial.",
+      "productionReady": false
+    },
+    {
+      "id": "pamela-p1-c1-ready2-01",
+      "target": "P1.C1",
+      "taskId": "6b60f198-3f20-4889-8abd-26d23e2ccbe5",
+      "model": "wan3",
+      "requestedAt": "2026-11-10T20:49:49.628Z",
+      "completedAt": "2026-11-10T20:54:02.484Z",
+      "durationRequested": 12,
+      "estimatedCredits": 240,
+      "start": {
+        "path": "assets/motions/pamela-p4-c1-shoe-contact-01/ready-02.png",
+        "sha256": "8309fdadbbced3b72d84053232f8cddda8080e9df7674d76873d436935de3eb7",
+        "position": "first"
+      },
+      "end": {
+        "path": "assets/motions/pamela-p1-c1-ready2-01/end.png",
+        "sha256": "a7231c1cfb84461a48f13ad4e8c0442fc747492dc09fabc2ead140af01edc668",
+        "position": "last"
+      },
+      "placementRef": {
+        "path": "assets/motions/pamela-p1-c1-ready2-01/placement-plan.json",
+        "sha256": "406acb69c086b51d166c0eba3e6bb2ce7e19b868b63546db04aa9562da7e7058",
+        "source": "placements/default.json",
+        "updatedAt": "2026-11-10T19:31:41.273Z",
+        "plannedTarget": "P1.C1"
+      },
+      "output": {
+        "path": "assets/motions/pamela-p1-c1-ready2-01/source.mp4",
+        "sha256": "692500d39f8dcd0d36a61185dc0f6679611fffb66100729c18b8650e796acf00",
+        "bytes": 33312874,
+        "width": 1764,
+        "height": 1174,
+        "fps": 30,
+        "frames": 360,
+        "provider": "Runway developer API",
+        "model": "wan3"
+      },
+      "acceptance": "PENDING",
+      "exactInputs": "data/p4-generation-review.json",
+      "visualReview": "evidence/ready2-p1-visual-review.json",
+      "reviewSummary": "Samma vänsterhand drar ut kortet: gul yta f140–151 → kant f152–153 → blå framsida f154–169. Släpp senast f255, tom retur före f330. Slutcentrum cirka 0,69 px från mål. Gröna bordet bevaras, men nästa kort i skon blir tillfälligt vitt och promptens delmål är sena. Kandidat för granskning; inte godkänd för produktion.",
+      "productionReady": false
+    }
+  ]
+}

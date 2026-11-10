@@ -1,0 +1,192 @@
+{
+  "schemaVersion": 1,
+  "reviewedAtUtc": "2026-11-10T20:55:43.812Z",
+  "clipId": "pamela-p1-c1-ready2-01",
+  "target": "P1.C1",
+  "source": {
+    "path": "assets/motions/pamela-p1-c1-ready2-01/source.mp4",
+    "sha256": "692500d39f8dcd0d36a61185dc0f6679611fffb66100729c18b8650e796acf00",
+    "generationReceipt": "assets/motions/pamela-p1-c1-ready2-01/generation.json",
+    "generationReceiptSha256": "dd77fb1e228500445d8017ab1ab9a1b48a912fbfcb678e9879593b7e9ff2dd94",
+    "width": 1764,
+    "height": 1174,
+    "fps": 30,
+    "frames": 360,
+    "durationSeconds": 12,
+    "frameNumbering": "zero-based, inclusive intervals"
+  },
+  "frozenInputs": {
+    "startSha256": "8309fdadbbced3b72d84053232f8cddda8080e9df7674d76873d436935de3eb7",
+    "endSha256": "a7231c1cfb84461a48f13ad4e8c0442fc747492dc09fabc2ead140af01edc668",
+    "planPath": "assets/motions/pamela-p1-c1-ready2-01/placement-plan.json",
+    "planSha256": "406acb69c086b51d166c0eba3e6bb2ce7e19b868b63546db04aa9562da7e7058",
+    "basis": "Input identity and requested geometry read from generation.json; no active-plan substitution.",
+    "intendedAction": "Anatomical LH draws yellow BACK from low shoe outlet, turns once to blue FRONT before P1.C1 contact, releases, returns empty to READY2."
+  },
+  "conclusion": {
+    "physicalTurn": "SUPPORTED",
+    "sameLeftHand": "SUPPORTED_IN_EXAMINED_FRAMES",
+    "broadSurfaceColorMorph": "NOT_OBSERVED_AT_TURN",
+    "fullRequestedContract": "NOT_MET",
+    "reason": "The card narrows through an edge and opens blue in the same LH. Timing is late and the next shoe surface becomes cream/white before returning yellow.",
+    "productionAcceptance": "PENDING_USER_REVIEW; this evidence does not modify motion/library decisions."
+  },
+  "observations": [
+    {
+      "phase": "draw",
+      "frames": [
+        45,
+        90
+      ],
+      "result": "LH finger pads slide the yellow card down the ramp and through the low front opening. At f90 the card is fully clear and still broad yellow.",
+      "confidenceBoundary": "Observed f45,60,75,90; exact first-clear frame not determined."
+    },
+    {
+      "phase": "grip transition",
+      "frames": [
+        105,
+        120
+      ],
+      "result": "The same anatomical LH lifts the card and changes from pressing the back to an edge pinch. The RH remains resting. No hand transfer is visible."
+    },
+    {
+      "phase": "physical turn",
+      "frames": [
+        140,
+        169
+      ],
+      "result": "Consecutive frames: yellow plane narrows f140-151, pale/narrow edge f152-153, blue opposite plane emerges and widens f154-169. Card silhouette and finger orientation change together.",
+      "assessment": "A genuine visible plane rotation is supported, unlike a broad-yellow to broad-blue swap. One turn is observed. No fold/crease is visible.",
+      "confidenceBoundary": "Minor contour curvature and exact hidden thumb contact cannot be resolved as physically perfect from these images."
+    },
+    {
+      "phase": "reach and landing",
+      "frames": [
+        180,
+        240
+      ],
+      "result": "The same LH reaches across to screen-left/P1 with blue already visible. f180 is still airborne; the card is lowered near the surface by f195 and lies at the target by f210. Fingers remain in contact at f240.",
+      "firstContactBound": [
+        181,
+        210
+      ],
+      "timing": "The requested placement by 6.0s/f180 is missed.",
+      "confidenceBoundary": "The exact contact frame is not measured; f195 tip/shadow is ambiguous. A small touchdown adjustment cannot be excluded."
+    },
+    {
+      "phase": "release",
+      "frames": [
+        241,
+        255
+      ],
+      "result": "Contact remains at sampled f240; f255 shows clear finger separation and the blue card left on the table.",
+      "timing": "Release is bounded to 8.03-8.50s, rather than completion by 6s."
+    },
+    {
+      "phase": "empty return",
+      "frames": [
+        255,
+        330
+      ],
+      "result": "LH is visibly empty at f255 and f270, returns to the outlet by f300, and resembles READY2 with a yellow shoe card by f330. f359 retains that state.",
+      "timing": "The requested READY2 by 9.0s/f270 is missed; at f270 the hand is still returning.",
+      "confidenceBoundary": "Return completion is bounded by sampled f300-330; no frame-exact completion time."
+    },
+    {
+      "phase": "table and next shoe card",
+      "frames": [
+        75,
+        359
+      ],
+      "result": "The next surface at the shoe is cream/white in sampled f75-300, then yellow at f330 and f359. This breaks the explicit instruction that the next shoe card stays yellow. The dealt blue card remains present at f255,270,300,330,359.",
+      "confidenceBoundary": "No dense sampling was added around the shoe recoloring; its exact transition is bounded to f301-330."
+    }
+  ],
+  "finalPlacement": {
+    "frame": 359,
+    "requestedSubmittedPolygon": [
+      {
+        "x": 218.6799039805181,
+        "y": 976.1998659309478
+      },
+      {
+        "x": 272.2849041427109,
+        "y": 976.1998659309478
+      },
+      {
+        "x": 220.185419167032,
+        "y": 1016.0390546871914
+      },
+      {
+        "x": 161.7667251398249,
+        "y": 1016.0390546871914
+      }
+    ],
+    "measuredBlueBounds": {
+      "left": 165,
+      "right": 266,
+      "top": 977,
+      "bottom": 1015
+    },
+    "measuredBluePixels": 2028,
+    "measuredBlueCentroid": {
+      "x": 217.1740631163708,
+      "y": 996.2278106508876
+    },
+    "requestedPolygonCentroid": {
+      "x": 217.83887903005208,
+      "y": 996.4047774167442
+    },
+    "centroidDifferencePixels": 0.6879661585438798,
+    "method": "Threshold B>140, R<100, G<145, B>1.4*G inside x100..349,y920..1079 of decoded final frame. Polygon centroid uses the submitted points in generation.json.",
+    "assessment": "Final center closely matches the frozen target, about 0.7px by this threshold. This is not pixel-identical contour acceptance; white border, compression and threshold exclude edge pixels."
+  },
+  "method": {
+    "independentlyDecoded": true,
+    "uniqueFramesExamined": 48,
+    "continuousTurnFrames": [
+      140,
+      169
+    ],
+    "otherExaminedFrames": [
+      0,
+      30,
+      45,
+      60,
+      75,
+      90,
+      105,
+      120,
+      180,
+      195,
+      210,
+      225,
+      240,
+      255,
+      270,
+      300,
+      330,
+      359
+    ],
+    "contactSheets": [
+      ".runtime/ready2-p1-review/overview-30f.png",
+      ".runtime/ready2-p1-review/extraction-45-120.png",
+      ".runtime/ready2-p1-review/turn-locator.png",
+      ".runtime/ready2-p1-review/turn-dense-140-169.png",
+      ".runtime/ready2-p1-review/landing-return.png"
+    ],
+    "finalFrame": ".runtime/ready2-p1-review/frame-359.png",
+    "ffmpegThreadsMaximumPerProcess": 2,
+    "filters": "Decode, optional crop, frame labels, scale and tile only; no motion/color alteration of the source.",
+    "boundary": "Dense sampling only around the turn. No real-time playback, audio review, full-frame temporal comparison or exact contour/contact tracking was performed."
+  },
+  "actions": {
+    "originalHashRechecked": true,
+    "originalOrRegistryModified": false,
+    "generationCalls": 0,
+    "networkCalls": 0,
+    "uiCalls": 0,
+    "retainedArtifacts": "Review contact sheets and final frame under .runtime/ready2-p1-review.",
+    "runningHelpersRemaining": 0
+  }
+}

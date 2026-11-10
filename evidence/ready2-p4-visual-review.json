@@ -1,0 +1,95 @@
+{
+  "schemaVersion": 1,
+  "id": "pamela-p4-c1-ready2-01",
+  "reviewScope": "Independent local source review; no original, registry, generation, UI or publication changes.",
+  "decision": "USEFUL_TURN_AND_RELEASE_WITH_FULL_SHOT_DEVIATIONS",
+  "userAcceptance": "NOT_INFERRED",
+  "source": {
+    "path": "assets/motions/pamela-p4-c1-ready2-01/source.mp4",
+    "sha256": "dabcde3588ca9626491ef1a3a179bdae4aefa7a4b6f3f054861031ba348649b6",
+    "bytes": 29006387,
+    "width": 1764,
+    "height": 1174,
+    "fps": 30,
+    "frames": 360,
+    "durationSeconds": 12,
+    "frameIndexing": "Zero-based; time = frame / 30."
+  },
+  "inputsVerified": {
+    "generationReceiptSha256AtRead": "c1eefe02ed663c5f125805102e1bb56ab35e01912eded7736f222b72be352c06",
+    "startPath": "assets/motions/pamela-p4-c1-shoe-contact-01/ready-02.png",
+    "startSha256": "8309fdadbbced3b72d84053232f8cddda8080e9df7674d76873d436935de3eb7",
+    "endPath": "assets/motions/pamela-p4-c1-ready2-01/end.png",
+    "endSha256": "54ca6bda789f987b1cdbf95ca826b91953ddb4306e8b345f66da903f008dd06f",
+    "planPath": "assets/motions/pamela-p4-c1-ready2-01/placement-plan.json",
+    "planSha256": "406acb69c086b51d166c0eba3e6bb2ce7e19b868b63546db04aa9562da7e7058",
+    "allThreeInputHashesMatchReceipt": true,
+    "intent": "Same anatomical LH: low shoe extraction, yellow BACK through thin edge to blue FRONT, P4.C1 landing by 6 seconds, full release and empty READY2 return by 9 seconds. No palm-up-only placement requirement in this prompt."
+  },
+  "observations": [
+    {
+      "phase": "Extraction",
+      "frames": [40, 100],
+      "finding": "Screen-right anatomical LH slides the yellow card down and out through the low front opening. It appears fully clear at f90, then lifts during f95-f100. The next yellow shoe card remains. Multiple finger pads overlap the back; exact pressure and two-finger exclusivity cannot be determined."
+    },
+    {
+      "phase": "Turn",
+      "frames": [99, 180],
+      "finding": "Broad yellow f99-f111 narrows through f120-f123. A sustained near-edge silhouette is visible f126-f160; the opposite surface expands f162-f167 and is broad blue by f168-f171, before target landing. Wrist/grip orientation changes with the silhouette. This supports an actual side change rather than the prior broad-face instantaneous colour replacement. No hand transfer observed. The long near-static edge hold is visually conspicuous.",
+      "uncertainty": "Exact 180-degree angle, strict corner identity and every intervening frame are not certified. Colour alone is not the basis for this conclusion."
+    },
+    {
+      "phase": "Landing and contact",
+      "frames": [192, 254],
+      "finding": "LH lowers the blue card f192-f222, with the back of the hand toward camera and fingertips over its face. The card becomes flat around f222 and remains held through f254. This top contact is not itself a violation of the current prompt.",
+      "uncertainty": "First table contact lies within the lowering interval and is not resolved exactly. Some forward settling/translation is visible before f222; its division into airborne lowering versus table sliding cannot be certified from these samples."
+    },
+    {
+      "phase": "Release and return",
+      "frames": [252, 359],
+      "finding": "Dense f252-f258 inspection shows last visible fingertip overlap at f254 and first clear separation at f255 (8.50 s). The visibly empty LH returns toward the shoe, still travelling at f270 (9.00 s), contacting the READY area by f288-f297 (9.60-9.90 s), and holds at sampled f300-f359. Other hand remains on the table. No second card removal or hand transfer observed.",
+      "uncertainty": "Release boundary is a visible overlap/separation judgement, approximately +/-1 frame, not a force/contact sensor measurement."
+    }
+  ],
+  "deviations": [
+    {
+      "type": "SCENE_APPEARANCE",
+      "finding": "Green tabletop in f0 changes to a pale/white tabletop at sampled f15-f345 and returns green at f359. This is a major scene-consistency deviation from the submitted green anchors. Exact transition endpoints were not densely reviewed."
+    },
+    {
+      "type": "TIMING",
+      "finding": "At f180 (6.00 s) the blue card is visibly airborne; placement-by-6s is not met. At f270 (9.00 s) the empty hand is still returning; READY2-by-9s is not met."
+    }
+  ],
+  "finalGeometry": {
+    "method": "Blue pixel core in native pixels; ROI x700..1049,y900..1173; B>100, B>1.5R, B>1.2G, R<80. No reconstruction of occluded borders.",
+    "endAnchorCore": {
+      "pixels": 3908,
+      "centroid": [851.9483111566018, 1101.0040941658137],
+      "boundsInclusive": [817, 1072, 887, 1129]
+    },
+    "sourceFrame359Core": {
+      "pixels": 3736,
+      "centroid": [852.6581905781585, 1100.6978051391864],
+      "boundsInclusive": [818, 1072, 887, 1128]
+    },
+    "centroidErrorPixels": 0.7731376080504906,
+    "intersectionPixels": 3712,
+    "unionPixels": 3932,
+    "intersectionOverUnion": 0.9440488301119023,
+    "postRelease": "Sampled f258,270,300,330,359 remain at the target; no material post-release slide observed. Thresholded contour agreement is not exact polygon equality."
+  },
+  "inspection": {
+    "overviewFrames": [0, 15, 30, 45, 60, 75, 90, 105, 120, 135, 150, 165, 180, 195, 210, 225, 240, 255, 270, 285, 300, 315, 330, 345, 359],
+    "extractionDetailFrames": [40, 50, 60, 70, 80, 90, 95, 100],
+    "turnDetail": "f99..186 every 3 frames; additional every frame f156..171.",
+    "landingDetailFrames": [192, 198, 204, 210, 216, 222, 228, 234, 240, 246, 252, 255, 258, 261, 264, 267, 270, 279, 288, 297],
+    "releaseDetailFrames": [252, 253, 254, 255, 256, 257, 258],
+    "savedContactSheets": [
+      ".runtime/ready2-p4-review/overview.jpg",
+      ".runtime/ready2-p4-review/turn.jpg",
+      ".runtime/ready2-p4-review/landing.jpg"
+    ],
+    "codecWorkers": "One synchronous FFmpeg process at a time; decoder and output thread limits each 1. No persistent helper or frame bank."
+  }
+}

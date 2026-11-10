@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "createdAt": "2026-11-10T20:19:11.120Z",
-  "purpose": "Exact submitted inputs. The two older controls use historic geometry; the palm experiment uses its frozen placement snapshot.",
-  "imageTransport": "The displayed PNG bytes were embedded as data:image/png;base64 in promptImage; this review names files and hashes instead of repeating base64.",
+  "createdAt": "2026-11-10T20:58:00.097Z",
+  "purpose": "Exact prepared or submitted inputs. The two older controls use historic geometry; the palm and READY2 experiments use their own frozen placement snapshots. The optional anchor study is an unsubmitted image-only experiment.",
+  "imageTransport": "Submitted PNG bytes were embedded as data:image/png;base64 in promptImage; this review names files and hashes instead of repeating base64.",
   "colorConvention": {
     "yellow": "BACK/closed",
     "blue": "FRONT/open",
@@ -221,6 +221,278 @@
       "bytes": 16434162
     },
     "reviewSummary": "Vändningsfas med smal kantf94–112 och blå motsidaf113–116. Samma LH. Nedläggning sker med handrygg upp och fingrar ovanpåf132–155; fri frånf156, handflata upp förstcirka166. Bevaras som alternativ; beställd underhandsnedläggning är inte uppfylld."
+  },
+  "ready2Experiments": [
+    {
+      "schemaVersion": 1,
+      "id": "pamela-p4-c1-ready2-01",
+      "target": "P4.C1",
+      "createdAt": "2026-11-10T20:49:31.273Z",
+      "status": "SUCCEEDED",
+      "provider": "Runway developer API",
+      "endpoint": "/v1/image_to_video",
+      "model": "wan3",
+      "duration": 12,
+      "ratio": "auto_1080p",
+      "audio": false,
+      "estimatedCredits": 240,
+      "promptText": "One continuous 12-second shot, locked camera. Preserve Pamela, green studio, shoe, framing and scale. Start in READY2. Her anatomical LEFT hand (screen right) uses index and middle finger pads to slide ONE rigid card DOWN the shoe ramp and OUT through its LOW FRONT opening, yellow back visible. Pull it fully clear before lifting. With the SAME LEFT HAND, adjust to a thumb-and-finger edge grip and turn the entire card over ONCE during the reach: broad yellow narrows to a thin pale edge, then the opposite blue face opens UP before any table contact. Keep the card flat, not folded. Reach straight forward to the central foreground. By 6s place it exactly at the sole blue card footprint in LAST (centre 48.35% from left, 93.85% from top). Release all fingers and leave the blue card motionless. Return the visibly EMPTY left hand to READY2 by 9s; hold through 12s. The other hand rests and the next shoe card stays yellow. No hand transfer, colour morph, extra turn, sliding the placed card or removing it.",
+      "start": {
+        "path": "assets/motions/pamela-p4-c1-shoe-contact-01/ready-02.png",
+        "sha256": "8309fdadbbced3b72d84053232f8cddda8080e9df7674d76873d436935de3eb7",
+        "position": "first"
+      },
+      "end": {
+        "path": "assets/motions/pamela-p4-c1-ready2-01/end.png",
+        "sha256": "54ca6bda789f987b1cdbf95ca826b91953ddb4306e8b345f66da903f008dd06f",
+        "position": "last"
+      },
+      "placementRef": {
+        "path": "assets/motions/pamela-p4-c1-ready2-01/placement-plan.json",
+        "sha256": "406acb69c086b51d166c0eba3e6bb2ce7e19b868b63546db04aa9562da7e7058",
+        "source": "placements/default.json",
+        "updatedAt": "2026-11-10T19:31:41.273Z",
+        "plannedTarget": "P4.C1"
+      },
+      "landing": {
+        "nativePoints": [
+          {
+            "x": 819.0040710931385,
+            "y": 1070.9600990974113
+          },
+          {
+            "x": 883.9849710931385,
+            "y": 1070.9600990974113
+          },
+          {
+            "x": 887.5950210931385,
+            "y": 1130.7830990974114
+          },
+          {
+            "x": 815.3940210931385,
+            "y": 1130.7830990974114
+          }
+        ],
+        "submittedPoints": [
+          {
+            "x": 819.9342290387298,
+            "y": 1070.9600990974113
+          },
+          {
+            "x": 884.9889290387297,
+            "y": 1070.9600990974113
+          },
+          {
+            "x": 888.6030790387298,
+            "y": 1130.7830990974114
+          },
+          {
+            "x": 816.3200790387298,
+            "y": 1130.7830990974114
+          }
+        ],
+        "coordinateMapping": "native x*(1764-1)/(1762-1); y unchanged",
+        "endAnchorMethod": "Immutable READY2 plus plan-owned blue card polygon only",
+        "changedPixels": 4381,
+        "bounds": {
+          "left": 813,
+          "right": 892,
+          "top": 1067,
+          "bottom": 1134
+        }
+      },
+      "physicalIntent": {
+        "takeHand": "LH",
+        "releaseHand": "LH",
+        "startSide": "BACK",
+        "endSide": "FRONT",
+        "turnCount": 1,
+        "pass": false,
+        "returnToShoe": true
+      },
+      "v6VideoSubmitted": false,
+      "referenceVideoSubmitted": false,
+      "intermediateImageSubmitted": false,
+      "reviewDecision": "SECONDARY",
+      "requestedAt": "2026-11-10T20:49:47.363Z",
+      "taskId": "f3bed7bd-7557-439b-aa6d-166840f6ef3d",
+      "lastCheckedAt": "2026-11-10T20:54:02.289Z",
+      "completedAt": "2026-11-10T20:54:02.289Z",
+      "output": {
+        "path": "assets/motions/pamela-p4-c1-ready2-01/source.mp4",
+        "sha256": "dabcde3588ca9626491ef1a3a179bdae4aefa7a4b6f3f054861031ba348649b6",
+        "bytes": 29006387,
+        "width": 1764,
+        "height": 1174,
+        "fps": 30,
+        "frames": 360,
+        "provider": "Runway developer API",
+        "model": "wan3"
+      },
+      "reviewSummary": "Samma vänsterhand drar ut kortet och visar gul sida → tunn kant → blå sida före landning. Släpp f255, tom retur omkring f288–297. Slutcentrum cirka 0,77 px från mål. Bordet blir vitt under större delen av filmen och rörelsen tar längre tid än promptens delmål. Sekundärt rörelseprov; inte färdigt produktionsmaterial.",
+      "visualReview": "evidence/ready2-p4-visual-review.json",
+      "anchorSemantics": {
+        "first": "READY2 before extraction",
+        "last": "READY2 after empty-hand return, with dealt card remaining at target",
+        "intermediateLandingImageSubmitted": false
+      }
+    },
+    {
+      "schemaVersion": 1,
+      "id": "pamela-p1-c1-ready2-01",
+      "target": "P1.C1",
+      "createdAt": "2026-11-10T20:49:32.183Z",
+      "status": "SUCCEEDED",
+      "provider": "Runway developer API",
+      "endpoint": "/v1/image_to_video",
+      "model": "wan3",
+      "duration": 12,
+      "ratio": "auto_1080p",
+      "audio": false,
+      "estimatedCredits": 240,
+      "promptText": "One continuous 12-second shot, locked camera. Preserve Pamela, green studio, shoe, framing and scale. Start in READY2. Her anatomical LEFT hand (screen right) uses index and middle finger pads to slide ONE rigid card DOWN the shoe ramp and OUT through its LOW FRONT opening, yellow back visible. Pull it fully clear before lifting. With the SAME LEFT HAND, adjust to a thumb-and-finger edge grip and turn the entire card over ONCE during the reach: broad yellow narrows to a thin pale edge, then the opposite blue face opens UP before any table contact. Keep the card flat, not folded. Reach across her body to the far LEFT foreground, leaning naturally without changing hands. By 6s place it exactly at the sole blue card footprint in LAST (centre 12.38% from left, 84.92% from top). Release all fingers and leave the blue card motionless. Return the visibly EMPTY left hand to READY2 by 9s; hold through 12s. The other hand rests and the next shoe card stays yellow. No hand transfer, colour morph, extra turn, sliding the placed card or removing it.",
+      "start": {
+        "path": "assets/motions/pamela-p4-c1-shoe-contact-01/ready-02.png",
+        "sha256": "8309fdadbbced3b72d84053232f8cddda8080e9df7674d76873d436935de3eb7",
+        "position": "first"
+      },
+      "end": {
+        "path": "assets/motions/pamela-p1-c1-ready2-01/end.png",
+        "sha256": "a7231c1cfb84461a48f13ad4e8c0442fc747492dc09fabc2ead140af01edc668",
+        "position": "last"
+      },
+      "placementRef": {
+        "path": "assets/motions/pamela-p1-c1-ready2-01/placement-plan.json",
+        "sha256": "406acb69c086b51d166c0eba3e6bb2ce7e19b868b63546db04aa9562da7e7058",
+        "source": "placements/default.json",
+        "updatedAt": "2026-11-10T19:31:41.273Z",
+        "plannedTarget": "P1.C1"
+      },
+      "landing": {
+        "nativePoints": [
+          {
+            "x": 218.43182694820894,
+            "y": 976.1998659309478
+          },
+          {
+            "x": 271.97601599280426,
+            "y": 976.1998659309478
+          },
+          {
+            "x": 219.93563423320666,
+            "y": 1016.0390546871914
+          },
+          {
+            "x": 161.5832121220826,
+            "y": 1016.0390546871914
+          }
+        ],
+        "submittedPoints": [
+          {
+            "x": 218.6799039805181,
+            "y": 976.1998659309478
+          },
+          {
+            "x": 272.2849041427109,
+            "y": 976.1998659309478
+          },
+          {
+            "x": 220.185419167032,
+            "y": 1016.0390546871914
+          },
+          {
+            "x": 161.7667251398249,
+            "y": 1016.0390546871914
+          }
+        ],
+        "coordinateMapping": "native x*(1764-1)/(1762-1); y unchanged",
+        "endAnchorMethod": "Immutable READY2 plus plan-owned blue card polygon only",
+        "changedPixels": 2508,
+        "bounds": {
+          "left": 158,
+          "right": 276,
+          "top": 973,
+          "bottom": 1020
+        }
+      },
+      "physicalIntent": {
+        "takeHand": "LH",
+        "releaseHand": "LH",
+        "startSide": "BACK",
+        "endSide": "FRONT",
+        "turnCount": 1,
+        "pass": false,
+        "returnToShoe": true
+      },
+      "v6VideoSubmitted": false,
+      "referenceVideoSubmitted": false,
+      "intermediateImageSubmitted": false,
+      "reviewDecision": "PENDING",
+      "requestedAt": "2026-11-10T20:49:49.628Z",
+      "taskId": "6b60f198-3f20-4889-8abd-26d23e2ccbe5",
+      "lastCheckedAt": "2026-11-10T20:54:02.484Z",
+      "completedAt": "2026-11-10T20:54:02.484Z",
+      "output": {
+        "path": "assets/motions/pamela-p1-c1-ready2-01/source.mp4",
+        "sha256": "692500d39f8dcd0d36a61185dc0f6679611fffb66100729c18b8650e796acf00",
+        "bytes": 33312874,
+        "width": 1764,
+        "height": 1174,
+        "fps": 30,
+        "frames": 360,
+        "provider": "Runway developer API",
+        "model": "wan3"
+      },
+      "reviewSummary": "Samma vänsterhand drar ut kortet: gul yta f140–151 → kant f152–153 → blå framsida f154–169. Släpp senast f255, tom retur före f330. Slutcentrum cirka 0,69 px från mål. Gröna bordet bevaras, men nästa kort i skon blir tillfälligt vitt och promptens delmål är sena. Kandidat för granskning; inte godkänd för produktion.",
+      "visualReview": "evidence/ready2-p1-visual-review.json",
+      "anchorSemantics": {
+        "first": "READY2 before extraction",
+        "last": "READY2 after empty-hand return, with dealt card remaining at target",
+        "intermediateLandingImageSubmitted": false
+      }
+    }
+  ],
+  "anchorStudy": {
+    "schemaVersion": 1,
+    "id": "pamela-p4-c1-pinch-turn-study-01",
+    "status": "REJECTED_NOT_SUBMITTED",
+    "provider": "Built-in image_gen",
+    "createdAt": "2026-11-10T20:57:38.685Z",
+    "prompts": {
+      "start": "Use case: precise-object-edit. Edit the attached full-frame Pamela dealer plate into a photographic START/TAKE anchor study. Preserve the same woman, face, hair, black blazer, white blouse, green background and green tabletop, fixed camera, full original composition and 3:2-ish aspect ratio, lighting, resting anatomical RIGHT hand on screen left, and the exact black shoe position and size. Change only her anatomical LEFT forearm, wrist, hand and the single active yellow card at the shoe. Show an unmistakable natural thumb-and-index edge pinch: her left thumb contacts one face at the near side edge, her left index finger opposes it on the other face, middle finger gently supports alongside. The thumb, opposing fingertip and narrow contact gap must be separately readable, not two fingers pressing the same surface. Wrist relaxed, elbow and forearm aligned with the direction of extraction. The card is one thin rigid flat playing card, opaque solid YELLOW back visible, a fine pale paper edge, BLUE opposite face mostly hidden. It is partly slid DOWN and OUT through the shoe's low FRONT mouth along the ramp; its near edge protrudes beyond the lip so it can actually be gripped. Never pull a card through the top or side wall. Keep standard playing-card size relative to her hand and the shoe. Three remaining fingers naturally curled, no exaggerated raised little finger. Nothing on the open table, no other floating cards. Photorealistic anatomically plausible five-finger hand with clean fingertip contact. No arrows, captions, diagram, inset, collage or altered camera framing. Produce one full-frame still image.",
+      "turn": "Use case: precise-object-edit. Edit the FIRST attached full-frame Pamela palm-up plate into a photographic TURN/REVEAL anchor, the instant JUST BEFORE lowering a card onto the table. The SECOND attached image supplies the same woman's identity, shoe and yellow-back card design. Preserve woman, face, hair, black blazer, white blouse, green background/tabletop, camera framing, lighting and the exact black shoe on screen right. Her anatomical RIGHT hand on screen left still rests. Change only her anatomical LEFT forearm and hand into a natural forearm roll, palm upward and slightly toward the player/camera, presenting ONE thin rigid playing card still physically supported by her hand. The opposite solid BLUE front is now visibly coming into view, occupying a clear flat quadrilateral. Fingers support the underside/lower edge while the thumb relaxes at the side edge, still controlling the card until landing; no floating card. Her hand and card reach toward central foreground P4.C1. Card just above the table, gently tilted about 25-40 degrees as the reveal finishes, not standing like a sign. Relative to the hand it is a real playing card, not huge. Remove the separate flat blue marker/card currently lying on the table: it is THIS card, now held in her left hand, not a second card. The next card in the shoe stays YELLOW. Physical surfaces: opaque solid yellow reverse, opaque solid blue front, fine pale paper thickness; do not paint blue and yellow side by side on one face. A trace of the yellow reverse may be visible only if geometrically possible along the far edge; otherwise show only the blue face and pale thin edge. Keep card rigid, not folded or transparent. Natural five-finger anatomy, clear thumb and fingertip support. This is a controlled mid-turn pose, not an empty hand after release. No arrows, captions, inset, diagram, collage or camera crop. Produce one full-frame still image.",
+      "refinement": "Edit this exact full-frame image, preserving everything except the anatomical LEFT hand and the small necessary wrist/forearm adjustment at the shoe on screen right. The current grip is ambiguous because TWO fingertips lie on the yellow face. Replace it with ONE unmistakable opposing thumb-index pinch on the FREE LOWER SHORT EDGE of the yellow card protruding from the shoe's low front mouth. The LEFT THUMB PAD is the only digit pressing the visible YELLOW UPPER surface near that free edge. The LEFT INDEX finger curls visibly UNDER the free edge in a small natural hook and its supporting finger pad presses the hidden underside directly opposite the thumb. Make the curved index finger under the thin card and the thumb above it separately readable in side profile against the green table, so the card is visibly sandwiched between them. Remaining middle, ring and little fingers loosely curled, not laid on the yellow face. Rotate wrist slightly to expose this contact; arm remains natural and in proportion. Keep the card rigid, thin and straight, its yellow back up, still partly supported on the shoe ramp, slid down/out rather than lifted through the shoe wall. Keep the whole green studio/table, woman's face/clothes/body, right resting hand, fixed shoe size/location and exact camera framing. Single full-frame photograph; no insets, annotations, arrows or collage."
+    },
+    "reviewSummary": "Avvisad bildstudie. Jakob bedömer bilderna som onaturliga. Startens motgrepp är otydligt; den öppna handflatan visar en poserad kortpresentation snarare än ett trovärdigt utdelningsögonblick. Den senare nypvarianten förlänger kortet orimligt. Ingen av bilderna används som produktionsankare eller har skickats till Runway.",
+    "rejectionBasis": "User feedback plus visible grip and card-proportion defects",
+    "coordinateCalibrated": false,
+    "videoSubmitted": false,
+    "replacesReady2": false,
+    "sourceImages": [
+      "assets/motions/pamela-p4-c1-palm-up-01/start.png",
+      "assets/motions/pamela-p4-c1-palm-up-01/end.png"
+    ],
+    "start": {
+      "path": "assets/motions/pamela-p4-c1-pinch-turn-study-01/start-pinch.png",
+      "sha256": "c9b4f7de0727ec7e180784c89b66fecb99437662d68b1966dcaf4f1d210ede1e",
+      "bytes": 1595241,
+      "width": 1536,
+      "height": 1024
+    },
+    "turn": {
+      "path": "assets/motions/pamela-p4-c1-pinch-turn-study-01/turn-reveal.png",
+      "sha256": "0622e00ba33a8adcbf3f0dc2b259b460ec8d3d48799728833ea9bd04deae19a6",
+      "bytes": 1601150,
+      "width": 1537,
+      "height": 1023
+    },
+    "rejectedRefinement": {
+      "path": "assets/motions/pamela-p4-c1-pinch-turn-study-01/start-pinch-rejected-02.png",
+      "sha256": "64675f4c251205a10cb1394f6a47d8ca349a19039dd000b05edd03a063ac6c3b",
+      "bytes": 1571581,
+      "width": 1536,
+      "height": 1024
+    }
   },
   "historicalPrompts": [
     {

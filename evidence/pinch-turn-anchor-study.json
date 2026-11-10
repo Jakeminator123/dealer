@@ -1,0 +1,42 @@
+{
+  "schemaVersion": 1,
+  "id": "pamela-p4-c1-pinch-turn-study-01",
+  "status": "REJECTED_NOT_SUBMITTED",
+  "provider": "Built-in image_gen",
+  "createdAt": "2026-11-10T20:57:38.685Z",
+  "prompts": {
+    "start": "Use case: precise-object-edit. Edit the attached full-frame Pamela dealer plate into a photographic START/TAKE anchor study. Preserve the same woman, face, hair, black blazer, white blouse, green background and green tabletop, fixed camera, full original composition and 3:2-ish aspect ratio, lighting, resting anatomical RIGHT hand on screen left, and the exact black shoe position and size. Change only her anatomical LEFT forearm, wrist, hand and the single active yellow card at the shoe. Show an unmistakable natural thumb-and-index edge pinch: her left thumb contacts one face at the near side edge, her left index finger opposes it on the other face, middle finger gently supports alongside. The thumb, opposing fingertip and narrow contact gap must be separately readable, not two fingers pressing the same surface. Wrist relaxed, elbow and forearm aligned with the direction of extraction. The card is one thin rigid flat playing card, opaque solid YELLOW back visible, a fine pale paper edge, BLUE opposite face mostly hidden. It is partly slid DOWN and OUT through the shoe's low FRONT mouth along the ramp; its near edge protrudes beyond the lip so it can actually be gripped. Never pull a card through the top or side wall. Keep standard playing-card size relative to her hand and the shoe. Three remaining fingers naturally curled, no exaggerated raised little finger. Nothing on the open table, no other floating cards. Photorealistic anatomically plausible five-finger hand with clean fingertip contact. No arrows, captions, diagram, inset, collage or altered camera framing. Produce one full-frame still image.",
+    "turn": "Use case: precise-object-edit. Edit the FIRST attached full-frame Pamela palm-up plate into a photographic TURN/REVEAL anchor, the instant JUST BEFORE lowering a card onto the table. The SECOND attached image supplies the same woman's identity, shoe and yellow-back card design. Preserve woman, face, hair, black blazer, white blouse, green background/tabletop, camera framing, lighting and the exact black shoe on screen right. Her anatomical RIGHT hand on screen left still rests. Change only her anatomical LEFT forearm and hand into a natural forearm roll, palm upward and slightly toward the player/camera, presenting ONE thin rigid playing card still physically supported by her hand. The opposite solid BLUE front is now visibly coming into view, occupying a clear flat quadrilateral. Fingers support the underside/lower edge while the thumb relaxes at the side edge, still controlling the card until landing; no floating card. Her hand and card reach toward central foreground P4.C1. Card just above the table, gently tilted about 25-40 degrees as the reveal finishes, not standing like a sign. Relative to the hand it is a real playing card, not huge. Remove the separate flat blue marker/card currently lying on the table: it is THIS card, now held in her left hand, not a second card. The next card in the shoe stays YELLOW. Physical surfaces: opaque solid yellow reverse, opaque solid blue front, fine pale paper thickness; do not paint blue and yellow side by side on one face. A trace of the yellow reverse may be visible only if geometrically possible along the far edge; otherwise show only the blue face and pale thin edge. Keep card rigid, not folded or transparent. Natural five-finger anatomy, clear thumb and fingertip support. This is a controlled mid-turn pose, not an empty hand after release. No arrows, captions, inset, diagram, collage or camera crop. Produce one full-frame still image.",
+    "refinement": "Edit this exact full-frame image, preserving everything except the anatomical LEFT hand and the small necessary wrist/forearm adjustment at the shoe on screen right. The current grip is ambiguous because TWO fingertips lie on the yellow face. Replace it with ONE unmistakable opposing thumb-index pinch on the FREE LOWER SHORT EDGE of the yellow card protruding from the shoe's low front mouth. The LEFT THUMB PAD is the only digit pressing the visible YELLOW UPPER surface near that free edge. The LEFT INDEX finger curls visibly UNDER the free edge in a small natural hook and its supporting finger pad presses the hidden underside directly opposite the thumb. Make the curved index finger under the thin card and the thumb above it separately readable in side profile against the green table, so the card is visibly sandwiched between them. Remaining middle, ring and little fingers loosely curled, not laid on the yellow face. Rotate wrist slightly to expose this contact; arm remains natural and in proportion. Keep the card rigid, thin and straight, its yellow back up, still partly supported on the shoe ramp, slid down/out rather than lifted through the shoe wall. Keep the whole green studio/table, woman's face/clothes/body, right resting hand, fixed shoe size/location and exact camera framing. Single full-frame photograph; no insets, annotations, arrows or collage."
+  },
+  "reviewSummary": "Avvisad bildstudie. Jakob bedömer bilderna som onaturliga. Startens motgrepp är otydligt; den öppna handflatan visar en poserad kortpresentation snarare än ett trovärdigt utdelningsögonblick. Den senare nypvarianten förlänger kortet orimligt. Ingen av bilderna används som produktionsankare eller har skickats till Runway.",
+  "rejectionBasis": "User feedback plus visible grip and card-proportion defects",
+  "coordinateCalibrated": false,
+  "videoSubmitted": false,
+  "replacesReady2": false,
+  "sourceImages": [
+    "assets/motions/pamela-p4-c1-palm-up-01/start.png",
+    "assets/motions/pamela-p4-c1-palm-up-01/end.png"
+  ],
+  "start": {
+    "path": "assets/motions/pamela-p4-c1-pinch-turn-study-01/start-pinch.png",
+    "sha256": "c9b4f7de0727ec7e180784c89b66fecb99437662d68b1966dcaf4f1d210ede1e",
+    "bytes": 1595241,
+    "width": 1536,
+    "height": 1024
+  },
+  "turn": {
+    "path": "assets/motions/pamela-p4-c1-pinch-turn-study-01/turn-reveal.png",
+    "sha256": "0622e00ba33a8adcbf3f0dc2b259b460ec8d3d48799728833ea9bd04deae19a6",
+    "bytes": 1601150,
+    "width": 1537,
+    "height": 1023
+  },
+  "rejectedRefinement": {
+    "path": "assets/motions/pamela-p4-c1-pinch-turn-study-01/start-pinch-rejected-02.png",
+    "sha256": "64675f4c251205a10cb1394f6a47d8ca349a19039dd000b05edd03a063ac6c3b",
+    "bytes": 1571581,
+    "width": 1536,
+    "height": 1024
+  }
+}

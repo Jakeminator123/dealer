@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 1,
+  "id": "pamela-p4-c1-ready2-01",
+  "dealer": "pamela",
+  "source": {
+    "path": "assets/motions/pamela-p4-c1-ready2-01/source.mp4",
+    "sha256": "dabcde3588ca9626491ef1a3a179bdae4aefa7a4b6f3f054861031ba348649b6",
+    "bytes": 29006387,
+    "width": 1764,
+    "height": 1174,
+    "fps": 30,
+    "frames": 360,
+    "provider": "Runway developer API",
+    "model": "wan3"
+  },
+  "motion": {
+    "takeHand": "LH",
+    "releaseHand": "LH",
+    "target": "P4.C1",
+    "physicalStartSide": "BACK",
+    "physicalEndSide": "FRONT",
+    "turn": true,
+    "pass": false,
+    "basis": "SOURCE_FRAME_REVIEW",
+    "evidence": "evidence/ready2-p4-visual-review.json"
+  },
+  "review": {
+    "decision": "SECONDARY",
+    "basis": "Samma vänsterhand drar ut kortet och visar gul sida → tunn kant → blå sida före landning. Släpp f255, tom retur omkring f288–297. Slutcentrum cirka 0,77 px från mål. Bordet blir vitt under större delen av filmen och rörelsen tar längre tid än promptens delmål. Sekundärt rörelseprov; inte färdigt produktionsmaterial.",
+    "limitations": "No material overlay or Scout integration.",
+    "colorDoesNotProvePhysicalSide": true,
+    "userAccepted": false,
+    "physicalTurnSupported": true,
+    "sameLeftHandSupported": true,
+    "emptyReturnSupported": true,
+    "fullPromptContractMet": false,
+    "productionReady": false,
+    "landingCentreErrorPixels": 0.7731
+  },
+  "placementRef": {
+    "path": "assets/motions/pamela-p4-c1-ready2-01/placement-plan.json",
+    "sha256": "406acb69c086b51d166c0eba3e6bb2ce7e19b868b63546db04aa9562da7e7058",
+    "source": "placements/default.json",
+    "updatedAt": "2026-11-10T19:31:41.273Z",
+    "plannedTarget": "P4.C1"
+  },
+  "postProcessing": "none",
+  "generationRef": "assets/motions/pamela-p4-c1-ready2-01/generation.json",
+  "scoutIntegrated": false,
+  "published": false
+}

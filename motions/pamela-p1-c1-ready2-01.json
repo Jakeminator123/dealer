@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 1,
+  "id": "pamela-p1-c1-ready2-01",
+  "dealer": "pamela",
+  "source": {
+    "path": "assets/motions/pamela-p1-c1-ready2-01/source.mp4",
+    "sha256": "692500d39f8dcd0d36a61185dc0f6679611fffb66100729c18b8650e796acf00",
+    "bytes": 33312874,
+    "width": 1764,
+    "height": 1174,
+    "fps": 30,
+    "frames": 360,
+    "provider": "Runway developer API",
+    "model": "wan3"
+  },
+  "motion": {
+    "takeHand": "LH",
+    "releaseHand": "LH",
+    "target": "P1.C1",
+    "physicalStartSide": "BACK",
+    "physicalEndSide": "FRONT",
+    "turn": true,
+    "pass": false,
+    "basis": "SOURCE_FRAME_REVIEW",
+    "evidence": "evidence/ready2-p1-visual-review.json"
+  },
+  "review": {
+    "decision": "PENDING",
+    "basis": "Samma vänsterhand drar ut kortet: gul yta f140–151 → kant f152–153 → blå framsida f154–169. Släpp senast f255, tom retur före f330. Slutcentrum cirka 0,69 px från mål. Gröna bordet bevaras, men nästa kort i skon blir tillfälligt vitt och promptens delmål är sena. Kandidat för granskning; inte godkänd för produktion.",
+    "limitations": "No material overlay or Scout integration.",
+    "colorDoesNotProvePhysicalSide": true,
+    "userAccepted": false,
+    "physicalTurnSupported": true,
+    "sameLeftHandSupported": true,
+    "emptyReturnSupported": true,
+    "fullPromptContractMet": false,
+    "productionReady": false,
+    "landingCentreErrorPixels": 0.688
+  },
+  "placementRef": {
+    "path": "assets/motions/pamela-p1-c1-ready2-01/placement-plan.json",
+    "sha256": "406acb69c086b51d166c0eba3e6bb2ce7e19b868b63546db04aa9562da7e7058",
+    "source": "placements/default.json",
+    "updatedAt": "2026-11-10T19:31:41.273Z",
+    "plannedTarget": "P1.C1"
+  },
+  "postProcessing": "none",
+  "generationRef": "assets/motions/pamela-p1-c1-ready2-01/generation.json",
+  "scoutIntegrated": false,
+  "published": false
+}

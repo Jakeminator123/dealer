@@ -21,6 +21,20 @@
       "bytes": 17847045
     },
     {
+      "id": "pamela-p4-c1-ready2-01",
+      "path": "assets/motions/pamela-p4-c1-ready2-01/source.mp4",
+      "url": "https://qeojzihua5ewt4uo.public.blob.vercel-storage.com/dealer/dabcde3588ca9626491ef1a3a179bdae4aefa7a4b6f3f054861031ba348649b6.mp4",
+      "sha256": "dabcde3588ca9626491ef1a3a179bdae4aefa7a4b6f3f054861031ba348649b6",
+      "bytes": 29006387
+    },
+    {
+      "id": "pamela-p1-c1-ready2-01",
+      "path": "assets/motions/pamela-p1-c1-ready2-01/source.mp4",
+      "url": "https://qeojzihua5ewt4uo.public.blob.vercel-storage.com/dealer/692500d39f8dcd0d36a61185dc0f6679611fffb66100729c18b8650e796acf00.mp4",
+      "sha256": "692500d39f8dcd0d36a61185dc0f6679611fffb66100729c18b8650e796acf00",
+      "bytes": 33312874
+    },
+    {
       "id": "pamela-p4-c1-palm-up-01",
       "path": "assets/motions/pamela-p4-c1-palm-up-01/source.mp4",
       "url": "https://qeojzihua5ewt4uo.public.blob.vercel-storage.com/dealer/576bf245d3914979f8fd177543a8a476bc034a6fc8424b1f3703e213bfda8399.mp4",

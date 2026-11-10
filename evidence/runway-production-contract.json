@@ -540,5 +540,30 @@
       "keyReads": 0,
       "providerSwitches": 0
     }
+  },
+  "aleph2AnchorFollowup": {
+    "checkedAtUtc": "2026-11-10T20:40:56.403Z",
+    "source": "https://docs.dev.runwayml.com/openapi.json",
+    "endpoint": "POST /v1/video_to_video",
+    "model": "aleph2",
+    "required": [
+      "videoUri",
+      "model"
+    ],
+    "maximumKeyframes": 5,
+    "keyframePositions": [
+      "seconds: absolute video time",
+      "at: normalized video position 0..1"
+    ],
+    "supportsEditedMotion": true,
+    "motionGuide": "https://help.runwayml.com/hc/en-us/articles/52150503729171-Aleph-2-0-Prompting-Guide",
+    "motionApiNote": "Motion is described in promptText; no separate extraMotionPrompt field in the developer endpoint.",
+    "promptMaximumCharacters": 1000,
+    "duration": "Inherited from input video, maximum 30 seconds; no duration request field",
+    "outputFormat": "mp4 selected for normal video review; no paid format surcharge",
+    "qualityBoundary": "Timed guidance is not a guarantee of exact anatomy, contact or a physical card turnover.",
+    "assessment": "Useful alternative for editing a registered existing turn and constraining an intermediate pose; no new Aleph task submitted.",
+    "officialSkill": "https://github.com/runwayml/skills/blob/main/skills/runway-dev-models/SKILL.md",
+    "modelSchemaSha256": "d6f2cdf32625d29b824b5dedb5a5bb43cf79e26e94964243102c190df7e02ac4"
   }
 }

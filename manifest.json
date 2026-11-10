@@ -7950,6 +7950,136 @@
       "model": "wan3",
       "source": "Runway task ee8c4cbb-bf95-4f2e-8b1d-d928550e7dcd",
       "role": "palm-up-generation-original"
+    },
+    {
+      "path": "assets/motions/pamela-p4-c1-shoe-contact-01/anchor-candidate-01.png",
+      "sha256": "5a5fa069a7e5ebb6c370780afb4d7f7339d4d4e95753eec306338113523b0329",
+      "bytes": 1581808,
+      "source": "imagegen edited shoe ready anchor; rejected by user for hand direction",
+      "role": "secondary-anchor-candidate"
+    },
+    {
+      "path": "assets/motions/pamela-p4-c1-shoe-contact-01/anchor-candidate-02.png",
+      "sha256": "972cb2709d9fe3b79ef0482f46215e91f220b6ed467d3a2dba066d26055371ca",
+      "bytes": 1537543,
+      "source": "imagegen edited shoe ready anchor; rejected by user for hand direction",
+      "role": "secondary-anchor-candidate"
+    },
+    {
+      "path": "assets/motions/pamela-p4-c1-shoe-contact-01/imagegen-ready-02.png",
+      "sha256": "9bd670bcedc0bb17671b15b3f0eec80183e3df9fd707381571e7efbc248c28d3",
+      "bytes": 1541206,
+      "source": "User-requested natural shoe-feed READY2 imagegen alternative",
+      "role": "ready-anchor-candidate"
+    },
+    {
+      "path": "assets/motions/pamela-p4-c1-shoe-contact-01/ready-02.png",
+      "sha256": "8309fdadbbced3b72d84053232f8cddda8080e9df7674d76873d436935de3eb7",
+      "bytes": 2015336,
+      "source": "User-requested natural shoe-feed READY2 imagegen alternative",
+      "role": "ready-anchor-candidate"
+    },
+    {
+      "path": "assets/motions/pamela-p4-c1-shoe-contact-01/ready-02-prompt.txt",
+      "sha256": "c8d8858e495c4e3135946b9ad6b1ee5c3f8f8163a0b33953e1d2438c4569ad39",
+      "bytes": 2293,
+      "source": "User-requested natural shoe-feed READY2 imagegen alternative",
+      "role": "ready-anchor-candidate"
+    },
+    {
+      "path": "assets/motions/pamela-p4-c1-ready2-01/end.png",
+      "sha256": "54ca6bda789f987b1cdbf95ca826b91953ddb4306e8b345f66da903f008dd06f",
+      "bytes": 2170253,
+      "source": "READY2 immutable source plate plus frozen placement card target",
+      "role": "ready2-generation-input"
+    },
+    {
+      "path": "assets/motions/pamela-p4-c1-ready2-01/placement-plan.json",
+      "sha256": "406acb69c086b51d166c0eba3e6bb2ce7e19b868b63546db04aa9562da7e7058",
+      "bytes": 11752,
+      "source": "READY2 immutable source plate plus frozen placement card target",
+      "role": "ready2-generation-input"
+    },
+    {
+      "path": "assets/motions/pamela-p4-c1-ready2-01/prompt.txt",
+      "sha256": "7197f5f698492949846bc8d4b73beeb865dade0212bc599a56e67f27e03695eb",
+      "bytes": 1011,
+      "source": "READY2 immutable source plate plus frozen placement card target",
+      "role": "ready2-generation-input"
+    },
+    {
+      "path": "assets/motions/pamela-p1-c1-ready2-01/end.png",
+      "sha256": "a7231c1cfb84461a48f13ad4e8c0442fc747492dc09fabc2ead140af01edc668",
+      "bytes": 2171560,
+      "source": "READY2 immutable source plate plus frozen placement card target",
+      "role": "ready2-generation-input"
+    },
+    {
+      "path": "assets/motions/pamela-p1-c1-ready2-01/placement-plan.json",
+      "sha256": "406acb69c086b51d166c0eba3e6bb2ce7e19b868b63546db04aa9562da7e7058",
+      "bytes": 11752,
+      "source": "READY2 immutable source plate plus frozen placement card target",
+      "role": "ready2-generation-input"
+    },
+    {
+      "path": "assets/motions/pamela-p1-c1-ready2-01/prompt.txt",
+      "sha256": "dc463cc267a5eee68a717ed83be2abed20beeb5a202d28246bebbc3310514e57",
+      "bytes": 1053,
+      "source": "READY2 immutable source plate plus frozen placement card target",
+      "role": "ready2-generation-input"
+    },
+    {
+      "path": "assets/motions/pamela-p4-c1-ready2-01/source.mp4",
+      "sha256": "dabcde3588ca9626491ef1a3a179bdae4aefa7a4b6f3f054861031ba348649b6",
+      "bytes": 29006387,
+      "width": 1764,
+      "height": 1174,
+      "fps": 30,
+      "frames": 360,
+      "provider": "Runway developer API",
+      "model": "wan3",
+      "source": "Runway task f3bed7bd-7557-439b-aa6d-166840f6ef3d",
+      "role": "ready2-generation-original"
+    },
+    {
+      "path": "assets/motions/pamela-p1-c1-ready2-01/source.mp4",
+      "sha256": "692500d39f8dcd0d36a61185dc0f6679611fffb66100729c18b8650e796acf00",
+      "bytes": 33312874,
+      "width": 1764,
+      "height": 1174,
+      "fps": 30,
+      "frames": 360,
+      "provider": "Runway developer API",
+      "model": "wan3",
+      "source": "Runway task 6b60f198-3f20-4889-8abd-26d23e2ccbe5",
+      "role": "ready2-generation-original"
+    },
+    {
+      "path": "assets/motions/pamela-p4-c1-pinch-turn-study-01/start-pinch.png",
+      "sha256": "c9b4f7de0727ec7e180784c89b66fecb99437662d68b1966dcaf4f1d210ede1e",
+      "bytes": 1595241,
+      "width": 1536,
+      "height": 1024,
+      "source": "Built-in image_gen; rejected local study",
+      "role": "rejected-anchor-study"
+    },
+    {
+      "path": "assets/motions/pamela-p4-c1-pinch-turn-study-01/turn-reveal.png",
+      "sha256": "0622e00ba33a8adcbf3f0dc2b259b460ec8d3d48799728833ea9bd04deae19a6",
+      "bytes": 1601150,
+      "width": 1537,
+      "height": 1023,
+      "source": "Built-in image_gen; rejected local study",
+      "role": "rejected-anchor-study"
+    },
+    {
+      "path": "assets/motions/pamela-p4-c1-pinch-turn-study-01/start-pinch-rejected-02.png",
+      "sha256": "64675f4c251205a10cb1394f6a47d8ca349a19039dd000b05edd03a063ac6c3b",
+      "bytes": 1571581,
+      "width": 1536,
+      "height": 1024,
+      "source": "Built-in image_gen; rejected local study",
+      "role": "rejected-anchor-study"
     }
   ]
 }
