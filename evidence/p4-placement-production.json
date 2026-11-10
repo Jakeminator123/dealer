@@ -1,0 +1,158 @@
+{
+  "schemaVersion": 1,
+  "id": "pamela-p4-c1-plan-retarget-02",
+  "createdAt": "2026-11-10T20:00:48.808Z",
+  "source": {
+    "path": "assets/motions/pamela-p4-c1-source-turn/source.mp4",
+    "sha256": "4153a54702edd316744ae39a64d7b6094e5bcdcd2020a1852850a4c3a9aaa1fe",
+    "cut": [
+      0,
+      89
+    ],
+    "crop": {
+      "left": 0,
+      "right": 2,
+      "reason": "Actual yuv420p crop verified after render; original misreport retained in immutable render receipt."
+    }
+  },
+  "code": [
+    {
+      "path": "src/p4-placement-retarget.ts",
+      "sha256": "22f2f5f8d1b3080a369b4bf1a0960e61147710165aed420fd419a86607a78a4c"
+    },
+    {
+      "path": "src/placement-model.ts",
+      "sha256": "446f960d5975d850ca305150691ea328f02855b59c469752126a0caf05f56a5a"
+    },
+    {
+      "path": "tools/render-p4-placement.ts",
+      "sha256": "ab88856c3dff6e2ba84e33f2267d12a53287993fec4537f9435efda3ad9948cb"
+    }
+  ],
+  "placementRef": {
+    "path": "assets/motions/pamela-p4-c1-plan-retarget-02/placement-plan.json",
+    "sha256": "406acb69c086b51d166c0eba3e6bb2ce7e19b868b63546db04aa9562da7e7058",
+    "source": "placements/default.json",
+    "unchangedDuringRender": true,
+    "updatedAt": "2026-11-10T19:31:41.273Z"
+  },
+  "output": {
+    "path": "assets/motions/pamela-p4-c1-plan-retarget-02/preview.mp4",
+    "sha256": "3e4422b84e7402a161ec8ef550cb6028d2ca9d9f68ce6d1e4f9fb54969bc8983",
+    "bytes": 3235663,
+    "width": 1762,
+    "height": 1174,
+    "fps": 30,
+    "frameCount": 89
+  },
+  "physicalIntent": {
+    "takeHand": "LH",
+    "startSide": "BACK",
+    "endSide": "FRONT",
+    "turn": true,
+    "pass": false
+  },
+  "warp": {
+    "minimumJacobian": 0.5634944199855213,
+    "maximumDisplacement": 102.1092721878878,
+    "cornerError": 7.190186943645084e-13,
+    "maxInverseError": 0.0004999992597618645,
+    "unmodifiedSourceFrames": [
+      0,
+      64
+    ],
+    "transitionSourceFrames": [
+      64,
+      76
+    ],
+    "sourceQuad": [
+      [
+        842,
+        1011
+      ],
+      [
+        919,
+        1011
+      ],
+      [
+        920,
+        1080
+      ],
+      [
+        840,
+        1080
+      ]
+    ],
+    "targetQuad": [
+      [
+        819.0040710931385,
+        1070.9600990974113
+      ],
+      [
+        883.9849710931385,
+        1070.9600990974113
+      ],
+      [
+        887.5950210931385,
+        1130.7830990974114
+      ],
+      [
+        815.3940210931385,
+        1130.7830990974114
+      ]
+    ],
+    "method": "bounded projective foreground deformation; hand/card/shadow use one continuous map; no colour switch, generated pixels, retiming or pose interpolation",
+    "unchangedFlipFrames": 64,
+    "restingHandProtectedRectangle": [
+      540,
+      760,
+      840,
+      899
+    ]
+  },
+  "acceptance": {
+    "decision": "PENDING",
+    "sourceTurn": "preserved original pixels through frame63",
+    "landedContour": "target quad is inferred from original rim; measure encoded output before acceptance",
+    "contact": "hand and card share the same mapping, review required",
+    "returnToShoe": false
+  },
+  "limitations": [
+    "Local two-dimensional warp, not a new recorded/anatomically reconstructed movement.",
+    "P4.C1 only; no return, C2, full deal or Scout integration.",
+    "Current saved file is frozen; unsaved browser edits are not included.",
+    "Original green plate retained: generic keying erases the thin reflected edge; dedicated edge matte remains.",
+    "No replacement of original card surfaces or V6 source."
+  ],
+  "apiJobs": 0,
+  "independentReview": "evidence/p4-placement-review.json",
+  "previousLocalAttempt": {
+    "id": "pamela-p4-c1-plan-retarget-01",
+    "decision": "REJECTED",
+    "published": false,
+    "reasons": [
+      "Chroma key erased reflected card edge",
+      "Deformation moved resting right hand"
+    ],
+    "retained": "ignored local diagnostic only"
+  },
+  "cropProvenanceCorrection": {
+    "recordedAt": "2026-11-10T20:04:37.496Z",
+    "originalReceipt": "assets/motions/pamela-p4-c1-plan-retarget-02/render.json",
+    "originalReceiptPreserved": true,
+    "originalReported": {
+      "left": 1,
+      "right": 1
+    },
+    "actualCrop": {
+      "left": 0,
+      "right": 2
+    },
+    "cause": "FFmpeg crop on yuv420p rounds x=1 to even0 without exact=1. Independent installed-FFmpeg gradient test confirmed this.",
+    "executedFilter": "crop=1762:1174:1:0",
+    "futureExplicitEquivalentFilter": "crop=1762:1174:0:0",
+    "movieUnchanged": true,
+    "movieSha256": "3e4422b84e7402a161ec8ef550cb6028d2ca9d9f68ce6d1e4f9fb54969bc8983",
+    "measurementBoundary": "The encoded output measurement remains0.624px centre error. Do not add/subtract a pixel from that measured result."
+  }
+}

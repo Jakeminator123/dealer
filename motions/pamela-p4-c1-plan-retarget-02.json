@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "id": "pamela-p4-c1-plan-retarget-02",
+  "dealer": "pamela",
+  "source": {
+    "path": "assets/motions/pamela-p4-c1-plan-retarget-02/preview.mp4",
+    "sha256": "3e4422b84e7402a161ec8ef550cb6028d2ca9d9f68ce6d1e4f9fb54969bc8983",
+    "bytes": 3235663,
+    "width": 1762,
+    "height": 1174,
+    "fps": 30,
+    "frameCount": 89,
+    "frames": 89,
+    "provider": "local source-preserving 2D retarget",
+    "model": null
+  },
+  "motion": {
+    "takeHand": "LH",
+    "releaseHand": "LH",
+    "target": "P4.C1",
+    "physicalStartSide": "BACK",
+    "physicalEndSide": "FRONT",
+    "turn": true,
+    "pass": false,
+    "basis": "SOURCE_AND_ENCODED_FRAME_REVIEW",
+    "evidence": "evidence/p4-placement-review.json"
+  },
+  "review": {
+    "decision": "PENDING",
+    "basis": "Independent source/encoded review supports one same-hand physical turn and release; user acceptance remains pending.",
+    "limitations": [
+      "Local two-dimensional warp, not a new recorded/anatomically reconstructed movement.",
+      "P4.C1 only; no return, C2, full deal or Scout integration.",
+      "Current saved file is frozen; unsaved browser edits are not included.",
+      "Original green plate retained: generic keying erases the thin reflected edge; dedicated edge matte remains.",
+      "No replacement of original card surfaces or V6 source."
+    ],
+    "colorDoesNotProvePhysicalSide": true
+  },
+  "placementRef": {
+    "path": "assets/motions/pamela-p4-c1-plan-retarget-02/placement-plan.json",
+    "sha256": "406acb69c086b51d166c0eba3e6bb2ce7e19b868b63546db04aa9562da7e7058",
+    "source": "placements/default.json",
+    "unchangedDuringRender": true,
+    "updatedAt": "2026-11-10T19:31:41.273Z",
+    "currentDraftMatchedAtRender": true,
+    "notBoundToFutureEdits": true
+  },
+  "postProcessing": "bounded projective foreground deformation; hand/card/shadow use one continuous map; no colour switch, generated pixels, retiming or pose interpolation",
+  "generationRef": null,
+  "scoutIntegrated": false,
+  "published": false
+}

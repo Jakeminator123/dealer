@@ -30,6 +30,52 @@
       "motionRef": null
     },
     {
+      "id": "pamela-p4-c1-plan-retarget-02",
+      "title": "P4.C1 · vändning · sparad placering",
+      "path": "assets/motions/pamela-p4-c1-plan-retarget-02/preview.mp4",
+      "sha256": "3e4422b84e7402a161ec8ef550cb6028d2ca9d9f68ce6d1e4f9fb54969bc8983",
+      "bytes": 3235663,
+      "width": 1762,
+      "height": 1174,
+      "fps": 30,
+      "frameCount": 89,
+      "view": "native",
+      "kind": "candidate",
+      "status": null,
+      "motionRef": "motions/pamela-p4-c1-plan-retarget-02.json",
+      "description": "NYTT LOKALT PLACERINGSPROV: återfunnen vänsterhandsvändning, samma hand genom kantpassage och släpp. Hand och kort flyttas tillsammans till fryst P4.C1-plan406acb69. Landningscentrum avviker0,62px i mätt slutruta. Grön bakgrund bevarar den tunna kanten. Ingen ny Runway-generering. PENDING; retur, C2 och slutmaterial återstår.",
+      "chapters": [
+        {
+          "label": "Början",
+          "frame": 0
+        },
+        {
+          "label": "Gul sida",
+          "frame": 48
+        },
+        {
+          "label": "Tunn kant",
+          "frame": 60
+        },
+        {
+          "label": "Blå motsida",
+          "frame": 63
+        },
+        {
+          "label": "Kontakt",
+          "frame": 77
+        },
+        {
+          "label": "Släpp",
+          "frame": 78
+        },
+        {
+          "label": "Landning",
+          "frame": 88
+        }
+      ]
+    },
+    {
       "id": "pamela-older-14-mask-refined",
       "title": "Äldre sekvens · 3:03 · förbättrade masker",
       "path": "assets/motions/pamela-older-14-mask-refined/source.mp4",

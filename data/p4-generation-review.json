@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "createdAt": "2026-11-10T19:48:13.577Z",
+  "createdAt": "2026-11-10T20:02:59.458Z",
   "purpose": "Exact instructions and image inputs actually submitted; not the current editor plan.",
   "imageTransport": "The displayed PNG bytes were embedded as data:image/png;base64 in promptImage; this review names files and hashes instead of repeating base64.",
   "colorConvention": {

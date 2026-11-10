@@ -7874,6 +7874,27 @@
       "frames": 5486,
       "source": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-mask-bank/take-01/render/vila-fourteen-materials-vila.mp4",
       "role": "historical-mask-refined-sequence"
+    },
+    {
+      "path": "assets/motions/pamela-p4-c1-plan-retarget-02/preview.mp4",
+      "sha256": "3e4422b84e7402a161ec8ef550cb6028d2ca9d9f68ce6d1e4f9fb54969bc8983",
+      "bytes": 3235663,
+      "source": "assets/motions/pamela-p4-c1-source-turn/source.mp4",
+      "role": "current-plan-motion-review"
+    },
+    {
+      "path": "assets/motions/pamela-p4-c1-plan-retarget-02/placement-plan.json",
+      "sha256": "406acb69c086b51d166c0eba3e6bb2ce7e19b868b63546db04aa9562da7e7058",
+      "bytes": 11752,
+      "source": "placements/default.json",
+      "role": "frozen-current-plan-render-receipt"
+    },
+    {
+      "path": "assets/motions/pamela-p4-c1-plan-retarget-02/render.json",
+      "sha256": "7d43a17728c764a9f7a8d6ccc811ce4461b1917b9e9e250796885a372a03f389",
+      "bytes": 3464,
+      "source": "assets/motions/pamela-p4-c1-source-turn/source.mp4",
+      "role": "frozen-current-plan-render-receipt"
     }
   ]
 }

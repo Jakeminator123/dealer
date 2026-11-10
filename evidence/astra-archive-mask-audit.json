@@ -230,14 +230,17 @@
     "finding": "14/14 selected registered data/material-source/shadow files match manifest hashes. Existing V6 mesh, nail guards, hand-occlusion, silhouette/contact shadows and material studies are already present; no reimport recommended."
   },
   "verification": {
-    "archiveSourcesHashed": 28,
+    "archiveSourcesHashed": 34,
     "newArchiveImports": 0,
     "apiCalls": 0,
     "newRenders": 0,
     "archiveScriptsExecuted": 0,
     "packageInstalls": 0,
     "filesWritten": [
-      "evidence/astra-archive-mask-audit.json"
+      "evidence/astra-archive-mask-audit.json",
+      ".runtime/astra-p4-physical/c1-overview.jpg",
+      ".runtime/astra-p4-physical/c2-overview.jpg",
+      ".runtime/astra-p4-physical/critical-continuous.jpg"
     ],
     "nodeOrTestProcessesStarted": 0,
     "productionAccepted": false,
@@ -295,6 +298,10 @@
     {
       "path": "src/pamela-contact-shadow.ts",
       "sha256": "226d45b226fe277a5a9ce4fab5dea3a0119360f8c2ed38f9ceda7d99ed9af464"
+    },
+    {
+      "path": "assets/timeline.json",
+      "sha256": "8e736cb2d1b462321bf87d55fbd46798cf03463842cf0c2e96ce2bff1a8021a6"
     }
   ],
   "readOnlyArchiveFiles": [
@@ -465,6 +472,42 @@
       "sha256": "e5a6f2a0728dc12d4e412589e8ed7d4aff560923807055a8c90d59f4b927fbe7",
       "bytes": 12065,
       "inspection": "source / selected historical shadow measurement receipt fields"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261109-pamela-seat-bank/batches/middle-end-card-v1/original/pamela-seat-4-wan3-end-card-v1.mp4",
+      "sha256": "4e252be2235ce42cec5de9d49b993d0ffed1c029de9890faea6686f46824f87c",
+      "bytes": 31987524,
+      "inspection": "original decoded directly into limited contact sheets; hash verified"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261109-pamela-seat-bank/c2/bank-v2-stage-2/original/pamela-seat-4-wan3-c2-bank-v2.mp4",
+      "sha256": "67319ed86cde67cc7a7566553d451a89f8aac11384a55f8f8b460d1403d30167",
+      "bytes": 31746670,
+      "inspection": "original decoded directly into limited contact sheets; hash verified"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/src/pamela-p4-card-calibration.ts",
+      "sha256": "558066eb08fb5404fed2fcc28a26365b5c907631515e2df696088a45dd3e2726",
+      "bytes": 2726,
+      "inspection": "source / selected plan fields read"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/src/pamela-two-sided-card.ts",
+      "sha256": "28c70188e9a7acf9c5942c7ff43096b3ad6fe24bdd03e40ab12b337baee7719f",
+      "bytes": 5173,
+      "inspection": "source / selected plan fields read"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-two-sided-bank/take-02/plan.json",
+      "sha256": "0bc91fb10ba7c77fa9ea4b2a121f8c14be9edffeceb19420849fc2753e443223",
+      "bytes": 31628,
+      "inspection": "source / selected plan fields read"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/tools/pamela-mask-bank-assemble.ts",
+      "sha256": "51dbd46fef47ef6d79c7d5bcc7b13ecc8d80143534a899e7f5d700273116770b",
+      "bytes": 27930,
+      "inspection": "source / selected plan fields read"
     }
   ],
   "rootFollowup": {
@@ -481,5 +524,128 @@
     "method": "byte-identical copy for existing library comparison",
     "newGeneration": false,
     "archiveCodeExecuted": false
+  },
+  "p4PhysicalFollowup": {
+    "createdAt": "2026-11-10T19:51:44.8024082Z",
+    "request": "Inspect original white P4 C1/C2 geometry independent of authored material colours. Read-only source audit.",
+    "conclusion": "C2 provides visible broad-face / sustained edge / broad-face geometry and is a viable physical-turn candidate. C1 does not provide a verified side passage; changing its material side on a broad face would fake the requested turn.",
+    "method": {
+      "overview": "Original zero-based frames0..348 step12 for each source",
+      "criticalC1": [
+        [
+          38,
+          60
+        ],
+        [
+          211,
+          219
+        ]
+      ],
+      "criticalC2": [
+        [
+          76,
+          106
+        ],
+        [
+          211,
+          219
+        ]
+      ],
+      "rangesInclusive": true,
+      "continuity": "Every source frame is present within the critical ranges, without retiming/interpolation; overview outside these ranges is sampled, not full-frame certification.",
+      "outputs": [
+        {
+          "path": ".runtime/astra-p4-physical/c1-overview.jpg",
+          "sha256": "0dad4ebb34910e915c022b725e8e1cfa471400c6dcec9c7fb83480e70199ba00",
+          "bytes": 167669
+        },
+        {
+          "path": ".runtime/astra-p4-physical/c2-overview.jpg",
+          "sha256": "a9e6bc47320a1686f46b0159866a6f6c4bf0ea6512f3a7bb5ab706a76057caab",
+          "bytes": 169927
+        },
+        {
+          "path": ".runtime/astra-p4-physical/critical-continuous.jpg",
+          "sha256": "41f98a991e303fa400e83a6dbbbb332879e6d1b26789231e557c26010b7bd212",
+          "bytes": 222206
+        }
+      ],
+      "encoder": "ffmpeg decode/crop/scale/drawtext/tile only, bounded threads, no intermediate frame banks",
+      "warnings": "FFmpeg reported fontconfig-default-config warnings, but decoded sheets and their visible frame labels were produced and inspected successfully."
+    },
+    "c1": {
+      "sourceSha256": "4e252be2235ce42cec5de9d49b993d0ffed1c029de9890faea6686f46824f87c",
+      "hand": "Dealer left hand, seen on viewer right",
+      "observations": [
+        "Frames38-48: held card rises out of the shoe; narrow visible shape is extraction/foreshortening against another white card, not a verified free side reversal.",
+        "Frames49-60: exposed paper broadens continuously as it clears the shoe.",
+        "Overview60,72,84,96,108,120 onward: broad face continues toward the table; no visible separate turn established.",
+        "Frames211-219: fingertips separate from the landed card while it remains stationary; clear gap by216 in this crop."
+      ],
+      "physicalSemanticSide": "UNKNOWN on blank paper",
+      "decision": "NOT_VERIFIED_BACK_TURN_FRONT",
+      "minimumFix": "Do not change C1 sidePolicy from all FRONT to a timed BACK/FRONT swap. A source movement with a verified turn, or independently verified continuous join to one, is required. Do not relabel extraction as flip."
+    },
+    "c2": {
+      "sourceSha256": "67319ed86cde67cc7a7566553d451a89f8aac11384a55f8f8b460d1403d30167",
+      "hand": "Dealer left hand, seen on viewer right",
+      "observations": [
+        "Frames76-83: carried broad white face narrows continuously toward an edge.",
+        "Frames84-98: sustained thin edge/green-reflected strip in a continuous held-card path; this is a phase, not merely one frame98.",
+        "Frames99-106: white paper widens again into the landing-facing plane; no broad-face colour switch is needed.",
+        "Frames211-219: moving-card fingertip release occurs around214-218; both landed white cards persist."
+      ],
+      "physicalSemanticSide": "UNKNOWN from white print; geometry supports a turn candidate but cannot identify printed BACK versus FRONT by itself",
+      "decision": "GEOMETRIC_TURN_CANDIDATE_WITH_CONTINUOUS_EDGE",
+      "currentPolicy": "Already BACK[0,98), EDGE[98,99), FRONT[99,360) in the archived plan. Therefore OPEN-to-OPEN is not a universal description of all bank side schedules.",
+      "minimumFix": "Reuse the exact C2 source, masks and geometry instead of repainting an encoded full movie. Candidate refinement: BACK[0,84), EDGE[84,99), FRONT[99,360), keeping original edge RGB without material and retaining foreground guards. This interval needs native renderer validation before acceptance."
+    },
+    "exactCodeAndPlanBoundaries": [
+      {
+        "path": "runs/20261110-pamela-two-sided-bank/take-02/plan.json",
+        "location": "selections[id=C2-P4].sidePolicy.segments and code/calibration hashes",
+        "action": "Clone into a new local versioned candidate; preserve archive. C2 already has a valid start BACK intent. Only broaden EDGE if renderer review supports it. C1 all-FRONT cannot be fixed by policy alone."
+      },
+      {
+        "path": "src/pamela-two-sided-card.ts",
+        "location": "pamelaP4FlipSide at lines60-63; presentedCardMaterial at lines9-14",
+        "action": "A copied candidate helper must agree with any changed C2 phase schedule. EDGE deliberately returns no texture; retain original paper edge and preserve engine frontAllowed."
+      },
+      {
+        "path": "src/pamela-p4-card-calibration.ts",
+        "location": "calibrateP4CardFrame; lineKeys and f84..98 narrow support",
+        "action": "Reuse exact source-bound coverage/guard geometry. It calls pamelaP4FlipSide; no new generic mask is necessary for the phase-only trial."
+      },
+      {
+        "path": "src/pamela-bank-card-surfaces.ts",
+        "location": "lines74-77 and86",
+        "action": "Keep guards: uncalibrated C1 must remain a no-turn single-face demonstration; C2 helper and plan schedule must exactly match. Hash checks also require new candidate proof/code bindings rather than overwriting historical hashes."
+      },
+      {
+        "path": "runs/20261109-pamela-c2-motion-track/take-01/seat-4/draft-03/track.json",
+        "location": "frames[sourceFrame] source/mask/quad",
+        "action": "Reuse as source-frame-indexed input. Do not edit original tracks to fit output time or desired side."
+      },
+      {
+        "path": "assets/timeline.json",
+        "location": "current local V6 sources.deal",
+        "action": "Do not insert C2 frame98 into this existing timeline: it binds a different180-frame source2445bb2e..., not the360-frame white C2 source67319ed8.... New local bank assembly must map output frames to original C2 source indices explicitly."
+      }
+    ],
+    "remaining": [
+      "Current editor landing coordinates and V6 scene placement remain root-owned separate work.",
+      "Blank source face identity remains semantic UNKNOWN; this audit does not invent card values or engine reveal events.",
+      "No full-speed playback or new production rendering was performed.",
+      "A new C1 physical-turn source/join remains the concrete blocker to the complete requested chain."
+    ],
+    "resources": {
+      "contactSheetsRetained": 3,
+      "ffmpegJobsExecuted": 4,
+      "maxConfiguredThreadsPerComponent": 2,
+      "runningTaskOwnedProcesses": 0,
+      "productionMovieWrites": 0,
+      "apiJobs": 0,
+      "archiveWrites": 0
+    }
   }
 }

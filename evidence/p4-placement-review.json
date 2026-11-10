@@ -1,0 +1,363 @@
+{
+  "schemaVersion": 1,
+  "createdAt": "2026-11-10T20:00:38.066Z",
+  "status": "COMPLETE_READ_ONLY",
+  "scope": "Independent read-only visual/code review of P4.C1 retarget candidates. No V6 acceptance.",
+  "take01": {
+    "source": {
+      "path": "assets/motions/pamela-p4-c1-source-turn/source.mp4",
+      "sha256": "4153a54702edd316744ae39a64d7b6094e5bcdcd2020a1852850a4c3a9aaa1fe",
+      "cut": [
+        0,
+        89
+      ],
+      "crop": {
+        "left": 1,
+        "right": 1,
+        "reason": "native1764 source cropped to1762 V6 canvas; no rescaling"
+      }
+    },
+    "output": {
+      "path": "assets/motions/pamela-p4-c1-plan-retarget-01/preview.mp4",
+      "sha256": "0da408fdfbed707c15d3f9bb38a63fa9fd11c8f73f92a954e293305c713a85be",
+      "bytes": 975319,
+      "width": 1762,
+      "height": 1174,
+      "fps": 30,
+      "frameCount": 89
+    },
+    "placementRef": {
+      "path": "assets/motions/pamela-p4-c1-plan-retarget-01/placement-plan.json",
+      "sha256": "406acb69c086b51d166c0eba3e6bb2ce7e19b868b63546db04aa9562da7e7058",
+      "source": "placements/default.json",
+      "unchangedDuringRender": true,
+      "updatedAt": "2026-11-10T19:31:41.273Z"
+    },
+    "observedFrames": [
+      60,
+      70,
+      78,
+      88
+    ],
+    "measuredFrame": 88,
+    "coordinateSystem": "Native 1762x1174, source crop x-1; x right y down.",
+    "landing": {
+      "threshold": "B>80, B-R>40, B-G>22 within x760..959,y1000..1159",
+      "losslessPng": {
+        "count": 4018,
+        "centroid": {
+          "x": 852.6831757093081,
+          "y": 1100.7543554006968
+        },
+        "bounds": {
+          "left": 818,
+          "top": 1071,
+          "right": 888,
+          "bottom": 1130
+        }
+      },
+      "encodedMp4": {
+        "count": 4044,
+        "centroid": {
+          "x": 852.4188921859545,
+          "y": 1100.3298714144412
+        },
+        "bounds": {
+          "left": 818,
+          "top": 1070,
+          "right": 887,
+          "bottom": 1131
+        }
+      },
+      "targetCornerMean": {
+        "x": 851.4945210931385,
+        "y": 1100.8715990974115
+      },
+      "encodedCentroidDistanceFromTargetCornerMeanPx": 1.071415325506549
+    },
+    "knownBlockers": [
+      "Generic key removes the green-reflected card edge at f60, although pre-key warp preserved raw source pixels.",
+      "Warp support displaces the unrelated resting anatomical right hand; visible in f78/f88."
+    ],
+    "notes": [
+      "Target-corner math is not independent measured silhouette accuracy.",
+      "Same spatial transform preserves common 2D pixel overlap; it does not certify physical 3D contact, rigidity, or anatomy.",
+      "f78 and f88 show the blue card on the target and released left hand in the reviewed rendered frames."
+    ]
+  },
+  "registeredSources": [
+    {
+      "path": "assets/motions/pamela-p4-c1-plan-retarget-01/preview.mp4",
+      "sha256": "0da408fdfbed707c15d3f9bb38a63fa9fd11c8f73f92a954e293305c713a85be",
+      "bytes": 975319
+    },
+    {
+      "path": "assets/motions/pamela-p4-c1-plan-retarget-01/render.json",
+      "sha256": "1dcc5be2f274306a5051822812f5f042436c0ea6f9ecf2757755304ffc8e89c6",
+      "bytes": 2823
+    },
+    {
+      "path": "assets/motions/pamela-p4-c1-plan-retarget-01/placement-plan.json",
+      "sha256": "406acb69c086b51d166c0eba3e6bb2ce7e19b868b63546db04aa9562da7e7058",
+      "bytes": 11752
+    },
+    {
+      "path": "assets/motions/pamela-p4-c1-plan-retarget-01/f060.png",
+      "sha256": "f097c4311b925e5c4b5104dff165411c81900f483450b79277cdf7e7961138c6",
+      "bytes": 1622373
+    },
+    {
+      "path": "assets/motions/pamela-p4-c1-plan-retarget-01/f070.png",
+      "sha256": "0692cc92b1db0bcf775e6c8b6cc97cfd4000879fa7a77fc8fce3a59e95069cef",
+      "bytes": 1660509
+    },
+    {
+      "path": "assets/motions/pamela-p4-c1-plan-retarget-01/f078.png",
+      "sha256": "bbb8166d70bbf9fce9cf9cd01a8f9c22ddffa89f152cda4e85676f2201ff38ed",
+      "bytes": 1669586
+    },
+    {
+      "path": "assets/motions/pamela-p4-c1-plan-retarget-01/f088.png",
+      "sha256": "91fa47f7cfb7032050867a1e5f55973a17ac5918735ff15e6b7500c0c3c108b8",
+      "bytes": 1656096
+    },
+    {
+      "path": "src/pamela-key.ts",
+      "sha256": "38a682369e2006da29101c7b9f023b36c8a60f4b17257fccbe49044d26965e8d",
+      "bytes": 3237
+    }
+  ],
+  "take02": {
+    "status": "REVIEWED_NO_NEW_BLOCKER_IN_BOUNDED_SCOPE",
+    "inlineSequence": {
+      "frames": [
+        56,
+        65
+      ],
+      "coordinateBase": 0,
+      "source": "assets/motions/pamela-p4-c1-plan-retarget-02/preview.mp4",
+      "crop": {
+        "left": 790,
+        "top": 800,
+        "width": 300,
+        "height": 300
+      },
+      "displayJpegSha256": "c48269b165c26a25b712b3ab0c8e267c7225a96150258ba7a934b04e0e8275ce",
+      "savedToDisk": false
+    },
+    "source": {
+      "path": "assets/motions/pamela-p4-c1-source-turn/source.mp4",
+      "sha256": "4153a54702edd316744ae39a64d7b6094e5bcdcd2020a1852850a4c3a9aaa1fe",
+      "cut": [
+        0,
+        89
+      ],
+      "crop": {
+        "left": 1,
+        "right": 1,
+        "reason": "native1764 source cropped to1762 V6 canvas; no rescaling"
+      }
+    },
+    "output": {
+      "path": "assets/motions/pamela-p4-c1-plan-retarget-02/preview.mp4",
+      "sha256": "3e4422b84e7402a161ec8ef550cb6028d2ca9d9f68ce6d1e4f9fb54969bc8983",
+      "bytes": 3235663,
+      "width": 1762,
+      "height": 1174,
+      "fps": 30,
+      "frameCount": 89
+    },
+    "placementRef": {
+      "path": "assets/motions/pamela-p4-c1-plan-retarget-02/placement-plan.json",
+      "sha256": "406acb69c086b51d166c0eba3e6bb2ce7e19b868b63546db04aa9562da7e7058",
+      "source": "placements/default.json",
+      "unchangedDuringRender": true,
+      "updatedAt": "2026-11-10T19:31:41.273Z"
+    },
+    "landing": {
+      "frame": 88,
+      "count": 3912,
+      "centroid": {
+        "x": 852.1114519427402,
+        "y": 1100.7781186094069
+      },
+      "bounds": {
+        "left": 818,
+        "top": 1070,
+        "right": 887,
+        "bottom": 1129
+      },
+      "targetCornerMean": {
+        "x": 851.4945210931385,
+        "y": 1100.8715990974115
+      },
+      "centroidErrorPx": 0.6239729760397844,
+      "blueCoreVsTargetPolygonIoU": 0.9295673076923077,
+      "intersection": 3867,
+      "union": 4160,
+      "threshold": "B>80,B-R>40,B-G>22; exact quad raster at pixel centres; target includes rim but blue core does not."
+    },
+    "independentPixelChecks": [
+      {
+        "frame": 60,
+        "protectedRestingHandChangedPixels": 0,
+        "wholeFramePixelIdenticalToCroppedSource": true
+      },
+      {
+        "frame": 76,
+        "protectedRestingHandChangedPixels": 0,
+        "wholeFramePixelIdenticalToCroppedSource": null
+      },
+      {
+        "frame": 78,
+        "protectedRestingHandChangedPixels": 0,
+        "wholeFramePixelIdenticalToCroppedSource": null
+      },
+      {
+        "frame": 88,
+        "protectedRestingHandChangedPixels": 0,
+        "wholeFramePixelIdenticalToCroppedSource": null
+      }
+    ],
+    "inlineContact": {
+      "frames": [
+        73,
+        80
+      ],
+      "savedToDisk": false,
+      "sha256": "f6fc32d97a7116682e3fda8a0e2f676508c32f5131cb0dd4dbb79ff68baa06c5"
+    },
+    "sourceAndOutputHashesVerified": true,
+    "reviewedCodeMatchesReceipt": true,
+    "conclusion": "The exact 4153a… P4.C1 source turn remains visible in the encoded green-plate take02. It is a separate source from V6 and the legacy full-length film. No additional concrete blocker was found in the inspected turn/contact/landing ranges; this is not user acceptance or V6/full-sequence approval.",
+    "physicalObservation": {
+      "sourceIdentity": "4153a54702edd316744ae39a64d7b6094e5bcdcd2020a1852850a4c3a9aaa1fe",
+      "turnFrames": [
+        56,
+        65
+      ],
+      "sequence": "Yellow broad side narrows through near-edge f58–60; opposite blue face opens f61–63 and remains blue. Edge is now visible in the encoded candidate; no local color reassignment was found.",
+      "basis": "Continuous encoded frames56–65, known source identity, and f60 lossless PNG pixel-identical to the cropped source. This is geometry/edge evidence as well as color.",
+      "takeHand": "LH",
+      "releaseHand": "LH",
+      "handTransferObserved": false,
+      "contactFrames": [
+        73,
+        77
+      ],
+      "firstClearSeparationFrame": 78,
+      "contactDetail": "Same fingers visibly retain the blue card through f77; f78 separates and the card remains placed through inspected f80/f88.",
+      "physical3DOrRigidBodyCertification": false
+    },
+    "resolvedTake01Findings": {
+      "greenReflectedEdge": "Preserved by retaining original green plate; final scene keying remains future work.",
+      "restingRightHand": "Independent lossless comparisons at f60/76/78/88 show zero changed RGB pixels in x540..840,y760..899. Runtime assertion reports the same protection over all89 pre-encode frames."
+    },
+    "limitations": [
+      "89-frame local 2D retarget only; source crop is 1764 to1762 by removing one column on each side, without scaling.",
+      "Card core centroid/IoU are measured on encoded output; they do not certify exact white-rim corners. Target quad includes the rim while threshold excludes it.",
+      "Common warp preserves visible contact jointly but is not reconstructed 3D anatomy or a rigid-body solver.",
+      "No conclusion about whether an older 3:03 film turns, and no claim that V6 has no hand transfer; these are distinct source identities.",
+      "No V6 visual acceptance, dedicated final matte, C2, return-to-shoe or full-game sequence was reviewed."
+    ],
+    "userApproved": false,
+    "productionApproved": false,
+    "registeredSources": [
+      {
+        "path": "assets/motions/pamela-p4-c1-source-turn/source.mp4",
+        "sha256": "4153a54702edd316744ae39a64d7b6094e5bcdcd2020a1852850a4c3a9aaa1fe",
+        "bytes": 11359929
+      },
+      {
+        "path": "assets/motions/pamela-p4-c1-plan-retarget-02/preview.mp4",
+        "sha256": "3e4422b84e7402a161ec8ef550cb6028d2ca9d9f68ce6d1e4f9fb54969bc8983",
+        "bytes": 3235663
+      },
+      {
+        "path": "assets/motions/pamela-p4-c1-plan-retarget-02/render.json",
+        "sha256": "7d43a17728c764a9f7a8d6ccc811ce4461b1917b9e9e250796885a372a03f389",
+        "bytes": 3464
+      },
+      {
+        "path": "assets/motions/pamela-p4-c1-plan-retarget-02/placement-plan.json",
+        "sha256": "406acb69c086b51d166c0eba3e6bb2ce7e19b868b63546db04aa9562da7e7058",
+        "bytes": 11752
+      },
+      {
+        "path": "assets/motions/pamela-p4-c1-plan-retarget-02/f060.png",
+        "sha256": "e3bf78bff355e9e0f2b8544c4b79f7671a8b732bd0eee615b35b942a67e1826c",
+        "bytes": 1412516
+      },
+      {
+        "path": "assets/motions/pamela-p4-c1-plan-retarget-02/f076.png",
+        "sha256": "5c664eec0d18b3625429900eec9d925244f2efe34f06ca4d55621a8593138e6e",
+        "bytes": 1403713
+      },
+      {
+        "path": "assets/motions/pamela-p4-c1-plan-retarget-02/f078.png",
+        "sha256": "00a2bf3d0b448145d55936804623c43e4d27086927cdba6c761791e124f69dca",
+        "bytes": 1426360
+      },
+      {
+        "path": "assets/motions/pamela-p4-c1-plan-retarget-02/f088.png",
+        "sha256": "0f836a1e18badc15cce5f9efd68521633bdf320b1527382ad90b4f2e90acc93a",
+        "bytes": 1487210
+      },
+      {
+        "path": "src/p4-placement-retarget.ts",
+        "sha256": "22f2f5f8d1b3080a369b4bf1a0960e61147710165aed420fd419a86607a78a4c",
+        "bytes": 5172
+      },
+      {
+        "path": "src/placement-model.ts",
+        "sha256": "446f960d5975d850ca305150691ea328f02855b59c469752126a0caf05f56a5a",
+        "bytes": 9155
+      },
+      {
+        "path": "tools/render-p4-placement.ts",
+        "sha256": "ab88856c3dff6e2ba84e33f2267d12a53287993fec4537f9435efda3ad9948cb",
+        "bytes": 6286
+      }
+    ]
+  },
+  "completedAt": "2026-11-10T20:02:10.841Z",
+  "findings": [
+    {
+      "id": "P4-RETARGET-01",
+      "appliesTo": "take01",
+      "severity": "BLOCKING",
+      "detail": "Generic key removes the green-reflected physical edge at f60. Take02 green plate restores visible edge evidence."
+    },
+    {
+      "id": "P4-RETARGET-02",
+      "appliesTo": "take01",
+      "severity": "BLOCKING",
+      "detail": "Broad warp moves resting RH. Take02 guarded support removes pixel changes in independently sampled protected-region comparisons."
+    },
+    {
+      "id": "P4-RETARGET-03",
+      "appliesTo": "take02",
+      "severity": "OBSERVATION",
+      "detail": "Encoded f88 blue core centroid (852.111,1100.778) is0.624 native px from target corner mean. Core-to-quad IoU92.96%; this is not exact contour/rim certification."
+    }
+  ],
+  "cropProvenanceCorrection": {
+    "recordedAt": "2026-11-10T20:04:37.496Z",
+    "originalReceipt": "assets/motions/pamela-p4-c1-plan-retarget-02/render.json",
+    "originalReceiptPreserved": true,
+    "originalReported": {
+      "left": 1,
+      "right": 1
+    },
+    "actualCrop": {
+      "left": 0,
+      "right": 2
+    },
+    "cause": "FFmpeg crop on yuv420p rounds x=1 to even0 without exact=1. Independent installed-FFmpeg gradient test confirmed this.",
+    "executedFilter": "crop=1762:1174:1:0",
+    "futureExplicitEquivalentFilter": "crop=1762:1174:0:0",
+    "movieUnchanged": true,
+    "movieSha256": "3e4422b84e7402a161ec8ef550cb6028d2ca9d9f68ce6d1e4f9fb54969bc8983",
+    "measurementBoundary": "The encoded output measurement remains0.624px centre error. Do not add/subtract a pixel from that measured result."
+  }
+}

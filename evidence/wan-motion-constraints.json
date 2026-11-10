@@ -1,0 +1,418 @@
+{
+  "schemaVersion": 1,
+  "checkedAtUtc": "2026-11-10T19:56:30.6942490Z",
+  "purpose": "Avgransad read-only granskning av WAN3-mellanbilder, rorelsefel och genomforbart nasta prov. Endast detta evidenskvitto skrivs.",
+  "identity": {
+    "root": "C:/Users/jakem/dev/super-feature-sg/dealer",
+    "remote": "git@github.com:Jakeminator123/dealer.git",
+    "provider": "Runway developer API",
+    "environment": "Lokal dealer-planering; ingen Scout-integration eller deploy.",
+    "canonicalEvidence": [
+      "README.md",
+      "HANDOFF.md",
+      "docs/DRIFT.md:30-46"
+    ],
+    "credentialsRead": false,
+    "accountQueried": false,
+    "boundary": "MCP-kontraktet granskas som schema. Dess workspace/saldo visar inte identiteten bakom developer-API-nyckeln."
+  },
+  "conclusion": {
+    "wan3DocumentedIntermediateKeyframes": false,
+    "numericIntermediatePositions": "Inte dokumenterade. Skicka inte position:0.5, position:middle, seconds eller at som WAN3-mellanbild.",
+    "firstLastWithReferences": false,
+    "nextStep": "Granska forst roots lokala retarget av den redan fungerande P4.C1-kallan till fryst aktuell plan. Ingen ny stokastisk prompt-only-tagning rekommenderas.",
+    "futureSingleGeneration": "Endast om ny generering behovs: ett WAN3-referensvideoprov pa en redan fysiskt och geometriskt verifierad referens. Exakt landning ar fortfarande acceptanskrav, inte API-garanti.",
+    "preserveMethod": "Bevara befintlig metod med separata rorelsesegment, bildrutebaserad klippning, tom retur och sammansatt cirka treminuterssekvens."
+  },
+  "documentedContract": {
+    "source": "https://docs.dev.runwayml.com/openapi.json",
+    "apiVersion": "2024-11-06",
+    "normalizedUtf8OpenapiSha256": "9be166e96b075256fab17998dc14ab0e07c6a2c233c1bf7dc9231f710b4e63e6",
+    "hashMethod": "Offentligt curl-svar sammanfogat med LF och SHA-256 over UTF-8; inte ett genereringsanrop.",
+    "model": "wan3",
+    "imageToVideo": {
+      "method": "POST",
+      "path": "/v1/image_to_video",
+      "required": [
+        "model",
+        "promptText",
+        "promptImage"
+      ],
+      "exposedFields": [
+        "promptImage",
+        "promptText",
+        "audio",
+        "duration",
+        "ratio",
+        "referenceVideos",
+        "referenceAudio",
+        "model"
+      ],
+      "anchorForm": "promptImage:[{uri:<image>,position:first},{uri:<image>,position:last}]",
+      "referenceImageForm": "promptImage:[{uri:<image>},...] without position",
+      "exclusion": "Forsta/sista bild och opositionerade bild-/videoreferenser kan inte blandas.",
+      "durationSeconds": {
+        "type": "integer",
+        "minimum": 2,
+        "maximum": 30
+      },
+      "anchorRatioValues": [
+        "auto_480p",
+        "auto_720p",
+        "auto_1080p"
+      ],
+      "framing": "Bildankarlaget foljer forsta bildens proportioner.",
+      "schemaCaveat": "WAN3 promptImage-array har minItems:1, maxItems:10 och items:{}. Exakta item-falt ar inte typade dar. Dokumentationens forsta/sista-kontrakt och befintliga lyckade anrop stodjer uri/position:first|last; den oppna schemaformen bevisar inte stod for godtyckliga mellanpositioner."
+    },
+    "referenceMode": {
+      "method": "POST",
+      "path": "/v1/text_to_video",
+      "required": [
+        "model",
+        "promptText"
+      ],
+      "exposedFields": [
+        "promptText",
+        "audio",
+        "duration",
+        "ratio",
+        "references",
+        "referenceVideos",
+        "referenceAudio",
+        "model"
+      ],
+      "images": {
+        "field": "references",
+        "maximumItems": 10,
+        "itemRequired": [
+          "uri"
+        ]
+      },
+      "videos": {
+        "field": "referenceVideos",
+        "maximumItems": 5,
+        "itemRequired": [
+          "type",
+          "uri"
+        ],
+        "typeValue": "video",
+        "combinedMaximumSeconds": 15
+      },
+      "audio": {
+        "field": "referenceAudio",
+        "maximumItems": 5,
+        "combinedMaximumSeconds": 15
+      },
+      "interpretation": "Referenser ger sammanhang, ingen tidsatt bildrutelasning eller dokumenterad exakt rorelseoverforing.",
+      "durationSeconds": {
+        "type": "integer",
+        "minimum": 2,
+        "maximum": 30
+      },
+      "imageVideoTransport": [
+        "HTTPS URL",
+        "runway:// upload URI",
+        "data URI"
+      ],
+      "videoTransportLimits": {
+        "httpsMegabytes": 32,
+        "dataUriEncodedMegabytes": 5,
+        "ephemeralUploadMegabytes": 200
+      },
+      "videoExample": {
+        "type": "video",
+        "uri": "<registered verified video URI>"
+      },
+      "routeBoundary": "WAN3 saknas i aktuell /v1/video_to_video-variantlista. MCP:s benamning video-to-video innebar inte att WAN3 ska skickas till den developer-endpointen."
+    },
+    "unexposedWan3Controls": [
+      "intermediate keyframes",
+      "numeric keyframe position",
+      "keyframe timestamp",
+      "seed",
+      "negativePrompt",
+      "motion strength",
+      "cfgScale",
+      "output fps",
+      "outputFormat"
+    ],
+    "notEquivalent": "Andra modellers middle/keyframes/seconds/at-falt ar inte WAN3-falt. Ett schema med position:first/last hos en annan modell bevisar inte WAN3-mellanbildsstod.",
+    "mcp": {
+      "tool": "mcp__codex_apps__runway_generate_video",
+      "schemaObserved": "2026-11-10; inte anropad",
+      "exactRelevantFields": {
+        "model": "wan3",
+        "promptText": "string",
+        "duration": "number",
+        "generateAudio": "boolean",
+        "ratio": "string",
+        "resolution": "string",
+        "startFrame": "{taskId?:string,url?:string}",
+        "endFrame": "{url:string}",
+        "referenceImages": "Array<{tag?:string,url:string}>",
+        "referenceVideo": "{durationSeconds?:number,url:string}"
+      },
+      "wan3Limits": {
+        "durationSeconds": [
+          2,
+          30
+        ],
+        "resolutions": [
+          "480p",
+          "720p",
+          "1080p"
+        ],
+        "referenceImagesMaximum": 10,
+        "referenceVideoMaximumSeconds": 15,
+        "promptMaximumCharacters": 20000
+      },
+      "restrictions": [
+        "endFrame kraver startFrame.",
+        "startFrame/endFrame kan inte kombineras med referenceImages/referenceVideo for WAN3.",
+        "WAN3 ignorerar referensbilders tag; de ar inte tidsstamplar.",
+        "Ingen mellanbild/timestamp finns i verktygets input-schema.",
+        "MCP exponerar en referenceVideo; developer-API exponerar en array."
+      ]
+    }
+  },
+  "localEvidence": {
+    "reviewedFiles": [
+      "HANDOFF.md",
+      "evidence/runway-production-contract.json",
+      "data/p4-generation-review.json",
+      "motions/pamela-p4-c1-source-turn.json",
+      "docs/SYSTEM.md",
+      "placements/default.json"
+    ],
+    "imagesVisuallyInspected": [
+      "assets/motions/pamela-p4-c1-color-control-01/start.png",
+      "assets/motions/pamela-p4-c1-color-control-01/end.png"
+    ],
+    "historicalAnchorHashes": {
+      "start": "a2fc6d3565ca711015c9b547671bf33e97eea4c2281e75841690f8848b422f45",
+      "end": "c30be996971282c737825a9439e3d303728086c391d8bbb14a67a8fc826e784b"
+    },
+    "reportedMotionResults": [
+      {
+        "id": "pamela-p4-c1-color-control-01",
+        "model": "wan3",
+        "durationSeconds": 4,
+        "result": "REJECTED; bred gul till bred bla f63-64, ingen verifierad kantpassage."
+      },
+      {
+        "id": "pamela-p4-c1-kling-control-01",
+        "model": "kling3.0_pro",
+        "durationSeconds": 4,
+        "result": "REJECTED; bred gul till bla f52-54 vid 24 fps, ingen verifierad kantpassage."
+      }
+    ],
+    "motionInspectionBoundary": "Dessa filmresultat kommer fran befintligt granskningskvitto; denna audit inspekterade ankarbilderna men gjorde ingen ny bildrutegranskning av filmerna.",
+    "knownBetterSource": {
+      "path": "assets/motions/pamela-p4-c1-source-turn/source.mp4",
+      "sha256": "4153a54702edd316744ae39a64d7b6094e5bcdcd2020a1852850a4c3a9aaa1fe",
+      "sourceStatus": "Registret anger LH till LH, BACK till FRONT, turn:true, pass:false; aktuell anvandaracceptans PENDING.",
+      "parentEvidence": "Root anger fungerande vandning f48-63 och lokal retarget efter denna fas. Detta ar samordningsuppgift, inte denna audits sjalvstandiga filmverifiering."
+    },
+    "currentPlanSnapshot": {
+      "path": "placements/default.json",
+      "sha256": "406acb69c086b51d166c0eba3e6bb2ce7e19b868b63546db04aa9562da7e7058",
+      "updatedAt": "2026-11-10T19:31:41.273Z",
+      "target": "P4.C1",
+      "space": "image-normalized-bottom-up",
+      "native": {
+        "u": 0.4835289727956493,
+        "v": 0.06149053785386942,
+        "width": 0.041,
+        "height": 0.051,
+        "angle": 0,
+        "taper": 0.9,
+        "reviewed": false
+      },
+      "portrait": {
+        "u": 0.475,
+        "v": 0.16,
+        "width": 0.06,
+        "height": 0.04,
+        "angle": 0,
+        "taper": 0.9,
+        "reviewed": false
+      },
+      "intent": {
+        "takeHand": "LH",
+        "startSide": "BACK",
+        "endSide": "FRONT",
+        "pass": false,
+        "turn": true
+      },
+      "tableProjection": {
+        "mode": "flat",
+        "heading": 0
+      },
+      "pixelMapping": "x=u*(W-1); y=(1-v)*(H-1). Width/height ar andelar av respektive pixelcentrumspann; slutkonturen maste anvanda projektets projektion.",
+      "boundary": "Aktuellt utkast ar inte uppmatt kamera. Historiska ankare ar inte bundna till detta utkast. Frys och hasha ratta versionen fore prov; aendra inte aktiv fil."
+    }
+  },
+  "confounders": [
+    {
+      "issue": "Slutposen och greppet",
+      "fact": "Slutbilden visar en oppen tom vansterhand ovanfor ett separat blatt kort. Mellanposen och greppets kontinuitet saknas som bildvillkor.",
+      "hypothesis": "Modellen kan interpolera mot frislappandet och byta ytutseende utan att losa en hel fysisk rotation.",
+      "action": "Bedoem samma fingers kontakt med samma kortkant genom hela tippen/rollen; separera slutlig tomhandspose fran vandningsbevis."
+    },
+    {
+      "issue": "Gult vid skon",
+      "fact": "En gul rektangel syns vid skomynningen i bade start- och slutbild; prompten benamner slutets gula yta som nasta kort.",
+      "hypothesis": "Statisk inlaggsyta och rorligt kort kan blandas ihop, eller en ny yta uppsta utan verklig extraktion.",
+      "action": "Kontrollera vilket kort som dras och vilket som ligger kvar. Rora inte historiska ankare for att dolja felet."
+    },
+    {
+      "issue": "Viktning mot farg",
+      "fact": "Prompten innehaller explicit gul BACK, bla FRONT och fargvaxling; bada senare modellerna missade verifierad kantpassage.",
+      "hypothesis": "Tva starka fargankare kan losas som utseendebyte. Det ar inte bevisat att farger orsakade felet.",
+      "action": "Anvand fysisk silhuett, kantpassage, fingergrepp och sammanhangande kortbana som primar QA. Vitt material tar inte bort fysikkravet och kan gora sidan svarare att bedoma."
+    },
+    {
+      "issue": "Fyra sekunder",
+      "fact": "Fyra sekunder ar inom WAN3:s 2-30 sekunder. Samma historiska upplagg har tidigare givit en fungerande vandning enligt kallregister/parent.",
+      "hypothesis": "Kort tid kan oka konkurrensen mellan dragning, rotation, placering och slapp, men ar inte en visad grundorsak eller ett omojlighetsbevis.",
+      "action": "Bestall inte ett langre prov enbart pa denna hypotes. Behall tid om referensrorelsen redan fungerar."
+    },
+    {
+      "issue": "Riktning, koordinater och kamera",
+      "fact": "Vansterhand avser dealern; den startar pa bildens hogra sida. Planens v ar bottom-up. Ankare 1764x1174, V6/native-kontrakt 1762x1174, Kling-resultat 1764x1172.",
+      "hypothesis": "Odefinierad wrist roll, screen-left/dealer-left, 3D-axel eller direkt pixelkopiering kan ge fel hand, fel lutning eller fel landning.",
+      "action": "Skriv dealer's left hand (screen right at the shoe); beskriv tippning och kortplanet. Bind geometri via ratt vy/projektion, inte en hardkodad centerkoordinat eller 16:9-konvertering."
+    },
+    {
+      "issue": "Kamerageometri och slutkort",
+      "fact": "Kortet vid skon star pa lutande bana; slutkortet ar en perspektivkomprimerad rektangel pa bordet. Editorns flat-lage ar inte kamerakalibrering.",
+      "hypothesis": "En enkel 2D-farg-/forminterpolation kan ersatta den behovda tredimensionella tippningen. Nara vertikalt i varlden ar inte alltid kant-on mot kameran.",
+      "action": "Valj en fysisk mellanpose fran ratt kameravy. Kontrollera rigid kontur, perspektiv och kontakt fore varje materialbyte."
+    },
+    {
+      "issue": "Reproducerbarhet och instruktioner",
+      "fact": "Kontrollerna delar historiska bilder/prompt, men WAN3-kontraktet har inget exponerat seed-falt. Prompten innehaller manga forbud.",
+      "hypothesis": "Stokastik eller forandradd dold modellversion kan bidra; dessa forklaringar kan inte sarskiljas har. Forbud kan konkurrera med rorelsesekvensen.",
+      "action": "Behall request-/kallhashar. Anvand kort positiv rorelsebeskrivning; lova inte att exakt samma request reproducerar en tidigare tagning."
+    }
+  ],
+  "nextExperiment": {
+    "status": "PLAN_ONLY_NOT_SUBMITTED",
+    "selected": "Lokal retarget av kand fungerande rorelse; root ager genomforande och visuell acceptans.",
+    "constraints": [
+      "Vandningsfasen f48-63 forblir oforandrad enligt roots plan.",
+      "Senare hand och kort flyttas tillsammans; Jacobian-/kontinuitetskontroll och bildrutegranskning behovs.",
+      "Aktuell P4.C1-kontur och fingerkontakt verifieras i slutbilden, inte bara blatt slutkort.",
+      "En lokal geometriflytt ar inte automatiskt fysiskt korrekt; rotens granskningsresultat avgor."
+    ],
+    "futureReferenceTrial": {
+      "condition": "Endast om ny generering fortfarande behovs och den frysta retargetade referensen redan har korrekt grepp, vandning, kameraprojektion och landning.",
+      "calls": 1,
+      "developerRequestShape": {
+        "model": "wan3",
+        "promptText": "<motionPrompt below>",
+        "duration": 4,
+        "ratio": "auto_1080p",
+        "audio": false,
+        "references": [
+          {
+            "uri": "<registered same-view current-plan appearance image>"
+          }
+        ],
+        "referenceVideos": [
+          {
+            "type": "video",
+            "uri": "<registered verified four-second current-plan motion reference>"
+          }
+        ]
+      },
+      "omittedOnPurpose": [
+        "promptImage first/last",
+        "startFrame",
+        "endFrame",
+        "numeric middle keyframe",
+        "seed"
+      ],
+      "motionPrompt": "Locked camera. Match the reference clip's single continuous left-hand deal. Her left thumb and fingertips keep the same pinch as the card is drawn, tipped toward upright, and rolled once through a clearly visible thin edge. The opposite face opens. She lowers the card onto the reference landing footprint, releases it and lifts her empty fingers. Her right hand, the shoe and the next card stay still.",
+      "geometryBoundary": "Referensvideo och opositionerad bild ger kontext, inte hard slutbild. Kontrollera exakt plan/projektion efterat; underkann drift. auto_1080p garanterar inte exakt 1762x1174.",
+      "stopRule": "Ett prov; ingen automatisk retry eller ny betalbestallning efter underkand fysik/geometri.",
+      "authorization": "Inget nytt jobb, mediauppladdning eller konto-/miljobyte ar utfort av denna audit."
+    },
+    "futureTwoCallMidpointAlternative": {
+      "recommendedNow": false,
+      "purpose": "Genomforbart forsta/sista-bildsalternativ om ett verkligt mellanankare senare kravs. Inte ett dolt WAN3-mellanfalt.",
+      "minimumDurationPerCallSeconds": 2,
+      "minimumCombinedGeneratedSeconds": 4,
+      "endpoint": "/v1/image_to_video",
+      "fieldsPerCall": [
+        "model:wan3",
+        "promptText",
+        "duration:2 or greater integer",
+        "ratio:auto_1080p",
+        "audio:false",
+        "promptImage:[{uri,position:first},{uri,position:last}]"
+      ],
+      "stageA": {
+        "first": "Registrerad startbild i vald kameravy.",
+        "last": "Fysiskt granskad smal kantpose med samma LH-grepp, hamtad fran korrekt kallrorelse.",
+        "prompt": "Locked camera. Her left hand, on screen right at the shoe, keeps the same thumb-and-fingertip pinch while drawing one rigid card and carrying it forward. She tips the card toward upright as her forearm begins one smooth roll, reaching the narrow edge-on pose in the last image with the grip intact. Her right hand, the shoe and the next card stay still."
+      },
+      "stageB": {
+        "first": "Granskad faktisk sista bild fran A, om den fortfarande ar en korrekt mellanpose; inte automatiskt originalets planerade PNG.",
+        "last": "Granskad slutbild renderad fran fryst aktuell plan, inklusive korrekt tomhandspose.",
+        "prompt": "Locked camera. Continuing from the same left-hand pinch and wrist direction, she completes the smooth roll so the opposite face opens, lowers the card flat onto the exact final footprint, releases once and lifts her empty fingers to the final pose. Her right hand stays at rest and the dealt card stays still."
+      },
+      "seamAcceptance": "Matcha faktisk kort-/fingergeometri, kameravy och hastighet genom skarven. Ingen dold extra vandning, posefrysning, blend eller fargbyte far fa ersatta kantpassagen.",
+      "limitation": "Tva verkliga genereringsanrop och en granskad skarv behovs. Forsta/sista-bilder ar styrning, inte pixelgaranti. Stoppa efter A om fysiken misslyckas."
+    }
+  },
+  "acceptance": [
+    "Ett och samma kort behaller korrekt fingerkontakt genom en sammanhangande LH-tippning/roll.",
+    "Bred BACK smalnar via fysisk kant och motsatt FRONT breddas; farg ensamt raknas inte.",
+    "Ingen handvaxling, andra vandning, dubblerat kort eller dold ersattning.",
+    "Hand/kort kommer till samma frysta P4.C1-kontur och kontaktpunkt; frislappandet ar synligt.",
+    "Landat kort forblir stilla; tom retur ar eget kompatibelt segment.",
+    "Hela fungerande sekvens-/klippmetoden bevaras; inget rent overlay far anvandas som bevis for en vandning."
+  ],
+  "sources": [
+    {
+      "url": "https://docs.dev.runwayml.com/openapi.json",
+      "retrievedDate": "2026-11-10",
+      "use": "Live parsning av WAN3 image_to_video/text_to_video samt franvaro i video_to_video; schemaform, falt och gransvarden."
+    },
+    {
+      "url": "https://docs.dev.runwayml.com/assets/inputs/",
+      "retrievedDate": "2026-11-10",
+      "use": "WAN3 forsta/sista, referensexkludering, upplosning, tids-/mediegranser."
+    },
+    {
+      "source": "mcp__codex_apps__runway_generate_video live tool description/input schema",
+      "retrievedDate": "2026-11-10",
+      "use": "MCP:s egna falt, WAN3-begransningar och avsaknad av mellanbildsfalt; ingen tool-exekvering."
+    },
+    {
+      "url": "https://help.runwayml.com/hc/en-us/articles/47313698911891-Introduction-to-Prompting",
+      "retrievedDate": "2026-11-10",
+      "use": "Allman vagledning om konkret positiv rorelse och motsagelser; inte bevis for WAN3:s kortfysik."
+    },
+    {
+      "url": "https://help.runwayml.com/hc/en-us/articles/39789879462419-Gen-4-Video-Prompting-Guide",
+      "retrievedDate": "2026-11-10",
+      "use": "Endast kompletterande Gen-4-specifik promptvagledning; inga Gen-4-garantier tillskrivs WAN3."
+    }
+  ],
+  "actions": {
+    "generationCalls": 0,
+    "uploads": 0,
+    "paidCalls": 0,
+    "credentialReads": 0,
+    "accountSwitches": 0,
+    "sourceMediaEdits": 0,
+    "currentPlanEdits": 0
+  },
+  "limitations": [
+    "Inget runtime-prov med numeriska WAN3-mellanpositioner har gjorts; dokumentationen styr beslutet att inte anvanda dem.",
+    "Modellsannolikheter och orsakssamband ar inte matta. Hypoteserna ovan ar inte rotorsaksdomar.",
+    "Roots retarget-resultat ar inte granskat eller accepterat av denna audit."
+  ]
+}

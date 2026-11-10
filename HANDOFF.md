@@ -51,6 +51,13 @@ Biblioteket har kapitel, ±1 källruta, 0,25/0,5/1× och `?clip=...&frame=...`. 
 - `evidence/sequence-reuse-audit.json` har exakta källor, äldre kandidater/tidsbevis och nyare tidslinje. Materialfilmernas exakta skapandetid saknas; mtime bevisar inte “20 timmar”. Nyare P7 `p7-c1-outer-01` har arkiv-QA: gul f60–67, kant68, blå69+, släpp88. Återgranska användbar råtagning före nytt jobb.
 - `tools/restore-sequence-review.ts` importerar 17-kortsfilmer byteidentiskt och gör 16-kortsprefix med två encoders×två trådar. Kör inte om så senare reviewkvitton ersätts. Registrera arkivläsningar; inga gamla node_modules/junctions/runtime-beroenden.
 
+## Aktuellt P4-prov och mellanreferenser
+
+- `pamela-p4-c1-plan-retarget-02`: nytt lokalt prov från den verifierade separata P4.C1-källan4153a…, inte V6/3:03. Samma LH, synlig kantf58–63, släppf78. Fryst plan406acb69…; slutcentrum0,624px från mål, blå kärna92,96% IoU. Originalets vändning bevarad genomf63 före kodning; hand/kort korrigeras tillsammans därefter. Grönt bevaras för att inte maska bort kanten. PENDING; retur/C2/fullsekvens/slutmaterial saknas. `evidence/p4-placement-production.json` och `p4-placement-review.json`.
+- Första lokala provet01 underkändes: vilande hand påverkades och generisk keying dolde kortkanten. Endast02 registreras för granskning; inga nya API-jobb.
+- WAN3 har endast dokumenterade first/last-ankare; de kan inte kombineras med referensbild/video. Fysisk mellanpose kräver två separata anrop med gemensam PNG och skarvkontroll. `evidence/wan-motion-constraints.json` har officiella kontrakt och möjliga felorsaker.
+- V6 har handbyte och är visuellt mål, inte godkänd LH-rörelse. Äldre3:03 är sammanhängande montage men inte verifierad BACK→FRONT genom alla utdelningar.
+
 ## Nästa steg och gränser
 
 1. Jämför äldre materialsekvenser mot V6 och oförändrade råtagningar. Klipp fungerande sammanhängande rörelser på dokumenterade rutor och bevara lagda kort över bryggorna.
