@@ -89,6 +89,21 @@ De två senaste P7-jobben använder `tools/generate-p7-direct.ts`: en fryst plac
 
 Det beställda `pamela-p4-c1-color-control-01` är ett separat kontrollprov via `tools/generate-p4-control.ts`: exakt start-/slutbild och prompt från den nyare historiska P4.C1-tagningen, 4 s, `wan3`, ingen omfärgning. Den historiska planen är kontrollunderlag, inte aktuellt editorutkast. WAN3 och det efterföljande Kling 3.0 Pro-provet är SUCCEEDED men REJECTED för vändningskravet: båda byter färg på en bred yta utan verifierad kantpassage. Kling ger 1764×1172, 24 fps/97 rutor; ingen retiming eller formatkorrigering är gjord. Kvittot i `assets/motions/<clip-id>/generation.json` och HANDOFF anger aktuell status.
 
+## Klippbank och nodnotation
+
+Labbets flik **Klippbank** (`lab.html?tab=klippbank`) visar klippjobben som ett nodträd. Noderna är ankarposer: `IDLE`, `READY` och ett landningsankare per kort (`P4.C1`, `D.C2`). Varje klipp är en kant `A>B` med en enda handling; en runda är kanter i följd:
+
+```text
+IDLE>READY | READY>P1.C1 | P1.C1>READY | READY>D.C1 | D.C1>READY | READY>P1.C2 | P1.C2>READY | READY>D.C2 | D.C2>IDLE
+```
+
+- Banken är 51 kanter: 16 kort × giv, retur till READY och retur till IDLE, samt `IDLE>READY`, `READY>IDLE` och `IDLE>IDLE`. `D.C3` är tre valfria kanter utöver dem. `@<klipp-id>` efter en kant låser en viss tagning, till exempel en variant. Jobbfilens `LAND(P4.C1)`/`RELEASE(P4.C1)` och VILA/REDO läses som samma noder.
+- READY kan ha namngivna varianter (`READY-B`): `READY-B>P4.C1` är en tagning av kanten `READY>P4.C1` med annan startpose, visad som variant-start och spelad bara när rundan skriver den så. Jobb med andra noder (`READY-B>DRAWN`, `DRAWN>P4.C1`) tappas aldrig: de bildar gruppen Experiment utanför de 51, med samma detaljvy och som egna kedjor att jämföra med modellens väg.
+- Fliken är presentation, inget eget statusregister. `src/clip-graph.ts` räknar grafen ur `data/clip-jobs.json`, lokala kvitton (förberedd/renderas/klar) och `motions/<id>.json` (beslut), och läser om var fjärde sekund. Huvudtagning är godkänd före ogranskad och, bland lika, den senaste som har en passande retur. Underkända tagningar väljs aldrig; de och ersatta tagningar ligger hopfällda per kant och i den skrivskyddade städlistan. `review.acceptedAs: "MAIN"` går före härledningen och `"VARIANT"` visas bredvid.
+- Ankarregeln för klipp: en retur vars första bild är en fil (landningsankaret) passar varje tagning av given, som spelas till sin sista ruta. En retur vars första bild är en ruta ur ett visst givklipp passar bara den tagningen, som klipps vid den rutan (`first.frame.index`; `motion.landingFrame` går före om det anges). Rundbyggaren spelar kedjan, stegar ruta för ruta över klippen och visar saknade kanter som luckor. Scout äger fortsatt ordning, regler och kortvärden.
+- En härledd tagning är inget nytt klipp utan rutorna A–B ur ett befintligt: `"derived": [{id, kind, from, to, clip, frames: [A, B]}]` i jobbfilen.
+- Jobbutkast för saknade kanter kopieras ur fliken, som aldrig skriver i jobbfilen eller beställer något. Preview-servern lämnar bara ut läsvägarna `/api/clip-bank` och `/api/proofs`, `source.mp4`, `first.png` och `last.png` för klipp i jobbfilen samt mp4, png och json under `assets/proofs/`. Fliken Prov (`?tab=prov&proof=<mapp>`) spelar provmapparnas filmer; `proof.json` får bära `title`, `description`, `labels` och `chapters`. Publika sidan saknar underlaget och visar "finns bara lokalt".
+
 ## Återbruk och införande
 
 Två historiska banker måste hållas isär. Den **äldre vita banken** på 182,867 s byggdes av fjorton separata 12-sekunderstagningar plus vila/bryggor. Kortversionen 146,8 s trimmade hela bildrutor utan retime/blend. P4.C1/C2-promptarna begärde vita kort och komplett dragning–placering–släpp–tom retur, ingen uttrycklig sidvändning. Dess senare materialvisning tilldelade kortsidor; råfilmens semantiska sida var UNKNOWN. Dessa vita original är inte källan till den nyare gula/blå P4.C2 och dess felaktigt helgula `review-v04`. Exakta äldre instruktioner, trimintervall och hashkontroller: [historiskt underlag](../evidence/historical-p4-generation-inputs.json).

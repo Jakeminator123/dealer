@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "id": "pamela-ready-b-shoe-plate-01",
+  "dealer": "pamela",
+  "source": {
+    "path": "assets/motions/pamela-ready-b-shoe-plate-01/source.mp4",
+    "sha256": "a945396d1ae0ed736bc29f2cce72228619110a76715a76aa7bb920e0c06fc07e",
+    "bytes": 11809821,
+    "width": 1764,
+    "height": 1174,
+    "fps": 30,
+    "frames": 120,
+    "provider": "Runway developer API",
+    "model": "wan3"
+  },
+  "motion": {
+    "kind": "IDLE",
+    "from": "READY-B",
+    "to": "READY-B",
+    "hand": "LH",
+    "pass": false,
+    "basis": "SOURCE_FRAME_REVIEW",
+    "evidence": "evidence/generation-method-audit.json"
+  },
+  "review": {
+    "decision": "PENDING",
+    "basis": "REDO B till vila och tillbaka: handen på kortet i låga öppningen f0–18, lyfter f24, båda händer vilar f42–78 med skon orörd och gult kort på plats, tillbaka f84–96, REDO B från f102.",
+    "limitations": "REDO B-bilden är AI-ritad och inte godkänd av Jakob som ankare. Ruta 60 används som skobild i landningsankare.",
+    "colorDoesNotProvePhysicalSide": true,
+    "userAccepted": false,
+    "productionReady": false
+  },
+  "experiment": "READY-B",
+  "postProcessing": "none",
+  "generationRef": "assets/motions/pamela-ready-b-shoe-plate-01/generation.json",
+  "jobRef": "data/clip-jobs.json",
+  "scoutIntegrated": false,
+  "published": false
+}

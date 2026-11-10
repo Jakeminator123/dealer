@@ -28,12 +28,13 @@
     "evidence": "evidence/generation-method-audit.json"
   },
   "review": {
-    "decision": "PENDING",
+    "decision": "SECONDARY",
     "basis": "Samma vänsterhand bär kortet lågt över bordet. Gult nära kantläge f57–66, kant f69–72, blå framsida f75–84, fingrarna vilar på kortet f87–117 på planens plats.",
-    "limitations": "Vändningen sker mycket lågt, bred gul yta syns kort. Svaga ljusa märken på blå ytan. En tagning.",
+    "limitations": "Kortet bärs nästan plant och vänds vid bordsytan, så bred gul sida syns knappt. Ersatt som huvudklipp av plan-deal-03.",
     "colorDoesNotProvePhysicalSide": true,
     "userAccepted": false,
-    "productionReady": false
+    "productionReady": false,
+    "userReview": "Jakob 2026-11-10: ser ingen vändning; fel sida visas utan synlig vridning."
   },
   "placementRef": {
     "path": "assets/anchors/pamela-p1-c1-plan-land-03/placement-plan.json",

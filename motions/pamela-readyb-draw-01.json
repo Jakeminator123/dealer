@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "id": "pamela-readyb-draw-01",
+  "dealer": "pamela",
+  "source": {
+    "path": "assets/motions/pamela-readyb-draw-01/source.mp4",
+    "sha256": "569c32abc83dbb7da888e67ffa2ef4504a5d493152c188baaaa474ce1357b639",
+    "bytes": 5800421,
+    "width": 1764,
+    "height": 1174,
+    "fps": 30,
+    "frames": 60,
+    "provider": "Runway developer API",
+    "model": "wan3"
+  },
+  "motion": {
+    "kind": "ENTRY",
+    "from": "READY-B",
+    "to": "DRAWN",
+    "hand": "LH",
+    "pass": false,
+    "basis": "SOURCE_FRAME_REVIEW",
+    "evidence": "evidence/generation-method-audit.json"
+  },
+  "review": {
+    "decision": "REJECTED",
+    "basis": "Kortet lyfts ur öppningen f24–33 i stället för att tryckas ner, läggs för långt bort f36–42 och skjuts tillbaka f45–57. Nästa kort i skon får mönster från f27.",
+    "limitations": "Beställd rörelse uteblev. Verkligt uttag på filten finns i pamela-p1-c1-ready2-01 f38–50, som DRAWN-ankaret är taget ur (skarv 206 avvikande pixlar mot nästa klipp).",
+    "colorDoesNotProvePhysicalSide": true,
+    "userAccepted": false,
+    "productionReady": false
+  },
+  "experiment": "READY-B",
+  "postProcessing": "none",
+  "generationRef": "assets/motions/pamela-readyb-draw-01/generation.json",
+  "jobRef": "data/clip-jobs.json",
+  "scoutIntegrated": false,
+  "published": false
+}

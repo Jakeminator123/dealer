@@ -1,0 +1,50 @@
+{
+  "schemaVersion": 1,
+  "id": "pamela-p1-c1-plan-return-idle-02",
+  "dealer": "pamela",
+  "source": {
+    "path": "assets/motions/pamela-p1-c1-plan-return-idle-02/source.mp4",
+    "sha256": "bfab59992170b28f5fd279faefc4785d027393011aa10cab0dd80fd38cc1995c",
+    "bytes": 8321297,
+    "width": 1764,
+    "height": 1174,
+    "fps": 30,
+    "frames": 90,
+    "provider": "Runway developer API",
+    "model": "wan3"
+  },
+  "motion": {
+    "kind": "RETURN",
+    "from": "LAND(P1.C1)",
+    "to": "IDLE",
+    "hand": "LH",
+    "target": "P1.C1",
+    "pass": false,
+    "startsOn": {
+      "clip": "pamela-p1-c1-plan-deal-03",
+      "frame": 110,
+      "seamPixelsOverThreshold": 0
+    },
+    "basis": "SOURCE_FRAME_REVIEW",
+    "evidence": "evidence/generation-method-audit.json"
+  },
+  "review": {
+    "decision": "PENDING",
+    "basis": "Startar på landningsrutan f110 i plan-deal-03 (0 avvikande pixlar). Fingrarna vilar f0–18, lyfter f24, armen tillbaka f30–42, två vilande händer från f48.",
+    "limitations": "En tagning.",
+    "colorDoesNotProvePhysicalSide": true,
+    "userAccepted": false,
+    "productionReady": false
+  },
+  "placementRef": {
+    "path": "assets/anchors/pamela-idle-p1-c1-plan-01/placement-plan.json",
+    "sha256": "406acb69c086b51d166c0eba3e6bb2ce7e19b868b63546db04aa9562da7e7058",
+    "source": "placements/default.json",
+    "plannedTarget": "P1.C1"
+  },
+  "postProcessing": "none",
+  "generationRef": "assets/motions/pamela-p1-c1-plan-return-idle-02/generation.json",
+  "jobRef": "data/clip-jobs.json",
+  "scoutIntegrated": false,
+  "published": false
+}

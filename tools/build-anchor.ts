@@ -16,6 +16,7 @@ const W = 1764, H = 1174, N = W * H;
 const sha = (b: Buffer | string) => createHash('sha256').update(b).digest('hex');
 type Colour = 'blue' | 'magenta';
 type Anchor = {id: string; purpose: string; base: {frame?: {video: string; videoSha256: string; index: number}; file?: {path: string; sha256: string}};
+  replaceObject?: {what: string; mode?: 'behindHand'; box: [number, number, number, number]; plate: {frame: {video: string; videoSha256: string; index: number}}}[];
   cardTexture?: {frame: {video: string; videoSha256: string; index: number}}; erase?: Colour[]; restore?: {what: string; box: [number, number, number, number]; plate: {frame: {video: string; videoSha256: string; index: number}}}[];
   paint?: {target: string; side: 'FRONT' | 'BACK'}[]; plan: {path: string; sha256: string}};
 
@@ -47,6 +48,33 @@ const is: Record<Colour | 'green', (r: number, g: number, b: number) => boolean>
 };
 const at = (i: number) => [px[i * 3], px[i * 3 + 1], px[i * 3 + 2]] as const;
 const report: Record<string, unknown> = {};
+
+// 0. Swap a static prop (the shoe) for the same prop from another REAL frame of the locked shot.
+//    Inside the box every pixel that belongs to the prop in either frame takes the plate's pixel,
+//    so the old prop disappears and the new one arrives with its own surroundings.
+for (const step of anchor.replaceObject ?? []) {
+  const f = step.plate.frame;
+  if (sha(await readFile(f.video)) !== f.videoSha256) throw Error(`Plate video changed: ${f.video}`);
+  const plate = execFileSync(process.env.FFMPEG ?? 'ffmpeg', ['-hide_banner', '-loglevel', 'error', '-i', f.video, '-vf', `select=eq(n\\,${f.index})`, '-fps_mode', 'vfr', '-frames:v', '1', '-f', 'rawvideo', '-pix_fmt', 'rgb24', '-'], {maxBuffer: 64 << 20});
+  if (plate.length !== N * 3) throw Error('Plate frame has the wrong size.');
+  let n = 0, skinInBox = 0;
+  for (let y = step.box[1]; y <= step.box[3]; y++) for (let x = step.box[0]; x <= step.box[2]; x++) {
+    const i = y * W + x, [r, g, b] = at(i), pg = is.green(plate[i * 3], plate[i * 3 + 1], plate[i * 3 + 2]);
+    const skin = r > 120 && r > g + 15 && g >= b - 25 && r > b + 25 && g > 0.55 * r && b > 0.3 * r; // b term keeps the yellow card out
+    // A hand over bare table is never overwritten. Skin-coloured pixels where the plate has the prop are the
+    // old prop's gold trim (or a hand in front of it, which the guard below rejects) and are replaced.
+    if (skin) { skinInBox++; if (r > g + 25 && pg) continue; }
+    if (pg && is.green(r, g, b)) continue;
+    // 'behindHand': same prop in both frames, hand in front of it. Only the plate's prop pixels are taken,
+    // and never over hand skin or over a yellow card lying in front of the prop.
+    // Skin must be clearly red-shifted here: the trial's cream-coloured shoe card is skin-like but paler.
+    if (step.mode === 'behindHand' && (pg || (skin && r > g + 25) || (r > 150 && g > 130 && b < 110 && r > b + 80))) continue;
+    for (let j = 0; j < 3; j++) px[i * 3 + j] = plate[i * 3 + j]; n++;
+  }
+  // The shoe's gold window frame is skin-coloured (about 1 400 px); a real hand in the box is far larger.
+  if (step.mode !== 'behindHand' && skinInBox > 3000) throw Error(`${step.what}: a hand overlaps the box in the base frame (${skinInBox} skin pixels); choose another base or box.`);
+  report[`replaced:${step.what}`] = {pixels: n, box: step.box, plate: {video: f.video, videoSha256: f.videoSha256, frame: f.index}};
+}
 
 // 1. Remove old table cards of the named colours, including their pale rim, without touching skin or sleeve.
 for (const colour of anchor.erase ?? []) {
@@ -184,7 +212,8 @@ for (const card of anchor.paint ?? []) {
   for (let i = 0; i < N; i++) { const a = layer[i * 4 + 3]; if (!a) continue;
     const [r, g, b] = at(i), skin = r > 120 && r > g + 15 && g >= b - 25 && r > b + 25 && g > 0.55 * r, dark = r < 75 && g < 75 && b < 75;
     if (skin || dark) { hidden++; continue; }
-    const shade = Math.min(1, Math.max(0.45, g / litLevel));
+    // Only table green carries shadow information; over another card the new card keeps its own brightness.
+    const shade = g > r + 35 && g > b + 35 ? Math.min(1, Math.max(0.45, g / litLevel)) : 1;
     for (let k = 0; k < 3; k++) px[i * 3 + k] = Math.round((layer[i * 4 + k] * shade * a + px[i * 3 + k] * (255 - a)) / 255); visible++; }
   if (visible < 300) throw Error(`${card.target}: the planned card would be almost fully hidden by the hand; choose another base frame.`);
   painted.push({target: card.target, side: card.side, submittedPoints: points, visiblePixels: visible, hiddenBehindForeground: hidden});

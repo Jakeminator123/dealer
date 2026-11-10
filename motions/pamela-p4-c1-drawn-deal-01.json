@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "id": "pamela-p4-c1-drawn-deal-01",
+  "dealer": "pamela",
+  "source": {
+    "path": "assets/motions/pamela-p4-c1-drawn-deal-01/source.mp4",
+    "sha256": "46050e50ba256e5272b91b047728620cddabafd0177ed90a0473cbc734250893",
+    "bytes": 11079999,
+    "width": 1764,
+    "height": 1174,
+    "fps": 30,
+    "frames": 120,
+    "provider": "Runway developer API",
+    "model": "wan3"
+  },
+  "motion": {
+    "kind": "DEAL",
+    "from": "DRAWN",
+    "to": "LAND(P4.C1)",
+    "takeHand": "LH",
+    "releaseHand": "LH",
+    "target": "P4.C1",
+    "physicalStartSide": "BACK",
+    "physicalEndSide": "FRONT",
+    "turn": true,
+    "pass": false,
+    "basis": "SOURCE_FRAME_REVIEW",
+    "evidence": "evidence/generation-method-audit.json"
+  },
+  "review": {
+    "decision": "ACCEPTED",
+    "basis": "Kortet glider plant längs filten under fingrarna f24–62, reses i kanten f63–67, tunn kant f68–70, blått öppnar f73–77, bred blå f78–81, läggs på planens plats f84–92 med fingret kvar. Greppet granskat ruta för ruta f58–81 utan fingerfel. Skon stabil, nästa gula kort sitter kvar. Sista rutan 17 px från ankaret.",
+    "limitations": "En tagning. Uttaget ur skon (READY-B>DRAWN) saknar godkänt klipp. Returer för variant B är inte beställda.",
+    "colorDoesNotProvePhysicalSide": true,
+    "userAccepted": true,
+    "productionReady": false,
+    "userReview": "Jakob 2026-11-11: 'Svinbra'. Rörelsen han beskrev: föra fram kortet längs filten, vrida hand och kort nära platsen, landa i ankaret.",
+    "acceptedAs": "MOTION (variant B); inte produktionsklart: uttag och returer saknas"
+  },
+  "experiment": "READY-B",
+  "postProcessing": "none",
+  "generationRef": "assets/motions/pamela-p4-c1-drawn-deal-01/generation.json",
+  "jobRef": "data/clip-jobs.json",
+  "scoutIntegrated": false,
+  "published": false
+}

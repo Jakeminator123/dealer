@@ -29,9 +29,9 @@
     "evidence": "evidence/generation-method-audit.json"
   },
   "review": {
-    "decision": "PENDING",
+    "decision": "SECONDARY",
     "basis": "Startar på givens landningsruta f112 (0 avvikande pixlar). Fingrarna vilar f0–24, lyfter f30, armen tillbaka f36–42, två vilande händer från f54.",
-    "limitations": "En tagning.",
+    "limitations": "Hör till plan-deal-02. Skarvar inte mot nya huvudgiven plan-deal-03 (ca 440 avvikande pixlar); ersatt av -02.",
     "colorDoesNotProvePhysicalSide": true,
     "userAccepted": false,
     "productionReady": false

@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "id": "pamela-p4-c1-readyb-deal-01",
+  "dealer": "pamela",
+  "source": {
+    "path": "assets/motions/pamela-p4-c1-readyb-deal-01/source.mp4",
+    "sha256": "b25bd45bc26a71e330f08ee414c75fb2dbfac9e7d45600fc6f59f69c0b649836",
+    "bytes": 13638074,
+    "width": 1764,
+    "height": 1174,
+    "fps": 30,
+    "frames": 150,
+    "provider": "Runway developer API",
+    "model": "wan3"
+  },
+  "motion": {
+    "kind": "DEAL",
+    "from": "READY-B",
+    "to": "LAND(P4.C1)",
+    "takeHand": "LH",
+    "releaseHand": "LH",
+    "target": "P4.C1",
+    "physicalStartSide": "BACK",
+    "physicalEndSide": "FRONT",
+    "turn": true,
+    "pass": false,
+    "basis": "SOURCE_FRAME_REVIEW",
+    "evidence": "evidence/generation-method-audit.json"
+  },
+  "review": {
+    "decision": "PENDING",
+    "basis": "Variant från REDO B. Kortet glider av bunten i låga öppningen och lyfts f32–54 (släpas inte över filten). Bred gul sida f72–77, smalnar f78–80, tunn kant f81–82, blått f83–95, plant på planens plats med fingret på från ca f105. Skon håller formen, nästa gula kort sitter kvar. Sista rutan 29 px från ankaret.",
+    "limitations": "Beställt släp plant över filten uteblev. En tagning. Returer till REDO B är inte beställda; retur till VILA kan dela ankare med variant A.",
+    "colorDoesNotProvePhysicalSide": true,
+    "userAccepted": false,
+    "productionReady": false
+  },
+  "experiment": "READY-B",
+  "postProcessing": "none",
+  "generationRef": "assets/motions/pamela-p4-c1-readyb-deal-01/generation.json",
+  "jobRef": "data/clip-jobs.json",
+  "scoutIntegrated": false,
+  "published": false
+}
