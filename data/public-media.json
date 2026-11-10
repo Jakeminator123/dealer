@@ -1,0 +1,59 @@
+{
+  "schemaVersion": 1,
+  "provider": "vercel-blob",
+  "projectId": "prj_7zd112w6MIX9YnpcR7Nj64Ke50yk",
+  "teamId": "team_Scxorb9qtZHjNae1YEQnFCaT",
+  "storeId": "store_qeojzIHuA5ewT4uO",
+  "access": "public",
+  "entries": [
+    {
+      "id": "v6-native-reference",
+      "path": "assets/reference/v6.mp4",
+      "url": "https://qeojzihua5ewt4uo.public.blob.vercel-storage.com/dealer/412a2fa01f9e852e8894002076b5771181bd6afd4ddeef1be76c0640d5853a2d.mp4",
+      "sha256": "412a2fa01f9e852e8894002076b5771181bd6afd4ddeef1be76c0640d5853a2d",
+      "bytes": 21108259
+    },
+    {
+      "id": "v6-portrait-reference",
+      "path": "output/v6/take-01/render/idle-deal-idle-portrait.mp4",
+      "url": "https://qeojzihua5ewt4uo.public.blob.vercel-storage.com/dealer/51a2d0c203f4981b812f503cb32c68413350b8f9c6e8ccaf80445a9359356d0b.mp4",
+      "sha256": "51a2d0c203f4981b812f503cb32c68413350b8f9c6e8ccaf80445a9359356d0b",
+      "bytes": 17847045
+    },
+    {
+      "id": "pamela-p4-c2-closed-review-v04",
+      "path": "assets/motions/pamela-p4-c2-left-closed-closed/review-v04/preview.mp4",
+      "url": "https://qeojzihua5ewt4uo.public.blob.vercel-storage.com/dealer/7d093a28f37abf5bd4c373491fca9bc113fc2271e7784e718e66d95beb42392f.mp4",
+      "sha256": "7d093a28f37abf5bd4c373491fca9bc113fc2271e7784e718e66d95beb42392f",
+      "bytes": 5273433
+    },
+    {
+      "id": "pamela-p7-c1-left-turn-pilot-01",
+      "path": "assets/motions/pamela-p7-c1-left-turn-pilot-01/source.mp4",
+      "url": "https://qeojzihua5ewt4uo.public.blob.vercel-storage.com/dealer/f00262416a1b09dcf01ddb9e6c4b9d14ffeaf03745a2cb097682645ed9087751.mp4",
+      "sha256": "f00262416a1b09dcf01ddb9e6c4b9d14ffeaf03745a2cb097682645ed9087751",
+      "bytes": 20509640
+    },
+    {
+      "id": "pamela-p7-c1-left-turn-pilot-02",
+      "path": "assets/motions/pamela-p7-c1-left-turn-pilot-02/source.mp4",
+      "url": "https://qeojzihua5ewt4uo.public.blob.vercel-storage.com/dealer/00a93efa3e7b8ccdadbafa57e8232a1eed479600c5f4c06d12faed9f74b1e334.mp4",
+      "sha256": "00a93efa3e7b8ccdadbafa57e8232a1eed479600c5f4c06d12faed9f74b1e334",
+      "bytes": 20926194
+    },
+    {
+      "id": "pamela-p6-c1-left-turn-pilot-01",
+      "path": "assets/motions/pamela-p6-c1-left-turn-pilot-01/source.mp4",
+      "url": "https://qeojzihua5ewt4uo.public.blob.vercel-storage.com/dealer/6386e401b1600263998e5a5e8facb180a46c000c13bb0ab76265d213a9703c34.mp4",
+      "sha256": "6386e401b1600263998e5a5e8facb180a46c000c13bb0ab76265d213a9703c34",
+      "bytes": 16269958
+    },
+    {
+      "id": "pamela-p7-c1-left-pink-pilot-01",
+      "path": "assets/motions/pamela-p7-c1-left-pink-pilot-01/source.mp4",
+      "url": "https://qeojzihua5ewt4uo.public.blob.vercel-storage.com/dealer/41ac99c50cba24781f2d4461bed91c2c6b5e13beb6b761d8d6f09d13979bf20e.mp4",
+      "sha256": "41ac99c50cba24781f2d4461bed91c2c6b5e13beb6b761d8d6f09d13979bf20e",
+      "bytes": 16491760
+    }
+  ]
+}

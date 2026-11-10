@@ -11,6 +11,7 @@ import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import sharp from 'sharp';
 import type { PamelaCardContactV4Frame } from '../src/pamela-card-contact-v6.ts';
+import { pinInputs, readPinnedInput } from './render-inputs.ts';
 
 const W = 1762, H = 1174, FPS = 30, TOTAL = 926, WORKERS = 4;
 const root = process.cwd();
@@ -30,7 +31,7 @@ type Source = { path: string; dir: string; sha256: string; frames: number };
 type Plan = { fps: number; frameCount: number; timeline: Entry[]; sources: Record<Clip, Source>; segments: Array<{ clip: Clip; startFrameInclusive: number; endFrameExclusive: number; dealOrdinal: number; priorCards: number }> };
 type HashRecord = { path: string; sha256: string };
 type Snapshot = HashRecord & { snapshot: string };
-type Job = { run: string; part: number; start: number; end: number; plan: Plan; snapshot: Snapshot[]; checkFrames: number[] };
+type Job = { run: string; part: number; start: number; end: number; plan: Plan; snapshot: Snapshot[]; frameInputs: HashRecord[]; checkFrames: number[] };
 type Output = HashRecord & { width: number; height: number; fps: number; frameCount: number; duration: number };
 type FrameRecord = { outputFrame: number; clip: Clip; sourceFrame: number; inputs: HashRecord[] };
 type PartResult = { part: number; start: number; end: number; outputs: { native: Output; portrait: Output }; frames: FrameRecord[]; checks: HashRecord[] };
@@ -135,7 +136,8 @@ async function worker(jobPath: string) {
   await verify(job.snapshot.map(item => ({ path: item.snapshot, sha256: item.sha256 })));
   await verify(job.snapshot.filter(item => !item.path.endsWith('.ts')));
   const renderer = await import(pathToFileURL(local(`${job.run}/snapshot/${rendererPath}`)).href) as typeof import('../src/pamela-card-contact-v6.ts');
-  const render = await renderer.createPamelaCardContactV6Renderer();
+  const render = await renderer.createPamelaCardContactV6Renderer(undefined, local(`${job.run}/snapshot`));
+  const expectedInputs = new Map(job.frameInputs.map(input => [input.path, input.sha256]));
   const tracks = await read<{ frames: { frameSha256: string; moving: { contourNative: NonNullable<PamelaCardContactV4Frame['contour']>; quadNative: PamelaCardContactV4Frame['quad'] } }[] }>(`${job.run}/snapshot/${trackPath}`);
   const prefix = `${job.run}/parts/part-${job.part}`;
   const files = { native: `${prefix}-native.mp4`, portrait: `${prefix}-portrait.mp4` };
@@ -153,7 +155,7 @@ async function worker(jobPath: string) {
       const name = `frame-${String(entry.sourceFrame + 1).padStart(3, '0')}.png`;
       const inputs: HashRecord[] = [];
       const image = async (file: string, mask = false) => {
-        const bytes = await readFile(runFile(file)); inputs.push({ path: file, sha256: hash(bytes) });
+        const bytes = await readPinnedInput(runFile(file), expectedInputs.get(file)); inputs.push({ path: file, sha256: hash(bytes) });
         const decoded = await (mask ? sharp(bytes).greyscale() : sharp(bytes).removeAlpha()).raw().toBuffer({ resolveWithObject: true });
         if (decoded.info.width !== W || decoded.info.height !== H || decoded.info.channels !== (mask ? 1 : 3)) throw Error(`Unexpected source raster: ${file}`);
         return decoded.data;
@@ -204,20 +206,25 @@ async function main() {
     const snapshot = await makeSnapshot(run);
     const frozenPlan = await read<Plan>(`${run}/snapshot/${planPath}`); validatePlan(frozenPlan);
     if (JSON.stringify(frozenPlan) !== JSON.stringify(plan)) throw Error('Plan changed during setup');
+    const framePaths = frozenPlan.timeline.flatMap(entry => {
+      const name = `frame-${String(entry.sourceFrame + 1).padStart(3, '0')}.png`;
+      return [`${frozenPlan.sources[entry.clip].dir}/${name}`, ...(entry.clip === 'deal' ? [`${trackRoot}/moving-mask/${name}`, `${trackRoot}/shoe-mask/${name}`] : [])];
+    });
+    const frameInputs = await pinInputs(framePaths, runFile);
     let boundary = 0;
     const joins = plan.segments.slice(0, -1).map(segment => {
       boundary += segment.endFrameExclusive - segment.startFrameInclusive;
       return { outputFrame: boundary, seconds: boundary / FPS, from: plan.timeline[boundary - 1], to: plan.timeline[boundary] };
     });
     const checkFrames = [...new Set([0, TOTAL - 1, ...joins.flatMap(join => [join.outputFrame - 1, join.outputFrame]), ...Array.from({ length: WORKERS - 1 }, (_, i) => Math.floor(TOTAL * (i + 1) / WORKERS)).flatMap(frame => [frame - 1, frame])])].sort((a, b) => a - b);
-    await save(`${run}/manifest.json`, { status: 'rendering', startedAt, node: process.version, sharp: sharp.versions, workers: WORKERS, sharpThreads: 1, ffmpegThreads: 1, snapshot, sources, checkFrames, joins });
+    await save(`${run}/manifest.json`, { status: 'rendering', startedAt, node: process.version, sharp: sharp.versions, workers: WORKERS, sharpThreads: 1, ffmpegThreads: 1, snapshot, frameInputs, sources, checkFrames, joins });
     const children: ChildProcess[] = [];
     const cancel = () => { for (const child of children) if (child.connected && child.exitCode === null) child.send({ stop: true }, () => {}); };
     process.on('SIGINT', cancel); process.on('SIGTERM', cancel);
     try {
       const jobs: Promise<void>[] = [];
       for (let part = 0; part < WORKERS; part++) {
-        const job: Job = { run, part, start: Math.floor(TOTAL * part / WORKERS), end: Math.floor(TOTAL * (part + 1) / WORKERS), plan: frozenPlan, snapshot, checkFrames };
+        const job: Job = { run, part, start: Math.floor(TOTAL * part / WORKERS), end: Math.floor(TOTAL * (part + 1) / WORKERS), plan: frozenPlan, snapshot, frameInputs, checkFrames };
         const jobPath = `${run}/parts/job-${part}.json`; await save(jobPath, job);
         const child = spawn(process.execPath, [local(`${run}/snapshot/${scriptPath}`), '--worker', jobPath], { cwd: root, windowsHide: true, env: { ...process.env, UV_THREADPOOL_SIZE: '1', VIPS_CONCURRENCY: '1', OMP_NUM_THREADS: '1' }, stdio: ['ignore', 'pipe', 'pipe', 'ipc'] });
         children.push(child);
@@ -242,7 +249,7 @@ async function main() {
       if (inputs.has(input.path) && inputs.get(input.path) !== input.sha256) throw Error(`Source changed between worker reads: ${input.path}`);
       inputs.set(input.path, input.sha256);
     }
-    await verify([...sources, ...snapshot, ...Array.from(inputs, ([file, sha256]) => ({ path: file, sha256 }))]);
+    await verify([...sources, ...snapshot, ...frameInputs, ...Array.from(inputs, ([file, sha256]) => ({ path: file, sha256 }))]);
     const outputs: Partial<Record<'native' | 'portrait', Output>> = {};
     const timestamps: Record<string, unknown> = {};
     for (const format of ['native', 'portrait'] as const) {
@@ -264,7 +271,7 @@ async function main() {
       await rename(local(`${run}/qa/encoded-selected-${String(index).padStart(4, '0')}.png`), local(file));
       checks.push({ path: file, sha256: await hashFile(file) });
     }
-    await save(`${run}/sequence-evidence.json`, { status: 'local-candidate-awaiting-visual-review', productionAccepted: false, startedAt, completedAt: new Date().toISOString(), sources, snapshot, outputs, timestamps, frameRecords, checks, plan: frozenPlan, joins, processing: { workers: WORKERS, fps: FPS, frames: TOTAL, sharpThreads: 1, ffmpegThreads: 1, retime: false, crossfade: false, faceInterpolation: false, newPaidJobs: 0, retainsTwoCardsAtEnd: true } });
+    await save(`${run}/sequence-evidence.json`, { status: 'local-candidate-awaiting-visual-review', productionAccepted: false, startedAt, completedAt: new Date().toISOString(), sources, snapshot, frameInputs, outputs, timestamps, frameRecords, checks, plan: frozenPlan, joins, processing: { workers: WORKERS, fps: FPS, frames: TOTAL, sharpThreads: 1, ffmpegThreads: 1, retime: false, crossfade: false, faceInterpolation: false, newPaidJobs: 0, retainsTwoCardsAtEnd: true } });
     console.log(`Verified ${TOTAL} frames in both formats: ${run}/sequence-evidence.json`);
   } catch (error) {
     await save(`${run}/failure.json`, { status: 'failed-kept-for-inspection', startedAt, failedAt: new Date().toISOString(), error: error instanceof Error ? error.message : String(error) });

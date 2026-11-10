@@ -46,5 +46,13 @@
   "placementRef": null,
   "viewProfileId": null,
   "scoutIntegrated": false,
-  "published": false
+  "published": true,
+  "publicReview": {
+    "purpose": "review-only",
+    "file": "assets/motions/pamela-p4-c2-left-closed-closed/review-v04/preview.mp4",
+    "sha256": "7d093a28f37abf5bd4c373491fca9bc113fc2271e7784e718e66d95beb42392f",
+    "url": "https://qeojzihua5ewt4uo.public.blob.vercel-storage.com/dealer/7d093a28f37abf5bd4c373491fca9bc113fc2271e7784e718e66d95beb42392f.mp4",
+    "site": "https://dealer-delta-eosin.vercel.app/",
+    "doesNotImplyApproval": true
+  }
 }

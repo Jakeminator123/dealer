@@ -13,7 +13,9 @@ export function publicStore(storage: StoragePort, initial: () => Promise<PublicS
     const snapshot = saved === null ? await initial() : JSON.parse(saved);
     validatePlan(snapshot.plan);
     if (typeof snapshot.revision !== 'string') throw Error('Ogiltigt sparat utkast.');
-    return structuredClone(snapshot);
+    const copy = structuredClone(snapshot);
+    if (saved === null) copy.plan.updatedAt = null;
+    return copy;
   }
   async function save(value: unknown, expected: string | null) {
     validatePlan(value);

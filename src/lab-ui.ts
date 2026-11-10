@@ -4,6 +4,7 @@ const $=<T extends HTMLElement=HTMLElement>(id:string)=>document.getElementById(
 const input=(id:string)=>$<HTMLInputElement>(id);
 let plan:PlacementPlan, revision='', savedSignature='', view:View='native', selected='P4.C2', dirty=false, busy=false, materialReady=false, reloadArmed=false;
 let history:PlacementPlan[]=[];
+let loadGeneration=0, editGeneration=0;
 let zoom=1;
 let motionFrame=0, motionStart=0;
 const displayedQuad=(id:string)=>input('flat-plane').checked?flatQuad(plan.targets[id].geometry[view],plan.targets['P4.C1'].geometry[view],view,Number(input('plane-heading').value)):quad(plan.targets[id].geometry[view],view);
@@ -14,7 +15,7 @@ function sizeStage(){const p=VIEWS[view],ratio=p.width/p.height,w=Math.min(stage
 function setZoom(value:number){zoom=Math.max(.5,Math.min(3,value));sizeStage();$('zoom-reset').textContent=`${Math.round(zoom*100)} %`;paint(false);}
 function message(text:string){$('message').textContent=text;$('message').hidden=false;}
 function checkpoint(){history.push(structuredClone(plan));if(history.length>30)history.shift();}
-function changed(){dirty=JSON.stringify(plan)!==savedSignature;reloadArmed=false;$('message').hidden=true;paint(false);}
+function changed(){editGeneration++;dirty=JSON.stringify(plan)!==savedSignature;reloadArmed=false;$('message').hidden=true;paint(false);}
 const target=()=>plan.targets[selected==='shoe'?'P4.C2':selected];
 const geometry=()=>target().geometry[view];
 function setPanel(name:string){if(selected==='shoe'&&name!=='placement')return;document.querySelectorAll<HTMLButtonElement>('[data-panel]').forEach(b=>{const on=b.dataset.panel===name;b.setAttribute('aria-pressed',String(on));$(`panel-${b.dataset.panel}`).hidden=!on;});if(name==='material')void material();}
@@ -24,8 +25,8 @@ async function material(){
 function syncMaterial(){const c=window.cardMaterialStudy;if(!c)return;const t=target();c.setBend(t.material.bend);c.setGloss(t.material.gloss);c.showSide(t.intent.endSide==='FRONT'?'front':'back');}
 function choose(id:string){stopMotion();selected=id;if(id==='shoe')setPanel('placement');paint();syncMaterial();}
 function paint(fields=true){
- if(!plan)return;const p=VIEWS[view],isShoe=selected==='shoe',g=geometry(),t=target(),point=isShoe?plan.shoe[view]:g,px=toPixels(point,view);
  (document.querySelector('.workspace') as HTMLElement).inert=busy;
+ if(!plan)return;const p=VIEWS[view],isShoe=selected==='shoe',g=geometry(),t=target(),point=isShoe?plan.shoe[view]:g,px=toPixels(point,view);
  $('stage').classList.toggle('portrait',view==='portrait');$<HTMLImageElement>('stage-image').src=p.background;
  $('stage').classList.toggle('solid-cards',input('solid-cards').checked);sizeStage();
  $('board').setAttribute('viewBox',`0 0 ${p.width} ${p.height}`);$('view-size').textContent=`${p.width} × ${p.height} · ${p.profileId}`;
@@ -34,7 +35,8 @@ function paint(fields=true){
  $('inspector-title').textContent=isShoe?'Skons uttag':`${selected[0]==='D'?'Dealer':`Spelare ${selected[1]}`} · kort ${selected.at(-1)}`;
  $('placement-status').textContent=!isShoe&&g.reviewed?'KONTROLLERAD':'UTKAST';
  $('review-count').textContent=`${TARGETS.filter(id=>plan.targets[id].geometry[view].reviewed).length} av 16 kontrollerade`;
- $('save-state').textContent=busy?'Sparar…':dirty?'Osparade ändringar':plan.updatedAt?'Sparat lokalt':'Startförslag · osparat';
+ $('save-state').textContent=busy?'Arbetar…':dirty?'Osparade ändringar':plan.updatedAt?'Sparat lokalt':'Startförslag · osparat';
+ $<HTMLButtonElement>('reload').disabled=busy;
  $<HTMLButtonElement>('save').disabled=busy||!dirty;$<HTMLButtonElement>('undo').disabled=!history.length||busy;
  $('select-shoe').setAttribute('aria-pressed',String(isShoe));$('card-geometry').hidden=isShoe;
  document.querySelectorAll<HTMLButtonElement>('[data-panel]').forEach(b=>b.disabled=isShoe&&b.dataset.panel!=='placement');
@@ -62,7 +64,17 @@ function paint(fields=true){
  $('side-back').setAttribute('aria-pressed',String(t.intent.endSide==='BACK'));$('side-front').setAttribute('aria-pressed',String(t.intent.endSide==='FRONT'));
  const h=t.intent.pass?otherHand(t.intent.takeHand):t.intent.takeHand;$('release-hand').textContent=h==='LH'?'Vänster · LH':'Höger · RH';
 }
-async function load(){const res=await fetch('/api/placements');if(!res.ok)throw Error('Placeringarna kunde inte läsas.');const data=await res.json();validatePlan(data.plan);plan=data.plan;savedSignature=JSON.stringify(plan);revision=data.revision;dirty=false;history=[];paint();}
+async function load(){
+ const generation=++loadGeneration, edits=editGeneration;
+ busy=true;stopMotion();drag=null;paint(false);
+ try{
+  const res=await fetch('/api/placements');if(!res.ok)throw Error('Placeringarna kunde inte läsas.');
+  const data=await res.json();validatePlan(data.plan);
+  if(generation!==loadGeneration)return;
+  if(edits!==editGeneration)throw Error('Utkastet ändrades under inläsningen och har behållits. Läs in igen för att ersätta det.');
+  plan=data.plan;savedSignature=JSON.stringify(plan);revision=data.revision;dirty=false;history=[];syncMaterial();
+ }finally{if(generation===loadGeneration){busy=false;paint();}}
+}
 function editGeometry(key:keyof Geometry,value:number|boolean){checkpoint();if(selected==='shoe'){if(key==='u'||key==='v')plan.shoe[view][key]=Math.max(0,Math.min(1,value as number));}else{const g={...geometry(),[key]:value,reviewed:key==='reviewed'?value:false} as Geometry;target().geometry[view]=constrain(g,view);}changed();paint();}
 for(const seat of [...Array.from({length:7},(_,i)=>`P${i+1}`),'D']){
  const row=document.createElement('div');row.className='slot-row';row.innerHTML=`<span class="seat"><b>${seat==='D'?'♦':seat[1]}</b>${seat==='D'?'Dealer':`Spelare ${seat[1]}`}</span>`;
@@ -95,8 +107,8 @@ $('side-back').addEventListener('click',()=>editIntent('endSide','BACK'));$('sid
 for(const [id,key] of [['cm-bend','bend'],['cm-gloss','gloss']] as const)input(id).addEventListener('input',()=>{checkpoint();target().material[key]=input(id).valueAsNumber;changed();});
 $('undo').addEventListener('click',()=>{if(history.length){plan=history.pop()!;changed();paint();syncMaterial();}});
 $('reset-selected').addEventListener('click',()=>{checkpoint();if(selected==='shoe')plan.shoe[view]=structuredClone(baseline.shoe[view]);else target().geometry[view]=structuredClone(baseline.targets[selected].geometry[view]);changed();paint();});
-$('save').addEventListener('click',async()=>{try{validatePlan(plan);busy=true;paint(false);const res=await fetch('/api/placements',{method:'PUT',headers:{'content-type':'application/json','if-match':revision},body:JSON.stringify(plan)});const data=await res.json();if(!res.ok){if(res.status===409)$('reload').hidden=false;throw Error(data.error||'Det gick inte att spara.');}plan=data.plan;savedSignature=JSON.stringify(plan);revision=data.revision;dirty=false;history=[];$('message').hidden=true;}catch(e){message((e as Error).message);}finally{busy=false;paint();}});
-$('reload').addEventListener('click',async()=>{if(dirty&&!reloadArmed){message('Exportera först om du vill behålla ditt utkast. Tryck Läs in igen för att ersätta det.');reloadArmed=true;return;}try{await load();reloadArmed=false;$('reload').hidden=true;$('message').hidden=true;}catch(e){message((e as Error).message);}});
+$('save').addEventListener('click',async()=>{if(busy)return;try{validatePlan(plan);busy=true;paint(false);const res=await fetch('/api/placements',{method:'PUT',headers:{'content-type':'application/json','if-match':revision},body:JSON.stringify(plan)});const data=await res.json();if(!res.ok){if(res.status===409)$('reload').hidden=false;throw Error(data.error||'Det gick inte att spara.');}plan=data.plan;savedSignature=JSON.stringify(plan);revision=data.revision;dirty=false;history=[];$('message').hidden=true;}catch(e){message((e as Error).message);}finally{busy=false;paint();}});
+$('reload').addEventListener('click',async()=>{if(busy)return;if(dirty&&!reloadArmed){message('Exportera först om du vill behålla ditt utkast. Tryck Läs in igen för att ersätta det.');reloadArmed=true;return;}try{await load();reloadArmed=false;$('reload').hidden=true;$('message').hidden=true;}catch(e){message((e as Error).message);}});
 $('export').addEventListener('click',()=>{const blob=new Blob([JSON.stringify(plan,null,2)+'\n'],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='pamela-placeringar.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);});
 $('import-plan').addEventListener('click',()=>input('import-file').click());
 input('import-file').addEventListener('change',async()=>{try{const file=input('import-file').files?.[0];if(!file)return;if(file.size>65536)throw Error('Placeringsfilen är för stor.');const imported=JSON.parse(await file.text());validatePlan(imported);stopMotion();checkpoint();plan=imported;changed();paint();message('Utkastet är inläst. Det ersätter inget på disk förrän du sparar.');}catch(e){message((e as Error).message);}finally{input('import-file').value='';}});
@@ -124,6 +136,7 @@ board.addEventListener('pointerdown',e=>{if(e.button!==0||busy)return;const id=(
 board.addEventListener('pointermove',e=>{if(!drag)return;const at=pointer(e);if(drag.rotate){let angle=angleToward(geometry(),at,view);if(e.shiftKey)angle=Math.round(angle/15)*15;target().geometry[view]=constrain({...geometry(),angle,reviewed:false},view);}else{const pos={u:Math.max(0,Math.min(1,at.u-drag.du)),v:Math.max(0,Math.min(1,at.v-drag.dv))};if(drag.id==='shoe')plan.shoe[view]=pos;else plan.targets[drag.id].geometry[view]=constrain({...geometry(),...pos,reviewed:false},view);}changed();paint();});
 for(const type of ['pointerup','pointercancel'])board.addEventListener(type,()=>{if(drag)board.querySelector<SVGElement>(`[data-${drag.rotate?'rotate':'target'}="${drag.id}"]`)?.focus();drag=null;});
 board.addEventListener('keydown',e=>{
+ if(busy)return;
  const id=(e.target as Element).closest('[data-target]')?.getAttribute('data-target');if(!id)return;
  if(e.key==='Enter'||e.key===' '){e.preventDefault();choose(id);return;}
  const dirs:Record<string,number[]>={ArrowLeft:[-1,0],ArrowRight:[1,0],ArrowUp:[0,-1],ArrowDown:[0,1]};if(!dirs[e.key])return;

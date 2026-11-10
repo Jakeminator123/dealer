@@ -1,0 +1,225 @@
+{
+  "schemaVersion": 1,
+  "createdAt": "2026-11-10T18:11:53.003Z",
+  "scope": "Read-only projection analysis. No UI, plan, renderer, asset or V6 changes.",
+  "node": "v24.21.0",
+  "inputs": {
+    "plan": {
+      "path": "placements/default.json",
+      "sha256": "59cc79dea158f3b47fae16df0312386fc79bb2d8662b865a1fe3551d63a61bad",
+      "updatedAt": "2026-11-10T18:06:32.849Z"
+    },
+    "frozenComparison": {
+      "path": "placements/references/user-flat-native-20261110.json",
+      "sha256": "018c5a67258ee344d3a962d57f02011449e5c3c2a25e7e3daaf236eac2d285da",
+      "view": "native",
+      "heading": 0,
+      "calibrated": false
+    },
+    "images": [
+      {
+        "path": "assets/lab/native.jpg",
+        "sha256": "d7ef479f1642cf59450ab8a77197913a358f86f2b183330daeecd9b6cd6cad76",
+        "width": 1762,
+        "height": 1174
+      },
+      {
+        "path": "assets/lab/portrait.jpg",
+        "sha256": "93285647abceaab3d9a5e993dfc0eaaa6bf87dc39cba5984b317d625b8b60be4",
+        "width": 1080,
+        "height": 1920
+      }
+    ]
+  },
+  "findings": {
+    "composition": "Portrait is separately composited, not a crop/resize of the finished native frame.",
+    "foreground": {
+      "sx": 0.9001135073779796,
+      "sy": 0.9003407155025553,
+      "cropLeft": 250,
+      "top": 80,
+      "source": "src/pamela-card-contact-v6.ts:170-171",
+      "pixelMapping": "xP=(xN+0.5)*(1586/1762)-0.5-250; yP=(yN+0.5)*(1057/1174)-0.5+80",
+      "precision": "Geometric pixel-centre mapping; resampling/compression edge uncertainty below the magnitude of the reported layout differences."
+    },
+    "felt": {
+      "source": "src/pamela-card-contact-v6.ts:71-73",
+      "sourceRect": {
+        "left": 278,
+        "top": 838,
+        "width": 1200,
+        "height": 336
+      },
+      "destinationRect": {
+        "left": 0,
+        "top": 834,
+        "width": 1080,
+        "height": 1086
+      },
+      "sx": 0.9,
+      "sy": 3.232142857142857,
+      "verticalToHorizontalScale": 3.5912698412698414
+    },
+    "savedGeometry": "Native and portrait store independent coordinates, sizes, angles and taper. They are not derived from a shared table plane.",
+    "comparison": "flatQuad derives a projective comparison separately from each view's P4.C1; heading 0 degrees is in-plane direction, not camera/table pitch.",
+    "comparisonPersistence": "Flat-plane checkbox and heading are not fields in schemaVersion 1; Exportera jämförelse freezes displayed corners separately.",
+    "impliedComparisonHorizons": {
+      "native": {
+        "p4Taper": 0.9,
+        "referenceAngleDegrees": 0,
+        "horizonYAtZeroReferenceRoll": 532.55,
+        "meaning": "Implied by the comparison formula; not a measured camera horizon."
+      },
+      "portrait": {
+        "p4Taper": 0.9,
+        "referenceAngleDegrees": 0,
+        "horizonYAtZeroReferenceRoll": 882.74,
+        "meaning": "Implied by the comparison formula; not a measured camera horizon."
+      }
+    },
+    "mappingBasis": {
+      "pointType": "Planned native target centres and contours from the frozen user export, not measured or approved film/hand contacts.",
+      "conditionalAssumption": "The planned native targets are hypothetically used with the current V6 foreground transform.",
+      "distanceMeaning": "Distance between that hypothetical transformed native target and the independently saved portrait target.",
+      "conditionalResult": "Under this assumption, target differences are approximately 357-541 px and the planned P1/P7 contours would be clipped. Actual future film landings are not established by this calculation.",
+      "physicalContactMeasured": false
+    },
+    "mappedFrozenTargets": [
+      {
+        "id": "P1.C1",
+        "nativeCentre": {
+          "x": 217.98,
+          "y": 996.12
+        },
+        "portraitViaCurrentForeground": {
+          "x": -53.84,
+          "y": 976.8
+        },
+        "savedPortraitCentre": {
+          "x": 107.9,
+          "y": 1295.33
+        },
+        "distancePx": 357.24,
+        "currentForegroundWouldClip": true
+      },
+      {
+        "id": "P2.C1",
+        "nativeCentre": {
+          "x": 440.25,
+          "y": 1020.51
+        },
+        "portraitViaCurrentForeground": {
+          "x": 146.23,
+          "y": 998.76
+        },
+        "savedPortraitCentre": {
+          "x": 242.78,
+          "y": 1400.87
+        },
+        "distancePx": 413.54,
+        "currentForegroundWouldClip": false
+      },
+      {
+        "id": "P3.C1",
+        "nativeCentre": {
+          "x": 642.6,
+          "y": 1044.9
+        },
+        "portraitViaCurrentForeground": {
+          "x": 328.36,
+          "y": 1020.72
+        },
+        "savedPortraitCentre": {
+          "x": 377.65,
+          "y": 1506.42
+        },
+        "distancePx": 488.19,
+        "currentForegroundWouldClip": false
+      },
+      {
+        "id": "P4.C1",
+        "nativeCentre": {
+          "x": 851.49,
+          "y": 1100.87
+        },
+        "portraitViaCurrentForeground": {
+          "x": 516.39,
+          "y": 1071.11
+        },
+        "savedPortraitCentre": {
+          "x": 512.53,
+          "y": 1611.96
+        },
+        "distancePx": 540.86,
+        "currentForegroundWouldClip": false
+      },
+      {
+        "id": "P5.C1",
+        "nativeCentre": {
+          "x": 1085.51,
+          "y": 1058.72
+        },
+        "portraitViaCurrentForeground": {
+          "x": 727.03,
+          "y": 1033.16
+        },
+        "savedPortraitCentre": {
+          "x": 647.4,
+          "y": 1506.42
+        },
+        "distancePx": 479.91,
+        "currentForegroundWouldClip": false
+      },
+      {
+        "id": "P6.C1",
+        "nativeCentre": {
+          "x": 1277.54,
+          "y": 1028.41
+        },
+        "portraitViaCurrentForeground": {
+          "x": 899.88,
+          "y": 1005.87
+        },
+        "savedPortraitCentre": {
+          "x": 782.28,
+          "y": 1400.87
+        },
+        "distancePx": 412.14,
+        "currentForegroundWouldClip": false
+      },
+      {
+        "id": "P7.C1",
+        "nativeCentre": {
+          "x": 1465.72,
+          "y": 950.72
+        },
+        "portraitViaCurrentForeground": {
+          "x": 1069.26,
+          "y": 935.92
+        },
+        "savedPortraitCentre": {
+          "x": 917.15,
+          "y": 1295.33
+        },
+        "distancePx": 390.26,
+        "currentForegroundWouldClip": true
+      }
+    ]
+  },
+  "recommendation": {
+    "firstShot": "Use the frozen native target/corners as a planned visual 2D reference only, keeping source camera fixed. Measure actual landing and hand contact in the accepted source clip afterward. Do not treat heading 0 as calibrated table tilt or assume planned native and saved portrait targets coincide.",
+    "minimumLaterChange": [
+      "Keep logical card positions, in-plane yaw and physical card dimensions in one table plane.",
+      "Use an explicitly versioned projection per view; initially preserve current native reference and derive contact-sensitive portrait overlay from the SAME foreground transform.",
+      "If the frozen native targets are used with the current foreground transform, the planned P1/P7 contours would be clipped. Test mobile framing/composition against all seven planned targets before relying on that mapping; actual film contact remains clip-specific.",
+      "Use at least four matching non-collinear table-plane anchors per view to estimate planar mappings; camera pitch in degrees requires additional camera/metric constraints.",
+      "Treat film-contact/mask data separately from table artwork, card bend and gloss. Do not stretch cards by the current portrait felt-texture resize."
+    ],
+    "deployment": "Analysis only. No automatic conversion or migration implemented."
+  },
+  "checks": {
+    "planNotWritten": true,
+    "planStillMatchesRead": true,
+    "frozenP7MatchesCurrentComparisonWithin1e6": true
+  }
+}

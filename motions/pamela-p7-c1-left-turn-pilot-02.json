@@ -118,5 +118,13 @@
   "placementRef": null,
   "viewProfileId": null,
   "scoutIntegrated": false,
-  "published": false
+  "published": true,
+  "publicReview": {
+    "purpose": "review-only",
+    "file": "assets/motions/pamela-p7-c1-left-turn-pilot-02/source.mp4",
+    "sha256": "00a93efa3e7b8ccdadbafa57e8232a1eed479600c5f4c06d12faed9f74b1e334",
+    "url": "https://qeojzihua5ewt4uo.public.blob.vercel-storage.com/dealer/00a93efa3e7b8ccdadbafa57e8232a1eed479600c5f4c06d12faed9f74b1e334.mp4",
+    "site": "https://dealer-delta-eosin.vercel.app/",
+    "doesNotImplyApproval": true
+  }
 }

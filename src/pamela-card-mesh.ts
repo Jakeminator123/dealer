@@ -12,13 +12,27 @@ const pointAt=(a:MeshPoint,b:MeshPoint,t:number):MeshPoint=>[a[0]+(b[0]-a[0])*t,
 /** Piecewise projection of measured paper edges. It does not reconstruct hidden hands or physical depth. */
 export async function loadPamelaMesh(path:string){
   const contract=JSON.parse(await readFile(path,'utf8')) as MeshContract;
-  if(contract.sourceSha256!==PAMELA_CARD_SOURCE_SHA256)throw Error('Card mesh source mismatch');
+  if(!contract||contract.sourceSha256!==PAMELA_CARD_SOURCE_SHA256)throw Error('Card mesh source mismatch');
+  if(!Array.isArray(contract.frames))throw Error('Card mesh frames must be an array');
+  const seen=new Set<number>();
+  for(const frame of contract.frames){
+    if(!frame||!Number.isInteger(frame.sourceFrame)||frame.sourceFrame<0||frame.sourceFrame>=180||seen.has(frame.sourceFrame))throw Error('Invalid or duplicate card mesh source frame');
+    seen.add(frame.sourceFrame);
+    if(frame.side!=='BACK'&&frame.side!=='FRONT')throw Error('Unknown card mesh side: export requires BACK or FRONT');
+    if(frame.textureRotate180!==undefined&&typeof frame.textureRotate180!=='boolean')throw Error('Invalid mesh texture rotation');
+    if(!Array.isArray(frame.sections)||frame.sections.length<2)throw Error('Mesh needs at least two sections');
+    for(const section of frame.sections){
+      if(!section||!Number.isFinite(section.v)||section.v<0||section.v>1)throw Error('Invalid mesh section position');
+      for(const point of [section.left,section.right])if(!Array.isArray(point)||point.length!==2||!point.every(Number.isFinite))throw Error('Invalid mesh point');
+    }
+  }
   const frames=contract.frames.sort((a,b)=>a.sourceFrame-b.sourceFrame);
   for(const frame of frames){
     if(frame.sections.length<2||frame.sections[0].v!==0||frame.sections.at(-1)!.v!==1)throw Error('Mesh must cover card-local v=0..1');
     for(let i=1;i<frame.sections.length;i++)if(frame.sections[i].v<=frame.sections[i-1].v)throw Error('Unordered card sections');
   }
   return (index:number,mapPoint:(p:MeshPoint)=>MeshPoint=p=>p):CardMeshFrame|null=>{
+    if(!Number.isInteger(index)||index<0||index>=180)throw Error('Invalid card mesh sample frame');
     if(!frames.length||index<frames[0].sourceFrame||index>frames.at(-1)!.sourceFrame)return null;
     const next=frames.findIndex(f=>f.sourceFrame>=index),a=frames[Math.max(0,next-1)],b=frames[next];
     const t=a.sourceFrame===b.sourceFrame?0:(index-a.sourceFrame)/(b.sourceFrame-a.sourceFrame);

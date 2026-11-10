@@ -7198,17 +7198,17 @@
       "path": "src/pamela-card-contact-v6.ts",
       "source": "runs/20261109-pamela-v6-sequence/take-01/snapshot/src/pamela-card-contact-v6.ts",
       "sourceSha256": "cd95b3c3ffef8b90e6e78943e92afea036c6eb5d797820e6728749249c9fdd1f",
-      "sha256": "87c2b1f1de46f18a4e5249c1477556bdd80e40c1e295bc1bb8dc10793dcc1fbb",
+      "sha256": "84d486167c291aadea24efd3027ccb57b21f3ac115db958510786ca664168352",
       "role": "path-adapted-code",
-      "bytes": 14748
+      "bytes": 14902
     },
     {
       "path": "tools/render.ts",
       "source": "runs/20261109-pamela-v6-sequence/take-01/snapshot/tools/pamela-v6-sequence-parallel.ts",
       "sourceSha256": "804f4315f1fe4bdd76163962a71b7d6be85970d2e09e5c876e830e8103d1f157",
-      "sha256": "be00123803dc063eb87aba51803b8d84f0dd81c1e0318b2608bab8d38a94f07c",
+      "sha256": "acbf439d46859470613ea2963203f831296081a4190843d5a8e01660e8915a7f",
       "role": "path-adapted-code",
-      "bytes": 21123
+      "bytes": 21818
     },
     {
       "path": "assets/tracking/card-tracks.json",
@@ -7288,9 +7288,9 @@
       "path": "src/pamela-card-mesh.ts",
       "source": "runs/20261109-pamela-v6-sequence/take-01/snapshot/src/pamela-card-mesh.ts",
       "sourceSha256": "ae12f14aa68f56c771759f813e4e52b7df819faf0e7cc92eb8bce4da36d7d264",
-      "sha256": "ae12f14aa68f56c771759f813e4e52b7df819faf0e7cc92eb8bce4da36d7d264",
+      "sha256": "8594fca0fc59479fb6debd9546f9aac00166a635121150465d54bfa9653ea12a",
       "role": "path-adapted-code",
-      "bytes": 7936
+      "bytes": 9120
     },
     {
       "path": "src/pamela-card-shadow.ts",

@@ -1,4 +1,5 @@
 import {readFile} from 'node:fs/promises';
+import path from 'node:path';
 import sharp from 'sharp';
 import {keyPamelaFrame} from './pamela-key.ts';
 import {buildPamelaContactLayers} from './pamela-contact-shadow.ts';
@@ -59,12 +60,13 @@ function paint(out:Buffer,tex:Buffer,q:Quad,coverage?:Float32Array,mask?:Buffer,
  }
  return extended;
 }
-export async function createPamelaCardContactV6Renderer(meshPath='assets/tracking/card-mesh.json'){
- const cardMesh=await loadPamelaMesh(meshPath);
- const nailGuards=JSON.parse(await readFile('assets/tracking/nail-guards.json','utf8'));
+export async function createPamelaCardContactV6Renderer(meshPath='assets/tracking/card-mesh.json',assetRoot=process.cwd()){
+ const asset=(file:string)=>path.resolve(assetRoot,file);
+ const cardMesh=await loadPamelaMesh(asset(meshPath));
+ const nailGuards=JSON.parse(await readFile(asset('assets/tracking/nail-guards.json'),'utf8'));
  if(nailGuards.sourceSha256!==PAMELA_C2_SOURCE_SHA256)throw Error('Nail guard source mismatch');
  const options={retargetSecond:true,contact:true,cardSurfaceFix:{sourceSha256:PAMELA_C2_SOURCE_SHA256}};
- const roomPath=`${run}/room.png`,table=await readFile(`${run}/table.png`);
+ const roomPath=asset(`${run}/room.png`),table=await readFile(asset(`${run}/table.png`));
  const room=await sharp(roomPath).resize(W,H,{fit:'contain',background:'#24201d'}).removeAlpha().blur(8).modulate({brightness:.58,saturation:.65}).toBuffer();
  const stage=await sharp(room).composite([{input:table}]).removeAlpha().raw().toBuffer();
  const portraitRoom=await sharp(roomPath).resize(1080,1920,{fit:'cover'}).blur(8).modulate({brightness:.58,saturation:.65}).toBuffer();
@@ -75,7 +77,7 @@ export async function createPamelaCardContactV6Renderer(meshPath='assets/trackin
  const textures=[await texture('A','♠','#161b20'),await texture('K','♥','#a52d32')];
  const backTexture=options.cardSurfaceFix?await sharp(Buffer.from(PAMELA_SG_BACK_SVG)).removeAlpha().raw().toBuffer():null;
  const canonicalPath='assets/frames/deal/frame-127.png';
- const canonicalRaw=await sharp(await readFile(canonicalPath)).removeAlpha().raw().toBuffer();
+ const canonicalRaw=await sharp(await readFile(asset(canonicalPath))).removeAlpha().raw().toBuffer();
  const canonicalKey=keyPamelaFrame(canonicalRaw,W,H);
  const canonicalMasks=[Buffer.alloc(W*H),Buffer.alloc(W*H)];
  const canonicalShifted=[canonicalRaw,Buffer.alloc(W*H*3)];
@@ -87,7 +89,7 @@ export async function createPamelaCardContactV6Renderer(meshPath='assets/trackin
   for(let c=0;c<3;c++)canonicalShifted[1][(p+46)*3+c]=canonicalRaw[i+c];
  }
  const cardShadows=canonicalMasks.map(mask=>buildPamelaCardShadow(mask,W,H));
- const handContract=JSON.parse(await readFile('assets/tracking/hand-occlusion.json','utf8'));
+ const handContract=JSON.parse(await readFile(asset('assets/tracking/hand-occlusion.json'),'utf8'));
  if(handContract.sourceSha256!==PAMELA_C2_SOURCE_SHA256)throw Error('Hand matte source mismatch');
  const handMasks=new Map<number,Buffer>();
  for(const f of handContract.frames){

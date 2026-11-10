@@ -1,0 +1,49 @@
+{
+  "createdAt": "2026-11-10T18:12:10.578Z",
+  "references": [
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261109-pamela-sequence/central-base.json",
+      "sha256": "74c064da55b9c4def8d12d36aa499dbc2dc578c3ba4bbafab0fb42869e7afdeb"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261109-pamela-sequence/from-shoe.json",
+      "sha256": "8fcf2fe5944f8ce5c9c09e5c81f46dcbdea041c2f5c3b72c76fc42a4f5ace672"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261109-pamela-sequence/central-input-contract.json",
+      "sha256": "9b3d3fab499ebf30eb62d27fa068325cc3007d7e5a60ab04d89aa797824dd6ab"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261109-pamela-sequence/original/pamela-central-base-wan3.mp4",
+      "sha256": "2445bb2ef5122fe558134d582533d277603da72c4b98b6c782be01a5bf06235a"
+    }
+  ],
+  "v6Source": {
+    "path": "assets/originals/deal.mp4",
+    "sha256": "2445bb2ef5122fe558134d582533d277603da72c4b98b6c782be01a5bf06235a",
+    "byteIdenticalToHistoricalOutput": true
+  },
+  "historical": {
+    "model": "wan3",
+    "duration": 6,
+    "taskId": "390ff634-df94-4666-b9bd-8951b2ac686a",
+    "prompt": "Locked camera, one continuous six-second shot between the exact supplied REDO anchors. Preserve Pamela's mature identity, face, age, hair, black blazer, ivory blouse, body scale, the green studio and the black shoe in their exact positions. Start with her left hand (camera-right) touching the plain white card at the shoe outlet. Hold briefly. She smoothly draws exactly one rigid plain white unprinted card out of that actual outlet, brings it to her right hand near the middle, then her right hand makes one low controlled forward dealing action to the empty central foreground, directly below her resting-hand area. Place that same card flat exactly where it lies in the last image. It must remain a rigid perspective rectangle with its thin warm edge, with no rank, suit or symbol. Her fingertips visibly contact it until placement, then release it cleanly. The card stays stationary on the green surface for the rest of the shot. No appearing card, no fading, no card passing through fingers or the shoe. By 5.4 seconds her right hand returns to its original resting position and her left hand returns to the shoe outlet where the next card is seated, matching the last REDO pose and downward gaze. Exactly one new card remains on the table, and the shoe has the next card ready. Do not remove the landed card to match the hand pose. Preserve all fingers and complete arms inside the original frame throughout the full reach. No camera move, zoom, cuts, new table edge, torso drift or changed face. Settle naturally for the final half second."
+  },
+  "current": {
+    "path": "assets/motions/pamela-p7-c1-left-pink-pilot-01/generation.json",
+    "model": "wan3",
+    "duration": 6,
+    "taskId": "d3ddd907-b892-48b1-b96e-f289656928dc",
+    "prompt": "Locked camera, continuous natural dealing motion. Same woman and her anatomical LEFT hand on viewer right. Her left hand slides the top magenta card out of the shoe, keeps it low over the felt, turns it over ONCE with one small wrist roll while moving right, lays it flat in the exact new-card location in the last frame, releases it and returns empty to its original shoe pose. The card goes directly from draw to table. Her other hand rests naturally; her gaze follows the card. The dealt card stays a plain solid magenta rectangle on BOTH SIDES; this color is only a tracking surface. Preserve the card shape and natural fingertip grip. No hand transfer, no raised display pause, no second roll. Keep the existing centre card stationary.",
+    "endpoint": "https://api.dev.runwayml.com/v1/image_to_video"
+  },
+  "comparison": {
+    "sameModel": true,
+    "identicalPrompt": false,
+    "historicalAction": "Left hand takes from shoe, passes near centre to right hand; right hand deals to centre.",
+    "currentRequestedAction": "Same left hand, one low turn, target P7, return to shoe; no hand transfer or raised display pause.",
+    "currentObservedDeviation": "An inward detour/hesitation occurs before moving to P7; this was not requested.",
+    "causeOfDeviation": "Not established beyond failure to follow the requested trajectory.",
+    "appearanceRule": "Proxy colour is independent of physical side. Yellow/blue and final card textures must be driven by validated side annotations, not by generated pixel colour."
+  }
+}

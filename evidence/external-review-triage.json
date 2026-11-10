@@ -1,0 +1,61 @@
+{
+  "createdAt": "2026-11-10T18:17:34.351Z",
+  "report": {
+    "path": "C:/Users/jakem/.codex/attachments/286d882f-b879-4334-aecc-21214c4f0087/Inklistrad text.txt",
+    "sha256": "9141ef02021e628878d4b39cf9377e7e6d2d8ee5408cd98e42a97299625ac330",
+    "reviewedDealerCommit": "0374e529159e0a4f2fdeba0055c6e57a514e5e62"
+  },
+  "codeChanges": [
+    {
+      "path": "src/pamela-card-contact-v6.ts",
+      "previousSha256": "87c2b1f1de46f18a4e5249c1477556bdd80e40c1e295bc1bb8dc10793dcc1fbb",
+      "sha256": "84d486167c291aadea24efd3027ccb57b21f3ac115db958510786ca664168352",
+      "originalSourceSha256": "cd95b3c3ffef8b90e6e78943e92afea036c6eb5d797820e6728749249c9fdd1f"
+    },
+    {
+      "path": "src/pamela-card-mesh.ts",
+      "previousSha256": "ae12f14aa68f56c771759f813e4e52b7df819faf0e7cc92eb8bce4da36d7d264",
+      "sha256": "8594fca0fc59479fb6debd9546f9aac00166a635121150465d54bfa9653ea12a",
+      "originalSourceSha256": "ae12f14aa68f56c771759f813e4e52b7df819faf0e7cc92eb8bce4da36d7d264"
+    },
+    {
+      "path": "tools/render.ts",
+      "previousSha256": "be00123803dc063eb87aba51803b8d84f0dd81c1e0318b2608bab8d38a94f07c",
+      "sha256": "acbf439d46859470613ea2963203f831296081a4190843d5a8e01660e8915a7f",
+      "originalSourceSha256": "804f4315f1fe4bdd76163962a71b7d6be85970d2e09e5c876e830e8103d1f157"
+    }
+  ],
+  "referenceAndAssetHashesChanged": false,
+  "fixed": [
+    "Reject unknown mesh sides, invalid or duplicate source frames and malformed geometry before rendering.",
+    "Lock reload, ignore superseded replies, preserve edits made while a reply was pending and resynchronize the material study.",
+    "Load all static renderer inputs from the explicit job snapshot. Pin frame/mask hashes before workers start and verify the actual decoded byte buffer."
+  ],
+  "confirmedRemaining": [
+    "The placement editor and motion registry do not yet drive a general video render plan.",
+    "A correct RGB palette does not prove card/finger mask accuracy or physical side.",
+    "Native and portrait compositions use different foreground and table transforms; see table-projection-review.json."
+  ],
+  "outdated": [
+    "Film review is now public on Vercel; seven selected films are stored in the dealer-only Blob store.",
+    "The three rejected pilots now have distinct clip IDs, source hashes and decisions; the new pink pilot is pending."
+  ],
+  "notIndependentlyReproduced": [
+    "The Scout measured-base-profile bug and coverage counts of 10/34 actions. Scout code was not changed."
+  ],
+  "productionBoundary": "Do not start a full film bank or claim Scout integration. First bind one accepted physical movement to measured events, masks and the frozen native target.",
+  "validation": {
+    "unitTests": {
+      "passed": 16,
+      "failed": 0,
+      "command": "node --test --test-concurrency=4 tools/lab-ui.test.ts tools/render-safety.test.ts tools/placements.test.ts tools/public-storage.test.ts"
+    },
+    "referenceFrameCheck": {
+      "passed": 18,
+      "failed": 0,
+      "pixelIdentical": true,
+      "receipt": "evidence/render-safety-frames.json"
+    },
+    "fullMovieRerendered": false
+  }
+}

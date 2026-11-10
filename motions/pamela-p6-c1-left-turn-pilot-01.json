@@ -45,5 +45,13 @@
   "placementRef": null,
   "viewProfileId": null,
   "scoutIntegrated": false,
-  "published": false
+  "published": true,
+  "publicReview": {
+    "purpose": "review-only",
+    "file": "assets/motions/pamela-p6-c1-left-turn-pilot-01/source.mp4",
+    "sha256": "6386e401b1600263998e5a5e8facb180a46c000c13bb0ab76265d213a9703c34",
+    "url": "https://qeojzihua5ewt4uo.public.blob.vercel-storage.com/dealer/6386e401b1600263998e5a5e8facb180a46c000c13bb0ab76265d213a9703c34.mp4",
+    "site": "https://dealer-delta-eosin.vercel.app/",
+    "doesNotImplyApproval": true
+  }
 }
