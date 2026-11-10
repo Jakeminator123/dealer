@@ -1,31 +1,26 @@
 # Dealer
 
-Ren lokal arbetsyta för Pamela/P4 med V6 som godkänd visuell referens. Slutmålet är Scoutgaming.
+Självständig arbetsyta med V6 som Jakobs valda visuella referens. Målet är två kort till sju spelare och en dealer i Scoutgaming. En bildrutetidslinje styr; sekvenssträngar och en framtida nodvy beskriver samma metadata.
 
-- `src/`: V6-renderaren och dess sju lokala kodberoenden.
-- `tools/`: rendera, verifiera, visa. Node 24.21.0; Sharp 0.35.5 i eget node_modules.
-- `assets/`: original, exakt använda bildrutor, masker, bord, bakgrund, tidslinje, referensfilm och separat vänsterarmskandidat. Lokalt, utanför Git.
-- `manifest.json`: varje överförd fils källa och SHA-256. Historiska sökvägar är proveniens, aldrig runtime-fallback.
-- `materials/`: fristående SG-kort och marker i Three.js. Källor och licens finns under source. Inte integrerade marker i V6.
-- `evidence/`: historiska bevis och aktuellt verifieringskvitto. Inte aktiva konfigurationer.
-- `output/`: nya unika försök, utanför Git.
+| Läsning | Innehåll |
+| --- | --- |
+| [SYSTEM](docs/SYSTEM.md) | Tre ytor, två format, bottom-up, ordlista och rörelseregister. Befintligt och planerat hålls isär. |
+| [DRIFT](docs/DRIFT.md) | GitHub, Runway, miljö, D:-slask, återbruk och molnmiljö. |
+| [HANDOFF](HANDOFF.md) | Aktuellt arbete, ägare och blockerare. |
 
-## Köra
+`motions/<clip-id>.json` är registrerade rörelsers statuskälla. `manifest.json` registrerar filproveniens/SHA-256; `evidence/` innehåller verifieringskvitton. Dokumenten länkar till dessa, utan egna konkurrerande statusregister.
 
-Kör från denna mapp. `node -p process.version` ska visa v24.21.0. Vid behov: `npm ci`.
+## Kör lokalt
 
-`START.cmd` öppnar servern på http://127.0.0.1:4319. `STOPP.cmd` stoppar enbart denna server via identitetskontrollerad kontrollkanal. `STATUS.cmd` visar status. Servern stängs 60 sekunder efter sista öppna preview-fliken; använd Codex WebView. Gamla labbets preview på 4318 har eget STOPP.cmd.
+- Arbeta här. `node -p process.version` ska visa `v24.21.0` via Volta; `package.json` kräver `>=24.21.0 <25`. `npm ci` behövs om beroenden saknas.
+- `START.cmd`, `STATUS.cmd`, `STOPP.cmd` styr enbart `http://127.0.0.1:4319`. Återanvänd Codex WebView. Servern slutar 60 sekunder efter sista preview-fliken.
+- `npm run verify` kontrollerar registrerade lokala filer. `npm run verify -- --frames` återrenderar 18 kontrollrutor och kräver pixelidentitet.
+- `npm run render -- --render --take=02` startar ett nytt fullständigt försök med fyra arbetare. Välj alltid ett oanvänt tvåsiffrigt nummer; `take-01` är bevarat. Kräver FFmpeg/FFprobe via PATH eller `FFMPEG`/`FFPROBE`.
 
-`npm run verify` verifierar registrerade filer. `npm run verify -- --frames` återrenderar 18 kontrollrutor och kräver pixelidentitet mot de sparade okomprimerade V6-rutorna.
+## Verifierad bas och gräns
 
-`npm run render -- --render --take=01` återrenderar alla 926 rutor, båda formaten, med fyra arbetare. Varje nytt försök kräver ett nytt tvåsiffrigt nummer. FFmpeg och FFprobe hittas via PATH eller explicit FFMPEG/FFPROBE; inga personliga sökvägar i renderingskoden.
+Enligt [reproduktionskvittot](evidence/reproduction.json) har hela V6 återrenderats lokalt: 926 rutor, 30 fps, 1762×1174 och 1080×1920. Båda MP4-filerna är byteidentiska med originalen; 18 kontrollrutor är pixelidentiska enligt [bildrutekvittot](evidence/frame-verification.json). Detta verifierar V6, inte utdelning till alla åtta platser. Kända begränsningar för fingermask, rörelsekanter och källskarvar kvarstår.
 
-## Evidensgräns
+`src/` och `tools/` kör utan gamla labbet. `materials/` är separata kort-/markerprov; markerna är inte integrerade i V6 och TS-materialkällorna har inte återbyggts till de frysta JS-bundlarna. `assets/`, `output/`, `.runtime/`, `.env*` och `private/` är lokala och Git-ignorerade.
 
-1068 registrerade filer verifierade; 18 av 18 kontrollrutor pixelidentiska i den nya självständiga mappen. Hela V6 är nu återrenderad från denna mapp: 926 rutor, 30 fps, både liggande och porträtt. Båda MP4-filerna är byteidentiska med de historiska originalen, se evidence/reproduction.json. Att visa referensfilmen är inte likvärdigt med verifierad full reproduktion. V6 behåller sina kända begränsningar för fingermask, rörelsekanter och skarvar mellan källtagningar.
-
-V6 använder en fryst bildrutetidslinje och offline-komposition med Sharp/FFmpeg. Det äldre rörelsekontraktet är v1, med P4 kopplad till deal.player.centre/box3. Det senare DL1/v2-kontraktet har inte importerats. Manifestet här är ett filregister, inte en ny spelmotor.
-
-Vänsterarmskandidaten är P4 C2: hennes anatomiska vänster, till höger i bilden, 12 sekunder. Jakob har efter uppspelning klassat denna som closed → closed, utan önskad handledsvridning. Den är inte rätt svar på hans sökning efter vänsterarm med vridning. Rörelsehand och målplats hålls separata.
-
-Gamla snyggare-dealer, checkpoints, alla nya filmer, Scoutmotor-, D.C2- och REDO-arbeten är bevarade på ursprunglig plats. Ingen automatisk läsning av gammal kod eller node_modules. Ingen remote eller publicering.
+Privat källrepo: [Jakeminator123/dealer](https://github.com/Jakeminator123/dealer). GitHub innehåller inte media eller hemligheter. Scout-integration, deploy och betald generering är separata uppdrag.
