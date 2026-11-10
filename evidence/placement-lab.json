@@ -1,0 +1,136 @@
+{
+  "schemaVersion": 1,
+  "createdAt": "2026-11-10T17:27:00.271Z",
+  "purpose": "Local placement editor; no motion approval or Scout binding",
+  "node": "v24.21.0",
+  "backgrounds": [
+    {
+      "path": "assets/lab/native.jpg",
+      "sha256": "d7ef479f1642cf59450ab8a77197913a358f86f2b183330daeecd9b6cd6cad76",
+      "bytes": 140696,
+      "source": "dealer:assets/reference/v6.mp4#frame=0",
+      "role": "placement-reference-still",
+      "sourceSha256": "412a2fa01f9e852e8894002076b5771181bd6afd4ddeef1be76c0640d5853a2d",
+      "sourceFrame": 0,
+      "view": "native",
+      "width": 1762,
+      "height": 1174
+    },
+    {
+      "path": "assets/lab/portrait.jpg",
+      "sha256": "93285647abceaab3d9a5e993dfc0eaaa6bf87dc39cba5984b317d625b8b60be4",
+      "bytes": 121160,
+      "source": "dealer:output/v6/take-01/render/idle-deal-idle-portrait.mp4#frame=0",
+      "role": "placement-reference-still",
+      "sourceSha256": "51a2d0c203f4981b812f503cb32c68413350b8f9c6e8ccaf80445a9359356d0b",
+      "sourceFrame": 0,
+      "view": "portrait",
+      "width": 1080,
+      "height": 1920
+    }
+  ],
+  "material": {
+    "source": "materials/source/src/card-material-study.ts",
+    "sha256": "5e3eda345aaa7b24c83586dd4e1f0b4ec0fbdfe48af0604876bb7c6c9ee1b810",
+    "delivery": "Node stripTypeScriptTypes; existing local Three.js module",
+    "observed": [
+      "SG back texture visible",
+      "bend and gloss controls",
+      "landing becomes flat",
+      "lift enabled after landing"
+    ],
+    "limitations": [
+      "visual interpolation, no gravity solver",
+      "frozen material bundles unchanged"
+    ]
+  },
+  "checks": {
+    "unitCommand": "node --test --test-concurrency=4 tools/placements.test.ts",
+    "unitPassed": 5,
+    "unitFailed": 0,
+    "api": {
+      "checkedAt": "2026-11-10T17:26:20.948Z",
+      "cases": [
+        {
+          "name": "foreign-origin",
+          "status": 403
+        },
+        {
+          "name": "no-origin",
+          "status": 403
+        },
+        {
+          "name": "missing-revision",
+          "status": 428
+        },
+        {
+          "name": "stale-revision",
+          "status": 409
+        },
+        {
+          "name": "invalid-coordinate",
+          "status": 400
+        },
+        {
+          "name": "oversize-body",
+          "status": 413
+        },
+        {
+          "name": "wrong-method",
+          "status": 405
+        },
+        {
+          "name": "environment-not-served",
+          "status": 404
+        },
+        {
+          "name": "runtime-not-served",
+          "status": 404
+        }
+      ],
+      "unchangedRevision": true,
+      "libraryItems": 3,
+      "diagnosticDecision": "PENDING"
+    },
+    "browser": {
+      "drag": "P4.C2: 907,1070 to 989,1022 native pixels",
+      "numericSaveReload": {
+        "u": 0.562,
+        "v": 0.128,
+        "angle": 12,
+        "result": "persisted"
+      },
+      "keyboard": "Shift+Right moves 10 native pixels",
+      "viewIsolation": "portrait P4.C2 retained u=.51,v=.165,angle=0",
+      "motion": "RH + PASS + BACK to BACK releases LH without TURN",
+      "finalState": "test geometry/material restored; P4.C2 and D.C2 closed to closed; 32 per-view geometries unreviewed",
+      "responsive": {
+        "requestedWidth": 390,
+        "requestedHeight": 844,
+        "actualClientWidth": 344,
+        "scrollWidth": 344,
+        "nativeAspect": 1.5008789835486926,
+        "portraitAspect": 0.5625000145512522,
+        "overrideReset": true
+      },
+      "films": {
+        "count": 3,
+        "allReadyState": 4,
+        "errors": 0,
+        "diagnosticDecision": "PENDING"
+      },
+      "consoleErrors": 0,
+      "screenshots": [
+        ".runtime/placement-proof/lab.jpg",
+        ".runtime/placement-proof/library.jpg",
+        ".runtime/placement-proof/mobile.jpg"
+      ]
+    }
+  },
+  "remaining": [
+    "User calibration of placements",
+    "Actual motion selection and annotation",
+    "Final edge/occlusion masks",
+    "Renderer and Scout binding are separate"
+  ]
+}

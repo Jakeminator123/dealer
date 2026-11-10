@@ -1,0 +1,52 @@
+export type View = 'native' | 'portrait';
+export type Hand = 'LH' | 'RH';
+export type Side = 'BACK' | 'FRONT';
+export type Point = { u: number; v: number };
+export type Geometry = Point & { width: number; height: number; angle: number; taper: number; reviewed: boolean };
+export type Intent = { takeHand: Hand; startSide: Side; endSide: Side; pass: boolean; turn: boolean };
+export type Target = { geometry: Record<View, Geometry>; intent: Intent; material: { bend: number; gloss: number } };
+export type PlacementPlan = { schemaVersion: 1; id: 'pamela-table'; space: 'image-normalized-bottom-up'; updatedAt: string | null; shoe: Record<View, Point>; targets: Record<string, Target> };
+export const VIEWS = { native: { width: 1762, height: 1174, label: 'Dator', profileId: 'v6-native', background: 'assets/lab/native.jpg' }, portrait: { width: 1080, height: 1920, label: 'Mobil', profileId: 'v6-portrait', background: 'assets/lab/portrait.jpg' } } as const;
+export const TARGETS = [...Array.from({length:7},(_,i)=>`P${i+1}`),'D'].flatMap(p=>[`${p}.C1`,`${p}.C2`]);
+export const otherHand = (h: Hand): Hand => h==='LH'?'RH':'LH';
+export const otherSide = (s: Side): Side => s==='BACK'?'FRONT':'BACK';
+export function toPixels(point: Point, view: View) { const p=VIEWS[view]; return { x:point.u*(p.width-1), y:(1-point.v)*(p.height-1) }; }
+export function fromPixels(x: number,y: number,view: View): Point { const p=VIEWS[view];return {u:x/(p.width-1),v:1-y/(p.height-1)}; }
+export function quad(g: Geometry, view: View) {
+ const p=VIEWS[view],c=toPixels(g,view),w=g.width*(p.width-1)/2,h=g.height*(p.height-1)/2,a=g.angle*Math.PI/180;
+ return [[-w*g.taper,-h],[w*g.taper,-h],[w,h],[-w,h]].map(([x,y])=>({x:c.x+x*Math.cos(a)-y*Math.sin(a),y:c.y+x*Math.sin(a)+y*Math.cos(a)}));
+}
+export function constrain(g: Geometry,view: View): Geometry {
+ const p=VIEWS[view],q=quad(g,view),xs=q.map(p=>p.x),ys=q.map(p=>p.y);
+ const dx=Math.max(0,-Math.min(...xs))-Math.max(0,Math.max(...xs)-(p.width-1));
+ const dy=Math.max(0,-Math.min(...ys))-Math.max(0,Math.max(...ys)-(p.height-1));
+ return {...g,u:g.u+dx/(p.width-1),v:g.v-dy/(p.height-1)};
+}
+export function sequence(id: string, intent: Intent) {
+ const hand=intent.pass?otherHand(intent.takeHand):intent.takeHand;
+ return [`${id} | TAKE(${intent.takeHand},${intent.startSide})`,...(intent.pass?[`PASS(${intent.takeHand}>${hand},${intent.startSide})`]:[]),...(intent.turn?[`TURN(${hand},${intent.startSide}>${intent.endSide})`]:[]),`LAND(${intent.endSide})`,`RELEASE(${hand})`].join(' > ');
+}
+export function defaultPlan(): PlacementPlan {
+ const targets: Record<string,Target>={};
+ for(const id of TARGETS){const dealer=id[0]==='D',seat=dealer?3:Number(id[1])-1,second=id.endsWith('2'),v=.08+Math.abs(seat-3)*.025,closed=(dealer&&second)||id==='P4.C2';
+  targets[id]={geometry:{native:{u:dealer?.5+(second?.027:0):.13+seat*.12+(second?.025:0),v:dealer?.21:v+(second?.008:0),width:.041,height:.051,angle:dealer?0:(seat-3)*-7,taper:.9,reviewed:false},portrait:{u:dealer?.47+(second?.048:0):.10+seat*.125+(second?.035:0),v:dealer?.49:.16+Math.abs(seat-3)*.055+(second?.005:0),width:.06,height:.04,angle:dealer?0:(seat-3)*-7,taper:.9,reviewed:false}},intent:{takeHand:'LH',startSide:'BACK',endSide:closed?'BACK':'FRONT',pass:false,turn:!closed},material:{bend:.07,gloss:.35}};
+ }
+ return {schemaVersion:1,id:'pamela-table',space:'image-normalized-bottom-up',updatedAt:null,shoe:{native:{u:.733,v:.322},portrait:{u:.84,v:.58}},targets};
+}
+function object(v:unknown): v is Record<string,unknown>{return !!v&&typeof v==='object'&&!Array.isArray(v);}
+function keys(v:unknown,list:string[]): asserts v is Record<string,unknown>{if(!object(v)||Object.keys(v).sort().join('|')!==list.sort().join('|'))throw Error('Felaktiga fält i placeringsfilen.');}
+function number(v:unknown,lo:number,hi:number){if(typeof v!=='number'||!Number.isFinite(v)||v<lo||v>hi)throw Error('Koordinat eller reglage ligger utanför tillåtet intervall.');}
+export function validatePlan(value: unknown): asserts value is PlacementPlan {
+ keys(value,['schemaVersion','id','space','updatedAt','shoe','targets']);
+ if(value.schemaVersion!==1||value.id!=='pamela-table'||value.space!=='image-normalized-bottom-up'||!(value.updatedAt===null||(typeof value.updatedAt==='string'&&value.updatedAt.length<40&&Number.isFinite(Date.parse(value.updatedAt)))))throw Error('Okänd placering eller bildrymd.');
+ keys(value.shoe,['native','portrait']);keys(value.targets,[...TARGETS]);
+ for(const view of ['native','portrait'] as View[]){const s=value.shoe[view];keys(s,['u','v']);number(s.u,0,1);number(s.v,0,1);}
+ for(const target of Object.values(value.targets)){
+  keys(target,['geometry','intent','material']);keys(target.geometry,['native','portrait']);keys(target.intent,['takeHand','startSide','endSide','pass','turn']);keys(target.material,['bend','gloss']);
+  const i=target.intent;if(typeof i.takeHand!=='string'||typeof i.startSide!=='string'||typeof i.endSide!=='string'||!['LH','RH'].includes(i.takeHand)||!['BACK','FRONT'].includes(i.startSide)||!['BACK','FRONT'].includes(i.endSide)||typeof i.pass!=='boolean'||typeof i.turn!=='boolean'||i.turn!==(i.startSide!==i.endSide))throw Error('Sidbyte kräver TURN; handbyte och kortvändning är skilda val.');
+  number(target.material.bend,0,.18);number(target.material.gloss,0,1);
+  for(const view of ['native','portrait'] as View[]){const g=target.geometry[view];keys(g,['u','v','width','height','angle','taper','reviewed']);number(g.u,0,1);number(g.v,0,1);number(g.width,.005,.25);number(g.height,.005,.25);number(g.angle,-180,180);number(g.taper,.4,1.6);if(typeof g.reviewed!=='boolean')throw Error('Granskningsstatus saknas.');
+   const p=VIEWS[view];if(quad(g as Geometry,view).some(q=>q.x<-.01||q.y<-.01||q.x>p.width-1+.01||q.y>p.height-1+.01))throw Error('Hela kortkonturen måste ligga inom bildytan.');
+  }
+ }
+}

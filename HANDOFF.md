@@ -20,6 +20,18 @@ Kanoniskt original och ett sammanhängande lokalt gul→gul-prov finns under `as
 
 En väg överenskommen med MAINTAIN: engelska systembegrepp, en tidslinje, källbundna annoteringar, separata koordinatuppslag per vy. Sträng och framtida nodvy beskriver samma data. TILLBAKA-2 äger film/kod/metadata/HANDOFF/evidence; MAINTAIN äger README, SYSTEM/DRIFT, GitHub och miljökonfiguration. Externa sekvensguiden och HTML-skissen är underlag; MAINTAIN sammanfogar relevanta delar.
 
+### Lokalt placeringslabb, leverans 2026-11-10
+
+`http://127.0.0.1:4319/` och `/lab.html` öppnar nu placeringseditorn. 16 kortplatser (P1–P7 och D, C1/C2) samt skons uttag kan flyttas. Kontur, vinkel, storlek och perspektivbredd redigeras utan filmgenerering. Dator/mobil har separata geometrier, normaliserad bildrymd med Y uppåt. Alla platser är ogranskade startförslag; P4.C2 och D.C2 börjar BACK→BACK. Planerad hand, sida, PASS och TURN ändrar inte befintliga filmers klassning.
+
+`placements/default.json` sparas atomiskt med revisionskontroll mot samtidiga flikar; senaste föregående version finns i `.runtime/placement-previous.json`. UI har ångra, export och återläsning vid konflikt. Filbiblioteket läser MAINTAIN:s `data/library.json`: två befintliga V6-filer och gulprovet, utan mediekopior. Provets PENDING hämtas från rörelseregistret.
+
+Materialpanelen kör den redan lokala `materials/source/src/card-material-study.ts` via TypeScript-strippning och befintliga Three.js-moduler. Böjning/glans samt landning/lyft är visuellt verifierade. Det är enkel interpolerad visning, ingen gravitationssolver, och ingen verifiering av den historiska bundlingskedjan. Markerprovet länkas separat.
+
+Verifiering: fem avgränsade tester, nio negativa API-kontroller, faktisk dragning, exakt koordinatsparning/omladdning, 10-pixels tangentsteg, separata vyer och responsiva bildproportioner. Tre filmer laddar utan mediafel. 1072 registrerade filer verifierade; endast två små stillbilder från V6 har tillkommit. Kvittot är `evidence/placement-lab.json`; lokala skärmbilder i `.runtime/placement-proof/`. Provredigeringar är återställda till startförslaget. Inga V6-renderingar, maskgodkännanden eller Scoutkopplingar gjorda.
+
+Nästa användarsteg: placera och granska kortplatser i labbet. Därefter kopplas valda filmer till verifierade placeringar; hela rörelsebanken återstår. WebView-flik 3 och preview 4319 lämnas till Jakob. MAINTAIN samordnar den publika kodpushen efter denna leverans; media och lokala bevisbilder är fortsatt Git-ignorerade.
+
 Målbanken omfattar två kort för P1–P7, dealerns öppna utdelning, stängda hålkort och senare reveal. Scout är auktoritet för ordning och spelstatus: `C:/Users/jakem/dev/scoutgaming/packages/presentation/contracts/filmed-profile.mjs` skiljer spelare 1–7, dealer, hole och flip. Denna P4-rörelse är inte automatiskt kalibrerad för dealerplatsen.
 
 Arkivflytt: dealer är lokalt självständigt (1070 registrerade filer verifierade). Gamla labbet upptar 163,2 GB; Git endast 4,63 MB. Klartecken för direkt flytt till D: saknas: gamla servern PID 38944 (src/server.ts) var aktiv vid kontrollen, och en intern junction har absolut C:-mål. MAINTAIN har fått exakta hinder. Inga processer stoppade och inget gammalt material flyttat/raderat.

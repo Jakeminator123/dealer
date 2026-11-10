@@ -7551,6 +7551,24 @@
       "bytes": 17847045,
       "source": "new self-contained V6 reproduction",
       "role": "verified-reproduction-portrait"
+    },
+    {
+      "path": "assets/lab/native.jpg",
+      "sha256": "d7ef479f1642cf59450ab8a77197913a358f86f2b183330daeecd9b6cd6cad76",
+      "bytes": 140696,
+      "source": "dealer:assets/reference/v6.mp4#frame=0",
+      "role": "placement-reference-still",
+      "sourceSha256": "412a2fa01f9e852e8894002076b5771181bd6afd4ddeef1be76c0640d5853a2d",
+      "sourceFrame": 0
+    },
+    {
+      "path": "assets/lab/portrait.jpg",
+      "sha256": "93285647abceaab3d9a5e993dfc0eaaa6bf87dc39cba5984b317d625b8b60be4",
+      "bytes": 121160,
+      "source": "dealer:output/v6/take-01/render/idle-deal-idle-portrait.mp4#frame=0",
+      "role": "placement-reference-still",
+      "sourceSha256": "51a2d0c203f4981b812f503cb32c68413350b8f9c6e8ccaf80445a9359356d0b",
+      "sourceFrame": 0
     }
   ]
 }
