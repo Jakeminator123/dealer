@@ -32,7 +32,9 @@ y_px = (1 − v) × (H − 1)  v = 1 − y_px / (H − 1)
 
 Native centrum `(0.5,0.5)` ger `(880.5,586.5)` före rasteravrundning. Native-punkten `(820,1026)` blir `(820/1761,147/1173)`. Utsnitt med `left/top/width/height` beskriver pixelkanter, inte denna pixelcentrumkonvention. Bordets fysiska plan och 3D-kameran kräver egna kalibreringar; normaliserad bildrymd är inte ett perspektivmått.
 
-Koordinater lagras en gång i ett kommande placerings-/vyregister. Rörelsen refererar till `placementRef`, `sceneProfileId`, `viewProfileId`; inga x/y-tal i sekvenssträngen. Varje punkt anger `space`, enhet, källstorlek, yta och transformversion. Film och framtida React/Next-overlay ska använda samma uppslag och samma resize/crop/letterbox-offset. Desktop och porträtt har separata vyprofiler. Dessa register och adaptrar är ännu inte skapade; noder eller dokument får inte hitta på saknade mätningar.
+Placeringseditorns utkast finns i `placements/default.json`; vyprofiler och pixelkonvertering finns i `src/placement-model.ts`. Geometri lagras separat per `native`/`portrait`; hand-/sidavsikt och materialval hålls skilda från geometrin. Alla standardplatser börjar ogranskade (`reviewed=false`), inte uppmätta. `angle` är grader medurs i bildens y-ned-rymd; `width`/`height` är andelar av respektive vys pixelcentrumspann. `taper` formar konturen och bevisar inte en kalibrerad 3D-projektion.
+
+Rörelsernas framtida bindning använder `placementRef`, `sceneProfileId`, `viewProfileId`; inga x/y-tal i sekvenssträngen. Film och framtida React/Next-overlay ska använda samma uppslag och samma resize/crop/letterbox-offset. Editorns placeringsfil är ännu inte kopplad till V6-renderern eller Scout. DRAFT-ordningen i en planerad sekvens är inte uppmätta filmannoteringar; noder eller dokument får inte hitta på saknade mätningar.
 
 ## Ordlista och gräns mot Scout
 
@@ -62,6 +64,7 @@ P4.C2@VAR03 | TAKE(LH,BACK) > LAND(BACK) > RELEASE(LH) > RETURN(IDLE)
 ## Ett rörelseregister och tydliga bevis
 
 - `motions/<clip-id>.json` är ensam källa för rörelsens klassning/beslut. Hand, pose, fysisk sida, spelstatus, mål och variant hålls separata.
+- `data/library.json` pekar ut en liten visningskatalog utan mediekopior. V6-poster är referenser; diagnostiska poster hämtar granskningsbeslut från sitt `motionRef`. Gulprovet är 1764×1174 i källrymd, inte den kalibrerade native-vyn 1762×1174.
 - Nya original placeras i `assets/motions/<clip-id>/source.mp4`. Korrigerad visningsversion har egen hash/relation till original. Befintliga registrerade original får refereras där de ligger; inga kopior per godkännandestatus.
 - `KEYFRAME` är en källruta. `ANCHOR` är en utpekad källruta för exempelvis grepp, kantläge, kontakt, släpp eller vila: källhash + rutnummer. Saknad kunskap är `null`/`UNKNOWN`, inte uppskattade tider.
 - Bevisgrund `MEASURED/OBSERVED/REPORTED/HYPOTHESIS/UNKNOWN` skiljs från beslut `PENDING/ACCEPTED/REJECTED`. Rörelse, mask/geometri, scen och Scoutanslutning bedöms separat.
@@ -73,4 +76,4 @@ P4.C2@VAR03 | TAKE(LH,BACK) > LAND(BACK) > RELEASE(LH) > RETURN(IDLE)
 
 Underlag: `Dealer_sekvensguide_2026-11-10.md` och `Dealer_studio_skiss_2026-11-10.html` i Jakobs Downloads samt bifogad diskussion `2363882c-7e08-4c16-98fc-37620eb14bf9/Inklistrad text.txt`. De är referensförslag. Guidens semantik har sammanvägts här; HTML-skissen är inte installerad och texten är inte behörighet att ändra runtime. Källsökvägar/hashar finns i `.runtime/documentation-sources.json`.
 
-Nästa implementation: färdigställ ett rörelseregister, sedan ett placerings-/vyregister och adapter mot befintlig tidslinje. Full acceptans kräver obruten tvåkortsutdelning till alla åtta platser i båda format, verifierad kontakt/mask och bevarad V6-referens. Befintliga reproduktionskvitton bevisar bara V6-basens återrendering.
+Nästa steg: granska placeringsutkastet och rörelseprovet, bind därefter verifierade platser till den befintliga tidslinjen. Full acceptans kräver obruten tvåkortsutdelning till alla åtta platser i båda format, verifierad kontakt/mask och bevarad V6-referens. Befintliga reproduktionskvitton bevisar bara V6-basens återrendering.

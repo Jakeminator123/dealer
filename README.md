@@ -10,6 +10,8 @@ Självständig arbetsyta med V6 som Jakobs valda visuella referens. Målet är t
 
 `motions/<clip-id>.json` är registrerade rörelsers statuskälla. `manifest.json` registrerar filproveniens/SHA-256; `evidence/` innehåller verifieringskvitton. Dokumenten länkar till dessa, utan egna konkurrerande statusregister.
 
+`data/library.json` är den lilla lokala filmkatalogen: två V6-referenser och ett diagnostiskt prov vars beslut hämtas från rörelseregistret. `placements/default.json` är placeringseditorns utkast för 16 kortplatser; det är ännu inte kalibrerat eller kopplat till Scout/V6-utdelningen.
+
 ## Kör lokalt
 
 - Arbeta här. `node -p process.version` ska visa `v24.21.0` via Volta; `package.json` kräver `>=24.21.0 <25`. `npm ci` behövs om beroenden saknas.
@@ -23,4 +25,4 @@ Enligt [reproduktionskvittot](evidence/reproduction.json) har hela V6 återrende
 
 `src/` och `tools/` kör utan gamla labbet. `materials/` är separata kort-/markerprov; markerna är inte integrerade i V6 och TS-materialkällorna har inte återbyggts till de frysta JS-bundlarna. `assets/`, `output/`, `.runtime/`, `.env*` och `private/` är lokala och Git-ignorerade.
 
-Privat källrepo: [Jakeminator123/dealer](https://github.com/Jakeminator123/dealer). GitHub innehåller inte media eller hemligheter. Scout-integration, deploy och betald generering är separata uppdrag.
+Publikt källrepo: [Jakeminator123/dealer](https://github.com/Jakeminator123/dealer). GitHub innehåller inte media eller hemligheter. Scout-integration, deploy och betald generering är separata uppdrag.

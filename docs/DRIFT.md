@@ -7,7 +7,7 @@ Kontrollerat 2026-11-10. Aktuell arbetsstatus hör till HANDOFF och filmklassnin
 | Del | Kanonisk plats / identitet |
 | --- | --- |
 | Arbetsyta | `C:/Users/jakem/dev/super-feature-sg/dealer` |
-| Privat GitHub | `Jakeminator123/dealer`, origin `https://github.com/Jakeminator123/dealer.git` |
+| Publikt GitHub | `Jakeminator123/dealer`, origin `https://github.com/Jakeminator123/dealer.git` |
 | Slutmål | `C:/Users/jakem/dev/scoutgaming`, remote `git@github.com:Jakeminator123/scoutgaming.git` |
 | Gammal läsreferens | `C:/Users/jakem/dev/super-feature-sg/snyggare-dealer` |
 | Ny slask | `D:/dealer-scratch/tmp`, `renders`, `review` |
@@ -15,13 +15,13 @@ Kontrollerat 2026-11-10. Aktuell arbetsstatus hör till HANDOFF och filmklassnin
 
 MAINTAIN äger README, SYSTEM/DRIFT, anslutningskonfiguration och GitHub-upplägg. TILLBAKA-2 äger renderer/verktyg, preview, media, rörelseregister, HANDOFF och filmbevis. En skribent per fil; samordna index/commit. Inga nya underagenter.
 
-Jakobs uppdrag 2026-11-10 godkänner privat GitHub-upplägg, anslutningskontroller, nödvändig lokal env-återanvändning och D:-slask. Deploy, Scout-integration, databasändringar och betald generering är separata uppdrag. GitHub-repot är källförvaring, inte en publicerad studio eller webbplats.
+Jakobs uppdrag 2026-11-10 godkänner publikt GitHub-upplägg, anslutningskontroller, nödvändig lokal env-återanvändning och D:-slask. Deploy, Scout-integration, databasändringar och betald generering är separata uppdrag. GitHub-repot är källförvaring, inte en publicerad studio eller webbplats.
 
 ## Anslutningar och miljö
 
 | Kontroll | Resultat / bevisgräns |
 | --- | --- |
-| GitHub connector + CLI | Båda autentiserade som `Jakeminator123`; privat repo skapat. |
+| GitHub connector + CLI | Båda autentiserade som `Jakeminator123`; repo skapat privat, därefter ändrat till publikt av Jakob och bekräftat 2026-11-10. |
 | Runway connector | Autentiserad workspace `Jakob`, ID `67037521`. |
 | Direkt API | Gamla labbets `RUNWAY_API_KEY` gav HTTP 200 för `GET https://api.dev.runwayml.com/v1/organization`, API-version `2024-11-06`. Ingen generering/uppladdning. |
 | Lokal nyckel | Endast `RUNWAY_API_KEY` kopierad till Git-ignorerade dealer/.env.local efter uttryckligt godkännande. Sanitiserat kvitto: `.runtime/connection-check.json`. |
@@ -38,6 +38,8 @@ Nycklar skrivs aldrig i Git, manifest, dokument eller loggar. Blob/databas-/andr
 Slaskmapparna är skapade. Kontroll 2026-11-10: cirka 14,8 GiB ledigt på C: och 651,4 GiB på D:. Diskflytt frigör diskutrymme, inte RAM i sig. Ändra inte global TEMP/PATH och skapa inga junctions. Tillfälliga jobb kan få processlokal `TEMP`/`TMP` mot `D:/dealer-scratch/tmp`.
 
 V6-renderern skriver fortfarande till dealer/output/v6. Utdataflytt måste implementeras/verifieras av verktygsägaren; miljövariabeln ensam flyttar inget. Original och pågående review bevaras.
+
+`data/library.json` refererar till den bevarade porträttreproduktionen i `output/v6/take-01`. Den får inte rensas som slask medan katalogen refererar dit. Katalogen innehåller bara sökvägar/hashar, inga uppladdade filmer; diagnostiska beslut hämtas från motions-registret.
 
 Gamla labbet är ännu inte flyttat. TILLBAKA-2:s inventering: 163 182 601 786 byte, 194 532 filer, huvudsakligen exports/runs; Git är bara cirka 4,63 MB. Aktiv gammal preview och en absolut intern reparse-länk hindrar säker direktflytt. Detta är ett agentkvitto, inte en färdig arkivverifiering.
 

@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "items": [
+    {
+      "id": "v6-native-reference",
+      "title": "V6 · godkänd visuell referens · dator",
+      "path": "assets/reference/v6.mp4",
+      "sha256": "412a2fa01f9e852e8894002076b5771181bd6afd4ddeef1be76c0640d5853a2d",
+      "width": 1762,
+      "height": 1174,
+      "fps": 30,
+      "frameCount": 926,
+      "view": "native",
+      "kind": "reference",
+      "status": "REFERENCE",
+      "motionRef": null
+    },
+    {
+      "id": "v6-portrait-reference",
+      "title": "V6 · verifierad reproduktion · mobil",
+      "path": "output/v6/take-01/render/idle-deal-idle-portrait.mp4",
+      "sha256": "51a2d0c203f4981b812f503cb32c68413350b8f9c6e8ccaf80445a9359356d0b",
+      "width": 1080,
+      "height": 1920,
+      "fps": 30,
+      "frameCount": 926,
+      "view": "portrait",
+      "kind": "reference",
+      "status": "REFERENCE",
+      "motionRef": null
+    },
+    {
+      "id": "pamela-p4-c2-closed-review-v04",
+      "title": "P4.C2 · gul till gul · diagnostiskt prov",
+      "path": "assets/motions/pamela-p4-c2-left-closed-closed/review-v04/preview.mp4",
+      "sha256": "7d093a28f37abf5bd4c373491fca9bc113fc2271e7784e718e66d95beb42392f",
+      "width": 1764,
+      "height": 1174,
+      "fps": 30,
+      "frameCount": 120,
+      "view": "source",
+      "kind": "diagnostic",
+      "status": null,
+      "motionRef": "motions/pamela-p4-c2-left-closed-closed.json"
+    }
+  ]
+}
