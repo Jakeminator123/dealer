@@ -1,0 +1,29 @@
+{
+  "date": "2026-11-10",
+  "method": "Read-only recursive file-size inventory; reparse links recorded and not followed.",
+  "dealer": {"bytes": 1095108183, "files": 1394, "gitBytes": 1388055, "reparseLinks": 0, "readErrors": 0, "note": "Snapshot before the new colour-review outputs and MAINTAIN setup."},
+  "oldLab": {
+    "path": "C:/Users/jakem/dev/super-feature-sg/snyggare-dealer",
+    "bytes": 163182601786,
+    "files": 194532,
+    "gitBytes": 4632534,
+    "exportsBytes": 101700429335,
+    "runsBytes": 57969034047,
+    "trackedChanges": 0,
+    "untrackedStatusEntries": 411,
+    "worktrees": 1,
+    "readErrors": 0,
+    "junction": ".runtime/doc-version-check-facddb3ff3f3441791a225ae61c87417/.runtime/candidate-link",
+    "junctionTarget": "C:/Users/jakem/dev/super-feature-sg/snyggare-dealer/.runtime/doc-version-check-facddb3ff3f3441791a225ae61c87417/extra"
+  },
+  "destination": {"drive": "D:/", "exists": true, "freeBytesAtCheck": 699469410304},
+  "moveReady": false,
+  "blockersAtCheck": [
+    "Old server PID 38944, Volta Node 24.21.0, src/server.ts in the old checkout, started 2026-11-10T16:56:34.727636+01:00. Must be revalidated and stopped through its control channel before relocation.",
+    "Absolute junction targets the old C: path; direct move leaves a stale target. Archive must avoid following links and preserve a repair receipt.",
+    "No destination copy or hash verification performed; ignored and untracked original material must also be preserved."
+  ],
+  "newLabInputsVerified": 1070,
+  "newLabRuntimeOldPathReferencesFound": 0,
+  "action": "No old files moved or deleted; no Git reset; no processes stopped. Findings handed to MAINTAIN."
+}

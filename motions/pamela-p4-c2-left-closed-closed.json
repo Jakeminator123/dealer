@@ -1,0 +1,50 @@
+{
+  "schemaVersion": 1,
+  "id": "pamela-p4-c2-left-closed-closed",
+  "dealer": "pamela",
+  "source": {
+    "path": "assets/motions/pamela-p4-c2-left-closed-closed/source.mp4",
+    "sha256": "e3b38f89eb6cb14f8dc240c5fdecce814850bb87285ebe540084c33af82b2ad7",
+    "historicalPath": "runs/20261110-pamela-goal-pilot/p4-c2-center-01/original.mp4",
+    "model": "wan3",
+    "provider": "Runway API",
+    "width": 1764,
+    "height": 1174,
+    "fps": 30,
+    "frames": 120
+  },
+  "motion": {
+    "takeHand": "LH",
+    "releaseHand": "LH",
+    "target": "P4.C2",
+    "physicalStartSide": "BACK",
+    "physicalEndSide": "BACK",
+    "turn": false,
+    "pass": false,
+    "basis": "REPORTED",
+    "reviewer": "Jakob",
+    "decision": "ACCEPTED_CONDITIONALLY",
+    "condition": "Visible moving card must remain yellow/CLOSED. No side switch or card repositioning at an edge passage."
+  },
+  "diagnosticColors": {
+    "CLOSED": [255, 255, 0],
+    "OPEN": [0, 0, 255],
+    "NONE": [0, 0, 0],
+    "contourIsSeparate": true
+  },
+  "review": {
+    "preview": "assets/motions/pamela-p4-c2-left-closed-closed/review-v04/preview.mp4",
+    "losslessLabels": "assets/motions/pamela-p4-c2-left-closed-closed/review-v04/labels.mkv",
+    "receipt": "assets/motions/pamela-p4-c2-left-closed-closed/review-v04/receipt.json",
+    "decision": "PENDING",
+    "limitations": "Diagnostic colour cores, not final alpha mattes. Edge/skin spill, boundary antialiasing and the overlapping-card guide still require detailed review. MP4 is for viewing; exact RGB comes from the lossless labels.",
+    "preservesMotionAndTiming": true,
+    "contourPreviewRgb": [52, 48, 20],
+    "requiredSemanticSequence": ["CLOSED", "CLOSED"],
+    "priorCard": "P4.C1 remains OPEN/blue"
+  },
+  "placementRef": null,
+  "viewProfileId": null,
+  "scoutIntegrated": false,
+  "published": false
+}

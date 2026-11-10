@@ -1,0 +1,32 @@
+{
+  "status": "superseded-by-jakob-correction",
+  "currentRecord": "motions/pamela-p4-c2-left-closed-closed.json",
+  "correction": "Jakob classified the source motion as CLOSED to CLOSED. An edge passage and a generated colour change do not establish a physical side reversal. The previous TURN claim is withdrawn.",
+  "sourceRoot": "C:/Users/jakem/dev/super-feature-sg/snyggare-dealer",
+  "candidate": {
+    "source": "runs/20261110-pamela-goal-pilot/p4-c2-center-01/original.mp4",
+    "sha256": "e3b38f89eb6cb14f8dc240c5fdecce814850bb87285ebe540084c33af82b2ad7",
+    "localReviewCopy": "assets/motions/pamela-p4-c2-left-closed-closed/source.mp4",
+    "sourceHand": "dealer-left (image right)",
+    "target": "P4.C2",
+    "observedSourceColors": ["yellow", "edge", "blue"],
+    "requiredSemanticSequence": ["CLOSED", "CLOSED"],
+    "frames": 120,
+    "fps": 30,
+    "frameIndexBase": 0,
+    "turnReviewFramesInclusive": [53, 68],
+    "edgeFramesInclusive": [61, 62],
+    "firstBlueFrame": 63,
+    "frameSheet": "output/left-turn-review/p4-c2-left-turn-f053-f068.jpg",
+    "triptych": "output/left-turn-review/p4-c2-turn-triptych.jpg",
+    "verification": "Original hash and decoding verified. The earlier interpretation of the colour change as a physical turn was incorrect; these images show the uncorrected source."
+  },
+  "comparisonSources": [
+    "assets/originals/deal.mp4 (local V6 source)",
+    "runs/20261110-pamela-goal-pilot/center-arc-01/p4-c1/original.mp4",
+    "runs/20261110-pamela-goal-pilot/p5-c2-center-01/original.mp4",
+    "runs/20261109-pamela-seat-bank/batches/middle-end-card-v1/original/pamela-seat-4-wan3-end-card-v1.mp4"
+  ],
+  "excluded": "assets/candidates/p4-left-c2.mp4 is Jakob's closed-to-closed control.",
+  "integrated": false
+}
