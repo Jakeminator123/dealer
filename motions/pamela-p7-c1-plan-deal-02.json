@@ -28,11 +28,14 @@
     "evidence": "evidence/generation-method-audit.json"
   },
   "review": {
-    "decision": "REJECTED",
+    "decision": "ACCEPTED",
+    "acceptedAs": "VARIANT",
+    "userReview": "Jakob 2026-11-10: mycket bra. Rörelsen in mot mitten för att rätta till kortet är naturlig och verklig, men ska bara förekomma ibland. Perfekt som variant bredvid ett direkt huvudklipp.",
+    "agentFirstVerdict": "REJECTED som mellanlandning; ändrat efter användarens granskning.",
     "basis": "Gult kort läggs ner mitt på bordet f45–57, tas upp igen f60–63 och vänds vid skon f63–66 innan det läggs på P7.",
-    "limitations": "Mellanlandning. Använd plan-deal-01 eller beställ ny tagning.",
+    "limitations": "Variant, inte huvudklipp. Retur från denna given är inte beställd. Platt hand vid nedläggning.",
     "colorDoesNotProvePhysicalSide": true,
-    "userAccepted": false,
+    "userAccepted": true,
     "productionReady": false
   },
   "placementRef": {

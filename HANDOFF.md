@@ -28,16 +28,23 @@ Runway, nyckel, modell (`wan3`) och parametrar var desamma i gamla labbet och h�
 
 ## Resultat 2026-11-10
 
-Nio klipp, 680 credits. Alla sju givar har verklig enhandsvändning med kantpassage enligt rutgranskning. Beslut ägs av `motions/<id>.json`; inget är godkänt av Jakob.
+Tretton klipp, 920 credits. Alla sju givar har verklig enhandsvändning med kantpassage enligt rutgranskning. Beslut ägs av `motions/<id>.json`.
 
 | Klipp | Läge |
 | --- | --- |
-| `pamela-p4-c1-plan-deal-02` | Ren kandidat: kant f52–54, enfärgad blå, planens plats, släpp f114–117 |
-| `pamela-p1-c1-plan-deal-02` | Kandidat: vänds lågt vid bordet, ren blå, planens plats |
-| `pamela-p7-c1-plan-deal-01` | Kandidat med brist: vänder direkt vid skon, liten röd markering, platt hand |
-| `pamela-p4-c1-deal-calm-01` + två returer | Bra rörelse och låga returer, men gamla P4-platsen. Returerna rör kortet igen f6–18 |
-| `pamela-p4-c1-plan-deal-01`, `pamela-p7-c1-plan-deal-02` | Underkända: tryckt framsida respektive mellanlandning |
+| `pamela-p4-c1-plan-deal-02` + returer `…-plan-return-{ready,idle}-01` | Hel kedja på planens plats. Giv klipps vid landningsrutan f105, returerna startar på samma ruta (0 avvikande pixlar). VILA-returen lägger handen platt över kortet f24–36 |
+| `pamela-p1-c1-plan-deal-02` + returer `…-plan-return-{ready,idle}-01` | Hel kedja på planens plats, landningsruta f112, rena returer |
+| `pamela-p7-c1-plan-deal-01` | Kandidat som huvudklipp: vänder direkt vid skon, liten röd markering, platt hand |
+| `pamela-p7-c1-plan-deal-02` | **Godkänd av Jakob som variant**: rörelsen in mot mitten är naturlig men ska bara förekomma ibland |
+| `pamela-p4-c1-deal-calm-01` + två returer | Bra rörelse, men gamla P4-platsen och skarv med hack. Ersatt av kedjan ovan |
+| `pamela-p4-c1-plan-deal-01` | Underkänd: tryckt framsida |
 | `pamela-p1-c1-plan-deal-01` | Sekundär: prickig framsida |
+
+Jakob efter granskning: "allt ser lovande ut". Han bekräftar tre ankare — VILA, REDO och ett landningsankare per kort — och påpekade hacket vid släppet i batch 1, som landningsankaret nu tar bort.
+
+## Riktning: renderade kort ovanpå filmen
+
+Jakobs idé, som bedöms rimlig: filmen levererar dealer, hand och rörelse; korten blir ett renderat lager (React Three Fiber) som följer filmens enfärgade kortyta. I handen följer kortet spårningen och klipps mot fingrarna; i kantläget kan sida, material och position justeras osynligt; efter släppet är kortet ett fritt objekt (fysik, glans, dra, vika). Kort 1 och 2 på samma plats skiljer 35–42 px i planen, så en givfilm per plats kan räcka om kortet flyttas i kantläget. Inget av detta är byggt. Det kräver spårningsdata per klipp (hörn per ruta, sida, fingermatt), som kan tas ur den blå/gula masken.
 
 Jakobs betyg på äldre material samma dag: P4.C1 rått original 4,5/5 (saknar retur), V6 4/5 (byter hand), vita banken 3/5 (ingen vändning), gul/blå sekvens 2,5/5, READY2-proven "konstiga".
 
@@ -46,15 +53,15 @@ Jakobs betyg på äldre material samma dag: P4.C1 rått original 4,5/5 (saknar r
 - Branch `claude/deal-clips`, utgår från `bfd43fc`. `jakob/test` på GitHub står kvar på `a5821f1`.
 - `placements/default.json` är Jakobs utkast (SHA `406acb69…`): återställ eller stage:a det inte. Ankare använder frysta kopior.
 - Publika sajten visar fortfarande 22 filmer från `b65fd9b`. De nya klippen ligger bara lokalt under `assets/motions/` och är inte i filmbiblioteket eller Blob.
-- Granskningssidor utanför Git: `D:/dealer-scratch/review/claude-browser/` (`kandidater.html`, `batch-1.html`, `batch-3.html`).
+- Granskningssidor utanför Git: `D:/dealer-scratch/review/claude-browser/` (`kandidater.html`, `oversikt.html`, `batch-4.html`).
 - Kredittak i jobbfilen 1 000; Jakobs ram högst 5 000 med avsikten att stanna långt under.
 
 ## Nästa steg
 
-1. Jakob tittar på batch 1-kedjorna och batch 3 och säger om tempo, vändning och returer är rätt.
-2. Returer till REDO och VILA från `pamela-p4-c1-plan-deal-02` och `pamela-p1-c1-plan-deal-02`, med startruta där fingret vilar på kortet så att släppet hamnar i returen.
-3. Ny P7-tagning med slutbild av riktiga kortpixlar och gärna fingertopp i stället för platt hand.
-4. Övriga platser, C2 (med C1 inbakat i båda bilderna) och dealerkorten; D.C2 stannar gult.
+1. Jakob bedömer kedjorna för P4 och P1 (`batch-4.html`) och väljer väg för kort 2: egen film per kort eller en film per plats med renderat kort.
+2. Prov utan Runway-kostnad: ta fram spårning ur P4-kedjan och lägg ett renderat kort i labbet.
+3. P7: returer från `pamela-p7-c1-plan-deal-01` och från varianten; eventuellt ny huvudtagning med fingertopp i stället för platt hand.
+4. Övriga platser P2, P3, P5, P6 och dealerkorten; D.C2 stannar gult.
 5. Beslut om täckt start. `kling_4` med mellanbilder är oprövat och kan låsa själva utdraget.
 6. Inför valda klipp i `data/library.json` och manifest först när de är godkända.
 

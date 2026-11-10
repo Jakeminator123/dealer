@@ -1,0 +1,50 @@
+{
+  "schemaVersion": 1,
+  "id": "pamela-p4-c1-plan-return-ready-01",
+  "dealer": "pamela",
+  "source": {
+    "path": "assets/motions/pamela-p4-c1-plan-return-ready-01/source.mp4",
+    "sha256": "0e9e4c1bfab3a036867e61ccba2c3efff5578446aab25c59b61fe3537b061297",
+    "bytes": 8272250,
+    "width": 1764,
+    "height": 1174,
+    "fps": 30,
+    "frames": 90,
+    "provider": "Runway developer API",
+    "model": "wan3"
+  },
+  "motion": {
+    "kind": "RETURN",
+    "from": "LAND(P4.C1)",
+    "to": "READY",
+    "hand": "LH",
+    "target": "P4.C1",
+    "pass": false,
+    "startsOn": {
+      "clip": "pamela-p4-c1-plan-deal-02",
+      "frame": 105,
+      "seamPixelsOverThreshold": 0
+    },
+    "basis": "SOURCE_FRAME_REVIEW",
+    "evidence": "evidence/generation-method-audit.json"
+  },
+  "review": {
+    "decision": "PENDING",
+    "basis": "Startar på givens landningsruta f105 (0 avvikande pixlar). Pekfingret vilar på hörnet f0–12, lyfter f18, handen går med lös näve i höjd med skons överkant, nyp vid skon f48–54 och håller. En beröring, ett släpp.",
+    "limitations": "Handen passerar nära kroppen på vägen. En tagning.",
+    "colorDoesNotProvePhysicalSide": true,
+    "userAccepted": false,
+    "productionReady": false
+  },
+  "placementRef": {
+    "path": "assets/anchors/pamela-ready-p4-c1-plan-01/placement-plan.json",
+    "sha256": "406acb69c086b51d166c0eba3e6bb2ce7e19b868b63546db04aa9562da7e7058",
+    "source": "placements/default.json",
+    "plannedTarget": "P4.C1"
+  },
+  "postProcessing": "none",
+  "generationRef": "assets/motions/pamela-p4-c1-plan-return-ready-01/generation.json",
+  "jobRef": "data/clip-jobs.json",
+  "scoutIntegrated": false,
+  "published": false
+}
