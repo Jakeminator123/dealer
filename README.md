@@ -2,6 +2,8 @@
 
 Självständig arbetsyta med V6 som Jakobs valda visuella referens. Målet är två kort till sju spelare och en dealer i Scoutgaming. En bildrutetidslinje styr; sekvenssträngar och nodvyn beskriver samma metadata.
 
+[Öppna det publika labbet](https://dealer-delta-eosin.vercel.app/). Den publika sidan sparar utkast i den egna webbläsaren; lokal preview sparar till placeringsfilen på datorn. Export/import flyttar ett utkast mellan dem. Sju utvalda granskningsfilmer ligger i separat Vercel Blob, inte i Git eller webbpaketet.
+
 | Läsning | Innehåll |
 | --- | --- |
 | [SYSTEM](docs/SYSTEM.md) | Tre ytor, två format, bottom-up, ordlista och rörelseregister. Befintligt och planerat hålls isär. |
@@ -12,12 +14,15 @@ Självständig arbetsyta med V6 som Jakobs valda visuella referens. Målet är t
 
 `data/library.json` är den lilla filmkatalogen med V6-referenser, diagnostiskt gul–gul-prov och registrerade pilotfilmer. Beslut hämtas från rörelseregistret; katalogen är ingen bank av färdiggodkända utdelningar. `placements/default.json` innehåller Jakobs placeringsutkast för 16 kortplatser; det är ännu inte kopplat till Scout/V6-utdelningen.
 
+Plant bord är standard i editorn. Läget och riktningen sparas/exporteras i `tableProjection`, medan varje korts befintliga koordinater bevaras. Äldre filer utan fältet kan läsas in och sparas med den nya inställningen. Det är ett gemensamt visuellt perspektiv från P4, inte en uppmätt kamerakalibrering.
+
 ## Kör lokalt
 
 - Arbeta här. `node -p process.version` ska visa `v24.21.0` via Volta; `package.json` kräver `>=24.21.0 <25`. `npm ci` behövs om beroenden saknas.
 - `START.cmd`, `STATUS.cmd`, `STOPP.cmd` styr enbart `http://127.0.0.1:4319`. Återanvänd Codex WebView. Servern slutar 60 sekunder efter sista preview-fliken.
 - Öppna [placeringslabbet](http://127.0.0.1:4319/lab.html): 16 kortplatser och sko, separat dator/mobil, hand-/sidavsikt, nodvy, materialpanel och filmkatalog. Sparning ändrar bara placeringsutkastet. Grundkontroller finns i [evidence/placement-lab.json](evidence/placement-lab.json), senare vy-/nodkontroller i [evidence/plane-and-nodemap.json](evidence/plane-and-nodemap.json).
 - `npm run verify` kontrollerar registrerade lokala filer. `npm run verify -- --frames` återrenderar 18 kontrollrutor och kräver pixelidentitet.
+- `node --test --test-concurrency=4 tools/placements.test.ts tools/public-storage.test.ts tools/lab-ui.test.ts tools/render-safety.test.ts` testar placeringar, sparning, återläsning och renderinläsning.
 - `npm run render -- --render --take=02` startar ett nytt fullständigt försök med fyra arbetare. Välj alltid ett oanvänt tvåsiffrigt nummer; `take-01` är bevarat. Kräver FFmpeg/FFprobe via PATH eller `FFMPEG`/`FFPROBE`.
 
 ## Verifierad bas och gräns
@@ -29,3 +34,5 @@ Enligt [reproduktionskvittot](evidence/reproduction.json) har hela V6 återrende
 Labbet återanvänder kortmaterialets TS-källa direkt för böjning/glans och ett lokalt landningsprov. Detta ändrar inte V6-filmen eller de historiska materialbundlarna.
 
 Publikt källrepo: [Jakeminator123/dealer](https://github.com/Jakeminator123/dealer). GitHub innehåller inte media eller hemligheter. Scout-integration, deploy och betald generering är separata uppdrag.
+
+Aktuella fynd från den externa granskningen och avgränsade rättningar finns i [granskningskvittot](evidence/external-review-triage.json). Efter renderinläsningsrättningarna är 18 kontrollrutor fortsatt pixelidentiska enligt [nytt V6-kvitto](evidence/render-safety-frames.json). En generell koppling mellan placeringsplan och filmer återstår.

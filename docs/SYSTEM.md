@@ -34,6 +34,10 @@ Native centrum `(0.5,0.5)` ger `(880.5,586.5)` före rasteravrundning. Native-pu
 
 Placeringseditorns utkast finns i `placements/default.json`; vyprofiler och pixelkonvertering finns i `src/placement-model.ts`. Geometri lagras separat per `native`/`portrait`; hand-/sidavsikt och materialval hålls skilda från geometrin. Alla standardplatser börjar ogranskade (`reviewed=false`), inte uppmätta. `angle` är grader medurs i bildens y-ned-rymd; `width`/`height` är andelar av respektive vys pixelcentrumspann. `taper` formar konturen och bevisar inte en kalibrerad 3D-projektion.
 
+`tableProjection` sparar editorns gemensamma visningsval: `mode: flat | individual` och `heading` i grader (`-90,-45,-15,0,15,45,90`). Plant bord med 0° är standard. Äldre schema-v1-filer utan fältet accepteras; editorn erbjuder att spara standardinställningen utan att flytta koordinater. Planändringen går att ångra. Läget/riktningen följer med i export/import och publicerade webbläsarutkast. Plant bord beräknas från P4.C1 och är fortfarande inte en uppmätt fysisk kamera. Riktning i bordplanet är skild från kamerans lutning och kortets böjning.
+
+En analys av de nuvarande separata native-/mobilprojektionerna finns i [table-projection-review](../evidence/table-projection-review.md). Den flyttar inga sparade punkter och ändrar inte V6. Villkorliga målskillnader i analysen är inte uppmätt handkontakt i en framtida film.
+
 Rörelsernas framtida bindning använder `placementRef`, `sceneProfileId`, `viewProfileId`; inga x/y-tal i sekvenssträngen. Film och framtida React/Next-overlay ska använda samma uppslag och samma resize/crop/letterbox-offset. Editorns placeringsfil är ännu inte kopplad till V6-renderern eller Scout. DRAFT-ordningen i en planerad sekvens är inte uppmätta filmannoteringar; noder eller dokument får inte hitta på saknade mätningar.
 
 ## Ordlista och gräns mot Scout
@@ -65,6 +69,7 @@ P4.C2@VAR03 | TAKE(LH,BACK) > LAND(BACK) > RELEASE(LH) > RETURN(IDLE)
 
 - `motions/<clip-id>.json` är ensam källa för rörelsens klassning/beslut. Hand, pose, fysisk sida, spelstatus, mål och variant hålls separata.
 - `data/library.json` pekar ut en liten visningskatalog utan mediekopior. V6-poster är referenser; diagnostiska poster hämtar granskningsbeslut från sitt `motionRef`. Gulprovet är 1764×1174 i källrymd, inte den kalibrerade native-vyn 1762×1174.
+- `data/public-media.json` binder exakt dessa filmer till publika Blob-URL:er med samma SHA-256. `publicReview` i en rörelsepost anger exakt den publicerade granskningsfilen; publicering innebär inte godkänd rörelse eller Scoutintegration.
 - Nya original placeras i `assets/motions/<clip-id>/source.mp4`. Korrigerad visningsversion har egen hash/relation till original. Befintliga registrerade original får refereras där de ligger; inga kopior per godkännandestatus.
 - `KEYFRAME` är en källruta. `ANCHOR` är en utpekad källruta för exempelvis grepp, kantläge, kontakt, släpp eller vila: källhash + rutnummer. Saknad kunskap är `null`/`UNKNOWN`, inte uppskattade tider.
 - Bevisgrund `MEASURED/OBSERVED/REPORTED/HYPOTHESIS/UNKNOWN` skiljs från beslut `PENDING/ACCEPTED/REJECTED`. Rörelse, mask/geometri, scen och Scoutanslutning bedöms separat.

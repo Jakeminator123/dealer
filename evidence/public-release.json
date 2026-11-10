@@ -1,0 +1,431 @@
+{
+  "schemaVersion": 1,
+  "recordedAt": "2026-11-10T18:23:56.9547085Z",
+  "project": {
+    "name": "dealer",
+    "id": "prj_7zd112w6MIX9YnpcR7Nj64Ke50yk",
+    "teamId": "team_Scxorb9qtZHjNae1YEQnFCaT",
+    "teamSlug": "scoutgaming",
+    "githubSourceRepository": "Jakeminator123/dealer",
+    "automaticGitDeployment": false
+  },
+  "publicUrl": "https://dealer-delta-eosin.vercel.app/",
+  "deployment": {
+    "id": "dpl_DnChpA2tEKxUCh2UPR4X2ewgucbN",
+    "url": "https://dealer-6yzarfbbi-scoutgaming.vercel.app",
+    "inspectorUrl": "https://vercel.com/scoutgaming/dealer/DnChpA2tEKxUCh2UPR4X2ewgucbN",
+    "readyState": "READY",
+    "target": "production",
+    "deploymentApiUrl": "https://api.vercel.com/v13/deployments/dpl_DnChpA2tEKxUCh2UPR4X2ewgucbN"
+  },
+  "build": {
+    "builtAt": "2026-11-10T18:20:10.259Z",
+    "sourceCommit": "f73cc776e3fc1bc51c60e613ff0726618c9d744d",
+    "mediaMode": "vercel-blob",
+    "mediaManifestSha256": "7e9d13343f53a73a1fb883c1c7b9cb1e4c18c35f50555fe638c543054a87c4b3",
+    "mediaStoreId": "store_qeojzIHuA5ewT4uO",
+    "mediaCount": 7,
+    "initialPlanSource": "saved local snapshot",
+    "initialPlanPath": "placements/default.json",
+    "initialPlanSha256": "59cc79dea158f3b47fae16df0312386fc79bb2d8662b865a1fe3551d63a61bad",
+    "inputUnchangedDuringBuild": true,
+    "browserLocalWritesOnly": true,
+    "totalBytes": 4320080,
+    "files": [
+      {
+        "path": "data/default-plan.json",
+        "bytes": 6376,
+        "sha256": "8280d103b3135eaf34f081dabcb6f2ed4cbd6d70c05f039c744cfe1c427c24d6"
+      },
+      {
+        "path": "data/public-library.json",
+        "bytes": 4898,
+        "sha256": "db87d55e519c6fdd60c6bd4b50deb023d901ebcf97bef1435c9755b91c8723eb"
+      },
+      {
+        "path": "index.html",
+        "bytes": 11809,
+        "sha256": "aae63c6846a2bf222f285f6fbc09437488913f92fafcc6efdd5b186b44a9bf38"
+      },
+      {
+        "path": "lab.html",
+        "bytes": 11809,
+        "sha256": "aae63c6846a2bf222f285f6fbc09437488913f92fafcc6efdd5b186b44a9bf38"
+      },
+      {
+        "path": "lab.css",
+        "bytes": 14769,
+        "sha256": "53638d82ed18459242c317e71bd9377a41c2271e5b61d2e4b64991fbbe8ddc85"
+      },
+      {
+        "path": "lab-ui.js",
+        "bytes": 25643,
+        "sha256": "7bee65900f1ed0a18bf8487199c269f7e94f9727afcff23d7be0ffbeaae2cb15"
+      },
+      {
+        "path": "placement-model.js",
+        "bytes": 9155,
+        "sha256": "1e33c74e635b7de92c23a4427b986d8208e4d89ef83181fa712473fc7b85a169"
+      },
+      {
+        "path": "public-storage.js",
+        "bytes": 3291,
+        "sha256": "3b4ddf5da11de31e8ca48703c0a86143b047f0607a59373a7c27b4a31ce0e9e3"
+      },
+      {
+        "path": "materials/source/src/card-material-study.js",
+        "bytes": 24936,
+        "sha256": "9e4d93df7fc40f96097501e873c8d5075aa666043e63725c9d2dcd49d7c4cffd"
+      },
+      {
+        "path": "materials/source/references/card-materials/vendor/three.module.js",
+        "bytes": 1295459,
+        "sha256": "5289ca2dfde8572bd7715b9fa2ca929db12bae87e9a2cb53e431662df7039506"
+      },
+      {
+        "path": "materials/source/references/card-materials/vendor/LICENSE",
+        "bytes": 1081,
+        "sha256": "4c40a1ef62450b857c3b2aaf294936304cd552d965fbcd9d32d4c5bcf4ba4454"
+      },
+      {
+        "path": "assets/lab/native.jpg",
+        "bytes": 140696,
+        "sha256": "d7ef479f1642cf59450ab8a77197913a358f86f2b183330daeecd9b6cd6cad76"
+      },
+      {
+        "path": "assets/lab/portrait.jpg",
+        "bytes": 121160,
+        "sha256": "93285647abceaab3d9a5e993dfc0eaaa6bf87dc39cba5984b317d625b8b60be4"
+      },
+      {
+        "path": "materials/kortmaterial.js",
+        "bytes": 1323026,
+        "sha256": "996ed51a316bdfcf84865511ea23a2ce5ff9b7b33e7c751f2354a63e7f67c1cc"
+      },
+      {
+        "path": "materials/markermaterial.js",
+        "bytes": 1310294,
+        "sha256": "a1389095b4a89642174d4c11508dc3dab0796c2760a6ad64838118d9efdaebef"
+      },
+      {
+        "path": "materials/kortmaterial.html",
+        "bytes": 8079,
+        "sha256": "eb391e677109df6c4b9b4fc7943075c36c3b82929d28cb9e826277110652c72f"
+      },
+      {
+        "path": "materials/markermaterial.html",
+        "bytes": 7397,
+        "sha256": "2df852934a60b85b09a9b2a76b895b9e084c0930e2584caf82d2340564613330"
+      },
+      {
+        "path": "preview.html",
+        "bytes": 176,
+        "sha256": "7974eefdda00f0aeea0068d46bc0f44fbb1b2cace57c0ea5b2d42d80f603b75e"
+      },
+      {
+        "path": "robots.txt",
+        "bytes": 26,
+        "sha256": "331ea9090db0c9f6f597bd9840fd5b171830f6e0b3ba1cb24dfa91f0c95aedc1"
+      }
+    ]
+  },
+  "publicFileVerification": {
+    "verifiedAt": "2026-11-10T18:21:37.6473731Z",
+    "origin": "https://dealer-delta-eosin.vercel.app",
+    "sourceCommit": "f73cc776e3fc1bc51c60e613ff0726618c9d744d",
+    "files": 19,
+    "bytes": 4320080.0,
+    "allMatch": true,
+    "checks": [
+      {
+        "path": "data/default-plan.json",
+        "status": 200,
+        "bytes": 6376,
+        "sha256": "8280d103b3135eaf34f081dabcb6f2ed4cbd6d70c05f039c744cfe1c427c24d6",
+        "matchesBuild": true
+      },
+      {
+        "path": "data/public-library.json",
+        "status": 200,
+        "bytes": 4898,
+        "sha256": "db87d55e519c6fdd60c6bd4b50deb023d901ebcf97bef1435c9755b91c8723eb",
+        "matchesBuild": true
+      },
+      {
+        "path": "index.html",
+        "status": 200,
+        "bytes": 11809,
+        "sha256": "aae63c6846a2bf222f285f6fbc09437488913f92fafcc6efdd5b186b44a9bf38",
+        "matchesBuild": true
+      },
+      {
+        "path": "lab.html",
+        "status": 200,
+        "bytes": 11809,
+        "sha256": "aae63c6846a2bf222f285f6fbc09437488913f92fafcc6efdd5b186b44a9bf38",
+        "matchesBuild": true
+      },
+      {
+        "path": "lab.css",
+        "status": 200,
+        "bytes": 14769,
+        "sha256": "53638d82ed18459242c317e71bd9377a41c2271e5b61d2e4b64991fbbe8ddc85",
+        "matchesBuild": true
+      },
+      {
+        "path": "lab-ui.js",
+        "status": 200,
+        "bytes": 25643,
+        "sha256": "7bee65900f1ed0a18bf8487199c269f7e94f9727afcff23d7be0ffbeaae2cb15",
+        "matchesBuild": true
+      },
+      {
+        "path": "placement-model.js",
+        "status": 200,
+        "bytes": 9155,
+        "sha256": "1e33c74e635b7de92c23a4427b986d8208e4d89ef83181fa712473fc7b85a169",
+        "matchesBuild": true
+      },
+      {
+        "path": "public-storage.js",
+        "status": 200,
+        "bytes": 3291,
+        "sha256": "3b4ddf5da11de31e8ca48703c0a86143b047f0607a59373a7c27b4a31ce0e9e3",
+        "matchesBuild": true
+      },
+      {
+        "path": "materials/source/src/card-material-study.js",
+        "status": 200,
+        "bytes": 24936,
+        "sha256": "9e4d93df7fc40f96097501e873c8d5075aa666043e63725c9d2dcd49d7c4cffd",
+        "matchesBuild": true
+      },
+      {
+        "path": "materials/source/references/card-materials/vendor/three.module.js",
+        "status": 200,
+        "bytes": 1295459,
+        "sha256": "5289ca2dfde8572bd7715b9fa2ca929db12bae87e9a2cb53e431662df7039506",
+        "matchesBuild": true
+      },
+      {
+        "path": "materials/source/references/card-materials/vendor/LICENSE",
+        "status": 200,
+        "bytes": 1081,
+        "sha256": "4c40a1ef62450b857c3b2aaf294936304cd552d965fbcd9d32d4c5bcf4ba4454",
+        "matchesBuild": true
+      },
+      {
+        "path": "assets/lab/native.jpg",
+        "status": 200,
+        "bytes": 140696,
+        "sha256": "d7ef479f1642cf59450ab8a77197913a358f86f2b183330daeecd9b6cd6cad76",
+        "matchesBuild": true
+      },
+      {
+        "path": "assets/lab/portrait.jpg",
+        "status": 200,
+        "bytes": 121160,
+        "sha256": "93285647abceaab3d9a5e993dfc0eaaa6bf87dc39cba5984b317d625b8b60be4",
+        "matchesBuild": true
+      },
+      {
+        "path": "materials/kortmaterial.js",
+        "status": 200,
+        "bytes": 1323026,
+        "sha256": "996ed51a316bdfcf84865511ea23a2ce5ff9b7b33e7c751f2354a63e7f67c1cc",
+        "matchesBuild": true
+      },
+      {
+        "path": "materials/markermaterial.js",
+        "status": 200,
+        "bytes": 1310294,
+        "sha256": "a1389095b4a89642174d4c11508dc3dab0796c2760a6ad64838118d9efdaebef",
+        "matchesBuild": true
+      },
+      {
+        "path": "materials/kortmaterial.html",
+        "status": 200,
+        "bytes": 8079,
+        "sha256": "eb391e677109df6c4b9b4fc7943075c36c3b82929d28cb9e826277110652c72f",
+        "matchesBuild": true
+      },
+      {
+        "path": "materials/markermaterial.html",
+        "status": 200,
+        "bytes": 7397,
+        "sha256": "2df852934a60b85b09a9b2a76b895b9e084c0930e2584caf82d2340564613330",
+        "matchesBuild": true
+      },
+      {
+        "path": "preview.html",
+        "status": 200,
+        "bytes": 176,
+        "sha256": "7974eefdda00f0aeea0068d46bc0f44fbb1b2cace57c0ea5b2d42d80f603b75e",
+        "matchesBuild": true
+      },
+      {
+        "path": "robots.txt",
+        "status": 200,
+        "bytes": 26,
+        "sha256": "331ea9090db0c9f6f597bd9840fd5b171830f6e0b3ba1cb24dfa91f0c95aedc1",
+        "matchesBuild": true
+      }
+    ]
+  },
+  "publicLibraryVerification": {
+    "origin": "https://dealer-delta-eosin.vercel.app",
+    "status": 200,
+    "sourceCommit": "f73cc776e3fc1bc51c60e613ff0726618c9d744d",
+    "labScriptHashMatches": true,
+    "modelScriptHashMatches": true,
+    "films": 7,
+    "allFilmsUseBlob": true,
+    "snapshotRevision": "59cc79dea158f3b47fae16df0312386fc79bb2d8662b865a1fe3551d63a61bad"
+  },
+  "blobVerification": {
+    "evidence": "evidence/public-media-verification.json",
+    "manifest": "data/public-media.json",
+    "storeId": "store_qeojzIHuA5ewT4uO",
+    "access": "public",
+    "files": 7,
+    "totalBytes": 118426289,
+    "verification": "Anonymous HTTPS GET, video/mp4, exact byte count and SHA-256 for every selected film"
+  },
+  "browserStorage": {
+    "scope": "Each browser profile on the public origin",
+    "writesToLocalRepository": false,
+    "initialPlanSource": "saved local snapshot",
+    "initialPlanSha256": "59cc79dea158f3b47fae16df0312386fc79bb2d8662b865a1fe3551d63a61bad",
+    "unsavedLocalDraftsRead": false,
+    "requiresWebLocksForWrites": true
+  },
+  "previousProject": {
+    "name": "scout-dealerlab",
+    "id": "prj_mQwHzspK3GrrJA04eFOorFxth0d5",
+    "teamId": "team_Scxorb9qtZHjNae1YEQnFCaT",
+    "publicUrl": "https://scout-dealerlab.vercel.app",
+    "deploymentId": "dpl_6iJxHSqx11fvAJSEvRq9T5qFdhxE",
+    "deploymentUrl": "https://scout-dealerlab-bvkd21x6w-scoutgaming.vercel.app",
+    "gitLink": null,
+    "localReference": "D:/dealer-archive/snyggare-dealer/references/public-review.json",
+    "localExport": "D:/dealer-archive/snyggare-dealer/exports/review-hub-20261110140906924",
+    "retired": true,
+    "separateGithubRepositoryIdentified": false
+  },
+  "preservedMaterialBundles": {
+    "markerBundleSha256": "a1389095b4a89642174d4c11508dc3dab0796c2760a6ad64838118d9efdaebef",
+    "cardBundleSha256": "996ed51a316bdfcf84865511ea23a2ce5ff9b7b33e7c751f2354a63e7f67c1cc",
+    "bothBundlesByteIdenticalToPreviousPublicExport": true
+  },
+  "archivedReviewFeatures": [
+    {
+      "route": "/komposition",
+      "features": [
+        "frame stepping",
+        "0.25x and 0.5x playback",
+        "seam-specific playback buttons",
+        "comparison-source selection"
+      ],
+      "source": "D:/dealer-archive/snyggare-dealer/src/components/pamela-composition/PamelaCompositionReview.tsx"
+    },
+    {
+      "route": "/kortkontakt-v4",
+      "features": [
+        "V3/V4 side-by-side contact sheets",
+        "mask and geometry QA links",
+        "two-card hand-contact experiment evidence"
+      ],
+      "source": "D:/dealer-archive/snyggare-dealer/src/pamela-card-v4-page.ts"
+    }
+  ],
+  "retirement": {
+    "status": "verified-deleted",
+    "decision": "User delegated retirement; parent agent approved after final public WebView and Blob playback checks.",
+    "deletedProjectOnly": "scoutgaming/scout-dealerlab",
+    "deleteResult": {
+      "deletedAt": "2026-11-10T18:23:26.0960879Z",
+      "preflightAt": "2026-11-10T18:23:21.2644448Z",
+      "projectId": "prj_mQwHzspK3GrrJA04eFOorFxth0d5",
+      "teamId": "team_Scxorb9qtZHjNae1YEQnFCaT",
+      "name": "scout-dealerlab",
+      "previousProductionId": "dpl_6iJxHSqx11fvAJSEvRq9T5qFdhxE",
+      "domain": "scout-dealerlab.vercel.app",
+      "gitLink": null,
+      "apiReturnedSuccess": true,
+      "response": null
+    },
+    "providerVerification": {
+      "verifiedAt": "2026-11-10T18:23:47.6470918Z",
+      "oldProjectDeleted": true,
+      "oldProjectId": "prj_mQwHzspK3GrrJA04eFOorFxth0d5",
+      "oldReadExitCode": 126,
+      "oldReadMessage": "Error: Project not found. (404)",
+      "newProjectId": "prj_7zd112w6MIX9YnpcR7Nj64Ke50yk",
+      "newProjectName": "dealer",
+      "teamId": "team_Scxorb9qtZHjNae1YEQnFCaT",
+      "newProductionDeploymentId": "dpl_DnChpA2tEKxUCh2UPR4X2ewgucbN"
+    },
+    "publicVerification": {
+      "verifiedAt": "2026-11-10T18:23:40.8885147Z",
+      "newUrl": "https://dealer-delta-eosin.vercel.app/",
+      "newStatus": 200,
+      "oldUrl": "https://scout-dealerlab.vercel.app/",
+      "oldStatus": 404,
+      "blobStoreId": "store_qeojzIHuA5ewT4uO",
+      "blobFiles": [
+        {
+          "id": "v6-native-reference",
+          "status": 200,
+          "bytes": 21108259,
+          "contentType": "video/mp4"
+        },
+        {
+          "id": "v6-portrait-reference",
+          "status": 200,
+          "bytes": 17847045,
+          "contentType": "video/mp4"
+        },
+        {
+          "id": "pamela-p4-c2-closed-review-v04",
+          "status": 200,
+          "bytes": 5273433,
+          "contentType": "video/mp4"
+        },
+        {
+          "id": "pamela-p7-c1-left-turn-pilot-01",
+          "status": 200,
+          "bytes": 20509640,
+          "contentType": "video/mp4"
+        },
+        {
+          "id": "pamela-p7-c1-left-turn-pilot-02",
+          "status": 200,
+          "bytes": 20926194,
+          "contentType": "video/mp4"
+        },
+        {
+          "id": "pamela-p6-c1-left-turn-pilot-01",
+          "status": 200,
+          "bytes": 16269958,
+          "contentType": "video/mp4"
+        },
+        {
+          "id": "pamela-p7-c1-left-pink-pilot-01",
+          "status": 200,
+          "bytes": 16491760,
+          "contentType": "video/mp4"
+        }
+      ],
+      "allSevenBlobsStillAvailable": true
+    },
+    "archive": "D:/dealer-archive/snyggare-dealer/exports/review-hub-20261110140906924",
+    "archivePreserved": true,
+    "githubRepositoryDeleted": false,
+    "reasonNoGithubDeletion": "Old project has no Git integration and no separate unused repository was identified."
+  },
+  "browserVerification": {
+    "evidence": "evidence/public-lab-review.json",
+    "sha256": "376ffcc2e0c3dabd23911b0aa4d4c54e4992a2bbee24028539c05c9c2c2a593d",
+    "suppliedBy": "root agent final Codex WebView review"
+  }
+}

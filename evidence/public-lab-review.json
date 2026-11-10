@@ -1,0 +1,70 @@
+{
+  "verifiedAt": "2026-11-10T18:22:20.956Z",
+  "sourceCommit": "f73cc776e3fc1bc51c60e613ff0726618c9d744d",
+  "publicUrl": "https://dealer-delta-eosin.vercel.app/",
+  "browser": "Codex in-app WebView",
+  "localUrl": "http://127.0.0.1:4319/lab.html",
+  "plans": [
+    {
+      "name": "local",
+      "before": ".runtime/local-before-flat.json",
+      "after": "placements/default.json",
+      "beforeSha256": "59cc79dea158f3b47fae16df0312386fc79bb2d8662b865a1fe3551d63a61bad",
+      "afterSha256": "80029048726834297422b7360b8f3ac3fdb1cc9d013039af2ea5cfb289f4dbe9",
+      "coordinatesAndMaterialPreserved": true,
+      "projection": {
+        "mode": "flat",
+        "heading": 0
+      }
+    },
+    {
+      "name": "publicBrowser",
+      "before": ".runtime/public-qa/latest-before-flat.json",
+      "after": ".runtime/public-qa/saved-flat-plan.json",
+      "beforeSha256": "4a118032033a27298a3648d2a492895310532157a3e2ad95f6db750bea7b22a3",
+      "afterSha256": "a8389f0c5b588705a631102e2539a8c4079aa0e7fac16f841415fb463d5d8479",
+      "coordinatesAndMaterialPreserved": true,
+      "projection": {
+        "mode": "flat",
+        "heading": 0
+      }
+    }
+  ],
+  "flatDefaultPersistsAfterReload": true,
+  "publicDraftAlsoVisibleInNewTab": true,
+  "savedDestinations": {
+    "local": "placements/default.json",
+    "public": "browser local storage, not a shared server"
+  },
+  "playback": {
+    "duration": 6,
+    "ended": true,
+    "error": null,
+    "ready": 4,
+    "src": "https://qeojzihua5ewt4uo.public.blob.vercel-storage.com/dealer/41ac99c50cba24781f2d4461bed91c2c6b5e13beb6b761d8d6f09d13979bf20e.mp4",
+    "time": 6
+  },
+  "consoleErrors": [],
+  "tests": {
+    "passed": 19,
+    "failed": 0
+  },
+  "materialStudyPreviouslyVerified": {
+    "canvas": true,
+    "selectFront": true,
+    "consoleErrors": 0,
+    "integratedIntoPinkVideo": false
+  },
+  "screenshot": ".runtime/public-qa/plant-bord-hela-vyn.png",
+  "cleanup": {
+    "testTab10Closed": true,
+    "originalUserTabsPreserved": true,
+    "localPreviewKeptForReview": true,
+    "testTab11Closed": true
+  },
+  "limitations": [
+    "No full new production bank.",
+    "Pink clip remains pending motion/side review.",
+    "Placement-to-video overlay binding is not implemented."
+  ]
+}
