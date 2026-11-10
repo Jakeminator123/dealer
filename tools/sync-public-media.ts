@@ -20,7 +20,7 @@ type Entry={id:string;path:string;url:string;sha256:string;bytes:number};
 type LibraryItem={id:string;path:string;sha256:string};
 const digest=(bytes:Buffer)=>createHash('sha256').update(bytes).digest('hex');
 const library=JSON.parse(await readFile('data/library.json','utf8')) as {items:LibraryItem[]};
-if(library.items.length!==8||new Set(library.items.map(item=>item.id)).size!==8||!library.items.some(item=>item.id==='pamela-p7-c1-left-direct-pilot-01'))throw Error('Review the upload scope: seven existing films plus the one P7 direct candidate are authorized by this version.');
+if(![8,9].includes(library.items.length)||new Set(library.items.map(item=>item.id)).size!==library.items.length||!library.items.some(item=>item.id==='pamela-p7-c1-left-direct-pilot-01')||(library.items.length===9&&!library.items.some(item=>item.id==='pamela-p7-c1-left-turn-pilot-03')))throw Error('Review the upload scope: seven existing films, the secondary P7 direct trial and optionally the explicitly requested P7 turn trial 03.');
 const selected=[] as (LibraryItem&{bytes:number})[];
 for(const item of library.items){
  if(!/^(assets\/|output\/v6\/)[a-zA-Z0-9/_.-]+\.mp4$/.test(item.path)||item.path.includes('..')||!/^([a-f0-9]{64})$/.test(item.sha256))throw Error('Invalid library media path or hash.');

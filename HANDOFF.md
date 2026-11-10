@@ -1,6 +1,17 @@
-# TILLBAKA-2 → TILLBAKA-3
+# Dealer – TILLBAKA-3 huvudägare
 
-Uppdaterad 2026-11-10. Jakob har beställt denna överlämning för fortsatt materialproduktion. Läs AGENTS.md, README.md och denna fil. Bekräfta mottagande och ägarskap innan du skriver. TILLBAKA-2 avslutar efter sin slutrapport; MAINTAIN och underagenterna är klara. Starta inte bred historikläsning.
+Uppdaterad 2026-11-10. TILLBAKA-3 har huvudansvar enligt Jakob. TILLBAKA-2 har avslutat utan fler blockerare; MAINTAIN har committat publiceringsrutinerna i `f05be7d`. Inga underagenter är aktiva. Arbeta vidare här, en avgränsad P7-film i taget.
+
+## Senaste uppdrag och arbetssätt
+
+- Jakob gillar **Spela kortbana**. Den är en schematisk målbild; filmens exakta handledsvridning får anpassas till handens geometri. Kraven på verklig vändning, rätt fysisk slut-/synlig sida, avtalad hand, landning och trovärdig kontakt kvarstår. Ingen ny variant av labbet behövs för att börja nästa avgränsade prov.
+- Börja producera en rörelse i taget enligt produktionsstegen längre ned. Samordna med TILLBAKA-2 (`01a1c656-e3b6-78a0-8dc7-cf5d54052002`) när historiskt underlag är oklart, och fråga Jakob om val som faktiskt påverkar resultatet. Fortsätt oberoende arbete medan frågor är öppna; stanna inte vid en plan eller en mottagningsbekräftelse.
+- MAINTAIN (`01a1c66b-7c7e-74b2-b421-eb7bf0743b7e`) avslutar sin slutrapport. Rutinerna ligger i `f05be7d`; TILLBAKA-3 tar därefter även commit/check/push/CI. Använd `npm test` och `npm run check`; pre-push får inte kringgås. Jakobs placeringsutkast stage:as inte.
+- Senaste korrigering: `pamela-p7-c1-left-direct-pilot-01` är CLOSED→CLOSED enligt Jakob och sparas som **sekundärt alternativ i samma filmbibliotek**, inte som godkänd vändning. Nytt uttryckligen beställt prov `pamela-p7-c1-left-turn-pilot-03`, task `18b11157-288a-40e7-b667-a327506ed928`, är igång med palm-up-grepp och fingrar under kortet vid släpp. Detta jobb har gul/blå källa; rosa förblir Jakobs grundmetod för framtida maskprov. Gult BACK/blått FRONT är senare diagnostiskt överlägg, aldrig ersättning för fysisk vändning. Inget nytt sparsystem.
+- Arbeta i små granskningsbara steg: **förbered → generera → hämta/registrera → lokal granskning → publicera granskningsversion → ta in synpunkter → ny avgränsad korrigering**. Registrera klipp-ID, modell/prompt, inputhashar, originalhash, sid-/handhändelser och beslut. Bevara original; lägg inte filmer eller hemligheter i Git.
+- Externa granskare är en uttrycklig del av arbetsgången. När ett steg är klart, säg vad som kan ändras nu och om resultatet är endast lokalt eller faktiskt publikt. Ge efter verifierad publicering GitHub-commit, Vercel-länk, exakt klipp-ID/version, vad som ändrats och vilka konkreta bildrutor/frågor granskaren ska bedöma. Lokala C:-länkar räcker inte som externt underlag.
+- Jakob har beställt att färdiga granskningsändringar görs tillgängliga i GitHub och Vercel. Följ MAINTAIN:s färdiga kontroller för agentstyrd push av verifierade commits och samordna index. Publicering är separat från godkännande av filmen. Push innebär inte automatiskt deploy i nuvarande upplägg: bygg/publicera uttryckligen och kontrollera anonym åtkomst samt filmuppspelning innan du säger att granskaren kan se ändringen.
+- Rapportera tydliga granskningslägen och verkliga hinder, inte bara att du arbetar. Skicka inga externa meddelanden till granskare utan ett särskilt uppdrag; lämna fungerande granskningslänkar och frågor till Jakob.
 
 ## Arbetsyta och senaste leverans
 
@@ -25,6 +36,7 @@ Uppdaterad 2026-11-10. Jakob har beställt denna överlämning för fortsatt mat
 | P7 försök 2 | `pamela-p7-c1-left-turn-pilot-02`: REJECTED av Jakob. Fysisk följd BACK→FRONT→BACK; valörsidan visas felaktigt gul, senare baksida och landning felaktigt blå. Slutar stängt. |
 | P6 försök 1 | `pamela-p6-c1-left-turn-pilot-01`: REJECTED; oönskat LH→RH-handbyte och tryckt kort. |
 | Rosa P7 | `pamela-p7-c1-left-pink-pilot-01`: PENDING, 6 s, 180 rutor, 1764×1174. Samma LH, men oönskad omväg/stopp vid mitten. Fysisk slutsida och antal vändningar är UNKNOWN. Inte produktionsgodkänd. |
+| Direkt P7, sekundärt | `pamela-p7-c1-left-direct-pilot-01`: CLOSED→CLOSED enligt Jakob, REJECTED för vändningskravet. Bevarad som sekundärt alternativ med direkt P7-bana och retur. Original, fryst plan och beslut i befintliga register. Lokalt spelbar och Blob-hashverifierad; ny webbversion återstår. |
 
 Rörelseposterna är statusägare. `publicReview` anger bara vad som är publikt för granskning; `published:true` betyder inte accepterad rörelse eller Scoutintegration. Original, slutversion och diagnostiska masker hålls isär.
 

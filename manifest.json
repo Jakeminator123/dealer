@@ -7653,6 +7653,34 @@
       "bytes": 16491760,
       "source": "runway-task:d3ddd907-b892-48b1-b96e-f289656928dc",
       "role": "pending-motion-only-pilot-source"
+    },
+    {
+      "path": "assets/motions/pamela-p7-c1-left-direct-pilot-01/start.png",
+      "sha256": "373dc2b2a9b1415c22da6ef8f466690eaff676507c418d16956e922717193e73",
+      "bytes": 1193058,
+      "source": "assets/motions/pamela-p7-c1-left-pink-pilot-01/start.png",
+      "role": "pilot-start-anchor"
+    },
+    {
+      "path": "assets/motions/pamela-p7-c1-left-direct-pilot-01/end.png",
+      "sha256": "6d0e7c4c73243d431658afe38b02f1a53ddb8d28123dacb00344b28a479d028f",
+      "bytes": 1255151,
+      "source": "tools/generate-p7-direct.ts",
+      "role": "pilot-geometric-end-anchor"
+    },
+    {
+      "path": "assets/motions/pamela-p7-c1-left-direct-pilot-01/placement-plan.json",
+      "sha256": "a8389f0c5b588705a631102e2539a8c4079aa0e7fac16f841415fb463d5d8479",
+      "bytes": 11725,
+      "source": ".runtime/public-qa/saved-flat-plan.json",
+      "role": "frozen-pilot-placement-plan"
+    },
+    {
+      "path": "assets/motions/pamela-p7-c1-left-direct-pilot-01/source.mp4",
+      "sha256": "fd956e2537d100c9596366816c595e24caf1ab542451f788c426e7d4d3bf5809",
+      "bytes": 15932833,
+      "source": "runway-task:37496e52-9a7a-4ed2-b2d5-46bead1e9214",
+      "role": "pending-motion-only-pilot-source"
     }
   ]
 }

@@ -102,6 +102,21 @@
       "status": null,
       "motionRef": "motions/pamela-p7-c1-left-pink-pilot-01.json",
       "description": "GRANSKNINGSPROV: samma vänsterhand och rosa maskhjälpsyta. Handen tar en omväg via mitten före P7. Fysisk slutsida och antal vändningar är inte verifierade; rosa betyder varken öppet eller stängt. Inte godkänt för produktion och inget färdigt kortöverlägg."
+    },
+    {
+      "id": "pamela-p7-c1-left-direct-pilot-01",
+      "title": "P7 · stängt → stängt · sekundärt alternativ",
+      "path": "assets/motions/pamela-p7-c1-left-direct-pilot-01/source.mp4",
+      "sha256": "fd956e2537d100c9596366816c595e24caf1ab542451f788c426e7d4d3bf5809",
+      "width": 1764,
+      "height": 1174,
+      "fps": 30,
+      "frameCount": 180,
+      "view": "source",
+      "kind": "candidate",
+      "status": null,
+      "motionRef": "motions/pamela-p7-c1-left-direct-pilot-01.json",
+      "description": "SEKUNDÄRT ALTERNATIV enligt Jakob: stängt → stängt med samma vänsterhand, direkt P7-bana och retur till skon. Underkänt för den beställda vändningen till öppet. Originalet bevaras här i samma filmbibliotek. Rosa är maskhjälp; inget färdigt kortöverlägg eller produktionsgodkännande."
     }
   ]
 }

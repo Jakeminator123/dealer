@@ -54,6 +54,13 @@
       "url": "https://qeojzihua5ewt4uo.public.blob.vercel-storage.com/dealer/41ac99c50cba24781f2d4461bed91c2c6b5e13beb6b761d8d6f09d13979bf20e.mp4",
       "sha256": "41ac99c50cba24781f2d4461bed91c2c6b5e13beb6b761d8d6f09d13979bf20e",
       "bytes": 16491760
+    },
+    {
+      "id": "pamela-p7-c1-left-direct-pilot-01",
+      "path": "assets/motions/pamela-p7-c1-left-direct-pilot-01/source.mp4",
+      "url": "https://qeojzihua5ewt4uo.public.blob.vercel-storage.com/dealer/fd956e2537d100c9596366816c595e24caf1ab542451f788c426e7d4d3bf5809.mp4",
+      "sha256": "fd956e2537d100c9596366816c595e24caf1ab542451f788c426e7d4d3bf5809",
+      "bytes": 15932833
     }
   ]
 }

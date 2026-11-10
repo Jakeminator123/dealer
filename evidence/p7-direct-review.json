@@ -1,0 +1,177 @@
+{
+  "reviewedAt": "2026-11-10T18:38:47.468Z",
+  "id": "pamela-p7-c1-left-direct-pilot-01",
+  "taskId": "37496e52-9a7a-4ed2-b2d5-46bead1e9214",
+  "sha256": "fd956e2537d100c9596366816c595e24caf1ab542451f788c426e7d4d3bf5809",
+  "model": "wan3",
+  "duration": 6,
+  "frames": 180,
+  "sourceUnmodified": true,
+  "placementRef": {
+    "path": "placements/references/p7-direct-pilot-01.json",
+    "sha256": "a8389f0c5b588705a631102e2539a8c4079aa0e7fac16f841415fb463d5d8479"
+  },
+  "plannedTarget": {
+    "id": "P7.C1",
+    "nativePoints": [
+      {
+        "x": 1417.6436706428956,
+        "y": 934.507750991647
+      },
+      {
+        "x": 1466.1559950355468,
+        "y": 934.507750991647
+      },
+      {
+        "x": 1515.7465848811341,
+        "y": 966.937257514583
+      },
+      {
+        "x": 1463.3203096661196,
+        "y": 966.937257514583
+      }
+    ],
+    "points": [
+      {
+        "x": 1419.253714561854,
+        "y": 934.507750991647
+      },
+      {
+        "x": 1467.8211352911237,
+        "y": 934.507750991647
+      },
+      {
+        "x": 1517.468046079182,
+        "y": 966.937257514583
+      },
+      {
+        "x": 1464.9822293818108,
+        "y": 966.937257514583
+      }
+    ],
+    "calibrated": false,
+    "mapping": {
+      "from": [
+        1762,
+        1174
+      ],
+      "to": [
+        1764,
+        1174
+      ],
+      "xScale": 1.0011357183418512,
+      "yScale": 1,
+      "method": "normalized pixel endpoints; provisional source-image mapping"
+    }
+  },
+  "observed": {
+    "takeHand": "LH",
+    "releaseHand": "LH",
+    "handTransfer": false,
+    "route": "Stays beside/in front of the shoe and moves directly to P7; no detour to the centre card in reviewed samples.",
+    "physicalStartSide": "BACK",
+    "physicalEndSide": "BACK",
+    "verifiedTurnCount": null,
+    "returnsToShoe": true,
+    "anchorCutReady": false,
+    "landing": {
+      "frame": 179,
+      "method": "thresholded magenta core in fixed P7 ROI; not physical side or corner proof",
+      "pixels": 1227,
+      "centroid": {
+        "x": 1468.7856560717196,
+        "y": 951.2493887530562
+      },
+      "bounds": {
+        "left": 1423,
+        "right": 1511,
+        "top": 936,
+        "bottom": 965
+      },
+      "distanceFromPlannedCornerMeanPx": 1.4999585646584028
+    }
+  },
+  "review": {
+    "decision": "REJECTED",
+    "reviewer": "Jakob",
+    "userApproved": false,
+    "basis": "Jakob classified the latest trial as CLOSED→CLOSED and requested retention as an alternative/secondary clip in the existing library. Rejected against the requested BACK→FRONT turn; not discarded.",
+    "observedEvents": [
+      {
+        "frames": [
+          33,
+          45
+        ],
+        "label": "TAKE / card clears shoe",
+        "certainty": "sampled interval"
+      },
+      {
+        "frames": [
+          51,
+          72
+        ],
+        "label": "wrist turn and edge-on passage",
+        "certainty": "visible rotation; physical side and turn count not certified"
+      },
+      {
+        "frames": [
+          81,
+          90
+        ],
+        "label": "LAND / hand flattens card",
+        "certainty": "sampled interval"
+      },
+      {
+        "frames": [
+          108,
+          117
+        ],
+        "label": "RELEASE / fingers clear card",
+        "certainty": "sampled interval"
+      },
+      {
+        "frames": [
+          129,
+          179
+        ],
+        "label": "RETURN / settles at shoe",
+        "certainty": "pose returns; seamless anchor not verified"
+      }
+    ],
+    "limitations": [
+      "Card is lifted higher than the requested low sweep before turning.",
+      "CLOSED→CLOSED according to Jakob. Does not satisfy the requested BACK→FRONT action. Edge-on passage did not prove a side change.",
+      "Hand covers the card during final flattening; contact and shape need reviewer acceptance.",
+      "Source target mapping is provisional, not measured camera calibration; no general V6/Scout overlay binding.",
+      "No final finger/card masks, material overlay or seamless anchor acceptance."
+    ],
+    "questions": [
+      "Retained as a secondary CLOSED→CLOSED option. No acceptance as a turning or primary production clip."
+    ],
+    "evidence": [
+      ".runtime/p7-direct-proof/overview.jpg",
+      ".runtime/p7-direct-proof/contact.jpg",
+      ".runtime/p7-direct-proof/turn-frames-36-81.jpg",
+      "evidence/p7-direct-review.json"
+    ]
+  },
+  "localPlayback": {
+    "url": "http://127.0.0.1:4319/lab.html?clip=pamela-p7-c1-left-direct-pilot-01",
+    "time": 6,
+    "duration": 6,
+    "ended": true,
+    "error": null,
+    "readyState": 4
+  },
+  "publicBlob": {
+    "url": "https://qeojzihua5ewt4uo.public.blob.vercel-storage.com/dealer/fd956e2537d100c9596366816c595e24caf1ab542451f788c426e7d4d3bf5809.mp4",
+    "anonymousHashVerified": true
+  },
+  "publicSitePlayback": null,
+  "tests": {
+    "passed": 19,
+    "failed": 0
+  },
+  "manifestFilesVerified": 1088,
+  "userDecision": "Retain in existing film library as secondary CLOSED→CLOSED alternative."
+}

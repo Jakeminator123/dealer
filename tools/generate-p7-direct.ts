@@ -11,10 +11,13 @@ import type {PlacementPlan} from '../src/placement-model.ts';
 const root=fileURLToPath(new URL('../',import.meta.url));
 if(path.resolve(process.cwd())!==path.resolve(root))throw Error('Run from dealer checkout.');
 sharp.concurrency(1);
-const id='pamela-p7-c1-left-direct-pilot-01',dir=`assets/motions/${id}`;
+const turn=process.argv.includes('--turn');
+const id=turn?'pamela-p7-c1-left-turn-pilot-03':'pamela-p7-c1-left-direct-pilot-01',dir=`assets/motions/${id}`;
 const receiptPath=`${dir}/generation.json`;
 const hash=(b:Buffer)=>createHash('sha256').update(b).digest('hex');
-const promptText='Locked camera, one continuous six-second shot. Preserve the exact woman, clothes, green studio and black shoe. Her anatomical LEFT hand is on screen RIGHT and handles the card throughout. Draw ONE magenta card just clear of the shoe outlet, then immediately sweep it low diagonally toward the empty lower-RIGHT landing spot shown in the last image. The entire dealing action stays beside and in front of the shoe, on the RIGHT side of her body. While traveling outward, her left thumb and fingertips roll the card over exactly ONCE through an edge-on position: the original upper physical face ends DOWN, the original underside ends UP. This is a real 180-degree turnover, not a flat spin. Without stopping to show it, lower that same card flat at the new lower-right position, release it by 3.5 seconds, then return the empty left hand to the original shoe-ready pose by 5.3 seconds and settle. The new card stays on the table. The existing centre card stays untouched. No travel toward the centre card, no hand transfer, no display pause, no second turnover. Natural following gaze and subtle right-hand movement are allowed. Both card faces are plain magenta tracking surfaces, no print. Keep fingertip contact until release; preserve a thin rigid card, all fingers, body scale and camera framing. End with the same body, hand and gaze anchor as the first image, plus one new card on the table and the next card ready in the shoe.';
+const promptText=turn?
+ 'Locked camera, continuous six-second shot between these exact anchors. Same woman, left hand on SCREEN RIGHT, green studio and black shoe. A single rigid card has a YELLOW BACK and BLUE FRONT. At the outlet yellow is UP and blue is DOWN. Left index and middle fingers start ON TOP of yellow; thumb is underneath. Pull one card just clear of the outlet. Perform an UNDERHAND TURNOVER while moving directly to the lower-right landing spot: rotate the left forearm from PALM DOWN to PALM UP, turning the card over 180 degrees around its long edge. The yellow upper surface visibly rotates DOWN through an edge-on moment, revealing the blue underside, which becomes the UPWARD face. Finish the rotation with index and middle fingers UNDER the card supporting its yellow underside, and thumb above its blue face. Keep that palm-up grip until placement. Lower the card BLUE FACE UP at the new position in the last image and slide the supporting fingers OUT FROM UNDER it. Do not turn the wrist palm-down again until AFTER releasing the card. No palm pressing on top, no second turnover, no flat spin, no colour morph. One physical card, one turnover. Stay beside the shoe, no centre detour or hand transfer. By 5.3s return the empty left hand to its exact original shoe-ready pose and settle. The new blue card and old centre blue card remain still; the next shoe card stays yellow. Preserve natural gaze, fingers and framing.' :
+ 'Locked camera, one continuous six-second shot. Preserve the exact woman, clothes, green studio and black shoe. Her anatomical LEFT hand is on screen RIGHT and handles the card throughout. Draw ONE magenta card just clear of the shoe outlet, then immediately sweep it low diagonally toward the empty lower-RIGHT landing spot shown in the last image. The entire dealing action stays beside and in front of the shoe, on the RIGHT side of her body. While traveling outward, her left thumb and fingertips roll the card over exactly ONCE through an edge-on position: the original upper physical face ends DOWN, the original underside ends UP. This is a real 180-degree turnover, not a flat spin. Without stopping to show it, lower that same card flat at the new lower-right position, release it by 3.5 seconds, then return the empty left hand to the original shoe-ready pose by 5.3 seconds and settle. The new card stays on the table. The existing centre card stays untouched. No travel toward the centre card, no hand transfer, no display pause, no second turnover. Natural following gaze and subtle right-hand movement are allowed. Both card faces are plain magenta tracking surfaces, no print. Keep fingertip contact until release; preserve a thin rigid card, all fingers, body scale and camera framing. End with the same body, hand and gaze anchor as the first image, plus one new card on the table and the next card ready in the shoe.';
 
 await mkdir(dir,{recursive:true});
 if(!await stat(receiptPath).catch(()=>null)){
@@ -24,9 +27,9 @@ if(!await stat(receiptPath).catch(()=>null)){
  const plan=JSON.parse(planBytes.toString()) as PlacementPlan;validatePlan(plan);
  const intent=plan.targets['P7.C1'].intent;
  if(intent.takeHand!=='LH'||intent.startSide!=='BACK'||intent.endSide!=='FRONT'||intent.pass||!intent.turn)throw Error('Unexpected P7 intent.');
- const startSource='assets/motions/pamela-p7-c1-left-pink-pilot-01/start.png';
+ const startSource=turn?'assets/motions/pamela-p7-c1-left-turn-pilot-02/start.png':'assets/motions/pamela-p7-c1-left-pink-pilot-01/start.png';
  const start=await readFile(startSource);
- if(hash(start)!=='373dc2b2a9b1415c22da6ef8f466690eaff676507c418d16956e922717193e73')throw Error('Changed source anchor.');
+ if(hash(start)!==(turn?'3050e9ccc0d624a1b45d49a67be1c38a8ef6a6038d2743585891dea44d5ffff0':'373dc2b2a9b1415c22da6ef8f466690eaff676507c418d16956e922717193e73'))throw Error('Changed source anchor.');
  const metadata=await sharp(start).metadata();
  if(metadata.width!==1764||metadata.height!==1174)throw Error('Unexpected source geometry.');
  const nativePoints=plan.tableProjection?.mode==='flat'?flatQuad(plan.targets['P7.C1'].geometry.native,plan.targets['P4.C1'].geometry.native,'native',plan.tableProjection.heading):quad(plan.targets['P7.C1'].geometry.native,'native');
@@ -34,7 +37,7 @@ if(!await stat(receiptPath).catch(()=>null)){
  // not measured camera calibration or an integrated V6 render transform.
  const points=nativePoints.map(p=>({x:p.x*1763/1761,y:p.y}));
  if(points.some(p=>!Number.isFinite(p.x)||!Number.isFinite(p.y)||p.x<1350||p.x>1600||p.y<870||p.y>1060))throw Error('Unexpected P7 target corridor.');
- const endpointDiagram=Buffer.from(`<svg width="1764" height="1174" xmlns="http://www.w3.org/2000/svg"><polygon points="${points.map(p=>`${p.x},${p.y}`).join(' ')}" fill="#ff00ff"/></svg>`);
+ const endpointDiagram=Buffer.from(`<svg width="1764" height="1174" xmlns="http://www.w3.org/2000/svg"><polygon points="${points.map(p=>`${p.x},${p.y}`).join(' ')}" fill="${turn?'#075ad8':'#ff00ff'}"/></svg>`);
  const end=await sharp(start).composite([{input:endpointDiagram}]).png().toBuffer();
  const before=await sharp(start).removeAlpha().raw().toBuffer(),after=await sharp(end).removeAlpha().raw().toBuffer();
  let changedPixels=0;
