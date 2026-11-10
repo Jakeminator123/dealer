@@ -19,7 +19,7 @@ async function setup(){
   return elements.get(id);
  }
  const pending:((value:unknown)=>void)[]=[], material:unknown[][]=[];
- const context=createContext({...model,structuredClone,console,innerHeight:1000,
+ const context=createContext({...model,structuredClone,console,URLSearchParams,location:{search:''},innerHeight:1000,
   document:{getElementById:element,querySelector:element,querySelectorAll:()=>[],createElement:element},
   window:{addEventListener(){},cardMaterialStudy:{
    setBend(value:number){material.push(['bend',value]);},

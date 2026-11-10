@@ -166,7 +166,7 @@ function selectFilm(item:Film){
  $('film-note').textContent=item.description??(item.kind==='diagnostic'?'Grönt inspelningsmaterial med gul–gul-korrigering. Rörelsen är villkorligt godkänd; kanter och överlapp återstår att granska.':'Komponerad V6-referens. Rummet och bordet är redan inlagda i den här filmen.');
  document.querySelectorAll<HTMLButtonElement>('[data-film]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.film===item.id)));
 }
-async function openLibrary(green=false){
+async function openLibrary(green=false,clipId?:string){
  const dialog=$<HTMLDialogElement>('library');dialog.showModal();
  try{
   const res=await fetch('/api/library');if(!res.ok)throw Error();const data=await res.json();films=data.items;$('film-list').replaceChildren();
@@ -177,7 +177,7 @@ async function openLibrary(green=false){
    const detail=document.createElement('span');detail.textContent=`${item.width} × ${item.height} · ${(item.frameCount/item.fps).toFixed(1)} s`;
    button.append(label,detail);button.addEventListener('click',()=>selectFilm(item));$('film-list').append(button);
   }
-  selectFilm((green?films.find(f=>f.kind==='diagnostic'):null)??films[0]);
+  selectFilm((clipId?films.find(f=>f.id===clipId):null)??(green?films.find(f=>f.kind==='diagnostic'):null)??films[0]);
  }catch{$('film-list').textContent='Filmbiblioteket kunde inte läsas.';}
 }
 $('open-library').addEventListener('click',()=>void openLibrary());$('open-green').addEventListener('click',()=>void openLibrary(true));
@@ -189,4 +189,4 @@ $('library').addEventListener('close',()=>{$('library').querySelectorAll('video'
 window.addEventListener('beforeunload',e=>{if(dirty){e.preventDefault();e.returnValue='';}});
 new ResizeObserver(()=>{if(plan)paint(false);}).observe(stageWrap);
 window.addEventListener('resize',()=>{if(plan)paint(false);});
-void load().catch(e=>message((e as Error).message));
+void load().then(()=>{const clip=new URLSearchParams(location.search).get('clip');if(clip)void openLibrary(false,clip);}).catch(e=>message((e as Error).message));
