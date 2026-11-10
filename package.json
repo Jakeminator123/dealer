@@ -10,6 +10,9 @@
     "node": "24.21.0"
   },
   "scripts": {
+    "test": "node --test --test-concurrency=4 tools/placements.test.ts tools/public-storage.test.ts tools/lab-ui.test.ts tools/render-safety.test.ts tools/publication-check.test.ts",
+    "check": "node tools/publication-check.ts",
+    "hooks:install": "node tools/publication-check.ts --install",
     "verify": "node tools/verify.ts",
     "render": "node tools/render.ts",
     "preview": "node tools/preview.ts"

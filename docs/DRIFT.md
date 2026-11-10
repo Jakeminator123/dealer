@@ -13,9 +13,21 @@ Kontrollerat 2026-11-10. Aktuell arbetsstatus hör till HANDOFF och filmklassnin
 | Ny slask | `D:/dealer-scratch/tmp`, `renders`, `review` |
 | Befintligt arkiv | `D:/dealerlab-archive/snyggare-dealer`; tidigare delarkiv, inte bevis på full projektflytt |
 
-MAINTAIN har avslutat arkivflytt och grundupplägg. TILLBAKA-2 färdigställer överlämningen till TILLBAKA-3 enligt HANDOFF. En skribent per fil; samordna index/commit. Underagenterna för Vercel, Blob och projektionsanalys beställdes uttryckligen av Jakob; nya underagenter kräver uppdrag.
+TILLBAKA-3 tar huvudansvar efter MAINTAINs slutrapport för arkiv, rutiner och GitHub. En skribent per fil; samordna index/commit. Aktiva uppgifter hör till HANDOFF. Nya underagenter kräver uppdrag.
 
 Jakobs uppdrag 2026-11-10 godkänner publikt GitHub-upplägg, anslutningskontroller, nödvändig lokal env-återanvändning och D:-slask. Deploy, Scout-integration, databasändringar och betald generering är separata uppdrag. GitHub-repot är källförvaring, inte en publicerad studio eller webbplats.
+
+## Git och kontroller
+
+Jakob har godkänt automatisk push som agentens avslutningsrutin för färdiga egna ändringar. Flödet är `npm test` → uttrycklig staging av egna filer → commit → `npm run check` → vanlig push → verifierad fjärr-SHA och CI. Ingen bakgrundsbevakare eller automatisk commit av sparade filer används. Andras arbete och Jakobs placeringsutkast följer inte med av misstag. Git-push är separat från webbdeploy, mediauppladdning och generering.
+
+- Aktivera en gång per checkout: `npm run hooks:install`. Installationen vägrar skriva över en annan hooksPath. Git-hooks följer med i repot men aktiveras inte av vanlig clone.
+- `.githooks/pre-push` kontrollerar hela intervallet av nya commits, även känsliga filer som lagts till och senare tagits bort. Lokala media/env-mappar, binärt material, filer över 5 MiB och vissa tokenmönster stoppar push. Mönsterkontrollen är ett extra skydd, ingen garanti att alla hemligheter upptäcks; granska alltid diffen.
+- Testerna ska avse exakt HEAD. Ändrade eller nya kod-/testfiler stoppar kontrollen tills ägaren samordnat dem. `placements/default.json` är ett separat användarutkast och inkluderas inte automatiskt. Kontrollen kör fem avgränsade testsamlingar med högst fyra arbetare, utan Runway, media, FFmpeg eller deploy.
+- `.github/workflows/check.yml` kör samma kontroll på push och PR med Node 24.21.0, `npm ci`, enbart läsbehörighet och versionslåsta Actions. Före PR kör agenten `npm run check`. GitHub-kontrollen kör efter push och är inte ett serversidigt pushförbud eller aktiverat mergekrav.
+- **Rött:** stoppa, undersök orsak och rätta innan nytt försök. **Gult:** granska och åtgärda eller förklara kvarvarande begränsning kort i HANDOFF före push/PR. Varningarna visas i agentens terminal och som CI-annoteringar. Granska även hook/testens relevans och falsklarm; vid verkligt kontrollfel, rätta med ett avgränsat regressionstest. Hoppa inte över kontrollen för att få grönt.
+- Känd Node-varning: `stripTypeScriptTypes` i `tools/lab-ui.test.ts` använder ett experimentellt Node-API, även använt av preview/public-build. Varningen är spårad till detta API och testerna passerar. Den bevaras synlig; utred kompatibiliteten vid ändrat API/Node, utan att stänga av varningar generellt.
+- Håll fem styrdokument: README (start), AGENTS (arbetsregler), HANDOFF (nu/ansvar/hinder), SYSTEM (kontrakt) och DRIFT (rutiner/anslutningar). Uppdatera på plats när beteende eller ansvar ändras. Dokumenten länkar till befintliga JSON-register/kvitton. Nya Markdown-dokument och större dokumentmängd ger gul signal; riktvärdena är 100/50/140/160/150 rader i denna ordning, inte mål att fylla.
 
 ## Anslutningar och miljö
 

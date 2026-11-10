@@ -22,7 +22,7 @@ Plant bord är standard i editorn. Läget och riktningen sparas/exporteras i `ta
 - `START.cmd`, `STATUS.cmd`, `STOPP.cmd` styr enbart `http://127.0.0.1:4319`. Återanvänd Codex WebView. Servern slutar 60 sekunder efter sista preview-fliken.
 - Öppna [placeringslabbet](http://127.0.0.1:4319/lab.html): 16 kortplatser och sko, separat dator/mobil, hand-/sidavsikt, nodvy, materialpanel och filmkatalog. Sparning ändrar bara placeringsutkastet. Grundkontroller finns i [evidence/placement-lab.json](evidence/placement-lab.json), senare vy-/nodkontroller i [evidence/plane-and-nodemap.json](evidence/plane-and-nodemap.json).
 - `npm run verify` kontrollerar registrerade lokala filer. `npm run verify -- --frames` återrenderar 18 kontrollrutor och kräver pixelidentitet.
-- `node --test --test-concurrency=4 tools/placements.test.ts tools/public-storage.test.ts tools/lab-ui.test.ts tools/render-safety.test.ts` testar placeringar, sparning, återläsning och renderinläsning.
+- `npm test` kör avgränsade offlinetester för placeringar, sparning, återläsning, renderinläsning och publiceringsskydd. `npm run hooks:install` aktiverar lokal pre-push; `npm run check` kontrollerar commitintervallet före push/PR. Se [rutinen](docs/DRIFT.md#git-och-kontroller).
 - `npm run render -- --render --take=02` startar ett nytt fullständigt försök med fyra arbetare. Välj alltid ett oanvänt tvåsiffrigt nummer; `take-01` är bevarat. Kräver FFmpeg/FFprobe via PATH eller `FFMPEG`/`FFPROBE`.
 
 ## Verifierad bas och gräns
