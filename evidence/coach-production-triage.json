@@ -1,0 +1,357 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-11-10",
+  "owner": "coach_hygiene subagent; root owns implementation, index and delivery",
+  "scope": "Read-only comparison of two coach attachments against existing triage and current documents; shallow storage inventory. This JSON receipt is the only file written.",
+  "checkout": {
+    "root": "C:/Users/jakem/dev/super-feature-sg/dealer",
+    "headAtInspection": "45c07faa59a52d1d9811c9dbb9bacc4dc76068cd",
+    "origin": "git@github.com:Jakeminator123/dealer.git",
+    "initialWorkingTreeChange": "placements/default.json; user draft preserved"
+  },
+  "sources": [
+    {
+      "id": "coach-1",
+      "path": "C:/Users/jakem/.codex/attachments/8ce482fa-8253-464e-a638-3133ed57d5d8/Inklistrad text.txt",
+      "bytes": 27951,
+      "sha256": "f15a9942224a350e41324c45fcb0be9775824c910a3191cfa03c6bf34c0a9f81",
+      "reviewedDealerCommitReported": "0374e529",
+      "readPolicy": "Read substantive report; omitted embedded Mermaid CSS at line 129."
+    },
+    {
+      "id": "coach-2",
+      "path": "C:/Users/jakem/.codex/attachments/be84b97a-1003-4c29-8b51-003f399382e8/Inklistrad text.txt",
+      "bytes": 75610,
+      "sha256": "8b2e3e0bcf2f57db9e25718f88b616425252d3345a8c5f0db494130fb86f615c",
+      "reviewedDealerCommitReported": "45c07faa59a52d1d9811c9dbb9bacc4dc76068cd",
+      "precedence": "newer",
+      "readPolicy": "New production report at lines 604-843 and source-reference metadata were read. Repeated original prompts and pasted conversation were not treated as new instructions or authority."
+    }
+  ],
+  "comparisonSources": [
+    "AGENTS.md",
+    "README.md",
+    "HANDOFF.md",
+    "docs/SYSTEM.md",
+    "docs/DRIFT.md",
+    "evidence/external-review-triage.json",
+    "evidence/historical-p4-generation-inputs.json",
+    "evidence/archive-move.json",
+    "evidence/storage-audit.json",
+    "evidence/table-projection-review.md"
+  ],
+  "handled": [
+    {
+      "topic": "Original code findings",
+      "state": "already triaged as fixed, not independently rerun here",
+      "items": [
+        "UNKNOWN mesh-side and invalid source-frame rejection",
+        "safe reload and material resynchronization",
+        "snapshot-only render inputs and decoded-buffer hash checks"
+      ],
+      "evidence": "evidence/external-review-triage.json fixed and validation"
+    },
+    {
+      "topic": "Public P7 identity and decisions",
+      "state": "documented in existing canonical records",
+      "items": [
+        "direct-01 retained as secondary CLOSED-to-CLOSED example",
+        "turn-03 rejected for wrong landing and extra target card",
+        "public availability is separate from movement acceptance"
+      ],
+      "evidence": "HANDOFF.md accepted/provisional table; motions are the decision owners"
+    },
+    {
+      "topic": "General production boundary",
+      "state": "already documented but implementation remains unfinished",
+      "items": [
+        "bind one accepted movement to source hash, measured events, frozen placement, view profile and masks",
+        "anatomical hand, physical side and Scout visibility remain separate",
+        "placement/nodes do not create observed frame times",
+        "native and portrait need different transformations",
+        "preserve V6 and original media"
+      ],
+      "evidence": "HANDOFF.md next production steps; docs/SYSTEM.md"
+    },
+    {
+      "topic": "Historical reconstruction",
+      "state": "already recorded; no new archive-media reads performed",
+      "items": [
+        "14 separate 12-second takes plus idle/bridges",
+        "whole-frame trim rather than retiming",
+        "P4 sources differ from V6's central hand-transfer source",
+        "physical side UNKNOWN does not itself reject a historical movement"
+      ],
+      "evidence": "evidence/historical-p4-generation-inputs.json; docs/SYSTEM.md reuse section"
+    }
+  ],
+  "newActionable": [
+    {
+      "id": "N1-historical-comparison",
+      "source": "coach-2:657-663,725-732",
+      "action": "Compare historical P4.C2 raw and material versions at identical source-frame numbers, especially around frame 98 at 30 fps. Review the full give at normal speed, then the edge passage, release and return frame by frame; record which actual raw movement Jakob selects and for what property.",
+      "whyNew": "The existing handoff names an unresolved historical preference but does not prescribe this exact synchronized frame-98 comparison.",
+      "boundary": "A material BACK/EDGE/FRONT schedule is authored display, not proof of original physical side. Reuse tracks only when their source hash matches. No archive film was opened by this audit."
+    },
+    {
+      "id": "N2-anchor-and-prompt-preflight",
+      "source": "coach-2:692,699,734-749,794-806",
+      "action": "Before a new requested P7 generation, use one consistent hand description: her anatomical left hand on viewer-right. Verify that the pictured starting grip can reach the intended palm-up release, and that the last image has the correct card count, next shoe card and ready pose. Do not simultaneously prescribe incompatible finger, card-axis and forearm rotations.",
+      "whyNew": "Concrete prompt ambiguity and anchor-grip preflight are not in the existing production recipe.",
+      "boundary": "Do not edit immutable historical prompts. A clearer prompt does not establish the cause of earlier failure. No new paid job is authorized by this receipt."
+    },
+    {
+      "id": "N3-duration-and-method-change",
+      "source": "coach-2:734-760",
+      "action": "If a new hard movement is separately commissioned, prepare one 12-second continuous take with trim room for release and empty return. Record every changed input. If the same clear ghost-card, wrong-side or large-target failure recurs, use a demonstrated physical movement or a different controlled production method rather than continuing text-only variants.",
+      "whyNew": "The proposed duration, phase budget and explicit method-change trigger are new production guidance.",
+      "boundary": "Duration is a candidate hypothesis, not measured superiority. A reference-video request is a separate variant whose current provider contract must be checked before use."
+    },
+    {
+      "id": "N4-measurable-raw-acceptance",
+      "source": "coach-2:762-783",
+      "action": "Define acceptable landing error in the actual source resolution before acceptance. Report center displacement separately from corner/contour error. Require one continuously traceable card, exactly one additional table card, unchanged existing cards, credible release and empty return, plus a normal-speed seam check of body, gaze, shoe and hands.",
+      "whyNew": "Existing docs require correct landing/contact but do not define the measurement split or explicit table-card-count invariant.",
+      "boundary": "No numeric tolerance is invented here. A near-target magenta centroid cannot prove shape or hand contact."
+    },
+    {
+      "id": "N5-orientation-and-material-proof",
+      "source": "coach-2:706-721,776-782",
+      "action": "Use an asymmetrical, one-sided orientation marker only when blank-card corners and grip cannot establish orientation; it must exist in the actual anchors and raw take. Keep orientation UNKNOWN through complete occlusion unless continuity supports it. Check UV mirroring and stable corner ordering near edge-on frames before material acceptance.",
+      "whyNew": "The diagnostic marker and explicit UV/corner-order checks add precision beyond the existing color/side separation.",
+      "boundary": "Do not regenerate an otherwise useful white-card source merely to make it pink. A post-added marker does not prove the original turn. This is a possible diagnostic method, not a mandatory visual change."
+    },
+    {
+      "id": "N6-ready-and-table-state",
+      "source": "coach-2:785-792",
+      "action": "Define READY compatibility as body/hand pose plus explicit persistent table state. Record that a C2 source containing C1 depends on that C1 state; it cannot be freely reused across arbitrary table layouts until masking/composition is verified.",
+      "whyNew": "Existing docs request the same SHOE_READY but do not explicitly distinguish shared pose from identical whole-image state or enumerate baked-in C1 dependencies.",
+      "boundary": "No new runtime state engine or Scout change is proposed in this audit."
+    },
+    {
+      "id": "N7-coherent-review-case",
+      "source": "coach-2:828-840",
+      "action": "At the next authorized review publication, present raw and material versions synchronized by source frame, anchors, prompt/settings, frozen plan, selected reference, observed events, decisions, commit and served manifest in one case. Include historical P4 media/anchors only when publication is explicitly in scope; verify anonymous playback and seeking against the same hash/status.",
+      "whyNew": "The current workflow requires links and playback, but the combined source/anchor/measurement review case and seek test are more specific.",
+      "boundary": "No upload, deployment, new UI build or external message was performed."
+    }
+  ],
+  "productionRecipe": {
+    "status": "coach proposal extracted for root; not an implemented or accepted production process",
+    "sequence": [
+      "Recover and compare the selected historical raw/material movement first.",
+      "Freeze the actual chosen placement revision and its source-to-scene mapping.",
+      "Check start grip, source card, target quad, existing cards, shoe and final ready pose.",
+      "Only if needed and separately requested, generate one new continuous candidate with recorded changes.",
+      "Measure actual source-frame events and raw movement acceptance before replacing materials.",
+      "Verify material occlusion, UV/orientation, contact shadow, persistent table state and seams.",
+      "Publish the complete authorized review case; scale only after the whole path is accepted."
+    ],
+    "proposed12SecondBudget": [
+      {
+        "phase": "start ready",
+        "seconds": [
+          0,
+          1
+        ]
+      },
+      {
+        "phase": "take, transport, turn",
+        "seconds": [
+          1,
+          5
+        ]
+      },
+      {
+        "phase": "land and visible release",
+        "seconds": [
+          5,
+          7
+        ]
+      },
+      {
+        "phase": "empty return",
+        "seconds": [
+          7,
+          10
+        ]
+      },
+      {
+        "phase": "final ready hold",
+        "seconds": [
+          10,
+          12
+        ]
+      }
+    ],
+    "timingEvidence": "All proposed seconds above are requested phase budgets only. Actual TAKE, PASS, TURN interval, LAND, RELEASE and RETURN must be observed and stored as source-frame numbers; events may overlap.",
+    "minimumAnchorRequirements": [
+      "Original hash, actual dimensions, fps and frame count.",
+      "For observed anchors: source hash plus exact source-frame index; UNKNOWN/null when not known.",
+      "For generation image anchors: exact PNG bytes/hash and first/last role, separate from observed film frames.",
+      "Frozen placement hash and explicitly documented mapping between 1762-wide scene and 1764-wide source; retain calibrated:false until measured.",
+      "Anatomical hand, traceable card orientation, start/end body pose and required existing-card state.",
+      "Final state with exactly one new card, unchanged prior cards, empty returning hand and next card ready in the fixed shoe.",
+      "Independent decisions for raw movement, mask/material, assembly and Scout connection."
+    ]
+  },
+  "uncertain": [
+    {
+      "topic": "Current provider capabilities",
+      "state": "not independently checked",
+      "detail": "Coach claims Wan3 reference media cannot be mixed with first/last keyframes. Verify the live official request schema only when preparing that separate request; this audit made no API or web calls."
+    },
+    {
+      "topic": "Failure causes",
+      "state": "not isolated",
+      "detail": "The pink and yellow/blue P7 clips differ in anchors, colors and wording. They are not a controlled A/B experiment. Target size, 6-second duration and prompt ambiguity are hypotheses, not established causes."
+    },
+    {
+      "topic": "Scout integration findings",
+      "state": "already deferred and not reproduced on current Scout",
+      "detail": "Measured-base-profile behavior, 24-fps import, C1/C2 selection, layer format and 10/34 coverage counts require a separate scoped Scout verification; no new code review here."
+    },
+    {
+      "topic": "Exact historical preferred clip",
+      "state": "unresolved",
+      "detail": "Coach's frame-98 comparison is a concrete lead; it does not prove which older clip Jakob meant by around 04."
+    }
+  ],
+  "hygiene": {
+    "inventoryMethod": "Read current Git paths, .gitignore, five documents and selected existing receipts; shallow listings of .runtime, output and D:/dealer-scratch; hash only the two attachments and two named receipt pairs. No recursive archive scan or archive-media read.",
+    "gitignore": {
+      "verifiedPatterns": [
+        "node_modules/",
+        "assets/",
+        "output/",
+        ".runtime/",
+        ".env*",
+        "private/",
+        "*.log"
+      ],
+      "probeMethod": "git check-ignore --no-index -v on non-created representative paths",
+      "trackedPathsUnderProtectedRoots": [],
+      "result": "No new ignore rule needed for observed paths."
+    },
+    "documents": {
+      "governingDocuments": [
+        {
+          "path": "README.md",
+          "linesAtInspection": 38
+        },
+        {
+          "path": "AGENTS.md",
+          "linesAtInspection": 16
+        },
+        {
+          "path": "HANDOFF.md",
+          "linesAtInspection": 81
+        },
+        {
+          "path": "docs/SYSTEM.md",
+          "linesAtInspection": 94
+        },
+        {
+          "path": "docs/DRIFT.md",
+          "linesAtInspection": 86
+        }
+      ],
+      "otherTrackedMarkdown": [
+        {
+          "path": "evidence/table-projection-review.md",
+          "linesAtInspection": 23,
+          "decision": "retain as linked evidence, not a sixth governing document",
+          "references": [
+            "docs/SYSTEM.md:39",
+            "HANDOFF.md:69"
+          ],
+          "newAction": "Its line 7 describes an earlier save limitation. Mark that sentence as historical or reconcile it with the now-documented persisted tableProjection behavior; retain the underlying projection evidence."
+        }
+      ],
+      "result": "Five governing documents; no new diary or standalone plan needed. New decisions belong in existing documents or this JSON register."
+    },
+    "scratch": {
+      "D:/dealer-scratch/renders": "empty at shallow inspection",
+      "D:/dealer-scratch/review": "empty at shallow inspection",
+      "D:/dealer-scratch/tmp": "contains node-compile-cache; owner/activity not established, preserve",
+      "output/v6/take-01": "preserve: current film library reference and frozen reproduction",
+      "output/left-turn-review": "preserve: relevant current/historical review evidence",
+      "output/verification/frames.json": "preserve: verification receipt, not shown redundant",
+      "runtimeReviewDirectories": "preserve: p7-direct-proof, p7-turn-03-proof, pink-proof, plane-proof, placement-proof, lab-usability-proof, public-qa",
+      "freeBytesAtInspection": {
+        "C": 120176734208,
+        "D": 535751024640
+      },
+      "freeSpaceLimit": "Point-in-time logical drive free bytes, not a cleanup saving or allocation measurement."
+    },
+    "cleanupCandidates": [
+      {
+        "path": ".runtime/archive-maintain/source-before.json",
+        "owner": "MAINTAIN archive move, completed per HANDOFF and evidence/archive-move.json; not created by this subagent",
+        "bytes": 37771816,
+        "sha256": "9ab0f7177a4df6ac32d12ce7ee89c7945d80b71ea84c6aad3baae24180520d95",
+        "replacement": "D:/dealer-archive/receipts/20261110-snyggare-dealer/source-before.json",
+        "replacementSha256": "9ab0f7177a4df6ac32d12ce7ee89c7945d80b71ea84c6aad3baae24180520d95",
+        "replacementVerifiedIdentical": true,
+        "trackedDirectReferenceFound": false,
+        "decision": "conditional candidate only; retain until active use and ownership are revalidated"
+      },
+      {
+        "path": ".runtime/archive-maintain/verified-files.json",
+        "owner": "MAINTAIN archive move, completed per HANDOFF and evidence/archive-move.json; not created by this subagent",
+        "bytes": 43838136,
+        "sha256": "539fde2ac8ae06f88ac837fe277af399f3e7290545ce0a94f107c4f31d363f6a",
+        "replacement": "D:/dealer-archive/receipts/20261110-snyggare-dealer/verified-files.json",
+        "replacementSha256": "539fde2ac8ae06f88ac837fe277af399f3e7290545ce0a94f107c4f31d363f6a",
+        "replacementVerifiedIdentical": true,
+        "trackedDirectReferenceFound": false,
+        "decision": "conditional candidate only; retain until active use and ownership are revalidated"
+      }
+    ],
+    "cleanupCandidateLogicalBytes": 81609952,
+    "cleanupOwnershipLimit": "Get-CimInstance Win32_Process returned Access denied. The resulting empty pipeline is not evidence of zero active helpers. No process ownership/inactivity conclusion was made.",
+    "safeOwnTemporaryFiles": [],
+    "ownTemporaryFileExplanation": "This audit created no disposable files; its sole output is this durable evidence receipt. Other .runtime helpers are older task artifacts and were not classified safe merely by age/name.",
+    "protected": [
+      "placements/default.json",
+      "assets/originals",
+      "all original and active review media",
+      ".runtime/preview.json",
+      ".runtime/public-qa/saved-flat-plan.json",
+      ".runtime/placement-previous.json",
+      "D:/dealer-archive/receipts/20261110-snyggare-dealer",
+      "D:/dealerlab-archive"
+    ],
+    "previewTokenReadOrPrinted": false,
+    "deletedFiles": [],
+    "processesStopped": [],
+    "testsRun": false,
+    "apiJobsStarted": false,
+    "gitIndexOrCommitsChanged": false
+  },
+  "cleanupExecution": {
+    "at": "2026-11-10T19:16:43.0515389Z",
+    "scope": "Two redundant local archive inventories only",
+    "owner": "Completed MAINTAIN archive move",
+    "processCheck": "Elevated Win32_Process query found no matching archive helper; no processes stopped",
+    "backupRehashed": true,
+    "records": [
+      {
+        "path": "C:\\Users\\jakem\\dev\\super-feature-sg\\dealer\\.runtime\\archive-maintain\\source-before.json",
+        "replacement": "D:\\dealer-archive\\receipts\\20261110-snyggare-dealer\\source-before.json",
+        "sha256": "9ab0f7177a4df6ac32d12ce7ee89c7945d80b71ea84c6aad3baae24180520d95",
+        "logicalBytes": 37771816,
+        "removed": true
+      },
+      {
+        "path": "C:\\Users\\jakem\\dev\\super-feature-sg\\dealer\\.runtime\\archive-maintain\\verified-files.json",
+        "replacement": "D:\\dealer-archive\\receipts\\20261110-snyggare-dealer\\verified-files.json",
+        "sha256": "539fde2ac8ae06f88ac837fe277af399f3e7290545ce0a94f107c4f31d363f6a",
+        "logicalBytes": 43838136,
+        "removed": true
+      }
+    ],
+    "logicalBytesRemoved": 81609952.0,
+    "physicalBytesFreed": "not measured"
+  }
+}

@@ -1,81 +1,69 @@
 # Dealer – TILLBAKA-3 huvudägare
 
-Uppdaterad 2026-11-10. TILLBAKA-3 har huvudansvar enligt Jakob. TILLBAKA-2 har avslutat utan fler blockerare; MAINTAIN har committat publiceringsrutinerna i `f05be7d`. Inga underagenter är aktiva. Arbeta vidare här, en avgränsad P7-film i taget.
+Uppdaterad 2026-11-10. Fortsätt i denna checkout. Läs aktuell handoff och relevanta register, inte hela tidigare chatthistoriken. En skribent per fil; root samordnar index/publicering. TILLBAKA-2 och MAINTAIN har lämnat över.
 
-## Senaste uppdrag och arbetssätt
+## Jakobs senaste beslut
 
-- Jakob gillar **Spela kortbana**. Den är en schematisk målbild; filmens exakta handledsvridning får anpassas till handens geometri. Kraven på verklig vändning, rätt fysisk slut-/synlig sida, avtalad hand, landning och trovärdig kontakt kvarstår. Ingen ny variant av labbet behövs för att börja nästa avgränsade prov.
-- Börja producera en rörelse i taget enligt produktionsstegen längre ned. Samordna med TILLBAKA-2 (`01a1c656-e3b6-78a0-8dc7-cf5d54052002`) när historiskt underlag är oklart, och fråga Jakob om val som faktiskt påverkar resultatet. Fortsätt oberoende arbete medan frågor är öppna; stanna inte vid en plan eller en mottagningsbekräftelse.
-- MAINTAIN (`01a1c66b-7c7e-74b2-b421-eb7bf0743b7e`) har lämnat slutrapport och frisläppt index. Rutinerna ligger i `f05be7d`; TILLBAKA-3 tar därefter även commit/check/push/CI. Använd `npm test` och `npm run check`; pre-push får inte kringgås. Jakobs placeringsutkast stage:as inte.
-- Senaste korrigering: `pamela-p7-c1-left-direct-pilot-01` är CLOSED→CLOSED enligt Jakob och sparas som **sekundärt alternativ i samma filmbibliotek**, inte som godkänd vändning. Nytt uttryckligen beställt prov `pamela-p7-c1-left-turn-pilot-03`, task `18b11157-288a-40e7-b667-a327506ed928`, är färdigt men REJECTED: fel landning nära P4 och ett kort som dyker upp vid P7 utan kontakt. Instruktionen begärde palm-up-grepp och fingrar under kortet vid släpp. Detta jobb har gul/blå källa; rosa förblir Jakobs grundmetod för framtida maskprov. Gult BACK/blått FRONT är senare diagnostiskt överlägg, aldrig ersättning för fysisk vändning. Inget nytt sparsystem.
-- Arbeta i små granskningsbara steg: **förbered → generera → hämta/registrera → lokal granskning → publicera granskningsversion → ta in synpunkter → ny avgränsad korrigering**. Registrera klipp-ID, modell/prompt, inputhashar, originalhash, sid-/handhändelser och beslut. Bevara original; lägg inte filmer eller hemligheter i Git.
-- Externa granskare är en uttrycklig del av arbetsgången. När ett steg är klart, säg vad som kan ändras nu och om resultatet är endast lokalt eller faktiskt publikt. Ge efter verifierad publicering GitHub-commit, Vercel-länk, exakt klipp-ID/version, vad som ändrats och vilka konkreta bildrutor/frågor granskaren ska bedöma. Lokala C:-länkar räcker inte som externt underlag.
-- Jakob har beställt att färdiga granskningsändringar görs tillgängliga i GitHub och Vercel. Följ MAINTAIN:s färdiga kontroller för agentstyrd push av verifierade commits och samordna index. Publicering är separat från godkännande av filmen. Push innebär inte automatiskt deploy i nuvarande upplägg: bygg/publicera uttryckligen och kontrollera anonym åtkomst samt filmuppspelning innan du säger att granskaren kan se ändringen.
-- Rapportera tydliga granskningslägen och verkliga hinder, inte bara att du arbetar. Skicka inga externa meddelanden till granskare utan ett särskilt uppdrag; lämna fungerande granskningslänkar och frågor till Jakob.
+- **V6 är rätt visuellt mål**, åter bekräftat med bild: 1762×1174, 30,867 s. Bevara original och referenshashar.
+- Nyare gul/blå 119,933-sekundersfilmen är **inte** det äldre prov Jakob menade. Behåll 16/17-kortsversionerna som historiska alternativ med deras koordinater/format.
+- Äldre materialsekvenser på 182,867 och 146,8 s har återställts byteidentiskt. Samma bildmått som V6, 14 spelarkort, inga dealerkort. Jämförelsekandidater; exakt ihågkommet prov är inte identifierat genom ålder/filnamn.
+- Fortsätt klippa sammanhängande rörelser: två kort P1–P7, två eller tre till dealer, IDLE/SHOE_READY och korrekt bordstillstånd. Inget nytt sparsystem. Rosa kvar som separat material-/maskhjälp; vit yta är också tillåten.
+- Jakob har beställt generering, granskning, GitHub/Vercel vid större granskningssteg och underagenter med bara relevant kontext. Ett WAN3-kontrollprov och ett efterföljande Kling 3.0 Pro-jämförelseprov är beställda; ingen automatisk batch. Scout/databas ändras först vid konkret integrationsuppdrag.
 
-## Arbetsyta och senaste leverans
+## Arbetsyta och länkar
 
-- Arbeta i `C:/Users/jakem/dev/super-feature-sg/dealer`, huvudcheckout, branch `jakob/test`. Senaste publicerade kodversion: `6669c579263e410ebc87ba37f3aeca27915ef492`, pushad till GitHub och grön CI `42879443620`. Senare verifieringscommit kan tillkomma; kontrollera HEAD och status.
-- Publik sida: **https://dealer-delta-eosin.vercel.app/**. Lokal sida: **http://127.0.0.1:4319/lab.html**. Använd Codex WebView, inte Chrome. Återanvänd flik/server och bevara andra flikars osparade arbete.
-- Plant bord är nu standard och sparas med riktningen i `tableProjection`. Äldre planer fungerar; första sparningen lägger till inställningen. Befintliga koordinater bevaras. Lokal sida sparar i `placements/default.json`; publik sida sparar endast i den egna webbläsaren. Export/import flyttar utkast mellan dem.
-- `placements/default.json` är Jakobs arbetsfil och avsiktligt utanför våra commits. Återställ eller commit:a den inte av misstag. Den publika sidans eget sparade utkast kan skilja sig från den lokala filen.
-- De två senaste P7-proven använde fryst `.runtime/public-qa/saved-flat-plan.json` (P4.C2 cirka 907,1070 px). Det lokala utkastet har P4.C2 cirka 894,1091 px och är seed för den nya publika versionen, hash `80029048726834297422b7360b8f3ac3fdb1cc9d013039af2ea5cfb289f4dbe9`. Tidigare sparade webbläsarutkast skrivs inte över. Frys den faktiskt valda planen inför nästa jobb; ändringar i editorn når inte automatiskt Runway. Historisk före/efter-kontroll finns i `evidence/public-lab-review.json`.
-- Publika filmer ligger i Vercel Blob, inte Git eller webbpaketet. `data/library.json` är lokal katalog, `data/public-media.json` innehåller publika motsvarigheter med samma SHA-256. Nio objekt, 150 508 896 byte, alla anonymt hashverifierade. Inga hemligheter eller bildrutebanker uppladdade.
-- Vercel: team `scoutgaming`, projekt `dealer`, ID `prj_7zd112w6MIX9YnpcR7Nj64Ke50yk`. Blob `dealer-media`, `store_qeojzIHuA5ewT4uO`, public arn1. Projektbindning `.runtime/public-deploy/.vercel/project.json`. Aliaset `dealer-scoutgaming.vercel.app` är skyddat och är inte publik granskningslänk.
-- Senaste publicering: `dpl_BeHCenDsFxfwx9Qb19yKbLh8avij`, READY. Alla 19 publika filer är anonymt hashverifierade; biblioteket visar nio filmer inklusive sekundärt P7 och underkänt vändningsprov 3. Se `evidence/public-release.json` för aktuell release och `evidence/public-lab-review.json` för tidigare sparningskontroller. Gamla sidans avvecklingsstatus bevaras i public-release-kvittot.
-- Gamla publika `scout-dealerlab` är raderat: projekt och domän ger 404. Nya sidan ger 200 och samtliga sju Blob-filer finns kvar. De särskilda gamla `/komposition`- och `/kortkontakt-v4`-granskningsvyerna finns i D:-arkivet, inte på nya sidan. Inget separat gammalt GitHub-repo identifierades eller raderades.
+- `C:/Users/jakem/dev/super-feature-sg/dealer`, branch `jakob/test`, origin `git@github.com:Jakeminator123/dealer.git`.
+- Lokal preview **http://127.0.0.1:4319/lab.html**, behåll för Jakob. Codex WebView; bevara användarflikars arbete. `node tools/preview.ts --status`, stopp via kontrollkanal, aldrig processnamn/port.
+- Publikt **https://dealer-delta-eosin.vercel.app/**. Aktuell verifierad deployment, kod-SHA och uppspelningsbevis: `evidence/public-release.json`. Lokala ändringar är inte publika förrän detta kvitto uppdaterats.
+- Vercel `scoutgaming/dealer`, projekt `prj_7zd112w6MIX9YnpcR7Nj64Ke50yk`, team `team_Scxorb9qtZHjNae1YEQnFCaT`. Bindning `.runtime/public-deploy/.vercel/project.json`. Skyddade `dealer-scoutgaming.vercel.app` är inte publik granskningslänk.
+- Blob `dealer-media`, `store_qeojzIHuA5ewT4uO`. Lokal katalog `data/library.json`; publika motsvarigheter `data/public-media.json`. Aktuellt filantal/byte/hashkontroll i `evidence/public-media-verification.json`. Media/hemligheter aldrig i Git eller webbpaket.
+- **`placements/default.json` är Jakobs aktiva utkast. Återställ eller stage:a det inte.** Lokal sparning skriver dit; publik sparning är webbläsarlokal. Befintliga webbutkast skrivs inte över av deploy. Bygget fryser lokal fil/hash; generering kräver egen uttrycklig planbindning.
+- Två tidigare P7-jobb använde `.runtime/public-qa/saved-flat-plan.json`, inte aktuellt lokalt utkast. P4-kontrollerna använder historiska ankare. Dessa jobb följer inte automatiskt editorns senaste koordinater.
 
-## Vad som är accepterat respektive inte klart
+## Material och rättad färgförklaring
 
-| Material | Beslut och användning |
+| Material | Status / användning |
 | --- | --- |
-| V6, `assets/reference/v6.mp4` | Jakobs valda visuella referens. SHA-256 `412a2fa01f9e852e8894002076b5771181bd6afd4ddeef1be76c0640d5853a2d`. Bevara handrörelse, matta, C2-förskjutning och liten skugga. |
-| Historiska V6-exporter | `output/v6/take-01`: 926 rutor, 30 fps; native 1762×1174 och porträtt 1080×1920. Tidigare byteidentisk full reproduktion. Efter de senaste kodrättningarna är 18 kontrollrutor fortsatt pixelidentiska. |
-| P4.C2 gul–gul | `motions/pamela-p4-c2-left-closed-closed.json`: rörelsen villkorligt accepterad som CLOSED→CLOSED, med gul synlig sida hela vägen. `review-v04` är fortfarande PENDING för kanter/fingrar/överlapp. Inte en accepterad vändning. |
-| P7 försök 1 | `pamela-p7-c1-left-turn-pilot-01`: REJECTED; fel sidfärger, landning nära P4, blå sko. En kort synlig undersida ska vara blå; gult i bilden bevisar inte att vändning saknas. |
-| P7 försök 2 | `pamela-p7-c1-left-turn-pilot-02`: REJECTED av Jakob. Fysisk följd BACK→FRONT→BACK; valörsidan visas felaktigt gul, senare baksida och landning felaktigt blå. Slutar stängt. |
-| P6 försök 1 | `pamela-p6-c1-left-turn-pilot-01`: REJECTED; oönskat LH→RH-handbyte och tryckt kort. |
-| Rosa P7 | `pamela-p7-c1-left-pink-pilot-01`: PENDING, 6 s, 180 rutor, 1764×1174. Samma LH, men oönskad omväg/stopp vid mitten. Fysisk slutsida och antal vändningar är UNKNOWN. Inte produktionsgodkänd. |
-| Direkt P7, sekundärt | `pamela-p7-c1-left-direct-pilot-01`: CLOSED→CLOSED enligt Jakob, REJECTED för vändningskravet. Bevarad som sekundärt alternativ med direkt P7-bana och retur. Original, fryst plan och beslut i befintliga register. Finns i publika biblioteket. |
-| P7 vändningsprov 3 | `pamela-p7-c1-left-turn-pilot-03`: REJECTED, kort uppstår vid P7 utan kontakt och det hållna kortet landar nära P4. Gul/blå källa och exakt prompt bevarade för jämförelse. Finns i publika biblioteket. |
+| V6 dator/mobil | Vald referens; hash `412a2fa01f9e852e8894002076b5771181bd6afd4ddeef1be76c0640d5853a2d`, 926 rutor/30 fps. Tidigare full reproduktion och 18 senare pixelidentiska kontrollrutor bevarade. |
+| `pamela-older-14-mask-refined` | Befintlig 182,867s fullfilm med riktade P7-skokants/P6-pappersspetsrättningar. Byteidentiskt återställd efter Astra-granskning; PENDING, samma rörelser/geometri. |
+| `pamela-older-14-material-full` / `compact` | Äldre 182,867/146,8 s, 1762×1174. Två kort per spelare, inga dealerkort. PENDING; historisk geometri och tilldelade sidmaterial. |
+| `pamela-sequence-{16,17}-{native,portrait}-r2` | Historiska alternativ, PENDING. 16-kortsprefix `[0,3296)` slutar i IDLE med D.C2 dolt. 17-kort `[0,3598)` inkluderar reveal och D.C3. Native 1764×1174, porträtt 1080×1920. Inte kalibrerade till aktuell plan. |
+| `pamela-p4-c1-source-turn`, `pamela-p4-c2-source-turn` | Oförändrade gul/blå fyrasekundersoriginal. Källrutor/arkiv-QA stödjer BACK→EDGE→FRONT; aktuell användaracceptans PENDING. Nyare än vita 12s-banken. |
+| `pamela-p4-c2-closed-review-v04` | **SEKUNDÄRT färgexperiment.** `closed-card-review.ts` målade den öppnade blå motsidan gul. Tidigare rapporterad CLOSED→CLOSED rättad och bevarad som historik, inte fysisk sanning. Media oförändrade. |
+| `pamela-p4-c1-color-control-01` | Ny WAN3-tagning med exakt historiska P4.C1-bilder/prompt. SUCCEEDED men REJECTED: bred gul→bred blå f63→64 utan verifierad kantpassage; sent släpp f116→117 fungerar. |
+| `pamela-p4-c1-kling-control-01` | SUCCEEDED men REJECTED: bred gul→blå f52–54 utan verifierad kantpassage. Samma bilder/prompt, 48 credits. Original 1764×1172, 24 fps/97 rutor; ingen ombeställning. |
+| P7 direktprov | CLOSED→CLOSED enligt Jakob, sekundärt alternativ; REJECTED för vändningskravet. |
+| P7 försök1/2/3 och P6 försök1 | Bevarade REJECTED: fel mål/sida, extra vändning, spontan kortyta respektive handbyte. Rosa P7 är separat PENDING mask-/rörelseprov. |
 
-Rörelseposterna är statusägare. `publicReview` anger bara vad som är publikt för granskning; `published:true` betyder inte accepterad rörelse eller Scoutintegration. Original, slutversion och diagnostiska masker hålls isär.
+`motions/` äger besluten. `published:true` betyder inte godkänd rörelse eller Scout-integration. UI gul=BACK/stängt och blå=FRONT/öppet avser **slutsidan**. Editorfärg ändrar varken befintlig film eller skickar API-jobb. Rosa är inte en tredje fysisk sida. Bedöm grepp, kant och sammanhängande rörelse före materialbyte.
 
-## Modell, instruktioner och färger
+Biblioteket har kapitel, ±1 källruta, 0,25/0,5/1× och `?clip=...&frame=...`. “Visa grön film” öppnar oförändrat P4.C2-original, inte gula överlägget. Filmvisning får inte ändra placeringsutkastet.
 
-- Verifierat: **Runway developer-API**, `https://api.dev.runwayml.com/v1/image_to_video`, version `2024-11-06`, modell **wan3**, `auto_1080p`, utan ljud. Samma lokala API-nyckelkälla som tidigare labb: Git-ignorerade `.env.local`. Connectorns workspace är inte bevisat samma konto; byt inte anslutningsväg av bekvämlighet.
-- Alla sex nya jobb är färdighämtade; inget väntande Runway-jobb finns. Rosa provets task-ID `d3ddd907-b892-48b1-b96e-f289656928dc`; SHA-256 `41ac99c50cba24781f2d4461bed91c2c6b5e13beb6b761d8d6f09d13979bf20e`.
-- Full prompt-/modelljämförelse: `evidence/prompt-comparison.json`. V6-källan `assets/originals/deal.mp4` är byteidentisk med gamla `pamela-central-base-wan3.mp4` och har SHA-256 `2445bb2ef5122fe558134d582533d277603da72c4b98b6c782be01a5bf06235a`.
-- Den nu återfunna P4-banken är ett annat underlag än V6:s sexsekunderskälla. `evidence/historical-p4-generation-inputs.json` innehåller exakta P4.C1/C2-promptar, avkodade requestbilder och 36 registrerade arkivläsningar. Separata 12-sekunderstagningar byggdes till 182,867 s; kortversionen trimmade hela bildrutor. Vita kort och komplett tom retur var instruktionerna, ingen uttrycklig sidvändning. Tvåsidiga visningen hade tilldelade BACK/FRONT och okänd ursprunglig fysisk sida. Exakt prov som Jakob avser omkring 04 är inte fastställt. Återanvänd sekvens-/ankarmetoden, men behandla inte tilldelad färg som verifierad fysisk vändning.
-- V6-prompten bad uttryckligen om vänsterhand från skon → handbyte vid mitten → högerhand till center. Kopiera inte detta till P7 med samma vänsterhand. Rosa P7 bad om direkt LH-rörelse utan uppvisningsstopp; modellen följde inte banan fullt ut. Ingen annan grundorsak är verifierad.
-- Gul = BACK/CLOSED, blå = FRONT/OPEN. Rosa RGB 255,0,255 är en maskhjälpsyta, inte en tredje kortsida. Genererad MP4 garanterar inte exakt RGB. Exakta etiketter och mjuk visuell alpha är separata utdata.
-- Fysisk vändning bedöms från grepp, kanter och sammanhängande källrutor, aldrig från enbart färgen. Samma färg på båda sidor kräver särskild sidannotering. UNKNOWN får aldrig automatiskt renderas som framsida.
+## Exakta instruktioner och återbruk
 
-## Nästa produktionssteg – en sammanhängande rörelse först
+- `generation.html` visar faktiskt skickade bilder/prompt, båda nya filmerna och äldre promptar. JSON i `data/p4-generation-review.json`. Uppdatera med `node tools/build-generation-review.ts`; denna läsning gör inga API-anrop. Sidan länkas från filmbiblioteket.
+- Astra 6 hög har slutfört `evidence/astra-archive-mask-audit.json`: V6-skuggor/fingermasker redan importerade (14/14 kontrollerade hashmatchningar), bankens riktade maskrättningar återfunna. V7 edge take-02 var uttryckligen REJECTED och ska inte importeras som förbättring.
 
-Jakob vill komma vidare med filmer, utan fler stora labbutbyggnader. Målet är P1–P7 med två kortplatser, dealer öppet/dolt och separat senare hålkortsvändning. Räkna inte 40 färdiga filmer som ett verifierat behov: granskaren föreslår återbruk av skoövergångar, men deras 10/34-tal är inte lokalt reproducerade här.
+- Samma Runway developer-API och ignorerade `.env.local`-nyckelkälla; connectorns konto är inte bevisat samma. **V6-filmen skickades inte till kontrolljobben:** de fick två PNG-ankare och historisk textprompt. `tools/generate-p4-control.ts` visar exakt body; Kling utelämnar `ratio`, WAN3 använder `auto_1080p`.
+- Varje `assets/motions/<id>/generation.json` har prompt, inputhashar, task-ID och outputhash. `evidence/p4-control-production.json`, `p4-control-visual-review.json` och `runway-production-contract.json` ger offentligt underlag utan hemligheter. `request.lock` ligger kvar även vid osäkert nätutfall.
+- `evidence/anchor-color-audit.json` skiljer fysisk källsida, UI-avsikt, övermålning och äldre sidetiketter. 11/11 tidigare start/end-PNG matchade registrerade hashvärden. P4.C2-felet kom i senare överlägg.
+- `evidence/historical-p4-generation-inputs.json` har exakta äldre P4.C1/C2-promptar och requestbilder. Äldre 183s = 14×12s plus 446 vila/bryggrutor; 146,8s klipper hela källrutor utan retime. Vita original har UNKNOWN fysisk semantisk sida; det är inte skäl att kasta en synligt användbar rörelse.
+- `evidence/sequence-reuse-audit.json` har exakta källor, äldre kandidater/tidsbevis och nyare tidslinje. Materialfilmernas exakta skapandetid saknas; mtime bevisar inte “20 timmar”. Nyare P7 `p7-c1-outer-01` har arkiv-QA: gul f60–67, kant68, blå69+, släpp88. Återgranska användbar råtagning före nytt jobb.
+- `tools/restore-sequence-review.ts` importerar 17-kortsfilmer byteidentiskt och gör 16-kortsprefix med två encoders×två trådar. Kör inte om så senare reviewkvitton ersätts. Registrera arkivläsningar; inga gamla node_modules/junctions/runtime-beroenden.
 
-1. Utgå från V6:s godkända uttryck och befintligt rosa P7-prov. Granska om rörelsen kan användas; färga inte om ett felaktigt slutet nedlägg till öppet. Fullständig målrörelse: SHOE_READY → TAKE(LH,BACK) → en verklig TURN → LAND(P7.C1,FRONT) → RELEASE → samma SHOE_READY. Naturlig följande högerhand/blick tillåts, inget oönskat handbyte eller uppvisningsstopp. Retur är riktig framåtrörelse, aldrig baklänges film som tar tillbaka det lagda kortet.
-2. Använd Jakobs native-placering och Plant bord som visuell riktning. `placements/references/user-flat-native-20261110.json` bevarar den tidigare 0°-jämförelsen. Frys den aktuella sparade planen/hash innan ny beställning; blanda inte 1762×1174 scengeometri med 1764×1174 källfilm utan uttrycklig omvandling. Det rosa provets gamla P7-mål är inte en verifierad bindning till den senast sparade scenplanen.
-3. Om ny generering behövs: ett nytt klipp-ID och en ny avgränsad tagning. Registrera start/slutbild, deras hash, exakt prompt, modell, längd, API-task och senare originalets metadata/hash. `tools/generate-pink-pilot.ts` är låst till det redan beställda provet; ta inte bort dess lås och beställ inte samma jobb igen. `tools/collect-pilot.ts` hämtar endast befintliga jobb. Ingen automatisk upprepad betalning eller stor batch.
-4. Mät källrutor för grepp, synliga sidor, kantläge, landning, släpp och återgång. Separera `LH/RH`, fysisk sida, målplats och Scouts tillåtna synlighet. Skapa konservativa kort-/fingermasker innan gul/blå eller riktigt fram-/baksidematerial läggs på.
-5. Bind **en** accepterad rörelse till fryst placeringsrevision, uppmätta händelser, maskspår och vald vy. Visa original och overlay för samma rutor. Bevisa kontakt och överlapp. Ändra inte V6 för att få ett nytt prov att se godkänt ut.
-6. Låt Jakob välja rörelsen innan flera platser beställs. Därefter återanvänd en bevisad process för ytterplatser, C2-överlapp, dealer dolt och reveal.
+## Nästa steg och gränser
 
-## Viktiga begränsningar – inte färdigt bara för att labbet fungerar
+1. Jämför äldre materialsekvenser mot V6 och oförändrade råtagningar. Klipp fungerande sammanhängande rörelser på dokumenterade rutor och bevara lagda kort över bryggorna.
+2. Frys vald aktuell placeringsplan innan ny rörelse binds. Skilj 1762/1764, native/mobil och uppmätt kortkontakt. Anpassa inte metadata/färg för att dölja saknad rörelse.
+3. IDLE/SHOE_READY är poseankare **med bordstillstånd**. Landning/release är händelser/målquad, inte global vilopose. Fullt bord får inte loopas till tomt. Scout äger reveal, tredje kort, regler, slump och kortvärden.
+4. Materialpanelen/Three.js och nodkartan är separata förhandsvisningar. Generell plan→Runway→mask→material→Scout är inte färdig. Slutmaterial, fingermasker, skarvar och integration återstår; V6 ändras inte för att få prov att se godkända ut.
+5. Leverera lokalt spelbara filmer, GitHub, Vercel och faktisk anonym uppspelning med klipp-/rutelänkar. Inga externa samordningsmeddelanden utan särskilt uppdrag.
 
-- Placeringseditor och nodkarta beskriver avsikt. **De styr ännu inte den generella filmrenderingen.** V6 är ett fast tvåkortsrecept. Nästa agent måste binda den första nya rörelsen uttryckligt; hitta inte på tidsankare från grafen.
-- Materialpanelen har valbar fram-/baksida, valör/färg, glans, böjning och enkel landningsanimation. Den är en separat Three.js-studie. Den är ännu inte ett redigerbart kortlager som automatiskt följer nya filmer eller fingrar. Ingen gravitationssolver finns. Next/React ersätter inte den delen.
-- Mobilen har separat matta och persontransform; den är inte en nedskalad desktopbild. Se `evidence/table-projection-review.md/json`. 0° betyder riktning på bordet, inte kamerans lutning. Inga automatiska mobilgeometriändringar gjordes. Beställ inte en hel bank med antagandet att alla ytterplatser redan ryms i mobilen.
-- Externa rapportens mesh-, återläsnings-, materialsynk- och renderinläsningsfel är rättade; se `evidence/external-review-triage.json`. Meshdata med UNKNOWN eller ogiltiga rutor stoppas. Statiska renderdata läses från snapshot och varje avkodad bild-/maskbuffer kontrolleras mot en hash som fixerats före arbetarstart.
-- Scout-rapportens measured-basprofilfel, fps-importkrav och täckningssiffror är inte verifierade på aktuell Scout-version här. Scout är endast läsreferens. Inga spelregler, databasändringar eller Scoutintegration är gjorda/beställda i denna leverans.
+## Drift och lagring
 
-## Verifiering, drift och lagring
-
-- Node via projektets Volta: **24.21.0**, krav `>=24.21.0 <25`. Verifierat; ingen ominstallation av Volta/Node behövdes. Detta labb kör TypeScript/Node, Sharp och Three.js; ingen Next-/React-app behöver installeras för befintliga funktioner.
-- Senaste `npm test` och `npm run check` passerade **25/25** tester; inga dokumentvarningar. Känd synlig Node-varning från experimentella `stripTypeScriptTypes` är dokumenterad i DRIFT. `node tools/verify.ts` verifierade 1092 registrerade filer. Tidigare `--frames` gav 18 pixelidentiska kontrollrutor; V6-källan är oförändrad och full rendering har inte upprepats. Se `evidence/render-safety-frames.json`.
-- Lokal preview 4319 lämnas till Jakob. Den startades om via sin kontrollkanal för den nya sparmodellen. `node tools/preview.ts --status` visar aktuell ägare/PID; `.runtime/preview.json` har en hemlig kontrolltoken och får inte skrivas ut. Stoppa med `STOPP.cmd`, aldrig med processnamn eller portjakt. Automatisk avstängning efter 60 s utan preview-flik.
-- `node tools/sync-public-media.ts` ger torr plan. `--upload` ska bara användas för en granskad katalogändring. Avgränsningen till åtta eller nio registrerade filmer är avsiktlig; uppdatera den tillsammans med nya biblioteksposter. Blob-nyckel finns i `.runtime/blob-sync/.env.local`, aldrig i `.runtime/public-deploy` eller publika paketet.
-- Gamla `snyggare-dealer` är färdigflyttat till **D:/dealer-archive/snyggare-dealer** och borttaget från C:. 194 531 filer / 163 182 601 679 logiska byte hashverifierade; faktiskt frigjort C:-utrymme **94 016 409 600 byte (~94,02 GB)**. Se `evidence/archive-move.json`. Gamla 4318 är stoppad. Rör inte andra delarkivet `D:/dealerlab-archive`.
-- Läs gamla arkivet bara avgränsat och registrera använd källa/hash. Inga gamla node_modules, junctions eller oregistrerade runtime-läsningar. Behåll V6, original, registrerade masker och aktiva prov; producera inte onödiga PNG-kopior eller dubbla MP4:or per status.
-- Håll svaren på svenska, slutsats först, cirka 120 ord. Avsluta med antal aktiva underagenter. Vid överlämning: skilj accepterat, prov, rättat och återstående arbete.
+- Node 24.21.0 via Volta, engines `>=24.21.0 <25`, högst fyra arbetare. `npm test` → explicit egna filer → commit → `npm run check` → vanlig push → fjärr-SHA/CI. Ingen kringgång av pre-push; placeringsutkastet ska lämnas kvar.
+- `node tools/verify.ts` kontrollerar registrerade filer. Full V6-render behövs inte när inputs/kod är oförändrade. Känd experimentell `stripTypeScriptTypes`-varning är dokumenterad och bevaras synlig.
+- Publicera via granskad `node tools/sync-public-media.ts --upload`; torr plan utan flaggan. `--single-request` använder CLI:ns befintliga Blob-SDK när multipart stannar länge på värden. Kontrollera anonym hash, ingen overwrite. `node tools/build-public.ts`, Vercel från `.runtime/public-deploy`.
+- Behåll JSON nu; ingen SQLite/lokal Postgres/ny Neon. `evidence/storage-choice-review.json` beskriver senare Scout-adapter vid flera skrivare/atomisk historik. Inga DB-ändringar.
+- Gamla labbet finns på `D:/dealer-archive/snyggare-dealer`; C:-originalet och 4318 avvecklade enligt `evidence/archive-move.json`. Rör inte `D:/dealerlab-archive`. Preview 4319 lämnas till Jakob.
+- Två verifierat dubbla inventeringsfiler rensade: 81 609 952 logiska byte; fysisk frigörelse ej mätt. D:-original kvar. `evidence/coach-production-triage.json` har rensningskvitto och coachfilernas behandling. Bevara original/review/aktiva jobb, undvik PNG-banker.

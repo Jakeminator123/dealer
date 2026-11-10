@@ -1,0 +1,485 @@
+{
+  "schemaVersion": 1,
+  "createdAt": "2026-11-10T19:42:54.8961021Z",
+  "purpose": "Read-only archive audit of overlooked masks, material tracks and alpha handling for V6-based production. Requested Astra audit; no archive code execution.",
+  "archiveRoot": "D:/dealer-archive/snyggare-dealer",
+  "visualTarget": {
+    "path": "assets/reference/v6.mp4",
+    "sha256": "412a2fa01f9e852e8894002076b5771181bd6afd4ddeef1be76c0640d5853a2d",
+    "width": 1762,
+    "height": 1174,
+    "frames": 926,
+    "fps": 30,
+    "unchanged": true
+  },
+  "conclusion": "Four bounded reuse candidates identified. Strongest immediately reviewable result: already-rendered older14-card films with two mask fixes. Small silhouette/contact shadows are already imported. The separate receiver-constrained shadow is only a candidate, and no general superior replacement for V6 or new continuous physical turn is established.",
+  "structure": {
+    "method": "Filename/directory inventory at archive root, src, tools and selected runs; content reads confined to readOnlyArchiveFiles. No exhaustive archive scan.",
+    "roles": {
+      "materials": "Current repo already contains imported material studies",
+      "references": "Manifest-selected contracts/material provenance; not independently traversed",
+      "runs": "Take-specific frozen inputs, rendered witnesses and decisions; check exact hashes",
+      "src": "Reusable algorithms and adapters; not automatically accepted"
+    },
+    "excluded": [
+      "node_modules",
+      ".git",
+      ".env*",
+      "private",
+      ".next",
+      "execution of archive scripts",
+      "new renders",
+      "paid generation",
+      "media imports"
+    ]
+  },
+  "candidates": [
+    {
+      "priority": 1,
+      "id": "bounded-mask-fixes-and-existing-films",
+      "classification": "Verified preserved artifact and locally inspected sample improvement; historical numeric guarantees not rerun",
+      "paths": [
+        "src/pamela-bank-mask-refinements.ts",
+        "src/pamela-refined-bank-card-surfaces.ts",
+        "runs/20261110-pamela-mask-bank/take-01/evidence.json",
+        "runs/20261110-pamela-mask-bank/take-01/render/vila-fourteen-materials-vila.mp4",
+        "runs/20261110-pamela-mask-bank/take-01/render/vila-fourteen-materials-trim.mp4"
+      ],
+      "finding": "C1-P7 reduces neutral-grey shoe ownership under the free tip; C2-P6 reconnects visible neutral paper near the existing mask. Hand/shoe guards and prior card are absolute exclusions. Existing full/compact movies preserve 1762x1174 and 5486/4404 frames according to the receipts.",
+      "verifiedNow": [
+        "Both MP4 byte hashes match the archive receipt; neither hash is registered in current manifest/library at audit time.",
+        "Refinement source hash matches review-02.",
+        "P7 f86 and P6 f117 before/after sheets inspected: localized edge corrections, no obvious finger displacement in these samples."
+      ],
+      "historicalEvidence": {
+        "sourceFrames": 720,
+        "protectedPixelChanges": 0,
+        "priorCardCoreChanges": 0,
+        "unchangedFullClips": 12,
+        "unchangedLandedLayers": 14,
+        "nonreplacementFullFramesCompared": 4766,
+        "nonreplacementCompactFramesCompared": 3936,
+        "decodedChangesOutsideReplacementIntervals": 0
+      },
+      "limitations": [
+        "Earlier masks, source seams, green fringes and authored side labels remain.",
+        "Not a solution for V6/editor coordinates or missing physical turns.",
+        "No full playback, re-render or independent decoded comparison in this audit."
+      ],
+      "minimumNextStep": "Review these existing two films beside the restored two-sided-bank originals before any new rendering; if useful, explicitly import as separate mask-improved comparison candidates with these hashes."
+    },
+    {
+      "priority": 2,
+      "id": "frozen-native-paper-hand-shoe-uv-tracks",
+      "classification": "Concrete preserved reusable data; benefit for new V6-based assembly remains conditional",
+      "paths": [
+        "src/pamela-frozen-material-track.ts",
+        "src/pamela-bank-card-surfaces.ts",
+        "src/pamela-paper-material.ts",
+        "runs/20261109-pamela-middle-card-track/take-07/p4-stable-integration/evidence.json",
+        "runs/20261109-pamela-c2-motion-track/take-01/seat-4/draft-03/track.json"
+      ],
+      "finding": "P4 C1 has 360 records with separate one-channel coverage/hand/shoe masks and compressed float32 UV fields. P4 C2 has 360 records with R=C1, G=C2 paper coverage and B=protected hand/next-shoe guard. Adapters bind exact source hashes, reject paper/guard overlap and keep geometry separate from artwork. This is more reusable than extracting a new mask from an already printed movie.",
+      "currentGap": "These per-slot source tracks/adapters are absent from current src and manifest. Current V6 already has its own mesh, nail guards and manual hand-occlusion data, so this is expansion to original bank clips, not recovery of missing V6 guards.",
+      "limitations": [
+        "P4 C1 review explicitly rejects dark full-surface/SG-back acceptance because a warm-shadow tab remains at frames176-212.",
+        "Authored UVs can slip; physical semantic side remains UNKNOWN.",
+        "P4 C2 playback was unverified in its source review.",
+        "Referenced per-frame PNG/UV payloads were not all read or rehashed; no claim of complete dependency closure."
+      ],
+      "minimumNextStep": "For one selected original P4 motion, bind source+track+review hashes and copy only its transitive mask/UV dependencies into an isolated local candidate. Compare black/white/front material at extraction, edge, grip and release before broadening."
+    },
+    {
+      "priority": 3,
+      "id": "semantic-paper-alpha",
+      "classification": "Promising bounded algorithm; not verified as better than current V6",
+      "paths": [
+        "src/pamela-key-paper.ts",
+        "runs/20261109-pamela-paper-key/take-01/evidence.json",
+        "runs/20261110-pamela-mask-bank/take-01/evidence.json"
+      ],
+      "finding": "keyPamelaFrameWithPaper separates paper coverage from chroma confidence. It restores opaque supported paper while retaining measured mixed green-screen edge alpha, using the unprinted plate so artwork cannot alter classification.",
+      "currentComparison": "V6 already raises alpha under mesh/surface coverage; the overlooked addition is explicit unprinted-reference mixed-edge handling, not generic alpha restoration.",
+      "versionBoundary": "The early eight-frame P3 paper-key receipt records code529edddf..., whereas preserved source is a12c5096.... The later mask-bank receipt binds a12c5096..., but the old eight-frame test must not be claimed as validation of the later implementation.",
+      "limitations": [
+        "No independent A/B render on current V6 in this audit.",
+        "Requires valid visible-paper support with finger/shoe exclusions; cannot infer hidden hands or sides."
+      ],
+      "minimumNextStep": "Compare only a few already-selected V6 source frames with exact existing masks and an unprinted reference; retain original renderer and require zero changes outside supported paper."
+    },
+    {
+      "priority": 4,
+      "id": "receiver-constrained-overlap-shadow",
+      "classification": "Isolated measured historical candidate; improvement over current V6 unverified",
+      "paths": [
+        "src/pamela-card-shadow-v7.ts",
+        "runs/20261109-pamela-shadow-v7/take-01/evidence.json"
+      ],
+      "finding": "Upper-card shadow is multiplied by the lower-card receiving mask, preventing any added table shadow. Defaults sigma2, offset(-0.6,0.75), opacity0.12. The source helper is separate from the rejected V7 edge experiment.",
+      "historicalMeasurements": {
+        "shadowPixels": 497,
+        "maxAlpha": 0.06833754479885101,
+        "meanWidthPercentOfOldV5": 26.501766784452297,
+        "candidatePixelsAboveThreshold": 225,
+        "oldV5PixelsAboveThreshold": 849,
+        "alphaThreshold": 0.01,
+        "outsideReceiverChangedBytes": 0
+      },
+      "currentComparison": "Current V6 already imports the silhouette card-shadow helper (sigma0.85, offset -0.4/+0.75, opacity0.12) and source-evidenced contact-shadow helper. The older shadow-study receipt binds the identical current card-shadow hash and measured reductions versus V5 of86.57% pixel area and95.47% alpha mass. Those are already-imported improvements, not new work.",
+      "limitations": [
+        "Historical width comparison is against V5, not against current frozen V6.",
+        "Receipt explicitly leaves integrated sequence QA pending.",
+        "No independent A/B render in this audit; retain V6 as reference."
+      ],
+      "minimumNextStep": "If shadow detail remains a visible concern, compare only source117 and final hold with the isolated receiver-mask helper; do not import the rejected V7 renderer or edge treatment."
+    }
+  ],
+  "rejectedCandidate": {
+    "path": "runs/20261109-pamela-v7-edge-proof/take-02/decision.json",
+    "decision": "rejected-local-experiment",
+    "reason": "Residual colour fringes, extrapolated black tips and repeated edge stripes outweigh improved white-paper coverage.",
+    "action": "Do not promote pamela-card-contact-v7 merely because its version number is higher."
+  },
+  "alreadyImported": {
+    "verifiedLocalRegisteredFiles": [
+      {
+        "path": "assets/tracking/card-tracks.json",
+        "registeredSha256": "0609340167d5bd1ac289dc1c4dc0e9393e2bd1059afc29f84bbf988e60d907e6",
+        "actualSha256": "0609340167d5bd1ac289dc1c4dc0e9393e2bd1059afc29f84bbf988e60d907e6",
+        "matches": true
+      },
+      {
+        "path": "assets/tracking/card-mesh.json",
+        "registeredSha256": "e23d938dd9d5702df31a94c406553b827170b2ce94d767f86752eb8c6219d9f6",
+        "actualSha256": "e23d938dd9d5702df31a94c406553b827170b2ce94d767f86752eb8c6219d9f6",
+        "matches": true
+      },
+      {
+        "path": "assets/tracking/nail-guards.json",
+        "registeredSha256": "abe2caa21cc8c07a8e6d16a95d85f34268f4ecd5f5b2f2bb1408f993d408d4f0",
+        "actualSha256": "abe2caa21cc8c07a8e6d16a95d85f34268f4ecd5f5b2f2bb1408f993d408d4f0",
+        "matches": true
+      },
+      {
+        "path": "assets/tracking/hand-occlusion.json",
+        "registeredSha256": "0b43e0d4ad49a9209a8b7e08f5c39c235f85875bfc821234c7105649a4f03f18",
+        "actualSha256": "0b43e0d4ad49a9209a8b7e08f5c39c235f85875bfc821234c7105649a4f03f18",
+        "matches": true
+      },
+      {
+        "path": "materials/source/src/card-material-study.ts",
+        "registeredSha256": "5e3eda345aaa7b24c83586dd4e1f0b4ec0fbdfe48af0604876bb7c6c9ee1b810",
+        "actualSha256": "5e3eda345aaa7b24c83586dd4e1f0b4ec0fbdfe48af0604876bb7c6c9ee1b810",
+        "matches": true
+      },
+      {
+        "path": "materials/source/src/chip-material-study.ts",
+        "registeredSha256": "3b46246e4f8cf6d8a404b1b2dbd6cacbc6b795325f5ae66f5cb92b89cf906e05",
+        "actualSha256": "3b46246e4f8cf6d8a404b1b2dbd6cacbc6b795325f5ae66f5cb92b89cf906e05",
+        "matches": true
+      },
+      {
+        "path": "materials/source/references/card-materials/new-front2/card-geometry.ts",
+        "registeredSha256": "34a38598c0bb0b8ea33553f232d3083b2639fe9d59fb34508db4bfc06ff7f5f8",
+        "actualSha256": "34a38598c0bb0b8ea33553f232d3083b2639fe9d59fb34508db4bfc06ff7f5f8",
+        "matches": true
+      },
+      {
+        "path": "materials/source/references/card-materials/new-front2/card-textures.ts",
+        "registeredSha256": "de641ec2b648a0d6f55c94bc61eb3325d96be095196169778309cc5f2d969988",
+        "actualSha256": "de641ec2b648a0d6f55c94bc61eb3325d96be095196169778309cc5f2d969988",
+        "matches": true
+      },
+      {
+        "path": "materials/source/references/card-materials/new-front2/playing-card-mesh.tsx",
+        "registeredSha256": "5a92052f80220e0aca92042d0ff2a17ff676f71fc66935e437659d27cfcd78c2",
+        "actualSha256": "5a92052f80220e0aca92042d0ff2a17ff676f71fc66935e437659d27cfcd78c2",
+        "matches": true
+      },
+      {
+        "path": "materials/source/references/card-materials/new-front2/provenance.json",
+        "registeredSha256": "5df3381430245c75d151363dd836fd5a517cd8f780fdfbc2f5c25e0be4df6fc6",
+        "actualSha256": "5df3381430245c75d151363dd836fd5a517cd8f780fdfbc2f5c25e0be4df6fc6",
+        "matches": true
+      },
+      {
+        "path": "materials/source/references/card-materials/vendor/LICENSE",
+        "registeredSha256": "4c40a1ef62450b857c3b2aaf294936304cd552d965fbcd9d32d4c5bcf4ba4454",
+        "actualSha256": "4c40a1ef62450b857c3b2aaf294936304cd552d965fbcd9d32d4c5bcf4ba4454",
+        "matches": true
+      },
+      {
+        "path": "materials/source/references/card-materials/vendor/three.module.js",
+        "registeredSha256": "5289ca2dfde8572bd7715b9fa2ca929db12bae87e9a2cb53e431662df7039506",
+        "actualSha256": "5289ca2dfde8572bd7715b9fa2ca929db12bae87e9a2cb53e431662df7039506",
+        "matches": true
+      },
+      {
+        "path": "src/pamela-card-shadow.ts",
+        "registeredSha256": "898cc2260c9858eb21a753ac207a65ba5a393cceff1c6beed5eec3ef60deb7d5",
+        "actualSha256": "898cc2260c9858eb21a753ac207a65ba5a393cceff1c6beed5eec3ef60deb7d5",
+        "matches": true
+      },
+      {
+        "path": "src/pamela-contact-shadow.ts",
+        "registeredSha256": "226d45b226fe277a5a9ce4fab5dea3a0119360f8c2ed38f9ceda7d99ed9af464",
+        "actualSha256": "226d45b226fe277a5a9ce4fab5dea3a0119360f8c2ed38f9ceda7d99ed9af464",
+        "matches": true
+      }
+    ],
+    "finding": "14/14 selected registered data/material-source/shadow files match manifest hashes. Existing V6 mesh, nail guards, hand-occlusion, silhouette/contact shadows and material studies are already present; no reimport recommended."
+  },
+  "verification": {
+    "archiveSourcesHashed": 28,
+    "newArchiveImports": 0,
+    "apiCalls": 0,
+    "newRenders": 0,
+    "archiveScriptsExecuted": 0,
+    "packageInstalls": 0,
+    "filesWritten": [
+      "evidence/astra-archive-mask-audit.json"
+    ],
+    "nodeOrTestProcessesStarted": 0,
+    "productionAccepted": false,
+    "scope": "Hash/read/source/sample-image audit, not independent end-to-end production certification."
+  },
+  "localContextSnapshot": [
+    {
+      "path": "README.md",
+      "sha256": "3e944ea81f3df7771b64d2b9abe3bb1e6d7e3a199c3714099b50d6b70e0c19ea"
+    },
+    {
+      "path": "HANDOFF.md",
+      "sha256": "232bde83dab9ea1283161b2f3ae8cd1933575f39bb7994e613ee07f7dff4124a"
+    },
+    {
+      "path": "evidence/sequence-reuse-audit.json",
+      "sha256": "b468f01da8733d8e08c8dcd81d66d109f32882550410c422f60ccaf77db96842"
+    },
+    {
+      "path": "evidence/anchor-color-audit.json",
+      "sha256": "f5c02a390cd0c0fe024034e3b9442570ea1c675519928262d2a2ac40a857d4b3"
+    },
+    {
+      "path": "evidence/historical-p4-generation-inputs.json",
+      "sha256": "fb6fca250d2c0f997ce2bd81173b7a4bbd85d5a49577e0218d44528320758c6f"
+    },
+    {
+      "path": "manifest.json",
+      "sha256": "05d2e8543289343636d9cbfc65a65f1a9a261fd6b18dd08bb5d0f2ff439bce3c"
+    },
+    {
+      "path": "data/library.json",
+      "sha256": "2298f8ca8d1084b24e439d853dbea0c418ba788b82d036dd7131a83f7f9072fe"
+    },
+    {
+      "path": "src/pamela-card-contact-v6.ts",
+      "sha256": "84d486167c291aadea24efd3027ccb57b21f3ac115db958510786ca664168352"
+    },
+    {
+      "path": "src/pamela-card-mesh.ts",
+      "sha256": "8594fca0fc59479fb6debd9546f9aac00166a635121150465d54bfa9653ea12a"
+    },
+    {
+      "path": "src/pamela-card-surfaces.ts",
+      "sha256": "9ddefcaf48406f714ee9309fd64ae5307229136fea71891acef6d1825907a15b"
+    },
+    {
+      "path": "tools/render.ts",
+      "sha256": "acbf439d46859470613ea2963203f831296081a4190843d5a8e01660e8915a7f"
+    },
+    {
+      "path": "src/pamela-card-shadow.ts",
+      "sha256": "898cc2260c9858eb21a753ac207a65ba5a393cceff1c6beed5eec3ef60deb7d5"
+    },
+    {
+      "path": "src/pamela-contact-shadow.ts",
+      "sha256": "226d45b226fe277a5a9ce4fab5dea3a0119360f8c2ed38f9ceda7d99ed9af464"
+    }
+  ],
+  "readOnlyArchiveFiles": [
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/src/pamela-bank-mask-refinements.ts",
+      "sha256": "c9aba30e21e87ced5b70ddde0507fe848f8ae778eafe7acc6a70460511f5708f",
+      "bytes": 3821,
+      "inspection": "read source or selected JSON fields"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/src/pamela-refined-bank-card-surfaces.ts",
+      "sha256": "213258817da106c552b5d1401354ac7b53985bdb0a07f1a57fade88d6b212755",
+      "bytes": 2335,
+      "inspection": "read source or selected JSON fields"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/src/pamela-key-paper.ts",
+      "sha256": "a12c50961d77f1c748b558d5d915c29c9d444278ce15063b1c23f96afeaa25ff",
+      "bytes": 2677,
+      "inspection": "read source or selected JSON fields"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/src/pamela-card-contact-v7.ts",
+      "sha256": "4e34a5f3bd26164b05b05d35c8bba4c1cd44f45c00f3bce96204bd4516d1df80",
+      "bytes": 15259,
+      "inspection": "read source or selected JSON fields"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/src/pamela-frozen-material-track.ts",
+      "sha256": "97c52b27ff50df47b31bd9d16ece45eca22eaf449057fa2dfa277dc65f19c0ca",
+      "bytes": 6060,
+      "inspection": "read source or selected JSON fields"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/src/pamela-bank-card-surfaces.ts",
+      "sha256": "a72c9e2ab4f299be1aa81400bf7f5d7e7b46578a78d77f1b11cdea495f225466",
+      "bytes": 12908,
+      "inspection": "read source or selected JSON fields"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/src/pamela-paper-material.ts",
+      "sha256": "9794b7953638fb48410aef0aeea9fd3e1e6eb0cb86cedda365a6586ec3be5a60",
+      "bytes": 3160,
+      "inspection": "read source or selected JSON fields"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-bank-mask-refinements/take-02/review-02.json",
+      "sha256": "f90ef90c36ae31f1cdeb2eff7bc2f3fa1918635caa18600a1893e581c8674658",
+      "bytes": 22540,
+      "inspection": "read source or selected JSON fields"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-bank-mask-refinements/take-02/evidence.json",
+      "sha256": "351af5fe9b3009a08c3816b242ca739fbc6f2bb793c61f260c1096b8f1028c90",
+      "bytes": 18358,
+      "inspection": "hash-only"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-bank-mask-integration/take-03/qa/native-review.json",
+      "sha256": "808114e7aea59ac6a990bd9ec207a1703de12226fbc5f776b57324f8fb9a5c17",
+      "bytes": 2796,
+      "inspection": "read source or selected JSON fields"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-bank-mask-integration/take-03/evidence.json",
+      "sha256": "31bbe80ab77120897512dc90a733d9616b935f679e276df287978cddc4ab2487",
+      "bytes": 882124,
+      "inspection": "hash-only"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261109-pamela-v7-edge-proof/take-02/decision.json",
+      "sha256": "7ba19e2179a7770588f27691e066c9fad772c3ac7f8b45ee1d4e694302c1bd4d",
+      "bytes": 504,
+      "inspection": "read source or selected JSON fields"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261109-pamela-paper-key/take-01/evidence.json",
+      "sha256": "b1eecb049cde9aa0197ca43d22de56b42b9fa1185f33823950354c240ceae642",
+      "bytes": 5226,
+      "inspection": "read source or selected JSON fields"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-mask-bank/take-01/evidence.json",
+      "sha256": "ed63d72517802affc241445070c3242c5440d0ab2122d6f55a36b22f372967dc",
+      "bytes": 210980,
+      "inspection": "read source or selected JSON fields"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-mask-bank/take-01/native-review/optical-review.json",
+      "sha256": "8d94fead489cfa563c9e90f17a9da2e0f337b7133dcb5932d0a5e4fff61d0a55",
+      "bytes": 743,
+      "inspection": "read source or selected JSON fields"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-bank-mask-integration/take-03/qa/integration-check.json",
+      "sha256": "d5a4835829d3fe200de2de1df1e5320141bfa148f3cb2f17970e686bc4cd7b3a",
+      "bytes": 2038,
+      "inspection": "read source or selected JSON fields"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-bank-mask-integration/take-03/qa/before-after.json",
+      "sha256": "1201891c3149de9a620580ab610953f5626055f2085957f2077ff21c2d000bf9",
+      "bytes": 2135,
+      "inspection": "read source or selected JSON fields"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-bank-mask-integration/take-03/qa/C1-P7-before-after.png",
+      "sha256": "f73111a633b95b0b6768a20633b155fb1df3835719aa35a549c0d5fcddfea06c",
+      "bytes": 82903,
+      "inspection": "visually inspected existing before/after sheet"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-bank-mask-integration/take-03/qa/C2-P6-before-after.png",
+      "sha256": "79f8e3ee3bff60ba4cfa32538d7a3399d34ef0be38965fc20043fb414f5002a8",
+      "bytes": 80130,
+      "inspection": "visually inspected existing before/after sheet"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-mask-bank/take-01/render/vila-fourteen-materials-vila.mp4",
+      "sha256": "fbfd97b475920daa2a95c0340f264e55a9b5e3142be77ac54cf0fd3a07f25d43",
+      "bytes": 74322783,
+      "inspection": "hash-only"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-mask-bank/take-01/render/vila-fourteen-materials-trim.mp4",
+      "sha256": "ffd9bf98298f9bedd9b85ae0fd29115426d8fc01f412d545308e3dc2cc3ff530",
+      "bytes": 62767435,
+      "inspection": "hash-only"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261109-pamela-middle-card-track/take-07/p4-stable-integration/evidence.json",
+      "sha256": "7cf6d4a8891a613646ed978e575810d0812158174cbc064aa639643b035c0015",
+      "bytes": 3299144,
+      "inspection": "read source or selected JSON fields"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261109-pamela-middle-card-track/take-07/p4-stable-integration/visual-review.json",
+      "sha256": "45208894d5d114f898c86afaf8880cd6beba108d7b81dc859e95a20b1e189666",
+      "bytes": 3923,
+      "inspection": "read source or selected JSON fields"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261109-pamela-c2-motion-track/take-01/seat-4/draft-03/track.json",
+      "sha256": "5f7bdf302f9a1cc602c0addac3a691888af019fefede75d671fe59ccff1bb4d8",
+      "bytes": 518352,
+      "inspection": "read source or selected JSON fields"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261109-pamela-c2-motion-track/take-01/seat-4/draft-03/review.json",
+      "sha256": "19321babe318833089da1a47ab7fdd0037af8ebdb952949b31ab7392e8a119ac",
+      "bytes": 2767,
+      "inspection": "read source or selected JSON fields"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/src/pamela-card-shadow-v7.ts",
+      "sha256": "f5fe8e5adbb119476cabc404a8735eb9c8356ce7a417bb144e64f7cea8cc5862",
+      "bytes": 1581,
+      "inspection": "source / selected historical shadow measurement receipt fields"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261109-pamela-shadow-study/take-01/evidence.json",
+      "sha256": "e43dc5744560c5606b872aba2373438e218dddd5bf3a3c6209f7a4913f127c21",
+      "bytes": 10069,
+      "inspection": "source / selected historical shadow measurement receipt fields"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261109-pamela-shadow-v7/take-01/evidence.json",
+      "sha256": "e5a6f2a0728dc12d4e412589e8ed7d4aff560923807055a8c90d59f4b927fbe7",
+      "bytes": 12065,
+      "inspection": "source / selected historical shadow measurement receipt fields"
+    }
+  ],
+  "rootFollowup": {
+    "at": "2026-11-10T19:47:21.662Z",
+    "imported": {
+      "path": "assets/motions/pamela-older-14-mask-refined/source.mp4",
+      "sha256": "fbfd97b475920daa2a95c0340f264e55a9b5e3142be77ac54cf0fd3a07f25d43",
+      "bytes": 74322783,
+      "width": 1762,
+      "height": 1174,
+      "fps": 30,
+      "frames": 5486
+    },
+    "method": "byte-identical copy for existing library comparison",
+    "newGeneration": false,
+    "archiveCodeExecuted": false
+  }
+}

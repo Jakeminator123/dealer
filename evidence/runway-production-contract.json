@@ -1,0 +1,544 @@
+{
+  "schemaVersion": 1,
+  "checkedAtUtc": "2026-11-10T19:10:08Z",
+  "purpose": "Read-only Runway production-contract audit; no generation, upload, key read, billing action or account switch.",
+  "repository": {
+    "root": "C:/Users/jakem/dev/super-feature-sg/dealer",
+    "remote": "git@github.com:Jakeminator123/dealer.git",
+    "target": "Local dealer production planning; existing Runway developer API.",
+    "canonicalIdentityEvidence": "docs/DRIFT.md:32-48",
+    "canonicalFacts": [
+      "DRIFT records wan3 through the developer API for V6 and P7/P6/pink samples.",
+      "DRIFT records RUNWAY_API_KEY in ignored .env.local; the key was not read during this audit.",
+      "DRIFT distinguishes the historical two 12-second P4 jobs from V6 six-second center jobs; historical P4 prompts did not explicitly require a flip or hand transfer."
+    ],
+    "limitations": [
+      "Existing clips and generation receipts were not inspected by this subtask; no motion or visual acceptance is asserted.",
+      "Developer-API organization, balance and model entitlement were not queried."
+    ]
+  },
+  "mcp": {
+    "toolsInspected": [
+      "whoami",
+      "generate_video",
+      "edit_video",
+      "get_skill"
+    ],
+    "toolsInvoked": [
+      "whoami"
+    ],
+    "skillCall": {
+      "invoked": false,
+      "reason": "The offered mood-board, resize-image, social-thumbnail and workflow-builder skills do not match this contract audit."
+    },
+    "whoami": {
+      "authenticated": true,
+      "team": {
+        "id": 67037521,
+        "name": "Jakob",
+        "organization": null,
+        "isPersonal": true,
+        "wasExplicitlyPicked": true
+      },
+      "multipleWorkspacesAvailable": false,
+      "disabledModelsKnown": true,
+      "deprecationsKnown": true,
+      "modelDeprecations": [],
+      "relevantAvailableVideoModels": [
+        "wan3",
+        "wan3-prime",
+        "seedance-2",
+        "seedance-2.5",
+        "kling-3-motion-control"
+      ],
+      "credits": {
+        "unlimited": false,
+        "plan": 0,
+        "purchased": 17,
+        "total": 17
+      }
+    },
+    "identityBoundary": "This connector workspace and balance do not establish the identity or balance behind dealer's developer-API key.",
+    "generateVideoContract": {
+      "source": "mcp__codex_apps__runway_generate_video description and input schema, observed 2026-11-10",
+      "wan3": {
+        "durationSeconds": {
+          "minimum": 2,
+          "maximum": 30
+        },
+        "resolutions": [
+          "480p",
+          "720p",
+          "1080p"
+        ],
+        "promptMaxCharacters": 20000,
+        "startFrame": "{ url } or { taskId }; image-to-video",
+        "endFrame": "{ url }; requires startFrame",
+        "referenceImagesMaximum": 10,
+        "referenceVideo": "{ url, durationSeconds }; source at most 15 seconds",
+        "exclusions": [
+          "startFrame/endFrame cannot be combined with reference images or reference video"
+        ],
+        "audio": "Enabled by default; generateAudio:false disables it.",
+        "durationDefault": "10 seconds for text/image generation; specify 6 or 12 explicitly when intended."
+      },
+      "motionControlAvailabilityBoundary": "whoami lists kling-3-motion-control, but this generate_video schema has no corresponding model enum or dedicated motion-control input. No execution path was verified."
+    },
+    "editVideoContract": {
+      "source": "mcp__codex_apps__runway_edit_video description and input schema, observed 2026-11-10",
+      "engine": "Aleph 2.0",
+      "sourceSeconds": {
+        "minimum": 2,
+        "maximum": 30
+      },
+      "maximumResolution": "1080p",
+      "maximumFps": 30,
+      "maximumCuts": 10,
+      "sourceFields": [
+        "video.url",
+        "video.durationSeconds"
+      ],
+      "keyframeFields": [
+        "keyframeImage.url",
+        "keyframeTimestampSeconds"
+      ],
+      "workflow": "Choose source frame, preview edited frame, then submit approved video edit.",
+      "prompt": "Short targeted transformation; extraMotionPrompt only for motion absent from source/keyframe.",
+      "intendedUse": "Preserve original motion/framing/timing while changing an appearance detail.",
+      "warning": "Preservation is a documented design goal, not verified pixel-perfect output or a promise to repair incorrect source choreography."
+    }
+  },
+  "developerApi": {
+    "source": "https://docs.dev.runwayml.com/openapi.json",
+    "schemaVersion": "2024-11-06",
+    "acquisition": "Public unauthenticated GET; exact variants parsed for wan3 and aleph2.",
+    "headers": {
+      "X-Runway-Version": "2024-11-06",
+      "Authorization": "Bearer credential, not read or recorded"
+    },
+    "wan3ImageToVideo": {
+      "method": "POST",
+      "path": "/v1/image_to_video",
+      "required": [
+        "model",
+        "promptText",
+        "promptImage"
+      ],
+      "model": "wan3",
+      "promptImage": "Image URI, or array: first/last position for anchors; omit position for reference images. Modes cannot be mixed.",
+      "promptTextMaxCharacters": 20000,
+      "duration": {
+        "type": "integer",
+        "minimum": 2,
+        "maximum": 30
+      },
+      "audio": "boolean",
+      "keyframeRatioValues": [
+        "auto_480p",
+        "auto_720p",
+        "auto_1080p"
+      ],
+      "framing": "Keyframe output follows the first frame.",
+      "referenceVideos": {
+        "maximumItems": 5,
+        "requiredItemFields": [
+          "type",
+          "uri"
+        ],
+        "itemType": "video",
+        "combinedMaximumSeconds": 15
+      },
+      "referenceAudio": {
+        "maximumItems": 5,
+        "combinedMaximumSeconds": 15
+      },
+      "boundary": "Official input guide and MCP explicitly disallow combining first/last anchors with references."
+    },
+    "wan3MotionReference": {
+      "method": "POST",
+      "path": "/v1/text_to_video",
+      "required": [
+        "model",
+        "promptText"
+      ],
+      "acceptedFields": [
+        "model",
+        "promptText",
+        "duration",
+        "ratio",
+        "audio",
+        "references",
+        "referenceVideos",
+        "referenceAudio"
+      ],
+      "references": {
+        "maximumItems": 10,
+        "requiredItemFields": [
+          "uri"
+        ]
+      },
+      "referenceVideos": {
+        "maximumItems": 5,
+        "requiredItemFields": [
+          "type",
+          "uri"
+        ],
+        "itemType": "video",
+        "combinedMaximumSeconds": 15
+      },
+      "exampleOnlyNotSubmitted": {
+        "model": "wan3",
+        "promptText": "<one concrete card action matching the verified source motion>",
+        "duration": 12,
+        "ratio": "1280:720",
+        "audio": false,
+        "references": [
+          {
+            "uri": "<registered dealer identity image>"
+          }
+        ],
+        "referenceVideos": [
+          {
+            "type": "video",
+            "uri": "<registered clip showing one correct physical flip>"
+          }
+        ]
+      },
+      "noAnchors": true,
+      "controlLimit": "Reference video supplies context; schema offers no motion-strength, per-frame constraints, negative-prompt or timestamp-schedule field.",
+      "routeBoundary": "wan3 is present in text_to_video and image_to_video but absent from the current video_to_video model variants. Do not send a WAN3 developer request to /v1/video_to_video merely because MCP calls the mode video-to-video.",
+      "mediaFormatBoundary": "WAN3 schema does not expose outputFormat or output fps. Inspect the actual successful artifact rather than claiming container/fps from this schema."
+    },
+    "aleph2VideoEdit": {
+      "method": "POST",
+      "path": "/v1/video_to_video",
+      "required": [
+        "model",
+        "videoUri"
+      ],
+      "model": "aleph2",
+      "promptText": {
+        "optional": true,
+        "maximumCharacters": 1000
+      },
+      "sourceMaximumSeconds": 30,
+      "keyframes": {
+        "maximumItems": 5,
+        "required": "uri plus either seconds or at",
+        "seconds": {
+          "minimum": 0,
+          "maximum": 30
+        },
+        "at": {
+          "minimum": 0,
+          "maximum": 1,
+          "meaning": "fraction of source duration"
+        },
+        "optionalRange": {
+          "fields": [
+            "start_seconds",
+            "end_seconds"
+          ],
+          "rules": "Whole-second edit window; keyframe must fall within it; all keyframes use ranges or none do."
+        }
+      },
+      "outputFormat": {
+        "default": "mp4",
+        "meaning": "H.264 MP4",
+        "alternatives": [
+          "prores",
+          "png_sequence",
+          "sdr_rec709_10bit"
+        ],
+        "note": "Non-default formats have surcharges."
+      },
+      "exampleOnlyNotSubmitted": {
+        "model": "aleph2",
+        "videoUri": "<registered source with already-correct movement>",
+        "promptText": "Change the exposed card face to solid pink.",
+        "keyframes": [
+          {
+            "uri": "<edited frame with pink card face>",
+            "seconds": 3
+          }
+        ],
+        "outputFormat": "mp4"
+      },
+      "exampleBoundary": "seconds:3 is illustrative; choose an actual source timestamp showing the exposed card face before submission.",
+      "suitability": "Use when choreography is already correct and only card appearance needs changing. Do not expect it to eliminate a double flip while retaining all original motion."
+    }
+  },
+  "comparison": [
+    {
+      "option": "Reuse verified existing 12-second original",
+      "advantage": "No new generation cost; retains the inspected source movement.",
+      "condition": "Only if frame-by-frame review confirms required source hand, one flip, visible face and target P7 placement.",
+      "limitation": "Existing historical duration/prompt alone proves none of these conditions."
+    },
+    {
+      "option": "New 6-second WAN3 first/last generation",
+      "advantage": "Half the per-attempt output cost of 12 seconds at the same resolution.",
+      "limitation": "Repeated reported double-flip/back-back failures remain unresolved; anchors constrain ends, not full finger/card mechanics."
+    },
+    {
+      "option": "New time-segmented 12-second WAN3 first/last generation",
+      "advantage": "More time for a slower action and final hold.",
+      "limitation": "Inference: it changes pacing but not the control method. No evidence found that duration or timestamp prose fixes the reported repeated error.",
+      "recommendation": "Do not spend another attempt solely on longer text and duration."
+    },
+    {
+      "option": "WAN3 with verified motion reference and identity image, without anchors",
+      "advantage": "Retains current provider/model while supplying the missing movement example.",
+      "limitation": "Contextual guidance, not deterministic motion transfer; needs a genuinely correct source clip.",
+      "recommendation": "Preferred next controlled experiment after source acceptance."
+    },
+    {
+      "option": "Aleph2 edit of already-correct movement",
+      "advantage": "More appropriate for card-face color/appearance replacement.",
+      "limitation": "Model changes and more expensive; unsuitable as the first fix when source has a double flip.",
+      "recommendation": "Use only for a specific appearance repair after physical motion acceptance."
+    }
+  ],
+  "developerPricing": {
+    "source": "https://docs.dev.runwayml.com/guides/pricing/",
+    "checkedDate": "2026-11-10",
+    "wan3CreditsPerOutputSecond": {
+      "480p": 5,
+      "720p": 10,
+      "1080p": 20
+    },
+    "calculatedPerAttempt": [
+      {
+        "seconds": 6,
+        "480p": 30,
+        "720p": 60,
+        "1080p": 120
+      },
+      {
+        "seconds": 12,
+        "480p": 60,
+        "720p": 120,
+        "1080p": 240
+      }
+    ],
+    "aleph2BaseCreditsPerSourceSecond": 28,
+    "note": "Calculated from published base rates, not an executed quote. No balance inference across API and connector."
+  },
+  "prompting": {
+    "recommendation": "Describe one visible physical sequence using positive, concrete motion language; fixed camera; source hand from dealer perspective and destination stated separately.",
+    "scope": "General Runway guidance, with Gen-4-specific guidance identified separately; no WAN3-specific prompt recipe claiming guaranteed card mechanics was found.",
+    "repeatedFailureResponse": "Change conditioning information instead of adding increasingly elaborate prohibitions.",
+    "acceptanceCriteria": [
+      "Exactly one continuous physical rotation of the same card.",
+      "Required hand remains the source hand through the specified action.",
+      "Card edge and face remain physically continuous; no back-back substitution.",
+      "Correct final visible face and P7 location.",
+      "No extra card, hand transfer, second flip or final reset hidden between accepted frames."
+    ],
+    "sourceUrls": [
+      "https://help.runwayml.com/hc/en-us/articles/47313698911891-Introduction-to-Prompting",
+      "https://help.runwayml.com/hc/en-us/articles/39789879462419-Gen-4-Video-Prompting-Guide"
+    ]
+  },
+  "alternativeMotionControl": {
+    "officialGuide": "https://help.runwayml.com/hc/en-us/articles/50280558448147-Creating-with-Kling-3-0-Motion-Control",
+    "capability": "Character image plus performance video transfers body movement, hand gestures and expression.",
+    "constraints": "Single visible person, continuous shot, stable moderate motion. Image orientation maximum 10 seconds; video orientation maximum 30 seconds; 720p or 1080p.",
+    "limitation": "Guide does not guarantee exact small-object/card mechanics. Listed in connector whoami, but a callable MCP/developer path was not established here.",
+    "recommendation": "A documented specialist fallback to investigate only if WAN3 reference conditioning fails; no provider/model switch performed."
+  },
+  "sources": [
+    {
+      "url": "https://docs.dev.runwayml.com/openapi.json",
+      "retrievedDate": "2026-11-10",
+      "use": "Exact WAN3 reference and Aleph2 request schema."
+    },
+    {
+      "url": "https://docs.dev.runwayml.com/assets/inputs/",
+      "retrievedDate": "2026-11-10",
+      "use": "WAN3 durations/resolutions, anchor-reference exclusion and media limits."
+    },
+    {
+      "url": "https://docs.dev.runwayml.com/api-details/api_changelog/",
+      "retrievedDate": "2026-11-10",
+      "publishedFactDate": "2026-08-26",
+      "use": "WAN3 launch and first/last/reference capabilities."
+    },
+    {
+      "url": "https://docs.dev.runwayml.com/guides/pricing/",
+      "retrievedDate": "2026-11-10",
+      "use": "WAN3 and Aleph2 base rates."
+    },
+    {
+      "url": "https://help.runwayml.com/hc/en-us/articles/47313698911891-Introduction-to-Prompting",
+      "retrievedDate": "2026-11-10",
+      "use": "General prompting and iteration principles."
+    },
+    {
+      "url": "https://help.runwayml.com/hc/en-us/articles/39789879462419-Gen-4-Video-Prompting-Guide",
+      "retrievedDate": "2026-11-10",
+      "use": "Explicit physical motion and positive concise language; Gen-4-specific guidance."
+    },
+    {
+      "url": "https://help.runwayml.com/hc/en-us/articles/52150503729171-Aleph-2-0-Prompting-Guide",
+      "retrievedDate": "2026-11-10",
+      "use": "Targeted edit and preservation intent; extra-motion distinction."
+    },
+    {
+      "url": "https://help.runwayml.com/hc/en-us/articles/50280558448147-Creating-with-Kling-3-0-Motion-Control",
+      "retrievedDate": "2026-11-10",
+      "use": "Specialist motion-reference alternative and input limits."
+    }
+  ],
+  "alternateModelFollowup": {
+    "checkedAtUtc": "2026-11-10T19:34:21Z",
+    "request": "One alternative-model comparison using the same historical P4.C1 anchors/prompt and four-second duration; white-card anchors remain a separate experiment.",
+    "latestFailure": {
+      "source": "Parent task report, not independently viewed in this subtask.",
+      "report": "WAN3 four-second image-to-video changed yellow to blue between frames 63 and 64 without a physical card edge."
+    },
+    "recommendation": {
+      "model": "kling3.0_pro",
+      "jobs": 1,
+      "durationSeconds": 4,
+      "reason": "Different model family, supports both anchors and audio:false, preserves first-frame aspect ratio with paired anchors, and has a lower published trial cost than the other compared 1080p alternatives.",
+      "evidenceBoundary": "This is the best controlled comparison among the checked contracts, not a proven best model for card physics. No source or benchmark found establishes reliable wrist rotation, card rigidity or absence of color morphing for this exact scene.",
+      "method": "Retain exact original first/last bytes and prompt for the first comparison; change model only where its API requires different framing controls. Keep default cfgScale=0.5.",
+      "risk": "Quality/success probability is unknown and unquantified. Morphing, wrong hand, extra turns and geometry errors remain possible despite a more suitable comparison.",
+      "stopRule": "Inspect the full motion, especially the edge-on crossing, after this one result; do not infer success from endpoint colors or launch an automatic retry sequence."
+    },
+    "developerApiContract": {
+      "baseUrl": "https://api.dev.runwayml.com",
+      "method": "POST",
+      "path": "/v1/image_to_video",
+      "versionHeader": {
+        "X-Runway-Version": "2024-11-06"
+      },
+      "authentication": "Existing dealer developer-API credential; no account switch or key read performed by this audit.",
+      "requiredFields": [
+        "promptImage",
+        "model"
+      ],
+      "allowedDurationSeconds": {
+        "minimum": 3,
+        "maximum": 15
+      },
+      "promptTextMaxCharacters": 2500,
+      "cfgScale": {
+        "minimum": 0,
+        "maximum": 1,
+        "default": 0.5
+      },
+      "requestExampleNotSubmitted": {
+        "model": "kling3.0_pro",
+        "duration": 4,
+        "audio": false,
+        "promptText": "<exact existing P4.C1 prompt, provided it is at most 2500 characters>",
+        "promptImage": [
+          {
+            "uri": "<exact historical P4.C1 start image>",
+            "position": "first"
+          },
+          {
+            "uri": "<exact historical P4.C1 end image>",
+            "position": "last"
+          }
+        ]
+      },
+      "framing": {
+        "inputDimensionsReported": {
+          "width": 1764,
+          "height": 1174
+        },
+        "ratioOmitted": true,
+        "reason": "Paired anchors follow first-frame aspect ratio. This model's ratio enum is only 1920:1080, 1080:1920, 1440:1440; neither auto_1080p nor 1764:1174 is valid.",
+        "quality": "Kling 3.0 Pro is the 1080p tier.",
+        "outputDimensions": "Exact returned dimensions require artifact inspection; 1764x1174 output is not promised.",
+        "auto1080TransferWarning": "Do not carry WAN3's auto_1080p parameter into Kling."
+      }
+    },
+    "comparedModels": [
+      {
+        "model": "kling3.0_pro",
+        "firstLast": true,
+        "audioFalse": true,
+        "duration4": true,
+        "published1080pCreditsPerSecond": 12,
+        "calculatedFourSecondCredits": 48,
+        "calculatedFiveSecondCredits": 60,
+        "choice": "Recommended single controlled comparison."
+      },
+      {
+        "model": "wan3_prime",
+        "firstLast": true,
+        "audioFalse": true,
+        "duration4": true,
+        "published1080pCreditsPerSecond": 28,
+        "calculatedFourSecondCredits": 112,
+        "calculatedFiveSecondCredits": 140,
+        "choice": "Not selected: documented speed variant, no evidence it fixes WAN3's observed physical failure."
+      },
+      {
+        "model": "seedance2",
+        "firstLast": true,
+        "audioFalse": true,
+        "duration4": true,
+        "published1080pCreditsPerSecond": 40,
+        "calculatedFourSecondCredits": 160,
+        "calculatedFiveSecondCredits": 200,
+        "choice": "Not selected for this one comparison: more expensive and its explicit ratio enum has no auto_1080p or exact 1764:1174."
+      },
+      {
+        "model": "kling_4",
+        "firstLast": true,
+        "audioFalse": false,
+        "duration4": true,
+        "choice": "Not selected: native audio has no disable toggle; cannot satisfy the stated audio:false contract."
+      }
+    ],
+    "whiteVariant": {
+      "performed": false,
+      "note": "Needs separately prepared and reviewed anchor images. Do not silently whiten either historical reference or mix anchor changes into the first model-only comparison."
+    },
+    "availabilityBoundary": "Official developer API supports kling3.0_pro; actual entitlement or task acceptance for dealer's key was not checked. Earlier connector whoami lists kling-3-pro but cannot prove developer-account entitlement.",
+    "sources": [
+      {
+        "url": "https://docs.dev.runwayml.com/openapi.json",
+        "retrievedDate": "2026-11-10",
+        "use": "Parsed exact image_to_video variants, prompt limits, paired-anchor framing, optional ratio and duration/audio controls."
+      },
+      {
+        "url": "https://docs.dev.runwayml.com/guides/pricing/",
+        "retrievedDate": "2026-11-10",
+        "use": "No-audio Kling3 Pro rate, WAN3 Prime and Seedance2 1080p rates; Kling4 has no audio toggle."
+      },
+      {
+        "url": "https://docs.dev.runwayml.com/api-details/api_changelog/",
+        "retrievedDate": "2026-11-10",
+        "use": "Kling 3.0 Pro 1080p tier and paired-anchor support, published 2026-10-13."
+      }
+    ],
+    "actions": {
+      "generationCalls": 0,
+      "uploads": 0,
+      "paidCalls": 0,
+      "keyReads": 0,
+      "accountSwitches": 0
+    }
+  },
+  "outcome": {
+    "recommendation": "Reuse an accepted original if available; otherwise use a correct motion reference with WAN3 before considering a different model. No further blind six/twelve-second text-only retry is supported by this audit.",
+    "unverified": [
+      "Developer-API organization identity, available credits and actual task acceptance.",
+      "Whether any current local source satisfies the physical P7 acceptance criteria.",
+      "Success probability, exact rendering fidelity and runtime of any new generation."
+    ],
+    "actions": {
+      "generationCalls": 0,
+      "uploads": 0,
+      "paidCalls": 0,
+      "keyReads": 0,
+      "providerSwitches": 0
+    }
+  }
+}

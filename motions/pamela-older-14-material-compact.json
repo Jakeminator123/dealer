@@ -1,0 +1,67 @@
+{
+  "schemaVersion": 1,
+  "id": "pamela-older-14-material-compact",
+  "dealer": "pamela",
+  "kind": "sequence",
+  "source": {
+    "path": "assets/motions/pamela-older-14-material-compact/source.mp4",
+    "sha256": "f5b0a602fe181661c9b76d380cdb667a6feae655a6a4dccbd61ab2ad1a24d4c6",
+    "bytes": 62758144,
+    "width": 1762,
+    "height": 1174,
+    "fps": 30,
+    "frames": 4404
+  },
+  "provenance": {
+    "method": "byte-identical archived composition",
+    "original": {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-two-sided-bank/take-02/render/vila-fourteen-materials-trim.mp4",
+      "sha256": "f5b0a602fe181661c9b76d380cdb667a6feae655a6a4dccbd61ab2ad1a24d4c6"
+    },
+    "receipt": {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-two-sided-bank/take-02/evidence.json",
+      "sha256": "fd9cd8078f35d52fbe1932cb484c0ebd60db60cf5e4a0ef1716237598867fd82"
+    },
+    "audit": "evidence/sequence-reuse-audit.json",
+    "importedAt": "2026-11-10T19:35:51.115Z"
+  },
+  "sequence": {
+    "playerCards": 14,
+    "dealerCards": 0,
+    "startPose": "IDLE",
+    "endPose": "IDLE",
+    "startBoardCount": 0,
+    "endBoardCount": 14,
+    "loopToEmptyStartAllowed": false
+  },
+  "placementBinding": {
+    "basis": "original historical geometry",
+    "currentDraftMatched": false,
+    "sourceWidth": 1762,
+    "sourceHeight": 1174
+  },
+  "review": {
+    "decision": "PENDING",
+    "basis": "Older material-sequence candidate related to the V6 visual era; exact remembered film still requires user confirmation.",
+    "limitations": [
+      "Review film only; hard cuts retain visible source differences.",
+      "Existing preliminary key and blank card artwork remain unapproved.",
+      "Closing fourteen-card table must not automatically reset to the empty opening when playback loops.",
+      "Blank original semantic side UNKNOWN; display schedules are authored",
+      "C1 and C2 P6/P7 show a continuous broad face; no invented turn",
+      "P1 two passages are a limited optical candidate with a protected grip and mixed edge at115–118",
+      "Old outer idle/ready seams retained; new bridge is not accepted",
+      "No production engine, GPU or interchangeable shoe claim for this bank",
+      "Full round uses one design; the second design is independently checked in the preflight",
+      "Preliminary dealer matte and hard source pose seams remain",
+      "Compact display is re-encoded after whole-frame trimming",
+      "Numeric checks are not continuous perceptual acceptance",
+      "The older sequences have 14 player cards and zero dealer cards. They are historical review candidates, not a claim that the requested16/17-card integration is complete.",
+      "No new continuous playback review or user approval performed.",
+      "Exact material-film render creation time is UNKNOWN; directory dates and file modification times are insufficient."
+    ],
+    "physicalSourceSide": "UNKNOWN; authored material-side schedule is not a physical-turn proof"
+  },
+  "scoutIntegrated": false,
+  "published": false
+}

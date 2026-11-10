@@ -30,8 +30,83 @@
       "motionRef": null
     },
     {
+      "id": "pamela-older-14-mask-refined",
+      "title": "Äldre sekvens · 3:03 · förbättrade masker",
+      "path": "assets/motions/pamela-older-14-mask-refined/source.mp4",
+      "sha256": "fbfd97b475920daa2a95c0340f264e55a9b5e3142be77ac54cf0fd3a07f25d43",
+      "width": 1762,
+      "height": 1174,
+      "fps": 30,
+      "frameCount": 5486,
+      "view": "native",
+      "kind": "sequence",
+      "status": null,
+      "motionRef": "motions/pamela-older-14-mask-refined.json",
+      "description": "BEVARAD MASKFÖRBÄTTRAD VERSION: samma äldre14-kortsrörelser och geometri. Riktade rättningar av P7:s skokant och P6:s pappersspets; övriga källrutor bevarade enligt arkivets jämförelse. Fysisk vändning är en separat visuell granskning. Inga dealerkort; V6 är fortsatt visuellt mål.",
+      "chapters": [
+        {
+          "label": "Början",
+          "frame": 0
+        },
+        {
+          "label": "Slut · 14 kort",
+          "frame": 5485
+        }
+      ]
+    },
+    {
+      "id": "pamela-older-14-material-full",
+      "title": "Äldre sekvens · 3:03 · original · kortmaterial",
+      "path": "assets/motions/pamela-older-14-material-full/source.mp4",
+      "sha256": "a2a03846093ec7a53c16556b84be78c8c1047ae50a7219ca4ea58fa68d1cde45",
+      "width": 1762,
+      "height": 1174,
+      "fps": 30,
+      "frameCount": 5486,
+      "view": "native",
+      "kind": "sequence",
+      "status": null,
+      "motionRef": "motions/pamela-older-14-material-full.json",
+      "description": "ÅTERFUNNEN ÄLDRE KANDIDAT: två kort till sju spelare, inga dealerkort. Samma bildmått som V6, historiska koordinater. Befintliga sammanhängande råtagningar har klippts ihop; materialets sidfärger är tilldelade och bevisar inte fysisk vändning. V6 förblir valt visuellt mål. Slutet med 14 kort ska inte loopas till tomt bord.",
+      "chapters": [
+        {
+          "label": "Början",
+          "frame": 0
+        },
+        {
+          "label": "Slut · 14 kort",
+          "frame": 5485
+        }
+      ]
+    },
+    {
+      "id": "pamela-older-14-material-compact",
+      "title": "Äldre sekvens · 2:27 · klippt · kortmaterial",
+      "path": "assets/motions/pamela-older-14-material-compact/source.mp4",
+      "sha256": "f5b0a602fe181661c9b76d380cdb667a6feae655a6a4dccbd61ab2ad1a24d4c6",
+      "width": 1762,
+      "height": 1174,
+      "fps": 30,
+      "frameCount": 4404,
+      "view": "native",
+      "kind": "sequence",
+      "status": null,
+      "motionRef": "motions/pamela-older-14-material-compact.json",
+      "description": "ÅTERFUNNEN ÄLDRE KANDIDAT: två kort till sju spelare, inga dealerkort. Samma bildmått som V6, historiska koordinater. Befintliga sammanhängande råtagningar har klippts ihop; materialets sidfärger är tilldelade och bevisar inte fysisk vändning. V6 förblir valt visuellt mål. Slutet med 14 kort ska inte loopas till tomt bord.",
+      "chapters": [
+        {
+          "label": "Början",
+          "frame": 0
+        },
+        {
+          "label": "Slut · 14 kort",
+          "frame": 4403
+        }
+      ]
+    },
+    {
       "id": "pamela-p4-c2-closed-review-v04",
-      "title": "P4.C2 · gul till gul · diagnostiskt prov",
+      "title": "P4.C2 · övermålad gul sida · sekundärt",
       "path": "assets/motions/pamela-p4-c2-left-closed-closed/review-v04/preview.mp4",
       "sha256": "7d093a28f37abf5bd4c373491fca9bc113fc2271e7784e718e66d95beb42392f",
       "width": 1764,
@@ -41,7 +116,8 @@
       "view": "source",
       "kind": "diagnostic",
       "status": null,
-      "motionRef": "motions/pamela-p4-c2-left-closed-closed.json"
+      "motionRef": "motions/pamela-p4-c2-left-closed-closed.json",
+      "description": "SEKUNDÄRT FÄRGEXPERIMENT: ett lokalt filter färgar originalets blå motsida gul. Den gula bilden bevisar inte stängt→stängt. Välj P4.C2 historiskt original för fysisk vändning. Filen bevaras oförändrad för jämförelse."
     },
     {
       "id": "pamela-p7-c1-left-turn-pilot-01",
@@ -132,6 +208,342 @@
       "status": null,
       "motionRef": "motions/pamela-p7-c1-left-turn-pilot-03.json",
       "description": "UNDERKÄNT: ett kort uppstår vid P7 utan handkontakt och kortet i handen landar nära mitten/P4. Skon blir blå under rörelsen. Bevarat för jämförelse av instruktioner, inte som godkänd P7-film. Gul/blå färg är genererad i originalet och bevisar inte fysisk sida."
+    },
+    {
+      "id": "pamela-sequence-17-native-r2",
+      "title": "Historiskt alternativ · 17 kort · dator",
+      "path": "assets/motions/pamela-sequence-17-native-r2/source.mp4",
+      "sha256": "842dd4829654195d559acd27ae66b74eb0a9793e2392993685557b94bc76e9e4",
+      "width": 1764,
+      "height": 1174,
+      "fps": 30,
+      "frameCount": 3598,
+      "view": "native",
+      "kind": "sequence",
+      "status": null,
+      "motionRef": "motions/pamela-sequence-17-native-r2.json",
+      "chapters": [
+        {
+          "label": "Början",
+          "frame": 0
+        },
+        {
+          "label": "P7 · första kortet",
+          "frame": 59
+        },
+        {
+          "label": "P1 · första kortet",
+          "frame": 1254
+        },
+        {
+          "label": "Dealerns första",
+          "frame": 1417
+        },
+        {
+          "label": "P7 · andra kortet",
+          "frame": 1595
+        },
+        {
+          "label": "P1 · andra kortet",
+          "frame": 2973
+        },
+        {
+          "label": "Dolt dealerkort",
+          "frame": 3152
+        },
+        {
+          "label": "Vänd dealerkortet",
+          "frame": 3296
+        },
+        {
+          "label": "Dealerns tredje",
+          "frame": 3475
+        },
+        {
+          "label": "Vila · 17 kort",
+          "frame": 3597
+        }
+      ],
+      "description": "ALTERNATIV, inte det äldre prov Jakob efterfrågar. ÅTERFUNNEN KANDIDAT: två kort till P1–P7 och 3 till dealern. Innehåller separat reveal av D.C2 och tredje kort; Scout ska styra dessa val. Historiska placeringar, inte det aktuella placeringsutkastet. Blå/gul visar kortsidor; slutmaterial saknas. Kända skarv-/maskbegränsningar kvarstår. Slutet får inte loopas till ett tomt bord."
+    },
+    {
+      "id": "pamela-sequence-16-native-r2",
+      "title": "Historiskt alternativ · 16 kort · dator",
+      "path": "assets/motions/pamela-sequence-16-native-r2/review.mp4",
+      "sha256": "0860ad550ed94d7c84c37e434effe62531752140b755c359bd0e468332b37024",
+      "width": 1764,
+      "height": 1174,
+      "fps": 30,
+      "frameCount": 3296,
+      "view": "native",
+      "kind": "sequence",
+      "status": null,
+      "motionRef": "motions/pamela-sequence-16-native-r2.json",
+      "chapters": [
+        {
+          "label": "Början",
+          "frame": 0
+        },
+        {
+          "label": "P7 · första kortet",
+          "frame": 59
+        },
+        {
+          "label": "P1 · första kortet",
+          "frame": 1254
+        },
+        {
+          "label": "Dealerns första",
+          "frame": 1417
+        },
+        {
+          "label": "P7 · andra kortet",
+          "frame": 1595
+        },
+        {
+          "label": "P1 · andra kortet",
+          "frame": 2973
+        },
+        {
+          "label": "Dolt dealerkort",
+          "frame": 3152
+        },
+        {
+          "label": "Vila · 16 kort",
+          "frame": 3295
+        }
+      ],
+      "description": "ALTERNATIV, inte det äldre prov Jakob efterfrågar. ÅTERFUNNEN KANDIDAT: två kort till P1–P7 och 2 till dealern. D.C2 förblir dolt; filmen slutar i vila. Historiska placeringar, inte det aktuella placeringsutkastet. Blå/gul visar kortsidor; slutmaterial saknas. Kända skarv-/maskbegränsningar kvarstår. Slutet får inte loopas till ett tomt bord."
+    },
+    {
+      "id": "pamela-sequence-17-portrait-r2",
+      "title": "Historiskt alternativ · 17 kort · mobil",
+      "path": "assets/motions/pamela-sequence-17-portrait-r2/source.mp4",
+      "sha256": "2233434001c3e7d957fc6eb86291b298e64e5feffe8d3e0f9dd20acf71935460",
+      "width": 1080,
+      "height": 1920,
+      "fps": 30,
+      "frameCount": 3598,
+      "view": "portrait",
+      "kind": "sequence",
+      "status": null,
+      "motionRef": "motions/pamela-sequence-17-portrait-r2.json",
+      "chapters": [
+        {
+          "label": "Början",
+          "frame": 0
+        },
+        {
+          "label": "P7 · första kortet",
+          "frame": 59
+        },
+        {
+          "label": "P1 · första kortet",
+          "frame": 1254
+        },
+        {
+          "label": "Dealerns första",
+          "frame": 1417
+        },
+        {
+          "label": "P7 · andra kortet",
+          "frame": 1595
+        },
+        {
+          "label": "P1 · andra kortet",
+          "frame": 2973
+        },
+        {
+          "label": "Dolt dealerkort",
+          "frame": 3152
+        },
+        {
+          "label": "Vänd dealerkortet",
+          "frame": 3296
+        },
+        {
+          "label": "Dealerns tredje",
+          "frame": 3475
+        },
+        {
+          "label": "Vila · 17 kort",
+          "frame": 3597
+        }
+      ],
+      "description": "ALTERNATIV, inte det äldre prov Jakob efterfrågar. ÅTERFUNNEN KANDIDAT: två kort till P1–P7 och 3 till dealern. Innehåller separat reveal av D.C2 och tredje kort; Scout ska styra dessa val. Historiska placeringar, inte det aktuella placeringsutkastet. Blå/gul visar kortsidor; slutmaterial saknas. Kända skarv-/maskbegränsningar kvarstår. Slutet får inte loopas till ett tomt bord."
+    },
+    {
+      "id": "pamela-sequence-16-portrait-r2",
+      "title": "Historiskt alternativ · 16 kort · mobil",
+      "path": "assets/motions/pamela-sequence-16-portrait-r2/review.mp4",
+      "sha256": "cdb2bc706f07d51b1bb840dba03751147825c27074fc59971d44851b6eb2ccf4",
+      "width": 1080,
+      "height": 1920,
+      "fps": 30,
+      "frameCount": 3296,
+      "view": "portrait",
+      "kind": "sequence",
+      "status": null,
+      "motionRef": "motions/pamela-sequence-16-portrait-r2.json",
+      "chapters": [
+        {
+          "label": "Början",
+          "frame": 0
+        },
+        {
+          "label": "P7 · första kortet",
+          "frame": 59
+        },
+        {
+          "label": "P1 · första kortet",
+          "frame": 1254
+        },
+        {
+          "label": "Dealerns första",
+          "frame": 1417
+        },
+        {
+          "label": "P7 · andra kortet",
+          "frame": 1595
+        },
+        {
+          "label": "P1 · andra kortet",
+          "frame": 2973
+        },
+        {
+          "label": "Dolt dealerkort",
+          "frame": 3152
+        },
+        {
+          "label": "Vila · 16 kort",
+          "frame": 3295
+        }
+      ],
+      "description": "ALTERNATIV, inte det äldre prov Jakob efterfrågar. ÅTERFUNNEN KANDIDAT: två kort till P1–P7 och 2 till dealern. D.C2 förblir dolt; filmen slutar i vila. Historiska placeringar, inte det aktuella placeringsutkastet. Blå/gul visar kortsidor; slutmaterial saknas. Kända skarv-/maskbegränsningar kvarstår. Slutet får inte loopas till ett tomt bord."
+    },
+    {
+      "id": "pamela-p4-c1-source-turn",
+      "title": "P4.C1 · historiskt original · vändning",
+      "path": "assets/motions/pamela-p4-c1-source-turn/source.mp4",
+      "sha256": "4153a54702edd316744ae39a64d7b6094e5bcdcd2020a1852850a4c3a9aaa1fe",
+      "width": 1764,
+      "height": 1174,
+      "fps": 30,
+      "frameCount": 120,
+      "view": "source",
+      "kind": "candidate",
+      "status": null,
+      "motionRef": "motions/pamela-p4-c1-source-turn.json",
+      "description": "OFÖRÄNDRAT ORIGINAL från den nyare gul/blå banken. Källan visar gul sida, kantpassage och blå motsida. Historisk geometri; inte automatiskt godkänd för den aktuella planen. Det äldre efterfrågade långprovet identifieras separat.",
+      "chapters": [
+        {
+          "label": "Början",
+          "frame": 0
+        },
+        {
+          "label": "Kantpassage",
+          "frame": 60
+        },
+        {
+          "label": "Motsida",
+          "frame": 68
+        },
+        {
+          "label": "Slut",
+          "frame": 119
+        }
+      ]
+    },
+    {
+      "id": "pamela-p4-c2-source-turn",
+      "title": "P4.C2 · historiskt original · vändning",
+      "path": "assets/motions/pamela-p4-c2-left-closed-closed/source.mp4",
+      "sha256": "e3b38f89eb6cb14f8dc240c5fdecce814850bb87285ebe540084c33af82b2ad7",
+      "width": 1764,
+      "height": 1174,
+      "fps": 30,
+      "frameCount": 120,
+      "view": "source",
+      "kind": "candidate",
+      "status": null,
+      "motionRef": "motions/pamela-p4-c2-source-turn.json",
+      "description": "OFÖRÄNDRAT ORIGINAL från den nyare gul/blå banken. Källan visar gul sida, kantpassage och blå motsida. Historisk geometri; inte automatiskt godkänd för den aktuella planen. Det äldre efterfrågade långprovet identifieras separat.",
+      "chapters": [
+        {
+          "label": "Början",
+          "frame": 0
+        },
+        {
+          "label": "Kantpassage",
+          "frame": 62
+        },
+        {
+          "label": "Motsida",
+          "frame": 68
+        },
+        {
+          "label": "Slut",
+          "frame": 119
+        }
+      ]
+    },
+    {
+      "id": "pamela-p4-c1-color-control-01",
+      "title": "P4.C1 · nytt kontrollprov · original",
+      "path": "assets/motions/pamela-p4-c1-color-control-01/source.mp4",
+      "sha256": "d5834149569c00b1ec99b334df44724e289e49dbd5e6d5fc2a67e12d0fb5140c",
+      "width": 1764,
+      "height": 1174,
+      "fps": 30,
+      "frameCount": 120,
+      "view": "source",
+      "kind": "candidate",
+      "status": null,
+      "motionRef": "motions/pamela-p4-c1-color-control-01.json",
+      "description": "NYTT WAN3-KONTROLLPROV · UNDERKÄNT FÖR VÄNDNING: bred gul yta blir bred blå f63→64 utan verifierad kantpassage. Samma historiska PNG och prompt som tidigare P4.C1. Ingen omfärgning. Släpp f116→117 fungerar; aktuella placeringsplanen används inte.",
+      "chapters": [
+        {
+          "label": "Början",
+          "frame": 0
+        },
+        {
+          "label": "Kantpassage",
+          "frame": 60
+        },
+        {
+          "label": "Motsida",
+          "frame": 68
+        },
+        {
+          "label": "Slut",
+          "frame": 119
+        }
+      ]
+    },
+    {
+      "id": "pamela-p4-c1-kling-control-01",
+      "title": "P4.C1 · Kling 3 Pro · nytt jämförelseprov",
+      "path": "assets/motions/pamela-p4-c1-kling-control-01/source.mp4",
+      "sha256": "d780e9a3ff5a1505385740e328b6cc17ed90b32b60870e2470f7028198067ee4",
+      "width": 1764,
+      "height": 1172,
+      "fps": 24,
+      "frameCount": 97,
+      "view": "source",
+      "kind": "candidate",
+      "status": null,
+      "motionRef": "motions/pamela-p4-c1-kling-control-01.json",
+      "description": "NYTT KLING 3 PRO-PROV · UNDERKÄNT FÖR VÄNDNING: bred gul yta blir bred blå f52–54 utan synlig kantpassage. Samma PNG/prompt som WAN3, endast modellen ändrad. Samma LH och sent släpp fungerar. Originalformat1764×1172,24fps,97rutor; ingen omfärgning eller retiming.",
+      "chapters": [
+        {
+          "label": "Början",
+          "frame": 0
+        },
+        {
+          "label": "Slut",
+          "frame": 96
+        }
+      ]
     }
   ]
 }

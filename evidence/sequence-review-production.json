@@ -1,0 +1,125 @@
+{
+  "schemaVersion": 1,
+  "createdAt": "2026-11-10T19:15:14.500Z",
+  "noPaidGeneration": true,
+  "sourceAudit": "evidence/sequence-reuse-audit.json",
+  "sourceTimeline": {
+    "path": "assets/sequences/pamela-r2/timeline.json",
+    "sha256": "b9500e990de4a0e021042efbb5ae4dc123513b94fb96c30aef39c982406281fa",
+    "bytes": 321701,
+    "source": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-scene/take-09/timeline-89d0a44801ef.json",
+    "role": "historical-sequence-timeline"
+  },
+  "archivePosterObserved": {
+    "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-scene/take-09/decoded-board-842dd48296/pamela-vila-17-kort.png",
+    "sha256": "ba8e116bf90b475e3ce1fb63c14d8a0cd91b9f388f647babdcd5f7a5c332f639"
+  },
+  "jobs": [
+    {
+      "id": "pamela-sequence-17-native-r2",
+      "path": "assets/motions/pamela-sequence-17-native-r2/source.mp4",
+      "sha256": "842dd4829654195d559acd27ae66b74eb0a9793e2392993685557b94bc76e9e4",
+      "bytes": 48538733,
+      "frames": 3598,
+      "width": 1764,
+      "height": 1174,
+      "sourceRange": [
+        0,
+        3598
+      ],
+      "frameCountVerifiedByDecode": true
+    },
+    {
+      "id": "pamela-sequence-16-native-r2",
+      "path": "assets/motions/pamela-sequence-16-native-r2/review.mp4",
+      "sha256": "0860ad550ed94d7c84c37e434effe62531752140b755c359bd0e468332b37024",
+      "bytes": 29134812,
+      "frames": 3296,
+      "width": 1764,
+      "height": 1174,
+      "sourceRange": [
+        0,
+        3296
+      ],
+      "frameCountVerifiedByDecode": true
+    },
+    {
+      "id": "pamela-sequence-17-portrait-r2",
+      "path": "assets/motions/pamela-sequence-17-portrait-r2/source.mp4",
+      "sha256": "2233434001c3e7d957fc6eb86291b298e64e5feffe8d3e0f9dd20acf71935460",
+      "bytes": 20341037,
+      "frames": 3598,
+      "width": 1080,
+      "height": 1920,
+      "sourceRange": [
+        0,
+        3598
+      ],
+      "frameCountVerifiedByDecode": true
+    },
+    {
+      "id": "pamela-sequence-16-portrait-r2",
+      "path": "assets/motions/pamela-sequence-16-portrait-r2/review.mp4",
+      "sha256": "cdb2bc706f07d51b1bb840dba03751147825c27074fc59971d44851b6eb2ccf4",
+      "bytes": 14568693,
+      "frames": 3296,
+      "width": 1080,
+      "height": 1920,
+      "sourceRange": [
+        0,
+        3296
+      ],
+      "frameCountVerifiedByDecode": true
+    }
+  ],
+  "trim": {
+    "range": [
+      0,
+      3296
+    ],
+    "units": "source frames at 30fps",
+    "retimed": false,
+    "pngFrameBankCreated": false,
+    "maxConcurrentEncoders": 2,
+    "threadsPerEncoder": 2
+  },
+  "currentDraftMatched": false,
+  "productionAccepted": false,
+  "localPlayback": [
+    {
+      "id": "pamela-sequence-17-native-r2",
+      "duration": 119.933333,
+      "ended": true,
+      "error": null,
+      "played": [
+        [
+          0,
+          119.933333
+        ]
+      ],
+      "observedIn": "Codex WebView"
+    },
+    {
+      "id": "pamela-older-14-material-full",
+      "duration": 182.866667,
+      "ended": true,
+      "error": null,
+      "played": [
+        [
+          0,
+          182.866667
+        ]
+      ],
+      "observedIn": "Codex WebView"
+    }
+  ],
+  "currentVerification": {
+    "at": "2026-11-10T19:49:02.397Z",
+    "node": "v24.21.0",
+    "registeredLocalFiles": 1113,
+    "testsPassed": 26,
+    "testsFailed": 0,
+    "independentCodeReview": "No blocking findings; evidence boundaries retained",
+    "sourceDraftEditedByAgent": false
+  }
+}

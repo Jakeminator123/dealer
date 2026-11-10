@@ -18,30 +18,53 @@
     "releaseHand": "LH",
     "target": "P4.C2",
     "physicalStartSide": "BACK",
-    "physicalEndSide": "BACK",
-    "turn": false,
+    "physicalEndSide": "FRONT",
+    "turn": true,
     "pass": false,
-    "basis": "REPORTED",
-    "reviewer": "Jakob",
-    "decision": "ACCEPTED_CONDITIONALLY",
-    "condition": "Visible moving card must remain yellow/CLOSED. No side switch or card repositioning at an edge passage."
+    "basis": "SOURCE_SEQUENCE_AND_ARCHIVED_QA",
+    "reviewer": "source audit",
+    "decision": "PENDING",
+    "condition": "Inspect unmodified source. Prior CLOSED-to-CLOSED label contradicted by the source and forced recoloring.",
+    "evidence": "evidence/anchor-color-audit.json"
   },
   "diagnosticColors": {
-    "CLOSED": [255, 255, 0],
-    "OPEN": [0, 0, 255],
-    "NONE": [0, 0, 0],
+    "CLOSED": [
+      255,
+      255,
+      0
+    ],
+    "OPEN": [
+      0,
+      0,
+      255
+    ],
+    "NONE": [
+      0,
+      0,
+      0
+    ],
     "contourIsSeparate": true
   },
   "review": {
     "preview": "assets/motions/pamela-p4-c2-left-closed-closed/review-v04/preview.mp4",
     "losslessLabels": "assets/motions/pamela-p4-c2-left-closed-closed/review-v04/labels.mkv",
     "receipt": "assets/motions/pamela-p4-c2-left-closed-closed/review-v04/receipt.json",
-    "decision": "PENDING",
-    "limitations": "Diagnostic colour cores, not final alpha mattes. Edge/skin spill, boundary antialiasing and the overlapping-card guide still require detailed review. MP4 is for viewing; exact RGB comes from the lossless labels.",
+    "decision": "SECONDARY",
+    "limitations": "Historical forced-yellow color experiment. Source blue moving surface is painted yellow after a real edge passage; this preview cannot establish physical side. Original preserved and separately playable.",
     "preservesMotionAndTiming": true,
-    "contourPreviewRgb": [52, 48, 20],
-    "requiredSemanticSequence": ["CLOSED", "CLOSED"],
-    "priorCard": "P4.C1 remains OPEN/blue"
+    "contourPreviewRgb": [
+      52,
+      48,
+      20
+    ],
+    "requiredSemanticSequence": [
+      "BACK",
+      "EDGE",
+      "FRONT"
+    ],
+    "priorCard": "P4.C1 remains OPEN/blue",
+    "preservesPhysicalSideAppearance": false,
+    "originalReviewId": "pamela-p4-c2-source-turn"
   },
   "placementRef": null,
   "viewProfileId": null,
@@ -54,5 +77,20 @@
     "url": "https://qeojzihua5ewt4uo.public.blob.vercel-storage.com/dealer/7d093a28f37abf5bd4c373491fca9bc113fc2271e7784e718e66d95beb42392f.mp4",
     "site": "https://dealer-delta-eosin.vercel.app/",
     "doesNotImplyApproval": true
+  },
+  "supersededReportedMotion": {
+    "takeHand": "LH",
+    "releaseHand": "LH",
+    "target": "P4.C2",
+    "physicalStartSide": "BACK",
+    "physicalEndSide": "BACK",
+    "turn": false,
+    "pass": false,
+    "basis": "REPORTED",
+    "reviewer": "Jakob",
+    "decision": "ACCEPTED_CONDITIONALLY",
+    "condition": "Visible moving card must remain yellow/CLOSED. No side switch or card repositioning at an edge passage.",
+    "supersededAt": "2026-11-10T19:33:40.399Z",
+    "reason": "Local diagnostic recolored the newly revealed opposite face yellow. This reported label is not physical source evidence."
   }
 }

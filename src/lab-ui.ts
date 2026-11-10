@@ -64,6 +64,8 @@ function paint(fields=true){
  }
  $('angle-value').textContent=`${Math.round(g.angle)}°`;$('taper-value').textContent=`${Math.round(g.taper*100)} %`;
  $('side-back').setAttribute('aria-pressed',String(t.intent.endSide==='BACK'));$('side-front').setAttribute('aria-pressed',String(t.intent.endSide==='FRONT'));
+ const sideLabel=(side:string)=>side==='BACK'?'gul / stängt':'blå / öppet';
+ $('side-guide').textContent=`Start i skon: ${sideLabel(t.intent.startSide)} → landning här: ${sideLabel(t.intent.endSide)}. Färgen på bordet visar slutsidan. Befintliga filmer ändras inte av detta val.`;
  const h=t.intent.pass?otherHand(t.intent.takeHand):t.intent.takeHand;$('release-hand').textContent=h==='LH'?'Vänster · LH':'Höger · RH';
 }
 async function load(){
@@ -155,33 +157,47 @@ board.addEventListener('keydown',e=>{
  else {const p=VIEWS[view],d=dirs[e.key],step=e.shiftKey?10:1,old=id==='shoe'?plan.shoe[view]:geometry(),pos={u:Math.max(0,Math.min(1,old.u+d[0]*step/(p.width-1))),v:Math.max(0,Math.min(1,old.v-d[1]*step/(p.height-1)))};if(id==='shoe')plan.shoe[view]=pos;else target().geometry[view]=constrain({...geometry(),...pos,reviewed:false},view);}
  changed();paint();board.querySelector<SVGElement>(`[data-${rotate?'rotate':'target'}="${id}"]`)?.focus();
 });
-type Film={id:string;title:string;path:string;kind:string;status:string|null;description?:string;reviewDecision?:string;width:number;height:number;frameCount:number;fps:number};
+type Film={id:string;title:string;path:string;kind:string;status:string|null;description?:string;reviewDecision?:string;width:number;height:number;frameCount:number;fps:number;chapters?:{label:string;frame:number}[]};
 let films:Film[]=[];
+let selectedFilm:Film|null=null,pendingFilmFrame:number|null=null;
 const filmPlayer=$<HTMLVideoElement>('film-player');
-function selectFilm(item:Film){
+function filmFrame(){return selectedFilm?Math.max(0,Math.min(selectedFilm.frameCount-1,Math.floor(filmPlayer.currentTime*selectedFilm.fps+1e-4))):0;}
+function filmLink(frame=0){if(!selectedFilm||!window.history)return;const url=new URL(location.href);url.searchParams.set('clip',selectedFilm.id);if(frame)url.searchParams.set('frame',String(frame));else url.searchParams.delete('frame');window.history.replaceState(null,'',url);}
+function showFilmFrame(){if(selectedFilm)$('film-frame').textContent=`Ruta ${filmFrame()} / ${selectedFilm.frameCount-1} · ${selectedFilm.fps} fps`;}
+function seekFilm(frame:number){if(!selectedFilm||!Number.isSafeInteger(frame))return;filmPlayer.pause();const target=Math.max(0,Math.min(selectedFilm.frameCount-1,frame));if(filmPlayer.readyState<1){pendingFilmFrame=target;return;}filmPlayer.currentTime=(target+.001)/selectedFilm.fps;pendingFilmFrame=null;filmLink(target);showFilmFrame();}
+function selectFilm(item:Film,frame=0){
+ selectedFilm=item;pendingFilmFrame=Number.isSafeInteger(frame)&&frame>0?Math.min(frame,item.frameCount-1):null;
  filmPlayer.pause();filmPlayer.src=item.path;filmPlayer.load();$('film-title').textContent=item.title;
- const decisions:Record<string,string>={PENDING:'VÄNTAR PÅ GRANSKNING',ACCEPTED:'GODKÄND',APPROVED:'GODKÄND',REJECTED:'AVVISAD',UNKNOWN:'STATUS SAKNAS'};
+ filmPlayer.playbackRate=Number($<HTMLSelectElement>('film-speed').value)||1;filmLink(pendingFilmFrame??0);showFilmFrame();
+ const decisions:Record<string,string>={PENDING:'VÄNTAR PÅ GRANSKNING',ACCEPTED:'GODKÄND',APPROVED:'GODKÄND',REJECTED:'AVVISAD',SECONDARY:'SEKUNDÄRT ALTERNATIV',UNKNOWN:'STATUS SAKNAS'};
  $('film-status').textContent=item.status==='REFERENCE'?'VALD REFERENS':decisions[item.reviewDecision??'UNKNOWN']??'GRANSKNINGSPROV';
  $('film-info').textContent=`${item.width} × ${item.height} · ${(item.frameCount/item.fps).toFixed(2)} s`;
- $('film-note').textContent=item.description??(item.kind==='diagnostic'?'Grönt inspelningsmaterial med gul–gul-korrigering. Rörelsen är villkorligt godkänd; kanter och överlapp återstår att granska.':'Komponerad V6-referens. Rummet och bordet är redan inlagda i den här filmen.');
+ $('film-note').textContent=item.description??(item.kind==='diagnostic'?'Diagnostiskt färgprov. Bedöm fysisk vändning i originalet; överlagd färg är inte bevis för kortsidan.':'Komponerad V6-referens. Rummet och bordet är redan inlagda i den här filmen.');
+ $('film-chapters').replaceChildren();
+ for(const chapter of item.chapters??[]){if(!Number.isSafeInteger(chapter.frame)||chapter.frame<0||chapter.frame>=item.frameCount)continue;const button=document.createElement('button');button.textContent=chapter.label;button.title=`Ruta ${chapter.frame}`;button.addEventListener('click',()=>seekFilm(chapter.frame));$('film-chapters').append(button);}
  document.querySelectorAll<HTMLButtonElement>('[data-film]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.film===item.id)));
 }
-async function openLibrary(green=false,clipId?:string){
+async function openLibrary(green=false,clipId?:string,frame=0){
  const dialog=$<HTMLDialogElement>('library');dialog.showModal();
  try{
   const res=await fetch('/api/library');if(!res.ok)throw Error();const data=await res.json();films=data.items;$('film-list').replaceChildren();
   if(!films.length){$('film-list').textContent='Inga filmer finns i det lokala biblioteket ännu.';return;}
   for(const item of films){
    const button=document.createElement('button');button.dataset.film=item.id;button.className='film-choice';
-   const label=document.createElement('strong');label.textContent=item.kind==='diagnostic'?'Grön film · gul–gul':item.kind==='reference'?(item.width>item.height?'V6 · dator':'V6 · mobil'):item.title;
+   const label=document.createElement('strong');label.textContent=item.kind==='reference'?(item.width>item.height?'V6 · dator':'V6 · mobil'):item.title;
    const detail=document.createElement('span');detail.textContent=`${item.width} × ${item.height} · ${(item.frameCount/item.fps).toFixed(1)} s`;
    button.append(label,detail);button.addEventListener('click',()=>selectFilm(item));$('film-list').append(button);
   }
-  selectFilm((clipId?films.find(f=>f.id===clipId):null)??(green?films.find(f=>f.kind==='diagnostic'):null)??films[0]);
+  selectFilm((clipId?films.find(f=>f.id===clipId):null)??(green?(films.find(f=>f.id==='pamela-p4-c2-source-turn')??films.find(f=>f.kind==='diagnostic')):null)??films[0],frame);
  }catch{$('film-list').textContent='Filmbiblioteket kunde inte läsas.';}
 }
 $('open-library').addEventListener('click',()=>void openLibrary());$('open-green').addEventListener('click',()=>void openLibrary(true));
 $('film-play').addEventListener('click',()=>{if(filmPlayer.paused)void filmPlayer.play().catch(()=>$('film-note').textContent='Uppspelningen kunde inte startas. Prova videons inbyggda spelknapp.');else filmPlayer.pause();});
+$('film-prev-frame').addEventListener('click',()=>seekFilm(filmFrame()-1));$('film-next-frame').addEventListener('click',()=>seekFilm(filmFrame()+1));
+$('film-speed').addEventListener('change',()=>{const speed=Number($<HTMLSelectElement>('film-speed').value);if([.25,.5,1].includes(speed))filmPlayer.playbackRate=speed;});
+filmPlayer.addEventListener('loadedmetadata',()=>{if(pendingFilmFrame!==null)seekFilm(pendingFilmFrame);else showFilmFrame();});
+for(const event of ['timeupdate','seeked'])filmPlayer.addEventListener(event,showFilmFrame);
+for(const event of ['seeked','pause'])filmPlayer.addEventListener(event,()=>{if(selectedFilm&&filmPlayer.readyState>=1)filmLink(filmFrame());});
 for(const event of ['play','pause','ended'])filmPlayer.addEventListener(event,()=>$('film-play').textContent=filmPlayer.paused?'Spela filmen':'Pausa filmen');
 filmPlayer.addEventListener('error',()=>$('film-note').textContent='Filen kunde inte spelas. Kontrollera att filmen finns lokalt.');
 $('close-library').addEventListener('click',()=>{$<HTMLDialogElement>('library').close();});
@@ -189,4 +205,4 @@ $('library').addEventListener('close',()=>{$('library').querySelectorAll('video'
 window.addEventListener('beforeunload',e=>{if(dirty){e.preventDefault();e.returnValue='';}});
 new ResizeObserver(()=>{if(plan)paint(false);}).observe(stageWrap);
 window.addEventListener('resize',()=>{if(plan)paint(false);});
-void load().then(()=>{const clip=new URLSearchParams(location.search).get('clip');if(clip)void openLibrary(false,clip);}).catch(e=>message((e as Error).message));
+void load().then(()=>{const params=new URLSearchParams(location.search),clip=params.get('clip'),frame=Number(params.get('frame')??0);if(clip)void openLibrary(false,clip,frame);}).catch(e=>message((e as Error).message));

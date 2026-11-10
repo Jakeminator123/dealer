@@ -1,0 +1,40 @@
+{
+  "schemaVersion": 1,
+  "id": "pamela-older-14-mask-refined",
+  "dealer": "pamela",
+  "kind": "sequence",
+  "source": {
+    "path": "assets/motions/pamela-older-14-mask-refined/source.mp4",
+    "sha256": "fbfd97b475920daa2a95c0340f264e55a9b5e3142be77ac54cf0fd3a07f25d43",
+    "bytes": 74322783,
+    "width": 1762,
+    "height": 1174,
+    "fps": 30,
+    "frames": 5486
+  },
+  "provenance": {
+    "method": "byte-identical historical mask-refined composition",
+    "originalPath": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-mask-bank/take-01/render/vila-fourteen-materials-vila.mp4",
+    "audit": "evidence/astra-archive-mask-audit.json"
+  },
+  "sequence": {
+    "playerCards": 14,
+    "dealerCards": 0,
+    "startPose": "IDLE",
+    "endPose": "IDLE",
+    "startBoardCount": 0,
+    "endBoardCount": 14,
+    "loopToEmptyStartAllowed": false
+  },
+  "placementBinding": {
+    "basis": "original historical geometry",
+    "currentDraftMatched": false
+  },
+  "review": {
+    "decision": "PENDING",
+    "basis": "Existing bounded mask improvements for C1.P7 shoe edge and C2.P6 paper tip; not new motion, side or coordinate acceptance.",
+    "limitations": "Physical semantics of old white source remain unannotated; full visual acceptance pending. V6 remains selected visual target."
+  },
+  "scoutIntegrated": false,
+  "published": false
+}

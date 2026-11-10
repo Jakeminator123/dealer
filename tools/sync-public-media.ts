@@ -9,6 +9,7 @@ import {createHash} from 'node:crypto';
 import {execFileSync,spawnSync} from 'node:child_process';
 import {parseEnv} from 'node:util';
 import {fileURLToPath} from 'node:url';
+import {createRequire} from 'node:module';
 import path from 'node:path';
 
 const root=path.resolve(fileURLToPath(new URL('../',import.meta.url)));
@@ -20,7 +21,13 @@ type Entry={id:string;path:string;url:string;sha256:string;bytes:number};
 type LibraryItem={id:string;path:string;sha256:string};
 const digest=(bytes:Buffer)=>createHash('sha256').update(bytes).digest('hex');
 const library=JSON.parse(await readFile('data/library.json','utf8')) as {items:LibraryItem[]};
-if(![8,9].includes(library.items.length)||new Set(library.items.map(item=>item.id)).size!==library.items.length||!library.items.some(item=>item.id==='pamela-p7-c1-left-direct-pilot-01')||(library.items.length===9&&!library.items.some(item=>item.id==='pamela-p7-c1-left-turn-pilot-03')))throw Error('Review the upload scope: seven existing films, the secondary P7 direct trial and optionally the explicitly requested P7 turn trial 03.');
+const sequenceIds=['pamela-sequence-17-native-r2','pamela-sequence-16-native-r2','pamela-sequence-17-portrait-r2','pamela-sequence-16-portrait-r2'];
+const p4Ids=['pamela-p4-c1-source-turn','pamela-p4-c2-source-turn','pamela-p4-c1-color-control-01'];
+const olderIds=['pamela-older-14-material-full','pamela-older-14-material-compact'];
+const klingId='pamela-p4-c1-kling-control-01';
+const refinedId='pamela-older-14-mask-refined';
+const reviewedIds=new Set(['v6-native-reference','v6-portrait-reference','pamela-p4-c2-closed-review-v04','pamela-p7-c1-left-turn-pilot-01','pamela-p7-c1-left-turn-pilot-02','pamela-p6-c1-left-turn-pilot-01','pamela-p7-c1-left-pink-pilot-01','pamela-p7-c1-left-direct-pilot-01','pamela-p7-c1-left-turn-pilot-03',...sequenceIds,...p4Ids,...olderIds,klingId,refinedId]);
+if(![8,9,13,16,18,19,20].includes(library.items.length)||new Set(library.items.map(item=>item.id)).size!==library.items.length||library.items.some(item=>!reviewedIds.has(item.id))||!library.items.some(item=>item.id==='pamela-p7-c1-left-direct-pilot-01')||(library.items.length>=9&&!library.items.some(item=>item.id==='pamela-p7-c1-left-turn-pilot-03'))||(library.items.length>=13&&sequenceIds.some(id=>!library.items.some(item=>item.id===id)))||(library.items.length>=16&&p4Ids.some(id=>!library.items.some(item=>item.id===id)))||(library.items.length>=18&&olderIds.some(id=>!library.items.some(item=>item.id===id)))||(library.items.length>=19&&!library.items.some(item=>item.id===klingId))||(library.items.length===20&&!library.items.some(item=>item.id===refinedId)))throw Error('Review upload scope: nine existing films, four historical alternatives, three P4 originals/control, two older material sequences, one Kling comparison and one existing mask-refined film.');
 const selected=[] as (LibraryItem&{bytes:number})[];
 for(const item of library.items){
  if(!/^(assets\/|output\/v6\/)[a-zA-Z0-9/_.-]+\.mp4$/.test(item.path)||item.path.includes('..')||!/^([a-f0-9]{64})$/.test(item.sha256))throw Error('Invalid library media path or hash.');
@@ -29,7 +36,7 @@ for(const item of library.items){
  selected.push({...item,bytes:file.length});
 }
 const totalBytes=selected.reduce((sum,item)=>sum+item.bytes,0);
-if(totalBytes>250_000_000)throw Error('Selected media unexpectedly exceeds 250 MB.');
+if(totalBytes>600_000_000)throw Error('Selected review media unexpectedly exceeds 600 MB.');
 const manifestFile='data/public-media.json',progressFile='.runtime/blob-sync/progress.json';
 const existing=await readFile(manifestFile,'utf8').then(JSON.parse).catch(()=>null);
 const progress=await readFile(progressFile,'utf8').then(JSON.parse).catch(()=>null);
@@ -47,6 +54,10 @@ const wrapper=execFileSync('volta',['which','vercel'],{encoding:'utf8',windowsHi
 const packageRoot=path.join(path.dirname(wrapper),'node_modules/vercel');
 const cliPackage=JSON.parse(readFileSync(path.join(packageRoot,'package.json'),'utf8'));
 const cli=path.resolve(packageRoot,cliPackage.bin.vercel);
+const singleRequest=process.argv.includes('--single-request');
+// Use the SDK already shipped with the installed CLI; no project dependency or
+// credential changes. Single PUT avoids a stalled multipart child on this host.
+const blob=createRequire(path.join(packageRoot,'package.json'))('@vercel/blob');
 const env={...process.env,BLOB_READ_WRITE_TOKEN:token};
 // The CLI provisioning response included an OIDC token without BLOB_STORE_ID.
 // Use this store's explicit read/write credential without changing cloud auth.
@@ -58,11 +69,21 @@ for(const item of selected){
  const pathname=`dealer/${item.sha256}.mp4`;
  let url=known.find(entry=>entry.id===item.id&&entry.sha256===item.sha256)?.url;
  if(!url){
+  const expected=`https://${identity.storeId.slice(6).toLowerCase()}.public.blob.vercel-storage.com/${pathname}`;
+  try{const remote=await blob.head(expected,{token,abortSignal:AbortSignal.timeout(30000)});if(remote.size!==item.bytes)throw Error(`Existing object size mismatch: ${item.id}`);url=remote.url;}
+  catch(error){if(!(error instanceof blob.BlobNotFoundError))throw error;}
+ }
+ if(!url&&singleRequest){
+  let lastBucket=-1;
+  const result=await blob.put(pathname,await readFile(path.join(root,item.path)),{token,access:'public',addRandomSuffix:false,allowOverwrite:false,contentType:'video/mp4',cacheControlMaxAge:31536000,multipart:false,abortSignal:AbortSignal.timeout(180000),onUploadProgress:({percentage}:{percentage:number})=>{const bucket=Math.floor(percentage/25);if(bucket>lastBucket){lastBucket=bucket;console.log(JSON.stringify({id:item.id,uploadPercent:Math.min(100,bucket*25)}));}}});
+  url=result.url;uploaded++;
+ }
+ if(!url){
   // CLI Boolean flags take no value. Omitting these uses the verified defaults:
   // addRandomSuffix=false, allowOverwrite=false, multipart=true.
-  const result=spawnSync(process.execPath,[cli,'blob','put',path.join(root,item.path),'--access','public','--pathname',pathname,'--content-type','video/mp4','--cache-control-max-age','31536000','--scope','scoutgaming','--no-color'],{cwd:root,env,encoding:'utf8',windowsHide:true,timeout:180000,maxBuffer:4_000_000});
+  const result=spawnSync(process.execPath,[cli,'blob','put',path.join(root,item.path),'--access','public','--pathname',pathname,'--content-type','video/mp4','--cache-control-max-age','31536000','--scope','scoutgaming','--no-color'],{cwd:root,env,encoding:'utf8',windowsHide:true,timeout:600000,maxBuffer:4_000_000});
   const output=`${result.stdout??''}\n${result.stderr??''}`.replaceAll(token,'[redacted]').replace(/\u001b\[[0-9;]*m/g,'');
-  if(result.status!==0)throw Error(`Upload failed for ${item.id}: ${output.slice(-1500)}`);
+  if(result.status!==0)throw Error(`Upload failed for ${item.id} (${result.error?.message??result.status}): ${output.slice(-1500)}`);
   url=output.match(/https:\/\/[a-z0-9]+\.public\.blob\.vercel-storage\.com\/[^\s"'<>)]*/i)?.[0];
   if(!url)throw Error(`Upload succeeded for ${item.id}, but its public URL needs inspection before any retry.`);
   uploaded++;

@@ -7709,6 +7709,171 @@
       "bytes": 16149774,
       "source": "runway-task:18b11157-288a-40e7-b667-a327506ed928",
       "role": "pending-motion-only-pilot-source"
+    },
+    {
+      "path": "assets/sequences/pamela-r2/review-manifest.json",
+      "sha256": "56eec07608af6519951f7fcc22781a427ed6153ceaec060efe9b6991c0b91a19",
+      "bytes": 2074,
+      "source": "D:/dealer-archive/snyggare-dealer/references/pamela-goal-film-review.json",
+      "role": "historical-sequence-review-manifest"
+    },
+    {
+      "path": "assets/sequences/pamela-r2/timeline.json",
+      "sha256": "b9500e990de4a0e021042efbb5ae4dc123513b94fb96c30aef39c982406281fa",
+      "bytes": 321701,
+      "source": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-scene/take-09/timeline-89d0a44801ef.json",
+      "role": "historical-sequence-timeline"
+    },
+    {
+      "path": "assets/motions/pamela-sequence-17-native-r2/source.mp4",
+      "sha256": "842dd4829654195d559acd27ae66b74eb0a9793e2392993685557b94bc76e9e4",
+      "bytes": 48538733,
+      "source": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-scene/take-09/full-candidate-3598-89d0a448-b6afbd/pamela-sammanhangande-kandidat.mp4",
+      "role": "historical-composited-sequence-original"
+    },
+    {
+      "path": "assets/motions/pamela-sequence-17-portrait-r2/source.mp4",
+      "sha256": "2233434001c3e7d957fc6eb86291b298e64e5feffe8d3e0f9dd20acf71935460",
+      "bytes": 20341037,
+      "source": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-scene/take-14/842dd4829654/pamela-sammanhangande-mobil.mp4",
+      "role": "historical-composited-sequence-original"
+    },
+    {
+      "path": "assets/motions/pamela-sequence-16-native-r2/review.mp4",
+      "sha256": "0860ad550ed94d7c84c37e434effe62531752140b755c359bd0e468332b37024",
+      "bytes": 29134812,
+      "source": "assets/motions/pamela-sequence-17-native-r2/source.mp4#frames=0:3296",
+      "role": "derived-16-card-sequence-review"
+    },
+    {
+      "path": "assets/motions/pamela-sequence-16-portrait-r2/review.mp4",
+      "sha256": "cdb2bc706f07d51b1bb840dba03751147825c27074fc59971d44851b6eb2ccf4",
+      "bytes": 14568693,
+      "source": "assets/motions/pamela-sequence-17-portrait-r2/source.mp4#frames=0:3296",
+      "role": "derived-16-card-sequence-review"
+    },
+    {
+      "path": "assets/motions/pamela-p4-c1-source-turn/source.mp4",
+      "sha256": "4153a54702edd316744ae39a64d7b6094e5bcdcd2020a1852850a4c3a9aaa1fe",
+      "bytes": 11359929,
+      "source": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/center-arc-01/p4-c1/original.mp4",
+      "role": "historical-unmodified-motion-source"
+    },
+    {
+      "path": "assets/motions/pamela-p4-c2-left-closed-closed/source.mp4",
+      "sha256": "e3b38f89eb6cb14f8dc240c5fdecce814850bb87285ebe540084c33af82b2ad7",
+      "bytes": 11206879,
+      "source": "existing local registered source",
+      "role": "historical-unmodified-motion-source"
+    },
+    {
+      "path": "assets/motions/pamela-p4-c1-color-control-01/source.mp4",
+      "sha256": "d5834149569c00b1ec99b334df44724e289e49dbd5e6d5fc2a67e12d0fb5140c",
+      "bytes": 11165209,
+      "source": "runway-task:e3fd5595-09ba-4228-a42c-0b7fb848fe6d",
+      "role": "unmodified-control-output"
+    },
+    {
+      "path": "assets/motions/pamela-p4-c1-color-control-01/start.png",
+      "sha256": "a2fc6d3565ca711015c9b547671bf33e97eea4c2281e75841690f8848b422f45",
+      "bytes": 1179028,
+      "source": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/center-arc-01/p4-c1/start.png",
+      "role": "exact-historical-control-input"
+    },
+    {
+      "path": "assets/motions/pamela-p4-c1-color-control-01/end.png",
+      "sha256": "c30be996971282c737825a9439e3d303728086c391d8bbb14a67a8fc826e784b",
+      "bytes": 1315858,
+      "source": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/center-arc-01/p4-c1/end.png",
+      "role": "exact-historical-control-input"
+    },
+    {
+      "path": "assets/motions/pamela-p4-c1-color-control-01/plan.json",
+      "sha256": "dc3d88069afeb232f6ed5b388b29a39f051c9d7303167d8ead477ba880d4f6fe",
+      "bytes": 5711,
+      "source": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/center-arc-01/p4-c1/plan.json",
+      "role": "exact-historical-control-input"
+    },
+    {
+      "path": "assets/motions/pamela-p4-c1-color-control-01/prompt.txt",
+      "sha256": "1e5c0abca098d18083f2f558c7ab2c50064e7d051a2842cf721dac122973648d",
+      "bytes": 733,
+      "source": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/center-arc-01/p4-c1/prompt.txt",
+      "role": "exact-historical-control-input"
+    },
+    {
+      "path": "assets/motions/pamela-older-14-material-full/source.mp4",
+      "sha256": "a2a03846093ec7a53c16556b84be78c8c1047ae50a7219ca4ea58fa68d1cde45",
+      "bytes": 74322687,
+      "width": 1762,
+      "height": 1174,
+      "fps": 30,
+      "frames": 5486,
+      "source": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-two-sided-bank/take-02/render/vila-fourteen-materials-vila.mp4",
+      "role": "historical-material-sequence-original"
+    },
+    {
+      "path": "assets/motions/pamela-older-14-material-compact/source.mp4",
+      "sha256": "f5b0a602fe181661c9b76d380cdb667a6feae655a6a4dccbd61ab2ad1a24d4c6",
+      "bytes": 62758144,
+      "width": 1762,
+      "height": 1174,
+      "fps": 30,
+      "frames": 4404,
+      "source": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-two-sided-bank/take-02/render/vila-fourteen-materials-trim.mp4",
+      "role": "historical-material-sequence-original"
+    },
+    {
+      "path": "assets/motions/pamela-p4-c1-kling-control-01/source.mp4",
+      "sha256": "d780e9a3ff5a1505385740e328b6cc17ed90b32b60870e2470f7028198067ee4",
+      "bytes": 4787878,
+      "width": 1764,
+      "height": 1172,
+      "fps": 24,
+      "frames": 97,
+      "provider": "Runway developer API",
+      "model": "kling3.0_pro",
+      "role": "unmodified-control-output",
+      "source": "runway-task:b22a8190-96ad-4c55-9c9d-b930a0d0623b"
+    },
+    {
+      "path": "assets/motions/pamela-p4-c1-kling-control-01/start.png",
+      "sha256": "a2fc6d3565ca711015c9b547671bf33e97eea4c2281e75841690f8848b422f45",
+      "bytes": 1179028,
+      "source": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/center-arc-01/p4-c1/start.png",
+      "role": "exact-historical-control-input"
+    },
+    {
+      "path": "assets/motions/pamela-p4-c1-kling-control-01/end.png",
+      "sha256": "c30be996971282c737825a9439e3d303728086c391d8bbb14a67a8fc826e784b",
+      "bytes": 1315858,
+      "source": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/center-arc-01/p4-c1/end.png",
+      "role": "exact-historical-control-input"
+    },
+    {
+      "path": "assets/motions/pamela-p4-c1-kling-control-01/plan.json",
+      "sha256": "dc3d88069afeb232f6ed5b388b29a39f051c9d7303167d8ead477ba880d4f6fe",
+      "bytes": 5711,
+      "source": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/center-arc-01/p4-c1/plan.json",
+      "role": "exact-historical-control-input"
+    },
+    {
+      "path": "assets/motions/pamela-p4-c1-kling-control-01/prompt.txt",
+      "sha256": "1e5c0abca098d18083f2f558c7ab2c50064e7d051a2842cf721dac122973648d",
+      "bytes": 733,
+      "source": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/center-arc-01/p4-c1/prompt.txt",
+      "role": "exact-historical-control-input"
+    },
+    {
+      "path": "assets/motions/pamela-older-14-mask-refined/source.mp4",
+      "sha256": "fbfd97b475920daa2a95c0340f264e55a9b5e3142be77ac54cf0fd3a07f25d43",
+      "bytes": 74322783,
+      "width": 1762,
+      "height": 1174,
+      "fps": 30,
+      "frames": 5486,
+      "source": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-mask-bank/take-01/render/vila-fourteen-materials-vila.mp4",
+      "role": "historical-mask-refined-sequence"
     }
   ]
 }

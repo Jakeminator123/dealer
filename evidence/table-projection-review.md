@@ -4,7 +4,7 @@ Status: endast analys. Inga placeringar, UI-filer, bilder eller V6 ändrade.
 
 - Mobilbilden omkomponeras. Mattan skalas från 1200×336 till 1080×1086 (x0,9; y3,232). Dealer/hand/kort skalas cirka x0,9/y0,9 och beskärs separat. Se src/pamela-card-contact-v6.ts:71–73 och 170–171.
 - Jämförelsens 0° är kortens riktning i bordplanet, inte kamerans lutning. P4:s förhållande mellan över-/underkant extrapoleras separat i varje vy; det är ingen uppmätt kamerakalibrering.
-- Exporten placements/references/user-flat-native-20261110.json bevarar Jakobs visuella referens. Vanlig Spara lagrar inte jämförelsens kryssruta eller heading.
+- Exporten placements/references/user-flat-native-20261110.json bevarar Jakobs visuella referens. Vid denna historiska analys sparades inte jämförelsens kryssruta eller heading. Nu sparar vanlig Spara båda i `tableProjection`; se docs/SYSTEM.md. Mätvärdena nedan beskriver fortfarande analysens frysta underlag.
 
 Tabellen räknar på **planerade punkter och konturer** från native-exporten, inte på uppmätt eller godkänd handkontakt. **Om dessa native-mål används med dagens foregroundtransform** hamnar de 357–541 px från de separat sparade mobilmålen, och P1/P7:s planerade konturer skulle klippas. Detta säger inte var en ännu ej granskad framtida film faktiskt landar.
 

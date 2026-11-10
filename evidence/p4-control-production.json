@@ -1,0 +1,242 @@
+{
+  "schemaVersion": 1,
+  "createdAt": "2026-11-10T19:33:40.399Z",
+  "generation": {
+    "schemaVersion": 1,
+    "id": "pamela-p4-c1-color-control-01",
+    "provider": "Runway developer API",
+    "endpoint": "/v1/image_to_video",
+    "model": "wan3",
+    "duration": 4,
+    "ratio": "auto_1080p",
+    "audio": false,
+    "promptText": "Same Pamela, black suit, green felt and fixed shoe in one locked wide shot. One continuous four-second deal directly in front, centred in the image. From the exact first pose her left hand removes one card, broad yellow back visible. During the reach roll that same wrist once: yellow visibly narrows to a thin pale edge and the opposite blue face opens fully before table contact. The colours stay on opposite surfaces of the same physical card. Touch down at the exact blue footprint and angle in the last image, then lift empty fingers directly to that clear final pose. The other hand rests. The next yellow card stays in the shoe. No slide, second touch, display gesture, handoff, second flip, colour swap, camera motion or cut.",
+    "status": "SUCCEEDED",
+    "estimatedCredits": 80,
+    "createdAt": "2026-11-10T19:25:45.903Z",
+    "start": {
+      "name": "start.png",
+      "sha256": "a2fc6d3565ca711015c9b547671bf33e97eea4c2281e75841690f8848b422f45",
+      "source": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/center-arc-01/p4-c1/start.png",
+      "path": "assets/motions/pamela-p4-c1-color-control-01/start.png",
+      "bytes": 1179028
+    },
+    "end": {
+      "name": "end.png",
+      "sha256": "c30be996971282c737825a9439e3d303728086c391d8bbb14a67a8fc826e784b",
+      "source": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/center-arc-01/p4-c1/end.png",
+      "path": "assets/motions/pamela-p4-c1-color-control-01/end.png",
+      "bytes": 1315858
+    },
+    "registeredArchiveReads": [
+      {
+        "name": "start.png",
+        "sha256": "a2fc6d3565ca711015c9b547671bf33e97eea4c2281e75841690f8848b422f45",
+        "source": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/center-arc-01/p4-c1/start.png",
+        "path": "assets/motions/pamela-p4-c1-color-control-01/start.png",
+        "bytes": 1179028
+      },
+      {
+        "name": "end.png",
+        "sha256": "c30be996971282c737825a9439e3d303728086c391d8bbb14a67a8fc826e784b",
+        "source": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/center-arc-01/p4-c1/end.png",
+        "path": "assets/motions/pamela-p4-c1-color-control-01/end.png",
+        "bytes": 1315858
+      },
+      {
+        "name": "plan.json",
+        "sha256": "dc3d88069afeb232f6ed5b388b29a39f051c9d7303167d8ead477ba880d4f6fe",
+        "source": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/center-arc-01/p4-c1/plan.json",
+        "path": "assets/motions/pamela-p4-c1-color-control-01/plan.json",
+        "bytes": 5711
+      },
+      {
+        "name": "prompt.txt",
+        "sha256": "1e5c0abca098d18083f2f558c7ab2c50064e7d051a2842cf721dac122973648d",
+        "source": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/center-arc-01/p4-c1/prompt.txt",
+        "path": "assets/motions/pamela-p4-c1-color-control-01/prompt.txt",
+        "bytes": 733
+      }
+    ],
+    "placementRef": {
+      "path": "assets/motions/pamela-p4-c1-color-control-01/plan.json",
+      "sha256": "dc3d88069afeb232f6ed5b388b29a39f051c9d7303167d8ead477ba880d4f6fe",
+      "basis": "Exact historic P4.C1 control; not the current editable placement draft"
+    },
+    "physicalIntent": {
+      "takeHand": "LH",
+      "releaseHand": "LH",
+      "startSide": "BACK",
+      "endSide": "FRONT",
+      "turnCount": 1,
+      "pass": false,
+      "terminalPose": "fingers clear after landing; return to shoe is a separate forward segment"
+    },
+    "colorConvention": {
+      "BACK": "yellow",
+      "FRONT": "blue",
+      "pink": "separate material tracking surface, unused in this control"
+    },
+    "colorDoesNotProvePhysicalSide": true,
+    "postProcessing": "none; inspect the unmodified generated original",
+    "reviewDecision": "PENDING",
+    "requestedAt": "2026-11-10T19:26:49.129Z",
+    "taskId": "e3fd5595-09ba-4228-a42c-0b7fb848fe6d",
+    "lastCheckedAt": "2026-11-10T19:28:50.814Z",
+    "completedAt": "2026-11-10T19:28:50.814Z",
+    "output": {
+      "path": "assets/motions/pamela-p4-c1-color-control-01/source.mp4",
+      "sha256": "d5834149569c00b1ec99b334df44724e289e49dbd5e6d5fc2a67e12d0fb5140c",
+      "bytes": 11165209
+    }
+  },
+  "unmodifiedFiles": [
+    {
+      "path": "assets/motions/pamela-p4-c1-source-turn/source.mp4",
+      "sha256": "4153a54702edd316744ae39a64d7b6094e5bcdcd2020a1852850a4c3a9aaa1fe",
+      "bytes": 11359929,
+      "source": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/center-arc-01/p4-c1/original.mp4",
+      "role": "historical-unmodified-motion-source"
+    },
+    {
+      "path": "assets/motions/pamela-p4-c2-left-closed-closed/source.mp4",
+      "sha256": "e3b38f89eb6cb14f8dc240c5fdecce814850bb87285ebe540084c33af82b2ad7",
+      "bytes": 11206879,
+      "source": "existing local registered source",
+      "role": "historical-unmodified-motion-source"
+    },
+    {
+      "path": "assets/motions/pamela-p4-c1-color-control-01/source.mp4",
+      "sha256": "d5834149569c00b1ec99b334df44724e289e49dbd5e6d5fc2a67e12d0fb5140c",
+      "bytes": 11165209,
+      "source": "runway-task:e3fd5595-09ba-4228-a42c-0b7fb848fe6d",
+      "role": "unmodified-control-output"
+    }
+  ],
+  "controlPurpose": "Separate one fresh generation from the local overlay error; exact historical P4.C1 inputs, not a new current-plan binding.",
+  "historicalSequenceRequestedByUserStillUnidentified": true,
+  "physicalReview": {
+    "decision": "REJECTED",
+    "evidence": "evidence/p4-control-visual-review.json",
+    "basis": "Frames63→64 change broad yellow to broad blue without visible edge or corresponding silhouette rotation. Physical turn not verified; late release116→117 succeeds."
+  },
+  "postProcessing": "none",
+  "archivalReadRegistration": [
+    {
+      "path": "assets/motions/pamela-p4-c1-source-turn/source.mp4",
+      "sha256": "4153a54702edd316744ae39a64d7b6094e5bcdcd2020a1852850a4c3a9aaa1fe",
+      "bytes": 11359929,
+      "source": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/center-arc-01/p4-c1/original.mp4",
+      "role": "historical-unmodified-motion-source"
+    }
+  ],
+  "klingComparison": {
+    "generation": {
+      "schemaVersion": 1,
+      "id": "pamela-p4-c1-kling-control-01",
+      "provider": "Runway developer API",
+      "endpoint": "/v1/image_to_video",
+      "model": "kling3.0_pro",
+      "duration": 4,
+      "ratio": null,
+      "audio": false,
+      "promptText": "Same Pamela, black suit, green felt and fixed shoe in one locked wide shot. One continuous four-second deal directly in front, centred in the image. From the exact first pose her left hand removes one card, broad yellow back visible. During the reach roll that same wrist once: yellow visibly narrows to a thin pale edge and the opposite blue face opens fully before table contact. The colours stay on opposite surfaces of the same physical card. Touch down at the exact blue footprint and angle in the last image, then lift empty fingers directly to that clear final pose. The other hand rests. The next yellow card stays in the shoe. No slide, second touch, display gesture, handoff, second flip, colour swap, camera motion or cut.",
+      "status": "SUCCEEDED",
+      "estimatedCredits": 48,
+      "createdAt": "2026-11-10T19:35:13.407Z",
+      "start": {
+        "name": "start.png",
+        "sha256": "a2fc6d3565ca711015c9b547671bf33e97eea4c2281e75841690f8848b422f45",
+        "source": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/center-arc-01/p4-c1/start.png",
+        "path": "assets/motions/pamela-p4-c1-kling-control-01/start.png",
+        "bytes": 1179028
+      },
+      "end": {
+        "name": "end.png",
+        "sha256": "c30be996971282c737825a9439e3d303728086c391d8bbb14a67a8fc826e784b",
+        "source": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/center-arc-01/p4-c1/end.png",
+        "path": "assets/motions/pamela-p4-c1-kling-control-01/end.png",
+        "bytes": 1315858
+      },
+      "registeredArchiveReads": [
+        {
+          "name": "start.png",
+          "sha256": "a2fc6d3565ca711015c9b547671bf33e97eea4c2281e75841690f8848b422f45",
+          "source": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/center-arc-01/p4-c1/start.png",
+          "path": "assets/motions/pamela-p4-c1-kling-control-01/start.png",
+          "bytes": 1179028
+        },
+        {
+          "name": "end.png",
+          "sha256": "c30be996971282c737825a9439e3d303728086c391d8bbb14a67a8fc826e784b",
+          "source": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/center-arc-01/p4-c1/end.png",
+          "path": "assets/motions/pamela-p4-c1-kling-control-01/end.png",
+          "bytes": 1315858
+        },
+        {
+          "name": "plan.json",
+          "sha256": "dc3d88069afeb232f6ed5b388b29a39f051c9d7303167d8ead477ba880d4f6fe",
+          "source": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/center-arc-01/p4-c1/plan.json",
+          "path": "assets/motions/pamela-p4-c1-kling-control-01/plan.json",
+          "bytes": 5711
+        },
+        {
+          "name": "prompt.txt",
+          "sha256": "1e5c0abca098d18083f2f558c7ab2c50064e7d051a2842cf721dac122973648d",
+          "source": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/center-arc-01/p4-c1/prompt.txt",
+          "path": "assets/motions/pamela-p4-c1-kling-control-01/prompt.txt",
+          "bytes": 733
+        }
+      ],
+      "placementRef": {
+        "path": "assets/motions/pamela-p4-c1-kling-control-01/plan.json",
+        "sha256": "dc3d88069afeb232f6ed5b388b29a39f051c9d7303167d8ead477ba880d4f6fe",
+        "basis": "Exact historic P4.C1 control; not the current editable placement draft"
+      },
+      "physicalIntent": {
+        "takeHand": "LH",
+        "releaseHand": "LH",
+        "startSide": "BACK",
+        "endSide": "FRONT",
+        "turnCount": 1,
+        "pass": false,
+        "terminalPose": "fingers clear after landing; return to shoe is a separate forward segment"
+      },
+      "colorConvention": {
+        "BACK": "yellow",
+        "FRONT": "blue",
+        "pink": "separate material tracking surface, unused in this control"
+      },
+      "colorDoesNotProvePhysicalSide": true,
+      "postProcessing": "none; inspect the unmodified generated original",
+      "reviewDecision": "PENDING",
+      "requestedAt": "2026-11-10T19:35:15.993Z",
+      "taskId": "b22a8190-96ad-4c55-9c9d-b930a0d0623b",
+      "lastCheckedAt": "2026-11-10T19:38:21.116Z",
+      "completedAt": "2026-11-10T19:38:21.116Z",
+      "output": {
+        "path": "assets/motions/pamela-p4-c1-kling-control-01/source.mp4",
+        "sha256": "d780e9a3ff5a1505385740e328b6cc17ed90b32b60870e2470f7028198067ee4",
+        "bytes": 4787878
+      }
+    },
+    "output": {
+      "path": "assets/motions/pamela-p4-c1-kling-control-01/source.mp4",
+      "sha256": "d780e9a3ff5a1505385740e328b6cc17ed90b32b60870e2470f7028198067ee4",
+      "bytes": 4787878,
+      "width": 1764,
+      "height": 1172,
+      "fps": 24,
+      "frames": 97,
+      "provider": "Runway developer API",
+      "model": "kling3.0_pro"
+    },
+    "changedVariable": "model only; ratio omitted per model contract",
+    "physicalReview": {
+      "decision": "REJECTED",
+      "basis": "Frames52–54 at24fps change broad yellow to broad blue without a visible edge-on turnover; same left hand and release by92, but physical flip unverified.",
+      "evidence": "evidence/p4-control-visual-review.json#/klingComparison"
+    },
+    "estimatedCredits": 48
+  }
+}

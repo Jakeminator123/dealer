@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "id": "pamela-p4-c1-source-turn",
+  "dealer": "pamela",
+  "source": {
+    "path": "assets/motions/pamela-p4-c1-source-turn/source.mp4",
+    "sha256": "4153a54702edd316744ae39a64d7b6094e5bcdcd2020a1852850a4c3a9aaa1fe",
+    "bytes": 11359929,
+    "width": 1764,
+    "height": 1174,
+    "fps": 30,
+    "frames": 120,
+    "provider": "Runway developer API",
+    "model": "wan3"
+  },
+  "motion": {
+    "takeHand": "LH",
+    "releaseHand": "LH",
+    "target": "P4.C1",
+    "physicalStartSide": "BACK",
+    "physicalEndSide": "FRONT",
+    "turn": true,
+    "pass": false,
+    "basis": "SOURCE_SEQUENCE_AND_ARCHIVED_QA",
+    "evidence": "evidence/anchor-color-audit.json"
+  },
+  "review": {
+    "decision": "PENDING",
+    "basis": "Recovered original; source and historic QA support one flip, awaiting current user review.",
+    "limitations": "Historical placement, not current editor geometry. Green source, no composited room or material replacement. Return to shoe is a separate segment; do not loop this take.",
+    "colorDoesNotProvePhysicalSide": true
+  },
+  "placementRef": {
+    "basis": "historical P4 control",
+    "currentDraftMatched": false
+  },
+  "postProcessing": "none",
+  "generationRef": null,
+  "scoutIntegrated": false,
+  "published": false
+}

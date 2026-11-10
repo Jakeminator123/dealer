@@ -94,3 +94,29 @@ test('loading a legacy plan offers a save for the new flat default while preserv
  assert.equal(element('save').disabled,false);
  assert.equal(runInContext('JSON.stringify(plan.targets)',context),geometry);
 });
+
+test('film review seeks source frames at the clip fps and clears a pending seek when selecting another clip',async()=>{
+ const {context,element,fire}=await setup();
+ const before=runInContext('JSON.stringify(plan)',context),player=element('film-player');
+ player.pause=()=>{};player.load=()=>{player.currentTime=0;player.readyState=0;};
+ const clip={id:'review-24',title:'Review',path:'assets/review.mp4',kind:'candidate',status:null,width:100,height:100,frameCount:72,fps:24};
+ context.reviewClip=clip;
+ runInContext('selectFilm(reviewClip,31)',context);
+ assert.equal(player.currentTime,0);
+ player.readyState=1;fire('film-player','loadedmetadata');
+ assert.ok(Math.abs(player.currentTime-(31.001/24))<1e-8);
+ assert.match(element('film-frame').textContent,/Ruta 31 \/ 71/);
+ runInContext('seekFilm(9999)',context);
+ assert.ok(player.currentTime<3);assert.match(element('film-frame').textContent,/Ruta 71 \/ 71/);
+ runInContext('selectFilm(reviewClip,31);selectFilm({...reviewClip,id:"next"})',context);
+ player.readyState=1;fire('film-player','loadedmetadata');
+ assert.equal(player.currentTime,0);
+ assert.equal(runInContext('JSON.stringify(plan)',context),before);
+ assert.equal(runInContext('dirty',context),false);
+ const urls:string[]=[];context.URL=URL;context.location.href='http://127.0.0.1:4319/lab.html?clip=next&frame=31';
+ context.window.history={replaceState(_state:unknown,_title:string,url:URL){urls.push(String(url));}};
+ player.currentTime=2;fire('film-player','seeked');
+ assert.equal(new URL(urls.at(-1)!).searchParams.get('frame'),'48');
+ player.currentTime=2.5;fire('film-player','pause');
+ assert.equal(new URL(urls.at(-1)!).searchParams.get('frame'),'60');
+});

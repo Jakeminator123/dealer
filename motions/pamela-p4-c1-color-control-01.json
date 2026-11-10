@@ -1,0 +1,42 @@
+{
+  "schemaVersion": 1,
+  "id": "pamela-p4-c1-color-control-01",
+  "dealer": "pamela",
+  "source": {
+    "path": "assets/motions/pamela-p4-c1-color-control-01/source.mp4",
+    "sha256": "d5834149569c00b1ec99b334df44724e289e49dbd5e6d5fc2a67e12d0fb5140c",
+    "bytes": 11165209,
+    "width": 1764,
+    "height": 1174,
+    "fps": 30,
+    "frames": 120,
+    "provider": "Runway developer API",
+    "model": "wan3"
+  },
+  "motion": {
+    "takeHand": "LH",
+    "releaseHand": "LH",
+    "target": "P4.C1",
+    "physicalStartSide": "UNKNOWN",
+    "physicalEndSide": "UNKNOWN",
+    "turn": null,
+    "pass": false,
+    "basis": "SOURCE_FRAME_REVIEW",
+    "evidence": "evidence/anchor-color-audit.json"
+  },
+  "review": {
+    "decision": "REJECTED",
+    "basis": "Frames63→64 change broad yellow to broad blue without visible edge or corresponding silhouette rotation. Physical turn not verified; late release116→117 succeeds.",
+    "limitations": "Historical placement, not current editor geometry. Green source, no composited room or material replacement. Return to shoe is a separate segment; do not loop this take.",
+    "colorDoesNotProvePhysicalSide": true,
+    "evidence": "evidence/p4-control-visual-review.json"
+  },
+  "placementRef": {
+    "basis": "historical P4 control",
+    "currentDraftMatched": false
+  },
+  "postProcessing": "none",
+  "generationRef": "assets/motions/pamela-p4-c1-color-control-01/generation.json",
+  "scoutIntegrated": false,
+  "published": false
+}

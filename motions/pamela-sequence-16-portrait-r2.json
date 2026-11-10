@@ -1,0 +1,3931 @@
+{
+  "schemaVersion": 1,
+  "id": "pamela-sequence-16-portrait-r2",
+  "dealer": "pamela",
+  "kind": "sequence",
+  "source": {
+    "path": "assets/motions/pamela-sequence-16-portrait-r2/review.mp4",
+    "sha256": "cdb2bc706f07d51b1bb840dba03751147825c27074fc59971d44851b6eb2ccf4",
+    "bytes": 14568693,
+    "width": 1080,
+    "height": 1920,
+    "fps": 30,
+    "frames": 3296
+  },
+  "provenance": {
+    "method": "frame-exact prefix, H264 re-encode",
+    "originalPath": "assets/motions/pamela-sequence-17-portrait-r2/source.mp4",
+    "originalSha256": "2233434001c3e7d957fc6eb86291b298e64e5feffe8d3e0f9dd20acf71935460",
+    "sourceRange": [
+      0,
+      3296
+    ],
+    "archiveReview": {
+      "path": "assets/sequences/pamela-r2/review-manifest.json",
+      "sha256": "56eec07608af6519951f7fcc22781a427ed6153ceaec060efe9b6991c0b91a19",
+      "bytes": 2074,
+      "source": "D:/dealer-archive/snyggare-dealer/references/pamela-goal-film-review.json",
+      "role": "historical-sequence-review-manifest"
+    },
+    "archiveTimeline": {
+      "path": "assets/sequences/pamela-r2/timeline.json",
+      "sha256": "b9500e990de4a0e021042efbb5ae4dc123513b94fb96c30aef39c982406281fa",
+      "bytes": 321701,
+      "source": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-scene/take-09/timeline-89d0a44801ef.json",
+      "role": "historical-sequence-timeline"
+    },
+    "audit": "evidence/sequence-reuse-audit.json",
+    "importedAt": "2026-11-10T19:15:14.500Z"
+  },
+  "sequence": {
+    "startPose": "IDLE",
+    "endPose": "IDLE",
+    "startBoard": [],
+    "endBoard": [
+      {
+        "slot": "P7.C1",
+        "side": "FRONT"
+      },
+      {
+        "slot": "P6.C1",
+        "side": "FRONT"
+      },
+      {
+        "slot": "P5.C1",
+        "side": "FRONT"
+      },
+      {
+        "slot": "P4.C1",
+        "side": "FRONT"
+      },
+      {
+        "slot": "P3.C1",
+        "side": "FRONT"
+      },
+      {
+        "slot": "P2.C1",
+        "side": "FRONT"
+      },
+      {
+        "slot": "P1.C1",
+        "side": "FRONT"
+      },
+      {
+        "slot": "D.C1",
+        "side": "FRONT"
+      },
+      {
+        "slot": "P7.C2",
+        "side": "FRONT"
+      },
+      {
+        "slot": "P6.C2",
+        "side": "FRONT"
+      },
+      {
+        "slot": "P5.C2",
+        "side": "FRONT"
+      },
+      {
+        "slot": "P4.C2",
+        "side": "FRONT"
+      },
+      {
+        "slot": "P3.C2",
+        "side": "FRONT"
+      },
+      {
+        "slot": "P2.C2",
+        "side": "FRONT"
+      },
+      {
+        "slot": "P1.C2",
+        "side": "FRONT"
+      },
+      {
+        "slot": "D.C2",
+        "side": "BACK"
+      }
+    ],
+    "playerCards": 14,
+    "dealerCards": 2,
+    "sourceOrder": "P7 to P1, D.C1, P7 to P1, D.C2; optional reveal and D.C3",
+    "loopToEmptyStartAllowed": false,
+    "scoutOwnsRevealAndDraw": true,
+    "segments": [
+      {
+        "id": "bridge.to-redo",
+        "instance": "bridge.to-redo#1",
+        "from": {
+          "kind": "VILA"
+        },
+        "to": {
+          "kind": "REDO"
+        },
+        "outputRange": [
+          0,
+          59
+        ],
+        "activeSlot": null,
+        "boardBefore": [],
+        "boardAfter": [],
+        "sourceSides": null,
+        "bound": true
+      },
+      {
+        "id": "deal.P7.K1.release",
+        "instance": "deal.P7.K1.release#1",
+        "from": {
+          "kind": "REDO"
+        },
+        "to": {
+          "boundaryId": "release.P7.K1",
+          "kind": "ACTION_BOUNDARY"
+        },
+        "outputRange": [
+          59,
+          152
+        ],
+        "activeSlot": "P7.C1",
+        "boardBefore": [],
+        "boardAfter": [
+          {
+            "slot": "P7.C1",
+            "side": "FRONT"
+          }
+        ],
+        "sourceSides": [
+          "BACK",
+          "EDGE",
+          "FRONT"
+        ],
+        "bound": true
+      },
+      {
+        "id": "return.P7.K1.to-redo",
+        "instance": "return.P7.K1.to-redo#1",
+        "from": {
+          "boundaryId": "release.P7.K1",
+          "kind": "ACTION_BOUNDARY"
+        },
+        "to": {
+          "kind": "REDO"
+        },
+        "outputRange": [
+          152,
+          219
+        ],
+        "activeSlot": null,
+        "boardBefore": [
+          {
+            "slot": "P7.C1",
+            "side": "FRONT"
+          }
+        ],
+        "boardAfter": [
+          {
+            "slot": "P7.C1",
+            "side": "FRONT"
+          }
+        ],
+        "sourceSides": null,
+        "bound": true
+      },
+      {
+        "id": "deal.P6.K1.release",
+        "instance": "deal.P6.K1.release#1",
+        "from": {
+          "kind": "REDO"
+        },
+        "to": {
+          "boundaryId": "release.P6.K1",
+          "kind": "ACTION_BOUNDARY"
+        },
+        "outputRange": [
+          219,
+          312
+        ],
+        "activeSlot": "P6.C1",
+        "boardBefore": [
+          {
+            "slot": "P7.C1",
+            "side": "FRONT"
+          }
+        ],
+        "boardAfter": [
+          {
+            "slot": "P7.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P6.C1",
+            "side": "FRONT"
+          }
+        ],
+        "sourceSides": [
+          "BACK",
+          "EDGE",
+          "FRONT"
+        ],
+        "bound": true
+      },
+      {
+        "id": "return.P6.K1.direct",
+        "instance": "return.P6.K1.direct#1",
+        "from": {
+          "boundaryId": "release.P6.K1",
+          "kind": "ACTION_BOUNDARY"
+        },
+        "to": {
+          "kind": "VILA"
+        },
+        "outputRange": [
+          312,
+          345
+        ],
+        "activeSlot": null,
+        "boardBefore": [
+          {
+            "slot": "P7.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P6.C1",
+            "side": "FRONT"
+          }
+        ],
+        "boardAfter": [
+          {
+            "slot": "P7.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P6.C1",
+            "side": "FRONT"
+          }
+        ],
+        "sourceSides": null,
+        "bound": true
+      },
+      {
+        "id": "bridge.to-redo",
+        "instance": "bridge.to-redo#2",
+        "from": {
+          "kind": "VILA"
+        },
+        "to": {
+          "kind": "REDO"
+        },
+        "outputRange": [
+          345,
+          404
+        ],
+        "activeSlot": null,
+        "boardBefore": [
+          {
+            "slot": "P7.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P6.C1",
+            "side": "FRONT"
+          }
+        ],
+        "boardAfter": [
+          {
+            "slot": "P7.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P6.C1",
+            "side": "FRONT"
+          }
+        ],
+        "sourceSides": null,
+        "bound": true
+      },
+      {
+        "id": "deal.P5.K1.release",
+        "instance": "deal.P5.K1.release#1",
+        "from": {
+          "kind": "REDO"
+        },
+        "to": {
+          "boundaryId": "release.P5.K1",
+          "kind": "ACTION_BOUNDARY"
+        },
+        "outputRange": [
+          404,
+          494
+        ],
+        "activeSlot": "P5.C1",
+        "boardBefore": [
+          {
+            "slot": "P7.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P6.C1",
+            "side": "FRONT"
+          }
+        ],
+        "boardAfter": [
+          {
+            "slot": "P7.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P6.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P5.C1",
+            "side": "FRONT"
+          }
+        ],
+        "sourceSides": [
+          "BACK",
+          "EDGE",
+          "FRONT"
+        ],
+        "bound": true
+      },
+      {
+        "id": "return.P5.K1.direct",
+        "instance": "return.P5.K1.direct#1",
+        "from": {
+          "boundaryId": "release.P5.K1",
+          "kind": "ACTION_BOUNDARY"
+        },
+        "to": {
+          "kind": "VILA"
+        },
+        "outputRange": [
+          494,
+          553
+        ],
+        "activeSlot": null,
+        "boardBefore": [
+          {
+            "slot": "P7.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P6.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P5.C1",
+            "side": "FRONT"
+          }
+        ],
+        "boardAfter": [
+          {
+            "slot": "P7.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P6.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P5.C1",
+            "side": "FRONT"
+          }
+        ],
+        "sourceSides": null,
+        "bound": true
+      },
+      {
+        "id": "bridge.to-redo",
+        "instance": "bridge.to-redo#3",
+        "from": {
+          "kind": "VILA"
+        },
+        "to": {
+          "kind": "REDO"
+        },
+        "outputRange": [
+          553,
+          612
+        ],
+        "activeSlot": null,
+        "boardBefore": [
+          {
+            "slot": "P7.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P6.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P5.C1",
+            "side": "FRONT"
+          }
+        ],
+        "boardAfter": [
+          {
+            "slot": "P7.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P6.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P5.C1",
+            "side": "FRONT"
+          }
+        ],
+        "sourceSides": null,
+        "bound": true
+      },
+      {
+        "id": "deal.P4.K1.release",
+        "instance": "deal.P4.K1.release#1",
+        "from": {
+          "kind": "REDO"
+        },
+        "to": {
+          "boundaryId": "release.P4.K1",
+          "kind": "ACTION_BOUNDARY"
+        },
+        "outputRange": [
+          612,
+          705
+        ],
+        "activeSlot": "P4.C1",
+        "boardBefore": [
+          {
+            "slot": "P7.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P6.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P5.C1",
+            "side": "FRONT"
+          }
+        ],
+        "boardAfter": [
+          {
+            "slot": "P7.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P6.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P5.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P4.C1",
+            "side": "FRONT"
+          }
+        ],
+        "sourceSides": [
+          "BACK",
+          "EDGE",
+          "FRONT"
+        ],
+        "bound": true
+      },
+      {
+        "id": "return.P4.K1.to-redo",
+        "instance": "return.P4.K1.to-redo#1",
+        "from": {
+          "boundaryId": "release.P4.K1",
+          "kind": "ACTION_BOUNDARY"
+        },
+        "to": {
+          "kind": "REDO"
+        },
+        "outputRange": [
+          705,
+          765
+        ],
+        "activeSlot": null,
+        "boardBefore": [
+          {
+            "slot": "P7.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P6.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P5.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P4.C1",
+            "side": "FRONT"
+          }
+        ],
+        "boardAfter": [
+          {
+            "slot": "P7.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P6.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P5.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P4.C1",
+            "side": "FRONT"
+          }
+        ],
+        "sourceSides": null,
+        "bound": true
+      },
+      {
+        "id": "deal.P3.K1.release",
+        "instance": "deal.P3.K1.release#1",
+        "from": {
+          "kind": "REDO"
+        },
+        "to": {
+          "boundaryId": "release.P3.K1",
+          "kind": "ACTION_BOUNDARY"
+        },
+        "outputRange": [
+          765,
+          896
+        ],
+        "activeSlot": "P3.C1",
+        "boardBefore": [
+          {
+            "slot": "P7.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P6.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P5.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P4.C1",
+            "side": "FRONT"
+          }
+        ],
+        "boardAfter": [
+          {
+            "slot": "P7.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P6.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P5.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P4.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P3.C1",
+            "side": "FRONT"
+          }
+        ],
+        "sourceSides": [
+          "BACK",
+          "EDGE",
+          "FRONT"
+        ],
+        "bound": true
+      },
+      {
+        "id": "return.P3.K1.direct",
+        "instance": "return.P3.K1.direct#1",
+        "from": {
+          "boundaryId": "release.P3.K1",
+          "kind": "ACTION_BOUNDARY"
+        },
+        "to": {
+          "kind": "VILA"
+        },
+        "outputRange": [
+          896,
+          956
+        ],
+        "activeSlot": null,
+        "boardBefore": [
+          {
+            "slot": "P7.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P6.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P5.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P4.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P3.C1",
+            "side": "FRONT"
+          }
+        ],
+        "boardAfter": [
+          {
+            "slot": "P7.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P6.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P5.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P4.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P3.C1",
+            "side": "FRONT"
+          }
+        ],
+        "sourceSides": null,
+        "bound": true
+      },
+      {
+        "id": "bridge.to-redo",
+        "instance": "bridge.to-redo#4",
+        "from": {
+          "kind": "VILA"
+        },
+        "to": {
+          "kind": "REDO"
+        },
+        "outputRange": [
+          956,
+          1015
+        ],
+        "activeSlot": null,
+        "boardBefore": [
+          {
+            "slot": "P7.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P6.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P5.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P4.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P3.C1",
+            "side": "FRONT"
+          }
+        ],
+        "boardAfter": [
+          {
+            "slot": "P7.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P6.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P5.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P4.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P3.C1",
+            "side": "FRONT"
+          }
+        ],
+        "sourceSides": null,
+        "bound": true
+      },
+      {
+        "id": "deal.P2.K1.release",
+        "instance": "deal.P2.K1.release#1",
+        "from": {
+          "kind": "REDO"
+        },
+        "to": {
+          "boundaryId": "release.P2.K1",
+          "kind": "ACTION_BOUNDARY"
+        },
+        "outputRange": [
+          1015,
+          1124
+        ],
+        "activeSlot": "P2.C1",
+        "boardBefore": [
+          {
+            "slot": "P7.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P6.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P5.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P4.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P3.C1",
+            "side": "FRONT"
+          }
+        ],
+        "boardAfter": [
+          {
+            "slot": "P7.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P6.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P5.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P4.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P3.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P2.C1",
+            "side": "FRONT"
+          }
+        ],
+        "sourceSides": [
+          "BACK",
+          "EDGE",
+          "FRONT"
+        ],
+        "bound": true
+      },
+      {
+        "id": "return.P2.K1.direct",
+        "instance": "return.P2.K1.direct#1",
+        "from": {
+          "boundaryId": "release.P2.K1",
+          "kind": "ACTION_BOUNDARY"
+        },
+        "to": {
+          "kind": "VILA"
+        },
+        "outputRange": [
+          1124,
+          1195
+        ],
+        "activeSlot": null,
+        "boardBefore": [
+          {
+            "slot": "P7.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P6.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P5.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P4.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P3.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P2.C1",
+            "side": "FRONT"
+          }
+        ],
+        "boardAfter": [
+          {
+            "slot": "P7.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P6.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P5.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P4.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P3.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P2.C1",
+            "side": "FRONT"
+          }
+        ],
+        "sourceSides": null,
+        "bound": true
+      },
+      {
+        "id": "bridge.to-redo",
+        "instance": "bridge.to-redo#5",
+        "from": {
+          "kind": "VILA"
+        },
+        "to": {
+          "kind": "REDO"
+        },
+        "outputRange": [
+          1195,
+          1254
+        ],
+        "activeSlot": null,
+        "boardBefore": [
+          {
+            "slot": "P7.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P6.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P5.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P4.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P3.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P2.C1",
+            "side": "FRONT"
+          }
+        ],
+        "boardAfter": [
+          {
+            "slot": "P7.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P6.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P5.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P4.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P3.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P2.C1",
+            "side": "FRONT"
+          }
+        ],
+        "sourceSides": null,
+        "bound": true
+      },
+      {
+        "id": "deal.P1.K1.release",
+        "instance": "deal.P1.K1.release#1",
+        "from": {
+          "kind": "REDO"
+        },
+        "to": {
+          "boundaryId": "release.P1.K1",
+          "kind": "ACTION_BOUNDARY"
+        },
+        "outputRange": [
+          1254,
+          1357
+        ],
+        "activeSlot": "P1.C1",
+        "boardBefore": [
+          {
+            "slot": "P7.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P6.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P5.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P4.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P3.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P2.C1",
+            "side": "FRONT"
+          }
+        ],
+        "boardAfter": [
+          {
+            "slot": "P7.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P6.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P5.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P4.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P3.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P2.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P1.C1",
+            "side": "FRONT"
+          }
+        ],
+        "sourceSides": [
+          "BACK",
+          "EDGE",
+          "FRONT"
+        ],
+        "bound": true
+      },
+      {
+        "id": "return.P1.K1.to-redo",
+        "instance": "return.P1.K1.to-redo#1",
+        "from": {
+          "boundaryId": "release.P1.K1",
+          "kind": "ACTION_BOUNDARY"
+        },
+        "to": {
+          "kind": "REDO"
+        },
+        "outputRange": [
+          1357,
+          1417
+        ],
+        "activeSlot": null,
+        "boardBefore": [
+          {
+            "slot": "P7.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P6.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P5.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P4.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P3.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P2.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P1.C1",
+            "side": "FRONT"
+          }
+        ],
+        "boardAfter": [
+          {
+            "slot": "P7.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P6.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P5.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P4.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P3.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P2.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P1.C1",
+            "side": "FRONT"
+          }
+        ],
+        "sourceSides": null,
+        "bound": true
+      },
+      {
+        "id": "deal.D.K1.release",
+        "instance": "deal.D.K1.release#1",
+        "from": {
+          "kind": "REDO"
+        },
+        "to": {
+          "boundaryId": "release.D.K1",
+          "kind": "ACTION_BOUNDARY"
+        },
+        "outputRange": [
+          1417,
+          1547
+        ],
+        "activeSlot": "D.C1",
+        "boardBefore": [
+          {
+            "slot": "P7.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P6.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P5.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P4.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P3.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P2.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P1.C1",
+            "side": "FRONT"
+          }
+        ],
+        "boardAfter": [
+          {
+            "slot": "P7.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P6.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P5.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P4.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P3.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P2.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P1.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "D.C1",
+            "side": "FRONT"
+          }
+        ],
+        "sourceSides": [
+          "BACK",
+          "EDGE",
+          "FRONT"
+        ],
+        "bound": true
+      },
+      {
+        "id": "return.D.K1.to-redo",
+        "instance": "return.D.K1.to-redo#1",
+        "from": {
+          "boundaryId": "release.D.K1",
+          "kind": "ACTION_BOUNDARY"
+        },
+        "to": {
+          "kind": "REDO"
+        },
+        "outputRange": [
+          1547,
+          1595
+        ],
+        "activeSlot": null,
+        "boardBefore": [
+          {
+            "slot": "P7.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P6.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P5.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P4.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P3.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P2.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P1.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "D.C1",
+            "side": "FRONT"
+          }
+        ],
+        "boardAfter": [
+          {
+            "slot": "P7.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P6.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P5.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P4.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P3.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P2.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P1.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "D.C1",
+            "side": "FRONT"
+          }
+        ],
+        "sourceSides": null,
+        "bound": true
+      },
+      {
+        "id": "deal.P7.K2.release",
+        "instance": "deal.P7.K2.release#1",
+        "from": {
+          "kind": "REDO"
+        },
+        "to": {
+          "boundaryId": "release.P7.K2",
+          "kind": "ACTION_BOUNDARY"
+        },
+        "outputRange": [
+          1595,
+          1711
+        ],
+        "activeSlot": "P7.C2",
+        "boardBefore": [
+          {
+            "slot": "P7.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P6.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P5.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P4.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P3.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P2.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P1.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "D.C1",
+            "side": "FRONT"
+          }
+        ],
+        "boardAfter": [
+          {
+            "slot": "P7.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P6.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P5.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P4.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P3.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P2.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P1.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "D.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P7.C2",
+            "side": "FRONT"
+          }
+        ],
+        "sourceSides": [
+          "BACK",
+          "EDGE",
+          "FRONT"
+        ],
+        "bound": true
+      },
+      {
+        "id": "return.P7.K2.direct",
+        "instance": "return.P7.K2.direct#1",
+        "from": {
+          "boundaryId": "release.P7.K2",
+          "kind": "ACTION_BOUNDARY"
+        },
+        "to": {
+          "kind": "VILA"
+        },
+        "outputRange": [
+          1711,
+          1771
+        ],
+        "activeSlot": null,
+        "boardBefore": [
+          {
+            "slot": "P7.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P6.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P5.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P4.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P3.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P2.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P1.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "D.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P7.C2",
+            "side": "FRONT"
+          }
+        ],
+        "boardAfter": [
+          {
+            "slot": "P7.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P6.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P5.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P4.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P3.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P2.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P1.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "D.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P7.C2",
+            "side": "FRONT"
+          }
+        ],
+        "sourceSides": null,
+        "bound": true
+      },
+      {
+        "id": "bridge.to-redo",
+        "instance": "bridge.to-redo#6",
+        "from": {
+          "kind": "VILA"
+        },
+        "to": {
+          "kind": "REDO"
+        },
+        "outputRange": [
+          1771,
+          1830
+        ],
+        "activeSlot": null,
+        "boardBefore": [
+          {
+            "slot": "P7.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P6.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P5.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P4.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P3.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P2.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P1.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "D.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P7.C2",
+            "side": "FRONT"
+          }
+        ],
+        "boardAfter": [
+          {
+            "slot": "P7.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P6.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P5.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P4.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P3.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P2.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P1.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "D.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P7.C2",
+            "side": "FRONT"
+          }
+        ],
+        "sourceSides": null,
+        "bound": true
+      },
+      {
+        "id": "deal.P6.K2.release",
+        "instance": "deal.P6.K2.release#1",
+        "from": {
+          "kind": "REDO"
+        },
+        "to": {
+          "boundaryId": "release.P6.K2",
+          "kind": "ACTION_BOUNDARY"
+        },
+        "outputRange": [
+          1830,
+          1927
+        ],
+        "activeSlot": "P6.C2",
+        "boardBefore": [
+          {
+            "slot": "P7.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P6.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P5.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P4.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P3.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P2.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P1.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "D.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P7.C2",
+            "side": "FRONT"
+          }
+        ],
+        "boardAfter": [
+          {
+            "slot": "P7.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P6.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P5.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P4.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P3.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P2.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P1.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "D.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P7.C2",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P6.C2",
+            "side": "FRONT"
+          }
+        ],
+        "sourceSides": [
+          "BACK",
+          "EDGE",
+          "FRONT"
+        ],
+        "bound": true
+      },
+      {
+        "id": "return.P6.K2.direct",
+        "instance": "return.P6.K2.direct#1",
+        "from": {
+          "boundaryId": "release.P6.K2",
+          "kind": "ACTION_BOUNDARY"
+        },
+        "to": {
+          "kind": "VILA"
+        },
+        "outputRange": [
+          1927,
+          1980
+        ],
+        "activeSlot": null,
+        "boardBefore": [
+          {
+            "slot": "P7.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P6.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P5.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P4.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P3.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P2.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P1.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "D.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P7.C2",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P6.C2",
+            "side": "FRONT"
+          }
+        ],
+        "boardAfter": [
+          {
+            "slot": "P7.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P6.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P5.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P4.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P3.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P2.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P1.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "D.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P7.C2",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P6.C2",
+            "side": "FRONT"
+          }
+        ],
+        "sourceSides": null,
+        "bound": true
+      },
+      {
+        "id": "bridge.to-redo",
+        "instance": "bridge.to-redo#7",
+        "from": {
+          "kind": "VILA"
+        },
+        "to": {
+          "kind": "REDO"
+        },
+        "outputRange": [
+          1980,
+          2039
+        ],
+        "activeSlot": null,
+        "boardBefore": [
+          {
+            "slot": "P7.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P6.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P5.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P4.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P3.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P2.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P1.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "D.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P7.C2",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P6.C2",
+            "side": "FRONT"
+          }
+        ],
+        "boardAfter": [
+          {
+            "slot": "P7.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P6.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P5.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P4.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P3.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P2.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P1.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "D.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P7.C2",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P6.C2",
+            "side": "FRONT"
+          }
+        ],
+        "sourceSides": null,
+        "bound": true
+      },
+      {
+        "id": "deal.P5.K2.release",
+        "instance": "deal.P5.K2.release#1",
+        "from": {
+          "kind": "REDO"
+        },
+        "to": {
+          "boundaryId": "release.P5.K2",
+          "kind": "ACTION_BOUNDARY"
+        },
+        "outputRange": [
+          2039,
+          2162
+        ],
+        "activeSlot": "P5.C2",
+        "boardBefore": [
+          {
+            "slot": "P7.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P6.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P5.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P4.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P3.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P2.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P1.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "D.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P7.C2",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P6.C2",
+            "side": "FRONT"
+          }
+        ],
+        "boardAfter": [
+          {
+            "slot": "P7.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P6.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P5.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P4.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P3.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P2.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P1.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "D.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P7.C2",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P6.C2",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P5.C2",
+            "side": "FRONT"
+          }
+        ],
+        "sourceSides": [
+          "BACK",
+          "EDGE",
+          "FRONT"
+        ],
+        "bound": true
+      },
+      {
+        "id": "return.P5.K2.direct",
+        "instance": "return.P5.K2.direct#1",
+        "from": {
+          "boundaryId": "release.P5.K2",
+          "kind": "ACTION_BOUNDARY"
+        },
+        "to": {
+          "kind": "VILA"
+        },
+        "outputRange": [
+          2162,
+          2219
+        ],
+        "activeSlot": null,
+        "boardBefore": [
+          {
+            "slot": "P7.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P6.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P5.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P4.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P3.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P2.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P1.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "D.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P7.C2",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P6.C2",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P5.C2",
+            "side": "FRONT"
+          }
+        ],
+        "boardAfter": [
+          {
+            "slot": "P7.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P6.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P5.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P4.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P3.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P2.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P1.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "D.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P7.C2",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P6.C2",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P5.C2",
+            "side": "FRONT"
+          }
+        ],
+        "sourceSides": null,
+        "bound": true
+      },
+      {
+        "id": "bridge.to-redo",
+        "instance": "bridge.to-redo#8",
+        "from": {
+          "kind": "VILA"
+        },
+        "to": {
+          "kind": "REDO"
+        },
+        "outputRange": [
+          2219,
+          2278
+        ],
+        "activeSlot": null,
+        "boardBefore": [
+          {
+            "slot": "P7.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P6.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P5.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P4.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P3.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P2.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P1.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "D.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P7.C2",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P6.C2",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P5.C2",
+            "side": "FRONT"
+          }
+        ],
+        "boardAfter": [
+          {
+            "slot": "P7.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P6.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P5.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P4.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P3.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P2.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P1.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "D.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P7.C2",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P6.C2",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P5.C2",
+            "side": "FRONT"
+          }
+        ],
+        "sourceSides": null,
+        "bound": true
+      },
+      {
+        "id": "deal.P4.K2.release",
+        "instance": "deal.P4.K2.release#1",
+        "from": {
+          "kind": "REDO"
+        },
+        "to": {
+          "boundaryId": "release.P4.K2",
+          "kind": "ACTION_BOUNDARY"
+        },
+        "outputRange": [
+          2278,
+          2394
+        ],
+        "activeSlot": "P4.C2",
+        "boardBefore": [
+          {
+            "slot": "P7.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P6.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P5.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P4.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P3.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P2.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P1.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "D.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P7.C2",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P6.C2",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P5.C2",
+            "side": "FRONT"
+          }
+        ],
+        "boardAfter": [
+          {
+            "slot": "P7.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P6.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P5.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P4.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P3.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P2.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P1.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "D.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P7.C2",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P6.C2",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P5.C2",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P4.C2",
+            "side": "FRONT"
+          }
+        ],
+        "sourceSides": [
+          "BACK",
+          "EDGE",
+          "FRONT"
+        ],
+        "bound": true
+      },
+      {
+        "id": "return.P4.K2.direct",
+        "instance": "return.P4.K2.direct#1",
+        "from": {
+          "boundaryId": "release.P4.K2",
+          "kind": "ACTION_BOUNDARY"
+        },
+        "to": {
+          "kind": "VILA"
+        },
+        "outputRange": [
+          2394,
+          2454
+        ],
+        "activeSlot": null,
+        "boardBefore": [
+          {
+            "slot": "P7.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P6.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P5.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P4.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P3.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P2.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P1.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "D.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P7.C2",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P6.C2",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P5.C2",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P4.C2",
+            "side": "FRONT"
+          }
+        ],
+        "boardAfter": [
+          {
+            "slot": "P7.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P6.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P5.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P4.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P3.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P2.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P1.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "D.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P7.C2",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P6.C2",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P5.C2",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P4.C2",
+            "side": "FRONT"
+          }
+        ],
+        "sourceSides": null,
+        "bound": true
+      },
+      {
+        "id": "bridge.to-redo",
+        "instance": "bridge.to-redo#9",
+        "from": {
+          "kind": "VILA"
+        },
+        "to": {
+          "kind": "REDO"
+        },
+        "outputRange": [
+          2454,
+          2513
+        ],
+        "activeSlot": null,
+        "boardBefore": [
+          {
+            "slot": "P7.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P6.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P5.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P4.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P3.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P2.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P1.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "D.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P7.C2",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P6.C2",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P5.C2",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P4.C2",
+            "side": "FRONT"
+          }
+        ],
+        "boardAfter": [
+          {
+            "slot": "P7.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P6.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P5.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P4.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P3.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P2.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P1.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "D.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P7.C2",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P6.C2",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P5.C2",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P4.C2",
+            "side": "FRONT"
+          }
+        ],
+        "sourceSides": null,
+        "bound": true
+      },
+      {
+        "id": "deal.P3.K2.release",
+        "instance": "deal.P3.K2.release#1",
+        "from": {
+          "kind": "REDO"
+        },
+        "to": {
+          "boundaryId": "release.P3.K2",
+          "kind": "ACTION_BOUNDARY"
+        },
+        "outputRange": [
+          2513,
+          2638
+        ],
+        "activeSlot": "P3.C2",
+        "boardBefore": [
+          {
+            "slot": "P7.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P6.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P5.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P4.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P3.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P2.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P1.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "D.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P7.C2",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P6.C2",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P5.C2",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P4.C2",
+            "side": "FRONT"
+          }
+        ],
+        "boardAfter": [
+          {
+            "slot": "P7.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P6.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P5.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P4.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P3.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P2.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P1.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "D.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P7.C2",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P6.C2",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P5.C2",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P4.C2",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P3.C2",
+            "side": "FRONT"
+          }
+        ],
+        "sourceSides": [
+          "BACK",
+          "EDGE",
+          "FRONT"
+        ],
+        "bound": true
+      },
+      {
+        "id": "return.P3.K2.direct",
+        "instance": "return.P3.K2.direct#1",
+        "from": {
+          "boundaryId": "release.P3.K2",
+          "kind": "ACTION_BOUNDARY"
+        },
+        "to": {
+          "kind": "VILA"
+        },
+        "outputRange": [
+          2638,
+          2693
+        ],
+        "activeSlot": null,
+        "boardBefore": [
+          {
+            "slot": "P7.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P6.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P5.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P4.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P3.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P2.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P1.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "D.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P7.C2",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P6.C2",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P5.C2",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P4.C2",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P3.C2",
+            "side": "FRONT"
+          }
+        ],
+        "boardAfter": [
+          {
+            "slot": "P7.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P6.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P5.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P4.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P3.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P2.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P1.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "D.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P7.C2",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P6.C2",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P5.C2",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P4.C2",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P3.C2",
+            "side": "FRONT"
+          }
+        ],
+        "sourceSides": null,
+        "bound": true
+      },
+      {
+        "id": "bridge.to-redo",
+        "instance": "bridge.to-redo#10",
+        "from": {
+          "kind": "VILA"
+        },
+        "to": {
+          "kind": "REDO"
+        },
+        "outputRange": [
+          2693,
+          2752
+        ],
+        "activeSlot": null,
+        "boardBefore": [
+          {
+            "slot": "P7.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P6.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P5.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P4.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P3.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P2.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P1.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "D.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P7.C2",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P6.C2",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P5.C2",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P4.C2",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P3.C2",
+            "side": "FRONT"
+          }
+        ],
+        "boardAfter": [
+          {
+            "slot": "P7.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P6.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P5.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P4.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P3.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P2.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P1.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "D.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P7.C2",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P6.C2",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P5.C2",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P4.C2",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P3.C2",
+            "side": "FRONT"
+          }
+        ],
+        "sourceSides": null,
+        "bound": true
+      },
+      {
+        "id": "deal.P2.K2.release",
+        "instance": "deal.P2.K2.release#1",
+        "from": {
+          "kind": "REDO"
+        },
+        "to": {
+          "boundaryId": "release.P2.K2",
+          "kind": "ACTION_BOUNDARY"
+        },
+        "outputRange": [
+          2752,
+          2895
+        ],
+        "activeSlot": "P2.C2",
+        "boardBefore": [
+          {
+            "slot": "P7.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P6.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P5.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P4.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P3.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P2.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P1.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "D.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P7.C2",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P6.C2",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P5.C2",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P4.C2",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P3.C2",
+            "side": "FRONT"
+          }
+        ],
+        "boardAfter": [
+          {
+            "slot": "P7.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P6.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P5.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P4.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P3.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P2.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P1.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "D.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P7.C2",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P6.C2",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P5.C2",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P4.C2",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P3.C2",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P2.C2",
+            "side": "FRONT"
+          }
+        ],
+        "sourceSides": [
+          "BACK",
+          "EDGE",
+          "FRONT"
+        ],
+        "bound": true
+      },
+      {
+        "id": "return.P2.K2.direct",
+        "instance": "return.P2.K2.direct#1",
+        "from": {
+          "boundaryId": "release.P2.K2",
+          "kind": "ACTION_BOUNDARY"
+        },
+        "to": {
+          "kind": "VILA"
+        },
+        "outputRange": [
+          2895,
+          2914
+        ],
+        "activeSlot": null,
+        "boardBefore": [
+          {
+            "slot": "P7.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P6.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P5.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P4.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P3.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P2.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P1.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "D.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P7.C2",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P6.C2",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P5.C2",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P4.C2",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P3.C2",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P2.C2",
+            "side": "FRONT"
+          }
+        ],
+        "boardAfter": [
+          {
+            "slot": "P7.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P6.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P5.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P4.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P3.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P2.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P1.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "D.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P7.C2",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P6.C2",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P5.C2",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P4.C2",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P3.C2",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P2.C2",
+            "side": "FRONT"
+          }
+        ],
+        "sourceSides": null,
+        "bound": true
+      },
+      {
+        "id": "bridge.to-redo",
+        "instance": "bridge.to-redo#11",
+        "from": {
+          "kind": "VILA"
+        },
+        "to": {
+          "kind": "REDO"
+        },
+        "outputRange": [
+          2914,
+          2973
+        ],
+        "activeSlot": null,
+        "boardBefore": [
+          {
+            "slot": "P7.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P6.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P5.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P4.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P3.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P2.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P1.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "D.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P7.C2",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P6.C2",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P5.C2",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P4.C2",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P3.C2",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P2.C2",
+            "side": "FRONT"
+          }
+        ],
+        "boardAfter": [
+          {
+            "slot": "P7.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P6.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P5.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P4.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P3.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P2.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P1.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "D.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P7.C2",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P6.C2",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P5.C2",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P4.C2",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P3.C2",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P2.C2",
+            "side": "FRONT"
+          }
+        ],
+        "sourceSides": null,
+        "bound": true
+      },
+      {
+        "id": "deal.P1.K2.release",
+        "instance": "deal.P1.K2.release#1",
+        "from": {
+          "kind": "REDO"
+        },
+        "to": {
+          "boundaryId": "release.P1.K2",
+          "kind": "ACTION_BOUNDARY"
+        },
+        "outputRange": [
+          2973,
+          3092
+        ],
+        "activeSlot": "P1.C2",
+        "boardBefore": [
+          {
+            "slot": "P7.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P6.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P5.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P4.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P3.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P2.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P1.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "D.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P7.C2",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P6.C2",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P5.C2",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P4.C2",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P3.C2",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P2.C2",
+            "side": "FRONT"
+          }
+        ],
+        "boardAfter": [
+          {
+            "slot": "P7.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P6.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P5.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P4.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P3.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P2.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P1.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "D.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P7.C2",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P6.C2",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P5.C2",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P4.C2",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P3.C2",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P2.C2",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P1.C2",
+            "side": "FRONT"
+          }
+        ],
+        "sourceSides": [
+          "BACK",
+          "EDGE",
+          "FRONT"
+        ],
+        "bound": true
+      },
+      {
+        "id": "return.P1.K2.to-redo",
+        "instance": "return.P1.K2.to-redo#1",
+        "from": {
+          "boundaryId": "release.P1.K2",
+          "kind": "ACTION_BOUNDARY"
+        },
+        "to": {
+          "kind": "REDO"
+        },
+        "outputRange": [
+          3092,
+          3152
+        ],
+        "activeSlot": null,
+        "boardBefore": [
+          {
+            "slot": "P7.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P6.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P5.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P4.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P3.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P2.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P1.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "D.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P7.C2",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P6.C2",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P5.C2",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P4.C2",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P3.C2",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P2.C2",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P1.C2",
+            "side": "FRONT"
+          }
+        ],
+        "boardAfter": [
+          {
+            "slot": "P7.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P6.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P5.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P4.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P3.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P2.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P1.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "D.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P7.C2",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P6.C2",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P5.C2",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P4.C2",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P3.C2",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P2.C2",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P1.C2",
+            "side": "FRONT"
+          }
+        ],
+        "sourceSides": null,
+        "bound": true
+      },
+      {
+        "id": "deal.D.K2.release",
+        "instance": "deal.D.K2.release#1",
+        "from": {
+          "kind": "REDO"
+        },
+        "to": {
+          "boundaryId": "release.D.K2",
+          "kind": "ACTION_BOUNDARY"
+        },
+        "outputRange": [
+          3152,
+          3251
+        ],
+        "activeSlot": "D.C2",
+        "boardBefore": [
+          {
+            "slot": "P7.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P6.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P5.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P4.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P3.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P2.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P1.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "D.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P7.C2",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P6.C2",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P5.C2",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P4.C2",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P3.C2",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P2.C2",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P1.C2",
+            "side": "FRONT"
+          }
+        ],
+        "boardAfter": [
+          {
+            "slot": "P7.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P6.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P5.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P4.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P3.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P2.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P1.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "D.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P7.C2",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P6.C2",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P5.C2",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P4.C2",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P3.C2",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P2.C2",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P1.C2",
+            "side": "FRONT"
+          },
+          {
+            "slot": "D.C2",
+            "side": "BACK"
+          }
+        ],
+        "sourceSides": [
+          "BACK",
+          "BACK"
+        ],
+        "bound": true
+      },
+      {
+        "id": "return.D.K2.direct",
+        "instance": "return.D.K2.direct#1",
+        "from": {
+          "boundaryId": "release.D.K2",
+          "kind": "ACTION_BOUNDARY"
+        },
+        "to": {
+          "kind": "VILA"
+        },
+        "outputRange": [
+          3251,
+          3296
+        ],
+        "activeSlot": null,
+        "boardBefore": [
+          {
+            "slot": "P7.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P6.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P5.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P4.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P3.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P2.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P1.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "D.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P7.C2",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P6.C2",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P5.C2",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P4.C2",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P3.C2",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P2.C2",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P1.C2",
+            "side": "FRONT"
+          },
+          {
+            "slot": "D.C2",
+            "side": "BACK"
+          }
+        ],
+        "boardAfter": [
+          {
+            "slot": "P7.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P6.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P5.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P4.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P3.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P2.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P1.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "D.C1",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P7.C2",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P6.C2",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P5.C2",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P4.C2",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P3.C2",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P2.C2",
+            "side": "FRONT"
+          },
+          {
+            "slot": "P1.C2",
+            "side": "FRONT"
+          },
+          {
+            "slot": "D.C2",
+            "side": "BACK"
+          }
+        ],
+        "sourceSides": null,
+        "bound": true
+      }
+    ]
+  },
+  "placementBinding": {
+    "basis": "historical qualified timeline; not current editor draft",
+    "currentDraftMatched": false,
+    "sourceWidth": 1764,
+    "sourceHeight": 1174,
+    "calibratedToCurrentPlan": false
+  },
+  "review": {
+    "decision": "PENDING",
+    "userApproved": false,
+    "basis": "Recovered complete review candidate. Source hashes and frame counts verified; current continuous playback and visual review required.",
+    "limitations": [
+      "Main and optional films show blue/yellow side markers. Actual card art is verified in separate stationary and moving proofs.",
+      "Some source and compositing joins retain minor tone or chroma edges, including a brief purple tint on the P3 edge.",
+      "D.C3 to D.C4 uses the verified via-VILA join. Individual short sources do not qualify arbitrary cross-source splices.",
+      "The film keeps the exact qualified r2 timeline. The separate r3 direct bank uses the newer standalone P1.C2 return.",
+      "The runtime must preserve game engine authority and separately qualify contact, occlusion, material and scene joins."
+    ]
+  },
+  "scoutIntegrated": false,
+  "published": false,
+  "userClassification": {
+    "role": "alternative",
+    "basis": "Jakob says this is a different newer sequence with historical coordinates/format; retain as alternative",
+    "recordedAt": "2026-11-10T19:33:40.399Z"
+  }
+}

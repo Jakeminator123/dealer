@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "id": "pamela-p4-c1-kling-control-01",
+  "dealer": "pamela",
+  "source": {
+    "path": "assets/motions/pamela-p4-c1-kling-control-01/source.mp4",
+    "sha256": "d780e9a3ff5a1505385740e328b6cc17ed90b32b60870e2470f7028198067ee4",
+    "bytes": 4787878,
+    "width": 1764,
+    "height": 1172,
+    "fps": 24,
+    "frames": 97,
+    "provider": "Runway developer API",
+    "model": "kling3.0_pro"
+  },
+  "motion": {
+    "takeHand": "LH",
+    "releaseHand": "LH",
+    "target": "P4.C1",
+    "physicalStartSide": "UNKNOWN",
+    "physicalEndSide": "UNKNOWN",
+    "turn": null,
+    "pass": false,
+    "basis": "SOURCE_FRAME_REVIEW"
+  },
+  "review": {
+    "decision": "REJECTED",
+    "basis": "Frames52–54 at24fps change broad yellow to broad blue without a visible edge-on turnover; same left hand and release by92, but physical flip unverified.",
+    "limitations": "Generated 1764x1172 at24fps/97frames, unconverted. Historical target, not current placement plan.",
+    "evidence": "evidence/p4-control-visual-review.json"
+  },
+  "generationRef": "assets/motions/pamela-p4-c1-kling-control-01/generation.json",
+  "placementRef": {
+    "path": "assets/motions/pamela-p4-c1-kling-control-01/plan.json",
+    "sha256": "dc3d88069afeb232f6ed5b388b29a39f051c9d7303167d8ead477ba880d4f6fe",
+    "basis": "Exact historic P4.C1 control; not the current editable placement draft"
+  },
+  "postProcessing": "none",
+  "scoutIntegrated": false,
+  "published": false
+}

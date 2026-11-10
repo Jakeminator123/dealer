@@ -21,6 +21,27 @@
       "bytes": 17847045
     },
     {
+      "id": "pamela-older-14-mask-refined",
+      "path": "assets/motions/pamela-older-14-mask-refined/source.mp4",
+      "url": "https://qeojzihua5ewt4uo.public.blob.vercel-storage.com/dealer/fbfd97b475920daa2a95c0340f264e55a9b5e3142be77ac54cf0fd3a07f25d43.mp4",
+      "sha256": "fbfd97b475920daa2a95c0340f264e55a9b5e3142be77ac54cf0fd3a07f25d43",
+      "bytes": 74322783
+    },
+    {
+      "id": "pamela-older-14-material-full",
+      "path": "assets/motions/pamela-older-14-material-full/source.mp4",
+      "url": "https://qeojzihua5ewt4uo.public.blob.vercel-storage.com/dealer/a2a03846093ec7a53c16556b84be78c8c1047ae50a7219ca4ea58fa68d1cde45.mp4",
+      "sha256": "a2a03846093ec7a53c16556b84be78c8c1047ae50a7219ca4ea58fa68d1cde45",
+      "bytes": 74322687
+    },
+    {
+      "id": "pamela-older-14-material-compact",
+      "path": "assets/motions/pamela-older-14-material-compact/source.mp4",
+      "url": "https://qeojzihua5ewt4uo.public.blob.vercel-storage.com/dealer/f5b0a602fe181661c9b76d380cdb667a6feae655a6a4dccbd61ab2ad1a24d4c6.mp4",
+      "sha256": "f5b0a602fe181661c9b76d380cdb667a6feae655a6a4dccbd61ab2ad1a24d4c6",
+      "bytes": 62758144
+    },
+    {
       "id": "pamela-p4-c2-closed-review-v04",
       "path": "assets/motions/pamela-p4-c2-left-closed-closed/review-v04/preview.mp4",
       "url": "https://qeojzihua5ewt4uo.public.blob.vercel-storage.com/dealer/7d093a28f37abf5bd4c373491fca9bc113fc2271e7784e718e66d95beb42392f.mp4",
@@ -68,6 +89,62 @@
       "url": "https://qeojzihua5ewt4uo.public.blob.vercel-storage.com/dealer/427a32f5ea55a64aa55b10c6e6e45f3b64fc887a22eb54f0bce06a675eb35f84.mp4",
       "sha256": "427a32f5ea55a64aa55b10c6e6e45f3b64fc887a22eb54f0bce06a675eb35f84",
       "bytes": 16149774
+    },
+    {
+      "id": "pamela-sequence-17-native-r2",
+      "path": "assets/motions/pamela-sequence-17-native-r2/source.mp4",
+      "url": "https://qeojzihua5ewt4uo.public.blob.vercel-storage.com/dealer/842dd4829654195d559acd27ae66b74eb0a9793e2392993685557b94bc76e9e4.mp4",
+      "sha256": "842dd4829654195d559acd27ae66b74eb0a9793e2392993685557b94bc76e9e4",
+      "bytes": 48538733
+    },
+    {
+      "id": "pamela-sequence-16-native-r2",
+      "path": "assets/motions/pamela-sequence-16-native-r2/review.mp4",
+      "url": "https://qeojzihua5ewt4uo.public.blob.vercel-storage.com/dealer/0860ad550ed94d7c84c37e434effe62531752140b755c359bd0e468332b37024.mp4",
+      "sha256": "0860ad550ed94d7c84c37e434effe62531752140b755c359bd0e468332b37024",
+      "bytes": 29134812
+    },
+    {
+      "id": "pamela-sequence-17-portrait-r2",
+      "path": "assets/motions/pamela-sequence-17-portrait-r2/source.mp4",
+      "url": "https://qeojzihua5ewt4uo.public.blob.vercel-storage.com/dealer/2233434001c3e7d957fc6eb86291b298e64e5feffe8d3e0f9dd20acf71935460.mp4",
+      "sha256": "2233434001c3e7d957fc6eb86291b298e64e5feffe8d3e0f9dd20acf71935460",
+      "bytes": 20341037
+    },
+    {
+      "id": "pamela-sequence-16-portrait-r2",
+      "path": "assets/motions/pamela-sequence-16-portrait-r2/review.mp4",
+      "url": "https://qeojzihua5ewt4uo.public.blob.vercel-storage.com/dealer/cdb2bc706f07d51b1bb840dba03751147825c27074fc59971d44851b6eb2ccf4.mp4",
+      "sha256": "cdb2bc706f07d51b1bb840dba03751147825c27074fc59971d44851b6eb2ccf4",
+      "bytes": 14568693
+    },
+    {
+      "id": "pamela-p4-c1-source-turn",
+      "path": "assets/motions/pamela-p4-c1-source-turn/source.mp4",
+      "url": "https://qeojzihua5ewt4uo.public.blob.vercel-storage.com/dealer/4153a54702edd316744ae39a64d7b6094e5bcdcd2020a1852850a4c3a9aaa1fe.mp4",
+      "sha256": "4153a54702edd316744ae39a64d7b6094e5bcdcd2020a1852850a4c3a9aaa1fe",
+      "bytes": 11359929
+    },
+    {
+      "id": "pamela-p4-c2-source-turn",
+      "path": "assets/motions/pamela-p4-c2-left-closed-closed/source.mp4",
+      "url": "https://qeojzihua5ewt4uo.public.blob.vercel-storage.com/dealer/e3b38f89eb6cb14f8dc240c5fdecce814850bb87285ebe540084c33af82b2ad7.mp4",
+      "sha256": "e3b38f89eb6cb14f8dc240c5fdecce814850bb87285ebe540084c33af82b2ad7",
+      "bytes": 11206879
+    },
+    {
+      "id": "pamela-p4-c1-color-control-01",
+      "path": "assets/motions/pamela-p4-c1-color-control-01/source.mp4",
+      "url": "https://qeojzihua5ewt4uo.public.blob.vercel-storage.com/dealer/d5834149569c00b1ec99b334df44724e289e49dbd5e6d5fc2a67e12d0fb5140c.mp4",
+      "sha256": "d5834149569c00b1ec99b334df44724e289e49dbd5e6d5fc2a67e12d0fb5140c",
+      "bytes": 11165209
+    },
+    {
+      "id": "pamela-p4-c1-kling-control-01",
+      "path": "assets/motions/pamela-p4-c1-kling-control-01/source.mp4",
+      "url": "https://qeojzihua5ewt4uo.public.blob.vercel-storage.com/dealer/d780e9a3ff5a1505385740e328b6cc17ed90b32b60870e2470f7028198067ee4.mp4",
+      "sha256": "d780e9a3ff5a1505385740e328b6cc17ed90b32b60870e2470f7028198067ee4",
+      "bytes": 4787878
     }
   ]
 }

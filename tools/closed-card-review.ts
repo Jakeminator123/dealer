@@ -1,9 +1,11 @@
-/** Local diagnostic recolour only. No pose changes, interpolation or provider calls. */
+/** Historical forced-yellow diagnostic, unsuitable for judging physical side. */
 import { spawn } from 'node:child_process';
 import { once } from 'node:events';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 import sharp from 'sharp';
+
+if(!process.argv.includes('--legacy-yellow-overlay'))throw Error('This historical overlay hides the real P4.C2 turn by painting its blue opposite face yellow. Review the unchanged source instead. Only --legacy-yellow-overlay reproduces that explicitly secondary color experiment.');
 
 const root='assets/motions/pamela-p4-c2-left-closed-closed';
 const source=`${root}/source.mp4`, output=`${root}/review-v04`;

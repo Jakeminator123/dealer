@@ -1,0 +1,138 @@
+{
+  "schemaVersion": 1,
+  "createdAt": "2026-11-10T19:48:13.577Z",
+  "purpose": "Exact instructions and image inputs actually submitted; not the current editor plan.",
+  "imageTransport": "The displayed PNG bytes were embedded as data:image/png;base64 in promptImage; this review names files and hashes instead of repeating base64.",
+  "colorConvention": {
+    "yellow": "BACK/closed",
+    "blue": "FRONT/open",
+    "pink": "separate mask aid, unused in these controls"
+  },
+  "jobs": [
+    {
+      "id": "pamela-p4-c1-color-control-01",
+      "endpoint": "/v1/image_to_video",
+      "model": "wan3",
+      "durationRequested": 4,
+      "ratio": "auto_1080p",
+      "audio": false,
+      "promptText": "Same Pamela, black suit, green felt and fixed shoe in one locked wide shot. One continuous four-second deal directly in front, centred in the image. From the exact first pose her left hand removes one card, broad yellow back visible. During the reach roll that same wrist once: yellow visibly narrows to a thin pale edge and the opposite blue face opens fully before table contact. The colours stay on opposite surfaces of the same physical card. Touch down at the exact blue footprint and angle in the last image, then lift empty fingers directly to that clear final pose. The other hand rests. The next yellow card stays in the shoe. No slide, second touch, display gesture, handoff, second flip, colour swap, camera motion or cut.",
+      "taskId": "e3fd5595-09ba-4228-a42c-0b7fb848fe6d",
+      "estimatedCredits": 80,
+      "start": {
+        "path": "assets/motions/pamela-p4-c1-color-control-01/start.png",
+        "sha256": "a2fc6d3565ca711015c9b547671bf33e97eea4c2281e75841690f8848b422f45",
+        "position": "first"
+      },
+      "end": {
+        "path": "assets/motions/pamela-p4-c1-color-control-01/end.png",
+        "sha256": "c30be996971282c737825a9439e3d303728086c391d8bbb14a67a8fc826e784b",
+        "position": "last"
+      },
+      "output": {
+        "path": "assets/motions/pamela-p4-c1-color-control-01/source.mp4",
+        "sha256": "d5834149569c00b1ec99b334df44724e289e49dbd5e6d5fc2a67e12d0fb5140c",
+        "bytes": 11165209,
+        "width": 1764,
+        "height": 1174,
+        "fps": 30,
+        "frames": 120,
+        "provider": "Runway developer API",
+        "model": "wan3"
+      },
+      "review": {
+        "decision": "REJECTED",
+        "basis": "Frames63→64 change broad yellow to broad blue without visible edge or corresponding silhouette rotation. Physical turn not verified; late release116→117 succeeds.",
+        "limitations": "Historical placement, not current editor geometry. Green source, no composited room or material replacement. Return to shoe is a separate segment; do not loop this take.",
+        "colorDoesNotProvePhysicalSide": true,
+        "evidence": "evidence/p4-control-visual-review.json"
+      },
+      "placementBinding": {
+        "path": "assets/motions/pamela-p4-c1-color-control-01/plan.json",
+        "sha256": "dc3d88069afeb232f6ed5b388b29a39f051c9d7303167d8ead477ba880d4f6fe",
+        "basis": "Exact historic P4.C1 control; not the current editable placement draft"
+      },
+      "postProcessing": "none",
+      "v6VideoSubmitted": false
+    },
+    {
+      "id": "pamela-p4-c1-kling-control-01",
+      "endpoint": "/v1/image_to_video",
+      "model": "kling3.0_pro",
+      "durationRequested": 4,
+      "ratio": "omitted",
+      "audio": false,
+      "promptText": "Same Pamela, black suit, green felt and fixed shoe in one locked wide shot. One continuous four-second deal directly in front, centred in the image. From the exact first pose her left hand removes one card, broad yellow back visible. During the reach roll that same wrist once: yellow visibly narrows to a thin pale edge and the opposite blue face opens fully before table contact. The colours stay on opposite surfaces of the same physical card. Touch down at the exact blue footprint and angle in the last image, then lift empty fingers directly to that clear final pose. The other hand rests. The next yellow card stays in the shoe. No slide, second touch, display gesture, handoff, second flip, colour swap, camera motion or cut.",
+      "taskId": "b22a8190-96ad-4c55-9c9d-b930a0d0623b",
+      "estimatedCredits": 48,
+      "start": {
+        "path": "assets/motions/pamela-p4-c1-kling-control-01/start.png",
+        "sha256": "a2fc6d3565ca711015c9b547671bf33e97eea4c2281e75841690f8848b422f45",
+        "position": "first"
+      },
+      "end": {
+        "path": "assets/motions/pamela-p4-c1-kling-control-01/end.png",
+        "sha256": "c30be996971282c737825a9439e3d303728086c391d8bbb14a67a8fc826e784b",
+        "position": "last"
+      },
+      "output": {
+        "path": "assets/motions/pamela-p4-c1-kling-control-01/source.mp4",
+        "sha256": "d780e9a3ff5a1505385740e328b6cc17ed90b32b60870e2470f7028198067ee4",
+        "bytes": 4787878,
+        "width": 1764,
+        "height": 1172,
+        "fps": 24,
+        "frames": 97,
+        "provider": "Runway developer API",
+        "model": "kling3.0_pro"
+      },
+      "review": {
+        "decision": "REJECTED",
+        "basis": "Frames52–54 at24fps change broad yellow to broad blue without a visible edge-on turnover; same left hand and release by92, but physical flip unverified.",
+        "limitations": "Generated 1764x1172 at24fps/97frames, unconverted. Historical target, not current placement plan.",
+        "evidence": "evidence/p4-control-visual-review.json"
+      },
+      "placementBinding": {
+        "path": "assets/motions/pamela-p4-c1-kling-control-01/plan.json",
+        "sha256": "dc3d88069afeb232f6ed5b388b29a39f051c9d7303167d8ead477ba880d4f6fe",
+        "basis": "Exact historic P4.C1 control; not the current editable placement draft"
+      },
+      "postProcessing": "none",
+      "v6VideoSubmitted": false
+    }
+  ],
+  "historicalPrompts": [
+    {
+      "id": "P4.C1-middle-end-card-v1",
+      "model": "wan3",
+      "duration": 12,
+      "promptText": "One uninterrupted 12-second take from a completely stationary tripod camera. FIRST and LAST have the same framing. Keep the entire reference dealer, her head and both hands fully in view at the original scale throughout the action. Preserve her identity, black blazer and ivory blouse. Keep the black shoe, bright chroma-green background AND tabletop fixed in the original screen positions; only the natural dealing movement changes. No zoom, pan, tilt, crop, close-up, reframing or camera movement. [0-1s] Hold the FIRST REDO pose. [1-4s] The hand touching the shoe draws ONE rigid plain-white poker-size card, about 63 by 88 millimeters, and carries it toward player seat 4: center, straight forward toward the viewer. [4-5s] Lay it flat exactly where the separate white card is visible in the LAST image: center about 50 percent image width from LEFT and 89 percent image height from TOP; this is the distinct seat-4 position entirely on the green tabletop. Preserve the complete card and hand inside the fixed original frame. [5-6s] Open all fingers and lift the entire EMPTY hand clear, leaving visible green separation between every fingertip and the card. [6-9s] Return that visibly EMPTY hand to the original REDO position beside the shoe without touching the dealt card again. [9-12s] Hold the LAST reference pose with the dealt card still motionless on the table. Never retrieve, lift, erase, cover or return the placed card. The shoe and its white front insert remain unchanged; every visible card surface stays plain unprinted white without ranks, suits, text, pictures or colored artwork. The tabletop and background remain the original flat bright chroma green with constant lighting. One complete deal, natural anatomy, fixed camera and full dealer visible throughout.",
+      "requestSha256": "7a56c0fdcd629d53fe6659420d476d105f0a350801e6444f44dc864d95379422",
+      "submittedAt": "2026-11-09T17:31:05.721+01:00"
+    },
+    {
+      "id": "P4.C2-bank-v2",
+      "model": "wan3",
+      "duration": 12,
+      "promptText": "One uninterrupted 12-second take, completely fixed tripod camera and unchanged framing. Preserve the FIRST dealer, black blazer, ivory blouse, black shoe, all bright chroma-green background and tabletop. FIRST already contains exactly ONE blank white card C1. Keep C1 completely still at exactly that position, size and orientation for the whole take. [0-1s] Hold FIRST REDO. [1-4s] The shoe hand draws exactly ONE additional plain-white rigid card C2 and carries it toward the CENTER toward the viewer, to the existing C1 at seat 4. Keep C2 the same apparent card size as C1, with no stretching or extra cards. [4-6s] Place C2 flat over C1 in exactly the overlap, orientation and size shown in LAST. C2 center is approximately 51.4 percent image width from LEFT and 88.1 percent image height from TOP. LAST shows a deliberately offset pair: leave the exposed edge and end of C1 visibly separate, so both card contours can be read. Only a small contact shadow may appear where C2 overlaps C1; do not move, bend, resize or merge C1. [6-7s] Release C2 fully and lift every fingertip away from both cards. [7-10s] Return the visibly EMPTY hand to the original REDO position beside the shoe without touching the two cards again. [10-12s] Hold LAST REDO with both cards motionless and both contours visible through the final frame. Never retrieve, erase, dissolve, combine or return either dealt card. All card surfaces and the shoe insert remain plain unprinted white without ranks, suits, text or artwork. No zoom, pan, tilt, crop or reframing. Keep the whole head, both hands and shoe visible at the original scale. Natural hand anatomy, one complete additional deal, constant green scene.",
+      "requestSha256": "0d6671bbf8c897031db00c61ba973b35690a213f9e2a45a5697378a3f239e222",
+      "submittedAt": "2026-11-09T19:21:13.837+01:00"
+    },
+    {
+      "id": "V6-central-base",
+      "model": "wan3",
+      "duration": 6,
+      "promptText": "Locked camera, one continuous six-second shot between the exact supplied REDO anchors. Preserve Pamela's mature identity, face, age, hair, black blazer, ivory blouse, body scale, the green studio and the black shoe in their exact positions. Start with her left hand (camera-right) touching the plain white card at the shoe outlet. Hold briefly. She smoothly draws exactly one rigid plain white unprinted card out of that actual outlet, brings it to her right hand near the middle, then her right hand makes one low controlled forward dealing action to the empty central foreground, directly below her resting-hand area. Place that same card flat exactly where it lies in the last image. It must remain a rigid perspective rectangle with its thin warm edge, with no rank, suit or symbol. Her fingertips visibly contact it until placement, then release it cleanly. The card stays stationary on the green surface for the rest of the shot. No appearing card, no fading, no card passing through fingers or the shoe. By 5.4 seconds her right hand returns to its original resting position and her left hand returns to the shoe outlet where the next card is seated, matching the last REDO pose and downward gaze. Exactly one new card remains on the table, and the shoe has the next card ready. Do not remove the landed card to match the hand pose. Preserve all fingers and complete arms inside the original frame throughout the full reach. No camera move, zoom, cuts, new table edge, torso drift or changed face. Settle naturally for the final half second.",
+      "requestSha256": null,
+      "submittedAt": "2026-11-09T01:09:53.826+01:00"
+    },
+    {
+      "id": "V6-from-shoe",
+      "model": "wan3",
+      "duration": 3,
+      "promptText": "Locked camera, one continuous three-second transition between the supplied first REDO image and last VILA image. Preserve Pamela's exact mature face, age, hair, black blazer, ivory blouse, body scale and framing. Start with her left hand at the black shoe outlet. Without extracting or moving the white card, gently release contact and return the left hand to its exact resting position in the last VILA image. Her other hand stays in its original resting place. Her gaze calmly returns from the shoe toward the viewer. Keep the black shoe and its single white card completely stationary and unchanged. Preserve the green background and all props. Natural continuous shoulder, elbow, wrist and finger movement. Keep elbows and fingertips inside the frame. No camera movement, zoom, cut, new objects, additional cards, hand fading or extra fingers. Settle naturally into the exact final VILA pose.",
+      "requestSha256": null,
+      "submittedAt": "2026-11-09T01:09:24.615+01:00"
+    }
+  ]
+}

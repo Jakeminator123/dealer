@@ -1,0 +1,114 @@
+{
+  "schemaVersion": 1,
+  "reviewedDate": "2026-11-10",
+  "purpose": "Avgränsad lagringsbedömning; verifieringskvitto, inte ett andra rörelsestatusregister.",
+  "scope": {
+    "mode": "Read-only kod- och dokumentgranskning; endast detta kvitto skapas.",
+    "dealerRoot": "C:/Users/jakem/dev/super-feature-sg/dealer",
+    "dealerRemote": "git@github.com:Jakeminator123/dealer.git",
+    "dealerHeadAtInspection": "45c07faa59a52d1d9811c9dbb9bacc4dc76068cd",
+    "environment": "Lokalt authoring-labb och statisk publik granskningssida; ingen databasanslutning utförd.",
+    "scoutRoot": "C:/Users/jakem/dev/scoutgaming",
+    "scoutRemote": "git@github.com:Jakeminator123/scoutgaming.git",
+    "scoutHeadAtInspection": "dfe1a0859bfb351a7d511491da47d883c401efbb",
+    "scoutAccess": "Avgränsad lokal läsreferens efter kontroll av rot/remote/HEAD; inga credentials lästa, ingen fetch eller tjänsteåtkomst."
+  },
+  "recommendation": {
+    "classification": "Arkitekturbedömning baserad på verifierad kod; ingen uppmätt prestandavinst eller riskprocent.",
+    "now": "Behåll befintliga JSON/manifest och webbläsarutkast. Inför inte en tillfällig SQLite-databas, lokal Postgres-server eller ny Neon-anslutning för dagens arbetsflöde.",
+    "why": "Den aktuella editorn sparar ett litet dokument via en lokal skrivare. Rörelsebeslut har redan ett gemensamt register. En tillfällig SQL-lagring tillför ytterligare adapter, migrering och ansvar utan visat behov av gemensamma transaktioner.",
+    "future": "Vid beställd Scout-integration: anpassa authoring-data till Scouts befintliga scoped Postgres/Neon-repository och importkontrakt. Ingen parallell produktdatabas eller automatisk direktimport av Dealer-JSON.",
+    "authority": "motions/<clip-id>.json för rörelsebeslut nu; library/public-media/manifest är katalog/proveniens. Efter en framtida kontrollerad produktimport äger Scout produktregistret. Undvik dubbelskrivning av samma produktstatus.",
+    "media": "MP4, bildrutor och masker förblir separata filer/Blob-objekt med ID, referens och SHA-256 i metadata. Mer filmvolym är inte i sig ett skäl att byta metadatalager."
+  },
+  "verifiedObservations": [
+    {
+      "fact": "Inspektionssnapshot: ett schema-v1-placeringsdokument, 16 mål och 11752 byte; 7 motions-poster; 9 biblioteksposter; manifestet har 1092 filposter och 321868 byte.",
+      "evidence": ["placements/default.json", "src/placement-model.ts:9-12", "motions/", "data/library.json", "manifest.json"],
+      "boundary": "Antal gäller vid läsningen. Huvudagenten arbetar samtidigt med fyra sekvensposter och har rapporterat avsedda slutantal 11 motions/13 katalogposter. Dessa nya slutantal har inte självständigt räknats här och påverkar inte lagringsvalet."
+    },
+    {
+      "fact": "Lokal sparning validerar planen, köar inom en placementStore-instans, jämför SHA-256-revision, avvisar saknad/gammal revision, behåller föregående plan och ersätter målet genom temporär fil plus rename.",
+      "evidence": ["tools/placement-store.ts:6-17", "tools/preview.ts:19", "tools/preview.ts:32-44", "tools/placements.test.ts:75-81"]
+    },
+    {
+      "fact": "Den publika sidan saknar gemensam skrivendpoint. localStorage, Web Locks och revisionskontroll skyddar flikar inom samma webbläsarlagring; export/import flyttar utkast mellan publik och lokal vy.",
+      "evidence": ["src/public-storage.ts:8-30", "src/public-storage.ts:38-45", "src/public-storage.ts:49-61", "tools/public-storage.test.ts:6-33", "docs/DRIFT.md:53-61"]
+    },
+    {
+      "fact": "Lokal katalog och publik byggning hämtar reviewDecision från motionRef. Bygget kontrollerar mediaidentitet och SHA samt att placeringsplanen och public-media inte ändrats under bygget.",
+      "evidence": ["tools/preview.ts:20", "tools/build-public.ts:47-70", "tools/build-public.ts:100-102", "docs/SYSTEM.md:68-77"]
+    },
+    {
+      "fact": "Renderingen använder frysta och hashbundna indata samt exklusivt skapade körningsfiler. Fyra renderarbetare är därför inte bevis för fyra konkurrerande skribenter till ett gemensamt produktregister.",
+      "evidence": ["tools/render.ts:31-39", "tools/render.ts:70-87"]
+    },
+    {
+      "fact": "Scout använder enligt aktuell lokal konfiguration Neon/Postgres som produktregister och separat privat Blob för media. Dess repository har BEGIN/COMMIT/ROLLBACK, scoped låsning, revisionsvillkor, historik och audit i samma skrivoperation.",
+      "evidence": ["C:/Users/jakem/dev/scoutgaming/AGENTS.md:7", "C:/Users/jakem/dev/scoutgaming/docs/storage/BLOB-NEON.md:7-19", "C:/Users/jakem/dev/scoutgaming/apps/admin/lib/neon-project-store.mjs:7-43", "C:/Users/jakem/dev/scoutgaming/packages/studio-registry/server/repository.mjs:82-100", "C:/Users/jakem/dev/scoutgaming/packages/studio-registry/server/repository.mjs:243-251", "C:/Users/jakem/dev/scoutgaming/packages/studio-registry/server/repository.mjs:294-302"]
+    }
+  ],
+  "currentLimits": [
+    "Lokal Promise-kö är inget processöverskridande lås. En andra serverinstans eller extern skribent kan ändra samma fil mellan revisionskontroll och rename. För fortsatt JSON: en ägare per fil och en sparväg för det delade utkastet.",
+    "Föregående plan, aktuell plan och andra register uppdateras inte som en gemensam transaktion. Ingen explicit fsync/durabilitetsgaranti finns i placement-store. Avsiktliga felfall vid strömavbrott har inte provats.",
+    "Webbläsarutkast synkroniseras inte mellan enheter eller användare och försvinner om lagringen rensas; de ersätter inte exporterade arbetskopior.",
+    "HTTP-gränsen är 65536 byte för en placerings-PUT. Att närma sig gränsen kräver format-/API-bedömning, inte automatiskt en databas.",
+    "Ingen uppmätt query-latens, dokumenttillväxt eller återkommande skrivkonflikt visar ett skalproblem nu. En liten katalog räcker inte ensam som prestandabevis.",
+    "En databastransaktion kan inte ensam göra Runway-anrop eller Blob-uppladdningar atomiska med metadata. Framtida gemensamma jobb behöver även idempotenta jobb-ID:n och återhämtning."
+  ],
+  "alternatives": [
+    {
+      "option": "JSON/manifest nu",
+      "assessment": "Tillräckligt för nuvarande lokala, avgränsade authoring och statiska granskning. Läsbart i Git och direkt exporterbart. Behåll det enda rörelseregistret; bygg inga separata statuskopior.",
+      "cost": "Ingen lagringsmigrering. Begränsningarna ovan måste fortsätta respekteras."
+    },
+    {
+      "option": "SQLite",
+      "assessment": "Rimligt om Dealer uttryckligen blir en självständig offlineprodukt med krav på hållbara lokala jobb eller atomiska uppdateringar över flera poster. SQLite kan köa flera lokala klienter men har en skrivtransaktion åt gången; WAL kan ge samtidiga läsare/skrivare och använder dessutom -wal/-shm-filer på samma värd.",
+      "cost": "Som tillfällig brygga nu ger det JSON→SQLite→Postgres i stället för en importerare. SQL-dialekt, typer, revisionsmodell och migrationskedja måste ändå provas mot Postgres. Lägg aldrig till SQLite som andra statusägare.",
+      "sources": ["https://www.sqlite.org/whentouse.html", "https://www.sqlite.org/wal.html", "https://www.sqlite.org/datatype3.html"]
+    },
+    {
+      "option": "Lokal Postgres",
+      "assessment": "Användbar som avgränsad testmiljö när den faktiska Scout-adaptern, SQL eller transaktioner ska utvecklas. Behövs inte som nytt permanent lokalt register nu.",
+      "cost": "Installation, process/livscykel och schema måste förvaltas. Lokal SQL-kompatibilitet bevisar inte rätt molnidentitet, behörigheter eller Blob-integrationen."
+    },
+    {
+      "option": "Scout/Neon senare",
+      "assessment": "Naturligt produktmål för delat, autentiserat arbete och atomisk historik/publicering eftersom Scout redan har motsvarande repository. Återanvänd dess dokumentkontrakt och scope i en uttryckligen vald isolerad testmiljö.",
+      "cost": "Kräver domänmappning, behörigheter, revisioner, migrationstest och kontrollerad övergång. Neon-brancher kan isolera ändringar men är inte i sig ett mandat att skapa eller kopiera miljöer.",
+      "sources": ["https://www.postgresql.org/docs/current/tutorial-transactions.html", "https://neon.com/docs/introduction/branching"]
+    }
+  ],
+  "switchThreshold": {
+    "trigger": [
+      "Beställt gemensamt redigerande från flera användare/enheter som behöver samma aktuella data och serverkontrollerad behörighet.",
+      "Oberoende worker-/serverprocesser måste uppdatera samma jobb eller motioner och en enda serialiserad sparväg inte längre räcker.",
+      "Beslut, materialrelationer, versionshistorik och publiceringsstatus måste ändras allt-eller-inget över flera poster.",
+      "Beställd verklig Scout-import/integration kräver dess produktidentiteter och scoped repository, eller uppmätta sök-/uppdateringskostnader gör filmodellen olämplig."
+    ],
+    "action": "Ta då ett avgränsat Postgres/Scout-integrationsuppdrag. SQLite är ett separat val endast om offlineprodukten själv behöver det; antal filmer eller mediestorlek ensamt är ingen bytgräns."
+  },
+  "jsonToScoutPortability": {
+    "feasibility": "JSON kan vara importformat och Postgres kan lagra JSONB, men Dealer-planen är inte redan ett giltigt Scout-projektdokument. En explicit adapter behövs.",
+    "preserve": ["Stabila klipp-/mål-ID:n, schemaVersion och revisionsavsikt", "UNKNOWN/null, beslut och bevisgrund som skilda fält", "Källhash, källruta/fps, vy- och placeringsreferenser", "Blob-/filreferenser separat från media och hemligheter"],
+    "hashBoundary": "JSONB bevarar inte whitespace eller objektens nyckelordning. Nuvarande bytebaserade SHA-revision får därför inte räknas om från JSONB och kallas samma proveniens. Behåll originalets bytes/hash separat och använd Scouts revisions-/kanoniseringskontrakt för det importerade produktdokumentet.",
+    "safeCutover": "Validerad/idempotent import i isolerad miljö, kontroll av referenser och behörigheter, stale-save-prov och återläsning. Frys exporten och bevara återställningsunderlag; välj en produktstatusägare och undvik permanent dubbelskrivning.",
+    "source": "https://www.postgresql.org/docs/current/datatype-json.html"
+  },
+  "scoutConfigurationEvidence": {
+    "source": "C:/Users/jakem/dev/scoutgaming/tools/environments.json",
+    "main": {"projectId":"wandering-hill-60561912","branchId":"br-flat-fog-b161a6r8","database":"scoutgaming_main"},
+    "preview": {"projectId":"red-violet-36066351","branchId":"br-plain-voice-b9yu49xi","database":"croupier_staging"},
+    "boundary": "Lokal kanonisk konfiguration, inte en liveverifiering eller ett valt skrivmål. Ingen miljö återanvändes och inga anslutningssträngar hämtades."
+  },
+  "verification": {
+    "method": "Källkod, befintliga testfall, JSON-antal/storlekar och officiella dokument lästa; inget last-/kraschtest eller DB-prov.",
+    "node": "Volta-resolverad Node v24.21.0 verifierad mot package.json >=24.21.0 <25.",
+    "tests": "Befintliga samtidighetsfall inspekterade; inte återkörda i denna read-only arkitekturgranskning. Huvudagenten samordnar ordinarie leveranskontroller.",
+    "skills": "Installerade neon och neon-postgres lästa för lagringsgräns, befintlig provider och isolerad framtida migration; ingen setup/provisionering utförd.",
+    "artifacts": ["evidence/storage-choice-review.json"],
+    "createdResources": [],
+    "dbFilesInstallEnvMigrationsOrMediaWrites": false
+  }
+}

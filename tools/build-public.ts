@@ -75,6 +75,14 @@ for (const item of library.items) {
   item.path = url.href;
 }
 await emit('data/public-library.json', JSON.stringify(library));
+// Exact submitted images/prompt are review material, not API credentials.
+const generationReview = JSON.parse(await readFile('data/p4-generation-review.json', 'utf8'));
+for (const input of [generationReview.jobs[0].start, generationReview.jobs[0].end]) await copy(input.path, input.path, input.sha256);
+await copy('data/p4-generation-review.json');
+let generationHtml = await readFile('generation.html', 'utf8');
+generationHtml = generationHtml.replace('<script type="module" src="preview-ui.js"></script>', '');
+for (const item of library.items) generationHtml = generationHtml.replaceAll(item.sourcePath, item.path);
+await emit('generation.html', generationHtml);
 let html = await readFile(path.join(root, 'lab.html'), 'utf8');
 html = html.replace('<body>', '<body><div style="background:#30213f;color:#efeaf7;padding:8px 24px;font:13px Segoe UI,sans-serif">Publikt labb · Dina ändringar sparas bara i den här webbläsaren. Exportera en placeringsfil för att flytta dem till det lokala labbet.</div>')
   .replace('<script type="module" src="preview-ui.js"></script>', '')

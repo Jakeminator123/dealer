@@ -1,0 +1,1949 @@
+{
+  "schemaVersion": 1,
+  "createdAt": "2026-11-10T19:15:37.242Z",
+  "scope": "Read-only source/anchor audit. Initial six-generation anchor analysis plus explicitly requested P4 consistency follow-up using narrowly registered archive reads. No media edits, paid generation, key reads, API calls, commits or motion-status changes.",
+  "node": "v24.21.0",
+  "conclusion": "Two deliberately different input-color schemes. All eleven PNGs match receipt hashes. Start-to-end changes are bounded to added target polygons; magenta preparation deliberately also recolors the stationary centre card. Color is not physical-side proof.",
+  "coverage": {
+    "receipts": 6,
+    "startAnchors": 6,
+    "endAnchors": 5,
+    "matchingInputHashes": 11,
+    "allEndChangesInsideRecordedPolygon": true,
+    "allInputsFullyOpaque": true,
+    "hashesRecheckedAfterAudit": true
+  },
+  "sourceToPink": {
+    "source": {
+      "path": "assets/motions/pamela-p7-c1-left-pink-pilot-01/source-anchor.png",
+      "sha256": "3050e9ccc0d624a1b45d49a67be1c38a8ef6a6038d2743585891dea44d5ffff0",
+      "bytes": 953140
+    },
+    "pinkStart": {
+      "path": "assets/motions/pamela-p7-c1-left-pink-pilot-01/start.png",
+      "sha256": "373dc2b2a9b1415c22da6ef8f466690eaff676507c418d16956e922717193e73",
+      "bytes": 1193058
+    },
+    "inputMask": {
+      "path": "assets/motions/pamela-p7-c1-left-pink-pilot-01/input-mask.png",
+      "sha256": "36258bfeb83d56cd1addc5af013f7f587195b4d2e98c7b76c18d9e69bd14dd85",
+      "bytes": 7050
+    },
+    "sourceIsByteIdenticalToYellowStart": true,
+    "changedPixels": 9605,
+    "outsideRegisteredMask": 0,
+    "bounds": {
+      "left": 843,
+      "top": 758,
+      "right": 1341,
+      "bottom": 1078
+    },
+    "changedPixelRegions": {
+      "shoeCard": 4555,
+      "existingCentreCard": 5050,
+      "other": 0
+    },
+    "allChangedPixelsExactMagenta": true
+  },
+  "findings": [
+    {
+      "id": "ANCHOR-01",
+      "classification": "VERIFIED_INTENTIONAL",
+      "title": "Two explicit color schemes, not corrupt files",
+      "detail": "P6 turn-01 and P7 turn-01/02/03 use yellow shoe-card back plus blue existing/front target. P7 pink-01 and direct-01 use exact magenta tracking cores on all visible cards. All eleven stored input files match their generation receipt SHA-256 values.",
+      "ids": [
+        "pamela-p6-c1-left-turn-pilot-01",
+        "pamela-p7-c1-left-direct-pilot-01",
+        "pamela-p7-c1-left-pink-pilot-01",
+        "pamela-p7-c1-left-turn-pilot-01",
+        "pamela-p7-c1-left-turn-pilot-02",
+        "pamela-p7-c1-left-turn-pilot-03"
+      ]
+    },
+    {
+      "id": "ANCHOR-02",
+      "classification": "VERIFIED_INTENTIONAL",
+      "title": "End anchor adds only one target; next shoe card retains start color",
+      "detail": "All five end anchors differ from start only within the registered new-card polygon. No other source RGB pixels change, including hand/body, shoe housing, shoe-card face and existing centre card. The retained shoe card represents the next card; the new landing card is a separate object.",
+      "changedPixelsById": {
+        "pamela-p6-c1-left-turn-pilot-01": 4251,
+        "pamela-p7-c1-left-direct-pilot-01": 1742,
+        "pamela-p7-c1-left-pink-pilot-01": 4253,
+        "pamela-p7-c1-left-turn-pilot-02": 4253,
+        "pamela-p7-c1-left-turn-pilot-03": 1742
+      }
+    },
+    {
+      "id": "ANCHOR-03",
+      "classification": "VERIFIED_INTENTIONAL",
+      "title": "Pink preparation also recolors the existing centre card",
+      "detail": "The shared pink start is derived from the exact yellow/blue source anchor. It deliberately changes 4,555 shoe-card pixels and 5,050 existing-centre-card pixels to RGB 255,0,255. Zero pixels outside the registered input-mask change. This is a preparation-stage appearance change, not a physical turn or card movement.",
+      "evidence": [
+        "tools/generate-pink-pilot.ts:25-30",
+        "sourceToPink"
+      ]
+    },
+    {
+      "id": "ANCHOR-04",
+      "classification": "VERIFIED_PROCESS_INCONSISTENCY",
+      "title": "P7 turn-03 returned to yellow/blue after two pink requests",
+      "detail": "The generator explicitly selects P7 turn-02/start.png for --turn and requests YELLOW BACK / BLUE FRONT. Its request followed pink-01 and direct-01. Motion metadata documents that the source was already submitted before Jakob clarified that pink remained the mask method. It is an original recorded request, not a later image replacement. Future pink mask policy therefore should not be inferred from the latest historical input.",
+      "evidence": [
+        "tools/generate-p7-direct.ts:13-18",
+        "tools/generate-p7-direct.ts:31-39",
+        "motions/pamela-p7-c1-left-turn-pilot-03.json:121"
+      ]
+    },
+    {
+      "id": "ANCHOR-05",
+      "classification": "VERIFIED_COLOR_VARIATION_NO_SIDE_CHANGE",
+      "title": "Blue is not one exact RGB in these input images",
+      "detail": "P6 turn-01 and P7 turn-02 add RGB 0,0,255. P7 turn-03 adds RGB 7,90,216 (#075ad8), explicitly selected in the generator. The preserved source centre card is shaded blue, with representative modal core RGB 0,94,224. Both target colors meet the prompt word BLUE, but they are not interchangeable exact label masks. No rationale for the shade change is recorded.",
+      "evidence": [
+        "tools/generate-p7-direct.ts:39",
+        "assets/motions/pamela-p6-c1-left-turn-pilot-01/overlay-spec.json",
+        "assets/motions/pamela-p7-c1-left-turn-pilot-02/overlay-spec.json"
+      ]
+    },
+    {
+      "id": "ANCHOR-06",
+      "classification": "REGISTERED_OUTPUT_ERRORS_NOT_INPUT_CORRUPTION",
+      "title": "Prior motion reviews record actual output defects",
+      "detail": "P7 turn-01: wrong landing/blue shoe and wrong visible-side coloring. P7 turn-02: BACK→FRONT→BACK, front colored yellow and back landing colored blue. P6 turn-01: LH→RH transfer and printed face. P7 turn-03: premature P7 card, held-card landing near P4, blue shoe. Direct-01: CLOSED→CLOSED despite requested turn, retained only as secondary motion. These are existing registered decisions, not a fresh video-side certification.",
+      "source": "Each motions/<id>.json review and observed fields, preserved below."
+    },
+    {
+      "id": "ANCHOR-07",
+      "classification": "UNKNOWN",
+      "title": "Static anchors cannot establish physical-side success",
+      "detail": "Pink-01 and turn-03 physical end side/turn count remain UNKNOWN in the registry. Direct-01 is reported BACK→BACK. None of the static image checks certifies a physical turnover, contact, return cut or Scout integration. Provider-side received PNG bytes were not independently retrieved."
+    },
+    {
+      "id": "ANCHOR-08",
+      "classification": "VERIFIED_INTENTIONAL",
+      "title": "P7 turn-01 has a start image only",
+      "detail": "The receipt has no end field and the directory contains no end.png. The absence is an original single-anchor request, not an observed missing/mutated second-anchor hash."
+    },
+    {
+      "id": "ANCHOR-P4-01",
+      "classification": "VERIFIED_DIAGNOSTIC_RECOLOR_AND_METADATA_CONFLICT",
+      "title": "P4 review-v04 colors the revealed blue source face yellow",
+      "detail": "Same local/archive source e3b38f89… shows an opposite surface after f61–62 edge; diagnostic code forces moving blue pixels to yellow. At f68 fixed moving-card ROI: 2,424 blue source pixels, 2,004 become yellow and zero remain blue (others are contour/compression/mixed pixels). CLOSED→CLOSED metadata is not independent proof; see p4Followup.",
+      "evidence": [
+        "tools/closed-card-review.ts:57",
+        "tools/closed-card-review.ts:61",
+        "motions/pamela-p4-c2-left-closed-closed.json:21",
+        "p4Followup.f68PixelVerification"
+      ]
+    }
+  ],
+  "evidenceBoundary": "Stored receipt hashes support exact prepared/submitted input identity. Provider-side received bytes were not independently re-fetched. Static start/end anchors cannot prove physical turn, landing contact or seamless return. Generated-film observations below are read from the motion registry, not newly certified.",
+  "motions": [
+    {
+      "id": "pamela-p6-c1-left-turn-pilot-01",
+      "receipt": {
+        "path": "assets/motions/pamela-p6-c1-left-turn-pilot-01/generation.json",
+        "sha256": "dc991d505108533350adb8c0a01a4e3bf17e4c205c94336c754bfd106cb308c0",
+        "bytes": 2314
+      },
+      "taskId": "d4281d56-7b6f-4936-9c62-b203fd20ef58",
+      "model": "wan3",
+      "requestedAt": "2026-11-10T17:51:32.866Z",
+      "method": "yellow-BACK-blue-FRONT-proxy",
+      "start": {
+        "path": "assets/motions/pamela-p6-c1-left-turn-pilot-01/start.png",
+        "sha256": "3050e9ccc0d624a1b45d49a67be1c38a8ef6a6038d2743585891dea44d5ffff0",
+        "bytes": 953140,
+        "receiptSha256": "3050e9ccc0d624a1b45d49a67be1c38a8ef6a6038d2743585891dea44d5ffff0",
+        "matchesReceipt": true,
+        "alphaFullyOpaque": true
+      },
+      "end": {
+        "path": "assets/motions/pamela-p6-c1-left-turn-pilot-01/end.png",
+        "sha256": "a08ba7353c1de4a5978365444a06bda8e13ee9447081f42efb661874b60bcfcf",
+        "bytes": 1264637,
+        "receiptSha256": "a08ba7353c1de4a5978365444a06bda8e13ee9447081f42efb661874b60bcfcf",
+        "matchesReceipt": true,
+        "alphaFullyOpaque": true
+      },
+      "imageDimensions": {
+        "width": 1764,
+        "height": 1174
+      },
+      "intendedTarget": {
+        "id": "P6.C1",
+        "u": 0.7254640956328173,
+        "v": 0.12326925596163063,
+        "calibrated": false
+      },
+      "colors": {
+        "shoeFaceCore": {
+          "start": [
+            {
+              "rgb": [
+                241,
+                230,
+                0
+              ],
+              "pixels": 179
+            },
+            {
+              "rgb": [
+                240,
+                229,
+                0
+              ],
+              "pixels": 134
+            },
+            {
+              "rgb": [
+                242,
+                231,
+                0
+              ],
+              "pixels": 122
+            }
+          ],
+          "end": [
+            {
+              "rgb": [
+                241,
+                230,
+                0
+              ],
+              "pixels": 179
+            },
+            {
+              "rgb": [
+                240,
+                229,
+                0
+              ],
+              "pixels": 134
+            },
+            {
+              "rgb": [
+                242,
+                231,
+                0
+              ],
+              "pixels": 122
+            }
+          ]
+        },
+        "existingCentreCore": {
+          "start": [
+            {
+              "rgb": [
+                0,
+                94,
+                224
+              ],
+              "pixels": 119
+            },
+            {
+              "rgb": [
+                0,
+                95,
+                225
+              ],
+              "pixels": 102
+            },
+            {
+              "rgb": [
+                0,
+                93,
+                223
+              ],
+              "pixels": 81
+            }
+          ],
+          "end": [
+            {
+              "rgb": [
+                0,
+                94,
+                224
+              ],
+              "pixels": 119
+            },
+            {
+              "rgb": [
+                0,
+                95,
+                225
+              ],
+              "pixels": 102
+            },
+            {
+              "rgb": [
+                0,
+                93,
+                223
+              ],
+              "pixels": 81
+            }
+          ]
+        }
+      },
+      "targetCore": {
+        "x": 1279,
+        "y": 1028,
+        "start": [
+          0,
+          244,
+          59
+        ],
+        "end": [
+          0,
+          0,
+          255
+        ]
+      },
+      "startToEndDiff": {
+        "changedPixels": 4251,
+        "outsideRegisteredMask": 0,
+        "bounds": {
+          "left": 1242,
+          "top": 998,
+          "right": 1315,
+          "bottom": 1058
+        }
+      },
+      "promptText": "A single natural casino deal, fixed camera. Match the FIRST and LAST frames. Preserve the same woman, green scene, shoe and existing blue centre card. The LAST image adds one BLUE card directly below the front outlet of the shoe, at viewer-right lower table position P6. 0-0.7s: her anatomical LEFT hand (viewer RIGHT) draws ONE YELLOW-back-up card from the shoe. 0.7-1.8s: in one continuous low forward arc just above the table she rolls her wrist and forearm, turning the card over in the same grip: YELLOW back turns away, a thin physical edge crosses view, then the BLUE opposite face turns up. Make an actual turnover, never a colour dissolve. Do not lift the card to chest height or hold it up for display. 1.8-3s: place the BLUE card at the exact new-card position in the LAST image, below the shoe, without touching the centre card. 3-5s: release and return her empty left hand naturally to the exact shoe-ready pose. Gaze follows her hand. Her right hand moves subtly and naturally. 5-6s: hold the exact final frame. The dealt blue card stays put. Shoe stays YELLOW. No extra cards, no cuts, no hand transfer, no camera motion.",
+      "physicalIntent": {
+        "takeHand": "LH",
+        "releaseHand": "LH",
+        "target": "P6.C1",
+        "physicalStartSide": "BACK",
+        "physicalEndSide": "FRONT",
+        "turn": true,
+        "pass": false
+      },
+      "recordedMotionReview": {
+        "decision": "REJECTED",
+        "observed": {
+          "takeHand": "LH",
+          "releaseHand": "RH",
+          "pass": true,
+          "endAppearance": "printed court card, not the requested plain blue surface",
+          "landedNear": "P6.C1",
+          "returnsToShoe": true,
+          "anchorCutReady": false
+        },
+        "reasons": [
+          "Unrequested hand transfer: left hand takes, right hand releases.",
+          "Generated a printed face and did not preserve the plain colour surface."
+        ]
+      },
+      "evidenceBoundary": "PNG pixels and file hashes freshly verified. Motion results are existing registered review decisions; no new full-video physical-side review."
+    },
+    {
+      "id": "pamela-p7-c1-left-direct-pilot-01",
+      "receipt": {
+        "path": "assets/motions/pamela-p7-c1-left-direct-pilot-01/generation.json",
+        "sha256": "845adddc8f6de0ea5ed373c24b2f25d96d7836a02916e7528ce26c769ba4cc69",
+        "bytes": 4449
+      },
+      "taskId": "37496e52-9a7a-4ed2-b2d5-46bead1e9214",
+      "model": "wan3",
+      "requestedAt": "2026-11-10T18:31:48.698Z",
+      "method": "neutral-magenta-tracking",
+      "start": {
+        "path": "assets/motions/pamela-p7-c1-left-direct-pilot-01/start.png",
+        "sha256": "373dc2b2a9b1415c22da6ef8f466690eaff676507c418d16956e922717193e73",
+        "bytes": 1193058,
+        "receiptSha256": "373dc2b2a9b1415c22da6ef8f466690eaff676507c418d16956e922717193e73",
+        "matchesReceipt": true,
+        "alphaFullyOpaque": true
+      },
+      "end": {
+        "path": "assets/motions/pamela-p7-c1-left-direct-pilot-01/end.png",
+        "sha256": "6d0e7c4c73243d431658afe38b02f1a53ddb8d28123dacb00344b28a479d028f",
+        "bytes": 1255151,
+        "receiptSha256": "6d0e7c4c73243d431658afe38b02f1a53ddb8d28123dacb00344b28a479d028f",
+        "matchesReceipt": true,
+        "alphaFullyOpaque": true
+      },
+      "imageDimensions": {
+        "width": 1764,
+        "height": 1174
+      },
+      "intendedTarget": {
+        "id": "P7.C1",
+        "nativePoints": [
+          {
+            "x": 1417.6436706428956,
+            "y": 934.507750991647
+          },
+          {
+            "x": 1466.1559950355468,
+            "y": 934.507750991647
+          },
+          {
+            "x": 1515.7465848811341,
+            "y": 966.937257514583
+          },
+          {
+            "x": 1463.3203096661196,
+            "y": 966.937257514583
+          }
+        ],
+        "points": [
+          {
+            "x": 1419.253714561854,
+            "y": 934.507750991647
+          },
+          {
+            "x": 1467.8211352911237,
+            "y": 934.507750991647
+          },
+          {
+            "x": 1517.468046079182,
+            "y": 966.937257514583
+          },
+          {
+            "x": 1464.9822293818108,
+            "y": 966.937257514583
+          }
+        ],
+        "calibrated": false,
+        "mapping": {
+          "from": [
+            1762,
+            1174
+          ],
+          "to": [
+            1764,
+            1174
+          ],
+          "xScale": 1.0011357183418512,
+          "yScale": 1,
+          "method": "normalized pixel endpoints; provisional source-image mapping"
+        }
+      },
+      "colors": {
+        "shoeFaceCore": {
+          "start": [
+            {
+              "rgb": [
+                255,
+                0,
+                255
+              ],
+              "pixels": 588
+            }
+          ],
+          "end": [
+            {
+              "rgb": [
+                255,
+                0,
+                255
+              ],
+              "pixels": 588
+            }
+          ]
+        },
+        "existingCentreCore": {
+          "start": [
+            {
+              "rgb": [
+                255,
+                0,
+                255
+              ],
+              "pixels": 1271
+            }
+          ],
+          "end": [
+            {
+              "rgb": [
+                255,
+                0,
+                255
+              ],
+              "pixels": 1271
+            }
+          ]
+        }
+      },
+      "targetCore": {
+        "x": 1467,
+        "y": 951,
+        "start": [
+          0,
+          244,
+          59
+        ],
+        "end": [
+          255,
+          0,
+          255
+        ]
+      },
+      "startToEndDiff": {
+        "changedPixels": 1742,
+        "outsideRegisteredMask": 0,
+        "bounds": {
+          "left": 1419,
+          "top": 934,
+          "right": 1517,
+          "bottom": 966
+        }
+      },
+      "promptText": "Locked camera, one continuous six-second shot. Preserve the exact woman, clothes, green studio and black shoe. Her anatomical LEFT hand is on screen RIGHT and handles the card throughout. Draw ONE magenta card just clear of the shoe outlet, then immediately sweep it low diagonally toward the empty lower-RIGHT landing spot shown in the last image. The entire dealing action stays beside and in front of the shoe, on the RIGHT side of her body. While traveling outward, her left thumb and fingertips roll the card over exactly ONCE through an edge-on position: the original upper physical face ends DOWN, the original underside ends UP. This is a real 180-degree turnover, not a flat spin. Without stopping to show it, lower that same card flat at the new lower-right position, release it by 3.5 seconds, then return the empty left hand to the original shoe-ready pose by 5.3 seconds and settle. The new card stays on the table. The existing centre card stays untouched. No travel toward the centre card, no hand transfer, no display pause, no second turnover. Natural following gaze and subtle right-hand movement are allowed. Both card faces are plain magenta tracking surfaces, no print. Keep fingertip contact until release; preserve a thin rigid card, all fingers, body scale and camera framing. End with the same body, hand and gaze anchor as the first image, plus one new card on the table and the next card ready in the shoe.",
+      "physicalIntent": {
+        "takeHand": "LH",
+        "releaseHand": "LH",
+        "startSide": "BACK",
+        "endSide": "FRONT",
+        "turnCount": 1,
+        "pass": false,
+        "returnAnchor": "same shoe-ready pose, new card retained"
+      },
+      "recordedMotionReview": {
+        "decision": "REJECTED",
+        "observed": {
+          "takeHand": "LH",
+          "releaseHand": "LH",
+          "handTransfer": false,
+          "route": "Stays beside/in front of the shoe and moves directly to P7; no detour to the centre card in reviewed samples.",
+          "physicalStartSide": "BACK",
+          "physicalEndSide": "BACK",
+          "verifiedTurnCount": null,
+          "returnsToShoe": true,
+          "anchorCutReady": false,
+          "landing": {
+            "frame": 179,
+            "method": "thresholded magenta core in fixed P7 ROI; not physical side or corner proof",
+            "pixels": 1227,
+            "centroid": {
+              "x": 1468.7856560717196,
+              "y": 951.2493887530562
+            },
+            "bounds": {
+              "left": 1423,
+              "right": 1511,
+              "top": 936,
+              "bottom": 965
+            },
+            "distanceFromPlannedCornerMeanPx": 1.4999585646584028
+          }
+        },
+        "limitations": [
+          "Card is lifted higher than the requested low sweep before turning.",
+          "CLOSED→CLOSED according to Jakob. Does not satisfy the requested BACK→FRONT action. Edge-on passage did not prove a side change.",
+          "Hand covers the card during final flattening; contact and shape need reviewer acceptance.",
+          "Source target mapping is provisional, not measured camera calibration; no general V6/Scout overlay binding.",
+          "No final finger/card masks, material overlay or seamless anchor acceptance."
+        ]
+      },
+      "evidenceBoundary": "PNG pixels and file hashes freshly verified. Motion results are existing registered review decisions; no new full-video physical-side review."
+    },
+    {
+      "id": "pamela-p7-c1-left-pink-pilot-01",
+      "receipt": {
+        "path": "assets/motions/pamela-p7-c1-left-pink-pilot-01/generation.json",
+        "sha256": "2ab9efaff0eb1f991504e5536acb26f5be4275b861564ca1e6ef9deb178a5d07",
+        "bytes": 2786
+      },
+      "taskId": "d3ddd907-b892-48b1-b96e-f289656928dc",
+      "model": "wan3",
+      "requestedAt": "2026-11-10T18:05:20.380Z",
+      "method": "neutral-magenta-tracking",
+      "start": {
+        "path": "assets/motions/pamela-p7-c1-left-pink-pilot-01/start.png",
+        "sha256": "373dc2b2a9b1415c22da6ef8f466690eaff676507c418d16956e922717193e73",
+        "bytes": 1193058,
+        "receiptSha256": "373dc2b2a9b1415c22da6ef8f466690eaff676507c418d16956e922717193e73",
+        "matchesReceipt": true,
+        "alphaFullyOpaque": true
+      },
+      "end": {
+        "path": "assets/motions/pamela-p7-c1-left-pink-pilot-01/end.png",
+        "sha256": "deedd1c062779f13b8430da223510195c742d437473cd43739ea9b99c07ad5e2",
+        "bytes": 1254312,
+        "receiptSha256": "deedd1c062779f13b8430da223510195c742d437473cd43739ea9b99c07ad5e2",
+        "matchesReceipt": true,
+        "alphaFullyOpaque": true
+      },
+      "imageDimensions": {
+        "width": 1764,
+        "height": 1174
+      },
+      "intendedTarget": {
+        "id": "P7.C1",
+        "points": [
+          {
+            "x": 1434.2886500000002,
+            "y": 920.2185000000001
+          },
+          {
+            "x": 1499.34335,
+            "y": 920.2185000000001
+          },
+          {
+            "x": 1502.9575000000002,
+            "y": 980.0415000000002
+          },
+          {
+            "x": 1430.6744999999999,
+            "y": 980.0415000000002
+          }
+        ],
+        "calibrated": false
+      },
+      "colors": {
+        "shoeFaceCore": {
+          "start": [
+            {
+              "rgb": [
+                255,
+                0,
+                255
+              ],
+              "pixels": 588
+            }
+          ],
+          "end": [
+            {
+              "rgb": [
+                255,
+                0,
+                255
+              ],
+              "pixels": 588
+            }
+          ]
+        },
+        "existingCentreCore": {
+          "start": [
+            {
+              "rgb": [
+                255,
+                0,
+                255
+              ],
+              "pixels": 1271
+            }
+          ],
+          "end": [
+            {
+              "rgb": [
+                255,
+                0,
+                255
+              ],
+              "pixels": 1271
+            }
+          ]
+        }
+      },
+      "targetCore": {
+        "x": 1467,
+        "y": 950,
+        "start": [
+          0,
+          244,
+          59
+        ],
+        "end": [
+          255,
+          0,
+          255
+        ]
+      },
+      "startToEndDiff": {
+        "changedPixels": 4253,
+        "outsideRegisteredMask": 0,
+        "bounds": {
+          "left": 1430,
+          "top": 920,
+          "right": 1502,
+          "bottom": 980
+        }
+      },
+      "promptText": "Locked camera, continuous natural dealing motion. Same woman and her anatomical LEFT hand on viewer right. Her left hand slides the top magenta card out of the shoe, keeps it low over the felt, turns it over ONCE with one small wrist roll while moving right, lays it flat in the exact new-card location in the last frame, releases it and returns empty to its original shoe pose. The card goes directly from draw to table. Her other hand rests naturally; her gaze follows the card. The dealt card stays a plain solid magenta rectangle on BOTH SIDES; this color is only a tracking surface. Preserve the card shape and natural fingertip grip. No hand transfer, no raised display pause, no second roll. Keep the existing centre card stationary.",
+      "physicalIntent": {
+        "takeHand": "LH",
+        "releaseHand": "LH",
+        "startSide": "BACK",
+        "endSide": "FRONT",
+        "turnCount": 1,
+        "pass": false
+      },
+      "recordedMotionReview": {
+        "decision": "PENDING",
+        "observed": {
+          "takeHand": "LH",
+          "releaseHand": "LH",
+          "handTransfer": false,
+          "landsNear": "P7.C1 source-image target",
+          "route": "Draws from shoe, moves inward toward centre, then moves outward to P7 before releasing.",
+          "returnsToShoe": true,
+          "physicalStartSide": "BACK",
+          "physicalEndSide": "UNKNOWN",
+          "verifiedTurnCount": null,
+          "anchorCutReady": false
+        },
+        "limitations": [
+          "Unrequested detour toward centre before moving to P7.",
+          "A continuous corner/hand annotation is still required to establish physical side and turn count; proxy colour does not establish either.",
+          "No final foreground/hand alpha mask, no calibrated V6/Scout placement and no verified seamless return."
+        ]
+      },
+      "evidenceBoundary": "PNG pixels and file hashes freshly verified. Motion results are existing registered review decisions; no new full-video physical-side review."
+    },
+    {
+      "id": "pamela-p7-c1-left-turn-pilot-01",
+      "receipt": {
+        "path": "assets/motions/pamela-p7-c1-left-turn-pilot-01/generation.json",
+        "sha256": "65da6f84207ccf3bd245ab2bcd6017b6d89cb15b6b7933d5777d13d634569a85",
+        "bytes": 2277
+      },
+      "taskId": "910b3d33-fb58-40ba-876b-d14bd82c12ee",
+      "model": "wan3",
+      "requestedAt": "2026-11-10T17:43:10.854Z",
+      "method": "yellow-BACK-blue-FRONT-proxy",
+      "start": {
+        "path": "assets/motions/pamela-p7-c1-left-turn-pilot-01/start.png",
+        "sha256": "3050e9ccc0d624a1b45d49a67be1c38a8ef6a6038d2743585891dea44d5ffff0",
+        "bytes": 953140,
+        "receiptSha256": "3050e9ccc0d624a1b45d49a67be1c38a8ef6a6038d2743585891dea44d5ffff0",
+        "matchesReceipt": true,
+        "alphaFullyOpaque": true
+      },
+      "end": null,
+      "imageDimensions": {
+        "width": 1764,
+        "height": 1174
+      },
+      "intendedTarget": {
+        "id": "P7.C1",
+        "u": 0.832,
+        "v": 0.19,
+        "calibrated": false
+      },
+      "colors": {
+        "shoeFaceCore": {
+          "start": [
+            {
+              "rgb": [
+                241,
+                230,
+                0
+              ],
+              "pixels": 179
+            },
+            {
+              "rgb": [
+                240,
+                229,
+                0
+              ],
+              "pixels": 134
+            },
+            {
+              "rgb": [
+                242,
+                231,
+                0
+              ],
+              "pixels": 122
+            }
+          ],
+          "end": null
+        },
+        "existingCentreCore": {
+          "start": [
+            {
+              "rgb": [
+                0,
+                94,
+                224
+              ],
+              "pixels": 119
+            },
+            {
+              "rgb": [
+                0,
+                95,
+                225
+              ],
+              "pixels": 102
+            },
+            {
+              "rgb": [
+                0,
+                93,
+                223
+              ],
+              "pixels": 81
+            }
+          ],
+          "end": null
+        }
+      },
+      "targetCore": null,
+      "startToEndDiff": null,
+      "promptText": "Locked camera, one continuous realistic casino dealer action on this same green screen and green tabletop. Preserve the woman, clothing, lighting, shoe and existing blue card at bottom centre. Her anatomical LEFT hand is on the viewer RIGHT beside the shoe. The card in the shoe has a solid bright YELLOW back and a solid BLUE opposite face. From the exact starting pose, she draws ONE yellow-back-up card with her LEFT hand. Keeping the same continuous thumb-and-finger grip, she clearly rotates her wrist 180 degrees: yellow surface turns away, the thin physical card edge is visible, then the blue opposite surface turns toward camera. Show this unmistakable real turnover slowly, not a colour morph. She places the card BLUE FACE UP on the tabletop at viewer RIGHT, target centre x=83.2% across, y=81.0% down the full image. Keep its long axis aligned with the bottom-centre card, no fan rotation, lying on one flat horizontal table. After release the blue card stays at that position. Her empty left hand returns naturally to the original ready pose at the shoe, and her gaze follows the hand then returns. Her right hand may move subtly and naturally but never touches this card. Finish holding the ready pose for one second. No cuts, no camera movement, no added text, no extra cards, no hand swap, no disappearing placed cards. The yellow and blue faces are plain matte unprinted surfaces.",
+      "physicalIntent": {
+        "takeHand": "LH",
+        "releaseHand": "LH",
+        "target": "P7.C1",
+        "physicalStartSide": "BACK",
+        "physicalEndSide": "FRONT",
+        "turn": true,
+        "pass": false
+      },
+      "recordedMotionReview": {
+        "decision": "REJECTED",
+        "observed": {
+          "startRenderedColor": "yellow",
+          "endRenderedColor": "yellow",
+          "briefUndersideVisible": {
+            "basis": "Jakob correction",
+            "reported": true,
+            "requiredColor": "blue",
+            "exactFrameAnnotation": "pending"
+          },
+          "landedNear": "P4.C1",
+          "endYellowBounds": {
+            "n": 7487,
+            "x0": 936,
+            "y0": 1008,
+            "x1": 1051,
+            "y1": 1079
+          },
+          "anchorMatched": false,
+          "shoeEndRenderedColor": "blue"
+        },
+        "reasons": [
+          "Jakob reports a brief underside view mid-motion: this should render blue. Yellow pixels alone do not prove absence of a physical turn.",
+          "Missed intended P7 landing position: yellow end card bounds x936..1051, y1008..1079; requested centre x1467,y950.",
+          "Shoe turns blue and return pose differs from start."
+        ]
+      },
+      "evidenceBoundary": "PNG pixels and file hashes freshly verified. Motion results are existing registered review decisions; no new full-video physical-side review."
+    },
+    {
+      "id": "pamela-p7-c1-left-turn-pilot-02",
+      "receipt": {
+        "path": "assets/motions/pamela-p7-c1-left-turn-pilot-02/generation.json",
+        "sha256": "62afbbc3a936e4f0d2010ba7200577419253644c0dcaa744c1f0c5da55d55a04",
+        "bytes": 2327
+      },
+      "taskId": "4f57a462-6df7-4beb-8fa0-db5d3eaf8357",
+      "model": "wan3",
+      "requestedAt": "2026-11-10T17:47:27.555Z",
+      "method": "yellow-BACK-blue-FRONT-proxy",
+      "start": {
+        "path": "assets/motions/pamela-p7-c1-left-turn-pilot-02/start.png",
+        "sha256": "3050e9ccc0d624a1b45d49a67be1c38a8ef6a6038d2743585891dea44d5ffff0",
+        "bytes": 953140,
+        "receiptSha256": "3050e9ccc0d624a1b45d49a67be1c38a8ef6a6038d2743585891dea44d5ffff0",
+        "matchesReceipt": true,
+        "alphaFullyOpaque": true
+      },
+      "end": {
+        "path": "assets/motions/pamela-p7-c1-left-turn-pilot-02/end.png",
+        "sha256": "5c9de55375c9a12b3395af7e873f07c85b5b067c49b1d9b5a3aa4711e50fb0a6",
+        "bytes": 1264899,
+        "receiptSha256": "5c9de55375c9a12b3395af7e873f07c85b5b067c49b1d9b5a3aa4711e50fb0a6",
+        "matchesReceipt": true,
+        "alphaFullyOpaque": true
+      },
+      "imageDimensions": {
+        "width": 1764,
+        "height": 1174
+      },
+      "intendedTarget": {
+        "id": "P7.C1",
+        "u": 0.832,
+        "v": 0.19,
+        "calibrated": false
+      },
+      "colors": {
+        "shoeFaceCore": {
+          "start": [
+            {
+              "rgb": [
+                241,
+                230,
+                0
+              ],
+              "pixels": 179
+            },
+            {
+              "rgb": [
+                240,
+                229,
+                0
+              ],
+              "pixels": 134
+            },
+            {
+              "rgb": [
+                242,
+                231,
+                0
+              ],
+              "pixels": 122
+            }
+          ],
+          "end": [
+            {
+              "rgb": [
+                241,
+                230,
+                0
+              ],
+              "pixels": 179
+            },
+            {
+              "rgb": [
+                240,
+                229,
+                0
+              ],
+              "pixels": 134
+            },
+            {
+              "rgb": [
+                242,
+                231,
+                0
+              ],
+              "pixels": 122
+            }
+          ]
+        },
+        "existingCentreCore": {
+          "start": [
+            {
+              "rgb": [
+                0,
+                94,
+                224
+              ],
+              "pixels": 119
+            },
+            {
+              "rgb": [
+                0,
+                95,
+                225
+              ],
+              "pixels": 102
+            },
+            {
+              "rgb": [
+                0,
+                93,
+                223
+              ],
+              "pixels": 81
+            }
+          ],
+          "end": [
+            {
+              "rgb": [
+                0,
+                94,
+                224
+              ],
+              "pixels": 119
+            },
+            {
+              "rgb": [
+                0,
+                95,
+                225
+              ],
+              "pixels": 102
+            },
+            {
+              "rgb": [
+                0,
+                93,
+                223
+              ],
+              "pixels": 81
+            }
+          ]
+        }
+      },
+      "targetCore": {
+        "x": 1467,
+        "y": 950,
+        "start": [
+          0,
+          244,
+          59
+        ],
+        "end": [
+          0,
+          0,
+          255
+        ]
+      },
+      "startToEndDiff": {
+        "changedPixels": 4253,
+        "outsideRegisteredMask": 0,
+        "bounds": {
+          "left": 1430,
+          "top": 920,
+          "right": 1502,
+          "bottom": 980
+        }
+      },
+      "promptText": "Single fixed-camera shot. The FIRST image is the start. The LAST image is the exact finish: the original blue card at bottom centre plus a NEW BLUE CARD far to VIEWER RIGHT, below and right of the shoe. Animate the same woman connecting these two frames. 0-1s: anatomical LEFT hand (viewer right) draws one YELLOW-backed card from the shoe. 1-3s: hold the card above the right side of the table and visibly ROLL THE WRIST AND FOREARM 180 DEGREES, turning the same card over around its long axis in the same grip. Yellow surface turns away, physical thin edge passes camera, BLUE REVERSE FACE appears and remains visible. Do NOT merely recolour an unturned card. 3-5s: left hand travels outward to VIEWER RIGHT and places that BLUE face-up card precisely at the position shown in the LAST image. It never approaches the existing centre blue card. 5-7s: release and return empty left hand to the shoe, matching the last frame. 7-8s: hold the exact finish. Shoe stays YELLOW throughout. Both blue cards stay still after placement. Natural right hand and gaze. Preserve the woman and camera, green background, green table and shoe. No cuts, no disappearing cards, no hand transfer.",
+      "physicalIntent": {
+        "takeHand": "LH",
+        "releaseHand": "LH",
+        "target": "P7.C1",
+        "physicalStartSide": "BACK",
+        "physicalEndSide": "FRONT",
+        "turn": true,
+        "pass": false
+      },
+      "recordedMotionReview": {
+        "decision": "REJECTED",
+        "observed": {
+          "takeHand": "LH",
+          "releaseHand": "LH",
+          "turn": "Two side changes: front with rank symbols becomes visible after pickup; later wrist rotation exposes the back before landing.",
+          "landedAt": "P7.C1 source-image target",
+          "settledCardSamples": [
+            {
+              "second": 6,
+              "count": 4007,
+              "bounds": {
+                "x0": 1430,
+                "y0": 922,
+                "x1": 1501,
+                "y1": 979
+              },
+              "centre": {
+                "x": 1465.5,
+                "y": 950.5
+              }
+            },
+            {
+              "second": 6.5,
+              "count": 4047,
+              "bounds": {
+                "x0": 1430,
+                "y0": 922,
+                "x1": 1501,
+                "y1": 979
+              },
+              "centre": {
+                "x": 1465.5,
+                "y": 950.5
+              }
+            },
+            {
+              "second": 7,
+              "count": 4048,
+              "bounds": {
+                "x0": 1430,
+                "y0": 922,
+                "x1": 1501,
+                "y1": 979
+              },
+              "centre": {
+                "x": 1465.5,
+                "y": 950.5
+              }
+            },
+            {
+              "second": 7.5,
+              "count": 4042,
+              "bounds": {
+                "x0": 1430,
+                "y0": 922,
+                "x1": 1501,
+                "y1": 979
+              },
+              "centre": {
+                "x": 1465.5,
+                "y": 950.5
+              }
+            }
+          ],
+          "shoeRenderedColor": "yellow",
+          "returnsToShoe": true,
+          "anchorCutReady": false,
+          "physicalSequence": [
+            "BACK",
+            "FRONT",
+            "BACK"
+          ],
+          "physicalEndSide": "BACK",
+          "sideBasis": "Jakob supplied three screenshots and pointed out wrong colour at reveal and landing; reviewed against the continuous source sequence."
+        },
+        "reasons": [
+          "Front/rank face is rendered yellow but should be blue.",
+          "Opposite side exposed for landing is rendered blue but should be yellow.",
+          "Motion appears to end BACK, so it does not satisfy a BACK-to-FRONT deal."
+        ],
+        "limitations": [
+          "Card is raised high and held before turning; naturalness needs Jakob review.",
+          "Generated yellow face has unwanted small printed marks; overlay must cover them.",
+          "Source-image position only; no final V6/Scout calibration or hand/contact masks.",
+          "Return pose is visually close, not verified as a seamless loop."
+        ]
+      },
+      "evidenceBoundary": "PNG pixels and file hashes freshly verified. Motion results are existing registered review decisions; no new full-video physical-side review."
+    },
+    {
+      "id": "pamela-p7-c1-left-turn-pilot-03",
+      "receipt": {
+        "path": "assets/motions/pamela-p7-c1-left-turn-pilot-03/generation.json",
+        "sha256": "f7302b349f1ce0794265bd895758334bf4726d5804a3da8d5dd4ceab3c2e47fd",
+        "bytes": 4426
+      },
+      "taskId": "18b11157-288a-40e7-b667-a327506ed928",
+      "model": "wan3",
+      "requestedAt": "2026-11-10T18:40:22.260Z",
+      "method": "yellow-BACK-blue-FRONT-proxy",
+      "start": {
+        "path": "assets/motions/pamela-p7-c1-left-turn-pilot-03/start.png",
+        "sha256": "3050e9ccc0d624a1b45d49a67be1c38a8ef6a6038d2743585891dea44d5ffff0",
+        "bytes": 953140,
+        "receiptSha256": "3050e9ccc0d624a1b45d49a67be1c38a8ef6a6038d2743585891dea44d5ffff0",
+        "matchesReceipt": true,
+        "alphaFullyOpaque": true
+      },
+      "end": {
+        "path": "assets/motions/pamela-p7-c1-left-turn-pilot-03/end.png",
+        "sha256": "6dab51f1a0346051c2656a835e21ece48bfc7533395235e9010c4f64fa86e628",
+        "bytes": 1265825,
+        "receiptSha256": "6dab51f1a0346051c2656a835e21ece48bfc7533395235e9010c4f64fa86e628",
+        "matchesReceipt": true,
+        "alphaFullyOpaque": true
+      },
+      "imageDimensions": {
+        "width": 1764,
+        "height": 1174
+      },
+      "intendedTarget": {
+        "id": "P7.C1",
+        "nativePoints": [
+          {
+            "x": 1417.6436706428956,
+            "y": 934.507750991647
+          },
+          {
+            "x": 1466.1559950355468,
+            "y": 934.507750991647
+          },
+          {
+            "x": 1515.7465848811341,
+            "y": 966.937257514583
+          },
+          {
+            "x": 1463.3203096661196,
+            "y": 966.937257514583
+          }
+        ],
+        "points": [
+          {
+            "x": 1419.253714561854,
+            "y": 934.507750991647
+          },
+          {
+            "x": 1467.8211352911237,
+            "y": 934.507750991647
+          },
+          {
+            "x": 1517.468046079182,
+            "y": 966.937257514583
+          },
+          {
+            "x": 1464.9822293818108,
+            "y": 966.937257514583
+          }
+        ],
+        "calibrated": false,
+        "mapping": {
+          "from": [
+            1762,
+            1174
+          ],
+          "to": [
+            1764,
+            1174
+          ],
+          "xScale": 1.0011357183418512,
+          "yScale": 1,
+          "method": "normalized pixel endpoints; provisional source-image mapping"
+        }
+      },
+      "colors": {
+        "shoeFaceCore": {
+          "start": [
+            {
+              "rgb": [
+                241,
+                230,
+                0
+              ],
+              "pixels": 179
+            },
+            {
+              "rgb": [
+                240,
+                229,
+                0
+              ],
+              "pixels": 134
+            },
+            {
+              "rgb": [
+                242,
+                231,
+                0
+              ],
+              "pixels": 122
+            }
+          ],
+          "end": [
+            {
+              "rgb": [
+                241,
+                230,
+                0
+              ],
+              "pixels": 179
+            },
+            {
+              "rgb": [
+                240,
+                229,
+                0
+              ],
+              "pixels": 134
+            },
+            {
+              "rgb": [
+                242,
+                231,
+                0
+              ],
+              "pixels": 122
+            }
+          ]
+        },
+        "existingCentreCore": {
+          "start": [
+            {
+              "rgb": [
+                0,
+                94,
+                224
+              ],
+              "pixels": 119
+            },
+            {
+              "rgb": [
+                0,
+                95,
+                225
+              ],
+              "pixels": 102
+            },
+            {
+              "rgb": [
+                0,
+                93,
+                223
+              ],
+              "pixels": 81
+            }
+          ],
+          "end": [
+            {
+              "rgb": [
+                0,
+                94,
+                224
+              ],
+              "pixels": 119
+            },
+            {
+              "rgb": [
+                0,
+                95,
+                225
+              ],
+              "pixels": 102
+            },
+            {
+              "rgb": [
+                0,
+                93,
+                223
+              ],
+              "pixels": 81
+            }
+          ]
+        }
+      },
+      "targetCore": {
+        "x": 1467,
+        "y": 951,
+        "start": [
+          0,
+          244,
+          59
+        ],
+        "end": [
+          7,
+          90,
+          216
+        ]
+      },
+      "startToEndDiff": {
+        "changedPixels": 1742,
+        "outsideRegisteredMask": 0,
+        "bounds": {
+          "left": 1419,
+          "top": 934,
+          "right": 1517,
+          "bottom": 966
+        }
+      },
+      "promptText": "Locked camera, continuous six-second shot between these exact anchors. Same woman, left hand on SCREEN RIGHT, green studio and black shoe. A single rigid card has a YELLOW BACK and BLUE FRONT. At the outlet yellow is UP and blue is DOWN. Left index and middle fingers start ON TOP of yellow; thumb is underneath. Pull one card just clear of the outlet. Perform an UNDERHAND TURNOVER while moving directly to the lower-right landing spot: rotate the left forearm from PALM DOWN to PALM UP, turning the card over 180 degrees around its long edge. The yellow upper surface visibly rotates DOWN through an edge-on moment, revealing the blue underside, which becomes the UPWARD face. Finish the rotation with index and middle fingers UNDER the card supporting its yellow underside, and thumb above its blue face. Keep that palm-up grip until placement. Lower the card BLUE FACE UP at the new position in the last image and slide the supporting fingers OUT FROM UNDER it. Do not turn the wrist palm-down again until AFTER releasing the card. No palm pressing on top, no second turnover, no flat spin, no colour morph. One physical card, one turnover. Stay beside the shoe, no centre detour or hand transfer. By 5.3s return the empty left hand to its exact original shoe-ready pose and settle. The new blue card and old centre blue card remain still; the next shoe card stays yellow. Preserve natural gaze, fingers and framing.",
+      "physicalIntent": {
+        "takeHand": "LH",
+        "releaseHand": "LH",
+        "startSide": "BACK",
+        "endSide": "FRONT",
+        "turnCount": 1,
+        "pass": false,
+        "returnAnchor": "same shoe-ready pose, new card retained"
+      },
+      "recordedMotionReview": {
+        "decision": "REJECTED",
+        "observed": {
+          "takeHand": "LH",
+          "releaseHand": "LH",
+          "physicalEndSide": "UNKNOWN",
+          "verifiedTurnCount": null,
+          "anchorCutReady": false,
+          "landsNear": "P4 centre instead of P7",
+          "unrequestedEarlyTargetCard": true,
+          "shoeChangesColor": true
+        },
+        "limitations": [
+          "Wrong landing near P4, not the requested P7.",
+          "A card appears at P7 before contact; this is not a physically dealt card.",
+          "Shoe changes blue during the action.",
+          "Physical side/turn count not certified; generated colour is not side evidence.",
+          "Source yellow/blue was already submitted before Jakob clarified pink remains the mask method. Future mask trials should remain pink."
+        ]
+      },
+      "evidenceBoundary": "PNG pixels and file hashes freshly verified. Motion results are existing registered review decisions; no new full-video physical-side review."
+    }
+  ],
+  "registeredSources": [
+    {
+      "path": "assets/motions/pamela-p6-c1-left-turn-pilot-01/generation.json",
+      "sha256": "dc991d505108533350adb8c0a01a4e3bf17e4c205c94336c754bfd106cb308c0",
+      "bytes": 2314
+    },
+    {
+      "path": "motions/pamela-p6-c1-left-turn-pilot-01.json",
+      "sha256": "745cc53f03ee92b8d20351e3c829cc94f552aa8a59e8bba59eda13a910f1b32d",
+      "bytes": 1910
+    },
+    {
+      "path": "assets/motions/pamela-p6-c1-left-turn-pilot-01/start.png",
+      "sha256": "3050e9ccc0d624a1b45d49a67be1c38a8ef6a6038d2743585891dea44d5ffff0",
+      "bytes": 953140
+    },
+    {
+      "path": "assets/motions/pamela-p6-c1-left-turn-pilot-01/end.png",
+      "sha256": "a08ba7353c1de4a5978365444a06bda8e13ee9447081f42efb661874b60bcfcf",
+      "bytes": 1264637
+    },
+    {
+      "path": "assets/motions/pamela-p6-c1-left-turn-pilot-01/overlay-spec.json",
+      "sha256": "c4e390db07583804353b50744b553f53931d05e579c8c1352ce6d1eb762e11f0",
+      "bytes": 495
+    },
+    {
+      "path": "assets/motions/pamela-p7-c1-left-direct-pilot-01/generation.json",
+      "sha256": "845adddc8f6de0ea5ed373c24b2f25d96d7836a02916e7528ce26c769ba4cc69",
+      "bytes": 4449
+    },
+    {
+      "path": "motions/pamela-p7-c1-left-direct-pilot-01.json",
+      "sha256": "6c6239f63f6ee08aa1feb4c5c052a49e1b625d56b20ea232455d5aa69dc9244b",
+      "bytes": 7720
+    },
+    {
+      "path": "assets/motions/pamela-p7-c1-left-direct-pilot-01/start.png",
+      "sha256": "373dc2b2a9b1415c22da6ef8f466690eaff676507c418d16956e922717193e73",
+      "bytes": 1193058
+    },
+    {
+      "path": "assets/motions/pamela-p7-c1-left-direct-pilot-01/end.png",
+      "sha256": "6d0e7c4c73243d431658afe38b02f1a53ddb8d28123dacb00344b28a479d028f",
+      "bytes": 1255151
+    },
+    {
+      "path": "assets/motions/pamela-p7-c1-left-pink-pilot-01/generation.json",
+      "sha256": "2ab9efaff0eb1f991504e5536acb26f5be4275b861564ca1e6ef9deb178a5d07",
+      "bytes": 2786
+    },
+    {
+      "path": "motions/pamela-p7-c1-left-pink-pilot-01.json",
+      "sha256": "a4564828e8146dce5f6c2ae9162c29f7ed90fab5c2600bce2fca4d601125cfdf",
+      "bytes": 2883
+    },
+    {
+      "path": "assets/motions/pamela-p7-c1-left-pink-pilot-01/start.png",
+      "sha256": "373dc2b2a9b1415c22da6ef8f466690eaff676507c418d16956e922717193e73",
+      "bytes": 1193058
+    },
+    {
+      "path": "assets/motions/pamela-p7-c1-left-pink-pilot-01/end.png",
+      "sha256": "deedd1c062779f13b8430da223510195c742d437473cd43739ea9b99c07ad5e2",
+      "bytes": 1254312
+    },
+    {
+      "path": "assets/motions/pamela-p7-c1-left-turn-pilot-01/generation.json",
+      "sha256": "65da6f84207ccf3bd245ab2bcd6017b6d89cb15b6b7933d5777d13d634569a85",
+      "bytes": 2277
+    },
+    {
+      "path": "motions/pamela-p7-c1-left-turn-pilot-01.json",
+      "sha256": "029583c2ce80f46927ab0ec89f7f1d4f6281038df986db1fa7d6666d90a47046",
+      "bytes": 2286
+    },
+    {
+      "path": "assets/motions/pamela-p7-c1-left-turn-pilot-01/start.png",
+      "sha256": "3050e9ccc0d624a1b45d49a67be1c38a8ef6a6038d2743585891dea44d5ffff0",
+      "bytes": 953140
+    },
+    {
+      "path": "assets/motions/pamela-p7-c1-left-turn-pilot-02/generation.json",
+      "sha256": "62afbbc3a936e4f0d2010ba7200577419253644c0dcaa744c1f0c5da55d55a04",
+      "bytes": 2327
+    },
+    {
+      "path": "motions/pamela-p7-c1-left-turn-pilot-02.json",
+      "sha256": "721c6dc1f725ad4242c7fa2e0e1adc908fb915f395edc92cf32d30a233585805",
+      "bytes": 3868
+    },
+    {
+      "path": "assets/motions/pamela-p7-c1-left-turn-pilot-02/start.png",
+      "sha256": "3050e9ccc0d624a1b45d49a67be1c38a8ef6a6038d2743585891dea44d5ffff0",
+      "bytes": 953140
+    },
+    {
+      "path": "assets/motions/pamela-p7-c1-left-turn-pilot-02/end.png",
+      "sha256": "5c9de55375c9a12b3395af7e873f07c85b5b067c49b1d9b5a3aa4711e50fb0a6",
+      "bytes": 1264899
+    },
+    {
+      "path": "assets/motions/pamela-p7-c1-left-turn-pilot-02/overlay-spec.json",
+      "sha256": "2ff10fecae331cc096f48cc712dbd3e254c9db2ee7f8054e33e65ad420ca0eb9",
+      "bytes": 485
+    },
+    {
+      "path": "assets/motions/pamela-p7-c1-left-turn-pilot-03/generation.json",
+      "sha256": "f7302b349f1ce0794265bd895758334bf4726d5804a3da8d5dd4ceab3c2e47fd",
+      "bytes": 4426
+    },
+    {
+      "path": "motions/pamela-p7-c1-left-turn-pilot-03.json",
+      "sha256": "290aa5c28188c76fa8f90319f8c645bd84248db26f8c6dcf66de39d2c1aedfdc",
+      "bytes": 5846
+    },
+    {
+      "path": "assets/motions/pamela-p7-c1-left-turn-pilot-03/start.png",
+      "sha256": "3050e9ccc0d624a1b45d49a67be1c38a8ef6a6038d2743585891dea44d5ffff0",
+      "bytes": 953140
+    },
+    {
+      "path": "assets/motions/pamela-p7-c1-left-turn-pilot-03/end.png",
+      "sha256": "6dab51f1a0346051c2656a835e21ece48bfc7533395235e9010c4f64fa86e628",
+      "bytes": 1265825
+    },
+    {
+      "path": "assets/motions/pamela-p7-c1-left-pink-pilot-01/source-anchor.png",
+      "sha256": "3050e9ccc0d624a1b45d49a67be1c38a8ef6a6038d2743585891dea44d5ffff0",
+      "bytes": 953140
+    },
+    {
+      "path": "assets/motions/pamela-p7-c1-left-pink-pilot-01/input-mask.png",
+      "sha256": "36258bfeb83d56cd1addc5af013f7f587195b4d2e98c7b76c18d9e69bd14dd85",
+      "bytes": 7050
+    },
+    {
+      "path": "tools/generate-pink-pilot.ts",
+      "sha256": "8dadec2d98a43137ccbd3340fc6408629b05b4678412fc7b7958a01faed63b26",
+      "bytes": 5971
+    },
+    {
+      "path": "tools/generate-p7-direct.ts",
+      "sha256": "6d81ae3917dc797a0bf4e6ccb9e7a1b60003c9a3fa5682f9547bcae88987d73f",
+      "bytes": 9761
+    },
+    {
+      "path": "HANDOFF.md",
+      "sha256": "7901d28487e6f54d7067eccfd616454baa7b426605248507c217eda5f53d2a95",
+      "bytes": 16872
+    },
+    {
+      "path": "motions/pamela-p4-c2-left-closed-closed.json",
+      "sha256": "ceb14f24e8bdc5ff38441fd05f1175d56ea6acdde30beb40db39d9aaf9a927fa",
+      "bytes": 2293,
+      "readAt": "2026-11-10T19:23:45.548Z"
+    },
+    {
+      "path": "assets/motions/pamela-p4-c2-left-closed-closed/source.mp4",
+      "sha256": "e3b38f89eb6cb14f8dc240c5fdecce814850bb87285ebe540084c33af82b2ad7",
+      "bytes": 11206879
+    },
+    {
+      "path": "assets/motions/pamela-p4-c2-left-closed-closed/review-v04/preview.mp4",
+      "sha256": "7d093a28f37abf5bd4c373491fca9bc113fc2271e7784e718e66d95beb42392f",
+      "bytes": 5273433
+    },
+    {
+      "path": "assets/motions/pamela-p4-c2-left-closed-closed/review-v04/receipt.json",
+      "sha256": "6336816e99d08673b82e308b834e013a78364060cab0d2de00ad6e8e90f8db26",
+      "bytes": 10155
+    },
+    {
+      "path": "tools/closed-card-review.ts",
+      "sha256": "f888e7fc9049ee727eaefacc4106528f909bc3cbb3b6980c3a3893cc9feea32d",
+      "bytes": 4940
+    },
+    {
+      "path": "evidence/historical-p4-generation-inputs.json",
+      "sha256": "fb6fca250d2c0f997ce2bd81173b7a4bbd85d5a49577e0218d44528320758c6f",
+      "bytes": 52859,
+      "readAt": "2026-11-10T19:23:45.547Z"
+    },
+    {
+      "path": "evidence/sequence-reuse-audit.json",
+      "sha256": "ffeb1f733a6692c46a4eaf15ab5fd2781c17dbf45e69510e47d9275ecd99ddb8",
+      "bytes": 81790,
+      "readAt": "2026-11-10T19:23:45.547Z"
+    },
+    {
+      "path": "data/library.json",
+      "sha256": "dea026da8858d71573913998de6bddebf4d66f015430f4cd5b2d44336cf4dfb9",
+      "bytes": 12610,
+      "readAt": "2026-11-10T19:23:45.547Z"
+    },
+    {
+      "path": "src/lab-ui.ts",
+      "sha256": "b76a93ff816f6df565467583ad3aa57bd0eeec749ba373dbd25acbab32426a3c",
+      "bytes": 28462,
+      "readAt": "2026-11-10T19:23:45.548Z"
+    },
+    {
+      "path": "assets/motions/pamela-p4-c2-left-closed-closed/review-v04/f068.png",
+      "sha256": "fbcc524f1d3725501aed0906631db73841a27134715d23d83985e52cd99ddb90",
+      "bytes": 554992,
+      "readAt": "2026-11-10T19:23:45.549Z"
+    }
+  ],
+  "archiveReads": [
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/center-arc-01/p4-c1/review/qa.json",
+      "sha256": "a930ebcbd0e6e1326a0437cd0ad16e048bb531ba7621aa0e1561b28e7bf25bc6",
+      "bytes": 2653,
+      "purpose": "P4 color/physical-side consistency follow-up"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p4-c2-center-01/review/qa.json",
+      "sha256": "38ab563741d0801684dab15307925570a3a48e867dc534b28097f5dc2952c837",
+      "bytes": 2884,
+      "purpose": "P4 color/physical-side consistency follow-up"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-scene/take-09/timeline-89d0a44801ef.json",
+      "sha256": "b9500e990de4a0e021042efbb5ae4dc123513b94fb96c30aef39c982406281fa",
+      "bytes": 321701,
+      "purpose": "P4 color/physical-side consistency follow-up"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-card-side-review/take-01/manifest.json",
+      "sha256": "cf57437da49e14150abc31845e77f713e1f612538600d6e210c336ed080c5983",
+      "bytes": 1262894,
+      "purpose": "P4 color/physical-side consistency follow-up"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p4-c2-center-01/review/turn-49-68.png",
+      "sha256": "6cd5c715612bd6ea78824f2101d57a6a0df28a74ad8c0e70c071e1fd7146bed0",
+      "bytes": 1392221,
+      "purpose": "P4 physical turn evidence comparison"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/center-arc-01/p4-c1/review/turn-48-67-native.png",
+      "sha256": "5f710fc6e202c15caa65a2d9fb1f6bdc1a0c141b28b3b6064583fc9f37e708ef",
+      "bytes": 2296777,
+      "purpose": "P4 physical turn evidence comparison"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p4-c2-center-01/original.mp4",
+      "sha256": "e3b38f89eb6cb14f8dc240c5fdecce814850bb87285ebe540084c33af82b2ad7",
+      "bytes": 11206879,
+      "purpose": "P4 physical turn evidence comparison"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/center-arc-01/p4-c1/original.mp4",
+      "sha256": "4153a54702edd316744ae39a64d7b6094e5bcdcd2020a1852850a4c3a9aaa1fe",
+      "bytes": 11359929,
+      "purpose": "P4.C1 source identity verification"
+    }
+  ],
+  "comparisonSheet": {
+    "path": ".runtime/anchor-color-audit/comparison.jpg",
+    "sha256": "66c0652fda8bdf2479f1b669be9eb5c376de370f0cb0c0c43f8c69058788250a",
+    "purpose": "One local comparison sheet, crops only; original anchors untouched"
+  },
+  "methodology": {
+    "comparison": "Decode each original PNG to RGB. Compare every pixel of each start/end pair. Render the recorded target polygon to an alpha coverage mask; count differences outside nonzero coverage. Inspect alpha channels separately.",
+    "colorSampling": {
+      "shoeFaceCore": {
+        "left": 1280,
+        "top": 791,
+        "right": 1300,
+        "bottom": 818
+      },
+      "existingCentreCore": {
+        "left": 860,
+        "top": 1030,
+        "right": 900,
+        "bottom": 1060
+      },
+      "newCardCore": "Pixel nearest mean of four recorded target corners."
+    },
+    "physicalSideBoundary": "BACK/FRONT are physical/semantic labels. Yellow/blue input appearance expresses intent but is not measured side truth. Magenta explicitly represents both physical faces.",
+    "comparisonSheetVisuallyReviewed": true
+  },
+  "localMotionWithoutStartEndReceipt": {
+    "id": "pamela-p4-c2-left-closed-closed",
+    "reason": "The P4 source has no start.png/end.png/generation.json triple under assets/motions; it is an earlier source/diagnostic-review asset. It was not counted as a seventh new generation receipt.",
+    "motion": {
+      "takeHand": "LH",
+      "releaseHand": "LH",
+      "target": "P4.C2",
+      "physicalStartSide": "BACK",
+      "physicalEndSide": "BACK",
+      "turn": false,
+      "pass": false,
+      "basis": "REPORTED",
+      "reviewer": "Jakob",
+      "decision": "ACCEPTED_CONDITIONALLY",
+      "condition": "Visible moving card must remain yellow/CLOSED. No side switch or card repositioning at an edge passage."
+    },
+    "diagnosticColors": {
+      "CLOSED": [
+        255,
+        255,
+        0
+      ],
+      "OPEN": [
+        0,
+        0,
+        255
+      ],
+      "NONE": [
+        0,
+        0,
+        0
+      ],
+      "contourIsSeparate": true
+    },
+    "priorCard": "P4.C1 remains OPEN/blue",
+    "reviewDecision": "PENDING",
+    "followupWarning": "Its recorded BACK→BACK claim is disputed by p4Followup; retained here as historical metadata, not an audited physical fact."
+  },
+  "completedAt": "2026-11-10T19:16:33.208Z",
+  "p4Followup": {
+    "createdAt": "2026-11-10T19:22:44.559Z",
+    "status": "COMPLETE_READ_ONLY",
+    "f68PixelVerification": {
+      "frame": 68,
+      "frameBase": 0,
+      "second": 2.2666666666666666,
+      "roi": {
+        "left": 820,
+        "top": 850,
+        "width": 240,
+        "height": 150
+      },
+      "sourceBlue": 2424,
+      "sourceBlueNowYellow": 2004,
+      "sourceBlueStillBlue": 0,
+      "sourceRgbCropSha256": "d1d9a0a3f698d91e28dd3173f52432c279441804e1d13f2f38d3e6597f447cf1",
+      "diagnosticRgbCropSha256": "48941df739191d39e6fcbe006b588734f50bb0847a6955015915eab78a9bf54c",
+      "method": "Decode same frame and fixed ROI from source and diagnostic MP4 into memory. Blue: B>65, B-R>42, B-G>22. Yellow: R/G>160 and B<min(R,G)*0.4. ROI excludes stationary C1 and shoe. No frame files saved."
+    },
+    "completedAt": "2026-11-10T19:23:45.544Z",
+    "conclusion": "Jakob has concrete support: review-v04 can show yellow on the newly revealed opposite face because the local diagnostic renderer forcibly recolors moving blue card pixels yellow. Its CLOSED→CLOSED metadata conflicts with the byte-identical source sequence, source QA and newer timeline; it must not be used to dismiss his observation.",
+    "requestedNameResolution": {
+      "requested": "motions/pamela-p4-c2-closed-review-v04.json",
+      "actualLibraryId": "pamela-p4-c2-closed-review-v04",
+      "actualMotionRef": "motions/pamela-p4-c2-left-closed-closed.json",
+      "actualFilm": "assets/motions/pamela-p4-c2-left-closed-closed/review-v04/preview.mp4",
+      "note": "The requested string is a library item ID; no matching motion JSON exists under that name."
+    },
+    "fourDistinctQuestions": {
+      "uiConvention": {
+        "yellow": "BACK/CLOSED",
+        "blue": "FRONT/OPEN",
+        "evidence": [
+          "src/lab-ui.ts:50",
+          "src/lab-ui.ts:67",
+          "src/lab-ui.ts:135"
+        ]
+      },
+      "pixelsActuallyInFilm": "Measured/read from the identified source or derivative, never inferred from its filename.",
+      "physicalObservedSide": "Inspect continuous grip, broad surface contraction, edge and opposite surface. The shader/overlay color alone cannot certify side.",
+      "authoredLabel": "A display policy or reported registry label is a separate claim; it is not independent physical observation."
+    },
+    "comparisons": [
+      {
+        "id": "older-white-P4.C1",
+        "source": {
+          "seat": 4,
+          "path": "D:/dealer-archive/snyggare-dealer/runs/20261109-pamela-seat-bank/batches/middle-end-card-v1/original/pamela-seat-4-wan3-end-card-v1.mp4",
+          "sha256": "4e252be2235ce42cec5de9d49b993d0ffed1c029de9890faea6686f46824f87c",
+          "frameDirectory": "runs/20261109-pamela-seat-bank/batches/middle-end-card-v1/qa/seat-4/frames",
+          "width": 1762,
+          "height": 1174,
+          "fps": 30,
+          "frames": 360,
+          "sha256Recorded": "4e252be2235ce42cec5de9d49b993d0ffed1c029de9890faea6686f46824f87c",
+          "bytes": 31987524,
+          "hashMatchesRecorded": true
+        },
+        "filmColor": "Original prompt requires all card surfaces plain unprinted white; this follow-up relies on prior source-bound historical audit for the older bank, not a newly sampled video.",
+        "authoredSidePolicy": {
+          "sourceSha256": "4e252be2235ce42cec5de9d49b993d0ffed1c029de9890faea6686f46824f87c",
+          "physicalSide": "UNKNOWN",
+          "segments": [
+            {
+              "start": 0,
+              "end": 360,
+              "side": "FRONT"
+            }
+          ],
+          "basis": {
+            "path": "runs/20261109-pamela-side-bank-survey/review.json",
+            "sha256": "ffb63873fb30e5a75ac44e309bf5f960a8af42d9cf9b225c8f5ccc05cf8ac6f0"
+          }
+        },
+        "physicalSide": "UNKNOWN",
+        "contrast": "This 12-second source is different from the newer 4-second yellow/blue P4.C1."
+      },
+      {
+        "id": "older-white-P4.C2",
+        "source": {
+          "path": "D:/dealer-archive/snyggare-dealer/runs/20261109-pamela-seat-bank/c2/bank-v2-stage-2/original/pamela-seat-4-wan3-c2-bank-v2.mp4",
+          "sha256": "67319ed86cde67cc7a7566553d451a89f8aac11384a55f8f8b460d1403d30167",
+          "bytes": 31746670,
+          "probe": {
+            "programs": [],
+            "stream_groups": [],
+            "streams": [
+              {
+                "width": 1762,
+                "height": 1174,
+                "avg_frame_rate": "30/1",
+                "nb_read_frames": "360"
+              }
+            ],
+            "format": {
+              "duration": "12.000000"
+            }
+          },
+          "sha256Recorded": "67319ed86cde67cc7a7566553d451a89f8aac11384a55f8f8b460d1403d30167",
+          "hashMatchesRecorded": true
+        },
+        "filmColor": "Original prompt requires white surfaces. Later material/diagnostic views author side appearance.",
+        "authoredSidePolicy": {
+          "sourceSha256": "67319ed86cde67cc7a7566553d451a89f8aac11384a55f8f8b460d1403d30167",
+          "physicalSide": "UNKNOWN",
+          "segments": [
+            {
+              "start": 0,
+              "end": 98,
+              "side": "BACK"
+            },
+            {
+              "start": 98,
+              "end": 99,
+              "side": "EDGE"
+            },
+            {
+              "start": 99,
+              "end": 360,
+              "side": "FRONT"
+            }
+          ],
+          "basis": {
+            "path": "runs/20261109-pamela-card-atlas/take-03/evidence.json",
+            "sha256": "d96a3094c39cc94e096847ea989ebe4edc85d1412304f6189e78a8584a86dddf"
+          }
+        },
+        "physicalSide": "UNKNOWN original semantic identity; a thin passage was observed in prior audit, but BACK/FRONT schedule is authored.",
+        "contrast": "This 12-second source is different from the newer P4.C2 and local review-v04 source."
+      },
+      {
+        "id": "newer-P4.C1",
+        "source": {
+          "path": "runs/20261110-pamela-goal-pilot/center-arc-01/p4-c1/original.mp4",
+          "sha256": "4153a54702edd316744ae39a64d7b6094e5bcdcd2020a1852850a4c3a9aaa1fe"
+        },
+        "filmColor": "Yellow broad face before turn, blue opposite broad face after edge; visible in registered consecutive f48–67 sheet.",
+        "physicalObservation": "Continuous broad yellow surface contracts through near-edge f58–60; opposite blue surface opens at f61–63. Geometric side change is visually supported. Printed/game identity is not independently marked.",
+        "authoredSourceSides": [
+          "BACK",
+          "EDGE",
+          "FRONT"
+        ],
+        "qaObservations": {
+          "movingHand": "Left hand maintains the grip from yellow draw to the one placement.",
+          "back": "Broad yellow face contracts continuously through f48–57.",
+          "edge": "Near-edge in f58–60, no broad intervening surface.",
+          "front": "Blue widens f61–63. By f63 the opposite surface is clearly visible above contact.",
+          "release": "Finger contact persists through f77. Clear separation visible at f78 and continues to the selected f88 anchor.",
+          "tail": "Additional lowering later in the raw take is outside the selected cut."
+        },
+        "timeline": [
+          {
+            "id": "deal.P4.K1.release",
+            "activeSlot": "P4.C1",
+            "sourceSides": [
+              "BACK",
+              "EDGE",
+              "FRONT"
+            ],
+            "outputRange": [
+              612,
+              705
+            ],
+            "boardAfter": [
+              {
+                "slot": "P4.C1",
+                "side": "FRONT"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "newer-P4.C2-and-local-original",
+        "source": {
+          "path": "runs/20261110-pamela-goal-pilot/p4-c2-center-01/original.mp4",
+          "sha256": "e3b38f89eb6cb14f8dc240c5fdecce814850bb87285ebe540084c33af82b2ad7"
+        },
+        "localSource": "assets/motions/pamela-p4-c2-left-closed-closed/source.mp4",
+        "localAndArchiveSourceByteIdentical": true,
+        "filmColor": "Yellow contracts f57–60; a narrow edge passes f61–62; blue opposite face opens from f63. Stationary C1 stays blue, shoe insert yellow.",
+        "physicalObservation": "Consecutive f49–68 source sheet visibly supports an opposite-surface exposure after edge. This is compatible with a turn/open surface; yellow pixels in the derivative cannot contradict it.",
+        "authoredSourceSides": [
+          "BACK",
+          "EDGE",
+          "FRONT"
+        ],
+        "qaObservations": {
+          "draw": "Left hand draws one yellow card. Only C1 exists on the table before the new placement.",
+          "side": "Yellow contracts f57–60, narrow motion-blurred edge f61–62 and blue opens f63 onward. No additional side or second turn.",
+          "release": "Separate C2 lands above/right of C1 in the corrected geometry. Last visible contact f116, clear from f117. Exact f119 anchor.",
+          "board": "Prior C1 stays as its own partially exposed square under C2. Shoe insert remains yellow."
+        },
+        "timeline": [
+          {
+            "id": "deal.P4.K2.release",
+            "activeSlot": "P4.C2",
+            "sourceSides": [
+              "BACK",
+              "EDGE",
+              "FRONT"
+            ],
+            "outputRange": [
+              2278,
+              2394
+            ],
+            "boardAfter": [
+              {
+                "slot": "P4.C2",
+                "side": "FRONT"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "local-review-v04",
+        "source": {
+          "path": "assets/motions/pamela-p4-c2-left-closed-closed/source.mp4",
+          "sha256": "e3b38f89eb6cb14f8dc240c5fdecce814850bb87285ebe540084c33af82b2ad7",
+          "historicalPath": "runs/20261110-pamela-goal-pilot/p4-c2-center-01/original.mp4",
+          "model": "wan3",
+          "provider": "Runway API",
+          "width": 1764,
+          "height": 1174,
+          "fps": 30,
+          "frames": 120
+        },
+        "film": "assets/motions/pamela-p4-c2-left-closed-closed/review-v04/preview.mp4",
+        "filmColor": "Moving card is forced yellow even when its original pixels are blue; prior stationary C1 is retained blue.",
+        "physicalObservation": "This recolor changes appearance only. It does not undo the observed source-side passage.",
+        "authoredLabel": {
+          "takeHand": "LH",
+          "releaseHand": "LH",
+          "target": "P4.C2",
+          "physicalStartSide": "BACK",
+          "physicalEndSide": "BACK",
+          "turn": false,
+          "pass": false,
+          "basis": "REPORTED",
+          "reviewer": "Jakob",
+          "decision": "ACCEPTED_CONDITIONALLY",
+          "condition": "Visible moving card must remain yellow/CLOSED. No side switch or card repositioning at an edge passage."
+        },
+        "classification": "LABEL_AND_OVERLAY_CONFLICT",
+        "codeMechanism": {
+          "path": "tools/closed-card-review.ts",
+          "line": 57,
+          "logic": "Every classified blue pixel outside stationary prior C1 is reassigned type 1 (yellow), including moving C2 after the turn. Lines 61–62 write yellow into labels and preview.",
+          "noPhysicalSideScheduleConsulted": true
+        },
+        "proofFrame": 68,
+        "proofSecond": 2.2666666666666666
+      }
+    ],
+    "markerLegendFromOlderDiagnosticReview": {
+      "method": "authored-diagnostic-overlay",
+      "observedInOriginal": false,
+      "FRONT": "#155cff",
+      "BACK": "#fff000",
+      "observedPhysicalSide": "UNKNOWN"
+    },
+    "knownErrorComparison": {
+      "answer": "Yes: yellow-on-open is directly supported for this P4 diagnostic. It is not proof that the old white bank used an inverse convention.",
+      "distinction": "P7 turn-02 recorded front-yellow/back-blue errors in the generated original. P4 review-v04 has a separate deterministic cause: blue source surfaces are locally overwritten yellow."
+    },
+    "recommendedCorrection": "Correct the P4 diagnostic/registry explanation to separate source-side observation from the forced all-yellow overlay. Preserve original media and this evidence. Do not call CLOSED→CLOSED physically verified or reject Jakob’s observation solely from the current reported label. No correction performed by this read-only subtask.",
+    "limitations": [
+      "A color-only BACK/FRONT interpretation is still insufficient; source geometry and documented intent support the side-change reading. No new exact 3D/occlusion certification or production acceptance.",
+      "The exact older proof Jakob originally meant by the good P4.C1/C2 sample is not established solely by its name; the inspected local review-v04 nevertheless reproduces his stated symptom.",
+      "No newer full-film rendering was performed; timeline/source identity and P4-specific source evidence were compared."
+    ]
+  }
+}

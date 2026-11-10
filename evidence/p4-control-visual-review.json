@@ -1,0 +1,1019 @@
+{
+  "schemaVersion": 1,
+  "createdAt": "2026-11-10T19:31:35.209Z",
+  "id": "pamela-p4-c1-color-control-01",
+  "status": "COMPLETE",
+  "source": {
+    "path": "assets/motions/pamela-p4-c1-color-control-01/source.mp4",
+    "sha256": "d5834149569c00b1ec99b334df44724e289e49dbd5e6d5fc2a67e12d0fb5140c"
+  },
+  "scope": "Independent local visual review of the unmodified four-second historical-geometry control. Not V6 acceptance or a full-round sequence.",
+  "format": {
+    "frames": 120,
+    "fps": 30,
+    "width": 1764,
+    "height": 1174,
+    "ffprobe": {
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "width": 1764,
+          "height": 1174,
+          "r_frame_rate": "30/1",
+          "nb_frames": "120"
+        }
+      ],
+      "format": {
+        "duration": "4.000000"
+      }
+    }
+  },
+  "reviewedFrames": {
+    "overview": "Root existing overview contact sheet",
+    "continuousTurn": [
+      50,
+      51,
+      52,
+      53,
+      54,
+      55,
+      56,
+      57,
+      58,
+      59,
+      60,
+      61,
+      62,
+      63,
+      64,
+      65,
+      66,
+      67,
+      68,
+      69,
+      70,
+      71,
+      72,
+      73,
+      74,
+      75
+    ],
+    "continuousTail": [
+      96,
+      97,
+      98,
+      99,
+      100,
+      101,
+      102,
+      103,
+      104,
+      105,
+      106,
+      107,
+      108,
+      109,
+      110,
+      111,
+      112,
+      113,
+      114,
+      115,
+      116,
+      117,
+      118,
+      119
+    ],
+    "continuousLanding": [
+      76,
+      77,
+      78,
+      79,
+      80,
+      81,
+      82,
+      83,
+      84,
+      85,
+      86,
+      87,
+      88,
+      89,
+      90,
+      91,
+      92,
+      93,
+      94,
+      95
+    ]
+  },
+  "contactSheet": {
+    "path": ".runtime/p4-control-review/continuity.jpg",
+    "sha256": "e1f5bef09da9356511c543fa4bd1e002a469c174c5e3b69034cd4f29c0ad3cc0",
+    "crop": {
+      "left": 790,
+      "top": 700,
+      "width": 360,
+      "height": 400
+    },
+    "method": "Exact integer frames decoded in memory; unmodified appearance; native crop resized to 240x267. One contact sheet updated in place; no still-frame files.",
+    "finalSheetFrames": [
+      60,
+      61,
+      62,
+      63,
+      64,
+      65,
+      66,
+      67,
+      76,
+      77,
+      78,
+      79,
+      80,
+      81,
+      82,
+      83,
+      84,
+      85,
+      86,
+      87,
+      88,
+      89,
+      90,
+      91,
+      92,
+      93,
+      94,
+      95,
+      110,
+      111,
+      112,
+      113,
+      114,
+      115,
+      116,
+      117,
+      118,
+      119
+    ],
+    "bytes": 610025
+  },
+  "registeredSources": [
+    {
+      "path": "assets/motions/pamela-p4-c1-color-control-01/source.mp4",
+      "sha256": "d5834149569c00b1ec99b334df44724e289e49dbd5e6d5fc2a67e12d0fb5140c",
+      "bytes": 11165209
+    },
+    {
+      "path": "assets/motions/pamela-p4-c1-color-control-01/start.png",
+      "sha256": "a2fc6d3565ca711015c9b547671bf33e97eea4c2281e75841690f8848b422f45",
+      "bytes": 1179028
+    },
+    {
+      "path": "assets/motions/pamela-p4-c1-color-control-01/end.png",
+      "sha256": "c30be996971282c737825a9439e3d303728086c391d8bbb14a67a8fc826e784b",
+      "bytes": 1315858
+    },
+    {
+      "path": "assets/motions/pamela-p4-c1-color-control-01/generation.json",
+      "sha256": "4ebbea4a6a7f794b59c6dab8281674ceb13d08f71b72b98697005963d7b0e9a9",
+      "bytes": 4267
+    },
+    {
+      "path": "assets/motions/pamela-p4-c1-color-control-01/plan.json",
+      "sha256": "dc3d88069afeb232f6ed5b388b29a39f051c9d7303167d8ead477ba880d4f6fe",
+      "bytes": 5711
+    },
+    {
+      "path": "assets/motions/pamela-p4-c1-color-control-01/prompt.txt",
+      "sha256": "1e5c0abca098d18083f2f558c7ab2c50064e7d051a2842cf721dac122973648d",
+      "bytes": 733
+    },
+    {
+      "path": ".runtime/sequence-review/p4-control-contact.jpg",
+      "sha256": "2d7f15d199540c052671c0cc71b2c071f274feac8083839a6367d5679c858628",
+      "bytes": 72005
+    },
+    {
+      "path": ".runtime/p4-control-review/continuity.jpg",
+      "sha256": "e1f5bef09da9356511c543fa4bd1e002a469c174c5e3b69034cd4f29c0ad3cc0",
+      "bytes": 610025
+    }
+  ],
+  "quantitative": {
+    "turnColorCoreSamples": [
+      {
+        "frame": 56,
+        "second": 1.8666666666666667,
+        "yellowLargestComponent": {
+          "pixels": 4570,
+          "bounds": {
+            "left": 924,
+            "top": 700,
+            "right": 985,
+            "bottom": 823,
+            "width": 62,
+            "height": 124
+          }
+        },
+        "blueLargestComponent": {
+          "pixels": 0,
+          "bounds": null
+        }
+      },
+      {
+        "frame": 57,
+        "second": 1.9,
+        "yellowLargestComponent": {
+          "pixels": 4703,
+          "bounds": {
+            "left": 908,
+            "top": 700,
+            "right": 963,
+            "bottom": 835,
+            "width": 56,
+            "height": 136
+          }
+        },
+        "blueLargestComponent": {
+          "pixels": 0,
+          "bounds": null
+        }
+      },
+      {
+        "frame": 58,
+        "second": 1.9333333333333333,
+        "yellowLargestComponent": {
+          "pixels": 5545,
+          "bounds": {
+            "left": 880,
+            "top": 718,
+            "right": 947,
+            "bottom": 871,
+            "width": 68,
+            "height": 154
+          }
+        },
+        "blueLargestComponent": {
+          "pixels": 0,
+          "bounds": null
+        }
+      },
+      {
+        "frame": 59,
+        "second": 1.9666666666666666,
+        "yellowLargestComponent": {
+          "pixels": 5860,
+          "bounds": {
+            "left": 874,
+            "top": 728,
+            "right": 941,
+            "bottom": 881,
+            "width": 68,
+            "height": 154
+          }
+        },
+        "blueLargestComponent": {
+          "pixels": 0,
+          "bounds": null
+        }
+      },
+      {
+        "frame": 60,
+        "second": 2,
+        "yellowLargestComponent": {
+          "pixels": 5880,
+          "bounds": {
+            "left": 870,
+            "top": 736,
+            "right": 935,
+            "bottom": 891,
+            "width": 66,
+            "height": 156
+          }
+        },
+        "blueLargestComponent": {
+          "pixels": 0,
+          "bounds": null
+        }
+      },
+      {
+        "frame": 61,
+        "second": 2.033333333333333,
+        "yellowLargestComponent": {
+          "pixels": 6274,
+          "bounds": {
+            "left": 858,
+            "top": 751,
+            "right": 929,
+            "bottom": 909,
+            "width": 72,
+            "height": 159
+          }
+        },
+        "blueLargestComponent": {
+          "pixels": 0,
+          "bounds": null
+        }
+      },
+      {
+        "frame": 62,
+        "second": 2.066666666666667,
+        "yellowLargestComponent": {
+          "pixels": 6635,
+          "bounds": {
+            "left": 850,
+            "top": 768,
+            "right": 921,
+            "bottom": 925,
+            "width": 72,
+            "height": 158
+          }
+        },
+        "blueLargestComponent": {
+          "pixels": 0,
+          "bounds": null
+        }
+      },
+      {
+        "frame": 63,
+        "second": 2.1,
+        "yellowLargestComponent": {
+          "pixels": 6868,
+          "bounds": {
+            "left": 838,
+            "top": 800,
+            "right": 913,
+            "bottom": 957,
+            "width": 76,
+            "height": 158
+          }
+        },
+        "blueLargestComponent": {
+          "pixels": 0,
+          "bounds": null
+        }
+      },
+      {
+        "frame": 64,
+        "second": 2.1333333333333333,
+        "yellowLargestComponent": {
+          "pixels": 461,
+          "bounds": {
+            "left": 972,
+            "top": 818,
+            "right": 1003,
+            "bottom": 855,
+            "width": 32,
+            "height": 38
+          }
+        },
+        "blueLargestComponent": {
+          "pixels": 7375,
+          "bounds": {
+            "left": 834,
+            "top": 826,
+            "right": 907,
+            "bottom": 975,
+            "width": 74,
+            "height": 150
+          }
+        }
+      },
+      {
+        "frame": 65,
+        "second": 2.1666666666666665,
+        "yellowLargestComponent": {
+          "pixels": 427,
+          "bounds": {
+            "left": 972,
+            "top": 828,
+            "right": 999,
+            "bottom": 860,
+            "width": 28,
+            "height": 33
+          }
+        },
+        "blueLargestComponent": {
+          "pixels": 7798,
+          "bounds": {
+            "left": 834,
+            "top": 830,
+            "right": 909,
+            "bottom": 983,
+            "width": 76,
+            "height": 154
+          }
+        }
+      },
+      {
+        "frame": 66,
+        "second": 2.2,
+        "yellowLargestComponent": {
+          "pixels": 377,
+          "bounds": {
+            "left": 972,
+            "top": 836,
+            "right": 997,
+            "bottom": 867,
+            "width": 26,
+            "height": 32
+          }
+        },
+        "blueLargestComponent": {
+          "pixels": 8092,
+          "bounds": {
+            "left": 832,
+            "top": 833,
+            "right": 909,
+            "bottom": 991,
+            "width": 78,
+            "height": 159
+          }
+        }
+      },
+      {
+        "frame": 67,
+        "second": 2.2333333333333334,
+        "yellowLargestComponent": {
+          "pixels": 443,
+          "bounds": {
+            "left": 964,
+            "top": 847,
+            "right": 996,
+            "bottom": 877,
+            "width": 33,
+            "height": 31
+          }
+        },
+        "blueLargestComponent": {
+          "pixels": 8353,
+          "bounds": {
+            "left": 832,
+            "top": 844,
+            "right": 909,
+            "bottom": 1001,
+            "width": 78,
+            "height": 158
+          }
+        }
+      },
+      {
+        "frame": 68,
+        "second": 2.2666666666666666,
+        "yellowLargestComponent": {
+          "pixels": 355,
+          "bounds": {
+            "left": 967,
+            "top": 858,
+            "right": 995,
+            "bottom": 891,
+            "width": 29,
+            "height": 34
+          }
+        },
+        "blueLargestComponent": {
+          "pixels": 8494,
+          "bounds": {
+            "left": 830,
+            "top": 868,
+            "right": 909,
+            "bottom": 1023,
+            "width": 80,
+            "height": 156
+          }
+        }
+      },
+      {
+        "frame": 69,
+        "second": 2.3,
+        "yellowLargestComponent": {
+          "pixels": 323,
+          "bounds": {
+            "left": 968,
+            "top": 866,
+            "right": 995,
+            "bottom": 898,
+            "width": 28,
+            "height": 33
+          }
+        },
+        "blueLargestComponent": {
+          "pixels": 8551,
+          "bounds": {
+            "left": 830,
+            "top": 880,
+            "right": 909,
+            "bottom": 1033,
+            "width": 80,
+            "height": 154
+          }
+        }
+      },
+      {
+        "frame": 70,
+        "second": 2.3333333333333335,
+        "yellowLargestComponent": {
+          "pixels": 301,
+          "bounds": {
+            "left": 969,
+            "top": 871,
+            "right": 995,
+            "bottom": 902,
+            "width": 27,
+            "height": 32
+          }
+        },
+        "blueLargestComponent": {
+          "pixels": 8653,
+          "bounds": {
+            "left": 830,
+            "top": 886,
+            "right": 909,
+            "bottom": 1037,
+            "width": 80,
+            "height": 152
+          }
+        }
+      }
+    ],
+    "coordinateSystem": "All measured component and landing bounds use full source x right/y down.",
+    "thresholds": {
+      "yellow": "R>120,G>120,B<75,abs(R-G)<45; largest 4-connected component in x790..1149,y700..1099",
+      "blue": "B>120,B-R>70,B-G>40; turn measurement keeps largest 4-connected component"
+    },
+    "endAnchorBlueCore": {
+      "pixels": 5269,
+      "centroid": {
+        "x": 881.3142911368382,
+        "y": 1044.5285632947428
+      },
+      "bounds": {
+        "left": 843,
+        "top": 1011,
+        "right": 920,
+        "bottom": 1079
+      }
+    },
+    "lastFrameBlueCore": {
+      "pixels": 5240,
+      "centroid": {
+        "x": 881.386641221374,
+        "y": 1045.2687022900764
+      },
+      "bounds": {
+        "left": 842,
+        "top": 1010,
+        "right": 919,
+        "bottom": 1079
+      }
+    },
+    "lastFrameVsEndAnchor": {
+      "intersection": 5136,
+      "union": 5373,
+      "iou": 0.9558905639307649,
+      "centroidDistancePx": 0.743666771575677
+    },
+    "limitation": "Threshold masks measure colored footprint, not physical-side or contact truth.",
+    "releaseGapSamples": [
+      {
+        "frame": 115,
+        "skinBottom": 1025,
+        "blueTop": 1012,
+        "verticalGapPixels": -14
+      },
+      {
+        "frame": 116,
+        "skinBottom": 1015,
+        "blueTop": 1012,
+        "verticalGapPixels": -4
+      },
+      {
+        "frame": 117,
+        "skinBottom": 985,
+        "blueTop": 1010,
+        "verticalGapPixels": 24
+      },
+      {
+        "frame": 118,
+        "skinBottom": 977,
+        "blueTop": 1010,
+        "verticalGapPixels": 32
+      },
+      {
+        "frame": 119,
+        "skinBottom": 971,
+        "blueTop": 1010,
+        "verticalGapPixels": 38
+      },
+      {
+        "frame": "end.png",
+        "skinBottom": 971,
+        "blueTop": 1011,
+        "verticalGapPixels": 39
+      }
+    ],
+    "releaseGapMethod": "Coarse skin-color threshold in x840..989,y850..1039 compared with blue-card top. Positive vertical gap supports visible 2D separation; not a depth/contact solver."
+  },
+  "completedAt": "2026-11-10T19:33:20.522Z",
+  "reviewDecision": "REJECT_FOR_REQUIRED_PHYSICAL_TURN",
+  "userApproval": false,
+  "conclusion": "The control reaches the historical P4 target and visibly releases the card by f117, but it does not show the required continuous physical turnover: a broad yellow surface at f63 becomes broad blue at f64 without a visible edge passage or matching grip/geometry change. Do not treat the color change as proof of BACK→FRONT.",
+  "generationRef": {
+    "path": "assets/motions/pamela-p4-c1-color-control-01/generation.json",
+    "taskId": "e3fd5595-09ba-4228-a42c-0b7fb848fe6d",
+    "model": "wan3",
+    "promptText": "Same Pamela, black suit, green felt and fixed shoe in one locked wide shot. One continuous four-second deal directly in front, centred in the image. From the exact first pose her left hand removes one card, broad yellow back visible. During the reach roll that same wrist once: yellow visibly narrows to a thin pale edge and the opposite blue face opens fully before table contact. The colours stay on opposite surfaces of the same physical card. Touch down at the exact blue footprint and angle in the last image, then lift empty fingers directly to that clear final pose. The other hand rests. The next yellow card stays in the shoe. No slide, second touch, display gesture, handoff, second flip, colour swap, camera motion or cut.",
+    "postProcessing": "none; inspect the unmodified generated original",
+    "physicalIntent": {
+      "takeHand": "LH",
+      "releaseHand": "LH",
+      "startSide": "BACK",
+      "endSide": "FRONT",
+      "turnCount": 1,
+      "pass": false,
+      "terminalPose": "fingers clear after landing; return to shoe is a separate forward segment"
+    }
+  },
+  "inputAndSourceHashVerification": {
+    "startMatchesReceipt": true,
+    "endMatchesReceipt": true,
+    "sourceMatchesReceipt": true,
+    "sourceSha256": "d5834149569c00b1ec99b334df44724e289e49dbd5e6d5fc2a67e12d0fb5140c"
+  },
+  "observed": {
+    "takeHand": "LH in full-view overview",
+    "movingAndReleaseHand": "LH throughout contiguous reviewed f50–119",
+    "handTransferObserved": false,
+    "physicalTurnCount": null,
+    "physicalEndSide": "UNKNOWN_NOT_PROVEN_BY_COLOR",
+    "visibleSideChange": {
+      "lastYellowBroadFrame": 63,
+      "firstBlueBroadFrame": 64,
+      "lastYellowSecond": 2.1,
+      "firstBlueSecond": 2.1333333333333333,
+      "edgePassageObserved": false,
+      "interpretation": "Abrupt color substitution is the supported appearance; a true 180-degree surface reversal is not demonstrated. The broad face and top-edge finger grip persist across f63→64.",
+      "colorCoreGeometry": {
+        "f63Yellow": {
+          "pixels": 6868,
+          "width": 76,
+          "height": 158
+        },
+        "f64Blue": {
+          "pixels": 7375,
+          "width": 74,
+          "height": 150
+        }
+      }
+    },
+    "grip": {
+      "continuousFingerCardOverlap": true,
+      "basis": "Top-edge grip remains visible over contiguous frames50–95; the same hand lowers and flattens the card, then lifts.",
+      "limitation": "Pixel overlap supports visible contact; no depth reconstruction or complete finger-occlusion mesh was attempted."
+    },
+    "landing": {
+      "target": "historical P4.C1 end-anchor footprint",
+      "loweringAndFlatteningFrames": [
+        76,
+        96
+      ],
+      "firstTableContactFrame": null,
+      "contactTimingNote": "Exact first table contact is not separable from the tilt/shadow in these images. Card is lowered/flattened over f76–96; the final footprint is settled while fingers remain on top.",
+      "centerErrorPx": 0.743666771575677,
+      "blueFootprintIoU": 0.9558905639307649,
+      "geometryAssessment": "Final colored footprint closely matches the end anchor; not a calibrated V6/Scout placement."
+    },
+    "release": {
+      "lastVisibleFingerOverlapFrame": 116,
+      "firstClearlySeparatedFrame": 117,
+      "firstClearlySeparatedSecond": 3.9,
+      "clearFrames": [
+        117,
+        118,
+        119
+      ],
+      "visibleGreenGapPixels": {
+        "f117": 24,
+        "f118": 32,
+        "f119": 38,
+        "endAnchor": 39
+      },
+      "secondTouchAfterReleaseObserved": false,
+      "limitation": "Only the final three source frames remain after separation; later behavior is not available."
+    },
+    "terminalPose": {
+      "emptyFingersClear": true,
+      "cardRetainedOnTable": true,
+      "handClearanceCloseToEndAnchor": true,
+      "exactPixelMatchClaim": false,
+      "returnToShoeExpected": false,
+      "returnNote": "This four-second control ends at a clear release anchor. Return to shoe was explicitly a separate forward segment, so its absence is not a failure."
+    },
+    "otherHandAndCamera": "No handoff/camera move apparent in the root full-view overview; contiguous full-frame analysis outside the hand/card ROI was not performed."
+  },
+  "findings": [
+    {
+      "id": "P4-CONTROL-01",
+      "severity": "BLOCKING_FOR_TURN",
+      "title": "Broad face changes pigment without visible physical turnover",
+      "frames": [
+        60,
+        61,
+        62,
+        63,
+        64,
+        65,
+        66,
+        67
+      ],
+      "detail": "At f63 (2.100s) the yellow card core remains 76×158px. At f64 (2.133s) the blue core is 74×150px. The broad-face silhouette and finger arrangement persist. No thin edge links the surfaces. This fails the exact prompt request for yellow narrowing to an edge and opposite blue opening."
+    },
+    {
+      "id": "P4-CONTROL-02",
+      "severity": "PASS_WITH_LIMITATION",
+      "title": "Late but visible release; f110 was not the last frame",
+      "frames": [
+        110,
+        115,
+        116,
+        117,
+        118,
+        119
+      ],
+      "detail": "Fingers overlap the card through f116. Clear green separation begins f117 and remains to f119. Thus no-release is not a valid failure claim; available separated hold is only three frames."
+    },
+    {
+      "id": "P4-CONTROL-03",
+      "severity": "PASS_HISTORICAL_GEOMETRY_ONLY",
+      "title": "Final target footprint closely matches end anchor",
+      "frames": [
+        119
+      ],
+      "detail": "Thresholded blue footprint center differs by 0.744px and intersection-over-union is 95.59%. Final hand/card vertical gap is approximately 38px versus 39px in the end anchor. This does not validate V6 visual integration or a whole-round sequence."
+    }
+  ],
+  "limits": [
+    "Visual turn assessment reviewed every integer source frame50–119 in contiguous subranges, supplemented by root full-view overview. No physical-side conclusion is based solely on yellow/blue.",
+    "Exact first table-contact frame remains unresolved; the known final overlap/release boundary is f116→117.",
+    "Card-front/rank identity cannot be certified: both surfaces are unprinted proxies, and this control shows a pigment change without a proven physical reversal.",
+    "No API calls, internet, archive reads, source-media modifications, registry writes or new generation were performed in this review.",
+    "One local contact sheet is review-only. V6 remains the visual target; this is a separate historical-geometric control and is not a full-sequence acceptance."
+  ],
+  "recommendedAction": "Retain the unmodified control as a failed physical-turn sample with successful target/late-release evidence. Do not correct its color locally and then describe it as a proven turn. Root owns any registry/UI action or next generation.",
+  "klingComparison": {
+    "status": "COMPLETE",
+    "createdAt": "2026-11-10T19:38:45.864Z",
+    "id": "pamela-p4-c1-kling-control-01",
+    "source": {
+      "path": "assets/motions/pamela-p4-c1-kling-control-01/source.mp4",
+      "sha256": "d780e9a3ff5a1505385740e328b6cc17ed90b32b60870e2470f7028198067ee4",
+      "bytes": 4787878
+    },
+    "format": {
+      "width": 1764,
+      "height": 1172,
+      "fps": 24,
+      "frames": 97,
+      "duration": 4.041666666666667
+    },
+    "overviewFrames": [
+      0,
+      6,
+      12,
+      18,
+      24,
+      30,
+      36,
+      42,
+      48,
+      54,
+      60,
+      66,
+      72,
+      78,
+      84,
+      90,
+      96
+    ],
+    "contactSheet": {
+      "path": ".runtime/kling-control-review/continuity.jpg",
+      "sha256": "d35a1a18dbb97ce7fd3eeb13d7e0f078df721ae5b778e92d933f161a73638649",
+      "bytes": 542995,
+      "crop": {
+        "left": 780,
+        "top": 630,
+        "width": 420,
+        "height": 470
+      },
+      "frames": [
+        44,
+        45,
+        46,
+        47,
+        48,
+        49,
+        50,
+        51,
+        52,
+        53,
+        54,
+        55,
+        56,
+        57,
+        62,
+        63,
+        64,
+        65,
+        66,
+        67,
+        68,
+        69,
+        70,
+        71,
+        72,
+        73,
+        74,
+        75,
+        86,
+        87,
+        88,
+        89,
+        90,
+        91,
+        92,
+        93,
+        94,
+        95,
+        96
+      ],
+      "method": "Exact integer frames, original unfiltered RGB, one contact sheet updated in place; no still-frame bank."
+    },
+    "reviewedFrames": {
+      "overview": [
+        0,
+        6,
+        12,
+        18,
+        24,
+        30,
+        36,
+        42,
+        48,
+        54,
+        60,
+        66,
+        72,
+        78,
+        84,
+        90,
+        96
+      ],
+      "continuousTurn": [
+        44,
+        57
+      ],
+      "continuousLanding": [
+        62,
+        75
+      ],
+      "continuousTail": [
+        86,
+        96
+      ]
+    },
+    "completedAt": "2026-11-10T19:39:13.705Z",
+    "reviewDecision": "REJECT_FOR_REQUIRED_PHYSICAL_TURN",
+    "userApproval": false,
+    "conclusion": "Kling also fails to demonstrate the requested physical 180-degree turnover: the same broad surface changes from yellow through a mixed/shaded frame to blue over f52–54, without a visible edge passage. Same-hand lowering, late release and the final retained-card anchor are present. This is not a successful turning or V6 sequence candidate.",
+    "generation": {
+      "model": "kling3.0_pro",
+      "taskId": "b22a8190-96ad-4c55-9c9d-b930a0d0623b",
+      "requestedAt": "2026-11-10T19:35:15.993Z",
+      "duration": 4,
+      "ratio": null,
+      "audio": false,
+      "promptMatchesWan3": true,
+      "startHashMatchesWan3": true,
+      "endHashMatchesWan3": true,
+      "postProcessing": "none; inspect the unmodified generated original"
+    },
+    "inputAndSourceHashVerification": {
+      "source": true,
+      "start": true,
+      "end": true
+    },
+    "observed": {
+      "takeHand": "LH",
+      "releaseHand": "LH",
+      "handTransferObserved": false,
+      "physicalTurnCount": null,
+      "physicalEndSide": "UNKNOWN_NOT_PROVEN_BY_COLOR",
+      "turn": {
+        "lastBroadYellowFrame": 52,
+        "transitionFrame": 53,
+        "firstBroadBlueFrame": 54,
+        "seconds": [
+          2.1666666666666665,
+          2.2083333333333335,
+          2.25
+        ],
+        "edgePassageObserved": false,
+        "detail": "Card remains broad while yellow surface develops blue/pale shading and becomes blue. Visible top-edge pinch and same broad silhouette persist; there is no observed edge-on link between opposite physical surfaces."
+      },
+      "grip": "Same anatomical left hand retains top-edge contact through the lowering and switches to fingers resting on the placed blue card. No transfer or disappearing card seen in the reviewed samples.",
+      "landing": {
+        "target": "historical P4.C1 end image",
+        "frames": [
+          62,
+          75
+        ],
+        "detail": "Card lowers and flattens in front of the same hand at the central target. Exact first table-contact frame was not certified; no numeric geometry acceptance is claimed."
+      },
+      "release": {
+        "contactObservedThroughAtLeastFrame": 88,
+        "transitionUncertaintyFrames": [
+          89,
+          90,
+          91
+        ],
+        "clearByFrame": 92,
+        "clearBySecond": 3.8333333333333335,
+        "clearThroughFrame": 96,
+        "detail": "Finger clearance is visibly established by f92 and retained to final f96. This is late release, not failure to release."
+      },
+      "terminalAnchor": {
+        "cardRetained": true,
+        "fingersVisiblyClear": true,
+        "positionAndAngle": "Visually close to supplied blue-card end anchor; no exact pixel/pose match claimed.",
+        "originalAnchorDimensions": [
+          1764,
+          1174
+        ],
+        "outputDimensions": [
+          1764,
+          1172
+        ],
+        "note": "Two-pixel height difference means direct pixel-coordinate comparisons need explicit mapping; no WAN frame indices reused.",
+        "returnToShoeRequired": false
+      }
+    },
+    "comparisonToWan3": {
+      "sharedFailure": "Broad-face pigment transition without a visible physical edge passage.",
+      "wanTransitionFrames": [
+        63,
+        64
+      ],
+      "wanFps": 30,
+      "klingTransitionFrames": [
+        52,
+        53,
+        54
+      ],
+      "klingFps": 24,
+      "sharedPass": "Same hand, retained blue target card and visible late release.",
+      "providerConclusion": "No successful physical-turn improvement established by this one Kling control."
+    },
+    "limitations": [
+      "Focused review used exact continuous f44–57, f62–75 and f86–96 plus every-six-frame overview; it was not a full optical reconstruction.",
+      "Transition into clearance is conservatively bounded f89–91; clear separation by f92 is visible.",
+      "The final landing/pose assessment is visual; no V6/Scout integration or whole-sequence acceptance.",
+      "Only local unmodified output, anchors and receipts were read. No internet, API generation, media mutation, registry/UI change or archive access."
+    ],
+    "registeredSources": [
+      {
+        "path": "assets/motions/pamela-p4-c1-kling-control-01/source.mp4",
+        "sha256": "d780e9a3ff5a1505385740e328b6cc17ed90b32b60870e2470f7028198067ee4",
+        "bytes": 4787878
+      },
+      {
+        "path": "assets/motions/pamela-p4-c1-kling-control-01/start.png",
+        "sha256": "a2fc6d3565ca711015c9b547671bf33e97eea4c2281e75841690f8848b422f45",
+        "bytes": 1179028
+      },
+      {
+        "path": "assets/motions/pamela-p4-c1-kling-control-01/end.png",
+        "sha256": "c30be996971282c737825a9439e3d303728086c391d8bbb14a67a8fc826e784b",
+        "bytes": 1315858
+      },
+      {
+        "path": "assets/motions/pamela-p4-c1-kling-control-01/generation.json",
+        "sha256": "ac366d038b65e56304cbfd49213a9487ab58e962b797ceeb5ba4ee93763d145b",
+        "bytes": 4266
+      },
+      {
+        "path": "assets/motions/pamela-p4-c1-kling-control-01/prompt.txt",
+        "sha256": "1e5c0abca098d18083f2f558c7ab2c50064e7d051a2842cf721dac122973648d",
+        "bytes": 733
+      },
+      {
+        "path": ".runtime/kling-control-review/continuity.jpg",
+        "sha256": "d35a1a18dbb97ce7fd3eeb13d7e0f078df721ae5b778e92d933f161a73638649",
+        "bytes": 542995
+      }
+    ],
+    "recommendedAction": "Keep as an explicitly failed physical-turn comparison. Do not infer a successful turn from the yellow-to-blue change; no further analysis or generation initiated by this review."
+  }
+}
