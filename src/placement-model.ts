@@ -5,7 +5,9 @@ export type Point = { u: number; v: number };
 export type Geometry = Point & { width: number; height: number; angle: number; taper: number; reviewed: boolean };
 export type Intent = { takeHand: Hand; startSide: Side; endSide: Side; pass: boolean; turn: boolean };
 export type Target = { geometry: Record<View, Geometry>; intent: Intent; material: { bend: number; gloss: number } };
-export type PlacementPlan = { schemaVersion: 1; id: 'pamela-table'; space: 'image-normalized-bottom-up'; updatedAt: string | null; shoe: Record<View, Point>; targets: Record<string, Target> };
+export type TableProjection = { mode:'flat'|'individual'; heading:number };
+export type PlacementPlan = { schemaVersion: 1; id: 'pamela-table'; space: 'image-normalized-bottom-up'; updatedAt: string | null; shoe: Record<View, Point>; targets: Record<string, Target>; tableProjection?:TableProjection };
+export const PLANE_HEADINGS=[-90,-45,-15,0,15,45,90] as const;
 export const VIEWS = { native: { width: 1762, height: 1174, label: 'Dator', profileId: 'v6-native', background: 'assets/lab/native.jpg' }, portrait: { width: 1080, height: 1920, label: 'Mobil', profileId: 'v6-portrait', background: 'assets/lab/portrait.jpg' } } as const;
 export const TARGETS = [...Array.from({length:7},(_,i)=>`P${i+1}`),'D'].flatMap(p=>[`${p}.C1`,`${p}.C2`]);
 export const otherHand = (h: Hand): Hand => h==='LH'?'RH':'LH';
@@ -18,8 +20,8 @@ export function angleToward(from: Point,to: Point,view: View): number {
  const degrees=Math.atan2(b.y-a.y,b.x-a.x)*180/Math.PI+90;
  return ((degrees+540)%360)-180;
 }
-// A single projective plane derived from P4. This is a comparison, not a
-// camera calibration: a real board needs measured correspondences later.
+// A single projective plane derived from P4. Saving this visual projection
+// does not make it a camera calibration; that still needs measured correspondences.
 export function flatQuad(g: Geometry, reference: Geometry, view: View, heading=0) {
  const p=VIEWS[view],origin=toPixels(reference,view),wanted=toPixels(g,view);
  const w=reference.width*(p.width-1)/2,h=reference.height*(p.height-1)/2;
@@ -60,13 +62,17 @@ export function defaultPlan(): PlacementPlan {
  for(const id of TARGETS){const dealer=id[0]==='D',seat=dealer?3:Number(id[1])-1,second=id.endsWith('2'),v=.08+Math.abs(seat-3)*.025,closed=(dealer&&second)||id==='P4.C2';
   targets[id]={geometry:{native:{u:dealer?.5+(second?.027:0):.13+seat*.12+(second?.025:0),v:dealer?.21:v+(second?.008:0),width:.041,height:.051,angle:0,taper:.9,reviewed:false},portrait:{u:dealer?.47+(second?.048:0):.10+seat*.125+(second?.035:0),v:dealer?.49:.16+Math.abs(seat-3)*.055+(second?.005:0),width:.06,height:.04,angle:0,taper:.9,reviewed:false}},intent:{takeHand:'LH',startSide:'BACK',endSide:closed?'BACK':'FRONT',pass:false,turn:!closed},material:{bend:.07,gloss:.35}};
  }
- return {schemaVersion:1,id:'pamela-table',space:'image-normalized-bottom-up',updatedAt:null,shoe:{native:{u:.733,v:.322},portrait:{u:.84,v:.58}},targets};
+ return {schemaVersion:1,id:'pamela-table',space:'image-normalized-bottom-up',updatedAt:null,shoe:{native:{u:.733,v:.322},portrait:{u:.84,v:.58}},targets,tableProjection:{mode:'flat',heading:0}};
 }
 function object(v:unknown): v is Record<string,unknown>{return !!v&&typeof v==='object'&&!Array.isArray(v);}
 function keys(v:unknown,list:string[]): asserts v is Record<string,unknown>{if(!object(v)||Object.keys(v).sort().join('|')!==list.sort().join('|'))throw Error('Felaktiga fält i placeringsfilen.');}
 function number(v:unknown,lo:number,hi:number){if(typeof v!=='number'||!Number.isFinite(v)||v<lo||v>hi)throw Error('Koordinat eller reglage ligger utanför tillåtet intervall.');}
 export function validatePlan(value: unknown): asserts value is PlacementPlan {
- keys(value,['schemaVersion','id','space','updatedAt','shoe','targets']);
+ keys(value,['schemaVersion','id','space','updatedAt','shoe','targets',...(object(value)&&Object.hasOwn(value,'tableProjection')?['tableProjection']:[])]);
+ if(Object.hasOwn(value,'tableProjection')){
+  keys(value.tableProjection,['mode','heading']);
+  if(!['flat','individual'].includes(value.tableProjection.mode as string)||!PLANE_HEADINGS.includes(value.tableProjection.heading as typeof PLANE_HEADINGS[number]))throw Error('Ogiltigt bordperspektiv eller riktning.');
+ }
  if(value.schemaVersion!==1||value.id!=='pamela-table'||value.space!=='image-normalized-bottom-up'||!(value.updatedAt===null||(typeof value.updatedAt==='string'&&value.updatedAt.length<40&&Number.isFinite(Date.parse(value.updatedAt)))))throw Error('Okänd placering eller bildrymd.');
  keys(value.shoe,['native','portrait']);keys(value.targets,[...TARGETS]);
  for(const view of ['native','portrait'] as View[]){const s=value.shoe[view];keys(s,['u','v']);number(s.u,0,1);number(s.v,0,1);}

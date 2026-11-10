@@ -17,6 +17,14 @@ test('sixteen draft slots have independent view geometry and coherent motion pla
  for(const id of TARGETS)assert.equal(p.targets[id].geometry.native.reviewed,false);
  const text=sequence('P4.C2',{takeHand:'LH',startSide:'BACK',endSide:'BACK',pass:true,turn:false});assert.match(text,/PASS\(LH>RH,BACK\)/);assert.match(text,/RELEASE\(RH\)/);assert.doesNotMatch(text,/\bTURN\(/);assert.match(text,/RETURN\(SHOE_READY\)$/);
 });
+
+test('saved table projection is optional for legacy files and rejects unsupported settings',async()=>{
+ const plan=defaultPlan();assert.deepEqual(plan.tableProjection,{mode:'flat',heading:0});
+ const legacy=structuredClone(plan);delete legacy.tableProjection;validatePlan(legacy);
+ for(const projection of [{mode:'spherical',heading:0},{mode:'flat',heading:22},{mode:'flat',heading:0,extra:true},null]){
+  assert.throws(()=>validatePlan({...plan,tableProjection:projection}));
+ }
+});
 test('card tops can point up, right, left or down in either view',()=>{
  for(const view of ['native','portrait'] as const){
   const from={u:.5,v:.5};

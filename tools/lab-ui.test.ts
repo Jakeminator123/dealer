@@ -9,10 +9,11 @@ import * as model from '../src/placement-model.ts';
 // No local server or user's placement file is changed by these race regressions.
 async function setup(){
  const elements=new Map<string,any>();
+ const listeners=new Map<string,(()=>void)[]>();
  function element(id:string):any{
   if(!elements.has(id))elements.set(id,{
    value:'0',checked:false,clientWidth:1000,style:{},dataset:{},inert:false,
-   classList:{toggle(){},remove(){}},setAttribute(){},addEventListener(){},
+   classList:{toggle(){},remove(){}},setAttribute(){},addEventListener(type:string,fn:()=>void){const key=`${id}:${type}`;listeners.set(key,[...(listeners.get(key)??[]),fn]);},
    append(){},replaceChildren(){},insertAdjacentHTML(){},querySelectorAll(){return [];},
   });
   return elements.get(id);
@@ -36,7 +37,7 @@ async function setup(){
  assert.equal(element('.workspace').inert,true);
  reply(model.defaultPlan());await new Promise(setImmediate);
  assert.equal(element('.workspace').inert,false);
- return {context,element,reply,material};
+ return {context,element,reply,material,fire:(id:string,type:string)=>listeners.get(`${id}:${type}`)?.forEach(fn=>fn())};
 }
 
 test('reload locks editing; a queued edit is preserved and its undo history survives',async()=>{
@@ -68,4 +69,28 @@ test('out-of-order reloads cannot replace newer data or unlock it; material is r
  assert.equal(runInContext("plan.targets['P4.C2'].geometry.native.angle",context),23);
  assert.equal(runInContext('revision',context),'new');
  assert.deepEqual(material.slice(-3),[['bend',.12],['gloss',.8],['side','front']]);
+});
+
+test('flat board is the default; changing mode and heading enters the saved plan without moving centres',async()=>{
+ const {context,element,fire}=await setup();
+ assert.equal(element('flat-plane').checked,true);
+ const geometry=runInContext('JSON.stringify(plan.targets)',context);
+ element('flat-plane').checked=false;fire('flat-plane','change');
+ element('plane-heading').value='15';fire('plane-heading','change');
+ assert.equal(runInContext('plan.tableProjection.mode',context),'individual');
+ assert.equal(runInContext('plan.tableProjection.heading',context),15);
+ assert.equal(runInContext('dirty',context),true);
+ assert.equal(element('save').disabled,false);
+ assert.equal(runInContext('JSON.stringify(plan.targets)',context),geometry);
+});
+
+test('loading a legacy plan offers a save for the new flat default while preserving its coordinates',async()=>{
+ const {context,element,reply}=await setup(),legacy=model.defaultPlan();
+ delete legacy.tableProjection;
+ const geometry=JSON.stringify(legacy.targets),loading=runInContext('load()',context);
+ reply(legacy);await loading;
+ assert.equal(element('flat-plane').checked,true);
+ assert.equal(runInContext('dirty',context),true);
+ assert.equal(element('save').disabled,false);
+ assert.equal(runInContext('JSON.stringify(plan.targets)',context),geometry);
 });

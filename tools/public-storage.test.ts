@@ -16,9 +16,11 @@ test('public drafts are isolated from the seed and reject stale-tab saves', asyn
   const first = await store.load(), second = await store.load();
   assert.equal(first.plan.updatedAt, null);
   first.plan.targets['P1.C1'].geometry.native.angle = 12;
+  first.plan.tableProjection = { mode: 'flat', heading: 15 };
   const results = await Promise.all([store.save(first.plan, first.revision), store.save(second.plan, second.revision)]);
   assert.deepEqual(results.map(result => result.status), [200, 409]);
   assert.equal((await store.load()).plan.targets['P1.C1'].geometry.native.angle, 12);
+  assert.deepEqual((await store.load()).plan.tableProjection, { mode: 'flat', heading: 15 });
   assert.ok((await store.load()).plan.updatedAt);
   assert.equal(JSON.stringify(seed), unchanged);
   assert.equal((await store.save(first.plan, null)).status, 428);

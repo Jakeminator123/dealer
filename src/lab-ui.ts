@@ -27,6 +27,8 @@ function choose(id:string){stopMotion();selected=id;if(id==='shoe')setPanel('pla
 function paint(fields=true){
  (document.querySelector('.workspace') as HTMLElement).inert=busy;
  if(!plan)return;const p=VIEWS[view],isShoe=selected==='shoe',g=geometry(),t=target(),point=isShoe?plan.shoe[view]:g,px=toPixels(point,view);
+ const projection=plan.tableProjection??{mode:'flat',heading:0};
+ input('flat-plane').checked=projection.mode==='flat';input('plane-heading').value=String(projection.heading);
  $('stage').classList.toggle('portrait',view==='portrait');$<HTMLImageElement>('stage-image').src=p.background;
  $('stage').classList.toggle('solid-cards',input('solid-cards').checked);sizeStage();
  $('board').setAttribute('viewBox',`0 0 ${p.width} ${p.height}`);$('view-size').textContent=`${p.width} × ${p.height} · ${p.profileId}`;
@@ -54,7 +56,7 @@ function paint(fields=true){
  $('contours').insertAdjacentHTML('beforeend',`<g data-target="shoe" class="card-shape ${isShoe?'selected':''}" role="button" tabindex="0" aria-label="Flytta skons uttag" style="--card-color:#dfb9ed"><polygon points="${s.x},${s.y-r} ${s.x+r},${s.y} ${s.x},${s.y+r} ${s.x-r},${s.y}"/><text style="font-size:${10*unit}px" x="${s.x}" y="${s.y-r-6*unit}" text-anchor="middle">SKO</text></g>`);
  $('sequence').textContent=isShoe?'TAKE · gemensam startpunkt i den valda vyn':sequence(selected,t.intent);
  $('node-map').innerHTML=motionNodes(isShoe?'P4.C2':selected,t.intent).map((n,i)=>`${i?'<span class="map-arrow">→</span>':''}<div class="map-node" data-node="${n.id}"><b>${n.label}</b><span>${n.detail}</span></div>`).join('');
- $('plane-note').textContent=input('flat-plane').checked?'Jämförelse: ett plant bord från P4. Samma fysiska kortstorlek och riktning; bildcentrum bevaras. Inte kamerakalibrerat eller sparat.':'Ditt utkast: varje kort har sin sparade rotation och perspektivbredd.';
+ $('plane-note').textContent=input('flat-plane').checked?'Plant bord från P4. Bildcentrum bevaras. Läge och riktning sparas med placeringarna. Kameran är inte kalibrerad.':'Varje kort använder sin egen sparade rotation och perspektivbredd.';
  $('plane-controls').hidden=!input('flat-plane').checked;
  for(const id of ['angle','angle-number','angle-zero','angle-quarter','angle-centre','straighten','width','height','taper','shape-rectangle'])($<HTMLInputElement|HTMLButtonElement>(id)).disabled=input('flat-plane').checked;
  if(fields){input('coord-u').value=(point.u*100).toFixed(2);input('coord-v').value=(point.v*100).toFixed(2);input('width').value=(g.width*100).toFixed(2);input('height').value=(g.height*100).toFixed(2);input('angle').value=String(g.angle);input('angle-number').value=String(Math.round(g.angle*10)/10);input('taper').value=String(g.taper);input('reviewed').checked=g.reviewed;
@@ -72,7 +74,9 @@ async function load(){
   const data=await res.json();validatePlan(data.plan);
   if(generation!==loadGeneration)return;
   if(edits!==editGeneration)throw Error('Utkastet ändrades under inläsningen och har behållits. Läs in igen för att ersätta det.');
-  plan=data.plan;savedSignature=JSON.stringify(plan);revision=data.revision;dirty=false;history=[];syncMaterial();
+  plan=data.plan;savedSignature=JSON.stringify(plan);revision=data.revision;
+  if(!plan.tableProjection)plan.tableProjection={mode:'flat',heading:0};
+  dirty=JSON.stringify(plan)!==savedSignature;history=[];syncMaterial();
  }finally{if(generation===loadGeneration){busy=false;paint();}}
 }
 function editGeometry(key:keyof Geometry,value:number|boolean){checkpoint();if(selected==='shoe'){if(key==='u'||key==='v')plan.shoe[view][key]=Math.max(0,Math.min(1,value as number));}else{const g={...geometry(),[key]:value,reviewed:key==='reviewed'?value:false} as Geometry;target().geometry[view]=constrain(g,view);}changed();paint();}
@@ -83,7 +87,13 @@ for(const seat of [...Array.from({length:7},(_,i)=>`P${i+1}`),'D']){
 for(const v of ['native','portrait'] as View[])$(`view-${v}`).addEventListener('click',()=>{stopMotion();view=v;paint();});
 document.querySelectorAll<HTMLButtonElement>('[data-panel]').forEach(b=>b.addEventListener('click',()=>setPanel(b.dataset.panel!)));
 $('select-shoe').addEventListener('click',()=>choose('shoe'));
-for(const id of ['show-all','show-grid','solid-cards','flat-plane','plane-heading'])$(id).addEventListener('change',()=>{stopMotion();paint(false);});
+for(const id of ['show-all','show-grid','solid-cards'])$(id).addEventListener('change',()=>{stopMotion();paint(false);});
+for(const id of ['flat-plane','plane-heading'])$(id).addEventListener('change',()=>{
+ if(busy)return;stopMotion();checkpoint();
+ plan.tableProjection={mode:input('flat-plane').checked?'flat':'individual',heading:Number(input('plane-heading').value)};
+ for(const tr of Object.values(plan.targets))for(const v of ['native','portrait'] as View[])tr.geometry[v].reviewed=false;
+ changed();
+});
 for(const [id,key,min,max,factor] of [['coord-u','u',0,100,100],['coord-v','v',0,100,100],['width','width',.5,25,100],['height','height',.5,25,100],['angle','angle',-180,180,1],['angle-number','angle',-180,180,1],['taper','taper',.4,1.6,1]] as const){
  let edited=false;
  const commitValue=()=>{edited=false;const value=input(id).valueAsNumber;if(!Number.isFinite(value)||value<min||value>max){message(`Välj ett värde mellan ${min} och ${max}.`);paint();return;}const current=selected==='shoe'&&(key==='u'||key==='v')?plan.shoe[view][key]:geometry()[key];if(value/factor!==current)editGeometry(key,value/factor);};
