@@ -16,6 +16,7 @@ Självständig arbetsyta med V6 som Jakobs valda visuella referens. Målet är t
 
 - Arbeta här. `node -p process.version` ska visa `v24.21.0` via Volta; `package.json` kräver `>=24.21.0 <25`. `npm ci` behövs om beroenden saknas.
 - `START.cmd`, `STATUS.cmd`, `STOPP.cmd` styr enbart `http://127.0.0.1:4319`. Återanvänd Codex WebView. Servern slutar 60 sekunder efter sista preview-fliken.
+- Öppna [placeringslabbet](http://127.0.0.1:4319/lab.html): 16 kortplatser och sko, separat dator/mobil, hand-/sidavsikt, materialpanel och filmkatalog. Sparning ändrar bara placeringsutkastet. Senaste UI-/API-kvittot finns i [evidence/placement-lab.json](evidence/placement-lab.json).
 - `npm run verify` kontrollerar registrerade lokala filer. `npm run verify -- --frames` återrenderar 18 kontrollrutor och kräver pixelidentitet.
 - `npm run render -- --render --take=02` startar ett nytt fullständigt försök med fyra arbetare. Välj alltid ett oanvänt tvåsiffrigt nummer; `take-01` är bevarat. Kräver FFmpeg/FFprobe via PATH eller `FFMPEG`/`FFPROBE`.
 
@@ -24,5 +25,7 @@ Självständig arbetsyta med V6 som Jakobs valda visuella referens. Målet är t
 Enligt [reproduktionskvittot](evidence/reproduction.json) har hela V6 återrenderats lokalt: 926 rutor, 30 fps, 1762×1174 och 1080×1920. Båda MP4-filerna är byteidentiska med originalen; 18 kontrollrutor är pixelidentiska enligt [bildrutekvittot](evidence/frame-verification.json). Detta verifierar V6, inte utdelning till alla åtta platser. Kända begränsningar för fingermask, rörelsekanter och källskarvar kvarstår.
 
 `src/` och `tools/` kör utan gamla labbet. `materials/` är separata kort-/markerprov; markerna är inte integrerade i V6 och TS-materialkällorna har inte återbyggts till de frysta JS-bundlarna. `assets/`, `output/`, `.runtime/`, `.env*` och `private/` är lokala och Git-ignorerade.
+
+Labbet återanvänder kortmaterialets TS-källa direkt för böjning/glans och ett lokalt landningsprov. Detta ändrar inte V6-filmen eller de historiska materialbundlarna.
 
 Publikt källrepo: [Jakeminator123/dealer](https://github.com/Jakeminator123/dealer). GitHub innehåller inte media eller hemligheter. Scout-integration, deploy och betald generering är separata uppdrag.
