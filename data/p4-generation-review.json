@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "createdAt": "2026-11-10T20:02:59.458Z",
-  "purpose": "Exact instructions and image inputs actually submitted; not the current editor plan.",
+  "createdAt": "2026-11-10T20:19:11.120Z",
+  "purpose": "Exact submitted inputs. The two older controls use historic geometry; the palm experiment uses its frozen placement snapshot.",
   "imageTransport": "The displayed PNG bytes were embedded as data:image/png;base64 in promptImage; this review names files and hashes instead of repeating base64.",
   "colorConvention": {
     "yellow": "BACK/closed",
@@ -101,6 +101,127 @@
       "v6VideoSubmitted": false
     }
   ],
+  "palmExperiment": {
+    "schemaVersion": 1,
+    "id": "pamela-p4-c1-palm-up-01",
+    "createdAt": "2026-11-10T20:10:00.824Z",
+    "provider": "Runway developer API",
+    "endpoint": "/v1/image_to_video",
+    "model": "wan3",
+    "duration": 6,
+    "ratio": "auto_1080p",
+    "audio": false,
+    "estimatedCredits": 120,
+    "promptText": "One continuous six-second shot, fixed camera. Same Pamela and green studio. Her LEFT hand, on screen RIGHT, pinches one card at the shoe, yellow back facing up. Pull it clear. Keeping the SAME grip, tip the card upright so its thin edge faces the camera, then turn her left forearm PALM UP. The yellow side rotates downward and the opposite blue side rotates upward through that visible edge position. Carry the card on the palm-up fingertips to the blue footprint in the final image. Lower the blue face-up card onto the table, then slide the supporting fingers out from UNDER it. Finish with the EMPTY OPEN LEFT PALM visible beside the card, exactly as in the final image. Keep the palm up after release. The right hand rests. The next shoe card stays yellow. One rigid card and one physical turnover; no hand transfer, flat spin, colour morph or second turnover. No return to the shoe in this shot.",
+    "status": "SUCCEEDED",
+    "start": {
+      "path": "assets/motions/pamela-p4-c1-palm-up-01/start.png",
+      "sha256": "a2fc6d3565ca711015c9b547671bf33e97eea4c2281e75841690f8848b422f45"
+    },
+    "end": {
+      "path": "assets/motions/pamela-p4-c1-palm-up-01/end.png",
+      "sha256": "1d306103fea146fe8a4f2a5deb10870929c47a8b58e971688872559edb94478e"
+    },
+    "placementRef": {
+      "path": "assets/motions/pamela-p4-c1-palm-up-01/placement-plan.json",
+      "sha256": "406acb69c086b51d166c0eba3e6bb2ce7e19b868b63546db04aa9562da7e7058",
+      "source": "placements/default.json",
+      "updatedAt": "2026-11-10T19:31:41.273Z",
+      "plannedTarget": "P4.C1"
+    },
+    "imageEdit": {
+      "tool": "built-in imagegen",
+      "originalEditedImage": {
+        "path": "assets/motions/pamela-p4-c1-palm-up-01/imagegen-end.png",
+        "sha256": "1f6833b8ce9491214cfbb3de32c87994b0fed528819db3cdbc29ddff6afc1f06",
+        "width": 1536,
+        "height": 1024
+      },
+      "request": "Correct anatomical left hand to visibly open palm up after release; preserve Pamela, green plate, resting hand and shoe.",
+      "normalization": {
+        "from": [
+          1536,
+          1024
+        ],
+        "to": [
+          1764,
+          1174
+        ],
+        "fit": "fill"
+      },
+      "geometricMarker": {
+        "method": "Only flat green marker corridor reconstructed from its four clean corners, then exact saved-plan SVG target; all other normalized pixels identical",
+        "removedBlueBoundingBox": [
+          762,
+          1074,
+          847,
+          1129
+        ],
+        "changedPixels": 8737,
+        "nativePoints": [
+          {
+            "x": 819.0040710931385,
+            "y": 1070.9600990974113
+          },
+          {
+            "x": 883.9849710931385,
+            "y": 1070.9600990974113
+          },
+          {
+            "x": 887.5950210931385,
+            "y": 1130.7830990974114
+          },
+          {
+            "x": 815.3940210931385,
+            "y": 1130.7830990974114
+          }
+        ],
+        "submittedPoints": [
+          {
+            "x": 819.9342290387298,
+            "y": 1070.9600990974113
+          },
+          {
+            "x": 884.9889290387297,
+            "y": 1070.9600990974113
+          },
+          {
+            "x": 888.6030790387298,
+            "y": 1130.7830990974114
+          },
+          {
+            "x": 816.3200790387298,
+            "y": 1130.7830990974114
+          }
+        ]
+      },
+      "limitations": "AI edit may change photographic details; visual identity, anatomy and continuity require review. Exact marker position is planned; generated motion still requires measured landing."
+    },
+    "physicalIntent": {
+      "takeHand": "LH",
+      "releaseHand": "LH",
+      "startSide": "BACK",
+      "endSide": "FRONT",
+      "pass": false,
+      "turnCount": 1,
+      "finalPalm": "UP_AND_VISIBLE",
+      "returnToShoe": false
+    },
+    "v6VideoSubmitted": false,
+    "referenceVideoSubmitted": false,
+    "intermediateImageSubmitted": false,
+    "reviewDecision": "SECONDARY",
+    "requestedAt": "2026-11-10T20:10:26.016Z",
+    "taskId": "ee8c4cbb-bf95-4f2e-8b1d-d928550e7dcd",
+    "lastCheckedAt": "2026-11-10T20:13:48.721Z",
+    "completedAt": "2026-11-10T20:13:48.721Z",
+    "output": {
+      "path": "assets/motions/pamela-p4-c1-palm-up-01/source.mp4",
+      "sha256": "576bf245d3914979f8fd177543a8a476bc034a6fc8424b1f3703e213bfda8399",
+      "bytes": 16434162
+    },
+    "reviewSummary": "Vändningsfas med smal kantf94–112 och blå motsidaf113–116. Samma LH. Nedläggning sker med handrygg upp och fingrar ovanpåf132–155; fri frånf156, handflata upp förstcirka166. Bevaras som alternativ; beställd underhandsnedläggning är inte uppfylld."
+  },
   "historicalPrompts": [
     {
       "id": "P4.C1-middle-end-card-v1",

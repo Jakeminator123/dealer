@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 1,
+  "id": "pamela-p4-c1-palm-up-01",
+  "dealer": "pamela",
+  "source": {
+    "path": "assets/motions/pamela-p4-c1-palm-up-01/source.mp4",
+    "sha256": "576bf245d3914979f8fd177543a8a476bc034a6fc8424b1f3703e213bfda8399",
+    "bytes": 16434162,
+    "width": 1764,
+    "height": 1174,
+    "fps": 30,
+    "frames": 180,
+    "provider": "Runway developer API",
+    "model": "wan3"
+  },
+  "motion": {
+    "takeHand": "LH",
+    "releaseHand": "LH",
+    "target": "P4.C1",
+    "physicalStartSide": "BACK",
+    "physicalEndSide": "FRONT",
+    "turn": true,
+    "pass": false,
+    "basis": "SOURCE_FRAME_REVIEW",
+    "evidence": "evidence/p4-palm-visual-review.json"
+  },
+  "review": {
+    "decision": "SECONDARY",
+    "basis": "Vändningsfas med smal kantf94–112 och blå motsidaf113–116. Samma LH. Nedläggning sker med handrygg upp och fingrar ovanpåf132–155; fri frånf156, handflata upp förstcirka166. Bevaras som alternativ; beställd underhandsnedläggning är inte uppfylld.",
+    "limitations": "No return segment, material overlay or Scout integration.",
+    "colorDoesNotProvePhysicalSide": true,
+    "requestedTechniqueAcceptance": "REJECTED",
+    "observedTechnique": "same-LH geometric turn followed by top-contact placement",
+    "underhandRelease": false,
+    "returnToShoe": false,
+    "landingCentreErrorPixels": 1.248,
+    "landingBlueCoreIoU": 0.9367,
+    "userAccepted": false
+  },
+  "placementRef": {
+    "path": "assets/motions/pamela-p4-c1-palm-up-01/placement-plan.json",
+    "sha256": "406acb69c086b51d166c0eba3e6bb2ce7e19b868b63546db04aa9562da7e7058",
+    "source": "placements/default.json",
+    "updatedAt": "2026-11-10T19:31:41.273Z",
+    "plannedTarget": "P4.C1"
+  },
+  "postProcessing": "none",
+  "generationRef": "assets/motions/pamela-p4-c1-palm-up-01/generation.json",
+  "scoutIntegrated": false,
+  "published": false
+}

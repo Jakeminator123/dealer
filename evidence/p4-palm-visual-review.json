@@ -1,0 +1,373 @@
+{
+  "schemaVersion": 1,
+  "status": "COMPLETE_READ_ONLY",
+  "createdAt": "2026-11-10T20:14:21.344Z",
+  "id": "pamela-p4-c1-palm-up-01",
+  "source": {
+    "path": "assets/motions/pamela-p4-c1-palm-up-01/source.mp4",
+    "sha256": "576bf245d3914979f8fd177543a8a476bc034a6fc8424b1f3703e213bfda8399"
+  },
+  "format": {
+    "width": 1764,
+    "height": 1174,
+    "fps": 30,
+    "frames": 180
+  },
+  "contactSheets": [
+    {
+      "path": ".runtime/p4-palm-review/overview.jpg",
+      "sha256": "61e7bc95ea690dddec380aa719d362de1d4a57951eb8128d5fde8c9dabb24871",
+      "frames": [
+        0,
+        12,
+        24,
+        36,
+        48,
+        60,
+        72,
+        84,
+        96,
+        108,
+        120,
+        132,
+        144,
+        156,
+        168,
+        179
+      ],
+      "crop": {
+        "left": 600,
+        "top": 500,
+        "width": 1120,
+        "height": 650
+      }
+    },
+    {
+      "path": ".runtime/p4-palm-review/turn.jpg",
+      "sha256": "e06563df5a951b8997459199c291e7e8207f9dcd1bf134d435de78f978074cca",
+      "frames": [
+        80,
+        81,
+        82,
+        83,
+        84,
+        85,
+        86,
+        87,
+        88,
+        89,
+        90,
+        91,
+        92,
+        93,
+        94,
+        95,
+        96,
+        97,
+        98,
+        99,
+        100,
+        101,
+        102,
+        103,
+        104,
+        105,
+        106,
+        107,
+        108,
+        109,
+        110,
+        111,
+        112,
+        113,
+        114,
+        115,
+        116,
+        117,
+        118,
+        119,
+        120,
+        121,
+        122,
+        123,
+        124,
+        125
+      ],
+      "crop": {
+        "left": 780,
+        "top": 680,
+        "width": 360,
+        "height": 420
+      }
+    },
+    {
+      "path": ".runtime/p4-palm-review/release.jpg",
+      "sha256": "08bde1bea1a05ddfd124a33a05fa5fe789d6dd3198203461572e99627fcfb03a",
+      "frames": [
+        132,
+        133,
+        134,
+        135,
+        136,
+        137,
+        138,
+        139,
+        140,
+        141,
+        142,
+        143,
+        144,
+        145,
+        146,
+        147,
+        148,
+        149,
+        150,
+        151,
+        152,
+        153,
+        154,
+        155,
+        156,
+        157,
+        158,
+        159,
+        160,
+        161,
+        162,
+        163,
+        164,
+        165,
+        166,
+        167,
+        168,
+        169,
+        170,
+        171
+      ],
+      "crop": {
+        "left": 760,
+        "top": 850,
+        "width": 400,
+        "height": 310
+      }
+    }
+  ],
+  "landingMeasurement": {
+    "frame": 179,
+    "source": {
+      "n": 4001,
+      "center": {
+        "x": 851.4861284678831,
+        "y": 1101.6625843539116
+      },
+      "bounds": {
+        "left": 818,
+        "top": 1072,
+        "right": 885,
+        "bottom": 1131
+      }
+    },
+    "endAnchor": {
+      "n": 4011,
+      "center": {
+        "x": 851.9663425579656,
+        "y": 1100.5105958613813
+      },
+      "bounds": {
+        "left": 817,
+        "top": 1071,
+        "right": 887,
+        "bottom": 1129
+      }
+    },
+    "centroidErrorPx": 1.2480717364142648,
+    "intersection": 3875,
+    "union": 4137,
+    "iou": 0.9366690838772057,
+    "threshold": "B>100,B-R>45,B-G>30 in x750..1079,y1020..1159; actual 1764x1174 output and end anchor; blue core only"
+  },
+  "completedAt": "2026-11-10T20:15:26.614Z",
+  "reviewDecision": "REQUESTED_UNDERHAND_PLACEMENT_NOT_MET",
+  "userApproved": false,
+  "productionApproved": false,
+  "conclusion": "The clip contains a sustained geometric edge passage into a blue broad face, a meaningful improvement over earlier broad-face color swaps. It uses the same left hand and lands close to the exact end anchor. It does not retain palm-up support through placement: the hand turns back-down, presses from above, then opens palm-up only after release. An ergonomic alternative must be named as such rather than described as the requested underhand release.",
+  "generation": {
+    "path": "assets/motions/pamela-p4-c1-palm-up-01/generation.json",
+    "taskId": "ee8c4cbb-bf95-4f2e-8b1d-d928550e7dcd",
+    "model": "wan3",
+    "duration": 6,
+    "audio": false,
+    "promptText": "One continuous six-second shot, fixed camera. Same Pamela and green studio. Her LEFT hand, on screen RIGHT, pinches one card at the shoe, yellow back facing up. Pull it clear. Keeping the SAME grip, tip the card upright so its thin edge faces the camera, then turn her left forearm PALM UP. The yellow side rotates downward and the opposite blue side rotates upward through that visible edge position. Carry the card on the palm-up fingertips to the blue footprint in the final image. Lower the blue face-up card onto the table, then slide the supporting fingers out from UNDER it. Finish with the EMPTY OPEN LEFT PALM visible beside the card, exactly as in the final image. Keep the palm up after release. The right hand rests. The next shoe card stays yellow. One rigid card and one physical turnover; no hand transfer, flat spin, colour morph or second turnover. No return to the shoe in this shot."
+  },
+  "inputAndOutputIdentity": {
+    "sourceSha256": "576bf245d3914979f8fd177543a8a476bc034a6fc8424b1f3703e213bfda8399",
+    "startSha256": "a2fc6d3565ca711015c9b547671bf33e97eea4c2281e75841690f8848b422f45",
+    "endSha256": "1d306103fea146fe8a4f2a5deb10870929c47a8b58e971688872559edb94478e",
+    "placementSha256": "406acb69c086b51d166c0eba3e6bb2ce7e19b868b63546db04aa9562da7e7058",
+    "sourceMatchesProvidedHash": true,
+    "startMatchesReceipt": true,
+    "endMatchesReceipt": true
+  },
+  "observed": {
+    "takeHand": "LH",
+    "releaseHand": "LH",
+    "handTransferObserved": false,
+    "sideChange": {
+      "classification": "GEOMETRIC_EDGE_PASSAGE_SUPPORTED",
+      "yellowBeforeEdgeFrames": [
+        80,
+        93
+      ],
+      "sustainedThinEdgeFrames": [
+        94,
+        112
+      ],
+      "blueOpeningFrames": [
+        113,
+        116
+      ],
+      "blueBroadThereafter": true,
+      "detail": "The visible broad surface narrows into a thin slanted edge and then opens as a blue face while grip/forearm orientation changes continuously. This is not the abrupt broad-face pigment substitution seen in the earlier WAN3/Kling controls.",
+      "certifiedExact180DegreeAngle": false,
+      "certifiedPhysicalTurnCount": null,
+      "whyNotExactCount": "No complete corner identity/3D reconstruction; retain evidence of one observed side transition without deriving a count from color alone."
+    },
+    "palmAndGrip": {
+      "palmVisibleDuringEdge": true,
+      "backOfHandVisibleBeforeLanding": true,
+      "palmUpAtTableContact": false,
+      "supportingFingersUnderCardAtRelease": false,
+      "topContactFrames": [
+        132,
+        155
+      ],
+      "detail": "Hand returns to a back-up orientation with fingers on the upper blue surface. It lowers/flattens and holds the card from above rather than sliding supporting fingers out from underneath."
+    },
+    "landing": {
+      "loweringAndFlatteningFrames": [
+        132,
+        140
+      ],
+      "firstTableContactFrame": null,
+      "stationaryCardAfterRelease": true,
+      "plannedTarget": "P4.C1",
+      "endGeometry": [
+        {
+          "x": 819.9342290387298,
+          "y": 1070.9600990974113
+        },
+        {
+          "x": 884.9889290387297,
+          "y": 1070.9600990974113
+        },
+        {
+          "x": 888.6030790387298,
+          "y": 1130.7830990974114
+        },
+        {
+          "x": 816.3200790387298,
+          "y": 1130.7830990974114
+        }
+      ],
+      "centroidErrorVsEndAnchorPx": 1.2480717364142648,
+      "blueCoreIoU": 0.9366690838772057,
+      "limitation": "Contact onset is obscured during tilt/flattening; color-core agreement is not full contour or 3D contact certification."
+    },
+    "release": {
+      "lastVisibleContactFrame": 155,
+      "firstClearSeparationFrame": 156,
+      "frameBoundaryUncertainty": 1,
+      "firstClearSeparationSeconds": 5.2,
+      "postReleasePalmRotationFrames": [
+        157,
+        165
+      ],
+      "clearlyOpenPalmByFrame": 166,
+      "finalEmptyPalmUp": true,
+      "detail": "The empty hand lifts clear first, then rotates/open-cups toward the requested final palm-up pose. No retrieval or second touch observed after release in the inspected tail."
+    },
+    "finalAnchor": {
+      "cardRetained": true,
+      "emptyPalmVisible": true,
+      "consistentWithSubmittedFinalPose": true,
+      "doesNotProveRequestedPlacementPath": true
+    }
+  },
+  "findings": [
+    {
+      "id": "PALM-01",
+      "classification": "USABLE_PHASE",
+      "frames": [
+        94,
+        116
+      ],
+      "detail": "Continuous narrow edge and blue-face opening provide stronger physical-side evidence than previous color-morph controls; preserve this phase as a source reference."
+    },
+    {
+      "id": "PALM-02",
+      "classification": "CONCRETE_PROMPT_DEVIATION",
+      "frames": [
+        132,
+        166
+      ],
+      "detail": "Back-up top-contact placement persists through f155; clear release f156; open palm only after release by f166. Requested palm-up support/under-card withdrawal did not happen."
+    },
+    {
+      "id": "PALM-03",
+      "classification": "MEASURED_TARGET_AGREEMENT",
+      "frames": [
+        179
+      ],
+      "detail": "Final blue core center (851.486,1101.663) versus end-anchor core (851.966,1100.511): 1.248px difference; IoU93.67%. The card remains at the target."
+    }
+  ],
+  "scopeLimits": [
+    "Independent review is restricted to this new source576bf245…; no claims about V6, retarget02 or older long-film actions.",
+    "An alternative ergonomic dealing technique is not intrinsically invalid. The concrete result is a top-contact placement with post-release palm rotation, which differs from the submitted underhand instructions. User acceptance of that alternative is not inferred.",
+    "No API calls, generation, browser control, source-media changes or motion-registry updates were performed.",
+    "Three compact contact sheets only; no PNG frame bank. Sequential decodes and one codec worker per command."
+  ],
+  "registeredSources": [
+    {
+      "path": "assets/motions/pamela-p4-c1-palm-up-01/source.mp4",
+      "sha256": "576bf245d3914979f8fd177543a8a476bc034a6fc8424b1f3703e213bfda8399",
+      "bytes": 16434162
+    },
+    {
+      "path": "assets/motions/pamela-p4-c1-palm-up-01/start.png",
+      "sha256": "a2fc6d3565ca711015c9b547671bf33e97eea4c2281e75841690f8848b422f45",
+      "bytes": 1179028
+    },
+    {
+      "path": "assets/motions/pamela-p4-c1-palm-up-01/end.png",
+      "sha256": "1d306103fea146fe8a4f2a5deb10870929c47a8b58e971688872559edb94478e",
+      "bytes": 2351175
+    },
+    {
+      "path": "assets/motions/pamela-p4-c1-palm-up-01/inputs.json",
+      "sha256": "885b708612607bf4057f0ff028a21d5c4e6cd4750e6750373538b2411c6a9763",
+      "bytes": 2505
+    },
+    {
+      "path": "assets/motions/pamela-p4-c1-palm-up-01/generation.json",
+      "sha256": "8a7856f7389837b96fd85fd2ea82a89cd4e1afaea9fc5d3da1ded7c0ba86cbb1",
+      "bytes": 4466
+    },
+    {
+      "path": ".runtime/p4-palm-review/overview.jpg",
+      "sha256": "61e7bc95ea690dddec380aa719d362de1d4a57951eb8128d5fde8c9dabb24871",
+      "bytes": 357866
+    },
+    {
+      "path": ".runtime/p4-palm-review/turn.jpg",
+      "sha256": "e06563df5a951b8997459199c291e7e8207f9dcd1bf134d435de78f978074cca",
+      "bytes": 561048
+    },
+    {
+      "path": ".runtime/p4-palm-review/release.jpg",
+      "sha256": "08bde1bea1a05ddfd124a33a05fa5fe789d6dd3198203461572e99627fcfb03a",
+      "bytes": 431378
+    }
+  ]
+}

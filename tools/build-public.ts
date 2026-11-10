@@ -77,7 +77,7 @@ for (const item of library.items) {
 await emit('data/public-library.json', JSON.stringify(library));
 // Exact submitted images/prompt are review material, not API credentials.
 const generationReview = JSON.parse(await readFile('data/p4-generation-review.json', 'utf8'));
-for (const input of [generationReview.jobs[0].start, generationReview.jobs[0].end]) await copy(input.path, input.path, input.sha256);
+for (const input of [generationReview.jobs[0].start, generationReview.jobs[0].end,...(generationReview.palmExperiment?[generationReview.palmExperiment.start,generationReview.palmExperiment.end]:[])]) await copy(input.path, input.path, input.sha256);
 await copy('data/p4-generation-review.json');
 let generationHtml = await readFile('generation.html', 'utf8');
 generationHtml = generationHtml.replace('<script type="module" src="preview-ui.js"></script>', '');

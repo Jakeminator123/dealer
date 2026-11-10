@@ -21,6 +21,13 @@
       "bytes": 17847045
     },
     {
+      "id": "pamela-p4-c1-palm-up-01",
+      "path": "assets/motions/pamela-p4-c1-palm-up-01/source.mp4",
+      "url": "https://qeojzihua5ewt4uo.public.blob.vercel-storage.com/dealer/576bf245d3914979f8fd177543a8a476bc034a6fc8424b1f3703e213bfda8399.mp4",
+      "sha256": "576bf245d3914979f8fd177543a8a476bc034a6fc8424b1f3703e213bfda8399",
+      "bytes": 16434162
+    },
+    {
       "id": "pamela-p4-c1-plan-retarget-02",
       "path": "assets/motions/pamela-p4-c1-plan-retarget-02/preview.mp4",
       "url": "https://qeojzihua5ewt4uo.public.blob.vercel-storage.com/dealer/3e4422b84e7402a161ec8ef550cb6028d2ca9d9f68ce6d1e4f9fb54969bc8983.mp4",

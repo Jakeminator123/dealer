@@ -30,6 +30,51 @@
       "motionRef": null
     },
     {
+      "id": "pamela-p4-c1-palm-up-01",
+      "title": "P4.C1 · nytt WAN · vändning, släpp ovanifrån",
+      "path": "assets/motions/pamela-p4-c1-palm-up-01/source.mp4",
+      "sha256": "576bf245d3914979f8fd177543a8a476bc034a6fc8424b1f3703e213bfda8399",
+      "width": 1764,
+      "height": 1174,
+      "fps": 30,
+      "frameCount": 180,
+      "view": "source",
+      "kind": "candidate",
+      "status": null,
+      "motionRef": "motions/pamela-p4-c1-palm-up-01.json",
+      "description": "NY WAN3-TAGNING · SEKUNDÄRT ALTERNATIV. Synlig kantpassage och samma vänsterhand. Landningscentrum1,25px från skickat mål. Fingrarna är ovanpå kortet vid landning; handflatan öppnas först efter släpp. Den beställda underhandsnedläggningen är inte uppfylld. Original utan omfärgning; ingen retur. Exakta bilder och prompt finns i underlaget.",
+      "chapters": [
+        {
+          "label": "Början",
+          "frame": 0
+        },
+        {
+          "label": "Gul sida",
+          "frame": 60
+        },
+        {
+          "label": "Vridning",
+          "frame": 95
+        },
+        {
+          "label": "Blå sida",
+          "frame": 120
+        },
+        {
+          "label": "Landning",
+          "frame": 140
+        },
+        {
+          "label": "Öppen hand",
+          "frame": 165
+        },
+        {
+          "label": "Slut",
+          "frame": 179
+        }
+      ]
+    },
+    {
       "id": "pamela-p4-c1-plan-retarget-02",
       "title": "P4.C1 · vändning · sparad placering",
       "path": "assets/motions/pamela-p4-c1-plan-retarget-02/preview.mp4",

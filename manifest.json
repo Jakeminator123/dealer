@@ -7895,6 +7895,61 @@
       "bytes": 3464,
       "source": "assets/motions/pamela-p4-c1-source-turn/source.mp4",
       "role": "frozen-current-plan-render-receipt"
+    },
+    {
+      "path": "assets/motions/pamela-p4-c1-palm-up-01/start.png",
+      "sha256": "a2fc6d3565ca711015c9b547671bf33e97eea4c2281e75841690f8848b422f45",
+      "bytes": 1179028,
+      "source": "assets/motions/pamela-p4-c1-color-control-01/start.png",
+      "role": "palm-up-generation-input"
+    },
+    {
+      "path": "assets/motions/pamela-p4-c1-palm-up-01/end.png",
+      "sha256": "1d306103fea146fe8a4f2a5deb10870929c47a8b58e971688872559edb94478e",
+      "bytes": 2351175,
+      "source": "imagegen palm-up edit plus explicit placement marker",
+      "role": "palm-up-generation-input"
+    },
+    {
+      "path": "assets/motions/pamela-p4-c1-palm-up-01/imagegen-end.png",
+      "sha256": "1f6833b8ce9491214cfbb3de32c87994b0fed528819db3cdbc29ddff6afc1f06",
+      "bytes": 1579572,
+      "source": "imagegen palm-up edit plus explicit placement marker",
+      "role": "palm-up-generation-input"
+    },
+    {
+      "path": "assets/motions/pamela-p4-c1-palm-up-01/inputs.json",
+      "sha256": "885b708612607bf4057f0ff028a21d5c4e6cd4750e6750373538b2411c6a9763",
+      "bytes": 2505,
+      "source": "imagegen palm-up edit plus explicit placement marker",
+      "role": "palm-up-generation-input"
+    },
+    {
+      "path": "assets/motions/pamela-p4-c1-palm-up-01/placement-plan.json",
+      "sha256": "406acb69c086b51d166c0eba3e6bb2ce7e19b868b63546db04aa9562da7e7058",
+      "bytes": 11752,
+      "source": "placements/default.json",
+      "role": "palm-up-generation-input"
+    },
+    {
+      "path": "assets/motions/pamela-p4-c1-palm-up-01/prompt.txt",
+      "sha256": "acc184c54a21df40a7cddd746194d79394ee9fa56a8530c60b183582cf930e44",
+      "bytes": 902,
+      "source": "imagegen palm-up edit plus explicit placement marker",
+      "role": "palm-up-generation-input"
+    },
+    {
+      "path": "assets/motions/pamela-p4-c1-palm-up-01/source.mp4",
+      "sha256": "576bf245d3914979f8fd177543a8a476bc034a6fc8424b1f3703e213bfda8399",
+      "bytes": 16434162,
+      "width": 1764,
+      "height": 1174,
+      "fps": 30,
+      "frames": 180,
+      "provider": "Runway developer API",
+      "model": "wan3",
+      "source": "Runway task ee8c4cbb-bf95-4f2e-8b1d-d928550e7dcd",
+      "role": "palm-up-generation-original"
     }
   ]
 }

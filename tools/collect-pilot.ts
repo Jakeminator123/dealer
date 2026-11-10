@@ -9,8 +9,9 @@ const ids:Record<string,string>={p6:'pamela-p6-c1-left-turn-pilot-01','p7-1':'pa
 ids['p7-3']='pamela-p7-c1-left-turn-pilot-03';
 ids['p4-control']='pamela-p4-c1-color-control-01';
 ids['p4-kling']='pamela-p4-c1-kling-control-01';
+ids['p4-palm']='pamela-p4-c1-palm-up-01';
 const id=ids[process.argv[2]];
-if(!id)throw Error('Choose existing experiment: p6, p7-1, p7-2, p7-3, p7-pink, p7-direct, p4-control or p4-kling. No new job is submitted.');
+if(!id)throw Error('Choose existing experiment: p6, p7-1, p7-2, p7-3, p7-pink, p7-direct, p4-control, p4-kling or p4-palm. No new job is submitted.');
 const directory=`assets/motions/${id}`,receiptPath=`${directory}/generation.json`;
 const receipt=JSON.parse(await readFile(receiptPath,'utf8'));
 if(!/^[a-f0-9-]{36}$/.test(receipt.taskId))throw Error('Missing task identity.');
