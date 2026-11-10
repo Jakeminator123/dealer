@@ -1,0 +1,74 @@
+{
+  "schemaVersion": 1,
+  "createdAt": "2026-11-10T17:36:19.265Z",
+  "node": "v24.21.0",
+  "scope": "Local lab usability; existing motion decisions and media unchanged",
+  "implementation": "TypeScript/HTML/CSS with existing Node preview and Three.js material; no React/Next or dependency reinstall",
+  "changes": [
+    "light high-contrast interface",
+    "direct BACK/FRONT controls and RGB yellow/blue surfaces",
+    "rotation handle and numeric degrees",
+    "aim card top toward midpoint of dealer card placements",
+    "zoom 50-300 percent without changing geometry",
+    "large single-video player with direct green-film entry",
+    "planned return to SHOE_READY in sequence; not a measured motion event"
+  ],
+  "checks": {
+    "unit": {
+      "command": "node --test --test-concurrency=4 tools/placements.test.ts",
+      "passed": 6,
+      "failed": 0
+    },
+    "syntax": "node --check src/lab-ui.ts",
+    "browser": {
+      "yellow": "#ffff00",
+      "blue": "#0000ff",
+      "sideChangeRequiresTurn": true,
+      "aimP7Degrees": -83.8,
+      "rotationKeyboard": {
+        "initialDegrees": 30,
+        "resultDegrees": 45,
+        "positionUnchanged": "907,1070"
+      },
+      "rotationDrag": {
+        "resultDegrees": -90.6,
+        "positionUnchanged": "907,1070"
+      },
+      "zoom": {
+        "percent": 125,
+        "positionUnchanged": "907,1070",
+        "noHorizontalPageOverflow": true
+      },
+      "portrait": {
+        "aspect": 0.5624725018230652,
+        "position": "550,1602"
+      },
+      "undoToSavedClearsDirty": true,
+      "greenVideo": {
+        "readyState": 4,
+        "reachedSeconds": 4,
+        "error": null
+      },
+      "consoleErrors": 0,
+      "testTabsClosed": [
+        5,
+        6
+      ],
+      "userTabsPreserved": [
+        3,
+        4
+      ],
+      "screenshots": [
+        ".runtime/lab-usability-proof/green-film.jpg",
+        ".runtime/lab-usability-proof/lab.jpg"
+      ]
+    }
+  },
+  "boundaries": {
+    "mediaGenerated": false,
+    "dependenciesChanged": false,
+    "savedUserPlacementsExcludedFromAgentCommit": true,
+    "liveUserDraftPreserved": true
+  },
+  "next": "Choose and verify SHOE_READY anchor, P7 landing geometry and pilot cost cap before new paid generation"
+}

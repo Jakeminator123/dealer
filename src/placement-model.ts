@@ -12,6 +12,12 @@ export const otherHand = (h: Hand): Hand => h==='LH'?'RH':'LH';
 export const otherSide = (s: Side): Side => s==='BACK'?'FRONT':'BACK';
 export function toPixels(point: Point, view: View) { const p=VIEWS[view]; return { x:point.u*(p.width-1), y:(1-point.v)*(p.height-1) }; }
 export function fromPixels(x: number,y: number,view: View): Point { const p=VIEWS[view];return {u:x/(p.width-1),v:1-y/(p.height-1)}; }
+export function angleToward(from: Point,to: Point,view: View): number {
+ const a=toPixels(from,view),b=toPixels(to,view);
+ if(Math.hypot(b.x-a.x,b.y-a.y)<.001)return 0;
+ const degrees=Math.atan2(b.y-a.y,b.x-a.x)*180/Math.PI+90;
+ return ((degrees+540)%360)-180;
+}
 export function quad(g: Geometry, view: View) {
  const p=VIEWS[view],c=toPixels(g,view),w=g.width*(p.width-1)/2,h=g.height*(p.height-1)/2,a=g.angle*Math.PI/180;
  return [[-w*g.taper,-h],[w*g.taper,-h],[w,h],[-w,h]].map(([x,y])=>({x:c.x+x*Math.cos(a)-y*Math.sin(a),y:c.y+x*Math.sin(a)+y*Math.cos(a)}));
@@ -24,7 +30,7 @@ export function constrain(g: Geometry,view: View): Geometry {
 }
 export function sequence(id: string, intent: Intent) {
  const hand=intent.pass?otherHand(intent.takeHand):intent.takeHand;
- return [`${id} | TAKE(${intent.takeHand},${intent.startSide})`,...(intent.pass?[`PASS(${intent.takeHand}>${hand},${intent.startSide})`]:[]),...(intent.turn?[`TURN(${hand},${intent.startSide}>${intent.endSide})`]:[]),`LAND(${intent.endSide})`,`RELEASE(${hand})`].join(' > ');
+ return [`${id} | TAKE(${intent.takeHand},${intent.startSide})`,...(intent.pass?[`PASS(${intent.takeHand}>${hand},${intent.startSide})`]:[]),...(intent.turn?[`TURN(${hand},${intent.startSide}>${intent.endSide})`]:[]),`LAND(${intent.endSide})`,`RELEASE(${hand})`,`RETURN(SHOE_READY)`].join(' > ');
 }
 export function defaultPlan(): PlacementPlan {
  const targets: Record<string,Target>={};
