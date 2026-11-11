@@ -5,6 +5,7 @@ import {createScene, DEFAULTS, type SceneState} from './scene3d-view.ts';
 import type {Part} from './scene3d-film.ts';
 import type {CardTrack} from './scene3d-geometry.ts';
 import type {RoomId} from './scene3d-room.ts';
+import {EXIT_TRIAL, exitView} from './scene3d-exit.ts';
 
 const query = new URLSearchParams(location.search), bare = query.get('ui') === '0';
 const el = <K extends keyof HTMLElementTagNameMap>(tag: K, props: Partial<HTMLElementTagNameMap[K]> = {}, ...kids: (Node | string)[]) => { const n = Object.assign(document.createElement(tag), props); n.append(...kids); return n; };
@@ -106,14 +107,16 @@ function build() {
     check('Fläktskugga över dealer och bord', 'fan'), slider('Fläktens styrka', 'fanStrength', 0, 0.4, 0.01, '', live), slider('Sekunder per blad', 'fanPeriod', 2, 12, 0.5, ' s', live),
     note('Fläkten är en långsam trebladig fläkt under en lampa över bordet; skuggan läggs ovanpå filmen och ska hållas svag. Rummet och filmen ställs var för sig tills de ser ut att stå i samma ljus. Dealerns reglage ändrar bara filmens nivå och färgton, inte varifrån ljuset kommer. 1,00 och 0,00 är filmen som den är. <b>Rummets ljus runt dealern</b> lägger det rum som syns bakom henne som ett svagt ljus längs hennes kontur, så att hon ser ut att stå i rummet och inte framför det; 0 är av.'));
   group('Kamera', choice('mode', [['look', 'Titta runt'], ['lean', 'Luta / flytta']]), slider('Vrid sidled', 'yaw', -60, 60, 0.5, '°', live), slider('Vrid höjdled', 'pitch', -35, 25, 0.5, '°', live), slider('Zoom', 'zoom', 0.45, 2.5, 0.01, '×', live),
-    slider('Flytta sidled', 'dx', -0.9, 0.9, 0.005, ' m', live), slider('Flytta höjd', 'dy', -0.3, 0.5, 0.005, ' m', live), slider('Flytta djup', 'dz', -0.5, 0.8, 0.005, ' m', live),
+    slider('Flytta sidled', 'dx', -0.9, 0.9, 0.005, ' m', live), slider('Flytta höjd', 'dy', -0.3, 0.5, 0.005, ' m', live), slider('Flytta djup', 'dz', -0.5, 1.6, 0.005, ' m', live),
     check('Håll blicken på dealern vid flytt', 'aim'), check('Gunga kameran automatiskt', 'sway'),
-    el('div', {className: 'btns'}, button('Hemvy (filmkameran)', () => scene.home()), button('Mobilvy', () => { scene.home(); scene.set({format: 'mob', pitch: -9, zoom: 1}); }), button('Grannstol (bryter)', () => { scene.home(); scene.set({mode: 'lean', dx: 0.55}); })),
+    el('div', {className: 'btns'}, button('Hemvy (filmkameran)', () => scene.home()), button('Mobilvy', () => { scene.home(); scene.set({format: 'mob', pitch: -9, zoom: 1}); }), button('Hela bordet', () => { scene.home(); scene.set({mode: 'lean', dz: 1.14, dy: 0.26, pitch: -5.5, zoom: 0.9}); }), button('Grannstol (bryter)', () => { scene.home(); scene.set({mode: 'lean', dx: 0.55}); })),
     note('<b>Titta runt</b> vrider kameran på stället: det är exakt för en 2D-film. <b>Luta / flytta</b> ändrar kamerans plats: rummet och bordet är äkta 3D, filmen är två platta ytor och börjar ljuga ju längre du går.'));
   group('Format', choice('format', [['desk', 'Dator 1764×1174'], ['mob', 'Mobil 9:16'], ['fill', 'Fyll fönstret']]));
   const select = el('select'); select.append(...rounds.map((r, i) => el('option', {value: `round:${i}`, textContent: r.label})), ...clips.map(c => el('option', {value: c.id, textContent: c.id}))); select.value = first;
   select.addEventListener('change', () => { scene.players.toggle(false); void scene.players.load(partsOf(select.value)); });
   group('Film', select, el('div', {className: 'btns'}, button('Pausa', () => scene.players.toggle(), 'play'), button('−1 ruta', () => void scene.players.step(-1)), button('+1 ruta', () => void scene.players.step(1))),
+    el('div', {className: 'btns'}, button('Prov: dealern lämnar bordet', () => exit.play()), button('Tillbaka till filmen', () => { exit.stop(); scene.players.toggle(false); void scene.players.load(partsOf(select.value)); })),
+    note('<b>Prov: dealern lämnar bordet</b> spelar filmagentens lågupplösta helkroppsprov: händerna lämnar bordet, hon reser sig, rättar till kavajen och går ut, medan kameran backar tills hon och hela bordet syns. Provfilmen är suddig och saknar ben; välj gärna Underrede <b>Två ben</b> först.'),
     check('Vik filmen mot bordet (händer och kort följer filten)', 'fold'), check('Visa hjälplinjer (filmruta, vikning, filmens bordsyta)', 'guides'),
     slider('Skuggor', 'shadow', 0, 1.6, 0.05), slider('Nyckel låg', 'keyLo', 0, 0.5, 0.01), slider('Nyckel hög', 'keyHi', 0.5, 1.2, 0.01));
   const logo = el('input', {type: 'text', value: state.logo, maxLength: 28}); logo.addEventListener('input', () => scene.set({logo: logo.value})); setters.logo = ((v: string) => { if (document.activeElement !== logo) logo.value = v; }) as never;
@@ -123,14 +126,54 @@ function build() {
     note('<b>I scenen</b>: kortet är ett föremål på bordet under filmen. Filmens eget kort (och kortet i skons fönster) nycklas bort, så filmens fingrar ligger över det renderade kortet och deras skuggor faller på det. Ljuset tas från filmens kort i varje ruta, glansen från rummet; i rörelse blir kortet oskarpt som handen. <b>I filmrutan</b>: den tidigare vägen, där labbets kortritare ritar kortet in i filmrutan. Var kortet är och vilken sida som syns kommer i båda fallen ur spårningen och placeringsplanen. Valören här är bara för provet: i spelet bestämmer Scout den.'));
   group('Bord', check('Markerbräde försänkt vid dealern', 'tray'), el('label', {className: 'row two'}, el('span', {textContent: 'Logotext'}), logo), choice('felt', [['green', 'Grön'], ['blue', 'Blå'], ['vin', 'Vinröd'], ['svart', 'Svart']]),
     note('Filt, linjer, kortrutor och logga är en enda platt bild sedd rakt uppifrån. Kortrutorna kommer ur placeringsplanen (endast läst). Bordets form och tryckets layout är provisoriska.'),
+    el('label', {className: 'row two'}, el('span', {textContent: 'Underrede'}), choice('base', [['column', 'Pelare (förut)'], ['legs', 'Två ben']])),
+    note('<b>Två ben</b>: fotograferat trä, mässingsfötter, fotstöd i mässing och bordets skugga på golvet, efter rumsstudien 7 november. Syns när kameran backar: knappen <b>Hela bordet</b> under Kamera.'),
     el('label', {className: 'row two'}, el('span', {textContent: 'Ljus i relingen'}), choice('railLight', [['off', 'Av'], ['steady', 'Fast'], ['breathe', 'Andas'], ['chase', 'Löper']])),
     choice('railColour', [['gold', 'Guld'], ['white', 'Vitt'], ['cyan', 'Turkos'], ['magenta', 'Rosa']]), check('Mugghållare i relingen', 'cups'),
     note('<b>Ljus i relingen</b>: en ljuslinje längs filtens kant med sitt sken på filten. <b>Andas</b> sväller långsamt, <b>Löper</b> låter en ljus sträcka gå relingen runt. Syns mest när vyn vrids eller backar; i hemvyn bara vid relingens ändar. <b>Mugghållare</b>: en mässingsring mellan varje plats.'));
+  group('Marker och bricka', el('div', {className: 'btns'}, button('Lägg insatser', () => chipsLab.lay()), button('En marker till på plats 4', () => chipsLab.more())),
+    el('div', {className: 'btns'}, button('Dealern tar plats 2', () => chipsLab.take(2)), button('Betala plats 6', () => chipsLab.pay(6)), button('Rensa', () => chipsLab.clear())),
+    note('Spelets marker med tyngd, och en bricka med <b>samma marker</b> på högkant i stället för den byggda. En förlorad insats lyfts, vänds på högkant och sätts ner i sin rad; en vinst bärs ut ur brickan och ställs bredvid insatsen. Ingen hand syns: det kräver en film där hon sträcker sig.'));
   let timer = 0; const scale = slider('Skala k', 'scale', 1, 2.6, 0.05, '×', () => { clearTimeout(timer); timer = window.setTimeout(() => scene.rebuild(), 120); }), shown = setters.scale as unknown as (v: number) => void;
   setters.scale = ((v: number) => shown(v > 0 ? v : scene.status().camera.scale)) as never;
   group('Filmkamera och skala', choice('lens', [['plan', 'Planens kamera (kontrakt)'], ['estimate', 'Dealerns lins (skattad)']], lens => { scene.home(); scene.set({lens, scale: 0}); }), scale,
     note('Hemvyn är filmen oavsett kamera. Kameran styr hur filttrycket, bordet och rummet ligger i perspektiv och hur vridning och parallax ser ut. <b>Planens kamera</b> läses ur data/scene-contract.json och passar kortrutorna; kontraktet säger självt att dealern inte är ritad med den linsen. <b>Dealerns lins</b> är en skattning ur dealerns proportioner och ögonhöjd, inte uppmätt. <b>k</b> är hur många gånger större dealerns värld är än planens kort; kontraktet skattar 1,8–2,5.'));
 }
+
+// ---- chips and the house's tray (src/game3d-chips.ts, src/game3d-tray.ts): tried here without a game behind them ----------
+// Bets are laid on three seats, the house takes one and pays another: the chips fall with weight, a lost bet is carried into
+// the tray and winnings out of it. The modules are the game's own and are fetched the first time a button is pressed.
+const chipsLab = (() => {
+  type Spot3 = {x: number; y: number; s: number};
+  type Chips = {set(bets: Record<number, number[]>, now: number): void; update(now: number): boolean; send(seat: number, to: (value: number) => Spot3, now: number, arrive: (value: number) => void): void;
+    pay(seat: number, values: number[], from: (value: number) => Spot3, now: number, leave: (value: number) => void): void; clearWinnings(): void};
+  type Tray = {mouth(value: number, taking: boolean): Spot3; add(value: number): boolean; remove(value: number): boolean};
+  let chips: Chips | null = null, tray: Tray | null = null, bets: Record<number, number[]> = {}, loading: Promise<void> | null = null;
+  const now = () => performance.now() / 1000;
+  const load = () => loading ??= Promise.all([import('./game3d-chips.ts'), import('./game3d-tray.ts')]).then(([c, t]) => {
+    const made = c.createChips(scene), house = t.createHouseTray(scene); scene.set({tray: false}); scene.notch(house.notch); scene.addProp(house); scene.addProp(made); chips = made; tray = house;
+    scene.onFrame(() => { made.update(now()); }); });
+  const show = () => chips?.set(bets, now());
+  return {
+    lay() { void load().then(() => { chips!.clearWinnings(); bets = {2: [25, 25, 100], 4: [5, 5, 25], 6: [100, 500]}; show(); }); },
+    more() { void load().then(() => { bets = {...bets, 4: [...(bets[4] ?? []), 25]}; show(); }); },
+    take(seat: number) { void load().then(() => { if (!bets[seat]) return; delete bets[seat]; chips!.send(seat, value => tray!.mouth(value, false), now(), value => { tray!.add(value); }); }); },
+    pay(seat: number) { void load().then(() => { if (!bets[seat]) return; chips!.pay(seat, bets[seat], value => tray!.mouth(value, true), now(), value => { tray!.remove(value); }); }); },
+    clear() { void load().then(() => { bets = {}; chips!.clearWinnings(); show(); }); },
+  };
+})();
+
+// ---- the exit trial (src/scene3d-exit.ts): the film in two parts, and the camera that follows the second ----------------
+const exit = (() => {
+  let part = -1, from = {pitch: 0, zoom: 1};
+  scene.onFrame(() => { if (part !== 1) return; const goal = exitView(scene.players.frame(), scene.status().camera, from);
+    for (const key of ['yaw', 'pitch', 'zoom', 'dy', 'dz'] as const) state[key] += (goal[key] - state[key]) * 0.12; hud(); });
+  return {
+    play() { from = {pitch: state.pitch, zoom: state.zoom}; part = 0; state.mode = 'lean'; state.dx = 0; scene.players.toggle(false);
+      scene.players.play([{...EXIT_TRIAL.lead, track: null}, {...EXIT_TRIAL.probe, track: null}], {cut: true, onPart: index => { part = index; }, onEnd: () => { part = -1; sync(); }}); },
+    stop() { if (part < 0 && !state.dz && !state.dy) return; part = -1; scene.set({pitch: from.pitch, zoom: from.zoom, dy: 0, dz: 0, yaw: 0}); sync(); },
+  };
+})();
 
 // ---- mouse and keyboard ------------------------------------------------------------------------------
 const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v));

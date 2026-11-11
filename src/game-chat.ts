@@ -1,4 +1,4 @@
-// The table chat as a dummy (game.html?chatt=1): the look and the feel of a chat beside the table, with nothing behind
+// The table chat as a dummy (in the game unless game.html?chatt=0): the look and the feel of a chat beside the table, with nothing behind
 // it. Nothing is sent anywhere and nobody answers for real: the dealer's lines come from what happens in the round, two
 // made-up players say something now and then, and what the player writes is answered from a short list. It is here so that
 // the controls can be judged with a chat in the picture; a real chat is Scout's.

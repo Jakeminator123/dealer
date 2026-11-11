@@ -44,7 +44,7 @@ button:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid 
 <!-- three.js 0.180: the lab server decides where the module is served; this map is the single place that names it.
      The scope: the card material study imports its own vendored three.js. The rendered cards in the scene (scene3d-deal.ts)
      load the study as a separate instance (?scene3d) whose three.js is the scene's, so the page holds one copy of three.js. -->
-<script type="importmap">{"imports":{"three":"/vendor/three.module.js"},"scopes":{"/materials/source/src/card-material-study.js?scene3d":{"/materials/source/references/card-materials/vendor/three.module.js":"/vendor/three.module.js"}}}</script>
+<script type="importmap">{"imports":{"three":"/vendor/three.module.js"},"scopes":{"/materials/source/src/card-material-study.js?scene3d":{"/materials/source/references/card-materials/vendor/three.module.js":"/vendor/three.module.js"},"/materials/source/src/chip-material-study.js":{"/materials/source/references/card-materials/vendor/three.module.js":"/vendor/three.module.js"}}}</script>
 </head>
 <body>
 <div id="app">

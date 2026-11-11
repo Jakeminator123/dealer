@@ -1,6 +1,7 @@
 import test from 'node:test';
 import {frameAt, type FilmFrame} from '../src/scene3d-film.ts';
 import {RAIL_MOVES, cupAngles, railLevel, railTop} from '../src/scene3d-rail.ts';
+import {EXIT_VIEW, exitView} from '../src/scene3d-exit.ts';
 import {RAIL, TABLE} from '../src/scene3d-table.ts';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
@@ -214,4 +215,16 @@ test('cup holders sit on the rail between the seats and outside the end seats', 
   const [x, y, z] = railTop(Math.PI / 2); assert.ok(Math.abs(x) < 1e-9 && Math.abs(z - (TABLE.b + RAIL.centre)) < 1e-9); assert.equal(y, RAIL.top);
   const end = railTop(0); assert.ok(Math.abs(end[0] - (TABLE.a + RAIL.centre)) < 1e-9 && Math.abs(end[2]) < 1e-9);
   for (const t of angles) { const p = railTop(t); assert.ok((p[0] / TABLE.a) ** 2 + (p[2] / TABLE.b) ** 2 > 1, 'outside the felt'); assert.ok((p[0] / (TABLE.a + TABLE.rail)) ** 2 + (p[2] / (TABLE.b + TABLE.rail)) ** 2 < 1, 'inside the rail'); }
+});
+
+test('the exit: the camera backs away along its line of sight while she rises, and stays there', () => {
+  const camera: FilmCamera = {focalPx: 886, horizonRow: 548, edgeRow: 831.5, heightM: 0.493, scale: 2, source: 'contract'}, from = {pitch: -8, zoom: 0.84}, solved = solveCamera(camera);
+  assert.deepEqual(exitView(0, camera, from), {yaw: 0, pitch: -8, zoom: 0.84, dz: 0, dy: 0}, 'before she rises the view is the one she is seen in');
+  assert.deepEqual(exitView(EXIT_VIEW.rise[0], camera, from), exitView(0, camera, from));
+  const stood = exitView(EXIT_VIEW.rise[1], camera, from);
+  assert.equal(stood.pitch, EXIT_VIEW.pitch); assert.equal(stood.zoom, EXIT_VIEW.zoom); assert.equal(stood.yaw, 0);
+  assert.ok(Math.abs(Math.hypot(stood.dz, stood.dy - EXIT_VIEW.lift) - EXIT_VIEW.back * solved.edgeDistance) < 1e-9, 'back by its share of the distance to the table edge');
+  assert.ok(Math.abs(Math.atan2(stood.dy - EXIT_VIEW.lift, stood.dz) - (solved.pitch + 8 * Math.PI / 180)) < 1e-9, 'along the line of sight of the view it started in');
+  assert.deepEqual(exitView(170, camera, from), stood, 'and it stays there while she walks out');
+  const half = exitView((EXIT_VIEW.rise[0] + EXIT_VIEW.rise[1]) / 2, camera, from); assert.ok(Math.abs(half.dz - stood.dz / 2) < 1e-9 && half.pitch > -8 && half.pitch < EXIT_VIEW.pitch);
 });

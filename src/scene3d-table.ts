@@ -10,6 +10,12 @@ import {BET, type Spot} from './scene3d-geometry.ts';
 
 export const FELTS: Record<string, [string, string]> = {green: ['#134232', '#0a2a20'], blue: ['#16325e', '#0b1c38'], vin: ['#571a26', '#330d15'], svart: ['#23272a', '#101214']};
 export const TABLE = {a: 0.95, b: 0.6, rail: 0.1}; // half width, depth toward the players, rail width
+// What the table stands on. column: the first base, one thick leg on a brass foot; it was never meant to be seen, and from a
+// camera that has backed away it is ugly (Jakob, 2026-11-11). legs: two tapered legs of photographed wood on brass plinths with
+// a stretcher between them, a brass foot rail on the players' side, a board that closes the underside, and the table's shadow
+// on the floor; the recipe of the room study of 2026-11-07 (photographed materials, real legs, contact with the ground).
+export type TableBase = 'column' | 'legs';
+export const BASE = {floor: -0.95, under: -0.15, legX: 0.58, legZ: 0.25, rail: -0.72}; // heights above the felt and places, dealer metres
 const PRINT = {width: 2.8, depth: 1.4, back: 0.1, pxW: 4096, pxH: 2048}; // the felt image covers width x depth metres and starts `back` behind the dealer edge
 const GOLD = '#d8b665';
 
@@ -185,9 +191,28 @@ export function createTable(lit: <M extends T.Material>(material: M) => M = m =>
   const felt = lit(new T.MeshBasicMaterial({map: texture, side: T.DoubleSide}));
   const leather = lit(new T.MeshStandardMaterial({...leatherTextures(ROLL, ROLL.seams), normalScale: new T.Vector2(0.75, 0.75), roughness: 1, metalness: 0, envMap: room, envMapIntensity: 3}));
   const bead = lit(new T.MeshStandardMaterial({map: shadeTexture(BEAD), color: 0x9c7a45, roughness: 0.36, metalness: 1, envMap: room, envMapIntensity: 1.1}));
-  const apron = lit(new T.MeshPhysicalMaterial({map: walnutTexture(), aoMap: shadeTexture(APRON), roughness: 0.5, metalness: 0, clearcoat: 0.4, clearcoatRoughness: 0.3, envMap: room, envMapIntensity: 1.5}));
+  const walnut = walnutTexture();
+  const apron = lit(new T.MeshPhysicalMaterial({map: walnut, aoMap: shadeTexture(APRON), roughness: 0.5, metalness: 0, clearcoat: 0.4, clearcoatRoughness: 0.3, envMap: room, envMapIntensity: 1.5}));
   // The dealer-side board, the leg and the foot keep their first materials: a strip of the board's top shows in the home view.
   const wood = lit(new T.MeshStandardMaterial({color: 0x2a170d, roughness: 0.4, metalness: 0.1, side: T.DoubleSide})), brass = lit(new T.MeshStandardMaterial({color: 0xb08a45, roughness: 0.3, metalness: 0.9}));
+
+  // The base of photographed wood (Poly Haven's wood_table, CC0; data/scene-materials.json). The maps are local media, read the
+  // first time a base asks for them; until they are there, and where they cannot be read, the base wears the painted walnut.
+  const timber = lit(new T.MeshStandardMaterial({map: walnut, color: 0xffffff, roughness: 0.5, metalness: 0, envMap: room, envMapIntensity: 1.1}));
+  // The skirt in the same wood, lacquered: its grain runs along the arc, and the section's shade keeps the overhang's shadow on it.
+  const skirt = lit(new T.MeshPhysicalMaterial({map: walnut, aoMap: shadeTexture(APRON), roughness: 0.5, metalness: 0, clearcoat: 0.5, clearcoatRoughness: 0.25, envMap: room, envMapIntensity: 1.6}));
+  const polished = lit(new T.MeshStandardMaterial({color: 0xb08a45, roughness: 0.28, metalness: 1, envMap: room, envMapIntensity: 1.5}));
+  const shadow = (() => { const c = document.createElement('canvas'); c.width = c.height = 128; const g = c.getContext('2d')!, fade = g.createRadialGradient(64, 64, 8, 64, 64, 64);
+    fade.addColorStop(0, 'rgba(0,0,0,.62)'); fade.addColorStop(0.55, 'rgba(0,0,0,.34)'); fade.addColorStop(1, 'rgba(0,0,0,0)'); g.fillStyle = fade; g.fillRect(0, 0, 128, 128);
+    return new T.MeshBasicMaterial({map: new T.CanvasTexture(c), transparent: true, depthWrite: false}); })();
+  let asked = false;
+  function photographed() {
+    if (asked) return; asked = true;
+    const loader = new T.TextureLoader(), read = (name: string, colour: boolean) => loader.loadAsync(`assets/scene/materials/wood_table-${name}.webp`).then(t => { t.wrapS = t.wrapT = T.RepeatWrapping; t.repeat.set(2, 1.5); t.anisotropy = 8; if (colour) t.colorSpace = T.SRGBColorSpace; return t; });
+    Promise.all([read('diffuse', true), read('nor_gl', false), read('rough', false)]).then(([map, normalMap, roughnessMap]) => {
+      Object.assign(timber, {map, normalMap, roughnessMap, roughness: 0.85}); timber.color.set(0x9a7052); timber.normalScale.set(0.45, 0.45); timber.needsUpdate = true;
+      const along = map.clone(); along.repeat.set(1, 0.4); along.needsUpdate = true; skirt.map = along; skirt.color.set(0xa67a58); skirt.needsUpdate = true; }, () => {});
+  }
 
   function draw(print: FeltPrint) {
     const g = canvas.getContext('2d')!, [light, dark] = FELTS[print.felt] ?? FELTS.green;
@@ -226,7 +251,7 @@ export function createTable(lit: <M extends T.Material>(material: M) => M = m =>
   // `notch`: a rectangle cut into the felt from the dealer-side edge, for something sunk into the table there (x across,
   // s1 = how far it reaches toward the players; dealer metres). A notch, not a hole: a hole this close to the edge is
   // triangulated shut by ShapeGeometry.
-  function build(edgeZ: number, scale: number, notch?: {x0: number; x1: number; s1: number}) {
+  function build(edgeZ: number, scale: number, notch?: {x0: number; x1: number; s1: number}, base: TableBase = 'column') {
     for (const child of [...group.children]) { group.remove(child); (child as T.Mesh).geometry?.dispose(); }
     group.position.set(0, 0, edgeZ); group.scale.setScalar(scale);
     const N = 96, {a, b, rail} = TABLE, uvOf = (x: number, s: number) => [(x + PRINT.width / 2) / PRINT.width, 1 - (s + PRINT.back) / PRINT.depth];
@@ -242,10 +267,28 @@ export function createTable(lit: <M extends T.Material>(material: M) => M = m =>
     // padded rail round the players' arc with rounded ends past the dealer's edge, the brass bead along the felt, then the apron
     group.add(new T.Mesh(sweep(ROLL, 128, ROLL.length, {length: 0.036, core: CORE, steps: 9}), leather));
     group.add(new T.Mesh(sweep(BEAD, 128, 1, {length: 0.004, core: [0.0035, 0], steps: 3}), bead));
-    group.add(new T.Mesh(sweep(APRON, 96, 0.6, null), apron));
-    const add = (geometry: T.BufferGeometry, material: T.Material, x: number, y: number, z: number) => { const m = new T.Mesh(geometry, material); m.position.set(x, y, z); group.add(m); };
+    group.add(new T.Mesh(sweep(APRON, 96, 0.6, null), base === 'legs' ? skirt : apron));
+    const add = (geometry: T.BufferGeometry, material: T.Material, x: number, y: number, z: number) => { const m = new T.Mesh(geometry, material); m.position.set(x, y, z); group.add(m); return m; };
     add(new T.BoxGeometry(2 * (a + rail), 0.16, 0.02), wood, 0, -0.082, -0.011);
-    add(new T.CylinderGeometry(0.16, 0.24, 0.78, 32), wood, 0, -0.55, b * 0.45); add(new T.CylinderGeometry(0.42, 0.46, 0.05, 48), brass, 0, -0.93, b * 0.45);
+    if (base === 'column') { add(new T.CylinderGeometry(0.16, 0.24, 0.78, 32), wood, 0, -0.55, b * 0.45); add(new T.CylinderGeometry(0.42, 0.46, 0.05, 48), brass, 0, -0.93, b * 0.45); return; }
+    photographed();
+    const {floor, under, legX, legZ} = BASE, height = under - floor - 0.02, oval = (geometry: T.BufferGeometry, deep: number) => geometry.scale(1, 1, deep);
+    // the grain runs up a leg, not round it: the cylinder's texture coordinates change places
+    const upright = (geometry: T.BufferGeometry) => { const uv = geometry.getAttribute('uv') as T.BufferAttribute; for (let i = 0; i < uv.count; i++) uv.setXY(i, uv.getY(i) * 0.9, uv.getX(i) * 1.6); return geometry; };
+    // a board under the top, so that nothing looks up into the table
+    const closed = new T.Shape(Array.from({length: 65}, (_, i) => new T.Vector2((a + 0.05) * Math.cos(Math.PI * i / 64), (b + 0.05) * Math.sin(Math.PI * i / 64))));
+    add(new T.ShapeGeometry(closed).rotateX(Math.PI / 2), timber, 0, under + 0.004, 0);
+    for (const side of [-1, 1]) {
+      add(upright(oval(new T.CylinderGeometry(0.082, 0.112, height, 40), 1.9)), timber, side * legX, floor + 0.02 + height / 2, legZ); // a leg, oval in plan, wider at the floor
+      add(oval(new T.CylinderGeometry(0.126, 0.134, 0.02, 40), 1.85), polished, side * legX, floor + 0.01, legZ); // its plinth
+      add(new T.PlaneGeometry(0.62, 0.84).rotateX(-Math.PI / 2), shadow, side * legX, floor + 0.002, legZ).renderOrder = -1; // and its shadow on the floor
+    }
+    add(new T.BoxGeometry(2 * legX, 0.07, 0.05), timber, 0, floor + 0.3, legZ); // the stretcher between the legs
+    // the brass foot rail on the players' side, on four short posts
+    const railPath = new T.CatmullRomCurve3(Array.from({length: 33}, (_, i) => { const t = Math.PI * (0.13 + 0.74 * i / 32); return new T.Vector3((a - 0.06) * Math.cos(t), BASE.rail, (b + 0.02) * Math.sin(t)); }));
+    add(new T.TubeGeometry(railPath, 96, 0.013, 12), polished, 0, 0, 0);
+    for (const u of [0.02, 0.34, 0.66, 0.98]) { const p = railPath.getPoint(u); add(new T.CylinderGeometry(0.009, 0.009, BASE.rail - floor, 12), polished, p.x, (BASE.rail + floor) / 2, p.z); }
+    add(new T.PlaneGeometry(3.3, 2.5).rotateX(-Math.PI / 2), shadow, 0, floor + 0.001, b * 0.42).renderOrder = -2; // the table's own shadow on the floor
   }
   return {group, draw, build};
 }

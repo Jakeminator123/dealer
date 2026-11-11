@@ -161,10 +161,10 @@ type Chips = {set(bets: Record<number, number[]>, now: number): void; update(now
 let chips: Chips | null = null;
 const seconds = () => performance.now() / 1000;
 void import('./game3d-chips.ts').then(m => { const made = m.createChips(scene); scene.addProp(made); chips = made; stage.classList.add('chips3d'); render(); }).catch(() => {});
-// A trial, game.html?chatt=1: the table chat as a dummy (src/game-chat.ts). The dealer's lines follow the round's phases and how it ended.
+// The table chat as a dummy (src/game-chat.ts; game.html?chatt=0 leaves it out). The dealer's lines follow the round's phases and how it ended.
 type Chat = {phase(phase: string): void; say(text: string): void};
 let chat: Chat | null = null, chatPhase = '', chatLine: string | null = null;
-if (query.has('chatt')) void import('./game-chat.ts').then(m => { chat = m.mountChat(stage); render(); }).catch(() => {});
+if (query.get('chatt') !== '0') void import('./game-chat.ts').then(m => { chat = m.mountChat(stage); render(); }).catch(() => {});
 const render = () => { const view = tableView(snapshot, page);
   if (chat) { if (view.phase !== chatPhase) { chatPhase = view.phase; chat.phase(view.phase); } if (page.line !== chatLine) { chatLine = page.line; if (page.line && view.phase === 'SETTLED') chat.say(page.line.replace(/<[^>]+>/g, '')); } } chips?.set(Object.fromEntries(view.seats.map(s => [s.seat, taken.has(s.seat) ? [] : s.chips])), seconds()); if (view.phase === 'TURN' || view.phase === 'BETTING') { if (view.phase === 'TURN') byHand = false; aimAt(view.phase === 'TURN' ? snapshot.view.round?.activeSeat ?? null : null); } overlay.render(view); };
 
@@ -191,50 +191,17 @@ function aimAt(seat: number | null) {
   aimed = !tall || !spot ? 0 : Math.max(-FRAMING.turnLimit, Math.min(FRAMING.turnLimit, Math.atan2(-spot.x * camera.scale, solveCamera(camera).edgeDistance - spot.s * camera.scale) * 180 / Math.PI * FRAMING.turnShare));
 }
 // A sideways drag on the picture turns the view by hand (standing: to reach the outer seats; lying: to look around); a double click turns it back.
-// shot: a view that a clip directs (the dealer leaving): turn, tilt and zoom, and the camera moved up (dy) and back (dz) from its own place.
-const SHOT_KEYS = ['yaw', 'pitch', 'zoom', 'dy', 'dz'] as const;
-let turning: {x: number; yaw: number} | null = null, byHand = false, shot: Record<typeof SHOT_KEYS[number], number> | null = null;
-const framing = () => tall ? FRAMING.tall : FRAMING.wide;
+let turning: {x: number; yaw: number} | null = null, byHand = false;
 canvas.addEventListener('pointerdown', e => { turning = {x: e.clientX, yaw: scene.state.yaw}; canvas.setPointerCapture(e.pointerId); });
 canvas.addEventListener('pointermove', e => { if (!turning) return; const dx = e.clientX - turning.x; if (Math.abs(dx) > 4) byHand = true; if (byHand) scene.state.yaw = Math.max(-FRAMING.turnLimit, Math.min(FRAMING.turnLimit, turning.yaw + dx * 45 / canvas.clientHeight / Math.max(1, scene.state.zoom))); });
 for (const type of ['pointerup', 'pointercancel']) canvas.addEventListener(type, () => { turning = null; });
 canvas.addEventListener('dblclick', () => { byHand = false; });
 scene.onFrame(() => {
   chips?.update(seconds());
-  // A clip that directs the view (the dealer leaving) takes it over; otherwise the view eases to the seat in play and to its own tilt.
-  if (shot) for (const key of SHOT_KEYS) scene.state[key] += (shot[key] - scene.state[key]) * 0.12;
-  else { if (!turning && !byHand && Math.abs(scene.state.yaw - aimed) > 0.02) scene.state.yaw += (aimed - scene.state.yaw) * 0.08;
-    if (!fixed) for (const key of ['pitch', 'zoom'] as const) { const left = framing()[key] - scene.state[key]; if (left) scene.state[key] = Math.abs(left) < 0.002 ? framing()[key] : scene.state[key] + left * 0.08; }
-    for (const key of ['dy', 'dz'] as const) if (scene.state[key]) scene.state[key] = Math.abs(scene.state[key]) < 0.002 ? 0 : scene.state[key] * 0.92; } // the camera comes home
+  if (!turning && !byHand && Math.abs(scene.state.yaw - aimed) > 0.02) scene.state.yaw += (aimed - scene.state.yaw) * 0.08;
   const host = stage.getBoundingClientRect(), box = scene.canvas.getBoundingClientRect();
   overlay.place({left: box.left - host.left, top: box.top - host.top, width: box.width, height: box.height}, anchors());
 });
 render();
 
-// ── a trial: the dealer leaves the table (game.html?prov=utgang) ──
-// The film agent's low-resolution probe of a whole-body exit, played in the game as it would be: the hands leave the table in
-// a film of the standard frame, then the whole-body film takes over behind the 3D table while the camera pulls back as she
-// rises, until she and the whole table are in the picture; she walks out of it. (First tried with the camera in its place,
-// tilting up and turning after her: Jakob found looking up at her not pretty, and the turn showed where the film's own frame
-// ends, which cut her.) A trial with a blurry probe film, until the real film exists in the clip bank.
-if (query.get('prov') === 'utgang') {
-  const TRIAL = {lead: {path: 'assets/motions/pamela-table-leave-02/source.mp4', start: 3, end: 30}, probe: {path: 'assets/proofs/helkropp-prov/prov-lag-upplosning-uppskalad.mp4', start: 0, end: 177, frame: {scale: 0.5, anchor: [882, 656], layer: 'BEHIND_TABLE', shadow: false}},
-    // rise: the probe's film frames in which she stands up. When she stands the camera has moved back along its line of sight by
-    // `back` of its distance to the table's dealer-side edge and `lift` upward (scene units), and the view has tilt `up` and zoom `out`.
-    rise: [8, 34], back: 0.75, lift: 0.05, up: -5.5, out: 0.9};
-  const button = document.createElement('button'); button.type = 'button'; button.className = 'game-trial'; button.textContent = 'Prov: dealern lämnar bordet'; stage.append(button);
-  const ease = (f: number, [a, b]: number[]) => { const t = Math.min(1, Math.max(0, (f - a) / (b - a))); return t * t * (3 - 2 * t); };
-  let away = false;
-  button.addEventListener('click', async () => {
-    if (away) { away = false; shot = null; page.busy = false; page.error = null; button.textContent = 'Prov: dealern lämnar bordet'; film.rest(); render(); return; }
-    if (page.busy || page.stage !== 'BETTING') return; // only between rounds
-    button.disabled = true; page.busy = true; page.error = 'Prov med lågupplöst film'; render();
-    let part = 0; const base = framing(), solved = solveCamera(scene.status().camera), slope = solved.pitch - base.pitch * Math.PI / 180; // the line of sight, radians below the horizontal
-    const follow = scene.onFrame(() => { if (part !== 1) return; const risen = ease(scene.players.frame(), TRIAL.rise), reach = TRIAL.back * solved.edgeDistance * risen;
-      shot = {yaw: 0, pitch: base.pitch + (TRIAL.up - base.pitch) * risen, zoom: base.zoom + (TRIAL.out - base.zoom) * risen, dz: reach * Math.cos(slope), dy: reach * Math.sin(slope) + TRIAL.lift * risen}; });
-    await film.show([{...TRIAL.lead, track: null}, {...TRIAL.probe, track: null}], index => { part = index; });
-    follow(); away = true; button.disabled = false; button.textContent = 'Tillbaka till vila';
-  });
-  Object.assign(window, {gameTrial: TRIAL}); // the numbers can be tried from the console
-}
 Object.assign(window, {game: {scene, film, page, state: () => snapshot}}); // for the proof recorder and the console; not an interface

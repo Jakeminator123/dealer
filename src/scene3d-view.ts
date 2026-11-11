@@ -8,7 +8,7 @@ import {createFilmLayers, createPlayers, frameAt} from './scene3d-film.ts';
 import {createFanLight} from './scene3d-light.ts';
 import {createChipTray, TRAY} from './scene3d-props.ts';
 import {createRooms, type RoomId} from './scene3d-room.ts';
-import {TABLE, createTable} from './scene3d-table.ts';
+import {TABLE, createTable, type TableBase} from './scene3d-table.ts';
 import {createRailExtras, type RailLight} from './scene3d-rail.ts';
 
 export type SceneState = {
@@ -18,7 +18,7 @@ export type SceneState = {
   keyLo: number; keyHi: number; shadow: number;
   focus: 'off' | 'dealer' | 'card' | 'follow' | 'manual'; focusDistance: number; tolerance: number;
   fan: boolean; fanStrength: number; fanPeriod: number;
-  tray: boolean; railLight: RailLight; railColour: string; cups: boolean;
+  tray: boolean; railLight: RailLight; railColour: string; cups: boolean; base: TableBase;
   cards: boolean; cardMethod: 'scene' | 'film'; cardRank: string; cardSuit: string; cardScale: number;
   clock: boolean; dust: number; flicker: boolean; flickerEvery: number; flickerStrength: number;
   filmBright: number; filmWarm: number; wrap: number;
@@ -31,7 +31,7 @@ export const DEFAULTS: SceneState = {
   keyLo: 0.12, keyHi: 0.9, shadow: 1,
   focus: 'off', focusDistance: 1.5, tolerance: 0.4,
   fan: false, fanStrength: 0.16, fanPeriod: 5,
-  tray: false, railLight: 'off', railColour: 'gold', cups: false,
+  tray: false, railLight: 'off', railColour: 'gold', cups: false, base: 'column',
   cards: false, cardMethod: 'scene', cardRank: 'A', cardSuit: 'spades', cardScale: 1.2,
   clock: false, dust: 0, flicker: false, flickerEvery: 20, flickerStrength: 0.6,
   filmBright: 1, filmWarm: 0, wrap: 0,
@@ -143,7 +143,7 @@ export function createScene(canvas: HTMLCanvasElement, host: HTMLElement, data: 
     camera = filmCamera(); const solved = solveCamera(camera); pitch = solved.pitch; edgeZ = -solved.edgeDistance;
     filmCam.fov = solved.fovYDeg; filmCam.aspect = W / H; filmCam.position.set(0, camera.heightM, 0); filmCam.rotation.set(-pitch, 0, 0, 'YXZ'); filmCam.updateProjectionMatrix(); filmCam.updateMatrixWorld(true);
     filmVP.multiplyMatrices(filmCam.projectionMatrix, filmCam.matrixWorldInverse);
-    table.build(edgeZ, camera.scale, ownNotch ?? (state.tray ? TRAY : undefined)); tray.group.visible = state.tray && !ownNotch; if (tray.group.visible) tray.build(edgeZ, camera.scale); rail.build(edgeZ, camera.scale, betSpots(data.plan, camera)); drawFelt(); rooms.place(camera); light.place(camera); buildGuides(); focusNow = NaN; built = true; for (const prop of props) prop.build(edgeZ, camera.scale); apply();
+    table.build(edgeZ, camera.scale, ownNotch ?? (state.tray ? TRAY : undefined), state.base); tray.group.visible = state.tray && !ownNotch; if (tray.group.visible) tray.build(edgeZ, camera.scale); rail.build(edgeZ, camera.scale, betSpots(data.plan, camera)); drawFelt(); rooms.place(camera); light.place(camera); buildGuides(); focusNow = NaN; built = true; for (const prop of props) prop.build(edgeZ, camera.scale); apply();
   }
   const drawFelt = () => table.draw({spots: cardSpots(data.plan, camera), logo: state.logo, felt: state.felt, scale: camera.scale});
   function apply() {
@@ -212,7 +212,7 @@ export function createScene(canvas: HTMLCanvasElement, host: HTMLElement, data: 
     state, players, render, rebuild, apply, resize,
     start() { if (!running) { running = true; requestAnimationFrame(loop); } }, stop() { running = false; },
     home() { Object.assign(state, {yaw: 0, pitch: 0, zoom: 1, dx: 0, dy: 0, dz: 0, sway: false}); apply(); },
-    set(patch: Partial<SceneState>) { if (patch.cards) loadCards(); const relens = 'lens' in patch && patch.lens !== state.lens || 'scale' in patch && patch.scale !== state.scale || 'tray' in patch && patch.tray !== state.tray, reprint = 'logo' in patch || 'felt' in patch; Object.assign(state, patch); if (relens) rebuild(); else { if (reprint) drawFelt(); apply(); } },
+    set(patch: Partial<SceneState>) { if (patch.cards) loadCards(); const relens = 'lens' in patch && patch.lens !== state.lens || 'scale' in patch && patch.scale !== state.scale || 'tray' in patch && patch.tray !== state.tray || 'base' in patch && patch.base !== state.base, reprint = 'logo' in patch || 'felt' in patch; Object.assign(state, patch); if (relens) rebuild(); else { if (reprint) drawFelt(); apply(); } },
     setTrack(next: CardTrack | null) { track = next; },
     // ---- for a page that puts a game on the table. Positions are dealer metres: x across the table, s from the dealer-side
     // edge toward the players, y above the felt (as cardSpots and betSpots give them).

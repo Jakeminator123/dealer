@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "about": "Photographed material maps for the 3D scene. The files are media and lie outside Git under assets/scene/materials/; this file names each by its SHA-256 and says where it came from. They were copied on 2026-11-11 from Jakob's room study of 2026-11-07 (C:/Users/jakem/Desktop/wow/rumsstudie-3d-2026-11-07/tools/room-study/assets, its own register: material-sources.json), which fetched them from Poly Haven and stored them as WebP.",
+  "licence": "CC0 (Poly Haven)",
+  "maps": [
+    {
+      "file": "wood_table-diffuse.webp",
+      "sha256": "e307b54f608386e1357df40c297a1d687aeb1559dd02257f75ed243b88d5159c",
+      "source": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/wood_table/wood_table_diff_1k.jpg",
+      "use": "the table base (src/scene3d-table.ts, base legs)"
+    },
+    {
+      "file": "wood_table-nor_gl.webp",
+      "sha256": "c1df20651130754fe7a19fe7ef6b23bd155fba3ab0bb6d70d5fbd54bd679e5db",
+      "source": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/wood_table/wood_table_nor_gl_1k.jpg",
+      "use": "the table base"
+    },
+    {
+      "file": "wood_table-rough.webp",
+      "sha256": "b4499bd05618490a827f9344516fc8106c3925e16ea49c99d6adf6c6bb07f1d4",
+      "source": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/wood_table/wood_table_rough_1k.jpg",
+      "use": "the table base"
+    },
+    {
+      "file": "brown_leather-nor_gl.webp",
+      "sha256": "5563963829922e802aef387d7e8d5580aaa03066929be0dea74a7a78995b4386",
+      "source": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/brown_leather/brown_leather_nor_gl_1k.jpg",
+      "use": "not used yet"
+    },
+    {
+      "file": "brown_leather-rough.webp",
+      "sha256": "00612ec28b54cf8da43dc60085be0511a65112825e8ca863afaadefce556d7e4",
+      "source": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/brown_leather/brown_leather_rough_1k.jpg",
+      "use": "not used yet"
+    }
+  ]
+}

@@ -86,13 +86,6 @@ export function createFilm(players: FilmPlayers, graph: Graph, layout: Layout, r
   }
   return {
     play, rest,
-    /** Plays parts that are no step of the game (the dealer leaving the table). The rest loop stops and does not start again by itself; the last frame is held. */
-    async show(parts: FilmPart[], onPart: (index: number) => void = () => {}): Promise<void> {
-      const mine = ++token, leaving = resting; resting = null;
-      await new Promise<void>(resolve => { const cut = !leaving || idleExit(leaving) === 'CUT'; if (!cut) players.hurry(IDLE_RULE.exitRate);
-        players.preload?.(parts.map(p => p.path)); players.play(parts, {cut, onPart: index => { if (mine === token) onPart(index); }, onEnd: resolve}); });
-    },
-    /** Sets the table without film: a new round clears it. */
     set(next: {table: TableCards; records: CardRecord[]; lying: number[]}) { table = next.table; records = next.records; lying = [...next.lying]; rest(); },
     get lying() { return [...lying]; },
   };
