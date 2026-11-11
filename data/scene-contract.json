@@ -1,12 +1,13 @@
 {
   "schemaVersion": 1,
-  "measuredAt": "2026-11-11T00:00:11.753Z",
+  "measuredAt": "2026-11-11T00:04:03.385Z",
   "generatedBy": "node tools/scene-measure.ts (maths in src/scene-geometry.ts, checked by tools/scene-geometry.test.ts)",
   "basisLegend": {
     "MEASURED": "read from film pixels by the tool",
     "DERIVED": "computed from measured values under the stated model",
     "ESTIMATED": "rests on an assumption this footage cannot check; a working value",
     "GIVEN": "input from the brief, the plan file or existing code, not a result",
+    "REPORTED": "told to this tool's author by another reviewer, not checked here",
     "rule": "An object's `basis` covers every number inside it unless a nested object states its own."
   },
   "image": {
@@ -42,6 +43,1334 @@
     "plan": "The 16 plan quads are exactly one plane of 63 x 88 mm cards (1.1e-13 px). Against the film-calibrated plane they differ by at most 2.2 px (rms 1.2 px), which is inside the calibration's own uncertainty (2.9 px at 95 %, 5.4 px leave-one-out).",
     "scale": "Millimetres on this plane are a convention. The same plane makes a resting hand 256 mm wide and the shoe 948 mm long, and the cards the generator drew by itself measure 76 x 122 mm on it. Relative to the dealer the plan's cards are roughly half size.",
     "use": "Treating the table as one calibrated plane is sound for card positions, rendered cards, shadows and flat table artwork. Body-scale props drawn in millimetres on it will look about twice too small next to the dealer until the scale convention is settled."
+  },
+  "keyFigures": {
+    "note": "Short list for consumers. Ranges span leave-one-out and the 95 % uncertainty runs; all lengths are in plan-scale millimetres (see cardSizeAtTargets.scale).",
+    "homographyTableMmToImagePx": {
+      "basis": "DERIVED",
+      "matrix": [
+        [
+          1.11534905,
+          1.05925092,
+          852.5548004
+        ],
+        [
+          0,
+          0.6898742742,
+          1099.092342
+        ],
+        [
+          0,
+          0.001258095892,
+          1
+        ]
+      ],
+      "reprojectionRmsPx": 1.12,
+      "reprojectionMaxPx": 2.43,
+      "perCardRmsPx": {
+        "P4.C1": 0.73,
+        "P1.C1": 1.34,
+        "P4.C2": 0.65,
+        "P7.C1": 1.5
+      },
+      "leftOutCardRmsPx": {
+        "P4.C1": 0.94,
+        "P1.C1": 2.45,
+        "P4.C2": 1.03,
+        "P7.C1": 2.56
+      },
+      "predictedCardsMoveUpToPx": {
+        "leaveOneOut": 5.4,
+        "uncertainty95": 2.9
+      }
+    },
+    "focalPx": {
+      "value": 886,
+      "range": [
+        770,
+        1003
+      ],
+      "basis": "DERIVED",
+      "how": "pinhole behind the plane"
+    },
+    "tiltDownDeg": {
+      "value": 2.5,
+      "range": [
+        -2,
+        6.7
+      ],
+      "basis": "DERIVED",
+      "how": "optical axis below the horizontal"
+    },
+    "heightAboveFeltMm": {
+      "value": 493,
+      "range": [
+        438,
+        563
+      ],
+      "basis": "DERIVED",
+      "how": "camera centre above the felt"
+    },
+    "distanceToP4C1AlongFeltMm": {
+      "value": 774,
+      "range": [
+        710,
+        841
+      ],
+      "basis": "DERIVED",
+      "how": "from below the camera to the P4.C1 card centre"
+    },
+    "distanceToP4C1Mm": {
+      "value": 918,
+      "range": [
+        835,
+        1012
+      ],
+      "basis": "DERIVED",
+      "how": "camera centre to the P4.C1 card centre"
+    },
+    "viewAngleAtP4C1Deg": {
+      "value": 32.5,
+      "range": [
+        31.6,
+        33.8
+      ],
+      "basis": "DERIVED",
+      "how": "line of sight to the P4.C1 card against the felt"
+    },
+    "dealerEdgeImageRow": {
+      "basis": "MEASURED",
+      "value": 831.5,
+      "acrossClips": [
+        829.5,
+        831.5
+      ],
+      "clipsRead": 7,
+      "what": "image row where the dealer's body ends on the back edge of the table: last jacket row plus half a pixel, columns 846-900 between the hands",
+      "onPlaneYMm": {
+        "basis": "DERIVED",
+        "value": 751
+      }
+    },
+    "caution": "Focal length, height and distances belong to the plan-scale reading of the table. They describe one consistent plane, not a verified physical camera; see verdict and sanityChecks."
+  },
+  "cardSizeAtTargets": {
+    "what": "Image size of a 63 x 88 mm card lying square to the table, centred on each plan target. farWidthPx and nearWidthPx are the dealer-side and camera-side edges, depthPx the distance between their midpoints, sideSlantDeg the direction of the left side (-90 = upright).",
+    "scale": {
+      "planScale": {
+        "basis": "DERIVED",
+        "k": 1,
+        "note": "the calibrated plane as fitted to the film cards; equals the plan quads to within 2.2 px because those cards were imposed by the plan"
+      },
+      "bodyScale": {
+        "basis": "ESTIMATED",
+        "k": 2,
+        "kRange": [
+          1.8,
+          2.5
+        ],
+        "note": "the same plane with the card as large as the dealer's hands and the shoe imply; sizes grow almost in proportion to k, so interpolate for another k"
+      },
+      "evidenceForK": {
+        "hands": {
+          "basis": "ESTIMATED",
+          "k": [
+            2.05,
+            2.69
+          ],
+          "from": "resting hand width on the plane against 95-125 mm"
+        },
+        "shoe": {
+          "basis": "ESTIMATED",
+          "k": [
+            2.11,
+            2.5
+          ],
+          "from": "shoe base length on the plane against 380-450 mm"
+        },
+        "shoeMouthCard": {
+          "basis": "DERIVED",
+          "kAtLeast": 1.58,
+          "from": "long side of the yellow card in the shoe mouth against the plane scale at the shoe foot"
+        },
+        "legacyV6Card": {
+          "basis": "DERIVED",
+          "kWidth": 2.17,
+          "kDepth": 1.27,
+          "from": "landed white card of the older take (src/pamela-card-contact-v6.ts)"
+        },
+        "earlierBlueCards": {
+          "basis": "DERIVED",
+          "k": [
+            1.21,
+            1.41
+          ],
+          "from": "pamela-p4-c1-source-turn and pamela-p4-c1-deal-calm-01; the second was generated with a last image and lands on the same quad as the first, so it is not independent"
+        },
+        "freshDeals": {
+          "basis": "REPORTED",
+          "k": [
+            1.77,
+            1.94
+          ],
+          "from": "coordinator's frame review of freshly generated deals: landed card 124-182 px wide, shrunk to the anchor's 70-94 px in the last two frames. Not measured by this tool."
+        }
+      }
+    },
+    "targets": [
+      {
+        "id": "P1.C1",
+        "centrePx": [
+          218.2,
+          996.1
+        ],
+        "planQuad": {
+          "farWidthPx": 53.6,
+          "nearWidthPx": 58.4,
+          "depthPx": 67.5,
+          "taper": 0.918,
+          "sideSlantDeg": -35
+        },
+        "atPlanScale": {
+          "farWidthPx": 54.6,
+          "nearWidthPx": 59.7,
+          "depthPx": 69,
+          "taper": 0.914,
+          "sideSlantDeg": -34.5,
+          "quadPx": [
+            [
+              218.96,
+              976.01
+            ],
+            [
+              273.53,
+              976.01
+            ],
+            [
+              220.06,
+              1016.23
+            ],
+            [
+              160.37,
+              1016.23
+            ]
+          ]
+        },
+        "atBodyScale": {
+          "farWidthPx": 104.1,
+          "nearWidthPx": 124.5,
+          "depthPx": 137.1,
+          "taper": 0.836,
+          "sideSlantDeg": -33.3,
+          "quadPx": [
+            [
+              221.9,
+              956.14
+            ],
+            [
+              325.95,
+              956.14
+            ],
+            [
+              224.76,
+              1036.1
+            ],
+            [
+              100.3,
+              1036.1
+            ]
+          ],
+          "nearWidthRangePx": [
+            111,
+            159
+          ],
+          "depthRangePx": [
+            124,
+            171
+          ]
+        }
+      },
+      {
+        "id": "P1.C2",
+        "centrePx": [
+          250.9,
+          983.8
+        ],
+        "planQuad": {
+          "farWidthPx": 52.2,
+          "nearWidthPx": 56.8,
+          "depthPx": 62.9,
+          "taper": 0.92,
+          "sideSlantDeg": -35.7
+        },
+        "atPlanScale": {
+          "farWidthPx": 53.1,
+          "nearWidthPx": 58,
+          "depthPx": 64.1,
+          "taper": 0.916,
+          "sideSlantDeg": -35.1,
+          "quadPx": [
+            [
+              250.15,
+              964.75
+            ],
+            [
+              303.28,
+              964.75
+            ],
+            [
+              254.07,
+              1002.8
+            ],
+            [
+              196.09,
+              1002.8
+            ]
+          ]
+        },
+        "atBodyScale": {
+          "farWidthPx": 101.5,
+          "nearWidthPx": 120.8,
+          "depthPx": 127.5,
+          "taper": 0.84,
+          "sideSlantDeg": -34,
+          "quadPx": [
+            [
+              251.51,
+              945.95
+            ],
+            [
+              352.97,
+              945.95
+            ],
+            [
+              259.93,
+              1021.6
+            ],
+            [
+              139.17,
+              1021.6
+            ]
+          ],
+          "nearWidthRangePx": [
+            108,
+            154
+          ],
+          "depthRangePx": [
+            115,
+            159
+          ]
+        }
+      },
+      {
+        "id": "P2.C1",
+        "centrePx": [
+          440.7,
+          1020.5
+        ],
+        "planQuad": {
+          "farWidthPx": 56.3,
+          "nearWidthPx": 61.6,
+          "depthPx": 57.7,
+          "taper": 0.913,
+          "sideSlantDeg": -47.9
+        },
+        "atPlanScale": {
+          "farWidthPx": 57.4,
+          "nearWidthPx": 63.1,
+          "depthPx": 58.7,
+          "taper": 0.91,
+          "sideSlantDeg": -47.6,
+          "quadPx": [
+            [
+              431.05,
+              998.15
+            ],
+            [
+              488.44,
+              998.15
+            ],
+            [
+              453.3,
+              1042.87
+            ],
+            [
+              390.21,
+              1042.87
+            ]
+          ]
+        },
+        "atBodyScale": {
+          "farWidthPx": 109.1,
+          "nearWidthPx": 131.8,
+          "depthPx": 116.6,
+          "taper": 0.828,
+          "sideSlantDeg": -45.7,
+          "quadPx": [
+            [
+              423.92,
+              976.09
+            ],
+            [
+              533.07,
+              976.09
+            ],
+            [
+              468.92,
+              1064.93
+            ],
+            [
+              337.1,
+              1064.93
+            ]
+          ],
+          "nearWidthRangePx": [
+            118,
+            168
+          ],
+          "depthRangePx": [
+            105,
+            145
+          ]
+        }
+      },
+      {
+        "id": "P2.C2",
+        "centrePx": [
+          475.4,
+          996.3
+        ],
+        "planQuad": {
+          "farWidthPx": 53.6,
+          "nearWidthPx": 58.4,
+          "depthPx": 51.4,
+          "taper": 0.918,
+          "sideSlantDeg": -48.9
+        },
+        "atPlanScale": {
+          "farWidthPx": 54.6,
+          "nearWidthPx": 59.7,
+          "depthPx": 52,
+          "taper": 0.914,
+          "sideSlantDeg": -48.6,
+          "quadPx": [
+            [
+              464.57,
+              976.19
+            ],
+            [
+              519.16,
+              976.19
+            ],
+            [
+              488.78,
+              1016.45
+            ],
+            [
+              429.06,
+              1016.45
+            ]
+          ]
+        },
+        "atBodyScale": {
+          "farWidthPx": 104.1,
+          "nearWidthPx": 124.5,
+          "depthPx": 103.4,
+          "taper": 0.836,
+          "sideSlantDeg": -46.6,
+          "quadPx": [
+            [
+              456.09,
+              956.3
+            ],
+            [
+              560.19,
+              956.3
+            ],
+            [
+              504.91,
+              1036.34
+            ],
+            [
+              380.39,
+              1036.34
+            ]
+          ],
+          "nearWidthRangePx": [
+            111,
+            159
+          ],
+          "depthRangePx": [
+            93,
+            129
+          ]
+        }
+      },
+      {
+        "id": "P3.C1",
+        "centrePx": [
+          643.3,
+          1044.9
+        ],
+        "planQuad": {
+          "farWidthPx": 59,
+          "nearWidthPx": 64.8,
+          "depthPx": 52.5,
+          "taper": 0.909,
+          "sideSlantDeg": -64.9
+        },
+        "atPlanScale": {
+          "farWidthPx": 60.2,
+          "nearWidthPx": 66.5,
+          "depthPx": 53.3,
+          "taper": 0.905,
+          "sideSlantDeg": -65.1,
+          "quadPx": [
+            [
+              623.11,
+              1020.18
+            ],
+            [
+              683.31,
+              1020.18
+            ],
+            [
+              666.69,
+              1069.62
+            ],
+            [
+              600.18,
+              1069.62
+            ]
+          ]
+        },
+        "atBodyScale": {
+          "farWidthPx": 114.2,
+          "nearWidthPx": 139.2,
+          "depthPx": 105.7,
+          "taper": 0.82,
+          "sideSlantDeg": -62.2,
+          "quadPx": [
+            [
+              605.87,
+              995.82
+            ],
+            [
+              720.05,
+              995.82
+            ],
+            [
+              693.31,
+              1093.98
+            ],
+            [
+              554.08,
+              1093.98
+            ]
+          ],
+          "nearWidthRangePx": [
+            124,
+            178
+          ],
+          "depthRangePx": [
+            95,
+            131
+          ]
+        }
+      },
+      {
+        "id": "P3.C2",
+        "centrePx": [
+          696.8,
+          1039.5
+        ],
+        "planQuad": {
+          "farWidthPx": 58.4,
+          "nearWidthPx": 64.1,
+          "depthPx": 49.8,
+          "taper": 0.91,
+          "sideSlantDeg": -69.8
+        },
+        "atPlanScale": {
+          "farWidthPx": 59.6,
+          "nearWidthPx": 65.7,
+          "depthPx": 50.4,
+          "taper": 0.906,
+          "sideSlantDeg": -70.2,
+          "quadPx": [
+            [
+              674.19,
+              1015.28
+            ],
+            [
+              733.77,
+              1015.28
+            ],
+            [
+              722.56,
+              1063.65
+            ],
+            [
+              656.81,
+              1063.65
+            ]
+          ]
+        },
+        "atBodyScale": {
+          "farWidthPx": 113.1,
+          "nearWidthPx": 137.6,
+          "depthPx": 100.1,
+          "taper": 0.822,
+          "sideSlantDeg": -67.1,
+          "quadPx": [
+            [
+              654.49,
+              991.44
+            ],
+            [
+              767.55,
+              991.44
+            ],
+            [
+              751.43,
+              1087.49
+            ],
+            [
+              613.86,
+              1087.49
+            ]
+          ],
+          "nearWidthRangePx": [
+            123,
+            176
+          ],
+          "depthRangePx": [
+            90,
+            125
+          ]
+        }
+      },
+      {
+        "id": "P4.C1",
+        "centrePx": [
+          852.5,
+          1100.9
+        ],
+        "planQuad": {
+          "farWidthPx": 65.1,
+          "nearWidthPx": 72.3,
+          "depthPx": 59.8,
+          "taper": 0.9,
+          "sideSlantDeg": -86.5
+        },
+        "atPlanScale": {
+          "farWidthPx": 66.6,
+          "nearWidthPx": 74.4,
+          "depthPx": 61.2,
+          "taper": 0.895,
+          "sideSlantDeg": -87.4,
+          "quadPx": [
+            [
+              818.58,
+              1070.28
+            ],
+            [
+              885.18,
+              1070.28
+            ],
+            [
+              890.24,
+              1131.46
+            ],
+            [
+              815.85,
+              1131.46
+            ]
+          ]
+        },
+        "atBodyScale": {
+          "farWidthPx": 125.5,
+          "nearWidthPx": 156.5,
+          "depthPx": 121.3,
+          "taper": 0.802,
+          "sideSlantDeg": -83.8,
+          "quadPx": [
+            [
+              788.55,
+              1040.24
+            ],
+            [
+              914.07,
+              1040.24
+            ],
+            [
+              931.84,
+              1161.5
+            ],
+            [
+              775.39,
+              1161.5
+            ]
+          ],
+          "nearWidthRangePx": [
+            139,
+            200
+          ],
+          "depthRangePx": [
+            109,
+            151
+          ]
+        }
+      },
+      {
+        "id": "P4.C2",
+        "centrePx": [
+          894.6,
+          1091.5
+        ],
+        "planQuad": {
+          "farWidthPx": 64,
+          "nearWidthPx": 71,
+          "depthPx": 58,
+          "taper": 0.902,
+          "sideSlantDeg": -90.9
+        },
+        "atPlanScale": {
+          "farWidthPx": 65.5,
+          "nearWidthPx": 73.1,
+          "depthPx": 59.4,
+          "taper": 0.897,
+          "sideSlantDeg": -91.9,
+          "quadPx": [
+            [
+              858.93,
+              1061.92
+            ],
+            [
+              924.46,
+              1061.92
+            ],
+            [
+              933.96,
+              1121.05
+            ],
+            [
+              860.89,
+              1121.05
+            ]
+          ]
+        },
+        "atBodyScale": {
+          "farWidthPx": 123.6,
+          "nearWidthPx": 153.5,
+          "depthPx": 117.8,
+          "taper": 0.805,
+          "sideSlantDeg": -88.2,
+          "quadPx": [
+            [
+              827.06,
+              1032.88
+            ],
+            [
+              950.7,
+              1032.88
+            ],
+            [
+              977.01,
+              1150.1
+            ],
+            [
+              823.46,
+              1150.1
+            ]
+          ],
+          "nearWidthRangePx": [
+            137,
+            196
+          ],
+          "depthRangePx": [
+            106,
+            146
+          ]
+        }
+      },
+      {
+        "id": "P5.C1",
+        "centrePx": [
+          1086.7,
+          1058.7
+        ],
+        "planQuad": {
+          "farWidthPx": 60.5,
+          "nearWidthPx": 66.7,
+          "depthPx": 56.2,
+          "taper": 0.907,
+          "sideSlantDeg": -111
+        },
+        "atPlanScale": {
+          "farWidthPx": 61.8,
+          "nearWidthPx": 68.4,
+          "depthPx": 57.9,
+          "taper": 0.903,
+          "sideSlantDeg": -112.6,
+          "quadPx": [
+            [
+              1043.33,
+              1032.6
+            ],
+            [
+              1105.11,
+              1032.6
+            ],
+            [
+              1133.49,
+              1084.83
+            ],
+            [
+              1065.05,
+              1084.83
+            ]
+          ]
+        },
+        "atBodyScale": {
+          "farWidthPx": 117,
+          "nearWidthPx": 143.5,
+          "depthPx": 114.9,
+          "taper": 0.816,
+          "sideSlantDeg": -109.4,
+          "quadPx": [
+            [
+              1003.39,
+              1006.9
+            ],
+            [
+              1120.39,
+              1006.9
+            ],
+            [
+              1183.33,
+              1110.54
+            ],
+            [
+              1039.87,
+              1110.54
+            ]
+          ],
+          "nearWidthRangePx": [
+            128,
+            183
+          ],
+          "depthRangePx": [
+            104,
+            143
+          ]
+        }
+      },
+      {
+        "id": "P5.C2",
+        "centrePx": [
+          1128.8,
+          1039.5
+        ],
+        "planQuad": {
+          "farWidthPx": 58.4,
+          "nearWidthPx": 64.1,
+          "depthPx": 54.2,
+          "taper": 0.91,
+          "sideSlantDeg": -115.9
+        },
+        "atPlanScale": {
+          "farWidthPx": 59.6,
+          "nearWidthPx": 65.7,
+          "depthPx": 56,
+          "taper": 0.906,
+          "sideSlantDeg": -117.5,
+          "quadPx": [
+            [
+              1084.84,
+              1015.28
+            ],
+            [
+              1144.42,
+              1015.28
+            ],
+            [
+              1175.75,
+              1063.65
+            ],
+            [
+              1110,
+              1063.65
+            ]
+          ]
+        },
+        "atBodyScale": {
+          "farWidthPx": 113.1,
+          "nearWidthPx": 137.6,
+          "depthPx": 111.2,
+          "taper": 0.822,
+          "sideSlantDeg": -114.5,
+          "quadPx": [
+            [
+              1044.18,
+              991.44
+            ],
+            [
+              1157.24,
+              991.44
+            ],
+            [
+              1225.58,
+              1087.49
+            ],
+            [
+              1088.01,
+              1087.49
+            ]
+          ],
+          "nearWidthRangePx": [
+            123,
+            176
+          ],
+          "depthRangePx": [
+            100,
+            138
+          ]
+        }
+      },
+      {
+        "id": "P6.C1",
+        "centrePx": [
+          1279,
+          1028.4
+        ],
+        "planQuad": {
+          "farWidthPx": 57.2,
+          "nearWidthPx": 62.7,
+          "depthPx": 60.1,
+          "taper": 0.912,
+          "sideSlantDeg": -128.7
+        },
+        "atPlanScale": {
+          "farWidthPx": 58.3,
+          "nearWidthPx": 64.2,
+          "depthPx": 62.5,
+          "taper": 0.908,
+          "sideSlantDeg": -130.3,
+          "quadPx": [
+            [
+              1228.8,
+              1005.3
+            ],
+            [
+              1287.1,
+              1005.3
+            ],
+            [
+              1332.13,
+              1051.51
+            ],
+            [
+              1267.93,
+              1051.51
+            ]
+          ]
+        },
+        "atBodyScale": {
+          "farWidthPx": 110.8,
+          "nearWidthPx": 134.2,
+          "depthPx": 124.2,
+          "taper": 0.825,
+          "sideSlantDeg": -128.1,
+          "quadPx": [
+            [
+              1181.81,
+              982.5
+            ],
+            [
+              1292.59,
+              982.5
+            ],
+            [
+              1387.89,
+              1074.31
+            ],
+            [
+              1253.68,
+              1074.31
+            ]
+          ],
+          "nearWidthRangePx": [
+            120,
+            171
+          ],
+          "depthRangePx": [
+            112,
+            154
+          ]
+        }
+      },
+      {
+        "id": "P6.C2",
+        "centrePx": [
+          1297.4,
+          1014.1
+        ],
+        "planQuad": {
+          "farWidthPx": 55.6,
+          "nearWidthPx": 60.8,
+          "depthPx": 58.5,
+          "taper": 0.915,
+          "sideSlantDeg": -130.8
+        },
+        "atPlanScale": {
+          "farWidthPx": 56.6,
+          "nearWidthPx": 62.2,
+          "depthPx": 60.9,
+          "taper": 0.911,
+          "sideSlantDeg": -132.4,
+          "quadPx": [
+            [
+              1247.78,
+              992.33
+            ],
+            [
+              1304.43,
+              992.33
+            ],
+            [
+              1349.75,
+              1035.84
+            ],
+            [
+              1287.55,
+              1035.84
+            ]
+          ]
+        },
+        "atBodyScale": {
+          "farWidthPx": 107.8,
+          "nearWidthPx": 129.9,
+          "depthPx": 120.9,
+          "taper": 0.83,
+          "sideSlantDeg": -130.4,
+          "quadPx": [
+            [
+              1201.2,
+              970.86
+            ],
+            [
+              1309.01,
+              970.86
+            ],
+            [
+              1404.59,
+              1057.32
+            ],
+            [
+              1274.72,
+              1057.32
+            ]
+          ],
+          "nearWidthRangePx": [
+            116,
+            166
+          ],
+          "depthRangePx": [
+            109,
+            150
+          ]
+        }
+      },
+      {
+        "id": "P7.C1",
+        "centrePx": [
+          1467.4,
+          950.7
+        ],
+        "planQuad": {
+          "farWidthPx": 48.6,
+          "nearWidthPx": 52.5,
+          "depthPx": 57.7,
+          "taper": 0.925,
+          "sideSlantDeg": -144.7
+        },
+        "atPlanScale": {
+          "farWidthPx": 49.3,
+          "nearWidthPx": 53.4,
+          "depthPx": 60.1,
+          "taper": 0.922,
+          "sideSlantDeg": -146.1,
+          "quadPx": [
+            [
+              1417.5,
+              934.48
+            ],
+            [
+              1466.76,
+              934.48
+            ],
+            [
+              1519.34,
+              966.97
+            ],
+            [
+              1465.93,
+              966.97
+            ]
+          ]
+        },
+        "atBodyScale": {
+          "farWidthPx": 94.4,
+          "nearWidthPx": 110.9,
+          "depthPx": 119.5,
+          "taper": 0.851,
+          "sideSlantDeg": -145,
+          "quadPx": [
+            [
+              1369.91,
+              918.39
+            ],
+            [
+              1464.33,
+              918.39
+            ],
+            [
+              1573.11,
+              983.06
+            ],
+            [
+              1462.18,
+              983.06
+            ]
+          ],
+          "nearWidthRangePx": [
+            99,
+            141
+          ],
+          "depthRangePx": [
+            108,
+            149
+          ]
+        }
+      },
+      {
+        "id": "P7.C2",
+        "centrePx": [
+          1505.5,
+          935.4
+        ],
+        "planQuad": {
+          "farWidthPx": 46.9,
+          "nearWidthPx": 50.5,
+          "depthPx": 57.3,
+          "taper": 0.928,
+          "sideSlantDeg": -147.3
+        },
+        "atPlanScale": {
+          "farWidthPx": 47.5,
+          "nearWidthPx": 51.3,
+          "depthPx": 59.7,
+          "taper": 0.925,
+          "sideSlantDeg": -148.8,
+          "quadPx": [
+            [
+              1456.02,
+              920.38
+            ],
+            [
+              1503.48,
+              920.38
+            ],
+            [
+              1556.96,
+              950.45
+            ],
+            [
+              1505.65,
+              950.45
+            ]
+          ]
+        },
+        "atBodyScale": {
+          "farWidthPx": 91.1,
+          "nearWidthPx": 106.4,
+          "depthPx": 118.8,
+          "taper": 0.856,
+          "sideSlantDeg": -147.8,
+          "quadPx": [
+            [
+              1408.64,
+              905.48
+            ],
+            [
+              1499.77,
+              905.48
+            ],
+            [
+              1610.06,
+              965.35
+            ],
+            [
+              1503.65,
+              965.35
+            ]
+          ],
+          "nearWidthRangePx": [
+            95,
+            135
+          ],
+          "depthRangePx": [
+            107,
+            148
+          ]
+        }
+      },
+      {
+        "id": "D.C1",
+        "centrePx": [
+          881.5,
+          926.7
+        ],
+        "planQuad": {
+          "farWidthPx": 45.9,
+          "nearWidthPx": 49.4,
+          "depthPx": 28.9,
+          "taper": 0.929,
+          "sideSlantDeg": -90.8
+        },
+        "atPlanScale": {
+          "farWidthPx": 46.4,
+          "nearWidthPx": 50.1,
+          "depthPx": 28.9,
+          "taper": 0.927,
+          "sideSlantDeg": -92.3,
+          "quadPx": [
+            [
+              856.78,
+              912.3
+            ],
+            [
+              903.22,
+              912.3
+            ],
+            [
+              908.05,
+              941.04
+            ],
+            [
+              857.95,
+              941.04
+            ]
+          ]
+        },
+        "atBodyScale": {
+          "farWidthPx": 89.2,
+          "nearWidthPx": 103.8,
+          "depthPx": 57.5,
+          "taper": 0.859,
+          "sideSlantDeg": -88.7,
+          "quadPx": [
+            [
+              833.89,
+              898.06
+            ],
+            [
+              923.13,
+              898.06
+            ],
+            [
+              936.41,
+              955.28
+            ],
+            [
+              832.57,
+              955.28
+            ]
+          ],
+          "nearWidthRangePx": [
+            93,
+            132
+          ],
+          "depthRangePx": [
+            52,
+            72
+          ]
+        }
+      },
+      {
+        "id": "D.C2",
+        "centrePx": [
+          929.1,
+          926.7
+        ],
+        "planQuad": {
+          "farWidthPx": 45.9,
+          "nearWidthPx": 49.4,
+          "depthPx": 29.4,
+          "taper": 0.929,
+          "sideSlantDeg": -97.6
+        },
+        "atPlanScale": {
+          "farWidthPx": 46.4,
+          "nearWidthPx": 50.1,
+          "depthPx": 29.5,
+          "taper": 0.927,
+          "sideSlantDeg": -99.5,
+          "quadPx": [
+            [
+              902.57,
+              912.3
+            ],
+            [
+              949.01,
+              912.3
+            ],
+            [
+              957.46,
+              941.04
+            ],
+            [
+              907.36,
+              941.04
+            ]
+          ]
+        },
+        "atBodyScale": {
+          "farWidthPx": 89.2,
+          "nearWidthPx": 103.8,
+          "depthPx": 58.7,
+          "taper": 0.859,
+          "sideSlantDeg": -95.9,
+          "quadPx": [
+            [
+              877.89,
+              898.06
+            ],
+            [
+              967.13,
+              898.06
+            ],
+            [
+              987.61,
+              955.28
+            ],
+            [
+              883.77,
+              955.28
+            ]
+          ],
+          "nearWidthRangePx": [
+            93,
+            132
+          ],
+          "depthRangePx": [
+            53,
+            73
+          ]
+        }
+      }
+    ]
   },
   "tablePlane": {
     "model": "LEVEL_ROWS",
@@ -2324,8 +3653,14 @@
         }
       ]
     },
+    "reportedFreshDeals": {
+      "basis": "REPORTED",
+      "finding": "In freshly generated deals the model draws the landed card 124-182 px wide and shrinks it to the anchor's 70-94 px only in the last two frames. Cards in clips with `plan` in the id therefore show the plan's hand-set quad, not the generator's own scale.",
+      "consistentWith": "the hand, shoe and older-card factors in cardSizeAtTargets.scale.evidenceForK, all near 2",
+      "notMeasuredHere": true
+    },
     "generatorFamily": {
-      "what": "landed cards the generator drew without a planned end quad, both near P4",
+      "what": "landed cards drawn without a planned end quad from placements/default.json, both near P4; deal-calm was generated with a last image and lands on the same quad as source-turn",
       "rows": [
         {
           "id": "GEN deal-calm",
@@ -3252,7 +4587,8 @@
     "previews": [
       "D:/dealer-scratch/review/scen/shadow-matte-pamela-p4-c1-plan-deal-02-f40-104.mp4",
       "D:/dealer-scratch/review/scen/shadow-side-by-side-pamela-p4-c1-plan-deal-02.mp4",
-      "D:/dealer-scratch/review/scen/shadow-contact-sheet.png"
+      "D:/dealer-scratch/review/scen/shadow-contact-sheet.png",
+      "D:/dealer-scratch/review/scen/shadow-on-new-table.png"
     ],
     "method": "Green channel against the frame's own lit level; 3 x 3 mean among table pixels; values below about 0.02 fade to 0 as compression noise. Static darkening by body, resting hand and shoe is kept, since it is darker than the lit table too.",
     "quality": {
@@ -3759,7 +5095,8 @@
       "usedFor": [
         "landed card P4.C1 deal clip",
         "static foreground for the shadow matte",
-        "shadow matte and light measurement"
+        "shadow matte and light measurement",
+        "shadow matte proof on a new table"
       ]
     },
     {

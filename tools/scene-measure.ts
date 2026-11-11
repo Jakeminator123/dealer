@@ -12,6 +12,7 @@ import sharp from 'sharp';
 import {type Camera, type CardObservation, type CardPose, type FrameTransform, type Mat3, type Pt, type Segment, CARD_MM, V6_PORTRAIT, applyH, cameraProject, decomposeHomography, fitCardPose, fitPlane,
   horizon, horizonRotation, inv3, mapPoint, principalXFromHomography, projectCard, quadOnPlane, quadShape, quadVisibility, reframe, reframePose, seededRandom} from '../src/scene-geometry.ts';
 import {validatePlan, flatQuad, quad, TARGETS, type PlacementPlan} from '../src/placement-model.ts';
+import {keyPamelaFrame} from '../src/pamela-key.ts';
 
 if (path.resolve(process.cwd()) !== path.resolve(fileURLToPath(new URL('../', import.meta.url)))) throw Error('Run from the dealer checkout.');
 sharp.concurrency(1);
@@ -172,7 +173,7 @@ const CARD_JOBS: CardJob[] = [
   {id: 'P7.C1', family: 'PLAN', target: 'P7.C1', clip: 'pamela-p7-c1-plan-deal-01', frames: [116, 117, 118, 119], seed: 'plan', role: 'FIT', note: 'hand resting on the card, far part in deep hand shadow'},
   {id: 'P7.C1 take 2', family: 'PLAN', target: 'P7.C1', clip: 'pamela-p7-c1-plan-deal-02', frames: [116, 117, 118, 119], seed: 'plan', role: 'CHECK', note: 'second generation of the same landing; hand covers the far edge'},
   {id: 'P4.C1 deal clip', family: 'PLAN', target: 'P4.C1', clip: 'pamela-p4-c1-plan-deal-02', frames: [117, 118, 119], seed: 'blob', role: 'CHECK', note: 'same landing in the deal clip, hand just released'},
-  {id: 'GEN deal-calm', family: 'GENERATOR', target: null, clip: 'pamela-p4-c1-deal-calm-01', frames: [117, 118, 119], seed: 'blob', role: 'COMPARE', note: 'generator-rendered landed card, no planned end quad'},
+  {id: 'GEN deal-calm', family: 'GENERATOR', target: null, clip: 'pamela-p4-c1-deal-calm-01', frames: [117, 118, 119], seed: 'blob', role: 'COMPARE', note: 'landed card without a planned end quad, but generated with a last image'},
   {id: 'GEN source-turn', family: 'GENERATOR', target: null, clip: 'pamela-p4-c1-source-turn', frames: [100, 105, 110, 115, 119], seed: 'blob', role: 'COMPARE', note: 'generator-rendered landed card, no planned end quad'},
 ];
 type CardMeasure = CardJob & {outer: Quad; core: Quad; temporalStd: number; firstFrame: Buffer};
@@ -512,6 +513,19 @@ const png = (px: Buffer) => sharp(px, {raw: {width: W, height: H, channels: 3}})
   tiles.push({input: svg(sheetW, 40, [label(6, 26, `${SHADOW_CLIP}: left film, right shadow matte (white = darker; grey value = darkness x 255, shown unscaled). Yellow dot = hand and card centre, ring = where the best overlap puts its shadow.`, 17)]), left: 0, top: sheetH - 40});
   await sharp({create: {width: sheetW, height: sheetH, channels: 3, background: '#161616'}}).composite(tiles).png().toFile(`${REVIEW}/shadow-contact-sheet.png`);
 }
+// 4c2. The written mattes used as intended: a plain felt colour multiplied by the matte, the keyed dealer on top.
+{
+  const FELT = [47, 107, 82], list = [56, 72, 96], frames = await readFrames(shadowVideo, list, 'shadow matte proof on a new table'), TW = SHEET_BOX.width / 2, TH = SHEET_BOX.height / 2, CAP = 30, tiles: sharp.OverlayOptions[] = [], sheetW = 3 * TW + 16, sheetH = list.length * (TH + CAP) + 40;
+  for (const [i, n] of list.entries()) {
+    const px = frames[i], key = keyPamelaFrame(px, W, H), {data, info} = await sharp(`${matteDir}/matte-${String(n).padStart(4, '0')}.png`).raw().toBuffer({resolveWithObject: true}), plain = Buffer.alloc(N * 3), shaded = Buffer.alloc(N * 3);
+    for (let p = 0; p < N; p++) { const a = key.alpha[p], d = data[p * info.channels] / 255; for (let c = 0; c < 3; c++) { const fg = key.rgb[p * 3 + c] * a; plain[p * 3 + c] = Math.round(fg + FELT[c] * (1 - a)); shaded[p * 3 + c] = Math.round(fg + FELT[c] * (1 - d) * (1 - a)); } }
+    const y = i * (TH + CAP) + CAP;
+    for (const [k, image] of [px, plain, shaded].entries()) tiles.push({input: await png(image).extract(SHEET_BOX).resize(TW, TH).png().toBuffer(), left: k * (TW + 8), top: y});
+    tiles.push({input: svg(sheetW, CAP, [label(4, 21, `f${n}: film`, 16), label(TW + 12, 21, 'keyed dealer on plain felt, no matte', 16), label(2 * TW + 20, 21, 'felt x (1 - matte), keyed dealer on top', 16)]), left: 0, top: y - CAP});
+  }
+  tiles.push({input: svg(sheetW, 40, [label(6, 26, `Shadow matte proof, ${SHADOW_CLIP}. Felt is a flat test colour; key from src/pamela-key.ts. Mattes read back from ${matteDir}.`, 16)]), left: 0, top: sheetH - 40});
+  await sharp({create: {width: sheetW, height: sheetH, channels: 3, background: '#161616'}}).composite(tiles).png().toFile(`${REVIEW}/shadow-on-new-table.png`);
+}
 // 4d. Portrait crops: where today's transform and the proposals cut the native frame, and the resulting canvases.
 {
   const NS = 0.5, NW = Math.round(NATIVE_W * NS), NH = Math.round(H * NS), PS = 0.3, CW = Math.round(PORTRAIT.width * PS), CH = Math.round(PORTRAIT.height * PS), GAP = 18, TOP = 64, framings = [{t: V6_PORTRAIT, colour: '#ffffff', name: 'V6 today'}, ...proposals.map((t, i) => ({t, colour: ['#00e5ff', '#ff7ad9'][i], name: t.id}))];
@@ -544,11 +558,22 @@ const gapMax = Math.max(...targetRows.map(r => r.cornerGapMaxPx)), gapRms = rmsO
 const handFactor = hands.length ? [Math.min(...hands.map(h => h.widthOnPlaneMm)) / 125, Math.max(...hands.map(h => h.widthOnPlaneMm)) / 95] : null, shoeFactor = [shoeBaseMm / 450, shoeBaseMm / 380], generatorFactor = rangeOf(generatorRows.flatMap(g => [g.sizeRatio.width, g.sizeRatio.height]));
 const blurPx = softRows.map(r => r.sigmaPx), contactPeak = median(contactRows.map(m => m.peak)), darkByHeight = usableLight.map(r => ({frame: r.frame, heightMm: round(r.heightMm, 0), peakDarkness: round(r.peakDarkness, 2)}));
 const v6Cut = v6Rows.filter(r => r.state !== 'INSIDE'), reports = proposals.map(p => ({p, r: framingReport(p)})), v6Report = framingReport(V6_PORTRAIT), needShrink = (PORTRAIT.width / V6_PORTRAIT.scaleX - 2 * 24 / V6_PORTRAIT.scaleX) / (seatBox.x1 - seatBox.x0);
+// What a 63 x 88 mm card measures in the image at each target: on the calibrated plane as it is
+// (the plan's own scale), and on the same plane read at `k` times that scale, H * diag(k, k, 1),
+// which keeps vanishing line and foreshortening and only changes what a millimetre is.
+const BODY_SCALE = {value: 2, range: [1.8, 2.5]}, scaled = (k: number): Mat3 => plane.H.map((v, i) => i % 3 === 2 ? v : v * k);
+const sizeRow = (q: Pt[]) => { const s = shapeOf(q); return {farWidthPx: round(s.farWidthPx, 1), nearWidthPx: round(s.nearWidthPx, 1), depthPx: round(s.depthPx, 1), taper: round(s.taper, 3), sideSlantDeg: round(s.leftSideSlantDeg, 1)}; };
+const cardSizes = TARGETS.map(id => { const centre = centreOf(planFilm[id]), body = cardAt(scaled(BODY_SCALE.value), centre).quad, lo = shapeOf(cardAt(scaled(BODY_SCALE.range[0]), centre).quad), hi = shapeOf(cardAt(scaled(BODY_SCALE.range[1]), centre).quad);
+  return {id, centrePx: xy(centre, 1), planQuad: sizeRow(planFilm[id]), atPlanScale: {...sizeRow(base[id]), quadPx: quadOut(base[id])}, atBodyScale: {...sizeRow(body), quadPx: quadOut(body), nearWidthRangePx: [round(lo.nearWidthPx, 0), round(hi.nearWidthPx, 0)], depthRangePx: [round(lo.depthPx, 0), round(hi.depthPx, 0)]}}; });
+// The dealer-side edge row in the last frame of every clip read; frames where the dealing arm crosses the columns are left out.
+const edgeRowsByClip = cards.map(c => ({clip: c.clip, frame: c.frames.at(-1)!, row: dealerEdgeRow(c.firstFrame)})).filter(e => Number.isFinite(e.row) && Math.abs(e.row - edgeRow) <= 6);
+const both = (e: {leaveOneOutRange: number[]; noise95Range: number[]}) => [Math.min(e.leaveOneOutRange[0], e.noise95Range[0]), Math.max(e.leaveOneOutRange[1], e.noise95Range[1])];
+const figure = (pick: (c: CameraSummary) => number, digits: number, how: string) => { const e = estimate(pick, digits, how); return {value: e.value, range: both(e), basis: 'DERIVED', how}; };
 const contract = {
   schemaVersion: 1,
   measuredAt: new Date().toISOString(),
   generatedBy: 'node tools/scene-measure.ts (maths in src/scene-geometry.ts, checked by tools/scene-geometry.test.ts)',
-  basisLegend: {MEASURED: 'read from film pixels by the tool', DERIVED: 'computed from measured values under the stated model', ESTIMATED: 'rests on an assumption this footage cannot check; a working value', GIVEN: 'input from the brief, the plan file or existing code, not a result',
+  basisLegend: {MEASURED: 'read from film pixels by the tool', DERIVED: 'computed from measured values under the stated model', ESTIMATED: 'rests on an assumption this footage cannot check; a working value', GIVEN: 'input from the brief, the plan file or existing code, not a result', REPORTED: 'told to this tool\'s author by another reviewer, not checked here',
     rule: 'An object\'s `basis` covers every number inside it unless a nested object states its own.'},
   image: {basis: 'GIVEN', width: W, height: H, framesPerSecond: 30, pixelConvention: 'pixel centres, origin top left, x right, y down', v6NativeWidth: NATIVE_W, note: 'The plan and V6 use 1762-wide native pixels; film x = native x * 1763 / 1761, as tools/build-anchor.ts scales them.'},
   cardMillimetres: {basis: 'GIVEN', width: CARD_MM.width, height: CARD_MM.height, cardEdge: 'the blue tracking face, the surface the plan quad and tools/build-anchor.ts place; the pale rim lies outside it',
@@ -559,6 +584,35 @@ const contract = {
     plan: `The 16 plan quads are exactly one plane of 63 x 88 mm cards (${planPlane.residualRms.toExponential(1)} px). Against the film-calibrated plane they differ by at most ${round(gapMax, 1)} px (rms ${round(gapRms, 1)} px), which is inside the calibration's own uncertainty (${round(noiseWorst, 1)} px at 95 %, ${round(looWorst, 1)} px leave-one-out).`,
     scale: `Millimetres on this plane are a convention. The same plane makes a resting hand ${hands.length ? round(hands[0].widthOnPlaneMm, 0) : 'n/a'} mm wide and the shoe ${round(shoeBaseMm, 0)} mm long, and the cards the generator drew by itself measure ${round(meanOf(generatorRows.map(g => g.sizeOnPlaneMm.width)), 0)} x ${round(meanOf(generatorRows.map(g => g.sizeOnPlaneMm.height)), 0)} mm on it. Relative to the dealer the plan's cards are roughly half size.`,
     use: 'Treating the table as one calibrated plane is sound for card positions, rendered cards, shadows and flat table artwork. Body-scale props drawn in millimetres on it will look about twice too small next to the dealer until the scale convention is settled.',
+  },
+  keyFigures: {
+    note: 'Short list for consumers. Ranges span leave-one-out and the 95 % uncertainty runs; all lengths are in plan-scale millimetres (see cardSizeAtTargets.scale).',
+    homographyTableMmToImagePx: {basis: 'DERIVED', matrix: matrix(plane.H), reprojectionRmsPx: round(plane.fit.residualRms), reprojectionMaxPx: round(Math.max(...plane.cards.map(c => c.residualMax))), perCardRmsPx: Object.fromEntries(plane.cards.map(c => [c.id, round(c.residualRms)])),
+      leftOutCardRmsPx: Object.fromEntries(leaveOneOut.map(l => [l.leftOut, round(l.leftOutCardEdgeRms)])), predictedCardsMoveUpToPx: {leaveOneOut: round(looWorst, 1), uncertainty95: round(noiseWorst, 1)}},
+    focalPx: figure(c => c.focalPx, 0, 'pinhole behind the plane'),
+    tiltDownDeg: figure(c => c.pitchDownDeg, 1, 'optical axis below the horizontal'),
+    heightAboveFeltMm: figure(c => c.heightAboveTableMm, 0, 'camera centre above the felt'),
+    distanceToP4C1AlongFeltMm: figure(c => c.groundDistanceToOriginMm, 0, 'from below the camera to the P4.C1 card centre'),
+    distanceToP4C1Mm: figure(c => c.distanceToOriginMm, 0, 'camera centre to the P4.C1 card centre'),
+    viewAngleAtP4C1Deg: figure(c => c.viewAngleAtOriginDeg, 1, 'line of sight to the P4.C1 card against the felt'),
+    dealerEdgeImageRow: {basis: 'MEASURED', value: edgeRow, acrossClips: rangeOf(edgeRowsByClip.map(e => e.row), 1), clipsRead: edgeRowsByClip.length, what: 'image row where the dealer\'s body ends on the back edge of the table: last jacket row plus half a pixel, columns 846-900 between the hands', onPlaneYMm: {basis: 'DERIVED', value: round(edgeMid.y, 0)}},
+    caution: 'Focal length, height and distances belong to the plan-scale reading of the table. They describe one consistent plane, not a verified physical camera; see verdict and sanityChecks.',
+  },
+  cardSizeAtTargets: {
+    what: 'Image size of a 63 x 88 mm card lying square to the table, centred on each plan target. farWidthPx and nearWidthPx are the dealer-side and camera-side edges, depthPx the distance between their midpoints, sideSlantDeg the direction of the left side (-90 = upright).',
+    scale: {
+      planScale: {basis: 'DERIVED', k: 1, note: 'the calibrated plane as fitted to the film cards; equals the plan quads to within ' + round(gapMax, 1) + ' px because those cards were imposed by the plan'},
+      bodyScale: {basis: 'ESTIMATED', k: BODY_SCALE.value, kRange: BODY_SCALE.range, note: 'the same plane with the card as large as the dealer\'s hands and the shoe imply; sizes grow almost in proportion to k, so interpolate for another k'},
+      evidenceForK: {
+        hands: {basis: 'ESTIMATED', k: handFactor && handFactor.map(v => round(v, 2)), from: 'resting hand width on the plane against 95-125 mm'},
+        shoe: {basis: 'ESTIMATED', k: shoeFactor.map(v => round(v, 2)), from: 'shoe base length on the plane against 380-450 mm'},
+        shoeMouthCard: {basis: 'DERIVED', kAtLeast: round(shoeCardScale / shoeFoot.alongX, 2), from: 'long side of the yellow card in the shoe mouth against the plane scale at the shoe foot'},
+        legacyV6Card: {basis: 'DERIVED', kWidth: round(v6OnPlane.widthMm / CARD_MM.width, 2), kDepth: round(v6OnPlane.heightMm / CARD_MM.height, 2), from: 'landed white card of the older take (src/pamela-card-contact-v6.ts)'},
+        earlierBlueCards: {basis: 'DERIVED', k: generatorFactor, from: 'pamela-p4-c1-source-turn and pamela-p4-c1-deal-calm-01; the second was generated with a last image and lands on the same quad as the first, so it is not independent'},
+        freshDeals: {basis: 'REPORTED', k: [round(124 / 70, 2), round(182 / 94, 2)], from: 'coordinator\'s frame review of freshly generated deals: landed card 124-182 px wide, shrunk to the anchor\'s 70-94 px in the last two frames. Not measured by this tool.'},
+      },
+    },
+    targets: cardSizes,
   },
   tablePlane: {
     model: 'LEVEL_ROWS',
@@ -626,7 +680,9 @@ const contract = {
     filmAgainstPlan: {basis: 'MEASURED', what: 'measured blue face of the landed film card against the plan quad it was imposed with; null where a corner is hidden or rests on a side taken from the outer edge',
       rows: targetRows.filter(r => r.film).map(r => ({id: r.id, clip: clip(r.film!.clip), cornerOffsetPx: r.film!.filmVsPlanCornerPx.map((v, k) => v === null || r.film!.sideFromOuterEdge[k] || r.film!.sideFromOuterEdge[(k + 3) % 4] ? null : round(v, 1)), centreOffsetPx: {x: round(r.film!.centreOffsetPx.x, 1), y: round(r.film!.centreOffsetPx.y, 1)},
         nearEdgeTiltDeg: round(r.film!.shape.nearEdgeTiltDeg, 1), planNearEdgeTiltDeg: round(r.planShape.nearEdgeTiltDeg, 1), taper: round(r.film!.shape.taper, 3), planTaper: round(r.planShape.taper, 3), headingOnPlaneDeg: round(r.film!.headingOnPlaneDeg, 1)}))},
-    generatorFamily: {what: 'landed cards the generator drew without a planned end quad, both near P4',
+    reportedFreshDeals: {basis: 'REPORTED', finding: 'In freshly generated deals the model draws the landed card 124-182 px wide and shrinks it to the anchor\'s 70-94 px only in the last two frames. Cards in clips with `plan` in the id therefore show the plan\'s hand-set quad, not the generator\'s own scale.',
+      consistentWith: 'the hand, shoe and older-card factors in cardSizeAtTargets.scale.evidenceForK, all near 2', notMeasuredHere: true},
+    generatorFamily: {what: 'landed cards drawn without a planned end quad from placements/default.json, both near P4; deal-calm was generated with a last image and lands on the same quad as source-turn',
       rows: generatorRows.map(g => ({id: g.id, clip: clip(g.clip), frames: g.frames, measured: {basis: 'MEASURED', quadPx: quadOut(g.quadPx), farWidthPx: round(g.shape.farWidthPx, 1), nearWidthPx: round(g.shape.nearWidthPx, 1), depthPx: round(g.shape.depthPx, 1), taper: round(g.shape.taper, 3), frameToFrameCornerScatterPx: round(g.temporalStd)},
         onCalibratedPlane: {basis: 'DERIVED', sizeMm: {width: round(g.sizeOnPlaneMm.width, 1), height: round(g.sizeOnPlaneMm.height, 1)}, sizeRatioTo63x88: {width: round(g.sizeRatio.width, 3), height: round(g.sizeRatio.height, 3)}, edgeRmsAsA63x88CardPx: round(g.bestPoseEdgeRmsPx, 1),
           planeCardThere: {farWidthPx: round(g.planeCardAtSamePlace.shape.farWidthPx, 1), nearWidthPx: round(g.planeCardAtSamePlace.shape.nearWidthPx, 1), depthPx: round(g.planeCardAtSamePlace.shape.depthPx, 1), taper: round(g.planeCardAtSamePlace.shape.taper, 3)}},
@@ -670,7 +726,7 @@ const contract = {
     basis: 'MEASURED', clip: SHADOW_CLIP, source: shadowVideo, frames: SHADOW_RANGE, count: shadowFrames.length, path: `${matteDir}/matte-%04d.png`,
     format: `${W} x ${H} 8-bit grey + alpha PNG, lossless. Grey = darkness x 255. Alpha 255 = measured table pixel, 0 = excluded: dealer, shoe, cards, a 2 px band around them, and everything above image row ${tableTop}.`,
     use: 'newTable * (1 - grey / 255) in display values, then the keyed dealer on top. Inside the excluded band the grey carries the nearest measured value for 3 px so that ignoring alpha leaves no light halo; further in it is 0.',
-    previews: [matteVideoPath, pairVideoPath, `${REVIEW}/shadow-contact-sheet.png`],
+    previews: [matteVideoPath, pairVideoPath, `${REVIEW}/shadow-contact-sheet.png`, `${REVIEW}/shadow-on-new-table.png`],
     method: `Green channel against the frame's own lit level; 3 x 3 mean among table pixels; values below about ${NOISE_GATE} fade to 0 as compression noise. Static darkening by body, resting hand and shoe is kept, since it is darker than the lit table too.`,
     quality: {noiseRmsBeforeGate: round(median(matteStats.map(m => m.quietNoise)), 4), noiseGate: NOISE_GATE, peak: rangeOf(matteStats.map(m => m.peak)), shadedPixelsPerFrame: rangeOf(matteStats.map(m => m.shadedPixels), 0), excludedPixelsPerFrame: rangeOf(matteStats.map(m => m.excludedPixels), 0)},
     usable: 'Yes for the table: soft cast shadow and contact shadow follow the hand frame by frame. It holds no shadow on the card itself (card pixels are excluded) and none under the hand.',
