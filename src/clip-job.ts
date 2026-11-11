@@ -6,7 +6,7 @@ export type FileRef = {path: string; sha256: string};
 export type ImageRef = {frame: FrameRef; note?: string} | {file: FileRef; note?: string};
 export type Ratio = 'auto_1080p' | 'auto_720p' | 'auto_480p';
 export type ClipJob = {
-  id: string; kind: 'DEAL' | 'RETURN' | 'ENTRY' | 'IDLE'; target: string | null; from: string; to: string;
+  id: string; kind: 'DEAL' | 'RETURN' | 'ENTRY' | 'IDLE' | 'REVEAL'; target: string | null; from: string; to: string;
   model: 'wan3'; duration: number; ratio: Ratio; audio: false;
   promptText: string; first: ImageRef; last: ImageRef; purpose: string;
   // 2 = the action is generated in slow motion at half speed and is meant to be played back twice as fast.
@@ -40,7 +40,7 @@ function image(value: unknown, label: string): ImageRef {
 export function validateJob(value: unknown): ClipJob {
   const j = value as ClipJob;
   if (!j || typeof j.id !== 'string' || !ID.test(j.id)) throw Error('Job id must be lowercase kebab-case.');
-  if (!['DEAL', 'RETURN', 'ENTRY', 'IDLE'].includes(j.kind)) throw Error(`${j.id}: unknown kind.`);
+  if (!['DEAL', 'RETURN', 'ENTRY', 'IDLE', 'REVEAL'].includes(j.kind)) throw Error(`${j.id}: unknown kind.`);
   if (j.model !== 'wan3') throw Error(`${j.id}: only wan3 first/last jobs are supported by this tool.`);
   if (!Number.isInteger(j.duration) || j.duration < 2 || j.duration > 30) throw Error(`${j.id}: wan3 duration must be 2–30 whole seconds.`);
   if (!(j.ratio in CREDITS_PER_SECOND)) throw Error(`${j.id}: keyframes need an auto_ ratio.`);

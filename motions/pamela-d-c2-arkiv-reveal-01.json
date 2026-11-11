@@ -26,7 +26,7 @@
   "review": {
     "decision": "PENDING",
     "basis": "Arkivklipp, rutgranskat 2026-11-11: vändningen ruta för ruta i 0,75 skala, resten var sjätte ruta. Visning av hålkortet, från vila till vila. Ruta 0 mot vilobilden: 22 bildpunkter över 40 utanför korten; slutrutan 54. Vänsterhanden går till det gula hålkortet f12–24, tar upp det f24–50, ställer det på högkant f52–56 och vänder det: smalnar f57–62, tunn kant f63–66, tunn blå f67, bred blå f68–71. Kortet läggs tillbaka på samma plats till f78, släpps f86, handen åter i vila cirka f105.",
-    "limitations": "Det lyfta kortet ser mjukt ut med kraftigt rundade hörn f52–57. Båda dealerkorten är inbakade på gamla labbets platser; det vända kortet ligger 44 px från planens D.C2 och D.C1 38 px från sin. Klippbanken har ingen kant för visning: tagningen ligger som experiment och ingår inte i rundor. Gamla labbets egen dom: lokalt godkänd.",
+    "limitations": "Det lyfta kortet ser mjukt ut med kraftigt rundade hörn f52–57. Båda dealerkorten är inbakade på gamla labbets platser; det vända kortet ligger 44 px från planens D.C2 och D.C1 38 px från sin. Tagningen ligger på modellens kant IDLE>REVEAL(D.C2) och spelas i rundor från ruta 3 till 117. Gamla labbets egen dom: lokalt godkänd.",
     "colorDoesNotProvePhysicalSide": true,
     "userAccepted": false,
     "productionReady": false

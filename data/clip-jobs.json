@@ -2844,7 +2844,7 @@
         0,
         119
       ],
-      "purpose": "Reveal of the dealer hole card D.C2, from the old lab archive (paid original, 4 s): from rest, the hand picks the yellow card off the table, turns it physically and lays it back blue, then returns to rest. Not an edge of the model (it starts and ends in IDLE), so it is listed as an experiment and is not part of rounds."
+      "purpose": "Reveal of the dealer hole card D.C2, from the old lab archive (paid original, 4 s): from rest, the hand picks the yellow card off the table, turns it physically and lays it back blue, then returns to rest. A take of the model edge IDLE>REVEAL(D.C2): it starts and ends in rest, and a round plays it without its first three and last three frames."
     },
     {
       "id": "pamela-p3-c1-arkiv-deal-01",

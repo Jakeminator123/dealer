@@ -393,7 +393,7 @@ function paintTree(){
  const text=(id:string,x:number,y:number,anchor='middle')=>`<text class="kb-edge-label" x="${x}" y="${y}" text-anchor="${anchor}">${esc(id)}</text>`;
  const stubs=(id:string,p=at[id])=>{const dir=id[0]==='D'?-1:1,near=p.y-dir*h,far=p.y+dir*h,rail=dir<0?T.idleRail:T.idleBus;
   return line(`READY>${id}`,p.x-9,T.readyBus+dir*3,p.x-9,near-dir,'',-1)+line(`${id}>READY`,p.x+9,near-dir,p.x+9,T.readyBus+dir*4,'',1)+line(`${id}>IDLE`,p.x,far+dir,p.x,rail-dir*3,'',1);};
- const node=(id:string)=>{const p=at[id],done=g.edges.filter(e=>e.target===id&&e.main).length,side=plan?.targets[id]?.intent.endSide??G.wantedSide(id);
+ const node=(id:string)=>{const p=at[id],done=g.edges.filter(e=>e.target===id&&e.kind!=='REVEAL'&&e.main).length,side=plan?.targets[id]?.intent.endSide??G.wantedSide(id);
   return `<g class="kb-node${id===kbNode&&!inRound?' sel':''}${done===3?' full':done?' part':''}${G.OPTIONAL_TARGETS.includes(id)?' optional':''}" data-node="${id}" role="button" tabindex="0" aria-label="${id}, ${done} av 3 kanter klara"><title>${id} · ${esc(G.describeNode(id))} · ${done} av 3 kanter klara</title><rect x="${p.x-w}" y="${p.y-h}" width="${w*2}" height="${h*2}" rx="7"/><rect class="side ${side==='BACK'?'back':'front'}" x="${p.x+w-13}" y="${p.y-h+5}" width="8" height="8" rx="2"/><text class="name" x="${p.x}" y="${p.y+3}" text-anchor="middle">${id}</text><text class="count" x="${p.x}" y="${p.y+19}" text-anchor="middle">${done}/3</text></g>`;};
  // Seat mode: a seat whose second card shares the first card's films is one node with both cards and the seat's three edges.
  const pairs=[...G.SEATS,'D'].filter(s=>!!g.edge[`READY>${s}.C2`].shares),solo=cards.filter(id=>!pairs.includes(id.split('.')[0])||G.OPTIONAL_TARGETS.includes(id)),mid=(s:string)=>({x:(at[`${s}.C1`].x+at[`${s}.C2`].x)/2,y:at[`${s}.C1`].y});
@@ -410,10 +410,10 @@ function paintTree(){
 }
 function paintNode(){
  const G=clipGraph!,g=kbGraph!,atHub=kbNode==='IDLE'||kbNode==='READY',seat=kbNode.split('.')[0],second=`${seat}.C2`,paired=!atHub&&!G.OPTIONAL_TARGETS.includes(kbNode)&&!!g.edge[`READY>${second}`]?.shares,card=paired?`${seat}.C1`:kbNode;
- const ids=atHub?['IDLE>READY','READY>IDLE','IDLE>IDLE']:[`READY>${card}`,`${card}>READY`,`${card}>IDLE`];
+ const ids=atHub?['IDLE>READY','READY>IDLE','IDLE>IDLE',...(kbNode==='IDLE'?[G.REVEAL_EDGE]:[])]:[`READY>${card}`,`${card}>READY`,`${card}>IDLE`,...(kbNode===G.HOLE_CARD?[G.REVEAL_EDGE]:[])];
  $('kb-node-title').textContent=paired?`${seat} · ${seat==='D'?'Dealer':`Spelare ${seat[1]}`} · en film för båda korten`:`${kbNode} · ${G.describeNode(kbNode)}`;
  // The seat's second card: no film of its own, how far the rendered card is moved, and any film that was made for it anyway.
- const reach=paired?kbReach(second):null,own=paired?g.edges.filter(e=>e.target===second&&e.takes.some(G.playable)):[];
+ const reach=paired?kbReach(second):null,own=paired?g.edges.filter(e=>e.target===second&&e.kind!=='REVEAL'&&e.takes.some(G.playable)):[];
  $('kb-node-share').hidden=!paired;
  if(paired)$('kb-node-share').innerHTML=`<p>Kort 2 (<code>${esc(second)}</code>) har ingen egen film. Det spelar platsens tre filmer, och det renderade kortet flyttas${reach===null?'':` ${reach} px`} till sin plats.${reach!==null&&reach>KB_REACH?` <span class="far">⚠ Över ${KB_REACH} px: stillbildsprovet på P4 höll till ungefär 45–50 px.</span>`:''}</p><button data-play-second="READY" title="Spelar platsens giv och retur med det renderade kortet på kort 2:s plats">▶ Kort 2: giv + retur till READY</button>${own.map(e=>`<button data-edge="${esc(e.id)}" title="Används bara när en runda namnger tagningen">egen film för kort 2 · <code>${esc(e.id)}</code></button>`).join('')}`;
  $('kb-node-edges').innerHTML=ids.map(id=>kbEdgeChip(g.edge[id])).join('');$('kb-node-play').hidden=!!G.hubOf(kbNode);
