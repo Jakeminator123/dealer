@@ -1,5 +1,5 @@
-import { VIEWS, TARGETS, defaultPlan, validatePlan, quad, flatQuad, snapPoint, motionNodes, constrain, fromPixels, toPixels, otherHand, otherSide, sequence, angleToward } from './placement-model.js';
-import type { PlacementPlan, View, Geometry, Intent, Hand, Side } from './placement-model.js';
+import { VIEWS, TARGETS, PLAYER_TARGETS, CARD_SCALE, SHOE_CARD, defaultPlan, validatePlan, quad, flatQuad, snapPoint, motionNodes, constrain, fromPixels, toPixels, otherHand, otherSide, sequence, angleToward, applyTechnique, techniqueOf, copyChoices, scaleCards } from './placement-model.js';
+import type { PlacementPlan, View, Geometry, Intent, Hand, Side, Grip, TurnAt, Technique } from './placement-model.js';
 const $=<T extends HTMLElement=HTMLElement>(id:string)=>document.getElementById(id) as T;
 const input=(id:string)=>$<HTMLInputElement>(id);
 let plan:PlacementPlan, revision='', savedSignature='', view:View='native', selected='P4.C2', dirty=false, busy=false, materialReady=false, reloadArmed=false;
@@ -7,7 +7,12 @@ let history:PlacementPlan[]=[];
 let loadGeneration=0, editGeneration=0;
 let zoom=1;
 let motionFrame=0, motionStart=0;
-const displayedQuad=(id:string)=>input('flat-plane').checked?flatQuad(plan.targets[id].geometry[view],plan.targets['P4.C1'].geometry[view],view,Number(input('plane-heading').value)):quad(plan.targets[id].geometry[view],view);
+const displayedQuad=(id:string,from:PlacementPlan=plan)=>input('flat-plane').checked?flatQuad(from.targets[id].geometry[view],from.targets['P4.C1'].geometry[view],view,Number(input('plane-heading').value)):quad(from.targets[id].geometry[view],view);
+// A card's drawn size in the chosen view's pixels: the near edge's length × the distance between the two edges' midpoints.
+function cardPixels(id:string,from:PlacementPlan=plan){const q=displayedQuad(id,from),mid=(a:{x:number;y:number},b:{x:number;y:number})=>({x:(a.x+b.x)/2,y:(a.y+b.y)/2}),top=mid(q[0],q[1]),bottom=mid(q[2],q[3]);
+ return `${Math.round(Math.hypot(q[2].x-q[3].x,q[2].y-q[3].y))} × ${Math.round(Math.hypot(bottom.x-top.x,bottom.y-top.y))} px`;}
+const factorText=(f:number)=>f.toFixed(2).replace('.',',');
+const TECHNIQUE_BUTTONS=[['technique-pinch-air','pinch-air'],['technique-drag-place','drag-place'],['technique-drag-closed','drag-closed']] as const;
 function stopMotion(){cancelAnimationFrame(motionFrame);motionFrame=0;$('motion-overlay').replaceChildren();$('play-path').textContent='Spela kortbana';document.querySelectorAll('.map-node').forEach(n=>n.classList.remove('playing'));}
 const baseline=defaultPlan();
 const stageWrap=document.querySelector('.stage-wrap') as HTMLElement;
@@ -53,6 +58,8 @@ function paint(fields=true){
   return `<g class="card-shape ${active?'selected':''}" data-target="${id}" style="--card-color:${color}" role="button" tabindex="0" aria-label="Flytta ${id}"><title>${id} · ${tr.intent.endSide==='BACK'?'stängt':'öppet'}</title><polygon points="${q.map(v=>`${v.x},${v.y}`).join(' ')}"/>${active?q.map(v=>`<circle class="handle" cx="${v.x}" cy="${v.y}" r="${2.8*unit}"/>`).join(''):''}${active||id.endsWith('1')?`<text style="font-size:${12*unit}px" x="${c.x}" y="${Math.max(...q.map(v=>v.y))+18*unit}" text-anchor="middle">${active?id:id.split('.')[0]}</text>`:''}</g>${rotate}`;
  }).join('');
  const s=toPixels(plan.shoe[view],view),r=6*unit;
+ // the card standing in the shoe's window: yellow, as a closed card is in the films (the picture shows the game's black back)
+ $('contours').insertAdjacentHTML('afterbegin',`<polygon class="shoe-card" points="${SHOE_CARD[view].map(q=>`${q.x},${q.y}`).join(' ')}"><title>Kortet i skon · stängt</title></polygon>`);
  $('contours').insertAdjacentHTML('beforeend',`<g data-target="shoe" class="card-shape ${isShoe?'selected':''}" role="button" tabindex="0" aria-label="Flytta skons uttag" style="--card-color:#dfb9ed"><polygon points="${s.x},${s.y-r} ${s.x+r},${s.y} ${s.x},${s.y+r} ${s.x-r},${s.y}"/><text style="font-size:${10*unit}px" x="${s.x}" y="${s.y-r-6*unit}" text-anchor="middle">SKO</text></g>`);
  $('sequence').textContent=isShoe?'TAKE · gemensam startpunkt i den valda vyn':sequence(selected,t.intent);
  $('node-map').innerHTML=motionNodes(isShoe?'P4.C2':selected,t.intent).map((n,i)=>`${i?'<span class="map-arrow">→</span>':''}<div class="map-node" data-node="${n.id}"><b>${n.label}</b><span>${n.detail}</span></div>`).join('');
@@ -61,7 +68,13 @@ function paint(fields=true){
  for(const id of ['angle','angle-number','angle-zero','angle-quarter','angle-centre','straighten','width','height','taper','shape-rectangle'])($<HTMLInputElement|HTMLButtonElement>(id)).disabled=input('flat-plane').checked;
  if(fields){input('coord-u').value=(point.u*100).toFixed(2);input('coord-v').value=(point.v*100).toFixed(2);input('width').value=(g.width*100).toFixed(2);input('height').value=(g.height*100).toFixed(2);input('angle').value=String(g.angle);input('angle-number').value=String(Math.round(g.angle*10)/10);input('taper').value=String(g.taper);input('reviewed').checked=g.reviewed;
   $<HTMLSelectElement>('take-hand').value=t.intent.takeHand;$<HTMLSelectElement>('start-side').value=t.intent.startSide;$<HTMLSelectElement>('end-side').value=t.intent.endSide;input('pass').checked=t.intent.pass;input('turn').checked=t.intent.turn;
+  $<HTMLSelectElement>('grip').value=t.intent.grip;$<HTMLSelectElement>('turn-at').value=t.intent.turnAt;
  }
+ // Where the card is turned only matters when it is turned.
+ $<HTMLSelectElement>('turn-at').disabled=!t.intent.turn;
+ const technique=techniqueOf(t.intent);for(const [id,name] of TECHNIQUE_BUTTONS)$(id).setAttribute('aria-pressed',String(technique===name));
+ const factor=Number(input('card-scale').value),sizeOf=isShoe?'P4.C2':selected;
+ $('card-scale-readout').textContent=`${sizeOf} nu: ${cardPixels(sizeOf)}${Number.isFinite(factor)&&factor>=CARD_SCALE.min&&factor<=CARD_SCALE.max&&factor!==1?` · efter ×${factorText(factor)}: ${cardPixels(sizeOf,scaleCards(plan,view,factor).plan)}`:''}${input('flat-plane').checked?' · Plant bord: alla kort ritas i P4.C1:s storlek.':''}`;
  $('angle-value').textContent=`${Math.round(g.angle)}°`;$('taper-value').textContent=`${Math.round(g.taper*100)} %`;
  $('side-back').setAttribute('aria-pressed',String(t.intent.endSide==='BACK'));$('side-front').setAttribute('aria-pressed',String(t.intent.endSide==='FRONT'));
  const sideLabel=(side:string)=>side==='BACK'?'gul / stängt':'blå / öppet';
@@ -116,7 +129,13 @@ $('start-side').addEventListener('change',()=>editIntent('startSide',$<HTMLSelec
 $('end-side').addEventListener('change',()=>editIntent('endSide',$<HTMLSelectElement>('end-side').value as Side));
 for(const id of ['pass','turn'])input(id).addEventListener('change',()=>editIntent(id as 'pass'|'turn',input(id).checked));
 $('side-back').addEventListener('click',()=>editIntent('endSide','BACK'));$('side-front').addEventListener('click',()=>editIntent('endSide','FRONT'));
+$('grip').addEventListener('change',()=>editIntent('grip',$<HTMLSelectElement>('grip').value as Grip));
+$('turn-at').addEventListener('change',()=>editIntent('turnAt',$<HTMLSelectElement>('turn-at').value as TurnAt));
+// A technique sets every choice of how the selected card is taken and turned in one click (the hand and PASS stay).
+for(const [id,name] of TECHNIQUE_BUTTONS)$(id).addEventListener('click',()=>{if(selected==='shoe')return;stopMotion();checkpoint();target().intent=applyTechnique(target().intent,name as Technique);changed();paint();syncMaterial();});
+$('motion-to-players').addEventListener('click',()=>{if(selected==='shoe')return;stopMotion();checkpoint();plan=copyChoices(plan,selected,'intent',PLAYER_TARGETS);changed();paint();message(`Rörelsen från ${selected} gäller nu alla 14 spelarkort. Dealerns två kort är orörda. Ångra tar tillbaka.`);});
 for(const [id,key] of [['cm-bend','bend'],['cm-gloss','gloss']] as const)input(id).addEventListener('input',()=>{checkpoint();target().material[key]=input(id).valueAsNumber;changed();});
+$('material-to-all').addEventListener('click',()=>{if(selected==='shoe')return;checkpoint();const m=target().material;plan=copyChoices(plan,selected,'material',TARGETS);changed();paint();syncMaterial();message(`Materialet från ${selected} (böjning ${String(m.bend).replace('.',',')}, glans ${String(m.gloss).replace('.',',')}) gäller nu alla 16 kort. Ångra tar tillbaka.`);});
 $('undo').addEventListener('click',()=>{if(history.length){plan=history.pop()!;changed();paint();syncMaterial();}});
 $('reset-selected').addEventListener('click',()=>{checkpoint();if(selected==='shoe')plan.shoe[view]=structuredClone(baseline.shoe[view]);else target().geometry[view]=structuredClone(baseline.targets[selected].geometry[view]);changed();paint();});
 $('save').addEventListener('click',async()=>{if(busy)return;try{validatePlan(plan);busy=true;paint(false);const res=await fetch('/api/placements',{method:'PUT',headers:{'content-type':'application/json','if-match':revision},body:JSON.stringify(plan)});const data=await res.json();if(!res.ok){if(res.status===409)$('reload').hidden=false;throw Error(data.error||'Det gick inte att spara.');}plan=data.plan;savedSignature=JSON.stringify(plan);revision=data.revision;dirty=false;history=[];$('message').hidden=true;}catch(e){message((e as Error).message);}finally{busy=false;paint();}});
@@ -127,6 +146,16 @@ input('import-file').addEventListener('change',async()=>{try{const file=input('i
 $('export-plane').addEventListener('click',()=>{const data={schemaVersion:1,kind:'flat-plane-comparison',view,reference:'P4.C1',referenceGeometry:plan.targets['P4.C1'].geometry[view],heading:Number(input('plane-heading').value),calibrated:false,targets:Object.fromEntries(TARGETS.map(id=>[id,{centre:toPixels(plan.targets[id].geometry[view],view),corners:displayedQuad(id)}]))};const url=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)+'\n'],{type:'application/json'})),a=document.createElement('a');a.href=url;a.download=`plant-bord-${view}.json`;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);});
 $('straighten').addEventListener('click',()=>{stopMotion();checkpoint();for(const id of TARGETS.filter(id=>id[0]==='P'))plan.targets[id].geometry[view]={...plan.targets[id].geometry[view],angle:0,reviewed:false};changed();paint();});
 $('snap-selected').addEventListener('click',()=>{stopMotion();checkpoint();const step=Number(input('snap-step').value);if(selected==='shoe')plan.shoe[view]=snapPoint(plan.shoe[view],view,step);else target().geometry[view]=constrain({...geometry(),...snapPoint(geometry(),view,step),angle:Math.round(geometry().angle/5)*5,reviewed:false},view);changed();paint();});
+// Card size for all cards: one factor on every card's width and height in the chosen view, centre and angle kept, through undo.
+input('card-scale').addEventListener('input',()=>paint(false));
+$('scale-cards').addEventListener('click',()=>{
+ const factor=Number(input('card-scale').value);
+ if(!Number.isFinite(factor)||factor<CARD_SCALE.min||factor>CARD_SCALE.max){message(`Välj en faktor mellan ${factorText(CARD_SCALE.min)} och ${factorText(CARD_SCALE.max)}.`);return;}
+ if(factor===1){message('Faktorn 1,00 ändrar inget.');return;}
+ stopMotion();const id=selected==='shoe'?'P4.C2':selected,before=cardPixels(id),result=scaleCards(plan,view,factor);
+ checkpoint();plan=result.plan;input('card-scale').value='1.00';changed();paint();
+ message(`Alla 16 kort i ${view==='native'?'datorvyn':'mobilvyn'} är skalade ×${factorText(factor)}. ${id}: ${before} → ${cardPixels(id)}.${result.limited.length?` ${result.limited.join(', ')} ${factor>1?'nådde bildkanten eller största storlek och växte mindre':'nådde minsta storlek och krympte mindre'}.`:''} Ångra tar tillbaka.`);
+});
 $('play-path').addEventListener('click',()=>{if(motionFrame){stopMotion();return;}if(selected==='shoe')choose('P7.C1');motionStart=performance.now();$('play-path').textContent='Stoppa prov';motionFrame=requestAnimationFrame(animatePath);});
 function animatePath(now:number){
  const t=Math.min(1,(now-motionStart)/6000),tr=target(),start=toPixels(plan.shoe[view],view),end=toPixels(geometry(),view),q=displayedQuad(selected);

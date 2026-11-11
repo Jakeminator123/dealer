@@ -612,6 +612,93 @@ test('the idle player: picks play back to back from frame 3, a calm clip is left
  assert.ok(requests.every(request=>request.startsWith('GET ')));
 });
 
+// A plan as it was saved before grip and turnAt existed.
+const legacyPlan=()=>{const plan=model.defaultPlan() as any;for(const t of Object.values(plan.targets) as any[]){delete t.intent.grip;delete t.intent.turnAt;}return plan;};
+test('a plan saved before grip and turnAt opens with their defaults, unchanged; save, import and export carry the keys',async()=>{
+ const {context,element,reply,respond,calls,fire}=await setup();
+ const loading=runInContext('load()',context);reply(legacyPlan());await loading;
+ assert.equal(runInContext('dirty',context),false);assert.equal(element('save').disabled,true);
+ assert.equal(runInContext("plan.targets['P1.C1'].intent.grip+'/'+plan.targets['P1.C1'].intent.turnAt",context),'PINCH/AIR');
+ // An edit and a save: the PUT body holds both keys for every card.
+ runInContext("choose('P1.C1')",context);element('grip').value='DRAG';fire('grip','change');
+ fire('save','click');await settle();
+ const sent=JSON.parse(calls.at(-1)!.init!.body!);assert.equal(calls.at(-1)!.init!.method,'PUT');
+ for(const id of model.TARGETS)assert.deepEqual(Object.keys(sent.targets[id].intent).slice(-2),['grip','turnAt']);
+ assert.equal(sent.targets['P1.C1'].intent.grip,'DRAG');
+ respond({ok:true,json:async()=>({plan:sent,revision:'saved'})},'/api/placements');await settle();
+ assert.equal(runInContext('dirty',context),false);
+ // An imported older file gets the defaults too.
+ element('import-file').files=[{size:1000,text:async()=>JSON.stringify(legacyPlan())}];fire('import-file','change');await settle();
+ assert.equal(runInContext("plan.targets['D.C2'].intent.grip+'/'+plan.targets['D.C2'].intent.turnAt",context),'PINCH/AIR');
+ // The export writes the plan with the keys.
+ const exported:string[]=[];context.Blob=class{constructor(parts:string[]){exported.push(parts.join(''));}};context.URL={createObjectURL:()=>'blob:test',revokeObjectURL(){}};element('a').click=()=>{};
+ fire('export','click');assert.equal(exported.length,1);assert.equal(exported[0].match(/"grip": "PINCH"/g)?.length,16);assert.equal(exported[0].match(/"turnAt": "AIR"/g)?.length,16);
+});
+
+test('the motion panel: grip and place of the turn go through undo, a technique sets a card in one click, and its motion can go to every player card',async()=>{
+ const {context,element,fire}=await setup(),pressed:Record<string,string>={};
+ for(const id of ['technique-pinch-air','technique-drag-place','technique-drag-closed'])element(id).setAttribute=(name:string,value:string)=>{if(name==='aria-pressed')pressed[id]=value;};
+ const intent=(id:string)=>JSON.parse(runInContext(`JSON.stringify(plan.targets['${id}'].intent)`,context));
+ runInContext("choose('P2.C1')",context);
+ assert.equal(element('grip').value,'PINCH');assert.equal(element('turn-at').value,'AIR');assert.equal(element('turn-at').disabled,false);
+ assert.equal(pressed['technique-pinch-air'],'true');assert.equal(pressed['technique-drag-place'],'false');
+ assert.match(element('sequence').textContent,/^P2\.C1 \| TAKE\(LH,BACK\) > TURN\(LH,BACK>FRONT,AIR\)/);
+ element('grip').value='DRAG';fire('grip','change');
+ assert.equal(intent('P2.C1').grip,'DRAG');assert.match(element('sequence').textContent,/^P2\.C1 \| DRAG\(LH,BACK\)/);assert.equal(runInContext('dirty',context),true);
+ element('turn-at').value='PLACE';fire('turn-at','change');
+ assert.match(element('sequence').textContent,/TURN\(LH,BACK>FRONT,PLACE\)/);assert.equal(pressed['technique-drag-place'],'true');assert.equal(runInContext('history.length',context),2);
+ fire('undo','click');assert.equal(intent('P2.C1').turnAt,'AIR');assert.equal(intent('P2.C1').grip,'DRAG');
+ // Laid closed, turned later: no turn, so where it is turned cannot be chosen.
+ fire('technique-drag-closed','click');
+ assert.deepEqual(intent('P2.C1'),{takeHand:'LH',startSide:'BACK',endSide:'BACK',pass:false,turn:false,grip:'DRAG',turnAt:'AIR'});
+ assert.equal(element('turn-at').disabled,true);assert.equal(element('turn').checked,false);assert.equal(element('end-side').value,'BACK');assert.doesNotMatch(element('sequence').textContent,/\bTURN\(/);
+ assert.equal(pressed['technique-drag-closed'],'true');assert.equal(pressed['technique-pinch-air'],'false');
+ // A technique keeps the hand choices: PASS on top of "Släp och vänd vid platsen".
+ element('pass').checked=true;fire('pass','change');fire('technique-drag-place','click');
+ assert.deepEqual(intent('P2.C1'),{takeHand:'LH',startSide:'BACK',endSide:'FRONT',pass:true,turn:true,grip:'DRAG',turnAt:'PLACE'});
+ assert.match(element('sequence').textContent,/DRAG\(LH,BACK\) > PASS\(LH>RH,BACK\) > TURN\(RH,BACK>FRONT,PLACE\)/);
+ // Its motion to the fourteen player cards, in one undo step; the dealer's two cards are left alone.
+ const dealer=[intent('D.C1'),intent('D.C2')],geometry=runInContext('JSON.stringify(Object.values(plan.targets).map(t=>[t.geometry,t.material]))',context),steps=runInContext('history.length',context);
+ fire('motion-to-players','click');
+ for(const id of model.PLAYER_TARGETS)assert.deepEqual(intent(id),intent('P2.C1'),id);
+ assert.deepEqual([intent('D.C1'),intent('D.C2')],dealer);assert.equal(runInContext('JSON.stringify(Object.values(plan.targets).map(t=>[t.geometry,t.material]))',context),geometry);
+ assert.match(element('message').textContent,/alla 14 spelarkort/);assert.equal(runInContext('history.length',context),steps+1);
+ fire('undo','click');assert.equal(intent('P5.C1').grip,'PINCH');assert.equal(intent('P2.C1').grip,'DRAG');
+});
+
+test('card size for all cards: the factor scales every card of the view through undo, and the size of the selected card is shown before and after',async()=>{
+ const {context,element,fire}=await setup();
+ const sizes=(view:string)=>JSON.parse(runInContext(`JSON.stringify(TARGETS.map(id=>[plan.targets[id].geometry.${view}.width,plan.targets[id].geometry.${view}.height]))`,context));
+ runInContext("choose('P4.C1')",context);
+ const native=sizes('native'),portrait=sizes('portrait'),pixels=(text:string)=>[...text.matchAll(/(\d+) × (\d+) px/g)].map(m=>[Number(m[1]),Number(m[2])]);
+ assert.match(element('card-scale-readout').textContent,/^P4\.C1 nu: \d+ × \d+ px · Plant bord: alla kort ritas i P4\.C1:s storlek\.$/);
+ element('card-scale').value='1.2';fire('card-scale','input');
+ const [now,after]=pixels(element('card-scale-readout').textContent);assert.match(element('card-scale-readout').textContent,/efter ×1,20/);
+ assert.ok(Math.abs(after[0]-now[0]*1.2)<=1&&Math.abs(after[1]-now[1]*1.2)<=1,`${now} → ${after}`);
+ fire('scale-cards','click');
+ sizes('native').forEach(([w,h]:number[],i:number)=>{assert.ok(Math.abs(w-native[i][0]*1.2)<1e-12);assert.ok(Math.abs(h-native[i][1]*1.2)<1e-12);});
+ assert.deepEqual(sizes('portrait'),portrait);assert.equal(runInContext('dirty',context),true);assert.equal(runInContext('history.length',context),1);
+ assert.equal(element('card-scale').value,'1.00');
+ const said=element('message').textContent;assert.match(said,/^Alla 16 kort i datorvyn är skalade ×1,20\. P4\.C1: \d+ × \d+ px → \d+ × \d+ px\. Ångra tar tillbaka\.$/);assert.deepEqual(pixels(said),[now,after]);
+ fire('undo','click');assert.deepEqual(sizes('native'),native);
+ // A factor outside 0.50–2.50 or of 1 does nothing.
+ for(const [value,text] of [['2.6',/mellan 0,50 och 2,50/],['abc',/mellan 0,50 och 2,50/],['1',/ändrar inget/]] as const){element('card-scale').value=value;fire('scale-cards','click');assert.match(element('message').textContent,text);assert.deepEqual(sizes('native'),native);}
+ assert.equal(runInContext('history.length',context),0);
+});
+
+test('the material panel gives every card the selected card\'s material in one undo step',async()=>{
+ const {context,element,fire,material}=await setup();
+ runInContext("choose('P3.C2')",context);
+ element('cm-bend').valueAsNumber=.14;fire('cm-bend','input');element('cm-gloss').valueAsNumber=.35;fire('cm-gloss','input');
+ const steps=runInContext('history.length',context),intents=runInContext('JSON.stringify(Object.values(plan.targets).map(t=>t.intent))',context);
+ fire('material-to-all','click');
+ assert.deepEqual(JSON.parse(runInContext('JSON.stringify(TARGETS.map(id=>plan.targets[id].material))',context)),model.TARGETS.map(()=>({bend:.14,gloss:.35})));
+ assert.equal(runInContext('JSON.stringify(Object.values(plan.targets).map(t=>t.intent))',context),intents);
+ assert.match(element('message').textContent,/^Materialet från P3\.C2 \(böjning 0,14, glans 0,35\) gäller nu alla 16 kort\./);assert.deepEqual(material.slice(-3,-1),[['bend',.14],['gloss',.35]]);
+ assert.equal(runInContext('history.length',context),steps+1);
+ fire('undo','click');assert.equal(runInContext("plan.targets['P1.C1'].material.bend",context),model.defaultPlan().targets['P1.C1'].material.bend);
+});
+
 test('every tab button of the lab opens its tab when it is clicked',async()=>{
  const html=await readFile('lab.html','utf8'),source=await readFile('src/lab-ui.ts','utf8');
  const tabs=[...html.matchAll(/<button id="(tab-[a-z]+)"/g)].map(m=>m[1]);
