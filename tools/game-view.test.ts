@@ -1,6 +1,6 @@
 import test from 'node:test';
 import {DEALER_LINES, cleanMessage, dealerLine, otherLine, replyTo} from '../src/game-chat.ts';
-import {dealerNote, roomCards} from '../src/game-panel.ts';
+import {dealerNote, musicLabel, roomCards, roomNote} from '../src/game-panel.ts';
 import assert from 'node:assert/strict';
 import {createSession, type Snapshot} from '../game/session.ts';
 import {defaultPlan} from '../src/placement-model.ts';
@@ -110,11 +110,18 @@ test('the chat dummy: the dealer speaks at the phases she has a line for, and wh
   assert.equal(cleanMessage('  hej   på \n dig  '), 'hej på dig'); assert.equal(cleanMessage('   '), null); assert.equal(cleanMessage('x'.repeat(300))!.length, 140);
 });
 
-test('the Bord menu: the room that is showing is marked, and nothing can be changed during a round or a change', () => {
+test('the menus: the room that is showing is marked, and nothing can be changed during a round or a change', () => {
   const rooms = [{id: 'panorama', label: 'Las Vegas', note: '', thumb: ''}, {id: 'la', label: 'Skyline', note: '', thumb: ''}];
   assert.deepEqual(roomCards(rooms, {room: 'la', canChange: true, changing: false}), [{id: 'panorama', chosen: false, disabled: false}, {id: 'la', chosen: true, disabled: true}]);
   assert.ok(roomCards(rooms, {room: 'la', canChange: false, changing: false}).every(c => c.disabled), 'a round is being played');
   assert.ok(roomCards(rooms, {room: 'la', canChange: true, changing: true}).every(c => c.disabled), 'the dealer is being changed');
   assert.notEqual(dealerNote({canChange: true, changing: false}), dealerNote({canChange: false, changing: false}));
   assert.match(dealerNote({canChange: true, changing: true}), /byts/);
+  // With one dealer the note says she is the one who comes back; with more it does not.
+  assert.match(dealerNote({canChange: true, changing: false}, 1), /kommer tillbaka/); assert.doesNotMatch(dealerNote({canChange: true, changing: false}, 2), /kommer tillbaka/);
+  assert.match(roomNote({canChange: true, changing: false}), /skimmer/i); assert.match(roomNote({canChange: false, changing: false}), /mellan rundorna/);
+  // The Musik button: the track that plays, else that sounds are on, else quiet. A track that is not in the list is not named.
+  const tracks = [{id: 'lounge', label: 'Lounge', note: ''}];
+  assert.equal(musicLabel({tracks, track: 'lounge', table: false, ambience: false}), 'Lounge'); assert.equal(musicLabel({tracks, track: null, table: true, ambience: false}), 'Ljud på');
+  assert.equal(musicLabel({tracks, track: null, table: false, ambience: false}), 'Tyst'); assert.equal(musicLabel({tracks: [], track: 'lounge', table: false, ambience: false}), 'Tyst');
 });
