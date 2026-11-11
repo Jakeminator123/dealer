@@ -7,7 +7,7 @@
 import {resolveRound, pickIdle, idleRange, idleExit, IDLE_RULE, type Graph, type Take, type Segment} from './clip-graph.ts';
 import type {CardRecord} from './card-overlay.ts';
 import {slotOf, slotLabel, type Layout, type Pt, type TableCards} from './game-table.ts';
-import type {Beat} from './game-director.ts';
+import {planBeats, type Beat, type FilmSignal} from './game-director.ts';
 
 // What this file uses of the scene's film queue.
 export type FilmPart = {path: string; start?: number; end?: number | null; rate?: number; track?: unknown; cards?: Record<string, unknown>};
@@ -47,25 +47,31 @@ export function createFilm(players: FilmPlayers, graph: Graph, layout: Layout, r
       players.play([{path: take.media.video!, start: range.start, end: range.end, track, cards: cardOptions({own: null, lying}, table, records, layout)}], {onEnd: () => { if (mine === token) rest(); }}); });
   }
 
+  // A card whose deal has no film that can be played (none made, or the only take rejected) is laid without a hand.
+  const filmless = (target: string) => !resolveRound(graph, [{from: 'READY', to: target}], {places})[0]?.video;
   /**
-   * Plays one step. next: the table and card values after the step. landed(beat) is called when a beat's film has ended (a
-   * dealt card lies there, the hole card is open); a beat without a playable film lands at once, in order.
-   * Resolves when the chain has played; the rest loop then goes on with the new table.
+   * Plays one step of the game. signals: the engine's signals for the step. next: the table and card values after it.
+   * landed(beat) is called when a beat's film has ended (a dealt card lies there, the hole card is open); a beat without
+   * a playable film lands at once, in order. Resolves when the chain has played; the rest loop then goes on with the new table.
    */
-  async function play(beats: Beat[], next: {table: TableCards; records: CardRecord[]}, landed: (beat: Beat, index: number) => void = () => {}): Promise<{gaps: string[]}> {
+  async function play(signals: FilmSignal[], next: {table: TableCards; records: CardRecord[]}, landed: (beat: Beat, index: number) => void = () => {}): Promise<{gaps: string[]; beats: Beat[]}> {
     const mine = ++token, leaving = resting; resting = null;
+    const beats = planBeats(next.table, lying, signals, filmless);
     table = next.table; records = next.records;
-    const segments: Segment[] = resolveRound(graph, beats.map(b => b.step), {places}), gaps = segments.filter(s => !s.video).map(s => `${s.id}: ${s.gap ?? 'ingen film'}`);
-    const loaded = await Promise.all(segments.map(s => trackOf(s.video ? s.take : null)));
-    if (mine !== token) return {gaps};
+    // PLACE beats have no edge; the others are resolved as one chain, so each deal is cut where its return begins.
+    const filmed = beats.map((b, i) => b.step ? i : -1).filter(i => i >= 0), resolved: Segment[] = resolveRound(graph, filmed.map(i => beats[i].step!), {places});
+    const segments: (Segment | null)[] = beats.map(() => null); filmed.forEach((i, k) => { segments[i] = resolved[k]; });
+    const gaps = beats.flatMap((b, i) => b.kind === 'PLACE' ? [`${b.own!.label}: ingen spelbar film, kortet läggs utan hand`] : !segments[i]?.video ? [`${segments[i]?.id}: ${segments[i]?.gap ?? 'ingen film'}`] : []);
+    const loaded = await Promise.all(segments.map(s => trackOf(s?.video ? s.take : null)));
+    if (mine !== token) return {gaps, beats};
     // A hole card that is turned later in this chain stays closed and without a value until that beat.
     const turn = beats.findIndex(b => b.kind === 'REVEAL'), hole = turn >= 0 ? beats[turn].own!.shoeDraw : null;
     const closed = hole === null ? records : records.map(r => r.shoeDraw === hole ? {...r, r: null, s: null, faceDown: true} : r);
     const parts: FilmPart[] = [], beatOf: number[] = [];
-    segments.forEach((s, i) => { if (!s.video) return; beatOf.push(i); parts.push({path: s.video, start: s.start, end: s.end, track: loaded[i], cards: cardOptions(beats[i], table, i < turn ? closed : records, layout)}); });
+    segments.forEach((s, i) => { if (!s?.video) return; beatOf.push(i); parts.push({path: s.video, start: s.start, end: s.end, track: loaded[i], cards: cardOptions(beats[i], table, i < turn ? closed : records, layout)}); });
     let done = 0; // beats landed so far, in order
     const land = (upTo: number) => { for (; done < upTo; done++) { const beat = beats[done]; if (beat.own && beat.kind !== 'DEAL' && !lying.includes(beat.own.shoeDraw)) lying = [...lying, beat.own.shoeDraw]; landed(beat, done); } };
-    if (!parts.length) { land(beats.length); rest(); return {gaps}; }
+    if (!parts.length) { land(beats.length); rest(); return {gaps, beats}; }
     await new Promise<void>(resolve => {
       // A calm rest clip is cut at once; a gesture is played out faster, so that it lands, and the chain starts after it.
       const cut = !leaving || idleExit(leaving) === 'CUT'; if (!cut) players.hurry(IDLE_RULE.exitRate);
@@ -73,7 +79,7 @@ export function createFilm(players: FilmPlayers, graph: Graph, layout: Layout, r
       players.play(parts, {cut, onPart: index => { if (mine === token) land(beatOf[index]); }, onEnd: () => { if (mine === token) land(beats.length); resolve(); }});
     });
     if (mine === token) rest();
-    return {gaps};
+    return {gaps, beats};
   }
   return {
     play, rest,

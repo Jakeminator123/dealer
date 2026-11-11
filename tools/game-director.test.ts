@@ -9,7 +9,7 @@ import {planBeats, lyingAfter, cardRecords, REVEAL_NODE} from '../src/game-direc
 // Draw 1 is the burn card.
 const opening: TableCards = {hands: [{seat: 4, cards: [3, 6]}, {seat: 7, cards: [2, 5]}], dealer: [4, 7]};
 const deal = (shoeDraw: number) => ({type: 'deal', shoeDraw});
-const edges = (beats: {step: {from: string; to: string}}[]) => beats.map(b => formatEdge(b.step.from, b.step.to));
+const edges = (beats: {kind: string; step: {from: string; to: string} | null; own: {label: string} | null}[]) => beats.map(b => b.step ? formatEdge(b.step.from, b.step.to) : `${b.kind}(${b.own!.label})`);
 
 test('slots: seat, hand and number in the hand, seats counted 1–7', () => {
   assert.deepEqual(slotOf(opening, 2), {owner: 'P', seat: 7, hand: 0, hands: 1, index: 0});
@@ -39,7 +39,7 @@ test('opening deal: rest to shoe once, a return to the shoe between cards, back 
   const beats = planBeats(opening, [], [{type: 'speak', line: 'goodluck'}, deal(2), deal(3), deal(4), deal(5), deal(6), {type: 'deal', shoeDraw: 7, card: null, faceDown: true}, {type: 'turn', seat: 7}]);
   assert.deepEqual(edges(beats), ['IDLE>READY', 'READY>P7.C1', 'P7.C1>READY', 'READY>P4.C1', 'P4.C1>READY', 'READY>D.C1', 'D.C1>READY',
     'READY>P7.C2', 'P7.C2>READY', 'READY>P4.C2', 'P4.C2>READY', 'READY>D.C2', 'D.C2>IDLE']);
-  for (const b of beats) assert.ok(parseEdge(formatEdge(b.step.from, b.step.to)), `${b.step.from}>${b.step.to} is an edge of the clip bank`);
+  for (const b of beats) assert.ok(parseEdge(formatEdge(b.step!.from, b.step!.to)), `${b.step!.from}>${b.step!.to} is an edge of the clip bank`);
   // Each beat knows which cards already lie there; the film's own card is never among them.
   assert.deepEqual(beats[0].lying, []);
   assert.deepEqual(beats.find(b => b.kind === 'DEAL' && b.own?.shoeDraw === 5)!.lying, [2, 3, 4]);
@@ -63,6 +63,17 @@ test('dealer\'s turn: the hole card is turned from rest, then further cards are 
   assert.equal(beats[0].own!.label, 'D.C2');
   assert.equal(beats[4].own!.label, 'D.C4');
   assert.deepEqual(lyingAfter([3, 4, 6, 7], beats), [3, 4, 6, 7, 8, 9]);
+});
+
+test('a card without a film is laid without a hand, and the hand rests before it instead of waiting at the shoe', () => {
+  // The closed deal of the hole card has no playable film (Jakob rejected the only take on 2026-11-11).
+  const beats = planBeats(opening, [], [deal(2), deal(3), deal(4), deal(5), deal(6), deal(7)], target => target === 'D.C2');
+  assert.deepEqual(edges(beats), ['IDLE>READY', 'READY>P7.C1', 'P7.C1>READY', 'READY>P4.C1', 'P4.C1>READY', 'READY>D.C1', 'D.C1>READY', 'READY>P7.C2', 'P7.C2>READY', 'READY>P4.C2', 'P4.C2>IDLE', 'PLACE(D.C2)']);
+  assert.deepEqual(beats[beats.length - 1].lying, [2, 3, 4, 5, 6]);
+  assert.deepEqual(lyingAfter([], beats), [2, 3, 4, 5, 6, 7]);
+  // In the middle of a run the hand goes to rest, the card is laid, and the hand comes back for the next one.
+  const middle = planBeats(opening, [], [deal(2), deal(3), deal(4)], target => target === 'P4.C1');
+  assert.deepEqual(edges(middle), ['IDLE>READY', 'READY>P7.C1', 'P7.C1>IDLE', 'PLACE(P4.C1)', 'IDLE>READY', 'READY>D.C1', 'D.C1>IDLE']);
 });
 
 test('a card the table does not know stops the plan', () => {

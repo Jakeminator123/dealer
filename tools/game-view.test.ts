@@ -33,7 +33,7 @@ test('opening deal: beats in the engine\'s order, totals only as the cards land,
   const table = tableCards(dealt);
   assert.deepEqual(table, {hands: [{seat: 4, cards: [2, 4]}], dealer: [3, 5]});
   const beats = planBeats(table, [], dealt.events);
-  assert.deepEqual(beats.map(b => `${b.step.from}>${b.step.to}`), ['IDLE>READY', 'READY>P4.C1', 'P4.C1>READY', 'READY>D.C1', 'D.C1>READY', 'READY>P4.C2', 'P4.C2>READY', 'READY>D.C2', 'D.C2>IDLE']);
+  assert.deepEqual(beats.map(b => `${b.step!.from}>${b.step!.to}`), ['IDLE>READY', 'READY>P4.C1', 'P4.C1>READY', 'READY>D.C1', 'D.C1>READY', 'READY>P4.C2', 'P4.C2>READY', 'READY>D.C2', 'D.C2>IDLE']);
   // What each landed card showed, straight from the engine's signals.
   const shown = dealt.events.filter(e => e.type === 'deal').map(e => shownBy(e)!);
   assert.deepEqual(shown.map(x => [x.key, x.total]), [[handKey(4, 0), 10], [DEALER_KEY, 7], [handKey(4, 0), 16], [DEALER_KEY, 7]]);
@@ -60,7 +60,7 @@ test('a hit, the dealer\'s turn and the result', () => {
   const lying = lyingAfter([], planBeats(tableCards(dealt), [], dealt.events));
   const r = dealt.view.round!, hit = run(s, {op: 'act', seat: 4, handIndex: r.active, action: 'hit', roundId: dealt.view.roundId, turnSeq: dealt.view.turnSeq});
   const beats = planBeats(tableCards(hit), lying, hit.events);
-  assert.deepEqual(beats.slice(0, 3).map(b => `${b.step.from}>${b.step.to}`), ['IDLE>READY', 'READY>P4.C1', 'P4.C1>IDLE']);
+  assert.deepEqual(beats.slice(0, 3).map(b => `${b.step!.from}>${b.step!.to}`), ['IDLE>READY', 'READY>P4.C1', 'P4.C1>IDLE']);
   assert.equal(beats[1].own!.label, 'P4.C3');
   assert.equal(shownBy(hit.events.find(e => e.type === 'deal')!)!.total, 21);
   // 21 ends the hand: the dealer turns the hole card (17, stands) and the hand wins.

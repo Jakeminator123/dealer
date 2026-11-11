@@ -8,7 +8,7 @@ import {buildGraph} from './clip-graph.ts';
 import {createScene} from './scene3d-view.ts';
 import {filmToScene, sceneToSpot, solveCamera, type FilmCamera} from './scene3d-geometry.ts';
 import {createLayout, slotOf} from './game-table.ts';
-import {planBeats, cardRecords} from './game-director.ts';
+import {cardRecords} from './game-director.ts';
 import {createFilm, type FilmPlayers} from './game-film.ts';
 import {mountOverlay, type Action, type Anchors} from './game-overlay.ts';
 import {tableView, tableCards, cardFaces, shownBy, lineOf, betTotal, handKey, DEALER_KEY, type PageState, type Settled} from './game-view.ts';
@@ -62,14 +62,14 @@ async function send(command: Record<string, unknown>): Promise<Snapshot | null> 
 }
 // Plays one answered step: film first, the totals as the cards land, then the engine's state as it is.
 async function present(next: Snapshot, dealerPlays: boolean) {
-  const table = tableCards(next), beats = planBeats(table, film.lying, next.events);
+  const table = tableCards(next);
   const settle = next.events.find(e => e.type === 'settle') as Settled | undefined;
   // The stakes leave the balance at once; what the round pays back shows when its film has played.
   if (page.stage === 'BETTING') { page.balance -= betTotal(page.bets); page.stage = 'ROUND'; }
   snapshot = next; page.busy = true; page.dealerPlays = dealerPlays;
   render();
-  await film.play(beats, {table, records: cardRecords(table, cardFaces(next))}, beat => {
-    if (beat.kind !== 'DEAL' && beat.kind !== 'REVEAL') return;
+  await film.play(next.events, {table, records: cardRecords(table, cardFaces(next))}, beat => {
+    if (beat.kind !== 'DEAL' && beat.kind !== 'REVEAL' && beat.kind !== 'PLACE') return;
     const event = next.events.find(e => (e.type === 'deal' || e.type === 'reveal') && e.shoeDraw === beat.own!.shoeDraw), shown = event && shownBy(event);
     if (shown) { page.shown[shown.key] = shown; render(); }
   });
