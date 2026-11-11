@@ -1,0 +1,86 @@
+// Pure geometry for the 3D scene tab: the film camera read from data/scene-contract.json and the mapping
+// between film pixels and the table top. No I/O and no three.js, so Node can test it.
+// World frame, metres: x toward image right, y up, z toward the camera. The felt is y = 0, the film camera
+// stands at (0, heightM, 0) looking along -z, pitched down. Lengths are in the contract's plan scale;
+// `scale` (the contract's k) says how many times larger the dealer's own world is.
+// The pinhole itself is the one in src/scene-geometry.ts (table millimetres, Y away from the camera); this file only changes frame.
+import {applyH, cameraHomography, cameraProject, inv3, type Camera} from './scene-geometry.ts';
+
+export const FILM = {width: 1764, height: 1174};
+export type FilmCamera = {focalPx: number; horizonRow: number; edgeRow: number; heightM: number; scale: number; source: 'contract' | 'estimate'};
+export type TablePoint = {x: number; z: number};
+export type Spot = {id: string; x: number; s: number}; // dealer metres: x across the table, s from the dealer-side edge toward the players
+const CX = (FILM.width - 1) / 2, CY = (FILM.height - 1) / 2;
+
+// A lens estimated from the dealer herself (proportions, horizon at eye height). Not measured; kept only for comparison.
+export const DEALER_LENS_ESTIMATE: FilmCamera = {focalPx: 1270, horizonRow: 215, edgeRow: 831.5, heightM: 0.55, scale: 1, source: 'estimate'};
+
+type Figure = {value?: unknown};
+const figure = (group: Record<string, Figure> | undefined, name: string): number => {
+  const v = group?.[name]?.value; if (typeof v !== 'number' || !Number.isFinite(v)) throw Error(`scene-contract.json saknar keyFigures.${name}.value.`); return v;
+};
+// The plan's camera. The contract states that the dealer was not drawn with this lens; it is the one that fits the card quads.
+export function cameraFromContract(contract: {keyFigures?: Record<string, Figure>; cardSizeAtTargets?: {scale?: {bodyScale?: {k?: unknown}}}}): FilmCamera {
+  const k = contract.keyFigures, focalPx = figure(k, 'focalPx'), tilt = figure(k, 'tiltDownDeg') * Math.PI / 180, body = contract.cardSizeAtTargets?.scale?.bodyScale?.k;
+  return {focalPx, horizonRow: CY - focalPx * Math.tan(tilt), edgeRow: figure(k, 'dealerEdgeImageRow'), heightM: figure(k, 'heightAboveFeltMm') / 1000, scale: typeof body === 'number' && body > 0 ? body : 1, source: 'contract'};
+}
+// Pitch below the horizontal (radians), ground distance from below the camera to the dealer-side table edge, vertical field of view.
+export function solveCamera(c: FilmCamera) {
+  const pitch = Math.atan((CY - c.horizonRow) / c.focalPx), edgeDistance = c.heightM / Math.tan(pitch + Math.atan((c.edgeRow - CY) / c.focalPx));
+  return {pitch, edgeDistance, fovYDeg: 2 * Math.atan(FILM.height / 2 / c.focalPx) * 180 / Math.PI};
+}
+const pinhole = (c: FilmCamera): Camera => ({focalPx: c.focalPx, cx: CX, cy: CY, pitchDeg: solveCamera(c).pitch * 180 / Math.PI, rollDeg: 0, yawDeg: 0, heightMm: c.heightM * 1000, x: 0, y: 0});
+// Film pixel -> point on the felt, or null for a pixel at or above the table's vanishing line.
+export function filmToTable(c: FilmCamera, px: number, py: number): TablePoint | null {
+  if (py <= c.horizonRow + 1e-9) return null;
+  const p = applyH(inv3(cameraHomography(pinhole(c))), {x: px, y: py}); return {x: p.x / 1000, z: -p.y / 1000};
+}
+export const tableToFilm = (c: FilmCamera, x: number, z: number): {x: number; y: number} => cameraProject(pinhole(c), {x: x * 1000, y: -z * 1000, z: 0});
+// Vertical field of view of a view that shows the whole film frame at zoom 1: fitted by height on wide canvases, by width on tall ones.
+export function viewFovDeg(c: FilmCamera, aspect: number, zoom = 1): number {
+  const half = aspect >= FILM.width / FILM.height ? FILM.height / 2 / c.focalPx : FILM.width / 2 / c.focalPx / aspect;
+  return 2 * Math.atan(half / zoom) * 180 / Math.PI;
+}
+// Extra yaw and pitch (radians, three.js sign: yaw turns toward -x) that keep `pivot` where it was when the camera moves from `base` to `moved`.
+export function aimCorrection(base: number[], moved: number[], pivot: number[]): {yaw: number; pitch: number} {
+  const a = pivot.map((v, i) => v - base[i]), b = pivot.map((v, i) => v - moved[i]);
+  return {yaw: Math.atan2(-b[0], -b[2]) - Math.atan2(-a[0], -a[2]), pitch: Math.atan2(b[1], Math.hypot(b[0], b[2])) - Math.atan2(a[1], Math.hypot(a[0], a[2]))};
+}
+// Card places of the placement plan (native view, normalised bottom-up) laid back onto the felt. Read only.
+export function cardSpots(plan: {targets?: Record<string, {geometry?: {native?: {u?: number; v?: number}}}>} | null, c: FilmCamera): Spot[] {
+  const edge = -solveCamera(c).edgeDistance, out: Spot[] = [];
+  for (const [id, target] of Object.entries(plan?.targets ?? {})) {
+    const n = target.geometry?.native; if (typeof n?.u !== 'number' || typeof n?.v !== 'number') continue;
+    const p = filmToTable(c, n.u * (FILM.width - 1), (1 - n.v) * (FILM.height - 1)); if (!p) continue;
+    const spot = {id, x: p.x / c.scale, s: (p.z - edge) / c.scale}; if (spot.s > -0.05 && spot.s < 1.2) out.push(spot);
+  }
+  return out;
+}
+
+// Where a film pixel lies in the scene: on the felt from the dealer edge row downward, on the vertical plane standing on that edge above it.
+export function filmToScene(c: FilmCamera, px: number, py: number): [number, number, number] {
+  const {pitch, edgeDistance} = solveCamera(c), table = py >= c.edgeRow ? filmToTable(c, px, py) : null;
+  if (table) return [table.x, 0, table.z];
+  const u = px - CX, v = py - CY, forward = c.focalPx * Math.cos(pitch) - v * Math.sin(pitch), t = edgeDistance / forward;
+  return [u * t, c.heightM - (v * Math.cos(pitch) + c.focalPx * Math.sin(pitch)) * t, -edgeDistance];
+}
+// How blurred something at `distance` is when the picture is focused at `focus`: 0 inside the tolerance band, toward 1 far
+// away. Behind the focus this is the thin-lens shape (1 - focus / distance); in front of it the mirror image is used, which
+// is gentler than a real lens, so the near felt does not dissolve when the dealer is sharp. The shader in scene3d-view.ts follows this.
+export function lensBlur(distance: number, focus: number, tolerance: number): number {
+  return Math.max(0, Math.min(1, (Math.abs(distance - focus) / Math.max(distance, focus) - tolerance) / (1 - tolerance)));
+}
+export type CardTrack = {leavesShoe?: number | null; restFrom?: number | null; frames?: {frame: number; quad?: number[][] | null; edge?: number[][] | null}[]};
+// The film pixel to keep sharp while a card is dealt: the card's centre from shortly before it leaves the shoe until
+// shortly after it has come to rest. Null otherwise: a card lying still is not the subject, the dealer is.
+export function cardFocusPixel(track: CardTrack | null, frame: number, lead = 6, hold = 18): {x: number; y: number} | null {
+  if (!track?.frames || typeof track.leavesShoe !== 'number' || typeof track.restFrom !== 'number') return null;
+  if (frame < track.leavesShoe - lead || frame > track.restFrom + hold) return null;
+  return cardPixel(track, frame);
+}
+// Centre of the tracked card on a frame, wherever it is; null when the frame has neither quad nor edge.
+export function cardPixel(track: CardTrack | null, frame: number): {x: number; y: number} | null {
+  const entry = track?.frames?.find(f => f.frame === frame), points = entry?.quad ?? entry?.edge;
+  if (!points?.length) return null;
+  return {x: points.reduce((s, p) => s + p[0], 0) / points.length, y: points.reduce((s, p) => s + p[1], 0) / points.length};
+}
