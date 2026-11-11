@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "budget": {
-    "maximumCredits": 3800
+    "maximumCredits": 4200
   },
   "anchors": [
     {
@@ -2353,6 +2353,238 @@
         "note": "READY anchor with the P7.C1 card at the saved plan position."
       },
       "purpose": "Retake of pamela-p7-c1-plan-return-ready-01, two seconds instead of three. In the first take the hand withdrew to the body, waited, rose as a fist to chest height and dropped onto the shoe from above: the path from P7 to the shoe is too short to fill three seconds. Same images; only the duration and the wording about going directly have changed."
+    },
+    {
+      "id": "pamela-idle-breath-b-01",
+      "kind": "IDLE",
+      "target": null,
+      "from": "IDLE",
+      "to": "IDLE",
+      "model": "wan3",
+      "duration": 3,
+      "ratio": "auto_1080p",
+      "audio": false,
+      "promptText": "Locked camera on the same Pamela, black suit, green felt and fixed shoe. She sits upright with both hands resting flat on the table in front of her, exactly as in the first image. For the whole clip she simply breathes, clearly visible: her chest and shoulders rise slowly as she breathes in and sink as she breathes out, once, and she blinks once. Both hands stay flat and still on the table. She ends in the exact pose of the last image, which is the same as the first, and is completely still for the last quarter of a second. The yellow card stays fully seated in the shoe and the table stays empty. No reach toward the shoe, speaking, extra card, camera motion or cut.",
+      "first": {
+        "frame": {
+          "video": "assets/motions/pamela-idle-ready-entry-01/source.mp4",
+          "videoSha256": "cbaf81cd79f53eafcc38891847151a1311e3ee94275abe10463674ae6a6f66f2",
+          "index": 0
+        },
+        "note": "Real resting frame: frame 0 of the entry clip, the keystone every idle variant starts on."
+      },
+      "last": {
+        "frame": {
+          "video": "assets/motions/pamela-idle-ready-entry-01/source.mp4",
+          "videoSha256": "cbaf81cd79f53eafcc38891847151a1311e3ee94275abe10463674ae6a6f66f2",
+          "index": 0
+        },
+        "note": "Same frame, so every variant ends on the keystone and any other can follow."
+      },
+      "purpose": "Calm variant: visible breathing with one blink. The first idle loop was almost a still image. One of several short idle variants to be picked at random, breathing most often and gestures rarely."
+    },
+    {
+      "id": "pamela-idle-deep-breath-01",
+      "kind": "IDLE",
+      "target": null,
+      "from": "IDLE",
+      "to": "IDLE",
+      "model": "wan3",
+      "duration": 3,
+      "ratio": "auto_1080p",
+      "audio": false,
+      "promptText": "Locked camera on the same Pamela, black suit, green felt and fixed shoe. She sits upright with both hands resting flat on the table in front of her, exactly as in the first image. She takes one deep breath: her shoulders lift clearly, she lets the air out through her nose with a small relaxed exhale, and her shoulders settle back. Both hands stay flat and still on the table. She ends in the exact pose of the last image, which is the same as the first, and is completely still for the last quarter of a second. The yellow card stays fully seated in the shoe and the table stays empty. No reach toward the shoe, speaking, extra card, camera motion or cut.",
+      "first": {
+        "frame": {
+          "video": "assets/motions/pamela-idle-ready-entry-01/source.mp4",
+          "videoSha256": "cbaf81cd79f53eafcc38891847151a1311e3ee94275abe10463674ae6a6f66f2",
+          "index": 0
+        },
+        "note": "Real resting frame: frame 0 of the entry clip, the keystone every idle variant starts on."
+      },
+      "last": {
+        "frame": {
+          "video": "assets/motions/pamela-idle-ready-entry-01/source.mp4",
+          "videoSha256": "cbaf81cd79f53eafcc38891847151a1311e3ee94275abe10463674ae6a6f66f2",
+          "index": 0
+        },
+        "note": "Same frame, so every variant ends on the keystone and any other can follow."
+      },
+      "purpose": "Calm variant: one deep breath with the shoulders settling. One of several short idle variants to be picked at random, breathing most often and gestures rarely."
+    },
+    {
+      "id": "pamela-idle-hand-resettle-01",
+      "kind": "IDLE",
+      "target": null,
+      "from": "IDLE",
+      "to": "IDLE",
+      "model": "wan3",
+      "duration": 3,
+      "ratio": "auto_1080p",
+      "audio": false,
+      "promptText": "Locked camera on the same Pamela, black suit, green felt and fixed shoe. She sits upright with both hands resting flat on the table in front of her, exactly as in the first image. She lifts her right hand, the one at the left of the image, a few centimetres off the table, loosens and flexes the fingers once, and lays the hand down flat again in exactly the same place. The other hand stays flat and still. She ends in the exact pose of the last image, which is the same as the first, and is completely still for the last quarter of a second. The yellow card stays fully seated in the shoe and the table stays empty. No reach toward the shoe, speaking, extra card, camera motion or cut.",
+      "first": {
+        "frame": {
+          "video": "assets/motions/pamela-idle-ready-entry-01/source.mp4",
+          "videoSha256": "cbaf81cd79f53eafcc38891847151a1311e3ee94275abe10463674ae6a6f66f2",
+          "index": 0
+        },
+        "note": "Real resting frame: frame 0 of the entry clip, the keystone every idle variant starts on."
+      },
+      "last": {
+        "frame": {
+          "video": "assets/motions/pamela-idle-ready-entry-01/source.mp4",
+          "videoSha256": "cbaf81cd79f53eafcc38891847151a1311e3ee94275abe10463674ae6a6f66f2",
+          "index": 0
+        },
+        "note": "Same frame, so every variant ends on the keystone and any other can follow."
+      },
+      "purpose": "Calm variant that moves the right arm, which Jakob finds stiff. One of several short idle variants to be picked at random, breathing most often and gestures rarely."
+    },
+    {
+      "id": "pamela-idle-glance-01",
+      "kind": "IDLE",
+      "target": null,
+      "from": "IDLE",
+      "to": "IDLE",
+      "model": "wan3",
+      "duration": 3,
+      "ratio": "auto_1080p",
+      "audio": false,
+      "promptText": "Locked camera on the same Pamela, black suit, green felt and fixed shoe. She sits upright with both hands resting flat on the table in front of her, exactly as in the first image. She turns her eyes and then her head slightly to one side, as if noticing someone beside the table, holds it for a moment, and turns back to look into the camera. Both hands stay flat and still on the table. She ends in the exact pose of the last image, which is the same as the first, and is completely still for the last quarter of a second. The yellow card stays fully seated in the shoe and the table stays empty. No reach toward the shoe, speaking, extra card, camera motion or cut.",
+      "first": {
+        "frame": {
+          "video": "assets/motions/pamela-idle-ready-entry-01/source.mp4",
+          "videoSha256": "cbaf81cd79f53eafcc38891847151a1311e3ee94275abe10463674ae6a6f66f2",
+          "index": 0
+        },
+        "note": "Real resting frame: frame 0 of the entry clip, the keystone every idle variant starts on."
+      },
+      "last": {
+        "frame": {
+          "video": "assets/motions/pamela-idle-ready-entry-01/source.mp4",
+          "videoSha256": "cbaf81cd79f53eafcc38891847151a1311e3ee94275abe10463674ae6a6f66f2",
+          "index": 0
+        },
+        "note": "Same frame, so every variant ends on the keystone and any other can follow."
+      },
+      "purpose": "Gesture: a glance aside and back. One of several short idle variants to be picked at random, breathing most often and gestures rarely."
+    },
+    {
+      "id": "pamela-idle-smile-01",
+      "kind": "IDLE",
+      "target": null,
+      "from": "IDLE",
+      "to": "IDLE",
+      "model": "wan3",
+      "duration": 3,
+      "ratio": "auto_1080p",
+      "audio": false,
+      "promptText": "Locked camera on the same Pamela, black suit, green felt and fixed shoe. She sits upright with both hands resting flat on the table in front of her, exactly as in the first image. Her slight smile widens into a warm, friendly smile for a moment, with one small nod toward the camera, and then relaxes back to the calm expression of the first image. Both hands stay flat and still on the table. She ends in the exact pose of the last image, which is the same as the first, and is completely still for the last quarter of a second. The yellow card stays fully seated in the shoe and the table stays empty. No reach toward the shoe, speaking, extra card, camera motion or cut.",
+      "first": {
+        "frame": {
+          "video": "assets/motions/pamela-idle-ready-entry-01/source.mp4",
+          "videoSha256": "cbaf81cd79f53eafcc38891847151a1311e3ee94275abe10463674ae6a6f66f2",
+          "index": 0
+        },
+        "note": "Real resting frame: frame 0 of the entry clip, the keystone every idle variant starts on."
+      },
+      "last": {
+        "frame": {
+          "video": "assets/motions/pamela-idle-ready-entry-01/source.mp4",
+          "videoSha256": "cbaf81cd79f53eafcc38891847151a1311e3ee94275abe10463674ae6a6f66f2",
+          "index": 0
+        },
+        "note": "Same frame, so every variant ends on the keystone and any other can follow."
+      },
+      "purpose": "Gesture: a small smile and nod. One of several short idle variants to be picked at random, breathing most often and gestures rarely."
+    },
+    {
+      "id": "pamela-idle-stretch-01",
+      "kind": "IDLE",
+      "target": null,
+      "from": "IDLE",
+      "to": "IDLE",
+      "model": "wan3",
+      "duration": 4,
+      "ratio": "auto_1080p",
+      "audio": false,
+      "promptText": "Locked camera on the same Pamela, black suit, green felt and fixed shoe. She sits upright with both hands resting flat on the table in front of her, exactly as in the first image. She straightens her back, rolls both shoulders back once in a small discreet stretch, tilts her head briefly to one side, and settles back into her upright posture. Both hands stay on the table throughout. She ends in the exact pose of the last image, which is the same as the first, and is completely still for the last quarter of a second. The yellow card stays fully seated in the shoe and the table stays empty. No reach toward the shoe, speaking, extra card, camera motion or cut.",
+      "first": {
+        "frame": {
+          "video": "assets/motions/pamela-idle-ready-entry-01/source.mp4",
+          "videoSha256": "cbaf81cd79f53eafcc38891847151a1311e3ee94275abe10463674ae6a6f66f2",
+          "index": 0
+        },
+        "note": "Real resting frame: frame 0 of the entry clip, the keystone every idle variant starts on."
+      },
+      "last": {
+        "frame": {
+          "video": "assets/motions/pamela-idle-ready-entry-01/source.mp4",
+          "videoSha256": "cbaf81cd79f53eafcc38891847151a1311e3ee94275abe10463674ae6a6f66f2",
+          "index": 0
+        },
+        "note": "Same frame, so every variant ends on the keystone and any other can follow."
+      },
+      "purpose": "Gesture: straightening the back and rolling the shoulders. One of several short idle variants to be picked at random, breathing most often and gestures rarely."
+    },
+    {
+      "id": "pamela-idle-scratch-01",
+      "kind": "IDLE",
+      "target": null,
+      "from": "IDLE",
+      "to": "IDLE",
+      "model": "wan3",
+      "duration": 4,
+      "ratio": "auto_1080p",
+      "audio": false,
+      "promptText": "Locked camera on the same Pamela, black suit, green felt and fixed shoe. She sits upright with both hands resting flat on the table in front of her, exactly as in the first image. She raises her right hand, the one at the left of the image, briefly scratches the side of her head just above the ear with two fingers, and lowers the hand to lie flat on the table in exactly the same place as before. The other hand stays flat and still. She ends in the exact pose of the last image, which is the same as the first, and is completely still for the last quarter of a second. The yellow card stays fully seated in the shoe and the table stays empty. No reach toward the shoe, speaking, extra card, camera motion or cut.",
+      "first": {
+        "frame": {
+          "video": "assets/motions/pamela-idle-ready-entry-01/source.mp4",
+          "videoSha256": "cbaf81cd79f53eafcc38891847151a1311e3ee94275abe10463674ae6a6f66f2",
+          "index": 0
+        },
+        "note": "Real resting frame: frame 0 of the entry clip, the keystone every idle variant starts on."
+      },
+      "last": {
+        "frame": {
+          "video": "assets/motions/pamela-idle-ready-entry-01/source.mp4",
+          "videoSha256": "cbaf81cd79f53eafcc38891847151a1311e3ee94275abe10463674ae6a6f66f2",
+          "index": 0
+        },
+        "note": "Same frame, so every variant ends on the keystone and any other can follow."
+      },
+      "purpose": "Gesture: scratching her head. One of several short idle variants to be picked at random, breathing most often and gestures rarely."
+    },
+    {
+      "id": "pamela-idle-coffee-01",
+      "kind": "IDLE",
+      "target": null,
+      "from": "IDLE",
+      "to": "IDLE",
+      "model": "wan3",
+      "duration": 5,
+      "ratio": "auto_1080p",
+      "audio": false,
+      "promptText": "Locked camera on the same Pamela, black suit, green felt and fixed shoe. She sits upright with both hands resting flat on the table in front of her, exactly as in the first image. With her right hand, the one at the left of the image, she reaches just below the near table edge in front of her and lifts up a plain white coffee mug without any print, brings it to her lips, takes one small sip, and lowers the mug back down out of sight below the table edge. Her right hand then returns to lie flat on the table in exactly the same place as before. The other hand stays flat and still. She ends in the exact pose of the last image, which is the same as the first, and is completely still for the last quarter of a second. The yellow card stays fully seated in the shoe and the table stays empty. No reach toward the shoe, speaking, extra card, camera motion or cut.",
+      "first": {
+        "frame": {
+          "video": "assets/motions/pamela-idle-ready-entry-01/source.mp4",
+          "videoSha256": "cbaf81cd79f53eafcc38891847151a1311e3ee94275abe10463674ae6a6f66f2",
+          "index": 0
+        },
+        "note": "Real resting frame: frame 0 of the entry clip, the keystone every idle variant starts on."
+      },
+      "last": {
+        "frame": {
+          "video": "assets/motions/pamela-idle-ready-entry-01/source.mp4",
+          "videoSha256": "cbaf81cd79f53eafcc38891847151a1311e3ee94275abe10463674ae6a6f66f2",
+          "index": 0
+        },
+        "note": "Same frame, so every variant ends on the keystone and any other can follow."
+      },
+      "purpose": "Recreational variant Jakob asked for: she drinks coffee. The mug is plain; a logo is added afterwards if wanted. One of several short idle variants to be picked at random, breathing most often and gestures rarely."
     }
   ],
   "derived": [

@@ -28,13 +28,15 @@
     "evidence": "evidence/generation-method-audit.json"
   },
   "review": {
-    "decision": "SECONDARY",
+    "decision": "ACCEPTED",
     "basis": "Fysisk vändning, men vit tryckt framsida med prickar f73–80, gult kort läggs ner vid målet f58–62 och lyfts igen, slutsnäpp f118–119 där kortet krymper 124→70 px.",
     "limitations": "Landningsankaret byggs om med kortet i den storlek modellen själv ritar; klippet görs om därefter.",
     "reviewedBy": "separat rutgranskare i full upplösning 2026-11-11",
     "colorDoesNotProvePhysicalSide": true,
-    "userAccepted": false,
-    "productionReady": false
+    "userAccepted": true,
+    "productionReady": false,
+    "acceptedAs": "VARIANT",
+    "userReview": "Jakob 2026-11-11: Ja, vi kan ta bort det här kortet som är 20% så stort. Den är lite rolig, faktiskt. Hon visar kortet från ett udda ställe. Det är inte gult på ett visst sätt; till exempel på ruta 74 kan man se ett spelkort. Det gör inget, men den här håller inte en vanlig standard."
   },
   "placementRef": {
     "path": "assets/anchors/pamela-p2-c1-plan-land-01/placement-plan.json",
