@@ -24,12 +24,13 @@
     "evidence": "evidence/generation-method-audit.json"
   },
   "review": {
-    "decision": "PENDING",
+    "decision": "ACCEPTED",
     "basis": "Oberoende rutgranskning 2026-11-11: användbar med anmärkning. Rent lyft f14–22, ingen ny beröring. VILA från f53, helt stilla f67–89, händer och huvud inom 0,6 px från vilobilden. Startrutan stämmer med givens ruta 105 (0 avvikande bildpunkter vid kvartsstorlek).",
     "limitations": "Hög båge i stället för låg: handen går över skons fönster f29–33 och färdas löst knuten i brösthöjd f34–44. Ögonen slutna f34–39. Kortet flyttas cirka 6 px åt höger f10–20. Grönnivån hoppar i de två sista rutorna.",
     "colorDoesNotProvePhysicalSide": true,
-    "userAccepted": false,
-    "productionReady": false
+    "userAccepted": true,
+    "productionReady": false,
+    "userReview": "Jakob 2026-11-11: Det är bra, det är okej att hon har en hög båge istället."
   },
   "postProcessing": "none",
   "generationRef": "assets/motions/pamela-p7-c1-plan-return-idle-01/generation.json",

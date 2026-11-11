@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 1,
+  "id": "pamela-p2-c1-handover-01",
+  "dealer": "pamela",
+  "source": {
+    "path": "assets/motions/pamela-p2-c1-handover-01/source.mp4",
+    "sha256": "c5553aa8293714b73277b23c29cfdb8e22c2a839841d1b85bef32343700c55e8",
+    "bytes": 13636534,
+    "width": 1764,
+    "height": 1174,
+    "fps": 30,
+    "frames": 150,
+    "provider": "Runway developer API",
+    "model": "wan3"
+  },
+  "motion": {
+    "kind": "DEAL",
+    "from": "READY",
+    "to": "HANDOVER(P2.C1)",
+    "takeHand": "LH",
+    "releaseHand": "LH",
+    "target": "P2.C1",
+    "physicalStartSide": "BACK",
+    "physicalEndSide": "FRONT",
+    "turn": null,
+    "pass": false,
+    "basis": "SOURCE_FRAME_REVIEW",
+    "evidence": "evidence/generation-method-audit.json"
+  },
+  "review": {
+    "decision": "PENDING",
+    "basis": "Levererad. Väntar på oberoende rutgranskning; ingen dom ännu.",
+    "limitations": "Inte granskad ruta för ruta ännu.",
+    "colorDoesNotProvePhysicalSide": true,
+    "userAccepted": false,
+    "productionReady": false
+  },
+  "postProcessing": "none",
+  "generationRef": "assets/motions/pamela-p2-c1-handover-01/generation.json",
+  "jobRef": "data/clip-jobs.json",
+  "scoutIntegrated": false,
+  "published": false
+}

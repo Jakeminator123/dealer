@@ -24,12 +24,13 @@
     "evidence": "evidence/generation-method-audit.json"
   },
   "review": {
-    "decision": "PENDING",
+    "decision": "ACCEPTED",
     "basis": "Oberoende rutgranskning 2026-11-11: användbar med anmärkning, klart bättre än tagning 1. Handen ligger på kortet f0–11, lyfter f12–18 och sveper upp över skons framkant f18–22. Ingen tillbakadragning mot kroppen och ingen ny beröring av kortet. Pekfingret kommer ner på det gula kortet f31–37, nypet formas f39–42 och är stilla från f47. Startrutan stämmer med givens ruta 105 (0 avvikande bildpunkter vid kvartsstorlek).",
     "limitations": "Ingen låg glidning: handen går i båge över skon och hänger halvsluten ovanför skons fönster f24–30, som högst f27 med fingertopparna 53 px över skons kant. Frysta rutor 20, 26 och 32 i rörelsen samt 48–49 och 54–55 i slutet; ruta 19 är ett stort steg. Kortet kryper cirka 8 px åt höger f4–13. Blekt märke på skons gula kort f19–38. Grönnivån hoppar i de två sista rutorna. Provet på 2 s i stället för 3 gav färre påhittade rörelser.",
     "colorDoesNotProvePhysicalSide": true,
-    "userAccepted": false,
-    "productionReady": false
+    "userAccepted": true,
+    "productionReady": false,
+    "userReview": "Jakob 2026-11-11: Godkänd som alternativ till den bästa filmen, men det kan också vara en variant. Jag vet inte riktigt vad skillnaden är."
   },
   "postProcessing": "none",
   "generationRef": "assets/motions/pamela-p7-c1-plan-return-ready-02/generation.json",

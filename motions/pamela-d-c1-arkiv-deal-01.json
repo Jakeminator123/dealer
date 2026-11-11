@@ -26,12 +26,14 @@
     "evidence": "evidence/generation-method-audit.json"
   },
   "review": {
-    "decision": "PENDING",
+    "decision": "ACCEPTED",
     "basis": "Arkivklipp, rutgranskat 2026-11-11: dragning, vändning och landning ruta för ruta i full upplösning, resten var sjätte ruta. Ruta 0 är dagens REDO-ankare (medel 1,45, 0 bildpunkter över 40 vid kvartsstorlek). Vänsterhanden drar kortet rent ur skon f8–20. Vändningen är fysisk: bred gul f74–79, tunn kant f80–82, bred blå från f84. Kortet läggs uppifrån f96–104 utan att glida. Utsnittet slutar f116 med fingrarna kvar på kortet; båda returerna börjar på f117. Rutorna f0–116 är lika med de betalda filmernas rutor (117 av 117 vid kvartsstorlek).",
     "limitations": "Omväg: kortet bärs åt vänster över kroppen till x≈586 (över den vilande högerhanden) f30–58 och tillbaka till x≈1040 vid f80 före vändningen. Kortet är blekt f94–96. Handen trycker på kortet från f100 och släpper först i returen (cirka 1,2 s i returen till vila). Kortet hamnar 38 px från planens D.C1 (−26, +28) och ligger som en liggande romb, cirka 138×64 px mot planens 72×60. Granskad på gamla labbets RGB-sammanfogning (contract-r8/d-c1-direct.mp4, inte importerad): samma rutor f0–116, högst 1,49 i medelnivåskillnad och 0 bildpunkter över 40. Filmen är gamla labbets förlustfria sammanfogning av betalda filmer (H.264 High 4:4:4 Predictive); uppspelning i webbläsare är inte prövad. Gamla labbets egen dom: lokalt godkänd kandidat, aldrig produktionsgodkänd.",
     "colorDoesNotProvePhysicalSide": true,
-    "userAccepted": false,
-    "productionReady": false
+    "userAccepted": true,
+    "productionReady": false,
+    "acceptedAs": "VARIANT",
+    "userReview": "Jakob 2026-11-11: Hon lägger kortet snett och gör en allmän vända som ser ut som att hon lurar spelarna att hon ska gå ut till första spelaren nummer ett eller sju. Det är en ganska rolig variant. Hon lägger kortet snett framför sig själv också; jag vet inte om det är avsiktligt. Man kan alltid ställa en vinkel på det, men det är rätt underhållande."
   },
   "postProcessing": "Old lab: decoded frames of the paid films in importedFrom.paidParts concatenated in that order and encoded lossless (H.264 High 4:4:4 Predictive, yuv420p). Copied unchanged; nothing was generated or re-encoded for this import.",
   "generationRef": null,
