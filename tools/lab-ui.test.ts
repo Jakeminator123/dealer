@@ -5,6 +5,7 @@ import {stripTypeScriptTypes} from 'node:module';
 import {createContext,runInContext} from 'node:vm';
 import * as model from '../src/placement-model.ts';
 import * as clipGraph from '../src/clip-graph.ts';
+import * as cardOverlay from '../src/card-overlay.ts';
 
 // Execute the real UI module with a small DOM port and controllable HTTP replies.
 // No local server or user's placement file is changed by these race regressions.
@@ -22,7 +23,7 @@ async function setup(search=''){
   });
   return elements.get(id);
  }
- const pending:{url:string;resolve:(value:unknown)=>void}[]=[], material:unknown[][]=[], requests:string[]=[];
+ const pending:{url:string;resolve:(value:unknown)=>void}[]=[], material:unknown[][]=[], requests:string[]=[], calls:{url:string;init?:{method?:string;headers?:Record<string,string>;body?:string}}[]=[];
  // Answers the oldest waiting request, or the oldest one to a given address.
  const respond=(value:unknown,url?:string)=>{const at=url?pending.findIndex(p=>p.url===url):0;assert.ok(at>=0&&pending[at],`no pending request${url?` to ${url}`:''}`);pending.splice(at,1)[0].resolve(value);};
  const context=createContext({...model,structuredClone,console,URLSearchParams,location:{search},innerHeight:1000,
@@ -34,7 +35,7 @@ async function setup(search=''){
    showSide(value:string){material.push(['side',value]);},
   }},
   ResizeObserver:class {observe(){}},cancelAnimationFrame(){},
-  fetch:(url:unknown,init?:{method?:string})=>{requests.push(`${init?.method??'GET'} ${url}`);return new Promise(resolve=>pending.push({url:String(url),resolve}));},
+  fetch:(url:unknown,init?:{method?:string})=>{requests.push(`${init?.method??'GET'} ${url}`);calls.push({url:String(url),init});return new Promise(resolve=>pending.push({url:String(url),resolve}));},
  });
  const source=await readFile(new URL('../src/lab-ui.ts',import.meta.url),'utf8');
  runInContext(stripTypeScriptTypes(source).replace(/^import[^\n]+\n/gm,''),context);
@@ -42,7 +43,7 @@ async function setup(search=''){
  assert.equal(element('.workspace').inert,true);
  reply(model.defaultPlan());await new Promise(setImmediate);
  assert.equal(element('.workspace').inert,false);
- return {context,element,reply,respond,requests,material,fire};
+ return {context,element,reply,respond,requests,calls,material,fire};
 }
 const settle=async()=>{for(let i=0;i<4;i++)await new Promise(setImmediate);};
 
@@ -340,4 +341,85 @@ test('the proof tab plays a proof folder with frame stepping, and the mobile vie
  assert.equal(element('mobile-note').hidden,true);
  fire('view-portrait','click');assert.equal(element('mobile-note').hidden,false);
  fire('view-native','click');assert.equal(element('mobile-note').hidden,true);
+});
+
+test('a review decision is written only by its button, against the revision that was read, and the view says what happened',async()=>{
+ const bank:any=clipBank(),id='pamela-p4-c1-plan-deal-02',address=`/api/clip-bank/review/${id}`;
+ bank.revisions={[id]:'"rev-1"'};bank.motions[id].review.userReview='Jakob 2026-11-10: bra grepp';
+ const {context,element,respond,requests,calls,fire}=await openBank(bank),press=(decision:string)=>fire('kb-decide','click',{target:{closest:()=>({dataset:{decide:decision}})}});
+ // Opening the tab, the edge and the take writes nothing; the note shows the stored words without name and date.
+ assert.ok(requests.every(request=>request.startsWith('GET ')));
+ assert.equal(element('kb-decide').hidden,false);assert.equal(element('kb-note').value,'bra grepp');assert.equal(element('kb-note').disabled,false);
+ assert.match(element('kb-decide-state').textContent,/Ett klick sparar beslutet och anteckningen i motions\/pamela-p4-c1-plan-deal-02\.json/);
+ // A take without a record in motions/ cannot be decided: it says so, and its buttons do nothing.
+ runInContext("kbSelect('P4.C1>READY')",context);
+ assert.match(element('kb-decide-state').textContent,/Kan inte sparas ännu: pamela-p4-c1-plan-return-ready-01 har ingen post i motions\//);assert.equal(element('kb-note').disabled,true);
+ press('REJECTED');await settle();assert.ok(requests.every(request=>request.startsWith('GET ')));
+ // One press sends one PUT with the decision, the note and the revision; while it is on its way a second press is ignored.
+ runInContext("kbSelect('READY>P4.C1')",context);element('kb-note').value='fingret går igenom kortet';
+ press('REJECTED');press('ACCEPTED');await settle();
+ const puts=calls.filter(call=>call.init?.method==='PUT');
+ assert.equal(puts.length,1);assert.equal(puts[0].url,address);assert.equal(puts[0].init!.headers!['if-match'],'"rev-1"');
+ assert.deepEqual(JSON.parse(puts[0].init!.body!),{decision:'REJECTED',note:'fingret går igenom kortet'});
+ assert.equal(element('kb-decide-state').textContent,'Sparar beslutet…');
+ // The answer is shown, and the bank is read again so every view carries what is now on disk.
+ bank.motions[id].review={decision:'REJECTED',userReview:'Jakob 2026-11-11: fingret går igenom kortet'};bank.revisions[id]='"rev-2"';
+ respond({ok:true,json:async()=>({revision:'"rev-2"',review:bank.motions[id].review})},address);await settle();
+ respond(served(bank),'/api/clip-bank');await settle();
+ assert.equal(element('kb-decide-state').textContent,'Sparat i motions/pamela-p4-c1-plan-deal-02.json · Jakob 2026-11-11: fingret går igenom kortet');
+ assert.match(element('kb-review').innerHTML,/UNDERKÄND/);assert.equal(runInContext('kbGraph.takes[kbTake].revision',context),'"rev-2"');
+ // A refusal (someone else changed the record) is shown as such and nothing is assumed saved.
+ press('ACCEPTED');await settle();
+ assert.equal(calls.filter(call=>call.init?.method==='PUT').at(-1)!.init!.headers!['if-match'],'"rev-2"');
+ respond({ok:false,json:async()=>({error:'Posten har ändrats sedan den lästes.'})},address);await settle();
+ assert.equal(element('kb-decide-state').textContent,'Inte sparat: Posten har ändrats sedan den lästes.');
+ assert.equal(calls.filter(call=>call.init?.method==='PUT').length,2);
+});
+
+test('the rendered card says when it is not available, and a take shows its card track and where the card goes in front of the hand',async()=>{
+ const bank:any=clipBank(),id='pamela-p4-c1-plan-deal-02',track=`assets/tracking/${id}/card-track.json`,rules=`assets/tracking/${id}/overrides.json`;
+ bank.media[id].track=track;bank.media[id].overrides=rules;
+ const {context,element,respond,requests}=await openBank(bank);
+ // Without the overlay modules (the public site, or this VM) the take still opens; the track is simply not read.
+ assert.match(element('kb-facts').innerHTML,/<dt>Kortspår<\/dt><dd>kunde inte läsas<\/dd>/);
+ runInContext('ov.on=true;ovLoad()',context);await settle();
+ assert.equal(runInContext('ovState',context),'missing');assert.equal(element('kb-card').hidden,true);assert.equal(runInContext("ovStatus('take')",context),'Det renderade kortet finns bara lokalt.');
+ assert.ok(!requests.some(request=>request.includes('tracking')||request.includes('scene-contract')));
+ // With the model in place the track and the overrides are read once, read-only, and described in the take detail.
+ context.testOverlay=cardOverlay;runInContext('ovModel=testOverlay;ovData.clear();ovReading.clear();paintEdge()',context);await settle();
+ const quad=[[800,1000],[870,1000],[870,1060],[800,1060]],frames=Array.from({length:6},(_,i)=>({frame:i,side:i<3?'BACK':'FRONT',quad,edge:null,confidence:.9}));
+ respond({ok:true,json:async()=>({width:1764,height:1174,frames,edgeWindow:null,flips:[{from:2,to:3,quarterTurns:1}],restFrom:4,restQuad:quad})},track);
+ respond({ok:true,json:async()=>({cardInFront:[{from:2,to:3,note:'<b>fingertopp</b>'}]})},rules);await settle();
+ assert.match(element('kb-facts').innerHTML,/<dt>Kortspår<\/dt><dd>BACK 0–2 · FRONT 3–5 · sätts om 1 kvartsvarv vid ruta 2–3 · vilar från ruta 4<\/dd>/);
+ assert.match(element('kb-facts').innerHTML,/<dt>Kort framför handen<\/dt><dd>ruta 2–3 · &#60;b&#62;fingertopp&#60;\/b&#62; · ur <code>assets\/tracking\/pamela-p4-c1-plan-deal-02\/overrides\.json<\/code><\/dd>/);
+ assert.equal(requests.filter(request=>request.includes('tracking')).length,2);assert.ok(requests.every(request=>request.startsWith('GET ')));
+ // A take without a track says how to get one.
+ runInContext("kbSelect('P4.C1>READY')",context);
+ assert.match(element('kb-facts').innerHTML,/<dt>Kortspår<\/dt><dd>saknas · renderat kort kräver <code>node tools\/track-card\.ts pamela-p4-c1-plan-return-ready-01<\/code><\/dd>/);
+});
+
+test('a corrected copy is labelled as such, a slow-motion take plays at its own speed and a reversed film can be chosen',async()=>{
+ const bank:any=clipBank(),id='pamela-p4-c1-plan-deal-02',copy=`${id}-edit-01`;
+ bank.edits=[{id:copy,source:{clip:id},model:'aleph2',promptText:'One correction only.',purpose:'grip'}];
+ bank.media[copy]={video:`assets/motions/${copy}/source.mp4`,reversed:`assets/motions/${copy}/source-reversed.mp4`,first:null,last:null};bank.receipts[copy]={status:'SUCCEEDED',estimatedCredits:60};
+ bank.jobs[0].playbackSpeed=2;
+ const {context,element,fire,requests}=await openBank(bank),player=element('kb-player');
+ // The copy sits among the takes of the same edge, saying what it is a copy of. Being the newest unreviewed take with a return that fits, it is the main take.
+ assert.match(element('kb-takes').innerHTML,/data-take="pamela-p4-c1-plan-deal-02-edit-01"[^>]*><b>plan-deal-02-edit-01<\/b><span>huvudtagning · rättad kopia av plan-deal-02 · 2×<\/span>/);
+ // The slow-motion take plays at twice the chosen speed; frame numbers are the file's.
+ runInContext("kbSelect('READY>P4.C1','pamela-p4-c1-plan-deal-02')",context);await settle();
+ element('kb-speed').value='1';fire('kb-player','loadedmetadata');assert.equal(player.playbackRate,2);
+ element('kb-speed').value='0.5';fire('kb-speed','change');assert.equal(player.playbackRate,1);
+ assert.match(element('kb-facts').innerHTML,/<dt>Uppspelning<\/dt><dd>filmen är gjord i slow motion och spelas här i 2×/);assert.equal(element('kb-reverse-box').hidden,true);
+ // The copy: detail says so, keeps its source's viewing speed (same timing), and offers its reversed film.
+ runInContext(`kbSelect('READY>P4.C1','${copy}')`,context);await settle();
+ assert.match(element('kb-facts').innerHTML,/<dt>Rättad kopia<\/dt><dd>av <code>pamela-p4-c1-plan-deal-02<\/code>/);assert.equal(element('kb-prompt').textContent,'One correction only.');
+ assert.equal(player.src,`assets/motions/${copy}/source.mp4`);assert.equal(element('kb-reverse-box').hidden,false);
+ element('kb-speed').value='1';fire('kb-speed','change');assert.equal(player.playbackRate,2);
+ element('kb-reverse').checked=true;fire('kb-reverse','change');
+ assert.equal(player.src,`assets/motions/${copy}/source-reversed.mp4`);assert.match(element('kb-facts').innerHTML,/<dt>Baklänges<\/dt><dd>den omvända filen spelas/);
+ // Another take always opens forwards again.
+ runInContext("kbSelect('READY>P4.C1','pamela-p4-c1-plan-deal-02')",context);
+ assert.equal(player.src,'assets/motions/pamela-p4-c1-plan-deal-02/source.mp4');assert.equal(element('kb-reverse').checked,false);
+ assert.ok(requests.every(request=>request.startsWith('GET ')));
 });

@@ -2,7 +2,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
-import {validateJob, validateJobFile, estimateCredits, requestBody, committedCredits, assertBudget, type ClipJob} from '../src/clip-job.ts';
+import {validateJob, validateJobFile, estimateCredits, requestBody, committedCredits, assertBudget, watchedSeconds, type ClipJob} from '../src/clip-job.ts';
 
 const sha = 'a'.repeat(64);
 const base = (): ClipJob => ({id: 'pamela-test-01', kind: 'DEAL', target: 'P4.C1', from: 'READY', to: 'RELEASE(P4.C1)', model: 'wan3', duration: 4, ratio: 'auto_1080p', audio: false,
@@ -12,7 +12,13 @@ const base = (): ClipJob => ({id: 'pamela-test-01', kind: 'DEAL', target: 'P4.C1
 test('the tracked job file is valid and every job is one action between two images', async () => {
   const file = validateJobFile(JSON.parse(await readFile('data/clip-jobs.json', 'utf8')));
   assert.ok(file.jobs.length > 0);
-  for (const job of file.jobs) assert.ok(job.duration <= 6, `${job.id}: one action per clip, not a whole deal-and-return`);
+  for (const job of file.jobs) assert.ok(watchedSeconds(job) <= 6, `${job.id}: one action per clip, not a whole deal-and-return`);
+});
+
+test('a slow-motion job is still one short action once sped up, and only declared speeds are allowed', () => {
+  assert.equal(watchedSeconds({...base(), duration: 8, playbackSpeed: 2}), 4);
+  assert.equal(watchedSeconds({...base(), duration: 8}), 8);
+  assert.throws(() => validateJob({...base(), playbackSpeed: 3}), /playbackSpeed/);
 });
 
 test('the request body carries exactly the documented wan3 first/last fields', () => {

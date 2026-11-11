@@ -1,0 +1,40 @@
+{
+  "schemaVersion": 1,
+  "id": "pamela-readyb-draw-02",
+  "dealer": "pamela",
+  "source": {
+    "path": "assets/motions/pamela-readyb-draw-02/source.mp4",
+    "sha256": "dfd77d6b03652b97bee6c733f232469d1f68ed6faa025db654a4ac0e0a8af043",
+    "bytes": 8131476,
+    "width": 1764,
+    "height": 1174,
+    "fps": 30,
+    "frames": 90,
+    "provider": "Runway developer API",
+    "model": "wan3"
+  },
+  "motion": {
+    "kind": "ENTRY",
+    "from": "READY-B",
+    "to": "DRAWN",
+    "hand": "LH",
+    "pass": false,
+    "basis": "INDEPENDENT_FRAME_REVIEW",
+    "evidence": "evidence/generation-method-audit.json"
+  },
+  "review": {
+    "decision": "REJECTED",
+    "basis": "Kortet trycks inte ut: det dras uppåt på rampen f14–23, lyfts fritt f24–27, hänger i luften med egen skugga f27–37 (cirka 0,6 kortlängd över filten), sätts ner f39–40 och fälls platt f41–56. Grå fläckar vid fingrarna från f55, ärvda från ankaret. Agentens första läsning \"glider lågt\" var fel.",
+    "limitations": "Ankarbilderna (DRAWN och landningarna) är hopklippta och har rester och för litet kort; klippen ärver felen i första och sista rutorna. Ankare ska i stället tas som hela, verkliga rutor ur modellens egna klipp.",
+    "reviewedBy": "separat rutgranskare i full upplösning 2026-11-11",
+    "colorDoesNotProvePhysicalSide": true,
+    "userAccepted": false,
+    "productionReady": false
+  },
+  "experiment": "READY-B",
+  "postProcessing": "none",
+  "generationRef": "assets/motions/pamela-readyb-draw-02/generation.json",
+  "jobRef": "data/clip-jobs.json",
+  "scoutIntegrated": false,
+  "published": false
+}

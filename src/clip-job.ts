@@ -9,7 +9,12 @@ export type ClipJob = {
   id: string; kind: 'DEAL' | 'RETURN' | 'ENTRY' | 'IDLE'; target: string | null; from: string; to: string;
   model: 'wan3'; duration: number; ratio: Ratio; audio: false;
   promptText: string; first: ImageRef; last: ImageRef; purpose: string;
+  // 2 = the action is generated in slow motion at half speed and is meant to be played back twice as fast.
+  playbackSpeed?: 1 | 2;
 };
+
+// Length of the action as it will be watched. One action per clip means this stays short.
+export const watchedSeconds = (job: ClipJob): number => job.duration / (job.playbackSpeed ?? 1);
 export type JobFile = {schemaVersion: 1; budget: {maximumCredits: number}; jobs: ClipJob[]};
 
 // Developer-API price read from docs.dev.runwayml.com/guides/pricing 2026-11-10.
@@ -43,6 +48,7 @@ export function validateJob(value: unknown): ClipJob {
   if (typeof j.promptText !== 'string' || j.promptText.length < 40 || j.promptText.length > PROMPT_LIMIT) throw Error(`${j.id}: prompt must be 40–${PROMPT_LIMIT} characters.`);
   if (typeof j.purpose !== 'string' || !j.purpose) throw Error(`${j.id}: state the purpose.`);
   if (typeof j.from !== 'string' || typeof j.to !== 'string') throw Error(`${j.id}: name the from/to nodes.`);
+  if (j.playbackSpeed !== undefined && j.playbackSpeed !== 1 && j.playbackSpeed !== 2) throw Error(`${j.id}: playbackSpeed must be 1 or 2.`);
   image(j.first, `${j.id} first`); image(j.last, `${j.id} last`);
   return j;
 }

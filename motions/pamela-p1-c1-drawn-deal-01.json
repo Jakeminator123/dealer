@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "id": "pamela-p1-c1-drawn-deal-01",
+  "dealer": "pamela",
+  "source": {
+    "path": "assets/motions/pamela-p1-c1-drawn-deal-01/source.mp4",
+    "sha256": "515c9567e09face093d7df651d58f94207ac19e8f5038a2dd10c29f8d3b6c6a3",
+    "bytes": 11364529,
+    "width": 1764,
+    "height": 1174,
+    "fps": 30,
+    "frames": 120,
+    "provider": "Runway developer API",
+    "model": "wan3"
+  },
+  "motion": {
+    "kind": "DEAL",
+    "from": "DRAWN",
+    "to": "LAND(P1.C1)",
+    "takeHand": "LH",
+    "releaseHand": "LH",
+    "target": "P1.C1",
+    "physicalStartSide": "BACK",
+    "physicalEndSide": "FRONT",
+    "turn": true,
+    "pass": false,
+    "basis": "INDEPENDENT_FRAME_REVIEW",
+    "evidence": "evidence/generation-method-audit.json"
+  },
+  "review": {
+    "decision": "SECONDARY",
+    "basis": "Kortet skjuts plant hela vägen f15–63 (cirka 970 px), reses f68, lyfts och vänds i luften f79–93 (kant f94–96, blått f97–103). Rödrosa klump i greppet f97–101, tumstump poppar fram f117. Landar 5 px från ankaret.",
+    "limitations": "Ankarbilderna (DRAWN och landningarna) är hopklippta och har rester och för litet kort; klippen ärver felen i första och sista rutorna. Ankare ska i stället tas som hela, verkliga rutor ur modellens egna klipp.",
+    "reviewedBy": "separat rutgranskare i full upplösning 2026-11-11",
+    "colorDoesNotProvePhysicalSide": true,
+    "userAccepted": false,
+    "productionReady": false
+  },
+  "experiment": "READY-B",
+  "postProcessing": "none",
+  "generationRef": "assets/motions/pamela-p1-c1-drawn-deal-01/generation.json",
+  "jobRef": "data/clip-jobs.json",
+  "scoutIntegrated": false,
+  "published": false
+}

@@ -378,3 +378,32 @@ test('every tracked job is shown: known nodes map to model edges, unknown nodes 
   // The round player must always get a usable plan from the real bank.
   for (const segment of graph.resolveRound(g, graph.roundSequence({seats: graph.SEATS, thirdDealerCard: true}))) assert.ok(segment.take || segment.gap, segment.id);
 });
+
+test('a corrected copy is a further take of its source\'s edge, and a slow-motion clip carries its viewing speed', async () => {
+  const data = bank(), source = 'pamela-p1-c1-plan-deal-02';
+  data.edits = [{id: `${source}-edit-01`, source: {clip: source, sha256: sha}, model: 'aleph2', promptText: 'Keep this video identical. One correction only.', purpose: 'grip'},
+    {id: 'orphan-edit-01', source: {clip: 'no-such-clip'}}, null as never];
+  data.jobs!.push(job('pamela-p1-c1-plan-deal-slow-01', 'READY', 'LAND(P1.C1)', {duration: 8, playbackSpeed: 2}), job('pamela-p1-c1-plan-deal-odd-01', 'READY', 'LAND(P1.C1)', {playbackSpeed: 40}));
+  data.media = {...data.media, [`${source}-edit-01`]: {video: video(`${source}-edit-01`), reversed: `assets/motions/${source}-edit-01/source-reversed.mp4`}};
+  const g = graph.buildGraph(data), copy = g.takes[`${source}-edit-01`], original = g.takes[source];
+  // Same edge, same kind and images as the source; its own id, model, prompt, film and review.
+  assert.equal(copy.edge, original.edge); assert.equal(copy.edge, 'READY>P1.C1'); assert.equal(copy.editOf, source); assert.equal(original.editOf, null);
+  assert.deepEqual([copy.job.model, copy.job.promptText, copy.job.purpose, copy.job.duration], ['aleph2', 'Keep this video identical. One correction only.', 'grip', original.job.duration]);
+  assert.deepEqual(copy.job.first, original.job.first); assert.equal(copy.stage, 'DONE'); assert.equal(copy.media.reversed, `assets/motions/${source}-edit-01/source-reversed.mp4`);
+  assert.ok(g.edge['READY>P1.C1'].takes.includes(copy)); assert.ok(copy.order > original.order);
+  // The returns cut from the source follow the copy at the same frame, since the copy keeps the source's timing and landing.
+  const back = Object.values(g.takes).find(r => r.startsOn?.clip === source)!;
+  assert.ok(Number.isInteger(original.landingFrame)); assert.equal(copy.landingFrame, original.landingFrame); assert.equal(back.startsOn!.frame, copy.landingFrame);
+  assert.equal(graph.returnFits(back, copy), true); assert.equal(graph.returnFits(back, original), true); assert.equal(graph.returnFits(back, g.takes['pamela-p1-c1-plan-deal-01']), false);
+  // Unreviewed, it is shown among the current takes even when its source stays the main take; once rejected it is folded away like any other.
+  const e = g.edge['READY>P1.C1']; if (e.main !== copy) { assert.equal(graph.takeRole(e, copy), 'OTHER'); assert.equal(graph.isCurrent(e, copy), true); }
+  data.motions = {...data.motions, [copy.id]: done('REJECTED')}; const after = graph.buildGraph(data); assert.equal(graph.isCurrent(after.edge['READY>P1.C1'], after.takes[copy.id]), false);
+  // A copy whose source is unknown is named, not shown, and breaks nothing; the 51 edges are still 51.
+  assert.deepEqual(g.unplaced.filter(u => /källklipp/.test(u.reason)).map(u => u.id), ['orphan-edit-01', 'undefined']); assert.equal(g.edges.length, 54);
+  // The viewing speed is the job's own, within reason; everything else plays at 1.
+  assert.deepEqual([g.takes['pamela-p1-c1-plan-deal-slow-01'].speed, g.takes['pamela-p1-c1-plan-deal-odd-01'].speed, original.speed, copy.speed], [2, 1, 1, 1]);
+  // The real job file: every edit lands on the edge of the clip it corrects.
+  const real = JSON.parse(await readFile('data/clip-jobs.json', 'utf8')), live = graph.buildGraph({jobs: real.jobs, derived: real.derived, edits: real.edits});
+  for (const edit of real.edits ?? []) { assert.equal(live.takes[edit.id].edge, live.takes[edit.source.clip].edge, edit.id); assert.equal(live.takes[edit.id].editOf, edit.source.clip); }
+  for (const j of real.jobs) if (j.playbackSpeed) assert.equal(live.takes[j.id].speed, j.playbackSpeed, j.id);
+});

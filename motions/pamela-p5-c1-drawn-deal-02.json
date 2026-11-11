@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "id": "pamela-p5-c1-drawn-deal-02",
+  "dealer": "pamela",
+  "source": {
+    "path": "assets/motions/pamela-p5-c1-drawn-deal-02/source.mp4",
+    "sha256": "94f6a089f79b91fcdbbddc76dd5ec81d7913ed1d12638a43cfa4374507262a9f",
+    "bytes": 11003116,
+    "width": 1764,
+    "height": 1174,
+    "fps": 30,
+    "frames": 120,
+    "provider": "Runway developer API",
+    "model": "wan3"
+  },
+  "motion": {
+    "kind": "DEAL",
+    "from": "DRAWN",
+    "to": "LAND(P5.C1)",
+    "takeHand": "LH",
+    "releaseHand": "LH",
+    "target": "P5.C1",
+    "physicalStartSide": "BACK",
+    "physicalEndSide": "FRONT",
+    "turn": true,
+    "pass": false,
+    "basis": "INDEPENDENT_FRAME_REVIEW",
+    "evidence": "evidence/generation-method-audit.json"
+  },
+  "review": {
+    "decision": "PENDING",
+    "basis": "Samma sort som klippet Jakob godkände: kortet glider f23–59 och rullas på kanten utan att lämna filten (kant f78, blått f79–83), plant från f97. Fingrarna drar sig av kortet i f117–119 eftersom ankaret har dem svävande.",
+    "limitations": "Ankarbilderna (DRAWN och landningarna) är hopklippta och har rester och för litet kort; klippen ärver felen i första och sista rutorna. Ankare ska i stället tas som hela, verkliga rutor ur modellens egna klipp.",
+    "reviewedBy": "separat rutgranskare i full upplösning 2026-11-11",
+    "colorDoesNotProvePhysicalSide": true,
+    "userAccepted": false,
+    "productionReady": false
+  },
+  "experiment": "READY-B",
+  "postProcessing": "none",
+  "generationRef": "assets/motions/pamela-p5-c1-drawn-deal-02/generation.json",
+  "jobRef": "data/clip-jobs.json",
+  "scoutIntegrated": false,
+  "published": false
+}

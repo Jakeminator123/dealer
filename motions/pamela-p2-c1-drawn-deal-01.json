@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "id": "pamela-p2-c1-drawn-deal-01",
+  "dealer": "pamela",
+  "source": {
+    "path": "assets/motions/pamela-p2-c1-drawn-deal-01/source.mp4",
+    "sha256": "f75b3ca154ae0285e667004224efeb32d9560cc572dac031b8f7de2d63a89ca9",
+    "bytes": 11260396,
+    "width": 1764,
+    "height": 1174,
+    "fps": 30,
+    "frames": 120,
+    "provider": "Runway developer API",
+    "model": "wan3"
+  },
+  "motion": {
+    "kind": "DEAL",
+    "from": "DRAWN",
+    "to": "LAND(P2.C1)",
+    "takeHand": "LH",
+    "releaseHand": "LH",
+    "target": "P2.C1",
+    "physicalStartSide": "BACK",
+    "physicalEndSide": "FRONT",
+    "turn": true,
+    "pass": false,
+    "basis": "INDEPENDENT_FRAME_REVIEW",
+    "evidence": "evidence/generation-method-audit.json"
+  },
+  "review": {
+    "decision": "SECONDARY",
+    "basis": "Skjuts plant hela vägen f16–62, vänds vid målet (kant f87–88, bred blå f93–117). Kortet är 126 px brett och krymper i f118–119 till ankarets 76 px.",
+    "limitations": "Ankarbilderna (DRAWN och landningarna) är hopklippta och har rester och för litet kort; klippen ärver felen i första och sista rutorna. Ankare ska i stället tas som hela, verkliga rutor ur modellens egna klipp.",
+    "reviewedBy": "separat rutgranskare i full upplösning 2026-11-11",
+    "colorDoesNotProvePhysicalSide": true,
+    "userAccepted": false,
+    "productionReady": false
+  },
+  "experiment": "READY-B",
+  "postProcessing": "none",
+  "generationRef": "assets/motions/pamela-p2-c1-drawn-deal-01/generation.json",
+  "jobRef": "data/clip-jobs.json",
+  "scoutIntegrated": false,
+  "published": false
+}

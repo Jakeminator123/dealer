@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "id": "pamela-p4-c1-drawn-deal-slow-01",
+  "dealer": "pamela",
+  "source": {
+    "path": "assets/motions/pamela-p4-c1-drawn-deal-slow-01/source.mp4",
+    "sha256": "50641eb2ef5ab8c598d977b1f7014e875c2d4a3f86a1419f59f722ba2ee9b7dc",
+    "bytes": 20917337,
+    "width": 1764,
+    "height": 1174,
+    "fps": 30,
+    "frames": 240,
+    "provider": "Runway developer API",
+    "model": "wan3"
+  },
+  "motion": {
+    "kind": "DEAL",
+    "from": "DRAWN",
+    "to": "LAND(P4.C1)",
+    "target": "P4.C1",
+    "hand": "LH",
+    "pass": false,
+    "basis": "UNREVIEWED",
+    "evidence": null
+  },
+  "review": {
+    "decision": "PENDING",
+    "basis": "Valideringsprov: samma ankare i halv fart över 8 s, avsett att spelas 2×. Uppsnabbad kopia: source-2x.mp4. Oberoende rutgranskning pågår; inget omdöme ännu.",
+    "limitations": "Inte granskat.",
+    "colorDoesNotProvePhysicalSide": true,
+    "userAccepted": false,
+    "productionReady": false
+  },
+  "postProcessing": "none",
+  "generationRef": "assets/motions/pamela-p4-c1-drawn-deal-slow-01/generation.json",
+  "jobRef": "data/clip-jobs.json",
+  "scoutIntegrated": false,
+  "published": false
+}

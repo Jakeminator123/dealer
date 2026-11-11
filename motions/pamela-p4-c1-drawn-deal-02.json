@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "id": "pamela-p4-c1-drawn-deal-02",
+  "dealer": "pamela",
+  "source": {
+    "path": "assets/motions/pamela-p4-c1-drawn-deal-02/source.mp4",
+    "sha256": "4e46ecdd1c10cfb3dfd50493c6fc369ac935932a546caced6299e3f891827701",
+    "bytes": 10858667,
+    "width": 1764,
+    "height": 1174,
+    "fps": 30,
+    "frames": 120,
+    "provider": "Runway developer API",
+    "model": "wan3"
+  },
+  "motion": {
+    "kind": "DEAL",
+    "from": "DRAWN",
+    "to": "LAND(P4.C1)",
+    "target": "P4.C1",
+    "hand": "LH",
+    "pass": false,
+    "basis": "UNREVIEWED",
+    "evidence": null
+  },
+  "review": {
+    "decision": "PENDING",
+    "basis": "Valideringsprov: samma giv som pamela-p4-c1-drawn-deal-01 men med båda ankarna som hela verkliga rutor. Oberoende rutgranskning pågår; inget omdöme ännu.",
+    "limitations": "Inte granskat.",
+    "colorDoesNotProvePhysicalSide": true,
+    "userAccepted": false,
+    "productionReady": false
+  },
+  "postProcessing": "none",
+  "generationRef": "assets/motions/pamela-p4-c1-drawn-deal-02/generation.json",
+  "jobRef": "data/clip-jobs.json",
+  "scoutIntegrated": false,
+  "published": false
+}

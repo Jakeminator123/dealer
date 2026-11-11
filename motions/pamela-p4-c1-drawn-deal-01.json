@@ -35,7 +35,8 @@
     "userAccepted": true,
     "productionReady": false,
     "userReview": "Jakob 2026-11-11: 'Svinbra'. Rörelsen han beskrev: föra fram kortet längs filten, vrida hand och kort nära platsen, landa i ankaret.",
-    "acceptedAs": "MOTION (variant B); inte produktionsklart: uttag och returer saknas"
+    "acceptedAs": "MOTION (variant B); inte produktionsklart: uttag och returer saknas",
+    "independentReview": "Separat rutgranskare 2026-11-11: DRAWN-ankarets rester syns i f0–14 och klippet har ett hopp vid f117. Rörelsen i övrigt är referensen för variant B. Jakobs godkännande gäller rörelsen."
   },
   "experiment": "READY-B",
   "postProcessing": "none",

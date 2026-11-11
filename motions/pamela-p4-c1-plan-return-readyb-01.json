@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "id": "pamela-p4-c1-plan-return-readyb-01",
+  "dealer": "pamela",
+  "source": {
+    "path": "assets/motions/pamela-p4-c1-plan-return-readyb-01/source.mp4",
+    "sha256": "45825b3879a17d74232ba341bc8ececcfcdb569ababce3864a60b481d263ad03",
+    "bytes": 8196206,
+    "width": 1764,
+    "height": 1174,
+    "fps": 30,
+    "frames": 90,
+    "provider": "Runway developer API",
+    "model": "wan3"
+  },
+  "motion": {
+    "kind": "RETURN",
+    "from": "LAND(P4.C1)",
+    "to": "READY-B",
+    "hand": "LH",
+    "target": "P4.C1",
+    "pass": false,
+    "basis": "INDEPENDENT_FRAME_REVIEW",
+    "evidence": "evidence/generation-method-audit.json"
+  },
+  "review": {
+    "decision": "PENDING",
+    "basis": "Håller f0–13, lyfter en gång f14–18, låg bana med lösa fingrar, fingertoppar på gula kortet från ca f58, stilla från f85. Kortet rör sig högst 1,1 px. Upprepade rutor (f30, 36, 42, 59, 65, 71) och färgsnäpp f88–89.",
+    "limitations": "Ankarbilderna (DRAWN och landningarna) är hopklippta och har rester och för litet kort; klippen ärver felen i första och sista rutorna. Ankare ska i stället tas som hela, verkliga rutor ur modellens egna klipp.",
+    "reviewedBy": "separat rutgranskare i full upplösning 2026-11-11",
+    "colorDoesNotProvePhysicalSide": true,
+    "userAccepted": false,
+    "productionReady": false
+  },
+  "experiment": "READY-B",
+  "postProcessing": "none",
+  "generationRef": "assets/motions/pamela-p4-c1-plan-return-readyb-01/generation.json",
+  "jobRef": "data/clip-jobs.json",
+  "scoutIntegrated": false,
+  "published": false
+}

@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "id": "pamela-readyb-pushback-01",
+  "dealer": "pamela",
+  "source": {
+    "path": "assets/motions/pamela-readyb-pushback-01/source.mp4",
+    "sha256": "60f6119686113969f14c4e69366cf67f4128187a8e6a97c792284440d644a8aa",
+    "bytes": 7799390,
+    "width": 1764,
+    "height": 1174,
+    "fps": 30,
+    "frames": 90,
+    "provider": "Runway developer API",
+    "model": "wan3"
+  },
+  "motion": {
+    "kind": "ENTRY",
+    "from": "DRAWN",
+    "to": "READY-B",
+    "target": null,
+    "hand": "LH",
+    "pass": false,
+    "basis": "UNREVIEWED",
+    "evidence": null
+  },
+  "review": {
+    "decision": "PENDING",
+    "basis": "Valideringsprov: kortet skjuts in i skon; avsett att spelas baklänges som uttag (source-reversed.mp4). Oberoende rutgranskning pågår; inget omdöme ännu.",
+    "limitations": "Inte granskat.",
+    "colorDoesNotProvePhysicalSide": true,
+    "userAccepted": false,
+    "productionReady": false
+  },
+  "postProcessing": "none",
+  "generationRef": "assets/motions/pamela-readyb-pushback-01/generation.json",
+  "jobRef": "data/clip-jobs.json",
+  "scoutIntegrated": false,
+  "published": false
+}

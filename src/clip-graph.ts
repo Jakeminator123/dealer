@@ -5,17 +5,21 @@
 export type EdgeKind = 'DEAL' | 'RETURN' | 'ENTRY' | 'IDLE';
 export type Side = 'BACK' | 'FRONT';
 export type ImageRef = {frame?: {video: string; videoSha256: string; index: number}; file?: {path: string; sha256: string}; note?: string};
-export type BankJob = {id: string; kind: string; target: string | null; from: string; to: string; model: string; duration: number; ratio: string; audio: boolean; promptText: string; first: ImageRef; last: ImageRef; purpose: string};
+export type BankJob = {id: string; kind: string; target: string | null; from: string; to: string; model: string; duration: number; ratio: string; audio: boolean; promptText: string; first: ImageRef; last: ImageRef; purpose: string; playbackSpeed?: number};
 export type MotionRecord = {
   source?: {path?: string; sha256?: string; bytes?: number; fps?: number; frames?: number; width?: number; height?: number};
   motion?: {physicalEndSide?: string; landingFrame?: number; startsOn?: {clip?: string; frame?: number; seamPixelsOverThreshold?: number}};
   review?: {decision?: string; acceptedAs?: string; basis?: string; limitations?: string; userReview?: string; userAccepted?: boolean};
 };
 export type Receipt = {status?: string; estimatedCredits?: number; requestedAt?: string; completedAt?: string; output?: {bytes?: number; fps?: number; frames?: number; width?: number; height?: number} | null};
-export type Media = {video?: string | null; first?: string | null; last?: string | null};
+// track and overrides: the card track from tools/track-card.ts and hand-written occlusion overrides, when they exist locally.
+// reversed: the same film written backwards (source-reversed.mp4), when someone has made one.
+export type Media = {video?: string | null; first?: string | null; last?: string | null; track?: string | null; overrides?: string | null; reversed?: string | null};
 // A derived take is not generated: it is frames A–B (both shown) of a clip that already exists.
 export type DerivedTake = {id: string; kind?: string; from: string; to: string; clip: string; frames: [number, number]; purpose?: string};
-export type BankData = {jobs?: BankJob[]; derived?: DerivedTake[]; budget?: {maximumCredits?: number} | null; motions?: Record<string, MotionRecord>; receipts?: Record<string, Receipt>; media?: Record<string, Media>};
+// An edit is a corrected copy of an existing clip, made with a video-to-video model: a further take of the same edge as its source.
+export type EditTake = {id: string; source?: {clip?: string; sha256?: string}; model?: string; promptText?: string; purpose?: string};
+export type BankData = {jobs?: BankJob[]; derived?: DerivedTake[]; edits?: EditTake[]; budget?: {maximumCredits?: number} | null; motions?: Record<string, MotionRecord>; receipts?: Record<string, Receipt>; media?: Record<string, Media>; revisions?: Record<string, string>};
 
 export const SEATS = ['P1', 'P2', 'P3', 'P4', 'P5', 'P6', 'P7'];
 // Same 16 placement keys as src/placement-model.ts; D.C3 is the optional third dealer card.
@@ -109,6 +113,9 @@ export type Take = {
   variant: boolean; explicitMain: boolean; endSide: Side | null; fps: number | null; frames: number | null; credits: number;
   startsOn: {clip: string | null; video: string | null; frame: number} | null; anchorStart: string | null; landingFrame: number | null; landingConflict: boolean;
   segment: {clip: string; start: number; end: number} | null; // set on a derived take: the frames of that clip it shows
+  revision: string | null; // of its motions record; a review decision must present it to be saved. null: no record yet
+  editOf: string | null;   // set on a corrected copy: the clip it was made from
+  speed: number;           // the speed the film is meant to be watched at (a clip generated in slow motion says 2); frame numbers stay the file's
   motion: MotionRecord | null; receipt: Receipt | null; media: Media;
 };
 // experiment: a job whose from/to is outside the model. It keeps its takes and detail view but is never one of the 51.
@@ -138,7 +145,8 @@ export const playable = (take: Take) => take.stage === 'DONE' && take.decision !
 // from. A return from a landing anchor fits every deal that ends on that same anchor image: variant B deals
 // end on their own anchor, so their returns do not fit the model's deals and the other way round.
 export function returnFits(back: Take, deal: Take): boolean {
-  if (!back.anchorStart) return back.startsOn?.clip === deal.id;
+  // A corrected copy keeps its source's timing and landing, so the returns cut from the source follow the copy too.
+  if (!back.anchorStart) return !!back.startsOn?.clip && (back.startsOn.clip === deal.id || back.startsOn.clip === deal.editOf);
   const end = deal.job.last?.file, start = back.job.first?.file;
   return !!end && (end.path === back.anchorStart || (!!end.sha256 && end.sha256 === start?.sha256));
 }
@@ -172,7 +180,15 @@ export function buildGraph(data: BankData): Graph {
     return [{id: d.id, kind: d.kind ?? '', target: null, from: d.from, to: d.to, model: 'utsnitt', duration: 0, ratio: '', audio: false, promptText: '', purpose: d.purpose ?? '',
       first: {frame: {video, videoSha256: '', index: start}}, last: {frame: {video, videoSha256: '', index: end}}}];
   });
-  [...(Array.isArray(data?.jobs) ? data.jobs : []), ...derived].forEach((job, order) => {
+  // A corrected copy enters as its source's job under its own id, with its own model, prompt and purpose: same edge, same images.
+  const sources = new Map((Array.isArray(data?.jobs) ? data.jobs : []).filter(j => j && typeof j.id === 'string').map(j => [j.id, j])), editOf = new Map<string, string>();
+  const edits = (Array.isArray(data?.edits) ? data.edits : []).flatMap((x): BankJob[] => {
+    const source = sources.get(String(x?.source?.clip));
+    if (!x || typeof x.id !== 'string' || !source) { unplaced.push({id: String(x?.id), reason: 'Den rättade kopians källklipp finns inte bland jobben.'}); return []; }
+    editOf.set(x.id, source.id);
+    return [{...source, id: x.id, model: x.model ?? source.model, promptText: x.promptText ?? '', purpose: x.purpose ?? ''}];
+  });
+  [...(Array.isArray(data?.jobs) ? data.jobs : []), ...derived, ...edits].forEach((job, order) => {
     // Only a job that cannot be told apart from the others is left out, and it is named in unplaced.
     if (!job || typeof job.id !== 'string' || !job.id || takes[job.id]) { unplaced.push({id: String(job?.id), reason: job && takes[job.id] ? 'Samma jobb-id förekommer två gånger.' : 'Jobbet saknar id.'}); return; }
     const ref = parseEdge(`${job.from}>${job.to}`), from = nodeName(job.from), to = nodeName(job.to), key = formatEdge(from, to);
@@ -190,13 +206,14 @@ export function buildGraph(data: BankData): Graph {
     const take: Take = {id: job.id, edge: e.id, kind: e.kind, hub: ref && !e.experiment ? ref.hub : null, job, order, stage: stageOf(receipt, motion, media), decision,
       variant: motion?.review?.acceptedAs === 'VARIANT', explicitMain: motion?.review?.acceptedAs === 'MAIN', endSide,
       fps: motion?.source?.fps ?? receipt?.output?.fps ?? null, frames: motion?.source?.frames ?? receipt?.output?.frames ?? null,
-      credits: receipt?.estimatedCredits ?? job.duration * (CREDITS_PER_SECOND[job.ratio] ?? 0), startsOn, anchorStart, landingFrame: null, landingConflict: false, segment, motion, receipt, media};
+      credits: receipt?.estimatedCredits ?? job.duration * (CREDITS_PER_SECOND[job.ratio] ?? 0), startsOn, anchorStart, landingFrame: null, landingConflict: false, segment, revision: data.revisions?.[job.id] ?? null,
+      editOf: editOf.get(job.id) ?? null, speed: Number(job.playbackSpeed) >= 0.25 && Number(job.playbackSpeed) <= 4 ? Number(job.playbackSpeed) : 1, motion, receipt, media};
     takes[job.id] = take; e.takes.push(take);
   });
   const all = Object.values(takes);
   // A deal's landing/cut frame is the frame its returns start on. An explicit motion.landingFrame wins.
   for (const deal of all.filter(t => t.kind === 'DEAL')) {
-    const returns = all.filter(r => r.startsOn?.clip === deal.id), kept = returns.filter(r => r.decision !== 'REJECTED' && r.stage !== 'FAILED');
+    const returns = all.filter(r => !!r.startsOn?.clip && (r.startsOn.clip === deal.id || r.startsOn.clip === deal.editOf)), kept = returns.filter(r => r.decision !== 'REJECTED' && r.stage !== 'FAILED');
     const frames = (kept.length ? kept : returns).map(r => r.startsOn!.frame), explicit = deal.motion?.motion?.landingFrame;
     const counts = new Map<number, number>(); for (const f of frames) counts.set(f, (counts.get(f) ?? 0) + 1);
     deal.landingFrame = Number.isInteger(explicit) ? explicit! : [...counts].sort((a, b) => b[1] - a[1])[0]?.[0] ?? null;
@@ -249,7 +266,8 @@ export const ROLE_LABEL: Record<Role, string> = {MAIN: 'huvudtagning', VARIANT: 
 
 // What matters now on an edge: its main take, accepted variants, variant starts and work on its way.
 // The rest (rejected, failed, replaced by a newer take) is kept, but belongs folded away.
-export const isCurrent = (edge: Edge, take: Take) => !['REJECTED', 'FAILED', 'OTHER'].includes(takeRole(edge, take));
+// A corrected copy that nobody has reviewed yet is current too: it was made to be looked at, even while its source is still the main take.
+export const isCurrent = (edge: Edge, take: Take) => { const role = takeRole(edge, take); return !['REJECTED', 'FAILED', 'OTHER'].includes(role) || (role === 'OTHER' && !!take.editOf && take.decision === 'PENDING'); };
 export type Leftover = {take: Take; edge: Edge; role: Role; bytes: number | null};
 export function leftovers(graph: Graph): Leftover[] {
   return [...graph.edges, ...graph.experiments].flatMap(edge => edge.takes.filter(take => !isCurrent(edge, take))
@@ -335,7 +353,7 @@ export function resolveRound(graph: Graph, steps: Step[], options: {holeCardDown
     const film = seg.take, next = out[i + 1], follower = next?.take && next.from === seg.to ? next.take : null, known = returnsOf(graph, film);
     const usable = (frame: number | null | undefined): frame is number => typeof frame === 'number' && frame > seg.start && (film.frames === null || frame < film.frames) && (seg.end === null || frame <= seg.end);
     // Any film is cut where the film after it was cut out of it. Beyond that only a deal has a rule.
-    const own = follower?.startsOn && (follower.startsOn.clip === film.id || follower.startsOn.clip === film.segment?.clip) ? follower.startsOn.frame : null;
+    const own = follower?.startsOn && (follower.startsOn.clip === film.id || follower.startsOn.clip === film.segment?.clip || follower.startsOn.clip === film.editOf) ? follower.startsOn.frame : null;
     if (seg.kind !== 'DEAL') { if (usable(own)) { seg.end = own; seg.cut = 'FRAME'; } return; }
     // The return that follows decides. Without one in the chain, the deal ends as its known returns would cut it.
     const back = follower && next.kind === 'RETURN' ? follower : null, viaAnchor = back ? !!back.anchorStart && returnFits(back, film) : known.anchor.some(playable);

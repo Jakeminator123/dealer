@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "id": "pamela-p4-c1-plan-return-idleb-01",
+  "dealer": "pamela",
+  "source": {
+    "path": "assets/motions/pamela-p4-c1-plan-return-idleb-01/source.mp4",
+    "sha256": "578f4bddcc90396d806ef9cdcf9beebefe2804172a4751c24fd4be98e072f569",
+    "bytes": 8065558,
+    "width": 1764,
+    "height": 1174,
+    "fps": 30,
+    "frames": 90,
+    "provider": "Runway developer API",
+    "model": "wan3"
+  },
+  "motion": {
+    "kind": "RETURN",
+    "from": "LAND(P4.C1)",
+    "to": "IDLE-B",
+    "hand": "LH",
+    "target": "P4.C1",
+    "pass": false,
+    "basis": "INDEPENDENT_FRAME_REVIEW",
+    "evidence": "evidence/generation-method-audit.json"
+  },
+  "review": {
+    "decision": "PENDING",
+    "basis": "Ren: fingret ligger kvar f0–22, lyfter en gång f23–25, låg bana, båda händerna vilar från ca f58. Kortet rör sig högst 0,3 px. Färgsnäpp f88–89.",
+    "limitations": "Ankarbilderna (DRAWN och landningarna) är hopklippta och har rester och för litet kort; klippen ärver felen i första och sista rutorna. Ankare ska i stället tas som hela, verkliga rutor ur modellens egna klipp.",
+    "reviewedBy": "separat rutgranskare i full upplösning 2026-11-11",
+    "colorDoesNotProvePhysicalSide": true,
+    "userAccepted": false,
+    "productionReady": false
+  },
+  "experiment": "READY-B",
+  "postProcessing": "none",
+  "generationRef": "assets/motions/pamela-p4-c1-plan-return-idleb-01/generation.json",
+  "jobRef": "data/clip-jobs.json",
+  "scoutIntegrated": false,
+  "published": false
+}

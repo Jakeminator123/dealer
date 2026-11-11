@@ -344,6 +344,7 @@ function paintBank(){
  kbResolve();paintSummary();paintTree();paintNode();
  document.querySelectorAll<HTMLButtonElement>('[data-kb-panel]').forEach(b=>{const on=b.dataset.kbPanel===kbPanel;b.setAttribute('aria-pressed',String(on));$(`kb-panel-${b.dataset.kbPanel}`).hidden=!on;});
  if(kbPanel==='edge')paintEdge();else paintRound();
+ ovSync();
 }
 function paintSummary(){
  const G=clipGraph!,s=kbGraph!.summary,shown=G.STATUSES.filter(k=>s.byStatus[k]);
@@ -424,13 +425,13 @@ function paintEdge(){
  $('kb-edge-status').className=`kb-chip s-${e.status}`;$('kb-edge-status').innerHTML=`<i>${KB_GLYPH[e.status]}</i>${esc(kbEdgeNote(e))}`;
  // Only what matters now is shown: the main take, accepted variants, variant starts and films on their way.
  // Rejected and replaced takes are kept behind one folded row, which opens by itself when one of them is selected.
- const tab=(x:KbTake)=>{const role=G.takeRole(e,x),sub=role==='WAITING'?G.STAGE_LABEL[x.stage]:role==='OTHER'?(x.decision==='SECONDARY'?'sekundär':e.main?'ersatt':'alternativ'):role==='START'?`variant-start ${esc(x.hub)}`:G.ROLE_LABEL[role];
-  return `<button class="kb-take-tab r-${role}" data-take="${esc(x.id)}" aria-pressed="${x===t}" title="${esc(x.id)}"><b>${esc(kbShort(x.id,e.target))}</b><span>${sub}${x.segment?' · utsnitt':''}</span></button>`;};
+ const tab=(x:KbTake)=>{const role=G.takeRole(e,x),sub=role==='WAITING'?G.STAGE_LABEL[x.stage]:role==='OTHER'?(x.decision==='SECONDARY'?'sekundär':x.editOf&&x.decision==='PENDING'?'ogranskad':e.main?'ersatt':'alternativ'):role==='START'?`variant-start ${esc(x.hub)}`:G.ROLE_LABEL[role];
+  return `<button class="kb-take-tab r-${role}" data-take="${esc(x.id)}" aria-pressed="${x===t}" title="${esc(x.id)}"><b>${esc(kbShort(x.id,e.target))}</b><span>${sub}${x.segment?' · utsnitt':''}${x.editOf?` · rättad kopia av ${esc(kbShort(x.editOf,e.target))}`:''}${x.speed!==1?` · ${String(x.speed).replace('.',',')}×`:''}</span></button>`;};
  const sorted=[...e.takes].sort((a,b)=>Number(b===e.main)-Number(a===e.main)||b.order-a.order),old=sorted.filter(x=>!G.isCurrent(e,x));
  $('kb-takes').innerHTML=sorted.filter(x=>G.isCurrent(e,x)).map(tab).join('');$('kb-takes-old').innerHTML=old.map(tab).join('');
  $('kb-old').hidden=!old.length;$('kb-old-summary').textContent=`Ersatta och underkända (${old.length})`;if(t&&old.includes(t))$<HTMLDetailsElement>('kb-old').open=true;
  $('kb-take').hidden=!t;$('kb-empty').hidden=e.takes.length>0;$('kb-empty').textContent='Ingen tagning finns för den här kanten ännu.';
- if(t)paintTake(e,t);else kbPlayer.pause();
+ if(t)paintTake(e,t);else{kbPlayer.pause();paintDecide(null);}
  const draft=G.draftJob(g,e.id,{holeCardDown:input('kb-hole').checked});
  if(kbDraftFor!==e.id){kbDraftFor=e.id;$<HTMLDetailsElement>('kb-draft').open=!e.takes.length;}
  $('kb-draft').hidden=!draft; // an experiment has no recipe to draft from
@@ -439,7 +440,9 @@ function paintEdge(){
  $('kb-draft-notes').innerHTML=(draft?.notes??[]).map(note=>`<li>${esc(note)}</li>`).join('');
 }
 function paintTake(e:KbEdge,t:KbTake){
- const G=clipGraph!,job=t.job,src=t.media.video??'',source=t.motion?.source,out=t.receipt?.output,cut=t.kind==='DEAL'?t.landingFrame:null;
+ if(kbPlayer.dataset.take!==t.id)kbReversed=false; // every take opens forwards
+ const G=clipGraph!,job=t.job,src=(kbReversed&&t.media.reversed)||t.media.video||'',source=t.motion?.source,out=t.receipt?.output,cut=t.kind==='DEAL'?t.landingFrame:null;
+ $('kb-reverse-box').hidden=!t.media.reversed;input('kb-reverse').checked=kbReversed;
  if(kbPlayer.dataset.take!==t.id||kbPlayer.dataset.src!==src){kbPlayer.pause();kbPlayer.dataset.take=t.id;kbPlayer.dataset.src=src;if(t.segment&&kbPendingFrame===null)kbPendingFrame=t.segment.start||null;if(src){kbPlayer.src=src;kbPlayer.load();}else kbPlayer.removeAttribute('src');}
  kbPlayer.hidden=!src;$('kb-player-missing').hidden=!!src;$('kb-player-missing').textContent=t.stage==='DONE'?'Filmen finns bara lokalt.':`Ingen film ännu · ${G.STAGE_LABEL[t.stage]}.`;
  for(const id of ['kb-play','kb-prev-frame','kb-next-frame'])$<HTMLButtonElement>(id).disabled=!src;
@@ -449,6 +452,9 @@ function paintTake(e:KbEdge,t:KbTake){
  const facts:[string,string][]=[['Klipp',`<code>${esc(t.id)}</code>`],...(t.segment?[['Utsnitt',`ruta ${t.segment.start}–${t.segment.end} ur <code>${esc(t.segment.clip)}</code> · ingen ny film, inga credits`]] as [string,string][]:[['Modell',`${esc(job.model)} · ${esc(job.duration)} s · ${esc(job.ratio)} · ${job.audio?'med ljud':'utan ljud'}`],['Credits',`${esc(t.credits)}${t.receipt?'':' (beräknat)'}`]] as [string,string][]),
   ['Läge',t.segment?(t.stage==='DONE'?'klar · filmen finns':'filmen saknas på den här datorn'):t.stage==='DONE'?`klar${day(t.receipt?.completedAt)}`:t.stage==='ORDERED'?`${t.receipt?.status==='THROTTLED'?'i kö hos Runway':'renderas hos Runway'} · beställd${day(t.receipt?.requestedAt)}`:t.stage==='PREPARED'?'förberedd · indata frysta, inte beställd':t.stage==='FAILED'?'misslyckad hos Runway':'jobb skrivet · indata inte frysta']];
  if(t.frames)facts.push(['Film',`${width&&height?`${esc(width)} × ${esc(height)} · `:''}${esc(t.frames)} rutor · ${esc(t.fps??30)} fps`]);
+ if(t.editOf)facts.push(['Rättad kopia',`av <code>${esc(t.editOf)}</code> · samma kant, samma bilder; bara det prompten nämner är ändrat${t.kind==='DEAL'?' · returer klippta ur källklippet följer även kopian; den skarven är inte uppmätt för kopian':''}`]);
+ if(t.speed!==1)facts.push(['Uppspelning',`filmen är gjord i slow motion och spelas här i ${esc(String(t.speed).replace('.',','))}× · rutnumren är filens egna`]);
+ if(t.media.reversed)facts.push(['Baklänges',kbReversed?'den omvända filen spelas · rutnumren räknas från filmens slut':'en omvänd fil finns · kryssa i Spela baklänges under filmen']);
  // Which cut rule applies: a return cut from one frame of this clip fits only this take; a return from the landing anchor fits them all.
  if(t.kind==='DEAL'){
   const back=G.returnsOf(kbGraph!,t),names=(list:KbTake[])=>list.map(x=>`<code>${esc(kbShort(x.id,e.target))}</code>`).join(', ');
@@ -458,6 +464,14 @@ function paintTake(e:KbEdge,t:KbTake){
  }
  if(t.anchorStart)facts.push(['Startar på',`landningsankaret <code>${esc(t.anchorStart.split('/').at(-2)??t.anchorStart)}</code> · passar varje giv till ${esc(e.from)} som slutar på det ankaret; given spelas till sin sista ruta`]);
  else if(t.startsOn)facts.push(['Startar på',`ruta f${t.startsOn.frame} i <code>${esc(t.startsOn.clip??t.startsOn.video)}</code> · passar bara den tagningen, som klipps vid samma ruta${typeof seam==='number'?` · ${seam} avvikande pixlar i skarven`:''}`]);
+ // What the card track says about this film, and where the card is drawn in front of the hand by hand-written rule.
+ if(src){const data=ovData.get(t.id);
+  if(!t.media.track)facts.push(['Kortspår',`saknas · renderat kort kräver <code>node tools/track-card.ts ${esc(t.segment?.clip??t.id)}</code>`]);
+  else if(!data){facts.push(['Kortspår','läser…']);void ovRead(t).then(()=>{if(kbState==='ready'&&kbPanel==='edge'&&kbTake===t.id)paintEdge();});}
+  else if(!data.track||!ovModel)facts.push(['Kortspår','kunde inte läsas']);
+  else{facts.push(['Kortspår',esc(ovModel.describeTrack(data.track))]);
+   facts.push(['Kort framför handen',data.overrides.length?data.overrides.map(o=>`ruta ${o.from}–${o.to}${o.note?` · ${esc(o.note)}`:''}`).join('<br>')+` · ur <code>${esc(t.media.overrides)}</code>`:'inga undantag · handen ligger alltid framför kortet']);}
+ }
  facts.push(['Syfte',esc(job.purpose)]);
  $('kb-facts').innerHTML=facts.map(([key,value])=>`<dt>${key}</dt><dd>${value}</dd>`).join('');
  const review=t.motion?.review,role=G.takeRole(e,t);
@@ -466,17 +480,23 @@ function paintTake(e:KbEdge,t:KbTake){
  const image=(label:string,ref:KbImage,path?:string|null)=>`<figure>${path?`<a href="${esc(path)}" target="_blank" rel="noopener" title="Öppna i full storlek"><img src="${esc(path)}" alt="${label}" loading="lazy"></a>`:`<div class="kb-noimage">${t.stage==='WRITTEN'?'Bilden är inte fryst ännu':'Finns bara lokalt'}</div>`}<figcaption><b>${label}</b><span>${esc(ref?.frame?`ruta f${ref.frame.index} ur ${G.clipOfVideo(ref.frame.video)??ref.frame.video}`:ref?.file?.path)}</span>${ref?.note?`<small>${esc(ref.note)}</small>`:''}</figcaption></figure>`;
  $('kb-images').innerHTML=t.segment?'':image('Första bild',job.first,t.media.first)+image('Sista bild',job.last,t.media.last);
  $('kb-prompt').textContent=job.promptText;$('kb-prompt-box').hidden=!job.promptText;
+ paintDecide(t);
 }
 const kbPlayer=$<HTMLVideoElement>('kb-player');
 const kbSpeed=(id:string)=>{const speed=Number($<HTMLSelectElement>(id).value);return [.25,.5,1].includes(speed)?speed:1;};
+let kbReversed=false;
+// The chosen speed times the speed the take is meant to be watched at.
+const kbRate=()=>kbSpeed('kb-speed')*(kbGraph?.takes[kbTake]?.speed??1);
 function kbClip(){const t=kbGraph?.takes[kbTake];if(!t?.media.video)return null;const fps=t.fps??30;return {fps,frames:t.frames??Math.max(1,Math.round((kbPlayer.duration||0)*fps))};}
-function kbShowFrame(){const c=kbClip();$('kb-frame').textContent=c?`Ruta ${frameAt(kbPlayer,c.fps,c.frames)} / ${c.frames-1} · ${c.fps} fps`:'';}
+function kbShowFrame(){const c=kbClip(),scrub=input('kb-scrub');$('kb-frame').textContent=c?`Ruta ${frameAt(kbPlayer,c.fps,c.frames)} / ${c.frames-1} · ${c.fps} fps`:'';scrub.disabled=!c;if(c){scrub.max=String(c.frames-1);scrub.value=String(frameAt(kbPlayer,c.fps,c.frames));}}
 function kbSeek(frame:number){const c=kbClip();if(!c||!Number.isSafeInteger(frame))return;kbPlayer.pause();const target=Math.max(0,Math.min(c.frames-1,frame));if(kbPlayer.readyState<1){kbPendingFrame=target;return;}kbPlayer.currentTime=frameTime(target,c.fps);kbPendingFrame=null;kbShowFrame();}
 $('kb-play').addEventListener('click',()=>{if(kbPlayer.paused)void kbPlayer.play().catch(()=>{});else kbPlayer.pause();});
 for(const [id,step] of [['kb-prev-frame',-1],['kb-next-frame',1]] as const)$(id).addEventListener('click',()=>{const c=kbClip();if(c)kbSeek(frameAt(kbPlayer,c.fps,c.frames)+step);});
 $('kb-cut-frame').addEventListener('click',()=>{const cut=kbGraph?.takes[kbTake]?.landingFrame;if(typeof cut==='number')kbSeek(cut);});
-$('kb-speed').addEventListener('change',()=>{kbPlayer.playbackRate=kbSpeed('kb-speed');});
-kbPlayer.addEventListener('loadedmetadata',()=>{kbPlayer.playbackRate=kbSpeed('kb-speed');if(kbPendingFrame!==null)kbSeek(kbPendingFrame);else kbShowFrame();});
+$('kb-scrub').addEventListener('input',()=>kbSeek(Number(input('kb-scrub').value))); // one step of the slider is one frame of the film
+$('kb-speed').addEventListener('change',()=>{kbPlayer.playbackRate=kbRate();});
+$('kb-reverse').addEventListener('change',()=>{kbReversed=input('kb-reverse').checked;kbPendingFrame=null;if(kbState==='ready'&&kbPanel==='edge')paintEdge();});
+kbPlayer.addEventListener('loadedmetadata',()=>{kbPlayer.playbackRate=kbRate();if(kbPendingFrame!==null)kbSeek(kbPendingFrame);else kbShowFrame();});
 for(const event of ['timeupdate','seeked'])kbPlayer.addEventListener(event,kbShowFrame);
 for(const event of ['play','pause','ended'])kbPlayer.addEventListener(event,()=>{$('kb-play').textContent=kbPlayer.paused?'Spela':'Pausa';});
 kbPlayer.addEventListener('error',()=>{if(!kbPlayer.dataset.src)return;kbPlayer.hidden=true;$('kb-player-missing').hidden=false;$('kb-player-missing').textContent='Filmen kunde inte spelas. Kontrollera att den finns lokalt.';});
@@ -531,7 +551,7 @@ function paintChain(note=''){
  $('kb-chain-gap').hidden=!gap;
  if(gap)$('kb-chain-gap').innerHTML=`<b>${clipGraph!.GAP_LABEL[gap.gap!]}: ${esc(gap.id)}</b><span>${gap.gap==='MISSING'?'Ingen tagning finns för den här kanten.':gap.gap==='WAITING'?'Tagningen är förberedd eller beställd men inte klar.':gap.gap==='REJECTED'?'Alla tagningar är underkända.':gap.gap==='LOCAL_ONLY'?'Filmen ligger bara på den lokala datorn.':'Kanten finns inte i klippmodellen.'}</span>`;
  $('kb-chain-label').hidden=!seg;$('kb-chain-label').textContent=seg?`${seg.index+1} / ${kbSegments.length} · ${seg.id}`:'';
- kbChainStatus(note);
+ kbChainStatus(note);ovSync();
 }
 // Every chain action first halts whatever ran before; the token makes a superseded load or timer give up.
 function kbHalt(){kbChain.token++;clearTimeout(kbChain.timer);cancelAnimationFrame(kbChain.frame);kbChain.playing=false;for(const v of kbVideos)v.pause();}
@@ -544,7 +564,7 @@ async function kbCue(index:number,frame?:number):Promise<'ok'|'failed'|'stale'>{
  if(token!==kbChain.token)return 'stale';
  if(!ok)return 'failed';
  const time=frameTime(frame??seg.start,seg.fps);if(Math.abs(el.currentTime-time)>.0005)el.currentTime=time; // a reused element may stand anywhere
- kbVideos[1-slot].pause();kbVideos.forEach((v,i)=>v.classList.toggle('on',i===slot));kbChain.active=slot;
+ kbVideos[1-slot].pause();kbVideos.forEach((v,i)=>v.classList.toggle('on',i===slot));kbChain.active=slot;ovSync();
  const next=kbSegments.slice(index+1).find(s=>!s.gap);if(next)void kbPrepare(kbVideos[1-slot],next);
  return 'ok';
 }
@@ -553,7 +573,7 @@ function kbRun(){
  const index=kbChain.index,seg=kbSegments[index],el=kbVideos[kbChain.active],token=kbChain.token;
  // The cut: leave a deal half a frame before the frame its return starts on; the return shows that same frame next.
  const limit=seg.end===null?Infinity:(seg.end-.5)/seg.fps;
- el.playbackRate=kbSpeed('kb-chain-speed');void el.play().catch(()=>{});
+ el.playbackRate=kbSpeed('kb-chain-speed')*(seg.take?.speed??1);void el.play().catch(()=>{});
  const watch=()=>{if(token!==kbChain.token)return;kbChainStatus();if(el.ended||el.currentTime>=limit){el.pause();void kbPlayStep(index+1);return;}kbChain.frame=requestAnimationFrame(watch);};
  kbChain.frame=requestAnimationFrame(watch);
 }
@@ -598,7 +618,7 @@ $('kb-chain-play').addEventListener('click',()=>{
 });
 $('kb-chain-stop').addEventListener('click',()=>{kbStopChain();paintRound();});
 $('kb-chain-prev').addEventListener('click',()=>void kbChainStep(-1));$('kb-chain-next').addEventListener('click',()=>void kbChainStep(1));
-$('kb-chain-speed').addEventListener('change',()=>{for(const v of kbVideos)v.playbackRate=kbSpeed('kb-chain-speed');});
+$('kb-chain-speed').addEventListener('change',()=>{kbVideos[kbChain.active].playbackRate=kbSpeed('kb-chain-speed')*(kbSegments[kbChain.index]?.take?.speed??1);});
 $('kb-chain-bar').addEventListener('click',event=>{const el=(event.target as Element).closest<HTMLElement>('[data-step-play]');if(el)void kbPlayStep(Number(el.dataset.stepPlay));});
 document.querySelectorAll<HTMLButtonElement>('[data-kb-seat]').forEach(b=>b.addEventListener('click',()=>{const seat=b.dataset.kbSeat!;if(!kbSeats.delete(seat))kbSeats.add(seat);kbRoundChanged(false);}));
 $('kb-dealer').addEventListener('click',()=>{kbDealer=!kbDealer;kbRoundChanged(false);});
@@ -633,6 +653,122 @@ $('kb-notices').addEventListener('click',event=>{
 });
 $('kb-copy-prompt').addEventListener('click',()=>void kbCopy($('kb-prompt').textContent??'',$('kb-copy-prompt')));
 $('kb-copy-draft').addEventListener('click',()=>void kbCopy($('kb-draft-json').textContent??'',$('kb-copy-draft')));
+// ── Renderat kort över filmen ───────────────────────────────────────────────
+// Kortet ritas av src/card-overlay-view.ts med Materialpanelens eget kort. Var det ligger kommer ur
+// kortspåret (tools/track-card.ts) och hur stort ur scenkontraktet. Filmen själv ändras aldrig.
+type OvView=typeof import('./card-overlay-view.js');
+type OvModel=typeof import('./card-overlay.js');
+type OvTrack=import('./card-overlay.js').CardTrack;
+type OvScene=import('./card-overlay.js').Scene;
+type OvData={track:OvTrack|null;overrides:import('./card-overlay.js').Override[]};
+const ov={on:false,split:false,scale:2,rank:'A',suit:'spades',side:'TRACK'};
+let ovView:OvView|null=null,ovModel:OvModel|null=null,ovScene:OvScene|null=null,ovState:'idle'|'loading'|'ready'|'missing'='idle',ovScaleSet=false,ovError='';
+const ovData=new Map<string,OvData>(),ovReading=new Map<string,Promise<OvData>>(),ovLayers=new Map<string,ReturnType<OvView['createCardOverlay']>>();
+// A take's card track and occlusion overrides, read once per take. A missing file is simply "no track".
+function ovRead(take:KbTake):Promise<OvData>{
+ const known=ovReading.get(take.id);if(known)return known;
+ const json=async(path?:string|null)=>{if(!path)return null;try{const res=await fetch(path);return res.ok?await res.json():null;}catch{return null;}};
+ const reading=(async()=>{
+  let data:OvData={track:null,overrides:[]};
+  try{ovModel??=await import('./card-overlay.js');const [track,overrides]=await Promise.all([json(take.media.track),json(take.media.overrides)]);data={track:track&&Array.isArray(track.frames)?track:null,overrides:ovModel.overridesOf(overrides)};}catch{/* no overlay model here: nothing to show */}
+  ovData.set(take.id,data);return data;
+ })();
+ ovReading.set(take.id,reading);return reading;
+}
+async function ovLoad(){
+ if(ovState!=='idle')return;ovState='loading';ovSync();
+ try{
+  [ovModel,ovView]=await Promise.all([import('./card-overlay.js'),import('./card-overlay-view.js')]);
+  try{const res=await fetch('data/scene-contract.json');ovScene=res.ok?ovModel.sceneOf(await res.json()):null;}catch{ovScene=null;}
+  if(ovScene&&!ovScaleSet)ov.scale=ovScene.bodyScale; // the contract's body scale is the starting point
+  ovState='ready';
+ }catch{ovState='missing';}
+ ovSync();
+}
+// The card a take deals or leaves, for the bend and gloss set on that card in the Material panel.
+function ovOptions(take:KbTake,frame:number,data:OvData|undefined){
+ const edge=kbGraph?.edge[take.edge],card=edge?.target??[edge?.to,edge?.from].find(node=>!!node&&!!plan?.targets[node]),material=card?plan?.targets[card]?.material:undefined;
+ return {scale:ov.scale,split:ov.split,card:{rank:ov.rank,suit:ov.suit} as never,side:ov.side as 'TRACK'|'BACK'|'FRONT',bend:material?.bend??.07,gloss:material?.gloss??.35,inFront:!!data&&!!ovModel&&ovModel.cardInFront(data.overrides,frame)};
+}
+function ovPaint(name:'take'|'chain',video:HTMLVideoElement,take:KbTake|null|undefined,frame:number,visible:boolean){
+ const canvas=$<HTMLCanvasElement>(name==='take'?'kb-card':'kb-chain-card'),active=ov.on&&ovState==='ready'&&visible&&!!take?.media.video;
+ canvas.hidden=!active;$(name==='take'?'kb-video-box':'kb-chain-box').classList.toggle('split',active&&ov.split);
+ if(name==='take')kbPlayer.controls=!active; // the browser's own control bar would lie over the table where cards land; the frame slider below takes its place
+ if(!active||!take)return;
+ const data=ovData.get(take.id);if(!data)void ovRead(take).then(()=>ovSync()); // drawn again when the track has arrived
+ try{
+  let layer=ovLayers.get(name);if(!layer){layer=ovView!.createCardOverlay(canvas);ovLayers.set(name,layer);}
+  layer.draw(video,frame,data?.track??null,ovScene,ovOptions(take,frame,data));ovError='';
+ }catch{ovError='Kortet kunde inte ritas. WebGL krävs för det renderade kortet.';}
+}
+const ovTakeNow=()=>kbGraph?.takes[kbTake]??null;
+const ovSegmentNow=()=>kbSegments[kbChain.index]??(kbChain.index<0?kbSegments.find(s=>!s.gap):undefined);
+function ovTake(frame?:number){const t=ovTakeNow(),c=kbClip(),shown=frame??(c?frameAt(kbPlayer,c.fps,c.frames):0);
+ ovPaint('take',kbPlayer,t,kbReversed&&c?c.frames-1-shown:shown,tab==='clipbank'&&kbPanel==='edge'&&!!c);} // the track counts the forward film's frames
+function ovChain(frame?:number){const seg=ovSegmentNow(),video=kbVideos[kbChain.active],shown=!!seg&&!seg.gap&&video.dataset.seg===`${seg.index}:${seg.video}`;
+ ovPaint('chain',video,shown?seg!.take:null,frame??(shown?frameAt(video,seg!.fps,seg!.take?.frames??100000):0),tab==='clipbank'&&kbPanel==='round'&&shown);}
+function ovStatus(name:string){
+ if(!ov.on)return '';
+ if(ovState==='loading')return 'Läser in kortmaterialet…';
+ if(ovState==='missing')return 'Det renderade kortet finns bara lokalt.';
+ if(ovError)return ovError;
+ const take=name==='take'?ovTakeNow():ovSegmentNow()?.take;if(!take?.media.video)return 'Ingen film att rita kortet på.';
+ const data=ovData.get(take.id);if(!data)return 'Läser kortspåret…';
+ if(!data.track)return `Ingen spårning för ${take.id}: filmen visas som den är. Kör node tools/track-card.ts ${take.id}.`;
+ return `Spår: ${ovModel!.describeTrack(data.track)}${ovScene?'':' · scenkontraktet saknas, kortet förstoras kring sin mitt'}${data.overrides.length?` · framför handen ruta ${data.overrides.map(o=>`${o.from}–${o.to}`).join(', ')}`:''}`;
+}
+function ovSync(){
+ document.querySelectorAll<HTMLElement>('[data-overlay]').forEach(box=>{
+  box.hidden=false;
+  box.querySelectorAll<HTMLInputElement>('[data-ov]').forEach(el=>{const key=el.dataset.ov as keyof typeof ov;if(el.type==='checkbox')el.checked=!!ov[key];else el.value=String(ov[key]);el.disabled=key!=='on'&&!ov.on;});
+  box.querySelector('[data-ov-scale]')!.textContent=ov.scale.toFixed(2).replace('.',',');
+ });
+ ovTake();ovChain();
+ document.querySelectorAll<HTMLElement>('[data-overlay]').forEach(box=>{box.querySelector('[data-ov-status]')!.textContent=ovStatus(box.dataset.overlay!);});
+}
+document.querySelectorAll<HTMLElement>('[data-overlay]').forEach(box=>{for(const type of ['input','change'])box.addEventListener(type,event=>{
+ const el=event.target as HTMLInputElement,key=el.dataset?.ov;if(!key)return;
+ if(key==='on')ov.on=el.checked;else if(key==='split')ov.split=el.checked;else if(key==='scale'){ov.scale=Math.max(1,Math.min(2.5,Number(el.value)||2));ovScaleSet=true;}else if(key==='rank')ov.rank=el.value;else if(key==='suit')ov.suit=el.value;else if(key==='side')ov.side=el.value;
+ if(ov.on&&ovState==='idle')void ovLoad();else ovSync();
+});});
+// The overlay is drawn for the frame the film actually shows: on every presented frame where the browser
+// reports them, and after every seek, so stepping one frame moves film and card together.
+const ovWatch=(video:HTMLVideoElement,draw:(frame?:number)=>void,fps:()=>number)=>{
+ const tick=(_now:number,meta:{mediaTime:number})=>{if(ov.on&&ovState==='ready')draw(Math.round(meta.mediaTime*fps()));(video as never as {requestVideoFrameCallback(fn:typeof tick):void}).requestVideoFrameCallback(tick);};
+ if('requestVideoFrameCallback' in video)(video as never as {requestVideoFrameCallback(fn:typeof tick):void}).requestVideoFrameCallback(tick);
+ for(const type of ['seeked','loadeddata'])video.addEventListener(type,()=>{if(ov.on&&ovState==='ready')draw();});
+};
+ovWatch(kbPlayer,ovTake,()=>ovTakeNow()?.fps??30);
+for(const video of kbVideos)ovWatch(video,frame=>{if(video===kbVideos[kbChain.active])ovChain(frame);},()=>ovSegmentNow()?.fps??30);
+ovSync();
+
+// ── Granskningsbeslut ───────────────────────────────────────────────────────
+// Det enda labbet skriver utöver placeringarna: review-blocket i motions/<id>.json, via ett knapptryck.
+// Inget skrivs vid inläsning, och varje skrivning visar vad som sparades och var.
+let kbNoteFor='',kbSaving=false,kbSaved={id:'',text:'',failed:false};
+function paintDecide(t:KbTake|null){
+ const box=$('kb-decide');box.hidden=!t;if(!t)return;
+ const can=t.stage==='DONE'&&!!t.revision&&!kbSaving,current=t.stage!=='DONE'?'':t.variant?'VARIANT':t.decision,note=$<HTMLTextAreaElement>('kb-note');
+ box.querySelectorAll<HTMLButtonElement>('[data-decide]').forEach(b=>{b.disabled=!can||(b.dataset.decide==='PENDING'&&current==='PENDING');b.setAttribute('aria-pressed',String(b.dataset.decide===current));});
+ if(kbNoteFor!==t.id){kbNoteFor=t.id;note.value=String(t.motion?.review?.userReview??'').replace(/^\S+ \d{4}-\d{2}-\d{2}: /,'');} // the stored note without its name and date
+ note.disabled=!can;
+ const state=$('kb-decide-state'),mine=kbSaved.id===t.id;
+ state.classList.toggle('saved',mine&&!kbSaved.failed);state.classList.toggle('failed',mine&&kbSaved.failed);
+ state.textContent=kbSaving?'Sparar beslutet…':mine?kbSaved.text:t.stage!=='DONE'?'Beslut kan sättas när filmen är klar.':!t.revision?`Kan inte sparas ännu: ${t.id} har ingen post i motions/. Den skapas när klippet registreras.`:`Ett klick sparar beslutet och anteckningen i motions/${t.id}.json. Inget annat i filen ändras.`;
+}
+async function kbDecide(decision:string){
+ const t=kbGraph?.takes[kbTake];if(!t?.revision||t.stage!=='DONE'||kbSaving)return;
+ kbSaving=true;paintDecide(t);
+ try{
+  const res=await fetch(`/api/clip-bank/review/${t.id}`,{method:'PUT',headers:{'content-type':'application/json','if-match':t.revision},body:JSON.stringify({decision,note:$<HTMLTextAreaElement>('kb-note').value})});
+  const data=await res.json();if(!res.ok)throw Error(data.error||'Beslutet kunde inte sparas.');
+  kbSaved={id:t.id,text:`Sparat i motions/${t.id}.json · ${data.review?.userReview??''}`,failed:false};kbNoteFor='';
+  await kbRead().catch(()=>{}); // the bank is read again so every view shows the decision that is now on disk
+ }catch(error){kbSaved={id:t.id,text:`Inte sparat: ${(error as Error).message}`,failed:true};}
+ finally{kbSaving=false;if(kbState==='ready')paintBank();}
+}
+$('kb-decide').addEventListener('click',event=>{const decision=(event.target as Element).closest<HTMLElement>('[data-decide]')?.dataset.decide;if(decision)void kbDecide(decision);});
+
 // ── Prov ────────────────────────────────────────────────────────────────────
 // Färdiga jämförelsefilmer och bildark under assets/proofs/<id>/, lästa via /api/proofs. Samma rutstegning som överallt annars.
 type Proof={id:string;title:string|null;description:string|null;labels:Record<string,string>|null;chapters:{label:string;frame:number}[]|null;fps:number;files:{name:string;path:string;kind:string;bytes:number}[]};
@@ -682,5 +818,7 @@ pfPlayer.addEventListener('loadedmetadata',()=>{pfPlayer.playbackRate=kbSpeed('p
 for(const event of ['timeupdate','seeked'])pfPlayer.addEventListener(event,pfShowFrame);
 for(const event of ['play','pause','ended'])pfPlayer.addEventListener(event,()=>{$('pf-play').textContent=pfPlayer.paused?'Spela':'Pausa';});
 $('tab-placement').addEventListener('click',()=>setTab('placement'));$('tab-clipbank').addEventListener('click',()=>setTab('clipbank'));$('tab-proofs').addEventListener('click',()=>setTab('proofs'));
+// The 3D scene is a page of its own, served by the local preview only: its link shows when the page is there.
+if(location.hostname==='127.0.0.1')void fetch('scene3d.html',{method:'HEAD'}).then(res=>{$('nav-scene3d').hidden=!res.ok;}).catch(()=>{});
 const startTab=new URLSearchParams(location.search).get('tab');if(startTab==='klippbank')setTab('clipbank');else if(startTab==='prov')setTab('proofs');
 void load().then(()=>{const params=new URLSearchParams(location.search),clip=params.get('clip'),frame=Number(params.get('frame')??0);if(clip)void openLibrary(false,clip,frame);if(tab==='clipbank'&&kbState==='ready')paintTree();}).catch(e=>message((e as Error).message));

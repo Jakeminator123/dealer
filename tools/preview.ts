@@ -5,6 +5,7 @@ import {randomUUID} from 'node:crypto';
 import {stripTypeScriptTypes} from 'node:module';
 import path from 'node:path';
 import {placementStore,StoreError} from './placement-store.ts';
+import {reviewStore} from './review-store.ts';
 const port=4319,origin=`http://127.0.0.1:${port}`,state='.runtime/preview.json';
 if(process.argv.includes('--stop')||process.argv.includes('--status')){
  const s=JSON.parse(await readFile(state,'utf8'));
@@ -14,20 +15,32 @@ if(process.argv.includes('--stop')||process.argv.includes('--status')){
  if(!r.ok)throw Error('Preview control failed');console.log(await r.text());
 }else{
  const manifest=JSON.parse(await readFile('manifest.json','utf8'));
- const allowed=new Set(['preview.html','lab.html','lab.css','generation.html','data/p4-generation-review.json','assets/lab/native.jpg','assets/lab/portrait.jpg','materials/kortmaterial.html','materials/markermaterial.html',...manifest.files.map((f:{path:string})=>f.path).filter((p:string)=>p.startsWith('assets/')||p.startsWith('materials/')||p.startsWith('output/v6/'))]);
- const scripts:Record<string,string>={'/preview-ui.js':'src/preview-ui.ts','/lab-ui.js':'src/lab-ui.ts','/placement-model.js':'src/placement-model.ts','/clip-graph.js':'src/clip-graph.ts','/materials/source/src/card-material-study.js':'materials/source/src/card-material-study.ts'};
- const placements=placementStore(process.cwd());
+ const allowed=new Set(['preview.html','lab.html','lab.css','scene3d.html','generation.html','data/p4-generation-review.json','data/scene-contract.json','assets/lab/native.jpg','assets/lab/portrait.jpg','assets/scene/room.png','assets/scene/panorama-vegas.jpg','materials/kortmaterial.html','materials/markermaterial.html',...manifest.files.map((f:{path:string})=>f.path).filter((p:string)=>p.startsWith('assets/')||p.startsWith('materials/')||p.startsWith('output/v6/'))]);
+ const scripts:Record<string,string>={'/preview-ui.js':'src/preview-ui.ts','/lab-ui.js':'src/lab-ui.ts','/placement-model.js':'src/placement-model.ts','/clip-graph.js':'src/clip-graph.ts','/card-track.js':'src/card-track.ts','/card-overlay.js':'src/card-overlay.ts','/card-overlay-view.js':'src/card-overlay-view.ts','/scene-geometry.js':'src/scene-geometry.ts',...Object.fromEntries(['geometry','film','table','room','view','ui'].map(name=>[`/scene3d-${name}.js`,`src/scene3d-${name}.ts`])),'/materials/source/src/card-material-study.js':'materials/source/src/card-material-study.ts'};
+ // Modules that are also run by Node name their neighbours with .ts; the browser asks for the same file as .js.
+ const forBrowser=(source:string)=>stripTypeScriptTypes(source).replace(/((?:from|import)\s*\(?\s*)(['"])([^'"\n]+)\.ts\2/g,'$1$2$3.js$2');
+ // three.js for the 3D scene (scene3d.html maps the bare name "three" to /vendor/three.module.js): exactly the two files its module build
+ // consists of, read from the pinned dependency. Nothing else under node_modules is reachable.
+ const vendor:Record<string,string>={'/vendor/three.module.js':'node_modules/three/build/three.module.js','/vendor/three.core.js':'node_modules/three/build/three.core.js'};
+ const placements=placementStore(process.cwd()),reviews=reviewStore(process.cwd());
  const library=async()=>{try{const data=JSON.parse(await readFile('data/library.json','utf8'));data.items=await Promise.all(data.items.filter((item:{path:string})=>typeof item.path==='string'&&/^(assets\/|output\/v6\/)/.test(item.path)&&path.posix.normalize(item.path)===item.path&&!item.path.includes('\\')&&item.path.endsWith('.mp4')).map(async(item:{motionRef?:string})=>{if(item.motionRef&&/^motions\/[a-z0-9-]+\.json$/.test(item.motionRef)){try{const motion=JSON.parse(await readFile(item.motionRef,'utf8'));return {...item,reviewDecision:motion.review?.decision??'PENDING'};}catch{return {...item,reviewDecision:'UNKNOWN'};}}return item;}));return data;}catch{return {schemaVersion:1,items:[]};}};
  // Read-only clip bank for the lab: the tracked jobs and review decisions plus a fixed, non-secret
  // projection of each local receipt. Task ids, balances and credentials never leave this process.
- const clipId=/^[a-z0-9]+(?:-[a-z0-9]+)*$/,clipMedia=/^assets\/motions\/([a-z0-9]+(?:-[a-z0-9]+)*)\/(source\.mp4|first\.png|last\.png)$/;
+ const clipId=/^[a-z0-9]+(?:-[a-z0-9]+)*$/,clipMedia=/^assets\/motions\/([a-z0-9]+(?:-[a-z0-9]+)*)\/(source\.mp4|source-reversed\.mp4|first\.png|last\.png)$/;
  const readJson=async(file:string)=>{try{return JSON.parse(await readFile(file,'utf8'));}catch{return null;}};
  // derived: an edge take that is frames A–B of an existing clip ("derived": [{id, kind, from, to, clip, frames: [A, B]}] in the job file).
  const clipJobs=async()=>{const file=await readJson('data/clip-jobs.json'),named=(list:unknown)=>(Array.isArray(list)?list:[]).filter((item:{id?:unknown})=>typeof item?.id==='string'&&clipId.test(item.id));
-  return {file,jobs:named(file?.jobs) as {id:string}[],derived:named(file?.derived).filter((d:{clip?:unknown})=>typeof d.clip==='string'&&clipId.test(d.clip)) as {id:string;clip:string}[]};};
- // Only source.mp4, first.png and last.png of a clip named in data/clip-jobs.json, and only where the file really lies in that folder.
+  // edits: corrected copies of a clip ("edits": [{id, source: {clip}, …}]); their films lie in assets/motions/<edit id>/ like any other clip.
+  const jobs=named(file?.jobs) as {id:string}[],edits=named(file?.edits).filter((e:{source?:{clip?:unknown}})=>typeof e.source?.clip==='string') as {id:string}[];
+  return {file,jobs,edits,clips:[...jobs,...edits],derived:named(file?.derived).filter((d:{clip?:unknown})=>typeof d.clip==='string'&&clipId.test(d.clip)) as {id:string;clip:string}[]};};
+ // Only source.mp4, source-reversed.mp4, first.png and last.png of a clip named in data/clip-jobs.json, and only where the file really lies in that folder.
  const confined=async(id:string,name:string)=>{try{return await realpath(`assets/motions/${id}/${name}`)===path.join(await realpath('assets/motions'),id,name);}catch{return false;}};
- const clipFile=async(file:string)=>{const m=clipMedia.exec(file);if(!m)return false;const {jobs,derived}=await clipJobs();return (jobs.some(job=>job.id===m[1])||derived.some(d=>d.clip===m[1]))&&await confined(m[1],m[2]);};
+ const clipFile=async(file:string)=>{const m=clipMedia.exec(file);if(!m)return false;const {clips,derived}=await clipJobs();return (clips.some(job=>job.id===m[1])||derived.some(d=>d.clip===m[1]))&&await confined(m[1],m[2]);};
+ // Card tracks from tools/track-card.ts and hand-written occlusion overrides, for the same clips and with the same confinement.
+ const trackMedia=/^assets\/tracking\/([a-z0-9]+(?:-[a-z0-9]+)*)\/(card-track\.json|receipt\.json|overrides\.json)$/;
+ const tracked=async(id:string,name:string)=>{try{return await realpath(`assets/tracking/${id}/${name}`)===path.join(await realpath('assets/tracking'),id,name);}catch{return false;}};
+ const trackFile=async(file:string)=>{const m=trackMedia.exec(file);if(!m)return false;const {clips,derived}=await clipJobs();return (clips.some(job=>job.id===m[1])||derived.some(d=>d.clip===m[1]))&&await tracked(m[1],m[2]);};
+ const tracking=async(id:string)=>({track:await tracked(id,'card-track.json')?`assets/tracking/${id}/card-track.json`:null,overrides:await tracked(id,'overrides.json')?`assets/tracking/${id}/overrides.json`:null});
  // Proofs: finished comparison films and contact sheets under assets/proofs/<id>/. Read-only, and only mp4, png and json.
  const proofFile=/^assets\/proofs\/((?:[a-z0-9][a-z0-9._-]*\/)+[a-z0-9][a-z0-9._-]*\.(?:mp4|png|json))$/;
  const proofPath=async(file:string)=>{const m=proofFile.exec(file);if(!m)return false;try{return await realpath(file)===path.join(await realpath('assets/proofs'),...m[1].split('/'));}catch{return false;}};
@@ -42,21 +55,23 @@ if(process.argv.includes('--stop')||process.argv.includes('--status')){
   return {schemaVersion:1,proofs:list};
  };
  const clipBank=async()=>{
-  const {file,jobs,derived}=await clipJobs(),motions:Record<string,unknown>={},receipts:Record<string,unknown>={},media:Record<string,unknown>={};
-  // A derived take borrows its film and film facts from the clip it is cut from; a review of its own may lie in motions/<id>.json.
+  const {file,jobs,edits,clips,derived}=await clipJobs(),motions:Record<string,unknown>={},receipts:Record<string,unknown>={},media:Record<string,unknown>={},revisions:Record<string,string>={};
+  // The revision of a motion record is what a review decision must present to be saved (If-Match).
+  const motionOf=async(id:string)=>{try{const text=await readFile(`motions/${id}.json`,'utf8');revisions[id]=reviews.revisionOf(text);return JSON.parse(text);}catch{return null;}};
+  // A derived take borrows its film, film facts and card track from the clip it is cut from; a review of its own may lie in motions/<id>.json.
   await Promise.all(derived.map(async take=>{
-   const own=await readJson(`motions/${take.id}.json`),clip=await readJson(`motions/${take.clip}.json`);
+   const own=await motionOf(take.id),clip=await readJson(`motions/${take.clip}.json`);
    motions[take.id]={source:clip?.source,motion:own?.motion,review:own?.review};
-   media[take.id]={video:await confined(take.clip,'source.mp4')?`assets/motions/${take.clip}/source.mp4`:null,first:null,last:null};
+   media[take.id]={video:await confined(take.clip,'source.mp4')?`assets/motions/${take.clip}/source.mp4`:null,first:null,last:null,...await tracking(take.clip)};
   }));
-  await Promise.all(jobs.map(async job=>{
-   const dir=`assets/motions/${job.id}`,motion=await readJson(`motions/${job.id}.json`),receipt=await readJson(`${dir}/generation.json`);
+  await Promise.all(clips.map(async job=>{
+   const dir=`assets/motions/${job.id}`,motion=await motionOf(job.id),receipt=await readJson(`${dir}/generation.json`);
    if(motion)motions[job.id]={source:motion.source,motion:motion.motion,review:motion.review};
    if(receipt)receipts[job.id]={status:receipt.status,estimatedCredits:receipt.estimatedCredits,requestedAt:receipt.requestedAt,completedAt:receipt.completedAt,output:receipt.output?{bytes:receipt.output.bytes,fps:receipt.output.fps,frames:receipt.output.frames,width:receipt.output.width,height:receipt.output.height}:null};
    const present=async(name:string)=>await confined(job.id,name)?`${dir}/${name}`:null;
-   media[job.id]={video:await present('source.mp4'),first:await present('first.png'),last:await present('last.png')};
+   media[job.id]={video:await present('source.mp4'),reversed:await present('source-reversed.mp4'),first:await present('first.png'),last:await present('last.png'),...await tracking(job.id)};
   }));
-  return {schemaVersion:1,readable:!!file,budget:file?.budget??null,jobs,derived,motions,receipts,media};
+  return {schemaVersion:1,readable:!!file,budget:file?.budget??null,jobs,derived,edits,motions,receipts,media,revisions};
  };
  const token=randomUUID();let lastSeen=Date.now();
  const types:Record<string,string>={'.html':'text/html; charset=utf-8','.css':'text/css; charset=utf-8','.js':'text/javascript; charset=utf-8','.mp4':'video/mp4','.png':'image/png','.jpg':'image/jpeg','.json':'application/json'};
@@ -85,12 +100,32 @@ if(process.argv.includes('--stop')||process.argv.includes('--status')){
    }
    if(url.pathname==='/api/library'&&req.method==='GET'){res.setHeader('Content-Type','application/json; charset=utf-8');res.end(JSON.stringify(await library()));return;}
    if(url.pathname==='/api/clip-bank'&&req.method==='GET'){res.setHeader('Content-Type','application/json; charset=utf-8');res.end(JSON.stringify(await clipBank()));return;}
+   // The one write besides placements: a review decision for a clip of the job file. It rewrites only the review block
+   // of motions/<id>.json, from this page only, and only against the revision the page last read.
+   if(url.pathname.startsWith('/api/clip-bank/review/')){
+    const id=url.pathname.slice('/api/clip-bank/review/'.length);
+    res.setHeader('Content-Type','application/json; charset=utf-8');
+    if(req.method!=='PUT'){res.writeHead(405).end();return;}
+    if(req.headers.origin!==origin){res.writeHead(403).end(JSON.stringify({error:'Spara från det lokala labbet.'}));return;}
+    if(!req.headers['content-type']?.startsWith('application/json')){res.writeHead(415).end(JSON.stringify({error:'JSON krävs.'}));return;}
+    if(Number(req.headers['content-length']??0)>8192){res.writeHead(413).end(JSON.stringify({error:'Beslutet är för stort.'}));return;}
+    try{
+     const {clips,derived}=await clipJobs();
+     if(!clips.some(job=>job.id===id)&&!derived.some(take=>take.id===id))throw new StoreError(404,'Klippet finns inte i jobbfilen.');
+     let size=0;const chunks:Buffer[]=[];for await(const chunk of req){size+=chunk.length;if(size>8192)throw new StoreError(413,'Beslutet är för stort.');chunks.push(chunk);}
+     res.end(JSON.stringify(await reviews.save(id,JSON.parse(Buffer.concat(chunks).toString('utf8')),typeof req.headers['if-match']==='string'?req.headers['if-match']:undefined)));
+    }catch(error){res.writeHead(error instanceof StoreError?error.status:400).end(JSON.stringify({error:(error as Error).message}));}return;
+   }
    if(url.pathname==='/api/proofs'&&req.method==='GET'){res.setHeader('Content-Type','application/json; charset=utf-8');res.end(JSON.stringify(await proofs()));return;}
    if(req.method!=='GET'&&req.method!=='HEAD'){res.writeHead(405).end();return;}
-   if(scripts[url.pathname]){res.setHeader('Content-Type','text/javascript');res.end(stripTypeScriptTypes(await readFile(scripts[url.pathname],'utf8')));return;}
+   if(scripts[url.pathname]||vendor[url.pathname]){
+    let source:string;try{source=await readFile(scripts[url.pathname]??vendor[url.pathname],'utf8');}catch{res.writeHead(404).end();return;} // a module that has not been written yet
+    res.setHeader('Content-Type','text/javascript; charset=utf-8');res.end(scripts[url.pathname]?forBrowser(source):source);return;
+   }
    const file=url.pathname==='/'?'lab.html':decodeURIComponent(url.pathname.slice(1));
-   if(!allowed.has(file)&&!await clipFile(file)&&!await proofPath(file)&&!(await library()).items.some((item:{path:string})=>item.path===file)){res.writeHead(404).end();return;}
-   const size=(await stat(file)).size,ext=file.slice(file.lastIndexOf('.'));
+   if(!allowed.has(file)&&!await clipFile(file)&&!await trackFile(file)&&!await proofPath(file)&&!(await library()).items.some((item:{path:string})=>item.path===file)){res.writeHead(404).end();return;}
+   const size=await stat(file).then(s=>s.isFile()?s.size:-1,()=>-1),ext=file.slice(file.lastIndexOf('.'));
+   if(size<0){res.writeHead(404).end();return;} // allowed, but not on this machine
    res.setHeader('Content-Type',types[ext]??'application/octet-stream');res.setHeader('Accept-Ranges','bytes');
    let start=0,end=size-1;
    if(req.headers.range){

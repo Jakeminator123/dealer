@@ -24,7 +24,9 @@ Varje klipp är en handling mellan två ankare och skrivs `READY>P4.C1`, `P4.C1>
 - **Bilderna styr, inte texten.** Modellen gör det ankarna visar. Med kortet på filten i startbilden gled det längs filten; med kortet i skon lyfte hon, oavsett ordalydelse. En önskad rörelse låses med ett ankare.
 - **Verkliga rutor som ankare.** Bara kortpixlar och rekvisita byts (`tools/build-anchor.ts`). Platt målad kortyta fick modellen att hitta på tryckt framsida; riktiga kortpixlar gav ren blå.
 - **Givar slutar på sitt ankare.** Sista rutan ligger 17–47 px (vid kvartsstorlek) från landningsankaret oavsett tagning. Returer som startar från ankarbilden passar därför alla tagningar och varianter, och giv och returer kan beställas samtidigt.
-- **Granska i full upplösning, ruta för ruta.** Grov granskning missade ett finger genom kortet och en vändning Jakob inte kunde se.
+- **Granska i full upplösning, ruta för ruta.** Grov granskning missade ett finger genom kortet, en vändning Jakob inte kunde se och ett lyft som lästes som glid. Använd oberoende granskare och mjuka inte upp domen.
+- **Ankaren var den svaga länken.** Hopklippta ankare gav för litet kort (modellen ritar det cirka dubbelt så stort och krymper det i de två sista rutorna), fingertopp bredvid kortet och rester som syns i klippens första och sista rutor. Ta ankare som hela, verkliga rutor ur modellens egna klipp, till exempel givens landningsruta före slutet. Pröva en plats, granska, och beställ först därefter parallellt.
+- **Skalan.** Planens kortrutor passar ett plan (1,1 px), men händer, sko och modellens egna kort är cirka dubbelt så stora (k ≈ 2). Mätning och kortstorlek per mål: [data/scene-contract.json](data/scene-contract.json). Jakob lutar åt renderade kort i större skala; beslutet är inte fattat.
 - Gamla bankens returer gick i hög båge för att prompten beställde det, och dess kort låg på en rak linje medan planen är en båge. Bakgrund: [evidence/generation-method-audit.json](evidence/generation-method-audit.json).
 
 ## Läget i klippbanken
@@ -37,9 +39,9 @@ Beslut ägs av `motions/<id>.json`; uppdraget av `data/clip-jobs.json`. 2 800 cr
 | P4.C2 | `pamela-p4-c2-plan-deal-01`: egen film för kort 2 (alternativ A), kort 1 orört |
 | P1.C1 | Inget rent huvudklipp. `…-deal-02`: Jakob ser ingen vändning. `…-deal-03`: finger genom kortet f72–78. Returer `…-return-{ready,idle}-02` hör till deal-03 |
 | P7.C1 | `…-plan-deal-01` kandidat; `…-plan-deal-02` godkänd av Jakob som variant. Inga returer |
-| P2, P3, P5, P6 variant A | Giv + två returer per plats beställda parallellt. Rutgranskning pågår |
-| Variant B, P4 | `pamela-p4-c1-drawn-deal-01` godkänd av Jakob ("svinbra"). Returer till REDO B och VILA finns. Uttaget `pamela-readyb-draw-02` glider lågt ner mot filten; `…-draw-01` underkänt (lyfte) |
-| Variant B, P1, P2, P3, P5 | `…-drawn-deal-*` beställda. Rutgranskning pågår |
+| P2, P3, P5, P6 variant A | Ingen huvudtagning (oberoende rutgranskning). P2 tryckt framsida, P3 ingen vändning, P5 och P6 glid på bordet; alla krymper kortet i f118–119. Returerna hänger på ankare som ska göras om |
+| Variant B, P4 | `pamela-p4-c1-drawn-deal-01` godkänd av Jakob ("svinbra"); har ankarrester f0–14 och hopp vid f117. Retur till VILA ren, till REDO B användbar. Båda uttagen (`pamela-readyb-draw-01`, `-02`) underkända: kortet lyfts |
+| Variant B, P1, P2, P3, P5 | P5 användbar och av samma sort som P4. P1 användbar men vänds i luften. P2 krymper i slutet, P3 tryckt framsida |
 | Variant B, P6, P7 | Ej byggt: armen korsar skon, skobytet i ankaret klarar inte det |
 | Saknas helt | Dealerkort, vändning av täckt kort, insamling, VILA>REDO för variant A (finns i arkivet), träffkort |
 
@@ -55,10 +57,15 @@ Riktning från Jakob, prövad i `tools/track-card.ts` och `tools/render-card-pro
 - `placements/default.json` är Jakobs utkast (SHA `406acb69…`): återställ eller stage:a det inte.
 - **Labbet är granskningsytan:** `http://127.0.0.1:4319/lab.html?tab=klippbank` visar nodträd, tagningar och rundbyggare. Lösa sidor under `D:/dealer-scratch` används inte längre mot Jakob. Beställning och granskningsbeslut i labbet är inte byggda.
 - Publika sajten visar fortfarande 22 filmer från `b65fd9b`. Jakob vill ha nya läget dit; kräver mediauppladdning och ombyggnad.
-- Mätning av bordsplan, kamera, ljus och mobilbeskärning pågår (`data/scene-contract.json` när den är klar). Dagens mobilvy är en äldre beskärning som klipper P1.
+- Mätningen av bordsplan, kamera, ljus och mobilbeskärning är klar (`data/scene-contract.json`). Ljuset kommer uppifrån, svagt från bildvänster; skuggmatten går att lägga på nytt bord. Dagens mobilvy klipper P1.C1 helt och delar av P1.C2, P7.C1 och P7.C2.
+- **Bakgrundsagenten** (Jakobs egen session, `dealer-89`) bygger rum och bord som läsande prov under `assets/proofs/bakgrund-3d/` och ändrar inga repofiler. Dess fynd 2026-11-11: (1) kontraktets kamera passar planens kort men tänjer dealern när vyn vrids, medan en lins skattad ur dealern (cirka 1 270 px, skattad) lutar korten fel — samma tvålinsproblem som skalan; (2) nyckling mot varje rutas egen gröna nivå räcker och behåller skuggorna, cirka 1,4 px grönt spill i hud och hår; (3) sko och lyft arm korsar bordskantsraden 831,5, så skon bör stå helt på filten och vara oförändrad mellan klipp; (4) med 3D-bord och 3D-rum är mobilvyn bara en annan kameravinkel.
+- Jakobs smak om 3D-labbet (2026-11-11): "fantastiskt"; gillar att oskärpan har djup, att vyn lutar lite åt sidan och att bordet har markeringar.
+- Labbagenten bygger renderade kort live i labbet med Jakobs kortmaterial och ett reglage för kortskala, samt granskningsknappar. Redigeringsverktyg för `aleph2` ("exakt så, men rätta") byggs; inget är beställt.
 - Scoutgamings huvudagent har fått besked: inget härifrån är infört där, och insatsrutor bör vara data per bord och filmbank.
 
 ## Nästa steg
+
+0. **Valideringsprov på en plats innan något beställs brett:** ankare som hela verkliga rutor (DRAWN ur `pamela-p4-c1-drawn-deal-01` cirka f18–22, landning ur en givs egna rutor före slutsnäppet). Pröva samtidigt Jakobs iakttagelse 2026-11-11 att klipp gjorda i ultrarapid fungerade bäst: samma ankare en gång i normal fart (4 s) och en gång i halv fart (8 s) som sedan snabbas upp 2×. Pröva även uttaget ur skon baklänges (hon skjuter in kortet; spelas omvänt).
 
 1. Ta emot rutgranskningen av de 19 nya klippen och uppdatera `motions/`.
 2. Ta emot labbagentens klippbank; lägg till beställning och granskningsbeslut i labbet; publicera till Vercel.
