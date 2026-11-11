@@ -4,7 +4,7 @@
 // With focus on, they go through a full-size target and are blurred by their own distance from the focus.
 import * as T from 'three';
 import {DEALER_LENS_ESTIMATE, FILM, aimCorrection, betSpots, cameraFromContract, cardFocusPixel, cardPixel, cardSpots, cloudLevel, filmToScene, flickerLevel, sceneToSpot, solveCamera, spotToScene, viewFovDeg, type CardTrack, type FilmCamera} from './scene3d-geometry.ts';
-import {createFilmLayers, createPlayers} from './scene3d-film.ts';
+import {createFilmLayers, createPlayers, frameAt} from './scene3d-film.ts';
 import {createFanLight} from './scene3d-light.ts';
 import {createChipTray, TRAY} from './scene3d-props.ts';
 import {createRooms, type RoomId} from './scene3d-room.ts';
@@ -179,7 +179,7 @@ export function createScene(canvas: HTMLCanvasElement, host: HTMLElement, data: 
   function render(seconds = performance.now() / 1000) {
     targets(); updateView(seconds);
     const shown = players.current, part = players.part; if (part && part.track !== undefined) track = part.track; // a part that names its track brings it along
-    film.setFrame(part?.frame ?? null); // and so does a part whose film has a frame of its own
+    film.setFrame(frameAt(part?.frame ?? null, players.frame())); // and so does a part whose film has a frame of its own
     // A film with a frame of its own has no shoe and no card places in its picture: the rendered cards (the one seated in the shoe window among them) stay out of it.
     const cardsOn = state.cards && !part?.frame; if (!cardsOn) cardLayer?.off?.();
     if (shown) film.setTexture(cardsOn && cardLayer?.update(shown.video, players.frame(), track, {rank: state.cardRank, suit: state.cardSuit, scale: state.cardScale}, part?.cards) ? cardLayer.texture : shown.texture);

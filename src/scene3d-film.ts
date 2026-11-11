@@ -131,9 +131,18 @@ export type KeySettings = {lo: number; hi: number; shadow: number};
 // A film whose picture is not the standard frame: the dealer is drawn at `scale` of her usual size on a larger screen, and the
 // middle of the dealer-side table edge, (881.5, 831.5) in the standard frame, lies at `anchor` in the film's own pixels. With
 // layer BEHIND_TABLE the film carries no table: it is drawn on one plane `back` dealer metres behind the table's edge and the
-// scene's own table hides what is behind it. shadow false: darker screen is not kept as a shadow. Written in a film's record
-// as motion.frame.
-export type FilmFrame = {scale: number; anchor: [number, number]; layer?: 'BEHIND_TABLE'; shadow?: boolean; back?: number};
+// scene's own table hides what is behind it. shadow false: darker screen is not kept as a shadow. behindFrom: the film frame
+// from which BEHIND_TABLE holds; before it the film is drawn in the usual two layers, read through scale and anchor, so a film
+// can begin in the rest pose with her hands on the table and go behind the table once they have left it. Absent: from the
+// first frame. Written in a film's record as motion.frame.
+export type FilmFrame = {scale: number; anchor: [number, number]; layer?: 'BEHIND_TABLE'; shadow?: boolean; back?: number; behindFrom?: number};
+const fronts = new WeakMap<FilmFrame, FilmFrame>();
+/** A film's frame as it holds at one of its frames: before behindFrom it is the same frame without its layer. One object per answer, so the layers are placed anew only when the answer changes. */
+export function frameAt(frame: FilmFrame | null, at: number): FilmFrame | null {
+  if (!frame || frame.layer !== 'BEHIND_TABLE' || frame.behindFrom === undefined || at >= frame.behindFrom) return frame;
+  let front = fronts.get(frame); if (!front) { front = {...frame}; delete front.layer; fronts.set(frame, front); }
+  return front;
+}
 const BEHIND = 0.15; // dealer metres behind the edge when the film does not say
 // Where the film's own card is to be keyed away in this frame (film pixels, quads clockwise on screen): `zone` where it and
 // its blur can be, `core` its tracked colour, `colour` that colour lit (yellow back, blue face), `rim` how far its pale rim

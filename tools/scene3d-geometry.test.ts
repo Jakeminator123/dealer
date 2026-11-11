@@ -1,4 +1,5 @@
 import test from 'node:test';
+import {frameAt, type FilmFrame} from '../src/scene3d-film.ts';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import {BET, DEALER_LENS_ESTIMATE, FILM, aimCorrection, betSpots, cameraFromContract, cardSpots, filmToTable, sceneToSpot, solveCamera, spotToScene, tableToFilm, viewFovDeg, type FilmCamera} from '../src/scene3d-geometry.ts';
@@ -166,4 +167,16 @@ test('dealer metres and scene positions map both ways', () => {
     const spot = cardSpots(plan, c).find(p => p.id === 'P4.C1')!, [sx, , sz] = spotToScene(c, spot.x, spot.s), n = plan.plan?.targets?.['P4.C1']?.geometry?.native ?? plan.targets['P4.C1'].geometry.native, film = tableToFilm(c, sx, sz);
     near(film.x, n.u * (FILM.width - 1), 1e-6, 'filmpixel x'); near(film.y, (1 - n.v) * (FILM.height - 1), 1e-6, 'filmpixel y');
   }
+});
+
+test('a film with a frame of its own goes behind the table from the frame it names', () => {
+  const whole: FilmFrame = {scale: 0.5, anchor: [882, 656], layer: 'BEHIND_TABLE', shadow: false}, late: FilmFrame = {...whole, behindFrom: 30};
+  assert.equal(frameAt(null, 5), null);
+  assert.equal(frameAt(whole, 0), whole, 'without the number it is behind the table from the first frame');
+  const before = frameAt(late, 29)!;
+  assert.equal(before.layer, undefined); assert.deepEqual({...before, layer: 'BEHIND_TABLE'}, late, 'before the frame: the same film in the usual layers');
+  assert.equal(frameAt(late, 12), before, 'the same object every time, so nothing is placed anew');
+  assert.equal(frameAt(late, 30), late); assert.equal(frameAt(late, 177), late);
+  const plain: FilmFrame = {scale: 0.5, anchor: [882, 656], behindFrom: 30};
+  assert.equal(frameAt(plain, 3), plain, 'a film that never goes behind the table is left as it is');
 });
