@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "id": "pamela-p7-c1-plan-return-ready-02",
+  "dealer": "pamela",
+  "source": {
+    "path": "assets/motions/pamela-p7-c1-plan-return-ready-02/source.mp4",
+    "sha256": "f7b5fdbba9a74f5e5b0ca9842f6875ce306987455ac3b17628767a21a505f6c9",
+    "bytes": 5514546,
+    "width": 1764,
+    "height": 1174,
+    "fps": 30,
+    "frames": 60,
+    "provider": "Runway developer API",
+    "model": "wan3"
+  },
+  "motion": {
+    "kind": "RETURN",
+    "from": "LAND(P7.C1)",
+    "to": "READY",
+    "hand": "LH",
+    "target": "P7.C1",
+    "pass": false,
+    "basis": "SOURCE_FRAME_REVIEW",
+    "evidence": "evidence/generation-method-audit.json"
+  },
+  "review": {
+    "decision": "PENDING",
+    "basis": "Levererad. Väntar på oberoende rutgranskning; ingen dom ännu.",
+    "limitations": "Inte granskad ruta för ruta ännu.",
+    "colorDoesNotProvePhysicalSide": true,
+    "userAccepted": false,
+    "productionReady": false
+  },
+  "postProcessing": "none",
+  "generationRef": "assets/motions/pamela-p7-c1-plan-return-ready-02/generation.json",
+  "jobRef": "data/clip-jobs.json",
+  "scoutIntegrated": false,
+  "published": false
+}
