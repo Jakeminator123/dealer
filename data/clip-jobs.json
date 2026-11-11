@@ -2141,6 +2141,18 @@
         50
       ],
       "purpose": "The real press-out motion from the older READY2 trial, frames 0–50: the DRAWN anchor was taken from this clip. Seam to DRAWN deals about 200 pixels over threshold."
+    },
+    {
+      "id": "pamela-idle-ready-entry-01",
+      "kind": "ENTRY",
+      "from": "IDLE",
+      "to": "READY",
+      "clip": "pamela-idle-ready-entry-01",
+      "frames": [
+        0,
+        59
+      ],
+      "purpose": "Entry from VILA to the pinch on the yellow card, recovered from the old lab (physical entry pilot, 2 s, 40 credits already spent there). Its last image is the current READY anchor byte for byte, so it leads into every variant A deal. Empty table."
     }
   ],
   "edits": [

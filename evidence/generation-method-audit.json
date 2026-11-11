@@ -680,6 +680,84 @@
       "sha256": "58ad446e06c28c4e0c78c48ea39ba96cc00428e12566e4192cdd6c72afd96aac",
       "bytes": 13656939,
       "purpose": "Release frame decoded to measure where the old bank landed its card"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-physical-entry-pilot/jobs/vila-to-shoe-take-01/plan.json",
+      "sha256": "457b095a9c1e18800d8f7eae661adc510f854a28e64cfaa029990ae967099fed",
+      "bytes": 2952,
+      "purpose": "Entry pilot (VILA to shoe): job, verdict and anchors, to decide whether the clip fits the current READY anchor"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-physical-entry-pilot/jobs/vila-to-shoe-take-01/state.json",
+      "sha256": "81d1618efa7cfb0afc4b4781c4f2801a6fccfce95bc41598b049063036544699",
+      "bytes": 1038,
+      "purpose": "Entry pilot (VILA to shoe): job, verdict and anchors, to decide whether the clip fits the current READY anchor"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-physical-entry-pilot/jobs/vila-to-shoe-take-01/native-verification.json",
+      "sha256": "7cb04f25dcda0620152100e35e62f063696393778ea7514089058dd7d4f03024",
+      "bytes": 632,
+      "purpose": "Entry pilot (VILA to shoe): job, verdict and anchors, to decide whether the clip fits the current READY anchor"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-physical-entry-pilot/review/take-01/browser-review.json",
+      "sha256": "ee483a6746031ae58f970b3858d41935aa56d26234e7d66dc7705a80002b440a",
+      "bytes": 993,
+      "purpose": "Entry pilot (VILA to shoe): job, verdict and anchors, to decide whether the clip fits the current READY anchor"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-physical-entry-pilot/review/take-01/receipt.json",
+      "sha256": "1e3e06e442bce402dedf657e47e12e7e0fbf024417e7bed7d55941b1f61ceb2f",
+      "bytes": 2365,
+      "purpose": "Entry pilot (VILA to shoe): job, verdict and anchors, to decide whether the clip fits the current READY anchor"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-physical-entry-pilot/preparation/qa.json",
+      "sha256": "64c7b4912d510dce0275550b774115a4dedd610db5ae482a54269e7cc8a18a85",
+      "bytes": 1400,
+      "purpose": "Entry pilot (VILA to shoe): job, verdict and anchors, to decide whether the clip fits the current READY anchor"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-physical-entry-pilot/preparation/end.png",
+      "sha256": "a2fc6d3565ca711015c9b547671bf33e97eea4c2281e75841690f8848b422f45",
+      "bytes": 1179028,
+      "purpose": "Entry pilot anchors and film, hashed for identity with the current READY anchor and for import"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-physical-entry-pilot/preparation/start.png",
+      "sha256": "79a87163c9c665d2c5b8e64dd32fe83bfbd08e7b227a1ef000bb76ed71ceeed0",
+      "bytes": 1682666,
+      "purpose": "Entry pilot anchors and film, hashed for identity with the current READY anchor and for import"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-physical-entry-pilot/jobs/vila-to-shoe-take-01/original.mp4",
+      "sha256": "cbaf81cd79f53eafcc38891847151a1311e3ee94275abe10463674ae6a6f66f2",
+      "bytes": 5845081,
+      "purpose": "Entry pilot anchors and film, hashed for identity with the current READY anchor and for import"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261109-pamela-idle-pilot/review-summary.json",
+      "sha256": "97e1ee80d5d4396533fbdf902d848963b09078b252c4b018a3c640b6bd23037b",
+      "bytes": 3986,
+      "purpose": "Old idle clips: what was generated, from which image, and the old lab's own verdict, to decide what can serve as IDLE loop"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261109-pamela-continuous-idle/continuous.json",
+      "sha256": "143c6e451f47652d8d279de0a32224cc09adf6aad7920d0bb312e643e0fb36df",
+      "bytes": 2412,
+      "purpose": "Old idle clips: what was generated, from which image, and the old lab's own verdict, to decide what can serve as IDLE loop"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261109-pamela-continuous-idle/qa/visual-review.json",
+      "sha256": "e1a4d6edf1acfd6e6751933a733a7a117891de2a7ca16228867cf6dc4a630c79",
+      "bytes": 5333,
+      "purpose": "Old idle clips: what was generated, from which image, and the old lab's own verdict, to decide what can serve as IDLE loop"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261109-pamela-continuous-idle/qa/cut-proposals.json",
+      "sha256": "0f6eff7afbad72db68009b1f66c4b4370bf6f5befb4e321a7865dc2ee2a8464a",
+      "bytes": 3265,
+      "purpose": "Old idle clips: what was generated, from which image, and the old lab's own verdict, to decide what can serve as IDLE loop"
     }
   ]
 }
