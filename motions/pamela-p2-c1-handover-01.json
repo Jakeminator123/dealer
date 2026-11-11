@@ -28,12 +28,13 @@
     "evidence": "evidence/generation-method-audit.json"
   },
   "review": {
-    "decision": "PENDING",
+    "decision": "REJECTED",
     "basis": "Oberoende rutgranskning 2026-11-11: användbar med anmärkning. Överlämningen är verklig: vänster hand lyfter kortet ur fönstret f18–30, båda händerna håller det vid bröstet f40–53 och vänster släpper f54–55. Höger hand vänder det i luften (bred gul f56–64, kant cirka f77, blå öppnar f78–86), lägger det f86–92 och släpper f102–104. Inget går igenom något och händerna ser rimliga ut. Vid f149 är båda händerna inom 0,5 px från vilobilden.",
     "limitations": "Hackar: 17 frysta rutor med ungefär sex rutors takt. Kortet böjs f84–88 och är plant igen f124. Grönnivån hoppar i de två sista rutorna. Klippet rymmer giv och retur i ett och står därför som experiment.",
     "colorDoesNotProvePhysicalSide": true,
     "userAccepted": false,
-    "productionReady": false
+    "productionReady": false,
+    "userReview": "Jakob 2026-11-11: Nej, den här kommer jag inte att godkänna. Allt är jättebra, men det enda felet är att hon inte vrider om sin andra arm. Det är synd, för jag vill verkligen ha fler filmer där hon använder sin högra arm, den som syns åt vänster, och att hon jobbar med båda händerna."
   },
   "postProcessing": "none",
   "generationRef": "assets/motions/pamela-p2-c1-handover-01/generation.json",

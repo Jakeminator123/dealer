@@ -28,12 +28,13 @@
     "evidence": "evidence/generation-method-audit.json"
   },
   "review": {
-    "decision": "PENDING",
+    "decision": "REJECTED",
     "basis": "Oberoende rutgranskning 2026-11-11: användbar med anmärkning, den renaste av de tre. Kortet trycks och glider ut f14–28 och ligger plant på filten ända till platsen (f72), där det vilar f72–86. Vändning i luften: bred gul f88–92, kant f93–99, blå öppnar f100–105, lagt f106–110. Två fingertoppar ligger kvar f112–149 utan andra beröring.",
     "limitations": "Kortet kryper 23 px f112–134 och är sedan stilla. Skons öppning vidgas och ett ljust stag syns från f20–24.",
     "colorDoesNotProvePhysicalSide": true,
     "userAccepted": false,
-    "productionReady": false
+    "productionReady": false,
+    "userReview": "Jakob 2026-11-11: Verkligen synd, här börjar hon handrörelsen, men i slutet flippar hon tillbaka. Det är fortfarande ett mysterium varför hon inte kan vända sin hand. Eller kommer vi till det läget där kortet faller över på andra sidan."
   },
   "postProcessing": "none",
   "generationRef": "assets/motions/pamela-p5-c1-readyb-deal-01/generation.json",

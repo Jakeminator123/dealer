@@ -25,13 +25,14 @@
     "evidence": "evidence/generation-method-audit.json"
   },
   "review": {
-    "decision": "SECONDARY",
+    "decision": "ACCEPTED",
     "basis": "Störd rad f0–4, pekfingret kliver på kortet f5–10, lyft f22–25. Lös näve f68–80 innan nypet.",
     "limitations": "Landningsankaret byggs om med kortet i den storlek modellen själv ritar; klippet görs om därefter.",
     "reviewedBy": "separat rutgranskare i full upplösning 2026-11-11",
     "colorDoesNotProvePhysicalSide": true,
-    "userAccepted": false,
-    "productionReady": false
+    "userAccepted": true,
+    "productionReady": false,
+    "userReview": "Jakob 2026-11-11: Det här ser väldigt bra ut, tycker jag, i allmänhet."
   },
   "placementRef": {
     "path": "assets/anchors/pamela-ready-p6-c1-plan-01/placement-plan.json",
