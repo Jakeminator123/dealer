@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "budget": {
-    "maximumCredits": 4812
+    "maximumCredits": 4912
   },
   "anchors": [
     {
@@ -2786,6 +2786,27 @@
       },
       "promptText": "Locked camera on the same Pamela, black suit, green felt and fixed shoe. She sits upright with both hands resting flat on the table, exactly as in the first image. Two cards lie flat and still on the table close in front of her: a plain solid blue card at left and a plain solid yellow card at right. In one calm, unhurried movement her left hand reaches to that yellow card, lifts it by its edge and turns it over once just above the table: yellow visibly narrows to a thin pale edge and the opposite blue face opens fully. She lays the same card flat, blue face up, on the exact place it was lifted from, lets go of it, and draws the hand low and straight back to rest flat on the table in front of her. She ends in the exact pose of the last image, looking into the camera with a slight friendly smile. Both faces of the card are blank: one plain solid yellow, the other plain solid blue, with no print, pips, pattern or picture. The other hand rests on the table throughout. The blue card at left stays flat, still and untouched. The yellow card in the shoe stays fully seated. No slide, second flip, colour swap, reach toward the shoe, extra card, display gesture, camera motion or cut.",
       "purpose": "New take of the turn of the hole card for the game (Jakob asked for the film; the archive take is usable but its lifted card looks soft). Whole real frames as first and last image. Same images as pamela-d-c2-reveal-01 with the clip bank's plain recipe for the turn, to see whether the wording matters."
+    },
+    {
+      "id": "pamela-table-leave-01",
+      "kind": "LEAVE",
+      "target": null,
+      "from": "IDLE",
+      "to": "AWAY",
+      "model": "wan3",
+      "duration": 5,
+      "ratio": "auto_1080p",
+      "audio": false,
+      "promptText": "Locked camera on the same Pamela, black suit, green felt and fixed shoe. She sits upright with both hands resting flat on the table, exactly as in the first image. In one calm, unhurried movement she lifts her hands from the table, pushes back, stands up, turns to her left and walks out of the picture past its right edge, behind the shoe. From then on nobody is in the picture: only the plain green background, the plain green table and the black shoe remain, and the clip holds that empty picture, perfectly still, to its end. The shoe never moves and the yellow card stays fully seated in it. The green background and the table keep their exact colour and light, and the left edge of the picture stays empty the whole time. No other person, no chair or other object appears, no card is touched, no wave or gesture, no camera motion or cut.",
+      "first": {
+        "frame": {
+          "video": "assets/motions/pamela-idle-ready-entry-01/source.mp4",
+          "videoSha256": "cbaf81cd79f53eafcc38891847151a1311e3ee94275abe10463674ae6a6f66f2",
+          "index": 0
+        },
+        "note": "The rest keystone: frame 0 of the entry clip, the frame every idle clip starts and ends on."
+      },
+      "purpose": "She stands up and leaves the table (Jakob asked for it in the node tree). Ordered from the first image alone; the last frames are meant to be the picture without her, the start of the arrival film."
     }
   ],
   "derived": [
