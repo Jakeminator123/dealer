@@ -87,12 +87,12 @@ export function createFilm(players: FilmPlayers, graph: Graph, layout: Layout, r
     return {gaps, beats};
   }
   /**
-   * The dealer is changed: she stands up and leaves, the table stands empty (away() is awaited then; the page may change what
-   * it shows), and a dealer comes in and sits down. True when rest has begun again; false when the bank has no film to
+   * The dealer is changed: she stands up and leaves, the table stands empty (away() is awaited then, and is given the film
+   * that comes next; the page may change what it shows), and a dealer comes in and sits down. True when rest has begun again; false when the bank has no film to
    * leave with or to arrive with, and nothing is played then. Only between rounds: no card lies on the table. `own`: films
    * the page brings itself, played instead of the bank's (a stand-in while the bank has no approved film for the change).
    */
-  async function swap(away: () => void | Promise<void> = () => {}, own: {leave?: FilmPart[]; arrive?: FilmPart[]} | null = null): Promise<boolean> {
+  async function swap(away: (arrive: FilmPart[]) => void | Promise<void> = () => {}, own: {leave?: FilmPart[]; arrive?: FilmPart[]} | null = null): Promise<boolean> {
     const part = (s: Segment | undefined): FilmPart[] => s?.video ? [{path: s.video, start: s.start, end: s.end, track: null, frame: frameOf(s.take), ...fpsOf(s.take)}] : [];
     const banked = (from: string, to: string) => part(resolveRound(graph, [{from, to}], {places})[0]); // the bank's own film comes first; the page's stands in where the bank has none
     let leave = banked('IDLE', 'AWAY'), arrive = banked('AWAY', 'IDLE'); if (!leave.length) leave = own?.leave ?? []; if (!arrive.length) arrive = own?.arrive ?? [];
@@ -102,7 +102,7 @@ export function createFilm(players: FilmPlayers, graph: Graph, layout: Layout, r
     const cut = !leaving || idleExit(leaving) === 'CUT'; if (!cut) players.hurry(IDLE_RULE.exitRate);
     players.preload?.([...leave, ...arrive].map(p => p.path));
     await run(leave, cut); if (mine !== token) return true;
-    await away(); if (mine !== token) return true;
+    await away(arrive); if (mine !== token) return true;
     await run(arrive, true); if (mine === token) rest();
     return true;
   }

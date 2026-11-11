@@ -212,6 +212,9 @@ test('the exit: the camera backs away along its line of sight while she rises, a
   assert.deepEqual(exitView(170, camera, from), stood, 'and it stays there while she walks out');
   // A film that says when she rises is followed by its own frames.
   assert.deepEqual(exitView(56, camera, from, [30, 56]), stood); assert.deepEqual(exitView(30, camera, from, [30, 56]), exitView(0, camera, from)); assert.notDeepEqual(exitView(45, camera, from, [30, 56]), exitView(45, camera, from));
+  // An entrance goes the same way backwards: stood back while she walks in, home when she has sat down.
+  assert.deepEqual(exitView(0, camera, from, [146, 184], true), stood); assert.deepEqual(exitView(146, camera, from, [146, 184], true), stood);
+  assert.deepEqual(exitView(184, camera, from, [146, 184], true), exitView(0, camera, from)); assert.deepEqual(exitView(216, camera, from, [146, 184], true), exitView(0, camera, from));
   const half = exitView((EXIT_VIEW.rise[0] + EXIT_VIEW.rise[1]) / 2, camera, from); assert.ok(Math.abs(half.dz - stood.dz / 2) < 1e-9 && half.pitch > -8 && half.pitch < EXIT_VIEW.pitch);
 });
 

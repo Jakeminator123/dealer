@@ -20,10 +20,11 @@ export type ExitView = {yaw: number; pitch: number; zoom: number; dy: number; dz
 /**
  * The view at a frame of the exit film. `from` is the view she is seen in before she rises (tilt in degrees, zoom); the
  * camera then backs away along that view's own line of sight, so nothing in the picture slides sideways. `rise`: the frames
- * in which she stands up in this film (its record's motion.frame.rise).
+ * in which she stands up in this film (its record's motion.frame.rise). `entering`: the film is an entrance, and the same
+ * way is gone backwards: the camera stands back while she walks in, and comes home over the frames in which she sits down.
  */
-export function exitView(frame: number, camera: FilmCamera, from: {pitch: number; zoom: number}, rise: readonly number[] = EXIT_VIEW.rise): ExitView {
-  const [a, b] = rise, t = Math.min(1, Math.max(0, (frame - a) / (b - a))), risen = t * t * (3 - 2 * t);
+export function exitView(frame: number, camera: FilmCamera, from: {pitch: number; zoom: number}, rise: readonly number[] = EXIT_VIEW.rise, entering = false): ExitView {
+  const [a, b] = rise, t = Math.min(1, Math.max(0, (frame - a) / (b - a))), eased = t * t * (3 - 2 * t), risen = entering ? 1 - eased : eased;
   const solved = solveCamera(camera), slope = solved.pitch - from.pitch * Math.PI / 180, reach = EXIT_VIEW.back * solved.edgeDistance * risen; // slope: radians below the horizontal
   return {yaw: 0, pitch: from.pitch + (EXIT_VIEW.pitch - from.pitch) * risen, zoom: from.zoom + (EXIT_VIEW.zoom - from.zoom) * risen, dz: reach * Math.cos(slope), dy: reach * Math.sin(slope) + EXIT_VIEW.lift * risen};
 }
