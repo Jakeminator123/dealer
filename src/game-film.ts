@@ -12,8 +12,10 @@ import {planBeats, type Beat, type FilmSignal} from './game-director.ts';
 // What this file uses of the scene's film queue.
 // frame: a film whose picture is not the standard frame (the entrance and the exit, drawn behind the table) says so in its
 // record as motion.frame; the scene reads it from the part (FilmFrame in src/scene3d-film.ts).
-export type FilmPart = {path: string; start?: number; end?: number | null; rate?: number; track?: unknown; cards?: Record<string, unknown>; frame?: unknown};
+export type FilmPart = {path: string; start?: number; end?: number | null; rate?: number; track?: unknown; cards?: Record<string, unknown>; frame?: unknown; fps?: number};
 const frameOf = (take: Take | null | undefined) => (take?.motion?.motion as {frame?: unknown} | undefined)?.frame ?? null;
+// A film that is not 30 frames a second says so in the bank (take.fps); its frame numbers are its own.
+const fpsOf = (take: Take | null | undefined) => typeof take?.fps === 'number' && take.fps > 0 && take.fps !== 30 ? {fps: take.fps} : {};
 export type FilmPlayers = {
   play(parts: FilmPart[], options?: {loop?: boolean; cut?: boolean; onPart?(index: number): void; onEnd?(): void}): unknown;
   hurry(rate: number): void; preload?(paths: string[]): void;
@@ -47,7 +49,7 @@ export function createFilm(players: FilmPlayers, graph: Graph, layout: Layout, r
     const take = pick.take, range = idleRange(take.frames ?? 90);
     resting = take; played.push(take.id); played.splice(0, Math.max(0, played.length - 12));
     void trackOf(take).then(track => { if (mine !== token) return;
-      players.play([{path: take.media.video!, start: range.start, end: range.end, track, cards: cardOptions({own: null, lying}, table, records, layout)}], {onEnd: () => { if (mine === token) rest(); }}); });
+      players.play([{path: take.media.video!, start: range.start, end: range.end, ...fpsOf(take), track, cards: cardOptions({own: null, lying}, table, records, layout)}], {onEnd: () => { if (mine === token) rest(); }}); });
   }
 
   // A card whose deal has no film that can be played (none made, or the only take rejected) is laid without a hand.
@@ -71,7 +73,7 @@ export function createFilm(players: FilmPlayers, graph: Graph, layout: Layout, r
     const turn = beats.findIndex(b => b.kind === 'REVEAL'), hole = turn >= 0 ? beats[turn].own!.shoeDraw : null;
     const closed = hole === null ? records : records.map(r => r.shoeDraw === hole ? {...r, r: null, s: null, faceDown: true} : r);
     const parts: FilmPart[] = [], beatOf: number[] = [];
-    segments.forEach((s, i) => { if (!s?.video) return; beatOf.push(i); parts.push({path: s.video, start: s.start, end: s.end, track: loaded[i], cards: cardOptions(beats[i], table, i < turn ? closed : records, layout), frame: frameOf(s.take)}); });
+    segments.forEach((s, i) => { if (!s?.video) return; beatOf.push(i); parts.push({path: s.video, start: s.start, end: s.end, track: loaded[i], cards: cardOptions(beats[i], table, i < turn ? closed : records, layout), frame: frameOf(s.take), ...fpsOf(s.take)}); });
     let done = 0; // beats landed so far, in order
     const land = (upTo: number) => { for (; done < upTo; done++) { const beat = beats[done]; if (beat.own && beat.kind !== 'DEAL' && !lying.includes(beat.own.shoeDraw)) lying = [...lying, beat.own.shoeDraw]; landed(beat, done); } };
     if (!parts.length) { land(beats.length); rest(); return {gaps, beats}; }
@@ -91,7 +93,7 @@ export function createFilm(players: FilmPlayers, graph: Graph, layout: Layout, r
    * the page brings itself, played instead of the bank's (a stand-in while the bank has no approved film for the change).
    */
   async function swap(away: () => void | Promise<void> = () => {}, own: {leave?: FilmPart[]; arrive?: FilmPart[]} | null = null): Promise<boolean> {
-    const part = (s: Segment | undefined): FilmPart[] => s?.video ? [{path: s.video, start: s.start, end: s.end, track: null, frame: frameOf(s.take)}] : [];
+    const part = (s: Segment | undefined): FilmPart[] => s?.video ? [{path: s.video, start: s.start, end: s.end, track: null, frame: frameOf(s.take), ...fpsOf(s.take)}] : [];
     const banked = (from: string, to: string) => part(resolveRound(graph, [{from, to}], {places})[0]); // the bank's own film comes first; the page's stands in where the bank has none
     let leave = banked('IDLE', 'AWAY'), arrive = banked('AWAY', 'IDLE'); if (!leave.length) leave = own?.leave ?? []; if (!arrive.length) arrive = own?.arrive ?? [];
     if (!leave.length || !arrive.length) return false;

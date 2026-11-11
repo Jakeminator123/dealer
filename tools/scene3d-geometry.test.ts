@@ -228,3 +228,12 @@ test('the exit: the camera backs away along its line of sight while she rises, a
   assert.deepEqual(exitView(170, camera, from), stood, 'and it stays there while she walks out');
   const half = exitView((EXIT_VIEW.rise[0] + EXIT_VIEW.rise[1]) / 2, camera, from); assert.ok(Math.abs(half.dz - stood.dz / 2) < 1e-9 && half.pitch > -8 && half.pitch < EXIT_VIEW.pitch);
 });
+
+test('an entrance stands behind the table until the frame it names, and takes the usual layers from it', () => {
+  const entrance: FilmFrame = {scale: 0.5, anchor: [1044, 656], size: [2088, 1174], layer: 'BEHIND_TABLE', shadow: false, behindUntil: 120};
+  assert.equal(frameAt(entrance, 0), entrance); assert.equal(frameAt(entrance, 119), entrance);
+  const seated = frameAt(entrance, 120)!; assert.equal(seated.layer, undefined); assert.deepEqual(seated.size, [2088, 1174]); assert.equal(frameAt(entrance, 200), seated);
+  // Both at once: in front, behind, in front again.
+  const both: FilmFrame = {...entrance, behindFrom: 30};
+  assert.equal(frameAt(both, 10)!.layer, undefined); assert.equal(frameAt(both, 60), both); assert.equal(frameAt(both, 130)!.layer, undefined);
+});

@@ -143,13 +143,14 @@ export type KeySettings = {lo: number; hi: number; shadow: number};
 // scene's own table hides what is behind it. shadow false: darker screen is not kept as a shadow. behindFrom: the film frame
 // from which BEHIND_TABLE holds; before it the film is drawn in the usual two layers, read through scale and anchor, so a film
 // can begin in the rest pose with her hands on the table and go behind the table once they have left it. Absent: from the
-// first frame. size: the film's own picture in pixels when it is not the standard 1764 × 1174 (a wider film gives her more room to
+// first frame. behindUntil: the other way round, for an entrance: behind the table up to that frame, the usual layers from it
+// (her hands have reached the table). size: the film's own picture in pixels when it is not the standard 1764 × 1174 (a wider film gives her more room to
 // walk before its edge). Written in a film's record as motion.frame.
-export type FilmFrame = {scale: number; anchor: [number, number]; layer?: 'BEHIND_TABLE'; shadow?: boolean; back?: number; behindFrom?: number; size?: [number, number]};
+export type FilmFrame = {scale: number; anchor: [number, number]; layer?: 'BEHIND_TABLE'; shadow?: boolean; back?: number; behindFrom?: number; behindUntil?: number; size?: [number, number]};
 const fronts = new WeakMap<FilmFrame, FilmFrame>();
-/** A film's frame as it holds at one of its frames: before behindFrom it is the same frame without its layer. One object per answer, so the layers are placed anew only when the answer changes. */
+/** A film's frame as it holds at one of its frames: before behindFrom, and from behindUntil, it is the same frame without its layer. One object per answer, so the layers are placed anew only when the answer changes. */
 export function frameAt(frame: FilmFrame | null, at: number): FilmFrame | null {
-  if (!frame || frame.layer !== 'BEHIND_TABLE' || frame.behindFrom === undefined || at >= frame.behindFrom) return frame;
+  if (!frame || frame.layer !== 'BEHIND_TABLE' || (frame.behindFrom === undefined || at >= frame.behindFrom) && (frame.behindUntil === undefined || at < frame.behindUntil)) return frame;
   let front = fronts.get(frame); if (!front) { front = {...frame}; delete front.layer; fronts.set(frame, front); }
   return front;
 }
@@ -228,10 +229,11 @@ export function createFilmLayers(filmVP: T.Matrix4, light: Record<string, {value
 // (src/clip-graph.ts resolveRound gives the range); played to its end, the hand lifts and then jumps back.
 // Optional per part: `rate` playback speed, `track` the card track of this piece (the scene then uses it while the
 // piece is on screen; null = no card), `cards` extra options for the rendered cards (lying cards, a value per card).
-// `frame`: a film with a frame of its own (see FilmFrame).
-export type Part = {path: string; start?: number; end?: number | null; rate?: number; track?: CardTrack | null; cards?: Partial<OverlayOptions> | null; frame?: FilmFrame | null};
+// `frame`: a film with a frame of its own (see FilmFrame). `fps`: the film's own frames per second when it is not 30; start,
+// end and every frame number of the part are counted in the film's own frames.
+export type Part = {path: string; start?: number; end?: number | null; rate?: number; track?: CardTrack | null; cards?: Partial<OverlayOptions> | null; frame?: FilmFrame | null; fps?: number};
 export type PlayOptions = {loop?: boolean; cut?: boolean; onPart?: (index: number, part: Part) => void; onEnd?: () => void; onError?: (error: Error) => void};
-type Player = {part: Part; path: string; start: number; end: number | null; video: HTMLVideoElement; texture: T.VideoTexture};
+type Player = {part: Part; path: string; start: number; end: number | null; fps: number; video: HTMLVideoElement; texture: T.VideoTexture};
 const FPS = 30;
 // One or more parts played as a chain, each on its own video element so the next one is decoded before it is shown.
 export function createPlayers(onShow: (texture: T.Texture, path: string) => void, onChange: () => void) {
@@ -239,11 +241,11 @@ export function createPlayers(onShow: (texture: T.Texture, path: string) => void
   const show = (i: number) => { current = i; onShow(players[i].texture, players[i].path); onChange(); };
   // The middle of the part's first frame, also for frame 0: an element that has never been seeked takes about a quarter
   // of a second to get going and drops its first frames; one that waits on a seeked frame starts on the next frame.
-  const startTime = (p: Player) => (p.start + 0.5) / FPS;
+  const startTime = (p: Player) => (p.start + 0.5) / p.fps;
   const make = (part: Part): Player => {
     const video = document.createElement('video'); video.muted = true; video.playsInline = true; video.preload = 'auto'; video.src = part.path;
     const texture = new T.VideoTexture(video); texture.colorSpace = T.NoColorSpace; texture.minFilter = texture.magFilter = T.LinearFilter; texture.generateMipmaps = false;
-    return {part, path: part.path, start: part.start ?? 0, end: part.end ?? null, video, texture};
+    return {part, path: part.path, start: part.start ?? 0, end: part.end ?? null, fps: part.fps ?? FPS, video, texture};
   };
   // The part on screen is done: stop it where it is and bring in the next one on its first decoded frame.
   function advance(list: Player[], i: number) {
@@ -260,7 +262,7 @@ export function createPlayers(onShow: (texture: T.Texture, path: string) => void
     list.forEach((p, i) => {
       p.video.addEventListener('ended', () => advance(list, i));
       if (p.end === null) return;
-      const last = p.end - 1, reached = (seconds: number) => Math.floor(seconds * FPS + 1e-6) >= last;
+      const last = p.end - 1, reached = (seconds: number) => Math.floor(seconds * p.fps + 1e-6) >= last;
       if (p.video.requestVideoFrameCallback) { const watch = (_now: number, frame: {mediaTime: number}) => { if (list !== players) return; if (reached(frame.mediaTime)) advance(list, i); p.video.requestVideoFrameCallback(watch); }; p.video.requestVideoFrameCallback(watch); }
       else p.video.addEventListener('timeupdate', () => { if (reached(p.video.currentTime)) advance(list, i); });
     });
@@ -282,7 +284,7 @@ export function createPlayers(onShow: (texture: T.Texture, path: string) => void
   // While a queue plays, `parts`, `count`, `seek` and `step` describe the one part on screen.
   type Media = {path: string; video: HTMLVideoElement; texture: T.VideoTexture; busy: boolean; used: number; hook: ((mediaTime: number | null) => void) | null; fail: (() => void) | null};
   type Chain = {parts: Part[]; media: (Media | undefined)[]; options: PlayOptions};
-  const POOL = 8, partStart = (part: Part) => ((part.start ?? 0) + 0.5) / FPS, frameAt = (seconds: number) => Math.floor(seconds * FPS + 1e-6);
+  const POOL = 8, partStart = (part: Part) => ((part.start ?? 0) + 0.5) / (part.fps ?? FPS), frameOf = (seconds: number, part: Part) => Math.floor(seconds * (part.fps ?? FPS) + 1e-6);
   let pool: Media[] = [], loaded: Player[] = [], used = 0, chain: Chain | null = null, waiting: Chain | null = null, entering: Chain | null = null, shown: Media | null = null, token = 0, held = false;
   function discard(m: Media) { pool = pool.filter(p => p !== m); m.hook = m.fail = null; m.video.pause(); m.video.removeAttribute('src'); m.video.load(); m.texture.dispose(); }
   // An element for the path that nothing else is using; a new one if there is none. The pool is trimmed of the longest unused.
@@ -309,17 +311,17 @@ export function createPlayers(onShow: (texture: T.Texture, path: string) => void
   function enter(c: Chain, i: number, ended: boolean) {
     const my = ++token, part = c.parts[i], from = shown, onScreen = players[current], m = prime(c, i), v = m.video;
     if (entering && entering !== c && entering !== chain) forget(entering); entering = c;
-    if (from) { if (ended) { from.video.pause(); from.hook = null; } else { const last = onScreen ? (onScreen.end ?? Math.max(1, Math.round(onScreen.video.duration * FPS))) - 1 : Infinity; from.hook = time => { if (time === null || frameAt(time) >= last) from.video.pause(); }; } }
+    if (from) { if (ended) { from.video.pause(); from.hook = null; } else { const last = onScreen ? (onScreen.end ?? Math.max(1, Math.round(onScreen.video.duration * onScreen.fps))) - 1 : Infinity; from.hook = time => { if (time === null || Math.floor(time * (onScreen?.fps ?? FPS) + 1e-6) >= last) from.video.pause(); }; } }
     const swap = () => {
       if (my !== token) return;
       const old = chain; shown = m; chain = c; entering = null; held = false; if (waiting === c) waiting = null;
       if (from) { from.video.pause(); from.hook = null; if (!c.media.includes(from)) from.busy = false; }
       if (old && old !== c) forget(old);
       for (const p of loaded) { p.video.pause(); p.video.removeAttribute('src'); p.video.load(); p.texture.dispose(); } loaded = [];
-      players = [{part, path: part.path, start: part.start ?? 0, end: part.end ?? null, video: v, texture: m.texture}]; current = 0;
-      const last = (part.end ?? Math.max(1, Math.round(v.duration * FPS))) - 1;
+      players = [{part, path: part.path, start: part.start ?? 0, end: part.end ?? null, fps: part.fps ?? FPS, video: v, texture: m.texture}]; current = 0;
+      const last = (part.end ?? Math.max(1, Math.round(v.duration * (part.fps ?? FPS)))) - 1;
       // A hurried part slows to normal speed for its last frames, so it stops on its end frame and not a few frames past it.
-      m.hook = time => { if (my !== token || paused) return; if (time === null || frameAt(time) >= last) finish(c, i); else if (v.playbackRate > 1 && last - frameAt(time) <= 2 * v.playbackRate) v.playbackRate = 1; };
+      m.hook = time => { if (my !== token || paused) return; if (time === null || frameOf(time, part) >= last) finish(c, i); else if (v.playbackRate > 1 && last - frameOf(time, part) <= 2 * v.playbackRate) v.playbackRate = 1; };
       // what comes next is decoded before it is needed
       if (waiting) prime(waiting, 0); else if (i + 1 < c.parts.length) prime(c, i + 1); else if (c.options.loop) prime(c, 0);
       c.options.onPart?.(i, part); onShow(m.texture, m.path); onChange();
@@ -355,13 +357,13 @@ export function createPlayers(onShow: (texture: T.Texture, path: string) => void
     toggle(force?: boolean) { paused = force ?? !paused; const v = players[current]?.video; if (v) { if (paused) v.pause(); else v.play().catch(() => {}); } onChange(); },
     // Half a frame past the frame start, so the decoder lands on that frame and not the one before it.
     // Stays inside the part on screen.
-    step(frames: number) { const p = players[current]; if (!p) return Promise.resolve(); const last = (p.end ?? Math.max(1, Math.round(p.video.duration * FPS))) - 1, frame = Math.max(p.start, Math.min(last, Math.floor(p.video.currentTime * FPS + 1e-6) + frames)); return seek(current, (frame + 0.5) / FPS); },
+    step(frames: number) { const p = players[current]; if (!p) return Promise.resolve(); const last = (p.end ?? Math.max(1, Math.round(p.video.duration * p.fps))) - 1, frame = Math.max(p.start, Math.min(last, Math.floor(p.video.currentTime * p.fps + 1e-6) + frames)); return seek(current, (frame + 0.5) / p.fps); },
     get paused() { return paused; }, get path() { return players[current]?.path ?? ''; },
     // The video on screen and its texture, for a layer that draws on the film frame (rendered cards).
     get current() { const p = players[current]; return p ? {video: p.video, texture: p.texture} : null; }, get count() { return players.length; },
     // The chain as source frame ranges, end exclusive; for stepping through it frame by frame from outside.
-    get parts() { return players.map(p => ({path: p.path, start: p.start, end: p.end ?? Math.round(p.video.duration * FPS)})); },
+    get parts() { return players.map(p => ({path: p.path, start: p.start, end: p.end ?? Math.round(p.video.duration * p.fps)})); },
     // Source frame of the clip on screen: card tracks are indexed by it.
-    frame() { const v = players[current]?.video; return v ? Math.floor(v.currentTime * FPS + 1e-6) : 0; },
+    frame() { const p = players[current]; return p ? Math.floor(p.video.currentTime * p.fps + 1e-6) : 0; },
   };
 }
