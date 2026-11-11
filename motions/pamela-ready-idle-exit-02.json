@@ -22,12 +22,13 @@
     "evidence": "evidence/generation-method-audit.json"
   },
   "review": {
-    "decision": "PENDING",
+    "decision": "REJECTED",
     "basis": "Oberoende rutgranskad 2026-11-11 mot en 2 s-tagning av samma beställning: användbar med anmärkning, den som bör användas. Handen börjar lyfta f34–36 och är av kortet f38–39, går lågt till bordet (högsta punkt f41, 13 px över greppet), stilla från cirka f58–60; huvudet på plats från f77. Det gula kortet ligger kvar i skon och stämmer med vilofilmernas startruta i slutet. Inga dubblettrutor i själva rörelsen. Ruta 87 mot slutbilden: handen −1 px, huvudet +1 px. Den andra handen rör sig högst 2 px, skon högst 1 px.",
     "limitations": "Hon håller greppet i cirka 1,3 s innan något händer (f14–33 nästan fruset, f27–28 identiska), och under tiden kryper handen 13 px och pekfingertoppen glider cirka 20 px nerför kortet. Början går inte att kapa (vid f11–14 ligger handen 11–13 px från REDO-bilden); den som vill korta filmen klipper inne i hållet, f14 till f33, med en övertoning på två till tre rutor. Hopp i rörelsen f43 (66,8 px mot 28 och 16) och f48, i femrutorstakten. Handen är krökt med pekfingret först och suddig f39–42. Ögonen slutna f38–41. Den här filmen driver längst från slutbildens gröna (G 246 till 222) och har därför det största sluthoppet (f88–89), i rutor som spelaren hoppar över. Inte sedd i fart.",
     "colorDoesNotProvePhysicalSide": true,
     "userAccepted": false,
-    "productionReady": false
+    "productionReady": false,
+    "userReview": "Jakob 2026-11-11: Det här skulle kunna vara bra, eftersom man kan använda filmen för att gå från vila till den position där man startar videon. Man kan tänka sig att de kommer med vänsterhanden och trycker på ett kort. Om man spelar det baklänges måste ordningen såklart ändras. Om du klarar av det här till hundra procent får du gärna göra det, men annars är det för riskabelt att blanda ihop systemen. Jag kommer därför att välja underkänn, även om det bär mig emot. Det skulle kunna vara en variant."
   },
   "postProcessing": "none",
   "generationRef": "assets/motions/pamela-ready-idle-exit-02/generation.json",

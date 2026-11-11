@@ -40,12 +40,13 @@
     }
   },
   "review": {
-    "decision": "PENDING",
+    "decision": "ACCEPTED",
     "basis": "Oberoende rutgranskad 2026-11-11 mot två wan3-tagningar (nr 3 och 4): bäst av de tre, användbar med anmärkning. Rörelsen är jämn: stegavvikelse 0,040 för huvudet (wan3-tagningarna 0,28–0,42), gången stadig 13–19 px per ruta både bakom bordet och i helfigur, uppresningen en mjuk klockkurva f29–57, inga dubbla eller blandade rutor. Grönt driver inte (1/228/43 hela filmen, största hopp 0,5 nivåer). Samma kvinna som i wan3-filmerna (ansiktsform, näsa, ögonbryn, leende), ögonen öppna under hela gången, ingen ring. Fingertopparna på kanten till f63, av från f65 (behindFrom). Fullt stående f57, greppar kavajen f70–79, ett ryck nedåt f80–82, håller till f88, armarna faller till f93 (cirka 0,8 s), vänder sig f90–100, första skotån till höger om bordet f129, sista ruta med henne f190. Skorna är stängda med låg klack (2–3 cm), som i tagning 01. Golvskuggan vid skorna är den svagaste av de tre (7–17 nivåer).",
     "limitations": "24 rutor per sekund: måste spelas i 24, och rutnumren här är filmens egna. Hon lyfter inte händerna först: från f2 går armbågarna ut, händerna glider isär och hon trycker sig upp med händerna på bordet; redan vid f3 ligger armbågarna 4–10 px från viloposen, ett litet hopp mot vilofilmen. Ingen ren tom ruta i slutet: f191 har en hälrest och skugga (upp till 54 nivåer), f192 en skugga (20 nivåer) vid x 2050–2088, y 1030–1110; klipp vid f190. Två rader av hennes kropp (rad 656–657, cirka 204 px brett) ligger under kantraden f65–128 och en till två kolumner av benet vid x 1568–1569 f129–155; allt det skyms av 3D-bordet. Strikt helfigur bara f157–161. Helfiguren är 1 007 px, 2 % större än tagning 01. Mjukare återgivning än wan3 (slätare hud, något fylligare kinder, håret varmare kastanj i profil); ansiktet suddas under uppresningen f36–50 utan att deformeras. Rörelseoskärpa på fötterna f158 och f176. Svag ljus linje längs bordets högra sida (x 1564–1570, 5–11 nivåer) efter övermålningen. Inte sedd i fart; nycklingen av skuggorna och spelningen i 24 rutor/s i scenen är inte prövade.",
     "colorDoesNotProvePhysicalSide": true,
-    "userAccepted": false,
-    "productionReady": false
+    "userAccepted": true,
+    "productionReady": false,
+    "userReview": "Jakob 2026-11-11: Jag är osäker på om det här klassas som utgång från skol till vila, utsnitt. Det är en speciell typ av film eftersom hon faktiskt går ut ur rummet. Fast hon går ut och det finns fortfarande mycket grön yta kvar, vilket är lite märkligt. Hon kanske ska gå ut genom att närma sig, gå förbi bordet, oavsett hur stort det är. Sen går hon förbi oss lite snett. Jag vet inte."
   },
   "postProcessing": "Scaled from the delivered 1920x1080 to 2088x1174 (lanczos) so that she is exactly half the usual scale, the drawn slab painted in each frame's own background green (D:/dealer-scratch/tmp/filmagent/mcp/slab-to-bg.mjs), the audio track removed, frame rate kept at 24. The delivered film lies beside it as original-1920x1080.mp4.",
   "generationRef": "assets/motions/pamela-table-leave-wide-kling-01/generation.json",
