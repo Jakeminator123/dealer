@@ -18,6 +18,7 @@ export type SceneState = {
   focus: 'off' | 'dealer' | 'card' | 'follow' | 'manual'; focusDistance: number; tolerance: number;
   fan: boolean; fanStrength: number; fanPeriod: number;
   tray: boolean;
+  cards: boolean; cardRank: string; cardSuit: string;
 };
 // Everything added after checkpoint v1 starts switched off, so the page opens as v1. scale 0 = the contract's own k.
 export const DEFAULTS: SceneState = {
@@ -28,6 +29,7 @@ export const DEFAULTS: SceneState = {
   focus: 'off', focusDistance: 1.5, tolerance: 0.4,
   fan: false, fanStrength: 0.16, fanPeriod: 5,
   tray: false,
+  cards: false, cardRank: 'A', cardSuit: 'spades',
 };
 export type SceneData = {contract: Parameters<typeof cameraFromContract>[0]; plan: Parameters<typeof cardSpots>[0]; urls: {plate: string; panorama: string}; onChange: () => void; onMissingRoom: (room: RoomId) => void};
 
@@ -74,6 +76,10 @@ export function createScene(canvas: HTMLCanvasElement, host: HTMLElement, data: 
   const players = createPlayers(texture => film.setTexture(texture), data.onChange);
   let camera: FilmCamera = DEALER_LENS_ESTIMATE, pitch = 0, edgeZ = -1, guides: T.Group | null = null, track: CardTrack | null = null;
   let focusNow = NaN, focusWhat = '', lastSeconds = NaN, moved = false;
+  // Rendered cards: the module is fetched the first time they are switched on, and switched off again if it cannot be read.
+  type CardLayer = {texture: T.Texture; update(video: HTMLVideoElement, frame: number, track: unknown, choice: {rank: string; suit: string; scale: number}): boolean};
+  let cardLayer: CardLayer | null = null, cardLoad: Promise<void> | null = null, cardError = '';
+  function loadCards() { cardLoad ??= import('./scene3d-cards.ts').then(m => { cardLayer = m.createCardLayer(data.contract); cardError = ''; }, error => { cardError = String((error as Error)?.message ?? error); state.cards = false; cardLoad = null; }).then(() => data.onChange()); }
 
   // ---- post chain ---------------------------------------------------------------------------
   const fsCam = new T.OrthographicCamera(-1, 1, 1, -1, 0, 1), fsQuad = new T.Mesh(new T.PlaneGeometry(2, 2)), fsScene = new T.Scene(); fsQuad.frustumCulled = false; fsScene.add(fsQuad);
@@ -154,6 +160,8 @@ export function createScene(canvas: HTMLCanvasElement, host: HTMLElement, data: 
 
   function render(seconds = performance.now() / 1000) {
     targets(); updateView(seconds);
+    const shown = players.current;
+    if (shown) film.setTexture(state.cards && cardLayer?.update(shown.video, players.frame(), track, {rank: state.cardRank, suit: state.cardSuit, scale: camera.scale}) ? cardLayer.texture : shown.texture);
     const room = rooms.rooms[state.room], focusOn = state.focus !== 'off', u = blurMat.uniforms, scale = canvas.width / W;
     rooms.followCamera(state.room, view.position, state.panoramaTurn); light.update(seconds, state.fan, state.fanStrength, state.fanPeriod);
     if (focusOn) { const goal = focusTarget(seconds), dt = Math.max(0, Math.min(0.2, seconds - lastSeconds)); focusWhat = goal.what;
@@ -179,9 +187,9 @@ export function createScene(canvas: HTMLCanvasElement, host: HTMLElement, data: 
     state, players, render, rebuild, apply, resize,
     start() { if (!running) { running = true; requestAnimationFrame(loop); } }, stop() { running = false; },
     home() { Object.assign(state, {yaw: 0, pitch: 0, zoom: 1, dx: 0, dy: 0, dz: 0, sway: false}); apply(); },
-    set(patch: Partial<SceneState>) { const relens = 'lens' in patch && patch.lens !== state.lens || 'scale' in patch && patch.scale !== state.scale || 'tray' in patch && patch.tray !== state.tray, reprint = 'logo' in patch || 'felt' in patch; Object.assign(state, patch); if (relens) rebuild(); else { if (reprint) drawFelt(); apply(); } },
+    set(patch: Partial<SceneState>) { if (patch.cards) loadCards(); const relens = 'lens' in patch && patch.lens !== state.lens || 'scale' in patch && patch.scale !== state.scale || 'tray' in patch && patch.tray !== state.tray, reprint = 'logo' in patch || 'felt' in patch; Object.assign(state, patch); if (relens) rebuild(); else { if (reprint) drawFelt(); apply(); } },
     setTrack(next: CardTrack | null) { track = next; },
     // What the picture is right now: the film itself, the film turned (still exact) or the film seen from another place (approximate).
-    status() { const turned = !!(state.yaw || state.pitch || state.zoom !== 1 || state.sway); return {view: moved || state.sway && state.mode === 'lean' ? 'moved' : turned ? 'turned' : 'home', camera, focus: state.focus === 'off' ? null : {what: focusWhat, distance: focusNow, tracked: !!track}}; },
+    status() { const turned = !!(state.yaw || state.pitch || state.zoom !== 1 || state.sway); return {view: moved || state.sway && state.mode === 'lean' ? 'moved' : turned ? 'turned' : 'home', camera, focus: state.focus === 'off' ? null : {what: focusWhat, distance: focusNow, tracked: !!track}, cards: {on: state.cards && !!cardLayer, loading: state.cards && !cardLayer, error: cardError, tracked: !!track}}; },
   };
 }

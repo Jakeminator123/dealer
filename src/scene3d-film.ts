@@ -105,7 +105,9 @@ export function createPlayers(onShow: (texture: T.Texture, path: string) => void
     // Half a frame past the frame start, so the decoder lands on that frame and not the one before it.
     // Stays inside the part on screen.
     step(frames: number) { const p = players[current]; if (!p) return Promise.resolve(); const last = (p.end ?? Math.max(1, Math.round(p.video.duration * FPS))) - 1, frame = Math.max(p.start, Math.min(last, Math.floor(p.video.currentTime * FPS + 1e-6) + frames)); return seek(current, (frame + 0.5) / FPS); },
-    get paused() { return paused; }, get path() { return players[current]?.path ?? ''; }, get count() { return players.length; },
+    get paused() { return paused; }, get path() { return players[current]?.path ?? ''; },
+    // The video on screen and its texture, for a layer that draws on the film frame (rendered cards).
+    get current() { const p = players[current]; return p ? {video: p.video, texture: p.texture} : null; }, get count() { return players.length; },
     // The chain as source frame ranges, end exclusive; for stepping through it frame by frame from outside.
     get parts() { return players.map(p => ({path: p.path, start: p.start, end: p.end ?? Math.round(p.video.duration * FPS)})); },
     // Source frame of the clip on screen: card tracks are indexed by it.
