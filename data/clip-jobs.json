@@ -3323,6 +3323,18 @@
         119
       ],
       "purpose": "Idle insert Jakob asked for 2026-11-11: she coughs. Second order, with a text that keeps her facing the camera; the second of two takes (the first, 080ad563, was rejected in review: one soft eye closure and a smile that reads as speaking; not in the bank)."
+    },
+    {
+      "id": "pamela-table-arrive-wide-kling-01",
+      "kind": "ARRIVE",
+      "from": "AWAY",
+      "to": "IDLE",
+      "clip": "pamela-table-arrive-wide-kling-01",
+      "frames": [
+        0,
+        216
+      ],
+      "purpose": "The full-figure arrive film Jakob asked for, with kling-4, in two parts: she walks in and ends standing behind the table (last image: frame 56 of the delivered pamela-table-leave-wide-01, a real frame of her standing), then sits down (first image: that same frame; last image: the seated pose). Ordered in two parts because a film from the empty picture straight to the seated pose made her about ten to fifteen per cent too small while walking, in four attempts with two models: the seated end image holds her head at seated height. The text of the second part is D:/dealer-scratch/tmp/filmagent/till-runway/prompt-ingang-3-satt.txt."
     }
   ],
   "edits": [

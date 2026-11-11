@@ -1,0 +1,55 @@
+{
+  "schemaVersion": 1,
+  "id": "pamela-table-arrive-wide-kling-01",
+  "dealer": "pamela",
+  "source": {
+    "path": "assets/motions/pamela-table-arrive-wide-kling-01/source.mp4",
+    "sha256": "bde4a438a73ebd6c6b421b875e5cbebac9282b94598b1703840887a0af8d4c2a",
+    "bytes": 17034287,
+    "width": 2088,
+    "height": 1174,
+    "fps": 24,
+    "frames": 217,
+    "provider": "Runway MCP server (app account credits)",
+    "model": "wan3"
+  },
+  "motion": {
+    "kind": "ARRIVE",
+    "from": "AWAY",
+    "to": "IDLE",
+    "pass": false,
+    "basis": "SOURCE_FRAME_REVIEW",
+    "evidence": "evidence/generation-method-audit.json",
+    "frame": {
+      "scale": 0.5,
+      "anchor": [
+        1044,
+        656
+      ],
+      "size": [
+        2088,
+        1174
+      ],
+      "layer": "BEHIND_TABLE",
+      "shadow": false,
+      "behindUntil": 154,
+      "rise": [
+        146,
+        184
+      ]
+    }
+  },
+  "review": {
+    "decision": "PENDING",
+    "basis": "Oberoende rutgranskad 2026-11-11 mot en andra hopsättning (tagning 2 av varje del): den bästa av de två, användbar med anmärkning. Tom bild f0–15, hon kommer in från höger f16, går mycket jämnt (17–20 px per ruta f31–62, ±1 px, sedan mjuk inbromsning till f108), strikt helfigur f33–46, sista benet till höger om bordet f62, vänder sig cirka f74–90, står f109–144 med händerna mot magen, sätter sig mjukt f145–184 (huvudet 2–10 px per ruta), sista rena ruta f153, fingertopparna på kanten från f154 (behindUntil), huvudet i slutlig höjd från f193. Skarven f144|145: huvudet rör sig 0,5 px, färgen på henne ändras högst 4 nivåer, bakgrunden 1,7 nivåer; händernas rörelse dippar en ruta, ingen vändning, ingenting läses som ett klipp. Slutposen stämmer med viloposen inom 0–3 px vid huvud och händer (silhuettöverlapp 0,984). Samma kvinna som i utgångsfilmen (ansiktskorrelation 0,99 mot dess första ruta), ögonen öppna och huvudet uppe under gången. Inga dubbla eller blandade rutor.",
+    "limitations": "24 rutor per sekund; rutnumren här är filmens egna. Byxor och skor skiljer sig från kling-utgångens: här smala ankellånga byxor och matta spetsiga pumps med låg blockklack (cirka 5 cm), där utsvängda hellånga byxor och blankare, rundare skor; det syns bara i helfigursrutorna. Huvudet sjunker 22–24 px under sin slutliga höjd när hon sätter sig (f184) och kommer upp igen f185–195. Kontaktskuggor under skorna f16–62 (upp till 116 nivåer mörkare) och en skugga på bordskanten under henne f148–184 (rad 656–686, upp till 40 nivåer). Armarna dras fortfarande in under de sista 15 rutorna, och höger armbåges kontur hoppar 18 px inåt f214–215 (bankens klipp tar bort de tre sista rutorna). Grönt är cirka 32/193/59 (mörkare än utgångens 2/227/43, eftersom ankarbilderna kom ur wan3-filmen). Ansiktet är cirka 6 % större stående än sittande, som i alla fyra kling-filmerna. Tvåradig mörkgrön frans på rad 656–657 och benpunkter i de sista högst 10 kolumnerna (x 1560–1569) f48–49 och f57, bakom 3D-bordet. Inte sedd i fart; nycklingen av skuggorna är inte prövad.",
+    "colorDoesNotProvePhysicalSide": true,
+    "userAccepted": false,
+    "productionReady": false
+  },
+  "postProcessing": "Assembled: frames 0-144 are the walk-in film, frames 145-216 are frames 1-72 of the sit-down film (the join lies on the standing image both parts were anchored on). Then scaled from 1920x1080 to 2088x1174 (lanczos), the drawn slab painted in each frame's own background green (D:/dealer-scratch/tmp/filmagent/mcp/slab-to-bg.mjs), audio removed, frame rate kept at 24. The joined 1920x1080 film lies beside it as original-1920x1080.mp4.",
+  "generationRef": "assets/motions/pamela-table-arrive-wide-kling-01/generation.json",
+  "jobRef": "data/clip-jobs.json",
+  "scoutIntegrated": false,
+  "published": false
+}
