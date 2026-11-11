@@ -72,6 +72,7 @@ export type Pose = {
   film: Pt[] | null;      // the film's own card in this frame, rim included: what must be covered
   resting: number;        // 0 in the hand, 1 lying still; in between while the size settles
   turned: boolean;
+  at?: [Pt, Pt] | null;   // edge-on frames of a shifted card: where the film's own edge is, which is what must be covered
 };
 /**
  * The rendered card in one frame. In the hand it follows the film's quad. From `restFrom` on it is
@@ -79,7 +80,25 @@ export type Pose = {
  * smoothly to the resting size instead of following the film, which draws the card large in the
  * hand and shrinks it in the last two frames; the shape settles over the last three.
  */
-export function poseAt(track: CardTrack, scene: Scene | null, frame: number, scale: number, ease = 12): Pose | null {
+export function poseAt(track: CardTrack, scene: Scene | null, frame: number, scale: number, ease = 12, shift: {x: number; y: number} | null = null): Pose | null {
+  const pose = filmPose(track, scene, frame, scale, ease);
+  if (!pose || !shift || (!pose.quad && !pose.edge)) return pose;
+  // One film per seat: the same film deals the seat's second card. The rendered card is moved to that card's place, the film's own card stays where it is and is covered.
+  const k = shiftShare(track, pose.frame), move = (p: Pt): Pt => ({x: p.x + shift.x * k, y: p.y + shift.y * k});
+  return {...pose, quad: pose.quad && pose.quad.map(move), edge: pose.edge && [move(pose.edge[0]), move(pose.edge[1])], at: pose.edge};
+}
+/** How much of a shift applies in a frame: none while the card sits in the shoe, all of it once it lies; in between it grows smoothly while the card is carried. */
+export function shiftShare(track: CardTrack, frame: number): number {
+  const rest = restOf(track), to = rest ? rest.from : track.frames.length - 1, from = Math.min(to, Math.max(0, track.leavesShoe ?? 0));
+  return frame >= to ? 1 : frame <= from ? 0 : smooth((frame - from) / (to - from));
+}
+/** Where a film leaves its card lying, for the films that follow it in a round: the resting card, moved with its step's shift. */
+export function placedCard(track: CardTrack, scene: Scene | null, scale: number, shift: {x: number; y: number} | null = null): {quad: Pt[]; side: Side} | null {
+  if (!restOf(track)) return null;
+  const pose = poseAt(track, scene, track.frames.length - 1, scale, 12, shift);
+  return pose?.quad ? {quad: pose.quad, side: pose.side} : null;
+}
+function filmPose(track: CardTrack, scene: Scene | null, frame: number, scale: number, ease: number): Pose | null {
   const at = Math.max(0, Math.min(track.frames.length - 1, Math.round(frame))), f = track.frames[at];
   if (!f) return null;
   const none: Pose = {frame: at, side: f.side, quad: null, edge: null, film: null, resting: 0, turned: false};
@@ -121,7 +140,7 @@ export function projectionOf(h: number[], width: number, height: number): number
 export type Box = {x: number; y: number; width: number; height: number};
 /** The whole-pixel region of the film that a pose touches, with room for blur and fingers around it. */
 export function regionOf(pose: Pose, width: number, height: number, margin = 26): Box | null {
-  const points = [...(pose.quad ?? []), ...(pose.film ?? []), ...(pose.edge ?? [])];
+  const points = [...(pose.quad ?? []), ...(pose.film ?? []), ...(pose.edge ?? []), ...(pose.at ?? [])];
   if (!points.length) return null;
   const x0 = Math.max(0, Math.floor(Math.min(...points.map(p => p.x)) - margin)), y0 = Math.max(0, Math.floor(Math.min(...points.map(p => p.y)) - margin));
   const x1 = Math.min(width, Math.ceil(Math.max(...points.map(p => p.x)) + margin)), y1 = Math.min(height, Math.ceil(Math.max(...points.map(p => p.y)) + margin));
@@ -174,7 +193,7 @@ export function readMatte(rgba: ArrayLike<number>, width: number, height: number
 /** Whether an image point lies where the film's own card can show in this frame: its quad or its edge line, with room for motion blur. */
 export function filmZone(pose: Pose, margin?: number): (x: number, y: number) => boolean {
   if (pose.film) { const q = clockwise(pose.film), reach = grown(q, margin ?? 10 + 0.12 * Math.sqrt(Math.abs(signedArea(q)))); return (x, y) => inside(reach, x, y); }
-  if (pose.edge) { const [a, b] = pose.edge, dx = b.x - a.x, dy = b.y - a.y, l2 = dx * dx + dy * dy || 1, reach = margin ?? 16;
+  if (pose.edge) { const [a, b] = pose.at ?? pose.edge, dx = b.x - a.x, dy = b.y - a.y, l2 = dx * dx + dy * dy || 1, reach = margin ?? 16;
     return (x, y) => { const t = Math.max(-0.15, Math.min(1.15, ((x - a.x) * dx + (y - a.y) * dy) / l2)); return Math.hypot(x - a.x - dx * t, y - a.y - dy * t) <= reach; }; }
   return () => false;
 }

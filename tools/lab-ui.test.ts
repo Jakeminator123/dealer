@@ -160,7 +160,7 @@ test('the clip bank says it is local-only when its module or endpoint is missing
 });
 
 test('the clip bank draws every edge, opens a deep-linked edge, drafts a missing job and builds a round without writing anything',async()=>{
- const {context,element,respond,requests,fire}=await setup('?tab=klippbank&edge=p4c1>idle'),bank=clipBank();
+ const {context,element,respond,requests,fire}=await setup('?tab=klippbank&edge=p4c1>idle&filmer=kort'),bank=clipBank();
  await settle();
  context.testGraph=clipGraph;runInContext('clipGraph=testGraph',context);
  const opening=runInContext('openClipBank()',context);await settle();
@@ -208,8 +208,8 @@ test('the clip bank draws every edge, opens a deep-linked edge, drafts a missing
 
 const served=(bank:unknown)=>({ok:true,text:async()=>JSON.stringify(bank)});
 // Opens the clip bank tab on a given bank, with the graph module in place.
-async function openBank(bank:unknown,search=''){
- const lab=await setup(search);await settle();
+async function openBank(bank:unknown,search='',before?:(lab:Awaited<ReturnType<typeof setup>>)=>void){
+ const lab=await setup(search);await settle();before?.(lab);
  lab.context.testGraph=clipGraph;runInContext('clipGraph=testGraph',lab.context);
  const opening=runInContext("tab='clipbank';openClipBank()",lab.context);await settle();
  lab.respond(served(bank),'/api/clip-bank');await opening;await settle();
@@ -217,7 +217,7 @@ async function openBank(bank:unknown,search=''){
 }
 
 test('the clip bank re-reads itself: a rendering film shows as such, a finished one is announced, and the view is left alone',async()=>{
- const bank:any=clipBank(),{context,element,respond,requests,fire}=await openBank(bank);
+ const bank:any=clipBank(),{context,element,respond,requests,fire}=await openBank(bank,'?filmer=kort');
  const poll=async(reply:unknown)=>{const tick=runInContext('kbRefresh()',context);await settle();respond(reply,'/api/clip-bank');await tick;};
  assert.equal(element('kb-count').textContent,'3 av 51 kanter klara');assert.equal(runInContext('kbEdge',context),'READY>P4.C1');
  let loads=0;const player=element('kb-player'),film=player.src;player.load=()=>{loads++;};
@@ -285,7 +285,7 @@ test('experiments, derived takes and replaced takes each have their place: a cha
  bank.derived=[{id:'pamela-readyb-draw-cut-01',kind:'ENTRY',from:'READY-B',to:'DRAWN',clip:'pamela-p1-c1-ready2-01',frames:[0,50],purpose:'Real draw-out from an older clip.'}];
  bank.motions['pamela-readyb-draw-cut-01']={source:{fps:30,frames:360}};bank.media['pamela-readyb-draw-cut-01']={video:ready2,first:null,last:null};
  // A deep link may carry a whole chain, experiment edges included.
- const {context,element,fire}=await openBank(bank,'?tab=klippbank&round=READY-B>DRAWN|DRAWN>P4.C1');
+ const {context,element,fire}=await openBank(bank,'?tab=klippbank&filmer=kort&round=READY-B>DRAWN|DRAWN>P4.C1');
  assert.equal(runInContext('kbPanel',context),'round');assert.equal(element('kb-seq').value,'READY-B>DRAWN | DRAWN>P4.C1');
  assert.match(element('kb-seq-count').textContent,/^2 steg · 2 spelbara · 0 luckor · 5,7 s film · ändrad för hand$/);
  assert.match(element('kb-steps').innerHTML,/readyb-draw-cut-01 · ruta 0–50</);
@@ -421,5 +421,55 @@ test('a corrected copy is labelled as such, a slow-motion take plays at its own 
  // Another take always opens forwards again.
  runInContext("kbSelect('READY>P4.C1','pamela-p4-c1-plan-deal-02')",context);
  assert.equal(player.src,'assets/motions/pamela-p4-c1-plan-deal-02/source.mp4');assert.equal(element('kb-reverse').checked,false);
+ assert.ok(requests.every(request=>request.startsWith('GET ')));
+});
+
+test('one film per seat is the default view: seat nodes, the share that is done, and a second card that plays the seat film with the card moved',async()=>{
+ const bank:any=clipBank(),plan=model.defaultPlan(),px=(id:string)=>model.toPixels(plan.targets[id].geometry.native,'native'),reach=Math.round(Math.hypot(px('P4.C2').x-px('P4.C1').x,px('P4.C2').y-px('P4.C1').y));
+ const urls:string[]=[];
+ const {context,element,requests}=await openBank(bank,'',lab=>{lab.element('kb-hole').checked=true;lab.context.URL=URL;lab.context.location.href='http://127.0.0.1:4319/lab.html';lab.context.window.history={replaceState(_s:unknown,_t:string,url:URL){urls.push(String(url));}};});
+ // The header answers how much is done: needed films, how many exist, and of those how many are candidates or have known flaws.
+ assert.equal(element('kb-count').textContent,'3 av 30 filmer finns · 10 %');
+ assert.match(element('kb-count-detail').textContent,/^kandidater 3 · kända brister 0 · saknas 27 · D\.C3 0 av 3/);
+ assert.match(element('kb-mode-note').textContent,/^En film per plats: 30 filmer behövs\..*dealerns andra kort ligger stängt och har egna filmer\.$/);
+ assert.equal(element('kb-meter').innerHTML.match(/<span /g).length,2);
+ // Each seat is one node with both cards and three edges; the dealer keeps two nodes because the hole card stays closed.
+ const tree=element('kb-tree').innerHTML;
+ assert.equal(tree.match(/class="kb-node seat/g).length,7);assert.equal(tree.match(/class="kb-node/g).length,10);assert.equal(tree.match(/class="kb-edge /g).length,33);
+ assert.match(tree,new RegExp(`data-node="P4\\.C1"[^]*?<text class="share[^"]*"[^>]*>C1 · C2 (⚠ )?\\+${reach} px</text><text class="count"[^>]*>3/3</text>`));
+ assert.doesNotMatch(tree,/data-node="P4\.C2"/);assert.match(tree,/data-node="D\.C2"/);assert.doesNotMatch(tree,/data-edge="READY&#62;P4\.C2"/);
+ // The standard round: the second card's steps are playable through the seat's films, and say so.
+ runInContext("kbPanel='round';paintBank()",context);
+ assert.equal(element('kb-seq').value,'IDLE>READY | READY>P4.C1 | P4.C1>READY | READY>D.C1 | D.C1>READY | READY>P4.C2 | P4.C2>READY | READY>D.C2 | D.C2>IDLE');
+ assert.match(element('kb-seq-count').textContent,/^9 steg · 4 spelbara · 5 luckor/);
+ assert.match(element('kb-steps').innerHTML,new RegExp(`data-step="5"[^]*?klipps vid landningsrutan f105 · platsens film <code>READY&#62;P4\\.C1</code> · kortet flyttas ${reach} px`));
+ assert.equal(runInContext('kbSegments[5].take.id',context),'pamela-p4-c1-plan-deal-02');assert.equal(runInContext('kbSegments[7].gap',context),'MISSING');
+ // The detail of a shared step says in plain words which film it plays and how far the card is moved.
+ runInContext("kbSelect('READY>P4.C2')",context);
+ assert.equal(element('kb-share').hidden,false);
+ assert.match(element('kb-share').innerHTML,new RegExp(`Det spelar <code>READY&#62;P4\\.C1</code> \\(tagning <code>plan-deal-02</code>\\), och det renderade kortet ritas ${reach} px bort, på platsen för P4\\.C2\\. Filmens eget kort täcks\\.`));
+ assert.match(element('kb-edge-status').innerHTML,/delar film · klar, ogranskad/);assert.equal(element('kb-take').hidden,true);assert.match(element('kb-empty').textContent,/behöver ingen: steget spelar platsens film/);
+ assert.match(tree,/class="kb-edge s-UNREVIEWED/);assert.match(element('kb-tree').innerHTML,/class="kb-edge s-UNREVIEWED sel" data-edge="READY&#62;P4\.C1"/);
+ assert.match(element('kb-node-share').innerHTML,new RegExp(`Kort 2 \\(<code>P4\\.C2</code>\\) har ingen egen film\\. Det spelar platsens tre filmer, och det renderade kortet flyttas ${reach} px`));
+ runInContext("kbSelect('READY>P4.C1')",context);assert.equal(element('kb-share').hidden,true);
+ // Earlier cards stay on the table: each lies where the last film that carried it left it, the second card a shift away from the first.
+ const quad=[[800,1000],[870,1000],[870,1060],[800,1060]],track={width:1764,height:1174,edgeWindow:null,restFrom:2,restQuad:quad,frames:Array.from({length:6},(_,i)=>({frame:i,side:'FRONT',quad,edge:null}))};
+ context.testOverlay=cardOverlay;context.testTrack={track,overrides:[]};
+ runInContext("ovModel=testOverlay;for(const id of ['pamela-p4-c1-plan-deal-02','pamela-p4-c1-plan-return-ready-01','pamela-p4-c1-plan-return-idle-01'])ovData.set(id,testTrack);kbSteps=clipGraph.parseSequence('READY>P4.C1 | P4.C1>READY | READY>P4.C2 | P4.C2>READY | READY>D.C1').steps;kbCustom=true;kbPanel='round';paintBank()",context);
+ const laid=(index:number)=>JSON.parse(runInContext(`JSON.stringify(ovPlaced(${index}))`,context)),shift=JSON.parse(runInContext('JSON.stringify(kbSegments[2].shift)',context));
+ assert.equal(Math.round(Math.hypot(shift.x,shift.y)),reach);
+ assert.deepEqual([laid(0).cards.length,laid(1).cards.length,laid(2).cards.length,laid(3).cards.length,laid(4).cards.length],[0,0,1,1,2]);
+ const [first,second]=laid(4).cards;
+ first.quad.forEach((p:{x:number;y:number},i:number)=>{assert.ok(Math.abs(second.quad[i].x-p.x-shift.x)<1e-6);assert.ok(Math.abs(second.quad[i].y-p.y-shift.y)<1e-6);});
+ assert.deepEqual(laid(2).cards[0],first);assert.equal(first.back,false);assert.deepEqual(laid(4).lost,[]);
+ // The switch: one film per card brings back the 51 edges and every card as its own node; the choice is kept in the address.
+ runInContext("kbPanel='edge';kbCustom=false;kbSetMode('CARD')",context);
+ assert.equal(element('kb-count').textContent,'3 av 51 kanter klara');assert.equal(element('kb-tree').innerHTML.match(/class="kb-node/g).length,17);assert.equal(element('kb-tree').innerHTML.match(/class="kb-edge /g).length,54);
+ assert.equal(new URL(urls.at(-1)!).searchParams.get('filmer'),'kort');assert.equal(runInContext("kbGraph.edge['READY>P4.C2'].shares",context),null);
+ runInContext("kbSetMode('SEAT')",context);
+ assert.equal(element('kb-count').textContent,'3 av 30 filmer finns · 10 %');assert.equal(new URL(urls.at(-1)!).searchParams.get('filmer'),null);
+ // With the hole card open the dealer's second card shares the first card's films as well.
+ element('kb-hole').checked=false;runInContext('kbRebuild();paintBank()',context);
+ assert.match(element('kb-count').textContent,/^3 av 27 filmer finns/);assert.equal(element('kb-tree').innerHTML.match(/class="kb-node seat/g).length,8);
  assert.ok(requests.every(request=>request.startsWith('GET ')));
 });

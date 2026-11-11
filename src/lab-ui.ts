@@ -237,6 +237,17 @@ type KbImage=import('./clip-graph.js').ImageRef;
 let clipGraph:ClipGraph|null=null,kbGraph:KbGraph|null=null,kbState:'idle'|'loading'|'ready'|'local'|'error'='idle',kbLinked=false;
 let tab:'placement'|'clipbank'='placement',kbPanel:'edge'|'round'='edge',kbEdge='READY>P4.C1',kbNode='P4.C1',kbTake='',kbPendingFrame:number|null=null,kbDraftFor='';
 let kbSteps:KbStep[]=[],kbSegments:KbSegment[]=[],kbCustom=false,kbDealer=true,kbSeatsChosen=false;
+// One film per seat (the default, Jakob's decision 2026-11-11) or one film per card; lab.html?…&filmer=kort keeps the second.
+let kbMode:'SEAT'|'CARD'=new URLSearchParams(location.search).get('filmer')==='kort'?'CARD':'SEAT';
+const kbBuildOptions=()=>({mode:kbMode,holeCardDown:input('kb-hole').checked});
+function kbRebuild(){if(clipGraph&&kbText){kbGraph=clipGraph.buildGraph(JSON.parse(kbText),kbBuildOptions());kbKeepSelection();}}
+function kbSetMode(mode:'SEAT'|'CARD'){if(mode===kbMode||kbState!=='ready')return;kbMode=mode;kbRebuild();kbStopChain();if(!kbCustom)kbSteps=clipGraph!.roundSequence(kbRoundOptions());paintBank();kbLink();}
+// Card centres from the placement plan in the film's pixels (the plan's native view is two pixels narrower than the film).
+const kbPlaces=()=>plan?Object.fromEntries(TARGETS.map(id=>{const p=toPixels(plan.targets[id].geometry.native,'native');return [id,{x:p.x*1763/1761,y:p.y}];})):null;
+// How far a seat's second card lies from its first, in native pixels. The still-image trial on P4 held up to about 45–50.
+const KB_REACH=50;
+const kbReach=(second:string)=>{const a=plan?.targets[`${second.split('.')[0]}.C1`],b=plan?.targets[second];if(!a||!b)return null;const p=toPixels(a.geometry.native,'native'),q=toPixels(b.geometry.native,'native');return Math.round(Math.hypot(q.x-p.x,q.y-p.y));};
+const kbFilm=(e:KbEdge)=>e.shares?kbGraph!.edge[e.shares]:e; // the edge whose film an edge plays
 const kbSeats=new Set<string>();
 const esc=(value:unknown)=>String(value??'').replace(/[&<>"']/g,c=>`&#${c.charCodeAt(0)};`);
 // A status is never colour alone: every state has its own glyph, line style and label.
@@ -249,7 +260,7 @@ const kbKnown=(id:string)=>!!kbGraph?.edge[id]?.experiment; // an experiment edg
 const kbTakeStatus=(t:KbTake)=>t.variant?'VARIANT':t.decision==='ACCEPTED'?'ACCEPTED':'UNREVIEWED';
 // What an edge says about itself wherever it is named: status plus the two kinds of extra takes beside the main one.
 const kbEdgeNote=(e:KbEdge)=>`${e.status==='UNREVIEWED'&&e.main?.decision==='SECONDARY'?'klar, sekundär':clipGraph!.STATUS_LABEL[e.status]}${e.hasVariant?' · variant finns':''}${e.hubVariants.length?` · variant-start ${e.hubVariants.join(', ')}`:''}${e.status==='ORDERED'?'':e.rendering?` · ${e.rendering} renderas`:e.main&&e.inProgress?' · ny tagning förberedd':''}`;
-const kbEdgeChip=(e:KbEdge)=>`<button class="kb-edge-chip s-${e.status}" data-edge="${esc(e.id)}" aria-pressed="${e.id===kbEdge}"><i>${KB_GLYPH[e.status]}</i><code>${esc(e.id)}</code><span>${esc(kbEdgeNote(e))}</span></button>`;
+const kbEdgeChip=(e:KbEdge)=>{const f=kbFilm(e);return `<button class="kb-edge-chip s-${f.status}" data-edge="${esc(e.id)}" aria-pressed="${e.id===kbEdge}"><i>${KB_GLYPH[f.status]}</i><code>${esc(e.id)}</code><span>${esc(f===e?kbEdgeNote(e):`spelar ${f.id} · ${kbEdgeNote(f)}`)}</span></button>`;};
 async function kbCopy(text:string,button:HTMLElement){
  try{await navigator.clipboard.writeText(text);}catch{const area=document.createElement('textarea');area.value=text;document.body.append(area);area.select();document.execCommand('copy');area.remove();}
  const label=button.textContent;button.textContent='Kopierat ✓';setTimeout(()=>{button.textContent=label;},1400);
@@ -276,7 +287,7 @@ function kbKeepSelection(){
 async function kbRead(){
  const res=await fetch('/api/clip-bank');if(!res.ok)throw Error();
  const text=await res.text();if(kbGraph&&text===kbText)return false;
- const before=kbGraph,next=clipGraph!.buildGraph(JSON.parse(text));
+ const before=kbGraph,next=clipGraph!.buildGraph(JSON.parse(text),kbBuildOptions());
  // A film that arrives (or fails) while the tab is open is announced; the first read announces nothing.
  if(before)for(const t of Object.values(next.takes)){const failed=t.stage==='FAILED';if((t.stage==='DONE'||failed)&&before.takes[t.id]?.stage!==t.stage&&!kbNews.some(n=>n.id===t.id))kbNews.unshift({id:t.id,edge:t.edge,failed});}
  kbNews.splice(5);kbGraph=next;kbText=text;kbKeepSelection();
@@ -289,7 +300,7 @@ async function openClipBank(){
  try{clipGraph??=await import('./clip-graph.js');}catch{kbState='local';paintBank();return;}
  try{await kbRead();}catch{kbGraph=null;kbText='';kbState=location.hostname==='127.0.0.1'?'error':'local';paintBank();return;}
  kbState='ready';kbOnline(true);
- if(!kbLinked){kbLinked=true;kbApplyLink();kbKeepSelection();}
+ if(!kbLinked){kbLinked=true;kbApplyLink();kbRebuild();}
  // Start the round builder on what can be played today: seats whose first card already has a deal.
  if(!kbSeatsChosen){kbSeatsChosen=true;for(const seat of clipGraph.SEATS)if(kbGraph!.edge[`READY>${seat}.C1`].main)kbSeats.add(seat);if(!kbSeats.size)for(const seat of clipGraph.SEATS)kbSeats.add(seat);}
  if(!kbCustom)kbSteps=clipGraph.roundSequence(kbRoundOptions());
@@ -320,10 +331,10 @@ function kbApplyLink(){
 }
 function kbLink(){
  if(!window.history)return;const url=new URL(location.href);
- for(const key of ['tab','edge','take','round','dealer','cards','hole','third','seq','proof','file'])url.searchParams.delete(key);
+ for(const key of ['tab','edge','take','round','dealer','cards','hole','third','seq','proof','file','filmer'])url.searchParams.delete(key);
  if(tab==='proofs'){url.searchParams.set('tab','prov');if(pfId)url.searchParams.set('proof',pfId);if(pfFile)url.searchParams.set('file',pfFile);}
  if(tab==='clipbank'){
-  url.searchParams.set('tab','klippbank');
+  url.searchParams.set('tab','klippbank');if(kbMode==='CARD')url.searchParams.set('filmer','kort');
   if(kbPanel==='edge'){url.searchParams.set('edge',kbEdge);if(kbTake&&kbTake!==kbGraph?.edge[kbEdge]?.main?.id)url.searchParams.set('take',kbTake);}
   else{
    if(kbCustom&&clipGraph)url.searchParams.set('round',clipGraph.formatSequence(kbSteps).replaceAll(' ',''));
@@ -334,7 +345,7 @@ function kbLink(){
  window.history.replaceState(null,'',url);
 }
 const kbRoundOptions=()=>({seats:[...kbSeats],dealer:kbDealer,cards:Number($<HTMLSelectElement>('kb-cards').value)||2,thirdDealerCard:input('kb-third').checked});
-function kbResolve(){kbSegments=clipGraph&&kbGraph?clipGraph.resolveRound(kbGraph,kbSteps,{holeCardDown:input('kb-hole').checked}):[];}
+function kbResolve(){kbSegments=clipGraph&&kbGraph?clipGraph.resolveRound(kbGraph,kbSteps,{holeCardDown:input('kb-hole').checked,places:kbPlaces()}):[];}
 function paintBank(){
  const ready=kbState==='ready'&&!!kbGraph&&!!clipGraph;
  $('clipbank').classList.toggle('kb-off',!ready);$('kb-notice').hidden=ready;
@@ -347,21 +358,25 @@ function paintBank(){
  ovSync();
 }
 function paintSummary(){
- const G=clipGraph!,s=kbGraph!.summary,shown=G.STATUSES.filter(k=>s.byStatus[k]);
- $('kb-count').textContent=`${s.done} av ${s.total} kanter klara`;
- $('kb-count-detail').textContent=[...shown.map(k=>`${KB_PLURAL[k]} ${s.byStatus[k]}`),`D.C3 ${s.optional.done} av ${s.optional.total}`,...(s.experiments.total?[`experiment ${s.experiments.total}`]:[]),...(s.credits.committed===null?[]:[`${s.credits.committed}${s.credits.maximum===null?'':` av ${s.credits.maximum}`} credits beställda`])].join(' · ');
- $('kb-meter').innerHTML=shown.map(k=>`<span class="s-${k}" style="flex:${s.byStatus[k]}" title="${KB_PLURAL[k]}: ${s.byStatus[k]}"></span>`).join('');
+ const G=clipGraph!,s=kbGraph!.summary,f=s.films,seat=f.mode==='SEAT',shown=G.STATUSES.filter(k=>s.byStatus[k]);
+ document.querySelectorAll<HTMLButtonElement>('[data-kb-mode]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.kbMode===f.mode)));
+ // Seat mode answers "how much is done": of the films the bank needs, how many exist, and how many of those are candidates or carry known flaws.
+ $('kb-mode-note').textContent=seat?`En film per plats: ${f.total} filmer behövs. Platsens andra kort spelar första kortets tre filmer med det renderade kortet flyttat; ${kbGraph!.edge['READY>D.C2'].shares?'dealerns andra kort gör likadant när det ligger öppet':'dealerns andra kort ligger stängt och har egna filmer'}.`:'En film per kort: varje kort har egna filmer, 51 kanter.';
+ $('kb-count').textContent=seat?`${f.done} av ${f.total} filmer finns · ${f.total?Math.round(100*f.done/f.total):0} %`:`${s.done} av ${s.total} kanter klara`;
+ $('kb-count-detail').textContent=[...(seat?[`kandidater ${f.candidates}`,`kända brister ${f.flaws}`,`saknas ${f.missing}`]:shown.map(k=>`${KB_PLURAL[k]} ${s.byStatus[k]}`)),`D.C3 ${s.optional.done} av ${s.optional.total}`,...(s.experiments.total?[`experiment ${s.experiments.total}`]:[]),...(s.credits.committed===null?[]:[`${s.credits.committed}${s.credits.maximum===null?'':` av ${s.credits.maximum}`} credits beställda`])].join(' · ');
+ $('kb-meter').innerHTML=seat?([['s-UNREVIEWED','kandidater',f.candidates],['s-UNREVIEWED flaw','kända brister',f.flaws],['s-MISSING','saknas',f.missing]] as [string,string,number][]).filter(part=>part[2]).map(([cls,label,n])=>`<span class="${cls}" style="flex:${n}" title="${label}: ${n}"></span>`).join('')
+  :shown.map(k=>`<span class="s-${k}" style="flex:${s.byStatus[k]}" title="${KB_PLURAL[k]}: ${s.byStatus[k]}"></span>`).join('');
  $('kb-legend').innerHTML=['MISSING','PREPARED','ORDERED','UNREVIEWED','ACCEPTED','REJECTED'].map(k=>`<span class="kb-key"><svg viewBox="0 0 34 12" aria-hidden="true"><g class="kb-edge s-${k}"><line class="ln" x1="2" y1="6" x2="22" y2="6"/><path class="head" d="M32,6 L22,1 L22,11 Z"/>${k==='REJECTED'?'<path class="kb-cross" d="M8,2 l8,8 m0,-8 l-8,8"/>':k==='ORDERED'?'<circle class="kb-render" cx="12" cy="6" r="3.5"/>':''}</g></svg>${G.STATUS_LABEL[k as keyof typeof G.STATUS_LABEL]}</span>`).join('')
   +'<span class="kb-key"><svg viewBox="0 0 12 12" aria-hidden="true"><rect class="kb-variant" x="2.5" y="2.5" width="7" height="7" transform="rotate(45 6 6)"/></svg>variant finns</span><span class="kb-key"><svg viewBox="0 0 12 12" aria-hidden="true"><rect class="kb-start" x="2.5" y="2.5" width="7" height="7" transform="rotate(45 6 6)"/></svg>variant-start finns</span><span class="kb-key"><i class="swatch blue"></i>öppet kort</span><span class="kb-key"><i class="swatch yellow"></i>stängt kort</span>';
 }
 // Schematic table. READY feeds one rail (deal down, return up); IDLE has its own rail, so no lines cross.
 function paintTree(){
  if(!clipGraph||!kbGraph)return;
- const G=clipGraph,g=kbGraph,T=G.TREE,w=T.nodeWidth/2,h=T.nodeHeight/2,cards=[...G.TARGETS,...G.OPTIONAL_TARGETS],inRound=kbPanel==='round',round=new Set(inRound?kbSegments.map(s=>s.edge?.id??s.id):[]);
+ const G=clipGraph,g=kbGraph,T=G.TREE,w=T.nodeWidth/2,h=T.nodeHeight/2,cards=[...G.TARGETS,...G.OPTIONAL_TARGETS],inRound=kbPanel==='round',round=new Set(inRound?kbSegments.map(s=>s.film?.id??s.edge?.id??s.id):[]),chosen=g.edge[kbEdge]?.shares??kbEdge;
  const at=G.tableLayout(plan?Object.fromEntries(TARGETS.map(id=>[id,toPixels(plan.targets[id].geometry.native,'native')])):null);
  const live=(e:KbEdge)=>e.takes.filter(t=>G.isCurrent(e,t)).length; // replaced and rejected takes stay out of the picture
  const tip=(e:KbEdge)=>`${e.id} · ${kbEdgeNote(e)}${live(e)>1?` · ${live(e)} aktuella tagningar`:''}${e.takes.length>live(e)?` · ${e.takes.length-live(e)} ersatta eller underkända`:''}`;
- const group=(id:string,inner:string)=>{const e=g.edge[id];return `<g class="kb-edge s-${e.status}${id===kbEdge&&!inRound?' sel':''}${round.has(id)?' in-round':''}" data-edge="${esc(id)}" role="button" tabindex="0" aria-label="${esc(tip(e))}"><title>${esc(tip(e))}</title>${inner}</g>`;};
+ const group=(id:string,inner:string)=>{const e=g.edge[id];return `<g class="kb-edge s-${e.status}${id===chosen&&!inRound?' sel':''}${round.has(id)?' in-round':''}" data-edge="${esc(id)}" role="button" tabindex="0" aria-label="${esc(tip(e))}"><title>${esc(tip(e))}</title>${inner}</g>`;};
  const head=(x:number,y:number,angle:number)=>`<path class="head" d="M0,0 L-10,-5.5 L-10,5.5 Z" transform="translate(${x} ${y}) rotate(${angle})"/>`;
  const marks=(e:KbEdge,x:number,y:number)=>(e.hasVariant||e.status==='VARIANT'?`<rect class="kb-variant" x="${x-4.5}" y="${y-4.5}" width="9" height="9" transform="rotate(45 ${x} ${y})"/>`:'')+(e.status==='REJECTED'?`<path class="kb-cross" d="M${x-4},${y-4} l8,8 m0,-8 l-8,8"/>`:'');
  // A hollow diamond near the READY end: a take exists that starts from (or returns to) another READY pose.
@@ -369,10 +384,14 @@ function paintTree(){
  const line=(id:string,x1:number,y1:number,x2:number,y2:number,label='',side=0)=>{const e=g.edge[id],d=Math.hypot(x2-x1,y2-y1),ex=x2-(x2-x1)/d*7,ey=y2-(y2-y1)/d*7,k=e.from==='READY'?.26:.74,sx=x1+(x2-x1)*k,sy=y1+(y2-y1)*k,mx=(x1+x2)/2,my=(y1+y2)/2;
   return group(id,`<line class="hit" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}"/><line class="ln" x1="${x1}" y1="${y1}" x2="${ex}" y2="${ey}"/>${head(x2,y2,Math.atan2(y2-y1,x2-x1)*180/Math.PI)}${marks(e,mx,my)}${e.hubVariants.length?`<rect class="kb-start" x="${sx-4.5}" y="${sy-4.5}" width="9" height="9" transform="rotate(45 ${sx} ${sy})"/>`:''}${e.rendering?`<circle class="kb-render" cx="${x1+(x2-x1)*(1-k)}" cy="${y1+(y2-y1)*(1-k)}" r="4.5"/>`:''}${side&&live(e)>1?`<text class="kb-count-n" x="${mx+side*9}" y="${my+3.5}" text-anchor="${side<0?'end':'start'}">${live(e)}</text>`:''}${label}`);};
  const text=(id:string,x:number,y:number,anchor='middle')=>`<text class="kb-edge-label" x="${x}" y="${y}" text-anchor="${anchor}">${esc(id)}</text>`;
- const stubs=(id:string)=>{const p=at[id],dir=id[0]==='D'?-1:1,near=p.y-dir*h,far=p.y+dir*h,rail=dir<0?T.idleRail:T.idleBus;
+ const stubs=(id:string,p=at[id])=>{const dir=id[0]==='D'?-1:1,near=p.y-dir*h,far=p.y+dir*h,rail=dir<0?T.idleRail:T.idleBus;
   return line(`READY>${id}`,p.x-9,T.readyBus+dir*3,p.x-9,near-dir,'',-1)+line(`${id}>READY`,p.x+9,near-dir,p.x+9,T.readyBus+dir*4,'',1)+line(`${id}>IDLE`,p.x,far+dir,p.x,rail-dir*3,'',1);};
  const node=(id:string)=>{const p=at[id],done=g.edges.filter(e=>e.target===id&&e.main).length,side=plan?.targets[id]?.intent.endSide??G.wantedSide(id);
   return `<g class="kb-node${id===kbNode&&!inRound?' sel':''}${done===3?' full':done?' part':''}${G.OPTIONAL_TARGETS.includes(id)?' optional':''}" data-node="${id}" role="button" tabindex="0" aria-label="${id}, ${done} av 3 kanter klara"><title>${id} · ${esc(G.describeNode(id))} · ${done} av 3 kanter klara</title><rect x="${p.x-w}" y="${p.y-h}" width="${w*2}" height="${h*2}" rx="7"/><rect class="side ${side==='BACK'?'back':'front'}" x="${p.x+w-13}" y="${p.y-h+5}" width="8" height="8" rx="2"/><text class="name" x="${p.x}" y="${p.y+3}" text-anchor="middle">${id}</text><text class="count" x="${p.x}" y="${p.y+19}" text-anchor="middle">${done}/3</text></g>`;};
+ // Seat mode: a seat whose second card shares the first card's films is one node with both cards and the seat's three edges.
+ const pairs=[...G.SEATS,'D'].filter(s=>!!g.edge[`READY>${s}.C2`].shares),solo=cards.filter(id=>!pairs.includes(id.split('.')[0])||G.OPTIONAL_TARGETS.includes(id)),mid=(s:string)=>({x:(at[`${s}.C1`].x+at[`${s}.C2`].x)/2,y:at[`${s}.C1`].y});
+ const seatNode=(s:string)=>{const p=mid(s),c1=`${s}.C1`,c2=`${s}.C2`,done=g.edges.filter(e=>e.target===c1&&e.main).length,reach=kbReach(c2),far=reach!==null&&reach>KB_REACH,label=`${s} · ${s==='D'?'Dealer':`Spelare ${s[1]}`} · en film för båda korten · ${done} av 3 filmer finns${reach===null?'':` · kort 2 flyttas ${reach} px${far?` (över ${KB_REACH} px)`:''}`}`;
+  return `<g class="kb-node seat${[c1,c2].includes(kbNode)&&!inRound?' sel':''}${done===3?' full':done?' part':''}" data-node="${c1}" role="button" tabindex="0" aria-label="${esc(label)}"><title>${esc(label)}</title><rect x="${p.x-52}" y="${p.y-h}" width="104" height="${h*2}" rx="7"/><text class="name" x="${p.x}" y="${p.y-9}" text-anchor="middle">${s}</text><text class="share${far?' far':''}" x="${p.x}" y="${p.y+6}" text-anchor="middle">C1 · C2 ${reach===null?'delar film':`${far?'⚠ ':''}+${reach} px`}</text><text class="count" x="${p.x}" y="${p.y+21}" text-anchor="middle">${done}/3</text></g>`;};
  const hub=(id:string,sub:string)=>{const p=at[id];return `<g class="kb-hub${id===kbNode&&!inRound?' sel':''}" data-node="${id}" role="button" tabindex="0" aria-label="${id}, ${sub}"><title>${id} · ${esc(G.describeNode(id))}</title><rect x="${p.x-70}" y="${p.y-26}" width="140" height="52" rx="10"/><text class="name" x="${p.x}" y="${p.y}" text-anchor="middle">${id}</text><text class="count" x="${p.x}" y="${p.y+16}" text-anchor="middle">${sub}</text></g>`;};
  const px=G.TARGETS.filter(id=>id[0]==='P').map(id=>at[id].x),dx=cards.filter(id=>id[0]==='D').map(id=>at[id].x);
  $('kb-tree').classList.toggle('round',kbPanel==='round'); // the round's own path stays lit, the rest steps back
@@ -380,11 +399,16 @@ function paintTree(){
   +`<text class="kb-rail-label" x="${T.readyTrunk-14}" y="${T.readyBus-11}" text-anchor="end">READY · HANDEN VID SKON</text><text class="kb-rail-label" x="${T.idleTrunk+14}" y="${T.idleBus+21}">IDLE · VILA</text>`
   +line('IDLE>READY',170,58,830,58,text('IDLE>READY',500,48))+line('READY>IDLE',830,82,170,82,text('READY>IDLE',500,101))
   +group('IDLE>IDLE',`<path class="hit" d="M72,44 C54,2 142,2 122,44"/><path class="ln" d="M72,44 C54,2 140,2 124,38"/>${head(122,44,115)}${marks(g.edge['IDLE>IDLE'],97,13)}${text('IDLE>IDLE',146,24,'start')}`)
-  +cards.map(stubs).join('')+cards.map(node).join('')+hub('IDLE','vila')+hub('READY','redo vid skon');
+  +solo.map(id=>stubs(id)).join('')+pairs.map(s=>stubs(`${s}.C1`,mid(s))).join('')+solo.map(node).join('')+pairs.map(seatNode).join('')+hub('IDLE','vila')+hub('READY','redo vid skon');
 }
 function paintNode(){
- const G=clipGraph!,g=kbGraph!,ids=kbNode==='IDLE'||kbNode==='READY'?['IDLE>READY','READY>IDLE','IDLE>IDLE']:[`READY>${kbNode}`,`${kbNode}>READY`,`${kbNode}>IDLE`];
- $('kb-node-title').textContent=`${kbNode} · ${G.describeNode(kbNode)}`;
+ const G=clipGraph!,g=kbGraph!,atHub=kbNode==='IDLE'||kbNode==='READY',seat=kbNode.split('.')[0],second=`${seat}.C2`,paired=!atHub&&!G.OPTIONAL_TARGETS.includes(kbNode)&&!!g.edge[`READY>${second}`]?.shares,card=paired?`${seat}.C1`:kbNode;
+ const ids=atHub?['IDLE>READY','READY>IDLE','IDLE>IDLE']:[`READY>${card}`,`${card}>READY`,`${card}>IDLE`];
+ $('kb-node-title').textContent=paired?`${seat} · ${seat==='D'?'Dealer':`Spelare ${seat[1]}`} · en film för båda korten`:`${kbNode} · ${G.describeNode(kbNode)}`;
+ // The seat's second card: no film of its own, how far the rendered card is moved, and any film that was made for it anyway.
+ const reach=paired?kbReach(second):null,own=paired?g.edges.filter(e=>e.target===second&&e.takes.some(G.playable)):[];
+ $('kb-node-share').hidden=!paired;
+ if(paired)$('kb-node-share').innerHTML=`<p>Kort 2 (<code>${esc(second)}</code>) har ingen egen film. Det spelar platsens tre filmer, och det renderade kortet flyttas${reach===null?'':` ${reach} px`} till sin plats.${reach!==null&&reach>KB_REACH?` <span class="far">⚠ Över ${KB_REACH} px: stillbildsprovet på P4 höll till ungefär 45–50 px.</span>`:''}</p><button data-play-second="READY" title="Spelar platsens giv och retur med det renderade kortet på kort 2:s plats">▶ Kort 2: giv + retur till READY</button>${own.map(e=>`<button data-edge="${esc(e.id)}" title="Används bara när en runda namnger tagningen">egen film för kort 2 · <code>${esc(e.id)}</code></button>`).join('')}`;
  $('kb-node-edges').innerHTML=ids.map(id=>kbEdgeChip(g.edge[id])).join('');$('kb-node-play').hidden=!!G.hubOf(kbNode);
  // Jobs whose from/to is outside the model are never hidden: they get their own group and the same detail view.
  const chains=G.experimentChains(g);
@@ -422,20 +446,24 @@ function kbSelect(edgeId:string,takeId=''){
 function paintEdge(){
  const G=clipGraph!,g=kbGraph!,e=g.edge[kbEdge],t=g.takes[kbTake]?.edge===e.id?g.takes[kbTake]:null;
  $('kb-edge-title').textContent=e.id;$('kb-edge-sub').textContent=e.experiment?'Experiment utanför nodträdet. Räknas inte bland de 51 kanterna och ingår inte i rundor.':`${G.describeEdge(e)}.${e.optional?' Valfri kant: det tredje dealerkortet räknas inte in i de 51.':''}`;
- $('kb-edge-status').className=`kb-chip s-${e.status}`;$('kb-edge-status').innerHTML=`<i>${KB_GLYPH[e.status]}</i>${esc(kbEdgeNote(e))}`;
+ const film=kbFilm(e),shared=film!==e,far=shared?kbReach(e.target!):null;
+ $('kb-edge-status').className=`kb-chip s-${film.status}`;$('kb-edge-status').innerHTML=`<i>${KB_GLYPH[film.status]}</i>${esc(shared?`delar film · ${kbEdgeNote(film)}`:kbEdgeNote(e))}`;
+ // A shared step says in plain words which film it plays and how far the card is moved.
+ $('kb-share').hidden=!shared;
+ if(shared)$('kb-share').innerHTML=`<p>En film per plats: det här steget har ingen egen film. Det spelar <code>${esc(film.id)}</code>${film.main?` (tagning <code>${esc(kbShort(film.main.id,film.target))}</code>)`:', som ännu saknar film'}, och det renderade kortet ritas${far===null?' på kortets egen plats':` ${far} px bort, på platsen för ${esc(e.target)}`}. Filmens eget kort täcks.${far!==null&&far>KB_REACH?` <span class="far">⚠ Över ${KB_REACH} px: stillbildsprovet på P4 höll till ungefär 45–50 px.</span>`:''}</p><button data-edge="${esc(film.id)}">Visa platsens film</button><button data-play-shared="1"${film.main?'':' disabled'} title="Spelar steget i rundbyggaren med Renderat kort på">▶ Spela steget med flyttat kort</button>`;
  // Only what matters now is shown: the main take, accepted variants, variant starts and films on their way.
  // Rejected and replaced takes are kept behind one folded row, which opens by itself when one of them is selected.
- const tab=(x:KbTake)=>{const role=G.takeRole(e,x),sub=role==='WAITING'?G.STAGE_LABEL[x.stage]:role==='OTHER'?(x.decision==='SECONDARY'?'sekundär':x.editOf&&x.decision==='PENDING'?'ogranskad':e.main?'ersatt':'alternativ'):role==='START'?`variant-start ${esc(x.hub)}`:G.ROLE_LABEL[role];
+ const tab=(x:KbTake)=>{const role=G.takeRole(e,x),sub=role==='WAITING'?G.STAGE_LABEL[x.stage]:shared&&(role==='MAIN'||role==='OTHER')?'egen film för kort 2':role==='OTHER'?(x.decision==='SECONDARY'?'sekundär':x.editOf&&x.decision==='PENDING'?'ogranskad':e.main?'ersatt':'alternativ'):role==='START'?`variant-start ${esc(x.hub)}`:G.ROLE_LABEL[role];
   return `<button class="kb-take-tab r-${role}" data-take="${esc(x.id)}" aria-pressed="${x===t}" title="${esc(x.id)}"><b>${esc(kbShort(x.id,e.target))}</b><span>${sub}${x.segment?' · utsnitt':''}${x.editOf?` · rättad kopia av ${esc(kbShort(x.editOf,e.target))}`:''}${x.speed!==1?` · ${String(x.speed).replace('.',',')}×`:''}</span></button>`;};
  const sorted=[...e.takes].sort((a,b)=>Number(b===e.main)-Number(a===e.main)||b.order-a.order),old=sorted.filter(x=>!G.isCurrent(e,x));
  $('kb-takes').innerHTML=sorted.filter(x=>G.isCurrent(e,x)).map(tab).join('');$('kb-takes-old').innerHTML=old.map(tab).join('');
  $('kb-old').hidden=!old.length;$('kb-old-summary').textContent=`Ersatta och underkända (${old.length})`;if(t&&old.includes(t))$<HTMLDetailsElement>('kb-old').open=true;
- $('kb-take').hidden=!t;$('kb-empty').hidden=e.takes.length>0;$('kb-empty').textContent='Ingen tagning finns för den här kanten ännu.';
+ $('kb-take').hidden=!t;$('kb-empty').hidden=e.takes.length>0;$('kb-empty').textContent=shared?'Kort 2 har ingen egen film och behöver ingen: steget spelar platsens film.':'Ingen tagning finns för den här kanten ännu.';
  if(t)paintTake(e,t);else{kbPlayer.pause();paintDecide(null);}
  const draft=G.draftJob(g,e.id,{holeCardDown:input('kb-hole').checked});
- if(kbDraftFor!==e.id){kbDraftFor=e.id;$<HTMLDetailsElement>('kb-draft').open=!e.takes.length;}
+ if(kbDraftFor!==e.id){kbDraftFor=e.id;$<HTMLDetailsElement>('kb-draft').open=!e.takes.length&&!shared;}
  $('kb-draft').hidden=!draft; // an experiment has no recipe to draft from
- $('kb-draft-summary').textContent=e.takes.length?'Jobbutkast för en ny tagning':'Jobbutkast för den saknade kanten';
+ $('kb-draft-summary').textContent=shared?'Jobbutkast för en egen film för kort 2 (behövs inte med en film per plats)':e.takes.length?'Jobbutkast för en ny tagning':'Jobbutkast för den saknade kanten';
  $('kb-draft-json').textContent=draft?JSON.stringify(draft.job,null,2):'';
  $('kb-draft-notes').innerHTML=(draft?.notes??[]).map(note=>`<li>${esc(note)}</li>`).join('');
 }
@@ -449,7 +477,7 @@ function paintTake(e:KbEdge,t:KbTake){
  $('kb-cut-frame').hidden=cut===null||!src;$('kb-cut-frame').textContent=`Till landningsrutan f${cut}`;kbShowFrame();
  const day=(value?:string)=>value?` ${esc(String(value).slice(0,10))}`:'',width=source?.width??out?.width,height=source?.height??out?.height,seam=t.motion?.motion?.startsOn?.seamPixelsOverThreshold;
  // A derived take was never generated: it shows a range of frames from a film that already exists.
- const facts:[string,string][]=[['Klipp',`<code>${esc(t.id)}</code>`],...(t.segment?[['Utsnitt',`ruta ${t.segment.start}–${t.segment.end} ur <code>${esc(t.segment.clip)}</code> · ingen ny film, inga credits`]] as [string,string][]:[['Modell',`${esc(job.model)} · ${esc(job.duration)} s · ${esc(job.ratio)} · ${job.audio?'med ljud':'utan ljud'}`],['Credits',`${esc(t.credits)}${t.receipt?'':' (beräknat)'}`]] as [string,string][]),
+ const facts:[string,string][]=[['Klipp',`<code>${esc(t.id)}</code>`],...(t.segment?[['Utsnitt',t.segment.clip===t.id?`ruta ${t.segment.start}–${t.segment.end} av filmens egna rutor · resten av filmen spelas inte`:`ruta ${t.segment.start}–${t.segment.end} ur <code>${esc(t.segment.clip)}</code> · ingen ny film, inga credits`]] as [string,string][]:[['Modell',`${esc(job.model)} · ${esc(job.duration)} s · ${esc(job.ratio)} · ${job.audio?'med ljud':'utan ljud'}`],['Credits',`${esc(t.credits)}${t.receipt?'':' (beräknat)'}`]] as [string,string][]),
   ['Läge',t.segment?(t.stage==='DONE'?'klar · filmen finns':'filmen saknas på den här datorn'):t.stage==='DONE'?`klar${day(t.receipt?.completedAt)}`:t.stage==='ORDERED'?`${t.receipt?.status==='THROTTLED'?'i kö hos Runway':'renderas hos Runway'} · beställd${day(t.receipt?.requestedAt)}`:t.stage==='PREPARED'?'förberedd · indata frysta, inte beställd':t.stage==='FAILED'?'misslyckad hos Runway':'jobb skrivet · indata inte frysta']];
  if(t.frames)facts.push(['Film',`${width&&height?`${esc(width)} × ${esc(height)} · `:''}${esc(t.frames)} rutor · ${esc(t.fps??30)} fps`]);
  if(t.editOf)facts.push(['Rättad kopia',`av <code>${esc(t.editOf)}</code> · samma kant, samma bilder; bara det prompten nämner är ändrat${t.kind==='DEAL'?' · returer klippta ur källklippet följer även kopian; den skarven är inte uppmätt för kopian':''}`]);
@@ -463,7 +491,7 @@ function paintTake(e:KbEdge,t:KbTake){
   if(!back.frame.length&&!back.anchor.length)facts.push(['Klipps vid',cut===null?'okänt · ingen retur finns ännu, given spelas till sista rutan':`ruta f${cut} · angiven landningsruta`]);
  }
  if(t.anchorStart)facts.push(['Startar på',`landningsankaret <code>${esc(t.anchorStart.split('/').at(-2)??t.anchorStart)}</code> · passar varje giv till ${esc(e.from)} som slutar på det ankaret; given spelas till sin sista ruta`]);
- else if(t.startsOn)facts.push(['Startar på',`ruta f${t.startsOn.frame} i <code>${esc(t.startsOn.clip??t.startsOn.video)}</code> · passar bara den tagningen, som klipps vid samma ruta${typeof seam==='number'?` · ${seam} avvikande pixlar i skarven`:''}`]);
+ else if(t.startsOn)facts.push(['Startar på',`ruta f${t.startsOn.frame} i <code>${esc(t.startsOn.clip??t.startsOn.video)}</code>${t.kind==='RETURN'?` · passar bara den tagningen, som klipps vid samma ruta${typeof seam==='number'?` · ${seam} avvikande pixlar i skarven`:''}`:' · startbilden är hämtad därifrån; inget klipps för det'}`]);
  // What the card track says about this film, and where the card is drawn in front of the hand by hand-written rule.
  if(src){const data=ovData.get(t.id);
   if(!t.media.track)facts.push(['Kortspår',`saknas · renderat kort kräver <code>node tools/track-card.ts ${esc(t.segment?.clip??t.id)}</code>`]);
@@ -507,10 +535,10 @@ function paintRound(){
  const G=clipGraph!,g=kbGraph!,frames=(s:KbSegment)=>s.gap?0:Math.max(0,(s.end??s.take?.frames??0)-s.start),gaps=kbSegments.filter(s=>s.gap).length;
  document.querySelectorAll<HTMLButtonElement>('[data-kb-seat]').forEach(b=>b.setAttribute('aria-pressed',String(kbSeats.has(b.dataset.kbSeat!))));$('kb-dealer').setAttribute('aria-pressed',String(kbDealer));
  $('kb-seq-count').textContent=kbSegments.length?`${kbSegments.length} steg · ${kbSegments.length-gaps} spelbara · ${gaps} ${gaps===1?'lucka':'luckor'} · ${kbSegments.reduce((sum,s)=>sum+frames(s)/s.fps,0).toFixed(1).replace('.',',')} s film${kbCustom?' · ändrad för hand':''}`:'';
- $('kb-steps').innerHTML=kbSegments.map(s=>{const e=s.edge,t=s.take,takes=e?e.takes.filter(G.playable):[],seam=!!t?.startsOn&&t.startsOn.clip===kbSegments[s.index-1]?.take?.id;
+ $('kb-steps').innerHTML=kbSegments.map(s=>{const own=s.edge,e=s.film??own,t=s.take,lent=!!own&&e!==own,takes=e?[...e.takes.filter(G.playable),...(lent?own!.takes.filter(G.playable):[])]:[],seam=!!t?.startsOn&&t.startsOn.clip===kbSegments[s.index-1]?.take?.id;
   const state=s.gap?`<span class="kb-chip gap"><i>○</i>${G.GAP_LABEL[s.gap]}</span>`:kbChip(kbTakeStatus(t!),t===e!.main?G.STATUS_LABEL[e!.status]:G.ROLE_LABEL[G.takeRole(e!,t!)]);
-  const pick=takes.length>1?`<select data-step-take="${s.index}" aria-label="Tagning för steg ${s.index+1}">${takes.map(o=>`<option value="${esc(o.id)}"${o===t?' selected':''}>${esc(kbShort(o.id,e!.target))} · ${G.ROLE_LABEL[G.takeRole(e!,o)]}</option>`).join('')}</select>`:'';
-  const detail=t?`${esc(kbShort(t.id,e!.target))}${s.gap?'':` · ruta ${s.start}–${kbLast(s)}${s.cut==='FRAME'?` · klipps vid landningsrutan f${s.end}`:s.cut==='END'?' · spelas till sista rutan':''}${seam?` · startar på landningsrutan f${t.startsOn!.frame}`:t.anchorStart?' · startar från landningsankaret':''}`}`:'';
+  const pick=takes.length>1?`<select data-step-take="${s.index}" aria-label="Tagning för steg ${s.index+1}">${takes.map(o=>`<option value="${esc(o.id)}"${o===t?' selected':''}>${esc(kbShort(o.id,e!.target))} · ${lent&&own!.takes.includes(o)?'egen film för kort 2':G.ROLE_LABEL[G.takeRole(e!,o)]}</option>`).join('')}</select>`:'';
+  const detail=t?`${esc(kbShort(t.id,e!.target))}${s.gap?'':` · ruta ${s.start}–${kbLast(s)}${s.cut==='FRAME'?` · klipps vid landningsrutan f${s.end}`:s.cut==='END'?' · spelas till sista rutan':''}${seam?` · startar på landningsrutan f${t.startsOn!.frame}`:t.anchorStart?' · startar från landningsankaret':''}`}${lent?` · platsens film <code>${esc(e!.id)}</code>${s.shift?` · kortet flyttas ${Math.round(Math.hypot(s.shift.x,s.shift.y))} px`:''}`:''}`:lent?`platsens film <code>${esc(e!.id)}</code> saknas`:'';
   return `<li class="kb-step${s.gap?' gap':''}" data-step="${s.index}"><button class="kb-step-play" data-step-play="${s.index}" title="Spela från det här steget"><span>${s.index+1}</span><code>${esc(s.id)}</code>${s.side?`<i class="swatch ${s.side==='BACK'?'yellow':'blue'}" title="${s.side==='BACK'?'stängt kort':'öppet kort'}"></i>`:''}</button>${state}<span class="kb-step-pick">${pick}</span><span class="kb-step-tools"><button data-step-open="${s.index}" title="Visa kantdetalj" aria-label="Visa kantdetalj för ${esc(s.id)}">↗</button><button data-step-move="${s.index}" data-by="-1" title="Flytta upp" aria-label="Flytta upp steg ${s.index+1}">↑</button><button data-step-move="${s.index}" data-by="1" title="Flytta ned" aria-label="Flytta ned steg ${s.index+1}">↓</button><button data-step-del="${s.index}" title="Ta bort steget" aria-label="Ta bort steg ${s.index+1}">✕</button></span>${detail?`<p class="kb-step-detail">${detail}</p>`:''}${s.notes.map(note=>`<p class="kb-step-note">${esc(note)}</p>`).join('')}</li>`;}).join('')||'<li class="kb-empty">Välj minst en plats eller dealern.</li>';
  $('kb-chain-bar').innerHTML=kbSegments.map(s=>`<button class="${s.gap?'gap':`s-${kbTakeStatus(s.take!)}`}" data-step-play="${s.index}" style="flex:${Math.max(24,frames(s))}" title="${s.index+1}. ${esc(s.id)}${s.gap?` · ${G.GAP_LABEL[s.gap]}`:''}" aria-label="Spela från steg ${s.index+1}, ${esc(s.id)}"></button>`).join('');
  const seq=$<HTMLTextAreaElement>('kb-seq');if(document.activeElement!==seq)seq.value=G.formatSequence(kbSteps);
@@ -546,7 +574,7 @@ function kbChainStatus(note=''){
 function paintChain(note=''){
  const seg=kbSegments[kbChain.index],gap=seg?.gap&&clipGraph?seg:null;
  document.querySelectorAll<HTMLElement>('#kb-steps [data-step],#kb-chain-bar [data-step-play]').forEach(n=>n.classList.toggle('current',Number(n.dataset.step??n.dataset.stepPlay)===kbChain.index));
- document.querySelectorAll<SVGElement>('#kb-tree [data-edge]').forEach(n=>n.classList.toggle('playing',!!seg&&n.dataset.edge===(seg.edge?.id??seg.id)));
+ document.querySelectorAll<SVGElement>('#kb-tree [data-edge]').forEach(n=>n.classList.toggle('playing',!!seg&&n.dataset.edge===(seg.film?.id??seg.edge?.id??seg.id)));
  $('kb-chain-play').textContent=kbChain.playing?'Pausa':kbChain.index>=0?'Fortsätt':'Spela rundan';$<HTMLButtonElement>('kb-chain-play').disabled=!kbSegments.length;
  $('kb-chain-gap').hidden=!gap;
  if(gap)$('kb-chain-gap').innerHTML=`<b>${clipGraph!.GAP_LABEL[gap.gap!]}: ${esc(gap.id)}</b><span>${gap.gap==='MISSING'?'Ingen tagning finns för den här kanten.':gap.gap==='WAITING'?'Tagningen är förberedd eller beställd men inte klar.':gap.gap==='REJECTED'?'Alla tagningar är underkända.':gap.gap==='LOCAL_ONLY'?'Filmen ligger bara på den lokala datorn.':'Kanten finns inte i klippmodellen.'}</span>`;
@@ -623,7 +651,7 @@ $('kb-chain-bar').addEventListener('click',event=>{const el=(event.target as Ele
 document.querySelectorAll<HTMLButtonElement>('[data-kb-seat]').forEach(b=>b.addEventListener('click',()=>{const seat=b.dataset.kbSeat!;if(!kbSeats.delete(seat))kbSeats.add(seat);kbRoundChanged(false);}));
 $('kb-dealer').addEventListener('click',()=>{kbDealer=!kbDealer;kbRoundChanged(false);});
 for(const id of ['kb-third','kb-cards'])$(id).addEventListener('change',()=>kbRoundChanged(false));
-$('kb-hole').addEventListener('change',()=>kbRoundChanged(kbCustom));
+$('kb-hole').addEventListener('change',()=>{kbRebuild();kbRoundChanged(kbCustom);paintSummary();paintNode();}); // an open hole card ends on the same side as the first dealer card and then shares its films
 $('kb-reset-round').addEventListener('click',()=>kbRoundChanged(false));
 $('kb-add-step').addEventListener('click',()=>{const e=clipGraph?.parseEdge($<HTMLSelectElement>('kb-add-edge').value);if(e){kbSteps=[...kbSteps,e];kbRoundChanged(true);}});
 $('kb-apply-seq').addEventListener('click',()=>{
@@ -640,9 +668,14 @@ $('kb-steps').addEventListener('click',event=>{
  else if(d.stepDel!==undefined){kbSteps=kbSteps.filter((_,i)=>i!==Number(d.stepDel));kbRoundChanged(true);}
  else if(d.stepMove!==undefined){const i=Number(d.stepMove),j=i+Number(d.by),steps=[...kbSteps];if(j<0||j>=steps.length)return;[steps[i],steps[j]]=[steps[j],steps[i]];kbSteps=steps;kbRoundChanged(true);}
 });
-$('kb-steps').addEventListener('change',event=>{const el=event.target as HTMLSelectElement,i=Number(el.dataset.stepTake);if(el.dataset.stepTake===undefined)return;kbSteps=kbSteps.map((s,n)=>n===i?{from:s.from,to:s.to,...(el.value===kbSegments[i].edge?.main?.id?{}:{take:el.value})}:s);kbRoundChanged(true);});
+$('kb-steps').addEventListener('change',event=>{const el=event.target as HTMLSelectElement,i=Number(el.dataset.stepTake);if(el.dataset.stepTake===undefined)return;kbSteps=kbSteps.map((s,n)=>n===i?{from:s.from,to:s.to,...(el.value===(kbSegments[i].film??kbSegments[i].edge)?.main?.id?{}:{take:el.value})}:s);kbRoundChanged(true);});
 const kbPick=(event:Event)=>{const d=(event.target as Element).closest<HTMLElement>('[data-edge],[data-node]')?.dataset;if(!d)return false;kbSelect(d.edge??(d.node==='IDLE'?'IDLE>READY':d.node==='READY'?'READY>IDLE':`READY>${d.node}`));return true;};
 $('kb-tree').addEventListener('click',kbPick);$('kb-node-edges').addEventListener('click',kbPick);
+document.querySelectorAll<HTMLButtonElement>('[data-kb-mode]').forEach(b=>b.addEventListener('click',()=>kbSetMode(b.dataset.kbMode==='CARD'?'CARD':'SEAT')));
+// A second card played through the seat's film is only meaningful with the rendered card, so these buttons switch it on.
+const kbPlayShifted=(steps:KbStep[])=>{ov.on=true;if(ovState==='idle')void ovLoad();kbPlaySteps(steps);};
+$('kb-node-share').addEventListener('click',event=>{if(kbPick(event))return;const to=(event.target as Element).closest<HTMLElement>('[data-play-second]')?.dataset.playSecond,second=`${kbNode.split('.')[0]}.C2`;if(to&&kbGraph?.edge[`READY>${second}`])kbPlayShifted([{from:'READY',to:second},{from:second,to}]);});
+$('kb-share').addEventListener('click',event=>{if(kbPick(event))return;const e=kbGraph?.edge[kbEdge];if(e&&(event.target as Element).closest('[data-play-shared]'))kbPlayShifted([{from:e.from,to:e.to}]);});
 $('kb-tree').addEventListener('keydown',event=>{const key=(event as KeyboardEvent).key;if((key==='Enter'||key===' ')&&kbPick(event)){event.preventDefault();$('kb-tree').querySelector<SVGElement>('.kb-edge.sel')?.focus();}});
 for(const id of ['kb-takes','kb-takes-old'])$(id).addEventListener('click',event=>{const take=(event.target as Element).closest<HTMLElement>('[data-take]')?.dataset.take;if(take){kbTake=take;kbPendingFrame=null;paintEdge();kbLink();}});
 document.querySelectorAll<HTMLButtonElement>('[data-kb-panel]').forEach(b=>b.addEventListener('click',()=>{kbPanel=b.dataset.kbPanel as 'edge'|'round';kbStopChain();kbPlayer.pause();paintBank();kbLink();}));
@@ -686,11 +719,12 @@ async function ovLoad(){
  ovSync();
 }
 // The card a take deals or leaves, for the bend and gloss set on that card in the Material panel.
-function ovOptions(take:KbTake,frame:number,data:OvData|undefined){
+type OvExtra={shift?:{x:number;y:number}|null;placed?:{quad:{x:number;y:number}[];back:boolean}[]};
+function ovOptions(take:KbTake,frame:number,data:OvData|undefined,extra:OvExtra={}){
  const edge=kbGraph?.edge[take.edge],card=edge?.target??[edge?.to,edge?.from].find(node=>!!node&&!!plan?.targets[node]),material=card?plan?.targets[card]?.material:undefined;
- return {scale:ov.scale,split:ov.split,card:{rank:ov.rank,suit:ov.suit} as never,side:ov.side as 'TRACK'|'BACK'|'FRONT',bend:material?.bend??.07,gloss:material?.gloss??.35,inFront:!!data&&!!ovModel&&ovModel.cardInFront(data.overrides,frame)};
+ return {scale:ov.scale,split:ov.split,card:{rank:ov.rank,suit:ov.suit} as never,side:ov.side as 'TRACK'|'BACK'|'FRONT',bend:material?.bend??.07,gloss:material?.gloss??.35,inFront:!!data&&!!ovModel&&ovModel.cardInFront(data.overrides,frame),shift:extra.shift??null,placed:extra.placed??[]};
 }
-function ovPaint(name:'take'|'chain',video:HTMLVideoElement,take:KbTake|null|undefined,frame:number,visible:boolean){
+function ovPaint(name:'take'|'chain',video:HTMLVideoElement,take:KbTake|null|undefined,frame:number,visible:boolean,extra:OvExtra={}){
  const canvas=$<HTMLCanvasElement>(name==='take'?'kb-card':'kb-chain-card'),active=ov.on&&ovState==='ready'&&visible&&!!take?.media.video;
  canvas.hidden=!active;$(name==='take'?'kb-video-box':'kb-chain-box').classList.toggle('split',active&&ov.split);
  if(name==='take')kbPlayer.controls=!active; // the browser's own control bar would lie over the table where cards land; the frame slider below takes its place
@@ -698,15 +732,28 @@ function ovPaint(name:'take'|'chain',video:HTMLVideoElement,take:KbTake|null|und
  const data=ovData.get(take.id);if(!data)void ovRead(take).then(()=>ovSync()); // drawn again when the track has arrived
  try{
   let layer=ovLayers.get(name);if(!layer){layer=ovView!.createCardOverlay(canvas);ovLayers.set(name,layer);}
-  layer.draw(video,frame,data?.track??null,ovScene,ovOptions(take,frame,data));ovError='';
+  layer.draw(video,frame,data?.track??null,ovScene,ovOptions(take,frame,data,extra));ovError='';
  }catch{ovError='Kortet kunde inte ritas. WebGL krävs för det renderade kortet.';}
 }
 const ovTakeNow=()=>kbGraph?.takes[kbTake]??null;
 const ovSegmentNow=()=>kbSegments[kbChain.index]??(kbChain.index<0?kbSegments.find(s=>!s.gap):undefined);
 function ovTake(frame?:number){const t=ovTakeNow(),c=kbClip(),shown=frame??(c?frameAt(kbPlayer,c.fps,c.frames):0);
  ovPaint('take',kbPlayer,t,kbReversed&&c?c.frames-1-shown:shown,tab==='clipbank'&&kbPanel==='edge'&&!!c);} // the track counts the forward film's frames
+// The cards dealt earlier in the round, which the film in view does not show. Each lies where the last film that had it as its
+// own card left it (its return if that has been played, else its deal), moved with that step's shift. lost: cards whose film has no track.
+function ovPlaced(index:number){
+ const seg=kbSegments[index],mine=seg?.kind==='DEAL'?seg.to:seg?.from,lie=new Map<string,{quad:{x:number;y:number}[];back:boolean}>(),lost=new Set<string>();
+ if(ovModel)for(const s of kbSegments.slice(0,Math.max(0,index))){
+  const card=s.kind==='DEAL'?s.to:s.kind==='RETURN'&&s.edge?.target?s.from:null;
+  if(!card||!s.take||s.gap||card===mine){if(card===mine){lie.delete(card);lost.delete(card);}continue;}
+  const data=ovData.get(s.take.id);if(!data){void ovRead(s.take).then(()=>ovSync());continue;}
+  const put=data.track?ovModel.placedCard(data.track,ovScene,ov.scale,s.shift):null;
+  if(put){lie.set(card,{quad:put.quad,back:(ov.side==='TRACK'?(s.kind==='DEAL'&&s.side?s.side:put.side):ov.side)==='BACK'});lost.delete(card);}else if(!lie.has(card))lost.add(card);
+ }
+ return {cards:[...lie.values()],lost:[...lost]};
+}
 function ovChain(frame?:number){const seg=ovSegmentNow(),video=kbVideos[kbChain.active],shown=!!seg&&!seg.gap&&video.dataset.seg===`${seg.index}:${seg.video}`;
- ovPaint('chain',video,shown?seg!.take:null,frame??(shown?frameAt(video,seg!.fps,seg!.take?.frames??100000):0),tab==='clipbank'&&kbPanel==='round'&&shown);}
+ ovPaint('chain',video,shown?seg!.take:null,frame??(shown?frameAt(video,seg!.fps,seg!.take?.frames??100000):0),tab==='clipbank'&&kbPanel==='round'&&shown,shown&&ov.on&&ovState==='ready'?{shift:seg!.shift,placed:ovPlaced(seg!.index).cards}:{});}
 function ovStatus(name:string){
  if(!ov.on)return '';
  if(ovState==='loading')return 'Läser in kortmaterialet…';
@@ -714,8 +761,11 @@ function ovStatus(name:string){
  if(ovError)return ovError;
  const take=name==='take'?ovTakeNow():ovSegmentNow()?.take;if(!take?.media.video)return 'Ingen film att rita kortet på.';
  const data=ovData.get(take.id);if(!data)return 'Läser kortspåret…';
- if(!data.track)return `Ingen spårning för ${take.id}: filmen visas som den är. Kör node tools/track-card.ts ${take.id}.`;
- return `Spår: ${ovModel!.describeTrack(data.track)}${ovScene?'':' · scenkontraktet saknas, kortet förstoras kring sin mitt'}${data.overrides.length?` · framför handen ruta ${data.overrides.map(o=>`${o.from}–${o.to}`).join(', ')}`:''}`;
+ // In the chain: what the seat film is doing for this step, and which earlier cards lie on the table.
+ const seg=name==='chain'?ovSegmentNow():undefined,laid=seg?ovPlaced(seg.index):{cards:[],lost:[]};
+ const round=`${seg?.shift?` · platsens film, kortet flyttat ${Math.round(Math.hypot(seg.shift.x,seg.shift.y))} px till ${seg.edge?.target}`:''}${laid.cards.length?` · ${laid.cards.length} tidigare kort ligger kvar`:''}${laid.lost.length?` · ${laid.lost.join(', ')} saknar spår och visas inte`:''}`;
+ if(!data.track)return `Ingen spårning för ${take.id}: filmens eget kort visas som det är. Kör node tools/track-card.ts ${take.segment?.clip??take.id}.${round}`;
+ return `Spår: ${ovModel!.describeTrack(data.track)}${ovScene?'':' · scenkontraktet saknas, kortet förstoras kring sin mitt'}${data.overrides.length?` · framför handen ruta ${data.overrides.map(o=>`${o.from}–${o.to}`).join(', ')}`:''}${round}`;
 }
 function ovSync(){
  document.querySelectorAll<HTMLElement>('[data-overlay]').forEach(box=>{

@@ -407,3 +407,102 @@ test('a corrected copy is a further take of its source\'s edge, and a slow-motio
   for (const edit of real.edits ?? []) { assert.equal(live.takes[edit.id].edge, live.takes[edit.source.clip].edge, edit.id); assert.equal(live.takes[edit.id].editOf, edit.source.clip); }
   for (const j of real.jobs) if (j.playbackSpeed) assert.equal(live.takes[j.id].speed, j.playbackSpeed, j.id);
 });
+
+// ── One film per seat ───────────────────────────────────────────────────────
+// A small bank built here, so the counts do not move with the real job file.
+function seatBank(): BankData {
+  const jobs = [job('entry-01', 'IDLE', 'READY', {kind: 'ENTRY', target: null}), job('p4-deal-01', 'READY', 'LAND(P4.C1)'), job('p4-back-ready-01', 'LAND(P4.C1)', 'READY', from('p4-deal-01', 100)),
+    job('p4-back-idle-01', 'LAND(P4.C1)', 'IDLE', from('p4-deal-01', 100)), job('p1-deal-01', 'READY', 'LAND(P1.C1)'), job('p4-second-01', 'READY', 'LAND(P4.C2)'), job('hole-deal-01', 'READY', 'LAND(D.C2)')];
+  const decisions: Record<string, string> = {'p4-back-ready-01': 'ACCEPTED', 'p4-back-idle-01': 'SECONDARY', 'p1-deal-01': 'REJECTED'};
+  return {jobs, motions: Object.fromEntries(jobs.map(j => [j.id, done(decisions[j.id] ?? 'PENDING', j.id === 'hole-deal-01' ? {motion: {physicalEndSide: 'BACK'}} : {})])), media: Object.fromEntries(jobs.map(j => [j.id, {video: video(j.id)}]))};
+}
+
+test('one film per seat is the default: a second card shares the first card\'s films when it ends on the same side, and only needed films are counted', () => {
+  // The rule is the side, not the name.
+  assert.deepEqual(['P4.C1', 'P4.C2', 'D.C1', 'D.C2', 'D.C3'].map(t => graph.filmCard(t)), ['P4.C1', 'P4.C1', 'D.C1', 'D.C2', 'D.C3']);
+  assert.equal(graph.filmCard('D.C2', false), 'D.C1', 'an open hole card ends on the same side as the first dealer card');
+  const g = graph.buildGraph(seatBank()), f = g.summary.films;
+  assert.equal(graph.FILM_MODE, 'SEAT'); assert.equal(g.mode, 'SEAT');
+  // 3 hub films, three per seat, and both dealer cards on their own: 3 + 7 × 3 + 3 + 3.
+  assert.equal(f.total, 30); assert.equal(f.required.length, 30); assert.ok(!f.required.some(id => /P\d\.C2|D\.C3/.test(id))); assert.ok(f.required.includes('READY>D.C2'));
+  for (const seat of graph.SEATS) for (const [own, first] of [[`READY>${seat}.C2`, `READY>${seat}.C1`], [`${seat}.C2>READY`, `${seat}.C1>READY`], [`${seat}.C2>IDLE`, `${seat}.C1>IDLE`]]) assert.equal(g.edge[own].shares, first);
+  for (const id of ['READY>D.C2', 'D.C2>READY', 'D.C2>IDLE', 'READY>D.C3', 'READY>P4.C1', 'IDLE>READY']) assert.equal(g.edge[id].shares, null, id);
+  assert.equal(g.edge['READY>D.C3'].optional, true);
+  // Candidates: unreviewed or accepted main take. Known flaws: a secondary main take. Missing: nothing playable, a rejected film included.
+  assert.deepEqual([f.done, f.candidates, f.flaws, f.missing], [5, 4, 1, 25]);
+  // The second card's own film stays a take of its own edge and is not one of the needed films.
+  assert.equal(g.edge['READY>P4.C2'].main?.id, 'p4-second-01'); assert.ok(!f.required.includes('READY>P4.C2'));
+  // The per-card summary is untouched by the mode, so older callers read what they always read.
+  assert.equal(g.summary.total, 51); assert.equal(g.summary.done, 6);
+  // One film per card: nothing is shared and all 51 are needed.
+  const card = graph.buildGraph(seatBank(), {mode: 'CARD'});
+  assert.equal(card.mode, 'CARD'); assert.ok(card.edges.every(e => e.shares === null));
+  assert.deepEqual([card.summary.films.total, card.summary.films.done, card.summary.films.candidates, card.summary.films.flaws, card.summary.films.missing], [51, 6, 5, 1, 45]);
+  // With the hole card open the dealer's second card shares too.
+  const open = graph.buildGraph(seatBank(), {holeCardDown: false});
+  assert.equal(open.edge['READY>D.C2'].shares, 'READY>D.C1'); assert.equal(open.summary.films.total, 27);
+});
+
+test('in a round a second card plays the seat film with the card shifted; a film of its own is used only when the step names it', () => {
+  const g = graph.buildGraph(seatBank()), places = {'P4.C1': {x: 850, y: 1100}, 'P4.C2': {x: 890, y: 1084}, 'D.C1': {x: 800, y: 700}, 'D.C2': {x: 848, y: 700}};
+  const steps = graph.parseSequence('READY>P4.C1 | P4.C1>READY | READY>P4.C2 | P4.C2>IDLE').steps, round = graph.resolveRound(g, steps, {places});
+  // The first card is unchanged. The second card's steps keep their own name and play the seat's films.
+  assert.deepEqual(round.map(s => [s.id, s.edge?.id, s.film?.id, s.take?.id, s.gap]), [['READY>P4.C1', 'READY>P4.C1', 'READY>P4.C1', 'p4-deal-01', null], ['P4.C1>READY', 'P4.C1>READY', 'P4.C1>READY', 'p4-back-ready-01', null],
+    ['READY>P4.C2', 'READY>P4.C2', 'READY>P4.C1', 'p4-deal-01', null], ['P4.C2>IDLE', 'P4.C2>IDLE', 'P4.C1>IDLE', 'p4-back-idle-01', null]]);
+  assert.deepEqual(round.map(s => s.shift), [null, null, {x: 40, y: -16}, {x: 40, y: -16}]);
+  // The seat film is cut for the second card exactly as for the first, and the chain is unbroken.
+  assert.deepEqual([round[2].start, round[2].end, round[2].cut], [round[0].start, round[0].end, round[0].cut]); assert.equal(round[2].end, 100);
+  assert.ok(round.every(s => s.notes.length === 0), JSON.stringify(round.map(s => s.notes)));
+  // Naming the second card's own film plays that film where it lies: no shift.
+  const own = graph.resolveRound(g, [{from: 'READY', to: 'P4.C2', take: 'p4-second-01'}], {places})[0];
+  assert.deepEqual([own.film?.id, own.take?.id, own.shift, own.video], ['READY>P4.C2', 'p4-second-01', null, video('p4-second-01')]);
+  // Naming a take of the seat film keeps the shift.
+  const pinned = graph.resolveRound(g, [{from: 'READY', to: 'P4.C2', take: 'p4-deal-01'}], {places})[0];
+  assert.deepEqual([pinned.film?.id, pinned.take?.id, pinned.shift], ['READY>P4.C1', 'p4-deal-01', {x: 40, y: -16}]);
+  // Without the plan the film is still chosen; the missing shift is said, not guessed.
+  const blind = graph.resolveRound(g, [{from: 'READY', to: 'P4.C2'}])[0];
+  assert.equal(blind.take?.id, 'p4-deal-01'); assert.equal(blind.shift, null); assert.match(blind.notes.join(' '), /flytt är okänd utan placeringsplan/);
+  // The dealer's hole card is not shared: it plays its own film, unshifted, and a seat without a film is a gap for both its cards.
+  const dealer = graph.resolveRound(g, graph.parseSequence('READY>D.C2 | READY>P1.C2 | READY>P2.C2').steps, {places});
+  assert.deepEqual(dealer.map(s => [s.film?.id, s.take?.id ?? null, s.shift, s.gap]), [['READY>D.C2', 'hole-deal-01', null, null], ['READY>P1.C1', null, null, 'REJECTED'], ['READY>P2.C1', null, null, 'MISSING']]);
+  // One film per card: the same step plays the card's own film or is a gap, never the seat's.
+  const card = graph.buildGraph(seatBank(), {mode: 'CARD'}), each = graph.resolveRound(card, graph.parseSequence('READY>P4.C2 | P4.C2>IDLE').steps, {places});
+  assert.deepEqual(each.map(s => [s.film?.id, s.take?.id ?? null, s.shift, s.gap]), [['READY>P4.C2', 'p4-second-01', null, null], ['P4.C2>IDLE', null, null, 'MISSING']]);
+});
+
+test('an idle loop that starts on frame 0 of the entry clip, and a deal that ends on a frame of an earlier deal, cut and reorder nothing', () => {
+  const entry = 'pamela-idle-ready-entry-01', frame0 = {frame: {video: video(entry), videoSha256: sha, index: 0}}, base = seatBank(), plain = graph.buildGraph(base);
+  const data = seatBank();
+  data.derived = [{id: entry, kind: 'ENTRY', from: 'IDLE', to: 'READY', clip: entry, frames: [12, 96]}];
+  data.jobs!.push(job('pamela-idle-loop-01', 'IDLE', 'IDLE', {kind: 'IDLE', target: null, first: frame0, last: frame0}),
+    job('p4-deal-02', 'READY', 'LAND(P4.C1)', {last: {frame: {video: video('p4-deal-01'), videoSha256: sha, index: 100}}}));
+  data.motions = {...data.motions, [entry]: done(), 'pamela-idle-loop-01': done(), 'p4-deal-02': done('SECONDARY')}; data.media = {...data.media, [entry]: {video: video(entry)}, 'pamela-idle-loop-01': {video: video('pamela-idle-loop-01')}};
+  const g = graph.buildGraph(data);
+  assert.deepEqual(g.unplaced, []); assert.equal(g.takes['pamela-idle-loop-01'].edge, 'IDLE>IDLE'); assert.equal(g.edge['IDLE>IDLE'].main?.id, 'pamela-idle-loop-01');
+  // The entry clip is a derived take of its own film: one id, its own frames.
+  assert.deepEqual(g.takes[entry].segment, {clip: entry, start: 12, end: 96}); assert.equal(g.takes[entry].startsOn, null);
+  // Nothing about the first card's films moves: same main takes, same landing frame.
+  for (const id of ['READY>P4.C1', 'P4.C1>READY', 'P4.C1>IDLE']) assert.equal(g.edge[id].main?.id, plain.edge[id].main?.id, id);
+  assert.equal(g.takes['p4-deal-01'].landingFrame, plain.takes['p4-deal-01'].landingFrame); assert.equal(g.takes['p4-deal-02'].landingFrame, null);
+  // In a round the loop and the entry play their own frames to the end; frame 0 is never a cut.
+  const round = graph.resolveRound(g, graph.parseSequence('IDLE>IDLE | IDLE>READY@' + entry + ' | READY>P4.C1 | P4.C1>IDLE | IDLE>IDLE').steps);
+  assert.deepEqual(round.map(s => [s.take?.id, s.start, s.end, s.cut]), [['pamela-idle-loop-01', 0, null, null], [entry, 12, 97, null], ['p4-deal-01', 0, 100, 'FRAME'], ['p4-back-idle-01', 0, null, null], ['pamela-idle-loop-01', 0, null, null]]);
+  assert.ok(round.every(s => s.notes.length === 0), JSON.stringify(round.map(s => s.notes)));
+});
+
+test('the real job file in seat mode: 30 needed films, every entry placed, and each shared second card follows its seat', async () => {
+  const file = JSON.parse(await readFile('data/clip-jobs.json', 'utf8')), motions: Record<string, MotionRecord> = {};
+  for (const name of await readdir('motions')) if (name.endsWith('.json')) motions[name.slice(0, -5)] = JSON.parse(await readFile(`motions/${name}`, 'utf8'));
+  const g = graph.buildGraph({jobs: file.jobs, derived: file.derived, edits: file.edits, budget: file.budget, motions}), f = g.summary.films;
+  assert.deepEqual(g.unplaced, []); assert.equal(Object.keys(g.takes).length, file.jobs.length + (file.derived ?? []).length + (file.edits ?? []).length);
+  // The numbers move as films arrive; what holds is how they add up.
+  assert.equal(f.mode, 'SEAT'); assert.equal(f.total, 30); assert.equal(f.done + f.missing, f.total); assert.equal(f.candidates + f.flaws, f.done); assert.equal(g.summary.total, 51);
+  const shared = g.edges.filter(e => e.shares);
+  assert.equal(shared.length, 21);
+  for (const e of shared) { const seat = g.edge[e.shares!]; assert.equal(seat.target, e.target!.replace('C2', 'C1')); assert.equal(seat.kind, e.kind); assert.equal(seat.shares, null); assert.ok(!f.required.includes(e.id)); }
+  // A full round resolves every shared step to its seat's film, or to the same gap as the seat.
+  for (const s of graph.resolveRound(g, graph.roundSequence({seats: graph.SEATS}))) {
+    assert.ok(s.take || s.gap, s.id);
+    if (s.edge?.shares) { assert.equal(s.film?.id, s.edge.shares, s.id); if (s.take) assert.ok(s.film!.takes.includes(s.take), s.id); } else assert.equal(s.film, s.edge, s.id);
+  }
+});

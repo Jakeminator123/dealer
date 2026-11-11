@@ -5,10 +5,13 @@
 import * as THREE from '../materials/source/references/card-materials/vendor/three.module.js';
 import {CARD, RANKS, SUITS, createCardGeometry, createCardPrint, paperMaterialParameters, applyCardLights, validateCard, type CardValue} from '../materials/source/src/card-material-study.ts';
 import {poseAt, cardToImage, projectionOf, regionOf, readMatte, filmZone, type CardTrack, type Scene, type Pose} from './card-overlay.ts';
-import {signedArea, inside, clockwise, grown} from './card-track.ts';
+import {signedArea, inside, clockwise, grown, is} from './card-track.ts';
 
 export {RANKS, SUITS};
-export type OverlayOptions = {scale: number; split: boolean; card: CardValue; side: 'TRACK' | 'BACK' | 'FRONT'; bend: number; gloss: number; inFront: boolean};
+// shift: the film deals another card than its own (one film per seat): the rendered card is drawn that far from the film's card.
+// placed: cards dealt by earlier films of the round, which this film does not show; they lie where they landed.
+export type OverlayOptions = {scale: number; split: boolean; card: CardValue; side: 'TRACK' | 'BACK' | 'FRONT'; bend: number; gloss: number; inFront: boolean;
+  shift?: {x: number; y: number} | null; placed?: {quad: {x: number; y: number}[]; back: boolean}[]};
 
 // One WebGL scene for every overlay on the page: the study's card, lit as in the study, seen straight on.
 // A homography then places that view on the card's quad in the film, so its perspective is the table's.
@@ -59,6 +62,29 @@ export function createCardOverlay(canvas: HTMLCanvasElement) {
     mask.width = width; mask.height = height; mctx.putImageData(image, 0, 0);
     lctx.globalCompositeOperation = operation; lctx.filter = 'blur(0.7px)'; lctx.drawImage(mask, 0, 0); lctx.filter = 'none'; lctx.globalCompositeOperation = 'source-over';
   };
+  // A card dealt by an earlier film: rendered once and kept, then only laid over the frame. Where the film shows anything but
+  // table there (a hand or sleeve passing, or the film's own card), the hand matte of that spot keeps the film's hand in front.
+  const lying = new Map<string, {image: HTMLCanvasElement; x: number; y: number}>(), peek = document.createElement('canvas'), pctx = peek.getContext('2d', {willReadFrequently: true})!;
+  function lay(video: HTMLVideoElement, card: {quad: {x: number; y: number}[]; back: boolean}, options: OverlayOptions, width: number, height: number, own: {x: number; y: number}[] | null) {
+    const key = JSON.stringify([card.quad.map(p => [Math.round(p.x * 4), Math.round(p.y * 4)]), card.back, options.card, options.gloss]);
+    let hit = lying.get(key);
+    if (!hit) {
+      const xs = card.quad.map(p => p.x), ys = card.quad.map(p => p.y), x = Math.max(0, Math.floor(Math.min(...xs)) - 3), y = Math.max(0, Math.floor(Math.min(...ys)) - 3);
+      const w = Math.min(width, Math.ceil(Math.max(...xs)) + 3) - x, h = Math.min(height, Math.ceil(Math.max(...ys)) + 3) - y, drawn = w > 1 && h > 1 ? render(card.quad, card.back, 1, options, width, height) : null;
+      if (!drawn) return;
+      const image = document.createElement('canvas'); image.width = w; image.height = h; image.getContext('2d')!.drawImage(drawn, x, y, w, h, 0, 0, w, h);
+      if (lying.size > 60) lying.clear();
+      hit = {image, x, y}; lying.set(key, hit);
+    }
+    const {image, x, y} = hit, w = image.width, h = image.height, sw = Math.ceil(w / 4), sh = Math.ceil(h / 4);
+    peek.width = sw; peek.height = sh; pctx.drawImage(video, x, y, w, h, 0, 0, sw, sh);
+    const look = pctx.getImageData(0, 0, sw, sh).data; let bare = true;
+    for (let i = 0; i < look.length && bare; i += 4) bare = is.table(look[i], look[i + 1], look[i + 2]);
+    if (bare) { out.drawImage(image, x, y); return; }
+    read.width = w; read.height = h; rctx.drawImage(video, x, y, w, h, 0, 0, w, h);
+    const matte = readMatte(rctx.getImageData(0, 0, w, h).data, w, h, own ? (px, py) => inside(own, x + px + 0.5, y + py + 0.5) : undefined);
+    layer.width = w; layer.height = h; lctx.drawImage(image, 0, 0); stamp(matte.hand, w, h, 'destination-out'); out.drawImage(layer, x, y);
+  }
   /** Draws one frame. Returns what was placed, or null when there is nothing to draw for it. */
   function draw(video: HTMLVideoElement, frame: number, track: CardTrack | null, scene: Scene | null, options: OverlayOptions): Pose | null {
     const width = video.videoWidth, height = video.videoHeight;
@@ -66,8 +92,10 @@ export function createCardOverlay(canvas: HTMLCanvasElement) {
     if (canvas.width !== width || canvas.height !== height) { canvas.width = width; canvas.height = height; }
     out.clearRect(0, 0, width, height);
     if (options.split) out.drawImage(video, 0, 0, width, height); // beside the raw film the layer needs its own copy of the frame
-    const pose = track ? poseAt(track, scene, frame, options.scale) : null, box = pose ? regionOf(pose, width, height) : null;
-    if (!pose || !box) return pose;
+    const pose = track ? poseAt(track, scene, frame, options.scale, 12, options.shift ?? null) : null, box = pose ? regionOf(pose, width, height) : null, placed = options.placed ?? [];
+    canvas.dataset.frame = String(pose?.frame ?? Math.round(frame)); // which film frame the layer was drawn for
+    canvas.dataset.cards = String(placed.length + (pose?.quad || pose?.edge ? 1 : 0)); // how many rendered cards it carries
+    if (!pose || !box) { for (const card of placed) lay(video, card, options, width, height, null); return pose; }
     // What the film shows here: hand and sleeve stay in front, the film's own card must go.
     const bw = box.width, bh = box.height;
     read.width = bw; read.height = bh; rctx.drawImage(video, box.x, box.y, bw, bh, 0, 0, bw, bh);
@@ -86,6 +114,11 @@ export function createCardOverlay(canvas: HTMLCanvasElement) {
     field.width = f.width; field.height = f.height; fctx.putImageData(cells, 0, 0);
     stamp(matte.card, bw, bh, 'source-over');
     lctx.globalCompositeOperation = 'source-in'; lctx.imageSmoothingEnabled = true; lctx.drawImage(field, 0, 0, f.width, f.height, 0, 0, f.width * f.cell, f.height * f.cell); lctx.globalCompositeOperation = 'source-over';
+    // Order matters: first the film's own card is taken away, then the earlier cards are laid (one of them may lie exactly there),
+    // then this film's card is drawn where it belongs. The film's hand stays in front of every one of them.
+    stamp(matte.hand, bw, bh, 'destination-out'); out.drawImage(layer, box.x, box.y);
+    for (const card of placed) lay(video, card, options, width, height, own);
+    layer.width = bw; layer.height = bh;
     if (pose.quad) {
       const side = options.side === 'TRACK' ? pose.side : options.side, card = render(pose.quad, side === 'BACK', pose.resting, options, width, height);
       if (card) lctx.drawImage(card, box.x, box.y, box.width, box.height, 0, 0, box.width, box.height);
@@ -95,7 +128,6 @@ export function createCardOverlay(canvas: HTMLCanvasElement) {
     }
     if (!options.inFront) stamp(matte.hand, bw, bh, 'destination-out'); // the film's hand shows through
     out.drawImage(layer, box.x, box.y);
-    canvas.dataset.frame = String(pose.frame); // which film frame the layer was drawn for
     return pose;
   }
   return {draw, clear() { out.clearRect(0, 0, canvas.width, canvas.height); }};

@@ -120,11 +120,19 @@ export type Take = {
 };
 // experiment: a job whose from/to is outside the model. It keeps its takes and detail view but is never one of the 51.
 // rendering: takes of this edge that are ordered and not back yet, whether or not the edge already has a main take.
-export type Edge = Omit<EdgeRef, 'kind'> & {kind: EdgeKind | null; optional: boolean; experiment: boolean; takes: Take[]; main: Take | null; variants: Take[]; status: Status; hasVariant: boolean; hubVariants: string[]; inProgress: number; rendering: number};
+// shares: in seat mode, the edge whose film this edge plays (READY>P4.C2 plays READY>P4.C1). Its own takes stay listed; they are only played when a round names one.
+export type Edge = Omit<EdgeRef, 'kind'> & {kind: EdgeKind | null; optional: boolean; experiment: boolean; shares: string | null; takes: Take[]; main: Take | null; variants: Take[]; status: Status; hasVariant: boolean; hubVariants: string[]; inProgress: number; rendering: number};
 export type Count = {total: number; done: number; byStatus: Record<Status, number>};
+// One film per seat (Jakob's decision 2026-11-11) or one film per card. In seat mode a seat's second card has no film of its own:
+// it plays the films of the first card, with the rendered card drawn at its own place.
+export type FilmMode = 'SEAT' | 'CARD';
+export const FILM_MODE: FilmMode = 'SEAT';
+// The films the mode needs. candidates: the main take is unreviewed or accepted. flaws: the main take is a secondary
+// alternative with known faults. missing: no film that may be played (none, or only rejected ones).
+export type Films = {mode: FilmMode; total: number; done: number; candidates: number; flaws: number; missing: number; required: string[]};
 export type Graph = {
-  edges: Edge[]; experiments: Edge[]; edge: Record<string, Edge>; takes: Record<string, Take>; unplaced: {id: string; reason: string}[];
-  summary: Count & {optional: Count; experiments: Count; credits: {committed: number | null; maximum: number | null}};
+  edges: Edge[]; experiments: Edge[]; edge: Record<string, Edge>; takes: Record<string, Take>; unplaced: {id: string; reason: string}[]; mode: FilmMode;
+  summary: Count & {optional: Count; experiments: Count; films: Films; credits: {committed: number | null; maximum: number | null}};
 };
 
 export const STATUSES: Status[] = ['ACCEPTED', 'UNREVIEWED', 'VARIANT', 'ORDERED', 'PREPARED', 'REJECTED', 'MISSING'];
@@ -167,8 +175,8 @@ function best(takes: Take[], ...keys: ((t: Take) => number)[]): Take | null {
 }
 
 const KINDS = ['DEAL', 'RETURN', 'ENTRY', 'IDLE'];
-export function buildGraph(data: BankData): Graph {
-  const blank = (ref: Omit<EdgeRef, 'kind'> & {kind: EdgeKind | null}, experiment: boolean): Edge => ({...ref, optional: !!ref.target && OPTIONAL_TARGETS.includes(ref.target), experiment, takes: [], main: null, variants: [], status: 'MISSING', hasVariant: false, hubVariants: [], inProgress: 0, rendering: 0});
+export function buildGraph(data: BankData, options: {mode?: FilmMode; holeCardDown?: boolean} = {}): Graph {
+  const blank = (ref: Omit<EdgeRef, 'kind'> & {kind: EdgeKind | null}, experiment: boolean): Edge => ({...ref, optional: !!ref.target && OPTIONAL_TARGETS.includes(ref.target), experiment, shares: null, takes: [], main: null, variants: [], status: 'MISSING', hasVariant: false, hubVariants: [], inProgress: 0, rendering: 0});
   const edges: Edge[] = bankEdges().map(e => blank(e, false)), experiments: Edge[] = [];
   const edge: Record<string, Edge> = Object.fromEntries(edges.map(e => [e.id, e]));
   const takes: Record<string, Take> = {}, unplaced: {id: string; reason: string}[] = [], segments = new Map<string, {clip: string; start: number; end: number}>();
@@ -244,7 +252,13 @@ export function buildGraph(data: BankData): Graph {
   const count = (list: Edge[]): Count => ({total: list.length, done: list.filter(e => e.main).length,
     byStatus: Object.fromEntries(STATUSES.map(s => [s, list.filter(e => e.status === s).length])) as Record<Status, number>});
   const sent = all.filter(t => t.receipt?.status && t.receipt.status !== 'PREPARED');
-  return {edges, experiments, edge, takes, unplaced, summary: {...count(edges.filter(e => !e.optional)), optional: count(edges.filter(e => e.optional)), experiments: count(experiments),
+  // Seat mode: a second card that ends on the same side as the first shares the first card's three films, and is not a film to make.
+  const mode = options.mode ?? FILM_MODE;
+  if (mode === 'SEAT') for (const e of edges) { const card = e.target ? filmCard(e.target, options.holeCardDown !== false) : null; if (card && card !== e.target) e.shares = e.id.replace(e.target!, card); }
+  const required = edges.filter(e => !e.optional && !e.shares), flawed = (e: Edge) => e.main?.decision === 'SECONDARY';
+  const films: Films = {mode, total: required.length, done: required.filter(e => e.main).length, candidates: required.filter(e => e.main && !flawed(e)).length, flaws: required.filter(flawed).length,
+    missing: required.filter(e => !e.main).length, required: required.map(e => e.id)};
+  return {edges, experiments, edge, takes, unplaced, mode, summary: {...count(edges.filter(e => !e.optional)), optional: count(edges.filter(e => e.optional)), experiments: count(experiments), films,
     credits: {committed: all.some(t => t.receipt) ? sent.reduce((sum, t) => sum + t.credits, 0) : null, maximum: data?.budget?.maximumCredits ?? null}}};
 }
 
@@ -311,31 +325,45 @@ export function roundSequence(options: RoundOptions): EdgeRef[] {
 // D.C2 is the hole card and stays closed unless the round says otherwise; every other card is turned open.
 export const wantedSide = (target: string, holeCardDown = true): Side => target === 'D.C2' && holeCardDown ? 'BACK' : 'FRONT';
 
+// The card whose films a card plays in seat mode. The rule is the side, not the name: a second card shares the first card's films
+// only when it ends on the same side. The dealer's hole card stays closed while the first dealer card is turned, so it keeps its own.
+export function filmCard(target: string, holeCardDown = true): string {
+  const [seat, card] = target.split('.');
+  return card === 'C2' && wantedSide(target, holeCardDown) === wantedSide(`${seat}.C1`, holeCardDown) ? `${seat}.C1` : target;
+}
+
 export type Step = {from: string; to: string; take?: string};
 export type Gap = 'INVALID' | 'MISSING' | 'WAITING' | 'REJECTED' | 'LOCAL_ONLY';
 export const GAP_LABEL: Record<Gap, string> = {INVALID: 'ogiltig kant', MISSING: 'saknas', WAITING: 'inte klar', REJECTED: 'underkänd', LOCAL_ONLY: 'finns bara lokalt'};
 // start/end are source frames; end is exclusive and null means "play to the last frame".
 // cut says how a deal ends: FRAME = at the frame its return starts on, END = at its last frame because the
 // return starts from the landing anchor, null = not a deal or nothing known.
-export type Segment = {index: number; id: string; from: string; to: string; kind: EdgeKind | null; edge: Edge | null; take: Take | null; video: string | null; fps: number; start: number; end: number | null; cut: 'FRAME' | 'END' | null; gap: Gap | null; side: Side | null; notes: string[]};
+// film: the edge whose film the step plays; in seat mode a second card's step plays the seat edge. shift: how far the rendered
+// card is then moved from the film's own card to this step's card, in the pixels of the places the caller gave.
+export type Segment = {index: number; id: string; from: string; to: string; kind: EdgeKind | null; edge: Edge | null; film: Edge | null; shift: {x: number; y: number} | null; take: Take | null; video: string | null; fps: number; start: number; end: number | null; cut: 'FRAME' | 'END' | null; gap: Gap | null; side: Side | null; notes: string[]};
 
 // Chooses one take per step and the frame range to play. A return prefers a take that continues the
 // deal chosen just before it. The deal is then cut by the anchor rule: at the frame a frame-started
 // return begins on, or at its own last frame when the return starts from the landing anchor.
-export function resolveRound(graph: Graph, steps: Step[], options: {holeCardDown?: boolean} = {}): Segment[] {
+// places: each card's centre in film pixels (the placement plan); it gives a shared step its shift.
+export function resolveRound(graph: Graph, steps: Step[], options: {holeCardDown?: boolean; places?: Record<string, {x: number; y: number}> | null} = {}): Segment[] {
   const out: Segment[] = [];
   steps.forEach((step, index) => {
     // A model edge in any spelling, or an experiment edge under the exact name the graph gave it.
     const id = formatEdge(step.from, step.to), ref = parseEdge(id), found = graph.edge[ref?.base ?? id], e = found && (ref || found.experiment) ? found : null, prev = out[index - 1], notes: string[] = [];
     if (prev && prev.to !== step.from) notes.push(`Bryter kedjan: föregående steg slutar i ${prev.to}.`);
-    const seg: Segment = {index, id, from: step.from, to: step.to, kind: e?.kind ?? null, edge: e, take: null, video: null, fps: 30, start: 0, end: null, cut: null, gap: null, side: null, notes};
+    const seg: Segment = {index, id, from: step.from, to: step.to, kind: e?.kind ?? null, edge: e, film: e, shift: null, take: null, video: null, fps: 30, start: 0, end: null, cut: null, gap: null, side: null, notes};
     out.push(seg);
     if (!e) { seg.gap = 'INVALID'; notes.push('Kanten finns inte i klippbanken.'); return; }
     seg.side = e.kind === 'DEAL' && e.target ? wantedSide(e.target, options.holeCardDown !== false) : null;
     // A step written with a READY variant only uses takes made from that pose; a plain step never does.
-    const hub = ref?.hub ?? null, pool = e.takes.filter(t => t.hub === hub), main = hub ? best(pool, rank) : e.main;
+    // Seat mode: the step plays the seat's film unless it names a film of its own card.
+    const film = e.shares && !(step.take && e.takes.some(t => t.id === step.take && playable(t))) ? graph.edge[e.shares] : e;
+    if (film !== e) { seg.film = film; const a = options.places?.[film.target!], b = options.places?.[e.target!];
+      if (a && b && [a.x, a.y, b.x, b.y].every(Number.isFinite)) seg.shift = {x: b.x - a.x, y: b.y - a.y}; else notes.push('Kortets flytt är okänd utan placeringsplan: det renderade kortet ritas där filmens kort ligger.'); }
+    const hub = ref?.hub ?? null, pool = film.takes.filter(t => t.hub === hub), main = hub ? best(pool, rank) : film.main;
     const after = prev?.take && prev.kind === 'DEAL' && prev.to === step.from ? prev.take : null;
-    let take = step.take ? e.takes.find(t => t.id === step.take && playable(t)) ?? null : null;
+    let take = step.take ? film.takes.find(t => t.id === step.take && playable(t)) ?? null : null;
     if (step.take && !take) notes.push(`Låst tagning ${step.take} kan inte spelas här; huvudtagningen används.`);
     if (!take && e.kind === 'DEAL' && main?.endSide && main.endSide !== seg.side) take = best(pool.filter(t => t.endSide === seg.side), rank);
     if (!take && after) take = best(pool.filter(t => returnFits(t, after)), rank);

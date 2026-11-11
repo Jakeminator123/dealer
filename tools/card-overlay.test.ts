@@ -3,7 +3,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
-import {sceneOf, restingQuad, restOf, poseAt, cardToImage, projectionOf, regionOf, readMatte, filmZone, overridesOf, cardInFront, describeTrack, RIM, type CardTrack, type Scene} from '../src/card-overlay.ts';
+import {sceneOf, restingQuad, restOf, poseAt, cardToImage, projectionOf, regionOf, readMatte, filmZone, shiftShare, placedCard, overridesOf, cardInFront, describeTrack, RIM, type CardTrack, type Scene} from '../src/card-overlay.ts';
 import {signedArea, centre, dist, type Pt} from '../src/card-track.ts';
 
 const contract = JSON.parse(await readFile('data/scene-contract.json', 'utf8')), scene = sceneOf(contract)!;
@@ -142,4 +142,28 @@ test('regions, occlusion overrides and the track summary', () => {
   assert.equal(describeTrack(track), 'BACK 0–13 · EDGE 14–15 · FRONT 16–39 · sätts om 3 kvartsvarv vid ruta 13–16 · vilar från ruta 30 · 2 osäkra rutor'); // the two edge-on frames
   assert.match(describeTrack({...track, restFrom: null, frames: track.frames.map(f => ({...f, confidence: 0.3}))}), /vilar inte i klippet, sista rutan 39 får gälla · 40 osäkra rutor$/);
   assert.equal(describeTrack({...track, restFrom: null, flips: [], frames: track.frames.slice(0, 14)}), 'BACK 0–13 · kortet kommer aldrig till vila i spåret');
+});
+
+test('a seat film deals the second card: the rendered card is moved, the film\'s own card stays to be covered, and a laid card keeps its place', () => {
+  const track: CardTrack = {...deal(), leavesShoe: 4}, shift = {x: 40, y: -16}, still = restingQuad(scene, pts(P4_FILM), 2).quad, moved = (q: Pt[]) => q.map(p => ({x: p.x + 40, y: p.y - 16}));
+  // Nothing of the shift while the card sits in the shoe, all of it once it lies, and never backwards in between.
+  const shares = Array.from({length: 40}, (_, i) => shiftShare(track, i));
+  assert.deepEqual([shares[0], shares[4], shares[30], shares[39]], [0, 0, 1, 1]); assert.ok(shares[17] > 0.3 && shares[17] < 0.7);
+  for (let i = 1; i < 40; i++) assert.ok(shares[i] >= shares[i - 1]);
+  // At rest: the constant-size card, exactly the shift away. The film's own card is reported where it is.
+  const lying = poseAt(track, scene, 35, 2, 12, shift)!, plain = poseAt(track, scene, 35, 2)!;
+  lying.quad!.forEach((p, i) => assert.ok(dist(p, moved(still)[i]) < 1e-9)); assert.deepEqual(lying.film, plain.film); assert.equal(lying.resting, 1);
+  // In the shoe the card is the film's; halfway it is partly moved; no shift means no change at all.
+  assert.deepEqual(poseAt(track, scene, 2, 2, 12, shift)!.quad, poseAt(track, scene, 2, 2)!.quad);
+  const carried = poseAt(track, scene, 20, 2, 12, shift)!, free = poseAt(track, scene, 20, 2)!, k = shiftShare(track, 20);
+  carried.quad!.forEach((p, i) => assert.ok(dist(p, {x: free.quad![i].x + 40 * k, y: free.quad![i].y - 16 * k}) < 1e-9));
+  assert.deepEqual(poseAt(track, scene, 20, 2, 12, null), free); assert.equal(free.at, undefined);
+  // Edge-on: the thin edge is drawn moved, the film's edge is remembered, cleaned and inside the region.
+  const edge = poseAt(track, scene, 14, 2, 12, shift)!, e = shiftShare(track, 14);
+  assert.deepEqual(edge.at, [{x: 900, y: 914}, {x: 840, y: 944}]); assert.ok(dist(edge.edge![0], {x: 900 + 40 * e, y: 914 - 16 * e}) < 1e-9);
+  assert.equal(filmZone(edge)(870, 929), true); const box = regionOf(edge, 1764, 1174)!; assert.ok(box.x <= 840 && box.x + box.width >= 900 + 40 * e);
+  // What a film leaves on the table for the films after it: its resting card, shifted with the step; a card that never lands leaves nothing.
+  assert.deepEqual(placedCard(track, scene, 2), {quad: still, side: 'FRONT'});
+  placedCard(track, scene, 2, shift)!.quad.forEach((p, i) => assert.ok(dist(p, moved(still)[i]) < 1e-9));
+  assert.equal(placedCard({...track, restFrom: null, restQuad: null, frames: track.frames.slice(0, 14)}, scene, 2, shift), null);
 });
