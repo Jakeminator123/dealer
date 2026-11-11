@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="sv">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Dealer · Modell-labb</title>
+<link rel="stylesheet" href="props.css">
+<!-- three.js 0.180 and its add-ons as the lab server serves them; this map is the single place that names them. -->
+<script type="importmap">{"imports":{"three":"/vendor/three.module.js","three/addons/":"/vendor/"}}</script>
+</head>
+<body>
+<div id="app">
+  <div id="stage"><canvas id="view"></canvas><div id="hud"></div><div id="fail" role="alert"></div></div>
+  <aside id="panel">
+    <h1>Modell-labb</h1>
+    <p class="sub">Jakobs modeller från Meshy, i andra utseenden och i rörelse.</p>
+    <p class="lab-note"><b>Labb på ett sidospår.</b> Ingenting här ändrar spelet eller filmen. Utseendena räknas fram här i webbläsaren ur modellens egna bilder, bara för att titta på. För att ett utseende ska bli verkligt behöver varje modell en egen genererad uppsättning bilder (färg, metall och glans, ytstruktur) i just det utseendet.</p>
+    <fieldset><legend>Modell</legend>
+      <div class="seg" id="models"></div>
+      <p class="note" id="model-note"></p>
+    </fieldset>
+    <fieldset><legend>Utseende</legend>
+      <div class="seg wrap" id="looks"></div>
+      <label class="row" id="gold-row">Hur mycket guld<input type="range" id="gold" min="0" max="100" step="1"><output id="gold-out"></output></label>
+      <label class="row" id="gloss-row">Glans<input type="range" id="gloss" min="0" max="100" step="1"><output id="gloss-out"></output></label>
+      <p class="note" id="look-note"></p>
+    </fieldset>
+    <fieldset><legend>Rörelse</legend>
+      <div class="seg two" id="motions"></div>
+      <p class="note" id="motion-note"></p>
+    </fieldset>
+    <fieldset><legend>Ljus</legend>
+      <div class="seg" id="lights"></div>
+      <label class="row">Exponering<input type="range" id="exposure" min="50" max="200" step="5"><output id="exposure-out"></output></label>
+    </fieldset>
+    <div class="btns"><button type="button" id="home">Återställ vyn</button></div>
+    <p class="note">Dra i bilden för att vrida. Rulla för att zooma. Dubbelklicka för att börja om.</p>
+  </aside>
+</div>
+<script type="module" src="props-lab.js" onerror="document.getElementById('fail').textContent='Sidans kod kunde inte läsas (props-lab.js). Starta labbet med START.cmd och ladda om.'"></script>
+</body>
+</html>
