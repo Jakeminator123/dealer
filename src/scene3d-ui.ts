@@ -47,7 +47,7 @@ async function followTrack() {
 const decimal = (v: number, digits = 2) => v.toFixed(digits).replace('.', ',');
 function hud() {
   const s = scene.status(), chip = (text: string, tone = '') => el('span', {className: `chip ${tone}`, textContent: text}), id = /motions\/([^/]+)\//.exec(scene.players.path)?.[1] ?? 'läser film…';
-  const added = [state.focus !== 'off' && 'fokus', state.fan && 'fläktskugga', state.tray && 'markerbräde', state.cards && 'renderade kort', state.clock && 'klocka', state.dust > 0 && 'damm', state.flicker && 'blinkande lampa', (state.filmBright !== 1 || state.filmWarm !== 0) && 'ljuskalibrering'].filter(Boolean);
+  const added = [state.focus !== 'off' && 'fokus', state.fan && 'fläktskugga', state.tray && 'markerbräde', state.cards && 'renderade kort', state.clock && 'klocka', state.dust > 0 && 'luft', state.flicker && 'ljusskifte', (state.filmBright !== 1 || state.filmWarm !== 0) && 'ljuskalibrering'].filter(Boolean);
   hudBox.replaceChildren(chip(id),
     s.view === 'moved' ? chip('Kameran är flyttad: 2,5D-närmevärde, inte filmens sanning', 'warn') : s.view === 'turned' ? chip('Bara vridning/zoom: filmen är geometriskt exakt', 'ok') : chip('Hemvy: filmen pixel för pixel', 'ok'),
     s.camera.source === 'contract' ? chip(`Kamera: planens (kontraktet) · skala k = ${decimal(s.camera.scale)} skattad`) : chip('Kamera: egen skattning, inte uppmätt', 'warn'),
@@ -58,7 +58,16 @@ function hud() {
 }
 
 // ---- control panel ---------------------------------------------------------------------------------
-function sync() { for (const [key, set] of Object.entries(setters)) (set as (v: unknown) => void)(state[key as keyof SceneState]); const play = document.getElementById('play'); if (play) play.textContent = scene.players.paused ? 'Spela' : 'Pausa'; }
+// What the three animations are in the room that is showing.
+const THREE: Record<string, string> = {
+  salong: 'Här: en stående klocka, damm i lampornas ljus, och pendeln till höger som flimrar till.',
+  panorama: 'Här: en stående klocka, damm, och ett neonrör som flimrar till medan salen dämpas lite.',
+  la: 'Här: en stående klocka, damm i kvällsljuset, och ett moln som går för solen i några sekunder.',
+  skog: 'Här: en stående klocka, pollen och fallande löv, och ett moln som går för solen i några sekunder.',
+  kuliss: 'Här: en stående klocka, damm, och ljuset som dämpas mjukt i några sekunder.',
+  plat: 'Här finns inget rum att ställa klockan i; damm syns bara framför dealern och ljuset dämpas mjukt.'};
+function sync() { const three = document.getElementById('three'); if (three) three.textContent = THREE[state.room] ?? '';
+  for (const [key, set] of Object.entries(setters)) (set as (v: unknown) => void)(state[key as keyof SceneState]); const play = document.getElementById('play'); if (play) play.textContent = scene.players.paused ? 'Spela' : 'Pausa'; }
 function build() {
   const group = (title: string, ...kids: Node[]) => panel.append(el('fieldset', {}, el('legend', {textContent: title}), ...kids));
   const note = (html: string) => el('p', {className: 'note', innerHTML: html});
@@ -83,13 +92,14 @@ function build() {
   group('Fokus (styrs av filmen)', choice('focus', [['off', 'Av'], ['dealer', 'Dealern'], ['follow', 'Följ given'], ['card', 'Kortet'], ['manual', 'Eget']]),
     slider('Eget avstånd', 'focusDistance', 0.3, 12, 0.01, ' m', live), slider('Skärpedjup', 'tolerance', 0, 0.8, 0.01, '', live),
     note('<b>Av</b> är kontrollpunkt v1: bord och film alltid skarpa. Med fokus på blir allt oskarpt efter sitt avstånd till skärpeplanet, även bordet och dealern. <b>Följ given</b> flyttar skärpan till kortet från att det lämnar skon tills det ligger still, och sedan tillbaka till dealern; hennes ansikte blir då lite mjukt. Styrkan är reglaget "Oskärpa längst bort".'));
-  group('Ständiga rörelser', check('Klocka som visar rätt tid', 'clock'), slider('Damm i luften', 'dust', 0, 1, 0.01, '', live),
+  const three = el('p', {className: 'note', id: 'three'});
+  group('Tre rörelser i rummet', check('Klocka som visar rätt tid', 'clock'), slider('Luft: damm eller löv', 'dust', 0, 1, 0.01, '', live),
+    check('Ljuset skiftar till ibland', 'flicker'), slider('Ungefär var', 'flickerEvery', 4, 90, 1, ' s', live), slider('Hur djupt', 'flickerStrength', 0, 1, 0.01, '', live),
+    el('div', {className: 'btns'}, button('Alla tre på', () => scene.set({clock: true, dust: 0.7, flicker: true})), button('Alla tre av', () => scene.set({clock: false, dust: 0, flicker: false}))), three,
+    note('Samma tre i varje miljö, i den form som passar den. Det som svävar finns både bakom dealern och mellan dig och henne; nära kameran blir ett korn en stor, svag skiva. Skiftet bestäms av klockan, så det går att förutse.'));
+  group('Ljus', slider('Ljus i rummet', 'exposure', 0.3, 2, 0.05, '', live), slider('Dealerns ljusstyrka', 'filmBright', 0.6, 1.4, 0.01), slider('Dealerns värme', 'filmWarm', -0.2, 0.2, 0.005),
     check('Fläktskugga över dealer och bord', 'fan'), slider('Fläktens styrka', 'fanStrength', 0, 0.4, 0.01, '', live), slider('Sekunder per blad', 'fanPeriod', 2, 12, 0.5, ' s', live),
-    note('Sådant som alltid pågår och inte bryr sig om spelet. Klockan står till höger bakom dealern och läser datorns tid. Dammet svävar bakom henne och blir mjuka ljuspunkter av rummets oskärpa. Fläkten är en långsam trebladig fläkt under en lampa över bordet; filmens eget ljus går inte att ändra, så skuggan läggs ovanpå och ska hållas svag.'));
-  group('Händelser', check('En lampa blinkar till ibland', 'flicker'), slider('Ungefär var', 'flickerEvery', 4, 90, 1, ' s', live), slider('Hur djupt', 'flickerStrength', 0, 1, 0.01, '', live),
-    note('Sådant som händer då och då. En gång per period flimrar pendeln till höger om dealern i ungefär en sekund. Tidpunkten bestäms av klockan, så den går att förutse och styra. I miljöer som bara är en bild dämpas hela rummet lite i stället.'));
-  group('Ljus (kalibrering)', slider('Ljus i rummet', 'exposure', 0.3, 2, 0.05, '', live), slider('Dealerns ljusstyrka', 'filmBright', 0.6, 1.4, 0.01), slider('Dealerns värme', 'filmWarm', -0.2, 0.2, 0.005),
-    note('Rummet och filmen ställs var för sig tills de ser ut att stå i samma ljus. Dealerns reglage ändrar bara filmens nivå och färgton, inte varifrån ljuset kommer. 1,00 och 0,00 är filmen som den är.'));
+    note('Fläkten är en långsam trebladig fläkt under en lampa över bordet; skuggan läggs ovanpå filmen och ska hållas svag. Rummet och filmen ställs var för sig tills de ser ut att stå i samma ljus. Dealerns reglage ändrar bara filmens nivå och färgton, inte varifrån ljuset kommer. 1,00 och 0,00 är filmen som den är.'));
   group('Kamera', choice('mode', [['look', 'Titta runt'], ['lean', 'Luta / flytta']]), slider('Vrid sidled', 'yaw', -60, 60, 0.5, '°', live), slider('Vrid höjdled', 'pitch', -35, 25, 0.5, '°', live), slider('Zoom', 'zoom', 0.45, 2.5, 0.01, '×', live),
     slider('Flytta sidled', 'dx', -0.9, 0.9, 0.005, ' m', live), slider('Flytta höjd', 'dy', -0.3, 0.5, 0.005, ' m', live), slider('Flytta djup', 'dz', -0.5, 0.8, 0.005, ' m', live),
     check('Håll blicken på dealern vid flytt', 'aim'), check('Gunga kameran automatiskt', 'sway'),

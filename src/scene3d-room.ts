@@ -31,22 +31,42 @@ function buildClock() {
   const pole = new T.Mesh(new T.CylinderGeometry(0.022, 0.03, 2.2, 16), paint(0x6d5529)); pole.position.set(0, -R - 1.1, -0.03); g.add(pole);
   return {group: g, set(now: Date) { const a = clockAngles(now.getHours(), now.getMinutes(), now.getSeconds() + now.getMilliseconds() / 1000); hour.rotation.z = -a.hour; minute.rotation.z = -a.minute; second.rotation.z = -a.second; }};
 }
-// Dust in the air behind the dealer: small warm specks that drift slowly and catch the light now and then. They are moved
-// in the shader from the time alone, and the room's blur turns them into soft points.
-function buildDust() {
-  const N = 700, position = new Float32Array(N * 3), seed = new Float32Array(N); let s = 3; const random = () => (s = (s * 16807) % 2147483647) / 2147483647;
-  for (let i = 0; i < N; i++) { position[i * 3] = (random() - 0.5) * 7; position[i * 3 + 1] = -0.4 + random() * 2.8; position[i * 3 + 2] = -0.3 - random() * 4.4; seed[i] = random(); }
+// Things in the air. Dust: very small warm specks that wander slowly and show where a lamp shines on them. Leaves (the
+// forest): fewer, larger, coloured, falling with a sway. Each exists twice: a cloud behind the dealer, drawn with the room
+// and blurred with it, and a thin cloud between the camera and the dealer, drawn over the film, where a speck close to
+// the lens is a large faint disc. That second cloud is what puts air between the viewer and her. All motion comes from
+// the time alone, in the shader.
+const AIR_VERTEX = `attribute float seed; uniform float time, amount, pixels, leaves; uniform vec3 box0, box1; varying float vGlow; varying float vSeed; varying float vTurn;
+void main(){
+  vec3 p = position; float t = time;
+  p.x += sin(t * (.05 + seed * .06) + seed * 40.) * .18 + sin(t * .013 + seed * 9.) * .3 + leaves * sin(t * (.6 + seed) + seed * 12.) * .12;
+  p.z += cos(t * (.04 + seed * .05) + seed * 23.) * .15;
+  p.y = box0.y + mod(p.y - box0.y - t * mix((seed - .5) * .012, .05 + seed * .05, leaves), box1.y - box0.y);
+  vec4 mv = modelViewMatrix * vec4(p, 1.); gl_Position = projectionMatrix * mv;
+  float px = pixels * mix(3.5 + seed * 3.5, 34. + seed * 38., leaves) / max(.22, -mv.z);
+  // where the lamps shine: over the table in front of the dealer and under the pendants behind her
+  float beam = max(max(1. - smoothstep(.2, 1., distance(p.xz, vec2(-.3, .25))), 1. - smoothstep(.3, 1.2, distance(p.xz, vec2(2.3, -2.9)))), max(1. - smoothstep(.3, 1.2, distance(p.xz, vec2(-2.3, -2.9))), 1. - smoothstep(.3, 1.3, distance(p.xz, vec2(0., -4.4)))));
+  float twinkle = .55 + .45 * sin(t * (.3 + seed * .9) + seed * 90.);
+  // a speck spread over many pixels is fainter in proportion, so one close to the lens is a soft disc and not a snowball
+  vGlow = step(seed, amount) * mix((.22 + 1.3 * beam) * twinkle * min(1., 3. / px), 1., leaves);
+  vSeed = seed; vTurn = t * (.4 + seed) + seed * 30.; gl_PointSize = max(px, 1.);
+}`;
+const DUST_FRAGMENT = 'varying float vGlow; uniform vec3 tint; void main(){ float a = smoothstep(.5, .12, length(gl_PointCoord - .5)) * vGlow; if (a < .002) discard; gl_FragColor = vec4(tint * a, a); }';
+const LEAF_FRAGMENT = `varying float vGlow; varying float vSeed; varying float vTurn; uniform vec3 tint;
+void main(){ vec2 q = gl_PointCoord - .5; float c = cos(vTurn), s = sin(vTurn); q = vec2(q.x * c - q.y * s, q.x * s + q.y * c);
+  float leaf = (1. - smoothstep(.8, 1., q.x * q.x / .2 + q.y * q.y / (.02 + .05 * abs(sin(vTurn * .7))))) * vGlow; if (leaf < .01) discard;
+  vec3 colour = mix(vec3(.33, .42, .12), vec3(.62, .36, .08), fract(vSeed * 7.)) * (.75 + .5 * q.y) * tint; gl_FragColor = vec4(colour * leaf, leaf); }`;
+type Air = {points: T.Points; set(seconds: number, amount: number, pixels: number, tint: number[]): void};
+function buildAir(count: number, lo: number[], hi: number[], leaves: boolean, seedStart: number, overFilm: boolean): Air {
+  const position = new Float32Array(count * 3), seed = new Float32Array(count); let s = seedStart; const random = () => (s = (s * 16807) % 2147483647) / 2147483647;
+  for (let i = 0; i < count; i++) { for (let k = 0; k < 3; k++) position[i * 3 + k] = lo[k] + random() * (hi[k] - lo[k]); seed[i] = random(); }
   const geometry = new T.BufferGeometry(); geometry.setAttribute('position', new T.BufferAttribute(position, 3)); geometry.setAttribute('seed', new T.BufferAttribute(seed, 1));
-  const material = new T.ShaderMaterial({transparent: true, depthWrite: false, blending: T.AdditiveBlending, uniforms: {time: {value: 0}, amount: {value: 0}, pixels: {value: 1}},
-    vertexShader: `attribute float seed; uniform float time, amount, pixels; varying float vGlow;
-      void main(){ vec3 p = position; float t = time * (.03 + seed * .04);
-        p.x += sin(t * 2.1 + seed * 40.) * .25; p.z += cos(t * 1.7 + seed * 23.) * .2; p.y = -.4 + mod(p.y + .4 + t * .35, 2.8);
-        vec4 mv = modelViewMatrix * vec4(p, 1.); gl_Position = projectionMatrix * mv;
-        vGlow = step(seed, amount) * (.35 + .65 * abs(sin(time * (.4 + seed) + seed * 90.)));
-        gl_PointSize = pixels * (6. + seed * 9.) / max(.6, -mv.z); }`,
-    fragmentShader: `varying float vGlow; void main(){ float a = smoothstep(.5, .1, length(gl_PointCoord - .5)) * vGlow; if (a < .003) discard; gl_FragColor = vec4(vec3(1.9, 1.55, 1.1) * a, a); }`});
-  const points = new T.Points(geometry, material); points.frustumCulled = false;
-  return {points, set(seconds: number, amount: number, pixels: number) { material.uniforms.time.value = seconds; material.uniforms.amount.value = amount; material.uniforms.pixels.value = pixels; }};
+  // dust adds light and leaves the picture's alpha alone; a leaf covers what is behind it
+  const material = new T.ShaderMaterial({vertexShader: AIR_VERTEX, fragmentShader: leaves ? LEAF_FRAGMENT : DUST_FRAGMENT, transparent: true, depthWrite: false, depthTest: !overFilm,
+    blending: T.CustomBlending, blendSrc: T.OneFactor, blendDst: leaves ? T.OneMinusSrcAlphaFactor : T.OneFactor, blendSrcAlpha: leaves ? T.OneFactor : T.ZeroFactor, blendDstAlpha: leaves ? T.OneMinusSrcAlphaFactor : T.OneFactor,
+    uniforms: {time: {value: 0}, amount: {value: 0}, pixels: {value: 1}, leaves: {value: leaves ? 1 : 0}, box0: {value: new T.Vector3(...lo)}, box1: {value: new T.Vector3(...hi)}, tint: {value: new T.Vector3(1, 1, 1)}}});
+  const points = new T.Points(geometry, material); points.frustumCulled = false; points.visible = false; if (overFilm) points.renderOrder = 9;
+  return {points, set(seconds, amount, pixels, tint) { const u = material.uniforms; u.time.value = seconds; u.amount.value = amount; u.pixels.value = pixels; (u.tint.value as T.Vector3).set(tint[0], tint[1], tint[2]); }};
 }
 
 function buildSalon() {
@@ -96,7 +116,7 @@ export function createRooms(scene: T.Scene, urls: {plate: string; panorama: stri
   const loader = new T.TextureLoader(), load = (url: string, rooms: RoomId[]) => { const t = loader.load(url, undefined, undefined, () => rooms.forEach(onMissing)); t.colorSpace = T.SRGBColorSpace; return t; };
   const plate = load(urls.plate, ['kuliss', 'plat']), panorama = load(urls.panorama, ['panorama']);
   const ball = new T.SphereGeometry(60, 64, 32), sphereOf = (map: T.Texture | null) => new T.Mesh(ball, new T.MeshBasicMaterial({map, side: T.BackSide, fog: false}));
-  const built = buildSalon(), salon = built.group, clock = buildClock(), dust = buildDust(), sphere = sphereOf(panorama), la = sphereOf(null), skog = sphereOf(null);
+  const built = buildSalon(), salon = built.group, clock = buildClock(), sphere = sphereOf(panorama), la = sphereOf(null), skog = sphereOf(null);
   // The two extra panoramas are fetched the first time they are shown.
   const later: Partial<Record<RoomId, {mesh: T.Mesh; url: string}>> = {la: {mesh: la, url: urls.la}, skog: {mesh: skog, url: urls.skog}};
   const backdrop = new T.Mesh(new T.PlaneGeometry(1, 1), new T.MeshBasicMaterial({map: plate, color: 0x959595, fog: false}));
@@ -108,7 +128,19 @@ export function createRooms(scene: T.Scene, urls: {plate: string; panorama: stri
     kuliss: {group: backdrop, plate: null, follow: false, hasDepth: false, blur: 9, exposure: 1, fog: null},
     plat: {group: null, plate, follow: false, hasDepth: false, blur: 8, exposure: 1, fog: null},
   };
-  scene.add(salon, sphere, la, skog, backdrop, clock.group, dust.points); clock.group.visible = dust.points.visible = false;
+  // air: behind the dealer (with the room) and between the camera and the dealer (over the film; the caller adds `front` to its foreground)
+  const dustBack = buildAir(3200, [-3.6, -0.5, -4.6], [3.6, 2.3, -0.2], false, 3, false), dustFront = buildAir(1300, [-1.6, 0.04, 0.03], [1.6, 1.2, 0.72], false, 5, true);
+  const leafBack = buildAir(260, [-3.6, -0.6, -4.2], [3.6, 2.6, -0.3], true, 7, false), leafFront = buildAir(40, [-1.4, 0.1, 0.05], [1.4, 1.2, 0.65], true, 9, true);
+  const back = [dustBack, leafBack], front = [dustFront, leafFront];
+  // two neon tubes for the Las Vegas hall; the magenta one is the one that may flicker
+  const neon = new T.Group(), tube = (r: number, gr: number, b: number, x: number, z: number) => { const m = new T.Mesh(new T.CylinderGeometry(0.025, 0.025, 1.7, 12), new T.MeshBasicMaterial({color: new T.Color(r, gr, b), fog: false})); m.position.set(x, 0.75, z); neon.add(m); return m.material as T.MeshBasicMaterial; };
+  const magenta = tube(6, 0.6, 3.2, -2.6, -3.4); tube(0.5, 3.5, 5, 2.9, -3.6); neon.visible = false;
+  scene.add(salon, sphere, la, skog, backdrop, clock.group, neon, ...back.map(a => a.points)); clock.group.visible = false;
+  // tint of the dust per room: [behind the dealer (linear, may exceed 1), in front of her (as shown)], and how much of it is leaves
+  const AIR: Record<RoomId, {back: number[]; front: number[]; leaves: number}> = {
+    salong: {back: [2.2, 1.8, 1.25], front: [0.8, 0.7, 0.56], leaves: 0}, panorama: {back: [2.0, 1.7, 1.5], front: [0.75, 0.66, 0.6], leaves: 0},
+    la: {back: [2.6, 1.7, 0.9], front: [0.9, 0.68, 0.42], leaves: 0}, skog: {back: [1.6, 1.7, 1.1], front: [0.6, 0.64, 0.42], leaves: 1},
+    kuliss: {back: [2.2, 1.8, 1.25], front: [0.8, 0.7, 0.56], leaves: 0}, plat: {back: [0, 0, 0], front: [0.8, 0.7, 0.56], leaves: 0}};
   return {
     rooms,
     // Rooms are built in dealer metres around the dealer-side table edge and scaled into the plan-scale world.
@@ -116,19 +148,28 @@ export function createRooms(scene: T.Scene, urls: {plate: string; panorama: stri
       const {pitch, edgeDistance} = solveCamera(camera), k = camera.scale, distance = edgeDistance + 3.2 * k, halfWidth = FILM.width / 2 / camera.focalPx * distance * 1.14;
       salon.position.set(0, 0, -edgeDistance); salon.scale.setScalar(k); rooms.salong.fog!.near = 8 * k; rooms.salong.fog!.far = 30 * k;
       backdrop.scale.set(2 * halfWidth, 2 * halfWidth / 1.5, 1); backdrop.position.set(0, camera.heightM - Math.tan(pitch) * distance, -edgeDistance - 3.2 * k);
-      clock.group.position.set(2.6 * k, 1.3 * k, -edgeDistance - 2.8 * k); clock.group.scale.setScalar(k); dust.points.position.set(0, 0, -edgeDistance); dust.points.scale.setScalar(k);
+      // the clock stands close behind the dealer's left shoulder (image right), so it is among the sharper things in the room
+      clock.group.position.set(1.9 * k, 1.1 * k, -edgeDistance - 1.5 * k); clock.group.scale.setScalar(k * 0.88);
+      for (const o of [neon, ...back.map(a => a.points), ...front.map(a => a.points)]) { o.position.set(0, 0, -edgeDistance); o.scale.setScalar(k); }
     },
     show(id: RoomId) {
       const wait = later[id]; if (wait) { const material = wait.mesh.material as T.MeshBasicMaterial; material.map = load(wait.url, [id]); material.needsUpdate = true; delete later[id]; }
       for (const [name, room] of Object.entries(rooms)) if (room.group) room.group.visible = name === id; scene.fog = rooms[id].fog;
     },
-    // What moves in the room. `lamp` is the brightness of the flickering lamp, 1 = steady. The salon has that lamp; a room that is
-    // only a picture dims a little as a whole instead, and the returned factor says by how much. The fixed plate has no room to stand in.
-    ambient(id: RoomId, seconds: number, now: Date, live: {clock: boolean; dust: number; lamp: number}, pixels: number): number {
-      const inRoom = id !== 'plat'; clock.group.visible = inRoom && live.clock; if (clock.group.visible) clock.set(now);
-      dust.points.visible = inRoom && live.dust > 0; if (dust.points.visible) dust.set(seconds, live.dust, pixels);
-      built.lamp.material.color.setRGB(7 * live.lamp * live.lamp, 4 * live.lamp * live.lamp, 1.6 * live.lamp * live.lamp); built.lamp.light.intensity = 3 * live.lamp;
-      return id === 'salong' ? 1 : 1 - 0.3 * (1 - live.lamp);
+    // The clouds drawn over the film; the caller puts them in its foreground scene.
+    front: front.map(a => a.points),
+    // What moves in the room, the same three things in every room in the form that suits it: a clock, something in the air and
+    // an event in the light. `lamp` is a flickering lamp's brightness and `cloud` a passing cloud's, 1 = nothing happening.
+    // Salon: a pendant flickers. Las Vegas: a neon tube flickers and the hall dims a little. Rooms lit from outside (skyline,
+    // forest, plates): the cloud dims the whole room. Returns the factor for the room's brightness. `pixels` = picture height / film height.
+    ambient(id: RoomId, seconds: number, now: Date, live: {clock: boolean; air: number; lamp: number; cloud: number}, pixels: number): number {
+      const inRoom = id !== 'plat', air = AIR[id]; clock.group.visible = inRoom && live.clock; if (clock.group.visible) clock.set(now);
+      const amounts = [live.air * (air.leaves ? 0.45 : 1), live.air * air.leaves];
+      back.forEach((a, i) => { a.points.visible = inRoom && amounts[i] > 0; if (a.points.visible) a.set(seconds, amounts[i], pixels * 0.5, i ? [1.5, 1.5, 1.3] : air.back); }); // the room is drawn at half size; leaves keep their own colour
+      front.forEach((a, i) => { a.points.visible = amounts[i] > 0; if (a.points.visible) a.set(seconds, amounts[i], pixels, i ? [1, 1, 1] : air.front); });
+      const lit = live.lamp * live.lamp; built.lamp.material.color.setRGB(7 * lit, 4 * lit, 1.6 * lit); built.lamp.light.intensity = 3 * live.lamp;
+      neon.visible = id === 'panorama'; magenta.color.setRGB(6 * lit, 0.6 * lit, 3.2 * lit);
+      return id === 'salong' ? 1 : id === 'panorama' ? 1 - 0.15 * (1 - live.lamp) : live.cloud;
     },
     followCamera(id: RoomId, position: T.Vector3, turnDeg: number) { const room = rooms[id]; if (room.follow && room.group) { room.group.position.copy(position); room.group.rotation.y = turnDeg * Math.PI / 180; } },
   };

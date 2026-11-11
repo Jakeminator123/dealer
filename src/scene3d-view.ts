@@ -3,7 +3,7 @@
 // With focus off, table and film are drawn straight to the screen and stay sharp (the look of checkpoint v1).
 // With focus on, they go through a full-size target and are blurred by their own distance from the focus.
 import * as T from 'three';
-import {DEALER_LENS_ESTIMATE, FILM, aimCorrection, cameraFromContract, cardFocusPixel, cardPixel, cardSpots, filmToScene, flickerLevel, solveCamera, viewFovDeg, type CardTrack, type FilmCamera} from './scene3d-geometry.ts';
+import {DEALER_LENS_ESTIMATE, FILM, aimCorrection, cameraFromContract, cardFocusPixel, cardPixel, cardSpots, cloudLevel, filmToScene, flickerLevel, solveCamera, viewFovDeg, type CardTrack, type FilmCamera} from './scene3d-geometry.ts';
 import {createFilmLayers, createPlayers} from './scene3d-film.ts';
 import {createFanLight} from './scene3d-light.ts';
 import {createChipTray, TRAY} from './scene3d-props.ts';
@@ -76,7 +76,7 @@ export function createScene(canvas: HTMLCanvasElement, host: HTMLElement, data: 
   const bg = new T.Scene(), fg = new T.Scene(), view = new T.PerspectiveCamera(40, W / H, 0.05, 200), filmCam = new T.PerspectiveCamera(40, W / H, 0.05, 200), filmVP = new T.Matrix4();
   const light = createFanLight(), film = createFilmLayers(filmVP, light.uniforms), table = createTable(light.hook), tray = createChipTray(light.hook), rooms = createRooms(bg, data.urls, data.onMissingRoom);
   const sun = new T.DirectionalLight(0xfff1dd, 1.6); sun.position.set(-1.5, 3, 2.5);
-  fg.add(film.body, film.table, table.group, tray.group, new T.AmbientLight(0xffe6cc, 1.1), sun);
+  fg.add(film.body, film.table, table.group, tray.group, new T.AmbientLight(0xffe6cc, 1.1), sun, ...rooms.front);
   const players = createPlayers(texture => film.setTexture(texture), data.onChange);
   let camera: FilmCamera = DEALER_LENS_ESTIMATE, pitch = 0, edgeZ = -1, guides: T.Group | null = null, track: CardTrack | null = null;
   let focusNow = NaN, focusWhat = '', lastSeconds = NaN, moved = false;
@@ -168,7 +168,7 @@ export function createScene(canvas: HTMLCanvasElement, host: HTMLElement, data: 
     if (shown) film.setTexture(state.cards && cardLayer?.update(shown.video, players.frame(), track, {rank: state.cardRank, suit: state.cardSuit, scale: state.cardScale}) ? cardLayer.texture : shown.texture);
     const room = rooms.rooms[state.room], focusOn = state.focus !== 'off', u = blurMat.uniforms, scale = canvas.width / W;
     rooms.followCamera(state.room, view.position, state.panoramaTurn); light.update(seconds, state.fan, state.fanStrength, state.fanPeriod);
-    const dim = rooms.ambient(state.room, seconds, new Date(), {clock: state.clock, dust: state.dust, lamp: state.flicker ? flickerLevel(seconds, state.flickerEvery, state.flickerStrength) : 1}, canvas.height / H);
+    const dim = rooms.ambient(state.room, seconds, new Date(), {clock: state.clock, air: state.dust, lamp: state.flicker ? flickerLevel(seconds, state.flickerEvery, state.flickerStrength) : 1, cloud: state.flicker ? cloudLevel(seconds, state.flickerEvery, state.flickerStrength * 0.5) : 1}, canvas.height / H);
     if (focusOn) { const goal = focusTarget(seconds), dt = Math.max(0, Math.min(0.2, seconds - lastSeconds)); focusWhat = goal.what;
       focusNow = Number.isFinite(focusNow) && Number.isFinite(dt) ? focusNow + (goal.distance - focusNow) * (1 - Math.exp(-dt / 0.22)) : goal.distance; } else focusNow = NaN;
     lastSeconds = seconds;

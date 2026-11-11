@@ -101,3 +101,11 @@ test('clock hands and the flickering lamp follow the time alone', async () => {
     for (let i = 0; i < 2000; i++) { const t = slot * 20 + i * 0.01, level = flickerLevel(t, 20, 0.6); assert.equal(level, flickerLevel(t, 20, 0.6)); if (level < 1) { if (first < 0) first = i; last = i; lowest = Math.min(lowest, level); } }
     assert.ok(first >= 0, `period ${slot} har en blinkning`); assert.ok(last - first <= 121, `period ${slot}: ${last - first} hundradelar`); assert.ok(lowest >= 0.4 - 1e-9 && lowest < 0.95, `period ${slot}: lägst ${lowest}`); }
 });
+
+test('a passing cloud dims smoothly once per period', async () => {
+  const {cloudLevel} = await import('../src/scene3d-geometry.ts');
+  assert.equal(cloudLevel(5, 30, 0), 1); assert.equal(cloudLevel(5, 0, 0.5), 1);
+  for (let slot = 0; slot < 30; slot++) { let first = -1, last = -1, lowest = 1, jump = 0, before = 1;
+    for (let i = 0; i < 3000; i++) { const level = cloudLevel(slot * 30 + i * 0.01, 30, 0.5); if (level < 1) { if (first < 0) first = i; last = i; lowest = Math.min(lowest, level); } jump = Math.max(jump, Math.abs(level - before)); before = level; }
+    assert.ok(last - first >= 290 && last - first <= 501, `period ${slot}: ${(last - first) / 100} s`); near(lowest, 0.5, 0.01, `period ${slot}: djupast`); assert.ok(jump < 0.02, `period ${slot}: mjuk, största steg ${jump}`); }
+});

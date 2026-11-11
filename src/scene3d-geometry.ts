@@ -100,3 +100,11 @@ export function flickerLevel(seconds: number, every: number, strength: number): 
   const dip = hash(slot * 31 + Math.floor(t / 0.06)); // a new dip every 60 ms, strongest in the middle of the burst
   return 1 - Math.min(1, strength) * Math.sin(Math.PI * t / length) * (dip > 0.45 ? dip : 0.15);
 }
+// A cloud passing the sun, for rooms lit from outside: 1 most of the time, and once in every `every` seconds a smooth dip of
+// three to five seconds, at most down to 1 - strength. Same rule as the flicker: the time alone decides.
+export function cloudLevel(seconds: number, every: number, strength: number): number {
+  if (!(every > 0) || !(strength > 0) || !Number.isFinite(seconds)) return 1;
+  const hash = (n: number) => { const x = Math.sin(n * 91.7 + 17.3) * 24634.6345; return x - Math.floor(x); };
+  const slot = Math.floor(seconds / every), length = Math.min(every, 3 + hash(slot + 0.5) * 2), t = seconds - (slot * every + hash(slot) * (every - length));
+  return t < 0 || t > length ? 1 : 1 - Math.min(1, strength) * Math.sin(Math.PI * t / length) ** 2;
+}
