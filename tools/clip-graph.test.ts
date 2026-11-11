@@ -372,7 +372,8 @@ test('every tracked job is shown: known nodes map to model edges, unknown nodes 
     // Known from/to: a take of that model edge. Anything else: a take of an experiment named as the job wrote it.
     if (ref) { assert.equal(take.edge, ref.base, job.id); assert.equal(edge.experiment, false, job.id); assert.equal(take.kind, job.kind, job.id); assert.equal(take.hub, ref.hub, job.id); }
     else { assert.equal(take.edge, `${graph.nodeName(job.from)}>${graph.nodeName(job.to)}`, job.id); assert.ok(g.experiments.includes(edge), job.id); }
-    if (take.startsOn?.clip && g.takes[take.startsOn.clip]) assert.equal(g.takes[take.startsOn.clip].kind, 'DEAL', job.id);
+    // A return that starts on a frame of another film was cut out of a deal. Any other film may start on a frame of any film (a deal from a READY-B plate, an idle clip from the entry).
+    if (take.kind === 'RETURN' && take.startsOn?.clip && g.takes[take.startsOn.clip]) assert.equal(g.takes[take.startsOn.clip].kind, 'DEAL', job.id);
   }
   assert.equal(g.experiments.reduce((sum, e) => sum + e.takes.length, 0) + g.edges.reduce((sum, e) => sum + e.takes.length, 0), file.jobs.length);
   // The round player must always get a usable plan from the real bank.
@@ -525,4 +526,63 @@ test('films recovered from a longer film chain like any others: a derived return
     assert.deepEqual(round.map(s => [s.take?.id, s.video, s.start, s.end, s.cut]), [[deal, film, 100, 220, 'FRAME'], [back, film, 220, 301, null]], named);
     assert.ok(round.every(s => s.notes.length === 0), JSON.stringify(round.map(s => s.notes)));
   }
+});
+
+// ── Idle ────────────────────────────────────────────────────────────────────
+function idleBank(): BankData {
+  const frame0 = {frame: {video: video('pamela-idle-ready-entry-01'), videoSha256: sha, index: 0}}, idle = (id: string) => job(id, 'IDLE', 'IDLE', {kind: 'IDLE', target: null, first: frame0, last: frame0});
+  const jobs = [idle('pamela-idle-loop-01'), idle('pamela-idle-breath-b-01'), idle('pamela-idle-smile-01'), idle('pamela-idle-coffee-01'), idle('pamela-idle-stretch-01'), idle('pamela-idle-glance-01')];
+  return {jobs, media: Object.fromEntries(jobs.map(j => [j.id, {video: video(j.id)}])), motions: {
+    'pamela-idle-loop-01': done(), 'pamela-idle-breath-b-01': done('PENDING', {motion: {idle: {calm: true, weight: 10, label: 'andning'}}}), 'pamela-idle-smile-01': done(),
+    'pamela-idle-coffee-01': done('PENDING', {motion: {idle: {onRequest: true}}}), 'pamela-idle-stretch-01': done('REJECTED')}}; // the glance film has no record yet
+}
+
+test('an idle take carries its weight, calm flag, on-request flag and a word for what it shows, with defaults when the record is silent', () => {
+  const g = graph.buildGraph(idleBank()), idle = (id: string) => g.takes[`pamela-idle-${id}-01`].idle;
+  assert.deepEqual(idle('loop'), {calm: true, weight: 20, onRequest: false, label: 'lugn vila'});        // only the plain loop is calm by default
+  assert.deepEqual(idle('breath-b'), {calm: true, weight: 10, onRequest: false, label: 'andning'});      // the record's own words
+  assert.deepEqual(idle('smile'), {calm: false, weight: 3, onRequest: false, label: 'leende'});          // a gesture until its record says otherwise
+  assert.deepEqual(idle('coffee'), {calm: false, weight: 3, onRequest: true, label: 'kaffe'});
+  assert.deepEqual(idle('glance'), {calm: false, weight: 3, onRequest: false, label: 'blick åt sidan'}); assert.equal(g.takes['pamela-idle-glance-01'].stage, 'DONE', 'a film without a record is still a film');
+  assert.equal(graph.buildGraph(seatBank()).takes['p4-deal-01'].idle, null);
+  // The round's idle step is the calmest film, not the newest: calm before gesture, the highest weight, the older take on a tie.
+  assert.equal(g.edge['IDLE>IDLE'].main?.id, 'pamela-idle-loop-01');
+  const even = idleBank(); even.motions!['pamela-idle-breath-b-01'] = done('PENDING', {motion: {idle: {calm: true, weight: 20}}});
+  assert.equal(graph.buildGraph(even).edge['IDLE>IDLE'].main?.id, 'pamela-idle-loop-01');
+  // His acceptance or an explicit main still wins, as on every other edge.
+  const chosen = idleBank(); chosen.motions!['pamela-idle-smile-01'] = done('ACCEPTED');
+  assert.equal(graph.buildGraph(chosen).edge['IDLE>IDLE'].main?.id, 'pamela-idle-smile-01');
+  assert.deepEqual(graph.resolveRound(g, [{from: 'IDLE', to: 'IDLE'}]).map(s => s.take?.id), ['pamela-idle-loop-01']);
+});
+
+test('the idle picker: weighted, never the same clip twice in a row, three calm clips between gestures, nothing rejected or on request', () => {
+  const g = graph.buildGraph(idleBank()), takes = g.edge['IDLE>IDLE'].takes, pick = (played: string[], random: number) => graph.pickIdle(takes, played, random)!.take.id;
+  const loop = 'pamela-idle-loop-01', breath = 'pamela-idle-breath-b-01', smile = 'pamela-idle-smile-01', glance = 'pamela-idle-glance-01';
+  // At the start only calm clips come, by weight: loop 20 and breath 10 of 30.
+  assert.equal(pick([], 0), loop); assert.equal(pick([], 0.66), loop); assert.equal(pick([], 0.67), breath); assert.equal(pick([], 0.999), breath);
+  // Never the same clip twice in a row.
+  for (const r of [0, 0.5, 0.99]) { assert.equal(pick([loop], r), breath); assert.equal(pick([breath], r), loop); }
+  // After three calm clips a gesture may come, by weight among everything but the last clip: breath 10, smile 3, glance 3 of 16.
+  const calm3 = [loop, breath, loop];
+  assert.equal(pick([loop, breath], 0.99), loop, 'two calm clips are not enough');
+  assert.equal(pick(calm3, 0), breath); assert.equal(pick(calm3, 0.7), smile); assert.equal(pick(calm3, 0.9), glance); assert.match(graph.pickIdle(takes, calm3, 0.7)!.why, /^gest · 3 lugna klipp har gått · 19 % chans$/);
+  // Right after a gesture three calm clips must pass again, whatever the dice say.
+  for (const played of [[...calm3, smile], [...calm3, smile, loop], [...calm3, smile, loop, breath]]) for (const r of [0, 0.5, 0.99]) assert.ok([loop, breath].includes(pick(played, r)), played.join(','));
+  assert.ok([smile, glance, breath].includes(pick([...calm3, smile, loop, breath, loop], 0.99)));
+  // The rejected stretch and the coffee on request never come by chance, however long it runs; every clip that may come does come.
+  const played: string[] = [], seen = new Set<string>(); let seed = 7;
+  for (let i = 0; i < 600; i++) { seed = (seed * 16807) % 2147483647; const next = pick(played, seed / 2147483647); assert.notEqual(next, played.at(-1)); played.push(next); seen.add(next); }
+  assert.deepEqual([...seen].sort(), [breath, glance, loop, smile].sort());
+  for (let i = 0; i < played.length; i++) if (![loop, breath].includes(played[i])) { const before = played.slice(Math.max(0, i - 3), i); assert.ok(before.length === 3 && before.every(id => [loop, breath].includes(id)), `gesture at ${i} after ${before.join(',')}`); }
+  assert.ok(played.filter(id => [loop, breath].includes(id)).length > 0.75 * played.length, 'breathing dominates');
+  // With a single calm clip it is that clip that repeats; the spacing between gestures is kept.
+  const one = takes.filter(t => t.id !== breath);
+  assert.equal(graph.pickIdle(one, [loop], 0.5)!.take.id, loop); assert.match(graph.pickIdle(one, [loop], 0.5)!.why, /enda lugna klippet/);
+  assert.equal(graph.pickIdle(one, [smile, loop, loop], 0.99)!.take.id, loop); assert.ok([smile, glance].includes(graph.pickIdle(one, [smile, loop, loop, loop], 0.99)!.take.id));
+  // Nothing to play: no pick. Only gestures: they play, never the same twice.
+  assert.equal(graph.pickIdle([], [], 0.5), null); assert.equal(graph.pickIdle(takes.filter(t => t.id === 'pamela-idle-stretch-01'), [], 0.5), null);
+  const only = takes.filter(t => [smile, glance].includes(t.id)); assert.equal(graph.pickIdle(only, [smile], 0.1)!.take.id, glance);
+  // What is played of a clip, and how the idle is left to deal.
+  assert.deepEqual(graph.idleRange(120), {start: 3, end: 117}); assert.deepEqual(graph.idleRange(4), {start: 3, end: 4});
+  assert.equal(graph.idleExit(g.takes[loop]), 'CUT'); assert.equal(graph.idleExit(g.takes[smile]), 'FINISH_FAST'); assert.equal(graph.IDLE_RULE.exitRate, 2.5);
 });

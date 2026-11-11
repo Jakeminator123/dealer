@@ -235,7 +235,7 @@ type KbSegment=import('./clip-graph.js').Segment;
 type KbStep=import('./clip-graph.js').Step;
 type KbImage=import('./clip-graph.js').ImageRef;
 let clipGraph:ClipGraph|null=null,kbGraph:KbGraph|null=null,kbState:'idle'|'loading'|'ready'|'local'|'error'='idle',kbLinked=false;
-let tab:'placement'|'clipbank'='placement',kbPanel:'edge'|'round'='edge',kbEdge='READY>P4.C1',kbNode='P4.C1',kbTake='',kbPendingFrame:number|null=null,kbDraftFor='';
+let tab:'placement'|'clipbank'='placement',kbPanel:'edge'|'round'|'idle'='edge',kbEdge='READY>P4.C1',kbNode='P4.C1',kbTake='',kbPendingFrame:number|null=null,kbDraftFor='';
 let kbSteps:KbStep[]=[],kbSegments:KbSegment[]=[],kbCustom=false,kbDealer=true,kbSeatsChosen=false;
 // One film per seat (the default, Jakob's decision 2026-11-11) or one film per card; lab.html?…&filmer=kort keeps the second.
 let kbMode:'SEAT'|'CARD'=new URLSearchParams(location.search).get('filmer')==='kort'?'CARD':'SEAT';
@@ -269,7 +269,7 @@ function setTab(name:'placement'|'clipbank'|'proofs'|'review'){
  tab=name;stopMotion();
  (document.querySelector('.workspace') as HTMLElement).hidden=name!=='placement';$('clipbank').hidden=name!=='clipbank';$('proofs').hidden=name!=='proofs';$('review').hidden=name!=='review';
  for(const t of ['placement','clipbank','proofs','review'])$(`tab-${t}`).classList.toggle('active',t===name);
- if(name!=='clipbank')kbStopChain();
+ if(name!=='clipbank'){kbStopChain();viStop();}
  if(name!=='clipbank'&&name!=='review')kbPlayer.pause();
  if(name!=='review'){$('kb-take-home').append(kbTakeBox);rvHtml='';} // the take detail goes back to its place in the Klippbank
  if(name!=='proofs')pfPlayer.pause();
@@ -325,6 +325,7 @@ function kbApplyLink(){
  // A model edge in any spelling (a READY variant opens its model edge), or an experiment exactly as its job wrote it.
  const e=kbGraph!.edge[G.parseEdge(raw)?.base??raw];
  if(e){kbEdge=e.id;if(!e.experiment)kbNode=kbHub(e);kbTake=p.get('take')??'';kbPendingFrame=Number.isSafeInteger(frame)&&frame>0?frame:null;}
+ if(p.get('panel')==='vila')kbPanel='idle'; // lab.html?tab=klippbank&panel=vila
  const round=p.get('round'),list=round?.includes('>')?round:p.get('seq'); // a round is either seats or an explicit list of edges
  if(round===null&&list===null)return;
  kbPanel='round';
@@ -334,12 +335,13 @@ function kbApplyLink(){
 }
 function kbLink(){
  if(!window.history)return;const url=new URL(location.href);
- for(const key of ['tab','edge','take','round','dealer','cards','hole','third','seq','proof','file','filmer'])url.searchParams.delete(key);
+ for(const key of ['tab','edge','take','round','dealer','cards','hole','third','seq','proof','file','filmer','panel'])url.searchParams.delete(key);
  if(tab==='proofs'){url.searchParams.set('tab','prov');if(pfId)url.searchParams.set('proof',pfId);if(pfFile)url.searchParams.set('file',pfFile);}
  if(tab==='review'){url.searchParams.set('tab','granska');if(kbTake)url.searchParams.set('take',kbTake);}
  if(tab==='clipbank'){
   url.searchParams.set('tab','klippbank');if(kbMode==='CARD')url.searchParams.set('filmer','kort');
-  if(kbPanel==='edge'){url.searchParams.set('edge',kbEdge);if(kbTake&&kbTake!==kbGraph?.edge[kbEdge]?.main?.id)url.searchParams.set('take',kbTake);}
+  if(kbPanel==='idle')url.searchParams.set('panel','vila');
+  else if(kbPanel==='edge'){url.searchParams.set('edge',kbEdge);if(kbTake&&kbTake!==kbGraph?.edge[kbEdge]?.main?.id)url.searchParams.set('take',kbTake);}
   else{
    if(kbCustom&&clipGraph)url.searchParams.set('round',clipGraph.formatSequence(kbSteps).replaceAll(' ',''));
    else{url.searchParams.set('round',[...kbSeats].sort().join(','));if(!kbDealer)url.searchParams.set('dealer','0');if($<HTMLSelectElement>('kb-cards').value==='1')url.searchParams.set('cards','1');if(input('kb-third').checked)url.searchParams.set('third','1');}
@@ -358,7 +360,8 @@ function paintBank(){
  $('kb-notices').innerHTML=kbNews.map(n=>`<span class="kb-news${n.failed?' failed':''}"><button data-news="${esc(n.id)}" title="Visa tagningen">${n.failed?'Misslyckades':'Ny film klar'}: <code>${esc(n.edge)}</code></button><button data-news-close="${esc(n.id)}" aria-label="Stäng meddelandet">✕</button></span>`).join('');
  kbResolve();paintSummary();paintTree();paintNode();
  document.querySelectorAll<HTMLButtonElement>('[data-kb-panel]').forEach(b=>{const on=b.dataset.kbPanel===kbPanel;b.setAttribute('aria-pressed',String(on));$(`kb-panel-${b.dataset.kbPanel}`).hidden=!on;});
- if(kbPanel==='edge')paintEdge();else paintRound();
+ if(kbPanel!=='idle')viStop(); // the idle only runs while its panel is open
+ if(kbPanel==='edge')paintEdge();else if(kbPanel==='round')paintRound();else paintIdle();
  ovSync();paintReview();
 }
 function paintSummary(){
@@ -687,7 +690,7 @@ $('kb-node-share').addEventListener('click',event=>{if(kbPick(event))return;cons
 $('kb-share').addEventListener('click',event=>{if(kbPick(event))return;const e=kbGraph?.edge[kbEdge];if(e&&(event.target as Element).closest('[data-play-shared]'))kbPlayShifted([{from:e.from,to:e.to}]);});
 $('kb-tree').addEventListener('keydown',event=>{const key=(event as KeyboardEvent).key;if((key==='Enter'||key===' ')&&kbPick(event)){event.preventDefault();$('kb-tree').querySelector<SVGElement>('.kb-edge.sel')?.focus();}});
 for(const id of ['kb-takes','kb-takes-old'])$(id).addEventListener('click',event=>{const take=(event.target as Element).closest<HTMLElement>('[data-take]')?.dataset.take;if(take){kbTake=take;kbPendingFrame=null;paintEdge();kbLink();}});
-document.querySelectorAll<HTMLButtonElement>('[data-kb-panel]').forEach(b=>b.addEventListener('click',()=>{kbPanel=b.dataset.kbPanel as 'edge'|'round';kbStopChain();kbPlayer.pause();paintBank();kbLink();}));
+document.querySelectorAll<HTMLButtonElement>('[data-kb-panel]').forEach(b=>b.addEventListener('click',()=>{kbPanel=b.dataset.kbPanel as 'edge'|'round'|'idle';kbStopChain();kbPlayer.pause();paintBank();kbLink();}));
 $('kb-refresh').addEventListener('click',()=>void openClipBank());
 $('kb-notices').addEventListener('click',event=>{
  const d=(event.target as Element).closest<HTMLElement>('button')?.dataset,id=d?.news??d?.newsClose,at=kbNews.findIndex(n=>n.id===id);if(at<0)return;
@@ -837,6 +840,76 @@ async function kbDecide(decision:string){
 }
 $('kb-decide').addEventListener('click',event=>{const decision=(event.target as Element).closest<HTMLElement>('[data-decide]')?.dataset.decide;if(decision)void kbDecide(decision);});
 
+// ── Vila ────────────────────────────────────────────────────────────────────
+// The idle as the game runs it: a weighted pick among short clips that all begin and end on the same frame (clipGraph.pickIdle),
+// each played from frame 3 to three frames before its end, the next one loaded in the hidden element and taking over by a hard cut.
+type ViPick={take:KbTake;why:string};
+const viVideos=[$<HTMLVideoElement>('vi-a'),$<HTMLVideoElement>('vi-b')];
+const vi={on:false,stage:'idle' as 'idle'|'leaving'|'entry'|'done',token:0,frame:0,serial:0,active:0,played:[] as string[],log:[] as string[],note:'',
+ now:null as (ViPick&{end:number})|null,next:null as ViPick|null,nextReady:null as Promise<boolean>|null,entry:null as ViPick|null,entryReady:null as Promise<boolean>|null};
+const viTakes=()=>kbGraph?.edge['IDLE>IDLE']?.takes??[];
+const viName=(t:KbTake)=>t.idle?.label||kbShort(t.id,null);
+const viLoad=(el:HTMLVideoElement,take:KbTake,start:number)=>kbPrepare(el,{index:1000+ ++vi.serial,video:take.media.video,start,fps:take.fps??30} as KbSegment);
+function viHalt(){vi.token++;cancelAnimationFrame(vi.frame);for(const v of viVideos)v.pause();}
+function viStop(){if(!vi.on&&!vi.now)return;viHalt();vi.on=false;vi.stage='idle';vi.now=null;vi.next=null;vi.entry=null;if(kbState==='ready'&&kbPanel==='idle')paintIdle();}
+// Brings a loaded clip into view and plays it to its last frame; an idle clip also has the one after it picked and loaded at once.
+function viShow(pick:ViPick,slot:number){
+ const el=viVideos[slot],t=pick.take,fps=t.fps??30,entry=vi.stage==='entry',frames=t.frames??Math.max(1,Math.round((el.duration||0)*fps)); // a film without a record is measured when it has loaded
+ vi.now={...pick,end:entry?(t.segment?t.segment.end+1:frames):clipGraph!.idleRange(frames).end};
+ viVideos.forEach((v,i)=>v.classList.toggle('on',i===slot));viVideos[1-slot].pause();vi.active=slot;
+ if(!entry){vi.played.push(t.id);vi.played.splice(0,Math.max(0,vi.played.length-12));vi.log.unshift(`${viName(t)} · ${pick.why}`);vi.log.splice(8);viQueue(clipGraph!.pickIdle(viTakes(),vi.played,Math.random()));}
+ el.playbackRate=1;void el.play().catch(()=>{});paintIdle();
+ const token=vi.token,limit=(vi.now.end-.5)/fps,watch=()=>{if(token!==vi.token)return;if(el.ended||el.currentTime>=limit){void viAdvance();return;}vi.frame=requestAnimationFrame(watch);};
+ vi.frame=requestAnimationFrame(watch);
+}
+function viQueue(pick:ViPick|null){vi.next=pick;vi.nextReady=pick?viLoad(viVideos[1-vi.active],pick.take,clipGraph!.IDLE_RULE.skipStart):null;}
+// The clip in view has reached its last frame: the loaded one takes over. Leaving the idle, that is the entry; after the entry it ends.
+async function viAdvance(){
+ cancelAnimationFrame(vi.frame);const token=++vi.token;
+ if(vi.stage==='entry'){viVideos[vi.active].pause();vi.on=false;vi.stage='done';paintIdle();return;}
+ const leaving=vi.stage==='leaving',coming=leaving?vi.entry:vi.next,ok=coming?await (leaving?vi.entryReady:vi.nextReady):false;
+ if(token!==vi.token)return;
+ if(!coming||!ok){viStop();vi.note=coming?'Filmen kunde inte spelas. Kontrollera att den finns lokalt.':'Inga vilofilmer finns att spela.';paintIdle();return;}
+ if(leaving)vi.stage='entry';
+ viShow(coming,1-vi.active);
+}
+async function viStart(first?:KbTake){
+ viHalt();vi.on=true;vi.stage='idle';vi.played=[];vi.log=[];vi.note='';vi.now=null;vi.next=null;vi.active=0;
+ const pick=first?{take:first,why:'på begäran'}:clipGraph!.pickIdle(viTakes(),[],Math.random()),token=vi.token;
+ const ok=pick?await viLoad(viVideos[0],pick.take,clipGraph!.IDLE_RULE.skipStart):false;if(token!==vi.token)return;
+ if(!pick||!ok){vi.on=false;vi.note=pick?'Filmen kunde inte spelas. Kontrollera att den finns lokalt.':'Inga vilofilmer finns att spela ännu.';paintIdle();return;}
+ viShow(pick,0);
+}
+// "Dela ut nu": a calm clip is cut to the entry at once; a gesture is played out faster, so that it lands, and then the entry starts.
+function viDeal(){
+ if(!vi.on||vi.stage!=='idle'||!vi.now)return;
+ const entry=kbGraph?.edge['IDLE>READY']?.main;
+ if(!entry?.media.video){vi.note='Ingen ingångsfilm finns att gå över till.';paintIdle();return;}
+ vi.stage='leaving';vi.entry={take:entry,why:'ingången till skon'};vi.entryReady=viLoad(viVideos[1-vi.active],entry,entry.segment?.start??0);
+ if(clipGraph!.idleExit(vi.now.take)==='CUT'){void viAdvance();return;}
+ viVideos[vi.active].playbackRate=clipGraph!.IDLE_RULE.exitRate;paintIdle();
+}
+// One take on request: it comes next, or starts the idle if it is not running. This is also how an on-request take is seen at all.
+function viAsk(id:string){
+ const t=kbGraph?.takes[id];if(!t||!clipGraph!.playable(t)||!t.media.video)return;
+ if(!vi.on||vi.stage!=='idle'){void viStart(t);return;}
+ viQueue({take:t,why:'på begäran'});paintIdle();
+}
+function paintIdle(){
+ const G=clipGraph!,takes=viTakes(),pool=takes.filter(t=>t.idle&&G.playable(t)&&!t.idle.onRequest&&t.idle.weight>0&&!!t.media.video),total=pool.reduce((sum,t)=>sum+t.idle!.weight,0),now=vi.now,rate=String(G.IDLE_RULE.exitRate).replace('.',',');
+ $('vi-play').textContent=vi.on?'Stoppa vilan':'Starta vilan';$<HTMLButtonElement>('vi-play').disabled=!pool.length&&!vi.on;$<HTMLButtonElement>('vi-deal').disabled=!vi.on||vi.stage!=='idle';
+ $('vi-label').hidden=!now;$('vi-label').textContent=!now?'':vi.stage==='entry'||vi.stage==='done'?'ingången · IDLE>READY':`${viName(now.take)} · ${now.take.idle?.calm?'lugnt':'gest'}`;
+ $('vi-status').textContent=vi.note||(!now?(pool.length?`${pool.length} klipp kan komma av slumpen.`:'Inga vilofilmer finns att spela ännu.'):vi.stage==='done'?'Ingången är spelad: härifrån tar given vid.':vi.stage==='entry'?'Ingången spelas: handen går till skon.':vi.stage==='leaving'?`Dela ut: gesten spelas klart i ${rate}× fart, sedan börjar ingången.`:`Spelar ${viName(now.take)} · ${now.why}`);
+ $('vi-why').textContent=now&&vi.stage==='idle'&&vi.next?`Därefter: ${viName(vi.next.take)} · ${vi.next.why}`:'';
+ $('vi-log').innerHTML=vi.log.map(line=>`<li>${esc(line)}</li>`).join('');
+ $('vi-takes').innerHTML=takes.map(t=>{const i=t.idle!,able=G.playable(t)&&!!t.media.video;
+  const state=t.stage!=='DONE'?G.STAGE_LABEL[t.stage]:!t.media.video?'filmen finns bara lokalt':t.decision==='REJECTED'?'underkänd · spelas aldrig':!t.revision?'kan inte beslutas ännu · filmen saknar post':t.motion?.review?.userReview?`ditt beslut: ${G.DECISION_LABEL[t.decision]??t.decision}`:'väntar på ditt beslut';
+  return `<tr class="${now?.take===t&&vi.stage==='idle'?'current':''}"><td><button data-vi-open="${esc(t.id)}" title="Visa tagningen i kantdetaljen">${esc(viName(t))}</button><code>${esc(t.id)}</code></td><td>${i.calm?'lugnt':'gest'}${i.onRequest?' · bara på begäran':''}</td><td>vikt ${esc(i.weight)} · ${pool.includes(t)&&total?`${Math.round(100*i.weight/total)} %`:'–'}</td><td>${esc(state)}</td><td><button data-vi-ask="${esc(t.id)}"${able?'':' disabled'}>${vi.on&&vi.stage==='idle'?'Spela härnäst':'Spela'}</button></td></tr>`;}).join('');
+}
+$('vi-play').addEventListener('click',()=>{if(vi.on)viStop();else void viStart();});
+$('vi-deal').addEventListener('click',viDeal);
+$('vi-takes').addEventListener('click',event=>{const d=(event.target as Element).closest<HTMLElement>('button')?.dataset;if(d?.viOpen)kbSelect('IDLE>IDLE',d.viOpen);else if(d?.viAsk)viAsk(d.viAsk);});
+
 // ── Granska ─────────────────────────────────────────────────────────────────
 // Every finished film that still lacks Jakob's own word, in dealing order. The open row holds the Klippbank's own take detail
 // (film, frame stepping, rendered card, findings, decision buttons), moved here while the tab is open: nothing is built twice.
@@ -858,7 +931,7 @@ function rvTitle(e:KbEdge,t:KbTake){
  // A seat film from another series than the plan's (an early "calm" take) says so, or two rows would read the same.
  const series=card?t.id.replace(/^pamela-/,'').split('-').filter(w=>!/^(p\d|d|c\d|plan|deal|return|ready|idle|\d+|drawn|readyb|idleb|arkiv|reveal|edit|slow)$/.test(w)).join(' '):'';
  const who=!card?'':seat==='D'?`Dealerns ${['första','andra','tredje'][n-1]} kort`:`${seat}${n>1?` · kort ${n}`:''}`;
- const step=/REVEAL/.test(e.id)?'kortet vänds upp':e.kind==='DEAL'&&card?'giv':e.kind==='RETURN'&&card?`retur till ${G.hubOf(e.to)==='READY'?'redo':'vila'}`:e.experiment?`${e.from} → ${e.to}`:e.kind==='ENTRY'?'Ingång · från vila till skon':e.kind==='IDLE'?'Vila · stilla klipp':'Utgång · från skon till vila';
+ const step=/REVEAL/.test(e.id)?'kortet vänds upp':e.kind==='DEAL'&&card?'giv':e.kind==='RETURN'&&card?`retur till ${G.hubOf(e.to)==='READY'?'redo':'vila'}`:e.experiment?`${e.from} → ${e.to}`:e.kind==='ENTRY'?'Ingång · från vila till skon':e.kind==='IDLE'?`Vila · ${t.idle?.label||'stilla klipp'}`:'Utgång · från skon till vila';
  const tags=[old?'ur gamla labbet':'',b?'variant B':'',e.experiment&&!b?'experiment':'',t.editOf?'rättad kopia':'',t.segment&&!old?'utsnitt':'',t.speed!==1?'slow motion':'',series?`serie ”${series}”`:''].filter(Boolean),no=Number(/-(\d+)$/.exec(t.id)?.[1]??0);
  return [who,step,...tags,no>1||(no&&!tags.length)?`tagning ${no}`:''].filter(Boolean).join(' · ');
 }

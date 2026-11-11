@@ -8,7 +8,9 @@ export type ImageRef = {frame?: {video: string; videoSha256: string; index: numb
 export type BankJob = {id: string; kind: string; target: string | null; from: string; to: string; model: string; duration: number; ratio: string; audio: boolean; promptText: string; first: ImageRef; last: ImageRef; purpose: string; playbackSpeed?: number};
 export type MotionRecord = {
   source?: {path?: string; sha256?: string; bytes?: number; fps?: number; frames?: number; width?: number; height?: number};
-  motion?: {physicalEndSide?: string; landingFrame?: number; startsOn?: {clip?: string; frame?: number; seamPixelsOverThreshold?: number}};
+  // idle: how a take of IDLE>IDLE takes part in the idle. weight: its share among the takes that may be picked. calm: breathing and
+  // the like, as opposed to a gesture. onRequest: never picked by chance. label: what it shows, in a word or two.
+  motion?: {physicalEndSide?: string; landingFrame?: number; startsOn?: {clip?: string; frame?: number; seamPixelsOverThreshold?: number}; idle?: {weight?: number; calm?: boolean; onRequest?: boolean; label?: string}};
   review?: {decision?: string; acceptedAs?: string; basis?: string; limitations?: string; userReview?: string; userAccepted?: boolean};
 };
 export type Receipt = {status?: string; estimatedCredits?: number; requestedAt?: string; completedAt?: string; output?: {bytes?: number; fps?: number; frames?: number; width?: number; height?: number} | null};
@@ -114,10 +116,21 @@ export type Take = {
   startsOn: {clip: string | null; video: string | null; frame: number} | null; anchorStart: string | null; landingFrame: number | null; landingConflict: boolean;
   segment: {clip: string; start: number; end: number} | null; // set on a derived take: the frames of that clip it shows
   revision: string | null; // of its motions record; a review decision must present it to be saved. null: no record yet
+  idle: Idle | null;       // set on a take of IDLE>IDLE: its part in the idle
   editOf: string | null;   // set on a corrected copy: the clip it was made from
   speed: number;           // the speed the film is meant to be watched at (a clip generated in slow motion says 2); frame numbers stay the file's
   motion: MotionRecord | null; receipt: Receipt | null; media: Media;
 };
+// The idle is many short clips that all begin and end on the same frame. Breathing dominates, gestures are rare.
+export type Idle = {weight: number; calm: boolean; onRequest: boolean; label: string};
+export const IDLE_WEIGHT = {calm: 20, gesture: 3};
+const IDLE_WORDS: [RegExp, string][] = [[/deep-breath/, 'djupt andetag'], [/breath/, 'andning'], [/hand-resettle/, 'handen läggs om'], [/glance/, 'blick åt sidan'], [/smile/, 'leende'], [/stretch/, 'sträcker på sig'], [/scratch/, 'kliar sig'], [/coffee/, 'kaffe'], [/loop/, 'lugn vila']];
+// Without a word in the record, only the plain loop counts as calm; every other idle take is a gesture until its record says otherwise.
+function idleOf(id: string, motion: MotionRecord | null): Idle {
+  const said = motion?.motion?.idle, calm = typeof said?.calm === 'boolean' ? said.calm : /-idle-loop-/.test(id), weight = Number(said?.weight);
+  return {calm, weight: Number.isFinite(weight) && weight >= 0 ? weight : calm ? IDLE_WEIGHT.calm : IDLE_WEIGHT.gesture, onRequest: said?.onRequest === true,
+    label: typeof said?.label === 'string' && said.label.trim() ? said.label.trim() : IDLE_WORDS.find(([word]) => word.test(id))?.[1] ?? ''};
+}
 // experiment: a job whose from/to is outside the model. It keeps its takes and detail view but is never one of the 51.
 // rendering: takes of this edge that are ordered and not back yet, whether or not the edge already has a main take.
 // shares: in seat mode, the edge whose film this edge plays (READY>P4.C2 plays READY>P4.C1). Its own takes stay listed; they are only played when a round names one.
@@ -223,7 +236,7 @@ export function buildGraph(data: BankData, options: {mode?: FilmMode; holeCardDo
       variant: motion?.review?.acceptedAs === 'VARIANT', explicitMain: motion?.review?.acceptedAs === 'MAIN', endSide,
       fps: motion?.source?.fps ?? receipt?.output?.fps ?? null, frames: motion?.source?.frames ?? receipt?.output?.frames ?? null,
       credits: receipt?.estimatedCredits ?? job.duration * (CREDITS_PER_SECOND[job.ratio] ?? 0), startsOn, anchorStart, landingFrame: null, landingConflict: false, segment, revision: data.revisions?.[job.id] ?? null,
-      editOf: editOf.get(job.id) ?? null, speed: Number(job.playbackSpeed) >= 0.25 && Number(job.playbackSpeed) <= 4 ? Number(job.playbackSpeed) : 1, motion, receipt, media};
+      idle: e.id === 'IDLE>IDLE' ? idleOf(job.id, motion) : null, editOf: editOf.get(job.id) ?? null, speed: Number(job.playbackSpeed) >= 0.25 && Number(job.playbackSpeed) <= 4 ? Number(job.playbackSpeed) : 1, motion, receipt, media};
     takes[job.id] = take; e.takes.push(take);
   });
   const all = Object.values(takes);
@@ -245,6 +258,9 @@ export function buildGraph(data: BankData, options: {mode?: FilmMode; holeCardDo
     const deal = e.target ? edge[`READY>${e.target}`]?.main : null;
     e.main = best(plain(e), t => t.explicitMain ? 1 : 0, t => deal && returnFits(t, deal) ? 1 : 0, rank);
   }
+  // The idle step of a round is the calmest film there is, not the newest: an explicit main or an accepted take first, as everywhere;
+  // then a calm take before a gesture, the highest weight, and the older take on a tie.
+  edge['IDLE>IDLE'].main = best(plain(edge['IDLE>IDLE']), t => t.explicitMain ? 1 : 0, t => t.decision === 'ACCEPTED' && !t.variant ? 1 : 0, t => t.idle?.calm ? 1 : 0, t => t.idle?.weight ?? 0, t => -t.order);
   for (const e of experiments) e.main = best(e.takes, rank);
   for (const e of [...edges, ...experiments]) {
     const own = plain(e);
@@ -315,6 +331,31 @@ export function experimentChains(graph: Graph): Chain[] {
   for (const head of links.filter(link => rests(link.from) || !links.some(other => other.to === link.from))) grow([head]);
   return chains;
 }
+
+// ── Idle ────────────────────────────────────────────────────────────────────
+// The rules, borrowed as they are: a weighted pick among the takes; never the same clip twice in a row; at least three calm
+// clips between two gestures; rejected takes and takes marked on request are never picked by chance. Unreviewed takes may be picked.
+export const IDLE_RULE = {calmBetweenGestures: 3, exitRate: 2.5, skipStart: 3, skipEnd: 3};
+export type IdlePick = {take: Take; why: string};
+export function pickIdle(takes: Take[], played: string[], random: number): IdlePick | null {
+  const pool = takes.filter(t => t.idle && playable(t) && !t.idle.onRequest && t.idle.weight > 0 && !!t.media.video), last = played[played.length - 1];
+  if (!pool.length) return null;
+  const calmOf = (id: string) => takes.find(t => t.id === id)?.idle?.calm !== false; // a clip that is no longer known counts as calm
+  let since = 0; for (let i = played.length - 1; i >= 0 && calmOf(played[i]); i--) since++;
+  const gestureDue = since >= IDLE_RULE.calmBetweenGestures && played.some(id => !calmOf(id)) || (since >= IDLE_RULE.calmBetweenGestures && since === played.length);
+  const fresh = pool.filter(t => t.id !== last), calm = (list: Take[]) => list.filter(t => t.idle!.calm);
+  // What may come now, most wanted rule first; each later line gives up one rule only when nothing is left otherwise.
+  const [allowed, note] = gestureDue && fresh.length ? [fresh, ''] : calm(fresh).length ? [calm(fresh), ''] : calm(pool).length ? [calm(pool), 'enda lugna klippet, så det går igen'] : fresh.length ? [fresh, 'inget lugnt klipp finns'] : [pool, 'enda klippet'];
+  const total = allowed.reduce((sum, t) => sum + t.idle!.weight, 0); let at = Math.min(0.999999, Math.max(0, random)) * total, take = allowed[allowed.length - 1];
+  for (const t of allowed) { if (at < t.idle!.weight) { take = t; break; } at -= t.idle!.weight; }
+  const share = `${Math.round(100 * take.idle!.weight / total)} % chans`;
+  const why = note || (take.idle!.calm ? gestureDue ? `lugnt klipp · en gest hade fått komma · ${share}` : `lugnt klipp · ${since < IDLE_RULE.calmBetweenGestures ? `${IDLE_RULE.calmBetweenGestures - since} lugna kvar till nästa gest` : share}` : `gest · ${since} lugna klipp har gått · ${share}`);
+  return {take, why};
+}
+// The frames of an idle clip that are played: a generated clip is brighter in its first frames and jumps in its last two.
+export const idleRange = (frames: number): {start: number; end: number} => ({start: Math.min(IDLE_RULE.skipStart, Math.max(0, frames - 1)), end: Math.max(Math.min(IDLE_RULE.skipStart, Math.max(0, frames - 1)) + 1, frames - IDLE_RULE.skipEnd)});
+// Leaving the idle to deal: a calm clip is cut at once; a gesture is played out faster, so that it lands, and then the entry starts.
+export const idleExit = (take: Take): 'CUT' | 'FINISH_FAST' => take.idle?.calm === false ? 'FINISH_FAST' : 'CUT';
 
 // ── Round ───────────────────────────────────────────────────────────────────
 export type RoundOptions = {seats: string[]; dealer?: boolean; cards?: number; thirdDealerCard?: boolean};

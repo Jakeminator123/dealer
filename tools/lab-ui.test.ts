@@ -545,3 +545,51 @@ test('the review list: every finished film without Jakob\'s word, in dealing ord
  runInContext('kbLink()',context);assert.equal(new URL(urls.at(-1)!).searchParams.get('tab'),'granska');assert.equal(new URL(urls.at(-1)!).searchParams.get('take'),'pamela-p4-c1-plan-deal-03');
  runInContext("setTab('placement')",context);assert.equal(element('review').hidden,true);
 });
+
+test('the idle player: picks play back to back from frame 3, a calm clip is left at once and a gesture is played out faster before the entry',async()=>{
+ const bank:any=clipBank(),sha='e'.repeat(64),src=(id:string)=>`assets/motions/${id}/source.mp4`;
+ const idle=(id:string,record:unknown)=>{bank.jobs.push({...bank.jobs[0],id,kind:'IDLE',target:null,from:'IDLE',to:'IDLE'});if(record)bank.motions[id]=record;bank.media[id]={video:src(id),first:null,last:null};};
+ idle('pamela-idle-loop-01',{source:{fps:30,frames:120,sha256:sha},review:{decision:'PENDING'}});idle('pamela-idle-smile-01',{source:{fps:30,frames:90,sha256:sha},review:{decision:'PENDING'}});
+ idle('pamela-idle-coffee-01',{source:{fps:30,frames:150,sha256:sha},motion:{idle:{onRequest:true,weight:5}},review:{decision:'PENDING'}});idle('pamela-idle-stretch-01',{source:{fps:30,frames:120,sha256:sha},review:{decision:'REJECTED'}});
+ idle('pamela-idle-glance-01',null); // a film that has arrived without a record
+ bank.jobs.push({...bank.jobs[0],id:'pamela-idle-ready-entry-02',kind:'ENTRY',target:null,from:'IDLE',to:'READY'});bank.motions['pamela-idle-ready-entry-02']={source:{fps:30,frames:60,sha256:sha},review:{decision:'PENDING'}};bank.media['pamela-idle-ready-entry-02']={video:src('pamela-idle-ready-entry-02'),first:null,last:null};
+ bank.revisions=Object.fromEntries(Object.keys(bank.motions).map(id=>[id,`"${id}"`]));
+ const {context,element,requests}=await openBank(bank,'?tab=klippbank&panel=vila',lab=>{lab.element('vi-a').duration=4;lab.element('vi-b').duration=4;});
+ const state=()=>JSON.parse(runInContext('JSON.stringify({on:vi.on,stage:vi.stage,now:vi.now&&vi.now.take.id,end:vi.now&&vi.now.end,next:vi.next&&vi.next.take.id,played:vi.played,src:viVideos[vi.active].src,time:viVideos[vi.active].currentTime,rate:viVideos[vi.active].playbackRate})',context));
+ // The panel lists every idle take with what it is, its weight and where it stands; nothing plays until it is started.
+ assert.equal(runInContext('kbPanel',context),'idle');
+ const rows=element('vi-takes').innerHTML;
+ assert.match(rows,/>lugn vila<\/button><code>pamela-idle-loop-01<\/code><\/td><td>lugnt<\/td><td>vikt 20 · 77 %<\/td><td>väntar på ditt beslut</);
+ assert.match(rows,/>leende<\/button><code>pamela-idle-smile-01<\/code><\/td><td>gest<\/td><td>vikt 3 · 12 %</);
+ assert.match(rows,/>kaffe<\/button>[^]*?<td>gest · bara på begäran<\/td><td>vikt 5 · –</);
+ assert.match(rows,/>sträcker på sig<\/button>[^]*?<td>underkänd · spelas aldrig<\/td><td><button data-vi-ask="pamela-idle-stretch-01" disabled>/);
+ assert.match(rows,/>blick åt sidan<\/button>[^]*?<td>kan inte beslutas ännu · filmen saknar post<\/td><td><button data-vi-ask="pamela-idle-glance-01">Spela</);
+ assert.equal(state().on,false);assert.equal(element('vi-deal').disabled,true);assert.equal(element('vi-status').textContent,'3 klipp kan komma av slumpen.');
+ // Started, the first pick is the calm clip (nothing else may come yet), from frame 3 to three frames before its end; the next one is already chosen and loading.
+ runInContext('viStart()',context);await settle();
+ let s=state();assert.equal(s.on,true);assert.equal(s.now,'pamela-idle-loop-01');assert.equal(s.src,src('pamela-idle-loop-01'));assert.ok(Math.abs(s.time-3.001/30)<1e-9);assert.equal(s.end,117);
+ assert.equal(s.next,'pamela-idle-loop-01','with one calm clip it is that clip that comes again');assert.match(element('vi-status').textContent,/^Spelar lugn vila · /);assert.match(element('vi-why').textContent,/^Därefter: lugn vila · enda lugna klippet/);
+ assert.equal(element('vi-play').textContent,'Stoppa vilan');assert.equal(element('vi-deal').disabled,false);
+ // At its last frame the loaded clip takes over by a cut: the other element, again from frame 3.
+ runInContext('viAdvance()',context);await settle();
+ s=state();assert.deepEqual(s.played,['pamela-idle-loop-01','pamela-idle-loop-01']);assert.ok(Math.abs(s.time-3.001/30)<1e-9);assert.equal(element('vi-log').innerHTML.match(/<li>/g).length,2);
+ // A take asked for comes next, also one that never comes by chance. A film without a record plays too; its length is read from the film.
+ runInContext("viAsk('pamela-idle-glance-01')",context);await settle();assert.equal(state().next,'pamela-idle-glance-01');
+ runInContext('viAdvance()',context);await settle();
+ s=state();assert.equal(s.now,'pamela-idle-glance-01');assert.equal(s.end,117,'four seconds at 30 fps, less the last three frames');assert.match(element('vi-status').textContent,/^Spelar blick åt sidan · på begäran$/);
+ // Dela ut nu during a gesture: it is played out at 2.5 times the speed, and only then does the entry start.
+ runInContext('viDeal()',context);await settle();
+ s=state();assert.equal(s.stage,'leaving');assert.equal(s.now,'pamela-idle-glance-01');assert.equal(s.rate,2.5);assert.match(element('vi-status').textContent,/gesten spelas klart i 2,5× fart, sedan börjar ingången/);assert.equal(element('vi-deal').disabled,true);
+ runInContext('viAdvance()',context);await settle();
+ s=state();assert.equal(s.stage,'entry');assert.equal(s.src,src('pamela-idle-ready-entry-02'));assert.equal(s.rate,1);assert.ok(Math.abs(s.time-.001/30)<1e-9);assert.equal(element('vi-status').textContent,'Ingången spelas: handen går till skon.');
+ runInContext('viAdvance()',context);await settle();
+ assert.equal(state().stage,'done');assert.equal(state().on,false);assert.equal(element('vi-status').textContent,'Ingången är spelad: härifrån tar given vid.');
+ // Dela ut nu during a calm clip: the entry starts at once.
+ runInContext('viStart()',context);await settle();assert.equal(state().now,'pamela-idle-loop-01');
+ runInContext('viDeal()',context);await settle();
+ s=state();assert.equal(s.stage,'entry');assert.equal(s.src,src('pamela-idle-ready-entry-02'));
+ // Leaving the panel stops the idle; the round's idle step is still the calm main take; nothing was written.
+ runInContext("kbPanel='round';paintBank()",context);assert.equal(state().on,false);assert.equal(state().now,null);
+ assert.equal(runInContext("kbGraph.edge['IDLE>IDLE'].main.id",context),'pamela-idle-loop-01');
+ assert.ok(requests.every(request=>request.startsWith('GET ')));
+});
