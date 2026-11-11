@@ -27,12 +27,13 @@
     "evidence": "evidence/generation-method-audit.json"
   },
   "review": {
-    "decision": "SECONDARY",
+    "decision": "ACCEPTED",
     "basis": "Oberoende rutgranskad 2026-11-11 (alla 120 rutor i full upplösning kring händer och kort, hela bilden var sjätte ruta). Granskarens dom: möjlig variant, på gränsen till inte användbar. Fysisk vändning f58–69 med kantläge f63–65. Handen lämnar vilan f15–18, når kortet f33–34, släpar det på bordet f39–46, kortet fritt från bordet f50–51, bred gul yta i brösthöjd f52–57, blå yta f66–77, kortet plant f79–81, fingret släpper f85, handen i vila f107–108. Kortet hamnar inom cirka 1 px från där det låg.",
     "limitations": "Obeställd gest efter släppet: handen halvknuten i brösthöjd f90–101, med en mörk strimma under handen f88–91. Kortet släpas 11 px åt vänster och 26 px uppåt på bordet före lyftet f39–46, utan synligt nypgrepp. Det sväller i luften f48–57 (ytan mer än fördubblas) med kuddlika hörn, och lyfts cirka 215 px. Hög båge på vägen in f19–25. Grönnivån faller under rutorna 0–10 och hoppar i de två sista; slutrutan är cirka 9 nivåer mörkare i grönt än slutbilden. Övre och nedre vänstra hörnet är tomma och gröna i alla rutor. Det blå kortet till vänster och skon rör sig inte.",
     "colorDoesNotProvePhysicalSide": true,
-    "userAccepted": false,
-    "productionReady": false
+    "userAccepted": true,
+    "productionReady": false,
+    "userReview": "Jakob 2026-11-11: Den här blev jättebra!"
   },
   "postProcessing": "none",
   "generationRef": "assets/motions/pamela-d-c2-reveal-02/generation.json",

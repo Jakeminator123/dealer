@@ -27,12 +27,13 @@
     "evidence": "evidence/generation-method-audit.json"
   },
   "review": {
-    "decision": "SECONDARY",
+    "decision": "ACCEPTED",
     "basis": "Oberoende rutgranskad 2026-11-11 (alla 120 rutor i full upplösning kring händer och kort, hela bilden var sjätte ruta). Granskarens dom: möjlig variant. Fysisk vändning över kortets bortre kant f48–73; inget färgbyte på bred yta. Handen lämnar vilan f13, når kortet f29 och ligger still f30–38; kortet dras cirka 45 px mot dealern och vrids på bordet f39–47, lämnar bordet f51, bred gul yta i brösthöjd f52–57, kantpassage f62–63, blå yta f64–67, kortet plant och stabilt från f74, fingret släpper f83, handen i vila f97. Kortet hamnar inom 1–2 px från där det låg. Renast retur av de tre.",
     "limitations": "Kortet dras och vrids på bordet före lyftet f39–47 och lyfts cirka 230 px och visas mot kameran f52–57; båda var uteslutna i beställningen. Kantpassagen är en enda oskarp ruta (f62–63). Det vänstra blå kortets högra hörn bleknar i f51–52. Hård mörk skugga på bordet under den lyfta armen f16–23, f49–62 och f85–95. Blicken går ned f17–44, ögonen slutna f42. Grönnivån faller under rutorna 0–10 och hoppar i de två sista; slutrutan är cirka 9 nivåer mörkare i grönt än slutbilden. Övre och nedre vänstra hörnet är tomma och gröna i alla rutor. Det blå kortet till vänster och skon rör sig inte.",
     "colorDoesNotProvePhysicalSide": true,
-    "userAccepted": false,
-    "productionReady": false
+    "userAccepted": true,
+    "productionReady": false,
+    "userReview": "Jakob 2026-11-11: Jättebra, den här också."
   },
   "postProcessing": "none",
   "generationRef": "assets/motions/pamela-d-c2-reveal-03/generation.json",
