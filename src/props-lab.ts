@@ -1,5 +1,6 @@
 // Page code of props.html: the model lab. Jakob's models (data/props.json, assets/props/<id>.glb) one at a time on a
-// studio floor, in other looks and in movement. A lab on a side track: everything here is read only and worked out in the
+// studio floor, in other looks and in movement; the table also with the dealer's film behind it and the game's room around
+// (src/props-stage.ts). A lab on a side track: everything here is read only and worked out in the
 // browser while it is looked at. Nothing is written, and nothing the game or the film uses is touched. A look that should
 // become real needs a generated texture set of its own per model; what is shown here is derived from the model's own.
 //
@@ -10,11 +11,17 @@ import * as T from 'three';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
 import {RoomEnvironment} from 'three/addons/environments/RoomEnvironment.js';
+import {createStage, stageFit, STAGE_VIEW, type StageFit} from './props-stage.ts';
 
 // ── what the panel offers ───────────────────────────────────────────────────
 export type LookId = 'original' | 'ivory' | 'gold' | 'ivory-gold' | 'lacquer-gold';
 export type MotionId = 'still' | 'turn' | 'present' | 'sweep';
 export type LightId = 'warm' | 'neutral' | 'cool';
+export type StageId = 'alone' | 'scene';
+export const STAGES: {id: StageId; label: string; note: string}[] = [
+  {id: 'alone', label: 'Ensam', note: 'Modellen ensam på ett golv.'},
+  {id: 'scene', label: 'Med dealer och rum', note: 'Bordet med dealern bakom och spelets rum omkring, sett längs spelkamerans siktlinje men längre bak. Ett prov på helheten: hon är spelets vilofilm på en plan skiva bakom bordet, så vrid bara lite. Filmens egen sko är borttagen eftersom bordet har sin egen.'},
+];
 /** accents: the look has two materials, and "Hur mycket guld" decides where one ends and the other begins. */
 export const LOOKS: {id: LookId; label: string; note: string; accents: boolean}[] = [
   {id: 'original', label: 'Som den kom', note: 'Modellens egna bilder, som den kom från Meshy. Formen är förenklad för webben.', accents: false},
@@ -35,15 +42,15 @@ export const LIGHTS: {id: LightId; label: string; tint: [number, number, number]
   {id: 'neutral', label: 'Neutralt', tint: [1, 1, 1]},
   {id: 'cool', label: 'Kallt', tint: [0.76, 0.87, 1]},
 ];
-export const DEFAULTS = {look: 'original' as LookId, gold: 0.5, gloss: 0.6, motion: 'turn' as MotionId, light: 'neutral' as LightId, exposure: 1};
+export const DEFAULTS = {look: 'original' as LookId, gold: 0.5, gloss: 0.6, motion: 'turn' as MotionId, light: 'neutral' as LightId, exposure: 1, stage: 'alone' as StageId};
 
 const MODEL_NAMES: Record<string, string> = {shoe: 'Sko', tray: 'Markerbricka', table: 'Bord'};
 /** The Swedish name of a model of data/props.json; a model the page has no name for goes by its id. */
 export const modelName = (id: string) => MODEL_NAMES[id] ?? id;
-/** The models of data/props.json, in its order: every entry with an id the lab server would serve a file for. */
-export function propList(data: unknown): {id: string}[] {
+/** The models of data/props.json, in its order: every entry with an id the lab server would serve a file for. stage: where a table has its felt, when the entry says. */
+export function propList(data: unknown): {id: string; stage?: StageFit}[] {
   const props = (data as {props?: unknown} | null)?.props;
-  return (Array.isArray(props) ? props : []).filter((p): p is {id: string} => typeof p?.id === 'string' && /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(p.id)).map(p => ({id: p.id}));
+  return (Array.isArray(props) ? props : []).filter((p): p is {id: string; stage?: unknown} => typeof p?.id === 'string' && /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(p.id)).map(p => { const stage = stageFit(p.stage); return stage ? {id: p.id, stage} : {id: p.id}; });
 }
 /** Width × height × depth in metres, as it is written in Swedish. */
 export const sizeText = (x: number, y: number, z: number) => `${[x, y, z].map(v => v.toFixed(2).replace('.', ',')).join(' × ')} m`;
@@ -175,13 +182,16 @@ export function motionPose(motion: MotionId, t: number): {yaw: number; lift: num
 }
 
 // ── the page ────────────────────────────────────────────────────────────────
+// The game's room behind the staged table: how far the panorama is turned (so that the hall's far end is behind her) and how bright it is.
+// pull: how much further back than the game's camera the view starts, in distances to the dealer. fov: its lens, degrees.
+const STAGE_ROOM = {turn: Math.PI, light: 0.55, pull: 1.75, fov: 38};
 const STAGE = {
   backdrop: 0x0b0c0c, floor: 0x151717, fov: 30, azimuth: 32, elevation: 27, flatElevation: 40, // flat: a model much wider than tall is looked at from higher up
   key: 4, sweep: 3.2, room: 0.5, // light strengths: the key lamp, the travelling light, the room's reflections
   maxTexture: 2048,
 };
 type Part = {mesh: T.Mesh; original: T.Material; derived: T.MeshPhysicalMaterial | null; analysis: Analysis | null; painted: Painted | null; colour: T.DataTexture | null; surface: T.DataTexture | null; shown: string; plain: boolean};
-type Model = {id: string; fit: T.Group; size: T.Vector3; height: number; flat: boolean; triangles: number; turned: number; textureSize: number | null; parts: Part[]};
+type Model = {id: string; fit: T.Group; object: T.Object3D; size: T.Vector3; height: number; flat: boolean; triangles: number; turned: number; textureSize: number | null; parts: Part[]};
 
 async function start() {
   const $ = <E extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as E;
@@ -192,7 +202,7 @@ async function start() {
   const oneOf = <V extends {id: string}>(list: V[], id: string | null, otherwise: V['id']) => list.some(item => item.id === id) ? id as V['id'] : otherwise;
   // Someone who has asked their system for less movement meets the model standing still.
   const calm = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const state = {model: '', look: oneOf(LOOKS, query.get('look'), DEFAULTS.look), gold: DEFAULTS.gold, gloss: DEFAULTS.gloss, motion: oneOf(MOTIONS, query.get('motion'), calm ? 'still' : DEFAULTS.motion), light: oneOf(LIGHTS, query.get('light'), DEFAULTS.light), exposure: DEFAULTS.exposure};
+  const state = {model: '', look: oneOf(LOOKS, query.get('look'), DEFAULTS.look), gold: DEFAULTS.gold, gloss: DEFAULTS.gloss, motion: oneOf(MOTIONS, query.get('motion'), calm ? 'still' : DEFAULTS.motion), light: oneOf(LIGHTS, query.get('light'), DEFAULTS.light), exposure: DEFAULTS.exposure, stage: DEFAULTS.stage};
   let problem = '', loading = '';
 
   // ── the studio ──
@@ -243,7 +253,7 @@ async function start() {
     // Every model is brought to the same size on the stage (half its diagonal is 1), standing on the floor over the centre.
     const box = new T.Box3().setFromObject(object), size = box.getSize(new T.Vector3()), centre = box.getCenter(new T.Vector3()), unit = 2 / Math.max(size.length(), 1e-6), fit = new T.Group();
     object.position.set(-centre.x, -box.min.y, -centre.z); fit.add(object); fit.scale.setScalar(unit);
-    return {id, fit, size, height: size.y * unit, flat: size.y < 0.2 * Math.max(size.x, size.z), triangles: Math.round(triangles), turned, textureSize, parts};
+    return {id, fit, object, size, height: size.y * unit, flat: size.y < 0.2 * Math.max(size.x, size.z), triangles: Math.round(triangles), turned, textureSize, parts};
   }
 
   // ── looks ──
@@ -285,6 +295,30 @@ async function start() {
     dirty = true;
   }
 
+  // ── the whole picture: dealer and room around a table (src/props-stage.ts) ──
+  // The studio's floor and backdrop give way to the game's room, the dealer's film stands behind the table, and the view starts
+  // where the game's camera is. Made the first time it is asked for; a model without a felt of its own cannot have it.
+  const fitOf = (id: string) => props.find(p => p.id === id)?.stage ?? null, backdrop = scene.background, fog = scene.fog, reach = {min: controls.minDistance, max: controls.maxDistance, polar: controls.maxPolarAngle};
+  let rig: ReturnType<typeof createStage> | null = null, room: T.Texture | null = null, staged = false, stageProblem = '';
+  async function setStage(id: StageId) {
+    state.stage = id; stageProblem = '';
+    if (id === 'scene' && !fitOf(state.model)) { const table = props.find(p => p.stage); if (table) await choose(table.id); else state.stage = 'alone'; }
+    if (state.stage === 'scene' && !rig) try {
+      const contract = await fetch('data/scene-contract.json').then(res => res.ok ? res.json() : Promise.reject(Error('data/scene-contract.json')));
+      room = await new T.TextureLoader().loadAsync(STAGE_VIEW.room); room.mapping = T.EquirectangularReflectionMapping; room.colorSpace = T.SRGBColorSpace;
+      rig = createStage(contract);
+    } catch { state.stage = 'alone'; stageProblem = 'Scenen med dealer och rum kunde inte läsas (spelets kamera eller rummets bild saknas).'; }
+    showStage(); sync();
+  }
+  /** Puts the dealer and the room around the model on the floor, or takes them away; called whenever the model or the choice changes. */
+  function showStage() {
+    const fit = state.stage === 'scene' && rig && model ? fitOf(model.id) : null; staged = !!fit;
+    if (rig) { rig.group.removeFromParent(); if (fit) { rig.place(fit); model!.object.add(rig.group); rig.play(); } else rig.pause(); }
+    floor.visible = !staged; scene.background = staged ? room : backdrop; scene.fog = staged ? null : fog; scene.backgroundBlurriness = staged ? 0.08 : 0; scene.backgroundRotation.y = staged ? STAGE_ROOM.turn : 0; scene.backgroundIntensity = staged ? STAGE_ROOM.light : 1;
+    if (staged) setMotion('still');
+    home();
+  }
+
   // ── the view ──
   let dirty = true, yawBase = 0, motionStart = performance.now(), lift = 0, glow = 0, swept = 0, last = performance.now(), repaint = false;
   function resize() {
@@ -293,7 +327,18 @@ async function start() {
   }
   /** The model and the camera as the page first shows them: unturned, three quarters from the front, far enough to hold all of it. The movement starts over. */
   function home(view: {azimuth?: number; elevation?: number; zoom?: number} = {}) {
-    yawBase = 0; holder.rotation.y = 0; motionStart = performance.now();
+    yawBase = 0; holder.rotation.y = 0; holder.position.y = 0; lift = 0; motionStart = performance.now();
+    controls.minDistance = reach.min; controls.maxDistance = reach.max; controls.maxPolarAngle = reach.polar; controls.minAzimuthAngle = -Infinity; controls.maxAzimuthAngle = Infinity; camera.fov = STAGE.fov;
+    if (staged && rig) { // the game camera's own place and lens; from there the view can be turned a little and moved in and out
+      scene.updateMatrixWorld(true); const pose = rig.pose(camera.aspect);
+      // The game's camera stands over the table's middle with a wide lens (the film's own table is shallower than a model's). The
+      // view starts on the same line of sight, further back and with a longer lens, so that the whole table is in the picture
+      // and she is not dwarfed by its near edge.
+      camera.fov = STAGE_ROOM.fov; controls.target.copy(pose.target); camera.position.copy(pose.target).addScaledVector(pose.eye.clone().sub(pose.target).normalize(), pose.reach * (1 + STAGE_ROOM.pull) / (view.zoom ?? 1));
+      controls.minDistance = pose.reach * 0.45; controls.maxDistance = pose.reach * 6; controls.minAzimuthAngle = -0.7; controls.maxAzimuthAngle = 0.7; controls.maxPolarAngle = Math.PI / 2 - 0.02;
+      camera.updateProjectionMatrix(); controls.update(); dirty = true; return;
+    }
+    camera.updateProjectionMatrix();
     const height = model?.height ?? 1, vertical = STAGE.fov * Math.PI / 180, narrow = Math.min(vertical, 2 * Math.atan(Math.tan(vertical / 2) * camera.aspect));
     // Half the model's diagonal is 1. Lying, the height of the picture is the limit and the models are wider than tall, so the
     // camera can stand a little closer than that; standing (a phone), the width is the limit and it cannot.
@@ -315,7 +360,8 @@ async function start() {
     sweepLight.intensity = STAGE.sweep * glow; sweepLight.position.set(swept * 4.2, 3.4, 3); key.intensity = STAGE.key * (1 - 0.45 * glow);
     scene.environmentRotation.y = swept * 0.7; // the room's lamps slide across the polish with the light
     if (repaint) { repaint = false; applyLook(); }
-    if (controls.update() || moving() || dirty) { dirty = false; renderer.render(scene, camera); }
+    if (staged) rig!.update(); // the film is drawn through the film camera, which stands where the model does
+    if (controls.update() || moving() || dirty || staged) { dirty = false; renderer.render(scene, camera); }
   }
 
   // ── the panel ──
@@ -332,6 +378,7 @@ async function start() {
     return () => { input.value = String(Math.round(value() * 100)); out.textContent = text(value()); };
   }
   segment('models', props.map(p => ({id: p.id, label: modelName(p.id)})), () => state.model, id => void choose(id));
+  segment('stages', STAGES, () => state.stage, id => void setStage(id));
   segment('looks', LOOKS, () => state.look, id => { state.look = id; applyLook(); });
   segment('motions', MOTIONS, () => state.motion, setMotion);
   segment('lights', LIGHTS, () => state.light, id => { state.light = id; setLight(); });
@@ -348,6 +395,7 @@ async function start() {
     $('gloss-row').classList.toggle('off', state.look === 'original'); $<HTMLInputElement>('gloss').disabled = state.look === 'original';
     $('look-note').textContent = plain ? 'Modellen har ingen egen färgbild att välja guldet ur, så hela föremålet får grundmaterialet.' : look.note; $('look-note').classList.toggle('warn', plain);
     $('motion-note').textContent = MOTIONS.find(m => m.id === state.motion)!.note;
+    $('stage-note').textContent = stageProblem || STAGES.find(s => s.id === state.stage)!.note; $('stage-note').classList.toggle('warn', !!stageProblem);
     $('model-note').textContent = model ? `${decimal(model.triangles)} trianglar · ${sizeText(model.size.x, model.size.y, model.size.z)}${model.textureSize ? ` · bilder ${model.textureSize} px` : ''}` : '';
     const chip = (text: string, tone = '') => el('span', {className: `chip ${tone}`, textContent: text});
     hudBox.replaceChildren(chip('Labb · ändrar inget i spelet', 'lab'), ...(loading ? [chip(`Läser ${modelName(loading)}…`)] : model ? [chip(modelName(model.id)), chip(look.label)] : []), ...(problem ? [chip('Modellen saknas', 'warn')] : []));
@@ -361,7 +409,7 @@ async function start() {
     const next = await models.get(id)!.catch(() => { models.delete(id); return null; });
     if (state.model !== id) return; // another model was chosen while this one was read
     loading = ''; holder.clear(); model = next;
-    if (next) { holder.add(next.fit); applyLook(); home(); }
+    if (next) { holder.add(next.fit); applyLook(); if (state.stage === 'scene' && !fitOf(id)) state.stage = 'alone'; showStage(); }
     else problem = `Modellen ”${modelName(id)}” kunde inte läsas (${fileOf(id)}). Filen är lokal media och finns inte i Git: den görs av originalet i assets/props/source/ med tools/prop-glb.ts.`;
     dirty = true; sync();
   }
@@ -378,6 +426,7 @@ async function start() {
     ready: ready.then(settled),
     async set(patch: Partial<typeof state> & {view?: {azimuth?: number; elevation?: number; zoom?: number}}) {
       if (patch.model !== undefined && patch.model !== state.model) await choose(patch.model);
+      if (patch.stage !== undefined && patch.stage !== state.stage) await setStage(patch.stage);
       if (patch.motion !== undefined && patch.motion !== state.motion) setMotion(patch.motion);
       for (const name of ['look', 'gold', 'gloss', 'light', 'exposure'] as const) if (patch[name] !== undefined) (state as Record<string, unknown>)[name] = patch[name];
       setLight(); applyLook(); if (patch.view) home(patch.view); sync(); await settled();

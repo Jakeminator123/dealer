@@ -1,6 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {LOOKS, MOTIONS, LIGHTS, DEFAULTS, ACCENT, SUBSTANCE, MOTION, accentScore, goldShare, analyse, paintLook, glossFactor, alignWinding, motionPose, propList, modelName, sizeText, type LookId} from '../src/props-lab.ts';
+import {stagePlacement, stageFit} from '../src/props-stage.ts';
+import {solveCamera, type FilmCamera} from '../src/scene3d-geometry.ts';
+import {TABLE as FILM_TABLE} from '../src/scene3d-table.ts';
 
 // The colours the three models' own base colour textures consist of (the means of their largest colour groups).
 const SHOE = {black: [27, 28, 30], brass: [228, 182, 111], brassShade: [130, 105, 68]};
@@ -130,4 +133,18 @@ test('the model list is read from the prop register, and names and sizes are wri
   for (const broken of [null, undefined, {}, {props: 'shoe'}, 'text', 7]) assert.deepEqual(propList(broken), []);
   assert.deepEqual(['shoe', 'tray', 'table', 'chip-rack'].map(modelName), ['Sko', 'Markerbricka', 'Bord', 'chip-rack']);
   assert.equal(sizeText(0.1397, 0.1501, 0.45), '0,14 × 0,15 × 0,45 m');
+});
+
+test('the film of the dealer is laid on a table model: felt on felt, edge on edge, width on width', () => {
+  const camera: FilmCamera = {focalPx: 1270, horizonRow: 215, edgeRow: 831.5, heightM: 0.55, scale: 1.3, source: 'estimate'}, fit = {feltY: 0.99, edgeZ: -0.75, halfWidth: 0.93};
+  const {scale, matrix, eye} = stagePlacement(camera, fit), at = (x: number, y: number, z: number) => [matrix[0] * x + matrix[12], matrix[5] * y + matrix[13], matrix[10] * z + matrix[14]];
+  const edge = -solveCamera(camera).edgeDistance, near = (a: number[], b: number[]) => a.every((v, i) => Math.abs(v - b[i]) < 1e-9);
+  assert.ok(near(at(0, 0, edge), [0, 0.99, -0.75]), 'the middle of the dealer-side edge in the film lies on that of the model');
+  assert.ok(near(at(FILM_TABLE.a * camera.scale, 0, edge), [0.93, 0.99, -0.75]), 'half the width of the film table is half the width of the felt');
+  assert.ok(near(at(0, camera.heightM, 0), eye) && eye[1] > 0.99 && eye[2] > -0.75, 'the camera stands above the felt, on the side of the players');
+  assert.ok(Math.abs(scale - 0.93 / (0.95 * 1.3)) < 1e-12);
+  // Where the felt is comes from the register; an entry that does not say it in full has no stage.
+  assert.deepEqual(stageFit({feltY: 0.99, edgeZ: -0.75, halfWidth: 0.93, extra: 1}), fit);
+  for (const broken of [null, undefined, {}, {feltY: 1, edgeZ: 0}, {feltY: '1', edgeZ: 0, halfWidth: 1}, {feltY: 1, edgeZ: 0, halfWidth: 0}, {feltY: NaN, edgeZ: 0, halfWidth: 1}]) assert.equal(stageFit(broken), null);
+  assert.deepEqual(propList({props: [{id: 'table', stage: fit}, {id: 'shoe', stage: {feltY: 1}}]}), [{id: 'table', stage: fit}, {id: 'shoe'}]);
 });
