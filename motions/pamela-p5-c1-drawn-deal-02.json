@@ -28,13 +28,14 @@
     "evidence": "evidence/generation-method-audit.json"
   },
   "review": {
-    "decision": "PENDING",
+    "decision": "ACCEPTED",
     "basis": "Samma sort som klippet Jakob godkände: kortet glider f23–59 och rullas på kanten utan att lämna filten (kant f78, blått f79–83), plant från f97. Fingrarna drar sig av kortet i f117–119 eftersom ankaret har dem svävande.",
     "limitations": "Ankarbilderna (DRAWN och landningarna) är hopklippta och har rester och för litet kort; klippen ärver felen i första och sista rutorna. Ankare ska i stället tas som hela, verkliga rutor ur modellens egna klipp.",
     "reviewedBy": "separat rutgranskare i full upplösning 2026-11-11",
     "colorDoesNotProvePhysicalSide": true,
-    "userAccepted": false,
-    "productionReady": false
+    "userAccepted": true,
+    "productionReady": false,
+    "userReview": "Jakob 2026-11-11: Det här ser ut som ett bra klipp för att vara en \"ankare två två\", som jag tillfälligt kallar det. Jag ser inga problem med detta, givet att det kommer i rätt sekvens."
   },
   "experiment": "READY-B",
   "postProcessing": "none",

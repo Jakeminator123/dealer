@@ -25,13 +25,14 @@
     "evidence": "evidence/generation-method-audit.json"
   },
   "review": {
-    "decision": "SECONDARY",
+    "decision": "ACCEPTED",
     "basis": "Fingrarna kliver på kortet f1–8 innan lyftet f22–24. Låg väg, nyp från ca f76.",
     "limitations": "Landningsankaret byggs om med kortet i den storlek modellen själv ritar; klippet görs om därefter.",
     "reviewedBy": "separat rutgranskare i full upplösning 2026-11-11",
     "colorDoesNotProvePhysicalSide": true,
-    "userAccepted": false,
-    "productionReady": false
+    "userAccepted": true,
+    "productionReady": false,
+    "userReview": "Jakob 2026-11-11: Ser inget fel på den här?"
   },
   "placementRef": {
     "path": "assets/anchors/pamela-ready-p5-c1-plan-01/placement-plan.json",
