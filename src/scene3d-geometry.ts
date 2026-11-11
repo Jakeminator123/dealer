@@ -85,6 +85,56 @@ export function cardPixel(track: CardTrack | null, frame: number): {x: number; y
   return {x: points.reduce((s, p) => s + p[0], 0) / points.length, y: points.reduce((s, p) => s + p[1], 0) / points.length};
 }
 
+// ---- a card as an object in the scene ---------------------------------------------------------------------
+// The rendered card is geometry in the scene (src/scene3d-deal.ts), placed so that seen from the film camera it covers the
+// film's card exactly: each point of the card is where the film's own surfaces (filmToScene) carry the film pixel that the
+// card's homography gives it. The card thereby lies on the felt like the film's hands, and stays with them when the view
+// moves. A true 3D pose solved from the quad (a card of known size seen by the known camera) was tried and dropped: the
+// tracked corners are a few pixels off a true perspective rectangle, and a 70 px card has only about 8 px of perspective,
+// so the lying P4 card came out 13 cm under the felt and tilted 35 degrees.
+export type Vec3 = [number, number, number];
+/**
+ * The projective map of the unit square onto a quad (row-major, last element 1): (0,0), (1,0), (1,1), (0,1) go to the
+ * quad's corners in order. Card coordinates u to the right and v downward of the visible print, as the track orders its
+ * corners (top left, top right, bottom right, bottom left), so a print laid with it sits on the film's card exactly.
+ */
+export function squareToQuad(q: number[][]): number[] {
+  const [[x0, y0], [x1, y1], [x2, y2], [x3, y3]] = q, sx = x0 - x1 + x2 - x3, sy = y0 - y1 + y2 - y3;
+  if (Math.abs(sx) < 1e-12 && Math.abs(sy) < 1e-12) return [x1 - x0, x3 - x0, x0, y1 - y0, y3 - y0, y0, 0, 0, 1];
+  const dx1 = x1 - x2, dx2 = x3 - x2, dy1 = y1 - y2, dy2 = y3 - y2, den = dx1 * dy2 - dx2 * dy1;
+  if (Math.abs(den) < 1e-12) throw Error('Degenerate card quad.');
+  const g = (sx * dy2 - dx2 * sy) / den, h = (dx1 * sy - sx * dy1) / den;
+  return [x1 - x0 + g * x1, x3 - x0 + h * x3, x0, y1 - y0 + g * y1, y3 - y0 + h * y3, y0, g, h, 1];
+}
+export const onSquare = (H: number[], u: number, v: number): [number, number] => { const w = H[6] * u + H[7] * v + H[8]; return [(H[0] * u + H[1] * v + H[2]) / w, (H[3] * u + H[4] * v + H[5]) / w]; };
+/**
+ * A point of the card in the scene: card coordinates through the homography to a film pixel, laid on the film's surfaces,
+ * `lift` metres over the felt. The vertex shader of src/scene3d-deal.ts does the same per vertex; this copy is for tests.
+ */
+export function cardPoint(c: FilmCamera, H: number[], u: number, v: number, lift = 0): Vec3 {
+  const [px, py] = onSquare(H, u, v), p = filmToScene(c, px, py); if (p[1] !== 0 || !lift) return p;
+  const s = (c.heightM - lift) / c.heightM; return [p[0] * s, lift, p[2] * s]; // along the film camera's ray, so the pixel stays
+}
+/** A scene point seen from the film camera, in film pixels; null behind the camera. */
+export function filmPixel(c: FilmCamera, p: Vec3): {x: number; y: number} | null {
+  const q = solveCamera(c).pitch, cq = Math.cos(q), sq = Math.sin(q), y = p[1] - c.heightM, z = p[2], forward = -y * sq - z * cq;
+  return forward > 1e-9 ? {x: CX + c.focalPx * p[0] / forward, y: CY + c.focalPx * (-y * cq + z * sq) / forward} : null;
+}
+/** An edge-on card as a thin quad along its edge line, `half` pixels to each side, in texture order (clockwise on screen). */
+export function edgeQuad(a: number[], b: number[], half: number): number[][] {
+  const l = Math.hypot(b[0] - a[0], b[1] - a[1]) || 1, nx = -(b[1] - a[1]) / l * half, ny = (b[0] - a[0]) / l * half;
+  const q = [[a[0] - nx, a[1] - ny], [b[0] - nx, b[1] - ny], [b[0] + nx, b[1] + ny], [a[0] + nx, a[1] + ny]];
+  const area = q.reduce((s, p, i) => { const r = q[(i + 1) % 4]; return s + p[0] * r[1] - r[0] * p[1]; }, 0);
+  return area >= 0 ? q : [q[1], q[0], q[3], q[2]];
+}
+/**
+ * How large the rendered card is drawn in the hand, as a share of the overlay's own size there (card-overlay.ts poseAt,
+ * which makes it MARGIN times the film's card so that the film's card cannot show beside it). The scene keys the film's card
+ * away instead, so in the hand the card can be the film's card itself (`held` = 1 / MARGIN): fingers that hold its edge then
+ * hold the rendered card's edge. It grows to the plan's resting size while it settles (`resting` 0 to 1).
+ */
+export const heldScale = (resting: number, held: number): number => held + (1 - held) * Math.max(0, Math.min(1, resting));
+
 // ---- time: what moves by the clock, kept pure so it can be tested ---------------------------------------
 // Angles of a clock's hands in radians, clockwise from twelve. Every hand creeps; none of them ticks.
 export function clockAngles(hours: number, minutes: number, seconds: number): {hour: number; minute: number; second: number} {

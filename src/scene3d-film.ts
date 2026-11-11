@@ -11,8 +11,91 @@ void main(){ vec4 w = modelMatrix * vec4(position, 1.); vWorld = w.xyz; vFilm = 
 // Output is premultiplied and sRGB-encoded, like the video. The screen colour is read from the frame itself
 // because it drifts between and inside clips. A screen pixel that is only darker than that reference comes
 // out as black with partial alpha, which is how hand and shoe shadows on the green table survive the key.
+// ---- rendered cards as objects in the scene (src/scene3d-deal.ts) -----------------------------------------------------
+// The card lies under the film, so the film's own card must go: near where the track puts it, the film's card is keyed to
+// transparent like the screen, and whatever is darker than the card (finger shadows on it) stays as a shadow on the rendered
+// card. Film pixels, y down. `cardBase` is shared with the card's own shader, which takes its brightness from it.
+export const CARD_GLSL = `const vec2 FILM_PX = vec2(${FILM.width}., ${FILM.height}.);
+float edgeIn(vec2 p, vec2 a, vec2 b){ vec2 e = b - a; return (e.x * (p.y - a.y) - e.y * (p.x - a.x)) / max(length(e), 1e-4); }
+// distance inside a quad given clockwise on screen: positive inside, negative outside
+float quadIn(vec2 p, vec2 q[4]){ return min(min(edgeIn(p, q[0], q[1]), edgeIn(p, q[1], q[2])), min(edgeIn(p, q[2], q[3]), edgeIn(p, q[3], q[0]))); }
+vec3 filmAt(sampler2D map, vec2 p){ return textureLod(map, vec2(p.x / FILM_PX.x, 1. - p.y / FILM_PX.y), 0.).rgb; } // explicit level: read in branches
+// The film's card in this frame, lit, as the video shows it: samples in the middle of its tracked core that carry the card's own
+// colour (fingers, their shadows and marks on the card left out), and of those the lighter half, so a card half in a hand's
+// shadow counts as lit and the shadow stays a shadow on it. Its brightness is the film's light on the card.
+vec3 coreAt(sampler2D map, vec2 q[4], int i, int j){ vec2 st = vec2(.2 + .12 * float(i), .2 + .12 * float(j)); return filmAt(map, mix(mix(q[0], q[1], st.x), mix(q[3], q[2], st.x), st.y)); }
+vec3 cardBase(sampler2D map, vec2 q[4], vec3 ref){
+  vec3 sum = vec3(0.), top = vec3(0.), dir = normalize(ref), w = vec3(.2126, .7152, .0722); float n = 0., m = 0., mean = 0.;
+  for (int j = 0; j < 6; j++) for (int i = 0; i < 6; i++) { vec3 s = coreAt(map, q, i, j); if (length(s) > .12 && dot(normalize(s), dir) > .96) { sum += s; n += 1.; mean += dot(s, w); } }
+  mean /= max(n, 1.);
+  for (int j = 0; j < 6; j++) for (int i = 0; i < 6; i++) { vec3 s = coreAt(map, q, i, j); if (length(s) > .12 && dot(normalize(s), dir) > .96 && dot(s, w) >= mean) { top += s; m += 1.; } }
+  return n >= 6. ? (m >= 3. ? top / m : sum / n) : ref;
+}`;
+const CARD_KEY = `uniform float cardOn, cardRim, cardSides, cardTint, cardTrust, cardOverOn, cardHeld, seatOn; uniform vec2 cardZone[4], cardCore[4], cardOver[4], cardDrawn[4], seatZone[4], seatCore[4]; uniform vec3 cardColour; uniform vec4 cardShoe;
+${CARD_GLSL}
+const vec3 BACK_LIT = vec3(.91, .82, .02), FACE_LIT = vec3(0., .475, .89); // the film card's yellow back and blue face, lit
+// Skin, the hand that must stay in front, from a pale fingertip to a knuckle in warm shadow: warm (red over blue, red at least
+// green), blue at least about half of green (skin 0.6 to 0.95; the yellow card has almost none), green not far under red (a red
+// mark is no skin).
+float skinOf(vec3 c){ return smoothstep(.03, .08, c.r - c.b) * smoothstep(-.02, .03, c.r - c.g) * smoothstep(.4, .55, c.b / max(c.g, .01)) * smoothstep(.38, .48, c.g / max(c.r, .01)); }
+// One film card keyed away: zoneQ where it and its blur can be, coreQ its tracked colour, colour that colour lit, rim how far its
+// pale rim reaches, sides which colours count as card (0 the back, 1 the face, 2 both), tint whose tint fingers on it lose (0
+// the back's, 1 the face's, 2 none), trust how far the core is the card itself (the track's confidence); inside the shoe box
+// only the card itself and its rim go (the next card seated there stays).
+vec4 keyCard(vec4 o, vec2 px, vec3 c, vec3 key, vec2 zoneQ[4], vec2 coreQ[4], vec3 colour, float rim, float sides, float tint, float trust, vec4 shoe, vec2 drawnQ[4], float held){
+  float zone = smoothstep(-2., 2., quadIn(px, zoneQ)); if (zone <= 0.) return o;
+  float core = quadIn(px, coreQ), back = step(sides, .5) + step(1.5, sides), face = step(.5, sides);
+  if (all(greaterThan(px, shoe.xy)) && all(lessThan(px, shoe.zw))) zone *= smoothstep(-rim - 3., -rim, core);
+  // how far the colour lies off the plane of the screen and the card's colour, each in any light: 0 for card, felt and mixes of
+  // the two, large for skin, sleeve and blouse
+  float l = length(c) + .04, offBack = abs(dot(c, normalize(cross(key, BACK_LIT)))) / l, offFace = abs(dot(c, normalize(cross(key, FACE_LIT)))) / l;
+  float bg = 1. - smoothstep(.12, .22, min(back > .5 ? offBack : 9., face > .5 ? offFace : 9.));
+  // the card's own colour family however light or dark (its rim, blurred over the felt): bluish for the face; for the back
+  // yellowish, green well over blue without skin's red over green, and its cream rim, light with blue well under green and red
+  // at most a little over green (skin keeps blue at about 0.8 of green, or, warm in strong light (P1's knuckles), at 0.67 with
+  // red 0.2 over green; the tan frame of the shoe window is darker); and a light, neutral smear of the white edge while the card
+  // moves fast (the blouse is warmer)
+  float cream = (1. - smoothstep(.62, .74, c.b / max(c.g, .01))) * (1. - smoothstep(.12, .18, c.r - c.g)) * smoothstep(.55, .65, c.g);
+  float pale = (1. - smoothstep(.04, .08, max(abs(c.r - c.g), abs(c.g - c.b)))) * smoothstep(.6, .7, c.g) * (1. - skinOf(c)); // a pale nail is warm
+  bg = max(bg, max(max(back * max(smoothstep(.15, .3, c.g - c.b) * (1. - smoothstep(.06, .14, c.r - c.g)), cream), face * smoothstep(.06, .16, c.b - c.r)), pale));
+  // the rim in a narrow band along the core goes with the card. The face's rim is pale blue (blue at least red, which skin never
+  // is); the back's is cream (blue under 0.7 of green), or blended with the dark shoe or sleeve into light, nearly neutral
+  // pixels that keep a trace of the card's yellow (a pale fingertip is as neutral, but has blue near green)
+  float band = smoothstep(-rim - 2., -rim, core) * (1. - smoothstep(1.5, 3., core));
+  float rimBack = max((1. - smoothstep(.7, .8, c.b / max(c.g, .01))) * (1. - smoothstep(.16, .24, c.r - c.g)) * smoothstep(.55, .65, c.g), (1. - smoothstep(.08, .12, c.r - c.g)) * smoothstep(.35, .45, c.g) * smoothstep(.06, .1, c.g - c.b));
+  bg = max(bg, band * max(back * rimBack, face * smoothstep(-.02, .06, c.b - c.r)));
+  // well inside a core the track is sure of, whatever is not skin is the card: marks the film drew on its card, its shading. A
+  // dark or purplish skin-like pixel there is a finger's edge only beside bright skin (a red mark's purple rim is not).
+  float inside = trust * smoothstep(1., 3., core), skin = skinOf(c), near = 0.;
+  if (inside > 0.) { for (int k = 0; k < 8; k++) { float a = float(k) * .785398; vec3 s = filmAt(map, px + 6. * vec2(cos(a), sin(a))); near = max(near, skinOf(s) * smoothstep(.4, .55, dot(s, vec3(.2126, .7152, .0722)))); }
+    skin *= max((1. - smoothstep(-.02, .03, c.b - c.g)) * smoothstep(.22, .35, dot(c, vec3(.2126, .7152, .0722))), near); }
+  bg = max(bg, inside * (1. - skin));
+  // what stays in front (fingers on the card) loses the card's tint along their edges: no blue over green on the face, skin's
+  // blue back on the back. Only on and right beside the card: the shoe's tan frame keeps its colour.
+  vec4 f = o; if (tint < .5) f.b = max(f.b, .8 * f.g); else if (tint < 1.5) f.b = min(f.b, f.g);
+  float onCard = smoothstep(-6., 0., core);
+  // brightness against the screen and the card's colour in this frame, as a mix of the two: what is darker is shadow
+  vec3 base = cardBase(map, coreQ, colour);
+  float kk = dot(key, key), kb = dot(key, base), bb = dot(base, base), kx = dot(key, c), bx = dot(base, c);
+  float lit = (bb * kx - kb * bx + kk * bx - kb * kx) / max(kk * bb - kb * kb, 1e-6), dark = (1. - clamp((lit - lo) / (hi - lo), 0., 1.)) * shadow;
+  // on the card a shadow is a finger's, so it lies next to (bright) skin; dark without skin near is a mark on the film's card
+  dark *= mix(1., near, inside);
+  vec4 keyed = mix(mix(o, f, zone * onCard), vec4(0., 0., 0., dark), bg * zone);
+  // While the card is held, its pale edge beyond the drawn card (its white edge, thick when seen steeply) is the card's own: it
+  // stays as the film draws it, without the film card's tint, instead of opening onto the felt.
+  float beyond = quadIn(px, drawnQ), edge = held * (1. - smoothstep(-1., 0., beyond)) * smoothstep(-7., -4., beyond) * max(max(face * smoothstep(.06, .16, c.b - c.r), back * cream), pale) * smoothstep(.45, .6, dot(c, vec3(.2126, .7152, .0722)));
+  return mix(keyed, vec4(vec3(dot(o.rgb, vec3(.2126, .7152, .0722))), o.a), edge * zone);
+}
+// The card seated in the shoe window (its back), then the dealt card; a card drawn in front of the hand keeps no film inside it.
+vec4 keyCards(vec4 o, vec2 uv, vec3 c, vec3 key){
+  vec2 px = vec2(uv.x, 1. - uv.y) * FILM_PX;
+  if (cardOverOn > .5 && quadIn(px, cardOver) > 0.) return vec4(0.);
+  if (seatOn > .5) o = keyCard(o, px, c, key, seatZone, seatCore, BACK_LIT, 4., 0., 2., 1., vec4(-1.), seatCore, 0.);
+  return keyCard(o, px, c, key, cardZone, cardCore, cardColour, cardRim, cardSides, cardTint, cardTrust, cardShoe, cardDrawn, cardHeld);
+}`;
 const FRAGMENT = `varying vec4 vFilm; varying vec3 vWorld; uniform sampler2D map; uniform vec2 refUv, texel; uniform float lo, hi, shadow, erode; uniform vec3 grade;
 ${FAN_GLSL}
+${CARD_KEY}
 float screenAt(vec2 uv, vec3 key, float dk){ vec3 c = texture2D(map, uv).rgb; return clamp(((c.g - max(c.r, c.b)) / dk - lo) / (hi - lo), 0., 1.); }
 void main(){
   if (vFilm.w <= 0.) discard;
@@ -31,23 +114,48 @@ void main(){
   float isShadow = (1. - smoothstep(.03, .12, tone)) * (1. - smoothstep(.7, .95, a));
   a *= mix(1., shadow, isShadow);
   if (a < .004) discard;
-  gl_FragColor = vec4(pm * grade * fanShade(vWorld), a);
+  vec4 o = vec4(pm * grade * fanShade(vWorld), a);
+  if (cardOn > .5) { o = keyCards(o, uv, c, key); if (o.a < .004) discard; }
+  gl_FragColor = o;
 }`;
 
 export type KeySettings = {lo: number; hi: number; shadow: number};
+// Where the film's own card is to be keyed away in this frame (film pixels, quads clockwise on screen): `zone` where it and
+// its blur can be, `core` its tracked colour, `colour` that colour lit (yellow back, blue face), `rim` how far its pale rim
+// reaches outside the core, `shoe` the shoe window box, `over` a rendered card drawn in front of the hand. `seated`: the card
+// seated in the shoe window (always its back), keyed away too when a rendered back lies under it. No dealt card: `core` null.
+// `sides`: which colours count as card (0 the back's, 1 the face's, 2 both); `tint`: whose tint fingers on it lose (0, 1, or 2
+// none); `trust`: how far the core is the card itself (the track's confidence in this frame); `drawn`: the rendered card's outline
+// and `held` how far it is still in the hand (its pale edge beyond the outline then stays, untinted).
+export type CardKey = {zone: number[][]; core: number[][] | null; colour: number[]; sides: number; tint: number; trust: number; rim: number; shoe: number[] | null; over: number[][] | null;
+  drawn?: number[][] | null; held?: number; seated?: {zone: number[][]; core: number[][]} | null};
 export function createFilmLayers(filmVP: T.Matrix4, light: Record<string, {value: unknown}>) {
+  // One frame, grade and card key for both layers; the rendered cards (scene3d-deal.ts) read the same frame and grade.
+  const map = {value: null as T.Texture | null}, grade = {value: new T.Vector3(1, 1, 1)}, quad = () => [0, 1, 2, 3].map(() => new T.Vector2());
+  const card = {cardOn: {value: 0}, cardRim: {value: 4}, cardSides: {value: 0}, cardTint: {value: 2}, cardTrust: {value: 0}, cardOverOn: {value: 0}, cardHeld: {value: 0}, cardDrawn: {value: quad()}, cardZone: {value: quad()}, cardCore: {value: quad()}, cardOver: {value: quad()}, cardColour: {value: new T.Vector3(1, 1, 0)}, cardShoe: {value: new T.Vector4(-1, -1, -1, -1)},
+    seatOn: {value: 0}, seatZone: {value: quad()}, seatCore: {value: quad()}};
   const material = (refUv: T.Vector2) => new T.ShaderMaterial({vertexShader: VERTEX, fragmentShader: FRAGMENT, transparent: true, depthWrite: false, side: T.DoubleSide,
     blending: T.CustomBlending, blendSrc: T.OneFactor, blendDst: T.OneMinusSrcAlphaFactor, blendSrcAlpha: T.OneFactor, blendDstAlpha: T.OneMinusSrcAlphaFactor,
-    uniforms: {...light, map: {value: null}, filmVP: {value: filmVP}, refUv: {value: refUv}, lo: {value: 0.12}, hi: {value: 0.9}, shadow: {value: 1}, erode: {value: 0.6}, grade: {value: new T.Vector3(1, 1, 1)}, texel: {value: new T.Vector2(1.4 / FILM.width, 1.4 / FILM.height)}}});
+    uniforms: {...light, ...card, map, filmVP: {value: filmVP}, refUv: {value: refUv}, lo: {value: 0.12}, hi: {value: 0.9}, shadow: {value: 1}, erode: {value: 0.6}, grade, texel: {value: new T.Vector2(1.4 / FILM.width, 1.4 / FILM.height)}}});
   // The screen reference is read in a corner that stays empty: top left for the backdrop, bottom left for the table.
   const bodyMat = material(new T.Vector2(0.02, 0.97)), tableMat = material(new T.Vector2(0.02, 0.03));
   const body = new T.Mesh(new T.PlaneGeometry(10, 3), bodyMat), table = new T.Mesh(new T.PlaneGeometry(10, 2).rotateX(-Math.PI / 2), tableMat);
   body.renderOrder = 5; table.renderOrder = 6;
   return {
-    body, table,
-    setTexture(texture: T.Texture) { bodyMat.uniforms.map.value = tableMat.uniforms.map.value = texture; },
+    body, table, shared: {map, grade},
+    setTexture(texture: T.Texture) { map.value = texture; },
     // Calibration of the film against the room: brightness, and warmth as red up and blue down by the same share. 1 and 0 leave the film as it is.
-    setGrade(brightness: number, warmth: number) { for (const m of [bodyMat, tableMat]) (m.uniforms.grade.value as T.Vector3).set(brightness * (1 + warmth), brightness, brightness * (1 - warmth)); },
+    setGrade(brightness: number, warmth: number) { grade.value.set(brightness * (1 + warmth), brightness, brightness * (1 - warmth)); },
+    // The film's own card keyed away (a rendered card lies under the film there), or null: the film as it is.
+    setCards(key: CardKey | null) {
+      card.cardOn.value = key ? 1 : 0; if (!key) return;
+      const put = (to: T.Vector2[], q: number[][]) => q.forEach((p, i) => to[i].set(p[0], p[1])), none = [[-9, -9], [-8, -9], [-8, -8], [-9, -8]]; // a quad off the frame
+      put(card.cardZone.value, key.core ? key.zone : none); put(card.cardCore.value, key.core ?? none); card.cardColour.value.set(key.colour[0], key.colour[1], key.colour[2]); card.cardRim.value = key.rim; card.cardSides.value = key.sides; card.cardTint.value = key.tint; card.cardTrust.value = key.trust;
+      card.cardHeld.value = key.drawn ? key.held ?? 0 : 0; if (key.drawn) put(card.cardDrawn.value, key.drawn);
+      card.seatOn.value = key.seated ? 1 : 0; if (key.seated) { put(card.seatZone.value, key.seated.zone); put(card.seatCore.value, key.seated.core); }
+      if (key.shoe) card.cardShoe.value.set(key.shoe[0], key.shoe[1], key.shoe[2], key.shoe[3]); else card.cardShoe.value.set(-1, -1, -1, -1);
+      card.cardOverOn.value = key.over ? 1 : 0; if (key.over) put(card.cardOver.value, key.over);
+    },
     setKey(key: KeySettings) { bodyMat.uniforms.lo.value = key.lo; bodyMat.uniforms.hi.value = key.hi - 0.08; tableMat.uniforms.lo.value = key.lo; tableMat.uniforms.hi.value = key.hi; tableMat.uniforms.shadow.value = key.shadow; },
     // Folded: the plane stands on the table edge and the table layer carries hands, cards and shadows.
     // Unfolded: one plane carries the whole frame and nothing follows the felt when the camera moves.

@@ -120,6 +120,42 @@ test('bet rings: one per player seat, in seat order, just past the first card', 
   assert.deepEqual(betSpots(null, DEALER_LENS_ESTIMATE), []);
 });
 
+test('a rendered card is laid where the film camera sees the film card, on the film\'s own surfaces', async () => {
+  const {squareToQuad, onSquare, cardPoint, filmPixel, filmToScene} = await import('../src/scene3d-geometry.ts'), c = cameraFromContract(contract), {edgeDistance} = solveCamera(c);
+  // the P4 card lying still (pamela-p4-c1-plan-deal-02, restQuad): texture order, clockwise on screen
+  const quad = [[817.5, 1069.5], [887.2, 1069.5], [891, 1133.5], [817.5, 1133.5]], H = squareToQuad(quad);
+  [[0, 0], [1, 0], [1, 1], [0, 1]].forEach(([u, v], i) => { const [x, y] = onSquare(H, u, v); near(x, quad[i][0], 1e-9, `hörn ${i} x`); near(y, quad[i][1], 1e-9, `hörn ${i} y`); });
+  // a projective map keeps straight lines: the middle of the card goes to where the quad's diagonals cross
+  const [mx, my] = onSquare(H, 0.5, 0.5), cross = (a: number[], b: number[], p: number[]) => (b[0] - a[0]) * (p[1] - a[1]) - (b[1] - a[1]) * (p[0] - a[0]);
+  near(cross(quad[0], quad[2], [mx, my]), 0, 1e-6, 'mitten på diagonalen 0-2'); near(cross(quad[1], quad[3], [mx, my]), 0, 1e-6, 'mitten på diagonalen 1-3');
+  // every point of the card projects back to its film pixel, lifted off the felt or not; on the felt it lies at the lift
+  for (const [u, v] of [[0.5, 0.5], [0.1, 0.9], [1, 0]]) for (const lift of [0, 0.0004]) {
+    const p = cardPoint(c, H, u, v, lift), back = filmPixel(c, p)!, [x, y] = onSquare(H, u, v);
+    near(back.x, x, 1e-6, 'filmpixel x'); near(back.y, y, 1e-6, 'filmpixel y'); near(p[1], lift, 1e-12, 'höjd över filten');
+  }
+  // a card held up in front of the dealer, above the table edge row, lies on the dealer plane like her hand
+  const high = squareToQuad([[1100, 640], [1150, 650], [1140, 760], [1090, 750]]), up = cardPoint(c, high, 0.5, 0.2, 0.0004);
+  near(up[2], -edgeDistance, 1e-9, 'på dealerplanet'); const seen = filmPixel(c, up)!, [hx, hy] = onSquare(high, 0.5, 0.2); near(seen.x, hx, 1e-6, 'x'); near(seen.y, hy, 1e-6, 'y');
+  // filmPixel is the inverse of the film's surfaces wherever they are
+  for (const [px, py] of [[100, 900], [881.5, 831.5], [1600, 300]]) { const back = filmPixel(c, filmToScene(c, px, py))!; near(back.x, px, 1e-6, 'x'); near(back.y, py, 1e-6, 'y'); }
+  assert.throws(() => squareToQuad([[0, 0], [10, 0], [20, 0], [30, 0]]), /Degenerate/);
+});
+
+test('an edge-on card is a thin quad along its line, clockwise on screen', async () => {
+  const {edgeQuad} = await import('../src/scene3d-geometry.ts');
+  for (const [a, b] of [[[950.9, 852.6], [842, 909.2]], [[842, 909.2], [950.9, 852.6]], [[0, 0], [0, 40]]]) {
+    const q = edgeQuad(a, b, 1.5), area = q.reduce((s, p, i) => { const r = q[(i + 1) % 4]; return s + p[0] * r[1] - r[0] * p[1]; }, 0) / 2, length = Math.hypot(b[0] - a[0], b[1] - a[1]);
+    assert.ok(area > 0, 'medurs på skärmen'); near(area, length * 3, 1e-6, 'linjens längd gånger bredden');
+    const mid = [(q[0][0] + q[1][0] + q[2][0] + q[3][0]) / 4, (q[0][1] + q[1][1] + q[2][1] + q[3][1]) / 4]; near(mid[0], (a[0] + b[0]) / 2, 1e-9, 'mitt x'); near(mid[1], (a[1] + b[1]) / 2, 1e-9, 'mitt y');
+  }
+});
+
+test('in the hand the card is the film card; it grows to the resting size while it settles', async () => {
+  const {heldScale} = await import('../src/scene3d-geometry.ts'), held = 1 / 1.2;
+  near(heldScale(0, held), held, 1e-12, 'i handen'); near(heldScale(1, held), 1, 1e-12, 'vilar'); near(heldScale(0.5, held), (held + 1) / 2, 1e-12, 'halvvägs');
+  assert.equal(heldScale(-1, held), held); assert.equal(heldScale(2, held), 1); assert.equal(heldScale(0.3, 1), 1, 'utan egen storlek i handen följer den överlägget');
+});
+
 test('dealer metres and scene positions map both ways', () => {
   for (const c of [cameraFromContract(contract), DEALER_LENS_ESTIMATE]) {
     const {edgeDistance} = solveCamera(c), [x, y, z] = spotToScene(c, 0.3, 0.25, 0.01);

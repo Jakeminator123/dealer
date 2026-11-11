@@ -39,7 +39,11 @@ async function followTrack() {
   const path = scene.players.path; if (path === trackedPath) return; trackedPath = path;
   const id = /^assets\/motions\/([a-z0-9-]+)\/source\.mp4$/.exec(path)?.[1];
   scene.setTrack(id ? tracks.get(id) ?? null : null); if (!id || tracks.has(id)) return; // never the previous clip's track on this clip's frames
-  tracks.set(id, await fetch(`assets/tracking/${id}/card-track.json`).then(r => r.ok ? r.json() : null).catch(() => null));
+  const json = (url: string) => fetch(url).then(r => r.ok ? r.json() : null).catch(() => null), track = await json(`assets/tracking/${id}/card-track.json`);
+  // the clip bank's frames where the card is drawn in front of the hand (card-overlay.ts overridesOf reads them off the track)
+  const overrides = Object.values((bank.media ?? {}) as Record<string, {video?: string | null; overrides?: string | null}>).find(m => m.video === path && m.overrides)?.overrides;
+  if (track && overrides) track.cardInFront = (await json(overrides))?.cardInFront ?? [];
+  tracks.set(id, track);
   if (scene.players.path === path) { scene.setTrack(tracks.get(id) ?? null); hud(); }
 }
 
@@ -47,7 +51,7 @@ async function followTrack() {
 const decimal = (v: number, digits = 2) => v.toFixed(digits).replace('.', ',');
 function hud() {
   const s = scene.status(), chip = (text: string, tone = '') => el('span', {className: `chip ${tone}`, textContent: text}), id = /motions\/([^/]+)\//.exec(scene.players.path)?.[1] ?? 'läser film…';
-  const added = [state.focus !== 'off' && 'fokus', state.fan && 'fläktskugga', state.tray && 'markerbräde', state.cards && 'renderade kort', state.clock && 'klocka', state.dust > 0 && 'luft', state.flicker && 'ljusskifte', (state.filmBright !== 1 || state.filmWarm !== 0) && 'ljuskalibrering'].filter(Boolean);
+  const added = [state.focus !== 'off' && 'fokus', state.fan && 'fläktskugga', state.tray && 'markerbräde', state.cards && (state.cardMethod === 'scene' ? 'kort i scenen' : 'kort i filmrutan'), state.clock && 'klocka', state.dust > 0 && 'luft', state.flicker && 'ljusskifte', (state.filmBright !== 1 || state.filmWarm !== 0) && 'ljuskalibrering'].filter(Boolean);
   hudBox.replaceChildren(chip(id),
     s.view === 'moved' ? chip('Kameran är flyttad: 2,5D-närmevärde, inte filmens sanning', 'warn') : s.view === 'turned' ? chip('Bara vridning/zoom: filmen är geometriskt exakt', 'ok') : chip('Hemvy: filmen pixel för pixel', 'ok'),
     s.camera.source === 'contract' ? chip(`Kamera: planens (kontraktet) · skala k = ${decimal(s.camera.scale)} skattad`) : chip('Kamera: egen skattning, inte uppmätt', 'warn'),
@@ -113,9 +117,9 @@ function build() {
     slider('Skuggor', 'shadow', 0, 1.6, 0.05), slider('Nyckel låg', 'keyLo', 0, 0.5, 0.01), slider('Nyckel hög', 'keyHi', 0.5, 1.2, 0.01));
   const logo = el('input', {type: 'text', value: state.logo, maxLength: 28}); logo.addEventListener('input', () => scene.set({logo: logo.value})); setters.logo = ((v: string) => { if (document.activeElement !== logo) logo.value = v; }) as never;
   const pick = (key: 'cardRank' | 'cardSuit', options: [string, string][]) => { const s = el('select'); s.append(...options.map(([value, text]) => el('option', {value, textContent: text}))); s.addEventListener('change', () => scene.set({[key]: s.value})); setters[key] = ((v: string) => { s.value = v; }) as never; return s; };
-  group('Kort', check('Renderade kort i stället för filmens färgyta', 'cards'),
+  group('Kort', check('Renderade kort i stället för filmens färgyta', 'cards'), choice('cardMethod', [['scene', 'I scenen (3D)'], ['film', 'I filmrutan (2D)']]),
     slider('Kortets storlek', 'cardScale', 1, 2.5, 0.05, '×', live), el('div', {className: 'seg'}, pick('cardRank', ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'].map(r => [r, r])), pick('cardSuit', [['spades', 'Spader'], ['hearts', 'Hjärter'], ['diamonds', 'Ruter'], ['clubs', 'Klöver']])),
-    note('Labbets kortritare lägger det renderade kortet på filmrutan där spårningen säger att kortet är, med handen kvar framför. Scenen använder sedan den rutan som film, så kortet får samma skärpa och fläktskugga som resten. Valören här är bara för provet: i spelet bestämmer Scout den.'));
+    note('<b>I scenen</b>: kortet är ett föremål på bordet under filmen. Filmens eget kort (och kortet i skons fönster) nycklas bort, så filmens fingrar ligger över det renderade kortet och deras skuggor faller på det. Ljuset tas från filmens kort i varje ruta, glansen från rummet; i rörelse blir kortet oskarpt som handen. <b>I filmrutan</b>: den tidigare vägen, där labbets kortritare ritar kortet in i filmrutan. Var kortet är och vilken sida som syns kommer i båda fallen ur spårningen och placeringsplanen. Valören här är bara för provet: i spelet bestämmer Scout den.'));
   group('Bord', check('Markerbräde försänkt vid dealern', 'tray'), el('label', {className: 'row two'}, el('span', {textContent: 'Logotext'}), logo), choice('felt', [['green', 'Grön'], ['blue', 'Blå'], ['vin', 'Vinröd'], ['svart', 'Svart']]),
     note('Filt, linjer, kortrutor och logga är en enda platt bild sedd rakt uppifrån. Kortrutorna kommer ur placeringsplanen (endast läst). Bordets form och tryckets layout är provisoriska.'));
   let timer = 0; const scale = slider('Skala k', 'scale', 1, 2.6, 0.05, '×', () => { clearTimeout(timer); timer = window.setTimeout(() => scene.rebuild(), 120); }), shown = setters.scale as unknown as (v: number) => void;

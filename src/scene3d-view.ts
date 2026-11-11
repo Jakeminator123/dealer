@@ -18,7 +18,7 @@ export type SceneState = {
   focus: 'off' | 'dealer' | 'card' | 'follow' | 'manual'; focusDistance: number; tolerance: number;
   fan: boolean; fanStrength: number; fanPeriod: number;
   tray: boolean;
-  cards: boolean; cardRank: string; cardSuit: string; cardScale: number;
+  cards: boolean; cardMethod: 'scene' | 'film'; cardRank: string; cardSuit: string; cardScale: number;
   clock: boolean; dust: number; flicker: boolean; flickerEvery: number; flickerStrength: number;
   filmBright: number; filmWarm: number;
 };
@@ -31,7 +31,7 @@ export const DEFAULTS: SceneState = {
   focus: 'off', focusDistance: 1.5, tolerance: 0.4,
   fan: false, fanStrength: 0.16, fanPeriod: 5,
   tray: false,
-  cards: false, cardRank: 'A', cardSuit: 'spades', cardScale: 1.2,
+  cards: false, cardMethod: 'scene', cardRank: 'A', cardSuit: 'spades', cardScale: 1.2,
   clock: false, dust: 0, flicker: false, flickerEvery: 20, flickerStrength: 0.6,
   filmBright: 1, filmWarm: 0,
 };
@@ -80,13 +80,24 @@ export function createScene(canvas: HTMLCanvasElement, host: HTMLElement, data: 
   const players = createPlayers(texture => film.setTexture(texture), data.onChange);
   let camera: FilmCamera = DEALER_LENS_ESTIMATE, pitch = 0, edgeZ = -1, guides: T.Group | null = null, track: CardTrack | null = null;
   let focusNow = NaN, focusWhat = '', lastSeconds = NaN, moved = false;
-  // Rendered cards: the module is fetched the first time they are switched on, and switched off again if it cannot be read.
-  type CardLayer = {texture: T.Texture; update(video: HTMLVideoElement, frame: number, track: unknown, choice: {rank: string; suit: string; scale: number}, extra?: object | null): boolean};
+  // Rendered cards, two ways: 'scene' makes each card an object in the scene under the film (scene3d-deal.ts); 'film' draws
+  // the card into the film frame (scene3d-cards.ts), the earlier way, kept to compare. A way's module is fetched the first time
+  // it is used and cards are switched off again if it cannot be read. update() returning true means "show my texture as the film".
+  type CardLayer = {texture: T.Texture; update(video: HTMLVideoElement, frame: number, track: unknown, choice: {rank: string; suit: string; scale: number}, extra?: object | null): boolean; off?(): void};
   // Things another page adds: props lying on the table (built with the table, drawn under the film) and a call after every drawn frame.
   type Prop = {group: T.Object3D; build(edgeZ: number, scale: number): void};
   const props: Prop[] = [], frameCalls = new Set<() => void>(); let built = false, ownNotch: {x0: number; x1: number; s1: number} | null = null;
-  let cardLayer: CardLayer | null = null, cardLoad: Promise<void> | null = null, cardError = '';
-  function loadCards() { cardLoad ??= import('./scene3d-cards.ts').then(m => { cardLayer = m.createCardLayer(data.contract); cardError = ''; }, error => { cardError = String((error as Error)?.message ?? error); state.cards = false; cardLoad = null; }).then(() => data.onChange()); }
+  let cardLayer: CardLayer | null = null, cardError = ''; const cardLayers: Partial<Record<SceneState['cardMethod'], CardLayer>> = {}, cardLoads = new Set<string>();
+  function loadCards() {
+    const method = state.cardMethod; if (cardLayers[method] || cardLoads.has(method)) return; cardLoads.add(method);
+    (method === 'scene' ? import('./scene3d-deal.ts').then(m => { const layer = m.createDealLayer({contract: data.contract, plan: data.plan, film, light: light.uniforms, camera: () => camera, edgeZ: () => edgeZ,
+      renderer, view: () => view, pixels: () => Math.min(canvas.width / W, canvas.height / H) * state.zoom}); fg.add(layer.group); return layer; })
+      : import('./scene3d-cards.ts').then(m => m.createCardLayer(data.contract)))
+      .then(layer => { cardLayers[method] = layer; cardError = ''; }, error => { cardError = String((error as Error)?.message ?? error); if (state.cardMethod === method) state.cards = false; })
+      .then(() => { cardLoads.delete(method); useCards(); data.onChange(); });
+  }
+  // The layer of the chosen way while cards are on; the one left gives the film back.
+  function useCards() { const next = state.cards ? cardLayers[state.cardMethod] ?? null : null; if (next !== cardLayer) { cardLayer?.off?.(); cardLayer = next; } if (state.cards && !next) loadCards(); }
 
   // ---- post chain ---------------------------------------------------------------------------
   const fsCam = new T.OrthographicCamera(-1, 1, 1, -1, 0, 1), fsQuad = new T.Mesh(new T.PlaneGeometry(2, 2)), fsScene = new T.Scene(); fsQuad.frustumCulled = false; fsScene.add(fsQuad);
@@ -135,7 +146,7 @@ export function createScene(canvas: HTMLCanvasElement, host: HTMLElement, data: 
   }
   const drawFelt = () => table.draw({spots: cardSpots(data.plan, camera), logo: state.logo, felt: state.felt, scale: camera.scale});
   function apply() {
-    rooms.show(state.room); film.place(edgeZ, state.fold, state.focus !== 'off'); film.setKey({lo: state.keyLo, hi: state.keyHi, shadow: state.shadow}); film.setGrade(state.filmBright, state.filmWarm);
+    useCards(); rooms.show(state.room); film.place(edgeZ, state.fold, state.focus !== 'off'); film.setKey({lo: state.keyLo, hi: state.keyHi, shadow: state.shadow}); film.setGrade(state.filmBright, state.filmWarm);
     if (guides) guides.visible = state.guides; resize(); data.onChange();
   }
   function resize() {
@@ -168,7 +179,7 @@ export function createScene(canvas: HTMLCanvasElement, host: HTMLElement, data: 
   function render(seconds = performance.now() / 1000) {
     targets(); updateView(seconds);
     const shown = players.current, part = players.part; if (part && part.track !== undefined) track = part.track; // a part that names its track brings it along
-    if (shown) film.setTexture(state.cards && cardLayer?.update(shown.video, players.frame(), track, {rank: state.cardRank, suit: state.cardSuit, scale: state.cardScale}, part?.cards) ? cardLayer.texture : shown.texture);
+    if (shown) film.setTexture(state.cards && cardLayer?.update(shown.video, players.frame(), track, {rank: state.cardRank, suit: state.cardSuit, scale: state.cardScale}, part?.cards) ? cardLayer.texture : shown.texture); else cardLayer?.off?.();
     const room = rooms.rooms[state.room], focusOn = state.focus !== 'off', u = blurMat.uniforms, scale = canvas.width / W;
     rooms.followCamera(state.room, view.position, state.panoramaTurn); light.update(seconds, state.fan, state.fanStrength, state.fanPeriod);
     const dim = rooms.ambient(state.room, seconds, new Date(), {clock: state.clock, air: state.dust, lamp: state.flicker ? flickerLevel(seconds, state.flickerEvery, state.flickerStrength) : 1, cloud: state.flicker ? cloudLevel(seconds, state.flickerEvery, state.flickerStrength * 0.5) : 1}, canvas.height / H);

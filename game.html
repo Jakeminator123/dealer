@@ -5,8 +5,10 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Dealer · Spel</title>
 <link rel="stylesheet" href="game.css">
-<!-- three.js as the 3D scene uses it: the lab server decides where the module is served. -->
-<script type="importmap">{"imports":{"three":"/vendor/three.module.js","three/addons/":"/vendor/"}}</script>
+<!-- three.js as the 3D scene uses it: the lab server decides where the module is served. The scope is the scene's own
+     (scene3d.html): the rendered cards load the card material study as an instance whose three.js is the scene's, and the
+     chips' study gets the same, so the page holds one copy of three.js. -->
+<script type="importmap">{"imports":{"three":"/vendor/three.module.js","three/addons/":"/vendor/"},"scopes":{"/materials/source/src/card-material-study.js?scene3d":{"/materials/source/references/card-materials/vendor/three.module.js":"/vendor/three.module.js"},"/materials/source/src/chip-material-study.js":{"/materials/source/references/card-materials/vendor/three.module.js":"/vendor/three.module.js"}}}</script>
 </head>
 <body>
 <div id="app">

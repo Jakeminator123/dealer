@@ -152,8 +152,9 @@ function shadeTexture(sec: Section) {
 }
 // What the rail reflects: a dark warm room painted from the salon's layout as seen from the table. The lamp over the table, light slots on
 // the back wall and the pillars, downlights in a dark ceiling, a dark carpet. Equirectangular, as three.js reads it: column =
-// atan2(z, x) / 2pi + 1/2 (the dealer's side, -z, at a quarter of the width), row 0 straight up.
-function roomReflection() {
+// atan2(z, x) / 2pi + 1/2 (the dealer's side, -z, at a quarter of the width), row 0 straight up. The rendered cards'
+// sheen reflects it too (scene3d-deal.ts), so rail and cards shine with the same room.
+export function roomReflection() {
   const w = 1024, h = 512, c = document.createElement('canvas'); c.width = w; c.height = h; const g = c.getContext('2d')!;
   const sky = g.createLinearGradient(0, 0, 0, h); for (const [at, color] of [[0, '#241910'], [0.3, '#1d140d'], [0.45, '#33231a'], [0.5, '#2a1c12'], [0.56, '#140d09'], [1, '#060403']] as [number, string][]) sky.addColorStop(at, color);
   g.fillStyle = sky; g.fillRect(0, 0, w, h); g.globalCompositeOperation = 'lighter';
