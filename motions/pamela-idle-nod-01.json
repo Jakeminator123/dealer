@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 1,
+  "id": "pamela-idle-nod-01",
+  "dealer": "pamela",
+  "source": {
+    "path": "assets/motions/pamela-idle-nod-01/source.mp4",
+    "sha256": "2de4387f25b666390e0c76b3cb1e01a7ff9c12fc9be6ff76f5151db71c8fa297",
+    "bytes": 8417429,
+    "width": 1764,
+    "height": 1174,
+    "fps": 30,
+    "frames": 90,
+    "provider": "Runway MCP server (app account credits)",
+    "model": "wan3"
+  },
+  "motion": {
+    "kind": "IDLE",
+    "from": "IDLE",
+    "to": "IDLE",
+    "pass": false,
+    "basis": "SOURCE_FRAME_REVIEW",
+    "evidence": "evidence/generation-method-audit.json",
+    "idle": {
+      "weight": 1,
+      "calm": false,
+      "label": "bugar djupt med slutna ögon (inte en nick)",
+      "onRequest": false
+    }
+  },
+  "review": {
+    "decision": "PENDING",
+    "basis": "Oberoende rutgranskning 2026-11-11 (varje ruta i halv storlek, ansikten, händer och skarvar i full upplösning; inte sedd i fart). Slutar i grundposen och är stilla de sista åtta rutorna; förskjutning av händer, huvud och sko mot grundrutan högst 0,33 px; inga dubblettrutor; kortet i skon oförändrat i varje ruta. Inte som beställt, men naturlig som en artig, ödmjuk bugning (möjlig variant). Ögonen sluts f19–22, djup och långsam bugning f22–55 (ansiktet sjunker 69 px) med stängt leende, tillbaka till vila. Händerna rör sig högst 0,8 px.",
+    "limitations": "Ingen snabb hälsningsnick. Rörelsen stannar upp f32–33 och f49. Gemensamt för omgången: ett större steg var femte ruta; grönt G 224–231 i de visade rutorna (hoppet från 237 ligger i de tre första).",
+    "colorDoesNotProvePhysicalSide": true,
+    "userAccepted": false,
+    "productionReady": false
+  },
+  "postProcessing": "none",
+  "generationRef": "assets/motions/pamela-idle-nod-01/generation.json",
+  "jobRef": "data/clip-jobs.json",
+  "scoutIntegrated": false,
+  "published": false
+}

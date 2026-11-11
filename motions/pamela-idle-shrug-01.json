@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 1,
+  "id": "pamela-idle-shrug-01",
+  "dealer": "pamela",
+  "source": {
+    "path": "assets/motions/pamela-idle-shrug-01/source.mp4",
+    "sha256": "705e1576ee6eab18e9f660b940761cd4f65135704fafc4fbdc00674a105481d8",
+    "bytes": 8577829,
+    "width": 1764,
+    "height": 1174,
+    "fps": 30,
+    "frames": 90,
+    "provider": "Runway MCP server (app account credits)",
+    "model": "wan3"
+  },
+  "motion": {
+    "kind": "IDLE",
+    "from": "IDLE",
+    "to": "IDLE",
+    "pass": false,
+    "basis": "SOURCE_FRAME_REVIEW",
+    "evidence": "evidence/generation-method-audit.json",
+    "idle": {
+      "weight": 2,
+      "calm": false,
+      "label": "axelryckning med öppna handflator",
+      "onRequest": false
+    }
+  },
+  "review": {
+    "decision": "PENDING",
+    "basis": "Oberoende rutgranskning 2026-11-11 (varje ruta i halv storlek, ansikten, händer och skarvar i full upplösning; inte sedd i fart). Slutar i grundposen och är stilla de sista åtta rutorna; förskjutning av händer, huvud och sko mot grundrutan högst 0,33 px; inga dubblettrutor; kortet i skon oförändrat i varje ruta. Inte som beställt, men naturlig som en \"ja, så är det\"-axelryckning med öppna handflator (möjlig variant). Axlarna stiger 14–28 px f24–46, munnen stängd och putande, huvudet lutas. Båda händerna kommer exakt tillbaka (högst 0,1 px). Fem fingrar per hand.",
+    "limitations": "Båda händerna lyfter från bordet och vänds med handflatorna inåt och uppåt f19–53 (65–74 px); beställningen sade att de skulle ligga still. Skuggor under de lyfta händerna f24–47 (upp till 116 nivåer mörkare, fortfarande grönt). Gemensamt för omgången: ett större steg var femte ruta; grönt G 224–231 i de visade rutorna (hoppet från 237 ligger i de tre första).",
+    "colorDoesNotProvePhysicalSide": true,
+    "userAccepted": false,
+    "productionReady": false
+  },
+  "postProcessing": "none",
+  "generationRef": "assets/motions/pamela-idle-shrug-01/generation.json",
+  "jobRef": "data/clip-jobs.json",
+  "scoutIntegrated": false,
+  "published": false
+}

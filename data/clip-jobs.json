@@ -3215,6 +3215,78 @@
         119
       ],
       "purpose": "Idle insert Jakob asked for 2026-11-11: she coughs. Ordered through Runway's MCP server from the keystone as first and last image."
+    },
+    {
+      "id": "pamela-idle-scratch-02",
+      "kind": "IDLE",
+      "from": "IDLE",
+      "to": "IDLE",
+      "clip": "pamela-idle-scratch-02",
+      "frames": [
+        0,
+        119
+      ],
+      "purpose": "Idle insert ordered 2026-11-11 after Jakob asked for more of them: she scratches her head. Ordered through Runway's MCP server from the keystone as first and last image."
+    },
+    {
+      "id": "pamela-idle-smile-02",
+      "kind": "IDLE",
+      "from": "IDLE",
+      "to": "IDLE",
+      "clip": "pamela-idle-smile-02",
+      "frames": [
+        0,
+        89
+      ],
+      "purpose": "Idle insert ordered 2026-11-11 after Jakob asked for more of them: she smiles broadly. Ordered through Runway's MCP server from the keystone as first and last image."
+    },
+    {
+      "id": "pamela-idle-disappointed-01",
+      "kind": "IDLE",
+      "from": "IDLE",
+      "to": "IDLE",
+      "clip": "pamela-idle-disappointed-01",
+      "frames": [
+        0,
+        119
+      ],
+      "purpose": "Idle insert ordered 2026-11-11 after Jakob asked for more of them: she looks disappointed. Ordered through Runway's MCP server from the keystone as first and last image."
+    },
+    {
+      "id": "pamela-idle-nod-01",
+      "kind": "IDLE",
+      "from": "IDLE",
+      "to": "IDLE",
+      "clip": "pamela-idle-nod-01",
+      "frames": [
+        0,
+        89
+      ],
+      "purpose": "Idle insert ordered 2026-11-11 after Jakob asked for more of them: she nods a greeting. Ordered through Runway's MCP server from the keystone as first and last image."
+    },
+    {
+      "id": "pamela-idle-headdown-01",
+      "kind": "IDLE",
+      "from": "IDLE",
+      "to": "IDLE",
+      "clip": "pamela-idle-headdown-01",
+      "frames": [
+        0,
+        149
+      ],
+      "purpose": "Idle insert ordered 2026-11-11 after Jakob asked for more of them: she rests her forehead on the table in mock despair. Ordered through Runway's MCP server from the keystone as first and last image."
+    },
+    {
+      "id": "pamela-idle-shrug-01",
+      "kind": "IDLE",
+      "from": "IDLE",
+      "to": "IDLE",
+      "clip": "pamela-idle-shrug-01",
+      "frames": [
+        0,
+        89
+      ],
+      "purpose": "Idle insert ordered 2026-11-11 after Jakob asked for more of them: she shrugs. Ordered through Runway's MCP server from the keystone as first and last image."
     }
   ],
   "edits": [

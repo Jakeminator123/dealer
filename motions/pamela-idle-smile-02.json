@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 1,
+  "id": "pamela-idle-smile-02",
+  "dealer": "pamela",
+  "source": {
+    "path": "assets/motions/pamela-idle-smile-02/source.mp4",
+    "sha256": "65db6578a4c9131d5db1f86eda717e161ca94ab7246b61216cbee0a2afbebe59",
+    "bytes": 8400873,
+    "width": 1764,
+    "height": 1174,
+    "fps": 30,
+    "frames": 90,
+    "provider": "Runway MCP server (app account credits)",
+    "model": "wan3"
+  },
+  "motion": {
+    "kind": "IDLE",
+    "from": "IDLE",
+    "to": "IDLE",
+    "pass": false,
+    "basis": "SOURCE_FRAME_REVIEW",
+    "evidence": "evidence/generation-method-audit.json",
+    "idle": {
+      "weight": 3,
+      "calm": false,
+      "label": "brett leende med lutat huvud",
+      "onRequest": false
+    }
+  },
+  "review": {
+    "decision": "PENDING",
+    "basis": "Oberoende rutgranskning 2026-11-11 (varje ruta i halv storlek, ansikten, händer och skarvar i full upplösning; inte sedd i fart). Slutar i grundposen och är stilla de sista åtta rutorna; förskjutning av händer, huvud och sko mot grundrutan högst 0,33 px; inga dubblettrutor; kortet i skon oförändrat i varje ruta. Användbar med anmärkning. Brett, varmt leende f22–66, huvudet lutas cirka 33 px åt hennes höger f32–52, blinkning f49–52, lugn från f72. Händerna rör sig högst 0,3 px.",
+    "limitations": "Leendet visar övre tänderna; beställningen sade stängda läppar. Huvudet sätter sig fortfarande upp till 0,8 px under f82–89. Gemensamt för omgången: ett större steg var femte ruta; grönt G 224–231 i de visade rutorna (hoppet från 237 ligger i de tre första).",
+    "colorDoesNotProvePhysicalSide": true,
+    "userAccepted": false,
+    "productionReady": false
+  },
+  "postProcessing": "none",
+  "generationRef": "assets/motions/pamela-idle-smile-02/generation.json",
+  "jobRef": "data/clip-jobs.json",
+  "scoutIntegrated": false,
+  "published": false
+}

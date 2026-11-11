@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 1,
+  "id": "pamela-idle-disappointed-01",
+  "dealer": "pamela",
+  "source": {
+    "path": "assets/motions/pamela-idle-disappointed-01/source.mp4",
+    "sha256": "a89ef9d3130e4eba49e9a9416b4a844812c747b3b0947fe6ece22889cc1ade2f",
+    "bytes": 11003345,
+    "width": 1764,
+    "height": 1174,
+    "fps": 30,
+    "frames": 120,
+    "provider": "Runway MCP server (app account credits)",
+    "model": "wan3"
+  },
+  "motion": {
+    "kind": "IDLE",
+    "from": "IDLE",
+    "to": "IDLE",
+    "pass": false,
+    "basis": "SOURCE_FRAME_REVIEW",
+    "evidence": "evidence/generation-method-audit.json",
+    "idle": {
+      "weight": 2,
+      "calm": false,
+      "label": "ser ner, lite generad (inte besviken)",
+      "onRequest": false
+    }
+  },
+  "review": {
+    "decision": "PENDING",
+    "basis": "Oberoende rutgranskning 2026-11-11 (varje ruta i halv storlek, ansikten, händer och skarvar i full upplösning; inte sedd i fart). Slutar i grundposen och är stilla de sista åtta rutorna; förskjutning av händer, huvud och sko mot grundrutan högst 0,33 px; inga dubblettrutor; kortet i skon oförändrat i varje ruta. Inte som beställt, men naturlig som en ångerfull, generad blick nedåt (möjlig variant). Mjukt leende med läpparna isär f19–44, hon ser ner f45–66 (huvudet cirka 34 px ner och 22 px åt sidan) med ett snett leende, tillbaka till vila. Händerna rör sig högst 0,9 px, inga skuggor.",
+    "limitations": "Ingen besvikelse: läpparna pressas inte ihop, ingen huvudskakning, ingen suck; axeln till vänster i bild stiger upp till 33 px i stället för att sjunka. Tänder syns f19–44. Gemensamt för omgången: ett större steg var femte ruta; grönt G 224–231 i de visade rutorna (hoppet från 237 ligger i de tre första).",
+    "colorDoesNotProvePhysicalSide": true,
+    "userAccepted": false,
+    "productionReady": false
+  },
+  "postProcessing": "none",
+  "generationRef": "assets/motions/pamela-idle-disappointed-01/generation.json",
+  "jobRef": "data/clip-jobs.json",
+  "scoutIntegrated": false,
+  "published": false
+}

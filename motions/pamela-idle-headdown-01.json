@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 1,
+  "id": "pamela-idle-headdown-01",
+  "dealer": "pamela",
+  "source": {
+    "path": "assets/motions/pamela-idle-headdown-01/source.mp4",
+    "sha256": "dcdcbc93ee88868597ffdcace0a4bbe6d923f023bfa9702e608035d4349278b4",
+    "bytes": 14473666,
+    "width": 1764,
+    "height": 1174,
+    "fps": 30,
+    "frames": 150,
+    "provider": "Runway MCP server (app account credits)",
+    "model": "wan3"
+  },
+  "motion": {
+    "kind": "IDLE",
+    "from": "IDLE",
+    "to": "IDLE",
+    "pass": false,
+    "basis": "SOURCE_FRAME_REVIEW",
+    "evidence": "evidence/generation-method-audit.json",
+    "idle": {
+      "weight": 0,
+      "calm": false,
+      "label": "huvudet ner mot bordet (skämt)",
+      "onRequest": true
+    }
+  },
+  "review": {
+    "decision": "PENDING",
+    "basis": "Oberoende rutgranskning 2026-11-11 (varje ruta i halv storlek, ansikten, händer och skarvar i full upplösning; inte sedd i fart). Slutar i grundposen och är stilla de sista åtta rutorna; förskjutning av händer, huvud och sko mot grundrutan högst 0,33 px; inga dubblettrutor; kortet i skon oförändrat i varje ruta. Användbar med anmärkning, på gränsen. Läpparna öppnas som i en suck f28–40, hon böjer sig från midjan med hjässan mot kameran f60–83, reser sig f84–104 och ler f104–108. Fingertopparna ligger kvar; skon ändras inte.",
+    "limitations": "Omgångens sämsta slutskarv: ruta 146 mot grundrutan 6 716 bildpunkter över 24 nivåer, varav 2 339 på hårets kontur; huvudet cirka 1,1 px fel. Rörelsen stannar upp f50, f56, f85–86 och f92 (0 px mellan steg på 23–49 px). Ansiktet är kraftigt smetat f93–103. Pannan ser ut att stanna strax ovanför bordet (blusen syns under håret i f75). Händernas ytterkanter sprids upp till 17 px. Vänster armbåge trycker mot skons främre hörn f45–100. Huvudets skugga faller mellan händerna f56–90 (upp till 126 nivåer mörkare, fortfarande grönt). Vikt 0 och bara på begäran. Gemensamt för omgången: ett större steg var femte ruta; grönt G 224–231 i de visade rutorna (hoppet från 237 ligger i de tre första).",
+    "colorDoesNotProvePhysicalSide": true,
+    "userAccepted": false,
+    "productionReady": false
+  },
+  "postProcessing": "none",
+  "generationRef": "assets/motions/pamela-idle-headdown-01/generation.json",
+  "jobRef": "data/clip-jobs.json",
+  "scoutIntegrated": false,
+  "published": false
+}
