@@ -1,4 +1,4 @@
-// One first/last Runway clip per job in data/clip-jobs.json.
+// One Runway clip per job in data/clip-jobs.json: first and last image, or a first image alone.
 //   node tools/clip-job.ts check <id>                           freeze inputs, no network
 //   node --env-file=.env.local tools/clip-job.ts submit <id>    exactly one POST, never retried
 //   node --env-file=.env.local tools/clip-job.ts collect <id>   read status / download
@@ -45,20 +45,20 @@ async function materialize(ref: ImageRef, out: string) {
 if (!await exists(receiptPath)) {
   if (await exists(dir)) throw Error('Partial preparation exists; inspect before proceeding.');
   await mkdir(dir, {recursive: true});
-  const first = await materialize(job.first, `${dir}/first.png`), last = await materialize(job.last, `${dir}/last.png`);
+  const first = await materialize(job.first, `${dir}/first.png`), last = job.last ? await materialize(job.last, `${dir}/last.png`) : null;
   await writeFile(`${dir}/prompt.txt`, job.promptText + '\n', {flag: 'wx'});
   await save({schemaVersion: 1, id: job.id, kind: job.kind, target: job.target, from: job.from, to: job.to, purpose: job.purpose,
     createdAt: new Date().toISOString(), status: 'PREPARED', provider: 'Runway developer API', endpoint: '/v1/image_to_video', apiVersion: VERSION,
     model: job.model, duration: job.duration, ratio: job.ratio, audio: job.audio, estimatedCredits: estimateCredits(job),
-    promptText: job.promptText, promptSha256: sha(job.promptText), first: {...first, position: 'first'}, last: {...last, position: 'last'},
+    promptText: job.promptText, promptSha256: sha(job.promptText), first: {...first, position: 'first'}, last: last ? {...last, position: 'last'} : null,
     job, intermediateImageSubmitted: false, referenceVideoSubmitted: false, seedSubmitted: false, postProcessing: 'none', reviewDecision: 'PENDING'});
 }
 const r = JSON.parse(await readFile(receiptPath, 'utf8'));
 if (JSON.stringify(r.job) !== JSON.stringify(job)) throw Error('The job definition changed after preparation; use a new job id instead of editing a frozen one.');
-for (const f of [r.first, r.last]) if (sha(await readFile(f.path)) !== f.sha256) throw Error(`Prepared input changed: ${f.path}`);
+for (const f of [r.first, r.last]) if (f && sha(await readFile(f.path)) !== f.sha256) throw Error(`Prepared input changed: ${f.path}`);
 
 if (command === 'check') {
-  console.log(JSON.stringify({id: r.id, status: r.status, model: r.model, duration: r.duration, ratio: r.ratio, estimatedCredits: r.estimatedCredits, first: r.first.path, last: r.last.path, promptCharacters: r.promptText.length, taskId: r.taskId ?? null}));
+  console.log(JSON.stringify({id: r.id, status: r.status, model: r.model, duration: r.duration, ratio: r.ratio, estimatedCredits: r.estimatedCredits, first: r.first.path, last: r.last?.path ?? null, promptCharacters: r.promptText.length, taskId: r.taskId ?? null}));
   process.exit(0);
 }
 const key = process.env.RUNWAY_API_KEY;
@@ -75,7 +75,7 @@ if (command === 'submit') {
   const balance = (await org.json()).creditBalance;
   if (balance < r.estimatedCredits) throw Error('Insufficient developer credits.');
   const uri = async (file: string) => `data:image/png;base64,${(await readFile(file)).toString('base64')}`;
-  const body = requestBody(job as ClipJob, await uri(r.first.path), await uri(r.last.path));
+  const body = requestBody(job as ClipJob, await uri(r.first.path), r.last ? await uri(r.last.path) : null);
   await writeFile(`${dir}/request.lock`, new Date().toISOString(), {flag: 'wx'});
   r.status = 'SUBMITTING'; r.requestedAt = new Date().toISOString(); r.creditBalanceBefore = balance; await save(r);
   const response = await fetch(`${API}/v1/image_to_video`, {method: 'POST', headers, body: JSON.stringify(body), signal: AbortSignal.timeout(120000)});

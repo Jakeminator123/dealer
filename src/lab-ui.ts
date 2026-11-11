@@ -410,7 +410,7 @@ function paintTree(){
 }
 function paintNode(){
  const G=clipGraph!,g=kbGraph!,atHub=kbNode==='IDLE'||kbNode==='READY',seat=kbNode.split('.')[0],second=`${seat}.C2`,paired=!atHub&&!G.OPTIONAL_TARGETS.includes(kbNode)&&!!g.edge[`READY>${second}`]?.shares,card=paired?`${seat}.C1`:kbNode;
- const ids=atHub?['IDLE>READY','READY>IDLE','IDLE>IDLE',...(kbNode==='IDLE'?[G.REVEAL_EDGE]:[])]:[`READY>${card}`,`${card}>READY`,`${card}>IDLE`,...(kbNode===G.HOLE_CARD?[G.REVEAL_EDGE]:[])];
+ const ids=atHub?['IDLE>READY','READY>IDLE','IDLE>IDLE',...(kbNode==='IDLE'?[G.REVEAL_EDGE,G.ARRIVE_EDGE,G.LEAVE_EDGE]:[])]:[`READY>${card}`,`${card}>READY`,`${card}>IDLE`,...(kbNode===G.HOLE_CARD?[G.REVEAL_EDGE]:[])];
  $('kb-node-title').textContent=paired?`${seat} · ${seat==='D'?'Dealer':`Spelare ${seat[1]}`} · en film för båda korten`:`${kbNode} · ${G.describeNode(kbNode)}`;
  // The seat's second card: no film of its own, how far the rendered card is moved, and any film that was made for it anyway.
  const reach=paired?kbReach(second):null,own=paired?g.edges.filter(e=>e.target===second&&e.kind!=='REVEAL'&&e.takes.some(G.playable)):[];

@@ -33,6 +33,14 @@ test('cost follows resolution and seconds', () => {
   assert.equal(estimateCredits({...base(), ratio: 'auto_480p', duration: 3}), 15);
 });
 
+test('a job may give a first image alone: the request then carries one image, and nothing else changes', () => {
+  const {last: _last, ...firstOnly} = base(), job = validateJob({...firstOnly, kind: 'LEAVE', target: null, from: 'IDLE', to: 'AWAY', duration: 5});
+  assert.equal(job.last, undefined); assert.equal(estimateCredits(job), 100);
+  assert.deepEqual(requestBody(job, 'data:first').promptImage, [{uri: 'data:first', position: 'first'}]);
+  assert.deepEqual(requestBody(job, 'data:first', null).promptImage, [{uri: 'data:first', position: 'first'}]);
+  assert.equal(validateJob({...base(), kind: 'ARRIVE', target: null, from: 'AWAY', to: 'IDLE'}).kind, 'ARRIVE');
+});
+
 test('invalid jobs are refused before anything is prepared', () => {
   assert.throws(() => validateJob({...base(), audio: true}), /audio/);
   assert.throws(() => validateJob({...base(), duration: 1}), /duration/);
@@ -40,6 +48,7 @@ test('invalid jobs are refused before anything is prepared', () => {
   assert.throws(() => validateJob({...base(), id: 'Bad Id'}), /kebab/);
   assert.throws(() => validateJob({...base(), first: {file: {path: 'a.png', sha256: 'short'}}}), /file reference/);
   assert.throws(() => validateJob({...base(), last: {}}), /exactly one/);
+  assert.throws(() => validateJob({...base(), last: undefined, first: undefined}), /exactly one/);
   assert.throws(() => validateJobFile({schemaVersion: 1, budget: {maximumCredits: 100}, jobs: [base(), base()]}), /Duplicate/);
 });
 

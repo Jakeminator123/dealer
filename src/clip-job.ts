@@ -1,4 +1,4 @@
-// Pure contract for one Runway first/last clip job. No network or file access here.
+// Pure contract for one Runway clip job: a first and a last image, or a first image alone. No network or file access here.
 // One clip is one action: a deal ends at the real release frame, a return starts from it.
 
 export type FrameRef = {video: string; videoSha256: string; index: number};
@@ -6,9 +6,10 @@ export type FileRef = {path: string; sha256: string};
 export type ImageRef = {frame: FrameRef; note?: string} | {file: FileRef; note?: string};
 export type Ratio = 'auto_1080p' | 'auto_720p' | 'auto_480p';
 export type ClipJob = {
-  id: string; kind: 'DEAL' | 'RETURN' | 'ENTRY' | 'IDLE' | 'REVEAL'; target: string | null; from: string; to: string;
+  id: string; kind: 'DEAL' | 'RETURN' | 'ENTRY' | 'IDLE' | 'REVEAL' | 'ARRIVE' | 'LEAVE'; target: string | null; from: string; to: string;
   model: 'wan3'; duration: number; ratio: Ratio; audio: false;
-  promptText: string; first: ImageRef; last: ImageRef; purpose: string;
+  // last is left out when the film is ordered from its first image alone and the model is to make the end itself.
+  promptText: string; first: ImageRef; last?: ImageRef; purpose: string;
   // 2 = the action is generated in slow motion at half speed and is meant to be played back twice as fast.
   playbackSpeed?: 1 | 2;
 };
@@ -40,7 +41,7 @@ function image(value: unknown, label: string): ImageRef {
 export function validateJob(value: unknown): ClipJob {
   const j = value as ClipJob;
   if (!j || typeof j.id !== 'string' || !ID.test(j.id)) throw Error('Job id must be lowercase kebab-case.');
-  if (!['DEAL', 'RETURN', 'ENTRY', 'IDLE', 'REVEAL'].includes(j.kind)) throw Error(`${j.id}: unknown kind.`);
+  if (!['DEAL', 'RETURN', 'ENTRY', 'IDLE', 'REVEAL', 'ARRIVE', 'LEAVE'].includes(j.kind)) throw Error(`${j.id}: unknown kind.`);
   if (j.model !== 'wan3') throw Error(`${j.id}: only wan3 first/last jobs are supported by this tool.`);
   if (!Number.isInteger(j.duration) || j.duration < 2 || j.duration > 30) throw Error(`${j.id}: wan3 duration must be 2–30 whole seconds.`);
   if (!(j.ratio in CREDITS_PER_SECOND)) throw Error(`${j.id}: keyframes need an auto_ ratio.`);
@@ -49,7 +50,7 @@ export function validateJob(value: unknown): ClipJob {
   if (typeof j.purpose !== 'string' || !j.purpose) throw Error(`${j.id}: state the purpose.`);
   if (typeof j.from !== 'string' || typeof j.to !== 'string') throw Error(`${j.id}: name the from/to nodes.`);
   if (j.playbackSpeed !== undefined && j.playbackSpeed !== 1 && j.playbackSpeed !== 2) throw Error(`${j.id}: playbackSpeed must be 1 or 2.`);
-  image(j.first, `${j.id} first`); image(j.last, `${j.id} last`);
+  image(j.first, `${j.id} first`); if (j.last !== undefined) image(j.last, `${j.id} last`);
   return j;
 }
 
@@ -65,9 +66,9 @@ export function validateJobFile(value: unknown): JobFile {
 export const estimateCredits = (job: ClipJob): number => job.duration * CREDITS_PER_SECOND[job.ratio];
 
 // Exactly what is sent to POST /v1/image_to_video. Nothing else leaves the machine.
-export function requestBody(job: ClipJob, firstUri: string, lastUri: string) {
+export function requestBody(job: ClipJob, firstUri: string, lastUri?: string | null) {
   return {model: job.model, duration: job.duration, ratio: job.ratio, audio: job.audio, promptText: job.promptText,
-    promptImage: [{uri: firstUri, position: 'first'}, {uri: lastUri, position: 'last'}]};
+    promptImage: [{uri: firstUri, position: 'first'}, ...(lastUri ? [{uri: lastUri, position: 'last'}] : [])]};
 }
 
 // A job counts against the ceiling from the moment a request may have been sent.

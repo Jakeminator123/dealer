@@ -1,12 +1,12 @@
 // Pure clip-bank graph for the lab. Nodes are anchor poses: IDLE, READY and one landing
 // anchor per card (P4.C1, D.C2 ...). Every clip is one action, so every clip is one edge "A>B".
-// One more pose has a name: REVEAL(D.C2) is rest with the dealer's hole card turned open.
+// Two more poses have a name: REVEAL(D.C2) is rest with the dealer's hole card turned open, and AWAY is the picture without the dealer.
 // No DOM, network or file access here. Scout owns rules, order and card values; this only plans motion.
 
-export type EdgeKind = 'DEAL' | 'RETURN' | 'ENTRY' | 'IDLE' | 'REVEAL';
+export type EdgeKind = 'DEAL' | 'RETURN' | 'ENTRY' | 'IDLE' | 'REVEAL' | 'ARRIVE' | 'LEAVE';
 export type Side = 'BACK' | 'FRONT';
 export type ImageRef = {frame?: {video: string; videoSha256: string; index: number}; file?: {path: string; sha256: string}; note?: string};
-export type BankJob = {id: string; kind: string; target: string | null; from: string; to: string; model: string; duration: number; ratio: string; audio: boolean; promptText: string; first: ImageRef; last: ImageRef; purpose: string; playbackSpeed?: number};
+export type BankJob = {id: string; kind: string; target: string | null; from: string; to: string; model: string; duration: number; ratio: string; audio: boolean; promptText: string; first: ImageRef; last?: ImageRef; purpose: string; playbackSpeed?: number}; // without last: a film ordered from its first image alone
 export type MotionRecord = {
   source?: {path?: string; sha256?: string; bytes?: number; fps?: number; frames?: number; width?: number; height?: number};
   // idle: how a take of IDLE>IDLE takes part in the idle. weight: its share among the takes that may be picked. calm: breathing and
@@ -33,9 +33,13 @@ export const OPTIONAL_TARGETS = ['D.C3'];
 export const HOLE_CARD = 'D.C2';
 export const REVEAL_NODE = `REVEAL(${HOLE_CARD})`;
 export const REVEAL_EDGE = `IDLE>${REVEAL_NODE}`;
+// AWAY is the picture without the dealer: table, shoe and background. She comes in and sits down (AWAY>IDLE) and she stands
+// up and leaves (IDLE>AWAY); rest is the fixed end of both.
+export const AWAY = 'AWAY';
+export const ARRIVE_EDGE = `${AWAY}>IDLE`, LEAVE_EDGE = `IDLE>${AWAY}`;
 
 // ── Notation ────────────────────────────────────────────────────────────────
-// base is the edge of the 52-edge model; hub names the READY variant when the edge was written with one.
+// base is the edge of the 54-edge model; hub names the READY variant when the edge was written with one.
 export type EdgeRef = {id: string; from: string; to: string; kind: EdgeKind; target: string | null; base: string; hub: string | null};
 // READY may have named variants (READY-B: another hand pose at the shoe). They are the same hub in the
 // graph: "READY-B>P4.C1" is a take of the edge READY>P4.C1 that starts from that other pose.
@@ -44,7 +48,7 @@ export const hubOf = (node: string): 'IDLE' | 'READY' | null => node === 'IDLE' 
 export const isHub = (node: string) => hubOf(node) !== null;
 export const formatEdge = (from: string, to: string) => `${from}>${to}`;
 
-// Accepts p4.c1, P4C1, LAND(P4.C1), RELEASE(P4.C1), READY-B, REVEAL(D.C2) and the older aliases VILA/REDO.
+// Accepts p4.c1, P4C1, LAND(P4.C1), RELEASE(P4.C1), READY-B, REVEAL(D.C2), AWAY and the older aliases VILA/REDO.
 export function parseNode(text: unknown): string | null {
   if (typeof text !== 'string') return null;
   let s = text.trim().toUpperCase().replace(/\s+/g, '');
@@ -54,6 +58,7 @@ export function parseNode(text: unknown): string | null {
   if (wrapped) s = wrapped[1];
   if (s === 'IDLE' || s === 'VILA') return 'IDLE';
   if (s === 'READY' || s === 'REDO') return 'READY';
+  if (s === AWAY || s === 'BORTA') return AWAY;
   if (HUB_VARIANT.test(s)) return s;
   const m = /^(P[1-7]|D)\.?C([1-3])$/.exec(s);
   if (!m || (m[2] === '3' && m[1] !== 'D')) return null;
@@ -63,6 +68,7 @@ export function parseNode(text: unknown): string | null {
 export function edgeKind(from: string, to: string): EdgeKind | null {
   const a = hubOf(from), b = hubOf(to);
   if (to === REVEAL_NODE) return a === 'IDLE' ? 'REVEAL' : null; // the hole card is turned from rest only
+  if (from === AWAY || to === AWAY) return from === AWAY ? (to === 'IDLE' ? 'ARRIVE' : null) : a === 'IDLE' ? 'LEAVE' : null; // she is away from rest and comes back to rest
   if (a === 'IDLE') return b === 'READY' ? 'ENTRY' : b === 'IDLE' ? 'IDLE' : null;
   if (a === 'READY') return b === 'IDLE' ? 'RETURN' : b === 'READY' ? null : 'DEAL'; // READY to READY, also between variants, is not a model edge
   return b ? 'RETURN' : null; // a card is only left towards a hub
@@ -76,6 +82,7 @@ export function parseEdge(text: unknown): EdgeRef | null {
   if (!from || !to) return null;
   const kind = edgeKind(from, to);
   if (kind === 'REVEAL') return {id: formatEdge(from, to), from, to, kind, target: HOLE_CARD, base: REVEAL_EDGE, hub: null};
+  if (kind === 'ARRIVE' || kind === 'LEAVE') return {id: formatEdge(from, to), from, to, kind, target: null, base: kind === 'ARRIVE' ? ARRIVE_EDGE : LEAVE_EDGE, hub: null};
   return kind ? {id: formatEdge(from, to), from, to, kind, target: !isHub(from) ? from : !isHub(to) ? to : null,
     base: formatEdge(hubOf(from) ?? from, hubOf(to) ?? to), hub: [from, to].find(n => HUB_VARIANT.test(n)) ?? null} : null;
 }
@@ -101,6 +108,7 @@ export const formatSequence = (steps: {from: string; to: string; take?: string}[
 export function describeNode(node: string): string {
   if (node === 'IDLE') return 'Vila · båda händerna på bordet';
   if (node === REVEAL_NODE) return 'Vila · hålkortet vänt upp';
+  if (node === AWAY) return 'Borta · bordet utan dealer';
   if (node === 'READY') return 'Redo · handen vid skon';
   if (hubOf(node) === 'READY') return `Redo, variant ${node.slice(6)} · annan handställning vid skon`;
   const [seat, card] = node.split('.');
@@ -108,6 +116,8 @@ export function describeNode(node: string): string {
 }
 export function describeEdge(edge: {from: string; to: string; kind: EdgeKind | null; target: string | null}): string {
   if (edge.kind === 'REVEAL') return 'Hålkortet vänds upp: från vila och tillbaka till vila';
+  if (edge.kind === 'ARRIVE') return 'Hon kommer in och sätter sig: från tomt bord till vila';
+  if (edge.kind === 'LEAVE') return 'Hon reser sig och går: från vila till tomt bord';
   if (edge.kind === 'ENTRY') return 'Ingång: från vila till skon';
   if (edge.kind === 'IDLE') return 'Vila: stilla klipp som börjar och slutar i vila';
   if (edge.kind === 'DEAL') return `Giv från skon till ${describeNode(edge.target!).toLowerCase()}`;
@@ -143,7 +153,7 @@ function idleOf(id: string, motion: MotionRecord | null): Idle {
   return {calm, weight: Number.isFinite(weight) && weight >= 0 ? weight : calm ? IDLE_WEIGHT.calm : IDLE_WEIGHT.gesture, onRequest: said?.onRequest === true,
     label: typeof said?.label === 'string' && said.label.trim() ? said.label.trim() : IDLE_WORDS.find(([word]) => word.test(id))?.[1] ?? ''};
 }
-// experiment: a job whose from/to is outside the model. It keeps its takes and detail view but is never one of the 52.
+// experiment: a job whose from/to is outside the model. It keeps its takes and detail view but is never one of the 54.
 // rendering: takes of this edge that are ordered and not back yet, whether or not the edge already has a main take.
 // shares: in seat mode, the edge whose film this edge plays (READY>P4.C2 plays READY>P4.C1). Its own takes stay listed; they are only played when a round names one.
 export type Edge = Omit<EdgeRef, 'kind'> & {kind: EdgeKind | null; optional: boolean; experiment: boolean; shares: string | null; takes: Take[]; main: Take | null; variants: Take[]; status: Status; hasVariant: boolean; hubVariants: string[]; inProgress: number; rendering: number};
@@ -166,10 +176,10 @@ export const STAGE_LABEL: Record<Stage, string> = {WRITTEN: 'jobb skrivet', PREP
 export const DECISION_LABEL: Record<string, string> = {PENDING: 'väntar på granskning', ACCEPTED: 'godkänd', REJECTED: 'underkänd', SECONDARY: 'sekundärt alternativ'};
 const CREDITS_PER_SECOND: Record<string, number> = {auto_1080p: 20, auto_720p: 10, auto_480p: 5};
 
-// The 52 edges of the bank (entry, exit, the idle clip and the turn of the hole card, then 16 cards × deal,
-// return to READY, return to IDLE) followed by the three optional D.C3 edges.
+// The 54 edges of the bank (entry, exit, the idle clip, the turn of the hole card, her coming to the table and her leaving
+// it, then 16 cards × deal, return to READY, return to IDLE) followed by the three optional D.C3 edges.
 export function bankEdges(): EdgeRef[] {
-  return ['IDLE>READY', 'READY>IDLE', 'IDLE>IDLE', REVEAL_EDGE, ...[...TARGETS, ...OPTIONAL_TARGETS].flatMap(t => [`READY>${t}`, `${t}>READY`, `${t}>IDLE`])].map(id => parseEdge(id)!);
+  return ['IDLE>READY', 'READY>IDLE', 'IDLE>IDLE', REVEAL_EDGE, ARRIVE_EDGE, LEAVE_EDGE, ...[...TARGETS, ...OPTIONAL_TARGETS].flatMap(t => [`READY>${t}`, `${t}>READY`, `${t}>IDLE`])].map(id => parseEdge(id)!);
 }
 
 export const clipOfVideo = (video: unknown): string | null => typeof video === 'string' ? /^assets\/motions\/([a-z0-9-]+)\/source\.mp4$/.exec(video)?.[1] ?? null : null;
@@ -207,7 +217,7 @@ function best(takes: Take[], ...keys: ((t: Take) => number)[]): Take | null {
   return takes.filter(playable).sort((a, b) => { for (const key of keys) { const d = key(b) - key(a); if (d) return d; } return b.order - a.order; })[0] ?? null;
 }
 
-const KINDS = ['DEAL', 'RETURN', 'ENTRY', 'IDLE', 'REVEAL'];
+const KINDS = ['DEAL', 'RETURN', 'ENTRY', 'IDLE', 'REVEAL', 'ARRIVE', 'LEAVE'];
 export function buildGraph(data: BankData, options: {mode?: FilmMode; holeCardDown?: boolean} = {}): Graph {
   const blank = (ref: Omit<EdgeRef, 'kind'> & {kind: EdgeKind | null}, experiment: boolean): Edge => ({...ref, optional: !!ref.target && OPTIONAL_TARGETS.includes(ref.target), experiment, shares: null, takes: [], main: null, variants: [], status: 'MISSING', hasVariant: false, hubVariants: [], inProgress: 0, rendering: 0});
   const edges: Edge[] = bankEdges().map(e => blank(e, false)), experiments: Edge[] = [];
@@ -435,8 +445,8 @@ export function resolveRound(graph: Graph, steps: Step[], options: {holeCardDown
     if (!take) { seg.gap = pool.some(t => t.stage === 'ORDERED' || t.stage === 'PREPARED' || t.stage === 'WRITTEN') ? 'WAITING' : pool.some(t => t.stage === 'DONE') ? 'REJECTED' : 'MISSING'; return; }
     seg.take = take; seg.fps = take.fps ?? 30; seg.video = take.media.video ?? null;
     if (take.segment) { seg.start = take.segment.start; seg.end = take.frames !== null && take.segment.end >= take.frames - 1 ? null : take.segment.end + 1; } // a derived take shows only its own frames
-    // A turn runs from rest to rest like an idle clip: a generated film is brighter in its first frames and jumps in its last two, so they are not played.
-    if (e.kind === 'REVEAL') { const last = seg.end ?? take.frames; seg.start += IDLE_RULE.skipStart; if (last !== null && last - IDLE_RULE.skipEnd > seg.start) seg.end = last - IDLE_RULE.skipEnd; }
+    // A turn runs from rest to rest like an idle clip, and her coming and leaving have rest at one end: a generated film is brighter in its first frames and jumps in its last two, so they are not played.
+    if (e.kind === 'REVEAL' || e.kind === 'ARRIVE' || e.kind === 'LEAVE') { const last = seg.end ?? take.frames; seg.start += IDLE_RULE.skipStart; if (last !== null && last - IDLE_RULE.skipEnd > seg.start) seg.end = last - IDLE_RULE.skipEnd; }
     if (!seg.video) seg.gap = 'LOCAL_ONLY';
     if (seg.side && take.endSide && take.endSide !== seg.side) notes.push(`Tagningen slutar med ${take.endSide === 'BACK' ? 'stängt (gult)' : 'öppet (blått)'} kort; rundan vill ha ${seg.side === 'BACK' ? 'stängt' : 'öppet'}.`);
     if (after && !returnFits(take, after)) notes.push(take.anchorStart ? `Skarv: returen startar från ett annat landningsankare än given ${after.id} slutar på.`
@@ -483,6 +493,8 @@ const FALLBACK = {
   ENTRY: `${SCENE} She sits upright with both hands resting flat on the table in front of her, exactly as in the first image. In one calm, unhurried movement her left hand lifts slightly and glides low over the table straight toward the shoe on the right, staying below chest height the whole way, fingers relaxed and naturally curved. It arrives gently at the yellow card in the shoe and settles into the exact grip of the last image, thumb and index finger on the top edge of the yellow card. Her eyes follow the hand to the shoe. The other hand rests on the table throughout. The yellow card stays fully seated in the shoe. No raised hand, fist, flourish, extraction, handoff, camera motion or cut.`,
   EXIT: `${SCENE} Her left hand rests at the shoe in the exact grip of the first image, thumb and index finger on the top edge of the yellow card. She lets go of the card, and in one calm, unhurried movement draws the hand low and straight back toward herself, then lays it flat on the table in front of her, matching the last image: both hands resting side by side, shoulders level, upright posture. As the hand settles she lifts her head and looks into the camera with a slight friendly smile. The other hand rests on the table throughout. The yellow card stays fully seated in the shoe. No raised hand, fist, flourish, extraction, extra card, camera motion or cut.`,
   REVEAL: `${SCENE} She sits upright with both hands resting flat on the table, exactly as in the first image. One plain solid yellow card lies flat and still on the table close in front of her. In one calm, unhurried movement her left hand reaches to that yellow card, lifts it by its edge and turns it over once just above the table: yellow visibly narrows to a thin pale edge and the opposite blue face opens fully. She lays the same card flat, blue face up, on the exact place it was lifted from, lets go of it, and draws the hand low and straight back to rest flat on the table in front of her. She ends in the exact pose of the last image, looking into the camera with a slight friendly smile. ${BLANK} The other hand rests on the table throughout. Every other card on the table stays flat, still and untouched. The yellow card in the shoe stays fully seated. No slide, second flip, colour swap, reach toward the shoe, extra card, display gesture, camera motion or cut.`,
+  LEAVE: `${SCENE} She sits upright with both hands resting flat on the table, exactly as in the first image. In one calm, unhurried movement she lifts her hands from the table, pushes back, stands up, turns to her left and walks out of the picture past its right edge, behind the shoe. From then on nobody is in the picture: only the plain green background, the plain green table and the black shoe remain, and the clip holds that empty picture, perfectly still, to its end. The shoe never moves and the yellow card stays fully seated in it. The green background and the table keep their exact colour and light, and the left edge of the picture stays empty the whole time. No other person, no chair or other object appears, no card is touched, no wave or gesture, no camera motion or cut.`,
+  ARRIVE: `${SCENE} The picture begins empty, exactly as the first image: the plain green background, the plain green table and the black shoe, and nobody there. The same Pamela walks in from the right edge of the picture, behind the shoe, to the middle behind the table, turns to face the camera and sits down. She lays both hands flat on the table in front of her, side by side, and ends in the exact pose of the last image, looking into the camera with a slight friendly smile. The shoe never moves and the yellow card stays fully seated in it. The green background and the table keep their exact colour and light, and the left edge of the picture stays empty the whole time. No other person, no chair or other object appears, no card is touched, no wave or gesture, no camera motion or cut.`,
   LOOP: `${SCENE} She sits upright with both hands resting flat on the table in front of her, exactly as in the first image, and looks into the camera with a slight friendly smile. For the whole clip she only breathes calmly and blinks naturally, and ends in the exact pose of the last image. Both hands stay flat and still on the table. The yellow card stays fully seated in the shoe. No reach, gesture, raised hand, head turn, extra card, camera motion or cut.`,
 };
 const seatIndex = (target: string) => target[0] === 'D' ? 4 : Number(target[1]);
@@ -494,7 +506,7 @@ export function draftJob(graph: Graph, edgeId: string, options: {holeCardDown?: 
   const notes: string[] = [], jobs = Object.values(graph.takes).map(t => t.job);
   const [seat, card] = e.target ? e.target.split('.') : ['', ''], slug = e.target ? `${seat.toLowerCase()}-${card.toLowerCase()}` : '';
   const side = e.target ? wantedSide(e.target, options.holeCardDown !== false) : null;
-  const stem = e.kind === 'DEAL' ? `pamela-${slug}-plan-deal` : e.kind === 'REVEAL' ? `pamela-${slug}-reveal` : e.kind === 'ENTRY' ? 'pamela-idle-ready-entry' : e.kind === 'IDLE' ? 'pamela-idle-loop'
+  const stem = e.kind === 'DEAL' ? `pamela-${slug}-plan-deal` : e.kind === 'REVEAL' ? `pamela-${slug}-reveal` : e.kind === 'ARRIVE' ? 'pamela-table-arrive' : e.kind === 'LEAVE' ? 'pamela-table-leave' : e.kind === 'ENTRY' ? 'pamela-idle-ready-entry' : e.kind === 'IDLE' ? 'pamela-idle-loop'
     : e.target ? `pamela-${slug}-plan-return-${e.to.toLowerCase()}` : 'pamela-ready-idle-exit';
   const taken = Object.keys(graph.takes).map(id => id.startsWith(`${stem}-`) ? Number(id.slice(stem.length + 1)) : 0).filter(Number.isInteger);
   const id = `${stem}-${String(Math.max(0, ...taken) + 1).padStart(2, '0')}`;
@@ -508,7 +520,7 @@ export function draftJob(graph: Graph, edgeId: string, options: {holeCardDown?: 
   // Wording comes from the main take of the same kind at the nearest seat, so later prompt lessons follow along.
   const source = e.target ? graph.edges.filter(o => o.kind === e.kind && (e.kind === 'DEAL' || o.to === e.to) && o.target && o.main)
     .sort((a, b) => Math.abs(seatIndex(a.target!) - seatIndex(e.target!)) - Math.abs(seatIndex(b.target!) - seatIndex(e.target!)) || Number(a.target!.slice(-1) !== card.slice(-1)) - Number(b.target!.slice(-1) !== card.slice(-1)) || b.main!.order - a.main!.order)[0]?.main ?? null : null;
-  let promptText: string, first: ImageRef, last: ImageRef;
+  let promptText: string, first: ImageRef, last: ImageRef | undefined;
   if (e.kind === 'DEAL') {
     const closed = side === 'BACK', base = closed ? FALLBACK.CLOSED : source?.job.promptText ?? FALLBACK.DEAL;
     promptText = base.replace(/(four-second deal )[^.]*\./, `$1${PLACE[seat].deal}.`).replace(/to the [a-z-]+ position of the last image/, `to the ${PLACE[seat].spot} position of the last image`);
@@ -536,15 +548,22 @@ export function draftJob(graph: Graph, edgeId: string, options: {holeCardDown?: 
     first = graph.edge[`${HOLE_CARD}>IDLE`]?.main?.job.last ?? file('assets/anchors/pamela-idle-d-c2-closed-01/anchor.png', 'IDLE with the closed hole card lying at D.C2.');
     last = e.main?.job.last ?? file('assets/anchors/pamela-idle-d-c2-open-01/anchor.png', 'IDLE with the hole card turned open at D.C2.');
     notes.push('Första bild: vila med det stängda hålkortet. Sista bild: vila med kortet uppvänt. Välj rutor minst tre före respektive films slut och fyll i filmens hash.');
+  } else if (e.kind === 'ARRIVE' || e.kind === 'LEAVE') {
+    // Rest is the keystone frame the idle clips start on. The picture without her is a real frame from the end of a leave film,
+    // which is why leaving is ordered first, from its first image alone.
+    const rest = graph.edge['IDLE>IDLE']?.main?.job.first ?? idleEmpty, empty = file('assets/anchors/pamela-away-01/anchor.png', 'The set without the dealer: a whole real frame from the end of a leave film.');
+    promptText = e.kind === 'ARRIVE' ? FALLBACK.ARRIVE : FALLBACK.LEAVE;
+    first = e.kind === 'ARRIVE' ? empty : rest; last = e.kind === 'ARRIVE' ? rest : undefined;
+    notes.push(e.kind === 'ARRIVE' ? 'Första bild ska vara en verklig ruta utan henne, ur slutet av en utgångsfilm.' : 'Utgången beställs med enbart första bild; dess sista rutor blir bilden utan henne.');
   } else {
     promptText = e.kind === 'ENTRY' ? FALLBACK.ENTRY : e.kind === 'IDLE' ? FALLBACK.LOOP : FALLBACK.EXIT;
     notes.push('Mall utan tidigare tagning i banken; ett äldre klipp finns bara i arkivet.');
     first = e.kind === 'RETURN' ? readyStart : idleEmpty; last = e.kind === 'ENTRY' ? readyStart : idleEmpty;
   }
   notes.push('Jämför alltid prompten med start- och slutbilden innan jobbet fryses.');
-  const wrap = (node: string) => isHub(node) ? node : `LAND(${node})`;
-  return {basedOn: source?.id ?? null, notes, job: {id, kind: e.kind, target: e.target, from: wrap(e.from), to: wrap(e.to), model: 'wan3', duration: e.kind === 'DEAL' || e.kind === 'IDLE' || e.kind === 'REVEAL' ? 4 : 3, ratio: 'auto_1080p', audio: false,
-    promptText, first, last, purpose: `Draft from the lab clip bank for ${e.id}${source ? `; wording based on ${source.id}` : ''}. Check the wording against both images before freezing.`}};
+  const wrap = (node: string) => isHub(node) || node === AWAY ? node : `LAND(${node})`;
+  return {basedOn: source?.id ?? null, notes, job: {id, kind: e.kind, target: e.target, from: wrap(e.from), to: wrap(e.to), model: 'wan3', duration: e.kind === 'ARRIVE' || e.kind === 'LEAVE' ? 5 : e.kind === 'DEAL' || e.kind === 'IDLE' || e.kind === 'REVEAL' ? 4 : 3, ratio: 'auto_1080p', audio: false,
+    promptText, first, ...(last ? {last} : {}), purpose: `Draft from the lab clip bank for ${e.id}${source ? `; wording based on ${source.id}` : ''}. Check the wording against both images before freezing.`}};
 }
 
 // ── Tree layout ─────────────────────────────────────────────────────────────

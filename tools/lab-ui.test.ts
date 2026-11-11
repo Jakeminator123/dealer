@@ -166,8 +166,8 @@ test('the clip bank draws every edge, opens a deep-linked edge, drafts a missing
  const opening=runInContext('openClipBank()',context);await settle();
  respond({ok:true,text:async()=>JSON.stringify(bank)});await opening;
  assert.equal(element('kb-notice').hidden,true);
- assert.equal(element('kb-count').textContent,'3 av 52 kanter klara');
- assert.match(element('kb-count-detail').textContent,/saknas 49 · D.C3 0 av 3 · 200 av 1500 credits beställda/);
+ assert.equal(element('kb-count').textContent,'3 av 54 kanter klara');
+ assert.match(element('kb-count-detail').textContent,/saknas 51 · D.C3 0 av 3 · 200 av 1500 credits beställda/);
  const tree=element('kb-tree').innerHTML;
  assert.equal(tree.match(/class="kb-edge /g).length,54);assert.equal(tree.match(/class="kb-node/g).length,17);assert.equal(tree.match(/class="kb-hub/g).length,2);
  assert.match(tree,/class="kb-edge s-UNREVIEWED sel" data-edge="P4\.C1&#62;IDLE"/);
@@ -219,7 +219,7 @@ async function openBank(bank:unknown,search='',before?:(lab:Awaited<ReturnType<t
 test('the clip bank re-reads itself: a rendering film shows as such, a finished one is announced, and the view is left alone',async()=>{
  const bank:any=clipBank(),{context,element,respond,requests,fire}=await openBank(bank,'?filmer=kort');
  const poll=async(reply:unknown)=>{const tick=runInContext('kbRefresh()',context);await settle();respond(reply,'/api/clip-bank');await tick;};
- assert.equal(element('kb-count').textContent,'3 av 52 kanter klara');assert.equal(runInContext('kbEdge',context),'READY>P4.C1');
+ assert.equal(element('kb-count').textContent,'3 av 54 kanter klara');assert.equal(runInContext('kbEdge',context),'READY>P4.C1');
  let loads=0;const player=element('kb-player'),film=player.src;player.load=()=>{loads++;};
  // Unchanged data repaints nothing.
  element('kb-tree').innerHTML='untouched';await poll(served(bank));
@@ -236,10 +236,10 @@ test('the clip bank re-reads itself: a rendering film shows as such, a finished 
  bank.receipts[job.id].status='SUCCEEDED';bank.media[job.id].video='assets/motions/pamela-p2-c1-plan-deal-01/source.mp4';
  await poll(served(bank));
  assert.match(element('kb-notices').innerHTML,/Ny film klar: <code>READY&#62;P2\.C1<\/code>/);assert.equal(element('kb-notices').innerHTML.match(/data-news=/g).length,1);
- assert.equal(element('kb-count').textContent,'4 av 52 kanter klara');assert.equal(loads,0);
+ assert.equal(element('kb-count').textContent,'4 av 54 kanter klara');assert.equal(loads,0);
  // Without contact the view stays as it is and says so; the next successful read clears the warning.
  await poll({ok:false});
- assert.match(element('kb-live').textContent,/Ingen kontakt/);assert.equal(element('kb-count').textContent,'4 av 52 kanter klara');
+ assert.match(element('kb-live').textContent,/Ingen kontakt/);assert.equal(element('kb-count').textContent,'4 av 54 kanter klara');
  await poll(served(bank));
  assert.equal(element('kb-live').textContent,'Uppdateras automatiskt');
  // The announcement opens that take.
@@ -290,7 +290,7 @@ test('experiments, derived takes and replaced takes each have their place: a cha
  assert.match(element('kb-seq-count').textContent,/^2 steg · 2 spelbara · 0 luckor · 5,7 s film · ändrad för hand$/);
  assert.match(element('kb-steps').innerHTML,/readyb-draw-cut-01 · ruta 0–50</);
  // The 51 edges are counted as before; experiments are counted and listed on their own, as a chain to compare with the model's way.
- assert.equal(element('kb-count').textContent,'3 av 52 kanter klara');assert.match(element('kb-count-detail').textContent,/experiment 2/);
+ assert.equal(element('kb-count').textContent,'3 av 54 kanter klara');assert.match(element('kb-count-detail').textContent,/experiment 2/);
  assert.equal(element('kb-experiments').hidden,false);
  assert.match(element('kb-experiment-chains').innerHTML,/<b>P4\.C1<\/b><button class="model" data-chain-model="P4\.C1"[^>]*>▶ A · <code>READY&#62;P4\.C1<\/code><\/button><button data-chain="0"[^>]*>▶ B · <code>READY-B → DRAWN → P4\.C1<\/code><\/button><\/div>$/);
  assert.match(element('kb-experiment-edges').innerHTML,/data-edge="READY-B&#62;DRAWN"[^]*data-edge="DRAWN&#62;P4\.C1"/);assert.equal(element('kb-experiment-count').textContent,'Enskilda experimentkanter (2)');
@@ -434,9 +434,9 @@ test('one film per seat is the default view: seat nodes, the share that is done,
  const urls:string[]=[];
  const {context,element,requests}=await openBank(bank,'',lab=>{lab.element('kb-hole').checked=true;lab.context.URL=URL;lab.context.location.href='http://127.0.0.1:4319/lab.html';lab.context.window.history={replaceState(_s:unknown,_t:string,url:URL){urls.push(String(url));}};});
  // The header answers how much is done: needed films, how many exist, and of those how many are candidates or have known flaws.
- assert.equal(element('kb-count').textContent,'3 av 31 filmer finns · 10 %');
- assert.match(element('kb-count-detail').textContent,/^kandidater 3 · kända brister 0 · saknas 28 · D\.C3 0 av 3/);
- assert.match(element('kb-mode-note').textContent,/^En film per plats: 31 filmer behövs\..*dealerns andra kort ligger stängt och har egna filmer\.$/);
+ assert.equal(element('kb-count').textContent,'3 av 33 filmer finns · 9 %');
+ assert.match(element('kb-count-detail').textContent,/^kandidater 3 · kända brister 0 · saknas 30 · D\.C3 0 av 3/);
+ assert.match(element('kb-mode-note').textContent,/^En film per plats: 33 filmer behövs\..*dealerns andra kort ligger stängt och har egna filmer\.$/);
  assert.equal(element('kb-meter').innerHTML.match(/<span /g).length,2);
  // Each seat is one node with both cards and three edges; the dealer keeps two nodes because the hole card stays closed.
  const tree=element('kb-tree').innerHTML;
@@ -479,13 +479,13 @@ test('one film per seat is the default view: seat nodes, the share that is done,
  runInContext('ov.deck=false',context);assert.deepEqual(laid(4).cards.map((c:{shoeDraw:number|null})=>c.shoeDraw),[null,null]);
  // The switch: one film per card brings back the 51 edges and every card as its own node; the choice is kept in the address.
  runInContext("kbPanel='edge';kbCustom=false;kbSetMode('CARD')",context);
- assert.equal(element('kb-count').textContent,'3 av 52 kanter klara');assert.equal(element('kb-tree').innerHTML.match(/class="kb-node/g).length,17);assert.equal(element('kb-tree').innerHTML.match(/class="kb-edge /g).length,54);
+ assert.equal(element('kb-count').textContent,'3 av 54 kanter klara');assert.equal(element('kb-tree').innerHTML.match(/class="kb-node/g).length,17);assert.equal(element('kb-tree').innerHTML.match(/class="kb-edge /g).length,54);
  assert.equal(new URL(urls.at(-1)!).searchParams.get('filmer'),'kort');assert.equal(runInContext("kbGraph.edge['READY>P4.C2'].shares",context),null);
  runInContext("kbSetMode('SEAT')",context);
- assert.equal(element('kb-count').textContent,'3 av 31 filmer finns · 10 %');assert.equal(new URL(urls.at(-1)!).searchParams.get('filmer'),null);
+ assert.equal(element('kb-count').textContent,'3 av 33 filmer finns · 9 %');assert.equal(new URL(urls.at(-1)!).searchParams.get('filmer'),null);
  // With the hole card open the dealer's second card shares the first card's films as well.
  element('kb-hole').checked=false;runInContext('kbRebuild();paintBank()',context);
- assert.match(element('kb-count').textContent,/^3 av 27 filmer finns/);assert.equal(element('kb-tree').innerHTML.match(/class="kb-node seat/g).length,8);
+ assert.match(element('kb-count').textContent,/^3 av 29 filmer finns/);assert.equal(element('kb-tree').innerHTML.match(/class="kb-node seat/g).length,8);
  assert.ok(requests.every(request=>request.startsWith('GET ')));
 });
 
@@ -510,7 +510,7 @@ test('the review list: every finished film without Jakob\'s word, in dealing ord
  assert.deepEqual(titles('rv-list'),['P1 · giv · tagning 2','P4 · giv · tagning 2','P4 · retur till redo · tagning 1','P7 · retur till redo · tagning 2','Dealerns första kort · giv · ur gamla labbet']);
  assert.deepEqual([...element('rv-list').innerHTML.matchAll(/class="rv-group">([^<]+)</g)].map(m=>m[1]),['P1','P4','P7','Dealern']);
  // The top line says where the bank stands: of the films needed, how many are approved, waiting for him and missing.
- assert.match(element('rv-count').textContent,/^Av de 31 filmer som behövs är 1 godkända, 5 väntar på dig och 25 saknas\. /);assert.equal(element('rv-main-title').textContent,'Huvudfilmer som väntar på dig (5)');
+ assert.match(element('rv-count').textContent,/^Av de 33 filmer som behövs är 1 godkända, 5 väntar på dig och 27 saknas\. /);assert.equal(element('rv-main-title').textContent,'Huvudfilmer som väntar på dig (5)');
  // A take that is not the main take of its step waits folded under Övriga tagningar.
  assert.deepEqual(ids('rv-other-list'),['pamela-p4-c1-plan-deal-03']);assert.equal(element('rv-other-summary').textContent,'Övriga tagningar (1) · andra tagningar, varianter, variant B och experiment');
  // The reviewers' findings are on the row; what they already rejected waits folded at the end; what Jakob decided is under Avgjorda.
@@ -557,7 +557,7 @@ test('the review list: every finished film without Jakob\'s word, in dealing ord
  // The rejected main take is no longer the film of its step: the next best take has taken its place among the main films, and is the one that opens.
  assert.match(element('rv-done-list').innerHTML,/ditt beslut: underkänd/);
  assert.deepEqual(ids('rv-list'),['pamela-p1-c1-plan-deal-02','pamela-p4-c1-plan-deal-03','pamela-p4-c1-plan-return-ready-01','pamela-p7-c1-plan-return-ready-02',old]);assert.deepEqual(ids('rv-other-list'),[]);
- assert.equal(runInContext('kbTake',context),'pamela-p4-c1-plan-deal-03');assert.match(element('rv-count').textContent,/är 1 godkända, 5 väntar på dig och 25 saknas/);
+ assert.equal(runInContext('kbTake',context),'pamela-p4-c1-plan-deal-03');assert.match(element('rv-count').textContent,/är 1 godkända, 5 väntar på dig och 27 saknas/);
  // Leaving the tab gives the take detail back to the Klippbank; the address names the tab and the open film.
  const urls:string[]=[];context.URL=URL;context.location.href='http://127.0.0.1:4319/lab.html';context.window.history={replaceState(_s:unknown,_t:string,url:URL){urls.push(String(url));}};
  runInContext('kbLink()',context);assert.equal(new URL(urls.at(-1)!).searchParams.get('tab'),'granska');assert.equal(new URL(urls.at(-1)!).searchParams.get('take'),'pamela-p4-c1-plan-deal-03');
