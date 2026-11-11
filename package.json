@@ -10,7 +10,7 @@
     "node": "24.21.0"
   },
   "scripts": {
-    "test": "node --test --test-concurrency=4 tools/placements.test.ts tools/public-storage.test.ts tools/lab-ui.test.ts tools/render-safety.test.ts tools/publication-check.test.ts tools/clip-job.test.ts tools/clip-graph.test.ts tools/card-track.test.ts tools/scene-geometry.test.ts tools/scene3d-geometry.test.ts tools/clip-edit.test.ts tools/card-overlay.test.ts tools/review-store.test.ts",
+    "test": "node --test --test-concurrency=4 tools/placements.test.ts tools/public-storage.test.ts tools/lab-ui.test.ts tools/render-safety.test.ts tools/publication-check.test.ts tools/clip-job.test.ts tools/clip-graph.test.ts tools/card-track.test.ts tools/scene-geometry.test.ts tools/scene3d-geometry.test.ts tools/clip-edit.test.ts tools/card-overlay.test.ts tools/review-store.test.ts tools/game-director.test.ts",
     "check": "node tools/publication-check.ts",
     "hooks:install": "node tools/publication-check.ts --install",
     "verify": "node tools/verify.ts",
