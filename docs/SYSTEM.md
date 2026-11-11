@@ -29,7 +29,7 @@ Lager, bakifrån och fram:
 | --- | --- | --- |
 | Rum | Byggd salong, 360°-panorama, V6-plåten som kuliss eller V6-plåten fast i rutan. Ritas i halv upplösning och görs oskarpt efter avstånd. | `src/scene3d-room.ts` |
 | Bord | Filten är en platt bild sedd uppifrån (linjer, kortrutor ur placeringsplanen, logga), plus reling och sarg som geometri. Byte av logga eller filtfärg är ett bildbyte. | `src/scene3d-table.ts` |
-| Rekvisita under filmen | Sådant händerna vilar på eller passerar över, till exempel ett försänkt markerbräde. Ritas före filmen, så händerna hamnar alltid överst. | planerad fil för rekvisita, inte i repot ännu |
+| Rekvisita under filmen | Sådant händerna vilar på eller passerar över. Först ut: dealerns markerbräde, försänkt i ett urtag i filten vid hennes kant så att kant och marker ligger i filtens nivå och filmens händer vilar på dem. Ritas före filmen, så händerna hamnar alltid överst. | `src/scene3d-props.ts` |
 | Film | Nycklas i shadern mot rutans egen gröna nivå (skuggor blir svart med delalfa) och projiceras från filmkameran på två ytor: ett lodrätt plan på bordets bakkant och bordsskivan. | `src/scene3d-film.ts` |
 | Ljus | Fläktskuggan: en multiplikation ovanpå film och bord; filmens eget ljus går inte att ändra. | `src/scene3d-light.ts` |
 | Bild | Vykamera, oskärpa, fokus och slutkomposit. | `src/scene3d-view.ts` |
