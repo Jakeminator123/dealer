@@ -14,7 +14,9 @@ import {readFile, writeFile, mkdir} from 'node:fs/promises';
 import {createHash} from 'node:crypto';
 import path from 'node:path';
 
-export type Mesh = {positions: Float32Array; uvs: Float32Array | null; indices: Uint32Array};
+// normals: the source's own vertex normals, when it has them. They are kept through the thinning, so the thinned surface is
+// still shaded like the smooth one it came from, and the lumps of the thinning show only in its outline.
+export type Mesh = {positions: Float32Array; uvs: Float32Array | null; indices: Uint32Array; normals?: Float32Array | null};
 export const triangleCount = (mesh: Mesh) => mesh.indices.length / 3;
 
 export function bounds(positions: Float32Array): {min: number[]; max: number[]} {
@@ -30,7 +32,7 @@ export function bounds(positions: Float32Array): {min: number[]; max: number[]} 
  * count: only count the triangles that would be left (for the search in simplifyTo).
  */
 export function clusterMesh(mesh: Mesh, cell: number, options: {uvCells?: number; count?: boolean} = {}): Mesh & {triangles: number} {
-  const {positions, uvs, indices} = mesh, n = positions.length / 3, {min, max} = bounds(positions), uvCells = options.uvCells ?? 24;
+  const {positions, uvs, indices} = mesh, normals = mesh.normals ?? null, n = positions.length / 3, {min, max} = bounds(positions), uvCells = options.uvCells ?? 24;
   const nx = Math.max(1, Math.ceil((max[0] - min[0]) / cell) + 1), ny = Math.max(1, Math.ceil((max[1] - min[1]) / cell) + 1), nz = Math.max(1, Math.ceil((max[2] - min[2]) / cell) + 1), cubes = nx * ny * nz;
   if (!(cell > 0) || cubes * uvCells * uvCells > Number.MAX_SAFE_INTEGER) throw Error('The cell is too small for this mesh.');
   const cubeOf = new Float64Array(n), cluster = new Uint32Array(n), ids = new Map<number, number>(), cubeIds = new Map<number, number>(), clusterCube: number[] = [];
@@ -44,24 +46,36 @@ export function clusterMesh(mesh: Mesh, cell: number, options: {uvCells?: number
   for (let t = 0; t < indices.length; t += 3) { const a = cluster[indices[t]], b = cluster[indices[t + 1]], c = cluster[indices[t + 2]]; if (a !== b && b !== c && a !== c) triangles++; }
   if (options.count) return {positions: new Float32Array(0), uvs: null, indices: new Uint32Array(0), triangles};
   // A cube's mean point, shared by all its clusters; a cluster's own mean texture coordinate.
-  const sum = new Float64Array(cubeIds.size * 3), members = new Uint32Array(cubeIds.size), uvSum = new Float64Array(ids.size * 2), uvMembers = new Uint32Array(ids.size);
+  const sum = new Float64Array(cubeIds.size * 3), members = new Uint32Array(cubeIds.size), uvSum = new Float64Array(ids.size * 2), uvMembers = new Uint32Array(ids.size), normalSum = normals ? new Float64Array(ids.size * 3) : null, normalMembers = new Uint32Array(ids.size);
   for (let i = 0; i < n; i++) { const c = cubeOf[i]; sum[c * 3] += positions[i * 3]; sum[c * 3 + 1] += positions[i * 3 + 1]; sum[c * 3 + 2] += positions[i * 3 + 2]; members[c]++;
-    if (uvs) { const id = cluster[i]; uvSum[id * 2] += uvs[i * 2]; uvSum[id * 2 + 1] += uvs[i * 2 + 1]; uvMembers[id]++; } }
+    if (uvs) { const id = cluster[i]; uvSum[id * 2] += uvs[i * 2]; uvSum[id * 2 + 1] += uvs[i * 2 + 1]; uvMembers[id]++; }
+    if (normalSum) { const id = cluster[i]; normalSum[id * 3] += normals![i * 3]; normalSum[id * 3 + 1] += normals![i * 3 + 1]; normalSum[id * 3 + 2] += normals![i * 3 + 2]; normalMembers[id]++; } }
   const outPositions = new Float32Array(ids.size * 3), outUvs = uvs ? new Float32Array(ids.size * 2) : null;
   for (let id = 0; id < ids.size; id++) { const c = clusterCube[id]; for (let k = 0; k < 3; k++) outPositions[id * 3 + k] = sum[c * 3 + k] / members[c]; if (outUvs) { outUvs[id * 2] = uvSum[id * 2] / uvMembers[id]; outUvs[id * 2 + 1] = uvSum[id * 2 + 1] / uvMembers[id]; } }
-  // Triangles: collapsed ones go, and so does a second triangle on the same three vertices.
+  // Triangles: collapsed ones go, and so does a second triangle on the same three vertices. Moving its corners to the cubes'
+  // mean points can turn a thin triangle over; it is then wound the other way, so that it still faces where it faced.
   const kept = new Uint32Array(triangles * 3), seen = new Set<string | number>(), small = ids.size < 100000; let w = 0;
+  const facing = (p: Float32Array, a: number, b: number, c: number) => { const ux = p[b * 3] - p[a * 3], uy = p[b * 3 + 1] - p[a * 3 + 1], uz = p[b * 3 + 2] - p[a * 3 + 2], vx = p[c * 3] - p[a * 3], vy = p[c * 3 + 1] - p[a * 3 + 1], vz = p[c * 3 + 2] - p[a * 3 + 2]; return [uy * vz - uz * vy, uz * vx - ux * vz, ux * vy - uy * vx]; };
   for (let t = 0; t < indices.length; t += 3) {
     const a = cluster[indices[t]], b = cluster[indices[t + 1]], c = cluster[indices[t + 2]]; if (a === b || b === c || a === c) continue;
     const lo = Math.min(a, b, c), hi = Math.max(a, b, c), mid = a + b + c - lo - hi, key = small ? (lo * ids.size + mid) * ids.size + hi : `${lo},${mid},${hi}`;
-    if (seen.has(key)) continue; seen.add(key); kept[w++] = a; kept[w++] = b; kept[w++] = c;
+    if (seen.has(key)) continue; seen.add(key);
+    const was = facing(positions, indices[t], indices[t + 1], indices[t + 2]), now = facing(outPositions, a, b, c), turned = was[0] * now[0] + was[1] * now[1] + was[2] * now[2] < 0;
+    kept[w++] = a; kept[w++] = turned ? c : b; kept[w++] = turned ? b : c;
   }
   // Vertices no triangle uses any more are left out.
   const used = new Int32Array(ids.size).fill(-1); let count = 0; const finalIndices = kept.slice(0, w);
   for (let i = 0; i < w; i++) { if (used[finalIndices[i]] < 0) used[finalIndices[i]] = count++; finalIndices[i] = used[finalIndices[i]]; }
-  const p = new Float32Array(count * 3), u = outUvs ? new Float32Array(count * 2) : null;
-  for (let id = 0; id < ids.size; id++) { const to = used[id]; if (to < 0) continue; p.set(outPositions.subarray(id * 3, id * 3 + 3), to * 3); if (u) u.set(outUvs!.subarray(id * 2, id * 2 + 2), to * 2); }
-  return {positions: p, uvs: u, indices: finalIndices, triangles: w / 3};
+  const p = new Float32Array(count * 3), u = outUvs ? new Float32Array(count * 2) : null, kn = normalSum ? new Float32Array(count * 3) : null;
+  for (let id = 0; id < ids.size; id++) { const to = used[id]; if (to < 0) continue; p.set(outPositions.subarray(id * 3, id * 3 + 3), to * 3); if (u) u.set(outUvs!.subarray(id * 2, id * 2 + 2), to * 2);
+    if (kn) for (let k = 0; k < 3; k++) kn[to * 3 + k] = normalSum![id * 3 + k] / normalMembers[id]; }
+  const out: Mesh = {positions: p, uvs: u, indices: finalIndices};
+  if (kn) { // the mean of the source normals where they agree; where they cancel out (two sides of a thin wall in one cube), the faces' own
+    const faces = vertexNormals(out);
+    for (let i = 0; i < kn.length; i += 3) { const l = Math.hypot(kn[i], kn[i + 1], kn[i + 2]); // the mean of unit normals: 1 where they all agree, near 0 where they cancel
+      if (l > 0.5 && kn[i] * faces[i] + kn[i + 1] * faces[i + 1] + kn[i + 2] * faces[i + 2] >= 0) { kn[i] /= l; kn[i + 1] /= l; kn[i + 2] /= l; } else { kn[i] = faces[i]; kn[i + 1] = faces[i + 1]; kn[i + 2] = faces[i + 2]; } }
+    out.normals = kn; }
+  return {...out, triangles: w / 3};
 }
 
 /** Thins a mesh to about `target` triangles (never more): the largest cell is searched whose result still has enough. */
@@ -123,13 +137,15 @@ export function meshOf(json: Json, bin: Buffer): Mesh {
   for (const mesh of json.meshes ?? []) for (const primitive of mesh.primitives) {
     if ((primitive.mode ?? 4) !== 4) throw Error('Only triangle lists are read.');
     const positions = accessor(json, bin, primitive.attributes.POSITION).values as Float32Array, uv = primitive.attributes.TEXCOORD_0 !== undefined ? accessor(json, bin, primitive.attributes.TEXCOORD_0).values as Float32Array : null;
+    const normals = primitive.attributes.NORMAL !== undefined ? accessor(json, bin, primitive.attributes.NORMAL).values as Float32Array : null;
     const indices = primitive.indices !== undefined ? Uint32Array.from(accessor(json, bin, primitive.indices).values) : Uint32Array.from({length: positions.length / 3}, (_, i) => i);
-    parts.push({positions, uvs: uv, indices});
+    parts.push({positions, uvs: uv, indices, normals});
   }
   if (parts.length === 1) return parts[0];
   const total = parts.reduce((s, p) => s + p.positions.length / 3, 0), positions = new Float32Array(total * 3), uvs = parts.every(p => p.uvs) ? new Float32Array(total * 2) : null, indices = new Uint32Array(parts.reduce((s, p) => s + p.indices.length, 0));
-  let v = 0, i = 0; for (const p of parts) { positions.set(p.positions, v * 3); if (uvs) uvs.set(p.uvs!, v * 2); for (const index of p.indices) indices[i++] = index + v; v += p.positions.length / 3; }
-  return {positions, uvs, indices};
+  const normals = parts.every(p => p.normals) ? new Float32Array(total * 3) : null;
+  let v = 0, i = 0; for (const p of parts) { positions.set(p.positions, v * 3); if (uvs) uvs.set(p.uvs!, v * 2); if (normals) normals.set(p.normals!, v * 3); for (const index of p.indices) indices[i++] = index + v; v += p.positions.length / 3; }
+  return {positions, uvs, indices, normals};
 }
 
 export type PropImage = {mimeType: string; data: Buffer};
@@ -160,7 +176,7 @@ async function convert(job: PropJob, directory: string) {
   const source = await readFile(path.join(directory, job.file)), sha = createHash('sha256').update(source).digest('hex');
   if (sha !== job.sha256) throw Error(`${job.file} is not the file data/props.json names (sha256 ${sha}).`);
   const {json, bin} = readGlb(source), full = meshOf(json, bin), {mesh, cell} = simplifyTo(full, job.triangles);
-  const placed = placeOnOrigin(mesh.positions, ({x: 0, y: 1, z: 2} as const)[job.lengthAxis], job.lengthMetres), normals = vertexNormals(mesh);
+  const placed = placeOnOrigin(mesh.positions, ({x: 0, y: 1, z: 2} as const)[job.lengthAxis], job.lengthMetres), normals = mesh.normals ?? vertexNormals(mesh); // scaling is uniform, so the source's normals stay true
   const sharp = (await import('sharp')).default, images: PropImage[] = [];
   for (const image of json.images ?? []) { const view = json.bufferViews[image.bufferView], data = bin.subarray(view.byteOffset ?? 0, (view.byteOffset ?? 0) + view.byteLength);
     images.push({mimeType: 'image/jpeg', data: await sharp(data).resize({width: job.textureSize, height: job.textureSize, fit: 'inside', withoutEnlargement: true}).jpeg({quality: 86}).toBuffer()}); }
