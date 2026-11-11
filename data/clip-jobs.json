@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "budget": {
-    "maximumCredits": 4600
+    "maximumCredits": 4812
   },
   "anchors": [
     {
@@ -2699,6 +2699,93 @@
         "note": "IDLE with the P2.C1 card at the plan position: both hands resting, so either hand may have laid the card."
       },
       "purpose": "Test of the handover variant Jakob asked for: the left hand takes the card, the right hand turns and lays it. The end image shows both hands at rest so that it does not dictate which hand laid the card; the clip therefore holds deal and return in one, which is why it is an experiment and not a seat film."
+    },
+    {
+      "id": "pamela-d-c2-reveal-01",
+      "kind": "REVEAL",
+      "target": "D.C2",
+      "from": "IDLE",
+      "to": "REVEAL(D.C2)",
+      "model": "wan3",
+      "duration": 4,
+      "ratio": "auto_1080p",
+      "audio": false,
+      "first": {
+        "frame": {
+          "video": "assets/motions/pamela-arkiv-d-c2-hole-join/source.mp4",
+          "videoSha256": "7e60360f343863f752e2688997f282c2f7930e45ee0c620b3c0ebac92f4562de",
+          "index": 140
+        },
+        "note": "Whole real frame: frame 140 of pamela-arkiv-d-c2-hole-join, three frames before its end. Both hands at rest, D.C1 blue and the hole card D.C2 yellow on the table."
+      },
+      "last": {
+        "frame": {
+          "video": "assets/motions/pamela-arkiv-d-c2-reveal-01/source.mp4",
+          "videoSha256": "2ddd3083d9b90ed8070d8916c1dba9b9cfaa83b010e1becea5b8188a8707afd6",
+          "index": 116
+        },
+        "note": "Whole real frame: frame 116 of pamela-arkiv-d-c2-reveal-01, three frames before its end. Both hands at rest, both dealer cards blue."
+      },
+      "promptText": "Locked camera on the same Pamela, black suit, green felt and fixed shoe, with two cards lying on the table close in front of her: a blue card at left and a yellow card at right. Begin in the exact rest pose of the first image, both hands flat on the table. In one calm, unhurried movement her left hand reaches a short distance to the upper right edge of the yellow card on the table and pinches this existing card. The blue card at left stays flat and fixed. She lifts the yellow card just above its own footprint and rolls it over once around its long axis in the same grip: the broad yellow back narrows to a distinct thin pale edge, then the opposite blue face opens and widens before contact. The card is one rigid flat rectangle with sharp corners the whole time, and both face colours stay fixed to the physical card. She lowers it blue side up onto the exact footprint it was lifted from and lays it flat once. She lets go, lifts the empty fingers and returns the hand directly to rest flat on the table, ending in the exact pose of the last image, looking into the camera with a slight friendly smile. Both faces of the card are blank: one plain solid yellow, the other plain solid blue, with no print, pips, pattern or picture. Only the yellow card moves. The other hand rests throughout. The yellow card in the shoe stays fully seated and the shoe is untouched. No slide, second flip, colour swap, extra card, display gesture, camera motion or cut.",
+      "purpose": "New take of the turn of the hole card for the game (Jakob asked for the film; the archive take is usable but its lifted card looks soft). Whole real frames as first and last image. Wording: the archive's, which gave a physical turn, with the card said to stay rigid."
+    },
+    {
+      "id": "pamela-d-c2-reveal-02",
+      "kind": "REVEAL",
+      "target": "D.C2",
+      "from": "IDLE",
+      "to": "REVEAL(D.C2)",
+      "model": "wan3",
+      "duration": 4,
+      "ratio": "auto_1080p",
+      "audio": false,
+      "first": {
+        "frame": {
+          "video": "assets/motions/pamela-arkiv-d-c2-hole-join/source.mp4",
+          "videoSha256": "7e60360f343863f752e2688997f282c2f7930e45ee0c620b3c0ebac92f4562de",
+          "index": 140
+        },
+        "note": "Whole real frame: frame 140 of pamela-arkiv-d-c2-hole-join, three frames before its end. Both hands at rest, D.C1 blue and the hole card D.C2 yellow on the table."
+      },
+      "last": {
+        "frame": {
+          "video": "assets/motions/pamela-arkiv-d-c2-reveal-01/source.mp4",
+          "videoSha256": "2ddd3083d9b90ed8070d8916c1dba9b9cfaa83b010e1becea5b8188a8707afd6",
+          "index": 116
+        },
+        "note": "Whole real frame: frame 116 of pamela-arkiv-d-c2-reveal-01, three frames before its end. Both hands at rest, both dealer cards blue."
+      },
+      "promptText": "Locked camera on the same Pamela, black suit, green felt and fixed shoe, with two cards lying on the table close in front of her: a blue card at left and a yellow card at right. Begin in the exact rest pose of the first image, both hands flat on the table. In one calm, unhurried movement her left hand reaches a short distance to the upper right edge of the yellow card on the table and pinches this existing card. The blue card at left stays flat and fixed. She lifts the yellow card just above its own footprint and rolls it over once around its long axis in the same grip: the broad yellow back narrows to a distinct thin pale edge, then the opposite blue face opens and widens before contact. The card is one rigid flat rectangle with sharp corners the whole time, and both face colours stay fixed to the physical card. She lowers it blue side up onto the exact footprint it was lifted from and lays it flat once. She lets go, lifts the empty fingers and returns the hand directly to rest flat on the table, ending in the exact pose of the last image, looking into the camera with a slight friendly smile. Both faces of the card are blank: one plain solid yellow, the other plain solid blue, with no print, pips, pattern or picture. Only the yellow card moves. The other hand rests throughout. The yellow card in the shoe stays fully seated and the shoe is untouched. No slide, second flip, colour swap, extra card, display gesture, camera motion or cut.",
+      "purpose": "New take of the turn of the hole card for the game (Jakob asked for the film; the archive take is usable but its lifted card looks soft). Whole real frames as first and last image. Same images and wording as pamela-d-c2-reveal-01: a second draw, since about every second or third take holds."
+    },
+    {
+      "id": "pamela-d-c2-reveal-03",
+      "kind": "REVEAL",
+      "target": "D.C2",
+      "from": "IDLE",
+      "to": "REVEAL(D.C2)",
+      "model": "wan3",
+      "duration": 4,
+      "ratio": "auto_1080p",
+      "audio": false,
+      "first": {
+        "frame": {
+          "video": "assets/motions/pamela-arkiv-d-c2-hole-join/source.mp4",
+          "videoSha256": "7e60360f343863f752e2688997f282c2f7930e45ee0c620b3c0ebac92f4562de",
+          "index": 140
+        },
+        "note": "Whole real frame: frame 140 of pamela-arkiv-d-c2-hole-join, three frames before its end. Both hands at rest, D.C1 blue and the hole card D.C2 yellow on the table."
+      },
+      "last": {
+        "frame": {
+          "video": "assets/motions/pamela-arkiv-d-c2-reveal-01/source.mp4",
+          "videoSha256": "2ddd3083d9b90ed8070d8916c1dba9b9cfaa83b010e1becea5b8188a8707afd6",
+          "index": 116
+        },
+        "note": "Whole real frame: frame 116 of pamela-arkiv-d-c2-reveal-01, three frames before its end. Both hands at rest, both dealer cards blue."
+      },
+      "promptText": "Locked camera on the same Pamela, black suit, green felt and fixed shoe. She sits upright with both hands resting flat on the table, exactly as in the first image. Two cards lie flat and still on the table close in front of her: a plain solid blue card at left and a plain solid yellow card at right. In one calm, unhurried movement her left hand reaches to that yellow card, lifts it by its edge and turns it over once just above the table: yellow visibly narrows to a thin pale edge and the opposite blue face opens fully. She lays the same card flat, blue face up, on the exact place it was lifted from, lets go of it, and draws the hand low and straight back to rest flat on the table in front of her. She ends in the exact pose of the last image, looking into the camera with a slight friendly smile. Both faces of the card are blank: one plain solid yellow, the other plain solid blue, with no print, pips, pattern or picture. The other hand rests on the table throughout. The blue card at left stays flat, still and untouched. The yellow card in the shoe stays fully seated. No slide, second flip, colour swap, reach toward the shoe, extra card, display gesture, camera motion or cut.",
+      "purpose": "New take of the turn of the hole card for the game (Jakob asked for the film; the archive take is usable but its lifted card looks soft). Whole real frames as first and last image. Same images as pamela-d-c2-reveal-01 with the clip bank's plain recipe for the turn, to see whether the wording matters."
     }
   ],
   "derived": [
