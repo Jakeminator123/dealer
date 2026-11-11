@@ -10,7 +10,7 @@
 - Fem styrdokument räcker: README, AGENTS, HANDOFF, docs/SYSTEM och docs/DRIFT. Uppdatera befintliga avsnitt; skapa inte dagbok/plan per körning. Nya beslut måste nå rätt dokument eller befintligt JSON-register. Rensa ersatt status, bevara källbevis.
 - Tillfälliga jobb använder processlokal TEMP/TMP på D:/dealer-scratch/tmp. Före nya stora körningar: kontrollera utrymme och befintlig återanvändbar utdata. Radera bara verifierat ersatt slask; bevara original, aktiva referenser och review.
 - START.cmd, STOPP.cmd och STATUS.cmd gäller 127.0.0.1:4319. Använd Codex WebView, återanvänd flik/server. Stäng inte gamla labbets eller andra projekts servrar. Stoppa via kontrollkanal; aldrig processnamn/port.
-- Materialprov är separata tills faktisk integration verifierats. Märk källhand ur dealerns perspektiv och målplats separat. Inga spelregler/slump/kortvärden flyttas från Scout.
+- Materialprov är separata tills faktisk integration verifierats. Märk källhand ur dealerns perspektiv och målplats separat. Inga spelregler/slump/kortvärden flyttas från Scout. Undantag enligt Jakobs uppdrag 2026-11-11: en fristående spelmotor för labbets speloverlay får ligga i en egen avskild mapp, skild från filmkoden; inget ändras i Scout.
 - Inga oregistrerade läsningar från gamla labbet, inga junctions eller gamla node_modules-beroenden. assets/, output/, .runtime/, .env* och private/ hålls utanför Git.
 - Svara svenska, slutsats först, cirka högst 120 ord. Skilj verifierat och skattat. Avsluta med antal aktiva underagenter. Rapportera kvarvarande arbete och stängningshinder kort.
 - Windows rg: välj Get-Command rg.exe -All med Source som matchar *\OpenAI\Codex\bin\*\rg.exe och lägg dess mapp först i processens PATH; annars Select-String. Ändra inte bestående PATH.

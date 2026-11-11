@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "id": "pamela-readyb-idleb-exit-01",
+  "dealer": "pamela",
+  "motion": {
+    "kind": "RETURN",
+    "from": "READY-B",
+    "to": "IDLE-B",
+    "hand": "LH",
+    "pass": false,
+    "basis": "SOURCE_FRAME_REVIEW",
+    "evidence": "evidence/generation-method-audit.json"
+  },
+  "review": {
+    "decision": "PENDING",
+    "basis": "Utsnitt, ruta 3–52 ur pamela-ready-b-shoe-plate-01. Enligt den tidigare granskningen av hela klippet: handen på kortet i låga öppningen f0–18, lyfter f24, båda händerna vilar f42–78 med skon orörd, tillbaka f84–96, REDO B från f102.",
+    "limitations": "Utsnittet är inte granskat ruta för ruta som eget steg. Vilan här har variant B:s sko med låg öppning och är inte samma bild som vilan i variant A.",
+    "colorDoesNotProvePhysicalSide": true,
+    "userAccepted": false,
+    "productionReady": false
+  },
+  "experiment": "READY-B",
+  "postProcessing": "none",
+  "generationRef": null,
+  "jobRef": "data/clip-jobs.json",
+  "scoutIntegrated": false,
+  "published": false
+}

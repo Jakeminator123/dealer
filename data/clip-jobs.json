@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "budget": {
-    "maximumCredits": 4200
+    "maximumCredits": 4600
   },
   "anchors": [
     {
@@ -2585,6 +2585,120 @@
         "note": "Same frame, so every variant ends on the keystone and any other can follow."
       },
       "purpose": "Recreational variant Jakob asked for: she drinks coffee. The mug is plain; a logo is added afterwards if wanted. One of several short idle variants to be picked at random, breathing most often and gestures rarely."
+    },
+    {
+      "id": "pamela-p1-c1-readyb-deal-01",
+      "kind": "DEAL",
+      "target": "P1.C1",
+      "from": "READY-B",
+      "to": "LAND(P1.C1)",
+      "model": "wan3",
+      "ratio": "auto_1080p",
+      "audio": false,
+      "duration": 5,
+      "promptText": "Locked camera. The same woman, black suit, uniform green set and fixed black card shoe: a blackjack dealer dealing one card face up to a player at the far left of the image. One continuous, calm and unhurried five-second deal. From the exact first pose her left fingertips slide the top card down and out through the low front opening of the shoe, its plain yellow back up, and draw it low across the table, flat on the felt, all the way to that player's place. There she takes the card by its edge between thumb and fingers and turns it over once: the broad yellow back is seen, then the thin pale edge, then the broad plain blue face. She lays the blue-face-up card flat exactly where the blue card lies in the last image and the clip ends there, her fingertips still resting lightly on the card as in the last image. Both faces of the card are blank: one plain solid yellow, the other plain solid blue, with no print, pips, pattern or picture. The other hand rests throughout. The next yellow card stays seated in the low front opening of the shoe and the shoe keeps its exact shape. No lift before the turn, second card, handoff, second flip, colour swap, slide of the placed card, camera motion or cut.",
+      "first": {
+        "frame": {
+          "video": "assets/motions/pamela-ready-b-shoe-plate-01/source.mp4",
+          "videoSha256": "a945396d1ae0ed736bc29f2cce72228619110a76715a76aa7bb920e0c06fc07e",
+          "index": 112
+        },
+        "note": "READY B as a whole real frame: frame 112 of pamela-ready-b-shoe-plate-01, fingertips flat on the card at the low outlet, empty table."
+      },
+      "last": {
+        "frame": {
+          "video": "assets/motions/pamela-p1-c1-drawn-deal-01/source.mp4",
+          "videoSha256": "515c9567e09face093d7df651d58f94207ac19e8f5038a2dd10c29f8d3b6c6a3",
+          "index": 108
+        },
+        "note": "Whole real frame: frame 108 of pamela-p1-c1-drawn-deal-01, fingertips on the blue card at P1, the same low-outlet shoe."
+      },
+      "purpose": "Variant B in one film for P1: from READY B the card is pressed out, slid along the felt and turned at the seat. This skips the step from READY B to the drawn card, which no clip has solved; the direct film to P4 was accepted by Jakob as a variant."
+    },
+    {
+      "id": "pamela-p2-c1-readyb-deal-01",
+      "kind": "DEAL",
+      "target": "P2.C1",
+      "from": "READY-B",
+      "to": "LAND(P2.C1)",
+      "model": "wan3",
+      "ratio": "auto_1080p",
+      "audio": false,
+      "duration": 5,
+      "promptText": "Locked camera. The same woman, black suit, uniform green set and fixed black card shoe: a blackjack dealer dealing one card face up to a player at the left side of the image. One continuous, calm and unhurried five-second deal. From the exact first pose her left fingertips slide the top card down and out through the low front opening of the shoe, its plain yellow back up, and draw it low across the table, flat on the felt, all the way to that player's place. There she takes the card by its edge between thumb and fingers and turns it over once: the broad yellow back is seen, then the thin pale edge, then the broad plain blue face. She lays the blue-face-up card flat exactly where the blue card lies in the last image and the clip ends there, her fingertips still resting lightly on the card as in the last image. Both faces of the card are blank: one plain solid yellow, the other plain solid blue, with no print, pips, pattern or picture. The other hand rests throughout. The next yellow card stays seated in the low front opening of the shoe and the shoe keeps its exact shape. No lift before the turn, second card, handoff, second flip, colour swap, slide of the placed card, camera motion or cut.",
+      "first": {
+        "frame": {
+          "video": "assets/motions/pamela-ready-b-shoe-plate-01/source.mp4",
+          "videoSha256": "a945396d1ae0ed736bc29f2cce72228619110a76715a76aa7bb920e0c06fc07e",
+          "index": 112
+        },
+        "note": "READY B as a whole real frame: frame 112 of pamela-ready-b-shoe-plate-01, fingertips flat on the card at the low outlet, empty table."
+      },
+      "last": {
+        "frame": {
+          "video": "assets/motions/pamela-p2-c1-drawn-deal-01/source.mp4",
+          "videoSha256": "f75b3ca154ae0285e667004224efeb32d9560cc572dac031b8f7de2d63a89ca9",
+          "index": 108
+        },
+        "note": "Whole real frame: frame 108 of pamela-p2-c1-drawn-deal-01, fingertips on the blue card at P2, the same low-outlet shoe."
+      },
+      "purpose": "Variant B in one film for P2: from READY B the card is pressed out, slid along the felt and turned at the seat. This skips the step from READY B to the drawn card, which no clip has solved; the direct film to P4 was accepted by Jakob as a variant."
+    },
+    {
+      "id": "pamela-p5-c1-readyb-deal-01",
+      "kind": "DEAL",
+      "target": "P5.C1",
+      "from": "READY-B",
+      "to": "LAND(P5.C1)",
+      "model": "wan3",
+      "ratio": "auto_1080p",
+      "audio": false,
+      "duration": 5,
+      "promptText": "Locked camera. The same woman, black suit, uniform green set and fixed black card shoe: a blackjack dealer dealing one card face up to a player slightly right of centre in the image. One continuous, calm and unhurried five-second deal. From the exact first pose her left fingertips slide the top card down and out through the low front opening of the shoe, its plain yellow back up, and draw it low across the table, flat on the felt, all the way to that player's place. There she takes the card by its edge between thumb and fingers and turns it over once: the broad yellow back is seen, then the thin pale edge, then the broad plain blue face. She lays the blue-face-up card flat exactly where the blue card lies in the last image and the clip ends there, her fingertips still resting lightly on the card as in the last image. Both faces of the card are blank: one plain solid yellow, the other plain solid blue, with no print, pips, pattern or picture. The other hand rests throughout. The next yellow card stays seated in the low front opening of the shoe and the shoe keeps its exact shape. No lift before the turn, second card, handoff, second flip, colour swap, slide of the placed card, camera motion or cut.",
+      "first": {
+        "frame": {
+          "video": "assets/motions/pamela-ready-b-shoe-plate-01/source.mp4",
+          "videoSha256": "a945396d1ae0ed736bc29f2cce72228619110a76715a76aa7bb920e0c06fc07e",
+          "index": 112
+        },
+        "note": "READY B as a whole real frame: frame 112 of pamela-ready-b-shoe-plate-01, fingertips flat on the card at the low outlet, empty table."
+      },
+      "last": {
+        "frame": {
+          "video": "assets/motions/pamela-p5-c1-drawn-deal-02/source.mp4",
+          "videoSha256": "94f6a089f79b91fcdbbddc76dd5ec81d7913ed1d12638a43cfa4374507262a9f",
+          "index": 108
+        },
+        "note": "Whole real frame: frame 108 of pamela-p5-c1-drawn-deal-02, fingertips on the blue card at P5, the same low-outlet shoe."
+      },
+      "purpose": "Variant B in one film for P5: from READY B the card is pressed out, slid along the felt and turned at the seat. This skips the step from READY B to the drawn card, which no clip has solved; the direct film to P4 was accepted by Jakob as a variant."
+    },
+    {
+      "id": "pamela-p2-c1-handover-01",
+      "kind": "DEAL",
+      "target": "P2.C1",
+      "from": "READY",
+      "to": "HANDOVER(P2.C1)",
+      "model": "wan3",
+      "ratio": "auto_1080p",
+      "audio": false,
+      "duration": 5,
+      "promptText": "Locked camera on the same Pamela, black suit, green felt and fixed shoe: a blackjack dealer dealing one card face up to a player at the left side of the image, using both hands. One continuous, calm five-second movement. From the exact first pose her left hand draws one card out of the shoe, its plain yellow back visible, and brings it in front of her body. There her right hand comes up from the table and takes the card from the left hand. The right hand turns the card over once while carrying it to the left: the broad yellow back is seen, then the thin pale edge, then the broad plain blue face. The right hand lays the blue-face-up card flat on the table exactly where the blue card lies in the last image, lets go of it, and both hands come back to rest flat on the table in front of her as in the last image, where she looks into the camera. Both faces of the card are blank: one plain solid yellow, the other plain solid blue, with no print, pips, pattern or picture. The next yellow card stays seated in the shoe. No second card, second flip, colour swap, slide of the placed card, camera motion or cut.",
+      "first": {
+        "file": {
+          "path": "assets/motions/pamela-p4-c1-color-control-01/start.png",
+          "sha256": "a2fc6d3565ca711015c9b547671bf33e97eea4c2281e75841690f8848b422f45"
+        },
+        "note": "Proven READY anchor: real video frame with the pinch on the yellow card."
+      },
+      "last": {
+        "file": {
+          "path": "assets/anchors/pamela-idle-p2-c1-plan-01/anchor.png",
+          "sha256": "7d59258db5fd2ddde40c5fb664d54b9f48faf93a4cb541ae53d3ecd5b1d90e9a"
+        },
+        "note": "IDLE with the P2.C1 card at the plan position: both hands resting, so either hand may have laid the card."
+      },
+      "purpose": "Test of the handover variant Jakob asked for: the left hand takes the card, the right hand turns and lays it. The end image shows both hands at rest so that it does not dictate which hand laid the card; the clip therefore holds deal and return in one, which is why it is an experiment and not a seat film."
     }
   ],
   "derived": [
@@ -2839,6 +2953,30 @@
         59
       ],
       "purpose": "P6.C1 return to READY from the old lab archive (paid original, 2 s), frames 1–59. Its frame 0 is the same image as frame 92 of the deal film, so it follows pamela-p6-c1-arkiv-deal-01 played to 92. Loose fist raised f12–27."
+    },
+    {
+      "id": "pamela-idleb-readyb-entry-01",
+      "kind": "ENTRY",
+      "from": "IDLE-B",
+      "to": "READY-B",
+      "clip": "pamela-ready-b-shoe-plate-01",
+      "frames": [
+        72,
+        112
+      ],
+      "purpose": "From rest to READY B (anchor 1 to the second variant of anchor 2), cut from the shoe plate clip: the hand goes back to the card at the low outlet in frames 84–96 and is in READY B from frame 102. Nothing generated."
+    },
+    {
+      "id": "pamela-readyb-idleb-exit-01",
+      "kind": "RETURN",
+      "from": "READY-B",
+      "to": "IDLE-B",
+      "clip": "pamela-ready-b-shoe-plate-01",
+      "frames": [
+        3,
+        52
+      ],
+      "purpose": "From READY B to rest, cut from the same clip: the hand lifts at frame 24 and both hands rest from frame 42. Nothing generated."
     }
   ],
   "edits": [
