@@ -19,6 +19,27 @@ Kort, marker, masker och kontaktskuggor komponerar dessa tre ytor; de är inga y
 
 Verifierad kod i `src/pamela-card-contact-v6.ts`: native dealerkomposition skalas till 1586×1057, beskärs vid `(left=250,top=0,width=1080,height=1057)` och placeras på porträttytan vid `(0,80)`. Mattans native-utsnitt `(278,838,1200,336)` blir 1080×1086 vid `(0,834)`; kanten `(278,817,1200,21)` blir 1080×19 vid `(0,815)`. En global bildtransform kan därför inte beskriva alla tre ytorna. Återinför inte äldre bordskanter/magklippning utan separat granskning.
 
+### 3D-scenen (`scene3d.html`)
+
+Pamelas film visas i ett tredimensionellt rum med ett tredimensionellt bord. Sidan är fristående TypeScript-moduler som webbläsaren läser direkt, typavskalade av `tools/preview.ts`, med three.js 0.180.0 via importmappen i `scene3d.html`. Ingen React, ingen React Three Fiber, ingen bundler och inget byggsteg. Node används bara av labbservern, testerna och provinspelningen. Bakgrundsagenten äger dessa filer.
+
+Lager, bakifrån och fram:
+
+| Lager | Vad | Fil |
+| --- | --- | --- |
+| Rum | Byggd salong, 360°-panorama, V6-plåten som kuliss eller V6-plåten fast i rutan. Ritas i halv upplösning och görs oskarpt efter avstånd. | `src/scene3d-room.ts` |
+| Bord | Filten är en platt bild sedd uppifrån (linjer, kortrutor ur placeringsplanen, logga), plus reling och sarg som geometri. Byte av logga eller filtfärg är ett bildbyte. | `src/scene3d-table.ts` |
+| Rekvisita under filmen | Sådant händerna vilar på eller passerar över, till exempel ett försänkt markerbräde. Ritas före filmen, så händerna hamnar alltid överst. | planerad fil för rekvisita, inte i repot ännu |
+| Film | Nycklas i shadern mot rutans egen gröna nivå (skuggor blir svart med delalfa) och projiceras från filmkameran på två ytor: ett lodrätt plan på bordets bakkant och bordsskivan. | `src/scene3d-film.ts` |
+| Ljus | Fläktskuggan: en multiplikation ovanpå film och bord; filmens eget ljus går inte att ändra. | `src/scene3d-light.ts` |
+| Bild | Vykamera, oskärpa, fokus och slutkomposit. | `src/scene3d-view.ts` |
+
+Filmkameran läses ur `data/scene-contract.json` (planens kamera) i `src/scene3d-geometry.ts`, som återanvänder pinhålet i `src/scene-geometry.ts`. Tre lägen ska hållas isär: från filmkamerans plats är bilden filmen pixel för pixel; vridning och zoom från samma plats är geometriskt exakt; förflyttning är ett närmevärde som bryter vid ungefär en stols avstånd. Rundor spelas med klippbankens egna klippunkter (`resolveRound`), aldrig hela klipp efter varandra.
+
+Allt som tillkommit efter kontrollpunkt v1 (fokus, fläktskugga, rekvisita) är avstängt från start, så sidan öppnar som v1. Ny bild jämförs mot föregående etapp innan den kallas oförändrad. Etapper heter `jakob-N` (se DRIFT).
+
+Kända gränser: planens kamera passar kortrutorna men dealern är inte ritad med den linsen; skalan k är skattad (1,8–2,5); skon är film och kan varken läggas bakom något eller bytas ut utan en egen matt; salongen, bordets mått och tryckets layout är platshållare. Test: `tools/scene3d-geometry.test.ts` (ren geometri, utan media).
+
 ## Bottom-up och koordinatreferenser
 
 Bottom-up betyder att höjd ökar uppåt. V6 mäter idag bildpixlar från övre vänstra hörnet med y nedåt. Originalmätningar och referenshashar bevaras; en adapter ska konvertera vid en uttrycklig systemgräns.
