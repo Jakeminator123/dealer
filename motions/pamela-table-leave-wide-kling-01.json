@@ -32,7 +32,11 @@
       ],
       "layer": "BEHIND_TABLE",
       "shadow": false,
-      "behindFrom": 65
+      "behindFrom": 65,
+      "rise": [
+        22,
+        48
+      ]
     }
   },
   "review": {
