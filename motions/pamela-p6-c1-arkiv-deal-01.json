@@ -26,12 +26,14 @@
     "evidence": "evidence/generation-method-audit.json"
   },
   "review": {
-    "decision": "PENDING",
+    "decision": "ACCEPTED",
     "basis": "Arkivklipp, rutgranskat 2026-11-11 ruta för ruta i 0,6–1,0 skala. Ruta 0 är dagens REDO-ankare (medel 1,45, 0 bildpunkter över 40). Vänsterhanden drar kortet rent f14–26. Vändningen är fysisk, under nedföringen framför skon: gul remsa f52–59, hårtunn kant f60–63, tunn blå f64, bred blå från f67. Kortet ligger plant från f76 utan att glida. Fingrarna vilar på överkanten f76–88, släpper f90. Utsnittet slutar f92.",
     "limitations": "Kortet driver åt vänster till x≈1188 f32–40 (förledet är en P2-giv) och kommer tillbaka; läses som en sammanhängande rörelse. Armen går framför skons fönster f52–90. Kortet hamnar 30 px från planens P6.C1 (+27, +13). Filmen är gamla labbets förlustfria sammanfogning av betalda filmer (H.264 High 4:4:4 Predictive); uppspelning i webbläsare är inte prövad. Gamla labbets egen dom: lokalt godkänd; en tidigare hel tagning underkändes för ett för tidigt andra kort.",
     "colorDoesNotProvePhysicalSide": true,
-    "userAccepted": false,
-    "productionReady": false
+    "userAccepted": true,
+    "productionReady": false,
+    "acceptedAs": "VARIANT",
+    "userReview": "Jakob 2026-11-11: Ja, den här är lite rolig. Hon ler nästan lite när hon går tillbaka och gör något på skon."
   },
   "postProcessing": "Old lab: decoded frames of the paid films in importedFrom.paidParts concatenated in that order and encoded lossless (H.264 High 4:4:4 Predictive, yuv420p). Copied unchanged; nothing was generated or re-encoded for this import.",
   "generationRef": null,

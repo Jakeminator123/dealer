@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "id": "pamela-idle-breath-b-01",
+  "dealer": "pamela",
+  "source": {
+    "path": "assets/motions/pamela-idle-breath-b-01/source.mp4",
+    "sha256": "544cf7f3e0173e1111312fe17fd926f1d9c4dc4937b5e582f91000206c431740",
+    "bytes": 7979193,
+    "width": 1764,
+    "height": 1174,
+    "fps": 30,
+    "frames": 90,
+    "provider": "Runway developer API",
+    "model": "wan3"
+  },
+  "motion": {
+    "kind": "IDLE",
+    "from": "IDLE",
+    "to": "IDLE",
+    "hand": "LH",
+    "pass": false,
+    "basis": "SOURCE_FRAME_REVIEW",
+    "evidence": "evidence/generation-method-audit.json"
+  },
+  "review": {
+    "decision": "PENDING",
+    "basis": "Levererad. Väntar på oberoende rutgranskning; ingen dom ännu.",
+    "limitations": "Inte granskad ruta för ruta ännu.",
+    "colorDoesNotProvePhysicalSide": true,
+    "userAccepted": false,
+    "productionReady": false
+  },
+  "postProcessing": "none",
+  "generationRef": "assets/motions/pamela-idle-breath-b-01/generation.json",
+  "jobRef": "data/clip-jobs.json",
+  "scoutIntegrated": false,
+  "published": false
+}

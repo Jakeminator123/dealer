@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "id": "pamela-idle-coffee-01",
+  "dealer": "pamela",
+  "source": {
+    "path": "assets/motions/pamela-idle-coffee-01/source.mp4",
+    "sha256": "66725269528737a19de34a55cbed031c5feb12446ddc3c9c355afef854308552",
+    "bytes": 13823944,
+    "width": 1764,
+    "height": 1174,
+    "fps": 30,
+    "frames": 150,
+    "provider": "Runway developer API",
+    "model": "wan3"
+  },
+  "motion": {
+    "kind": "IDLE",
+    "from": "IDLE",
+    "to": "IDLE",
+    "hand": "LH",
+    "pass": false,
+    "basis": "SOURCE_FRAME_REVIEW",
+    "evidence": "evidence/generation-method-audit.json"
+  },
+  "review": {
+    "decision": "PENDING",
+    "basis": "Levererad. Väntar på oberoende rutgranskning; ingen dom ännu.",
+    "limitations": "Inte granskad ruta för ruta ännu.",
+    "colorDoesNotProvePhysicalSide": true,
+    "userAccepted": false,
+    "productionReady": false
+  },
+  "postProcessing": "none",
+  "generationRef": "assets/motions/pamela-idle-coffee-01/generation.json",
+  "jobRef": "data/clip-jobs.json",
+  "scoutIntegrated": false,
+  "published": false
+}
