@@ -84,7 +84,7 @@ export function createScene(canvas: HTMLCanvasElement, host: HTMLElement, data: 
   type CardLayer = {texture: T.Texture; update(video: HTMLVideoElement, frame: number, track: unknown, choice: {rank: string; suit: string; scale: number}, extra?: object | null): boolean};
   // Things another page adds: props lying on the table (built with the table, drawn under the film) and a call after every drawn frame.
   type Prop = {group: T.Object3D; build(edgeZ: number, scale: number): void};
-  const props: Prop[] = [], frameCalls = new Set<() => void>(); let built = false;
+  const props: Prop[] = [], frameCalls = new Set<() => void>(); let built = false, ownNotch: {x0: number; x1: number; s1: number} | null = null;
   let cardLayer: CardLayer | null = null, cardLoad: Promise<void> | null = null, cardError = '';
   function loadCards() { cardLoad ??= import('./scene3d-cards.ts').then(m => { cardLayer = m.createCardLayer(data.contract); cardError = ''; }, error => { cardError = String((error as Error)?.message ?? error); state.cards = false; cardLoad = null; }).then(() => data.onChange()); }
 
@@ -131,7 +131,7 @@ export function createScene(canvas: HTMLCanvasElement, host: HTMLElement, data: 
     camera = filmCamera(); const solved = solveCamera(camera); pitch = solved.pitch; edgeZ = -solved.edgeDistance;
     filmCam.fov = solved.fovYDeg; filmCam.aspect = W / H; filmCam.position.set(0, camera.heightM, 0); filmCam.rotation.set(-pitch, 0, 0, 'YXZ'); filmCam.updateProjectionMatrix(); filmCam.updateMatrixWorld(true);
     filmVP.multiplyMatrices(filmCam.projectionMatrix, filmCam.matrixWorldInverse);
-    table.build(edgeZ, camera.scale, state.tray ? TRAY : undefined); tray.group.visible = state.tray; if (state.tray) tray.build(edgeZ, camera.scale); drawFelt(); rooms.place(camera); light.place(camera); buildGuides(); focusNow = NaN; built = true; for (const prop of props) prop.build(edgeZ, camera.scale); apply();
+    table.build(edgeZ, camera.scale, ownNotch ?? (state.tray ? TRAY : undefined)); tray.group.visible = state.tray && !ownNotch; if (tray.group.visible) tray.build(edgeZ, camera.scale); drawFelt(); rooms.place(camera); light.place(camera); buildGuides(); focusNow = NaN; built = true; for (const prop of props) prop.build(edgeZ, camera.scale); apply();
   }
   const drawFelt = () => table.draw({spots: cardSpots(data.plan, camera), logo: state.logo, felt: state.felt, scale: camera.scale});
   function apply() {
@@ -201,6 +201,9 @@ export function createScene(canvas: HTMLCanvasElement, host: HTMLElement, data: 
     // ---- for a page that puts a game on the table. Positions are dealer metres: x across the table, s from the dealer-side
     // edge toward the players, y above the felt (as cardSpots and betSpots give them).
     canvas,
+    // A prop that is sunk into the table at the dealer's edge brings its own notch in the felt (x0, x1 across, s1 toward the
+    // players); the built tray then steps aside. null gives the felt back to the built tray.
+    notch(next: {x0: number; x1: number; s1: number} | null) { ownNotch = next; if (built) rebuild(); },
     // Card places and bet rings as the film camera in use lays them on the felt. They move with the lens and the scale, so a
     // prop reads them in its build(), which runs again whenever those change.
     spots() { return {cards: cardSpots(data.plan, camera), bets: betSpots(data.plan, camera)}; },

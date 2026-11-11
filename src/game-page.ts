@@ -121,6 +121,8 @@ const overlay = mountOverlay(stage, {
   },
 });
 const order: number[] = []; // the seats the chips were laid on, in order, for Ångra
+// Jakob's chip tray (assets/props/tray.glb, local media) takes the place of the built tray when it can be read; game.html?tray=built keeps the built one.
+if (query.get('tray') !== 'built') void import('./game3d-props.ts').then(async m => { const tray = await m.loadTray(scene); scene.notch(tray.notch); scene.addProp(tray); }).catch(() => {});
 // The chips in the rings are 3D objects on the table when the module can be read; until then, and if it cannot, the overlay draws them flat.
 type Chips = {set(bets: Record<number, number[]>, now: number): void; update(now: number): boolean};
 let chips: Chips | null = null;

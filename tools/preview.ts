@@ -17,12 +17,16 @@ if(process.argv.includes('--stop')||process.argv.includes('--status')){
 }else{
  const manifest=JSON.parse(await readFile('manifest.json','utf8'));
  const allowed=new Set(['preview.html','lab.html','lab.css','scene3d.html','game.html','game.css','generation.html','data/p4-generation-review.json','data/scene-contract.json','assets/lab/native.jpg','assets/lab/portrait.jpg','assets/scene/room.png','assets/scene/panorama-vegas.jpg','assets/scene/panorama-la.jpg','assets/scene/panorama-skog.jpg','materials/kortmaterial.html','materials/markermaterial.html',...manifest.files.map((f:{path:string})=>f.path).filter((p:string)=>p.startsWith('assets/')||p.startsWith('materials/')||p.startsWith('output/v6/'))]);
- const scripts:Record<string,string>={'/preview-ui.js':'src/preview-ui.ts','/lab-ui.js':'src/lab-ui.ts','/placement-model.js':'src/placement-model.ts','/clip-graph.js':'src/clip-graph.ts','/card-track.js':'src/card-track.ts','/card-overlay.js':'src/card-overlay.ts','/card-overlay-view.js':'src/card-overlay-view.ts','/scene-geometry.js':'src/scene-geometry.ts',...Object.fromEntries(['geometry','film','light','table','props','cards','room','view','ui'].map(name=>[`/scene3d-${name}.js`,`src/scene3d-${name}.ts`])),...Object.fromEntries(['page','overlay','view','film','director','table'].map(name=>[`/game-${name}.js`,`src/game-${name}.ts`])),'/game3d-chips.js':'src/game3d-chips.ts','/materials/source/src/card-material-study.js':'materials/source/src/card-material-study.ts','/materials/source/src/chip-material-study.js':'materials/source/src/chip-material-study.ts'};
+ const scripts:Record<string,string>={'/preview-ui.js':'src/preview-ui.ts','/lab-ui.js':'src/lab-ui.ts','/placement-model.js':'src/placement-model.ts','/clip-graph.js':'src/clip-graph.ts','/card-track.js':'src/card-track.ts','/card-overlay.js':'src/card-overlay.ts','/card-overlay-view.js':'src/card-overlay-view.ts','/scene-geometry.js':'src/scene-geometry.ts',...Object.fromEntries(['geometry','film','light','table','props','cards','room','view','ui'].map(name=>[`/scene3d-${name}.js`,`src/scene3d-${name}.ts`])),...Object.fromEntries(['page','overlay','view','film','director','table'].map(name=>[`/game-${name}.js`,`src/game-${name}.ts`])),'/game3d-chips.js':'src/game3d-chips.ts','/game3d-props.js':'src/game3d-props.ts','/materials/source/src/card-material-study.js':'materials/source/src/card-material-study.ts','/materials/source/src/chip-material-study.js':'materials/source/src/chip-material-study.ts'};
  // Modules that are also run by Node name their neighbours with .ts; the browser asks for the same file as .js.
  const forBrowser=(source:string)=>stripTypeScriptTypes(source).replace(/((?:from|import)\s*\(?\s*)(['"])([^'"\n]+)\.ts\2/g,'$1$2$3.js$2');
  // three.js for the 3D scene (scene3d.html maps the bare name "three" to /vendor/three.module.js): exactly the two files its module build
  // consists of, read from the pinned dependency. Nothing else under node_modules is reachable.
- const vendor:Record<string,string>={'/vendor/three.module.js':'node_modules/three/build/three.module.js','/vendor/three.core.js':'node_modules/three/build/three.core.js'};
+ const vendor:Record<string,string>={'/vendor/three.module.js':'node_modules/three/build/three.module.js','/vendor/three.core.js':'node_modules/three/build/three.core.js',
+  // The GLB reader for table props (game.html maps "three/addons/" to /vendor/): the loader and the one helper it imports.
+  '/vendor/loaders/GLTFLoader.js':'node_modules/three/examples/jsm/loaders/GLTFLoader.js','/vendor/utils/BufferGeometryUtils.js':'node_modules/three/examples/jsm/utils/BufferGeometryUtils.js'};
+ // Table props made by tools/prop-glb.ts: assets/props/<id>.glb, and only where the file really lies in that folder.
+ const propFile=async(file:string)=>{const m=/^assets\/props\/([a-z0-9]+(?:-[a-z0-9]+)*\.glb)$/.exec(file);if(!m)return false;try{return await realpath(file)===path.join(await realpath('assets/props'),m[1]);}catch{return false;}};
  const placements=placementStore(process.cwd()),reviews=reviewStore(process.cwd());
  const library=async()=>{try{const data=JSON.parse(await readFile('data/library.json','utf8'));data.items=await Promise.all(data.items.filter((item:{path:string})=>typeof item.path==='string'&&/^(assets\/|output\/v6\/)/.test(item.path)&&path.posix.normalize(item.path)===item.path&&!item.path.includes('\\')&&item.path.endsWith('.mp4')).map(async(item:{motionRef?:string})=>{if(item.motionRef&&/^motions\/[a-z0-9-]+\.json$/.test(item.motionRef)){try{const motion=JSON.parse(await readFile(item.motionRef,'utf8'));return {...item,reviewDecision:motion.review?.decision??'PENDING'};}catch{return {...item,reviewDecision:'UNKNOWN'};}}return item;}));return data;}catch{return {schemaVersion:1,items:[]};}};
  // Read-only clip bank for the lab: the tracked jobs and review decisions plus a fixed, non-secret
@@ -78,7 +82,7 @@ if(process.argv.includes('--stop')||process.argv.includes('--status')){
  const games=new Map<string,Session>(),tableName=(url:URL)=>{const name=url.searchParams.get('table')??'main';return /^[a-z0-9-]{1,40}$/.test(name)?name:null;};
  const tableOf=(name:string)=>{let game=games.get(name);if(!game){if(games.size>=24)games.delete(games.keys().next().value!);game=createSession();games.set(name,game);}return game;};
  const token=randomUUID();let lastSeen=Date.now();
- const types:Record<string,string>={'.html':'text/html; charset=utf-8','.css':'text/css; charset=utf-8','.js':'text/javascript; charset=utf-8','.mp4':'video/mp4','.png':'image/png','.jpg':'image/jpeg','.json':'application/json'};
+ const types:Record<string,string>={'.html':'text/html; charset=utf-8','.css':'text/css; charset=utf-8','.js':'text/javascript; charset=utf-8','.mp4':'video/mp4','.png':'image/png','.jpg':'image/jpeg','.json':'application/json','.glb':'model/gltf-binary'};
  const stop=()=>server.close();
  const server=http.createServer(async(req,res)=>{
   try{
@@ -146,7 +150,7 @@ if(process.argv.includes('--stop')||process.argv.includes('--status')){
     res.setHeader('Content-Type','text/javascript; charset=utf-8');res.end(scripts[url.pathname]?forBrowser(source):source);return;
    }
    const file=url.pathname==='/'?'lab.html':decodeURIComponent(url.pathname.slice(1));
-   if(!allowed.has(file)&&!await clipFile(file)&&!await trackFile(file)&&!await proofPath(file)&&!(await library()).items.some((item:{path:string})=>item.path===file)){res.writeHead(404).end();return;}
+   if(!allowed.has(file)&&!await clipFile(file)&&!await trackFile(file)&&!await proofPath(file)&&!await propFile(file)&&!(await library()).items.some((item:{path:string})=>item.path===file)){res.writeHead(404).end();return;}
    const size=await stat(file).then(s=>s.isFile()?s.size:-1,()=>-1),ext=file.slice(file.lastIndexOf('.'));
    if(size<0){res.writeHead(404).end();return;} // allowed, but not on this machine
    res.setHeader('Content-Type',types[ext]??'application/octet-stream');res.setHeader('Accept-Ranges','bytes');
