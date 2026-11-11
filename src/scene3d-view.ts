@@ -21,7 +21,7 @@ export type SceneState = {
   tray: boolean; railLight: RailLight; railColour: string; cups: boolean;
   cards: boolean; cardMethod: 'scene' | 'film'; cardRank: string; cardSuit: string; cardScale: number;
   clock: boolean; dust: number; flicker: boolean; flickerEvery: number; flickerStrength: number;
-  filmBright: number; filmWarm: number;
+  filmBright: number; filmWarm: number; wrap: number;
 };
 // Everything added after checkpoint v1 starts switched off, so the page opens as v1. scale 0 = the contract's own k.
 export const DEFAULTS: SceneState = {
@@ -34,7 +34,7 @@ export const DEFAULTS: SceneState = {
   tray: false, railLight: 'off', railColour: 'gold', cups: false,
   cards: false, cardMethod: 'scene', cardRank: 'A', cardSuit: 'spades', cardScale: 1.2,
   clock: false, dust: 0, flicker: false, flickerEvery: 20, flickerStrength: 0.6,
-  filmBright: 1, filmWarm: 0,
+  filmBright: 1, filmWarm: 0, wrap: 0,
 };
 export type SceneData = {contract: Parameters<typeof cameraFromContract>[0]; plan: Parameters<typeof cardSpots>[0]; urls: {plate: string; panorama: string; la: string; skog: string}; onChange: () => void; onMissingRoom: (room: RoomId) => void};
 
@@ -197,6 +197,7 @@ export function createScene(canvas: HTMLCanvasElement, host: HTMLElement, data: 
     u.near.value = view.near; u.far.value = view.far; u.start.value = -edgeZ + 0.25 * camera.scale; u.range.value = state.dofRange * camera.scale; u.focus.value = focusOn ? focusNow : 1; u.tol.value = state.tolerance;
     u.depthMap.value = a.depthTexture; u.mode.value = focusOn ? 2 : state.depthBlur && room.hasDepth ? 1 : 0;
     const roomResult = blur(a, b, c, state.blur * scale / 2);
+    film.setWrap(state.wrap > 0 ? roomResult.texture : null, canvas.width, canvas.height, state.exposure * room.exposure * dim, state.wrap);
     // table and film
     outMat.uniforms.useFg.value = 0;
     if (focusOn) { const [f, g, h] = full; light.uniforms.toTarget.value = 1; renderer.setRenderTarget(f); renderer.setClearColor(0x000000, 0); renderer.clear(); renderer.render(fg, view); light.uniforms.toTarget.value = 0;
