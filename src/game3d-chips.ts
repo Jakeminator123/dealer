@@ -51,6 +51,17 @@ export function chipRest(seat: number, index: number): {x: number; z: number; tu
   return {x: (a - 0.5) * 0.0016, z: (b - 0.5) * 0.0016, turn: a * Math.PI * 2};
 }
 
+// ── between a ring and the tray ─────────────────────────────────────────────
+// A chip that changes hands is carried, not dropped: it rises, turns onto its edge (the way it stands in the tray) or off
+// it, and is set down. seconds per chip, the pause between two chips, how high it rises, and how far beside the bet the
+// winnings are set down (dealer metres, toward image right).
+export const FLIGHT = {seconds: 0.5, stagger: 0.07, lift: 0.045, beside: 0.05};
+/** Where a carried chip is u of the way (0-1) between two points [x, y, z], and how far it has turned onto its edge (0 flat, 1 on edge). */
+export function chipCarry(from: number[], to: number[], u: number, edge: [number, number]): {at: number[]; edge: number} {
+  const t = Math.min(1, Math.max(0, u)), e = t * t * (3 - 2 * t);
+  return {at: [from[0] + (to[0] - from[0]) * e, from[1] + (to[1] - from[1]) * e + Math.sin(Math.PI * t) * FLIGHT.lift, from[2] + (to[2] - from[2]) * e], edge: edge[0] + (edge[1] - edge[0]) * e};
+}
+
 // ── the chip itself ─────────────────────────────────────────────────────────
 function chipGeometry(): T.BufferGeometry {
   const data = createChipSurface(), geometry = new T.BufferGeometry();
@@ -69,6 +80,9 @@ function shadowTexture(): T.CanvasTexture {
 
 type Scene = {spots(): {bets: {id: string; x: number; s: number; radius: number}[]}; lit<M extends T.Material>(material: M): M};
 type Chip = {mesh: T.Mesh; value: number; index: number; from: number}; // from: when it was let go, seconds; -Infinity = it lay there already
+type Place = {x: number; y: number; s: number}; // dealer metres: across the table, above the felt, from the dealer's edge
+// A chip on its way: begin is called as it sets off, done as it arrives.
+type Flight = {mesh: T.Mesh; from: number[]; to: number[]; start: number; edge: [number, number]; turn: number; begun: boolean; begin?: () => void; done?: () => void};
 
 export function createChips(scene: Scene) {
   const group = new T.Group(), geometry = chipGeometry(), owned: {dispose(): void}[] = [geometry];
@@ -82,6 +96,7 @@ export function createChips(scene: Scene) {
   };
   const shade = keep(new T.MeshBasicMaterial({map: keep(shadowTexture()), transparent: true, depthWrite: false})), shadeGeometry = keep(new T.CircleGeometry(CHIP_RADIUS * 1.5, 24).rotateX(-Math.PI / 2));
   const rings = new Map<number, {x: number; s: number; chips: Chip[]; values: number[]; shadow: T.Mesh}>();
+  const flights: Flight[] = [], winnings = new Map<number, Chip[]>();
   let moving = false;
 
   function place(seat: number, chip: Chip, now: number) {
@@ -109,8 +124,37 @@ export function createChips(scene: Scene) {
         ring.values = values; ring.shadow.visible = values.length > 0;
       }
     },
-    /** Moves the falling chips. True while any chip is still moving. */
-    update(now: number) { if (!moving) return false; moving = false; for (const [seat, ring] of rings) for (const chip of ring.chips) if (chip.from !== -Infinity) place(seat, chip, now); return moving; },
+    /** Moves the falling and the carried chips. True while any chip is still moving. */
+    update(now: number) {
+      if (!moving) return false; moving = false; for (const [seat, ring] of rings) for (const chip of ring.chips) if (chip.from !== -Infinity) place(seat, chip, now);
+      for (const flight of [...flights]) {
+        const u = (now - flight.start) / FLIGHT.seconds; moving = true; if (u < 0) continue;
+        if (!flight.begun) { flight.begun = true; flight.mesh.visible = true; flight.begin?.(); }
+        const {at, edge} = chipCarry(flight.from, flight.to, u, flight.edge); flight.mesh.position.set(at[0], at[1], at[2]); flight.mesh.rotation.set(edge * Math.PI / 2, flight.turn * (1 - edge), 0);
+        if (u >= 1) { flights.splice(flights.indexOf(flight), 1); flight.done?.(); }
+      }
+      return moving;
+    },
+    /**
+     * The house takes a ring's chips: the top one first, they are carried to `to(value)` (the tray) and `arrive(value)` is
+     * called as each gets there. The ring is empty from now on; set() with the same bet would lay the chips again.
+     */
+    send(seat: number, to: (value: number) => Place, now: number, arrive: (value: number) => void) {
+      const ring = rings.get(seat); if (!ring) return;
+      ring.chips.splice(0).reverse().forEach((chip, i) => { const goal = to(chip.value);
+        flights.push({mesh: chip.mesh, from: chip.mesh.position.toArray(), to: [goal.x, goal.y, goal.s], start: now + i * FLIGHT.stagger, edge: [0, 1], turn: chip.mesh.rotation.y, begun: false, done: () => { group.remove(chip.mesh); arrive(chip.value); }}); });
+      ring.values = []; ring.shadow.visible = false; moving = true;
+    },
+    /** Winnings: chips are carried from `from(value)` (the tray) and set down in a stack of their own beside the ring. `leave(value)` is called as each sets off. */
+    pay(seat: number, values: number[], from: (value: number) => Place, now: number, leave: (value: number) => void) {
+      const ring = rings.get(seat); if (!ring) return; const stack = winnings.get(seat) ?? []; winnings.set(seat, stack);
+      values.forEach((value, i) => { const mesh = new T.Mesh(geometry, materialsOf(value)), index = stack.length, rest = chipRest(seat + 50, index), start = from(value);
+        mesh.visible = false; group.add(mesh); stack.push({mesh, value, index, from: -Infinity});
+        flights.push({mesh, from: [start.x, start.y, start.s], to: [ring.x + FLIGHT.beside + rest.x, (index + 0.5) * CHIP_HEIGHT, ring.s + rest.z], start: now + i * FLIGHT.stagger, edge: [1, 0], turn: rest.turn, begun: false, begin: () => leave(value)}); });
+      moving = true;
+    },
+    /** The winnings are taken off the table (a new round). */
+    clearWinnings() { for (const stack of winnings.values()) for (const chip of stack) { group.remove(chip.mesh); const at = flights.findIndex(f => f.mesh === chip.mesh); if (at >= 0) flights.splice(at, 1); } winnings.clear(); },
     dispose() { for (const o of owned) o.dispose(); },
   };
 }

@@ -10,8 +10,8 @@ import {filmToScene, sceneToSpot, solveCamera, type FilmCamera} from './scene3d-
 import {createLayout, slotOf} from './game-table.ts';
 import {cardRecords} from './game-director.ts';
 import {createFilm, type FilmPlayers} from './game-film.ts';
-import {mountOverlay, type Action, type Anchors} from './game-overlay.ts';
-import {tableView, tableCards, cardFaces, shownBy, lineOf, betTotal, handKey, DEALER_KEY, type PageState, type Settled} from './game-view.ts';
+import {chipsFor, mountOverlay, type Action, type Anchors} from './game-overlay.ts';
+import {tableView, tableCards, cardFaces, shownBy, lineOf, betTotal, handKey, CHIP_VALUES, DEALER_KEY, type PageState, type Settled} from './game-view.ts';
 import type {Snapshot} from '../game/session.ts';
 
 const $ = (id: string) => document.getElementById(id)!, stage = $('stage'), canvas = $('view') as HTMLCanvasElement, failBox = $('fail');
@@ -77,6 +77,7 @@ async function present(next: Snapshot, dealerPlays: boolean) {
   if (settle || next.view.round?.phase === 'settled') {
     page.stage = 'SETTLED'; page.settled = settle ?? page.settled; render();
     // What the round pays back reaches the balance when it is collected; the cards stay on the table until the next round.
+    if (settle) settleChips(settle);
     paid = await send({op: 'collect', roundId: next.view.roundId}); if (paid) page.balance = paid.balance;
   }
   render();
@@ -130,19 +131,37 @@ const overlay = mountOverlay(stage, {
   async next() {
     if (page.busy) return; page.busy = true; render();
     const next = paid ?? await send({op: 'collect', roundId: snapshot.view.roundId}); page.busy = false; if (!next) { render(); return; }
-    snapshot = next; paid = null; Object.assign(page, {stage: 'BETTING', bets: {}, shown: {}, settled: null, line: null, balance: next.balance}); order.length = 0;
+    snapshot = next; paid = null; Object.assign(page, {stage: 'BETTING', bets: {}, shown: {}, settled: null, line: null, balance: next.balance}); order.length = 0; taken.clear(); chips?.clearWinnings();
     film.set({table: {hands: [], dealer: []}, records: [], lying: []}); render();
   },
 });
 const order: number[] = []; // the seats the chips were laid on, in order, for Ångra
 // Jakob's chip tray (assets/props/tray.glb, local media) takes the place of the built tray when it can be read; game.html?tray=built keeps the built one.
-if (query.get('tray') !== 'built') void import('./game3d-props.ts').then(async m => { const tray = await m.loadTray(scene); scene.notch(tray.notch); scene.addProp(tray); }).catch(() => {});
+// A trial, game.html?bricka=hus: the tray holds the house's own chips (src/game3d-tray.ts), a lost bet is carried into it and winnings out of it.
+type HouseTray = {mouth(value: number, taking: boolean): {x: number; y: number; s: number}; add(value: number): boolean; remove(value: number): boolean};
+let houseTray: HouseTray | null = null; const taken = new Set<number>(); // the seats whose chips the house has taken this round
+if (query.get('bricka') === 'hus') void import('./game3d-tray.ts').then(m => { const tray = m.createHouseTray(scene); scene.notch(tray.notch); scene.addProp(tray); houseTray = tray; }).catch(() => {});
+else if (query.get('tray') !== 'built') void import('./game3d-props.ts').then(async m => { const tray = await m.loadTray(scene); scene.notch(tray.notch); scene.addProp(tray); }).catch(() => {});
+// When a round is settled: a seat that got back less than it staked loses its chips to the tray, and what a seat got back
+// beyond its stake is carried out of the tray and set down beside the bet. Only in the trial with the house's tray.
+function settleChips(settle: Settled) {
+  const tray = houseTray; if (!tray || !chips) return;
+  const seats = new Map<number, {stake: number; returned: number}>();
+  for (const hand of settle.hands) { const s = seats.get(hand.seat) ?? {stake: 0, returned: 0}; s.stake += hand.stake; s.returned += hand.returned; seats.set(hand.seat, s); }
+  const now = seconds(), into = (value: number) => tray.mouth(value, false), outOf = (value: number) => tray.mouth(value, true);
+  for (const [seat, s] of seats) {
+    if (s.returned < s.stake) { taken.add(seat); chips.send(seat, into, now, value => { tray.add(value); }); if (s.returned > 0) chips.pay(seat, chipsFor(s.returned, [...CHIP_VALUES]), outOf, now + 0.7, value => { tray.remove(value); }); }
+    else if (s.returned > s.stake) chips.pay(seat, chipsFor(s.returned - s.stake, [...CHIP_VALUES]), outOf, now, value => { tray.remove(value); });
+  }
+}
 // The chips in the rings are 3D objects on the table when the module can be read; until then, and if it cannot, the overlay draws them flat.
-type Chips = {set(bets: Record<number, number[]>, now: number): void; update(now: number): boolean};
+type Spot3 = {x: number; y: number; s: number};
+type Chips = {set(bets: Record<number, number[]>, now: number): void; update(now: number): boolean; send(seat: number, to: (value: number) => Spot3, now: number, arrive: (value: number) => void): void;
+  pay(seat: number, values: number[], from: (value: number) => Spot3, now: number, leave: (value: number) => void): void; clearWinnings(): void};
 let chips: Chips | null = null;
 const seconds = () => performance.now() / 1000;
 void import('./game3d-chips.ts').then(m => { const made = m.createChips(scene); scene.addProp(made); chips = made; stage.classList.add('chips3d'); render(); }).catch(() => {});
-const render = () => { const view = tableView(snapshot, page); chips?.set(Object.fromEntries(view.seats.map(s => [s.seat, s.chips])), seconds()); if (view.phase === 'TURN' || view.phase === 'BETTING') { if (view.phase === 'TURN') byHand = false; aimAt(view.phase === 'TURN' ? snapshot.view.round?.activeSeat ?? null : null); } overlay.render(view); };
+const render = () => { const view = tableView(snapshot, page); chips?.set(Object.fromEntries(view.seats.map(s => [s.seat, taken.has(s.seat) ? [] : s.chips])), seconds()); if (view.phase === 'TURN' || view.phase === 'BETTING') { if (view.phase === 'TURN') byHand = false; aimAt(view.phase === 'TURN' ? snapshot.view.round?.activeSeat ?? null : null); } overlay.render(view); };
 
 // ── where things are in the picture ──
 // A film pixel on the felt as the scene's own table point (dealer metres: x across, s from the dealer's edge).
