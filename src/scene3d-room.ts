@@ -41,15 +41,15 @@ void main(){
   vec3 p = position; float t = time;
   p.x += sin(t * (.05 + seed * .06) + seed * 40.) * .18 + sin(t * .013 + seed * 9.) * .3 + leaves * sin(t * (.6 + seed) + seed * 12.) * .12;
   p.z += cos(t * (.04 + seed * .05) + seed * 23.) * .15;
-  p.y = box0.y + mod(p.y - box0.y - t * mix((seed - .5) * .012, .05 + seed * .05, leaves), box1.y - box0.y);
+  p.y = box0.y + mod(p.y - box0.y - t * mix(.004 + seed * .008, .05 + seed * .05, leaves), box1.y - box0.y); // dust sinks a few millimetres a second, leaves fall
   vec4 mv = modelViewMatrix * vec4(p, 1.); gl_Position = projectionMatrix * mv;
   float px = pixels * mix(3.5 + seed * 3.5, 34. + seed * 38., leaves) / max(.22, -mv.z);
   // where the lamps shine: over the table in front of the dealer and under the pendants behind her
   float beam = max(max(1. - smoothstep(.2, 1., distance(p.xz, vec2(-.3, .25))), 1. - smoothstep(.3, 1.2, distance(p.xz, vec2(2.3, -2.9)))), max(1. - smoothstep(.3, 1.2, distance(p.xz, vec2(-2.3, -2.9))), 1. - smoothstep(.3, 1.3, distance(p.xz, vec2(0., -4.4)))));
-  float twinkle = .55 + .45 * sin(t * (.3 + seed * .9) + seed * 90.);
+  float twinkle = .88 + .12 * sin(t * (.08 + seed * .2) + seed * 90.); // slow and slight: a speck that blinks reads as flicker
   // a speck spread over many pixels is fainter in proportion, so one close to the lens is a soft disc and not a snowball
   vGlow = step(seed, amount) * mix((.22 + 1.3 * beam) * twinkle * min(1., 3. / px), 1., leaves);
-  vSeed = seed; vTurn = t * (.4 + seed) + seed * 30.; gl_PointSize = max(px, 1.);
+  vSeed = seed; vTurn = t * (.4 + seed) + seed * 30.; gl_PointSize = max(px, 1.6);
 }`;
 const DUST_FRAGMENT = 'varying float vGlow; uniform vec3 tint; void main(){ float a = smoothstep(.5, .12, length(gl_PointCoord - .5)) * vGlow; if (a < .002) discard; gl_FragColor = vec4(tint * a, a); }';
 const LEAF_FRAGMENT = `varying float vGlow; varying float vSeed; varying float vTurn; uniform vec3 tint;
@@ -129,7 +129,7 @@ export function createRooms(scene: T.Scene, urls: {plate: string; panorama: stri
     plat: {group: null, plate, follow: false, hasDepth: false, blur: 8, exposure: 1, fog: null},
   };
   // air: behind the dealer (with the room) and between the camera and the dealer (over the film; the caller adds `front` to its foreground)
-  const dustBack = buildAir(3200, [-3.6, -0.5, -4.6], [3.6, 2.3, -0.2], false, 3, false), dustFront = buildAir(1300, [-1.6, 0.04, 0.03], [1.6, 1.2, 0.72], false, 5, true);
+  const dustBack = buildAir(1500, [-3.6, -0.5, -4.6], [3.6, 2.3, -0.2], false, 3, false), dustFront = buildAir(750, [-1.6, 0.04, 0.03], [1.6, 1.2, 0.72], false, 5, true);
   const leafBack = buildAir(260, [-3.6, -0.6, -4.2], [3.6, 2.6, -0.3], true, 7, false), leafFront = buildAir(40, [-1.4, 0.1, 0.05], [1.4, 1.2, 0.65], true, 9, true);
   const back = [dustBack, leafBack], front = [dustFront, leafFront];
   // two neon tubes for the Las Vegas hall; the magenta one is the one that may flicker
@@ -138,9 +138,9 @@ export function createRooms(scene: T.Scene, urls: {plate: string; panorama: stri
   scene.add(salon, sphere, la, skog, backdrop, clock.group, neon, ...back.map(a => a.points)); clock.group.visible = false;
   // tint of the dust per room: [behind the dealer (linear, may exceed 1), in front of her (as shown)], and how much of it is leaves
   const AIR: Record<RoomId, {back: number[]; front: number[]; leaves: number}> = {
-    salong: {back: [2.2, 1.8, 1.25], front: [0.8, 0.7, 0.56], leaves: 0}, panorama: {back: [2.0, 1.7, 1.5], front: [0.75, 0.66, 0.6], leaves: 0},
-    la: {back: [2.6, 1.7, 0.9], front: [0.9, 0.68, 0.42], leaves: 0}, skog: {back: [1.6, 1.7, 1.1], front: [0.6, 0.64, 0.42], leaves: 1},
-    kuliss: {back: [2.2, 1.8, 1.25], front: [0.8, 0.7, 0.56], leaves: 0}, plat: {back: [0, 0, 0], front: [0.8, 0.7, 0.56], leaves: 0}};
+    salong: {back: [1.0, 0.82, 0.57], front: [0.56, 0.49, 0.39], leaves: 0}, panorama: {back: [0.9, 0.77, 0.68], front: [0.52, 0.46, 0.42], leaves: 0},
+    la: {back: [1.2, 0.78, 0.41], front: [0.63, 0.48, 0.29], leaves: 0}, skog: {back: [0.73, 0.78, 0.5], front: [0.42, 0.45, 0.3], leaves: 1},
+    kuliss: {back: [1.0, 0.82, 0.57], front: [0.56, 0.49, 0.39], leaves: 0}, plat: {back: [0, 0, 0], front: [0.56, 0.49, 0.39], leaves: 0}};
   return {
     rooms,
     // Rooms are built in dealer metres around the dealer-side table edge and scaled into the plan-scale world.
