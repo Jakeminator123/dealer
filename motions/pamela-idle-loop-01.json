@@ -22,7 +22,7 @@
     "basis": "SOURCE_FRAME_REVIEW",
     "evidence": "evidence/generation-method-audit.json",
     "idle": {
-      "weight": 12,
+      "weight": 10,
       "calm": true,
       "label": "lugn vila",
       "onRequest": false

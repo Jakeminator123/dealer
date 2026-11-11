@@ -22,7 +22,7 @@
     "basis": "SOURCE_FRAME_REVIEW",
     "evidence": "evidence/generation-method-audit.json",
     "idle": {
-      "weight": 3,
+      "weight": 4,
       "calm": false,
       "label": "leende",
       "onRequest": false
@@ -30,8 +30,8 @@
   },
   "review": {
     "decision": "PENDING",
-    "basis": "Levererad. Väntar på oberoende rutgranskning; ingen dom ännu.",
-    "limitations": "Inte granskad ruta för ruta ännu.",
+    "basis": "Oberoende rutgranskning 2026-11-11: användbar, som beställt. Tänderna syns f30–62, en nick f34–41 (5 px), en hård blinkning f43–47, avslappnad f70.",
+    "limitations": "Inga anmärkningar utöver grönnivåns steg i klippets ändar.",
     "colorDoesNotProvePhysicalSide": true,
     "userAccepted": false,
     "productionReady": false

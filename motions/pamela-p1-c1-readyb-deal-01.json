@@ -22,15 +22,15 @@
     "target": "P1.C1",
     "physicalStartSide": "BACK",
     "physicalEndSide": "FRONT",
-    "turn": null,
+    "turn": true,
     "pass": false,
     "basis": "SOURCE_FRAME_REVIEW",
     "evidence": "evidence/generation-method-audit.json"
   },
   "review": {
-    "decision": "PENDING",
-    "basis": "Levererad. Väntar på oberoende rutgranskning; ingen dom ännu.",
-    "limitations": "Inte granskad ruta för ruta ännu.",
+    "decision": "REJECTED",
+    "basis": "Oberoende rutgranskning 2026-11-11: inte användbar. Kortet lyfts av skon f14–30 och bärs i luften till filten f34–38 i stället för att tryckas ut. Det glider sedan plant f38–96, cirka 860 px. Vändning vid platsen: bred gul f100–107, kant f117–119, men blått syns bara som en tunn mörk strimma f120–131 och ligger plant f134.",
+    "limitations": "Det blå kortet slutar på ungefär halva det gulas yta. Underarmen täcker vilohanden f57–75. Fingrarna flyttar sig på kortet f136–148. Skons öppning vidgas och ett ljust stag syns från f20–24.",
     "colorDoesNotProvePhysicalSide": true,
     "userAccepted": false,
     "productionReady": false

@@ -18,19 +18,19 @@
     "from": "READY",
     "to": "HANDOVER(P2.C1)",
     "takeHand": "LH",
-    "releaseHand": "LH",
+    "releaseHand": "RH",
     "target": "P2.C1",
     "physicalStartSide": "BACK",
     "physicalEndSide": "FRONT",
-    "turn": null,
-    "pass": false,
+    "turn": true,
+    "pass": true,
     "basis": "SOURCE_FRAME_REVIEW",
     "evidence": "evidence/generation-method-audit.json"
   },
   "review": {
     "decision": "PENDING",
-    "basis": "Levererad. Väntar på oberoende rutgranskning; ingen dom ännu.",
-    "limitations": "Inte granskad ruta för ruta ännu.",
+    "basis": "Oberoende rutgranskning 2026-11-11: användbar med anmärkning. Överlämningen är verklig: vänster hand lyfter kortet ur fönstret f18–30, båda händerna håller det vid bröstet f40–53 och vänster släpper f54–55. Höger hand vänder det i luften (bred gul f56–64, kant cirka f77, blå öppnar f78–86), lägger det f86–92 och släpper f102–104. Inget går igenom något och händerna ser rimliga ut. Vid f149 är båda händerna inom 0,5 px från vilobilden.",
+    "limitations": "Hackar: 17 frysta rutor med ungefär sex rutors takt. Kortet böjs f84–88 och är plant igen f124. Grönnivån hoppar i de två sista rutorna. Klippet rymmer giv och retur i ett och står därför som experiment.",
     "colorDoesNotProvePhysicalSide": true,
     "userAccepted": false,
     "productionReady": false
@@ -39,5 +39,6 @@
   "generationRef": "assets/motions/pamela-p2-c1-handover-01/generation.json",
   "jobRef": "data/clip-jobs.json",
   "scoutIntegrated": false,
-  "published": false
+  "published": false,
+  "experiment": "HANDOVER"
 }
