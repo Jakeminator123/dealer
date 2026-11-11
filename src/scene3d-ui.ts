@@ -69,7 +69,7 @@ const THREE: Record<string, string> = {
   panorama: 'Här: en stående klocka, damm, och ett neonrör som flimrar till medan salen dämpas lite.',
   la: 'Här: en stående klocka, damm i kvällsljuset, och ett moln som går för solen i några sekunder.',
   skog: 'Här: en stående klocka, pollen och fallande löv, och ett moln som går för solen i några sekunder.',
-  hall: 'Här: en stående klocka, damm och rök, och spelhallens egna ljus.',
+  hall: 'Här: en stående klocka, låg rök som tätnar med reglaget, och neonskylten Bar som flimrar till.',
   kuliss: 'Här: en stående klocka, damm, och ljuset som dämpas mjukt i några sekunder.',
   plat: 'Här finns inget rum att ställa klockan i; damm syns bara framför dealern och ljuset dämpas mjukt.'};
 function sync() { const three = document.getElementById('three'); if (three) three.textContent = THREE[state.room] ?? '';

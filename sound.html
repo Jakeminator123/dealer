@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="sv">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Dealer · Ljud-labb</title>
+<link rel="stylesheet" href="sound.css">
+</head>
+<body>
+<div id="app">
+  <div id="stage"><canvas id="view"></canvas><div id="hud"></div><p id="hint">Tryck på ett ljud till höger.<br>Ljudet börjar med första trycket (webbläsarens regel).</p><div id="fail" role="alert"></div></div>
+  <aside id="panel">
+    <h1>Ljud-labb</h1>
+    <p class="sub">Marker, kort och bakgrunder, gjorda här i webbläsaren.</p>
+    <p class="lab-note"><b>Labb på ett sidospår.</b> Ingenting här ändrar spelet. Alla ljud räknas fram i webbläsaren, utan ljudfiler, och blir lite olika varje gång. Tryck flera gånger på samma knapp för att höra hur de varierar.</p>
+    <p class="note start" id="start-note">Ljudet börjar med första trycket (webbläsarens regel).</p>
+    <fieldset><legend>Marker</legend>
+      <div class="sounds" id="chips"></div>
+      <label class="row">Styrka<input type="range" id="strength" min="5" max="100" step="1"><output id="strength-out"></output></label>
+      <label class="row">Höjd på stapeln<input type="range" id="height" min="0" max="20" step="1"><output id="height-out"></output></label>
+      <label class="row">Plats på bordet<input type="range" id="pan" min="-100" max="100" step="5"><output id="pan-out"></output></label>
+      <p class="note">Höjden är hur många marker som redan ligger där. Fem och Tjugo marker börjar på filten när den är noll; Marker på marker och Ta tillbaka har alltid minst en under sig.</p>
+    </fieldset>
+    <fieldset><legend>Kort</legend>
+      <div class="sounds" id="cards"></div>
+    </fieldset>
+    <fieldset><legend>Bakgrund</legend>
+      <div class="seg three" id="rooms"></div>
+      <p class="note" id="room-note"></p>
+    </fieldset>
+    <fieldset><legend>Volym</legend>
+      <label class="row">Allt<input type="range" id="volume" min="0" max="100" step="1"><output id="volume-out"></output></label>
+      <label class="row">Effekter<input type="range" id="effects" min="0" max="100" step="1"><output id="effects-out"></output></label>
+      <label class="row">Bakgrund<input type="range" id="ambience" min="0" max="100" step="1"><output id="ambience-out"></output></label>
+      <div class="meter" title="Nivån ut till högtalarna. Strecket står vid −6 dBFS, taket för ett enskilt ljud."><span>Nivå, dBFS</span><div class="bar"><i id="meter-fill"></i><b id="meter-hold"></b><u></u></div><output id="meter-out">–</output></div>
+      <div class="btns"><button type="button" id="mute" aria-pressed="false">Stäng av ljudet</button></div>
+    </fieldset>
+    <p class="note">Tangenterna 1–9 spelar ljuden i samma ordning som knapparna. M stänger av och sätter på ljudet.</p>
+  </aside>
+</div>
+<script type="module" src="lab-sound.js" onerror="document.getElementById('fail').textContent='Sidans kod kunde inte läsas (lab-sound.js). Starta labbet med START.cmd och ladda om.'"></script>
+</body>
+</html>
