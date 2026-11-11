@@ -3,7 +3,7 @@
 // The generated files have hundreds of thousands to millions of triangles, 4K textures, a size normalised to about two
 // units and their origin in the middle. The scene wants (docs/SYSTEM.md, "Sko och markerbricka som GLB") a real size in
 // metres, the origin under the object, a few tens of thousands of triangles and textures of at most 1024 px, with no
-// compression that needs an extra decoder. This tool reads one source, thins the mesh by vertex clustering, makes the
+// compression that needs an extra decoder. This tool reads one source, thins the mesh by edge collapse, makes the
 // textures smaller, bakes scale and origin into the vertices and writes a plain GLB under assets/props/.
 //
 //   node tools/prop-glb.ts <id>        one prop of data/props.json
@@ -13,9 +13,9 @@
 import {readFile, writeFile, mkdir} from 'node:fs/promises';
 import {createHash} from 'node:crypto';
 import path from 'node:path';
+import {MeshoptSimplifier} from 'meshoptimizer';
 
-// normals: the source's own vertex normals, when it has them. They are kept through the thinning, so the thinned surface is
-// still shaded like the smooth one it came from, and the lumps of the thinning show only in its outline.
+// normals: the source's own vertex normals, when it has them. Every vertex keeps its own through the thinning.
 export type Mesh = {positions: Float32Array; uvs: Float32Array | null; indices: Uint32Array; normals?: Float32Array | null};
 export const triangleCount = (mesh: Mesh) => mesh.indices.length / 3;
 
@@ -26,80 +26,64 @@ export function bounds(positions: Float32Array): {min: number[]; max: number[]} 
 }
 
 /**
- * Thins a mesh by vertex clustering: space is cut into cubes of side `cell`, every vertex in a cube moves to the cube's
- * mean point, and triangles that collapse are dropped. Vertices of one cube that lie in different parts of the texture
- * (a seam of the UV map) stay separate vertices at the same point, so the texture is not smeared across a seam.
- * count: only count the triangles that would be left (for the search in simplifyTo).
+ * Thins a mesh to at most `target` triangles by edge collapse (meshoptimizer's simplifier): edges are folded away one at
+ * a time, the one that changes the surface least first. A flat panel becomes a few large triangles and a sharp edge stays
+ * where it was. No vertex is moved or made: every vertex of the result is a vertex of the source, with its own normal and
+ * texture coordinate, and a seam of the UV map stays a seam.
+ *
+ * (Until 2026-11-11 this was vertex clustering, which moves every vertex to the mean point of its cube. It crumpled flat
+ * panels along their edges, which showed in every glossy look: the lumps were ours, not the source's.)
+ *
+ * error: the simplifier's own measure of how far the thinned surface lies from the source, in the units of the mesh.
  */
-export function clusterMesh(mesh: Mesh, cell: number, options: {uvCells?: number; count?: boolean} = {}): Mesh & {triangles: number} {
-  const {positions, uvs, indices} = mesh, normals = mesh.normals ?? null, n = positions.length / 3, {min, max} = bounds(positions), uvCells = options.uvCells ?? 24;
-  const nx = Math.max(1, Math.ceil((max[0] - min[0]) / cell) + 1), ny = Math.max(1, Math.ceil((max[1] - min[1]) / cell) + 1), nz = Math.max(1, Math.ceil((max[2] - min[2]) / cell) + 1), cubes = nx * ny * nz;
-  if (!(cell > 0) || cubes * uvCells * uvCells > Number.MAX_SAFE_INTEGER) throw Error('The cell is too small for this mesh.');
-  const cubeOf = new Float64Array(n), cluster = new Uint32Array(n), ids = new Map<number, number>(), cubeIds = new Map<number, number>(), clusterCube: number[] = [];
-  for (let i = 0; i < n; i++) {
-    const cube = Math.floor((positions[i * 3] - min[0]) / cell) + nx * (Math.floor((positions[i * 3 + 1] - min[1]) / cell) + ny * Math.floor((positions[i * 3 + 2] - min[2]) / cell));
-    const part = uvs ? Math.min(uvCells - 1, Math.max(0, Math.floor(uvs[i * 2] * uvCells))) + uvCells * Math.min(uvCells - 1, Math.max(0, Math.floor(uvs[i * 2 + 1] * uvCells))) : 0, key = cube + cubes * part;
-    let id = ids.get(key); if (id === undefined) { id = ids.size; ids.set(key, id); let c = cubeIds.get(cube); if (c === undefined) { c = cubeIds.size; cubeIds.set(cube, c); } clusterCube.push(c); }
-    cubeOf[i] = cubeIds.get(cube)!; cluster[i] = id;
-  }
-  let triangles = 0;
-  for (let t = 0; t < indices.length; t += 3) { const a = cluster[indices[t]], b = cluster[indices[t + 1]], c = cluster[indices[t + 2]]; if (a !== b && b !== c && a !== c) triangles++; }
-  if (options.count) return {positions: new Float32Array(0), uvs: null, indices: new Uint32Array(0), triangles};
-  // A cube's mean point, shared by all its clusters; a cluster's own mean texture coordinate.
-  const sum = new Float64Array(cubeIds.size * 3), members = new Uint32Array(cubeIds.size), uvSum = new Float64Array(ids.size * 2), uvMembers = new Uint32Array(ids.size), normalSum = normals ? new Float64Array(ids.size * 3) : null, normalMembers = new Uint32Array(ids.size);
-  for (let i = 0; i < n; i++) { const c = cubeOf[i]; sum[c * 3] += positions[i * 3]; sum[c * 3 + 1] += positions[i * 3 + 1]; sum[c * 3 + 2] += positions[i * 3 + 2]; members[c]++;
-    if (uvs) { const id = cluster[i]; uvSum[id * 2] += uvs[i * 2]; uvSum[id * 2 + 1] += uvs[i * 2 + 1]; uvMembers[id]++; }
-    if (normalSum) { const id = cluster[i]; normalSum[id * 3] += normals![i * 3]; normalSum[id * 3 + 1] += normals![i * 3 + 1]; normalSum[id * 3 + 2] += normals![i * 3 + 2]; normalMembers[id]++; } }
-  const outPositions = new Float32Array(ids.size * 3), outUvs = uvs ? new Float32Array(ids.size * 2) : null;
-  for (let id = 0; id < ids.size; id++) { const c = clusterCube[id]; for (let k = 0; k < 3; k++) outPositions[id * 3 + k] = sum[c * 3 + k] / members[c]; if (outUvs) { outUvs[id * 2] = uvSum[id * 2] / uvMembers[id]; outUvs[id * 2 + 1] = uvSum[id * 2 + 1] / uvMembers[id]; } }
-  // Triangles: collapsed ones go, and so does a second triangle on the same three vertices. Moving its corners to the cubes'
-  // mean points can turn a thin triangle over; it is then wound the other way, so that it still faces where it faced.
-  const kept = new Uint32Array(triangles * 3), seen = new Set<string | number>(), small = ids.size < 100000; let w = 0;
-  const facing = (p: Float32Array, a: number, b: number, c: number) => { const ux = p[b * 3] - p[a * 3], uy = p[b * 3 + 1] - p[a * 3 + 1], uz = p[b * 3 + 2] - p[a * 3 + 2], vx = p[c * 3] - p[a * 3], vy = p[c * 3 + 1] - p[a * 3 + 1], vz = p[c * 3 + 2] - p[a * 3 + 2]; return [uy * vz - uz * vy, uz * vx - ux * vz, ux * vy - uy * vx]; };
-  for (let t = 0; t < indices.length; t += 3) {
-    const a = cluster[indices[t]], b = cluster[indices[t + 1]], c = cluster[indices[t + 2]]; if (a === b || b === c || a === c) continue;
-    const lo = Math.min(a, b, c), hi = Math.max(a, b, c), mid = a + b + c - lo - hi, key = small ? (lo * ids.size + mid) * ids.size + hi : `${lo},${mid},${hi}`;
-    if (seen.has(key)) continue; seen.add(key);
-    const was = facing(positions, indices[t], indices[t + 1], indices[t + 2]), now = facing(outPositions, a, b, c), turned = was[0] * now[0] + was[1] * now[1] + was[2] * now[2] < 0;
-    kept[w++] = a; kept[w++] = turned ? c : b; kept[w++] = turned ? b : c;
-  }
+export async function simplifyTo(mesh: Mesh, target: number): Promise<{mesh: Mesh; error: number}> {
+  if (triangleCount(mesh) <= target) return {mesh, error: 0};
+  await MeshoptSimplifier.ready;
+  // The error limit is left open (1 = the whole extent): the triangle budget decides where the thinning stops. Prune lets
+  // loose crumbs go whole when they are smaller than the error reached.
+  const [indices, relative] = MeshoptSimplifier.simplify(mesh.indices, mesh.positions, 3, target * 3, 1, ['Prune']);
+  if (indices.length > target * 3 * 1.05) throw Error(`The mesh could not be thinned below ${indices.length / 3} triangles (${target} asked for).`);
   // Vertices no triangle uses any more are left out.
-  const used = new Int32Array(ids.size).fill(-1); let count = 0; const finalIndices = kept.slice(0, w);
-  for (let i = 0; i < w; i++) { if (used[finalIndices[i]] < 0) used[finalIndices[i]] = count++; finalIndices[i] = used[finalIndices[i]]; }
-  const p = new Float32Array(count * 3), u = outUvs ? new Float32Array(count * 2) : null, kn = normalSum ? new Float32Array(count * 3) : null;
-  for (let id = 0; id < ids.size; id++) { const to = used[id]; if (to < 0) continue; p.set(outPositions.subarray(id * 3, id * 3 + 3), to * 3); if (u) u.set(outUvs!.subarray(id * 2, id * 2 + 2), to * 2);
-    if (kn) for (let k = 0; k < 3; k++) kn[to * 3 + k] = normalSum![id * 3 + k] / normalMembers[id]; }
-  const out: Mesh = {positions: p, uvs: u, indices: finalIndices};
-  if (kn) { // the mean of the source normals where they agree; where they cancel out (two sides of a thin wall in one cube), the faces' own
-    const faces = vertexNormals(out);
-    for (let i = 0; i < kn.length; i += 3) { const l = Math.hypot(kn[i], kn[i + 1], kn[i + 2]); // the mean of unit normals: 1 where they all agree, near 0 where they cancel
-      if (l > 0.5 && kn[i] * faces[i] + kn[i + 1] * faces[i + 1] + kn[i + 2] * faces[i + 2] >= 0) { kn[i] /= l; kn[i + 1] /= l; kn[i + 2] /= l; } else { kn[i] = faces[i]; kn[i + 1] = faces[i + 1]; kn[i + 2] = faces[i + 2]; } }
-    out.normals = kn; }
-  return {...out, triangles: w / 3};
+  const to = new Int32Array(mesh.positions.length / 3).fill(-1), from: number[] = [];
+  const out = Uint32Array.from(indices, i => { if (to[i] < 0) { to[i] = from.length; from.push(i); } return to[i]; });
+  const pick = (source: Float32Array, width: number) => { const kept = new Float32Array(from.length * width); from.forEach((i, at) => kept.set(source.subarray(i * width, i * width + width), at * width)); return kept; };
+  return {mesh: {positions: pick(mesh.positions, 3), uvs: mesh.uvs ? pick(mesh.uvs, 2) : null, indices: out, ...(mesh.normals ? {normals: pick(mesh.normals, 3)} : {})}, error: relative * MeshoptSimplifier.getScale(mesh.positions, 3)};
 }
 
-/** Thins a mesh to about `target` triangles (never more): the largest cell is searched whose result still has enough. */
-export function simplifyTo(mesh: Mesh, target: number): {mesh: Mesh; cell: number} {
-  if (triangleCount(mesh) <= target) return {mesh, cell: 0};
-  const {min, max} = bounds(mesh.positions), span = Math.max(max[0] - min[0], max[1] - min[1], max[2] - min[2]);
-  // The parts of the texture that are kept apart set a floor of their own: with too many of them even the largest cell
-  // leaves more triangles than asked for, so the texture is cut into fewer parts until the target can be reached.
-  let uvCells = 24; while (uvCells > 1 && clusterMesh(mesh, span / 4, {count: true, uvCells}).triangles > target) uvCells = Math.floor(uvCells / 2);
-  let fine = span / 4096, coarse = span / 4; // fine gives too many triangles, coarse few enough
-  for (let step = 0; step < 18; step++) { const cell = Math.sqrt(fine * coarse); if (clusterMesh(mesh, cell, {count: true, uvCells}).triangles > target) fine = cell; else coarse = cell; }
-  return {mesh: clusterMesh(mesh, coarse, {uvCells}), cell: coarse};
-}
-
-/** Smooth vertex normals, each face weighted by its area. */
-export function vertexNormals(mesh: Mesh): Float32Array {
-  const {positions: p, indices} = mesh, normals = new Float32Array(p.length);
-  for (let t = 0; t < indices.length; t += 3) {
-    const a = indices[t] * 3, b = indices[t + 1] * 3, c = indices[t + 2] * 3, ux = p[b] - p[a], uy = p[b + 1] - p[a + 1], uz = p[b + 2] - p[a + 2], vx = p[c] - p[a], vy = p[c + 1] - p[a + 1], vz = p[c + 2] - p[a + 2];
-    const x = uy * vz - uz * vy, y = uz * vx - ux * vz, z = ux * vy - uy * vx;
-    for (const i of [a, b, c]) { normals[i] += x; normals[i + 1] += y; normals[i + 2] += z; }
+/**
+ * Normals for a thinned mesh, and its vertices split to carry them: at each corner of each triangle, the mean of the faces
+ * around that point that lie within `angle` degrees of the triangle's own, each weighted by its area. A flat panel is
+ * shaded flat right up to its edge and the edge stays sharp; a rounded part stays smooth. Points are matched by place, so a
+ * seam of the UV map does not show in the shading.
+ *
+ * The source's own normals do not fit a thinned mesh: in the source a sharp edge is a band of tiny triangles across which
+ * the normal turns; thinned, the same normals are spread over large triangles and the panel looks crumpled along its edges.
+ */
+export function creasedNormals(mesh: Mesh, angle = 40): Mesh & {normals: Float32Array} {
+  const {positions: p, uvs, indices} = mesh, faces = indices.length / 3, limit = Math.cos(angle * Math.PI / 180);
+  const place = new Uint32Array(p.length / 3), places = new Map<string, number>();
+  for (let v = 0; v < place.length; v++) { const key = `${p[v * 3]},${p[v * 3 + 1]},${p[v * 3 + 2]}`; let id = places.get(key); if (id === undefined) { id = places.size; places.set(key, id); } place[v] = id; }
+  const area = new Float64Array(faces * 3), unit = new Float64Array(faces * 3); // each face's normal: as long as twice its area, and of length one
+  for (let f = 0; f < faces; f++) {
+    const a = indices[f * 3] * 3, b = indices[f * 3 + 1] * 3, c = indices[f * 3 + 2] * 3, ux = p[b] - p[a], uy = p[b + 1] - p[a + 1], uz = p[b + 2] - p[a + 2], vx = p[c] - p[a], vy = p[c + 1] - p[a + 1], vz = p[c + 2] - p[a + 2];
+    const x = uy * vz - uz * vy, y = uz * vx - ux * vz, z = ux * vy - uy * vx, l = Math.hypot(x, y, z);
+    area.set([x, y, z], f * 3); if (l > 0) unit.set([x / l, y / l, z / l], f * 3);
   }
-  for (let i = 0; i < normals.length; i += 3) { const l = Math.hypot(normals[i], normals[i + 1], normals[i + 2]) || 1; normals[i] /= l; normals[i + 1] /= l; normals[i + 2] /= l; }
-  return normals;
+  const start = new Uint32Array(places.size + 1); for (const i of indices) start[place[i] + 1]++;
+  for (let i = 0; i < places.size; i++) start[i + 1] += start[i];
+  const around = new Uint32Array(indices.length), next = start.slice(0, places.size); // the faces around each place
+  for (let f = 0; f < faces; f++) for (let k = 0; k < 3; k++) around[next[place[indices[f * 3 + k]]]++] = f;
+  const out = new Uint32Array(indices.length), made = new Map<string, number>(), from: number[] = [], normals: number[] = [];
+  for (let f = 0; f < faces; f++) for (let k = 0; k < 3; k++) {
+    const v = indices[f * 3 + k], at = place[v]; let x = 0, y = 0, z = 0;
+    for (let j = start[at]; j < start[at + 1]; j++) { const g = around[j]; if (g === f || unit[f * 3] * unit[g * 3] + unit[f * 3 + 1] * unit[g * 3 + 1] + unit[f * 3 + 2] * unit[g * 3 + 2] >= limit) { x += area[g * 3]; y += area[g * 3 + 1]; z += area[g * 3 + 2]; } }
+    const l = Math.hypot(x, y, z); if (l > 0) { x /= l; y /= l; z /= l; } else { x = 0; y = 1; z = 0; } // a triangle with no area has no side to face
+    const key = `${v}:${Math.round(x * 1024)},${Math.round(y * 1024)},${Math.round(z * 1024)}`; let id = made.get(key);
+    if (id === undefined) { id = from.length; made.set(key, id); from.push(v); normals.push(x, y, z); }
+    out[f * 3 + k] = id;
+  }
+  const pick = (source: Float32Array, width: number) => { const kept = new Float32Array(from.length * width); from.forEach((i, to) => kept.set(source.subarray(i * width, i * width + width), to * width)); return kept; };
+  return {positions: pick(p, 3), uvs: uvs ? pick(uvs, 2) : null, indices: out, normals: Float32Array.from(normals)};
 }
 
 /**
@@ -171,12 +155,12 @@ export function writeGlb(mesh: Mesh, normals: Float32Array, material: Json, text
 
 // ── command ─────────────────────────────────────────────────────────────────
 // data/props.json: {source: {directory}, props: [{id, file, sha256, lengthAxis: 'x'|'y'|'z', lengthMetres, triangles, textureSize}]}
-type PropJob = {id: string; file: string; sha256: string; lengthAxis: 'x' | 'y' | 'z'; lengthMetres: number; triangles: number; textureSize: number; note?: string};
+type PropJob = {id: string; file: string; sha256: string; lengthAxis: 'x' | 'y' | 'z'; lengthMetres: number; triangles: number; textureSize: number; creaseDegrees?: number; note?: string};
 async function convert(job: PropJob, directory: string) {
   const source = await readFile(path.join(directory, job.file)), sha = createHash('sha256').update(source).digest('hex');
   if (sha !== job.sha256) throw Error(`${job.file} is not the file data/props.json names (sha256 ${sha}).`);
-  const {json, bin} = readGlb(source), full = meshOf(json, bin), {mesh, cell} = simplifyTo(full, job.triangles);
-  const placed = placeOnOrigin(mesh.positions, ({x: 0, y: 1, z: 2} as const)[job.lengthAxis], job.lengthMetres), normals = mesh.normals ?? vertexNormals(mesh); // scaling is uniform, so the source's normals stay true
+  const {json, bin} = readGlb(source), full = meshOf(json, bin), thinned = await simplifyTo(full, job.triangles), error = thinned.error, mesh = creasedNormals(thinned.mesh, job.creaseDegrees ?? 40);
+  const placed = placeOnOrigin(mesh.positions, ({x: 0, y: 1, z: 2} as const)[job.lengthAxis], job.lengthMetres), normals = mesh.normals; // scaling is uniform, so the normals stay true
   const sharp = (await import('sharp')).default, images: PropImage[] = [];
   for (const image of json.images ?? []) { const view = json.bufferViews[image.bufferView], data = bin.subarray(view.byteOffset ?? 0, (view.byteOffset ?? 0) + view.byteLength);
     images.push({mimeType: 'image/jpeg', data: await sharp(data).resize({width: job.textureSize, height: job.textureSize, fit: 'inside', withoutEnlargement: true}).jpeg({quality: 86}).toBuffer()}); }
@@ -184,9 +168,9 @@ async function convert(job: PropJob, directory: string) {
   const textures = (json.textures ?? []).map((t: Json) => ({source: t.source, sampler: 0}));
   const out = writeGlb(mesh, normals, material, textures, images, 'dealer tools/prop-glb.ts'), target = `assets/props/${job.id}.glb`;
   await mkdir('assets/props', {recursive: true}); await writeFile(target, out);
-  const receipt = {id: job.id, source: {file: job.file, sha256: sha, bytes: source.length, triangles: triangleCount(full)}, output: {path: target, sha256: createHash('sha256').update(out).digest('hex'), bytes: out.length, triangles: triangleCount(mesh), vertices: mesh.positions.length / 3, cellMetres: cell * placed.scale, sizeMetres: placed.size.map(v => Number(v.toFixed(4))), textures: images.map(i => i.data.length)}, createdAt: new Date().toISOString()};
+  const receipt = {id: job.id, source: {file: job.file, sha256: sha, bytes: source.length, triangles: triangleCount(full)}, output: {path: target, sha256: createHash('sha256').update(out).digest('hex'), bytes: out.length, triangles: triangleCount(mesh), vertices: mesh.positions.length / 3, errorMetres: Number((error * placed.scale).toFixed(5)), sizeMetres: placed.size.map(v => Number(v.toFixed(4))), textures: images.map(i => i.data.length)}, createdAt: new Date().toISOString()};
   await writeFile(`assets/props/${job.id}.receipt.json`, JSON.stringify(receipt, null, 2));
-  console.log(`${job.id}: ${receipt.source.triangles} → ${receipt.output.triangles} trianglar, ${(source.length / 1048576).toFixed(1)} → ${(out.length / 1048576).toFixed(2)} MB, mått ${receipt.output.sizeMetres.join(' × ')} m, cell ${(receipt.output.cellMetres * 1000).toFixed(1)} mm`);
+  console.log(`${job.id}: ${receipt.source.triangles} → ${receipt.output.triangles} trianglar, ${(source.length / 1048576).toFixed(1)} → ${(out.length / 1048576).toFixed(2)} MB, mått ${receipt.output.sizeMetres.join(' × ')} m, avvikelse omkring ${(receipt.output.errorMetres * 1000).toFixed(1)} mm`);
 }
 if (process.argv[1] && path.resolve(process.argv[1]) === path.resolve(import.meta.dirname, 'prop-glb.ts')) {
   const config = JSON.parse(await readFile('data/props.json', 'utf8')), wanted = process.argv.slice(2), jobs: PropJob[] = wanted.includes('--all') ? config.props : config.props.filter((p: PropJob) => wanted.includes(p.id));
