@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "budget": {
-    "maximumCredits": 5132
+    "maximumCredits": 5162
   },
   "anchors": [
     {
@@ -2857,6 +2857,26 @@
         "note": "The rest keystone, so that every idle clip follows the arrival."
       },
       "purpose": "She comes in, sits down and lays her hands on the table (Jakob asked for it in the node tree). Starts on a real empty frame and ends on the rest keystone."
+    },
+    {
+      "id": "pamela-table-leave-wide-probe-01",
+      "kind": "LEAVE",
+      "target": null,
+      "from": "IDLE",
+      "to": "AWAY-WIDE",
+      "model": "wan3",
+      "duration": 6,
+      "ratio": "auto_480p",
+      "audio": false,
+      "promptText": "Wide, locked shot in a green-screen studio. Everything except the woman is plain green: the green background and, across the lower part of the picture, a very large, lighter green table top seen from the players' side, which hides everything behind and below it. The same Pamela, black suit, her dark hair pulled back in a low bun, sits behind the middle of the table with her arms at her sides, exactly as in the first image. She stands up from her chair: her whole upper body visibly rises as she straightens her legs, until she stands at full height with her whole head well inside the picture. Standing, she straightens her jacket with both hands in one short tug at its front. Then she turns to her left and walks calmly along behind the table to the right and out of the picture past its right edge. She stays exactly the same size the whole time, and the table always hides the part of her that is behind it. From then on nobody is in the picture: only the plain green background and the green table remain, perfectly still, to the end. The camera never moves, tilts or zooms. No other person, no chair and no other object comes into view, no wave, no cut.",
+      "first": {
+        "file": {
+          "path": "assets/anchors/pamela-wide-seated-01/anchor.png",
+          "sha256": "e7ee289be09ec05ff6064b37bc00df7a6fc9f920cf3670788037c922b102f1c4"
+        },
+        "note": "Composite: frame 30 of pamela-table-leave-02 at half scale behind a drawn green table on a larger green surface (assets/anchors/pamela-wide-seated-01/anchor.json)."
+      },
+      "purpose": "Low-resolution probe for the full-figure leave film Jakob asked for after rejecting both in/out films: does the model keep her size, stand her up inside the picture and walk her out to the right from a composite wide first image? An experiment, not a film to judge; nothing plays it."
     }
   ],
   "derived": [
