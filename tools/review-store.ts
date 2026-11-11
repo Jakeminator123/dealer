@@ -28,7 +28,8 @@ export function applyChange(review: unknown, change: ReviewChange, date: string,
   next.decision = change.decision === 'VARIANT' ? 'ACCEPTED' : change.decision;
   // "VARIANT" is an accepted take used now and then; an explicit MAIN marker survives a plain approval.
   if (change.decision === 'VARIANT') next.acceptedAs = 'VARIANT'; else if (!accepted || next.acceptedAs !== 'MAIN') delete next.acceptedAs;
-  next.userReview = `${reviewer} ${date}: ${change.note || SAID[change.decision]}`;
+  // A reset takes away what marks the film as decided: his word. It then waits for his decision again.
+  if (change.decision === 'PENDING') delete next.userReview; else next.userReview = `${reviewer} ${date}: ${change.note || SAID[change.decision]}`;
   next.userAccepted = accepted;
   return next;
 }

@@ -41,7 +41,9 @@ test('each decision sets decision, acceptedAs, userAccepted and a dated note', (
   assert.deepEqual(at('ACCEPTED'), {decision: 'ACCEPTED', userAccepted: true, basis: 'b', userReview: 'Jakob 2026-11-11: godkänd i labbet.'});
   assert.deepEqual(at('REJECTED', 'tryckt framsida'), {decision: 'REJECTED', userAccepted: false, basis: 'b', userReview: 'Jakob 2026-11-11: tryckt framsida'});
   assert.deepEqual(at('SECONDARY'), {decision: 'SECONDARY', userAccepted: false, basis: 'b', userReview: 'Jakob 2026-11-11: sekundärt alternativ, satt i labbet.'});
-  assert.deepEqual(at('PENDING'), {decision: 'PENDING', userAccepted: false, basis: 'b', userReview: 'Jakob 2026-11-11: återställd till ogranskad i labbet.'});
+  assert.deepEqual(at('PENDING'), {decision: 'PENDING', userAccepted: false, basis: 'b'});
+  // A reset after a decision removes his word, so the film is waiting again.
+  assert.deepEqual(applyChange({decision: 'REJECTED', basis: 'b', userReview: 'Jakob 2026-11-10: nej', userAccepted: false}, {decision: 'PENDING', note: 'ångrar mig'}, '2026-11-11'), {decision: 'PENDING', basis: 'b', userAccepted: false});
   // An explicit main marker survives a plain approval and goes with any other decision.
   assert.equal(at('ACCEPTED', '', {acceptedAs: 'MAIN'}).acceptedAs, 'MAIN'); assert.equal(at('REJECTED', '', {acceptedAs: 'MAIN'}).acceptedAs, undefined);
   assert.equal(at('VARIANT', '', {acceptedAs: 'MAIN'}).acceptedAs, 'VARIANT');
@@ -78,6 +80,6 @@ test('a real tracked record survives a round of decisions with everything outsid
   const text = await readFile(target, 'utf8'), after = JSON.parse(text);
   const {review: was, ...rest} = original, {review: now, ...kept} = after;
   assert.deepEqual(kept, rest); assert.deepEqual(Object.keys(after), Object.keys(original)); assert.ok(text.endsWith('}\n'));
-  assert.equal(now.decision, 'PENDING'); assert.equal(now.userAccepted, false); assert.equal(now.acceptedAs, undefined);
+  assert.equal(now.decision, 'PENDING'); assert.equal(now.userAccepted, false); assert.equal(now.acceptedAs, undefined); assert.equal(now.userReview, undefined);
   for (const key of ['basis', 'limitations', 'agentFirstVerdict', 'colorDoesNotProvePhysicalSide', 'productionReady']) assert.deepEqual(now[key], was[key], key);
 });

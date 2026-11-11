@@ -1,20 +1,31 @@
 // Follows the coloured tracking card (yellow back, blue face) through one clip and writes, per frame,
 // the visible side, the card quad in texture order, the edge-on line and a confidence.
-//   node tools/track-card.ts <clip-id> [--overlay <out.mp4>]
+//   node tools/track-card.ts <clip-id> [--overlay <out.mp4>] [--kind DEAL|RETURN|OTHER]
+// The kind of film (a deal, a return, or a film without a dealt card) is read from data/clip-jobs.json unless given.
 // Reads assets/motions/<clip-id>/source.mp4, writes assets/tracking/<clip-id>/card-track.json and receipt.json.
 // --overlay also writes the clip with the tracked outline drawn on it, for checking by eye.
 import {readFile, writeFile, mkdir} from 'node:fs/promises';
-import {existsSync} from 'node:fs';
+import {existsSync, readFileSync} from 'node:fs';
 import {createHash} from 'node:crypto';
 import {spawn, execFileSync} from 'node:child_process';
 import {fileURLToPath} from 'node:url';
 import path from 'node:path';
-import {classify, persistent, follower, buildTrack, blobs, YELLOW, EDGE_THICKNESS, MIN_AREA, type Raw, type Pt} from '../src/card-track.ts';
+import {classify, persistent, follower, buildTrack, settleRaws, blobs, morph, YELLOW, BLUE, TABLE, EDGE_THICKNESS, MIN_AREA, type Raw, type Pt, type FilmKind} from '../src/card-track.ts';
 
 if (path.resolve(process.cwd()) !== path.resolve(fileURLToPath(new URL('../', import.meta.url)))) throw Error('Run from the dealer checkout.');
 const id = process.argv[2], overlayAt = process.argv.indexOf('--overlay'), overlay = overlayAt > 0 ? process.argv[overlayAt + 1] : null;
 if (!id || !/^[a-z0-9-]+$/.test(id) || (overlayAt > 0 && !overlay)) throw Error('Usage: track-card.ts <clip-id> [--overlay <out.mp4>]');
 const video = `assets/motions/${id}/source.mp4`, dir = `assets/tracking/${id}`;
+// What the film is decides what can be in it. A clip cut into several takes, or one the job file does not know, is followed as before.
+function kindOf(clip: string): FilmKind | null {
+  const file = existsSync('data/clip-jobs.json') ? JSON.parse(readFileSync('data/clip-jobs.json', 'utf8')) : {}, edit = (file.edits ?? []).find((e: {id: string}) => e.id === clip);
+  if (edit?.source?.clip) return kindOf(edit.source.clip);
+  const kinds = [...new Set([...(file.jobs ?? []), ...(file.derived ?? [])].filter((e: {id: string; clip?: string}) => (e.clip ?? e.id) === clip).map((e: {kind?: string; from?: string; to?: string}) =>
+    e.kind === 'DEAL' ? 'DEAL' : e.kind === 'RETURN' && /(?:P[1-7]|D)\.C[1-3]/.test(String(e.from)) ? 'RETURN' : 'OTHER'))];
+  // A film cut into a deal and the return after it is a deal as a whole: the card turns once and then lies.
+  return kinds.includes('DEAL') ? 'DEAL' : kinds.length === 1 ? kinds[0] as FilmKind : null;
+}
+const kindAt = process.argv.indexOf('--kind'), kind: FilmKind | null = kindAt > 0 ? process.argv[kindAt + 1] as FilmKind : kindOf(id);
 const env = existsSync('D:/dealer-scratch/tmp') ? {...process.env, TEMP: 'D:/dealer-scratch/tmp', TMP: 'D:/dealer-scratch/tmp'} : process.env;
 const ffmpeg = process.env.FFMPEG ?? 'ffmpeg', ffprobe = process.env.FFPROBE ?? 'ffprobe';
 const info = JSON.parse(execFileSync(ffprobe, ['-v', 'error', '-select_streams', 'v:0', '-show_entries', 'stream=width,height,r_frame_rate,nb_frames', '-of', 'json', video], {env}).toString()).streams[0];
@@ -29,18 +40,24 @@ async function* frames(file: string): AsyncGenerator<Buffer> {
 }
 
 // Pass 1: which pixels are yellow through most of the clip? That is the card seated in the shoe window.
-const counts = new Uint16Array(N); let total = 0;
-for await (const frame of frames(video)) { const cls = classify(frame, N); for (let i = 0; i < N; i++) if (cls[i] === YELLOW) counts[i]++; total++; }
+const counts = new Uint16Array(N), blues = new Uint16Array(N); let total = 0;
+for await (const frame of frames(video)) { const cls = classify(frame, N); for (let i = 0; i < N; i++) { if (cls[i] === YELLOW) counts[i]++; else if (cls[i] === BLUE) blues[i]++; } total++; }
 if (!total) throw Error(`No frames decoded from ${video}.`);
 const shoe = persistent(counts, total), shoeBlob = blobs(shoe, W, H, 400)[0] ?? null;
 
 // Pass 2: the card in every frame, each finding steering where the next one is looked for.
-const step = follower(W, H, shoe), raws: Raw[] = [];
-for await (const frame of frames(video)) raws.push(step(classify(frame, N)));
-const track = buildTrack(raws);
+// In a deal, blue that is there in nine frames of ten is a card that lay on the table before this one was dealt: it is not the
+// moving card and is taken out of the picture (in eight frames of ten, since a hand passes over it). A film without a dealt card (entry, idle, exit) has nothing to follow.
+const lying = kind === 'DEAL' ? morph(Uint8Array.from(blues, count => count >= 0.8 * total ? 1 : 0), W, H, 4, true) : null, // with its pale rim
+  lyingPixels = lying ? lying.reduce((sum, v) => sum + v, 0) : 0;
+const step = follower(W, H, shoe), found: Raw[] = [], nothing: Raw = {side: 'NONE', corners: null, segment: null, area: 0, fill: 0, thickness: 0, shoeShare: 0, note: 'no dealt card in this kind of film'};
+for await (const frame of frames(video)) { if (kind === 'OTHER') { found.push(nothing); continue; }
+  const cls = classify(frame, N); if (lyingPixels) for (let i = 0; i < N; i++) if (lying![i]) cls[i] = TABLE;
+  found.push(step(cls)); }
+const raws = kind ? settleRaws(found, kind) : found, track = buildTrack(raws);
 
 const sha256 = createHash('sha256').update(await readFile(video)).digest('hex');
-const out = {schemaVersion: 1, clip: id, source: {path: video, sha256}, width: W, height: H, fps, frameCount: total,
+const out = {schemaVersion: 1, clip: id, kind, source: {path: video, sha256}, width: W, height: H, fps, frameCount: total,
   quadOrder: 'Texture order of the visible side: top left, top right, bottom right, bottom left of that side\'s artwork; clockwise on screen. The first side is anchored on its first frame, later sides on their last frame (the card at rest).',
   flipsNote: 'quarterTurns: how far the anchored orientation after the edge-on moment differs from a rigid card that simply turned over. Non-zero means the film changes the proportions of the card there, and the rendered card re-seats while it is a line.',
   edgeOrder: 'Edge-on frames have a line instead of a quad. Its direction continues the length of the last quad before it: from the end with that quad\'s corners 0 and 1 (0 and 3 if the card turns about its short axis) to the opposite end.',
@@ -52,7 +69,7 @@ await mkdir(dir, {recursive: true});
 await writeFile(`${dir}/card-track.json`, body);
 const r2 = (v: number) => Math.round(v * 100) / 100, jitter = track.restJitter;
 const receipt = {schemaVersion: 1, clip: id, createdAt: new Date().toISOString(), tool: 'tools/track-card.ts', source: {path: video, sha256, width: W, height: H, fps, frameCount: total},
-  rules: {yellow: 'r>95 && g>95 && g>0.82r && r>0.6g && b<0.45*min(r,g)', blue: 'b>90 && b>1.5r && b>1.15g', edgeOnBelowThicknessPx: EDGE_THICKNESS, minCardPixels: MIN_AREA, shoeCard: 'persistent yellow; ignored unless the track continues out of it'},
+  rules: {yellow: 'r>95 && g>95 && g>0.82r && r>0.6g && b<0.45*min(r,g)', blue: 'b>90 && b>1.5r && b>1.15g', edgeOnBelowThicknessPx: EDGE_THICKNESS, minCardPixels: MIN_AREA, shoeCard: 'persistent yellow; ignored unless the track continues out of it', filmKind: kind, lyingCardPixelsIgnored: lyingPixels, settled: raws.filter((r, i) => r.note !== found[i].note).length},
   ranges: track.ranges, edgeWindow: track.edgeWindow, flips: track.flips, leavesShoe: track.leavesShoe, restFrom: track.restFrom,
   stability: jitter && {restFrames: jitter.frames, clearRestFrames: jitter.clearFrames, rawCornerOffsetMeanPx: r2(jitter.rawMean), rawCornerOffsetMaxPx: r2(jitter.rawMax), clearCornerOffsetMeanPx: r2(jitter.clearMean), clearCornerOffsetMaxPx: r2(jitter.clearMax), note: 'Distance of each found corner from the locked resting quad, before locking. Clear = frames where the card is not covered.'},
   lowConfidenceFrames: track.lowConfidence, output: {path: `${dir}/card-track.json`, sha256: createHash('sha256').update(body).digest('hex'), bytes: Buffer.byteLength(body)}};

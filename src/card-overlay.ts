@@ -2,7 +2,7 @@
 // drawn and what the film shows around it. Position, rotation and side come from the card track
 // (tools/track-card.ts); size does not: a card has one physical size, taken from the scene contract.
 // No DOM, WebGL or file access here. The drawing itself is src/card-overlay-view.ts.
-import {classify, morph, grown, centre, signedArea, inside, clockwise, YELLOW, BLUE, SHADE, TINT, TABLE, SKIN, DARK, type Pt, type Side} from './card-track.ts';
+import {classify, morph, blobs, grown, centre, signedArea, inside, clockwise, is, YELLOW, BLUE, SHADE, TINT, TABLE, SKIN, DARK, type Pt, type Side} from './card-track.ts';
 
 export type TrackFrame = {frame: number; side: Side; quad: number[][] | null; edge: number[][] | null; confidence?: number; shoeShare?: number};
 export type CardTrack = {clip?: string; width: number; height: number; frames: TrackFrame[]; edgeWindow: [number, number] | null; flips?: {from: number; to: number; quarterTurns: number}[];
@@ -11,6 +11,9 @@ export type CardTrack = {clip?: string; width: number; height: number; frames: T
 export type Scene = {toImage: number[]; toTable: number[]; cardWidth: number; cardHeight: number; bodyScale: number};
 export const RIM = 4; // the film's pale rim and its blur outside the tracked colour core, in pixels
 export const SCALE = {min: 1, max: 2.5, fallback: 2};
+export const MARGIN = 1.2; // the rendered card is this much larger than the film's card wherever it follows it
+export const BESIDE = 12;  // film card colour this close beside the rendered card is cleaned too
+export const STRAY = 50;   // a connected patch of the film card's colour of at least this many pixels is a film card, wherever it is
 const pts = (q: number[][]): Pt[] => q.map(([x, y]) => ({x, y}));
 const apply = (h: number[], p: Pt): Pt => { const w = h[6] * p.x + h[7] * p.y + 1; return {x: (h[0] * p.x + h[1] * p.y + h[2]) / w, y: (h[3] * p.x + h[4] * p.y + h[5]) / w}; };
 const smooth = (t: number) => t <= 0 ? 0 : t >= 1 ? 1 : t * t * (3 - 2 * t);
@@ -80,41 +83,97 @@ export type Pose = {
  * smoothly to the resting size instead of following the film, which draws the card large in the
  * hand and shrinks it in the last two frames; the shape settles over the last three.
  */
-export function poseAt(track: CardTrack, scene: Scene | null, frame: number, scale: number, ease = 12, shift: {x: number; y: number} | null = null): Pose | null {
-  const pose = filmPose(track, scene, frame, scale, ease);
-  if (!pose || !shift || (!pose.quad && !pose.edge)) return pose;
-  // One film per seat: the same film deals the seat's second card. The rendered card is moved to that card's place, the film's own card stays where it is and is covered.
-  const k = shiftShare(track, pose.frame), move = (p: Pt): Pt => ({x: p.x + shift.x * k, y: p.y + shift.y * k});
-  return {...pose, quad: pose.quad && pose.quad.map(move), edge: pose.edge && [move(pose.edge[0]), move(pose.edge[1])], at: pose.edge};
-}
-/** How much of a shift applies in a frame: none while the card sits in the shoe, all of it once it lies; in between it grows smoothly while the card is carried. */
-export function shiftShare(track: CardTrack, frame: number): number {
-  const rest = restOf(track), to = rest ? rest.from : track.frames.length - 1, from = Math.min(to, Math.max(0, track.leavesShoe ?? 0));
-  return frame >= to ? 1 : frame <= from ? 0 : smooth((frame - from) / (to - from));
-}
-/** Where a film leaves its card lying, for the films that follow it in a round: the resting card, moved with its step's shift. */
-export function placedCard(track: CardTrack, scene: Scene | null, scale: number, shift: {x: number; y: number} | null = null): {quad: Pt[]; side: Side} | null {
-  if (!restOf(track)) return null;
-  const pose = poseAt(track, scene, track.frames.length - 1, scale, 12, shift);
-  return pose?.quad ? {quad: pose.quad, side: pose.side} : null;
-}
-function filmPose(track: CardTrack, scene: Scene | null, frame: number, scale: number, ease: number): Pose | null {
+export function poseAt(track: CardTrack, scene: Scene | null, frame: number, scale: number, ease = 12, shift: {x: number; y: number} | null = null, land: Pt[] | null = null): Pose | null {
   const at = Math.max(0, Math.min(track.frames.length - 1, Math.round(frame))), f = track.frames[at];
   if (!f) return null;
   const none: Pose = {frame: at, side: f.side, quad: null, edge: null, film: null, resting: 0, turned: false};
-  if (f.side === 'EDGE' && f.edge?.length === 2) return {...none, edge: [{x: f.edge[0][0], y: f.edge[0][1]}, {x: f.edge[1][0], y: f.edge[1][1]}]};
+  const landed = restOf(track), goal = land?.length === 4 && landed ? sameStart(land, landed.quad) : null;
+  // The film's card is only a marker. Where the rendered card must end is the plan's place (land), or the place of the seat's
+  // second card (shift). Either way the move grows from nothing at the shoe to all of it at the landing, so the card never jumps.
+  const d = goal ? {x: centre(goal).x - centre(landed!.quad).x, y: centre(goal).y - centre(landed!.quad).y} : shift ?? {x: 0, y: 0};
+  const k = d.x || d.y ? shiftShare(track, at) : 0, move = (p: Pt): Pt => ({x: p.x + d.x * k, y: p.y + d.y * k});
+  if (f.side === 'EDGE' && f.edge?.length === 2) { const line: [Pt, Pt] = [{x: f.edge[0][0], y: f.edge[0][1]}, {x: f.edge[1][0], y: f.edge[1][1]}];
+    return k ? {...none, edge: [move(line[0]), move(line[1])], at: line} : {...none, edge: line}; }
   if ((f.side !== 'BACK' && f.side !== 'FRONT') || f.quad?.length !== 4) return none;
-  const film = grown(pts(f.quad), RIM), landed = restOf(track);
-  if (!landed) return {...none, quad: film, film};
-  // Without the contract the resting card can only be the film's own card, enlarged about its centre.
-  const rest = landed.quad, from = landed.from, still = scene ? restingQuad(scene, rest, scale) : {quad: about(grown(rest, RIM), scale), turned: false};
+  // In the hand the rendered card is the film's card and a margin more, so the film's card and its rim never show beside it.
+  const film = grown(pts(f.quad), RIM), held = about(pts(f.quad), MARGIN);
+  if (!landed) return {...none, quad: held.map(move), film};
+  // At rest it is the constant-size card on the table: at the plan's place and direction, else where the film laid it (moved by the shift).
+  const from = landed.from, rest = goal ?? landed.quad.map(p => ({x: p.x + d.x, y: p.y + d.y}));
+  const still = scene ? restingQuad(scene, rest, scale) : {quad: about(grown(rest, RIM), scale), turned: false};
   if (at >= from) return {...none, quad: still.quad, film, resting: 1, turned: still.turned};
   // The size only starts to settle once the card shows the side it will lie on.
   let start = Math.max(0, from - ease); for (let i = from - 1; i >= start; i--) if (track.frames[i].side !== track.frames[from].side || !track.frames[i].quad) { start = i + 1; break; }
   const t = at < start ? 0 : smooth((at - start + 1) / (from - start + 1)), shape = smooth((at - (from - 4)) / 4);
-  const order = still.turned ? [film[1], film[2], film[3], film[0]] : film, settled = about(order, 1 + (size(still.quad) / (size(order) || 1) - 1) * t);
+  const order = still.turned ? [held[1], held[2], held[3], held[0]] : held, settled = about(order, 1 + (size(still.quad) / (size(order) || 1) - 1) * t).map(move);
   return {...none, quad: mix(settled, still.quad, shape), film, resting: t, turned: still.turned};
 }
+// The plan's quad, begun at the corner that lies nearest the film card's first corner and running the same way round: the
+// rendered card ends in the plan's direction without spinning on its way there.
+function sameStart(plan: Pt[], film: Pt[]): Pt[] {
+  const way = signedArea(plan) * signedArea(film) < 0 ? [plan[0], plan[3], plan[2], plan[1]] : plan, a = centre(way), b = centre(film); let best = way, least = Infinity;
+  for (let turn = 0; turn < 4; turn++) { const q = way.map((_, i) => way[(i + turn) % 4]), off = q.reduce((sum, p, i) => sum + Math.hypot(p.x - a.x - film[i].x + b.x, p.y - a.y - film[i].y + b.y), 0); if (off < least) { least = off; best = q; } }
+  return best;
+}
+/** How much of a move applies in a frame: none while the card sits in the shoe, all of it once it lies; in between it grows smoothly while the card is carried. */
+export function shiftShare(track: CardTrack, frame: number): number {
+  const rest = restOf(track), to = rest ? rest.from : track.frames.length - 1, from = Math.min(to, Math.max(0, track.leavesShoe ?? 0));
+  return frame >= to ? 1 : frame <= from ? 0 : smooth((frame - from) / (to - from));
+}
+/** Where a film leaves its card lying, for the films that follow it in a round: the resting card, at the plan's place or moved with its step's shift. */
+export function placedCard(track: CardTrack, scene: Scene | null, scale: number, shift: {x: number; y: number} | null = null, land: Pt[] | null = null): {quad: Pt[]; side: Side} | null {
+  if (!restOf(track)) return null;
+  const pose = poseAt(track, scene, track.frames.length - 1, scale, 12, shift, land);
+  return pose?.quad ? {quad: pose.quad, side: pose.side} : null;
+}
+/** How far beside the plan a film lays its card, and the Kortskala at which the rendered card is a margin larger than the film's resting card. */
+export function landing(track: CardTrack, scene: Scene | null, land: Pt[] | null): {off: number | null; filmSize: number; planSize: number | null; scaleNeeded: number | null} | null {
+  const rest = restOf(track);
+  if (!rest) return null;
+  const filmSize = size(rest.quad), planSize = scene ? size(restingQuad(scene, rest.quad, 1).quad) : null;
+  return {off: land?.length === 4 ? Math.hypot(centre(land).x - centre(rest.quad).x, centre(land).y - centre(rest.quad).y) : null, filmSize, planSize, scaleNeeded: planSize ? MARGIN * filmSize / planSize : null};
+}
+/**
+ * Film card pixels that would still show with the rendered card drawn: the tracker's own yellow and blue, outside the boxes to
+ * ignore (the shoe window), not under or right beside the rendered card, not in the cleaned zone around the film's own card and
+ * not in a patch of card size, which the overlay paints over wherever it lies.
+ * The mask is opened by one step first, so a one-pixel fringe along a finger is not counted as card.
+ */
+export function leakCount(rgb: Uint8Array, width: number, height: number, pose: Pose | null, ignore: number[][] = []): number {
+  const n = width * height, mask = new Uint8Array(n); let any = false;
+  const near = pose ? filmZone(pose) : null, wide = pose?.quad ? grown(clockwise(pose.quad), BESIDE) : null;
+  for (let i = 0, j = 0; i < n; i++, j += 3) { const r = rgb[j], g = rgb[j + 1], b = rgb[j + 2];
+    if (!is.yellow(r, g, b) && !is.blue(r, g, b)) continue;
+    const x = i % width, y = (i - x) / width;
+    if (ignore.some(box => x >= box[0] - 8 && x <= box[2] + 8 && y >= box[1] - 8 && y <= box[3] + 8)) continue;
+    if (near?.(x + 0.5, y + 0.5) || (wide && inside(wide, x + 0.5, y + 0.5))) continue;
+    mask[i] = 1; any = true; }
+  if (!any) return 0;
+  // Patches of card size are painted over by the overlay wherever they are (strayBoxes); what can still show is what is smaller.
+  for (const blob of blobs(mask, width, height, STRAY)) for (let k = 0; k < blob.pixels.length; k++) mask[blob.pixels[k]] = 0;
+  const solid = morph(mask, width, height, 1, false); let count = 0;
+  for (let i = 0; i < n; i++) count += solid[i];
+  return count;
+}
+/**
+ * The film's card is only a marker, and so is every other card the film shows: a card lying since an earlier deal, or a card the
+ * track lost for a few frames. Every connected patch of the card colours of at least `min` pixels, outside the boxes to ignore
+ * (the shoe window), is found here as a box; the overlay paints each with the background around it. `step` is the scale of the
+ * picture given (2 for a half-size frame); boxes come back in full-size pixels, with room for the card's rim.
+ */
+export function strayBoxes(rgba: ArrayLike<number>, width: number, height: number, ignore: number[][] = [], step = 1, min = STRAY, room = 10): Box[] {
+  const mask = new Uint8Array(width * height); let any = false;
+  for (let i = 0, j = 0; i < width * height; i++, j += 4) { const r = rgba[j], g = rgba[j + 1], b = rgba[j + 2];
+    if (!is.yellow(r, g, b) && !is.blue(r, g, b)) continue;
+    const x = (i % width) * step, y = ((i - i % width) / width) * step;
+    if (ignore.some(box => x >= box[0] - 8 && x <= box[2] + 8 && y >= box[1] - 8 && y <= box[3] + 8)) continue;
+    mask[i] = 1; any = true; }
+  if (!any) return [];
+  return blobs(mask, width, height, Math.max(1, Math.round(min / (step * step)))).map(blob => { const x = Math.max(0, blob.x0 * step - room), y = Math.max(0, blob.y0 * step - room);
+    return {x, y, width: (Math.min(width * step, (blob.x1 + 1) * step + room) - x) & ~1, height: (Math.min(height * step, (blob.y1 + 1) * step + room) - y) & ~1}; }).filter(box => box.width > 1 && box.height > 1);
+}
+/** Frame ranges out of a list of frame numbers: [61, 62, 63, 70] -> [[61, 63], [70, 70]]. */
+export const ranges = (frames: number[]): [number, number][] => frames.reduce((out: [number, number][], f) => { const last = out[out.length - 1]; if (last && f === last[1] + 1) last[1] = f; else out.push([f, f]); return out; }, []);
 
 /** Corners of the model card (width x height, y up, centred) and the eight numbers that carry them onto `quad`. */
 export function cardToImage(quad: Pt[], width: number, height: number): number[] {

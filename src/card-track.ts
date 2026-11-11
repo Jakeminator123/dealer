@@ -249,7 +249,7 @@ function pickYellow(cls: Uint8Array, w: number, h: number, shoe: Uint8Array | nu
   const region = hint?.region ? grown(hint.region, 8) : null; let best: Blob | null = null, bestScore = 0;
   for (const blob of pieces(maskOf(cls, YELLOW), w, h)) {
     let inShoe = 0, cont = 0; for (let k = 0; k < blob.pixels.length; k++) { const i = blob.pixels[k]; if (shoe) inShoe += shoe[i]; if (region && inside(region, i % w, Math.floor(i / w))) cont++; }
-    const free = inShoe < 0.5 * blob.area, score = hint === null ? blob.area : cont >= 0.25 * blob.area ? cont + (free ? blob.area : 0) : free ? blob.area * 0.5 : 0;
+    const free = inShoe < 0.5 * blob.area, score = hint === null ? blob.area : cont >= 0.25 * blob.area ? cont + (free ? blob.area : 0) : free ? blob.area * (blob.area >= 2 * MIN_AREA ? 2 : 0.5) : 0;
     if (score > bestScore) { bestScore = score; best = blob; } }
   return best ? measure(best, w, shoe, '') : null;
 }
@@ -278,7 +278,9 @@ export function thinSliver(cls: Uint8Array, w: number, h: number, around: Pt[], 
 /** Finds the card in one classified frame. On the very first frame (`hint === null`) a seated card is the one about to be dealt, unless a blue card already lies on the table. */
 export function detect(cls: Uint8Array, w: number, h: number, shoe: Uint8Array | null, hint: Hint | null): Raw {
   const blue = pickBlue(cls, w, h, hint), yellow = hint === null && blue && blue.area >= MIN_AREA ? null : pickYellow(cls, w, h, shoe, hint);
-  const pick = (yellow?.area ?? 0) >= (blue?.area ?? 0) ? yellow : blue, side = pick?.quad ? sideOf(yellow?.area ?? 0, blue?.area ?? 0, pick.thick) : 'NONE';
+  // The card seated in the shoe window is yellow in every frame. Once a blue card of real size is in the picture it is the dealt card, turned.
+  const seated = !!yellow && yellow.shoeShare >= 0.5 && !!blue && blue.area >= MIN_AREA;
+  const pick = !seated && (yellow?.area ?? 0) >= (blue?.area ?? 0) ? yellow : blue, side = pick?.quad ? sideOf(yellow?.area ?? 0, blue?.area ?? 0, pick.thick) : 'NONE';
   if (pick?.quad && (side === 'BACK' || side === 'FRONT')) return {side, corners: pick.quad, segment: null, area: pick.area, fill: pick.fill, thickness: pick.thick, shoeShare: pick.shoeShare, note: pick.note};
   const sliver = hint?.region ? thinSliver(cls, w, h, hint.region) : null;
   if (pick?.quad && side === 'EDGE') { const [a, b] = ends(pick.quad), own: [Pt, Pt] = [mid(pick.quad[a[0]], pick.quad[a[1]]), mid(pick.quad[b[0]], pick.quad[b[1]])];
@@ -303,6 +305,46 @@ export function follower(w: number, h: number, shoe: Uint8Array | null) {
     else { missed++; if (last) last = {x: last.x + step.x, y: last.y + step.y}; hint = {region: hint?.region && missed <= 4 ? shifted(hint.region, step) : null}; }
     return raw;
   };
+}
+
+// ---- the marker rule ----
+// The film's card is a plain colour patch that only has to be found. What a film can show is known beforehand: a deal shows the
+// back, perhaps the edge, then the face, once; a return shows one side all through. Findings that contradict it are another
+// object (the seated card, a card lying since before) and are dropped; short holes are then bridged from the frames around them.
+export type FilmKind = 'DEAL' | 'RETURN' | 'OTHER';
+const sameWay = (from: Pt[], to: Pt[]): Pt[] => { // `to` begun at the corner nearest `from`'s first, so corners can be joined one to one
+  let best = to, least = Infinity; for (const base of [to, [to[0], to[3], to[2], to[1]]]) for (let turn = 0; turn < 4; turn++) { const q = base.map((_, i) => base[(i + turn) % 4]), off = q.reduce((sum, p, i) => sum + dist(p, from[i]), 0); if (off < least) { least = off; best = q; } }
+  return best; };
+const spine = (q: Pt[]): [Pt, Pt] => { const [a, b] = ends(q); return [mid(q[a[0]], q[a[1]]), mid(q[b[0]], q[b[1]])]; };
+export function settleRaws(raws: Raw[], kind: FilmKind, reach = 15): Raw[] {
+  const out = raws.map(r => ({...r})), drop = (i: number, note: string) => { out[i] = {...out[i], side: 'NONE', corners: null, segment: null, note}; };
+  const flat = (i: number) => out[i].side === 'BACK' || out[i].side === 'FRONT';
+  if (kind === 'DEAL') { // one turn: the split with the fewest findings on the wrong side of it
+    let best = 0, least = Infinity, wrong = out.filter(r => r.side === 'BACK').length;
+    for (let k = 0; k <= out.length; k++) { if (wrong < least) { least = wrong; best = k; } if (k < out.length) wrong += out[k].side === 'FRONT' ? 1 : out[k].side === 'BACK' ? -1 : 0; }
+    out.forEach((r, i) => { if ((r.side === 'FRONT' && i < best) || (r.side === 'BACK' && i >= best)) drop(i, 'another object: wrong side of the one turn');
+      else if (r.side === 'EDGE' && Math.abs(i - best) > 6) drop(i, 'edge-on away from the one turn: the card was only thin to the eye'); });
+  } else if (kind === 'RETURN') { // one side: the one seen most
+    const back = out.filter(r => r.side === 'BACK').length, front = out.filter(r => r.side === 'FRONT').length, side: Side = back > front ? 'BACK' : 'FRONT';
+    out.forEach((r, i) => { if (flat(i) && r.side !== side) drop(i, 'another object: a lying card shows one side'); else if (r.side === 'EDGE') drop(i, 'a lying card is not edge-on'); });
+  }
+  // A card mostly hidden under the hand keeps its last known shape: a finding that suddenly has less than half the area, at the same place, is the same card.
+  for (let i = 1; i < out.length; i++) { const now = out[i], was = out[i - 1];
+    if (flat(i) && flat(i - 1) && now.side === was.side && now.corners && was.corners && now.area < 0.5 * was.area && dist(centre(now.corners), centre(was.corners)) < 0.6 * Math.sqrt(Math.abs(signedArea(was.corners))))
+      out[i] = {...was, shoeShare: now.shoeShare, note: 'mostly hidden: last known shape kept'}; }
+  // Holes: a run of frames without a flat finding, between two flat ones. Between two findings of the same side the shape is carried
+  // over; between back and face the card was edge-on, on the line between the two shapes. An edge that was really found stays.
+  for (let i = 0; i < out.length; i++) { if (flat(i)) continue;
+    let end = i; while (end + 1 < out.length && !flat(end + 1)) end++;
+    const a = i - 1, b = end + 1;
+    if (a >= 0 && b < out.length && end - i + 1 <= reach && out[a].corners && out[b].corners) {
+      const from = out[a].corners!, to = sameWay(from, out[b].corners!), s0 = spine(from), s1raw = spine(out[b].corners!), s1: [Pt, Pt] = dist(s0[0], s1raw[0]) + dist(s0[1], s1raw[1]) <= dist(s0[0], s1raw[1]) + dist(s0[1], s1raw[0]) ? s1raw : [s1raw[1], s1raw[0]];
+      for (let j = i; j <= end; j++) { const t = (j - a) / (b - a), lerp = (p: Pt, q: Pt): Pt => ({x: p.x + (q.x - p.x) * t, y: p.y + (q.y - p.y) * t});
+        if (out[j].side === 'EDGE' && out[j].segment) continue;
+        out[j] = out[a].side === out[b].side ? {...out[a], corners: from.map((p, c) => lerp(p, to[c])), area: out[a].area + (out[b].area - out[a].area) * t, shoeShare: 0, note: 'bridged from the frames around it'}
+          : {...out[j], side: 'EDGE', corners: null, segment: [lerp(s0[0], s1[0]), lerp(s0[1], s1[1])], thickness: 2, note: 'edge-on, bridged from the frames around it'}; } }
+    i = end; }
+  return out;
 }
 
 // ---- whole track ----

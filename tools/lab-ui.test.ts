@@ -389,13 +389,18 @@ test('the rendered card says when it is not available, and a take shows its card
  context.testOverlay=cardOverlay;runInContext('ovModel=testOverlay;ovData.clear();ovReading.clear();paintEdge()',context);await settle();
  const quad=[[800,1000],[870,1000],[870,1060],[800,1060]],frames=Array.from({length:6},(_,i)=>({frame:i,side:i<3?'BACK':'FRONT',quad,edge:null,confidence:.9}));
  respond({ok:true,json:async()=>({width:1764,height:1174,frames,edgeWindow:null,flips:[{from:2,to:3,quarterTurns:1}],restFrom:4,restQuad:quad})},track);
- respond({ok:true,json:async()=>({cardInFront:[{from:2,to:3,note:'<b>fingertopp</b>'}]})},rules);await settle();
+ respond({ok:true,json:async()=>({cardInFront:[{from:2,to:3,note:'<b>fingertopp</b>'}]})},rules);
+ // What the coverage tool measured lies in the track's receipt: in which frames the film's own card still shows, and how far beside the plan it lands.
+ respond({ok:true,json:async()=>({coverage:{covered:false,leakFrames:3,leakRanges:[[61,63]],worst:{frame:62,pixels:140},landsOffPlanPx:43.2,offPlanFlag:false,filmRestPx:67.7,planRestPx:65.8,scaleNeeded:1.24,scale:2}})},`assets/tracking/${id}/receipt.json`);await settle();
+ assert.match(element('kb-facts').innerHTML,/<dt>Täckning<\/dt><dd>läcker ruta 61–63 · 3 rutor, som mest 140 bildpunkter i ruta 62 \(uppmätt vid kortskala 2\)<\/dd>/);
+ assert.match(element('kb-facts').innerHTML,/<dt>Landning<\/dt><dd>filmens kort landar 43,2 px från planens plats · det renderade kortet flyttas dit, lite i taget från skon<\/dd>/);
+ assert.match(element('kb-facts').innerHTML,/<dt>Kortstorlek<\/dt><dd>filmens kort i vila är 67,7 px, planens kort 65,8 px · kortskala 1,24 räcker för 20 % marginal<\/dd>/);
  assert.match(element('kb-facts').innerHTML,/<dt>Kortspår<\/dt><dd>BACK 0–2 · FRONT 3–5 · sätts om 1 kvartsvarv vid ruta 2–3 · vilar från ruta 4<\/dd>/);
  assert.match(element('kb-facts').innerHTML,/<dt>Kort framför handen<\/dt><dd>ruta 2–3 · &#60;b&#62;fingertopp&#60;\/b&#62; · ur <code>assets\/tracking\/pamela-p4-c1-plan-deal-02\/overrides\.json<\/code><\/dd>/);
- assert.equal(requests.filter(request=>request.includes('tracking')).length,2);assert.ok(requests.every(request=>request.startsWith('GET ')));
+ assert.equal(requests.filter(request=>request.includes('tracking')).length,3);assert.ok(requests.every(request=>request.startsWith('GET ')));
  // A take without a track says how to get one.
  runInContext("kbSelect('P4.C1>READY')",context);
- assert.match(element('kb-facts').innerHTML,/<dt>Kortspår<\/dt><dd>saknas · renderat kort kräver <code>node tools\/track-card\.ts pamela-p4-c1-plan-return-ready-01<\/code><\/dd>/);
+ assert.match(element('kb-facts').innerHTML,/<dt>Kortspår<\/dt><dd>saknas ännu · filmens eget kort visas som det är<\/dd>/);assert.doesNotMatch(element('kb-facts').innerHTML,/node tools/);
 });
 
 test('a corrected copy is labelled as such, a slow-motion take plays at its own speed and a reversed film can be chosen',async()=>{
@@ -460,7 +465,10 @@ test('one film per seat is the default view: seat nodes, the share that is done,
  assert.equal(Math.round(Math.hypot(shift.x,shift.y)),reach);
  assert.deepEqual([laid(0).cards.length,laid(1).cards.length,laid(2).cards.length,laid(3).cards.length,laid(4).cards.length],[0,0,1,1,2]);
  const [first,second]=laid(4).cards;
- first.quad.forEach((p:{x:number;y:number},i:number)=>{assert.ok(Math.abs(second.quad[i].x-p.x-shift.x)<1e-6);assert.ok(Math.abs(second.quad[i].y-p.y-shift.y)<1e-6);});
+ // Both end on the plan's own places, so the second lies the plan's distance from the first.
+ const mid=(q:{x:number;y:number}[])=>({x:q.reduce((s,p)=>s+p.x,0)/4,y:q.reduce((s,p)=>s+p.y,0)/4});
+ assert.ok(Math.abs(mid(second.quad).x-mid(first.quad).x-shift.x)<1.5);assert.ok(Math.abs(mid(second.quad).y-mid(first.quad).y-shift.y)<1.5);
+ const planned=JSON.parse(runInContext("JSON.stringify(kbLand('P4.C1'))",context));assert.ok(Math.abs(mid(first.quad).x-mid(planned).x)<1.5&&Math.abs(mid(first.quad).y-mid(planned).y)<1.5);
  assert.deepEqual(laid(2).cards[0],first);assert.equal(first.back,false);assert.deepEqual(laid(4).lost,[]);
  // The switch: one film per card brings back the 51 edges and every card as its own node; the choice is kept in the address.
  runInContext("kbPanel='edge';kbCustom=false;kbSetMode('CARD')",context);

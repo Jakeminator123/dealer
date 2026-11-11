@@ -4,14 +4,20 @@
 // and how large comes from src/card-overlay.ts.
 import * as THREE from '../materials/source/references/card-materials/vendor/three.module.js';
 import {CARD, RANKS, SUITS, createCardGeometry, createCardPrint, paperMaterialParameters, applyCardLights, validateCard, type CardValue} from '../materials/source/src/card-material-study.ts';
-import {poseAt, cardToImage, projectionOf, regionOf, readMatte, filmZone, type CardTrack, type Scene, type Pose} from './card-overlay.ts';
+import {poseAt, cardToImage, projectionOf, regionOf, readMatte, filmZone, strayBoxes, BESIDE, type CardTrack, type Scene, type Pose} from './card-overlay.ts';
 import {signedArea, inside, clockwise, grown, is} from './card-track.ts';
 
 export {RANKS, SUITS};
+// The study lights its card for a dark room. Over the film the paper must read as white beside the film's own whites, so the same
+// lights are given more exposure; the filmic curve keeps the print from burning out.
+// Measured in the lab on the lying P4 card: exposure 1 gives paper 191 of 255 (grey beside the film), 3 gives 234, where the
+// film's own whites (her blouse) are about 228; ink stays below 20 and the red print keeps its colour.
+const PAPER_EXPOSURE = 3;
 // shift: the film deals another card than its own (one film per seat): the rendered card is drawn that far from the film's card.
+// land: the plan's quad for the card, in film pixels: the rendered card ends there, whatever the film's own landing; it replaces shift.
 // placed: cards dealt by earlier films of the round, which this film does not show; they lie where they landed.
 export type OverlayOptions = {scale: number; split: boolean; card: CardValue; side: 'TRACK' | 'BACK' | 'FRONT'; bend: number; gloss: number; inFront: boolean;
-  shift?: {x: number; y: number} | null; placed?: {quad: {x: number; y: number}[]; back: boolean}[]};
+  shift?: {x: number; y: number} | null; land?: {x: number; y: number}[] | null; placed?: {quad: {x: number; y: number}[]; back: boolean}[]};
 
 // One WebGL scene for every overlay on the page: the study's card, lit as in the study, seen straight on.
 // A homography then places that view on the card's quad in the film, so its perspective is the table's.
@@ -40,6 +46,7 @@ function open(options: OverlayOptions): Studio {
 function render(quad: {x: number; y: number}[], back: boolean, resting: number, options: OverlayOptions, width: number, height: number): HTMLCanvasElement | null {
   const s = open(options);
   if (s.canvas.width !== width || s.canvas.height !== height) s.renderer.setSize(width, height, false);
+  s.renderer.toneMappingExposure = PAPER_EXPOSURE;
   // The film may show a card mirrored for a frame; it is still drawn facing the eye.
   const corners = signedArea(quad) < 0 ? [quad[1], quad[0], quad[3], quad[2]] : quad;
   let h: number[]; try { h = cardToImage(corners, CARD.width, CARD.height); } catch { return null; }
@@ -85,6 +92,21 @@ export function createCardOverlay(canvas: HTMLCanvasElement) {
     const matte = readMatte(rctx.getImageData(0, 0, w, h).data, w, h, own ? (px, py) => inside(own, x + px + 0.5, y + py + 0.5) : undefined);
     layer.width = w; layer.height = h; lctx.drawImage(image, 0, 0); stamp(matte.hand, w, h, 'destination-out'); out.drawImage(layer, x, y);
   }
+  // Every other card the film shows (one lying since an earlier deal, or the film's card where the track lost it) is painted with
+  // the background around it; the film's hand stays in front. Found on a half-size copy of the frame, painted at full size.
+  const half = document.createElement('canvas'), hctx = half.getContext('2d', {willReadFrequently: true})!;
+  function wipe(video: HTMLVideoElement, width: number, height: number, shoe: number[][]) {
+    const hw = width >> 1, hh = height >> 1; half.width = hw; half.height = hh; hctx.drawImage(video, 0, 0, hw, hh);
+    for (const b of strayBoxes(hctx.getImageData(0, 0, hw, hh).data, hw, hh, shoe.map(box => box.map(v => v)), 2)) {
+      read.width = b.width; read.height = b.height; rctx.drawImage(video, b.x, b.y, b.width, b.height, 0, 0, b.width, b.height);
+      const matte = readMatte(rctx.getImageData(0, 0, b.width, b.height).data, b.width, b.height), f = matte.field, cells = fctx.createImageData(f.width, f.height);
+      for (let k = 0; k < f.width * f.height; k++) { cells.data[k * 4] = f.rgb[k * 3]; cells.data[k * 4 + 1] = f.rgb[k * 3 + 1]; cells.data[k * 4 + 2] = f.rgb[k * 3 + 2]; cells.data[k * 4 + 3] = 255; }
+      field.width = f.width; field.height = f.height; fctx.putImageData(cells, 0, 0);
+      layer.width = b.width; layer.height = b.height; stamp(matte.card, b.width, b.height, 'source-over');
+      lctx.globalCompositeOperation = 'source-in'; lctx.imageSmoothingEnabled = true; lctx.drawImage(field, 0, 0, f.width, f.height, 0, 0, f.width * f.cell, f.height * f.cell); lctx.globalCompositeOperation = 'source-over';
+      stamp(matte.hand, b.width, b.height, 'destination-out'); out.drawImage(layer, b.x, b.y);
+    }
+  }
   /** Draws one frame. Returns what was placed, or null when there is nothing to draw for it. */
   function draw(video: HTMLVideoElement, frame: number, track: CardTrack | null, scene: Scene | null, options: OverlayOptions): Pose | null {
     const width = video.videoWidth, height = video.videoHeight;
@@ -92,9 +114,12 @@ export function createCardOverlay(canvas: HTMLCanvasElement) {
     if (canvas.width !== width || canvas.height !== height) { canvas.width = width; canvas.height = height; }
     out.clearRect(0, 0, width, height);
     if (options.split) out.drawImage(video, 0, 0, width, height); // beside the raw film the layer needs its own copy of the frame
-    const pose = track ? poseAt(track, scene, frame, options.scale, 12, options.shift ?? null) : null, box = pose ? regionOf(pose, width, height) : null, placed = options.placed ?? [];
+    const pose = track ? poseAt(track, scene, frame, options.scale, 12, options.shift ?? null, options.land ?? null) : null, box = pose ? regionOf(pose, width, height) : null, placed = options.placed ?? [];
     canvas.dataset.frame = String(pose?.frame ?? Math.round(frame)); // which film frame the layer was drawn for
     canvas.dataset.cards = String(placed.length + (pose?.quad || pose?.edge ? 1 : 0)); // how many rendered cards it carries
+    // Before anything is drawn. A card lying right beside the dealt one (the dealer's first card under the second) goes too; the
+    // tracked card's own place is then cleaned once more with its finer rule. Without a track the shoe window is unknown, and nothing is wiped.
+    if (track) wipe(video, width, height, track.shoeWindow?.box ? [track.shoeWindow.box] : []);
     if (!pose || !box) { for (const card of placed) lay(video, card, options, width, height, null); return pose; }
     // What the film shows here: hand and sleeve stay in front, the film's own card must go.
     const bw = box.width, bh = box.height;
@@ -103,7 +128,7 @@ export function createCardOverlay(canvas: HTMLCanvasElement) {
     const matte = readMatte(rctx.getImageData(0, 0, bw, bh).data, bw, bh, own ? (x, y) => inside(own, box.x + x + 0.5, box.y + y + 0.5) : undefined), near = filmZone(pose);
     // Only the dealt card's own place is cleaned: not the next card seated in the shoe, not a yellowish finger edge elsewhere.
     // Along the border of the film's card a skin-coloured line narrower than a finger is the card's pale rim: it goes with the card.
-    const core = own ? grown(own, -9) : null, wide = pose.quad ? grown(clockwise(pose.quad), 12) : null; // just beside the rendered card nothing of the film's card may be left either
+    const core = own ? grown(own, -9) : null, wide = pose.quad ? grown(clockwise(pose.quad), BESIDE) : null; // just beside the rendered card nothing of the film's card may be left either
     for (let y = 0; y < bh; y++) for (let x = 0; x < bw; x++) { const i = y * bw + x, px = box.x + x + 0.5, py = box.y + y + 0.5, close = (matte.card[i] || matte.hand[i]) && (near(px, py) || (!!wide && matte.card[i] === 1 && inside(wide, px, py)));
       if (matte.card[i] && !close) matte.card[i] = 0;
       if (matte.hand[i] && !matte.firm[i] && close && !(core && inside(core, px, py))) { matte.hand[i] = 0; matte.card[i] = 1; } }

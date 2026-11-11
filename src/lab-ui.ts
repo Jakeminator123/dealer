@@ -498,11 +498,16 @@ function paintTake(e:KbEdge,t:KbTake){
  else if(t.startsOn)facts.push(['Startar på',`ruta f${t.startsOn.frame} i <code>${esc(t.startsOn.clip??t.startsOn.video)}</code>${t.kind==='RETURN'?` · passar bara den tagningen, som klipps vid samma ruta${typeof seam==='number'?` · ${seam} avvikande pixlar i skarven`:''}`:' · startbilden är hämtad därifrån; inget klipps för det'}`]);
  // What the card track says about this film, and where the card is drawn in front of the hand by hand-written rule.
  if(src){const data=ovData.get(t.id);
-  if(!t.media.track)facts.push(['Kortspår',`saknas · renderat kort kräver <code>node tools/track-card.ts ${esc(t.segment?.clip??t.id)}</code>`]);
+  if(!t.media.track)facts.push(['Kortspår','saknas ännu · filmens eget kort visas som det är']);
   else if(!data){facts.push(['Kortspår','läser…']);void ovRead(t).then(()=>{if(kbState==='ready'&&kbPanel==='edge'&&kbTake===t.id)paintEdge();});}
   else if(!data.track||!ovModel)facts.push(['Kortspår','kunde inte läsas']);
   else{facts.push(['Kortspår',esc(ovModel.describeTrack(data.track))]);
-   facts.push(['Kort framför handen',data.overrides.length?data.overrides.map(o=>`ruta ${o.from}–${o.to}${o.note?` · ${esc(o.note)}`:''}`).join('<br>')+` · ur <code>${esc(t.media.overrides)}</code>`:'inga undantag · handen ligger alltid framför kortet']);}
+   facts.push(['Kort framför handen',data.overrides.length?data.overrides.map(o=>`ruta ${o.from}–${o.to}${o.note?` · ${esc(o.note)}`:''}`).join('<br>')+` · ur <code>${esc(t.media.overrides)}</code>`:'inga undantag · handen ligger alltid framför kortet']);
+   // The measured answer to "is everything covered", and how far the rendered card is moved to end on the plan's place.
+   const c=data.coverage;
+   facts.push(['Täckning',c?`${ovCovers(c)}${c.covered?' · filmens eget kort syns inte i någon ruta':` · ${c.leakFrames} rutor, som mest ${c.worst.pixels} bildpunkter i ruta ${c.worst.frame}`} (uppmätt vid kortskala ${String(c.scale).replace('.',',')})`:'inte uppmätt ännu']);
+   if(c&&c.landsOffPlanPx!==null)facts.push(['Landning',`filmens kort landar ${String(c.landsOffPlanPx).replace('.',',')} px från planens plats${c.offPlanFlag?' ⚠ över 50 px':''} · det renderade kortet flyttas dit, lite i taget från skon`]);
+   if(c&&c.filmRestPx!==null&&c.scaleNeeded!==null)facts.push(['Kortstorlek',`filmens kort i vila är ${String(c.filmRestPx).replace('.',',')} px, planens kort ${String(c.planRestPx).replace('.',',')} px · kortskala ${String(c.scaleNeeded).replace('.',',')} räcker för 20 % marginal${c.scaleNeeded>c.scale?' ⚠ mer än förvalet':''}`]);}
  }
  facts.push(['Syfte',esc(job.purpose)]);
  $('kb-facts').innerHTML=facts.map(([key,value])=>`<dt>${key}</dt><dd>${value}</dd>`).join('');
@@ -697,8 +702,15 @@ type OvView=typeof import('./card-overlay-view.js');
 type OvModel=typeof import('./card-overlay.js');
 type OvTrack=import('./card-overlay.js').CardTrack;
 type OvScene=import('./card-overlay.js').Scene;
-type OvData={track:OvTrack|null;overrides:import('./card-overlay.js').Override[]};
-const ov={on:false,split:false,scale:2,rank:'A',suit:'spades',side:'TRACK'};
+// coverage: what tools/card-coverage.ts measured for the film: in which frames the film's own card still shows, and how far beside the plan it lands.
+type OvCoverage={covered:boolean;leakFrames:number;leakRanges:[number,number][];worst:{frame:number;pixels:number};landsOffPlanPx:number|null;offPlanFlag:boolean;filmRestPx:number|null;planRestPx:number|null;scaleNeeded:number|null;scale:number};
+type OvData={track:OvTrack|null;overrides:import('./card-overlay.js').Override[];coverage:OvCoverage|null};
+// The plan's quad for a card, in the film's pixels: where the rendered card is to end, whatever the film's own landing.
+const kbLand=(card:string|null|undefined)=>{const g=card?plan?.targets[card]?.geometry.native:null;if(!g)return null;
+ const q=plan.tableProjection?.mode==='flat'?flatQuad(g,plan.targets['P4.C1'].geometry.native,'native',plan.tableProjection.heading??0):quad(g,'native');return q.map((p:{x:number;y:number})=>({x:p.x*1763/1761,y:p.y}));};
+const ovCovers=(c:OvCoverage)=>c.covered?'täcker allt':`läcker ruta ${c.leakRanges.slice(0,4).map(([a,b])=>a===b?`${a}`:`${a}–${b}`).join(', ')}${c.leakRanges.length>4?' …':''}`;
+// Kortskala 1,2: the plan's card and a fifth more, the same at every seat, so the film's card is covered without the cards dominating the table.
+const ov={on:false,split:false,scale:1.2,rank:'A',suit:'spades',side:'TRACK'};
 let ovView:OvView|null=null,ovModel:OvModel|null=null,ovScene:OvScene|null=null,ovState:'idle'|'loading'|'ready'|'missing'='idle',ovScaleSet=false,ovError='';
 const ovData=new Map<string,OvData>(),ovReading=new Map<string,Promise<OvData>>(),ovLayers=new Map<string,ReturnType<OvView['createCardOverlay']>>();
 // A take's card track and occlusion overrides, read once per take. A missing file is simply "no track".
@@ -706,8 +718,8 @@ function ovRead(take:KbTake):Promise<OvData>{
  const known=ovReading.get(take.id);if(known)return known;
  const json=async(path?:string|null)=>{if(!path)return null;try{const res=await fetch(path);return res.ok?await res.json():null;}catch{return null;}};
  const reading=(async()=>{
-  let data:OvData={track:null,overrides:[]};
-  try{ovModel??=await import('./card-overlay.js');const [track,overrides]=await Promise.all([json(take.media.track),json(take.media.overrides)]);data={track:track&&Array.isArray(track.frames)?track:null,overrides:ovModel.overridesOf(overrides)};}catch{/* no overlay model here: nothing to show */}
+  let data:OvData={track:null,overrides:[],coverage:null};
+  try{ovModel??=await import('./card-overlay.js');const [track,overrides,receipt]=await Promise.all([json(take.media.track),json(take.media.overrides),json(take.media.track?.replace(/card-track\.json$/,'receipt.json'))]);data={track:track&&Array.isArray(track.frames)?track:null,overrides:ovModel.overridesOf(overrides),coverage:receipt?.coverage&&Array.isArray(receipt.coverage.leakRanges)?receipt.coverage:null};}catch{/* no overlay model here: nothing to show */}
   ovData.set(take.id,data);return data;
  })();
  ovReading.set(take.id,reading);return reading;
@@ -717,16 +729,16 @@ async function ovLoad(){
  try{
   [ovModel,ovView]=await Promise.all([import('./card-overlay.js'),import('./card-overlay-view.js')]);
   try{const res=await fetch('data/scene-contract.json');ovScene=res.ok?ovModel.sceneOf(await res.json()):null;}catch{ovScene=null;}
-  if(ovScene&&!ovScaleSet)ov.scale=ovScene.bodyScale; // the contract's body scale is the starting point
+  if(!ovScaleSet)ov.scale=ovModel.MARGIN;
   ovState='ready';
  }catch{ovState='missing';}
  ovSync();
 }
 // The card a take deals or leaves, for the bend and gloss set on that card in the Material panel.
-type OvExtra={shift?:{x:number;y:number}|null;placed?:{quad:{x:number;y:number}[];back:boolean}[]};
+type OvExtra={shift?:{x:number;y:number}|null;land?:{x:number;y:number}[]|null;placed?:{quad:{x:number;y:number}[];back:boolean}[]};
 function ovOptions(take:KbTake,frame:number,data:OvData|undefined,extra:OvExtra={}){
  const edge=kbGraph?.edge[take.edge],card=edge?.target??[edge?.to,edge?.from].find(node=>!!node&&!!plan?.targets[node]),material=card?plan?.targets[card]?.material:undefined;
- return {scale:ov.scale,split:ov.split,card:{rank:ov.rank,suit:ov.suit} as never,side:ov.side as 'TRACK'|'BACK'|'FRONT',bend:material?.bend??.07,gloss:material?.gloss??.35,inFront:!!data&&!!ovModel&&ovModel.cardInFront(data.overrides,frame),shift:extra.shift??null,placed:extra.placed??[]};
+ return {scale:ov.scale,split:ov.split,card:{rank:ov.rank,suit:ov.suit} as never,side:ov.side as 'TRACK'|'BACK'|'FRONT',bend:material?.bend??.07,gloss:material?.gloss??.35,inFront:!!data&&!!ovModel&&ovModel.cardInFront(data.overrides,frame),shift:extra.shift??null,land:extra.land??null,placed:extra.placed??[]};
 }
 function ovPaint(name:'take'|'chain',video:HTMLVideoElement,take:KbTake|null|undefined,frame:number,visible:boolean,extra:OvExtra={}){
  const canvas=$<HTMLCanvasElement>(name==='take'?'kb-card':'kb-chain-card'),active=ov.on&&ovState==='ready'&&visible&&!!take?.media.video;
@@ -742,7 +754,7 @@ function ovPaint(name:'take'|'chain',video:HTMLVideoElement,take:KbTake|null|und
 const ovTakeNow=()=>kbGraph?.takes[kbTake]??null;
 const ovSegmentNow=()=>kbSegments[kbChain.index]??(kbChain.index<0?kbSegments.find(s=>!s.gap):undefined);
 function ovTake(frame?:number){const t=ovTakeNow(),c=kbClip(),shown=frame??(c?frameAt(kbPlayer,c.fps,c.frames):0);
- ovPaint('take',kbPlayer,t,kbReversed&&c?c.frames-1-shown:shown,(tab==='review'||(tab==='clipbank'&&kbPanel==='edge'))&&!!c);} // the track counts the forward film's frames
+ ovPaint('take',kbPlayer,t,kbReversed&&c?c.frames-1-shown:shown,(tab==='review'||(tab==='clipbank'&&kbPanel==='edge'))&&!!c,{land:t?kbLand(rvCard(kbGraph!.edge[t.edge])):null});} // the track counts the forward film's frames
 // The cards dealt earlier in the round, which the film in view does not show. Each lies where the last film that had it as its
 // own card left it (its return if that has been played, else its deal), moved with that step's shift. lost: cards whose film has no track.
 function ovPlaced(index:number){
@@ -751,13 +763,13 @@ function ovPlaced(index:number){
   const card=s.kind==='DEAL'?s.to:s.kind==='RETURN'&&s.edge?.target?s.from:null;
   if(!card||!s.take||s.gap||card===mine){if(card===mine){lie.delete(card);lost.delete(card);}continue;}
   const data=ovData.get(s.take.id);if(!data){void ovRead(s.take).then(()=>ovSync());continue;}
-  const put=data.track?ovModel.placedCard(data.track,ovScene,ov.scale,s.shift):null;
+  const put=data.track?ovModel.placedCard(data.track,ovScene,ov.scale,s.shift,kbLand(card)):null;
   if(put){lie.set(card,{quad:put.quad,back:(ov.side==='TRACK'?(s.kind==='DEAL'&&s.side?s.side:put.side):ov.side)==='BACK'});lost.delete(card);}else if(!lie.has(card))lost.add(card);
  }
  return {cards:[...lie.values()],lost:[...lost]};
 }
 function ovChain(frame?:number){const seg=ovSegmentNow(),video=kbVideos[kbChain.active],shown=!!seg&&!seg.gap&&video.dataset.seg===`${seg.index}:${seg.video}`;
- ovPaint('chain',video,shown?seg!.take:null,frame??(shown?frameAt(video,seg!.fps,seg!.take?.frames??100000):0),tab==='clipbank'&&kbPanel==='round'&&shown,shown&&ov.on&&ovState==='ready'?{shift:seg!.shift,placed:ovPlaced(seg!.index).cards}:{});}
+ ovPaint('chain',video,shown?seg!.take:null,frame??(shown?frameAt(video,seg!.fps,seg!.take?.frames??100000):0),tab==='clipbank'&&kbPanel==='round'&&shown,shown&&ov.on&&ovState==='ready'?{shift:seg!.shift,land:kbLand(seg!.edge?rvCard(seg!.edge):null),placed:ovPlaced(seg!.index).cards}:{});}
 function ovStatus(name:string){
  if(!ov.on)return '';
  if(ovState==='loading')return 'Läser in kortmaterialet…';
@@ -768,7 +780,7 @@ function ovStatus(name:string){
  // In the chain: what the seat film is doing for this step, and which earlier cards lie on the table.
  const seg=name==='chain'?ovSegmentNow():undefined,laid=seg?ovPlaced(seg.index):{cards:[],lost:[]};
  const round=`${seg?.shift?` · platsens film, kortet flyttat ${Math.round(Math.hypot(seg.shift.x,seg.shift.y))} px till ${seg.edge?.target}`:''}${laid.cards.length?` · ${laid.cards.length} tidigare kort ligger kvar`:''}${laid.lost.length?` · ${laid.lost.join(', ')} saknar spår och visas inte`:''}`;
- if(!data.track)return `Ingen spårning för ${take.id}: filmens eget kort visas som det är. Kör node tools/track-card.ts ${take.segment?.clip??take.id}.${round}`;
+ if(!data.track)return `Den här filmen har inget kortspår ännu, så det renderade kortet kan inte följa den: filmens eget kort visas som det är.${round}`;
  return `Spår: ${ovModel!.describeTrack(data.track)}${ovScene?'':' · scenkontraktet saknas, kortet förstoras kring sin mitt'}${data.overrides.length?` · framför handen ruta ${data.overrides.map(o=>`${o.from}–${o.to}`).join(', ')}`:''}${round}`;
 }
 function ovSync(){
@@ -782,7 +794,7 @@ function ovSync(){
 }
 document.querySelectorAll<HTMLElement>('[data-overlay]').forEach(box=>{for(const type of ['input','change'])box.addEventListener(type,event=>{
  const el=event.target as HTMLInputElement,key=el.dataset?.ov;if(!key)return;
- if(key==='on')ov.on=el.checked;else if(key==='split')ov.split=el.checked;else if(key==='scale'){ov.scale=Math.max(1,Math.min(2.5,Number(el.value)||2));ovScaleSet=true;}else if(key==='rank')ov.rank=el.value;else if(key==='suit')ov.suit=el.value;else if(key==='side')ov.side=el.value;
+ if(key==='on')ov.on=el.checked;else if(key==='split')ov.split=el.checked;else if(key==='scale'){ov.scale=Math.max(1,Math.min(2.5,Number(el.value)||1.2));ovScaleSet=true;}else if(key==='rank')ov.rank=el.value;else if(key==='suit')ov.suit=el.value;else if(key==='side')ov.side=el.value;
  if(ov.on&&ovState==='idle')void ovLoad();else ovSync();
 });});
 // The overlay is drawn for the frame the film actually shows: on every presented frame where the browser
@@ -818,7 +830,7 @@ async function kbDecide(decision:string){
  try{
   const res=await fetch(`/api/clip-bank/review/${t.id}`,{method:'PUT',headers:{'content-type':'application/json','if-match':t.revision},body:JSON.stringify({decision,note:$<HTMLTextAreaElement>('kb-note').value})});
   const data=await res.json();if(!res.ok)throw Error(data.error||'Beslutet kunde inte sparas.');
-  kbSaved={id:t.id,text:`Sparat i motions/${t.id}.json · ${data.review?.userReview??''}`,failed:false};kbNoteFor='';rvNext=after;
+  kbSaved={id:t.id,text:`Sparat i motions/${t.id}.json · ${data.review?.userReview??'återställd: filmen väntar på ditt beslut igen'}`,failed:false};kbNoteFor='';rvNext=after;
   await kbRead().catch(()=>{}); // the bank is read again so every view shows the decision that is now on disk
  }catch(error){kbSaved={id:t.id,text:`Inte sparat: ${(error as Error).message}`,failed:true};}
  finally{kbSaving=false;if(kbState==='ready')paintBank();}
@@ -844,7 +856,7 @@ const rvGroup=(e:KbEdge)=>{const card=rvCard(e);return card?(card[0]==='D'?'Deal
 function rvTitle(e:KbEdge,t:KbTake){
  const G=clipGraph!,card=rvCard(e),seat=card?card.split('.')[0]:'',n=card?Number(card.at(-1)):0,old=/arkiv/.test(t.id),b=!!t.hub||/drawn|readyb|idleb/.test(t.id)||/DRAWN|READY-|IDLE-/.test(e.id);
  // A seat film from another series than the plan's (an early "calm" take) says so, or two rows would read the same.
- const series=card?t.id.replace(/^pamela-/,'').split('-').filter(w=>!/^(p\d|d|c\d|plan|deal|return|ready|idle|\d+|drawn|readyb|idleb|arkiv|edit|slow)$/.test(w)).join(' '):'';
+ const series=card?t.id.replace(/^pamela-/,'').split('-').filter(w=>!/^(p\d|d|c\d|plan|deal|return|ready|idle|\d+|drawn|readyb|idleb|arkiv|reveal|edit|slow)$/.test(w)).join(' '):'';
  const who=!card?'':seat==='D'?`Dealerns ${['första','andra','tredje'][n-1]} kort`:`${seat}${n>1?` · kort ${n}`:''}`;
  const step=/REVEAL/.test(e.id)?'kortet vänds upp':e.kind==='DEAL'&&card?'giv':e.kind==='RETURN'&&card?`retur till ${G.hubOf(e.to)==='READY'?'redo':'vila'}`:e.experiment?`${e.from} → ${e.to}`:e.kind==='ENTRY'?'Ingång · från vila till skon':e.kind==='IDLE'?'Vila · stilla klipp':'Utgång · från skon till vila';
  const tags=[old?'ur gamla labbet':'',b?'variant B':'',e.experiment&&!b?'experiment':'',t.editOf?'rättad kopia':'',t.segment&&!old?'utsnitt':'',t.speed!==1?'slow motion':'',series?`serie ”${series}”`:''].filter(Boolean),no=Number(/-(\d+)$/.exec(t.id)?.[1]??0);
@@ -872,9 +884,12 @@ function paintReview(){
  const want=rvNext,enter=rvEnter;rvNext='';rvEnter=false; // coming into the tab starts at the top of the list
  const next=(want&&all.find(x=>x.t.id===want))||(!enter&&all.some(x=>x.t.id===kbTake)?null:todo[0]??rejected[0]??done[0]??null);
  if(next&&next.t.id!==kbTake){rvOpen(next.t.id);return;}
+ // The coverage measured for each film is read once, in the background, and the list is painted again when it is all in.
+ const unread=all.filter(x=>x.t.media.track&&!ovData.has(x.t.id)&&!ovReading.has(x.t.id));
+ if(unread.length)void Promise.all(unread.map(x=>ovRead(x.t))).then(()=>{if(tab==='review'&&kbState==='ready')paintReview();});
  const word=(t:KbTake)=>t.variant?'godkänd som variant':G.DECISION_LABEL[t.decision]??t.decision;
  const row=({t,e}:RvItem)=>{const open=t.id===kbTake,r=t.motion?.review,mine=r?.userReview;
-  return `<article class="rv-row${open?' open':''}"><button class="rv-row-head" data-rv-open="${esc(t.id)}" aria-expanded="${open}"><span class="rv-title">${esc(rvTitle(e,t))}</span><span class="status-pill d-${esc(t.decision)}">${esc(`${mine?'ditt beslut':'granskarna'}: ${word(t)}`)}</span>${t.revision?'':'<span class="status-pill">kan inte sparas ännu</span>'}<code>${esc(t.id)}</code></button>`
+  return `<article class="rv-row${open?' open':''}"><button class="rv-row-head" data-rv-open="${esc(t.id)}" aria-expanded="${open}"><span class="rv-title">${esc(rvTitle(e,t))}</span><span class="status-pill d-${esc(t.decision)}">${esc(`${mine?'ditt beslut':'granskarna'}: ${word(t)}`)}</span>${t.revision?'':'<span class="status-pill">kan inte sparas ännu</span>'}${ovData.get(t.id)?.coverage?`<span class="status-pill${ovData.get(t.id)!.coverage!.covered?' d-ACCEPTED':''}">renderat kort: ${esc(ovCovers(ovData.get(t.id)!.coverage!))}</span>`:''}<code>${esc(t.id)}</code></button>`
    +(open?'<div id="rv-slot" class="rv-slot"></div>':`<div class="rv-find">${mine?`<p><b>Dina ord</b>${esc(mine)}</p>`:''}${r?.basis?`<p><b>Granskaren</b>${esc(r.basis)}</p>`:''}${r?.limitations?`<p><b>Begränsning</b>${esc(r.limitations)}</p>`:''}</div>`)+'</article>';};
  const list=(items:RvItem[])=>{let last='';return items.map(x=>{const g=rvGroup(x.e),head=g===last?'':`<h3 class="rv-group">${esc(g)}</h3>`;last=g;return head+row(x);}).join('');};
  const html=[list(todo),list(rejected),list(done)];

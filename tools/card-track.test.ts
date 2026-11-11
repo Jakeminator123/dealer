@@ -2,7 +2,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {is, classify, YELLOW, BLUE, TABLE, SKIN, DARK, TINT, SHADE, OTHER, blobs, pieces, persistent, measure, hull, fitQuad, orderCorners, alignCorners, carryAcrossFlip,
-  signedArea, dist, centre, sideOf, EDGE_THICKNESS, MIN_AREA, smooth, offsetRamp, homography, project, follower, buildTrack, thinSliver, type Pt, type Raw} from '../src/card-track.ts';
+  signedArea, dist, centre, sideOf, EDGE_THICKNESS, MIN_AREA, smooth, offsetRamp, homography, project, follower, buildTrack, thinSliver, settleRaws, type Pt, type Raw} from '../src/card-track.ts';
 
 const GREEN = [10, 208, 56], LIT = [232, 208, 4], FACE = [6, 112, 224], BLACK = [20, 20, 20], RIM = [235, 225, 160], FLESH = [240, 172, 140];
 const W = 320, H = 240, N = W * H;
@@ -171,4 +171,44 @@ test('leaving the shoe: a fit that runs long over the window is held to the leng
   const length = (f: number) => dist(t.frames[f].quad![1], t.frames[f].quad![2]);
   assert.ok(length(4) < 63 && length(5) < 63, `long sides stay card length, got ${length(4).toFixed(1)} and ${length(5).toFixed(1)}`); assert.ok(t.frames[4].note?.includes('shortened'));
   assert.ok(Math.abs(t.frames[4].quad![0].y - (50 - 12)) < 3, 'the leading end is left where it was found');
+});
+
+// ── The marker rule: what a film can show is known, so findings that contradict it are another object ──
+const seen = (side: Raw['side'], q: Pt[] | null, area = 4000): Raw => ({side, corners: q, segment: null, area, fill: 1, thickness: 40, shoeShare: 0, note: ''});
+const none: Raw = {side: 'NONE', corners: null, segment: null, area: 0, fill: 0, thickness: 0, shoeShare: 0, note: 'nothing'};
+
+test('a deal turns once: findings on the wrong side of the turn are dropped and the holes are bridged from the frames around them', () => {
+  const at = (i: number) => rect(100 + i * 4, 60 + i, 60, 80);
+  const raws: Raw[] = Array.from({length: 40}, (_, i) => seen(i < 20 ? 'BACK' : 'FRONT', at(i)));
+  raws[8] = seen('FRONT', rect(10, 10, 60, 80));           // a blue card that lay there before, picked for one frame
+  raws[27] = seen('BACK', rect(250, 20, 50, 70)); raws[28] = seen('BACK', rect(250, 20, 50, 70)); // the seated yellow card, picked for two
+  raws[12] = none; raws[13] = none;                          // lost for two frames in the hand
+  raws[33] = {...none, side: 'EDGE', segment: [{x: 5, y: 5}, {x: 60, y: 5}]}; // thin to the eye for a frame, long after the turn
+  raws[18] = {...none, side: 'EDGE', segment: [{x: 172, y: 78}, {x: 232, y: 158}]}; // really edge-on, right at the turn: stays as found
+  raws[19] = none; raws[20] = none;                          // lost at the turn itself
+  const out = settleRaws(raws, 'DEAL');
+  assert.deepEqual(out.map(r => r.side[0]).join(''), 'BBBBBBBBBBBBBBBBBBEEEFFFFFFFFFFFFFFFFFFF');
+  assert.deepEqual(out[18].segment, raws[18].segment); assert.match(out[33].note, /bridged/);
+  // Bridged shapes lie between their neighbours, corner for corner.
+  for (const i of [8, 12, 13, 27, 28, 33]) { assert.match(out[i].note, /bridged/); out[i].corners!.forEach((p, c) => assert.ok(dist(p, at(i)[c]) < 1e-6, `frame ${i} corner ${c}`)); }
+  // The lost turn is an edge-on card on the line between the two shapes, not a hole.
+  for (const i of [19, 20]) { assert.equal(out[i].corners, null); assert.ok(out[i].segment); assert.ok(dist(centre(out[i].segment!), centre(at(i))) < 4); }
+  assert.deepEqual(out[5], raws[5]); assert.equal(raws[8].side, 'FRONT', 'the findings themselves are not changed');
+  // A hole that is too long stays a hole, and a film the job file does not know is left as found.
+  const long = raws.map((r, i) => i >= 2 && i < 19 ? none : r);
+  assert.equal(settleRaws(long, 'DEAL').filter(r => r.side === 'NONE').length, 19); // frames 2–20: longer than can be bridged
+  assert.deepEqual(settleRaws([seen('FRONT', at(0)), seen('BACK', at(1)), seen('FRONT', at(2))], 'OTHER').map(r => r.side), ['FRONT', 'BACK', 'FRONT']);
+});
+
+test('a return shows one side all through, and a card mostly hidden under the hand keeps its last known shape', () => {
+  const lie = rect(120, 100, 70, 60), raws: Raw[] = Array.from({length: 12}, () => seen('FRONT', lie, 4200));
+  raws[3] = seen('BACK', rect(260, 30, 50, 70)); raws[4] = {...none, side: 'EDGE', segment: [{x: 0, y: 0}, {x: 40, y: 0}]};
+  raws[7] = seen('FRONT', rect(120, 100, 30, 60), 1500); raws[8] = seen('FRONT', rect(122, 100, 22, 60), 1100); // the hand covers most of it
+  const out = settleRaws(raws, 'RETURN');
+  assert.ok(out.every(r => r.side === 'FRONT'));
+  for (const i of [3, 4, 7, 8]) out[i].corners!.forEach((p, c) => assert.ok(dist(p, lie[c]) < 1e-6, `frame ${i}`));
+  assert.match(out[7].note, /last known shape kept/); assert.match(out[3].note, /bridged/);
+  // A card that really moves away is not held back.
+  const moved = settleRaws([seen('FRONT', lie, 4200), seen('FRONT', rect(300, 100, 30, 60), 1500)], 'RETURN');
+  assert.equal(moved[1].corners![0].x, 300);
 });
