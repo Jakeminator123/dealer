@@ -758,6 +758,102 @@
       "sha256": "0f6eff7afbad72db68009b1f66c4b4370bf6f5befb4e321a7865dc2ee2a8464a",
       "bytes": 3265,
       "purpose": "Old idle clips: what was generated, from which image, and the old lab's own verdict, to decide what can serve as IDLE loop"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/docs/studio/ALTERNATIV-3D.md",
+      "sha256": "64e8cfaa75450f4b7de7ee563fc34e78ef43f687817f137f29dd1ad1f4dbfe15",
+      "bytes": 11550,
+      "purpose": "Read by the read-only origin search (Opus subagent, 2026-11-11): earlier 3D drafts with Pamela and where the panorama was used; re-hashed here."
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/references/alternative-3d.json",
+      "sha256": "de9783cc4315654803e21274e14ba519c53c2467ca3000a317dcfd99e2180c72",
+      "bytes": 2476,
+      "purpose": "Read by the read-only origin search (Opus subagent, 2026-11-11): earlier 3D drafts with Pamela and where the panorama was used; re-hashed here."
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/src/pamela-scene-renderer.ts",
+      "sha256": "cd87f80cf314821356e2225f00e3ac2f1a7887f4b84e49ba637b36bcfd70321c",
+      "bytes": 9160,
+      "purpose": "Read by the read-only origin search (Opus subagent, 2026-11-11): earlier 3D drafts with Pamela and where the panorama was used; re-hashed here."
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/tools/pamela-central-composite.ts",
+      "sha256": "0cdcbf61db16cda60cb30f55cdd15f2eb68d81eb826d3d6c5df8502df68d300d",
+      "bytes": 16427,
+      "purpose": "Read by the read-only origin search (Opus subagent, 2026-11-11): earlier 3D drafts with Pamela and where the panorama was used; re-hashed here."
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/src/pamela-studio-layout.ts",
+      "sha256": "9b16290c2a31194b92a54b90f93cff0d40b21c58b68414d2f54f3a92545b38d2",
+      "bytes": 1913,
+      "purpose": "Read by the read-only origin search (Opus subagent, 2026-11-11): earlier 3D drafts with Pamela and where the panorama was used; re-hashed here."
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/tools/pamela-composite-pilot.ts",
+      "sha256": "f0d05309453a0ca3f74fbd3d850f79249d04f25704ac39eff63d98266740b1b6",
+      "bytes": 3591,
+      "purpose": "Read by the read-only origin search (Opus subagent, 2026-11-11): earlier 3D drafts with Pamela and where the panorama was used; re-hashed here."
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/src/pamela-stage-client.tsx",
+      "sha256": "36e212d154740aff1fa59281fa4fc0fd3286cd0b6aca1b374acf566f44bd3230",
+      "bytes": 36287,
+      "purpose": "Read by the read-only origin search (Opus subagent, 2026-11-11): earlier 3D drafts with Pamela and where the panorama was used; re-hashed here."
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/src/pamela-combined-stage-client.tsx",
+      "sha256": "55be64a6c42cee3c80b8719c7caaeab3540041ead7ce2bfda218d22cd2172ce7",
+      "bytes": 23906,
+      "purpose": "Read by the read-only origin search (Opus subagent, 2026-11-11): earlier 3D drafts with Pamela and where the panorama was used; re-hashed here."
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/src/pamela-modular-stage-client.tsx",
+      "sha256": "fc9f23cf840d6c85cdeb721dc6cd836e689903c2c658b5bcbfe6afa3e54dfe65",
+      "bytes": 52601,
+      "purpose": "Read by the read-only origin search (Opus subagent, 2026-11-11): earlier 3D drafts with Pamela and where the panorama was used; re-hashed here."
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/tools/pamela-layered-pilot.ts",
+      "sha256": "6834710047f4266ad2548ed5e72b5e08b620a25c64cbc20934c716c35c8c29a4",
+      "bytes": 4744,
+      "purpose": "Read by the read-only origin search (Opus subagent, 2026-11-11): earlier 3D drafts with Pamela and where the panorama was used; re-hashed here."
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261109-pamela-stage/assets.json",
+      "sha256": "b389f377e77db113807fa1c1a99dcde2b0897d50c777f7c5b409de3aa2434aec",
+      "bytes": 1407,
+      "purpose": "Read by the read-only origin search (Opus subagent, 2026-11-11): earlier 3D drafts with Pamela and where the panorama was used; re-hashed here."
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261109-pamela-stage/scene-center.png",
+      "sha256": "8e6fcb6f261651b44a2bd44ff03f3d5888dc898643b2561418da095da2981d0c",
+      "bytes": 89450,
+      "purpose": "Read by the read-only origin search (Opus subagent, 2026-11-11): earlier 3D drafts with Pamela and where the panorama was used; re-hashed here."
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261109-pamela-stage/public-scene-final.png",
+      "sha256": "933801e877b82acc58d1bb2717a75f9e39d12736d82c716a8634e065206b7a34",
+      "bytes": 109734,
+      "purpose": "Read by the read-only origin search (Opus subagent, 2026-11-11): earlier 3D drafts with Pamela and where the panorama was used; re-hashed here."
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-studio-integration/take-02/vegas-fram.png",
+      "sha256": "aa909a31f0c4ae9b605e1dc3db8187d5311dfd9abcf958e40b3744d5320492de",
+      "bytes": 1297571,
+      "purpose": "Read by the read-only origin search (Opus subagent, 2026-11-11): earlier 3D drafts with Pamela and where the panorama was used; re-hashed here."
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-studio-integration/take-02/vegas-sida.png",
+      "sha256": "54ac07258fd6846c82f44fbdff77796b4c646c537c58bafb85442b44de685993",
+      "bytes": 1332564,
+      "purpose": "Screenshot of an earlier 3D draft with Pamela, copied unchanged to assets/proofs/pamela-3d-utkast/ so Jakob can see it in the lab."
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-studio-integration/take-02/spel-redo.png",
+      "sha256": "b79839bb75751ed877a3b7cf92ca99921c224930397dd35bbe3726d6c7f9960b",
+      "bytes": 1244864,
+      "purpose": "Screenshot of an earlier 3D draft with Pamela, copied unchanged to assets/proofs/pamela-3d-utkast/ so Jakob can see it in the lab."
     }
   ]
 }
