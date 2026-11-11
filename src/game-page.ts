@@ -6,6 +6,7 @@
 // when its card has landed. Seats are 1–7, seat 1 at camera left.
 import {buildGraph} from './clip-graph.ts';
 import {createScene} from './scene3d-view.ts';
+import {readRegister} from './scene3d-room.ts';
 import {filmToScene, sceneToSpot, solveCamera, type FilmCamera} from './scene3d-geometry.ts';
 import {createLayout, slotOf} from './game-table.ts';
 import {cardRecords} from './game-director.ts';
@@ -25,11 +26,13 @@ stage.dataset.theme = THEMES.includes(query.get('tema') ?? '') ? query.get('tema
 // The server keeps one session per table name; a second tab or a test opens game.html?table=<name> and plays its own.
 const table = /^[a-z0-9-]{1,40}$/.test(query.get('table') ?? '') ? `?table=${query.get('table')}` : '';
 
-const [contract, placements, bank, first] = await Promise.all([read('data/scene-contract.json', 'Scenkontraktet'), read('api/placements', 'Placeringsplanen'), read('api/clip-bank', 'Klippbanken'), read(`api/game${table}`, 'Spelet')]);
+const [contract, placements, bank, first, register] = await Promise.all([read('data/scene-contract.json', 'Scenkontraktet'), read('api/placements', 'Placeringsplanen'), read('api/clip-bank', 'Klippbanken'), read(`api/game${table}`, 'Spelet'), read('data/scene-rooms.json', 'Rumsregistret')]);
+// The 360-degree rooms Jakob has let into the game (game: true in data/scene-rooms.json); a new room is tried in the lab first.
+const panoramas = readRegister(register).rooms.filter(r => r.game);
 const plan = placements.plan ?? placements, graph = buildGraph(bank), layout = createLayout(plan, {fan: query.has('fan') && Number.isFinite(Number(query.get('fan'))) ? Math.max(0, Math.min(80, Number(query.get('fan')))) : null}); // ?fan=<px>: one fan step for every seat, for trying values
 
 // ── the picture: the 3D scene, seen a little from above so that all seven bet rings and the bar have room ──
-const scene = createScene(canvas, stage, {contract, plan, urls: {plate: 'assets/scene/room.png', panorama: 'assets/scene/panorama-vegas.jpg', la: 'assets/scene/panorama-la.jpg', skog: 'assets/scene/panorama-skog.jpg'}, onChange: () => {}, onMissingRoom: () => {}});
+const scene = createScene(canvas, stage, {contract, plan, urls: {plate: 'assets/scene/room.png', panorama: 'assets/scene/panorama-vegas.jpg', la: 'assets/scene/panorama-la.jpg', skog: 'assets/scene/panorama-skog.jpg'}, rooms: panoramas, onChange: () => {}, onMissingRoom: () => {}});
 // Two framings, both by turning and zooming from the film camera's own place (exact for a flat film). Lying: the whole table
 // with all seven rings. Standing (a phone): the film's width is locked to the screen's, so the view is zoomed in on seats 3–5
 // and turns toward the seat in play.
@@ -42,11 +45,13 @@ function frame() {
   scene.resize();
 }
 let framed = false;
-// The rooms the player can choose between (the console's Bord menu), each with the blur that suits it. The choice is kept in the browser.
+// The rooms the player can choose between (the console's Bord menu): the register's rooms that are in the game, then the two
+// built rooms. Each with the blur that suits it and the room sound it is heard with. The choice is kept in the browser.
 const ROOMS = [
-  {id: 'panorama', label: 'Las Vegas', note: 'En kasinosal i Las Vegas om natten', blur: 5}, {id: 'la', label: 'Skyline', note: 'En takvåning över staden i skymningen', blur: 6},
-  {id: 'skog', label: 'Skogen', note: 'En glänta i skogen', blur: 6}, {id: 'hall', label: 'Spelhallen', note: 'En spelhall med spelautomater och låg rök', blur: 11}, {id: 'salong', label: 'Salongen', note: 'En stillsam salong', blur: 11},
+  ...panoramas.map(r => ({id: r.id, label: r.label, note: r.note, blur: r.blur, sound: r.sound})),
+  {id: 'hall', label: 'Spelhallen', note: 'En spelhall med spelautomater och låg rök', blur: 11, sound: 'hall'}, {id: 'salong', label: 'Salongen', note: 'En stillsam salong', blur: 11, sound: 'salong'},
 ].map(r => ({...r, thumb: `assets/scene/thumbs/room-${r.id}.jpg`}));
+const soundOf = (id: string) => ROOMS.find(r => r.id === id)?.sound ?? null;
 const DEALERS = [{id: 'pamela', label: 'Pamela', note: 'Vid bordet nu', thumb: 'assets/scene/thumbs/dealer-pamela.jpg'}];
 const remembered = (() => { try { return localStorage.getItem('dealer.room'); } catch { return null; } })();
 let room = ROOMS.find(r => r.id === (query.get('room') ?? remembered))?.id ?? 'panorama';
@@ -166,14 +171,16 @@ const panel = mountPanel(overlay.root.querySelector<HTMLElement>('.go-bar')!, RO
     const next = ROOMS.find(r => r.id === id); if (!next || id === room || page.busy || page.stage === 'ROUND') return;
     room = id; try { localStorage.setItem('dealer.room', id); } catch { /* a private window keeps nothing */ }
     scene.set({roomShift: 'shimmer', room: id, blur: next.blur} as never); // the background shimmers and changes under the shimmer
-    if (heard.ambience) sound?.ambience(id); panel.set({room: id});
+    if (heard.ambience) sound?.ambience(soundOf(id)); panel.set({room: id});
   },
   // Only one dealer has films yet, so the change is shown with her: she leaves, the table stands empty, a dealer comes in.
   async dealer() {
     if (page.busy || page.stage === 'ROUND') return;
     page.busy = true; page.error = 'Dealern byts …'; comeHome = false; panel.set({changing: true}); render(); chat?.say('Tack för mig. Lycka till vid bordet!');
-    // The table stands empty for a moment and the camera comes home before the next dealer walks in.
-    const away = () => new Promise<void>(resolve => { comeHome = true; shot = null; setTimeout(resolve, 1500); });
+    // The table stands empty for a moment. An entrance that shows her whole body is watched from where the camera stands, backed
+    // away (its film begins with the empty table); before one that begins at the table the camera comes home.
+    const away = (arrive: {frame?: unknown}[]) => new Promise<void>(resolve => { const whole = arrive.some(p => (p.frame as {layer?: string} | null | undefined)?.layer === 'BEHIND_TABLE');
+      if (!whole) { comeHome = true; shot = null; } setTimeout(resolve, whole ? 700 : 1500); });
     // Until the bank has approved films for the change, a stand-in: the first full-resolution exit (not a main take) and the older entrance.
     const entrance = graph.edge['AWAY>IDLE']?.takes.find(t => t.media.video)?.media.video;
     const standIn = entrance ? {leave: [{...EXIT_TRIAL.lead, track: null}, {...EXIT_TRIAL.probe, track: null}], arrive: [{path: entrance, track: null}]} : null;
@@ -184,7 +191,7 @@ const panel = mountPanel(overlay.root.querySelector<HTMLElement>('.go-bar')!, RO
   music(track) { heard.track = track; panel.set({track}); withSound(s => s.music?.(track)); },
   level(music) { heard.music = music; panel.set({music}); sound?.set({music}); },
   table(on) { heard.table = on; panel.set({table: on}); if (on) withSound(s => s.chip('stack', {height: 1, pan: 0})); },
-  ambience(on) { heard.ambience = on; panel.set({ambience: on}); withSound(s => s.ambience(on ? room : null)); },
+  ambience(on) { heard.ambience = on; panel.set({ambience: on}); withSound(s => s.ambience(on ? soundOf(room) : null)); },
 });
 panel.set({room, dealer: 'pamela'});
 // Jakob's chip tray (assets/props/tray.glb, local media) takes the place of the built tray when it can be read; game.html?tray=built keeps the built one.
@@ -253,8 +260,8 @@ for (const type of ['pointerup', 'pointercancel']) canvas.addEventListener(type,
 canvas.addEventListener('dblclick', () => { byHand = false; });
 scene.onFrame(() => {
   chips?.update(seconds());
-  const whole = scene.players.part?.frame as {layer?: string} | null | undefined;
-  if (whole?.layer === 'BEHIND_TABLE' && !comeHome) shot = exitView(scene.players.frame(), scene.status().camera, framing());
+  const whole = scene.players.part?.frame as {layer?: string; rise?: [number, number]; behindUntil?: number} | null | undefined;
+  if (whole?.layer === 'BEHIND_TABLE' && !comeHome) shot = exitView(scene.players.frame(), scene.status().camera, framing(), whole.rise, whole.behindUntil !== undefined);
   if (shot) for (const key of ['yaw', 'pitch', 'zoom', 'dy', 'dz'] as const) scene.state[key] += (shot[key] - scene.state[key]) * 0.12;
   else { if (!turning && !byHand && Math.abs(scene.state.yaw - aimed) > 0.02) scene.state.yaw += (aimed - scene.state.yaw) * 0.08;
     if (!fixed) for (const key of ['pitch', 'zoom'] as const) { const left = framing()[key] - scene.state[key]; if (left) scene.state[key] = Math.abs(left) < 0.002 ? framing()[key] : scene.state[key] + left * 0.08; }

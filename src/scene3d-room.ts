@@ -1,7 +1,8 @@
 // Rooms behind the dealer. Four ways to make a background, kept side by side for comparison:
 //   salong   built geometry, real parallax and depth (a placeholder room, not a designed environment)
-//   panorama a 360-degree image on a sphere around the camera: exact when turning, no parallax.
-//            Three of them: the Las Vegas hall (panorama), a penthouse over a skyline (la) and a forest (skog)
+//   panorama a 360-degree image on a sphere around the camera: exact when turning, no parallax. One room per entry of the
+//            register data/scene-rooms.json (readRegister below); without a register the first three: the Las Vegas hall
+//            (panorama), a penthouse over a skyline (la) and a forest (skog)
 //   hall     a gaming hall, built geometry like the salon, made by src/scene3d-hall.ts and fetched the first time it is shown
 //   kuliss   the V6 plate as one flat backdrop behind the dealer
 //   plat     the V6 plate fixed to the frame, as V6 does it today
@@ -9,14 +10,62 @@
 import * as T from 'three';
 import {FILM, clockAngles, solveCamera, type FilmCamera} from './scene3d-geometry.ts';
 
-export type RoomId = 'salong' | 'panorama' | 'la' | 'skog' | 'hall' | 'kuliss' | 'plat';
+// The built rooms by name; a panorama room is named by its entry in the register.
+export type RoomId = 'salong' | 'panorama' | 'la' | 'skog' | 'hall' | 'kuliss' | 'plat' | (string & {});
+const BUILT = ['salong', 'hall', 'kuliss', 'plat'];
 // A room that a module of its own builds (src/scene3d-hall.ts). Dealer metres around the middle of the dealer-side table edge:
 // the felt is y = 0, the floor and ceiling as FLOOR and CEILING below, -z is away from the camera, behind the dealer. update
 // runs before every drawn frame (lamp: a flickering lamp's brightness, 1 = steady; air: how much is in the air, 0-1) and
 // returns the factor for the room's brightness. fog: the room's own, in dealer metres.
 export type BuiltRoom = {group: T.Object3D; update(seconds: number, live: {lamp: number; air: number}): number; fog?: {color: number; near: number; far: number}};
-export type Room = {group: T.Object3D | null; plate: T.Texture | null; follow: boolean; hasDepth: boolean; blur: number; exposure: number; fog: T.Fog | null};
+// turn and mirror: a panorama's own (Panorama below); 0 and false for the others.
+export type Room = {group: T.Object3D | null; plate: T.Texture | null; follow: boolean; hasDepth: boolean; blur: number; exposure: number; fog: T.Fog | null; turn: number; mirror: boolean};
 const FLOOR = -0.92, CEILING = 3.15; // dealer metres relative to the felt
+
+// ---- the register of panorama rooms (data/scene-rooms.json, in Git; the pictures are local media under assets/scene/) ----
+// What the scene reads of an entry. file: the picture, an equirectangular 2:1 JPEG. blur: the page's "Oskärpa längst bort"
+// for the room. exposure: how bright the room is shown. turn: degrees beyond the scene's common panoramaTurn (90 from the
+// start, which puts the middle of the picture behind the dealer), the way three turns things: a positive turn brings what
+// stood to her right in the picture behind her. mirror: a sphere seen from inside shows its picture mirrored, and the first
+// three rooms have always been shown so (seen with a test picture with writing in it, 2026-11-11); a photograph is shown the
+// right way round (false), or its writing reads backwards. air: what floats in it, dust or leaves, and the dust's tint behind
+// the dealer (linear, may exceed 1) and in front of her (as shown). light: its event in the light, a neon tube that flickers
+// while the hall dims a little (Las Vegas), or a cloud that dims the whole room.
+export type Panorama = {id: string; file: string; blur: number; exposure: number; turn: number; mirror: boolean; air: 'dust' | 'leaves'; tint: {back: number[]; front: number[]}; light: 'neon' | 'cloud'};
+// The rest of an entry is for the pages: a Swedish label and note, the room sound it is heard with (a RoomSound of
+// src/lab-sound.ts), whether the game offers it (a new room is tried in the lab until Jakob lets it into the game), and
+// whether it is a photograph or a generated picture. Its provenance (size, bytes, sha256, source, author, licence) is for people and the test.
+export type RegisterRoom = Panorama & {label: string; note: string; sound: string; game: boolean; kind: 'photo' | 'generated'; author: string; licence: string; page: string | null};
+// The first three panoramas as the scene had them before the register, for a page that gives none (the register's entries
+// for them hold the same values; tools/scene3d-rooms.test.ts checks it).
+export const FIRST_PANORAMAS: Omit<Panorama, 'file'>[] = [
+  {id: 'panorama', blur: 5, exposure: 0.8, turn: 0, mirror: true, air: 'dust', tint: {back: [1.35, 1.15, 1.0], front: [0.88, 0.78, 0.71]}, light: 'neon'},
+  {id: 'la', blur: 6, exposure: 0.7, turn: 0, mirror: true, air: 'dust', tint: {back: [1.8, 1.17, 0.62], front: [1.0, 0.78, 0.48]}, light: 'cloud'},
+  {id: 'skog', blur: 6, exposure: 0.55, turn: 0, mirror: true, air: 'leaves', tint: {back: [1.1, 1.17, 0.75], front: [0.7, 0.75, 0.5]}, light: 'cloud'}];
+export const firstPanoramas = (urls: {panorama: string; la: string; skog: string}): Panorama[] => FIRST_PANORAMAS.map(p => ({...p, file: urls[p.id as 'panorama' | 'la' | 'skog']}));
+// The register's rooms as the scene and the pages read them, in its order. An entry that cannot be used is left out and
+// said in `problems` (in Swedish, for the page). Pure: no three.js and no fetching.
+export function readRegister(json: unknown): {rooms: RegisterRoom[]; problems: string[]} {
+  const rooms: RegisterRoom[] = [], problems: string[] = [], list = (json as {rooms?: unknown} | null)?.rooms;
+  if (!Array.isArray(list)) return {rooms, problems: ['rumsregistret saknar listan rooms']};
+  const number = (v: unknown, lo: number, hi: number) => typeof v === 'number' && Number.isFinite(v) && v >= lo && v <= hi;
+  const tint = (v: unknown) => Array.isArray(v) && v.length === 3 && v.every(c => number(c, 0, 4));
+  for (const [i, entry] of list.entries()) {
+    const r = entry as Partial<RegisterRoom>, id = typeof r?.id === 'string' ? r.id : `nr ${i + 1}`, wrong = [
+      !(typeof r?.id === 'string' && /^[a-z0-9-]{1,30}$/.test(r.id)) && 'id', typeof r?.id === 'string' && BUILT.includes(r.id) && 'id (ett byggt rum heter så)',
+      rooms.some(other => other.id === r?.id) && 'id (finns två gånger)',
+      !(typeof r?.file === 'string' && /^assets\/scene\/(rooms\/[a-z0-9][a-z0-9_-]*|panorama-[a-z]+)\.jpg$/.test(r.file)) && 'file',
+      !(typeof r?.label === 'string' && r.label.trim()) && 'label', typeof r?.note !== 'string' && 'note',
+      !number(r?.blur, 0, 30) && 'blur', !number(r?.exposure, 0.05, 3) && 'exposure', !number(r?.turn, -180, 180) && 'turn', typeof r?.mirror !== 'boolean' && 'mirror',
+      r?.air !== 'dust' && r?.air !== 'leaves' && 'air', !(tint(r?.tint?.back) && tint(r?.tint?.front)) && 'tint', r?.light !== 'neon' && r?.light !== 'cloud' && 'light',
+      typeof r?.sound !== 'string' && 'sound', typeof r?.game !== 'boolean' && 'game', r?.kind !== 'photo' && r?.kind !== 'generated' && 'kind',
+      typeof r?.author !== 'string' && 'author', typeof r?.licence !== 'string' && 'licence'].filter(Boolean);
+    if (wrong.length) { problems.push(`${id}: ${wrong.join(', ')}`); continue; }
+    rooms.push({id: r.id!, file: r.file!, blur: r.blur!, exposure: r.exposure!, turn: r.turn!, mirror: r.mirror!, air: r.air!, tint: {back: [...r.tint!.back], front: [...r.tint!.front]}, light: r.light!,
+      label: r.label!, note: r.note!, sound: r.sound!, game: r.game!, kind: r.kind!, author: r.author!, licence: r.licence!, page: typeof r.page === 'string' ? r.page : null});
+  }
+  return {rooms, problems};
+}
 
 function canvasTexture(w: number, h: number, draw: (c: CanvasRenderingContext2D, w: number, h: number) => void, repeat?: [number, number]) {
   const canvas = document.createElement('canvas'); canvas.width = w; canvas.height = h; draw(canvas.getContext('2d')!, w, h);
@@ -118,23 +167,23 @@ function buildSalon() {
 }
 
 // `onMissing` is told when an image cannot be read, so the page can say so instead of showing a black room.
-export function createRooms(scene: T.Scene, urls: {plate: string; panorama: string; la: string; skog: string}, onMissing: (room: RoomId) => void) {
+// `panoramas`: the register's rooms (readRegister); without them the first three, with their pictures at `urls`.
+export function createRooms(scene: T.Scene, urls: {plate: string; panorama: string; la: string; skog: string}, onMissing: (room: RoomId) => void, panoramas: Panorama[] = firstPanoramas(urls)) {
   const loader = new T.TextureLoader(), load = (url: string, rooms: RoomId[]) => { const t = loader.load(url, undefined, undefined, () => rooms.forEach(onMissing)); t.colorSpace = T.SRGBColorSpace; return t; };
-  const plate = load(urls.plate, ['kuliss', 'plat']), panorama = load(urls.panorama, ['panorama']);
+  const plate = load(urls.plate, ['kuliss', 'plat']);
   const ball = new T.SphereGeometry(60, 64, 32), sphereOf = (map: T.Texture | null) => new T.Mesh(ball, new T.MeshBasicMaterial({map, side: T.BackSide, fog: false}));
-  const built = buildSalon(), salon = built.group, clock = buildClock(), sphere = sphereOf(panorama), la = sphereOf(null), skog = sphereOf(null);
+  const built = buildSalon(), salon = built.group, clock = buildClock();
   const hallBox = new T.Group(); let hall: BuiltRoom | null = null, hallAsked = false, k = 1; // the hall's group is empty until its module has been read
-  // The two extra panoramas are fetched the first time they are shown.
-  const later: Partial<Record<RoomId, {mesh: T.Mesh; url: string}>> = {la: {mesh: la, url: urls.la}, skog: {mesh: skog, url: urls.skog}};
+  // One sphere per panorama; its picture is fetched the first time the room is shown.
+  const spheres = panoramas.map(look => ({look, mesh: sphereOf(null)})), later = new Map(spheres.map(s => [s.look.id, s]));
+  const lights = new Map(panoramas.map(p => [p.id, p.light]));
   const backdrop = new T.Mesh(new T.PlaneGeometry(1, 1), new T.MeshBasicMaterial({map: plate, color: 0x959595, fog: false}));
   const rooms: Record<RoomId, Room> = {
-    salong: {group: salon, plate: null, follow: false, hasDepth: true, blur: 11, exposure: 1, fog: new T.Fog(0x0f0906, 8, 30)},
-    panorama: {group: sphere, plate: null, follow: true, hasDepth: false, blur: 5, exposure: 0.8, fog: null},
-    la: {group: la, plate: null, follow: true, hasDepth: false, blur: 6, exposure: 0.7, fog: null},
-    skog: {group: skog, plate: null, follow: true, hasDepth: false, blur: 6, exposure: 0.55, fog: null},
-    hall: {group: hallBox, plate: null, follow: false, hasDepth: true, blur: 11, exposure: 1, fog: new T.Fog(0x0b0710, 8, 30)},
-    kuliss: {group: backdrop, plate: null, follow: false, hasDepth: false, blur: 9, exposure: 1, fog: null},
-    plat: {group: null, plate, follow: false, hasDepth: false, blur: 8, exposure: 1, fog: null},
+    salong: {group: salon, plate: null, follow: false, hasDepth: true, blur: 11, exposure: 1, fog: new T.Fog(0x0f0906, 8, 30), turn: 0, mirror: false},
+    ...Object.fromEntries(spheres.map(({look, mesh}) => [look.id, {group: mesh, plate: null, follow: true, hasDepth: false, blur: look.blur, exposure: look.exposure, fog: null, turn: look.turn, mirror: look.mirror}])),
+    hall: {group: hallBox, plate: null, follow: false, hasDepth: true, blur: 11, exposure: 1, fog: new T.Fog(0x0b0710, 8, 30), turn: 0, mirror: false},
+    kuliss: {group: backdrop, plate: null, follow: false, hasDepth: false, blur: 9, exposure: 1, fog: null, turn: 0, mirror: false},
+    plat: {group: null, plate, follow: false, hasDepth: false, blur: 8, exposure: 1, fog: null, turn: 0, mirror: false},
   };
   // air: behind the dealer (with the room) and between the camera and the dealer (over the film; the caller adds `front` to its foreground)
   const dustBack = buildAir(2000, [-3.6, -0.5, -4.6], [3.6, 2.3, -0.2], false, 3, false), dustFront = buildAir(1100, [-1.6, 0.04, 0.03], [1.6, 1.2, 0.72], false, 5, true);
@@ -143,13 +192,14 @@ export function createRooms(scene: T.Scene, urls: {plate: string; panorama: stri
   // two neon tubes for the Las Vegas hall; the magenta one is the one that may flicker
   const neon = new T.Group(), tube = (r: number, gr: number, b: number, x: number, z: number) => { const m = new T.Mesh(new T.CylinderGeometry(0.025, 0.025, 1.7, 12), new T.MeshBasicMaterial({color: new T.Color(r, gr, b), fog: false})); m.position.set(x, 0.75, z); neon.add(m); return m.material as T.MeshBasicMaterial; };
   const magenta = tube(6, 0.6, 3.2, -2.6, -3.4); tube(0.5, 3.5, 5, 2.9, -3.6); neon.visible = false;
-  scene.add(salon, sphere, la, skog, hallBox, backdrop, clock.group, neon, ...back.map(a => a.points)); clock.group.visible = false;
+  scene.add(salon, ...spheres.map(s => s.mesh), hallBox, backdrop, clock.group, neon, ...back.map(a => a.points)); clock.group.visible = false;
   const hallFog = () => { const own = hall?.fog ?? {color: 0x0b0710, near: 8, far: 30}, fog = rooms.hall.fog!; fog.color.set(own.color); fog.near = own.near * k; fog.far = own.far * k; };
   // tint of the dust per room: [behind the dealer (linear, may exceed 1), in front of her (as shown)], and how much of it is leaves
+  // (a panorama's from its entry)
   const AIR: Record<RoomId, {back: number[]; front: number[]; leaves: number}> = {
-    salong: {back: [1.5, 1.23, 0.85], front: [0.95, 0.83, 0.66], leaves: 0}, panorama: {back: [1.35, 1.15, 1.0], front: [0.88, 0.78, 0.71], leaves: 0},
-    la: {back: [1.8, 1.17, 0.62], front: [1.0, 0.78, 0.48], leaves: 0}, skog: {back: [1.1, 1.17, 0.75], front: [0.7, 0.75, 0.5], leaves: 1}, hall: {back: [1.3, 1.1, 1.25], front: [0.85, 0.78, 0.82], leaves: 0},
-    kuliss: {back: [1.5, 1.23, 0.85], front: [0.95, 0.83, 0.66], leaves: 0}, plat: {back: [0, 0, 0], front: [0.95, 0.83, 0.66], leaves: 0}};
+    salong: {back: [1.5, 1.23, 0.85], front: [0.95, 0.83, 0.66], leaves: 0}, hall: {back: [1.3, 1.1, 1.25], front: [0.85, 0.78, 0.82], leaves: 0},
+    kuliss: {back: [1.5, 1.23, 0.85], front: [0.95, 0.83, 0.66], leaves: 0}, plat: {back: [0, 0, 0], front: [0.95, 0.83, 0.66], leaves: 0},
+    ...Object.fromEntries(panoramas.map(p => [p.id, {back: p.tint.back, front: p.tint.front, leaves: p.air === 'leaves' ? 1 : 0}]))};
   return {
     rooms,
     // Rooms are built in dealer metres around the dealer-side table edge and scaled into the plan-scale world.
@@ -163,16 +213,18 @@ export function createRooms(scene: T.Scene, urls: {plate: string; panorama: stri
       for (const o of [neon, ...back.map(a => a.points), ...front.map(a => a.points)]) { o.position.set(0, 0, -edgeDistance); o.scale.setScalar(k); }
     },
     show(id: RoomId) {
-      const wait = later[id]; if (wait) { const material = wait.mesh.material as T.MeshBasicMaterial; material.map = load(wait.url, [id]); material.needsUpdate = true; delete later[id]; }
+      // a picture shown the right way round is read backwards across (repeat -1): the sphere would otherwise mirror it
+      const wait = later.get(id); if (wait) { const material = wait.mesh.material as T.MeshBasicMaterial, map = load(wait.look.file, [id]); later.delete(id);
+        if (!wait.look.mirror) { map.wrapS = T.RepeatWrapping; map.repeat.x = -1; } material.map = map; material.needsUpdate = true; }
       if (id === 'hall' && !hallAsked) { hallAsked = true; import('./scene3d-hall.ts').then(m => { hall = m.buildHall() as BuiltRoom; hallBox.add(hall.group); hallFog(); }, () => onMissing('hall')); }
-      for (const [name, room] of Object.entries(rooms)) if (room.group) room.group.visible = name === id; scene.fog = rooms[id].fog;
+      for (const [name, room] of Object.entries(rooms)) if (room.group) room.group.visible = name === id; scene.fog = rooms[id]?.fog ?? null;
     },
     // The clouds drawn over the film; the caller puts them in its foreground scene.
     front: front.map(a => a.points),
     // What moves in the room, the same three things in every room in the form that suits it: a clock, something in the air and
     // an event in the light. `lamp` is a flickering lamp's brightness and `cloud` a passing cloud's, 1 = nothing happening.
-    // Salon: a pendant flickers. Las Vegas: a neon tube flickers and the hall dims a little. Rooms lit from outside (skyline,
-    // forest, plates): the cloud dims the whole room. Returns the factor for the room's brightness. `pixels` = picture height / film height.
+    // Salon: a pendant flickers. Las Vegas (a panorama whose light is neon): a neon tube flickers and the hall dims a little.
+    // The other panoramas and the plates: the cloud dims the whole room. Returns the factor for the room's brightness. `pixels` = picture height / film height.
     // `front`: the share of the air that is shown between the camera and the dealer, 1 if not given. A change of room with the
     // shimmer thins it out and lets it come back, so that one room's dust or leaves do not turn into another's in one frame.
     ambient(id: RoomId, seconds: number, now: Date, live: {clock: boolean; air: number; lamp: number; cloud: number; front?: number}, pixels: number): number {
@@ -181,10 +233,11 @@ export function createRooms(scene: T.Scene, urls: {plate: string; panorama: stri
       back.forEach((a, i) => { a.points.visible = inRoom && amounts[i] > 0; if (a.points.visible) a.set(seconds, amounts[i], pixels * 0.5, i ? [1.5, 1.5, 1.3] : air.back); }); // the room is drawn at half size; leaves keep their own colour
       front.forEach((a, i) => { const amount = amounts[i] * (live.front ?? 1); a.points.visible = amount > 0; if (a.points.visible) a.set(seconds, amount, pixels, i ? [1, 1, 1] : air.front); });
       const lit = live.lamp * live.lamp; built.lamp.material.color.setRGB(7 * lit, 4 * lit, 1.6 * lit); built.lamp.light.intensity = 3 * live.lamp;
-      neon.visible = id === 'panorama'; magenta.color.setRGB(6 * lit, 0.6 * lit, 3.2 * lit);
+      const neonRoom = lights.get(id) === 'neon'; neon.visible = neonRoom; magenta.color.setRGB(6 * lit, 0.6 * lit, 3.2 * lit);
       if (id === 'hall') return hall ? hall.update(seconds, {lamp: live.lamp, air: live.air}) : 1;
-      return id === 'salong' ? 1 : id === 'panorama' ? 1 - 0.15 * (1 - live.lamp) : live.cloud;
+      return id === 'salong' ? 1 : neonRoom ? 1 - 0.15 * (1 - live.lamp) : live.cloud;
     },
-    followCamera(id: RoomId, position: T.Vector3, turnDeg: number) { const room = rooms[id]; if (room.follow && room.group) { room.group.position.copy(position); room.group.rotation.y = turnDeg * Math.PI / 180; } },
+    // A panorama follows the camera, turned by the scene's common turn and its own.
+    followCamera(id: RoomId, position: T.Vector3, turnDeg: number) { const room = rooms[id]; if (room.follow && room.group) { room.group.position.copy(position); room.group.rotation.y = (turnDeg + room.turn) * Math.PI / 180; } },
   };
 }

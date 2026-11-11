@@ -4,7 +4,7 @@ import {buildGraph, resolveRound, type Step} from './clip-graph.ts';
 import {createScene, DEFAULTS, type SceneState} from './scene3d-view.ts';
 import type {Part} from './scene3d-film.ts';
 import type {CardTrack} from './scene3d-geometry.ts';
-import type {RoomId} from './scene3d-room.ts';
+import {readRegister, type RoomId} from './scene3d-room.ts';
 import {EXIT_TRIAL, exitView} from './scene3d-exit.ts';
 
 const query = new URLSearchParams(location.search), bare = query.get('ui') === '0';
@@ -15,7 +15,9 @@ if (bare) document.body.classList.add('noui');
 const fail = (message: string) => { panel.append(el('p', {className: 'error', textContent: message})); hudBox.replaceChildren(el('span', {className: 'chip warn', textContent: message})); throw Error(message); };
 const read = async (url: string, what: string) => { const res = await fetch(url).catch(() => null); if (!res?.ok) fail(`${what} kunde inte läsas (${url}). Sidan gissar inga värden.`); return res!.json(); };
 
-const [contract, placements, bank] = await Promise.all([read('data/scene-contract.json', 'Scenkontraktet'), read('api/placements', 'Placeringsplanen'), read('api/clip-bank', 'Klippbanken')]);
+const [contract, placements, bank, register] = await Promise.all([read('data/scene-contract.json', 'Scenkontraktet'), read('api/placements', 'Placeringsplanen'), read('api/clip-bank', 'Klippbanken'), read('data/scene-rooms.json', 'Rumsregistret')]);
+// The 360-degree rooms: every room of the register, the ones not yet in the game among them.
+const {rooms: panoramas, problems: roomProblems} = readRegister(register);
 type Clip = {id: string; video: string};
 const clips: Clip[] = Object.entries((bank.media ?? {}) as Record<string, {video?: string | null}>).filter(([, m]) => typeof m.video === 'string').map(([id, m]) => ({id, video: m.video!})).sort((a, b) => a.id.localeCompare(b.id));
 // Rounds through the clip bank. The bank's own rule cuts each film (resolveRound): a deal stops on the frame its return was
@@ -29,7 +31,7 @@ if (!clips.length) fail('Klippbanken innehåller inga filmer.');
 
 const first = clips.find(c => c.id === query.get('clip'))?.id ?? (rounds.length ? 'round:0' : clips[0].id);
 const missing = new Set<RoomId>(), setters: Partial<Record<keyof SceneState, (value: never) => void>> = {};
-const scene = createScene(canvas, stage, {contract, plan: placements.plan ?? placements, urls: {plate: 'assets/scene/room.png', panorama: 'assets/scene/panorama-vegas.jpg', la: 'assets/scene/panorama-la.jpg', skog: 'assets/scene/panorama-skog.jpg'}, onChange: () => { sync(); hud(); void followTrack(); }, onMissingRoom: room => { missing.add(room); hud(); }});
+const scene = createScene(canvas, stage, {contract, plan: placements.plan ?? placements, urls: {plate: 'assets/scene/room.png', panorama: 'assets/scene/panorama-vegas.jpg', la: 'assets/scene/panorama-la.jpg', skog: 'assets/scene/panorama-skog.jpg'}, rooms: panoramas, onChange: () => { sync(); hud(); void followTrack(); }, onMissingRoom: room => { missing.add(room); hud(); }});
 const state = scene.state;
 for (const [key, value] of query) if (key in DEFAULTS) { const k = key as keyof SceneState, base = DEFAULTS[k]; (state as Record<string, unknown>)[k] = typeof base === 'number' ? Number(value) : typeof base === 'boolean' ? value === '1' : value; }
 if (bare) state.format = 'fill';
@@ -74,7 +76,18 @@ const THREE: Record<string, string> = {
   hall: 'Här: en stående klocka, låg rök som tätnar med reglaget, och neonskylten Bar som flimrar till.',
   kuliss: 'Här: en stående klocka, damm, och ljuset som dämpas mjukt i några sekunder.',
   plat: 'Här finns inget rum att ställa klockan i; damm syns bara framför dealern och ljuset dämpas mjukt.'};
-function sync() { const three = document.getElementById('three'); if (three) three.textContent = THREE[state.room] ?? '';
+// A room of the register without words of its own above: said from what its entry gives it.
+function threeOf(id: string) {
+  const p = panoramas.find(r => r.id === id); if (THREE[id] || !p) return THREE[id] ?? '';
+  return `Här: en stående klocka, ${p.air === 'leaves' ? 'pollen och fallande löv' : 'damm i ljuset'}, och ${p.light === 'neon' ? 'ett neonrör som flimrar till medan rummet dämpas lite' : 'ljuset som dämpas mjukt i några sekunder'}.`;
+}
+// What the 360-degree room on screen is, where its picture comes from, and whether the game has it.
+function roomNote(id: string) {
+  const p = panoramas.find(r => r.id === id); if (!p) return '';
+  const origin = p.kind === 'photo' ? `Fotograferat 360°-panorama av ${p.author}${p.page?.includes('polyhaven.com') ? ', Poly Haven' : ''} (${p.licence}).` : 'Genererad bild (Jakobs Codex-session 7 november).';
+  return `${p.label}: ${p.note}. ${origin} ${p.game ? 'Finns i spelet.' : 'Finns bara här i labbet: når spelet när du har godkänt det.'}`;
+}
+function sync() { const three = document.getElementById('three'); if (three) three.textContent = threeOf(state.room); const about = document.getElementById('roomnote'); if (about) about.textContent = roomNote(state.room);
   for (const [key, set] of Object.entries(setters)) (set as (v: unknown) => void)(state[key as keyof SceneState]); const play = document.getElementById('play'); if (play) play.textContent = scene.players.paused ? 'Spela' : 'Pausa'; }
 function build() {
   const group = (title: string, ...kids: Node[]) => panel.append(el('fieldset', {}, el('legend', {textContent: title}), ...kids));
@@ -98,9 +111,13 @@ function build() {
   shimmerBox.addEventListener('change', () => scene.set({roomShift: shimmerBox.checked ? 'shimmer' : 'cut'})); setters.roomShift = ((v: SceneState['roomShift']) => { shimmerBox.checked = v === 'shimmer'; }) as never;
 
   panel.append(el('h1', {textContent: '3D-scen · bakgrund och bord'}), el('p', {className: 'sub', textContent: 'Pamelas 2D-film i ett 3D-rum med 3D-bord. Dra i bilden, rulla för zoom, dubbelklicka för hemvy.'}));
-  group('Miljö', choice('room', [['salong', '3D-salong'], ['panorama', 'Las Vegas'], ['la', 'Skyline'], ['skog', 'Skog'], ['hall', 'Spelhall'], ['kuliss', 'Kuliss'], ['plat', 'V6-plåt']], room => scene.set({room, blur: ({salong: 11, panorama: 5, la: 6, skog: 6, hall: 11, kuliss: 9, plat: 8})[room]}), true),
+  // Each room with the blur that suits it: a 360-degree room's from its entry in the register.
+  const blurOf = (room: RoomId) => panoramas.find(r => r.id === room)?.blur ?? ({salong: 11, hall: 11, kuliss: 9, plat: 8} as Record<string, number>)[room] ?? 11, fresh = panoramas.filter(r => !r.game);
+  group('Miljö', choice('room', [['salong', '3D-salong'], ...panoramas.map(r => [r.id, r.label] as [RoomId, string]), ['hall', 'Spelhall'], ['kuliss', 'Kuliss'], ['plat', 'V6-plåt']], room => scene.set({room, blur: blurOf(room)}), true),
+    el('p', {className: 'note', id: 'roomnote'}),
     slider('Oskärpa längst bort', 'blur', 0, 30, 0.5, ' px', live), check('Oskärpan växer med avståndet (3D-salongen)', 'depthBlur'), slider('Full oskärpa efter', 'dofRange', 0.5, 12, 0.1, ' m', live),
-    note('<b>3D-salong</b>: byggd geometri, äkta parallax. <b>Las Vegas</b>, <b>Skyline</b> och <b>Skog</b>: 360°-bilder runt kameran, exakta vid vridning men utan parallax. <b>Kuliss</b>: V6-plåten som ett plan bakom dealern. <b>V6-plåt</b>: dagens platta bild, fast i rutan.'),
+    note('<b>3D-salong</b>: byggd geometri, äkta parallax. <b>360°-rummen</b> (Las Vegas, Skyline, Skogen och de nya): bilder runt kameran, exakta vid vridning men utan parallax, listade i data/scene-rooms.json. Skogen och de nya är fotograferade panoraman, Las Vegas och Skyline genererade bilder. <b>Kuliss</b>: V6-plåten som ett plan bakom dealern. <b>V6-plåt</b>: dagens platta bild, fast i rutan.'
+      + (fresh.length ? ` Bara i labbet tills du har godkänt dem för spelet: ${fresh.map(r => r.label).join(', ')}.` : '') + (roomProblems.length ? ` <b>Rumsregistret</b>: utelämnade (${roomProblems.join('; ').replace(/</g, '&lt;')}).` : '')),
     shimmer, slider('Skimrets längd', 'roomShiftSeconds', 1, 5, 0.1, ' s', live),
     note('<b>Skimmer vid miljöbyte</b>: när du väljer en annan miljö byggs ett skimmer av guldpaljetter upp över hela bakgrunden, rummet byts under det när det är som starkast, och skimret dör ut över det nya rummet. Dealern och bordet rörs inte. Längden gäller nästa byte.'));
   group('Fokus (styrs av filmen)', choice('focus', [['off', 'Av'], ['dealer', 'Dealern'], ['follow', 'Följ given'], ['card', 'Kortet'], ['manual', 'Eget']]),

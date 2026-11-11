@@ -7,7 +7,7 @@ import {DEALER_LENS_ESTIMATE, FILM, aimCorrection, betSpots, cameraFromContract,
 import {createFilmLayers, createPlayers, frameAt} from './scene3d-film.ts';
 import {createFanLight} from './scene3d-light.ts';
 import {createChipTray, TRAY} from './scene3d-props.ts';
-import {createRooms, type RoomId} from './scene3d-room.ts';
+import {createRooms, type Panorama, type RoomId} from './scene3d-room.ts';
 import {CHANGE_FRAGMENT, SHIMMER_GLSL, readyFrom, retake, roomChange, shiftProgress, shimmerLevel} from './scene3d-shift.ts';
 import {TABLE, createTable, type TableBase, type TableSurface} from './scene3d-table.ts';
 import {createRailExtras} from './scene3d-rail.ts';
@@ -39,10 +39,14 @@ export const DEFAULTS: SceneState = {
   filmBright: 1, filmWarm: 0, wrap: 0,
   roomShift: 'cut', roomShiftSeconds: 2.6,
 };
-export type SceneData = {contract: Parameters<typeof cameraFromContract>[0]; plan: Parameters<typeof cardSpots>[0]; urls: {plate: string; panorama: string; la: string; skog: string}; onChange: () => void; onMissingRoom: (room: RoomId) => void};
+// rooms: the panorama rooms of the register (data/scene-rooms.json, readRegister in scene3d-room.ts); without it the first three, at urls.
+export type SceneData = {contract: Parameters<typeof cameraFromContract>[0]; plan: Parameters<typeof cardSpots>[0]; urls: {plate: string; panorama: string; la: string; skog: string}; rooms?: Panorama[]; onChange: () => void; onMissingRoom: (room: RoomId) => void};
 
 const W = FILM.width, H = FILM.height, RAD = Math.PI / 180;
-const ROOM_TURN = 0; // how the prefiltered room is turned against the sphere that shows it, radians (found by a mirror ball on the table)
+// How the prefiltered room is turned against the sphere that shows it, radians. Checked 2026-11-11 with a black test picture
+// with coloured discs and a mirror ball on the felt lit by the table's own map: each disc lies on the ball on the side where
+// the sphere shows it behind the dealer, for a mirrored and for a right-way-round room, so 0.
+const ROOM_TURN = 0;
 const FS_VERTEX = 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = vec4(position.xy, 0., 1.); }';
 // mode 0: even blur. mode 1: blur grows with distance behind the dealer (an artistic ramp, the v1 look).
 // mode 2: lens, blur grows with the distance from the focus; a sample only spreads as far as its own blur reaches,
@@ -87,7 +91,7 @@ export function createScene(canvas: HTMLCanvasElement, host: HTMLElement, data: 
   const state: SceneState = {...DEFAULTS};
   const renderer = new T.WebGLRenderer({canvas, antialias: true, preserveDrawingBuffer: true}); renderer.autoClear = false;
   const bg = new T.Scene(), fg = new T.Scene(), view = new T.PerspectiveCamera(40, W / H, 0.05, 200), filmCam = new T.PerspectiveCamera(40, W / H, 0.05, 200), filmVP = new T.Matrix4();
-  const light = createFanLight(), film = createFilmLayers(filmVP, light.uniforms), table = createTable(light.hook), tray = createChipTray(light.hook), rail = createRailExtras(light.hook), rooms = createRooms(bg, data.urls, data.onMissingRoom);
+  const light = createFanLight(), film = createFilmLayers(filmVP, light.uniforms), table = createTable(light.hook), tray = createChipTray(light.hook), rail = createRailExtras(light.hook), rooms = createRooms(bg, data.urls, data.onMissingRoom, data.rooms);
   const sun = new T.DirectionalLight(0xfff1dd, 1.6); sun.position.set(-1.5, 3, 2.5);
   fg.add(film.body, film.table, table.group, tray.group, rail.group, new T.AmbientLight(0xffe6cc, 1.1), sun, ...rooms.front);
   const players = createPlayers(texture => film.setTexture(texture), data.onChange);
@@ -174,6 +178,7 @@ export function createScene(canvas: HTMLCanvasElement, host: HTMLElement, data: 
   }
   const drawFelt = () => table.draw({spots: cardSpots(data.plan, camera), logo: state.logo, felt: state.felt, scale: camera.scale});
   function apply() {
+    if (!rooms.rooms[state.room]) state.room = 'salong'; // a room the scene does not have (an old address, a room taken out of the register)
     useCards(); rooms.show(state.room); rail.set({cups: state.cups}); film.place(edgeZ, state.fold, state.focus !== 'off', camera.scale); film.setKey({lo: state.keyLo, hi: state.keyHi, shadow: state.shadow}); film.setGrade(state.filmBright, state.filmWarm);
     if (guides) guides.visible = state.guides; resize(); data.onChange();
   }
@@ -222,7 +227,7 @@ export function createScene(canvas: HTMLCanvasElement, host: HTMLElement, data: 
     return {target: blur(a, ping, pong, look.blur * scale / 2), exposure: look.exposure * room.exposure * dim};
   }
   const lookNow = (): Look => ({room: state.room, blur: state.blur, depthBlur: state.depthBlur, dofRange: state.dofRange, exposure: state.exposure, panoramaTurn: state.panoramaTurn});
-  // Whether a room has its picture: two of the panoramas are fetched the first time they are shown, and the hall is built by a module of its own.
+  // Whether a room has its picture: a panorama's is fetched the first time it is shown, and the hall is built by a module of its own.
   function roomReady(id: RoomId) {
     const room = rooms.rooms[id]; if (id === 'hall') return !!room.group?.children.length;
     const map = room.plate ?? ((room.group as T.Mesh | null)?.material as T.MeshBasicMaterial | undefined)?.map, image = map?.image as {width?: number} | null | undefined;
@@ -293,17 +298,18 @@ export function createScene(canvas: HTMLCanvasElement, host: HTMLElement, data: 
     if (!focusOn) { renderer.clearDepth(); renderer.render(fg, view); }
     for (const call of frameCalls) call();
   }
-  // With the photographed surface the table is lit by the room that is showing: the room's panorama, mirrored as the sphere
-  // shows it from inside, prefiltered once per room. A built room has no panorama; the table then keeps its painted room.
+  // With the photographed surface the table is lit by the room that is showing: the room's panorama as the sphere shows it
+  // from inside (mirrored for a mirrored room: an environment map reads a picture the right way round), prefiltered once per
+  // room and turned as the sphere is. A built room has no panorama; the table then keeps its painted room.
   const pmrem = new T.PMREMGenerator(renderer); let litBy: T.Texture | null = null, litKey = '', litMap: T.WebGLRenderTarget | null = null;
   function roomLight(look: {room: RoomId; panoramaTurn: number}) {
-    const sphere = state.surface === 'photo' ? rooms.rooms[look.room].group as T.Mesh | null : null, map = sphere && rooms.rooms[look.room].follow ? (sphere.material as T.MeshBasicMaterial).map : null;
+    const room = rooms.rooms[look.room], sphere = state.surface === 'photo' ? room.group as T.Mesh | null : null, map = sphere && room.follow ? (sphere.material as T.MeshBasicMaterial).map : null;
     const image = map?.image as HTMLImageElement | undefined, ready = map && image && image.width > 0 ? map : null, key = `${ready?.uuid ?? ''}:${look.panoramaTurn}:${state.roomLight}`;
     if (key === litKey) return; litKey = key;
     if (ready !== litBy) { litBy = ready; litMap?.dispose(); litMap = null;
-      if (ready) { const flipped = document.createElement('canvas'); flipped.width = image!.width; flipped.height = image!.height; const g = flipped.getContext('2d')!; g.translate(flipped.width, 0); g.scale(-1, 1); g.drawImage(image!, 0, 0);
-        const source = new T.CanvasTexture(flipped); source.colorSpace = T.SRGBColorSpace; source.mapping = T.EquirectangularReflectionMapping; litMap = pmrem.fromEquirectangular(source); source.dispose(); } }
-    table.setEnvironment(litMap?.texture ?? null, ROOM_TURN + look.panoramaTurn * RAD, state.roomLight);
+      if (ready) { const picture = document.createElement('canvas'); picture.width = image!.width; picture.height = image!.height; const g = picture.getContext('2d')!; if (room.mirror) { g.translate(picture.width, 0); g.scale(-1, 1); } g.drawImage(image!, 0, 0);
+        const source = new T.CanvasTexture(picture); source.colorSpace = T.SRGBColorSpace; source.mapping = T.EquirectangularReflectionMapping; litMap = pmrem.fromEquirectangular(source); source.dispose(); } }
+    table.setEnvironment(litMap?.texture ?? null, ROOM_TURN + (look.panoramaTurn + room.turn) * RAD, state.roomLight);
   }
 
   let running = false; const loop = (ms: number) => { if (!running) return; render(ms / 1000); requestAnimationFrame(loop); };
