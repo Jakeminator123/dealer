@@ -1,0 +1,65 @@
+{
+  "schemaVersion": 1,
+  "about": "Where each file of the local blackjack engine (game/) comes from. Ported files keep Scout's logic; a token-level diff of each type-stripped port against its Scout blob (whitespace and parentheses ignored) shows only the deviations listed here. Re-check when Scout changes: git -C <scoutgaming> rev-parse <commit>:<path> must still equal blob.",
+  "scout": { "repository": "Jakeminator123/scoutgaming", "commit": "0fe56ace3", "commitNote": "origin/main 2026-11-11; the same blobs are unchanged at main 76acbcd9d" },
+  "ported": [
+    {
+      "file": "game/round.ts",
+      "scoutPath": "services/game/games/blackjack/round.mjs",
+      "blob": "3be88ff2e2395ad3038c3c76c187c770ece95d66",
+      "deviations": "types added; class fields as `declare` (no runtime fields); type-only `!`/`as` in draw(), act(), split(); isBJ and isNatural exported (module-private in Scout) so seats.ts reports naturals and dealer blackjack with the core's own test"
+    },
+    {
+      "file": "game/shoe-rules.ts",
+      "scoutPath": "packages/shared/blackjack-shoe-rules.mjs",
+      "blob": "0d0993db2218c49104134b54e74fc721a015e6f0",
+      "deviations": "types added; exported type ShoeRules"
+    },
+    {
+      "file": "game/rng.ts",
+      "scoutPath": "packages/game-rng/index.mjs",
+      "blob": "d11705148b2a4f6cc3a3dd25a44676d2b71b5b82",
+      "alsoFrom": [{ "scoutPath": "packages/game-rng/index.d.mts", "blob": "71eff2b655bada782fb2f0e2fa4808ade9b958ea", "use": "exported types inlined" }],
+      "deviations": "types added; canonicalJson reads object keys through a local alias `record`"
+    },
+    {
+      "file": "game/random-port.ts",
+      "scoutPath": "services/game/games/secure-random.mjs",
+      "blob": "b5b17449d0b21c4f684e3ea2e79c8ab90d0e613d",
+      "deviations": "types added; exported types RandomPort, RngSettings, RngReceipt. Not in the requested list, ported because core imports journaledDraw, rngReceipt and RandomPortError from it"
+    },
+    {
+      "file": "game/shoe-proof.ts",
+      "scoutPath": "services/game/games/blackjack/shoe-proof.mjs",
+      "blob": "6337904a116359aaf765a5993d341ad95f1285ad",
+      "deviations": "types added (PhysicalCard, ShoeProof, ProofDraw, ClosingEvidence, ShoeVerification); type-only casts. Kept whole (commit/reveal and verifyShoe) because core's shuffle, restoreRound and shoeView use it"
+    },
+    {
+      "file": "game/core.ts",
+      "scoutPath": "services/game/games/blackjack/core.mjs",
+      "blob": "e93fcb1375ba5b1c121fc1be0731303f9ed9f6df",
+      "deviations": "types added; local import paths; fail typed `(code, message) => never`; local const aliases of the same objects (port = random, shoe = g.shoe read at use time, f = funding); comments name the lab session instead of Scout's K03 coordinator"
+    },
+    {
+      "file": "game/presentation.ts",
+      "scoutPath": "services/game/presentation/partner-presentation.mjs",
+      "blob": "d7cd10f2758cd6a1e55de7f7ad336f1bb45fa5c0",
+      "alsoFrom": [
+        { "scoutPath": "services/game/games/blackjack/presentation/outbox-presentation.mjs", "blob": "207a5fef1dbdd15fce4c94cbf33a8db9f42d5e07", "use": "catalogueEventId and withFamily (exported here)" },
+        { "scoutPath": "packages/presentation/runtime/media-family-resolver.mjs", "blob": "e2055293255bcb47cdf931573678294fe68c3836", "use": "mediaSituationForEvent" },
+        { "scoutPath": "packages/presentation/contracts/filmed-profile.mjs", "blob": "93a688025460c5c18b8a3c483af0e28b3061cf49", "use": "filmedDealTarget" }
+      ],
+      "deviations": "types added; withFamily exported; not ported: withMovingOpening, presentationForRow, lineIdOf, reconnectPresentation, resolveMediaFamily*, the rest of filmed-profile"
+    }
+  ],
+  "new": [
+    { "file": "game/shoe-source.ts", "basis": "scoutgaming test/fixtures/game-random.mjs blob f4c2f7da5c9be7b7d76fed18915ba8fedfb26695 (seededRandom, uuidOf, counter nonce/uuid)", "purpose": "session shoe sources secure | seeded | stacked (lab only, a game-rng replay draw named 'stacked')" },
+    { "file": "game/seats.ts", "basis": "new", "purpose": "the only box 0-6 <-> seat 1-7 conversion; event/view rewriting; totals on deal/reveal events and hands" },
+    { "file": "game/session.ts", "basis": "shell pattern of local-studio blackjack-studio/game-session.ts", "purpose": "in-memory single-player session: balance, funding, requestId idempotency, expectedVersion, seat-numbered results" }
+  ],
+  "notPorted": [
+    "services/game/games/blackjack/table/** (coordinator, ports, Postgres store/runtime/wallet, audit chain)",
+    "services/game/games/blackjack/native/** (shoe-game single-player variant, Postgres native table)",
+    "services/game/games/blackjack/presentation/postgres-receiver.mjs"
+  ]
+}

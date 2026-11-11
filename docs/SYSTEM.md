@@ -42,6 +42,14 @@ Allt som tillkommit efter kontrollpunkt v1 (fokus, fläktskugga, rekvisita) är 
 
 Kända gränser: planens kamera passar kortrutorna men dealern är inte ritad med den linsen; skalan k är skattad (1,8–2,5); skon är film och kan varken läggas bakom något eller bytas ut utan en egen matt; salongen, bordets mått och tryckets layout är platshållare. Test: `tools/scene3d-geometry.test.ts` (ren geometri, utan media).
 
+### Spelet (`game/` och `/api/game`)
+
+`game/` är Scouts blackjackkärna, förd hit oförändrad i sak (regler, sko med bränt kort och skärkort, slump med journal, signaler); `game/provenance.json` anger Scout-fil, commit, blob och avvikelse per fil. Ren TypeScript utan DOM som aldrig importerar från `src/`. Scouts boxar 0–6 finns bara inne i kärnan: `game/seats.ts` är den enda översättningen, och allt utanför räknar platser 1–7 (plats 1 kamerans vänster). `game/session.ts` är en lokal enspelarsession i minnet: saldo, `requestId` (samma svar vid omsändning), `expectedVersion`, och svar med signaler och vy. Skon är `secure` som förval; `seeded` och `stacked` (förutbestämda kort, bara labb) syns som `view.shoe.source`.
+
+Labbservern håller en session: `GET /api/game` (läget), `POST /api/game/command` (`start`, `act`, `insurance`, `collect`) och `POST /api/game/new` (nytt saldo och sko), med samma skydd som granskningsvägen. Hålkortets valör lämnar aldrig servern före vändningen. Signalerna är Scouts: `speak`, `deal`, `reveal`, `turn`, `settle`, `idle`; `deal` och `reveal` bär `shoeDraw`, handens summa efter kortet (`total`, `soft`) och `natural`/`blackjack`, så att sidan aldrig räknar kortvärden. Vinsten når saldot vid `collect`. Känd egenhet i Scouts kärna: `outcome` i `settle` räknar in försäkringens utbetalning.
+
+`src/game-director.ts` gör signalerna till slag, ett per kant i klippbanken (vila till sko en gång, retur mellan korten, hålkortet vänds från vila), och `src/game-table.ts` ger varje kort en plats: planens två platser per plats, därefter en solfjäder i steg om 24 px och splittade händer 44 px mot dealern (första värden, inte dömda i rörelse).
+
 ## Bottom-up och koordinatreferenser
 
 Bottom-up betyder att höjd ökar uppåt. V6 mäter idag bildpixlar från övre vänstra hörnet med y nedåt. Originalmätningar och referenshashar bevaras; en adapter ska konvertera vid en uttrycklig systemgräns.

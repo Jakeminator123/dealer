@@ -6,6 +6,7 @@ import {stripTypeScriptTypes} from 'node:module';
 import path from 'node:path';
 import {placementStore,StoreError} from './placement-store.ts';
 import {reviewStore} from './review-store.ts';
+import {createSession,SessionError,type Session,type SessionOptions} from '../game/session.ts';
 const port=4319,origin=`http://127.0.0.1:${port}`,state='.runtime/preview.json';
 if(process.argv.includes('--stop')||process.argv.includes('--status')){
  const s=JSON.parse(await readFile(state,'utf8'));
@@ -73,6 +74,7 @@ if(process.argv.includes('--stop')||process.argv.includes('--status')){
   }));
   return {schemaVersion:1,readable:!!file,budget:file?.budget??null,jobs,derived,edits,motions,receipts,media,revisions};
  };
+ let game:Session=createSession();
  const token=randomUUID();let lastSeen=Date.now();
  const types:Record<string,string>={'.html':'text/html; charset=utf-8','.css':'text/css; charset=utf-8','.js':'text/javascript; charset=utf-8','.mp4':'video/mp4','.png':'image/png','.jpg':'image/jpeg','.json':'application/json'};
  const stop=()=>server.close();
@@ -115,6 +117,24 @@ if(process.argv.includes('--stop')||process.argv.includes('--status')){
      let size=0;const chunks:Buffer[]=[];for await(const chunk of req){size+=chunk.length;if(size>8192)throw new StoreError(413,'Beslutet är för stort.');chunks.push(chunk);}
      res.end(JSON.stringify(await reviews.save(id,JSON.parse(Buffer.concat(chunks).toString('utf8')),typeof req.headers['if-match']==='string'?req.headers['if-match']:undefined)));
     }catch(error){res.writeHead(error instanceof StoreError?error.status:400).end(JSON.stringify({error:(error as Error).message}));}return;
+   }
+   // The game: one local single-player blackjack session, kept in this process only (game/session.ts). Rules, shuffle, card
+   // values and money live there; the page sends commands and plays what comes back. GET reads the state, POST /command
+   // plays one command, POST /new starts over (a balance and, for demos, a seeded or stacked shoe). From this page only.
+   if(url.pathname==='/api/game'&&req.method==='GET'){res.setHeader('Content-Type','application/json; charset=utf-8');res.end(JSON.stringify(game.state()));return;}
+   if(url.pathname==='/api/game/command'||url.pathname==='/api/game/new'){
+    res.setHeader('Content-Type','application/json; charset=utf-8');
+    const refuse=(status:number,code:string,message:string)=>{res.writeHead(status).end(JSON.stringify({error:{code,message}}));};
+    if(req.method!=='POST'){res.writeHead(405).end();return;}
+    if(req.headers.origin!==origin){refuse(403,'FORBIDDEN','Spela från det lokala labbet.');return;}
+    if(!req.headers['content-type']?.startsWith('application/json')){refuse(415,'JSON_REQUIRED','JSON krävs.');return;}
+    try{
+     let size=0;const chunks:Buffer[]=[];for await(const chunk of req){size+=chunk.length;if(size>16384)throw new SessionError('TOO_LARGE','Kommandot är för stort.',413);chunks.push(chunk);}
+     let body:unknown;try{body=JSON.parse(Buffer.concat(chunks).toString('utf8'));}catch{throw new SessionError('INVALID_COMMAND','Kommandot är inte giltig JSON.',400);}
+     if(url.pathname==='/api/game/new'){game=createSession(body as SessionOptions);res.end(JSON.stringify(game.state()));}
+     else res.end(JSON.stringify(game.command(body)));
+    }catch(error){if(error instanceof SessionError)refuse(error.status,error.code,error.message);else refuse(500,'INTERNAL','Spelet kunde inte svara.');}
+    return;
    }
    if(url.pathname==='/api/proofs'&&req.method==='GET'){res.setHeader('Content-Type','application/json; charset=utf-8');res.end(JSON.stringify(await proofs()));return;}
    if(req.method!=='GET'&&req.method!=='HEAD'){res.writeHead(405).end();return;}
