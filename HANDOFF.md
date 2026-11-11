@@ -46,7 +46,9 @@ Beslut ägs av `motions/<id>.json`; uppdraget av `data/clip-jobs.json`. 44 best�
 | `pamela-p7-c1-plan-return-ready-01` | Inte huvudtagning: handen dras in, knyts i brösthöjd och sänks på skon uppifrån; nio frysta rutor |
 | `pamela-p3-c1-plan-deal-02` | Underkänd: fysisk vändning, men glid på filten f24–43, hopp f44, hopflutna fingrar f61–62, andra beröring f96 |
 
-Vad omgången visade: (1) hela verkliga rutor som slutbild höll, ingen krympning och inga rester; (2) rörelsen är fortfarande lotteri per tagning, så varje kant behöver räknas med två till tre tagningar och urval; (3) när vägen är kort hinner modellen hitta på extra rörelser, så korta vägar ska ha kortare klipp: `pamela-p7-c1-plan-return-ready-02` är beställd på 2 s (40 credits) som prov; (4) varje klipp har ljusare grönt i sina första rutor och ett nivåhopp i de två sista, så skarvar mäts och klipps tre rutor in och två rutor före slutet; (5) frysta rutor förekommer inne i rörelser och ska räknas vid granskning. Med omgången räknar labbet 20 av 30 filmer: 11 kandidater, 9 med kända brister, 10 saknas. Parallellt inventeras gamla labbets klipp från 10 november (dealerkort, P3, P5, P6) som möjliga gratis kandidater.
+Vad omgången visade: (1) hela verkliga rutor som slutbild höll, ingen krympning och inga rester; (2) rörelsen är fortfarande lotteri per tagning, så varje kant behöver räknas med två till tre tagningar och urval; (3) när vägen är kort hinner modellen hitta på extra rörelser, så korta vägar ska ha kortare klipp: `pamela-p7-c1-plan-return-ready-02` är beställd på 2 s (40 credits) som prov; (4) varje klipp har ljusare grönt i sina första rutor och ett nivåhopp i de två sista, så skarvar mäts och klipps tre rutor in och två rutor före slutet; (5) frysta rutor förekommer inne i rörelser och ska räknas vid granskning. Med omgången räknar labbet 20 av 30 filmer: 11 kandidater, 9 med kända brister, 10 saknas. 
+
+**Ur gamla labbet, införda 2026-11-11 (0 credits):** 19 tagningar på 15 filmer från 10 november, id med `arkiv`: dealerns D.C1, stängda D.C2 och D.C3 med giv och två returer vardera, vändningen av det dolda kortet (experiment `IDLE>REVEAL(D.C2)`), samt P3, P5 och P6 med giv och två returer. Alla givar börjar på dagens REDO-bild och varje retur på den ruta där given slutar (0 avvikande bildpunkter). De landar 17–43 px från planen; dealerns kort ligger 111 px isär mot planens 47 och är vridna annorlunda. Inget av dem blev slutgodkänt i gamla labbet, flera returer lyfter den tomma handen till axelhöjd, och P3-given står still vid skon i cirka 1,6 s. De är nu huvudtagning på sina kanter tills Jakob har dömt, och labbet räknar 29 av 30 filmer; bara `READY>IDLE` saknas. Sex av filmerna var förlustfria i ett format webbläsare inte spelar säkert och är omkodade till H.264 High 4:2:0 med samma antal rutor; de förlustfria ligger kvar bredvid som `original-lossless.mp4`. Inventeringen, med nio förkastade alternativ, ligger i `D:/dealer-scratch/tmp/arkivinventering/`.
 
 | Del | Läge |
 | --- | --- |
@@ -62,6 +64,16 @@ Vad omgången visade: (1) hela verkliga rutor som slutbild höll, ingen krympnin
 | Saknas helt | Dealerkort, vändning av täckt kort, insamling, träffkort, REDO>VILA utan kort och vilo-loop. Gamla labbets viloklipp passar inte som de är: vitt kort i skon och 1 762 px bredd. En ny vilo-loop beställs från en verklig viloruta när huvudvarianten är vald |
 
 Jakobs betyg på äldre material: P4.C1 rått original 4,5/5, V6 4/5 (byter hand), vita banken 3/5, gul/blå sekvens 2,5/5, READY2-proven "konstiga".
+
+## Grundloopen (vila), efter Kevin och Emil
+
+Läst 2026-11-11 i scoutgaming, `origin/kevin-staging` (`b4a78b44c`, mappen `kevin/croupier-scoutgg/`) och `origin/main` (`5428c0593`); inget ändrat där. Jakob vill låna deras logik utan att göra den mer avancerad.
+
+Deras vila är en viktad slumpning av korta klipp som alla börjar och slutar på keystone-bilden, med hårda klipp (övertoning prövades och gav spökbild). Det som gör den naturlig: (1) klippen är korta, cirka 3 s, så hon är tillbaka i keystone ofta; (2) andning dominerar (vikt 20 + 20 mot 3–8 för gester), gester hålls minst tre klipp isär och samma klipp spelas aldrig två gånger i rad; (3) en gest som pågår när en giv ska börja snabbas upp till högst 2,5× i stället för att klippas av, och ingen gest startas när en giv är på väg; (4) nästa klipp laddas i ett dolt videoelement och tar över på sista rutan, utan glapp. `main` har samma väljare men 5 s-klipp som kräver total stillhet, och där klipper en giv oftast mitt i vilan.
+
+Förslag för vår bank, inte beställt: alla som tagningar på `IDLE>IDLE` med vilorutan som första och sista bild, 3–5 s vardera. Lugna: andning A (finns, `pamela-idle-loop-01`), andning B med en blinkning, djupt andetag, höger hand lyfts och läggs om. Gester: blick åt sidan, litet leende, sträcka på sig, klia sig i huvudet, hosta, besviken min. På begäran: skämtet där hon dunkar huvudet i bordet och skrattar. Räkna med två kandidater per gest; Kevin förkastade dussintals. Modellen saknar vikt och lugn-flagga per vilotagning, en på-begäran-flagga och en väljare på cirka 15 rader. Varje klipp spelas från ruta 3 till tre rutor före slutet, vilket också döljer grönnivåns hopp.
+
+Jakobs önskemål därtill (2026-11-11): en rekreationsvariant som nästan alltid finns med, där hon dricker kaffe, gärna ur en mugg med Scout Gaming-loggan (loggan får läggas på i efterhand; filmmodellen ritar inte text pålitligt, skattat). Och en **givvariant med överlämning**: vänster hand tar kortet ur skon, lämnar över det till höger hand och kortet vänds i överlämningen, för platser där det finns skäl att byta hand, alltså de längst från skon (P1–P3, min tolkning). Notationen för detta finns redan per kort i placeringsplanen (`intent`: hand, sida, överlämning, vändning; `sequence()` i `src/placement-model.ts`) och motsvarar Scouts klippkarta med varianter.
 
 ## Renderade kort ovanpå filmen
 
@@ -82,6 +94,7 @@ Riktning från Jakob, prövad i `tools/track-card.ts` och `tools/render-card-pro
 - Publika sajten visar fortfarande 22 filmer från `b65fd9b`. Jakob vill ha nya läget dit; kräver mediauppladdning och ombyggnad.
 - Mätningen av bordsplan, kamera, ljus och mobilbeskärning är klar (`data/scene-contract.json`). Ljuset kommer uppifrån, svagt från bildvänster; skuggmatten går att lägga på nytt bord. Dagens mobilvy klipper P1.C1 helt och delar av P1.C2, P7.C1 och P7.C2.
 - **Bakgrundsagenten** (Jakobs egen session, `dealer-89`) äger `scene3d.html` och `src/scene3d-*.ts`: rum, bord, ljus, styrbart fokus och fläktskugga, med rundor lästa ur klippbanken. Den säger till när ett steg är stabilt, och klippagenten committar. Prov under `assets/proofs/bakgrund-3d*/`. Panoramabilden `assets/scene/panorama-vegas.jpg` har klarlagt ursprung (kontrollerat 2026-11-11): skapad i Jakobs egen Codex-session 2026-11-07 med OpenAIs bildmodell, ingen tredjepartslicens. Originalet (PNG 1774×887 med C2PA-signatur) ligger i `C:/Users/jakem/.codex/generated_images/01a1b3e8-dd54-7201-bb99-f0fc6e46fb59/`, prompten i `Desktop/wow/rumsstudie-3d-2026-11-07/.cache/room-study/las-vegas/provenance.json`, och samma bild finns redan i `Jakeminator123/scoutgaming` (commit `929868053`). Vår kopia är en omkodad JPEG av originalet. De två andra miljöerna: `panorama-la.jpg` (Skyline) är gjord på samma sätt samma dag, med original och prompt i samma mappar (`…/room-study/los-angeles/provenance.json`), och är en oförändrad kopia av studions bild. `panorama-skog.jpg` är ett verkligt 360°-foto: Codex-sessionen 2026-11-07 hämtade den tonmappade bilden av Poly Havens HDRI `forest_slope` (Poly Haven anger CC0 för sina tillgångar); vår fil är en omkodning av studions `panorama-4096.avif`, och att den avif-filen är samma bild är rimligt men inte hashkontrollerat. Dess fynd 2026-11-11: (1) kontraktets kamera passar planens kort men tänjer dealern när vyn vrids, medan en lins skattad ur dealern (cirka 1 270 px, skattad) lutar korten fel — samma tvålinsproblem som skalan; (2) nyckling mot varje rutas egen gröna nivå räcker och behåller skuggorna, cirka 1,4 px grönt spill i hud och hår; (3) sko och lyft arm korsar bordskantsraden 831,5, så skon bör stå helt på filten och vara oförändrad mellan klipp; (4) med 3D-bord och 3D-rum är mobilvyn bara en annan kameravinkel.
+- **Tredje agenten, "kort och marker"** (föreslagen 2026-11-11, startas av Jakob): det som ligger på bordet i 3D-scenen, alltså marker med tyngd, insatser på de sju platserna (bara presentation, inga regler), liggande kort som riktig geometri och underlaget till en provfilm där dealern tar in markerna från plats 4. Egna filer, inkoppling genom bakgrundsagenten, commits genom klippagenten. Startprompt: `D:/dealer-scratch/review/kort-och-marker-startprompt.md`. Klippagenten behåller filmerna, spårningen och granskningen.
 - Jakobs smak om 3D-labbet (2026-11-11): "fantastiskt"; gillar att oskärpan har djup, att vyn lutar lite åt sidan och att bordet har markeringar. Om steget i `jakob-4`, enligt bakgrundsagenten: "överlag är det här över förväntan"; bordsbenen är inte snygga men får vara så länge de inte kostar minne; markerbrädet ska finnas kvar som reserv, avstängt från start.
 - Kortspårningen (`src/card-track.ts`) är inställd på P4 och går fel på flera andra klipp (tappat kort, fel sida, ingen kantfas); det renderade kortet stämmer därför bara säkert på P4 och på returerna.
 - Scoutgamings huvudagent har fått besked: inget härifrån är infört där, och insatsrutor bör vara data per bord och filmbank.
@@ -92,9 +105,18 @@ Riktning från Jakob, prövad i `tools/track-card.ts` och `tools/render-card-pro
 
 1. Kvar för Jakob att bestämma: huvudvariant A eller B (banken är längst kommen i A; B är den han beskrev och har P4 och P5), och kortens storlek, som med renderade kort är ett reglage och inte hindrar beställning. Nodkartan byggs om för en film per plats.
 2. Beställ därefter en plats i taget enligt punkt 0; P1 och P7 behöver rena huvudklipp, P6 och P7 saknar variant B (skobyte bakom arm).
-3. Vilo-loop och dealerkorten; D.C2 stannar gult.
+3. Grundloopen: efter Jakobs ja beställs en första omgång korta vilovarianter, och väljaren byggs i labbet. Dealerkorten prövas först med klippen ur gamla labbet; D.C2 stannar gult.
 4. Beställning från labbet; rätta kortspårningen för andra platser än P4.
 5. Renderade kort inne i 3D-scenen (bakgrundsagentens nästa steg); publicera nya läget till Vercel när Jakob säger till.
+
+## Före avslut av en session
+
+1. Vänta in eller stoppa egna underagenter; inget ocommittat får ligga kvar utom `placements/default.json`.
+2. `npm test`, commit av egna filer, `npm run check`, push, och läs GitHub-kontrollens resultat.
+3. Sätt etapptagg `jakob-N` om Jakob har sett läget, och pusha taggen.
+4. Uppdatera detta dokument: läget i klippbanken, vad som är beställt och ogranskat, öppna frågor till Jakob.
+5. Städa `D:/dealer-scratch`: radera granskarnas rutdumpar som går att återskapa ur klippen, behåll kontaktark som stöder beslut och allt som Jakob inte har dömt.
+6. Labbservern får stå kvar; den stoppas bara med `node tools/preview.ts --stop`.
 
 ## Verifiering
 

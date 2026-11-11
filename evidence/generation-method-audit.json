@@ -854,6 +854,2340 @@
       "sha256": "b79839bb75751ed877a3b7cf92ca99921c224930397dd35bbe3726d6c7f9960b",
       "bytes": 1244864,
       "purpose": "Screenshot of an earlier 3D draft with Pamela, copied unchanged to assets/proofs/pamela-3d-utkast/ so Jakob can see it in the lab."
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/references/pamela-motion-contract-v2.json",
+      "sha256": "eae8b68c1b763ad8bde728d3dcb5769e8e27a70841f26bd5b771c766d818b720",
+      "bytes": 265630,
+      "purpose": "old lab's motion contract: edge to film and frame-range mapping"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-direct-return-pilot/jobs/p1-c1-canonical-take-01/native-verification.json",
+      "sha256": "8d71f92c856adaf5e371daafcdc77bc4eeba5e73917c563b0b8653a38edb648c",
+      "bytes": 634,
+      "purpose": "old lab's native verification of the downloaded film"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-direct-return-pilot/jobs/p1-c1-canonical-take-01/plan.json",
+      "sha256": "d7819d668756692d9710cd9f5f55267ec00d5e7d1fd084aaeb9778c6c4c0aa8a",
+      "bytes": 3858,
+      "purpose": "job plan: role, prompt, input image hashes"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-direct-return-pilot/jobs/p1-c1-canonical-take-01/state.json",
+      "sha256": "fe571fd4ba64daa8153e9bb92497712950860aef717482ae418c224b8d999a79",
+      "bytes": 1042,
+      "purpose": "job state: provider status, output hash"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-direct-return-pilot/jobs/p1-c1-canonical-take-02/native-verification.json",
+      "sha256": "87e879e25a7bb7c5cac893d405629d85c894cb376c385a38280a620a5a744f88",
+      "bytes": 634,
+      "purpose": "old lab's native verification of the downloaded film"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-direct-return-pilot/jobs/p1-c1-canonical-take-02/plan.json",
+      "sha256": "4bfdc29c9516fec8eb82aa0515467e9fa477a9748536b8712669cc068ab82126",
+      "bytes": 3916,
+      "purpose": "job plan: role, prompt, input image hashes"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-direct-return-pilot/jobs/p1-c1-canonical-take-02/state.json",
+      "sha256": "48229aedf68d077f92e677da7d381ed101479c23179cbf2924c5705bda566434",
+      "bytes": 1042,
+      "purpose": "job state: provider status, output hash"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-direct-return-pilot/jobs/p1-c2-canonical-take-01/plan.json",
+      "sha256": "2ed86f6661f7fd703df09244e570d6cd6dc20ffdc1350eef91bf9b6181325a9d",
+      "bytes": 3895,
+      "purpose": "job plan: role, prompt, input image hashes"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-direct-return-pilot/jobs/p1-k1-take-01/native-verification.json",
+      "sha256": "18ff7874dc7ea38f88db217ab0591a3bd3c5d24b841579a4147d799715648723",
+      "bytes": 624,
+      "purpose": "old lab's native verification of the downloaded film"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-direct-return-pilot/jobs/p1-k1-take-01/plan.json",
+      "sha256": "5fee30e0f17ae3f0d05a7a32af99eacc48e52f49c37088b21fcb29829eb37ce2",
+      "bytes": 3272,
+      "purpose": "job plan: role, prompt, input image hashes"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-direct-return-pilot/jobs/p1-k1-take-01/state.json",
+      "sha256": "5191700d81743d11e9fb9dab1568499c5d7f3ced3e420d09f972203b370bc045",
+      "bytes": 1022,
+      "purpose": "job state: provider status, output hash"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-direct-return-pilot/jobs/p1-k2-take-01/native-verification.json",
+      "sha256": "038ed55100d38e6461a4cba409304dfbddbfe024359fce1bd8d59896e68293b4",
+      "bytes": 624,
+      "purpose": "old lab's native verification of the downloaded film"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-direct-return-pilot/jobs/p1-k2-take-01/plan.json",
+      "sha256": "53fae50c9517d2668bd863fa9170ad1f83d892ceebe0cfaa9eebd9b602459918",
+      "bytes": 3273,
+      "purpose": "job plan: role, prompt, input image hashes"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-direct-return-pilot/jobs/p1-k2-take-01/state.json",
+      "sha256": "75224494d4e9feb008b6764f33fa3640598dcdcbb52a1e76d991f610a7360a5b",
+      "bytes": 1022,
+      "purpose": "job state: provider status, output hash"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-direct-return-pilot/jobs/p1-k2-take-02/native-verification.json",
+      "sha256": "75906f85b43e70bb0b4edbfd237cb3d16aa4f62c9294068aa5cf81c13af3f01e",
+      "bytes": 624,
+      "purpose": "old lab's native verification of the downloaded film"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-direct-return-pilot/jobs/p1-k2-take-02/plan.json",
+      "sha256": "adcbb21486370fe05814ad8a5e06316045cf3745f3cb649d6bd66bd5ac2e2b95",
+      "bytes": 3626,
+      "purpose": "job plan: role, prompt, input image hashes"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-direct-return-pilot/jobs/p1-k2-take-02/state.json",
+      "sha256": "aefd48f463525f0c826ff9f7a89330f73cb7b74c1cd2a0a2c283fb38c526123b",
+      "bytes": 1022,
+      "purpose": "job state: provider status, output hash"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-direct-return-pilot/preparation/plan.json",
+      "sha256": "f01154315e1d2cd71342d6c84616a3e40e831e9d1299b59651df46b411b8b7f6",
+      "bytes": 23768,
+      "purpose": "job plan: role, prompt, input image hashes"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-direct-return-pilot/review/canonical-c1-retake-02/plan.json",
+      "sha256": "c6b0bcac647789461f87888f944ac33bda769242192d82a54f021c5e4b9f0d26",
+      "bytes": 63151,
+      "purpose": "job plan: role, prompt, input image hashes"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-direct-return-pilot/review/canonical-input-01/plan.json",
+      "sha256": "2508623beae16471d0ac3379e64e5c9893543454c2dff65279645ab0f382f482",
+      "bytes": 9931,
+      "purpose": "job plan: role, prompt, input image hashes"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-direct-return-pilot/review/canonical-input-02/plan.json",
+      "sha256": "25cf1f24904a26223a3c9b4179f2a174f3fea16ecb2c61383b33f2696ce35690",
+      "bytes": 6693,
+      "purpose": "job plan: role, prompt, input image hashes"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-direct-return-pilot/review/canonical-return/plan.json",
+      "sha256": "56847bef709599609941c6bbd35dd5e0fc965209d0acd063a77f700e93e1fd36",
+      "bytes": 119676,
+      "purpose": "job plan: role, prompt, input image hashes"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-direct-return-pilot/review/P1-K2/retake-input-02/plan.json",
+      "sha256": "1d5b8d7a31fba71409f3ab898fa77300eedfdb46ec58048fdc4735b44a0baaf6",
+      "bytes": 8320,
+      "purpose": "job plan: role, prompt, input image hashes"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-direct-return-pilot/review/plan.json",
+      "sha256": "12309ffe9c6bccb4f3b5f1706cf7b7eb78802fb94c8e04c257f8992e528bf731",
+      "bytes": 333611,
+      "purpose": "job plan: role, prompt, input image hashes"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-direct-return-pilot/review/public-01/plan.json",
+      "sha256": "17fc481a76d87d2cebbe9e4a237ace94b0a5035a5d339fca481624c427e12da8",
+      "bytes": 2623,
+      "purpose": "job plan: role, prompt, input image hashes"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-direct-return-pilot/review/public-02/plan.json",
+      "sha256": "6297e1d8d7ee8710704ed47b0b5d243644a0b51b878c4dd9a74bdf255a97dfb2",
+      "bytes": 2302,
+      "purpose": "job plan: role, prompt, input image hashes"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-direct-return-pilot/review/public-03/plan.json",
+      "sha256": "3c3078a226a35da643c20e9f7d0f029c3b60ef97b1c554abff04b646df2eb3bf",
+      "bytes": 1226,
+      "purpose": "job plan: role, prompt, input image hashes"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/center-arc-01/p3-c1/native-verification.json",
+      "sha256": "efa4d310b2504752a4b529feaa46f98f6c1538ac4a685c503dc2f37b8b05812b",
+      "bytes": 618,
+      "purpose": "old lab's native verification of the downloaded film"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/center-arc-01/p3-c1/plan.json",
+      "sha256": "7e84dbcf61b0dbcc234544148f164e5906b1c3aa3038a7691f072e730a062129",
+      "bytes": 6039,
+      "purpose": "job plan: role, prompt, input image hashes"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/center-arc-01/p3-c1/review/qa.json",
+      "sha256": "12eb40a6df3f8f741a12534c8cb5904e4dd031a632b165b9889087570ad5bf92",
+      "bytes": 2167,
+      "purpose": "old lab's own QA verdict"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/center-arc-01/p3-c1/state.json",
+      "sha256": "8938e1035f97a1c44b6ef65b0531058cf8cd2e8530d1ff57c78cf7352a693250",
+      "bytes": 1006,
+      "purpose": "job state: provider status, output hash"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/center-arc-01/p4-c1/native-verification.json",
+      "sha256": "adb7861bd32226edb3ed4439e7756df9c64d66010a346cb1889975555f6e299a",
+      "bytes": 618,
+      "purpose": "old lab's native verification of the downloaded film"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/center-arc-01/p4-c1/plan.json",
+      "sha256": "dc3d88069afeb232f6ed5b388b29a39f051c9d7303167d8ead477ba880d4f6fe",
+      "bytes": 5711,
+      "purpose": "job plan: role, prompt, input image hashes"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/center-arc-01/p4-c1/review/qa.json",
+      "sha256": "a930ebcbd0e6e1326a0437cd0ad16e048bb531ba7621aa0e1561b28e7bf25bc6",
+      "bytes": 2653,
+      "purpose": "old lab's own QA verdict"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/center-arc-01/p4-c1/state.json",
+      "sha256": "f2423be8f27a8906ab56f4891498ce7a645b5bcb44cfe66116f0a51489f52ce5",
+      "bytes": 1006,
+      "purpose": "job state: provider status, output hash"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/center-arc-01/p5-c1/native-verification.json",
+      "sha256": "67d7b0414b9409926aab7289ff8bcd038a9c3935287c64dfdb26536c5b79aca0",
+      "bytes": 618,
+      "purpose": "old lab's native verification of the downloaded film"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/center-arc-01/p5-c1/plan.json",
+      "sha256": "b6f187b22a3b5b4991185b75417c04e19fbe908cee4831a52facbe576a253252",
+      "bytes": 5700,
+      "purpose": "job plan: role, prompt, input image hashes"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/center-arc-01/p5-c1/review/qa.json",
+      "sha256": "cf8028a3f8bbbc6e517759427d605f6e7695f395969c2ed933e15b6c14a94478",
+      "bytes": 2715,
+      "purpose": "old lab's own QA verdict"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/center-arc-01/p5-c1/state.json",
+      "sha256": "6c70d6bdbae7766c23a8ddbe04e881d6851f328a81a99c9b2098e2beb2369f85",
+      "bytes": 1006,
+      "purpose": "job state: provider status, output hash"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/contract-r10/verified-contract.json",
+      "sha256": "c543d0ab3feae266b9e740a0d999d570514f91f26b237b396e50b645d205780b",
+      "bytes": 5659,
+      "purpose": "old lab's final verified motion contract: which films and frame ranges make each edge"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/contract-r8/d-c1-direct-join.json",
+      "sha256": "90c51c176ba07f0462134c24e6d5335006e2f243814aabcbe154fce1ba69cba0",
+      "bytes": 1005,
+      "purpose": "old lab's join receipt: which source films and frame ranges were concatenated"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/contract-r8/d-c1-direct.mp4",
+      "sha256": "f6a97fd51d21a601c7c43d77b76afab231f7d62d9794abc0a7a7aea273ba5612",
+      "bytes": 237284307,
+      "purpose": "old lab's lossless join of the D.C1 deal and direct return: decoded for seam, pop and card-position measurements; candidate film: frames extracted for the frame-by-frame visual judgement; candidate film: frames extracted for the contact sheet and the frame-by-frame visual judgement; copied to assets/motions during the import and removed again: the D.C1 deal is cut from the yuv420p join instead, which keeps the paid frames exactly"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/contract-r8/p3-c1-direct-join.json",
+      "sha256": "8ed2f28b4d4b9658c75cd7df8cb8bc12cbe99307ecce25333fbfa4b35047ddfc",
+      "bytes": 1024,
+      "purpose": "old lab's join receipt: which source films and frame ranges were concatenated"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/contract-r8/p3-c1-direct.mp4",
+      "sha256": "3cc8a07087b83090c64b1cefdd9658ecad8f29b016b4193c6f2a18e384749d12",
+      "bytes": 250124492,
+      "purpose": "old lab's lossless join of the P3.C1 deal and direct return: decoded for seam, pop and card-position measurements; candidate film: frames extracted for the frame-by-frame visual judgement"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/contract-r8/p3-c1-redo-join.json",
+      "sha256": "9fa813c35e28f73b3b590e8cf7dfb6eb62bb1af37ffe34beabfbe9d607ca711d",
+      "bytes": 999,
+      "purpose": "old lab's join receipt: which source films and frame ranges were concatenated"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/contract-r8/p3-c1-redo.mp4",
+      "sha256": "9afbfdbee0c9254daf8b2b84bad7b8bf53a201e7025ec15eb181aec257718bd9",
+      "bytes": 248770252,
+      "purpose": "old lab's lossless join of the P3.C1 deal and return to READY: decoded for seam, pop and card-position measurements"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/contract-r9/d-c3-redo-tail-join.json",
+      "sha256": "67c69f679536dc1e14e9825918931a149b9174b6d44df1b787edf47e74b441d5",
+      "bytes": 1031,
+      "purpose": "old lab's join receipt: which source films and frame ranges were concatenated"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/contract-r9/d-c3-redo-tail.mp4",
+      "sha256": "c30153e94346d2c8cd2bfcd8f7cf4bef841cb42808c3de92562ababcba1ba7ee",
+      "bytes": 81603587,
+      "purpose": "old lab's lossless join of the D.C3 return to READY: decoded for seam, pop and card-position measurements; candidate film: frames extracted for the contact sheet and the frame-by-frame visual judgement; copied unchanged to assets/motions/pamela-arkiv-d-c3-redo-tail/source.mp4 for the clip bank"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/d-c1-direct-02/native-verification.json",
+      "sha256": "260b6774af06e639661aea5e41c95ab0e5de3ad4468231d3a27aae34c444b6c2",
+      "bytes": 611,
+      "purpose": "old lab's native verification of the downloaded film"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/d-c1-direct-02/original.mp4",
+      "sha256": "556911fed66144e9b169c687a56341b505a08d8ea0df50023844494ece7f5ba0",
+      "bytes": 5511807,
+      "purpose": "candidate film: decoded for seam, pop and card-position measurements; frame read for a seam comparison; candidate film: frames extracted for the contact sheet and the frame-by-frame visual judgement; copied unchanged to assets/motions/pamela-arkiv-d-c1-direct-02/source.mp4 for the clip bank"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/d-c1-direct-02/plan.json",
+      "sha256": "97b82d11c2000659198fc6a6cc9df29f39ae458324c1560b9992591ccc44a353",
+      "bytes": 4346,
+      "purpose": "job plan: role, prompt, input image hashes"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/d-c1-direct-02/prefix.json",
+      "sha256": "ea82a287dde927f409349ad66f396dd070265483f11df47314189ebb0c1480dd",
+      "bytes": 1021,
+      "purpose": "which earlier film and frame this job continues from"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/d-c1-direct-02/review/qa.json",
+      "sha256": "7ce8635319795be92c690164bc05728f245d9be81d77342d9bfa100d52ccf9ce",
+      "bytes": 2778,
+      "purpose": "old lab's own QA verdict"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/d-c1-direct-02/state.json",
+      "sha256": "40ee3232dc83b919624bea6f2af6855eb396929344287f10abd1a73c6682c0c8",
+      "bytes": 996,
+      "purpose": "job state: provider status, output hash"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/d-c1-redo-continuation-01/check.json",
+      "sha256": "58c96fa9750d7100fa461e3a011cade63801fbf0bd5a4e85d5e637d4fba87c72",
+      "bytes": 768,
+      "purpose": "old lab's pre-submit check"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/d-c1-redo-continuation-01/native-verification.json",
+      "sha256": "65a12c19f470f46ffae021c406c7a63767c1ca1dd63b449077763a02155d860c",
+      "bytes": 622,
+      "purpose": "old lab's native verification of the downloaded film"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/d-c1-redo-continuation-01/original.mp4",
+      "sha256": "69c71cb0e41267ee7fe3f4b9df003d92cf23a764b3d18541034b97c5348a586d",
+      "bytes": 5608415,
+      "purpose": "candidate film: decoded for seam, pop and card-position measurements; frame read for a seam comparison"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/d-c1-redo-continuation-01/plan.json",
+      "sha256": "6952707a90f23fe2fe354b2ffde6ff3052864800828e1c0895c634cfee33e8cd",
+      "bytes": 5108,
+      "purpose": "job plan: role, prompt, input image hashes"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/d-c1-redo-continuation-01/prefix.json",
+      "sha256": "39c3ddecdcba9dcd5306119f6d699496229c516e9f294d2dd3dc4fb657d0bcd6",
+      "bytes": 5676,
+      "purpose": "which earlier film and frame this job continues from"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/d-c1-redo-continuation-01/receipt.json",
+      "sha256": "3cad17178c8aaab3cd7e7343a7956b7e92d824e5fb3d0fad8f5bc71bd7da0ecb",
+      "bytes": 1457,
+      "purpose": "old lab's receipt for the job"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/d-c1-redo-continuation-01/review/qa.json",
+      "sha256": "47d0041cc75baa60afe783250baa84c879979b3425e41cca6addd8bff86786e9",
+      "bytes": 3018,
+      "purpose": "old lab's own QA verdict"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/d-c1-redo-continuation-01/state.json",
+      "sha256": "72f5cda4345c7713bc2cb4e3255f6d95c4a81300edc62c6c7db5edc353acdc66",
+      "bytes": 1018,
+      "purpose": "job state: provider status, output hash"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/d-c1-redo-continuation-02/check.json",
+      "sha256": "f6e56137faf5ac2646126e241a38c7b6b1feec01e92bc65b3c7cf5e19cbd55da",
+      "bytes": 768,
+      "purpose": "old lab's pre-submit check"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/d-c1-redo-continuation-02/native-verification.json",
+      "sha256": "24e89e7730fd8d99179ca4633eff0c9af8e1626ab6ef034d228014647583f76e",
+      "bytes": 622,
+      "purpose": "old lab's native verification of the downloaded film"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/d-c1-redo-continuation-02/original.mp4",
+      "sha256": "1d4291e3961b5b0ec69b9463e0835f61033318c68a25300742549134dbf11822",
+      "bytes": 5522742,
+      "purpose": "candidate film: decoded for seam, pop and card-position measurements; frame read for a seam comparison"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/d-c1-redo-continuation-02/plan.json",
+      "sha256": "ed4285ae1f4f1a6936d7ca39e5252704ca524b45964506f6f313e99ec8882328",
+      "bytes": 4723,
+      "purpose": "job plan: role, prompt, input image hashes"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/d-c1-redo-continuation-02/prefix.json",
+      "sha256": "230dec9cf3475014dc95c8a396d436a667665a52b4988c6dbc30e7a7d519be1b",
+      "bytes": 4245,
+      "purpose": "which earlier film and frame this job continues from"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/d-c1-redo-continuation-02/receipt.json",
+      "sha256": "ad734f619f27a72f938a43fc4d072e7e4ed2075780dc95656f3a662e8b8373a2",
+      "bytes": 1685,
+      "purpose": "old lab's receipt for the job"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/d-c1-redo-continuation-02/review/native-join/clip.mp4",
+      "sha256": "89de66abfdc076cb8e63e9e10662551d6f39d5486b88a4de2588c15a211a06ee",
+      "bytes": 64439486,
+      "purpose": "old lab's lossless join of the D.C1 deal and return to READY: decoded for seam, pop and card-position measurements; candidate film: frames extracted for the frame-by-frame visual judgement; candidate film: frames extracted for the contact sheet and the frame-by-frame visual judgement; copied unchanged to assets/motions/pamela-arkiv-d-c1-redo-join/source.mp4 for the clip bank"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/d-c1-redo-continuation-02/review/native-join/receipt.json",
+      "sha256": "75244bff42bcae74ba4fd1a498d3a99adc2f05f1831fcef46b93107df1d365e6",
+      "bytes": 1905,
+      "purpose": "old lab's join receipt: which source films and frame ranges were concatenated"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/d-c1-redo-continuation-02/review/qa.json",
+      "sha256": "87402484944c063208312df4673613b7f33f5508c4ad14153a7924ac984eb0b7",
+      "bytes": 3436,
+      "purpose": "old lab's own QA verdict"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/d-c1-redo-continuation-02/state.json",
+      "sha256": "67ae8be6e6ecd7fc0b582ac9edea8a429c0851cfbd3d753299883f96d5f30daa",
+      "bytes": 1018,
+      "purpose": "job state: provider status, output hash"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/d-c1-returns-01/direct/plan.json",
+      "sha256": "c26f31cf66e0ac8ade7dd962c7649e6fff16b9e0fbf2a91f1fcb81ac1954d801",
+      "bytes": 3869,
+      "purpose": "job plan: role, prompt, input image hashes"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/d-c1-returns-01/to-redo/native-verification.json",
+      "sha256": "1070d0dfb62274f6577b3524eab1de2c69960d73797a8cba130e452a514e58d1",
+      "bytes": 620,
+      "purpose": "old lab's native verification of the downloaded film"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/d-c1-returns-01/to-redo/original.mp4",
+      "sha256": "5714bfd88f9addf37e8934030e946abeeabce5e20834644a80a018ae7df2adc1",
+      "bytes": 5672991,
+      "purpose": "candidate film: decoded for seam, pop and card-position measurements"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/d-c1-returns-01/to-redo/plan.json",
+      "sha256": "376767c42afdbf2217939a6dea7179e3c9e831b056fa6dffc07d9a2cec82bbf4",
+      "bytes": 3875,
+      "purpose": "job plan: role, prompt, input image hashes"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/d-c1-returns-01/to-redo/review/qa.json",
+      "sha256": "4c2e02ebc0156d1b2b14a6e3b511161775253f16794e06c15635bba13112638c",
+      "bytes": 1820,
+      "purpose": "old lab's own QA verdict"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/d-c1-returns-01/to-redo/state.json",
+      "sha256": "07efd2d12547ab343c83da7d3f2980bcffa4add91d91a854ac15f675146c002e",
+      "bytes": 1014,
+      "purpose": "job state: provider status, output hash"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/dealer-fourth-01/native-verification.json",
+      "sha256": "1c1629b23e92374c38d8aaa1f4bc1d48784c97520d8c012f4c017cdf70da602c",
+      "bytes": 615,
+      "purpose": "old lab's native verification of the downloaded film"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/dealer-fourth-01/original.mp4",
+      "sha256": "ac6557258db209c1c09f32471b72abcd16d6d0db8eb5f540342809d9b7f089c9",
+      "bytes": 13470457,
+      "purpose": "candidate film: decoded for seam, pop and card-position measurements"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/dealer-fourth-01/plan.json",
+      "sha256": "89043aeb849a7fe678c9c147a648b2333758a8651b147a84beba404833b1baa1",
+      "bytes": 5003,
+      "purpose": "job plan: role, prompt, input image hashes"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/dealer-fourth-01/review/qa.json",
+      "sha256": "57724e99279053375c46e807abd1ff568e2a1c75ac1a558c0fbde42d026d2cd3",
+      "bytes": 4304,
+      "purpose": "old lab's own QA verdict"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/dealer-fourth-01/state.json",
+      "sha256": "390a9ecae9e58cf70f08aa2e2fa15729b676bfe5fef4dfb94afd1ce5d48d6cf1",
+      "bytes": 1003,
+      "purpose": "job state: provider status, output hash"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/dealer-fourth-to-redo-01/native-verification.json",
+      "sha256": "5ba2c980ef8a19b840103b59ab3c154e75eea271479413a7097bee2a12d74ca5",
+      "bytes": 621,
+      "purpose": "old lab's native verification of the downloaded film"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/dealer-fourth-to-redo-01/original.mp4",
+      "sha256": "56f48d65ec5b7418291e4c1dccbd2b2abe338d4d02b8c3706b2a278269674c44",
+      "bytes": 5552437,
+      "purpose": "candidate film: decoded for seam, pop and card-position measurements"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/dealer-fourth-to-redo-01/plan.json",
+      "sha256": "55c70c994a9fdd882ee302c730d132ad6e5f42855d5c9a6ec9a0238ad649513e",
+      "bytes": 4239,
+      "purpose": "job plan: role, prompt, input image hashes"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/dealer-fourth-to-redo-01/review/qa.json",
+      "sha256": "f2ba5927600dc8e9e3f8e3749dc79cb9a21319264366429b45a10cd0ab9593eb",
+      "bytes": 2433,
+      "purpose": "old lab's own QA verdict"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/dealer-fourth-to-redo-01/state.json",
+      "sha256": "e038d66049c9fdcabd6122d438cc5451811c14bc76a43543ee294d1c84aced0d",
+      "bytes": 1016,
+      "purpose": "job state: provider status, output hash"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/dealer-hole-01/native-verification.json",
+      "sha256": "82e68ff38fc28549d883d54e2a7945b0eb02ad462fa3d1764ac1c77c7b9cf60a",
+      "bytes": 613,
+      "purpose": "old lab's native verification of the downloaded film"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/dealer-hole-01/plan.json",
+      "sha256": "96095ebe352dcb4b8f99455810e4421b620dc8b7c211940879c20cb849b40349",
+      "bytes": 4860,
+      "purpose": "job plan: role, prompt, input image hashes"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/dealer-hole-01/review/qa.json",
+      "sha256": "e58c34c738a73764f1907fbc3b93d33a87be1cd167bd90f240c29e7375e09b9a",
+      "bytes": 3198,
+      "purpose": "old lab's own QA verdict"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/dealer-hole-01/state.json",
+      "sha256": "dc18b6a5df3adecb949257dd10237295bc31397deaf5ff616093b05f72557b41",
+      "bytes": 999,
+      "purpose": "job state: provider status, output hash"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/dealer-hole-continuation-01/native-verification.json",
+      "sha256": "f6ce85cb70561370ff019e75123fc89e93f2a5f579d87ec551c22f98347e522b",
+      "bytes": 624,
+      "purpose": "old lab's native verification of the downloaded film"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/dealer-hole-continuation-01/original.mp4",
+      "sha256": "05edd13a6609d212b0ece6e6e0ae2ffbaae8a92369f33b6218be00bf630a6d0b",
+      "bytes": 8270409,
+      "purpose": "candidate film: decoded for seam, pop and card-position measurements; frame read for a seam comparison"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/dealer-hole-continuation-01/plan.json",
+      "sha256": "9cb5599017605871f1def9e74d633403bb2384d4d63b3227bc97968ad12c013d",
+      "bytes": 3276,
+      "purpose": "job plan: role, prompt, input image hashes"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/dealer-hole-continuation-01/prefix.json",
+      "sha256": "e30b2ea9ee9fe1d9eeca1b48580152803c6d540716a1c24114398303d2f314d0",
+      "bytes": 1060,
+      "purpose": "which earlier film and frame this job continues from"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/dealer-hole-continuation-01/review/native-join/clip.mp4",
+      "sha256": "20f2cd6195ec5332f223f6468b9a6b84319d2ee0000f6f8dc9b2bb3d1e8b20d3",
+      "bytes": 50325222,
+      "purpose": "old lab's lossless join of the hidden D.C2 deal and direct return: decoded for seam, pop and card-position measurements; candidate film: frames extracted for the frame-by-frame visual judgement; candidate film: frames extracted for the contact sheet and the frame-by-frame visual judgement; copied unchanged to assets/motions/pamela-arkiv-d-c2-hole-join/source.mp4 for the clip bank"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/dealer-hole-continuation-01/review/native-join/receipt.json",
+      "sha256": "972dacbe9021ac5b34325c6fd3d738d9a3d0e21dcae1af6cc5609da02fe1519a",
+      "bytes": 1363,
+      "purpose": "old lab's join receipt: which source films and frame ranges were concatenated"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/dealer-hole-continuation-01/review/qa.json",
+      "sha256": "5c0589051e105cae1edf64e46276e6a5f6348399b5065b0c4abc779b1c856563",
+      "bytes": 3961,
+      "purpose": "old lab's own QA verdict"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/dealer-hole-continuation-01/state.json",
+      "sha256": "60edd1b68c98b00f8e2011df210cfe4d33aabc231af22261af62e2a626777f82",
+      "bytes": 1022,
+      "purpose": "job state: provider status, output hash"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/dealer-hole-to-redo-01/check.json",
+      "sha256": "cde2a5db433bcf2422136b119c8f3c1f8248c4b97e401b75e0d319909edcf74b",
+      "bytes": 780,
+      "purpose": "old lab's pre-submit check"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/dealer-hole-to-redo-01/native-verification.json",
+      "sha256": "b8dd4c4337e531f59921d4bc4d1718bf7d509814b702b48a7af9bd9ee4164fd3",
+      "bytes": 619,
+      "purpose": "old lab's native verification of the downloaded film"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/dealer-hole-to-redo-01/original.mp4",
+      "sha256": "bfd401b1b9ef6615a88caa0f213ca77f3a15b00cf38b6d30c36247513c5e3321",
+      "bytes": 5542551,
+      "purpose": "candidate film: decoded for seam, pop and card-position measurements; frame read for a seam comparison; candidate film: frames extracted for the frame-by-frame visual judgement; candidate film: frames extracted for the contact sheet and the frame-by-frame visual judgement; copied unchanged to assets/motions/pamela-arkiv-d-c2-hole-to-redo-01/source.mp4 for the clip bank"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/dealer-hole-to-redo-01/plan.json",
+      "sha256": "132b40460611f2ee639f6d01b534fd6e7d4a572b16fd923500fd7849a347e020",
+      "bytes": 4941,
+      "purpose": "job plan: role, prompt, input image hashes"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/dealer-hole-to-redo-01/receipt.json",
+      "sha256": "895e080195a68c1bef8a804eda214026ab4bebb523ea80a3bbb99f101a701fed",
+      "bytes": 2230,
+      "purpose": "old lab's receipt for the job"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/dealer-hole-to-redo-01/review/qa.json",
+      "sha256": "f4ba906ade0f1bf605b61593023146cea89fdb0aaeb4d20fba6cfe0be1486455",
+      "bytes": 2545,
+      "purpose": "old lab's own QA verdict"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/dealer-hole-to-redo-01/state.json",
+      "sha256": "5e60b0d5a7c1670043a6413cef2d5592e0d4991d339b1ed399b36f2574730d0c",
+      "bytes": 1012,
+      "purpose": "job state: provider status, output hash"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/dealer-reveal-01/native-verification.json",
+      "sha256": "c5de197b766c6407d45a99668d0b35889156e9a3b552a52084276c80a99a3ea4",
+      "bytes": 615,
+      "purpose": "old lab's native verification of the downloaded film"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/dealer-reveal-01/original.mp4",
+      "sha256": "2ddd3083d9b90ed8070d8916c1dba9b9cfaa83b010e1becea5b8188a8707afd6",
+      "bytes": 10537712,
+      "purpose": "candidate film: decoded for seam, pop and card-position measurements; frame read for a seam comparison; candidate film: frames extracted for the frame-by-frame visual judgement; candidate film: frames extracted for the contact sheet and the frame-by-frame visual judgement; copied unchanged to assets/motions/pamela-arkiv-d-c2-reveal-01/source.mp4 for the clip bank"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/dealer-reveal-01/plan.json",
+      "sha256": "442b625e08bb1e34e3d04695e38e06e8e24720bc227ba99b2a8ac4ccdefb7a31",
+      "bytes": 4256,
+      "purpose": "job plan: role, prompt, input image hashes"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/dealer-reveal-01/review/qa.json",
+      "sha256": "e190f417d05962458887802bb397174c1d03a268182d3bf09656b29eb09cf954",
+      "bytes": 3569,
+      "purpose": "old lab's own QA verdict"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/dealer-reveal-01/state.json",
+      "sha256": "695c100c1d8431ac14edf6c4ab3ca2f597c8b3094957e76612e5c208a32f3da5",
+      "bytes": 1000,
+      "purpose": "job state: provider status, output hash"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/dealer-third-01/native-verification.json",
+      "sha256": "66d88617992656da7cb095bf01ac0ba9a0114eb5aec74fe14f08bfa3173ff67c",
+      "bytes": 614,
+      "purpose": "old lab's native verification of the downloaded film"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/dealer-third-01/plan.json",
+      "sha256": "2cbfac1f5065f6a44116f4ae6add1c7e209ce6fce8a6eb6674272d45c9110d7c",
+      "bytes": 4998,
+      "purpose": "job plan: role, prompt, input image hashes"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/dealer-third-01/review/qa.json",
+      "sha256": "6b8330b8abda1174954dfe07522dfe4236fa6daed118993b498d933958c2c110",
+      "bytes": 3571,
+      "purpose": "old lab's own QA verdict"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/dealer-third-01/state.json",
+      "sha256": "8a07708badeb08ee3a6fe9174ce44354f92a95d61fa58ef45c8a729d158fde9a",
+      "bytes": 1001,
+      "purpose": "job state: provider status, output hash"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/dealer-third-continuation-01/check.json",
+      "sha256": "fe5d25ed37fed76e00ea4c894fea632ee7df96efcd9fbef446e86832e8918359",
+      "bytes": 767,
+      "purpose": "old lab's pre-submit check"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/dealer-third-continuation-01/native-verification.json",
+      "sha256": "06cd434218ad05817ffe91e9881788739416a4eb75257fc2b049f7ca89c748d2",
+      "bytes": 625,
+      "purpose": "old lab's native verification of the downloaded film"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/dealer-third-continuation-01/original.mp4",
+      "sha256": "7913500168ad8dbea7fac8cfc3f67163cd10d08b21c77ae6e844d118bd67e44a",
+      "bytes": 8184032,
+      "purpose": "candidate film: decoded for seam, pop and card-position measurements; frame read for a seam comparison"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/dealer-third-continuation-01/plan.json",
+      "sha256": "ae25ca400f00fb4271df4b52f41606137c1cbeb6d8e81c10669723ddfd27fa0f",
+      "bytes": 4482,
+      "purpose": "job plan: role, prompt, input image hashes"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/dealer-third-continuation-01/prefix.json",
+      "sha256": "6b8fd9aa397211e68f915191eb4b70ad4d514c5c53333507e943e83f8d671e74",
+      "bytes": 4020,
+      "purpose": "which earlier film and frame this job continues from"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/dealer-third-continuation-01/receipt.json",
+      "sha256": "a259a29acb1aa413570de1237b5e51cdfb532a3f2040c922f7fe90ef4afe8ba4",
+      "bytes": 2096,
+      "purpose": "old lab's receipt for the job"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/dealer-third-continuation-01/review/native-join/clip.mp4",
+      "sha256": "9b1e66d770c617d19e283cd01aa7ba545c8987147c02d14cb3766077892f0064",
+      "bytes": 42860407,
+      "purpose": "old lab's lossless join of the D.C3 deal and direct return: decoded for seam, pop and card-position measurements; candidate film: frames extracted for the frame-by-frame visual judgement; candidate film: frames extracted for the contact sheet and the frame-by-frame visual judgement; copied unchanged to assets/motions/pamela-arkiv-d-c3-third-join/source.mp4 for the clip bank"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/dealer-third-continuation-01/review/native-join/receipt.json",
+      "sha256": "4819a2ec62385937a75088f8a9e2dfe241f0c32b1829028806694440a6f89034",
+      "bytes": 1368,
+      "purpose": "old lab's join receipt: which source films and frame ranges were concatenated"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/dealer-third-continuation-01/review/qa.json",
+      "sha256": "acca5c2b5029d16604b1587a33ae3b5c7631e6b8c9cb551a2e64b1ddfed4276f",
+      "bytes": 4143,
+      "purpose": "old lab's own QA verdict"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/dealer-third-continuation-01/state.json",
+      "sha256": "2c9259b9c91ebf281454ac2e3c43b7920ceed2255fc6f55162919c9db8006ee3",
+      "bytes": 1024,
+      "purpose": "job state: provider status, output hash"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/dealer-third-to-redo-01/native-verification.json",
+      "sha256": "84f4f0900dcc4aa80d8afbc320388df2a0b0366b2f03a43dd36da183caba5918",
+      "bytes": 620,
+      "purpose": "old lab's native verification of the downloaded film"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/dealer-third-to-redo-01/original.mp4",
+      "sha256": "3033ca51d782a0dcb1c1fb107c122e453918cecc56f2de7c0cec832e3eac9529",
+      "bytes": 5552017,
+      "purpose": "candidate film: decoded for seam, pop and card-position measurements"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/dealer-third-to-redo-01/plan.json",
+      "sha256": "19bb682978d60a38c3442e9ba25ae4835c8f10c0fa0137c4811c9cd8dabd793a",
+      "bytes": 4612,
+      "purpose": "job plan: role, prompt, input image hashes"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/dealer-third-to-redo-01/review/qa.json",
+      "sha256": "10fec191bad7d36c90fb4880d1812da46693647b53bbd381c27f4f2ad17b9927",
+      "bytes": 1650,
+      "purpose": "old lab's own QA verdict"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/dealer-third-to-redo-01/state.json",
+      "sha256": "e1a337dc2761e11447ceabe5d15e2db6e5764ba1d175b1da55009950e9babe59",
+      "bytes": 1014,
+      "purpose": "job state: provider status, output hash"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/dealer-third-to-redo-02/native-verification.json",
+      "sha256": "5e430027101cf746009398bf71b05b9c2dfb9261db22b1a0d2c7de3adc2ac482",
+      "bytes": 620,
+      "purpose": "old lab's native verification of the downloaded film"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/dealer-third-to-redo-02/original.mp4",
+      "sha256": "9aa95f379a25244f9f4f91bb16153c625481978c056ce9dbf7745b0a39e7b74f",
+      "bytes": 5262510,
+      "purpose": "candidate film: decoded for seam, pop and card-position measurements; frame read for a seam comparison"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/dealer-third-to-redo-02/plan.json",
+      "sha256": "058c7960d0552c33bd733da662aae50c2764a8cd1e2e72208874d3f83802023e",
+      "bytes": 4868,
+      "purpose": "job plan: role, prompt, input image hashes"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/dealer-third-to-redo-02/prefix.json",
+      "sha256": "79f46b57d4ec0c72abb6cfdedf5382f36373814097a83ae68415dc28b347663f",
+      "bytes": 1225,
+      "purpose": "which earlier film and frame this job continues from"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/dealer-third-to-redo-02/review/qa.json",
+      "sha256": "f1312cb9ef5e42a4efa4badb0fc7db434b184ebac13b207e0cef155dfa8c8d1d",
+      "bytes": 3675,
+      "purpose": "old lab's own QA verdict"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/dealer-third-to-redo-02/state.json",
+      "sha256": "eeabb8b0f905bc7b7465f9d27f114faaf4bc6efdbbac4320e43aef12566a6dcb",
+      "bytes": 1014,
+      "purpose": "job state: provider status, output hash"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/dealer-zone-01/plan.json",
+      "sha256": "247ca12768589f726f880659dc567223f3ed5e3ec9287d83ae70166cf302df21",
+      "bytes": 4062,
+      "purpose": "job plan: role, prompt, input image hashes"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/dealer-zone-02/native-verification.json",
+      "sha256": "b35a90b3cc18d7d1acd7cb9328038caf5be3f13bfd2968c84ee12681c461b859",
+      "bytes": 613,
+      "purpose": "old lab's native verification of the downloaded film"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/dealer-zone-02/original.mp4",
+      "sha256": "a6986c1859ba73658fd6b869195439c2d537f57a298ee0ffa08c36c047bb491b",
+      "bytes": 11244544,
+      "purpose": "candidate film: decoded for seam, pop and card-position measurements; candidate film: frames extracted for the frame-by-frame visual judgement"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/dealer-zone-02/plan.json",
+      "sha256": "3f331d9c54c5dbcad82b188e29b661dfe2b3951d6bbfd561cc9baf490d4c99ed",
+      "bytes": 4376,
+      "purpose": "job plan: role, prompt, input image hashes"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/dealer-zone-02/review/qa.json",
+      "sha256": "51e0f5fb4fa0d53a133472f53b4f62822a71a57d1b542268701b1f204a1ce3e5",
+      "bytes": 4610,
+      "purpose": "old lab's own QA verdict"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/dealer-zone-02/state.json",
+      "sha256": "1294ec18704d65df3319517d244887fee69861aee5cd846ef440df2e05897fe1",
+      "bytes": 996,
+      "purpose": "job state: provider status, output hash"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/dealer-zone-continuation-01/native-verification.json",
+      "sha256": "53a4dcdb352327e4d9b5b0b7fdc3d582945eb7cc3c4b14966c8150a98d6e95a6",
+      "bytes": 624,
+      "purpose": "old lab's native verification of the downloaded film"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/dealer-zone-continuation-01/original.mp4",
+      "sha256": "4bbdc502ec9eb44989ae63efcdcc459700ec0eab26fd8ac583e615ddad07b0e4",
+      "bytes": 8328475,
+      "purpose": "candidate film: decoded for seam, pop and card-position measurements; frame read for a seam comparison; paid original compared frame by frame with the two old-lab joins of the D.C1 deal"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/dealer-zone-continuation-01/plan.json",
+      "sha256": "bfc59e3e688a536beeca182e573093666879e4d2e1c470ae80e13024ab3b5771",
+      "bytes": 4109,
+      "purpose": "job plan: role, prompt, input image hashes"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/dealer-zone-continuation-01/prefix.json",
+      "sha256": "25cf2a90bda2ee84e24e2c52f084ee7aa28614a02a6df6671692eaf8c1a6cf5d",
+      "bytes": 4055,
+      "purpose": "which earlier film and frame this job continues from"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/dealer-zone-continuation-01/review/d-c1-assembly.json",
+      "sha256": "67b6ab56da19d80ef62a197c55c9df3f2f5c09a1aa2e23a520e73a8fed762817",
+      "bytes": 964,
+      "purpose": "old lab's join receipt: which source films and frame ranges were concatenated"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/dealer-zone-continuation-01/review/qa.json",
+      "sha256": "6a7eaec534f82f99fb9c59754b1d68eaf46f82d01604bf68f9daf46e870739ec",
+      "bytes": 4583,
+      "purpose": "old lab's own QA verdict"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/dealer-zone-continuation-01/state.json",
+      "sha256": "1832dfd382e9a799b2d711faab9a055ca810ef9578ebbac4a8d5e5dbe3aafe04",
+      "bytes": 1022,
+      "purpose": "job state: provider status, output hash"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/mid-arc-01/p2-c1/check.json",
+      "sha256": "028d9675f2ef4a600a6982ab32b9a9412e25d65719e0f384fa72cc8716040350",
+      "bytes": 750,
+      "purpose": "old lab's pre-submit check"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/mid-arc-01/p2-c1/plan.json",
+      "sha256": "8afc6d4f984bb384332ebee91cb674e127bf5e2727f585fd57de1845321bf2bf",
+      "bytes": 3963,
+      "purpose": "job plan: role, prompt, input image hashes"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/mid-arc-01/p6-c1/check.json",
+      "sha256": "3fa03fae0ff36aff7557a585cc842e0c0da62428056a9b9c35a3ee450e55ff57",
+      "bytes": 750,
+      "purpose": "old lab's pre-submit check"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/mid-arc-01/p6-c1/plan.json",
+      "sha256": "25f8ff81853cb408ca22185cb3b33a9ae943cb488aa09579e7990c746e76d6b0",
+      "bytes": 3964,
+      "purpose": "job plan: role, prompt, input image hashes"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/mid-arc-02/p2-c1/check.json",
+      "sha256": "838d2610a9528b1a84dd0c11d796c23277bac20f09098ebe637d461f6e0cf4c6",
+      "bytes": 749,
+      "purpose": "old lab's pre-submit check"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/mid-arc-02/p2-c1/native-verification.json",
+      "sha256": "e3b16e85ca7704f0f009e1fe89525a5e23fe51ada6dfce43cabb1d41de005ef4",
+      "bytes": 615,
+      "purpose": "old lab's native verification of the downloaded film"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/mid-arc-02/p2-c1/plan.json",
+      "sha256": "82558f61cae0c8ad0ef48df6a7c0bab333bf5d8e153506a3900e8857e1232cfe",
+      "bytes": 3955,
+      "purpose": "job plan: role, prompt, input image hashes"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/mid-arc-02/p2-c1/review/qa.json",
+      "sha256": "aab9be990f74c62274c5bd21e2e724c6dd200778def1c87c744c8e55cd7965a8",
+      "bytes": 3868,
+      "purpose": "old lab's own QA verdict"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/mid-arc-02/p2-c1/state.json",
+      "sha256": "b0a1dd93c06b96853204acb16cec754cbfd31e3c4159bff03ad4356b0ecb6d79",
+      "bytes": 1003,
+      "purpose": "job state: provider status, output hash"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/mid-arc-02/p6-c1/check.json",
+      "sha256": "057f2db76aeedf227bfbc20ec3812695b4a55a5bdfe68f342bd7c76daea834af",
+      "bytes": 749,
+      "purpose": "old lab's pre-submit check"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/mid-arc-02/p6-c1/native-verification.json",
+      "sha256": "133974ef864e524f0848b2c3a83b9b5413b9333a8fbe4cfd5af14a5f846ba7b0",
+      "bytes": 615,
+      "purpose": "old lab's native verification of the downloaded film"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/mid-arc-02/p6-c1/original.mp4",
+      "sha256": "e25c6e92cd9d3cc5005662e3b54afedbaadf2d8548328232ed362c23a264e672",
+      "bytes": 16727533,
+      "purpose": "candidate film: decoded for seam, pop and card-position measurements"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/mid-arc-02/p6-c1/plan.json",
+      "sha256": "144cb9844cf0cbff1a85af72e1250fd28a55f76b7ea6272e31f5d06a549ef613",
+      "bytes": 3956,
+      "purpose": "job plan: role, prompt, input image hashes"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/mid-arc-02/p6-c1/review/qa.json",
+      "sha256": "ac66b95d84a4bd1ba5e913deed600ba0d38a12ae8d3319effe6441c295ddf4a5",
+      "bytes": 2090,
+      "purpose": "old lab's own QA verdict"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/mid-arc-02/p6-c1/state.json",
+      "sha256": "365c6f12f88fd86099822d38785b17c52440267126d98e02a30f4b9456fb0c91",
+      "bytes": 1003,
+      "purpose": "job state: provider status, output hash"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p1-c2-samehand-01/native-verification.json",
+      "sha256": "f9bb94a2dc8a614d5499d0923bc6150f47c28747e9bc3bae5d91d104a9ea768f",
+      "bytes": 616,
+      "purpose": "old lab's native verification of the downloaded film"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p1-c2-samehand-01/plan.json",
+      "sha256": "a2a01c1c4b30b47efaa7a61f9380326d4c445f22983b828413f5171eae312c57",
+      "bytes": 4113,
+      "purpose": "job plan: role, prompt, input image hashes"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p1-c2-samehand-01/review/qa.json",
+      "sha256": "760bc6fd4f05d29e7a5a7acca42ea6809991ddd31e8778d80e39f034d78d94c3",
+      "bytes": 4818,
+      "purpose": "old lab's own QA verdict"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p1-c2-samehand-01/state.json",
+      "sha256": "08464856b5ac172a477258b6f9d7aedb3c23a5906feac8e9a4f8f1b22540f097",
+      "bytes": 1002,
+      "purpose": "job state: provider status, output hash"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p1-c2-to-redo-01/native-verification.json",
+      "sha256": "31009152940663dcddb05c9a0caf1fb6c01502e4b8cadc4705604484f75ef457",
+      "bytes": 613,
+      "purpose": "old lab's native verification of the downloaded film"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p1-c2-to-redo-01/plan.json",
+      "sha256": "58152fe4202a4346f9f488bcdf6d99e4bc159c1e37dafaf2f1615db32da0c0c6",
+      "bytes": 2788,
+      "purpose": "job plan: role, prompt, input image hashes"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p1-c2-to-redo-01/review/qa.json",
+      "sha256": "0e461b5e2787ba96c259bdbcf892c71a44f80daa25bfa821a838b74fc23b57f0",
+      "bytes": 2558,
+      "purpose": "old lab's own QA verdict"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p1-c2-to-redo-01/state.json",
+      "sha256": "b6a64c64198986b18a3155222533359c87c26fcb9e6e222a561cea7f9fe91a58",
+      "bytes": 1000,
+      "purpose": "job state: provider status, output hash"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p1-c2-to-vila-01/native-verification.json",
+      "sha256": "43e12873f3fd7195fb83a55b1c69333ff8e347d12740b52b103ebfbb54e7d168",
+      "bytes": 613,
+      "purpose": "old lab's native verification of the downloaded film"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p1-c2-to-vila-01/plan.json",
+      "sha256": "12c2f76df64562485babc24648c55f3ef1123b8e230da7093328afc686b4f062",
+      "bytes": 2651,
+      "purpose": "job plan: role, prompt, input image hashes"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p1-c2-to-vila-01/review/qa.json",
+      "sha256": "3a26a9d2d1da4cf64132c3908049047141ebfa7401257f954618bbdc75998fd4",
+      "bytes": 3306,
+      "purpose": "old lab's own QA verdict"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p1-c2-to-vila-01/state.json",
+      "sha256": "1ebc80c24719b2515976e62a61d8eda705915df198d5d0c79ba5fba5a2dabdd2",
+      "bytes": 1000,
+      "purpose": "job state: provider status, output hash"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p2-c1-to-redo-01/native-verification.json",
+      "sha256": "2824edec67fd54223bb6a465aa9367d2ee97995621bc6b67d31c187da8b6d9fb",
+      "bytes": 613,
+      "purpose": "old lab's native verification of the downloaded film"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p2-c1-to-redo-01/plan.json",
+      "sha256": "3b808dd514b6e0aacb829c4e68c8dd7fd88cdd3801b34996786d8c8dd55e91a1",
+      "bytes": 4168,
+      "purpose": "job plan: role, prompt, input image hashes"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p2-c1-to-redo-01/review/qa.json",
+      "sha256": "0a2a86694e7ebe92cef3feb5869c5bd6327e096871d61bc6d67d1ca1308939ff",
+      "bytes": 1595,
+      "purpose": "old lab's own QA verdict"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p2-c1-to-redo-01/state.json",
+      "sha256": "73ea5fab16361714aeebd9de0713e93703d46f043e0238132190f1f87169f9fe",
+      "bytes": 1000,
+      "purpose": "job state: provider status, output hash"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p2-c1-to-redo-02/native-verification.json",
+      "sha256": "7cced57ff55e6d515a8d6b3b87c8a99b34e33b81bb4b3f484c753c4404d96d12",
+      "bytes": 613,
+      "purpose": "old lab's native verification of the downloaded film"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p2-c1-to-redo-02/plan.json",
+      "sha256": "0ad067298b5fc73b90bf93223a643e6bd84b660869aaa9672adb640caf3094ed",
+      "bytes": 4731,
+      "purpose": "job plan: role, prompt, input image hashes"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p2-c1-to-redo-02/prefix.json",
+      "sha256": "6217df3935d44d7c7bd7703702f708ccbe79760d661cbcd99187ce9bed4f7527",
+      "bytes": 14374,
+      "purpose": "which earlier film and frame this job continues from"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p2-c1-to-redo-02/review/qa.json",
+      "sha256": "00c2b84584d9703b733b6f250358e422eb4a49c500260d99580cf0b6fcd0263d",
+      "bytes": 1624,
+      "purpose": "old lab's own QA verdict"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p2-c1-to-redo-02/state.json",
+      "sha256": "ad2505facceb410be584cf959a2c3f0a96d93c5789c4f170d4d0492f735eb7ba",
+      "bytes": 1000,
+      "purpose": "job state: provider status, output hash"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p2-c1-to-redo-03/native-verification.json",
+      "sha256": "69cd6bd327c9c0b4ac9627c850796379d981b2b7f3fcb85d62a4cbb80ae3fb7f",
+      "bytes": 613,
+      "purpose": "old lab's native verification of the downloaded film"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p2-c1-to-redo-03/plan.json",
+      "sha256": "e4ac201fbafbac197987e11b40d50acf15572f3baf1fc2600b0960bcbd66a78e",
+      "bytes": 4902,
+      "purpose": "job plan: role, prompt, input image hashes"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p2-c1-to-redo-03/prefix.json",
+      "sha256": "3ddfacec2b93251bb9b88c0ece699903b4037e296a3a4401e79b475383452b99",
+      "bytes": 1126,
+      "purpose": "which earlier film and frame this job continues from"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p2-c1-to-redo-03/review/qa.json",
+      "sha256": "615f157ac29e1858c5071c79ceebb14cb7bddb95689bba04780943062eb41692",
+      "bytes": 2464,
+      "purpose": "old lab's own QA verdict"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p2-c1-to-redo-03/state.json",
+      "sha256": "2503f4f8b22f37809a647a34a89d382e13a301318be397ef57cd0801b2419b7d",
+      "bytes": 1000,
+      "purpose": "job state: provider status, output hash"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p2-c2-continuation-01/native-verification.json",
+      "sha256": "633ea04df05d95180b3fbb5b1dfe480fcefce6fc2b72d578e6352b21bbdc5ef8",
+      "bytes": 620,
+      "purpose": "old lab's native verification of the downloaded film"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p2-c2-continuation-01/plan.json",
+      "sha256": "298e709ab40dc5d0f6034a69976c7cb038b0a3cb6120f3507979e0a20d6b6b8a",
+      "bytes": 4660,
+      "purpose": "job plan: role, prompt, input image hashes"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p2-c2-continuation-01/prefix.json",
+      "sha256": "594006ae8955a65f5f0ade225277bc56cbb61e6daf98459b3ecd83d593828c84",
+      "bytes": 4872,
+      "purpose": "which earlier film and frame this job continues from"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p2-c2-continuation-01/review/qa.json",
+      "sha256": "a9aea47dbe13b322468627cd2eef3b8fc4a067d4bfa8ca8fee03b534bfa51b68",
+      "bytes": 3894,
+      "purpose": "old lab's own QA verdict"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p2-c2-continuation-01/state.json",
+      "sha256": "6b5d89a90da5932d48bec79643372feccd06159955a175434a43dd2dd6095df3",
+      "bytes": 1010,
+      "purpose": "job state: provider status, output hash"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p2-c2-mid-01/native-verification.json",
+      "sha256": "781c2a749ca451be0f9ec4fde149e1d3448f6e468f64e766c2d29ed9abec761d",
+      "bytes": 611,
+      "purpose": "old lab's native verification of the downloaded film"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p2-c2-mid-01/plan.json",
+      "sha256": "8467c1424fdc1adcac810143ac2a296f6fa732f9240514353915b9abb499fdc9",
+      "bytes": 4564,
+      "purpose": "job plan: role, prompt, input image hashes"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p2-c2-mid-01/review/qa.json",
+      "sha256": "be1fa75970cdfd77819cb1922eb0faabbb7f6a6259e471d1cae6070196515f77",
+      "bytes": 3101,
+      "purpose": "old lab's own QA verdict"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p2-c2-mid-01/state.json",
+      "sha256": "de9c17a5a980e70dfb4baf0fb0a5c094f427c9ab3c66c92749072d38bb10c6d3",
+      "bytes": 995,
+      "purpose": "job state: provider status, output hash"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p2-c2-to-redo-01/native-verification.json",
+      "sha256": "aff622d6d6caf1bd88a7073af291c57745e6bd4a564b3a9b0a7a584c40f8a913",
+      "bytes": 613,
+      "purpose": "old lab's native verification of the downloaded film"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p2-c2-to-redo-01/plan.json",
+      "sha256": "b55014795bb64b22880aa322a467dd24ae51493e7b4c352ed65141f63333b6de",
+      "bytes": 4187,
+      "purpose": "job plan: role, prompt, input image hashes"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p2-c2-to-redo-01/review/qa.json",
+      "sha256": "66bbe835864974ab7a1905a84edc138be13f242451b2bf3bbfde878910c5391f",
+      "bytes": 2149,
+      "purpose": "old lab's own QA verdict"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p2-c2-to-redo-01/state.json",
+      "sha256": "a007189e90b740fc69309add3bba7cc9aaa74770ec29facd2324c1b9f4ae1b18",
+      "bytes": 1000,
+      "purpose": "job state: provider status, output hash"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p3-c1-continuation-01/check.json",
+      "sha256": "6c891f17a57d6bc93ffe05d060e0cdb47e110d71a94b0615e832a24dc700e498",
+      "bytes": 1374,
+      "purpose": "old lab's pre-submit check"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p3-c1-continuation-01/native-verification.json",
+      "sha256": "d0afec4c77ea87f85273f752eb631ef93b757ff06bd8ca197ac1dd0fe670b4c4",
+      "bytes": 618,
+      "purpose": "old lab's native verification of the downloaded film"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p3-c1-continuation-01/original.mp4",
+      "sha256": "ddaa122adf37094a90cc7ea45a6df983a7ea5ba241723e47a0bb2d52bc14c63e",
+      "bytes": 8571988,
+      "purpose": "candidate film: decoded for seam, pop and card-position measurements"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p3-c1-continuation-01/plan.json",
+      "sha256": "795fdd78804d292fae0109d4659fc05e9f21c34f49d78891a97aa103099ee274",
+      "bytes": 5856,
+      "purpose": "job plan: role, prompt, input image hashes"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p3-c1-continuation-01/receipt.json",
+      "sha256": "b6c461203a6d0d7c07d68d81cd2e398bb9baa8a1cf0fa0af755bc6420433ab65",
+      "bytes": 2457,
+      "purpose": "old lab's receipt for the job"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p3-c1-continuation-01/review/scout-rules-qa.json",
+      "sha256": "acc142cbc9507822af5bae05a58f89ef0fcae2c20f3b7a945c4bef888478b893",
+      "bytes": 3152,
+      "purpose": "old lab's QA verdict for the first P3.C1 continuation"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p3-c1-continuation-01/state.json",
+      "sha256": "cc99e9fdccfb6888faa6c78de2016dc8f419eecffbc555023541591aff723554",
+      "bytes": 1010,
+      "purpose": "job state: provider status, output hash"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p3-c1-continuation-02/check.json",
+      "sha256": "d8c61cd28790873d318991a584a6d0d9fb42b0ecfe8aa613126b6d2d8a42dc50",
+      "bytes": 763,
+      "purpose": "old lab's pre-submit check"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p3-c1-continuation-02/native-verification.json",
+      "sha256": "57cc0f5646eacbe7e571e5f0ec7990af88ad341420dc4cbc41f53385f30ff4f6",
+      "bytes": 618,
+      "purpose": "old lab's native verification of the downloaded film"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p3-c1-continuation-02/original.mp4",
+      "sha256": "ab1cba5aded4d4c552d9ec6d447b36caa9b1b2427e43c6ca57cf42531d28c0ad",
+      "bytes": 8481205,
+      "purpose": "candidate film: decoded for seam, pop and card-position measurements; frame read for a seam comparison"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p3-c1-continuation-02/plan.json",
+      "sha256": "5ed6ec40621e0500e84108a5b5221680faf8a13b5eb70aeb18a2a3ad8838d314",
+      "bytes": 4695,
+      "purpose": "job plan: role, prompt, input image hashes"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p3-c1-continuation-02/prefix.json",
+      "sha256": "c9e8879aad6ec15c5bd9febc829343d616ff3be7f7109f1efb4cd073fa6c76a3",
+      "bytes": 3746,
+      "purpose": "which earlier film and frame this job continues from"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p3-c1-continuation-02/receipt.json",
+      "sha256": "608f8c2778880da4cc6206b97c5c30abf9963ebd3a4d6807f1d91bcdfcca86d6",
+      "bytes": 1272,
+      "purpose": "old lab's receipt for the job"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p3-c1-continuation-02/review/native-join/clip.mp4",
+      "sha256": "0be0af13cf2098301b9a42a400bfbe3586aad2ff6b30d462cc54ac9f3c62db01",
+      "bytes": 48185991,
+      "purpose": "old lab's lossless join of the P3.C1 deal: decoded for seam, pop and card-position measurements; candidate film: frames extracted for the contact sheet and the frame-by-frame visual judgement; copied unchanged to assets/motions/pamela-arkiv-p3-c1-join/source.mp4 for the clip bank"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p3-c1-continuation-02/review/native-join/receipt.json",
+      "sha256": "7a1e5e57cb866ad179ed20e7300bcaa724dd48246014f66d574db5c551d89305",
+      "bytes": 1344,
+      "purpose": "old lab's join receipt: which source films and frame ranges were concatenated"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p3-c1-continuation-02/review/qa.json",
+      "sha256": "24fd2516d11c97f31178d34198c81dc698502aeb1e6f1c89cbaa3a308388d89d",
+      "bytes": 3437,
+      "purpose": "old lab's own QA verdict"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p3-c1-continuation-02/state.json",
+      "sha256": "94c912f4e33890900a0a1062f732ab472774961ad1b0f02efc6eb6cdd5cb6f78",
+      "bytes": 1010,
+      "purpose": "job state: provider status, output hash"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p3-c1-returns-01/direct/plan.json",
+      "sha256": "42d27effe89ddb149ffc2b49789b6814d2d46c9535aa95c8da96d147c5aaa5d1",
+      "bytes": 4104,
+      "purpose": "job plan: role, prompt, input image hashes"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p3-c1-returns-01/to-redo/native-verification.json",
+      "sha256": "b59fdb49c0542069bef11c327dbaffed2f370b984b11f412853609c70a7889f9",
+      "bytes": 621,
+      "purpose": "old lab's native verification of the downloaded film"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p3-c1-returns-01/to-redo/original.mp4",
+      "sha256": "6144467927a8d14f3997cc834b9c2b3f6042d0a25b8b35b7eb37d3558d051987",
+      "bytes": 5644648,
+      "purpose": "candidate film: decoded for seam, pop and card-position measurements"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p3-c1-returns-01/to-redo/plan.json",
+      "sha256": "bd8847a7194a067e3b8451930f7e7ebb38082ade0df7ea43f127fae6a4d90512",
+      "bytes": 4198,
+      "purpose": "job plan: role, prompt, input image hashes"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p3-c1-returns-01/to-redo/review/qa.json",
+      "sha256": "1eefab6cba0518addf24390574eea2faf5150947c7b2ddd8dadeadf5ed1b4b11",
+      "bytes": 1590,
+      "purpose": "old lab's own QA verdict"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p3-c1-returns-01/to-redo/state.json",
+      "sha256": "79a2715aadee0e2a4ead15b20415bda11d3b656e2fcccba161dceb5bb52a9223",
+      "bytes": 1016,
+      "purpose": "job state: provider status, output hash"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p3-c1-returns-02/direct/native-verification.json",
+      "sha256": "dcee9da715a7f6c9757c7653768d21f761048532248262dbfa6a2b02e3a7443c",
+      "bytes": 620,
+      "purpose": "old lab's native verification of the downloaded film"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p3-c1-returns-02/direct/original.mp4",
+      "sha256": "a2df55e32ceb00423b8de94a07837a4a43a398035e0396c7166aac97c53fb5a7",
+      "bytes": 5521387,
+      "purpose": "candidate film: decoded for seam, pop and card-position measurements; frame read for a seam comparison; candidate film: frames extracted for the frame-by-frame visual judgement; candidate film: frames extracted for the contact sheet and the frame-by-frame visual judgement; copied unchanged to assets/motions/pamela-arkiv-p3-c1-direct-02/source.mp4 for the clip bank"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p3-c1-returns-02/direct/plan.json",
+      "sha256": "c3723cfdf45c1c4b8a61a94169714e66a7238910174d70e0d52d892e44d1c062",
+      "bytes": 5850,
+      "purpose": "job plan: role, prompt, input image hashes"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p3-c1-returns-02/direct/review/p3-c1-direct-blank-rgb-03.mp4",
+      "sha256": "15dde69ece3e27768eeb9eaf3c5afe369dabeba75e5350129ca0c3e729645142",
+      "bytes": 81424348,
+      "purpose": "old lab's repaired copy of the P3.C1 direct return (hallucinated print painted out): decoded for seam and card measurements; old lab's repaired copy of the P3.C1 direct return: frames extracted to check the repair"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p3-c1-returns-02/direct/review/qa-blank-rgb.json",
+      "sha256": "00976b64449d2912b5c8e8ef74dfe39aa091d82553aa82f41f4ebf80b24f15f5",
+      "bytes": 5687,
+      "purpose": "old lab's QA verdict for the P3.C1 direct return and its repaired copy"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p3-c1-returns-02/direct/state.json",
+      "sha256": "2551a60a3e44566b7c50db9be80fc8e9945fccc4639ccd01679737ac2d9d7076",
+      "bytes": 1014,
+      "purpose": "job state: provider status, output hash"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p3-c1-returns-02/to-redo/native-verification.json",
+      "sha256": "dd4f1d4fa4ce20be0c7af4ddd1d7009082242ba3fe46d4d3951672b400bb1fb4",
+      "bytes": 621,
+      "purpose": "old lab's native verification of the downloaded film"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p3-c1-returns-02/to-redo/original.mp4",
+      "sha256": "08d69b16f2138cfffef170c5b884c4b3b98fab6364f586d43b10c8a74f4275ab",
+      "bytes": 5553510,
+      "purpose": "candidate film: decoded for seam, pop and card-position measurements; frame read for a seam comparison; candidate film: frames extracted for the frame-by-frame visual judgement; candidate film: frames extracted for the contact sheet and the frame-by-frame visual judgement; copied unchanged to assets/motions/pamela-arkiv-p3-c1-to-redo-02/source.mp4 for the clip bank"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p3-c1-returns-02/to-redo/plan.json",
+      "sha256": "e9ade1f548713262fbb0be4da98a176ec5bcc40b29182962cb8eeaac28068dfe",
+      "bytes": 5810,
+      "purpose": "job plan: role, prompt, input image hashes"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p3-c1-returns-02/to-redo/review/qa.json",
+      "sha256": "9c4d0f9cc51a40a517f07e2a6760e677e4111be2c8647c6cf497cdc5d7fd9da8",
+      "bytes": 2706,
+      "purpose": "old lab's own QA verdict"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p3-c1-returns-02/to-redo/state.json",
+      "sha256": "276f7cba74c476f4b4917dbc918dc2cb6aaa0ad96dfc83eb08c1d8f5fd707953",
+      "bytes": 1016,
+      "purpose": "job state: provider status, output hash"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p3-c2-mid-01/native-verification.json",
+      "sha256": "62d792b67fe0fa569d07489c97fad72a8000843b431bde4e6c8d16aee5fa6599",
+      "bytes": 611,
+      "purpose": "old lab's native verification of the downloaded film"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p3-c2-mid-01/plan.json",
+      "sha256": "acc0be21641add5471eeeaa756795573c938eb3465cc7aa4de7ca4303dcb3263",
+      "bytes": 4595,
+      "purpose": "job plan: role, prompt, input image hashes"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p3-c2-mid-01/review/qa.json",
+      "sha256": "bf9552a3f113fc9e6eaee3da45a3845aff514c879e23b744238a9ad0ca905d53",
+      "bytes": 3250,
+      "purpose": "old lab's own QA verdict"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p3-c2-mid-01/state.json",
+      "sha256": "cf53302b57609e21795b6b344812187b5656ff9f722224b034bd5acad05924f5",
+      "bytes": 995,
+      "purpose": "job state: provider status, output hash"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p3-c2-to-redo-01/native-verification.json",
+      "sha256": "4b50243bbb77de64e7506a1284bdaa25ce7374f8f0055456385cb8938a5d7011",
+      "bytes": 613,
+      "purpose": "old lab's native verification of the downloaded film"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p3-c2-to-redo-01/plan.json",
+      "sha256": "a4841a11623cd8061da6e1f36be35aa839b9fdb9d2fc36958caa29b3c0ea243f",
+      "bytes": 4079,
+      "purpose": "job plan: role, prompt, input image hashes"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p3-c2-to-redo-01/review/qa.json",
+      "sha256": "363f30c5f45009645d2c051b9004290edb6c6860c392bc4a8090a8b8808d006d",
+      "bytes": 1594,
+      "purpose": "old lab's own QA verdict"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p3-c2-to-redo-01/state.json",
+      "sha256": "1799fd3a42bfd3dec99ac58cbd7f0803be220701e8dad6298c198c315b690605",
+      "bytes": 1000,
+      "purpose": "job state: provider status, output hash"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p3-c2-to-redo-02/native-verification.json",
+      "sha256": "a8686a90ee7a2dd5938f28e3c18fa87be5f33663e6c42b72f53d2ba23c255714",
+      "bytes": 613,
+      "purpose": "old lab's native verification of the downloaded film"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p3-c2-to-redo-02/plan.json",
+      "sha256": "21df312b210518e7365648316e482bc4725719e7fde916f9e13a4608e14a664e",
+      "bytes": 4223,
+      "purpose": "job plan: role, prompt, input image hashes"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p3-c2-to-redo-02/prefix.json",
+      "sha256": "b379238760bc7b43ea538187ed229427edaca9582e84543e63b12ef2452d1105",
+      "bytes": 1121,
+      "purpose": "which earlier film and frame this job continues from"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p3-c2-to-redo-02/review/qa.json",
+      "sha256": "5aa68475b391117d7861836073121512f811e3b7d735c99baddcbc931f226b56",
+      "bytes": 2151,
+      "purpose": "old lab's own QA verdict"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p3-c2-to-redo-02/state.json",
+      "sha256": "97db13a9d34cc0c353c3a2f92809126a229fdae5e801c2738287b5b2237af7cf",
+      "bytes": 1000,
+      "purpose": "job state: provider status, output hash"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p4-c1-front-front-01/native-verification.json",
+      "sha256": "6617c20f99d91daeba44d4bc3d4df062373b8eca83846ce6933093b286106650",
+      "bytes": 619,
+      "purpose": "old lab's native verification of the downloaded film"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p4-c1-front-front-01/plan.json",
+      "sha256": "c029c806ec1e9de0556bd843477a94db38b8b8ca4bfc25760497326caff533c9",
+      "bytes": 5138,
+      "purpose": "job plan: role, prompt, input image hashes"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p4-c1-front-front-01/review/qa.json",
+      "sha256": "4ec8e487d29d76593f3f4eee4b69444f57f9d04c861dbc0b886e084a8c47d055",
+      "bytes": 3238,
+      "purpose": "old lab's own QA verdict"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p4-c1-front-front-01/state.json",
+      "sha256": "43930c3cba036e9672264ab5c4300c4906ddee2644c8cc07ced10d6ce29cf301",
+      "bytes": 1008,
+      "purpose": "job state: provider status, output hash"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p4-c1-returns-01/direct/check.json",
+      "sha256": "eeb63cd7958806abefb80c96f434b7402d74c23c2e5dd69bb99bc43b32c0ae92",
+      "bytes": 763,
+      "purpose": "old lab's pre-submit check"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p4-c1-returns-01/direct/plan.json",
+      "sha256": "d1cc84cb7fa6d0e50f71bd4fd172ae82434b9fd51a3b5097ea4580ce4ae43307",
+      "bytes": 4027,
+      "purpose": "job plan: role, prompt, input image hashes"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p4-c1-returns-01/to-redo/check.json",
+      "sha256": "743d53a088f6c64cd2445ab35831c14c3ed67f6aa0d61062e05893932eeee1fb",
+      "bytes": 765,
+      "purpose": "old lab's pre-submit check"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p4-c1-returns-01/to-redo/native-verification.json",
+      "sha256": "45f226b50ab0f85b81152da3e54b3e149ab7fbeb0b7af63bc0dffa6986ca227f",
+      "bytes": 621,
+      "purpose": "old lab's native verification of the downloaded film"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p4-c1-returns-01/to-redo/review/qa.json",
+      "sha256": "6ef4f1c334e9d9f2c24f63d0e4f70cb91778568fceb3146e1cc4cfce85bd064f",
+      "bytes": 2100,
+      "purpose": "old lab's own QA verdict"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p4-c1-returns-01/to-redo/state.json",
+      "sha256": "c6938cdd74a4c1142304138100adb05b559ac63a053f15583701c9a368ab565c",
+      "bytes": 1016,
+      "purpose": "job state: provider status, output hash"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p4-c1-returns-02/direct/native-verification.json",
+      "sha256": "097454feee29dfb660fc7d4f4626b6c4cf03dd63fc796f71ecb9e51bdc979d43",
+      "bytes": 620,
+      "purpose": "old lab's native verification of the downloaded film"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p4-c1-returns-02/direct/review/qa.json",
+      "sha256": "9469f6f54a4d0129c1da1cd2204dfa2a2ede21b3d5b11a4263dd00175703bdf7",
+      "bytes": 1806,
+      "purpose": "old lab's own QA verdict"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p4-c1-returns-02/direct/state.json",
+      "sha256": "f215acfc408978251fe3499f300b12e1cbee86270e5e25215d3dd354f7ba8f4b",
+      "bytes": 1014,
+      "purpose": "job state: provider status, output hash"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p4-c1-returns-02/to-redo/native-verification.json",
+      "sha256": "50ef53e5870a2223a25333fdc0c81267875f0483a543cd7431dc8552659fb563",
+      "bytes": 621,
+      "purpose": "old lab's native verification of the downloaded film"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p4-c1-returns-02/to-redo/review/qa.json",
+      "sha256": "c4f106e3d04ecda1773c0948ba0f2cd93b3e8e4bedb61281d2ffbc5dddaad684",
+      "bytes": 6383,
+      "purpose": "old lab's own QA verdict"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p4-c1-returns-02/to-redo/state.json",
+      "sha256": "dcf4f2a224aa684fbac7a8d3f498e62b0c1ea05513aa0549ed247d777b5359f6",
+      "bytes": 1016,
+      "purpose": "job state: provider status, output hash"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p4-c2-center-01/check.json",
+      "sha256": "108278f32f7f32320baf4935916461094d63e6ebb6f91a105c69a69237778e79",
+      "bytes": 749,
+      "purpose": "old lab's pre-submit check"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p4-c2-center-01/native-verification.json",
+      "sha256": "4ccdf48a3d6ab7265c8a4b9e6f05cec6840e8b0b33ac06021acbf7169a95671e",
+      "bytes": 614,
+      "purpose": "old lab's native verification of the downloaded film"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p4-c2-center-01/plan.json",
+      "sha256": "7f91638aa2fce23ab8d24a87b42a624120aca4ed1f145a12c67969b1adcf92c0",
+      "bytes": 4999,
+      "purpose": "job plan: role, prompt, input image hashes"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p4-c2-center-01/review/qa.json",
+      "sha256": "38ab563741d0801684dab15307925570a3a48e867dc534b28097f5dc2952c837",
+      "bytes": 2884,
+      "purpose": "old lab's own QA verdict"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p4-c2-center-01/state.json",
+      "sha256": "b2c82378c28cf69d216d56123233a6b2220cd630d5be9a0e1507293f67b0dab5",
+      "bytes": 998,
+      "purpose": "job state: provider status, output hash"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p4-c2-returns-01/direct/check.json",
+      "sha256": "34ec502bd2f414f30a8f6f4efa2224464fa8135518af2c5abedc17561577f837",
+      "bytes": 771,
+      "purpose": "old lab's pre-submit check"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p4-c2-returns-01/direct/plan.json",
+      "sha256": "b63d38af0e2b041c94e2801435e8ca9a65895669ddd28a5d42bcfff1a596a18a",
+      "bytes": 4459,
+      "purpose": "job plan: role, prompt, input image hashes"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p4-c2-returns-01/to-redo/check.json",
+      "sha256": "6258749dda3d68c451f8c6a7216f5abb04bf1852e19ad209daee8e7b815089da",
+      "bytes": 773,
+      "purpose": "old lab's pre-submit check"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p4-c2-returns-01/to-redo/native-verification.json",
+      "sha256": "de4b4f1601f3822af71c791615f2eec8fe54f62cc860d3122c9c0ed58ae9d01e",
+      "bytes": 621,
+      "purpose": "old lab's native verification of the downloaded film"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p4-c2-returns-01/to-redo/plan.json",
+      "sha256": "8a96c18dcd7ba1f281891bcb5209788de6beb5838b9382589678d04d5de5afb5",
+      "bytes": 4469,
+      "purpose": "job plan: role, prompt, input image hashes"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p4-c2-returns-01/to-redo/review/qa.json",
+      "sha256": "39c897d456ae7f9cadcb247c2fcb040281da04e4220ac1e0dfe658fbc3a2648f",
+      "bytes": 2232,
+      "purpose": "old lab's own QA verdict"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p4-c2-returns-01/to-redo/state.json",
+      "sha256": "940893a22a827885ee659d1562ae98f8501a94a803e1797d2b608aed80951da0",
+      "bytes": 1016,
+      "purpose": "job state: provider status, output hash"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p4-c2-returns-02/native-verification.json",
+      "sha256": "9360638051249e7319a148dac1eb136eb570a1998e911965eef648a9a4db6301",
+      "bytes": 613,
+      "purpose": "old lab's native verification of the downloaded film"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p4-c2-returns-02/plan.json",
+      "sha256": "f11c4cd1084076b335ae54ddd437bb26c0e8d1150b49224aa4af6ce01d48a7dc",
+      "bytes": 4451,
+      "purpose": "job plan: role, prompt, input image hashes"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p4-c2-returns-02/prefix.json",
+      "sha256": "015b8634d8a657acd079dc78714bb75d58521ad3621c3805d3231ddb4f7bbaf5",
+      "bytes": 6959,
+      "purpose": "which earlier film and frame this job continues from"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p4-c2-returns-02/state.json",
+      "sha256": "d854ed459cb9ecb7528fb6cb402e6c08c8278675cb94d1278d2370e7b2e186e6",
+      "bytes": 1000,
+      "purpose": "job state: provider status, output hash"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p5-c1-returns-01/direct/check.json",
+      "sha256": "ee818d6cdfc41854eb4f94d17c7dc82718d9add15c721d72ccf091b99685c303",
+      "bytes": 763,
+      "purpose": "old lab's pre-submit check"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p5-c1-returns-01/direct/native-verification.json",
+      "sha256": "3a43606bf9787e344910c9a0a37f1d2748a09025e9745c91a932b2c26e77c363",
+      "bytes": 620,
+      "purpose": "old lab's native verification of the downloaded film"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p5-c1-returns-01/direct/original.mp4",
+      "sha256": "0e30f316df4792d1cfde33456babc672a447604cae87c7d7fff02d681f81857b",
+      "bytes": 5904752,
+      "purpose": "candidate film: decoded for seam, pop and card-position measurements; frame read for a seam comparison; candidate film: frames extracted for the frame-by-frame visual judgement; candidate film: frames extracted for the contact sheet and the frame-by-frame visual judgement; copied unchanged to assets/motions/pamela-arkiv-p5-c1-direct-01/source.mp4 for the clip bank"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p5-c1-returns-01/direct/plan.json",
+      "sha256": "e26d3b2113d457eaec501d2329c44b7ab61e3404ee1f4b36f4f91211415df9b2",
+      "bytes": 3986,
+      "purpose": "job plan: role, prompt, input image hashes"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p5-c1-returns-01/direct/review/qa.json",
+      "sha256": "97b965a2652e9edc4600803ef247d51104a3a933fd2e21d12261e7ca2575f559",
+      "bytes": 2340,
+      "purpose": "old lab's own QA verdict"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p5-c1-returns-01/direct/state.json",
+      "sha256": "8a4c89945baf3aa3bea40a2e94b9264a29b5812076e144c0f7933c230706453d",
+      "bytes": 1014,
+      "purpose": "job state: provider status, output hash"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p5-c1-returns-01/to-redo/check.json",
+      "sha256": "e3e964bf92a543030078cc19176e6251f372b0a9ef12807391adbee8d75af9f7",
+      "bytes": 765,
+      "purpose": "old lab's pre-submit check"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p5-c1-returns-01/to-redo/native-verification.json",
+      "sha256": "a1812b6ad1a609ae7fe0547d421a4d4805bfdfcad62ce0a1349318e8adda812f",
+      "bytes": 621,
+      "purpose": "old lab's native verification of the downloaded film"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p5-c1-returns-01/to-redo/original.mp4",
+      "sha256": "90b86eab6263cd86a59b9e40b5a68230e580bfaee802752a8850618ab784b59d",
+      "bytes": 5812017,
+      "purpose": "candidate film: decoded for seam, pop and card-position measurements; frame read for a seam comparison; candidate film: frames extracted for the frame-by-frame visual judgement; candidate film: frames extracted for the contact sheet and the frame-by-frame visual judgement; copied unchanged to assets/motions/pamela-arkiv-p5-c1-to-redo-01/source.mp4 for the clip bank"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p5-c1-returns-01/to-redo/plan.json",
+      "sha256": "efe15598f5921904084caad0faa286bf30af1f1ee6f4312adc6c9c1ea4dc0c9f",
+      "bytes": 3994,
+      "purpose": "job plan: role, prompt, input image hashes"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p5-c1-returns-01/to-redo/review/qa.json",
+      "sha256": "1f499ddf95424419c730c592bdf74fac1d03432f0e1bbab3374bb24fbe58ec3b",
+      "bytes": 1689,
+      "purpose": "old lab's own QA verdict"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p5-c1-returns-01/to-redo/state.json",
+      "sha256": "923b161afee6f2567d272346d8e68f2a8c807fde134abcedf6def6fa4c10ef59",
+      "bytes": 1016,
+      "purpose": "job state: provider status, output hash"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p5-c2-center-01/check.json",
+      "sha256": "1535f61515dd86e3763b706d53e48e725e08ca0aac74356d4ddcdc2fda532529",
+      "bytes": 750,
+      "purpose": "old lab's pre-submit check"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p5-c2-center-01/native-verification.json",
+      "sha256": "54977f55ad68cf94c0482204ca22adb01016f4057508d2eb63547bc2a0c1d017",
+      "bytes": 614,
+      "purpose": "old lab's native verification of the downloaded film"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p5-c2-center-01/plan.json",
+      "sha256": "73f7c52cb6fc468ff414e257c943db0de5c9f15c38d488a5895e6d2b1831b11a",
+      "bytes": 5039,
+      "purpose": "job plan: role, prompt, input image hashes"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p5-c2-center-01/review/qa.json",
+      "sha256": "69131400396feee257765302639c2553c936918543fb89b4cb88f4ca171f43fc",
+      "bytes": 3319,
+      "purpose": "old lab's own QA verdict"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p5-c2-center-01/state.json",
+      "sha256": "98bbfe7d4a7c1e2f1d44f4777b5579954f5fcafa45801a890ff4858dba795395",
+      "bytes": 1001,
+      "purpose": "job state: provider status, output hash"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p5-c2-to-redo-01/native-verification.json",
+      "sha256": "ea7ebde6107f3ea6300c693524251e1875cc95b2e32bd6ab0a40f4ecce0d775c",
+      "bytes": 613,
+      "purpose": "old lab's native verification of the downloaded film"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p5-c2-to-redo-01/plan.json",
+      "sha256": "c1116c583a1449786109b13e6f8158070e1c9a13d3f59c0acc770d39ccbb5a26",
+      "bytes": 4080,
+      "purpose": "job plan: role, prompt, input image hashes"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p5-c2-to-redo-01/review/qa.json",
+      "sha256": "26ec0e69172bff7c958595480611f57c39203f6c80db48e71386571615c8a483",
+      "bytes": 2182,
+      "purpose": "old lab's own QA verdict"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p5-c2-to-redo-01/state.json",
+      "sha256": "636c349582d5756b4b389a65624681b4b87638fe00761d56c8f974e6c8002b53",
+      "bytes": 1000,
+      "purpose": "job state: provider status, output hash"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p6-c1-continuation-01/native-verification.json",
+      "sha256": "69109ebb336852c28e67acb4c60b7aae846a4332152f3a256873f70633b0bc97",
+      "bytes": 618,
+      "purpose": "old lab's native verification of the downloaded film"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p6-c1-continuation-01/original.mp4",
+      "sha256": "c9a03b47561640df05c2fbdbc0d0b4183bd380dfb4a8629d8383c33a0479ce70",
+      "bytes": 8445856,
+      "purpose": "candidate film: decoded for seam, pop and card-position measurements; frame read for a seam comparison"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p6-c1-continuation-01/plan.json",
+      "sha256": "200183b447473e10951a99f37b5dd7d59a7fb66ba40a6155e15ae71cbc75807f",
+      "bytes": 3428,
+      "purpose": "job plan: role, prompt, input image hashes"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p6-c1-continuation-01/prefix.json",
+      "sha256": "532dbf8a7babeb637a1be03eb04875fec46530f7dda5fb33eb764ac8fd08e3a9",
+      "bytes": 1208,
+      "purpose": "which earlier film and frame this job continues from"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p6-c1-continuation-01/review/native-join/clip.mp4",
+      "sha256": "6e0fc3a6a4b370fd9e6a9144a98125b4841f8cd158e4a67932a275417800cbf5",
+      "bytes": 45626595,
+      "purpose": "old lab's lossless join of the P6.C1 deal and direct return: decoded for seam, pop and card-position measurements; candidate film: frames extracted for the frame-by-frame visual judgement; candidate film: frames extracted for the contact sheet and the frame-by-frame visual judgement; copied unchanged to assets/motions/pamela-arkiv-p6-c1-join/source.mp4 for the clip bank"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p6-c1-continuation-01/review/native-join/receipt.json",
+      "sha256": "28626dbe81280d5c36f43a775ca97126b0c76018cfdb1870d1bc573f63bfc7ff",
+      "bytes": 1341,
+      "purpose": "old lab's join receipt: which source films and frame ranges were concatenated"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p6-c1-continuation-01/review/qa.json",
+      "sha256": "9e8392752048e0bb00d6d6eb2ed7c96b8bc8d67eeaf09ef3cce4a7ea463cf942",
+      "bytes": 3554,
+      "purpose": "old lab's own QA verdict"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p6-c1-continuation-01/state.json",
+      "sha256": "804757f10eb4632d04509b86bf4a1b086b80de1e32bcd48b3de5c1903b1aa18b",
+      "bytes": 1010,
+      "purpose": "job state: provider status, output hash"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p6-c1-to-redo-01/native-verification.json",
+      "sha256": "6f3b5fb30941261ac52fc76213c051be07a63f01d03f28669f1df3422d3d07ab",
+      "bytes": 613,
+      "purpose": "old lab's native verification of the downloaded film"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p6-c1-to-redo-01/original.mp4",
+      "sha256": "f354ff52bf9fbee22e46cf2d2b8d3523ebfd345e173425ecc922e5bb32b7a1c9",
+      "bytes": 5277393,
+      "purpose": "candidate film: decoded for seam, pop and card-position measurements; frame read for a seam comparison; candidate film: frames extracted for the frame-by-frame visual judgement; candidate film: frames extracted for the contact sheet and the frame-by-frame visual judgement; copied unchanged to assets/motions/pamela-arkiv-p6-c1-to-redo-01/source.mp4 for the clip bank"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p6-c1-to-redo-01/plan.json",
+      "sha256": "d2a7b44e249bdccd4158c58a40ff3fc2e7e4ca18a1ecc7dfd6bbba5175757011",
+      "bytes": 4354,
+      "purpose": "job plan: role, prompt, input image hashes"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p6-c1-to-redo-01/review/qa.json",
+      "sha256": "064b18f09f084bf6f3aedb9002c1d38e19acf2acadad5c1f48b383e4e12e602f",
+      "bytes": 1665,
+      "purpose": "old lab's own QA verdict"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p6-c1-to-redo-01/state.json",
+      "sha256": "3b94356622931809f132d2f37aca1b4bd4072c2397794c01224432fc01546a48",
+      "bytes": 1000,
+      "purpose": "job state: provider status, output hash"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p6-c2-mid-01/native-verification.json",
+      "sha256": "9c902181ec064df042469afb0e4e7ae298c394dcb57e8c921f802bc205969f84",
+      "bytes": 611,
+      "purpose": "old lab's native verification of the downloaded film"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p6-c2-mid-01/plan.json",
+      "sha256": "d3293d17c08d6950164ebccec6b2518421b287de92b6ca283e2b006ab9c8c96f",
+      "bytes": 4729,
+      "purpose": "job plan: role, prompt, input image hashes"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p6-c2-mid-01/review/qa.json",
+      "sha256": "6cc28557f092ac9137005c568fd0063ff8d70a5b1c02e9f1b3620d45739c1783",
+      "bytes": 3277,
+      "purpose": "old lab's own QA verdict"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p6-c2-mid-01/state.json",
+      "sha256": "371edb447e8e78dddd5a62a217d4b662eedb80de5dc8c9e1da29f8393d823c92",
+      "bytes": 995,
+      "purpose": "job state: provider status, output hash"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p6-c2-to-redo-01/native-verification.json",
+      "sha256": "b46320f69110e2235b5f53f9bb83fd32dcc6b8944b317b23d420698bf0487fa6",
+      "bytes": 613,
+      "purpose": "old lab's native verification of the downloaded film"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p6-c2-to-redo-01/plan.json",
+      "sha256": "ef59922a12be185b17bcaa771495ed80d6776ab90946a08ee3ad629e3f139c4f",
+      "bytes": 4146,
+      "purpose": "job plan: role, prompt, input image hashes"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p6-c2-to-redo-01/review/qa.json",
+      "sha256": "f6f402924b255b34e646d11878af6953716c9cc7d512da055c55856478ee1862",
+      "bytes": 2274,
+      "purpose": "old lab's own QA verdict"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p6-c2-to-redo-01/state.json",
+      "sha256": "e40423e2045c122d8be489964b72e2e2287ae855cb05bf4a18c380cb1d4e05d7",
+      "bytes": 1000,
+      "purpose": "job state: provider status, output hash"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p7-c1-outer-01/native-verification.json",
+      "sha256": "082ad59770fa6bee101f39632829ece3c477c9b007205da752a45054d06037d4",
+      "bytes": 613,
+      "purpose": "old lab's native verification of the downloaded film"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p7-c1-outer-01/review/qa.json",
+      "sha256": "46fc5ca634715dce19d4743f553c596bf5acce767d5224ccafa8ccf0abbb3769",
+      "bytes": 3968,
+      "purpose": "old lab's own QA verdict"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p7-c1-outer-01/state.json",
+      "sha256": "a02485c003aa02106d20e733e17b61dff1e1fd9b5fc2a312488a0dc49116e807",
+      "bytes": 996,
+      "purpose": "job state: provider status, output hash"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p7-c1-returns-01/direct/native-verification.json",
+      "sha256": "67bf191c149b6b6c9b8dc5eb6d41b1b028b70a976d006b301e4cc46fcd3eec63",
+      "bytes": 620,
+      "purpose": "old lab's native verification of the downloaded film"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p7-c1-returns-01/direct/original.mp4",
+      "sha256": "28a93d8206bc94126779d55ea5b0a4585a887c9f1ef2a1d681591507c6e849fa",
+      "bytes": 5812538,
+      "purpose": "candidate film: decoded for seam, pop and card-position measurements; frame read for a seam comparison; candidate film: frames extracted for the frame-by-frame visual judgement; find-seam.mjs against the current P7.C1 deal (frames 0-3)"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p7-c1-returns-01/direct/plan.json",
+      "sha256": "8c3fd1967e957f68c374614df6f605f41b0ce87a0bad796a04514e3e19301bdb",
+      "bytes": 4494,
+      "purpose": "job plan: role, prompt, input image hashes"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p7-c1-returns-01/direct/review/qa.json",
+      "sha256": "e79813e3c7ec56bee404a309f6b4ddd74bc857a44018ea53afba3a16f57a7373",
+      "bytes": 1865,
+      "purpose": "old lab's own QA verdict"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p7-c1-returns-01/direct/state.json",
+      "sha256": "b16e2e4f1e72c4d39b04e4449af89a95eaca12e04b00631191e2db7627f2650d",
+      "bytes": 1014,
+      "purpose": "job state: provider status, output hash"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p7-c1-returns-01/to-redo/native-verification.json",
+      "sha256": "c49f7a053679406498809e65e32c3a1c8691d21d7f8bbbc7db38ca7e699e44ef",
+      "bytes": 621,
+      "purpose": "old lab's native verification of the downloaded film"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p7-c1-returns-01/to-redo/original.mp4",
+      "sha256": "dc4b984143505016fe9c5cf536fb1373dcc1dcfac5dc6a5906e2de9ee1f0a3da",
+      "bytes": 5903502,
+      "purpose": "candidate film: decoded for seam, pop and card-position measurements; frame read for a seam comparison"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p7-c1-returns-01/to-redo/plan.json",
+      "sha256": "649737bb496dc1df10daf2822edbf001ddfaf95801dedafb388b9c66757556f1",
+      "bytes": 4475,
+      "purpose": "job plan: role, prompt, input image hashes"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p7-c1-returns-01/to-redo/review/qa.json",
+      "sha256": "3980613f9dbbe03f43bfbe6e35bad33e6fead086732ac21e431c699a0c982ebc",
+      "bytes": 1580,
+      "purpose": "old lab's own QA verdict"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p7-c1-returns-01/to-redo/state.json",
+      "sha256": "ac16ae2d5f41ea45d69eafbd13f639687efe4526a89ae7434a99ab43508e19ec",
+      "bytes": 1016,
+      "purpose": "job state: provider status, output hash"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p7-c1-returns-02/native-verification.json",
+      "sha256": "88b45f6452ebeaa6f63d416583c20def8b913a596d9b0c3164998084b178e3f4",
+      "bytes": 613,
+      "purpose": "old lab's native verification of the downloaded film"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p7-c1-returns-02/original.mp4",
+      "sha256": "b79f19496fa6e5dd419b765852d95bb05f57b0dc3bd0defcac5ef6fa2427ec81",
+      "bytes": 5397427,
+      "purpose": "candidate film: decoded for seam, pop and card-position measurements; frame read for a seam comparison"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p7-c1-returns-02/plan.json",
+      "sha256": "e2db589308861cb4b44804b022d1f2988dc978ddce8e47b37a2b7028913441fd",
+      "bytes": 4775,
+      "purpose": "job plan: role, prompt, input image hashes"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p7-c1-returns-02/review/native-join/clip.mp4",
+      "sha256": "a27aa7096e9a75204f0e231cbe35093b3989ad3ef3940c530f059cd1cf6c79d1",
+      "bytes": 24494988,
+      "purpose": "old lab's lossless join of the P7.C1 return to READY: decoded for seam, pop and card-position measurements; candidate film: frames extracted for the frame-by-frame visual judgement"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p7-c1-returns-02/review/native-join/receipt.json",
+      "sha256": "34a1a10ebf7a55d0497818c377412a4b0fb9f78645e9fd85e0d2172512a4cb54",
+      "bytes": 1325,
+      "purpose": "old lab's join receipt: which source films and frame ranges were concatenated"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p7-c1-returns-02/review/qa.json",
+      "sha256": "39ab807a2ef4dc9701024b651907b1391b36d0f1fd41fa5a3159d4102dd13214",
+      "bytes": 2499,
+      "purpose": "old lab's own QA verdict"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p7-c1-returns-02/state.json",
+      "sha256": "e5445203f0c1e9feda03c58f2c20fd4a8b8c74c7792f22d34ab9f8232679157e",
+      "bytes": 1000,
+      "purpose": "job state: provider status, output hash"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p7-c2-direct-02/plan.json",
+      "sha256": "f7dd389ff0070de26b137fc8ccc67b4855670549b12f45a674cf63899937cdd8",
+      "bytes": 4962,
+      "purpose": "job plan: role, prompt, input image hashes"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p7-c2-outer-01/native-verification.json",
+      "sha256": "dec2aaab88cf0d60013367bedff4b9829985d91c803d4cca66645fb16e68e01f",
+      "bytes": 613,
+      "purpose": "old lab's native verification of the downloaded film"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p7-c2-outer-01/plan.json",
+      "sha256": "456d597e5838881d259003ec1304b51d1a7b1609dc9e5c8a63767b3243356192",
+      "bytes": 4897,
+      "purpose": "job plan: role, prompt, input image hashes"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p7-c2-outer-01/review/qa.json",
+      "sha256": "0f755a3334ff948f42f91af63f5ab3663d89f1f1bcce7b94bc026e9233c915df",
+      "bytes": 3381,
+      "purpose": "old lab's own QA verdict"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p7-c2-outer-01/state.json",
+      "sha256": "d08dbe9255c4339894635e061f9c77d927aed32ae3c986147fc28c035e176ce4",
+      "bytes": 996,
+      "purpose": "job state: provider status, output hash"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p7-c2-returns-01/direct/native-verification.json",
+      "sha256": "db171f50afc82e08184b3762edb68cbab2dd58f4e5335d17e291d91590be41cd",
+      "bytes": 620,
+      "purpose": "old lab's native verification of the downloaded film"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p7-c2-returns-01/direct/plan.json",
+      "sha256": "83598cf572bc71ad921beed01d98e8dcf01ae52a5cbb3fec6ff5eb9fce0ec749",
+      "bytes": 5222,
+      "purpose": "job plan: role, prompt, input image hashes"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p7-c2-returns-01/direct/review/qa.json",
+      "sha256": "7f3fdcf5089d928fc92e145153dcf776c5e30e9c966fda2c3c3ad094202ee451",
+      "bytes": 3773,
+      "purpose": "old lab's own QA verdict"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p7-c2-returns-01/direct/state.json",
+      "sha256": "7875d00b6dddc017e94f666ca40d4481455b284158962857e863ffa3ed394058",
+      "bytes": 1014,
+      "purpose": "job state: provider status, output hash"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p7-c2-returns-01/to-redo/native-verification.json",
+      "sha256": "44ae73e3cd0379987b6dab42c682905005b53db28215cdd66fc5421972f85773",
+      "bytes": 621,
+      "purpose": "old lab's native verification of the downloaded film"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p7-c2-returns-01/to-redo/plan.json",
+      "sha256": "0cd4d0a2a461230bace61a03b57deffd3c0d79d399ed155f3218bd75a706d8cd",
+      "bytes": 5157,
+      "purpose": "job plan: role, prompt, input image hashes"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p7-c2-returns-01/to-redo/review/qa.json",
+      "sha256": "7d59e789b02b1cc7bd763d8d92f97ef9a70809240155a1ae1443357bfe0fd06d",
+      "bytes": 1839,
+      "purpose": "old lab's own QA verdict"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p7-c2-returns-01/to-redo/state.json",
+      "sha256": "e512a3d75a1807e41eded2ca088aae622a576fed7faad54feed07dd509282bef",
+      "bytes": 1016,
+      "purpose": "job state: provider status, output hash"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p7-c2-returns-03/native-verification.json",
+      "sha256": "6a4d996f75ccb3fb0ba491131a9b4b8a582bb52d6d7e2f6ed5eaeaf3269ec2d8",
+      "bytes": 613,
+      "purpose": "old lab's native verification of the downloaded film"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p7-c2-returns-03/plan.json",
+      "sha256": "3a65d155f8eb97e9a7c7383546bd1ac3318e767f842828ba8e7efc8313fe0e2b",
+      "bytes": 5299,
+      "purpose": "job plan: role, prompt, input image hashes"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p7-c2-returns-03/prefix.json",
+      "sha256": "ae97030728b99d6048b7f8246440ab9937e437f3ef17b8eb0e95ff992db4cfb4",
+      "bytes": 7721,
+      "purpose": "which earlier film and frame this job continues from"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p7-c2-returns-03/review/qa.json",
+      "sha256": "4ae65133d7b3870a529658de4965c27ca0e701c35b78717a138b1daf2d2fac2a",
+      "bytes": 9453,
+      "purpose": "old lab's own QA verdict"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p7-c2-returns-03/state.json",
+      "sha256": "c04d754f7be1b35f299cfadc95f69d5d357e3dbdae99ffc63ddcd2266c1074b3",
+      "bytes": 1000,
+      "purpose": "job state: provider status, output hash"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p7-c2-to-redo-02/native-verification.json",
+      "sha256": "359cf8a081622cb2b7bd7719d5956118c39fa8cbdc0367fa6081fc46719019f8",
+      "bytes": 613,
+      "purpose": "old lab's native verification of the downloaded film"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p7-c2-to-redo-02/plan.json",
+      "sha256": "209ab757da74b06670fd26ed06ddf060ba153f1e20efde4904fe841959c2065e",
+      "bytes": 6427,
+      "purpose": "job plan: role, prompt, input image hashes"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p7-c2-to-redo-02/prefix.json",
+      "sha256": "97083a907ca9986faebe6c69b7f8fe42296ff14506fa3d8b32af29876b85027b",
+      "bytes": 3798,
+      "purpose": "which earlier film and frame this job continues from"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p7-c2-to-redo-02/review/qa.json",
+      "sha256": "63fb76bb57dba2185749647ec792f111fc00985f7e7467ab07fd79718d0c3cff",
+      "bytes": 2352,
+      "purpose": "old lab's own QA verdict"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p7-c2-to-redo-02/state.json",
+      "sha256": "9f436c1282d74b732c9b6f5598b714f1e9aa782b0211d364c2e803dac4aa0669",
+      "bytes": 1000,
+      "purpose": "job state: provider status, output hash"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-mask-bank/take-01/plan.json",
+      "sha256": "607dc697b6abcf505011ef339dee7559e1eb016897c2eebac1f9710613026c6d",
+      "bytes": 49140,
+      "purpose": "job plan: role, prompt, input image hashes"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-physical-bridge-pilot/jobs/p1-c1-release-to-c2-shoe-take-01/native-verification.json",
+      "sha256": "55ffdb2f9f09ba3b1c7c33a1f64254eaa2c6bd55d304dce5e0d035d872db0599",
+      "bytes": 645,
+      "purpose": "old lab's native verification of the downloaded film"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-physical-bridge-pilot/jobs/p1-c1-release-to-c2-shoe-take-01/plan.json",
+      "sha256": "3e7d4d6d43298357b450aff07f808ccb415df5f54d9eccd7ba092ded11821ce2",
+      "bytes": 2851,
+      "purpose": "job plan: role, prompt, input image hashes"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-physical-bridge-pilot/jobs/p1-c1-release-to-c2-shoe-take-01/state.json",
+      "sha256": "aa6819482aa2da482dbaf4c853c01e53ededf7e61ed4fd6ce038484898dbb8ab",
+      "bytes": 1064,
+      "purpose": "job state: provider status, output hash"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-physical-c2-pilot/jobs/p1-c2-back-front-take-01/native-verification.json",
+      "sha256": "7a7dc849f9348c5b06affbe3dff0498590f7666461c59b31caf73463b2f3a75c",
+      "bytes": 635,
+      "purpose": "old lab's native verification of the downloaded film"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-physical-c2-pilot/jobs/p1-c2-back-front-take-01/plan.json",
+      "sha256": "6f7b87de30af7f85fe1efc46228e048c22f8d8b8a17286cd948b178769f547ae",
+      "bytes": 3163,
+      "purpose": "job plan: role, prompt, input image hashes"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-physical-c2-pilot/jobs/p1-c2-back-front-take-01/state.json",
+      "sha256": "1f1ee71c541194656dc78510abf77272241fe85589a0c79eaf95d9b1edef9368",
+      "bytes": 1040,
+      "purpose": "job state: provider status, output hash"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-physical-c2-separated-turn/jobs/p1-c2-turn-before-transfer-take-01/native-verification.json",
+      "sha256": "c814c4fba6d9a8f6420e5a7cb585fcac6d8e5114f306e93df7f2c155fb010241",
+      "bytes": 654,
+      "purpose": "old lab's native verification of the downloaded film"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-physical-c2-separated-turn/jobs/p1-c2-turn-before-transfer-take-01/plan.json",
+      "sha256": "feda5c2ec522efc665654111fcb7b4aa4ac98e199ad5f765363a3fcab30ab83a",
+      "bytes": 3186,
+      "purpose": "job plan: role, prompt, input image hashes"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-physical-c2-separated-turn/jobs/p1-c2-turn-before-transfer-take-01/state.json",
+      "sha256": "2ce4b96b96edbfce106996cf7265cc73f074b65b390323091a8014ebf23aef01",
+      "bytes": 1081,
+      "purpose": "job state: provider status, output hash"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-physical-deal-pilot/jobs/p1-back-front-keyframes-take-02/native-verification.json",
+      "sha256": "dbd6e02e4bceee6311e96c7a0a1fb893b4e3f9f7d10e12f69dee70f82e73bfe0",
+      "bytes": 644,
+      "purpose": "old lab's native verification of the downloaded film"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-physical-deal-pilot/jobs/p1-back-front-keyframes-take-02/plan.json",
+      "sha256": "9230f8374c11e9d6eda186c3620ff6bd23524e14fa33c29271ad66afa8340f2e",
+      "bytes": 3794,
+      "purpose": "job plan: role, prompt, input image hashes"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-physical-deal-pilot/jobs/p1-back-front-keyframes-take-02/state.json",
+      "sha256": "972c3b2355fd917a7fedfb34e5732190c28fd16d78f4b45a5a95d8386a293d72",
+      "bytes": 1058,
+      "purpose": "job state: provider status, output hash"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-physical-deal-pilot/jobs/p1-back-front-reference-take-01/native-verification.json",
+      "sha256": "0c0b4c20f6037d7a5ce01bb357d540f1f66f9c96cc63cea0cc4074671e2de1b8",
+      "bytes": 644,
+      "purpose": "old lab's native verification of the downloaded film"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-physical-deal-pilot/jobs/p1-back-front-reference-take-01/plan.json",
+      "sha256": "190bfbac7b3d42e5acab2bf7e6d536019766269815d40cdc97411990f2362084",
+      "bytes": 4451,
+      "purpose": "job plan: role, prompt, input image hashes"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-physical-deal-pilot/jobs/p1-back-front-reference-take-01/state.json",
+      "sha256": "43c5a8942dc2228562971c8c115afa4226601abc3e5a61c8104ee9d7092d2b35",
+      "bytes": 1061,
+      "purpose": "job state: provider status, output hash"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-physical-return-pilot/jobs/p1-c1-lifted-to-vila-take-01/native-verification.json",
+      "sha256": "9c38250497654193aac041ca46ce430c8d37ddb27d5df5d358f99f69324623cd",
+      "bytes": 641,
+      "purpose": "old lab's native verification of the downloaded film"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-physical-return-pilot/jobs/p1-c1-lifted-to-vila-take-01/plan.json",
+      "sha256": "04f42bfca04ab7d3bf317f56b4d6736e7feccc4be54546924a5b27c56a9f8a21",
+      "bytes": 3540,
+      "purpose": "job plan: role, prompt, input image hashes"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-physical-return-pilot/jobs/p1-c1-lifted-to-vila-take-01/state.json",
+      "sha256": "aab3f2cf08216b5c1c112680d7f87b75d8628edd6a20946711c46150a9653d56",
+      "bytes": 1056,
+      "purpose": "job state: provider status, output hash"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-two-sided-bank/take-01/plan.json",
+      "sha256": "f550f8cb2790754a1522cce1e7843167436bcab961bec56373aeb6f243af1aca",
+      "bytes": 31423,
+      "purpose": "job plan: role, prompt, input image hashes"
+    },
+    {
+      "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-two-sided-bank/take-02/plan.json",
+      "sha256": "0bc91fb10ba7c77fa9ea4b2a121f8c14be9edffeceb19420849fc2753e443223",
+      "bytes": 31628,
+      "purpose": "job plan: role, prompt, input image hashes"
     }
   ]
 }

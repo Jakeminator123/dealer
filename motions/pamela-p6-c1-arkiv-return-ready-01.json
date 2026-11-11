@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "id": "pamela-p6-c1-arkiv-return-ready-01",
+  "dealer": "pamela",
+  "cutFrom": {
+    "clip": "pamela-arkiv-p6-c1-to-redo-01",
+    "frames": [
+      1,
+      59
+    ],
+    "record": "motions/pamela-arkiv-p6-c1-to-redo-01.json"
+  },
+  "motion": {
+    "kind": "RETURN",
+    "from": "LAND(P6.C1)",
+    "to": "READY",
+    "target": "P6.C1",
+    "hand": "LH",
+    "pass": false,
+    "startsOn": {
+      "clip": "pamela-p6-c1-arkiv-deal-01",
+      "frame": 93,
+      "seamPixelsOverThreshold": 0
+    },
+    "basis": "SOURCE_FRAME_REVIEW",
+    "evidence": "evidence/generation-method-audit.json"
+  },
+  "review": {
+    "decision": "PENDING",
+    "basis": "Arkivklipp, granskat 2026-11-11 var tredje ruta i 0,3 skala. Filmens ruta 0 är samma bild som givens f92 (0 bildpunkter över 40); utsnittet börjar därför på ruta 1. Handen lyfter framför skon f3–6, hålls uppe f9–27, går ner f30–36, nyp på det gula kortet f42–59. Kortet ligger kvar. Slutrutan mot REDO-ankaret: 32 bildpunkter över 40 utanför kortet.",
+    "limitations": "Möjlig variant: handen hålls som en lös knytnäve i axelhöjd f12–27 innan den går till skon. Inte granskad ruta för ruta. Kortet ligger 30 px från planens P6.C1. Gamla labbets egen dom: lokalt godkänd.",
+    "colorDoesNotProvePhysicalSide": true,
+    "userAccepted": false,
+    "productionReady": false
+  },
+  "postProcessing": "none",
+  "generationRef": null,
+  "jobRef": "data/clip-jobs.json",
+  "scoutIntegrated": false,
+  "published": false
+}

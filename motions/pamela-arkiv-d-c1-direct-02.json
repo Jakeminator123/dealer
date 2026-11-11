@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "id": "pamela-arkiv-d-c1-direct-02",
+  "dealer": "pamela",
+  "source": {
+    "path": "assets/motions/pamela-arkiv-d-c1-direct-02/source.mp4",
+    "sha256": "556911fed66144e9b169c687a56341b505a08d8ea0df50023844494ece7f5ba0",
+    "bytes": 5511807,
+    "width": 1764,
+    "height": 1174,
+    "fps": 30,
+    "frames": 60,
+    "provider": "Runway developer API",
+    "model": "wan3"
+  },
+  "importedFrom": {
+    "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/d-c1-direct-02/original.mp4",
+    "sha256": "556911fed66144e9b169c687a56341b505a08d8ea0df50023844494ece7f5ba0",
+    "generatedAt": "2026-11-10",
+    "kind": "PAID_ORIGINAL",
+    "credits": 40,
+    "note": "Paid for in the old lab; nothing was generated for this import."
+  },
+  "takes": [
+    "pamela-d-c1-arkiv-return-idle-01"
+  ],
+  "postProcessing": "none",
+  "generationRef": null,
+  "jobRef": "data/clip-jobs.json",
+  "scoutIntegrated": false,
+  "published": false
+}

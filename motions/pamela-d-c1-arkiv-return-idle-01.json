@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "id": "pamela-d-c1-arkiv-return-idle-01",
+  "dealer": "pamela",
+  "cutFrom": {
+    "clip": "pamela-arkiv-d-c1-direct-02",
+    "frames": [
+      0,
+      59
+    ],
+    "record": "motions/pamela-arkiv-d-c1-direct-02.json"
+  },
+  "motion": {
+    "kind": "RETURN",
+    "from": "LAND(D.C1)",
+    "to": "IDLE",
+    "target": "D.C1",
+    "hand": "LH",
+    "pass": false,
+    "startsOn": {
+      "clip": "pamela-d-c1-arkiv-deal-01",
+      "frame": 117,
+      "seamPixelsOverThreshold": 0
+    },
+    "basis": "SOURCE_FRAME_REVIEW",
+    "evidence": "evidence/generation-method-audit.json"
+  },
+  "review": {
+    "decision": "PENDING",
+    "basis": "Arkivklipp, rutgranskat 2026-11-11. Ruta 0 är samma bild som f117 i givens film (0 bildpunkter över 40). Fingrarna ligger kvar på kortet f0–20, släpper f21–23, handen går rakt in till vila och ligger still från cirka f39. Kortet ligger kvar. Slutrutan mot vilobilden: 53 bildpunkter över 40 utanför kortet (det importerade ingångsklippets slutruta mot REDO: 33).",
+    "limitations": "Släppet granskat ruta för ruta, resten var sjätte ruta. Kortet ligger 38 px från planens D.C1 och är bredare än planens kort. Gamla labbets egen dom: lokalt godkänd.",
+    "colorDoesNotProvePhysicalSide": true,
+    "userAccepted": false,
+    "productionReady": false
+  },
+  "postProcessing": "none",
+  "generationRef": null,
+  "jobRef": "data/clip-jobs.json",
+  "scoutIntegrated": false,
+  "published": false
+}

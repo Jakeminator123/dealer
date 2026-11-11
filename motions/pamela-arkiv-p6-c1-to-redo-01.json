@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "id": "pamela-arkiv-p6-c1-to-redo-01",
+  "dealer": "pamela",
+  "source": {
+    "path": "assets/motions/pamela-arkiv-p6-c1-to-redo-01/source.mp4",
+    "sha256": "f354ff52bf9fbee22e46cf2d2b8d3523ebfd345e173425ecc922e5bb32b7a1c9",
+    "bytes": 5277393,
+    "width": 1764,
+    "height": 1174,
+    "fps": 30,
+    "frames": 60,
+    "provider": "Runway developer API",
+    "model": "wan3"
+  },
+  "importedFrom": {
+    "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p6-c1-to-redo-01/original.mp4",
+    "sha256": "f354ff52bf9fbee22e46cf2d2b8d3523ebfd345e173425ecc922e5bb32b7a1c9",
+    "generatedAt": "2026-11-10",
+    "kind": "PAID_ORIGINAL",
+    "credits": 40,
+    "note": "Paid for in the old lab; nothing was generated for this import."
+  },
+  "takes": [
+    "pamela-p6-c1-arkiv-return-ready-01"
+  ],
+  "postProcessing": "none",
+  "generationRef": null,
+  "jobRef": "data/clip-jobs.json",
+  "scoutIntegrated": false,
+  "published": false
+}

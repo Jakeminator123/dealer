@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "id": "pamela-p3-c1-arkiv-return-ready-01",
+  "dealer": "pamela",
+  "cutFrom": {
+    "clip": "pamela-arkiv-p3-c1-to-redo-02",
+    "frames": [
+      0,
+      59
+    ],
+    "record": "motions/pamela-arkiv-p3-c1-to-redo-02.json"
+  },
+  "motion": {
+    "kind": "RETURN",
+    "from": "LAND(P3.C1)",
+    "to": "READY",
+    "target": "P3.C1",
+    "hand": "LH",
+    "pass": false,
+    "startsOn": {
+      "clip": "pamela-p3-c1-arkiv-deal-01",
+      "frame": 131,
+      "seamPixelsOverThreshold": 0
+    },
+    "basis": "SOURCE_FRAME_REVIEW",
+    "evidence": "evidence/generation-method-audit.json"
+  },
+  "review": {
+    "decision": "PENDING",
+    "basis": "Arkivklipp, granskat 2026-11-11 var tredje ruta i 0,3 skala. Ruta 0 är samma bild som f131 i givens film (0 bildpunkter över 40). Fingrarna ligger kvar på kortet f0–15, lyfter f18, armen går i en båge framför kroppen f24–36, nyp på det gula kortet f42–59. Kortet ligger kvar. Slutrutan mot REDO-ankaret: 25 bildpunkter över 40 utanför kortet.",
+    "limitations": "Inte granskad ruta för ruta. Snabb armrörelse vid f28 (cirka 2 500 bildpunkter över 40 mellan rutor). Kortet ligger 27 px från planens P3.C1. Gamla labbets egen dom: lokalt godkänd.",
+    "colorDoesNotProvePhysicalSide": true,
+    "userAccepted": false,
+    "productionReady": false
+  },
+  "postProcessing": "none",
+  "generationRef": null,
+  "jobRef": "data/clip-jobs.json",
+  "scoutIntegrated": false,
+  "published": false
+}

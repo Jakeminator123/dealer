@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "id": "pamela-arkiv-p5-c1-center-arc-01",
+  "dealer": "pamela",
+  "source": {
+    "path": "assets/motions/pamela-arkiv-p5-c1-center-arc-01/source.mp4",
+    "sha256": "f8b3d4859562a88c1261e50f86bd560939001169cc17d45340eeec36a4dc2b0d",
+    "bytes": 11138043,
+    "width": 1764,
+    "height": 1174,
+    "fps": 30,
+    "frames": 120,
+    "provider": "Runway developer API",
+    "model": "wan3"
+  },
+  "importedFrom": {
+    "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/center-arc-01/p5-c1/original.mp4",
+    "sha256": "f8b3d4859562a88c1261e50f86bd560939001169cc17d45340eeec36a4dc2b0d",
+    "generatedAt": "2026-11-10",
+    "kind": "PAID_ORIGINAL",
+    "credits": 80,
+    "note": "Paid for in the old lab; nothing was generated for this import."
+  },
+  "takes": [
+    "pamela-p5-c1-arkiv-deal-01"
+  ],
+  "postProcessing": "none",
+  "generationRef": null,
+  "jobRef": "data/clip-jobs.json",
+  "scoutIntegrated": false,
+  "published": false
+}

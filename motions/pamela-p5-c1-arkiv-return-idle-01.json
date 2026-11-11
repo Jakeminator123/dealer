@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "id": "pamela-p5-c1-arkiv-return-idle-01",
+  "dealer": "pamela",
+  "cutFrom": {
+    "clip": "pamela-arkiv-p5-c1-direct-01",
+    "frames": [
+      1,
+      59
+    ],
+    "record": "motions/pamela-arkiv-p5-c1-direct-01.json"
+  },
+  "motion": {
+    "kind": "RETURN",
+    "from": "LAND(P5.C1)",
+    "to": "IDLE",
+    "target": "P5.C1",
+    "hand": "LH",
+    "pass": false,
+    "startsOn": {
+      "clip": "pamela-p5-c1-arkiv-deal-01",
+      "frame": 90,
+      "seamPixelsOverThreshold": 0
+    },
+    "basis": "SOURCE_FRAME_REVIEW",
+    "evidence": "evidence/generation-method-audit.json"
+  },
+  "review": {
+    "decision": "PENDING",
+    "basis": "Arkivklipp, granskat 2026-11-11 var tredje ruta i 0,3 skala. Filmens ruta 0 är samma bild som givens f89 (0 bildpunkter över 40); utsnittet börjar därför på ruta 1. Handen stiger f3–12, går till skons ovansida f15–27, svänger in f30–36 och ligger i vila f42–59. Kortet ligger kvar. Slutrutan mot vilobilden: 64 bildpunkter över 40 utanför kortet.",
+    "limitations": "På väg till vila stannar handen över skons ovansida med nypta fingrar f15–27, som om den skulle ta något, innan den går till vila. Inte granskad ruta för ruta. Kortet ligger 17 px från planens P5.C1. Gamla labbets egen dom: lokalt godkänd; noterade själv fingrarna nära skons bakkant f17–27.",
+    "colorDoesNotProvePhysicalSide": true,
+    "userAccepted": false,
+    "productionReady": false
+  },
+  "postProcessing": "none",
+  "generationRef": null,
+  "jobRef": "data/clip-jobs.json",
+  "scoutIntegrated": false,
+  "published": false
+}

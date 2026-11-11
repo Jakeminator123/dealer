@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "id": "pamela-d-c3-arkiv-deal-01",
+  "dealer": "pamela",
+  "cutFrom": {
+    "clip": "pamela-arkiv-d-c3-third-join",
+    "frames": [
+      0,
+      92
+    ],
+    "record": "motions/pamela-arkiv-d-c3-third-join.json"
+  },
+  "motion": {
+    "kind": "DEAL",
+    "from": "READY",
+    "to": "LAND(D.C3)",
+    "target": "D.C3",
+    "hand": "LH",
+    "takeHand": "LH",
+    "releaseHand": "LH",
+    "physicalStartSide": "BACK",
+    "physicalEndSide": "FRONT",
+    "turn": true,
+    "pass": false,
+    "basis": "SOURCE_FRAME_REVIEW",
+    "evidence": "evidence/generation-method-audit.json"
+  },
+  "review": {
+    "decision": "PENDING",
+    "basis": "Arkivklipp, rutgranskat 2026-11-11: vändningen ruta för ruta i 0,68 skala, resten var sjätte ruta. Ruta 0 är REDO-ankaret med två blå dealerkort redan på bordet (0 bildpunkter över 40 utanför dem). Vänsterhanden drar kortet f20–42. Vändningen är fysisk: bred gul f44–48, tunn olivgul remsa f49–56, tunn mörk och blå kant f57–58, bred blå från f62. Kortet läggs till höger om de två f72–84, släpps f88–90.",
+    "limitations": "Planen har ingen plats för D.C3; filmens kort ligger på (1070, 928). Två tidigare dealerkort är inbakade på gamla labbets platser, 38 och 44 px från planens D.C1 och D.C2. Filmen är gamla labbets förlustfria sammanfogning av betalda filmer (H.264 High 4:4:4 Predictive); uppspelning i webbläsare är inte prövad. Gamla labbets egen dom: lokalt godkänd; första försöket underkändes för en tredje synlig yta.",
+    "colorDoesNotProvePhysicalSide": true,
+    "userAccepted": false,
+    "productionReady": false
+  },
+  "postProcessing": "Old lab: decoded frames of the paid films in importedFrom.paidParts concatenated in that order and encoded lossless (H.264 High 4:4:4 Predictive, yuv420p). Copied unchanged; nothing was generated or re-encoded for this import.",
+  "generationRef": null,
+  "jobRef": "data/clip-jobs.json",
+  "scoutIntegrated": false,
+  "published": false
+}

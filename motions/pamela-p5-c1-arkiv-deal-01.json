@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "id": "pamela-p5-c1-arkiv-deal-01",
+  "dealer": "pamela",
+  "cutFrom": {
+    "clip": "pamela-arkiv-p5-c1-center-arc-01",
+    "frames": [
+      0,
+      89
+    ],
+    "record": "motions/pamela-arkiv-p5-c1-center-arc-01.json"
+  },
+  "motion": {
+    "kind": "DEAL",
+    "from": "READY",
+    "to": "LAND(P5.C1)",
+    "target": "P5.C1",
+    "hand": "LH",
+    "takeHand": "LH",
+    "releaseHand": "LH",
+    "physicalStartSide": "BACK",
+    "physicalEndSide": "FRONT",
+    "turn": true,
+    "pass": false,
+    "basis": "SOURCE_FRAME_REVIEW",
+    "evidence": "evidence/generation-method-audit.json"
+  },
+  "review": {
+    "decision": "PENDING",
+    "basis": "Arkivklipp, rutgranskat 2026-11-11 ruta för ruta i 0,75–1,0 skala. Ruta 0 är dagens REDO-ankare (medel 1,45, 0 bildpunkter över 40). Vänsterhanden drar kortet rent f10–30 och bär det i luften. Vändningen är fysisk: gul smalnar f40–46, tunn remsa f47–49, blå från f52. Kortet förs ner på högkant f60–66 och fälls plant f68–74 utan att glida. Fingrarna vilar på överkanten f74–82, släpper f84. Utsnittet slutar f89 med handen lyft.",
+    "limitations": "Remsan är rosavit f50–51, mellan gult och blått. Kortet är blekt f68–72. Filmens rutor efter f89 används inte: där svävar handen med öppen handflata. Kortet hamnar 17 px från planens P5.C1 (+6, −16). Gamla labbets egen dom: lokalt godkänd med klipp vid f89.",
+    "colorDoesNotProvePhysicalSide": true,
+    "userAccepted": false,
+    "productionReady": false
+  },
+  "postProcessing": "none",
+  "generationRef": null,
+  "jobRef": "data/clip-jobs.json",
+  "scoutIntegrated": false,
+  "published": false
+}

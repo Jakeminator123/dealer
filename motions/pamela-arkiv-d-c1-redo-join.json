@@ -1,0 +1,77 @@
+{
+  "schemaVersion": 1,
+  "id": "pamela-arkiv-d-c1-redo-join",
+  "dealer": "pamela",
+  "source": {
+    "path": "assets/motions/pamela-arkiv-d-c1-redo-join/source.mp4",
+    "sha256": "3a01d26760db8ce26889f871bfc583072e93a484fce3602a675aa5da2a7efb0b",
+    "bytes": 15154379,
+    "width": 1764,
+    "height": 1174,
+    "fps": 30,
+    "frames": 178,
+    "provider": "Runway developer API",
+    "model": "wan3",
+    "encodedFrom": {
+      "sha256": "89de66abfdc076cb8e63e9e10662551d6f39d5486b88a4de2588c15a211a06ee",
+      "bytes": 64439486,
+      "format": "High 4:4:4 Predictive yuv420p",
+      "kept": "assets/motions/pamela-arkiv-d-c1-redo-join/original-lossless.mp4"
+    }
+  },
+  "importedFrom": {
+    "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/d-c1-redo-continuation-02/review/native-join/clip.mp4",
+    "sha256": "89de66abfdc076cb8e63e9e10662551d6f39d5486b88a4de2588c15a211a06ee",
+    "generatedAt": "2026-11-10",
+    "kind": "OLD_LAB_LOSSLESS_JOIN",
+    "joinReceipt": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/d-c1-redo-continuation-02/review/native-join/receipt.json",
+    "paidParts": [
+      {
+        "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-physical-deal-pilot/jobs/p1-back-front-keyframes-take-02/original.mp4",
+        "sha256": "678965c828751b080edd9c1c50d9a73e4bb649226c12ca4a92b5c7cae71c65d9",
+        "frames": [
+          0,
+          37
+        ],
+        "credits": 80
+      },
+      {
+        "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/dealer-zone-continuation-01/original.mp4",
+        "sha256": "4bbdc502ec9eb44989ae63efcdcc459700ec0eab26fd8ac583e615ddad07b0e4",
+        "frames": [
+          0,
+          80
+        ],
+        "credits": 60
+      },
+      {
+        "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/d-c1-redo-continuation-02/original.mp4",
+        "sha256": "1d4291e3961b5b0ec69b9463e0835f61033318c68a25300742549134dbf11822",
+        "frames": [
+          0,
+          41
+        ],
+        "credits": 40
+      },
+      {
+        "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/d-c1-redo-continuation-01/original.mp4",
+        "sha256": "69c71cb0e41267ee7fe3f4b9df003d92cf23a764b3d18541034b97c5348a586d",
+        "frames": [
+          40,
+          60
+        ],
+        "credits": 40
+      }
+    ],
+    "note": "Paid for in the old lab; nothing was generated for this import."
+  },
+  "takes": [
+    "pamela-d-c1-arkiv-deal-01",
+    "pamela-d-c1-arkiv-return-ready-01"
+  ],
+  "postProcessing": "Old lab: decoded frames of the paid films in importedFrom.paidParts concatenated in that order and encoded lossless (H.264 High 4:4:4 Predictive, yuv420p). Copied unchanged; nothing was generated or re-encoded for this import. Omkodad här 2026-11-11 från gamla labbets förlustfria fil till H.264 High 4:2:0 (CRF 12) för att kunna spelas i webbläsare och mobil; samma antal rutor, den förlustfria filen ligger kvar bredvid.",
+  "generationRef": null,
+  "jobRef": "data/clip-jobs.json",
+  "scoutIntegrated": false,
+  "published": false
+}

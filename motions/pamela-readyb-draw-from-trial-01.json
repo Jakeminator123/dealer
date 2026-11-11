@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "id": "pamela-readyb-draw-from-trial-01",
+  "dealer": "pamela",
+  "motion": {
+    "kind": "ENTRY",
+    "from": "READY-B",
+    "to": "DRAWN",
+    "hand": "LH",
+    "pass": false,
+    "basis": "SOURCE_FRAME_REVIEW",
+    "evidence": "evidence/generation-method-audit.json"
+  },
+  "review": {
+    "decision": "PENDING",
+    "basis": "Utsnitt, ruta 0–50 ur pamela-p1-c1-ready2-01: den verkliga uttryckningen ur det äldre READY2-provet, där kortet trycks ner ur skons låga öppning och hamnar plant på filten under fingrarna. DRAWN-ankaret är taget ur detta klipps ruta 50.",
+    "limitations": "Inte granskat ruta för ruta som eget steg. Skon i utsnittet är det äldre provets, inte variant B:s sko, så skarven mot REDO B är inte mätt. De två beställda uttagen (pamela-readyb-draw-01 och -02) är underkända eftersom kortet lyfts; detta utsnitt är den enda kandidaten för uttaget ur skon.",
+    "colorDoesNotProvePhysicalSide": true,
+    "userAccepted": false,
+    "productionReady": false
+  },
+  "experiment": "READY-B",
+  "postProcessing": "none",
+  "generationRef": null,
+  "jobRef": "data/clip-jobs.json",
+  "scoutIntegrated": false,
+  "published": false
+}

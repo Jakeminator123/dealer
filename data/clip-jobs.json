@@ -2379,6 +2379,234 @@
         59
       ],
       "purpose": "Entry from VILA to the pinch on the yellow card, recovered from the old lab (physical entry pilot, 2 s, 40 credits already spent there). Its last image is the current READY anchor byte for byte, so it leads into every variant A deal. Empty table."
+    },
+    {
+      "id": "pamela-d-c1-arkiv-deal-01",
+      "kind": "DEAL",
+      "from": "READY",
+      "to": "LAND(D.C1)",
+      "clip": "pamela-arkiv-d-c1-redo-join",
+      "frames": [
+        0,
+        116
+      ],
+      "purpose": "D.C1 deal from the old lab archive: frames 0–116 of its lossless join of the P1 draw (0–36) and the dealer-zone continuation (37–116), frame for frame the paid films. Starts on the READY anchor, physical turn f74–84, ends with the fingers still on the card; both returns start on frame 117. Card lands 38 px from the plan. Nothing was generated for this import."
+    },
+    {
+      "id": "pamela-d-c1-arkiv-return-idle-01",
+      "kind": "RETURN",
+      "from": "LAND(D.C1)",
+      "to": "IDLE",
+      "clip": "pamela-arkiv-d-c1-direct-02",
+      "frames": [
+        0,
+        59
+      ],
+      "purpose": "D.C1 return to IDLE from the old lab archive (paid original, 2 s). Its frame 0 is the same image as frame 117 of the deal film (both were generated from the same frame), so it follows pamela-d-c1-arkiv-deal-01 cut at 117. Releases f21–23, straight to rest."
+    },
+    {
+      "id": "pamela-d-c1-arkiv-return-ready-01",
+      "kind": "RETURN",
+      "from": "LAND(D.C1)",
+      "to": "READY",
+      "clip": "pamela-arkiv-d-c1-redo-join",
+      "frames": [
+        117,
+        177
+      ],
+      "purpose": "D.C1 return to READY from the old lab archive: frames 117–177 of the same lossless join as the deal (two paid films spliced at f158), so it follows pamela-d-c1-arkiv-deal-01 without a cut in the film. Raised open palm f137–149."
+    },
+    {
+      "id": "pamela-d-c2-arkiv-deal-01",
+      "kind": "DEAL",
+      "from": "READY",
+      "to": "LAND(D.C2)",
+      "clip": "pamela-arkiv-d-c2-hole-join",
+      "frames": [
+        0,
+        98
+      ],
+      "purpose": "D.C2 deal, closed hole card, from the old lab archive: frames 0–98 of its lossless join. The card stays yellow from draw to release. Starts on the READY anchor with a blue D.C1 already on the table; both returns start on frame 99. Card lands 43 px from the plan."
+    },
+    {
+      "id": "pamela-d-c2-arkiv-return-idle-01",
+      "kind": "RETURN",
+      "from": "LAND(D.C2)",
+      "to": "IDLE",
+      "clip": "pamela-arkiv-d-c2-hole-join",
+      "frames": [
+        99,
+        143
+      ],
+      "purpose": "D.C2 return to IDLE from the old lab archive: frames 99–143 of the same lossless join as the deal, so it follows pamela-d-c2-arkiv-deal-01 without a cut in the film. Straight to rest by f108."
+    },
+    {
+      "id": "pamela-d-c2-arkiv-return-ready-01",
+      "kind": "RETURN",
+      "from": "LAND(D.C2)",
+      "to": "READY",
+      "clip": "pamela-arkiv-d-c2-hole-to-redo-01",
+      "frames": [
+        1,
+        59
+      ],
+      "purpose": "D.C2 return to READY from the old lab archive (paid original, 2 s), frames 1–59. Its frame 0 is the same image as frame 98 of the deal film, so it follows pamela-d-c2-arkiv-deal-01 played to 98. High arc f9–27. The hole card stays yellow."
+    },
+    {
+      "id": "pamela-d-c3-arkiv-deal-01",
+      "kind": "DEAL",
+      "from": "READY",
+      "to": "LAND(D.C3)",
+      "clip": "pamela-arkiv-d-c3-third-join",
+      "frames": [
+        0,
+        92
+      ],
+      "purpose": "D.C3 deal (optional third dealer card) from the old lab archive: frames 0–92 of its lossless join. Starts on the READY anchor with two blue dealer cards already on the table, physical turn f44–62; both returns start on frame 93. The plan has no D.C3 place."
+    },
+    {
+      "id": "pamela-d-c3-arkiv-return-idle-01",
+      "kind": "RETURN",
+      "from": "LAND(D.C3)",
+      "to": "IDLE",
+      "clip": "pamela-arkiv-d-c3-third-join",
+      "frames": [
+        93,
+        122
+      ],
+      "purpose": "D.C3 return to IDLE from the old lab archive: frames 93–122 of the same lossless join as the deal, so it follows pamela-d-c3-arkiv-deal-01 without a cut in the film. End pose furthest from rest of the imported returns."
+    },
+    {
+      "id": "pamela-d-c3-arkiv-return-ready-01",
+      "kind": "RETURN",
+      "from": "LAND(D.C3)",
+      "to": "READY",
+      "clip": "pamela-arkiv-d-c3-redo-tail",
+      "frames": [
+        0,
+        63
+      ],
+      "purpose": "D.C3 return to READY from the old lab archive: its lossless tail, frames 0–63 (frames 93–96 of the deal join followed by a paid 2 s return). Frame 0 is frame 93 of the deal film, so it follows pamela-d-c3-arkiv-deal-01 cut at 93. Raised open palm f12–30."
+    },
+    {
+      "id": "pamela-d-c2-arkiv-reveal-01",
+      "kind": "REVEAL",
+      "from": "IDLE",
+      "to": "REVEAL(D.C2)",
+      "clip": "pamela-arkiv-d-c2-reveal-01",
+      "frames": [
+        0,
+        119
+      ],
+      "purpose": "Reveal of the dealer hole card D.C2, from the old lab archive (paid original, 4 s): from rest, the hand picks the yellow card off the table, turns it physically and lays it back blue, then returns to rest. Not an edge of the model (it starts and ends in IDLE), so it is listed as an experiment and is not part of rounds."
+    },
+    {
+      "id": "pamela-p3-c1-arkiv-deal-01",
+      "kind": "DEAL",
+      "from": "READY",
+      "to": "LAND(P3.C1)",
+      "clip": "pamela-arkiv-p3-c1-join",
+      "frames": [
+        0,
+        130
+      ],
+      "purpose": "P3.C1 deal from the old lab archive: frames 0–130 of its lossless join. Starts on the READY anchor, physical turn f88–98, ends with the fingertips on the card; both returns start on frame 131. The card is held beside the shoe for about 1.6 s first. Card lands 27 px from the plan."
+    },
+    {
+      "id": "pamela-p3-c1-arkiv-return-ready-01",
+      "kind": "RETURN",
+      "from": "LAND(P3.C1)",
+      "to": "READY",
+      "clip": "pamela-arkiv-p3-c1-to-redo-02",
+      "frames": [
+        0,
+        59
+      ],
+      "purpose": "P3.C1 return to READY from the old lab archive (paid original, 2 s). Its frame 0 is the same image as frame 131 of the deal film, so it follows pamela-p3-c1-arkiv-deal-01 cut at 131. Fingers off at f18, one arc to the shoe."
+    },
+    {
+      "id": "pamela-p3-c1-arkiv-return-idle-01",
+      "kind": "RETURN",
+      "from": "LAND(P3.C1)",
+      "to": "IDLE",
+      "clip": "pamela-arkiv-p3-c1-direct-02",
+      "frames": [
+        0,
+        59
+      ],
+      "purpose": "P3.C1 return to IDLE from the old lab archive (paid original, 2 s). Its frame 0 is the same image as frame 131 of the deal film, so it follows pamela-p3-c1-arkiv-deal-01 cut at 131. The film card shows a printed \"PIA\" on frames 2–57."
+    },
+    {
+      "id": "pamela-p5-c1-arkiv-deal-01",
+      "kind": "DEAL",
+      "from": "READY",
+      "to": "LAND(P5.C1)",
+      "clip": "pamela-arkiv-p5-c1-center-arc-01",
+      "frames": [
+        0,
+        89
+      ],
+      "purpose": "P5.C1 deal from the old lab archive (paid original, 4 s), frames 0–89. Starts on the READY anchor, card carried in the air, physical turn f40–54, laid flat without sliding, release f84; both returns start after frame 89. Card lands 17 px from the plan. Frames after 89 are not used."
+    },
+    {
+      "id": "pamela-p5-c1-arkiv-return-ready-01",
+      "kind": "RETURN",
+      "from": "LAND(P5.C1)",
+      "to": "READY",
+      "clip": "pamela-arkiv-p5-c1-to-redo-01",
+      "frames": [
+        1,
+        59
+      ],
+      "purpose": "P5.C1 return to READY from the old lab archive (paid original, 2 s), frames 1–59. Its frame 0 is the same image as frame 89 of the deal film, so it follows pamela-p5-c1-arkiv-deal-01 played to 89. Raised open palm f9–24."
+    },
+    {
+      "id": "pamela-p5-c1-arkiv-return-idle-01",
+      "kind": "RETURN",
+      "from": "LAND(P5.C1)",
+      "to": "IDLE",
+      "clip": "pamela-arkiv-p5-c1-direct-01",
+      "frames": [
+        1,
+        59
+      ],
+      "purpose": "P5.C1 return to IDLE from the old lab archive (paid original, 2 s), frames 1–59. Its frame 0 is the same image as frame 89 of the deal film, so it follows pamela-p5-c1-arkiv-deal-01 played to 89. The hand hovers over the top of the shoe f15–27 on its way to rest."
+    },
+    {
+      "id": "pamela-p6-c1-arkiv-deal-01",
+      "kind": "DEAL",
+      "from": "READY",
+      "to": "LAND(P6.C1)",
+      "clip": "pamela-arkiv-p6-c1-join",
+      "frames": [
+        0,
+        92
+      ],
+      "purpose": "P6.C1 deal from the old lab archive: frames 0–92 of its lossless join. Starts on the READY anchor, physical turn f52–67 while the card comes down in front of the shoe, laid flat without sliding, release f90; both returns start on frame 93. Card lands 30 px from the plan."
+    },
+    {
+      "id": "pamela-p6-c1-arkiv-return-idle-01",
+      "kind": "RETURN",
+      "from": "LAND(P6.C1)",
+      "to": "IDLE",
+      "clip": "pamela-arkiv-p6-c1-join",
+      "frames": [
+        93,
+        125
+      ],
+      "purpose": "P6.C1 return to IDLE from the old lab archive: frames 93–125 of the same lossless join as the deal, so it follows pamela-p6-c1-arkiv-deal-01 without a cut in the film. Straight to rest by f108."
+    },
+    {
+      "id": "pamela-p6-c1-arkiv-return-ready-01",
+      "kind": "RETURN",
+      "from": "LAND(P6.C1)",
+      "to": "READY",
+      "clip": "pamela-arkiv-p6-c1-to-redo-01",
+      "frames": [
+        1,
+        59
+      ],
+      "purpose": "P6.C1 return to READY from the old lab archive (paid original, 2 s), frames 1–59. Its frame 0 is the same image as frame 92 of the deal film, so it follows pamela-p6-c1-arkiv-deal-01 played to 92. Loose fist raised f12–27."
     }
   ],
   "edits": [

@@ -1,0 +1,58 @@
+{
+  "schemaVersion": 1,
+  "id": "pamela-arkiv-d-c3-redo-tail",
+  "dealer": "pamela",
+  "source": {
+    "path": "assets/motions/pamela-arkiv-d-c3-redo-tail/source.mp4",
+    "sha256": "de6d9f56b6edced00edca251eebd9d436b9a50f43eea86ed6e5dec2a3e44d177",
+    "bytes": 5341772,
+    "width": 1764,
+    "height": 1174,
+    "fps": 30,
+    "frames": 64,
+    "provider": "Runway developer API",
+    "model": "wan3",
+    "encodedFrom": {
+      "sha256": "c30153e94346d2c8cd2bfcd8f7cf4bef841cb42808c3de92562ababcba1ba7ee",
+      "bytes": 81603587,
+      "format": "High 4:4:4 Predictive gbrp",
+      "kept": "assets/motions/pamela-arkiv-d-c3-redo-tail/original-lossless.mp4"
+    }
+  },
+  "importedFrom": {
+    "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/contract-r9/d-c3-redo-tail.mp4",
+    "sha256": "c30153e94346d2c8cd2bfcd8f7cf4bef841cb42808c3de92562ababcba1ba7ee",
+    "generatedAt": "2026-11-10",
+    "kind": "OLD_LAB_LOSSLESS_JOIN",
+    "joinReceipt": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/contract-r9/d-c3-redo-tail-join.json",
+    "paidParts": [
+      {
+        "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/dealer-third-continuation-01/original.mp4",
+        "sha256": "7913500168ad8dbea7fac8cfc3f67163cd10d08b21c77ae6e844d118bd67e44a",
+        "frames": [
+          60,
+          64
+        ],
+        "credits": 60
+      },
+      {
+        "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/dealer-third-to-redo-02/original.mp4",
+        "sha256": "9aa95f379a25244f9f4f91bb16153c625481978c056ce9dbf7745b0a39e7b74f",
+        "frames": [
+          0,
+          60
+        ],
+        "credits": 40
+      }
+    ],
+    "note": "Paid for in the old lab; nothing was generated for this import."
+  },
+  "takes": [
+    "pamela-d-c3-arkiv-return-ready-01"
+  ],
+  "postProcessing": "Old lab: decoded frames of the paid films in importedFrom.paidParts concatenated in that order and encoded lossless (H.264 High 4:4:4 Predictive, RGB gbrp). Copied unchanged; nothing was generated or re-encoded for this import. Omkodad här 2026-11-11 från gamla labbets förlustfria fil till H.264 High 4:2:0 (CRF 12) för att kunna spelas i webbläsare och mobil; samma antal rutor, den förlustfria filen ligger kvar bredvid.",
+  "generationRef": null,
+  "jobRef": "data/clip-jobs.json",
+  "scoutIntegrated": false,
+  "published": false
+}

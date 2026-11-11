@@ -1,0 +1,58 @@
+{
+  "schemaVersion": 1,
+  "id": "pamela-arkiv-p3-c1-join",
+  "dealer": "pamela",
+  "source": {
+    "path": "assets/motions/pamela-arkiv-p3-c1-join/source.mp4",
+    "sha256": "43f3696f9878431816799470cc549ba4f9427e4bbdde47bc6b02f96b54877e90",
+    "bytes": 11491056,
+    "width": 1764,
+    "height": 1174,
+    "fps": 30,
+    "frames": 135,
+    "provider": "Runway developer API",
+    "model": "wan3",
+    "encodedFrom": {
+      "sha256": "0be0af13cf2098301b9a42a400bfbe3586aad2ff6b30d462cc54ac9f3c62db01",
+      "bytes": 48185991,
+      "format": "High 4:4:4 Predictive yuv420p",
+      "kept": "assets/motions/pamela-arkiv-p3-c1-join/original-lossless.mp4"
+    }
+  },
+  "importedFrom": {
+    "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p3-c1-continuation-02/review/native-join/clip.mp4",
+    "sha256": "0be0af13cf2098301b9a42a400bfbe3586aad2ff6b30d462cc54ac9f3c62db01",
+    "generatedAt": "2026-11-10",
+    "kind": "OLD_LAB_LOSSLESS_JOIN",
+    "joinReceipt": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p3-c1-continuation-02/review/native-join/receipt.json",
+    "paidParts": [
+      {
+        "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/center-arc-01/p3-c1/original.mp4",
+        "sha256": "7bd0d4d5e3e04307bc4738d6111ad08ff24546acd7ca92d1c73ba28d3097332e",
+        "frames": [
+          0,
+          45
+        ],
+        "credits": 80
+      },
+      {
+        "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p3-c1-continuation-02/original.mp4",
+        "sha256": "ab1cba5aded4d4c552d9ec6d447b36caa9b1b2427e43c6ca57cf42531d28c0ad",
+        "frames": [
+          0,
+          90
+        ],
+        "credits": 60
+      }
+    ],
+    "note": "Paid for in the old lab; nothing was generated for this import."
+  },
+  "takes": [
+    "pamela-p3-c1-arkiv-deal-01"
+  ],
+  "postProcessing": "Old lab: decoded frames of the paid films in importedFrom.paidParts concatenated in that order and encoded lossless (H.264 High 4:4:4 Predictive, yuv420p). Copied unchanged; nothing was generated or re-encoded for this import. Omkodad här 2026-11-11 från gamla labbets förlustfria fil till H.264 High 4:2:0 (CRF 12) för att kunna spelas i webbläsare och mobil; samma antal rutor, den förlustfria filen ligger kvar bredvid.",
+  "generationRef": null,
+  "jobRef": "data/clip-jobs.json",
+  "scoutIntegrated": false,
+  "published": false
+}
