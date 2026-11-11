@@ -2325,6 +2325,34 @@
         "note": "Whole real frame: frame 108 of the first P5 deal, three fingers resting on the card at the size the model draws it. Not a composite."
       },
       "purpose": "Re-roll of the P5 deal for the seat film. The first take slid the card along the table and shrank it in the last two frames to match a composite anchor. The end image is now a whole real frame from that take, before the shrink."
+    },
+    {
+      "id": "pamela-p7-c1-plan-return-ready-02",
+      "kind": "RETURN",
+      "target": "P7.C1",
+      "from": "LAND(P7.C1)",
+      "to": "READY",
+      "model": "wan3",
+      "ratio": "auto_1080p",
+      "audio": false,
+      "duration": 2,
+      "promptText": "Locked camera on the same Pamela, black suit, green felt and fixed shoe. One plain solid blue card lies flat and still on the table at the right side of the image, just in front of the shoe. Her left fingers rest lightly on the card. In one short, direct two-second movement she lifts the fingers straight off the card and the hand goes low over the table the short way up to the shoe, fingers relaxed and open the whole way, never rising above the top of the shoe. It arrives gently at the yellow card in the shoe and settles into the exact grip of the last image, thumb and index finger on the top edge of the yellow card. Her eyes follow the hand to the shoe. The other hand rests on the table throughout. The blue card stays flat, still and untouched after the fingers leave it. The yellow card stays fully seated in the shoe. No pause, detour toward the body, raised hand, fist, flourish, second touch of the blue card, extraction, handoff, camera motion or cut.",
+      "first": {
+        "frame": {
+          "video": "assets/motions/pamela-p7-c1-plan-deal-01/source.mp4",
+          "videoSha256": "a4ad1132fd8516e36e96275242b1809b8b8a33946d912cd2f2e99625018b9e4e",
+          "index": 105
+        },
+        "note": "Landing frame for P7.C1: exact frame 105 of pamela-p7-c1-plan-deal-01, fingers resting on the card. The deal is cut at this same frame, so there is no jump."
+      },
+      "last": {
+        "file": {
+          "path": "assets/anchors/pamela-ready-p7-c1-plan-01/anchor.png",
+          "sha256": "881cf3d830043f23cb4722bc2b9d387df7fbf47bd4031d8ca541e84562cde875"
+        },
+        "note": "READY anchor with the P7.C1 card at the saved plan position."
+      },
+      "purpose": "Retake of pamela-p7-c1-plan-return-ready-01, two seconds instead of three. In the first take the hand withdrew to the body, waited, rose as a fist to chest height and dropped onto the shoe from above: the path from P7 to the shoe is too short to fill three seconds. Same images; only the duration and the wording about going directly have changed."
     }
   ],
   "derived": [

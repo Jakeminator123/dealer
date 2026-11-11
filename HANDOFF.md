@@ -36,7 +36,17 @@ Beslut ägs av `motions/<id>.json`; uppdraget av `data/clip-jobs.json`. 44 best�
 
 **Jakobs beslut 2026-11-11: börja med en film per plats.** Platsens tre filmer är första kortets (giv, retur till REDO, retur till VILA); andra kortet spelar samma filmer med det renderade kortet flyttat till sin plats. Dealern behöver två uppsättningar, eftersom D.C2 stannar stängt. Då behövs 30 filmer i stället för 51. Av dem finns 17 med ett klipp som inte är underkänt: 9 kandidater (ingången, P4 × 3, P1 och P2 returer, P7 giv) och 8 med kända brister (givarna P1, P2, P5, P6 och returerna P5, P6). 13 saknas: P3 × 3, P7 returer, dealern × 6, vilo-loop och REDO>VILA. Avståndet kort 1 till kort 2 i planen är 23–48 px utom P3 (54 px); provet på P4 höll till cirka 45–50 px, och P7 flyttas bort från skon, vilket är oprövat. Egen film per kort finns kvar som utväg där flytten inte håller. Gränsen 50 px är ingen spärr utan en varning: P3 behandlas som övriga platser.
 
-**Omgång 6, beställd 2026-11-11 (360 credits, tak höjt till 3 800):** `pamela-p7-c1-plan-return-ready-01` och `-idle-01` (startar på ruta 105 ur P7-given), `pamela-idle-loop-01` (första och sista bild är ruta 0 ur ingångsklippet), samt omtagningar `pamela-p3-c1-plan-deal-02` och `pamela-p5-c1-plan-deal-02` vars slutbild är en hel verklig ruta ur respektive första giv (ruta 112 och 108) i stället för ett hopklippt ankare. Ska rutgranskas oberoende innan P6 och returerna för P3 och P5 beställs. Parallellt inventeras gamla labbets klipp från 10 november (dealerkort, P3, P5, P6) som möjliga gratis kandidater.
+**Omgång 6 (2026-11-11, 360 credits, tak 3 800), oberoende rutgranskad.** Ingen ren huvudtagning; tre användbara med anmärkning, två inte:
+
+| Klipp | Dom |
+| --- | --- |
+| `pamela-p7-c1-plan-return-idle-01` | Användbar: rent lyft, VILA från f53. Hög båge över skon, ögonen slutna f34–39 |
+| `pamela-idle-loop-01` | Användbar: nästan stillbild (en halv blinkning). Klipp 119→3, inte 119→0: rutorna 0–2 har ljusare grönt |
+| `pamela-p5-c1-plan-deal-02` | Möjlig variant: kortet läggs ner gult f56–66, tas upp och vänds, kryper under fingrarna f98–119 |
+| `pamela-p7-c1-plan-return-ready-01` | Inte huvudtagning: handen dras in, knyts i brösthöjd och sänks på skon uppifrån; nio frysta rutor |
+| `pamela-p3-c1-plan-deal-02` | Underkänd: fysisk vändning, men glid på filten f24–43, hopp f44, hopflutna fingrar f61–62, andra beröring f96 |
+
+Vad omgången visade: (1) hela verkliga rutor som slutbild höll, ingen krympning och inga rester; (2) rörelsen är fortfarande lotteri per tagning, så varje kant behöver räknas med två till tre tagningar och urval; (3) när vägen är kort hinner modellen hitta på extra rörelser, så korta vägar ska ha kortare klipp: `pamela-p7-c1-plan-return-ready-02` är beställd på 2 s (40 credits) som prov; (4) varje klipp har ljusare grönt i sina första rutor och ett nivåhopp i de två sista, så skarvar mäts och klipps tre rutor in och två rutor före slutet; (5) frysta rutor förekommer inne i rörelser och ska räknas vid granskning. Med omgången räknar labbet 20 av 30 filmer: 11 kandidater, 9 med kända brister, 10 saknas. Parallellt inventeras gamla labbets klipp från 10 november (dealerkort, P3, P5, P6) som möjliga gratis kandidater.
 
 | Del | Läge |
 | --- | --- |

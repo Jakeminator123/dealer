@@ -24,9 +24,9 @@
     "evidence": "evidence/generation-method-audit.json"
   },
   "review": {
-    "decision": "PENDING",
-    "basis": "Levererad 2026-11-11 (omgång 6). Väntar på oberoende rutgranskning; ingen dom ännu.",
-    "limitations": "Inte granskad ruta för ruta ännu.",
+    "decision": "SECONDARY",
+    "basis": "Oberoende rutgranskning 2026-11-11: rent lyft f14–22 utan ny beröring, men handen går inte den korta, låga vägen. Den dras in framför bålen och väntar f34–47, knyts och höjs till brösthöjd f48–57 och sänks ner på skon uppifrån f58–70. REDO-greppet från f76, huvudet inom 1 px från REDO-bilden.",
+    "limitations": "Inte huvudtagning. Nio frysta rutor inne i rörelsen (20, 30, 36, 42, 49, 59, 65, 71, 78). Kortet flyttas cirka 7 px åt höger när fingrarna släpper (f10–20). Blekt märke på skons gula kort f18–89. Troligen för lång tid (3 s) för en så kort väg; omtagning på 2 s är beställd.",
     "colorDoesNotProvePhysicalSide": true,
     "userAccepted": false,
     "productionReady": false

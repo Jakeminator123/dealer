@@ -22,15 +22,15 @@
     "target": "P3.C1",
     "physicalStartSide": "BACK",
     "physicalEndSide": "FRONT",
-    "turn": null,
+    "turn": true,
     "pass": false,
     "basis": "SOURCE_FRAME_REVIEW",
     "evidence": "evidence/generation-method-audit.json"
   },
   "review": {
-    "decision": "PENDING",
-    "basis": "Levererad 2026-11-11 (omgång 6). Väntar på oberoende rutgranskning; ingen dom ännu.",
-    "limitations": "Inte granskad ruta för ruta ännu.",
+    "decision": "REJECTED",
+    "basis": "Oberoende rutgranskning 2026-11-11: inte användbar. Vändningen är fysisk och synlig (bred gul f44–57, tunn kant f63–67, blå öppnar f68–75, plant f84–87), men kortet skjuts ut och glider plant på filten f24–43 och hoppar till lyft läge på en enda ruta (f44).",
+    "limitations": "Givhanden korsar vilohanden f55–67 och fingrarna flyter ihop med ett orange stråk f61–62. Fingrarna släpper f88–90 och landar på kortet igen f96–97 (andra beröring); kortet glider sedan cirka 8 px f101–112. 15 frysta rutor och ett huvudhopp på 1,5 px vid f117. Landar cirka 41 px höger om planen, i linje med sin slutbild. Ingen storleksändring i slutet och inga rester: slutbilden som hel verklig ruta höll.",
     "colorDoesNotProvePhysicalSide": true,
     "userAccepted": false,
     "productionReady": false
