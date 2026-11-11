@@ -3287,6 +3287,42 @@
         89
       ],
       "purpose": "Idle insert ordered 2026-11-11 after Jakob asked for more of them: she shrugs. Ordered through Runway's MCP server from the keystone as first and last image."
+    },
+    {
+      "id": "pamela-table-leave-wide-kling-01",
+      "kind": "LEAVE",
+      "from": "IDLE",
+      "to": "AWAY",
+      "clip": "pamela-table-leave-wide-kling-01",
+      "frames": [
+        0,
+        192
+      ],
+      "purpose": "The full-figure leave film with the model kling-4, ordered because both wan3 takes stutter in a five-frame cadence while she walks. Same first image and text as wan3 take 02. Note: the model field of the bank's job type says wan3 for every take; this film is kling-4, as its receipt says."
+    },
+    {
+      "id": "pamela-idle-stern-02",
+      "kind": "IDLE",
+      "from": "IDLE",
+      "to": "IDLE",
+      "clip": "pamela-idle-stern-02",
+      "frames": [
+        0,
+        80
+      ],
+      "purpose": "Idle insert Jakob asked for 2026-11-11: she looks angry. A text-only take (idle-stern-01, 60 app credits, not in the bank) read as worried with the mouth open, so the look is fixed by the last image, as the wink was."
+    },
+    {
+      "id": "pamela-idle-cough-02",
+      "kind": "IDLE",
+      "from": "IDLE",
+      "to": "IDLE",
+      "clip": "pamela-idle-cough-02",
+      "frames": [
+        0,
+        119
+      ],
+      "purpose": "Idle insert Jakob asked for 2026-11-11: she coughs. Second order, with a text that keeps her facing the camera; the second of two takes (the first, 080ad563, was rejected in review: one soft eye closure and a smile that reads as speaking; not in the bank)."
     }
   ],
   "edits": [

@@ -29,8 +29,8 @@
   },
   "review": {
     "decision": "PENDING",
-    "basis": "Oberoende rutgranskning 2026-11-11 av en långsammare hopsättning av samma rutor (77 rutor: stängning 8 rutor, stängt 1,1 s): användbar med anmärkning, skarvarna perfekta (ruta 3 mot ruta 73: 0 bildpunkter över 24 nivåer, förskjutning högst 0,02 px). En riktig blinkning med ena ögat: ögat till höger i bild stängs, det andra är öppet i varje ruta (cirka 60 % öppet när leendet är som störst), de två är aldrig stängda samtidigt. Bara ansiktet ändras: huvud högst 0,45 px, händer 0,05 px, sko 0,03 px. Vändpunkten ligger i det stängda läget och syns varken som stopp eller hopp.",
-    "limitations": "Granskarens anmärkning på den långsamma hopsättningen: för långsam och exakt speglad, läses som en hållen pose. Den här hopsättningen är snabbare (stängt cirka 0,3 s) men är inte granskad på nytt och är fortfarande exakt speglad: leendet går tillbaka precis som det kom. Inte sedd i fart.",
+    "basis": "Oberoende rutgranskning 2026-11-11 av den här hopsättningen (45 rutor): användbar, läses som en naturlig, snabb blinkning med ena ögat och ett menande leende. Ögat till höger i bild börjar stängas f14, är stängt f18 (4 rutor), stängt f18–26 (9 rutor, 0,30 s), öppnas f26–30 (4 rutor). Det andra ögat är öppet hela tiden med bara en lätt kisning. Ruta 3 mot ruta 41: 0 bildpunkter över 24 nivåer; förskjutning av huvud, händer, sko och kort högst 0,03 px; huvudet rör sig högst 0,4 px. Grönt G 228,1–229,8 i de visade rutorna.",
+    "limitations": "Stängning och öppning är exakt speglade; en verklig blinkning öppnas oftast lite långsammare. Sista steget i stängningen (f17–18) är dubbelt så stort som de före och läses som att ögonlocket slår igen, inte som ett ryck, bedömt ur rutorna. Ruta 0 skiljer sig mer från grundrutan än i de vanliga klippen (394 bildpunkter över 24 mot cirka 150), troligen för att filmen är omkodad; den rutan spelas inte. Inte sedd i fart.",
     "colorDoesNotProvePhysicalSide": true,
     "userAccepted": false,
     "productionReady": false

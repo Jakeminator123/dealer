@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 1,
+  "id": "pamela-idle-stern-02",
+  "dealer": "pamela",
+  "source": {
+    "path": "assets/motions/pamela-idle-stern-02/source.mp4",
+    "sha256": "410bc3ccbb5a32a0812195db1180360868c4b5a03bea2ee61215d8bf2f4329b7",
+    "bytes": 9057427,
+    "width": 1764,
+    "height": 1174,
+    "fps": 30,
+    "frames": 81,
+    "provider": "Runway MCP server (app account credits)",
+    "model": "wan3"
+  },
+  "motion": {
+    "kind": "IDLE",
+    "from": "IDLE",
+    "to": "IDLE",
+    "pass": false,
+    "basis": "SOURCE_FRAME_REVIEW",
+    "evidence": "evidence/generation-method-audit.json",
+    "idle": {
+      "weight": 2,
+      "calm": false,
+      "label": "sträng blick",
+      "onRequest": false
+    }
+  },
+  "review": {
+    "decision": "PENDING",
+    "basis": "Oberoende rutgranskning 2026-11-11: användbar med anmärkning. Läses som sträng och irriterad, inte bekymrad: ögonbrynen går ner och ihop, munnen är stängd i varje ruta (läpplinjen 3–5 px), inga tänder. Lugn f3–10, leendet försvinner f11–20, neutral f20–25, ögonbrynen dras ner och ihop och läpparna pressas f26–34, blicken fördjupas till f40, därefter exakt baklänges. Ruta 3 mot ruta 77: 0 bildpunkter över 24 nivåer; händer och sko rör sig högst 0,1 px. Vändpunkten vid f40 syns med stor sannolikhet inte (ansiktets förändring har nästan stannat där). Grönt G 228,2–230,9 i de visade rutorna.",
+    "limitations": "Blicken hålls aldrig stilla: den når sin topp vid f40 och vänder genast. Rutorna 34–36 är nästan identiska (ett stopp på tre rutor) följt av ett steg f36–37, speglat vid f44–46. Huvudet glider upp till 1,4 px åt vänster och 1,2 px uppåt f13–27, speglat f53–67. Exakt speglad. Ruta 0 skiljer sig mer från grundrutan än vanligt (392 bildpunkter över 24), troligen omkodningen; den rutan spelas inte. Inte sedd i fart.",
+    "colorDoesNotProvePhysicalSide": true,
+    "userAccepted": false,
+    "productionReady": false
+  },
+  "postProcessing": "Assembled: the generated film goes from the keystone to the stern look in 2 s (60 frames; kept beside this film as generated-half.mp4). This film is its frames 0-40 played forward and then backward (81 frames) (D:/dealer-scratch/tmp/filmagent/mcp/spegla.sh).",
+  "generationRef": "assets/motions/pamela-idle-stern-02/generation.json",
+  "jobRef": "data/clip-jobs.json",
+  "scoutIntegrated": false,
+  "published": false
+}
