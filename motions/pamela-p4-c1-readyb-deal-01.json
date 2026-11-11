@@ -28,13 +28,15 @@
     "evidence": "evidence/generation-method-audit.json"
   },
   "review": {
-    "decision": "SECONDARY",
+    "decision": "ACCEPTED",
     "basis": "Variant från REDO B. Kortet glider av bunten i låga öppningen och lyfts f32–54 (släpas inte över filten). Bred gul sida f72–77, smalnar f78–80, tunn kant f81–82, blått f83–95, plant på planens plats med fingret på från ca f105. Skon håller formen, nästa gula kort sitter kvar. Sista rutan 29 px från ankaret.",
     "limitations": "Beställt släp plant över filten uteblev. En tagning. Returer till REDO B är inte beställda; retur till VILA kan dela ankare med variant A.",
     "colorDoesNotProvePhysicalSide": true,
-    "userAccepted": false,
+    "userAccepted": true,
     "productionReady": false,
-    "independentReview": "Separat rutgranskare 2026-11-11 håller inte med om att klippet är rent: slutsnäpp f148–149 (kortet krymper 114→72 px), frysta rutor f51–53 och f68–70, lila genomskinligt hörn i greppet f85–99, fingrarna flyttar sig på kortet f112–124."
+    "independentReview": "Separat rutgranskare 2026-11-11 håller inte med om att klippet är rent: slutsnäpp f148–149 (kortet krymper 114→72 px), frysta rutor f51–53 och f68–70, lila genomskinligt hörn i greppet f85–99, fingrarna flyttar sig på kortet f112–124.",
+    "acceptedAs": "VARIANT",
+    "userReview": "Jakob 2026-11-11: Ja, den är tillräckligt bra för att vara en variant, men det händer inte så mycket och den skiljer sig inte mycket från tidigare klipp. Man skulle kunna underkänna den för att den är så lik många andra, men den kan också godkännas för att den är tillräckligt bra. Varianten sticker dock inte ut tillräckligt mycket."
   },
   "experiment": "READY-B",
   "postProcessing": "none",

@@ -26,12 +26,13 @@
     "evidence": "evidence/generation-method-audit.json"
   },
   "review": {
-    "decision": "PENDING",
+    "decision": "ACCEPTED",
     "basis": "Arkivklipp, granskat 2026-11-11 var tredje ruta i 0,3 skala. Ruta 0 är samma bild som f131 i givens film (0 bildpunkter över 40). Fingrarna ligger kvar på kortet f0–15, lyfter f18, armen går i en båge framför kroppen f24–36, nyp på det gula kortet f42–59. Kortet ligger kvar. Slutrutan mot REDO-ankaret: 25 bildpunkter över 40 utanför kortet.",
     "limitations": "Inte granskad ruta för ruta. Snabb armrörelse vid f28 (cirka 2 500 bildpunkter över 40 mellan rutor). Kortet ligger 27 px från planens P3.C1. Gamla labbets egen dom: lokalt godkänd.",
     "colorDoesNotProvePhysicalSide": true,
-    "userAccepted": false,
-    "productionReady": false
+    "userAccepted": true,
+    "productionReady": false,
+    "userReview": "Jakob 2026-11-11: Allt är en tillbakagång igen, det ser väl fint ut?"
   },
   "postProcessing": "none",
   "generationRef": null,

@@ -26,12 +26,13 @@
     "evidence": "evidence/generation-method-audit.json"
   },
   "review": {
-    "decision": "PENDING",
+    "decision": "ACCEPTED",
     "basis": "Arkivklipp, rutgranskat 2026-11-11 ruta för ruta i 0,75–1,0 skala. Ruta 0 är dagens REDO-ankare (medel 1,45, 0 bildpunkter över 40). Vänsterhanden drar kortet rent f10–30 och bär det i luften. Vändningen är fysisk: gul smalnar f40–46, tunn remsa f47–49, blå från f52. Kortet förs ner på högkant f60–66 och fälls plant f68–74 utan att glida. Fingrarna vilar på överkanten f74–82, släpper f84. Utsnittet slutar f89 med handen lyft.",
     "limitations": "Remsan är rosavit f50–51, mellan gult och blått. Kortet är blekt f68–72. Filmens rutor efter f89 används inte: där svävar handen med öppen handflata. Kortet hamnar 17 px från planens P5.C1 (+6, −16). Gamla labbets egen dom: lokalt godkänd med klipp vid f89.",
     "colorDoesNotProvePhysicalSide": true,
-    "userAccepted": false,
-    "productionReady": false
+    "userAccepted": true,
+    "productionReady": false,
+    "userReview": "Jakob 2026-11-11: Ja, den är okej. Hon vänder så att det precis går, men den är fin. Det finns en liten rensa också. Det är just sånt här som jag menar att 20% ska täcka; det var min grundidé i alla fall."
   },
   "postProcessing": "none",
   "generationRef": null,

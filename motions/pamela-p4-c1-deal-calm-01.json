@@ -28,12 +28,14 @@
     "evidence": "evidence/generation-method-audit.json"
   },
   "review": {
-    "decision": "PENDING",
+    "decision": "ACCEPTED",
     "basis": "Samma vänsterhand. Gult smalnar f67–70, tunn kant f71–72, blått öppnar f73–80 utan enrutershopp. Plant f96, pekfinger på hörnet f96–114, släpp f115–117. Ingen gest efter släppet.",
     "limitations": "Landar på gamla P4-platsen, 63 px från sparad plan. En tagning.",
     "colorDoesNotProvePhysicalSide": true,
-    "userAccepted": false,
-    "productionReady": false
+    "userAccepted": true,
+    "productionReady": false,
+    "acceptedAs": "VARIANT",
+    "userReview": "Jakob 2026-11-11: Hon fipplar lite med fingrarna genom kortet, men den är annars ganska bra som en variant."
   },
   "placementRef": {
     "basis": "historical P4 landing",

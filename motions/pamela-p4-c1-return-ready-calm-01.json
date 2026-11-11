@@ -24,12 +24,13 @@
     "evidence": "evidence/generation-method-audit.json"
   },
   "review": {
-    "decision": "PENDING",
+    "decision": "ACCEPTED",
     "basis": "Pekfingret rör kortet igen f6–18, lyfter f21–24, går i höjd med skons överkant med lös näve, nyp vid skon f54–57 och håller. Ingen höjd över bröstet.",
     "limitations": "Återberöringen kräver klipp mot givens f110 eller ny retur som startar med fingret på kortet. Kortet ligger på gamla P4-platsen.",
     "colorDoesNotProvePhysicalSide": true,
-    "userAccepted": false,
-    "productionReady": false
+    "userAccepted": true,
+    "productionReady": false,
+    "userReview": "Jakob 2026-11-11: Ja, tillbaka till ursprungsposition."
   },
   "placementRef": {
     "basis": "historical P4 landing",

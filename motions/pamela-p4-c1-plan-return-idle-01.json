@@ -29,12 +29,13 @@
     "evidence": "evidence/generation-method-audit.json"
   },
   "review": {
-    "decision": "PENDING",
+    "decision": "ACCEPTED",
     "basis": "Startar på givens landningsruta f105 (0 avvikande pixlar). Fingret vilar f0–18, handen läggs platt över kortet f24–36, dras tillbaka f42 och vilar från f54.",
     "limitations": "Platt hand över kortet f24–36 bör bedömas av Jakob. Kortet ligger kvar på plats efteråt.",
     "colorDoesNotProvePhysicalSide": true,
-    "userAccepted": false,
-    "productionReady": false
+    "userAccepted": true,
+    "productionReady": false,
+    "userReview": "Jakob 2026-11-11: Seringfältet här."
   },
   "placementRef": {
     "path": "assets/anchors/pamela-idle-p4-c1-plan-01/placement-plan.json",

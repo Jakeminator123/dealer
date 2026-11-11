@@ -28,12 +28,13 @@
     "evidence": "evidence/generation-method-audit.json"
   },
   "review": {
-    "decision": "SECONDARY",
+    "decision": "ACCEPTED",
     "basis": "Fysisk vändning lågt vid bordet, kant f78–79, men blå framsida med prickmönster f84–89.",
     "limitations": "Slutbilden hade platt målad kortyta. Ersatt av plan-deal-02.",
     "colorDoesNotProvePhysicalSide": true,
-    "userAccepted": false,
-    "productionReady": false
+    "userAccepted": true,
+    "productionReady": false,
+    "userReview": "Jakob 2026-11-11: Ja, den här är okej givet att det landar rätt, men också att vi kan styra vinkeln på kortet. Allt sådant här måste du slutgranska."
   },
   "placementRef": {
     "path": "assets/anchors/pamela-p1-c1-plan-land-02/placement-plan.json",

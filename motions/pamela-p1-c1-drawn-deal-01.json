@@ -28,13 +28,14 @@
     "evidence": "evidence/generation-method-audit.json"
   },
   "review": {
-    "decision": "SECONDARY",
+    "decision": "ACCEPTED",
     "basis": "Kortet skjuts plant hela vägen f15–63 (cirka 970 px), reses f68, lyfts och vänds i luften f79–93 (kant f94–96, blått f97–103). Rödrosa klump i greppet f97–101, tumstump poppar fram f117. Landar 5 px från ankaret.",
     "limitations": "Ankarbilderna (DRAWN och landningarna) är hopklippta och har rester och för litet kort; klippen ärver felen i första och sista rutorna. Ankare ska i stället tas som hela, verkliga rutor ur modellens egna klipp.",
     "reviewedBy": "separat rutgranskare i full upplösning 2026-11-11",
     "colorDoesNotProvePhysicalSide": true,
-    "userAccepted": false,
-    "productionReady": false
+    "userAccepted": true,
+    "productionReady": false,
+    "userReview": "Jakob 2026-11-11: KuKul, när hon drar ut ett kort istället för att nypa ut det, måste vi ha ett ankare två. Det är det andra ankaret. Vi måste alltså ha från vila till ankare två, förutsatt att det finns. Så godkänner jag."
   },
   "experiment": "READY-B",
   "postProcessing": "none",

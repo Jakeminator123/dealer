@@ -29,12 +29,13 @@
     "evidence": "evidence/generation-method-audit.json"
   },
   "review": {
-    "decision": "SECONDARY",
+    "decision": "ACCEPTED",
     "basis": "Startar på givens landningsruta f112 (0 avvikande pixlar). Fingrarna vilar f0–24, lyfter f30, armen tillbaka f36–42, två vilande händer från f54.",
     "limitations": "Hör till plan-deal-02. Skarvar inte mot nya huvudgiven plan-deal-03 (ca 440 avvikande pixlar); ersatt av -02.",
     "colorDoesNotProvePhysicalSide": true,
-    "userAccepted": false,
-    "productionReady": false
+    "userAccepted": true,
+    "productionReady": false,
+    "userReview": "Jakob 2026-11-11: Ja, jag tror att det är detsamma här."
   },
   "placementRef": {
     "path": "assets/anchors/pamela-idle-p1-c1-plan-01/placement-plan.json",

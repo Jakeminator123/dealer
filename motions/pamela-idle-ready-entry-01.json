@@ -23,12 +23,13 @@
     "evidence": "evidence/generation-method-audit.json"
   },
   "review": {
-    "decision": "PENDING",
+    "decision": "ACCEPTED",
     "basis": "Återfunnet ingångsklipp från gamla labbet (2 s): båda händerna vilar f0–15, vänsterhanden lyfter f20, når skon f35 och ligger i nypet på det gula kortet f40–59. Slutbilden är byte för byte dagens REDO-ankare (a2fc6d35…), så klippet går direkt över i varje giv i variant A: 33–35 avvikande bildpunkter vid kvartsstorlek mot givarnas första ruta. Tomt bord.",
     "limitations": "Granskat på kontaktark var femte ruta, inte ruta för ruta i full upplösning. Rörelsen är snabb: hela förflyttningen sker på cirka 0,5 s. Gamla labbets egen dom: kandidat, med ett litet steg i skons kortkant vid skarven. Startbilden är VILA med skons gula kort inlagt (4 587 bildpunkter). Gäller bara variant A; variant B har en annan sko.",
     "colorDoesNotProvePhysicalSide": true,
-    "userAccepted": false,
-    "productionReady": false
+    "userAccepted": true,
+    "productionReady": false,
+    "userReview": "Jakob 2026-11-11: godkänd i labbet."
   },
   "importedFrom": {
     "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-physical-entry-pilot/jobs/vila-to-shoe-take-01/original.mp4",

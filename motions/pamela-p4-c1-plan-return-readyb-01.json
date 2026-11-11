@@ -24,13 +24,14 @@
     "evidence": "evidence/generation-method-audit.json"
   },
   "review": {
-    "decision": "PENDING",
+    "decision": "ACCEPTED",
     "basis": "Håller f0–13, lyfter en gång f14–18, låg bana med lösa fingrar, fingertoppar på gula kortet från ca f58, stilla från f85. Kortet rör sig högst 1,1 px. Upprepade rutor (f30, 36, 42, 59, 65, 71) och färgsnäpp f88–89.",
     "limitations": "Ankarbilderna (DRAWN och landningarna) är hopklippta och har rester och för litet kort; klippen ärver felen i första och sista rutorna. Ankare ska i stället tas som hela, verkliga rutor ur modellens egna klipp.",
     "reviewedBy": "separat rutgranskare i full upplösning 2026-11-11",
     "colorDoesNotProvePhysicalSide": true,
-    "userAccepted": false,
-    "productionReady": false
+    "userAccepted": true,
+    "productionReady": false,
+    "userReview": "Jakob 2026-11-11: Ja, det här är bra. Det ska vara fliten kortet."
   },
   "experiment": "READY-B",
   "postProcessing": "none",

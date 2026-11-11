@@ -24,12 +24,13 @@
     "evidence": "evidence/generation-method-audit.json"
   },
   "review": {
-    "decision": "PENDING",
+    "decision": "ACCEPTED",
     "basis": "Samma återberöring f6–18, därefter rakt tillbaka till två vilande händer vid f42, håller till slutet.",
     "limitations": "Samma klippkrav som READY-returen. Kortet ligger på gamla P4-platsen.",
     "colorDoesNotProvePhysicalSide": true,
-    "userAccepted": false,
-    "productionReady": false
+    "userAccepted": true,
+    "productionReady": false,
+    "userReview": "Jakob 2026-11-11: Jag har avseringsfilmer här."
   },
   "placementRef": {
     "basis": "historical P4 landing",

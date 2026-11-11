@@ -28,12 +28,13 @@
     "evidence": "evidence/generation-method-audit.json"
   },
   "review": {
-    "decision": "PENDING",
+    "decision": "ACCEPTED",
     "basis": "Samma vänsterhand. Gult smalnar f46–51, tunn kant f52–54, enfärgad blå framsida från f55. Plant på planens plats f93, pekfinger på hörnet f93–111, släpp f114–117.",
     "limitations": "En tagning. Retur från denna given är inte beställd.",
     "colorDoesNotProvePhysicalSide": true,
-    "userAccepted": false,
-    "productionReady": false
+    "userAccepted": true,
+    "productionReady": false,
+    "userReview": "Jakob 2026-11-11: Det ser bra ut."
   },
   "placementRef": {
     "path": "assets/anchors/pamela-p4-c1-plan-hover-03/placement-plan.json",

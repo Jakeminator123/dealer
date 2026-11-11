@@ -26,12 +26,14 @@
     "evidence": "evidence/generation-method-audit.json"
   },
   "review": {
-    "decision": "PENDING",
+    "decision": "ACCEPTED",
     "basis": "Arkivklipp, rutgranskat 2026-11-11 ruta för ruta i 0,6–1,0 skala. Ruta 0 är dagens REDO-ankare (medel 1,45, 0 bildpunkter över 40). Vänsterhanden drar kortet rent f22–38. Vändningen är fysisk: bred gul f88–92, tunn kant f93–97, bred blå från f98. Kortet läggs uppifrån f112–122 utan att glida. Utsnittet slutar f130 med fingertopparna på kortets övre högra hörn; båda returerna börjar på f131.",
     "limitations": "Stopp på cirka 1,6 s: efter dragningen lyfts kortet f40–56 och hålls hängande bredvid skon f62–90; f71–85 är nästan stilla (högst 89 bildpunkter över 40 mellan rutor). Kortet är blekt f110–117. Given tar 4,4 s. Kortet hamnar 27 px från planens P3.C1 (+27, 0). Filmen är gamla labbets förlustfria sammanfogning av betalda filmer (H.264 High 4:4:4 Predictive); uppspelning i webbläsare är inte prövad. Gamla labbets egen dom: lokalt godkänd med förled; noterade själv att uppehållet vid skon är långt.",
     "colorDoesNotProvePhysicalSide": true,
-    "userAccepted": false,
-    "productionReady": false
+    "userAccepted": true,
+    "productionReady": false,
+    "acceptedAs": "VARIANT",
+    "userReview": "Jakob 2026-11-11: Ja, det här är lite lustigt. Det är verkligen en variant. Det ser ut som en liten robot när hon lägger över kortet."
   },
   "postProcessing": "Old lab: decoded frames of the paid films in importedFrom.paidParts concatenated in that order and encoded lossless (H.264 High 4:4:4 Predictive, yuv420p). Copied unchanged; nothing was generated or re-encoded for this import.",
   "generationRef": null,

@@ -28,13 +28,15 @@
     "evidence": "evidence/generation-method-audit.json"
   },
   "review": {
-    "decision": "SECONDARY",
+    "decision": "ACCEPTED",
     "basis": "Tydligast vändning av de fyra (kant f51–54, blått från f58), men handen släpper f84–90, tar i igen f93–96 och kortet glider 26 px f97–113. Vit tjock kant. Slutsnäpp 182→86 px.",
     "limitations": "Landningsankaret byggs om med kortet i den storlek modellen själv ritar; klippet görs om därefter.",
     "reviewedBy": "separat rutgranskare i full upplösning 2026-11-11",
     "colorDoesNotProvePhysicalSide": true,
-    "userAccepted": false,
-    "productionReady": false
+    "userAccepted": true,
+    "productionReady": false,
+    "acceptedAs": "VARIANT",
+    "userReview": "Jakob 2026-11-11: Det här är ett för stort kort, så jag överväger att underkänna det. Men om det går att lösa på något sätt skulle det kunna fungera. Kanske kan jag sätta den som en variant?"
   },
   "placementRef": {
     "path": "assets/anchors/pamela-p5-c1-plan-land-01/placement-plan.json",

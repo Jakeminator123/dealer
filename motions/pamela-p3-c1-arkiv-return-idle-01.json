@@ -26,12 +26,13 @@
     "evidence": "evidence/generation-method-audit.json"
   },
   "review": {
-    "decision": "PENDING",
+    "decision": "REJECTED",
     "basis": "Arkivklipp, granskat 2026-11-11: kortet på 10 rutor i 1,3 skala, handen var tredje ruta. Ruta 0 är samma bild som f131 i givens film (0 bildpunkter över 40). Fingrarna ligger kvar f0–12, handen lyfter cirka f15, går upp framför bröstet f21–30 och ner till vila, still från cirka f42. Slutrutan mot vilobilden: 46 bildpunkter över 40 utanför kortet.",
     "limitations": "Fel i filmen: det blå kortet får ett tryckt motiv med texten ”PIA” och en röd logotyp f2–57 och blir enfärgat blått igen f58. Duger bara om det renderade kortet och plåten täcker filmens kort helt. Gamla labbet har en lagad förlustfri kopia med trycket bortmålat och handen orörd (p3-c1-returns-02/direct/review/p3-c1-direct-blank-rgb-03.mp4, SHA-256 15dde69ece3e27768eeb9eaf3c5afe369dabeba75e5350129ca0c3e729645142); den är inte importerad. Handen går upp till brösthöjd f21–30. Kortet ligger 27 px från planens P3.C1. Gamla labbets egen dom: originalet har ingen egen dom; den lagade kopian är lokalt godkänd.",
     "colorDoesNotProvePhysicalSide": true,
     "userAccepted": false,
-    "productionReady": false
+    "productionReady": false,
+    "userReview": "Jakob 2026-11-11: Nej, det här kan jag inte godkänna, för det står Pia på det blå kortet."
   },
   "postProcessing": "none",
   "generationRef": null,

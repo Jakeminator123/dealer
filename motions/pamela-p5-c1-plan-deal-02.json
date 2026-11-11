@@ -28,12 +28,13 @@
     "evidence": "evidence/generation-method-audit.json"
   },
   "review": {
-    "decision": "SECONDARY",
+    "decision": "REJECTED",
     "basis": "Oberoende rutgranskning 2026-11-11: användbar med anmärkning, möjlig variant som Jakob får avgöra. Kortet bärs och glider inte, men högt: dras upp f24–29 och svängs på kant i brösthöjd f34–43. Det läggs ner med gula sidan upp och hålls f56–66, tas upp och vänds: kant f73, bred blå f79–84, lagt f85–90. En vändning, men bordet berörs före den. Tre fingertoppar ligger kvar f88–119.",
     "limitations": "Kortet kryper under fingrarna f98–119 (+24 px i x, +13 px i y) och rör sig ännu i sista rutan. Vit kant från f16 och ändrade proportioner; skons kort blir orange från cirka f30. Landar cirka 23 px från planen. Ingen storleksändring i slutet och inga rester.",
     "colorDoesNotProvePhysicalSide": true,
     "userAccepted": false,
-    "productionReady": false
+    "productionReady": false,
+    "userReview": "Jakob 2026-11-11: Ja, den här är bra, men jag får nog underkänna den eftersom kortet är för stort i slutet."
   },
   "postProcessing": "none",
   "generationRef": "assets/motions/pamela-p5-c1-plan-deal-02/generation.json",

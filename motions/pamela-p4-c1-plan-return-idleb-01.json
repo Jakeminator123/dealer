@@ -24,13 +24,14 @@
     "evidence": "evidence/generation-method-audit.json"
   },
   "review": {
-    "decision": "PENDING",
+    "decision": "REJECTED",
     "basis": "Ren: fingret ligger kvar f0–22, lyfter en gång f23–25, låg bana, båda händerna vilar från ca f58. Kortet rör sig högst 0,3 px. Färgsnäpp f88–89.",
     "limitations": "Ankarbilderna (DRAWN och landningarna) är hopklippta och har rester och för litet kort; klippen ärver felen i första och sista rutorna. Ankare ska i stället tas som hela, verkliga rutor ur modellens egna klipp.",
     "reviewedBy": "separat rutgranskare i full upplösning 2026-11-11",
     "colorDoesNotProvePhysicalSide": true,
     "userAccepted": false,
-    "productionReady": false
+    "productionReady": false,
+    "userReview": "Jakob 2026-11-11: Här avviker hon lite genom att lägga handen på bordet, men det skulle kunna vara roligt. Jag blir tvungen att underkänna det här eftersom hon inte går tillbaka till något ankare."
   },
   "experiment": "READY-B",
   "postProcessing": "none",
