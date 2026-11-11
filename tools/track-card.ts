@@ -10,7 +10,7 @@ import {createHash} from 'node:crypto';
 import {spawn, execFileSync} from 'node:child_process';
 import {fileURLToPath} from 'node:url';
 import path from 'node:path';
-import {classify, persistent, follower, buildTrack, settleRaws, blobs, morph, YELLOW, BLUE, TABLE, EDGE_THICKNESS, MIN_AREA, type Raw, type Pt, type FilmKind} from '../src/card-track.ts';
+import {classify, paleMask, persistent, follower, buildTrack, settleRaws, blobs, morph, YELLOW, BLUE, TABLE, EDGE_THICKNESS, MIN_AREA, type Raw, type Pt, type FilmKind} from '../src/card-track.ts';
 
 if (path.resolve(process.cwd()) !== path.resolve(fileURLToPath(new URL('../', import.meta.url)))) throw Error('Run from the dealer checkout.');
 const id = process.argv[2], overlayAt = process.argv.indexOf('--overlay'), overlay = overlayAt > 0 ? process.argv[overlayAt + 1] : null;
@@ -41,8 +41,9 @@ async function* frames(file: string): AsyncGenerator<Buffer> {
 }
 
 // Pass 1: which pixels are yellow through most of the clip? That is the card seated in the shoe window.
-const counts = new Uint16Array(N), blues = new Uint16Array(N); let total = 0;
-for await (const frame of frames(video)) { const cls = classify(frame, N); for (let i = 0; i < N; i++) { if (cls[i] === YELLOW) counts[i]++; else if (cls[i] === BLUE) blues[i]++; } total++; }
+// And which are pale through half of it? That is her blouse, a rim or a highlight, never a card on its way.
+const counts = new Uint16Array(N), blues = new Uint16Array(N), pales = new Uint16Array(N); let total = 0;
+for await (const frame of frames(video)) { const cls = classify(frame, N), pale = paleMask(frame, N); for (let i = 0; i < N; i++) { if (cls[i] === YELLOW) counts[i]++; else if (cls[i] === BLUE) blues[i]++; if (pale[i]) pales[i]++; } total++; }
 if (!total) throw Error(`No frames decoded from ${video}.`);
 const shoe = persistent(counts, total), shoeBlob = blobs(shoe, W, H, 400)[0] ?? null;
 
@@ -51,10 +52,13 @@ const shoe = persistent(counts, total), shoeBlob = blobs(shoe, W, H, 400)[0] ?? 
 // moving card and is taken out of the picture (in eight frames of ten, since a hand passes over it). A film without a dealt card (entry, idle, exit) has nothing to follow.
 const lying = kind === 'DEAL' ? morph(Uint8Array.from(blues, count => count >= 0.8 * total ? 1 : 0), W, H, 4, true) : null, // with its pale rim
   lyingPixels = lying ? lying.reduce((sum, v) => sum + v, 0) : 0;
+// In a deal the film may print or wash out the face it turns up; such a card is followed as a pale shape where the card was expected.
+const stillPale = kind === 'DEAL' ? morph(persistent(pales, total, 0.5), W, H, 4, true) : null;
 const step = follower(W, H, shoe), found: Raw[] = [], nothing: Raw = {side: 'NONE', corners: null, segment: null, area: 0, fill: 0, thickness: 0, shoeShare: 0, note: 'no dealt card in this kind of film'};
 for await (const frame of frames(video)) { if (kind === 'OTHER') { found.push(nothing); continue; }
   const cls = classify(frame, N); if (lyingPixels) for (let i = 0; i < N; i++) if (lying![i]) cls[i] = TABLE;
-  found.push(step(cls)); }
+  const pale = stillPale ? paleMask(frame, N) : null; if (pale) for (let i = 0; i < N; i++) if (stillPale![i] || lying?.[i]) pale[i] = 0;
+  found.push(step(cls, pale)); }
 const raws = kind ? settleRaws(found, kind) : found, track = buildTrack(raws);
 
 const sha256 = createHash('sha256').update(await readFile(video)).digest('hex');
@@ -70,7 +74,7 @@ await mkdir(dir, {recursive: true});
 await writeFile(`${dir}/card-track.json`, body);
 const r2 = (v: number) => Math.round(v * 100) / 100, jitter = track.restJitter;
 const receipt = {schemaVersion: 1, clip: id, createdAt: new Date().toISOString(), tool: 'tools/track-card.ts', source: {path: video, sha256, width: W, height: H, fps, frameCount: total},
-  rules: {yellow: 'r>95 && g>95 && g>0.82r && r>0.6g && b<0.45*min(r,g)', blue: 'b>90 && b>1.5r && b>1.15g', edgeOnBelowThicknessPx: EDGE_THICKNESS, minCardPixels: MIN_AREA, shoeCard: 'persistent yellow; ignored unless the track continues out of it', filmKind: kind, lyingCardPixelsIgnored: lyingPixels, settled: raws.filter((r, i) => r.note !== found[i].note).length},
+  rules: {yellow: 'r>95 && g>95 && g>0.82r && r>0.6g && b<0.45*min(r,g)', blue: 'b>90 && b>1.5r && b>1.15g', pale: 'r,g,b>150 && max-min<60; only in a deal, only where the card was expected, never where pale in half the frames', paleFrames: found.filter(r => /pale/.test(r.note)).length, edgeOnBelowThicknessPx: EDGE_THICKNESS, minCardPixels: MIN_AREA, shoeCard: 'persistent yellow; ignored unless the track continues out of it', filmKind: kind, lyingCardPixelsIgnored: lyingPixels, settled: raws.filter((r, i) => r.note !== found[i].note).length},
   ranges: track.ranges, edgeWindow: track.edgeWindow, flips: track.flips, leavesShoe: track.leavesShoe, restFrom: track.restFrom,
   stability: jitter && {restFrames: jitter.frames, clearRestFrames: jitter.clearFrames, rawCornerOffsetMeanPx: r2(jitter.rawMean), rawCornerOffsetMaxPx: r2(jitter.rawMax), clearCornerOffsetMeanPx: r2(jitter.clearMean), clearCornerOffsetMaxPx: r2(jitter.clearMax), note: 'Distance of each found corner from the locked resting quad, before locking. Clear = frames where the card is not covered.'},
   lowConfidenceFrames: track.lowConfidence, output: {path: `${dir}/card-track.json`, sha256: createHash('sha256').update(body).digest('hex'), bytes: Buffer.byteLength(body)}};

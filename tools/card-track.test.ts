@@ -2,7 +2,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {is, classify, YELLOW, BLUE, TABLE, SKIN, DARK, TINT, SHADE, OTHER, blobs, pieces, persistent, measure, hull, fitQuad, orderCorners, alignCorners, carryAcrossFlip,
-  signedArea, dist, centre, sideOf, EDGE_THICKNESS, MIN_AREA, smooth, offsetRamp, homography, project, follower, buildTrack, thinSliver, settleRaws, type Pt, type Raw} from '../src/card-track.ts';
+  signedArea, dist, centre, sideOf, EDGE_THICKNESS, MIN_AREA, smooth, offsetRamp, homography, project, follower, buildTrack, thinSliver, settleRaws, isPale, paleMask, type Pt, type Raw} from '../src/card-track.ts';
 
 const GREEN = [10, 208, 56], LIT = [232, 208, 4], FACE = [6, 112, 224], BLACK = [20, 20, 20], RIM = [235, 225, 160], FLESH = [240, 172, 140];
 const W = 320, H = 240, N = W * H;
@@ -198,6 +198,37 @@ test('a deal turns once: findings on the wrong side of the turn are dropped and 
   const long = raws.map((r, i) => i >= 2 && i < 19 ? none : r);
   assert.equal(settleRaws(long, 'DEAL').filter(r => r.side === 'NONE').length, 19); // frames 2–20: longer than can be bridged
   assert.deepEqual(settleRaws([seen('FRONT', at(0)), seen('BACK', at(1)), seen('FRONT', at(2))], 'OTHER').map(r => r.side), ['FRONT', 'BACK', 'FRONT']);
+});
+
+test('a printed or washed-out face is followed as a pale shape, but only where the card was expected', () => {
+  const WHITE = [236, 234, 228], CREAM = [238, 226, 205];
+  assert.ok(isPale(236, 234, 228) && isPale(238, 226, 205), 'a printed face and a blouse are both pale');
+  assert.ok(!isPale(...(LIT as [number, number, number])) && !isPale(...(FACE as [number, number, number])) && !isPale(...(GREEN as [number, number, number])) && !isPale(...(FLESH as [number, number, number])) && !isPale(...(RIM as [number, number, number])), 'card colours, table, skin and the rim are not');
+  const blouse = rect(20, 10, 90, 70), at = (x: number) => rect(x, 150, 58, 36);
+  const run = (shapes: Shape[][], withPale = true) => { const step = follower(W, H, null); return shapes.map(s => { const rgb = frame(s); return step(classify(rgb, N), withPale ? paleMask(rgb, N) : null); }); };
+  // Back, back, then the same card white for three frames (moving on by its own step), then blue.
+  const film: Shape[][] = [[{q: blouse, colour: CREAM}, {q: at(60), colour: LIT}], [{q: blouse, colour: CREAM}, {q: at(70), colour: LIT}], [{q: blouse, colour: CREAM}, {q: at(80), colour: WHITE}],
+    [{q: blouse, colour: CREAM}, {q: at(90), colour: WHITE}], [{q: blouse, colour: CREAM}, {q: at(100), colour: WHITE}], [{q: blouse, colour: CREAM}, {q: at(110), colour: FACE}], [{q: blouse, colour: CREAM}, {q: at(120), colour: FACE}]];
+  const raws = run(film);
+  assert.deepEqual(raws.map(r => r.side), ['BACK', 'BACK', 'FRONT', 'FRONT', 'FRONT', 'FRONT', 'FRONT']);
+  assert.match(raws[2].note, /pale face/); assert.ok(nearest(raws[3].corners!, {x: 90, y: 150}) < 2.5, 'the quad is the white card, not the blouse');
+  assert.ok(raws.every(r => !r.corners || centre(r.corners).y > 140), 'the blouse is never the card: it is larger than a card and away from where the card was expected');
+  // Without the pale mask the same frames show no flat card there, as before: a line at best.
+  assert.ok(run(film, false).slice(2, 5).every(r => r.side === 'NONE' || r.side === 'EDGE'));
+  // The turn is then at the first pale frame, and nothing needs bridging.
+  const settled = settleRaws(raws, 'DEAL');
+  assert.deepEqual(settled.map(r => r.side), ['BACK', 'BACK', 'FRONT', 'FRONT', 'FRONT', 'FRONT', 'FRONT']); assert.ok(settled.every(r => !/bridged/.test(r.note)));
+  // A finger over the white card: the pale shape is an L, its own quad would be filled poorly, so the expected shape is moved onto it.
+  const finger = rect(100, 150, 30, 20), covered = run([[{q: at(60), colour: LIT}], [{q: at(70), colour: LIT}], [{q: at(80), colour: WHITE}, {q: finger, colour: FLESH}, {q: rect(80, 186, 20, 34), colour: WHITE}]]);
+  assert.equal(covered[2].side, 'FRONT'); assert.match(covered[2].note, /expected shape moved/);
+  const [cw, ch] = [dist(covered[2].corners![0], covered[2].corners![1]), dist(covered[2].corners![1], covered[2].corners![2])]; assert.ok(Math.abs(cw - 58) < 3 && Math.abs(ch - 36) < 3, 'the card keeps the size it had');
+  // Once the blue face has been seen, a pale shape at the card's place is no longer taken for the card (a nail, a rim, a highlight on a card under the hand).
+  const after = run([[{q: at(60), colour: LIT}], [{q: at(70), colour: FACE}], [{q: at(80), colour: FACE}], [{q: at(90), colour: WHITE}]]);
+  assert.deepEqual(after.slice(0, 3).map(r => r.side), ['BACK', 'FRONT', 'FRONT']); assert.ok(!/pale/.test(after[3].note) && after[3].side !== 'FRONT');
+  // A pale shape that is thin is the card edge-on, found as any line is; a pale speck (a nail) is nothing.
+  const thin = run([[{q: at(60), colour: LIT}], [{q: at(70), colour: LIT}], [{q: rect(80, 165, 58, 5), colour: WHITE}]]);
+  assert.equal(thin[2].side, 'EDGE'); assert.ok(thin[2].segment && dist(...thin[2].segment) > 45);
+  assert.equal(run([[{q: at(60), colour: LIT}], [{q: at(70), colour: LIT}], [{q: rect(95, 160, 9, 9), colour: WHITE}]])[2].side, 'NONE');
 });
 
 test('a return shows one side all through, and a card mostly hidden under the hand keeps its last known shape', () => {

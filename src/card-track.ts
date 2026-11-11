@@ -27,6 +27,10 @@ export function classify(rgb: Uint8Array, n: number): Uint8Array {
     out[i] = is.yellow(r, g, b) ? YELLOW : is.blue(r, g, b) ? BLUE : is.shade(r, g, b) ? SHADE : is.table(r, g, b) ? (r > 0.3 * g ? TINT : TABLE) : is.skin(r, g, b) ? SKIN : is.dark(r, g, b) ? DARK : OTHER; }
   return out;
 }
+// A face the film has printed or washed out is neither yellow nor blue: bright and almost without colour. Such pixels are not a
+// class of their own, since a blouse, a nail and a highlight look the same; they only count where the card was expected (pickPale).
+export const isPale = (r: number, g: number, b: number) => r > 150 && g > 150 && b > 150 && Math.max(r, g, b) - Math.min(r, g, b) < 60;
+export function paleMask(rgb: Uint8Array, n: number): Uint8Array { const m = new Uint8Array(n); for (let i = 0, j = 0; i < n; i++, j += 3) if (isPale(rgb[j], rgb[j + 1], rgb[j + 2])) m[i] = 1; return m; }
 export const maskOf = (cls: Uint8Array, kind: number): Uint8Array => { const m = new Uint8Array(cls.length); for (let i = 0; i < cls.length; i++) if (cls[i] === kind) m[i] = 1; return m; };
 
 // ---- masks ----
@@ -216,8 +220,8 @@ export const project = (h: number[], x: number, y: number): Pt => { const w = h[
 // ---- one frame ----
 export type Raw = {side: Side; corners: Pt[] | null; segment: [Pt, Pt] | null; area: number; fill: number; thickness: number; shoeShare: number; note: string};
 /** What the earlier frames expect: where the card should be now. `null` instead of a hint means the very first frame. */
-export type Hint = {region: Pt[] | null};
-export const EDGE_THICKNESS = 9, MIN_AREA = 120;
+export type Hint = {region: Pt[] | null; size?: number; flat?: boolean}; // size: the area of the last flat card seen, when there was one. flat: the expectation is that card's shape, not the ribbon of an edge-on frame
+export const EDGE_THICKNESS = 9, MIN_AREA = 120, PALE_FILL = 0.6; // PALE_FILL: measured on pamela-p2-c1-plan-deal-01, where good fits of the printed face fill 0.66–0.73 of their quad and fits with a stray corner 0.45–0.49
 
 /** Side from what one frame shows. A thin shape is edge-on whatever its colour. */
 export function sideOf(yellow: number, blue: number, thick: number, minArea = MIN_AREA, thin = EDGE_THICKNESS): Side {
@@ -259,6 +263,16 @@ function pickBlue(cls: Uint8Array, w: number, h: number, hint: Hint | null): Pic
   return best ? measure(best, w, null, '') : null;
 }
 /**
+ * The card as a pale shape: the largest one whose middle lies where the card was expected and whose size is that of a card
+ * (between a sixth and two and a half times the last flat card seen: a nail is far smaller, a blouse larger). Without an expectation there is none.
+ */
+function pickPale(pale: Uint8Array, w: number, h: number, hint: Hint | null): (Pick & {at: Pt}) | null {
+  if (!hint?.region) return null;
+  const region = grown(hint.region, 30), size = hint.size ?? Math.abs(signedArea(hint.region)); let best: Blob | null = null;
+  for (const blob of blobs(pale, w, h, MIN_AREA)) if (inside(region, blob.cx, blob.cy) && blob.area >= 0.15 * size && blob.area <= 2.5 * size && blob.area > (best?.area ?? 0)) best = blob;
+  return best ? {...measure(best, w, null, 'pale face: neither yellow nor blue, where the card was expected'), at: {x: best.cx, y: best.cy}} : null;
+}
+/**
  * Edge-on card: for a frame or three the card is a line with hardly any colour. Around the expected
  * place everything that is not clean table is taken, and what an opening removes (anything thinner
  * than a finger) is the card. Returns the longest such sliver.
@@ -275,13 +289,24 @@ export function thinSliver(cls: Uint8Array, w: number, h: number, around: Pt[], 
     bestLength = ax.length; best = {segment: [{x: ax.a.x + x0, y: ax.a.y + y0}, {x: ax.b.x + x0, y: ax.b.y + y0}], area: blob.area, mean: ax.mean}; }
   return best;
 }
-/** Finds the card in one classified frame. On the very first frame (`hint === null`) a seated card is the one about to be dealt, unless a blue card already lies on the table. */
-export function detect(cls: Uint8Array, w: number, h: number, shoe: Uint8Array | null, hint: Hint | null): Raw {
+/**
+ * Finds the card in one classified frame. On the very first frame (`hint === null`) a seated card is the one about to be dealt, unless a blue card already lies on the table.
+ * pale: the frame's bright colourless pixels (paleMask), when the film may show a printed or washed-out face. It is only asked when neither colour gives a flat card.
+ */
+export function detect(cls: Uint8Array, w: number, h: number, shoe: Uint8Array | null, hint: Hint | null, pale: Uint8Array | null = null): Raw {
   const blue = pickBlue(cls, w, h, hint), yellow = hint === null && blue && blue.area >= MIN_AREA ? null : pickYellow(cls, w, h, shoe, hint);
   // The card seated in the shoe window is yellow in every frame. Once a blue card of real size is in the picture it is the dealt card, turned.
   const seated = !!yellow && yellow.shoeShare >= 0.5 && !!blue && blue.area >= MIN_AREA;
   const pick = !seated && (yellow?.area ?? 0) >= (blue?.area ?? 0) ? yellow : blue, side = pick?.quad ? sideOf(yellow?.area ?? 0, blue?.area ?? 0, pick.thick) : 'NONE';
   if (pick?.quad && (side === 'BACK' || side === 'FRONT')) return {side, corners: pick.quad, segment: null, area: pick.area, fill: pick.fill, thickness: pick.thick, shoeShare: pick.shoeShare, note: pick.note};
+  // A printed face is the face: the card has turned. Seen nearly edge-on it is too small to count here and is found as a line below.
+  const white = pale ? pickPale(pale, w, h, hint) : null;
+  if (white?.quad && white.thick >= EDGE_THICKNESS) {
+    // A fit the shape fills poorly has a corner astray (a finger lies over the card). The expected shape, moved onto the pale one, is then the better guess.
+    // That only holds when the expectation is a card's shape; after an edge-on frame it is a ribbon, and the pale shape is then left to the rules below.
+    const loose = white.fill < PALE_FILL && !!hint?.region, from = loose ? centre(hint!.region!) : null;
+    if (!loose || hint!.flat) return {side: 'FRONT', corners: loose ? shifted(hint!.region!, {x: white.at.x - from!.x, y: white.at.y - from!.y}) : white.quad, segment: null, area: white.area, fill: white.fill, thickness: white.thick, shoeShare: 0, note: loose ? 'pale face, expected shape moved onto it: its own fit had a corner astray' : white.note};
+  }
   const sliver = hint?.region ? thinSliver(cls, w, h, hint.region) : null;
   if (pick?.quad && side === 'EDGE') { const [a, b] = ends(pick.quad), own: [Pt, Pt] = [mid(pick.quad[a[0]], pick.quad[a[1]]), mid(pick.quad[b[0]], pick.quad[b[1]])];
     return sliver && dist(...sliver.segment) > dist(...own) ? {side, corners: null, segment: sliver.segment, area: sliver.area, fill: 0, thickness: sliver.mean, shoeShare: 0, note: 'thin shape, colour fading'} : {side, corners: null, segment: own, area: pick.area, fill: pick.fill, thickness: pick.thick, shoeShare: pick.shoeShare, note: 'thin coloured shape'}; }
@@ -297,12 +322,15 @@ const ribbon = (s: [Pt, Pt], half: number): Pt[] => { const l = dist(s[0], s[1])
  * shapes outside the shoe window can start a new track.
  */
 export function follower(w: number, h: number, shoe: Uint8Array | null) {
-  let hint: Hint | null = null, first = true, last: Pt | null = null, step: Pt = {x: 0, y: 0}, missed = 0;
-  return (cls: Uint8Array): Raw => {
-    const raw = detect(cls, w, h, shoe, first ? null : hint ?? {region: null}); first = false;
+  let hint: Hint | null = null, first = true, last: Pt | null = null, step: Pt = {x: 0, y: 0}, missed = 0, size: number | undefined, faced = false;
+  return (cls: Uint8Array, pale: Uint8Array | null = null): Raw => {
+    // A printed face comes before the blue one, at the turn. Once the blue face has been seen, a card without colour is a card under the hand, not a pale one.
+    const raw = detect(cls, w, h, shoe, first ? null : hint ?? {region: null}, faced ? null : pale); first = false;
+    if (raw.side === 'FRONT' && !/^pale face/.test(raw.note)) faced = true;
     const shape = raw.corners ? clockwise(raw.corners) : raw.segment ? ribbon(raw.segment, 8) : null;
-    if (shape) { const c = centre(shape); step = last && missed === 0 ? {x: c.x - last.x, y: c.y - last.y} : {x: 0, y: 0}; last = c; missed = 0; hint = {region: shifted(shape, step)}; }
-    else { missed++; if (last) last = {x: last.x + step.x, y: last.y + step.y}; hint = {region: hint?.region && missed <= 4 ? shifted(hint.region, step) : null}; }
+    if (raw.corners) size = Math.abs(signedArea(raw.corners));
+    if (shape) { const c = centre(shape); step = last && missed === 0 ? {x: c.x - last.x, y: c.y - last.y} : {x: 0, y: 0}; last = c; missed = 0; hint = {region: shifted(shape, step), size, flat: !!raw.corners}; }
+    else { missed++; if (last) last = {x: last.x + step.x, y: last.y + step.y}; hint = {region: hint?.region && missed <= 4 ? shifted(hint.region, step) : null, size, flat: hint?.flat}; }
     return raw;
   };
 }

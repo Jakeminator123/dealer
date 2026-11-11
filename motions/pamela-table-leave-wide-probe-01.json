@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "id": "pamela-table-leave-wide-probe-01",
+  "dealer": "pamela",
+  "source": {
+    "path": "assets/motions/pamela-table-leave-wide-probe-01/source.mp4",
+    "sha256": "9776d670752e1d6952f71d9a3de25487992b5a82fcd27b9a6c9150949897536a",
+    "bytes": 2168286,
+    "width": 784,
+    "height": 522,
+    "fps": 30,
+    "frames": 180,
+    "provider": "Runway developer API",
+    "model": "wan3"
+  },
+  "motion": {
+    "kind": "LEAVE",
+    "from": "IDLE",
+    "to": "AWAY-WIDE",
+    "pass": false,
+    "basis": "SOURCE_FRAME_REVIEW",
+    "evidence": "evidence/generation-method-audit.json",
+    "frame": {
+      "scale": 0.5,
+      "anchor": [
+        882,
+        656
+      ],
+      "layer": "BEHIND_TABLE",
+      "shadow": false
+    }
+  },
+  "review": {
+    "decision": "SECONDARY",
+    "basis": "Lågupplöst prov (784×522, 6 s, 30 credits), inte en film att döma. Sett av filmagenten i översikt (var tolfte ruta och fyra rutor i provets egen storlek), inte oberoende granskat. Frågan var om modellen, med henne i halv skala bakom en ritad grön bordsskiva på en större grön yta, håller hennes storlek, låter henne resa sig med huvudet i bild och gå ut åt höger. Det gör den: hon sitter f0–12, reser sig f24–36, står med hela huvudet i bild f36–48, rättar till kavajen med båda händerna f60–84, vänder sig och går åt höger bakom bordet f96–132, lämnar bilden vid högerkanten f144–156, och bilden är tom med bordet kvar från cirka f165. Den ritade bordsskivan står kvar hela filmen och skymmer henne längs sin kant.",
+    "limitations": "Hon blir större när hon närmar sig högerkanten (huvudet cirka en och en halv gång så högt vid f146 som vid f128): modellen låter henne gå mot kameran längs bordets kant i stället för rakt i sidled. Benen syns aldrig; bordet skymmer dem. Första bilden är hopsatt av en verklig ruta (assets/anchors/pamela-wide-seated-01). Låg upplösning: ansikte och händer går inte att bedöma. Dealerkantens mitt ligger på (882, 656) i bildens fulla storlek; i det riktiga försöket flyttas den åt vänster så att hon kan gå längre ut.",
+    "colorDoesNotProvePhysicalSide": true,
+    "userAccepted": false,
+    "productionReady": false
+  },
+  "experiment": "AWAY-WIDE",
+  "postProcessing": "none",
+  "generationRef": "assets/motions/pamela-table-leave-wide-probe-01/generation.json",
+  "jobRef": "data/clip-jobs.json",
+  "scoutIntegrated": false,
+  "published": false
+}
