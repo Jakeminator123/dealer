@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 1,
+  "id": "pamela-p5-c1-plan-deal-02",
+  "dealer": "pamela",
+  "source": {
+    "path": "assets/motions/pamela-p5-c1-plan-deal-02/source.mp4",
+    "sha256": "87cf57c5cf5813af8633c1aa5fdf33332818a77a5b839f01f7790f155cb03437",
+    "bytes": 11176022,
+    "width": 1764,
+    "height": 1174,
+    "fps": 30,
+    "frames": 120,
+    "provider": "Runway developer API",
+    "model": "wan3"
+  },
+  "motion": {
+    "kind": "DEAL",
+    "from": "READY",
+    "to": "LAND(P5.C1)",
+    "takeHand": "LH",
+    "releaseHand": "LH",
+    "target": "P5.C1",
+    "physicalStartSide": "BACK",
+    "physicalEndSide": "FRONT",
+    "turn": null,
+    "pass": false,
+    "basis": "SOURCE_FRAME_REVIEW",
+    "evidence": "evidence/generation-method-audit.json"
+  },
+  "review": {
+    "decision": "PENDING",
+    "basis": "Levererad 2026-11-11 (omgång 6). Väntar på oberoende rutgranskning; ingen dom ännu.",
+    "limitations": "Inte granskad ruta för ruta ännu.",
+    "colorDoesNotProvePhysicalSide": true,
+    "userAccepted": false,
+    "productionReady": false
+  },
+  "postProcessing": "none",
+  "generationRef": "assets/motions/pamela-p5-c1-plan-deal-02/generation.json",
+  "jobRef": "data/clip-jobs.json",
+  "scoutIntegrated": false,
+  "published": false
+}

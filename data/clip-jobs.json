@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "budget": {
-    "maximumCredits": 3400
+    "maximumCredits": 3800
   },
   "anchors": [
     {
@@ -942,6 +942,63 @@
               "index": 60
             }
           }
+        }
+      ],
+      "plan": {
+        "path": "placements/default.json",
+        "sha256": "406acb69c086b51d166c0eba3e6bb2ce7e19b868b63546db04aa9562da7e7058"
+      }
+    },
+    {
+      "id": "pamela-ready-p7-c1-plan-01",
+      "purpose": "READY with the P7.C1 card at the saved plan position: last image of the return to READY from that card. Same real card pixels and plan quad as the P7 deal ended on.",
+      "base": {
+        "file": {
+          "path": "assets/motions/pamela-p4-c1-color-control-01/start.png",
+          "sha256": "a2fc6d3565ca711015c9b547671bf33e97eea4c2281e75841690f8848b422f45"
+        }
+      },
+      "cardTexture": {
+        "frame": {
+          "video": "assets/motions/pamela-p4-c1-deal-calm-01/source.mp4",
+          "videoSha256": "87d82c357d9c4239b1749bb92ad6dbb595afb97ae72cea85c378ad141a4d8572",
+          "index": 119
+        }
+      },
+      "paint": [
+        {
+          "target": "P7.C1",
+          "side": "FRONT"
+        }
+      ],
+      "plan": {
+        "path": "placements/default.json",
+        "sha256": "406acb69c086b51d166c0eba3e6bb2ce7e19b868b63546db04aa9562da7e7058"
+      }
+    },
+    {
+      "id": "pamela-idle-p7-c1-plan-01",
+      "purpose": "IDLE with the P7.C1 card at the saved plan position: last image of the return to IDLE from that card.",
+      "base": {
+        "file": {
+          "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p4-c1-returns-01/direct/end.png",
+          "sha256": "b9560b7992e018e8d0110a3bf58db95ee90c91cd8ef77c70f2e73323d51c24e7"
+        }
+      },
+      "erase": [
+        "blue"
+      ],
+      "cardTexture": {
+        "frame": {
+          "video": "assets/motions/pamela-p4-c1-deal-calm-01/source.mp4",
+          "videoSha256": "87d82c357d9c4239b1749bb92ad6dbb595afb97ae72cea85c378ad141a4d8572",
+          "index": 119
+        }
+      },
+      "paint": [
+        {
+          "target": "P7.C1",
+          "side": "FRONT"
         }
       ],
       "plan": {
@@ -2127,6 +2184,147 @@
         "note": "READY B as a whole real frame: frame 112 of the shoe plate clip, fingertips flat on the card at the low outlet."
       },
       "purpose": "The draw-out generated backwards. Two attempts to press the card out lifted it instead; pushing a card INTO the slot is naturally a slide, and played in reverse it is the press-out Jakob asked for."
+    },
+    {
+      "id": "pamela-p7-c1-plan-return-ready-01",
+      "kind": "RETURN",
+      "target": "P7.C1",
+      "from": "LAND(P7.C1)",
+      "to": "READY",
+      "model": "wan3",
+      "ratio": "auto_1080p",
+      "audio": false,
+      "duration": 3,
+      "promptText": "Locked camera on the same Pamela, black suit, green felt and fixed shoe. One plain solid blue card lies flat and still on the table at the right side of the image, just in front of the shoe. Her left fingers rest lightly on the card. She lifts the fingers gently straight off the card, and in one calm, unhurried movement the hand glides low over the table the short way up to the shoe, staying below chest height the whole way, fingers relaxed and naturally curved. It arrives gently at the yellow card in the shoe and settles into the exact grip of the last image, thumb and index finger on the top edge of the yellow card. Her eyes follow the hand to the shoe. The other hand rests on the table throughout. The blue card stays flat, still and untouched after the fingers leave it. The yellow card stays fully seated in the shoe. No second touch of the blue card, raised hand, fist, flourish, extraction, handoff, camera motion or cut.",
+      "first": {
+        "frame": {
+          "video": "assets/motions/pamela-p7-c1-plan-deal-01/source.mp4",
+          "videoSha256": "a4ad1132fd8516e36e96275242b1809b8b8a33946d912cd2f2e99625018b9e4e",
+          "index": 105
+        },
+        "note": "Landing frame for P7.C1: exact frame 105 of pamela-p7-c1-plan-deal-01, fingers resting on the card. The deal is cut at this same frame, so there is no jump."
+      },
+      "last": {
+        "file": {
+          "path": "assets/anchors/pamela-ready-p7-c1-plan-01/anchor.png",
+          "sha256": "881cf3d830043f23cb4722bc2b9d387df7fbf47bd4031d8ca541e84562cde875"
+        },
+        "note": "READY anchor with the P7.C1 card at the saved plan position."
+      },
+      "purpose": "Return to READY for the P7 seat film (one film per seat): the seat had a deal but no returns. Starts on a real frame of that deal, as the P4 and P1 returns do."
+    },
+    {
+      "id": "pamela-p7-c1-plan-return-idle-01",
+      "kind": "RETURN",
+      "target": "P7.C1",
+      "from": "LAND(P7.C1)",
+      "to": "IDLE",
+      "model": "wan3",
+      "ratio": "auto_1080p",
+      "audio": false,
+      "duration": 3,
+      "promptText": "Locked camera on the same Pamela, black suit, green felt and fixed shoe. One plain solid blue card lies flat and still on the table at the right side of the image, just in front of the shoe. Her left fingers rest lightly on the card. She lifts the fingers gently straight off the card, and in one calm, unhurried movement draws the hand low and back toward herself, then lays it flat on the table in front of her, matching the last image: both hands resting side by side, shoulders level, upright posture. As the hand settles she lifts her head and looks into the camera with a slight friendly smile. The other hand rests on the table throughout. The blue card stays flat, still and untouched after the fingers leave it. The yellow card stays fully seated in the shoe. No second touch of the blue card, raised hand, fist, flourish, reach toward the shoe, extra card, camera motion or cut.",
+      "first": {
+        "frame": {
+          "video": "assets/motions/pamela-p7-c1-plan-deal-01/source.mp4",
+          "videoSha256": "a4ad1132fd8516e36e96275242b1809b8b8a33946d912cd2f2e99625018b9e4e",
+          "index": 105
+        },
+        "note": "Landing frame for P7.C1: exact frame 105 of pamela-p7-c1-plan-deal-01, fingers resting on the card. The deal is cut at this same frame, so there is no jump."
+      },
+      "last": {
+        "file": {
+          "path": "assets/anchors/pamela-idle-p7-c1-plan-01/anchor.png",
+          "sha256": "a006e6708be3bfa611cac6589d175979788fffc78fae5600f80b348475889d3a"
+        },
+        "note": "IDLE anchor with the P7.C1 card at the saved plan position."
+      },
+      "purpose": "Return to IDLE for the P7 seat film (one film per seat). Starts on the same real frame of the P7 deal as the return to READY."
+    },
+    {
+      "id": "pamela-idle-loop-01",
+      "kind": "IDLE",
+      "target": null,
+      "from": "IDLE",
+      "to": "IDLE",
+      "model": "wan3",
+      "ratio": "auto_1080p",
+      "audio": false,
+      "duration": 4,
+      "promptText": "Locked camera on the same Pamela, black suit, green felt and fixed shoe. She sits upright with both hands resting flat on the table in front of her, exactly as in the first image, with the same calm expression. For the whole clip she only breathes calmly and blinks naturally once or twice, and she ends in the exact pose of the last image, which is the same as the first. Both hands stay flat and still on the table. The yellow card stays fully seated in the shoe and the table stays empty. No reach, gesture, raised hand, head turn, speaking, extra card, camera motion or cut.",
+      "first": {
+        "frame": {
+          "video": "assets/motions/pamela-idle-ready-entry-01/source.mp4",
+          "videoSha256": "cbaf81cd79f53eafcc38891847151a1311e3ee94275abe10463674ae6a6f66f2",
+          "index": 0
+        },
+        "note": "Real resting frame: frame 0 of the entry clip, so the loop leads straight into the entry."
+      },
+      "last": {
+        "frame": {
+          "video": "assets/motions/pamela-idle-ready-entry-01/source.mp4",
+          "videoSha256": "cbaf81cd79f53eafcc38891847151a1311e3ee94275abe10463674ae6a6f66f2",
+          "index": 0
+        },
+        "note": "Same frame, so the clip loops and leads into the entry."
+      },
+      "purpose": "Idle loop for the empty table in variant A. The idle clips of the old lab do not fit (white shoe card, 1762 px wide), so this one starts and ends on a real resting frame of the current scene."
+    },
+    {
+      "id": "pamela-p3-c1-plan-deal-02",
+      "kind": "DEAL",
+      "target": "P3.C1",
+      "from": "READY",
+      "to": "LAND(P3.C1)",
+      "model": "wan3",
+      "ratio": "auto_1080p",
+      "audio": false,
+      "duration": 4,
+      "promptText": "Same Pamela, black suit, green felt and fixed shoe in one locked wide shot: a blackjack dealer dealing one card face up. One continuous, calm and unhurried four-second deal slightly left of centre in the image. From the exact first pose her left hand removes one card from the shoe, broad yellow back visible, and carries it low over the table. During the reach she rolls that same wrist once: yellow visibly narrows to a thin pale edge and the opposite face, plain solid blue, opens fully before table contact. The colours stay on opposite surfaces of the same rigid card. She lays the card down gently exactly where the blue card lies in the last image and the clip ends there, her fingertips still resting lightly on the card as in the last image. Both faces of the card are blank: one plain solid yellow, the other plain solid blue, with no print, pips, pattern or picture. The other hand rests. The next yellow card stays in the shoe. No slide, second touch, display gesture, handoff, second flip, colour swap, camera motion or cut.",
+      "first": {
+        "file": {
+          "path": "assets/motions/pamela-p4-c1-color-control-01/start.png",
+          "sha256": "a2fc6d3565ca711015c9b547671bf33e97eea4c2281e75841690f8848b422f45"
+        },
+        "note": "Proven READY anchor: real video frame with thumb and index pinch on the yellow card."
+      },
+      "last": {
+        "frame": {
+          "video": "assets/motions/pamela-p3-c1-plan-deal-01/source.mp4",
+          "videoSha256": "2519464c8337b980ed828401c696f3b76be8d32c327d90be0c54b86f22ded5c9",
+          "index": 112
+        },
+        "note": "Whole real frame: frame 112 of the rejected first P3 deal, fingers resting on the blue card at the plan position. Not a composite."
+      },
+      "purpose": "Re-roll of the P3 deal for the seat film. The first take never turned the card (yellow on the table, then a colour swap at frame 104). Same proven wording; the end image is now a whole real frame instead of a composite anchor, as validated on P4."
+    },
+    {
+      "id": "pamela-p5-c1-plan-deal-02",
+      "kind": "DEAL",
+      "target": "P5.C1",
+      "from": "READY",
+      "to": "LAND(P5.C1)",
+      "model": "wan3",
+      "ratio": "auto_1080p",
+      "audio": false,
+      "duration": 4,
+      "promptText": "Same Pamela, black suit, green felt and fixed shoe in one locked wide shot: a blackjack dealer dealing one card face up. One continuous, calm and unhurried four-second deal slightly right of centre in the image. From the exact first pose her left hand removes one card from the shoe, broad yellow back visible, and carries it low over the table. During the reach she rolls that same wrist once: yellow visibly narrows to a thin pale edge and the opposite face, plain solid blue, opens fully before table contact. The colours stay on opposite surfaces of the same rigid card. She lays the card down gently exactly where the blue card lies in the last image and the clip ends there, her fingertips still resting lightly on the card as in the last image. Both faces of the card are blank: one plain solid yellow, the other plain solid blue, with no print, pips, pattern or picture. The other hand rests. The next yellow card stays in the shoe. No slide, second touch, display gesture, handoff, second flip, colour swap, camera motion or cut.",
+      "first": {
+        "file": {
+          "path": "assets/motions/pamela-p4-c1-color-control-01/start.png",
+          "sha256": "a2fc6d3565ca711015c9b547671bf33e97eea4c2281e75841690f8848b422f45"
+        },
+        "note": "Proven READY anchor: real video frame with thumb and index pinch on the yellow card."
+      },
+      "last": {
+        "frame": {
+          "video": "assets/motions/pamela-p5-c1-plan-deal-01/source.mp4",
+          "videoSha256": "8d77b10da35b3c4f5f10e13eb63d0849dff35d80da39d02501b0e729242bf33d",
+          "index": 108
+        },
+        "note": "Whole real frame: frame 108 of the first P5 deal, three fingers resting on the card at the size the model draws it. Not a composite."
+      },
+      "purpose": "Re-roll of the P5 deal for the seat film. The first take slid the card along the table and shrank it in the last two frames to match a composite anchor. The end image is now a whole real frame from that take, before the shrink."
     }
   ],
   "derived": [

@@ -32,7 +32,11 @@ Varje klipp är en handling mellan två ankare och skrivs `READY>P4.C1`, `P4.C1>
 
 ## Läget i klippbanken
 
-Beslut ägs av `motions/<id>.json`; uppdraget av `data/clip-jobs.json`. 44 beställda klipp och ett återfört ur arkivet, 3 156 credits använda, 2 138 kvar (kontrollerat mot Runway 2026-11-11). Tak i jobbfilen 3 400; Jakobs ram högst 5 000. Labbet räknar cirka 17–20 av 51 kanter som har klipp; rena huvudtagningar efter hård granskning är färre (P4 i båda varianter).
+Beslut ägs av `motions/<id>.json`; uppdraget av `data/clip-jobs.json`. 44 beställda klipp och ett återfört ur arkivet, 3 156 credits använda, 2 138 kvar (kontrollerat mot Runway 2026-11-11). Tak i jobbfilen 3 400; Jakobs ram högst 5 000.
+
+**Jakobs beslut 2026-11-11: börja med en film per plats.** Platsens tre filmer är första kortets (giv, retur till REDO, retur till VILA); andra kortet spelar samma filmer med det renderade kortet flyttat till sin plats. Dealern behöver två uppsättningar, eftersom D.C2 stannar stängt. Då behövs 30 filmer i stället för 51. Av dem finns 17 med ett klipp som inte är underkänt: 9 kandidater (ingången, P4 × 3, P1 och P2 returer, P7 giv) och 8 med kända brister (givarna P1, P2, P5, P6 och returerna P5, P6). 13 saknas: P3 × 3, P7 returer, dealern × 6, vilo-loop och REDO>VILA. Avståndet kort 1 till kort 2 i planen är 23–48 px utom P3 (54 px); provet på P4 höll till cirka 45–50 px, och P7 flyttas bort från skon, vilket är oprövat. Egen film per kort finns kvar som utväg där flytten inte håller. Gränsen 50 px är ingen spärr utan en varning: P3 behandlas som övriga platser.
+
+**Omgång 6, beställd 2026-11-11 (360 credits, tak höjt till 3 800):** `pamela-p7-c1-plan-return-ready-01` och `-idle-01` (startar på ruta 105 ur P7-given), `pamela-idle-loop-01` (första och sista bild är ruta 0 ur ingångsklippet), samt omtagningar `pamela-p3-c1-plan-deal-02` och `pamela-p5-c1-plan-deal-02` vars slutbild är en hel verklig ruta ur respektive första giv (ruta 112 och 108) i stället för ett hopklippt ankare. Ska rutgranskas oberoende innan P6 och returerna för P3 och P5 beställs. Parallellt inventeras gamla labbets klipp från 10 november (dealerkort, P3, P5, P6) som möjliga gratis kandidater.
 
 | Del | Läge |
 | --- | --- |
@@ -76,7 +80,7 @@ Riktning från Jakob, prövad i `tools/track-card.ts` och `tools/render-card-pro
 
 0. **Valideringsprovet 2026-11-11 är gjort och oberoende granskat (356 credits).** Hela verkliga rutor som ankare fungerar: `pamela-p4-c1-drawn-deal-02` är användbar och utan rester; kvar är att startankarets kort är cirka 30 % större än landningens och att grönt mörknar för varje generation. Tre spår är prövade och förkastade: ultrarapid som snabbas upp (inte bättre, dubbla priset), uttaget ur skon baklänges (lyfter 1,1 kortlängd, sämre), och `aleph2`-redigering (felet kvar, vändningen förstörd, synliga skarvar; API:t kräver dessutom minst 2 s fönster). **Uttaget ur skon är olöst**; otestat förslag: ankare där kortet redan är halvvägs ute på filten. Nästa beställning: normal fart 4 s, verkliga rutor som ankare, ett ankarpar per plats med samma kortstorlek och grönnivå, en plats i taget.
 
-1. Jakobs beslut som styr nästa beställning: kortens storlek (planens eller handens, cirka dubbelt), en film per plats eller per kort, och huvudvariant A eller B.
+1. Kvar för Jakob att bestämma: huvudvariant A eller B (banken är längst kommen i A; B är den han beskrev och har P4 och P5), och kortens storlek, som med renderade kort är ett reglage och inte hindrar beställning. Nodkartan byggs om för en film per plats.
 2. Beställ därefter en plats i taget enligt punkt 0; P1 och P7 behöver rena huvudklipp, P6 och P7 saknar variant B (skobyte bakom arm).
 3. Vilo-loop och dealerkorten; D.C2 stannar gult.
 4. Beställning från labbet; rätta kortspårningen för andra platser än P4.
