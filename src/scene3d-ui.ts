@@ -68,6 +68,7 @@ const THREE: Record<string, string> = {
   panorama: 'Här: en stående klocka, damm, och ett neonrör som flimrar till medan salen dämpas lite.',
   la: 'Här: en stående klocka, damm i kvällsljuset, och ett moln som går för solen i några sekunder.',
   skog: 'Här: en stående klocka, pollen och fallande löv, och ett moln som går för solen i några sekunder.',
+  hall: 'Här: en stående klocka, damm och rök, och spelhallens egna ljus.',
   kuliss: 'Här: en stående klocka, damm, och ljuset som dämpas mjukt i några sekunder.',
   plat: 'Här finns inget rum att ställa klockan i; damm syns bara framför dealern och ljuset dämpas mjukt.'};
 function sync() { const three = document.getElementById('three'); if (three) three.textContent = THREE[state.room] ?? '';
@@ -90,7 +91,7 @@ function build() {
   const live = () => hud();
 
   panel.append(el('h1', {textContent: '3D-scen · bakgrund och bord'}), el('p', {className: 'sub', textContent: 'Pamelas 2D-film i ett 3D-rum med 3D-bord. Dra i bilden, rulla för zoom, dubbelklicka för hemvy.'}));
-  group('Miljö', choice('room', [['salong', '3D-salong'], ['panorama', 'Las Vegas'], ['la', 'Skyline'], ['skog', 'Skog'], ['kuliss', 'Kuliss'], ['plat', 'V6-plåt']], room => scene.set({room, blur: ({salong: 11, panorama: 5, la: 6, skog: 6, kuliss: 9, plat: 8})[room]}), true),
+  group('Miljö', choice('room', [['salong', '3D-salong'], ['panorama', 'Las Vegas'], ['la', 'Skyline'], ['skog', 'Skog'], ['hall', 'Spelhall'], ['kuliss', 'Kuliss'], ['plat', 'V6-plåt']], room => scene.set({room, blur: ({salong: 11, panorama: 5, la: 6, skog: 6, hall: 11, kuliss: 9, plat: 8})[room]}), true),
     slider('Oskärpa längst bort', 'blur', 0, 30, 0.5, ' px', live), check('Oskärpan växer med avståndet (3D-salongen)', 'depthBlur'), slider('Full oskärpa efter', 'dofRange', 0.5, 12, 0.1, ' m', live),
     note('<b>3D-salong</b>: byggd geometri, äkta parallax. <b>Las Vegas</b>, <b>Skyline</b> och <b>Skog</b>: 360°-bilder runt kameran, exakta vid vridning men utan parallax. <b>Kuliss</b>: V6-plåten som ett plan bakom dealern. <b>V6-plåt</b>: dagens platta bild, fast i rutan.'));
   group('Fokus (styrs av filmen)', choice('focus', [['off', 'Av'], ['dealer', 'Dealern'], ['follow', 'Följ given'], ['card', 'Kortet'], ['manual', 'Eget']]),

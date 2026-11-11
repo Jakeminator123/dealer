@@ -2,13 +2,19 @@
 //   salong   built geometry, real parallax and depth (a placeholder room, not a designed environment)
 //   panorama a 360-degree image on a sphere around the camera: exact when turning, no parallax.
 //            Three of them: the Las Vegas hall (panorama), a penthouse over a skyline (la) and a forest (skog)
+//   hall     a gaming hall, built geometry like the salon, made by src/scene3d-hall.ts and fetched the first time it is shown
 //   kuliss   the V6 plate as one flat backdrop behind the dealer
 //   plat     the V6 plate fixed to the frame, as V6 does it today
 // Everything here is drawn blurred; nothing in a room may stand in front of the table.
 import * as T from 'three';
 import {FILM, clockAngles, solveCamera, type FilmCamera} from './scene3d-geometry.ts';
 
-export type RoomId = 'salong' | 'panorama' | 'la' | 'skog' | 'kuliss' | 'plat';
+export type RoomId = 'salong' | 'panorama' | 'la' | 'skog' | 'hall' | 'kuliss' | 'plat';
+// A room that a module of its own builds (src/scene3d-hall.ts). Dealer metres around the middle of the dealer-side table edge:
+// the felt is y = 0, the floor and ceiling as FLOOR and CEILING below, -z is away from the camera, behind the dealer. update
+// runs before every drawn frame (lamp: a flickering lamp's brightness, 1 = steady; air: how much is in the air, 0-1) and
+// returns the factor for the room's brightness. fog: the room's own, in dealer metres.
+export type BuiltRoom = {group: T.Object3D; update(seconds: number, live: {lamp: number; air: number}): number; fog?: {color: number; near: number; far: number}};
 export type Room = {group: T.Object3D | null; plate: T.Texture | null; follow: boolean; hasDepth: boolean; blur: number; exposure: number; fog: T.Fog | null};
 const FLOOR = -0.92, CEILING = 3.15; // dealer metres relative to the felt
 
@@ -117,6 +123,7 @@ export function createRooms(scene: T.Scene, urls: {plate: string; panorama: stri
   const plate = load(urls.plate, ['kuliss', 'plat']), panorama = load(urls.panorama, ['panorama']);
   const ball = new T.SphereGeometry(60, 64, 32), sphereOf = (map: T.Texture | null) => new T.Mesh(ball, new T.MeshBasicMaterial({map, side: T.BackSide, fog: false}));
   const built = buildSalon(), salon = built.group, clock = buildClock(), sphere = sphereOf(panorama), la = sphereOf(null), skog = sphereOf(null);
+  const hallBox = new T.Group(); let hall: BuiltRoom | null = null, hallAsked = false, k = 1; // the hall's group is empty until its module has been read
   // The two extra panoramas are fetched the first time they are shown.
   const later: Partial<Record<RoomId, {mesh: T.Mesh; url: string}>> = {la: {mesh: la, url: urls.la}, skog: {mesh: skog, url: urls.skog}};
   const backdrop = new T.Mesh(new T.PlaneGeometry(1, 1), new T.MeshBasicMaterial({map: plate, color: 0x959595, fog: false}));
@@ -125,6 +132,7 @@ export function createRooms(scene: T.Scene, urls: {plate: string; panorama: stri
     panorama: {group: sphere, plate: null, follow: true, hasDepth: false, blur: 5, exposure: 0.8, fog: null},
     la: {group: la, plate: null, follow: true, hasDepth: false, blur: 6, exposure: 0.7, fog: null},
     skog: {group: skog, plate: null, follow: true, hasDepth: false, blur: 6, exposure: 0.55, fog: null},
+    hall: {group: hallBox, plate: null, follow: false, hasDepth: true, blur: 11, exposure: 1, fog: new T.Fog(0x0b0710, 8, 30)},
     kuliss: {group: backdrop, plate: null, follow: false, hasDepth: false, blur: 9, exposure: 1, fog: null},
     plat: {group: null, plate, follow: false, hasDepth: false, blur: 8, exposure: 1, fog: null},
   };
@@ -135,17 +143,19 @@ export function createRooms(scene: T.Scene, urls: {plate: string; panorama: stri
   // two neon tubes for the Las Vegas hall; the magenta one is the one that may flicker
   const neon = new T.Group(), tube = (r: number, gr: number, b: number, x: number, z: number) => { const m = new T.Mesh(new T.CylinderGeometry(0.025, 0.025, 1.7, 12), new T.MeshBasicMaterial({color: new T.Color(r, gr, b), fog: false})); m.position.set(x, 0.75, z); neon.add(m); return m.material as T.MeshBasicMaterial; };
   const magenta = tube(6, 0.6, 3.2, -2.6, -3.4); tube(0.5, 3.5, 5, 2.9, -3.6); neon.visible = false;
-  scene.add(salon, sphere, la, skog, backdrop, clock.group, neon, ...back.map(a => a.points)); clock.group.visible = false;
+  scene.add(salon, sphere, la, skog, hallBox, backdrop, clock.group, neon, ...back.map(a => a.points)); clock.group.visible = false;
+  const hallFog = () => { const own = hall?.fog ?? {color: 0x0b0710, near: 8, far: 30}, fog = rooms.hall.fog!; fog.color.set(own.color); fog.near = own.near * k; fog.far = own.far * k; };
   // tint of the dust per room: [behind the dealer (linear, may exceed 1), in front of her (as shown)], and how much of it is leaves
   const AIR: Record<RoomId, {back: number[]; front: number[]; leaves: number}> = {
     salong: {back: [1.5, 1.23, 0.85], front: [0.95, 0.83, 0.66], leaves: 0}, panorama: {back: [1.35, 1.15, 1.0], front: [0.88, 0.78, 0.71], leaves: 0},
-    la: {back: [1.8, 1.17, 0.62], front: [1.0, 0.78, 0.48], leaves: 0}, skog: {back: [1.1, 1.17, 0.75], front: [0.7, 0.75, 0.5], leaves: 1},
+    la: {back: [1.8, 1.17, 0.62], front: [1.0, 0.78, 0.48], leaves: 0}, skog: {back: [1.1, 1.17, 0.75], front: [0.7, 0.75, 0.5], leaves: 1}, hall: {back: [1.3, 1.1, 1.25], front: [0.85, 0.78, 0.82], leaves: 0},
     kuliss: {back: [1.5, 1.23, 0.85], front: [0.95, 0.83, 0.66], leaves: 0}, plat: {back: [0, 0, 0], front: [0.95, 0.83, 0.66], leaves: 0}};
   return {
     rooms,
     // Rooms are built in dealer metres around the dealer-side table edge and scaled into the plan-scale world.
     place(camera: FilmCamera) {
-      const {pitch, edgeDistance} = solveCamera(camera), k = camera.scale, distance = edgeDistance + 3.2 * k, halfWidth = FILM.width / 2 / camera.focalPx * distance * 1.14;
+      const {pitch, edgeDistance} = solveCamera(camera), distance = edgeDistance + 3.2 * (k = camera.scale), halfWidth = FILM.width / 2 / camera.focalPx * distance * 1.14;
+      hallBox.position.set(0, 0, -edgeDistance); hallBox.scale.setScalar(k); hallFog();
       salon.position.set(0, 0, -edgeDistance); salon.scale.setScalar(k); rooms.salong.fog!.near = 8 * k; rooms.salong.fog!.far = 30 * k;
       backdrop.scale.set(2 * halfWidth, 2 * halfWidth / 1.5, 1); backdrop.position.set(0, camera.heightM - Math.tan(pitch) * distance, -edgeDistance - 3.2 * k);
       // the clock stands close behind the dealer's left shoulder (image right), so it is among the sharper things in the room
@@ -154,6 +164,7 @@ export function createRooms(scene: T.Scene, urls: {plate: string; panorama: stri
     },
     show(id: RoomId) {
       const wait = later[id]; if (wait) { const material = wait.mesh.material as T.MeshBasicMaterial; material.map = load(wait.url, [id]); material.needsUpdate = true; delete later[id]; }
+      if (id === 'hall' && !hallAsked) { hallAsked = true; import('./scene3d-hall.ts').then(m => { hall = m.buildHall() as BuiltRoom; hallBox.add(hall.group); hallFog(); }, () => onMissing('hall')); }
       for (const [name, room] of Object.entries(rooms)) if (room.group) room.group.visible = name === id; scene.fog = rooms[id].fog;
     },
     // The clouds drawn over the film; the caller puts them in its foreground scene.
@@ -169,6 +180,7 @@ export function createRooms(scene: T.Scene, urls: {plate: string; panorama: stri
       front.forEach((a, i) => { a.points.visible = amounts[i] > 0; if (a.points.visible) a.set(seconds, amounts[i], pixels, i ? [1, 1, 1] : air.front); });
       const lit = live.lamp * live.lamp; built.lamp.material.color.setRGB(7 * lit, 4 * lit, 1.6 * lit); built.lamp.light.intensity = 3 * live.lamp;
       neon.visible = id === 'panorama'; magenta.color.setRGB(6 * lit, 0.6 * lit, 3.2 * lit);
+      if (id === 'hall') return hall ? hall.update(seconds, {lamp: live.lamp, air: live.air}) : 1;
       return id === 'salong' ? 1 : id === 'panorama' ? 1 - 0.15 * (1 - live.lamp) : live.cloud;
     },
     followCamera(id: RoomId, position: T.Vector3, turnDeg: number) { const room = rooms[id]; if (room.follow && room.group) { room.group.position.copy(position); room.group.rotation.y = turnDeg * Math.PI / 180; } },
