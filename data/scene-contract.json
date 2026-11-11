@@ -1,0 +1,3809 @@
+{
+  "schemaVersion": 1,
+  "measuredAt": "2026-11-11T00:00:11.753Z",
+  "generatedBy": "node tools/scene-measure.ts (maths in src/scene-geometry.ts, checked by tools/scene-geometry.test.ts)",
+  "basisLegend": {
+    "MEASURED": "read from film pixels by the tool",
+    "DERIVED": "computed from measured values under the stated model",
+    "ESTIMATED": "rests on an assumption this footage cannot check; a working value",
+    "GIVEN": "input from the brief, the plan file or existing code, not a result",
+    "rule": "An object's `basis` covers every number inside it unless a nested object states its own."
+  },
+  "image": {
+    "basis": "GIVEN",
+    "width": 1764,
+    "height": 1174,
+    "framesPerSecond": 30,
+    "pixelConvention": "pixel centres, origin top left, x right, y down",
+    "v6NativeWidth": 1762,
+    "note": "The plan and V6 use 1762-wide native pixels; film x = native x * 1763 / 1761, as tools/build-anchor.ts scales them."
+  },
+  "cardMillimetres": {
+    "basis": "GIVEN",
+    "width": 63,
+    "height": 88,
+    "cardEdge": "the blue tracking face, the surface the plan quad and tools/build-anchor.ts place; the pale rim lies outside it",
+    "rim": {
+      "basis": "MEASURED",
+      "medianWidthPx": 1.33,
+      "bySidePx": {
+        "far": 1.26,
+        "right": 1.24,
+        "near": 1.16,
+        "left": 1.61
+      },
+      "sidesCompared": 28,
+      "note": "A rendered card that must also hide the film's rim has to reach this much further on each side; see tablePlane.outerSilhouetteVariant."
+    }
+  },
+  "verdict": {
+    "onePlane": "The planned-family film cards (P1.C1, P4.C1, P4.C2, P7.C1) fit one plane with 1.12 px rms edge error (max 2.43 px). Left out one at a time they are predicted within 2.56 px rms and the cards predicted at the 16 targets move by at most 5.4 px.",
+    "whatThatProves": "Those cards were put there by the plan through the end image, so the fit shows that the generator kept the plan's own flat projection to within a few pixels. It does not show that the shot was drawn with that camera.",
+    "plan": "The 16 plan quads are exactly one plane of 63 x 88 mm cards (1.1e-13 px). Against the film-calibrated plane they differ by at most 2.2 px (rms 1.2 px), which is inside the calibration's own uncertainty (2.9 px at 95 %, 5.4 px leave-one-out).",
+    "scale": "Millimetres on this plane are a convention. The same plane makes a resting hand 256 mm wide and the shoe 948 mm long, and the cards the generator drew by itself measure 76 x 122 mm on it. Relative to the dealer the plan's cards are roughly half size.",
+    "use": "Treating the table as one calibrated plane is sound for card positions, rendered cards, shadows and flat table artwork. Body-scale props drawn in millimetres on it will look about twice too small next to the dealer until the scale convention is settled."
+  },
+  "tablePlane": {
+    "model": "LEVEL_ROWS",
+    "modelNote": "Six-number plane: lines along table X stay horizontal in the image (no camera roll, camera square to the dealer-side edge). Cards are free to slide and turn on the table.",
+    "homographyTableMmToImagePx": {
+      "basis": "DERIVED",
+      "matrix": [
+        [
+          1.11534905,
+          1.05925092,
+          852.5548004
+        ],
+        [
+          0,
+          0.6898742742,
+          1099.092342
+        ],
+        [
+          0,
+          0.001258095892,
+          1
+        ]
+      ],
+      "how": "least squares on the measured blue-face edges of four landed cards, each a 63 x 88 mm rectangle with free position and heading"
+    },
+    "homographyImagePxToTableMm": {
+      "basis": "DERIVED",
+      "matrix": [
+        [
+          -0.9004987083,
+          0.01734324755,
+          748.6626659
+        ],
+        [
+          0,
+          1.449539485,
+          -1593.177747
+        ],
+        [
+          0,
+          -0.001823659671,
+          1
+        ]
+      ]
+    },
+    "origin": "centre of the measured P4.C1 card",
+    "originImagePx": {
+      "basis": "DERIVED",
+      "xy": [
+        852.55,
+        1099.09
+      ]
+    },
+    "axes": "millimetres on the felt; +X toward image right (the dealer's left hand side), +Y away from the camera toward the dealer, +Z up; X runs parallel to the table's vanishing line and to the dealer-side edge",
+    "scaleAtOrigin": {
+      "basis": "DERIVED",
+      "pxPerMmAlongX": 1.1153,
+      "pxPerMmAlongY": 0.6921,
+      "foreshortening": 0.62
+    },
+    "cards": [
+      {
+        "id": "P4.C1",
+        "target": "P4.C1",
+        "clip": "assets/motions/pamela-p4-c1-plan-return-idle-01/source.mp4",
+        "frames": [
+          62,
+          68,
+          74,
+          80,
+          86,
+          89
+        ],
+        "note": "card alone, hand withdrawn",
+        "measured": {
+          "basis": "MEASURED",
+          "quadPx": [
+            [
+              818.33,
+              1070.57
+            ],
+            [
+              886.81,
+              1069.7
+            ],
+            [
+              888.21,
+              1131.36
+            ],
+            [
+              816.82,
+              1131.48
+            ]
+          ],
+          "cornerOrder": "far-left, far-right, near-right, near-left",
+          "sides": [
+            {
+              "side": "far",
+              "edgeSamples": 318,
+              "lineScatterPx": 0.5,
+              "readFromRimAgainstOtherCard": false,
+              "takenFromOuterEdgeMinusRim": false
+            },
+            {
+              "side": "right",
+              "edgeSamples": 268,
+              "lineScatterPx": 0.09,
+              "readFromRimAgainstOtherCard": false,
+              "takenFromOuterEdgeMinusRim": false
+            },
+            {
+              "side": "near",
+              "edgeSamples": 330,
+              "lineScatterPx": 0.05,
+              "readFromRimAgainstOtherCard": false,
+              "takenFromOuterEdgeMinusRim": false
+            },
+            {
+              "side": "left",
+              "edgeSamples": 269,
+              "lineScatterPx": 0.09,
+              "readFromRimAgainstOtherCard": false,
+              "takenFromOuterEdgeMinusRim": false
+            }
+          ],
+          "frameToFrameCornerScatterPx": 0.4
+        },
+        "onPlane": {
+          "basis": "DERIVED",
+          "centreMm": {
+            "x": 0,
+            "y": 0
+          },
+          "headingDeg": -0.48,
+          "projectedQuadPx": [
+            [
+              819.11,
+              1070.04
+            ],
+            [
+              885.69,
+              1070.37
+            ],
+            [
+              889.95,
+              1131.57
+            ],
+            [
+              815.56,
+              1131.16
+            ]
+          ]
+        },
+        "reprojection": {
+          "basis": "DERIVED",
+          "edgeRmsPx": 0.73,
+          "edgeMaxPx": 1.33,
+          "cornerErrorPx": [
+            0.94,
+            1.3,
+            1.75,
+            1.31
+          ]
+        }
+      },
+      {
+        "id": "P1.C1",
+        "target": "P1.C1",
+        "clip": "assets/motions/pamela-p1-c1-plan-return-idle-02/source.mp4",
+        "frames": [
+          60,
+          66,
+          72,
+          78,
+          84,
+          89
+        ],
+        "note": "card alone, hand withdrawn",
+        "measured": {
+          "basis": "MEASURED",
+          "quadPx": [
+            [
+              216.97,
+              975.4
+            ],
+            [
+              275.2,
+              975.84
+            ],
+            [
+              224.24,
+              1018.34
+            ],
+            [
+              164.41,
+              1015.07
+            ]
+          ],
+          "cornerOrder": "far-left, far-right, near-right, near-left",
+          "sides": [
+            {
+              "side": "far",
+              "edgeSamples": 260,
+              "lineScatterPx": 0.12,
+              "readFromRimAgainstOtherCard": false,
+              "takenFromOuterEdgeMinusRim": false
+            },
+            {
+              "side": "right",
+              "edgeSamples": 299,
+              "lineScatterPx": 0.28,
+              "readFromRimAgainstOtherCard": false,
+              "takenFromOuterEdgeMinusRim": false
+            },
+            {
+              "side": "near",
+              "edgeSamples": 269,
+              "lineScatterPx": 0.3,
+              "readFromRimAgainstOtherCard": false,
+              "takenFromOuterEdgeMinusRim": false
+            },
+            {
+              "side": "left",
+              "edgeSamples": 285,
+              "lineScatterPx": 0.28,
+              "readFromRimAgainstOtherCard": false,
+              "takenFromOuterEdgeMinusRim": false
+            }
+          ],
+          "frameToFrameCornerScatterPx": 0.64
+        },
+        "onPlane": {
+          "basis": "DERIVED",
+          "centreMm": {
+            "x": -695,
+            "y": 184.5
+          },
+          "headingDeg": 1.72,
+          "projectedQuadPx": [
+            [
+              219.11,
+              976.51
+            ],
+            [
+              274.76,
+              975.72
+            ],
+            [
+              223.98,
+              1015.86
+            ],
+            [
+              162.99,
+              1016.81
+            ]
+          ]
+        },
+        "reprojection": {
+          "basis": "DERIVED",
+          "edgeRmsPx": 1.34,
+          "edgeMaxPx": 1.98,
+          "cornerErrorPx": [
+            2.41,
+            0.45,
+            2.49,
+            2.25
+          ]
+        }
+      },
+      {
+        "id": "P4.C2",
+        "target": "P4.C2",
+        "clip": "assets/motions/pamela-p4-c2-plan-deal-01/source.mp4",
+        "frames": [
+          113,
+          115,
+          117,
+          119
+        ],
+        "note": "second card on top of the first, fingers on it; left side and part of the near side read from the rim against the lower card",
+        "measured": {
+          "basis": "MEASURED",
+          "quadPx": [
+            [
+              860.01,
+              1060.11
+            ],
+            [
+              926.38,
+              1061.54
+            ],
+            [
+              933.19,
+              1121.41
+            ],
+            [
+              861.62,
+              1121.54
+            ]
+          ],
+          "cornerOrder": "far-left, far-right, near-right, near-left",
+          "sides": [
+            {
+              "side": "far",
+              "edgeSamples": 82,
+              "lineScatterPx": 0.47,
+              "readFromRimAgainstOtherCard": false,
+              "takenFromOuterEdgeMinusRim": false
+            },
+            {
+              "side": "right",
+              "edgeSamples": 93,
+              "lineScatterPx": 0.5,
+              "readFromRimAgainstOtherCard": false,
+              "takenFromOuterEdgeMinusRim": false
+            },
+            {
+              "side": "near",
+              "edgeSamples": 180,
+              "lineScatterPx": 0.16,
+              "readFromRimAgainstOtherCard": true,
+              "takenFromOuterEdgeMinusRim": false
+            },
+            {
+              "side": "left",
+              "edgeSamples": 141,
+              "lineScatterPx": 0.31,
+              "readFromRimAgainstOtherCard": true,
+              "takenFromOuterEdgeMinusRim": false
+            }
+          ],
+          "frameToFrameCornerScatterPx": 0.68
+        },
+        "onPlane": {
+          "basis": "DERIVED",
+          "centreMm": {
+            "x": 38.9,
+            "y": 13.9
+          },
+          "headingDeg": -0.63,
+          "projectedQuadPx": [
+            [
+              860.03,
+              1061.5
+            ],
+            [
+              925.57,
+              1061.92
+            ],
+            [
+              934.07,
+              1121.04
+            ],
+            [
+              860.99,
+              1120.52
+            ]
+          ]
+        },
+        "reprojection": {
+          "basis": "DERIVED",
+          "edgeRmsPx": 0.65,
+          "edgeMaxPx": 1.02,
+          "cornerErrorPx": [
+            1.39,
+            0.9,
+            0.96,
+            1.2
+          ]
+        }
+      },
+      {
+        "id": "P7.C1",
+        "target": "P7.C1",
+        "clip": "assets/motions/pamela-p7-c1-plan-deal-01/source.mp4",
+        "frames": [
+          116,
+          117,
+          118,
+          119
+        ],
+        "note": "hand resting on the card, far part in deep hand shadow",
+        "measured": {
+          "basis": "MEASURED",
+          "quadPx": [
+            [
+              1424.92,
+              938.81
+            ],
+            [
+              1473.84,
+              937.55
+            ],
+            [
+              1517.56,
+              966.9
+            ],
+            [
+              1466.66,
+              967.54
+            ]
+          ],
+          "cornerOrder": "far-left, far-right, near-right, near-left",
+          "sides": [
+            {
+              "side": "far",
+              "edgeSamples": 14,
+              "lineScatterPx": 0.06,
+              "readFromRimAgainstOtherCard": false,
+              "takenFromOuterEdgeMinusRim": true
+            },
+            {
+              "side": "right",
+              "edgeSamples": 105,
+              "lineScatterPx": 0.35,
+              "readFromRimAgainstOtherCard": false,
+              "takenFromOuterEdgeMinusRim": false
+            },
+            {
+              "side": "near",
+              "edgeSamples": 130,
+              "lineScatterPx": 0.07,
+              "readFromRimAgainstOtherCard": false,
+              "takenFromOuterEdgeMinusRim": false
+            },
+            {
+              "side": "left",
+              "edgeSamples": 61,
+              "lineScatterPx": 0.43,
+              "readFromRimAgainstOtherCard": false,
+              "takenFromOuterEdgeMinusRim": false
+            }
+          ],
+          "frameToFrameCornerScatterPx": 0.83
+        },
+        "onPlane": {
+          "basis": "DERIVED",
+          "centreMm": {
+            "x": 758.5,
+            "y": 289.4
+          },
+          "headingDeg": -0.81,
+          "projectedQuadPx": [
+            [
+              1420.95,
+              936.2
+            ],
+            [
+              1470.92,
+              936.51
+            ],
+            [
+              1523.09,
+              969.36
+            ],
+            [
+              1468.85,
+              969
+            ]
+          ]
+        },
+        "reprojection": {
+          "basis": "DERIVED",
+          "edgeRmsPx": 1.5,
+          "edgeMaxPx": 2.43,
+          "cornerErrorPx": [
+            4.75,
+            3.1,
+            6.05,
+            2.63
+          ]
+        }
+      }
+    ],
+    "reprojection": {
+      "basis": "DERIVED",
+      "what": "distance from each end of a measured edge segment to the projected card edge",
+      "rmsPx": 1.12,
+      "maxPx": 2.43,
+      "residuals": 32,
+      "freeNumbers": 16,
+      "redundancy": 16,
+      "twoStartsAgreeWithinPx": 0,
+      "perCard": [
+        {
+          "id": "P4.C1",
+          "edgeRmsPx": 0.73,
+          "edgeMaxPx": 1.33
+        },
+        {
+          "id": "P1.C1",
+          "edgeRmsPx": 1.34,
+          "edgeMaxPx": 1.98
+        },
+        {
+          "id": "P4.C2",
+          "edgeRmsPx": 0.65,
+          "edgeMaxPx": 1.02
+        },
+        {
+          "id": "P7.C1",
+          "edgeRmsPx": 1.5,
+          "edgeMaxPx": 2.43
+        }
+      ]
+    },
+    "leaveOneOut": {
+      "basis": "DERIVED",
+      "what": "plane refitted without one card; the left-out card is then laid on it as a free 63 x 88 mm card, and the 16 predicted target cards are compared with the full fit",
+      "meanLeftOutEdgeRmsPx": 1.75,
+      "rows": [
+        {
+          "leftOut": "P4.C1",
+          "leftOutCardEdgeRmsPx": 0.94,
+          "leftOutCardEdgeMaxPx": 1.79,
+          "predictedCardsMoveUpToPx": 1.7,
+          "movedPx": {
+            "P1.C1": 0.7,
+            "P4.C1": 1.6,
+            "P7.C1": 1.3,
+            "D.C1": 0.9
+          },
+          "camera": {
+            "focalPx": 875,
+            "horizontalFieldOfViewDeg": 90.5,
+            "pitchDownDeg": 1.9,
+            "heightAboveTableMm": 482,
+            "groundDistanceToOriginMm": 764,
+            "viewAngleAtOriginDeg": 32.3,
+            "vanishingLineRow": 557,
+            "principalColumn": 819
+          },
+          "twoStartsAgreeWithinPx": 0
+        },
+        {
+          "leftOut": "P1.C1",
+          "leftOutCardEdgeRmsPx": 2.45,
+          "leftOutCardEdgeMaxPx": 4.39,
+          "predictedCardsMoveUpToPx": 5.4,
+          "movedPx": {
+            "P1.C1": 5.4,
+            "P4.C1": 1.9,
+            "P7.C1": 3,
+            "D.C1": 2.9
+          },
+          "camera": {
+            "focalPx": 770,
+            "horizontalFieldOfViewDeg": 97.8,
+            "pitchDownDeg": -2,
+            "heightAboveTableMm": 438,
+            "groundDistanceToOriginMm": 710,
+            "viewAngleAtOriginDeg": 31.7,
+            "vanishingLineRow": 613,
+            "principalColumn": 865
+          },
+          "twoStartsAgreeWithinPx": 0
+        },
+        {
+          "leftOut": "P4.C2",
+          "leftOutCardEdgeRmsPx": 1.03,
+          "leftOutCardEdgeMaxPx": 1.56,
+          "predictedCardsMoveUpToPx": 1.3,
+          "movedPx": {
+            "P1.C1": 1.3,
+            "P4.C1": 0.7,
+            "P7.C1": 0.8,
+            "D.C1": 0.5
+          },
+          "camera": {
+            "focalPx": 920,
+            "horizontalFieldOfViewDeg": 87.6,
+            "pitchDownDeg": 2.8,
+            "heightAboveTableMm": 497,
+            "groundDistanceToOriginMm": 796,
+            "viewAngleAtOriginDeg": 32,
+            "vanishingLineRow": 541,
+            "principalColumn": 837
+          },
+          "twoStartsAgreeWithinPx": 0
+        },
+        {
+          "leftOut": "P7.C1",
+          "leftOutCardEdgeRmsPx": 2.56,
+          "leftOutCardEdgeMaxPx": 3.89,
+          "predictedCardsMoveUpToPx": 3.9,
+          "movedPx": {
+            "P1.C1": 3.5,
+            "P4.C1": 0.8,
+            "P7.C1": 3.9,
+            "D.C1": 2.4
+          },
+          "camera": {
+            "focalPx": 1003,
+            "horizontalFieldOfViewDeg": 82.7,
+            "pitchDownDeg": 6.7,
+            "heightAboveTableMm": 563,
+            "groundDistanceToOriginMm": 841,
+            "viewAngleAtOriginDeg": 33.8,
+            "vanishingLineRow": 469,
+            "principalColumn": 850
+          },
+          "twoStartsAgreeWithinPx": 0
+        }
+      ]
+    },
+    "uncertainty": {
+      "basis": "DERIVED",
+      "how": "every measured side moved as a line by a normal disturbance of 1.12 px at each end of the side (the fit's own rms, which is mostly the generator drawing each card a little differently), 300 refits",
+      "disturbancePx": 1.12,
+      "runs": 300,
+      "predictedCardCornerShift95Px": {
+        "P1.C1": 2.9,
+        "P1.C2": 2.7,
+        "P2.C1": 2.5,
+        "P2.C2": 2.4,
+        "P3.C1": 2.3,
+        "P3.C2": 2.2,
+        "P4.C1": 2.4,
+        "P4.C2": 2.4,
+        "P5.C1": 2.5,
+        "P5.C2": 2.4,
+        "P6.C1": 2.8,
+        "P6.C2": 2.7,
+        "P7.C1": 2.8,
+        "P7.C2": 2.8,
+        "D.C1": 1.9,
+        "D.C2": 1.9
+      },
+      "worstPx": 2.9
+    },
+    "unconstrainedModel": {
+      "basis": "DERIVED",
+      "what": "general homography, one more free number, not adopted",
+      "edgeRmsPx": 0.93,
+      "rollDeg": -1.36,
+      "vanishingLineRow": 547,
+      "predictedCardsDifferUpToPx": 3.6,
+      "meanLeftOutEdgeRmsPx": 1.8,
+      "leftOutPredictedCardsMoveUpToPx": 6.1,
+      "fStatistic": {
+        "value": 6.68,
+        "degreesOfFreedom": [
+          1,
+          15
+        ],
+        "note": "The 5 % point of F(1,15) is 4.54, so the in-sample gain is nominally significant. But the residuals are systematic per card rather than noise, held-out cards are predicted no better (1.8 against 1.75 px), and the one visible table line is horizontal. That decides for level rows."
+      },
+      "homographyTableMmToImagePx": [
+        [
+          1.113772965,
+          1.101865514,
+          852.6114083
+        ],
+        [
+          0.02636046288,
+          0.6852799798,
+          1099.107524
+        ],
+        [
+          6.776263578e-21,
+          0.001252619465,
+          1
+        ]
+      ]
+    },
+    "outerSilhouetteVariant": {
+      "basis": "DERIVED",
+      "what": "the same fit with the card taken as face plus rim (where the table green ends)",
+      "homographyTableMmToImagePx": [
+        [
+          1.172641955,
+          1.051314865,
+          852.4785423
+        ],
+        [
+          0,
+          0.6402287616,
+          1099.530533
+        ],
+        [
+          0,
+          0.001241988811,
+          1
+        ]
+      ],
+      "edgeRmsPx": 1.1,
+      "pxPerMmAlongXAtOrigin": 1.1718,
+      "scaleRatioToPrimary": 1.0506,
+      "plannedCardsCornerGapUpToPx": 4.2,
+      "camera": {
+        "focalPx": 941,
+        "horizontalFieldOfViewDeg": 86.3,
+        "pitchDownDeg": 4.3,
+        "heightAboveTableMm": 497,
+        "groundDistanceToOriginMm": 768,
+        "viewAngleAtOriginDeg": 32.9,
+        "vanishingLineRow": 515,
+        "principalColumn": 846
+      }
+    },
+    "dealerEdge": {
+      "row": {
+        "basis": "MEASURED",
+        "imageRow": 831.5,
+        "how": "last jacket row between the hands, columns 846-900, pamela-p4-c1-plan-return-idle-01 f89; horizontal across the body"
+      },
+      "onPlane": {
+        "basis": "DERIVED",
+        "yMm": 751,
+        "note": "distance from the P4.C1 card centre to the dealer-side edge, on the plan-scale plane"
+      }
+    },
+    "plannedTargetsOnPlaneMm": {
+      "basis": "DERIVED",
+      "what": "table position of a 63 x 88 mm card, square to the table, whose image centre is the plan target's centre",
+      "targets": {
+        "P1.C1": {
+          "x": -697.3,
+          "y": 184.8
+        },
+        "P1.C2": {
+          "x": -679.8,
+          "y": 212.4
+        },
+        "P2.C1": {
+          "x": -429.1,
+          "y": 134.4
+        },
+        "P2.C2": {
+          "x": -413.6,
+          "y": 184.3
+        },
+        "P3.C1": {
+          "x": -207,
+          "y": 88.9
+        },
+        "P3.C2": {
+          "x": -155.4,
+          "y": 98.7
+        },
+        "P4.C1": {
+          "x": -0.1,
+          "y": -0.1
+        },
+        "P4.C2": {
+          "x": 38.3,
+          "y": 13.5
+        },
+        "P5.C1": {
+          "x": 227.3,
+          "y": 65.1
+        },
+        "P5.C2": {
+          "x": 278.9,
+          "y": 98.7
+        },
+        "P6.C1": {
+          "x": 440,
+          "y": 119.2
+        },
+        "P6.C2": {
+          "x": 473.3,
+          "y": 147.1
+        },
+        "P7.C1": {
+          "x": 758,
+          "y": 294.9
+        },
+        "P7.C2": {
+          "x": 837,
+          "y": 337.8
+        },
+        "D.C1": {
+          "x": 42.1,
+          "y": 363.9
+        },
+        "D.C2": {
+          "x": 104.2,
+          "y": 363.9
+        }
+      }
+    },
+    "repeatability": {
+      "basis": "MEASURED",
+      "what": "the same landing measured in another clip, not used in the fit",
+      "rows": [
+        {
+          "id": "P7.C1 take 2",
+          "clip": "assets/motions/pamela-p7-c1-plan-deal-02/source.mp4",
+          "frames": [
+            116,
+            117,
+            118,
+            119
+          ],
+          "target": "P7.C1",
+          "quadPx": [
+            [
+              1418.91,
+              934.51
+            ],
+            [
+              1471.1,
+              934.51
+            ],
+            [
+              1519.7,
+              967.07
+            ],
+            [
+              1466.58,
+              971.89
+            ]
+          ],
+          "cornersMeasured": [
+            false,
+            false,
+            true,
+            true
+          ],
+          "edgeRmsOnPlanePx": 1.71,
+          "cornerShiftAgainstFitClipPx": [
+            null,
+            null,
+            2.1,
+            4.3
+          ]
+        },
+        {
+          "id": "P4.C1 deal clip",
+          "clip": "assets/motions/pamela-p4-c1-plan-deal-02/source.mp4",
+          "frames": [
+            117,
+            118,
+            119
+          ],
+          "target": "P4.C1",
+          "quadPx": [
+            [
+              819.02,
+              1069.81
+            ],
+            [
+              886.3,
+              1069.4
+            ],
+            [
+              889.38,
+              1132.98
+            ],
+            [
+              817.3,
+              1133.31
+            ]
+          ],
+          "cornersMeasured": [
+            true,
+            true,
+            true,
+            true
+          ],
+          "edgeRmsOnPlanePx": 0.97,
+          "cornerShiftAgainstFitClipPx": [
+            1,
+            0.6,
+            2,
+            1.9
+          ]
+        }
+      ]
+    }
+  },
+  "camera": {
+    "basis": "DERIVED",
+    "assumptions": [
+      "pinhole, square pixels, no skew, no lens distortion",
+      "principal row at the image centre (586.5)",
+      "principal column where the plane itself puts it, the one column for which a pinhole reproduces the plane exactly",
+      "level rows: no roll, camera square to the dealer-side edge",
+      "the blue card face is 63 x 88 mm; every length scales with that"
+    ],
+    "estimates": {
+      "focalPx": {
+        "value": 886,
+        "leaveOneOutRange": [
+          770,
+          1003
+        ],
+        "noise95Range": [
+          805,
+          956
+        ],
+        "noise68Range": [
+          849,
+          920
+        ],
+        "outerSilhouetteEdge": 941,
+        "unconstrainedModel": 889,
+        "basis": "DERIVED",
+        "how": "from the equal-length condition on the two table axes"
+      },
+      "horizontalFieldOfViewDeg": {
+        "value": 89.8,
+        "leaveOneOutRange": [
+          82.7,
+          97.8
+        ],
+        "noise95Range": [
+          85.4,
+          95.2
+        ],
+        "noise68Range": [
+          87.6,
+          92.2
+        ],
+        "outerSilhouetteEdge": 86.3,
+        "unconstrainedModel": 89.6,
+        "basis": "DERIVED",
+        "how": "2 atan(1764 / 2f)"
+      },
+      "verticalFieldOfViewDeg": {
+        "value": 67.1,
+        "leaveOneOutRange": [
+          60.7,
+          74.7
+        ],
+        "noise95Range": [
+          63.1,
+          72.2
+        ],
+        "noise68Range": [
+          65.1,
+          69.3
+        ],
+        "outerSilhouetteEdge": 63.9,
+        "unconstrainedModel": 66.9,
+        "basis": "DERIVED",
+        "how": "2 atan(1174 / 2f)"
+      },
+      "pitchDownDeg": {
+        "value": 2.5,
+        "leaveOneOutRange": [
+          -2,
+          6.7
+        ],
+        "noise95Range": [
+          -0.2,
+          4.7
+        ],
+        "noise68Range": [
+          1.4,
+          3.6
+        ],
+        "outerSilhouetteEdge": 4.3,
+        "unconstrainedModel": 2.5,
+        "basis": "DERIVED",
+        "how": "optical axis below the horizontal"
+      },
+      "heightAboveTableMm": {
+        "value": 493,
+        "leaveOneOutRange": [
+          438,
+          563
+        ],
+        "noise95Range": [
+          452,
+          531
+        ],
+        "noise68Range": [
+          476,
+          513
+        ],
+        "outerSilhouetteEdge": 497,
+        "unconstrainedModel": 495,
+        "basis": "DERIVED",
+        "how": "camera centre above the felt"
+      },
+      "groundDistanceToOriginMm": {
+        "value": 774,
+        "leaveOneOutRange": [
+          710,
+          841
+        ],
+        "noise95Range": [
+          726,
+          821
+        ],
+        "noise68Range": [
+          750,
+          798
+        ],
+        "outerSilhouetteEdge": 768,
+        "unconstrainedModel": 776,
+        "basis": "DERIVED",
+        "how": "along the felt from below the camera to the P4.C1 card"
+      },
+      "distanceToOriginMm": {
+        "value": 918,
+        "leaveOneOutRange": [
+          835,
+          1012
+        ],
+        "noise95Range": [
+          856,
+          976
+        ],
+        "noise68Range": [
+          891,
+          948
+        ],
+        "outerSilhouetteEdge": 914,
+        "unconstrainedModel": 921,
+        "basis": "DERIVED",
+        "how": "camera centre to the P4.C1 card"
+      },
+      "viewAngleAtOriginDeg": {
+        "value": 32.5,
+        "leaveOneOutRange": [
+          31.7,
+          33.8
+        ],
+        "noise95Range": [
+          31.6,
+          33.5
+        ],
+        "noise68Range": [
+          32,
+          33
+        ],
+        "outerSilhouetteEdge": 32.9,
+        "unconstrainedModel": 32.5,
+        "basis": "DERIVED",
+        "how": "angle between the line of sight to the P4.C1 card and the felt"
+      },
+      "vanishingLineRow": {
+        "value": 548,
+        "leaveOneOutRange": [
+          469,
+          613
+        ],
+        "noise95Range": [
+          507,
+          590
+        ],
+        "noise68Range": [
+          528,
+          566
+        ],
+        "outerSilhouetteEdge": 515,
+        "unconstrainedModel": 547,
+        "basis": "DERIVED",
+        "how": "image row of the table's vanishing line"
+      },
+      "principalColumn": {
+        "value": 842,
+        "leaveOneOutRange": [
+          819,
+          865
+        ],
+        "noise95Range": [
+          812,
+          878
+        ],
+        "noise68Range": [
+          827,
+          861
+        ],
+        "outerSilhouetteEdge": 846,
+        "unconstrainedModel": 879,
+        "basis": "DERIVED",
+        "how": "image column where the table's depth lines meet"
+      }
+    },
+    "positionMm": {
+      "x": -10,
+      "y": -774,
+      "z": 493
+    },
+    "focalWithPrincipalPointAtImageCentrePx": 886,
+    "howWellConstrained": {
+      "wellConstrained": "image scale and foreshortening at P4 (px per mm along X and Y), and the view angle at the origin: fixed by the P4 cards alone, a few percent",
+      "moderately": "vanishing-line row, focal length, camera height and distance: they hang on the size and shape of the P1 and P7 cards relative to P4; see the leave-one-out and uncertainty ranges",
+      "weakly": "pitch (a few degrees either way moves the vanishing line by tens of rows) and the principal column",
+      "notConstrained": "principal row, lens distortion, and anything about the real metric scale"
+    },
+    "planCamera": {
+      "basis": "DERIVED",
+      "what": "the same decomposition of the plan's own flat projection",
+      "focalPx": 907,
+      "horizontalFieldOfViewDeg": 88.4,
+      "pitchDownDeg": 3.4,
+      "heightAboveTableMm": 520,
+      "groundDistanceToOriginMm": 805,
+      "viewAngleAtOriginDeg": 32.9,
+      "vanishingLineRow": 533,
+      "principalColumn": 852
+    },
+    "reading": "This is the camera that would draw the plan's cards, a wide lens about half a metre above the felt. The dealer, her hands and the shoe are drawn at roughly twice that scale, so no single pinhole explains both; see sanityChecks."
+  },
+  "planConsistency": {
+    "planAsPlane": {
+      "basis": "DERIVED",
+      "what": "one plane fitted to the 16 flat-mode plan quads, each a free 63 x 88 mm card",
+      "residualRmsPx": 1.11e-13,
+      "residualMaxPx": 4.55e-13,
+      "tableProjection": {
+        "mode": "flat",
+        "heading": 0
+      },
+      "homographyTableMmToImagePx": [
+        [
+          1.086962406,
+          1.019690884,
+          852.461579
+        ],
+        [
+          1.809710642e-16,
+          0.6370252382,
+          1099.29731
+        ],
+        [
+          0,
+          0.001196172249,
+          1
+        ]
+      ],
+      "camera": {
+        "focalPx": 907,
+        "horizontalFieldOfViewDeg": 88.4,
+        "pitchDownDeg": 3.4,
+        "heightAboveTableMm": 520,
+        "groundDistanceToOriginMm": 805,
+        "viewAngleAtOriginDeg": 32.9,
+        "vanishingLineRow": 533,
+        "principalColumn": 852
+      }
+    },
+    "againstCalibratedPlane": {
+      "basis": "DERIVED",
+      "what": "at each target a 63 x 88 mm card on the film-calibrated plane, square to the table and centred on the plan quad's image centre, compared corner by corner with the plan quad",
+      "cornerGapMaxPx": 2.2,
+      "cornerGapRmsPx": 1.2,
+      "largestAt": [
+        {
+          "id": "P6.C1",
+          "cornerGapMaxPx": 2.2
+        },
+        {
+          "id": "P6.C2",
+          "cornerGapMaxPx": 2.1
+        },
+        {
+          "id": "P5.C1",
+          "cornerGapMaxPx": 2
+        }
+      ],
+      "insideCalibrationUncertainty": true,
+      "perTarget": [
+        {
+          "id": "P1.C1",
+          "cornerGapPx": [
+            0.3,
+            1.3,
+            0.2,
+            1.4
+          ],
+          "cornerGapMaxPx": 1.4,
+          "shapeOnlyCornerRmsPx": 0.87,
+          "planQuadOnPlaneMm": {
+            "width": 61.8,
+            "height": 87.2
+          },
+          "planQuadPx": [
+            [
+              218.68,
+              976.2
+            ],
+            [
+              272.28,
+              976.2
+            ],
+            [
+              220.19,
+              1016.04
+            ],
+            [
+              161.77,
+              1016.04
+            ]
+          ],
+          "calibratedQuadPx": [
+            [
+              218.96,
+              976.01
+            ],
+            [
+              273.53,
+              976.01
+            ],
+            [
+              220.06,
+              1016.23
+            ],
+            [
+              160.37,
+              1016.23
+            ]
+          ],
+          "plan": {
+            "farWidthPx": 53.6,
+            "nearWidthPx": 58.4,
+            "depthPx": 67.5,
+            "taper": 0.918,
+            "sideSlantDeg": -35
+          },
+          "calibrated": {
+            "farWidthPx": 54.6,
+            "nearWidthPx": 59.7,
+            "depthPx": 69,
+            "taper": 0.914,
+            "sideSlantDeg": -34.5
+          }
+        },
+        {
+          "id": "P1.C2",
+          "cornerGapPx": [
+            0.3,
+            1.1,
+            0.2,
+            1.3
+          ],
+          "cornerGapMaxPx": 1.3,
+          "shapeOnlyCornerRmsPx": 0.77,
+          "planQuadOnPlaneMm": {
+            "width": 61.8,
+            "height": 87.3
+          },
+          "planQuadPx": [
+            [
+              249.94,
+              964.9
+            ],
+            [
+              302.18,
+              964.9
+            ],
+            [
+              254.13,
+              1002.65
+            ],
+            [
+              197.33,
+              1002.65
+            ]
+          ],
+          "calibratedQuadPx": [
+            [
+              250.15,
+              964.75
+            ],
+            [
+              303.28,
+              964.75
+            ],
+            [
+              254.07,
+              1002.8
+            ],
+            [
+              196.09,
+              1002.8
+            ]
+          ],
+          "plan": {
+            "farWidthPx": 52.2,
+            "nearWidthPx": 56.8,
+            "depthPx": 62.9,
+            "taper": 0.92,
+            "sideSlantDeg": -35.7
+          },
+          "calibrated": {
+            "farWidthPx": 53.1,
+            "nearWidthPx": 58,
+            "depthPx": 64.1,
+            "taper": 0.916,
+            "sideSlantDeg": -35.1
+          }
+        },
+        {
+          "id": "P2.C1",
+          "cornerGapPx": [
+            0.3,
+            1,
+            0.5,
+            1.2
+          ],
+          "cornerGapMaxPx": 1.2,
+          "shapeOnlyCornerRmsPx": 0.79,
+          "planQuadOnPlaneMm": {
+            "width": 61.7,
+            "height": 86.8
+          },
+          "planQuadPx": [
+            [
+              431.22,
+              998.44
+            ],
+            [
+              487.51,
+              998.44
+            ],
+            [
+              452.94,
+              1042.58
+            ],
+            [
+              391.32,
+              1042.58
+            ]
+          ],
+          "calibratedQuadPx": [
+            [
+              431.05,
+              998.15
+            ],
+            [
+              488.44,
+              998.15
+            ],
+            [
+              453.3,
+              1042.87
+            ],
+            [
+              390.21,
+              1042.87
+            ]
+          ],
+          "plan": {
+            "farWidthPx": 56.3,
+            "nearWidthPx": 61.6,
+            "depthPx": 57.7,
+            "taper": 0.913,
+            "sideSlantDeg": -47.9
+          },
+          "calibrated": {
+            "farWidthPx": 57.4,
+            "nearWidthPx": 63.1,
+            "depthPx": 58.7,
+            "taper": 0.91,
+            "sideSlantDeg": -47.6
+          }
+        },
+        {
+          "id": "P2.C2",
+          "cornerGapPx": [
+            0.3,
+            0.8,
+            0.4,
+            0.9
+          ],
+          "cornerGapMaxPx": 0.9,
+          "shapeOnlyCornerRmsPx": 0.64,
+          "planQuadOnPlaneMm": {
+            "width": 61.8,
+            "height": 87.2
+          },
+          "planQuadPx": [
+            [
+              464.79,
+              976.39
+            ],
+            [
+              518.42,
+              976.39
+            ],
+            [
+              488.41,
+              1016.26
+            ],
+            [
+              429.96,
+              1016.26
+            ]
+          ],
+          "calibratedQuadPx": [
+            [
+              464.57,
+              976.19
+            ],
+            [
+              519.16,
+              976.19
+            ],
+            [
+              488.78,
+              1016.45
+            ],
+            [
+              429.06,
+              1016.45
+            ]
+          ],
+          "plan": {
+            "farWidthPx": 53.6,
+            "nearWidthPx": 58.4,
+            "depthPx": 51.4,
+            "taper": 0.918,
+            "sideSlantDeg": -48.9
+          },
+          "calibrated": {
+            "farWidthPx": 54.6,
+            "nearWidthPx": 59.7,
+            "depthPx": 52,
+            "taper": 0.914,
+            "sideSlantDeg": -48.6
+          }
+        },
+        {
+          "id": "P3.C1",
+          "cornerGapPx": [
+            0.8,
+            0.7,
+            1,
+            0.9
+          ],
+          "cornerGapMaxPx": 1,
+          "shapeOnlyCornerRmsPx": 0.82,
+          "planQuadOnPlaneMm": {
+            "width": 61.6,
+            "height": 86.6
+          },
+          "planQuadPx": [
+            [
+              623.77,
+              1020.58
+            ],
+            [
+              682.74,
+              1020.58
+            ],
+            [
+              665.82,
+              1069.22
+            ],
+            [
+              600.97,
+              1069.22
+            ]
+          ],
+          "calibratedQuadPx": [
+            [
+              623.11,
+              1020.18
+            ],
+            [
+              683.31,
+              1020.18
+            ],
+            [
+              666.69,
+              1069.62
+            ],
+            [
+              600.18,
+              1069.62
+            ]
+          ],
+          "plan": {
+            "farWidthPx": 59,
+            "nearWidthPx": 64.8,
+            "depthPx": 52.5,
+            "taper": 0.909,
+            "sideSlantDeg": -64.9
+          },
+          "calibrated": {
+            "farWidthPx": 60.2,
+            "nearWidthPx": 66.5,
+            "depthPx": 53.3,
+            "taper": 0.905,
+            "sideSlantDeg": -65.1
+          }
+        },
+        {
+          "id": "P3.C2",
+          "cornerGapPx": [
+            0.9,
+            0.6,
+            1,
+            0.7
+          ],
+          "cornerGapMaxPx": 1,
+          "shapeOnlyCornerRmsPx": 0.78,
+          "planQuadOnPlaneMm": {
+            "width": 61.6,
+            "height": 86.6
+          },
+          "planQuadPx": [
+            [
+              674.96,
+              1015.65
+            ],
+            [
+              733.33,
+              1015.65
+            ],
+            [
+              721.59,
+              1063.27
+            ],
+            [
+              657.46,
+              1063.27
+            ]
+          ],
+          "calibratedQuadPx": [
+            [
+              674.19,
+              1015.28
+            ],
+            [
+              733.77,
+              1015.28
+            ],
+            [
+              722.56,
+              1063.65
+            ],
+            [
+              656.81,
+              1063.65
+            ]
+          ],
+          "plan": {
+            "farWidthPx": 58.4,
+            "nearWidthPx": 64.1,
+            "depthPx": 49.8,
+            "taper": 0.91,
+            "sideSlantDeg": -69.8
+          },
+          "calibrated": {
+            "farWidthPx": 59.6,
+            "nearWidthPx": 65.7,
+            "depthPx": 50.4,
+            "taper": 0.906,
+            "sideSlantDeg": -70.2
+          }
+        },
+        {
+          "id": "P4.C1",
+          "cornerGapPx": [
+            1.5,
+            0.7,
+            1.8,
+            0.8
+          ],
+          "cornerGapMaxPx": 1.8,
+          "shapeOnlyCornerRmsPx": 1.16,
+          "planQuadOnPlaneMm": {
+            "width": 61.4,
+            "height": 86
+          },
+          "planQuadPx": [
+            [
+              819.93,
+              1070.96
+            ],
+            [
+              884.99,
+              1070.96
+            ],
+            [
+              888.6,
+              1130.78
+            ],
+            [
+              816.32,
+              1130.78
+            ]
+          ],
+          "calibratedQuadPx": [
+            [
+              818.58,
+              1070.28
+            ],
+            [
+              885.18,
+              1070.28
+            ],
+            [
+              890.24,
+              1131.46
+            ],
+            [
+              815.85,
+              1131.46
+            ]
+          ],
+          "plan": {
+            "farWidthPx": 65.1,
+            "nearWidthPx": 72.3,
+            "depthPx": 59.8,
+            "taper": 0.9,
+            "sideSlantDeg": -86.5
+          },
+          "calibrated": {
+            "farWidthPx": 66.6,
+            "nearWidthPx": 74.4,
+            "depthPx": 61.2,
+            "taper": 0.895,
+            "sideSlantDeg": -87.4
+          }
+        },
+        {
+          "id": "P4.C2",
+          "cornerGapPx": [
+            1.6,
+            0.6,
+            1.8,
+            0.7
+          ],
+          "cornerGapMaxPx": 1.8,
+          "shapeOnlyCornerRmsPx": 1.13,
+          "planQuadOnPlaneMm": {
+            "width": 61.4,
+            "height": 86.1
+          },
+          "planQuadPx": [
+            [
+              860.36,
+              1062.55
+            ],
+            [
+              924.4,
+              1062.55
+            ],
+            [
+              932.26,
+              1120.42
+            ],
+            [
+              861.22,
+              1120.42
+            ]
+          ],
+          "calibratedQuadPx": [
+            [
+              858.93,
+              1061.92
+            ],
+            [
+              924.46,
+              1061.92
+            ],
+            [
+              933.96,
+              1121.05
+            ],
+            [
+              860.89,
+              1121.05
+            ]
+          ],
+          "plan": {
+            "farWidthPx": 64,
+            "nearWidthPx": 71,
+            "depthPx": 58,
+            "taper": 0.902,
+            "sideSlantDeg": -90.9
+          },
+          "calibrated": {
+            "farWidthPx": 65.5,
+            "nearWidthPx": 73.1,
+            "depthPx": 59.4,
+            "taper": 0.897,
+            "sideSlantDeg": -91.9
+          }
+        },
+        {
+          "id": "P5.C1",
+          "cornerGapPx": [
+            1.8,
+            0.6,
+            2,
+            0.5
+          ],
+          "cornerGapMaxPx": 2,
+          "shapeOnlyCornerRmsPx": 1.13,
+          "planQuadOnPlaneMm": {
+            "width": 61.5,
+            "height": 86.4
+          },
+          "planQuadPx": [
+            [
+              1045.09,
+              1033.07
+            ],
+            [
+              1105.56,
+              1033.07
+            ],
+            [
+              1131.5,
+              1084.37
+            ],
+            [
+              1064.83,
+              1084.37
+            ]
+          ],
+          "calibratedQuadPx": [
+            [
+              1043.33,
+              1032.6
+            ],
+            [
+              1105.11,
+              1032.6
+            ],
+            [
+              1133.49,
+              1084.83
+            ],
+            [
+              1065.05,
+              1084.83
+            ]
+          ],
+          "plan": {
+            "farWidthPx": 60.5,
+            "nearWidthPx": 66.7,
+            "depthPx": 56.2,
+            "taper": 0.907,
+            "sideSlantDeg": -111
+          },
+          "calibrated": {
+            "farWidthPx": 61.8,
+            "nearWidthPx": 68.4,
+            "depthPx": 57.9,
+            "taper": 0.903,
+            "sideSlantDeg": -112.6
+          }
+        },
+        {
+          "id": "P5.C2",
+          "cornerGapPx": [
+            1.8,
+            0.7,
+            2,
+            0.5
+          ],
+          "cornerGapMaxPx": 2,
+          "shapeOnlyCornerRmsPx": 1.07,
+          "planQuadOnPlaneMm": {
+            "width": 61.6,
+            "height": 86.7
+          },
+          "planQuadPx": [
+            [
+              1086.59,
+              1015.65
+            ],
+            [
+              1144.96,
+              1015.65
+            ],
+            [
+              1173.79,
+              1063.27
+            ],
+            [
+              1109.67,
+              1063.27
+            ]
+          ],
+          "calibratedQuadPx": [
+            [
+              1084.84,
+              1015.28
+            ],
+            [
+              1144.42,
+              1015.28
+            ],
+            [
+              1175.75,
+              1063.65
+            ],
+            [
+              1110,
+              1063.65
+            ]
+          ],
+          "plan": {
+            "farWidthPx": 58.4,
+            "nearWidthPx": 64.1,
+            "depthPx": 54.2,
+            "taper": 0.91,
+            "sideSlantDeg": -115.9
+          },
+          "calibrated": {
+            "farWidthPx": 59.6,
+            "nearWidthPx": 65.7,
+            "depthPx": 56,
+            "taper": 0.906,
+            "sideSlantDeg": -117.5
+          }
+        },
+        {
+          "id": "P6.C1",
+          "cornerGapPx": [
+            2,
+            0.9,
+            2.2,
+            0.7
+          ],
+          "cornerGapMaxPx": 2.2,
+          "shapeOnlyCornerRmsPx": 1.21,
+          "planQuadOnPlaneMm": {
+            "width": 61.6,
+            "height": 86.8
+          },
+          "planQuadPx": [
+            [
+              1230.81,
+              1005.62
+            ],
+            [
+              1287.97,
+              1005.62
+            ],
+            [
+              1329.93,
+              1051.19
+            ],
+            [
+              1267.26,
+              1051.19
+            ]
+          ],
+          "calibratedQuadPx": [
+            [
+              1228.8,
+              1005.3
+            ],
+            [
+              1287.1,
+              1005.3
+            ],
+            [
+              1332.13,
+              1051.51
+            ],
+            [
+              1267.93,
+              1051.51
+            ]
+          ],
+          "plan": {
+            "farWidthPx": 57.2,
+            "nearWidthPx": 62.7,
+            "depthPx": 60.1,
+            "taper": 0.912,
+            "sideSlantDeg": -128.7
+          },
+          "calibrated": {
+            "farWidthPx": 58.3,
+            "nearWidthPx": 64.2,
+            "depthPx": 62.5,
+            "taper": 0.908,
+            "sideSlantDeg": -130.3
+          }
+        },
+        {
+          "id": "P6.C2",
+          "cornerGapPx": [
+            2,
+            0.9,
+            2.1,
+            0.8
+          ],
+          "cornerGapMaxPx": 2.1,
+          "shapeOnlyCornerRmsPx": 1.16,
+          "planQuadOnPlaneMm": {
+            "width": 61.7,
+            "height": 87
+          },
+          "planQuadPx": [
+            [
+              1249.73,
+              992.6
+            ],
+            [
+              1305.32,
+              992.6
+            ],
+            [
+              1347.63,
+              1035.58
+            ],
+            [
+              1286.85,
+              1035.58
+            ]
+          ],
+          "calibratedQuadPx": [
+            [
+              1247.78,
+              992.33
+            ],
+            [
+              1304.43,
+              992.33
+            ],
+            [
+              1349.75,
+              1035.84
+            ],
+            [
+              1287.55,
+              1035.84
+            ]
+          ],
+          "plan": {
+            "farWidthPx": 55.6,
+            "nearWidthPx": 60.8,
+            "depthPx": 58.5,
+            "taper": 0.915,
+            "sideSlantDeg": -130.8
+          },
+          "calibrated": {
+            "farWidthPx": 56.6,
+            "nearWidthPx": 62.2,
+            "depthPx": 60.9,
+            "taper": 0.911,
+            "sideSlantDeg": -132.4
+          }
+        },
+        {
+          "id": "P7.C1",
+          "cornerGapPx": [
+            1.8,
+            1.1,
+            1.9,
+            0.9
+          ],
+          "cornerGapMaxPx": 1.9,
+          "shapeOnlyCornerRmsPx": 1.03,
+          "planQuadOnPlaneMm": {
+            "width": 62,
+            "height": 87.9
+          },
+          "planQuadPx": [
+            [
+              1419.25,
+              934.51
+            ],
+            [
+              1467.82,
+              934.51
+            ],
+            [
+              1517.47,
+              966.94
+            ],
+            [
+              1464.98,
+              966.94
+            ]
+          ],
+          "calibratedQuadPx": [
+            [
+              1417.5,
+              934.48
+            ],
+            [
+              1466.76,
+              934.48
+            ],
+            [
+              1519.34,
+              966.97
+            ],
+            [
+              1465.93,
+              966.97
+            ]
+          ],
+          "plan": {
+            "farWidthPx": 48.6,
+            "nearWidthPx": 52.5,
+            "depthPx": 57.7,
+            "taper": 0.925,
+            "sideSlantDeg": -144.7
+          },
+          "calibrated": {
+            "farWidthPx": 49.3,
+            "nearWidthPx": 53.4,
+            "depthPx": 60.1,
+            "taper": 0.922,
+            "sideSlantDeg": -146.1
+          }
+        },
+        {
+          "id": "P7.C2",
+          "cornerGapPx": [
+            1.7,
+            1.1,
+            1.8,
+            1
+          ],
+          "cornerGapMaxPx": 1.8,
+          "shapeOnlyCornerRmsPx": 0.99,
+          "planQuadOnPlaneMm": {
+            "width": 62.1,
+            "height": 88.2
+          },
+          "planQuadPx": [
+            [
+              1457.7,
+              920.37
+            ],
+            [
+              1504.56,
+              920.37
+            ],
+            [
+              1555.18,
+              950.47
+            ],
+            [
+              1504.68,
+              950.47
+            ]
+          ],
+          "calibratedQuadPx": [
+            [
+              1456.02,
+              920.38
+            ],
+            [
+              1503.48,
+              920.38
+            ],
+            [
+              1556.96,
+              950.45
+            ],
+            [
+              1505.65,
+              950.45
+            ]
+          ],
+          "plan": {
+            "farWidthPx": 46.9,
+            "nearWidthPx": 50.5,
+            "depthPx": 57.3,
+            "taper": 0.928,
+            "sideSlantDeg": -147.3
+          },
+          "calibrated": {
+            "farWidthPx": 47.5,
+            "nearWidthPx": 51.3,
+            "depthPx": 59.7,
+            "taper": 0.925,
+            "sideSlantDeg": -148.8
+          }
+        },
+        {
+          "id": "D.C1",
+          "cornerGapPx": [
+            0.7,
+            0.2,
+            0.8,
+            0.1
+          ],
+          "cornerGapMaxPx": 0.8,
+          "shapeOnlyCornerRmsPx": 0.36,
+          "planQuadOnPlaneMm": {
+            "width": 62.2,
+            "height": 88.3
+          },
+          "planQuadPx": [
+            [
+              857.5,
+              912.26
+            ],
+            [
+              903.38,
+              912.26
+            ],
+            [
+              907.24,
+              941.08
+            ],
+            [
+              857.88,
+              941.08
+            ]
+          ],
+          "calibratedQuadPx": [
+            [
+              856.78,
+              912.3
+            ],
+            [
+              903.22,
+              912.3
+            ],
+            [
+              908.05,
+              941.04
+            ],
+            [
+              857.95,
+              941.04
+            ]
+          ],
+          "plan": {
+            "farWidthPx": 45.9,
+            "nearWidthPx": 49.4,
+            "depthPx": 28.9,
+            "taper": 0.929,
+            "sideSlantDeg": -90.8
+          },
+          "calibrated": {
+            "farWidthPx": 46.4,
+            "nearWidthPx": 50.1,
+            "depthPx": 28.9,
+            "taper": 0.927,
+            "sideSlantDeg": -92.3
+          }
+        },
+        {
+          "id": "D.C2",
+          "cornerGapPx": [
+            0.8,
+            0.2,
+            0.9,
+            0.1
+          ],
+          "cornerGapMaxPx": 0.9,
+          "shapeOnlyCornerRmsPx": 0.39,
+          "planQuadOnPlaneMm": {
+            "width": 62.2,
+            "height": 88.3
+          },
+          "planQuadPx": [
+            [
+              903.36,
+              912.26
+            ],
+            [
+              949.24,
+              912.26
+            ],
+            [
+              956.58,
+              941.08
+            ],
+            [
+              907.22,
+              941.08
+            ]
+          ],
+          "calibratedQuadPx": [
+            [
+              902.57,
+              912.3
+            ],
+            [
+              949.01,
+              912.3
+            ],
+            [
+              957.46,
+              941.04
+            ],
+            [
+              907.36,
+              941.04
+            ]
+          ],
+          "plan": {
+            "farWidthPx": 45.9,
+            "nearWidthPx": 49.4,
+            "depthPx": 29.4,
+            "taper": 0.929,
+            "sideSlantDeg": -97.6
+          },
+          "calibrated": {
+            "farWidthPx": 46.4,
+            "nearWidthPx": 50.1,
+            "depthPx": 29.5,
+            "taper": 0.927,
+            "sideSlantDeg": -99.5
+          }
+        }
+      ]
+    },
+    "filmAgainstPlan": {
+      "basis": "MEASURED",
+      "what": "measured blue face of the landed film card against the plan quad it was imposed with; null where a corner is hidden or rests on a side taken from the outer edge",
+      "rows": [
+        {
+          "id": "P1.C1",
+          "clip": "assets/motions/pamela-p1-c1-plan-return-idle-02/source.mp4",
+          "cornerOffsetPx": [
+            1.9,
+            2.9,
+            4.7,
+            2.8
+          ],
+          "centreOffsetPx": {
+            "x": 2,
+            "y": 0
+          },
+          "nearEdgeTiltDeg": 3.1,
+          "planNearEdgeTiltDeg": 0,
+          "taper": 0.972,
+          "planTaper": 0.918,
+          "headingOnPlaneDeg": 1.7
+        },
+        {
+          "id": "P4.C1",
+          "clip": "assets/motions/pamela-p4-c1-plan-return-idle-01/source.mp4",
+          "cornerOffsetPx": [
+            1.7,
+            2.2,
+            0.7,
+            0.9
+          ],
+          "centreOffsetPx": {
+            "x": 0.1,
+            "y": -0.1
+          },
+          "nearEdgeTiltDeg": -0.1,
+          "planNearEdgeTiltDeg": 0,
+          "taper": 0.959,
+          "planTaper": 0.9,
+          "headingOnPlaneDeg": -0.5
+        },
+        {
+          "id": "P4.C2",
+          "clip": "assets/motions/pamela-p4-c2-plan-deal-01/source.mp4",
+          "cornerOffsetPx": [
+            2.5,
+            2.2,
+            1.4,
+            1.2
+          ],
+          "centreOffsetPx": {
+            "x": 0.7,
+            "y": -0.3
+          },
+          "nearEdgeTiltDeg": -0.1,
+          "planNearEdgeTiltDeg": 0,
+          "taper": 0.927,
+          "planTaper": 0.902,
+          "headingOnPlaneDeg": -0.6
+        },
+        {
+          "id": "P7.C1",
+          "clip": "assets/motions/pamela-p7-c1-plan-deal-01/source.mp4",
+          "cornerOffsetPx": [
+            null,
+            null,
+            0.1,
+            1.8
+          ],
+          "centreOffsetPx": {
+            "x": 3.4,
+            "y": 2
+          },
+          "nearEdgeTiltDeg": -0.7,
+          "planNearEdgeTiltDeg": 0,
+          "taper": 0.961,
+          "planTaper": 0.925,
+          "headingOnPlaneDeg": -0.8
+        }
+      ]
+    },
+    "generatorFamily": {
+      "what": "landed cards the generator drew without a planned end quad, both near P4",
+      "rows": [
+        {
+          "id": "GEN deal-calm",
+          "clip": "assets/motions/pamela-p4-c1-deal-calm-01/source.mp4",
+          "frames": [
+            117,
+            118,
+            119
+          ],
+          "measured": {
+            "basis": "MEASURED",
+            "quadPx": [
+              [
+                845.37,
+                1011.47
+              ],
+              [
+                919.34,
+                1011.23
+              ],
+              [
+                919.85,
+                1079.76
+              ],
+              [
+                841.48,
+                1077.13
+              ]
+            ],
+            "farWidthPx": 74,
+            "nearWidthPx": 78.4,
+            "depthPx": 67.1,
+            "taper": 0.943,
+            "frameToFrameCornerScatterPx": 0.1
+          },
+          "onCalibratedPlane": {
+            "basis": "DERIVED",
+            "sizeMm": {
+              "width": 75.9,
+              "height": 119.9
+            },
+            "sizeRatioTo63x88": {
+              "width": 1.205,
+              "height": 1.363
+            },
+            "edgeRmsAsA63x88CardPx": 7.7,
+            "planeCardThere": {
+              "farWidthPx": 60.2,
+              "nearWidthPx": 66.5,
+              "depthPx": 49.6,
+              "taper": 0.905
+            }
+          },
+          "own": {
+            "basis": "DERIVED",
+            "pxPerMm": 1.211,
+            "planePxPerMmThere": 1.007,
+            "foreshortening": 0.63,
+            "planeForeshorteningThere": 0.558,
+            "vanishingLineRowFromThisCardAlone": -83
+          }
+        },
+        {
+          "id": "GEN source-turn",
+          "clip": "assets/motions/pamela-p4-c1-source-turn/source.mp4",
+          "frames": [
+            100,
+            105,
+            110,
+            115,
+            119
+          ],
+          "measured": {
+            "basis": "MEASURED",
+            "quadPx": [
+              [
+                844.2,
+                1009.95
+              ],
+              [
+                919.33,
+                1009.95
+              ],
+              [
+                919.6,
+                1079.26
+              ],
+              [
+                841.72,
+                1078.97
+              ]
+            ],
+            "farWidthPx": 75.1,
+            "nearWidthPx": 77.9,
+            "depthPx": 69.2,
+            "taper": 0.965,
+            "frameToFrameCornerScatterPx": 0.18
+          },
+          "onCalibratedPlane": {
+            "basis": "DERIVED",
+            "sizeMm": {
+              "width": 76.4,
+              "height": 123.8
+            },
+            "sizeRatioTo63x88": {
+              "width": 1.213,
+              "height": 1.407
+            },
+            "edgeRmsAsA63x88CardPx": 8.4,
+            "planeCardThere": {
+              "farWidthPx": 60.2,
+              "nearWidthPx": 66.5,
+              "depthPx": 49.5,
+              "taper": 0.905
+            }
+          },
+          "own": {
+            "basis": "DERIVED",
+            "pxPerMm": 1.215,
+            "planePxPerMmThere": 1.006,
+            "foreshortening": 0.647,
+            "planeForeshorteningThere": 0.557,
+            "vanishingLineRowFromThisCardAlone": -873
+          }
+        }
+      ],
+      "legacyV6Card": {
+        "basis": "DERIVED",
+        "what": "landed card of the older white-card take, constant `landed` in src/pamela-card-contact-v6.ts (GIVEN), laid on the calibrated plane",
+        "quadFilmPx": [
+          [
+            820.93,
+            1026
+          ],
+          [
+            944.07,
+            1026
+          ],
+          [
+            964.09,
+            1091
+          ],
+          [
+            802.91,
+            1093
+          ]
+        ],
+        "sizeOnPlaneMm": {
+          "width": 137,
+          "height": 112
+        }
+      },
+      "finding": "The generator's own cards are larger, less foreshortened and less tapered than a plan-plane card at the same place, and the two clips disagree with each other on perspective. The families share one thing: a foreshortening near 0.6 at P4."
+    }
+  },
+  "sanityChecks": {
+    "frame": "pamela-p4-c1-plan-return-idle-01 f89",
+    "hands": [
+      {
+        "name": "dealer right hand (image left)",
+        "measured": {
+          "basis": "MEASURED",
+          "widestSkinRow": 836,
+          "widthPx": 150
+        },
+        "onPlane": {
+          "basis": "DERIVED",
+          "widthMm": 256,
+          "planePxPerMmThere": 0.583
+        }
+      },
+      {
+        "name": "dealer left hand (image right)",
+        "measured": {
+          "basis": "MEASURED",
+          "widestSkinRow": 836,
+          "widthPx": 150
+        },
+        "onPlane": {
+          "basis": "DERIVED",
+          "widthMm": 256,
+          "planePxPerMmThere": 0.583
+        }
+      }
+    ],
+    "handReference": {
+      "basis": "ESTIMATED",
+      "adultHandAcrossKnucklesWithThumbMm": [
+        95,
+        125
+      ],
+      "note": "anthropometric range, not measured in the footage"
+    },
+    "shoeBase": {
+      "measured": {
+        "basis": "MEASURED",
+        "fromPx": [
+          1254.5,
+          898.5
+        ],
+        "toPx": [
+          1687,
+          830.2
+        ],
+        "lengthPx": 438
+      },
+      "onPlane": {
+        "basis": "DERIVED",
+        "lengthMm": 948
+      },
+      "reference": {
+        "basis": "ESTIMATED",
+        "dealingShoeLengthMm": [
+          380,
+          450
+        ]
+      }
+    },
+    "shoeMouthCard": {
+      "measured": {
+        "basis": "MEASURED",
+        "sidesPx": [
+          49,
+          50.1,
+          97.4,
+          98.5
+        ]
+      },
+      "derived": {
+        "basis": "DERIVED",
+        "pxPerMmAtLeast": 1.12,
+        "planePxPerMmAtShoeFoot": 0.709,
+        "ratioAtLeast": 1.58
+      },
+      "note": "The yellow card in the shoe mouth is not on the table plane; its long side cannot be longer than 88 mm, so its image scale is a lower bound."
+    },
+    "scaleConflict": {
+      "basis": "ESTIMATED",
+      "objectsAreLargerThanPlanScaleCardsBy": {
+        "hands": [
+          2.05,
+          2.69
+        ],
+        "shoe": [
+          2.11,
+          2.5
+        ],
+        "shoeMouthCardAtLeast": 1.58,
+        "generatorCards": [
+          1.21,
+          1.41
+        ]
+      },
+      "reading": "Everything the generator drew by itself is 1.2 to 2.6 times larger than the plan-scale card implies. The plane is self-consistent; its millimetres are not the dealer's millimetres."
+    }
+  },
+  "light": {
+    "clip": "assets/motions/pamela-p4-c1-plan-deal-02/source.mp4",
+    "framesMeasured": [
+      40,
+      44,
+      48,
+      52,
+      56,
+      60,
+      64,
+      68,
+      72,
+      76,
+      80,
+      84,
+      88,
+      92,
+      96,
+      100,
+      104
+    ],
+    "framesUsed": [
+      40,
+      44,
+      48,
+      52,
+      56,
+      60,
+      64,
+      68
+    ],
+    "direction": {
+      "castOffsetInImage": {
+        "basis": "MEASURED",
+        "what": "shift that best lays the silhouette of the moving hand and card onto its shadow",
+        "medianAngleFromImageDownDeg": 4.9,
+        "sign": "positive = shadow toward image right",
+        "perFrame": [
+          {
+            "frame": 40,
+            "offsetPx": [
+              75,
+              147
+            ],
+            "lengthPx": 165,
+            "used": true
+          },
+          {
+            "frame": 44,
+            "offsetPx": [
+              13,
+              150
+            ],
+            "lengthPx": 150,
+            "used": true
+          },
+          {
+            "frame": 48,
+            "offsetPx": [
+              -6,
+              113
+            ],
+            "lengthPx": 113,
+            "used": true
+          },
+          {
+            "frame": 52,
+            "offsetPx": [
+              12,
+              59
+            ],
+            "lengthPx": 61,
+            "used": true
+          },
+          {
+            "frame": 56,
+            "offsetPx": [
+              0,
+              91
+            ],
+            "lengthPx": 91,
+            "used": true
+          },
+          {
+            "frame": 60,
+            "offsetPx": [
+              -1,
+              76
+            ],
+            "lengthPx": 76,
+            "used": true
+          },
+          {
+            "frame": 64,
+            "offsetPx": [
+              5,
+              53
+            ],
+            "lengthPx": 53,
+            "used": true
+          },
+          {
+            "frame": 68,
+            "offsetPx": [
+              4,
+              39
+            ],
+            "lengthPx": 39,
+            "used": true
+          },
+          {
+            "frame": 72,
+            "offsetPx": [
+              9,
+              28
+            ],
+            "lengthPx": 30,
+            "used": false
+          },
+          {
+            "frame": 76,
+            "offsetPx": [
+              10,
+              26
+            ],
+            "lengthPx": 28,
+            "used": false
+          },
+          {
+            "frame": 80,
+            "offsetPx": [
+              18,
+              22
+            ],
+            "lengthPx": 28,
+            "used": false
+          },
+          {
+            "frame": 84,
+            "offsetPx": [
+              110,
+              -26
+            ],
+            "lengthPx": 113,
+            "used": false
+          },
+          {
+            "frame": 88,
+            "offsetPx": [
+              114,
+              -26
+            ],
+            "lengthPx": 116,
+            "used": false
+          },
+          {
+            "frame": 92,
+            "offsetPx": [
+              113,
+              -26
+            ],
+            "lengthPx": 116,
+            "used": false
+          },
+          {
+            "frame": 96,
+            "offsetPx": [
+              115,
+              -26
+            ],
+            "lengthPx": 118,
+            "used": false
+          },
+          {
+            "frame": 100,
+            "offsetPx": [
+              88,
+              -26
+            ],
+            "lengthPx": 92,
+            "used": false
+          },
+          {
+            "frame": 104,
+            "offsetPx": [
+              87,
+              -26
+            ],
+            "lengthPx": 91,
+            "used": false
+          }
+        ]
+      },
+      "sidewaysLean": {
+        "basis": "DERIVED",
+        "valueDeg": 5.2,
+        "range68Deg": [
+          -0.6,
+          11.7
+        ],
+        "sign": "positive = light comes from image left (the dealer's right) and pushes shadows toward +X",
+        "how": "cast offset split into the image of the table X axis and the image of the vertical, with the pinhole of the fitted plane"
+      },
+      "leanTowardOrAwayFromCamera": {
+        "basis": "ESTIMATED",
+        "valueDeg": 0,
+        "plausibleRangeDeg": [
+          -30,
+          30
+        ],
+        "why": "The offset grows with the hand's height, which the footage does not give. A light leaning toward or away from the camera looks the same as a higher or lower hand; the heights implied by a vertical light (see shadowDarkness.byHeight) are plausible, nothing more."
+      },
+      "towardLightUnitVector": {
+        "basis": "ESTIMATED",
+        "tableFrameXYZ": [
+          -0.091,
+          0,
+          0.996
+        ],
+        "note": "key light essentially overhead; Y component set to zero for lack of evidence"
+      }
+    },
+    "softness": {
+      "blurSigmaPx": {
+        "basis": "MEASURED",
+        "what": "Gaussian blur of the shifted silhouette that best explains the matte",
+        "median": 34,
+        "range": [
+          21,
+          52
+        ],
+        "perFrame": [
+          {
+            "frame": 40,
+            "sigmaPx": 34,
+            "explainedShare": 0.86,
+            "atSearchLimit": false
+          },
+          {
+            "frame": 44,
+            "sigmaPx": 34,
+            "explainedShare": 0.87,
+            "atSearchLimit": false
+          },
+          {
+            "frame": 48,
+            "sigmaPx": 42,
+            "explainedShare": 0.9,
+            "atSearchLimit": false
+          },
+          {
+            "frame": 52,
+            "sigmaPx": 52,
+            "explainedShare": 0.85,
+            "atSearchLimit": false
+          },
+          {
+            "frame": 56,
+            "sigmaPx": 52,
+            "explainedShare": 0.72,
+            "atSearchLimit": false
+          },
+          {
+            "frame": 60,
+            "sigmaPx": 34,
+            "explainedShare": 0.73,
+            "atSearchLimit": false
+          },
+          {
+            "frame": 64,
+            "sigmaPx": 21,
+            "explainedShare": 0.68,
+            "atSearchLimit": false
+          },
+          {
+            "frame": 68,
+            "sigmaPx": 21,
+            "explainedShare": 0.61,
+            "atSearchLimit": false
+          }
+        ]
+      },
+      "blurSigmaMm": {
+        "basis": "DERIVED",
+        "median": 61,
+        "range": [
+          26,
+          94
+        ],
+        "note": "plan-scale millimetres on the table"
+      },
+      "growthWithHeight": {
+        "basis": "DERIVED",
+        "sigmaPxPerOffsetPx": 0.051,
+        "floorPx": 31,
+        "frames": 8,
+        "note": "A physical light would give blur proportional to height. Here the blur stays near its floor at every height measured, so the shadow is better reproduced as a fixed soft blur than as a penumbra model."
+      },
+      "lightAngularSize": {
+        "basis": "ESTIMATED",
+        "sigmaDegIfBlurWereAllPenumbra": [
+          13,
+          29
+        ],
+        "sigmaDegFromGrowthOnly": 2.9,
+        "note": "between a small source (from the growth) and a very broad overhead source (from the blur itself); the footage does not behave like one physical lamp"
+      }
+    },
+    "shadowDarkness": {
+      "basis": "MEASURED",
+      "definition": "1 - G / lit G in display (gamma-encoded) values; 0 = lit table, 1 = black",
+      "atContact": {
+        "frames": [
+          96,
+          97,
+          98,
+          99,
+          100,
+          101,
+          102,
+          103,
+          104
+        ],
+        "peak": 0.76,
+        "ratioToLitTable": 0.24
+      },
+      "byHeight": {
+        "heightBasis": "DERIVED, plan-scale millimetres, assuming no lean toward or away from the camera",
+        "rows": [
+          {
+            "frame": 40,
+            "heightMm": 279,
+            "peakDarkness": 0.29
+          },
+          {
+            "frame": 44,
+            "heightMm": 258,
+            "peakDarkness": 0.4
+          },
+          {
+            "frame": 48,
+            "heightMm": 209,
+            "peakDarkness": 0.48
+          },
+          {
+            "frame": 52,
+            "heightMm": 108,
+            "peakDarkness": 0.45
+          },
+          {
+            "frame": 56,
+            "heightMm": 126,
+            "peakDarkness": 0.44
+          },
+          {
+            "frame": 60,
+            "heightMm": 98,
+            "peakDarkness": 0.5
+          },
+          {
+            "frame": 64,
+            "heightMm": 68,
+            "peakDarkness": 0.57
+          },
+          {
+            "frame": 68,
+            "heightMm": 50,
+            "peakDarkness": 0.6
+          }
+        ]
+      },
+      "peakPerFrame": [
+        {
+          "frame": 40,
+          "peak": 0.37
+        },
+        {
+          "frame": 41,
+          "peak": 0.39
+        },
+        {
+          "frame": 42,
+          "peak": 0.41
+        },
+        {
+          "frame": 43,
+          "peak": 0.43
+        },
+        {
+          "frame": 44,
+          "peak": 0.48
+        },
+        {
+          "frame": 45,
+          "peak": 0.49
+        },
+        {
+          "frame": 46,
+          "peak": 0.5
+        },
+        {
+          "frame": 47,
+          "peak": 0.51
+        },
+        {
+          "frame": 48,
+          "peak": 0.52
+        },
+        {
+          "frame": 49,
+          "peak": 0.53
+        },
+        {
+          "frame": 50,
+          "peak": 0.53
+        },
+        {
+          "frame": 51,
+          "peak": 0.51
+        },
+        {
+          "frame": 52,
+          "peak": 0.51
+        },
+        {
+          "frame": 53,
+          "peak": 0.5
+        },
+        {
+          "frame": 54,
+          "peak": 0.47
+        },
+        {
+          "frame": 55,
+          "peak": 0.47
+        },
+        {
+          "frame": 56,
+          "peak": 0.48
+        },
+        {
+          "frame": 57,
+          "peak": 0.5
+        },
+        {
+          "frame": 58,
+          "peak": 0.54
+        },
+        {
+          "frame": 59,
+          "peak": 0.54
+        },
+        {
+          "frame": 60,
+          "peak": 0.55
+        },
+        {
+          "frame": 61,
+          "peak": 0.57
+        },
+        {
+          "frame": 62,
+          "peak": 0.59
+        },
+        {
+          "frame": 63,
+          "peak": 0.61
+        },
+        {
+          "frame": 64,
+          "peak": 0.62
+        },
+        {
+          "frame": 65,
+          "peak": 0.64
+        },
+        {
+          "frame": 66,
+          "peak": 0.63
+        },
+        {
+          "frame": 67,
+          "peak": 0.64
+        },
+        {
+          "frame": 68,
+          "peak": 0.65
+        },
+        {
+          "frame": 69,
+          "peak": 0.66
+        },
+        {
+          "frame": 70,
+          "peak": 0.67
+        },
+        {
+          "frame": 71,
+          "peak": 0.67
+        },
+        {
+          "frame": 72,
+          "peak": 0.67
+        },
+        {
+          "frame": 73,
+          "peak": 0.67
+        },
+        {
+          "frame": 74,
+          "peak": 0.67
+        },
+        {
+          "frame": 75,
+          "peak": 0.67
+        },
+        {
+          "frame": 76,
+          "peak": 0.67
+        },
+        {
+          "frame": 77,
+          "peak": 0.67
+        },
+        {
+          "frame": 78,
+          "peak": 0.67
+        },
+        {
+          "frame": 79,
+          "peak": 0.67
+        },
+        {
+          "frame": 80,
+          "peak": 0.66
+        },
+        {
+          "frame": 81,
+          "peak": 0.66
+        },
+        {
+          "frame": 82,
+          "peak": 0.65
+        },
+        {
+          "frame": 83,
+          "peak": 0.64
+        },
+        {
+          "frame": 84,
+          "peak": 0.63
+        },
+        {
+          "frame": 85,
+          "peak": 0.6
+        },
+        {
+          "frame": 86,
+          "peak": 0.62
+        },
+        {
+          "frame": 87,
+          "peak": 0.62
+        },
+        {
+          "frame": 88,
+          "peak": 0.66
+        },
+        {
+          "frame": 89,
+          "peak": 0.66
+        },
+        {
+          "frame": 90,
+          "peak": 0.73
+        },
+        {
+          "frame": 91,
+          "peak": 0.73
+        },
+        {
+          "frame": 92,
+          "peak": 0.74
+        },
+        {
+          "frame": 93,
+          "peak": 0.75
+        },
+        {
+          "frame": 94,
+          "peak": 0.75
+        },
+        {
+          "frame": 95,
+          "peak": 0.75
+        },
+        {
+          "frame": 96,
+          "peak": 0.75
+        },
+        {
+          "frame": 97,
+          "peak": 0.76
+        },
+        {
+          "frame": 98,
+          "peak": 0.76
+        },
+        {
+          "frame": 99,
+          "peak": 0.77
+        },
+        {
+          "frame": 100,
+          "peak": 0.77
+        },
+        {
+          "frame": 101,
+          "peak": 0.76
+        },
+        {
+          "frame": 102,
+          "peak": 0.76
+        },
+        {
+          "frame": 103,
+          "peak": 0.76
+        },
+        {
+          "frame": 104,
+          "peak": 0.76
+        }
+      ],
+      "linearLight": {
+        "basis": "DERIVED",
+        "note": "for a renderer working in linear light use (1 - darkness)^2.2",
+        "contactRatio": 0.042
+      }
+    },
+    "litTable": {
+      "basis": "MEASURED",
+      "greenLevel": [
+        219.7,
+        223
+      ],
+      "note": "the clip darkens from its start image over the first frames, so every frame is read against its own lit level",
+      "patchDisagreementUpTo": 0.0091,
+      "noiseRms": 0.0091
+    },
+    "cardGloss": {
+      "basis": "ESTIMATED",
+      "note": "not measured: the tracking cards are flat colour without a visible highlight. A broad overhead source this soft would give a wide, weak highlight; keep gloss low."
+    },
+    "method": "Per frame the lit level is the median green of three table patches the hand never reaches. Darkness is 1 - G / lit level on table-green pixels below the dealer-side edge. Cast offset and blur come from sliding and blurring the moving hand-and-card silhouette at quarter resolution."
+  },
+  "shadowMatte": {
+    "basis": "MEASURED",
+    "clip": "pamela-p4-c1-plan-deal-02",
+    "source": "assets/motions/pamela-p4-c1-plan-deal-02/source.mp4",
+    "frames": [
+      40,
+      104
+    ],
+    "count": 65,
+    "path": "assets/scene-work/shadow-matte/pamela-p4-c1-plan-deal-02/matte-%04d.png",
+    "format": "1764 x 1174 8-bit grey + alpha PNG, lossless. Grey = darkness x 255. Alpha 255 = measured table pixel, 0 = excluded: dealer, shoe, cards, a 2 px band around them, and everything above image row 833.",
+    "use": "newTable * (1 - grey / 255) in display values, then the keyed dealer on top. Inside the excluded band the grey carries the nearest measured value for 3 px so that ignoring alpha leaves no light halo; further in it is 0.",
+    "previews": [
+      "D:/dealer-scratch/review/scen/shadow-matte-pamela-p4-c1-plan-deal-02-f40-104.mp4",
+      "D:/dealer-scratch/review/scen/shadow-side-by-side-pamela-p4-c1-plan-deal-02.mp4",
+      "D:/dealer-scratch/review/scen/shadow-contact-sheet.png"
+    ],
+    "method": "Green channel against the frame's own lit level; 3 x 3 mean among table pixels; values below about 0.02 fade to 0 as compression noise. Static darkening by body, resting hand and shoe is kept, since it is darker than the lit table too.",
+    "quality": {
+      "noiseRmsBeforeGate": 0.0091,
+      "noiseGate": 0.02,
+      "peak": [
+        0.37,
+        0.77
+      ],
+      "shadedPixelsPerFrame": [
+        14754,
+        37934
+      ],
+      "excludedPixelsPerFrame": [
+        24070,
+        65365
+      ]
+    },
+    "usable": "Yes for the table: soft cast shadow and contact shadow follow the hand frame by frame. It holds no shadow on the card itself (card pixels are excluded) and none under the hand."
+  },
+  "portrait": {
+    "canvas": {
+      "basis": "GIVEN",
+      "width": 1080,
+      "height": 1920
+    },
+    "currentTransform": {
+      "basis": "GIVEN",
+      "source": "src/pamela-card-contact-v6.ts",
+      "nativeSize": [
+        1762,
+        1174
+      ],
+      "resizedTo": [
+        1586,
+        1057
+      ],
+      "cropLeft": 250,
+      "cropWidth": 1080,
+      "placedAt": [
+        0,
+        80
+      ],
+      "scale": 0.9001,
+      "nativeColumnsVisible": [
+        277.7,
+        1477.6
+      ],
+      "formula": "x' = x * 1586/1762 - 250, y' = y * 1057/1174 + 80"
+    },
+    "targetsUnderCurrentTransform": {
+      "basis": "DERIVED",
+      "rows": [
+        {
+          "id": "P1.C1",
+          "state": "OUTSIDE",
+          "centrePx": [
+            -53.8,
+            976.8
+          ],
+          "widthInsidePercent": 0,
+          "lostLeftPx": 104.6,
+          "lostRightPx": 0
+        },
+        {
+          "id": "P1.C2",
+          "state": "PARTLY_CUT",
+          "centrePx": [
+            -24.4,
+            965.7
+          ],
+          "widthInsidePercent": 23,
+          "lostLeftPx": 72.6,
+          "lostRightPx": 0
+        },
+        {
+          "id": "P2.C1",
+          "state": "INSIDE",
+          "centrePx": [
+            146.3,
+            998.8
+          ],
+          "widthInsidePercent": 100,
+          "lostLeftPx": 0,
+          "lostRightPx": 0
+        },
+        {
+          "id": "P2.C2",
+          "state": "INSIDE",
+          "centrePx": [
+            177.4,
+            977
+          ],
+          "widthInsidePercent": 100,
+          "lostLeftPx": 0,
+          "lostRightPx": 0
+        },
+        {
+          "id": "P3.C1",
+          "state": "INSIDE",
+          "centrePx": [
+            328.4,
+            1020.8
+          ],
+          "widthInsidePercent": 100,
+          "lostLeftPx": 0,
+          "lostRightPx": 0
+        },
+        {
+          "id": "P3.C2",
+          "state": "INSIDE",
+          "centrePx": [
+            376.5,
+            1015.9
+          ],
+          "widthInsidePercent": 100,
+          "lostLeftPx": 0,
+          "lostRightPx": 0
+        },
+        {
+          "id": "P4.C1",
+          "state": "INSIDE",
+          "centrePx": [
+            516.4,
+            1071.2
+          ],
+          "widthInsidePercent": 100,
+          "lostLeftPx": 0,
+          "lostRightPx": 0
+        },
+        {
+          "id": "P4.C2",
+          "state": "INSIDE",
+          "centrePx": [
+            554.3,
+            1062.7
+          ],
+          "widthInsidePercent": 100,
+          "lostLeftPx": 0,
+          "lostRightPx": 0
+        },
+        {
+          "id": "P5.C1",
+          "state": "INSIDE",
+          "centrePx": [
+            727.1,
+            1033.2
+          ],
+          "widthInsidePercent": 100,
+          "lostLeftPx": 0,
+          "lostRightPx": 0
+        },
+        {
+          "id": "P5.C2",
+          "state": "INSIDE",
+          "centrePx": [
+            764.9,
+            1015.9
+          ],
+          "widthInsidePercent": 100,
+          "lostLeftPx": 0,
+          "lostRightPx": 0
+        },
+        {
+          "id": "P6.C1",
+          "state": "INSIDE",
+          "centrePx": [
+            899.9,
+            1005.9
+          ],
+          "widthInsidePercent": 100,
+          "lostLeftPx": 0,
+          "lostRightPx": 0
+        },
+        {
+          "id": "P6.C2",
+          "state": "INSIDE",
+          "centrePx": [
+            916.5,
+            993
+          ],
+          "widthInsidePercent": 100,
+          "lostLeftPx": 0,
+          "lostRightPx": 0
+        },
+        {
+          "id": "P7.C1",
+          "state": "PARTLY_CUT",
+          "centrePx": [
+            1069.3,
+            936
+          ],
+          "widthInsidePercent": 61,
+          "lostLeftPx": 0,
+          "lostRightPx": 34.3
+        },
+        {
+          "id": "P7.C2",
+          "state": "PARTLY_CUT",
+          "centrePx": [
+            1103.6,
+            922.2
+          ],
+          "widthInsidePercent": 22,
+          "lostLeftPx": 0,
+          "lostRightPx": 68.2
+        },
+        {
+          "id": "D.C1",
+          "state": "INSIDE",
+          "centrePx": [
+            542.5,
+            914.3
+          ],
+          "widthInsidePercent": 100,
+          "lostLeftPx": 0,
+          "lostRightPx": 0
+        },
+        {
+          "id": "D.C2",
+          "state": "INSIDE",
+          "centrePx": [
+            585.3,
+            914.3
+          ],
+          "widthInsidePercent": 100,
+          "lostLeftPx": 0,
+          "lostRightPx": 0
+        }
+      ]
+    },
+    "targetsCutOff": {
+      "basis": "DERIVED",
+      "outside": [
+        "P1.C1"
+      ],
+      "partlyCut": [
+        {
+          "id": "P1.C2",
+          "widthInsidePercent": 23
+        },
+        {
+          "id": "P7.C1",
+          "widthInsidePercent": 61
+        },
+        {
+          "id": "P7.C2",
+          "widthInsidePercent": 22
+        }
+      ],
+      "inside": 12,
+      "plannedCardsSpanNativePx": [
+        161.6,
+        1553.4
+      ],
+      "spanPx": 1392,
+      "v6ShowsNativePx": 1200
+    },
+    "proposals": [
+      {
+        "id": "A-all-seats",
+        "basis": "DERIVED",
+        "note": "Uniform scale, every planned card inside with a 24 px side margin. The shoe stays cut at its rear, as in V6.",
+        "transform": {
+          "scale": 0.7415,
+          "offsetX": -95.8,
+          "offsetY": 212.1,
+          "formula": "x' = x * scale + offsetX, y' = y * scale + offsetY, native pixels in"
+        },
+        "sideMarginPx": 24,
+        "nativeColumnsVisible": [
+          129.2,
+          1585.8
+        ],
+        "cardsInside": 16,
+        "dealerInside": true,
+        "dealerEdgeRow": 829,
+        "headTopRow": 273,
+        "filmRowsOnCanvas": [
+          212,
+          1083
+        ],
+        "lost": [
+          "dealer and cards at 82 % of today's portrait size (P4 card 54 px wide instead of 65 px)",
+          "212 canvas rows above and 837 below hold no film and need room and table plates (today 80 and 783)",
+          "the shoe's rear 99 native px stay outside (today 207)"
+        ]
+      },
+      {
+        "id": "B-all-seats-and-shoe",
+        "basis": "DERIVED",
+        "note": "Uniform scale, every planned card and the whole shoe inside with a 16 px side margin.",
+        "transform": {
+          "scale": 0.6879,
+          "offsetX": -95.2,
+          "offsetY": 256.7,
+          "formula": "x' = x * scale + offsetX, y' = y * scale + offsetY, native pixels in"
+        },
+        "sideMarginPx": 16,
+        "nativeColumnsVisible": [
+          138.3,
+          1708.3
+        ],
+        "cardsInside": 16,
+        "dealerInside": true,
+        "dealerEdgeRow": 829,
+        "headTopRow": 313,
+        "filmRowsOnCanvas": [
+          257,
+          1064
+        ],
+        "lost": [
+          "dealer and cards at 76 % of today's portrait size (P4 card 50 px wide instead of 65 px)",
+          "257 canvas rows above and 856 below hold no film and need room and table plates (today 80 and 783)",
+          "whole shoe visible; 16 px of side margin left of P1 and the dealer -40 px off centre"
+        ]
+      }
+    ],
+    "keepingTodaysScale": {
+      "basis": "DERIVED",
+      "note": "Not a framing: at V6 scale with 24 px margins the planned cards would have to span this share of their present width about the centre, which means new clips for the outer seats.",
+      "seatSpanWouldHaveToShrinkTo": 0.824
+    },
+    "planPortraitTargets": {
+      "basis": "DERIVED",
+      "what": "the plan's hand-set portrait targets against where an axis-aligned placement of the film would put the native targets",
+      "underCurrentTransformRmsGapPx": 418,
+      "bestAxisAlignedFit": {
+        "scaleX": 0.646,
+        "scaleY": 3.123,
+        "rmsGapPx": 72,
+        "maxGapPx": 148
+      },
+      "finding": "The portrait targets ask for a seat arc several times deeper than the film's. No scale-and-crop of the film puts the dealt hand on them; they describe a different table, not a framing."
+    }
+  },
+  "sources": [
+    {
+      "path": "placements/default.json",
+      "sha256": "406acb69c086b51d166c0eba3e6bb2ce7e19b868b63546db04aa9562da7e7058",
+      "bytes": 11752,
+      "framesUsed": [],
+      "usedFor": [
+        "planned card quads (read only)"
+      ]
+    },
+    {
+      "path": "assets/motions/pamela-p4-c1-plan-return-idle-01/source.mp4",
+      "sha256": "0b3cba9be4a969334bf1ba23623b80be6d0bd119a3c4dd8236db27145d479aa7",
+      "bytes": 8281469,
+      "framesUsed": [
+        62,
+        68,
+        74,
+        80,
+        86,
+        89
+      ],
+      "usedFor": [
+        "landed card P4.C1"
+      ]
+    },
+    {
+      "path": "assets/motions/pamela-p1-c1-plan-return-idle-02/source.mp4",
+      "sha256": "bfab59992170b28f5fd279faefc4785d027393011aa10cab0dd80fd38cc1995c",
+      "bytes": 8321297,
+      "framesUsed": [
+        60,
+        66,
+        72,
+        78,
+        84,
+        89
+      ],
+      "usedFor": [
+        "landed card P1.C1"
+      ]
+    },
+    {
+      "path": "assets/motions/pamela-p4-c2-plan-deal-01/source.mp4",
+      "sha256": "2469ed628726aba6967a4be70b414f853723024048bf29271af95148a57ee76a",
+      "bytes": 11174005,
+      "framesUsed": [
+        113,
+        115,
+        117,
+        119
+      ],
+      "usedFor": [
+        "landed card P4.C2"
+      ]
+    },
+    {
+      "path": "assets/motions/pamela-p7-c1-plan-deal-01/source.mp4",
+      "sha256": "a4ad1132fd8516e36e96275242b1809b8b8a33946d912cd2f2e99625018b9e4e",
+      "bytes": 10946323,
+      "framesUsed": [
+        116,
+        117,
+        118,
+        119
+      ],
+      "usedFor": [
+        "landed card P7.C1"
+      ]
+    },
+    {
+      "path": "assets/motions/pamela-p7-c1-plan-deal-02/source.mp4",
+      "sha256": "118ce7372e67af42ddcf53d868859774b6da862315b7b1a12887c38ce803b344",
+      "bytes": 11017150,
+      "framesUsed": [
+        116,
+        117,
+        118,
+        119
+      ],
+      "usedFor": [
+        "landed card P7.C1 take 2"
+      ]
+    },
+    {
+      "path": "assets/motions/pamela-p4-c1-plan-deal-02/source.mp4",
+      "sha256": "68aa306dbe34a85b500a0147c2b481f4bd08717e146807f0d82bb9e51e4227df",
+      "bytes": 11309153,
+      "framesUsed": [
+        0,
+        6,
+        12,
+        18,
+        24,
+        30,
+        36,
+        40,
+        41,
+        42,
+        43,
+        44,
+        45,
+        46,
+        47,
+        48,
+        49,
+        50,
+        51,
+        52,
+        53,
+        54,
+        55,
+        56,
+        57,
+        58,
+        59,
+        60,
+        61,
+        62,
+        63,
+        64,
+        65,
+        66,
+        67,
+        68,
+        69,
+        70,
+        71,
+        72,
+        73,
+        74,
+        75,
+        76,
+        77,
+        78,
+        79,
+        80,
+        81,
+        82,
+        83,
+        84,
+        85,
+        86,
+        87,
+        88,
+        89,
+        90,
+        91,
+        92,
+        93,
+        94,
+        95,
+        96,
+        97,
+        98,
+        99,
+        100,
+        101,
+        102,
+        103,
+        104,
+        108,
+        114,
+        117,
+        118,
+        119
+      ],
+      "usedFor": [
+        "landed card P4.C1 deal clip",
+        "static foreground for the shadow matte",
+        "shadow matte and light measurement"
+      ]
+    },
+    {
+      "path": "assets/motions/pamela-p4-c1-deal-calm-01/source.mp4",
+      "sha256": "87d82c357d9c4239b1749bb92ad6dbb595afb97ae72cea85c378ad141a4d8572",
+      "bytes": 11243574,
+      "framesUsed": [
+        117,
+        118,
+        119
+      ],
+      "usedFor": [
+        "landed card GEN deal-calm"
+      ]
+    },
+    {
+      "path": "assets/motions/pamela-p4-c1-source-turn/source.mp4",
+      "sha256": "4153a54702edd316744ae39a64d7b6094e5bcdcd2020a1852850a4c3a9aaa1fe",
+      "bytes": 11359929,
+      "framesUsed": [
+        100,
+        105,
+        110,
+        115,
+        119
+      ],
+      "usedFor": [
+        "landed card GEN source-turn"
+      ]
+    }
+  ],
+  "limits": [
+    "The landed cards of the plan clips were imposed through an end image built from the plan. They carry the plan's projection, so the plane fitted to them cannot test that projection against reality.",
+    "Four cards in three places, two of them at P4, all in the lower third of the frame. Perspective (vanishing line, focal length, height) rests on the P1 and P7 cards; P7 is partly under a hand and its far edge was read in deep shadow from the outer edge.",
+    "No real metric scale: hands, shoe and the generator's own cards disagree with the plan-scale card by factors of 1.2 to 2.6, and the older white-card take drew the P4 card about twice as wide again.",
+    "The table and the backdrop are the same green; no table outline, felt line or far corner is visible. The only table line seen is the dealer-side edge behind the hands.",
+    "Light: only the sideways lean is observable. Lean toward or away from the camera, the lamp's size and its distance cannot be separated from the unknown height of the hand.",
+    "Shadow matte: table only; nothing on cards or under the hand; one clip and one frame range. The first frames of a clip are brighter than the rest, so mattes must be normalised per frame as done here.",
+    "Principal row, lens distortion and rolling shutter are not observable; the footage is generated and need not obey one camera at all."
+  ],
+  "wouldSettleIt": [
+    "A clip or still from the same READY framing with a printed grid or ruler mat lying on the table, covering P1 to P7 and the dealer-side edge, drawn by the generator without a warped end image: gives the plane and the scale the generator itself uses.",
+    "Failing that, real-size cards left where the generator puts them at P1, P4, P7 and in front of the dealer (four or more unedited landings spread over the table).",
+    "One object of known height standing on the table in the same light (a chip stack or a card box at P4 and near the shoe): fixes the light's lean toward the camera and its size.",
+    "A decision on the scale convention: either the plan card is 63 mm and the dealer is a large figure, or the dealer is life size and the cards are scaled up by about 1.2 to 2."
+  ]
+}

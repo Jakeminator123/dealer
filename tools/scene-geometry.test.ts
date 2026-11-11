@@ -69,6 +69,9 @@ test('the level-rows model recovers a camera without roll and rejects one with r
   const found = decomposeHomography(level.H, image, {x: square.cx, y: square.cy})!; near(found.focalPx, square.focalPx, 0.01, 'focal'); near(found.camera.pitchDeg, square.pitchDeg, 1e-4, 'pitch'); near(found.camera.heightMm, square.heightMm, 0.01, 'height');
   near(level.cards[0].pose.heading, 0, 1e-5, 'first card heading'); near(level.cards[2].pose.x, poses[2].x, 1e-3, 'pose x');
   const rolled = fitPlane(observe(cameraHomography({...camera, rollDeg: 3, yawDeg: 0})), {levelRows: true}); assert.ok(rolled.residualRms > 0.15, `a rolled camera must not fit level rows, rms ${rolled.residualRms}`);
+  // A start given in another table frame (shifted origin) must lead to the same plane in the image.
+  const shift = {x: 120, y: -60}, moved = {H: reframe(H, shift, 0), poses: poses.map(p => reframePose(p, shift, 0))}, seeded = fitPlane(observe(H, 0.4, 3), {levelRows: true, initial: moved}), plain = fitPlane(observe(H, 0.4, 3), {levelRows: true});
+  near(seeded.residualRms, plain.residualRms, 1e-6, 'seeded and unseeded fits agree'); seeded.cards.forEach((c, i) => c.projected.forEach((p, k) => near(p.x, plain.cards[i].projected[k].x, 1e-3, 'seeded projection')));
 });
 test('the table frame can be turned so that X runs parallel to the horizon', () => {
   const H = cameraHomography(camera), turn = horizonRotation(H), R = reframe(H, {x: 0, y: 0}, turn);
