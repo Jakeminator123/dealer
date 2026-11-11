@@ -180,7 +180,9 @@ export function createScene(canvas: HTMLCanvasElement, host: HTMLElement, data: 
     targets(); updateView(seconds);
     const shown = players.current, part = players.part; if (part && part.track !== undefined) track = part.track; // a part that names its track brings it along
     film.setFrame(part?.frame ?? null); // and so does a part whose film has a frame of its own
-    if (shown) film.setTexture(state.cards && cardLayer?.update(shown.video, players.frame(), track, {rank: state.cardRank, suit: state.cardSuit, scale: state.cardScale}, part?.cards) ? cardLayer.texture : shown.texture); else cardLayer?.off?.();
+    // A film with a frame of its own has no shoe and no card places in its picture: the rendered cards (the one seated in the shoe window among them) stay out of it.
+    const cardsOn = state.cards && !part?.frame; if (!cardsOn) cardLayer?.off?.();
+    if (shown) film.setTexture(cardsOn && cardLayer?.update(shown.video, players.frame(), track, {rank: state.cardRank, suit: state.cardSuit, scale: state.cardScale}, part?.cards) ? cardLayer.texture : shown.texture);
     const room = rooms.rooms[state.room], focusOn = state.focus !== 'off', u = blurMat.uniforms, scale = canvas.width / W;
     rooms.followCamera(state.room, view.position, state.panoramaTurn); light.update(seconds, state.fan, state.fanStrength, state.fanPeriod);
     const dim = rooms.ambient(state.room, seconds, new Date(), {clock: state.clock, air: state.dust, lamp: state.flicker ? flickerLevel(seconds, state.flickerEvery, state.flickerStrength) : 1, cloud: state.flicker ? cloudLevel(seconds, state.flickerEvery, state.flickerStrength * 0.5) : 1}, canvas.height / H);
