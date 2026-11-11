@@ -27,14 +27,17 @@
       "triangles": 40000,
       "textureSize": 1024,
       "note": "Twelve tubes with the chips modelled in; the requirement was an empty tray. 3 849 960 triangles in the source."
-    }
-  ],
-  "notUsed": [
+    },
     {
+      "id": "table",
       "file": "table-meshy.glb",
       "original": "black-jack-tbl.glb (the same file as the two Meshy_AI_Blackjack_Table_Model files)",
       "sha256": "92acb04cbdd1585bfe0e5eaf34c198a5597edcf03f2456df7980d60d2748324e",
-      "note": "A whole table with its own felt print, five bet spots, a tray and a shoe modelled in; 937 290 triangles. Not converted: what it is for is Jakob's to say."
+      "lengthAxis": "x",
+      "lengthMetres": 2.1,
+      "triangles": 60000,
+      "textureSize": 2048,
+      "note": "A whole table with its own felt print, five bet spots, a tray and a shoe modelled in; 937 290 triangles in the source. Converted for the model lab only (props.html); the game does not use it."
     }
   ]
 }
