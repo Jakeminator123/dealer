@@ -80,5 +80,15 @@ html,body{height:100%;margin:0;background:#060706;color:var(--go-ink);font:14px/
 .go-btn.primary:hover:not(:disabled){background:#e6c97d}
 .go-btn.act{min-width:5.4em;padding:.8em 1.2em;font-size:1.05em}
 .go-note{color:var(--go-dim);white-space:nowrap}
+/* standing (a phone): larger type, and the bar across the width with buttons a thumb can hit */
+#stage.tall .go{font-size:clamp(13px,2.35cqw,22px)}
+#stage.tall .go-bar{width:94%;max-width:none;bottom:2%;justify-content:space-between;gap:.7em;padding:.6em .8em}
+#stage.tall .go-group{flex:1;min-width:0;justify-content:flex-end}
+#stage.tall .go-rail{flex:0 1 auto;justify-content:flex-start;gap:.3em}
+#stage.tall .go-btn.act{flex:1;min-width:0;padding:1em .4em}
+#stage.tall .go-btn.small{padding:.5em .55em}
+#stage.tall .go-btn.small:disabled{display:none} /* no room for a button that cannot be pressed */
+#stage.tall .go-wallet{padding-right:.7em}
+#stage.tall .go-wallet dt{font-size:.6em}
 @media (prefers-reduced-motion:reduce){.go-stack .go-chip,.go-result{animation:none}.go-rail .go-chip,.go-btn{transition:none}}
 @container (max-width:700px){.go-wallet dt{display:none}.go-bar{gap:.6em;padding:.55em .7em}.go-btn.small{display:none}}

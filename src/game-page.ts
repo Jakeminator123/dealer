@@ -6,7 +6,7 @@
 // when its card has landed. Seats are 1–7, seat 1 at camera left.
 import {buildGraph} from './clip-graph.ts';
 import {createScene} from './scene3d-view.ts';
-import {filmToScene, sceneToSpot, type FilmCamera} from './scene3d-geometry.ts';
+import {filmToScene, sceneToSpot, solveCamera, type FilmCamera} from './scene3d-geometry.ts';
 import {createLayout, slotOf} from './game-table.ts';
 import {planBeats, cardRecords} from './game-director.ts';
 import {createFilm, type FilmPlayers} from './game-film.ts';
@@ -26,9 +26,21 @@ const plan = placements.plan ?? placements, graph = buildGraph(bank), layout = c
 
 // ── the picture: the 3D scene, seen a little from above so that all seven bet rings and the bar have room ──
 const scene = createScene(canvas, stage, {contract, plan, urls: {plate: 'assets/scene/room.png', panorama: 'assets/scene/panorama-vegas.jpg', la: 'assets/scene/panorama-la.jpg', skog: 'assets/scene/panorama-skog.jpg'}, onChange: () => {}, onMissingRoom: () => {}});
-scene.set({format: 'fill', room: (query.get('room') ?? 'panorama') as never, tray: true, cards: true, pitch: Number(query.get('pitch') ?? -8), zoom: Number(query.get('zoom') ?? 0.84)});
+// Two framings, both by turning and zooming from the film camera's own place (exact for a flat film). Lying: the whole table
+// with all seven rings. Standing (a phone): the film's width is locked to the screen's, so the view is zoomed in on seats 3–5
+// and turns toward the seat in play.
+const FRAMING = {wide: {pitch: -8, zoom: 0.84}, tall: {pitch: -10, zoom: 1.9}, tallBelow: 0.8, turnShare: 0.6, turnLimit: 40};
+const fixed = query.has('pitch') || query.has('zoom');
+let tall = false, aimed = 0; // aimed: the yaw the view is easing toward, degrees
+function frame() {
+  const box = stage.getBoundingClientRect(), now = box.width / Math.max(1, box.height) < FRAMING.tallBelow;
+  if (now !== tall || !framed) { tall = now; framed = true; stage.classList.toggle('tall', tall); if (!fixed) scene.set(tall ? FRAMING.tall : FRAMING.wide); if (!tall) { aimed = 0; scene.set({yaw: 0}); } }
+  scene.resize();
+}
+let framed = false;
+scene.set({format: 'fill', room: (query.get('room') ?? 'panorama') as never, tray: true, cards: true, pitch: Number(query.get('pitch') ?? FRAMING.wide.pitch), zoom: Number(query.get('zoom') ?? FRAMING.wide.zoom)});
 scene.rebuild(); scene.start();
-new ResizeObserver(() => scene.resize()).observe(stage);
+new ResizeObserver(frame).observe(stage); frame();
 const film = createFilm(scene.players as unknown as FilmPlayers, graph, layout, path => fetch(path).then(res => res.ok ? res.json() : null));
 
 // ── state ──
@@ -109,7 +121,7 @@ const overlay = mountOverlay(stage, {
   },
 });
 const order: number[] = []; // the seats the chips were laid on, in order, for Ångra
-const render = () => overlay.render(tableView(snapshot, page));
+const render = () => { const view = tableView(snapshot, page); if (view.phase === 'TURN' || view.phase === 'BETTING') { if (view.phase === 'TURN') byHand = false; aimAt(view.phase === 'TURN' ? snapshot.view.round?.activeSeat ?? null : null); } overlay.render(view); };
 
 // ── where things are in the picture ──
 // A film pixel on the felt as the scene's own table point (dealer metres: x across, s from the dealer's edge).
@@ -128,7 +140,19 @@ function anchors(): Anchors {
   pin(DEALER_KEY, table.dealer[0]);
   return out;
 }
+// Standing: the view turns toward a seat (most of the way, so the dealer stays in the picture) and eases there.
+function aimAt(seat: number | null) {
+  const spot = seat === null ? null : scene.spots().bets.find(b => b.id === `P${seat}`), camera = scene.status().camera;
+  aimed = !tall || !spot ? 0 : Math.max(-FRAMING.turnLimit, Math.min(FRAMING.turnLimit, Math.atan2(-spot.x * camera.scale, solveCamera(camera).edgeDistance - spot.s * camera.scale) * 180 / Math.PI * FRAMING.turnShare));
+}
+// A sideways drag on the picture turns the view by hand (standing: to reach the outer seats; lying: to look around); a double click turns it back.
+let turning: {x: number; yaw: number} | null = null, byHand = false;
+canvas.addEventListener('pointerdown', e => { turning = {x: e.clientX, yaw: scene.state.yaw}; canvas.setPointerCapture(e.pointerId); });
+canvas.addEventListener('pointermove', e => { if (!turning) return; const dx = e.clientX - turning.x; if (Math.abs(dx) > 4) byHand = true; if (byHand) scene.state.yaw = Math.max(-FRAMING.turnLimit, Math.min(FRAMING.turnLimit, turning.yaw + dx * 45 / canvas.clientHeight / Math.max(1, scene.state.zoom))); });
+for (const type of ['pointerup', 'pointercancel']) canvas.addEventListener(type, () => { turning = null; });
+canvas.addEventListener('dblclick', () => { byHand = false; });
 scene.onFrame(() => {
+  if (!turning && !byHand && Math.abs(scene.state.yaw - aimed) > 0.02) scene.state.yaw += (aimed - scene.state.yaw) * 0.08;
   const host = stage.getBoundingClientRect(), box = scene.canvas.getBoundingClientRect();
   overlay.place({left: box.left - host.left, top: box.top - host.top, width: box.width, height: box.height}, anchors());
 });
