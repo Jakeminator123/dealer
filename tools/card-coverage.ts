@@ -20,7 +20,7 @@ const env = existsSync('D:/dealer-scratch/tmp') ? {...process.env, TEMP: 'D:/dea
 const ffmpeg = process.env.FFMPEG ?? 'ffmpeg', ffprobe = process.env.FFPROBE ?? 'ffprobe';
 const json = async (file: string) => JSON.parse(await readFile(file, 'utf8'));
 const tracked = (await readdir('assets/tracking', {withFileTypes: true})).filter(d => d.isDirectory() && existsSync(`assets/tracking/${d.name}/card-track.json`) && existsSync(`assets/motions/${d.name}/source.mp4`)).map(d => d.name).sort();
-const clips = all ? tracked.filter((_, i) => i % parts === part - 1) : args.filter((a, i) => /^[a-z][a-z0-9-]+$/.test(a) && i !== scaleAt + 1);
+const clips = all ? tracked.filter((_, i) => i % parts === part - 1) : args.filter((a, i) => /^[a-z][a-z0-9-]+$/.test(a) && (scaleAt < 0 || i !== scaleAt + 1));
 if (!clips.length) throw Error('Usage: card-coverage.ts <clip-id> ... | --all [--shard i/n]');
 
 const scene = sceneOf(await json('data/scene-contract.json')), jobs = await json('data/clip-jobs.json');

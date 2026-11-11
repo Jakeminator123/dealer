@@ -21,8 +21,9 @@ function kindOf(clip: string): FilmKind | null {
   const file = existsSync('data/clip-jobs.json') ? JSON.parse(readFileSync('data/clip-jobs.json', 'utf8')) : {}, edit = (file.edits ?? []).find((e: {id: string}) => e.id === clip);
   if (edit?.source?.clip) return kindOf(edit.source.clip);
   const kinds = [...new Set([...(file.jobs ?? []), ...(file.derived ?? [])].filter((e: {id: string; clip?: string}) => (e.clip ?? e.id) === clip).map((e: {kind?: string; from?: string; to?: string}) =>
-    e.kind === 'DEAL' ? 'DEAL' : e.kind === 'RETURN' && /(?:P[1-7]|D)\.C[1-3]/.test(String(e.from)) ? 'RETURN' : 'OTHER'))];
-  // A film cut into a deal and the return after it is a deal as a whole: the card turns once and then lies.
+    e.kind === 'DEAL' || e.kind === 'REVEAL' ? 'DEAL' : e.kind === 'RETURN' && /(?:P[1-7]|D)\.C[1-3]/.test(String(e.from)) ? 'RETURN' : 'OTHER'))];
+  // A film cut into a deal and the return after it is a deal as a whole: the card turns once and then lies. The turn of the
+  // hole card is the same thing to follow, a card that turns once and then lies; it only starts on the table instead of in the shoe.
   return kinds.includes('DEAL') ? 'DEAL' : kinds.length === 1 ? kinds[0] as FilmKind : null;
 }
 const kindAt = process.argv.indexOf('--kind'), kind: FilmKind | null = kindAt > 0 ? process.argv[kindAt + 1] as FilmKind : kindOf(id);

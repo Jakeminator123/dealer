@@ -1,0 +1,42 @@
+{
+  "schemaVersion": 1,
+  "id": "pamela-d-c2-reveal-01",
+  "dealer": "pamela",
+  "source": {
+    "path": "assets/motions/pamela-d-c2-reveal-01/source.mp4",
+    "sha256": "ea40e3c0827c3b353a6375c290f26f8451cc927efc5ff6a79a085d1057bb5cf9",
+    "bytes": 10582948,
+    "width": 1764,
+    "height": 1174,
+    "fps": 30,
+    "frames": 120,
+    "provider": "Runway developer API",
+    "model": "wan3"
+  },
+  "motion": {
+    "kind": "REVEAL",
+    "from": "IDLE",
+    "to": "REVEAL(D.C2)",
+    "target": "D.C2",
+    "hand": "LH",
+    "physicalStartSide": "BACK",
+    "physicalEndSide": "FRONT",
+    "turn": true,
+    "pass": false,
+    "basis": "SOURCE_FRAME_REVIEW",
+    "evidence": "evidence/generation-method-audit.json"
+  },
+  "review": {
+    "decision": "PENDING",
+    "basis": "Oberoende rutgranskad 2026-11-11 (alla 120 rutor i full upplösning kring händer och kort, hela bilden var sjätte ruta). Granskarens dom: möjlig variant. Fysisk, obruten vändning kring kortets långa axel f58–64; inget färgbyte utan vändning. Handen lämnar vilan f14–17, når kortet f29–30 och ligger still på det f30–43; bortre kanten pillas upp f44–52, kortet lämnar bordet f53, bred gul yta mot kameran f52–57, smal kant f63, blå yta öppnas f64–72, kortet ligger plant f84, fingret släpper f91–92, handen i vila f107–108. Kortet hamnar inom 1–2 px från där det låg och från slutbilden.",
+    "limitations": "Kortet lyfts cirka 165 px och visas upp mot kameran f53–57 i stället för att vändas strax över sin plats. Det är böjt f46–51 och ser ut som en rundad platta med ungefär dubbel yta f52–59; med renderat kort syns det inte, eftersom filmens kort målas över. Pauser f19–23, f30–43 och f80–90. Kantpassagen f62–64 är tre oskarpa rutor. Ojämn takt vid f19, 24, 29, 58, 63, 68 och 97. Grönnivån faller under rutorna 0–10 och hoppar i de två sista; slutrutan är cirka 9 nivåer mörkare i grönt än slutbilden. Övre och nedre vänstra hörnet är tomma och gröna i alla rutor. Det blå kortet till vänster och skon rör sig inte.",
+    "colorDoesNotProvePhysicalSide": true,
+    "userAccepted": false,
+    "productionReady": false
+  },
+  "postProcessing": "none",
+  "generationRef": "assets/motions/pamela-d-c2-reveal-01/generation.json",
+  "jobRef": "data/clip-jobs.json",
+  "scoutIntegrated": false,
+  "published": false
+}
