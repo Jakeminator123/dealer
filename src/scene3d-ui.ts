@@ -3,7 +3,7 @@
 import {buildGraph, resolveRound, type Step} from './clip-graph.ts';
 import {createScene, DEFAULTS, type SceneState} from './scene3d-view.ts';
 import type {Part} from './scene3d-film.ts';
-import type {CardTrack} from './scene3d-geometry.ts';
+import {filmToScene, type CardTrack} from './scene3d-geometry.ts';
 import {readRegister, type RoomId} from './scene3d-room.ts';
 import {EXIT_TRIAL, exitView} from './scene3d-exit.ts';
 
@@ -148,6 +148,7 @@ function build() {
   const pick = (key: 'cardRank' | 'cardSuit', options: [string, string][]) => { const s = el('select'); s.append(...options.map(([value, text]) => el('option', {value, textContent: text}))); s.addEventListener('change', () => scene.set({[key]: s.value})); setters[key] = ((v: string) => { s.value = v; }) as never; return s; };
   const grip = el('input', {type: 'checkbox'}); grip.checked = gripTracks; grip.addEventListener('change', () => { gripTracks = grip.checked; tracks.clear(); trackedPath = ''; });
   group('Kort', check('Renderade kort i stället för filmens färgyta', 'cards'), el('label', {className: 'check'}, grip, el('span', {textContent: 'Kortspår ur handens grepp (prov, där det finns)'})), choice('cardMethod', [['scene', 'I scenen (3D)'], ['film', 'I filmrutan (2D)']]),
+    el('label', {className: 'row two'}, el('span', {textContent: 'Kortet i handen'}), choice('cardHand', [['film', 'Filmens storlek (förut)'], ['standard', 'Standard hela vägen']])),
     slider('Kortets storlek', 'cardScale', 1, 2.5, 0.05, '×', live), el('div', {className: 'seg'}, pick('cardRank', ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'].map(r => [r, r])), pick('cardSuit', [['spades', 'Spader'], ['hearts', 'Hjärter'], ['diamonds', 'Ruter'], ['clubs', 'Klöver']])),
     note('<b>I scenen</b>: kortet är ett föremål på bordet under filmen. Filmens eget kort (och kortet i skons fönster) nycklas bort, så filmens fingrar ligger över det renderade kortet och deras skuggor faller på det. Ljuset tas från filmens kort i varje ruta, glansen från rummet; i rörelse blir kortet oskarpt som handen. <b>I filmrutan</b>: den tidigare vägen, där labbets kortritare ritar kortet in i filmrutan. Var kortet är och vilken sida som syns kommer i båda fallen ur spårningen och placeringsplanen. Valören här är bara för provet: i spelet bestämmer Scout den.'));
   group('Bord', check('Markerbräde försänkt vid dealern', 'tray'), el('label', {className: 'row two'}, el('span', {textContent: 'Logotext'}), logo), choice('felt', [['green', 'Grön'], ['blue', 'Blå'], ['vin', 'Vinröd'], ['svart', 'Svart']]),
@@ -156,6 +157,8 @@ function build() {
     note('<b>Fotomaterial</b> är rumsstudiens sätt (7 november): filten blir ett belyst tyg med fotograferad väv, och filt, läder, trä och mässing tar sitt ljus och sina speglingar ur det rum som visas, i stället för ur ett målat rum. Gäller panoramarummen (Las Vegas, Skyline, Skog).'),
     el('label', {className: 'row two'}, el('span', {textContent: 'Underrede'}), choice('base', [['column', 'Pelare (förut)'], ['legs', 'Två ben']])),
     note('<b>Två ben</b>: fotograferat trä, mässingsfötter, fotstöd i mässing och bordets skugga på golvet, efter rumsstudien 7 november. Syns när kameran backar: knappen <b>Hela bordet</b> under Kamera.'),
+    (() => { const box = el('input', {type: 'checkbox'}); box.checked = query.get('sko') === '3d'; box.addEventListener('change', () => void shoe.set(box.checked)); return el('label', {className: 'check'}, box, el('span', {textContent: 'Sko i 3D i stället för filmens sko (prov)'})); })(),
+    note('<b>Sko i 3D</b>: din skomodell står som ett föremål i scenen där filmens sko står, och filmens sko ritas inte. Den står kvar när dealern går. Inte löst än: i en giv klipps handen där den sträcker sig in till skon.'),
     check('Mugghållare i relingen', 'cups'), note('<b>Mugghållare</b>: en mässingsring mellan varje plats, nedsänkt i lädret.'));
   group('Marker och bricka', el('div', {className: 'btns'}, button('Lägg insatser', () => chipsLab.lay()), button('En marker till på plats 4', () => chipsLab.more())),
     el('div', {className: 'btns'}, button('Dealern tar plats 2', () => chipsLab.take(2)), button('Betala plats 6', () => chipsLab.pay(6)), button('Rensa', () => chipsLab.clear())),
@@ -188,6 +191,18 @@ const chipsLab = (() => {
     clear() { void load().then(() => { bets = {}; chips!.clearWinnings(); show(); }); },
   };
 })();
+
+// ---- the shoe trial: Jakob's shoe model as an object of the scene where the film's own shoe stands, and the film's shoe left
+// undrawn (panel Bord, or ?sko=3d). The whole-body films have no shoe on the table, so the film's shoe goes when the dealer
+// leaves and comes back when she sits; an object of the scene stays. A film with a frame of its own (whole body) keeps all of
+// its picture: its shoe box holds something else. Not solved here: a hand that reaches into the box, as in a deal, is cut with it.
+const shoe = (() => { let remove: (() => void) | null = null, box: number[] | null = null, wanted = false;
+  scene.onFrame(() => { if (remove && box) scene.hideFilm(scene.players.part?.frame ? null : box); });
+  return {async set(on: boolean) { wanted = on; if (on && !remove) { const m = await import('./game3d-props.ts'), camera = scene.status().camera, at = (p: number[]) => filmToScene(camera, p[0], p[1]);
+      const prop = await m.loadShoe(scene, {rear: at(m.FILM_SHOE.rear), front: at(m.FILM_SHOE.front), far: at(m.FILM_SHOE.far)}); if (!wanted || remove) return; box = m.FILM_SHOE.box; remove = scene.addProp(prop); }
+    else if (!on && remove) { remove(); remove = null; scene.hideFilm(null); } }};
+})();
+if (query.get('sko') === '3d') void shoe.set(true);
 
 // ---- the exit trial (src/scene3d-exit.ts): the film in two parts, and the camera that follows the second ----------------
 const exit = (() => {

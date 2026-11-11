@@ -20,7 +20,7 @@ export type SceneState = {
   focus: 'off' | 'dealer' | 'card' | 'follow' | 'manual'; focusDistance: number; tolerance: number;
   fan: boolean; fanStrength: number; fanPeriod: number;
   tray: boolean; cups: boolean; base: TableBase; surface: TableSurface; roomLight: number;
-  cards: boolean; cardMethod: 'scene' | 'film'; cardRank: string; cardSuit: string; cardScale: number;
+  cards: boolean; cardMethod: 'scene' | 'film'; cardRank: string; cardSuit: string; cardScale: number; cardHand: 'film' | 'standard';
   clock: boolean; dust: number; flicker: boolean; flickerEvery: number; flickerStrength: number;
   filmBright: number; filmWarm: number; wrap: number;
   roomShift: 'cut' | 'shimmer'; roomShiftSeconds: number;
@@ -34,7 +34,7 @@ export const DEFAULTS: SceneState = {
   focus: 'off', focusDistance: 1.5, tolerance: 0.4,
   fan: false, fanStrength: 0.16, fanPeriod: 5,
   tray: false, cups: false, base: 'column', surface: 'painted', roomLight: 1,
-  cards: false, cardMethod: 'scene', cardRank: 'A', cardSuit: 'spades', cardScale: 1.2,
+  cards: false, cardMethod: 'scene', cardRank: 'A', cardSuit: 'spades', cardScale: 1.2, cardHand: 'film',
   clock: false, dust: 0, flicker: false, flickerEvery: 20, flickerStrength: 0.6,
   filmBright: 1, filmWarm: 0, wrap: 0,
   roomShift: 'cut', roomShiftSeconds: 2.6,
@@ -279,7 +279,7 @@ export function createScene(canvas: HTMLCanvasElement, host: HTMLElement, data: 
     film.setFrame(frameAt(part?.frame ?? null, players.frame())); // and so does a part whose film has a frame of its own
     // A film with a frame of its own has no shoe and no card places in its picture: the rendered cards (the one seated in the shoe window among them) stay out of it.
     const cardsOn = state.cards && !part?.frame; if (!cardsOn) cardLayer?.off?.();
-    if (playing) film.setTexture(cardsOn && cardLayer?.update(playing.video, players.frame(), track, {rank: state.cardRank, suit: state.cardSuit, scale: state.cardScale}, part?.cards) ? cardLayer.texture : playing.texture);
+    if (playing) film.setTexture(cardsOn && cardLayer?.update(playing.video, players.frame(), track, {rank: state.cardRank, suit: state.cardSuit, scale: state.cardScale, hand: state.cardHand}, part?.cards) ? cardLayer.texture : playing.texture);
     const focusOn = state.focus !== 'off', u = blurMat.uniforms, scale = canvas.width / W;
     light.update(seconds, state.fan, state.fanStrength, state.fanPeriod);
     if (focusOn) { const goal = focusTarget(seconds), dt = Math.max(0, Math.min(0.2, seconds - lastSeconds)); focusWhat = goal.what;
@@ -334,6 +334,8 @@ export function createScene(canvas: HTMLCanvasElement, host: HTMLElement, data: 
     // prop reads them in its build(), which runs again whenever those change.
     spots() { return {cards: cardSpots(data.plan, camera), bets: betSpots(data.plan, camera)}; },
     lit: light.hook, // a prop's materials go through this, or focus and the fan's shade pass them by
+    /** A box of the film (film pixels: x0, y0, x1, y1) that is left undrawn, for an object of the scene that stands there instead; null draws all of the film again. */
+    hideFilm(box: number[] | null) { film.setHide(box); },
     addProp(prop: Prop) { props.push(prop); fg.add(prop.group); if (built) prop.build(edgeZ, camera.scale); return () => { const i = props.indexOf(prop); if (i >= 0) props.splice(i, 1); fg.remove(prop.group); }; },
     onFrame(call: () => void) { frameCalls.add(call); return () => { frameCalls.delete(call); }; },
     // Where a table point is in the picture as last drawn: CSS pixels from the canvas's top left corner, and how many

@@ -11,7 +11,7 @@
 // flat scales the paper, so the rendered card brightens and dims with the film's card (tilting away, turning over). Gloss and
 // bend are the card's own: the scene's room reflected in the paper, and a slight curve while it is held.
 import * as T from 'three';
-import {poseAt, sceneOf, cardRecord, cardFace, overridesOf, cardInFront, RIM, MARGIN, type CardTrack, type CardRecord} from './card-overlay.ts';
+import {poseAt, restOf, sceneOf, cardRecord, cardFace, overridesOf, cardInFront, RIM, MARGIN, type CardTrack, type CardRecord} from './card-overlay.ts';
 import {centre, clockwise, grown, signedArea, type Pt} from './card-track.ts';
 import {FILM, edgeQuad, heldScale, solveCamera, squareToQuad, type FilmCamera} from './scene3d-geometry.ts';
 import {CARD_GLSL, type CardKey} from './scene3d-film.ts';
@@ -103,7 +103,10 @@ void main(){
 const COMPOSITE_VERTEX = 'void main(){ gl_Position = vec4(position.xy, 0., 1.); }';
 const COMPOSITE_FRAGMENT = 'uniform sampler2D sum; uniform vec2 size; void main(){ gl_FragColor = texture2D(sum, gl_FragCoord.xy / size); }';
 
-type Choice = {rank: string; suit: string; scale: number};
+// hand: the card's size while it is carried. 'film' (as it was): the film's own card, which the model draws at a size of its own in
+// every clip, so the card changes size as it lands. 'standard': the size it lies in, from the shoe to the table (Jakob 2026-11-11: one
+// format, the card that lies on seat 4; everything else adapts to it).
+type Choice = {rank: string; suit: string; scale: number; hand?: 'film' | 'standard'};
 type Placed = {quad: Pt[]; back: boolean; target?: string | null; shoeDraw?: number | null};
 type Extra = {shift?: Pt | null; land?: Pt[] | null; placed?: Placed[]; cards?: CardRecord[] | null; target?: string | null; shoeDraw?: number | null};
 type FilmLayers = {shared: {map: {value: T.Texture | null}; grade: {value: T.Vector3}}; setCards(key: CardKey | null): void};
@@ -192,6 +195,17 @@ export function createDealLayer(o: Options) {
   const drawnAt = (track: CardTrack, frame: number, choice: Choice, extra: Extra): Drawn | null => {
     if (frame < 0 || frame >= track.frames.length) return null;
     const pose = poseAt(track, scene, frame, choice.scale, 12, extra.shift ?? null, extra.land ?? null);
+    // one size all the way: the film's card, made the size of ours. How much larger the film draws its card than ours is measured
+    // where both lie flat in the same place (the film's resting card against ours); the card in the hand is the film's card made
+    // smaller or larger by that much, about the point where the fingers hold it (the track's grip point, else its middle), so it
+    // neither grows nor shrinks as it lands. (Matching areas frame by frame would be wrong: a card that faces the eye is larger in
+    // the picture than the same card lying on the table.)
+    if (pose?.quad && choice.hand === 'standard' && pose.resting < 1) { const landed = restOf(track), rest = landed ? poseAt(track, scene, landed.from, choice.scale, 12, extra.shift ?? null, extra.land ?? null)?.quad : null, f = track.frames[pose.frame];
+      if (landed && rest && f.quad?.length === 4) { const root = (q: Pt[]) => Math.sqrt(Math.abs(signedArea(q))), film = f.quad.map(([x, y]) => ({x, y})), ours = root(rest), k = ours / (root(landed.quad) || 1);
+        // what poseAt has already done to the film's quad: its margin, and its own settling toward our size
+        const done = MARGIN * (1 + (ours / (MARGIN * root(film) || 1) - 1) * pose.resting), by = k / done, c = centre(pose.quad), raw = centre(film), grip = (f as {grip?: number[] | null}).grip;
+        const pivot = grip?.length === 2 ? {x: grip[0] + c.x - raw.x, y: grip[1] + c.y - raw.y} : c;
+        return {pose, q: pts(pose.quad.map(p => ({x: pivot.x + (p.x - pivot.x) * by, y: pivot.y + (p.y - pivot.y) * by}))), line: null}; } }
     // in the hand: the film's card and its pale edge (the contract measures that rim at 1.33 px), which belongs to the card
     if (pose?.quad) { const k = heldScale(pose.resting, HELD), c = centre(pose.quad); return {pose, q: pts(grown(pose.quad.map(p => ({x: c.x + (p.x - c.x) * k, y: c.y + (p.y - c.y) * k})), EDGE_PX * (1 - pose.resting))), line: null}; }
     if (pose?.edge) { const [a, b] = pose.edge; return {pose, q: edgeQuad([a.x, a.y], [b.x, b.y], 1.4), line: [[a.x, a.y], [b.x, b.y]]}; }

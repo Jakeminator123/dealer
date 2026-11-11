@@ -204,3 +204,15 @@ test('where a model meets the floor', () => {
   assert.deepEqual(footprint(positions, 0.05), {x0: -0.4, z0: -0.3, x1: 0.5, z1: 0.2}, 'only what is lower than the line');
   assert.equal(footprint([0, 1, 0], 0.05), null); assert.equal(footprint([], 0.05), null);
 });
+
+test('the shoe model stands where the film shoe stands: its near side on the measured side, its mouth toward the front corner', async () => {
+  const {shoeFit} = await import('../src/game3d-props.ts');
+  // A foot 0.45 long and 0.14 wide lying along +z with its near side on x = 1: the middle is half a width further out.
+  const straight = shoeFit([1, 0], [1, 0.45], [1.14, 0.45], 0.14, 0.45);
+  assert.ok(Math.abs(straight.x - 1.07) < 1e-9 && Math.abs(straight.z - 0.225) < 1e-9 && Math.abs(straight.yaw) < 1e-9 && Math.abs(straight.scale - 1) < 1e-9);
+  // Twice as long in the picture: twice the size, and the far side on the other hand puts the middle on the other side.
+  const big = shoeFit([0, 0], [0.9, 0], [0.9, 0.2], 0.14, 0.45);
+  assert.ok(Math.abs(big.scale - 2) < 1e-9 && Math.abs(big.yaw - Math.PI / 2) < 1e-9 && Math.abs(big.x - 0.45) < 1e-9 && Math.abs(big.z - 0.14) < 1e-9);
+  // The far corner need not lie square to the side (the mouth tapers): only its side of the shoe counts.
+  assert.deepEqual(shoeFit([0, 0], [0.9, 0], [0.7, 0.05], 0.14, 0.45), big);
+});
