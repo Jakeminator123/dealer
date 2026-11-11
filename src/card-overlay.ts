@@ -4,7 +4,10 @@
 // No DOM, WebGL or file access here. The drawing itself is src/card-overlay-view.ts.
 import {classify, morph, blobs, grown, centre, signedArea, inside, clockwise, is, YELLOW, BLUE, SHADE, TINT, TABLE, SKIN, DARK, type Pt, type Side} from './card-track.ts';
 
-export type TrackFrame = {frame: number; side: Side; quad: number[][] | null; edge: number[][] | null; confidence?: number; shoeShare?: number};
+// film: where the film's own card is in the frame, when the track draws the card somewhere else than the film has it (a track that
+// carries an even card in the grip): what is covered and keyed is then this quad, and quad is only where the card is drawn.
+// held: 1 while the card hangs in the hand, 0 once it lies (measured contact); absent, the scene goes by the frames before restFrom.
+export type TrackFrame = {frame: number; side: Side; quad: number[][] | null; edge: number[][] | null; confidence?: number; shoeShare?: number; film?: number[][] | null; held?: number};
 export type CardTrack = {clip?: string; width: number; height: number; frames: TrackFrame[]; edgeWindow: [number, number] | null; flips?: {from: number; to: number; quarterTurns: number}[];
   leavesShoe?: number | null; restFrom: number | null; restQuad: number[][] | null; shoeWindow?: {box: number[]} | null};
 // toImage/toTable are homographies as eight numbers (the ninth is 1): table millimetres <-> image pixels.
@@ -96,7 +99,7 @@ export function poseAt(track: CardTrack, scene: Scene | null, frame: number, sca
     return k ? {...none, edge: [move(line[0]), move(line[1])], at: line} : {...none, edge: line}; }
   if ((f.side !== 'BACK' && f.side !== 'FRONT') || f.quad?.length !== 4) return none;
   // In the hand the rendered card is the film's card and a margin more, so the film's card and its rim never show beside it.
-  const film = grown(pts(f.quad), RIM), held = about(pts(f.quad), MARGIN);
+  const film = grown(pts(f.film?.length === 4 ? f.film : f.quad), RIM), held = about(pts(f.quad), MARGIN);
   if (!landed) return {...none, quad: held.map(move), film};
   // At rest it is the constant-size card on the table: at the plan's place and direction, else where the film laid it (moved by the shift).
   const from = landed.from, rest = goal ?? landed.quad.map(p => ({x: p.x + d.x, y: p.y + d.y}));

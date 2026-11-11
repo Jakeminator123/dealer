@@ -247,10 +247,13 @@ export function createDealLayer(o: Options) {
         const edge = !!now.line, side = pose.side === 'BACK' || pose.side === 'FRONT' ? pose.side : sideNear(track!, pose.frame);
         const face = cardFace(cardRecord(extra.cards, extra), side === 'BACK', art(choice)), material = extra.target ? targets[extra.target]?.material : undefined;
         // in the shoe the card lies in the stack, flat; it bends once it is drawn out, and lies flat again once it rests
-        const out = track!.leavesShoe == null ? 1 : Math.max(0, Math.min(1, (pose.frame - track!.leavesShoe + 4) / 6)), held = (1 - pose.resting) * out;
-        const q = now.q, core = f.quad?.length === 4 ? f.quad : null;
+        // a track that has measured when the card is in the hand (held) says so itself; else the frames before its rest stand for it
+        const inHand = typeof f.held === 'number' ? Math.max(0, Math.min(1, f.held)) : 1 - pose.resting, measured = typeof f.held === 'number';
+        const out = track!.leavesShoe == null ? 1 : Math.max(0, Math.min(1, (pose.frame - track!.leavesShoe + 4) / 6)), held = inHand * out;
+        // the film's own card, for its light and for what is keyed: the track's film quad where it has one, else the quad the card is drawn by
+        const own4 = f.film?.length === 4 ? f.film : f.quad, q = now.q, core = own4?.length === 4 ? own4 : null;
         lay(dealt, q, {print: face.back ? print() : print(face.art), edge, bend: (material?.bend ?? BEND) * held, tilt: TILT * held, gloss: material?.gloss,
-          shade: core && !edge ? {core, colour: COLOUR[side], lying: LYING[side]} : null, contact: Math.max(0, Math.min(1, (pose.resting - 0.3) / 0.6))});
+          shade: core && !edge ? {core, colour: COLOUR[side], lying: LYING[side]} : null, contact: measured ? 1 - inHand : Math.max(0, Math.min(1, (pose.resting - 0.3) / 0.6))});
         // moving fast: drawn along its path over the shutter time instead, like the film's hand
         const path = pose.resting < 1 ? shutter(now, drawnAt(track!, at - 1, choice, extra), drawnAt(track!, at + 1, choice, extra)) : [q];
         if (path.length > 1) { drawSamples(path); dealt.mesh.visible = false; composite.visible = true; }
@@ -266,7 +269,7 @@ export function createDealLayer(o: Options) {
         // lose the shown side's tint.
         const sides = pose.resting >= 0.5 ? (side === 'BACK' ? 0 : 1) : 2;
         key = {...key, zone, core: clockwise(own.map(([x, y]) => ({x, y}))).map(p => [p.x, p.y]), colour: COLOUR[side], sides, tint: edge ? 2 : side === 'FRONT' ? 1 : 0,
-          trust: edge ? 0 : Math.max(0, Math.min(1, ((f.confidence ?? 1) - 0.3) / 0.4)), rim: edge ? 7 : RIM, drawn: edge ? null : q, held: 1 - pose.resting, over: cardInFront(overridesOf(track), pose.frame) && !edge ? q : null};
+          trust: edge ? 0 : Math.max(0, Math.min(1, ((f.confidence ?? 1) - 0.3) / 0.4)), rim: edge ? 7 : RIM, drawn: edge ? null : q, held: inHand, over: cardInFront(overridesOf(track), pose.frame) && !edge ? q : null};
       } else { hide(dealt); depth.visible = false; }
       o.film.setCards(key);
       // cards dealt by earlier films of the round, which this film does not show: lying flat where they landed

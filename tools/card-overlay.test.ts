@@ -47,6 +47,9 @@ test('in the hand the card follows the film, at rest it has its own size, and th
   const early = poseAt(track, scene, 5, 2)!;
   assert.equal(early.side, 'BACK'); assert.equal(early.resting, 0);
   assert.ok(Math.abs(Math.sqrt(area(early.quad!) / area(pts(track.frames[5].quad!))) - MARGIN) < 1e-9); assert.ok(dist(centre(early.quad!), centre(pts(track.frames[5].quad!))) < 1e-9); assert.ok(Math.abs(Math.sqrt(area(early.film!) / area(pts(track.frames[5].quad!))) - 1) < 2 * RIM / 60);
+  // A track that draws the card elsewhere than the film has it says where the film's card is: that is what must be covered, and the card is still drawn by quad.
+  const apart = deal(), moved = apart.frames[5].quad!.map(([x, y]) => [x + 40, y - 25]); apart.frames[5] = {...apart.frames[5], film: moved};
+  const split = poseAt(apart, scene, 5, 2)!; assert.deepEqual(split.quad, early.quad); assert.ok(dist(centre(split.film!), centre(pts(moved))) < 2, 'the rim grows it about its own middle, give or take a pixel'); assert.ok(dist(centre(split.film!), centre(early.film!)) > 40);
   // Lying still: the constant-size card, the same in every frame, and it covers the film's card.
   for (const frame of [30, 35, 39, 200]) assert.deepEqual(poseAt(track, scene, frame, 2)!.quad, still);
   assert.equal(poseAt(track, scene, 33, 2)!.resting, 1); assert.ok(area(still) > 3 * area(poseAt(track, scene, 33, 2)!.film!)); // the film's card with its rim
