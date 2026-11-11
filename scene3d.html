@@ -34,6 +34,7 @@ button{cursor:pointer}button:hover{border-color:var(--acc)}
 button:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid var(--acc);outline-offset:1px}
 .btns{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
 .seg{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:4px;margin:4px 0}
+.seg.rows{grid-auto-flow:row;grid-template-columns:repeat(3,1fr)}
 .seg button{padding:6px 4px}
 .seg button[aria-pressed=true]{background:var(--acc);color:#1a1404;border-color:var(--acc);font-weight:600}
 .note{color:var(--dim);font-size:12px;margin:6px 0 0}

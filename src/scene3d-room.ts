@@ -1,13 +1,14 @@
 // Rooms behind the dealer. Four ways to make a background, kept side by side for comparison:
 //   salong   built geometry, real parallax and depth (a placeholder room, not a designed environment)
-//   panorama a 360-degree image on a sphere around the camera: exact when turning, no parallax
+//   panorama a 360-degree image on a sphere around the camera: exact when turning, no parallax.
+//            Three of them: the Las Vegas hall (panorama), a penthouse over a skyline (la) and a forest (skog)
 //   kuliss   the V6 plate as one flat backdrop behind the dealer
 //   plat     the V6 plate fixed to the frame, as V6 does it today
 // Everything here is drawn blurred; nothing in a room may stand in front of the table.
 import * as T from 'three';
 import {FILM, solveCamera, type FilmCamera} from './scene3d-geometry.ts';
 
-export type RoomId = 'salong' | 'panorama' | 'kuliss' | 'plat';
+export type RoomId = 'salong' | 'panorama' | 'la' | 'skog' | 'kuliss' | 'plat';
 export type Room = {group: T.Object3D | null; plate: T.Texture | null; follow: boolean; hasDepth: boolean; blur: number; exposure: number; fog: T.Fog | null};
 const FLOOR = -0.92, CEILING = 3.15; // dealer metres relative to the felt
 
@@ -61,18 +62,23 @@ function buildSalon() {
 }
 
 // `onMissing` is told when an image cannot be read, so the page can say so instead of showing a black room.
-export function createRooms(scene: T.Scene, urls: {plate: string; panorama: string}, onMissing: (room: RoomId) => void) {
+export function createRooms(scene: T.Scene, urls: {plate: string; panorama: string; la: string; skog: string}, onMissing: (room: RoomId) => void) {
   const loader = new T.TextureLoader(), load = (url: string, rooms: RoomId[]) => { const t = loader.load(url, undefined, undefined, () => rooms.forEach(onMissing)); t.colorSpace = T.SRGBColorSpace; return t; };
   const plate = load(urls.plate, ['kuliss', 'plat']), panorama = load(urls.panorama, ['panorama']);
-  const salon = buildSalon(), sphere = new T.Mesh(new T.SphereGeometry(60, 64, 32), new T.MeshBasicMaterial({map: panorama, side: T.BackSide, fog: false}));
+  const ball = new T.SphereGeometry(60, 64, 32), sphereOf = (map: T.Texture | null) => new T.Mesh(ball, new T.MeshBasicMaterial({map, side: T.BackSide, fog: false}));
+  const salon = buildSalon(), sphere = sphereOf(panorama), la = sphereOf(null), skog = sphereOf(null);
+  // The two extra panoramas are fetched the first time they are shown.
+  const later: Partial<Record<RoomId, {mesh: T.Mesh; url: string}>> = {la: {mesh: la, url: urls.la}, skog: {mesh: skog, url: urls.skog}};
   const backdrop = new T.Mesh(new T.PlaneGeometry(1, 1), new T.MeshBasicMaterial({map: plate, color: 0x959595, fog: false}));
   const rooms: Record<RoomId, Room> = {
     salong: {group: salon, plate: null, follow: false, hasDepth: true, blur: 11, exposure: 1, fog: new T.Fog(0x0f0906, 8, 30)},
     panorama: {group: sphere, plate: null, follow: true, hasDepth: false, blur: 5, exposure: 0.8, fog: null},
+    la: {group: la, plate: null, follow: true, hasDepth: false, blur: 6, exposure: 0.7, fog: null},
+    skog: {group: skog, plate: null, follow: true, hasDepth: false, blur: 6, exposure: 0.55, fog: null},
     kuliss: {group: backdrop, plate: null, follow: false, hasDepth: false, blur: 9, exposure: 1, fog: null},
     plat: {group: null, plate, follow: false, hasDepth: false, blur: 8, exposure: 1, fog: null},
   };
-  scene.add(salon, sphere, backdrop);
+  scene.add(salon, sphere, la, skog, backdrop);
   return {
     rooms,
     // Rooms are built in dealer metres around the dealer-side table edge and scaled into the plan-scale world.
@@ -81,7 +87,10 @@ export function createRooms(scene: T.Scene, urls: {plate: string; panorama: stri
       salon.position.set(0, 0, -edgeDistance); salon.scale.setScalar(k); rooms.salong.fog!.near = 8 * k; rooms.salong.fog!.far = 30 * k;
       backdrop.scale.set(2 * halfWidth, 2 * halfWidth / 1.5, 1); backdrop.position.set(0, camera.heightM - Math.tan(pitch) * distance, -edgeDistance - 3.2 * k);
     },
-    show(id: RoomId) { for (const [name, room] of Object.entries(rooms)) if (room.group) room.group.visible = name === id; scene.fog = rooms[id].fog; },
+    show(id: RoomId) {
+      const wait = later[id]; if (wait) { const material = wait.mesh.material as T.MeshBasicMaterial; material.map = load(wait.url, [id]); material.needsUpdate = true; delete later[id]; }
+      for (const [name, room] of Object.entries(rooms)) if (room.group) room.group.visible = name === id; scene.fog = rooms[id].fog;
+    },
     followCamera(id: RoomId, position: T.Vector3, turnDeg: number) { const room = rooms[id]; if (room.follow && room.group) { room.group.position.copy(position); room.group.rotation.y = turnDeg * Math.PI / 180; } },
   };
 }

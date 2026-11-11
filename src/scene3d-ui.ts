@@ -28,7 +28,7 @@ if (!clips.length) fail('Klippbanken innehåller inga filmer.');
 
 const first = clips.find(c => c.id === query.get('clip'))?.id ?? (rounds.length ? 'round:0' : clips[0].id);
 const missing = new Set<RoomId>(), setters: Partial<Record<keyof SceneState, (value: never) => void>> = {};
-const scene = createScene(canvas, stage, {contract, plan: placements.plan ?? placements, urls: {plate: 'assets/scene/room.png', panorama: 'assets/scene/panorama-vegas.jpg'}, onChange: () => { sync(); hud(); void followTrack(); }, onMissingRoom: room => { missing.add(room); hud(); }});
+const scene = createScene(canvas, stage, {contract, plan: placements.plan ?? placements, urls: {plate: 'assets/scene/room.png', panorama: 'assets/scene/panorama-vegas.jpg', la: 'assets/scene/panorama-la.jpg', skog: 'assets/scene/panorama-skog.jpg'}, onChange: () => { sync(); hud(); void followTrack(); }, onMissingRoom: room => { missing.add(room); hud(); }});
 const state = scene.state;
 for (const [key, value] of query) if (key in DEFAULTS) { const k = key as keyof SceneState, base = DEFAULTS[k]; (state as Record<string, unknown>)[k] = typeof base === 'number' ? Number(value) : typeof base === 'boolean' ? value === '1' : value; }
 if (bare) state.format = 'fill';
@@ -69,17 +69,17 @@ function build() {
   };
   const check = (label: string, key: keyof SceneState) => { const input = el('input', {type: 'checkbox'}); input.addEventListener('change', () => scene.set({[key]: input.checked}));
     setters[key] = ((v: boolean) => { input.checked = v; }) as never; return el('label', {className: 'check'}, input, el('span', {textContent: label})); };
-  const choice = <K extends keyof SceneState>(key: K, options: [SceneState[K], string][], then: (value: SceneState[K]) => void = value => scene.set({[key]: value} as Partial<SceneState>)) => {
-    const box = el('div', {className: 'seg'}), buttons = options.map(([value, text]) => { const b = el('button', {type: 'button', textContent: text}); b.addEventListener('click', () => then(value)); box.append(b); return [value, b] as const; });
+  const choice = <K extends keyof SceneState>(key: K, options: [SceneState[K], string][], then: (value: SceneState[K]) => void = value => scene.set({[key]: value} as Partial<SceneState>), rows = false) => {
+    const box = el('div', {className: rows ? 'seg rows' : 'seg'}), buttons = options.map(([value, text]) => { const b = el('button', {type: 'button', textContent: text}); b.addEventListener('click', () => then(value)); box.append(b); return [value, b] as const; });
     setters[key] = ((v: SceneState[K]) => buttons.forEach(([value, b]) => b.setAttribute('aria-pressed', String(value === v)))) as never; return box;
   };
   const button = (text: string, onclick: () => void, id = '') => el('button', {type: 'button', textContent: text, onclick, id});
   const live = () => hud();
 
   panel.append(el('h1', {textContent: '3D-scen · bakgrund och bord'}), el('p', {className: 'sub', textContent: 'Pamelas 2D-film i ett 3D-rum med 3D-bord. Dra i bilden, rulla för zoom, dubbelklicka för hemvy.'}));
-  group('Miljö', choice('room', [['salong', '3D-salong'], ['panorama', 'Panorama'], ['kuliss', 'Kuliss'], ['plat', 'V6-plåt']], room => scene.set({room, blur: ({salong: 11, panorama: 5, kuliss: 9, plat: 8})[room]})),
+  group('Miljö', choice('room', [['salong', '3D-salong'], ['panorama', 'Las Vegas'], ['la', 'Skyline'], ['skog', 'Skog'], ['kuliss', 'Kuliss'], ['plat', 'V6-plåt']], room => scene.set({room, blur: ({salong: 11, panorama: 5, la: 6, skog: 6, kuliss: 9, plat: 8})[room]}), true),
     slider('Oskärpa längst bort', 'blur', 0, 30, 0.5, ' px', live), check('Oskärpan växer med avståndet (3D-salongen)', 'depthBlur'), slider('Full oskärpa efter', 'dofRange', 0.5, 12, 0.1, ' m', live), slider('Ljus i rummet', 'exposure', 0.3, 2, 0.05, '', live),
-    note('<b>3D-salong</b>: byggd geometri, äkta parallax. <b>Panorama</b>: 360°-bild, ingen parallax. <b>Kuliss</b>: V6-plåten som ett plan bakom dealern. <b>V6-plåt</b>: dagens platta bild, fast i rutan.'));
+    note('<b>3D-salong</b>: byggd geometri, äkta parallax. <b>Las Vegas</b>, <b>Skyline</b> och <b>Skog</b>: 360°-bilder runt kameran, exakta vid vridning men utan parallax. <b>Kuliss</b>: V6-plåten som ett plan bakom dealern. <b>V6-plåt</b>: dagens platta bild, fast i rutan.'));
   group('Fokus', choice('focus', [['off', 'Av'], ['dealer', 'Dealern'], ['follow', 'Följ given'], ['card', 'Kortet'], ['manual', 'Eget']]),
     slider('Eget avstånd', 'focusDistance', 0.3, 12, 0.01, ' m', live), slider('Skärpedjup', 'tolerance', 0, 0.8, 0.01, '', live),
     note('<b>Av</b> är kontrollpunkt v1: bord och film alltid skarpa. Med fokus på blir allt oskarpt efter sitt avstånd till skärpeplanet, även bordet och dealern. <b>Följ given</b> flyttar skärpan till kortet från att det lämnar skon tills det ligger still, och sedan tillbaka till dealern; hennes ansikte blir då lite mjukt. Styrkan är reglaget "Oskärpa längst bort".'));
