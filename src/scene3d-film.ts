@@ -11,7 +11,7 @@ void main(){ vec4 w = modelMatrix * vec4(position, 1.); vWorld = w.xyz; vFilm = 
 // Output is premultiplied and sRGB-encoded, like the video. The screen colour is read from the frame itself
 // because it drifts between and inside clips. A screen pixel that is only darker than that reference comes
 // out as black with partial alpha, which is how hand and shoe shadows on the green table survive the key.
-const FRAGMENT = `varying vec4 vFilm; varying vec3 vWorld; uniform sampler2D map; uniform vec2 refUv, texel; uniform float lo, hi, shadow, erode;
+const FRAGMENT = `varying vec4 vFilm; varying vec3 vWorld; uniform sampler2D map; uniform vec2 refUv, texel; uniform float lo, hi, shadow, erode; uniform vec3 grade;
 ${FAN_GLSL}
 float screenAt(vec2 uv, vec3 key, float dk){ vec3 c = texture2D(map, uv).rgb; return clamp(((c.g - max(c.r, c.b)) / dk - lo) / (hi - lo), 0., 1.); }
 void main(){
@@ -31,14 +31,14 @@ void main(){
   float isShadow = (1. - smoothstep(.03, .12, tone)) * (1. - smoothstep(.7, .95, a));
   a *= mix(1., shadow, isShadow);
   if (a < .004) discard;
-  gl_FragColor = vec4(pm * fanShade(vWorld), a);
+  gl_FragColor = vec4(pm * grade * fanShade(vWorld), a);
 }`;
 
 export type KeySettings = {lo: number; hi: number; shadow: number};
 export function createFilmLayers(filmVP: T.Matrix4, light: Record<string, {value: unknown}>) {
   const material = (refUv: T.Vector2) => new T.ShaderMaterial({vertexShader: VERTEX, fragmentShader: FRAGMENT, transparent: true, depthWrite: false, side: T.DoubleSide,
     blending: T.CustomBlending, blendSrc: T.OneFactor, blendDst: T.OneMinusSrcAlphaFactor, blendSrcAlpha: T.OneFactor, blendDstAlpha: T.OneMinusSrcAlphaFactor,
-    uniforms: {...light, map: {value: null}, filmVP: {value: filmVP}, refUv: {value: refUv}, lo: {value: 0.12}, hi: {value: 0.9}, shadow: {value: 1}, erode: {value: 0.6}, texel: {value: new T.Vector2(1.4 / FILM.width, 1.4 / FILM.height)}}});
+    uniforms: {...light, map: {value: null}, filmVP: {value: filmVP}, refUv: {value: refUv}, lo: {value: 0.12}, hi: {value: 0.9}, shadow: {value: 1}, erode: {value: 0.6}, grade: {value: new T.Vector3(1, 1, 1)}, texel: {value: new T.Vector2(1.4 / FILM.width, 1.4 / FILM.height)}}});
   // The screen reference is read in a corner that stays empty: top left for the backdrop, bottom left for the table.
   const bodyMat = material(new T.Vector2(0.02, 0.97)), tableMat = material(new T.Vector2(0.02, 0.03));
   const body = new T.Mesh(new T.PlaneGeometry(10, 3), bodyMat), table = new T.Mesh(new T.PlaneGeometry(10, 2).rotateX(-Math.PI / 2), tableMat);
@@ -46,6 +46,8 @@ export function createFilmLayers(filmVP: T.Matrix4, light: Record<string, {value
   return {
     body, table,
     setTexture(texture: T.Texture) { bodyMat.uniforms.map.value = tableMat.uniforms.map.value = texture; },
+    // Calibration of the film against the room: brightness, and warmth as red up and blue down by the same share. 1 and 0 leave the film as it is.
+    setGrade(brightness: number, warmth: number) { for (const m of [bodyMat, tableMat]) (m.uniforms.grade.value as T.Vector3).set(brightness * (1 + warmth), brightness, brightness * (1 - warmth)); },
     setKey(key: KeySettings) { bodyMat.uniforms.lo.value = key.lo; bodyMat.uniforms.hi.value = key.hi - 0.08; tableMat.uniforms.lo.value = key.lo; tableMat.uniforms.hi.value = key.hi; tableMat.uniforms.shadow.value = key.shadow; },
     // Folded: the plane stands on the table edge and the table layer carries hands, cards and shadows.
     // Unfolded: one plane carries the whole frame and nothing follows the felt when the camera moves.

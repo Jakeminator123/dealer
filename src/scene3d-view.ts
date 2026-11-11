@@ -3,7 +3,7 @@
 // With focus off, table and film are drawn straight to the screen and stay sharp (the look of checkpoint v1).
 // With focus on, they go through a full-size target and are blurred by their own distance from the focus.
 import * as T from 'three';
-import {DEALER_LENS_ESTIMATE, FILM, aimCorrection, cameraFromContract, cardFocusPixel, cardPixel, cardSpots, filmToScene, solveCamera, viewFovDeg, type CardTrack, type FilmCamera} from './scene3d-geometry.ts';
+import {DEALER_LENS_ESTIMATE, FILM, aimCorrection, cameraFromContract, cardFocusPixel, cardPixel, cardSpots, filmToScene, flickerLevel, solveCamera, viewFovDeg, type CardTrack, type FilmCamera} from './scene3d-geometry.ts';
 import {createFilmLayers, createPlayers} from './scene3d-film.ts';
 import {createFanLight} from './scene3d-light.ts';
 import {createChipTray, TRAY} from './scene3d-props.ts';
@@ -18,7 +18,9 @@ export type SceneState = {
   focus: 'off' | 'dealer' | 'card' | 'follow' | 'manual'; focusDistance: number; tolerance: number;
   fan: boolean; fanStrength: number; fanPeriod: number;
   tray: boolean;
-  cards: boolean; cardRank: string; cardSuit: string;
+  cards: boolean; cardRank: string; cardSuit: string; cardScale: number;
+  clock: boolean; dust: number; flicker: boolean; flickerEvery: number; flickerStrength: number;
+  filmBright: number; filmWarm: number;
 };
 // Everything added after checkpoint v1 starts switched off, so the page opens as v1. scale 0 = the contract's own k.
 export const DEFAULTS: SceneState = {
@@ -29,9 +31,11 @@ export const DEFAULTS: SceneState = {
   focus: 'off', focusDistance: 1.5, tolerance: 0.4,
   fan: false, fanStrength: 0.16, fanPeriod: 5,
   tray: false,
-  cards: false, cardRank: 'A', cardSuit: 'spades',
+  cards: false, cardRank: 'A', cardSuit: 'spades', cardScale: 1.2,
+  clock: false, dust: 0, flicker: false, flickerEvery: 20, flickerStrength: 0.6,
+  filmBright: 1, filmWarm: 0,
 };
-export type SceneData = {contract: Parameters<typeof cameraFromContract>[0]; plan: Parameters<typeof cardSpots>[0]; urls: {plate: string; panorama: string}; onChange: () => void; onMissingRoom: (room: RoomId) => void};
+export type SceneData = {contract: Parameters<typeof cameraFromContract>[0]; plan: Parameters<typeof cardSpots>[0]; urls: {plate: string; panorama: string; la: string; skog: string}; onChange: () => void; onMissingRoom: (room: RoomId) => void};
 
 const W = FILM.width, H = FILM.height, RAD = Math.PI / 180;
 const FS_VERTEX = 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = vec4(position.xy, 0., 1.); }';
@@ -128,7 +132,7 @@ export function createScene(canvas: HTMLCanvasElement, host: HTMLElement, data: 
   }
   const drawFelt = () => table.draw({spots: cardSpots(data.plan, camera), logo: state.logo, felt: state.felt, scale: camera.scale});
   function apply() {
-    rooms.show(state.room); film.place(edgeZ, state.fold, state.focus !== 'off'); film.setKey({lo: state.keyLo, hi: state.keyHi, shadow: state.shadow});
+    rooms.show(state.room); film.place(edgeZ, state.fold, state.focus !== 'off'); film.setKey({lo: state.keyLo, hi: state.keyHi, shadow: state.shadow}); film.setGrade(state.filmBright, state.filmWarm);
     if (guides) guides.visible = state.guides; resize(); data.onChange();
   }
   function resize() {
@@ -161,9 +165,10 @@ export function createScene(canvas: HTMLCanvasElement, host: HTMLElement, data: 
   function render(seconds = performance.now() / 1000) {
     targets(); updateView(seconds);
     const shown = players.current;
-    if (shown) film.setTexture(state.cards && cardLayer?.update(shown.video, players.frame(), track, {rank: state.cardRank, suit: state.cardSuit, scale: camera.scale}) ? cardLayer.texture : shown.texture);
+    if (shown) film.setTexture(state.cards && cardLayer?.update(shown.video, players.frame(), track, {rank: state.cardRank, suit: state.cardSuit, scale: state.cardScale}) ? cardLayer.texture : shown.texture);
     const room = rooms.rooms[state.room], focusOn = state.focus !== 'off', u = blurMat.uniforms, scale = canvas.width / W;
     rooms.followCamera(state.room, view.position, state.panoramaTurn); light.update(seconds, state.fan, state.fanStrength, state.fanPeriod);
+    const dim = rooms.ambient(state.room, seconds, new Date(), {clock: state.clock, dust: state.dust, lamp: state.flicker ? flickerLevel(seconds, state.flickerEvery, state.flickerStrength) : 1}, canvas.height / H);
     if (focusOn) { const goal = focusTarget(seconds), dt = Math.max(0, Math.min(0.2, seconds - lastSeconds)); focusWhat = goal.what;
       focusNow = Number.isFinite(focusNow) && Number.isFinite(dt) ? focusNow + (goal.distance - focusNow) * (1 - Math.exp(-dt / 0.22)) : goal.distance; } else focusNow = NaN;
     lastSeconds = seconds;
@@ -178,7 +183,7 @@ export function createScene(canvas: HTMLCanvasElement, host: HTMLElement, data: 
     outMat.uniforms.useFg.value = 0;
     if (focusOn) { const [f, g, h] = full; light.uniforms.toTarget.value = 1; renderer.setRenderTarget(f); renderer.setClearColor(0x000000, 0); renderer.clear(); renderer.render(fg, view); light.uniforms.toTarget.value = 0;
       u.depthMap.value = f.depthTexture; u.mode.value = 2; outMat.uniforms.fg.value = blur(f, g, h, state.blur * scale).texture; outMat.uniforms.useFg.value = 1; }
-    renderer.setRenderTarget(null); renderer.setClearColor(0x050403, 1); renderer.clear(); outMat.uniforms.map.value = roomResult.texture; outMat.uniforms.exposure.value = state.exposure * room.exposure; pass(outMat, null);
+    renderer.setRenderTarget(null); renderer.setClearColor(0x050403, 1); renderer.clear(); outMat.uniforms.map.value = roomResult.texture; outMat.uniforms.exposure.value = state.exposure * room.exposure * dim; pass(outMat, null);
     if (!focusOn) { renderer.clearDepth(); renderer.render(fg, view); }
   }
   let running = false; const loop = (ms: number) => { if (!running) return; render(ms / 1000); requestAnimationFrame(loop); };

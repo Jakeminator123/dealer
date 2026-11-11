@@ -84,3 +84,19 @@ export function cardPixel(track: CardTrack | null, frame: number): {x: number; y
   if (!points?.length) return null;
   return {x: points.reduce((s, p) => s + p[0], 0) / points.length, y: points.reduce((s, p) => s + p[1], 0) / points.length};
 }
+
+// ---- time: what moves by the clock, kept pure so it can be tested ---------------------------------------
+// Angles of a clock's hands in radians, clockwise from twelve. Every hand creeps; none of them ticks.
+export function clockAngles(hours: number, minutes: number, seconds: number): {hour: number; minute: number; second: number} {
+  const turn = 2 * Math.PI; return {second: seconds / 60 * turn, minute: (minutes + seconds / 60) / 60 * turn, hour: (hours % 12 + minutes / 60 + seconds / 3600) / 12 * turn};
+}
+// A lamp that flickers now and then: 1 most of the time, and once in every `every` seconds a short burst of dips,
+// at most down to 1 - strength. Decided by the time alone, so nothing has to be stored and the same second always looks the same.
+export function flickerLevel(seconds: number, every: number, strength: number): number {
+  if (!(every > 0) || !(strength > 0) || !Number.isFinite(seconds)) return 1;
+  const hash = (n: number) => { const x = Math.sin(n * 127.1 + 311.7) * 43758.5453; return x - Math.floor(x); };
+  const slot = Math.floor(seconds / every), length = Math.min(every, 0.5 + hash(slot + 0.5) * 0.7), t = seconds - (slot * every + hash(slot) * (every - length));
+  if (t < 0 || t > length) return 1;
+  const dip = hash(slot * 31 + Math.floor(t / 0.06)); // a new dip every 60 ms, strongest in the middle of the burst
+  return 1 - Math.min(1, strength) * Math.sin(Math.PI * t / length) * (dip > 0.45 ? dip : 0.15);
+}

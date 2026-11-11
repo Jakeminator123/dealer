@@ -34,6 +34,7 @@ Lager, bakifrån och fram:
 | Renderade kort | Labbets kortritare (`src/card-overlay-view.ts`) ritar filmrutan med det renderade kortet på, handen kvar framför, och scenen använder den rutan som film. Kortet får därmed samma nyckel, skärpa, fläktskugga och parallax som filmen. Laddas först när reglaget slås på. Gränser: kortet ritas i filmens bildrum och klipps vid filmrutans kant, och rundor med flera kort (placed/shift ur `resolveRound`) är inte inkopplade. | `src/scene3d-cards.ts` |
 | Ljus | Fläktskuggan: en multiplikation ovanpå film och bord; filmens eget ljus går inte att ändra. | `src/scene3d-light.ts` |
 | Bild | Vykamera, oskärpa, fokus och slutkomposit. | `src/scene3d-view.ts` |
+| Rörelse i rummet | Tre slag hålls isär. Ständiga: klocka med riktig tid, damm i luften, fläktskugga. Händelser: en lampa som flimrar till en gång per period, bestämd av klocktiden. Filmstyrda: fokus som följer given. Allt avstängt från start; styrka och takt har egna reglage. | `src/scene3d-room.ts`, `src/scene3d-light.ts`, `src/scene3d-geometry.ts` (klockvisare och blinkning) |
 
 Filmkameran läses ur `data/scene-contract.json` (planens kamera) i `src/scene3d-geometry.ts`, som återanvänder pinhålet i `src/scene-geometry.ts`. Tre lägen ska hållas isär: från filmkamerans plats är bilden filmen pixel för pixel; vridning och zoom från samma plats är geometriskt exakt; förflyttning är ett närmevärde som bryter vid ungefär en stols avstånd. Rundor spelas med klippbankens egna klippunkter (`resolveRound`), aldrig hela klipp efter varandra.
 

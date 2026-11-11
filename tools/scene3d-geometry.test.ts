@@ -90,3 +90,14 @@ test('focus follows a card only while it is being dealt', async () => {
   assert.equal(cardFocusPixel(null, 60), null); assert.equal(cardFocusPixel({frames: track.frames}, 60), null, 'utan uppgift om när kortet lämnar skon följs det inte');
   assert.equal(cardPixel({frames: [{frame: 3, quad: null, edge: [[10, 20], [30, 40]]}]}, 3)!.x, 20); assert.equal(cardPixel({frames: [{frame: 3, quad: null, edge: null}]}, 3), null);
 });
+
+test('clock hands and the flickering lamp follow the time alone', async () => {
+  const {clockAngles, flickerLevel} = await import('../src/scene3d-geometry.ts'), turn = 2 * Math.PI;
+  near(clockAngles(3, 0, 0).hour, turn / 4, 1e-12, 'klockan tre'); near(clockAngles(12, 30, 0).minute, turn / 2, 1e-12, 'halv'); near(clockAngles(15, 0, 0).hour, turn / 4, 1e-12, 'femton är tre');
+  near(clockAngles(0, 0, 45).second, turn * 0.75, 1e-12, 'sekundvisaren'); assert.ok(clockAngles(3, 30, 0).hour > clockAngles(3, 0, 0).hour, 'timvisaren kryper');
+  assert.equal(flickerLevel(12.3, 20, 0), 1); assert.equal(flickerLevel(12.3, 0, 0.6), 1); assert.equal(flickerLevel(NaN, 20, 0.6), 1);
+  // in every period: one stretch of flicker, at most 1.2 s long, never below 1 - strength, and the same answer every time it is asked
+  for (let slot = 0; slot < 40; slot++) { let first = -1, last = -1, lowest = 1;
+    for (let i = 0; i < 2000; i++) { const t = slot * 20 + i * 0.01, level = flickerLevel(t, 20, 0.6); assert.equal(level, flickerLevel(t, 20, 0.6)); if (level < 1) { if (first < 0) first = i; last = i; lowest = Math.min(lowest, level); } }
+    assert.ok(first >= 0, `period ${slot} har en blinkning`); assert.ok(last - first <= 121, `period ${slot}: ${last - first} hundradelar`); assert.ok(lowest >= 0.4 - 1e-9 && lowest < 0.95, `period ${slot}: lägst ${lowest}`); }
+});

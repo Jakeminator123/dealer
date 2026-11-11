@@ -47,7 +47,7 @@ async function followTrack() {
 const decimal = (v: number, digits = 2) => v.toFixed(digits).replace('.', ',');
 function hud() {
   const s = scene.status(), chip = (text: string, tone = '') => el('span', {className: `chip ${tone}`, textContent: text}), id = /motions\/([^/]+)\//.exec(scene.players.path)?.[1] ?? 'läser film…';
-  const added = [state.focus !== 'off' && 'fokus', state.fan && 'fläktskugga', state.tray && 'markerbräde', state.cards && 'renderade kort'].filter(Boolean);
+  const added = [state.focus !== 'off' && 'fokus', state.fan && 'fläktskugga', state.tray && 'markerbräde', state.cards && 'renderade kort', state.clock && 'klocka', state.dust > 0 && 'damm', state.flicker && 'blinkande lampa', (state.filmBright !== 1 || state.filmWarm !== 0) && 'ljuskalibrering'].filter(Boolean);
   hudBox.replaceChildren(chip(id),
     s.view === 'moved' ? chip('Kameran är flyttad: 2,5D-närmevärde, inte filmens sanning', 'warn') : s.view === 'turned' ? chip('Bara vridning/zoom: filmen är geometriskt exakt', 'ok') : chip('Hemvy: filmen pixel för pixel', 'ok'),
     s.camera.source === 'contract' ? chip(`Kamera: planens (kontraktet) · skala k = ${decimal(s.camera.scale)} skattad`) : chip('Kamera: egen skattning, inte uppmätt', 'warn'),
@@ -78,13 +78,18 @@ function build() {
 
   panel.append(el('h1', {textContent: '3D-scen · bakgrund och bord'}), el('p', {className: 'sub', textContent: 'Pamelas 2D-film i ett 3D-rum med 3D-bord. Dra i bilden, rulla för zoom, dubbelklicka för hemvy.'}));
   group('Miljö', choice('room', [['salong', '3D-salong'], ['panorama', 'Las Vegas'], ['la', 'Skyline'], ['skog', 'Skog'], ['kuliss', 'Kuliss'], ['plat', 'V6-plåt']], room => scene.set({room, blur: ({salong: 11, panorama: 5, la: 6, skog: 6, kuliss: 9, plat: 8})[room]}), true),
-    slider('Oskärpa längst bort', 'blur', 0, 30, 0.5, ' px', live), check('Oskärpan växer med avståndet (3D-salongen)', 'depthBlur'), slider('Full oskärpa efter', 'dofRange', 0.5, 12, 0.1, ' m', live), slider('Ljus i rummet', 'exposure', 0.3, 2, 0.05, '', live),
+    slider('Oskärpa längst bort', 'blur', 0, 30, 0.5, ' px', live), check('Oskärpan växer med avståndet (3D-salongen)', 'depthBlur'), slider('Full oskärpa efter', 'dofRange', 0.5, 12, 0.1, ' m', live),
     note('<b>3D-salong</b>: byggd geometri, äkta parallax. <b>Las Vegas</b>, <b>Skyline</b> och <b>Skog</b>: 360°-bilder runt kameran, exakta vid vridning men utan parallax. <b>Kuliss</b>: V6-plåten som ett plan bakom dealern. <b>V6-plåt</b>: dagens platta bild, fast i rutan.'));
-  group('Fokus', choice('focus', [['off', 'Av'], ['dealer', 'Dealern'], ['follow', 'Följ given'], ['card', 'Kortet'], ['manual', 'Eget']]),
+  group('Fokus (styrs av filmen)', choice('focus', [['off', 'Av'], ['dealer', 'Dealern'], ['follow', 'Följ given'], ['card', 'Kortet'], ['manual', 'Eget']]),
     slider('Eget avstånd', 'focusDistance', 0.3, 12, 0.01, ' m', live), slider('Skärpedjup', 'tolerance', 0, 0.8, 0.01, '', live),
     note('<b>Av</b> är kontrollpunkt v1: bord och film alltid skarpa. Med fokus på blir allt oskarpt efter sitt avstånd till skärpeplanet, även bordet och dealern. <b>Följ given</b> flyttar skärpan till kortet från att det lämnar skon tills det ligger still, och sedan tillbaka till dealern; hennes ansikte blir då lite mjukt. Styrkan är reglaget "Oskärpa längst bort".'));
-  group('Ljus och rörelse', check('Fläktskugga över dealer och bord', 'fan'), slider('Styrka', 'fanStrength', 0, 0.4, 0.01, '', live), slider('Sekunder per blad', 'fanPeriod', 2, 12, 0.5, ' s', live),
-    note('En långsam trebladig fläkt under en lampa över bordet. Filmens eget ljus går inte att ändra, så skuggan läggs ovanpå och ska hållas svag.'));
+  group('Ständiga rörelser', check('Klocka som visar rätt tid', 'clock'), slider('Damm i luften', 'dust', 0, 1, 0.01, '', live),
+    check('Fläktskugga över dealer och bord', 'fan'), slider('Fläktens styrka', 'fanStrength', 0, 0.4, 0.01, '', live), slider('Sekunder per blad', 'fanPeriod', 2, 12, 0.5, ' s', live),
+    note('Sådant som alltid pågår och inte bryr sig om spelet. Klockan står till höger bakom dealern och läser datorns tid. Dammet svävar bakom henne och blir mjuka ljuspunkter av rummets oskärpa. Fläkten är en långsam trebladig fläkt under en lampa över bordet; filmens eget ljus går inte att ändra, så skuggan läggs ovanpå och ska hållas svag.'));
+  group('Händelser', check('En lampa blinkar till ibland', 'flicker'), slider('Ungefär var', 'flickerEvery', 4, 90, 1, ' s', live), slider('Hur djupt', 'flickerStrength', 0, 1, 0.01, '', live),
+    note('Sådant som händer då och då. En gång per period flimrar pendeln till höger om dealern i ungefär en sekund. Tidpunkten bestäms av klockan, så den går att förutse och styra. I miljöer som bara är en bild dämpas hela rummet lite i stället.'));
+  group('Ljus (kalibrering)', slider('Ljus i rummet', 'exposure', 0.3, 2, 0.05, '', live), slider('Dealerns ljusstyrka', 'filmBright', 0.6, 1.4, 0.01), slider('Dealerns värme', 'filmWarm', -0.2, 0.2, 0.005),
+    note('Rummet och filmen ställs var för sig tills de ser ut att stå i samma ljus. Dealerns reglage ändrar bara filmens nivå och färgton, inte varifrån ljuset kommer. 1,00 och 0,00 är filmen som den är.'));
   group('Kamera', choice('mode', [['look', 'Titta runt'], ['lean', 'Luta / flytta']]), slider('Vrid sidled', 'yaw', -60, 60, 0.5, '°', live), slider('Vrid höjdled', 'pitch', -35, 25, 0.5, '°', live), slider('Zoom', 'zoom', 0.45, 2.5, 0.01, '×', live),
     slider('Flytta sidled', 'dx', -0.9, 0.9, 0.005, ' m', live), slider('Flytta höjd', 'dy', -0.3, 0.5, 0.005, ' m', live), slider('Flytta djup', 'dz', -0.5, 0.8, 0.005, ' m', live),
     check('Håll blicken på dealern vid flytt', 'aim'), check('Gunga kameran automatiskt', 'sway'),
@@ -99,7 +104,7 @@ function build() {
   const logo = el('input', {type: 'text', value: state.logo, maxLength: 28}); logo.addEventListener('input', () => scene.set({logo: logo.value})); setters.logo = ((v: string) => { if (document.activeElement !== logo) logo.value = v; }) as never;
   const pick = (key: 'cardRank' | 'cardSuit', options: [string, string][]) => { const s = el('select'); s.append(...options.map(([value, text]) => el('option', {value, textContent: text}))); s.addEventListener('change', () => scene.set({[key]: s.value})); setters[key] = ((v: string) => { s.value = v; }) as never; return s; };
   group('Kort', check('Renderade kort i stället för filmens färgyta', 'cards'),
-    el('div', {className: 'seg'}, pick('cardRank', ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'].map(r => [r, r])), pick('cardSuit', [['spades', 'Spader'], ['hearts', 'Hjärter'], ['diamonds', 'Ruter'], ['clubs', 'Klöver']])),
+    slider('Kortets storlek', 'cardScale', 1, 2.5, 0.05, '×', live), el('div', {className: 'seg'}, pick('cardRank', ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'].map(r => [r, r])), pick('cardSuit', [['spades', 'Spader'], ['hearts', 'Hjärter'], ['diamonds', 'Ruter'], ['clubs', 'Klöver']])),
     note('Labbets kortritare lägger det renderade kortet på filmrutan där spårningen säger att kortet är, med handen kvar framför. Scenen använder sedan den rutan som film, så kortet får samma skärpa och fläktskugga som resten. Valören här är bara för provet: i spelet bestämmer Scout den.'));
   group('Bord', check('Markerbräde försänkt vid dealern', 'tray'), el('label', {className: 'row two'}, el('span', {textContent: 'Logotext'}), logo), choice('felt', [['green', 'Grön'], ['blue', 'Blå'], ['vin', 'Vinröd'], ['svart', 'Svart']]),
     note('Filt, linjer, kortrutor och logga är en enda platt bild sedd rakt uppifrån. Kortrutorna kommer ur placeringsplanen (endast läst). Bordets form och tryckets layout är provisoriska.'));
