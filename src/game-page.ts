@@ -83,7 +83,15 @@ async function present(next: Snapshot, dealerPlays: boolean) {
 }
 
 const round = () => snapshot.view.round;
+// A chip let go over the felt lands in the nearest bet ring: past the rail the player only has to throw it roughly right.
+function nearestSeat(clientX: number, clientY: number): number | null {
+  const at = scene.pick(clientX, clientY); if (!at) return null;
+  let best: {seat: number; distance: number} | null = null;
+  for (const spot of scene.spots().bets) { const distance = Math.hypot(spot.x - at.x, spot.s - at.s); if (!best || distance < best.distance) best = {seat: Number(spot.id.slice(1)), distance}; }
+  return best?.seat ?? null;
+}
 const overlay = mountOverlay(stage, {
+  aim: nearestSeat,
   chip(value) { page.chip = value; render(); },
   bet(seat, value = page.chip) {
     if (page.stage !== 'BETTING' || page.busy) return;

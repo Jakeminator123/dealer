@@ -43,8 +43,10 @@ html,body{height:100%;margin:0;background:#060706;color:var(--go-ink);font:14px/
 .go-chip span{font-size:.62em;letter-spacing:-.02em}
 .go-stack .go-chip{width:2.5em;aspect-ratio:1/.62;box-shadow:0 .16em 0 color-mix(in srgb,var(--c) 62%,#000),0 .3em 0 rgba(0,0,0,.35),0 .5em .7em rgba(0,0,0,.45)}
 .go-chip[data-v="5"]{--c:#992e3b}.go-chip[data-v="25"]{--c:#2c6656}.go-chip[data-v="100"]{--c:#17191d}.go-chip[data-v="500"]{--c:#65487f}.go-chip[data-v="1000"]{--c:#24577e}
-.go-ghost{position:fixed;left:0;top:0;margin:-1.15em 0 0 -1.15em;pointer-events:none;z-index:10;transform:translate(var(--x),var(--y)) scale(1.15);filter:drop-shadow(0 .6em .8em rgba(0,0,0,.5));transition:scale .12s}
-.go-ghost.over{scale:.9 .58;filter:drop-shadow(0 .25em .3em rgba(0,0,0,.55))}
+.go-ghost{position:fixed;left:0;top:0;margin:-1.15em 0 0 -1.15em;pointer-events:none;z-index:10;transform:translate(var(--x),var(--y)) scale(1.15);filter:drop-shadow(0 .6em .8em rgba(0,0,0,.5))}
+/* headed for a ring the chip lies down; the scaling stays inside the transform, after the move, or it would scale the move itself */
+.go-ghost.over{transform:translate(var(--x),var(--y)) scale(.9,.58);filter:drop-shadow(0 .25em .3em rgba(0,0,0,.55))}
+.go-ghost.fly{transition:transform .16s cubic-bezier(.3,.6,.3,1)}
 
 /* the total beside a hand, and what the hand won */
 .go-total{transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;gap:.25em;white-space:nowrap}

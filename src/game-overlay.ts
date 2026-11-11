@@ -13,6 +13,8 @@ export type TableView = {
 export type Handlers = {
   chip(value: number): void; bet(seat: number, value?: number): void; undo(): void; clear(): void; rebet(): void; deal(): void;
   act(action: Action): void; insurance(take: boolean): void; next(): void;
+  // The seat whose bet ring a chip let go at this point of the screen would land in, or null when it is not over the table.
+  aim?(clientX: number, clientY: number): number | null;
 };
 // Where things are in the picture, in CSS pixels of the overlay box. ring: width of a bet ring. A missing key is hidden.
 export type Anchors = {bets: Record<number, {x: number; y: number; ring: number} | undefined>; hands: Record<string, {x: number; y: number} | undefined>};
@@ -52,7 +54,13 @@ export function mountOverlay(host: HTMLElement, on: Handlers) {
 
   // ── chips in the rail: press to choose, or drag one onto a ring ──
   let railValues = '', drag: {value: number; ghost: HTMLElement | null; x: number; y: number; ring: Element | null} | null = null;
-  const ringUnder = (x: number, y: number) => document.elementsFromPoint(x, y).find(n => n.classList.contains('go-ring')) ?? null;
+  // Where a dragged chip is headed: once it is past the rail and over the felt, the nearest bet ring (the page knows the
+  // table); without that, only a ring it is right on top of. Over the bar itself it is headed nowhere.
+  const ringUnder = (x: number, y: number): HTMLElement | null => {
+    const under = document.elementsFromPoint(x, y); if (under.includes(bar)) return null;
+    const seat = on.aim ? on.aim(x, y) : null;
+    return seat ? root.querySelector<HTMLElement>(`.go-ring[data-seat="${seat}"]`) : (under.find(n => n.classList.contains('go-ring')) as HTMLElement | undefined) ?? null;
+  };
   function buildRail(values: number[]) {
     rail.replaceChildren(...values.map(value => {
       const b = el('button'); b.type = 'button'; b.dataset.value = String(value); b.title = `Marker ${value}`; b.append(chipFace(value));
@@ -65,10 +73,14 @@ export function mountOverlay(host: HTMLElement, on: Handlers) {
         const ring = ringUnder(e.clientX, e.clientY); if (ring !== drag.ring) { drag.ring?.classList.remove('drop'); ring?.classList.add('drop'); drag.ring = ring; drag.ghost.classList.toggle('over', !!ring); } // over a ring the chip lies down, as it will on the felt
       });
       const end = (e: PointerEvent, cancelled: boolean) => {
-        if (!drag) return; const d = drag; drag = null; d.ghost?.remove(); d.ring?.classList.remove('drop'); root.classList.remove('dragging');
-        if (cancelled) return;
-        if (!d.ghost) { on.chip(value); return; } // a press without a drag chooses the chip
-        const seat = Number((ringUnder(e.clientX, e.clientY) as HTMLElement | null)?.dataset.seat); if (seat) on.bet(seat, value);
+        if (!drag) return; const d = drag; drag = null; d.ring?.classList.remove('drop'); root.classList.remove('dragging');
+        if (cancelled || !d.ghost) { d.ghost?.remove(); if (!cancelled) on.chip(value); return; } // a press without a drag chooses the chip
+        const ring = ringUnder(e.clientX, e.clientY), seat = Number(ring?.dataset.seat), ghost = d.ghost;
+        if (!ring || !seat) { ghost.remove(); return; } // let go beside the table: nothing is bet
+        // Let go over the table: the chip is thrown the rest of the way to the ring, and lands there as a bet.
+        const box = ring.getBoundingClientRect(); ghost.classList.add('over', 'fly');
+        ghost.style.setProperty('--x', `${box.left + box.width / 2}px`); ghost.style.setProperty('--y', `${box.top + box.height / 2}px`);
+        setTimeout(() => { ghost.remove(); on.bet(seat, value); }, 170);
       };
       b.addEventListener('pointerup', e => end(e, false)); b.addEventListener('pointercancel', e => end(e, true));
       return b;
