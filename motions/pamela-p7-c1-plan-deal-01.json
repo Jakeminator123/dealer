@@ -28,12 +28,13 @@
     "evidence": "evidence/generation-method-audit.json"
   },
   "review": {
-    "decision": "PENDING",
+    "decision": "REJECTED",
     "basis": "Samma vänsterhand vänder direkt vid skon: kant f40–43, blått f44–51, läggs framför skon f80–92, platt hand på kortet till slutet.",
     "limitations": "Liten röd markering på blå framsidan. Platt hand vid nedläggning. Slutbilden hade platt målad kortyta.",
     "colorDoesNotProvePhysicalSide": true,
     "userAccepted": false,
-    "productionReady": false
+    "productionReady": false,
+    "userReview": "Jakob 2026-11-11: Det här är lite konstigt, med en liten prick på. Jag kommer därför att underkänna det."
   },
   "placementRef": {
     "path": "assets/anchors/pamela-p7-c1-plan-land-03/placement-plan.json",

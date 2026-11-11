@@ -20,7 +20,13 @@
     "hand": "LH",
     "pass": false,
     "basis": "SOURCE_FRAME_REVIEW",
-    "evidence": "evidence/generation-method-audit.json"
+    "evidence": "evidence/generation-method-audit.json",
+    "idle": {
+      "weight": 20,
+      "calm": true,
+      "label": "andning",
+      "onRequest": false
+    }
   },
   "review": {
     "decision": "PENDING",
