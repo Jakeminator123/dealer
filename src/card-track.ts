@@ -340,6 +340,10 @@ export function follower(w: number, h: number, shoe: Uint8Array | null) {
 // back, perhaps the edge, then the face, once; a return shows one side all through. Findings that contradict it are another
 // object (the seated card, a card lying since before) and are dropped; short holes are then bridged from the frames around them.
 export type FilmKind = 'DEAL' | 'RETURN' | 'OTHER';
+// A smeared finding: this side's findings around it move more than `step` px a frame as a rule, and its quad's long side is under `small` of the median among
+// the same side's findings within `reach` frames, or two opposite sides differ by more than `lopsided` times. Measured on
+// pamela-p1-c1-plan-deal-01, frames 28-48: long sides 17-63 px among neighbours of about 100, opposite sides 34 against 120.
+export const SMEAR = {step: 12, reach: 10, small: 0.6, lopsided: 1.8};
 const sameWay = (from: Pt[], to: Pt[]): Pt[] => { // `to` begun at the corner nearest `from`'s first, so corners can be joined one to one
   let best = to, least = Infinity; for (const base of [to, [to[0], to[3], to[2], to[1]]]) for (let turn = 0; turn < 4; turn++) { const q = base.map((_, i) => base[(i + turn) % 4]), off = q.reduce((sum, p, i) => sum + dist(p, from[i]), 0); if (off < least) { least = off; best = q; } }
   return best; };
@@ -360,6 +364,26 @@ export function settleRaws(raws: Raw[], kind: FilmKind, reach = 15): Raw[] {
   for (let i = 1; i < out.length; i++) { const now = out[i], was = out[i - 1];
     if (flat(i) && flat(i - 1) && now.side === was.side && now.corners && was.corners && now.area < 0.5 * was.area && dist(centre(now.corners), centre(was.corners)) < 0.6 * Math.sqrt(Math.abs(signedArea(was.corners))))
       out[i] = {...was, shoeShare: now.shoeShare, note: 'mostly hidden: last known shape kept'}; }
+  // A card carried fast is smeared. Its quad then comes out too small (only the sharp core is card-coloured) or lopsided (a corner
+  // goes astray in the blur), while its place is still right. Such a finding, among sound ones of the same side, is taken out
+  // here, bridged below like any hole, and then moved back onto its own centre: shape from the frames around it, place its own.
+  const long = (q: Pt[]) => Math.max(dist(q[0], q[1]) + dist(q[2], q[3]), dist(q[1], q[2]) + dist(q[3], q[0])) / 2;
+  const ratio = (a: number, b: number) => Math.max(a, b) / Math.max(1e-6, Math.min(a, b));
+  const lopsided = (q: Pt[]) => Math.max(ratio(dist(q[0], q[1]), dist(q[2], q[3])), ratio(dist(q[1], q[2]), dist(q[3], q[0]))) > SMEAR.lopsided;
+  const smeared = new Map<number, {centre: Pt; was: Raw}>();
+  for (let i = 0; i < out.length; i++) { const now = out[i]; if (!flat(i) || !now.corners) continue;
+    // Only a card on the move: the usual step between this side's findings around it, not this finding's own (a bad quad has a bad centre).
+    const c = centre(now.corners), around: number[] = [], steps: number[] = []; let before: Pt | null = null;
+    for (let j = Math.max(0, i - SMEAR.reach); j <= Math.min(out.length - 1, i + SMEAR.reach); j++) { if (!flat(j) || out[j].side !== now.side || !out[j].corners) { before = null; continue; }
+      const at = centre(out[j].corners!); if (before) steps.push(dist(at, before)); before = at; if (j !== i) around.push(long(out[j].corners!)); }
+    if (around.length < 4 || steps.length < 4) continue; around.sort((x, y) => x - y); steps.sort((x, y) => x - y);
+    if (steps[steps.length >> 1] <= SMEAR.step) continue;
+    if (long(now.corners) < SMEAR.small * around[around.length >> 1] || lopsided(now.corners)) smeared.set(i, {centre: c, was: now}); }
+  // Only where sound findings of the same side stand on both sides within reach; otherwise the finding stays as it was.
+  const sound = (j: number) => j >= 0 && j < out.length && flat(j) && !smeared.has(j);
+  for (const [i, s] of [...smeared]) { let a = i - 1, b = i + 1; while (a >= 0 && smeared.has(a)) a--; while (b < out.length && smeared.has(b)) b++;
+    if (!sound(a) || !sound(b) || out[a].side !== s.was.side || out[b].side !== s.was.side || b - a - 1 > reach) smeared.delete(i); }
+  for (const i of smeared.keys()) out[i] = {...out[i], side: 'NONE', corners: null, segment: null};
   // Holes: a run of frames without a flat finding, between two flat ones. Between two findings of the same side the shape is carried
   // over; between back and face the card was edge-on, on the line between the two shapes. An edge that was really found stays.
   for (let i = 0; i < out.length; i++) { if (flat(i)) continue;
@@ -372,6 +396,9 @@ export function settleRaws(raws: Raw[], kind: FilmKind, reach = 15): Raw[] {
         out[j] = out[a].side === out[b].side ? {...out[a], corners: from.map((p, c) => lerp(p, to[c])), area: out[a].area + (out[b].area - out[a].area) * t, shoeShare: 0, note: 'bridged from the frames around it'}
           : {...out[j], side: 'EDGE', corners: null, segment: [lerp(s0[0], s1[0]), lerp(s0[1], s1[1])], thickness: 2, note: 'edge-on, bridged from the frames around it'}; } }
     i = end; }
+  for (const [i, s] of smeared) { const q = out[i].corners;
+    if (!q) { out[i] = s.was; continue; }
+    const c = centre(q); out[i] = {...out[i], corners: shifted(q, {x: s.centre.x - c.x, y: s.centre.y - c.y}), area: s.was.area, note: 'smeared in the carry: shape from the frames around it, place its own'}; }
   return out;
 }
 

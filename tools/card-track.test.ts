@@ -2,7 +2,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {is, classify, YELLOW, BLUE, TABLE, SKIN, DARK, TINT, SHADE, OTHER, blobs, pieces, persistent, measure, hull, fitQuad, orderCorners, alignCorners, carryAcrossFlip,
-  signedArea, dist, centre, sideOf, EDGE_THICKNESS, MIN_AREA, smooth, offsetRamp, homography, project, follower, buildTrack, thinSliver, settleRaws, isPale, paleMask, type Pt, type Raw} from '../src/card-track.ts';
+  signedArea, dist, centre, sideOf, EDGE_THICKNESS, MIN_AREA, smooth, offsetRamp, homography, project, follower, buildTrack, thinSliver, settleRaws, isPale, paleMask, SMEAR, type Pt, type Raw} from '../src/card-track.ts';
 
 const GREEN = [10, 208, 56], LIT = [232, 208, 4], FACE = [6, 112, 224], BLACK = [20, 20, 20], RIM = [235, 225, 160], FLESH = [240, 172, 140];
 const W = 320, H = 240, N = W * H;
@@ -229,6 +229,26 @@ test('a printed or washed-out face is followed as a pale shape, but only where t
   const thin = run([[{q: at(60), colour: LIT}], [{q: at(70), colour: LIT}], [{q: rect(80, 165, 58, 5), colour: WHITE}]]);
   assert.equal(thin[2].side, 'EDGE'); assert.ok(thin[2].segment && dist(...thin[2].segment) > 45);
   assert.equal(run([[{q: at(60), colour: LIT}], [{q: at(70), colour: LIT}], [{q: rect(95, 160, 9, 9), colour: WHITE}]])[2].side, 'NONE');
+});
+
+test('a card smeared in a fast carry keeps its place and takes its shape from the frames around it', () => {
+  // The card moves 30 px a frame. In frames 6-8 only its sharp core is found (a small quad), in frame 11 a corner goes astray.
+  const at = (i: number) => rect(40 + i * 30, 60 + i * 3, 60, 90), core = (i: number) => rect(40 + i * 30 + 20, 60 + i * 3 + 30, 20, 30);
+  const astray = (i: number): Pt[] => { const q = at(i); return [q[0], q[1], {x: q[2].x + 70, y: q[2].y + 10}, q[3]]; };
+  const raws: Raw[] = Array.from({length: 18}, (_, i) => seen('BACK', i >= 6 && i <= 8 ? core(i) : i === 11 ? astray(i) : at(i)));
+  const out = settleRaws(raws, 'OTHER');
+  for (const i of [6, 7, 8]) { assert.match(out[i].note, /smeared/); assert.ok(dist(centre(out[i].corners!), centre(core(i))) < 1e-6, 'its own place');
+    out[i].corners!.forEach((p, c) => assert.ok(dist(p, at(i)[c]) < 1e-6, `frame ${i} corner ${c}: the size of the frames around it`)); }
+  assert.match(out[11].note, /smeared/); assert.ok(Math.abs(dist(out[11].corners![1], out[11].corners![2]) - 90) < 1 && Math.abs(dist(out[11].corners![2], out[11].corners![3]) - 60) < 1, 'a lopsided quad becomes a card again');
+  assert.ok(dist(centre(out[11].corners!), centre(astray(11))) < 1e-6);
+  for (const i of [0, 5, 9, 10, 12, 17]) assert.deepEqual(out[i], raws[i], `frame ${i} is sound and stays as found`);
+  // A card at rest is never touched, however its quad looks: a finger over it is handled by the rules for a lying card.
+  const still: Raw[] = Array.from({length: 12}, (_, i) => seen('FRONT', i === 5 ? rect(100, 100, 20, 30) : rect(90, 80, 60, 90)));
+  assert.deepEqual(settleRaws(still, 'OTHER')[5].corners, still[5].corners);
+  // Without sound findings on both sides it stays as it was found.
+  const lone: Raw[] = Array.from({length: 8}, (_, i) => seen('BACK', i >= 5 ? core(i) : at(i)));
+  assert.deepEqual(settleRaws(lone, 'OTHER').map(r => r.corners), lone.map(r => r.corners));
+  assert.deepEqual(SMEAR, {step: 12, reach: 10, small: 0.6, lopsided: 1.8});
 });
 
 test('a return shows one side all through, and a card mostly hidden under the hand keeps its last known shape', () => {
