@@ -78,9 +78,14 @@ test('lens blur is zero inside the tolerance band and grows with distance from t
 
 test('focus follows a card only while it is being dealt', async () => {
   const {cardFocusPixel, cardPixel} = await import('../src/scene3d-geometry.ts');
-  const track = JSON.parse(await readFile('assets/tracking/pamela-p4-c1-plan-deal-02/card-track.json', 'utf8'));
+  // A made-up track in the shape of assets/tracking/<clip>/card-track.json (media is not in Git): the card rests in the
+  // shoe, leaves it on frame 23, is edge-on on frame 53 and lies still from frame 96.
+  const square = (x: number, y: number) => [[x - 30, y - 20], [x + 30, y - 20], [x + 30, y + 20], [x - 30, y + 20]];
+  const track = {leavesShoe: 23, restFrom: 96, frames: Array.from({length: 120}, (_, frame) => frame === 53 ? {frame, quad: null, edge: [[850, 930], [890, 950]]}
+    : {frame, quad: frame < 23 ? square(1290, 800) : frame < 96 ? square(1290 - (frame - 23) * 6, 800 + (frame - 23) * 4) : square(852, 1100), edge: null})};
   assert.equal(cardFocusPixel(track, 0), null, 'kortet vilar i skon'); assert.equal(cardFocusPixel(track, track.leavesShoe - 7), null);
-  const moving = cardFocusPixel(track, 60)!; assert.ok(moving.x > 800 && moving.x < 950 && moving.y > 900 && moving.y < 1010, 'kortets mitt under vändningen');
+  assert.deepEqual(cardFocusPixel(track, track.leavesShoe - 6), {x: 1290, y: 800}, 'sex rutor före skon följs kortet');
+  assert.deepEqual(cardFocusPixel(track, 60), {x: 1290 - 37 * 6, y: 800 + 37 * 4}, 'kortets mitt under vändningen'); assert.deepEqual(cardFocusPixel(track, 53), {x: 870, y: 940}, 'kantläget ger linjens mitt');
   assert.deepEqual(cardFocusPixel(track, track.restFrom + 18), cardPixel(track, track.restFrom + 18)); assert.equal(cardFocusPixel(track, track.restFrom + 19), null, 'kortet ligger stilla');
   assert.equal(cardFocusPixel(null, 60), null); assert.equal(cardFocusPixel({frames: track.frames}, 60), null, 'utan uppgift om när kortet lämnar skon följs det inte');
   assert.equal(cardPixel({frames: [{frame: 3, quad: null, edge: [[10, 20], [30, 40]]}]}, 3)!.x, 20); assert.equal(cardPixel({frames: [{frame: 3, quad: null, edge: null}]}, 3), null);
