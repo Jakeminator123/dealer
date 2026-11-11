@@ -3335,6 +3335,30 @@
         216
       ],
       "purpose": "The full-figure arrive film Jakob asked for, with kling-4, in two parts: she walks in and ends standing behind the table (last image: frame 56 of the delivered pamela-table-leave-wide-01, a real frame of her standing), then sits down (first image: that same frame; last image: the seated pose). Ordered in two parts because a film from the empty picture straight to the seated pose made her about ten to fifteen per cent too small while walking, in four attempts with two models: the seated end image holds her head at seated height. The text of the second part is D:/dealer-scratch/tmp/filmagent/till-runway/prompt-ingang-3-satt.txt."
+    },
+    {
+      "id": "pamela-p5-c1-plan-return-idle-02",
+      "kind": "RETURN",
+      "from": "LAND(P5.C1)",
+      "to": "IDLE",
+      "clip": "pamela-p5-c1-plan-return-idle-02",
+      "frames": [
+        0,
+        59
+      ],
+      "purpose": "Main-take attempt for P5.C1>IDLE following the main P5 deal. Both takes today are variants: the archive one stops over the shoe with pinched fingers as if to take something; the plan one steps on the card and hitches on repeated frames (a three-second clip for a 150 px way). Two seconds, real frames at both ends, wording forbids hover or reach toward the shoe. Ordered through Runway's MCP server (batch 15, 2026-11-11)."
+    },
+    {
+      "id": "pamela-ready-idle-exit-02",
+      "kind": "RETURN",
+      "from": "READY",
+      "to": "IDLE",
+      "clip": "pamela-ready-idle-exit-02",
+      "frames": [
+        0,
+        89
+      ],
+      "purpose": "As pamela-ready-idle-exit-01 but three seconds with the calm template wording, to compare: the entry moved its hand in about 0.5 s of its 2 s, and the head lift and smile also need time. Ordered through Runway's MCP server (batch 15, 2026-11-11)."
     }
   ],
   "edits": [
