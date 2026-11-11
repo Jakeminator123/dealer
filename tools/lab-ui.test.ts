@@ -488,10 +488,11 @@ test('the review list: every finished film without Jakob\'s word, in dealing ord
  add('pamela-p1-c1-plan-deal-02','READY','LAND(P1.C1)','P1.C1',{decision:'SECONDARY',basis:'Vändningen syns.',limitations:'Fingret ligger konstigt.'});
  add('pamela-p4-c1-plan-deal-01','READY','LAND(P4.C1)','P4.C1',{decision:'REJECTED',basis:'Kortet glider.'});
  add('pamela-p7-c1-plan-return-ready-02','LAND(P7.C1)','READY','P7.C1',{decision:'PENDING'});
+ add('pamela-p4-c1-plan-deal-03','READY','LAND(P4.C1)','P4.C1',{decision:'PENDING'}); // a newer take of a step whose main take has the returns that fit it
  bank.derived=[{id:old,kind:'DEAL',from:'READY',to:'LAND(D.C1)',clip:'pamela-arkiv-table-01',frames:[100,219]}];bank.motions[old]={source:{fps:30,frames:500},review:{decision:'PENDING'}};bank.media[old]={video:'assets/motions/pamela-arkiv-table-01/source.mp4',first:null,last:null};
  bank.motions['pamela-p4-c1-plan-return-idle-01'].review={decision:'ACCEPTED',userReview:'Jakob 2026-11-11: bra',userAccepted:true};
  bank.revisions=Object.fromEntries(Object.keys(bank.motions).map(id=>[id,`"${id}"`]));
- const {context,element,respond,requests,calls,fire}=await openBank(bank);
+ const {context,element,respond,requests,calls,fire}=await openBank(bank,'',lab=>{lab.element('kb-hole').checked=true;}); // the hole card stays closed, as in the page
  // The tab says how many films are waiting, also while another tab is open.
  assert.equal(element('tab-review').textContent,'Granska · 5');
  runInContext("setTab('review')",context);await settle();respond(served(bank),'/api/clip-bank');await settle();
@@ -501,7 +502,10 @@ test('the review list: every finished film without Jakob\'s word, in dealing ord
  assert.deepEqual(ids('rv-list'),['pamela-p1-c1-plan-deal-02',p4,'pamela-p4-c1-plan-return-ready-01','pamela-p7-c1-plan-return-ready-02',old]);
  assert.deepEqual(titles('rv-list'),['P1 · giv · tagning 2','P4 · giv · tagning 2','P4 · retur till redo · tagning 1','P7 · retur till redo · tagning 2','Dealerns första kort · giv · ur gamla labbet']);
  assert.deepEqual([...element('rv-list').innerHTML.matchAll(/class="rv-group">([^<]+)</g)].map(m=>m[1]),['P1','P4','P7','Dealern']);
- assert.match(element('rv-count').textContent,/^5 filmer väntar på ditt beslut/);
+ // The top line says where the bank stands: of the films needed, how many are approved, waiting for him and missing.
+ assert.match(element('rv-count').textContent,/^Av de 30 filmer som behövs är 1 godkända, 5 väntar på dig och 24 saknas\. /);assert.equal(element('rv-main-title').textContent,'Huvudfilmer som väntar på dig (5)');
+ // A take that is not the main take of its step waits folded under Övriga tagningar.
+ assert.deepEqual(ids('rv-other-list'),['pamela-p4-c1-plan-deal-03']);assert.equal(element('rv-other-summary').textContent,'Övriga tagningar (1) · andra tagningar, varianter, variant B och experiment');
  // The reviewers' findings are on the row; what they already rejected waits folded at the end; what Jakob decided is under Avgjorda.
  assert.match(element('rv-list').innerHTML,/granskarna: sekundärt alternativ/);assert.match(element('rv-list').innerHTML,/<b>Granskaren<\/b>&#60;img src=x onerror=alert\(1\)&#62; f105/);
  assert.match(element('kb-review').innerHTML,/<b>Begränsning<\/b>Fingret ligger konstigt\./); // the open row shows them in full, in the take detail
@@ -532,9 +536,12 @@ test('the review list: every finished film without Jakob\'s word, in dealing ord
  fire('kb-decide','click',{target:{closest:()=>({dataset:{decide:'REJECTED'}})}});await settle();
  bank.motions[p4].review={decision:'REJECTED',userReview:'Jakob 2026-11-11: bra grepp'};
  respond({ok:true,json:async()=>({revision:'"r3"',review:bank.motions[p4].review})},`/api/clip-bank/review/${p4}`);await settle();respond(served(bank),'/api/clip-bank');await settle();
- assert.equal(runInContext('kbTake',context),p4);assert.match(element('rv-done-list').innerHTML,/ditt beslut: underkänd/);
+ // The rejected main take is no longer the film of its step: the next best take has taken its place among the main films, and is the one that opens.
+ assert.match(element('rv-done-list').innerHTML,/ditt beslut: underkänd/);
+ assert.deepEqual(ids('rv-list'),['pamela-p1-c1-plan-deal-02','pamela-p4-c1-plan-deal-03','pamela-p4-c1-plan-return-ready-01','pamela-p7-c1-plan-return-ready-02',old]);assert.deepEqual(ids('rv-other-list'),[]);
+ assert.equal(runInContext('kbTake',context),'pamela-p4-c1-plan-deal-03');assert.match(element('rv-count').textContent,/är 1 godkända, 5 väntar på dig och 24 saknas/);
  // Leaving the tab gives the take detail back to the Klippbank; the address names the tab and the open film.
  const urls:string[]=[];context.URL=URL;context.location.href='http://127.0.0.1:4319/lab.html';context.window.history={replaceState(_s:unknown,_t:string,url:URL){urls.push(String(url));}};
- runInContext('kbLink()',context);assert.equal(new URL(urls.at(-1)!).searchParams.get('tab'),'granska');assert.equal(new URL(urls.at(-1)!).searchParams.get('take'),p4);
+ runInContext('kbLink()',context);assert.equal(new URL(urls.at(-1)!).searchParams.get('tab'),'granska');assert.equal(new URL(urls.at(-1)!).searchParams.get('take'),'pamela-p4-c1-plan-deal-03');
  runInContext("setTab('placement')",context);assert.equal(element('review').hidden,true);
 });

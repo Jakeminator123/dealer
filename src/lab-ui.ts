@@ -825,12 +825,12 @@ function paintDecide(t:KbTake|null){
 async function kbDecide(decision:string){
  const t=kbGraph?.takes[kbTake];if(!t?.revision||t.stage!=='DONE'||kbSaving)return;
  // In the review list a decided film leaves the list, so the film after it opens by itself.
- const waiting=tab==='review'?[...rvLists().todo,...rvLists().rejected].map(x=>x.t.id):[],place=waiting.indexOf(t.id),after=place<0?'':waiting[place+1]??waiting[place-1]??'';
+ const lists=tab==='review'?rvLists():null,waiting=lists?[...lists.main,...lists.other,...lists.rejected].map(x=>x.t.id):[],place=waiting.indexOf(t.id),after=place<0?'':waiting[place+1]??waiting[place-1]??'';
  kbSaving=true;paintDecide(t);
  try{
   const res=await fetch(`/api/clip-bank/review/${t.id}`,{method:'PUT',headers:{'content-type':'application/json','if-match':t.revision},body:JSON.stringify({decision,note:$<HTMLTextAreaElement>('kb-note').value})});
   const data=await res.json();if(!res.ok)throw Error(data.error||'Beslutet kunde inte sparas.');
-  kbSaved={id:t.id,text:`Sparat i motions/${t.id}.json · ${data.review?.userReview??'återställd: filmen väntar på ditt beslut igen'}`,failed:false};kbNoteFor='';rvNext=after;
+  kbSaved={id:t.id,text:`Sparat i motions/${t.id}.json · ${data.review?.userReview??'återställd: filmen väntar på ditt beslut igen'}`,failed:false};kbNoteFor='';rvNext=after;rvStep=tab==='review'&&decision==='REJECTED'?t.edge:'';
   await kbRead().catch(()=>{}); // the bank is read again so every view shows the decision that is now on disk
  }catch(error){kbSaved={id:t.id,text:`Inte sparat: ${(error as Error).message}`,failed:true};}
  finally{kbSaving=false;if(kbState==='ready')paintBank();}
@@ -841,7 +841,7 @@ $('kb-decide').addEventListener('click',event=>{const decision=(event.target as 
 // Every finished film that still lacks Jakob's own word, in dealing order. The open row holds the Klippbank's own take detail
 // (film, frame stepping, rendered card, findings, decision buttons), moved here while the tab is open: nothing is built twice.
 const kbTakeBox=$('kb-take');
-let rvHtml='',rvNext='',rvLinked=false,rvEnter=false;
+let rvHtml='',rvNext='',rvStep='',rvLinked=false,rvEnter=false;
 type RvItem={t:KbTake;e:KbEdge};
 const rvCard=(e:KbEdge)=>e.target??/(?:P[1-7]|D)\.C[1-3]/.exec(e.id)?.[0]??null; // an experiment is filed with the card it deals or leaves
 // Dealing order: the entry, each seat (first card, then second; deal, return to READY, return to IDLE), the dealer, exit and idle, the rest.
@@ -865,8 +865,12 @@ function rvTitle(e:KbEdge,t:KbTake){
 function rvLists(){
  const all:RvItem[]=kbGraph?[...kbGraph.edges,...kbGraph.experiments].flatMap(e=>e.takes.filter(t=>t.stage==='DONE').map(t=>({t,e}))).sort((a,b)=>rvKey(a.e)-rvKey(b.e)||a.t.order-b.t.order):[];
  const open=all.filter(x=>!x.t.motion?.review?.userReview);
- // The films the reviewers have already rejected come last, folded: they still lack Jakob's word, but are not where his time should go first.
- return {todo:open.filter(x=>x.t.decision!=='REJECTED'),rejected:open.filter(x=>x.t.decision==='REJECTED'),done:all.filter(x=>!!x.t.motion?.review?.userReview)};
+ // What matters is the films the bank needs: the main take of every needed step. Those he has not decided lead the list; other takes,
+ // variants and experiments wait folded, and what the reviewers have already rejected comes last.
+ const needed=kbGraph?kbGraph.summary.films.required.map(id=>kbGraph!.edge[id]):[],mains=new Set(needed.flatMap(e=>e.main?[e.main.id]:[]));
+ const word=(e:KbEdge)=>e.main?.motion?.review?.userReview;
+ return {main:open.filter(x=>mains.has(x.t.id)),other:open.filter(x=>!mains.has(x.t.id)&&x.t.decision!=='REJECTED'),rejected:open.filter(x=>x.t.decision==='REJECTED'),done:all.filter(x=>!!x.t.motion?.review?.userReview),
+  tally:{total:needed.length,approved:needed.filter(e=>word(e)&&e.main!.decision==='ACCEPTED').length,waiting:needed.filter(e=>e.main&&!word(e)).length,missing:needed.filter(e=>!e.main).length,settled:needed.filter(e=>word(e)&&e.main!.decision!=='ACCEPTED').length}};
 }
 function rvOpen(id:string){
  const t=kbGraph?.takes[id];if(!t)return;
@@ -875,13 +879,14 @@ function rvOpen(id:string){
 function paintReview(){
  const ready=kbState==='ready'&&!!kbGraph&&!!clipGraph;
  if(!ready){$('tab-review').textContent='Granska';if(tab==='review'){$('rv-notice').hidden=false;$('rv-notice').textContent=kbState==='local'?'Granskningslistan finns bara lokalt. Öppna det lokala labbet (START.cmd).':kbState==='error'?'Klippbanken kunde inte läsas. Starta om den lokala förhandsvisningen (STOPP.cmd och sedan START.cmd).':'Läser klippbanken…';}return;}
- const G=clipGraph!,{todo,rejected,done}=rvLists(),all=[...todo,...rejected,...done];
- $('tab-review').textContent=`Granska · ${todo.length}`;
+ const G=clipGraph!,{main,other,rejected,done,tally}=rvLists(),todo=[...main,...other],all=[...todo,...rejected,...done];
+ $('tab-review').textContent=`Granska · ${main.length}`;
  if(tab!=='review')return;
  $('rv-notice').hidden=true;
  // Which film is open: the one a link names, the one after a decision just made, the one already open, else the first one waiting.
  if(!rvLinked){rvLinked=true;rvNext=new URLSearchParams(location.search).get('take')??'';}
- const want=rvNext,enter=rvEnter;rvNext='';rvEnter=false; // coming into the tab starts at the top of the list
+ // After a rejection the next best take of the same step, if there is one, has taken its place among the main films: that one opens.
+ const heir=rvStep?kbGraph!.edge[rvStep]?.main:null,want=heir&&main.some(x=>x.t.id===heir.id)?heir.id:rvNext,enter=rvEnter;rvNext='';rvStep='';rvEnter=false; // coming into the tab starts at the top of the list
  const next=(want&&all.find(x=>x.t.id===want))||(!enter&&all.some(x=>x.t.id===kbTake)?null:todo[0]??rejected[0]??done[0]??null);
  if(next&&next.t.id!==kbTake){rvOpen(next.t.id);return;}
  // The coverage measured for each film is read once, in the background, and the list is painted again when it is all in.
@@ -892,17 +897,20 @@ function paintReview(){
   return `<article class="rv-row${open?' open':''}"><button class="rv-row-head" data-rv-open="${esc(t.id)}" aria-expanded="${open}"><span class="rv-title">${esc(rvTitle(e,t))}</span><span class="status-pill d-${esc(t.decision)}">${esc(`${mine?'ditt beslut':'granskarna'}: ${word(t)}`)}</span>${t.revision?'':'<span class="status-pill">kan inte sparas ännu</span>'}${ovData.get(t.id)?.coverage?`<span class="status-pill${ovData.get(t.id)!.coverage!.covered?' d-ACCEPTED':''}">renderat kort: ${esc(ovCovers(ovData.get(t.id)!.coverage!))}</span>`:''}<code>${esc(t.id)}</code></button>`
    +(open?'<div id="rv-slot" class="rv-slot"></div>':`<div class="rv-find">${mine?`<p><b>Dina ord</b>${esc(mine)}</p>`:''}${r?.basis?`<p><b>Granskaren</b>${esc(r.basis)}</p>`:''}${r?.limitations?`<p><b>Begränsning</b>${esc(r.limitations)}</p>`:''}</div>`)+'</article>';};
  const list=(items:RvItem[])=>{let last='';return items.map(x=>{const g=rvGroup(x.e),head=g===last?'':`<h3 class="rv-group">${esc(g)}</h3>`;last=g;return head+row(x);}).join('');};
- const html=[list(todo),list(rejected),list(done)];
- $('rv-count').textContent=todo.length?`${todo.length} ${todo.length===1?'film väntar':'filmer väntar'} på ditt beslut. Titta på filmen, skriv gärna en rad och tryck Godkänn, Variant eller Underkänn: nästa film öppnas då av sig själv.`:'Inga filmer väntar på ditt beslut just nu.';
+ const html=[list(main),list(rejected),list(done),list(other)];
+ $('rv-count').textContent=`Av de ${tally.total} filmer som behövs är ${tally.approved} godkända, ${tally.waiting} väntar på dig och ${tally.missing} saknas${tally.settled?` (${tally.settled} har du bedömt utan att godkänna)`:''}. ${main.length?'Titta på filmen, skriv gärna en rad och tryck Godkänn, Variant eller Underkänn: nästa film öppnas då av sig själv.':'Ingen huvudfilm väntar på ditt beslut just nu.'}`;
+ $('rv-main-title').textContent=`Huvudfilmer som väntar på dig (${main.length})`;
+ $('rv-other').hidden=!other.length;$('rv-other-summary').textContent=`Övriga tagningar (${other.length}) · andra tagningar, varianter, variant B och experiment`;
  $('rv-saved').hidden=!kbSaved.id||kbSaved.failed;$('rv-saved').textContent=kbSaved.failed?'':kbSaved.text;
  $('rv-rejected').hidden=!rejected.length;$('rv-rejected-summary').textContent=`Redan underkända av granskarna (${rejected.length}) · väntar också på ditt ord`;
  $('rv-done').hidden=!done.length;$('rv-done-summary').textContent=`Avgjorda (${done.length}) · öppna en film för att ändra beslutet`;
  if(html.join('\u0000')!==rvHtml){
   // The lists are rebuilt only when they change, and never with the take detail inside them.
   rvHtml=html.join('\u0000');$('kb-take-home').append(kbTakeBox);
-  $('rv-list').innerHTML=html[0];$('rv-rejected-list').innerHTML=html[1];$('rv-done-list').innerHTML=html[2];
+  $('rv-list').innerHTML=html[0];$('rv-rejected-list').innerHTML=html[1];$('rv-done-list').innerHTML=html[2];$('rv-other-list').innerHTML=html[3];
  }
  if(rejected.some(x=>x.t.id===kbTake))$<HTMLDetailsElement>('rv-rejected').open=true;
+ if(other.some(x=>x.t.id===kbTake))$<HTMLDetailsElement>('rv-other').open=true;
  if(done.some(x=>x.t.id===kbTake))$<HTMLDetailsElement>('rv-done').open=true;
  document.getElementById('rv-slot')?.append(kbTakeBox);
 }
