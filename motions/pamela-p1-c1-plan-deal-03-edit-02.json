@@ -20,16 +20,17 @@
     "target": "P1.C1",
     "hand": "LH",
     "pass": false,
-    "basis": "UNREVIEWED",
-    "evidence": null
+    "basis": "INDEPENDENT_FRAME_REVIEW",
+    "evidence": "evidence/generation-method-audit.json"
   },
   "review": {
-    "decision": "PENDING",
-    "basis": "Rättad kopia av pamela-p1-c1-plan-deal-03 med aleph2 (fönster 1–3 s) för att ta bort fingertoppen över kortet f72–78. 56 credits. Oberoende rutgranskning pågår; inget omdöme ännu.",
-    "limitations": "Inte granskat.",
+    "decision": "REJECTED",
+    "basis": "Oberoende rutgranskning 2026-11-11: felet är kvar (fingertoppar över framsidan f72–78, flimmer f73–77) och redigeringen förstörde vändningen: kortet är blått i stället för gult f30–60 med tvärt byte f29/30, smet f61–62, vågiga kanter, tolv dubbletter, framsidan 45–60 % mjukare. Synliga skarvar vid f29/30 och f88/89.",
+    "limitations": "aleph2 gör om hela bilden i hela fönstret; inte användbart för småfel i hand och kort. Utanför fönstret är klippet oförändrat (medelskillnad under 1 nivå).",
     "colorDoesNotProvePhysicalSide": true,
     "userAccepted": false,
-    "productionReady": false
+    "productionReady": false,
+    "reviewedBy": "separat rutgranskare i full upplösning 2026-11-11"
   },
   "postProcessing": "none",
   "generationRef": "assets/motions/pamela-p1-c1-plan-deal-03-edit-02/generation.json",

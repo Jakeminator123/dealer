@@ -31,7 +31,7 @@ Varje klipp är en handling mellan två ankare och skrivs `READY>P4.C1`, `P4.C1>
 
 ## Läget i klippbanken
 
-Beslut ägs av `motions/<id>.json`; uppdraget av `data/clip-jobs.json`. 2 800 credits använda, 2 494 kvar (kontrollerat mot Runway 2026-11-11). Tak i jobbfilen 3 400; Jakobs ram högst 5 000.
+Beslut ägs av `motions/<id>.json`; uppdraget av `data/clip-jobs.json`. 44 klipp, 3 156 credits använda, 2 138 kvar (kontrollerat mot Runway 2026-11-11). Tak i jobbfilen 3 400; Jakobs ram högst 5 000. Labbet räknar cirka 17–20 av 51 kanter som har klipp; rena huvudtagningar efter hård granskning är färre (P4 i båda varianter).
 
 | Del | Läge |
 | --- | --- |
@@ -51,6 +51,10 @@ Jakobs betyg på äldre material: P4.C1 rått original 4,5/5, V6 4/5 (byter hand
 
 Riktning från Jakob, prövad i `tools/track-card.ts` och `tools/render-card-proof.ts` på P4: filmen ger dealer, hand och rörelse; korten renderas ovanpå filmens enfärgade yta. Spårningen ger hörn och sida per ruta (cirka 19 kB per klipp, 0,1–0,5 px skakning i vila). Fingerordning, färgflimmer och tryckt framsida rättas i lagret; handens form gör det inte. En givfilm kan tjäna båda korten på en plats om förskjutningen är högst cirka 45–50 px och går mot handen; dubbel förskjutning eller motsatt håll faller. Bedömt på stillbilder från en plats, inte av Jakob i rörelse. Provfilmer: `assets/proofs/card-overlay/`.
 
+## Blackjack-studion och kortkomponenterna (läst 2026-11-11, inget ändrat där)
+
+`local-studio/blackjack-studio` är Jakobs fristående studio ("Göran"): TypeScript direkt i Node, egen server, three r180, ingen React eller Fiber. Den har redan spelmotor (7 boxar, 8 lekar, dolt kort), klipptidslinje, ett mätt kortankare per klipp (`creator-card-anchor/v1`), bord, sko och rum i meter, och 3D-kort ovanpå film. `new-front2` är en landningssida i Next/React/Fiber; dess kortmesh är källan till labbets Material-panel. Slutsats: dags att enas om kontrakt, inte att slå ihop kod. Att stämma av med Jakob: platsnumrering (studion räknar vänster till höger från kameran och delar ut till plats 7 först), giv-ordning, kortmått 63×88 mm i meter, ankarschema, mätt filmkamera kontra fri 3D-kamera, och om Pamela ersätter Göran (varje ankare där är bundet till Görans bildhash).
+
 ## Arbetsyta
 
 - Branch `claude/deal-clips`. `jakob/test` på GitHub står kvar på `a5821f1`.
@@ -65,7 +69,7 @@ Riktning från Jakob, prövad i `tools/track-card.ts` och `tools/render-card-pro
 
 ## Nästa steg
 
-0. **Valideringsprov på en plats innan något beställs brett:** ankare som hela verkliga rutor (DRAWN ur `pamela-p4-c1-drawn-deal-01` cirka f18–22, landning ur en givs egna rutor före slutsnäppet). Pröva samtidigt Jakobs iakttagelse 2026-11-11 att klipp gjorda i ultrarapid fungerade bäst: samma ankare en gång i normal fart (4 s) och en gång i halv fart (8 s) som sedan snabbas upp 2×. Pröva även uttaget ur skon baklänges (hon skjuter in kortet; spelas omvänt).
+0. **Valideringsprovet 2026-11-11 är gjort och oberoende granskat (356 credits).** Hela verkliga rutor som ankare fungerar: `pamela-p4-c1-drawn-deal-02` är användbar och utan rester; kvar är att startankarets kort är cirka 30 % större än landningens och att grönt mörknar för varje generation. Tre spår är prövade och förkastade: ultrarapid som snabbas upp (inte bättre, dubbla priset), uttaget ur skon baklänges (lyfter 1,1 kortlängd, sämre), och `aleph2`-redigering (felet kvar, vändningen förstörd, synliga skarvar; API:t kräver dessutom minst 2 s fönster). **Uttaget ur skon är olöst**; otestat förslag: ankare där kortet redan är halvvägs ute på filten. Nästa beställning: normal fart 4 s, verkliga rutor som ankare, ett ankarpar per plats med samma kortstorlek och grönnivå, en plats i taget.
 
 1. Ta emot rutgranskningen av de 19 nya klippen och uppdatera `motions/`.
 2. Ta emot labbagentens klippbank; lägg till beställning och granskningsbeslut i labbet; publicera till Vercel.

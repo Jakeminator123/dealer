@@ -20,16 +20,17 @@
     "target": null,
     "hand": "LH",
     "pass": false,
-    "basis": "UNREVIEWED",
-    "evidence": null
+    "basis": "INDEPENDENT_FRAME_REVIEW",
+    "evidence": "evidence/generation-method-audit.json"
   },
   "review": {
-    "decision": "PENDING",
-    "basis": "Valideringsprov: kortet skjuts in i skon; avsett att spelas baklänges som uttag (source-reversed.mp4). Oberoende rutgranskning pågår; inget omdöme ännu.",
-    "limitations": "Inte granskat.",
+    "decision": "REJECTED",
+    "basis": "Oberoende rutgranskning 2026-11-11: sämre än tidigare försök. Kortet lyfts cirka 1,1 kortlängd (140 px f36–37), bärs över skon och glider ner för skons framsida f42–62; det går aldrig uppför rampen. Bleknar f24–41. Baklänges stiger kortet ur öppningen, flyger blekt genom luften och kryper 22 px mot skon i slutet.",
+    "limitations": "Uttaget ur skon är olöst. Otestat förslag: ett ankare där kortet redan är halvvägs ute och vilar på filten.",
     "colorDoesNotProvePhysicalSide": true,
     "userAccepted": false,
-    "productionReady": false
+    "productionReady": false,
+    "reviewedBy": "separat rutgranskare i full upplösning 2026-11-11"
   },
   "postProcessing": "none",
   "generationRef": "assets/motions/pamela-readyb-pushback-01/generation.json",

@@ -20,16 +20,17 @@
     "target": "P4.C1",
     "hand": "LH",
     "pass": false,
-    "basis": "UNREVIEWED",
-    "evidence": null
+    "basis": "INDEPENDENT_FRAME_REVIEW",
+    "evidence": "evidence/generation-method-audit.json"
   },
   "review": {
-    "decision": "PENDING",
-    "basis": "Valideringsprov: samma ankare i halv fart över 8 s, avsett att spelas 2×. Uppsnabbad kopia: source-2x.mp4. Oberoende rutgranskning pågår; inget omdöme ännu.",
-    "limitations": "Inte granskat.",
+    "decision": "REJECTED",
+    "basis": "Oberoende rutgranskning 2026-11-11: inte bättre än normal fart och inte värd dubbla priset (en tagning). Långsam men ojämn: tio nästan frysta rutor i glidet med ryck efteråt, frysning f135–136. Kortet bleknar f137–142. Vändningen tar 42 rutor mot 21, men kantläget blir inte längre (2 rutor mot 3). I uppsnabbad kopia: kantläge en ruta, blek blixt f69, hack f68–72.",
+    "limitations": "Jakobs iakttagelse om ultrarapid bekräftades inte av detta enda prov.",
     "colorDoesNotProvePhysicalSide": true,
     "userAccepted": false,
-    "productionReady": false
+    "productionReady": false,
+    "reviewedBy": "separat rutgranskare i full upplösning 2026-11-11"
   },
   "postProcessing": "none",
   "generationRef": "assets/motions/pamela-p4-c1-drawn-deal-slow-01/generation.json",
