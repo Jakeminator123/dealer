@@ -99,6 +99,12 @@ const overlay = mountOverlay(stage, {
     if (now + value > snapshot.limits.max || betTotal(page.bets) + value > page.balance) return;
     page.bets[seat] = [...(page.bets[seat] ?? []), value]; order.push(seat); render();
   },
+  // A chip picked up from a ring: the last one laid there. It leaves the order of laying too, so that Ångra still takes the latest.
+  take(seat) {
+    if (page.stage !== 'BETTING' || page.busy || !page.bets[seat]?.length) return;
+    page.bets[seat] = page.bets[seat].slice(0, -1); if (!page.bets[seat].length) delete page.bets[seat];
+    const at = order.lastIndexOf(seat); if (at >= 0) order.splice(at, 1); render();
+  },
   undo() { const seat = order.pop(); if (seat === undefined) return; page.bets[seat] = page.bets[seat].slice(0, -1); if (!page.bets[seat].length) delete page.bets[seat]; render(); },
   clear() { page.bets = {}; order.length = 0; render(); },
   rebet() { if (!page.last) return; page.bets = Object.fromEntries(Object.entries(page.last).map(([seat, chips]) => [seat, [...chips]])); order.length = 0; for (const [seat, chips] of Object.entries(page.bets)) for (const _ of chips) order.push(Number(seat)); render(); },

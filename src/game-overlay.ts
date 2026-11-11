@@ -15,6 +15,8 @@ export type Handlers = {
   act(action: Action): void; insurance(take: boolean): void; next(): void;
   // The seat whose bet ring a chip let go at this point of the screen would land in, or null when it is not over the table.
   aim?(clientX: number, clientY: number): number | null;
+  /** The top chip of a seat's bet is taken back. Without it, chips that lie on the table cannot be picked up. */
+  take?(seat: number): void;
 };
 // Where things are in the picture, in CSS pixels of the overlay box. ring: width of a bet ring. A missing key is hidden.
 export type Anchors = {bets: Record<number, {x: number; y: number; ring: number} | undefined>; hands: Record<string, {x: number; y: number} | undefined>};
@@ -93,7 +95,35 @@ export function mountOverlay(host: HTMLElement, on: Handlers) {
     let node = seats.get(seat);
     if (!node) {
       const pin = el('div', 'go-pin'), ring = el('button', 'go-ring'), stack = el('span', 'go-stack'), amount = el('span', 'go-amount');
-      ring.type = 'button'; ring.dataset.seat = String(seat); ring.append(stack, amount, el('span')); ring.addEventListener('click', () => on.bet(seat));
+      ring.type = 'button'; ring.dataset.seat = String(seat); ring.append(stack, amount, el('span'));
+      // A press adds a chip. A chip that lies there can also be picked up again: dragged to another ring it is moved there, let
+      // go over the bar or beside the felt it is taken back. The press that ends a drag is not a bet.
+      let lift: {value: number; ghost: HTMLElement | null; x: number; y: number; ring: Element | null} | null = null, dragged = false;
+      ring.addEventListener('click', () => { if (dragged) { dragged = false; return; } on.bet(seat); });
+      ring.addEventListener('pointerdown', e => { const top = Number(seats.get(seat)?.chips.split(',').pop()); if (ring.disabled || !top || !on.take) return; lift = {value: top, ghost: null, x: e.clientX, y: e.clientY, ring: null}; ring.setPointerCapture(e.pointerId); });
+      ring.addEventListener('pointermove', e => {
+        if (!lift) return;
+        if (!lift.ghost && Math.hypot(e.clientX - lift.x, e.clientY - lift.y) > 6) { lift.ghost = chipFace(lift.value); lift.ghost.classList.add('go-ghost', 'over'); lift.ghost.style.fontSize = getComputedStyle(root).fontSize; document.body.append(lift.ghost); root.classList.add('dragging'); }
+        if (!lift.ghost) return;
+        lift.ghost.style.setProperty('--x', `${e.clientX}px`); lift.ghost.style.setProperty('--y', `${e.clientY}px`);
+        const over = ringUnder(e.clientX, e.clientY), target = over === ring ? null : over; if (target !== lift.ring) { lift.ring?.classList.remove('drop'); target?.classList.add('drop'); lift.ring = target; }
+        lift.ghost.classList.toggle('over', !!over); // over the felt it lies down; on its way back to the bar it stands up
+      });
+      const lifted = (e: PointerEvent, cancelled: boolean) => {
+        if (!lift) return; const d = lift; lift = null; d.ring?.classList.remove('drop'); root.classList.remove('dragging');
+        if (!d.ghost) return; // a press without a drag: the click adds a chip
+        dragged = true; setTimeout(() => { dragged = false; }, 60); const ghost = d.ghost;
+        const target = cancelled ? ring : ringUnder(e.clientX, e.clientY), to = Number(target?.dataset.seat);
+        if (to === seat) { ghost.remove(); return; } // put down where it lay
+        on.take!(seat);
+        // It flies the rest of the way: to the other ring, where it becomes a bet, or home to its own kind in the bar.
+        const home = target ?? rail.querySelector<HTMLElement>(`button[data-value="${d.value}"]`), box = home?.getBoundingClientRect();
+        if (!box) { ghost.remove(); return; }
+        ghost.classList.toggle('over', !!target); ghost.classList.add('fly');
+        ghost.style.setProperty('--x', `${box.left + box.width / 2}px`); ghost.style.setProperty('--y', `${box.top + box.height / 2}px`);
+        setTimeout(() => { ghost.remove(); if (target && to) on.bet(to, d.value); }, 170);
+      };
+      ring.addEventListener('pointerup', e => lifted(e, false)); ring.addEventListener('pointercancel', e => lifted(e, true));
       pin.append(ring); pin.hidden = true; table.append(pin); node = {pin, ring, stack, amount, chips: ''}; seats.set(seat, node);
     }
     return node;
