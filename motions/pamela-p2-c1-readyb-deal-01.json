@@ -28,12 +28,13 @@
     "evidence": "evidence/generation-method-audit.json"
   },
   "review": {
-    "decision": "PENDING",
+    "decision": "ACCEPTED",
     "basis": "Oberoende rutgranskning 2026-11-11: användbar med anmärkning. Kortet trycks och glider ut plant f14–28 och ligger plant på filten till f96. Vändning i luften: bred gul f98–106, kant f113–116, blå öppnar f117–124, plant f128. Fingertopparna lämnar aldrig kortet; kortet är stilla f136–149.",
     "limitations": "Stannar halvvägs ute under handen f30–48. Fingrarna flyttar sig f130–136. Skons öppning vidgas och ett ljust stag syns från f20–24. Huvudet driver cirka 4 px f140–149.",
     "colorDoesNotProvePhysicalSide": true,
-    "userAccepted": false,
-    "productionReady": false
+    "userAccepted": true,
+    "productionReady": false,
+    "userReview": "Jakob 2026-11-11: Jag kommer att godkänna det här, det här är från Ankare 2."
   },
   "postProcessing": "none",
   "generationRef": "assets/motions/pamela-p2-c1-readyb-deal-01/generation.json",
