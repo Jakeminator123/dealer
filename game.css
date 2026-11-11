@@ -9,6 +9,28 @@ html,body{height:100%;margin:0;background:#060706;color:var(--go-ink);font:14px/
 #fail{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);max-width:520px;padding:14px 18px;border:1px solid var(--go-lose);border-radius:12px;background:var(--go-glass);color:var(--go-ink)}
 #fail:empty{display:none}
 
+/* ── the table chat (a dummy, game.html?chatt=1) ── */
+.gc{position:absolute;left:1.6%;bottom:2.4%;z-index:3;display:flex;flex-direction:column;align-items:flex-start;gap:.6em;font-size:clamp(12px,1.05vw,15px)}
+.gc button{font:inherit;color:inherit;cursor:pointer}
+.gc-toggle{display:flex;align-items:center;gap:.5em;padding:.55em 1.1em;border-radius:999px;background:var(--go-glass);border:1px solid var(--go-line);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+.gc-toggle[aria-expanded=true]{border-color:var(--go-gold)}
+.gc-unread{min-width:1.5em;padding:0 .4em;border-radius:999px;background:var(--go-gold);color:var(--go-gold-ink);font-weight:700;font-size:.85em;text-align:center}
+.gc-unread:empty{display:none}
+.gc-panel{width:min(22em,86vw);display:flex;flex-direction:column;border-radius:1.1em;background:var(--go-glass);border:1px solid var(--go-line);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);box-shadow:0 .6em 2em rgba(0,0,0,.45);overflow:hidden}
+.gc-panel[hidden]{display:none}
+.gc-head{padding:.6em .9em;border-bottom:1px solid var(--go-line);color:var(--go-dim);font-size:.82em;letter-spacing:.03em}
+.gc-list{height:15em;overflow-y:auto;padding:.6em .9em;display:flex;flex-direction:column;gap:.45em;scrollbar-width:thin}
+.gc-row{max-width:92%;line-height:1.35}
+.gc-row b{margin-right:.45em;font-weight:600;color:var(--go-dim)}
+.gc-row.dealer b{color:var(--go-gold)}
+.gc-row.player{align-self:flex-end;padding:.35em .7em;border-radius:.9em .9em .2em .9em;background:rgba(217,185,106,.16);border:1px solid rgba(217,185,106,.3)}
+.gc-row.player b{display:none}
+.gc-row.note{align-self:center;color:var(--go-dim);font-size:.85em;text-align:center}
+.gc-form{display:flex;gap:.4em;padding:.55em;border-top:1px solid var(--go-line)}
+.gc-form input{flex:1;min-width:0;padding:.5em .8em;border-radius:999px;border:1px solid var(--go-line);background:rgba(0,0,0,.35);color:var(--go-ink);font:inherit}
+.gc-form input:focus{outline:none;border-color:var(--go-gold)}
+.gc-form button{padding:.5em 1em;border-radius:999px;border:0;background:var(--go-gold);color:var(--go-gold-ink);font-weight:600}
+#stage.tall .gc{bottom:calc(2% + 5.2em);font-size:13px} /* standing: above the bar */
 .game-trial{position:absolute;right:1.6%;top:2.4%;z-index:3;padding:.5em 1em;border-radius:999px;background:var(--go-glass);border:1px solid var(--go-gold);color:var(--go-ink);font:inherit;cursor:pointer}
 .game-trial:disabled{opacity:.45;cursor:default}
 .go{position:absolute;pointer-events:none;container-type:size;font-size:clamp(11px,1.25cqw,17px);user-select:none;-webkit-user-select:none;font-variant-numeric:tabular-nums}

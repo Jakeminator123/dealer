@@ -1,4 +1,5 @@
 import test from 'node:test';
+import {DEALER_LINES, cleanMessage, dealerLine, otherLine, replyTo} from '../src/game-chat.ts';
 import assert from 'node:assert/strict';
 import {createSession, type Snapshot} from '../game/session.ts';
 import {defaultPlan} from '../src/placement-model.ts';
@@ -97,4 +98,13 @@ test('card layer options: the lying cards on their own places, the film\'s card 
 test('small things the overlay writes', () => {
   assert.equal(totalText({total: 17, soft: true}), '7/17'); assert.equal(totalText({total: 17, soft: false}), '17'); assert.equal(totalText({total: 21, soft: true}), '11/21'); assert.equal(totalText({total: null, soft: false}), '');
   assert.deepEqual(chipsFor(155, [5, 25, 100, 500, 1000]), [100, 25, 25, 5]);
+});
+
+test('the chat dummy: the dealer speaks at the phases she has a line for, and what is written is cleaned', () => {
+  assert.equal(dealerLine('BETTING', 0), DEALER_LINES.BETTING[0]); assert.equal(dealerLine('BETTING', DEALER_LINES.BETTING.length), DEALER_LINES.BETTING[0], 'the lines come round again');
+  assert.notEqual(dealerLine('BETTING', 1), dealerLine('BETTING', 0)); assert.equal(dealerLine('TURN', 0), null, 'she does not talk over the player');
+  assert.equal(dealerLine('SETTLED', 3), null);
+  assert.equal(replyTo(0), replyTo(4)); assert.notEqual(replyTo(0), replyTo(1));
+  assert.deepEqual(otherLine(0), {who: 'other', name: 'Alex', text: 'Lycka till alla!'}); assert.equal(otherLine(6).text, otherLine(0).text);
+  assert.equal(cleanMessage('  hej   på \n dig  '), 'hej på dig'); assert.equal(cleanMessage('   '), null); assert.equal(cleanMessage('x'.repeat(300))!.length, 140);
 });

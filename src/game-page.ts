@@ -161,7 +161,12 @@ type Chips = {set(bets: Record<number, number[]>, now: number): void; update(now
 let chips: Chips | null = null;
 const seconds = () => performance.now() / 1000;
 void import('./game3d-chips.ts').then(m => { const made = m.createChips(scene); scene.addProp(made); chips = made; stage.classList.add('chips3d'); render(); }).catch(() => {});
-const render = () => { const view = tableView(snapshot, page); chips?.set(Object.fromEntries(view.seats.map(s => [s.seat, taken.has(s.seat) ? [] : s.chips])), seconds()); if (view.phase === 'TURN' || view.phase === 'BETTING') { if (view.phase === 'TURN') byHand = false; aimAt(view.phase === 'TURN' ? snapshot.view.round?.activeSeat ?? null : null); } overlay.render(view); };
+// A trial, game.html?chatt=1: the table chat as a dummy (src/game-chat.ts). The dealer's lines follow the round's phases and how it ended.
+type Chat = {phase(phase: string): void; say(text: string): void};
+let chat: Chat | null = null, chatPhase = '', chatLine: string | null = null;
+if (query.has('chatt')) void import('./game-chat.ts').then(m => { chat = m.mountChat(stage); render(); }).catch(() => {});
+const render = () => { const view = tableView(snapshot, page);
+  if (chat) { if (view.phase !== chatPhase) { chatPhase = view.phase; chat.phase(view.phase); } if (page.line !== chatLine) { chatLine = page.line; if (page.line && view.phase === 'SETTLED') chat.say(page.line.replace(/<[^>]+>/g, '')); } } chips?.set(Object.fromEntries(view.seats.map(s => [s.seat, taken.has(s.seat) ? [] : s.chips])), seconds()); if (view.phase === 'TURN' || view.phase === 'BETTING') { if (view.phase === 'TURN') byHand = false; aimAt(view.phase === 'TURN' ? snapshot.view.round?.activeSeat ?? null : null); } overlay.render(view); };
 
 // ── where things are in the picture ──
 // A film pixel on the felt as the scene's own table point (dealer metres: x across, s from the dealer's edge).
