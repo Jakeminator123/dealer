@@ -3,7 +3,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
-import {sceneOf, restingQuad, restOf, poseAt, cardToImage, projectionOf, regionOf, readMatte, filmZone, shiftShare, placedCard, landing, leakCount, strayBoxes, ranges, MARGIN, STRAY, overridesOf, cardInFront, describeTrack, RIM, type CardTrack, type Scene} from '../src/card-overlay.ts';
+import {sceneOf, restingQuad, restOf, poseAt, cardToImage, projectionOf, regionOf, readMatte, filmZone, shiftShare, placedCard, landing, leakCount, strayBoxes, ranges, cardRecord, cardFace, CARD_RANKS, CARD_SUITS, MARGIN, STRAY, type CardRecord, overridesOf, cardInFront, describeTrack, RIM, type CardTrack, type Scene} from '../src/card-overlay.ts';
 import {signedArea, centre, dist, type Pt} from '../src/card-track.ts';
 
 const contract = JSON.parse(await readFile('data/scene-contract.json', 'utf8')), scene = sceneOf(contract)!;
@@ -218,4 +218,26 @@ test('what is still visible of the film card is counted with the colours of the 
   const small = new Uint8ClampedArray((w / 2) * (h / 2) * 4); for (let y = 0; y < h / 2; y++) for (let x = 0; x < w / 2; x++) small.set([rgb[(y * 2 * w + x * 2) * 3], rgb[(y * 2 * w + x * 2) * 3 + 1], rgb[(y * 2 * w + x * 2) * 3 + 2], 255], (y * w / 2 + x) * 4);
   assert.deepEqual(strayBoxes(small, w / 2, h / 2, shoe, 2).map(b => [b.x, b.y, b.x + b.width, b.y + b.height]).sort((a, b) => a[0] - b[0]), [[0, 50, 36, 80], [30, 20, 70, 60], [60, 0, 82, 50]]); // the long one-pixel fringe passes as a patch at half size: painting it over does no harm
   assert.deepEqual(ranges([61, 62, 63, 70, 72, 73]), [[61, 63], [70, 70], [72, 73]]); assert.deepEqual(ranges([]), []);
+});
+
+test('a value per card: each card has its own record by draw number or target, and face-down wins over the side the film shows', () => {
+  const cards: CardRecord[] = [{shoeDraw: 1, target: 'P4.C1', r: 'K', s: 'hearts', faceDown: false}, {shoeDraw: 2, target: 'D.C1', r: '10', s: 'spades', faceDown: false},
+    {shoeDraw: 3, target: 'P4.C2', r: 'a', s: ' Clubs ', faceDown: false}, {shoeDraw: 4, target: 'D.C2', faceDown: true}, {shoeDraw: 9, target: 'P4.C1', r: '7', s: 'diamonds'}];
+  const chosen = {rank: 'A', suit: 'spades'} as const;
+  // By draw number, the card's identity; without it, the latest card dealt to that place.
+  assert.equal(cardRecord(cards, {shoeDraw: 1})!.r, 'K'); assert.equal(cardRecord(cards, {target: 'P4.C1'})!.shoeDraw, 9); assert.equal(cardRecord(cards, {shoeDraw: 1, target: 'D.C1'})!.target, 'P4.C1', 'the draw number goes first');
+  assert.equal(cardRecord(cards, {target: 'P1.C1'}), null); assert.equal(cardRecord(cards, {shoeDraw: 77}), null); assert.equal(cardRecord(null, {target: 'P4.C1'}), null); assert.equal(cardRecord(cards, {}), null);
+  // The face is the record's own, in the film's side; values are read whatever their case.
+  assert.deepEqual(cardFace(cardRecord(cards, {shoeDraw: 1}), false, chosen), {art: {rank: 'K', suit: 'hearts'}, back: false, own: true});
+  assert.deepEqual(cardFace(cardRecord(cards, {shoeDraw: 3}), false, chosen), {art: {rank: 'A', suit: 'clubs'}, back: false, own: true});
+  assert.equal(cardFace(cardRecord(cards, {shoeDraw: 1}), true, chosen).back, true, 'while the film still shows the back, so does the card');
+  // Face-down wins over the film: the hole card shows its back although the film has turned it, and needs no rank or suit.
+  assert.deepEqual(cardFace(cardRecord(cards, {target: 'D.C2'}), false, chosen), {art: chosen, back: true, own: false});
+  assert.equal(cardFace({shoeDraw: 5, target: 'D.C2', r: 'Q', s: 'hearts', faceDown: true}, false, chosen).back, true);
+  // No record, or a value the study cannot print: the artwork chosen in the panel, and it says so.
+  assert.deepEqual(cardFace(null, false, chosen), {art: chosen, back: false, own: false});
+  for (const bad of [{r: '1', s: 'hearts'}, {r: 'T', s: 'hearts'}, {r: 'K', s: 'h'}, {r: 'K'}, {s: 'hearts'}]) assert.deepEqual(cardFace({shoeDraw: 1, target: 'P4.C1', ...bad}, false, chosen), {art: chosen, back: false, own: false});
+  // Every value the study prints is accepted: 13 ranks and 4 suits.
+  assert.deepEqual([...CARD_RANKS], ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K']); assert.deepEqual([...CARD_SUITS], ['spades', 'hearts', 'diamonds', 'clubs']);
+  for (const r of CARD_RANKS) for (const s of CARD_SUITS) assert.equal(cardFace({shoeDraw: 1, target: 'P4.C1', r, s}, false, chosen).own, true);
 });

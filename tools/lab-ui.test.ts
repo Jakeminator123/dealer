@@ -470,6 +470,13 @@ test('one film per seat is the default view: seat nodes, the share that is done,
  assert.ok(Math.abs(mid(second.quad).x-mid(first.quad).x-shift.x)<1.5);assert.ok(Math.abs(mid(second.quad).y-mid(first.quad).y-shift.y)<1.5);
  const planned=JSON.parse(runInContext("JSON.stringify(kbLand('P4.C1'))",context));assert.ok(Math.abs(mid(first.quad).x-mid(planned).x)<1.5&&Math.abs(mid(first.quad).y-mid(planned).y)<1.5);
  assert.deepEqual(laid(2).cards[0],first);assert.equal(first.back,false);assert.deepEqual(laid(4).lost,[]);
+ // "Olika kort": every deal of the round gets a card of its own in dealing order, in the record the game sends; the cards on the table name theirs.
+ runInContext("ov.deck=true;kbSteps=clipGraph.parseSequence('READY>P4.C1 | P4.C1>READY | READY>P4.C2 | P4.C2>READY | READY>D.C2').steps;kbCustom=true;kbPanel='round';paintBank()",context);
+ const deck=JSON.parse(runInContext('JSON.stringify({cards:kbDeck().cards,draw:[...kbDeck().draw]})',context));
+ assert.deepEqual(deck.cards,[{shoeDraw:1,target:'P4.C1',r:'A',s:'spades',faceDown:false},{shoeDraw:2,target:'P4.C2',r:'K',s:'hearts',faceDown:false},{shoeDraw:3,target:'D.C2',r:'7',s:'clubs',faceDown:true}]);
+ assert.deepEqual(deck.draw,[[0,1],[1,1],[2,2],[3,2],[4,3]],'a return leaves the card its deal dealt');
+ assert.deepEqual(laid(4).cards.map((c:{target:string;shoeDraw:number})=>[c.target,c.shoeDraw]),[['P4.C1',1],['P4.C2',2]]);
+ runInContext('ov.deck=false',context);assert.deepEqual(laid(4).cards.map((c:{shoeDraw:number|null})=>c.shoeDraw),[null,null]);
  // The switch: one film per card brings back the 51 edges and every card as its own node; the choice is kept in the address.
  runInContext("kbPanel='edge';kbCustom=false;kbSetMode('CARD')",context);
  assert.equal(element('kb-count').textContent,'3 av 51 kanter klara');assert.equal(element('kb-tree').innerHTML.match(/class="kb-node/g).length,17);assert.equal(element('kb-tree').innerHTML.match(/class="kb-edge /g).length,54);

@@ -713,7 +713,7 @@ const kbLand=(card:string|null|undefined)=>{const g=card?plan?.targets[card]?.ge
  const q=plan.tableProjection?.mode==='flat'?flatQuad(g,plan.targets['P4.C1'].geometry.native,'native',plan.tableProjection.heading??0):quad(g,'native');return q.map((p:{x:number;y:number})=>({x:p.x*1763/1761,y:p.y}));};
 const ovCovers=(c:OvCoverage)=>c.covered?'täcker allt':`läcker ruta ${c.leakRanges.slice(0,4).map(([a,b])=>a===b?`${a}`:`${a}–${b}`).join(', ')}${c.leakRanges.length>4?' …':''}`;
 // Kortskala 1,2: the plan's card and a fifth more, the same at every seat, so the film's card is covered without the cards dominating the table.
-const ov={on:false,split:false,scale:1.2,rank:'A',suit:'spades',side:'TRACK'};
+const ov={on:false,split:false,scale:1.2,rank:'A',suit:'spades',side:'TRACK',deck:false};
 let ovView:OvView|null=null,ovModel:OvModel|null=null,ovScene:OvScene|null=null,ovState:'idle'|'loading'|'ready'|'missing'='idle',ovScaleSet=false,ovError='';
 const ovData=new Map<string,OvData>(),ovReading=new Map<string,Promise<OvData>>(),ovLayers=new Map<string,ReturnType<OvView['createCardOverlay']>>();
 // A take's card track and occlusion overrides, read once per take. A missing file is simply "no track".
@@ -738,10 +738,21 @@ async function ovLoad(){
  ovSync();
 }
 // The card a take deals or leaves, for the bend and gloss set on that card in the Material panel.
-type OvExtra={shift?:{x:number;y:number}|null;land?:{x:number;y:number}[]|null;placed?:{quad:{x:number;y:number}[];back:boolean}[]};
+type OvCard=import('./card-overlay.js').CardRecord;
+type OvExtra={shift?:{x:number;y:number}|null;land?:{x:number;y:number}[]|null;placed?:{quad:{x:number;y:number}[];back:boolean;target?:string|null;shoeDraw?:number|null}[];cards?:OvCard[]|null;target?:string|null;shoeDraw?:number|null};
+// "Olika kort": a try-out deck for the round. Every deal step gets a record of its own in dealing order, in the shape the game
+// sends ({shoeDraw, target, r, s, faceDown}); the dealer's hole card comes face down. The order is fixed, so a round looks the same each time.
+const KB_DECK=['A/spades','K/hearts','7/clubs','10/diamonds','Q/spades','3/hearts','J/clubs','9/diamonds','5/spades','2/hearts','8/clubs','6/diamonds','4/spades','10/hearts','K/clubs','A/diamonds','J/hearts','9/spades'];
+function kbDeck():{cards:OvCard[];draw:Map<number,number>}{
+ const cards:OvCard[]=[],draw=new Map<number,number>(); // draw: step index -> the draw number of the card that step deals or leaves
+ for(const s of kbSegments){const card=s.edge?.target??null;if(!card)continue;
+  if(s.kind==='DEAL'){const [r,suit]=KB_DECK[cards.length%KB_DECK.length].split('/');cards.push({shoeDraw:cards.length+1,target:card,r,s:suit,faceDown:s.side==='BACK'});draw.set(s.index,cards.length);}
+  else{const last=[...cards].reverse().find(c=>c.target===card);if(last)draw.set(s.index,last.shoeDraw);}}
+ return {cards,draw};
+}
 function ovOptions(take:KbTake,frame:number,data:OvData|undefined,extra:OvExtra={}){
  const edge=kbGraph?.edge[take.edge],card=edge?.target??[edge?.to,edge?.from].find(node=>!!node&&!!plan?.targets[node]),material=card?plan?.targets[card]?.material:undefined;
- return {scale:ov.scale,split:ov.split,card:{rank:ov.rank,suit:ov.suit} as never,side:ov.side as 'TRACK'|'BACK'|'FRONT',bend:material?.bend??.07,gloss:material?.gloss??.35,inFront:!!data&&!!ovModel&&ovModel.cardInFront(data.overrides,frame),shift:extra.shift??null,land:extra.land??null,placed:extra.placed??[]};
+ return {scale:ov.scale,split:ov.split,card:{rank:ov.rank,suit:ov.suit} as never,side:ov.side as 'TRACK'|'BACK'|'FRONT',bend:material?.bend??.07,gloss:material?.gloss??.35,inFront:!!data&&!!ovModel&&ovModel.cardInFront(data.overrides,frame),shift:extra.shift??null,land:extra.land??null,placed:extra.placed??[],cards:extra.cards??null,target:extra.target??null,shoeDraw:extra.shoeDraw??null};
 }
 function ovPaint(name:'take'|'chain',video:HTMLVideoElement,take:KbTake|null|undefined,frame:number,visible:boolean,extra:OvExtra={}){
  const canvas=$<HTMLCanvasElement>(name==='take'?'kb-card':'kb-chain-card'),active=ov.on&&ovState==='ready'&&visible&&!!take?.media.video;
@@ -761,18 +772,18 @@ function ovTake(frame?:number){const t=ovTakeNow(),c=kbClip(),shown=frame??(c?fr
 // The cards dealt earlier in the round, which the film in view does not show. Each lies where the last film that had it as its
 // own card left it (its return if that has been played, else its deal), moved with that step's shift. lost: cards whose film has no track.
 function ovPlaced(index:number){
- const seg=kbSegments[index],mine=seg?.kind==='DEAL'?seg.to:seg?.from,lie=new Map<string,{quad:{x:number;y:number}[];back:boolean}>(),lost=new Set<string>();
+ const seg=kbSegments[index],mine=seg?.kind==='DEAL'?seg.to:seg?.from,lie=new Map<string,{quad:{x:number;y:number}[];back:boolean;target:string;shoeDraw:number|null}>(),lost=new Set<string>(),deck=ov.deck?kbDeck():null;
  if(ovModel)for(const s of kbSegments.slice(0,Math.max(0,index))){
   const card=s.kind==='DEAL'?s.to:s.kind==='RETURN'&&s.edge?.target?s.from:null;
   if(!card||!s.take||s.gap||card===mine){if(card===mine){lie.delete(card);lost.delete(card);}continue;}
   const data=ovData.get(s.take.id);if(!data){void ovRead(s.take).then(()=>ovSync());continue;}
   const put=data.track?ovModel.placedCard(data.track,ovScene,ov.scale,s.shift,kbLand(card)):null;
-  if(put){lie.set(card,{quad:put.quad,back:(ov.side==='TRACK'?(s.kind==='DEAL'&&s.side?s.side:put.side):ov.side)==='BACK'});lost.delete(card);}else if(!lie.has(card))lost.add(card);
+  if(put){lie.set(card,{quad:put.quad,back:(ov.side==='TRACK'?(s.kind==='DEAL'&&s.side?s.side:put.side):ov.side)==='BACK',target:card,shoeDraw:deck?.draw.get(s.index)??null});lost.delete(card);}else if(!lie.has(card))lost.add(card);
  }
  return {cards:[...lie.values()],lost:[...lost]};
 }
 function ovChain(frame?:number){const seg=ovSegmentNow(),video=kbVideos[kbChain.active],shown=!!seg&&!seg.gap&&video.dataset.seg===`${seg.index}:${seg.video}`;
- ovPaint('chain',video,shown?seg!.take:null,frame??(shown?frameAt(video,seg!.fps,seg!.take?.frames??100000):0),tab==='clipbank'&&kbPanel==='round'&&shown,shown&&ov.on&&ovState==='ready'?{shift:seg!.shift,land:kbLand(seg!.edge?rvCard(seg!.edge):null),placed:ovPlaced(seg!.index).cards}:{});}
+ ovPaint('chain',video,shown?seg!.take:null,frame??(shown?frameAt(video,seg!.fps,seg!.take?.frames??100000):0),tab==='clipbank'&&kbPanel==='round'&&shown,shown&&ov.on&&ovState==='ready'?{shift:seg!.shift,land:kbLand(seg!.edge?rvCard(seg!.edge):null),placed:ovPlaced(seg!.index).cards,...(ov.deck?{cards:kbDeck().cards,target:seg!.edge?.target??null,shoeDraw:kbDeck().draw.get(seg!.index)??null}:{})}:{});}
 function ovStatus(name:string){
  if(!ov.on)return '';
  if(ovState==='loading')return 'Läser in kortmaterialet…';
@@ -793,11 +804,14 @@ function ovSync(){
   box.querySelector('[data-ov-scale]')!.textContent=ov.scale.toFixed(2).replace('.',',');
  });
  ovTake();ovChain();
+ // The try-out deck in words: which card each deal of the round carries.
+ const deck=ov.on&&ov.deck&&kbPanel==='round'?kbDeck().cards:[],pip:Record<string,string>={spades:'♠',hearts:'♥',diamonds:'♦',clubs:'♣'};
+ $('kb-deck-note').textContent=deck.length?`Olika kort: ${deck.map(c=>`${c.target} ${c.faceDown?'stängt':`${c.r}${pip[String(c.s)]}`}`).join(' · ')}`:'';
  document.querySelectorAll<HTMLElement>('[data-overlay]').forEach(box=>{box.querySelector('[data-ov-status]')!.textContent=ovStatus(box.dataset.overlay!);});
 }
 document.querySelectorAll<HTMLElement>('[data-overlay]').forEach(box=>{for(const type of ['input','change'])box.addEventListener(type,event=>{
  const el=event.target as HTMLInputElement,key=el.dataset?.ov;if(!key)return;
- if(key==='on')ov.on=el.checked;else if(key==='split')ov.split=el.checked;else if(key==='scale'){ov.scale=Math.max(1,Math.min(2.5,Number(el.value)||1.2));ovScaleSet=true;}else if(key==='rank')ov.rank=el.value;else if(key==='suit')ov.suit=el.value;else if(key==='side')ov.side=el.value;
+ if(key==='on')ov.on=el.checked;else if(key==='split')ov.split=el.checked;else if(key==='scale'){ov.scale=Math.max(1,Math.min(2.5,Number(el.value)||1.2));ovScaleSet=true;}else if(key==='deck')ov.deck=el.checked;else if(key==='rank')ov.rank=el.value;else if(key==='suit')ov.suit=el.value;else if(key==='side')ov.side=el.value;
  if(ov.on&&ovState==='idle')void ovLoad();else ovSync();
 });});
 // The overlay is drawn for the frame the film actually shows: on every presented frame where the browser

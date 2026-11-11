@@ -4,7 +4,7 @@
 // and how large comes from src/card-overlay.ts.
 import * as THREE from '../materials/source/references/card-materials/vendor/three.module.js';
 import {CARD, RANKS, SUITS, createCardGeometry, createCardPrint, paperMaterialParameters, applyCardLights, validateCard, type CardValue} from '../materials/source/src/card-material-study.ts';
-import {poseAt, cardToImage, projectionOf, regionOf, readMatte, filmZone, strayBoxes, BESIDE, type CardTrack, type Scene, type Pose} from './card-overlay.ts';
+import {poseAt, cardToImage, projectionOf, regionOf, readMatte, filmZone, strayBoxes, cardRecord, cardFace, CARD_RANKS, CARD_SUITS, BESIDE, type CardRecord, type CardTrack, type Scene, type Pose} from './card-overlay.ts';
 import {signedArea, inside, clockwise, grown, is} from './card-track.ts';
 
 export {RANKS, SUITS};
@@ -17,12 +17,17 @@ const PAPER_EXPOSURE = 3;
 // land: the plan's quad for the card, in film pixels: the rendered card ends there, whatever the film's own landing; it replaces shift.
 // placed: cards dealt by earlier films of the round, which this film does not show; they lie where they landed.
 export type OverlayOptions = {scale: number; split: boolean; card: CardValue; side: 'TRACK' | 'BACK' | 'FRONT'; bend: number; gloss: number; inFront: boolean;
-  shift?: {x: number; y: number} | null; land?: {x: number; y: number}[] | null; placed?: {quad: {x: number; y: number}[]; back: boolean}[]};
+  shift?: {x: number; y: number} | null; land?: {x: number; y: number}[] | null; placed?: {quad: {x: number; y: number}[]; back: boolean; target?: string | null; shoeDraw?: number | null}[];
+  // A value per card (optional): the records of the dealt cards, and which of them the card of this film is, by draw number or by
+  // target. Each resting card names its own in `placed`. A card without a record keeps the artwork in `card`.
+  cards?: CardRecord[] | null; target?: string | null; shoeDraw?: number | null};
+if (RANKS.join() !== CARD_RANKS.join() || SUITS.join() !== CARD_SUITS.join()) console.warn('Card values in src/card-overlay.ts differ from the card material study.');
 
 // One WebGL scene for every overlay on the page: the study's card, lit as in the study, seen straight on.
 // A homography then places that view on the card's quad in the film, so its perspective is the table's.
 type Studio = {canvas: HTMLCanvasElement; renderer: any; scene: any; camera: any; mesh: any; front: any; back: any; hidden: any; flat: any; bent: any; bend: number; gloss: number; face: string};
 let studio: Studio | null = null;
+const faces = new Map<string, any>(); // one print per card value, kept: at most 52
 const texture = (value?: CardValue) => { const t = new THREE.CanvasTexture(createCardPrint(value)); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8; return t; };
 function open(options: OverlayOptions): Studio {
   if (!studio) {
@@ -31,14 +36,15 @@ function open(options: OverlayOptions): Studio {
     const scene: any = new THREE.Scene(), hemisphere: any = new THREE.HemisphereLight('#f1f2f3', '#2e3231', 1.05), key: any = new THREE.DirectionalLight('#ffffff', 2.05), fill: any = new THREE.DirectionalLight('#e7edf1', 0.55);
     key.position.set(-3.5, 7, 5); fill.position.set(4, 3, -3); applyCardLights('neutral', key, fill, hemisphere); scene.add(hemisphere, key, fill);
     const paper = paperMaterialParameters(options.gloss), card = validateCard(options.card);
-    const front: any = new THREE.MeshPhysicalMaterial({...paper, map: texture(card), depthTest: false}), back: any = new THREE.MeshPhysicalMaterial({...paper, map: texture(), depthTest: false});
+    faces.set(`${card.rank}/${card.suit}`, texture(card));
+    const front: any = new THREE.MeshPhysicalMaterial({...paper, map: faces.get(`${card.rank}/${card.suit}`), depthTest: false}), back: any = new THREE.MeshPhysicalMaterial({...paper, map: texture(), depthTest: false});
     const hidden: any = new THREE.MeshBasicMaterial({visible: false}), flat = createCardGeometry(0), bent = createCardGeometry(options.bend);
     // Only the surface towards the eye is drawn; which print it carries is chosen per frame.
     const mesh: any = new THREE.Mesh(flat, [front, hidden, hidden]); mesh.position.set(0, 0, -8); mesh.frustumCulled = false; scene.add(mesh);
     studio = {canvas, renderer, scene, camera: new THREE.PerspectiveCamera(35, 1, 0.1, 40), mesh, front, back, hidden, flat, bent, bend: options.bend, gloss: options.gloss, face: `${card.rank}/${card.suit}`};
   }
   const s = studio, face = `${options.card.rank}/${options.card.suit}`;
-  if (s.face !== face) { const old = s.front.map; s.front.map = texture(validateCard(options.card)); s.front.needsUpdate = true; old.dispose(); s.face = face; }
+  if (s.face !== face) { let print = faces.get(face); if (!print) { print = texture(validateCard(options.card)); faces.set(face, print); } s.front.map = print; s.front.needsUpdate = true; s.face = face; }
   if (s.gloss !== options.gloss) { const {color, ...parameters} = paperMaterialParameters(options.gloss); for (const material of [s.front, s.back]) { Object.assign(material, parameters); material.color.set(color); } s.gloss = options.gloss; }
   if (s.bend !== options.bend) { s.bent.dispose(); s.bent = createCardGeometry(options.bend); s.bend = options.bend; }
   return s;
@@ -73,11 +79,11 @@ export function createCardOverlay(canvas: HTMLCanvasElement) {
   // table there (a hand or sleeve passing, or the film's own card), the hand matte of that spot keeps the film's hand in front.
   const lying = new Map<string, {image: HTMLCanvasElement; x: number; y: number}>(), peek = document.createElement('canvas'), pctx = peek.getContext('2d', {willReadFrequently: true})!;
   function lay(video: HTMLVideoElement, card: {quad: {x: number; y: number}[]; back: boolean}, options: OverlayOptions, width: number, height: number, own: {x: number; y: number}[] | null) {
-    const key = JSON.stringify([card.quad.map(p => [Math.round(p.x * 4), Math.round(p.y * 4)]), card.back, options.card, options.gloss]);
+    const face = cardFace(cardRecord(options.cards, card), card.back, options.card), key = JSON.stringify([card.quad.map(p => [Math.round(p.x * 4), Math.round(p.y * 4)]), face.back, face.art, options.gloss]);
     let hit = lying.get(key);
     if (!hit) {
       const xs = card.quad.map(p => p.x), ys = card.quad.map(p => p.y), x = Math.max(0, Math.floor(Math.min(...xs)) - 3), y = Math.max(0, Math.floor(Math.min(...ys)) - 3);
-      const w = Math.min(width, Math.ceil(Math.max(...xs)) + 3) - x, h = Math.min(height, Math.ceil(Math.max(...ys)) + 3) - y, drawn = w > 1 && h > 1 ? render(card.quad, card.back, 1, options, width, height) : null;
+      const w = Math.min(width, Math.ceil(Math.max(...xs)) + 3) - x, h = Math.min(height, Math.ceil(Math.max(...ys)) + 3) - y, drawn = w > 1 && h > 1 ? render(card.quad, face.back, 1, {...options, card: face.art}, width, height) : null;
       if (!drawn) return;
       const image = document.createElement('canvas'); image.width = w; image.height = h; image.getContext('2d')!.drawImage(drawn, x, y, w, h, 0, 0, w, h);
       if (lying.size > 60) lying.clear();
@@ -145,7 +151,7 @@ export function createCardOverlay(canvas: HTMLCanvasElement) {
     for (const card of placed) lay(video, card, options, width, height, own);
     layer.width = bw; layer.height = bh;
     if (pose.quad) {
-      const side = options.side === 'TRACK' ? pose.side : options.side, card = render(pose.quad, side === 'BACK', pose.resting, options, width, height);
+      const side = options.side === 'TRACK' ? pose.side : options.side, face = cardFace(cardRecord(options.cards, options), side === 'BACK', options.card), card = render(pose.quad, face.back, pose.resting, {...options, card: face.art}, width, height);
       if (card) lctx.drawImage(card, box.x, box.y, box.width, box.height, 0, 0, box.width, box.height);
     } else if (pose.edge) { // edge-on: the paper edge, a thin light line with a soft dark side
       const [a, b] = pose.edge; lctx.lineCap = 'round';

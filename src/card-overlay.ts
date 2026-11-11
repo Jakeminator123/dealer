@@ -257,6 +257,33 @@ export function filmZone(pose: Pose, margin?: number): (x: number, y: number) =>
   return () => false;
 }
 
+// ── A value per card ────────────────────────────────────────────────────────
+// One record per dealt card, the same fields all the way from the game engine's deal event. shoeDraw is the draw number in the
+// shoe and the card's identity; target is where it lies; faceDown means the back is shown whatever the film's side says (the
+// dealer's hole card), and such a card may come without rank and suit.
+export type CardRecord = {shoeDraw: number; target: string; r?: string | null; s?: string | null; faceDown?: boolean};
+// The values the card material study can print (materials/source/src/card-material-study.ts: RANKS and SUITS). Kept here as
+// well because this module also runs where the study cannot be loaded; the view checks that the two lists agree.
+export const CARD_RANKS = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'] as const;
+export const CARD_SUITS = ['spades', 'hearts', 'diamonds', 'clubs'] as const;
+export type CardArt = {rank: typeof CARD_RANKS[number]; suit: typeof CARD_SUITS[number]};
+/** The record of one card: by its draw number when that is known, else the latest card dealt to the target (the highest draw number). */
+export function cardRecord(cards: CardRecord[] | null | undefined, which: {shoeDraw?: number | null; target?: string | null}): CardRecord | null {
+  const list = Array.isArray(cards) ? cards.filter(c => c && Number.isFinite(c.shoeDraw) && typeof c.target === 'string') : [];
+  if (which.shoeDraw != null) return list.find(c => c.shoeDraw === which.shoeDraw) ?? null;
+  return which.target ? list.filter(c => c.target === which.target).sort((a, b) => b.shoeDraw - a.shoeDraw)[0] ?? null : null;
+}
+/**
+ * What one card shows. Face-down wins over the film: the back, whatever side the film has. Otherwise the side is the film's, and
+ * the face is the record's rank and suit; a card without a record, or with values the study cannot print, keeps the artwork
+ * given as fallback (`own` is then false).
+ */
+export function cardFace(record: CardRecord | null, back: boolean, fallback: CardArt): {art: CardArt; back: boolean; own: boolean} {
+  const rank = String(record?.r ?? '').trim().toUpperCase(), suit = String(record?.s ?? '').trim().toLowerCase();
+  const known = (CARD_RANKS as readonly string[]).includes(rank) && (CARD_SUITS as readonly string[]).includes(suit);
+  return {art: known ? {rank, suit} as CardArt : fallback, back: record?.faceDown === true || back, own: known};
+}
+
 export type Override = {from: number; to: number; note: string};
 /** Frame ranges where the card is drawn in front of the hand: {"cardInFront": [{"from": 72, "to": 78, "note": "..."}]}. Anything malformed is left out. */
 export function overridesOf(value: unknown): Override[] {
