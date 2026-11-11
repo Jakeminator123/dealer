@@ -165,3 +165,62 @@ html,body{height:100%;margin:0;background:#060706;color:var(--go-ink);font:14px/
 #stage.tall .gc{bottom:calc(100% - 7.5em);font-size:13px}
 @media (prefers-reduced-motion:reduce){.go-stack .go-chip,.go-result{animation:none}.go-rail .go-chip,.go-btn{transition:none}}
 @container (max-width:900px){.go-btn.small{padding:0 10px;font-size:12px}.go-rail .go-chip{width:38px;font-size:16px}.go-btn.primary{padding:0 16px;font-size:14px}}
+
+/* ── the console's menus (src/game-panel.ts): Bord and Musik, each a button in the console and a panel above it ── */
+.gp-menu{flex:none;display:flex;gap:8px;padding-right:14px;border-right:1px solid var(--tc-line)}
+.gp-open{display:inline-flex;align-items:center;gap:8px;height:44px;padding:0 14px 0 12px;border-radius:12px;border:1px solid var(--tc-line-strong);background:linear-gradient(180deg,rgba(255,255,255,.07),rgba(255,255,255,.02));color:var(--tc-text);font:600 13px/1 system-ui,'Segoe UI',sans-serif;cursor:pointer;transition:border-color .15s,background .15s,color .15s}
+.gp-open:hover,.gp-open[aria-expanded=true]{border-color:var(--tc-accent-line);background:var(--tc-accent-soft);color:var(--tc-accent)}
+.gp-open.on svg{color:var(--tc-accent)}
+.gp-open:focus-visible,.gp-panel button:focus-visible{outline:2px solid var(--tc-accent);outline-offset:2px}
+.gp-panels{position:absolute;left:0;right:0;bottom:100%;height:0;pointer-events:none}
+.gp-panel{position:absolute;bottom:14px;width:min(432px,calc(100vw - 24px));max-height:min(70vh,560px);overflow:auto;box-sizing:border-box;padding:16px 16px 14px;border-radius:18px;border:1px solid var(--tc-line-strong);color:var(--tc-text);pointer-events:auto;
+  background:var(--tc-texture),linear-gradient(180deg,var(--tc-surface-1),var(--tc-surface-2));box-shadow:0 24px 60px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,255,255,.07);animation:gp-rise .22s cubic-bezier(.2,.8,.2,1);scrollbar-width:thin}
+.gp-panel[hidden]{display:none}
+@keyframes gp-rise{from{opacity:0;transform:translateY(10px) scale(.985)}}
+.gp-panel h3{margin:0 0 10px;color:var(--tc-muted);font:500 10px/1 ui-monospace,'JetBrains Mono',Consolas,monospace;letter-spacing:.16em;text-transform:uppercase}
+.gp-panel h3:not(:first-child){margin-top:16px;padding-top:14px;border-top:1px solid var(--tc-line)}
+.gp-panel button{font:inherit;color:inherit;cursor:pointer}
+/* rooms: a picture of the table in each room, the one showing ringed in the accent */
+.gp-rooms{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.gp-room{position:relative;display:flex;flex-direction:column;gap:6px;padding:0;border:0;background:none;text-align:left}
+.gp-thumb{display:block;aspect-ratio:16/9;border-radius:10px;background:#111 center/cover no-repeat;box-shadow:0 0 0 1px var(--tc-line-strong),0 6px 14px rgba(0,0,0,.4);transition:transform .16s,box-shadow .16s}
+.gp-room:not(:disabled):hover .gp-thumb{transform:translateY(-2px);box-shadow:0 0 0 1px var(--tc-accent-line),0 10px 20px rgba(0,0,0,.5)}
+.gp-room.chosen .gp-thumb{box-shadow:0 0 0 2px var(--tc-accent),0 0 22px -4px var(--tc-glow)}
+.gp-room:disabled:not(.chosen){opacity:.45;cursor:default}
+.gp-name{font:600 12.5px/1.2 system-ui,'Segoe UI',sans-serif}
+.gp-mark{position:absolute;right:6px;top:6px;padding:3px 7px;border-radius:999px;background:var(--tc-accent);color:var(--tc-ink);font:700 9px/1 system-ui,sans-serif;letter-spacing:.08em;text-transform:uppercase;opacity:0}
+.gp-room.chosen .gp-mark{opacity:1}
+/* dealers */
+.gp-dealers{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.gp-dealer{display:flex;align-items:center;gap:10px;margin-right:auto}
+.gp-face{width:46px;height:46px;border-radius:50%;background:#111 center 20%/cover no-repeat;box-shadow:0 0 0 2px var(--tc-accent),0 0 0 5px var(--tc-accent-soft)}
+.gp-who{display:flex;flex-direction:column;gap:4px}
+.gp-who b{font:700 14px/1 system-ui,'Segoe UI',sans-serif}
+.gp-who small,.gp-note{color:var(--tc-muted);font:500 12px/1.35 system-ui,'Segoe UI',sans-serif}
+.gp-note{margin:10px 0 0}
+.gp-change{height:40px;padding:0 16px;border-radius:12px;border:1px solid var(--tc-accent-line);background:var(--tc-accent-soft);color:var(--tc-accent) !important;font:600 13px/1 system-ui,'Segoe UI',sans-serif !important}
+.gp-change:hover:not(:disabled){background:var(--tc-accent);color:var(--tc-ink) !important}
+.gp-change:disabled{opacity:.45;cursor:default}
+/* music */
+.gp-tracks{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.gp-track{display:flex;flex-direction:column;gap:4px;padding:10px 12px;border-radius:12px;border:1px solid var(--tc-line-strong);background:rgba(255,255,255,.03);text-align:left;transition:border-color .15s,background .15s}
+.gp-track b{font:600 13px/1 system-ui,'Segoe UI',sans-serif}
+.gp-track small{color:var(--tc-muted);font:500 11px/1.3 system-ui,'Segoe UI',sans-serif}
+.gp-track:hover{border-color:var(--tc-accent-line)}
+.gp-track[aria-pressed=true]{border-color:var(--tc-accent);background:var(--tc-accent-soft)}
+.gp-track[aria-pressed=true] b{color:var(--tc-accent)}
+.gp-level{display:flex;align-items:center;gap:12px;margin-top:12px;color:var(--tc-muted);font:500 12px/1 system-ui,'Segoe UI',sans-serif}
+.gp-level input{flex:1;accent-color:var(--tc-accent)}
+.gp-toggle{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;padding:9px 0;border:0;background:none;text-align:left}
+.gp-toggle span{display:flex;flex-direction:column;gap:4px}
+.gp-toggle b{font:600 13px/1 system-ui,'Segoe UI',sans-serif}
+.gp-toggle small{color:var(--tc-muted);font:500 11.5px/1.3 system-ui,'Segoe UI',sans-serif}
+.gp-toggle i{flex:none;position:relative;width:40px;height:22px;border-radius:999px;background:rgba(255,255,255,.12);box-shadow:inset 0 0 0 1px var(--tc-line-strong);transition:background .18s}
+.gp-toggle i::after{content:'';position:absolute;left:3px;top:3px;width:16px;height:16px;border-radius:50%;background:var(--tc-text);transition:transform .18s}
+.gp-toggle[aria-checked=true] i{background:var(--tc-accent)}
+.gp-toggle[aria-checked=true] i::after{transform:translateX(18px);background:var(--tc-ink)}
+#stage.tall .gp-menu{flex:1 1 100%;order:-3;border-right:0;padding-right:0}
+#stage.tall .gp-open{flex:1;justify-content:center}
+#stage.tall .gp-panel{left:12px !important;right:12px;width:auto}
+@container (max-width:900px){.gp-open span{display:none}.gp-open{padding:0 12px}}
+@media (prefers-reduced-motion:reduce){.gp-panel{animation:none}.gp-thumb,.gp-toggle i,.gp-toggle i::after{transition:none}}

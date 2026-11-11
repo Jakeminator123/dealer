@@ -96,7 +96,7 @@ vec4 keyCards(vec4 o, vec2 uv, vec3 c, vec3 key){
   if (seatOn > .5) o = keyCard(o, px, c, key, seatZone, seatCore, BACK_LIT, 4., 0., 2., 1., vec4(-1.), seatCore, 0.);
   return keyCard(o, px, c, key, cardZone, cardCore, cardColour, cardRim, cardSides, cardTint, cardTrust, cardShoe, cardDrawn, cardHeld);
 }`;
-const FRAGMENT = `varying vec4 vFilm; varying vec3 vWorld; uniform sampler2D map; uniform vec2 refUv, texel, frameAnchor; uniform float lo, hi, shadow, erode, frameOn, frameScale; uniform vec3 grade; uniform vec4 hide;
+const FRAGMENT = `varying vec4 vFilm; varying vec3 vWorld; uniform sampler2D map; uniform vec2 refUv, texel, frameAnchor, frameSize; uniform float lo, hi, shadow, erode, frameOn, frameScale; uniform vec3 grade; uniform vec4 hide;
 uniform sampler2D roomMap; uniform vec2 roomSize; uniform float wrap, roomExposure;
 ${FAN_GLSL}
 ${CARD_KEY}
@@ -106,7 +106,7 @@ void main(){
   vec2 uv = vFilm.xy / vFilm.w * .5 + .5;
   // A film with a frame of its own (the dealer smaller on a larger screen, so that she can stand up and walk out): the point of
   // the standard frame is found in that film. The middle of the dealer-side table edge is the fixed point of the two frames.
-  if (frameOn > .5) { vec2 px = (vec2(uv.x, 1. - uv.y) * FILM_PX - FRAME_FIX) * frameScale + frameAnchor; uv = vec2(px.x / FILM_PX.x, 1. - px.y / FILM_PX.y); }
+  if (frameOn > .5) { vec2 px = (vec2(uv.x, 1. - uv.y) * FILM_PX - FRAME_FIX) * frameScale + frameAnchor; uv = vec2(px.x / frameSize.x, 1. - px.y / frameSize.y); }
   if (uv.x < .001 || uv.x > .999 || uv.y < .001 || uv.y > .999) discard;
   // A box of the film that the page draws an object of its own for (the shoe): film pixels, y down. Off while x1 < x0.
   if (hide.z > hide.x) { vec2 hp = vec2(uv.x, 1. - uv.y) * FILM_PX; if (hp.x > hide.x && hp.x < hide.z && hp.y > hide.y && hp.y < hide.w) discard; }
@@ -143,8 +143,9 @@ export type KeySettings = {lo: number; hi: number; shadow: number};
 // scene's own table hides what is behind it. shadow false: darker screen is not kept as a shadow. behindFrom: the film frame
 // from which BEHIND_TABLE holds; before it the film is drawn in the usual two layers, read through scale and anchor, so a film
 // can begin in the rest pose with her hands on the table and go behind the table once they have left it. Absent: from the
-// first frame. Written in a film's record as motion.frame.
-export type FilmFrame = {scale: number; anchor: [number, number]; layer?: 'BEHIND_TABLE'; shadow?: boolean; back?: number; behindFrom?: number};
+// first frame. size: the film's own picture in pixels when it is not the standard 1764 × 1174 (a wider film gives her more room to
+// walk before its edge). Written in a film's record as motion.frame.
+export type FilmFrame = {scale: number; anchor: [number, number]; layer?: 'BEHIND_TABLE'; shadow?: boolean; back?: number; behindFrom?: number; size?: [number, number]};
 const fronts = new WeakMap<FilmFrame, FilmFrame>();
 /** A film's frame as it holds at one of its frames: before behindFrom it is the same frame without its layer. One object per answer, so the layers are placed anew only when the answer changes. */
 export function frameAt(frame: FilmFrame | null, at: number): FilmFrame | null {
@@ -165,7 +166,7 @@ export type CardKey = {zone: number[][]; core: number[][] | null; colour: number
 export function createFilmLayers(filmVP: T.Matrix4, light: Record<string, {value: unknown}>) {
   // One frame, grade and card key for both layers; the rendered cards (scene3d-deal.ts) read the same frame and grade.
   const map = {value: null as T.Texture | null}, grade = {value: new T.Vector3(1, 1, 1)}, quad = () => [0, 1, 2, 3].map(() => new T.Vector2());
-  const frame = {frameOn: {value: 0}, frameScale: {value: 1}, frameAnchor: {value: new T.Vector2(FRAME_FIX.x, FRAME_FIX.y)}};
+  const frame = {frameOn: {value: 0}, frameScale: {value: 1}, frameAnchor: {value: new T.Vector2(FRAME_FIX.x, FRAME_FIX.y)}, frameSize: {value: new T.Vector2(FILM.width, FILM.height)}};
   let framed: FilmFrame | null = null, placed = {edgeZ: 0, fold: true, depth: false, scale: 1}; const hide = {value: new T.Vector4(0, 0, -1, -1)};
   const card = {cardOn: {value: 0}, cardRim: {value: 4}, cardSides: {value: 0}, cardTint: {value: 2}, cardTrust: {value: 0}, cardOverOn: {value: 0}, cardHeld: {value: 0}, cardDrawn: {value: quad()}, cardZone: {value: quad()}, cardCore: {value: quad()}, cardOver: {value: quad()}, cardColour: {value: new T.Vector3(1, 1, 0)}, cardShoe: {value: new T.Vector4(-1, -1, -1, -1)},
     seatOn: {value: 0}, seatZone: {value: quad()}, seatCore: {value: quad()}};
@@ -215,7 +216,7 @@ export function createFilmLayers(filmVP: T.Matrix4, light: Record<string, {value
      */
     setFrame(next: FilmFrame | null) {
       if (next === framed) return; framed = next;
-      frame.frameOn.value = next ? 1 : 0; frame.frameScale.value = next?.scale ?? 1; frame.frameAnchor.value.set(next?.anchor[0] ?? FRAME_FIX.x, next?.anchor[1] ?? FRAME_FIX.y);
+      frame.frameOn.value = next ? 1 : 0; frame.frameScale.value = next?.scale ?? 1; frame.frameAnchor.value.set(next?.anchor[0] ?? FRAME_FIX.x, next?.anchor[1] ?? FRAME_FIX.y); frame.frameSize.value.set(next?.size?.[0] ?? FILM.width, next?.size?.[1] ?? FILM.height);
       bodyMat.uniforms.shadow.value = next && next.shadow === false ? 0 : 1; // without a table under her a darker green is not a shadow on anything
       this.place(placed.edgeZ, placed.fold, placed.depth, placed.scale);
     },

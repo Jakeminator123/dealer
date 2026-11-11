@@ -84,8 +84,27 @@ export function createFilm(players: FilmPlayers, graph: Graph, layout: Layout, r
     if (mine === token) rest();
     return {gaps, beats};
   }
+  /**
+   * The dealer is changed: she stands up and leaves, the table stands empty (away() is awaited then; the page may change what
+   * it shows), and a dealer comes in and sits down. True when rest has begun again; false when the bank has no film to
+   * leave with or to arrive with, and nothing is played then. Only between rounds: no card lies on the table. `own`: films
+   * the page brings itself, played instead of the bank's (a stand-in while the bank has no approved film for the change).
+   */
+  async function swap(away: () => void | Promise<void> = () => {}, own: {leave: FilmPart[]; arrive: FilmPart[]} | null = null): Promise<boolean> {
+    const part = (s: Segment | undefined): FilmPart[] => s?.video ? [{path: s.video, start: s.start, end: s.end, track: null, frame: frameOf(s.take)}] : [];
+    const leave = own?.leave ?? part(resolveRound(graph, [{from: 'IDLE', to: 'AWAY'}], {places})[0]), arrive = own?.arrive ?? part(resolveRound(graph, [{from: 'AWAY', to: 'IDLE'}], {places})[0]);
+    if (!leave.length || !arrive.length) return false;
+    const mine = ++token, leaving = resting; resting = null;
+    const run = (parts: FilmPart[], cut: boolean) => new Promise<void>(resolve => players.play(parts, {cut, onEnd: resolve}));
+    const cut = !leaving || idleExit(leaving) === 'CUT'; if (!cut) players.hurry(IDLE_RULE.exitRate);
+    players.preload?.([...leave, ...arrive].map(p => p.path));
+    await run(leave, cut); if (mine !== token) return true;
+    await away(); if (mine !== token) return true;
+    await run(arrive, true); if (mine === token) rest();
+    return true;
+  }
   return {
-    play, rest,
+    play, rest, swap,
     set(next: {table: TableCards; records: CardRecord[]; lying: number[]}) { table = next.table; records = next.records; lying = [...next.lying]; rest(); },
     get lying() { return [...lying]; },
   };

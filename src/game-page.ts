@@ -11,6 +11,8 @@ import {createLayout, slotOf} from './game-table.ts';
 import {cardRecords} from './game-director.ts';
 import {createFilm, type FilmPlayers} from './game-film.ts';
 import {chipsFor, mountOverlay, type Action, type Anchors} from './game-overlay.ts';
+import {mountPanel} from './game-panel.ts';
+import {EXIT_TRIAL, exitView, type ExitView} from './scene3d-exit.ts';
 import {tableView, tableCards, cardFaces, shownBy, lineOf, betTotal, handKey, CHIP_VALUES, DEALER_KEY, type PageState, type Settled} from './game-view.ts';
 import type {Snapshot} from '../game/session.ts';
 
@@ -40,7 +42,15 @@ function frame() {
   scene.resize();
 }
 let framed = false;
-scene.set({format: 'fill', room: (query.get('room') ?? 'panorama') as never, tray: true, cards: true, pitch: Number(query.get('pitch') ?? FRAMING.wide.pitch), zoom: Number(query.get('zoom') ?? FRAMING.wide.zoom)});
+// The rooms the player can choose between (the console's Bord menu), each with the blur that suits it. The choice is kept in the browser.
+const ROOMS = [
+  {id: 'panorama', label: 'Las Vegas', note: 'En kasinosal i Las Vegas om natten', blur: 5}, {id: 'la', label: 'Skyline', note: 'En takvåning över staden i skymningen', blur: 6},
+  {id: 'skog', label: 'Skogen', note: 'En glänta i skogen', blur: 6}, {id: 'hall', label: 'Spelhallen', note: 'En spelhall med spelautomater och låg rök', blur: 11}, {id: 'salong', label: 'Salongen', note: 'En stillsam salong', blur: 11},
+].map(r => ({...r, thumb: `assets/scene/thumbs/room-${r.id}.jpg`}));
+const DEALERS = [{id: 'pamela', label: 'Pamela', note: 'Vid bordet nu', thumb: 'assets/scene/thumbs/dealer-pamela.jpg'}];
+const remembered = (() => { try { return localStorage.getItem('dealer.room'); } catch { return null; } })();
+let room = ROOMS.find(r => r.id === (query.get('room') ?? remembered))?.id ?? 'panorama';
+scene.set({format: 'fill', room: room as never, blur: ROOMS.find(r => r.id === room)!.blur, tray: true, cards: true, pitch: Number(query.get('pitch') ?? FRAMING.wide.pitch), zoom: Number(query.get('zoom') ?? FRAMING.wide.zoom)});
 scene.rebuild(); scene.start();
 new ResizeObserver(frame).observe(stage); frame();
 const film = createFilm(scene.players as unknown as FilmPlayers, graph, layout, path => fetch(path).then(res => res.ok ? res.json() : null));
@@ -74,6 +84,7 @@ async function present(next: Snapshot, dealerPlays: boolean) {
     if (beat.kind !== 'DEAL' && beat.kind !== 'REVEAL' && beat.kind !== 'PLACE') return;
     const event = next.events.find(e => (e.type === 'deal' || e.type === 'reveal') && e.shoeDraw === beat.own!.shoeDraw), shown = event && shownBy(event);
     if (shown) { page.shown[shown.key] = shown; render(); }
+    if (heard.table && beat.own) sound?.card(beat.kind === 'REVEAL' ? 'turn' : 'land', {pan: beat.own.slot.owner === 'P' ? panOf(beat.own.slot.seat) : 0});
   });
   page.busy = false; page.balance = next.balance; page.line = lineOf(next.events) ?? page.line;
   if (settle || next.view.round?.phase === 'settled') {
@@ -100,19 +111,21 @@ const overlay = mountOverlay(stage, {
     if (page.stage !== 'BETTING' || page.busy) return;
     const now = (page.bets[seat] ?? []).reduce((a, b) => a + b, 0);
     if (now + value > snapshot.limits.max || betTotal(page.bets) + value > page.balance) return;
+    if (heard.table) sound?.chip(page.bets[seat]?.length ? 'stack' : 'felt', {height: page.bets[seat]?.length ?? 0, pan: panOf(seat)});
     page.bets[seat] = [...(page.bets[seat] ?? []), value]; order.push(seat); render();
   },
   // A chip picked up from a ring: the last one laid there. It leaves the order of laying too, so that Ångra still takes the latest.
   take(seat) {
     if (page.stage !== 'BETTING' || page.busy || !page.bets[seat]?.length) return;
     page.bets[seat] = page.bets[seat].slice(0, -1); if (!page.bets[seat].length) delete page.bets[seat];
-    const at = order.lastIndexOf(seat); if (at >= 0) order.splice(at, 1); render();
+    const at = order.lastIndexOf(seat); if (at >= 0) order.splice(at, 1); if (heard.table) sound?.chip('take', {pan: panOf(seat)}); render();
   },
   undo() { const seat = order.pop(); if (seat === undefined) return; page.bets[seat] = page.bets[seat].slice(0, -1); if (!page.bets[seat].length) delete page.bets[seat]; render(); },
   clear() { page.bets = {}; order.length = 0; render(); },
   rebet() { if (!page.last) return; page.bets = Object.fromEntries(Object.entries(page.last).map(([seat, chips]) => [seat, [...chips]])); order.length = 0; for (const [seat, chips] of Object.entries(page.bets)) for (const _ of chips) order.push(Number(seat)); render(); },
   async deal() {
     if (page.busy || !betTotal(page.bets)) return;
+    panel.close(); // an open menu closes when the round begins
     const bets = Object.entries(page.bets).map(([seat, chips]) => ({seat: Number(seat), main: chips.reduce((a, b) => a + b, 0)}));
     page.busy = true; render();
     const next = await send({op: 'start', bets}); if (!next) { page.busy = false; render(); return; }
@@ -138,6 +151,42 @@ const overlay = mountOverlay(stage, {
   },
 });
 const order: number[] = []; // the seats the chips were laid on, in order, for Ångra
+
+// ── the console's menus (src/game-panel.ts): the room and the dealer, music and sound ──
+// Sound is the sound lab's (src/lab-sound.ts), read the first time a menu is opened; everything is silent until the player
+// switches something on. panOf: where a seat is heard, left to right.
+type Sound = {unlock(): void; chip(kind: string, options?: object): void; card(kind: string, options?: object): void; ambience(room: string | null): void; music?(track: string | null): void; set(patch: object): void};
+let sound: Sound | null = null, soundAsked: Promise<void> | null = null;
+const heard = {table: false, ambience: false, track: null as string | null, music: 0.6}, panOf = (seat: number) => (seat - 4) / 3 * 0.8;
+const loadSound = () => soundAsked ??= import('./lab-sound.ts').then((m: {createSound(): Sound; MUSIC?: {id: string; label: string; note: string}[]}) => { sound = m.createSound(); sound.set({music: heard.music}); panel.set({tracks: m.MUSIC ?? []}); }).catch(() => {});
+const withSound = (act: (s: Sound) => void) => void loadSound().then(() => { if (sound) { sound.unlock(); act(sound); } });
+const panel = mountPanel(overlay.root.querySelector<HTMLElement>('.go-bar')!, ROOMS, DEALERS, {
+  open() { void loadSound(); },
+  room(id) {
+    const next = ROOMS.find(r => r.id === id); if (!next || id === room || page.busy || page.stage === 'ROUND') return;
+    room = id; try { localStorage.setItem('dealer.room', id); } catch { /* a private window keeps nothing */ }
+    scene.set({roomShift: 'shimmer', room: id, blur: next.blur} as never); // the background shimmers and changes under the shimmer
+    if (heard.ambience) sound?.ambience(id); panel.set({room: id});
+  },
+  // Only one dealer has films yet, so the change is shown with her: she leaves, the table stands empty, a dealer comes in.
+  async dealer() {
+    if (page.busy || page.stage === 'ROUND') return;
+    page.busy = true; page.error = 'Dealern byts …'; comeHome = false; panel.set({changing: true}); render(); chat?.say('Tack för mig. Lycka till vid bordet!');
+    // The table stands empty for a moment and the camera comes home before the next dealer walks in.
+    const away = () => new Promise<void>(resolve => { comeHome = true; shot = null; setTimeout(resolve, 1500); });
+    // Until the bank has approved films for the change, a stand-in: the first full-resolution exit (not a main take) and the older entrance.
+    const entrance = graph.edge['AWAY>IDLE']?.takes.find(t => t.media.video)?.media.video;
+    const standIn = entrance ? {leave: [{...EXIT_TRIAL.lead, track: null}, {...EXIT_TRIAL.probe, track: null}], arrive: [{path: entrance, track: null}]} : null;
+    const played = await film.swap(away) || !!standIn && await film.swap(away, standIn);
+    shot = null;
+    page.busy = false; page.error = played ? null : 'Det finns ingen film för dealerbytet än.'; panel.set({changing: false}); if (played) chat?.say('Hej! Nu är det jag som delar ut.'); render();
+  },
+  music(track) { heard.track = track; panel.set({track}); withSound(s => s.music?.(track)); },
+  level(music) { heard.music = music; panel.set({music}); sound?.set({music}); },
+  table(on) { heard.table = on; panel.set({table: on}); if (on) withSound(s => s.chip('stack', {height: 1, pan: 0})); },
+  ambience(on) { heard.ambience = on; panel.set({ambience: on}); withSound(s => s.ambience(on ? room : null)); },
+});
+panel.set({room, dealer: 'pamela'});
 // Jakob's chip tray (assets/props/tray.glb, local media) takes the place of the built tray when it can be read; game.html?tray=built keeps the built one.
 // A trial, game.html?bricka=hus: the tray holds the house's own chips (src/game3d-tray.ts), a lost bet is carried into it and winnings out of it.
 type HouseTray = {mouth(value: number, taking: boolean): {x: number; y: number; s: number}; add(value: number): boolean; remove(value: number): boolean};
@@ -168,6 +217,7 @@ type Chat = {phase(phase: string): void; say(text: string): void};
 let chat: Chat | null = null, chatPhase = '', chatLine: string | null = null;
 if (query.get('chatt') !== '0') void import('./game-chat.ts').then(m => { chat = m.mountChat(stage); render(); }).catch(() => {});
 const render = () => { const view = tableView(snapshot, page);
+  panel.set({canChange: !page.busy && page.stage !== 'ROUND'});
   if (chat) { if (view.phase !== chatPhase) { chatPhase = view.phase; chat.phase(view.phase); } if (page.line !== chatLine) { chatLine = page.line; if (page.line && view.phase === 'SETTLED') chat.say(page.line.replace(/<[^>]+>/g, '')); } } chips?.set(Object.fromEntries(view.seats.map(s => [s.seat, taken.has(s.seat) ? [] : s.chips])), seconds()); if (view.phase === 'TURN' || view.phase === 'BETTING') { if (view.phase === 'TURN') byHand = false; aimAt(view.phase === 'TURN' ? snapshot.view.round?.activeSeat ?? null : null); } overlay.render(view); };
 
 // ── where things are in the picture ──
@@ -193,14 +243,22 @@ function aimAt(seat: number | null) {
   aimed = !tall || !spot ? 0 : Math.max(-FRAMING.turnLimit, Math.min(FRAMING.turnLimit, Math.atan2(-spot.x * camera.scale, solveCamera(camera).edgeDistance - spot.s * camera.scale) * 180 / Math.PI * FRAMING.turnShare));
 }
 // A sideways drag on the picture turns the view by hand (standing: to reach the outer seats; lying: to look around); a double click turns it back.
-let turning: {x: number; yaw: number} | null = null, byHand = false;
+// shot: the view while a whole-body film is on (the dealer leaving): the camera backs away as she rises (src/scene3d-exit.ts).
+// Without it the view eases to the seat in play, to its own tilt and zoom, and the camera to its own place.
+let turning: {x: number; yaw: number} | null = null, byHand = false, shot: ExitView | null = null, comeHome = false; // comeHome: she has gone, the camera returns though her film's last frame is still up
+const framing = () => tall ? FRAMING.tall : FRAMING.wide;
 canvas.addEventListener('pointerdown', e => { turning = {x: e.clientX, yaw: scene.state.yaw}; canvas.setPointerCapture(e.pointerId); });
 canvas.addEventListener('pointermove', e => { if (!turning) return; const dx = e.clientX - turning.x; if (Math.abs(dx) > 4) byHand = true; if (byHand) scene.state.yaw = Math.max(-FRAMING.turnLimit, Math.min(FRAMING.turnLimit, turning.yaw + dx * 45 / canvas.clientHeight / Math.max(1, scene.state.zoom))); });
 for (const type of ['pointerup', 'pointercancel']) canvas.addEventListener(type, () => { turning = null; });
 canvas.addEventListener('dblclick', () => { byHand = false; });
 scene.onFrame(() => {
   chips?.update(seconds());
-  if (!turning && !byHand && Math.abs(scene.state.yaw - aimed) > 0.02) scene.state.yaw += (aimed - scene.state.yaw) * 0.08;
+  const whole = scene.players.part?.frame as {layer?: string} | null | undefined;
+  if (whole?.layer === 'BEHIND_TABLE' && !comeHome) shot = exitView(scene.players.frame(), scene.status().camera, framing());
+  if (shot) for (const key of ['yaw', 'pitch', 'zoom', 'dy', 'dz'] as const) scene.state[key] += (shot[key] - scene.state[key]) * 0.12;
+  else { if (!turning && !byHand && Math.abs(scene.state.yaw - aimed) > 0.02) scene.state.yaw += (aimed - scene.state.yaw) * 0.08;
+    if (!fixed) for (const key of ['pitch', 'zoom'] as const) { const left = framing()[key] - scene.state[key]; if (left) scene.state[key] = Math.abs(left) < 0.002 ? framing()[key] : scene.state[key] + left * 0.08; }
+    for (const key of ['dy', 'dz'] as const) if (scene.state[key]) scene.state[key] = Math.abs(scene.state[key]) < 0.002 ? 0 : scene.state[key] * 0.9; }
   const host = stage.getBoundingClientRect(), box = scene.canvas.getBoundingClientRect();
   overlay.place({left: box.left - host.left, top: box.top - host.top, width: box.width, height: box.height}, anchors());
 });
