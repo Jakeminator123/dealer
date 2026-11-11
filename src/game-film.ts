@@ -10,7 +10,10 @@ import {slotOf, slotLabel, type Layout, type Pt, type TableCards} from './game-t
 import {planBeats, type Beat, type FilmSignal} from './game-director.ts';
 
 // What this file uses of the scene's film queue.
-export type FilmPart = {path: string; start?: number; end?: number | null; rate?: number; track?: unknown; cards?: Record<string, unknown>};
+// frame: a film whose picture is not the standard frame (the entrance and the exit, drawn behind the table) says so in its
+// record as motion.frame; the scene reads it from the part (FilmFrame in src/scene3d-film.ts).
+export type FilmPart = {path: string; start?: number; end?: number | null; rate?: number; track?: unknown; cards?: Record<string, unknown>; frame?: unknown};
+const frameOf = (take: Take | null | undefined) => (take?.motion?.motion as {frame?: unknown} | undefined)?.frame ?? null;
 export type FilmPlayers = {
   play(parts: FilmPart[], options?: {loop?: boolean; cut?: boolean; onPart?(index: number): void; onEnd?(): void}): unknown;
   hurry(rate: number): void; preload?(paths: string[]): void;
@@ -68,7 +71,7 @@ export function createFilm(players: FilmPlayers, graph: Graph, layout: Layout, r
     const turn = beats.findIndex(b => b.kind === 'REVEAL'), hole = turn >= 0 ? beats[turn].own!.shoeDraw : null;
     const closed = hole === null ? records : records.map(r => r.shoeDraw === hole ? {...r, r: null, s: null, faceDown: true} : r);
     const parts: FilmPart[] = [], beatOf: number[] = [];
-    segments.forEach((s, i) => { if (!s?.video) return; beatOf.push(i); parts.push({path: s.video, start: s.start, end: s.end, track: loaded[i], cards: cardOptions(beats[i], table, i < turn ? closed : records, layout)}); });
+    segments.forEach((s, i) => { if (!s?.video) return; beatOf.push(i); parts.push({path: s.video, start: s.start, end: s.end, track: loaded[i], cards: cardOptions(beats[i], table, i < turn ? closed : records, layout), frame: frameOf(s.take)}); });
     let done = 0; // beats landed so far, in order
     const land = (upTo: number) => { for (; done < upTo; done++) { const beat = beats[done]; if (beat.own && beat.kind !== 'DEAL' && !lying.includes(beat.own.shoeDraw)) lying = [...lying, beat.own.shoeDraw]; landed(beat, done); } };
     if (!parts.length) { land(beats.length); rest(); return {gaps, beats}; }

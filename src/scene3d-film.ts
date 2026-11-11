@@ -31,7 +31,10 @@ vec3 cardBase(sampler2D map, vec2 q[4], vec3 ref){
   for (int j = 0; j < 6; j++) for (int i = 0; i < 6; i++) { vec3 s = coreAt(map, q, i, j); if (length(s) > .12 && dot(normalize(s), dir) > .96 && dot(s, w) >= mean) { top += s; m += 1.; } }
   return n >= 6. ? (m >= 3. ? top / m : sum / n) : ref;
 }`;
-const CARD_KEY = `uniform float cardOn, cardRim, cardSides, cardTint, cardTrust, cardOverOn, cardHeld, seatOn; uniform vec2 cardZone[4], cardCore[4], cardOver[4], cardDrawn[4], seatZone[4], seatCore[4]; uniform vec3 cardColour; uniform vec4 cardShoe;
+// The middle of the dealer-side table edge in the standard film frame (film pixels, y down): the fixed point of a film's own frame.
+export const FRAME_FIX = {x: 881.5, y: 831.5};
+const CARD_KEY = `const vec2 FRAME_FIX = vec2(${FRAME_FIX.x}, ${FRAME_FIX.y});
+uniform float cardOn, cardRim, cardSides, cardTint, cardTrust, cardOverOn, cardHeld, seatOn; uniform vec2 cardZone[4], cardCore[4], cardOver[4], cardDrawn[4], seatZone[4], seatCore[4]; uniform vec3 cardColour; uniform vec4 cardShoe;
 ${CARD_GLSL}
 const vec3 BACK_LIT = vec3(.91, .82, .02), FACE_LIT = vec3(0., .475, .89); // the film card's yellow back and blue face, lit
 // Skin, the hand that must stay in front, from a pale fingertip to a knuckle in warm shadow: warm (red over blue, red at least
@@ -93,13 +96,16 @@ vec4 keyCards(vec4 o, vec2 uv, vec3 c, vec3 key){
   if (seatOn > .5) o = keyCard(o, px, c, key, seatZone, seatCore, BACK_LIT, 4., 0., 2., 1., vec4(-1.), seatCore, 0.);
   return keyCard(o, px, c, key, cardZone, cardCore, cardColour, cardRim, cardSides, cardTint, cardTrust, cardShoe, cardDrawn, cardHeld);
 }`;
-const FRAGMENT = `varying vec4 vFilm; varying vec3 vWorld; uniform sampler2D map; uniform vec2 refUv, texel; uniform float lo, hi, shadow, erode; uniform vec3 grade;
+const FRAGMENT = `varying vec4 vFilm; varying vec3 vWorld; uniform sampler2D map; uniform vec2 refUv, texel, frameAnchor; uniform float lo, hi, shadow, erode, frameOn, frameScale; uniform vec3 grade;
 ${FAN_GLSL}
 ${CARD_KEY}
 float screenAt(vec2 uv, vec3 key, float dk){ vec3 c = texture2D(map, uv).rgb; return clamp(((c.g - max(c.r, c.b)) / dk - lo) / (hi - lo), 0., 1.); }
 void main(){
   if (vFilm.w <= 0.) discard;
   vec2 uv = vFilm.xy / vFilm.w * .5 + .5;
+  // A film with a frame of its own (the dealer smaller on a larger screen, so that she can stand up and walk out): the point of
+  // the standard frame is found in that film. The middle of the dealer-side table edge is the fixed point of the two frames.
+  if (frameOn > .5) { vec2 px = (vec2(uv.x, 1. - uv.y) * FILM_PX - FRAME_FIX) * frameScale + frameAnchor; uv = vec2(px.x / FILM_PX.x, 1. - px.y / FILM_PX.y); }
   if (uv.x < .001 || uv.x > .999 || uv.y < .001 || uv.y > .999) discard;
   vec3 c = texture2D(map, uv).rgb, key = texture2D(map, refUv).rgb;
   float dk = max(key.g - max(key.r, key.b), .05), s = (c.g - max(c.r, c.b)) / dk;
@@ -120,6 +126,13 @@ void main(){
 }`;
 
 export type KeySettings = {lo: number; hi: number; shadow: number};
+// A film whose picture is not the standard frame: the dealer is drawn at `scale` of her usual size on a larger screen, and the
+// middle of the dealer-side table edge, (881.5, 831.5) in the standard frame, lies at `anchor` in the film's own pixels. With
+// layer BEHIND_TABLE the film carries no table: it is drawn on one plane `back` dealer metres behind the table's edge and the
+// scene's own table hides what is behind it. shadow false: darker screen is not kept as a shadow. Written in a film's record
+// as motion.frame.
+export type FilmFrame = {scale: number; anchor: [number, number]; layer?: 'BEHIND_TABLE'; shadow?: boolean; back?: number};
+const BEHIND = 0.15; // dealer metres behind the edge when the film does not say
 // Where the film's own card is to be keyed away in this frame (film pixels, quads clockwise on screen): `zone` where it and
 // its blur can be, `core` its tracked colour, `colour` that colour lit (yellow back, blue face), `rim` how far its pale rim
 // reaches outside the core, `shoe` the shoe window box, `over` a rendered card drawn in front of the hand. `seated`: the card
@@ -132,11 +145,13 @@ export type CardKey = {zone: number[][]; core: number[][] | null; colour: number
 export function createFilmLayers(filmVP: T.Matrix4, light: Record<string, {value: unknown}>) {
   // One frame, grade and card key for both layers; the rendered cards (scene3d-deal.ts) read the same frame and grade.
   const map = {value: null as T.Texture | null}, grade = {value: new T.Vector3(1, 1, 1)}, quad = () => [0, 1, 2, 3].map(() => new T.Vector2());
+  const frame = {frameOn: {value: 0}, frameScale: {value: 1}, frameAnchor: {value: new T.Vector2(FRAME_FIX.x, FRAME_FIX.y)}};
+  let framed: FilmFrame | null = null, placed = {edgeZ: 0, fold: true, depth: false, scale: 1};
   const card = {cardOn: {value: 0}, cardRim: {value: 4}, cardSides: {value: 0}, cardTint: {value: 2}, cardTrust: {value: 0}, cardOverOn: {value: 0}, cardHeld: {value: 0}, cardDrawn: {value: quad()}, cardZone: {value: quad()}, cardCore: {value: quad()}, cardOver: {value: quad()}, cardColour: {value: new T.Vector3(1, 1, 0)}, cardShoe: {value: new T.Vector4(-1, -1, -1, -1)},
     seatOn: {value: 0}, seatZone: {value: quad()}, seatCore: {value: quad()}};
   const material = (refUv: T.Vector2) => new T.ShaderMaterial({vertexShader: VERTEX, fragmentShader: FRAGMENT, transparent: true, depthWrite: false, side: T.DoubleSide,
     blending: T.CustomBlending, blendSrc: T.OneFactor, blendDst: T.OneMinusSrcAlphaFactor, blendSrcAlpha: T.OneFactor, blendDstAlpha: T.OneMinusSrcAlphaFactor,
-    uniforms: {...light, ...card, map, filmVP: {value: filmVP}, refUv: {value: refUv}, lo: {value: 0.12}, hi: {value: 0.9}, shadow: {value: 1}, erode: {value: 0.6}, grade, texel: {value: new T.Vector2(1.4 / FILM.width, 1.4 / FILM.height)}}});
+    uniforms: {...light, ...card, ...frame, map, filmVP: {value: filmVP}, refUv: {value: refUv}, lo: {value: 0.12}, hi: {value: 0.9}, shadow: {value: 1}, erode: {value: 0.6}, grade, texel: {value: new T.Vector2(1.4 / FILM.width, 1.4 / FILM.height)}}});
   // The screen reference is read in a corner that stays empty: top left for the backdrop, bottom left for the table.
   const bodyMat = material(new T.Vector2(0.02, 0.97)), tableMat = material(new T.Vector2(0.02, 0.03));
   const body = new T.Mesh(new T.PlaneGeometry(10, 3), bodyMat), table = new T.Mesh(new T.PlaneGeometry(10, 2).rotateX(-Math.PI / 2), tableMat);
@@ -160,8 +175,23 @@ export function createFilmLayers(filmVP: T.Matrix4, light: Record<string, {value
     // Folded: the plane stands on the table edge and the table layer carries hands, cards and shadows.
     // Unfolded: one plane carries the whole frame and nothing follows the felt when the camera moves.
     // `depth` makes the layers write depth, which the focus blur reads; the unfolded plane then passes the depth test always instead of skipping it.
-    place(edgeZ: number, fold: boolean, depth = false) { table.visible = fold; table.position.set(0, 0.0015, edgeZ + 1); body.position.set(0, fold ? 1.5 : 0.5, edgeZ); body.scale.y = fold ? 1 : 5 / 3;
-      bodyMat.depthTest = fold || depth; bodyMat.depthFunc = fold ? T.LessEqualDepth : T.AlwaysDepth; bodyMat.depthWrite = tableMat.depthWrite = depth; },
+    place(edgeZ: number, fold: boolean, depth = false, scale = placed.scale) { placed = {edgeZ, fold, depth, scale};
+      const behind = framed?.layer === 'BEHIND_TABLE';
+      // Behind the table: the whole frame on one upright plane that reaches from the floor up, a little behind the dealer-side
+      // edge and tested against the table's depth, so the 3D table hides her legs until she comes out beside it.
+      table.visible = fold && !behind; table.position.set(0, 0.0015, edgeZ + 1);
+      body.position.set(0, behind ? 1 : fold ? 1.5 : 0.5, behind ? edgeZ - (framed!.back ?? BEHIND) * scale : edgeZ); body.scale.y = behind ? 2 : fold ? 1 : 5 / 3;
+      bodyMat.depthTest = behind || fold || depth; bodyMat.depthFunc = behind || fold ? T.LessEqualDepth : T.AlwaysDepth; bodyMat.depthWrite = tableMat.depthWrite = depth; },
+    /**
+     * The frame of the film on screen, or null for the standard frame. A film with a frame of its own shows the dealer at
+     * `scale` of her usual size with the fixed point (the middle of the dealer-side table edge) at `anchor` in its own pixels.
+     */
+    setFrame(next: FilmFrame | null) {
+      if (next === framed) return; framed = next;
+      frame.frameOn.value = next ? 1 : 0; frame.frameScale.value = next?.scale ?? 1; frame.frameAnchor.value.set(next?.anchor[0] ?? FRAME_FIX.x, next?.anchor[1] ?? FRAME_FIX.y);
+      bodyMat.uniforms.shadow.value = next && next.shadow === false ? 0 : 1; // without a table under her a darker green is not a shadow on anything
+      this.place(placed.edgeZ, placed.fold, placed.depth, placed.scale);
+    },
   };
 }
 
@@ -170,7 +200,8 @@ export function createFilmLayers(filmVP: T.Matrix4, light: Record<string, {value
 // (src/clip-graph.ts resolveRound gives the range); played to its end, the hand lifts and then jumps back.
 // Optional per part: `rate` playback speed, `track` the card track of this piece (the scene then uses it while the
 // piece is on screen; null = no card), `cards` extra options for the rendered cards (lying cards, a value per card).
-export type Part = {path: string; start?: number; end?: number | null; rate?: number; track?: CardTrack | null; cards?: Partial<OverlayOptions> | null};
+// `frame`: a film with a frame of its own (see FilmFrame).
+export type Part = {path: string; start?: number; end?: number | null; rate?: number; track?: CardTrack | null; cards?: Partial<OverlayOptions> | null; frame?: FilmFrame | null};
 export type PlayOptions = {loop?: boolean; cut?: boolean; onPart?: (index: number, part: Part) => void; onEnd?: () => void; onError?: (error: Error) => void};
 type Player = {part: Part; path: string; start: number; end: number | null; video: HTMLVideoElement; texture: T.VideoTexture};
 const FPS = 30;

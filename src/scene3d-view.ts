@@ -146,7 +146,7 @@ export function createScene(canvas: HTMLCanvasElement, host: HTMLElement, data: 
   }
   const drawFelt = () => table.draw({spots: cardSpots(data.plan, camera), logo: state.logo, felt: state.felt, scale: camera.scale});
   function apply() {
-    useCards(); rooms.show(state.room); film.place(edgeZ, state.fold, state.focus !== 'off'); film.setKey({lo: state.keyLo, hi: state.keyHi, shadow: state.shadow}); film.setGrade(state.filmBright, state.filmWarm);
+    useCards(); rooms.show(state.room); film.place(edgeZ, state.fold, state.focus !== 'off', camera.scale); film.setKey({lo: state.keyLo, hi: state.keyHi, shadow: state.shadow}); film.setGrade(state.filmBright, state.filmWarm);
     if (guides) guides.visible = state.guides; resize(); data.onChange();
   }
   function resize() {
@@ -179,6 +179,7 @@ export function createScene(canvas: HTMLCanvasElement, host: HTMLElement, data: 
   function render(seconds = performance.now() / 1000) {
     targets(); updateView(seconds);
     const shown = players.current, part = players.part; if (part && part.track !== undefined) track = part.track; // a part that names its track brings it along
+    film.setFrame(part?.frame ?? null); // and so does a part whose film has a frame of its own
     if (shown) film.setTexture(state.cards && cardLayer?.update(shown.video, players.frame(), track, {rank: state.cardRank, suit: state.cardSuit, scale: state.cardScale}, part?.cards) ? cardLayer.texture : shown.texture); else cardLayer?.off?.();
     const room = rooms.rooms[state.room], focusOn = state.focus !== 'off', u = blurMat.uniforms, scale = canvas.width / W;
     rooms.followCamera(state.room, view.position, state.panoramaTurn); light.update(seconds, state.fan, state.fanStrength, state.fanPeriod);
