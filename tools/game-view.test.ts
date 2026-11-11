@@ -48,6 +48,10 @@ test('opening deal: beats in the engine\'s order, totals only as the cards land,
   const after = tableView(dealt, page());
   assert.equal(after.phase, 'TURN'); assert.equal(after.seats[3].hands[0].total, 16); assert.equal(after.seats[3].hands[0].active, true); assert.equal(after.seats[3].turn, true);
   assert.equal(after.dealer!.total, 7); assert.ok(after.actions.includes('hit') && after.actions.includes('stand'));
+  // The chips stay as they were laid, and a larger stake (a double, a split) adds chips on top of them.
+  assert.deepEqual(tableView(dealt, page({bets: {4: [5, 5]}})).seats[3].chips, [5, 5]);
+  assert.deepEqual(tableView(dealt, page({bets: {4: [5]}})).seats[3].chips, [5, 5]);
+  assert.deepEqual(after.seats[3].chips, [5, 5], 'without a record of what was laid: the fewest chips');
   assert.match(after.message, /plats 4/);
 });
 

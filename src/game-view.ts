@@ -60,7 +60,9 @@ export function tableView(snapshot: Snapshot, page: PageState): TableView {
   const seats: SeatView[] = [];
   for (let seat = 1; seat <= 7; seat++) {
     const own = (round?.hands ?? []).filter(h => h.seat === seat), amount = betting ? sum(page.bets[seat] ?? []) : sum(own.map(h => h.stake));
-    seats.push({seat, amount, chips: betting ? [...(page.bets[seat] ?? [])] : chipsFor(amount, CHIP_VALUES), turn: phase === 'TURN' && round?.activeSeat === seat,
+    // In the round the chips that were laid stay as they lie; what a double or a split adds comes on top of them.
+    const laid = page.bets[seat] ?? [], had = sum(laid), chips = betting || amount === had ? [...laid] : amount > had && had > 0 ? [...laid, ...chipsFor(amount - had, CHIP_VALUES)] : chipsFor(amount, CHIP_VALUES);
+    seats.push({seat, amount, chips, turn: phase === 'TURN' && round?.activeSeat === seat,
       hands: betting ? [] : own.map(h => { const paid = page.settled?.hands.find(s => s.seat === seat && s.handIndex === h.handIndex);
         return hand(handKey(seat, h.hand), {total: h.total, soft: h.soft, natural: h.natural === true, busted: h.busted}, phase === 'TURN' && round!.active === h.handIndex, paid && page.stage === 'SETTLED' && !page.busy ? {outcome: paid.outcome, net: paid.returned - paid.stake} : null); })});
   }

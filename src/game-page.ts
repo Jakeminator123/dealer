@@ -121,7 +121,12 @@ const overlay = mountOverlay(stage, {
   },
 });
 const order: number[] = []; // the seats the chips were laid on, in order, for Ångra
-const render = () => { const view = tableView(snapshot, page); if (view.phase === 'TURN' || view.phase === 'BETTING') { if (view.phase === 'TURN') byHand = false; aimAt(view.phase === 'TURN' ? snapshot.view.round?.activeSeat ?? null : null); } overlay.render(view); };
+// The chips in the rings are 3D objects on the table when the module can be read; until then, and if it cannot, the overlay draws them flat.
+type Chips = {set(bets: Record<number, number[]>, now: number): void; update(now: number): boolean};
+let chips: Chips | null = null;
+const seconds = () => performance.now() / 1000;
+void import('./game3d-chips.ts').then(m => { const made = m.createChips(scene); scene.addProp(made); chips = made; stage.classList.add('chips3d'); render(); }).catch(() => {});
+const render = () => { const view = tableView(snapshot, page); chips?.set(Object.fromEntries(view.seats.map(s => [s.seat, s.chips])), seconds()); if (view.phase === 'TURN' || view.phase === 'BETTING') { if (view.phase === 'TURN') byHand = false; aimAt(view.phase === 'TURN' ? snapshot.view.round?.activeSeat ?? null : null); } overlay.render(view); };
 
 // ── where things are in the picture ──
 // A film pixel on the felt as the scene's own table point (dealer metres: x across, s from the dealer's edge).
@@ -152,6 +157,7 @@ canvas.addEventListener('pointermove', e => { if (!turning) return; const dx = e
 for (const type of ['pointerup', 'pointercancel']) canvas.addEventListener(type, () => { turning = null; });
 canvas.addEventListener('dblclick', () => { byHand = false; });
 scene.onFrame(() => {
+  chips?.update(seconds());
   if (!turning && !byHand && Math.abs(scene.state.yaw - aimed) > 0.02) scene.state.yaw += (aimed - scene.state.yaw) * 0.08;
   const host = stage.getBoundingClientRect(), box = scene.canvas.getBoundingClientRect();
   overlay.place({left: box.left - host.left, top: box.top - host.top, width: box.width, height: box.height}, anchors());
