@@ -29,12 +29,13 @@
     }
   },
   "review": {
-    "decision": "PENDING",
+    "decision": "ACCEPTED",
     "basis": "Oberoende rutgranskning 2026-11-11: användbar med anmärkning. Andningen syns: axlarna stiger 9,5 px f20–48 och är nere f72, bröstet vidgas 10 px. Tillbaka inom 1 px från vilan från f73; skarvarna mot vilorutan mäter 0 avvikande bildpunkter.",
     "limitations": "Två hela blinkningar (f14–18, f48–52) i stället för en, och munnen öppnas så att tänderna syns f24–68.",
     "colorDoesNotProvePhysicalSide": true,
-    "userAccepted": false,
-    "productionReady": false
+    "userAccepted": true,
+    "productionReady": false,
+    "userReview": "Jakob 2026-11-11: Jag tror att det här är bra att ha som en variant i grundloopen."
   },
   "postProcessing": "none",
   "generationRef": "assets/motions/pamela-idle-breath-b-01/generation.json",

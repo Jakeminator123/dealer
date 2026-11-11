@@ -26,12 +26,13 @@
     "evidence": "evidence/generation-method-audit.json"
   },
   "review": {
-    "decision": "PENDING",
+    "decision": "ACCEPTED",
     "basis": "Arkivklipp, granskat 2026-11-11 var tredje ruta i 0,3 skala. Filmens ruta 0 är samma bild som givens f98 (0 bildpunkter över 40); utsnittet börjar därför på ruta 1. Den redan fria handen stiger f3–12, går i en hög båge och kommer ner mot skon f27–30, nyp på det gula kortet f36–59. Hålkortet förblir gult och D.C1 blått; inget av dem rör sig. Slutrutan mot REDO-ankaret: 28 bildpunkter över 40 utanför korten.",
     "limitations": "Möjlig variant: handen lyfts över y=440 (axelhöjd) f9–27. Inte granskad ruta för ruta. D.C1 är inbakat; korten ligger 38 respektive 43 px från planen. Gamla labbets egen dom: lokalt godkänd.",
     "colorDoesNotProvePhysicalSide": true,
-    "userAccepted": false,
-    "productionReady": false
+    "userAccepted": true,
+    "productionReady": false,
+    "userReview": "Jakob 2026-11-11: Här är en bra variant för att gå tillbaka till redo-position. Å andra sidan ligger det nu återigen både ett blått och ett gult kort. Det kommer nästan alltid ligga ett öppet kort om hon lägger ett blått kort. Men det spelar ingen roll, för den här videon ska bara visa det kort som ska läggas ut. Jag kommer sätta godkänt på det här och underkänt på det förra, vilket gör det ologiskt, men..."
   },
   "postProcessing": "none",
   "generationRef": null,

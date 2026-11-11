@@ -17,12 +17,13 @@
     "evidence": "evidence/generation-method-audit.json"
   },
   "review": {
-    "decision": "PENDING",
+    "decision": "ACCEPTED",
     "basis": "Samma retur som pamela-p3-c1-arkiv-return-idle-01, som Jakob underkände för att det står \"Pia\" på filmens kort, men i gamla labbets rättade kopia där trycket är övermålat. Rörelsen är densamma: fingrarna av kortet, handen mot bröstet f21–30 och ner i vila.",
     "limitations": "Inte granskad ruta för ruta här; inventeringen kontrollerade tio rutor. Filmens kort målas ändå över av labbets kortlager, så trycket syntes inte heller i den första tagningen med renderat kort på.",
     "colorDoesNotProvePhysicalSide": true,
-    "userAccepted": false,
-    "productionReady": false
+    "userAccepted": true,
+    "productionReady": false,
+    "userReview": "Jakob 2026-11-11: godkänd i labbet."
   },
   "cutFrom": {
     "clip": "pamela-arkiv-p3-c1-direct-blank-03",

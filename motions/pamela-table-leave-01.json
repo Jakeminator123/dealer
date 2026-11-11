@@ -22,12 +22,13 @@
     "evidence": "evidence/generation-method-audit.json"
   },
   "review": {
-    "decision": "PENDING",
+    "decision": "REJECTED",
     "basis": "Oberoende rutgranskad 2026-11-11 (varje ruta 0–113 i full upplösning i hennes område, den tomma slutbilden i delar, hela bilden var sjätte ruta; inte sedd i fart). Granskarens dom: möjlig variant som film, och den tomma bilden användbar med anmärkning. Vila f0–20, händerna lämnar bordet f21–30 och sjunker bakom bordslinjen f33–37, hon står still f38–47, vrider sig f47–49 och går åt höger f49–54, passerar bakom skon f69–111, når högerkanten f99, sista strimman f114, tom bild f115–149. Hon går bakom skon, inte genom den; skon och dess gula kort ligger exakt kvar (ytterram x 1190–1689, y 638–897 i både ruta 0 och slutrutorna). Ingen stol, annan person, gest, kamerarörelse eller klipp; inga frysta rutor. Båda vänsterhörnen är tomma och gröna hela filmen. Bästa tomma rutor: f120–139, enskilt f131.",
     "limitations": "Hon reser sig inte: hjässan rör sig 12 px f20–49, hon ser ut som en stående dealer bakom en disk som går ut; armarna pendlar inte. Farten pulserar i en cykel på fem rutor (9–35 px per ruta, toppar f59, 64, 69, 74, 79, 84, 89, 94). Ansiktet är utsmetat f63–71 med en mörk fläck vid ögat f68–69. Grönnivån faller från G 237 i ruta 0 till cirka 204 från ruta 36 och ligger kvar där, och en bordslinje som första bilden saknar växer fram vid y 829–833 under f20–36. I den tomma bilden ligger en svag siluett kvar där hon satt (G −10) och två fläckar strax ovanför bordslinjen (x 835–955, y 785–825) som syns för blotta ögat. Undvik f144–149, där nivån sjunker igen.",
     "colorDoesNotProvePhysicalSide": true,
     "userAccepted": false,
-    "productionReady": false
+    "productionReady": false,
+    "userReview": "Jakob 2026-11-11: Här ska vi ha koll på hur det riktiga Blackjack-bordet ser ut. Hon ska resa sig innan hon går iväg. I själva verket ska hon ställa sig upp, rätta till kavajen och sedan gå ut precis som hon gör. Det ser ut som om hon står hela tiden nu. Annars b"
   },
   "postProcessing": "none",
   "generationRef": "assets/motions/pamela-table-leave-01/generation.json",

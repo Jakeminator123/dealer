@@ -26,12 +26,14 @@
     "evidence": "evidence/generation-method-audit.json"
   },
   "review": {
-    "decision": "PENDING",
+    "decision": "ACCEPTED",
     "basis": "Arkivklipp, rutgranskat 2026-11-11. Ruta 0 är samma bild som f117 i givens film (0 bildpunkter över 40). Fingrarna ligger kvar på kortet f0–20, släpper f21–23, handen går rakt in till vila och ligger still från cirka f39. Kortet ligger kvar. Slutrutan mot vilobilden: 53 bildpunkter över 40 utanför kortet (det importerade ingångsklippets slutruta mot REDO: 33).",
     "limitations": "Släppet granskat ruta för ruta, resten var sjätte ruta. Kortet ligger 38 px från planens D.C1 och är bredare än planens kort. Gamla labbets egen dom: lokalt godkänd.",
     "colorDoesNotProvePhysicalSide": true,
-    "userAccepted": false,
-    "productionReady": false
+    "userAccepted": true,
+    "productionReady": false,
+    "acceptedAs": "VARIANT",
+    "userReview": "Jakob 2026-11-11: Där går ett kort från den här dealern tillbaka. Kortet är snedvridet, det blåa kortet. Men det gör ingenting, vi kan alltid ändra det senare så att det blir rakt. Det ser bra ut."
   },
   "postProcessing": "none",
   "generationRef": null,

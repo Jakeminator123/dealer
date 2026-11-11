@@ -26,12 +26,13 @@
     "evidence": "evidence/generation-method-audit.json"
   },
   "review": {
-    "decision": "PENDING",
+    "decision": "REJECTED",
     "basis": "Arkivklipp, rutgranskat 2026-11-11 ruta för ruta i 0,55–0,9 skala. Ruta 0 är REDO-ankaret med ett blått D.C1 redan på bordet (0 bildpunkter över 40 utanför det kortet). Vänsterhanden drar kortet f20–36, bär det plant och sett från kanten f38–48 och lägger det bredvid D.C1 f62–80. Kortet är gult hela vägen: ingen blå yta på det rörliga kortet i någon ruta (mask f0–143, ögat f32–102). Ingen vändning. Ingen glidning: läget ändras 7 px efter f74. Fingrarna vilar på högerkanten f80–94, släpper f96.",
     "limitations": "Filmen har D.C1 inbakat på gamla labbets plats, 38 px från planen. Hålkortet hamnar 43 px från planens D.C2 (+38, +20); gamla labbets dealerkort ligger 111 px isär, planens 47 px. Båda korten är liggande romber, cirka 136×64 px mot planens 72×60. Filmen är gamla labbets förlustfria sammanfogning av betalda filmer (H.264 High 4:4:4 Predictive); uppspelning i webbläsare är inte prövad. Gamla labbets egen dom: lokalt godkänd; första försöket underkändes för en andra kortkontakt.",
     "colorDoesNotProvePhysicalSide": true,
     "userAccepted": false,
-    "productionReady": false
+    "productionReady": false,
+    "userReview": "Jakob 2026-11-11: Återigen lägger hon ett kort på ett sätt som jag inte tror är korrekt i Blackjack, då hon lägger det stängt och dessutom snett. Det blå kortet bredvid henne vet jag inte om det ska vara där. Jag tycker annars att rörelserna är bra och kortets storlek är bra. Jag sätter den som underkänd nu, men jag vill verkligen att vi ska behålla den."
   },
   "postProcessing": "Old lab: decoded frames of the paid films in importedFrom.paidParts concatenated in that order and encoded lossless (H.264 High 4:4:4 Predictive, yuv420p). Copied unchanged; nothing was generated or re-encoded for this import.",
   "generationRef": null,
