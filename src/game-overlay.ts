@@ -137,10 +137,11 @@ export function mountOverlay(host: HTMLElement, on: Handlers) {
     return node;
   }
   let anchors: Anchors = {bets: {}, hands: {}};
+  const RESULT_ROOM = 120; // pixels a result needs to the left of its total; nearer the stage's left edge than this it stands above
   const put = (pin: HTMLElement, at: {x: number; y: number} | undefined, show = true) => { pin.hidden = !at || !show; if (at) pin.style.transform = `translate(${at.x.toFixed(1)}px,${at.y.toFixed(1)}px)`; };
   function place() {
     for (const [seat, node] of seats) { const at = anchors.bets[seat]; put(node.pin, at); if (at) node.ring.style.setProperty('--ring', `${at.ring.toFixed(1)}px`); }
-    for (const [key, node] of totals) put(node.pin, anchors.hands[key], node.sum.textContent !== '' || node.result.textContent !== '');
+    for (const [key, node] of totals) { const at = anchors.hands[key]; put(node.pin, at, node.sum.textContent !== '' || node.result.textContent !== ''); if (at) node.pin.classList.toggle('edge', at.x < RESULT_ROOM); }
   }
 
   function render(view: TableView) {
