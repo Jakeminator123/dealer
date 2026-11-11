@@ -210,6 +210,8 @@ test('the exit: the camera backs away along its line of sight while she rises, a
   assert.ok(Math.abs(Math.hypot(stood.dz, stood.dy - EXIT_VIEW.lift) - EXIT_VIEW.back * solved.edgeDistance) < 1e-9, 'back by its share of the distance to the table edge');
   assert.ok(Math.abs(Math.atan2(stood.dy - EXIT_VIEW.lift, stood.dz) - (solved.pitch + 8 * Math.PI / 180)) < 1e-9, 'along the line of sight of the view it started in');
   assert.deepEqual(exitView(170, camera, from), stood, 'and it stays there while she walks out');
+  // A film that says when she rises is followed by its own frames.
+  assert.deepEqual(exitView(56, camera, from, [30, 56]), stood); assert.deepEqual(exitView(30, camera, from, [30, 56]), exitView(0, camera, from)); assert.notDeepEqual(exitView(45, camera, from, [30, 56]), exitView(45, camera, from));
   const half = exitView((EXIT_VIEW.rise[0] + EXIT_VIEW.rise[1]) / 2, camera, from); assert.ok(Math.abs(half.dz - stood.dz / 2) < 1e-9 && half.pitch > -8 && half.pitch < EXIT_VIEW.pitch);
 });
 

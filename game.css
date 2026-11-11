@@ -237,8 +237,6 @@ button.gp-dealer.chosen .gp-who small{display:none}
 .gp-steps{display:flex;gap:6px;margin:14px 0 0;padding:0;list-style:none;counter-reset:step}
 .gp-steps li{flex:1;display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:10px;background:var(--tc-tray);box-shadow:0 0 0 1px var(--tc-line);color:var(--tc-muted);font:500 11.5px/1.25 system-ui,'Segoe UI',sans-serif;counter-increment:step}
 .gp-steps li::before{content:counter(step);flex:none;display:grid;place-items:center;width:18px;height:18px;border-radius:50%;background:var(--tc-accent-soft);color:var(--tc-accent);font:700 10px/1 system-ui,sans-serif}
-.gp-steps.busy li{animation:gp-step 3.6s ease-in-out infinite}.gp-steps.busy li:nth-child(2){animation-delay:1.2s}.gp-steps.busy li:nth-child(3){animation-delay:2.4s}
-@keyframes gp-step{0%,33%,100%{box-shadow:0 0 0 1px var(--tc-line);color:var(--tc-muted)}8%,25%{box-shadow:0 0 0 1px var(--tc-accent);color:var(--tc-text)}}
 button.gp-change{position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;gap:9px;width:100%;height:46px;margin-top:12px;border:0;border-radius:13px;background:linear-gradient(180deg,var(--tc-accent),var(--tc-accent-2));color:var(--tc-ink) !important;
   font:700 14px/1 system-ui,'Segoe UI',sans-serif !important;letter-spacing:.04em;box-shadow:0 8px 22px -8px var(--tc-glow),inset 0 1px 0 rgba(255,255,255,.4),inset 0 -1px 0 rgba(0,0,0,.18);transition:filter .15s}
 button.gp-change:hover:not(:disabled){filter:brightness(1.08)}
@@ -295,4 +293,4 @@ button.gp-toggle[aria-checked=true] i::after{transform:translateX(18px);backgrou
 #stage.tall .gp-steps{flex-direction:column}
 @container (max-width:1180px){.gp-chev{display:none}button.gp-open{padding-right:12px}}
 @container (max-width:1040px){#stage:not(.tall) .gp-label{display:none}#stage:not(.tall) button.gp-open{padding:0 7px}}
-@media (prefers-reduced-motion:reduce){.gp-panel,.gp-page,.gp-steps.busy li,button.gp-change.busy::after,.gp-pic.eq i{animation:none !important}.gp-thumb,button.gp-toggle i,button.gp-toggle i::after,.gp-chev,.gp-mark{transition:none}}
+@media (prefers-reduced-motion:reduce){.gp-panel,.gp-page,button.gp-change.busy::after,.gp-pic.eq i{animation:none !important}.gp-thumb,button.gp-toggle i,button.gp-toggle i::after,.gp-chev,.gp-mark{transition:none}}

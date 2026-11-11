@@ -145,8 +145,9 @@ export type KeySettings = {lo: number; hi: number; shadow: number};
 // can begin in the rest pose with her hands on the table and go behind the table once they have left it. Absent: from the
 // first frame. behindUntil: the other way round, for an entrance: behind the table up to that frame, the usual layers from it
 // (her hands have reached the table). size: the film's own picture in pixels when it is not the standard 1764 × 1174 (a wider film gives her more room to
-// walk before its edge). Written in a film's record as motion.frame.
-export type FilmFrame = {scale: number; anchor: [number, number]; layer?: 'BEHIND_TABLE'; shadow?: boolean; back?: number; behindFrom?: number; behindUntil?: number; size?: [number, number]};
+// walk before its edge). rise: the frames in which she stands up (or, in an entrance, sits down), for a view that backs away to
+// take her whole body in (src/scene3d-exit.ts). Written in a film's record as motion.frame.
+export type FilmFrame = {scale: number; anchor: [number, number]; layer?: 'BEHIND_TABLE'; shadow?: boolean; back?: number; behindFrom?: number; behindUntil?: number; size?: [number, number]; rise?: [number, number]};
 const fronts = new WeakMap<FilmFrame, FilmFrame>();
 /** A film's frame as it holds at one of its frames: before behindFrom, and from behindUntil, it is the same frame without its layer. One object per answer, so the layers are placed anew only when the answer changes. */
 export function frameAt(frame: FilmFrame | null, at: number): FilmFrame | null {
