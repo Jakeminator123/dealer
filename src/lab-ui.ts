@@ -265,12 +265,15 @@ async function kbCopy(text:string,button:HTMLElement){
  try{await navigator.clipboard.writeText(text);}catch{const area=document.createElement('textarea');area.value=text;document.body.append(area);area.select();document.execCommand('copy');area.remove();}
  const label=button.textContent;button.textContent='Kopierat ✓';setTimeout(()=>{button.textContent=label;},1400);
 }
-function setTab(name:'placement'|'clipbank'|'proofs'){
+function setTab(name:'placement'|'clipbank'|'proofs'|'review'){
  tab=name;stopMotion();
- (document.querySelector('.workspace') as HTMLElement).hidden=name!=='placement';$('clipbank').hidden=name!=='clipbank';$('proofs').hidden=name!=='proofs';
- for(const t of ['placement','clipbank','proofs'])$(`tab-${t}`).classList.toggle('active',t===name);
- if(name!=='clipbank'){kbStopChain();kbPlayer.pause();}
+ (document.querySelector('.workspace') as HTMLElement).hidden=name!=='placement';$('clipbank').hidden=name!=='clipbank';$('proofs').hidden=name!=='proofs';$('review').hidden=name!=='review';
+ for(const t of ['placement','clipbank','proofs','review'])$(`tab-${t}`).classList.toggle('active',t===name);
+ if(name!=='clipbank')kbStopChain();
+ if(name!=='clipbank'&&name!=='review')kbPlayer.pause();
+ if(name!=='review'){$('kb-take-home').append(kbTakeBox);rvHtml='';} // the take detail goes back to its place in the Klippbank
  if(name!=='proofs')pfPlayer.pause();
+ if(name==='review'){kbPanel='edge';rvEnter=true;void openClipBank();return;}
  if(name==='clipbank'){void openClipBank();return;}
  if(name==='proofs'){void openProofs();return;}
  if(plan)paint(false);kbLink();
@@ -314,7 +317,7 @@ async function kbRefresh(){
  catch{kbOnline(false);} // keep what is on screen; the next tick tries again
  finally{kbBusy=false;}
 }
-setInterval(()=>{if(tab!=='clipbank'||document.hidden)return;if(kbState==='ready')void kbRefresh();else if(kbState==='error')void openClipBank();},4000);
+setInterval(()=>{if((tab!=='clipbank'&&tab!=='review')||document.hidden)return;if(kbState==='ready')void kbRefresh();else if(kbState==='error')void openClipBank();},4000);
 // lab.html?tab=klippbank&edge=READY>P4.C1[&take=<jobb-id>&frame=105]
 // or &round=<kantlista> (READY>P2.C1|P2.C1>READY, "@<jobb-id>" låser en tagning) or &round=P1,P4[&dealer=0&cards=1&hole=0&third=1]
 function kbApplyLink(){
@@ -333,6 +336,7 @@ function kbLink(){
  if(!window.history)return;const url=new URL(location.href);
  for(const key of ['tab','edge','take','round','dealer','cards','hole','third','seq','proof','file','filmer'])url.searchParams.delete(key);
  if(tab==='proofs'){url.searchParams.set('tab','prov');if(pfId)url.searchParams.set('proof',pfId);if(pfFile)url.searchParams.set('file',pfFile);}
+ if(tab==='review'){url.searchParams.set('tab','granska');if(kbTake)url.searchParams.set('take',kbTake);}
  if(tab==='clipbank'){
   url.searchParams.set('tab','klippbank');if(kbMode==='CARD')url.searchParams.set('filmer','kort');
   if(kbPanel==='edge'){url.searchParams.set('edge',kbEdge);if(kbTake&&kbTake!==kbGraph?.edge[kbEdge]?.main?.id)url.searchParams.set('take',kbTake);}
@@ -350,12 +354,12 @@ function paintBank(){
  const ready=kbState==='ready'&&!!kbGraph&&!!clipGraph;
  $('clipbank').classList.toggle('kb-off',!ready);$('kb-notice').hidden=ready;
  $('kb-notice').textContent=kbState==='local'?'Klippbanken finns bara lokalt. Öppna det lokala labbet (START.cmd) för nodträd, tagningar och rundbyggare.':kbState==='error'?'Klippbanken kunde inte läsas. Starta om den lokala förhandsvisningen (STOPP.cmd och sedan START.cmd) och öppna fliken igen.':'Läser klippbanken…';
- if(!ready){$('kb-count').textContent=kbState==='local'?'Finns bara lokalt':kbState==='error'?'Kunde inte läsas':'Läser klippbanken…';$('kb-count-detail').textContent='';return;}
+ if(!ready){$('kb-count').textContent=kbState==='local'?'Finns bara lokalt':kbState==='error'?'Kunde inte läsas':'Läser klippbanken…';$('kb-count-detail').textContent='';paintReview();return;}
  $('kb-notices').innerHTML=kbNews.map(n=>`<span class="kb-news${n.failed?' failed':''}"><button data-news="${esc(n.id)}" title="Visa tagningen">${n.failed?'Misslyckades':'Ny film klar'}: <code>${esc(n.edge)}</code></button><button data-news-close="${esc(n.id)}" aria-label="Stäng meddelandet">✕</button></span>`).join('');
  kbResolve();paintSummary();paintTree();paintNode();
  document.querySelectorAll<HTMLButtonElement>('[data-kb-panel]').forEach(b=>{const on=b.dataset.kbPanel===kbPanel;b.setAttribute('aria-pressed',String(on));$(`kb-panel-${b.dataset.kbPanel}`).hidden=!on;});
  if(kbPanel==='edge')paintEdge();else paintRound();
- ovSync();
+ ovSync();paintReview();
 }
 function paintSummary(){
  const G=clipGraph!,s=kbGraph!.summary,f=s.films,seat=f.mode==='SEAT',shown=G.STATUSES.filter(k=>s.byStatus[k]);
@@ -738,7 +742,7 @@ function ovPaint(name:'take'|'chain',video:HTMLVideoElement,take:KbTake|null|und
 const ovTakeNow=()=>kbGraph?.takes[kbTake]??null;
 const ovSegmentNow=()=>kbSegments[kbChain.index]??(kbChain.index<0?kbSegments.find(s=>!s.gap):undefined);
 function ovTake(frame?:number){const t=ovTakeNow(),c=kbClip(),shown=frame??(c?frameAt(kbPlayer,c.fps,c.frames):0);
- ovPaint('take',kbPlayer,t,kbReversed&&c?c.frames-1-shown:shown,tab==='clipbank'&&kbPanel==='edge'&&!!c);} // the track counts the forward film's frames
+ ovPaint('take',kbPlayer,t,kbReversed&&c?c.frames-1-shown:shown,(tab==='review'||(tab==='clipbank'&&kbPanel==='edge'))&&!!c);} // the track counts the forward film's frames
 // The cards dealt earlier in the round, which the film in view does not show. Each lies where the last film that had it as its
 // own card left it (its return if that has been played, else its deal), moved with that step's shift. lost: cards whose film has no track.
 function ovPlaced(index:number){
@@ -808,16 +812,86 @@ function paintDecide(t:KbTake|null){
 }
 async function kbDecide(decision:string){
  const t=kbGraph?.takes[kbTake];if(!t?.revision||t.stage!=='DONE'||kbSaving)return;
+ // In the review list a decided film leaves the list, so the film after it opens by itself.
+ const waiting=tab==='review'?[...rvLists().todo,...rvLists().rejected].map(x=>x.t.id):[],place=waiting.indexOf(t.id),after=place<0?'':waiting[place+1]??waiting[place-1]??'';
  kbSaving=true;paintDecide(t);
  try{
   const res=await fetch(`/api/clip-bank/review/${t.id}`,{method:'PUT',headers:{'content-type':'application/json','if-match':t.revision},body:JSON.stringify({decision,note:$<HTMLTextAreaElement>('kb-note').value})});
   const data=await res.json();if(!res.ok)throw Error(data.error||'Beslutet kunde inte sparas.');
-  kbSaved={id:t.id,text:`Sparat i motions/${t.id}.json · ${data.review?.userReview??''}`,failed:false};kbNoteFor='';
+  kbSaved={id:t.id,text:`Sparat i motions/${t.id}.json · ${data.review?.userReview??''}`,failed:false};kbNoteFor='';rvNext=after;
   await kbRead().catch(()=>{}); // the bank is read again so every view shows the decision that is now on disk
  }catch(error){kbSaved={id:t.id,text:`Inte sparat: ${(error as Error).message}`,failed:true};}
  finally{kbSaving=false;if(kbState==='ready')paintBank();}
 }
 $('kb-decide').addEventListener('click',event=>{const decision=(event.target as Element).closest<HTMLElement>('[data-decide]')?.dataset.decide;if(decision)void kbDecide(decision);});
+
+// ── Granska ─────────────────────────────────────────────────────────────────
+// Every finished film that still lacks Jakob's own word, in dealing order. The open row holds the Klippbank's own take detail
+// (film, frame stepping, rendered card, findings, decision buttons), moved here while the tab is open: nothing is built twice.
+const kbTakeBox=$('kb-take');
+let rvHtml='',rvNext='',rvLinked=false,rvEnter=false;
+type RvItem={t:KbTake;e:KbEdge};
+const rvCard=(e:KbEdge)=>e.target??/(?:P[1-7]|D)\.C[1-3]/.exec(e.id)?.[0]??null; // an experiment is filed with the card it deals or leaves
+// Dealing order: the entry, each seat (first card, then second; deal, return to READY, return to IDLE), the dealer, exit and idle, the rest.
+function rvKey(e:KbEdge){
+ const card=rvCard(e);
+ if(e.id==='IDLE>READY')return 0;
+ if(!card)return e.experiment?99000:90000+(e.kind==='IDLE'?100:0);
+ return (card[0]==='D'?8:Number(card[1]))*1000+Number(card.at(-1))*100+(e.kind==='DEAL'?0:clipGraph!.hubOf(e.to)==='READY'?10:20)+(e.experiment?5:0);
+}
+const rvGroup=(e:KbEdge)=>{const card=rvCard(e);return card?(card[0]==='D'?'Dealern':card.split('.')[0]):e.experiment?'Variant B och experiment utan kort':e.id==='IDLE>READY'?'Ingång':'Utgång och vila';};
+// What a film is, in plain words: who gets the card, which step, and where the film comes from. The id is shown small beside it.
+function rvTitle(e:KbEdge,t:KbTake){
+ const G=clipGraph!,card=rvCard(e),seat=card?card.split('.')[0]:'',n=card?Number(card.at(-1)):0,old=/arkiv/.test(t.id),b=!!t.hub||/drawn|readyb|idleb/.test(t.id)||/DRAWN|READY-|IDLE-/.test(e.id);
+ // A seat film from another series than the plan's (an early "calm" take) says so, or two rows would read the same.
+ const series=card?t.id.replace(/^pamela-/,'').split('-').filter(w=>!/^(p\d|d|c\d|plan|deal|return|ready|idle|\d+|drawn|readyb|idleb|arkiv|edit|slow)$/.test(w)).join(' '):'';
+ const who=!card?'':seat==='D'?`Dealerns ${['första','andra','tredje'][n-1]} kort`:`${seat}${n>1?` · kort ${n}`:''}`;
+ const step=/REVEAL/.test(e.id)?'kortet vänds upp':e.kind==='DEAL'&&card?'giv':e.kind==='RETURN'&&card?`retur till ${G.hubOf(e.to)==='READY'?'redo':'vila'}`:e.experiment?`${e.from} → ${e.to}`:e.kind==='ENTRY'?'Ingång · från vila till skon':e.kind==='IDLE'?'Vila · stilla klipp':'Utgång · från skon till vila';
+ const tags=[old?'ur gamla labbet':'',b?'variant B':'',e.experiment&&!b?'experiment':'',t.editOf?'rättad kopia':'',t.segment&&!old?'utsnitt':'',t.speed!==1?'slow motion':'',series?`serie ”${series}”`:''].filter(Boolean),no=Number(/-(\d+)$/.exec(t.id)?.[1]??0);
+ return [who,step,...tags,no>1||(no&&!tags.length)?`tagning ${no}`:''].filter(Boolean).join(' · ');
+}
+function rvLists(){
+ const all:RvItem[]=kbGraph?[...kbGraph.edges,...kbGraph.experiments].flatMap(e=>e.takes.filter(t=>t.stage==='DONE').map(t=>({t,e}))).sort((a,b)=>rvKey(a.e)-rvKey(b.e)||a.t.order-b.t.order):[];
+ const open=all.filter(x=>!x.t.motion?.review?.userReview);
+ // The films the reviewers have already rejected come last, folded: they still lack Jakob's word, but are not where his time should go first.
+ return {todo:open.filter(x=>x.t.decision!=='REJECTED'),rejected:open.filter(x=>x.t.decision==='REJECTED'),done:all.filter(x=>!!x.t.motion?.review?.userReview)};
+}
+function rvOpen(id:string){
+ const t=kbGraph?.takes[id];if(!t)return;
+ const e=kbGraph!.edge[t.edge];kbEdge=e.id;kbTake=t.id;if(!e.experiment)kbNode=kbHub(e);kbPanel='edge';kbPendingFrame=null;kbPlayer.pause();paintBank();kbLink();
+}
+function paintReview(){
+ const ready=kbState==='ready'&&!!kbGraph&&!!clipGraph;
+ if(!ready){$('tab-review').textContent='Granska';if(tab==='review'){$('rv-notice').hidden=false;$('rv-notice').textContent=kbState==='local'?'Granskningslistan finns bara lokalt. Öppna det lokala labbet (START.cmd).':kbState==='error'?'Klippbanken kunde inte läsas. Starta om den lokala förhandsvisningen (STOPP.cmd och sedan START.cmd).':'Läser klippbanken…';}return;}
+ const G=clipGraph!,{todo,rejected,done}=rvLists(),all=[...todo,...rejected,...done];
+ $('tab-review').textContent=`Granska · ${todo.length}`;
+ if(tab!=='review')return;
+ $('rv-notice').hidden=true;
+ // Which film is open: the one a link names, the one after a decision just made, the one already open, else the first one waiting.
+ if(!rvLinked){rvLinked=true;rvNext=new URLSearchParams(location.search).get('take')??'';}
+ const want=rvNext,enter=rvEnter;rvNext='';rvEnter=false; // coming into the tab starts at the top of the list
+ const next=(want&&all.find(x=>x.t.id===want))||(!enter&&all.some(x=>x.t.id===kbTake)?null:todo[0]??rejected[0]??done[0]??null);
+ if(next&&next.t.id!==kbTake){rvOpen(next.t.id);return;}
+ const word=(t:KbTake)=>t.variant?'godkänd som variant':G.DECISION_LABEL[t.decision]??t.decision;
+ const row=({t,e}:RvItem)=>{const open=t.id===kbTake,r=t.motion?.review,mine=r?.userReview;
+  return `<article class="rv-row${open?' open':''}"><button class="rv-row-head" data-rv-open="${esc(t.id)}" aria-expanded="${open}"><span class="rv-title">${esc(rvTitle(e,t))}</span><span class="status-pill d-${esc(t.decision)}">${esc(`${mine?'ditt beslut':'granskarna'}: ${word(t)}`)}</span>${t.revision?'':'<span class="status-pill">kan inte sparas ännu</span>'}<code>${esc(t.id)}</code></button>`
+   +(open?'<div id="rv-slot" class="rv-slot"></div>':`<div class="rv-find">${mine?`<p><b>Dina ord</b>${esc(mine)}</p>`:''}${r?.basis?`<p><b>Granskaren</b>${esc(r.basis)}</p>`:''}${r?.limitations?`<p><b>Begränsning</b>${esc(r.limitations)}</p>`:''}</div>`)+'</article>';};
+ const list=(items:RvItem[])=>{let last='';return items.map(x=>{const g=rvGroup(x.e),head=g===last?'':`<h3 class="rv-group">${esc(g)}</h3>`;last=g;return head+row(x);}).join('');};
+ const html=[list(todo),list(rejected),list(done)];
+ $('rv-count').textContent=todo.length?`${todo.length} ${todo.length===1?'film väntar':'filmer väntar'} på ditt beslut. Titta på filmen, skriv gärna en rad och tryck Godkänn, Variant eller Underkänn: nästa film öppnas då av sig själv.`:'Inga filmer väntar på ditt beslut just nu.';
+ $('rv-saved').hidden=!kbSaved.id||kbSaved.failed;$('rv-saved').textContent=kbSaved.failed?'':kbSaved.text;
+ $('rv-rejected').hidden=!rejected.length;$('rv-rejected-summary').textContent=`Redan underkända av granskarna (${rejected.length}) · väntar också på ditt ord`;
+ $('rv-done').hidden=!done.length;$('rv-done-summary').textContent=`Avgjorda (${done.length}) · öppna en film för att ändra beslutet`;
+ if(html.join('\u0000')!==rvHtml){
+  // The lists are rebuilt only when they change, and never with the take detail inside them.
+  rvHtml=html.join('\u0000');$('kb-take-home').append(kbTakeBox);
+  $('rv-list').innerHTML=html[0];$('rv-rejected-list').innerHTML=html[1];$('rv-done-list').innerHTML=html[2];
+ }
+ if(rejected.some(x=>x.t.id===kbTake))$<HTMLDetailsElement>('rv-rejected').open=true;
+ if(done.some(x=>x.t.id===kbTake))$<HTMLDetailsElement>('rv-done').open=true;
+ document.getElementById('rv-slot')?.append(kbTakeBox);
+}
+$('review').addEventListener('click',event=>{const id=(event.target as Element).closest<HTMLElement>('[data-rv-open]')?.dataset.rvOpen;if(id&&id!==kbTake)rvOpen(id);});
 
 // ── Prov ────────────────────────────────────────────────────────────────────
 // Färdiga jämförelsefilmer och bildark under assets/proofs/<id>/, lästa via /api/proofs. Samma rutstegning som överallt annars.
@@ -870,5 +944,7 @@ for(const event of ['play','pause','ended'])pfPlayer.addEventListener(event,()=>
 $('tab-placement').addEventListener('click',()=>setTab('placement'));$('tab-clipbank').addEventListener('click',()=>setTab('clipbank'));$('tab-proofs').addEventListener('click',()=>setTab('proofs'));
 // The 3D scene is a page of its own, served by the local preview only: its link shows when the page is there.
 if(location.hostname==='127.0.0.1')void fetch('scene3d.html',{method:'HEAD'}).then(res=>{$('nav-scene3d').hidden=!res.ok;}).catch(()=>{});
-const startTab=new URLSearchParams(location.search).get('tab');if(startTab==='klippbank')setTab('clipbank');else if(startTab==='prov')setTab('proofs');
+const startTab=new URLSearchParams(location.search).get('tab');if(startTab==='klippbank')setTab('clipbank');else if(startTab==='prov')setTab('proofs');else if(startTab==='granska')setTab('review');
+// On the local lab the bank is read once at start, so the Granska tab can say how many films are waiting.
+else if(location.hostname==='127.0.0.1')void openClipBank();
 void load().then(()=>{const params=new URLSearchParams(location.search),clip=params.get('clip'),frame=Number(params.get('frame')??0);if(clip)void openLibrary(false,clip,frame);if(tab==='clipbank'&&kbState==='ready')paintTree();}).catch(e=>message((e as Error).message));

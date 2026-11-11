@@ -506,3 +506,23 @@ test('the real job file in seat mode: 30 needed films, every entry placed, and e
     if (s.edge?.shares) { assert.equal(s.film?.id, s.edge.shares, s.id); if (s.take) assert.ok(s.film!.takes.includes(s.take), s.id); } else assert.equal(s.film, s.edge, s.id);
   }
 });
+
+test('films recovered from a longer film chain like any others: a derived return follows the derived deal whose range ends where it begins', () => {
+  const old = 'pamela-arkiv-table-01', film = video(old), long = {fps: 30, frames: 500, sha256: sha}, take = (id: string, from: string, to: string, kind: string, frames: [number, number]) => ({id, kind, from, to, clip: old, frames});
+  for (const named of ['film', 'take'] as const) {
+    const deal = 'pamela-d-c1-arkiv-deal-01', back = 'pamela-d-c1-arkiv-return-ready-01', other = 'pamela-d-c2-arkiv-deal-01';
+    const data: BankData = {jobs: [], derived: [take(deal, 'READY', 'LAND(D.C1)', 'DEAL', [100, 219]), take(back, 'LAND(D.C1)', 'READY', 'RETURN', [220, 300]), take(other, 'READY', 'LAND(D.C2)', 'DEAL', [301, 420])],
+      motions: {[deal]: done('PENDING', {source: long}), [other]: done('PENDING', {source: long}), [back]: done('PENDING', {source: long, motion: {startsOn: {clip: named === 'film' ? old : deal, frame: 220}}})}, media: {[deal]: {video: film}, [back]: {video: film}, [other]: {video: film}}};
+    const g = graph.buildGraph(data);
+    assert.deepEqual(g.unplaced, [], named);
+    // The return starts on the frame after the deal's last one: it follows that deal and no other range of the same film.
+    assert.deepEqual(g.takes[back].startsOn, {clip: named === 'film' ? old : deal, video: null, frame: 220});
+    assert.equal(graph.returnFits(g.takes[back], g.takes[deal]), true, named); assert.equal(graph.returnFits(g.takes[back], g.takes[other]), false, named);
+    assert.equal(g.takes[deal].landingFrame, 220); assert.equal(g.takes[other].landingFrame, null);
+    assert.equal(g.edge['READY>D.C1'].main?.id, deal); assert.equal(g.edge['D.C1>READY'].main?.id, back);
+    // In a round each plays its own frames of the old film, one after the other, without a note about the seam.
+    const round = graph.resolveRound(g, graph.parseSequence('READY>D.C1 | D.C1>READY').steps);
+    assert.deepEqual(round.map(s => [s.take?.id, s.video, s.start, s.end, s.cut]), [[deal, film, 100, 220, 'FRAME'], [back, film, 220, 301, null]], named);
+    assert.ok(round.every(s => s.notes.length === 0), JSON.stringify(round.map(s => s.notes)));
+  }
+});

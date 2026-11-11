@@ -152,9 +152,17 @@ export const playable = (take: Take) => take.stage === 'DONE' && take.decision !
 // Does this return continue that deal take without a jump? A return cut from a frame fits the clip it was cut
 // from. A return from a landing anchor fits every deal that ends on that same anchor image: variant B deals
 // end on their own anchor, so their returns do not fit the model's deals and the other way round.
+// Was this film cut out of that deal? Its first frame is a frame of the deal's own film: the deal itself, the clip a corrected copy
+// was made from, or, for a derived deal (frames A–B of a longer film), a frame of that film inside the deal's range or the one right after it.
+export function cutFrom(back: Take, deal: Take): boolean {
+  const s = back.startsOn;
+  if (!s?.clip) return false;
+  if (deal.segment && (s.clip === deal.segment.clip || s.clip === deal.id)) return s.frame > deal.segment.start && s.frame <= deal.segment.end + 1;
+  return s.clip === deal.id || s.clip === deal.editOf;
+}
 export function returnFits(back: Take, deal: Take): boolean {
   // A corrected copy keeps its source's timing and landing, so the returns cut from the source follow the copy too.
-  if (!back.anchorStart) return !!back.startsOn?.clip && (back.startsOn.clip === deal.id || back.startsOn.clip === deal.editOf);
+  if (!back.anchorStart) return cutFrom(back, deal);
   const end = deal.job.last?.file, start = back.job.first?.file;
   return !!end && (end.path === back.anchorStart || (!!end.sha256 && end.sha256 === start?.sha256));
 }
@@ -221,7 +229,7 @@ export function buildGraph(data: BankData, options: {mode?: FilmMode; holeCardDo
   const all = Object.values(takes);
   // A deal's landing/cut frame is the frame its returns start on. An explicit motion.landingFrame wins.
   for (const deal of all.filter(t => t.kind === 'DEAL')) {
-    const returns = all.filter(r => !!r.startsOn?.clip && (r.startsOn.clip === deal.id || r.startsOn.clip === deal.editOf)), kept = returns.filter(r => r.decision !== 'REJECTED' && r.stage !== 'FAILED');
+    const returns = all.filter(r => r !== deal && cutFrom(r, deal)), kept = returns.filter(r => r.decision !== 'REJECTED' && r.stage !== 'FAILED');
     const frames = (kept.length ? kept : returns).map(r => r.startsOn!.frame), explicit = deal.motion?.motion?.landingFrame;
     const counts = new Map<number, number>(); for (const f of frames) counts.set(f, (counts.get(f) ?? 0) + 1);
     deal.landingFrame = Number.isInteger(explicit) ? explicit! : [...counts].sort((a, b) => b[1] - a[1])[0]?.[0] ?? null;
