@@ -18,7 +18,7 @@ export type TableCards = {hands: TableHand[]; dealer: number[]};
 export const SEAT_COUNT = 7;
 // Pixels in the film frame. FAN: step between cards from the third on. SPLIT: step between the hands of one seat.
 // Both are first values to be judged by eye in motion; the seat films were only tried to about 45–50 px from their own card.
-export const FAN = 24, SPLIT = 44;
+export const FAN = 24, SPLIT = 66;
 // The plan is written for the 1762 px wide lab view; the films are 1764 px wide.
 const FILM_X = 1763 / 1761;
 
