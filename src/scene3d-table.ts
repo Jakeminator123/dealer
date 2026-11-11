@@ -15,6 +15,11 @@ export const TABLE = {a: 0.95, b: 0.6, rail: 0.1}; // half width, depth toward t
 // a stretcher between them, a brass foot rail on the players' side, a board that closes the underside, and the table's shadow
 // on the floor; the recipe of the room study of 2026-11-07 (photographed materials, real legs, contact with the ground).
 export type TableBase = 'column' | 'legs';
+// How the table's surfaces are made. painted: the felt is the flat print, unlit, and the table reflects a room painted for it;
+// that is the table as it was. photo: the room study's "photographed material on 3D": the felt is a lit cloth with a
+// photographed weave for its relief, and every surface of the table takes its light and its reflections from the room that
+// is showing (the panorama itself), so that the table stands in that room's light and not in a light of its own.
+export type TableSurface = 'painted' | 'photo';
 export const BASE = {floor: -0.95, under: -0.15, legX: 0.58, legZ: 0.25, rail: -0.72}; // heights above the felt and places, dealer metres
 const PRINT = {width: 2.8, depth: 1.4, back: 0.1, pxW: 4096, pxH: 2048}; // the felt image covers width x depth metres and starts `back` behind the dealer edge
 const GOLD = '#d8b665';
@@ -205,6 +210,17 @@ export function createTable(lit: <M extends T.Material>(material: M) => M = m =>
   const shadow = (() => { const c = document.createElement('canvas'); c.width = c.height = 128; const g = c.getContext('2d')!, fade = g.createRadialGradient(64, 64, 8, 64, 64, 64);
     fade.addColorStop(0, 'rgba(0,0,0,.62)'); fade.addColorStop(0.55, 'rgba(0,0,0,.34)'); fade.addColorStop(1, 'rgba(0,0,0,0)'); g.fillStyle = fade; g.fillRect(0, 0, 128, 128);
     return new T.MeshBasicMaterial({map: new T.CanvasTexture(c), transparent: true, depthWrite: false}); })();
+  // The felt as a lit cloth: the same print, and a photographed weave (a denim weave from Poly Haven, CC0, not measured
+  // blackjack felt; data/scene-materials.json) read the first time the photographed surface is asked for.
+  // The print holds the colours as they should be seen, so as the albedo of a lit cloth it is raised: under the scene's lights the
+  // cloth then comes out about as bright as the print, and what differs is what the light does to it.
+  const cloth = lit(new T.MeshStandardMaterial({map: texture, roughness: 1, metalness: 0, side: T.DoubleSide, envMap: room, envMapIntensity: 0.6})); cloth.color.setScalar(2.1);
+  let woven = false;
+  function weave() {
+    if (woven) return; woven = true;
+    const loader = new T.TextureLoader(), read = (name: string) => loader.loadAsync(`assets/scene/materials/denim_fabric-${name}.webp`).then(t => { t.wrapS = t.wrapT = T.RepeatWrapping; t.repeat.set(16, 8); t.anisotropy = 8; return t; });
+    Promise.all([read('nor_gl'), read('rough')]).then(([normalMap, roughnessMap]) => { Object.assign(cloth, {normalMap, roughnessMap}); cloth.normalScale.set(0.6, 0.6); cloth.needsUpdate = true; }, () => {});
+  }
   let asked = false;
   function photographed() {
     if (asked) return; asked = true;
@@ -251,7 +267,7 @@ export function createTable(lit: <M extends T.Material>(material: M) => M = m =>
   // `notch`: a rectangle cut into the felt from the dealer-side edge, for something sunk into the table there (x across,
   // s1 = how far it reaches toward the players; dealer metres). A notch, not a hole: a hole this close to the edge is
   // triangulated shut by ShapeGeometry.
-  function build(edgeZ: number, scale: number, notch?: {x0: number; x1: number; s1: number}, base: TableBase = 'column') {
+  function build(edgeZ: number, scale: number, notch?: {x0: number; x1: number; s1: number}, base: TableBase = 'column', surface: TableSurface = 'painted') {
     for (const child of [...group.children]) { group.remove(child); (child as T.Mesh).geometry?.dispose(); }
     group.position.set(0, 0, edgeZ); group.scale.setScalar(scale);
     const N = 96, {a, b, rail} = TABLE, uvOf = (x: number, s: number) => [(x + PRINT.width / 2) / PRINT.width, 1 - (s + PRINT.back) / PRINT.depth];
@@ -263,7 +279,8 @@ export function createTable(lit: <M extends T.Material>(material: M) => M = m =>
       const outline = [...Array.from({length: N + 1}, (_, i) => new T.Vector2(a * Math.cos(Math.PI * i / N), b * Math.sin(Math.PI * i / N))), new T.Vector2(notch.x0, 0), new T.Vector2(notch.x0, notch.s1), new T.Vector2(notch.x1, notch.s1), new T.Vector2(notch.x1, 0)];
       feltGeometry.dispose(); feltGeometry = new T.ShapeGeometry(new T.Shape(outline)).rotateX(Math.PI / 2); const p = feltGeometry.getAttribute('position'), cut: number[] = [];
       for (let i = 0; i < p.count; i++) cut.push(...uvOf(p.getX(i), p.getZ(i))); feltGeometry.setAttribute('uv', new T.Float32BufferAttribute(cut, 2)); }
-    group.add(new T.Mesh(feltGeometry, felt));
+    if (surface === 'photo') { weave(); feltGeometry.computeVertexNormals(); const normal = feltGeometry.getAttribute('normal') as T.BufferAttribute; for (let i = 0; i < normal.count; i++) normal.setXYZ(i, 0, 1, 0); } // the cloth faces up
+    group.add(new T.Mesh(feltGeometry, surface === 'photo' ? cloth : felt));
     // padded rail round the players' arc with rounded ends past the dealer's edge, the brass bead along the felt, then the apron
     group.add(new T.Mesh(sweep(ROLL, 128, ROLL.length, {length: 0.036, core: CORE, steps: 9}), leather));
     group.add(new T.Mesh(sweep(BEAD, 128, 1, {length: 0.004, core: [0.0035, 0], steps: 3}), bead));
@@ -290,5 +307,11 @@ export function createTable(lit: <M extends T.Material>(material: M) => M = m =>
     for (const u of [0.02, 0.34, 0.66, 0.98]) { const p = railPath.getPoint(u); add(new T.CylinderGeometry(0.009, 0.009, BASE.rail - floor, 12), polished, p.x, (BASE.rail + floor) / 2, p.z); }
     add(new T.PlaneGeometry(3.3, 2.5).rotateX(-Math.PI / 2), shadow, 0, floor + 0.001, b * 0.42).renderOrder = -2; // the table's own shadow on the floor
   }
-  return {group, draw, build};
+  // The room the table reflects and is lit by: a prefiltered map of the room that is showing, turned as that room is, or null
+  // for the room painted for the table. Only the photographed surface asks for it.
+  function setEnvironment(map: T.Texture | null, turn = 0, strength = 1) {
+    for (const [material, own] of [[cloth, 0.6], [leather, 3], [bead, 1.1], [apron, 1.5], [skirt, 1.6], [timber, 1.1], [polished, 1.5]] as [T.MeshStandardMaterial, number][]) {
+      material.envMap = map ?? room; material.envMapRotation.set(0, map ? turn : 0, 0); material.envMapIntensity = map ? own * strength : own; material.needsUpdate = true; }
+  }
+  return {group, draw, build, setEnvironment};
 }
