@@ -1,0 +1,550 @@
+{
+  "schemaVersion": 1,
+  "id": "pamela-table",
+  "space": "image-normalized-bottom-up",
+  "updatedAt": "2026-11-11T12:00:00.000Z",
+  "shoe": {
+    "native": {
+      "u": 0.733,
+      "v": 0.322
+    },
+    "portrait": {
+      "u": 0.84,
+      "v": 0.58
+    }
+  },
+  "targets": {
+    "P1.C1": {
+      "geometry": {
+        "native": {
+          "u": 0.12401,
+          "v": 0.15077,
+          "width": 0.04754,
+          "height": 0.09074,
+          "angle": 34.18,
+          "taper": 0.8624,
+          "reviewed": false
+        },
+        "portrait": {
+          "u": 0.1,
+          "v": 0.325,
+          "width": 0.06,
+          "height": 0.04,
+          "angle": 21,
+          "taper": 0.9,
+          "reviewed": false
+        }
+      },
+      "intent": {
+        "takeHand": "LH",
+        "startSide": "BACK",
+        "endSide": "FRONT",
+        "pass": false,
+        "turn": true
+      },
+      "material": {
+        "bend": 0.07,
+        "gloss": 0.35
+      }
+    },
+    "P1.C2": {
+      "geometry": {
+        "native": {
+          "u": 0.15083,
+          "v": 0.15651,
+          "width": 0.04849,
+          "height": 0.08366,
+          "angle": 30.93,
+          "taper": 0.8643,
+          "reviewed": false
+        },
+        "portrait": {
+          "u": 0.135,
+          "v": 0.33,
+          "width": 0.06,
+          "height": 0.04,
+          "angle": 21,
+          "taper": 0.9,
+          "reviewed": false
+        }
+      },
+      "intent": {
+        "takeHand": "LH",
+        "startSide": "BACK",
+        "endSide": "FRONT",
+        "pass": false,
+        "turn": true
+      },
+      "material": {
+        "bend": 0.07,
+        "gloss": 0.35
+      }
+    },
+    "P2.C1": {
+      "geometry": {
+        "native": {
+          "u": 0.24798,
+          "v": 0.12861,
+          "width": 0.05747,
+          "height": 0.07752,
+          "angle": 19.6,
+          "taper": 0.8551,
+          "reviewed": false
+        },
+        "portrait": {
+          "u": 0.225,
+          "v": 0.27,
+          "width": 0.06,
+          "height": 0.04,
+          "angle": 14,
+          "taper": 0.9,
+          "reviewed": false
+        }
+      },
+      "intent": {
+        "takeHand": "LH",
+        "startSide": "BACK",
+        "endSide": "FRONT",
+        "pass": false,
+        "turn": true
+      },
+      "material": {
+        "bend": 0.07,
+        "gloss": 0.35
+      }
+    },
+    "P2.C2": {
+      "geometry": {
+        "native": {
+          "u": 0.27865,
+          "v": 0.13897,
+          "width": 0.05689,
+          "height": 0.07037,
+          "angle": 16.49,
+          "taper": 0.8585,
+          "reviewed": false
+        },
+        "portrait": {
+          "u": 0.26,
+          "v": 0.275,
+          "width": 0.06,
+          "height": 0.04,
+          "angle": 14,
+          "taper": 0.9,
+          "reviewed": false
+        }
+      },
+      "intent": {
+        "takeHand": "LH",
+        "startSide": "BACK",
+        "endSide": "FRONT",
+        "pass": false,
+        "turn": true
+      },
+      "material": {
+        "bend": 0.07,
+        "gloss": 0.35
+      }
+    },
+    "P3.C1": {
+      "geometry": {
+        "native": {
+          "u": 0.36301,
+          "v": 0.10692,
+          "width": 0.06372,
+          "height": 0.07358,
+          "angle": 9.03,
+          "taper": 0.848,
+          "reviewed": false
+        },
+        "portrait": {
+          "u": 0.35,
+          "v": 0.215,
+          "width": 0.06,
+          "height": 0.04,
+          "angle": 7,
+          "taper": 0.9,
+          "reviewed": false
+        }
+      },
+      "intent": {
+        "takeHand": "LH",
+        "startSide": "BACK",
+        "endSide": "FRONT",
+        "pass": false,
+        "turn": true
+      },
+      "material": {
+        "bend": 0.07,
+        "gloss": 0.35
+      }
+    },
+    "P3.C2": {
+      "geometry": {
+        "native": {
+          "u": 0.38942,
+          "v": 0.11843,
+          "width": 0.0622,
+          "height": 0.06834,
+          "angle": 6.83,
+          "taper": 0.8518,
+          "reviewed": false
+        },
+        "portrait": {
+          "u": 0.385,
+          "v": 0.22,
+          "width": 0.06,
+          "height": 0.04,
+          "angle": 7,
+          "taper": 0.9,
+          "reviewed": false
+        }
+      },
+      "intent": {
+        "takeHand": "LH",
+        "startSide": "BACK",
+        "endSide": "FRONT",
+        "pass": false,
+        "turn": true
+      },
+      "material": {
+        "bend": 0.07,
+        "gloss": 0.35
+      }
+    },
+    "P4.C1": {
+      "geometry": {
+        "native": {
+          "u": 0.485,
+          "v": 0.06099,
+          "width": 0.07239,
+          "height": 0.08655,
+          "angle": -0.31,
+          "taper": 0.8324,
+          "reviewed": false
+        },
+        "portrait": {
+          "u": 0.475,
+          "v": 0.16,
+          "width": 0.06,
+          "height": 0.04,
+          "angle": 0,
+          "taper": 0.9,
+          "reviewed": false
+        }
+      },
+      "intent": {
+        "takeHand": "LH",
+        "startSide": "BACK",
+        "endSide": "FRONT",
+        "pass": false,
+        "turn": true
+      },
+      "material": {
+        "bend": 0.07,
+        "gloss": 0.35
+      }
+    },
+    "P4.C2": {
+      "geometry": {
+        "native": {
+          "u": 0.50813,
+          "v": 0.07258,
+          "width": 0.07008,
+          "height": 0.08193,
+          "angle": -2.38,
+          "taper": 0.8369,
+          "reviewed": false
+        },
+        "portrait": {
+          "u": 0.51,
+          "v": 0.165,
+          "width": 0.06,
+          "height": 0.04,
+          "angle": 0,
+          "taper": 0.9,
+          "reviewed": false
+        }
+      },
+      "intent": {
+        "takeHand": "LH",
+        "startSide": "BACK",
+        "endSide": "FRONT",
+        "pass": false,
+        "turn": true
+      },
+      "material": {
+        "bend": 0.07,
+        "gloss": 0.35
+      }
+    },
+    "P5.C1": {
+      "geometry": {
+        "native": {
+          "u": 0.61876,
+          "v": 0.09653,
+          "width": 0.06493,
+          "height": 0.07903,
+          "angle": -11.33,
+          "taper": 0.8447,
+          "reviewed": false
+        },
+        "portrait": {
+          "u": 0.6,
+          "v": 0.215,
+          "width": 0.06,
+          "height": 0.04,
+          "angle": -7,
+          "taper": 0.9,
+          "reviewed": false
+        }
+      },
+      "intent": {
+        "takeHand": "LH",
+        "startSide": "BACK",
+        "endSide": "FRONT",
+        "pass": false,
+        "turn": true
+      },
+      "material": {
+        "bend": 0,
+        "gloss": 0
+      }
+    },
+    "P5.C2": {
+      "geometry": {
+        "native": {
+          "u": 0.6365,
+          "v": 0.10743,
+          "width": 0.06282,
+          "height": 0.07682,
+          "angle": -12.86,
+          "taper": 0.8482,
+          "reviewed": false
+        },
+        "portrait": {
+          "u": 0.635,
+          "v": 0.22,
+          "width": 0.06,
+          "height": 0.04,
+          "angle": -7,
+          "taper": 0.9,
+          "reviewed": false
+        }
+      },
+      "intent": {
+        "takeHand": "LH",
+        "startSide": "BACK",
+        "endSide": "FRONT",
+        "pass": false,
+        "turn": true
+      },
+      "material": {
+        "bend": 0.07,
+        "gloss": 0.35
+      }
+    },
+    "P6.C1": {
+      "geometry": {
+        "native": {
+          "u": 0.72533,
+          "v": 0.12331,
+          "width": 0.05756,
+          "height": 0.08184,
+          "angle": -21.51,
+          "taper": 0.8534,
+          "reviewed": false
+        },
+        "portrait": {
+          "u": 0.725,
+          "v": 0.27,
+          "width": 0.06,
+          "height": 0.04,
+          "angle": -14,
+          "taper": 0.9,
+          "reviewed": false
+        }
+      },
+      "intent": {
+        "takeHand": "LH",
+        "startSide": "BACK",
+        "endSide": "FRONT",
+        "pass": false,
+        "turn": true
+      },
+      "material": {
+        "bend": 0.07,
+        "gloss": 0.35
+      }
+    },
+    "P6.C2": {
+      "geometry": {
+        "native": {
+          "u": 0.743,
+          "v": 0.13275,
+          "width": 0.05536,
+          "height": 0.08126,
+          "angle": -23.46,
+          "taper": 0.8565,
+          "reviewed": false
+        },
+        "portrait": {
+          "u": 0.76,
+          "v": 0.275,
+          "width": 0.06,
+          "height": 0.04,
+          "angle": -14,
+          "taper": 0.9,
+          "reviewed": false
+        }
+      },
+      "intent": {
+        "takeHand": "LH",
+        "startSide": "BACK",
+        "endSide": "FRONT",
+        "pass": false,
+        "turn": true
+      },
+      "material": {
+        "bend": 0.07,
+        "gloss": 0.35
+      }
+    },
+    "P7.C1": {
+      "geometry": {
+        "native": {
+          "u": 0.83363,
+          "v": 0.18734,
+          "width": 0.04211,
+          "height": 0.07902,
+          "angle": -35.34,
+          "taper": 0.8747,
+          "reviewed": false
+        },
+        "portrait": {
+          "u": 0.85,
+          "v": 0.325,
+          "width": 0.06,
+          "height": 0.04,
+          "angle": -21,
+          "taper": 0.9,
+          "reviewed": false
+        }
+      },
+      "intent": {
+        "takeHand": "LH",
+        "startSide": "BACK",
+        "endSide": "FRONT",
+        "pass": false,
+        "turn": true
+      },
+      "material": {
+        "bend": 0.07,
+        "gloss": 0.35
+      }
+    },
+    "P7.C2": {
+      "geometry": {
+        "native": {
+          "u": 0.84617,
+          "v": 0.19604,
+          "width": 0.03997,
+          "height": 0.07863,
+          "angle": -37.29,
+          "taper": 0.8776,
+          "reviewed": false
+        },
+        "portrait": {
+          "u": 0.885,
+          "v": 0.33,
+          "width": 0.06,
+          "height": 0.04,
+          "angle": -21,
+          "taper": 0.9,
+          "reviewed": false
+        }
+      },
+      "intent": {
+        "takeHand": "LH",
+        "startSide": "BACK",
+        "endSide": "FRONT",
+        "pass": false,
+        "turn": true
+      },
+      "material": {
+        "bend": 0.07,
+        "gloss": 0.35
+      }
+    },
+    "D.C1": {
+      "geometry": {
+        "native": {
+          "u": 0.4888,
+          "v": 0.20968,
+          "width": 0.04804,
+          "height": 0.04042,
+          "angle": -0.78,
+          "taper": 0.8822,
+          "reviewed": false
+        },
+        "portrait": {
+          "u": 0.47,
+          "v": 0.49,
+          "width": 0.06,
+          "height": 0.04,
+          "angle": 0,
+          "taper": 0.9,
+          "reviewed": false
+        }
+      },
+      "intent": {
+        "takeHand": "LH",
+        "startSide": "BACK",
+        "endSide": "FRONT",
+        "pass": false,
+        "turn": true
+      },
+      "material": {
+        "bend": 0.07,
+        "gloss": 0.35
+      }
+    },
+    "D.C2": {
+      "geometry": {
+        "native": {
+          "u": 0.53733,
+          "v": 0.20843,
+          "width": 0.04811,
+          "height": 0.04143,
+          "angle": -4.22,
+          "taper": 0.8818,
+          "reviewed": false
+        },
+        "portrait": {
+          "u": 0.518,
+          "v": 0.49,
+          "width": 0.06,
+          "height": 0.04,
+          "angle": 0,
+          "taper": 0.9,
+          "reviewed": false
+        }
+      },
+      "intent": {
+        "takeHand": "LH",
+        "startSide": "BACK",
+        "endSide": "BACK",
+        "pass": false,
+        "turn": false
+      },
+      "material": {
+        "bend": 0.07,
+        "gloss": 0.35
+      }
+    }
+  },
+  "tableProjection": {
+    "mode": "flat",
+    "heading": 0
+  }
+}
