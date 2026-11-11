@@ -502,7 +502,7 @@ test('the review list: every finished film without Jakob\'s word, in dealing ord
  const {context,element,respond,requests,calls,fire}=await openBank(bank,'',lab=>{lab.element('kb-hole').checked=true;}); // the hole card stays closed, as in the page
  // The tab says how many films are waiting, also while another tab is open.
  assert.equal(element('tab-review').textContent,'Granska · 5');
- runInContext("setTab('review')",context);await settle();respond(served(bank),'/api/clip-bank');await settle();
+ fire('tab-review','click');await settle();respond(served(bank),'/api/clip-bank');await settle(); // a click on the tab itself: it once had no handler
  assert.equal(element('review').hidden,false);assert.equal(element('clipbank').hidden,true);
  const ids=(id:string)=>[...element(id).innerHTML.matchAll(/data-rv-open="([^"]+)"/g)].map(m=>m[1]),titles=(id:string)=>[...element(id).innerHTML.matchAll(/class="rv-title">([^<]+)</g)].map(m=>m[1]);
  // Dealing order, seat by seat; what each film is comes first, in plain words, the id small beside it.
@@ -610,4 +610,11 @@ test('the idle player: picks play back to back from frame 3, a calm clip is left
  runInContext("kbPanel='round';paintBank()",context);assert.equal(state().on,false);assert.equal(state().now,null);
  assert.equal(runInContext("kbGraph.edge['IDLE>IDLE'].main.id",context),'pamela-idle-loop-01');
  assert.ok(requests.every(request=>request.startsWith('GET ')));
+});
+
+test('every tab button of the lab opens its tab when it is clicked',async()=>{
+ const html=await readFile('lab.html','utf8'),source=await readFile('src/lab-ui.ts','utf8');
+ const tabs=[...html.matchAll(/<button id="(tab-[a-z]+)"/g)].map(m=>m[1]);
+ assert.deepEqual(tabs,['tab-placement','tab-clipbank','tab-review','tab-proofs']);
+ for(const id of tabs)assert.ok(source.includes(`$('${id}').addEventListener('click'`),`${id} has a click handler`);
 });
