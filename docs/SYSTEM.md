@@ -50,6 +50,8 @@ Labbservern håller en session: `GET /api/game` (läget), `POST /api/game/comman
 
 `src/game-director.ts` gör signalerna till slag, ett per kant i klippbanken (vila till sko en gång, retur mellan korten, hålkortet vänds från vila), och `src/game-table.ts` ger varje kort en plats: planens två platser per plats, därefter en solfjäder i steg om 24 px och splittade händer 44 px mot dealern (första värden, inte dömda i rörelse).
 
+`game.html` visar spelet i 3D-scenen. Sidan (`src/game-page.ts`) bygger scenen med `createScene`, håller insatserna före given, skickar kommandon och spelar svaret: `src/game-film.ts` löser stegets slag med `resolveRound`, lägger kedjan i scenens filmkö med varje dels kortspår och kortval (kortets landningsruta, liggande kort, valör per kort) och spelar vilan (`pickIdle`) däremellan. Liggande kort ritas på layoutens platser, inte där filmen lämnade dem. `src/game-view.ts` gör motorns läge till det som visas, och en summa visas först när dess kort har landat. Overlayen (`src/game-overlay.ts`, `game.css`) är HTML över canvasen: ringarnas träffytor, markerstaplar, summor, utfall och en panel med markerrad och knappar; den visar vad den får och rapporterar tryck, inget mer. Gränser: korten försvinner utan film vid ny runda, markerna är platt HTML, splittade händer flyttas utan rörelse, kameran står still (lutad 8°, zoom 0,84) och mobil är oprövad.
+
 ## Bottom-up och koordinatreferenser
 
 Bottom-up betyder att höjd ökar uppåt. V6 mäter idag bildpixlar från övre vänstra hörnet med y nedåt. Originalmätningar och referenshashar bevaras; en adapter ska konvertera vid en uttrycklig systemgräns.

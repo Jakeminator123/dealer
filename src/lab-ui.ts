@@ -1063,7 +1063,7 @@ for(const event of ['timeupdate','seeked'])pfPlayer.addEventListener(event,pfSho
 for(const event of ['play','pause','ended'])pfPlayer.addEventListener(event,()=>{$('pf-play').textContent=pfPlayer.paused?'Spela':'Pausa';});
 $('tab-placement').addEventListener('click',()=>setTab('placement'));$('tab-clipbank').addEventListener('click',()=>setTab('clipbank'));$('tab-proofs').addEventListener('click',()=>setTab('proofs'));
 // The 3D scene is a page of its own, served by the local preview only: its link shows when the page is there.
-if(location.hostname==='127.0.0.1')void fetch('scene3d.html',{method:'HEAD'}).then(res=>{$('nav-scene3d').hidden=!res.ok;}).catch(()=>{});
+if(location.hostname==='127.0.0.1')for(const [page,link] of [['scene3d.html','nav-scene3d'],['game.html','nav-game']])void fetch(page,{method:'HEAD'}).then(res=>{$(link).hidden=!res.ok;}).catch(()=>{});
 const startTab=new URLSearchParams(location.search).get('tab');if(startTab==='klippbank')setTab('clipbank');else if(startTab==='prov')setTab('proofs');else if(startTab==='granska')setTab('review');
 // On the local lab the bank is read once at start, so the Granska tab can say how many films are waiting.
 else if(location.hostname==='127.0.0.1')void openClipBank();

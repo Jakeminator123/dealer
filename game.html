@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="sv">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Dealer · Spel</title>
+<link rel="stylesheet" href="game.css">
+<!-- three.js as the 3D scene uses it: the lab server decides where the module is served. -->
+<script type="importmap">{"imports":{"three":"/vendor/three.module.js"}}</script>
+</head>
+<body>
+<div id="app">
+  <div id="stage"><canvas id="view"></canvas><div id="fail" role="alert"></div></div>
+</div>
+<script type="module" src="game-page.js"></script>
+</body>
+</html>

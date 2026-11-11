@@ -1,0 +1,82 @@
+/* The game overlay: bets, totals and buttons on top of the table. The table carries the information (chips in the ring, the
+   total beside the cards); the bar at the bottom is only what the hand needs to reach. Sizes follow the picture's width. */
+:root{--go-ink:#f2efe6;--go-dim:#a9b0a8;--go-gold:#d9b96a;--go-gold-ink:#1d1603;--go-glass:rgba(12,15,13,.72);--go-line:rgba(255,255,255,.12);--go-win:#7fd39a;--go-lose:#e2776b;--go-push:#c9ccd0}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;background:#060706;color:var(--go-ink);font:14px/1.4 system-ui,"Segoe UI",sans-serif}
+#app{position:relative;height:100%;display:grid;place-items:center;overflow:hidden}
+#stage{position:relative;width:100%;height:100%;display:grid;place-items:center;min-width:0;min-height:0}
+#view{display:block;touch-action:none}
+#fail{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);max-width:520px;padding:14px 18px;border:1px solid var(--go-lose);border-radius:12px;background:var(--go-glass);color:var(--go-ink)}
+#fail:empty{display:none}
+
+.go{position:absolute;pointer-events:none;container-type:size;font-size:clamp(11px,1.25cqw,17px);user-select:none;-webkit-user-select:none;font-variant-numeric:tabular-nums}
+.go button{font:inherit;color:inherit;pointer-events:auto;cursor:pointer;border:0;background:none;padding:0;-webkit-tap-highlight-color:transparent}
+.go button:disabled{cursor:default}
+.go button:focus-visible{outline:2px solid var(--go-gold);outline-offset:3px}
+
+/* ── status line ── */
+.go-status{position:absolute;left:1.6%;top:2.4%;padding:.45em 1.1em;border-radius:999px;background:var(--go-glass);border:1px solid var(--go-line);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);letter-spacing:.02em;white-space:nowrap;transition:opacity .25s}
+.go-status:empty{opacity:0}
+.go-status b{color:var(--go-gold);font-weight:600}
+
+/* ── things that sit on the table: placed by the page, one transform each ── */
+.go-pin{position:absolute;left:0;top:0;will-change:transform}
+.go-pin[hidden]{display:none}
+
+/* the bet ring of a seat */
+.go-ring{position:relative;display:grid;place-items:center;width:var(--ring,5em);height:calc(var(--ring,5em)*.62);margin:calc(var(--ring,5em)*-.31) 0 0 calc(var(--ring,5em)*-.5);border-radius:50%;transition:box-shadow .15s,background .15s}
+/* the ring itself is printed on the felt; the overlay only lights it */
+.go[data-phase=BETTING] .go-ring:hover,.go-ring.drop{background:radial-gradient(closest-side,rgba(217,185,106,.38),rgba(217,185,106,.12) 70%,transparent)}
+.go-ring.turn{background:radial-gradient(closest-side,rgba(217,185,106,.3),rgba(217,185,106,.1) 72%,transparent);animation:go-turn 1.6s ease-in-out infinite alternate}
+@keyframes go-turn{to{background-color:rgba(217,185,106,.1)}}
+.go-stack{position:absolute;left:50%;bottom:30%;width:2.5em;font-size:calc(var(--ring,5em)*.17);transform:translateX(-50%);pointer-events:none}
+.go-stack .go-chip{position:absolute;left:0;bottom:calc(var(--i)*.3em);animation:go-drop .26s cubic-bezier(.2,.9,.3,1.25) backwards}
+.go-amount{position:absolute;left:84%;top:50%;transform:translateY(-50%);padding:.12em .6em;border-radius:999px;background:rgba(8,10,9,.82);border:1px solid var(--go-line);font-weight:600;white-space:nowrap}
+.go-amount:empty{display:none}
+@keyframes go-drop{from{transform:translateY(-2.2em) scale(1.08);opacity:0}60%{opacity:1}}
+
+/* a chip, the same print as the 3D chip: coloured body, eight yellow inlays, pale centre with the value */
+.go-chip{--c:#992e3b;display:grid;place-items:center;width:2.3em;aspect-ratio:1;border-radius:50%;
+  background:radial-gradient(circle,#eeeeee 0 52%,#d2d2d2 52% 54%,transparent 54%),repeating-conic-gradient(from -5.6deg,#edce39 0 11.25deg,var(--c) 11.25deg 45deg);
+  box-shadow:0 .1em 0 rgba(0,0,0,.55),0 .22em .5em rgba(0,0,0,.5),inset 0 0 0 .07em rgba(0,0,0,.35);color:#0a0b0d;font-weight:700;font-size:1em;line-height:1}
+.go-chip span{font-size:.62em;letter-spacing:-.02em}
+.go-stack .go-chip{width:2.5em;aspect-ratio:1/.62;box-shadow:0 .16em 0 color-mix(in srgb,var(--c) 62%,#000),0 .3em 0 rgba(0,0,0,.35),0 .5em .7em rgba(0,0,0,.45)}
+.go-chip[data-v="5"]{--c:#992e3b}.go-chip[data-v="25"]{--c:#2c6656}.go-chip[data-v="100"]{--c:#17191d}.go-chip[data-v="500"]{--c:#65487f}.go-chip[data-v="1000"]{--c:#24577e}
+.go-ghost{position:fixed;left:0;top:0;margin:-1.25em 0 0 -1.25em;pointer-events:none;z-index:10;transform:translate(var(--x),var(--y)) scale(1.15);filter:drop-shadow(0 .6em .8em rgba(0,0,0,.5))}
+
+/* the total beside a hand, and what the hand won */
+.go-total{transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;gap:.25em;white-space:nowrap}
+.go-sum{min-width:2.1em;padding:.14em .55em;border-radius:999px;background:rgba(8,10,9,.84);border:1px solid var(--go-line);text-align:center;font-weight:700;font-size:1.12em;box-shadow:0 .2em .6em rgba(0,0,0,.4)}
+.go-total.active .go-sum{border-color:var(--go-gold);color:var(--go-gold)}
+.go-total[data-state=BUST] .go-sum{color:var(--go-lose);border-color:var(--go-lose)}
+.go-total[data-state=BLACKJACK] .go-sum{background:var(--go-gold);color:var(--go-gold-ink);border-color:var(--go-gold)}
+.go-result{padding:.12em .65em;border-radius:999px;font-size:.86em;font-weight:700;letter-spacing:.03em;animation:go-pop .35s cubic-bezier(.2,.9,.3,1.3) backwards}
+.go-result:empty{display:none}
+.go-result[data-o=win],.go-result[data-o=blackjack]{background:var(--go-win);color:#06210f}
+.go-result[data-o=lose]{background:rgba(226,119,107,.9);color:#2a0905}
+.go-result[data-o=push]{background:var(--go-push);color:#14171a}
+@keyframes go-pop{from{transform:scale(.6);opacity:0}}
+
+/* ── the bar ── */
+.go-bar{position:absolute;left:50%;bottom:2.4%;transform:translateX(-50%);display:flex;align-items:center;gap:1em;padding:.5em .9em;border-radius:1.3em;background:var(--go-glass);border:1px solid var(--go-line);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);box-shadow:0 .6em 2em rgba(0,0,0,.45);pointer-events:auto;max-width:96%}
+.go-wallet{display:grid;grid-template-columns:auto auto;column-gap:.7em;row-gap:.05em;align-items:baseline;padding-right:1.1em;border-right:1px solid var(--go-line)}
+.go-wallet dt{color:var(--go-dim);font-size:.78em;letter-spacing:.06em;text-transform:uppercase}
+.go-wallet dd{margin:0;font-weight:700;text-align:right}
+.go-group{display:flex;align-items:center;gap:.55em}
+.go-group[hidden]{display:none}
+.go-rail .go-chip{transition:transform .14s}
+.go-rail button{border-radius:50%;touch-action:none}
+.go-rail button:hover .go-chip{transform:translateY(-.18em)}
+.go-rail button[aria-pressed=true] .go-chip{transform:translateY(-.45em) scale(1.12);box-shadow:0 0 0 .14em var(--go-gold),0 .5em 1em rgba(0,0,0,.55)}
+.go-rail button:disabled{opacity:.35}
+.go-btn{padding:.62em 1.05em;border-radius:.9em;background:rgba(255,255,255,.07);border:1px solid var(--go-line) !important;font-weight:600;letter-spacing:.01em;transition:background .15s,transform .1s,opacity .15s;white-space:nowrap}
+.go-btn:hover:not(:disabled){background:rgba(255,255,255,.14)}
+.go-btn:active:not(:disabled){transform:translateY(1px)}
+.go-btn:disabled{opacity:.32}
+.go-btn.small{padding:.5em .8em;font-size:.9em;font-weight:500;color:var(--go-dim)}
+.go-btn.primary{background:var(--go-gold);color:var(--go-gold-ink);border-color:transparent !important;padding:.72em 1.5em;font-weight:700}
+.go-btn.primary:hover:not(:disabled){background:#e6c97d}
+.go-btn.act{min-width:5.4em;padding:.8em 1.2em;font-size:1.05em}
+.go-note{color:var(--go-dim);white-space:nowrap}
+@media (prefers-reduced-motion:reduce){.go-stack .go-chip,.go-result{animation:none}.go-rail .go-chip,.go-btn{transition:none}}
+@container (max-width:700px){.go-wallet dt{display:none}.go-bar{gap:.6em;padding:.55em .7em}.go-btn.small{display:none}}
