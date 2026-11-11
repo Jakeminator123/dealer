@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "id": "pamela-table-arrive-01",
+  "dealer": "pamela",
+  "source": {
+    "path": "assets/motions/pamela-table-arrive-01/source.mp4",
+    "sha256": "ebd08c9b9cb0d3255750441e6b5df7ae6b1ac13dc7c2156b483cde0fbc076e34",
+    "bytes": 12743674,
+    "width": 1764,
+    "height": 1174,
+    "fps": 30,
+    "frames": 150,
+    "provider": "Runway developer API",
+    "model": "wan3"
+  },
+  "motion": {
+    "kind": "ARRIVE",
+    "from": "AWAY",
+    "to": "IDLE",
+    "pass": false,
+    "basis": "SOURCE_FRAME_REVIEW",
+    "evidence": "evidence/generation-method-audit.json"
+  },
+  "review": {
+    "decision": "REJECTED",
+    "basis": "Oberoende rutgranskad 2026-11-11 (varje ruta 11–128 i full upplösning utom frysta dubbletter, hela bilden var sjätte ruta, slutet mot slutbilden; inte sedd i fart). Granskarens dom: användbar med anmärkning. Tom bild f0–10, första delen av henne vid högerkanten f11, hon går bakom skon f15–47 (inte genom den), vänder sig mot kameran f38–51, är på plats f66, sätter sig f66–93 (axellinjen sjunker 167 px), händerna lyfts till brösthöjd f93–99 och ligger på bordet från f108, stilla från f117–143. Slutposen stämmer: ruta 146 ligger 0 px från slutbilden för huvud, axlar, armbågar och händer. Skon rör sig 0 px i alla rutor. Båda vänsterhörnen är tomma och gröna hela filmen. Ingen stol, annan person, gest, kamerarörelse eller klipp.",
+    "limitations": "Del av huvudet är utanför bildens överkant f17–72, som mest 75–95 px f51–66, där bildkanten går mitt i pannan. Hela filmen ligger i första bildens grönnivå (cirka 37/200/75) och byter till slutbildens (0/238/44) först i f148–149; ett klipp vid ruta 146 ger därför ett hopp i grönnivå, bordsgräns, hudton (5–6 nivåer) och skons ljushet. Orsaken är att första och sista bild har olika grönnivå; samma bildpar ger samma problem igen. 14 frysta rutor (f20, 21, 27, 33, 50, 56, 62, 79, 80, 85, 86, 92, 109, 115) med hopp på upp till 60 px. Gången ser ut som glidning, hon flyttas cirka 180 px i sidled vänd mot kameran f51–66, och sättningen är en rak sänkning där huvudet krymper cirka 10 procent. Ansiktet är utsmetat f55–61 och ögonlocken deformerade f75–77. Kroppen slutar nedtill i en rak kant vid bordslinjen (y cirka 830); inga ben syns.",
+    "colorDoesNotProvePhysicalSide": true,
+    "userAccepted": false,
+    "productionReady": false,
+    "userReview": "Jakob 2026-11-11: Jag kommer att neka den här också, dels för att hon inte har samma höjd som när hon går ut. Å andra sidan skulle det här ha kunnat funka om hon inte hade tappat kanske 5% av håret när hon kom in. Det var väldigt synd. Kanske går det att omarbeta i och för sig. Kanske det andra klippet också gör."
+  },
+  "postProcessing": "none",
+  "generationRef": "assets/motions/pamela-table-arrive-01/generation.json",
+  "jobRef": "data/clip-jobs.json",
+  "scoutIntegrated": false,
+  "published": false
+}

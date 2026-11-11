@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "id": "pamela-table-leave-02",
+  "dealer": "pamela",
+  "source": {
+    "path": "assets/motions/pamela-table-leave-02/source.mp4",
+    "sha256": "b7a4a8d24e64692b4a9e4725dc9cae8b8ccc475d49843806e3add5db87062aa0",
+    "bytes": 15795940,
+    "width": 1764,
+    "height": 1174,
+    "fps": 30,
+    "frames": 180,
+    "provider": "Runway developer API",
+    "model": "wan3"
+  },
+  "motion": {
+    "kind": "LEAVE",
+    "from": "IDLE",
+    "to": "AWAY",
+    "pass": false,
+    "basis": "SOURCE_FRAME_REVIEW",
+    "evidence": "evidence/generation-method-audit.json"
+  },
+  "review": {
+    "decision": "REJECTED",
+    "basis": "Oberoende rutgranskad 2026-11-11 (varje ruta 0–138 i full upplösning utom frysta dubbletter, hela bilden var sjätte ruta, slutrutorna i delar; inte sedd i fart). Granskarens dom: möjlig variant. Rörelsen följer beställningen och ingenting i kroppen är deformerat. Vila f0–9, händerna dras bakåt av bordet och sjunker bakom bordskanten f10–23, hon sitter med armarna längs sidorna f24–35, reser sig f36–60 (axellinjen stiger 314 px), för händerna till kavajens framkant f49–61 och håller den f62–85, vänder sig f78–98, går åt höger från f84–88, passerar bakom skon f94–134 (inte genom den), sista remsan vid högerkanten f135–136, tom bild f137–179. Skon och dess gula kort ligger exakt kvar (ytterkontur x 1190–1689, y 638–897). Båda vänsterhörnen är tomma och gröna i alla rutor. Ingen stol, annan person, gest, kamerarörelse eller klipp. Kroppen slutar nedtill vid en fast bågformad bordskant (y 832–833 mitt i bilden); inga ben syns och ingenting svävar. Bästa tomma rutor: f151–179.",
+    "limitations": "Hela huvudet är utanför bildens överkant f54–83 och till största delen utanför f84–134; beställningen godtog bara hjässan. Med den här första bilden (hjässa y 80, axlar y 390) och stilla kamera hamnar huvudet cirka 240 px ovanför bilden när hon står, så en ny tagning med samma bild ändrar inte det. 17 frysta rutor under rörelse (f11, 17, 23, 40, 41, 47, 53, 70, 76, 77, 83, 100, 106, 112, 113, 130, 136) och farthopp, värst f98–99 (78 px) och f103–104 (72 px). Det gröna blir mattare under f0–10 (från 0/237/43 till cirka 45/207/82) och ligger kvar där. I den tomma bilden ligger ett mörkare fält kvar där hon satt (x 520–1185) som slutar i en skarp båge vid y 799–833, synlig för blotta ögat. Händerna dras av bordet i stället för att lyftas f10–23. Från f81 syns en lockig rödbrun hästsvans som första bilden inte har. Kavajgreppet läses som att hon håller eller knäpper, inte som ett kort ryck. Ansiktet är mjukt f38–52.",
+    "colorDoesNotProvePhysicalSide": true,
+    "userAccepted": false,
+    "productionReady": false,
+    "userReview": "Jakob 2026-11-11: Det slog mig nu att det här är ett undantag som måste anmärkas på, och jag har inte tänkt på det förrän nu. I det riktiga blackjack-spelet upptar hon ungefär 30-35 procent av ytan. Nedanför henne är kanske 40-50 procent av ytan, och ovanför henne kanske 20 procent. När hon ställer sig och går ut, särskilt om man tittar uppåt i spelet, kommer man att se mycket mer. Beroende på hur bordet är utformat kommer det inte att vara sådär runt, för jag ser att det finns en liten maskning nu som videon har skapat. På sidan kommer hon att gå ut, och man ska se hennes ben under kanske en halv sekund. Detsamma gäller inpasseringsklippet. Av den anledningen kommer de här två klippen att skilja sig från resterande klipp, och därför behöver vi en hel kroppsvideo för henne som standard i de här två klippen. Så jag kommer att neka."
+  },
+  "postProcessing": "none",
+  "generationRef": "assets/motions/pamela-table-leave-02/generation.json",
+  "jobRef": "data/clip-jobs.json",
+  "scoutIntegrated": false,
+  "published": false
+}
