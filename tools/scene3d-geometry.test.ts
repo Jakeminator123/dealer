@@ -1,6 +1,6 @@
 import test from 'node:test';
 import {frameAt, type FilmFrame} from '../src/scene3d-film.ts';
-import {RAIL_MOVES, cupAngles, railLevel, railTop} from '../src/scene3d-rail.ts';
+import {cupAngles, railTop} from '../src/scene3d-rail.ts';
 import {EXIT_VIEW, exitView} from '../src/scene3d-exit.ts';
 import {RAIL, TABLE} from '../src/scene3d-table.ts';
 import assert from 'node:assert/strict';
@@ -182,22 +182,6 @@ test('a film with a frame of its own goes behind the table from the frame it nam
   assert.equal(frameAt(late, 30), late); assert.equal(frameAt(late, 177), late);
   const plain: FilmFrame = {scale: 0.5, anchor: [882, 656], behindFrom: 30};
   assert.equal(frameAt(plain, 3), plain, 'a film that never goes behind the table is left as it is');
-});
-
-test('the light in the rail: still, breathing, or a bright stretch that runs the rail round', () => {
-  const length = 2.5;
-  assert.equal(railLevel('off', 1, length, 3), 0);
-  assert.equal(railLevel('steady', 0.2, length, 0), railLevel('steady', 2.1, length, 99), 'the same everywhere and always');
-  // Breathing: the whole line together, between its two levels, back where it began after one breath.
-  const breath = RAIL_MOVES.breath, levels = Array.from({length: 51}, (_, i) => railLevel('breathe', 1, length, i / 50 * breath.seconds));
-  assert.ok(Math.abs(Math.min(...levels) - breath.low) < 1e-9 && Math.abs(Math.max(...levels) - breath.high) < 1e-9);
-  assert.ok(Math.abs(levels[0] - levels[50]) < 1e-9); assert.equal(railLevel('breathe', 0.3, length, 1.7), railLevel('breathe', 2.2, length, 1.7));
-  // Chase: full brightness where the stretch is, the low line far from it, and the stretch has moved on after a moment.
-  const chase = RAIL_MOVES.chase;
-  assert.ok(Math.abs(railLevel('chase', 0, length, 0) - 1) < 1e-9); assert.ok(Math.abs(railLevel('chase', length / 2, length, 0) - chase.low) < 1e-6);
-  assert.ok(Math.abs(railLevel('chase', length / 4, length, chase.seconds / 4) - 1) < 1e-9, 'a quarter of the way round after a quarter of the time');
-  assert.ok(Math.abs(railLevel('chase', 0.4, length, 3) - railLevel('chase', 0.4, length, 3 + chase.seconds)) < 1e-9, 'and round again');
-  for (let i = 0; i < 40; i++) { const v = railLevel('chase', i * 0.07, length, i * 0.31); assert.ok(v >= chase.low - 1e-9 && v <= 1 + 1e-9); }
 });
 
 test('cup holders sit on the rail between the seats and outside the end seats', () => {

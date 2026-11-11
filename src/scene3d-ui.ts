@@ -139,9 +139,7 @@ function build() {
     note('<b>Fotomaterial</b> är rumsstudiens sätt (7 november): filten blir ett belyst tyg med fotograferad väv, och filt, läder, trä och mässing tar sitt ljus och sina speglingar ur det rum som visas, i stället för ur ett målat rum. Gäller panoramarummen (Las Vegas, Skyline, Skog).'),
     el('label', {className: 'row two'}, el('span', {textContent: 'Underrede'}), choice('base', [['column', 'Pelare (förut)'], ['legs', 'Två ben']])),
     note('<b>Två ben</b>: fotograferat trä, mässingsfötter, fotstöd i mässing och bordets skugga på golvet, efter rumsstudien 7 november. Syns när kameran backar: knappen <b>Hela bordet</b> under Kamera.'),
-    el('label', {className: 'row two'}, el('span', {textContent: 'Ljus i relingen'}), choice('railLight', [['off', 'Av'], ['steady', 'Fast'], ['breathe', 'Andas'], ['chase', 'Löper']])),
-    choice('railColour', [['gold', 'Guld'], ['white', 'Vitt'], ['cyan', 'Turkos'], ['magenta', 'Rosa']]), check('Mugghållare i relingen', 'cups'),
-    note('<b>Ljus i relingen</b>: en ljuslinje längs filtens kant med sitt sken på filten. <b>Andas</b> sväller långsamt, <b>Löper</b> låter en ljus sträcka gå relingen runt. Syns mest när vyn vrids eller backar; i hemvyn bara vid relingens ändar. <b>Mugghållare</b>: en mässingsring mellan varje plats.'));
+    check('Mugghållare i relingen', 'cups'), note('<b>Mugghållare</b>: en mässingsring mellan varje plats, nedsänkt i lädret.'));
   group('Marker och bricka', el('div', {className: 'btns'}, button('Lägg insatser', () => chipsLab.lay()), button('En marker till på plats 4', () => chipsLab.more())),
     el('div', {className: 'btns'}, button('Dealern tar plats 2', () => chipsLab.take(2)), button('Betala plats 6', () => chipsLab.pay(6)), button('Rensa', () => chipsLab.clear())),
     note('Spelets marker med tyngd, och en bricka med <b>samma marker</b> på högkant i stället för den byggda. En förlorad insats lyfts, vänds på högkant och sätts ner i sin rad; en vinst bärs ut ur brickan och ställs bredvid insatsen. Ingen hand syns: det kräver en film där hon sträcker sig.'));

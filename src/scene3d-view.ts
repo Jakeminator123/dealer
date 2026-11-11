@@ -10,7 +10,7 @@ import {createChipTray, TRAY} from './scene3d-props.ts';
 import {createRooms, type RoomId} from './scene3d-room.ts';
 import {CHANGE_FRAGMENT, SHIMMER_GLSL, readyFrom, retake, roomChange, shiftProgress, shimmerLevel} from './scene3d-shift.ts';
 import {TABLE, createTable, type TableBase, type TableSurface} from './scene3d-table.ts';
-import {createRailExtras, type RailLight} from './scene3d-rail.ts';
+import {createRailExtras} from './scene3d-rail.ts';
 
 export type SceneState = {
   room: RoomId; blur: number; depthBlur: boolean; dofRange: number; exposure: number; panoramaTurn: number;
@@ -19,7 +19,7 @@ export type SceneState = {
   keyLo: number; keyHi: number; shadow: number;
   focus: 'off' | 'dealer' | 'card' | 'follow' | 'manual'; focusDistance: number; tolerance: number;
   fan: boolean; fanStrength: number; fanPeriod: number;
-  tray: boolean; railLight: RailLight; railColour: string; cups: boolean; base: TableBase; surface: TableSurface; roomLight: number;
+  tray: boolean; cups: boolean; base: TableBase; surface: TableSurface; roomLight: number;
   cards: boolean; cardMethod: 'scene' | 'film'; cardRank: string; cardSuit: string; cardScale: number;
   clock: boolean; dust: number; flicker: boolean; flickerEvery: number; flickerStrength: number;
   filmBright: number; filmWarm: number; wrap: number;
@@ -33,7 +33,7 @@ export const DEFAULTS: SceneState = {
   keyLo: 0.12, keyHi: 0.9, shadow: 1,
   focus: 'off', focusDistance: 1.5, tolerance: 0.4,
   fan: false, fanStrength: 0.16, fanPeriod: 5,
-  tray: false, railLight: 'off', railColour: 'gold', cups: false, base: 'column', surface: 'painted', roomLight: 1,
+  tray: false, cups: false, base: 'column', surface: 'painted', roomLight: 1,
   cards: false, cardMethod: 'scene', cardRank: 'A', cardSuit: 'spades', cardScale: 1.2,
   clock: false, dust: 0, flicker: false, flickerEvery: 20, flickerStrength: 0.6,
   filmBright: 1, filmWarm: 0, wrap: 0,
@@ -174,7 +174,7 @@ export function createScene(canvas: HTMLCanvasElement, host: HTMLElement, data: 
   }
   const drawFelt = () => table.draw({spots: cardSpots(data.plan, camera), logo: state.logo, felt: state.felt, scale: camera.scale});
   function apply() {
-    useCards(); rooms.show(state.room); rail.set({light: state.railLight, colour: state.railColour, cups: state.cups}); film.place(edgeZ, state.fold, state.focus !== 'off', camera.scale); film.setKey({lo: state.keyLo, hi: state.keyHi, shadow: state.shadow}); film.setGrade(state.filmBright, state.filmWarm);
+    useCards(); rooms.show(state.room); rail.set({cups: state.cups}); film.place(edgeZ, state.fold, state.focus !== 'off', camera.scale); film.setKey({lo: state.keyLo, hi: state.keyHi, shadow: state.shadow}); film.setGrade(state.filmBright, state.filmWarm);
     if (guides) guides.visible = state.guides; resize(); data.onChange();
   }
   function resize() {
@@ -276,7 +276,7 @@ export function createScene(canvas: HTMLCanvasElement, host: HTMLElement, data: 
     const cardsOn = state.cards && !part?.frame; if (!cardsOn) cardLayer?.off?.();
     if (playing) film.setTexture(cardsOn && cardLayer?.update(playing.video, players.frame(), track, {rank: state.cardRank, suit: state.cardSuit, scale: state.cardScale}, part?.cards) ? cardLayer.texture : playing.texture);
     const focusOn = state.focus !== 'off', u = blurMat.uniforms, scale = canvas.width / W;
-    light.update(seconds, state.fan, state.fanStrength, state.fanPeriod); rail.update(seconds);
+    light.update(seconds, state.fan, state.fanStrength, state.fanPeriod);
     if (focusOn) { const goal = focusTarget(seconds), dt = Math.max(0, Math.min(0.2, seconds - lastSeconds)); focusWhat = goal.what;
       focusNow = Number.isFinite(focusNow) && Number.isFinite(dt) ? focusNow + (goal.distance - focusNow) * (1 - Math.exp(-dt / 0.22)) : goal.distance; } else focusNow = NaN;
     lastSeconds = seconds;
