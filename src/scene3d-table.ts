@@ -6,10 +6,10 @@
 // lacquered walnut apron under its overhang. Its sheen comes from a small painted room that only the rail's own materials
 // reflect (an environment map of their own), so the scene's lights, the film and everything in the home view stay as they were.
 import * as T from 'three';
-import type {Spot} from './scene3d-geometry.ts';
+import {BET, type Spot} from './scene3d-geometry.ts';
 
 export const FELTS: Record<string, [string, string]> = {green: ['#134232', '#0a2a20'], blue: ['#16325e', '#0b1c38'], vin: ['#571a26', '#330d15'], svart: ['#23272a', '#101214']};
-const TABLE = {a: 0.95, b: 0.6, rail: 0.1}; // half width, depth toward the players, rail width
+export const TABLE = {a: 0.95, b: 0.6, rail: 0.1}; // half width, depth toward the players, rail width
 const PRINT = {width: 2.8, depth: 1.4, back: 0.1, pxW: 4096, pxH: 2048}; // the felt image covers width x depth metres and starts `back` behind the dealer edge
 const GOLD = '#d8b665';
 
@@ -213,7 +213,7 @@ export function createTable(lit: <M extends T.Material>(material: M) => M = m =>
     const half = g.measureText(logo).width / 2; g.lineWidth = 2; g.strokeStyle = GOLD; g.globalAlpha = 0.6; for (const d of [-1, 1]) { g.beginPath(); g.moveTo(X(0) + d * (half + 24), logoY); g.lineTo(X(0) + d * (half + 110), logoY); g.stroke(); }
     g.restore();
     // card places from the placement plan, at the plan's own card width; a bet circle in front of each seat's first card
-    const cardW = 0.063 / print.scale * k, cardH = 0.07 / print.scale * k, betOffset = 0.068 * k, betRadius = 0.027 * k;
+    const cardW = 0.063 / print.scale * k, cardH = 0.07 / print.scale * k, betOffset = BET.offset * k, betRadius = BET.radius * k;
     for (const p of print.spots) { const first = p.id.endsWith('C1'); g.save(); g.translate(X(p.x), Y(p.s)); g.strokeStyle = GOLD; g.globalAlpha = first ? 0.6 : 0.25; g.lineWidth = 3;
       g.beginPath(); g.roundRect(-cardW / 2, -cardH / 2, cardW, cardH, 8); g.stroke();
       if (first && p.id[0] === 'P') { g.globalAlpha = 0.5; g.beginPath(); g.arc(0, betOffset, betRadius, 0, 7); g.stroke(); g.font = `600 ${Math.round(0.02 * k)}px Georgia, serif`; g.fillStyle = GOLD; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(p.id[1], 0, betOffset); }

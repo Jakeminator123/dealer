@@ -3,12 +3,12 @@
 // With focus off, table and film are drawn straight to the screen and stay sharp (the look of checkpoint v1).
 // With focus on, they go through a full-size target and are blurred by their own distance from the focus.
 import * as T from 'three';
-import {DEALER_LENS_ESTIMATE, FILM, aimCorrection, cameraFromContract, cardFocusPixel, cardPixel, cardSpots, cloudLevel, filmToScene, flickerLevel, solveCamera, viewFovDeg, type CardTrack, type FilmCamera} from './scene3d-geometry.ts';
+import {DEALER_LENS_ESTIMATE, FILM, aimCorrection, betSpots, cameraFromContract, cardFocusPixel, cardPixel, cardSpots, cloudLevel, filmToScene, flickerLevel, sceneToSpot, solveCamera, spotToScene, viewFovDeg, type CardTrack, type FilmCamera} from './scene3d-geometry.ts';
 import {createFilmLayers, createPlayers} from './scene3d-film.ts';
 import {createFanLight} from './scene3d-light.ts';
 import {createChipTray, TRAY} from './scene3d-props.ts';
 import {createRooms, type RoomId} from './scene3d-room.ts';
-import {createTable} from './scene3d-table.ts';
+import {TABLE, createTable} from './scene3d-table.ts';
 
 export type SceneState = {
   room: RoomId; blur: number; depthBlur: boolean; dofRange: number; exposure: number; panoramaTurn: number;
@@ -81,7 +81,10 @@ export function createScene(canvas: HTMLCanvasElement, host: HTMLElement, data: 
   let camera: FilmCamera = DEALER_LENS_ESTIMATE, pitch = 0, edgeZ = -1, guides: T.Group | null = null, track: CardTrack | null = null;
   let focusNow = NaN, focusWhat = '', lastSeconds = NaN, moved = false;
   // Rendered cards: the module is fetched the first time they are switched on, and switched off again if it cannot be read.
-  type CardLayer = {texture: T.Texture; update(video: HTMLVideoElement, frame: number, track: unknown, choice: {rank: string; suit: string; scale: number}): boolean};
+  type CardLayer = {texture: T.Texture; update(video: HTMLVideoElement, frame: number, track: unknown, choice: {rank: string; suit: string; scale: number}, extra?: object | null): boolean};
+  // Things another page adds: props lying on the table (built with the table, drawn under the film) and a call after every drawn frame.
+  type Prop = {group: T.Object3D; build(edgeZ: number, scale: number): void};
+  const props: Prop[] = [], frameCalls = new Set<() => void>(); let built = false;
   let cardLayer: CardLayer | null = null, cardLoad: Promise<void> | null = null, cardError = '';
   function loadCards() { cardLoad ??= import('./scene3d-cards.ts').then(m => { cardLayer = m.createCardLayer(data.contract); cardError = ''; }, error => { cardError = String((error as Error)?.message ?? error); state.cards = false; cardLoad = null; }).then(() => data.onChange()); }
 
@@ -128,7 +131,7 @@ export function createScene(canvas: HTMLCanvasElement, host: HTMLElement, data: 
     camera = filmCamera(); const solved = solveCamera(camera); pitch = solved.pitch; edgeZ = -solved.edgeDistance;
     filmCam.fov = solved.fovYDeg; filmCam.aspect = W / H; filmCam.position.set(0, camera.heightM, 0); filmCam.rotation.set(-pitch, 0, 0, 'YXZ'); filmCam.updateProjectionMatrix(); filmCam.updateMatrixWorld(true);
     filmVP.multiplyMatrices(filmCam.projectionMatrix, filmCam.matrixWorldInverse);
-    table.build(edgeZ, camera.scale, state.tray ? TRAY : undefined); tray.group.visible = state.tray; if (state.tray) tray.build(edgeZ, camera.scale); drawFelt(); rooms.place(camera); light.place(camera); buildGuides(); focusNow = NaN; apply();
+    table.build(edgeZ, camera.scale, state.tray ? TRAY : undefined); tray.group.visible = state.tray; if (state.tray) tray.build(edgeZ, camera.scale); drawFelt(); rooms.place(camera); light.place(camera); buildGuides(); focusNow = NaN; built = true; for (const prop of props) prop.build(edgeZ, camera.scale); apply();
   }
   const drawFelt = () => table.draw({spots: cardSpots(data.plan, camera), logo: state.logo, felt: state.felt, scale: camera.scale});
   function apply() {
@@ -164,8 +167,8 @@ export function createScene(canvas: HTMLCanvasElement, host: HTMLElement, data: 
 
   function render(seconds = performance.now() / 1000) {
     targets(); updateView(seconds);
-    const shown = players.current;
-    if (shown) film.setTexture(state.cards && cardLayer?.update(shown.video, players.frame(), track, {rank: state.cardRank, suit: state.cardSuit, scale: state.cardScale}) ? cardLayer.texture : shown.texture);
+    const shown = players.current, part = players.part; if (part && part.track !== undefined) track = part.track; // a part that names its track brings it along
+    if (shown) film.setTexture(state.cards && cardLayer?.update(shown.video, players.frame(), track, {rank: state.cardRank, suit: state.cardSuit, scale: state.cardScale}, part?.cards) ? cardLayer.texture : shown.texture);
     const room = rooms.rooms[state.room], focusOn = state.focus !== 'off', u = blurMat.uniforms, scale = canvas.width / W;
     rooms.followCamera(state.room, view.position, state.panoramaTurn); light.update(seconds, state.fan, state.fanStrength, state.fanPeriod);
     const dim = rooms.ambient(state.room, seconds, new Date(), {clock: state.clock, air: state.dust, lamp: state.flicker ? flickerLevel(seconds, state.flickerEvery, state.flickerStrength) : 1, cloud: state.flicker ? cloudLevel(seconds, state.flickerEvery, state.flickerStrength * 0.5) : 1}, canvas.height / H);
@@ -185,6 +188,7 @@ export function createScene(canvas: HTMLCanvasElement, host: HTMLElement, data: 
       u.depthMap.value = f.depthTexture; u.mode.value = 2; outMat.uniforms.fg.value = blur(f, g, h, state.blur * scale).texture; outMat.uniforms.useFg.value = 1; }
     renderer.setRenderTarget(null); renderer.setClearColor(0x050403, 1); renderer.clear(); outMat.uniforms.map.value = roomResult.texture; outMat.uniforms.exposure.value = state.exposure * room.exposure * dim; pass(outMat, null);
     if (!focusOn) { renderer.clearDepth(); renderer.render(fg, view); }
+    for (const call of frameCalls) call();
   }
   let running = false; const loop = (ms: number) => { if (!running) return; render(ms / 1000); requestAnimationFrame(loop); };
 
@@ -194,6 +198,28 @@ export function createScene(canvas: HTMLCanvasElement, host: HTMLElement, data: 
     home() { Object.assign(state, {yaw: 0, pitch: 0, zoom: 1, dx: 0, dy: 0, dz: 0, sway: false}); apply(); },
     set(patch: Partial<SceneState>) { if (patch.cards) loadCards(); const relens = 'lens' in patch && patch.lens !== state.lens || 'scale' in patch && patch.scale !== state.scale || 'tray' in patch && patch.tray !== state.tray, reprint = 'logo' in patch || 'felt' in patch; Object.assign(state, patch); if (relens) rebuild(); else { if (reprint) drawFelt(); apply(); } },
     setTrack(next: CardTrack | null) { track = next; },
+    // ---- for a page that puts a game on the table. Positions are dealer metres: x across the table, s from the dealer-side
+    // edge toward the players, y above the felt (as cardSpots and betSpots give them).
+    canvas,
+    // Card places and bet rings as the film camera in use lays them on the felt. They move with the lens and the scale, so a
+    // prop reads them in its build(), which runs again whenever those change.
+    spots() { return {cards: cardSpots(data.plan, camera), bets: betSpots(data.plan, camera)}; },
+    lit: light.hook, // a prop's materials go through this, or focus and the fan's shade pass them by
+    addProp(prop: Prop) { props.push(prop); fg.add(prop.group); if (built) prop.build(edgeZ, camera.scale); return () => { const i = props.indexOf(prop); if (i >= 0) props.splice(i, 1); fg.remove(prop.group); }; },
+    onFrame(call: () => void) { frameCalls.add(call); return () => { frameCalls.delete(call); }; },
+    // Where a table point is in the picture as last drawn: CSS pixels from the canvas's top left corner, and how many
+    // pixels a dealer metre is there.
+    project(x: number, s: number, y = 0) {
+      const p = new T.Vector3(...spotToScene(camera, x, s, y)), depth = -p.clone().applyMatrix4(view.matrixWorldInverse).z, w = canvas.clientWidth, h = canvas.clientHeight; p.project(view);
+      return {x: (p.x + 1) / 2 * w, y: (1 - p.y) / 2 * h, visible: depth > view.near && Math.abs(p.x) <= 1 && Math.abs(p.y) <= 1, pxPerM: depth > 0 ? h / 2 / Math.tan(view.fov * RAD / 2) / depth * camera.scale : 0};
+    },
+    // The felt point under a pointer position (clientX/clientY), or null beside the felt.
+    pick(clientX: number, clientY: number) {
+      const box = canvas.getBoundingClientRect(), nx = (clientX - box.left) / box.width * 2 - 1, ny = 1 - (clientY - box.top) / box.height * 2; if (Math.abs(nx) > 1 || Math.abs(ny) > 1) return null;
+      const dir = new T.Vector3(nx, ny, 0.5).unproject(view).sub(view.position).normalize(); if (dir.y > -1e-6) return null;
+      const t = -view.position.y / dir.y, spot = sceneToSpot(camera, view.position.x + dir.x * t, view.position.z + dir.z * t);
+      return spot.s >= 0 && (spot.x / TABLE.a) ** 2 + (spot.s / TABLE.b) ** 2 <= 1 ? spot : null;
+    },
     // What the picture is right now: the film itself, the film turned (still exact) or the film seen from another place (approximate).
     status() { const turned = !!(state.yaw || state.pitch || state.zoom !== 1 || state.sway); return {view: moved || state.sway && state.mode === 'lean' ? 'moved' : turned ? 'turned' : 'home', camera, focus: state.focus === 'off' ? null : {what: focusWhat, distance: focusNow, tracked: !!track}, cards: {on: state.cards && !!cardLayer, loading: state.cards && !cardLayer, error: cardError, tracked: !!track}}; },
   };

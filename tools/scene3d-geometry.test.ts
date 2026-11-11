@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
-import {DEALER_LENS_ESTIMATE, FILM, aimCorrection, cameraFromContract, cardSpots, filmToTable, solveCamera, tableToFilm, viewFovDeg, type FilmCamera} from '../src/scene3d-geometry.ts';
+import {BET, DEALER_LENS_ESTIMATE, FILM, aimCorrection, betSpots, cameraFromContract, cardSpots, filmToTable, sceneToSpot, solveCamera, spotToScene, tableToFilm, viewFovDeg, type FilmCamera} from '../src/scene3d-geometry.ts';
 
 const contract = JSON.parse(await readFile('data/scene-contract.json', 'utf8')), plan = JSON.parse(await readFile('placements/default.json', 'utf8'));
 const near = (actual: number, expected: number, tolerance: number, what: string) => assert.ok(Math.abs(actual - expected) <= tolerance, `${what}: ${actual} mot ${expected} ± ${tolerance}`);
@@ -108,4 +108,26 @@ test('a passing cloud dims smoothly once per period', async () => {
   for (let slot = 0; slot < 30; slot++) { let first = -1, last = -1, lowest = 1, jump = 0, before = 1;
     for (let i = 0; i < 3000; i++) { const level = cloudLevel(slot * 30 + i * 0.01, 30, 0.5); if (level < 1) { if (first < 0) first = i; last = i; lowest = Math.min(lowest, level); } jump = Math.max(jump, Math.abs(level - before)); before = level; }
     assert.ok(last - first >= 290 && last - first <= 501, `period ${slot}: ${(last - first) / 100} s`); near(lowest, 0.5, 0.01, `period ${slot}: djupast`); assert.ok(jump < 0.02, `period ${slot}: mjuk, största steg ${jump}`); }
+});
+
+test('bet rings: one per player seat, in seat order, just past the first card', () => {
+  for (const c of [cameraFromContract(contract), DEALER_LENS_ESTIMATE]) {
+    const spots = cardSpots(plan, c), bets = betSpots(plan, c);
+    assert.deepEqual(bets.map(b => b.id), ['P1', 'P2', 'P3', 'P4', 'P5', 'P6', 'P7']);
+    for (const bet of bets) { const first = spots.find(p => p.id === bet.id + '.C1')!; assert.equal(bet.x, first.x); near(bet.s - first.s, BET.offset, 1e-12, 'ringen ligger bortom kortet'); assert.equal(bet.radius, BET.radius); }
+    assert.ok(bets[0].x < bets[3].x && bets[3].x < bets[6].x, 'P1 till vänster i bild, P7 till höger');
+  }
+  assert.deepEqual(betSpots(null, DEALER_LENS_ESTIMATE), []);
+});
+
+test('dealer metres and scene positions map both ways', () => {
+  for (const c of [cameraFromContract(contract), DEALER_LENS_ESTIMATE]) {
+    const {edgeDistance} = solveCamera(c), [x, y, z] = spotToScene(c, 0.3, 0.25, 0.01);
+    near(x, 0.3 * c.scale, 1e-12, 'x'); near(y, 0.01 * c.scale, 1e-12, 'y'); near(z, 0.25 * c.scale - edgeDistance, 1e-12, 'z');
+    const back = sceneToSpot(c, x, z); near(back.x, 0.3, 1e-12, 'x tillbaka'); near(back.s, 0.25, 1e-12, 's tillbaka');
+    assert.deepEqual(spotToScene(c, 0, 0), [0, 0, -edgeDistance]); // the dealer-side edge
+    // a card place laid on the felt by cardSpots is the same point the film shows there
+    const spot = cardSpots(plan, c).find(p => p.id === 'P4.C1')!, [sx, , sz] = spotToScene(c, spot.x, spot.s), n = plan.plan?.targets?.['P4.C1']?.geometry?.native ?? plan.targets['P4.C1'].geometry.native, film = tableToFilm(c, sx, sz);
+    near(film.x, n.u * (FILM.width - 1), 1e-6, 'filmpixel x'); near(film.y, (1 - n.v) * (FILM.height - 1), 1e-6, 'filmpixel y');
+  }
 });

@@ -108,3 +108,16 @@ export function cloudLevel(seconds: number, every: number, strength: number): nu
   const slot = Math.floor(seconds / every), length = Math.min(every, 3 + hash(slot + 0.5) * 2), t = seconds - (slot * every + hash(slot) * (every - length));
   return t < 0 || t > length ? 1 : 1 - Math.min(1, strength) * Math.sin(Math.PI * t / length) ** 2;
 }
+
+// Bet rings: one per player seat, a little past the seat's first card toward the player. The felt prints them from
+// this and a game reads the same list, so print and game cannot drift apart. Dealer metres, seats in order.
+export const BET = {offset: 0.068, radius: 0.027};
+export type BetSpot = {id: string; x: number; s: number; radius: number};
+export function betSpots(plan: Parameters<typeof cardSpots>[0], c: FilmCamera): BetSpot[] {
+  return cardSpots(plan, c).filter(p => /^P[0-9]+[.]C1$/.test(p.id)).map(p => ({id: p.id.split('.')[0], x: p.x, s: p.s + BET.offset, radius: BET.radius}))
+    .sort((a, b) => Number(a.id.slice(1)) - Number(b.id.slice(1)));
+}
+// A point in dealer metres (x across the table, s from the dealer-side edge toward the players, y above the felt) as a
+// scene position, and a scene position on the felt back in dealer metres.
+export function spotToScene(c: FilmCamera, x: number, s: number, y = 0): [number, number, number] { return [x * c.scale, y * c.scale, s * c.scale - solveCamera(c).edgeDistance]; }
+export function sceneToSpot(c: FilmCamera, x: number, z: number): {x: number; s: number} { return {x: x / c.scale, s: (z + solveCamera(c).edgeDistance) / c.scale}; }
