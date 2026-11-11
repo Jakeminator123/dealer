@@ -26,12 +26,13 @@
     "evidence": "evidence/generation-method-audit.json"
   },
   "review": {
-    "decision": "PENDING",
+    "decision": "REJECTED",
     "basis": "Arkivklipp, granskat 2026-11-11 var sjätte ruta i 0,4 skala. Filmens ruta 0 är samma ruta som f93 i givens film (0 bildpunkter över 40): gamla labbets svans är givens f93–96 följt av en egen retur. Handen lyfter, går upp f12–30 och ner till skon f36–42, nyp på det gula kortet f48–63. De tre korten ligger kvar. Slutrutan mot REDO-ankaret: 31 bildpunkter över 40 utanför korten.",
     "limitations": "Möjlig variant: öppen handflata lyft till axelhöjd f12–30. Inte granskad ruta för ruta. Filmen är RGB-kodad och skiljer cirka 1,25 i medelnivå från givens film (0 bildpunkter över 40). Filmen är gamla labbets förlustfria sammanfogning av betalda filmer (RGB, H.264 High 4:4:4 Predictive); uppspelning i webbläsare är inte prövad. Samma rutor finns utan RGB: givens film f93–96 följt av den betalda returen dealer-third-to-redo-02/original.mp4 f0–59, men då börjar de två returerna på olika rutor. Gamla labbets egen dom: lokalt godkänd; första försöket underkändes för ny kortkontakt.",
     "colorDoesNotProvePhysicalSide": true,
     "userAccepted": false,
-    "productionReady": false
+    "productionReady": false,
+    "userReview": "Jakob 2026-11-11: underkänd i labbet."
   },
   "postProcessing": "Old lab: decoded frames of the paid films in importedFrom.paidParts concatenated in that order and encoded lossless (H.264 High 4:4:4 Predictive, RGB gbrp). Copied unchanged; nothing was generated or re-encoded for this import.",
   "generationRef": null,

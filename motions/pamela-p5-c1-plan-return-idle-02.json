@@ -22,12 +22,13 @@
     "evidence": "evidence/generation-method-audit.json"
   },
   "review": {
-    "decision": "PENDING",
+    "decision": "ACCEPTED",
     "basis": "Oberoende rutgranskad 2026-11-11 mot en andra tagning av samma beställning: användbar med anmärkning, den som bör visas först. Ett rent lyft: pek- och långfingertopp vilar på kortets övre kant f0–21 och lyfter en gång f21–22; inget glid, tryck eller andra beröring. Kortet rör sig aldrig (ruta 84×68 från f10 till f59, tyngdpunkten inom 0,3 px från f25, högst 0,7 px från slutbilden), ingen krympning i de sista 15 rutorna, inget tryck på kortet, inget andra kort; det gula kortet ligger kvar i skon. Fingrarna är avslappnade under vägen: ingen knuten näve, ingen lyft handflata, ingen omväg mot skon. Handen ligger i vila från f48. Ruta 3 mot första bilden: handen −3/−1 px, kortet −1/+1 px; ruta 57 mot slutbilden: huvudet −1 px, allt annat 0. Den andra handen och skon rör sig 0 px. Slutet ligger inom 1–2 px från vilofilmernas startruta.",
     "limitations": "Handen går inte lågt tillbaka: den stiger i en båge till kavajfickans höjd (handens överkant 115 px över viloläget vid f33, fingertopparna 77 px över filtlinjen) och svävar lätt f33–36. Ryck vid f28 (54,5 px mot 27,8 och 11,5 i rutorna omkring); större steg var femte ruta (f28, 33, 38). Rutorna 9–13 är nästan identiska. Huvudet glider åt höger till f57–58 (cirka 9 px över f48–58), så hela posen är stilla först i de sista två till tre rutorna. Grönt G driver ner 17 nivåer och slutar 7 under slutbilden. Ögonen slutna f31–32. Mjukt mörkt skuggband längs filtlinjen till höger om kavajen f28–40. Handens verkliga höjd går inte att skilja från djup med en kamera. Inte sedd i fart; nycklingen är inte prövad.",
     "colorDoesNotProvePhysicalSide": true,
-    "userAccepted": false,
-    "productionReady": false
+    "userAccepted": true,
+    "productionReady": false,
+    "userReview": "Jakob 2026-11-11: godkänd i labbet."
   },
   "postProcessing": "none",
   "generationRef": "assets/motions/pamela-p5-c1-plan-return-idle-02/generation.json",

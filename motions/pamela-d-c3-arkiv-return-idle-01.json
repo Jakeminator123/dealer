@@ -26,12 +26,14 @@
     "evidence": "evidence/generation-method-audit.json"
   },
   "review": {
-    "decision": "PENDING",
+    "decision": "ACCEPTED",
     "basis": "Arkivklipp, granskat 2026-11-11 var sjätte ruta i 0,3 skala. Samma film fortsätter: f93 följer direkt på givens sista ruta f92. Handen går rakt in till vila, framme vid cirka f108. De tre korten ligger kvar.",
     "limitations": "Slutbilden ligger längre från vilobilden än de andra returerna: 168 bildpunkter över 40 utanför korten (övriga 20–64). Ljusnivån ändras i de två sista rutorna f121–122 (medel 2,6 och 1,8, 0 bildpunkter över 40). Inte granskad ruta för ruta. Filmen är gamla labbets förlustfria sammanfogning av betalda filmer (H.264 High 4:4:4 Predictive); uppspelning i webbläsare är inte prövad. Gamla labbets egen dom: lokalt godkänd.",
     "colorDoesNotProvePhysicalSide": true,
-    "userAccepted": false,
-    "productionReady": false
+    "userAccepted": true,
+    "productionReady": false,
+    "acceptedAs": "VARIANT",
+    "userReview": "Jakob 2026-11-11: godkänd som variant i labbet."
   },
   "postProcessing": "Old lab: decoded frames of the paid films in importedFrom.paidParts concatenated in that order and encoded lossless (H.264 High 4:4:4 Predictive, yuv420p). Copied unchanged; nothing was generated or re-encoded for this import.",
   "generationRef": null,
