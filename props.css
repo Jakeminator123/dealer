@@ -36,7 +36,12 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--acc);outline-of
 .seg.wrap button:first-child{grid-column:1/-1} /* the way back to the original is the widest button */
 .seg button{padding:6px 4px}
 .seg button[aria-pressed=true]{background:var(--acc);color:#1a1404;border-color:var(--acc);font-weight:600}
+.seg.off,.seg button:disabled{opacity:.4}
+.seg button:disabled{cursor:default;border-color:var(--line)}
+#stage-more.off{display:none}
+.mini{margin:9px 0 0;color:var(--dim);font-size:11px}
 .btns{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.btns button[hidden]{display:none}
 .note{color:var(--dim);font-size:12px;margin:6px 0 0;min-height:1.45em}
 .note.warn{color:var(--warn)}
 @media (max-width:900px){#app{grid-template-columns:1fr;grid-template-rows:58vh auto}#panel{border-left:0;border-top:1px solid var(--line)}}

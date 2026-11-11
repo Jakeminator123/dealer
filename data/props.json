@@ -37,8 +37,8 @@
       "lengthMetres": 2.1,
       "triangles": 60000,
       "textureSize": 2048,
-      "stage": {"feltY": 0.99, "edgeZ": -0.75, "halfWidth": 0.93},
-      "note": "A whole table with its own felt print, five bet spots, a tray and a shoe modelled in; 937 290 triangles in the source. Converted for the model lab only (props.html); the game does not use it."
+      "stage": {"feltY": 0.99, "edgeZ": -0.68, "halfWidth": 0.93},
+      "note": "A whole table with its own felt print, five bet spots, a tray and a shoe modelled in; 937 290 triangles in the source. Converted for the model lab only (props.html); the game does not use it. Measured 2026-11-11 on the converted file: the top's dealer-side edge lies at z -0.665 (middle) to -0.69 (beside the tray), hence edgeZ -0.68 (was -0.75, 7 cm behind it); the felt is 0.99 by the dealer's edge but the whole top (felt and rail) slopes 3.6 degrees toward the players (0.917 at z +0.55) on a level base; the chip tray is sunk flush with the felt (top 1.00)."
     }
   ]
 }

@@ -22,6 +22,13 @@
     <fieldset><legend>Scen</legend>
       <div class="seg" id="stages"></div>
       <p class="note" id="stage-note"></p>
+      <div id="stage-more" class="off">
+        <p class="mini">Rum</p><div class="seg" id="rooms"></div>
+        <p class="mini">Ljuset på bordet</p><div class="seg" id="stage-lights"></div>
+        <p class="mini">Golv</p><div class="seg" id="floors"></div>
+        <p class="mini">Hennes händer</p><div class="seg" id="hands"></div>
+        <p class="note" id="stage-more-note"></p>
+      </div>
     </fieldset>
     <fieldset><legend>Utseende</legend>
       <div class="seg wrap" id="looks"></div>
@@ -37,7 +44,7 @@
       <div class="seg" id="lights"></div>
       <label class="row">Exponering<input type="range" id="exposure" min="50" max="200" step="5"><output id="exposure-out"></output></label>
     </fieldset>
-    <div class="btns"><button type="button" id="home">Återställ vyn</button></div>
+    <div class="btns"><button type="button" id="home">Återställ vyn</button><button type="button" id="back-view" hidden>Backa: se ben och golv</button></div>
     <p class="note">Dra i bilden för att vrida. Rulla för att zooma. Dubbelklicka för att börja om.</p>
   </aside>
 </div>

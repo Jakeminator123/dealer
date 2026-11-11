@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {LOOKS, MOTIONS, LIGHTS, DEFAULTS, ACCENT, SUBSTANCE, MOTION, accentScore, goldShare, analyse, paintLook, glossFactor, alignWinding, motionPose, propList, modelName, sizeText, type LookId} from '../src/props-lab.ts';
-import {stagePlacement, stageFit} from '../src/props-stage.ts';
+import {LOOKS, MOTIONS, LIGHTS, DEFAULTS, ACCENT, SUBSTANCE, MOTION, STAGE_LIGHTS, FLOORS, HANDS, accentScore, goldShare, analyse, paintLook, glossFactor, alignWinding, motionPose, propList, modelName, sizeText, type LookId} from '../src/props-lab.ts';
+import {stagePlacement, stageFit, ROOMS, KEY, PHOTO, PHOTO_MAPS, panoramaDirection, turnY, roomKey, keyStrength, footprint} from '../src/props-stage.ts';
 import {solveCamera, type FilmCamera} from '../src/scene3d-geometry.ts';
 import {TABLE as FILM_TABLE} from '../src/scene3d-table.ts';
 
@@ -14,7 +14,7 @@ const image = (...colours: number[][]) => colours.flatMap(c => [...c, 255]);
 
 test('the module is read without a page, and the panel offers what was asked for', () => {
   assert.equal(typeof document, 'undefined');
-  assert.deepEqual(LOOKS.map(l => l.label), ['Som den kom', 'Elfenben', 'Guld', 'Elfenben och guld', 'Svart lack och guld']);
+  assert.deepEqual(LOOKS.map(l => l.label), ['Som den kom', 'Elfenben', 'Guld', 'Elfenben och guld', 'Svart lack och guld', 'Fotomaterial']);
   assert.equal(LOOKS[0].id, 'original', 'the original is the first choice');
   assert.deepEqual(LOOKS.filter(l => l.accents).map(l => l.id), ['ivory-gold', 'lacquer-gold'], 'the looks the gold slider belongs to');
   assert.deepEqual(MOTIONS.map(m => m.id), ['still', 'turn', 'present', 'sweep']);
@@ -82,6 +82,7 @@ test('a look is painted as a colour image and a surface image of the same size',
   const again = paintLook('ivory', analysis, 0.5, two);
   assert.equal(again.colour, two.colour); assert.equal(again.surface, two.surface); assert.deepEqual(again, ivory);
   assert.throws(() => paintLook('original' as LookId, analysis, 0.5), /original/);
+  assert.throws(() => paintLook('photo' as LookId, analysis, 0.5), /photo/, 'the photographed look is laid on in the shader, not painted');
   assert.deepEqual(analyse([]), {score: new Uint8Array(0), light: new Uint8Array(0)});
 });
 
@@ -147,4 +148,59 @@ test('the film of the dealer is laid on a table model: felt on felt, edge on edg
   assert.deepEqual(stageFit({feltY: 0.99, edgeZ: -0.75, halfWidth: 0.93, extra: 1}), fit);
   for (const broken of [null, undefined, {}, {feltY: 1, edgeZ: 0}, {feltY: '1', edgeZ: 0, halfWidth: 1}, {feltY: 1, edgeZ: 0, halfWidth: 0}, {feltY: NaN, edgeZ: 0, halfWidth: 1}]) assert.equal(stageFit(broken), null);
   assert.deepEqual(propList({props: [{id: 'table', stage: fit}, {id: 'shoe', stage: {feltY: 1}}]}), [{id: 'table', stage: fit}, {id: 'shoe'}]);
+});
+
+test('the stage offers three rooms and begins as it was, except that the table is lit by the room it stands in', () => {
+  assert.deepEqual(ROOMS.map(r => r.id), ['vegas', 'la', 'skog']);
+  assert.deepEqual(ROOMS.map(r => r.file), ['assets/scene/panorama-vegas.jpg', 'assets/scene/panorama-la.jpg', 'assets/scene/panorama-skog.jpg']);
+  for (const room of ROOMS) { assert.ok(room.label.length > 0 && room.shown > 0 && room.shown <= 1); assert.ok(room.ground.eye > 0 && room.ground.walls > room.ground.eye && room.ground.ceiling > room.ground.eye); }
+  assert.equal(ROOMS[0].turn, Math.PI, 'Las Vegas is turned as the stage showed it before');
+  assert.deepEqual([STAGE_LIGHTS, FLOORS, HANDS].map(list => list.map(item => item.id)), [['studio', 'room'], ['none', 'room'], ['behind', 'felt']]);
+  for (const list of [STAGE_LIGHTS, FLOORS, HANDS]) for (const item of list) assert.ok(item.label.length > 0 && item.note.length > 0);
+  assert.deepEqual([DEFAULTS.room, DEFAULTS.stageLight, DEFAULTS.floor, DEFAULTS.hands, DEFAULTS.stage], ['vegas', 'room', 'none', 'behind', 'alone'], 'the lab still opens alone; on the stage only the light is new from the start');
+  assert.deepEqual(Object.values(PHOTO_MAPS).map(name => `${name}.webp`).sort(), ['brown_leather-nor_gl.webp', 'brown_leather-rough.webp', 'denim_fabric-nor_gl.webp', 'denim_fabric-rough.webp', 'wood_table-diffuse.webp', 'wood_table-nor_gl.webp', 'wood_table-rough.webp'], 'the photographed maps are those of data/scene-materials.json');
+  for (const v of [...Object.values(PHOTO.tile), ...Object.values(PHOTO.relief)]) assert.ok(v > 0);
+});
+
+test('a panorama pixel is a direction in three.js\'s equirectangular frame, and the room\'s turn lays it in the world', () => {
+  const near = (a: number[], b: number[], eps = 1e-9) => a.every((v, i) => Math.abs(v - b[i]) < eps);
+  const W = 400, H = 200, at = (u: number, v: number) => panoramaDirection(u * W - 0.5, v * H - 0.5, W, H);
+  assert.ok(near(at(0.5, 0.5), [1, 0, 0]), 'the middle of the picture lies toward +x');
+  assert.ok(near(at(0.75, 0.5), [0, 0, 1]) && near(at(0.25, 0.5), [0, 0, -1]), 'three quarters toward +z, a quarter toward -z');
+  assert.ok(panoramaDirection(0, 0, W, H)[1] > 0.999 && panoramaDirection(0, H - 1, W, H)[1] < -0.999, 'the top row is straight up, the bottom row straight down');
+  for (let i = 0; i < 50; i++) { const d = panoramaDirection(i * 7 % W, i * 3 % H, W, H); assert.ok(Math.abs(Math.hypot(...d) - 1) < 1e-12); }
+  // Turned half round (Las Vegas), what lies at three quarters of the picture stands behind her (-z, away from the camera).
+  assert.ok(near(turnY(at(0.75, 0.5), Math.PI), [0, 0, -1]));
+  assert.ok(near(turnY([1, 0.3, 0], Math.PI / 2), [0, 0.3, -1]) && near(turnY([0.2, 0.5, 0.7], 0), [0.2, 0.5, 0.7]));
+});
+
+test('the key shines from where the panorama is brightest, and gives the felt the light her hands have in the film', () => {
+  // A dark room (sRGB 40) with one warm lamp: a block of pixels high up at three quarters of the picture.
+  const W = 128, H = 64, pixels = new Uint8Array(W * H * 4), lamp = {c0: 92, c1: 100, r0: 8, r1: 14};
+  for (let r = 0; r < H; r++) for (let c = 0; c < W; c++) { const p = (r * W + c) * 4, lit = c >= lamp.c0 && c < lamp.c1 && r >= lamp.r0 && r < lamp.r1; pixels.set(lit ? [255, 200, 120, 255] : [40, 40, 40, 255], p); }
+  const key = roomKey(pixels, W, H), toward = panoramaDirection((lamp.c0 + lamp.c1) / 2 - 0.5, (lamp.r0 + lamp.r1) / 2 - 0.5, W, H);
+  assert.ok(key.direction[0] * toward[0] + key.direction[1] * toward[1] + key.direction[2] * toward[2] > 0.99, 'toward the lamp');
+  assert.ok(Math.abs(Math.hypot(...key.direction) - 1) < 1e-9);
+  assert.equal(key.colour[0], 1); assert.ok(key.colour[1] < 1 && key.colour[2] < key.colour[1], 'its colour is the lamp\'s, warm');
+  // A grey room lights a surface facing up with its own brightness, and its brightest share of the sky carries that share of its
+  // light; the lamp carries far more than its share. A black room has no key to speak of.
+  const grey = new Uint8Array(W * H * 4).fill(128), black = new Uint8Array(W * H * 4); for (let i = 3; i < black.length; i += 4) black[i] = 255;
+  const even = roomKey(grey, W, H); assert.ok(Math.abs(even.up - ((128 / 255 + 0.055) / 1.055) ** 2.4) < 1e-6);
+  assert.ok(Math.abs(even.share - KEY.share) < 0.005, `an even sky: ${even.share}`); assert.ok(key.share > 5 * even.share && key.share <= 1, `the lamp: ${key.share}`);
+  assert.deepEqual(roomKey(black, W, H), {direction: [0, 1, 0], colour: [1, 1, 1], up: 0, share: 0});
+  // Only the sky half counts: a bright floor is no lamp.
+  const floor = new Uint8Array(W * H * 4); for (let r = 0; r < H; r++) for (let c = 0; c < W; c++) floor.set(r > H * 0.75 ? [255, 255, 255, 255] : [30, 30, 30, 255], (r * W + c) * 4);
+  assert.ok(roomKey(floor, W, H).direction[1] > 0.2, 'the key comes from above the horizon');
+  // Its strength: what the room gives a surface facing up and the key together make KEY.table; a low key is counted as KEY.softest high.
+  const up = 0.1, overhead = {direction: [0, 1, 0] as [number, number, number], colour: [1, 1, 1] as [number, number, number], up, share: 1};
+  assert.ok(Math.abs(keyStrength(overhead, 0.5) / Math.PI + up * 0.5 - KEY.table) < 1e-12);
+  assert.equal(keyStrength({...overhead, up: 5}, 1), 0, 'a room that is bright enough needs no key');
+  const low = {...overhead, direction: [Math.cos(0.1), Math.sin(0.1), 0] as [number, number, number]};
+  assert.ok(Math.abs(keyStrength(low, 0.5) - keyStrength(overhead, 0.5) / KEY.softest) < 1e-9);
+});
+
+test('where a model meets the floor', () => {
+  const positions = [0.5, 0, 0.2, -0.4, 0.01, -0.3, 0.9, 0.5, 0.9, -1, 1, -1];
+  assert.deepEqual(footprint(positions, 0.05), {x0: -0.4, z0: -0.3, x1: 0.5, z1: 0.2}, 'only what is lower than the line');
+  assert.equal(footprint([0, 1, 0], 0.05), null); assert.equal(footprint([], 0.05), null);
 });
