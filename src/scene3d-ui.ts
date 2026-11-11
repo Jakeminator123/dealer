@@ -1,6 +1,8 @@
 // Page code of scene3d.html: reads the contract, the placement plan and the clip bank, builds the control panel
 // and wires mouse and keyboard to the scene. Everything is read only; nothing here saves anything.
+import {buildGraph, resolveRound, type Step} from './clip-graph.ts';
 import {createScene, DEFAULTS, type SceneState} from './scene3d-view.ts';
+import type {Part} from './scene3d-film.ts';
 import type {CardTrack} from './scene3d-geometry.ts';
 import type {RoomId} from './scene3d-room.ts';
 
@@ -15,9 +17,15 @@ const read = async (url: string, what: string) => { const res = await fetch(url)
 const [contract, placements, bank] = await Promise.all([read('data/scene-contract.json', 'Scenkontraktet'), read('api/placements', 'Placeringsplanen'), read('api/clip-bank', 'Klippbanken')]);
 type Clip = {id: string; video: string};
 const clips: Clip[] = Object.entries((bank.media ?? {}) as Record<string, {video?: string | null}>).filter(([, m]) => typeof m.video === 'string').map(([id, m]) => ({id, video: m.video!})).sort((a, b) => a.id.localeCompare(b.id));
-const CHAIN = ['pamela-p4-c1-plan-deal-02', 'pamela-p4-c1-plan-return-idle-01'], chain = CHAIN.map(id => clips.find(c => c.id === id)).filter((c): c is Clip => !!c);
+// Rounds through the clip bank. The bank's own rule cuts each film (resolveRound): a deal stops on the frame its return was
+// generated from, so the hand does not lift and jump back at the join. A round with a step that cannot be played is left out.
+const graph = buildGraph(bank), deal: Step = {from: 'READY', to: 'P4.C1', take: 'pamela-p4-c1-plan-deal-02'};
+const round = (label: string, steps: Step[]): {label: string; parts: Part[]} => { const segments = resolveRound(graph, steps); return {label, parts: segments.every(s => s.video) ? segments.map(s => ({path: s.video!, start: s.start, end: s.end})) : []}; };
+const rounds = [round('Runda P4: giv → retur till vila', [deal, {from: 'P4.C1', to: 'IDLE', take: 'pamela-p4-c1-plan-return-idle-01'}]), round('Runda P4: giv → retur till redo', [deal, {from: 'P4.C1', to: 'READY', take: 'pamela-p4-c1-plan-return-ready-01'}])].filter(r => r.parts.length);
+const partsOf = (choice: string): Part[] => rounds[Number(choice.slice(6))]?.parts ?? [{path: clips.find(c => c.id === choice)!.video}];
 if (!clips.length) fail('Klippbanken innehåller inga filmer.');
 
+const first = clips.find(c => c.id === query.get('clip'))?.id ?? (rounds.length ? 'round:0' : clips[0].id);
 const missing = new Set<RoomId>(), setters: Partial<Record<keyof SceneState, (value: never) => void>> = {};
 const scene = createScene(canvas, stage, {contract, plan: placements.plan ?? placements, urls: {plate: 'assets/scene/room.png', panorama: 'assets/scene/panorama-vegas.jpg'}, onChange: () => { sync(); hud(); void followTrack(); }, onMissingRoom: room => { missing.add(room); hud(); }});
 const state = scene.state;
@@ -81,8 +89,8 @@ function build() {
     el('div', {className: 'btns'}, button('Hemvy (filmkameran)', () => scene.home()), button('Mobilvy', () => { scene.home(); scene.set({format: 'mob', pitch: -9, zoom: 1}); }), button('Grannstol (bryter)', () => { scene.home(); scene.set({mode: 'lean', dx: 0.55}); })),
     note('<b>Titta runt</b> vrider kameran på stället: det är exakt för en 2D-film. <b>Luta / flytta</b> ändrar kamerans plats: rummet och bordet är äkta 3D, filmen är två platta ytor och börjar ljuga ju längre du går.'));
   group('Format', choice('format', [['desk', 'Dator 1764×1174'], ['mob', 'Mobil 9:16'], ['fill', 'Fyll fönstret']]));
-  const select = el('select'); if (chain.length === CHAIN.length) select.append(el('option', {value: '', textContent: 'Kedja P4: giv → retur till vila'})); select.append(...clips.map(c => el('option', {value: c.id, textContent: c.id})));
-  select.addEventListener('change', () => { scene.players.toggle(false); void scene.players.load(select.value ? [clips.find(c => c.id === select.value)!.video] : chain.map(c => c.video)); });
+  const select = el('select'); select.append(...rounds.map((r, i) => el('option', {value: `round:${i}`, textContent: r.label})), ...clips.map(c => el('option', {value: c.id, textContent: c.id}))); select.value = first;
+  select.addEventListener('change', () => { scene.players.toggle(false); void scene.players.load(partsOf(select.value)); });
   group('Film', select, el('div', {className: 'btns'}, button('Pausa', () => scene.players.toggle(), 'play'), button('−1 ruta', () => void scene.players.step(-1)), button('+1 ruta', () => void scene.players.step(1))),
     check('Vik filmen mot bordet (händer och kort följer filten)', 'fold'), check('Visa hjälplinjer (filmruta, vikning, filmens bordsyta)', 'guides'),
     slider('Skuggor', 'shadow', 0, 1.6, 0.05), slider('Nyckel låg', 'keyLo', 0, 0.5, 0.01), slider('Nyckel hög', 'keyHi', 0.5, 1.2, 0.01));
@@ -113,6 +121,6 @@ new ResizeObserver(() => scene.resize()).observe(stage);
 // ---- start ---------------------------------------------------------------------------------------------
 if (!bare) build();
 scene.rebuild(); scene.start();
-const wanted = clips.find(c => c.id === query.get('clip')), ready = scene.players.load(wanted ? [wanted.video] : chain.length === CHAIN.length ? chain.map(c => c.video) : [clips[0].video]).then(() => true, error => fail((error as Error).message));
+const ready = scene.players.load(partsOf(first)).then(() => true, error => fail((error as Error).message));
 // For the proof recorder and for debugging from the console; not an interface for other pages.
 Object.assign(window, {scene3d: {scene, ready, clips}});

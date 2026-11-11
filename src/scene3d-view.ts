@@ -138,10 +138,14 @@ export function createScene(canvas: HTMLCanvasElement, host: HTMLElement, data: 
     view.rotation.set(rx, ry, 0, 'YXZ'); view.aspect = canvas.width / canvas.height; view.fov = viewFovDeg(camera, view.aspect, state.zoom); view.updateProjectionMatrix(); view.updateMatrixWorld(true);
   }
   // Distance from the view camera, along its axis, of what should be sharp.
-  function focusTarget(): {distance: number; what: string} {
+  // In "follow" the card stays the subject for a moment after its track lets go: the deal is cut at its landing frame
+  // and the return that follows has no card of its own to follow, so without this the focus would leave at the join.
+  const LINGER = 0.4; let heldPixel: {x: number; y: number} | null = null, heldAt = -Infinity;
+  function focusTarget(seconds: number): {distance: number; what: string} {
     const depthOf = (p: number[]) => -new T.Vector3(...p).applyMatrix4(view.matrixWorldInverse).z;
     if (state.focus === 'manual') return {distance: state.focusDistance, what: 'manuellt'};
-    const frame = players.frame(), pixel = state.focus === 'card' ? cardPixel(track, frame) : state.focus === 'follow' ? cardFocusPixel(track, frame) : null;
+    const frame = players.frame(); let pixel = state.focus === 'card' ? cardPixel(track, frame) : state.focus === 'follow' ? cardFocusPixel(track, frame) : null;
+    if (state.focus === 'follow') { if (pixel) { heldPixel = pixel; heldAt = seconds; } else if (heldPixel && seconds >= heldAt && seconds - heldAt <= LINGER) pixel = heldPixel; else heldPixel = null; }
     return pixel ? {distance: depthOf(filmToScene(camera, pixel.x, pixel.y)), what: 'kortet'} : {distance: depthOf([0, 0.3 * camera.scale, edgeZ]), what: 'dealern'};
   }
 
@@ -149,7 +153,7 @@ export function createScene(canvas: HTMLCanvasElement, host: HTMLElement, data: 
     targets(); updateView(seconds);
     const room = rooms.rooms[state.room], focusOn = state.focus !== 'off', u = blurMat.uniforms, scale = canvas.width / W;
     rooms.followCamera(state.room, view.position, state.panoramaTurn); light.update(seconds, state.fan, state.fanStrength, state.fanPeriod);
-    if (focusOn) { const goal = focusTarget(), dt = Math.max(0, Math.min(0.2, seconds - lastSeconds)); focusWhat = goal.what;
+    if (focusOn) { const goal = focusTarget(seconds), dt = Math.max(0, Math.min(0.2, seconds - lastSeconds)); focusWhat = goal.what;
       focusNow = Number.isFinite(focusNow) && Number.isFinite(dt) ? focusNow + (goal.distance - focusNow) * (1 - Math.exp(-dt / 0.22)) : goal.distance; } else focusNow = NaN;
     lastSeconds = seconds;
     // room

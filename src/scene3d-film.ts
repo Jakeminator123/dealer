@@ -55,23 +55,43 @@ export function createFilmLayers(filmVP: T.Matrix4, light: Record<string, {value
   };
 }
 
-type Player = {path: string; video: HTMLVideoElement; texture: T.VideoTexture};
-// One or more clips played as a chain, each on its own video element so the next one is decoded before it is shown.
+// One piece of film: source frames start … end − 1 of a clip. end null = to the clip's last frame.
+// A deal followed by a return that was generated from one of the deal's own frames must stop at that frame
+// (src/clip-graph.ts resolveRound gives the range); played to its end, the hand lifts and then jumps back.
+export type Part = {path: string; start?: number; end?: number | null};
+type Player = {path: string; start: number; end: number | null; video: HTMLVideoElement; texture: T.VideoTexture};
+const FPS = 30;
+// One or more parts played as a chain, each on its own video element so the next one is decoded before it is shown.
 export function createPlayers(onShow: (texture: T.Texture, path: string) => void, onChange: () => void) {
   let players: Player[] = [], current = 0, paused = false;
   const show = (i: number) => { current = i; onShow(players[i].texture, players[i].path); onChange(); };
-  const make = (path: string): Player => {
-    const video = document.createElement('video'); video.muted = true; video.playsInline = true; video.preload = 'auto'; video.src = path;
+  const startTime = (p: Player) => p.start ? (p.start + 0.5) / FPS : 0;
+  const make = (part: Part): Player => {
+    const video = document.createElement('video'); video.muted = true; video.playsInline = true; video.preload = 'auto'; video.src = part.path;
     const texture = new T.VideoTexture(video); texture.colorSpace = T.NoColorSpace; texture.minFilter = texture.magFilter = T.LinearFilter; texture.generateMipmaps = false;
-    return {path, video, texture};
+    return {path: part.path, start: part.start ?? 0, end: part.end ?? null, video, texture};
   };
-  async function load(paths: string[]) {
+  // The part on screen is done: stop it where it is and bring in the next one on its first decoded frame.
+  function advance(list: Player[], i: number) {
+    if (paused || list !== players || current !== i) return;
+    const n = (i + 1) % list.length, next = list[n]; list[i].video.pause(); next.video.currentTime = startTime(next);
+    const swap = () => { if (list === players) show(n); };
+    if (next.video.requestVideoFrameCallback) next.video.requestVideoFrameCallback(swap); else setTimeout(swap, 40);
+    next.video.play().catch(() => {});
+  }
+  async function load(parts: Part[]) {
     for (const p of players) { p.video.pause(); p.video.removeAttribute('src'); p.video.load(); p.texture.dispose(); }
-    players = paths.map(make);
-    players.forEach((p, i) => p.video.addEventListener('ended', () => { if (paused) return; const n = (i + 1) % players.length, next = players[n].video; next.currentTime = 0;
-      const swap = () => show(n); if (next.requestVideoFrameCallback) next.requestVideoFrameCallback(swap); else setTimeout(swap, 40); next.play().catch(() => {}); }));
-    await Promise.all(players.map(p => new Promise<void>((resolve, reject) => { if (p.video.readyState >= 2) resolve(); else { p.video.addEventListener('loadeddata', () => resolve(), {once: true}); p.video.addEventListener('error', () => reject(Error(`Filmen kunde inte läsas: ${p.path}`)), {once: true}); } })));
-    show(0); if (!paused) players[0].video.play().catch(() => {});
+    const list = players = parts.map(make);
+    list.forEach((p, i) => {
+      p.video.addEventListener('ended', () => advance(list, i));
+      if (p.end === null) return;
+      const last = p.end - 1, reached = (seconds: number) => Math.floor(seconds * FPS + 1e-6) >= last;
+      if (p.video.requestVideoFrameCallback) { const watch = (_now: number, frame: {mediaTime: number}) => { if (list !== players) return; if (reached(frame.mediaTime)) advance(list, i); p.video.requestVideoFrameCallback(watch); }; p.video.requestVideoFrameCallback(watch); }
+      else p.video.addEventListener('timeupdate', () => { if (reached(p.video.currentTime)) advance(list, i); });
+    });
+    await Promise.all(list.map(p => new Promise<void>((resolve, reject) => { if (p.video.readyState >= 2) resolve(); else { p.video.addEventListener('loadeddata', () => resolve(), {once: true}); p.video.addEventListener('error', () => reject(Error(`Filmen kunde inte läsas: ${p.path}`)), {once: true}); } })));
+    if (list !== players) return;
+    list[0].video.currentTime = startTime(list[0]); show(0); if (!paused) list[0].video.play().catch(() => {});
   }
   async function seek(i: number, seconds: number) {
     paused = true; players.forEach(p => p.video.pause()); const v = players[i].video;
@@ -83,8 +103,12 @@ export function createPlayers(onShow: (texture: T.Texture, path: string) => void
     load, seek,
     toggle(force?: boolean) { paused = force ?? !paused; const v = players[current]?.video; if (v) { if (paused) v.pause(); else v.play().catch(() => {}); } onChange(); },
     // Half a frame past the frame start, so the decoder lands on that frame and not the one before it.
-    step(frames: number, fps = 30) { const v = players[current]?.video; if (!v) return Promise.resolve(); const last = Math.max(0, Math.round(v.duration * fps) - 1), frame = Math.max(0, Math.min(last, Math.floor(v.currentTime * fps + 1e-6) + frames)); return seek(current, (frame + 0.5) / fps); },
+    // Stays inside the part on screen.
+    step(frames: number) { const p = players[current]; if (!p) return Promise.resolve(); const last = (p.end ?? Math.max(1, Math.round(p.video.duration * FPS))) - 1, frame = Math.max(p.start, Math.min(last, Math.floor(p.video.currentTime * FPS + 1e-6) + frames)); return seek(current, (frame + 0.5) / FPS); },
     get paused() { return paused; }, get path() { return players[current]?.path ?? ''; }, get count() { return players.length; },
-    frame(fps = 30) { const v = players[current]?.video; return v ? Math.floor(v.currentTime * fps + 1e-6) : 0; },
+    // The chain as source frame ranges, end exclusive; for stepping through it frame by frame from outside.
+    get parts() { return players.map(p => ({path: p.path, start: p.start, end: p.end ?? Math.round(p.video.duration * FPS)})); },
+    // Source frame of the clip on screen: card tracks are indexed by it.
+    frame() { const v = players[current]?.video; return v ? Math.floor(v.currentTime * FPS + 1e-6) : 0; },
   };
 }
