@@ -3179,6 +3179,42 @@
         212
       ],
       "purpose": "The full-figure leave film Jakob asked for after rejecting the in/out films in the usual frame: she stands up, walks out to the right and her legs show beside the table's end. Ordered from the first image alone through Runway's MCP server after two low-resolution probes (35 + 40 app credits)."
+    },
+    {
+      "id": "pamela-idle-lookup-01",
+      "kind": "IDLE",
+      "from": "IDLE",
+      "to": "IDLE",
+      "clip": "pamela-idle-lookup-01",
+      "frames": [
+        0,
+        89
+      ],
+      "purpose": "Idle insert Jakob asked for 2026-11-11: she looks up for a moment. Ordered through Runway's MCP server from the keystone as first and last image."
+    },
+    {
+      "id": "pamela-idle-wink-01",
+      "kind": "IDLE",
+      "from": "IDLE",
+      "to": "IDLE",
+      "clip": "pamela-idle-wink-01",
+      "frames": [
+        0,
+        44
+      ],
+      "purpose": "Idle insert Jakob asked for 2026-11-11: she winks with one eye. Text alone made the model shut both eyes (two low-resolution probes, 15 app credits each), so the wink is fixed by the last image."
+    },
+    {
+      "id": "pamela-idle-cough-01",
+      "kind": "IDLE",
+      "from": "IDLE",
+      "to": "IDLE",
+      "clip": "pamela-idle-cough-01",
+      "frames": [
+        0,
+        119
+      ],
+      "purpose": "Idle insert Jakob asked for 2026-11-11: she coughs. Ordered through Runway's MCP server from the keystone as first and last image."
     }
   ],
   "edits": [

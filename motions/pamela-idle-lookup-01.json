@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 1,
+  "id": "pamela-idle-lookup-01",
+  "dealer": "pamela",
+  "source": {
+    "path": "assets/motions/pamela-idle-lookup-01/source.mp4",
+    "sha256": "17fc2a96d747f63eef42b142938b769b1f290b719ecfc6d65d24158a97b9ac37",
+    "bytes": 7890921,
+    "width": 1764,
+    "height": 1174,
+    "fps": 30,
+    "frames": 90,
+    "provider": "Runway MCP server (app account credits)",
+    "model": "wan3"
+  },
+  "motion": {
+    "kind": "IDLE",
+    "from": "IDLE",
+    "to": "IDLE",
+    "pass": false,
+    "basis": "SOURCE_FRAME_REVIEW",
+    "evidence": "evidence/generation-method-audit.json",
+    "idle": {
+      "weight": 3,
+      "calm": false,
+      "label": "tittar upp",
+      "onRequest": false
+    }
+  },
+  "review": {
+    "decision": "PENDING",
+    "basis": "Oberoende rutgranskning 2026-11-11: användbar med anmärkning, skarvarna rena. Vila f0–14, blinkning f15–18, huvudet lutas bakåt f19–34 (ögonlinjen stiger cirka 34 px), hon håller blicken uppåt och lite åt bildens höger f34–55, blinkning på väg ner f56–58, huvudet ner f58–66, stilla f77–89. Händerna rör sig högst 0,09 px, skon och kortet högst 0,06 px; inget dyker upp på bordet. Ruta 3 mot ruta 86: 800 bildpunkter över 24 nivåer, mest ögon och kortkant; förskjutning högst 0,4 px.",
+    "limitations": "Blinkningen f15–18 tillsammans med ögon som rullar uppåt kan läsas som att hon himlar med ögonen. Blinkningen f56–58 är sned (ögat till vänster i bild stängs först), så ruta 57 ser ut som en blinkning med ena ögat; ögonlocket är svullet och smetat i den rutan. Ögonen är något smalare i slutet (ruta 86) än i grundrutan: möjligt litet flimmer i klippet. Rörelsen tar ett större steg var femte ruta (f19, 24, 29, 34, 58, 63). Grönt: G 229–231 i de visade rutorna, hoppet från 237 ligger i de tre första. Inte sedd i fart av granskaren.",
+    "colorDoesNotProvePhysicalSide": true,
+    "userAccepted": false,
+    "productionReady": false
+  },
+  "postProcessing": "none",
+  "generationRef": "assets/motions/pamela-idle-lookup-01/generation.json",
+  "jobRef": "data/clip-jobs.json",
+  "scoutIntegrated": false,
+  "published": false
+}

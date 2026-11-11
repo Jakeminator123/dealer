@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 1,
+  "id": "pamela-idle-wink-01",
+  "dealer": "pamela",
+  "source": {
+    "path": "assets/motions/pamela-idle-wink-01/source.mp4",
+    "sha256": "e79e6821197c89fdb6948b803b184fecf762424be79b92de4e66ba9310b9dba9",
+    "bytes": 5312137,
+    "width": 1764,
+    "height": 1174,
+    "fps": 30,
+    "frames": 45,
+    "provider": "Runway MCP server (app account credits)",
+    "model": "wan3"
+  },
+  "motion": {
+    "kind": "IDLE",
+    "from": "IDLE",
+    "to": "IDLE",
+    "pass": false,
+    "basis": "SOURCE_FRAME_REVIEW",
+    "evidence": "evidence/generation-method-audit.json",
+    "idle": {
+      "weight": 2,
+      "calm": false,
+      "label": "blinkar med ena ögat",
+      "onRequest": false
+    }
+  },
+  "review": {
+    "decision": "PENDING",
+    "basis": "Oberoende rutgranskning 2026-11-11 av en långsammare hopsättning av samma rutor (77 rutor: stängning 8 rutor, stängt 1,1 s): användbar med anmärkning, skarvarna perfekta (ruta 3 mot ruta 73: 0 bildpunkter över 24 nivåer, förskjutning högst 0,02 px). En riktig blinkning med ena ögat: ögat till höger i bild stängs, det andra är öppet i varje ruta (cirka 60 % öppet när leendet är som störst), de två är aldrig stängda samtidigt. Bara ansiktet ändras: huvud högst 0,45 px, händer 0,05 px, sko 0,03 px. Vändpunkten ligger i det stängda läget och syns varken som stopp eller hopp.",
+    "limitations": "Granskarens anmärkning på den långsamma hopsättningen: för långsam och exakt speglad, läses som en hållen pose. Den här hopsättningen är snabbare (stängt cirka 0,3 s) men är inte granskad på nytt och är fortfarande exakt speglad: leendet går tillbaka precis som det kom. Inte sedd i fart.",
+    "colorDoesNotProvePhysicalSide": true,
+    "userAccepted": false,
+    "productionReady": false
+  },
+  "postProcessing": "Assembled: the generated film goes from the keystone to the wink in 2 s (60 frames; kept beside this film as generated-half.mp4). This film is its frames 0-14, then every second frame 16-22, then 23-26, played forward and then backward (45 frames), so that the eye closes in about five frames, stays shut for about nine and opens the same way (D:/dealer-scratch/tmp/filmagent/mcp/spegla.sh).",
+  "generationRef": "assets/motions/pamela-idle-wink-01/generation.json",
+  "jobRef": "data/clip-jobs.json",
+  "scoutIntegrated": false,
+  "published": false
+}
