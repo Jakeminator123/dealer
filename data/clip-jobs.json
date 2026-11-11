@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "budget": {
-    "maximumCredits": 4912
+    "maximumCredits": 5132
   },
   "anchors": [
     {
@@ -2807,6 +2807,56 @@
         "note": "The rest keystone: frame 0 of the entry clip, the frame every idle clip starts and ends on."
       },
       "purpose": "She stands up and leaves the table (Jakob asked for it in the node tree). Ordered from the first image alone; the last frames are meant to be the picture without her, the start of the arrival film."
+    },
+    {
+      "id": "pamela-table-leave-02",
+      "kind": "LEAVE",
+      "from": "IDLE",
+      "to": "AWAY",
+      "model": "wan3",
+      "ratio": "auto_1080p",
+      "audio": false,
+      "target": null,
+      "duration": 6,
+      "promptText": "Locked camera on the same Pamela, black suit, green felt and fixed shoe. She sits upright on her chair behind the table with both hands resting flat on the table, exactly as in the first image. She lifts her hands from the table and stands up from the chair: her whole upper body visibly rises as she straightens her legs. Standing, she straightens her jacket with both hands in one short tug at its front. Then she turns to her left and walks calmly out of the picture past its right edge, behind the shoe. From then on nobody is in the picture: only the plain green background, the plain green table and the black shoe remain, and the clip holds that empty picture, perfectly still, to its end. The camera never moves, tilts or zooms to follow her; while she stands, the top of her head may be outside the picture. The shoe never moves and the yellow card stays fully seated in it. The left edge of the picture stays empty the whole time. No other person and no other object comes into view, no card is touched, no wave, no cut.",
+      "first": {
+        "frame": {
+          "video": "assets/motions/pamela-idle-ready-entry-01/source.mp4",
+          "videoSha256": "cbaf81cd79f53eafcc38891847151a1311e3ee94275abe10463674ae6a6f66f2",
+          "index": 0
+        },
+        "note": "The rest keystone: frame 0 of the entry clip, the frame every idle clip starts and ends on."
+      },
+      "purpose": "Second take of her leaving the table, after Jakob rejected the first because she never stands up: here she stands up, straightens her jacket and then walks out past the right edge as before. Ordered from the first image alone; six seconds, since there is more to do."
+    },
+    {
+      "id": "pamela-table-arrive-01",
+      "kind": "ARRIVE",
+      "from": "AWAY",
+      "to": "IDLE",
+      "model": "wan3",
+      "ratio": "auto_1080p",
+      "audio": false,
+      "target": null,
+      "duration": 5,
+      "promptText": "Locked camera on the same Pamela, black suit, green felt and fixed shoe. The picture begins empty, exactly as the first image: the plain green background, the plain green table and the black shoe, and nobody there. The same Pamela walks in calmly from the right edge of the picture, behind the shoe, to her place in the middle behind the table and turns to face the camera. She sits down on her chair: her whole upper body visibly lowers as she sits. She lays both hands flat on the table in front of her, side by side, and ends in the exact pose of the last image, looking into the camera with a slight friendly smile. The camera never moves, tilts or zooms to follow her; while she stands, the top of her head may be outside the picture. The shoe never moves and the yellow card stays fully seated in it. The left edge of the picture stays empty the whole time. No other person and no other object comes into view, no card is touched, no wave, no cut.",
+      "first": {
+        "frame": {
+          "video": "assets/motions/pamela-table-leave-01/source.mp4",
+          "videoSha256": "61abc6721e42d8f1ecbd97ba4d678c16f91a85771dd4448742c7c210974de446",
+          "index": 131
+        },
+        "note": "Whole real frame without the dealer: frame 131 of pamela-table-leave-01, the best empty frame according to its independent review."
+      },
+      "last": {
+        "frame": {
+          "video": "assets/motions/pamela-idle-ready-entry-01/source.mp4",
+          "videoSha256": "cbaf81cd79f53eafcc38891847151a1311e3ee94275abe10463674ae6a6f66f2",
+          "index": 0
+        },
+        "note": "The rest keystone, so that every idle clip follows the arrival."
+      },
+      "purpose": "She comes in, sits down and lays her hands on the table (Jakob asked for it in the node tree). Starts on a real empty frame and ends on the rest keystone."
     }
   ],
   "derived": [
