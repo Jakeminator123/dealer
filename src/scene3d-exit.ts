@@ -8,9 +8,9 @@
 // at her not pretty, and the turn showed where the film's own frame ends, which cut her.)
 import {solveCamera, type FilmCamera} from './scene3d-geometry.ts';
 
-// One film in two parts (the lab follows the second with its camera): a copy of assets/motions/pamela-table-leave-wide-01, which
-// the lab server does not hand out until the film is in the clip bank. The first three frames are left out (the film agent's word).
-const WIDE = {path: 'assets/proofs/helkropp-prov/leave-wide-01.mp4', frame: {scale: 0.5, anchor: [882, 656] as [number, number], layer: 'BEHIND_TABLE' as const, shadow: false, behindFrom: 54}};
+// One film in two parts (the lab follows the second with its camera): the bank's exit take, 2088 pixels wide so that she has room
+// to walk. The frame is the one in the film's record (motions/pamela-table-leave-wide-01.json); the first three frames are left out.
+const WIDE = {path: 'assets/motions/pamela-table-leave-wide-01/source.mp4', frame: {scale: 0.5, anchor: [1044, 656] as [number, number], size: [2088, 1174] as [number, number], layer: 'BEHIND_TABLE' as const, shadow: false, behindFrom: 54}};
 export const EXIT_TRIAL = {lead: {...WIDE, start: 3, end: 38}, probe: {...WIDE, start: 38, end: 212}};
 // rise: the film's frames in which she stands up. When she stands the camera has moved back along its line of sight by
 // `back` of its distance to the table's dealer-side edge and `lift` upward (scene units), and the view has this tilt and zoom.

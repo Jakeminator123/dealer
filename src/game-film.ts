@@ -90,9 +90,10 @@ export function createFilm(players: FilmPlayers, graph: Graph, layout: Layout, r
    * leave with or to arrive with, and nothing is played then. Only between rounds: no card lies on the table. `own`: films
    * the page brings itself, played instead of the bank's (a stand-in while the bank has no approved film for the change).
    */
-  async function swap(away: () => void | Promise<void> = () => {}, own: {leave: FilmPart[]; arrive: FilmPart[]} | null = null): Promise<boolean> {
+  async function swap(away: () => void | Promise<void> = () => {}, own: {leave?: FilmPart[]; arrive?: FilmPart[]} | null = null): Promise<boolean> {
     const part = (s: Segment | undefined): FilmPart[] => s?.video ? [{path: s.video, start: s.start, end: s.end, track: null, frame: frameOf(s.take)}] : [];
-    const leave = own?.leave ?? part(resolveRound(graph, [{from: 'IDLE', to: 'AWAY'}], {places})[0]), arrive = own?.arrive ?? part(resolveRound(graph, [{from: 'AWAY', to: 'IDLE'}], {places})[0]);
+    const banked = (from: string, to: string) => part(resolveRound(graph, [{from, to}], {places})[0]); // the bank's own film comes first; the page's stands in where the bank has none
+    let leave = banked('IDLE', 'AWAY'), arrive = banked('AWAY', 'IDLE'); if (!leave.length) leave = own?.leave ?? []; if (!arrive.length) arrive = own?.arrive ?? [];
     if (!leave.length || !arrive.length) return false;
     const mine = ++token, leaving = resting; resting = null;
     const run = (parts: FilmPart[], cut: boolean) => new Promise<void>(resolve => players.play(parts, {cut, onEnd: resolve}));

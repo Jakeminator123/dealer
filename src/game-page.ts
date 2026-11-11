@@ -177,7 +177,7 @@ const panel = mountPanel(overlay.root.querySelector<HTMLElement>('.go-bar')!, RO
     // Until the bank has approved films for the change, a stand-in: the first full-resolution exit (not a main take) and the older entrance.
     const entrance = graph.edge['AWAY>IDLE']?.takes.find(t => t.media.video)?.media.video;
     const standIn = entrance ? {leave: [{...EXIT_TRIAL.lead, track: null}, {...EXIT_TRIAL.probe, track: null}], arrive: [{path: entrance, track: null}]} : null;
-    const played = await film.swap(away) || !!standIn && await film.swap(away, standIn);
+    const played = await film.swap(away, standIn);
     shot = null;
     page.busy = false; page.error = played ? null : 'Det finns ingen film för dealerbytet än.'; panel.set({changing: false}); if (played) chat?.say('Hej! Nu är det jag som delar ut.'); render();
   },
