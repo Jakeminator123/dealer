@@ -76,9 +76,9 @@ Rörelsernas framtida bindning använder `placementRef`, `sceneProfileId`, `view
 | `LAND`, `RELEASE`, `RETURN(IDLE)` | Bordkontakt, släpp och återgång; kan ha olika bildrutor. |
 | `P4.C2`, `D.C2`, `VAR03` | Placeringsnycklar och rörelsevariant. V6 är historisk renderingsversion. |
 
-Målet är P1–P7 och D, två kortplatser vardera: 14 spelarkort plus två dealerkort. Fysisk platsnumrering, utdelningsordning och koordinater ska fastställas innan implementation. Historisk P4=`deal.player.centre/box3` är proveniens, inte en verifierad åttaplatskarta. DL1/v2 är inte importerat.
+Målet är P1–P7 och D, två kortplatser vardera: 14 spelarkort plus två dealerkort. Platsnumrering och utdelningsordning följer Scout (läst 2026-11-11): plats 1 är kamerans vänster, plats = Scouts box + 1, given börjar på plats 7 och går mot plats 1, sedan dealern, och det dolda kortet kommer sist. Koordinaterna är Jakobs placeringsplan. Historisk P4=`deal.player.centre/box3` är proveniens, inte en verifierad åttaplatskarta. DL1/v2 är inte importerat.
 
-Scoutgaming äger regler, slump, kortvärden och händelser. `P4.C2` är inte kortets runtime-ID; vid split krävs även hand-ID, medan Scout behåller kortinstansens ID. Ingen ny spelmotor i dealer.
+Scoutgaming äger regler, slump, kortvärden och händelser. `P4.C2` är inte kortets runtime-ID; vid split krävs även hand-ID, medan Scout behåller kortinstansens ID (dragnumret i skon). Ingen ny spelmotor skrivs i dealer. Jakobs undantag 2026-11-11: labbets speloverlay får en avskild motor i mappen `game/`, och spelagentens rekommendation är att lägga Scouts egen kärna där oförändrad i sak, med hashar som proveniens; blackjack-studions regelfil är byte för byte Scouts. Filmkoden importerar från `game/`, aldrig tvärtom, och inget ändras i Scout.
 
 Exempel, **inte klassning av en befintlig film**:
 
