@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "id": "pamela-arkiv-p3-c1-direct-blank-03",
+  "dealer": "pamela",
+  "source": {
+    "path": "assets/motions/pamela-arkiv-p3-c1-direct-blank-03/source.mp4",
+    "sha256": "72cb69116e36a73da2a1ecb5644dd5f966f543504eb6df049f297a0fe156b055",
+    "bytes": 5163511,
+    "width": 1764,
+    "height": 1174,
+    "fps": 30,
+    "frames": 60,
+    "provider": "Runway developer API",
+    "model": "wan3",
+    "encodedFrom": {
+      "sha256": "15dde69ece3e27768eeb9eaf3c5afe369dabeba75e5350129ca0c3e729645142",
+      "bytes": 81424348,
+      "format": "High 4:4:4 Predictive gbrp",
+      "kept": "assets/motions/pamela-arkiv-p3-c1-direct-blank-03/original-lossless.mp4"
+    }
+  },
+  "importedFrom": {
+    "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p3-c1-returns-02/direct/review/p3-c1-direct-blank-rgb-03.mp4",
+    "sha256": "15dde69ece3e27768eeb9eaf3c5afe369dabeba75e5350129ca0c3e729645142",
+    "note": "Repaired copy of p3-c1-returns-02/direct/original.mp4 made in the old lab; nothing generated for this import."
+  },
+  "takes": [
+    "pamela-p3-c1-arkiv-return-idle-02"
+  ],
+  "postProcessing": "Gamla labbet målade över det tryckta \"PIA\" på filmens kort; handen är orörd enligt inventeringen (tio rutor kontrollerade). Omkodad här 2026-11-11 från den förlustfria RGB-filen till H.264 High 4:2:0 (CRF 12), samma antal rutor; den förlustfria filen ligger kvar bredvid.",
+  "generationRef": null,
+  "jobRef": "data/clip-jobs.json",
+  "scoutIntegrated": false,
+  "published": false
+}

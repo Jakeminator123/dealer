@@ -2977,6 +2977,18 @@
         52
       ],
       "purpose": "From READY B to rest, cut from the same clip: the hand lifts at frame 24 and both hands rest from frame 42. Nothing generated."
+    },
+    {
+      "id": "pamela-p3-c1-arkiv-return-idle-02",
+      "kind": "RETURN",
+      "from": "LAND(P3.C1)",
+      "to": "IDLE",
+      "clip": "pamela-arkiv-p3-c1-direct-blank-03",
+      "frames": [
+        0,
+        59
+      ],
+      "purpose": "P3.C1 return to IDLE, the repaired copy from the old lab in which the printed \"PIA\" on the film card is painted out. Same motion as return-idle-01, which Jakob rejected for that print. Follows pamela-p3-c1-arkiv-deal-01 cut at frame 131."
     }
   ],
   "edits": [

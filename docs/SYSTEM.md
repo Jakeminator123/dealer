@@ -78,7 +78,7 @@ Rörelsernas framtida bindning använder `placementRef`, `sceneProfileId`, `view
 
 Målet är P1–P7 och D, två kortplatser vardera: 14 spelarkort plus två dealerkort. Platsnumrering och utdelningsordning följer Scout (läst 2026-11-11): plats 1 är kamerans vänster, plats = Scouts box + 1, given börjar på plats 7 och går mot plats 1, sedan dealern, och det dolda kortet kommer sist. Koordinaterna är Jakobs placeringsplan. Historisk P4=`deal.player.centre/box3` är proveniens, inte en verifierad åttaplatskarta. DL1/v2 är inte importerat.
 
-Scoutgaming äger regler, slump, kortvärden och händelser. `P4.C2` är inte kortets runtime-ID; vid split krävs även hand-ID, medan Scout behåller kortinstansens ID (dragnumret i skon). Ingen ny spelmotor skrivs i dealer. Jakobs undantag 2026-11-11: labbets speloverlay får en avskild motor i mappen `game/`, och spelagentens rekommendation är att lägga Scouts egen kärna där oförändrad i sak, med hashar som proveniens; blackjack-studions regelfil är byte för byte Scouts. Filmkoden importerar från `game/`, aldrig tvärtom, och inget ändras i Scout.
+Scoutgaming äger regler, slump, kortvärden och händelser. `P4.C2` är inte kortets runtime-ID; vid split krävs även hand-ID, medan Scout behåller kortinstansens ID (dragnumret i skon). Ingen ny spelmotor skrivs i dealer. Jakobs undantag 2026-11-11: labbets speloverlay får en avskild motor i mappen `game/`, och spelagentens rekommendation är att lägga Scouts egen kärna där oförändrad i sak, med hashar som proveniens; blackjack-studions regelfil `rules.mjs` är byte för byte Scouts `round.mjs`; dess `rules.ts` lägger till typer och sen uppgivning. Filmkoden importerar från `game/`, aldrig tvärtom, och inget ändras i Scout.
 
 Exempel, **inte klassning av en befintlig film**:
 

@@ -1,0 +1,40 @@
+{
+  "schemaVersion": 1,
+  "id": "pamela-p3-c1-arkiv-return-idle-02",
+  "dealer": "pamela",
+  "motion": {
+    "kind": "RETURN",
+    "from": "LAND(P3.C1)",
+    "to": "IDLE",
+    "target": "P3.C1",
+    "hand": "LH",
+    "pass": false,
+    "startsOn": {
+      "clip": "pamela-p3-c1-arkiv-deal-01",
+      "frame": 131
+    },
+    "basis": "SOURCE_FRAME_REVIEW",
+    "evidence": "evidence/generation-method-audit.json"
+  },
+  "review": {
+    "decision": "PENDING",
+    "basis": "Samma retur som pamela-p3-c1-arkiv-return-idle-01, som Jakob underkände för att det står \"Pia\" på filmens kort, men i gamla labbets rättade kopia där trycket är övermålat. Rörelsen är densamma: fingrarna av kortet, handen mot bröstet f21–30 och ner i vila.",
+    "limitations": "Inte granskad ruta för ruta här; inventeringen kontrollerade tio rutor. Filmens kort målas ändå över av labbets kortlager, så trycket syntes inte heller i den första tagningen med renderat kort på.",
+    "colorDoesNotProvePhysicalSide": true,
+    "userAccepted": false,
+    "productionReady": false
+  },
+  "cutFrom": {
+    "clip": "pamela-arkiv-p3-c1-direct-blank-03",
+    "frames": [
+      0,
+      59
+    ],
+    "record": "motions/pamela-arkiv-p3-c1-direct-blank-03.json"
+  },
+  "postProcessing": "Gamla labbet målade över det tryckta \"PIA\" på filmens kort; handen är orörd enligt inventeringen (tio rutor kontrollerade). Omkodad här 2026-11-11 från den förlustfria RGB-filen till H.264 High 4:2:0 (CRF 12), samma antal rutor; den förlustfria filen ligger kvar bredvid.",
+  "generationRef": null,
+  "jobRef": "data/clip-jobs.json",
+  "scoutIntegrated": false,
+  "published": false
+}
