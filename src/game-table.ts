@@ -19,6 +19,12 @@ export const SEAT_COUNT = 7;
 // Pixels in the film frame. FAN: step between cards from the third on. SPLIT: step between the hands of one seat.
 // Both are first values to be judged by eye in motion; the seat films were only tried to about 45–50 px from their own card.
 export const FAN = 24, SPLIT = 66;
+// Seats where the seat film's hand does not reach a fan of 24 px (the film agent's trial in motion, 2026-11-11): a shorter
+// step keeps the cards under the fingers at seat 5 and away from the shoe at seat 7. Proposals, not yet tried in motion.
+export const FAN_AT: Record<number, number> = {5: 16, 7: 12};
+// The dealer's third card lies where its film lays it (film pixels), not beside the second: the archive film's hand lands
+// there, and a card that slides a hundred pixels away from the fingers looks worse than a gap in the row.
+export const DEALER_THIRD = {x: 1069, y: 926};
 // The plan is written for the 1762 px wide lab view; the films are 1764 px wide.
 const FILM_X = 1763 / 1761;
 
@@ -47,17 +53,20 @@ export function slotFilm(slot: Slot): string {
 /** True when the plan has no place of its own for the slot, so the layout below made one up. */
 export const slotImprovised = (slot: Slot) => slot.hands > 1 || slot.index > 1;
 
-export function createLayout(plan: PlacementPlan) {
+/** fan: one step for every seat instead of FAN and FAN_AT (for trying values from the page's address). */
+export function createLayout(plan: PlacementPlan, options: {fan?: number | null} = {}) {
   const flat = plan.tableProjection?.mode === 'flat', heading = plan.tableProjection?.heading ?? 0, reference = plan.targets['P4.C1'].geometry.native;
   const shape = (g: Geometry): Pt[] => (flat ? flatQuad(g, reference, 'native', heading) : quad(g, 'native')).map(p => ({x: p.x * FILM_X, y: p.y}));
   function geometry(slot: Slot): Geometry {
     const first = plan.targets[`${place(slot)}.C1`].geometry.native, second = plan.targets[`${place(slot)}.C2`].geometry.native;
     if (slot.hands === 1 && slot.index <= 1) return slot.index ? second : first;
+    const step = options.fan ?? FAN_AT[slot.seat] ?? FAN;
+    if (slot.owner === 'D') return {...second, ...fromPixels((DEALER_THIRD.x + (slot.index - 2) * step) / FILM_X, DEALER_THIRD.y, 'native')};
     const a = toPixels(first, 'native'), b = toPixels(second, 'native'), length = Math.hypot(b.x - a.x, b.y - a.y) || 1;
     const along = {x: (b.x - a.x) / length, y: (b.y - a.y) / length};
     // Split hands step away from the player, toward the dealer: up in the image, whichever way the line C1 → C2 points.
     const away = along.x >= 0 ? {x: along.y, y: -along.x} : {x: -along.y, y: along.x};
-    const run = slot.index === 0 ? 0 : length + (slot.index - 1) * FAN, back = slot.hand * SPLIT;
+    const run = slot.index === 0 ? 0 : length + (slot.index - 1) * step, back = slot.hand * SPLIT;
     return {...(slot.index ? second : first), ...fromPixels(a.x + along.x * run + away.x * back, a.y + along.y * run + away.y * back, 'native')};
   }
   const quadOf = (slot: Slot) => shape(geometry(slot));

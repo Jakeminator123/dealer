@@ -22,7 +22,7 @@ const query = new URLSearchParams(location.search);
 const table = /^[a-z0-9-]{1,40}$/.test(query.get('table') ?? '') ? `?table=${query.get('table')}` : '';
 
 const [contract, placements, bank, first] = await Promise.all([read('data/scene-contract.json', 'Scenkontraktet'), read('api/placements', 'Placeringsplanen'), read('api/clip-bank', 'Klippbanken'), read(`api/game${table}`, 'Spelet')]);
-const plan = placements.plan ?? placements, graph = buildGraph(bank), layout = createLayout(plan);
+const plan = placements.plan ?? placements, graph = buildGraph(bank), layout = createLayout(plan, {fan: query.has('fan') && Number.isFinite(Number(query.get('fan'))) ? Math.max(0, Math.min(80, Number(query.get('fan')))) : null}); // ?fan=<px>: one fan step for every seat, for trying values
 
 // ── the picture: the 3D scene, seen a little from above so that all seven bet rings and the bar have room ──
 const scene = createScene(canvas, stage, {contract, plan, urls: {plate: 'assets/scene/room.png', panorama: 'assets/scene/panorama-vegas.jpg', la: 'assets/scene/panorama-la.jpg', skog: 'assets/scene/panorama-skog.jpg'}, onChange: () => {}, onMissingRoom: () => {}});

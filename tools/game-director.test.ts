@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {parseEdge, formatEdge} from '../src/clip-graph.ts';
 import {defaultPlan} from '../src/placement-model.ts';
-import {slotOf, slotFilm, slotLabel, slotImprovised, createLayout, FAN, SPLIT, type TableCards} from '../src/game-table.ts';
+import {slotOf, slotFilm, slotLabel, slotImprovised, createLayout, FAN, FAN_AT, SPLIT, DEALER_THIRD, type TableCards} from '../src/game-table.ts';
 import {planBeats, lyingAfter, cardRecords, REVEAL_NODE} from '../src/game-director.ts';
 
 // Seats 4 and 7 play. Opening deal as the engine draws it: seat 7, seat 4, dealer up, seat 7, seat 4, hole card.
@@ -95,4 +95,17 @@ test('layout: the plan\'s own places for card one and two, a short fan after the
   // Every seat and the dealer have a place for five cards and for four hands.
   for (const seat of [1, 2, 3, 4, 5, 6, 7]) for (let i = 0; i < 5; i++) for (const p of layout.quad({owner: 'P', seat, hand: 0, hands: 1, index: i})) assert.ok(Number.isFinite(p.x) && Number.isFinite(p.y));
   for (let i = 0; i < 6; i++) for (const p of layout.quad({owner: 'D', seat: 0, hand: 0, hands: 1, index: i})) assert.ok(Number.isFinite(p.x) && Number.isFinite(p.y));
+});
+
+test('layout: a shorter fan where the hand does not reach, and the third dealer card where its film lays it', () => {
+  const plan = defaultPlan(), layout = createLayout(plan), at = (seat: number, index: number) => layout.centre({owner: 'P', seat, hand: 0, hands: 1, index});
+  const step = (a: {x: number; y: number}, b: {x: number; y: number}) => Math.hypot(b.x - a.x, b.y - a.y);
+  for (const seat of [5, 7]) assert.ok(Math.abs(step(at(seat, 1), at(seat, 2)) - FAN_AT[seat]) < 2, `seat ${seat} fans in steps of ${FAN_AT[seat]} px`);
+  assert.ok(Math.abs(step(at(1, 1), at(1, 2)) - FAN) < 2);
+  const third = layout.centre({owner: 'D', seat: 0, hand: 0, hands: 1, index: 2}), fourth = layout.centre({owner: 'D', seat: 0, hand: 0, hands: 1, index: 3});
+  assert.ok(step(third, DEALER_THIRD) < 3, 'the third dealer card lies under the hand of its film');
+  assert.ok(Math.abs(fourth.x - third.x - FAN) < 2 && Math.abs(fourth.y - third.y) < 2, 'later dealer cards fan on from it');
+  // One step for every seat, as the page takes it from its address.
+  const tried = createLayout(plan, {fan: 10}), a = tried.centre({owner: 'P', seat: 7, hand: 0, hands: 1, index: 1}), b = tried.centre({owner: 'P', seat: 7, hand: 0, hands: 1, index: 2});
+  assert.ok(Math.abs(step(a, b) - 10) < 2);
 });
