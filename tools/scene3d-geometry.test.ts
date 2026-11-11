@@ -1,5 +1,7 @@
 import test from 'node:test';
 import {frameAt, type FilmFrame} from '../src/scene3d-film.ts';
+import {RAIL_MOVES, cupAngles, railLevel, railTop} from '../src/scene3d-rail.ts';
+import {RAIL, TABLE} from '../src/scene3d-table.ts';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import {BET, DEALER_LENS_ESTIMATE, FILM, aimCorrection, betSpots, cameraFromContract, cardSpots, filmToTable, sceneToSpot, solveCamera, spotToScene, tableToFilm, viewFovDeg, type FilmCamera} from '../src/scene3d-geometry.ts';
@@ -179,4 +181,37 @@ test('a film with a frame of its own goes behind the table from the frame it nam
   assert.equal(frameAt(late, 30), late); assert.equal(frameAt(late, 177), late);
   const plain: FilmFrame = {scale: 0.5, anchor: [882, 656], behindFrom: 30};
   assert.equal(frameAt(plain, 3), plain, 'a film that never goes behind the table is left as it is');
+});
+
+test('the light in the rail: still, breathing, or a bright stretch that runs the rail round', () => {
+  const length = 2.5;
+  assert.equal(railLevel('off', 1, length, 3), 0);
+  assert.equal(railLevel('steady', 0.2, length, 0), railLevel('steady', 2.1, length, 99), 'the same everywhere and always');
+  // Breathing: the whole line together, between its two levels, back where it began after one breath.
+  const breath = RAIL_MOVES.breath, levels = Array.from({length: 51}, (_, i) => railLevel('breathe', 1, length, i / 50 * breath.seconds));
+  assert.ok(Math.abs(Math.min(...levels) - breath.low) < 1e-9 && Math.abs(Math.max(...levels) - breath.high) < 1e-9);
+  assert.ok(Math.abs(levels[0] - levels[50]) < 1e-9); assert.equal(railLevel('breathe', 0.3, length, 1.7), railLevel('breathe', 2.2, length, 1.7));
+  // Chase: full brightness where the stretch is, the low line far from it, and the stretch has moved on after a moment.
+  const chase = RAIL_MOVES.chase;
+  assert.ok(Math.abs(railLevel('chase', 0, length, 0) - 1) < 1e-9); assert.ok(Math.abs(railLevel('chase', length / 2, length, 0) - chase.low) < 1e-6);
+  assert.ok(Math.abs(railLevel('chase', length / 4, length, chase.seconds / 4) - 1) < 1e-9, 'a quarter of the way round after a quarter of the time');
+  assert.ok(Math.abs(railLevel('chase', 0.4, length, 3) - railLevel('chase', 0.4, length, 3 + chase.seconds)) < 1e-9, 'and round again');
+  for (let i = 0; i < 40; i++) { const v = railLevel('chase', i * 0.07, length, i * 0.31); assert.ok(v >= chase.low - 1e-9 && v <= 1 + 1e-9); }
+});
+
+test('cup holders sit on the rail between the seats and outside the end seats', () => {
+  // Seven seats spread evenly round the arc, as bet rings a little inside the felt edge.
+  const seats = Array.from({length: 7}, (_, i) => { const t = Math.PI * (0.14 + 0.12 * i); return {x: 0.8 * TABLE.a * Math.cos(t), s: 0.8 * TABLE.b * Math.sin(t)}; });
+  const angles = cupAngles(seats);
+  assert.equal(angles.length, 8); for (let i = 1; i < angles.length; i++) assert.ok(Math.abs(angles[i] - angles[i - 1] - 0.12 * Math.PI) < 1e-9, 'evenly, a seat apart');
+  assert.ok(Math.abs(angles[0] - Math.PI * 0.08) < 1e-9 && Math.abs(angles[7] - Math.PI * 0.92) < 1e-9);
+  assert.deepEqual(cupAngles([...seats].reverse()), angles, 'whatever order the seats come in');
+  assert.deepEqual(cupAngles(seats.slice(0, 1)), []);
+  // Seats that reach the ends of the arc: no cup on the rail's rounded ends.
+  const wide = Array.from({length: 7}, (_, i) => { const t = Math.PI * (0.05 + 0.15 * i); return {x: TABLE.a * Math.cos(t), s: TABLE.b * Math.sin(t)}; });
+  assert.equal(cupAngles(wide).length, 6);
+  // A cup stands in the middle of the roll's top: out from the felt edge along the edge's own normal.
+  const [x, y, z] = railTop(Math.PI / 2); assert.ok(Math.abs(x) < 1e-9 && Math.abs(z - (TABLE.b + RAIL.centre)) < 1e-9); assert.equal(y, RAIL.top);
+  const end = railTop(0); assert.ok(Math.abs(end[0] - (TABLE.a + RAIL.centre)) < 1e-9 && Math.abs(end[2]) < 1e-9);
+  for (const t of angles) { const p = railTop(t); assert.ok((p[0] / TABLE.a) ** 2 + (p[2] / TABLE.b) ** 2 > 1, 'outside the felt'); assert.ok((p[0] / (TABLE.a + TABLE.rail)) ** 2 + (p[2] / (TABLE.b + TABLE.rail)) ** 2 < 1, 'inside the rail'); }
 });

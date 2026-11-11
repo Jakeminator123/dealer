@@ -16,8 +16,8 @@ const GOLD = '#d8b665';
 // ---- the rail's cross-sections, dealer metres: [out from the felt edge, height above the felt] ------------------------------------
 // `shade(v)` is how open a point of the section is (1) or how deep in a crease (toward 0), with v the fraction of the way round it.
 // It goes into texture data, not vertex colours: textures stay in range where the GPU extrapolates at silhouettes, colours do not.
-type Section = {points: number[][]; v: number[]; length: number; shade: (v: number) => number};
-function section(points: number[][], shade: (o: number, y: number) => number): Section {
+export type Section = {points: number[][]; v: number[]; length: number; shade: (v: number) => number};
+export function section(points: number[][], shade: (o: number, y: number) => number): Section {
   const d = [0]; for (let i = 1; i < points.length; i++) d.push(d[i - 1] + Math.hypot(points[i][0] - points[i - 1][0], points[i][1] - points[i - 1][1]));
   const length = d[d.length - 1], v = d.map(x => x / length);
   return {points, v, length, shade: (at: number) => { let i = 1; while (i < v.length - 1 && v[i] < at) i++; const f = Math.min(1, Math.max(0, (at - v[i - 1]) / (v[i] - v[i - 1] || 1)));
@@ -28,6 +28,7 @@ function section(points: number[][], shade: (o: number, y: number) => number): S
 // sparsely on the underside that nothing sees. The points run from the middle of the underside up the inner face, over the top and
 // back round, so the faces point outward; the shade darkens the creases at the brass bead and under the overhang.
 const CORE = [0.057, 0.012], SEAMS = [2.3, 0.84]; // seam angles round the core, radians from the outward side
+export const RAIL = {centre: CORE[0], top: CORE[1] + 0.034}; // the middle of the roll's top: out from the felt edge, and above the felt (for what is set into the rail, src/scene3d-rail.ts)
 const ROLL = (() => {
   const at = (q: number) => { const c = Math.cos(q), s = Math.sin(q), e = s > 0 ? 0.8 : 0.66, x = 0.05 * Math.sign(c) * Math.abs(c) ** e, y = (s > 0 ? 0.034 : 0.031) * Math.sign(s) * Math.abs(s) ** e;
     const dent = SEAMS.reduce((sum, m) => sum + Math.exp(-(((q - m) / 0.075) ** 2)), 0), f = 1 - 0.0016 * dent / Math.hypot(x, y); return [CORE[0] + x * f, CORE[1] + y * f]; };
@@ -54,7 +55,7 @@ const APRON = section([[0.0985, -0.006], [0.0993, -0.018], [0.1, -0.03], [0.1, -
 // section shrinks toward `core` while it moves `length` on. u runs along the arc in tiles of `tile` metres (the length along that line
 // of the section, so the grain does not stretch round the ends); v runs once round the section, 0 to 1, so textures can follow it.
 type Cap = {length: number; core: number[]; steps: number};
-function sweep(sec: Section, rings: number, tile: number, cap: Cap | null) {
+export function sweep(sec: Section, rings: number, tile: number, cap: Cap | null) {
   const {a, b} = TABLE, M = sec.points.length, K = cap ? cap.steps : 0, position: number[] = [], uv: number[] = [], index: number[] = [];
   const list: {t: number; push: number; shrink: number}[] = [];
   for (let k = K; k >= 1; k--) list.push({t: 0, push: cap!.length * Math.sin(k / K * Math.PI / 2), shrink: Math.cos(k / K * Math.PI / 2)});
