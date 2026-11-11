@@ -9,6 +9,8 @@ html,body{height:100%;margin:0;background:#060706;color:var(--go-ink);font:14px/
 #fail{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);max-width:520px;padding:14px 18px;border:1px solid var(--go-lose);border-radius:12px;background:var(--go-glass);color:var(--go-ink)}
 #fail:empty{display:none}
 
+.game-trial{position:absolute;right:1.6%;top:2.4%;z-index:3;padding:.5em 1em;border-radius:999px;background:var(--go-glass);border:1px solid var(--go-gold);color:var(--go-ink);font:inherit;cursor:pointer}
+.game-trial:disabled{opacity:.45;cursor:default}
 .go{position:absolute;pointer-events:none;container-type:size;font-size:clamp(11px,1.25cqw,17px);user-select:none;-webkit-user-select:none;font-variant-numeric:tabular-nums}
 .go button{font:inherit;color:inherit;pointer-events:auto;cursor:pointer;border:0;background:none;padding:0;-webkit-tap-highlight-color:transparent}
 .go button:disabled{cursor:default}
