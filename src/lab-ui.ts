@@ -271,7 +271,7 @@ function setTab(name:'placement'|'clipbank'|'proofs'|'review'){
  for(const t of ['placement','clipbank','proofs','review'])$(`tab-${t}`).classList.toggle('active',t===name);
  if(name!=='clipbank'){kbStopChain();viStop();}
  if(name!=='clipbank'&&name!=='review')kbPlayer.pause();
- if(name!=='review'){$('kb-take-home').append(kbTakeBox);rvHtml='';} // the take detail goes back to its place in the Klippbank
+ if(name!=='review'){$('kb-take-home').append(kbTakeBox);rvHtml='';rvShown='';} // the take detail goes back to its place in the Klippbank
  if(name!=='proofs')pfPlayer.pause();
  if(name==='review'){kbPanel='edge';rvEnter=true;void openClipBank();return;}
  if(name==='clipbank'){void openClipBank();return;}
@@ -914,7 +914,7 @@ $('vi-takes').addEventListener('click',event=>{const d=(event.target as Element)
 // Every finished film that still lacks Jakob's own word, in dealing order. The open row holds the Klippbank's own take detail
 // (film, frame stepping, rendered card, findings, decision buttons), moved here while the tab is open: nothing is built twice.
 const kbTakeBox=$('kb-take');
-let rvHtml='',rvNext='',rvStep='',rvLinked=false,rvEnter=false;
+let rvHtml='',rvNext='',rvStep='',rvShown='',rvLinked=false,rvEnter=false;
 type RvItem={t:KbTake;e:KbEdge};
 const rvCard=(e:KbEdge)=>e.target??/(?:P[1-7]|D)\.C[1-3]/.exec(e.id)?.[0]??null; // an experiment is filed with the card it deals or leaves
 // Dealing order: the entry, each seat (first card, then second; deal, return to READY, return to IDLE), the dealer, exit and idle, the rest.
@@ -966,13 +966,15 @@ function paintReview(){
  const unread=all.filter(x=>x.t.media.track&&!ovData.has(x.t.id)&&!ovReading.has(x.t.id));
  if(unread.length)void Promise.all(unread.map(x=>ovRead(x.t))).then(()=>{if(tab==='review'&&kbState==='ready')paintReview();});
  const word=(t:KbTake)=>t.variant?'godkänd som variant':G.DECISION_LABEL[t.decision]??t.decision;
- const row=({t,e}:RvItem)=>{const open=t.id===kbTake,r=t.motion?.review,mine=r?.userReview;
+ const row=({t,e}:RvItem)=>{const open=t.id===kbTake,r=t.motion?.review,mine=r?.userReview,at=main.findIndex(x=>x.t.id===t.id);
   return `<article class="rv-row${open?' open':''}"><button class="rv-row-head" data-rv-open="${esc(t.id)}" aria-expanded="${open}"><span class="rv-title">${esc(rvTitle(e,t))}</span><span class="status-pill d-${esc(t.decision)}">${esc(`${mine?'ditt beslut':'granskarna'}: ${word(t)}`)}</span>${t.revision?'':'<span class="status-pill">kan inte sparas ännu</span>'}${ovData.get(t.id)?.coverage?`<span class="status-pill${ovData.get(t.id)!.coverage!.covered?' d-ACCEPTED':''}">renderat kort: ${esc(ovCovers(ovData.get(t.id)!.coverage!))}</span>`:''}<code>${esc(t.id)}</code></button>`
-   +(open?'<div id="rv-slot" class="rv-slot"></div>':`<div class="rv-find">${mine?`<p><b>Dina ord</b>${esc(mine)}</p>`:''}${r?.basis?`<p><b>Granskaren</b>${esc(r.basis)}</p>`:''}${r?.limitations?`<p><b>Begränsning</b>${esc(r.limitations)}</p>`:''}</div>`)+'</article>';};
+   +(open?`<div class="rv-nav"><span>${at>=0?`Film ${at+1} av ${main.length} som väntar`:main.length?'Den här filmen är inte en av huvudfilmerna som väntar':'Ingen huvudfilm väntar'}</span>${main.some(x=>x.t.id!==t.id)?`<button data-rv-next="1">${at>=0?'Nästa film som väntar':'Till första filmen som väntar'} →</button>`:''}</div><div id="rv-slot" class="rv-slot"></div>`:`<div class="rv-find">${mine?`<p><b>Dina ord</b>${esc(mine)}</p>`:''}${r?.basis?`<p><b>Granskaren</b>${esc(r.basis)}</p>`:''}${r?.limitations?`<p><b>Begränsning</b>${esc(r.limitations)}</p>`:''}</div>`)+'</article>';};
  const list=(items:RvItem[])=>{let last='';return items.map(x=>{const g=rvGroup(x.e),head=g===last?'':`<h3 class="rv-group">${esc(g)}</h3>`;last=g;return head+row(x);}).join('');};
  const html=[list(main),list(rejected),list(done),list(other)];
  $('rv-count').textContent=`Av de ${tally.total} filmer som behövs är ${tally.approved} godkända, ${tally.waiting} väntar på dig och ${tally.missing} saknas${tally.settled?` (${tally.settled} har du bedömt utan att godkänna)`:''}. ${main.length?'Titta på filmen, skriv gärna en rad och tryck Godkänn, Variant eller Underkänn: nästa film öppnas då av sig själv.':'Ingen huvudfilm väntar på ditt beslut just nu.'}`;
  $('rv-main-title').textContent=`Huvudfilmer som väntar på dig (${main.length})`;
+ // The waiting main films by name, right under the heading: the open film is tall, and the rows after it would otherwise lie a screen or two down.
+ $('rv-jump').innerHTML=main.map(x=>`<button data-rv-open="${esc(x.t.id)}" aria-pressed="${x.t.id===kbTake}">${esc(rvTitle(x.e,x.t))}</button>`).join('');
  $('rv-other').hidden=!other.length;$('rv-other-summary').textContent=`Övriga tagningar (${other.length}) · andra tagningar, varianter, variant B och experiment`;
  $('rv-saved').hidden=!kbSaved.id||kbSaved.failed;$('rv-saved').textContent=kbSaved.failed?'':kbSaved.text;
  $('rv-rejected').hidden=!rejected.length;$('rv-rejected-summary').textContent=`Redan underkända av granskarna (${rejected.length}) · väntar också på ditt ord`;
@@ -986,8 +988,16 @@ function paintReview(){
  if(other.some(x=>x.t.id===kbTake))$<HTMLDetailsElement>('rv-other').open=true;
  if(done.some(x=>x.t.id===kbTake))$<HTMLDetailsElement>('rv-done').open=true;
  document.getElementById('rv-slot')?.append(kbTakeBox);
+ // A film that has just been opened is brought to the top of the window: after a decision the next film must not open out of sight.
+ if(rvShown!==kbTake){rvShown=kbTake;const top=document.querySelector('.rv-row.open')?.getBoundingClientRect?.().top;
+  if(typeof top==='number'&&(top<0||top>innerHeight*.35))window.scrollTo?.({top:Math.max(0,scrollY+top-12)});}
 }
-$('review').addEventListener('click',event=>{const id=(event.target as Element).closest<HTMLElement>('[data-rv-open]')?.dataset.rvOpen;if(id&&id!==kbTake)rvOpen(id);});
+$('review').addEventListener('click',event=>{
+ const d=(event.target as Element).closest<HTMLElement>('[data-rv-open],[data-rv-next]')?.dataset;if(!d)return;
+ // "Nästa film som väntar": the main film after the open one, round to the first; from any other film, the first one waiting.
+ if(d.rvNext){const main=rvLists().main,at=main.findIndex(x=>x.t.id===kbTake),next=main[(at+1)%Math.max(1,main.length)];if(next&&next.t.id!==kbTake)rvOpen(next.t.id);return;}
+ if(d.rvOpen&&d.rvOpen!==kbTake)rvOpen(d.rvOpen);
+});
 
 // ── Prov ────────────────────────────────────────────────────────────────────
 // Färdiga jämförelsefilmer och bildark under assets/proofs/<id>/, lästa via /api/proofs. Samma rutstegning som överallt annars.

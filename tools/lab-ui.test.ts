@@ -515,6 +515,17 @@ test('the review list: every finished film without Jakob\'s word, in dealing ord
  assert.equal(runInContext('kbTake',context),'pamela-p1-c1-plan-deal-02');assert.match(element('rv-list').innerHTML,/class="rv-row open"><button class="rv-row-head" data-rv-open="pamela-p1-c1-plan-deal-02" aria-expanded="true"/);
  assert.equal(element('kb-player').src,'assets/motions/pamela-p1-c1-plan-deal-02/source.mp4');assert.equal(element('kb-decide').hidden,false);
  assert.doesNotMatch(element('rv-list').innerHTML,/<img/);
+ // The waiting main films are named right under the heading, and the open row says which one it is and has a way to the next.
+ assert.equal(element('rv-jump').innerHTML.match(/data-rv-open=/g).length,5);assert.match(element('rv-jump').innerHTML,/data-rv-open="pamela-p1-c1-plan-deal-02" aria-pressed="true">P1 · giv · tagning 2</);
+ assert.match(element('rv-list').innerHTML,/<div class="rv-nav"><span>Film 1 av 5 som väntar<\/span><button data-rv-next="1">Nästa film som väntar →<\/button><\/div><div id="rv-slot"/);
+ fire('review','click',{target:{closest:()=>({dataset:{rvNext:'1'}})}});
+ assert.equal(runInContext('kbTake',context),p4);assert.match(element('rv-list').innerHTML,/Film 2 av 5 som väntar/);
+ for(let i=0;i<4;i++)fire('review','click',{target:{closest:()=>({dataset:{rvNext:'1'}})}});
+ assert.equal(runInContext('kbTake',context),'pamela-p1-c1-plan-deal-02','after the last one it goes round to the first');
+ // From a film that is not one of them the same button leads to the first one waiting.
+ fire('review','click',{target:{closest:()=>({dataset:{rvOpen:'pamela-p4-c1-plan-return-idle-01'}})}});
+ assert.match(element('rv-done-list').innerHTML,/Den här filmen är inte en av huvudfilmerna som väntar<\/span><button data-rv-next="1">Till första filmen som väntar →/);
+ fire('review','click',{target:{closest:()=>({dataset:{rvNext:'1'}})}});assert.equal(runInContext('kbTake',context),'pamela-p1-c1-plan-deal-02');
  // Another row is opened by a click on it.
  fire('review','click',{target:{closest:()=>({dataset:{rvOpen:p4}})}});
  assert.equal(runInContext('kbTake',context),p4);assert.equal(element('kb-player').src,`assets/motions/${p4}/source.mp4`);
