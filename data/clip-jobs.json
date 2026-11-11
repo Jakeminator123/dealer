@@ -3167,6 +3167,18 @@
         59
       ],
       "purpose": "P3.C1 return to IDLE, the repaired copy from the old lab in which the printed \"PIA\" on the film card is painted out. Same motion as return-idle-01, which Jakob rejected for that print. Follows pamela-p3-c1-arkiv-deal-01 cut at frame 131."
+    },
+    {
+      "id": "pamela-table-leave-wide-01",
+      "kind": "LEAVE",
+      "from": "IDLE",
+      "to": "AWAY",
+      "clip": "pamela-table-leave-wide-01",
+      "frames": [
+        3,
+        212
+      ],
+      "purpose": "The full-figure leave film Jakob asked for after rejecting the in/out films in the usual frame: she stands up, walks out to the right and her legs show beside the table's end. Ordered from the first image alone through Runway's MCP server after two low-resolution probes (35 + 40 app credits)."
     }
   ],
   "edits": [
