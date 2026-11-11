@@ -32,6 +32,18 @@
       "sha256": "00612ec28b54cf8da43dc60085be0511a65112825e8ca863afaadefce556d7e4",
       "source": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/brown_leather/brown_leather_rough_1k.jpg",
       "use": "not used yet"
+    },
+    {
+      "file": "denim_fabric-nor_gl.webp",
+      "sha256": "47d6e98f08a4311f7e7332b159d0ec3aa4b472d3f94b781c664a971655e77119",
+      "source": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/denim_fabric/denim_fabric_nor_gl_1k.jpg",
+      "use": "the weave of the felt (src/scene3d-table.ts, surface photo); a denim weave, not measured blackjack felt"
+    },
+    {
+      "file": "denim_fabric-rough.webp",
+      "sha256": "a9a9483ca0672ef18329e7d7de6acd7b6742201808cd91e4e1c36829fd27d97d",
+      "source": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/denim_fabric/denim_fabric_rough_1k.jpg",
+      "use": "the weave of the felt"
     }
   ]
 }

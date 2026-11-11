@@ -35,12 +35,14 @@ for (const [key, value] of query) if (key in DEFAULTS) { const k = key as keyof 
 if (bare) state.format = 'fill';
 
 // ---- card track of the clip on screen: focus can follow the card ---------------------------------
-const tracks = new Map<string, CardTrack | null>(); let trackedPath = '';
+// gripTracks: a trial of another way to place the card. A clip that has a second track beside its own (card-track-grip.json, the
+// same format, made from where the hand holds the card) is played with that one; a clip without it keeps its own track.
+const tracks = new Map<string, CardTrack | null>(); let trackedPath = '', gripTracks = query.get('spar') === 'grepp';
 async function followTrack() {
   const path = scene.players.path; if (path === trackedPath) return; trackedPath = path;
   const id = /^assets\/motions\/([a-z0-9-]+)\/source\.mp4$/.exec(path)?.[1];
   scene.setTrack(id ? tracks.get(id) ?? null : null); if (!id || tracks.has(id)) return; // never the previous clip's track on this clip's frames
-  const json = (url: string) => fetch(url).then(r => r.ok ? r.json() : null).catch(() => null), track = await json(`assets/tracking/${id}/card-track.json`);
+  const json = (url: string) => fetch(url).then(r => r.ok ? r.json() : null).catch(() => null), track = gripTracks && await json(`assets/tracking/${id}/card-track-grip.json`) || await json(`assets/tracking/${id}/card-track.json`);
   // the clip bank's frames where the card is drawn in front of the hand (card-overlay.ts overridesOf reads them off the track)
   const overrides = Object.values((bank.media ?? {}) as Record<string, {video?: string | null; overrides?: string | null}>).find(m => m.video === path && m.overrides)?.overrides;
   if (track && overrides) track.cardInFront = (await json(overrides))?.cardInFront ?? [];
@@ -121,7 +123,8 @@ function build() {
     slider('Skuggor', 'shadow', 0, 1.6, 0.05), slider('Nyckel låg', 'keyLo', 0, 0.5, 0.01), slider('Nyckel hög', 'keyHi', 0.5, 1.2, 0.01));
   const logo = el('input', {type: 'text', value: state.logo, maxLength: 28}); logo.addEventListener('input', () => scene.set({logo: logo.value})); setters.logo = ((v: string) => { if (document.activeElement !== logo) logo.value = v; }) as never;
   const pick = (key: 'cardRank' | 'cardSuit', options: [string, string][]) => { const s = el('select'); s.append(...options.map(([value, text]) => el('option', {value, textContent: text}))); s.addEventListener('change', () => scene.set({[key]: s.value})); setters[key] = ((v: string) => { s.value = v; }) as never; return s; };
-  group('Kort', check('Renderade kort i stället för filmens färgyta', 'cards'), choice('cardMethod', [['scene', 'I scenen (3D)'], ['film', 'I filmrutan (2D)']]),
+  const grip = el('input', {type: 'checkbox'}); grip.checked = gripTracks; grip.addEventListener('change', () => { gripTracks = grip.checked; tracks.clear(); trackedPath = ''; });
+  group('Kort', check('Renderade kort i stället för filmens färgyta', 'cards'), el('label', {className: 'check'}, grip, el('span', {textContent: 'Kortspår ur handens grepp (prov, där det finns)'})), choice('cardMethod', [['scene', 'I scenen (3D)'], ['film', 'I filmrutan (2D)']]),
     slider('Kortets storlek', 'cardScale', 1, 2.5, 0.05, '×', live), el('div', {className: 'seg'}, pick('cardRank', ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'].map(r => [r, r])), pick('cardSuit', [['spades', 'Spader'], ['hearts', 'Hjärter'], ['diamonds', 'Ruter'], ['clubs', 'Klöver']])),
     note('<b>I scenen</b>: kortet är ett föremål på bordet under filmen. Filmens eget kort (och kortet i skons fönster) nycklas bort, så filmens fingrar ligger över det renderade kortet och deras skuggor faller på det. Ljuset tas från filmens kort i varje ruta, glansen från rummet; i rörelse blir kortet oskarpt som handen. <b>I filmrutan</b>: den tidigare vägen, där labbets kortritare ritar kortet in i filmrutan. Var kortet är och vilken sida som syns kommer i båda fallen ur spårningen och placeringsplanen. Valören här är bara för provet: i spelet bestämmer Scout den.'));
   group('Bord', check('Markerbräde försänkt vid dealern', 'tray'), el('label', {className: 'row two'}, el('span', {textContent: 'Logotext'}), logo), choice('felt', [['green', 'Grön'], ['blue', 'Blå'], ['vin', 'Vinröd'], ['svart', 'Svart']]),
@@ -196,3 +199,6 @@ scene.rebuild(); scene.start();
 const ready = scene.players.load(partsOf(first)).then(() => true, error => fail((error as Error).message));
 // For the proof recorder and for debugging from the console; not an interface for other pages.
 Object.assign(window, {scene3d: {scene, ready, clips, rounds}});
+// The card trials have a file of their own (src/scene3d-cardlab.ts, the film agent's): when it exists it gets the scene and the
+// panel and adds what it needs there. reloadTracks makes the lab read the clips' card tracks again.
+void import('./scene3d-cardlab.ts').then(m => m.mountCardLab?.({scene, panel, reloadTracks() { tracks.clear(); trackedPath = ''; }}), () => {});
