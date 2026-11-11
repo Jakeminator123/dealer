@@ -66,7 +66,7 @@ export function tableView(snapshot: Snapshot, page: PageState): TableView {
   }
   const dealer = betting || !round ? null : hand(DEALER_KEY, {total: round.dealerTotal, soft: round.dealerSoft, natural: page.settled?.dealerBlackjack === true, busted: false}, false, null);
   const affordable = (bets: Record<number, number[]>) => betTotal(bets) > 0 && betTotal(bets) <= page.balance && Object.values(bets).every(chips => !sum(chips) || (sum(chips) >= snapshot.limits.min && sum(chips) <= snapshot.limits.max));
-  const message = page.error ?? (phase === 'BETTING' ? `Lägg dina insatser · ${snapshot.limits.min}–${snapshot.limits.max} per plats` : phase === 'TURN' ? `Din tur · <b>plats ${round!.activeSeat}</b>` : phase === 'INSURANCE' ? 'Dealern visar <b>ess</b>'
+  const message = page.error ?? (phase === 'BETTING' ? `Tryck på en ring eller dra en marker dit · ${snapshot.limits.min}–${snapshot.limits.max} per plats` : phase === 'TURN' ? `Din tur · <b>plats ${round!.activeSeat}</b>` : phase === 'INSURANCE' ? 'Dealern visar <b>ess</b>'
     : phase === 'SETTLED' ? `${page.line ?? 'Rundan är klar'}${page.settled && !page.settled.dealerBlackjack ? ` · dealern ${page.settled.dealerTotal}` : ''}` : '');
   return {phase, balance: page.balance, staked, seats, dealer, chipValues: CHIP_VALUES, chip: page.chip, canDeal: betting && !page.busy && affordable(page.bets), canUndo: betting && betTotal(page.bets) > 0,
     canRebet: betting && !!page.last && betTotal(page.bets) === 0 && affordable(page.last), actions: phase === 'TURN' ? [...snapshot.legalActions] as Action[] : [], message};

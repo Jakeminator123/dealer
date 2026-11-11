@@ -59,13 +59,13 @@ export function mountOverlay(host: HTMLElement, on: Handlers) {
       b.addEventListener('pointerdown', e => { if (b.disabled) return; drag = {value, ghost: null, x: e.clientX, y: e.clientY, ring: null}; b.setPointerCapture(e.pointerId); });
       b.addEventListener('pointermove', e => {
         if (!drag) return;
-        if (!drag.ghost && Math.hypot(e.clientX - drag.x, e.clientY - drag.y) > 6) { drag.ghost = chipFace(value); drag.ghost.classList.add('go-ghost'); drag.ghost.style.fontSize = getComputedStyle(root).fontSize; document.body.append(drag.ghost); }
+        if (!drag.ghost && Math.hypot(e.clientX - drag.x, e.clientY - drag.y) > 6) { drag.ghost = chipFace(value); drag.ghost.classList.add('go-ghost'); drag.ghost.style.fontSize = getComputedStyle(root).fontSize; document.body.append(drag.ghost); root.classList.add('dragging'); }
         if (!drag.ghost) return;
         drag.ghost.style.setProperty('--x', `${e.clientX}px`); drag.ghost.style.setProperty('--y', `${e.clientY}px`);
-        const ring = ringUnder(e.clientX, e.clientY); if (ring !== drag.ring) { drag.ring?.classList.remove('drop'); ring?.classList.add('drop'); drag.ring = ring; }
+        const ring = ringUnder(e.clientX, e.clientY); if (ring !== drag.ring) { drag.ring?.classList.remove('drop'); ring?.classList.add('drop'); drag.ring = ring; drag.ghost.classList.toggle('over', !!ring); } // over a ring the chip lies down, as it will on the felt
       });
       const end = (e: PointerEvent, cancelled: boolean) => {
-        if (!drag) return; const d = drag; drag = null; d.ghost?.remove(); d.ring?.classList.remove('drop');
+        if (!drag) return; const d = drag; drag = null; d.ghost?.remove(); d.ring?.classList.remove('drop'); root.classList.remove('dragging');
         if (cancelled) return;
         if (!d.ghost) { on.chip(value); return; } // a press without a drag chooses the chip
         const seat = Number((ringUnder(e.clientX, e.clientY) as HTMLElement | null)?.dataset.seat); if (seat) on.bet(seat, value);

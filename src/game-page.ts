@@ -18,8 +18,10 @@ const $ = (id: string) => document.getElementById(id)!, stage = $('stage'), canv
 const fail = (message: string): never => { failBox.textContent = message; throw Error(message); };
 const read = async (url: string, what: string) => { const res = await fetch(url).catch(() => null); if (!res?.ok) fail(`${what} kunde inte läsas (${url}).`); return res!.json(); };
 const query = new URLSearchParams(location.search);
+// The server keeps one session per table name; a second tab or a test opens game.html?table=<name> and plays its own.
+const table = /^[a-z0-9-]{1,40}$/.test(query.get('table') ?? '') ? `?table=${query.get('table')}` : '';
 
-const [contract, placements, bank, first] = await Promise.all([read('data/scene-contract.json', 'Scenkontraktet'), read('api/placements', 'Placeringsplanen'), read('api/clip-bank', 'Klippbanken'), read('api/game', 'Spelet')]);
+const [contract, placements, bank, first] = await Promise.all([read('data/scene-contract.json', 'Scenkontraktet'), read('api/placements', 'Placeringsplanen'), read('api/clip-bank', 'Klippbanken'), read(`api/game${table}`, 'Spelet')]);
 const plan = placements.plan ?? placements, graph = buildGraph(bank), layout = createLayout(plan);
 
 // ── the picture: the 3D scene, seen a little from above so that all seven bet rings and the bar have room ──
@@ -41,7 +43,7 @@ else film.rest();
 async function send(command: Record<string, unknown>): Promise<Snapshot | null> {
   page.error = null;
   try {
-    const res = await fetch('api/game/command', {method: 'POST', headers: {'content-type': 'application/json'}, body: JSON.stringify({...command, requestId: crypto.randomUUID(), expectedVersion: (paid ?? snapshot).ver})});
+    const res = await fetch(`api/game/command${table}`, {method: 'POST', headers: {'content-type': 'application/json'}, body: JSON.stringify({...command, requestId: crypto.randomUUID(), expectedVersion: (paid ?? snapshot).ver})});
     const data = await res.json(); if (!res.ok) throw Error(data.error?.message ?? 'Spelet svarade inte.');
     return data as Snapshot;
   } catch (error) { page.error = (error as Error).message; render(); return null; }

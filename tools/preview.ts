@@ -74,7 +74,9 @@ if(process.argv.includes('--stop')||process.argv.includes('--status')){
   }));
   return {schemaVersion:1,readable:!!file,budget:file?.budget??null,jobs,derived,edits,motions,receipts,media,revisions};
  };
- let game:Session=createSession();
+ // One session per table name (?table=…, "main" when none): a second tab or a test plays its own table and leaves the first alone.
+ const games=new Map<string,Session>(),tableName=(url:URL)=>{const name=url.searchParams.get('table')??'main';return /^[a-z0-9-]{1,40}$/.test(name)?name:null;};
+ const tableOf=(name:string)=>{let game=games.get(name);if(!game){if(games.size>=24)games.delete(games.keys().next().value!);game=createSession();games.set(name,game);}return game;};
  const token=randomUUID();let lastSeen=Date.now();
  const types:Record<string,string>={'.html':'text/html; charset=utf-8','.css':'text/css; charset=utf-8','.js':'text/javascript; charset=utf-8','.mp4':'video/mp4','.png':'image/png','.jpg':'image/jpeg','.json':'application/json'};
  const stop=()=>server.close();
@@ -118,21 +120,22 @@ if(process.argv.includes('--stop')||process.argv.includes('--status')){
      res.end(JSON.stringify(await reviews.save(id,JSON.parse(Buffer.concat(chunks).toString('utf8')),typeof req.headers['if-match']==='string'?req.headers['if-match']:undefined)));
     }catch(error){res.writeHead(error instanceof StoreError?error.status:400).end(JSON.stringify({error:(error as Error).message}));}return;
    }
-   // The game: one local single-player blackjack session, kept in this process only (game/session.ts). Rules, shuffle, card
+   // The game: local single-player blackjack sessions, kept in this process only (game/session.ts). Rules, shuffle, card
    // values and money live there; the page sends commands and plays what comes back. GET reads the state, POST /command
    // plays one command, POST /new starts over (a balance and, for demos, a seeded or stacked shoe). From this page only.
-   if(url.pathname==='/api/game'&&req.method==='GET'){res.setHeader('Content-Type','application/json; charset=utf-8');res.end(JSON.stringify(game.state()));return;}
+   if(url.pathname==='/api/game'&&req.method==='GET'){res.setHeader('Content-Type','application/json; charset=utf-8');const name=tableName(url);if(!name){res.writeHead(400).end(JSON.stringify({error:{code:'INVALID_TABLE',message:'Ogiltigt bordsnamn.'}}));return;}res.end(JSON.stringify(tableOf(name).state()));return;}
    if(url.pathname==='/api/game/command'||url.pathname==='/api/game/new'){
     res.setHeader('Content-Type','application/json; charset=utf-8');
     const refuse=(status:number,code:string,message:string)=>{res.writeHead(status).end(JSON.stringify({error:{code,message}}));};
     if(req.method!=='POST'){res.writeHead(405).end();return;}
     if(req.headers.origin!==origin){refuse(403,'FORBIDDEN','Spela från det lokala labbet.');return;}
     if(!req.headers['content-type']?.startsWith('application/json')){refuse(415,'JSON_REQUIRED','JSON krävs.');return;}
+    const name=tableName(url);if(!name){refuse(400,'INVALID_TABLE','Ogiltigt bordsnamn.');return;}
     try{
      let size=0;const chunks:Buffer[]=[];for await(const chunk of req){size+=chunk.length;if(size>16384)throw new SessionError('TOO_LARGE','Kommandot är för stort.',413);chunks.push(chunk);}
      let body:unknown;try{body=JSON.parse(Buffer.concat(chunks).toString('utf8'));}catch{throw new SessionError('INVALID_COMMAND','Kommandot är inte giltig JSON.',400);}
-     if(url.pathname==='/api/game/new'){game=createSession(body as SessionOptions);res.end(JSON.stringify(game.state()));}
-     else res.end(JSON.stringify(game.command(body)));
+     if(url.pathname==='/api/game/new'){const game=createSession(body as SessionOptions);games.delete(name);if(games.size>=24)games.delete(games.keys().next().value!);games.set(name,game);res.end(JSON.stringify(game.state()));}
+     else res.end(JSON.stringify(tableOf(name).command(body)));
     }catch(error){if(error instanceof SessionError)refuse(error.status,error.code,error.message);else refuse(500,'INTERNAL','Spelet kunde inte svara.');}
     return;
    }
