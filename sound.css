@@ -1,4 +1,4 @@
-/* The sound lab (sound.html): a picture of what is playing and a panel of sounds, backgrounds and volume. The palette and the
+/* The sound lab (sound.html): a picture of what is playing and a panel of sounds, backgrounds, music and volume. The palette and the
    panel pieces (fieldsets, sliders, segmented buttons) are those of props.html and scene3d.html. */
 :root{--bg:#0d0f0e;--panel:#151917;--line:#27302b;--ink:#e8ece9;--dim:#93a098;--acc:#d9b96a;--warn:#e8a653}
 *{box-sizing:border-box}

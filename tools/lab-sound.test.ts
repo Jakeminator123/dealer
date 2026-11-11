@@ -4,7 +4,9 @@ import {
   ROOMS, ROOM_IDS, ROOM_RECIPES, SOUND_DEFAULTS, LEVEL, CHIP, CARD, DISTANCE, LOOPS, LOOP_RMS, LEAD, BUTTONS,
   createRng, createSound, sliderGain, dbToGain, gainToDb, limiterMakeup, chipPlan, rippleTimes, renderChipHit, renderChipVoice, cardPlan, renderCard,
   renderShot, shotRate, shotSeconds, phraseScript, createPlanner, noiseLoop, babbleLoop, rustleLoop, reverbImpulse, measure, encodeWav, fft, panText, heightText,
-  type ChipHit, type ChipVoice, type OneShot, type AmbienceEvent,
+  MUSIC, MUSIC_IDS, MUSIC_RECIPES, TRACKS, SCALES, chordOf, chordTones, chordColours, voicingTones, voiceLead, bassRoots, approachNote, walkLine, phraseSlots, swungBeat,
+  createComposer, renderMusicNote, renderPad, musicRate, midiToHz, pcOf, powerSpectrum,
+  type ChipHit, type ChipVoice, type OneShot, type AmbienceEvent, type MusicNote, type MusicPart,
 } from '../src/lab-sound.ts';
 
 const RATE = 48000;
@@ -33,14 +35,16 @@ test('the module is read without a page or an audio context, and offers what the
 
 test('createSound keeps its settings and room before there is any sound, and does nothing it cannot', () => {
   const sound = createSound({seed: 1});
-  for (const name of ['unlock', 'chip', 'card', 'ambience', 'set', 'state', 'dispose', 'taps'] as const) assert.equal(typeof sound[name], 'function');
-  assert.deepEqual(sound.state(), {unlocked: false, ...SOUND_DEFAULTS, room: null});
+  for (const name of ['unlock', 'chip', 'card', 'ambience', 'music', 'set', 'state', 'dispose', 'taps'] as const) assert.equal(typeof sound[name], 'function');
+  assert.deepEqual(sound.state(), {unlocked: false, ...SOUND_DEFAULTS, room: null, track: null});
   sound.unlock(); sound.chip('stack', {count: 5}); sound.card('draw'); // no AudioContext here: quietly nothing
   assert.equal(sound.state().unlocked, false); assert.equal(sound.taps(), null);
   sound.ambience('skog'); assert.equal(sound.state().room, 'skog', 'a room chosen early starts with the sound');
   sound.ambience('nowhere' as never); assert.equal(sound.state().room, null);
-  sound.set({volume: 2, effects: -1, ambience: 0.3, muted: true}); sound.set({volume: Number.NaN});
-  assert.deepEqual(sound.state(), {unlocked: false, volume: 1, effects: 0, ambience: 0.3, muted: true, room: null});
+  sound.music('bossa'); assert.equal(sound.state().track, 'bossa', 'a track chosen early starts with the sound');
+  sound.music('opera' as never); assert.equal(sound.state().track, null); sound.music('natt');
+  sound.set({volume: 2, effects: -1, ambience: 0.3, music: 1.5, muted: true}); sound.set({volume: Number.NaN, music: Number.NaN});
+  assert.deepEqual(sound.state(), {unlocked: false, volume: 1, effects: 0, ambience: 0.3, music: 1, muted: true, room: null, track: 'natt'});
   sound.dispose(); sound.unlock(); assert.equal(sound.state().unlocked, false);
 });
 
@@ -277,4 +281,160 @@ test('the FFT is a DFT, and a WAV file has its header and samples where players 
   assert.equal(view.getUint32(4, true), wav.length - 8); assert.equal(view.getUint16(22, true), 2); assert.equal(view.getUint32(24, true), 44100); assert.equal(view.getUint16(34, true), 16);
   assert.equal(view.getUint32(40, true), 16); assert.equal(wav.length, 44 + 16);
   assert.deepEqual([0, 1, 2, 3, 4, 5, 6, 7].map(i => view.getInt16(44 + 2 * i, true)), [0, 8192, 16384, 0, -32767, 0, 32767, -16383]);
+});
+
+// ── music ──
+const VOICED: MusicPart[] = ['keys', 'guitar', 'pad', 'bell'];
+const DRUMS: MusicPart[] = ['swish', 'tap', 'chick', 'kick', 'snare', 'hat', 'shaker', 'rim'];
+type Written = {notes: MusicNote[]; chords: ReturnType<typeof createComposer>['chords']; scale: number[]};
+const composed = new Map<string, Written>();
+/** Ten minutes of a track from seed 7, written once and shared by the tests below. */
+function tenMinutes(track: (typeof MUSIC_IDS)[number]): Written {
+  let got = composed.get(track);
+  if (!got) { const c = createComposer(track, 7); got = {notes: c.plan(0, 600), chords: c.chords.filter(s => s.at < 598), scale: c.scale}; composed.set(track, got); }
+  return got;
+}
+const chordAt = (chords: Written['chords'], t: number) => { let s = chords[0]; for (const x of chords) if (x.at <= t + 1e-6) s = x; return s.chord; };
+
+test('music: four tracks with Swedish names, Tyst first on the page, and chords built in the key', () => {
+  assert.deepEqual(MUSIC.map(m => m.id), MUSIC_IDS); assert.ok(MUSIC_IDS.length <= 4);
+  assert.deepEqual(MUSIC.map(m => m.label), ['Lounge', 'Natt', 'Bossa', 'Stilla']); for (const m of MUSIC) assert.ok(m.note.length > 30, `${m.label} says what it is`);
+  assert.deepEqual(TRACKS.map(t => t.id), [null, ...MUSIC_IDS]); assert.equal(TRACKS[0].label, 'Tyst');
+  // F major's seventh chords, and the tensions that sit well: no flat ninth or thirteenth, no natural eleventh on a major chord.
+  assert.deepEqual([0, 1, 2, 3, 4, 5, 6].map(d => chordOf(5, 'major', d).name), ['Fmaj7', 'Gm7', 'Am7', 'Bbmaj7', 'C7', 'Dm7', 'Em7b5']);
+  assert.deepEqual([0, 3, 6].map(d => chordOf(2, 'dorian', d).name), ['Dm7', 'G7', 'Cmaj7']);
+  const iii = chordOf(5, 'major', 2), IV = chordOf(5, 'major', 3), I = chordOf(5, 'major', 0), V = chordOf(5, 'major', 4);
+  assert.equal(iii.ninth, null); assert.equal(iii.thirteenth, null); assert.equal(IV.eleventh, 4, 'Bbmaj7 takes the raised eleventh, E'); assert.equal(I.eleventh, null); assert.equal(V.ninth, 2); assert.equal(V.thirteenth, 9); assert.equal(V.eleventh, null);
+  for (const [scale, steps] of Object.entries(SCALES)) assert.equal(steps.length, 7, scale);
+  for (const id of MUSIC_IDS) {
+    const h = MUSIC_RECIPES[id].harmony, degrees = Object.keys(h.moves).map(Number), key = SCALES[h.scale].map(i => (h.key + i) % 12);
+    for (const d of degrees) for (const [to] of h.moves[d]) assert.ok(degrees.includes(to), `${id}: ${d} → ${to} goes somewhere it can leave`);
+    for (const [slots] of h.cadences) for (const s of slots) assert.ok(degrees.includes(s.degree));
+    for (const d of degrees) { const c = chordOf(h.key, h.scale, d); for (const pc of [...chordTones(c), ...chordColours(c)]) assert.ok(key.includes(pc)); }
+  }
+});
+
+test('music: progressions stay in key, phrases fill their beats and close on a cadence', () => {
+  for (const id of MUSIC_IDS) {
+    const {chords, scale} = tenMinutes(id), h = MUSIC_RECIPES[id].harmony;
+    assert.ok(chords.length > 20, `${id}: ${chords.length} chords in ten minutes`);
+    for (const s of chords) for (const pc of [...chordTones(s.chord), ...chordColours(s.chord)]) assert.ok(scale.includes(pc), `${id}: ${s.chord.name} has ${pc}, outside the key`);
+    assert.ok(new Set(chords.map(s => s.chord.name)).size >= 5, `${id}: more than a vamp`);
+    const rng = createRng(11), closings = new Set(h.cadences.map(([slots]) => slots[slots.length - 1].degree));
+    for (let i = 0; i < 300; i++) {
+      const slots = phraseSlots(h, rng, 0), beats = slots.reduce((a, s) => a + s.beats, 0);
+      assert.equal(beats, h.beats, `${id}: a phrase is ${h.beats} beats`); assert.equal(slots[0].degree, 0);
+      if (closings.size) assert.ok(closings.has(slots[slots.length - 1].degree), `${id}: ends on a cadence`);
+      for (let k = 1; k < slots.length; k++) {
+        const from = slots[k - 1].degree, to = slots[k].degree, inCadence = h.cadences.some(([c]) => c.some((s, j) => j > 0 && s.degree === to && c[j - 1].degree === from));
+        assert.ok(from === to || inCadence || h.moves[from].some(([d]) => d === to) || h.cadences.some(([c]) => c[0].degree === to), `${id}: ${from} → ${to} is a move the style makes`);
+      }
+    }
+  }
+  // Lounge closes many phrases on ii–V–I in F.
+  const names = tenMinutes('lounge').chords.map(s => s.chord.name).join(' ');
+  assert.ok((names.match(/Gm7 C7 Fmaj7/g) ?? []).length > 10, 'ii–V–I');
+});
+
+test('music: chords are voiced from the last one, inside the chord, without clusters', () => {
+  const rng = createRng(3);
+  let previous: number[] | null = null, moved = 0, changes = 0;
+  for (const degree of [1, 4, 0, 5, 1, 4, 0, 3, 2, 5, 1, 4, 0]) {
+    const chord = chordOf(5, 'major', degree), pcs = voicingTones(chord, rng, 'rootless'), v = voiceLead(pcs, previous, [52, 74], 13);
+    assert.deepEqual([...new Set(v.map(pcOf))].sort(), [...new Set(pcs)].sort(), `${chord.name}: the notes asked for`);
+    assert.ok(v.every(m => m >= 52 && m <= 74) && v[v.length - 1] - v[0] <= 13);
+    for (let k = 1; k < v.length; k++) assert.ok(v[k] - v[k - 1] >= 2, `${chord.name}: no minor second between neighbours`);
+    if (previous) { const last = previous; moved += v.reduce((a, m, k) => a + Math.abs(m - last[k]), 0); changes++; }
+    previous = v;
+  }
+  assert.ok(moved / changes / 4 <= 2.5, `each voice moves ${(moved / changes / 4).toFixed(2)} semitones a chord`);
+  // In the tracks: every note of the keyboard, guitar, pads and bells belongs to the chord sounding (its tones or tensions).
+  for (const id of MUSIC_IDS) {
+    const {notes, chords} = tenMinutes(id), voiced = notes.filter(n => VOICED.includes(n.part));
+    assert.ok(voiced.length > 100);
+    for (const n of voiced) { const c = chordAt(chords, n.at + 0.03); assert.ok([...chordTones(c), ...chordColours(c)].includes(pcOf(n.midi)), `${id}: ${n.part} ${n.midi} at ${n.at.toFixed(2)} s over ${c.name}`); }
+  }
+});
+
+test('music: the bass lands on every root and moves by sensible steps', () => {
+  for (const id of MUSIC_IDS) {
+    const {notes, chords, scale} = tenMinutes(id), bass = notes.filter(n => n.part === 'bass' || n.part === 'sub');
+    for (const s of chords) { const b = bass.find(n => Math.abs(n.at - s.at) < 0.03); assert.ok(b && pcOf(b.midi) === s.chord.root, `${id}: ${s.chord.name} at ${s.at.toFixed(2)} s starts on its root`); }
+    let leaps = 0;
+    for (let i = 1; i < bass.length; i++) {
+      const step = Math.abs(bass[i].midi - bass[i - 1].midi);
+      if (step > 7 && step !== 12) leaps++;
+      assert.ok(step <= 9 || step === 12, `${id}: a step of ${step} at ${bass[i].at.toFixed(2)} s`);
+    }
+    // Stilla's low root is a held drone, not a line: a sixth now and then, where falling chords would take it off the bottom.
+    assert.ok(id === 'stilla' ? leaps <= 2 : leaps === 0, `${id}: ${leaps} steps over a fifth`);
+    for (let i = 0; i + 1 < bass.length; i++) if (!scale.includes(pcOf(bass[i].midi))) assert.equal(Math.abs(bass[i + 1].midi - bass[i].midi), 1, `${id}: a note outside the key is a half step into the next`);
+    if (id === 'lounge') assert.ok(bass.filter(n => !scale.includes(pcOf(n.midi))).length > 20, 'the walking bass uses chromatic approaches');
+  }
+  // A walking line by itself: root first, every step a fifth or less, inside the range, the last leading to the next root.
+  const rng = createRng(5), scale = SCALES.major.map(i => (5 + i) % 12);
+  for (let i = 0; i < 300; i++) {
+    const chord = chordOf(5, 'major', rng.pick([0, 1, 2, 3, 4, 5])), root = 34 + ((chord.root - 10 + 12) % 12), next = root + rng.pick([-7, -5, -2, 2, 5, 7]);
+    const line = walkLine(rng, scale, chord, root, next, rng.pick([2, 4]), [28, 50]);
+    assert.equal(line[0], root); assert.ok(line.every(m => m >= 28 && m <= 50));
+    for (let k = 1; k < line.length; k++) assert.ok(Math.abs(line[k] - line[k - 1]) <= 7 && line[k] !== line[k - 1], `walk ${line}`);
+    assert.ok(Math.abs(line[line.length - 1] - next) <= 7, 'the last note leads to the next root');
+    const a = approachNote(rng, scale, next, root, [28, 50]); assert.ok(a !== next && Math.abs(a - next) <= 7);
+  }
+  const roots = bassRoots([0, 5, 1, 4, 0, 3, 4, 0].map(d => chordOf(5, 'major', d)), 41, [28, 50]);
+  assert.equal(roots[0], 41, 'starts where the line stands'); for (let k = 1; k < roots.length; k++) assert.ok(Math.abs(roots[k] - roots[k - 1]) <= 7);
+});
+
+test('music: a seed repeats, window by window as in one go; another seed differs; four bars never come back note for note', () => {
+  for (const id of MUSIC_IDS) {
+    const whole = createComposer(id, 21).plan(0, 180), windows = createComposer(id, 21), pieces: MusicNote[] = [];
+    for (let t = 0; t < 180; t += 0.25) pieces.push(...windows.plan(t, t + 0.25));
+    assert.deepEqual(pieces, whole, `${id}: a quarter second at a time is the same as three minutes at once`);
+    assert.ok(whole.every((n, i) => i === 0 || n.at >= whole[i - 1].at) && whole.every(n => n.at >= 0 && n.at < 180));
+    assert.notDeepEqual(createComposer(id, 22).plan(0, 60), createComposer(id, 21).plan(0, 60));
+    assert.equal(new Set(whole.map(n => n.seed)).size, whole.length, `${id}: every note has its own seed`);
+    // A bar's pitches and places (not loudness): no run of four bars is the same twice in ten minutes.
+    const {notes} = tenMinutes(id), bar = 4 * 60 / MUSIC_RECIPES[id].tempo, bars: string[][] = [];
+    for (const n of notes) if (!DRUMS.includes(n.part)) { const b = Math.floor((n.at - 0.03) / bar); (bars[b] ??= []).push(`${n.part}${n.midi}@${Math.round(((n.at - 0.05) % bar) * 20)}`); }
+    const seen = new Set<string>();
+    for (let b = 0; b + 4 <= bars.length; b++) { const key = bars.slice(b, b + 4).map(x => (x ?? []).sort().join(',')).join('|'); assert.ok(!seen.has(key), `${id}: bars ${b}–${b + 3} repeat`); seen.add(key); }
+  }
+  assert.ok(Math.abs(swungBeat(1.5, 0.64) - 1.64) < 1e-9); assert.equal(swungBeat(2, 0.64), 2); assert.equal(swungBeat(0.25, 0.64), 0.25);
+});
+
+test('music: levels sit under the clicks and a little over the rooms; every part has a place in its mix', () => {
+  assert.equal(SOUND_DEFAULTS.music, 0.5);
+  assert.ok(LEVEL.musicDbA - LEVEL.ambienceDbA >= 3 && LEVEL.musicDbA - LEVEL.ambienceDbA <= 8, 'a little over the backgrounds');
+  assert.ok(LEVEL.musicDbA < -30, 'well under a chip click (its loudest 50 ms lie near −31 dBFS, and its energy above 2 kHz)');
+  assert.ok(LEVEL.musicIn >= 1 && LEVEL.musicOut >= 1 && LEVEL.musicGap > 0 && LEVEL.musicGap < LEVEL.musicOut);
+  for (const id of MUSIC_IDS) {
+    const r = MUSIC_RECIPES[id], {notes} = tenMinutes(id), used = new Set(notes.map(n => n.part));
+    assert.ok(Math.abs(r.trimDb) < 20 && r.tempo >= 50 && r.tempo <= 140 && r.swing >= 0.5 && r.swing < 0.7);
+    for (const part of used) { const m = r.mix[part]; assert.ok(m && m.db <= 0 && m.wet >= 0 && m.wet <= 1, `${id}: ${part} has a level`); }
+    assert.ok(notes.every(n => n.velocity > 0 && n.velocity <= 1 && Math.abs(n.pan) <= 1 && n.seconds > 0));
+  }
+});
+
+test('music: every instrument renders clean, and the pitched ones in tune', () => {
+  const parts: MusicPart[] = ['keys', 'bass', 'guitar', 'pad', 'sub', 'bell', ...DRUMS];
+  for (const part of parts) {
+    const rate = musicRate(part, RATE), pitched = !DRUMS.includes(part), midi = part === 'bass' || part === 'sub' ? 45 : 69;
+    const n: MusicNote = {at: 0, seconds: pitched ? 2 : 0.3, part, midi: pitched ? midi : 0, velocity: 0.8, pan: 0, seed: 4, attack: part === 'pad' ? 0.5 : undefined, release: part === 'pad' ? 1 : undefined};
+    const x = renderMusicNote(n, rate), m = measure([x], rate);
+    assert.ok(finite(x), part); assert.equal(x[0], 0, `${part} starts in silence`); assert.ok(m.peakDb < 0, `${part} peaks under full scale (${m.peakDb.toFixed(1)})`);
+    assert.ok(m.endDb < m.peakDb - 45, `${part} ends in silence (${(m.endDb - m.peakDb).toFixed(0)} dB under its peak)`); assert.ok(m.dc < 0.01, `${part} has no offset`);
+    assert.deepEqual(renderMusicNote(n, rate), x, `${part} repeats for its seed`);
+    if (part === 'pad') { // the page makes a pad's voices in two tasks: summed they are the whole note
+      const a = renderPad(n, rate, [0]), b = renderPad(n, rate, [1, 2]); let worst = 0;
+      for (let i = 0; i < x.length; i++) worst = Math.max(worst, Math.abs(a[i] + b[i] - x[i]));
+      assert.equal(a.length, x.length); assert.ok(worst < 1e-6, `pad parts sum to the note (${worst})`);
+    }
+    if (!pitched) continue;
+    // In tune: the strongest peak near the fundamental, read to a fraction of a bin, within 3 cents of equal temperament (a pad's
+    // in-tune voice is the strongest of its three).
+    const size = 16384, p = powerSpectrum(x.length >= size ? x : Float32Array.from({length: size}, (_, i) => x[i] ?? 0), size), f = midiToHz(midi), bin = rate / size;
+    let k = Math.round(f * 0.97 / bin); for (let j = k; j <= Math.round(f * 1.03 / bin); j++) if (p[j] > p[k]) k = j;
+    const [a, b, c] = [p[k - 1], p[k], p[k + 1]].map(v => Math.log(v)), hz = (k + 0.5 * (a - c) / (a - 2 * b + c)) * bin, cents = 1200 * Math.log2(hz / f);
+    assert.ok(Math.abs(cents) < 3, `${part}: ${hz.toFixed(2)} Hz for ${f.toFixed(2)} (${cents.toFixed(1)} cents)`);
+  }
 });

@@ -6,12 +6,12 @@
 <title>Dealer · Ljud-labb</title>
 <link rel="stylesheet" href="sound.css">
 </head>
-<body>
+<body data-page="ljud-labb">
 <div id="app">
   <div id="stage"><canvas id="view"></canvas><div id="hud"></div><p id="hint">Tryck på ett ljud till höger.<br>Ljudet börjar med första trycket (webbläsarens regel).</p><div id="fail" role="alert"></div></div>
   <aside id="panel">
     <h1>Ljud-labb</h1>
-    <p class="sub">Marker, kort och bakgrunder, gjorda här i webbläsaren.</p>
+    <p class="sub">Marker, kort, bakgrunder och musik, gjorda här i webbläsaren.</p>
     <p class="lab-note"><b>Labb på ett sidospår.</b> Ingenting här ändrar spelet. Alla ljud räknas fram i webbläsaren, utan ljudfiler, och blir lite olika varje gång. Tryck flera gånger på samma knapp för att höra hur de varierar.</p>
     <p class="note start" id="start-note">Ljudet börjar med första trycket (webbläsarens regel).</p>
     <fieldset><legend>Marker</legend>
@@ -27,6 +27,12 @@
     <fieldset><legend>Bakgrund</legend>
       <div class="seg three" id="rooms"></div>
       <p class="note" id="room-note"></p>
+    </fieldset>
+    <fieldset><legend>Musik</legend>
+      <div class="seg three" id="tracks"></div>
+      <p class="note" id="track-note"></p>
+      <label class="row">Musik<input type="range" id="music" min="0" max="100" step="1"><output id="music-out"></output></label>
+      <p class="note">Musiken skrivs medan den spelar och upprepar sig inte. Byte av låt tonar över.</p>
     </fieldset>
     <fieldset><legend>Volym</legend>
       <label class="row">Allt<input type="range" id="volume" min="0" max="100" step="1"><output id="volume-out"></output></label>
