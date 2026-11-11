@@ -8,6 +8,7 @@ import {createFilmLayers, createPlayers, frameAt} from './scene3d-film.ts';
 import {createFanLight} from './scene3d-light.ts';
 import {createChipTray, TRAY} from './scene3d-props.ts';
 import {createRooms, type RoomId} from './scene3d-room.ts';
+import {CHANGE_FRAGMENT, SHIMMER_GLSL, readyFrom, retake, roomChange, shiftProgress, shimmerLevel} from './scene3d-shift.ts';
 import {TABLE, createTable, type TableBase, type TableSurface} from './scene3d-table.ts';
 import {createRailExtras, type RailLight} from './scene3d-rail.ts';
 
@@ -22,6 +23,7 @@ export type SceneState = {
   cards: boolean; cardMethod: 'scene' | 'film'; cardRank: string; cardSuit: string; cardScale: number;
   clock: boolean; dust: number; flicker: boolean; flickerEvery: number; flickerStrength: number;
   filmBright: number; filmWarm: number; wrap: number;
+  roomShift: 'cut' | 'shimmer'; roomShiftSeconds: number;
 };
 // Everything added after checkpoint v1 starts switched off, so the page opens as v1. scale 0 = the contract's own k.
 export const DEFAULTS: SceneState = {
@@ -35,6 +37,7 @@ export const DEFAULTS: SceneState = {
   cards: false, cardMethod: 'scene', cardRank: 'A', cardSuit: 'spades', cardScale: 1.2,
   clock: false, dust: 0, flicker: false, flickerEvery: 20, flickerStrength: 0.6,
   filmBright: 1, filmWarm: 0, wrap: 0,
+  roomShift: 'cut', roomShiftSeconds: 2.6,
 };
 export type SceneData = {contract: Parameters<typeof cameraFromContract>[0]; plan: Parameters<typeof cardSpots>[0]; urls: {plate: string; panorama: string; la: string; skog: string}; onChange: () => void; onMissingRoom: (room: RoomId) => void};
 
@@ -63,14 +66,22 @@ void main(){
 // The V6 plate fixed to the frame, darkened and desaturated as V6 does it.
 const PLATE_FRAGMENT = 'varying vec2 vUv; uniform sampler2D map; uniform vec2 scale; void main(){ vec3 c = texture2D(map, (vUv - .5) * scale + .5).rgb; float l = dot(c, vec3(.2126, .7152, .0722)); c = mix(vec3(l), c, .65) * .34; gl_FragColor = vec4(c, 1.); }';
 // Room: exposure, a soft shoulder, vignette, sRGB. Foreground (already sRGB, premultiplied) goes on top unchanged.
-const OUT_FRAGMENT = `varying vec2 vUv; uniform sampler2D map, fg; uniform float exposure, useFg;
-void main(){
-  vec3 c = texture2D(map, vUv).rgb * exposure; c = c / (1. + c) * 1.3;
+const OUT_HEAD = 'varying vec2 vUv; uniform sampler2D map, fg; uniform float exposure, useFg;';
+const OUT_TAIL = `c = c / (1. + c) * 1.3;
   c *= mix(.62, 1., smoothstep(1.05, .35, length((vUv - .5) * vec2(1.25, 1.1))));
   c = pow(max(c, 0.), vec3(1. / 2.2));
   if (useFg > .5) { vec4 f = texture2D(fg, vUv); c = f.rgb + c * (1. - f.a); }
   gl_FragColor = vec4(c, 1.);
 }`;
+const OUT_FRAGMENT = `${OUT_HEAD}
+void main(){
+  vec3 c = texture2D(map, vUv).rgb * exposure; ${OUT_TAIL}`;
+// The same picture while a change of room is under way: the shimmer (scene3d-shift.ts) lies over the room and under the
+// foreground. It is light added to the room before the shoulder, and a curtain that hides part of the room behind it.
+const SHIFT_OUT_FRAGMENT = `${OUT_HEAD}
+${SHIMMER_GLSL}
+void main(){
+  vec2 bent; vec4 over = shimmerOver(vUv, bent); vec3 c = texture2D(map, bent).rgb * exposure * (1. - over.a) + over.rgb; ${OUT_TAIL}`;
 
 export function createScene(canvas: HTMLCanvasElement, host: HTMLElement, data: SceneData) {
   const state: SceneState = {...DEFAULTS};
@@ -107,8 +118,23 @@ export function createScene(canvas: HTMLCanvasElement, host: HTMLElement, data: 
   const blurMat = shader(BLUR_FRAGMENT, {map: {value: null}, depthMap: {value: null}, dir: {value: new T.Vector2()}, near: {value: 0.05}, far: {value: 200}, mode: {value: 0}, start: {value: 2}, range: {value: 8}, focus: {value: 1.5}, tol: {value: 0.3}});
   const plateMat = shader(PLATE_FRAGMENT, {map: {value: null}, scale: {value: new T.Vector2(1, 1)}});
   const outMat = shader(OUT_FRAGMENT, {map: {value: null}, fg: {value: null}, exposure: {value: 1}, useFg: {value: 0}});
+  const shiftMat = shader(SHIFT_OUT_FRAGMENT, {map: {value: null}, fg: {value: null}, exposure: {value: 1}, useFg: {value: 0}, shimmer: {value: 0}, glitter: {value: 0}, pixels: {value: new T.Vector2(1, 1)}});
+  const changeMat = shader(CHANGE_FRAGMENT, {from: {value: null}, to: {value: null}, gainFrom: {value: 1}, gainTo: {value: 1}, change: {value: 0}, aspect: {value: 1}});
   type Target = T.WebGLRenderTarget;
   let half: Target[] = [], full: Target[] = [], size = '';
+  // A change of room with the shimmer (scene3d-shift.ts). What the room's path needs to know about a room is its look: the
+  // state is the look of the room that is showing or coming in, and the room that is going out keeps the look it had when
+  // the change was asked for. A picture is a room as drawn: the target it is in and the exposure it is to be shown with.
+  type Look = Pick<SceneState, 'room' | 'blur' | 'depthBlur' | 'dofRange' | 'exposure' | 'panoramaTurn'>;
+  type Picture = {target: Target; exposure: number};
+  // from: the outgoing room, drawn live; null when the outgoing picture is a still in `held` (a change asked for during a
+  // change). began: the scene's time at which the course started, NaN until the next drawn frame gives it. glitterFrom: the
+  // time the glitter counts from, which a second change leaves alone. lead: the progress the course started at. seen, ready:
+  // the second of the course at which the new room's picture was first there, and the one from which the course may go on.
+  // warm: the new room has been drawn once with its picture. take: the picture on screen is to be kept as the outgoing still.
+  type Shift = {from: Look | null; seconds: number; began: number; glitterFrom: number; lead: number; seen: number; ready: number; warm: boolean; take: boolean; progress: number};
+  // held: the one extra half-size target, for the outgoing room while both are drawn. shown: the room picture last put on screen.
+  let shift: Shift | null = null, held: Target | null = null, shown: Picture | null = null;
   const target = (w: number, h: number, depth: boolean, samples = 0): Target => {
     const options = {type: T.HalfFloatType, minFilter: T.LinearFilter, magFilter: T.LinearFilter, depthBuffer: depth, samples};
     if (!depth) return new T.WebGLRenderTarget(w, h, options);
@@ -119,7 +145,7 @@ export function createScene(canvas: HTMLCanvasElement, host: HTMLElement, data: 
   // The full-size foreground targets exist only while focus is on.
   function targets() {
     const w = canvas.width, h = canvas.height, key = `${w}x${h}`;
-    if (key !== size) { dispose(half); dispose(full); full = []; size = key; const hw = Math.max(2, w >> 1), hh = Math.max(2, h >> 1); half = [target(hw, hh, true), target(hw, hh, false), target(hw, hh, false)]; }
+    if (key !== size) { dispose(half); dispose(full); full = []; size = key; shown = null; const hw = Math.max(2, w >> 1), hh = Math.max(2, h >> 1); half = [target(hw, hh, true), target(hw, hh, false), target(hw, hh, false)]; }
     if (state.focus !== 'off' && !full.length) full = [target(w, h, true, 4), target(w, h, false), target(w, h, false)];
     if (state.focus === 'off' && full.length) { dispose(full); full = []; }
   }
@@ -178,46 +204,106 @@ export function createScene(canvas: HTMLCanvasElement, host: HTMLElement, data: 
     return pixel ? {distance: depthOf(filmToScene(camera, pixel.x, pixel.y)), what: 'kortet'} : {distance: depthOf([0, 0.3 * camera.scale, edgeZ]), what: 'dealern'};
   }
 
+  // What moves in a room at this time (rooms.ambient); returns the factor for the room's brightness. frontAir: the share of the
+  // air shown in front of the dealer. It is the one thing of a room that is not behind her: a change of room thins it out
+  // to nothing at the moment the rooms have half changed, when it becomes the new room's, and lets it come back.
+  let frontAir = 1;
+  const ambient = (id: RoomId, seconds: number) => rooms.ambient(id, seconds, new Date(), {clock: state.clock, air: state.dust, lamp: state.flicker ? flickerLevel(seconds, state.flickerEvery, state.flickerStrength) : 1, cloud: state.flicker ? cloudLevel(seconds, state.flickerEvery, state.flickerStrength * 0.5) : 1, front: frontAir}, canvas.height / H);
+  // One room into the half-size targets, blurred. The first target takes the room and its depth; `ping` and `pong` are the
+  // blur's two, and the picture ends in `pong`, or stays in the first when there is no blur.
+  function drawRoom(look: Look, seconds: number, ping: Target, pong: Target): Picture {
+    const room = rooms.rooms[look.room], focusOn = state.focus !== 'off', u = blurMat.uniforms, scale = canvas.width / W, a = half[0];
+    rooms.followCamera(look.room, view.position, look.panoramaTurn); const dim = ambient(look.room, seconds);
+    renderer.setRenderTarget(a); renderer.setClearColor(0x050403, 1); renderer.clear();
+    if (room.plate) { const image = 1536 / 1024, frame = canvas.width / canvas.height; plateMat.uniforms.map.value = room.plate; (plateMat.uniforms.scale.value as T.Vector2).set(frame > image ? 1 : frame / image, frame > image ? image / frame : 1); pass(plateMat, a); }
+    else renderer.render(bg, view);
+    u.near.value = view.near; u.far.value = view.far; u.start.value = -edgeZ + 0.25 * camera.scale; u.range.value = look.dofRange * camera.scale; u.focus.value = focusOn ? focusNow : 1; u.tol.value = state.tolerance;
+    u.depthMap.value = a.depthTexture; u.mode.value = focusOn ? 2 : look.depthBlur && room.hasDepth ? 1 : 0;
+    return {target: blur(a, ping, pong, look.blur * scale / 2), exposure: look.exposure * room.exposure * dim};
+  }
+  const lookNow = (): Look => ({room: state.room, blur: state.blur, depthBlur: state.depthBlur, dofRange: state.dofRange, exposure: state.exposure, panoramaTurn: state.panoramaTurn});
+  // Whether a room has its picture: two of the panoramas are fetched the first time they are shown, and the hall is built by a module of its own.
+  function roomReady(id: RoomId) {
+    const room = rooms.rooms[id]; if (id === 'hall') return !!room.group?.children.length;
+    const map = room.plate ?? ((room.group as T.Mesh | null)?.material as T.MeshBasicMaterial | undefined)?.map, image = map?.image as {width?: number} | null | undefined;
+    return !map || !!image && image.width! > 0;
+  }
+  // A change of room with the shimmer begins. One asked for during another is taken up where that one is: before the rooms
+  // have begun to change, only the goal is new. After that the picture on screen is kept as the outgoing still, and the
+  // course goes back to the point on its way up where the shimmer is as strong as it is now, so nothing jumps.
+  function beginShift(before: Look) {
+    if (!shift) { shift = {from: before, seconds: state.roomShiftSeconds, began: NaN, glitterFrom: NaN, lead: 0, seen: Infinity, ready: Infinity, warm: false, take: false, progress: 0}; return; }
+    if (roomChange(shift.progress) > 0) { shift.from = before; shift.take = true; } // `before` is drawn live in the still's place if the picture on screen is gone (the window changed size)
+    Object.assign(shift, {lead: retake(shift.progress), began: NaN, seen: Infinity, ready: Infinity, warm: false});
+  }
+  function endShift() { shift = null; held?.dispose(); held = null; shown = null; rooms.show(state.room); }
+  // A room picture into another target, times `gain` (the change pass with nothing changed).
+  function copyRoom(from: Target, to: Target, gain: number) { const m = changeMat.uniforms; m.from.value = m.to.value = from.texture; m.gainFrom.value = gain; m.change.value = 0; pass(changeMat, to); }
+  // The room's picture during a change. The outgoing room alone while the shimmer builds, the new one alone while it dies
+  // away; both are drawn only while they change places, and for one frame early on so that the new room's picture is taken
+  // in before it is needed. `change`: how far the rooms have changed, 0 to 1 (below 1).
+  function drawShift(now: Shift, change: number, seconds: number): Picture {
+    const [a, b, c] = half, both = change > 0 || !now.warm;
+    if (now.from && (!held || held.width !== a.width || held.height !== a.height)) { held?.dispose(); held = target(a.width, a.height, false); }
+    if (now.take) { if (shown && held && shown.target !== held) { copyRoom(shown.target, held, shown.exposure); now.from = null; } now.take = false; }
+    let old: Picture;
+    if (!now.from) old = {target: held!, exposure: 1};
+    else { rooms.show(now.from.room); old = drawRoom(now.from, seconds, b, both ? held! : c); if (both && old.target !== held) { copyRoom(old.target, held!, 1); old = {target: held!, exposure: old.exposure}; } }
+    if (!both) return old;
+    rooms.show(state.room); const next = drawRoom(state, seconds, b, c); if (now.seen < Infinity) now.warm = true;
+    if (now.from && change < 0.5) ambient(now.from.room, seconds); // the air in front of the dealer is the outgoing room's until the rooms have half changed
+    if (change <= 0) return old;
+    const m = changeMat.uniforms; m.from.value = old.target.texture; m.gainFrom.value = old.exposure; m.to.value = next.target.texture; m.gainTo.value = next.exposure; m.change.value = change; m.aspect.value = canvas.width / canvas.height; pass(changeMat, b);
+    return {target: b, exposure: 1};
+  }
+
   function render(seconds = performance.now() / 1000) {
-    targets(); updateView(seconds); roomLight();
-    const shown = players.current, part = players.part; if (part && part.track !== undefined) track = part.track; // a part that names its track brings it along
+    targets(); updateView(seconds);
+    // A change of room under way: how far it has come at this time. It counts from the first frame drawn after it was asked for.
+    let change = 1;
+    if (shift) {
+      if (Number.isNaN(shift.began)) { shift.began = seconds; if (Number.isNaN(shift.glitterFrom)) shift.glitterFrom = seconds; }
+      const elapsed = seconds - shift.began;
+      if (shift.ready === Infinity && roomReady(state.room)) { if (shift.seen === Infinity) shift.seen = elapsed; else if (shift.warm) shift.ready = readyFrom(shift.seen, elapsed, shift.seconds, shift.lead); }
+      shift.progress = shiftProgress(elapsed, shift.seconds, shift.ready, shift.lead);
+      if (shift.progress >= 1) { endShift(); data.onChange(); } else change = roomChange(shift.progress);
+    }
+    frontAir = shift ? Math.abs(1 - 2 * change) : 1;
+    roomLight(shift?.from && change < 0.5 ? shift.from : state); // the table changes its light when the rooms have half changed
+    const playing = players.current, part = players.part; if (part && part.track !== undefined) track = part.track; // a part that names its track brings it along
     film.setFrame(frameAt(part?.frame ?? null, players.frame())); // and so does a part whose film has a frame of its own
     // A film with a frame of its own has no shoe and no card places in its picture: the rendered cards (the one seated in the shoe window among them) stay out of it.
     const cardsOn = state.cards && !part?.frame; if (!cardsOn) cardLayer?.off?.();
-    if (shown) film.setTexture(cardsOn && cardLayer?.update(shown.video, players.frame(), track, {rank: state.cardRank, suit: state.cardSuit, scale: state.cardScale}, part?.cards) ? cardLayer.texture : shown.texture);
-    const room = rooms.rooms[state.room], focusOn = state.focus !== 'off', u = blurMat.uniforms, scale = canvas.width / W;
-    rooms.followCamera(state.room, view.position, state.panoramaTurn); light.update(seconds, state.fan, state.fanStrength, state.fanPeriod); rail.update(seconds);
-    const dim = rooms.ambient(state.room, seconds, new Date(), {clock: state.clock, air: state.dust, lamp: state.flicker ? flickerLevel(seconds, state.flickerEvery, state.flickerStrength) : 1, cloud: state.flicker ? cloudLevel(seconds, state.flickerEvery, state.flickerStrength * 0.5) : 1}, canvas.height / H);
+    if (playing) film.setTexture(cardsOn && cardLayer?.update(playing.video, players.frame(), track, {rank: state.cardRank, suit: state.cardSuit, scale: state.cardScale}, part?.cards) ? cardLayer.texture : playing.texture);
+    const focusOn = state.focus !== 'off', u = blurMat.uniforms, scale = canvas.width / W;
+    light.update(seconds, state.fan, state.fanStrength, state.fanPeriod); rail.update(seconds);
     if (focusOn) { const goal = focusTarget(seconds), dt = Math.max(0, Math.min(0.2, seconds - lastSeconds)); focusWhat = goal.what;
       focusNow = Number.isFinite(focusNow) && Number.isFinite(dt) ? focusNow + (goal.distance - focusNow) * (1 - Math.exp(-dt / 0.22)) : goal.distance; } else focusNow = NaN;
     lastSeconds = seconds;
     // room
-    const [a, b, c] = half; renderer.setRenderTarget(a); renderer.setClearColor(0x050403, 1); renderer.clear();
-    if (room.plate) { const image = 1536 / 1024, frame = canvas.width / canvas.height; plateMat.uniforms.map.value = room.plate; (plateMat.uniforms.scale.value as T.Vector2).set(frame > image ? 1 : frame / image, frame > image ? image / frame : 1); pass(plateMat, a); }
-    else renderer.render(bg, view);
-    u.near.value = view.near; u.far.value = view.far; u.start.value = -edgeZ + 0.25 * camera.scale; u.range.value = state.dofRange * camera.scale; u.focus.value = focusOn ? focusNow : 1; u.tol.value = state.tolerance;
-    u.depthMap.value = a.depthTexture; u.mode.value = focusOn ? 2 : state.depthBlur && room.hasDepth ? 1 : 0;
-    const roomResult = blur(a, b, c, state.blur * scale / 2);
-    film.setWrap(state.wrap > 0 ? roomResult.texture : null, canvas.width, canvas.height, state.exposure * room.exposure * dim, state.wrap);
-    // table and film
-    outMat.uniforms.useFg.value = 0;
+    if (shift && change >= 1) rooms.show(state.room); // also after a frame so long that the rooms never were on screen together
+    const picture = shift && change < 1 ? drawShift(shift, change, seconds) : drawRoom(state, seconds, half[1], half[2]); if (shift) shown = picture;
+    film.setWrap(state.wrap > 0 ? picture.target.texture : null, canvas.width, canvas.height, picture.exposure, state.wrap);
+    // table and film; while a change of room is under way the shimmer is laid over the room in the same pass that writes it to the screen
+    const out = shift ? shiftMat : outMat, o = out.uniforms; o.useFg.value = 0;
+    if (shift) { o.shimmer.value = shimmerLevel(shift.progress); o.glitter.value = seconds - shift.glitterFrom; (o.pixels.value as T.Vector2).set(canvas.width, canvas.height); }
     if (focusOn) { const [f, g, h] = full; light.uniforms.toTarget.value = 1; renderer.setRenderTarget(f); renderer.setClearColor(0x000000, 0); renderer.clear(); renderer.render(fg, view); light.uniforms.toTarget.value = 0;
-      u.depthMap.value = f.depthTexture; u.mode.value = 2; outMat.uniforms.fg.value = blur(f, g, h, state.blur * scale).texture; outMat.uniforms.useFg.value = 1; }
-    renderer.setRenderTarget(null); renderer.setClearColor(0x050403, 1); renderer.clear(); outMat.uniforms.map.value = roomResult.texture; outMat.uniforms.exposure.value = state.exposure * room.exposure * dim; pass(outMat, null);
+      u.depthMap.value = f.depthTexture; u.mode.value = 2; o.fg.value = blur(f, g, h, state.blur * scale).texture; o.useFg.value = 1; }
+    renderer.setRenderTarget(null); renderer.setClearColor(0x050403, 1); renderer.clear(); o.map.value = picture.target.texture; o.exposure.value = picture.exposure; pass(out, null);
     if (!focusOn) { renderer.clearDepth(); renderer.render(fg, view); }
     for (const call of frameCalls) call();
   }
   // With the photographed surface the table is lit by the room that is showing: the room's panorama, mirrored as the sphere
   // shows it from inside, prefiltered once per room. A built room has no panorama; the table then keeps its painted room.
   const pmrem = new T.PMREMGenerator(renderer); let litBy: T.Texture | null = null, litKey = '', litMap: T.WebGLRenderTarget | null = null;
-  function roomLight() {
-    const sphere = state.surface === 'photo' ? rooms.rooms[state.room].group as T.Mesh | null : null, map = sphere && rooms.rooms[state.room].follow ? (sphere.material as T.MeshBasicMaterial).map : null;
-    const image = map?.image as HTMLImageElement | undefined, ready = map && image && image.width > 0 ? map : null, key = `${ready?.uuid ?? ''}:${state.panoramaTurn}:${state.roomLight}`;
+  function roomLight(look: {room: RoomId; panoramaTurn: number}) {
+    const sphere = state.surface === 'photo' ? rooms.rooms[look.room].group as T.Mesh | null : null, map = sphere && rooms.rooms[look.room].follow ? (sphere.material as T.MeshBasicMaterial).map : null;
+    const image = map?.image as HTMLImageElement | undefined, ready = map && image && image.width > 0 ? map : null, key = `${ready?.uuid ?? ''}:${look.panoramaTurn}:${state.roomLight}`;
     if (key === litKey) return; litKey = key;
     if (ready !== litBy) { litBy = ready; litMap?.dispose(); litMap = null;
       if (ready) { const flipped = document.createElement('canvas'); flipped.width = image!.width; flipped.height = image!.height; const g = flipped.getContext('2d')!; g.translate(flipped.width, 0); g.scale(-1, 1); g.drawImage(image!, 0, 0);
         const source = new T.CanvasTexture(flipped); source.colorSpace = T.SRGBColorSpace; source.mapping = T.EquirectangularReflectionMapping; litMap = pmrem.fromEquirectangular(source); source.dispose(); } }
-    table.setEnvironment(litMap?.texture ?? null, ROOM_TURN + state.panoramaTurn * RAD, state.roomLight);
+    table.setEnvironment(litMap?.texture ?? null, ROOM_TURN + look.panoramaTurn * RAD, state.roomLight);
   }
 
   let running = false; const loop = (ms: number) => { if (!running) return; render(ms / 1000); requestAnimationFrame(loop); };
@@ -226,7 +312,11 @@ export function createScene(canvas: HTMLCanvasElement, host: HTMLElement, data: 
     state, players, render, rebuild, apply, resize,
     start() { if (!running) { running = true; requestAnimationFrame(loop); } }, stop() { running = false; },
     home() { Object.assign(state, {yaw: 0, pitch: 0, zoom: 1, dx: 0, dy: 0, dz: 0, sway: false}); apply(); },
-    set(patch: Partial<SceneState>) { if (patch.cards) loadCards(); const relens = 'lens' in patch && patch.lens !== state.lens || 'scale' in patch && patch.scale !== state.scale || 'tray' in patch && patch.tray !== state.tray || 'base' in patch && patch.base !== state.base || 'surface' in patch && patch.surface !== state.surface, reprint = 'logo' in patch || 'felt' in patch; Object.assign(state, patch); if (relens) rebuild(); else { if (reprint) drawFelt(); apply(); } },
+    set(patch: Partial<SceneState>) { if (patch.cards) loadCards(); const relens = 'lens' in patch && patch.lens !== state.lens || 'scale' in patch && patch.scale !== state.scale || 'tray' in patch && patch.tray !== state.tray || 'base' in patch && patch.base !== state.base || 'surface' in patch && patch.surface !== state.surface, reprint = 'logo' in patch || 'felt' in patch;
+      // Another room: with the shimmer the change is an animation that render() carries through; without it, or before the scene is built, a cut as before.
+      const other = 'room' in patch && patch.room !== state.room, before = lookNow(); Object.assign(state, patch);
+      if (other) { if (state.roomShift === 'shimmer' && built) beginShift(before); else if (shift) endShift(); }
+      if (relens) rebuild(); else { if (reprint) drawFelt(); apply(); } },
     setTrack(next: CardTrack | null) { track = next; },
     // ---- for a page that puts a game on the table. Positions are dealer metres: x across the table, s from the dealer-side
     // edge toward the players, y above the felt (as cardSpots and betSpots give them).
@@ -254,6 +344,7 @@ export function createScene(canvas: HTMLCanvasElement, host: HTMLElement, data: 
       return spot.s >= 0 && (spot.x / TABLE.a) ** 2 + (spot.s / TABLE.b) ** 2 <= 1 ? spot : null;
     },
     // What the picture is right now: the film itself, the film turned (still exact) or the film seen from another place (approximate).
-    status() { const turned = !!(state.yaw || state.pitch || state.zoom !== 1 || state.sway); return {view: moved || state.sway && state.mode === 'lean' ? 'moved' : turned ? 'turned' : 'home', camera, focus: state.focus === 'off' ? null : {what: focusWhat, distance: focusNow, tracked: !!track}, cards: {on: state.cards && !!cardLayer, loading: state.cards && !cardLayer, error: cardError, tracked: !!track}}; },
+    // shift: null when the room is not changing, otherwise how far a change with the shimmer has come, 0 to 1, as last drawn.
+    status() { const turned = !!(state.yaw || state.pitch || state.zoom !== 1 || state.sway); return {view: moved || state.sway && state.mode === 'lean' ? 'moved' : turned ? 'turned' : 'home', camera, focus: state.focus === 'off' ? null : {what: focusWhat, distance: focusNow, tracked: !!track}, cards: {on: state.cards && !!cardLayer, loading: state.cards && !cardLayer, error: cardError, tracked: !!track}, shift: shift ? shift.progress : null}; },
   };
 }

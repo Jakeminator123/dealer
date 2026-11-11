@@ -173,11 +173,13 @@ export function createRooms(scene: T.Scene, urls: {plate: string; panorama: stri
     // an event in the light. `lamp` is a flickering lamp's brightness and `cloud` a passing cloud's, 1 = nothing happening.
     // Salon: a pendant flickers. Las Vegas: a neon tube flickers and the hall dims a little. Rooms lit from outside (skyline,
     // forest, plates): the cloud dims the whole room. Returns the factor for the room's brightness. `pixels` = picture height / film height.
-    ambient(id: RoomId, seconds: number, now: Date, live: {clock: boolean; air: number; lamp: number; cloud: number}, pixels: number): number {
+    // `front`: the share of the air that is shown between the camera and the dealer, 1 if not given. A change of room with the
+    // shimmer thins it out and lets it come back, so that one room's dust or leaves do not turn into another's in one frame.
+    ambient(id: RoomId, seconds: number, now: Date, live: {clock: boolean; air: number; lamp: number; cloud: number; front?: number}, pixels: number): number {
       const inRoom = id !== 'plat', air = AIR[id]; clock.group.visible = inRoom && live.clock; if (clock.group.visible) clock.set(now);
       const amounts = [live.air * (air.leaves ? 0.45 : 1), live.air * air.leaves];
       back.forEach((a, i) => { a.points.visible = inRoom && amounts[i] > 0; if (a.points.visible) a.set(seconds, amounts[i], pixels * 0.5, i ? [1.5, 1.5, 1.3] : air.back); }); // the room is drawn at half size; leaves keep their own colour
-      front.forEach((a, i) => { a.points.visible = amounts[i] > 0; if (a.points.visible) a.set(seconds, amounts[i], pixels, i ? [1, 1, 1] : air.front); });
+      front.forEach((a, i) => { const amount = amounts[i] * (live.front ?? 1); a.points.visible = amount > 0; if (a.points.visible) a.set(seconds, amount, pixels, i ? [1, 1, 1] : air.front); });
       const lit = live.lamp * live.lamp; built.lamp.material.color.setRGB(7 * lit, 4 * lit, 1.6 * lit); built.lamp.light.intensity = 3 * live.lamp;
       neon.visible = id === 'panorama'; magenta.color.setRGB(6 * lit, 0.6 * lit, 3.2 * lit);
       if (id === 'hall') return hall ? hall.update(seconds, {lamp: live.lamp, air: live.air}) : 1;

@@ -33,7 +33,7 @@ Pamelas film visas i ett tredimensionellt rum med ett tredimensionellt bord. Fri
 
 | Funktion | Nycklar (förval) | För |
 | --- | --- | --- |
-| Miljö | `room`: `salong`, `panorama` (Las Vegas), `la` (Skyline), `skog`, `hall` (spelhall), `kuliss`, `plat` (salong; spelet väljer panorama) | D |
+| Miljö | `room`: `salong`, `panorama` (Las Vegas), `la` (Skyline), `skog`, `hall` (spelhall), `kuliss`, `plat` (salong; spelet väljer panorama); `roomShift` (cut; shimmer: en ridå av guldpaljetter stiger över hela bakgrunden, rummen byts under den och den dör ut, `roomShiftSeconds` 2,6, `status().shift`; `src/scene3d-shift.ts`) | D |
 | Liv i rummet: klocka med riktig tid, damm (i skogen pollen och löv) bakom och framför dealern, ett skifte i ljuset, och fläktens skugga över dealer och bord | `clock` (av), `dust` 0–1 (0), `flicker` (av), `flickerEvery` (20 s), `flickerStrength` (0,6); `fan` (av), `fanStrength` (0,16), `fanPeriod` (5 s) | D som av/på, värdena U |
 | Fokus: av, dealern, kortet, följ given, manuellt | `focus` (off), `focusDistance`, `tolerance` (0,4) | U; `follow` passar som fast förval |
 | Kamera och format: vrid, zooma, luta sig åt sidan, svaj | `yaw`, `pitch`, `zoom`, `mode`, `dx`, `dy`, `dz`, `aim`, `sway`, `scene.home()`; `format`: `desk`, `mob`, `fill` | Spelet sätter inramning per skärm (`fill`; liggande zoom 0,84 / pitch −8, stående under kvot 0,8 zoom 1,9 / pitch −10); fri vy U |
