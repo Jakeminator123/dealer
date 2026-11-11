@@ -6,6 +6,7 @@ import * as T from 'three';
 import {DEALER_LENS_ESTIMATE, FILM, aimCorrection, cameraFromContract, cardFocusPixel, cardPixel, cardSpots, filmToScene, solveCamera, viewFovDeg, type CardTrack, type FilmCamera} from './scene3d-geometry.ts';
 import {createFilmLayers, createPlayers} from './scene3d-film.ts';
 import {createFanLight} from './scene3d-light.ts';
+import {createChipTray, TRAY} from './scene3d-props.ts';
 import {createRooms, type RoomId} from './scene3d-room.ts';
 import {createTable} from './scene3d-table.ts';
 
@@ -16,6 +17,7 @@ export type SceneState = {
   keyLo: number; keyHi: number; shadow: number;
   focus: 'off' | 'dealer' | 'card' | 'follow' | 'manual'; focusDistance: number; tolerance: number;
   fan: boolean; fanStrength: number; fanPeriod: number;
+  tray: boolean;
 };
 // Everything added after checkpoint v1 starts switched off, so the page opens as v1. scale 0 = the contract's own k.
 export const DEFAULTS: SceneState = {
@@ -25,6 +27,7 @@ export const DEFAULTS: SceneState = {
   keyLo: 0.12, keyHi: 0.9, shadow: 1,
   focus: 'off', focusDistance: 1.5, tolerance: 0.4,
   fan: false, fanStrength: 0.16, fanPeriod: 5,
+  tray: false,
 };
 export type SceneData = {contract: Parameters<typeof cameraFromContract>[0]; plan: Parameters<typeof cardSpots>[0]; urls: {plate: string; panorama: string}; onChange: () => void; onMissingRoom: (room: RoomId) => void};
 
@@ -65,9 +68,9 @@ export function createScene(canvas: HTMLCanvasElement, host: HTMLElement, data: 
   const state: SceneState = {...DEFAULTS};
   const renderer = new T.WebGLRenderer({canvas, antialias: true, preserveDrawingBuffer: true}); renderer.autoClear = false;
   const bg = new T.Scene(), fg = new T.Scene(), view = new T.PerspectiveCamera(40, W / H, 0.05, 200), filmCam = new T.PerspectiveCamera(40, W / H, 0.05, 200), filmVP = new T.Matrix4();
-  const light = createFanLight(), film = createFilmLayers(filmVP, light.uniforms), table = createTable(light.hook), rooms = createRooms(bg, data.urls, data.onMissingRoom);
+  const light = createFanLight(), film = createFilmLayers(filmVP, light.uniforms), table = createTable(light.hook), tray = createChipTray(light.hook), rooms = createRooms(bg, data.urls, data.onMissingRoom);
   const sun = new T.DirectionalLight(0xfff1dd, 1.6); sun.position.set(-1.5, 3, 2.5);
-  fg.add(film.body, film.table, table.group, new T.AmbientLight(0xffe6cc, 1.1), sun);
+  fg.add(film.body, film.table, table.group, tray.group, new T.AmbientLight(0xffe6cc, 1.1), sun);
   const players = createPlayers(texture => film.setTexture(texture), data.onChange);
   let camera: FilmCamera = DEALER_LENS_ESTIMATE, pitch = 0, edgeZ = -1, guides: T.Group | null = null, track: CardTrack | null = null;
   let focusNow = NaN, focusWhat = '', lastSeconds = NaN, moved = false;
@@ -115,7 +118,7 @@ export function createScene(canvas: HTMLCanvasElement, host: HTMLElement, data: 
     camera = filmCamera(); const solved = solveCamera(camera); pitch = solved.pitch; edgeZ = -solved.edgeDistance;
     filmCam.fov = solved.fovYDeg; filmCam.aspect = W / H; filmCam.position.set(0, camera.heightM, 0); filmCam.rotation.set(-pitch, 0, 0, 'YXZ'); filmCam.updateProjectionMatrix(); filmCam.updateMatrixWorld(true);
     filmVP.multiplyMatrices(filmCam.projectionMatrix, filmCam.matrixWorldInverse);
-    table.build(edgeZ, camera.scale); drawFelt(); rooms.place(camera); light.place(camera); buildGuides(); focusNow = NaN; apply();
+    table.build(edgeZ, camera.scale, state.tray ? TRAY : undefined); tray.group.visible = state.tray; if (state.tray) tray.build(edgeZ, camera.scale); drawFelt(); rooms.place(camera); light.place(camera); buildGuides(); focusNow = NaN; apply();
   }
   const drawFelt = () => table.draw({spots: cardSpots(data.plan, camera), logo: state.logo, felt: state.felt, scale: camera.scale});
   function apply() {
@@ -176,7 +179,7 @@ export function createScene(canvas: HTMLCanvasElement, host: HTMLElement, data: 
     state, players, render, rebuild, apply, resize,
     start() { if (!running) { running = true; requestAnimationFrame(loop); } }, stop() { running = false; },
     home() { Object.assign(state, {yaw: 0, pitch: 0, zoom: 1, dx: 0, dy: 0, dz: 0, sway: false}); apply(); },
-    set(patch: Partial<SceneState>) { const relens = 'lens' in patch && patch.lens !== state.lens || 'scale' in patch && patch.scale !== state.scale, reprint = 'logo' in patch || 'felt' in patch; Object.assign(state, patch); if (relens) rebuild(); else { if (reprint) drawFelt(); apply(); } },
+    set(patch: Partial<SceneState>) { const relens = 'lens' in patch && patch.lens !== state.lens || 'scale' in patch && patch.scale !== state.scale || 'tray' in patch && patch.tray !== state.tray, reprint = 'logo' in patch || 'felt' in patch; Object.assign(state, patch); if (relens) rebuild(); else { if (reprint) drawFelt(); apply(); } },
     setTrack(next: CardTrack | null) { track = next; },
     // What the picture is right now: the film itself, the film turned (still exact) or the film seen from another place (approximate).
     status() { const turned = !!(state.yaw || state.pitch || state.zoom !== 1 || state.sway); return {view: moved || state.sway && state.mode === 'lean' ? 'moved' : turned ? 'turned' : 'home', camera, focus: state.focus === 'off' ? null : {what: focusWhat, distance: focusNow, tracked: !!track}}; },

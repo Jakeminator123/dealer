@@ -21,7 +21,8 @@ const clips: Clip[] = Object.entries((bank.media ?? {}) as Record<string, {video
 // generated from, so the hand does not lift and jump back at the join. A round with a step that cannot be played is left out.
 const graph = buildGraph(bank), deal: Step = {from: 'READY', to: 'P4.C1', take: 'pamela-p4-c1-plan-deal-02'};
 const round = (label: string, steps: Step[]): {label: string; parts: Part[]} => { const segments = resolveRound(graph, steps); return {label, parts: segments.every(s => s.video) ? segments.map(s => ({path: s.video!, start: s.start, end: s.end})) : []}; };
-const rounds = [round('Runda P4: giv → retur till vila', [deal, {from: 'P4.C1', to: 'IDLE', take: 'pamela-p4-c1-plan-return-idle-01'}]), round('Runda P4: giv → retur till redo', [deal, {from: 'P4.C1', to: 'READY', take: 'pamela-p4-c1-plan-return-ready-01'}])].filter(r => r.parts.length);
+const rounds = [round('Runda P4: giv → retur till vila', [deal, {from: 'P4.C1', to: 'IDLE', take: 'pamela-p4-c1-plan-return-idle-01'}]), round('Runda P4: giv → retur till redo', [deal, {from: 'P4.C1', to: 'READY', take: 'pamela-p4-c1-plan-return-ready-01'}]),
+  round('Runda P4: vila → redo → giv → vila', [{from: 'IDLE', to: 'READY', take: 'pamela-idle-ready-entry-01'}, deal, {from: 'P4.C1', to: 'IDLE', take: 'pamela-p4-c1-plan-return-idle-01'}])].filter(r => r.parts.length);
 const partsOf = (choice: string): Part[] => rounds[Number(choice.slice(6))]?.parts ?? [{path: clips.find(c => c.id === choice)!.video}];
 if (!clips.length) fail('Klippbanken innehåller inga filmer.');
 
@@ -46,7 +47,7 @@ async function followTrack() {
 const decimal = (v: number, digits = 2) => v.toFixed(digits).replace('.', ',');
 function hud() {
   const s = scene.status(), chip = (text: string, tone = '') => el('span', {className: `chip ${tone}`, textContent: text}), id = /motions\/([^/]+)\//.exec(scene.players.path)?.[1] ?? 'läser film…';
-  const added = [state.focus !== 'off' && 'fokus', state.fan && 'fläktskugga'].filter(Boolean);
+  const added = [state.focus !== 'off' && 'fokus', state.fan && 'fläktskugga', state.tray && 'markerbräde'].filter(Boolean);
   hudBox.replaceChildren(chip(id),
     s.view === 'moved' ? chip('Kameran är flyttad: 2,5D-närmevärde, inte filmens sanning', 'warn') : s.view === 'turned' ? chip('Bara vridning/zoom: filmen är geometriskt exakt', 'ok') : chip('Hemvy: filmen pixel för pixel', 'ok'),
     s.camera.source === 'contract' ? chip(`Kamera: planens (kontraktet) · skala k = ${decimal(s.camera.scale)} skattad`) : chip('Kamera: egen skattning, inte uppmätt', 'warn'),
@@ -95,7 +96,7 @@ function build() {
     check('Vik filmen mot bordet (händer och kort följer filten)', 'fold'), check('Visa hjälplinjer (filmruta, vikning, filmens bordsyta)', 'guides'),
     slider('Skuggor', 'shadow', 0, 1.6, 0.05), slider('Nyckel låg', 'keyLo', 0, 0.5, 0.01), slider('Nyckel hög', 'keyHi', 0.5, 1.2, 0.01));
   const logo = el('input', {type: 'text', value: state.logo, maxLength: 28}); logo.addEventListener('input', () => scene.set({logo: logo.value})); setters.logo = ((v: string) => { if (document.activeElement !== logo) logo.value = v; }) as never;
-  group('Bord', el('label', {className: 'row two'}, el('span', {textContent: 'Logotext'}), logo), choice('felt', [['green', 'Grön'], ['blue', 'Blå'], ['vin', 'Vinröd'], ['svart', 'Svart']]),
+  group('Bord', check('Markerbräde försänkt vid dealern', 'tray'), el('label', {className: 'row two'}, el('span', {textContent: 'Logotext'}), logo), choice('felt', [['green', 'Grön'], ['blue', 'Blå'], ['vin', 'Vinröd'], ['svart', 'Svart']]),
     note('Filt, linjer, kortrutor och logga är en enda platt bild sedd rakt uppifrån. Kortrutorna kommer ur placeringsplanen (endast läst). Bordets form och tryckets layout är provisoriska.'));
   let timer = 0; const scale = slider('Skala k', 'scale', 1, 2.6, 0.05, '×', () => { clearTimeout(timer); timer = window.setTimeout(() => scene.rebuild(), 120); }), shown = setters.scale as unknown as (v: number) => void;
   setters.scale = ((v: number) => shown(v > 0 ? v : scene.status().camera.scale)) as never;
@@ -123,4 +124,4 @@ if (!bare) build();
 scene.rebuild(); scene.start();
 const ready = scene.players.load(partsOf(first)).then(() => true, error => fail((error as Error).message));
 // For the proof recorder and for debugging from the console; not an interface for other pages.
-Object.assign(window, {scene3d: {scene, ready, clips}});
+Object.assign(window, {scene3d: {scene, ready, clips, rounds}});

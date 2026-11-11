@@ -36,7 +36,7 @@ Lager, bakifrån och fram:
 
 Filmkameran läses ur `data/scene-contract.json` (planens kamera) i `src/scene3d-geometry.ts`, som återanvänder pinhålet i `src/scene-geometry.ts`. Tre lägen ska hållas isär: från filmkamerans plats är bilden filmen pixel för pixel; vridning och zoom från samma plats är geometriskt exakt; förflyttning är ett närmevärde som bryter vid ungefär en stols avstånd. Rundor spelas med klippbankens egna klippunkter (`resolveRound`), aldrig hela klipp efter varandra.
 
-Allt som tillkommit efter kontrollpunkt v1 (fokus, fläktskugga, rekvisita) är avstängt från start, så sidan öppnar som v1. Ny bild jämförs mot föregående etapp innan den kallas oförändrad. Etapper heter `jakob-N` (se DRIFT).
+Allt som tillkommit efter kontrollpunkt v1 (fokus, fläktskugga, rekvisita) är avstängt från start, så sidan öppnar som v1. Ny bild jämförs mot föregående etapp innan den kallas oförändrad. Jämförelsen ska tåla webbläsarens egen variation: filtens tryckta guldlinjer kantutjämnas på två sätt mellan körningar, vilket ger medel 0,02 och högst cirka 30 av 255 längs linjerna även med oförändrad kod; allt utöver det, eller skillnad någon annanstans i bilden, är en verklig ändring. Etapper heter `jakob-N` (se DRIFT).
 
 Kända gränser: planens kamera passar kortrutorna men dealern är inte ritad med den linsen; skalan k är skattad (1,8–2,5); skon är film och kan varken läggas bakom något eller bytas ut utan en egen matt; salongen, bordets mått och tryckets layout är platshållare. Test: `tools/scene3d-geometry.test.ts` (ren geometri, utan media).
 
