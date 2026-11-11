@@ -48,7 +48,10 @@ export function mountOverlay(host: HTMLElement, on: Handlers) {
   const undo = button('Ångra', 'small', () => on.undo()), clear = button('Rensa', 'small', () => on.clear()), rebet = button('Samma igen', 'small', () => on.rebet()), deal = button('Dela ut', 'primary', () => on.deal());
   const betting = group(rail, undo, clear, rebet, deal);
   const acts = Object.fromEntries((['hit', 'stand', 'double', 'split'] as Action[]).map(a => [a, button(ACTION_LABEL[a], a === 'hit' ? 'act primary' : 'act', () => on.act(a))])) as Record<Action, HTMLButtonElement>;
-  const playing = group(acts.hit, acts.stand, acts.double, acts.split);
+  // The decision: whose turn (the seat's number in a ring) and the hand against the dealer's card, before the actions.
+  const decide = el('div', 'go-decide'), seatNo = el('span', 'go-seat'), versus = el('div', 'go-versus'), versusText = el('span');
+  versus.append(el('small', '', 'Din hand mot dealern'), versusText); decide.append(seatNo, versus);
+  const playing = group(decide, acts.hit, acts.stand, acts.double, acts.split);
   const insuring = group(el('span', 'go-note', 'Försäkring mot blackjack?'), button('Ja', 'act', () => on.insurance(true)), button('Nej', 'act primary', () => on.insurance(false)));
   const settled = group(button('Ny runda', 'primary', () => on.next()));
   const waiting = group(el('span', 'go-note'));
@@ -150,6 +153,8 @@ export function mountOverlay(host: HTMLElement, on: Handlers) {
     waiting.hidden = view.phase !== 'DEALING' && view.phase !== 'DEALER'; waiting.firstElementChild!.textContent = view.phase === 'DEALER' ? 'Dealern spelar …' : 'Korten delas ut …';
     undo.disabled = !view.canUndo; clear.disabled = !view.canUndo; rebet.disabled = !view.canRebet; deal.disabled = !view.canDeal;
     for (const a of Object.keys(acts) as Action[]) acts[a].disabled = !view.actions.includes(a); // all four stay in place, so a button never moves under the finger
+    const turn = view.seats.find(s => s.turn), hand = turn?.hands.find(h => h.active) ?? turn?.hands[0];
+    seatNo.textContent = turn ? String(turn.seat) : ''; versusText.innerHTML = hand ? `<b>${totalText(hand)}</b> mot ${view.dealer ? totalText(view.dealer) : ''}` : '';
     const live = new Set<string>();
     for (const s of view.seats) {
       const node = seatNode(s.seat), chips = s.chips.join();

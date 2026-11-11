@@ -14,10 +14,12 @@ import {chipsFor, mountOverlay, type Action, type Anchors} from './game-overlay.
 import {tableView, tableCards, cardFaces, shownBy, lineOf, betTotal, handKey, CHIP_VALUES, DEALER_KEY, type PageState, type Settled} from './game-view.ts';
 import type {Snapshot} from '../game/session.ts';
 
+const THEMES = ['noir', 'scout', 'smaragd', 'bordeaux', 'midnatt']; // the console's themes, Scout's own (game.css)
 const $ = (id: string) => document.getElementById(id)!, stage = $('stage'), canvas = $('view') as HTMLCanvasElement, failBox = $('fail');
 const fail = (message: string): never => { failBox.textContent = message; throw Error(message); };
 const read = async (url: string, what: string) => { const res = await fetch(url).catch(() => null); if (!res?.ok) fail(`${what} kunde inte läsas (${url}).`); return res!.json(); };
 const query = new URLSearchParams(location.search);
+stage.dataset.theme = THEMES.includes(query.get('tema') ?? '') ? query.get('tema')! : 'noir';
 // The server keeps one session per table name; a second tab or a test opens game.html?table=<name> and plays its own.
 const table = /^[a-z0-9-]{1,40}$/.test(query.get('table') ?? '') ? `?table=${query.get('table')}` : '';
 

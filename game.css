@@ -83,37 +83,85 @@ html,body{height:100%;margin:0;background:#060706;color:var(--go-ink);font:14px/
 .go-result[data-o=push]{background:var(--go-push);color:#14171a}
 @keyframes go-pop{from{transform:scale(.6);opacity:0}}
 
-/* ── the bar ── */
-.go-bar{position:absolute;left:50%;bottom:2.4%;transform:translateX(-50%);display:flex;align-items:center;gap:1em;padding:.5em .9em;border-radius:1.3em;background:var(--go-glass);border:1px solid var(--go-line);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);box-shadow:0 .6em 2em rgba(0,0,0,.45);pointer-events:auto;max-width:96%}
-.go-wallet{display:grid;grid-template-columns:auto auto;column-gap:.7em;row-gap:.05em;align-items:baseline;padding-right:1.1em;border-right:1px solid var(--go-line)}
-.go-wallet dt{color:var(--go-dim);font-size:.78em;letter-spacing:.06em;text-transform:uppercase}
-.go-wallet dd{margin:0;font-weight:700;text-align:right}
-.go-group{display:flex;align-items:center;gap:.55em}
+/* ── the console ──
+   After Scout Gaming's table console (services/game/public/table-console.css there, read 2026-11-11): one panel docked
+   along the lower edge instead of a floating pill, the balance in the accent, the chips in a recessed tray, small
+   outlined buttons that each keep their place, and one filled control in the accent at the row's end (Dela ut, Ny runda).
+   The deciding hand gets the seat's number in a ring and the hand against the dealer's card before its actions; an
+   action that is not allowed leaves its place empty. Five themes for the panel, Scout's own names and colours
+   (game.html?tema=scout|noir|smaragd|bordeaux|midnatt; noir, the gold one, when nothing is said). */
+#stage{--tc-surface-1:rgba(26,22,16,.97);--tc-surface-2:rgba(8,7,6,.98);--tc-plate:rgba(14,12,9,.88);--tc-line:rgba(226,191,109,.13);--tc-line-strong:rgba(226,191,109,.32);--tc-text:#f6eedc;--tc-muted:#bcae90;
+  --tc-accent:#e9c873;--tc-accent-2:#b98f3e;--tc-ink:#1b1305;--tc-accent-soft:rgba(233,200,115,.13);--tc-accent-line:rgba(233,200,115,.6);--tc-glow:rgba(233,200,115,.3);--tc-tray:#050403;
+  --tc-texture:radial-gradient(rgba(255,240,210,.035) .8px,transparent 1.1px) 0 0/3px 3px;
+  --go-gold:var(--tc-accent);--go-gold-ink:var(--tc-ink);--go-ink:var(--tc-text);--go-dim:var(--tc-muted);--go-line:var(--tc-line-strong)}
+#stage[data-theme=scout]{--tc-surface-1:rgba(20,23,27,.96);--tc-surface-2:rgba(9,10,12,.97);--tc-plate:rgba(10,11,13,.86);--tc-line:rgba(242,241,237,.1);--tc-line-strong:rgba(242,241,237,.2);--tc-text:#f2f1ed;--tc-muted:#a3a7af;
+  --tc-accent:#d6ff3a;--tc-accent-2:#b9e62c;--tc-ink:#0a0b0d;--tc-accent-soft:rgba(214,255,58,.12);--tc-accent-line:rgba(214,255,58,.55);--tc-glow:rgba(214,255,58,.32);--tc-tray:#07080a;
+  --tc-texture:linear-gradient(90deg,rgba(214,255,58,.035),transparent 26%,transparent 74%,rgba(214,255,58,.035))}
+#stage[data-theme=smaragd]{--tc-surface-1:rgba(14,62,46,.97);--tc-surface-2:rgba(5,33,24,.98);--tc-plate:rgba(6,38,28,.9);--tc-line:rgba(230,191,106,.15);--tc-line-strong:rgba(230,191,106,.34);--tc-text:#f1f6ef;--tc-muted:#b3cdbf;
+  --tc-accent:#e8c26d;--tc-accent-2:#bb913d;--tc-ink:#1b1405;--tc-accent-soft:rgba(232,194,109,.14);--tc-accent-line:rgba(232,194,109,.6);--tc-glow:rgba(232,194,109,.3);--tc-tray:#03251a;
+  --tc-texture:repeating-linear-gradient(45deg,rgba(255,255,255,.016) 0 1px,transparent 1px 4px)}
+#stage[data-theme=bordeaux]{--tc-surface-1:rgba(64,17,31,.97);--tc-surface-2:rgba(29,6,13,.98);--tc-plate:rgba(34,8,16,.9);--tc-line:rgba(243,214,164,.14);--tc-line-strong:rgba(243,214,164,.32);--tc-text:#fcf1ea;--tc-muted:#dcb9b9;
+  --tc-accent:#f3d6a4;--tc-accent-2:#d4ae74;--tc-ink:#2a0a12;--tc-accent-soft:rgba(243,214,164,.13);--tc-accent-line:rgba(243,214,164,.6);--tc-glow:rgba(243,214,164,.28);--tc-tray:#17040a;
+  --tc-texture:radial-gradient(120% 160% at 50% -30%,rgba(255,220,220,.07),transparent 60%)}
+#stage[data-theme=midnatt]{--tc-surface-1:rgba(22,36,68,.97);--tc-surface-2:rgba(8,14,31,.98);--tc-plate:rgba(9,16,34,.9);--tc-line:rgba(168,220,255,.13);--tc-line-strong:rgba(168,220,255,.3);--tc-text:#eef4ff;--tc-muted:#adbedb;
+  --tc-accent:#a8dcff;--tc-accent-2:#6fb3ec;--tc-ink:#06101f;--tc-accent-soft:rgba(168,220,255,.13);--tc-accent-line:rgba(168,220,255,.6);--tc-glow:rgba(168,220,255,.32);--tc-tray:#040917;
+  --tc-texture:radial-gradient(60% 140% at 18% 0%,rgba(168,220,255,.07),transparent 60%),radial-gradient(50% 120% at 85% 100%,rgba(120,140,255,.06),transparent 60%)}
+
+.go-bar{position:absolute;left:0;right:0;bottom:0;box-sizing:border-box;display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;min-height:76px;
+  padding:12px max(20px,calc((100% - 1680px)/2)) calc(12px + env(safe-area-inset-bottom,0px));border-top:1px solid var(--tc-line-strong);color:var(--tc-text);pointer-events:auto;
+  background:var(--tc-texture),linear-gradient(180deg,var(--tc-surface-1),var(--tc-surface-2));box-shadow:0 -16px 44px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.06);font-size:14px}
+/* a thin line of the accent along the top edge, brightest in the middle */
+.go-bar::before{content:'';position:absolute;left:0;right:0;top:-1px;height:2px;pointer-events:none;background:linear-gradient(90deg,transparent 6%,var(--tc-accent) 50%,transparent 94%);opacity:.7}
+/* wallet: a small label over each figure, the balance in the accent, a hairline between them */
+.go-wallet{flex:none;display:grid;grid-template-rows:auto auto;grid-auto-flow:column;column-gap:16px;row-gap:5px;margin:0}
+.go-wallet dt{color:var(--tc-muted);font:500 9px/1 ui-monospace,'JetBrains Mono',Consolas,monospace;letter-spacing:.14em;text-transform:uppercase;white-space:nowrap}
+.go-wallet dd{margin:0;font:700 15px/1 system-ui,'Segoe UI',sans-serif;white-space:nowrap}
+.go-wallet dd:first-of-type{color:var(--tc-accent)}
+.go-wallet dt:nth-of-type(n+2),.go-wallet dd:nth-of-type(n+2){padding-left:16px;border-left:1px solid var(--tc-line)}
+.go-group{flex:1;display:flex;align-items:center;gap:8px;min-width:0}
 .go-group[hidden]{display:none}
-.go-rail .go-chip{transition:transform .14s}
+/* the chip rack lies in a recessed tray */
+.go-rail{flex:none;display:flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;border:1px solid var(--tc-line);background:var(--tc-tray);box-shadow:inset 0 2px 8px rgba(0,0,0,.7),inset 0 -1px 0 rgba(255,255,255,.05),0 1px 0 rgba(255,255,255,.05)}
+.go-rail .go-chip{width:44px;font-size:19px;transition:transform .14s}
 .go-rail button{border-radius:50%;touch-action:none;cursor:grab}
 .go.dragging,.go.dragging button{cursor:grabbing}
-.go-rail button:hover .go-chip{transform:translateY(-.18em)}
-.go-rail button[aria-pressed=true] .go-chip{transform:translateY(-.45em) scale(1.12);box-shadow:0 0 0 .14em var(--go-gold),0 .5em 1em rgba(0,0,0,.55)}
-.go-rail button:disabled{opacity:.35}
-.go-btn{padding:.62em 1.05em;border-radius:.9em;background:rgba(255,255,255,.07);border:1px solid var(--go-line) !important;font-weight:600;letter-spacing:.01em;transition:background .15s,transform .1s,opacity .15s;white-space:nowrap}
-.go-btn:hover:not(:disabled){background:rgba(255,255,255,.14)}
-.go-btn:active:not(:disabled){transform:translateY(1px)}
-.go-btn:disabled{opacity:.32}
-.go-btn.small{padding:.5em .8em;font-size:.9em;font-weight:500;color:var(--go-dim)}
-.go-btn.primary{background:var(--go-gold);color:var(--go-gold-ink);border-color:transparent !important;padding:.72em 1.5em;font-weight:700}
-.go-btn.primary:hover:not(:disabled){background:#e6c97d}
-.go-btn.act{min-width:5.4em;padding:.8em 1.2em;font-size:1.05em}
-.go-note{color:var(--go-dim);white-space:nowrap}
-/* standing (a phone): larger type, and the bar across the width with buttons a thumb can hit */
+.go-rail button:hover .go-chip{transform:translateY(-3px)}
+.go-rail button[aria-pressed=true] .go-chip{transform:translateY(-6px) scale(1.08);box-shadow:0 0 0 2px var(--tc-accent),0 8px 16px rgba(0,0,0,.55)}
+.go-rail button:disabled{opacity:.5}
+/* the console's buttons: outlines on the panel, the accent on hover */
+.go-btn{flex:none;box-sizing:border-box;display:inline-flex;align-items:center;justify-content:center;height:44px;padding:0 14px;border-radius:12px;border:1px solid var(--tc-line-strong) !important;
+  background:linear-gradient(180deg,rgba(255,255,255,.07),rgba(255,255,255,.02));color:var(--tc-text);font:600 13px/1 system-ui,'Segoe UI',sans-serif;letter-spacing:.01em;white-space:nowrap;transition:border-color .15s,background .15s,color .15s}
+.go-btn:hover:not(:disabled){border-color:var(--tc-accent-line) !important;background:var(--tc-accent-soft)}
+.go-btn:disabled{border-color:var(--tc-line) !important;background:none;color:var(--tc-muted);opacity:.55}
+/* the one filled control, in the accent, at the row's end */
+.go-btn.primary{margin-left:auto;height:48px;padding:0 24px;border:0 !important;border-radius:14px;background:linear-gradient(180deg,var(--tc-accent),var(--tc-accent-2));color:var(--tc-ink);
+  font:700 16px/1 system-ui,'Segoe UI',sans-serif;letter-spacing:.1em;text-transform:uppercase;box-shadow:0 8px 22px -8px var(--tc-glow),inset 0 1px 0 rgba(255,255,255,.4),inset 0 -1px 0 rgba(0,0,0,.18)}
+.go-btn.primary:hover:not(:disabled){background:var(--tc-accent)}
+.go-btn.primary:disabled{background:var(--tc-accent-soft);color:var(--tc-muted);box-shadow:none;opacity:1}
+/* the decision: the seat's number in a ring, the hand against the dealer's card, then the actions. Each action keeps its place; one that is not allowed leaves it empty. */
+.go-decide{flex:none;display:flex;align-items:center;gap:12px;margin-right:auto}
+.go-seat{display:grid;place-items:center;width:44px;height:44px;border-radius:50%;border:2px solid var(--tc-accent);color:var(--tc-accent);font:700 17px/1 system-ui,'Segoe UI',sans-serif;box-shadow:0 0 0 4px var(--tc-accent-soft)}
+.go-versus{display:flex;flex-direction:column;gap:5px}
+.go-versus small{color:var(--tc-muted);font:500 9px/1 ui-monospace,'JetBrains Mono',Consolas,monospace;letter-spacing:.14em;text-transform:uppercase}
+.go-versus span{font:700 15px/1 system-ui,'Segoe UI',sans-serif}
+.go-versus b{color:var(--tc-accent)}
+.go-btn.act{min-width:104px;height:48px;border-radius:14px;font-size:15px}
+.go-btn.act.primary{margin-left:0;min-width:120px}
+.go-btn.act:disabled{visibility:hidden}
+.go-note{color:var(--tc-muted);font:500 13px/1.35 system-ui,'Segoe UI',sans-serif;white-space:nowrap;margin-left:auto}
+.go-note + .go-btn{margin-left:0}
+/* the chat's button stands clear of the console */
+.gc{bottom:92px}
+/* standing (a phone): a sheet of rows: wallet and the small buttons, the chips, then the filled control across the width */
 #stage.tall .go{font-size:clamp(13px,2.35cqw,22px)}
-#stage.tall .go-bar{width:94%;max-width:none;bottom:2%;justify-content:space-between;gap:.7em;padding:.6em .8em}
-#stage.tall .go-group{flex:1;min-width:0;justify-content:flex-end}
-#stage.tall .go-rail{flex:0 1 auto;justify-content:flex-start;gap:.3em}
-#stage.tall .go-btn.act{flex:1;min-width:0;padding:1em .4em}
-#stage.tall .go-btn.small{padding:.5em .55em}
-#stage.tall .go-btn.small:disabled{display:none} /* no room for a button that cannot be pressed */
-#stage.tall .go-wallet{padding-right:.7em}
-#stage.tall .go-wallet dt{font-size:.6em}
+#stage.tall .go-bar{padding:10px 12px calc(10px + env(safe-area-inset-bottom,0px));gap:8px 10px}
+#stage.tall .go-group{flex:1 1 100%;flex-wrap:wrap;justify-content:space-between}
+#stage.tall .go-wallet{flex:1 1 100%}
+#stage.tall .go-rail{flex:1 1 100%;justify-content:space-between;order:-1}
+#stage.tall .go-btn.primary{flex:1 1 100%;margin-left:0}
+#stage.tall .go-btn.act{flex:1;min-width:0}
+#stage.tall .go-btn.act.primary{flex:1}
+#stage.tall .go-decide{flex:1 1 100%}
+#stage.tall .gc{bottom:calc(100% - 7.5em);font-size:13px}
 @media (prefers-reduced-motion:reduce){.go-stack .go-chip,.go-result{animation:none}.go-rail .go-chip,.go-btn{transition:none}}
-@container (max-width:700px){.go-wallet dt{display:none}.go-bar{gap:.6em;padding:.55em .7em}.go-btn.small{display:none}}
+@container (max-width:900px){.go-btn.small{padding:0 10px;font-size:12px}.go-rail .go-chip{width:38px;font-size:16px}.go-btn.primary{padding:0 16px;font-size:14px}}
