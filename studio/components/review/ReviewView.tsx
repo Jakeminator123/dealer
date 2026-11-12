@@ -51,7 +51,10 @@ function replaceParams(next: Record<string, string | null>) {
     else p.delete(key);
   }
   const query = p.toString();
-  window.history.replaceState(window.history.state, "", `${window.location.pathname}${query ? `?${query}` : ""}`);
+  // null, not history.state: Next's patched replaceState leaves useSearchParams as it was when it is handed its own state
+  // (__NA), so the view would not follow its own address (a take opened from "Alla" stayed on "Alla"). With null Next
+  // copies its state over and updates useSearchParams (next/dist/client/components/app-router.js).
+  window.history.replaceState(null, "", `${window.location.pathname}${query ? `?${query}` : ""}`);
 }
 
 export function ReviewView() {
@@ -153,7 +156,8 @@ export function ReviewView() {
   const decidedNow = queue?.items.filter((i) => i.decided).length ?? 0;
   const status_ = queue ? (
     <span>
-      {queue.waiting ? `${queue.waiting} väntar på dig` : "Inget väntar på dig"}
+      {/* In the copy the person looking is not the one who decides. */}
+      {queue.waiting ? `${queue.waiting} väntar på ${isSnapshot ? "Jakob" : "dig"}` : `Inget väntar på ${isSnapshot ? "Jakob" : "dig"}`}
       {decidedNow ? <span className="text-faint"> · {decidedNow} avgjorda nu</span> : null}
     </span>
   ) : null;
@@ -202,7 +206,10 @@ export function ReviewView() {
 
   return (
     <Page title="Granska" status={status_} actions={tabs} full>
-      <div className="grid h-full grid-cols-[minmax(0,1fr)_320px]">
+      {/* The queue narrows, then steps aside, when the view is narrow (the bot's panel docked at 1280 px leaves about 800):
+          the take keeps its room, and ‹ › in its header still steps through what waits. */}
+      <div className="@container/granska h-full">
+      <div className="grid h-full grid-cols-[minmax(0,1fr)] @min-[1000px]/granska:grid-cols-[minmax(0,1fr)_240px] @min-[1200px]/granska:grid-cols-[minmax(0,1fr)_320px]">
         <div ref={main} tabIndex={-1} className="min-h-0 min-w-0 outline-none">
           {take && edge ? (
             <TakeReview
@@ -231,7 +238,7 @@ export function ReviewView() {
           ) : (
             <EmptyState
               icon={<PartyPopper />}
-              title="Allt är granskat. Inget väntar på dig."
+              title={`Allt är granskat. Inget väntar på ${isSnapshot ? "Jakob" : "dig"}.`}
               action={
                 <Button variant="quiet" onClick={() => replaceParams({ vy: "alla", tagning: null })}>
                   Se alla tagningar
@@ -241,7 +248,7 @@ export function ReviewView() {
             />
           )}
         </div>
-        <aside aria-label="Kön" className="flex min-h-0 flex-col border-l border-line bg-surface">
+        <aside aria-label="Kön" className="hidden min-h-0 flex-col border-l border-line bg-surface @min-[1000px]/granska:flex">
           <div className="flex h-11 shrink-0 items-center justify-between border-b border-line px-4">
             <span className="text-sm font-semibold text-ink">Kön</span>
             <span className="text-xs text-faint tabular-nums">{queue.waiting ? `${queue.waiting} väntar` : "tom"}</span>
@@ -254,6 +261,7 @@ export function ReviewView() {
             )}
           </div>
         </aside>
+      </div>
       </div>
     </Page>
   );

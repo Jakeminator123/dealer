@@ -307,7 +307,7 @@ export function Comparison({
           <Select aria-label={which === "a" ? "Tagning A" : "Tagning B"} size="sm" value={take.id} onChange={(id) => onPick(which, id)} options={options} className="w-52 min-w-0 shrink" />
           <TakeChip take={take} size="sm" />
           {which === "b" && role && role !== "vald" ? (
-            <span className="truncate text-xs text-faint">{role === "primar" ? "kantens Primär" : `${ROLE_LABEL[role].toLowerCase()} · ingen Primär satt`}</span>
+            <span className="truncate text-xs text-faint">{role === "primar" ? "stegets Primär" : `${ROLE_LABEL[role].toLowerCase()} · ingen Primär satt`}</span>
           ) : which === "a" ? (
             <span className="truncate text-xs text-faint">kandidaten</span>
           ) : null}

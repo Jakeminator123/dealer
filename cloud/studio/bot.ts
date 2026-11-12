@@ -9,8 +9,10 @@
 //   PATCH /api/onskemal/<id>       its status and answer: the owner's tool only, with the admin key
 //
 // Everything needs the lock's cookie (cloud/studio/lock.ts, checked here again behind the middleware), except the inbox for
-// the owner's tool, which shows DEALER_ADMIN_NYCKEL instead. Environment: OPENAI_API_KEY (without it the bot answers
-// "ingen_nyckel"), BOT_FEJK=1 (a canned answer, no model call: for building and rehearsing the panel), BOT_ENKEL_MODELL /
+// the owner's tool, which shows DEALER_ADMIN_NYCKEL instead. Environment: BOT_LEVERANTOR (gateway, the default: Vercel's AI
+// Gateway with the deployment's own OIDC token, or AI_GATEWAY_API_KEY; openai: OPENAI_API_KEY; see bot-provider.ts; with no
+// way in the bot answers "ingen_nyckel"), BOT_FEJK=1 (a canned answer, no model call: for building and rehearsing the
+// panel), BOT_ENKEL_MODELL /
 // BOT_ENKEL_ANSTRANGNING / BOT_STARK_MODELL / BOT_STARK_ANSTRANGNING (bot-models.ts), BOT_BLOB_TOKEN (the private store
 // for counters, logs and requests), DEALER_ADMIN_NYCKEL, and the lock's DEALER_LOSEN and DEALER_KAKNYCKEL.
 // No cost ever leaves the server: the öre go to the day's counter and the log.
@@ -21,6 +23,7 @@ import {buildInput, cited, foundText, rules, viewText, type Turn, type View} fro
 import {Index, coreText, type Knowledge, type Section} from './bot-search.ts';
 import {SSE_HEADERS, eventStream, frame, type BotEvent} from './bot-sse.ts';
 import {streamAnswer, wholeAnswer, type ModelFailure} from './bot-openai.ts';
+import {NO_WAY, endpointOf, providerOf, requestBody, type Provider} from './bot-provider.ts';
 import {STATUSES, TYPES, checkImage, checkNew, checkView, createPost, listPosts, numberOf, patchPost, pngKey, type RequestStatus, type RequestType} from './onskemal.ts';
 import {blobStore, type Store} from './bot-store.ts';
 
@@ -135,8 +138,10 @@ export function checkQuestion(body: unknown): {ok: true; value: Question} | {ok:
 }
 
 // ── The log ─────────────────────────────────────────────────────────────────
-type LogEntry = {tid: string; niva: string; modell: string; anstrangning: string; notering: string | null; vy: View | null; fraga: string; svar: string;
+type LogEntry = {tid: string; niva: string; modell: string; leverantor: Provider | null; anstrangning: string; notering: string | null; vy: View | null; fraga: string; svar: string;
   kallor: string[]; citerade: string[]; tokens: Usage; ore: number; ms: number; fel: string | null; besokare: string; bild: boolean; fejk: boolean};
+/** The log's notes on a choice that was not taken as asked (a model, an effort, a provider), joined; null for none. */
+const notes = (...list: (string | null)[]) => list.filter(Boolean).join('; ') || null;
 async function writeLog(store: Store, now: number, entry: LogEntry): Promise<void> {
   const time = new Intl.DateTimeFormat('sv-SE', {timeZone: 'Europe/Stockholm', hour: '2-digit', minute: '2-digit', second: '2-digit', hourCycle: 'h23'}).format(new Date(now)).replaceAll(':', '');
   const key = `bot/logg/${swedishDay(now)}/${time}-${hex(crypto.getRandomValues(new Uint8Array(3)))}.json`;
@@ -161,12 +166,12 @@ const pieces = (text: string) => text.match(/[\s\S]{1,24}/g) ?? [];
 
 // ── POST /api/bot ───────────────────────────────────────────────────────────
 async function ask(request: Request, ctx: BotContext, store: Store | null, now: number): Promise<Response> {
-  const fake = ctx.env.BOT_FEJK === '1', key = (ctx.env.OPENAI_API_KEY ?? '').trim();
+  const fake = ctx.env.BOT_FEJK === '1', way = endpointOf(ctx.env, request.headers);
   const body = await bodyOf(request, LIMITS.bot);
   if (!body.ok) return sseOnce({event: 'fel', data: {kod: 'indata', text: body.text}});
   const checked = checkQuestion(body.value);
   if (!checked.ok) return sseOnce({event: 'fel', data: {kod: 'indata', text: checked.text}});
-  if (!fake && !key) return sseOnce({event: 'fel', data: {kod: 'ingen_nyckel', text: 'Boten har ingen nyckel till modellen än. Jakob lägger in den.'}});
+  if (!fake && !way.key) return sseOnce({event: 'fel', data: {kod: 'ingen_nyckel', text: NO_WAY[way.provider]}});
   if (!store) return sseOnce({event: 'fel', data: {kod: 'ingen_nyckel', text: 'Boten har ingen lagring för sina räknare än. Jakob lägger in den.'}});
   const q = checked.value, knowledge = ctx.knowledge ?? EMPTY, choice = choose(q.niva, ctx.env), kr = kronorPerDollar(ctx.env);
 
@@ -207,8 +212,8 @@ async function ask(request: Request, ctx: BotContext, store: Store | null, now: 
       else if (order === 'fejk fel') failure = {kod: 'modell', text: 'Modellen kunde inte svara (provfel).'};
       usage = {...NO_USAGE, input: estimate, output: roughTokens(answer)};
     } else {
-      const call = {model: choice.model, input, reasoning: {effort: choice.effort}, max_output_tokens: choice.cap, ...(choice.known ? {prompt_cache_options: {mode: 'explicit'}} : {})};
-      for await (const e of streamAnswer(call, {key, fetch: ctx.fetch, signal: abort.signal})) {
+      const call = requestBody(way.provider, {model: choice.model, input, effort: choice.effort, cap: choice.cap, cache: choice.known});
+      for await (const e of streamAnswer(call, {key: way.key!, url: way.url, fetch: ctx.fetch, signal: abort.signal})) {
         if (e.type === 'text') { answer += e.t; stream.send({event: 'text', data: {t: e.t}}); }
         else if (e.type === 'done') { usage = e.usage; cut = e.incomplete; }
         else { failure = {kod: e.kod, text: e.text}; usage = e.usage; }
@@ -228,7 +233,7 @@ async function ask(request: Request, ctx: BotContext, store: Store | null, now: 
     const end = clock();
     settled = true;
     try { await caps.settle(ticket, ore, end, true); } catch (error) { console.error('Räknaren skrevs inte:', (error as Error).message); }
-    await writeLog(store, end, {tid: new Date(end).toISOString(), niva: q.niva, modell: fake ? 'fejk' : choice.model, anstrangning: choice.effort, notering: choice.note, vy: q.vy, fraga: q.fraga, svar: answer,
+    await writeLog(store, end, {tid: new Date(end).toISOString(), niva: q.niva, modell: fake ? 'fejk' : choice.model, leverantor: fake ? null : way.provider, anstrangning: choice.effort, notering: notes(choice.note, providerOf(ctx.env).note), vy: q.vy, fraga: q.fraga, svar: answer,
       kallor: sent.map(s => s.id), citerade, tokens: usage ?? NO_USAGE, ore, ms: end - now, fel: failure ? failure.text : null, besokare: visitor, bild: !!q.bild, fejk: fake});
     stream.close();
   };
@@ -266,14 +271,14 @@ function fakeDraft(thread: readonly Turn[]): Draft {
 }
 
 async function draft(request: Request, ctx: BotContext, store: Store | null, now: number): Promise<Response> {
-  const fake = ctx.env.BOT_FEJK === '1', key = (ctx.env.OPENAI_API_KEY ?? '').trim();
+  const fake = ctx.env.BOT_FEJK === '1', way = endpointOf(ctx.env, request.headers);
   const body = await bodyOf(request, LIMITS.utkast);
   if (!body.ok) return refuse('indata', body.text);
   const b = (body.value ?? {}) as Record<string, unknown>;
   const trad = checkThread(b.trad); if (!trad.ok) return refuse('indata', trad.text);
   const vy = checkView(b.vy); if (!vy.ok) return refuse('indata', vy.text);
   if (!trad.value.some(t => t.roll === 'du')) return refuse('indata', 'Samtalet är tomt.');
-  if (!fake && !key) return refuse('ingen_nyckel', 'Boten har ingen nyckel till modellen än. Jakob lägger in den.');
+  if (!fake && !way.key) return refuse('ingen_nyckel', NO_WAY[way.provider]);
   if (!store) return refuse('ingen_nyckel', 'Boten har ingen lagring för sina räknare än. Jakob lägger in den.');
   // A draft is a small task: the quick model at low effort where it allows that, with a small output cap.
   const base = choose('snabb', ctx.env);
@@ -288,15 +293,15 @@ async function draft(request: Request, ctx: BotContext, store: Store | null, now
   if (!admitted.ok) return refuse(admitted.kod, admitted.text);
   let result: Draft | null = null, usage: Usage | null = null, failure: string | null = null;
   if (fake) { result = fakeDraft(trad.value); usage = {...NO_USAGE, input: estimate, output: 60}; } else {
-    const answer = await wholeAnswer({model: choice.model, reasoning: {effort: choice.effort}, max_output_tokens: choice.cap,
+    const answer = await wholeAnswer(requestBody(way.provider, {model: choice.model, effort: choice.effort, cap: choice.cap, cache: false,
       input: [{role: 'developer', content: DRAFT_RULES}, {role: 'user', content: `${conversation}\n\n${viewText(vy.value)}`}],
-      text: {format: {type: 'json_schema', name: 'utkast', strict: true, schema: DRAFT_SCHEMA}}}, {key, fetch: ctx.fetch, signal: ctx.signal});
+      text: {format: {type: 'json_schema', name: 'utkast', strict: true, schema: DRAFT_SCHEMA}}}), {key: way.key!, url: way.url, fetch: ctx.fetch, signal: ctx.signal});
     usage = answer.usage;
     if (answer.ok) { try { result = checkDraft(JSON.parse(answer.text)); } catch { result = null; } if (!result) failure = 'Utkastet kom tillbaka i fel form.'; } else failure = answer.text;
   }
   const ore = fake ? 0 : usage && (usage.input || usage.output) ? oreOf(choice.model, usage, kr) : admitted.ticket.worst, end = (ctx.now ?? Date.now)();
   try { await caps.settle(admitted.ticket, ore, end, false); } catch (error) { console.error('Räknaren skrevs inte:', (error as Error).message); }
-  await writeLog(store, end, {tid: new Date(end).toISOString(), niva: 'utkast', modell: fake ? 'fejk' : choice.model, anstrangning: choice.effort, notering: choice.note, vy: vy.value,
+  await writeLog(store, end, {tid: new Date(end).toISOString(), niva: 'utkast', modell: fake ? 'fejk' : choice.model, leverantor: fake ? null : way.provider, anstrangning: choice.effort, notering: notes(choice.note, providerOf(ctx.env).note), vy: vy.value,
     fraga: conversation.slice(0, 4000), svar: result ? JSON.stringify(result) : '', kallor: [], citerade: [], tokens: usage ?? NO_USAGE, ore, ms: end - now, fel: failure, besokare: visitor, bild: false, fejk: fake});
   return result ? json(result) : refuse('modell', failure ?? 'Utkastet gick inte att göra.');
 }

@@ -36,6 +36,29 @@ const ENV = /process\.env|(?<![\w/])\.env(?:\.local)?\b|\b(?:[A-Z][A-Z0-9]*_)+(?
 const URL_ANY = /\bhttps?:\/\/[^\s)`>\]]+|\bgit@[\w.-]+:/g;
 const URL_OK = /^https?:\/\/(?:www\.)?scoutgaming\.tech(?:\/|$)/;
 
+// ── Paths of this machine, in every form the documents write them ──────────
+// The start of a path: a drive (C:/, D:\, c:\\, also after a non-ASCII letter's word boundary), a share or a long path
+// (\\server\share, \\?\C:\, \\wsl$\…), a Git Bash drive (/c/Users, /d/dealer-scratch), a home or system folder (/Users/,
+// /home/, /tmp/, ~/, ~\), and a folder named by a variable (%USERPROFILE%\, $HOME/, $env:TEMP\). PRIVATE_PATH of
+// tools/studio-freeze.ts (the copy's own check) is tested beside these, so nothing it finds is ever let through here.
+const PATH_START = String.raw`(?:(?<![\p{L}\p{N}_])[A-Za-z]:[\\/]+(?=[\p{L}\p{N}_.~$%-])|\\\\[?.]\\|\\\\[\p{L}\p{N}][\p{L}\p{N}._$-]*\\(?=[\p{L}\p{N}._$-])|(?<![\p{L}\p{N}_.~/-])\/[A-Za-z]\/(?=[\p{L}\p{N}_.-])|(?<![\p{L}\p{N}_.])\/(?:Users|home|mnt|tmp|var|private|root|opt)\/|(?<![\p{L}\p{N}_.~])~[\\/](?=[\p{L}\p{N}_.-])|%[A-Za-z_]+%[\\/]|\$(?:HOME|TEMP|TMP|USERPROFILE|env:[A-Za-z_]+)[\\/])`;
+// The rest of a path: up to a space, a quote, a bracket, a back-tick, a pipe or an emphasis mark; across a space only when
+// the next word is itself a piece of a path (C:\Users\Jakob Eberg\Desktop).
+const PATH_CHAR = String.raw`[^\s"'()<>,;|\x60*\[\]{}]`;
+const LOCAL_PATH = new RegExp(String.raw`${PATH_START}${PATH_CHAR}*(?: (?=${PATH_CHAR}*[\\/])${PATH_CHAR}+)*`, 'gu');
+/** A path of this machine in a text, in any of the forms above or as the copy's own check sees one. */
+export const hasLocalPath = (text: string): boolean => new RegExp(LOCAL_PATH.source, 'u').test(text) || new RegExp(PRIVATE_PATH.source).test(text);
+/** Every path of this machine replaced by the token; a full stop or colon that ends the sentence stays. */
+export function replacePaths(text: string, onEach: () => void = () => {}): string {
+  const token = (m: string) => { onEach(); const end = /[.:]+$/.exec(m)?.[0] ?? ''; return LOCAL + end; };
+  return text
+    // An autolink of a path (<D:/x>, <file:///C:/x>) goes whole, brackets and all.
+    .replace(/<(?:file:\/\/\/?)?(?:[A-Za-z]:[\\/]|\\\\|\/|~[\\/])[^<>\s]*>/g, token)
+    .replace(/\bfile:\/\/\/?(?=[A-Za-z]:[\\/]|\/)/g, '')
+    .replace(new RegExp(LOCAL_PATH.source, 'gu'), token)
+    .replace(new RegExp(PRIVATE_PATH.source, 'g'), token);
+}
+
 export type Rule = 'kostnad' | 'spärrat namn' | 'reklamfilm' | 'lösenord' | 'id' | 'miljövariabel' | 'adress' | 'lokal sökväg';
 /** The rule a piece of text breaks, or null. scout: Scoutgaming's own words (a game balance is no cost there). */
 export function breaks(text: string, release: Blocked, scout: boolean): Rule | null {
@@ -46,7 +69,7 @@ export function breaks(text: string, release: Blocked, scout: boolean): Rule | n
   if (IDS.some(re => re.test(text))) return 'id';
   if (ENV.test(text)) return 'miljövariabel';
   for (const m of text.matchAll(new RegExp(URL_ANY.source, 'g'))) if (!URL_OK.test(m[0])) return 'adress';
-  if (new RegExp(PRIVATE_PATH.source).test(text)) return 'lokal sökväg';
+  if (hasLocalPath(text)) return 'lokal sökväg';
   return null;
 }
 
@@ -61,7 +84,7 @@ export function rewrite(text: string, removed: Removed = {}): string {
     .replace(/\[([^\]]+)\]\((?:[^()]|\([^()]*\))*\)/g, '$1')
     .replace(/\bhttps?:\/\/(?:127\.0\.0\.1|localhost):4319(\/studio\/[^\s)`>\]]*)/g, '$1')
     .replace(/\bhttps?:\/\/(?:127\.0\.0\.1|localhost)(?::\d+)?[^\s)`>\]]*/g, '‹labbet›')
-    .replace(new RegExp(PRIVATE_PATH.source, 'g'), () => { count(removed, 'sökväg ersatt'); return LOCAL; });
+    .replace(/^[\s\S]*$/, all => replacePaths(all, () => count(removed, 'sökväg ersatt')));
 }
 
 /** One line (a paragraph, a list item or a table row) with every bad sentence, parenthesis or row taken out; null if nothing is left. */
@@ -139,10 +162,13 @@ export function cleanDoc(doc: Doc, release: Blocked): {sections: Built[]; remove
   const sections: Built[] = [], ids = new Set<string>();
   let h2 = '';
   parts.forEach((part, i) => {
-    if (part.level === 1 || part.level === 2) h2 = part.level === 2 ? part.heading : '';
-    const heading = part.level === 0 || part.level === 1 ? 'Inledning' : part.level === 3 && h2 ? `${h2} › ${part.heading}` : part.heading;
-    if ((part.level <= 1 && doc.dropIntro) || (doc.dropHeadings && doc.dropHeadings.test(part.level === 3 ? h2 : part.heading)) || (part.level === 3 && doc.dropHeadings?.test(part.heading))) { count(removed, 'avsnitt'); return; }
-    if (breaks(part.heading, release, doc.scout)) { count(removed, 'avsnitt'); return; }
+    // A heading may name a path too ("Arkivet på D:/…"): it is rewritten like the text, and the section kept.
+    const name = rewrite(part.heading, removed).trim();
+    if (part.level === 1 || part.level === 2) h2 = part.level === 2 ? name : '';
+    const heading = part.level === 0 || part.level === 1 ? 'Inledning' : part.level === 3 && h2 ? `${h2} › ${name}` : name;
+    if ((part.level <= 1 && doc.dropIntro) || (doc.dropHeadings && doc.dropHeadings.test(part.level === 3 ? h2 : name)) || (part.level === 3 && doc.dropHeadings?.test(name))) { count(removed, 'avsnitt'); return; }
+    // The heading as the title shows it, the parent's included: a section under a heading that breaks a rule goes with it.
+    if (breaks(heading, release, doc.scout) || breaks(name, release, doc.scout)) { count(removed, 'avsnitt'); return; }
     const lines = part.lines.map(l => l.trim() ? cleanLine(l, release, doc.scout, removed) : '').filter((l): l is string => l !== null);
     const text = lines.join('\n').replace(/\n{3,}/g, '\n\n').trim();
     if (text.length < 40 && i > 0) return;
@@ -193,14 +219,15 @@ export function bankSections(graph: Graph, release: Blocked, removed: Removed): 
     `Räknat med buildGraph på klippbanken som den var när kopian byggdes, i läget en film per plats (${graph.summary.films.mode === 'SEAT' ? 'platsens andra kort spelar första kortets filmer' : 'en film per kort'}).`,
     `- Huvudfilmer som en runda behöver: ${required.length}.`,
     `- Huvudtagningen, alltså det som spelas: ${tally(mainOf)}.`,
-    `- Bästa tagning per film i stället: ${tally(bestOf)}.`,
+    `- Bästa tagning per steg i stället: ${tally(bestOf)}.`,
     `- Primära tagningar satta av Jakob: ${required.filter(e => e.takes.some(t => t.explicitMain)).length} av ${required.length}.`,
     `- Tagningar totalt: ${all.length} (${tally(byVerdict)}).`,
     `- Väntar på Jakobs ord: ${waiting.length}${waiting.length ? `: ${waiting.map(t => `${t.id} (${edgeName(t.edge)})`).join(', ')}` : ''}.`,
-    `- Experimentkanter utanför modellen: ${graph.experiments.length}.`,
-    'Ankare: A1 = vila (IDLE), A2.1 = nyp i skons fönster (READY), A2.2 = hand över kortet (READY-B). En film går mellan två ankare och skrivs till exempel A2.1 → P4C1 (READY>P4.C1). Syns i vyerna Karta och Primära.',
+    `- Experimentsteg utanför modellen: ${graph.experiments.length}.`,
+    // Jakob's words (2026-11-12): a "steg" is one move between two anchors; a film or a take is what plays there.
+    'Ankare: A1 = vila (IDLE), A2.1 = nyp i skons fönster (READY), A2.2 = hand över kortet (READY-B). Ett steg är en rörelse mellan två ankare och skrivs till exempel A2.1 → P4C1 (READY>P4.C1); varje steg kan ha flera tagningar, och en av dem spelas. Syns i vyerna Karta och Primära.',
   ].join('\n');
-  const rows = ['| Film | Kant | Spelas nu | Dom | Tagningar |', '| --- | --- | --- | --- | --- |'];
+  const rows = ['| Steg | Id | Spelas nu | Dom | Tagningar |', '| --- | --- | --- | --- | --- |'];
   const detail: Built[] = [];
   for (const e of [...graph.edges, ...graph.experiments]) {
     const names = takeNames(e.takes), n = (t: Take) => names.get(t.id) ?? t.id;
@@ -209,7 +236,7 @@ export function bankSections(graph: Graph, release: Blocked, removed: Removed): 
     if (graph.summary.films.required.includes(e.id)) rows.push(`| ${edgeName(e)} | ${e.id} | ${e.main ? `${n(e.main)} (${e.main.id})` : 'ingen'} | ${e.main ? verdictWord(e.main) : 'saknas'} | ${tally(counts) || 'inga'} |`);
     if (!e.takes.length && !graph.summary.films.required.includes(e.id)) continue;
     const lines = [
-      `Film ${edgeName(e)} (kanten ${e.id}): från ${placeWords(e.from)} till ${placeWords(e.to)}${e.experiment ? ', experiment utanför modellen' : e.optional ? ', valfri' : ''}${e.shares ? `; spelar filmerna från ${edgeName(graph.edge[e.shares] ?? e.shares)}` : ''}.`,
+      `Steget ${edgeName(e)} (${e.id}): från ${placeWords(e.from)} till ${placeWords(e.to)}${e.experiment ? ', experiment utanför modellen' : e.optional ? ', valfri' : ''}${e.shares ? `; spelar filmerna från ${edgeName(graph.edge[e.shares] ?? e.shares)}` : ''}.`,
       e.main ? `- Spelas nu: ${n(e.main)} (${e.main.id}), ${verdictWord(e.main)}.` : '- Ingen tagning kan spelas här: filmen saknas.',
     ];
     for (const t of e.takes) {
@@ -258,8 +285,8 @@ export function proofSections(proofs: readonly Proof[], onSite: ReadonlySet<stri
 /** Five lines of the builder's own about each view, used when studio/lib/guide.ts gives none. */
 export const OWN_VIEWS: {namn: string; adress: string; text: string}[] = [
   {namn: 'Spela', adress: '/studio/', text: 'Spelar en runda i 3D-scenen eller som vanliga filmer. Rundan skrivs med Jakobs ord, till exempel A1 - A2.1 - P4C1 - A1.'},
-  {namn: 'Karta', adress: '/studio/karta/', text: 'Nodkartan: ankarna (A1 vila, A2.1 nyp, A2.2 hand över) och kortplatserna, med en linje per film. Klicka på en linje för filmens tagningar och domar.'},
-  {namn: 'Primära', adress: '/studio/primara/', text: 'En rad per film i rundan: vad som spelas nu mot bästa tagning Jakob godkänt. Jakob väljer själv en primär tagning per film.'},
+  {namn: 'Karta', adress: '/studio/karta/', text: 'Nodkartan: ankarna (A1 vila, A2.1 nyp, A2.2 hand över) och kortplatserna, med en linje per steg. Klicka på en linje för stegets tagningar och domar.'},
+  {namn: 'Primära', adress: '/studio/primara/', text: 'En rad per steg i rundan: vad som spelas nu mot bästa tagning Jakob godkänt. Jakob väljer själv en primär tagning per steg.'},
   {namn: 'Jämför', adress: '/studio/jamfor/', text: 'Två tagningar sida vid sida på samma ruta, eller på samma plats, med beslutet för kandidaten under.'},
   {namn: 'Granska', adress: '/studio/granska/', text: 'Tagningar som väntar på Jakobs dom, en i taget. I kopian sparas inga beslut.'},
   {namn: 'Prov', adress: '/studio/prov/', text: 'Prov från arbetet, nyast först: filmer och bilder med en dom per fil.'},
@@ -313,6 +340,21 @@ export function scanLeaks(knowledge: Knowledge, release: Blocked): string[] {
     }
   }
   for (const f of inspectBlob('bot-knowledge.json', Buffer.from(JSON.stringify(knowledge)))) if (f.level === 'RED') out.push(`kunskapen: ${f.message}`);
+  return out;
+}
+
+/**
+ * The snapshot build's own check of the knowledge it ships (tools/build-studio-snapshot.ts, bot-knowledge.js): the last
+ * scan, and every string of it (ids, sources and dates too) through the copy's text check (findTextLeaks). The strings are
+ * checked as the bot reads them, decoded: in the module's JSON a line break is the two characters "\n", so "mål:" at the
+ * end of a line reads as the drive path "l:\n…", and a real C:\Users\… hides behind its doubled backslash. Each finding
+ * says where it is.
+ */
+export function knowledgeLeaks(knowledge: Knowledge, release: Blocked, textLeaks: (text: string) => string[]): string[] {
+  const out = scanLeaks(knowledge, release);
+  const strings: {at: string; text: string}[] = [{at: 'byggd', text: knowledge.byggd}, ...knowledge.kallor.map((text, i) => ({at: `kallor[${i}]`, text}))];
+  for (const s of [...knowledge.karna, ...knowledge.avsnitt]) strings.push({at: `${s.id} (id)`, text: s.id}, ...`${s.titel}\n${s.text}`.split('\n').map(text => ({at: s.id, text})));
+  for (const {at, text} of strings) for (const rule of textLeaks(text)) out.push(`${at}: ${rule}: ${text.slice(0, 80)}`);
   return out;
 }
 

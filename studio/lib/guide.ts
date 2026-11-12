@@ -1,7 +1,9 @@
-// The studio in short, one text per view: what it shows and what one can do there. Data only (no imports, no DOM): the
+// The studio in short, one text per view: what it shows and what one can do there. Data only (no DOM; its one import is the
+// table of words): the
 // welcome dialog of the online copy reads it, and the bot's builder puts it in the bot's knowledge, so it is written for
 // someone who is not a programmer and has not seen the studio. Swedish, short, Jakob's own words for anchors and verdicts.
-// Keep machine paths and private names out: the copy's build scans every text it ships.
+// Keep machine paths and private names out: the copy's build scans every text it ships. The words come from lib/words.ts.
+import { WORDS as STUDIO_WORDS } from "./words.ts";
 
 export type GuideView = {
   /** The key the view gives to useViewContext (lib/context.ts). */
@@ -34,8 +36,8 @@ export const GUIDE: readonly GuideView[] = [
     kort: "Se alla filmer på kartan",
     text:
       "Nodkartan över allt som är filmat, upplagd som bordet: ankarna vid skon (A1 vila, A2.1 nyp, A2.2 hand över), platserna P1 " +
-      "till P7 i en båge och dealern överst. Varje linje är en film mellan två lägen och visar vad som spelas där. Klicka på en " +
-      "linje för att se alla tagningar av den filmen, med Jakobs omdöme på varje.",
+      "till P7 i en båge och dealern överst. Varje linje är ett steg mellan två lägen, till exempel steget A2.1 → P4C1, och visar " +
+      "vilken tagning som spelas där. Klicka på en linje för att se alla tagningar av steget, med Jakobs omdöme på varje.",
   },
   {
     vy: "primara",
@@ -43,8 +45,8 @@ export const GUIDE: readonly GuideView[] = [
     adress: "/studio/primara/",
     kort: "Vad som spelas nu",
     text:
-      "För varje film i en hel runda: tagningen som spelas nu bredvid den bästa som Jakob har godkänt rakt av, och skarven mellan " +
-      "giv och retur. En Primär är tagningen som alltid ska spelas på en film; den väljer bara Jakob.",
+      "För varje steg i en hel runda: tagningen som spelas nu bredvid den bästa som Jakob har godkänt rakt av, och skarven mellan " +
+      "giv och retur. En Primär är tagningen som spelas först i sitt steg; den väljer bara Jakob.",
   },
   {
     vy: "granska",
@@ -77,7 +79,7 @@ export const GUIDE: readonly GuideView[] = [
     adress: "/studio/jamfor/",
     kort: "Två tagningar bredvid varandra",
     text:
-      "Två tagningar av samma film sida vid sida från samma start, oftast en kandidat mot primären, med bildruta för bildruta " +
+      "Två tagningar av samma steg sida vid sida från samma start, oftast en kandidat mot primären, med bildruta för bildruta " +
       "och båda i samma bild (tangenten X). Öppnas från en tagning, inte från menyn.",
   },
   {
@@ -113,20 +115,13 @@ export const WELCOME = {
   ],
 } as const;
 
-/** Jakob's words, for the bot's knowledge: what the studio's short names mean. */
+/**
+ * Jakob's words, for the bot's knowledge: the studio's one table (lib/words.ts), each word with what it means and the
+ * other names it has in code and documents, so that the bot answers in the same words as the views and the Ordlista.
+ */
 export const WORDS: readonly { ord: string; betyder: string }[] = [
-  { ord: "A1, ankare 1", betyder: "Vila: dealerns händer i viloläget." },
-  { ord: "A2.1, ankare 2.1", betyder: "Nyp: handen nyper kortet i skons fönster, redo att dela ut." },
-  { ord: "A2.2, ankare 2.2", betyder: "Hand över: handen lämnar kortet vid skons mun." },
-  { ord: "P1C1 … P7C2", betyder: "Plats 1 till 7, kort 1 eller 2. DC1, DC2 är dealerns egna kort." },
   { ord: "A2.1 - P4C1 - A2.1", betyder: "En giv som Jakob skriver den: från nypet till plats 4:s första kort och tillbaka." },
-  { ord: "Tagning", betyder: "En filmad version av en film. En film (en kant på kartan) kan ha många tagningar." },
-  { ord: "Primär ★", betyder: "Tagningen som alltid ska spelas på en film. Bara Jakob väljer den." },
-  { ord: "Godkänd ✓", betyder: "Jakob har godkänt tagningen rakt av." },
-  { ord: "Variant ◆", betyder: "Godkänd som variant: får spelas, men är inte förstahandsvalet." },
-  { ord: "Väntar ○", betyder: "Ingen har sagt något om tagningen ännu." },
-  { ord: "Underkänd ✕", betyder: "Tagningen spelas inte." },
-  { ord: "3D eller Inte 3D", betyder: "Filmen spelad i 3D-scenen vid ett bord, eller som den är, på sin gröna bakgrund." },
+  ...STUDIO_WORDS.map((w) => ({ ord: w.ord, betyder: w.aven.length ? `${w.betyder} Kallas också: ${w.aven.join(", ")}.` : w.betyder })),
 ];
 
 /** The guide text of one view, or null. */

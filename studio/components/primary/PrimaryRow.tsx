@@ -149,7 +149,7 @@ export function PrimaryRow({ row, saving, busy, line, onMake }: { row: Row; savi
             loading={saving}
             disabled={busy && !saving}
             onClick={() => onMake(proposal!)}
-            title={`Gör ${takeName(proposal!)} till primär på ${edgeName(edge)}`}
+            title={`Gör ${takeName(proposal!)} till primär i steget ${edgeName(edge)}`}
           >
             Gör primär
           </Button>

@@ -25,6 +25,8 @@ import {STUDIO_TYPES} from './studio-files.ts';
 import {readRelease, pickTakes, freezeBank, pickProofs, graphShape, roundShape, scrub, findLeaks, findTextLeaks, blockedPath, safeRelative, prefetchAlias, objectName, MEDIA_TYPES, type Proof, type Left} from './studio-freeze.ts';
 import type {MediaMap} from '../cloud/studio/gate.ts';
 import {buildKnowledge, BOT_FUNCTION_FILES} from './build-knowledge.ts';
+import {knowledgeLeaks} from './knowledge.ts';
+import {isBotPath} from '../cloud/studio/bot-routes.ts';
 
 const root = path.resolve(fileURLToPath(new URL('../', import.meta.url)));
 if (path.resolve(process.cwd()) !== root) throw Error('Kör från dealer-katalogen.');
@@ -240,7 +242,7 @@ for (const name of asked) {
   if (name.startsWith('data/') && !(name in dataFiles)) {
     if (/^data\/(?:scene-[a-z-]+|props)\.json$/.test(name) && await localFile(name)) dataFiles[name] = await frozenJson(name);
     else notInCopy.push(name);
-  } else if (name.startsWith('api/') && !['api/clip-bank', 'api/proofs', 'api/placements', 'api/library'].includes(name.replace(/\?.*$/, ''))) notInCopy.push(name);
+  } else if (name.startsWith('api/') && !['api/clip-bank', 'api/proofs', 'api/placements', 'api/library'].includes(name.replace(/\?.*$/, '')) && !isBotPath(`/${name.replace(/\?.*$/, '')}`)) notInCopy.push(name);
 }
 
 // ── The frozen answers of the read routes ───────────────────────────────────
@@ -311,8 +313,12 @@ const botTexts: Record<string, string> = {};
 for (const [name, source] of Object.entries(BOT_FUNCTION_FILES)) botTexts[name] = forBrowser(await readFile(path.join(root, source), 'utf8'));
 botTexts['bot-knowledge.js'] = `// The bot's knowledge (tools/build-knowledge.ts), built with this copy. Only the function reads it.\nexport default ${JSON.stringify(knowledge)};\n`;
 for (const [name, text] of Object.entries(botTexts)) {
-  const leaks = findTextLeaks(text, botRelease);
-  if (leaks.length) throw Error(`Får inte gå upp: functions/api/bot.func/${name}: ${leaks.join(', ')}`);
+  // The knowledge is checked as the bot reads it, every string decoded (tools/knowledge.ts knowledgeLeaks): in its JSON a
+  // line break is "\n", which after "mål:" reads as a drive path, and a backslash path hides behind doubled backslashes.
+  const leaks = name === 'bot-knowledge.js'
+    ? [...findTextLeaks(text.slice(0, text.indexOf('export default ')), botRelease), ...knowledgeLeaks(knowledge, botRelease, t => findTextLeaks(t, botRelease))]
+    : findTextLeaks(text, botRelease);
+  if (leaks.length) throw Error(`Får inte gå upp: functions/api/bot.func/${name}: ${leaks.slice(0, 5).join(' | ')}`);
   await writeFile(path.join(botRoot, name), text);
 }
 await writeFile(path.join(botRoot, 'package.json'), JSON.stringify({type: 'module'}));

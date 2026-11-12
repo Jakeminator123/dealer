@@ -1,13 +1,15 @@
 "use client";
 
 // <AllTakes graph={graph} onOpen={(id) => …} />: every take, for looking something up: filters by verdict (several at
-// once) and by seat, then the takes in dealing order under the old lab's headings. A card opens the take large.
+// once) and by seat, then the takes in dealing order under the old lab's headings. A card opens the take large for a
+// decision; its ⤢ button opens the film over the whole window (FilmViewer, ‹ › through the list as filtered).
 import { useMemo, useState } from "react";
 import type { Graph } from "../../../src/clip-graph.ts";
 import { edgeName, takeNames } from "../../lib/names.ts";
 import { filterTakes, inReviewOrder, reviewGroup, seatOptions, verdictCounts } from "../../lib/review.ts";
 import { VERDICTS, type Verdict } from "../../lib/verdict.ts";
 import { TakeCard, VerdictChip } from "../takes";
+import { FilmViewer } from "../takes/FilmViewer";
 import { Button, EmptyState, SegmentedControl, cn } from "../ui";
 
 export function AllTakes({ graph, onOpen }: { graph: Graph; onOpen: (id: string) => void }) {
@@ -18,6 +20,9 @@ export function AllTakes({ graph, onOpen }: { graph: Graph; onOpen: (id: string)
   const inSeat = useMemo(() => filterTakes(all, graph, { verdicts: new Set(), seat: seat === "alla" ? null : seat }), [all, graph, seat]);
   const counts = useMemo(() => verdictCounts(inSeat), [inSeat]);
   const shown = useMemo(() => filterTakes(inSeat, graph, { verdicts, seat: null }), [inSeat, graph, verdicts]);
+  // The films over the whole window, in the order the list shows them (FilmViewer: ‹ › through them).
+  const withFilm = useMemo(() => shown.filter((t) => t.media.video), [shown]);
+  const [viewing, setViewing] = useState<number | null>(null);
   const names = useMemo(() => {
     const map = new Map<string, string>();
     for (const e of [...graph.edges, ...graph.experiments]) for (const [id, n] of takeNames(e.takes)) map.set(id, n);
@@ -91,7 +96,15 @@ export function AllTakes({ graph, onOpen }: { graph: Graph; onOpen: (id: string)
                 const t = graph.takes[id];
                 return (
                   <li key={id}>
-                    <TakeCard take={t} name={names.get(id)} still="film" onSelect={() => onOpen(id)} extra={edgeName(graph.edge[t.edge])} className="h-full" />
+                    <TakeCard
+                      take={t}
+                      name={names.get(id)}
+                      still="film"
+                      onSelect={() => onOpen(id)}
+                      onExpand={t.media.video ? () => setViewing(withFilm.indexOf(t)) : undefined}
+                      extra={edgeName(graph.edge[t.edge])}
+                      className="h-full"
+                    />
                   </li>
                 );
               })}
@@ -101,6 +114,7 @@ export function AllTakes({ graph, onOpen }: { graph: Graph; onOpen: (id: string)
       ) : (
         <EmptyState compact title="Inga tagningar med det urvalet" action={<Button size="sm" onClick={() => { setVerdicts(new Set()); setSeat("alla"); }}>Visa alla</Button>} />
       )}
+      <FilmViewer takes={withFilm} index={viewing} onIndex={setViewing} />
     </div>
   );
 }

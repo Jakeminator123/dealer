@@ -13,7 +13,7 @@ import { KEYS, readText, writeText } from "./storage";
 
 const HINT: Record<string, string> = {
   spela: "Dealern delar ut, i 3D eller som film",
-  karta: "Varje film mellan två lägen, med omdöme",
+  karta: "Varje steg mellan två lägen, med omdöme",
   prov: "Jämförelser och kontaktark",
   fraga: "Boten svarar; Jakob får dina önskemål",
 };

@@ -7,11 +7,12 @@ import "@xyflow/react/dist/style.css";
 import { Background, BackgroundVariant, ReactFlow, useReactFlow, useStore, type Edge, type Node } from "@xyflow/react";
 import { useCallback, useEffect, useMemo, useRef } from "react";
 import type { Graph } from "../../../src/clip-graph.ts";
-import type { EdgeInfo } from "@/lib/edge-stats";
+import { edgeInfo, type EdgeInfo } from "@/lib/edge-stats";
 import { seatReach, type MapLayout, type PlanPoints } from "@/lib/map-layout";
 import { nodeCode } from "@/lib/names";
 import { SHEET_W } from "./EdgeSheet";
-import { edgeTypes, type FilmEdgeType, type RailEdgeType } from "./MapEdges";
+import { experimentLines } from "./experiment-lines.ts";
+import { edgeTypes, type ExperimentEdgeType, type FilmEdgeType, type RailEdgeType } from "./MapEdges";
 import { nodeTypes, type DealerNodeType, type HubNodeType, type SeatNodeType } from "./MapNodes";
 
 const HUB_WORD: Record<string, string> = { IDLE: "vila", READY: "nyp vid skon", "READY-B": "hand över", AWAY: "tomt bord", "REVEAL(D.C2)": "" };
@@ -194,8 +195,16 @@ export function MapCanvas(view: MapView) {
       })
       // The chosen film is drawn last, over the others.
       .sort((a, b) => Number(a.id === lit) - Number(b.id === lit));
-    return [...rails, ...films];
-  }, [layout, infos, inFocus, active, hover, focus, zoom, lit, onPick, onHover]);
+    // Experiment steps between anchors the map shows (A1 ↔ A2.2), dashed; the other experiments stay in the tray.
+    const trials: ExperimentEdgeType[] = experimentLines(layout, graph.experiments).flatMap((line): ExperimentEdgeType[] => {
+      const info = edgeInfo(graph, line.id);
+      if (!info) return [];
+      const shown = inFocus(line.id, line.nodes);
+      return [{ id: line.id, source: line.nodes[0], target: line.nodes[1], type: "experiment", selectable: false, focusable: false, deletable: false,
+        data: { line, info, active: active === line.id, hover: hover === line.id, hidden: !shown, dim: shown && !!active && active !== line.id && !focus, onPick, onHover } }];
+    });
+    return [...rails, ...trials, ...films];
+  }, [layout, infos, inFocus, active, hover, focus, zoom, lit, onPick, onHover, graph]);
 
   return (
     <ReactFlow
@@ -213,8 +222,8 @@ export function MapCanvas(view: MapView) {
       elementsSelectable={false}
       zoomOnDoubleClick={false}
       proOptions={{ hideAttribution: true }}
-      onEdgeClick={(_, e) => e.type === "film" && onPick(e.id)}
-      onEdgeMouseEnter={(_, e) => e.type === "film" && onHover(e.id)}
+      onEdgeClick={(_, e) => (e.type === "film" || e.type === "experiment") && onPick(e.id)}
+      onEdgeMouseEnter={(_, e) => (e.type === "film" || e.type === "experiment") && onHover(e.id)}
       onEdgeMouseLeave={() => onHover(null)}
       onPaneClick={() => onFocus(null)}
       style={{ background: "var(--color-canvas)" }}

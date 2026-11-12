@@ -1,8 +1,9 @@
 "use client";
 
-// <TakeReview take={take} edge={edge} … />: one take, large, for Jakob's decision: its name in his words (the edge
+// <TakeReview take={take} edge={edge} … />: one take, large, for Jakob's decision: its name in his words (the step
 // "A2.1 → P4C1" and the take's short name), the film, what a reviewer noted (two lines, more on demand), the decision
-// bar, and "Jämför mot primär" when the edge has another film. Space plays, ← → step a frame.
+// bar, "Ursprung" (what the film was made from, folded), and "Jämför mot primär" when the step has another film. Space
+// plays, ← → step a frame.
 import { ArrowLeftRight, ChevronLeft, ChevronRight, Undo2 } from "lucide-react";
 import Link from "next/link";
 import { useMemo, useRef, type Ref } from "react";
@@ -15,6 +16,8 @@ import { compareHref } from "../compare/ChoiceList";
 import { FilmPlayer, type FilmMark, type FilmPlayerHandle } from "../player";
 import { DecisionBar, TakeChip } from "../takes";
 import type { DecisionBarHandle } from "../takes/DecisionBar";
+import { Origin } from "../takes/Origin";
+import { useBank } from "../../lib/bank.ts";
 import { IconButton, buttonClasses, cn } from "../ui";
 import { Fold } from "./Fold";
 
@@ -59,10 +62,11 @@ export function TakeReview({
   const pair = others.length ? comparePair(edge, take.id) : null;
   const marks: FilmMark[] = take.landingFrame !== null ? [{ frame: take.landingFrame, label: "Landning", kind: "landing" }] : [];
   const decisionBox = useRef<HTMLDivElement>(null);
+  const { graph } = useBank();
 
   return (
     <div className="flex h-full min-h-0 flex-col gap-3 overflow-y-auto px-5 pb-4 pt-4 [scrollbar-gutter:stable]">
-      <div className="flex min-w-0 items-center gap-4">
+      <div className="flex min-w-0 flex-wrap items-center gap-x-4 gap-y-2">
         <div className="flex min-w-0 flex-col gap-0.5">
           <div className="flex min-w-0 items-center gap-2.5">
             <span className="shrink-0 font-display text-lg font-medium text-dim">{edgeName(edge)}</span>
@@ -110,7 +114,7 @@ export function TakeReview({
         marks={marks}
         keys
         label={`Film: ${name}`}
-        className="min-h-[400px] flex-1"
+        className="min-h-[min(400px,55vh)] flex-1"
       />
 
       {notes.length ? (
@@ -128,6 +132,8 @@ export function TakeReview({
         {undoing ? <p className="mb-2 text-sm text-brass-hi">Ångra: beslutet kunde inte tas tillbaka. Välj igen, eller Återställ så väntar den igen.</p> : null}
         <DecisionBar ref={barRef} take={take} compact onSaved={onSaved} />
       </div>
+
+      <Origin take={take} graph={graph} className="px-1" />
     </div>
   );
 }

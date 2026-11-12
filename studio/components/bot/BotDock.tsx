@@ -231,10 +231,8 @@ export function BotLayer({ wide }: { wide: boolean }): ReactNode {
     <>
       {docked ? (
         <style>
-          {/* The view's side panels dock left of this one; the copy's banner (layout's SnapshotBanner, a direct child of
-              body) centres over the view instead of the window. */}
-          {`[role="dialog"].fixed.right-0:not([data-bot-panel]){right:${bot.width}px!important}` +
-            `body>[role="status"].fixed{left:calc((100% - ${bot.width}px) / 2 + 38px)!important;max-width:calc(100vw - ${bot.width + 120}px)!important}`}
+          {/* The view's side panels dock left of this one. */}
+          {`[role="dialog"].fixed.right-0:not([data-bot-panel]){right:${bot.width}px!important}`}
         </style>
       ) : null}
       {!wide ? <AsSheet /> : null}

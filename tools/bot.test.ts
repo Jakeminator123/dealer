@@ -14,6 +14,7 @@ import {checkImage, checkNew, createPost, listPosts, numberOf, patchPost} from '
 import {frame, readFrames, comment, eventStream} from '../cloud/studio/bot-sse.ts';
 import {sseData, outputText, failureOf} from '../cloud/studio/bot-openai.ts';
 import {buildInput, cited} from '../cloud/studio/bot-prompt.ts';
+import {CACHE_KEY, GATEWAY_URL, OPENAI_URL, endpointOf, modelFor, providerOf, requestBody} from '../cloud/studio/bot-provider.ts';
 import {handle, routeOf, checkThread, type BotContext} from '../cloud/studio/bot.ts';
 import {gate} from '../cloud/studio/gate.ts';
 import {COOKIE, MAX_AGE, TryLimit, secrets, signCookie} from '../cloud/studio/lock.ts';
@@ -271,23 +272,26 @@ test('the fake streams sources, text and an end, counts the question, logs it, a
 });
 
 /** A stand-in for the provider: one streamed answer, or an HTTP error. Records what it was sent. */
-function provider(answer: {text?: string[]; status?: number; code?: string; incomplete?: string; usage?: object}) {
-  const sent: any[] = [];
+function provider(answer: {text?: string[]; status?: number; code?: string; type?: string; incomplete?: string; usage?: object; url?: string}) {
+  const sent: any[] = [], auth: string[] = [];
   const fetcher = (async (url: string, init: RequestInit) => {
-    assert.equal(url, 'https://api.openai.com/v1/responses');
+    assert.equal(url, answer.url ?? 'https://api.openai.com/v1/responses');
     sent.push(JSON.parse(String(init.body)));
-    if (answer.status) return Response.json({error: {code: answer.code ?? null, message: 'nej'}}, {status: answer.status});
+    auth.push(String((init.headers as Record<string, string>).authorization));
+    if (answer.status) return Response.json({error: {code: answer.code, type: answer.type, message: 'nej'}}, {status: answer.status});
     const usage = answer.usage ?? {input_tokens: 30000, input_tokens_details: {cached_tokens: 28000, cache_write_tokens: 0}, output_tokens: 900, output_tokens_details: {reasoning_tokens: 500}};
     const blocks = [...(answer.text ?? []).map(delta => ({type: 'response.output_text.delta', delta})),
       answer.incomplete ? {type: 'response.incomplete', response: {incomplete_details: {reason: answer.incomplete}, usage}} : {type: 'response.completed', response: {usage}}];
     return new Response(blocks.map(b => `event: ${b.type}\ndata: ${JSON.stringify(b)}\n\n`).join(''), {headers: {'content-type': 'text/event-stream'}});
   }) as unknown as typeof fetch;
-  return {fetcher, sent};
+  return {fetcher, sent, auth};
 }
+/** The direct way to OpenAI, as the bot had it before the gateway (BOT_LEVERANTOR=openai). */
+const OPENAI = {BOT_LEVERANTOR: 'openai'};
 
 test('a real call: what the provider is sent, the answer streamed on, the öre counted on the server only', async () => {
   const {fetcher, sent} = provider({text: ['- Plats 6 spelar en variant ', '[Banken › A2.1 → P6C1].']});
-  const ctx = context({env: {...env, OPENAI_API_KEY: 'test-key'}, fetch: fetcher});
+  const ctx = context({env: {...env, ...OPENAI, OPENAI_API_KEY: 'test-key'}, fetch: fetcher});
   const raw = await (await handle(await post('/api/bot', {fraga: 'Vad spelas på plats 6?', niva: 'snabb', trad: [], vy: null, bild: PNG}), ctx)).text(), list = readFrames(raw);
   assert.deepEqual(list.map(e => e.event), ['kallor', 'text', 'text', 'klar']);
   assert.deepEqual(list.at(-1)!.data, {modell: 'gpt-6.1-terra', niva: 'snabb', tokensIn: 30000, tokensUt: 900, kallor: ['banken/ready-p6-c1']});
@@ -303,16 +307,16 @@ test('a real call: what the provider is sent, the answer streamed on, the öre c
 
 test('the caps stop a question before the provider is asked; the provider\'s own monthly limit reads as the cap', async () => {
   const {fetcher, sent} = provider({text: ['x']});
-  const ctx = context({env: {...env, OPENAI_API_KEY: 'test-key'}, fetch: fetcher});
+  const ctx = context({env: {...env, ...OPENAI, OPENAI_API_KEY: 'test-key'}, fetch: fetcher});
   await ctx.store.put(dayKey('2026-11-12'), JSON.stringify({...freshDay('2026-11-12', 0), ore: 4999}), 'application/json');
   const stop = await events(await handle(await post('/api/bot', {fraga: 'x', niva: 'grundlig'}), ctx));
   assert.deepEqual([stop.length, stop[0].event, (stop[0].data as {kod: string}).kod], [1, 'fel', 'tak']);
   assert.equal(sent.length, 0);
   const quota = provider({status: 429, code: 'insufficient_quota'});
-  const over = await events(await handle(await post('/api/bot', {fraga: 'x', niva: 'snabb'}), context({env: {...env, OPENAI_API_KEY: 'k'}, fetch: quota.fetcher})));
+  const over = await events(await handle(await post('/api/bot', {fraga: 'x', niva: 'snabb'}), context({env: {...env, ...OPENAI, OPENAI_API_KEY: 'k'}, fetch: quota.fetcher})));
   assert.deepEqual(over.map(e => e.event), ['kallor', 'fel']);
   assert.equal((over[1].data as {kod: string}).kod, 'tak');
-  const cut = await events(await handle(await post('/api/bot', {fraga: 'x', niva: 'grundlig'}), context({env: {...env, OPENAI_API_KEY: 'k'}, fetch: provider({incomplete: 'max_output_tokens'}).fetcher})));
+  const cut = await events(await handle(await post('/api/bot', {fraga: 'x', niva: 'grundlig'}), context({env: {...env, ...OPENAI, OPENAI_API_KEY: 'k'}, fetch: provider({incomplete: 'max_output_tokens'}).fetcher})));
   assert.deepEqual([cut.at(-1)!.event, (cut.at(-1)!.data as {kod: string}).kod], ['fel', 'modell'], 'all reasoning and no answer');
 });
 
@@ -324,7 +328,7 @@ test('the draft: the fake, and the quick model\'s JSON answer checked', async ()
   const sent: any[] = [];
   const fetcher = (async (_url: string, init: RequestInit) => { sent.push(JSON.parse(String(init.body)));
     return Response.json({status: 'completed', usage: {input_tokens: 400, output_tokens: 80}, output: [{type: 'message', content: [{type: 'output_text', text: JSON.stringify({rubrik: 'Större kort', typ: 'onskemal', sammanfattning: 'Chefen vill ha större kort.', forslag: '- Pröva V6:s storlek.'})}]}]}); }) as unknown as typeof fetch;
-  const ctx = context({env: {...env, OPENAI_API_KEY: 'k'}, fetch: fetcher});
+  const ctx = context({env: {...env, ...OPENAI, OPENAI_API_KEY: 'k'}, fetch: fetcher});
   const real = await handle(await post('/api/utkast', {trad: [{roll: 'du', text: 'Större kort?'}], vy: {namn: 'Spela', adress: '/studio/', val: {}}}), ctx);
   assert.deepEqual(await real.json(), {rubrik: 'Större kort', typ: 'onskemal', sammanfattning: 'Chefen vill ha större kort.', forslag: '- Pröva V6:s storlek.'});
   assert.deepEqual([sent[0].reasoning, sent[0].store, sent[0].text.format.type, sent[0].text.format.strict], [{effort: 'low'}, false, 'json_schema', true]);
@@ -334,6 +338,60 @@ test('the draft: the fake, and the quick model\'s JSON answer checked', async ()
   assert.deepEqual([empty.status, await empty.json()], [400, {kod: 'indata', text: 'Samtalet är tomt.'}], 'a refusal is {kod, text}, as the fel event');
   const noKey = await handle(await post('/api/utkast', {trad: [{roll: 'du', text: 'x'}], vy: null}), context());
   assert.deepEqual([noKey.status, (await noKey.json()).kod], [503, 'ingen_nyckel']);
+});
+
+test('the provider: the gateway by default, its token from the request or a key, and the request each provider is sent', () => {
+  const oidc = new Headers({'x-vercel-oidc-token': 'oidc-token'});
+  assert.deepEqual(providerOf({}), {provider: 'gateway', note: null});
+  assert.equal(providerOf({BOT_LEVERANTOR: 'OpenAI'}).provider, 'openai');
+  assert.match(providerOf({BOT_LEVERANTOR: 'azure'}).note ?? '', /gateway används/);
+  assert.deepEqual(endpointOf({}, oidc), {provider: 'gateway', url: GATEWAY_URL, key: 'oidc-token', via: 'oidc'});
+  assert.deepEqual(endpointOf({AI_GATEWAY_API_KEY: 'gw-key'}, oidc), {provider: 'gateway', url: GATEWAY_URL, key: 'gw-key', via: 'AI_GATEWAY_API_KEY'}, 'a key ranks above the token, as at the gateway');
+  assert.deepEqual(endpointOf({VERCEL_OIDC_TOKEN: 'pulled'}, new Headers()), {provider: 'gateway', url: GATEWAY_URL, key: 'pulled', via: 'VERCEL_OIDC_TOKEN'});
+  assert.equal(endpointOf({OPENAI_API_KEY: 'sk'}, oidc).key, 'oidc-token', 'the gateway never takes the OpenAI key');
+  assert.deepEqual(endpointOf({BOT_LEVERANTOR: 'openai', OPENAI_API_KEY: 'sk'}, oidc), {provider: 'openai', url: OPENAI_URL, key: 'sk', via: 'OPENAI_API_KEY'});
+  assert.equal(endpointOf({BOT_LEVERANTOR: 'openai'}, oidc).key, null, 'OpenAI never gets the gateway token');
+  assert.equal(modelFor('gateway', 'gpt-6.1-terra'), 'openai/gpt-6.1-terra');
+  assert.equal(modelFor('gateway', 'anthropic/claude-sonnet-5'), 'anthropic/claude-sonnet-5');
+  assert.equal(modelFor('openai', 'openai/gpt-6.1-sol'), 'gpt-6.1-sol');
+  assert.equal(choose('grundlig', {BOT_STARK_MODELL: 'openai/gpt-6.1-sol'}).model, 'gpt-6.1-sol', 'the gateway\'s name for a known model is known');
+  const input = buildInput({knowledge, thread: [], found: [], view: null, question: 'Hej', image: PNG, cache: true});
+  const call = {model: 'gpt-6.1-terra', input, effort: 'medium', cap: 8000, cache: true};
+  const direct = requestBody('openai', call), viaGateway = requestBody('gateway', call);
+  assert.deepEqual([direct.model, direct.reasoning, direct.max_output_tokens, direct.prompt_cache_options], ['gpt-6.1-terra', {effort: 'medium'}, 8000, {mode: 'explicit'}]);
+  assert.match(JSON.stringify(direct.input), /prompt_cache_breakpoint/, 'OpenAI keeps its explicit cache mark');
+  assert.deepEqual([viaGateway.model, viaGateway.reasoning, viaGateway.max_output_tokens, viaGateway.prompt_cache_key, viaGateway.caching, 'prompt_cache_options' in viaGateway], ['openai/gpt-6.1-terra', {effort: 'medium'}, 8000, CACHE_KEY, 'auto', false]);
+  assert.ok(!JSON.stringify(viaGateway).includes('prompt_cache_breakpoint'), 'no OpenAI-only cache field goes to the gateway');
+  assert.ok(CACHE_KEY.length <= 64);
+  assert.equal((viaGateway.input as any[]).at(-1).content[1].type, 'input_image', 'the picture goes as input_image with its data URL');
+  assert.match((viaGateway.input as any[]).at(-1).content[1].image_url, /^data:image\/png;base64,/);
+  assert.match(JSON.stringify(input), /prompt_cache_breakpoint/, 'the input handed in is left as it was');
+  const draft = requestBody('gateway', {...call, cache: false, text: {format: {type: 'json_schema', name: 'utkast', strict: true, schema: {}}}});
+  assert.deepEqual([draft.text, 'caching' in draft, 'prompt_cache_key' in draft], [{format: {type: 'json_schema', name: 'utkast', strict: true, schema: {}}}, false, false]);
+  // The gateway's spent budget or credit is the cap, in the visitor's words.
+  assert.equal(failureOf(402, 'quota_for_entity_exceeded').kod, 'tak');
+  assert.equal(failureOf(402, null).kod, 'tak');
+});
+
+test('a call through the gateway: its address, the deployment\'s token, the model with its provider, and the contract unchanged', async () => {
+  const {fetcher, sent, auth} = provider({url: GATEWAY_URL, text: ['- Plats 6 spelar en variant ', '[Banken › A2.1 → P6C1].']});
+  const ctx = context({env: {...env, OPENAI_API_KEY: 'never-used'}, fetch: fetcher});
+  const raw = await (await handle(await post('/api/bot', {fraga: 'Vad spelas på plats 6?', niva: 'grundlig', trad: [], vy: null, bild: PNG}, {'x-vercel-oidc-token': 'oidc-token'}), ctx)).text(), list = readFrames(raw);
+  assert.deepEqual(list.map(e => e.event), ['kallor', 'text', 'text', 'klar']);
+  assert.deepEqual(list.at(-1)!.data, {modell: 'gpt-6.1-sol', niva: 'grundlig', tokensIn: 30000, tokensUt: 900, kallor: ['banken/ready-p6-c1']}, 'the panel sees the same events and names');
+  contractOnly(list, raw);
+  assert.deepEqual(auth, ['Bearer oidc-token']);
+  assert.deepEqual([sent[0].model, sent[0].reasoning, sent[0].store, sent[0].stream, sent[0].caching], ['openai/gpt-6.1-sol', {effort: 'xhigh'}, false, true, 'auto']);
+  const logs = await ctx.store.list('bot/logg/2026-11-12/');
+  assert.equal((await readJson<any>(ctx.store, logs[0]))!.value.leverantor, 'gateway');
+  // No token and no key: the bot says so and calls nothing.
+  const none = provider({url: GATEWAY_URL, text: ['x']});
+  const shut = await events(await handle(await post('/api/bot', {fraga: 'x', niva: 'snabb'}), context({fetch: none.fetcher})));
+  assert.deepEqual([shut.length, (shut[0].data as {kod: string}).kod, none.sent.length], [1, 'ingen_nyckel', 0]);
+  // A spent budget at the gateway reads as the cap.
+  const spent = provider({url: GATEWAY_URL, status: 402, type: 'quota_for_entity_exceeded'});
+  const over = await events(await handle(await post('/api/bot', {fraga: 'x', niva: 'snabb'}, {'x-vercel-oidc-token': 't'}), context({fetch: spent.fetcher})));
+  assert.deepEqual(over.map(e => [e.event, (e.data as {kod?: string}).kod ?? null]), [['kallor', null], ['fel', 'tak']]);
 });
 
 test('the inbox over HTTP: the visitor sends and reads, only the admin key sets status', async () => {

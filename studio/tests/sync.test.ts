@@ -38,6 +38,22 @@ test("a seek lands on the frame asked for, and reads back as it", () => {
   assert.equal(frameOfTime(0, 30), 0);
 });
 
+test("a frame's start time rounded to whole microseconds (as browsers give it) still names that frame", () => {
+  // With a margin of a millionth, every third frame at 30 fps read one too low (1/30 s comes back as 0.033333 s).
+  for (const fps of [24, 25, 30, 60]) {
+    for (let frame = 0; frame < 600; frame++) {
+      const micro = Math.round((frame / fps) * 1e6) / 1e6;
+      assert.equal(frameOfTime(micro, fps), frame, `${frame} @ ${fps}: ${micro}`);
+      // The end of a frame stays in it: a hundredth of a frame before the next one starts.
+      assert.equal(frameOfTime(Math.round(((frame + 0.99) / fps) * 1e6) / 1e6, fps), frame, `end of ${frame} @ ${fps}`);
+    }
+  }
+  // The same rule as the scene's frameAtTime (src/scene3d-film.ts): floor(seconds × fps + 1e-3).
+  assert.equal(frameOfTime(0.033333, 30), 1);
+  assert.equal(frameOfTime(0.066666, 30), 2);
+  assert.equal(frameOfTime(2.966666, 30), 89);
+});
+
 test("ranges: the whole film, or frames A–B of a longer one", () => {
   assert.deepEqual(filmRange(120), { start: 0, end: 119 });
   assert.equal(filmRange(null), null);

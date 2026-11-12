@@ -1,5 +1,6 @@
-// The calls to OpenAI's Responses API (POST https://api.openai.com/v1/responses), server side only, with the key from the
-// environment (OPENAI_API_KEY). Every call sends store: false: the provider keeps no copy of the answer to fetch later.
+// The calls to OpenAI's Responses API, server side only: at OpenAI itself (POST https://api.openai.com/v1/responses, with
+// OPENAI_API_KEY) or through Vercel's AI Gateway, which offers the same API (bot-provider.ts says where and with which
+// token; the call gets its url and key from there). Every call sends store: false: the provider keeps no copy of the answer.
 // Streaming answers arrive as server-sent events whose data is JSON with a "type": response.output_text.delta carries the
 // text (delta), response.completed / response.incomplete the finished response with its usage, response.failed and error a
 // failure (the streaming guide names created, output_text.delta, completed and error; the fields read here are the
@@ -13,17 +14,19 @@ export type ModelEvent = {type: 'text'; t: string} | {type: 'done'; usage: Usage
 
 /** An HTTP error from the provider in the visitor's words. The provider's own message stays in the log, not the answer. */
 export function failureOf(status: number, code: string | null): ModelFailure {
-  if (code === 'insufficient_quota' || code === 'billing_hard_limit_reached') return {kod: 'tak', text: 'Månadens gräns hos modelltjänsten är nådd.'};
+  // OpenAI's own monthly limit, and the gateway's budget or credit (402, quota_for_entity_exceeded).
+  if (code === 'insufficient_quota' || code === 'billing_hard_limit_reached' || code === 'quota_for_entity_exceeded' || status === 402) return {kod: 'tak', text: 'Månadens gräns hos modelltjänsten är nådd.'};
   if (status === 401 || status === 403) return {kod: 'modell', text: 'Modelltjänsten godtar inte nyckeln. Jakob behöver se över den.'};
   if (status === 429) return {kod: 'modell', text: 'Modelltjänsten är upptagen just nu. Försök igen om en stund.'};
   if (status >= 500) return {kod: 'modell', text: 'Modelltjänsten svarar inte just nu. Försök igen om en stund.'};
   return {kod: 'modell', text: 'Frågan gick inte att ställa till modellen.'};
 }
 
-type Call = {key: string; fetch?: typeof fetch; signal?: AbortSignal};
+/** One call: the bearer token, and the Responses address (OpenAI's when not given; the gateway's from bot-provider.ts). */
+type Call = {key: string; url?: string; fetch?: typeof fetch; signal?: AbortSignal};
 
 async function post(body: Record<string, unknown>, call: Call, stream: boolean): Promise<Response | ({error: string} & ModelFailure)> {
-  const response = await (call.fetch ?? fetch)(RESPONSES_URL, {
+  const response = await (call.fetch ?? fetch)(call.url ?? RESPONSES_URL, {
     method: 'POST', signal: call.signal,
     headers: {authorization: `Bearer ${call.key}`, 'content-type': 'application/json', ...(stream ? {accept: 'text/event-stream'} : {})},
     body: JSON.stringify({...body, stream, store: false}),

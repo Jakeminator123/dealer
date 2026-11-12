@@ -14,8 +14,13 @@ export type Clip = { fps: number; range: Range; speed: number; landing: number |
 /** The time to seek to for a frame: the middle of the frame. */
 export const seekTime = (frame: number, fps: number): number => (frame + 0.5) / fps;
 
-/** The frame a video shows at a currentTime. */
-export const frameOfTime = (time: number, fps: number): number => Math.max(0, Math.floor(time * fps + 1e-6));
+/**
+ * The frame a video shows at a currentTime or a frame's mediaTime. The browser rounds media times to whole microseconds,
+ * so frame 1 at 30 fps comes back as 0.033333 s (0.99999 frames): a margin of a thousandth of a frame reads it as 1. The
+ * same rule as frameAtTime in src/scene3d-film.ts, which the 3D scene uses; the stage (components/stage/engines.ts) uses
+ * this one.
+ */
+export const frameOfTime = (time: number, fps: number): number => Math.max(0, Math.floor(time * fps + 1e-3));
 
 /** The frame requestVideoFrameCallback reports: its mediaTime is the frame's own timestamp, frame/fps. */
 export const frameOfMediaTime = (mediaTime: number, fps: number): number => Math.max(0, Math.round(mediaTime * fps));

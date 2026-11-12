@@ -6,7 +6,7 @@ import { CountSigns, PlayDot } from "./EdgeChip";
 export function Legend({ className }: { className?: string }) {
   return (
     <div className={cn("pointer-events-none flex items-center gap-3 whitespace-nowrap rounded-md border border-line bg-surface/92 px-3 py-1.5 text-[11.5px] text-dim shadow-pop backdrop-blur-sm", className)}>
-      <span className="text-ink">Linje = film</span>
+      <span className="text-ink">Linje = steg</span>
       <span aria-hidden className="h-3 w-px bg-line-strong" />
       {VERDICTS.map((v) => (
         <span key={v} className="inline-flex items-center gap-1">

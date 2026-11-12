@@ -177,7 +177,8 @@ function Karta() {
               onHover={setHover}
             />
           </div>
-          <Legend className="absolute bottom-3 left-3 z-10" />
+          {/* Room left for the experiments' button at the right: a narrow map (the bot's panel docked) cuts the legend's tail. */}
+          <Legend className="absolute bottom-3 left-3 z-10 max-w-[calc(100%-200px)] overflow-hidden" />
           <ExperimentTray graph={graph} open={trayOpen} onOpenChange={setTray} onPick={pick} active={edgeId} />
         </>
       )}

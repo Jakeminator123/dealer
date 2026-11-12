@@ -13,7 +13,9 @@
 // with the knowledge built beside it, a store of files under .runtime/bot-rehearsal/ instead of Blob, and BOT_FEJK=1: a
 // canned answer with real sources, no key and no model call. Set DEALER_ADMIN_NYCKEL (32+ characters, throwaway) to try
 // the owner's tool against it: DEALER_KOPIA_ADRESS=http://127.0.0.1:4330 node tools/onskemal.ts lista.
-// --riktig-modell lets the bot call the model with OPENAI_API_KEY instead: that costs money, and is the owner's choice.
+// --riktig-modell lets the bot call the model instead (BOT_LEVERANTOR, cloud/studio/bot-provider.ts: the AI Gateway with
+// AI_GATEWAY_API_KEY, since there is no deployment token here, or openai with OPENAI_API_KEY): that costs money, and is the
+// owner's choice.
 import http from 'node:http';
 import {readFile, writeFile, stat, realpath, unlink, mkdir} from 'node:fs/promises';
 import {createReadStream} from 'node:fs';

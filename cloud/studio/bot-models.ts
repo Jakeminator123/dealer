@@ -42,7 +42,8 @@ const MODEL = /^[a-z0-9][a-z0-9.:_-]{1,63}$/i;
 /** The model and effort for a level from BOT_ENKEL_* (quick) or BOT_STARK_* (thorough), checked against the table. */
 export function choose(level: Level, env: BotEnv): Choice {
   const prefix = level === 'snabb' ? 'BOT_ENKEL' : 'BOT_STARK';
-  const asked = (env[`${prefix}_MODELL`] ?? '').trim(), model = MODEL.test(asked) ? asked : DEFAULTS[level].model;
+  // A model may be written as the gateway names it ("openai/gpt-6.1-sol"): the table knows it by its own name.
+  const asked = (env[`${prefix}_MODELL`] ?? '').trim().replace(/^openai\//i, ''), model = MODEL.test(asked) ? asked : DEFAULTS[level].model;
   const wanted = (env[`${prefix}_ANSTRANGNING`] ?? '').trim().toLowerCase() || DEFAULTS[level].effort;
   const allowed = EFFORTS[model];
   let effort = wanted, note: string | null = asked && asked !== model ? `ogiltig modell ${JSON.stringify(asked)}, ${model} används` : null;

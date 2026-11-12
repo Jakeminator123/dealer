@@ -14,12 +14,12 @@ const BULLET = /^\s{0,3}[-*•]\s+(.*)$/;
 const NUMBER = /^\s{0,3}(\d{1,3})[.)]\s+(.*)$/;
 const HEADING = /^\s{0,3}#{1,4}\s+(.*)$/;
 
-/** A title as the server compares it. */
+/** A title as the server compares it (cloud/studio/bot-prompt.ts norm): the arrows of a step ("A2.1 → P4C1", "->") too. */
 export const normTitle = (text: string) =>
   text
     .normalize("NFC")
     .replace(/\s+/g, " ")
-    .replace(/\s*(?:›|>|»)\s*/g, " › ")
+    .replace(/\s*(?:->|›|>|»|→)\s*/g, " › ")
     .trim()
     .toLowerCase();
 

@@ -1,6 +1,7 @@
 "use client";
 
-// <DecisionBar take={take} />: Jakob's decision on one take: Primär, Godkänn, Variant, Underkänn, a note, Återställ.
+// <DecisionBar take={take} />: Jakob's decision on one take: Primär, Godkänn, Variant, Underkänn, a note, Återställ, and
+// under the buttons one quiet line on what each choice does to what is played (decision-help.ts).
 // Nothing is written without his click. Primär lowers an earlier Primär on the same edge to plain accepted (its note kept);
 // a 409 says the record changed, reads the bank again and asks him to choose again. demo: shows and answers, never writes.
 // In the online copy (lib/mode.ts) there are no buttons at all: the bar shows his verdict and note and says "Bara Jakob
@@ -21,8 +22,26 @@ import { Spinner } from "../ui/Spinner";
 import { TextArea } from "../ui/TextField";
 import { useToast } from "../ui/Toast";
 import { TakeChip } from "./VerdictChip";
+import { decisionHelp } from "./decision-help.ts";
 
 type Choice = Exclude<Decision, "PENDING">;
+
+/** One quiet line under the buttons: what each choice does to what is played (decision-help.ts). A list of many bars
+ * (the map's take panel) shows it once above them and passes help={false} to each. */
+export function DecisionHelp({ edge, className }: { edge: string; className?: string }) {
+  const { parts, rest } = decisionHelp(edge);
+  return (
+    <p className={cn("text-2xs leading-4 text-faint", className)}>
+      {parts.map((p, i) => (
+        <span key={p.word}>
+          {i ? " · " : ""}
+          <span className="text-dim">{p.word}</span> {p.text}
+        </span>
+      ))}
+      .{rest ? ` ${rest}` : ""}
+    </p>
+  );
+}
 
 const CHOICES: { decision: Choice; label: string; done: string; icon: ReactNode; on: string; hover: string; sign: string }[] = [
   {
@@ -72,6 +91,8 @@ type BarProps = {
   demo?: boolean;
   /** Leaves out the line that says where the decision is saved. */
   compact?: boolean;
+  /** The line on what each choice does (default on). */
+  help?: boolean;
   /** After a saved decision and the bank read again. */
   onSaved?: (decision: Decision) => void;
   className?: string;
@@ -84,11 +105,11 @@ export type DecisionBarHandle = {
 };
 
 export function DecisionBar(props: BarProps) {
-  return isSnapshot ? <JakobJudges take={props.take} className={props.className} ref={props.ref} /> : <DecisionButtons {...props} />;
+  return isSnapshot ? <JakobJudges take={props.take} help={props.help ?? true} className={props.className} ref={props.ref} /> : <DecisionButtons {...props} />;
 }
 
 /** The online copy's bar: his verdict and his note as they stand, and who decides. Nothing here can be pressed. */
-function JakobJudges({ take, className, ref }: { take: Take; className?: string; ref?: Ref<DecisionBarHandle> }) {
+function JakobJudges({ take, help, className, ref }: { take: Take; help: boolean; className?: string; ref?: Ref<DecisionBarHandle> }) {
   useImperativeHandle(ref, () => ({ reset: async () => false }), []);
   const note = storedNote(take.motion?.review);
   const stamp = reviewStamp(take.motion?.review);
@@ -101,6 +122,7 @@ function JakobJudges({ take, className, ref }: { take: Take; className?: string;
           Bara Jakob dömer
         </span>
       </div>
+      {help ? <DecisionHelp edge={take.edge} /> : null}
       {note ? (
         <p className="rounded-md border border-line bg-well px-3 py-2 text-sm text-ink">
           {stamp ? <span className="mr-1.5 text-faint">{stamp}:</span> : null}
@@ -111,7 +133,7 @@ function JakobJudges({ take, className, ref }: { take: Take; className?: string;
   );
 }
 
-function DecisionButtons({ take, demo = false, compact = false, onSaved, className, ref }: BarProps) {
+function DecisionButtons({ take, demo = false, compact = false, help = true, onSaved, className, ref }: BarProps) {
   const bank = useOptionalBank();
   const toast = useToast();
   const stored = storedNote(take.motion?.review);
@@ -247,6 +269,7 @@ function DecisionButtons({ take, demo = false, compact = false, onSaved, classNa
           </button>
         </div>
       </div>
+      {help ? <DecisionHelp edge={take.edge} /> : null}
       <TextArea
         aria-label="Anteckning"
         placeholder="Anteckning (sparas med beslutet)"

@@ -1,16 +1,18 @@
 // Jakob's names for what the clip bank holds: anchors (nodes), films between them (edges), single takes, and his way of
 // writing a round ("A2.1 - P4C1 - A2.1 - P4C2 - A2.1"). Pure: no DOM, no network; tests in studio/tests/names.test.ts.
 import { REVEAL_NODE, parseEdge, parseNode, parseSequence, type EdgeKind, type Step, type Take } from "../../src/clip-graph.ts";
+import { ANCHOR_WORDS } from "./words.ts";
 
 // ── Anchors ─────────────────────────────────────────────────────────────────
 // His words, 2026-11-12: ankare 1 = rest, ankare 2.1 = the pinch at the shoe window, ankare 2.2 = the card handed over at
 // the shoe's mouth. code is the short form used inside an edge ("A2.1 → P4C1"); name is the form used on its own.
+// The words themselves live in lib/words.ts, the studio's one table of words (the rail's Ordlista and the bot read it too).
 const ANCHORS: Record<string, { code: string; name: string }> = {
-  IDLE: { code: "A1", name: "A1 vila" },
-  READY: { code: "A2.1", name: "A2.1 nyp" },
-  "READY-B": { code: "A2.2", name: "A2.2 hand över" },
-  AWAY: { code: "Borta", name: "Borta" },
-  [REVEAL_NODE]: { code: "DC2 upp", name: "DC2 upp" },
+  IDLE: ANCHOR_WORDS.IDLE,
+  READY: ANCHOR_WORDS.READY,
+  "READY-B": ANCHOR_WORDS["READY-B"],
+  AWAY: ANCHOR_WORDS.AWAY,
+  [REVEAL_NODE]: ANCHOR_WORDS["REVEAL(D.C2)"],
 };
 
 /** The short code of a node: IDLE → "A1", READY → "A2.1", READY-B → "A2.2", P4.C1 → "P4C1", D.C1 → "DC1", REVEAL(D.C2) → "DC2 upp". */

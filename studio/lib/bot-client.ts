@@ -193,7 +193,7 @@ const sleep = (ms: number, signal?: AbortSignal) =>
 type FakeAnswer = { kallor: Kalla[]; text: string };
 const K = {
   lage: { id: "handoff-lage", titel: "HANDOFF › Läget just nu" },
-  bank: { id: "bank-kanter", titel: "Klippbanken › Filmerna per kant" },
+  bank: { id: "bank-steg", titel: "Klippbanken › Tagningarna per steg" },
   primara: { id: "guide-primara", titel: "Studion › Primära" },
   scout: { id: "readme-mal", titel: "README › Slutmålet Scoutgaming" },
   drift: { id: "drift-regler", titel: "DRIFT › Vad som inte flyttas från Scout" },

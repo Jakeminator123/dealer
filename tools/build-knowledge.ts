@@ -43,7 +43,7 @@ export const scoutRoot = (root: string) => process.env.DEALER_SCOUT_ROOT || path
 
 /** The cloud/studio files that make up the bot's function (as <published name>: <source>); bot-knowledge.js is written. */
 export const BOT_FUNCTION_FILES: Record<string, string> = Object.fromEntries([
-  ['index.js', 'bot-function.ts'], ...['bot', 'bot-node', 'bot-caps', 'bot-models', 'bot-prompt', 'bot-search', 'bot-sse', 'bot-openai', 'bot-store', 'onskemal', 'lock'].map(n => [`${n}.js`, `${n}.ts`]),
+  ['index.js', 'bot-function.ts'], ...['bot', 'bot-node', 'bot-caps', 'bot-models', 'bot-prompt', 'bot-search', 'bot-sse', 'bot-openai', 'bot-provider', 'bot-store', 'onskemal', 'lock'].map(n => [`${n}.js`, `${n}.ts`]),
 ].map(([name, file]) => [name, `cloud/studio/${file}`]));
 
 export type KnowledgeReport = {

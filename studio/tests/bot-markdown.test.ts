@@ -61,6 +61,12 @@ test("the numbers cited, in order of first mention", () => {
   assert.equal(normTitle(" HANDOFF»Läget "), "handoff › läget");
 });
 
+test("a step's arrow in a title compares as the server compares it: →, -> and › are one", () => {
+  const steps = [{ id: "banken/ready-p6-c1", titel: "Banken › A2.1 → P6C1" }];
+  assert.equal(normTitle("Banken › A2.1 -> P6C1"), normTitle("Banken › A2.1 → P6C1"));
+  assert.deepEqual(parseInline("Spelas nu [Banken > A2.1 -> P6C1]", steps), [{ t: "text", v: "Spelas nu" }, { t: "cite", n: 1 }]);
+});
+
 test("plain text for copying", () => {
   assert.equal(plainAnswer("**Ja** [1]. "), "Ja [1].");
 });

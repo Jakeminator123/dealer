@@ -15,6 +15,7 @@ import { useBot } from "../bot/BotProvider";
 import { useRequests } from "../requests/RequestsProvider";
 import { cn } from "../ui/cn";
 import { Tooltip } from "../ui/Tooltip";
+import { Glossary } from "./Glossary";
 
 type View = { href: string; label: string; hint: string; icon: ComponentType<{ className?: string }> };
 
@@ -146,9 +147,21 @@ export function Rail() {
         ) : null}
       </ul>
       <div className="mt-auto flex flex-col items-center gap-2 pb-3">
+        <Glossary />
         <AskButton />
-        <Tooltip content={status === "loading" ? "Läser klippbanken…" : offline ? `Labbet svarar inte: ${error?.message}` : "Labbet svarar · klippbanken läses var 4:e sekund"} side="right">
-          <span role="status" aria-label={offline ? "Labbet svarar inte" : "Labbet svarar"} className="grid size-6 place-items-center">
+        <Tooltip
+          content={
+            status === "loading"
+              ? "Läser klippbanken…"
+              : offline
+                ? `${isSnapshot ? "Kopian" : "Labbet"} svarar inte: ${error?.message}`
+                : isSnapshot
+                  ? "Kopian svarar · klippbanken är fryst som den var när kopian gjordes"
+                  : "Labbet svarar · klippbanken läses var 4:e sekund"
+          }
+          side="right"
+        >
+          <span role="status" aria-label={offline ? `${isSnapshot ? "Kopian" : "Labbet"} svarar inte` : `${isSnapshot ? "Kopian" : "Labbet"} svarar`} className="grid size-6 place-items-center">
             <span
               className={cn(
                 "size-2 rounded-full",

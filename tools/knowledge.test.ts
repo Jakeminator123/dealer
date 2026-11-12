@@ -3,9 +3,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {buildGraph, type BankData, type BankJob, type MotionRecord} from '../src/clip-graph.ts';
-import {LOCAL, assemble, bankSections, breaks, cleanDoc, cleanLine, cut, placeWords, prioFrom, proofSections, scanLeaks, unwrap, PART_CHARS, type Built, type Removed} from './knowledge.ts';
+import {LOCAL, assemble, bankSections, breaks, cleanDoc, cleanLine, cut, hasLocalPath, knowledgeLeaks, placeWords, prioFrom, proofSections, scanLeaks, unwrap, PART_CHARS, type Built, type Removed} from './knowledge.ts';
 import {Index, coreText, expandQuery, stem, tokenize, type Knowledge} from '../cloud/studio/bot-search.ts';
-import type {Proof} from './studio-freeze.ts';
+import {findTextLeaks, type Proof} from './studio-freeze.ts';
 
 const release = {blocked: {folders: ['trailer*'], names: ['Göran', 'Astrid', 'Kevin']}};
 
@@ -60,6 +60,48 @@ test('the cleaning keeps the facts and removes costs, blocked names, trailers, p
   assert.equal(sections[0].titel, 'HANDOFF › Inledning');
   assert.ok(sections.some(s => s.titel === 'HANDOFF › Läget i banken (räknat 2026-11-12)' && s.prio === 0), 'a heading with a note keeps its core priority');
   for (const rule of ['kostnad', 'spärrat namn', 'reklamfilm', 'lösenord', 'id', 'miljövariabel', 'adress', 'kodblock', 'avsnitt', 'sökväg ersatt'] as const) assert.ok((removed[rule] ?? 0) > 0, `counted: ${rule}`);
+});
+
+test('every form of a path of this machine becomes the token, and the words around it stay', () => {
+  const cases: [string, string][] = [
+    ['Säkerhetskopian ligger i `D:/dealer-archive/V2-backup-studio/` nu.', 'Säkerhetskopian ligger i `‹lokal mapp›` nu.'],
+    ['Repot ligger på C:\\Users\\jakem\\dev\\super-feature-sg\\dealer.', 'Repot ligger på ‹lokal mapp›.'],
+    ['Arkivet: D:\\dealer-archive\\snyggare-dealer och c:\\\\Users\\\\jakem\\\\x.', 'Arkivet: ‹lokal mapp› och ‹lokal mapp›.'],
+    ['Se [arkivet](D:/dealer-archive/V2-backup-studio/README.md) först.', 'Se arkivet först.'],
+    ['Se [kvittot](file:///C:/Users/jakem/evidence/x.json) och <file:///D:/dealer-archive/x> också.', 'Se kvittot och ‹lokal mapp› också.'],
+    ['I Git Bash: /c/Users/jakem/dev/dealer och /d/dealer-scratch/tmp.', 'I Git Bash: ‹lokal mapp› och ‹lokal mapp›.'],
+    ['Node skriver \\\\?\\c:\\Users\\jakem\\dev\\studio\\package.json.', 'Node skriver ‹lokal mapp›.'],
+    ['En delning \\\\nas\\media\\film.mp4 och \\\\wsl$\\Ubuntu\\home\\x i dag.', 'En delning ‹lokal mapp› och ‹lokal mapp› i dag.'],
+    ['Minnet ligger i ~/.claude/projects/x/memory.', 'Minnet ligger i ‹lokal mapp›.'],
+    ['Mappen C:\\Users\\Jakob Eberg\\Desktop\\x syns.', 'Mappen ‹lokal mapp› syns.'],
+    ['Slasket i %USERPROFILE%\\AppData\\Local\\Temp och $HOME/.config/x går.', 'Slasket i ‹lokal mapp› och ‹lokal mapp› går.'],
+    ['**D:/dealer-scratch/tmp/huvudagent** är slask.', '**‹lokal mapp›** är slask.'],
+    ['| Arkiv | `D:\\dealer-archive\\snyggare-dealer` |', '| Arkiv | `‹lokal mapp›` |'],
+  ];
+  for (const [given, wanted] of cases) {
+    const removed: Removed = {};
+    assert.equal(cleanLine(given, release, false, removed), wanted, given);
+    // A link's target goes with the link's own rule; every other path is counted.
+    if (!given.includes('](')) assert.ok((removed['sökväg ersatt'] ?? 0) > 0, `counted: ${given}`);
+  }
+  // What only looks like a path stays as it was.
+  const plain = 'Se /studio/karta/ och A/B, kl. 21:40, 1/2 och https://www.scoutgaming.tech/x i Spela.';
+  assert.equal(cleanLine(plain, release, false, {}), plain);
+  // A heading that names a path keeps its section, with the token in its title.
+  const {sections} = cleanDoc({kalla: 'CHECKLISTA', id: 'checklista', text: '# C\n\n## Kopian på D:/dealer-archive/V2-backup-studio/\n\nSäkerhetskopian görs före varje flytt av gamla labbets flikar.', scout: false}, release);
+  assert.equal(sections.at(-1)!.titel, `CHECKLISTA › Kopian på ${LOCAL}`);
+  for (const leak of ['/c/Users/x/y', 'C:\\Users\\x', '\\\\?\\c:\\x', '~/.claude/x', '`D:/dealer-archive/V2-backup-studio/`']) assert.ok(hasLocalPath(leak), leak);
+});
+
+test('the snapshot\'s check reads the knowledge decoded: "mål:" at the end of a line is no drive, a real path is found', () => {
+  const k = (text: string): Knowledge => ({schemaVersion: 1, byggd: '2026-11-12T00:00:00Z', kallor: ['HANDOFF'], karna: [{id: 'scout-x/y', titel: 'T', text}], avsnitt: []});
+  const textLeaks = (t: string) => findTextLeaks(t, release);
+  const fine = k('Forge-standardens mål:\n\n| Plats | Läge |');
+  assert.ok(findTextLeaks(JSON.stringify(fine), release).length, 'read as JSON text, the escape looks like a path');
+  assert.deepEqual(knowledgeLeaks(fine, release, textLeaks), []);
+  assert.ok(knowledgeLeaks(k('Ligger i C:\\Users\\x\\y.'), release, textLeaks).some(f => f.includes('lokal sökväg')));
+  assert.ok(!findTextLeaks(JSON.stringify(k('Ligger i C:\\Users\\x\\y.')), release).length, 'read as JSON text, a backslash path hides');
+  assert.ok(knowledgeLeaks({...fine, kallor: ['D:/dealer-archive/x']}, release, textLeaks).length, 'the sources are checked too');
 });
 
 test('a game balance is no cost in Scoutgaming, but a credit balance is in the dealer documents', () => {

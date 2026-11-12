@@ -32,7 +32,7 @@ export function useMakePrimary() {
       try {
         const { lowered, failed } = await makePrimary(take, graph, putDecision);
         if (failed.length) toast({ tone: "bad", title: `${name} är Primär, men ${failed.join(", ")} är också kvar som Primär`, detail: "Läs om och sätt den andra till Godkänn på kartan." });
-        else toast({ tone: "ok", title: `${name} är Primär · sparat`, detail: lowered.length ? `${lowered.join(", ")} är nu godkänd i stället för Primär.` : `Spelas först på ${edgeName(take.edge)}.` });
+        else toast({ tone: "ok", title: `${name} är Primär · sparat`, detail: lowered.length ? `${lowered.join(", ")} är nu godkänd i stället för Primär.` : `Spelas först i steget ${edgeName(take.edge)}.` });
         await reload();
       } catch (error) {
         if (error instanceof ApiError && error.kind === "conflict") {

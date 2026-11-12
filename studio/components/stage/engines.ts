@@ -7,6 +7,7 @@
 // Both keep a log of the frames they put on screen while playing, for checking the cuts without eyes.
 import type { createScene } from "../../../src/scene3d-view.ts";
 import { lastFrame, type PlayPart, type Position } from "../../lib/parts.ts";
+import { frameOfTime } from "../../lib/sync.ts";
 
 export type Scene = ReturnType<typeof createScene>;
 export type RunCalls = { onStep(step: number): void; onEnd(): void; onError(error: Error): void };
@@ -63,7 +64,8 @@ export function createFrameLog(): FrameLog {
   };
 }
 
-const frameOf = (seconds: number, fps: number) => Math.floor(seconds * fps + 1e-6);
+// One rule for which frame a time is on, as the scene's frameAtTime (a margin of a thousandth: media times are whole µs).
+const frameOf = frameOfTime;
 /** Does this browser call back on each presented video frame (requestVideoFrameCallback)? */
 const framed = (video: HTMLVideoElement) => typeof (video as { requestVideoFrameCallback?: unknown }).requestVideoFrameCallback === "function";
 
