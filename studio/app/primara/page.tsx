@@ -1,7 +1,6 @@
-// A stand-in until the Primära view is built (another builder replaces this file).
-import { Star } from "lucide-react";
-import { ComingSoon } from "@/components/shell";
+// Primära: what plays now against the best take Jakob accepted outright, one click per film (components/primary).
+import { PrimaraView } from "@/components/primary/PrimaraView";
 
 export default function Primara() {
-  return <ComingSoon title="Primära" icon={<Star />} />;
+  return <PrimaraView />;
 }
