@@ -1,49 +1,50 @@
 # Dealer
 
-Självständig arbetsyta med V6 som Jakobs valda visuella referens. Målet är två kort till sju spelare och en dealer i Scoutgaming. En bildrutetidslinje styr; sekvenssträngar och nodvyn beskriver samma metadata.
-
-[Öppna det publika labbet](https://dealer-delta-eosin.vercel.app/). Den publika sidan sparar utkast i den egna webbläsaren; lokal preview sparar till placeringsfilen på datorn. Export/import flyttar ett utkast mellan dem. Publicerade granskningsfilmer ligger i separat Vercel Blob, inte i Git eller webbpaketet. Lokal katalog kan innehålla nya prov före nästa verifierade publicering; aktuell release finns i HANDOFF och `evidence/public-release.json`.
+Självständig arbetsyta för en filmad dealer i Scoutgaming: två kort till sju spelare och en dealer, med trovärdig utdelning. Rörelserna är korta filmklipp mellan fasta ankare (vila, redo, kortets plats) i en klippbank; en runda är en väg genom klippen, och samma rundor spelas i labbet, i 3D-scenen och i spelet. V6 är Jakobs valda visuella referens och återskapas byteidentiskt. Scoutgaming äger regler, slump och kortvärden.
 
 | Läsning | Innehåll |
 | --- | --- |
-| [SYSTEM](docs/SYSTEM.md) | Tre ytor, två format, bottom-up, ordlista och rörelseregister. Befintligt och planerat hålls isär. |
-| [DRIFT](docs/DRIFT.md) | GitHub, Runway, miljö, D:-slask, återbruk och molnmiljö. |
-| [HANDOFF](HANDOFF.md) | Aktuellt arbete, ägare och blockerare. |
+| [AGENTS](AGENTS.md) | Arbetsregler för agenter. |
+| [HANDOFF](HANDOFF.md) | Läget nu: ägare, banken, vad som väntar på Jakob, nästa steg. Läs den först. |
+| [SYSTEM](docs/SYSTEM.md) | Kontrakt: koordinater, register, 3D-scenen, spelet, klippbanken och ordlistan. |
+| [DRIFT](docs/DRIFT.md) | Rutiner och anslutningar: Git och kontroller, labbservern, filmbeställning, Runway, publicering, D:-slask. |
 
-`motions/<clip-id>.json` är registrerade rörelsers statuskälla. `manifest.json` registrerar filproveniens/SHA-256; `evidence/` innehåller verifieringskvitton. Dokumenten länkar till dessa, utan egna konkurrerande statusregister.
+## Register
 
-`data/library.json` samlar V6, sekvenskandidater, original och diagnostiska prov. Beslut hämtas från rörelseregistret; en spelbar film är inte automatiskt godkänd. `placements/default.json` innehåller Jakobs placeringsutkast för 16 kortplatser; det är ännu inte kopplat till Scout/V6-utdelningen.
+- `motions/<clip-id>.json` är ensam källa för en films klassning och Jakobs beslut.
+- `data/clip-jobs.json` är klippbankens uppdrag: ankare, jobb, utsnitt och kredittak.
+- `placements/default.json` är Jakobs kortplan (16 kortplatser) och sparas från labbets Placering.
+- `manifest.json` registrerar filproveniens och SHA-256; `evidence/` innehåller verifieringskvitton.
+- `data/library.json` är V6-tidens filmkatalog (V6, sekvenser, original och diagnostiska prov); beslut hämtas från `motions/`.
 
-Fyra hela historiska **alternativ** är återställda: `pamela-sequence-{16,17}-{native,portrait}-r2`. Vid 30 fps har 16-kortsversionen 3296 rutor/109,867 s och 17-kortsversionen 3598 rutor/119,933 s. Båda ger två kort till P1–P7; 16 slutar med dealerns andra kort dolt, 17 innehåller separat reveal och D.C3. De går IDLE→IDLE med kvarliggande kort, inte tillbaka till tomt bord. Jakob accepterar dem som alternativ men anger fel koordinater/format: de identifierar inte den äldre sekvens han efterfrågade. Historisk placeringsplan används, inte dagens editorutkast. Produktionsacceptans är **PENDING**. Se [återbruk](evidence/sequence-reuse-audit.json) och [produktionskvitto](evidence/sequence-review-production.json).
-
-P4.C2:s nyare original visar BACK→EDGE→FRONT. Den lokala gula `review-v04` färgar om synlig blå motsida till gul och bevisar därför inte CLOSED→CLOSED; originalet granskas separat och överlägget bevaras som sekundärt diagnostiskt prov. Se [färggranskningens p4Followup](evidence/anchor-color-audit.json). P7 direktprovets separata CLOSED→CLOSED-klassning och vändningsprov 3:s avslag kvarstår.
-
-Plant bord är standard i editorn. Läget och riktningen sparas/exporteras i `tableProjection`, medan varje korts befintliga koordinater bevaras. Äldre filer utan fältet kan läsas in och sparas med den nya inställningen. Det är ett gemensamt visuellt perspektiv från P4, inte en uppmätt kamerakalibrering.
-
-Exakt skickad prompt, start-/slut-PNG, modellinställningar och resultaten finns på [Runway-underlaget](generation.html). Äldre materialfilmer på 182,867 och 146,8 s samt den befintliga maskförbättrade fullversionen finns i samma bibliotek. V6:s små skuggor/fingermasker var redan importerade; den senare bankens avgränsade maskrättningar återfanns av [Astra-granskningen](evidence/astra-archive-mask-audit.json).
+Dokumenten länkar till dessa i stället för att föra egna statusregister. Media (`assets/`, `output/`), `.runtime/`, `.env*` och `private/` är lokala och Git-ignorerade.
 
 ## Kör lokalt
 
 - Arbeta här. `node -p process.version` ska visa `v24.21.0` via Volta; `package.json` kräver `>=24.21.0 <25`. `npm ci` behövs om beroenden saknas.
-- `START.cmd` startar labbservern på `http://127.0.0.1:4319` utan fönster och visar labbet i en enda flik; `STATUS.cmd` och `STOPP.cmd` frågar och stoppar. Öppnas en labbflik till stänger den äldre sig själv, eller blir tom där webbläsaren inte låter en sida stänga sin flik. `node tools/preview.ts --open "<sida>"` visar en sida i den öppna fliken i stället för i en ny. Servern slutar 60 sekunder efter att fliken stängts.
-- Öppna [placeringslabbet](http://127.0.0.1:4319/lab.html): 16 kortplatser och sko, separat dator/mobil, hand-/sidavsikt, nodvy, materialpanel och filmkatalog. Sparning ändrar bara placeringsutkastet. Grundkontroller finns i [evidence/placement-lab.json](evidence/placement-lab.json), senare vy-/nodkontroller i [evidence/plane-and-nodemap.json](evidence/plane-and-nodemap.json).
-- Filmgranskningen har steg ±1 bildruta, kapitel och hastighet 0,25×/0,5×/1×. URL-parametrarna `clip` och `frame` pekar ut klipp och granskningsruta; tillgänglighet på publika sidan beror på senaste verifierade release.
+- `START.cmd` startar labbservern på `http://127.0.0.1:4319` utan fönster och visar labbet i en enda flik; `STATUS.cmd` och `STOPP.cmd` frågar och stoppar. `node tools/preview.ts --open "<sida>"` visar en sida i den öppna fliken i stället för i en ny, och `--restart` byter server utan att fliken stängs. Öppnas en labbflik till stänger den äldre sig själv, eller blir tom där webbläsaren inte låter en sida stänga sin flik. Servern slutar 60 sekunder efter att fliken stängts. Rutinen: [DRIFT](docs/DRIFT.md#labbservern-och-fliken).
+- [Labbet](http://127.0.0.1:4319/lab.html) har flikarna **Placering** (kortplanen: 16 kortplatser och sko, dator och mobil, hand- och sidavsikt, utdelningsteknik, material), **Klippbank** (nodträd, tagningar, rundbyggare, vila och renderat kort), **Granska** (Jakobs domar, som skrivs i `motions/`) och **Prov** (provmappar under `assets/proofs/`, `lab.html?tab=prov&proof=<mapp>`), samt länkarna 3D-scen, Spel, Modeller och Ljud. Sparning i Placering ändrar bara placeringsutkastet.
+- **Studion** (`http://127.0.0.1:4319/studio/`) är det nya labbet, en Next.js-app i `studio/` som byggs med `npm --prefix studio run build` och lämnas ut av samma server. Den byggs nu; gamla labbet ligger kvar tills Jakob har godkänt den ([SYSTEM](docs/SYSTEM.md)).
+- Filmgranskningen har steg ±1 bildruta, kapitel och hastighet 0,25×/0,5×/1×. URL-parametrarna `clip` och `frame` pekar ut klipp och granskningsruta.
+- `npm test` kör offlinetesterna (placeringar, klippbank, kortspår, scen, spelmotor, labbserver och publiceringsskydd). `npm run hooks:install` aktiverar lokal pre-push; `npm run check` kontrollerar commitintervallet före push/PR. Se [rutinen](docs/DRIFT.md#git-och-kontroller).
 - `npm run verify` kontrollerar registrerade lokala filer. `npm run verify -- --frames` återrenderar 18 kontrollrutor och kräver pixelidentitet.
-- `npm test` kör avgränsade offlinetester för placeringar, sparning, återläsning, renderinläsning och publiceringsskydd. `npm run hooks:install` aktiverar lokal pre-push; `npm run check` kontrollerar commitintervallet före push/PR. Se [rutinen](docs/DRIFT.md#git-och-kontroller).
-- `npm run render -- --render --take=02` startar ett nytt fullständigt försök med fyra arbetare. Välj alltid ett oanvänt tvåsiffrigt nummer; `take-01` är bevarat. Kräver FFmpeg/FFprobe via PATH eller `FFMPEG`/`FFPROBE`.
+- `npm run render -- --render --take=02` startar ett nytt fullständigt V6-försök med fyra arbetare. Välj alltid ett oanvänt tvåsiffrigt nummer; `take-01` är bevarat. Kräver FFmpeg/FFprobe via PATH eller `FFMPEG`/`FFPROBE`.
 
 ## Verifierad bas och gräns
 
-Enligt [reproduktionskvittot](evidence/reproduction.json) har hela V6 återrenderats lokalt: 926 rutor, 30 fps, 1762×1174 och 1080×1920. Båda MP4-filerna är byteidentiska med originalen; 18 kontrollrutor är pixelidentiska enligt [bildrutekvittot](evidence/frame-verification.json). Detta verifierar V6, inte utdelning till alla åtta platser. Kända begränsningar för fingermask, rörelsekanter och källskarvar kvarstår.
+Enligt [reproduktionskvittot](evidence/reproduction.json) har hela V6 återrenderats lokalt: 926 rutor, 30 fps, 1762×1174 och 1080×1920. Båda MP4-filerna är byteidentiska med originalen; 18 kontrollrutor är pixelidentiska enligt [bildrutekvittot](evidence/frame-verification.json), också efter renderinläsningsrättningarna ([V6-kvitto](evidence/render-safety-frames.json)). Detta verifierar V6, inte utdelning till alla åtta platser. Kända begränsningar för fingermask, rörelsekanter och källskarvar kvarstår.
 
-`src/` och `tools/` kör utan gamla labbet. `materials/` är separata kort-/markerprov; markerna är inte integrerade i V6 och TS-materialkällorna har inte återbyggts till de frysta JS-bundlarna. `assets/`, `output/`, `.runtime/`, `.env*` och `private/` är lokala och Git-ignorerade.
-
-Labbet återanvänder kortmaterialets TS-källa direkt för böjning/glans och ett lokalt landningsprov. Detta ändrar inte V6-filmen eller de historiska materialbundlarna.
+`src/` och `tools/` kör utan gamla labbet. `materials/` är separata kort- och markerprov; TS-materialkällorna har inte återbyggts till de frysta JS-bundlarna. Labbet och 3D-scenen läser kortmaterialets TS-källa direkt; det ändrar inte V6-filmen eller de historiska bundlarna.
 
 Publikt källrepo: [Jakeminator123/dealer](https://github.com/Jakeminator123/dealer). GitHub innehåller inte media eller hemligheter. Scout-integration, deploy och betald generering är separata uppdrag.
 
-Ett uttryckligen beställt P4.C1-kontrollprov, `pamela-p4-c1-color-control-01`, använder exakt historisk startbild, slutbild och prompt via `tools/generate-p4-control.ts`, utan omfärgning. WAN3 och det följande Kling 3.0 Pro-provet är färdighämtade men underkända för fysisk vändning. Aktuell status finns i det lokala genereringskvittot och HANDOFF.
+[Det publika labbet](https://dealer-delta-eosin.vercel.app/) visar ett äldre läge (release i [evidence/public-release.json](evidence/public-release.json)). Den publika sidan sparar utkast i den egna webbläsaren, lokal preview till placeringsfilen på datorn; export/import flyttar ett utkast mellan dem. Publicerade granskningsfilmer ligger i separat Vercel Blob, inte i Git eller webbpaketet.
 
 Behåll JSON-register, manifest och webbläsarutkast. [Lagringsbedömningen](evidence/storage-choice-review.json) rekommenderar ingen SQLite- eller annan ny databas nu; framtida Scout-import är ett separat införande.
 
-Aktuella fynd från den externa granskningen och avgränsade rättningar finns i [granskningskvittot](evidence/external-review-triage.json). Efter renderinläsningsrättningarna är 18 kontrollrutor fortsatt pixelidentiska enligt [nytt V6-kvitto](evidence/render-safety-frames.json). En generell koppling mellan placeringsplan och filmer återstår.
+## Historiskt underlag
+
+- Fyra hela historiska sekvenser, `pamela-sequence-{16,17}-{native,portrait}-r2`, är återställda som alternativ (Jakob: fel koordinater och format; produktionsacceptans PENDING): [återbruk](evidence/sequence-reuse-audit.json), [produktionskvitto](evidence/sequence-review-production.json), SYSTEM "Återbruk och införande".
+- P4.C2:s nyare original visar BACK→EDGE→FRONT; den gula `review-v04` bevisar inte CLOSED→CLOSED: [färggranskningens p4Followup](evidence/anchor-color-audit.json).
+- Promptar, start- och slutbilder och resultat för kontrollproven 10 november: [Runway-underlaget](generation.html). P4.C1-kontrollproven (`pamela-p4-c1-color-control-01` med WAN 3, `pamela-p4-c1-kling-control-01` med Kling 3.0 Pro) är underkända för fysisk vändning; besluten står i `motions/`.
+- Placeringslabbets grundkontroller: [evidence/placement-lab.json](evidence/placement-lab.json); vy- och nodkontroller: [evidence/plane-and-nodemap.json](evidence/plane-and-nodemap.json). V6:s små skuggor och fingermasker, och den senare bankens maskrättningar: [Astra-granskningen](evidence/astra-archive-mask-audit.json). Fynd från den externa granskningen: [granskningskvittot](evidence/external-review-triage.json).
