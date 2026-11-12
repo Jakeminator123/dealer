@@ -1,10 +1,10 @@
 "use client";
 
-// The left rail: the seven views with the active one marked, counts where they help (takes waiting for Jakob beside Granska,
+// The left rail: the eight views with the active one marked, counts where they help (takes waiting for Jakob beside Granska,
 // edges with a Primär beside Primära), whether the lab answers, and "Gamla labbet ↗" at the bottom (same tab).
 // In the online copy (lib/mode.ts) there is no old lab, so that link is not drawn; instead the bot is there: the view
 // Önskemål (with the answers from Jakob not yet seen) and "Fråga", which opens and closes the panel (components/bot).
-import { ArrowUpRight, FlaskConical, Images, Inbox, MessageCircleQuestion, Play, ScanEye, SlidersHorizontal, Star, Workflow } from "lucide-react";
+import { ArrowUpRight, FlaskConical, Images, Inbox, MessageCircleQuestion, Play, ScanEye, SlidersHorizontal, Spade, Star, Workflow } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useMemo, type ComponentType } from "react";
@@ -27,7 +27,11 @@ export const VIEWS: readonly View[] = [
   { href: "/prov/", label: "Prov", hint: "Jämförelsefilmer och kontaktark", icon: FlaskConical },
   { href: "/material/", label: "Material", hint: "Per dealer: ingångsbild, keystone, ankare, filmer och referenser", icon: Images },
   { href: "/scen/", label: "Scen", hint: "Rum, ljus, bord, kort och kamera", icon: SlidersHorizontal },
+  { href: "/game/", label: "Casino", hint: "Spela blackjack som i casinot: spelmotorn, marker och reglage, med valt förval", icon: Spade },
 ];
+
+/** The views the rail shows: the online copy has no game engine, so Casino is only in the lab. */
+const SHOWN: readonly View[] = isSnapshot ? VIEWS.filter((view) => view.href !== "/game/") : VIEWS;
 
 /** The view of requests to Jakob: only where the bot is (the online copy). */
 export const REQUESTS_VIEW: View = { href: "/onskemal/", label: "Önskemål", hint: "Önskemål till Jakob, med status och hans svar", icon: Inbox };
@@ -128,7 +132,7 @@ export function Rail() {
       </Tooltip>
       <div className="mx-4 mb-2 h-px bg-line" />
       <ul className="flex flex-col gap-1">
-        {VIEWS.map((view) => (
+        {SHOWN.map((view) => (
           <li key={view.href}>
             <RailItem
               view={view}

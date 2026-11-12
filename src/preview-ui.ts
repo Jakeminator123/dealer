@@ -4,10 +4,14 @@
 // an agent asks for (node tools/preview.ts --open <page>) is shown here instead of in a new tab. The open stream is also
 // what keeps the server up. A page driven by a test (headless Chrome, or ?robot=1) only sends the old sign of life and
 // never takes the place of the lab tab; ?robot=0 makes such a page behave as a person's.
+// A page inside a frame (the studio's Casino view plays game.html in an iframe) is part of the page around it, which holds
+// the tab's stream: it too only sends the old sign of life, whatever ?robot says, for as the newest page it would retire
+// the lab tab and so close the very page it sits in.
 const here=()=>location.pathname+location.search+location.hash;
 const asked=new URLSearchParams(location.search).get('robot');
 const robot=asked==='1'||(asked!=='0'&&(navigator.webdriver||/HeadlessChrome/.test(navigator.userAgent)));
-if(robot){const keepAlive=()=>fetch('/heartbeat',{method:'POST'}).catch(()=>{});keepAlive();setInterval(keepAlive,15000);}
+const framed=window.top!==window;
+if(robot||framed){const keepAlive=()=>fetch('/heartbeat',{method:'POST'}).catch(()=>{});keepAlive();setInterval(keepAlive,15000);}
 else{
  const id=crypto.randomUUID?.()??Array.from(crypto.getRandomValues(new Uint8Array(16)),byte=>byte.toString(16).padStart(2,'0')).join('');
  const events=new EventSource(`/tab/events?id=${id}&page=${encodeURIComponent(here())}`);

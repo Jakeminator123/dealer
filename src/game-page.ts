@@ -4,8 +4,11 @@
 // values and money. The 3D scene (src/scene3d-*.ts) owns the picture and the film queue. This page owns the bets in progress
 // and the order of things: it sends a command, turns the answer into film beats, lets the film play, and shows each total
 // when its card has landed. Seats are 1–7, seat 1 at camera left.
+//
+// The look is the game's own. The studio's Casino view plays another one calibrated in its Scen view: ?forval=<preset> and
+// scene keys in the address (src/game-look.ts); without them the page is as before.
 import {buildGraph} from './clip-graph.ts';
-import {createScene} from './scene3d-view.ts';
+import {createScene, DEFAULTS, type SceneState} from './scene3d-view.ts';
 import {readRegister} from './scene3d-room.ts';
 import {filmToScene, sceneToSpot, solveCamera, type FilmCamera} from './scene3d-geometry.ts';
 import {createLayout, slotOf} from './game-table.ts';
@@ -25,11 +28,27 @@ const query = new URLSearchParams(location.search);
 stage.dataset.theme = THEMES.includes(query.get('tema') ?? '') ? query.get('tema')! : 'noir';
 // The server keeps one session per table name; a second tab or a test opens game.html?table=<name> and plays its own.
 const table = /^[a-z0-9-]{1,40}$/.test(query.get('table') ?? '') ? `?table=${query.get('table')}` : '';
+// A look from the studio (src/game-look.ts). Its module is read only when the address holds more than the game's own words,
+// so the page without them reads and does exactly what it did before. ?inbaddad=1 (the Casino view shows the game in a
+// frame) hides nothing: the frame shows none of what this page shows, and src/preview-ui.ts keeps a framed page from
+// taking the lab tab by itself.
+const OWN_WORDS = ['table', 'tema', 'bricka', 'chatt', 'robot', 'inbaddad'], forval = query.get('forval');
+const lookAsked = [...query.keys()].some(word => !OWN_WORDS.includes(word));
 
-const [contract, placements, bank, first, register] = await Promise.all([read('data/scene-contract.json', 'Scenkontraktet'), read('api/placements', 'Placeringsplanen'), read('api/clip-bank', 'Klippbanken'), read(`api/game${table}`, 'Spelet'), read('data/scene-rooms.json', 'Rumsregistret')]);
-// The 360-degree rooms Jakob has let into the game (game: true in data/scene-rooms.json); a new room is tried in the lab first.
-const panoramas = readRegister(register).rooms.filter(r => r.game);
-const plan = placements.plan ?? placements, graph = buildGraph(bank), layout = createLayout(plan, {fan: query.has('fan') && Number.isFinite(Number(query.get('fan'))) ? Math.max(0, Math.min(80, Number(query.get('fan')))) : null}); // ?fan=<px>: one fan step for every seat, for trying values
+const [contract, placements, bank, first, register, lookCode, presetAnswer] = await Promise.all([read('data/scene-contract.json', 'Scenkontraktet'), read('api/placements', 'Placeringsplanen'), read('api/clip-bank', 'Klippbanken'), read(`api/game${table}`, 'Spelet'), read('data/scene-rooms.json', 'Rumsregistret'),
+  lookAsked ? import('./game-look.ts').catch(() => null) : null, forval ? fetch(`api/scene-presets/${encodeURIComponent(forval)}`).then(res => res.ok ? res.json() : null, () => null) : null]);
+const registered = readRegister(register).rooms, roomIds = lookCode ? [...lookCode.BUILT_ROOMS, ...registered.map(r => r.id)] : [];
+// The look over the game's own settings: with a preset its whole look, else the address's keys; {} when none is asked for.
+// What could not be used is said in one line on the page, and the game plays with its own look in its place.
+const look = lookCode?.readLook(query, roomIds) ?? null, preset = lookCode && look?.forval ? lookCode.presetFrom(presetAnswer, roomIds) : null;
+const asked: Partial<SceneState> = lookCode && look ? lookCode.lookState(DEFAULTS, preset?.state ?? null, look.keys, id => registered.find(r => r.id === id)?.blur ?? lookCode.BUILT_BLUR[id] ?? 11) : {};
+const lookNote = lookCode && look ? lookCode.lookNotice(look.asked, !!preset, [...look.ignored, ...(preset?.dropped ?? [])]) : forval !== null ? 'Förvalet kunde inte läsas: spelet visar sitt eget utseende.' : null;
+// The 360-degree rooms Jakob has let into the game (game: true in data/scene-rooms.json); a new room is tried in the lab first,
+// and a look that chooses one is shown with it.
+const panoramas = registered.filter(r => r.game || r.id === asked.room);
+// ?fan=<px>: one fan step for every seat, for trying values; 0 and 1 are the scene's fan shadow when a look is read.
+const fanWord = query.get('fan'), fanStep = fanWord !== null && Number.isFinite(Number(fanWord)) && !(lookCode && ['0', '1'].includes(fanWord)) ? Math.max(0, Math.min(80, Number(fanWord))) : null;
+const plan = placements.plan ?? placements, graph = buildGraph(bank), layout = createLayout(plan, {fan: fanStep});
 
 // ── the picture: the 3D scene, seen a little from above so that all seven bet rings and the bar have room ──
 const scene = createScene(canvas, stage, {contract, plan, urls: {plate: 'assets/scene/room.png', panorama: 'assets/scene/panorama-vegas.jpg', la: 'assets/scene/panorama-la.jpg', skog: 'assets/scene/panorama-skog.jpg'}, rooms: panoramas, onChange: () => {}, onMissingRoom: () => {}});
@@ -37,11 +56,13 @@ const scene = createScene(canvas, stage, {contract, plan, urls: {plate: 'assets/
 // with all seven rings. Standing (a phone): the film's width is locked to the screen's, so the view is zoomed in on seats 3–5
 // and turns toward the seat in play.
 const FRAMING = {wide: {pitch: -8, zoom: 0.84}, tall: {pitch: -10, zoom: 1.9}, tallBelow: 0.8, turnShare: 0.6, turnLimit: 40};
+// A look's pitch and zoom are its lying framing; its yaw, dy and dz are where the view comes to rest (all 0 in the game's own).
+const lying = {pitch: asked.pitch ?? FRAMING.wide.pitch, zoom: asked.zoom ?? FRAMING.wide.zoom}, home = {yaw: asked.yaw ?? 0, dy: asked.dy ?? 0, dz: asked.dz ?? 0};
 const fixed = query.has('pitch') || query.has('zoom');
-let tall = false, aimed = 0; // aimed: the yaw the view is easing toward, degrees
+let tall = false, aimed = home.yaw; // aimed: the yaw the view is easing toward, degrees
 function frame() {
   const box = stage.getBoundingClientRect(), now = box.width / Math.max(1, box.height) < FRAMING.tallBelow;
-  if (now !== tall || !framed) { tall = now; framed = true; stage.classList.toggle('tall', tall); if (!fixed) scene.set(tall ? FRAMING.tall : FRAMING.wide); if (!tall) { aimed = 0; scene.set({yaw: 0}); } }
+  if (now !== tall || !framed) { tall = now; framed = true; stage.classList.toggle('tall', tall); if (!fixed) scene.set(tall ? FRAMING.tall : lying); if (!tall) { aimed = home.yaw; scene.set({yaw: home.yaw}); } }
   scene.resize();
 }
 let framed = false;
@@ -54,8 +75,14 @@ const ROOMS = [
 const soundOf = (id: string) => ROOMS.find(r => r.id === id)?.sound ?? null;
 const DEALERS = [{id: 'pamela', label: 'Pamela', note: 'Vid bordet nu', thumb: 'assets/scene/thumbs/dealer-pamela.jpg'}];
 const remembered = (() => { try { return localStorage.getItem('dealer.room'); } catch { return null; } })();
-let room = ROOMS.find(r => r.id === (query.get('room') ?? remembered))?.id ?? 'panorama';
+let room = ROOMS.find(r => r.id === (asked.room ?? query.get('room') ?? remembered))?.id ?? 'panorama';
 scene.set({format: 'fill', room: room as never, blur: ROOMS.find(r => r.id === room)!.blur, tray: true, cards: true, pitch: Number(query.get('pitch') ?? FRAMING.wide.pitch), zoom: Number(query.get('zoom') ?? FRAMING.wide.zoom)});
+// The look over the game's own settings, before the first picture. A room of it that the menu does not offer (a built room
+// of the lab) is shown all the same, and the menu marks none. The table is built by now, so the room is changed with a cut,
+// and the look's own way of changing rooms holds from then on.
+if (Object.keys(asked).length) { scene.set({...asked, roomShift: 'cut'}); if (asked.roomShift) scene.set({roomShift: asked.roomShift}); room = asked.room ?? room; }
+if (lookNote) { const note = Object.assign(document.createElement('p'), {textContent: lookNote}); note.setAttribute('role', 'status');
+  note.style.cssText = 'position:absolute;left:50%;top:12px;transform:translateX(-50%);z-index:30;margin:0;max-width:min(92%,680px);padding:6px 14px;border:1px solid rgba(226,191,109,.32);border-radius:999px;background:rgba(8,7,6,.84);color:#f6eedc;font-size:13px;pointer-events:none'; stage.append(note); }
 scene.rebuild(); scene.start();
 new ResizeObserver(frame).observe(stage); frame();
 const film = createFilm(scene.players as unknown as FilmPlayers, graph, layout, path => fetch(path).then(res => res.ok ? res.json() : null));
@@ -169,8 +196,10 @@ const panel = mountPanel(overlay.root.querySelector<HTMLElement>('.go-bar')!, RO
   open() { void loadSound(); },
   room(id) {
     const next = ROOMS.find(r => r.id === id); if (!next || id === room || page.busy || page.stage === 'ROUND') return;
-    room = id; try { localStorage.setItem('dealer.room', id); } catch { /* a private window keeps nothing */ }
-    scene.set({roomShift: 'shimmer', room: id, blur: next.blur} as never); // the background shimmers and changes under the shimmer
+    room = id; // a look from the studio leaves the room the game remembers alone
+    if (forval === null) try { localStorage.setItem('dealer.room', id); } catch { /* a private window keeps nothing */ }
+    if (asked.roomShift === 'cut') scene.set({roomShift: 'cut', room: id, blur: next.blur} as never); // a look that changes rooms with a cut
+    else scene.set({roomShift: 'shimmer', room: id, blur: next.blur} as never); // the background shimmers and changes under the shimmer
     if (heard.ambience) sound?.ambience(soundOf(id)); panel.set({room: id});
   },
   // Only one dealer has films yet, so the change is shown with her: she leaves, the table stands empty, a dealer comes in.
@@ -218,7 +247,7 @@ type Chips = {set(bets: Record<number, number[]>, now: number): void; update(now
   pay(seat: number, values: number[], from: (value: number) => Spot3, now: number, leave: (value: number) => void): void; clearWinnings(): void};
 let chips: Chips | null = null;
 const seconds = () => performance.now() / 1000;
-void import('./game3d-chips.ts').then(m => { const made = m.createChips(scene); scene.addProp(made); chips = made; stage.classList.add('chips3d'); render(); }).catch(() => {});
+void import('./game3d-chips.ts').then(m => { const made = m.createChips(scene); if (asked.chipGloss !== undefined) made.setGloss(asked.chipGloss); scene.addProp(made); chips = made; stage.classList.add('chips3d'); render(); }).catch(() => {});
 // The table chat as a dummy (src/game-chat.ts; game.html?chatt=0 leaves it out). The dealer's lines follow the round's phases and how it ended.
 type Chat = {phase(phase: string): void; say(text: string): void};
 let chat: Chat | null = null, chatPhase = '', chatLine: string | null = null;
@@ -247,13 +276,13 @@ function anchors(): Anchors {
 // Standing: the view turns toward a seat (most of the way, so the dealer stays in the picture) and eases there.
 function aimAt(seat: number | null) {
   const spot = seat === null ? null : scene.spots().bets.find(b => b.id === `P${seat}`), camera = scene.status().camera;
-  aimed = !tall || !spot ? 0 : Math.max(-FRAMING.turnLimit, Math.min(FRAMING.turnLimit, Math.atan2(-spot.x * camera.scale, solveCamera(camera).edgeDistance - spot.s * camera.scale) * 180 / Math.PI * FRAMING.turnShare));
+  aimed = !tall || !spot ? home.yaw : Math.max(-FRAMING.turnLimit, Math.min(FRAMING.turnLimit, Math.atan2(-spot.x * camera.scale, solveCamera(camera).edgeDistance - spot.s * camera.scale) * 180 / Math.PI * FRAMING.turnShare));
 }
 // A sideways drag on the picture turns the view by hand (standing: to reach the outer seats; lying: to look around); a double click turns it back.
 // shot: the view while a whole-body film is on (the dealer leaving): the camera backs away as she rises (src/scene3d-exit.ts).
 // Without it the view eases to the seat in play, to its own tilt and zoom, and the camera to its own place.
 let turning: {x: number; yaw: number} | null = null, byHand = false, shot: ExitView | null = null, comeHome = false; // comeHome: she has gone, the camera returns though her film's last frame is still up
-const framing = () => tall ? FRAMING.tall : FRAMING.wide;
+const framing = () => tall ? FRAMING.tall : lying;
 canvas.addEventListener('pointerdown', e => { turning = {x: e.clientX, yaw: scene.state.yaw}; canvas.setPointerCapture(e.pointerId); });
 canvas.addEventListener('pointermove', e => { if (!turning) return; const dx = e.clientX - turning.x; if (Math.abs(dx) > 4) byHand = true; if (byHand) scene.state.yaw = Math.max(-FRAMING.turnLimit, Math.min(FRAMING.turnLimit, turning.yaw + dx * 45 / canvas.clientHeight / Math.max(1, scene.state.zoom))); });
 for (const type of ['pointerup', 'pointercancel']) canvas.addEventListener(type, () => { turning = null; });
@@ -265,7 +294,7 @@ scene.onFrame(() => {
   if (shot) for (const key of ['yaw', 'pitch', 'zoom', 'dy', 'dz'] as const) scene.state[key] += (shot[key] - scene.state[key]) * 0.12;
   else { if (!turning && !byHand && Math.abs(scene.state.yaw - aimed) > 0.02) scene.state.yaw += (aimed - scene.state.yaw) * 0.08;
     if (!fixed) for (const key of ['pitch', 'zoom'] as const) { const left = framing()[key] - scene.state[key]; if (left) scene.state[key] = Math.abs(left) < 0.002 ? framing()[key] : scene.state[key] + left * 0.08; }
-    for (const key of ['dy', 'dz'] as const) if (scene.state[key]) scene.state[key] = Math.abs(scene.state[key]) < 0.002 ? 0 : scene.state[key] * 0.9; }
+    for (const key of ['dy', 'dz'] as const) if (scene.state[key] !== home[key]) scene.state[key] = Math.abs(scene.state[key] - home[key]) < 0.002 ? home[key] : home[key] + (scene.state[key] - home[key]) * 0.9; }
   const host = stage.getBoundingClientRect(), box = scene.canvas.getBoundingClientRect();
   overlay.place({left: box.left - host.left, top: box.top - host.top, width: box.width, height: box.height}, anchors());
 });
