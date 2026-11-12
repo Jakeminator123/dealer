@@ -1,5 +1,177 @@
-import Spike from "./spike";
+"use client";
 
-export default function Home() {
-  return <Spike />;
+// Spela: the one surface for all playback. A round (a list of steps the clip bank resolves, src/clip-graph.ts resolveRound)
+// plays large in the lab's 3D scene or as plain films ("Inte 3D"), with one transport for both; under it the round as a
+// strip of its steps, beside it the rounds to choose from and the scene's look. The header says the round in Jakob's
+// notation ("A1 - A2.1 - P4C1 - A1 · 3 steg · 8,5 s"), never file names.
+// Addresses (other views link here): /?runda=<his notation or the graph's sequence>, /?kant=<edge>&tagning=<take> (that take
+// where it belongs: a deal with the return that continues it, a return after its deal), &vy=platt starts in "Inte 3D".
+import { Box, Film } from "lucide-react";
+import { useSearchParams } from "next/navigation";
+import { Suspense, useEffect, useMemo, useRef, useState } from "react";
+import { resolveRound } from "../../src/clip-graph.ts";
+import { RoundPicker, RoundStrip } from "@/components/round";
+import { BankStatus, Page } from "@/components/shell";
+import { Stage, createClock, type SceneLook, type StageHandle } from "@/components/stage";
+import { ErrorState, Kbd, SegmentedControl, Skeleton, Switch } from "@/components/ui";
+import { getPlacements } from "@/lib/api";
+import { useBank } from "@/lib/bank";
+import { formatJakob } from "@/lib/names";
+import { partsOf } from "@/lib/parts";
+import { addressOf, contextRound, placesOf, readAddress, readyRounds, roundFacts, roundFromText, type Round, type View } from "@/lib/rounds";
+
+export default function SpelaPage() {
+  return (
+    <Suspense fallback={<Page title="Spela" full />}>
+      <Spela />
+    </Suspense>
+  );
+}
+
+const VIEWS = [
+  { value: "3d" as const, label: "3D", icon: <Box />, title: "Filmen i 3D-scenen" },
+  { value: "platt" as const, label: "Inte 3D", icon: <Film />, title: "Filmen som den är, på sin gröna" },
+];
+const LOOKS = [
+  { value: "levande" as const, label: "Levande", title: "Kameran lutar och gungar, skärpan följer kortet, damm och klocka" },
+  { value: "stilla" as const, label: "Stilla", title: "Scenens grund i hemvyn" },
+];
+
+function Spela() {
+  const params = useSearchParams();
+  const query = params.toString();
+  const { graph, status, error, reload } = useBank();
+  const rounds = useMemo(() => readyRounds(), []);
+  const [address, setAddress] = useState(() => readAddress(params));
+  const [chosen, setChosen] = useState<Round | null>(null);
+  const [view, setView] = useState<View>(address.view);
+  const [look, setLook] = useState<SceneLook>("levande");
+  const [cards, setCards] = useState(false);
+  const [clock] = useState(() => createClock());
+  const stage = useRef<StageHandle>(null);
+
+  // The address changed from outside (a link from another view, back and forth in the history): it decides again. What
+  // this page wrote itself (written) is already on screen.
+  const [seen, setSeen] = useState(query);
+  const [written, setWritten] = useState<string | null>(null);
+  if (query !== seen) {
+    setSeen(query);
+    if (query !== written) {
+      const next = readAddress(params);
+      setAddress(next);
+      setView(next.view);
+      setChosen(null);
+    }
+  }
+  const write = (round: Round | null, next: View) => {
+    const text = addressOf(round, next);
+    setWritten(text.slice(1));
+    window.history.replaceState(null, "", `${window.location.pathname}${text}`);
+  };
+
+  const round = useMemo<Round | null>(() => {
+    if (chosen) return chosen;
+    const asked = address.asked;
+    if (asked.kind === "runda") return roundFromText(asked.text, rounds);
+    if (asked.kind === "kant") return graph ? contextRound(graph, asked.edge, asked.take) : null;
+    return rounds[0];
+  }, [chosen, address, graph, rounds]);
+
+  // Card places from Jakob's plan: a seat's second card then knows how far its card moves (the bank's notes say so otherwise).
+  const [places, setPlaces] = useState<ReturnType<typeof placesOf>>(null);
+  useEffect(() => {
+    let gone = false;
+    getPlacements().then(
+      (p) => !gone && setPlaces(placesOf(p.plan)),
+      () => {},
+    );
+    return () => {
+      gone = true;
+    };
+  }, []);
+
+  const segments = useMemo(() => (graph && round?.steps.length ? resolveRound(graph, round.steps, { holeCardDown: true, places }) : []), [graph, round, places]);
+  const parts = useMemo(() => partsOf(segments), [segments]);
+  const notation = round?.steps.length ? formatJakob(round.steps) : "";
+  const failed = status === "error" && !graph;
+
+  return (
+    <Page
+      title="Spela"
+      full
+      status={
+        graph ? (
+          <>
+            <span className="min-w-0 truncate font-medium text-ink" title={notation}>
+              {notation || "Ingen runda"}
+            </span>
+            {parts.length ? <span className="shrink-0">· {roundFacts(parts)}</span> : null}
+          </>
+        ) : (
+          <BankStatus />
+        )
+      }
+      actions={
+        <SegmentedControl
+          label="Visning"
+          value={view}
+          onChange={(next) => {
+            setView(next);
+            write(round, next);
+          }}
+          options={VIEWS}
+        />
+      }
+    >
+      <div className="grid h-full grid-cols-[minmax(0,1fr)_288px]">
+        <div className="flex min-h-0 min-w-0 flex-col">
+          {failed ? (
+            <ErrorState className="min-h-0 flex-1" title="Klippbanken kunde inte läsas" error={error} onRetry={() => void reload()} />
+          ) : (
+            <Stage ref={stage} className="min-h-0 flex-1" parts={parts} mode={view} look={look} cards={cards} clock={clock} />
+          )}
+          <div className="border-t border-line bg-canvas">
+            {status === "loading" ? (
+              <div className="flex gap-2 px-3 py-2" aria-busy>
+                {[0, 1, 2].map((i) => (
+                  <Skeleton key={i} className="h-[78px] w-[244px] rounded-lg" />
+                ))}
+              </div>
+            ) : segments.length ? (
+              <RoundStrip segments={segments} parts={parts} clock={clock} onCue={(step) => stage.current?.cue(step)} />
+            ) : (
+              <p className="flex h-[92px] items-center px-5 text-sm text-faint">Välj en runda till höger, eller skriv en egen.</p>
+            )}
+          </div>
+        </div>
+
+        <aside className="flex min-h-0 flex-col gap-6 overflow-y-auto border-l border-line px-4 pb-4 pt-4">
+          <RoundPicker
+            rounds={rounds}
+            current={round}
+            problems={round?.errors ?? []}
+            onPick={(next) => {
+              setChosen(next);
+              write(next, view);
+            }}
+          />
+          <section className="flex flex-col gap-2.5">
+            <h2 className="text-2xs font-semibold uppercase tracking-[0.09em] text-faint">Scenen</h2>
+            <SegmentedControl label="Scenens känsla" value={look} onChange={setLook} options={LOOKS} disabled={view === "platt"} className="self-start" />
+            <Switch size="sm" checked={cards} onChange={setCards} disabled={view === "platt"} label="Rendera kort" hint={view === "platt" ? "Gäller 3D" : "Ritade kort i stället för filmens"} />
+          </section>
+          <section className="mt-auto flex flex-col gap-1.5 text-xs text-faint">
+            <span className="flex items-center gap-1.5">
+              <Kbd>Mellanslag</Kbd> spela, pausa
+            </span>
+            <span className="flex items-center gap-1.5">
+              <Kbd>←</Kbd>
+              <Kbd>→</Kbd> en ruta, även över ett klipp
+            </span>
+            <span>Dra i bilden för att luta, rulla för zoom, dubbelklicka för hemvy.</span>
+          </section>
+        </aside>
+      </div>
+    </Page>
+  );
 }
