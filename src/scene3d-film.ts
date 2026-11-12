@@ -96,14 +96,25 @@ vec4 keyCards(vec4 o, vec2 uv, vec3 c, vec3 key){
   if (seatOn > .5) o = keyCard(o, px, c, key, seatZone, seatCore, BACK_LIT, 4., 0., 2., 1., vec4(-1.), seatCore, 0.);
   return keyCard(o, px, c, key, cardZone, cardCore, cardColour, cardRim, cardSides, cardTint, cardTrust, cardShoe, cardDrawn, cardHeld);
 }`;
-const FRAGMENT = `varying vec4 vFilm; varying vec3 vWorld; uniform sampler2D map; uniform vec2 refUv, texel, frameAnchor, frameSize; uniform float lo, hi, shadow, erode, frameOn, frameScale; uniform vec3 grade; uniform vec4 hide;
+// The keyed shadow above the table edge, kept as a share `above` (1 = all of it, as before): rows of the standard frame, y down.
+// It fades in over SHADOW_BAND rows up to the edge row, so the shadow on the felt below does not start with a line. Mirrored in
+// shadowAboveAt below for the tests.
+export const SHADOW_BAND = 8;
+const ABOVE_GLSL = `const float SHADOW_BAND = ${SHADOW_BAND}.;
+float aboveShare(float row, float above){ return mix(above, 1., smoothstep(FRAME_FIX.y - SHADOW_BAND, FRAME_FIX.y, row)); }`;
+/** The share of the keyed shadow kept at a row of the standard frame (y down) when `above` of it is kept above the table edge. */
+export function shadowAboveAt(row: number, above: number): number {
+  const t = Math.min(1, Math.max(0, (row - (FRAME_FIX.y - SHADOW_BAND)) / SHADOW_BAND)), s = t * t * (3 - 2 * t); return above + (1 - above) * s;
+}
+const FRAGMENT = `varying vec4 vFilm; varying vec3 vWorld; uniform sampler2D map; uniform vec2 refUv, texel, frameAnchor, frameSize; uniform float lo, hi, shadow, above, erode, frameOn, frameScale; uniform vec3 grade; uniform vec4 hide;
 uniform sampler2D roomMap; uniform vec2 roomSize; uniform float wrap, roomExposure;
 ${FAN_GLSL}
 ${CARD_KEY}
+${ABOVE_GLSL}
 float screenAt(vec2 uv, vec3 key, float dk){ vec3 c = texture2D(map, uv).rgb; return clamp(((c.g - max(c.r, c.b)) / dk - lo) / (hi - lo), 0., 1.); }
 void main(){
   if (vFilm.w <= 0.) discard;
-  vec2 uv = vFilm.xy / vFilm.w * .5 + .5;
+  vec2 uv = vFilm.xy / vFilm.w * .5 + .5, frameUv = uv; // frameUv: the standard frame, where the table edge row is
   // A film with a frame of its own (the dealer smaller on a larger screen, so that she can stand up and walk out): the point of
   // the standard frame is found in that film. The middle of the dealer-side table edge is the fixed point of the two frames.
   if (frameOn > .5) { vec2 px = (vec2(uv.x, 1. - uv.y) * FILM_PX - FRAME_FIX) * frameScale + frameAnchor; uv = vec2(px.x / frameSize.x, 1. - px.y / frameSize.y); }
@@ -120,8 +131,15 @@ void main(){
   pm.g = min(pm.g, mix(max(pm.r, pm.b), .5 * (pm.r + pm.b), smoothstep(0., .1, s)));
   pm *= a / max(a0, .001); // the pulled-in matte thins the pixel, it does not recolour it
   float tone = max(pm.r, max(pm.g, pm.b)) / max(a, .001);
-  float isShadow = (1. - smoothstep(.03, .12, tone)) * (1. - smoothstep(.7, .95, a));
-  a *= mix(1., shadow, isShadow);
+  float isShadow = (1. - smoothstep(.03, .12, tone)) * (1. - smoothstep(.7, .95, a)), kept = shadow;
+  // Above the table edge the arms' shadow lies, in the base pictures, on a table that goes on behind the edge; the scene has no
+  // table there but the plane she is drawn on, so the shadow can be let go there (above). Beside a solid pixel (within about
+  // three film pixels) it stays: that dark, half-covered rim is her jacket's own edge, not a shadow on anything.
+  if (above < 1. && isShadow > 0.) {
+    float solid = 0.; for (int i = 0; i < 8; i++) { float q = float(i) * .7853982; solid = max(solid, 1. - screenAt(uv + vec2(cos(q), sin(q)) * texel * 2., key, dk)); }
+    kept *= mix(aboveShare((1. - frameUv.y) * FILM_PX.y, above), 1., smoothstep(.85, .97, solid));
+  }
+  a *= mix(1., kept, isShadow);
   if (a < .004) discard;
   vec4 o = vec4(pm * grade * fanShade(vWorld), a);
   // The room's light round her outline (a light wrap): where the film around a pixel is mostly screen, the pixel lies at her
@@ -136,7 +154,9 @@ void main(){
   gl_FragColor = o;
 }`;
 
-export type KeySettings = {lo: number; hi: number; shadow: number};
+// shadow: strength of the keyed shadow on the felt (the table layer). above: the share of the keyed shadow kept above the table
+// edge, on the upright layer (1 = all, as before; 0 = none, faded in over SHADOW_BAND rows up to the edge).
+export type KeySettings = {lo: number; hi: number; shadow: number; above?: number};
 // A film whose picture is not the standard frame: the dealer is drawn at `scale` of her usual size on a larger screen, and the
 // middle of the dealer-side table edge, (881.5, 831.5) in the standard frame, lies at `anchor` in the film's own pixels. With
 // layer BEHIND_TABLE the film carries no table: it is drawn on one plane `back` dealer metres behind the table's edge and the
@@ -175,7 +195,7 @@ export function createFilmLayers(filmVP: T.Matrix4, light: Record<string, {value
   const room = {roomMap: {value: null as T.Texture | null}, roomSize: {value: new T.Vector2(1, 1)}, roomExposure: {value: 1}};
   const material = (refUv: T.Vector2) => new T.ShaderMaterial({vertexShader: VERTEX, fragmentShader: FRAGMENT, transparent: true, depthWrite: false, side: T.DoubleSide,
     blending: T.CustomBlending, blendSrc: T.OneFactor, blendDst: T.OneMinusSrcAlphaFactor, blendSrcAlpha: T.OneFactor, blendDstAlpha: T.OneMinusSrcAlphaFactor,
-    uniforms: {...light, ...card, ...frame, ...room, wrap: {value: 0}, hide, map, filmVP: {value: filmVP}, refUv: {value: refUv}, lo: {value: 0.12}, hi: {value: 0.9}, shadow: {value: 1}, erode: {value: 0.6}, grade, texel: {value: new T.Vector2(1.4 / FILM.width, 1.4 / FILM.height)}}});
+    uniforms: {...light, ...card, ...frame, ...room, wrap: {value: 0}, hide, map, filmVP: {value: filmVP}, refUv: {value: refUv}, lo: {value: 0.12}, hi: {value: 0.9}, shadow: {value: 1}, above: {value: 1}, erode: {value: 0.6}, grade, texel: {value: new T.Vector2(1.4 / FILM.width, 1.4 / FILM.height)}}});
   // The screen reference is read in a corner that stays empty: top left for the backdrop, bottom left for the table.
   const bodyMat = material(new T.Vector2(0.02, 0.97)), tableMat = material(new T.Vector2(0.02, 0.03));
   const body = new T.Mesh(new T.PlaneGeometry(10, 3), bodyMat), table = new T.Mesh(new T.PlaneGeometry(10, 2).rotateX(-Math.PI / 2), tableMat);
@@ -201,7 +221,7 @@ export function createFilmLayers(filmVP: T.Matrix4, light: Record<string, {value
     // The room as the scene has just drawn it (before its tone curve; `exposure` is what that pass multiplies it by) and how much
     // of it is laid round the dealer's outline, 0 = none. Only the upright layer takes it: behind the hands lies the felt, not the room.
     setWrap(texture: T.Texture | null, width: number, height: number, exposure: number, amount: number) { room.roomMap.value = texture; room.roomSize.value.set(width, height); room.roomExposure.value = exposure; bodyMat.uniforms.wrap.value = texture ? amount : 0; },
-    setKey(key: KeySettings) { bodyMat.uniforms.lo.value = key.lo; bodyMat.uniforms.hi.value = key.hi - 0.08; tableMat.uniforms.lo.value = key.lo; tableMat.uniforms.hi.value = key.hi; tableMat.uniforms.shadow.value = key.shadow; },
+    setKey(key: KeySettings) { bodyMat.uniforms.lo.value = key.lo; bodyMat.uniforms.hi.value = key.hi - 0.08; bodyMat.uniforms.above.value = Math.max(0, Math.min(1, key.above ?? 1)); tableMat.uniforms.lo.value = key.lo; tableMat.uniforms.hi.value = key.hi; tableMat.uniforms.shadow.value = key.shadow; },
     // Folded: the plane stands on the table edge and the table layer carries hands, cards and shadows.
     // Unfolded: one plane carries the whole frame and nothing follows the felt when the camera moves.
     // `depth` makes the layers write depth, which the focus blur reads; the unfolded plane then passes the depth test always instead of skipping it.

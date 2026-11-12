@@ -6,7 +6,7 @@
 // lacquered walnut apron under its overhang. Its sheen comes from a small painted room that only the rail's own materials
 // reflect (an environment map of their own), so the scene's lights, the film and everything in the home view stay as they were.
 import * as T from 'three';
-import {BET, type Spot} from './scene3d-geometry.ts';
+import {BET, spotToScene, tableToFilm, type FilmCamera, type Spot} from './scene3d-geometry.ts';
 
 export const FELTS: Record<string, [string, string]> = {green: ['#134232', '#0a2a20'], blue: ['#16325e', '#0b1c38'], vin: ['#571a26', '#330d15'], svart: ['#23272a', '#101214']};
 export const TABLE = {a: 0.95, b: 0.6, rail: 0.1}; // half width, depth toward the players, rail width
@@ -20,7 +20,103 @@ export type TableBase = 'column' | 'legs';
 // photographed weave for its relief, and every surface of the table takes its light and its reflections from the room that
 // is showing (the panorama itself), so that the table stands in that room's light and not in a light of its own.
 export type TableSurface = 'painted' | 'photo';
-export const BASE = {floor: -0.95, under: -0.15, legX: 0.58, legZ: 0.25, rail: -0.72}; // heights above the felt and places, dealer metres
+// What the felt's own colour and weave are. print: the colour of FELTS with a painted pool of light and a fine noise, as it was.
+// v6: V6's cloth (V6_CLOTH below), its colour and grain, evenly lit; the light across it is then the lamp's (LAMP).
+export type TableCloth = 'print' | 'v6';
+// The kinds of print on the felt, each its own switch. The state key holds them as one word: "all", "none" or a comma list.
+// trim: the dark list along the dealer's edge and its gold line; arc: the gold arc in front of the card places; text: BLACKJACK
+// PAYS 3 TO 2; logo: the logo text and its two lines; boxes: the card places; rings: the bet rings; numbers: the seat numbers in them.
+export const FELT_MARKS = ['trim', 'arc', 'text', 'logo', 'boxes', 'rings', 'numbers'] as const;
+export type FeltMark = typeof FELT_MARKS[number];
+export function feltMarks(text: string | null | undefined): Set<FeltMark> {
+  const words = (text ?? 'all').trim().toLowerCase(); if (words === 'all') return new Set(FELT_MARKS);
+  return new Set(words.split(/[\s,+]+/).filter((w): w is FeltMark => (FELT_MARKS as readonly string[]).includes(w)));
+}
+/** The word the state keeps for a set of marks: "all", "none" or the marks in their order. */
+export const marksText = (marks: Iterable<FeltMark>): string => { const on = new Set(marks); return FELT_MARKS.every(m => on.has(m)) ? 'all' : FELT_MARKS.filter(m => on.has(m)).join(',') || 'none'; };
+
+// ---- V6's cloth as the felt -----------------------------------------------------------------------------------------------------
+// assets/scene/table.png is V6's table: the felt in the film's perspective with the rail baked in and no print. It is no woven cloth:
+// a generated grain about one film pixel across (0.4 to 0.6 mm on the felt) and a soft mottle, under V6's own light, and only the felt
+// from about 24 to 42 cm in front of the dealer's edge is in its frame at all, squashed in depth 1.4 to 2.2 times. So its grain and
+// colour are taken, not a weave: the band nearest the camera (s0 to s1, x within ±x, dealer metres) is laid back flat through the
+// film camera, its light (anything larger than `flat`) is divided out, it is made to repeat without a seam (`fade`), and it is
+// coloured to the mean of the whole visible felt (rows `rows` of the picture, columns `cols`).
+export const V6_CLOTH = {url: 'assets/scene/table.png', x: 0.22, s0: 0.28, s1: 0.42, flat: 0.04, fade: 0.03, rows: [840, 1174], cols: [300, 1460]};
+export type Picture = {data: Float32Array; width: number; height: number}; // rgb, 0 to 255, rows from the top
+/**
+ * A box of the felt seen from straight above (x from -box.x to box.x across, s from box.s0 at the top to box.s1, dealer metres)
+ * read out of a picture in the film's frame through the film camera, at `pxPerM` pixels per metre, bilinearly. Source rgba.
+ */
+export function rectify(source: {data: ArrayLike<number>; width: number; height: number}, camera: FilmCamera, box: {x: number; s0: number; s1: number}, pxPerM: number): Picture {
+  const width = Math.max(1, Math.round(2 * box.x * pxPerM)), height = Math.max(1, Math.round((box.s1 - box.s0) * pxPerM)), data = new Float32Array(width * height * 3), {width: W, height: H} = source;
+  for (let j = 0; j < height; j++) for (let i = 0; i < width; i++) {
+    const [x, , z] = spotToScene(camera, -box.x + (i + 0.5) / pxPerM, box.s0 + (j + 0.5) / pxPerM), f = tableToFilm(camera, x, z);
+    const fx = Math.min(W - 1.001, Math.max(0, f.x)), fy = Math.min(H - 1.001, Math.max(0, f.y)), x0 = Math.floor(fx), y0 = Math.floor(fy), u = fx - x0, v = fy - y0;
+    for (let k = 0; k < 3; k++) { const at = (xx: number, yy: number) => source.data[(yy * W + xx) * 4 + k];
+      data[(j * width + i) * 3 + k] = (at(x0, y0) * (1 - u) + at(x0 + 1, y0) * u) * (1 - v) + (at(x0, y0 + 1) * (1 - u) + at(x0 + 1, y0 + 1) * u) * v; }
+  }
+  return {data, width, height};
+}
+// A box blur of `radius` pixels along one axis, the edge pixel repeated beyond the picture.
+function boxBlur(p: Picture, radius: number, alongX: boolean): Picture {
+  const {width, height} = p, out = new Float32Array(p.data.length), n = alongX ? width : height, lines = alongX ? height : width;
+  for (let line = 0; line < lines; line++) for (let k = 0; k < 3; k++) {
+    const at = (t: number) => { const c = Math.min(n - 1, Math.max(0, t)); return p.data[((alongX ? line * width + c : c * width + line) * 3) + k]; };
+    let sum = 0; for (let t = -radius; t <= radius; t++) sum += at(t);
+    for (let t = 0; t < n; t++) { out[(alongX ? line * width + t : t * width + line) * 3 + k] = sum / (2 * radius + 1); sum += at(t + radius + 1) - at(t - radius); }
+  }
+  return {data: out, width, height};
+}
+/** Divides out a picture's light larger than about `radius` pixels (a box blur twice each way) and sets each channel's mean to `mean`. */
+export function flatten(p: Picture, radius: number, mean: number[]): Picture {
+  let low = p; for (let r = 0; r < 2; r++) low = boxBlur(boxBlur(low, radius, true), radius, false);
+  const data = new Float32Array(p.data.length);
+  for (let i = 0; i < data.length; i++) data[i] = p.data[i] * mean[i % 3] / Math.max(1e-3, low.data[i]);
+  return {data, width: p.width, height: p.height};
+}
+/**
+ * Makes a picture repeat without a seam, `fade` pixels smaller each way: the last `fade` columns are blended into the first ones,
+ * then the same for the rows. The blend keeps the grain's contrast (each pixel's departure from the mean is weighted by
+ * w / sqrt(w1² + w2²)), so the fade does not show as a softer stripe.
+ */
+export function seamless(p: Picture, fade: number): Picture {
+  const mean = [0, 1, 2].map(k => { let s = 0; for (let i = k; i < p.data.length; i += 3) s += p.data[i]; return s / (p.data.length / 3); });
+  const blend = (a: number, b: number, t: number, k: number) => mean[k] + ((a - mean[k]) * (1 - t) + (b - mean[k]) * t) / Math.hypot(1 - t, t);
+  const W = p.width - fade, across = new Float32Array(W * p.height * 3);
+  for (let y = 0; y < p.height; y++) for (let x = 0; x < W; x++) for (let k = 0; k < 3; k++) {
+    const own = p.data[(y * p.width + x) * 3 + k]; across[(y * W + x) * 3 + k] = x < fade ? blend(p.data[(y * p.width + W + x) * 3 + k], own, (x + 0.5) / fade, k) : own; }
+  const H = p.height - fade, data = new Float32Array(W * H * 3);
+  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) for (let k = 0; k < 3; k++) {
+    const own = across[(y * W + x) * 3 + k]; data[(y * W + x) * 3 + k] = y < fade ? blend(across[((H + y) * W + x) * 3 + k], own, (y + 0.5) / fade, k) : own; }
+  return {data, width: W, height: H};
+}
+
+// ---- a lamp above the dealer ------------------------------------------------------------------------------------------------------
+// The light on the table can come partly from a lamp hanging above the dealer instead of evenly from the room: a point in the room
+// (dealer metres: x across, y above the felt, s from the dealer's edge), aimed down at the felt toward the players, with the cone
+// of a three.js spot of that angle and penumbra 1, and light that falls off with the square of the distance and the cosine to the
+// felt's normal. `strength` is the share of the table's light that comes from it: 0 is the table as it was, 1 all from the lamp.
+// Where the dealer's hands rest (x 0, s 0) the table stays as it was; away from there it darkens as the lamp's light falls off.
+export const LAMP = {x: 0, y: 0.9, s: -0.15, aim: 0.3, angle: 70 * Math.PI / 180};
+const lampIrradiance = (p: number[], at: number[], axis: number[], cone: number) => {
+  const l = [at[0] - p[0], at[1] - p[1], at[2] - p[2]], d2 = l[0] * l[0] + l[1] * l[1] + l[2] * l[2], d = Math.sqrt(d2), c = -(l[0] * axis[0] + l[1] * axis[1] + l[2] * axis[2]) / d;
+  const t = Math.min(1, Math.max(0, (c - cone) / (1 - cone))); return Math.max(l[1], 0) / d / d2 * t * t * (3 - 2 * t);
+};
+const LAMP_AXIS = (() => { const v = [0, -LAMP.y, LAMP.aim - LAMP.s], l = Math.hypot(v[0], v[1], v[2]); return v.map(c => c / l); })();
+/** The lamp's share of the light on the felt at (x, s) (dealer metres), as the factor the table's colour is multiplied by at that strength. */
+export function lampShade(x: number, s: number, strength: number): number {
+  const at = [LAMP.x, LAMP.y, LAMP.s], cone = Math.cos(LAMP.angle), rel = lampIrradiance([x, 0, s], at, LAMP_AXIS, cone) / lampIrradiance([0, 0, 0], at, LAMP_AXIS, cone);
+  return 1 - strength + strength * Math.min(1, rel);
+}
+// The same in the table's shaders, in world coordinates (the ratio does not change with the table's scale).
+const LAMP_GLSL = `uniform vec3 lampAt, lampAxis; uniform float lampCone, lampRef, lampOn; varying vec3 vLampAt;
+float lampLight(vec3 p){
+  if (lampOn <= 0.) return 1.;
+  vec3 l = lampAt - p; float d2 = dot(l, l), d = sqrt(d2);
+  return 1. - lampOn + lampOn * min(1., max(l.y, 0.) / d / d2 * smoothstep(lampCone, 1., dot(-l / d, lampAxis)) * lampRef);
+}`;
+export const BASE ={floor: -0.95, under: -0.15, legX: 0.58, legZ: 0.25, rail: -0.72}; // heights above the felt and places, dealer metres
 const PRINT = {width: 2.8, depth: 1.4, back: 0.1, pxW: 4096, pxH: 2048}; // the felt image covers width x depth metres and starts `back` behind the dealer edge
 const GOLD = '#d8b665';
 
@@ -186,27 +282,40 @@ export function roomReflection() {
   const t = new T.CanvasTexture(c); t.colorSpace = T.SRGBColorSpace; t.mapping = T.EquirectangularReflectionMapping; return t;
 }
 
-export type FeltPrint = {spots: Spot[]; logo: string; felt: string; scale: number};
+// camera: the film camera in use, through which V6's cloth is laid flat; marks: the kinds of print drawn (feltMarks; absent = all).
+export type FeltPrint = {spots: Spot[]; logo: string; felt: string; scale: number; marks?: string; cloth?: TableCloth; camera?: FilmCamera};
 export function createTable(lit: <M extends T.Material>(material: M) => M = m => m) {
   const canvas = document.createElement('canvas'); canvas.width = PRINT.pxW; canvas.height = PRINT.pxH;
   const texture = new T.CanvasTexture(canvas); texture.colorSpace = T.SRGBColorSpace; texture.anisotropy = 16;
   const group = new T.Group(), k = PRINT.pxW / PRINT.width, X = (x: number) => (x + PRINT.width / 2) * k, Y = (s: number) => (s + PRINT.back) * k;
+  // The lamp (LAMP) on every surface of the table: its light is worked out per pixel in world coordinates and multiplies the
+  // colour before it is encoded, where light acts. At strength 0 the factor is exactly 1 and the table is as it was.
+  const lamp = {lampAt: {value: new T.Vector3()}, lampAxis: {value: new T.Vector3(...LAMP_AXIS)}, lampCone: {value: Math.cos(LAMP.angle)}, lampRef: {value: 1}, lampOn: {value: 0}};
+  let lampStrength = 0;
+  const lamped = <M extends T.Material>(material: M): M => {
+    const before = material.onBeforeCompile, key = material.customProgramCacheKey.bind(material);
+    material.onBeforeCompile = (shader: T.WebGLProgramParametersWithUniforms, renderer: T.WebGLRenderer) => { before.call(material, shader, renderer); Object.assign(shader.uniforms, lamp);
+      shader.vertexShader = 'varying vec3 vLampAt;\n' + shader.vertexShader.replace('#include <project_vertex>', '#include <project_vertex>\n vLampAt = (modelMatrix * vec4(transformed, 1.)).xyz;');
+      shader.fragmentShader = LAMP_GLSL + '\n' + shader.fragmentShader.replace('#include <colorspace_fragment>', 'gl_FragColor.rgb *= lampLight(vLampAt);\n#include <colorspace_fragment>'); };
+    material.customProgramCacheKey = () => `${key()}+lamp`; return material;
+  };
+  const own = <M extends T.Material>(material: M): M => lamped(lit(material));
   // Materials and textures live as long as the table; build() only replaces geometry.
   const room = roomReflection();
-  const felt = lit(new T.MeshBasicMaterial({map: texture, side: T.DoubleSide}));
-  const leather = lit(new T.MeshStandardMaterial({...leatherTextures(ROLL, ROLL.seams), normalScale: new T.Vector2(0.75, 0.75), roughness: 1, metalness: 0, envMap: room, envMapIntensity: 3}));
-  const bead = lit(new T.MeshStandardMaterial({map: shadeTexture(BEAD), color: 0x9c7a45, roughness: 0.36, metalness: 1, envMap: room, envMapIntensity: 1.1}));
+  const felt = own(new T.MeshBasicMaterial({map: texture, side: T.DoubleSide}));
+  const leather = own(new T.MeshStandardMaterial({...leatherTextures(ROLL, ROLL.seams), normalScale: new T.Vector2(0.75, 0.75), roughness: 1, metalness: 0, envMap: room, envMapIntensity: 3}));
+  const bead = own(new T.MeshStandardMaterial({map: shadeTexture(BEAD), color: 0x9c7a45, roughness: 0.36, metalness: 1, envMap: room, envMapIntensity: 1.1}));
   const walnut = walnutTexture();
-  const apron = lit(new T.MeshPhysicalMaterial({map: walnut, aoMap: shadeTexture(APRON), roughness: 0.5, metalness: 0, clearcoat: 0.4, clearcoatRoughness: 0.3, envMap: room, envMapIntensity: 1.5}));
+  const apron = own(new T.MeshPhysicalMaterial({map: walnut, aoMap: shadeTexture(APRON), roughness: 0.5, metalness: 0, clearcoat: 0.4, clearcoatRoughness: 0.3, envMap: room, envMapIntensity: 1.5}));
   // The dealer-side board, the leg and the foot keep their first materials: a strip of the board's top shows in the home view.
-  const wood = lit(new T.MeshStandardMaterial({color: 0x2a170d, roughness: 0.4, metalness: 0.1, side: T.DoubleSide})), brass = lit(new T.MeshStandardMaterial({color: 0xb08a45, roughness: 0.3, metalness: 0.9}));
+  const wood = own(new T.MeshStandardMaterial({color: 0x2a170d, roughness: 0.4, metalness: 0.1, side: T.DoubleSide})), brass = own(new T.MeshStandardMaterial({color: 0xb08a45, roughness: 0.3, metalness: 0.9}));
 
   // The base of photographed wood (Poly Haven's wood_table, CC0; data/scene-materials.json). The maps are local media, read the
   // first time a base asks for them; until they are there, and where they cannot be read, the base wears the painted walnut.
-  const timber = lit(new T.MeshStandardMaterial({map: walnut, color: 0xffffff, roughness: 0.5, metalness: 0, envMap: room, envMapIntensity: 1.1}));
+  const timber = own(new T.MeshStandardMaterial({map: walnut, color: 0xffffff, roughness: 0.5, metalness: 0, envMap: room, envMapIntensity: 1.1}));
   // The skirt in the same wood, lacquered: its grain runs along the arc, and the section's shade keeps the overhang's shadow on it.
-  const skirt = lit(new T.MeshPhysicalMaterial({map: walnut, aoMap: shadeTexture(APRON), roughness: 0.5, metalness: 0, clearcoat: 0.5, clearcoatRoughness: 0.25, envMap: room, envMapIntensity: 1.6}));
-  const polished = lit(new T.MeshStandardMaterial({color: 0xb08a45, roughness: 0.28, metalness: 1, envMap: room, envMapIntensity: 1.5}));
+  const skirt = own(new T.MeshPhysicalMaterial({map: walnut, aoMap: shadeTexture(APRON), roughness: 0.5, metalness: 0, clearcoat: 0.5, clearcoatRoughness: 0.25, envMap: room, envMapIntensity: 1.6}));
+  const polished = own(new T.MeshStandardMaterial({color: 0xb08a45, roughness: 0.28, metalness: 1, envMap: room, envMapIntensity: 1.5}));
   const shadow = (() => { const c = document.createElement('canvas'); c.width = c.height = 128; const g = c.getContext('2d')!, fade = g.createRadialGradient(64, 64, 8, 64, 64, 64);
     fade.addColorStop(0, 'rgba(0,0,0,.62)'); fade.addColorStop(0.55, 'rgba(0,0,0,.34)'); fade.addColorStop(1, 'rgba(0,0,0,0)'); g.fillStyle = fade; g.fillRect(0, 0, 128, 128);
     return new T.MeshBasicMaterial({map: new T.CanvasTexture(c), transparent: true, depthWrite: false}); })();
@@ -214,7 +323,7 @@ export function createTable(lit: <M extends T.Material>(material: M) => M = m =>
   // blackjack felt; data/scene-materials.json) read the first time the photographed surface is asked for.
   // The print holds the colours as they should be seen, so as the albedo of a lit cloth it is raised: under the scene's lights the
   // cloth then comes out about as bright as the print, and what differs is what the light does to it.
-  const cloth = lit(new T.MeshStandardMaterial({map: texture, roughness: 1, metalness: 0, side: T.DoubleSide, envMap: room, envMapIntensity: 0.6})); cloth.color.setScalar(2.1);
+  const cloth = own(new T.MeshStandardMaterial({map: texture, roughness: 1, metalness: 0, side: T.DoubleSide, envMap: room, envMapIntensity: 0.6})); cloth.color.setScalar(2.1);
   let woven = false;
   function weave() {
     if (woven) return; woven = true;
@@ -230,36 +339,60 @@ export function createTable(lit: <M extends T.Material>(material: M) => M = m =>
       const along = map.clone(); along.repeat.set(1, 0.4); along.needsUpdate = true; skirt.map = along; skirt.color.set(0xa67a58); skirt.needsUpdate = true; }, () => {});
   }
 
+  // V6's cloth as a repeating tile at the print's own pixels per metre, made once per film camera (it is laid flat through it).
+  // The picture is local media, read the first time the cloth is asked for; until it is there, or where it cannot be read, the
+  // felt keeps its print colour.
+  let lastPrint: FeltPrint | null = null, v6Source: ImageData | null = null, v6Asked = false, v6Tile: {camera: string; pattern: CanvasPattern} | null = null;
+  function v6Pattern(g: CanvasRenderingContext2D, camera: FilmCamera): CanvasPattern | null {
+    const id = JSON.stringify(camera); if (v6Tile?.camera === id) return v6Tile.pattern;
+    if (!v6Source) { if (!v6Asked) { v6Asked = true; const image = new Image(); image.src = V6_CLOTH.url;
+      image.decode().then(() => { const c = document.createElement('canvas'); c.width = image.width; c.height = image.height; const cg = c.getContext('2d', {willReadFrequently: true})!; cg.drawImage(image, 0, 0);
+        v6Source = cg.getImageData(0, 0, image.width, image.height); if (lastPrint?.cloth === 'v6') draw(lastPrint); }, () => {}); } return null; }
+    const src = v6Source, [r0, r1] = V6_CLOTH.rows, [c0, c1] = V6_CLOTH.cols, mean = [0, 0, 0]; let n = 0;
+    for (let y = r0; y < Math.min(r1, src.height); y++) for (let x = c0; x < c1; x++) { const i = (y * src.width + x) * 4; mean[0] += src.data[i]; mean[1] += src.data[i + 1]; mean[2] += src.data[i + 2]; n++; }
+    const tile = seamless(flatten(rectify(src, camera, V6_CLOTH, k), Math.round(V6_CLOTH.flat * k / 2), mean.map(v => v / Math.max(1, n))), Math.round(V6_CLOTH.fade * k));
+    const image = new ImageData(tile.width, tile.height); for (let i = 0, j = 0; i < tile.data.length; i += 3, j += 4) { image.data[j] = tile.data[i]; image.data[j + 1] = tile.data[i + 1]; image.data[j + 2] = tile.data[i + 2]; image.data[j + 3] = 255; }
+    const c = document.createElement('canvas'); c.width = tile.width; c.height = tile.height; c.getContext('2d')!.putImageData(image, 0, 0);
+    const pattern = g.createPattern(c, 'repeat')!; v6Tile = {camera: id, pattern}; return pattern;
+  }
+
   function draw(print: FeltPrint) {
-    const g = canvas.getContext('2d')!, [light, dark] = FELTS[print.felt] ?? FELTS.green;
-    g.setTransform(1, 0, 0, 1, 0, 0); g.globalAlpha = 1; g.fillStyle = dark; g.fillRect(0, 0, PRINT.pxW, PRINT.pxH);
-    const pool = g.createRadialGradient(X(0), Y(0.3), 40, X(0), Y(0.3), 1.25 * k); pool.addColorStop(0, light); pool.addColorStop(1, dark); g.fillStyle = pool; g.fillRect(0, 0, PRINT.pxW, PRINT.pxH);
-    let seed = 7; const random = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
-    g.globalAlpha = 0.05; for (let i = 0; i < 70000; i++) { g.fillStyle = random() > 0.5 ? '#fff' : '#000'; g.fillRect(random() * PRINT.pxW, random() * PRINT.pxH, 2, 2); } g.globalAlpha = 1;
+    lastPrint = print;
+    const g = canvas.getContext('2d')!, [light, dark] = FELTS[print.felt] ?? FELTS.green, on = feltMarks(print.marks);
+    const weave = print.cloth === 'v6' && print.camera ? v6Pattern(g, print.camera) : null;
+    g.setTransform(1, 0, 0, 1, 0, 0); g.globalAlpha = 1;
+    if (weave) { g.fillStyle = weave; g.fillRect(0, 0, PRINT.pxW, PRINT.pxH); }
+    else {
+      g.fillStyle = dark; g.fillRect(0, 0, PRINT.pxW, PRINT.pxH);
+      const pool = g.createRadialGradient(X(0), Y(0.3), 40, X(0), Y(0.3), 1.25 * k); pool.addColorStop(0, light); pool.addColorStop(1, dark); g.fillStyle = pool; g.fillRect(0, 0, PRINT.pxW, PRINT.pxH);
+      let seed = 7; const random = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+      g.globalAlpha = 0.05; for (let i = 0; i < 70000; i++) { g.fillStyle = random() > 0.5 ? '#fff' : '#000'; g.fillRect(random() * PRINT.pxW, random() * PRINT.pxH, 2, 2); } g.globalAlpha = 1;
+    }
     // dealer-side trim: the film's body ends exactly at s = 0
-    g.fillStyle = '#17110c'; g.fillRect(0, 0, PRINT.pxW, Y(0.016)); g.fillStyle = GOLD; g.globalAlpha = 0.55; g.fillRect(0, Y(0.016), PRINT.pxW, 3); g.globalAlpha = 1;
+    if (on.has('trim')) { g.fillStyle = '#17110c'; g.fillRect(0, 0, PRINT.pxW, Y(0.016)); g.fillStyle = GOLD; g.globalAlpha = 0.55; g.fillRect(0, Y(0.016), PRINT.pxW, 3); g.globalAlpha = 1; }
     // the rail's soft shadow on the felt along the arc: a dark band just outside the felt edge, blurred inward and clipped to the felt
     g.save(); g.beginPath(); g.ellipse(X(0), Y(0), TABLE.a * k, TABLE.b * k, 0, 0, 2 * Math.PI); g.clip();
     for (const [width, blur, alpha] of [[0.04, 0.016, 0.55], [0.01, 0.0035, 0.65]]) { g.filter = `blur(${Math.round(blur * k)}px)`; g.strokeStyle = `rgba(3,2,1,${alpha})`; g.lineWidth = 2 * width * k;
       g.beginPath(); g.ellipse(X(0), Y(0), (TABLE.a + width) * k, (TABLE.b + width) * k, 0, 0, 2 * Math.PI); g.stroke(); }
     g.restore();
     const seats = print.spots.filter(p => /^P\d\.C1$/.test(p.id)), row = seats.length ? seats.reduce((t, p) => t + p.s, 0) / seats.length : 0.35, span = Math.max(0.3, ...seats.map(p => Math.abs(p.x))) * 1.5;
-    g.strokeStyle = GOLD; g.lineWidth = 3; g.globalAlpha = 0.5; g.beginPath(); g.ellipse(X(0), Y(0), span * k * 1.015, row * 0.83 * k, 0, 0.1 * Math.PI, 0.9 * Math.PI); g.stroke(); g.globalAlpha = 1;
+    if (on.has('arc')) { g.strokeStyle = GOLD; g.lineWidth = 3; g.globalAlpha = 0.5; g.beginPath(); g.ellipse(X(0), Y(0), span * k * 1.015, row * 0.83 * k, 0, 0.1 * Math.PI, 0.9 * Math.PI); g.stroke(); g.globalAlpha = 1; }
     // text along an arc that opens toward the dealer, upright for the players
-    const text = 'BLACKJACK PAYS 3 TO 2', size = Math.round(0.024 * k), rx = span * 0.95, ry = row * 0.7;
-    g.save(); g.font = `600 ${size}px Georgia, 'Times New Roman', serif`; g.fillStyle = GOLD; g.globalAlpha = 0.8; g.textAlign = 'center'; g.textBaseline = 'middle';
-    const widths = [...text].map(ch => g.measureText(ch).width + size * 0.12); let run = -widths.reduce((a, b) => a + b, 0) / 2;
-    for (let i = 0; i < text.length; i++) { const phi = (run + widths[i] / 2) / ((rx + ry) / 2 * k); run += widths[i]; g.save(); g.translate(X(rx * Math.sin(phi)), Y(ry * Math.cos(phi))); g.rotate(-phi); g.fillText(text[i], 0, 0); g.restore(); }
-    g.restore();
-    const logo = print.logo.toUpperCase(), logoY = Y(row * 0.44);
-    g.save(); g.fillStyle = GOLD; g.globalAlpha = 0.9; g.textAlign = 'center'; g.textBaseline = 'middle'; g.font = `700 ${Math.round(0.034 * k)}px Georgia, 'Times New Roman', serif`; g.fillText(logo, X(0), logoY);
-    const half = g.measureText(logo).width / 2; g.lineWidth = 2; g.strokeStyle = GOLD; g.globalAlpha = 0.6; for (const d of [-1, 1]) { g.beginPath(); g.moveTo(X(0) + d * (half + 24), logoY); g.lineTo(X(0) + d * (half + 110), logoY); g.stroke(); }
-    g.restore();
-    // card places from the placement plan, at the plan's own card width; a bet circle in front of each seat's first card
+    if (on.has('text')) { const text = 'BLACKJACK PAYS 3 TO 2', size = Math.round(0.024 * k), rx = span * 0.95, ry = row * 0.7;
+      g.save(); g.font = `600 ${size}px Georgia, 'Times New Roman', serif`; g.fillStyle = GOLD; g.globalAlpha = 0.8; g.textAlign = 'center'; g.textBaseline = 'middle';
+      const widths = [...text].map(ch => g.measureText(ch).width + size * 0.12); let run = -widths.reduce((a, b) => a + b, 0) / 2;
+      for (let i = 0; i < text.length; i++) { const phi = (run + widths[i] / 2) / ((rx + ry) / 2 * k); run += widths[i]; g.save(); g.translate(X(rx * Math.sin(phi)), Y(ry * Math.cos(phi))); g.rotate(-phi); g.fillText(text[i], 0, 0); g.restore(); }
+      g.restore(); }
+    if (on.has('logo')) { const logo = print.logo.toUpperCase(), logoY = Y(row * 0.44);
+      g.save(); g.fillStyle = GOLD; g.globalAlpha = 0.9; g.textAlign = 'center'; g.textBaseline = 'middle'; g.font = `700 ${Math.round(0.034 * k)}px Georgia, 'Times New Roman', serif`; g.fillText(logo, X(0), logoY);
+      const half = g.measureText(logo).width / 2; g.lineWidth = 2; g.strokeStyle = GOLD; g.globalAlpha = 0.6; for (const d of [-1, 1]) { g.beginPath(); g.moveTo(X(0) + d * (half + 24), logoY); g.lineTo(X(0) + d * (half + 110), logoY); g.stroke(); }
+      g.restore(); }
+    // card places from the placement plan, at the plan's own card width; a bet circle in front of each seat's first card, with the seat's number
     const cardW = 0.063 / print.scale * k, cardH = 0.07 / print.scale * k, betOffset = BET.offset * k, betRadius = BET.radius * k;
     for (const p of print.spots) { const first = p.id.endsWith('C1'); g.save(); g.translate(X(p.x), Y(p.s)); g.strokeStyle = GOLD; g.globalAlpha = first ? 0.6 : 0.25; g.lineWidth = 3;
-      g.beginPath(); g.roundRect(-cardW / 2, -cardH / 2, cardW, cardH, 8); g.stroke();
-      if (first && p.id[0] === 'P') { g.globalAlpha = 0.5; g.beginPath(); g.arc(0, betOffset, betRadius, 0, 7); g.stroke(); g.font = `600 ${Math.round(0.02 * k)}px Georgia, serif`; g.fillStyle = GOLD; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(p.id[1], 0, betOffset); }
+      if (on.has('boxes')) { g.beginPath(); g.roundRect(-cardW / 2, -cardH / 2, cardW, cardH, 8); g.stroke(); }
+      if (first && p.id[0] === 'P') { g.globalAlpha = 0.5; if (on.has('rings')) { g.beginPath(); g.arc(0, betOffset, betRadius, 0, 7); g.stroke(); }
+        if (on.has('numbers')) { g.font = `600 ${Math.round(0.02 * k)}px Georgia, serif`; g.fillStyle = GOLD; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(p.id[1], 0, betOffset); } }
       g.restore(); }
     texture.needsUpdate = true;
   }
@@ -269,7 +402,7 @@ export function createTable(lit: <M extends T.Material>(material: M) => M = m =>
   // triangulated shut by ShapeGeometry.
   function build(edgeZ: number, scale: number, notch?: {x0: number; x1: number; s1: number}, base: TableBase = 'column', surface: TableSurface = 'painted') {
     for (const child of [...group.children]) { group.remove(child); (child as T.Mesh).geometry?.dispose(); }
-    group.position.set(0, 0, edgeZ); group.scale.setScalar(scale);
+    group.position.set(0, 0, edgeZ); group.scale.setScalar(scale); setLamp(lampStrength);
     const N = 96, {a, b, rail} = TABLE, uvOf = (x: number, s: number) => [(x + PRINT.width / 2) / PRINT.width, 1 - (s + PRINT.back) / PRINT.depth];
     const position = [0, 0, b * 0.4], uv = [...uvOf(0, b * 0.4)], index: number[] = [];
     for (let i = 0; i <= N; i++) { const t = Math.PI * i / N, x = a * Math.cos(t), s = b * Math.sin(t); position.push(x, 0, s); uv.push(...uvOf(x, s)); if (i) index.push(0, i, i + 1); }
@@ -313,5 +446,12 @@ export function createTable(lit: <M extends T.Material>(material: M) => M = m =>
     for (const [material, own] of [[cloth, 0.6], [leather, 3], [bead, 1.1], [apron, 1.5], [skirt, 1.6], [timber, 1.1], [polished, 1.5]] as [T.MeshStandardMaterial, number][]) {
       material.envMap = map ?? room; material.envMapRotation.set(0, map ? turn : 0, 0); material.envMapIntensity = map ? own * strength : own; material.needsUpdate = true; }
   }
-  return {group, draw, build, setEnvironment};
+  // The lamp's strength, 0 to 1 (LAMP). It hangs in world coordinates where the table puts it (the table's place and scale), and
+  // its light where the dealer's hands rest is the reference the rest of the table is measured against.
+  function setLamp(strength: number) {
+    lampStrength = Math.max(0, Math.min(1, strength || 0)); const z = group.position.z, kk = group.scale.x;
+    lamp.lampAt.value.set(LAMP.x * kk, LAMP.y * kk, z + LAMP.s * kk); lamp.lampOn.value = lampStrength;
+    lamp.lampRef.value = 1 / Math.max(1e-9, lampIrradiance([0, 0, z], lamp.lampAt.value.toArray(), LAMP_AXIS, lamp.lampCone.value));
+  }
+  return {group, draw, build, setEnvironment, setLamp};
 }

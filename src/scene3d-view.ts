@@ -9,7 +9,7 @@ import {createFanLight} from './scene3d-light.ts';
 import {createChipTray, TRAY} from './scene3d-props.ts';
 import {createRooms, type Panorama, type RoomId} from './scene3d-room.ts';
 import {CHANGE_FRAGMENT, SHIMMER_GLSL, readyFrom, retake, roomChange, shiftProgress, shimmerLevel} from './scene3d-shift.ts';
-import {TABLE, createTable, type TableBase, type TableSurface} from './scene3d-table.ts';
+import {TABLE, createTable, type TableBase, type TableCloth, type TableSurface} from './scene3d-table.ts';
 import {createRailExtras} from './scene3d-rail.ts';
 
 export type SceneState = {
@@ -24,6 +24,11 @@ export type SceneState = {
   clock: boolean; dust: number; flicker: boolean; flickerEvery: number; flickerStrength: number;
   filmBright: number; filmWarm: number; wrap: number;
   roomShift: 'cut' | 'shimmer'; roomShiftSeconds: number;
+  // Lab trials of 2026-11-12, each at its default exactly the picture before them. shadowAbove: share of the keyed shadow kept above
+  // the table edge (1 all, 0 none). marks: the kinds of print on the felt ("all", "none" or a comma list, FELT_MARKS). cloth: the
+  // felt's colour and weave (print, or v6: V6's cloth). lamp: share of the table's light from a lamp above the dealer (0 to 1).
+  // chipGloss: the chips' gloss (0 to 1; 0.5 is their look before), read by the page that lays chips.
+  shadowAbove: number; marks: string; cloth: TableCloth; lamp: number; chipGloss: number;
 };
 // Everything added after checkpoint v1 starts switched off, so the page opens as v1. scale 0 = the contract's own k.
 export const DEFAULTS: SceneState = {
@@ -38,6 +43,7 @@ export const DEFAULTS: SceneState = {
   clock: false, dust: 0, flicker: false, flickerEvery: 20, flickerStrength: 0.6,
   filmBright: 1, filmWarm: 0, wrap: 0,
   roomShift: 'cut', roomShiftSeconds: 2.6,
+  shadowAbove: 1, marks: 'all', cloth: 'print', lamp: 0, chipGloss: 0.5,
 };
 // rooms: the panorama rooms of the register (data/scene-rooms.json, readRegister in scene3d-room.ts); without it the first three, at urls.
 export type SceneData = {contract: Parameters<typeof cameraFromContract>[0]; plan: Parameters<typeof cardSpots>[0]; urls: {plate: string; panorama: string; la: string; skog: string}; rooms?: Panorama[]; onChange: () => void; onMissingRoom: (room: RoomId) => void};
@@ -178,10 +184,11 @@ export function createScene(canvas: HTMLCanvasElement, host: HTMLElement, data: 
     filmVP.multiplyMatrices(filmCam.projectionMatrix, filmCam.matrixWorldInverse);
     table.build(edgeZ, camera.scale, ownNotch ?? (state.tray ? TRAY : undefined), state.base, state.surface); tray.group.visible = state.tray && !ownNotch; if (tray.group.visible) tray.build(edgeZ, camera.scale); rail.build(edgeZ, camera.scale, betSpots(data.plan, camera)); drawFelt(); rooms.place(camera); light.place(camera); buildGuides(); focusNow = NaN; built = true; for (const prop of props) prop.build(edgeZ, camera.scale); apply();
   }
-  const drawFelt = () => table.draw({spots: cardSpots(data.plan, camera), logo: state.logo, felt: state.felt, scale: camera.scale});
+  const drawFelt = () => table.draw({spots: cardSpots(data.plan, camera), logo: state.logo, felt: state.felt, scale: camera.scale, marks: state.marks, cloth: state.cloth, camera});
   function apply() {
     if (gone) return; if (!rooms.rooms[state.room]) state.room = 'salong'; // a room the scene does not have (an old address, a room taken out of the register)
-    useCards(); rooms.show(state.room); rail.set({cups: state.cups}); film.place(edgeZ, state.fold, state.focus !== 'off', camera.scale); film.setKey({lo: state.keyLo, hi: state.keyHi, shadow: state.shadow}); film.setGrade(state.filmBright, state.filmWarm);
+    useCards(); rooms.show(state.room); rail.set({cups: state.cups}); film.place(edgeZ, state.fold, state.focus !== 'off', camera.scale); film.setKey({lo: state.keyLo, hi: state.keyHi, shadow: state.shadow, above: state.shadowAbove}); film.setGrade(state.filmBright, state.filmWarm);
+    table.setLamp(state.lamp);
     if (guides) guides.visible = state.guides; resize(); data.onChange();
   }
   function resize() {
@@ -348,7 +355,7 @@ export function createScene(canvas: HTMLCanvasElement, host: HTMLElement, data: 
     start() { if (!running && !gone) { running = true; requestAnimationFrame(loop); } }, stop() { running = false; },
     dispose: takeDown,
     home() { if (gone) return; Object.assign(state, {yaw: 0, pitch: 0, zoom: 1, dx: 0, dy: 0, dz: 0, sway: false}); apply(); },
-    set(patch: Partial<SceneState>) { if (gone) return; if (patch.cards) loadCards(); const relens = 'lens' in patch && patch.lens !== state.lens || 'scale' in patch && patch.scale !== state.scale || 'tray' in patch && patch.tray !== state.tray || 'base' in patch && patch.base !== state.base || 'surface' in patch && patch.surface !== state.surface, reprint = 'logo' in patch || 'felt' in patch;
+    set(patch: Partial<SceneState>) { if (gone) return; if (patch.cards) loadCards(); const relens = 'lens' in patch && patch.lens !== state.lens || 'scale' in patch && patch.scale !== state.scale || 'tray' in patch && patch.tray !== state.tray || 'base' in patch && patch.base !== state.base || 'surface' in patch && patch.surface !== state.surface, reprint = 'logo' in patch || 'felt' in patch || 'marks' in patch || 'cloth' in patch;
       // Another room: with the shimmer the change is an animation that render() carries through; without it, or before the scene is built, a cut as before.
       const other = 'room' in patch && patch.room !== state.room, before = lookNow(); Object.assign(state, patch);
       if (other) { if (state.roomShift === 'shimmer' && built) beginShift(before); else if (shift) endShift(); }

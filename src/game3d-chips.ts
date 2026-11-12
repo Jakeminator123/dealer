@@ -6,7 +6,7 @@
 // placed in dealer metres (x across the table, y above the felt, s from the dealer's edge toward the players), drawn under
 // the film like the chip tray. It shows the chips it is told to show; what a bet is worth is the game's business.
 import * as T from 'three';
-import {CHIP, CHIP_COLOURS, CHIP_PRINT, createChipSurface, createChipPrint, type ChipColour, type ChipValue} from '../materials/source/src/chip-material-study.ts';
+import {CHIP, CHIP_COLOURS, CHIP_PRINT, chipMaterialParameters, createChipSurface, createChipPrint, type ChipColour, type ChipValue} from '../materials/source/src/chip-material-study.ts';
 
 // A real chip: 39 mm across. The study's own proportions give its height, a little over 3 mm.
 export const CHIP_RADIUS = 0.0195;
@@ -63,6 +63,14 @@ export function chipCarry(from: number[], to: number[], u: number, edge: [number
 }
 
 // ── the chip itself ─────────────────────────────────────────────────────────
+// Gloss, 0 to 1. The chip study's material (chipMaterialParameters) lowers the roughness by 0.28 per unit of gloss; the chips here
+// follow that slope round their own look, which is gloss 0.5: face 0.5, edge and inlays 0.48, as they were before gloss could be set.
+// The study's clearcoat and specular have no place in the scene's standard material.
+export const CHIP_GLOSS = 0.5;
+export function chipRoughness(gloss: number): {face: number; edge: number} {
+  const lift = chipMaterialParameters(Math.max(0, Math.min(1, Number.isFinite(gloss) ? gloss : CHIP_GLOSS))).roughness - chipMaterialParameters(CHIP_GLOSS).roughness;
+  return {face: 0.5 + lift, edge: 0.48 + lift};
+}
 function chipGeometry(): T.BufferGeometry {
   const data = createChipSurface(), geometry = new T.BufferGeometry();
   geometry.setAttribute('position', new T.BufferAttribute(data.positions, 3)); geometry.setAttribute('uv', new T.BufferAttribute(data.uv, 2)); geometry.setIndex(new T.BufferAttribute(data.indices, 1));
@@ -87,11 +95,11 @@ type Flight = {mesh: T.Mesh; from: number[]; to: number[]; start: number; edge: 
 export function createChips(scene: Scene) {
   const group = new T.Group(), geometry = chipGeometry(), owned: {dispose(): void}[] = [geometry];
   const keep = <O extends {dispose(): void}>(o: O) => { owned.push(o); return o; };
-  const looks = new Map<number, T.Material[]>();
+  const looks = new Map<number, T.MeshStandardMaterial[]>(); let rough = chipRoughness(CHIP_GLOSS);
   const materialsOf = (value: number): T.Material[] => {
     const look = lookOf(value), key = Number(look.value); let hit = looks.get(key);
-    if (!hit) { const print = keep(printTexture(look)), face = () => keep(scene.lit(new T.MeshStandardMaterial({map: print, roughness: 0.5, metalness: 0})));
-      hit = [face(), face(), keep(scene.lit(new T.MeshStandardMaterial({color: CHIP_COLOURS[look.colour].ink, roughness: 0.48, metalness: 0}))), keep(scene.lit(new T.MeshStandardMaterial({color: CHIP_PRINT.yellow, roughness: 0.48, metalness: 0})))]; looks.set(key, hit); }
+    if (!hit) { const print = keep(printTexture(look)), face = () => keep(scene.lit(new T.MeshStandardMaterial({map: print, roughness: rough.face, metalness: 0})));
+      hit = [face(), face(), keep(scene.lit(new T.MeshStandardMaterial({color: CHIP_COLOURS[look.colour].ink, roughness: rough.edge, metalness: 0}))), keep(scene.lit(new T.MeshStandardMaterial({color: CHIP_PRINT.yellow, roughness: rough.edge, metalness: 0})))]; looks.set(key, hit); }
     return hit;
   };
   const shade = keep(new T.MeshBasicMaterial({map: keep(shadowTexture()), transparent: true, depthWrite: false})), shadeGeometry = keep(new T.CircleGeometry(CHIP_RADIUS * 1.5, 24).rotateX(-Math.PI / 2));
@@ -153,6 +161,8 @@ export function createChips(scene: Scene) {
         flights.push({mesh, from: [start.x, start.y, start.s], to: [ring.x + FLIGHT.beside + rest.x, (index + 0.5) * CHIP_HEIGHT, ring.s + rest.z], start: now + i * FLIGHT.stagger, edge: [1, 0], turn: rest.turn, begun: false, begin: () => leave(value)}); });
       moving = true;
     },
+    /** The chips' gloss, 0 to 1 (chipRoughness); 0.5 is their look before. Chips on the table and chips made later both take it. */
+    setGloss(gloss: number) { rough = chipRoughness(gloss); for (const [face, back, edge, inlay] of looks.values()) { face.roughness = back.roughness = rough.face; edge.roughness = inlay.roughness = rough.edge; } },
     /** The winnings are taken off the table (a new round). */
     clearWinnings() { for (const stack of winnings.values()) for (const chip of stack) { group.remove(chip.mesh); const at = flights.findIndex(f => f.mesh === chip.mesh); if (at >= 0) flights.splice(at, 1); } winnings.clear(); },
     dispose() { for (const o of owned) o.dispose(); },
