@@ -103,6 +103,22 @@ test('a part waiting on the time of its last frame is not changed after dispose 
   }
 });
 
+// ---- the frame the queue reports (players.frame, step): the same rule as where a part ends --------------------------------
+test('every frame start in whole microseconds reads as its own frame, by the one rule, and players.frame follows it', async () => {
+  const {frameAtTime} = await import('../src/scene3d-film.ts');
+  for (let f = 0; f < 300; f++) { assert.equal(frameAtTime(at(f)), f, `frame ${f} at ${at(f)} s`); assert.equal(frameAtTime((f + 0.5) / 30), f); assert.equal(frameAtTime(at(f + 1) - 1e-4), f, `a tenth of a millisecond before frame ${f + 1}`); }
+  assert.equal(frameAtTime(Math.round(58 / 25 * 1e6) / 1e6, 25), 58, 'a film at its own rate');
+  const {players} = queue();
+  players.play([{path: 'a.mp4'}], {cut: true}); await settle();
+  const a = made[0], misread: number[] = [];
+  for (let f = 0; f < 60; f++) { a.currentTime = at(f); if (players.frame() !== f) misread.push(f); }
+  assert.deepEqual(misread, [], 'frames players.frame() read one too low');
+  a.currentTime = at(58); players.toggle(true); const stepped = players.step(1);
+  assert.equal(a.currentTime, (59 + 0.5) / 30, 'a step goes from frame 58, not 57');
+  a.dispatchEvent(new Event('seeked')); a.present(); await stepped; assert.equal(players.frame(), 59);
+  players.dispose();
+});
+
 test('a chain loaded with load() is taken down too, and a load that is still waiting never shows', async () => {
   const {players, seen} = queue();
   await players.load([{path: 'a.mp4', end: 30}, {path: 'b.mp4'}]); assert.equal(seen.shows, 1);

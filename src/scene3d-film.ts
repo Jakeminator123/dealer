@@ -256,6 +256,12 @@ export type Part = {path: string; start?: number; end?: number | null; rate?: nu
 export type PlayOptions = {loop?: boolean; cut?: boolean; onPart?: (index: number, part: Part) => void; onEnd?: () => void; onError?: (error: Error) => void};
 type Player = {part: Part; path: string; start: number; end: number | null; fps: number; video: HTMLVideoElement; texture: T.VideoTexture};
 const FPS = 30;
+/**
+ * The source frame a video time lies in: the one rule of the queue, for a presented frame's media time and for currentTime alike.
+ * A frame's media time comes in whole microseconds, so the start of frame 58 reads 1.933333 s, 57.99999 frames; the margin of a
+ * thousandth of a frame reads it as 58, and stays far below the half frame that a seek or a playing clock sits past a frame start.
+ */
+export const frameAtTime = (seconds: number, fps = FPS): number => Math.floor(seconds * fps + 1e-3);
 // One or more parts played as a chain, each on its own video element so the next one is decoded before it is shown.
 export function createPlayers(onShow: (texture: T.Texture, path: string) => void, onChange: () => void) {
   let players: Player[] = [], current = 0, paused = false, gone = false;
@@ -292,7 +298,7 @@ export function createPlayers(onShow: (texture: T.Texture, path: string) => void
     list.forEach((p, i) => {
       listen(p.video, 'ended', () => advance(list, i));
       if (p.end === null) return;
-      const last = p.end - 1, reached = (seconds: number) => Math.floor(seconds * p.fps + 1e-6) >= last;
+      const last = p.end - 1, reached = (seconds: number) => frameAtTime(seconds, p.fps) >= last;
       if (p.video.requestVideoFrameCallback) { const watch = (_now: number, frame: {mediaTime: number}) => { if (list !== players) return; if (reached(frame.mediaTime)) advance(list, i); frameCall(p.video, watch); }; frameCall(p.video, watch); }
       else listen(p.video, 'timeupdate', () => { if (reached(p.video.currentTime)) advance(list, i); });
     });
@@ -317,9 +323,7 @@ export function createPlayers(onShow: (texture: T.Texture, path: string) => void
   // While a queue plays, `parts`, `count`, `seek` and `step` describe the one part on screen.
   type Media = {path: string; video: HTMLVideoElement; texture: T.VideoTexture; busy: boolean; used: number; hook: ((mediaTime: number | null) => void) | null; fail: (() => void) | null};
   type Chain = {parts: Part[]; media: (Media | undefined)[]; options: PlayOptions};
-  // frameOf: a frame's media time comes in whole microseconds, so the start of frame 58 reads 1.933333 s, 57.99999 frames;
-  // the margin reads it as 58, and stays far below the half frame that a seek or a playing clock sits past a frame start.
-  const POOL = 8, LEAD_MS = 4, partStart = (part: Part) => ((part.start ?? 0) + 0.5) / (part.fps ?? FPS), frameOf = (seconds: number, part: Part) => Math.floor(seconds * (part.fps ?? FPS) + 1e-3);
+  const POOL = 8, LEAD_MS = 4, partStart = (part: Part) => ((part.start ?? 0) + 0.5) / (part.fps ?? FPS), frameOf = (seconds: number, part: Part) => frameAtTime(seconds, part.fps ?? FPS);
   let pool: Media[] = [], loaded: Player[] = [], used = 0, chain: Chain | null = null, waiting: Chain | null = null, entering: Chain | null = null, shown: Media | null = null, token = 0, held = false;
   function discard(m: Media) { pool = pool.filter(p => p !== m); m.hook = m.fail = null; drop(m.video, m.texture); }
   // An element for the path that nothing else is using; a new one if there is none. The pool is trimmed of the longest unused.
@@ -346,7 +350,7 @@ export function createPlayers(onShow: (texture: T.Texture, path: string) => void
   function enter(c: Chain, i: number, ended: boolean) {
     const my = ++token, part = c.parts[i], from = shown, onScreen = players[current], m = prime(c, i), v = m.video;
     if (entering && entering !== c && entering !== chain) forget(entering); entering = c;
-    if (from) { if (ended) { from.video.pause(); from.hook = null; } else { const last = onScreen ? (onScreen.end ?? Math.max(1, Math.round(onScreen.video.duration * onScreen.fps))) - 1 : Infinity; from.hook = time => { if (time === null || Math.floor(time * (onScreen?.fps ?? FPS) + 1e-6) >= last) from.video.pause(); }; } }
+    if (from) { if (ended) { from.video.pause(); from.hook = null; } else { const last = onScreen ? (onScreen.end ?? Math.max(1, Math.round(onScreen.video.duration * onScreen.fps))) - 1 : Infinity; from.hook = time => { if (time === null || frameAtTime(time, onScreen?.fps ?? FPS) >= last) from.video.pause(); }; } }
     const swap = () => {
       if (my !== token) return;
       const old = chain; shown = m; chain = c; entering = null; held = false; if (waiting === c) waiting = null;
@@ -412,13 +416,13 @@ export function createPlayers(onShow: (texture: T.Texture, path: string) => void
     },
     // Half a frame past the frame start, so the decoder lands on that frame and not the one before it.
     // Stays inside the part on screen.
-    step(frames: number) { const p = players[current]; if (!p) return Promise.resolve(); const last = (p.end ?? Math.max(1, Math.round(p.video.duration * p.fps))) - 1, frame = Math.max(p.start, Math.min(last, Math.floor(p.video.currentTime * p.fps + 1e-6) + frames)); return seek(current, (frame + 0.5) / p.fps); },
+    step(frames: number) { const p = players[current]; if (!p) return Promise.resolve(); const last = (p.end ?? Math.max(1, Math.round(p.video.duration * p.fps))) - 1, frame = Math.max(p.start, Math.min(last, frameAtTime(p.video.currentTime, p.fps) + frames)); return seek(current, (frame + 0.5) / p.fps); },
     get paused() { return paused; }, get path() { return players[current]?.path ?? ''; },
     // The video on screen and its texture, for a layer that draws on the film frame (rendered cards).
     get current() { const p = players[current]; return p ? {video: p.video, texture: p.texture} : null; }, get count() { return players.length; },
     // The chain as source frame ranges, end exclusive; for stepping through it frame by frame from outside.
     get parts() { return players.map(p => ({path: p.path, start: p.start, end: p.end ?? Math.round(p.video.duration * p.fps)})); },
-    // Source frame of the clip on screen: card tracks are indexed by it.
-    frame() { const p = players[current]; return p ? Math.floor(p.video.currentTime * p.fps + 1e-6) : 0; },
+    // Source frame of the clip on screen, by the queue's one rule (frameAtTime): card tracks are indexed by it.
+    frame() { const p = players[current]; return p ? frameAtTime(p.video.currentTime, p.fps) : 0; },
   };
 }
