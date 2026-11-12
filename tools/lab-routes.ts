@@ -1,11 +1,15 @@
-// The lab server's run-time modules as addresses: which TypeScript file in src/ (or materials/) is handed out as which
-// browser module, which three.js files are handed out under /vendor/, and how a module is made ready for the browser.
-// tools/preview.ts serves these; tools/build-studio-snapshot.ts freezes the same files for the studio's online copy.
-//
-// This is a copy of the maps in tools/preview.ts (lines 68-77, 2026-11-12), kept identical until preview.ts imports them from
-// here instead (the main agent's file; the change is proposed, not made). The snapshot build checks every module it takes
-// against the running server's own answer byte for byte, so a difference between the two copies stops the build.
+// The lab server's addresses and the files behind them: which page of the old lab (old-lab/) or the game (game/page/) is
+// handed out at which root address, which TypeScript file in src/ (or materials/) as which browser module, which three.js
+// files under /vendor/, and how a module is made ready for the browser. tools/preview.ts serves these;
+// tools/build-studio-snapshot.ts freezes the same modules for the studio's online copy and tools/build-public.ts reads the
+// pages from here. The snapshot build checks every module it takes against the running server's own answer byte for byte.
 import {stripTypeScriptTypes} from 'node:module';
+
+// The pages keep their root addresses although their files lie in folders, so that every relative reference inside them
+// (src="preview-ui.js", href="game.css", fetch('data/…'), ../preview.html in the material pages) resolves as before.
+// "/" is the old lab's first page (tools/preview.ts). tools/pages.test.ts checks this map against the folders.
+export const PAGES: Record<string, string> = {...Object.fromEntries(['lab.html', 'lab.css', 'scene3d.html', 'props.html', 'props.css', 'sound.html', 'sound.css', 'preview.html', 'generation.html'].map(name => [`/${name}`, `old-lab/${name}`])),
+  '/game.html': 'game/page/game.html', '/game.css': 'game/page/game.css'};
 
 export const SCRIPTS: Record<string, string> = {'/preview-ui.js': 'src/preview-ui.ts', '/lab-ui.js': 'src/lab-ui.ts', '/placement-model.js': 'src/placement-model.ts', '/clip-graph.js': 'src/clip-graph.ts', '/card-track.js': 'src/card-track.ts', '/card-overlay.js': 'src/card-overlay.ts', '/card-overlay-view.js': 'src/card-overlay-view.ts', '/scene-geometry.js': 'src/scene-geometry.ts', ...Object.fromEntries(['geometry', 'film', 'light', 'table', 'rail', 'props', 'cards', 'deal', 'room', 'hall', 'exit', 'cardlab', 'shift', 'view', 'ui'].map(name => [`/scene3d-${name}.js`, `src/scene3d-${name}.ts`])), ...Object.fromEntries(['page', 'overlay', 'view', 'film', 'director', 'table', 'chat', 'panel'].map(name => [`/game-${name}.js`, `src/game-${name}.ts`])), '/game3d-chips.js': 'src/game3d-chips.ts', '/game3d-props.js': 'src/game3d-props.ts', '/game3d-tray.js': 'src/game3d-tray.ts', '/props-lab.js': 'src/props-lab.ts', '/props-stage.js': 'src/props-stage.ts', '/lab-sound.js': 'src/lab-sound.ts', '/materials/source/src/card-material-study.js': 'materials/source/src/card-material-study.ts', '/materials/source/src/chip-material-study.js': 'materials/source/src/chip-material-study.ts'};
 

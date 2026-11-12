@@ -12,7 +12,7 @@ import {PRESET_BYTES} from '../studio/lib/scene-presets.ts';
 import {createSession,SessionError,type Session,type SessionOptions} from '../game/session.ts';
 import {tabRegistry,localPath,type Tab,type Reason} from './tab-registry.ts';
 import {resolveStudio} from './studio-files.ts';
-import {SCRIPTS as scripts,VENDOR as vendor,forBrowser} from './lab-routes.ts';
+import {SCRIPTS as scripts,VENDOR as vendor,PAGES as pages,forBrowser} from './lab-routes.ts';
 import {mediaRoles} from './media-roles.ts';
 import {UPLOAD_LIMIT} from '../studio/lib/media.ts';
 const port=4319,origin=`http://127.0.0.1:${port}`,state='.runtime/preview.json';
@@ -73,8 +73,9 @@ if(has('--restart')){
   spawn(command,list,{detached:true,stdio:'ignore'}).unref();console.log(`Öppnade labbfliken: ${origin}${target}`);
  }
 }else{
- const manifest=JSON.parse(await readFile('manifest.json','utf8'));
- const allowed=new Set(['preview.html','lab.html','lab.css','scene3d.html','game.html','game.css','props.html','props.css','data/props.json','sound.html','sound.css','generation.html','data/p4-generation-review.json','data/scene-contract.json','data/scene-rooms.json','assets/lab/native.jpg','assets/lab/portrait.jpg','assets/scene/room.png','assets/scene/panorama-vegas.jpg','assets/scene/panorama-la.jpg','assets/scene/panorama-skog.jpg',...['room-panorama','room-la','room-skog','room-hall','room-salong','dealer-pamela'].map(name=>`assets/scene/thumbs/${name}.jpg`),...['wood_table-diffuse','wood_table-nor_gl','wood_table-rough','brown_leather-nor_gl','brown_leather-rough','denim_fabric-nor_gl','denim_fabric-rough'].map(name=>`assets/scene/materials/${name}.webp`),'materials/kortmaterial.html','materials/markermaterial.html',...manifest.files.map((f:{path:string})=>f.path).filter((p:string)=>p.startsWith('assets/')||p.startsWith('materials/')||p.startsWith('output/v6/'))]);
+ const manifest=JSON.parse(await readFile('data/manifest.json','utf8'));
+ // The pages themselves (old-lab/, game/page/) are served at their root addresses through PAGES (tools/lab-routes.ts), below.
+ const allowed=new Set(['data/props.json','data/p4-generation-review.json','data/scene-contract.json','data/scene-rooms.json','assets/lab/native.jpg','assets/lab/portrait.jpg','assets/scene/room.png','assets/scene/panorama-vegas.jpg','assets/scene/panorama-la.jpg','assets/scene/panorama-skog.jpg',...['room-panorama','room-la','room-skog','room-hall','room-salong','dealer-pamela'].map(name=>`assets/scene/thumbs/${name}.jpg`),...['wood_table-diffuse','wood_table-nor_gl','wood_table-rough','brown_leather-nor_gl','brown_leather-rough','denim_fabric-nor_gl','denim_fabric-rough'].map(name=>`assets/scene/materials/${name}.webp`),'materials/kortmaterial.html','materials/markermaterial.html',...manifest.files.map((f:{path:string})=>f.path).filter((p:string)=>p.startsWith('assets/')||p.startsWith('materials/')||p.startsWith('output/v6/'))]);
  // The modules and vendor files the pages ask for, and how a module is made ready for the browser: tools/lab-routes.ts, which the
  // build of the online copy reads too (tools/build-studio-snapshot.ts), so that the copy serves exactly what this server serves.
  // Table props made by tools/prop-glb.ts: assets/props/<id>.glb, and only where the file really lies in that folder.
@@ -276,9 +277,11 @@ if(has('--restart')){
     if(studio.kind==='none'){res.writeHead(404).end();return;}
     file=studio.file;type=studio.type;
    }else{
-    file=url.pathname==='/'?'lab.html':decodeURIComponent(url.pathname.slice(1));
+    // A page of the old lab or the game: its root address ("/" is lab.html) maps to its file in old-lab/ or game/page/.
+    const name=url.pathname==='/'?'lab.html':decodeURIComponent(url.pathname.slice(1)),page=pages[`/${name}`];
+    file=page??name;
     // media.servable: a picture or film data/media-roles.json names (keystones, anchors and frames of the view Material), inside the repo and no link out of it.
-    if(!allowed.has(file)&&!await clipFile(file)&&!await trackFile(file)&&!await proofPath(file)&&!await sceneFile(file)&&!await propFile(file)&&!await media.servable(file)&&!(await library()).items.some((item:{path:string})=>item.path===file)){res.writeHead(404).end();return;}
+    if(!page&&!allowed.has(file)&&!await clipFile(file)&&!await trackFile(file)&&!await proofPath(file)&&!await sceneFile(file)&&!await propFile(file)&&!await media.servable(file)&&!(await library()).items.some((item:{path:string})=>item.path===file)){res.writeHead(404).end();return;}
     type=types[file.slice(file.lastIndexOf('.'))]??'application/octet-stream';
    }
    const size=await stat(file).then(s=>s.isFile()?s.size:-1,()=>-1);

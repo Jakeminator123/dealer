@@ -108,7 +108,7 @@ test("the V6 film: a reference of its own, the library's file, one part, only in
   const library = JSON.parse(readFileSync(new URL("../../data/library.json", import.meta.url), "utf8")) as { items: { id: string; path: string; fps: number; frameCount: number; width: number; height: number }[] };
   const item = library.items.find((i) => i.id === V6_FILM.id)!;
   assert.deepEqual({ path: item.path, fps: item.fps, frames: item.frameCount, width: item.width, height: item.height }, { path: V6_FILM.path, fps: V6_FILM.fps, frames: V6_FILM.frames, width: V6_FILM.width, height: V6_FILM.height });
-  const manifest = JSON.parse(readFileSync(new URL("../../manifest.json", import.meta.url), "utf8")) as { visualReference: { path: string } };
+  const manifest = JSON.parse(readFileSync(new URL("../../data/manifest.json", import.meta.url), "utf8")) as { visualReference: { path: string } };
   assert.equal(manifest.visualReference.path, V6_FILM.path);
   // /?runda=v6-filmen opens it, and the address it writes is that, without a view (it is always flat)
   assert.deepEqual(roundFromText("v6-filmen"), film);

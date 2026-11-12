@@ -723,7 +723,7 @@ test('the material panel gives every card the selected card\'s material in one u
 });
 
 test('every tab button of the lab opens its tab when it is clicked',async()=>{
- const html=await readFile('lab.html','utf8'),source=await readFile('src/lab-ui.ts','utf8');
+ const html=await readFile('old-lab/lab.html','utf8'),source=await readFile('src/lab-ui.ts','utf8');
  const tabs=[...html.matchAll(/<button id="(tab-[a-z]+)"/g)].map(m=>m[1]);
  assert.deepEqual(tabs,['tab-placement','tab-clipbank','tab-review','tab-proofs']);
  for(const id of tabs)assert.ok(source.includes(`$('${id}').addEventListener('click'`),`${id} has a click handler`);

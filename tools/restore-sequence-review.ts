@@ -10,7 +10,7 @@ if(path.resolve(process.cwd())!==root)throw Error('Run from dealer checkout.');
 const archive='D:/dealer-archive/snyggare-dealer';
 const hash=(b:Buffer)=>createHash('sha256').update(b).digest('hex');
 const audit=JSON.parse(await readFile('evidence/sequence-reuse-audit.json','utf8'));
-const manifestFile='manifest.json',manifestText=await readFile(manifestFile,'utf8'),manifest=JSON.parse(manifestText);
+const manifestFile='data/manifest.json',manifestText=await readFile(manifestFile,'utf8'),manifest=JSON.parse(manifestText);
 const now=new Date().toISOString();
 const imported=[] as {path:string;sha256:string;bytes:number;source:string;role:string}[];
 async function importFile(source:string,dest:string,expected:string,role:string){

@@ -2,7 +2,7 @@ import {readFile,mkdir,writeFile} from 'node:fs/promises';
 import {createHash} from 'node:crypto';
 import path from 'node:path';
 const digest=(b:Buffer)=>createHash('sha256').update(b).digest('hex');
-const manifest=JSON.parse(await readFile('manifest.json','utf8'));
+const manifest=JSON.parse(await readFile('data/manifest.json','utf8')); // its paths are relative to the repo root
 for(const file of manifest.files){
  const resolved=path.resolve(file.path);
  if(!resolved.startsWith(process.cwd()+path.sep))throw Error('Nonlocal input: '+file.path);

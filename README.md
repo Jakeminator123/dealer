@@ -2,6 +2,28 @@
 
 Självständig arbetsyta för en filmad dealer i Scoutgaming: två kort till sju spelare och en dealer, med trovärdig utdelning. Rörelserna är korta filmklipp mellan fasta ankare (vila, redo, kortets plats) i en klippbank; en runda är en väg genom klippen, och samma rundor spelas i labbet, i 3D-scenen och i spelet. V6 är Jakobs valda visuella referens och återskapas byteidentiskt. Scoutgaming äger regler, slump och kortvärden.
 
+Mapparna (omstruktureringens steg 1; resten flyttas i senare steg):
+
+```
+START.cmd STOPP.cmd STATUS.cmd   starta, stoppa och fråga labbservern på 127.0.0.1:4319
+README.md AGENTS.md HANDOFF.md   läs först
+studio/       studion: Jakobs arbetsyta i webbläsaren (Next.js)
+old-lab/      gamla labbets sidor (labbet, 3D-scen, Modeller, Ljud, Runway-underlaget), tills studion ersatt dem
+game/         spelet: Scouts regler oförändrade; spelsidan i game/page/ (reglerna flyttar till game/core/)
+src/          den delade motorn och sidornas kod: 3D-scen, klippgraf, kort, placering (byter namn i nästa steg)
+tools/        kommandon, labbservern (preview.ts) och testerna (*.test.ts); server och tester flyttar ut i nästa steg
+cloud/        studions onlinekopia: lås och bot (byter namn i nästa steg)
+materials/    kort- och markerprov
+data/         register: manifest.json (filernas SHA-256), klippjobb, scenkontrakt, filmkatalog
+motions/      en post per film med Jakobs dom
+placements/   Jakobs kortplan
+evidence/     verifieringskvitton
+docs/         SYSTEM och DRIFT
+assets/ output/ .runtime/        lokal media och lokala byggen, inte i Git
+```
+
+"Gamla labbet" betyder `old-lab/`. Det tidigare projektet på D: heter snyggare-dealer (arkivet). Sidorna har kvar sina adresser (`/lab.html`, `/game.html` …); bara filerna ligger i mappar.
+
 | Läsning | Innehåll |
 | --- | --- |
 | [AGENTS](AGENTS.md) | Arbetsregler för agenter. |
@@ -14,7 +36,7 @@ Självständig arbetsyta för en filmad dealer i Scoutgaming: två kort till sju
 - `motions/<clip-id>.json` är ensam källa för en films klassning och Jakobs beslut.
 - `data/clip-jobs.json` är klippbankens uppdrag: ankare, jobb, utsnitt och kredittak.
 - `placements/default.json` är Jakobs kortplan (16 kortplatser) och sparas från labbets Placering.
-- `manifest.json` registrerar filproveniens och SHA-256; `evidence/` innehåller verifieringskvitton.
+- `data/manifest.json` registrerar filproveniens och SHA-256 (sökvägarna i den räknas från repots rot); `evidence/` innehåller verifieringskvitton.
 - `data/library.json` är V6-tidens filmkatalog (V6, sekvenser, original och diagnostiska prov); beslut hämtas från `motions/`.
 
 Dokumenten länkar till dessa i stället för att föra egna statusregister. Media (`assets/`, `output/`), `.runtime/`, `.env*` och `private/` är lokala och Git-ignorerade.
@@ -46,5 +68,5 @@ Behåll JSON-register, manifest och webbläsarutkast. [Lagringsbedömningen](evi
 
 - Fyra hela historiska sekvenser, `pamela-sequence-{16,17}-{native,portrait}-r2`, är återställda som alternativ (Jakob: fel koordinater och format; produktionsacceptans PENDING): [återbruk](evidence/sequence-reuse-audit.json), [produktionskvitto](evidence/sequence-review-production.json), SYSTEM "Återbruk och införande".
 - P4.C2:s nyare original visar BACK→EDGE→FRONT; den gula `review-v04` bevisar inte CLOSED→CLOSED: [färggranskningens p4Followup](evidence/anchor-color-audit.json).
-- Promptar, start- och slutbilder och resultat för kontrollproven 10 november: [Runway-underlaget](generation.html). P4.C1-kontrollproven (`pamela-p4-c1-color-control-01` med WAN 3, `pamela-p4-c1-kling-control-01` med Kling 3.0 Pro) är underkända för fysisk vändning; besluten står i `motions/`.
+- Promptar, start- och slutbilder och resultat för kontrollproven 10 november: [Runway-underlaget](old-lab/generation.html). P4.C1-kontrollproven (`pamela-p4-c1-color-control-01` med WAN 3, `pamela-p4-c1-kling-control-01` med Kling 3.0 Pro) är underkända för fysisk vändning; besluten står i `motions/`.
 - Placeringslabbets grundkontroller: [evidence/placement-lab.json](evidence/placement-lab.json); vy- och nodkontroller: [evidence/plane-and-nodemap.json](evidence/plane-and-nodemap.json). V6:s små skuggor och fingermasker, och den senare bankens maskrättningar: [Astra-granskningen](evidence/astra-archive-mask-audit.json). Fynd från den externa granskningen: [granskningskvittot](evidence/external-review-triage.json).

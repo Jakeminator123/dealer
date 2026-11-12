@@ -5,6 +5,7 @@ import { stripTypeScriptTypes } from 'node:module';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { validatePlan } from '../src/placement-model.ts';
+import { PAGES } from './lab-routes.ts';
 
 const root = path.resolve(fileURLToPath(new URL('../', import.meta.url)));
 if (path.resolve(process.cwd()) !== root) throw Error('Run from the dealer checkout.');
@@ -85,16 +86,17 @@ for (const input of [generationReview.jobs[0].start, generationReview.jobs[0].en
   if (!previous) { await copy(input.path, input.path, input.sha256); copiedInputs.set(input.path, input.sha256); }
 }
 await copy('data/p4-generation-review.json');
-let generationHtml = await readFile('generation.html', 'utf8');
+// The pages lie in old-lab/ and go out at the same public paths as their lab addresses (tools/lab-routes.ts PAGES).
+let generationHtml = await readFile(path.join(root, PAGES['/generation.html']), 'utf8');
 generationHtml = generationHtml.replace('<script type="module" src="preview-ui.js"></script>', '');
 for (const item of library.items) generationHtml = generationHtml.replaceAll(item.sourcePath, item.path);
 await emit('generation.html', generationHtml);
-let html = await readFile(path.join(root, 'lab.html'), 'utf8');
+let html = await readFile(path.join(root, PAGES['/lab.html']), 'utf8');
 html = html.replace('<body>', '<body><div style="background:#30213f;color:#efeaf7;padding:8px 24px;font:13px Segoe UI,sans-serif">Publikt labb · Dina ändringar sparas bara i den här webbläsaren. Exportera en placeringsfil för att flytta dem till det lokala labbet.</div>')
   .replace('<script type="module" src="preview-ui.js"></script>', '')
   .replace('Sparas lokalt', 'Sparas i webbläsaren');
 await emit('index.html', html); await emit('lab.html', html);
-await copy('lab.css');
+await copy('lab.css', PAGES['/lab.css']);
 await compile('src/lab-ui.ts', 'lab-ui.js', "import { publicFetch as fetch } from './public-storage.js';\n");
 await compile('src/placement-model.ts', 'placement-model.js');
 await compile('src/public-storage.ts', 'public-storage.js');

@@ -1,0 +1,20 @@
+{
+  "files.exclude": {
+    "node_modules": true,
+    ".runtime": true,
+    "studio/.next": true,
+    "studio/out": true,
+    "studio/node_modules": true,
+    "studio/tsconfig.tsbuildinfo": true,
+    "studio/next-env.d.ts": true
+  },
+  "search.exclude": {
+    "node_modules": true,
+    ".runtime": true,
+    "studio/.next": true,
+    "studio/out": true,
+    "studio/node_modules": true,
+    "studio/tsconfig.tsbuildinfo": true,
+    "studio/next-env.d.ts": true
+  }
+}

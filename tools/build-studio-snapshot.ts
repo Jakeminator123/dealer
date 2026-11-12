@@ -193,7 +193,7 @@ for (const folder of ['app', 'components', 'lib']) for await (const text of stud
   for (const m of text.matchAll(/labModule(?:<[^>]*>)?\(\s*["']([a-z0-9-]+)(?:\.js)?["']/g)) roots.add(`/${m[1]}.js`);
   for (const m of text.matchAll(/["'`]\/?((?:api|data)\/[a-z0-9._/-]+)["'`]/g)) asked.add(m[1]);
 }
-const allowedMaterials = new Set((JSON.parse(await readFile(path.join(root, 'manifest.json'), 'utf8')).files as {path: string}[]).map(f => f.path).filter(p => p.startsWith('materials/')));
+const allowedMaterials = new Set((JSON.parse(await readFile(path.join(root, 'data/manifest.json'), 'utf8')).files as {path: string}[]).map(f => f.path).filter(p => p.startsWith('materials/')));
 const resolveSpecifier = (spec: string, from: string): string | null => {
   if (spec === 'three') return '/vendor/three.module.js';
   if (spec.startsWith('three/addons/')) return '/vendor/' + spec.slice('three/addons/'.length);
