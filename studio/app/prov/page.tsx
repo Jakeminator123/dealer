@@ -1,7 +1,12 @@
-// A stand-in until the Prov view is built (another builder replaces this file).
-import { FlaskConical } from "lucide-react";
-import { ComingSoon } from "@/components/shell";
+// Prov (/prov/?prov=<folder>&fil=<file>): the proof room: proof folders newest first, one proof open with its films and pictures.
+import { Suspense } from "react";
+import { ProofsView } from "@/components/proofs";
+import { Page } from "@/components/shell";
 
 export default function Prov() {
-  return <ComingSoon title="Prov" icon={<FlaskConical />} />;
+  return (
+    <Suspense fallback={<Page title="Prov" />}>
+      <ProofsView />
+    </Suspense>
+  );
 }

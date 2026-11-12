@@ -1,7 +1,12 @@
-// A stand-in until the Granska view is built (another builder replaces this file).
-import { ScanEye } from "lucide-react";
-import { ComingSoon } from "@/components/shell";
+// Granska (/granska/?tagning=<id>, ?vy=alla): the takes that wait for Jakob's word, one at a time and large.
+import { Suspense } from "react";
+import { ReviewView } from "@/components/review";
+import { Page } from "@/components/shell";
 
 export default function Granska() {
-  return <ComingSoon title="Granska" icon={<ScanEye />} />;
+  return (
+    <Suspense fallback={<Page title="Granska" />}>
+      <ReviewView />
+    </Suspense>
+  );
 }
