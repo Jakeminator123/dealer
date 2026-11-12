@@ -117,6 +117,7 @@ Arbetet (session `dealer-82`) ligger utanför Git i `D:/dealer-scratch/tmp/paow/
 
 - **Labbet först** (2026-11-11, två gånger): prov och effekter hör hemma i labbets sidor. Spelet (`game.html`) är ett mellansteg mot Scout och får bara det han har godkänt i labbet.
 - **Naturligt utseende:** ljus ska komma ur rummet (rumsstudiens teknik: panoramat som ljuskälla, skuggor i världens koordinater), inte målade sken. Relingens ljuslinje är därför borttagen.
+- **Kortet ur skon (2026-11-12):** "Ett kort ska tas som det ser ut i skon (inte den konstiga bild som har ett kort som är kort och tjockt). Sedan ska handen vrida kortet." Läst av huvudagenten: förlagan är fönsterskons kort i ankarna, inte skoplåtsfilmens (`pamela-ready-b-shoe-plate-01`, underkänd), och vilken kant kortet vänds kring ska bedömas utifrån hur kortet sitter i skon och i handen, inte i bilden.
 - **Ett kortformat:** kortet på plats 4 är standard och allt annat anpassar sig ("Storleken är inte problemet, utan att det finns olika format"). Kontraktet står i SYSTEM.
 - **En film per plats** (2026-11-11): platsens andra kort spelar första kortets filmer med det renderade kortet flyttat. En film lägger ett kort.
 - **Underlag till nya filmer:** bara tagningar han har godkänt rakt av, inte varianter. Allt görs i bankens format; Astrids och Kevins stående material används inte som referens.
