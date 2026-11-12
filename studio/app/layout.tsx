@@ -1,9 +1,20 @@
 import type { Metadata } from "next";
+import { Shell } from "../components/shell/Shell";
 import "./globals.css";
+
+// The tab's icon: the rail's brass card, inline (no file to hand out, and no request for /favicon.ico).
+const icon =
+  "data:image/svg+xml," +
+  encodeURIComponent(
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><rect width="32" height="32" rx="7" fill="#121815"/>' +
+      '<g transform="rotate(-8 16 16)" fill="none" stroke="#D9B96A" stroke-width="2"><rect x="8.5" y="5.5" width="15" height="21" rx="2.5"/></g>' +
+      '<path d="M16 11.2 19.6 16 16 20.8 12.4 16Z" fill="#D9B96A" transform="rotate(-8 16 16)"/></svg>',
+  );
 
 export const metadata: Metadata = {
   title: "Dealer · Studio",
   description: "Dealerns studio: filmer, nodkarta, granskning och scen.",
+  icons: { icon },
 };
 
 // The 3D scene is the lab's own modules, read from the lab server as they are (src/scene3d-*.ts, see lib/lab.ts). Two
@@ -29,8 +40,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <base href="/" />
         <script type="importmap" dangerouslySetInnerHTML={{ __html: JSON.stringify(importMap) }} />
       </head>
-      <body className="min-h-full">
-        {children}
+      <body className="h-full overflow-hidden">
+        {/* The rail and every view (components/shell): one bank, one tooltip and one toast provider for all of them. */}
+        <Shell>{children}</Shell>
         {/* The lab's one tab (src/preview-ui.ts): the studio is a lab page like the others, and its open stream keeps the lab server up. */}
         <script type="module" src="/preview-ui.js" />
       </body>

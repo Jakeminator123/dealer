@@ -39,3 +39,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# the one-build-at-a-time lock (scripts/build.mjs)
+/.next-build.lock/

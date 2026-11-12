@@ -24,6 +24,13 @@ export async function resolveStudio(pathname:string,out='studio/out'):Promise<St
  const folder=wanted===''||wanted.endsWith('/');
  const file=await inside(folder?wanted+'index.html':wanted);
  if(file&&await isFile(file)){const type=STUDIO_TYPES[path.extname(file).toLowerCase()];return type?{kind:'file',file,type}:{kind:'none'};}
+ // A view's prefetch file: the page asks for "karta/__next.karta.__PAGE__.txt", and the export writes the same segments as
+ // folders, "karta/__next.karta/__PAGE__.txt". Without this every change of view would be a whole page load.
+ const at=wanted.lastIndexOf('/')+1,parts=wanted.slice(at).replace(/\.txt$/,'').split('.');
+ if(wanted.endsWith('.txt')&&parts[0]==='__next'&&parts.length>=3){
+  const nested=await inside(`${wanted.slice(0,at)}__next.${parts[1]}/${parts.slice(2).join('/')}.txt`);
+  if(nested&&await isFile(nested))return {kind:'file',file:nested,type:STUDIO_TYPES['.txt']};
+ }
  if(!folder){const index=await inside(wanted+'/index.html');if(index&&await isFile(index))return {kind:'redirect',to:pathname+'/'};}
  return {kind:'none'};
 }

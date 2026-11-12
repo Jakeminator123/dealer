@@ -28,6 +28,18 @@ test('pages and their files are found, a folder by its index page',async()=>{
  }finally{await rm(root,{recursive:true,force:true});}
 });
 
+test('a view\'s prefetch file is found where the export wrote it, as folders',async()=>{
+ const {root,out}=await built();
+ try{
+  await mkdir(path.join(out,'karta/__next.karta'),{recursive:true});await writeFile(path.join(out,'karta/__next.karta/__PAGE__.txt'),'rsc');
+  const found=await resolveStudio('/studio/karta/__next.karta.__PAGE__.txt',out);
+  assert.ok(found.kind==='file'&&found.file.endsWith(path.join('__next.karta','__PAGE__.txt')));
+  assert.equal(found.kind==='file'&&found.type,'text/plain; charset=utf-8');
+  assert.equal((await resolveStudio('/studio/karta/__next.saknas.__PAGE__.txt',out)).kind,'none');
+  assert.equal((await resolveStudio('/studio/karta/__next...%2f..%2fsecret.txt',out)).kind,'none');
+ }finally{await rm(root,{recursive:true,force:true});}
+});
+
 test('an address without its closing slash is sent to the one with it',async()=>{
  const {root,out}=await built();
  try{
