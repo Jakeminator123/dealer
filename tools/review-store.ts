@@ -21,7 +21,7 @@ export function validateChange(value: unknown): ReviewChange {
   return {decision: value.decision as Decision, note: note.replace(/\s+/g, ' ').trim()};
 }
 
-/** The review block after a decision. Only decision, acceptedAs, userReview and userAccepted are touched. */
+/** The review block after a decision. Only decision, acceptedAs, userReview, userAccepted and inbox are touched. */
 export function applyChange(review: unknown, change: ReviewChange, date: string, reviewer = 'Jakob'): Record<string, unknown> {
   const next: Record<string, unknown> = {...(object(review) ? review : {})};
   const accepted = change.decision === 'ACCEPTED' || change.decision === 'VARIANT' || change.decision === 'MAIN';
@@ -31,6 +31,7 @@ export function applyChange(review: unknown, change: ReviewChange, date: string,
   if (change.decision === 'VARIANT' || change.decision === 'MAIN') next.acceptedAs = change.decision; else delete next.acceptedAs;
   // A reset takes away what marks the film as decided: his word. It then waits for his decision again.
   if (change.decision === 'PENDING') delete next.userReview; else next.userReview = `${reviewer} ${date}: ${change.note || SAID[change.decision]}`;
+  if (change.decision !== 'PENDING') delete next.inbox; // a take from an order leaves the inbox (src/clip-graph.ts) with his decision
   next.userAccepted = accepted;
   return next;
 }

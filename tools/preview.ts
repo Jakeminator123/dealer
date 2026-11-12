@@ -16,6 +16,7 @@ import {SCRIPTS as scripts,VENDOR as vendor,PAGES as pages,forBrowser} from './l
 import {mediaRoles} from './media-roles.ts';
 import {handleOrders} from './order-routes.ts';
 import {UPLOAD_LIMIT} from '../studio/lib/media.ts';
+import {dealersOf} from '../src/clip-graph.ts';
 const port=4319,origin=`http://127.0.0.1:${port}`,state='.runtime/preview.json';
 const args=process.argv.slice(2),has=(flag:string)=>args.includes(flag);
 // The same checkout, whatever case the shell wrote the drive letter in (Git Bash and PowerShell differ on Windows).
@@ -133,7 +134,8 @@ if(has('--restart')){
    const present=async(name:string)=>await confined(job.id,name)?`${dir}/${name}`:null;
    media[job.id]={video:await present('source.mp4'),reversed:await present('source-reversed.mp4'),first:await present('first.png'),last:await present('last.png'),...await tracking(job.id)};
   }));
-  return {schemaVersion:1,readable:!!file,budget:file?.budget??null,jobs,derived,edits,motions,receipts,media,revisions};
+  // dealers: whose each take is (absent in the job file = Pamela's), by the same rule buildGraph keeps one dealer's takes with.
+  return {schemaVersion:1,readable:!!file,budget:file?.budget??null,jobs,derived,edits,motions,receipts,media,revisions,dealers:dealersOf({jobs,derived,edits} as never)};
  };
  // One session per table name (?table=…, "main" when none): a second tab or a test plays its own table and leaves the first alone.
  const games=new Map<string,Session>(),tableName=(url:URL)=>{const name=url.searchParams.get('table')??'main';return /^[a-z0-9-]{1,40}$/.test(name)?name:null;};

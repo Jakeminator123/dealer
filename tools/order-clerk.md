@@ -68,16 +68,19 @@ Place all takes of all orders first, then collect.
 
 ## 4. Collect
 Poll `get_task` per task every 60–120 s (a background `sleep 90`, or sleeps of at most 25 s). Give a task 25 minutes.
-- SUCCEEDED: `node tools/order-put.ts status <id> <n> KLAR`. Download the result with a script file
-  (`curl -sS -o "assets/orders/<id>/tagning-<n>.<mp4|png>" '<URL verbatim>'`). This file is **the original: it is never
-  changed**. Then `node tools/order-put.ts status <id> <n> HÄMTAD --file assets/orders/<id>/tagning-<n>.<ext>` (it keeps the
-  hash). For a film: `ffprobe -v error -select_streams v:0 -show_entries stream=width,height,r_frame_rate,nb_frames -of csv=p=0 <file>`.
+- SUCCEEDED: `node tools/order-put.ts status <id> <n> KLAR`. Fetch the result into the take's own folder,
+  `assets/orders/<id>/take-<n>/source.<mp4|png>`, from a script file (the address has `&` in it). A film:
+  `node tools/order-collect.ts <id> <n> --url '<URL verbatim>'` hashes and probes it, writes `fetched.json` beside it, never
+  writes the signed address and prints the next commands. A still:
+  `curl -sS -o "assets/orders/<id>/take-<n>/source.png" '<URL verbatim>'`. This file is **the original: it is never
+  changed**. Then `node tools/order-put.ts status <id> <n> HÄMTAD --file assets/orders/<id>/take-<n>/source.<ext>` (it keeps the
+  hash).
 - FAILED: `node tools/order-put.ts status <id> <n> MISSLYCKAD --note "<reason verbatim>"`.
 
 ## 5. After-work (what has held)
 The scripts still live in `D:/dealer-scratch/tmp/paow/skript/` until they are ported to `src/film-after.ts` +
 `tools/film-after.ts`. Python: `D:/dealer-scratch/tmp/filmagent/py/venv/Scripts/python.exe -I <script> …`. Write beside the
-original, never over it: `tagning-<n>-efter.<ext>`. Then `status … EFTERARBETAD --file <that file>`.
+original, never over it: `take-<n>/after.<ext>`. Then `status … EFTERARBETAD --file <that file>`.
 - **A film:** `efterarbete.py <film> <anchor.png> <out.mp4> [--keep-tail] [--fps 24] [--lock <first.png>]` cuts WAN 3's two
   darkening last frames, brings every frame's green to the anchor's level and a Kling 4 film to 1764 × 1174 (Kling: `--fps 24`,
   sound dropped). `slutkoll.py <film> <last.png>` says whether the film ends in its end picture (the last frames' change and
@@ -90,12 +93,18 @@ original, never over it: `tagning-<n>-efter.<ext>`. Then `status … EFTERARBETA
 
 ## 6. Granska och laga (Jakob 2026-11-12)
 Look at every frame of every take yourself in full size, and fix what is easy to fix; leave what is hard.
-- **The original is never changed.** A fixed copy is written beside it, `tagning-<n>-lagad.<ext>`, and both are shown to
-  Jakob side by side (a proof folder `assets/proofs/<id>/` with both, made by the main agent or by you on its word).
+- **The original is never changed.** A fixed copy is written beside it, `take-<n>/fixed-<k>.mp4` with `fix-receipt-<k>.json`
+  and `fix-strip-<k>.png`, and both are shown to Jakob side by side (a proof folder `assets/proofs/<id>/` with both, made by
+  the main agent or by you on its word).
 - Easy, fix it: a few frames that are wrong, some 20 pixels wrong on one frame, a background colour off by a level on every
   background pixel (0,0,254 that should be 0,0,255). Hard, do not try: a human motion that is wrong. Mark it instead.
-- Use `tools/film-fix.ts` and its review template when they exist (another builder makes them). Until then: only the
-  after-work of step 5, and say what you would have fixed.
+- The review comes first: an independent reviewer (a subagent that did not order the film) follows `tools/film-review.md`
+  and writes the list of faults, each LAGBAR or not, with the fix list as JSON. Then `node tools/film-fix.ts <film.mp4>
+  <fixes.json>` writes the fixed copy; a list beyond the limits (src/film-fix.ts) is refused whole and nothing is written. The
+  fixed copy is a film of its own and is reviewed again.
+- Into the bank, waiting for Jakob in the inbox: `node tools/register-order.ts <id> <n> [--split <frame>]` for the delivered
+  film, and `node tools/register-order.ts <id> <n> --fixed <k>` for a fixed copy (`--dry` says what would be written). It
+  never writes over a take Jakob has decided on.
 
 ## 7. Measure
 Then `status … MÄTT`. Every measure is written in the report; a take outside a limit is **marked, not hidden**.

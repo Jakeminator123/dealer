@@ -6,6 +6,7 @@ import * as graph from '../src/clip-graph.ts';
 import type {BankData, BankJob, MotionRecord} from '../src/clip-graph.ts';
 import {TARGETS as PLAN_TARGETS, defaultPlan, toPixels} from '../src/placement-model.ts';
 import {validateJob} from '../src/clip-job.ts';
+import {applyChange} from './review-store.ts';
 
 const sha = 'a'.repeat(64), ready = {file: {path: 'assets/motions/pamela-p4-c1-color-control-01/start.png', sha256: sha}};
 const video = (id: string) => `assets/motions/${id}/source.mp4`;
@@ -362,6 +363,8 @@ test('the tree is laid out like the table: P1 far left, P7 far right, the dealer
 test('every tracked job is shown: known nodes map to model edges, unknown nodes land in the experiment group', async () => {
   const file = JSON.parse(await readFile('data/clip-jobs.json', 'utf8')), motions: Record<string, MotionRecord> = {};
   for (const name of await readdir('motions')) if (name.endsWith('.json')) motions[name.slice(0, -5)] = JSON.parse(await readFile(`motions/${name}`, 'utf8'));
+  // The graph is Pamela's: another dealer's jobs in the same file are hers to show.
+  file.jobs = file.jobs.filter((j: BankJob) => (j.dealer ?? graph.DEALER) === graph.DEALER);
   const g = graph.buildGraph({jobs: file.jobs, budget: file.budget, motions});
   assert.deepEqual(g.unplaced, []);
   assert.equal(Object.keys(g.takes).length, file.jobs.length);
@@ -563,7 +566,10 @@ test('the real job file in seat mode: 33 needed films, every entry placed, and e
   const file = JSON.parse(await readFile('data/clip-jobs.json', 'utf8')), motions: Record<string, MotionRecord> = {};
   for (const name of await readdir('motions')) if (name.endsWith('.json')) motions[name.slice(0, -5)] = JSON.parse(await readFile(`motions/${name}`, 'utf8'));
   const g = graph.buildGraph({jobs: file.jobs, derived: file.derived, edits: file.edits, budget: file.budget, motions}), f = g.summary.films;
-  assert.deepEqual(g.unplaced, []); assert.equal(Object.keys(g.takes).length, file.jobs.length + (file.derived ?? []).length + (file.edits ?? []).length);
+  // Every entry is placed in its dealer's graph; this one is Pamela's.
+  const owner = graph.dealersOf(file), hers = (list?: {id: string}[]) => (list ?? []).filter(x => owner[x.id] === graph.DEALER).length;
+  assert.deepEqual(g.unplaced, []); assert.equal(Object.keys(g.takes).length, hers(file.jobs) + hers(file.derived) + hers(file.edits));
+  for (const dealer of new Set(Object.values(owner))) assert.deepEqual(graph.buildGraph({jobs: file.jobs, derived: file.derived, edits: file.edits, motions}, {dealer}).unplaced, [], dealer);
   // The numbers move as films arrive; what holds is how they add up.
   assert.equal(f.mode, 'SEAT'); assert.equal(f.total, 33); assert.equal(f.done + f.missing, f.total); assert.equal(f.candidates + f.flaws, f.done); assert.equal(g.summary.total, 54);
   // The archive's turn of the hole card is a take of the model's edge, not an experiment.
@@ -798,4 +804,159 @@ test('the idle picker: weighted, never the same clip twice in a row, three calm 
   // What is played of a clip, and how the idle is left to deal.
   assert.deepEqual(graph.idleRange(120), {start: 3, end: 117}); assert.deepEqual(graph.idleRange(4), {start: 3, end: 4});
   assert.equal(graph.idleExit(g.takes[loop]), 'CUT'); assert.equal(graph.idleExit(g.takes[smile]), 'FINISH_FAST'); assert.equal(graph.IDLE_RULE.exitRate, 2.5);
+});
+
+// ── Dealers ─────────────────────────────────────────────────────────────────
+// The seat bank above for Pamela, and Paow's takes in the same file: Jakob's word on hers (a Primär, an accepted deal) would win on
+// Pamela's edges if the two ever mixed. Her derived take and her corrected copy name no dealer: they are hers by their film.
+const paowReady = {file: {path: 'assets/anchors/paow-ready-01/anchor.png', sha256: sha}};
+function twoDealers(): BankData {
+  const data = bank(), paow = (id: string, from: string, to: string, extra: Partial<BankJob> = {}) => job(id, from, to, {dealer: 'paow', first: paowReady, ...extra});
+  const hers = [paow('paow-p4-c1-plan-deal-01', 'READY', 'LAND(P4.C1)'), paow('paow-p4-c1-plan-return-ready-01', 'LAND(P4.C1)', 'READY', from('paow-p4-c1-plan-deal-01', 90)), paow('paow-p1-c1-plan-deal-01', 'READY', 'LAND(P1.C1)')];
+  data.jobs!.push(...hers);
+  data.derived = [{id: 'paow-p4-c1-plan-deal-01-cut', kind: 'DEAL', from: 'READY', to: 'LAND(P4.C1)', clip: 'paow-p4-c1-plan-deal-01', frames: [0, 80]}];
+  data.edits = [{id: 'paow-p1-c1-plan-deal-01-edit-01', source: {clip: 'paow-p1-c1-plan-deal-01', sha256: sha}, model: 'aleph2', promptText: 'A corrected copy.', purpose: 'fixture'}];
+  data.motions!['paow-p4-c1-plan-deal-01'] = done('ACCEPTED', {review: {decision: 'ACCEPTED', acceptedAs: 'MAIN'}});
+  data.motions!['paow-p4-c1-plan-return-ready-01'] = done('ACCEPTED', {review: {decision: 'ACCEPTED', acceptedAs: 'MAIN'}});
+  data.motions!['paow-p1-c1-plan-deal-01'] = done('ACCEPTED');
+  for (const id of [...hers.map(j => j.id), 'paow-p1-c1-plan-deal-01-edit-01']) { data.receipts![id] = {status: 'SUCCEEDED', estimatedCredits: 80}; data.media![id] = {video: video(id)}; }
+  data.media!['paow-p4-c1-plan-deal-01-cut'] = {video: video('paow-p4-c1-plan-deal-01')};
+  return data;
+}
+
+test('two dealers share the job file but never a graph; a take without a dealer field is Pamela\'s', () => {
+  const data = twoDealers(), owner = graph.dealersOf(data);
+  assert.equal(owner['pamela-p4-c1-plan-deal-02'], 'pamela'); assert.equal(owner['paow-p4-c1-plan-deal-01'], 'paow');
+  assert.equal(owner['paow-p4-c1-plan-deal-01-cut'], 'paow', 'a derived take is the dealer\'s whose film it is cut from');
+  assert.equal(owner['paow-p1-c1-plan-deal-01-edit-01'], 'paow', 'a corrected copy is the dealer\'s whose clip it corrects');
+  assert.deepEqual(graph.dealersOf({derived: [{id: 'x-01', from: 'READY', to: 'P4.C1', clip: 'old-film', frames: [0, 9]}], edits: [{id: 'y-01', source: {clip: 'gone'}}]}), {'x-01': 'pamela', 'y-01': 'pamela'});
+  const pamela = graph.buildGraph(data), paow = graph.buildGraph(data, {dealer: 'paow'});
+  assert.equal(pamela.dealer, 'pamela'); assert.equal(paow.dealer, 'paow'); assert.deepEqual([pamela.unplaced, paow.unplaced], [[], []]);
+  assert.deepEqual(Object.keys(paow.takes).sort(), ['paow-p1-c1-plan-deal-01', 'paow-p1-c1-plan-deal-01-edit-01', 'paow-p4-c1-plan-deal-01', 'paow-p4-c1-plan-deal-01-cut', 'paow-p4-c1-plan-return-ready-01']);
+  assert.ok(Object.keys(pamela.takes).every(id => id.startsWith('pamela-')), 'none of Paow\'s takes in Pamela\'s graph');
+  assert.ok(Object.values(paow.takes).every(t => t.dealer === 'paow') && Object.values(pamela.takes).every(t => t.dealer === 'pamela'));
+  assert.equal(paow.takes['paow-p1-c1-plan-deal-01-edit-01'].editOf, 'paow-p1-c1-plan-deal-01');
+  // Her own graph: her Primär plays at seat 4 and her accepted deal at seat 1; nothing of Pamela's fills her gaps.
+  assert.deepEqual(graph.resolveRound(paow, graph.parseSequence('READY>P4.C1 | P4.C1>READY | READY>P1.C1 | P1.C1>READY').steps).map(s => [s.take?.id ?? null, s.why, s.gap]),
+    [['paow-p4-c1-plan-deal-01', 'PRIMARY', null], ['paow-p4-c1-plan-return-ready-01', 'PRIMARY', null], ['paow-p1-c1-plan-deal-01', 'MAIN', null], [null, 'GAP', 'MISSING']]);
+  // A round in her graph that names one of Pamela's takes cannot play it.
+  const named = graph.resolveRound(paow, [{from: 'READY', to: 'P4.C1', take: 'pamela-p4-c1-plan-deal-02'}])[0];
+  assert.equal(named.take?.id, 'paow-p4-c1-plan-deal-01'); assert.match(named.notes.join(' '), /kan inte spelas här/);
+  assert.deepEqual(Object.keys(graph.buildGraph(data, {dealer: 'nobody'}).takes), []);
+});
+
+test('a Paow take, even one Jakob made Primär, does not move Pamela\'s main take, her round or her counts', () => {
+  const alone = graph.buildGraph(bank()), mixed = graph.buildGraph(twoDealers()), steps = graph.roundSequence({seats: graph.SEATS, reveal: true});
+  const mains = (g: graph.Graph) => [...g.edges, ...g.experiments].map(e => [e.id, e.main?.id ?? null, e.status, e.variants.map(t => t.id), e.inProgress]);
+  const round = (g: graph.Graph) => graph.resolveRound(g, steps).map(s => [s.id, s.take?.id ?? null, s.why, s.start, s.end, s.cut, s.gap, s.notes]);
+  assert.deepEqual(mains(mixed), mains(alone)); assert.deepEqual(round(mixed), round(alone)); assert.deepEqual(mixed.summary, alone.summary);
+  assert.deepEqual(mixed.takes['pamela-p4-c1-plan-deal-02'].landingFrame, alone.takes['pamela-p4-c1-plan-deal-02'].landingFrame);
+});
+
+test('a job draft is written for the graph\'s dealer: her ids, her anchors, her own takes as wording, her name and look in the text', () => {
+  const look = 'a young, slim, petite woman with a platinum-blonde chin-length bob, in a black tailored blazer over a cream V-neck top';
+  const g = graph.buildGraph(twoDealers(), {dealer: 'paow'}), profile = {id: 'paow', name: 'Paow', look, prefix: 'paow-'};
+  const deal = graph.draftJob(g, 'READY>P2.C1', {dealer: profile})!;
+  assert.deepEqual([deal.job.id, deal.job.dealer, deal.basedOn], ['paow-p2-c1-plan-deal-01', 'paow', 'paow-p1-c1-plan-deal-01']);
+  assert.deepEqual(deal.job.first, paowReady); assert.equal(deal.job.last?.file?.path, 'assets/anchors/paow-p2-c1-plan-land-01/anchor.png');
+  assert.equal(graph.draftJob(g, 'P4.C1>IDLE', {dealer: profile})!.job.id, 'paow-p4-c1-plan-return-idle-01');
+  // Without a profile the graph's dealer still decides: her id as her name, no look, her anchors.
+  const entry = graph.draftJob(g, 'IDLE>READY')!;
+  assert.equal(entry.job.id, 'paow-idle-ready-entry-01'); assert.equal(entry.job.dealer, 'paow');
+  assert.match(entry.job.promptText, /^Locked camera on the same Paow, green felt and fixed shoe\./); assert.doesNotMatch(entry.job.promptText, /Pamela/);
+  assert.deepEqual([entry.job.first.file?.path, entry.job.last?.file?.path], ['assets/anchors/paow-idle-empty-01/anchor.png', paowReady.file.path]);
+  assert.match(graph.draftJob(g, 'IDLE>READY', {dealer: profile})!.job.promptText, /^Locked camera on the same Paow, a young, slim, petite woman .* V-neck top, green felt and fixed shoe\./);
+  for (const id of ['READY>D.C2', 'IDLE>REVEAL(D.C2)', 'AWAY>IDLE', 'IDLE>AWAY', 'IDLE>IDLE', 'READY>IDLE']) {
+    const d = graph.draftJob(g, id, {dealer: profile})!.job;
+    assert.ok(d.id.startsWith('paow-'), id); assert.doesNotMatch(d.promptText, /Pamela/, id);
+    for (const ref of [d.first, d.last]) if (ref?.file) assert.match(ref.file.path, /^assets\/anchors\/paow-/, id);
+  }
+  // Pamela's drafts are what they were: no dealer field, her own words.
+  const hers = graph.draftJob(graph.buildGraph(twoDealers()), 'IDLE>READY')!;
+  assert.deepEqual([hers.job.id, hers.job.dealer], ['pamela-idle-ready-entry-01', undefined]); assert.match(hers.job.promptText, /^Locked camera on the same Pamela, black suit, green felt/);
+});
+
+// ── The inbox ───────────────────────────────────────────────────────────────
+// A take from an order (tools/register-order.ts) comes in with review.inbox: it may not push aside anything Jakob has seen.
+const inbox = (extra: MotionRecord = {}): MotionRecord => done('PENDING', {...extra, review: {decision: 'PENDING', inbox: true}});
+function inboxBank(): BankData {
+  const data = primaryBank(), add = (j: BankJob, record: MotionRecord) => { data.jobs!.push(j); data.motions![j.id] = record; data.media![j.id] = {video: video(j.id)}; };
+  add(job('p4-deal-03', 'READY', 'LAND(P4.C1)'), inbox());                                                         // a new deal beside the accepted one
+  add(job('p4-back-ready-03', 'LAND(P4.C1)', 'READY', from('p4-deal-03', 100)), inbox());                          // its own return
+  add(job('p4-back-idle-02', 'LAND(P4.C1)', 'IDLE', from('p4-deal-02', 110)), inbox());                            // continues the main deal, where only a variant does today
+  add(job('p7-deal-01', 'READY', 'LAND(P7.C1)'), inbox());                                                         // the only film of its step
+  return data;
+}
+
+test('a take in the inbox ranks below a variant and plays only where its step has no other film', () => {
+  const before = graph.buildGraph(primaryBank()), g = graph.buildGraph(inboxBank()), mains = (x: graph.Graph) => x.edges.filter(e => e.main).map(e => [e.id, e.main!.id, e.status]);
+  assert.ok(g.takes['p4-deal-03'].inbox && !g.takes['p4-deal-02'].inbox);
+  // Every main take Jakob has seen stays; seat 7, with nothing else, plays its new deal as unreviewed.
+  const order = (id: string) => g.edges.findIndex(e => e.id === id);
+  assert.deepEqual(mains(g), [...mains(before), ['READY>P7.C1', 'p7-deal-01', 'UNREVIEWED']].sort((a, b) => order(a[0]) - order(b[0])));
+  assert.equal(g.edge['P4.C1>IDLE'].main?.id, 'p4-back-idle-01', 'the variant stays, although the new return continues the main deal');
+  // A new return does not move the frame the main deal is cut at.
+  assert.deepEqual([g.takes['p4-deal-02'].landingFrame, g.takes['p4-deal-02'].landingConflict], [104, false]);
+  const steps = graph.roundSequence({seats: ['P4', 'P7'], dealer: false}), was = graph.resolveRound(before, steps).map(s => s.take?.id ?? null);
+  assert.deepEqual(graph.resolveRound(g, steps).map(s => s.take?.id ?? null), was.map((id, i) => steps[i].to === 'P7.C1' || steps[i].to === 'P7.C2' ? 'p7-deal-01' : id));
+  // A round that names the new takes plays them, its own return with it, without a seam.
+  const named = graph.resolveRound(g, graph.parseSequence('READY>P4.C1@p4-deal-03 | P4.C1>READY@p4-back-ready-03').steps);
+  assert.deepEqual(played(named), [['READY>P4.C1', 'p4-deal-03', 'LOCKED', 100, 'FRAME'], ['P4.C1>READY', 'p4-back-ready-03', 'LOCKED', null, null]]); assert.ok(named.every(s => !s.notes.length));
+  // Unnamed, the return after it is still one Jakob has seen: the seam is named, never hidden.
+  const after = graph.resolveRound(g, graph.parseSequence('READY>P4.C1@p4-deal-03 | P4.C1>READY').steps)[1];
+  assert.equal(after.take?.id, 'p4-back-ready-02'); assert.match(after.notes.join(' '), /Skarv/);
+  // It is current work, not a leftover.
+  for (const id of ['p4-deal-03', 'p4-back-ready-03', 'p4-back-idle-02']) assert.ok(graph.isCurrent(g.edge[g.takes[id].edge], g.takes[id]), id);
+  assert.ok(!graph.leftovers(g).some(l => l.take.inbox));
+});
+
+test('Jakob\'s decision takes a take out of the inbox, and it then ranks as any other', () => {
+  const data = inboxBank(), decide = (id: string, decision: 'ACCEPTED' | 'VARIANT' | 'REJECTED' | 'PENDING') => { data.motions![id] = {...data.motions![id], review: applyChange(data.motions![id].review, {decision, note: ''}, '2026-11-12') as MotionRecord['review']}; };
+  decide('p4-back-idle-02', 'PENDING'); assert.equal(data.motions!['p4-back-idle-02'].review?.inbox, true, 'a reset is no decision');
+  decide('p4-back-idle-02', 'ACCEPTED'); decide('p4-deal-03', 'REJECTED');
+  assert.equal(data.motions!['p4-back-idle-02'].review?.inbox, undefined); assert.equal(data.motions!['p4-deal-03'].review?.inbox, undefined);
+  const g = graph.buildGraph(data);
+  assert.equal(g.edge['P4.C1>IDLE'].main?.id, 'p4-back-idle-02', 'accepted and continuing the main deal');
+  assert.equal(g.edge['READY>P4.C1'].main?.id, 'p4-deal-02'); assert.equal(g.takes['p4-deal-03'].decision, 'REJECTED');
+});
+
+test('the idle picker leaves a take in the inbox alone while other idle films exist', () => {
+  const data = idleBank(); data.motions!['pamela-idle-new-01'] = inbox({motion: {idle: {calm: true, weight: 1000}}});
+  data.jobs!.push(job('pamela-idle-new-01', 'IDLE', 'IDLE', {kind: 'IDLE', target: null, first: data.jobs![0].first, last: data.jobs![0].last})); data.media!['pamela-idle-new-01'] = {video: video('pamela-idle-new-01')};
+  const g = graph.buildGraph(data), takes = g.edge['IDLE>IDLE'].takes;
+  assert.equal(g.edge['IDLE>IDLE'].main?.id, 'pamela-idle-loop-01');
+  const seen: string[] = []; for (let i = 0; i < 200; i++) seen.push(graph.pickIdle(takes, seen, (i * 37 % 100) / 100)!.take.id);
+  assert.ok(!seen.includes('pamela-idle-new-01'));
+  assert.equal(graph.pickIdle(takes.filter(t => t.inbox), [], 0.5)?.take.id, 'pamela-idle-new-01', 'alone it plays');
+});
+
+test('a film from an order enters as frames of its own clip with what it was ordered with, and its fixed copy is a corrected copy', () => {
+  const clip = 'paow-giv-p4-01', deal = `${clip}-deal`, back = `${clip}-return-ready`, fix = `${clip}-fix-1`, fixDeal = `${fix}-deal`, fixBack = `${fix}-return-ready`;
+  const order = {dealer: 'paow', model: 'kling-4', duration: 7, promptText: 'Round trip to seat 4.'};
+  const record = (frames: number, extra: MotionRecord = {}) => inbox({source: {fps: 24, frames}, ...extra});
+  const data: BankData = {jobs: [], derived: [
+    {id: deal, kind: 'DEAL', from: 'READY', to: 'P4.C1', clip, frames: [0, 99], ...order, first: {file: {path: 'assets/orders/o-1/first.png', sha256: sha}}},
+    {id: back, kind: 'RETURN', from: 'P4.C1', to: 'READY', clip, frames: [100, 167], ...order, last: {file: {path: 'assets/orders/o-1/last.png', sha256: sha}}},
+    {id: fixDeal, kind: 'DEAL', from: 'READY', to: 'P4.C1', clip: fix, frames: [0, 99], ...order, model: 'kling-4 + film-fix', editOf: deal},
+    {id: fixBack, kind: 'RETURN', from: 'P4.C1', to: 'READY', clip: fix, frames: [100, 165], ...order, model: 'kling-4 + film-fix', editOf: back}],
+    motions: {[deal]: record(168), [back]: record(168, {motion: {startsOn: {clip: deal, frame: 100}}}), [fixDeal]: record(166), [fixBack]: record(166, {motion: {startsOn: {clip: deal, frame: 100}}})},
+    media: {[deal]: {video: video(clip)}, [back]: {video: video(clip)}, [fixDeal]: {video: video(fix)}, [fixBack]: {video: video(fix)}}};
+  assert.deepEqual(Object.keys(graph.buildGraph(data).takes), [], 'none of it is Pamela\'s');
+  const g = graph.buildGraph(data, {dealer: 'paow'}), t = g.takes;
+  assert.deepEqual(g.unplaced, []);
+  assert.deepEqual([t[deal].job.model, t[deal].job.duration, t[deal].job.promptText, t[deal].job.first.file?.path, t[deal].job.last?.frame?.index], ['kling-4', 7, 'Round trip to seat 4.', 'assets/orders/o-1/first.png', 99]);
+  assert.deepEqual([t[back].job.first.frame?.index, t[back].job.last?.file?.path, t[back].anchorStart], [100, 'assets/orders/o-1/last.png', null]);
+  assert.deepEqual([t[deal].startsOn, t[back].startsOn, t[deal].landingFrame], [null, {clip: deal, video: null, frame: 100}, 100]);
+  assert.deepEqual([t[fixDeal].editOf, t[fixBack].editOf, t[deal].editOf], [deal, back, null]);
+  // Frame numbers are shared, so each return follows both deals, and the copy's own pair plays as one film.
+  for (const [r, d] of [[back, deal], [back, fixDeal], [fixBack, deal], [fixBack, fixDeal]]) assert.ok(graph.returnFits(t[r], t[d]), `${r} after ${d}`);
+  assert.deepEqual(graph.resolveRound(g, graph.parseSequence(`READY>P4.C1@${fixDeal} | P4.C1>READY@${fixBack}`).steps).map(s => [s.take?.id, s.video, s.start, s.end, s.cut, s.notes.length]),
+    [[fixDeal, video(fix), 0, 100, 'FRAME', 0], [fixBack, video(fix), 100, null, null, 0]]);
+  for (const id of [deal, back, fixDeal, fixBack]) assert.ok(graph.isCurrent(g.edge[t[id].edge], t[id]), id);
+  // A return ordered on its own from the landing picture follows every deal that ends on that picture.
+  const alone: BankData = {jobs: [job('paow-p4-deal-01', 'READY', 'LAND(P4.C1)', {dealer: 'paow', last: {file: {path: 'assets/orders/o-2/last.png', sha256: sha}}})],
+    derived: [{id: 'paow-p4-back-01', kind: 'RETURN', from: 'P4.C1', to: 'IDLE', clip: 'paow-p4-back-01', frames: [0, 71], dealer: 'paow', model: 'kling-4', first: {file: {path: 'assets/orders/o-2/last.png', sha256: sha}}}],
+    motions: {'paow-p4-deal-01': done(), 'paow-p4-back-01': record(72)}, media: {'paow-p4-deal-01': {video: video('paow-p4-deal-01')}, 'paow-p4-back-01': {video: video('paow-p4-back-01')}}};
+  const a = graph.buildGraph(alone, {dealer: 'paow'});
+  assert.equal(a.takes['paow-p4-back-01'].anchorStart, 'assets/orders/o-2/last.png'); assert.ok(graph.returnFits(a.takes['paow-p4-back-01'], a.takes['paow-p4-deal-01']));
 });

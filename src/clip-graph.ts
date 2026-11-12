@@ -6,23 +6,51 @@
 export type EdgeKind = 'DEAL' | 'RETURN' | 'ENTRY' | 'IDLE' | 'REVEAL' | 'ARRIVE' | 'LEAVE';
 export type Side = 'BACK' | 'FRONT';
 export type ImageRef = {frame?: {video: string; videoSha256: string; index: number}; file?: {path: string; sha256: string}; note?: string};
-export type BankJob = {id: string; kind: string; target: string | null; from: string; to: string; model: string; duration: number; ratio: string; audio: boolean; promptText: string; first: ImageRef; last?: ImageRef; purpose: string; playbackSpeed?: number}; // without last: a film ordered from its first image alone
+// dealer: whose take it is (data/dealers.json); without it the take is Pamela's, the bank's first dealer (see dealersOf).
+export type BankJob = {id: string; kind: string; target: string | null; from: string; to: string; model: string; duration: number; ratio: string; audio: boolean; promptText: string; first: ImageRef; last?: ImageRef; purpose: string; playbackSpeed?: number; dealer?: string}; // without last: a film ordered from its first image alone
 export type MotionRecord = {
   source?: {path?: string; sha256?: string; bytes?: number; fps?: number; frames?: number; width?: number; height?: number};
   // idle: how a take of IDLE>IDLE takes part in the idle. weight: its share among the takes that may be picked. calm: breathing and
   // the like, as opposed to a gesture. onRequest: never picked by chance. label: what it shows, in a word or two.
   motion?: {physicalEndSide?: string; landingFrame?: number; startsOn?: {clip?: string; frame?: number; seamPixelsOverThreshold?: number}; idle?: {weight?: number; calm?: boolean; onRequest?: boolean; label?: string}};
-  review?: {decision?: string; acceptedAs?: string; basis?: string; limitations?: string; userReview?: string; userAccepted?: boolean};
+  // inbox: a take that came in from an order (tools/register-order.ts) and that Jakob has not decided on yet. It plays only where its
+  // step has nothing else to play; tools/review-store.ts takes the flag away with his decision.
+  review?: {decision?: string; acceptedAs?: string; basis?: string; limitations?: string; userReview?: string; userAccepted?: boolean; inbox?: boolean};
 };
 export type Receipt = {status?: string; estimatedCredits?: number; requestedAt?: string; completedAt?: string; output?: {bytes?: number; fps?: number; frames?: number; width?: number; height?: number} | null};
 // track and overrides: the card track from tools/track-card.ts and hand-written occlusion overrides, when they exist locally.
 // reversed: the same film written backwards (source-reversed.mp4), when someone has made one.
 export type Media = {video?: string | null; first?: string | null; last?: string | null; track?: string | null; overrides?: string | null; reversed?: string | null};
-// A derived take is not generated: it is frames A–B (both shown) of a clip that already exists.
-export type DerivedTake = {id: string; kind?: string; from: string; to: string; clip: string; frames: [number, number]; purpose?: string};
+// A derived take is not generated: it is frames A–B (both shown) of a clip that already exists. A film ordered outside the job file's
+// API rules (tools/register-order.ts, and register-mcp.mjs before it) enters the same way, as frames of its own clip, and may carry
+// what it was ordered with: model, duration, promptText and its first and last picture, which then stand for the take's own.
+// editOf: the take this one is a corrected copy of (tools/film-fix.ts), as an edit is.
+export type DerivedTake = {id: string; kind?: string; from: string; to: string; clip: string; frames: [number, number]; purpose?: string; dealer?: string; editOf?: string;
+  model?: string; duration?: number; promptText?: string; first?: ImageRef; last?: ImageRef};
 // An edit is a corrected copy of an existing clip, made with a video-to-video model: a further take of the same edge as its source.
-export type EditTake = {id: string; source?: {clip?: string; sha256?: string}; model?: string; promptText?: string; purpose?: string};
+export type EditTake = {id: string; source?: {clip?: string; sha256?: string}; model?: string; promptText?: string; purpose?: string; dealer?: string};
 export type BankData = {jobs?: BankJob[]; derived?: DerivedTake[]; edits?: EditTake[]; budget?: {maximumCredits?: number} | null; motions?: Record<string, MotionRecord>; receipts?: Record<string, Receipt>; media?: Record<string, Media>; revisions?: Record<string, string>};
+
+// ── Dealers ─────────────────────────────────────────────────────────────────
+// The bank holds the takes of several dealers; a graph is always one dealer's. Pamela was the only dealer before the field existed.
+export const DEALER = 'pamela';
+const dealerWord = (value: unknown): string | null => typeof value === 'string' && /^[a-z0-9]+$/.test(value) ? value : null;
+// Whose each take is, by id. Its own dealer field first; without one, a derived take is the dealer's whose film it is cut from (or
+// corrects), an edit the dealer's whose clip it corrects, and anything left is Pamela's.
+export function dealersOf(data: Pick<BankData, 'jobs' | 'derived' | 'edits'> | null | undefined): Record<string, string> {
+  const list = <T extends {id: string}>(v: T[] | undefined): T[] => (Array.isArray(v) ? v : []).filter(x => !!x && typeof x.id === 'string'), out: Record<string, string> = {}, film = new Map<string, string>();
+  const jobs = list(data?.jobs), derived = list(data?.derived), edits = list(data?.edits);
+  // The dealer of each film: its job's, or that of a derived take that is its whole own clip and names one.
+  for (const j of jobs) if (!film.has(j.id)) film.set(j.id, dealerWord(j.dealer) ?? DEALER);
+  for (const d of derived) if (d.id === d.clip && dealerWord(d.dealer) && !film.has(d.id)) film.set(d.id, dealerWord(d.dealer)!);
+  const corrects = new Map<string, string>();
+  for (const j of jobs) out[j.id] ??= film.get(j.id)!;
+  for (const d of derived) { const own = dealerWord(d.dealer) ?? film.get(String(d.clip)); if (own) out[d.id] ??= own; else if (typeof d.editOf === 'string') corrects.set(d.id, d.editOf); }
+  for (const [id, of] of corrects) out[id] ??= out[of] ?? DEALER; // a corrected copy without a dealer of its own is the dealer's whose take it corrects
+  for (const d of derived) out[d.id] ??= DEALER;
+  for (const x of edits) out[x.id] ??= dealerWord(x.dealer) ?? film.get(String(x.source?.clip)) ?? DEALER;
+  return out;
+}
 
 export const SEATS = ['P1', 'P2', 'P3', 'P4', 'P5', 'P6', 'P7'];
 // Same 16 placement keys as src/placement-model.ts; D.C3 is the optional third dealer card.
@@ -141,6 +169,8 @@ export type Take = {
   idle: Idle | null;       // set on a take of IDLE>IDLE: its part in the idle
   editOf: string | null;   // set on a corrected copy: the clip it was made from
   speed: number;           // the speed the film is meant to be watched at (a clip generated in slow motion says 2); frame numbers stay the file's
+  dealer: string;          // whose take it is; every take of a graph is its dealer's
+  inbox: boolean;          // came in from an order and waits for Jakob: it plays only where its step has nothing else to play
   motion: MotionRecord | null; receipt: Receipt | null; media: Media;
 };
 // The idle is many short clips that all begin and end on the same frame. Breathing dominates, gestures are rare.
@@ -166,6 +196,7 @@ export const FILM_MODE: FilmMode = 'SEAT';
 // alternative with known faults. missing: no film that may be played (none, or only rejected ones).
 export type Films = {mode: FilmMode; total: number; done: number; candidates: number; flaws: number; missing: number; required: string[]};
 export type Graph = {
+  dealer: string; // whose takes the graph holds: one dealer's only, Pamela's unless buildGraph is told otherwise
   edges: Edge[]; experiments: Edge[]; edge: Record<string, Edge>; takes: Record<string, Take>; unplaced: {id: string; reason: string}[]; mode: FilmMode;
   summary: Count & {optional: Count; experiments: Count; films: Films; credits: {committed: number | null; maximum: number | null}};
 };
@@ -211,35 +242,45 @@ function stageOf(receipt: Receipt | null, motion: MotionRecord | null, media: Me
   if (!s && (Number.isInteger(motion?.source?.frames) || media.video)) return 'DONE';
   return s === 'PREPARED' ? 'PREPARED' : 'WRITTEN';
 }
-// Explicit main > accepted > unreviewed > unknown decision > secondary > variant. Rejected takes are never chosen.
-const rank = (t: Take) => t.explicitMain ? 5 : t.variant ? 0 : t.decision === 'ACCEPTED' ? 4 : t.decision === 'PENDING' ? 3 : t.decision === 'SECONDARY' ? 1 : 2;
+// Explicit main > accepted > unreviewed > unknown decision > secondary > variant > a take in the inbox. Rejected takes are never chosen.
+const rank = (t: Take) => t.explicitMain ? 5 : t.inbox ? -1 : t.variant ? 0 : t.decision === 'ACCEPTED' ? 4 : t.decision === 'PENDING' ? 3 : t.decision === 'SECONDARY' ? 1 : 2;
+// A key that puts every take that is not in the inbox first, wherever another key would otherwise come before the rank.
+const settled = (t: Take) => t.inbox ? 0 : 1;
 function best(takes: Take[], ...keys: ((t: Take) => number)[]): Take | null {
   return takes.filter(playable).sort((a, b) => { for (const key of keys) { const d = key(b) - key(a); if (d) return d; } return b.order - a.order; })[0] ?? null;
 }
 
 const KINDS = ['DEAL', 'RETURN', 'ENTRY', 'IDLE', 'REVEAL', 'ARRIVE', 'LEAVE'];
-export function buildGraph(data: BankData, options: {mode?: FilmMode; holeCardDown?: boolean} = {}): Graph {
+export function buildGraph(data: BankData, options: {mode?: FilmMode; holeCardDown?: boolean; dealer?: string} = {}): Graph {
   const blank = (ref: Omit<EdgeRef, 'kind'> & {kind: EdgeKind | null}, experiment: boolean): Edge => ({...ref, optional: !!ref.target && OPTIONAL_TARGETS.includes(ref.target), experiment, shares: null, takes: [], main: null, variants: [], status: 'MISSING', hasVariant: false, hubVariants: [], inProgress: 0, rendering: 0});
   const edges: Edge[] = bankEdges().map(e => blank(e, false)), experiments: Edge[] = [];
   const edge: Record<string, Edge> = Object.fromEntries(edges.map(e => [e.id, e]));
   const takes: Record<string, Take> = {}, unplaced: {id: string; reason: string}[] = [], segments = new Map<string, {clip: string; start: number; end: number}>();
-  // A derived take enters as a job without prompt or cost whose images are the first and last frame of its range.
-  const derived = (Array.isArray(data?.derived) ? data.derived : []).flatMap((d): BankJob[] => {
+  // One dealer's takes only, before anything else: another dealer's films never take part in this one's choices.
+  const dealer = dealerWord(options.dealer) ?? DEALER, owner = dealersOf(data), mine = (item: {id?: unknown} | null | undefined) => (owner[String(item?.id)] ?? DEALER) === dealer;
+  const list = <T extends {id?: unknown}>(v: T[] | undefined): T[] => (Array.isArray(v) ? v : []).filter(mine);
+  const image = (v: unknown): v is ImageRef => !!v && typeof v === 'object' && (typeof (v as ImageRef).file?.path === 'string' || typeof (v as ImageRef).frame?.video === 'string');
+  const editOf = new Map<string, string>();
+  // A derived take enters as a job without prompt or cost whose images are the first and last frame of its range, unless it carries
+  // what its film was ordered with.
+  const derived = list(data?.derived).flatMap((d): BankJob[] => {
     const [start, end] = Array.isArray(d?.frames) ? d.frames : [], video = `assets/motions/${d?.clip}/source.mp4`;
-    if (!d || typeof d.id !== 'string' || !/^[a-z0-9-]+$/.test(String(d.clip)) || !Number.isInteger(start) || !Number.isInteger(end) || start < 0 || end < start) { unplaced.push({id: String(d?.id), reason: 'Utsnittet saknar klipp eller giltiga rutor.'}); return []; }
-    segments.set(d.id, {clip: d.clip, start, end});
-    return [{id: d.id, kind: d.kind ?? '', target: null, from: d.from, to: d.to, model: 'utsnitt', duration: 0, ratio: '', audio: false, promptText: '', purpose: d.purpose ?? '',
-      first: {frame: {video, videoSha256: '', index: start}}, last: {frame: {video, videoSha256: '', index: end}}}];
+    if (!d || typeof d.id !== 'string' || !/^[a-z0-9-]+$/.test(String(d.clip)) || !Number.isInteger(start) || !Number.isInteger(end) || start! < 0 || end! < start!) { unplaced.push({id: String(d?.id), reason: 'Utsnittet saknar klipp eller giltiga rutor.'}); return []; }
+    segments.set(d.id, {clip: d.clip, start: start!, end: end!});
+    if (typeof d.editOf === 'string' && d.editOf !== d.id) editOf.set(d.id, d.editOf);
+    const first: ImageRef = image(d.first) ? d.first : {frame: {video, videoSha256: '', index: start!}}, last: ImageRef = image(d.last) ? d.last : {frame: {video, videoSha256: '', index: end!}};
+    return [{id: d.id, kind: d.kind ?? '', target: null, from: d.from, to: d.to, model: typeof d.model === 'string' ? d.model : 'utsnitt', duration: Number.isFinite(d.duration) ? d.duration! : 0, ratio: '', audio: false,
+      promptText: typeof d.promptText === 'string' ? d.promptText : '', purpose: d.purpose ?? '', first, last}];
   });
   // A corrected copy enters as its source's job under its own id, with its own model, prompt and purpose: same edge, same images.
-  const sources = new Map((Array.isArray(data?.jobs) ? data.jobs : []).filter(j => j && typeof j.id === 'string').map(j => [j.id, j])), editOf = new Map<string, string>();
-  const edits = (Array.isArray(data?.edits) ? data.edits : []).flatMap((x): BankJob[] => {
+  const jobs = list(data?.jobs), sources = new Map(jobs.filter(j => j && typeof j.id === 'string').map(j => [j.id, j]));
+  const edits = list(data?.edits).flatMap((x): BankJob[] => {
     const source = sources.get(String(x?.source?.clip));
     if (!x || typeof x.id !== 'string' || !source) { unplaced.push({id: String(x?.id), reason: 'Den rättade kopians källklipp finns inte bland jobben.'}); return []; }
     editOf.set(x.id, source.id);
     return [{...source, id: x.id, model: x.model ?? source.model, promptText: x.promptText ?? '', purpose: x.purpose ?? ''}];
   });
-  [...(Array.isArray(data?.jobs) ? data.jobs : []), ...derived, ...edits].forEach((job, order) => {
+  [...jobs, ...derived, ...edits].forEach((job, order) => {
     // Only a job that cannot be told apart from the others is left out, and it is named in unplaced.
     if (!job || typeof job.id !== 'string' || !job.id || takes[job.id]) { unplaced.push({id: String(job?.id), reason: job && takes[job.id] ? 'Samma jobb-id förekommer två gånger.' : 'Jobbet saknar id.'}); return; }
     const ref = parseEdge(`${job.from}>${job.to}`), from = nodeName(job.from), to = nodeName(job.to), key = formatEdge(from, to);
@@ -258,14 +299,16 @@ export function buildGraph(data: BankData, options: {mode?: FilmMode; holeCardDo
       variant: motion?.review?.acceptedAs === 'VARIANT', explicitMain: motion?.review?.acceptedAs === 'MAIN', endSide,
       fps: motion?.source?.fps ?? receipt?.output?.fps ?? null, frames: motion?.source?.frames ?? receipt?.output?.frames ?? null,
       credits: receipt?.estimatedCredits ?? job.duration * (CREDITS_PER_SECOND[job.ratio] ?? 0), startsOn, anchorStart, landingFrame: null, landingConflict: false, segment, revision: data.revisions?.[job.id] ?? null,
-      idle: e.id === 'IDLE>IDLE' ? idleOf(job.id, motion) : null, editOf: editOf.get(job.id) ?? null, speed: Number(job.playbackSpeed) >= 0.25 && Number(job.playbackSpeed) <= 4 ? Number(job.playbackSpeed) : 1, motion, receipt, media};
+      idle: e.id === 'IDLE>IDLE' ? idleOf(job.id, motion) : null, editOf: editOf.get(job.id) ?? null, speed: Number(job.playbackSpeed) >= 0.25 && Number(job.playbackSpeed) <= 4 ? Number(job.playbackSpeed) : 1,
+      dealer, inbox: motion?.review?.inbox === true, motion, receipt, media};
     takes[job.id] = take; e.takes.push(take);
   });
   const all = Object.values(takes);
-  // A deal's landing/cut frame is the frame its returns start on. An explicit motion.landingFrame wins.
+  // A deal's landing/cut frame is the frame its returns start on. An explicit motion.landingFrame wins. Returns in the inbox count
+  // only when no other return was cut from the deal.
   for (const deal of all.filter(t => t.kind === 'DEAL')) {
-    const returns = all.filter(r => r !== deal && cutFrom(r, deal)), kept = returns.filter(r => r.decision !== 'REJECTED' && r.stage !== 'FAILED');
-    const frames = (kept.length ? kept : returns).map(r => r.startsOn!.frame), explicit = deal.motion?.motion?.landingFrame;
+    const returns = all.filter(r => r !== deal && cutFrom(r, deal)), kept = returns.filter(r => r.decision !== 'REJECTED' && r.stage !== 'FAILED'), known = kept.filter(r => !r.inbox);
+    const frames = (known.length ? known : kept.length ? kept : returns).map(r => r.startsOn!.frame), explicit = deal.motion?.motion?.landingFrame;
     const counts = new Map<number, number>(); for (const f of frames) counts.set(f, (counts.get(f) ?? 0) + 1);
     deal.landingFrame = Number.isInteger(explicit) ? explicit! : [...counts].sort((a, b) => b[1] - a[1])[0]?.[0] ?? null;
     deal.landingConflict = counts.size > 1;
@@ -274,15 +317,17 @@ export function buildGraph(data: BankData, options: {mode?: FilmMode; holeCardDo
   // A return's main is one that continues the main deal, so the default chain is seamless.
   const backs = all.filter(r => r.kind === 'RETURN' && playable(r)), primaries = backs.filter(r => r.explicitMain && !r.hub && !edge[r.edge].experiment);
   // Takes written with a READY variant are offered beside the edge; status and main take follow the plain model poses.
+  // A return in the inbox decides between deals only after every other return has had its say.
   const plain = (e: Edge) => e.takes.filter(t => !t.hub), followed = (list: Take[], e: Edge) => (t: Take) => list.some(r => edge[r.edge].from === e.to && returnFits(r, t)) ? 1 : 0;
-  for (const e of edges.filter(e => e.kind === 'DEAL')) e.main = best(plain(e), rank, followed(primaries, e), followed(backs, e));
+  const knownBacks = backs.filter(r => !r.inbox), newBacks = backs.filter(r => r.inbox);
+  for (const e of edges.filter(e => e.kind === 'DEAL')) e.main = best(plain(e), rank, followed(primaries, e), followed(knownBacks, e), followed(newBacks, e));
   for (const e of edges.filter(e => e.kind !== 'DEAL')) {
     const deal = e.kind === 'RETURN' && e.target ? edge[`READY>${e.target}`]?.main : null;
-    e.main = best(plain(e), t => t.explicitMain ? 1 : 0, t => deal && returnFits(t, deal) ? 1 : 0, rank);
+    e.main = best(plain(e), t => t.explicitMain ? 1 : 0, settled, t => deal && returnFits(t, deal) ? 1 : 0, rank);
   }
   // The idle step of a round is the calmest film there is, not the newest: an explicit main or an accepted take first, as everywhere;
   // then a calm take before a gesture, the highest weight, and the older take on a tie.
-  edge['IDLE>IDLE'].main = best(plain(edge['IDLE>IDLE']), t => t.explicitMain ? 1 : 0, t => t.decision === 'ACCEPTED' && !t.variant ? 1 : 0, t => t.idle?.calm ? 1 : 0, t => t.idle?.weight ?? 0, t => -t.order);
+  edge['IDLE>IDLE'].main = best(plain(edge['IDLE>IDLE']), t => t.explicitMain ? 1 : 0, settled, t => t.decision === 'ACCEPTED' && !t.variant ? 1 : 0, t => t.idle?.calm ? 1 : 0, t => t.idle?.weight ?? 0, t => -t.order);
   for (const e of experiments) e.main = best(e.takes, rank);
   for (const e of [...edges, ...experiments]) {
     const own = plain(e);
@@ -305,7 +350,7 @@ export function buildGraph(data: BankData, options: {mode?: FilmMode; holeCardDo
   const required = edges.filter(e => !e.optional && !e.shares && !(e.kind === 'REVEAL' && options.holeCardDown === false)), flawed = (e: Edge) => e.main?.decision === 'SECONDARY';
   const films: Films = {mode, total: required.length, done: required.filter(e => e.main).length, candidates: required.filter(e => e.main && !flawed(e)).length, flaws: required.filter(flawed).length,
     missing: required.filter(e => !e.main).length, required: required.map(e => e.id)};
-  return {edges, experiments, edge, takes, unplaced, mode, summary: {...count(edges.filter(e => !e.optional)), optional: count(edges.filter(e => e.optional)), experiments: count(experiments), films,
+  return {dealer, edges, experiments, edge, takes, unplaced, mode, summary: {...count(edges.filter(e => !e.optional)), optional: count(edges.filter(e => e.optional)), experiments: count(experiments), films,
     credits: {committed: all.some(t => t.receipt) ? sent.reduce((sum, t) => sum + t.credits, 0) : null, maximum: data?.budget?.maximumCredits ?? null}}};
 }
 
@@ -328,7 +373,8 @@ export const ROLE_LABEL: Record<Role, string> = {MAIN: 'huvudtagning', VARIANT: 
 // What matters now on an edge: its main take, accepted variants, variant starts and work on its way.
 // The rest (rejected, failed, replaced by a newer take) is kept, but belongs folded away.
 // A corrected copy that nobody has reviewed yet is current too: it was made to be looked at, even while its source is still the main take.
-export const isCurrent = (edge: Edge, take: Take) => { const role = takeRole(edge, take); return !['REJECTED', 'FAILED', 'OTHER'].includes(role) || (role === 'OTHER' && !!take.editOf && take.decision === 'PENDING'); };
+// So is a take in the inbox, which waits for Jakob's decision.
+export const isCurrent = (edge: Edge, take: Take) => { const role = takeRole(edge, take); return !['REJECTED', 'FAILED', 'OTHER'].includes(role) || (role === 'OTHER' && ((!!take.editOf && take.decision === 'PENDING') || take.inbox)); };
 export type Leftover = {take: Take; edge: Edge; role: Role; bytes: number | null};
 export function leftovers(graph: Graph): Leftover[] {
   return [...graph.edges, ...graph.experiments].flatMap(edge => edge.takes.filter(take => !isCurrent(edge, take))
@@ -361,7 +407,9 @@ export function experimentChains(graph: Graph): Chain[] {
 export const IDLE_RULE = {calmBetweenGestures: 3, exitRate: 2.5, skipStart: 3, skipEnd: 3};
 export type IdlePick = {take: Take; why: string};
 export function pickIdle(takes: Take[], played: string[], random: number): IdlePick | null {
-  const pool = takes.filter(t => t.idle && playable(t) && !t.idle.onRequest && t.idle.weight > 0 && !!t.media.video), last = played[played.length - 1];
+  // Takes in the inbox only when there is nothing else.
+  const ready = takes.filter(t => t.idle && playable(t) && !t.idle.onRequest && t.idle.weight > 0 && !!t.media.video), last = played[played.length - 1];
+  const pool = ready.some(t => !t.inbox) ? ready.filter(t => !t.inbox) : ready;
   if (!pool.length) return null;
   const calmOf = (id: string) => takes.find(t => t.id === id)?.idle?.calm !== false; // a clip that is no longer known counts as calm
   let since = 0; for (let i = played.length - 1; i >= 0 && calmOf(played[i]); i--) since++;
@@ -429,8 +477,9 @@ function choices(graph: Graph, step: Step) {
   if (!e) return null;
   // Seat mode: the step plays the seat's film unless it names a film of its own card.
   const film = e.shares && !(step.take && e.takes.some(t => t.id === step.take && playable(t))) ? graph.edge[e.shares] : e;
-  // A step written with a READY variant only uses takes made from that pose; a plain step never does.
-  const hub = ref?.hub ?? null, pool = film.takes.filter(t => t.hub === hub), main = hub ? best(pool, rank) : film.main;
+  // A step written with a READY variant only uses takes made from that pose; a plain step never does. A take in the inbox is chosen
+  // only where the step has no other film it may play; a round that names it still plays it.
+  const hub = ref?.hub ?? null, own = film.takes.filter(t => t.hub === hub), pool = own.some(t => playable(t) && !t.inbox) ? own.filter(t => !t.inbox) : own, main = hub ? best(pool, rank) : film.main;
   return {e, film, pool, main, locked: step.take ? film.takes.find(t => t.id === step.take && playable(t)) ?? null : null};
 }
 
@@ -520,15 +569,26 @@ const FALLBACK = {
 };
 const seatIndex = (target: string) => target[0] === 'D' ? 4 : Number(target[1]);
 
+// Who a draft is written for: by default the graph's dealer. name and look are the words the texts use for her ("Same Pamela, black
+// suit"); prefix starts the ids of her films. Pamela's are the bank's own wording. Another dealer's come from the caller
+// (data/dealers.json: name, look, films.prefix); without them her id is her name, the texts name no look and her ids start "<id>-".
+export type DealerProfile = {id: string; name?: string; look?: string; prefix?: string};
+const PAMELA = {name: 'Pamela', look: 'black suit'};
+
 export type Draft = {job: BankJob; basedOn: string | null; notes: string[]};
-export function draftJob(graph: Graph, edgeId: string, options: {holeCardDown?: boolean} = {}): Draft | null {
+export function draftJob(graph: Graph, edgeId: string, options: {holeCardDown?: boolean; dealer?: DealerProfile} = {}): Draft | null {
   const e = graph.edge[edgeId];
   if (!e || e.experiment || !e.kind) return null; // drafts follow the model's recipe; an experiment has none
   const notes: string[] = [], jobs = Object.values(graph.takes).map(t => t.job);
   const [seat, card] = e.target ? e.target.split('.') : ['', ''], slug = e.target ? `${seat.toLowerCase()}-${card.toLowerCase()}` : '';
   const side = e.target ? wantedSide(e.target, options.holeCardDown !== false) : null;
-  const stem = e.kind === 'DEAL' ? `pamela-${slug}-plan-deal` : e.kind === 'REVEAL' ? `pamela-${slug}-reveal` : e.kind === 'ARRIVE' ? 'pamela-table-arrive' : e.kind === 'LEAVE' ? 'pamela-table-leave' : e.kind === 'ENTRY' ? 'pamela-idle-ready-entry' : e.kind === 'IDLE' ? 'pamela-idle-loop'
-    : e.target ? `pamela-${slug}-plan-return-${e.to.toLowerCase()}` : 'pamela-ready-idle-exit';
+  const who = dealerWord(options.dealer?.id) ?? dealerWord(graph.dealer) ?? DEALER, hers = who === DEALER;
+  const name = options.dealer?.name?.trim() || (hers ? PAMELA.name : who[0].toUpperCase() + who.slice(1)), look = options.dealer?.look?.trim() ?? (hers ? PAMELA.look : '');
+  const p = options.dealer?.prefix && /^[a-z0-9]+(?:-[a-z0-9]+)*-$/.test(options.dealer.prefix) ? options.dealer.prefix : `${who}-`, anchor = (rest: string) => `assets/anchors/${who}-${rest}/anchor.png`;
+  // The bank's wording names Pamela and her suit; for another dealer they are her name and look.
+  const words = (text: string) => name === PAMELA.name && look === PAMELA.look ? text : text.replace(/Pamela, black suit/g, look ? `${name}, ${look}` : name).replace(/\bPamela\b/g, name);
+  const stem = e.kind === 'DEAL' ? `${p}${slug}-plan-deal` : e.kind === 'REVEAL' ? `${p}${slug}-reveal` : e.kind === 'ARRIVE' ? `${p}table-arrive` : e.kind === 'LEAVE' ? `${p}table-leave` : e.kind === 'ENTRY' ? `${p}idle-ready-entry` : e.kind === 'IDLE' ? `${p}idle-loop`
+    : e.target ? `${p}${slug}-plan-return-${e.to.toLowerCase()}` : `${p}ready-idle-exit`;
   const taken = Object.keys(graph.takes).map(id => id.startsWith(`${stem}-`) ? Number(id.slice(stem.length + 1)) : 0).filter(Number.isInteger);
   const id = `${stem}-${String(Math.max(0, ...taken) + 1).padStart(2, '0')}`;
   // A known file keeps its recorded hash; an anchor that is not built yet gets a visible TODO, which validateJob refuses.
@@ -536,8 +596,9 @@ export function draftJob(graph: Graph, edgeId: string, options: {holeCardDown?: 
     const known = jobs.flatMap(j => [j.first, j.last]).find(ref => ref?.file?.path === path)?.file;
     return {file: {path, sha256: known?.sha256 ?? TODO_SHA}, note: known ? note : `${note} Build or locate it first, then replace the hash.`};
   };
-  const readyStart = jobs.find(j => j.kind === 'DEAL' && j.target?.endsWith('.C1') && j.first?.file)?.first ?? file('assets/motions/pamela-p4-c1-color-control-01/start.png', 'Proven READY anchor: real video frame with the pinch on the yellow card.');
-  const idleEmpty = file('assets/anchors/pamela-idle-empty-01/anchor.png', 'IDLE anchor with an empty table.');
+  const readyStart = jobs.find(j => j.kind === 'DEAL' && j.target?.endsWith('.C1') && j.first?.file)?.first ?? (hers ? file('assets/motions/pamela-p4-c1-color-control-01/start.png', 'Proven READY anchor: real video frame with the pinch on the yellow card.')
+    : file(anchor('ready-01'), 'READY anchor (ankare 2.1): a real video frame with the pinch on the yellow card in the shoe.'));
+  const idleEmpty = file(anchor('idle-empty-01'), 'IDLE anchor with an empty table.');
   // Wording comes from the main take of the same kind at the nearest seat, so later prompt lessons follow along.
   const source = e.target ? graph.edges.filter(o => o.kind === e.kind && (e.kind === 'DEAL' || o.to === e.to) && o.target && o.main)
     .sort((a, b) => Math.abs(seatIndex(a.target!) - seatIndex(e.target!)) - Math.abs(seatIndex(b.target!) - seatIndex(e.target!)) || Number(a.target!.slice(-1) !== card.slice(-1)) - Number(b.target!.slice(-1) !== card.slice(-1)) || b.main!.order - a.main!.order)[0]?.main ?? null : null;
@@ -549,8 +610,8 @@ export function draftJob(graph: Graph, edgeId: string, options: {holeCardDown?: 
     if (closed) notes.push('Stängt kort har ingen tidigare tagning; formuleringen utan vändning är oprövad.');
     else if (source && source.job.target !== e.target) notes.push(`Rörelsen är skriven för ${source.job.target}; kontrollera att den passar ${e.target}.`);
     if (card !== 'C1') notes.push('Tidigare kort ligger redan på bordet: börja från READY-ankaret med de korten, eller använd samma film med renderat kort.');
-    first = card === 'C1' ? readyStart : file(`assets/anchors/pamela-ready-${seat.toLowerCase()}-c${Number(card[1]) - 1}-plan-01/anchor.png`, 'READY anchor with the earlier card already lying at the plan position.');
-    last = file(`assets/anchors/pamela-${slug}-plan-land-01/anchor.png`, `Landing anchor for ${e.target}: fingertip resting on the card at the saved plan position (tools/build-anchor.ts).`);
+    first = card === 'C1' ? readyStart : file(anchor(`ready-${seat.toLowerCase()}-c${Number(card[1]) - 1}-plan-01`), 'READY anchor with the earlier card already lying at the plan position.');
+    last = file(anchor(`${slug}-plan-land-01`), `Landing anchor for ${e.target}: fingertip resting on the card at the saved plan position (tools/build-anchor.ts).`);
   } else if (e.kind === 'RETURN' && e.target) {
     const base = source?.job.promptText ?? (e.to === 'READY' ? FALLBACK.READY : FALLBACK.IDLE), deal = graph.edge[`READY>${e.target}`]?.main ?? null;
     promptText = base.replace(/(lies flat and still on the table )[^.]*\./, `$1${PLACE[seat].lies}.`);
@@ -560,19 +621,19 @@ export function draftJob(graph: Graph, edgeId: string, options: {holeCardDown?: 
     // Anchor rule: start from the deal's own end image, so the return follows every take of that deal.
     const end = (deal ?? [...graph.edge[`READY>${e.target}`].takes].reverse().find(t => !t.hub && t.stage !== 'FAILED'))?.job.last;
     first = end?.file ? {file: end.file, note: `Landing anchor for ${e.target}: the deal's own end image, so this return follows every take of that deal.`}
-      : file(`assets/anchors/pamela-${slug}-plan-land-01/anchor.png`, `Landing anchor for ${e.target}: the deal's own end image, so this return follows every take of that deal.`);
+      : file(anchor(`${slug}-plan-land-01`), `Landing anchor for ${e.target}: the deal's own end image, so this return follows every take of that deal.`);
     if (!end?.file) notes.push('Ingen giv med landningsankare finns ännu: bygg ankaret och använd samma bild som givens slutbild.');
-    last = file(`assets/anchors/pamela-${e.to.toLowerCase()}-${slug}-plan-01/anchor.png`, `${e.to} anchor with the ${e.target} card at the saved plan position.`);
+    last = file(anchor(`${e.to.toLowerCase()}-${slug}-plan-01`), `${e.to} anchor with the ${e.target} card at the saved plan position.`);
   } else if (e.kind === 'REVEAL') {
     // Rest with the closed card is where the return to rest after the hole card ends; rest with the open card is where the last turn ended.
     promptText = source?.job.promptText || FALLBACK.REVEAL;
-    first = graph.edge[`${HOLE_CARD}>IDLE`]?.main?.job.last ?? file('assets/anchors/pamela-idle-d-c2-closed-01/anchor.png', 'IDLE with the closed hole card lying at D.C2.');
-    last = e.main?.job.last ?? file('assets/anchors/pamela-idle-d-c2-open-01/anchor.png', 'IDLE with the hole card turned open at D.C2.');
+    first = graph.edge[`${HOLE_CARD}>IDLE`]?.main?.job.last ?? file(anchor('idle-d-c2-closed-01'), 'IDLE with the closed hole card lying at D.C2.');
+    last = e.main?.job.last ?? file(anchor('idle-d-c2-open-01'), 'IDLE with the hole card turned open at D.C2.');
     notes.push('Första bild: vila med det stängda hålkortet. Sista bild: vila med kortet uppvänt. Välj rutor minst tre före respektive films slut och fyll i filmens hash.');
   } else if (e.kind === 'ARRIVE' || e.kind === 'LEAVE') {
     // Rest is the keystone frame the idle clips start on. The picture without her is a real frame from the end of a leave film,
     // which is why leaving is ordered first, from its first image alone.
-    const rest = graph.edge['IDLE>IDLE']?.main?.job.first ?? idleEmpty, empty = file('assets/anchors/pamela-away-01/anchor.png', 'The set without the dealer: a whole real frame from the end of a leave film.');
+    const rest = graph.edge['IDLE>IDLE']?.main?.job.first ?? idleEmpty, empty = file(anchor('away-01'), 'The set without the dealer: a whole real frame from the end of a leave film.');
     promptText = e.kind === 'ARRIVE' ? FALLBACK.ARRIVE : FALLBACK.LEAVE;
     first = e.kind === 'ARRIVE' ? empty : rest; last = e.kind === 'ARRIVE' ? rest : undefined;
     notes.push(e.kind === 'ARRIVE' ? 'Första bild ska vara en verklig ruta utan henne, ur slutet av en utgångsfilm.' : 'Utgången beställs med enbart första bild; dess sista rutor blir bilden utan henne.');
@@ -583,8 +644,9 @@ export function draftJob(graph: Graph, edgeId: string, options: {holeCardDown?: 
   }
   notes.push('Jämför alltid prompten med start- och slutbilden innan jobbet fryses.');
   const wrap = (node: string) => isHub(node) || node === AWAY ? node : `LAND(${node})`;
+  // Pamela's drafts carry no dealer field (absent is hers); another dealer's name her, so the job lands in her graph.
   return {basedOn: source?.id ?? null, notes, job: {id, kind: e.kind, target: e.target, from: wrap(e.from), to: wrap(e.to), model: 'wan3', duration: e.kind === 'ARRIVE' || e.kind === 'LEAVE' ? 5 : e.kind === 'DEAL' || e.kind === 'IDLE' || e.kind === 'REVEAL' ? 4 : 3, ratio: 'auto_1080p', audio: false,
-    promptText, first, ...(last ? {last} : {}), purpose: `Draft from the lab clip bank for ${e.id}${source ? `; wording based on ${source.id}` : ''}. Check the wording against both images before freezing.`}};
+    promptText: words(promptText), first, ...(last ? {last} : {}), purpose: `Draft from the lab clip bank for ${e.id}${source ? `; wording based on ${source.id}` : ''}. Check the wording against both images before freezing.`, ...(hers ? {} : {dealer: who})}};
 }
 
 // ── Tree layout ─────────────────────────────────────────────────────────────
