@@ -3,17 +3,29 @@
 // tests in studio/tests/rounds.test.ts.
 //
 // A reference (film) is not a round of the bank: one finished, composited film (room, table, rendered cards) played as it
-// is, as one part, in "Inte 3D" only (in the 3D scene it would be keyed and projected, which is wrong for a finished picture).
+// is, in "Inte 3D" only (in the 3D scene it would be keyed and projected, which is wrong for a finished picture).
 // The V6 film is one: Jakob's chosen visual reference (data/library.json v6-native-reference). It is listed apart, under
 // "Referens", so that it is never mistaken for the bank's films played in the order of V6's deal ("Plats 4 · två kort").
+// The old public page's whole deals to all seven are others (16 and 17 cards, the older 14), kept here before that page
+// closes; where the registry has a timeline they are cut into chapters per card, so that one can jump to "P3C1".
 import { SEATS, formatSequence, parseEdge, playable, returnFits, roundSequence, type Graph, type Segment, type Step, type Take } from "../../src/clip-graph.ts";
 import { TARGETS, toPixels, type PlacementPlan } from "../../src/placement-model.ts";
 import { labUrl } from "./lab.ts";
 import { edgeName, formatJakob, formatSeconds, parseJakob, takeName } from "./names.ts";
 import { partsOf, roundSeconds, type PlayPart } from "./parts.ts";
 
-/** A finished film played as it is: its path as the lab server hands it out, its rate and length in frames. */
-export type ReferenceFilm = { id: string; path: string; fps: number; frames: number; width: number; height: number };
+/**
+ * A place to jump to in a reference film: from `frame` to the next chapter's frame (the last runs to the film's end).
+ * label in his notation ("P3C1", "DC2 upp", "Början"), sub in words ("plats 3 · kort 1"), still: the frame its box shows
+ * (where the deal lets go of the card).
+ */
+export type Chapter = { label: string; sub: string; frame: number; still: number };
+
+/**
+ * A finished film played as it is: its name in the strip, its path as the lab server hands it out (data/library.json),
+ * its rate and length in frames. chapters: one part each, so that the strip has a box per chapter and a click jumps there.
+ */
+export type ReferenceFilm = { id: string; name: string; path: string; fps: number; frames: number; width: number; height: number; chapters?: Chapter[] };
 
 /**
  * A round: name for its chip, text for the address (?runda=…) in his notation, or the lab's own with pinned takes
@@ -42,9 +54,99 @@ export const V6_DEAL = "A2.1 - P4C1 - A2.1 - P4C2 - A2.1";
  * finished picture with the room, the table and rendered cards; she changes hand and the card is larger than the plan's.
  * The computer's frame (1762 × 1174); the library's other V6 item, under output/v6/, is the phone's portrait reproduction.
  */
-export const V6_FILM: ReferenceFilm = { id: "v6-native-reference", path: "assets/reference/v6.mp4", fps: 30, frames: 926, width: 1762, height: 1174 };
+export const V6_FILM: ReferenceFilm = { id: "v6-native-reference", name: "V6-filmen", path: "assets/reference/v6.mp4", fps: 30, frames: 926, width: 1762, height: 1174 };
 /** Its key, also its text in the address: /?runda=v6-filmen. */
 export const V6_FILM_KEY = "v6-filmen";
+
+// ── The old public page's whole deals (dealer-delta-eosin.vercel.app, 10 Nov; data/library.json) ──────────────────────
+/** A segment of a sequence's timeline as motions/<id>.json keeps it (sequence.segments): its id and its frames [from, to). */
+export type SequenceSegment = { id: string; outputRange: [number, number] };
+
+/**
+ * The chapters of a whole deal from its registered timeline: one where each deal or turn begins ("deal.P3.K1.release",
+ * "reveal.D.K2"), running on through the return after it to the next; "Början" before the first when the film starts
+ * at rest. Labels in his notation: P3C1, DC1, "DC2 upp".
+ */
+export function chaptersOf(segments: readonly SequenceSegment[]): Chapter[] {
+  const out: Chapter[] = [];
+  for (const s of segments) {
+    const m = /^(deal|reveal)\.(P[1-7]|D)\.K(\d)\b/.exec(s.id);
+    if (!m) continue;
+    const [, kind, seat, card] = m;
+    const [from, to] = s.outputRange;
+    const dealer = seat === "D";
+    const label = kind === "reveal" ? `${seat}C${card} upp` : `${seat}C${card}`;
+    const sub = kind === "reveal" ? `dealern vänder kort ${card}` : dealer ? `dealern · kort ${card}` : `plats ${seat.slice(1)} · kort ${card}`;
+    out.push({ label, sub, frame: from, still: Math.max(from, to - 1) });
+  }
+  if (out.length && out[0].frame > 0) out.unshift({ label: "Början", sub: "vila till redo", frame: 0, still: Math.round(out[0].frame / 2) });
+  return out;
+}
+
+// The chapters of pamela-sequence-17-native-r2 as chaptersOf reads motions/pamela-sequence-17-native-r2.json (the test
+// checks it against the registry): seven seats from P7 to P1, the dealer's first, again P7 to P1, the hole card, then the
+// turn and the third. The 16-card film is the same film's first 3296 frames (a frame-exact prefix), so its chapters are
+// these up to the hole card.
+const R2_CHAPTERS: [string, number, number][] = [
+  ["P7C1", 59, 151], ["P6C1", 219, 311], ["P5C1", 404, 493], ["P4C1", 612, 704], ["P3C1", 765, 895], ["P2C1", 1015, 1123], ["P1C1", 1254, 1356],
+  ["DC1", 1417, 1546],
+  ["P7C2", 1595, 1710], ["P6C2", 1830, 1926], ["P5C2", 2039, 2161], ["P4C2", 2278, 2393], ["P3C2", 2513, 2637], ["P2C2", 2752, 2894], ["P1C2", 2973, 3091],
+  ["DC2", 3152, 3250], ["DC2 upp", 3296, 3415], ["DC3", 3475, 3567],
+];
+const r2Chapters = (frames: number): Chapter[] =>
+  chaptersOf(
+    R2_CHAPTERS.filter(([, from]) => from < frames).map(([label, from, last]) => {
+      const m = /^(P[1-7]|D)C(\d)( upp)?$/.exec(label)!;
+      return { id: `${m[3] ? "reveal" : "deal"}.${m[1]}.K${m[2]}${m[3] ? "" : ".release"}`, outputRange: [from, last + 1] as [number, number] };
+    }),
+  );
+
+/**
+ * pamela-sequence-16-native-r2: two cards to P1–P7 (P7 first), the dealer's two; the hole card stays down and the film
+ * ends at rest. Blue/yellow show the card's sides; historical placements, not the plan. 1764 × 1174, 3296 frames.
+ */
+export const SEQ16_FILM: ReferenceFilm = {
+  id: "pamela-sequence-16-native-r2",
+  name: "16 kort",
+  path: "assets/motions/pamela-sequence-16-native-r2/review.mp4",
+  fps: 30,
+  frames: 3296,
+  width: 1764,
+  height: 1174,
+  chapters: r2Chapters(3296),
+};
+/** pamela-sequence-17-native-r2: the 16-card deal, then the hole card turned (DC2 upp) and a third card to the dealer. 3598 frames. */
+export const SEQ17_FILM: ReferenceFilm = {
+  id: "pamela-sequence-17-native-r2",
+  name: "17 kort",
+  path: "assets/motions/pamela-sequence-17-native-r2/source.mp4",
+  fps: 30,
+  frames: 3598,
+  width: 1764,
+  height: 1174,
+  chapters: r2Chapters(3598),
+};
+/**
+ * pamela-older-14-material-full: the older V6-era composition, two cards to all seven (P1 first), no dealer cards, white
+ * cards with material in the room of V6. 3:03, 1762 × 1174. The library has no chapters per seat for it (only its start and
+ * end), so it plays as one part.
+ */
+export const OLDER14_FILM: ReferenceFilm = {
+  id: "pamela-older-14-material-full",
+  name: "14 kort, äldre",
+  path: "assets/motions/pamela-older-14-material-full/source.mp4",
+  fps: 30,
+  frames: 5486,
+  width: 1762,
+  height: 1174,
+};
+/** The references in the order the picker lists them, with their keys (the address: /?runda=17-kort). */
+export const REFERENCE_FILMS: { key: string; sub: string; film: ReferenceFilm }[] = [
+  { key: V6_FILM_KEY, sub: "den färdiga filmen från 10 nov · byter hand · större kort", film: V6_FILM },
+  { key: "16-kort", sub: "16 kort · alla sju platser · 10 nov · hålkortet dolt", film: SEQ16_FILM },
+  { key: "17-kort", sub: "17 kort · alla sju platser · 10 nov · DC2 upp och DC3", film: SEQ17_FILM },
+  { key: "14-kort", sub: "14 kort · alla sju platser · äldre · inga dealerkort", film: OLDER14_FILM },
+];
 
 const plain = (edges: { from: string; to: string }[]): Step[] => edges.map((e) => ({ from: e.from, to: e.to }));
 const reference = (key: string, name: string, sub: string, film: ReferenceFilm): Round => ({ key, name, text: key, steps: [], errors: [], sub, film });
@@ -59,7 +161,7 @@ export function readyRounds(): Round[] {
     { ...fromText("plats-4-tva", "Plats 4 · två kort", V6_DEAL), sub: `${V6_DEAL} · bankens filmer` },
     fromSteps("alla", "Alla platser", plain(roundSequence({ seats: SEATS, reveal: true }))),
     ...SEATS.map((seat) => fromSteps(seat.toLowerCase(), seat, plain(roundSequence({ seats: [seat], dealer: false, cards: 1 })))),
-    reference(V6_FILM_KEY, "V6-filmen", "den färdiga filmen från 10 nov · byter hand · större kort", V6_FILM),
+    ...REFERENCE_FILMS.map((r) => reference(r.key, r.film.name, r.sub, r.film)),
   ];
 }
 
@@ -86,8 +188,18 @@ export function referencePart(film: ReferenceFilm): PlayPart {
   return { step: 0, edge: film.id, from: "", to: "", take: null, path: labUrl(film.path), start: 0, end: film.frames, fps: film.fps, speed: 1, track: null, gap: null, known: true };
 }
 
-/** The parts of a round: a reference film's one part, else one per step the bank resolved. */
-export const roundParts = (round: Round | null, segments: readonly Segment[]): PlayPart[] => (isReference(round) ? [referencePart(round.film)] : partsOf(segments));
+/**
+ * A reference film as the stage plays it: one part per chapter, back to back on the same file (the stage plays them as
+ * one run and steps frames across them), so that a box of the strip cues its chapter; without chapters the one part.
+ */
+export function referenceParts(film: ReferenceFilm): PlayPart[] {
+  const chapters = film.chapters ?? [];
+  if (chapters.length < 2) return [referencePart(film)];
+  return chapters.map((c, step) => ({ ...referencePart(film), step, edge: `${film.id}#${c.label}`, start: c.frame, end: chapters[step + 1]?.frame ?? film.frames }));
+}
+
+/** The parts of a round: a reference film's (one per chapter), else one per step the bank resolved. */
+export const roundParts = (round: Round | null, segments: readonly Segment[]): PlayPart[] => (isReference(round) ? referenceParts(round.film) : partsOf(segments));
 
 /** The view a round can be shown in: a reference only as the film it is ("Inte 3D"); anything else as asked. */
 export const viewFor = (round: Round | null, asked: View): View => (isReference(round) ? "platt" : asked);

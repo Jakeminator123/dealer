@@ -4,7 +4,8 @@
 // per step: a still of the take, the edge in Jakob's words ("A2.1 → P4C1"), the take's short name, its verdict chip and
 // why it plays. The step on screen is marked and kept in view; a click cues that step. A step with a note from the bank
 // (a seam, an unknown landing) says so; a step without a film is drawn as a gap. With film (a reference such as the V6
-// film, lib/rounds.ts) the strip is one box: that film, "referens, inte i banken".
+// film, lib/rounds.ts) the strip is one box: that film, "referens, inte i banken"; a reference with chapters (the old
+// public page's whole deals) has one box per chapter ("P3C1 · plats 3 · kort 1"), and a click jumps there.
 // Stills: a long round (all seats, 34 steps) reads only the stills of the boxes near where the strip rests (a box's own
 // on-screen check also fires for every box the strip scrolls past while it follows the round, and the stills are drawn
 // a few at a time in the order asked, so those passed boxes held up the ones in view). The thumbnails do not play the
@@ -14,7 +15,7 @@ import { GAP_LABEL, WHY_LABEL, type Segment } from "../../../src/clip-graph.ts";
 import { useOptionalBank } from "../../lib/bank.ts";
 import { edgeName, takeName } from "../../lib/names.ts";
 import { lastFrame, type PlayPart } from "../../lib/parts.ts";
-import type { ReferenceFilm } from "../../lib/rounds.ts";
+import type { Chapter, ReferenceFilm } from "../../lib/rounds.ts";
 import { TakeChip, TakeThumb } from "../takes";
 import { cn } from "../ui/cn";
 import { Tooltip } from "../ui/Tooltip";
@@ -45,7 +46,7 @@ export function RoundStrip({
   const current = useClock(clock, (s) => s.pos?.step ?? -1);
   const scroller = useRef<HTMLDivElement>(null);
   const [near, setNear] = useState<ReadonlySet<number>>(() => new Set());
-  const count = film ? 1 : segments.length;
+  const count = film ? parts.length : segments.length;
 
   // Which boxes are near the window, measured where the strip comes to rest (and at once on a new round or size).
   useEffect(() => {
@@ -88,7 +89,13 @@ export function RoundStrip({
       className={cn("relative flex shrink-0 gap-2 overflow-x-auto px-3 py-2 [scrollbar-width:thin]", className)}
     >
       {film ? (
-        <FilmBox film={film} part={parts[0]} active={current === 0} clock={clock} load={near.has(0)} onCue={onCue} />
+        film.chapters && parts.length > 1 ? (
+          parts.map((part, i) => (
+            <ChapterBox key={i} index={i} film={film} chapter={film.chapters![i]} part={part} active={current === i} clock={clock} load={near.has(i)} onCue={onCue} />
+          ))
+        ) : (
+          <FilmBox film={film} part={parts[0]} active={current === 0} clock={clock} load={near.has(0)} onCue={onCue} />
+        )
       ) : (
         segments.map((seg, i) => <StepBox key={i} index={i} seg={seg} part={parts[i]} active={i === current} clock={clock} load={near.has(i)} onCue={onCue} />)
       )}
@@ -114,9 +121,58 @@ function FilmBox({ film, part, active, clock, load, onCue }: { film: ReferenceFi
         {active && part ? <Progress clock={clock} part={part} /> : null}
       </TakeThumb>
       <span className="flex min-w-0 flex-1 flex-col justify-center gap-px pr-1">
-        <span className="truncate text-sm font-semibold text-ink">V6-filmen</span>
+        <span className="truncate text-sm font-semibold text-ink">{film.name}</span>
         <span className="truncate text-xs text-dim">referens, inte i banken</span>
         <span className="truncate text-2xs text-faint">färdig film · spelas som den är</span>
+      </span>
+    </button>
+  );
+}
+
+/** A chapter of a reference film: a still where its card lets go, the card in his notation, the seat in words. */
+function ChapterBox({
+  index,
+  film,
+  chapter,
+  part,
+  active,
+  clock,
+  load,
+  onCue,
+}: {
+  index: number;
+  film: ReferenceFilm;
+  chapter: Chapter | undefined;
+  part: PlayPart;
+  active: boolean;
+  clock?: Clock | null;
+  load: boolean;
+  onCue(step: number): void;
+}) {
+  const thumb = { id: film.id, media: { video: film.path }, fps: film.fps, frames: film.frames, segment: null, landingFrame: null };
+  return (
+    <button
+      type="button"
+      data-step={index}
+      aria-current={active ? "step" : undefined}
+      onClick={() => onCue(index)}
+      className={cn(
+        "group relative flex w-[216px] shrink-0 items-stretch gap-2.5 rounded-lg border p-1 text-left transition-[border-color,background-color] duration-150",
+        active ? "border-brass/70 bg-brass/[0.07] shadow-[0_0_0_1px_rgb(217_185_106/0.25)]" : "border-line bg-surface hover:border-line-strong hover:bg-raised",
+      )}
+    >
+      <TakeThumb take={thumb} still="film" frame={chapter?.still ?? part.start} scrub={false} load={load} className="w-[104px] shrink-0 rounded-[5px]">
+        <span className="pointer-events-none absolute left-1 top-1 rounded-xs bg-black/65 px-1.5 py-px text-2xs font-semibold text-ink tabular-nums backdrop-blur-sm">
+          {index + 1}
+        </span>
+        {active ? <Progress clock={clock} part={part} /> : null}
+      </TakeThumb>
+      <span className="flex min-w-0 flex-1 flex-col justify-center gap-px pr-1">
+        <span className="truncate text-sm font-semibold text-ink">{chapter?.label ?? `Del ${index + 1}`}</span>
+        <span className="truncate text-xs text-dim">{chapter?.sub ?? ""}</span>
+        <span className="truncate text-2xs text-faint tabular-nums">
+          {film.name} · ruta {part.start}
+        </span>
       </span>
     </button>
   );

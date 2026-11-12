@@ -6,12 +6,12 @@ import { defaultPlan } from "../../src/placement-model.ts";
 import { formatJakob } from "../lib/names.ts";
 import { partsOf } from "../lib/parts.ts";
 import { readFileSync } from "node:fs";
-import { SEAT_FOUR, V6_FILM, addressOf, contextRound, contextSteps, isReference, matchReady, no3d, placesOf, readAddress, readyRounds, referencePart, roundFacts, roundFromText, roundParts, viewFor } from "../lib/rounds.ts";
+import { OLDER14_FILM, REFERENCE_FILMS, SEAT_FOUR, SEQ16_FILM, SEQ17_FILM, V6_FILM, addressOf, chaptersOf, referenceParts, type SequenceSegment,contextRound, contextSteps, isReference, matchReady, no3d, placesOf, readAddress, readyRounds, referencePart, roundFacts, roundFromText, roundParts, viewFor } from "../lib/rounds.ts";
 import { nearSteps, sameSet, stillOf } from "../components/round/strip.ts";
 
 test("the ready-made rounds, in his notation", () => {
   const all_ = readyRounds();
-  assert.deepEqual(all_.map((r) => r.name), ["Plats 4", "Plats 4 · två kort", "Alla platser", "P1", "P2", "P3", "P4", "P5", "P6", "P7", "V6-filmen"]);
+  assert.deepEqual(all_.map((r) => r.name), ["Plats 4", "Plats 4 · två kort", "Alla platser", "P1", "P2", "P3", "P4", "P5", "P6", "P7", "V6-filmen", "16 kort", "17 kort", "14 kort, äldre"]);
   const rounds = all_.filter((r) => !isReference(r));
   assert.ok(rounds.every((r) => !r.errors.length && r.steps.length));
   const [four, v6, all, p1] = rounds;
@@ -132,6 +132,56 @@ test("the V6 film: a reference of its own, the library's file, one part, only in
   assert.equal(viewFor(bankRound, "3d"), "3d");
   assert.equal(no3d(bankRound), null);
   assert.equal(viewFor(null, "3d"), "3d");
+});
+
+test("the old public page's whole deals: references of their own, the library's files, chapters from the registry", () => {
+  type Item = { id: string; path: string; fps: number; frameCount: number; width: number; height: number; sha256: string };
+  const library = JSON.parse(readFileSync(new URL("../../data/library.json", import.meta.url), "utf8")) as { items: Item[] };
+  const media = JSON.parse(readFileSync(new URL("../../data/public-media.json", import.meta.url), "utf8")) as { entries: { id: string; path: string }[] };
+  // every reference is a library item on the public page, with its path, rate, length and size (the lab server hands out those paths)
+  for (const { film } of REFERENCE_FILMS) {
+    const item = library.items.find((i) => i.id === film.id)!;
+    assert.ok(item, film.id);
+    assert.deepEqual({ path: item.path, fps: item.fps, frames: item.frameCount, width: item.width, height: item.height }, { path: film.path, fps: film.fps, frames: film.frames, width: film.width, height: film.height }, film.id);
+    assert.equal(media.entries.find((e) => e.id === film.id)?.path, film.path, film.id);
+  }
+  // keys and addresses: /?runda=16-kort opens it, always flat
+  const refs = readyRounds().filter(isReference);
+  assert.deepEqual(refs.map((r) => r.key), ["v6-filmen", "16-kort", "17-kort", "14-kort"]);
+  for (const r of refs) {
+    assert.equal(roundFromText(r.key).key, r.key);
+    assert.equal(addressOf(r, "3d"), `?runda=${r.key}`);
+    assert.equal(viewFor(r, "3d"), "platt");
+  }
+  assert.equal(refs[1].sub, "16 kort · alla sju platser · 10 nov · hålkortet dolt");
+
+  // the chapters are the registry's timeline: each deal and the turn begins one (motions/<id>.json sequence.segments)
+  for (const film of [SEQ16_FILM, SEQ17_FILM]) {
+    const motion = JSON.parse(readFileSync(new URL(`../../motions/${film.id}.json`, import.meta.url), "utf8")) as { source: { frames: number }; sequence: { segments: SequenceSegment[] } };
+    assert.equal(motion.source.frames, film.frames);
+    assert.deepEqual(film.chapters, chaptersOf(motion.sequence.segments), film.id);
+  }
+  // 16: Början, 7 + dealer + 7 + dealer = 17 chapters; 17 adds the turn and the third card
+  assert.deepEqual(SEQ16_FILM.chapters!.map((c) => c.label), ["Början", "P7C1", "P6C1", "P5C1", "P4C1", "P3C1", "P2C1", "P1C1", "DC1", "P7C2", "P6C2", "P5C2", "P4C2", "P3C2", "P2C2", "P1C2", "DC2"]);
+  assert.deepEqual(SEQ17_FILM.chapters!.slice(-3).map((c) => c.label), ["DC2", "DC2 upp", "DC3"]);
+  const p3 = SEQ17_FILM.chapters!.find((c) => c.label === "P3C1")!;
+  assert.deepEqual(p3, { label: "P3C1", sub: "plats 3 · kort 1", frame: 765, still: 895 });
+
+  // one part per chapter, back to back over the whole film, on the one file
+  const parts = referenceParts(SEQ17_FILM);
+  assert.equal(parts.length, 19);
+  assert.deepEqual(parts.map((p) => p.step), [...parts.keys()]);
+  assert.equal(parts[0].start, 0);
+  assert.equal(parts.at(-1)!.end, 3598);
+  for (let i = 1; i < parts.length; i++) assert.equal(parts[i].start, parts[i - 1].end);
+  assert.ok(parts.every((p) => p.path === "/assets/motions/pamela-sequence-17-native-r2/source.mp4" && p.gap === null && p.speed === 1));
+  assert.deepEqual(roundParts(refs[2], []), parts);
+  assert.equal(roundFacts(parts), "19 steg · 119,9 s");
+  // the 16-card film ends on the dealer's hole card at rest
+  assert.equal(referenceParts(SEQ16_FILM).at(-1)!.end, 3296);
+  // without chapters one part, the whole film
+  assert.deepEqual(referenceParts(OLDER14_FILM), [referencePart(OLDER14_FILM)]);
+  assert.deepEqual(chaptersOf([]), []);
 });
 
 test("the strip: a return's still a third in, a deal's at its landing; stills only near the window", () => {

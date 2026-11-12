@@ -2,7 +2,8 @@
 
 // <RoundPicker rounds={readyRounds()} current={round} onPick={(round) => …} />: the rounds Jakob can play. The ready-made
 // ones as chips in his notation (his favourite to seat 4, seat 4 with two cards in V6's order, every seat, one seat at a
-// time), under "Referens" the finished films that are not the bank's (the V6 film), and a field that takes his notation
+// time), under "Referens" the finished films that are not the bank's (the V6 film, the old public page's whole deals of
+// 16, 17 and 14 cards), and a field that takes his notation
 // ("A2.1 - P4C1 - A2.1 - P4C2 - A2.1") and says in plain Swedish what it could not read.
 import { CornerDownLeft, Film } from "lucide-react";
 import { useState } from "react";
