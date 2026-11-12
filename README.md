@@ -25,7 +25,7 @@ Exakt skickad prompt, start-/slut-PNG, modellinställningar och resultaten finns
 ## Kör lokalt
 
 - Arbeta här. `node -p process.version` ska visa `v24.21.0` via Volta; `package.json` kräver `>=24.21.0 <25`. `npm ci` behövs om beroenden saknas.
-- `START.cmd`, `STATUS.cmd`, `STOPP.cmd` styr enbart `http://127.0.0.1:4319`. Återanvänd Codex WebView. Servern slutar 60 sekunder efter sista preview-fliken.
+- `START.cmd` startar labbservern på `http://127.0.0.1:4319` utan fönster och visar labbet i en enda flik; `STATUS.cmd` och `STOPP.cmd` frågar och stoppar. Öppnas en labbflik till stänger den äldre sig själv, eller blir tom där webbläsaren inte låter en sida stänga sin flik. `node tools/preview.ts --open "<sida>"` visar en sida i den öppna fliken i stället för i en ny. Servern slutar 60 sekunder efter att fliken stängts.
 - Öppna [placeringslabbet](http://127.0.0.1:4319/lab.html): 16 kortplatser och sko, separat dator/mobil, hand-/sidavsikt, nodvy, materialpanel och filmkatalog. Sparning ändrar bara placeringsutkastet. Grundkontroller finns i [evidence/placement-lab.json](evidence/placement-lab.json), senare vy-/nodkontroller i [evidence/plane-and-nodemap.json](evidence/plane-and-nodemap.json).
 - Filmgranskningen har steg ±1 bildruta, kapitel och hastighet 0,25×/0,5×/1×. URL-parametrarna `clip` och `frame` pekar ut klipp och granskningsruta; tillgänglighet på publika sidan beror på senaste verifierade release.
 - `npm run verify` kontrollerar registrerade lokala filer. `npm run verify -- --frames` återrenderar 18 kontrollrutor och kräver pixelidentitet.

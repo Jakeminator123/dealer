@@ -1,19 +1,57 @@
 import http from 'node:http';
 import {readFile,mkdir,writeFile,stat,unlink,realpath,readdir} from 'node:fs/promises';
-import {createReadStream} from 'node:fs';
+import {createReadStream,existsSync} from 'node:fs';
+import {spawn} from 'node:child_process';
 import {randomUUID} from 'node:crypto';
 import {stripTypeScriptTypes} from 'node:module';
 import path from 'node:path';
 import {placementStore,StoreError} from './placement-store.ts';
 import {reviewStore} from './review-store.ts';
 import {createSession,SessionError,type Session,type SessionOptions} from '../game/session.ts';
+import {tabRegistry,localPath,type Tab} from './tab-registry.ts';
 const port=4319,origin=`http://127.0.0.1:${port}`,state='.runtime/preview.json';
-if(process.argv.includes('--stop')||process.argv.includes('--status')){
- const s=JSON.parse(await readFile(state,'utf8'));
- if(s.root!==process.cwd()||s.port!==port)throw Error('Preview identity differs');
- const stop=process.argv.includes('--stop');
- const r=await fetch(origin+(stop?'/stop':'/health'),{method:stop?'POST':'GET',headers:stop?{'x-dealer-token':s.token}:{}});
- if(!r.ok)throw Error('Preview control failed');console.log(await r.text());
+const args=process.argv.slice(2),has=(flag:string)=>args.includes(flag);
+// The same checkout, whatever case the shell wrote the drive letter in (Git Bash and PowerShell differ on Windows).
+const sameRoot=(a:unknown,b:string)=>typeof a==='string'&&(process.platform==='win32'?path.resolve(a).toLowerCase()===path.resolve(b).toLowerCase():path.resolve(a)===path.resolve(b));
+const readState=async()=>{try{return JSON.parse(await readFile(state,'utf8')) as {root?:string;token?:string};}catch{return null;}};
+const health=async()=>{try{const r=await fetch(origin+'/health',{signal:AbortSignal.timeout(1500)});return r.ok?await r.json() as {name?:string;root?:string}:null;}catch{return null;}};
+if(has('--stop')||has('--status')){
+ const alive=await health();
+ // Not running is an answer, not a failure; a status file left by a server that was killed is cleared on the way.
+ if(!alive){const s=await readState();if(s&&sameRoot(s.root,process.cwd()))await unlink(state).catch(()=>{});console.log('Labbservern är inte igång.');}
+ else if(alive.name!=='dealer'||!sameRoot(alive.root,process.cwd()))throw Error('Preview identity differs');
+ else if(has('--status'))console.log(JSON.stringify(alive));
+ else{const s=await readState();if(!s?.token)throw Error('Preview control failed');
+  const r=await fetch(origin+'/stop',{method:'POST',headers:{'x-dealer-token':s.token}});
+  if(!r.ok)throw Error('Preview control failed');console.log(await r.text());}
+}else if(has('--open')){
+ // The one way to put a lab page in front of Jakob: node tools/preview.ts --open "lab.html?tab=prov" (START.cmd does this
+ // with the lab's first page). The server is started if it is not running, the page is shown in the lab tab that is
+ // already open, and only when there is none is a tab opened. Opening the address itself adds a tab every time.
+ const wanted=args[args.indexOf('--open')+1],target=localPath(wanted&&!wanted.startsWith('--')?wanted:'lab.html',origin);
+ if(!target)throw Error('Ange en sida i labbet, till exempel lab.html?tab=prov');
+ let alive=await health();
+ if(alive&&(alive.name!=='dealer'||!sameRoot(alive.root,process.cwd())))throw Error('Preview identity differs');
+ if(!alive){
+  // Its own process, without a window, with scratch on D: where that folder exists. It stops by itself when the lab tab has been closed for a minute.
+  const scratch='D:/dealer-scratch/tmp',env=existsSync(scratch)?{...process.env,TEMP:scratch,TMP:scratch}:process.env;
+  // On Windows a child started by Node inherits the caller's open handles, so a server started that way would hold the
+  // caller's output pipe and a command that reads it (an agent's shell, "| more") would never end. Start-Process hands
+  // the start to the shell, which passes no handles on.
+  const quote=(text:string)=>`'${text.replaceAll("'","''")}'`;
+  if(process.platform==='win32')spawn('powershell.exe',['-NoProfile','-NonInteractive','-Command',`Start-Process -FilePath ${quote(process.execPath)} -ArgumentList 'tools/preview.ts' -WorkingDirectory ${quote(process.cwd())} -WindowStyle Hidden`],{env,stdio:'ignore',windowsHide:true});
+  else spawn(process.execPath,['tools/preview.ts'],{cwd:process.cwd(),env,detached:true,stdio:'ignore'}).unref();
+  for(let i=0;i<60&&!alive;i++){await new Promise(done=>setTimeout(done,250));alive=await health();}
+  if(!alive)throw Error('Labbservern startade inte.');
+ }
+ let s=await readState();for(let i=0;i<20&&!s?.token;i++){await new Promise(done=>setTimeout(done,100));s=await readState();}
+ const r=await fetch(origin+'/tab/show',{method:'POST',headers:{'x-dealer-token':s?.token??'','content-type':'application/json'},body:JSON.stringify({url:target})});
+ if(!r.ok)throw Error('Preview control failed');
+ if((await r.json() as {reused:boolean}).reused)console.log(`Visas i den öppna labbfliken: ${origin}${target}`);
+ else{
+  const [command,list]:[string,string[]]=process.platform==='win32'?['rundll32',['url.dll,FileProtocolHandler',origin+target]]:process.platform==='darwin'?['open',[origin+target]]:['xdg-open',[origin+target]];
+  spawn(command,list,{detached:true,stdio:'ignore'}).unref();console.log(`Öppnade labbfliken: ${origin}${target}`);
+ }
 }else{
  const manifest=JSON.parse(await readFile('manifest.json','utf8'));
  const allowed=new Set(['preview.html','lab.html','lab.css','scene3d.html','game.html','game.css','props.html','props.css','data/props.json','sound.html','sound.css','generation.html','data/p4-generation-review.json','data/scene-contract.json','data/scene-rooms.json','assets/lab/native.jpg','assets/lab/portrait.jpg','assets/scene/room.png','assets/scene/panorama-vegas.jpg','assets/scene/panorama-la.jpg','assets/scene/panorama-skog.jpg',...['room-panorama','room-la','room-skog','room-hall','room-salong','dealer-pamela'].map(name=>`assets/scene/thumbs/${name}.jpg`),...['wood_table-diffuse','wood_table-nor_gl','wood_table-rough','brown_leather-nor_gl','brown_leather-rough','denim_fabric-nor_gl','denim_fabric-rough'].map(name=>`assets/scene/materials/${name}.webp`),'materials/kortmaterial.html','materials/markermaterial.html',...manifest.files.map((f:{path:string})=>f.path).filter((p:string)=>p.startsWith('assets/')||p.startsWith('materials/')||p.startsWith('output/v6/'))]);
@@ -86,17 +124,36 @@ if(process.argv.includes('--stop')||process.argv.includes('--status')){
  // One session per table name (?table=…, "main" when none): a second tab or a test plays its own table and leaves the first alone.
  const games=new Map<string,Session>(),tableName=(url:URL)=>{const name=url.searchParams.get('table')??'main';return /^[a-z0-9-]{1,40}$/.test(name)?name:null;};
  const tableOf=(name:string)=>{let game=games.get(name);if(!game){if(games.size>=24)games.delete(games.keys().next().value!);game=createSession();games.set(name,game);}return game;};
- const token=randomUUID();let lastSeen=Date.now();
+ // The lab's pages: one tab at a time (tools/tab-registry.ts). A page with a stream keeps the server up for as long as it is open.
+ const token=randomUUID(),tabs=tabRegistry();
  const types:Record<string,string>={'.html':'text/html; charset=utf-8','.css':'text/css; charset=utf-8','.js':'text/javascript; charset=utf-8','.mp4':'video/mp4','.png':'image/png','.jpg':'image/jpeg','.json':'application/json','.glb':'model/gltf-binary'};
- const stop=()=>server.close();
+ // Streams and films in flight would hold the server open: the lab tab is told first, and what is still connected after half a second is cut.
+ const stop=()=>{tabs.retire('stop');server.close();setTimeout(()=>server.closeAllConnections(),500).unref();};
  const server=http.createServer(async(req,res)=>{
   try{
    res.setHeader('Cache-Control','no-store');
    if(req.headers.host!==`127.0.0.1:${port}`){res.writeHead(403).end();return;}
    const url=new URL(req.url??'/',origin);
-   if(url.pathname==='/health'){res.setHeader('Content-Type','application/json');res.end(JSON.stringify({name:'dealer',root:process.cwd(),pid:process.pid,port}));return;}
+   if(url.pathname==='/health'){res.setHeader('Content-Type','application/json');res.end(JSON.stringify({name:'dealer',root:process.cwd(),pid:process.pid,port,tabs:tabs.status()}));return;}
    if(url.pathname==='/stop'&&req.method==='POST'&&req.headers['x-dealer-token']===token){res.end('Stopped dealer preview');stop();return;}
-   if(url.pathname==='/heartbeat'&&req.method==='POST'&&req.headers.origin===origin){lastSeen=Date.now();res.end('ok');return;}
+   if(url.pathname==='/heartbeat'&&req.method==='POST'&&req.headers.origin===origin){tabs.touch();res.end('ok');return;}
+   // The stream of a lab page (src/preview-ui.ts), from a page of this lab only. What the server has to say to the tab goes out here.
+   if(url.pathname==='/tab/events'&&req.method==='GET'){
+    const id=url.searchParams.get('id')??'',page=localPath(url.searchParams.get('page')??'/',origin);
+    if(req.headers['sec-fetch-site']!=='same-origin'||!/^[0-9a-f-]{8,40}$/.test(id)||!page){res.writeHead(400).end();return;}
+    res.writeHead(200,{'Content-Type':'text/event-stream; charset=utf-8','Connection':'keep-alive'});res.write(': dealer lab tab\n\n');
+    const tab:Tab={id,page,send:event=>{res.write(`event: ${event.type}\ndata: ${JSON.stringify(event)}\n\n`);if(event.type==='retire')res.end();}};
+    const ping=setInterval(()=>res.write(': ping\n\n'),20000);
+    res.on('close',()=>{clearInterval(ping);tabs.disconnect(tab);});tabs.connect(tab);return;
+   }
+   // Show a page in the lab tab (node tools/preview.ts --open): answered with whether a tab was open to show it in.
+   if(url.pathname==='/tab/show'&&req.method==='POST'&&req.headers['x-dealer-token']===token){
+    res.setHeader('Content-Type','application/json; charset=utf-8');
+    let size=0;const chunks:Buffer[]=[];for await(const chunk of req){size+=chunk.length;if(size>4096){res.writeHead(413).end();return;}chunks.push(chunk);}
+    let wanted:unknown;try{wanted=JSON.parse(Buffer.concat(chunks).toString('utf8')).url;}catch{wanted=null;}
+    const target=localPath(wanted,origin);if(!target){res.writeHead(400).end(JSON.stringify({error:'Bara sidor i labbet kan visas.'}));return;}
+    res.end(JSON.stringify(tabs.show(target)));return;
+   }
    if(url.pathname==='/api/placements'){
     res.setHeader('Content-Type','application/json; charset=utf-8');
     // A proposal beside Jakob's draft (placements/proposals/<name>.json): read-only, for a lab page that is asked for it by name. His draft is the plan without a name, and the only one that can be saved.
@@ -175,8 +232,10 @@ if(process.argv.includes('--stop')||process.argv.includes('--status')){
    const stream=createReadStream(file,{start,end});stream.on('error',()=>res.destroy());stream.pipe(res);res.on('close',()=>stream.destroy());
   }catch{if(!res.headersSent)res.writeHead(500);res.end();}
  });
- const timer=setInterval(()=>{if(Date.now()-lastSeen>60000)stop();},5000);timer.unref();
- server.on('error',error=>{console.error(error.message);process.exitCode=1;});
+ const timer=setInterval(()=>{if(tabs.idleFor()>60000)stop();},5000);timer.unref();
+ // The port is taken: by this lab's own server (nothing to do), or by something else (an error).
+ server.on('error',async(error:NodeJS.ErrnoException)=>{const mine=error.code==='EADDRINUSE'?await health():null;
+  if(mine?.name==='dealer'&&sameRoot(mine.root,process.cwd()))console.log(`Labbservern går redan: ${origin}`);else{console.error(error.message);process.exitCode=1;}});
  server.on('close',()=>{clearInterval(timer);void unlink(state).catch(()=>{});});
  server.listen(port,'127.0.0.1',async()=>{await mkdir('.runtime',{recursive:true});await writeFile(state,JSON.stringify({root:process.cwd(),port,pid:process.pid,parent:process.ppid,executable:process.execPath,script:'tools/preview.ts',startedAt:new Date().toISOString(),token}));console.log(origin);});
  process.on('SIGINT',stop);process.on('SIGTERM',stop);

@@ -1,3 +1,3 @@
 @echo off
 cd /d "%~dp0"
-node tools/preview.ts
+node tools/preview.ts --open %*
