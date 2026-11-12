@@ -4,7 +4,8 @@
 // like the proof room's viewer (components/proofs/ImageViewer), and in two ways more: a frame of a film is shown from the
 // film itself (a paused video at that frame), and its facts open on demand beside it (F): where the file lies, its size,
 // what it was made from, and the bank's films that start or end on it, each a link to the map. ← → between the pictures
-// of the row, Z between the fitted picture and its full size, Esc closes.
+// of the row, Z between the fitted picture and its full size, Esc closes. A candidate picture has Godkänn and Underkänn
+// in the header (StateDecision), given the register's revision; not in the online copy.
 import * as RD from "@radix-ui/react-dialog";
 import { ChevronLeft, ChevronRight, HardDrive, ImageOff, Info, Maximize2, Minimize2, X } from "lucide-react";
 import Link from "next/link";
@@ -16,6 +17,7 @@ import { edgeName, nodeName, takeName } from "../../lib/names.ts";
 import { formatBytes } from "../../lib/proofs.ts";
 import { TakeChip, frameTime } from "../takes";
 import { Button, IconButton, Kbd, cn } from "../ui";
+import { StateDecision } from "./StateDecision";
 import { StateChip } from "./Tile";
 
 const PAD = 24;
@@ -138,6 +140,7 @@ function Facts({ entry }: { entry: EntryAnswer }) {
           {where ? <span className="text-dim"> · {where}</span> : null}
         </Fact>
         {entry.note ? <Fact label="Om bilden">{entry.note}</Fact> : null}
+        {(entry as { stateBy?: string }).stateBy ? <Fact label="Dom">{(entry as { stateBy?: string }).stateBy}</Fact> : null}
         <Fact label="Var den ligger">
           <span className="break-all font-mono text-xs leading-5 text-dim">{entry.pattern ?? entry.path ?? `assets/proofs/${entry.proof}`}</span>
           {entry.frame !== undefined ? (
@@ -167,7 +170,20 @@ function Facts({ entry }: { entry: EntryAnswer }) {
   );
 }
 
-export function MaterialViewer({ entries, index, onIndex }: { entries: readonly EntryAnswer[]; index: number | null; onIndex: (index: number | null) => void }) {
+export function MaterialViewer({
+  entries,
+  index,
+  onIndex,
+  revision = null,
+  onDecided,
+}: {
+  entries: readonly EntryAnswer[];
+  index: number | null;
+  onIndex: (index: number | null) => void;
+  /** The register's revision as read: with it, a candidate gets Godkänn and Underkänn (StateDecision). */
+  revision?: string | null;
+  onDecided?: () => void;
+}) {
   const open = index !== null && !!entries[index];
   const entry = open ? entries[index] : null;
   const [facts, setFacts] = useState(false);
@@ -210,6 +226,11 @@ export function MaterialViewer({ entries, index, onIndex }: { entries: readonly 
                 <span className="text-sm text-dim">{ROLE_LABEL[entry.role]}</span>
                 <RD.Title className="min-w-0 truncate font-display text-md font-semibold text-ink">{entry.name}</RD.Title>
                 {entry.state ? <StateChip state={entry.state} size="md" /> : null}
+                {onDecided ? (
+                  <div className="ml-2 flex items-center gap-1.5">
+                    <StateDecision entry={entry} row={entries} revision={revision} onDecided={onDecided} />
+                  </div>
+                ) : null}
                 <div className="ml-auto flex items-center gap-1.5">
                   <span className="mr-3 hidden items-center gap-1.5 text-xs text-faint lg:flex">
                     <Kbd>F</Kbd> fakta

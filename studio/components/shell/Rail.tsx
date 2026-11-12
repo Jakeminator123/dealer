@@ -4,7 +4,7 @@
 // edges with a Primär beside Primära), whether the lab answers, and "Gamla labbet ↗" at the bottom (same tab).
 // In the online copy (lib/mode.ts) there is no old lab, so that link is not drawn; instead the bot is there: the view
 // Önskemål (with the answers from Jakob not yet seen) and "Fråga", which opens and closes the panel (components/bot).
-import { ArrowUpRight, Clapperboard, FlaskConical, Images, Inbox, MessageCircleQuestion, ScanEye, Spade, Star, Workflow } from "lucide-react";
+import { ArrowUpRight, Clapperboard, FlaskConical, Images, Inbox, MessageCircleQuestion, ScanEye, Send, Spade, Star, Workflow } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useMemo, type ComponentType } from "react";
@@ -27,11 +27,13 @@ export const VIEWS: readonly View[] = [
   { href: "/granska/", label: "Granska", hint: "Filmer som väntar på ditt beslut", icon: ScanEye },
   { href: "/prov/", label: "Prov", hint: "Jämförelsefilmer och kontaktark", icon: FlaskConical },
   { href: "/material/", label: "Material", hint: "Per dealer: ingångsbild, keystone, ankare, filmer och referenser", icon: Images },
+  { href: "/bestall/", label: "Beställ", hint: "Det här skickas: granska en beställning av bild eller film innan du godkänner", icon: Send },
   { href: "/game/", label: "Casino", hint: "Spela blackjack som i casinot: spelmotorn, marker och reglage, med valt förval", icon: Spade },
 ];
 
-/** The views the rail shows: the online copy has no game engine, so Casino is only in the lab. */
-const SHOWN: readonly View[] = isSnapshot ? VIEWS.filter((view) => view.href !== "/game/") : VIEWS;
+/** The views the rail shows: the online copy has no game engine and orders nothing, so Casino and Beställ are only in the lab. */
+const LAB_ONLY: readonly string[] = ["/game/", "/bestall/"];
+const SHOWN: readonly View[] = isSnapshot ? VIEWS.filter((view) => !LAB_ONLY.includes(view.href)) : VIEWS;
 
 /** The view of requests to Jakob: only where the bot is (the online copy). */
 export const REQUESTS_VIEW: View = { href: "/onskemal/", label: "Önskemål", hint: "Önskemål till Jakob, med status och hans svar", icon: Inbox };

@@ -1,0 +1,79 @@
+{
+  "about": "What every dealer's anchors agree on, and the order in which a new dealer's pictures are made. Cleaned from the Paow session's proposal (D:/dealer-scratch/tmp/paow/stabilt/dealer-standard-forslag.json, 2026-11-12). The table edge and the frame are the scene's and stand in data/scene-contract.json; this file points there. Measured values come from the bank's rest frame (frame 0 of pamela-idle-ready-entry-01); a value with \"estimate\" is not measured. The order texts of the view Beställ say the same in words (src/order-prompts.ts, STANDARD_STILL).",
+  "schemaVersion": 1,
+  "scene": {
+    "contract": "data/scene-contract.json",
+    "tableEdgeRow": "measures.dealerEdgeImageRow (831,5): the row where the dealer's body ends on the back edge of the table",
+    "frame": "the bank's frame, 1764 × 1174 on green; a film that arrives in another size is brought to it, its own rate (24 or 30 per s) is kept and stated in the take"
+  },
+  "body": {
+    "seated": "She sits on a chair that is not in the picture, behind the table.",
+    "bodyEndsOnRows": [825, 831],
+    "forearms": "Elbows hang free at her sides; the forearms come down through the air to the hands. There is no table behind the edge for an elbow to rest on or cast a shadow on.",
+    "hands": "Both hands lie on the felt in front of the edge, the wrists above the edge row and the fingers below it, at the places of the measured rest picture (hands below)."
+  },
+  "aboveTheEdge": {
+    "rule": "Nothing 10 levels or more darker than the green above the edge, further than 2 px from her, also at the shoe.",
+    "check": "kantkoll.py in D:/dealer-scratch/tmp/paow/skript/ (0 dark points and the body ending on rows 825–831) until it is ported to the repo"
+  },
+  "hands": {
+    "about": "Rest pose, bank pixels (x, y).",
+    "leftInPicture": { "box": [703, 781, 836, 872], "wrist": [702.6, 781.2], "indexKnuckle": [775.4, 802], "littleKnuckle": [706.3, 826.8], "middleFingertip": [804.7, 872.4] },
+    "rightInPicture": { "box": [910, 783, 1044, 874], "wrist": [1044.1, 782.7], "indexKnuckle": [969.5, 799.4], "littleKnuckle": [1037.1, 827.3], "middleFingertip": [938.4, 873.9] },
+    "knuckleBreadthPx": 73.2,
+    "pxPerMmAtHands": { "value": 0.97, "estimate": "from a knuckle breadth of about 76 mm" },
+    "fitTolerancePx": { "hands": 8, "eyes": 8 }
+  },
+  "card": {
+    "realMm": [63, 88],
+    "atHandsPx": { "value": [61, 85], "estimate": "from pxPerMmAtHands" },
+    "planAgainstReal": { "value": 0.94, "note": "placements/default.json after the enlargement ×1,20 of 2026-11-11, measured against the knuckle breadth" },
+    "colours": { "closed": "yellow", "open": "blue" },
+    "sizeOnTable": "the plan's card (placements/default.json, the size Jakob drags in the lab); every film's landed card is drawn and measured against it"
+  },
+  "shoe": {
+    "perDealer": "One shoe per dealer: the 2.1 shoe (the black shoe with the card showing in the window at the front, frame 0 of pamela-idle-ready-entry-01), in every position including 2.2.",
+    "why": "Jakob 2026-11-12: \"Ett kort ska tas som det ser ut i skon (inte den konstiga bild som har ett kort som är kort och tjockt)\"; the open-front shoe of pamela-ready-b-shoe-plate-01 is not used for new dealers.",
+    "box": [1180, 630, 1700, 905],
+    "cardAgainstReal": { "value": [0.9, 1.29], "estimate": "measured against the knuckle breadth; open with Jakob whether the shoe's card is made the right size" }
+  },
+  "anchors": {
+    "1": "rest: both hands on the felt",
+    "2.1": "pinch: the left hand (right in the picture) holds the top of the card in the shoe's window between thumb and forefinger",
+    "2.2": "drag: the left hand lies over the card in the shoe's window, fingertips on it",
+    "mustAgree": [
+      "the shoe, pixel for pixel outside her hand",
+      "the green level and tone (rest frame: RGB 0, 237, 44 in the upper-left corner), shared by all anchors of a dealer",
+      "skin and cloth tone",
+      "the row the body ends on"
+    ],
+    "seats": "No anchors of their own while a deal is a round trip from anchor 2 and back: the last picture of a deal is the anchor plus the card as the placement plan draws it."
+  },
+  "order": [
+    "ingångsbild: any picture of the dealer",
+    "keystones: standing and seated, high resolution on white, never played",
+    "anchor 1: the seated pose in the bank's frame on green with the 2.1 shoe, made as an edit of the dealer's own picture",
+    "anchors 2.1 and 2.2: edits of anchor 1 into the two ready poses; then shoe, green and tone brought to anchor 1",
+    "films: every film starts and ends on these fixed anchor pictures, never on a frame of another film; one card per film"
+  ],
+  "takes": {
+    "perClip": 2,
+    "third": "only if both fail the frame review",
+    "review": "every film frame by frame by an independent reviewer before it is called usable; Jakob marks the best take Primär"
+  },
+  "afterWork": {
+    "held": [
+      "cut WAN 3's two last frames (they darken)",
+      "bring every frame's green to the anchor's level",
+      "bring a Kling 4 film to 1764 × 1174 without sound (it arrives with 1172 rows, green at G 255 and a sound track)",
+      "paint over a fault on a still part of the green"
+    ],
+    "failed": ["painting where a hand or arm moves through"]
+  },
+  "videoLook": {
+    "estimate": "two rest films (WAN 3, 4 s), Paow session 2026-11-12",
+    "firstFrameToStartPicture": 4.9,
+    "perLinkWhenChained": 5.1,
+    "advice": "anchors are fixed pictures; a film is never started on another film's frame"
+  }
+}

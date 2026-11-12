@@ -79,7 +79,7 @@ Rörelsernas framtida bindning använder `placementRef`, `sceneProfileId`, `view
 | --- | --- |
 | Ingångsbild, keystone, ankare | Jakobs ord 2026-11-12. Ingångsbild: två bilder i 4K på vitt (stående; sittande i vila). Keystone: förlagan i hög upplösning av en pose, spelas aldrig. Ankare: rutan i bankens format (1764×1174, grönt, bankens sko) som filmer börjar och slutar på. |
 | Ankare 1, 2.1, 2.2 | Vila (`IDLE`); nyp i skons fönster (`READY`, `grip: PINCH`); handen över kortet i skons öppning, släp (`READY-B`, `grip: DRAG`). Äldre Keystone 1/2 och variant A/B är samma ankare. |
-| Riktning, lutning, perspektiv | Kortets tre mått: vart kortsidan pekar på bordet; hur mycket kortet reser sig från bordet (0° = plant); hur mycket smalare den bortre kanten är (Jakob sade vinkel; perspektiv är obekräftat). Inte införda i labbet. |
+| Riktning, lutning, perspektiv | Kortets tre mått: vart kortsidan pekar på bordet; hur mycket kortet reser sig från bordet (0° = plant); hur mycket smalare den bortre kanten är (Jakob 2026-11-12: "perspektiv är bättre"). Gamla labbets etiketter är bytta; lutning saknar reglage. |
 | `IDLE`, `READY` | Vila respektive redo. Äldre VILA/REDO är alias, inte nya tillstånd. |
 | `LH`, `RH` | Dealerns anatomiska vänster/höger, oberoende av bildspegling. |
 | `BACK`, `EDGE`, `FRONT` | Observerad fysisk kortsida mot kameran. |

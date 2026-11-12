@@ -7,4 +7,5 @@ export { AddDialog } from "./AddDialog";
 export { Tile, StateChip, coverOfEntry, tileWidth, filmLine } from "./Tile";
 export { ChainStrip, OrderFrom, RoleRow, FilmsRow, ProofRow, Measures } from "./Rows";
 export { seatGroups, takeCount } from "./films.ts";
-export { getMedia, addPicture } from "./client.ts";
+export { getMedia, addPicture, setPictureState } from "./client.ts";
+export { StateDecision } from "./StateDecision";

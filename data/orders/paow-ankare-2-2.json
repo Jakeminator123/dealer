@@ -1,0 +1,95 @@
+{
+  "schemaVersion": 1,
+  "id": "paow-ankare-2-2",
+  "title": "Paow · ankare 2.2 (släp)",
+  "group": null,
+  "dealer": "paow",
+  "kind": "STILL",
+  "step": {
+    "key": "ANKARE-2.2",
+    "label": "Ankare 2.2 (släp)",
+    "edge": null,
+    "shape": null,
+    "cutInto": [],
+    "makes": {
+      "role": "ankare-2.2",
+      "label": "ankare 2.2"
+    }
+  },
+  "motion": null,
+  "pictures": [
+    {
+      "name": "anchor.png",
+      "label": "Paows bild (@anchor)",
+      "goesAs": "referenceImage",
+      "tag": "anchor",
+      "path": "assets/orders/paow-ankare-2-2/anchor.png",
+      "sha256": "cdaa59756e2eb0f7b839f23254f9999f8c8da4c8eef0e37bf23e9643ba6586ee",
+      "width": 1764,
+      "height": 1174,
+      "from": {
+        "entry": "paow-vila-ung-2",
+        "path": "assets/anchors/paow-vila-ung-2/anchor.png",
+        "note": "Vila, yngre, kandidat 2 (kandidat)"
+      },
+      "waits": null
+    },
+    {
+      "name": "pose.png",
+      "label": "Pose (@pose)",
+      "goesAs": "referenceImage",
+      "tag": "pose",
+      "path": "assets/orders/paow-ankare-2-2/pose.png",
+      "sha256": "0901fc7b99d4383ece2245b5de868833841a695069abdfbeefb81184d14fb69c",
+      "width": 1764,
+      "height": 1174,
+      "from": {
+        "entry": "pamela-slap",
+        "path": "assets/motions/pamela-ready-b-shoe-plate-01/source.mp4",
+        "frame": 112,
+        "note": "Pamelas ankare 2.2 (godkänt; skon där har öppen front och kopieras inte)"
+      },
+      "waits": null
+    }
+  ],
+  "reference": {
+    "status": "INGEN",
+    "why": "Ingen referensfilm behövs för steget."
+  },
+  "generation": {
+    "provider": "runway-app",
+    "tool": "generate_image",
+    "model": "nano-banana-pro",
+    "params": {
+      "ratio": "4:3",
+      "imageSize": "4K"
+    }
+  },
+  "prompt": {
+    "template": "bild-ankare@1",
+    "text": "This is an edit of the picture @anchor. Keep everything in @anchor exactly as it is: the framing and camera, the flat pure chroma-green background and green table surface with no visible edge, the black card shoe at the right with the yellow card in its window, and the woman herself, a young, slim, petite woman with a platinum-blonde chin-length bob, warm-coloured tattoos on her throat and upper chest and a small white flower pendant, in a black tailored blazer over a cream V-neck top: her face, hair, clothes and build, the place and size of her head and body, and her right hand, at the left of the picture, lying flat on the felt. Change only her left arm and hand, at the right of the picture: her hand lies over the yellow card in the shoe's window, fingertips resting flat on the card, ready to slide it out along the felt, in the pose of the dealer's left hand in @pose. The shoe in @pose has an open front: do not copy it. Take only the pose of the arm and hand from @pose, not the person, her clothes, the shoe or the card: the shoe and the yellow card in its window keep exactly the look, size and shape they have in @anchor. She sits on a chair that is not in the picture: her elbows hang free at her sides and her forearms come down to the felt; nothing supports her elbows or forearms. Her jacket continues down to the same straight horizontal line where her body is cut off in @anchor, with no green between the jacket and that line. The green is one even colour everywhere, right up to her outline: no shadows under or beside her arms, her hands, the card or the shoe. Soft, even frontal studio light; natural skin with fine texture, sharp eyes, matte black cloth with soft folds. Nothing of this happens: a second card appears, a finger passes through the card, the card has another size or shape than the card in the shoe's window, a hand floats in the air without holding anything, a second shoe appears, the framing changes.",
+    "sha256": "9669b06915650983fd84bcb1b7815d9c299a0ef1848fa38c6d3f31e12f61154e",
+    "extra": null,
+    "middle": false
+  },
+  "takes": 2,
+  "cost": {
+    "perTake": 40,
+    "total": 80,
+    "worstPerTake": 40,
+    "worstTotal": 80,
+    "basis": "40 krediter per bild. LASMIG: Nano Banana Pro 40 krediter per bild i 4K."
+  },
+  "limits": {
+    "maxCredits": 80,
+    "stopBelowCredits": 2000
+  },
+  "notes": [
+    "Redigering av Paows ankare 1 (kandidat 2) med Pamelas godkända ankare 2.2 som pose. Skon och kortet tas ur hennes egen bild (2.1-skon), inte ur posebilden med öppen front.",
+    "Efter leverans (LASMIG, recept som håller): grundbild.py passar in bilden i bankens ruta, ta-bort-skugga.py, kantkoll.py (0 mörka punkter, kroppen på rad 825–831), sedan skolagning.py, gron-till-niva.py och ton-till.py mot ankare 1."
+  ],
+  "created": "2026-11-12T22:28:07.234Z",
+  "createdBy": "byggaren av vyn Beställ (huvudagentens uppdrag 2026-11-12)",
+  "approval": null,
+  "status": "UTKAST"
+}

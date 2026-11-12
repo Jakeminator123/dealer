@@ -1,5 +1,6 @@
-// The view's two calls to the lab server: what is what (GET /api/media) and adding a picture (POST /api/media). Errors
-// are lib/api.ts's ApiError with a short Swedish message. In the online copy nothing is added: refused before it leaves.
+// The view's calls to the lab server: what is what (GET /api/media), adding a picture (POST /api/media) and Jakob's
+// Godkänn / Underkänn on a candidate (PUT /api/media/<id>/state, tools/order-routes.ts). Errors are lib/api.ts's ApiError
+// with a short Swedish message. In the online copy nothing is written: refused before it leaves.
 import { ApiError, SNAPSHOT_REFUSAL } from "../../lib/api.ts";
 import { labUrl } from "../../lib/lab.ts";
 import { UPLOAD_LIMIT, type Entry, type MediaAnswer, type UploadRole } from "../../lib/media.ts";
@@ -28,6 +29,27 @@ export async function getMedia(): Promise<MediaAnswer> {
     throw await errorOf(response, "Materialet");
   }
   return (await response.json()) as MediaAnswer;
+}
+
+export type Decided = { entry: Entry; replaced: { id: string; name: string }[]; revision: string };
+
+/** Jakob's Godkänn (gäller) or Underkänn (ersatt) on a picture, against the register's revision as read (PUT /api/media/<id>/state). */
+export async function setPictureState(id: string, state: "gäller" | "ersatt", revision: string): Promise<Decided> {
+  if (isSnapshot) throw new ApiError(SNAPSHOT_REFUSAL, 403, "refused");
+  let response: Response;
+  try {
+    response = await fetch(labUrl(`api/media/${encodeURIComponent(id)}/state`), { method: "PUT", headers: { "content-type": "application/json", "if-match": revision }, body: JSON.stringify({ state }) });
+  } catch {
+    throw new ApiError("Labbet svarar inte. Starta det med START.cmd.", 0, "network");
+  }
+  if (!response.ok) {
+    if (response.status === 404 || response.status === 405) {
+      const said = await response.clone().json().catch(() => null);
+      if (!said?.error) throw new ApiError("Labbet kan inte spara domen än: labbservern behöver startas om.", response.status, "missing");
+    }
+    throw await errorOf(response, "Domen");
+  }
+  return (await response.json()) as Decided;
 }
 
 export type Added = { entry: Entry; revision: string };

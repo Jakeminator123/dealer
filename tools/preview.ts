@@ -14,6 +14,7 @@ import {tabRegistry,localPath,type Tab,type Reason} from './tab-registry.ts';
 import {resolveStudio} from './studio-files.ts';
 import {SCRIPTS as scripts,VENDOR as vendor,PAGES as pages,forBrowser} from './lab-routes.ts';
 import {mediaRoles} from './media-roles.ts';
+import {handleOrders} from './order-routes.ts';
 import {UPLOAD_LIMIT} from '../studio/lib/media.ts';
 const port=4319,origin=`http://127.0.0.1:${port}`,state='.runtime/preview.json';
 const args=process.argv.slice(2),has=(flag:string)=>args.includes(flag);
@@ -167,6 +168,8 @@ if(has('--restart')){
     const target=localPath(wanted,origin);if(!target){res.writeHead(400).end(JSON.stringify({error:'Bara sidor i labbet kan visas.'}));return;}
     res.end(JSON.stringify(tabs.show(target)));return;
    }
+   // Film orders and the state of a candidate picture (tools/order-routes.ts): answered there when the address is theirs.
+   if(await handleOrders(req,res,url))return;
    if(url.pathname==='/api/placements'){
     res.setHeader('Content-Type','application/json; charset=utf-8');
     // A proposal beside Jakob's draft (placements/proposals/<name>.json): read-only, for a lab page that is asked for it by name. His draft is the plan without a name, and the only one that can be saved.

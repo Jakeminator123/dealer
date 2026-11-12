@@ -1,0 +1,186 @@
+// The routes of the view Beställ and of Jakob's verdict in Material (tools/order-routes.ts), run against a temporary
+// copy of the data on a real local server: drafts from a few choices, changes only with the revision read, approval only
+// from the lab's own origin and within the policy, nothing changed after approval, files only from the order's folder,
+// and kandidat → gäller with the other candidates replaced. Pictures here are tiny PNGs; no film is decoded.
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import http from 'node:http';
+import { mkdtemp, mkdir, readFile, writeFile, rm, copyFile } from 'node:fs/promises';
+import { existsSync } from 'node:fs';
+import { createHash } from 'node:crypto';
+import os from 'node:os';
+import path from 'node:path';
+import sharp from 'sharp';
+import { orderRoutes } from './order-routes.ts';
+import { orderStore, orderHash } from './order-store.ts';
+import { mediaRoles } from './media-roles.ts';
+import { replacedBy, allowed, isDecidable } from '../studio/components/material/state.ts';
+
+const base = existsSync('D:/dealer-scratch/tmp') ? 'D:/dealer-scratch/tmp' : os.tmpdir();
+const sha = (b: Buffer) => createHash('sha256').update(b).digest('hex');
+const picture = (r: number, g: number, b: number) => sharp({ create: { width: 24, height: 16, channels: 3, background: { r, g, b } } }).png().toBuffer();
+
+const register = () => ({
+  schemaVersion: 1,
+  dealers: {
+    pamela: { name: 'Pamela', entries: [
+      { id: 'pamela-vila', role: 'ankare-1', name: 'Vila', path: 'assets/anchors/pamela-vila/anchor.png', node: 'IDLE', state: 'gäller' },
+      { id: 'pamela-nyp', role: 'ankare-2.1', name: 'Nyp', path: 'assets/anchors/pamela-nyp/anchor.png', node: 'READY' },
+    ] },
+    paow: { name: 'Paow', entries: [
+      { id: 'paow-vila-ung-2', role: 'ankare-1', name: 'Vila, kandidat 2', path: 'assets/anchors/paow-vila-ung-2/anchor.png', node: 'IDLE', state: 'kandidat' },
+      { id: 'paow-vila-ung-1', role: 'ankare-1', name: 'Vila, kandidat 1', path: 'assets/anchors/paow-vila-ung-1/anchor.png', node: 'IDLE', state: 'kandidat' },
+      { id: 'paow-vila-kort', role: 'ankare-1', name: 'Vila med kort', path: 'assets/anchors/paow-vila-ung-1/anchor.png', node: 'IDLE', card: 'P4.C1', state: 'kandidat' },
+      { id: 'paow-nyp-ny', role: 'ankare-2.1', name: 'Nyp, ny', path: 'assets/anchors/paow-nyp-ny/anchor.png', node: 'READY', state: 'kandidat' },
+      { id: 'paow-film', role: 'film', name: 'En film', path: 'assets/films/paow/x/source.mp4', state: 'kandidat' },
+    ] },
+  },
+  measures: [],
+});
+
+async function lab(t: { after(fn: () => Promise<void> | void): void }) {
+  const root = await mkdtemp(path.join(base, 'order-routes-'));
+  t.after(() => rm(root, { recursive: true, force: true }));
+  for (const dir of ['data', 'placements']) await mkdir(path.join(root, dir), { recursive: true });
+  for (const file of ['data/order-policy.json', 'data/dealers.json', 'placements/default.json']) await copyFile(file, path.join(root, file));
+  await writeFile(path.join(root, 'data/media-roles.json'), JSON.stringify(register(), null, 2) + '\n');
+  await writeFile(path.join(root, 'data/clip-jobs.json'), '{"jobs": []}');
+  const files: Record<string, Buffer> = {};
+  for (const [name, colour] of [['pamela-vila', [0, 237, 44]], ['pamela-nyp', [10, 230, 40]], ['paow-vila-ung-2', [0, 236, 45]], ['paow-vila-ung-1', [1, 235, 46]], ['paow-nyp-ny', [2, 234, 47]]] as const) {
+    await mkdir(path.join(root, 'assets/anchors', name), { recursive: true });
+    files[name] = await picture(...colour);
+    await writeFile(path.join(root, 'assets/anchors', name, 'anchor.png'), files[name]);
+  }
+  let origin = '';
+  const handle = { fn: null as null | ReturnType<typeof orderRoutes> };
+  const server = http.createServer(async (req, res) => { const url = new URL(req.url ?? '/', origin); if (!(await handle.fn!(req, res, url))) res.writeHead(404).end('not mine'); });
+  await new Promise<void>((done) => server.listen(0, '127.0.0.1', done));
+  origin = `http://127.0.0.1:${(server.address() as { port: number }).port}`;
+  handle.fn = orderRoutes({ root, origin, now: () => new Date('2026-11-12T21:00:00Z') });
+  t.after(() => new Promise<void>((done) => server.close(() => done())));
+  const call = async (method: string, address: string, options: { body?: unknown; match?: string; from?: string | null } = {}) => {
+    const headers: Record<string, string> = {};
+    if (options.from !== null) headers.origin = options.from ?? origin;
+    if (options.body !== undefined) headers['content-type'] = 'application/json';
+    if (options.match) headers['if-match'] = options.match;
+    const response = await fetch(origin + address, { method, headers, body: options.body === undefined ? undefined : JSON.stringify(options.body) });
+    const type = response.headers.get('content-type') ?? '';
+    return { status: response.status, json: type.includes('json') ? await response.json() : null, bytes: type.includes('json') ? null : Buffer.from(await response.arrayBuffer()) };
+  };
+  return { root, origin, call, files };
+}
+
+test('drafts, changes and approval go through the routes with their guards', async (t) => {
+  const { root, call, files } = await lab(t);
+  assert.equal((await call('GET', '/api/orders')).json.orders.length, 0);
+  assert.equal((await call('GET', '/api/other')).status, 404, 'other addresses are left to the server');
+
+  const still = { dealer: 'paow', step: 'ANKARE-2.1', base: 'paow-vila-ung-2' };
+  assert.equal((await call('POST', '/api/orders', { body: still, from: 'http://evil.example' })).status, 403);
+  assert.equal((await call('POST', '/api/orders', { body: { ...still, id: 'mine' } })).status, 400, 'the page cannot name the id');
+  assert.equal((await call('POST', '/api/orders', { body: { ...still, pose: { path: 'C:/x.png' } } })).status, 400, 'nor the pose');
+  const made = await call('POST', '/api/orders', { body: still });
+  assert.equal(made.status, 201);
+  const a = made.json;
+  assert.equal(a.order.id, 'paow-ankare-2-1-01');
+  assert.equal(a.shown, 'KLAR_ATT_TRYCKA');
+  assert.match(a.warnings.join(' '), /Vila, kandidat 2 är kandidat, inte godkänd/);
+  const anchor = a.order.pictures.find((p: { name: string }) => p.name === 'anchor.png');
+  assert.equal(anchor.sha256, sha(files['paow-vila-ung-2']), 'the picture is copied byte for byte');
+  assert.equal((await call('GET', `/${anchor.path}`)).bytes!.equals(files['paow-vila-ung-2']), true);
+  assert.equal(a.order.pictures.find((p: { name: string }) => p.name === 'pose.png').from.entry, 'pamela-nyp');
+  assert.equal(a.order.cost.total, 80);
+
+  // Files: only pictures and films directly in the order's folder.
+  for (const bad of [`/assets/orders/${a.order.id}/receipt.json`, `/assets/orders/${a.order.id}/..%2F..%2Fdata%2Forder-policy.json`, '/assets/orders/../data/order-policy.json', '/assets/orders/x/none.png']) assert.equal((await call('GET', bad)).status, 404, bad);
+
+  // A change needs the revision read; only some fields change; the text and cost follow.
+  const id = a.order.id;
+  assert.equal((await call('PUT', `/api/orders/${id}`, { body: { takes: 1 } })).status, 428);
+  assert.equal((await call('PUT', `/api/orders/${id}`, { body: { takes: 1 }, match: '"x"' })).status, 409);
+  assert.equal((await call('PUT', `/api/orders/${id}`, { body: { prompt: 'mine' }, match: a.revision })).status, 400);
+  const changed = await call('PUT', `/api/orders/${id}`, { body: { takes: 1, extra: 'She smiles.' }, match: a.revision });
+  assert.equal(changed.status, 200);
+  assert.equal(changed.json.order.cost.total, 40);
+  assert.match(changed.json.order.prompt.text, /She smiles\. Nothing of this happens/);
+
+  // Approval: own origin, revision, then frozen with its hash.
+  assert.equal((await call('POST', `/api/orders/${id}/approve`, { match: changed.json.revision, from: null })).status, 403);
+  assert.equal((await call('POST', `/api/orders/${id}/approve`)).status, 428);
+  const approved = await call('POST', `/api/orders/${id}/approve`, { match: changed.json.revision });
+  assert.equal(approved.status, 200);
+  assert.equal(approved.json.order.status, 'GODKÄND');
+  assert.deepEqual(approved.json.order.approval, { by: 'jakob', at: '2026-11-12T21:00:00.000Z', orderSha256: orderHash(approved.json.order) });
+  assert.equal(approved.json.shown, 'GODKÄND');
+  assert.equal((await call('PUT', `/api/orders/${id}`, { body: { takes: 2 }, match: approved.json.revision })).status, 409, 'nothing changes after approval');
+  assert.equal((await call('POST', `/api/orders/${id}/approve`, { match: approved.json.revision })).status, 409);
+  const list = (await call('GET', '/api/orders')).json;
+  assert.equal(list.day.spent, 40);
+
+  // The policy: beyond the cap per order the approval is refused.
+  const policy = JSON.parse(await readFile(path.join(root, 'data/order-policy.json'), 'utf8'));
+  await writeFile(path.join(root, 'data/order-policy.json'), JSON.stringify({ ...policy, maxPerOrder: 50 }));
+  const second = (await call('POST', '/api/orders', { body: still })).json;
+  const refused = await call('POST', `/api/orders/${second.order.id}/approve`, { match: second.revision });
+  assert.equal(refused.status, 403);
+  assert.match(refused.json.error, /taket per beställning är 50/);
+  await writeFile(path.join(root, 'data/order-policy.json'), JSON.stringify({ ...policy, enabled: false }));
+  assert.match((await call('POST', `/api/orders/${second.order.id}/approve`, { match: second.revision })).json.error, /avstängda/);
+
+  // A film that waits for its anchor cannot be approved.
+  await writeFile(path.join(root, 'data/order-policy.json'), JSON.stringify(policy));
+  const film = (await call('POST', '/api/orders', { body: { dealer: 'paow', step: 'GIV-2.1', target: 'P4.C1', duration: 4 } })).json;
+  assert.equal(film.shown, 'VÄNTAR');
+  assert.deepEqual(film.waiting.map((w: { label: string; ready: boolean }) => [w.label, w.ready]), [['ankare 2.1', false], ['ankare 2.1', false]]);
+  assert.equal(film.order.step.edge, 'READY>P4.C1');
+  assert.equal(film.order.pictures[1].preview ?? null, null, 'no stand-in anchor that holds, so no preview');
+  const waiting = await call('POST', `/api/orders/${film.order.id}/approve`, { match: film.revision });
+  assert.equal(waiting.status, 409);
+  assert.match(waiting.json.error, /Väntar på ankare 2\.1/);
+  assert.equal((await call('POST', '/api/orders', { body: { dealer: 'paow', step: 'RETUR-2.1', target: 'P4.C1' } })).status, 400, 'a step that is off');
+});
+
+test('Material: Godkänn replaces the other candidates of the same role, Underkänn sets one aside, against the revision', async (t) => {
+  const { root, call } = await lab(t);
+  const revision = async () => (await mediaRoles(root).answer()).revision!;
+  assert.equal((await call('PUT', '/api/media/paow-vila-ung-2/state', { body: { state: 'gäller' } })).status, 428);
+  assert.equal((await call('PUT', '/api/media/paow-vila-ung-2/state', { body: { state: 'gäller' }, match: await revision(), from: 'http://evil.example' })).status, 403);
+  assert.equal((await call('PUT', '/api/media/paow-vila-ung-2/state', { body: { state: 'kandidat' }, match: await revision() })).status, 400);
+  assert.equal((await call('PUT', '/api/media/paow-film/state', { body: { state: 'gäller' }, match: await revision() })).status, 400, 'a film is not decided here');
+  const ok = await call('PUT', '/api/media/paow-vila-ung-2/state', { body: { state: 'gäller' }, match: await revision() });
+  assert.equal(ok.status, 200);
+  assert.deepEqual(ok.json.replaced, [{ id: 'paow-vila-ung-1', name: 'Vila, kandidat 1' }], 'the candidate with a card on the table is another picture');
+  const after = JSON.parse(await readFile(path.join(root, 'data/media-roles.json'), 'utf8')).dealers.paow.entries;
+  const by = (id: string) => after.find((e: { id: string }) => e.id === id);
+  assert.equal(by('paow-vila-ung-2').state, 'gäller');
+  assert.match(by('paow-vila-ung-2').stateBy, /^Jakob \d{4}-\d\d-\d\d \d\d:\d\d: kandidat → gäller \(Material\)$/);
+  assert.equal(by('paow-vila-ung-1').state, 'ersatt');
+  assert.match(by('paow-vila-ung-1').stateBy, /Vila, kandidat 2 godkändes/);
+  assert.equal(by('paow-vila-kort').state, 'kandidat');
+  assert.equal((await call('PUT', '/api/media/paow-vila-ung-1/state', { body: { state: 'gäller' }, match: await revision() })).status, 409, 'ersatt never comes back here');
+  assert.equal((await call('PUT', '/api/media/paow-vila-ung-2/state', { body: { state: 'gäller' }, match: ok.json.revision })).status, 409);
+  assert.equal((await call('PUT', '/api/media/paow-vila-kort/state', { body: { state: 'ersatt' }, match: '"old"' })).status, 409);
+  assert.equal((await call('PUT', '/api/media/paow-vila-kort/state', { body: { state: 'ersatt' }, match: ok.json.revision })).status, 200);
+  assert.equal((await call('PUT', '/api/media/nobody/state', { body: { state: 'ersatt' }, match: await revision() })).status, 404);
+  assert.equal(allowed('gäller', 'ersatt') && !allowed('ersatt', 'gäller') && !allowed(undefined, 'gäller'), true);
+  assert.equal(isDecidable({ role: 'ankare-1', path: 'assets/x/source.mp4', frame: 3 }), true);
+  assert.equal(replacedBy([{ id: 'a', role: 'ankare-1', state: 'kandidat' }, { id: 'b', role: 'ankare-1', state: 'kandidat' }, { id: 'c', role: 'ankare-1', state: 'gäller' }], { id: 'a', role: 'ankare-1', state: 'kandidat' }).map((e) => e.id).join(), 'b');
+});
+
+test('a draft that waits fetches its picture once the anchor holds (refresh)', async (t) => {
+  const { root, call, files } = await lab(t);
+  const store = orderStore(root, { now: () => new Date('2026-11-12T21:00:00Z') });
+  const { order, revision } = await store.create({ dealer: 'paow', step: 'MELLANBILD', target: 'P4.C1', pose: { entry: 'pamela-nyp' } });
+  assert.equal(order.step.makes?.entry, 'paow-mellanbild-p4');
+  assert.deepEqual(order.pictures.map((p) => [p.name, p.path === null, p.waits?.label ?? null]), [['anchor.png', true, 'ankare 2.1'], ['pose.png', false, null]]);
+  assert.equal((await call('GET', `/api/orders/${order.id}`)).json.waiting[0].ready, false);
+  const media = await mediaRoles(root).answer();
+  assert.equal((await call('PUT', '/api/media/paow-nyp-ny/state', { body: { state: 'gäller' }, match: media.revision! })).status, 200);
+  assert.equal((await call('GET', `/api/orders/${order.id}`)).json.waiting[0].ready, true);
+  const refreshed = await call('POST', `/api/orders/${order.id}/refresh`, { match: revision });
+  assert.equal(refreshed.status, 200);
+  const anchor = refreshed.json.order.pictures[0];
+  assert.equal(anchor.sha256, sha(files['paow-nyp-ny']));
+  assert.equal(anchor.from.entry, 'paow-nyp-ny');
+  assert.equal(refreshed.json.shown, 'KLAR_ATT_TRYCKA');
+});

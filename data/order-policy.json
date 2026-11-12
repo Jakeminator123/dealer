@@ -1,0 +1,18 @@
+{
+  "about": "Limits for orders approved in the studio's view Beställ (tools/order-routes.ts refuses an approval beyond them) and the price table the cost is computed from (src/order-model.ts priceOf). The worst case counts: the tool's listed price where it is higher than what the ledgers show. Set enabled to false to stop every approval. The balance is the last one known; a receipt's creditsRemainingAfter is newer when there is one.",
+  "schemaVersion": 1,
+  "enabled": true,
+  "dailyCapCredits": 1000,
+  "maxPerOrder": 400,
+  "minBalance": 2000,
+  "timeZone": "Europe/Stockholm",
+  "balance": { "credits": 17884, "at": "2026-11-12", "source": "Paow-sessionens sista beställning (b24), D:/dealer-scratch/tmp/paow/LASMIG.md" },
+  "prices": [
+    { "model": "kling-4", "resolution": "1080p", "perSecond": 21.3, "listedPerSecond": 23.5, "source": "Liggarna b19 och b20: 7 s i 1080p = 149 krediter; listpris 23,5 per s i verktyget generate_video 2026-11-12." },
+    { "model": "kling-4", "resolution": "720p", "perSecond": 15.7, "listedPerSecond": 15.7, "source": "Listpris i verktyget generate_video 2026-11-12; inte mätt i någon liggare." },
+    { "model": "wan3", "resolution": "1080p", "perSecond": 20, "source": "DRIFT, Lärdomar: 20 per s i full storlek; planen: 4 s = 80." },
+    { "model": "wan3", "resolution": "480p", "perSecond": 5, "source": "DRIFT, Lärdomar: auto_480p kostar 5 per s." },
+    { "model": "nano-banana-pro", "imageSize": "2K", "perImage": 20, "source": "LASMIG: Nano Banana Pro 20 krediter per bild i 2K." },
+    { "model": "nano-banana-pro", "imageSize": "4K", "perImage": 40, "source": "LASMIG: Nano Banana Pro 40 krediter per bild i 4K." }
+  ]
+}

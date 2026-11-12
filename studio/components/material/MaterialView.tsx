@@ -155,7 +155,7 @@ export function MaterialView() {
         </div>
         <Measures measures={answer.measures} />
       </div>
-      <MaterialViewer entries={row} index={open ? row.indexOf(open) : null} onIndex={(i) => setParams({ bild: i === null ? null : (row[i]?.id ?? null) })} />
+      <MaterialViewer entries={row} index={open ? row.indexOf(open) : null} onIndex={(i) => setParams({ bild: i === null ? null : (row[i]?.id ?? null) })} revision={answer.revision} onDecided={() => void read()} />
       {!isSnapshot ? <AddDialog open={adding} onOpenChange={setAdding} dealers={answer.dealers} dealer={dealer.id} onAdded={added} /> : null}
     </Page>
   );

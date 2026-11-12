@@ -1,0 +1,97 @@
+{
+  "schemaVersion": 1,
+  "id": "paow-mellanbild-p4",
+  "title": "Paow · mellanbild P4 (kortet på kortsidan)",
+  "group": {
+    "id": "vandning-p4",
+    "label": "Vändningsprovet vid plats 4"
+  },
+  "dealer": "paow",
+  "kind": "STILL",
+  "step": {
+    "key": "MELLANBILD",
+    "label": "Mellanbild: kortet på kortsidan mitt i rörelsen",
+    "edge": null,
+    "shape": null,
+    "cutInto": [],
+    "makes": {
+      "role": "arbetsmaterial",
+      "entry": "paow-mellanbild-p4",
+      "label": "mellanbilden"
+    }
+  },
+  "motion": null,
+  "pictures": [
+    {
+      "name": "anchor.png",
+      "label": "Paows bild (@anchor)",
+      "goesAs": "referenceImage",
+      "tag": "anchor",
+      "path": null,
+      "sha256": null,
+      "from": null,
+      "waits": {
+        "dealer": "paow",
+        "role": "ankare-2.1",
+        "node": "READY",
+        "label": "ankare 2.1"
+      }
+    },
+    {
+      "name": "pose.png",
+      "label": "Pose (@pose)",
+      "goesAs": "referenceImage",
+      "tag": "pose",
+      "path": "assets/orders/paow-mellanbild-p4/pose.png",
+      "sha256": "52fd235a24e3c759af300f3b8dd3ad721e696ae1369bf965106f22c6438ab663",
+      "width": 1764,
+      "height": 1174,
+      "from": {
+        "path": "assets/motions/pamela-p4-c1-plan-deal-02/source.mp4",
+        "frame": 42,
+        "note": "Pamelas giv till P4, ruta 42: kortet mitt i rörelsen"
+      },
+      "waits": null
+    }
+  ],
+  "reference": {
+    "status": "INGEN",
+    "why": "Ingen referensfilm behövs för steget."
+  },
+  "generation": {
+    "provider": "runway-app",
+    "tool": "generate_image",
+    "model": "nano-banana-pro",
+    "params": {
+      "ratio": "4:3",
+      "imageSize": "4K"
+    }
+  },
+  "prompt": {
+    "template": "bild-mellanbild@1",
+    "text": "This is an edit of the picture @anchor. Keep everything in @anchor exactly as it is: the framing and camera, the flat pure chroma-green background and green table surface with no visible edge, the black card shoe at the right with the yellow card in its window, and the woman herself, a young, slim, petite woman with a platinum-blonde chin-length bob, warm-coloured tattoos on her throat and upper chest and a small white flower pendant, in a black tailored blazer over a cream V-neck top: her face, hair, clothes and build, the place and size of her head and body, and her right hand, at the left of the picture, lying flat on the felt. Change only her left arm and hand, at the right of the picture: she has drawn the yellow card out of the shoe and carries it low over the table, halfway between the shoe and the place in front of her, her arm in the pose of the dealer's left arm in @pose. She holds the card between thumb and forefinger by its near short end, and the card stands upright on that short edge: one rigid card, upright between her fingers, the same size and shape as the card in the shoe's window. The next yellow card waits in the shoe's window, as in @anchor. Take only the pose of the arm and hand from @pose, not the person, her clothes, the shoe or the card: the shoe and the yellow card in its window keep exactly the look, size and shape they have in @anchor. She sits on a chair that is not in the picture: her elbows hang free at her sides and her forearms come down to the felt; nothing supports her elbows or forearms. Her jacket continues down to the same straight horizontal line where her body is cut off in @anchor, with no green between the jacket and that line. The green is one even colour everywhere, right up to her outline: no shadows under or beside her arms, her hands, the card or the shoe. Soft, even frontal studio light; natural skin with fine texture, sharp eyes, matte black cloth with soft folds. Nothing of this happens: a second card appears, a finger passes through the card, the card has another size or shape than the card in the shoe's window, a hand floats in the air without holding anything, a second shoe appears, the framing changes.",
+    "sha256": "6afdcd0d49b3ad0947a803ee278f20b53e6abd490f842a6a9a120701ae0829b6",
+    "extra": null,
+    "middle": false
+  },
+  "takes": 2,
+  "cost": {
+    "perTake": 40,
+    "total": 80,
+    "worstPerTake": 40,
+    "worstTotal": 80,
+    "basis": "40 krediter per bild. LASMIG: Nano Banana Pro 40 krediter per bild i 4K."
+  },
+  "limits": {
+    "maxCredits": 80,
+    "stopBelowCredits": 2000
+  },
+  "notes": [
+    "Görs ur Paows ankare 2.1 när det är godkänt, med Pamelas giv till P4 ruta 42 som pose. Den godkända bilden blir paow-mellanbild-p4 i Material, och filmerna med mellanbild väntar på den.",
+    "Provet ur planen (bestall-plan, Kortets vändning): fyra Kling 4-tagningar vid plats 4, två med bara text och två med mellanbild; varje tagning mäts (tools/flip-axis.ts) och rutgranskas."
+  ],
+  "created": "2026-11-12T22:28:07.557Z",
+  "createdBy": "byggaren av vyn Beställ (huvudagentens uppdrag 2026-11-12)",
+  "approval": null,
+  "status": "UTKAST"
+}

@@ -3,7 +3,8 @@
 // /api/media with answer(), hands out only files the register names (servable), and adds a picture on Jakob's click
 // (add): PNG or JPEG, kept under assets/keystones/<dealer>-<name>/ or assets/anchors/<dealer>-<name>/ with a receipt
 // beside it, never over an existing one, and the register rewritten like the placement file: queued, against what is on
-// disk at that moment, through a temporary file renamed into place. The shapes and the pure rules are
+// disk at that moment, through a temporary file renamed into place; Jakob's Godkänn and Underkänn on a candidate are
+// written the same way (setState, rules in studio/components/material/state.ts). The shapes and the pure rules are
 // studio/lib/media.ts; the readers of picture and film headers here are pure too. Tests: tools/media-roles.test.ts.
 import {readFile, open, stat, realpath, mkdir, writeFile, rename, rm, readdir} from 'node:fs/promises';
 import {createHash, randomUUID} from 'node:crypto';
@@ -15,6 +16,7 @@ import {
  NAME, NAME_LIMIT, TITLE_LIMIT, UPLOAD_LIMIT, ROLE_LABEL,
  type DealerAnswer, type Entry, type EntryAnswer, type Found, type ImageType, type JobLike, type MediaAnswer, type Register, type UploadRole,
 } from '../studio/lib/media.ts';
+import {allowed, isDecidable, replacedBy, stateLine} from '../studio/components/material/state.ts';
 
 // ── Headers of pictures and films (pure) ────────────────────────────────────
 /** PNG or JPEG by its first bytes. */
@@ -289,5 +291,40 @@ export function mediaRoles(root: string) {
   return task;
  }
 
- return {answer, servable, add, readRegister};
+ /**
+  * Jakob's verdict on a picture from the view Material (PUT /api/media/<id>/state, tools/order-routes.ts): only
+  * kandidat → gäller, kandidat → ersatt and gäller → ersatt, against the register's revision as read. Approving a
+  * candidate sets the other candidates of the same role, node and card to ersatt. Each changed entry gets a line of who and
+  * when (stateBy). The register is rewritten like add() does it.
+  */
+ async function setState(input: {id: string; state: unknown; expected: string | undefined; who?: string; now?: Date}) {
+  const {id, expected} = input, to = input.state, now = input.now ?? new Date(), who = input.who ?? 'Jakob';
+  if (to !== 'gäller' && to !== 'ersatt') throw new StoreError(400, 'Tillståndet ska vara gäller eller ersatt.');
+  const task = queue.then(async () => {
+   const {text, register, errors} = await readRegister();
+   if (!register || !text) throw new StoreError(500, `Registret håller inte: ${errors.join('; ')}`);
+   if (!expected) throw new StoreError(428, 'Läs materialet innan du ändrar en bild.');
+   if (revisionOf(text) !== expected) throw new StoreError(409, 'Registret har ändrats sedan det lästes. Läs om och försök igen.');
+   const owner = Object.entries(register.dealers).find(([, d]) => d.entries.some(e => e.id === id));
+   if (!owner) throw new StoreError(404, 'Bilden finns inte i registret.');
+   const next = structuredClone(register), dealer = next.dealers[owner[0]], entry = dealer.entries.find(e => e.id === id)!;
+   if (!isDecidable(entry)) throw new StoreError(400, 'Bara en bild (inte en film eller en provmapp) kan godkännas här.');
+   if (!allowed(entry.state, to)) throw new StoreError(409, `${entry.name} är ${entry.state ?? 'utan tillstånd'}: bara kandidat → gäller, kandidat → ersatt och gäller → ersatt.`);
+   const replaced = to === 'gäller' ? replacedBy(dealer.entries, entry) : [];
+   for (const other of replaced) Object.assign(other, {state: 'ersatt', stateBy: stateLine(who, now, 'kandidat', 'ersatt', `${entry.name} godkändes i Material`)});
+   Object.assign(entry, {state: to, stateBy: stateLine(who, now, entry.state!, to)});
+   const out = JSON.stringify(next, null, 2) + '\n';
+   if (validateRegister(JSON.parse(out)).errors.length) throw new StoreError(400, 'Ändringen gick inte att föra in i registret.');
+   await mkdir(path.join(root, '.runtime'), {recursive: true});
+   await writeFile(path.join(root, '.runtime/media-roles-previous.json'), text);
+   const temporary = path.join(root, 'data', `.${randomUUID()}.tmp`);
+   await writeFile(temporary, out, {flag: 'wx'});
+   await rename(temporary, registerFile);
+   return {entry, replaced: replaced.map(e => ({id: e.id, name: e.name})), revision: revisionOf(out)};
+  });
+  queue = task.then(() => {}, () => {});
+  return task;
+ }
+
+ return {answer, servable, add, readRegister, setState};
 }
