@@ -13,6 +13,8 @@ import {createSession,SessionError,type Session,type SessionOptions} from '../ga
 import {tabRegistry,localPath,type Tab,type Reason} from './tab-registry.ts';
 import {resolveStudio} from './studio-files.ts';
 import {SCRIPTS as scripts,VENDOR as vendor,forBrowser} from './lab-routes.ts';
+import {mediaRoles} from './media-roles.ts';
+import {UPLOAD_LIMIT} from '../studio/lib/media.ts';
 const port=4319,origin=`http://127.0.0.1:${port}`,state='.runtime/preview.json';
 const args=process.argv.slice(2),has=(flag:string)=>args.includes(flag);
 // The same checkout, whatever case the shell wrote the drive letter in (Git Bash and PowerShell differ on Windows).
@@ -77,7 +79,7 @@ if(has('--restart')){
  // build of the online copy reads too (tools/build-studio-snapshot.ts), so that the copy serves exactly what this server serves.
  // Table props made by tools/prop-glb.ts: assets/props/<id>.glb, and only where the file really lies in that folder.
  const propFile=async(file:string)=>{const m=/^assets\/props\/([a-z0-9]+(?:-[a-z0-9]+)*\.glb)$/.exec(file);if(!m)return false;try{return await realpath(file)===path.join(await realpath('assets/props'),m[1]);}catch{return false;}};
- const placements=placementStore(process.cwd()),reviews=reviewStore(process.cwd()),presets=scenePresetStore(process.cwd());
+ const placements=placementStore(process.cwd()),reviews=reviewStore(process.cwd()),presets=scenePresetStore(process.cwd()),media=mediaRoles(process.cwd());
  const library=async()=>{try{const data=JSON.parse(await readFile('data/library.json','utf8'));data.items=await Promise.all(data.items.filter((item:{path:string})=>typeof item.path==='string'&&/^(assets\/|output\/v6\/)/.test(item.path)&&path.posix.normalize(item.path)===item.path&&!item.path.includes('\\')&&item.path.endsWith('.mp4')).map(async(item:{motionRef?:string})=>{if(item.motionRef&&/^motions\/[a-z0-9-]+\.json$/.test(item.motionRef)){try{const motion=JSON.parse(await readFile(item.motionRef,'utf8'));return {...item,reviewDecision:motion.review?.decision??'PENDING'};}catch{return {...item,reviewDecision:'UNKNOWN'};}}return item;}));return data;}catch{return {schemaVersion:1,items:[]};}};
  // Read-only clip bank for the lab: the tracked jobs and review decisions plus a fixed, non-secret
  // projection of each local receipt. Task ids, balances and credentials never leave this process.
@@ -239,6 +241,23 @@ if(has('--restart')){
     return;
    }
    if(url.pathname==='/api/proofs'&&req.method==='GET'){res.setHeader('Content-Type','application/json; charset=utf-8');res.end(JSON.stringify(await proofs()));return;}
+   // What is what per dealer, for the studio's view Material (data/media-roles.json, tools/media-roles.ts). Any page reads
+   // it. A picture is added from this lab only: the PNG or JPEG itself as the body (at most UPLOAD_LIMIT, 40 MB), dealer,
+   // role and names in headers; it gets its own new folder with a receipt and a role in the register, never over another.
+   if(url.pathname==='/api/media'){
+    res.setHeader('Content-Type','application/json; charset=utf-8');
+    if(req.method==='GET'){res.end(JSON.stringify(await media.answer()));return;}
+    if(req.method!=='POST'){res.writeHead(405).end();return;}
+    if(req.headers.origin!==origin){res.writeHead(403).end(JSON.stringify({error:'Lägg till bilder från det lokala labbet.'}));return;}
+    const type=req.headers['content-type'];
+    if(type!=='image/png'&&type!=='image/jpeg'){res.writeHead(415).end(JSON.stringify({error:'Bara PNG eller JPEG.'}));return;}
+    if(Number(req.headers['content-length']??0)>UPLOAD_LIMIT){res.writeHead(413).end(JSON.stringify({error:`Bilden är för stor (högst ${UPLOAD_LIMIT/1048576} MB).`}));return;}
+    const header=(name:string)=>{const value=req.headers[name];if(typeof value!=='string')return '';try{return decodeURIComponent(value);}catch{return '';}};
+    try{
+     let size=0;const chunks:Buffer[]=[];for await(const chunk of req){size+=chunk.length;if(size>UPLOAD_LIMIT)throw new StoreError(413,`Bilden är för stor (högst ${UPLOAD_LIMIT/1048576} MB).`);chunks.push(chunk);}
+     res.end(JSON.stringify(await media.add({dealer:header('x-media-dealer'),role:header('x-media-role'),name:header('x-media-name'),title:header('x-media-title'),filename:header('x-media-filename'),type:type==='image/png'?'png':'jpeg',bytes:Buffer.concat(chunks)})));
+    }catch(error){res.writeHead(error instanceof StoreError?error.status:400).end(JSON.stringify({error:(error as Error).message}));}return;
+   }
    if(req.method!=='GET'&&req.method!=='HEAD'){res.writeHead(405).end();return;}
    if(scripts[url.pathname]||vendor[url.pathname]){
     let source:string;try{source=await readFile(scripts[url.pathname]??vendor[url.pathname],'utf8');}catch{
@@ -258,7 +277,8 @@ if(has('--restart')){
     file=studio.file;type=studio.type;
    }else{
     file=url.pathname==='/'?'lab.html':decodeURIComponent(url.pathname.slice(1));
-    if(!allowed.has(file)&&!await clipFile(file)&&!await trackFile(file)&&!await proofPath(file)&&!await sceneFile(file)&&!await propFile(file)&&!(await library()).items.some((item:{path:string})=>item.path===file)){res.writeHead(404).end();return;}
+    // media.servable: a picture or film data/media-roles.json names (keystones, anchors and frames of the view Material), inside the repo and no link out of it.
+    if(!allowed.has(file)&&!await clipFile(file)&&!await trackFile(file)&&!await proofPath(file)&&!await sceneFile(file)&&!await propFile(file)&&!await media.servable(file)&&!(await library()).items.some((item:{path:string})=>item.path===file)){res.writeHead(404).end();return;}
     type=types[file.slice(file.lastIndexOf('.'))]??'application/octet-stream';
    }
    const size=await stat(file).then(s=>s.isFile()?s.size:-1,()=>-1);

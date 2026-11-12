@@ -1,10 +1,10 @@
 "use client";
 
-// The left rail: the six views with the active one marked, counts where they help (takes waiting for Jakob beside Granska,
+// The left rail: the seven views with the active one marked, counts where they help (takes waiting for Jakob beside Granska,
 // edges with a Primär beside Primära), whether the lab answers, and "Gamla labbet ↗" at the bottom (same tab).
 // In the online copy (lib/mode.ts) there is no old lab, so that link is not drawn; instead the bot is there: the view
 // Önskemål (with the answers from Jakob not yet seen) and "Fråga", which opens and closes the panel (components/bot).
-import { ArrowUpRight, FlaskConical, Inbox, MessageCircleQuestion, Play, ScanEye, SlidersHorizontal, Star, Workflow } from "lucide-react";
+import { ArrowUpRight, FlaskConical, Images, Inbox, MessageCircleQuestion, Play, ScanEye, SlidersHorizontal, Star, Workflow } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useMemo, type ComponentType } from "react";
@@ -25,6 +25,7 @@ export const VIEWS: readonly View[] = [
   { href: "/primara/", label: "Primära", hint: "Vad som spelas nu, mot bästa godkända", icon: Star },
   { href: "/granska/", label: "Granska", hint: "Filmer som väntar på ditt beslut", icon: ScanEye },
   { href: "/prov/", label: "Prov", hint: "Jämförelsefilmer och kontaktark", icon: FlaskConical },
+  { href: "/material/", label: "Material", hint: "Per dealer: ingångsbild, keystone, ankare, filmer och referenser", icon: Images },
   { href: "/scen/", label: "Scen", hint: "Rum, ljus, bord, kort och kamera", icon: SlidersHorizontal },
 ];
 
