@@ -28,12 +28,14 @@
     }
   },
   "review": {
-    "decision": "PENDING",
+    "decision": "ACCEPTED",
     "basis": "Oberoende rutgranskning 2026-11-11: underkänd som hosta, skarvarna rena. Inte som beställt, men möjlig som egen variant ('ursäkta mig'): handen till vänster i bild lyfts f19–35, knuten hand för munnen f36–66 (knogarna täcker läpparna från cirka f40), huvudet vrids till trekvartsprofil, handen ner f73–90 och tillbaka på exakt samma plats (0,13 px), stilla f108–119. Den andra handen rör sig högst 0,45 px; skon och kortet högst 0,09 px.",
     "limitations": "Ingen hostning går att läsa: två små bröströrelser uppmätta (f43–46, f58–63) men inte synliga. Munnen öppnas som om hon talar från f25 med tänder f28–36; ena ögat kisar f29–31; ögonen slutna med leende f67–71 och en blinkning med ena ögat f72. Armen fryser f25–27 mitt i lyftet och hoppar f28–29; dubblettrutor f33, f79, f85. Mjuk skugga under underarmen f24–28 och f74–84. Grönt driver mest av de fyra (G 6,1 över de visade rutorna). Fingrarna går inte att räkna i rörelseoskärpan f24–28 och f72–82. Vikt 0 och bara på begäran tills Jakob har sett den; en ny hosta beställs.",
     "colorDoesNotProvePhysicalSide": true,
-    "userAccepted": false,
-    "productionReady": false
+    "userAccepted": true,
+    "productionReady": false,
+    "acceptedAs": "VARIANT",
+    "userReview": "Jakob 2026-11-12: Bra, men denna var ett bra exempel på något annat. Detta har en anna tidigare agent varit inne på vilket är att tidigare och kanske nuvarnade grundbold/Keystone 1 eller om det rä referens (som jag inte är säker på vad det är för någon) har bordet typ i magen eller liknande. och saken är det att detta är riskabelt. Anledningen är att o vi ändrar grundbild kanske framtida skapat material kommer att förskjuta henne.. men också eller kanske detta redan har tagits hand om (tex det gula kortet ahr lite vitt bakom sig, som kanske ska vara \"anda kort\" - vilket i och för sig är snyggt. Men också kanske faligt.. Men bra varaint faktist i övrigt! (Justja ang den skugga som markeras är hon hostar (på bla ruta 41 så kan man också skönja att hennes midja kapas lite cirkelformat, men det kan finnas en anledning till det med, såsom att kanske 3duppspelning blir bättre av det. Sista anbmärkningen är som tidigare fast tvärtom.. hennes andra ahnd (hennes vänstra) är nu helt stel.. men kanske finns någon logik för detta dock"
   },
   "postProcessing": "none",
   "generationRef": "assets/motions/pamela-idle-cough-01/generation.json",

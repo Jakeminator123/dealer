@@ -28,12 +28,13 @@
     }
   },
   "review": {
-    "decision": "PENDING",
+    "decision": "REJECTED",
     "basis": "Oberoende rutgranskning 2026-11-11 av den här hopsättningen (45 rutor): användbar, läses som en naturlig, snabb blinkning med ena ögat och ett menande leende. Ögat till höger i bild börjar stängas f14, är stängt f18 (4 rutor), stängt f18–26 (9 rutor, 0,30 s), öppnas f26–30 (4 rutor). Det andra ögat är öppet hela tiden med bara en lätt kisning. Ruta 3 mot ruta 41: 0 bildpunkter över 24 nivåer; förskjutning av huvud, händer, sko och kort högst 0,03 px; huvudet rör sig högst 0,4 px. Grönt G 228,1–229,8 i de visade rutorna.",
     "limitations": "Stängning och öppning är exakt speglade; en verklig blinkning öppnas oftast lite långsammare. Sista steget i stängningen (f17–18) är dubbelt så stort som de före och läses som att ögonlocket slår igen, inte som ett ryck, bedömt ur rutorna. Ruta 0 skiljer sig mer från grundrutan än i de vanliga klippen (394 bildpunkter över 24 mot cirka 150), troligen för att filmen är omkodad; den rutan spelas inte. Inte sedd i fart.",
     "colorDoesNotProvePhysicalSide": true,
     "userAccepted": false,
-    "productionReady": false
+    "productionReady": false,
+    "userReview": "Jakob 2026-11-12: Denna är faktist lite för stel.. hon är för stel i kroppen när hon gör denna blinkning.. Jag sätter altså underkänd"
   },
   "postProcessing": "Assembled: the generated film goes from the keystone to the wink in 2 s (60 frames; kept beside this film as generated-half.mp4). This film is its frames 0-14, then every second frame 16-22, then 23-26, played forward and then backward (45 frames), so that the eye closes in about five frames, stays shut for about nine and opens the same way (D:/dealer-scratch/tmp/filmagent/mcp/spegla.sh).",
   "generationRef": "assets/motions/pamela-idle-wink-01/generation.json",

@@ -23,12 +23,13 @@
     "evidence": "evidence/generation-method-audit.json"
   },
   "review": {
-    "decision": "PENDING",
+    "decision": "REJECTED",
     "basis": "REDO B till vila och tillbaka: handen på kortet i låga öppningen f0–18, lyfter f24, båda händer vilar f42–78 med skon orörd och gult kort på plats, tillbaka f84–96, REDO B från f102.",
     "limitations": "REDO B-bilden är AI-ritad och inte godkänd av Jakob som ankare. Ruta 60 används som skobild i landningsankare.",
     "colorDoesNotProvePhysicalSide": true,
     "userAccepted": false,
-    "productionReady": false
+    "productionReady": false,
+    "userReview": "Jakob 2026-11-12: Jag tycker att detta är väldigt intressant. Anledningen är att det gula kortet är något tjockare men lägre, taget från sin högkant. Man ser också in i skon lite mer. Den gröna bakgrunden är ljusare, och jag har ingen aning om vad hennes rörelse innebär. Jag undrar vilka referenser detta faktiskt har att göra med och vad som gör att detta produceras."
   },
   "experiment": "READY-B",
   "postProcessing": "none",

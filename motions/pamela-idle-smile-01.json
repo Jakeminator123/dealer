@@ -29,12 +29,14 @@
     }
   },
   "review": {
-    "decision": "PENDING",
+    "decision": "ACCEPTED",
     "basis": "Oberoende rutgranskning 2026-11-11: användbar, som beställt. Tänderna syns f30–62, en nick f34–41 (5 px), en hård blinkning f43–47, avslappnad f70.",
     "limitations": "Inga anmärkningar utöver grönnivåns steg i klippets ändar.",
     "colorDoesNotProvePhysicalSide": true,
-    "userAccepted": false,
-    "productionReady": false
+    "userAccepted": true,
+    "productionReady": false,
+    "acceptedAs": "VARIANT",
+    "userReview": "Jakob 2026-11-12: Jag tycker det är en jättebra variant, men det är också en variant eftersom hon gör en gest som inte skulle kunna vara en idol. Hon är i det, och vi har många namn här. Vi har `idle`, det heter A1 med stort, det heter 'VILA' och så vidare. Men detta är en okej/bra varaint till det jag nu kallar \"grundloopen i idle.. Jag antar en \"Primär\" i denna ska kanske vara en kort typ video där hon typ är nästan still, eller att i detta läge att hon bara typ loopar med liknnande varianter.. typ att hon andas. Men filmen här beror också på vad som fakrtist är ett ankare. Om det finns en ankarbild som vi kanske be5tämt så kabnske det finnas en \"idle\"film på 0.1 sek elelr något som bara gör att nästa variant i idle spelas upp lixom. jag klickar nu \"Variant\" men då är den ju också godkänd.. Osäker på vad som är skildnad på \"variant\" och \"Godkänd\".."
   },
   "postProcessing": "none",
   "generationRef": "assets/motions/pamela-idle-smile-01/generation.json",

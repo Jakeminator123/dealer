@@ -29,12 +29,14 @@
     }
   },
   "review": {
-    "decision": "PENDING",
+    "decision": "ACCEPTED",
     "basis": "Oberoende rutgranskning 2026-11-11: användbar med anmärkning. Hon sätter sig upp f28–44 (axlarna +46 och +32 px) och lutar sedan huvudet cirka 42 px åt sidan f63–78 i stället för att rulla axlarna. I vila från f103.",
     "limitations": "Hackar synligt: rutorna 27, 33, 50, 56, 62, 79, 85 och 91 är frysta inne i steg på 4–6 px.",
     "colorDoesNotProvePhysicalSide": true,
-    "userAccepted": false,
-    "productionReady": false
+    "userAccepted": true,
+    "productionReady": false,
+    "userReview": "Jakob 2026-11-12: Ja, den här är bra - samma här. Bra och godkänd som variant!",
+    "acceptedAs": "VARIANT"
   },
   "postProcessing": "none",
   "generationRef": "assets/motions/pamela-idle-stretch-01/generation.json",

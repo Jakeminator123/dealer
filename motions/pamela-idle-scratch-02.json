@@ -28,12 +28,14 @@
     }
   },
   "review": {
-    "decision": "PENDING",
+    "decision": "ACCEPTED",
     "basis": "Oberoende rutgranskning 2026-11-11 (varje ruta i halv storlek, ansikten, händer och skarvar i full upplösning; inte sedd i fart). Slutar i grundposen och är stilla de sista åtta rutorna; förskjutning av händer, huvud och sko mot grundrutan högst 0,33 px; inga dubblettrutor; kortet i skon oförändrat i varje ruta. Användbar med anmärkning. Vänster hand (till höger i bild) lyfts f22–34, hon kliar sig ovanför örat och tinningen f39–62, handen lämnar f63–67, landar f78 cirka 20 px högt, glider på plats f79–85 och ligger exakt tillbaka från f84 (0,1 px). Den andra handen rör sig högst 0,3 px.",
     "limitations": "Hon kliar sig vid tinningen, inte på hjässan som beställt. Läpparna är isär med övre tänderna synliga f24–75 (en öppning, läses som \"hm\"). Handen är smetad och halvgenomskinlig med grön ton f25–33 och f68–77; stora hopp f28–29 och f73 (upp till cirka 125 px per ruta). Blinkning f64–66. Svag skuggning (högst 16 nivåer) där handen lyfter och landar. Gemensamt för omgången: ett större steg var femte ruta; grönt G 224–231 i de visade rutorna (hoppet från 237 ligger i de tre första).",
     "colorDoesNotProvePhysicalSide": true,
-    "userAccepted": false,
-    "productionReady": false
+    "userAccepted": true,
+    "productionReady": false,
+    "acceptedAs": "VARIANT",
+    "userReview": "Jakob 2026-11-12: Jag har i tidigare text i denna granskningsomgång svarat på saker jag ser i nästan alla klipp så kommer härifrån enbart typ sätta variant eller underkän (och aknske godkänn eller primär, men då kommer jag motivera"
   },
   "postProcessing": "none",
   "generationRef": "assets/motions/pamela-idle-scratch-02/generation.json",

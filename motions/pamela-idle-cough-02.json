@@ -28,12 +28,14 @@
     }
   },
   "review": {
-    "decision": "PENDING",
+    "decision": "ACCEPTED",
     "basis": "Oberoende rutgranskning 2026-11-11: användbar med anmärkning, på gränsen; den bättre av två tagningar. Läses som en dämpad hostning i knuten hand med två slag: handen till vänster i bild lyfts medan munnen öppnas f18–33, knytnäven når läpparna f34–42, första hopknipningen av ögonen f52–56, huvudet sänks och lutas f57–72 (högst 31 px åt vänster, 36 px ner), andra hopknipningen f73–77, handen tillbaka inom 0,2 px, huvudet tillbaka cirka f113. Blicken ligger på kameran, handen landar mjukt, inga frysta rutor. Den andra handen rör sig högst 0,2 px.",
     "limitations": "Inga skarpa ryck i bröst och axlar (högst 2 px). Munnen är öppen f18–38 fast beställningen sade stängd; övre tänderna syns f19–24, vilket kan läsas som att hon ska säga något. Första hopknipningen är sned (ögat till vänster i bild helt stängt f54–55) och kan i en stillbild läsas som en blinkning med ena ögat. Slutskarven är den svagaste av de fyra i omgången: ruta 116 mot grundrutan 3 303 bildpunkter över 24 nivåer, mest kanter förskjutna under en bildpunkt på blus, slag och vänster ärm; övre ögonlocket till vänster i bild ligger lägre i slutet, så klippet kan ge en liten ryckning i ögonlocket. Grönt driver −2,8 över de visade rutorna; en cirka 8 nivåer mörkare grön fläck med synlig kant där armen lyftes f24–80 (försvinner i nycklingen). Inte sedd i fart.",
     "colorDoesNotProvePhysicalSide": true,
-    "userAccepted": false,
-    "productionReady": false
+    "userAccepted": true,
+    "productionReady": false,
+    "acceptedAs": "VARIANT",
+    "userReview": "Jakob 2026-11-12: godkänd som variant i labbet."
   },
   "postProcessing": "none",
   "generationRef": "assets/motions/pamela-idle-cough-02/generation.json",
