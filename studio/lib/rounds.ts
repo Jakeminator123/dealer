@@ -107,7 +107,7 @@ const r2Chapters = (frames: number): Chapter[] =>
  */
 export const SEQ16_FILM: ReferenceFilm = {
   id: "pamela-sequence-16-native-r2",
-  name: "16 kort",
+  name: "Hel giv · alla sju och dealern",
   path: "assets/motions/pamela-sequence-16-native-r2/review.mp4",
   fps: 30,
   frames: 3296,
@@ -118,7 +118,7 @@ export const SEQ16_FILM: ReferenceFilm = {
 /** pamela-sequence-17-native-r2: the 16-card deal, then the hole card turned (DC2 upp) and a third card to the dealer. 3598 frames. */
 export const SEQ17_FILM: ReferenceFilm = {
   id: "pamela-sequence-17-native-r2",
-  name: "17 kort",
+  name: "Hel giv · med vändning och tredje kort",
   path: "assets/motions/pamela-sequence-17-native-r2/source.mp4",
   fps: 30,
   frames: 3598,
@@ -133,7 +133,7 @@ export const SEQ17_FILM: ReferenceFilm = {
  */
 export const OLDER14_FILM: ReferenceFilm = {
   id: "pamela-older-14-material-full",
-  name: "14 kort, äldre",
+  name: "Hel giv · äldre, bara spelarna",
   path: "assets/motions/pamela-older-14-material-full/source.mp4",
   fps: 30,
   frames: 5486,
@@ -143,9 +143,9 @@ export const OLDER14_FILM: ReferenceFilm = {
 /** The references in the order the picker lists them, with their keys (the address: /?runda=17-kort). */
 export const REFERENCE_FILMS: { key: string; sub: string; film: ReferenceFilm }[] = [
   { key: V6_FILM_KEY, sub: "den färdiga filmen från 10 nov · byter hand · större kort", film: V6_FILM },
-  { key: "16-kort", sub: "16 kort · alla sju platser · 10 nov · hålkortet dolt", film: SEQ16_FILM },
-  { key: "17-kort", sub: "17 kort · alla sju platser · 10 nov · DC2 upp och DC3", film: SEQ17_FILM },
-  { key: "14-kort", sub: "14 kort · alla sju platser · äldre · inga dealerkort", film: OLDER14_FILM },
+  { key: "16-kort", sub: "färdig film 10 nov · 16 kort: två till varje plats, två till dealern (det andra dolt)", film: SEQ16_FILM },
+  { key: "17-kort", sub: "färdig film 10 nov · 17 kort: som ovan, sedan vänds dealerns dolda kort och hon tar ett tredje", film: SEQ17_FILM },
+  { key: "14-kort", sub: "äldre färdig film · 14 kort: två till varje plats, inga till dealern · vita kort", film: OLDER14_FILM },
 ];
 
 const plain = (edges: { from: string; to: string }[]): Step[] => edges.map((e) => ({ from: e.from, to: e.to }));

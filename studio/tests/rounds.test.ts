@@ -11,7 +11,7 @@ import { nearSteps, sameSet, stillOf } from "../components/round/strip.ts";
 
 test("the ready-made rounds, in his notation", () => {
   const all_ = readyRounds();
-  assert.deepEqual(all_.map((r) => r.name), ["Plats 4", "Plats 4 · två kort", "Alla platser", "P1", "P2", "P3", "P4", "P5", "P6", "P7", "V6-filmen", "16 kort", "17 kort", "14 kort, äldre"]);
+  assert.deepEqual(all_.map((r) => r.name), ["Plats 4", "Plats 4 · två kort", "Alla platser", "P1", "P2", "P3", "P4", "P5", "P6", "P7", "V6-filmen", "Hel giv · alla sju och dealern", "Hel giv · med vändning och tredje kort", "Hel giv · äldre, bara spelarna"]);
   const rounds = all_.filter((r) => !isReference(r));
   assert.ok(rounds.every((r) => !r.errors.length && r.steps.length));
   const [four, v6, all, p1] = rounds;
@@ -153,7 +153,7 @@ test("the old public page's whole deals: references of their own, the library's 
     assert.equal(addressOf(r, "3d"), `?runda=${r.key}`);
     assert.equal(viewFor(r, "3d"), "platt");
   }
-  assert.equal(refs[1].sub, "16 kort · alla sju platser · 10 nov · hålkortet dolt");
+  assert.equal(refs[1].sub, "färdig film 10 nov · 16 kort: två till varje plats, två till dealern (det andra dolt)");
 
   // the chapters are the registry's timeline: each deal and the turn begins one (motions/<id>.json sequence.segments)
   for (const film of [SEQ16_FILM, SEQ17_FILM]) {
