@@ -170,16 +170,21 @@ export function RoleRow({ dealer, role, step, last, open, onOpen }: { dealer: De
   );
 }
 
-/** The films: the bank in numbers per seat, the map one click away; for a dealer without films in the bank, what lies outside it. */
-export function FilmsRow({ dealer, graph, step }: { dealer: DealerAnswer; graph: Graph | null; step: number }) {
+/**
+ * The films: the bank in numbers per seat, the map one click away; for a dealer without films in the bank, what lies
+ * outside it. Under that, the films of the register (role film) that lie in the repo folder but not in the bank.
+ */
+export function FilmsRow({ dealer, graph, step, open, onOpen }: { dealer: DealerAnswer; graph: Graph | null; step: number; open: string | null; onOpen: (entry: EntryAnswer) => void }) {
   const [shown, setShown] = useState(false);
   const inBank = dealer.films?.from && graph ? takeCount(graph) : 0;
   const status: RoleStatus = inBank ? "finns" : "saknas";
   const outside = dealer.outside;
   const outFilms = outside?.ledgers.reduce((n, l) => n + l.films, 0) ?? 0;
   const outUsable = outside?.ledgers.reduce((n, l) => n + l.usable, 0) ?? 0;
+  const loose = dealer.entries.filter((e) => e.role === "film");
+  const count = `${inBank ? `${inBank} tagningar i banken` : "0 i banken"}${loose.length ? ` · ${loose.length} utanför` : ""}`;
   return (
-    <RowFrame role="film" step={step} status={status} count={inBank ? `${inBank} tagningar i banken` : "0 i banken"} last>
+    <RowFrame role="film" step={step} status={status} count={count} last>
       <div className="flex flex-col gap-3">
         {inBank && graph ? (
           <>
@@ -258,6 +263,18 @@ export function FilmsRow({ dealer, graph, step }: { dealer: DealerAnswer; graph:
             ) : null}
           </div>
         )}
+        {loose.length ? (
+          <div className="flex flex-col gap-2">
+            <span className="text-sm text-dim">
+              <span className="font-semibold tabular-nums text-ink">{loose.length} {loose.length === 1 ? "film" : "filmer"}</span> utanför banken, i repomappen
+            </span>
+            <Strip>
+              {loose.map((e) => (
+                <Tile key={e.id} entry={e} onOpen={onOpen} selected={open === e.id} line={filmLine(e) ?? ""} />
+              ))}
+            </Strip>
+          </div>
+        ) : null}
       </div>
     </RowFrame>
   );

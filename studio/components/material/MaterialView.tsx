@@ -137,7 +137,7 @@ export function MaterialView() {
         <div className="divide-y divide-line/70">
           {CHAIN.map((role) =>
             role === "film" ? (
-              <FilmsRow key={role} dealer={dealer} graph={graph} step={step(role)} />
+              <FilmsRow key={role} dealer={dealer} graph={graph} step={step(role)} open={open?.id ?? null} onOpen={(e) => setParams({ bild: e.id })} />
             ) : (
               <RoleRow key={role} dealer={dealer} role={role} step={step(role)} open={open?.id ?? null} onOpen={(e) => setParams({ bild: e.id })} />
             ),

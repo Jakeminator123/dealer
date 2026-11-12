@@ -33,7 +33,7 @@
       "purpose": "End image for a P1.C1 deal at the saved plan position. Real landing frame from the old P1 deal: the index fingertip already rests where the plan puts the card, so only the card moves 55 px under it.",
       "base": {
         "frame": {
-          "video": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-physical-deal-pilot/jobs/p1-back-front-keyframes-take-02/original.mp4",
+          "video": "assets/sources/pamela-p1-giv-keyframes-02/original.mp4",
           "videoSha256": "678965c828751b080edd9c1c50d9a73e4bb649226c12ca4a92b5c7cae71c65d9",
           "index": 92
         }
@@ -130,7 +130,7 @@
       "purpose": "End image for a P1.C1 deal at the saved plan position. Real landing frame from the old P1 deal: the index fingertip already rests where the plan puts the card, so only the card moves 55 px under it. The planned card is the real rendered blue card from the calm deal, warped onto the planned quad, because a flat painted quad made the model invent a printed face.",
       "base": {
         "frame": {
-          "video": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-physical-deal-pilot/jobs/p1-back-front-keyframes-take-02/original.mp4",
+          "video": "assets/sources/pamela-p1-giv-keyframes-02/original.mp4",
           "videoSha256": "678965c828751b080edd9c1c50d9a73e4bb649226c12ca4a92b5c7cae71c65d9",
           "index": 92
         }
@@ -237,7 +237,7 @@
       "purpose": "IDLE pose with the P4.C1 card lying at the saved plan position: last image of the return from that card. Same real card pixels as the deal's own end image, so the card does not change during the return.",
       "base": {
         "file": {
-          "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p4-c1-returns-01/direct/end.png",
+          "path": "assets/motions/pamela-p4-c1-return-idle-calm-01/last.png",
           "sha256": "b9560b7992e018e8d0110a3bf58db95ee90c91cd8ef77c70f2e73323d51c24e7"
         }
       },
@@ -294,7 +294,7 @@
       "purpose": "IDLE pose with the P1.C1 card lying at the saved plan position: last image of the return from that card. Same real card pixels as the deal's own end image, so the card does not change during the return.",
       "base": {
         "file": {
-          "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p4-c1-returns-01/direct/end.png",
+          "path": "assets/motions/pamela-p4-c1-return-idle-calm-01/last.png",
           "sha256": "b9560b7992e018e8d0110a3bf58db95ee90c91cd8ef77c70f2e73323d51c24e7"
         }
       },
@@ -385,7 +385,7 @@
       "purpose": "Landing anchor for P2.C1: real frame of the old bank's deal to this seat, four frames before the hand is clear (fingertip still on the card). All old blue cards are removed and the real card pixels are placed on the saved plan quad under the fingertip.",
       "base": {
         "frame": {
-          "video": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/mid-arc-02/p2-c1/original.mp4",
+          "video": "assets/sources/pamela-p2-mid-arc-02/original.mp4",
           "videoSha256": "ef48d5f3c2053c27e30563c98d95881d7afe563863bd85a920359a3ab24acc3c",
           "index": 104
         }
@@ -443,7 +443,7 @@
       "purpose": "IDLE with the P2.C1 card at the saved plan position: last image of the return to IDLE.",
       "base": {
         "file": {
-          "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p4-c1-returns-01/direct/end.png",
+          "path": "assets/motions/pamela-p4-c1-return-idle-calm-01/last.png",
           "sha256": "b9560b7992e018e8d0110a3bf58db95ee90c91cd8ef77c70f2e73323d51c24e7"
         }
       },
@@ -473,7 +473,7 @@
       "purpose": "Landing anchor for P3.C1: real frame of the old bank's deal to this seat, four frames before the hand is clear (fingertip still on the card). All old blue cards are removed and the real card pixels are placed on the saved plan quad under the fingertip.",
       "base": {
         "frame": {
-          "video": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p3-c2-mid-01/original.mp4",
+          "video": "assets/sources/pamela-p3-c2-mid-01/original.mp4",
           "videoSha256": "6474b8d6381f9efacff0928634f4f581e8eff7ce66ea6b7c02674a41e461c775",
           "index": 117
         }
@@ -531,7 +531,7 @@
       "purpose": "IDLE with the P3.C1 card at the saved plan position: last image of the return to IDLE.",
       "base": {
         "file": {
-          "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p4-c1-returns-01/direct/end.png",
+          "path": "assets/motions/pamela-p4-c1-return-idle-calm-01/last.png",
           "sha256": "b9560b7992e018e8d0110a3bf58db95ee90c91cd8ef77c70f2e73323d51c24e7"
         }
       },
@@ -561,7 +561,7 @@
       "purpose": "Landing anchor for P5.C1: real frame of the old bank's deal to this seat, four frames before the hand is clear (fingertip still on the card). All old blue cards are removed and the real card pixels are placed on the saved plan quad under the fingertip.",
       "base": {
         "frame": {
-          "video": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/center-arc-01/p5-c1/original.mp4",
+          "video": "assets/motions/pamela-arkiv-p5-c1-center-arc-01/source.mp4",
           "videoSha256": "f8b3d4859562a88c1261e50f86bd560939001169cc17d45340eeec36a4dc2b0d",
           "index": 79
         }
@@ -619,7 +619,7 @@
       "purpose": "IDLE with the P5.C1 card at the saved plan position: last image of the return to IDLE.",
       "base": {
         "file": {
-          "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p4-c1-returns-01/direct/end.png",
+          "path": "assets/motions/pamela-p4-c1-return-idle-calm-01/last.png",
           "sha256": "b9560b7992e018e8d0110a3bf58db95ee90c91cd8ef77c70f2e73323d51c24e7"
         }
       },
@@ -649,7 +649,7 @@
       "purpose": "Landing anchor for P6.C1: real frame of the old bank's deal to this seat, four frames before the hand is clear (fingertip still on the card). All old blue cards are removed and the real card pixels are placed on the saved plan quad under the fingertip.",
       "base": {
         "frame": {
-          "video": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p6-c2-mid-01/original.mp4",
+          "video": "assets/sources/pamela-p6-c2-mid-01/original.mp4",
           "videoSha256": "e6b82a321d7b51d4e25b9e4c06fd81c815dba1684828314040f53d708c20bb9d",
           "index": 84
         }
@@ -707,7 +707,7 @@
       "purpose": "IDLE with the P6.C1 card at the saved plan position: last image of the return to IDLE.",
       "base": {
         "file": {
-          "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p4-c1-returns-01/direct/end.png",
+          "path": "assets/motions/pamela-p4-c1-return-idle-calm-01/last.png",
           "sha256": "b9560b7992e018e8d0110a3bf58db95ee90c91cd8ef77c70f2e73323d51c24e7"
         }
       },
@@ -981,7 +981,7 @@
       "purpose": "IDLE with the P7.C1 card at the saved plan position: last image of the return to IDLE from that card.",
       "base": {
         "file": {
-          "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p4-c1-returns-01/direct/end.png",
+          "path": "assets/motions/pamela-p4-c1-return-idle-calm-01/last.png",
           "sha256": "b9560b7992e018e8d0110a3bf58db95ee90c91cd8ef77c70f2e73323d51c24e7"
         }
       },
@@ -1029,7 +1029,7 @@
       },
       "last": {
         "file": {
-          "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p4-c1-returns-01/to-redo/end.png",
+          "path": "assets/motions/pamela-p4-c1-return-ready-calm-01/last.png",
           "sha256": "ada31e674a37d6f4925df39a108c5738d6cff9064e27b6420ad09d0032d325b0"
         },
         "note": "Old lab READY anchor: pinch grip at the shoe with the landed P4.C1 card kept on the table."
@@ -1057,7 +1057,7 @@
       },
       "last": {
         "file": {
-          "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p4-c1-returns-01/direct/end.png",
+          "path": "assets/motions/pamela-p4-c1-return-idle-calm-01/last.png",
           "sha256": "b9560b7992e018e8d0110a3bf58db95ee90c91cd8ef77c70f2e73323d51c24e7"
         },
         "note": "Old lab IDLE anchor: both hands resting, eyes to camera, landed P4.C1 card kept on the table."

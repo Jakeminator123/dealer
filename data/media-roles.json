@@ -1,12 +1,12 @@
 {
   "schemaVersion": 1,
-  "about": "Vad som är vad per dealer: varje bild, ruta ur en film eller grupp av filer får en roll i Jakobs kedja (ingångsbild, keystone, ankare 1, 2.1, 2.2, landning, film, referens, prov, övrigt). Studions vy Material läser registret genom GET /api/media (tools/media-roles.ts), som lägger till om filen finns, dess storlek och vilka filmer i banken som börjar eller slutar på den. Bankens filmer listas inte här: de räknas ur data/clip-jobs.json. Fylld 2026-11-12 ur D:/dealer-scratch/tmp/huvudagent/original/RAPPORT.md, D:/dealer-scratch/tmp/paow/LASMIG.md och filerna själva.",
+  "about": "Vad som är vad per dealer: varje bild, ruta ur en film eller grupp av filer får en roll i Jakobs kedja (ingångsbild, keystone, ankare 1, 2.1, 2.2, landning, film, referens, prov, övrigt). Studions vy Material läser registret genom GET /api/media (tools/media-roles.ts), som lägger till om filen finns, dess storlek och vilka filmer i banken som börjar eller slutar på den. Bankens filmer listas inte här: de räknas ur data/clip-jobs.json. Filmer utanför banken har rollen film och ligger i assets/films/<dealer>/ eller i det prov där de granskades, med receipt.json bredvid (importen 2026-11-12). Fylld 2026-11-12 ur D:/dealer-scratch/tmp/huvudagent/original/RAPPORT.md, D:/dealer-scratch/tmp/paow/LASMIG.md och filerna själva.",
   "dealers": {
     "pamela": {
       "name": "Pamela",
       "missing": {
         "ingangsbild": "Pamela har ingen ingångsbild. Hon gjordes i gamla labbet, och ingen bild av henne över 2000 px finns där eller i repot.",
-        "keystone": "Pamela har ingen keystone i hög upplösning. De två närmaste är gamla labbets förlagor i 1536 × 1024, utanför repot."
+        "keystone": "Pamela har ingen keystone i hög upplösning. De två närmaste är gamla labbets förlagor i 1536 × 1024 (kopior i assets/keystones/pamela-v5-kropp och pamela-v4-vila)."
       },
       "films": {
         "from": "data/clip-jobs.json",
@@ -19,17 +19,17 @@
           "id": "pamela-keystone-v5-kropp",
           "role": "keystone",
           "name": "Kropp v5 (gamla labbet)",
-          "path": "D:/dealer-archive/snyggare-dealer/runs/20261108-pamela-v5-body/original/pamela-v5-body.png",
+          "path": "assets/keystones/pamela-v5-kropp/keystone.png",
           "note": "Närmast en keystone, men bara 1536 × 1024. Gamla labbet kallar den keystone-candidate.",
-          "source": { "from": "gamla labbet, bildgenererad", "when": "2026-11-08" }
+          "source": { "from": "gamla labbet, bildgenererad; kopia ur arkivet på D:, se receipt.json", "when": "2026-11-08" }
         },
         {
           "id": "pamela-keystone-v4-vila",
           "role": "keystone",
           "name": "Vila v4 (gamla labbet)",
-          "path": "D:/dealer-archive/snyggare-dealer/runs/20261108210457-pamela-v4-focused/original/pamela-vila-focused-v4.png",
+          "path": "assets/keystones/pamela-v4-vila/keystone.png",
           "note": "Förlagan till gamla labbets vilobild, 1536 × 1024. Ur den och kropp v5 gjordes vila- och redo-station och V6:s råfilmer.",
-          "source": { "from": "gamla labbet, bildgenererad", "when": "2026-11-08" }
+          "source": { "from": "gamla labbet, bildgenererad; kopia ur arkivet på D:, se receipt.json", "when": "2026-11-08" }
         },
 
         {
@@ -211,21 +211,21 @@
           "id": "pamela-gamla-vila-kort-p4",
           "role": "ankare-1",
           "name": "Vila, kort P4 (gamla labbet)",
-          "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p4-c1-returns-01/direct/end.png",
+          "path": "assets/motions/pamela-p4-c1-return-idle-calm-01/last.png",
           "card": "P4.C1",
           "node": "IDLE",
-          "note": "Gamla labbets vilobild med kortet på P4, utanför repot. Grunden för alla bilder vila med kort ovan.",
+          "note": "Gamla labbets vilobild med kortet på P4; samma fil som sista bilden i pamela-p4-c1-return-idle-calm-01. Grunden för alla bilder vila med kort ovan.",
           "source": { "from": "gamla labbet", "when": "2026-11-10" }
         },
         {
           "id": "pamela-gamla-vila-station",
           "role": "ankare-1",
           "name": "Vila-station (gamla labbet)",
-          "path": "D:/dealer-archive/snyggare-dealer/runs/20261109-pamela-reference-kit/original/pamela-vila-station.png",
+          "path": "assets/sources/pamela-vila-station/station.png",
           "node": "IDLE",
           "state": "ersatt",
           "note": "Gamla formatet (1536 × 1024, gammal sko med vitt kort). V6:s råfilmer börjar här. Ersatt av bankens vila.",
-          "source": { "from": "gamla labbet, ur vila v4 och kropp v5", "when": "2026-11-09" }
+          "source": { "from": "gamla labbet, ur vila v4 och kropp v5; kopia ur arkivet på D:, se receipt.json", "when": "2026-11-09" }
         },
 
         {
@@ -342,21 +342,21 @@
           "id": "pamela-gamla-nyp-kort-p4",
           "role": "ankare-2.1",
           "name": "Nyp, kort P4 (gamla labbet)",
-          "path": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/p4-c1-returns-01/to-redo/end.png",
+          "path": "assets/motions/pamela-p4-c1-return-ready-calm-01/last.png",
           "card": "P4.C1",
           "node": "READY",
-          "note": "Gamla labbets redo-bild med kortet på P4, utanför repot.",
+          "note": "Gamla labbets redo-bild med kortet på P4; samma fil som sista bilden i pamela-p4-c1-return-ready-calm-01.",
           "source": { "from": "gamla labbet", "when": "2026-11-10" }
         },
         {
           "id": "pamela-gamla-redo-station",
           "role": "ankare-2.1",
           "name": "Redo-station (gamla labbet)",
-          "path": "D:/dealer-archive/snyggare-dealer/runs/20261109-pamela-reference-kit/original/pamela-redo-station.png",
+          "path": "assets/sources/pamela-redo-station/station.png",
           "node": "READY",
           "state": "ersatt",
           "note": "Gamla formatet (1536 × 1024, gammal sko med vitt kort). V6:s råfilmer går hit. Ersatt av bankens nyp.",
-          "source": { "from": "gamla labbet, ur vila v4 och kropp v5", "when": "2026-11-09" }
+          "source": { "from": "gamla labbet, ur vila v4 och kropp v5; kopia ur arkivet på D:, se receipt.json", "when": "2026-11-09" }
         },
 
         {
@@ -867,6 +867,662 @@
           "note": "Råfilmernas rutor uppackade (vila, fram, giv, tillbaka), V6:s indata.",
           "source": { "from": "assets/originals", "when": "2026-11-10" }
         },
+        {
+          "id": "pamela-ref-p4-tur-retur",
+          "role": "referens",
+          "name": "Referens: tur och retur till P4",
+          "path": "assets/films/pamela/ref-p4-tur-retur/source.mp4",
+          "still": 88,
+          "fps": 30,
+          "note": "Bankens godkända tur och retur till plats 4, klippt som resolveRound klipper den. Referensfilm för Kling 4 i receptet \"plats 4 som mall\" (Paow b6, b19).",
+          "source": { "from": "Paow-sessionen (dealer-82)", "when": "2026-11-11" }
+        },
+        {
+          "id": "pamela-ref-p1-tur-retur",
+          "role": "referens",
+          "name": "Referens: tur och retur till P1",
+          "path": "assets/films/pamela/ref-p1-tur-retur/source.mp4",
+          "still": 94,
+          "fps": 30,
+          "note": "Bankens godkända tur och retur till plats 1. Referensfilm för nypet till P1 (Paow b20; kortet går rakt till P1).",
+          "source": { "from": "Paow-sessionen (dealer-82)", "when": "2026-11-11" }
+        },
+        {
+          "id": "pamela-ref-slap-p2-96",
+          "role": "referens",
+          "name": "Referens: släp till P2, 96 rutor",
+          "path": "assets/films/pamela/ref-slap-p2-96/source.mp4",
+          "still": 43,
+          "fps": 30,
+          "note": "De 96 första rutorna av den godkända pamela-p2-c1-readyb-deal-01, fram till strax före vändningen. Referens för släp ur skon (Paow b9).",
+          "source": { "from": "Paow-sessionen (dealer-82)", "when": "2026-11-11" }
+        },
+
+        {
+          "id": "pamela-film-b13-leave-wide-02",
+          "role": "film",
+          "name": "Utgång, helfigur (wan3, 8 s) 2",
+          "path": "assets/films/pamela/b13-leave-wide-02/source.mp4",
+          "still": 108,
+          "fps": 30,
+          "note": "Utanför banken. Obedömd av Jakob: alternativ till helkroppsfilmen som banken har i kling-4.",
+          "source": { "from": "FILMAGENT via Runways MCP, omgång b13", "when": "2026-11-11" }
+        },
+        {
+          "id": "pamela-film-b13-idle-sceptical-01",
+          "role": "film",
+          "name": "Vila, skeptisk (wan3, 3 s)",
+          "path": "assets/films/pamela/b13-idle-sceptical-01/source.mp4",
+          "still": 40,
+          "fps": 30,
+          "note": "Utanför banken. Obedömd: ingen dom hittad i liggare, prov eller banken.",
+          "source": { "from": "FILMAGENT via Runways MCP, omgång b13", "when": "2026-11-11" }
+        },
+        {
+          "id": "pamela-film-b14-arrive-walk-01",
+          "role": "film",
+          "name": "Ingång, går in (wan3, 5 s) 1",
+          "path": "assets/films/pamela/b14-arrive-walk-01/source.mp4",
+          "still": 67,
+          "fps": 30,
+          "note": "Utanför banken. Obedömd av Jakob: alternativ till helkroppsfilmen som banken har i kling-4.",
+          "source": { "from": "FILMAGENT via Runways MCP, omgång b14", "when": "2026-11-11" }
+        },
+        {
+          "id": "pamela-film-b14-arrive-walk-02",
+          "role": "film",
+          "name": "Ingång, går in (wan3, 5 s) 2",
+          "path": "assets/films/pamela/b14-arrive-walk-02/source.mp4",
+          "still": 67,
+          "fps": 30,
+          "note": "Utanför banken. Obedömd av Jakob: alternativ till helkroppsfilmen som banken har i kling-4.",
+          "source": { "from": "FILMAGENT via Runways MCP, omgång b14", "when": "2026-11-11" }
+        },
+        {
+          "id": "pamela-film-b14-arrive-sit-01",
+          "role": "film",
+          "name": "Ingång, sätter sig (wan3, 3 s) 1",
+          "path": "assets/films/pamela/b14-arrive-sit-01/source.mp4",
+          "still": 40,
+          "fps": 30,
+          "note": "Utanför banken. Obedömd av Jakob: alternativ till helkroppsfilmen som banken har i kling-4.",
+          "source": { "from": "FILMAGENT via Runways MCP, omgång b14", "when": "2026-11-11" }
+        },
+        {
+          "id": "pamela-film-b14-arrive-sit-02",
+          "role": "film",
+          "name": "Ingång, sätter sig (wan3, 3 s) 2",
+          "path": "assets/films/pamela/b14-arrive-sit-02/source.mp4",
+          "still": 40,
+          "fps": 30,
+          "note": "Utanför banken. Obedömd av Jakob: alternativ till helkroppsfilmen som banken har i kling-4.",
+          "source": { "from": "FILMAGENT via Runways MCP, omgång b14", "when": "2026-11-11" }
+        },
+        {
+          "id": "pamela-film-b14-leave-wide-03",
+          "role": "film",
+          "name": "Utgång, helfigur (wan3, 8 s) 3",
+          "path": "assets/films/pamela/b14-leave-wide-03/source.mp4",
+          "still": 108,
+          "fps": 30,
+          "note": "Utanför banken. Obedömd av Jakob: alternativ till helkroppsfilmen som banken har i kling-4.",
+          "source": { "from": "FILMAGENT via Runways MCP, omgång b14", "when": "2026-11-11" }
+        },
+        {
+          "id": "pamela-film-b14-leave-wide-04",
+          "role": "film",
+          "name": "Utgång, helfigur (wan3, 8 s) 4",
+          "path": "assets/films/pamela/b14-leave-wide-04/source.mp4",
+          "still": 108,
+          "fps": 30,
+          "note": "Utanför banken. Obedömd av Jakob: alternativ till helkroppsfilmen som banken har i kling-4.",
+          "source": { "from": "FILMAGENT via Runways MCP, omgång b14", "when": "2026-11-11" }
+        },
+        {
+          "id": "pamela-film-b16-leave-wide-wan3prime-01",
+          "role": "film",
+          "name": "Utgång, helfigur (wan3 prime, 8 s) 1",
+          "path": "assets/films/pamela/b16-leave-wide-wan3prime-01/source.mp4",
+          "still": 108,
+          "fps": 30,
+          "note": "Utanför banken. Obedömd av Jakob: alternativ till helkroppsfilmen som banken har i kling-4.",
+          "source": { "from": "FILMAGENT via Runways MCP, omgång b16", "when": "2026-11-11" }
+        },
+        {
+          "id": "pamela-film-b18-idle-cough-02",
+          "role": "film",
+          "name": "Vila, hostar, tagning 1 (wan3, 4 s)",
+          "path": "assets/films/pamela/b18-idle-cough-02/source.mp4",
+          "still": 54,
+          "fps": 30,
+          "note": "Utanför banken. Inte vald: tagning 2 fördes in i banken som pamela-idle-cough-02.",
+          "source": { "from": "FILMAGENT via Runways MCP, omgång b18", "when": "2026-11-11" }
+        },
+        {
+          "id": "pamela-film-b17-leave-wide-kling4-02",
+          "role": "film",
+          "name": "Utgång, helfigur (kling-4, 10 s) 2",
+          "path": "assets/films/pamela/b17-leave-wide-kling4-02/source.mp4",
+          "still": 108,
+          "fps": 24,
+          "note": "Utanför banken. Obedömd av Jakob: alternativ till helkroppsfilmen som banken har i kling-4.",
+          "source": { "from": "FILMAGENT via Runways MCP, omgång b17", "when": "2026-11-11" }
+        },
+        {
+          "id": "pamela-film-b17-leave-wide-kling4-02-t2",
+          "role": "film",
+          "name": "Utgång, helfigur (kling-4, 10 s) 2, tagning 2",
+          "path": "assets/films/pamela/b17-leave-wide-kling4-02-t2/source.mp4",
+          "still": 108,
+          "fps": 24,
+          "note": "Utanför banken. Obedömd av Jakob: alternativ till helkroppsfilmen som banken har i kling-4.",
+          "source": { "from": "FILMAGENT via Runways MCP, omgång b17", "when": "2026-11-11" }
+        },
+        {
+          "id": "pamela-film-b17-arrive-walk-kling4-01-t2",
+          "role": "film",
+          "name": "Ingång, går in (kling-4, 6 s) 1, tagning 2",
+          "path": "assets/films/pamela/b17-arrive-walk-kling4-01-t2/source.mp4",
+          "still": 65,
+          "fps": 24,
+          "note": "Utanför banken. Inte vald: banken satte ihop ingången av tagning 1.",
+          "source": { "from": "FILMAGENT via Runways MCP, omgång b17", "when": "2026-11-11" }
+        },
+        {
+          "id": "pamela-film-b17-arrive-sit-kling4-01-t2",
+          "role": "film",
+          "name": "Ingång, sätter sig (kling-4, 3 s) 1, tagning 2",
+          "path": "assets/films/pamela/b17-arrive-sit-kling4-01-t2/source.mp4",
+          "still": 32,
+          "fps": 24,
+          "note": "Utanför banken. Inte vald: banken satte ihop ingången av tagning 1.",
+          "source": { "from": "FILMAGENT via Runways MCP, omgång b17", "when": "2026-11-11" }
+        },
+        {
+          "id": "pamela-film-b17-arrive-hel-kling4-01",
+          "role": "film",
+          "name": "Ingång, hela vägen (kling-4, 8 s) 1",
+          "path": "assets/films/pamela/b17-arrive-hel-kling4-01/source.mp4",
+          "still": 86,
+          "fps": 24,
+          "note": "Utanför banken. Obedömd av Jakob: alternativ till helkroppsfilmen som banken har i kling-4.",
+          "source": { "from": "FILMAGENT via Runways MCP, omgång b17", "when": "2026-11-11" }
+        },
+        {
+          "id": "pamela-film-b17-arrive-hel-kling4-01-t2",
+          "role": "film",
+          "name": "Ingång, hela vägen (kling-4, 8 s) 1, tagning 2",
+          "path": "assets/films/pamela/b17-arrive-hel-kling4-01-t2/source.mp4",
+          "still": 86,
+          "fps": 24,
+          "note": "Utanför banken. Obedömd av Jakob: alternativ till helkroppsfilmen som banken har i kling-4.",
+          "source": { "from": "FILMAGENT via Runways MCP, omgång b17", "when": "2026-11-11" }
+        },
+        {
+          "id": "pamela-film-b15-p2-c1-plan-deal-02-t2",
+          "role": "film",
+          "name": "Giv P2.C1 (wan3, 4 s), tagning 2",
+          "path": "assets/films/pamela/b15-p2-c1-plan-deal-02-t2/source.mp4",
+          "still": 54,
+          "fps": 30,
+          "card": "P2.C1",
+          "note": "Utanför banken. Inte vald: tagning 1 rutgranskades som möjlig variant (Prov givar-omgang-15, b15/domar-givar.json).",
+          "source": { "from": "FILMAGENT via Runways MCP, omgång b15", "when": "2026-11-11" }
+        },
+        {
+          "id": "pamela-film-b15-p6-c1-plan-deal-02-t2",
+          "role": "film",
+          "name": "Giv P6.C1 (wan3, 4 s), tagning 2",
+          "path": "assets/films/pamela/b15-p6-c1-plan-deal-02-t2/source.mp4",
+          "still": 54,
+          "fps": 30,
+          "card": "P6.C1",
+          "note": "Utanför banken. Inte vald: tagning 1 rutgranskades som möjlig variant (Prov givar-omgang-15, b15/domar-givar.json).",
+          "source": { "from": "FILMAGENT via Runways MCP, omgång b15", "when": "2026-11-11" }
+        },
+        {
+          "id": "pamela-film-b15-p7-c1-plan-deal-03",
+          "role": "film",
+          "name": "Giv P7.C1 (wan3, 4 s)",
+          "path": "assets/films/pamela/b15-p7-c1-plan-deal-03/source.mp4",
+          "still": 54,
+          "fps": 30,
+          "card": "P7.C1",
+          "note": "Utanför banken. Obedömd: giv till P7 i omgång b15, inte bland omgångens fyra kandidater, inte rutgranskad.",
+          "source": { "from": "FILMAGENT via Runways MCP, omgång b15", "when": "2026-11-11" }
+        },
+        {
+          "id": "pamela-film-b15-p7-c1-plan-deal-04",
+          "role": "film",
+          "name": "Giv P7.C1 (wan3, 3 s)",
+          "path": "assets/films/pamela/b15-p7-c1-plan-deal-04/source.mp4",
+          "still": 40,
+          "fps": 30,
+          "card": "P7.C1",
+          "note": "Utanför banken. Obedömd: giv till P7 i omgång b15, inte bland omgångens fyra kandidater, inte rutgranskad.",
+          "source": { "from": "FILMAGENT via Runways MCP, omgång b15", "when": "2026-11-11" }
+        },
+        {
+          "id": "pamela-film-b15-p5-c1-plan-return-ready-02",
+          "role": "film",
+          "name": "Retur P5 till redo (wan3, 3 s)",
+          "path": "assets/films/pamela/b15-p5-c1-plan-return-ready-02/source.mp4",
+          "still": 40,
+          "fps": 30,
+          "card": "P5.C1",
+          "note": "Utanför banken. Obedömd: inte bland omgångens fyra kandidater, inte rutgranskad.",
+          "source": { "from": "FILMAGENT via Runways MCP, omgång b15", "when": "2026-11-11" }
+        },
+        {
+          "id": "pamela-film-b15-p5-c1-plan-return-ready-02-t2",
+          "role": "film",
+          "name": "Retur P5 till redo (wan3, 3 s), tagning 2",
+          "path": "assets/films/pamela/b15-p5-c1-plan-return-ready-02-t2/source.mp4",
+          "still": 40,
+          "fps": 30,
+          "card": "P5.C1",
+          "note": "Utanför banken. Obedömd: inte bland omgångens fyra kandidater, inte rutgranskad.",
+          "source": { "from": "FILMAGENT via Runways MCP, omgång b15", "when": "2026-11-11" }
+        },
+        {
+          "id": "pamela-film-b15-p5-c1-plan-return-idle-02-t2",
+          "role": "film",
+          "name": "Retur P5 till vila (wan3, 2 s), tagning 2",
+          "path": "assets/films/pamela/b15-p5-c1-plan-return-idle-02-t2/source.mp4",
+          "still": 27,
+          "fps": 30,
+          "card": "P5.C1",
+          "note": "Utanför banken. Inte vald: tagning 1 rutgranskades och ligger i banken.",
+          "source": { "from": "FILMAGENT via Runways MCP, omgång b15", "when": "2026-11-11" }
+        },
+        {
+          "id": "pamela-film-b15-p6-c1-plan-return-ready-02",
+          "role": "film",
+          "name": "Retur P6 till redo (wan3, 2 s)",
+          "path": "assets/films/pamela/b15-p6-c1-plan-return-ready-02/source.mp4",
+          "still": 27,
+          "fps": 30,
+          "card": "P6.C1",
+          "note": "Utanför banken. Obedömd: inte bland omgångens fyra kandidater, inte rutgranskad.",
+          "source": { "from": "FILMAGENT via Runways MCP, omgång b15", "when": "2026-11-11" }
+        },
+        {
+          "id": "pamela-film-b15-p6-c1-plan-return-ready-02-t2",
+          "role": "film",
+          "name": "Retur P6 till redo (wan3, 2 s), tagning 2",
+          "path": "assets/films/pamela/b15-p6-c1-plan-return-ready-02-t2/source.mp4",
+          "still": 27,
+          "fps": 30,
+          "card": "P6.C1",
+          "note": "Utanför banken. Obedömd: inte bland omgångens fyra kandidater, inte rutgranskad.",
+          "source": { "from": "FILMAGENT via Runways MCP, omgång b15", "when": "2026-11-11" }
+        },
+        {
+          "id": "pamela-film-b15-p6-c1-plan-return-idle-02",
+          "role": "film",
+          "name": "Retur P6 till vila (wan3, 3 s)",
+          "path": "assets/films/pamela/b15-p6-c1-plan-return-idle-02/source.mp4",
+          "still": 40,
+          "fps": 30,
+          "card": "P6.C1",
+          "note": "Utanför banken. Obedömd: inte bland omgångens fyra kandidater, inte rutgranskad.",
+          "source": { "from": "FILMAGENT via Runways MCP, omgång b15", "when": "2026-11-11" }
+        },
+        {
+          "id": "pamela-film-b15-p6-c1-plan-return-idle-02-t2",
+          "role": "film",
+          "name": "Retur P6 till vila (wan3, 3 s), tagning 2",
+          "path": "assets/films/pamela/b15-p6-c1-plan-return-idle-02-t2/source.mp4",
+          "still": 40,
+          "fps": 30,
+          "card": "P6.C1",
+          "note": "Utanför banken. Obedömd: inte bland omgångens fyra kandidater, inte rutgranskad.",
+          "source": { "from": "FILMAGENT via Runways MCP, omgång b15", "when": "2026-11-11" }
+        },
+        {
+          "id": "pamela-film-b15-ready-idle-exit-01",
+          "role": "film",
+          "name": "Redo till vila, 2 s (wan3, 2 s)",
+          "path": "assets/films/pamela/b15-ready-idle-exit-01/source.mp4",
+          "still": 27,
+          "fps": 30,
+          "note": "Utanför banken. Inte vald: 3 s-tagningen (exit-02) rutgranskades som bättre och fördes in.",
+          "source": { "from": "FILMAGENT via Runways MCP, omgång b15", "when": "2026-11-11" }
+        },
+        {
+          "id": "pamela-film-b19-p2-c1-plan-deal-02-kling",
+          "role": "film",
+          "name": "Giv P2.C1 (kling-4, 4 s)",
+          "path": "assets/films/pamela/b19-p2-c1-plan-deal-02-kling/source.mp4",
+          "still": 43,
+          "fps": 24,
+          "card": "P2.C1",
+          "note": "Utanför banken. Obedömd: kling-4-tagning av samma beställning; bara P6 rutgranskades.",
+          "source": { "from": "FILMAGENT via Runways MCP, omgång b19", "when": "2026-11-11" }
+        },
+        {
+          "id": "pamela-film-b19-p3-c1-plan-deal-03-kling",
+          "role": "film",
+          "name": "Giv P3.C1 (kling-4, 4 s)",
+          "path": "assets/films/pamela/b19-p3-c1-plan-deal-03-kling/source.mp4",
+          "still": 43,
+          "fps": 24,
+          "card": "P3.C1",
+          "note": "Utanför banken. Obedömd: kling-4-tagning av samma beställning; bara P6 rutgranskades.",
+          "source": { "from": "FILMAGENT via Runways MCP, omgång b19", "when": "2026-11-11" }
+        },
+        {
+          "id": "pamela-film-b19-p7-c1-plan-deal-03-kling",
+          "role": "film",
+          "name": "Giv P7.C1 (kling-4, 4 s)",
+          "path": "assets/films/pamela/b19-p7-c1-plan-deal-03-kling/source.mp4",
+          "still": 43,
+          "fps": 24,
+          "card": "P7.C1",
+          "note": "Utanför banken. Obedömd: kling-4-tagning av samma beställning; bara P6 rutgranskades.",
+          "source": { "from": "FILMAGENT via Runways MCP, omgång b19", "when": "2026-11-11" }
+        },
+        {
+          "id": "pamela-film-b19-p5-c1-plan-return-ready-02-kling",
+          "role": "film",
+          "name": "Retur P5 till redo (kling-4, 3 s)",
+          "path": "assets/films/pamela/b19-p5-c1-plan-return-ready-02-kling/source.mp4",
+          "still": 32,
+          "fps": 24,
+          "card": "P5.C1",
+          "note": "Utanför banken. Obedömd: kling-4-tagning av samma beställning; bara P6 rutgranskades.",
+          "source": { "from": "FILMAGENT via Runways MCP, omgång b19", "when": "2026-11-11" }
+        },
+        {
+          "id": "pamela-film-b19-p6-c1-plan-return-ready-02-kling",
+          "role": "film",
+          "name": "Retur P6 till redo (kling-4, 3 s)",
+          "path": "assets/films/pamela/b19-p6-c1-plan-return-ready-02-kling/source.mp4",
+          "still": 32,
+          "fps": 24,
+          "card": "P6.C1",
+          "note": "Utanför banken. Obedömd: kling-4-tagning av samma beställning; bara P6 rutgranskades.",
+          "source": { "from": "FILMAGENT via Runways MCP, omgång b19", "when": "2026-11-11" }
+        },
+        {
+          "id": "pamela-film-b20-p2-c1-plan-deal-02-ref",
+          "role": "film",
+          "name": "Giv P2.C1 (kling-4, referens, 4 s)",
+          "path": "assets/films/pamela/b20-p2-c1-plan-deal-02-ref/source.mp4",
+          "still": 43,
+          "fps": 24,
+          "card": "P2.C1",
+          "note": "Utanför banken. Obedömd: kling-4 med referensfilm, inte rutgranskad.",
+          "source": { "from": "FILMAGENT via Runways MCP, omgång b20", "when": "2026-11-11" }
+        },
+        {
+          "id": "pamela-film-b20-p3-c1-plan-deal-03-ref",
+          "role": "film",
+          "name": "Giv P3.C1 (kling-4, referens, 4 s)",
+          "path": "assets/films/pamela/b20-p3-c1-plan-deal-03-ref/source.mp4",
+          "still": 43,
+          "fps": 24,
+          "card": "P3.C1",
+          "note": "Utanför banken. Obedömd: kling-4 med referensfilm, inte rutgranskad.",
+          "source": { "from": "FILMAGENT via Runways MCP, omgång b20", "when": "2026-11-11" }
+        },
+        {
+          "id": "pamela-film-b20-p6-c1-plan-deal-02-ref",
+          "role": "film",
+          "name": "Giv P6.C1 (kling-4, referens, 4 s)",
+          "path": "assets/films/pamela/b20-p6-c1-plan-deal-02-ref/source.mp4",
+          "still": 43,
+          "fps": 24,
+          "card": "P6.C1",
+          "note": "Utanför banken. Obedömd: kling-4 med referensfilm, inte rutgranskad.",
+          "source": { "from": "FILMAGENT via Runways MCP, omgång b20", "when": "2026-11-11" }
+        },
+        {
+          "id": "pamela-film-b20-p7-c1-plan-deal-03-ref",
+          "role": "film",
+          "name": "Giv P7.C1 (kling-4, referens, 4 s)",
+          "path": "assets/films/pamela/b20-p7-c1-plan-deal-03-ref/source.mp4",
+          "still": 43,
+          "fps": 24,
+          "card": "P7.C1",
+          "note": "Utanför banken. Obedömd: kling-4 med referensfilm, inte rutgranskad.",
+          "source": { "from": "FILMAGENT via Runways MCP, omgång b20", "when": "2026-11-11" }
+        },
+        {
+          "id": "pamela-film-b20-p5-c1-plan-return-ready-02-ref",
+          "role": "film",
+          "name": "Retur P5 till redo (kling-4, referens, 3 s)",
+          "path": "assets/films/pamela/b20-p5-c1-plan-return-ready-02-ref/source.mp4",
+          "still": 32,
+          "fps": 24,
+          "card": "P5.C1",
+          "note": "Utanför banken. Obedömd: kling-4 med referensfilm, inte rutgranskad.",
+          "source": { "from": "FILMAGENT via Runways MCP, omgång b20", "when": "2026-11-11" }
+        },
+        {
+          "id": "pamela-film-b20-p6-c1-plan-return-ready-02-ref",
+          "role": "film",
+          "name": "Retur P6 till redo (kling-4, referens, 3 s)",
+          "path": "assets/films/pamela/b20-p6-c1-plan-return-ready-02-ref/source.mp4",
+          "still": 32,
+          "fps": 24,
+          "card": "P6.C1",
+          "note": "Utanför banken. Obedömd: kling-4 med referensfilm, inte rutgranskad.",
+          "source": { "from": "FILMAGENT via Runways MCP, omgång b20", "when": "2026-11-11" }
+        },
+        {
+          "id": "pamela-film-b21-p6-c1-plan-deal-04-kling",
+          "role": "film",
+          "name": "Giv P6.C1 (kling-4, 4 s)",
+          "path": "assets/films/pamela/b21-p6-c1-plan-deal-04-kling/source.mp4",
+          "still": 43,
+          "fps": 24,
+          "card": "P6.C1",
+          "note": "Utanför banken. Obedömd: giv med standardkortet, bara mätt (b21/work/verify21.json), inte rutgranskad.",
+          "source": { "from": "FILMAGENT via Runways MCP, omgång b21", "when": "2026-11-11" }
+        },
+        {
+          "id": "pamela-film-b21-p6-c1-plan-deal-04",
+          "role": "film",
+          "name": "Giv P6.C1 (wan3, 4 s)",
+          "path": "assets/films/pamela/b21-p6-c1-plan-deal-04/source.mp4",
+          "still": 54,
+          "fps": 30,
+          "card": "P6.C1",
+          "note": "Utanför banken. Obedömd: giv med standardkortet, bara mätt (b21/work/verify21.json), inte rutgranskad.",
+          "source": { "from": "FILMAGENT via Runways MCP, omgång b21", "when": "2026-11-11" }
+        },
+        {
+          "id": "pamela-film-b21-p7-c1-plan-deal-05-kling",
+          "role": "film",
+          "name": "Giv P7.C1 (kling-4, 4 s)",
+          "path": "assets/films/pamela/b21-p7-c1-plan-deal-05-kling/source.mp4",
+          "still": 43,
+          "fps": 24,
+          "card": "P7.C1",
+          "note": "Utanför banken. Obedömd: giv med standardkortet, bara mätt (b21/work/verify21.json), inte rutgranskad.",
+          "source": { "from": "FILMAGENT via Runways MCP, omgång b21", "when": "2026-11-11" }
+        },
+        {
+          "id": "pamela-film-b23-slide-p4-kling",
+          "role": "film",
+          "name": "Bara platsen: P4 (kling-4, 5 s)",
+          "path": "assets/films/pamela/b23-slide-p4-kling/source.mp4",
+          "still": 54,
+          "fps": 24,
+          "note": "Utanför banken. Obedömd av Jakob. Provet \"bara platsen, inga färger\" (gult kort i K 1,65); kling-4 släppte och knuffade kortet i tre av fem, wan3 med ett kort var användbar med anmärkning.",
+          "source": { "from": "FILMAGENT via Runways MCP, omgång b23", "when": "2026-11-11" }
+        },
+        {
+          "id": "pamela-film-b23-slide-p4-wan3",
+          "role": "film",
+          "name": "Bara platsen: P4 (wan3, 5 s)",
+          "path": "assets/films/pamela/b23-slide-p4-wan3/source.mp4",
+          "still": 67,
+          "fps": 30,
+          "note": "Utanför banken. Rutgranskad av FILMAGENT-2: användbar med anmärkning som \"lyft, bär, skjut på plats\" (kortet hålls upp mot kameran). Provet \"bara platsen, inga färger\" med gult kort i K 1,65; obedömd av Jakob.",
+          "source": { "from": "FILMAGENT via Runways MCP, omgång b23", "when": "2026-11-11" }
+        },
+        {
+          "id": "pamela-film-b23-slide-p1-kling",
+          "role": "film",
+          "name": "Bara platsen: P1 (kling-4, 5 s)",
+          "path": "assets/films/pamela/b23-slide-p1-kling/source.mp4",
+          "still": 54,
+          "fps": 24,
+          "note": "Utanför banken. Obedömd av Jakob. Provet \"bara platsen, inga färger\" (gult kort i K 1,65); kling-4 släppte och knuffade kortet i tre av fem, wan3 med ett kort var användbar med anmärkning.",
+          "source": { "from": "FILMAGENT via Runways MCP, omgång b23", "when": "2026-11-11" }
+        },
+        {
+          "id": "pamela-film-b23-slide-p6-kling",
+          "role": "film",
+          "name": "Bara platsen: P6 (kling-4, 5 s)",
+          "path": "assets/films/pamela/b23-slide-p6-kling/source.mp4",
+          "still": 54,
+          "fps": 24,
+          "note": "Utanför banken. Obedömd av Jakob. Provet \"bara platsen, inga färger\" (gult kort i K 1,65); kling-4 släppte och knuffade kortet i tre av fem, wan3 med ett kort var användbar med anmärkning.",
+          "source": { "from": "FILMAGENT via Runways MCP, omgång b23", "when": "2026-11-11" }
+        },
+        {
+          "id": "pamela-film-b23-slide-p7-kling",
+          "role": "film",
+          "name": "Bara platsen: P7 (kling-4, 4 s)",
+          "path": "assets/films/pamela/b23-slide-p7-kling/source.mp4",
+          "still": 43,
+          "fps": 24,
+          "note": "Utanför banken. Obedömd av Jakob. Provet \"bara platsen, inga färger\" (gult kort i K 1,65); kling-4 släppte och knuffade kortet i tre av fem, wan3 med ett kort var användbar med anmärkning.",
+          "source": { "from": "FILMAGENT via Runways MCP, omgång b23", "when": "2026-11-11" }
+        },
+        {
+          "id": "pamela-film-b23-slide-tre-kling",
+          "role": "film",
+          "name": "Bara platsen: tre kort (kling-4, 10 s)",
+          "path": "assets/films/pamela/b23-slide-tre-kling/source.mp4",
+          "still": 108,
+          "fps": 24,
+          "note": "Utanför banken. Obedömd av Jakob. Provet \"bara platsen, inga färger\" (gult kort i K 1,65); kling-4 släppte och knuffade kortet i tre av fem, wan3 med ett kort var användbar med anmärkning.",
+          "source": { "from": "FILMAGENT via Runways MCP, omgång b23", "when": "2026-11-11" }
+        },
+        {
+          "id": "pamela-film-b23-slide-karta-p4-kling",
+          "role": "film",
+          "name": "Bara platsen med karta: P4 (kling-4, 5 s)",
+          "path": "assets/films/pamela/b23-slide-karta-p4-kling/source.mp4",
+          "still": 54,
+          "fps": 24,
+          "note": "Utanför banken. Obedömd av Jakob. Provet \"bara platsen, inga färger\" (gult kort i K 1,65); kling-4 släppte och knuffade kortet i tre av fem, wan3 med ett kort var användbar med anmärkning.",
+          "source": { "from": "FILMAGENT via Runways MCP, omgång b23", "when": "2026-11-11" }
+        },
+        {
+          "id": "pamela-film-b22-p6-c1-plan-deal-05",
+          "role": "film",
+          "name": "Giv P6.C1 (wan3, 4 s)",
+          "path": "assets/films/pamela/b22-p6-c1-plan-deal-05/source.mp4",
+          "still": 54,
+          "fps": 30,
+          "card": "P6.C1",
+          "note": "Utanför banken. Obedömd: prov med större kort (K 1,65) i landningsbilden, inte rutgranskat.",
+          "source": { "from": "FILMAGENT via Runways MCP, omgång b22", "when": "2026-11-11" }
+        },
+        {
+          "id": "pamela-film-b22-p6-c1-plan-deal-05-kling",
+          "role": "film",
+          "name": "Giv P6.C1 (kling-4, 4 s)",
+          "path": "assets/films/pamela/b22-p6-c1-plan-deal-05-kling/source.mp4",
+          "still": 43,
+          "fps": 24,
+          "card": "P6.C1",
+          "note": "Utanför banken. Obedömd: prov med större kort (K 1,65) i landningsbilden, inte rutgranskat.",
+          "source": { "from": "FILMAGENT via Runways MCP, omgång b22", "when": "2026-11-11" }
+        },
+        {
+          "id": "pamela-film-b22-p4-c1-plan-deal-03",
+          "role": "film",
+          "name": "Giv P4.C1 (wan3, 4 s)",
+          "path": "assets/films/pamela/b22-p4-c1-plan-deal-03/source.mp4",
+          "still": 54,
+          "fps": 30,
+          "card": "P4.C1",
+          "note": "Utanför banken. Obedömd: prov med större kort (K 1,65) i landningsbilden, inte rutgranskat.",
+          "source": { "from": "FILMAGENT via Runways MCP, omgång b22", "when": "2026-11-11" }
+        },
+        {
+          "id": "pamela-film-b22-p4-c1-plan-deal-03-kling",
+          "role": "film",
+          "name": "Giv P4.C1 (kling-4, 4 s)",
+          "path": "assets/films/pamela/b22-p4-c1-plan-deal-03-kling/source.mp4",
+          "still": 43,
+          "fps": 24,
+          "card": "P4.C1",
+          "note": "Utanför banken. Obedömd: prov med större kort (K 1,65) i landningsbilden, inte rutgranskat.",
+          "source": { "from": "FILMAGENT via Runways MCP, omgång b22", "when": "2026-11-11" }
+        },
+        {
+          "id": "pamela-film-b15-giv-plats-2",
+          "role": "film",
+          "name": "Giv P2.C1 (wan3), Prov givar-omgang-15",
+          "path": "assets/proofs/givar-omgang-15/giv-plats-2.mp4",
+          "still": 54,
+          "fps": 30,
+          "state": "kandidat",
+          "note": "Utanför banken (en kopia ligger också i assets/motions utan post). Rutgranskad: möjlig variant, vändning på bordet.",
+          "source": { "from": "FILMAGENT via Runways MCP", "when": "2026-11-11" }
+        },
+        {
+          "id": "pamela-film-b15-giv-plats-3",
+          "role": "film",
+          "name": "Giv P3.C1 (wan3), Prov givar-omgang-15",
+          "path": "assets/proofs/givar-omgang-15/giv-plats-3.mp4",
+          "still": 54,
+          "fps": 30,
+          "state": "kandidat",
+          "note": "Utanför banken (en kopia ligger också i assets/motions utan post). Rutgranskad: möjlig variant, den bättre av två tagningar.",
+          "source": { "from": "FILMAGENT via Runways MCP", "when": "2026-11-11" }
+        },
+        {
+          "id": "pamela-film-b15-giv-plats-6",
+          "role": "film",
+          "name": "Giv P6.C1 (wan3), Prov givar-omgang-15",
+          "path": "assets/proofs/givar-omgang-15/giv-plats-6.mp4",
+          "still": 54,
+          "fps": 30,
+          "state": "kandidat",
+          "note": "Utanför banken (en kopia ligger också i assets/motions utan post). Rutgranskad: möjlig variant, skjuts på plats; omgångens renaste wan3-giv.",
+          "source": { "from": "FILMAGENT via Runways MCP", "when": "2026-11-11" }
+        },
+        {
+          "id": "pamela-film-b15-giv-plats-6-kling",
+          "role": "film",
+          "name": "Giv P6.C1 (kling-4), Prov givar-omgang-15",
+          "path": "assets/proofs/givar-omgang-15/giv-plats-6-kling.mp4",
+          "still": 43,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Utanför banken (en kopia ligger också i assets/motions utan post). Rutgranskad: kandidat till huvudtagning (vänds i luften, landar inom 2 px, en lätt klapp på kortet).",
+          "source": { "from": "FILMAGENT via Runways MCP", "when": "2026-11-11" }
+        },
+        {
+          "id": "pamela-film-b7-p3c2-kling4",
+          "role": "film",
+          "name": "Redo, kort till P3.C2, redo (kling-4)",
+          "path": "assets/films/pamela/b7-p3c2-kling4/source.mp4",
+          "still": 76,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Utanför banken, Pamela (beställd i Paow-sessionen). Jakob 2026-11-12: etta. Granskaren: närmast en huvudtagning, kortet 0,8 px från platsen (Prov plan-till-film-p3c2, film 8).",
+          "source": { "from": "Paow-sessionen (dealer-82) via Runways MCP, omgång b7", "when": "2026-11-11" }
+        },
+        {
+          "id": "pamela-film-reel-replik",
+          "role": "film",
+          "name": "Repliken med röst (veo-3.1)",
+          "path": "assets/films/pamela/reel-replik/source.mp4",
+          "still": 86,
+          "fps": 24,
+          "note": "Utanför banken. \"Naturlig eller natur, vad önskas John?\" ur vilan; i Pamela-filmen (Prov pamela-film). Uttalet är inte avlyssnat av Jakob. source.mp4 är anpassad till bankens ruta, original.mp4 är leveransen.",
+          "source": { "from": "Pamela-filmen, session dealer-db", "when": "2026-11-12" }
+        },
+
 
         {
           "id": "pamela-prov-original-ankare-keystone",
@@ -978,6 +1634,47 @@
           "node": "AWAY",
           "note": "1920 × 1080, inte bankens ruta. Skickad i Runway-ordrar utanför jobbfilen.",
           "source": { "from": "helfigursproven", "when": "2026-11-11" }
+        },
+
+        {
+          "id": "pamela-p1-giv-keyframes-02-kalla",
+          "role": "arbetsmaterial",
+          "name": "P1-giv (gamla labbet), grund för landningsankare",
+          "path": "assets/sources/pamela-p1-giv-keyframes-02/original.mp4",
+          "still": 92,
+          "fps": 30,
+          "note": "Gamla labbets P1-giv. Landningsankarna för P1 (pamela-p1-c1-plan-land-02, -03) byggdes ur en ruta här (data/clip-jobs.json, base).",
+          "source": { "from": "gamla labbet; kopia ur arkivet på D:, se receipt.json", "when": "2026-11-10" }
+        },
+        {
+          "id": "pamela-p2-mid-arc-02-kalla",
+          "role": "arbetsmaterial",
+          "name": "P2-giv (gamla labbet), grund för landningsankare",
+          "path": "assets/sources/pamela-p2-mid-arc-02/original.mp4",
+          "still": 104,
+          "fps": 30,
+          "note": "Gamla labbets P2-giv. Landningsankaret för P2 byggdes ur en ruta här (data/clip-jobs.json, base).",
+          "source": { "from": "gamla labbet; kopia ur arkivet på D:, se receipt.json", "when": "2026-11-10" }
+        },
+        {
+          "id": "pamela-p3-c2-mid-01-kalla",
+          "role": "arbetsmaterial",
+          "name": "P3-giv (gamla labbet), grund för landningsankare",
+          "path": "assets/sources/pamela-p3-c2-mid-01/original.mp4",
+          "still": 117,
+          "fps": 30,
+          "note": "Gamla labbets P3-giv. Landningsankaret för P3 byggdes ur en ruta här (data/clip-jobs.json, base).",
+          "source": { "from": "gamla labbet; kopia ur arkivet på D:, se receipt.json", "when": "2026-11-10" }
+        },
+        {
+          "id": "pamela-p6-c2-mid-01-kalla",
+          "role": "arbetsmaterial",
+          "name": "P6-giv (gamla labbet), grund för landningsankare",
+          "path": "assets/sources/pamela-p6-c2-mid-01/original.mp4",
+          "still": 84,
+          "fps": 30,
+          "note": "Gamla labbets P6-giv. Landningsankaret för P6 byggdes ur en ruta här (data/clip-jobs.json, base).",
+          "source": { "from": "gamla labbet; kopia ur arkivet på D:, se receipt.json", "when": "2026-11-10" }
         }
       ]
     },
@@ -996,7 +1693,7 @@
       },
       "outside": {
         "path": "D:/dealer-scratch/tmp/paow/",
-        "note": "Filmerna från Paow-sessionen (dealer-82), räknade 2026-11-12 ur liggarna bestallningar-*.json. Användbar = rutgranskad och användbar, också med anmärkningar, enligt proven; reserver räknas inte. Inte införda i banken.",
+        "note": "Filmerna från Paow-sessionen (dealer-82), räknade 2026-11-12 ur liggarna bestallningar-*.json. Användbar = rutgranskad och användbar, också med anmärkningar, enligt proven; reserver räknas inte. Inte införda i banken. De användbara har rollen film här (assets/films/paow/ eller provet de ligger i), liggarna ligger kvar i arbetsmappen.",
         "ledgers": [
           { "file": "bestallningar-b1a.json", "films": 8, "usable": 1, "note": "Samma giv till P4 på åtta sätt. Kling 4 med Pamelas film som referens användbar med anmärkningar; 3 föll, 4 bara mätta. Prov paow-samma-film." },
           { "file": "bestallningar-b1b.json", "films": 3, "usable": 0, "note": "Hela varvet i en tagning, första försöken. Inget användbart. Prov hel-runda-i-en-tagning." },
@@ -1188,6 +1885,204 @@
           "state": "ersatt",
           "note": "Det första utseendet; användbar med anmärkningar. Bankens sko för läge 2.",
           "source": { "from": "GPT Image 2.5, skon ur bankens egen bild", "when": "2026-11-11" }
+        },
+
+        {
+          "id": "paow-film-b1a-p4-kling4-ref",
+          "role": "film",
+          "name": "Giv P4 (kling-4, Pamelas film som referens)",
+          "path": "assets/films/paow/b1a-p4-kling4-ref/source.mp4",
+          "still": 43,
+          "fps": 24,
+          "state": "ersatt",
+          "note": "Utanför banken, första utseendet. Granskaren: användbar med anmärkningar, 91 poäng (Prov paow-samma-film, film 1).",
+          "source": { "from": "Paow-sessionen (dealer-82) via Runways MCP, omgång b1a", "when": "2026-11-11" }
+        },
+        {
+          "id": "paow-film-b6-p4-tur-retur-kling4",
+          "role": "film",
+          "name": "Redo, kort till P4, redo (kling-4)",
+          "path": "assets/films/paow/b6-p4-tur-retur-kling4/source.mp4",
+          "still": 76,
+          "fps": 24,
+          "state": "ersatt",
+          "note": "Utanför banken, första utseendet. Användbar med anmärkningar (Prov paow-plats-4-som-mall, film 1).",
+          "source": { "from": "Paow-sessionen (dealer-82) via Runways MCP, omgång b6", "when": "2026-11-11" }
+        },
+        {
+          "id": "paow-film-b6-p3-tur-retur-kling4",
+          "role": "film",
+          "name": "Redo, kort till P3, redo (kling-4)",
+          "path": "assets/films/paow/b6-p3-tur-retur-kling4/source.mp4",
+          "still": 76,
+          "fps": 24,
+          "state": "ersatt",
+          "note": "Utanför banken, första utseendet. Användbar med anmärkningar (Prov paow-plats-4-som-mall, film 2).",
+          "source": { "from": "Paow-sessionen (dealer-82) via Runways MCP, omgång b6", "when": "2026-11-11" }
+        },
+        {
+          "id": "paow-film-b7-p3c2-kling4",
+          "role": "film",
+          "name": "Redo, kort till P3.C2, redo (kling-4)",
+          "path": "assets/films/paow/b7-p3c2-kling4/source.mp4",
+          "still": 76,
+          "fps": 24,
+          "state": "ersatt",
+          "note": "Utanför banken, första utseendet. Jakob 2026-11-12: tvåa. Granskaren: användbar med anmärkningar (Prov plan-till-film-p3c2, film 5).",
+          "source": { "from": "Paow-sessionen (dealer-82) via Runways MCP, omgång b7", "when": "2026-11-11" }
+        },
+        {
+          "id": "paow-film-b9-slap-p1c1-wan3",
+          "role": "film",
+          "name": "Släp till P1.C1 (wan3), linnet",
+          "path": "assets/proofs/paow-linne-forsta-filmer/3-slap-p1-kort1-wan3.mp4",
+          "still": 81,
+          "fps": 30,
+          "state": "ersatt",
+          "note": "Utanför banken; filmen ligger i Prov paow-linne-forsta-filmer. Granskaren: användbar med anmärkningar, ett verkligt släp.",
+          "source": { "from": "Paow-sessionen (dealer-82) via Runways MCP, omgång b9", "when": "2026-11-11" }
+        },
+        {
+          "id": "paow-film-b9-slap-p1c2-wan3",
+          "role": "film",
+          "name": "Släp till P1.C2 (wan3), linnet",
+          "path": "assets/proofs/paow-linne-forsta-filmer/5-slap-p1-kort2-wan3.mp4",
+          "still": 81,
+          "fps": 30,
+          "state": "ersatt",
+          "note": "Utanför banken; filmen ligger i Prov paow-linne-forsta-filmer. Granskaren: användbar med anmärkningar, ett verkligt släp.",
+          "source": { "from": "Paow-sessionen (dealer-82) via Runways MCP, omgång b9", "when": "2026-11-11" }
+        },
+        {
+          "id": "paow-film-b10-slap-p1c1",
+          "role": "film",
+          "name": "Släp till P1.C1 (wan3), linnet, omgång 2",
+          "path": "assets/proofs/paow-linne-omgang-2/3-slap-p1-kort1.mp4",
+          "still": 81,
+          "fps": 30,
+          "state": "ersatt",
+          "note": "Utanför banken; filmen ligger i Prov paow-linne-omgang-2. Granskaren: användbar med tunga anmärkningar.",
+          "source": { "from": "Paow-sessionen (dealer-82) via Runways MCP, omgång b10", "when": "2026-11-11" }
+        },
+        {
+          "id": "paow-film-b11-slap-p1c2",
+          "role": "film",
+          "name": "Släp till P1.C2 (wan3), linnet, omgång 2",
+          "path": "assets/proofs/paow-linne-omgang-2/4-slap-p1-kort2.mp4",
+          "still": 81,
+          "fps": 30,
+          "state": "ersatt",
+          "note": "Utanför banken; filmen ligger i Prov paow-linne-omgang-2. Granskaren: användbar med anmärkningar.",
+          "source": { "from": "Paow-sessionen (dealer-82) via Runways MCP, omgång b11", "when": "2026-11-11" }
+        },
+        {
+          "id": "paow-film-b17-ankare1-till-2-1-t1",
+          "role": "film",
+          "name": "Ankare 1 till 2.1 (wan3), kavaj",
+          "path": "assets/proofs/paow-kavaj-filmer/01-ankare1-till-2-1-t1.mp4",
+          "still": 53,
+          "fps": 30,
+          "state": "kandidat",
+          "note": "Utanför banken; filmen ligger i Prov paow-kavaj-filmer. Granskaren: användbar med anmärkningar, den bättre av två.",
+          "source": { "from": "Paow-sessionen (dealer-82) via Runways MCP, omgång b17", "when": "2026-11-12" }
+        },
+        {
+          "id": "paow-film-b17-ankare1-till-2-2-t2",
+          "role": "film",
+          "name": "Ankare 1 till 2.2 (wan3), kavaj",
+          "path": "assets/proofs/paow-kavaj-filmer/04-ankare1-till-2-2-t2.mp4",
+          "still": 53,
+          "fps": 30,
+          "state": "kandidat",
+          "note": "Utanför banken; filmen ligger i Prov paow-kavaj-filmer. Granskaren: användbar som huvudtagning, en anmärkning (skugga där underarmen låg).",
+          "source": { "from": "Paow-sessionen (dealer-82) via Runways MCP, omgång b17", "when": "2026-11-12" }
+        },
+        {
+          "id": "paow-film-b17-slap-p1c1-t1",
+          "role": "film",
+          "name": "Släp till P1.C1 (wan3), kavaj",
+          "path": "assets/proofs/paow-kavaj-filmer/05-slap-p1c1-t1.mp4",
+          "still": 80,
+          "fps": 30,
+          "state": "kandidat",
+          "note": "Utanför banken; filmen ligger i Prov paow-kavaj-filmer. Granskaren: verkligt släp, användbar med anmärkningar.",
+          "source": { "from": "Paow-sessionen (dealer-82) via Runways MCP, omgång b17", "when": "2026-11-12" }
+        },
+        {
+          "id": "paow-film-b17-slap-p1c2-t2",
+          "role": "film",
+          "name": "Släp till P1.C2 (wan3), kavaj",
+          "path": "assets/proofs/paow-kavaj-filmer/08-slap-p1c2-t2.mp4",
+          "still": 80,
+          "fps": 30,
+          "state": "kandidat",
+          "note": "Utanför banken; filmen ligger i Prov paow-kavaj-filmer. Granskaren: verkligt släp, användbar med anmärkningar, den bättre av två.",
+          "source": { "from": "Paow-sessionen (dealer-82) via Runways MCP, omgång b17", "when": "2026-11-12" }
+        },
+        {
+          "id": "paow-film-b17-nyp-p4c1-kling4",
+          "role": "film",
+          "name": "Nyp till P4.C1 (kling-4), kavaj",
+          "path": "assets/proofs/paow-kavaj-filmer/13-nyp-p4c1-kling4.mp4",
+          "still": 76,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Utanför banken; filmen ligger i Prov paow-kavaj-filmer. Granskaren: användbar med anmärkningar, landar 2,6 px från platsen.",
+          "source": { "from": "Paow-sessionen (dealer-82) via Runways MCP, omgång b17", "when": "2026-11-12" }
+        },
+        {
+          "id": "paow-film-b19-nyp-dc1-kling4",
+          "role": "film",
+          "name": "Nyp till D.C1 (kling-4), kavaj",
+          "path": "assets/proofs/paow-kavaj-filmer/16-nyp-dc1-kling4.mp4",
+          "still": 76,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Utanför banken; filmen ligger i Prov paow-kavaj-filmer. Granskaren: användbar som huvudtagning.",
+          "source": { "from": "Paow-sessionen (dealer-82) via Runways MCP, omgång b19", "when": "2026-11-12" }
+        },
+        {
+          "id": "paow-film-b19-nyp-p1c1-kling4",
+          "role": "film",
+          "name": "Nyp till P1.C1 (kling-4, referens P4), kavaj",
+          "path": "assets/proofs/paow-kavaj-filmer/14-nyp-p1c1-kling4.mp4",
+          "still": 76,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Utanför banken; filmen ligger i Prov paow-kavaj-filmer. Granskaren: användbar bara med anmärkningar (referensen gick till P4).",
+          "source": { "from": "Paow-sessionen (dealer-82) via Runways MCP, omgång b19", "when": "2026-11-12" }
+        },
+        {
+          "id": "paow-film-b20-nyp-p1c1-egen-referens-t1",
+          "role": "film",
+          "name": "Nyp till P1.C1 (kling-4, egen referens) 1",
+          "path": "assets/proofs/paow-kavaj-filmer/17-nyp-p1c1-egen-referens-t1.mp4",
+          "still": 76,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Utanför banken; filmen ligger i Prov paow-kavaj-filmer. Granskaren: användbar med anmärkningar.",
+          "source": { "from": "Paow-sessionen (dealer-82) via Runways MCP, omgång b20", "when": "2026-11-12" }
+        },
+        {
+          "id": "paow-film-b20-nyp-p1c1-egen-referens-t2",
+          "role": "film",
+          "name": "Nyp till P1.C1 (kling-4, egen referens) 2",
+          "path": "assets/proofs/paow-kavaj-filmer/18-nyp-p1c1-egen-referens-t2.mp4",
+          "still": 76,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Utanför banken; filmen ligger i Prov paow-kavaj-filmer. Granskaren: användbar med anmärkningar.",
+          "source": { "from": "Paow-sessionen (dealer-82) via Runways MCP, omgång b20", "when": "2026-11-12" }
+        },
+        {
+          "id": "paow-film-reel-kommer",
+          "role": "film",
+          "name": "Paow kommer in, helfigur (kling-4)",
+          "path": "assets/films/paow/reel-kommer/source.mp4",
+          "still": 97,
+          "fps": 24,
+          "note": "Utanför banken. Från tomt brett bord till Paow sittande i den breda rutan, Pamelas godkända ingång som referens; skivan bortmålad. I Pamela-filmen. source.mp4 är bortmålad, original.mp4 leveransen.",
+          "source": { "from": "Pamela-filmen, session dealer-db", "when": "2026-11-12" }
         },
 
         {
