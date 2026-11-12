@@ -12,12 +12,13 @@
     "evidence": "evidence/generation-method-audit.json"
   },
   "review": {
-    "decision": "PENDING",
+    "decision": "REJECTED",
     "basis": "Utsnitt, ruta 0–50 ur pamela-p1-c1-ready2-01: den verkliga uttryckningen ur det äldre READY2-provet, där kortet trycks ner ur skons låga öppning och hamnar plant på filten under fingrarna. DRAWN-ankaret är taget ur detta klipps ruta 50.",
     "limitations": "Inte granskat ruta för ruta som eget steg. Skon i utsnittet är det äldre provets, inte variant B:s sko, så skarven mot REDO B är inte mätt. De två beställda uttagen (pamela-readyb-draw-01 och -02) är underkända eftersom kortet lyfts; detta utsnitt är den enda kandidaten för uttaget ur skon.",
     "colorDoesNotProvePhysicalSide": true,
     "userAccepted": false,
-    "productionReady": false
+    "productionReady": false,
+    "userReview": "Jakob 2026-11-12: Det här heter ingång B, drag ur prov 01. Jag tror att samma sko används här som i mitt förra svar. Hon drar bara ut kortet, och jag vet inte riktigt vad det ska användas till. Jag tror att kortet, precis som i `ready B` skoplått 01, är för tjockt, det gula. En annan underlig sak är att hennes vänstra arm i alla dessa klipp tycks sakna skugga. Det verkar som om hon sitter längre in i bordet. Det märkliga är att hennes högra arm, som syns i detta klipp, har skugga bakom sig."
   },
   "experiment": "READY-B",
   "postProcessing": "none",

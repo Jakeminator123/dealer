@@ -12,12 +12,13 @@
     "evidence": "evidence/generation-method-audit.json"
   },
   "review": {
-    "decision": "PENDING",
+    "decision": "REJECTED",
     "basis": "Utsnitt, ruta 72–112 ur pamela-ready-b-shoe-plate-01. Enligt den tidigare granskningen av hela klippet: handen på kortet i låga öppningen f0–18, lyfter f24, båda händerna vilar f42–78 med skon orörd, tillbaka f84–96, REDO B från f102.",
     "limitations": "Utsnittet är inte granskat ruta för ruta som eget steg. Vilan här har variant B:s sko med låg öppning och är inte samma bild som vilan i variant A.",
     "colorDoesNotProvePhysicalSide": true,
     "userAccepted": false,
-    "productionReady": false
+    "productionReady": false,
+    "userReview": "Jakob 2026-11-12: Jag förstår fortfarande inte hur det här passar in. Hon har handen på kortet när hon ska skicka ut det. Det finns ingen anledning att hon skulle göra något annat än att dela ut korten till en spelare. Det kanske är något jag missar eller inte förstår med de här klippen. Hon tar ju bara handen och sätter den på oförståeliga ställen. Jag förstår inte. Alla klipp är alltså... Det skulle i så fall vara ett kort som hon har delat ut till sig själv för att sedan gå tillbaka och dela ut. Men då kvarstår fortfarande alla problem som jag nämnt tidigare. Givet att hon har delat ut ett kort till sig själv, tar hon alltid sitt egna kort sist, vad jag vet. Så det finns ingen anledning att gå tillbaka till något annat än `Idle`, eller Vila, eller Grundlopens `keystone`, eller vad det nu heter. Det kanske heter `Anchor 1`. För det här är i min värld `Anchor 2.2`."
   },
   "experiment": "READY-B",
   "postProcessing": "none",
