@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "name": "basgrund",
+  "label": "Basgrund",
+  "about": "Det spelet visar i dag och som Jakob har kallat mycket bra: Las Vegas, hela bordet (zoom 0,84, −8°), markerbrädet, ritade kort, skimmer vid rumsbyte. Resten är scenens grund. Spelet lägger dessutom Jakobs bricka och markerna; de styrs under Kort och marker.",
+  "state": {
+    "format": "fill",
+    "room": "panorama",
+    "blur": 5,
+    "tray": true,
+    "cards": true,
+    "pitch": -8,
+    "zoom": 0.84,
+    "roomShift": "shimmer"
+  },
+  "updatedAt": "2026-11-12T20:00:00.000Z"
+}

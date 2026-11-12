@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "name": "rumsstudien",
+  "label": "Rumsstudien",
+  "about": "Levande med rumsstudiens bord: fotomaterial, två ben, ingen filmskugga ovanför kanten och lampan över dealern till hälften. Inte bedömd av Jakob än.",
+  "state": {
+    "format": "fill",
+    "room": "panorama",
+    "blur": 5,
+    "tray": true,
+    "cards": true,
+    "pitch": -8,
+    "zoom": 0.84,
+    "roomShift": "shimmer",
+    "mode": "lean",
+    "sway": true,
+    "focus": "follow",
+    "dust": 0.6,
+    "clock": true,
+    "surface": "photo",
+    "base": "legs",
+    "shadowAbove": 0,
+    "lamp": 0.5
+  },
+  "updatedAt": "2026-11-12T20:00:00.000Z"
+}

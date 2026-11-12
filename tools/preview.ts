@@ -7,6 +7,8 @@ import {stripTypeScriptTypes} from 'node:module';
 import path from 'node:path';
 import {placementStore,StoreError} from './placement-store.ts';
 import {reviewStore} from './review-store.ts';
+import {scenePresetStore} from './scene-preset-store.ts';
+import {PRESET_BYTES} from '../studio/lib/scene-presets.ts';
 import {createSession,SessionError,type Session,type SessionOptions} from '../game/session.ts';
 import {tabRegistry,localPath,type Tab,type Reason} from './tab-registry.ts';
 import {resolveStudio} from './studio-files.ts';
@@ -18,7 +20,7 @@ const sameRoot=(a:unknown,b:string)=>typeof a==='string'&&(process.platform==='w
 const readState=async()=>{try{return JSON.parse(await readFile(state,'utf8')) as {root?:string;token?:string};}catch{return null;}};
 const health=async()=>{try{const r=await fetch(origin+'/health',{signal:AbortSignal.timeout(1500)});return r.ok?await r.json() as {name?:string;root?:string}:null;}catch{return null;}};
 // Starts the server as its own process, without a window, with scratch on D: where that folder exists, and waits until it
-// answers. It stops by itself when the lab tab has been closed for a minute. On Windows a child started by Node inherits
+// answers. It stays up until it is told to stop. On Windows a child started by Node inherits
 // the caller's open handles, so a server started that way would hold the caller's output pipe and a command that reads it
 // (an agent's shell, "| more") would never end. Start-Process hands the start to the shell, which passes no handles on.
 const startServer=async()=>{
@@ -46,6 +48,11 @@ if(has('--restart')){
  else{const s=await readState();if(!s?.token)throw Error('Preview control failed');
   const r=await fetch(origin+'/stop',{method:'POST',headers:{'x-dealer-token':s.token}});
   if(!r.ok)throw Error('Preview control failed');console.log(await r.text());}
+}else if(has('--ensure')){
+ // Before a link to the lab is handed to Jakob: the server is started if it is not running, and no tab is opened or moved.
+ const alive=await health();
+ if(alive&&(alive.name!=='dealer'||!sameRoot(alive.root,process.cwd())))throw Error('Preview identity differs');
+ if(!alive)await startServer();console.log(alive?`Labbservern går: ${origin}`:`Labbservern är startad: ${origin}`);
 }else if(has('--open')){
  // The one way to put a lab page in front of Jakob: node tools/preview.ts --open "lab.html?tab=prov" (START.cmd does this
  // with the lab's first page). The server is started if it is not running, the page is shown in the lab tab that is
@@ -70,7 +77,7 @@ if(has('--restart')){
  // build of the online copy reads too (tools/build-studio-snapshot.ts), so that the copy serves exactly what this server serves.
  // Table props made by tools/prop-glb.ts: assets/props/<id>.glb, and only where the file really lies in that folder.
  const propFile=async(file:string)=>{const m=/^assets\/props\/([a-z0-9]+(?:-[a-z0-9]+)*\.glb)$/.exec(file);if(!m)return false;try{return await realpath(file)===path.join(await realpath('assets/props'),m[1]);}catch{return false;}};
- const placements=placementStore(process.cwd()),reviews=reviewStore(process.cwd());
+ const placements=placementStore(process.cwd()),reviews=reviewStore(process.cwd()),presets=scenePresetStore(process.cwd());
  const library=async()=>{try{const data=JSON.parse(await readFile('data/library.json','utf8'));data.items=await Promise.all(data.items.filter((item:{path:string})=>typeof item.path==='string'&&/^(assets\/|output\/v6\/)/.test(item.path)&&path.posix.normalize(item.path)===item.path&&!item.path.includes('\\')&&item.path.endsWith('.mp4')).map(async(item:{motionRef?:string})=>{if(item.motionRef&&/^motions\/[a-z0-9-]+\.json$/.test(item.motionRef)){try{const motion=JSON.parse(await readFile(item.motionRef,'utf8'));return {...item,reviewDecision:motion.review?.decision??'PENDING'};}catch{return {...item,reviewDecision:'UNKNOWN'};}}return item;}));return data;}catch{return {schemaVersion:1,items:[]};}};
  // Read-only clip bank for the lab: the tracked jobs and review decisions plus a fixed, non-secret
  // projection of each local receipt. Task ids, balances and credentials never leave this process.
@@ -175,6 +182,25 @@ if(has('--restart')){
      res.end(JSON.stringify(result));
     }catch(error){res.writeHead(error instanceof StoreError?error.status:400).end(JSON.stringify({error:(error as Error).message}));}return;
    }
+   // Looks of the 3D scene for the studio's Scen view (tools/scene-preset-store.ts, data/scene-presets/<name>.json). Any page
+   // of the lab reads them; Jakob's own are written and taken away from this lab only, against the revision last read. The
+   // three that ship with the lab are read-only.
+   if(url.pathname==='/api/scene-presets'||url.pathname.startsWith('/api/scene-presets/')){
+    res.setHeader('Content-Type','application/json; charset=utf-8');
+    try{
+     if(url.pathname==='/api/scene-presets'){if(req.method!=='GET'){res.writeHead(405).end();return;}res.end(JSON.stringify(await presets.list()));return;}
+     const name=decodeURIComponent(url.pathname.slice('/api/scene-presets/'.length)),expected=typeof req.headers['if-match']==='string'?req.headers['if-match']:undefined;
+     if(req.method==='GET'){res.end(JSON.stringify(await presets.load(name)));return;}
+     if(req.method!=='PUT'&&req.method!=='DELETE'){res.writeHead(405).end();return;}
+     if(req.headers.origin!==origin){res.writeHead(403).end(JSON.stringify({error:'Spara från det lokala labbet.'}));return;}
+     if(req.method==='DELETE'){res.end(JSON.stringify(await presets.remove(name,expected)));return;}
+     if(!req.headers['content-type']?.startsWith('application/json')){res.writeHead(415).end(JSON.stringify({error:'JSON krävs.'}));return;}
+     if(Number(req.headers['content-length']??0)>PRESET_BYTES){res.writeHead(413).end(JSON.stringify({error:'Förvalet är för stort.'}));return;}
+     let size=0;const chunks:Buffer[]=[];for await(const chunk of req){size+=chunk.length;if(size>PRESET_BYTES)throw new StoreError(413,'Förvalet är för stort.');chunks.push(chunk);}
+     let body:unknown;try{body=JSON.parse(Buffer.concat(chunks).toString('utf8'));}catch{throw new StoreError(400,'Förvalet är inte giltig JSON.');}
+     res.end(JSON.stringify(await presets.save(name,body,expected)));
+    }catch(error){res.writeHead(error instanceof StoreError?error.status:400).end(JSON.stringify({error:(error as Error).message}));}return;
+   }
    if(url.pathname==='/api/library'&&req.method==='GET'){res.setHeader('Content-Type','application/json; charset=utf-8');res.end(JSON.stringify(await library()));return;}
    if(url.pathname==='/api/clip-bank'&&req.method==='GET'){res.setHeader('Content-Type','application/json; charset=utf-8');res.end(JSON.stringify(await clipBank()));return;}
    // The one write besides placements: a review decision for a clip of the job file. It rewrites only the review block
@@ -250,11 +276,12 @@ if(has('--restart')){
    const stream=createReadStream(file,{start,end});stream.on('error',()=>res.destroy());stream.pipe(res);res.on('close',()=>stream.destroy());
   }catch{if(!res.headersSent)res.writeHead(500);res.end();}
  });
- const timer=setInterval(()=>{if(tabs.idleFor()>60000)stop();},5000);timer.unref();
+ // The server stays up until it is told to stop (STOPP.cmd, --stop). It used to stop a minute after the last lab tab
+ // closed, and then every link Jakob was given led to a refused connection until someone started it again.
  // The port is taken: by this lab's own server (nothing to do), or by something else (an error).
  server.on('error',async(error:NodeJS.ErrnoException)=>{const mine=error.code==='EADDRINUSE'?await health():null;
   if(mine?.name==='dealer'&&sameRoot(mine.root,process.cwd()))console.log(`Labbservern går redan: ${origin}`);else{console.error(error.message);process.exitCode=1;}});
- server.on('close',()=>{clearInterval(timer);void unlink(state).catch(()=>{});});
+ server.on('close',()=>{void unlink(state).catch(()=>{});});
  server.listen(port,'127.0.0.1',async()=>{await mkdir('.runtime',{recursive:true});await writeFile(state,JSON.stringify({root:process.cwd(),port,pid:process.pid,parent:process.ppid,executable:process.execPath,script:'tools/preview.ts',startedAt:new Date().toISOString(),token})); // Scratch on D: is tidied once per server start, only by rules that need no judgment (tools/scratch-clean.ts).
  if(existsSync('D:/dealer-scratch/tmp')){const log=openSync('.runtime/stada.log','a');spawn(process.execPath,['tools/scratch-clean.ts','--kor','--tyst'],{cwd:process.cwd(),stdio:['ignore',log,log],windowsHide:true}).on('error',()=>{});}
  console.log(origin);});

@@ -151,7 +151,7 @@ Arbetet (session `dealer-82`) ligger utanför Git i `D:/dealer-scratch/tmp/paow/
 3. Sätt etapptagg `jakob-N` om Jakob har sett läget, och pusha taggen (DRIFT).
 4. Uppdatera denna fil på plats: räkna om banken med skriptet ovan, och för in vad som är beställt och ogranskat och vad som väntar på Jakob. Skriv ingen dagbok; ersatt läge stryks.
 5. Städa `D:/dealer-scratch` med `npm run stada`: läs rapporten och kör `npm run stada -- --kor`. Kontaktark flyttas med `-- --kor --regel kontaktark` först när de inte stöder ett öppet beslut; allt som Jakob inte har dömt ligger kvar (DRIFT, "D: och städning").
-6. Labbservern får stå kvar. Stoppa den bara med `STOPP.cmd` eller `node tools/preview.ts --stop`; den slutar själv en minut efter att labbfliken stängts.
+6. Labbservern får stå kvar. Stoppa den bara med `STOPP.cmd` eller `node tools/preview.ts --stop`; den står kvar tills den stoppas, så att länkar till labbet alltid svarar (ändrat 2026-11-12: förut slutade den en minut efter sista fliken, och då ledde varje länk till "anslutningen nekades").
 
 ## Verifiering
 
