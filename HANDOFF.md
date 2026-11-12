@@ -90,7 +90,7 @@ Arbetet (session `dealer-82`) ligger utanför Git i `D:/dealer-scratch/tmp/paow/
 11. Tre konkurrerande vägar, där huvudagenten kommer med förslag: filmbeställning (MCP-vägen eller `tools/clip-job.ts`), renderat kort (platt överlägg eller 3D-kort) och uppspelning (V6:s tidslinje eller klippbankens rundor); underlag i `CHECKLISTA.md`.
 12. Meshy-bordet `table-plain` och vad hans större bordsmodell (`assets/props/source/table-meshy.glb`) är till för (Prov `meshy-bord-slatt` och `meshy-bord-naturligt`).
 13. Obedömda prov: spelets konsol (`spel-konsol`), sex nya rum (`fler-rum`; ett rum når spelet först med `"game": true`), skimret vid miljöbyte (`skimmer-vid-miljobyte`), 3D-skon (`sko-i-3d`), bordets yta och underrede (`bordets-yta-och-ljus`, `bordets-underrede`), ljud och musik som ingen har lyssnat på (`ljud-labb`), helkroppsfilmen i scenen (`helkropp-i-scenen`) och reklamfilmen (`trailer-noir-3`).
-14. `placements/default.json`: om hans utkast (×1,20, speglat) ska checkas in så att filen slutar visas som ändrad.
+14. (Avgjort 2026-11-12: `placements/default.json` är incheckad på hans ja.)
 15. Flikregeln: om han ser mer än en labbflik i sin Chrome; det som inte är sett där är att en äldre flik stänger sig och vad som händer med flikar som Chrome återställer efter en omstart.
 16. Publika sajten visar 22 filmer från `b65fd9b`; att föra dit dagens läge kräver hans uppdrag (mediauppladdning och ombyggnad).
 17. Skuggan under armarna: den snabba rättningen i 3D-scenen nu, och om grunden (ankare 1, 2.1, 2.2) ska göras om (Prov `original-ankare-keystone`, bild 8).
@@ -135,7 +135,7 @@ Arbetet (session `dealer-82`) ligger utanför Git i `D:/dealer-scratch/tmp/paow/
 
 - Branch `claude/deal-clips`. `jakob/test` på GitHub står kvar på `a5821f1`. Etapper `jakob-3` till `jakob-7` och hur de sätts: DRIFT, "Git och kontroller".
 - Labbet: `http://127.0.0.1:4319/lab.html` med flikarna Placering, Klippbank, Granska och Prov, och länkarna 3D-scen, Spel, Modeller och Ljud. En labbflik: visa en sida med `node tools/preview.ts --open "<sida>"` (DRIFT, "Labbservern och fliken"). Lösa granskningssidor under `D:/dealer-scratch` används inte mot Jakob.
-- `placements/default.json` är Jakobs utkast: återställ eller stage:a det inte. 2026-11-11 kväll lade `dealer-82` om det på hans ord genom labbets eget lager: alla kort ×1,20 (P4 86,6×71,8 px), perspektiv 87 %, vridning 0°, platserna speglade kring bildens mitt, P3.C2 tillbaka i sin rad, dealerns två kort centrerade, böjning 0,14 och glans 0,35, `grip`/`turnAt` med standardvärden.
+- `placements/default.json` är Jakobs plan. Den checkades in på hans ja 2026-11-12 (`7a158d6`); labbets Spara placeringar skriver den, och en agent ändrar den aldrig på eget bevåg och checkar in den bara på hans ord. 2026-11-11 kväll lade `dealer-82` om det på hans ord genom labbets eget lager: alla kort ×1,20 (P4 86,6×71,8 px), perspektiv 87 %, vridning 0°, platserna speglade kring bildens mitt, P3.C2 tillbaka i sin rad, dealerns två kort centrerade, böjning 0,14 och glans 0,35, `grip`/`turnAt` med standardvärden.
 - Skriptet bakom det är `D:/dealer-scratch/tmp/paow/labb/lagg-symmetriskt.ts`; kopior från före ändringarna: `D:/dealer-scratch/tmp/paow/placements-default-fore-labbandring.json` och `…-fore-symmetri.json`. `data/clip-jobs.json` pekar kvar på den äldre planen `406acb69…`.
 - Publika sajten visar 22 filmer från `b65fd9b` (`evidence/public-release.json`).
 - Scoutgamings huvudagent har fått besked: inget härifrån är infört där, och insatsrutor bör vara data per bord och filmbank.
@@ -146,7 +146,7 @@ Arbetet (session `dealer-82`) ligger utanför Git i `D:/dealer-scratch/tmp/paow/
 2. `npm test`, uttrycklig staging av egna filer, commit, `npm run check`, push, och läs GitHub-kontrollens resultat.
 3. Sätt etapptagg `jakob-N` om Jakob har sett läget, och pusha taggen (DRIFT).
 4. Uppdatera denna fil på plats: räkna om banken med skriptet ovan, och för in vad som är beställt och ogranskat och vad som väntar på Jakob. Skriv ingen dagbok; ersatt läge stryks.
-5. Städa `D:/dealer-scratch`: radera rutdumpar som går att återskapa ur klippen; behåll kontaktark som stöder beslut och allt som Jakob inte har dömt.
+5. Städa `D:/dealer-scratch` med `npm run stada`: läs rapporten och kör `npm run stada -- --kor`. Kontaktark flyttas med `-- --kor --regel kontaktark` först när de inte stöder ett öppet beslut; allt som Jakob inte har dömt ligger kvar (DRIFT, "D: och städning").
 6. Labbservern får stå kvar. Stoppa den bara med `STOPP.cmd` eller `node tools/preview.ts --stop`; den slutar själv en minut efter att labbfliken stängts.
 
 ## Verifiering

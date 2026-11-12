@@ -1,6 +1,6 @@
 import http from 'node:http';
 import {readFile,mkdir,writeFile,stat,unlink,realpath,readdir} from 'node:fs/promises';
-import {createReadStream,existsSync} from 'node:fs';
+import {createReadStream,existsSync,openSync} from 'node:fs';
 import {spawn} from 'node:child_process';
 import {randomUUID} from 'node:crypto';
 import {stripTypeScriptTypes} from 'node:module';
@@ -259,6 +259,8 @@ if(has('--restart')){
  server.on('error',async(error:NodeJS.ErrnoException)=>{const mine=error.code==='EADDRINUSE'?await health():null;
   if(mine?.name==='dealer'&&sameRoot(mine.root,process.cwd()))console.log(`Labbservern går redan: ${origin}`);else{console.error(error.message);process.exitCode=1;}});
  server.on('close',()=>{clearInterval(timer);void unlink(state).catch(()=>{});});
- server.listen(port,'127.0.0.1',async()=>{await mkdir('.runtime',{recursive:true});await writeFile(state,JSON.stringify({root:process.cwd(),port,pid:process.pid,parent:process.ppid,executable:process.execPath,script:'tools/preview.ts',startedAt:new Date().toISOString(),token}));console.log(origin);});
+ server.listen(port,'127.0.0.1',async()=>{await mkdir('.runtime',{recursive:true});await writeFile(state,JSON.stringify({root:process.cwd(),port,pid:process.pid,parent:process.ppid,executable:process.execPath,script:'tools/preview.ts',startedAt:new Date().toISOString(),token})); // Scratch on D: is tidied once per server start, only by rules that need no judgment (tools/scratch-clean.ts).
+ if(existsSync('D:/dealer-scratch/tmp')){const log=openSync('.runtime/stada.log','a');spawn(process.execPath,['tools/scratch-clean.ts','--kor','--tyst'],{cwd:process.cwd(),stdio:['ignore',log,log],windowsHide:true}).on('error',()=>{});}
+ console.log(origin);});
  process.on('SIGINT',()=>stop());process.on('SIGTERM',()=>stop());
 }
