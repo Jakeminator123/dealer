@@ -121,6 +121,86 @@ export function scaleCards(plan: PlacementPlan, view: View, factor: number): { p
  }
  return {plan:next,limited};
 }
+// ── Edits of a plan, shared by every page that changes one (the studio's Placering view; the old lab has its own copy inline) ──
+// Each returns a new plan and leaves the given one alone. The rules are the old lab's (src/lab-ui.ts): a place that is moved,
+// turned or resized is marked unchecked in that view, its outline is kept inside the picture, and a card's sides and TURN agree.
+/** A card place (P1.C1 … D.C2) or the shoe's take-off point. */
+export type Place = string;
+export const SHOE = 'shoe';
+const unit = (x: number) => Math.max(0, Math.min(1, x));
+const placeOf = (plan: PlacementPlan, id: string) => { const t = plan.targets[id]; if (!t) throw Error(`Okänd kortplats ${id}.`); return t; };
+/**
+ * The quad a card is drawn with in a view: the plan's own drawing rule, as the game lays its cards (src/game-table.ts). On a flat
+ * table (tableProjection.mode 'flat') every card is P4.C1's outline carried over one plane to its own centre (flatQuad); otherwise
+ * each card has its own angle, size and taper (quad). A plan without tableProjection is drawn card by card, as the game does.
+ */
+export function planQuad(plan: PlacementPlan, id: string, view: View) {
+ const g = placeOf(plan, id).geometry[view], t = plan.tableProjection;
+ return t?.mode === 'flat' ? flatQuad(g, plan.targets['P4.C1'].geometry[view], view, t.heading) : quad(g, view);
+}
+/**
+ * Changes a place's geometry in one view. The shoe has only u and v, each kept within the picture. A card is marked unchecked
+ * unless the change is its checked mark itself; size and taper are held to the model's limits, the angle to −180…180, and the
+ * whole outline is moved back inside the picture (constrain).
+ */
+export function editPlace(plan: PlacementPlan, id: Place, view: View, patch: Partial<Geometry>): PlacementPlan {
+ const next = structuredClone(plan);
+ if (id === SHOE) { const s = next.shoe[view]; if (typeof patch.u === 'number') s.u = unit(patch.u); if (typeof patch.v === 'number') s.v = unit(patch.v); return next; }
+ const target = placeOf(next, id), g: Geometry = {...target.geometry[view], ...patch};
+ if (!Object.hasOwn(patch, 'reviewed')) g.reviewed = false;
+ g.u = unit(g.u); g.v = unit(g.v); g.width = Math.min(.25, Math.max(.005, g.width)); g.height = Math.min(.25, Math.max(.005, g.height));
+ g.taper = Math.min(1.6, Math.max(.4, g.taper)); g.angle = g.angle > 180 || g.angle < -180 ? ((g.angle % 360) + 540) % 360 - 180 : g.angle;
+ target.geometry[view] = constrain(g, view);
+ return next;
+}
+/** One motion choice of a card. Turning the card and its two sides agree: TURN flips the landing side, a changed side sets TURN. */
+export function editIntent<K extends keyof Intent>(plan: PlacementPlan, id: string, key: K, value: Intent[K]): PlacementPlan {
+ const next = structuredClone(plan), i = placeOf(next, id).intent;
+ i[key] = value;
+ if (key === 'turn') i.endSide = i.turn ? otherSide(i.startSide) : i.startSide;
+ else if (key === 'startSide' || key === 'endSide') i.turn = i.startSide !== i.endSide;
+ return next;
+}
+/** A card's bend and gloss, held to the model's limits (bend 0–0.18, gloss 0–1). */
+export function editMaterial(plan: PlacementPlan, id: string, patch: Partial<Target['material']>): PlacementPlan {
+ const next = structuredClone(plan), m = placeOf(next, id).material;
+ if (typeof patch.bend === 'number') m.bend = Math.min(.18, Math.max(0, patch.bend));
+ if (typeof patch.gloss === 'number') m.gloss = Math.min(1, Math.max(0, patch.gloss));
+ return next;
+}
+/** The table's projection (flat from P4.C1 with a heading, or card by card). Every place in both views is then unchecked. */
+export function setTableProjection(plan: PlacementPlan, projection: TableProjection): PlacementPlan {
+ if (!['flat','individual'].includes(projection.mode) || !PLANE_HEADINGS.includes(projection.heading as typeof PLANE_HEADINGS[number])) throw Error('Ogiltigt bordperspektiv eller riktning.');
+ const next = structuredClone(plan); next.tableProjection = {mode: projection.mode, heading: projection.heading};
+ for (const t of Object.values(next.targets)) for (const v of ['native','portrait'] as View[]) t.geometry[v].reviewed = false;
+ return next;
+}
+/** Every player card's angle to 0° in one view (the dealer's two cards are left), unchecked and kept inside the picture. */
+export function straightenPlayers(plan: PlacementPlan, view: View): PlacementPlan {
+ const next = structuredClone(plan);
+ for (const id of PLAYER_TARGETS) next.targets[id].geometry[view] = constrain({...next.targets[id].geometry[view], angle: 0, reviewed: false}, view);
+ return next;
+}
+/** A place snapped to a grid of `step` pixels; a card's angle also to the nearest 5°. */
+export function snapPlace(plan: PlacementPlan, id: Place, view: View, step: number): PlacementPlan {
+ const next = structuredClone(plan);
+ if (id === SHOE) { next.shoe[view] = snapPoint(next.shoe[view], view, step); return next; }
+ const target = placeOf(next, id), g = target.geometry[view];
+ target.geometry[view] = constrain({...g, ...snapPoint(g, view, step), angle: Math.round(g.angle / 5) * 5, reviewed: false}, view);
+ return next;
+}
+/** A place back to the start proposal (defaultPlan) in one view. */
+export function resetPlace(plan: PlacementPlan, id: Place, view: View): PlacementPlan {
+ const next = structuredClone(plan), start = defaultPlan();
+ if (id === SHOE) next.shoe[view] = structuredClone(start.shoe[view]);
+ else { placeOf(next, id); next.targets[id].geometry[view] = structuredClone(start.targets[id].geometry[view]); }
+ return next;
+}
+/** The angle that turns a card toward the dealer: toward the middle of the dealer's two cards. */
+export function dealerAngle(plan: PlacementPlan, id: string, view: View): number {
+ const a = plan.targets['D.C1'].geometry[view], b = plan.targets['D.C2'].geometry[view];
+ return angleToward(placeOf(plan, id).geometry[view], {u: (a.u + b.u) / 2, v: (a.v + b.v) / 2}, view);
+}
 export function defaultPlan(): PlacementPlan {
  const targets: Record<string,Target>={};
  for(const id of TARGETS){const dealer=id[0]==='D',seat=dealer?3:Number(id[1])-1,second=id.endsWith('2'),v=.08+Math.abs(seat-3)*.025,closed=(dealer&&second)||id==='P4.C2';

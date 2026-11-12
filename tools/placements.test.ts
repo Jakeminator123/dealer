@@ -179,3 +179,61 @@ test('the yellow card the lab paints in the shoe window lies in the picture, aro
   const side=(i:number)=>Math.hypot(q[(i+1)%4].x-q[i].x,q[(i+1)%4].y-q[i].y);assert.ok(side(1)/side(0)>1.6&&side(1)/side(0)<2.6);
  }
 });
+
+// ── The plan's edits shared by the studio's Placering view (planQuad, editPlace, editIntent, …) ──
+test('planQuad draws a card as the game lays it: flat from P4.C1 on a flat table, card by card otherwise or without a projection',async()=>{
+ const m=await import('../src/placement-model.ts'),plan=defaultPlan();plan.targets['P2.C1'].geometry.native.angle=30;
+ for(const view of ['native','portrait'] as const){
+  assert.deepEqual(m.planQuad(plan,'P2.C1',view),flatQuad(plan.targets['P2.C1'].geometry[view],plan.targets['P4.C1'].geometry[view],view,0));
+  const tilted={...plan,tableProjection:{mode:'flat' as const,heading:45}};assert.deepEqual(m.planQuad(tilted,'P2.C1',view),flatQuad(plan.targets['P2.C1'].geometry[view],plan.targets['P4.C1'].geometry[view],view,45));
+  const own={...plan,tableProjection:{mode:'individual' as const,heading:0}};assert.deepEqual(m.planQuad(own,'P2.C1',view),quad(plan.targets['P2.C1'].geometry[view],view));
+  const legacy=structuredClone(plan);delete legacy.tableProjection;assert.deepEqual(m.planQuad(legacy,'P2.C1',view),quad(plan.targets['P2.C1'].geometry[view],view));
+ }
+ assert.throws(()=>m.planQuad(plan,'P9.C1','native'),/Okänd kortplats/);
+});
+test('editPlace moves, turns and sizes a place by the old lab\'s rules and leaves the given plan alone',async()=>{
+ const m=await import('../src/placement-model.ts'),plan=defaultPlan();plan.targets['P4.C1'].geometry.native.reviewed=true;const before=structuredClone(plan);
+ // a move unchecks the card in that view only; the other view and the given plan are untouched
+ const moved=m.editPlace(plan,'P4.C1','native',{u:.4,v:.3});assert.deepEqual(plan,before);validatePlan(moved);
+ assert.equal(moved.targets['P4.C1'].geometry.native.u,.4);assert.equal(moved.targets['P4.C1'].geometry.native.reviewed,false);assert.deepEqual(moved.targets['P4.C1'].geometry.portrait,plan.targets['P4.C1'].geometry.portrait);
+ // the checked mark itself is set without anything else changing
+ const checked=m.editPlace(moved,'P4.C1','native',{reviewed:true});assert.equal(checked.targets['P4.C1'].geometry.native.reviewed,true);assert.equal(checked.targets['P4.C1'].geometry.native.u,.4);
+ // limits: size .005–.25, taper .4–1.6, angle wrapped into −180…180, and the outline kept inside the picture
+ const wild=m.editPlace(plan,'P1.C1','native',{width:.9,height:.001,taper:3,angle:190,u:-1});const g=wild.targets['P1.C1'].geometry.native;validatePlan(wild);
+ assert.equal(g.width,.25);assert.equal(g.height,.005);assert.equal(g.taper,1.6);assert.equal(g.angle,-170);assert.ok(g.u>0);
+ assert.equal(m.editPlace(plan,'P1.C1','native',{angle:-190}).targets['P1.C1'].geometry.native.angle,170);
+ assert.equal(m.editPlace(plan,'P1.C1','native',{angle:180}).targets['P1.C1'].geometry.native.angle,180);
+ // the shoe has only u and v, kept within the picture
+ const shoe=m.editPlace(plan,m.SHOE,'portrait',{u:1.5,v:-.2,width:.1});assert.deepEqual(shoe.shoe.portrait,{u:1,v:0});assert.deepEqual(shoe.targets,plan.targets);
+ assert.throws(()=>m.editPlace(plan,'P8.C1','native',{u:.5}),/Okänd kortplats/);
+});
+test('editIntent keeps TURN and the two sides in agreement, and editMaterial holds bend and gloss to their limits',async()=>{
+ const m=await import('../src/placement-model.ts'),plan=defaultPlan();
+ const closed=m.editIntent(plan,'P1.C1','endSide','BACK');assert.equal(closed.targets['P1.C1'].intent.turn,false);assert.equal(plan.targets['P1.C1'].intent.endSide,'FRONT');validatePlan(closed);
+ const turned=m.editIntent(closed,'P1.C1','turn',true);assert.equal(turned.targets['P1.C1'].intent.endSide,'FRONT');validatePlan(turned);
+ const open=m.editIntent(plan,'P1.C1','startSide','FRONT');assert.equal(open.targets['P1.C1'].intent.turn,false);validatePlan(open);
+ const passed=m.editIntent(plan,'P1.C1','pass',true);assert.equal(passed.targets['P1.C1'].intent.pass,true);assert.equal(passed.targets['P1.C1'].intent.endSide,'FRONT');
+ const material=m.editMaterial(plan,'D.C2',{bend:.5,gloss:-1});assert.deepEqual(material.targets['D.C2'].material,{bend:.18,gloss:0});validatePlan(material);
+ assert.deepEqual(m.editMaterial(plan,'D.C2',{gloss:.6}).targets['D.C2'].material,{bend:.07,gloss:.6});
+});
+test('the table projection, straightening, snapping, a reset and the turn toward the dealer each follow the old lab',async()=>{
+ const m=await import('../src/placement-model.ts'),plan=defaultPlan();for(const t of Object.values(plan.targets)){t.geometry.native.reviewed=true;t.geometry.portrait.reviewed=true;}
+ // a new projection unchecks every place in both views
+ const own=m.setTableProjection(plan,{mode:'individual',heading:0});assert.deepEqual(own.tableProjection,{mode:'individual',heading:0});validatePlan(own);
+ assert.ok(Object.values(own.targets).every(t=>!t.geometry.native.reviewed&&!t.geometry.portrait.reviewed));assert.ok(plan.targets['P1.C1'].geometry.native.reviewed);
+ assert.throws(()=>m.setTableProjection(plan,{mode:'flat',heading:22}));
+ // the fourteen player cards to 0°, the dealer's two left as they were
+ const tilted=m.editPlace(m.editPlace(plan,'P3.C2','native',{angle:40}),'D.C1','native',{angle:-25}),straight=m.straightenPlayers(tilted,'native');validatePlan(straight);
+ assert.ok(PLAYER_TARGETS.every(id=>straight.targets[id].geometry.native.angle===0));assert.equal(straight.targets['D.C1'].geometry.native.angle,-25);
+ // snapping: a card to the pixel grid and 5°, the shoe to the grid only
+ const loose=m.editPlace(plan,'P5.C1','native',{angle:12.4}),snapped=m.snapPlace(loose,'P5.C1','native',10),p=toPixels(snapped.targets['P5.C1'].geometry.native,'native');
+ assert.ok(Math.abs(p.x/10-Math.round(p.x/10))<1e-6&&Math.abs(p.y/10-Math.round(p.y/10))<1e-6);assert.equal(snapped.targets['P5.C1'].geometry.native.angle,10);
+ const shoe=m.snapPlace(plan,m.SHOE,'native',20),s=toPixels(shoe.shoe.native,'native');assert.ok(Math.abs(s.x/20-Math.round(s.x/20))<1e-6);
+ // a reset brings back the start proposal in that view only
+ const reset=m.resetPlace(m.editPlace(m.editPlace(plan,'P6.C2','native',{u:.9}),'P6.C2','portrait',{u:.2}),'P6.C2','native');
+ assert.deepEqual(reset.targets['P6.C2'].geometry.native,defaultPlan().targets['P6.C2'].geometry.native);assert.equal(reset.targets['P6.C2'].geometry.portrait.u,.2);
+ assert.deepEqual(m.resetPlace(m.editPlace(plan,m.SHOE,'native',{u:.1}),m.SHOE,'native').shoe.native,defaultPlan().shoe.native);
+ // the turn toward the dealer is the one toward the middle of the dealer's two cards
+ const a=plan.targets['D.C1'].geometry.native,b=plan.targets['D.C2'].geometry.native;
+ assert.equal(m.dealerAngle(plan,'P1.C1','native'),angleToward(plan.targets['P1.C1'].geometry.native,{u:(a.u+b.u)/2,v:(a.v+b.v)/2},'native'));
+});
