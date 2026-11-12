@@ -238,7 +238,15 @@ type Player = {part: Part; path: string; start: number; end: number | null; fps:
 const FPS = 30;
 // One or more parts played as a chain, each on its own video element so the next one is decoded before it is shown.
 export function createPlayers(onShow: (texture: T.Texture, path: string) => void, onChange: () => void) {
-  let players: Player[] = [], current = 0, paused = false;
+  let players: Player[] = [], current = 0, paused = false, gone = false;
+  // What dispose() has to reach: every listener hangs on one signal, and every frame request and timer is kept until it fires,
+  // so that a queue that is taken down leaves nothing behind that could call back into it.
+  const ending = new AbortController(), asked = new Map<HTMLVideoElement, Set<number>>(), timers = new Set<ReturnType<typeof setTimeout>>();
+  const listen = (v: HTMLVideoElement, type: string, call: () => void, once = false) => v.addEventListener(type, call, {once, signal: ending.signal});
+  const frameCall = (v: HTMLVideoElement, call: VideoFrameRequestCallback) => { let ids = asked.get(v); if (!ids) asked.set(v, ids = new Set()); const own = ids, id = v.requestVideoFrameCallback((now, frame) => { own.delete(id); call(now, frame); }); own.add(id); };
+  const later = (call: () => void, ms: number) => { const id = setTimeout(() => { timers.delete(id); call(); }, ms); timers.add(id); return id; };
+  // An element let go of: stopped, its frame requests cancelled, its source dropped (the browser frees the decoder) and its texture freed.
+  const drop = (video: HTMLVideoElement, texture: T.Texture) => { video.pause(); for (const id of asked.get(video) ?? []) video.cancelVideoFrameCallback(id); asked.delete(video); video.removeAttribute('src'); video.load(); texture.dispose(); };
   const show = (i: number) => { current = i; onShow(players[i].texture, players[i].path); onChange(); };
   // The middle of the part's first frame, also for frame 0: an element that has never been seeked takes about a quarter
   // of a second to get going and drops its first frames; one that waits on a seeked frame starts on the next frame.
@@ -250,31 +258,35 @@ export function createPlayers(onShow: (texture: T.Texture, path: string) => void
   };
   // The part on screen is done: stop it where it is and bring in the next one on its first decoded frame.
   function advance(list: Player[], i: number) {
-    if (paused || list !== players || current !== i) return;
+    if (gone || paused || list !== players || current !== i) return;
     const n = (i + 1) % list.length, next = list[n]; list[i].video.pause(); next.video.currentTime = startTime(next);
     const swap = () => { if (list === players) show(n); };
-    if (next.video.requestVideoFrameCallback) next.video.requestVideoFrameCallback(swap); else setTimeout(swap, 40);
+    if (next.video.requestVideoFrameCallback) frameCall(next.video, swap); else later(swap, 40);
     next.video.play().catch(() => {});
   }
   async function load(parts: Part[]) {
+    if (gone) return;
     const queued = !!chain; closeQueue(); if (queued) players = [];
-    for (const p of players) { p.video.pause(); p.video.removeAttribute('src'); p.video.load(); p.texture.dispose(); }
+    for (const p of players) drop(p.video, p.texture);
     const list = players = loaded = parts.map(make);
     list.forEach((p, i) => {
-      p.video.addEventListener('ended', () => advance(list, i));
+      listen(p.video, 'ended', () => advance(list, i));
       if (p.end === null) return;
       const last = p.end - 1, reached = (seconds: number) => Math.floor(seconds * p.fps + 1e-6) >= last;
-      if (p.video.requestVideoFrameCallback) { const watch = (_now: number, frame: {mediaTime: number}) => { if (list !== players) return; if (reached(frame.mediaTime)) advance(list, i); p.video.requestVideoFrameCallback(watch); }; p.video.requestVideoFrameCallback(watch); }
-      else p.video.addEventListener('timeupdate', () => { if (reached(p.video.currentTime)) advance(list, i); });
+      if (p.video.requestVideoFrameCallback) { const watch = (_now: number, frame: {mediaTime: number}) => { if (list !== players) return; if (reached(frame.mediaTime)) advance(list, i); frameCall(p.video, watch); }; frameCall(p.video, watch); }
+      else listen(p.video, 'timeupdate', () => { if (reached(p.video.currentTime)) advance(list, i); });
     });
-    await Promise.all(list.map(p => new Promise<void>((resolve, reject) => { if (p.video.readyState >= 2) resolve(); else { p.video.addEventListener('loadeddata', () => resolve(), {once: true}); p.video.addEventListener('error', () => reject(Error(`Filmen kunde inte läsas: ${p.path}`)), {once: true}); } })));
+    // After dispose() neither listener is left, and the promise stays open: nothing waits on a queue that is gone.
+    await Promise.all(list.map(p => new Promise<void>((resolve, reject) => { if (p.video.readyState >= 2) resolve(); else { listen(p.video, 'loadeddata', () => resolve(), true); listen(p.video, 'error', () => reject(Error(`Filmen kunde inte läsas: ${p.path}`)), true); } })));
     if (list !== players) return;
     list[0].video.currentTime = startTime(list[0]); show(0); if (!paused) list[0].video.play().catch(() => {});
   }
   async function seek(i: number, seconds: number) {
+    if (gone) return;
     paused = true; players.forEach(p => p.video.pause()); const v = players[i].video;
-    await new Promise<void>(resolve => { const done = () => { if (v.requestVideoFrameCallback) { const fallback = setTimeout(resolve, 250); v.requestVideoFrameCallback(() => { clearTimeout(fallback); resolve(); }); } else setTimeout(resolve, 60); };
-      if (Math.abs(v.currentTime - seconds) < 1e-4 && v.readyState >= 2) done(); else { v.addEventListener('seeked', done, {once: true}); v.currentTime = seconds; } });
+    await new Promise<void>(resolve => { const done = () => { if (v.requestVideoFrameCallback) { const fallback = later(resolve, 250); frameCall(v, () => { clearTimeout(fallback); timers.delete(fallback); resolve(); }); } else later(resolve, 60); };
+      if (Math.abs(v.currentTime - seconds) < 1e-4 && v.readyState >= 2) done(); else { listen(v, 'seeked', done, true); v.currentTime = seconds; } });
+    if (gone) return;
     players[i].texture.needsUpdate = true; show(i);
   }
 
@@ -287,14 +299,14 @@ export function createPlayers(onShow: (texture: T.Texture, path: string) => void
   type Chain = {parts: Part[]; media: (Media | undefined)[]; options: PlayOptions};
   const POOL = 8, partStart = (part: Part) => ((part.start ?? 0) + 0.5) / (part.fps ?? FPS), frameOf = (seconds: number, part: Part) => Math.floor(seconds * (part.fps ?? FPS) + 1e-6);
   let pool: Media[] = [], loaded: Player[] = [], used = 0, chain: Chain | null = null, waiting: Chain | null = null, entering: Chain | null = null, shown: Media | null = null, token = 0, held = false;
-  function discard(m: Media) { pool = pool.filter(p => p !== m); m.hook = m.fail = null; m.video.pause(); m.video.removeAttribute('src'); m.video.load(); m.texture.dispose(); }
+  function discard(m: Media) { pool = pool.filter(p => p !== m); m.hook = m.fail = null; drop(m.video, m.texture); }
   // An element for the path that nothing else is using; a new one if there is none. The pool is trimmed of the longest unused.
   function media(path: string): Media {
     const free = pool.find(m => m.path === path && !m.busy); if (free) { free.busy = true; free.used = ++used; return free; }
     const made = make({path}), m: Media = {path, video: made.video, texture: made.texture, busy: true, used: ++used, hook: null, fail: null}, v = m.video;
-    v.addEventListener('ended', () => m.hook?.(null)); v.addEventListener('error', () => m.fail?.());
-    if (v.requestVideoFrameCallback) { const watch = (_now: number, frame: {mediaTime: number}) => { if (!pool.includes(m)) return; m.hook?.(frame.mediaTime); v.requestVideoFrameCallback(watch); }; v.requestVideoFrameCallback(watch); }
-    else v.addEventListener('timeupdate', () => m.hook?.(v.currentTime));
+    listen(v, 'ended', () => m.hook?.(null)); listen(v, 'error', () => m.fail?.());
+    if (v.requestVideoFrameCallback) { const watch = (_now: number, frame: {mediaTime: number}) => { if (!pool.includes(m)) return; m.hook?.(frame.mediaTime); frameCall(v, watch); }; frameCall(v, watch); }
+    else listen(v, 'timeupdate', () => m.hook?.(v.currentTime));
     pool.push(m);
     for (const spare of pool.filter(p => !p.busy).sort((a, b) => a.used - b.used)) { if (pool.length <= POOL) break; discard(spare); }
     return m;
@@ -318,7 +330,7 @@ export function createPlayers(onShow: (texture: T.Texture, path: string) => void
       const old = chain; shown = m; chain = c; entering = null; held = false; if (waiting === c) waiting = null;
       if (from) { from.video.pause(); from.hook = null; if (!c.media.includes(from)) from.busy = false; }
       if (old && old !== c) forget(old);
-      for (const p of loaded) { p.video.pause(); p.video.removeAttribute('src'); p.video.load(); p.texture.dispose(); } loaded = [];
+      for (const p of loaded) drop(p.video, p.texture); loaded = [];
       players = [{part, path: part.path, start: part.start ?? 0, end: part.end ?? null, fps: part.fps ?? FPS, video: v, texture: m.texture}]; current = 0;
       const last = (part.end ?? Math.max(1, Math.round(v.duration * (part.fps ?? FPS)))) - 1;
       // A hurried part slows to normal speed for its last frames, so it stops on its end frame and not a few frames past it.
@@ -330,10 +342,10 @@ export function createPlayers(onShow: (texture: T.Texture, path: string) => void
     m.fail = () => { if (my === token) c.options.onError?.(Error(`Filmen kunde inte läsas: ${part.path}`)); };
     // A frame request that has waited long on a paused video is no longer polled by the browser, and the first frame after
     // play() then arrives a quarter of a second late with the frames in between dropped. A fresh request sets that right.
-    if (v.requestVideoFrameCallback) v.requestVideoFrameCallback(() => {});
+    if (v.requestVideoFrameCallback) frameCall(v, () => {});
     v.playbackRate = part.rate ?? 1; v.play().catch(() => {});
     // Waiting on its first frame already: shown at once, so the join costs no frame. Otherwise on the first frame it presents.
-    if (v.readyState >= 2 && !v.seeking) { m.texture.needsUpdate = true; swap(); } else { m.hook = swap; if (!v.requestVideoFrameCallback) setTimeout(swap, 40); }
+    if (v.readyState >= 2 && !v.seeking) { m.texture.needsUpdate = true; swap(); } else { m.hook = swap; if (!v.requestVideoFrameCallback) later(swap, 40); }
   }
   function finish(c: Chain, i: number) {
     if (waiting) return enter(waiting, 0, true);
@@ -342,7 +354,7 @@ export function createPlayers(onShow: (texture: T.Texture, path: string) => void
     if (shown) { shown.video.pause(); shown.hook = null; } held = true; c.options.onEnd?.(); onChange(); // the last frame stays
   }
   function play(parts: Part[], options: PlayOptions = {}) {
-    if (!parts.length) return; const next: Chain = {parts, media: [], options}; paused = false;
+    if (gone || !parts.length) return; const next: Chain = {parts, media: [], options}; paused = false;
     if (waiting) forget(waiting); waiting = null;
     if (chain && shown && !held && !options.cut) { waiting = next; prime(next, 0); shown.video.play().catch(() => {}); return; }
     enter(next, 0, held);
@@ -352,10 +364,19 @@ export function createPlayers(onShow: (texture: T.Texture, path: string) => void
     // Speed of the part on screen, from now until it ends: a gesture hurried along because a deal is waiting.
     hurry(rate: number) { const v = players[current]?.video; if (v) v.playbackRate = rate; },
     // Fetches clips the game may ask for next, so the change does not wait for the network. The pool holds ${POOL} elements.
-    preload(paths: string[]) { for (const path of paths) if (!pool.some(m => m.path === path)) media(path).busy = false; },
+    preload(paths: string[]) { if (!gone) for (const path of paths) if (!pool.some(m => m.path === path)) media(path).busy = false; },
     // The part on screen, with what it carries (track, cards).
     get part(): Part | null { return players[current]?.part ?? null; },
-    toggle(force?: boolean) { paused = force ?? !paused; const v = players[current]?.video; if (v) { if (paused) v.pause(); else v.play().catch(() => {}); } onChange(); },
+    toggle(force?: boolean) { if (gone) return; paused = force ?? !paused; const v = players[current]?.video; if (v) { if (paused) v.pause(); else v.play().catch(() => {}); } onChange(); },
+    // Takes the queue down for good, for a page that goes away (a React view): every element it made, on screen, waiting or
+    // preloaded, is stopped and emptied, its frame requests and listeners go, its texture is freed, and pending timers are
+    // cleared. Neither onShow nor onChange is called again; every later call is a no-op and the getters say there is no film.
+    dispose() {
+      if (gone) return; gone = true; paused = true; const pooled = new Set(pool.map(m => m.video)); closeQueue(); // the queue's own elements, the one on screen among them
+      for (const p of new Set([...players, ...loaded])) if (!pooled.has(p.video)) drop(p.video, p.texture); players = loaded = []; current = 0; // a chain from load()
+      ending.abort(); for (const id of timers) clearTimeout(id); timers.clear();
+      for (const [v, ids] of asked) for (const id of ids) v.cancelVideoFrameCallback(id); asked.clear();
+    },
     // Half a frame past the frame start, so the decoder lands on that frame and not the one before it.
     // Stays inside the part on screen.
     step(frames: number) { const p = players[current]; if (!p) return Promise.resolve(); const last = (p.end ?? Math.max(1, Math.round(p.video.duration * p.fps))) - 1, frame = Math.max(p.start, Math.min(last, Math.floor(p.video.currentTime * p.fps + 1e-6) + frames)); return seek(current, (frame + 0.5) / p.fps); },

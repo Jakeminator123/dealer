@@ -100,18 +100,20 @@ export function createScene(canvas: HTMLCanvasElement, host: HTMLElement, data: 
   // Rendered cards, two ways: 'scene' makes each card an object in the scene under the film (scene3d-deal.ts); 'film' draws
   // the card into the film frame (scene3d-cards.ts), the earlier way, kept to compare. A way's module is fetched the first time
   // it is used and cards are switched off again if it cannot be read. update() returning true means "show my texture as the film".
-  type CardLayer = {texture: T.Texture; update(video: HTMLVideoElement, frame: number, track: unknown, choice: {rank: string; suit: string; scale: number}, extra?: object | null): boolean; off?(): void};
+  type CardLayer = {texture: T.Texture; update(video: HTMLVideoElement, frame: number, track: unknown, choice: {rank: string; suit: string; scale: number}, extra?: object | null): boolean; off?(): void; dispose?(): void};
   // Things another page adds: props lying on the table (built with the table, drawn under the film) and a call after every drawn frame.
   type Prop = {group: T.Object3D; build(edgeZ: number, scale: number): void};
   const props: Prop[] = [], frameCalls = new Set<() => void>(); let built = false, ownNotch: {x0: number; x1: number; s1: number} | null = null;
   let cardLayer: CardLayer | null = null, cardError = ''; const cardLayers: Partial<Record<SceneState['cardMethod'], CardLayer>> = {}, cardLoads = new Set<string>();
+  // gone: the scene has been taken down (dispose below); a module that arrives after that makes no layer.
+  let gone = false;
   function loadCards() {
     const method = state.cardMethod; if (cardLayers[method] || cardLoads.has(method)) return; cardLoads.add(method);
-    (method === 'scene' ? import('./scene3d-deal.ts').then(m => { const layer = m.createDealLayer({contract: data.contract, plan: data.plan, film, light: light.uniforms, camera: () => camera, edgeZ: () => edgeZ,
+    (method === 'scene' ? import('./scene3d-deal.ts').then(m => { if (gone) return null; const layer = m.createDealLayer({contract: data.contract, plan: data.plan, film, light: light.uniforms, camera: () => camera, edgeZ: () => edgeZ,
       renderer, view: () => view, pixels: () => Math.min(canvas.width / W, canvas.height / H) * state.zoom}); fg.add(layer.group); return layer; })
-      : import('./scene3d-cards.ts').then(m => m.createCardLayer(data.contract)))
-      .then(layer => { cardLayers[method] = layer; cardError = ''; }, error => { cardError = String((error as Error)?.message ?? error); if (state.cardMethod === method) state.cards = false; })
-      .then(() => { cardLoads.delete(method); useCards(); data.onChange(); });
+      : import('./scene3d-cards.ts').then(m => gone ? null : m.createCardLayer(data.contract)))
+      .then(layer => { if (!layer) return; cardLayers[method] = layer; cardError = ''; }, error => { cardError = String((error as Error)?.message ?? error); if (state.cardMethod === method) state.cards = false; })
+      .then(() => { cardLoads.delete(method); if (gone) return; useCards(); data.onChange(); });
   }
   // The layer of the chosen way while cards are on; the one left gives the film back.
   function useCards() { const next = state.cards ? cardLayers[state.cardMethod] ?? null : null; if (next !== cardLayer) { cardLayer?.off?.(); cardLayer = next; } if (state.cards && !next) loadCards(); }
@@ -171,19 +173,19 @@ export function createScene(canvas: HTMLCanvasElement, host: HTMLElement, data: 
     line([[0, camera.edgeRow], [W - 1, camera.edgeRow], [W - 1, H - 1], [0, H - 1]].map(([x, y]) => { const p = filmToScene(camera, x, y); return [p[0], 0.002, p[2]]; }), 0x55c8ff); // the film's part of the felt
   }
   function rebuild() {
-    camera = filmCamera(); const solved = solveCamera(camera); pitch = solved.pitch; edgeZ = -solved.edgeDistance;
+    if (gone) return; camera = filmCamera(); const solved = solveCamera(camera); pitch = solved.pitch; edgeZ = -solved.edgeDistance;
     filmCam.fov = solved.fovYDeg; filmCam.aspect = W / H; filmCam.position.set(0, camera.heightM, 0); filmCam.rotation.set(-pitch, 0, 0, 'YXZ'); filmCam.updateProjectionMatrix(); filmCam.updateMatrixWorld(true);
     filmVP.multiplyMatrices(filmCam.projectionMatrix, filmCam.matrixWorldInverse);
     table.build(edgeZ, camera.scale, ownNotch ?? (state.tray ? TRAY : undefined), state.base, state.surface); tray.group.visible = state.tray && !ownNotch; if (tray.group.visible) tray.build(edgeZ, camera.scale); rail.build(edgeZ, camera.scale, betSpots(data.plan, camera)); drawFelt(); rooms.place(camera); light.place(camera); buildGuides(); focusNow = NaN; built = true; for (const prop of props) prop.build(edgeZ, camera.scale); apply();
   }
   const drawFelt = () => table.draw({spots: cardSpots(data.plan, camera), logo: state.logo, felt: state.felt, scale: camera.scale});
   function apply() {
-    if (!rooms.rooms[state.room]) state.room = 'salong'; // a room the scene does not have (an old address, a room taken out of the register)
+    if (gone) return; if (!rooms.rooms[state.room]) state.room = 'salong'; // a room the scene does not have (an old address, a room taken out of the register)
     useCards(); rooms.show(state.room); rail.set({cups: state.cups}); film.place(edgeZ, state.fold, state.focus !== 'off', camera.scale); film.setKey({lo: state.keyLo, hi: state.keyHi, shadow: state.shadow}); film.setGrade(state.filmBright, state.filmWarm);
     if (guides) guides.visible = state.guides; resize(); data.onChange();
   }
   function resize() {
-    const box = host.getBoundingClientRect(), aspect = state.format === 'desk' ? W / H : state.format === 'mob' ? 9 / 16 : box.width / box.height;
+    if (gone) return; const box = host.getBoundingClientRect(), aspect = state.format === 'desk' ? W / H : state.format === 'mob' ? 9 / 16 : box.width / box.height;
     let w = box.width, h = box.height; if (w / h > aspect) w = h * aspect; else h = w / aspect;
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2)); renderer.setSize(Math.max(2, Math.round(w)), Math.max(2, Math.round(h)), true);
   }
@@ -263,7 +265,7 @@ export function createScene(canvas: HTMLCanvasElement, host: HTMLElement, data: 
   }
 
   function render(seconds = performance.now() / 1000) {
-    targets(); updateView(seconds);
+    if (gone) return; targets(); updateView(seconds);
     // A change of room under way: how far it has come at this time. It counts from the first frame drawn after it was asked for.
     let change = 1;
     if (shift) {
@@ -314,11 +316,39 @@ export function createScene(canvas: HTMLCanvasElement, host: HTMLElement, data: 
 
   let running = false; const loop = (ms: number) => { if (!running) return; render(ms / 1000); requestAnimationFrame(loop); };
 
+  // ---- taking the scene down -----------------------------------------------------------------------
+  // For a page that comes and goes (a React view). The loop stops for good and the film queue is taken down; then everything
+  // that hangs in the scene's three scenes (rooms, table, rail, tray, film layers, cards, guides, air, a hall read later) is
+  // freed by walking them: geometries, materials, the textures in a material's slots and in a shader's uniforms, instanced
+  // meshes and lights. After that the post chain's materials, the render targets, the prefiltered room, the card layers'
+  // own parts, the renderer and its WebGL context. The canvas stays in the page: it is the caller's, and a canvas whose
+  // context is lost cannot be given a new one, so a new scene wants a new canvas. Props added with addProp are the caller's:
+  // they are taken out of the scene but not freed, so the caller can free them or hand them to another scene. The scene
+  // registers no observers or listeners of its own (the pages do). Afterwards every call is a no-op, dispose() too.
+  function takeDown() {
+    if (gone) return; gone = true; running = false; shift = null;
+    players.dispose();
+    for (const prop of props.splice(0)) fg.remove(prop.group); frameCalls.clear();
+    for (const layer of Object.values(cardLayers)) layer.off?.(); cardLayer = null;
+    const freed = new Set<{dispose(): void}>(), textures = (value: unknown): void => { if (value instanceof T.Texture) freed.add(value as T.Texture); else if (Array.isArray(value)) value.forEach(textures); };
+    const material = (m: T.Material) => { freed.add(m); Object.values(m).forEach(textures); for (const u of Object.values(((m as T.ShaderMaterial).uniforms ?? {}) as Record<string, {value: unknown} | undefined>)) textures(u?.value); };
+    for (const root of [bg, fg, fsScene]) root.traverse((o: T.Object3D) => { const mesh = o as T.Mesh, ms = mesh.material;
+      if (mesh.geometry) freed.add(mesh.geometry); if (ms) (Array.isArray(ms) ? ms : [ms]).forEach(material);
+      if ((o as T.InstancedMesh).isInstancedMesh || (o as T.Light).isLight) freed.add(o as T.InstancedMesh | T.Light); });
+    [blurMat, plateMat, outMat, shiftMat, changeMat].forEach(material); textures(rooms.rooms.plat.plate);
+    for (const layer of Object.values(cardLayers)) freed.add(layer.texture);
+    for (const d of freed) d.dispose();
+    for (const layer of Object.values(cardLayers)) layer.dispose?.(); // the rendered cards' own: their motion samples and prints not on show
+    dispose(half); dispose(full); held?.dispose(); half = full = []; held = shown = null; litMap?.dispose(); litMap = litBy = null; pmrem.dispose();
+    renderer.setRenderTarget(null); renderer.dispose(); renderer.forceContextLoss();
+  }
+
   return {
     state, players, render, rebuild, apply, resize,
-    start() { if (!running) { running = true; requestAnimationFrame(loop); } }, stop() { running = false; },
-    home() { Object.assign(state, {yaw: 0, pitch: 0, zoom: 1, dx: 0, dy: 0, dz: 0, sway: false}); apply(); },
-    set(patch: Partial<SceneState>) { if (patch.cards) loadCards(); const relens = 'lens' in patch && patch.lens !== state.lens || 'scale' in patch && patch.scale !== state.scale || 'tray' in patch && patch.tray !== state.tray || 'base' in patch && patch.base !== state.base || 'surface' in patch && patch.surface !== state.surface, reprint = 'logo' in patch || 'felt' in patch;
+    start() { if (!running && !gone) { running = true; requestAnimationFrame(loop); } }, stop() { running = false; },
+    dispose: takeDown,
+    home() { if (gone) return; Object.assign(state, {yaw: 0, pitch: 0, zoom: 1, dx: 0, dy: 0, dz: 0, sway: false}); apply(); },
+    set(patch: Partial<SceneState>) { if (gone) return; if (patch.cards) loadCards(); const relens = 'lens' in patch && patch.lens !== state.lens || 'scale' in patch && patch.scale !== state.scale || 'tray' in patch && patch.tray !== state.tray || 'base' in patch && patch.base !== state.base || 'surface' in patch && patch.surface !== state.surface, reprint = 'logo' in patch || 'felt' in patch;
       // Another room: with the shimmer the change is an animation that render() carries through; without it, or before the scene is built, a cut as before.
       const other = 'room' in patch && patch.room !== state.room, before = lookNow(); Object.assign(state, patch);
       if (other) { if (state.roomShift === 'shimmer' && built) beginShift(before); else if (shift) endShift(); }
@@ -329,15 +359,15 @@ export function createScene(canvas: HTMLCanvasElement, host: HTMLElement, data: 
     canvas,
     // A prop that is sunk into the table at the dealer's edge brings its own notch in the felt (x0, x1 across, s1 toward the
     // players); the built tray then steps aside. null gives the felt back to the built tray.
-    notch(next: {x0: number; x1: number; s1: number} | null) { ownNotch = next; if (built) rebuild(); },
+    notch(next: {x0: number; x1: number; s1: number} | null) { if (gone) return; ownNotch = next; if (built) rebuild(); },
     // Card places and bet rings as the film camera in use lays them on the felt. They move with the lens and the scale, so a
     // prop reads them in its build(), which runs again whenever those change.
     spots() { return {cards: cardSpots(data.plan, camera), bets: betSpots(data.plan, camera)}; },
     lit: light.hook, // a prop's materials go through this, or focus and the fan's shade pass them by
     /** A box of the film (film pixels: x0, y0, x1, y1) that is left undrawn, for an object of the scene that stands there instead; null draws all of the film again. */
     hideFilm(box: number[] | null) { film.setHide(box); },
-    addProp(prop: Prop) { props.push(prop); fg.add(prop.group); if (built) prop.build(edgeZ, camera.scale); return () => { const i = props.indexOf(prop); if (i >= 0) props.splice(i, 1); fg.remove(prop.group); }; },
-    onFrame(call: () => void) { frameCalls.add(call); return () => { frameCalls.delete(call); }; },
+    addProp(prop: Prop) { if (gone) return () => {}; props.push(prop); fg.add(prop.group); if (built) prop.build(edgeZ, camera.scale); return () => { const i = props.indexOf(prop); if (i >= 0) props.splice(i, 1); fg.remove(prop.group); }; },
+    onFrame(call: () => void) { if (gone) return () => {}; frameCalls.add(call); return () => { frameCalls.delete(call); }; },
     // Where a table point is in the picture as last drawn: CSS pixels from the canvas's top left corner, and how many
     // pixels a dealer metre is there.
     project(x: number, s: number, y = 0) {
