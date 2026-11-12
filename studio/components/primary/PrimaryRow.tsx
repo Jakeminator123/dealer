@@ -2,16 +2,18 @@
 
 // One row of Primära: a film of the round; what plays there now (still, name, chip, why); an arrow; the best take Jakob
 // accepted outright (still, name, chip) with what making it Primär does to the seam, in a few words; and the buttons.
+// Each still plays: a click opens it over the whole window (onView, ‹ › to the row's other film), ▶ plays it in place.
 // Nothing is chosen in advance: "Gör primär" writes only on his click.
 import { ArrowRight, Columns2, Lock, Map as MapIcon, Play, Star } from "lucide-react";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { WHY_LABEL, type Take } from "../../../src/clip-graph.ts";
-import { TakeChip, TakeThumb } from "@/components/takes";
+import { TakeChip } from "@/components/takes";
 import { Badge, Button, buttonClasses, cn, type BadgeTone } from "@/components/ui";
 import { isSnapshot } from "@/lib/mode";
 import { edgeName, takeName } from "@/lib/names";
 import { PRAISED_NOTE, ROLE_WORD, type Row, type RowStatus, type Seam } from "@/lib/primaries";
+import { RowStill } from "./RowStill";
 import type { RowLine } from "./useMakePrimary";
 
 export const STATUS_WORD: Record<RowStatus, { word: string; many: string; tone: BadgeTone }> = {
@@ -40,10 +42,10 @@ export function SeamLine({ seam, className }: { seam: Seam; className?: string }
   );
 }
 
-function TakeSide({ take, top, children }: { take: Take; top?: ReactNode; children?: ReactNode }) {
+function TakeSide({ take, top, onOpen, children }: { take: Take; top?: ReactNode; onOpen: () => void; children?: ReactNode }) {
   return (
     <div className="flex min-w-0 items-center gap-3">
-      <TakeThumb take={take} still="film" className="w-[132px] shrink-0 rounded-md" />
+      <RowStill take={take} onOpen={onOpen} />
       <div className="flex min-w-0 flex-col gap-1">
         {top}
         <span className="truncate text-sm font-semibold text-ink" title={take.id}>
@@ -67,8 +69,29 @@ const eyebrow = (text: string, praised = false) => (
   </span>
 );
 
-export function PrimaryRow({ row, saving, busy, line, onMake }: { row: Row; saving: boolean; busy: boolean; line: RowLine | null; onMake: (take: Take) => void }) {
+export function PrimaryRow({
+  row,
+  saving,
+  busy,
+  line,
+  onMake,
+  onView,
+}: {
+  row: Row;
+  saving: boolean;
+  busy: boolean;
+  line: RowLine | null;
+  onMake: (take: Take) => void;
+  /** Open these films over the whole window, at this one (the row's films with a film, in the order shown). */
+  onView: (takes: Take[], index: number) => void;
+}) {
   const { edge, now, proposal, status } = row;
+  const showsProposal = status === "different" || (status === "gap" && !!proposal);
+  const films = [now, showsProposal ? proposal : null].filter((t, i, all): t is Take => !!t?.media.video && all.indexOf(t) === i);
+  const open = (take: Take) => {
+    const index = films.indexOf(take);
+    if (index >= 0) onView(films, index);
+  };
   const status_ = STATUS_WORD[status];
   const map = { pathname: "/karta/", query: { kant: edge.id } };
   const compare = proposal && now && proposal.id !== now.id ? { pathname: "/jamfor/", query: { kant: edge.id, a: proposal.id, b: now.id } } : null;
@@ -96,7 +119,7 @@ export function PrimaryRow({ row, saving, busy, line, onMake }: { row: Row; savi
 
       {/* Plays now */}
       {now ? (
-        <TakeSide take={now} top={eyebrow("Spelas nu")}>
+        <TakeSide take={now} top={eyebrow("Spelas nu")} onOpen={() => open(now)}>
           <span className="truncate text-xs text-faint">{WHY_LABEL[row.why]}</span>
         </TakeSide>
       ) : (
@@ -107,8 +130,8 @@ export function PrimaryRow({ row, saving, busy, line, onMake }: { row: Row; savi
 
       {/* The proposal */}
       <div className="flex min-w-0 flex-col gap-2">
-        {status === "different" || (status === "gap" && proposal) ? (
-          <TakeSide take={proposal!} top={row.praised ? eyebrow(PRAISED_NOTE, true) : eyebrow("Bäst av dina godkända")}>
+        {showsProposal ? (
+          <TakeSide take={proposal!} top={row.praised ? eyebrow(PRAISED_NOTE, true) : eyebrow("Bäst av dina godkända")} onOpen={() => open(proposal!)}>
             {row.others.length ? <span className="text-xs text-faint">+{row.others.length} till godkända av dig</span> : null}
           </TakeSide>
         ) : status === "same" ? (
@@ -137,9 +160,9 @@ export function PrimaryRow({ row, saving, busy, line, onMake }: { row: Row; savi
       {/* What he can do */}
       <div className="flex flex-col items-stretch gap-1.5">
         {canMake && isSnapshot ? (
-          <span className="inline-flex items-center gap-1.5 rounded-md border border-line-strong bg-raised px-2.5 py-1 text-xs text-dim">
-            <Lock aria-hidden className="size-3.5 text-brass" />
-            Bara Jakob dömer
+          <span className="inline-flex items-start gap-1.5 rounded-md border border-line-strong bg-raised px-2.5 py-1.5 text-xs leading-4 text-dim">
+            <Lock aria-hidden className="mt-px size-3.5 shrink-0 text-brass" />
+            Här kan ingen döma. Jakob dömer i sitt eget labb.
           </span>
         ) : canMake ? (
           <Button
@@ -163,7 +186,7 @@ export function PrimaryRow({ row, saving, busy, line, onMake }: { row: Row; savi
         {status !== "same" && play && (proposal || now) ? (
           <Link href={play} className={buttonClasses({ variant: "quiet", size: "sm", className: "justify-start" })}>
             <Play />
-            Spela
+            I scenen
           </Link>
         ) : null}
         {status === "none" || status === "gap" || status === "primary" ? (

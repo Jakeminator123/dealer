@@ -12,7 +12,6 @@ export type Val = Record<string, string>;
 type Params = { get(name: string): string | null };
 
 export const VIEW_NAMES: Record<string, string> = {
-  spela: "Spela",
   karta: "Karta",
   primara: "Primära",
   jamfor: "Jämför",

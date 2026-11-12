@@ -4,8 +4,8 @@
 // under the buttons one quiet line on what each choice does to what is played (decision-help.ts).
 // Nothing is written without his click. Primär lowers an earlier Primär on the same edge to plain accepted (its note kept);
 // a 409 says the record changed, reads the bank again and asks him to choose again. demo: shows and answers, never writes.
-// In the online copy (lib/mode.ts) there are no buttons at all: the bar shows his verdict and note and says "Bara Jakob
-// dömer", and putDecision refuses there too. The write itself, with the Primär rule, is lib/decide.ts (one copy).
+// In the online copy (lib/mode.ts) there are no buttons at all: the bar shows his verdict and note and says where judging
+// happens and why ("Här kan ingen döma. Jakob dömer i sitt eget labb."), and putDecision refuses there too. The write itself, with the Primär rule, is lib/decide.ts (one copy).
 // ref (DecisionBarHandle): reset() makes the same write as "Återställ", for a button of his elsewhere ("Ångra" in the
 // review queue); the caller calls it only from his click there. It skips Återställ's second click: "Ångra" is the click.
 import { Check, Diamond, Lock, RotateCcw, Star, X } from "lucide-react";
@@ -118,8 +118,8 @@ function JakobJudges({ take, help, className, ref }: { take: Take; help: boolean
       <div className="flex flex-wrap items-center gap-2">
         <TakeChip take={take} />
         <span className="ml-auto inline-flex items-center gap-1.5 rounded-md border border-line-strong bg-raised px-2.5 py-1 text-sm text-dim">
-          <Lock aria-hidden className="size-3.5 text-brass" />
-          Bara Jakob dömer
+          <Lock aria-hidden className="size-3.5 shrink-0 text-brass" />
+          Här kan ingen döma. Jakob dömer i sitt eget labb.
         </span>
       </div>
       {help ? <DecisionHelp edge={take.edge} /> : null}

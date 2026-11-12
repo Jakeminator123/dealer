@@ -23,7 +23,7 @@ export const BASE = "basgrund";
 // room is Las Vegas when the player has chosen none, line 57; its blur 5 is its entry in data/scene-rooms.json; pitch −8 and
 // zoom 0,84 are FRAMING.wide, line 39), and the shimmer when the room changes, line 173. Everything else is the scene's own.
 const GAME: Partial<SceneState> = { format: "fill", room: "panorama", blur: 5, tray: true, cards: true, pitch: -8, zoom: 0.84, roomShift: "shimmer" };
-// What Jakob remembers of the 3D lab (proof 3d-kanslan; LEVANDE in studio/components/stage/Stage.tsx).
+// What Jakob remembers of the 3D lab (proof 3d-kanslan); the Scen view starts with it.
 const ALIVE: Partial<SceneState> = { mode: "lean", sway: true, focus: "follow", dust: 0.6, clock: true };
 // The room study of 2026-11-07 (docs/SYSTEM.md "3D-scenen") with the lab trials of 2026-11-12.
 const STUDY: Partial<SceneState> = { surface: "photo", base: "legs", shadowAbove: 0, lamp: 0.5 };

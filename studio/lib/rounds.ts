@@ -1,4 +1,4 @@
-// Rounds for the Spela view: the ready-made ones as chips, the one his notation or the address asks for, a take played in
+// Rounds for the Scen view (the studio's start): the ready-made ones as chips, the one his notation or the address asks for, a take played in
 // its context, and the card places the bank needs to say how far a seat's second card is moved. Pure: no DOM, no network;
 // tests in studio/tests/rounds.test.ts.
 //

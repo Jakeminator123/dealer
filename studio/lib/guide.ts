@@ -20,14 +20,17 @@ export type GuideView = {
 
 export const GUIDE: readonly GuideView[] = [
   {
-    vy: "spela",
-    namn: "Spela",
+    // One view since 2026-11-12: the old Spela and Scen. The view names itself "scen" (app/page.tsx).
+    vy: "scen",
+    namn: "Scen",
     adress: "/studio/",
     kort: "Spela en runda",
     text:
-      "Spelar en runda med dealern, i 3D-scenen eller som vanliga filmer (Inte 3D). Välj en färdig runda till höger, till exempel " +
-      "Plats 4 eller Alla platser, eller skriv en egen som Jakob skriver den: ”A2.1 - P4C1 - A2.1”. Remsan under bilden visar varje " +
-      "steg, vilken tagning som spelas och varför. Mellanslag spelar och pausar, pilarna stegar en bildruta.",
+      "Scenen: här spelas en runda med dealern, i 3D-scenen eller som vanliga filmer (Inte 3D), och här ändras scenen. Panelen " +
+      "till höger har två flikar. Runda: välj en färdig runda, till exempel Plats 4 eller Alla platser, eller skriv en egen som " +
+      "Jakob skriver den: ”A2.1 - P4C1 - A2.1”. Scen: rum, rörelser, ljus, bord, kort och kamera, med förval att utgå från. " +
+      "Remsan under bilden visar varje steg, vilken tagning som spelas och varför. Mellanslag spelar och pausar, pilarna stegar " +
+      "en bildruta.",
   },
   {
     vy: "karta",
@@ -65,13 +68,6 @@ export const GUIDE: readonly GuideView[] = [
     text:
       "Provrummet: jämförelsefilmer och kontaktark från arbetet, nyast först. Öppna ett prov för att se dess filmer och bilder, " +
       "var och en med sitt omdöme (användbar, med anmärkningar, underkänd).",
-  },
-  {
-    vy: "scen",
-    namn: "Scen",
-    adress: "/studio/scen/",
-    kort: "Rum, ljus och bord",
-    text: "3D-scenens inställningar: rum, rörelser, ljus, bord, kort och kamera, med en grundinställning att utgå från.",
   },
   {
     vy: "jamfor",

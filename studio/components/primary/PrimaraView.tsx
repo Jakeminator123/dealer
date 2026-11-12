@@ -3,10 +3,13 @@
 // Primära: for every film of a whole round, what plays now against the best take Jakob has accepted outright, with the
 // seam a Primär would give, and one click per row to make it Primär. First the three films of seat 4 he called very
 // good on 12 Nov, then seat by seat (deal, return to A2.1, return to A1), then the dealer, then rest, entry and exit.
-// Nothing is chosen in advance and there is no "all at once": every Primär is his own click.
+// Nothing is chosen in advance and there is no "all at once": every Primär is his own click. Every still plays: a click
+// opens the film over the whole window (the shared FilmViewer, ‹ › to the row's other film), ▶ plays it in its place.
 import { Heart } from "lucide-react";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
+import type { Take } from "../../../src/clip-graph.ts";
 import { BankStatus, Page } from "@/components/shell";
+import { FilmViewer } from "@/components/takes/FilmViewer";
 import { ErrorState, Skeleton, cn } from "@/components/ui";
 import { useBank } from "@/lib/bank";
 import { isSnapshot } from "@/lib/mode";
@@ -20,6 +23,8 @@ export function PrimaraView() {
   const { bank, graph, status, error, reload } = useBank();
   const page = useMemo(() => (bank && graph ? primaries(bank, graph) : null), [bank, graph]);
   const { make, saving, lines } = useMakePrimary();
+  // The films over the whole window: the row's films and the one shown.
+  const [viewing, setViewing] = useState<{ takes: Take[]; index: number } | null>(null);
 
   const counts = page ? (
     <span className="flex items-center gap-3 text-sm text-dim">
@@ -35,7 +40,15 @@ export function PrimaraView() {
   );
 
   const row = (r: (typeof page & {})["rows"][number], key: string) => (
-    <PrimaryRow key={key} row={r} saving={saving === r.proposal?.id} busy={!!saving} line={lines[r.edge.id] ?? null} onMake={(t) => void make(t)} />
+    <PrimaryRow
+      key={key}
+      row={r}
+      saving={saving === r.proposal?.id}
+      busy={!!saving}
+      line={lines[r.edge.id] ?? null}
+      onMake={(t) => void make(t)}
+      onView={(takes, index) => setViewing({ takes, index })}
+    />
   );
 
   return (
@@ -51,7 +64,7 @@ export function PrimaraView() {
       ) : (
         <div className="flex flex-col gap-9">
           <p className="max-w-[760px] text-sm text-dim">
-            Till vänster det som spelas i en hel runda nu, till höger den bästa tagning du själv har godkänt.{" "}
+            Till vänster det som spelas i en hel runda nu, till höger den bästa tagning du själv har godkänt. Klicka på en bild för att se filmen stort.{" "}
             {isSnapshot ? (
               "Det här är en kopia: primär väljs bara i Jakobs labb."
             ) : (
@@ -79,6 +92,11 @@ export function PrimaraView() {
           ))}
         </div>
       )}
+      <FilmViewer
+        takes={viewing?.takes ?? []}
+        index={viewing ? viewing.index : null}
+        onIndex={(index) => setViewing((was) => (was && index !== null ? { ...was, index } : null))}
+      />
     </Page>
   );
 }

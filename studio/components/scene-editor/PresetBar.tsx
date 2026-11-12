@@ -1,9 +1,10 @@
 "use client";
 
 // The bar over the scene: the presets as chips (the one the scene is exactly now is filled; the one the look started from
-// says "ändrad" when something has been changed since), "Spara som…" for his own, "Jämför med basgrund" that shows the
-// baseline while it is held (or while B is held), and "Återställ allt". His own presets can be taken away; the three that
-// ship with the lab cannot. In the online copy nothing is saved and those buttons are not there.
+// says "ändrad" when something has been changed since), "Spara som…" for his own, how many keys differ from basgrund,
+// "Jämför med basgrund" that shows the baseline while it is held (or while B is held), and "Återställ allt". His own
+// presets can be taken away; the three that ship with the lab cannot. In the online copy nothing is saved and those
+// buttons are not there.
 import { Eye, Plus, RotateCcw, X } from "lucide-react";
 import { useState } from "react";
 import { asApiError } from "../../lib/api.ts";
@@ -16,6 +17,7 @@ export function PresetBar({
   active,
   origin,
   changed,
+  differ = null,
   canSave,
   comparing,
   onPick,
@@ -30,6 +32,8 @@ export function PresetBar({
   /** The preset the look started from. */
   origin: string;
   changed: boolean;
+  /** How many keys differ from basgrund; null while the scene is not there. */
+  differ?: number | null;
   canSave: boolean;
   comparing: boolean;
   onPick: (name: string) => void;
@@ -44,7 +48,7 @@ export function PresetBar({
   const [busy, setBusy] = useState(false);
   return (
     <div className="flex h-12 shrink-0 items-center gap-1.5 border-b border-line bg-canvas px-3">
-      <span className="pr-1 text-2xs font-semibold uppercase tracking-[0.09em] text-faint">Förval</span>
+      <span className="hidden pr-1 text-2xs font-semibold uppercase tracking-[0.09em] text-faint 2xl:inline">Förval</span>
       <div className="flex min-w-0 items-center gap-1.5 overflow-x-auto [scrollbar-width:none]">
         {presets.map((p) => {
           const on = active === p.name;
@@ -92,13 +96,18 @@ export function PresetBar({
         ) : null}
       </div>
       <div className="ml-auto flex shrink-0 items-center gap-1.5 pl-2">
+        {differ ? (
+          <span className="whitespace-nowrap pr-1 text-sm tabular-nums text-brass-hi" title="Reglage som skiljer sig från basgrunden; de har en mässingsprick i panelen">
+            {differ} reglage skiljer sig
+          </span>
+        ) : null}
         <Tooltip content="Visar basgrunden så länge du håller knappen (eller B)" kbd="B">
           <Button
             size="sm"
             variant="secondary"
             icon={<Eye />}
             aria-pressed={comparing}
-            disabled={active === "basgrund"}
+            disabled={active === "basgrund" || differ === null}
             onPointerDown={(e) => {
               e.currentTarget.setPointerCapture(e.pointerId);
               onCompare(true);
@@ -120,7 +129,7 @@ export function PresetBar({
             Jämför med basgrund
           </Button>
         </Tooltip>
-        <Button size="sm" variant="quiet" icon={<RotateCcw />} onClick={onResetAll} disabled={active === "basgrund"}>
+        <Button size="sm" variant="quiet" icon={<RotateCcw />} onClick={onResetAll} disabled={active === "basgrund" || differ === null}>
           Återställ allt
         </Button>
       </div>

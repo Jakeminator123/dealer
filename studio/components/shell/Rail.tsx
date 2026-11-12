@@ -1,10 +1,10 @@
 "use client";
 
-// The left rail: the eight views with the active one marked, counts where they help (takes waiting for Jakob beside Granska,
+// The left rail: the seven views with the active one marked, counts where they help (takes waiting for Jakob beside Granska,
 // edges with a Primär beside Primära), whether the lab answers, and "Gamla labbet ↗" at the bottom (same tab).
 // In the online copy (lib/mode.ts) there is no old lab, so that link is not drawn; instead the bot is there: the view
 // Önskemål (with the answers from Jakob not yet seen) and "Fråga", which opens and closes the panel (components/bot).
-import { ArrowUpRight, FlaskConical, Images, Inbox, MessageCircleQuestion, Play, ScanEye, SlidersHorizontal, Spade, Star, Workflow } from "lucide-react";
+import { ArrowUpRight, Clapperboard, FlaskConical, Images, Inbox, MessageCircleQuestion, ScanEye, Spade, Star, Workflow } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useMemo, type ComponentType } from "react";
@@ -20,13 +20,13 @@ import { Glossary } from "./Glossary";
 type View = { href: string; label: string; hint: string; icon: ComponentType<{ className?: string }> };
 
 export const VIEWS: readonly View[] = [
-  { href: "/", label: "Spela", hint: "Spela en runda i scenen", icon: Play },
+  // Scen and the old Spela are one view since 2026-11-12 (Jakob): /scen/ leads to /.
+  { href: "/", label: "Scen", hint: "Scenen: spela en runda och ändra allt", icon: Clapperboard },
   { href: "/karta/", label: "Karta", hint: "Nodkartan: ankare, filmer och varianter", icon: Workflow },
   { href: "/primara/", label: "Primära", hint: "Vad som spelas nu, mot bästa godkända", icon: Star },
   { href: "/granska/", label: "Granska", hint: "Filmer som väntar på ditt beslut", icon: ScanEye },
   { href: "/prov/", label: "Prov", hint: "Jämförelsefilmer och kontaktark", icon: FlaskConical },
   { href: "/material/", label: "Material", hint: "Per dealer: ingångsbild, keystone, ankare, filmer och referenser", icon: Images },
-  { href: "/scen/", label: "Scen", hint: "Rum, ljus, bord, kort och kamera", icon: SlidersHorizontal },
   { href: "/game/", label: "Casino", hint: "Spela blackjack som i casinot: spelmotorn, marker och reglage, med valt förval", icon: Spade },
 ];
 
@@ -126,7 +126,7 @@ export function Rail() {
   return (
     <nav aria-label="Vyer" className="flex h-full w-[76px] flex-col border-r border-line bg-surface">
       <Tooltip content="Dealer Studio" side="right">
-        <Link href="/" aria-label="Dealer Studio, till Spela" className="mx-auto mb-2 mt-3 grid size-11 place-items-center rounded-lg text-brass transition-colors hover:bg-raised/60">
+        <Link href="/" aria-label="Dealer Studio, till Scen" className="mx-auto mb-2 mt-3 grid size-11 place-items-center rounded-lg text-brass transition-colors hover:bg-raised/60">
           <Mark />
         </Link>
       </Tooltip>

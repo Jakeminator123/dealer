@@ -77,7 +77,7 @@ export function Welcome() {
           ))}
         </div>
         <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-          <Way icon={<Play />} title={way("spela")} hint={HINT.spela} href="/" onClick={close} />
+          <Way icon={<Play />} title={way("scen")} hint={HINT.spela} href="/" onClick={close} />
           <Way icon={<Workflow />} title={way("karta")} hint={HINT.karta} href="/karta/" onClick={close} />
           <Way icon={<FlaskConical />} title={way("prov")} hint={HINT.prov} href="/prov/" onClick={close} />
           <Way

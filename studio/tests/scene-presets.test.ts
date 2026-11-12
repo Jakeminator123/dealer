@@ -27,11 +27,12 @@ test("three ship with the lab; basgrund is the baseline", async () => {
   assert.equal(BASE, "basgrund");
   assert.ok(isShipped("levande") && !isShipped("min-egen"));
   for (const p of SHIPPED) assert.deepEqual(validatePreset(p, p.name).errors, [], p.name);
-  // levande is basgrund with exactly the five keys of the look Jakob remembers (the stage's Levande, read off its source)
+  // levande is basgrund with exactly the five keys of the look Jakob remembers (proof 3d-kanslan); the Scen view starts there
   const alive = { mode: "lean", sway: true, focus: "follow", dust: 0.6, clock: true };
   assert.deepEqual(patchOf(levande, basgrund), alive);
-  const stage = /LEVANDE\b[^=]*=\s*\{([^}]*)\}/.exec(await readFile("studio/components/stage/Stage.tsx", "utf8"))?.[1] ?? "";
-  for (const [key, value] of Object.entries(alive)) assert.match(stage, new RegExp(`\\b${key}:\\s*${typeof value === "string" ? `"${value}"` : `${String(value).replace(".", "\\.")}\\b`}`), `Stage.tsx LEVANDE ${key}`);
+  // the data file that ships with the lab says the same
+  const file = JSON.parse(await readFile("data/scene-presets/levande.json", "utf8")) as { state: Partial<SceneState> };
+  assert.deepEqual(patchOf(effective(DEFAULTS, file.state), basgrund), alive);
   assert.deepEqual(Object.keys(patchOf(rumsstudien, levande)).sort(), ["base", "lamp", "shadowAbove", "surface"]);
   assert.deepEqual(differences(basgrund, DEFAULTS), ["room", "roomShift", "blur", "tray", "cards", "pitch", "zoom", "format"]);
 });

@@ -284,13 +284,12 @@ export function proofSections(proofs: readonly Proof[], onSite: ReadonlySet<stri
 // ── The studio's views ──────────────────────────────────────────────────────
 /** Five lines of the builder's own about each view, used when studio/lib/guide.ts gives none. */
 export const OWN_VIEWS: {namn: string; adress: string; text: string}[] = [
-  {namn: 'Spela', adress: '/studio/', text: 'Spelar en runda i 3D-scenen eller som vanliga filmer. Rundan skrivs med Jakobs ord, till exempel A1 - A2.1 - P4C1 - A1.'},
+  {namn: 'Scen', adress: '/studio/', text: 'Spelar en runda i 3D-scenen eller som vanliga filmer, och ändrar rum, ljus, bord, kort och kamera med förval. Rundan skrivs med Jakobs ord, till exempel A1 - A2.1 - P4C1 - A1.'},
   {namn: 'Karta', adress: '/studio/karta/', text: 'Nodkartan: ankarna (A1 vila, A2.1 nyp, A2.2 hand över) och kortplatserna, med en linje per steg. Klicka på en linje för stegets tagningar och domar.'},
   {namn: 'Primära', adress: '/studio/primara/', text: 'En rad per steg i rundan: vad som spelas nu mot bästa tagning Jakob godkänt. Jakob väljer själv en primär tagning per steg.'},
   {namn: 'Jämför', adress: '/studio/jamfor/', text: 'Två tagningar sida vid sida på samma ruta, eller på samma plats, med beslutet för kandidaten under.'},
   {namn: 'Granska', adress: '/studio/granska/', text: 'Tagningar som väntar på Jakobs dom, en i taget. I kopian sparas inga beslut.'},
   {namn: 'Prov', adress: '/studio/prov/', text: 'Prov från arbetet, nyast först: filmer och bilder med en dom per fil.'},
-  {namn: 'Scen', adress: '/studio/scen/', text: 'Rum, ljus, bord, kort och kamera i 3D-scenen.'},
 ];
 export type ViewText = {namn: string; adress: string; text: string};
 export function viewSection(views: readonly ViewText[], words: readonly {ord: string; betyder: string}[], release: Blocked, removed: Removed): Built {

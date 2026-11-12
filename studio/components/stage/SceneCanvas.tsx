@@ -1,6 +1,6 @@
 "use client";
 
-// <SceneCanvas initial={{mode: "lean"}} onReady={(scene, defaults) => …} ref={sceneRef} className="absolute inset-0" />
+// <SceneCanvas initial={{mode: "lean"}} onReady={(scene, defaults, plan) => …} ref={sceneRef} className="absolute inset-0" />
 // The lab's own 3D scene (src/scene3d-view.ts, read from the lab server at run time) in a React view. It makes its own
 // <canvas> in a host element, builds the scene's data as the lab's page does (src/scene3d-ui.ts: the contract, Jakob's
 // placement plan, the room pictures and the rooms of data/scene-rooms.json), starts it, keeps it sized to the host, and
@@ -11,6 +11,7 @@
 // safe when React runs the effect twice and when the view goes while the scene is still loading. Nothing here is about
 // rounds: the caller plays films with scene.players.
 import { useEffect, useImperativeHandle, useRef, useState, type ReactNode, type Ref } from "react";
+import type { PlacementPlan } from "../../../src/placement-model.ts";
 import type { CardTrack } from "../../../src/scene3d-geometry.ts";
 import type * as SceneView from "../../../src/scene3d-view.ts";
 import { getContract, getPlacements, getRooms } from "../../lib/api.ts";
@@ -39,8 +40,11 @@ export function SceneCanvas({
 }: {
   /** Scene state set before the first frame (read once, when the scene is built). */
   initial?: Partial<SceneState>;
-  /** The scene is built and running; defaults is the scene's DEFAULTS. */
-  onReady?: (scene: Scene, defaults: SceneState) => void;
+  /**
+   * The scene is built and running; defaults is the scene's DEFAULTS, plan the placement plan object it was built with
+   * (the rendered cards read each card's bend and gloss from it every frame, so a change made there shows at once).
+   */
+  onReady?: (scene: Scene, defaults: SceneState, plan: PlacementPlan | null) => void;
   /** Anything in the scene changed (a film came on screen, a setting): the scene's own onChange. */
   onChange?: () => void;
   onError?: (error: Error) => void;
@@ -108,9 +112,10 @@ export function SceneCanvas({
         labModule<typeof SceneView>("scene3d-view"),
       ]);
       if (gone) return;
+      const plan = ((placements as { plan?: unknown }).plan ?? placements) as PlacementPlan | null;
       const made = view.createScene(canvas, box, {
         contract,
-        plan: ((placements as { plan?: unknown }).plan ?? placements) as never,
+        plan: plan as never,
         urls: URLS,
         rooms: rooms?.rooms.length ? rooms.rooms : undefined,
         onChange: () => {
@@ -129,7 +134,7 @@ export function SceneCanvas({
       undo.push(wire(made, canvas, () => latest.current.keys));
       sceneRef.current = made;
       setStatus("ready");
-      latest.current.onReady?.(made, view.DEFAULTS);
+      latest.current.onReady?.(made, view.DEFAULTS, plan && typeof plan === "object" && "targets" in plan ? plan : null);
     })().catch((error: Error) => {
       if (gone) return;
       setStatus("error");

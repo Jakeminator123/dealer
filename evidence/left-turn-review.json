@@ -28,5 +28,12 @@
     "runs/20261109-pamela-seat-bank/batches/middle-end-card-v1/original/pamela-seat-4-wan3-end-card-v1.mp4"
   ],
   "excluded": "assets/candidates/p4-left-c2.mp4 is Jakob's closed-to-closed control.",
-  "integrated": false
+  "integrated": false,
+  "images": {
+    "movedAt": "2026-11-12",
+    "from": "output/left-turn-review",
+    "to": "D:/dealer-archive/V2-backup-studio/2-media/output/left-turn-review",
+    "files": 11,
+    "check": "SHA-256 of all 11 files was equal in both places before the copy in the repo folder was removed. The frameSheet and triptych paths above name where the images lay at review time. No page or tool reads them."
+  }
 }

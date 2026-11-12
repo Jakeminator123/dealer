@@ -4,8 +4,8 @@
 // (placements/default.json, targets[id].material, read by the rendered cards in src/scene3d-deal.ts), and the old lab sets
 // them "to all cards" (src/lab-ui.ts). Here two sliders set all sixteen at once. The plan is his file: it is written only
 // when he presses "Spara till planen" and confirms, through /api/placements against the revision read, and the game reads
-// the same plan. The scene shows a change before it is saved only when it hands out the plan it was built with (a third
-// argument to SceneCanvas's onReady); without that the scene is built again after the save, to show it.
+// the same plan. The scene shows a change before it is saved because it hands out the plan it was built with (the third
+// argument of SceneCanvas's onReady, passed on by the Stage's onScene); without it the change shows on the next build.
 import { Save } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { TARGETS, type PlacementPlan } from "../../../src/placement-model.ts";
