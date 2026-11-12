@@ -41,7 +41,7 @@ const send = (method: string, body: unknown, revision?: string): RequestInit => 
 });
 
 export const getOrders = () => call<OrdersAnswer>("api/orders", "Beställningarna");
-export type NewOrderInput = { dealer: string; step: StepKey; target?: string | null; flipAxis?: FlipAxis; middle?: boolean; duration?: number; takes?: number; extra?: string | null };
+export type NewOrderInput = { dealer: string; step: StepKey; target?: string | null; flipAxis?: FlipAxis; duration?: number; takes?: number; extra?: string | null };
 export const createOrder = (input: NewOrderInput) => call<OrderAnswer>("api/orders", "Utkastet", send("POST", input));
 export type OrderChange = { title?: string; takes?: number; flipAxis?: FlipAxis; extra?: string | null; duration?: number };
 export const changeOrder = (id: string, change: OrderChange, revision: string) => call<OrderAnswer>(`api/orders/${id}`, "Ändringen", send("PUT", change, revision));

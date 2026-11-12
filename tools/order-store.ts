@@ -1,10 +1,13 @@
 // The order queue on disk: data/orders/<id>.json (in Git, small, no signed addresses) and the pictures that go out in
 // assets/orders/<id>/ (outside Git). Builds a draft from a few choices (create), changes a draft (change), fetches what a
-// draft waits for once it holds in the register and draws its last picture again (refresh), and freezes an order on
-// Jakob's click (approve: the order's hash in approval, refused beyond data/order-policy.json). The receipt beside the
-// pictures (receipt.json) is never written here: only tools/order-put.ts writes it. Same guards as
-// tools/review-store.ts: the caller presents the revision it read (If-Match), writes are queued, and a file is replaced
-// through a temporary file renamed into place. Routes: tools/order-routes.ts.
+// draft waits for, or the dealer's anchor Jakob has since chosen in Material, and draws its last picture again (refresh),
+// and freezes an order on Jakob's click (approve: the order's hash in approval, refused beyond data/order-policy.json).
+// The pose picture of a still is a figure cut from the other dealer's anchor: only her dealing forearm, hand, the shoe
+// and the card are kept (tools/order-images.ts cutFigure), so that nothing else of her goes out. Nothing of another
+// dealer is shown as a stand-in: a picture that waits shows that it waits. The receipt beside the pictures
+// (receipt.json) is never written here: only tools/order-put.ts writes it. Same guards as tools/review-store.ts: the
+// caller presents the revision it read (If-Match), writes are queued, and a file is replaced through a temporary file
+// renamed into place. Routes: tools/order-routes.ts.
 import { readFile, writeFile, mkdir, rename, rm, stat, realpath, readdir } from 'node:fs/promises';
 import { createHash, randomUUID } from 'node:crypto';
 import path from 'node:path';
@@ -12,11 +15,12 @@ import { StoreError } from './placement-store.ts';
 import { mediaRoles } from './media-roles.ts';
 import {
   ANCHOR_NODE, ANCHOR_ROLE, EXTRA_LIMIT, FILE_NAME, FLIP_AXES, MODELS, ORDER_ID, TAKES_MAX,
-  checkPolicy, costOf, dayOf, draftProblems, edgeOf, hashInput, shownOf, spentOn, stepOf, validateOrder, waitingOf,
+  checkPolicy, costOf, dayOf, draftProblems, edgeOf, genitive, hashInput, seatWords, shownOf, spentOn, stepOf, summaryOf, validateOrder, waitingOf,
   type Drawn, type FlipAxis, type Order, type OrderAnswer, type OrdersAnswer, type Picture, type Policy, type Receipt, type StepKey, type Waits,
 } from '../src/order-model.ts';
 import { promptFor } from '../src/order-prompts.ts';
-import { cardTexture, drawCard, pictureBytes, pngOf, readPlan, readRgb, type Texture } from './order-images.ts';
+import { CUT, cardTexture, cutFigure, drawCard, pictureBytes, planQuad, pngOf, readPlan, readRgb, type Pt, type Texture } from './order-images.ts';
+import type { PlacementPlan } from '../src/placement-model.ts';
 import type { Entry, Register } from '../studio/lib/media.ts';
 
 const sha = (b: Buffer | string) => createHash('sha256').update(b).digest('hex');
@@ -24,14 +28,16 @@ const revisionOf = (text: string) => `"${sha(text)}"`;
 export const orderHash = (order: Order) => sha(hashInput(order));
 
 export type DealerInfo = { id: string; name: string; look: string; paused?: string | null };
-/** Where the pose of a still comes from: an entry of the register, or a frame of a bank film. */
-export type Source = { entry?: string; path?: string; frame?: number; label?: string };
+/**
+ * Where the pose of a still comes from: an entry of the register, or a frame of a bank film. keep: the region of the
+ * picture that is kept (bank pixels); the rest of the person is filled with green, and what is kept is said in `what`.
+ */
+export type Source = { entry?: string; path?: string; frame?: number; label?: string; keep?: Pt[]; what?: string };
 export type NewOrder = {
   dealer: string;
   step: StepKey;
   target?: string | null;
   flipAxis?: FlipAxis;
-  middle?: boolean;
   duration?: number;
   resolution?: string;
   takes?: number;
@@ -47,16 +53,35 @@ export type NewOrder = {
 };
 export type Change = { title?: string; takes?: number; flipAxis?: FlipAxis; extra?: string | null; duration?: number };
 
-
-// The pose pictures come from the bank's own dealer: her anchors that hold, and a frame mid-carry of the seat-4 deal Jakob
-// called very good (frame 42 of pamela-p4-c1-plan-deal-02: the card held low in front of her, before the turn).
-export const POSE: Record<'ANKARE-2.1' | 'ANKARE-2.2' | 'MELLANBILD', Source> = {
-  'ANKARE-2.1': { entry: 'pamela-nyp', label: 'Pamelas ankare 2.1 (godkänt)' },
-  'ANKARE-2.2': { entry: 'pamela-slap', label: 'Pamelas ankare 2.2 (godkänt; skon där har öppen front och kopieras inte)' },
-  MELLANBILD: { path: 'assets/motions/pamela-p4-c1-plan-deal-02/source.mp4', frame: 42, label: 'Pamelas giv till P4, ruta 42: kortet mitt i rörelsen' },
+/**
+ * What is kept of the bank's dealer in a pose figure: her left forearm from about the elbow, its hand, the shoe and the
+ * card, in bank pixels. Measured on her pinch and drag pictures (the same arm line): the forearm crosses the cut from
+ * (1070, 655) to (1225, 500) at about the elbow, x 1107–1197; her body ends at x 1065 and stays outside, as do her head
+ * and other arm.
+ */
+export const ARM_AT_SHOE: Pt[] = [[1225, 500], [1420, 560], [1730, 600], [1730, 920], [1150, 920], [1070, 655]];
+export const POSE_WHAT = 'armen från armbågen, handen, skon och kortet';
+/** The label of a pose figure, on the screen "Det här skickas". */
+export const POSE_LABEL = 'Pose · bara armen, handen och skon';
+/**
+ * The pose pictures come from the bank's own dealer, cut down to the arm at the shoe. 2.1: not her anchor (there the
+ * fingertips sit at the card's corner by the window's rim, and Paow's earlier pinch copied it as a grip on the rim; Jakob
+ * 2026-11-13) but frame 16 of her seat-4 deal that Jakob approved: thumb and forefinger on the card's upper edge, the card
+ * drawn a little out of the window. Its shoe lies within 2 px of Paow's (best match dx +1, dy −2 on the shoe's body).
+ * 2.2: her anchor, the fingertips flat on the card (the shoe there has an open front and is not copied).
+ */
+export const POSE: Record<'ANKARE-2.1' | 'ANKARE-2.2', Source> = {
+  'ANKARE-2.1': { path: 'assets/motions/pamela-p4-c1-plan-deal-02/source.mp4', frame: 16, label: 'Pamelas giv till plats 4 (godkänd), ruta 16: nypet på kortet, kortet en bit ur fönstret', keep: ARM_AT_SHOE, what: POSE_WHAT },
+  'ANKARE-2.2': { entry: 'pamela-slap', label: 'Pamelas ankare 2.2 (godkänt; skon där har öppen front och kopieras inte)', keep: ARM_AT_SHOE, what: POSE_WHAT },
 };
-/** The dealer whose anchors stand in for a preview while a dealer's own anchor waits. */
-export const STAND_IN = 'pamela';
+/** The centre of a card of the plan in film pixels: where the text says the card lands before the last picture is drawn. */
+export const planCentre = (plan: PlacementPlan, target: string) => { const q = planQuad(plan, target); return { x: q.reduce((s, p) => s + p[0], 0) / 4, y: q.reduce((s, p) => s + p[1], 0) / 4 }; };
+
+/** "Paows ankare 1 · kandidat 2", "Paows ankare 2.1": which of the dealer's pictures a draft uses. */
+export function anchorWords(dealerName: string, at: string, entry: Pick<Entry, 'name' | 'state'> | null): string {
+  const which = !entry || entry.state === 'gäller' ? '' : (/kandidat\s*\d+/i.exec(entry.name)?.[0] ?? entry.state ?? '');
+  return `${genitive(dealerName)} ankare ${at}${which ? ` · ${which}` : ''}`;
+}
 
 const isPicture = (e: Entry) => !!e.path && (e.frame !== undefined || /\.(?:png|jpe?g)$/i.test(e.path)) && !/^[A-Za-z]:\//.test(e.path);
 /** The entry of a role that holds: state gäller, no card on the table, the anchor's node when given. */
@@ -74,7 +99,8 @@ export function resolveWaits(register: Register, waits: Waits): Entry | null {
   return null;
 }
 
-export function orderStore(root: string, options: { now?: () => Date } = {}) {
+export type StoreOptions = { now?: () => Date; /** Other pose sources than POSE (tests). */ poses?: Partial<Record<keyof typeof POSE, Source>> };
+export function orderStore(root: string, options: StoreOptions = {}) {
   const now = options.now ?? (() => new Date());
   const dir = path.join(root, 'data/orders');
   const folderOf = (id: string) => `assets/orders/${id}`;
@@ -164,17 +190,19 @@ export function orderStore(root: string, options: { now?: () => Date } = {}) {
     throw new StoreError(409, 'För många beställningar med samma namn.');
   }
 
-  /** The draft's text from its choices: the dealer's look, the step, the motion, the place the last picture draws the card at. */
-  function textOf(order: Pick<Order, 'step' | 'motion' | 'generation' | 'pictures' | 'prompt'>, dealer: DealerInfo, extra: string | null) {
-    const last = order.pictures.find((p) => p.goesAs === 'endFrame');
-    const drawn = last?.drawn ?? last?.preview?.drawn ?? null;
+  /**
+   * The draft's text from its choices: the dealer's look, the step, the motion, and where the card lands: where the last
+   * picture draws it, or before that picture exists the plan's own point for the card.
+   */
+  async function textOf(order: Pick<Order, 'step' | 'motion' | 'generation' | 'pictures' | 'prompt'>, dealer: DealerInfo, extra: string | null) {
+    const drawn = order.pictures.find((p) => p.goesAs === 'endFrame')?.drawn ?? null;
+    const place = drawn ? { x: drawn.centre[0], y: drawn.centre[1] } : order.motion?.target ? planCentre((await readPlan(root)).plan, order.motion.target) : null;
     const { template, text } = promptFor({
       dealer, step: order.step.key, model: order.generation.model,
       motion: order.motion ? { grip: order.motion.grip, turn: order.motion.turn, flipAxis: order.motion.flipAxis, side: order.motion.side } : null,
-      place: drawn ? { x: drawn.centre[0], y: drawn.centre[1] } : null,
-      middle: order.pictures.some((p) => p.name === 'middle.png'), extra,
+      place, extra,
     });
-    return { template, text, sha256: sha(text), extra, middle: order.pictures.some((p) => p.name === 'middle.png') };
+    return { template, text, sha256: sha(text), extra, middle: false };
   }
 
   async function create(input: NewOrder): Promise<{ order: Order; revision: string }> {
@@ -190,7 +218,6 @@ export function orderStore(root: string, options: { now?: () => Date } = {}) {
     const target = step.card ? (input.target ?? null) : null;
     const { plan } = await readPlan(root);
     if (step.card && (!target || !plan.targets[target])) throw new StoreError(400, 'Välj en plats på bordet (P1.C1 … D.C1).');
-    const middle = !!input.middle && step.kind === 'FILM' && !!model.middle && step.card;
     const takes = input.takes ?? 2;
     if (!Number.isInteger(takes) || takes < 1 || takes > TAKES_MAX) throw new StoreError(400, `Tagningar ska vara 1–${TAKES_MAX}.`);
     const extra = input.extra?.trim() ? input.extra.trim().slice(0, EXTRA_LIMIT) : null;
@@ -218,59 +245,60 @@ export function orderStore(root: string, options: { now?: () => Date } = {}) {
     try {
       const pictures: Picture[] = [];
       const notes = [...(input.notes ?? [])];
-      const anchorPicture = async (name: string, label: string, goesAs: Picture['goesAs'], at: '1' | '2.1' | '2.2', tag?: string): Promise<{ picture: Picture; bytes: Buffer | null }> => {
+      const anchorPicture = async (name: string, label: (words: string) => string, goesAs: Picture['goesAs'], at: '1' | '2.1' | '2.2', tag?: string): Promise<{ picture: Picture; bytes: Buffer | null }> => {
         const entry = input.base && at === step.from ? entryOf(register, input.base)?.entry ?? null : holding(register, dealer.id, ANCHOR_ROLE[at], ANCHOR_NODE[at]);
         if (input.base && at === step.from && !entry) throw new StoreError(404, `${input.base} finns inte i registret.`);
+        const words = anchorWords(dealer.name, at, entry);
         if (entry) {
           const { bytes, from } = await sourceBytes(register, { entry: entry.id });
-          return { picture: { name, label, goesAs, ...(tag ? { tag } : {}), ...(await put(id, name, bytes)), width: 1764, height: 1174, from, waits: null }, bytes };
+          return { picture: { name, label: label(words), goesAs, ...(tag ? { tag } : {}), ...(await put(id, name, bytes)), width: 1764, height: 1174, from, waits: null }, bytes };
         }
-        return { picture: { name, label, goesAs, ...(tag ? { tag } : {}), path: null, sha256: null, from: null, waits: { dealer: dealer.id, role: ANCHOR_ROLE[at], node: ANCHOR_NODE[at], label: `ankare ${at}` } }, bytes: null };
+        return { picture: { name, label: label(words), goesAs, ...(tag ? { tag } : {}), path: null, sha256: null, from: null, waits: { dealer: dealer.id, role: ANCHOR_ROLE[at], node: ANCHOR_NODE[at], label: `ankare ${at}` } }, bytes: null };
       };
 
       let motion: Order['motion'] = null;
       if (step.kind === 'FILM') {
-        const first = await anchorPicture('first.png', 'Första bild', 'startFrame', step.from);
+        const first = await anchorPicture('first.png', (w) => `Första bild · ${w}`, 'startFrame', step.from);
         pictures.push(first.picture);
         if (step.card) {
           const intent = plan.targets[target!].intent;
           motion = { grip: step.grip ?? 'PINCH', hand: intent.takeHand, turn: intent.turn, flipAxis, target, side: intent.endSide, fromPlan: true };
-          const last: Picture = { name: 'last.png', label: 'Sista bild', goesAs: 'endFrame', path: null, sha256: null, from: { built: `första bilden + kortet ${target} där planen säger` }, waits: first.picture.waits ?? null };
+          // Drawn on the dealer's own anchor only; while it waits, the picture shows that it waits (no other dealer stands in).
+          const last: Picture = { name: 'last.png', label: `Sista bild · samma + kortet på ${seatWords(target)}`, goesAs: 'endFrame', path: null, sha256: null, from: { built: `första bilden + kortet ${target} där planen säger` }, waits: first.picture.waits ?? null };
           if (first.bytes) {
             const { bytes, drawn } = await drawOn(first.bytes, target!);
             Object.assign(last, await put(id, 'last.png', bytes), { width: 1764, height: 1174, drawn, waits: null });
-          } else {
-            // A preview on the stand-in dealer's anchor: shows where and how large the card lands; never sent.
-            const stand = holding(register, STAND_IN, ANCHOR_ROLE[step.from], ANCHOR_NODE[step.from]);
-            if (stand) {
-              const { bytes: base } = await sourceBytes(register, { entry: stand.id });
-              const { bytes, drawn } = await drawOn(base, target!);
-              const saved = await put(id, 'last-forhandsvisning.png', bytes);
-              const standName = dealers.find((d) => d.id === STAND_IN)?.name ?? STAND_IN;
-              last.preview = { path: saved.path, on: `${standName}s ${stand.name.toLowerCase()}`, note: `Kortet ritat på ${standName}s ${first.picture.waits!.label} för att visa var och hur stort det landar. Ritas om på ${dealer.name}s ${first.picture.waits!.label} när den är godkänd i Material.`, drawn };
-            }
           }
           pictures.push(last);
-          if (middle) pictures.push({ name: 'middle.png', label: 'Mellanbild', goesAs: 'referenceImage', path: null, sha256: null, from: null, waits: { dealer: dealer.id, entry: `${dealer.id}-mellanbild-${seat}`, label: 'mellanbilden' } });
         } else {
-          const last = await anchorPicture('last.png', 'Sista bild', 'endFrame', step.to ?? step.from);
+          const last = await anchorPicture('last.png', (w) => `Sista bild · ${w}`, 'endFrame', step.to ?? step.from);
           pictures.push(last.picture);
         }
       } else {
-        const base = await anchorPicture('anchor.png', `${dealer.name}s bild (@anchor)`, 'referenceImage', step.from, 'anchor');
+        const base = await anchorPicture('anchor.png', (w) => w, 'referenceImage', step.from, 'anchor');
         pictures.push(base.picture);
-        const pose = input.pose ?? POSE[step.key as keyof typeof POSE];
+        const pose = input.pose ?? options.poses?.[step.key as keyof typeof POSE] ?? POSE[step.key as keyof typeof POSE];
         const { bytes, from } = await sourceBytes(register, pose);
-        pictures.push({ name: 'pose.png', label: 'Pose (@pose)', goesAs: 'referenceImage', tag: 'pose', ...(await put(id, 'pose.png', bytes)), width: 1764, height: 1174, from: { ...from, note: pose.label ?? from.note }, waits: null });
+        if (pose.keep) {
+          // The figure: only the arm at the shoe of the other dealer; the rest of her is the picture's own green.
+          const result = cutFigure(await readRgb(bytes), pose.keep);
+          const figure = await pngOf(result.rgb);
+          pictures.push({
+            name: 'pose-figure.png', label: POSE_LABEL, goesAs: 'referenceImage', tag: 'pose', ...(await put(id, 'pose-figure.png', figure)), width: 1764, height: 1174,
+            from: { ...from, note: `${pose.label ?? from.note}; allt av henne utom ${pose.what ?? POSE_WHAT} är bortklippt och grönt` }, waits: null,
+            cut: { keep: pose.keep.map(([x, y]) => [x, y] as [number, number]), what: pose.what ?? POSE_WHAT, source: { sha256: sha(bytes) }, settings: { ...CUT }, filledPx: result.filledPx, keptPx: result.keptPx, green: result.green },
+          });
+        } else pictures.push({ name: 'pose.png', label: 'Pose (@pose)', goesAs: 'referenceImage', tag: 'pose', ...(await put(id, 'pose.png', bytes)), width: 1764, height: 1174, from: { ...from, note: pose.label ?? from.note }, waits: null });
       }
 
-      // What the still becomes: a candidate of its role in the register; an in-between picture gets the id the films wait for.
-      const makes = step.makes ? { role: step.makes.role, ...(step.key === 'MELLANBILD' ? { entry: `${dealer.id}-mellanbild-${(input.target ?? 'P4.C1').toLowerCase().replace('.c1', '').replace('.', '-')}` } : {}), label: step.makes.label } : null;
+      // What the still becomes: a candidate of its role in the register.
+      const makes = step.makes ? { role: step.makes.role, label: step.makes.label } : null;
       const edge = edgeOf(step, target);
       const order: Order = {
         schemaVersion: 1,
         id,
-        title: input.title ?? `${dealer.name} · ${step.label}${target ? ` · ${target}` : ''}`,
+        title: input.title ?? `${dealer.name} · ${step.label}${target ? ` · ${seatWords(target)}` : ''}`,
+        summary: summaryOf(step, dealer.name, motion),
         group: input.group ?? null,
         dealer: dealer.id,
         kind: step.kind,
@@ -279,7 +307,7 @@ export function orderStore(root: string, options: { now?: () => Date } = {}) {
         pictures,
         reference: { status: 'INGEN', why: step.card ? 'Ingen referensfilm. Mallen som höll hade bankens tur och retur till samma plats som referens; den klipps inte här än.' : 'Ingen referensfilm behövs för steget.' },
         generation: { provider: 'runway-app', tool: model.tool, model: model.id, params },
-        prompt: { template: '', text: '', sha256: '', extra, middle },
+        prompt: { template: '', text: '', sha256: '', extra, middle: false },
         takes,
         cost,
         limits: { maxCredits: cost.worstTotal, stopBelowCredits: policy.minBalance },
@@ -289,7 +317,7 @@ export function orderStore(root: string, options: { now?: () => Date } = {}) {
         approval: null,
         status: 'UTKAST',
       };
-      order.prompt = textOf(order, dealer, extra);
+      order.prompt = await textOf(order, dealer, extra);
       const revision = await write(order);
       return { order, revision };
     } catch (error) {
@@ -330,7 +358,7 @@ export function orderStore(root: string, options: { now?: () => Date } = {}) {
       if (changes.flipAxis !== undefined) { if (!next.motion) throw new StoreError(400, 'Steget har ingen vändning.'); next.motion.flipAxis = changes.flipAxis; }
       if (changes.duration !== undefined) { if (next.kind !== 'FILM') throw new StoreError(400, 'En bild har ingen längd.'); next.generation.params.duration = changes.duration; }
       const extra = changes.extra !== undefined ? (changes.extra?.trim() || null) : next.prompt.extra;
-      next.prompt = textOf(next, dealer, extra);
+      next.prompt = await textOf(next, dealer, extra);
       const cost = costOf(next.generation, next.takes, policy.prices);
       if (!cost) throw new StoreError(400, 'Inget pris för de här värdena.');
       next.cost = cost;
@@ -363,9 +391,9 @@ export function orderStore(root: string, options: { now?: () => Date } = {}) {
         firstBytes ??= await readFile(path.join(root, ...first.path.split('/')));
         const { bytes, drawn } = await drawOn(firstBytes, next.motion.target);
         Object.assign(last, await put(id, 'last.png', bytes), { drawn, waits: null, width: 1764, height: 1174 });
-        if (last.preview) { await rm(path.join(root, ...last.preview.path.split('/')), { force: true }); last.preview = null; }
       }
-      next.prompt = textOf(next, dealer, next.prompt.extra);
+      next.summary = summaryOf(next.step, dealer.name, next.motion);
+      next.prompt = await textOf(next, dealer, next.prompt.extra);
       return { order: next, revision: await write(next) };
     });
   }

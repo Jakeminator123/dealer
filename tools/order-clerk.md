@@ -8,8 +8,8 @@ Report in Swedish, short, to the main agent; your final message is all it sees.
 ## What an order is
 - `data/orders/<id>.json`: the order (in Git). Only orders with `"status": "GODKÄND"` and an `approval` are placed. You never
   write this file, never write `approval`, never change a draft.
-- `assets/orders/<id>/`: the pictures that go out (`first.png`, `last.png`, `middle.png`, `anchor.png`, `pose.png`), and
-  later what you fetch. Outside Git.
+- `assets/orders/<id>/`: the pictures that go out (`first.png`, `last.png`, `anchor.png`, `pose-figure.png`: the pose cut
+  down to the other dealer's arm, hand, shoe and card), and later what you fetch. Outside Git.
 - `assets/orders/<id>/receipt.json`: what happened to each take. Written ONLY by `node tools/order-put.ts`, never by hand.
 - The rules for the queue: `data/order-policy.json` (`enabled`, caps, `minBalance`). The approval already checked the caps.
 
@@ -47,12 +47,12 @@ For take n of an order:
 2. Replace every `"$file:<name>"` with that file's hosted address, verbatim. Add a short truthful `rationale` ("green-screen
    picture of a blackjack dealer for the user's clip bank, approved by the owner"). Change nothing else: no argument added,
    removed or altered, no other model, no shortened text. The call is:
-   - **generate_image, `nano-banana-pro`** (a still: an anchor or an in-between picture): `model`, `promptText`, `ratio`
+   - **generate_image, `nano-banana-pro`** (a still: an anchor): `model`, `promptText`, `ratio`
      ("4:3"), `imageSize` ("4K"), `count: 1`, `referenceImages: [{url, tag: "anchor"}, {url, tag: "pose"}]` (the text says
      `@anchor` and `@pose`), and `confirmRepeat: true` from take 2.
    - **generate_video, `kling-4`**: `model`, `promptText`, `resolution` ("1080p"), `duration`, `startFrame: {url}`,
-     `endFrame: {url}`, optionally `referenceImages: [{url}]` (the in-between picture; Kling ignores tags) and
-     `referenceVideos: [{url, durationSeconds}]` (a reference film; `durationSeconds` required). No `generateAudio` (Kling's
+     `endFrame: {url}`, and optionally `referenceVideos: [{url, durationSeconds}]` (a reference film; `durationSeconds`
+     required). No `generateAudio` (Kling's
      sound is always on and the tool refuses false) and no `ratio` (it follows the first picture: 1764 × 1172).
    - **generate_video, `wan3`**: `model`, `promptText`, `resolution`, `ratio: "adaptive"` (gives exactly 1764 × 1174),
      `duration`, `startFrame`, `endFrame`, `generateAudio: false`. WAN takes no reference pictures together with start and end.

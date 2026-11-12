@@ -15,16 +15,15 @@ const answer = (order: Order, extra: Partial<OrderAnswer> = {}): OrderAnswer => 
 
 test("Det här skickas: every argument by its name, as the ordering agent will send it", async () => {
   const all = await drafts();
-  const film = all.find((o) => o.id === "paow-vandning-p4-mellanbild")!;
+  const film = all.find((o) => o.id === "paow-giv-p4")!;
   const rows = paramRows(film);
   assert.deepEqual(rows.map((r) => [r.name, r.value]), [
     ["verktyg", "generate_video"],
     ["model", "kling-4"],
     ["resolution", "1080p"],
-    ["duration", "4"],
+    ["duration", "7"],
     ["startFrame", "first.png"],
     ["endFrame", "last.png"],
-    ["referenceImages[0]", "middle.png"],
     ["confirmRepeat", "true"],
     ["generateAudio", "skickas inte"],
     ["ratio", "skickas inte"],
@@ -36,20 +35,20 @@ test("Det här skickas: every argument by its name, as the ordering agent will s
     ["ratio", "4:3"],
     ["imageSize", "4K"],
     ["referenceImages[0]", "anchor.png · tag anchor"],
-    ["referenceImages[1]", "pose.png · tag pose"],
+    ["referenceImages[1]", "pose-figure.png · tag pose"],
     ["count", "1"],
     ["confirmRepeat", "true"],
   ]);
-  assert.deepEqual(picturesInOrder(film.pictures).map((p) => p.name), ["first.png", "middle.png", "last.png"]);
+  assert.deepEqual(picturesInOrder(film.pictures).map((p) => p.name), ["first.png", "last.png"]);
   assert.deepEqual(picturesInOrder(still.pictures).map(goesWords), ["referenceImages · @anchor", "referenceImages · @pose"]);
-  assert.equal(costWords(film), "2 tagningar × 86 = 172 krediter");
+  assert.equal(costWords(film), "2 tagningar × 150 = 300 krediter");
   assert.equal(offsetWords(1.1), "1,1 px från planen");
 });
 
 test("the queue: sections, status words with sign, and the hand-over line", async () => {
   const all = await drafts();
-  const list = all.map((o) => answer(o, o.kind === "FILM" || o.id === "paow-mellanbild-p4" ? { shown: "VÄNTAR", waiting: [{ dealer: "paow", label: "ankare 2.1", ready: false }] } : {}));
-  assert.deepEqual(sections(list).map((s) => [s.key, s.orders.length]), [["redo", 2], ["vantar", 3]]);
+  const list = all.map((o) => answer(o, o.kind === "FILM" ? { shown: "VÄNTAR", waiting: [{ dealer: "paow", label: "ankare 2.1", ready: false }] } : {}));
+  assert.deepEqual(sections(list).map((s) => [s.key, s.orders.length]), [["redo", 2], ["vantar", 1]]);
   assert.equal(shownWords(list.find((a) => a.order.kind === "FILM")!), "Väntar på ankare 2.1");
   for (const key of Object.keys(SHOWN_LABEL)) assert.ok(SHOWN_CHIP[key as keyof typeof SHOWN_CHIP].sign, key);
   assert.equal(HANDOVER, "Säg 'lägg kön' till filmagenten eller huvudagenten, så läggs godkända beställningar.");

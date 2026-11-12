@@ -16,14 +16,14 @@ import path from 'node:path';
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import { StoreError } from './placement-store.ts';
 import { mediaRoles } from './media-roles.ts';
-import { orderStore, type NewOrder } from './order-store.ts';
+import { orderStore, type NewOrder, type StoreOptions } from './order-store.ts';
 
 const BODY_LIMIT = 16384;
-const NEW_KEYS = ['dealer', 'step', 'target', 'flipAxis', 'middle', 'duration', 'resolution', 'takes', 'extra', 'title', 'base'];
+const NEW_KEYS = ['dealer', 'step', 'target', 'flipAxis', 'duration', 'resolution', 'takes', 'extra', 'title', 'base'];
 
-export function orderRoutes(options: { root: string; origin: string; now?: () => Date }) {
+export function orderRoutes(options: { root: string; origin: string } & StoreOptions) {
   const { root, origin } = options;
-  const store = orderStore(root, { now: options.now });
+  const store = orderStore(root, { now: options.now, poses: options.poses });
   const media = mediaRoles(root);
 
   const json = (res: ServerResponse, status: number, value: unknown) => { res.writeHead(status, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' }).end(JSON.stringify(value)); };

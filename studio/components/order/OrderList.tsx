@@ -1,7 +1,8 @@
 "use client";
 
-// The queue: one card per order in sections (klara att godkänna, väntar på bilder, i kön, lagda), each with its pictures,
-// a status chip, the model and length, and the cost. A click opens "Det här skickas". Under the queue the one line on how
+// The queue: one card per order in sections (klara att godkänna, väntar på bilder, i kön, lagda), each with its pictures
+// (named for which of the dealer's pictures they are), one line on what the order makes, a status chip, the model and
+// length, and the cost. A click opens "Det här skickas". Under the queue the one line on how
 // approved orders get placed.
 import { Clock, Film, ImageIcon, Plus } from "lucide-react";
 import { labUrl } from "../../lib/lab.ts";
@@ -12,22 +13,19 @@ import { Button, Card, EmptyState } from "../ui";
 import { StatusChip } from "./Pictures";
 
 function Thumb({ picture }: { picture: Picture }) {
-  const src = picture.path ? labUrl(picture.path) : picture.preview ? labUrl(picture.preview.path) : null;
+  const src = picture.path ? labUrl(picture.path) : null;
   return (
     <div className="relative aspect-[1764/1174] min-w-0 flex-1 overflow-hidden rounded-md border border-line bg-well">
       {src ? (
         // eslint-disable-next-line @next/next/no-img-element -- a lab file; a static export cannot optimise
-        <img src={src} alt={picture.label} className={picture.path ? "size-full object-cover" : "size-full object-cover opacity-60"} loading="lazy" />
+        <img src={src} alt={picture.label} className="size-full object-cover" loading="lazy" />
       ) : (
         <div className="absolute inset-0 flex flex-col items-center justify-center gap-1 bg-[repeating-linear-gradient(135deg,#0c110f_0_8px,#0a0e0c_8px_16px)] text-2xs text-faint">
           <Clock className="size-4 text-vantar" />
-          {picture.waits?.label}
+          Väntar på {picture.waits?.label}
         </div>
       )}
-      <span className="absolute bottom-1 left-1 rounded-xs bg-black/65 px-1 text-2xs text-ink">
-        {picture.label}
-        {!picture.path && picture.preview ? <span className="text-[#f0b07a]"> · förhandsvisning</span> : null}
-      </span>
+      <span className="absolute bottom-1 left-1 right-1 truncate rounded-xs bg-black/65 px-1 text-2xs text-ink">{picture.label}</span>
     </div>
   );
 }
@@ -50,11 +48,8 @@ function OrderCard({ answer, onOpen }: { answer: OrderAnswer; onOpen: () => void
         {order.kind === "FILM" ? <Film className="mt-0.5 size-4 shrink-0 text-dim" /> : <ImageIcon className="mt-0.5 size-4 shrink-0 text-dim" />}
         <div className="min-w-0 flex-1">
           <p className="truncate font-display text-md font-semibold text-ink">{order.title}</p>
-          <p className="truncate text-xs text-dim">
-            {what}
-            {pics.some((x) => x.name === "middle.png") ? " · med mellanbild" : ""}
-            {order.group ? ` · ${order.group.label}` : ""}
-          </p>
+          {order.summary ? <p className="mt-0.5 text-sm leading-5 text-ink">{order.summary}</p> : null}
+          <p className="mt-0.5 truncate text-xs text-dim">{what}</p>
         </div>
       </div>
       <div className="mt-2.5 flex flex-wrap items-center gap-x-2 gap-y-1.5">

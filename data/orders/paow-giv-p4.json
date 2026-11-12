@@ -1,0 +1,101 @@
+{
+  "schemaVersion": 1,
+  "id": "paow-giv-p4",
+  "title": "Paow · första filmen: ett kort till plats 4",
+  "summary": "Gör en film av Paow: från nypet vid skon (ankare 2.1) tar hon ett kort, vänder det som en hand kan och lägger det på plats 4; handen går tillbaka till nypet.",
+  "group": null,
+  "dealer": "paow",
+  "kind": "FILM",
+  "step": {
+    "key": "GIV-2.1",
+    "label": "Nyp, ett kort till platsen och tillbaka",
+    "edge": "READY>P4.C1",
+    "shape": "ROUND_TRIP",
+    "cutInto": [
+      "READY>P4.C1",
+      "P4.C1>READY"
+    ],
+    "makes": null
+  },
+  "motion": {
+    "grip": "PINCH",
+    "hand": "LH",
+    "turn": true,
+    "flipAxis": "FREE",
+    "target": "P4.C1",
+    "side": "FRONT",
+    "fromPlan": true
+  },
+  "pictures": [
+    {
+      "name": "first.png",
+      "label": "Första bild · Paows ankare 2.1",
+      "goesAs": "startFrame",
+      "path": null,
+      "sha256": null,
+      "from": null,
+      "waits": {
+        "dealer": "paow",
+        "role": "ankare-2.1",
+        "node": "READY",
+        "label": "ankare 2.1"
+      }
+    },
+    {
+      "name": "last.png",
+      "label": "Sista bild · samma + kortet på plats 4",
+      "goesAs": "endFrame",
+      "path": null,
+      "sha256": null,
+      "from": {
+        "built": "första bilden + kortet P4.C1 där planen säger"
+      },
+      "waits": {
+        "dealer": "paow",
+        "role": "ankare-2.1",
+        "node": "READY",
+        "label": "ankare 2.1"
+      }
+    }
+  ],
+  "reference": {
+    "status": "INGEN",
+    "why": "Ingen referensfilm. Mallen som höll hade bankens tur och retur till samma plats som referens; den klipps inte här än."
+  },
+  "generation": {
+    "provider": "runway-app",
+    "tool": "generate_video",
+    "model": "kling-4",
+    "params": {
+      "resolution": "1080p",
+      "duration": 7
+    }
+  },
+  "prompt": {
+    "template": "film-giv@2",
+    "text": "One continuous take with a locked-off camera and no cuts. The woman in the first frame is a young, slim, petite woman with a platinum-blonde chin-length bob, warm-coloured tattoos on her throat and upper chest and a small white flower pendant, in a black tailored blazer over a cream V-neck top; she sits at a green table, seen from the front, with the black card shoe fixed at the right of the picture and a yellow card in its window. She deals one card and comes back to the pose she started in. Her left hand, at the right of the picture, pinches the yellow card in the shoe's window between thumb and forefinger, as in the first frame, and draws it out: the card looks as it does in the shoe, the same size and shape, one plain rigid card. The same hand carries it low over the table towards the place where it will lie. On the way she turns the card over once, the way a real hand can from this pinch: one natural movement of fingers and wrist that a human hand can actually make, the card held firmly the whole time and keeping its size, until its blue face is up. She lays it flat, blue face up, exactly where the blue card lies in the last frame, in the middle of the picture, at the same size and angle, lets go of it, and the card stays there. Then the hand returns to the shoe and pinches the next yellow card, exactly as in the first frame. Her right hand, at the left of the picture, rests on the table the whole time. Only one card moves; it is solid yellow on its back and solid blue on its face. She ends exactly as in the last frame. Nothing of this happens: a second card appears, a finger passes through the card, the card grows or shrinks on its way, a hand hovers in the air without holding or laying anything, the shoe changes, the picture cuts or the camera moves.",
+    "sha256": "4502797f9cc13a9b86e7703a2ca028a8bc0a9aa56f5cea77b6e669569c3704bf",
+    "extra": null,
+    "middle": false
+  },
+  "takes": 2,
+  "cost": {
+    "perTake": 150,
+    "total": 300,
+    "worstPerTake": 165,
+    "worstTotal": 330,
+    "basis": "21,3 krediter per s × 7 s. Liggarna b19 och b20: 7 s i 1080p = 149 krediter; listpris 23,5 per s i verktyget generate_video 2026-11-12."
+  },
+  "limits": {
+    "maxCredits": 330,
+    "stopBelowCredits": 2000
+  },
+  "notes": [
+    "Paows första film: från hennes ankare 2.1 tar hon ett kort ur skon, vänder det som en hand kan (ingen bestämd kant; kortet behåller sin storlek) och lägger det på plats 4, och handen går tillbaka till nypet. Sista bilden är hennes ankare 2.1 med kortet ritat där planen säger; den ritas när ankare 2.1 är godkänt.",
+    "Längd 7 s: bankens egen tur och retur till plats 4 tar 6,5 s (given landar efter 3,5 s, ruta 105 av pamela-p4-c1-plan-deal-02, och returen till nypet tar 3,0 s; referensen i Paows mall b6 är 196 rutor i 30/s). Mallen som höll för Paow (b6, rutgranskad) var 7 s, och 4 s skulle pressa samma rörelse till drygt halva tiden."
+  ],
+  "created": "2026-11-12T23:15:37.609Z",
+  "createdBy": "huvudagentens byggare (uppdrag 2026-11-12 kväll: tydligare utkast)",
+  "approval": null,
+  "status": "UTKAST"
+}

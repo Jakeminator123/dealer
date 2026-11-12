@@ -2,6 +2,7 @@
   "schemaVersion": 1,
   "id": "paow-ankare-2-2",
   "title": "Paow · ankare 2.2 (släp)",
+  "summary": "Gör Paows ankare 2.2: hennes ankare 1 där bara vänsterarmen flyttas, så att handen ligger över kortet vid skons öppning.",
   "group": null,
   "dealer": "paow",
   "kind": "STILL",
@@ -20,7 +21,7 @@
   "pictures": [
     {
       "name": "anchor.png",
-      "label": "Paows bild (@anchor)",
+      "label": "Paows ankare 1 · kandidat 2",
       "goesAs": "referenceImage",
       "tag": "anchor",
       "path": "assets/orders/paow-ankare-2-2/anchor.png",
@@ -35,21 +36,69 @@
       "waits": null
     },
     {
-      "name": "pose.png",
-      "label": "Pose (@pose)",
+      "name": "pose-figure.png",
+      "label": "Pose · bara armen, handen och skon",
       "goesAs": "referenceImage",
       "tag": "pose",
-      "path": "assets/orders/paow-ankare-2-2/pose.png",
-      "sha256": "0901fc7b99d4383ece2245b5de868833841a695069abdfbeefb81184d14fb69c",
+      "path": "assets/orders/paow-ankare-2-2/pose-figure.png",
+      "sha256": "424b49fd9aeba1c49ff78e6e1dfcedc6c5983691839bc5f5b515717c56a84552",
       "width": 1764,
       "height": 1174,
       "from": {
         "entry": "pamela-slap",
         "path": "assets/motions/pamela-ready-b-shoe-plate-01/source.mp4",
         "frame": 112,
-        "note": "Pamelas ankare 2.2 (godkänt; skon där har öppen front och kopieras inte)"
+        "note": "Pamelas ankare 2.2 (godkänt; skon där har öppen front och kopieras inte); allt av henne utom armen från armbågen, handen, skon och kortet är bortklippt och grönt"
       },
-      "waits": null
+      "waits": null,
+      "cut": {
+        "keep": [
+          [
+            1225,
+            500
+          ],
+          [
+            1420,
+            560
+          ],
+          [
+            1730,
+            600
+          ],
+          [
+            1730,
+            920
+          ],
+          [
+            1150,
+            920
+          ],
+          [
+            1070,
+            655
+          ]
+        ],
+        "what": "armen från armbågen, handen, skon och kortet",
+        "source": {
+          "sha256": "0901fc7b99d4383ece2245b5de868833841a695069abdfbeefb81184d14fb69c"
+        },
+        "settings": {
+          "grow": 10,
+          "feather": 5,
+          "tolerance": 10,
+          "block": 64,
+          "strip": 256,
+          "solid": 40,
+          "edge": 12
+        },
+        "filledPx": 313208,
+        "keptPx": 118201,
+        "green": [
+          3.9,
+          238.6,
+          68.1
+        ]
+      }
     }
   ],
   "reference": {
@@ -66,9 +115,9 @@
     }
   },
   "prompt": {
-    "template": "bild-ankare@1",
-    "text": "This is an edit of the picture @anchor. Keep everything in @anchor exactly as it is: the framing and camera, the flat pure chroma-green background and green table surface with no visible edge, the black card shoe at the right with the yellow card in its window, and the woman herself, a young, slim, petite woman with a platinum-blonde chin-length bob, warm-coloured tattoos on her throat and upper chest and a small white flower pendant, in a black tailored blazer over a cream V-neck top: her face, hair, clothes and build, the place and size of her head and body, and her right hand, at the left of the picture, lying flat on the felt. Change only her left arm and hand, at the right of the picture: her hand lies over the yellow card in the shoe's window, fingertips resting flat on the card, ready to slide it out along the felt, in the pose of the dealer's left hand in @pose. The shoe in @pose has an open front: do not copy it. Take only the pose of the arm and hand from @pose, not the person, her clothes, the shoe or the card: the shoe and the yellow card in its window keep exactly the look, size and shape they have in @anchor. She sits on a chair that is not in the picture: her elbows hang free at her sides and her forearms come down to the felt; nothing supports her elbows or forearms. Her jacket continues down to the same straight horizontal line where her body is cut off in @anchor, with no green between the jacket and that line. The green is one even colour everywhere, right up to her outline: no shadows under or beside her arms, her hands, the card or the shoe. Soft, even frontal studio light; natural skin with fine texture, sharp eyes, matte black cloth with soft folds. Nothing of this happens: a second card appears, a finger passes through the card, the card has another size or shape than the card in the shoe's window, a hand floats in the air without holding anything, a second shoe appears, the framing changes.",
-    "sha256": "9669b06915650983fd84bcb1b7815d9c299a0ef1848fa38c6d3f31e12f61154e",
+    "template": "bild-ankare@2",
+    "text": "This is an edit of the picture @anchor. Keep everything in @anchor exactly as it is: the framing and camera, the flat pure chroma-green background and green table surface with no visible edge, the black card shoe at the right with the yellow card in its window, and the woman herself, a young, slim, petite woman with a platinum-blonde chin-length bob, warm-coloured tattoos on her throat and upper chest and a small white flower pendant, in a black tailored blazer over a cream V-neck top: her face, hair, clothes and build, the place and size of her head and body, and her right hand, at the left of the picture, lying flat on the felt. Change only her left arm and hand, at the right of the picture: her hand lies over the yellow card in the shoe's window, the fingertips resting flat on the card itself, not on the shoe, ready to slide it out along the felt; her hand is placed and shaped as the hand in @pose. The shoe in @pose has an open front: do not copy it. @pose is a cut-out on plain green: it shows only a left forearm in a black sleeve, cut off at the elbow, its hand, the card shoe and the yellow card; nothing else of that person is in it. Take from @pose only where the hand is and how the wrist and fingers hold the card. Her own sleeve, skin and hand stay as they are in @anchor, and her forearm goes up to her own elbow and shoulder as her body in @anchor allows; the shoe and the yellow card in its window keep exactly the look, size and shape they have in @anchor. She sits on a chair that is not in the picture: her elbows hang free at her sides and her forearms come down to the felt; nothing supports her elbows or forearms. Her jacket continues down to the same straight horizontal line where her body is cut off in @anchor, with no green between the jacket and that line. The green is one even colour everywhere, right up to her outline: no shadows under or beside her arms, her hands, the card or the shoe. Soft, even frontal studio light; natural skin with fine texture, sharp eyes, matte black cloth with soft folds. Nothing of this happens: the fingers rest on the shoe instead of on the card, a second card appears, a finger passes through the card, the card has another size or shape than the card in the shoe's window, a hand floats in the air without holding anything, a second shoe appears, the framing changes.",
+    "sha256": "bdd188a47b44cd450329bf1482f8c0a736bc3f040624685619a91c4635af2ab1",
     "extra": null,
     "middle": false
   },
@@ -85,11 +134,12 @@
     "stopBelowCredits": 2000
   },
   "notes": [
-    "Redigering av Paows ankare 1 (kandidat 2) med Pamelas godkända ankare 2.2 som pose. Skon och kortet tas ur hennes egen bild (2.1-skon), inte ur posebilden med öppen front.",
+    "Görs som en redigering av Paows ankare 1, kandidat 2 (Jakob har inte valt mellan kandidaterna; väljer han kandidat 1 i Material görs utkastet om).",
+    "Posebilden är bara armen från armbågen, handen, skon och kortet ur Pamelas godkända ankare 2.2: fingertopparna plant på kortet. Skon där har öppen front och kortet ligger cirka 50 px längre till vänster och 35 px lägre än i Paows fönster; texten säger att skon och kortet tas ur hennes egen bild.",
     "Efter leverans (LASMIG, recept som håller): grundbild.py passar in bilden i bankens ruta, ta-bort-skugga.py, kantkoll.py (0 mörka punkter, kroppen på rad 825–831), sedan skolagning.py, gron-till-niva.py och ton-till.py mot ankare 1."
   ],
-  "created": "2026-11-12T22:28:07.234Z",
-  "createdBy": "byggaren av vyn Beställ (huvudagentens uppdrag 2026-11-12)",
+  "created": "2026-11-12T23:15:37.603Z",
+  "createdBy": "huvudagentens byggare (uppdrag 2026-11-12 kväll: tydligare utkast)",
   "approval": null,
   "status": "UTKAST"
 }

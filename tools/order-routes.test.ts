@@ -12,13 +12,16 @@ import os from 'node:os';
 import path from 'node:path';
 import sharp from 'sharp';
 import { orderRoutes } from './order-routes.ts';
-import { orderStore, orderHash } from './order-store.ts';
+import { ARM_AT_SHOE, POSE_WHAT, orderStore, orderHash } from './order-store.ts';
 import { mediaRoles } from './media-roles.ts';
 import { replacedBy, allowed, isDecidable } from '../studio/components/material/state.ts';
 
 const base = existsSync('D:/dealer-scratch/tmp') ? 'D:/dealer-scratch/tmp' : os.tmpdir();
 const sha = (b: Buffer) => createHash('sha256').update(b).digest('hex');
-const picture = (r: number, g: number, b: number) => sharp({ create: { width: 24, height: 16, channels: 3, background: { r, g, b } } }).png().toBuffer();
+// The bank's frame: a pose figure is cut in bank pixels.
+const picture = (r: number, g: number, b: number) => sharp({ create: { width: 1764, height: 1174, channels: 3, background: { r, g, b } } }).png().toBuffer();
+// The pose of a still from the test register (the real POSE points at a bank film that is not in the temporary lab).
+const poses = { 'ANKARE-2.1': { entry: 'pamela-nyp', label: 'Pamelas nyp', keep: ARM_AT_SHOE, what: POSE_WHAT } };
 
 const register = () => ({
   schemaVersion: 1,
@@ -56,7 +59,7 @@ async function lab(t: { after(fn: () => Promise<void> | void): void }) {
   const server = http.createServer(async (req, res) => { const url = new URL(req.url ?? '/', origin); if (!(await handle.fn!(req, res, url))) res.writeHead(404).end('not mine'); });
   await new Promise<void>((done) => server.listen(0, '127.0.0.1', done));
   origin = `http://127.0.0.1:${(server.address() as { port: number }).port}`;
-  handle.fn = orderRoutes({ root, origin, now: () => new Date('2026-11-12T21:00:00Z') });
+  handle.fn = orderRoutes({ root, origin, now: () => new Date('2026-11-12T21:00:00Z'), poses });
   t.after(() => new Promise<void>((done) => server.close(() => done())));
   const call = async (method: string, address: string, options: { body?: unknown; match?: string; from?: string | null } = {}) => {
     const headers: Record<string, string> = {};
@@ -88,7 +91,13 @@ test('drafts, changes and approval go through the routes with their guards', asy
   const anchor = a.order.pictures.find((p: { name: string }) => p.name === 'anchor.png');
   assert.equal(anchor.sha256, sha(files['paow-vila-ung-2']), 'the picture is copied byte for byte');
   assert.equal((await call('GET', `/${anchor.path}`)).bytes!.equals(files['paow-vila-ung-2']), true);
-  assert.equal(a.order.pictures.find((p: { name: string }) => p.name === 'pose.png').from.entry, 'pamela-nyp');
+  assert.equal(anchor.label, 'Paows ankare 1 · kandidat 2', 'which of her pictures the draft uses');
+  const pose = a.order.pictures.find((p: { name: string }) => p.name === 'pose-figure.png');
+  assert.equal(pose.from.entry, 'pamela-nyp');
+  assert.equal(pose.label, 'Pose · bara armen, handen och skon');
+  assert.deepEqual(pose.cut.keep, ARM_AT_SHOE);
+  assert.equal(pose.cut.source.sha256, sha(files['pamela-nyp']));
+  assert.equal(a.order.summary, 'Gör Paows ankare 2.1: hennes ankare 1 där bara vänsterarmen flyttas till nypet vid skon.');
   assert.equal(a.order.cost.total, 80);
 
   // Files: only pictures and films directly in the order's folder.
@@ -133,7 +142,8 @@ test('drafts, changes and approval go through the routes with their guards', asy
   assert.equal(film.shown, 'VÄNTAR');
   assert.deepEqual(film.waiting.map((w: { label: string; ready: boolean }) => [w.label, w.ready]), [['ankare 2.1', false], ['ankare 2.1', false]]);
   assert.equal(film.order.step.edge, 'READY>P4.C1');
-  assert.equal(film.order.pictures[1].preview ?? null, null, 'no stand-in anchor that holds, so no preview');
+  assert.equal(film.order.pictures[1].path, null, 'the last picture waits; no other dealer stands in');
+  assert.match(film.order.prompt.text, /exactly where the blue card lies in the last frame, in the middle of the picture/, 'the place from the plan before the last picture exists');
   const waiting = await call('POST', `/api/orders/${film.order.id}/approve`, { match: film.revision });
   assert.equal(waiting.status, 409);
   assert.match(waiting.json.error, /Väntar på ankare 2\.1/);
@@ -169,18 +179,32 @@ test('Material: Godkänn replaces the other candidates of the same role, Underk�
 
 test('a draft that waits fetches its picture once the anchor holds (refresh)', async (t) => {
   const { root, call, files } = await lab(t);
-  const store = orderStore(root, { now: () => new Date('2026-11-12T21:00:00Z') });
-  const { order, revision } = await store.create({ dealer: 'paow', step: 'MELLANBILD', target: 'P4.C1', pose: { entry: 'pamela-nyp' } });
-  assert.equal(order.step.makes?.entry, 'paow-mellanbild-p4');
-  assert.deepEqual(order.pictures.map((p) => [p.name, p.path === null, p.waits?.label ?? null]), [['anchor.png', true, 'ankare 2.1'], ['pose.png', false, null]]);
+  const store = orderStore(root, { now: () => new Date('2026-11-12T21:00:00Z'), poses });
+  const { order, revision } = await store.create({ dealer: 'paow', step: 'ANKARE-2.1' });
+  assert.deepEqual(order.pictures.map((p) => [p.name, p.path === null, p.waits?.label ?? null]), [['anchor.png', true, 'ankare 1'], ['pose-figure.png', false, null]]);
   assert.equal((await call('GET', `/api/orders/${order.id}`)).json.waiting[0].ready, false);
   const media = await mediaRoles(root).answer();
-  assert.equal((await call('PUT', '/api/media/paow-nyp-ny/state', { body: { state: 'gäller' }, match: media.revision! })).status, 200);
+  assert.equal((await call('PUT', '/api/media/paow-vila-ung-1/state', { body: { state: 'gäller' }, match: media.revision! })).status, 200);
   assert.equal((await call('GET', `/api/orders/${order.id}`)).json.waiting[0].ready, true);
   const refreshed = await call('POST', `/api/orders/${order.id}/refresh`, { match: revision });
   assert.equal(refreshed.status, 200);
   const anchor = refreshed.json.order.pictures[0];
-  assert.equal(anchor.sha256, sha(files['paow-nyp-ny']));
-  assert.equal(anchor.from.entry, 'paow-nyp-ny');
+  assert.equal(anchor.sha256, sha(files['paow-vila-ung-1']));
+  assert.equal(anchor.from.entry, 'paow-vila-ung-1');
   assert.equal(refreshed.json.shown, 'KLAR_ATT_TRYCKA');
+});
+
+test('a pose figure keeps only the region, fills the rest of the person with the picture\'s green, and cuts the same every time', async () => {
+  const { cutFigure, W, H } = await import('./order-images.ts');
+  const rgb = Buffer.alloc(W * H * 3);
+  for (let i = 0; i < W * H; i++) { rgb[i * 3] = 0; rgb[i * 3 + 1] = 240 + (i % 3); rgb[i * 3 + 2] = 60; }
+  // A dark "person": a block at her head (outside the region) and one at the shoe (inside).
+  const block = (x0: number, y0: number) => { for (let y = y0; y < y0 + 80; y++) for (let x = x0; x < x0 + 80; x++) rgb.fill(20, (y * W + x) * 3, (y * W + x) * 3 + 3); };
+  block(800, 150); block(1500, 700);
+  const one = cutFigure(rgb, ARM_AT_SHOE), two = cutFigure(rgb, ARM_AT_SHOE);
+  assert.ok(one.rgb.equals(two.rgb), 'the same picture and region give the same bytes');
+  const at = (x: number, y: number) => [...one.rgb.subarray((y * W + x) * 3, (y * W + x) * 3 + 3)];
+  assert.ok(at(840, 190)[1] >= 235 && at(840, 190)[0] < 10, `the head is green: ${at(840, 190)}`);
+  assert.deepEqual(at(1540, 740), [20, 20, 20], 'what lies in the region is kept');
+  assert.ok(one.filledPx > 6400 && one.keptPx === 6400, `${one.filledPx} filled, ${one.keptPx} kept`);
 });

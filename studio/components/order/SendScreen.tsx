@@ -176,6 +176,7 @@ export function SendScreen({ answer, all, onBack, onSaved }: { answer: OrderAnsw
       }
     >
       <div className="flex flex-col gap-7">
+        {order.summary ? <p className="font-display text-lg font-semibold leading-7 text-ink">{order.summary}</p> : null}
         {answer.shown === "VÄNTAR" ? (
           <div className="flex flex-wrap items-center gap-3 rounded-lg border border-vantar/25 bg-vantar/6 px-4 py-3 text-sm">
             <span className="text-ink">

@@ -12,12 +12,11 @@ import type { DealerAnswer, EntryAnswer, MediaAnswer } from "../../lib/media.ts"
 import { anchorFor, createOrder, firstLacking, type FlipAxis, type OrderAnswer, type OrdersAnswer, type StepKey } from "../../lib/orders.ts";
 import { FLIP_ABOUT, FLIP_AXES, FLIP_LABEL, MODELS, SEAT_TARGETS, STEPS, TAKES_MAX, costOf, credits, stepOf } from "../../../src/order-model.ts";
 import { getMedia } from "../material/client.ts";
-import { Button, SegmentedControl, Sheet, Switch, TextArea, cn, useToast } from "../ui";
+import { Button, SegmentedControl, Sheet, TextArea, cn, useToast } from "../ui";
 
 const POSE_WORDS: Partial<Record<StepKey, string>> = {
-  "ANKARE-2.1": "Pamelas godkända ankare 2.1",
-  "ANKARE-2.2": "Pamelas godkända ankare 2.2 (skon där kopieras inte)",
-  MELLANBILD: "Pamelas giv till P4, ruta 42 (kortet mitt i rörelsen)",
+  "ANKARE-2.1": "bara armen, handen och skon ur Pamelas godkända giv till plats 4 (nypet på kortet); resten av henne bortklippt",
+  "ANKARE-2.2": "bara armen, handen och skon ur Pamelas godkända ankare 2.2 (skon där kopieras inte); resten av henne bortklippt",
 };
 
 function Step({ n, title, children }: { n: number; title: string; children: ReactNode }) {
@@ -55,7 +54,6 @@ export function NewOrder({ open, onOpenChange, all, onCreated }: { open: boolean
   const [stepKey, setStepKey] = useState<StepKey | null>(null);
   const [target, setTarget] = useState("P4.C1");
   const [flip, setFlip] = useState<FlipAxis>("FREE");
-  const [middle, setMiddle] = useState(false);
   const [duration, setDuration] = useState<number | null>(null);
   const [takes, setTakes] = useState(2);
   const [base, setBase] = useState<string | null>(null);
@@ -78,7 +76,6 @@ export function NewOrder({ open, onOpenChange, all, onCreated }: { open: boolean
 
   useEffect(() => {
     setDuration(null);
-    setMiddle(false);
     setBase(null);
   }, [key, dealerId]);
 
@@ -102,7 +99,7 @@ export function NewOrder({ open, onOpenChange, all, onCreated }: { open: boolean
       const made = await createOrder({
         dealer: dealerId,
         step: key,
-        ...(step.card ? { target, flipAxis: flip, middle } : step.key === "MELLANBILD" ? { target } : {}),
+        ...(step.card ? { target, flipAxis: flip } : {}),
         ...(step.kind === "FILM" ? { duration: seconds } : {}),
         ...(step.kind === "STILL" && !start.holds && startEntry ? { base: startEntry.id } : {}),
         takes,
@@ -162,9 +159,9 @@ export function NewOrder({ open, onOpenChange, all, onCreated }: { open: boolean
             ))}
           </div>
         </Step>
-        {step.card || step.key === "MELLANBILD" ? (
+        {step.card ? (
           <Step n={next()} title="Plats på bordet">
-            <SegmentedControl label="Plats" size="sm" value={target} onChange={setTarget} options={SEAT_TARGETS.map((t) => ({ value: t, label: t.replace(".C1", ""), disabled: step.key === "MELLANBILD" && t !== "P4.C1" }))} />
+            <SegmentedControl label="Plats" size="sm" value={target} onChange={setTarget} options={SEAT_TARGETS.map((t) => ({ value: t, label: t.replace(".C1", "") }))} />
           </Step>
         ) : null}
         <Step n={next()} title="Bilder">
@@ -193,7 +190,6 @@ export function NewOrder({ open, onOpenChange, all, onCreated }: { open: boolean
                 </button>
               ))}
             </div>
-            {model.middle ? <Switch checked={middle} onChange={setMiddle} label="Med mellanbild" hint="Kortet på kortsidan mitt i rörelsen; väntar på mellanbilden." /> : null}
           </Step>
         ) : null}
         <Step n={next()} title="Modell och längd">

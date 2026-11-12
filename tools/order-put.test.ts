@@ -7,7 +7,7 @@ import { existsSync } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import sharp from 'sharp';
-import { orderStore } from './order-store.ts';
+import { ARM_AT_SHOE, POSE_WHAT, orderStore } from './order-store.ts';
 import { receipts } from './order-put.ts';
 
 const base = existsSync('D:/dealer-scratch/tmp') ? 'D:/dealer-scratch/tmp' : os.tmpdir();
@@ -17,7 +17,7 @@ async function approved(t: { after(fn: () => Promise<void>): void }) {
   t.after(() => rm(root, { recursive: true, force: true }));
   for (const dir of ['data', 'placements', 'assets/anchors/a', 'assets/anchors/b']) await mkdir(path.join(root, dir), { recursive: true });
   for (const file of ['data/order-policy.json', 'data/dealers.json', 'placements/default.json']) await copyFile(file, path.join(root, file));
-  const png = await sharp({ create: { width: 8, height: 8, channels: 3, background: { r: 0, g: 237, b: 44 } } }).png().toBuffer();
+  const png = await sharp({ create: { width: 1764, height: 1174, channels: 3, background: { r: 0, g: 237, b: 44 } } }).png().toBuffer();
   await writeFile(path.join(root, 'assets/anchors/a/anchor.png'), png);
   await writeFile(path.join(root, 'assets/anchors/b/anchor.png'), png);
   await writeFile(path.join(root, 'data/clip-jobs.json'), '{"jobs": []}');
@@ -26,7 +26,7 @@ async function approved(t: { after(fn: () => Promise<void>): void }) {
     paow: { name: 'Paow', entries: [{ id: 'paow-vila', role: 'ankare-1', name: 'Vila', path: 'assets/anchors/a/anchor.png', node: 'IDLE', state: 'gäller' }] },
   } }));
   const store = orderStore(root);
-  const draft = await store.create({ dealer: 'paow', step: 'ANKARE-2.1', id: 'prov-ett' });
+  const draft = await store.create({ dealer: 'paow', step: 'ANKARE-2.1', id: 'prov-ett', pose: { entry: 'pamela-nyp', keep: ARM_AT_SHOE, what: POSE_WHAT } });
   const r = receipts(root, { now: () => new Date('2026-11-12T22:00:00Z') });
   await assert.rejects(r.begin('prov-ett', 1), /inte godkänd/);
   await store.approve('prov-ett', draft.revision);
@@ -36,7 +36,7 @@ async function approved(t: { after(fn: () => Promise<void>): void }) {
 test('requestedAt before, task id after, and a begun take is never begun again', async (t) => {
   const { root, r } = await approved(t);
   const check = await r.check('prov-ett');
-  assert.deepEqual(check.files.map((f) => [f.name, f.mimeType, f.tag, f.goesAs]), [['anchor.png', 'image/png', 'anchor', 'referenceImage'], ['pose.png', 'image/png', 'pose', 'referenceImage']]);
+  assert.deepEqual(check.files.map((f) => [f.name, f.mimeType, f.tag, f.goesAs]), [['anchor.png', 'image/png', 'anchor', 'referenceImage'], ['pose-figure.png', 'image/png', 'pose', 'referenceImage']]);
   const begun = await r.begin('prov-ett', 1);
   assert.equal(begun.take.status, 'OSÄKER');
   assert.equal(begun.take.requestedAt, '2026-11-12T22:00:00.000Z');
@@ -72,6 +72,6 @@ test('nothing is placed for an order that changed after approval or whose pictur
   await writeFile(file, JSON.stringify({ ...order, takes: 1 }, null, 2));
   await assert.rejects(r.begin('prov-ett', 1), /ändrats efter godkännandet/);
   await writeFile(file, JSON.stringify(order, null, 2));
-  await writeFile(path.join(root, 'assets/orders/prov-ett/pose.png'), 'other');
+  await writeFile(path.join(root, 'assets/orders/prov-ett/pose-figure.png'), 'other');
   await assert.rejects(r.begin('prov-ett', 1), /inte den godkända filen/);
 });

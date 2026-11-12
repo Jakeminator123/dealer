@@ -5,9 +5,11 @@
 // seat-4 card from the last frame of pamela-p4-c1-plan-return-idle-01, whose outline is the quad its last picture was
 // painted with (assets/anchors/pamela-idle-p4-c1-plan-01/receipt.json). The same recipe as
 // D:/dealer-scratch/tmp/paow/skript/plan-till-order-2.py (lines 75–109), ported; the drawn card is then measured
-// against the plan (the centre of the changed pixels against the plan's point, in pixels).
+// against the plan (the centre of the changed pixels against the plan's point, in pixels). The pose picture of a still is
+// cut down to a figure (cutFigure): only the region the order keeps of the other dealer (her dealing forearm, hand, the
+// shoe and the card), the rest of her filled with the picture's own green.
 //
-//   node tools/order-images.ts <order id>     fetch what a draft waits for when it holds, and (re)draw its last picture
+//   node tools/order-images.ts <order id>     fetch what a draft waits for or follows when it holds, and (re)draw its last picture
 import { readFile } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
@@ -36,9 +38,9 @@ export function decodeFrame(file: string, index: number): Rgb {
   if (out.length !== N * 3) throw Error(`${file} ruta ${index}: ${out.length} byte, inte bankens ruta ${W} × ${H}.`);
   return out;
 }
-export async function readRgb(file: string): Promise<Rgb> {
+export async function readRgb(file: string | Buffer): Promise<Rgb> {
   const { data, info } = await sharp(file).removeAlpha().raw().toBuffer({ resolveWithObject: true });
-  if (info.width !== W || info.height !== H || info.channels !== 3) throw Error(`${file} är ${info.width} × ${info.height}, inte bankens ruta ${W} × ${H}.`);
+  if (info.width !== W || info.height !== H || info.channels !== 3) throw Error(`${typeof file === 'string' ? file : 'Bilden'} är ${info.width} × ${info.height}, inte bankens ruta ${W} × ${H}.`);
   return data;
 }
 export const pngOf = (rgb: Rgb) => sharp(rgb, { raw: { width: W, height: H, channels: 3 } }).png().toBuffer();
@@ -180,6 +182,174 @@ export function drawCard(base: Rgb, texture: Texture, plan: PlacementPlan, planF
   };
 }
 
+// ── A pose figure: only part of the person kept ─────────────────────────────
+/**
+ * The settings a pose figure is cut with (the order keeps them in picture.cut): the person is every pixel more than
+ * `tolerance` levels from the green model in a channel (her soft shadow on the green too), grown by `grow` px so that no
+ * fringe of hair or cloth is left, and faded out over `feather` px on each side of that edge so that no line shows where
+ * the fill meets the picture's green; the model is the median green per `block` × `block` pixels; the grain is the
+ * picture's own, taken from the cleanest vertical `strip` of background and laid mirrored side by side. Where the keep
+ * region's edge crosses an object (the sleeve at the elbow) it is sharp; where it crosses green or a soft shadow (less than
+ * `solid` levels from the model) it fades over `edge` px, so that no straight line is left in the green.
+ */
+export const CUT = { grow: 10, feather: 5, tolerance: 10, block: 64, strip: 256, solid: 40, edge: 12 } as const;
+export type CutOptions = { grow: number; feather: number; tolerance: number; block: number; strip: number; solid: number; edge: number };
+
+/** Whether (x, y) lies inside a polygon (even–odd rule). */
+export function inPolygon(poly: readonly Pt[], x: number, y: number): boolean {
+  let inside = false;
+  for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+    const [xi, yi] = poly[i], [xj, yj] = poly[j];
+    if (yi > y !== yj > y && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi) inside = !inside;
+  }
+  return inside;
+}
+/** The distance from (x, y) to the polygon's outline. */
+function outlineDistance(poly: readonly Pt[], x: number, y: number): number {
+  let best = Infinity;
+  for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+    const [ax, ay] = poly[j], [bx, by] = poly[i], dx = bx - ax, dy = by - ay;
+    const t = Math.max(0, Math.min(1, ((x - ax) * dx + (y - ay) * dy) / (dx * dx + dy * dy || 1)));
+    best = Math.min(best, Math.hypot(x - ax - t * dx, y - ay - t * dy));
+  }
+  return best;
+}
+/** How much of the pixel at (x, y) lies inside the polygon, 0–1: a one-pixel soft edge, or a ramp `width` px wide. */
+export const coverage = (poly: readonly Pt[], x: number, y: number, width = 1) => {
+  const d = outlineDistance(poly, x, y) * (inPolygon(poly, x, y) ? 1 : -1);
+  return Math.max(0, Math.min(1, 0.5 + d / width));
+};
+
+/** A mask grown by r pixels in every direction (a square, in two passes). */
+export function growMask(mask: Uint8Array, r: number, width = W, height = H): Uint8Array {
+  const across = new Uint8Array(mask.length), out = new Uint8Array(mask.length);
+  for (let y = 0; y < height; y++) {
+    let last = -Infinity;
+    for (let x = 0; x < width; x++) { if (mask[y * width + x]) last = x; if (x - last <= r) across[y * width + x] = 1; }
+    last = Infinity;
+    for (let x = width - 1; x >= 0; x--) { if (mask[y * width + x]) last = x; if (last - x <= r) across[y * width + x] = 1; }
+  }
+  for (let x = 0; x < width; x++) {
+    let last = -Infinity;
+    for (let y = 0; y < height; y++) { if (across[y * width + x]) last = y; if (y - last <= r) out[y * width + x] = 1; }
+    last = Infinity;
+    for (let y = height - 1; y >= 0; y--) { if (across[y * width + x]) last = y; if (last - y <= r) out[y * width + x] = 1; }
+  }
+  return out;
+}
+
+/**
+ * The green behind the person per pixel: the median of the background per block (a soft shadow on part of a block does
+ * not pull it down), blocks with too little background filled from their neighbours, bilinear between block centres.
+ */
+function greenModel(rgb: Rgb, background: Uint8Array, block: number): Float32Array {
+  const bw = Math.ceil(W / block), bh = Math.ceil(H / block), hist = new Uint32Array(bw * bh * 3 * 256), count = new Uint32Array(bw * bh);
+  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+    const i = y * W + x;
+    if (!background[i]) continue;
+    const b = Math.floor(y / block) * bw + Math.floor(x / block);
+    count[b]++; for (let c = 0; c < 3; c++) hist[(b * 3 + c) * 256 + rgb[i * 3 + c]]++;
+  }
+  const grid = new Float32Array(bw * bh * 3), known = new Uint8Array(bw * bh);
+  for (let b = 0; b < bw * bh; b++) {
+    if (count[b] < (block * block) / 3) continue;
+    known[b] = 1;
+    for (let c = 0; c < 3; c++) { let seen = 0, v = 0; const at = (b * 3 + c) * 256; while (v < 255 && (seen += hist[at + v]) * 2 < count[b]) v++; grid[b * 3 + c] = v; }
+  }
+  if (!known.some(Boolean)) throw Error('Ingen grön bakgrund att ta färgen ur.');
+  // Unknown blocks take the mean of their known neighbours, ring by ring, then settle (the known ones stay).
+  const fixed = Uint8Array.from(known);
+  for (let open = true; open; ) {
+    open = false;
+    const next = Uint8Array.from(known);
+    for (let by = 0; by < bh; by++) for (let bx = 0; bx < bw; bx++) {
+      const b = by * bw + bx;
+      if (known[b]) continue;
+      let n = 0; const s = [0, 0, 0];
+      for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) { const xx = bx + dx, yy = by + dy, k = yy * bw + xx; if (xx >= 0 && yy >= 0 && xx < bw && yy < bh && known[k]) { n++; for (let c = 0; c < 3; c++) s[c] += grid[k * 3 + c]; } }
+      if (n) { next[b] = 1; for (let c = 0; c < 3; c++) grid[b * 3 + c] = s[c] / n; } else open = true;
+    }
+    known.set(next);
+  }
+  for (let round = 0; round < 40; round++) for (let by = 0; by < bh; by++) for (let bx = 0; bx < bw; bx++) {
+    const b = by * bw + bx;
+    if (fixed[b]) continue;
+    let n = 0; const s = [0, 0, 0];
+    for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const xx = bx + dx, yy = by + dy, k = yy * bw + xx; if (xx >= 0 && yy >= 0 && xx < bw && yy < bh) { n++; for (let c = 0; c < 3; c++) s[c] += grid[k * 3 + c]; } }
+    for (let c = 0; c < 3; c++) grid[b * 3 + c] = s[c] / n;
+  }
+  const model = new Float32Array(N * 3);
+  for (let y = 0; y < H; y++) {
+    const gy = Math.max(0, Math.min(bh - 1, (y + 0.5) / block - 0.5)), y0 = Math.floor(gy), y1 = Math.min(bh - 1, y0 + 1), fy = gy - y0;
+    for (let x = 0; x < W; x++) {
+      const gx = Math.max(0, Math.min(bw - 1, (x + 0.5) / block - 0.5)), x0 = Math.floor(gx), x1 = Math.min(bw - 1, x0 + 1), fx = gx - x0;
+      for (let c = 0; c < 3; c++) {
+        const v = (grid[(y0 * bw + x0) * 3 + c] * (1 - fx) + grid[(y0 * bw + x1) * 3 + c] * fx) * (1 - fy) + (grid[(y1 * bw + x0) * 3 + c] * (1 - fx) + grid[(y1 * bw + x1) * 3 + c] * fx) * fy;
+        model[(y * W + x) * 3 + c] = v;
+      }
+    }
+  }
+  return model;
+}
+
+export type CutResult = { rgb: Rgb; filledPx: number; keptPx: number; green: [number, number, number]; grain: [number, number, number]; stripAt: number };
+/**
+ * A pose figure: of the person only what lies inside `keep` stays; the rest of her is replaced by the picture's own green
+ * (its model per block plus the grain of a clean strip of the same picture). Pixels that are background stay as they
+ * were, so the green around the figure is the picture's own. The same picture and settings always give the same bytes.
+ */
+export function cutFigure(rgb: Rgb, keep: readonly Pt[], options: CutOptions = CUT): CutResult {
+  if (rgb.length !== N * 3) throw Error(`Posebilden är inte bankens ruta ${W} × ${H}.`);
+  // Plainly green pixels first, for a first model; then the person against that model, grown; then the model again without her.
+  const plain = new Uint8Array(N);
+  for (let i = 0; i < N; i++) { const r = rgb[i * 3], g = rgb[i * 3 + 1], b = rgb[i * 3 + 2]; if (g > 170 && g - r > 120 && g - b > 100) plain[i] = 1; }
+  let model = greenModel(rgb, plain, options.block);
+  const person = new Uint8Array(N);
+  for (let i = 0; i < N; i++) for (let c = 0; c < 3; c++) if (Math.abs(rgb[i * 3 + c] - model[i * 3 + c]) > options.tolerance) { person[i] = 1; break; }
+  const grown = growMask(person, options.grow), background = new Uint8Array(N);
+  for (let i = 0; i < N; i++) background[i] = grown[i] ? 0 : 1;
+  model = greenModel(rgb, background, options.block);
+  // The grain: the picture's own around its model, from the vertical strip with the least of her in it (away from the
+  // frame's edge), laid mirrored side by side so that no seam shows; where the strip is not background, no grain.
+  const T = options.strip, column = new Uint32Array(W);
+  for (let i = 0; i < N; i++) if (grown[i]) column[i % W]++;
+  let stripAt = 16, least = Infinity;
+  for (let x0 = 16; x0 + T <= W - 16; x0 += 16) { let s = 0; for (let x = x0; x < x0 + T; x++) s += column[x]; if (s < least) { least = s; stripAt = x0; } }
+  const grainAt = (x: number, y: number, c: number) => {
+    const k = x % (2 * T), sx = stripAt + (k < T ? k : 2 * T - 1 - k), j = y * W + sx;
+    return background[j] ? rgb[j * 3 + c] - model[j * 3 + c] : 0;
+  };
+  const sq = [0, 0, 0];
+  let n = 0;
+  for (let y = 0; y < H; y++) for (let x = stripAt; x < stripAt + T; x++) if (background[y * W + x]) { n++; for (let c = 0; c < 3; c++) sq[c] += grainAt(x - stripAt, y, c) ** 2; }
+  const grain = sq.map((s) => Math.sqrt(s / Math.max(1, n))) as [number, number, number];
+  // How much of the fill each pixel gets: the grown mask averaged over a (2 · feather + 1)² box (a summed-area table).
+  const f = options.feather, table = new Uint32Array((W + 1) * (H + 1));
+  for (let y = 0; y < H; y++) { let row = 0; for (let x = 0; x < W; x++) { row += grown[y * W + x]; table[(y + 1) * (W + 1) + x + 1] = table[y * (W + 1) + x + 1] + row; } }
+  const weight = (x: number, y: number) => {
+    const x0 = Math.max(0, x - f), x1 = Math.min(W, x + f + 1), y0 = Math.max(0, y - f), y1 = Math.min(H, y + f + 1);
+    return (table[y1 * (W + 1) + x1] - table[y0 * (W + 1) + x1] - table[y1 * (W + 1) + x0] + table[y0 * (W + 1) + x0]) / ((x1 - x0) * (y1 - y0));
+  };
+  const out = Buffer.from(rgb), mean = [0, 0, 0];
+  let filledPx = 0, keptPx = 0;
+  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+    const i = y * W + x, w = weight(x, y);
+    if (!w) continue;
+    let deviation = 0;
+    for (let c = 0; c < 3; c++) deviation = Math.max(deviation, Math.abs(rgb[i * 3 + c] - model[i * 3 + c]));
+    const a = coverage(keep, x, y, deviation < options.solid ? options.edge : 1), share = w * (1 - a);
+    if (a >= 1) { if (person[i]) keptPx++; continue; }
+    if (share >= 0.5) filledPx++;
+    for (let c = 0; c < 3; c++) {
+      const fill = Math.max(0, Math.min(255, model[i * 3 + c] + grainAt(x, y, c)));
+      out[i * 3 + c] = Math.round(rgb[i * 3 + c] * (1 - share) + fill * share);
+      if (share >= 0.5) mean[c] += fill;
+    }
+  }
+  const r1 = (v: number) => Math.round(v * 10) / 10;
+  return { rgb: out, filledPx, keptPx, green: mean.map((s) => r1(s / Math.max(1, filledPx))) as [number, number, number], grain: grain.map(r1) as [number, number, number], stripAt };
+}
+
 /** The plan as saved, with its hash. */
 export async function readPlan(root: string): Promise<{ plan: PlacementPlan; file: { path: string; sha256: string } }> {
   const text = await readFile(path.join(root, 'placements/default.json'), 'utf8');
@@ -209,8 +379,8 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
     const { revision } = await store.load(id);
     const { order } = await store.refresh(id, revision);
     for (const p of order.pictures) {
-      const d = p.drawn ?? p.preview?.drawn;
-      console.log(`${p.label.padEnd(28)} ${p.path ?? `väntar på ${p.waits?.label}`}${d ? ` · kortet ${d.target} ${d.measuredOffsetPx} px från planen${p.drawn ? '' : ` (förhandsvisning på ${p.preview?.on})`}` : ''}`);
+      const d = p.drawn;
+      console.log(`${p.label.padEnd(36)} ${p.path ?? `väntar på ${p.waits?.label}`}${d ? ` · kortet ${d.target} ${d.measuredOffsetPx} px från planen` : ''}${p.cut ? ` · bara ${p.cut.what}, ${p.cut.filledPx} px gröna` : ''}`);
     }
   } catch (error) { console.error(`[RÖD] ${(error as Error).message}`); process.exitCode = 1; }
 }

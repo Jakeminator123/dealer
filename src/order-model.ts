@@ -12,18 +12,19 @@ export const EXTRA_LIMIT = 600;
 export const TAKES_MAX = 4;
 
 export type Kind = 'STILL' | 'FILM';
-/** How the card turns on its way: free (the model chooses a natural turn), rolled about the long side, folded over the short side. */
-export type FlipAxis = 'FREE' | 'LONG_EDGE' | 'SHORT_EDGE';
-export const FLIP_AXES: readonly FlipAxis[] = ['FREE', 'LONG_EDGE', 'SHORT_EDGE'];
+/**
+ * How the card turns on its way: free (the hand turns it as a human hand can, no fixed edge; Jakob 2026-11-12), or rolled
+ * about the long side as the bank's films do. Folding it over the short edge was an idea Jakob has dropped.
+ */
+export type FlipAxis = 'FREE' | 'LONG_EDGE';
+export const FLIP_AXES: readonly FlipAxis[] = ['FREE', 'LONG_EDGE'];
 export const FLIP_LABEL: Record<FlipAxis, string> = {
   FREE: 'Naturlig vändning',
   LONG_EDGE: 'Rullas kring långsidan',
-  SHORT_EDGE: 'Viks över kortsidan som fingrarna håller',
 };
 export const FLIP_ABOUT: Record<FlipAxis, string> = {
-  FREE: 'Ingen bestämd sida: handen vänder kortet som en människa kan från nypet.',
+  FREE: 'Ingen bestämd kant: handen vänder kortet som en människa kan, och kortet behåller sin storlek.',
   LONG_EDGE: 'Som bankens filmer gör i dag.',
-  SHORT_EDGE: 'Kortet står en stund upprätt på kortsidan mellan tummen och fingrarna.',
 };
 
 /** Stored on the order. A draft (UTKAST) can change; an approved order (GODKÄND) never does; AVBRUTEN is set aside. */
@@ -68,9 +69,23 @@ export type Drawn = {
 };
 export type GoesAs = 'startFrame' | 'endFrame' | 'referenceImage';
 /**
+ * A pose figure: of the person in the source picture only the part inside `keep` (a polygon in bank pixels) is kept; the
+ * rest of the person is filled with the picture's own green (a smooth model of it plus its own grain). Everything needed
+ * to cut it again is here: the source (picture.from and its hash), the polygon and the settings.
+ */
+export type Cut = {
+  keep: [number, number][];
+  what: string;
+  source: { sha256: string };
+  /** tools/order-images.ts CUT at the time of cutting. */
+  settings: Record<string, number>;
+  filledPx: number;
+  keptPx: number;
+  green: [number, number, number];
+};
+/**
  * One picture that goes out. name: the file in assets/orders/<id>/ ("first.png"); path and sha256 are null while it waits.
- * from: where it was copied or built from (a register entry, a frame of a film). preview: while it waits, a picture that
- * shows how it will look (for the last picture, the card drawn on a stand-in), never sent.
+ * from: where it was copied or built from (a register entry, a frame of a film). cut: how a pose figure was cut.
  */
 export type Picture = {
   name: string;
@@ -84,7 +99,7 @@ export type Picture = {
   from: { entry?: string; path?: string; frame?: number; built?: string; note?: string } | null;
   waits?: Waits | null;
   drawn?: Drawn | null;
-  preview?: { path: string; on: string; note: string; drawn?: Drawn | null } | null;
+  cut?: Cut | null;
 };
 export type Reference =
   | { status: 'INGEN'; why: string }
@@ -102,6 +117,8 @@ export type Order = {
   schemaVersion: 1;
   id: string;
   title: string;
+  /** One line in Jakob's words: what the order makes (summaryOf). */
+  summary?: string;
   group?: { id: string; label: string } | null;
   dealer: string;
   kind: Kind;
@@ -123,7 +140,7 @@ export type Order = {
 };
 
 // ── Steps and their defaults (bestall-plan "Defaults per kind of step") ─────
-export type StepKey = 'INGANG-2.1' | 'INGANG-2.2' | 'GIV-2.1' | 'GIV-2.2' | 'RETUR-2.1' | 'RETUR-1' | 'VILA' | 'ANKARE-2.1' | 'ANKARE-2.2' | 'MELLANBILD';
+export type StepKey = 'INGANG-2.1' | 'INGANG-2.2' | 'GIV-2.1' | 'GIV-2.2' | 'RETUR-2.1' | 'RETUR-1' | 'VILA' | 'ANKARE-2.1' | 'ANKARE-2.2';
 export type StepDef = {
   key: StepKey;
   group: string;
@@ -153,9 +170,35 @@ export const STEPS: readonly StepDef[] = [
   { key: 'VILA', group: 'Vila', label: 'Vila, samma bild först och sist', kind: 'FILM', from: '1', to: '1', card: false, model: 'wan3', resolution: '1080p', ratio: 'adaptive', duration: 4 },
   { key: 'ANKARE-2.1', group: 'Bild', label: 'Ankare 2.1 (nyp)', kind: 'STILL', from: '1', to: null, card: false, model: 'nano-banana-pro', ratio: '4:3', imageSize: '4K', makes: { role: 'ankare-2.1', node: 'READY', label: 'ankare 2.1' } },
   { key: 'ANKARE-2.2', group: 'Bild', label: 'Ankare 2.2 (släp)', kind: 'STILL', from: '1', to: null, card: false, model: 'nano-banana-pro', ratio: '4:3', imageSize: '4K', makes: { role: 'ankare-2.2', node: 'READY-B', label: 'ankare 2.2' } },
-  { key: 'MELLANBILD', group: 'Bild', label: 'Mellanbild: kortet på kortsidan mitt i rörelsen', kind: 'STILL', from: '2.1', to: null, card: false, model: 'nano-banana-pro', ratio: '4:3', imageSize: '4K', makes: { role: 'arbetsmaterial', label: 'mellanbilden' } },
 ];
 export const stepOf = (key: string): StepDef | null => STEPS.find((s) => s.key === key) ?? null;
+
+/** "Paows", "Agnes". */
+export const genitive = (name: string) => (/[sxz]$/i.test(name) ? name : `${name}s`);
+/** "plats 4", "plats 4, andra kortet", "dealerns plats". */
+export function seatWords(target: string | null | undefined): string {
+  const m = /^P(\d)\.C(\d)$/.exec(target ?? '');
+  if (m) return `plats ${m[1]}${m[2] === '1' ? '' : ', kort ' + m[2]}`;
+  return /^D\./.test(target ?? '') ? 'dealerns plats' : 'platsen';
+}
+/**
+ * What an order makes, in one line in Jakob's words: "Gör Paows ankare 2.1: hennes ankare 1 där bara vänsterarmen flyttas
+ * till nypet vid skon." Shown on the order's card and at the top of "Det här skickas".
+ */
+export function summaryOf(step: Pick<StepDef, 'key'>, dealerName: string, motion: Pick<Motion, 'turn' | 'target'> | null): string {
+  const of = genitive(dealerName), seat = seatWords(motion?.target), turn = motion?.turn ? ', vänder det som en hand kan' : '';
+  switch (step.key) {
+    case 'ANKARE-2.1': return `Gör ${of} ankare 2.1: hennes ankare 1 där bara vänsterarmen flyttas till nypet vid skon.`;
+    case 'ANKARE-2.2': return `Gör ${of} ankare 2.2: hennes ankare 1 där bara vänsterarmen flyttas, så att handen ligger över kortet vid skons öppning.`;
+    case 'GIV-2.1': return `Gör en film av ${dealerName}: från nypet vid skon (ankare 2.1) tar hon ett kort${turn} och lägger det på ${seat}; handen går tillbaka till nypet.`;
+    case 'GIV-2.2': return `Gör en film av ${dealerName}: från handen över kortet (ankare 2.2) släpar hon ett kort ur skon${turn} till ${seat}; handen går tillbaka över skon.`;
+    case 'RETUR-2.1': return `Gör en film av ${dealerName}: handen går från kortet på ${seat} tillbaka till nypet vid skon.`;
+    case 'RETUR-1': return `Gör en film av ${dealerName}: handen går från kortet på ${seat} tillbaka till vila.`;
+    case 'INGANG-2.1': return `Gör en film av ${dealerName}: från vila (ankare 1) flyttar hon vänsterhanden till nypet vid skon (ankare 2.1).`;
+    case 'INGANG-2.2': return `Gör en film av ${dealerName}: från vila (ankare 1) lägger hon vänsterhanden över kortet vid skons öppning (ankare 2.2).`;
+    case 'VILA': return `Gör en vilofilm av ${dealerName}: hon sitter still, och filmen börjar och slutar på ankare 1.`;
+  }
+}
 /** The graph's node of an anchor ("2.1" → READY). */
 export const ANCHOR_NODE: Record<'1' | '2.1' | '2.2', string> = { '1': 'IDLE', '2.1': 'READY', '2.2': 'READY-B' };
 /** The register's role of an anchor. */
@@ -320,6 +363,7 @@ export function validateOrder(value: unknown): { order: Order | null; errors: st
   if (o.schemaVersion !== 1) errors.push('schemaVersion ska vara 1.');
   if (typeof o.id !== 'string' || !ORDER_ID.test(o.id) || o.id.length > 80) errors.push('id ska vara a–z, 0–9 och bindestreck.');
   if (typeof o.title !== 'string' || !o.title.trim() || o.title.length > 120) errors.push('title saknas eller är för lång.');
+  if (o.summary !== undefined && (typeof o.summary !== 'string' || o.summary.length > 240)) errors.push('summary ska vara en rad text.');
   if (typeof o.dealer !== 'string' || !/^[a-z0-9]+$/.test(o.dealer)) errors.push('dealer ska vara ett id.');
   if (o.kind !== 'STILL' && o.kind !== 'FILM') errors.push('kind ska vara STILL eller FILM.');
   if (!isObject(o.step) || !stepOf(String(o.step.key))) errors.push('step.key är okänd.');
@@ -336,6 +380,7 @@ export function validateOrder(value: unknown): { order: Order | null; errors: st
       if (p.sha256 !== null && (typeof p.sha256 !== 'string' || !SHA.test(p.sha256))) errors.push(`${at}: sha256 ska vara 64 hextecken eller null.`);
       if ((p.path === null) !== (p.sha256 === null)) errors.push(`${at}: path och sha256 hör ihop.`);
       if (p.path === null && !p.waits) errors.push(`${at}: en bild utan fil måste vänta på något (waits).`);
+      if (p.cut != null && (!isObject(p.cut) || !Array.isArray(p.cut.keep) || p.cut.keep.length < 3 || !p.cut.keep.every((q) => Array.isArray(q) && q.length === 2 && q.every(Number.isFinite)) || !SHA.test(String(p.cut.source?.sha256)))) errors.push(`${at}: cut.keep ska vara minst tre punkter, och cut.source.sha256 källans hash.`);
     });
     if (o.pictures.filter((p) => p?.goesAs === 'startFrame').length > 1 || o.pictures.filter((p) => p?.goesAs === 'endFrame').length > 1) errors.push('Högst en första och en sista bild.');
   }

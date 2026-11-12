@@ -39,8 +39,8 @@
   },
   "anchors": {
     "1": "rest: both hands on the felt",
-    "2.1": "pinch: the left hand (right in the picture) holds the top of the card in the shoe's window between thumb and forefinger",
-    "2.2": "drag: the left hand lies over the card in the shoe's window, fingertips on it",
+    "2.1": "pinch: the left hand (right in the picture) holds the yellow card itself at its upper edge between thumb and forefinger, the fingertips on the card and not on the shoe's rim, the card drawn a little out of the window so that the grip is plain to see (a slight bend from the pinch is fine). Review: a pinch on the rim fails (Jakob 2026-11-13: \"Paow nyper inte tag i kortet som är gult, hon nyper tag i skons kant mer\")",
+    "2.2": "drag: the left hand lies over the card in the shoe's window, the fingertips flat on the yellow card itself and not on the shoe. Review: fingers on the shoe instead of the card fail",
     "mustAgree": [
       "the shoe, pixel for pixel outside her hand",
       "the green level and tone (rest frame: RGB 0, 237, 44 in the upper-left corner), shared by all anchors of a dealer",

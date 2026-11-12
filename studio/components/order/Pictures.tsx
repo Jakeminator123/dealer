@@ -2,8 +2,8 @@
 
 // The pictures of an order, large: what each is in the call (startFrame, endFrame, referenceImages · @pose), where it comes
 // from, and on a picture with a drawn card a magnified inset of the card with the plan's outline over it and "1,1 px från
-// planen". A picture that waits shows what it waits for; a preview (the card drawn on a stand-in) says so in amber and is
-// never sent. A click opens the picture over the whole window (Z: full size, Esc closes).
+// planen". A picture that waits shows what it waits for (never another dealer's picture in its place). A click opens the
+// picture over the whole window (Z: full size, Esc closes).
 import * as RD from "@radix-ui/react-dialog";
 import { Clock, Maximize2, Minimize2, X } from "lucide-react";
 import { useState } from "react";
@@ -82,42 +82,40 @@ function PictureViewer({ src, title, open, onOpenChange }: { src: string; title:
 /** One picture of an order. */
 export function PictureCard({ picture, className }: { picture: Picture; className?: string }) {
   const [open, setOpen] = useState(false);
-  const own = picture.path ? labUrl(picture.path) : null;
-  const preview = !own && picture.preview ? labUrl(picture.preview.path) : null;
-  const src = own ?? preview;
-  const drawn = picture.drawn ?? picture.preview?.drawn ?? null;
+  const src = picture.path ? labUrl(picture.path) : null;
+  const drawn = picture.drawn ?? null;
   return (
     <figure className={cn("flex min-w-0 flex-col gap-2", className)}>
       <figcaption className="flex items-baseline gap-2">
         <span className="font-display text-md font-semibold text-ink">{picture.label}</span>
         <code className="truncate font-mono text-xs text-faint">{goesWords(picture)}</code>
         {drawn ? (
-          <Badge tone={preview ? "remark" : "brass"} className="ml-auto">
+          <Badge tone="brass" className="ml-auto">
             kortet {drawn.target} · {offsetWords(drawn.measuredOffsetPx)}
           </Badge>
         ) : null}
       </figcaption>
-      <div className={cn("relative aspect-[1764/1174] overflow-hidden rounded-lg border bg-well", preview ? "border-anmarkning/50" : "border-line")}>
+      <div className="relative aspect-[1764/1174] overflow-hidden rounded-lg border border-line bg-well">
         {src ? (
           <button type="button" onClick={() => setOpen(true)} className="block size-full cursor-zoom-in" aria-label={`Visa ${picture.label} stort`}>
             {/* eslint-disable-next-line @next/next/no-img-element -- a lab file; next/image cannot optimise in a static export */}
-            <img src={src} alt={picture.label} draggable={false} className={cn("size-full object-contain", preview && "opacity-80")} />
+            <img src={src} alt={picture.label} draggable={false} className="size-full object-contain" />
           </button>
         ) : (
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-[repeating-linear-gradient(135deg,#0c110f_0_10px,#0a0e0c_10px_20px)] text-center">
             <Clock className="size-6 text-vantar" />
             <span className="text-md text-ink">Väntar på {picture.waits?.label ?? "bilden"}</span>
-            <span className="max-w-[80%] text-xs text-dim">Den skapas och kopieras hit när den är godkänd i Material.</span>
+            <span className="max-w-[80%] text-xs text-dim">
+              {picture.from?.built ? `Ritas när den är godkänd i Material: ${picture.from.built}.` : "Den kopieras hit när den är godkänd i Material."}
+            </span>
           </div>
         )}
-        {preview ? <span className="pointer-events-none absolute left-2 top-2 rounded-xs bg-[#2a1c0f]/90 px-1.5 py-0.5 text-2xs font-medium text-[#f0b07a]">Förhandsvisning · skickas inte</span> : null}
         {drawn && src ? (
           <div className="pointer-events-none absolute bottom-2 right-2">
             <CardInset src={src} drawn={drawn} />
           </div>
         ) : null}
       </div>
-      {preview ? <p className="text-xs text-[#f0b07a]">{picture.preview!.note}</p> : null}
       <p className="truncate text-xs text-dim" title={picture.from?.path ?? undefined}>
         {picture.from?.built ? `Ritad: ${picture.from.built}${drawn ? " (i rutan: kortet förstorat, planens kontur streckad)" : ""}` :picture.from?.note ? `Ur: ${picture.from.note}${picture.from.frame !== undefined ? `, ruta ${picture.from.frame}` : ""}` : picture.waits ? `Väntar på ${picture.waits.label}` : ""}
         {picture.sha256 ? <span className="ml-2 font-mono text-faint">sha256 {picture.sha256.slice(0, 12)}</span> : null}
