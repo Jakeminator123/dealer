@@ -12,14 +12,14 @@ Gul = stängd baksida (BACK), blå = öppen framsida (FRONT). Samma anatomiska v
 
 ## Ankarmodellen (Jakobs ord 2026-11-12)
 
-- **Ingångsbild:** det vi börjar från för en ny dealer. Två bilder i 4K på vit bakgrund: hela kroppen stående, och sittande i viloposen (som också är profilbilden).
-- **Keystone:** förlagan i hög upplösning av dealern i en pose. Den spelas aldrig upp; den finns för att göra ankaret och sätta filmens referens.
+- **Ingångsbild:** det vi börjar från för en ny dealer; Jakob 2026-11-12: "vilken bild som helst". Av den görs två riktigt högupplösta keystone.
+- **Keystone:** förlagan i hög upplösning av dealern i en pose: keystone 1 stående, och en likadan där hon sitter, i den skala som passar posen man börjar arbeta i. Den spelas aldrig upp. Ur keystone görs en video, och **ankaret tas ur videon**, "så att inte keystonebilder kommer in i videosekvenser" (Jakob 2026-11-12).
 - **Ankare:** rutan i bankens format (1764×1174, grönt, bankens egen sko) som filmer börjar och slutar på. En film beställs från exakt den rutan. Jakob vill att de gröna bilderna heter ankare, inte keystone.
 - **Ankare 1** = vila (`IDLE`). **Ankare 2.1** = nyp i skons fönster (`READY`, `grip: PINCH`). **Ankare 2.2** = handen över kortet i skons öppning, släp (`READY-B`, `grip: DRAG`). Varje dealer har två sätt att dela ut: från 2.1 och från 2.2. Äldre text, kod och id säger Keystone 1/2, variant A/B, VILA/REDO och REDO B om samma ankare; `DRAWN` (kortet utdraget plant framför skon) finns bara som experimentnod.
 - Läge 2.2 har i banken en egen skobild (öppen mynning), så ankare 1 finns i två utföranden (fönstersko och öppen sko, `IDLE-B`) tills en sko gäller för båda. Alla ankare för en dealer ska ha samma sko per läge, samma gröna och samma ton innan en film beställs mellan dem.
 - Ankare vid kortplatserna (3.1–3.7) behövs inte i receptet tur och retur från ankare 2; slutbilden per plats ritas ur kortplanen.
 - Varje klipp är en handling mellan två ankare och skrivs `READY>P4.C1`, `P4.C1>IDLE`; en runda är en väg genom kanterna (SYSTEM, "Klippbank och nodnotation").
-- Kortets tre mått: **riktning** (vart kortsidan pekar på bordet), **lutning** (hur mycket kortet reser sig från bordet, 0° = plant) och **perspektiv** (hur mycket smalare den bortre kanten är). Jakob sade vinkel om det tredje; perspektiv är ett förslag som han inte har bekräftat, och orden är inte införda i labbet.
+- Kortets tre mått: **riktning** (vart kortsidan pekar på bordet), **lutning** (hur mycket kortet reser sig från bordet, 0° = plant) och **perspektiv** (hur mycket smalare den bortre kanten är). Jakob bekräftade ordet perspektiv 2026-11-12 ("perspektiv är bättre"). Gamla labbets etiketter byts (patch från `dealer-82`); studion använder orden från början.
 
 ## Vem äger vad (2026-11-12 kväll)
 
@@ -61,7 +61,7 @@ Räknat med `buildGraph` ur `src/clip-graph.ts` på samma data som labbets `/api
 
 Arbetet (session `dealer-82`) ligger utanför Git i `D:/dealer-scratch/tmp/paow/`: arbetsgång och mått i `LASMIG.md`, skript i `skript/`, liggare i `bestallningar-*.json`. Inget är infört i banken, och banken skiljer ännu inte dealer per namn i jobben (förslag: id-prefix och fältet `dealer` i jobben; alla poster i `motions/` har redan `dealer`). Metodfynden står i DRIFT, "Filmbeställning".
 
-- Jakob 2026-11-12: kavaj, aningen smalare, 3–5 år yngre och nättare; "kör på, men kontrollerat, med det som faktiskt fungerar", två tagningar per klipp.
+- Jakob 2026-11-12: kavaj, aningen smalare, 3–5 år yngre och nättare; "jag vill ha de yngre och nättare bilderna", så ankarna i kavaj (gjorda före dem) görs om. "Kör på, men kontrollerat, med det som faktiskt fungerar", två tagningar per klipp.
 - Ankare i kavaj (`ankare/paow-vila-kavaj.png`, `-sko2`, `paow-redo-a-kavaj.png`, `paow-redo-b-kavaj.png`) är gjorda ur linnebilderna med Nano Banana Pro och granskade fem gånger: användbara. Ingångsbilderna i 4K på vitt (Prov `paow-kavaj`) gjordes efter ankarna, så ankarna har det tidigare utseendet tills Jakob har valt.
 - Filmer, rutgranskade (Prov `paow-kavaj-filmer`): ankare 1 till 2.1 och 2.2 med WAN 3 ger en användbar tagning av två, men slutar cirka 10 nivåer ljusare i hår och ansikte än slutbilden. Släp från 2.2 med WAN 3 håller till spelare 1, är osäkert till 4 och faller till 7. Nyp från 2.1 med Kling 4 går rätt när referensfilmen går till samma plats som kortet.
 - Mätt mot händernas knogbredd var planens kort 0,79 av ett riktigt kort före förstoringen ×1,20 och är 0,94 efter. De två skobildernas kort stämmer inte med varandra (Prov `grundstandard-utkast`).
@@ -95,6 +95,8 @@ Arbetet (session `dealer-82`) ligger utanför Git i `D:/dealer-scratch/tmp/paow/
 16. Publika sajten visar 22 filmer från `b65fd9b`; att föra dit dagens läge kräver hans uppdrag (mediauppladdning och ombyggnad).
 17. Skuggan under armarna: den snabba rättningen i 3D-scenen nu, och om grunden (ankare 1, 2.1, 2.2) ska göras om (Prov `original-ankare-keystone`, bild 8).
 18. Primär på plats 5 och 6 (ur regelns prov 2026-11-12): på plats 5 drar en primär retur in variantgiven som den fortsätter, framför den rakt godkända arkivgiven; på plats 6 ger en primär retur en synlig skarv tills en giv finns som slutar på returens ankare.
+19. Skon: en enda sko för läge 2.1 och 2.2, vilken av de två, och om dess kort ska göras i rätt storlek (mätt mot knogbredden är kortet i fönsterskon 0,9 × 1,29 av ett riktigt kort och i läge 2-skon 1,04 × 1,13; Prov `grundstandard-utkast`).
+20. Reklamfilmen version 3 (Prov `trailer-noir-3`): med eller utan barnet i spelhallen.
 
 ## Nästa steg
 
@@ -103,6 +105,7 @@ Arbetet (session `dealer-82`) ligger utanför Git i `D:/dealer-scratch/tmp/paow/
 3. **En väg per konkurrerande par** (punkt 11 ovan): förslag till Jakob, och därefter städning av den väg som faller, i text och verktyg.
 4. **Grunden för film** (utrett 2026-11-12, Prov `original-ankare-keystone`, rapport `D:/dealer-scratch/tmp/huvudagent/original/RAPPORT.md`): `assets/originals` har fyra filmer och inga ankare, och inget jobb har använt dem; ankarna ligger i `assets/anchors` (52 bilder: 13 ankare 1, 10 ankare 2.1, 1 ankare 2.2, 22 landningar), och Pamela har ingen keystone i hög upplösning. Räknat i 101 kvitton och 44 MCP-ordrar används 51 av 52 ankare, och referensfilm bara i 14 av 69 MCP-filmer.
    - Skuggan under armarna sitter i grundbilden: armbågarna vilar på ett bord som fortsätter bakom kanten, och skuggan når 40–44 px ovanför rad 831,5, där 3D-scenen ritar den på det lodräta planet. Snabb rättning: ingen skugga ovanför bordskanten i `src/scene3d-film.ts`, som ett val i labbet. Riktig rättning: nya ankare 1, 2.1 och 2.2 och nya filmer.
+   - **Grundstandard som huvudagenten och `dealer-82` är eniga om (2026-11-12, inte införd):** hon sitter på en osynlig stol bakom bordet, underarmarna fria i luften fram till händerna, händerna på bordet framför kanten, inget bord bakom kanten; bordskantens rad 831,5 och händernas platser behålls. Jakob: "kanske är gammalt material fel som ingångsvärde … en liten skavank just vid maghöjden". Standarden ska stå i `data/dealer-standard.json` med ett stycke i SYSTEM när mätningen i Prov `grundbild-och-bord` och Jakobs svar om skon finns. Inga nya ankare före det.
    - Duken Jakob vill ha som bordets yta är `assets/scene/table.png` (filmens perspektiv, relingen inbakad, inget tryck); 3D-filten ritar allt tryck med kod, så markeringarna kan bli valbara lager över dukens väv.
    - Mappen med 3D-utkast och en egen "pamela" är troligast gamla labbet, flyttat till `D:/dealer-archive/snyggare-dealer` (skattat att det är den Jakob menar); sju `pamela-*.ts` finns på båda ställena och två skiljer sig.
 5. **Filmer när Jakob vill** (VIDEOAGENT), i fallande nytta: hålkortets giv `READY>D.C2`; rakt godkända ersättare där huvudtagningen är variant (givarna P2, P3, P6, P7, returerna P5 och P6, dealerns D.C1); omtagning av överlämningen med båda händerna (Jakob vill att höger arm används mer); kaffe med en mugg som finns i bilden från början (gärna med Scout Gaming-loggan, påläggs efteråt); `READY>IDLE`; variant B för P3, P6 och P7.
