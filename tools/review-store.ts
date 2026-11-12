@@ -6,11 +6,11 @@ import {createHash, randomUUID} from 'node:crypto';
 import path from 'node:path';
 import {StoreError} from './placement-store.ts';
 
-export const DECISIONS = ['ACCEPTED', 'VARIANT', 'SECONDARY', 'REJECTED', 'PENDING'] as const;
+export const DECISIONS = ['MAIN', 'ACCEPTED', 'VARIANT', 'SECONDARY', 'REJECTED', 'PENDING'] as const;
 export type Decision = typeof DECISIONS[number];
 export type ReviewChange = {decision: Decision; note: string};
 export const NOTE_LIMIT = 1500;
-const SAID: Record<Decision, string> = {ACCEPTED: 'godkänd i labbet.', VARIANT: 'godkänd som variant i labbet.', SECONDARY: 'sekundärt alternativ, satt i labbet.', REJECTED: 'underkänd i labbet.', PENDING: 'återställd till ogranskad i labbet.'};
+const SAID: Record<Decision, string> = {MAIN: 'vald som primär tagning i labbet.', ACCEPTED: 'godkänd i labbet.', VARIANT: 'godkänd som variant i labbet.', SECONDARY: 'sekundärt alternativ, satt i labbet.', REJECTED: 'underkänd i labbet.', PENDING: 'återställd till ogranskad i labbet.'};
 const object = (v: unknown): v is Record<string, unknown> => !!v && typeof v === 'object' && !Array.isArray(v);
 
 export function validateChange(value: unknown): ReviewChange {
@@ -24,10 +24,11 @@ export function validateChange(value: unknown): ReviewChange {
 /** The review block after a decision. Only decision, acceptedAs, userReview and userAccepted are touched. */
 export function applyChange(review: unknown, change: ReviewChange, date: string, reviewer = 'Jakob'): Record<string, unknown> {
   const next: Record<string, unknown> = {...(object(review) ? review : {})};
-  const accepted = change.decision === 'ACCEPTED' || change.decision === 'VARIANT';
-  next.decision = change.decision === 'VARIANT' ? 'ACCEPTED' : change.decision;
-  // "VARIANT" is an accepted take used now and then; an explicit MAIN marker survives a plain approval.
-  if (change.decision === 'VARIANT') next.acceptedAs = 'VARIANT'; else if (!accepted || next.acceptedAs !== 'MAIN') delete next.acceptedAs;
+  const accepted = change.decision === 'ACCEPTED' || change.decision === 'VARIANT' || change.decision === 'MAIN';
+  next.decision = accepted ? 'ACCEPTED' : change.decision;
+  // "VARIANT" is an accepted take used now and then; "MAIN" (Primär in the lab) is the take played first on its edge.
+  // Only those two choices set the marker: a plain approval, like every other decision, takes it away.
+  if (change.decision === 'VARIANT' || change.decision === 'MAIN') next.acceptedAs = change.decision; else delete next.acceptedAs;
   // A reset takes away what marks the film as decided: his word. It then waits for his decision again.
   if (change.decision === 'PENDING') delete next.userReview; else next.userReview = `${reviewer} ${date}: ${change.note || SAID[change.decision]}`;
   next.userAccepted = accepted;

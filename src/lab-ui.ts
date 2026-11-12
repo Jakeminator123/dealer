@@ -860,7 +860,7 @@ ovSync();
 let kbNoteFor='',kbSaving=false,kbSaved={id:'',text:'',failed:false};
 function paintDecide(t:KbTake|null){
  const box=$('kb-decide');box.hidden=!t;if(!t)return;
- const can=t.stage==='DONE'&&!!t.revision&&!kbSaving,current=t.stage!=='DONE'?'':t.variant?'VARIANT':t.decision,note=$<HTMLTextAreaElement>('kb-note');
+ const can=t.stage==='DONE'&&!!t.revision&&!kbSaving,current=t.stage!=='DONE'?'':t.variant?'VARIANT':t.explicitMain?'MAIN':t.decision,note=$<HTMLTextAreaElement>('kb-note');
  box.querySelectorAll<HTMLButtonElement>('[data-decide]').forEach(b=>{b.disabled=!can||(b.dataset.decide==='PENDING'&&current==='PENDING');b.setAttribute('aria-pressed',String(b.dataset.decide===current));});
  if(kbNoteFor!==t.id){kbNoteFor=t.id;note.value=String(t.motion?.review?.userReview??'').replace(/^\S+ \d{4}-\d{2}-\d{2}: /,'');} // the stored note without its name and date
  note.disabled=!can;
@@ -876,6 +876,9 @@ async function kbDecide(decision:string){
  try{
   const res=await fetch(`/api/clip-bank/review/${t.id}`,{method:'PUT',headers:{'content-type':'application/json','if-match':t.revision},body:JSON.stringify({decision,note:$<HTMLTextAreaElement>('kb-note').value})});
   const data=await res.json();if(!res.ok)throw Error(data.error||'Beslutet kunde inte sparas.');
+  // One primary take per edge: another take that was primary there becomes a plain approved take, with its note kept.
+  if(decision==='MAIN')for(const other of Object.values(kbGraph!.takes))if(other.id!==t.id&&other.edge===t.edge&&other.explicitMain&&other.revision)
+   await fetch(`/api/clip-bank/review/${other.id}`,{method:'PUT',headers:{'content-type':'application/json','if-match':other.revision},body:JSON.stringify({decision:'ACCEPTED',note:String(other.motion?.review?.userReview??'').replace(/^S+ d{4}-d{2}-d{2}: /,'')})}).catch(()=>{});
   kbSaved={id:t.id,text:`Sparat i motions/${t.id}.json · ${data.review?.userReview??'återställd: filmen väntar på ditt beslut igen'}`,failed:false};kbNoteFor='';rvNext=after;rvStep=tab==='review'&&decision==='REJECTED'?t.edge:'';
   await kbRead().catch(()=>{}); // the bank is read again so every view shows the decision that is now on disk
  }catch(error){kbSaved={id:t.id,text:`Inte sparat: ${(error as Error).message}`,failed:true};}
@@ -1008,7 +1011,7 @@ function paintReview(){
  // The coverage measured for each film is read once, in the background, and the list is painted again when it is all in.
  const unread=all.filter(x=>x.t.media.track&&!ovData.has(x.t.id)&&!ovReading.has(x.t.id));
  if(unread.length)void Promise.all(unread.map(x=>ovRead(x.t))).then(()=>{if(tab==='review'&&kbState==='ready')paintReview();});
- const word=(t:KbTake)=>t.variant?'godkänd som variant':G.DECISION_LABEL[t.decision]??t.decision;
+ const word=(t:KbTake)=>t.variant?'godkänd som variant':t.explicitMain?'primär tagning':G.DECISION_LABEL[t.decision]??t.decision;
  const row=({t,e}:RvItem)=>{const open=t.id===kbTake,r=t.motion?.review,mine=r?.userReview,at=main.findIndex(x=>x.t.id===t.id);
   return `<article class="rv-row${open?' open':''}"><button class="rv-row-head" data-rv-open="${esc(t.id)}" aria-expanded="${open}"><span class="rv-title">${esc(rvTitle(e,t))}</span><span class="status-pill d-${esc(t.decision)}">${esc(`${mine?'ditt beslut':'granskarna'}: ${word(t)}`)}</span>${t.revision?'':'<span class="status-pill">kan inte sparas ännu</span>'}${ovData.get(t.id)?.coverage?`<span class="status-pill${ovData.get(t.id)!.coverage!.covered?' d-ACCEPTED':''}">renderat kort: ${esc(ovCovers(ovData.get(t.id)!.coverage!))}</span>`:''}<code>${esc(t.id)}</code></button>`
    +(open?`<div class="rv-nav"><span>${at>=0?`Film ${at+1} av ${main.length} som väntar`:main.length?'Den här filmen är inte en av huvudfilmerna som väntar':'Ingen huvudfilm väntar'}</span>${main.some(x=>x.t.id!==t.id)?`<button data-rv-next="1">${at>=0?'Nästa film som väntar':'Till första filmen som väntar'} →</button>`:''}</div><div id="rv-slot" class="rv-slot"></div>`:`<div class="rv-find">${mine?`<p><b>Dina ord</b>${esc(mine)}</p>`:''}${r?.basis?`<p><b>Granskaren</b>${esc(r.basis)}</p>`:''}${r?.limitations?`<p><b>Begränsning</b>${esc(r.limitations)}</p>`:''}</div>`)+'</article>';};

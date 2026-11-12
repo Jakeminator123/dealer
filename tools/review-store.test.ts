@@ -44,8 +44,9 @@ test('each decision sets decision, acceptedAs, userAccepted and a dated note', (
   assert.deepEqual(at('PENDING'), {decision: 'PENDING', userAccepted: false, basis: 'b'});
   // A reset after a decision removes his word, so the film is waiting again.
   assert.deepEqual(applyChange({decision: 'REJECTED', basis: 'b', userReview: 'Jakob 2026-11-10: nej', userAccepted: false}, {decision: 'PENDING', note: 'ångrar mig'}, '2026-11-11'), {decision: 'PENDING', basis: 'b', userAccepted: false});
-  // An explicit main marker survives a plain approval and goes with any other decision.
-  assert.equal(at('ACCEPTED', '', {acceptedAs: 'MAIN'}).acceptedAs, 'MAIN'); assert.equal(at('REJECTED', '', {acceptedAs: 'MAIN'}).acceptedAs, undefined);
+  // The main marker is set by the choice Primär only, and goes with any other decision, a plain approval included.
+  assert.deepEqual(at('MAIN'), {decision: 'ACCEPTED', acceptedAs: 'MAIN', userAccepted: true, basis: 'b', userReview: 'Jakob 2026-11-11: vald som primär tagning i labbet.'});
+  assert.equal(at('ACCEPTED', '', {acceptedAs: 'MAIN'}).acceptedAs, undefined); assert.equal(at('REJECTED', '', {acceptedAs: 'MAIN'}).acceptedAs, undefined);
   assert.equal(at('VARIANT', '', {acceptedAs: 'MAIN'}).acceptedAs, 'VARIANT');
   assert.deepEqual(at('ACCEPTED', '', null), {decision: 'ACCEPTED', userReview: 'Jakob 2026-11-11: godkänd i labbet.', userAccepted: true});
   for (const bad of [{decision: 'MAYBE'}, {decision: 'ACCEPTED', note: 5}, {decision: 'ACCEPTED', note: 'x'.repeat(NOTE_LIMIT + 1)}, {decision: 'ACCEPTED', basis: 'rewritten'}, null, 'ACCEPTED'])
