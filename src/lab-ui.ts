@@ -1044,7 +1044,7 @@ $('review').addEventListener('click',event=>{
 
 // ── Prov ────────────────────────────────────────────────────────────────────
 // Färdiga jämförelsefilmer och bildark under assets/proofs/<id>/, lästa via /api/proofs. Samma rutstegning som överallt annars.
-type Proof={id:string;title:string|null;description:string|null;labels:Record<string,string>|null;chapters:{label:string;frame:number}[]|null;fps:number;files:{name:string;path:string;kind:string;bytes:number}[]};
+type Proof={id:string;title:string|null;description:string|null;labels:Record<string,string>|null;verdicts?:Record<string,string>|null;updatedAt?:number|null;chapters:{label:string;frame:number}[]|null;fps:number;files:{name:string;path:string;kind:string;bytes:number}[]};
 // Text for proofs that do not describe themselves; a proof.json with title, description, labels and chapters goes first.
 const PROOF_TEXT:Record<string,{title:string;description:string;labels:Record<string,string>;chapters:{label:string;frame:number}[]}>={'card-overlay':{title:'Renderat kort ovanpå filmen — en film, två kortplatser',
  description:'Samma film i alla prov: given till P4.C1 och returen till READY. Filmens gula och blå kortyta är ersatt av ett renderat kort. B2 lägger kort 1 på P4.C1 från start och flyttar det utdelade kortet till P4.C2 med samma film.',
@@ -1065,22 +1065,50 @@ async function openProofs(){
  if(!pfLinked&&pfState==='ready'){pfLinked=true;const p=new URLSearchParams(location.search),frame=Number(p.get('frame'));pfId=p.get('proof')??'';pfFile=p.get('file')??'';pfPending=Number.isSafeInteger(frame)&&frame>0?frame:null;}
  paintProofs();kbLink();
 }
+// A film's or picture's verdict as a chip. A proof may state it (proof.json: verdicts[file] = ok | remarks | failed | unreviewed);
+// otherwise it is read from the words the label uses for it.
+const PF_VERDICT:Record<string,string>={ok:'Användbar',remarks:'Med anmärkningar',failed:'Underkänd',unreviewed:'Inte granskad'};
+function pfVerdict(p:Proof,name:string){
+ const given=p.verdicts?.[name];if(given&&Object.hasOwn(PF_VERDICT,given))return given;
+ const t=pfLabel(p,name).toLowerCase();
+ return /inte användbar|underkän|not usable/.test(t)?'failed':/användbar med|med anmärkning|som variant/.test(t)?'remarks':/bara mätt|inte (?:rut)?granskad|inte rättad|ej granskad/.test(t)?'unreviewed':/användbar|godkän/.test(t)?'ok':'';
+}
+const pfChip=(p:Proof,name:string)=>{const v=pfVerdict(p,name);return v?`<span class="pf-chip ${v}">${PF_VERDICT[v]}</span>`:'';};
+// A label is one short name followed by everything known about the file: the list shows the name, the rest is shown for the chosen file.
+function pfSplit(label:string){const cut=label.search(/ \(|\. |: /);return cut>=8?{name:label.slice(0,cut),rest:label.slice(cut).replace(/^[.:]\s*/,'').trim()}:{name:label,rest:''};}
+const pfTitle=(p:Proof)=>p.title??PROOF_TEXT[p.id]?.title??p.id;
+const pfDay=(ms?:number|null)=>ms?new Date(ms).toLocaleDateString('sv-SE',{day:'numeric',month:'short'}):'';
 function paintProofs(){
- const ready=pfState==='ready'&&proofs.length>0,p=ready?pfProof()??proofs[0]:undefined;
+ // newest first: the proof whose files changed last
+ const sorted=[...proofs].sort((a,b)=>(b.updatedAt??0)-(a.updatedAt??0)||a.id.localeCompare(b.id));
+ const ready=pfState==='ready'&&proofs.length>0,p=ready?pfProof()??sorted[0]:undefined;
  $('pf-notice').hidden=ready;$('pf-notice').textContent=pfState==='local'?'Proven finns bara lokalt. Öppna det lokala labbet (START.cmd).':pfState==='ready'?'Inga prov finns ännu under assets/proofs/.':'Läser prov…';
  $('pf-body').hidden=!p;
- $('pf-folders').innerHTML=proofs.map(x=>`<button class="film-choice" data-proof="${esc(x.id)}" aria-pressed="${x===p}"><strong>${esc(x.title??PROOF_TEXT[x.id]?.title??x.id)}</strong><span>${x.files.filter(f=>f.kind==='video').length} filmer · ${x.files.filter(f=>f.kind==='image').length} bilder</span></button>`).join('');
+ const query=pfQuery.trim().toLowerCase(),shown=sorted.filter(x=>!query||`${pfTitle(x)} ${x.id}`.toLowerCase().includes(query));
+ $('pf-count').textContent=ready?(query?`${shown.length} av ${proofs.length} prov`:`${proofs.length} prov · senast ändrade först`):'';
+ $('pf-folders').innerHTML=shown.map(x=>{const films=x.files.filter(f=>f.kind==='video').length,pictures=x.files.filter(f=>f.kind==='image').length;
+  return `<button class="pf-folder" data-proof="${esc(x.id)}" aria-pressed="${x===p}"><strong>${esc(pfTitle(x))}</strong><span>${[films?`${films} ${films===1?'film':'filmer'}`:'',pictures?`${pictures} ${pictures===1?'bild':'bilder'}`:'',pfDay(x.updatedAt)].filter(Boolean).join(' · ')}</span></button>`;}).join('');
  if(!p)return;
  // Films in the order the proof names them (the comparison first), anything unnamed after that.
- const order=Object.keys(p.labels??PROOF_TEXT[p.id]?.labels??{}),rank=(name:string)=>(order.indexOf(name)+1)||order.length+1,videos=p.files.filter(f=>f.kind==='video').sort((a,b)=>rank(a.name)-rank(b.name));
+ const order=Object.keys(p.labels??PROOF_TEXT[p.id]?.labels??{}),rank=(name:string)=>(order.indexOf(name)+1)||order.length+1,videos=p.files.filter(f=>f.kind==='video').sort((a,b)=>rank(a.name)-rank(b.name)),images=p.files.filter(f=>f.kind==='image');
  pfId=p.id;const file=videos.find(f=>f.name===pfFile)??videos[0];pfFile=file?.name??'';
- $('pf-id').textContent=`PROV · ${p.id}`;$('pf-title').textContent=p.title??PROOF_TEXT[p.id]?.title??p.id;$('pf-note').textContent=p.description??PROOF_TEXT[p.id]?.description??'';
- $('pf-files').innerHTML=videos.map(f=>`<button class="kb-take-tab" data-file="${esc(f.name)}" aria-pressed="${f===file}" title="${esc(f.name)}"><b>${esc(pfLabel(p,f.name))}</b><span>${esc(f.name)} · ${(f.bytes/1048576).toFixed(1).replace('.',',')} MB</span></button>`).join('');
+ $('pf-id').textContent=`PROV · ${p.id}`;$('pf-title').textContent=pfTitle(p);
+ const note=p.description??PROOF_TEXT[p.id]?.description??'';$('pf-note').textContent=note;$('pf-more').hidden=note.length<260;
+ $('pf-stage').hidden=!videos.length;$('pf-files-head').textContent=videos.length===1?'1 FILM':`${videos.length} FILMER`;
+ $('pf-files').innerHTML=videos.map((f,i)=>`<button class="pf-item" data-file="${esc(f.name)}" aria-pressed="${f===file}" title="${esc(f.name)}"><i>${i+1}</i><span><b>${esc(pfSplit(pfLabel(p,f.name)).name)}</b>${pfChip(p,f.name)}</span></button>`).join('');
  if(file&&pfPlayer.dataset.src!==file.path){pfPlayer.pause();pfPlayer.dataset.src=file.path;pfPlayer.src=file.path;pfPlayer.load();}
+ $('pf-about').innerHTML=file?`<div class="pf-about-head"><b>${esc(pfSplit(pfLabel(p,file.name)).name)}</b>${pfChip(p,file.name)}</div>${pfSplit(pfLabel(p,file.name)).rest?`<p>${esc(pfSplit(pfLabel(p,file.name)).rest)}</p>`:''}<small>${esc(file.name)} · ${(file.bytes/1048576).toFixed(1).replace('.',',')} MB</small>`:'';
  $('pf-chapters').innerHTML=(p.chapters??PROOF_TEXT[p.id]?.chapters??[]).filter(c=>Number.isSafeInteger(c?.frame)&&c.frame>=0).map(c=>`<button data-frame="${c.frame}" title="Ruta ${c.frame}">${esc(c.label)} · ${c.frame}</button>`).join('');
- $('pf-sheets').innerHTML=p.files.filter(f=>f.kind==='image').map(f=>`<figure><a href="${esc(f.path)}" target="_blank" rel="noopener" title="Öppna i full storlek"><img src="${esc(f.path)}" alt="${esc(pfLabel(p,f.name))}" loading="lazy"></a><figcaption>${esc(pfLabel(p,f.name))}</figcaption></figure>`).join('');
+ $('pf-sheets-head').hidden=!images.length;$('pf-sheets-head').textContent=images.length===1?'1 BILD':`${images.length} BILDER`;
+ $('pf-sheets').innerHTML=images.map(f=>{const text=pfSplit(pfLabel(p,f.name));
+  return `<figure><button class="pf-shot" type="button" data-image="${esc(f.path)}" data-caption="${esc(pfLabel(p,f.name))}" title="Visa i full storlek"><img src="${esc(f.path)}" alt="${esc(text.name)}" loading="lazy"></button><figcaption><b>${esc(text.name)}</b>${pfChip(p,f.name)}${text.rest?`<span>${esc(text.rest)}</span>`:''}</figcaption></figure>`;}).join('');
  pfShowFrame();
 }
+let pfQuery='';
+$('pf-search').addEventListener('input',()=>{pfQuery=input('pf-search').value;paintProofs();});
+$('pf-more').addEventListener('click',()=>{const open=$('pf-more').dataset.open!=='1';$('pf-more').dataset.open=open?'1':'';$('pf-note').classList.toggle('clamp',!open);$('pf-more').textContent=open?'Visa mindre':'Visa hela beskrivningen';});
+$('pf-sheets').addEventListener('click',event=>{const shot=(event.target as Element).closest<HTMLElement>('[data-image]');if(!shot)return;$<HTMLImageElement>('pf-light-img').src=shot.dataset.image??'';$('pf-light-cap').textContent=shot.dataset.caption??'';$<HTMLDialogElement>('pf-light').showModal();});
+$('pf-light').addEventListener('click',event=>{if((event.target as Element).id!=='pf-light-img')$<HTMLDialogElement>('pf-light').close();});
 $('pf-folders').addEventListener('click',event=>{const id=(event.target as Element).closest<HTMLElement>('[data-proof]')?.dataset.proof;if(id){pfId=id;pfFile='';pfPending=null;paintProofs();kbLink();}});
 $('pf-files').addEventListener('click',event=>{const name=(event.target as Element).closest<HTMLElement>('[data-file]')?.dataset.file;if(name){pfFile=name;pfPending=null;paintProofs();kbLink();}});
 $('pf-chapters').addEventListener('click',event=>{const frame=(event.target as Element).closest<HTMLElement>('[data-frame]')?.dataset.frame;if(frame!==undefined)pfSeek(Number(frame));});

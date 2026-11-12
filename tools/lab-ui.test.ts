@@ -322,7 +322,7 @@ test('the proof tab plays a proof folder with frame stepping, and the mobile vie
  const {context,element,respond,requests,fire}=await setup('?tab=prov&proof=card-overlay&file=b2-kort-2.mp4&frame=103');
  const file=(name:string)=>({name,path:`assets/proofs/card-overlay/${name}`,kind:name.endsWith('.mp4')?'video':'image',bytes:9000000}),player=element('pf-player');
  player.duration=6.5;player.readyState=1;
- respond({ok:true,json:async()=>({proofs:[{id:'card-overlay',title:null,description:null,labels:null,chapters:null,fps:30,files:['ark-1-b1-ur-skon.png','b2-kort-2.mp4','jamforelse.mp4','ra.mp4'].map(file)}]})},'/api/proofs');await settle();
+ respond({ok:true,json:async()=>({proofs:[{id:'card-overlay',title:null,description:null,labels:null,chapters:null,fps:30,files:['ark-1-b1-ur-skon.png','b2-kort-2.mp4','jamforelse.mp4','ra.mp4'].map(file)},{id:'nytt-prov',title:'Nytt prov',description:null,labels:{'slap.mp4':'Släp till spelare 1, kort 1 (WAN 3, 6 s). Granskaren: användbar med anmärkningar','vila.mp4':'Vila till redo. Granskaren: inte användbar','sista.png':'Sista bilden: ett kort'},verdicts:{'sista.png':'ok'},updatedAt:1794400000000,chapters:null,fps:30,files:['sista.png','slap.mp4','vila.mp4'].map(file)}]})},'/api/proofs');await settle();
  assert.equal(element('proofs').hidden,false);assert.equal(element('.workspace').hidden,true);assert.equal(element('pf-notice').hidden,true);
  assert.equal(element('pf-title').textContent,'Renderat kort ovanpå filmen — en film, två kortplatser');
  // The comparison comes first; the deep link chose another film and a frame in it.
@@ -332,6 +332,13 @@ test('the proof tab plays a proof folder with frame stepping, and the mobile vie
  fire('pf-next','click');assert.equal(element('pf-frame').textContent,'Ruta 104 / 194 · 30 fps');
  fire('pf-chapters','click',{target:{closest:()=>({dataset:{frame:'88'}})}});assert.equal(element('pf-frame').textContent,'Ruta 88 / 194 · 30 fps');
  assert.match(element('pf-chapters').innerHTML,/data-frame="88"/);assert.match(element('pf-sheets').innerHTML,/src="assets\/proofs\/card-overlay\/ark-1-b1-ur-skon\.png"/);
+ // the proof whose files changed last is listed first; a label is a short name and a verdict chip, the rest is shown for the chosen film
+ assert.match(element('pf-folders').innerHTML,/data-proof="nytt-prov" aria-pressed="false"[^]*data-proof="card-overlay" aria-pressed="true"/);
+ fire('pf-folders','click',{target:{closest:()=>({dataset:{proof:'nytt-prov'}})}});
+ assert.match(element('pf-files').innerHTML,/<b>Släp till spelare 1, kort 1<\/b><span class="pf-chip remarks">Med anmärkningar<\/span>[^]*<b>Vila till redo<\/b><span class="pf-chip failed">Underkänd<\/span>/);
+ assert.match(element('pf-about').innerHTML,/<p>\(WAN 3, 6 s\)\. Granskaren: användbar med anmärkningar<\/p>/);
+ assert.match(element('pf-sheets').innerHTML,/<b>Sista bilden<\/b><span class="pf-chip ok">Användbar<\/span><span>ett kort<\/span>/);
+ fire('pf-folders','click',{target:{closest:()=>({dataset:{proof:'card-overlay'}})}});
  // Without the endpoint (the public site) the tab says so instead of failing.
  const again=runInContext('openProofs()',context);await settle();respond({ok:false},'/api/proofs');await again;
  assert.match(element('pf-notice').textContent,/finns bara lokalt/);assert.equal(element('pf-body').hidden,true);
