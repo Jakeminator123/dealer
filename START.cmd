@@ -1,3 +1,3 @@
 @echo off
 cd /d "%~dp0"
-node tools/preview.ts --open %*
+node --disable-warning=ExperimentalWarning tools/preview.ts --open %*

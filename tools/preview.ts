@@ -222,7 +222,10 @@ if(has('--restart')){
    if(url.pathname==='/api/proofs'&&req.method==='GET'){res.setHeader('Content-Type','application/json; charset=utf-8');res.end(JSON.stringify(await proofs()));return;}
    if(req.method!=='GET'&&req.method!=='HEAD'){res.writeHead(405).end();return;}
    if(scripts[url.pathname]||vendor[url.pathname]){
-    let source:string;try{source=await readFile(scripts[url.pathname]??vendor[url.pathname],'utf8');}catch{res.writeHead(404).end();return;} // a module that has not been written yet
+    let source:string;try{source=await readFile(scripts[url.pathname]??vendor[url.pathname],'utf8');}catch{
+     // A module of the map that has not been written (the card lab's optional scene3d-cardlab.ts): an empty module, so that the
+     // page that asks for it "if it is there" loads without a failed request. A module a page needs fails on its missing names.
+     if(scripts[url.pathname]){res.setHeader('Content-Type','text/javascript; charset=utf-8');res.end('export {};\n');}else res.writeHead(404).end();return;}
     res.setHeader('Content-Type','text/javascript; charset=utf-8');res.end(scripts[url.pathname]?forBrowser(source):source);return;
    }
    // The studio (studio/, built to static files): everything under /studio/ is read from studio/out/ (tools/studio-files.ts).
