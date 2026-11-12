@@ -30,6 +30,7 @@ test('documentation warnings remain warnings; user placement drafts are not test
   assert.deepEqual(inspectDocument('docs/DRIFT.md','# Drift'),[]);
   assert.deepEqual(dirtyTestInputs(['placements/default.json','HANDOFF.md']),[]);
   assert.deepEqual(dirtyTestInputs(['src/lab-ui.ts','package-lock.json','placements/default.json']),['src/lab-ui.ts','package-lock.json']);
+  assert.deepEqual(dirtyTestInputs(['studio/app/page.tsx','studio/package.json','studio/lib/api.ts','src/studio/x.ts']),['src/studio/x.ts']);
 });
 
 test('pre-push parses new branches and multiple refs; deletion adds no objects',()=>{

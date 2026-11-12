@@ -49,8 +49,10 @@ export function parsePush(input:string):Array<{local:string;remote:string}> {
   }).filter(row=>!zero.test(row.local)); // A ref deletion introduces no objects.
 }
 
+// The studio (studio/) is no input of these tests: it has its own package, type check and build, and its builders
+// work in it while other steps are pushed. Its files are checked like all others once they are committed.
 export function dirtyTestInputs(names:string[]):string[] {
-  return names.filter(name=>/\.(?:ts|tsx|js|mjs|cjs|css|html)$/.test(name)||/^package(?:-lock)?\.json$/.test(name)||name.startsWith('.githooks/')||name.startsWith('.github/'));
+  return names.filter(name=>!name.startsWith('studio/')).filter(name=>/\.(?:ts|tsx|js|mjs|cjs|css|html)$/.test(name)||/^package(?:-lock)?\.json$/.test(name)||name.startsWith('.githooks/')||name.startsWith('.github/'));
 }
 
 export function scanRange(root:string,head:string,base:string):Finding[] {
