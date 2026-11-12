@@ -598,6 +598,149 @@ test('films recovered from a longer film chain like any others: a derived return
   }
 });
 
+// ── Primär ──────────────────────────────────────────────────────────────────
+// Seat 4 as seats 5 and 6 of the real bank stood on 2026-11-12: the deal Jakob accepted is continued only by variants, while the return
+// he accepted outright was cut from an older deal. A READY-B deal and the hole card stand beside them. marks: 'MAIN' (Primär), 'VARIANT' or a decision.
+function primaryBank(marks: Record<string, string> = {}): BankData {
+  const jobs = [job('entry-01', 'IDLE', 'READY', {kind: 'ENTRY', target: null}), job('p4-deal-01', 'READY', 'LAND(P4.C1)'), job('p4-deal-02', 'READY', 'LAND(P4.C1)'), job('p4-readyb-deal-01', 'READY-B', 'LAND(P4.C1)'),
+    job('p4-back-ready-01', 'LAND(P4.C1)', 'READY', from('p4-deal-01', 96)), job('p4-back-ready-02', 'LAND(P4.C1)', 'READY', from('p4-deal-02', 104)), job('p4-back-idle-01', 'LAND(P4.C1)', 'IDLE', from('p4-deal-02', 104)),
+    job('hole-open-01', 'READY', 'LAND(D.C2)'), job('hole-closed-01', 'READY', 'LAND(D.C2)'), job('hole-back-idle-01', 'LAND(D.C2)', 'IDLE', from('hole-open-01', 90))];
+  const marked: Record<string, string> = {'p4-deal-02': 'ACCEPTED', 'p4-readyb-deal-01': 'ACCEPTED', 'p4-back-ready-01': 'ACCEPTED', 'p4-back-ready-02': 'VARIANT', 'p4-back-idle-01': 'VARIANT', 'hole-closed-01': 'ACCEPTED', ...marks};
+  const review = (mark = 'PENDING') => mark === 'MAIN' || mark === 'VARIANT' ? {decision: 'ACCEPTED', acceptedAs: mark} : {decision: mark};
+  return {jobs, motions: Object.fromEntries(jobs.map(j => [j.id, done('PENDING', {review: review(marked[j.id]), motion: {physicalEndSide: j.id === 'hole-closed-01' ? 'BACK' : 'FRONT'}})])),
+    media: Object.fromEntries(jobs.map(j => [j.id, {video: video(j.id)}]))};
+}
+const played = (round: graph.Segment[]) => round.map(s => [s.id, s.take?.id ?? null, s.why, s.end, s.cut]);
+
+test('a Primär return plays right after a deal, and the deal before it is the one it was cut from, cut on its frame', () => {
+  const steps = graph.parseSequence('READY>P4.C1 | P4.C1>READY').steps;
+  // Without Primär the accepted deal plays, and after it the variant return that continues it: the rule before Primär.
+  assert.deepEqual(played(graph.resolveRound(graph.buildGraph(primaryBank()), steps)), [['READY>P4.C1', 'p4-deal-02', 'MAIN', 104, 'FRAME'], ['P4.C1>READY', 'p4-back-ready-02', 'MAIN', null, null]]);
+  // With the outright accepted return as Primär it plays, and the deal is the one it continues, cut where the return begins. No seam.
+  const g = graph.buildGraph(primaryBank({'p4-back-ready-01': 'MAIN'})), round = graph.resolveRound(g, steps);
+  assert.equal(g.edge['READY>P4.C1'].main?.id, 'p4-deal-02', 'the accepted deal stays the main deal: rank comes first');
+  assert.deepEqual(played(round), [['READY>P4.C1', 'p4-deal-01', 'FITS_PRIMARY_RETURN', 96, 'FRAME'], ['P4.C1>READY', 'p4-back-ready-01', 'PRIMARY', null, null]]);
+  assert.deepEqual(round.flatMap(s => s.notes), []);
+  // The other return keeps its own chain: a Primär to READY does not move the deal before a return to IDLE.
+  assert.deepEqual(played(graph.resolveRound(g, graph.parseSequence('READY>P4.C1 | P4.C1>IDLE').steps)), [['READY>P4.C1', 'p4-deal-02', 'MAIN', 104, 'FRAME'], ['P4.C1>IDLE', 'p4-back-idle-01', 'MAIN', null, null]]);
+});
+
+test('two Primär takes that do not fit both play: the deal to its own landing frame, and the seam is named', () => {
+  const g = graph.buildGraph(primaryBank({'p4-deal-02': 'MAIN', 'p4-back-ready-01': 'MAIN'})), round = graph.resolveRound(g, graph.parseSequence('READY>P4.C1 | P4.C1>READY').steps);
+  assert.deepEqual(played(round), [['READY>P4.C1', 'p4-deal-02', 'PRIMARY', 104, 'FRAME'], ['P4.C1>READY', 'p4-back-ready-01', 'PRIMARY', null, null]]);
+  assert.deepEqual(round[0].notes, []); assert.deepEqual(round[1].notes, ['Skarv: returen startar på p4-deal-01, inte på föregående giv p4-deal-02.']);
+});
+
+test('a take the round names beats Primär, on the return and on the deal', () => {
+  const g = graph.buildGraph(primaryBank({'p4-back-ready-01': 'MAIN'})), round = (text: string) => graph.resolveRound(g, graph.parseSequence(text).steps);
+  // A named return: the deal is not chosen for the Primär that does not play.
+  assert.deepEqual(played(round('READY>P4.C1 | P4.C1>READY@p4-back-ready-02')), [['READY>P4.C1', 'p4-deal-02', 'MAIN', 104, 'FRAME'], ['P4.C1>READY', 'p4-back-ready-02', 'LOCKED', null, null]]);
+  // A named deal: it plays, and so does the Primär return after it, with the seam said.
+  const named = round('READY>P4.C1@p4-deal-02 | P4.C1>READY');
+  assert.deepEqual(played(named), [['READY>P4.C1', 'p4-deal-02', 'LOCKED', 104, 'FRAME'], ['P4.C1>READY', 'p4-back-ready-01', 'PRIMARY', null, null]]); assert.match(named[1].notes.join(' '), /^Skarv/);
+  // A named deal beats a Primär deal too.
+  assert.deepEqual(played(graph.resolveRound(graph.buildGraph(primaryBank({'p4-deal-02': 'MAIN'})), [{from: 'READY', to: 'P4.C1', take: 'p4-deal-01'}])), [['READY>P4.C1', 'p4-deal-01', 'LOCKED', 96, 'FRAME']]);
+});
+
+test('one film per seat: the second card plays the seat\'s Primär return, after a seat deal it continues', () => {
+  const places = {'P4.C1': {x: 850, y: 1100}, 'P4.C2': {x: 890, y: 1084}}, steps = graph.parseSequence('READY>P4.C1 | P4.C1>READY | READY>P4.C2 | P4.C2>READY').steps;
+  const view = (round: graph.Segment[]) => round.map(s => [s.id, s.film?.id, s.take?.id, s.why, s.end, s.shift]);
+  const before = graph.resolveRound(graph.buildGraph(primaryBank()), steps, {places});
+  assert.deepEqual(view(before).slice(2), [['READY>P4.C2', 'READY>P4.C1', 'p4-deal-02', 'SHARED', 104, {x: 40, y: -16}], ['P4.C2>READY', 'P4.C1>READY', 'p4-back-ready-02', 'SHARED', null, {x: 40, y: -16}]]);
+  const round = graph.resolveRound(graph.buildGraph(primaryBank({'p4-back-ready-01': 'MAIN'})), steps, {places});
+  assert.deepEqual(view(round), [['READY>P4.C1', 'READY>P4.C1', 'p4-deal-01', 'FITS_PRIMARY_RETURN', 96, null], ['P4.C1>READY', 'P4.C1>READY', 'p4-back-ready-01', 'PRIMARY', null, null],
+    ['READY>P4.C2', 'READY>P4.C1', 'p4-deal-01', 'FITS_PRIMARY_RETURN', 96, {x: 40, y: -16}], ['P4.C2>READY', 'P4.C1>READY', 'p4-back-ready-01', 'PRIMARY', null, {x: 40, y: -16}]]);
+  assert.deepEqual(round.flatMap(s => s.notes), []);
+});
+
+test('a READY-B start is unaffected by a Primär return after it, and the closed hole card is never traded for a deal the Primär continues', () => {
+  const steps = graph.parseSequence('READY-B>P4.C1 | P4.C1>READY').steps, plain = graph.resolveRound(graph.buildGraph(primaryBank()), steps);
+  const marked = graph.resolveRound(graph.buildGraph(primaryBank({'p4-back-ready-01': 'MAIN'})), steps), deal = (s: graph.Segment) => [s.take?.id, s.why, s.start, s.end, s.cut, s.notes];
+  // The READY-B deal plays from its own pose either way, although the Primär return continues a plain deal; the return after it is the Primär, with the seam said.
+  assert.deepEqual(deal(marked[0]), deal(plain[0])); assert.equal(marked[0].take?.id, 'p4-readyb-deal-01');
+  assert.deepEqual([plain[1].take?.id, marked[1].take?.id, marked[1].why], ['p4-back-ready-02', 'p4-back-ready-01', 'PRIMARY']); assert.match(marked[1].notes.join(' '), /^Skarv/);
+  // The hole card stays closed: the Primär return was cut from an open deal, so the closed deal plays and the seam is said.
+  const hole = graph.buildGraph(primaryBank({'hole-back-idle-01': 'MAIN'})), last = graph.parseSequence('READY>D.C2 | D.C2>IDLE').steps;
+  const closed = graph.resolveRound(hole, last);
+  assert.deepEqual(played(closed), [['READY>D.C2', 'hole-closed-01', 'MAIN', null, null], ['D.C2>IDLE', 'hole-back-idle-01', 'PRIMARY', null, null]]);
+  assert.equal(closed[0].side, 'BACK'); assert.match(closed[1].notes.join(' '), /^Skarv/);
+  // Dealt open, the deal the Primär return continues may play.
+  const open = graph.resolveRound(hole, last, {holeCardDown: false});
+  assert.deepEqual(played(open), [['READY>D.C2', 'hole-open-01', 'FITS_PRIMARY_RETURN', 90, 'FRAME'], ['D.C2>IDLE', 'hole-back-idle-01', 'PRIMARY', null, null]]); assert.deepEqual(open.flatMap(s => s.notes), []);
+});
+
+test('the main deal: among equals, the one a Primär return continues; rank and a Primär deal still come first', () => {
+  const main = (marks: Record<string, string>) => { const g = graph.buildGraph(primaryBank(marks)); return [g.edge['READY>P4.C1'].main?.id, g.edge['P4.C1>READY'].main?.id]; };
+  // Two unreviewed deals that both have a return: the newer is the main deal.
+  assert.deepEqual(main({'p4-deal-02': 'PENDING'}), ['p4-deal-02', 'p4-back-ready-02']);
+  // A Primär return continues the older one: that one is the main deal now, so the default chain is seamless.
+  assert.deepEqual(main({'p4-deal-02': 'PENDING', 'p4-back-ready-01': 'MAIN'}), ['p4-deal-01', 'p4-back-ready-01']);
+  assert.deepEqual(main({'p4-back-ready-01': 'MAIN'}), ['p4-deal-02', 'p4-back-ready-01']);
+  assert.deepEqual(main({'p4-deal-02': 'PENDING', 'p4-back-ready-01': 'MAIN', 'p4-deal-01': 'SECONDARY'}), ['p4-deal-02', 'p4-back-ready-01']);
+  assert.deepEqual(main({'p4-deal-01': 'MAIN', 'p4-back-ready-02': 'MAIN'}), ['p4-deal-01', 'p4-back-ready-02']);
+  // A Primär on a return of a READY-B pose or of an experiment does not choose the plain main deal.
+  const data = primaryBank({'p4-deal-02': 'PENDING'});
+  data.jobs!.push(job('p4-back-readyb-01', 'LAND(P4.C1)', 'READY-B', from('p4-deal-01', 96)), job('p4-back-odd-01', 'LAND(P4.C1)', 'LAND(P5.C1)', from('p4-deal-01', 96)));
+  for (const id of ['p4-back-readyb-01', 'p4-back-odd-01']) { data.motions![id] = done('ACCEPTED', {review: {decision: 'ACCEPTED', acceptedAs: 'MAIN'}}); data.media![id] = {video: video(id)}; }
+  assert.equal(graph.buildGraph(data).edge['READY>P4.C1'].main?.id, 'p4-deal-02');
+});
+
+// The rule before Primär, written out from the lines it replaced: a named take, then the side the round wants, then the return that
+// continues the deal just played, then the main take. Rank as it was, without Primär; the newer take wins a tie.
+function takesBeforePrimary(g: graph.Graph, steps: graph.Step[]): (string | null)[] {
+  const rank = (t: graph.Take) => t.variant ? 0 : t.decision === 'ACCEPTED' ? 4 : t.decision === 'PENDING' ? 3 : t.decision === 'SECONDARY' ? 1 : 2;
+  const best = (list: graph.Take[]) => list.filter(graph.playable).sort((a, b) => rank(b) - rank(a) || b.order - a.order)[0] ?? null;
+  const out: {to: string; deal: boolean; take: graph.Take | null}[] = [];
+  for (const step of steps) {
+    const id = graph.formatEdge(step.from, step.to), ref = graph.parseEdge(id), found = g.edge[ref?.base ?? id], e = found && (ref || found.experiment) ? found : null, prev = out.at(-1);
+    if (!e) { out.push({to: step.to, deal: false, take: null}); continue; }
+    const film = e.shares && !(step.take && e.takes.some(t => t.id === step.take && graph.playable(t))) ? g.edge[e.shares] : e;
+    const pool = film.takes.filter(t => t.hub === (ref?.hub ?? null)), main = ref?.hub ? best(pool) : film.main, side = e.kind === 'DEAL' && e.target ? graph.wantedSide(e.target) : null;
+    const after = prev?.take && prev.deal && prev.to === step.from ? prev.take : null;
+    let take = step.take ? film.takes.find(t => t.id === step.take && graph.playable(t)) ?? null : null;
+    if (!take && e.kind === 'DEAL' && main?.endSide && main.endSide !== side) take = best(pool.filter(t => t.endSide === side));
+    if (!take && after) take = best(pool.filter(t => graph.returnFits(t, after)));
+    out.push({to: step.to, deal: e.kind === 'DEAL', take: take ?? main});
+  }
+  return out.map(s => s.take?.id ?? null);
+}
+
+test('a bank without any Primär resolves as before: the takes of the rule before Primär, cut exactly as when the round names each of them', async () => {
+  const file = JSON.parse(await readFile('data/clip-jobs.json', 'utf8')), motions: Record<string, MotionRecord> = {};
+  for (const name of await readdir('motions')) if (name.endsWith('.json')) motions[name.slice(0, -5)] = JSON.parse(await readFile(`motions/${name}`, 'utf8'));
+  // The real bank as it is, with any Primär Jakob has set since taken away again.
+  for (const motion of Object.values(motions)) if (motion.review?.acceptedAs === 'MAIN') delete motion.review.acceptedAs;
+  const real: BankData = {jobs: file.jobs, derived: file.derived, edits: file.edits, motions}, whole = graph.roundSequence({seats: graph.SEATS, reveal: true, thirdDealerCard: true});
+  const cases: [string, BankData, graph.Step[]][] = [['bank', bank(), whole], ['seat bank', seatBank(), whole], ['seat bank, both cards', seatBank(), graph.parseSequence('READY>P4.C1 | P4.C1>READY | READY>P4.C2 | P4.C2>IDLE').steps],
+    ['primary bank unmarked', primaryBank(), whole], ['primary bank, READY-B and hole card', primaryBank(), graph.parseSequence('READY-B>P4.C1 | P4.C1>READY | READY>P4.C2 | P4.C2>IDLE | READY>D.C2 | D.C2>IDLE').steps], ['real bank', real, whole]];
+  const view = (round: graph.Segment[]) => round.map(s => [s.id, s.take?.id ?? null, s.film?.id ?? null, s.shift, s.start, s.end, s.cut, s.gap, s.side, s.notes]);
+  for (const [name, data, steps] of cases) {
+    const g = graph.buildGraph(data);
+    assert.ok(!Object.values(g.takes).some(t => t.explicitMain), `${name} has no Primär`);
+    const expected = takesBeforePrimary(g, steps), round = graph.resolveRound(g, steps);
+    assert.ok(expected.some(Boolean), name);
+    assert.deepEqual(round.map(s => s.take?.id ?? null), expected, name);
+    // Named takes go through no choice at all, so their cuts are the cut rule's alone.
+    assert.deepEqual(view(round), view(graph.resolveRound(g, steps.map((s, i) => expected[i] ? {from: s.from, to: s.to, take: expected[i]!} : s))), name);
+  }
+});
+
+test('every segment of a whole round says why its take plays, with a short Swedish word for each reason', async () => {
+  assert.deepEqual(graph.WHY_LABEL, {LOCKED: 'låst', PRIMARY: 'primär', MAIN: 'huvudtagning', SHARED: 'platsens film', FITS_DEAL: 'passar given före', FITS_PRIMARY_RETURN: 'passar primär retur', SIDE: 'rätt kortsida krävs', GAP: 'lucka'});
+  const whole = graph.roundSequence({seats: graph.SEATS, reveal: true}), round = graph.resolveRound(graph.buildGraph(primaryBank({'p4-back-ready-01': 'MAIN'})), whole);
+  assert.deepEqual(round.filter(s => s.take).map(s => [s.id, s.take!.id, s.why]), [['IDLE>READY', 'entry-01', 'MAIN'], ['READY>P4.C1', 'p4-deal-01', 'FITS_PRIMARY_RETURN'], ['P4.C1>READY', 'p4-back-ready-01', 'PRIMARY'],
+    ['READY>P4.C2', 'p4-deal-01', 'FITS_PRIMARY_RETURN'], ['P4.C2>READY', 'p4-back-ready-01', 'PRIMARY'], ['READY>D.C2', 'hole-closed-01', 'MAIN'], ['D.C2>IDLE', 'hole-back-idle-01', 'MAIN']]);
+  // The other reasons: the side the round wants, the return that continues the deal before it, a named take.
+  const sided = graph.resolveRound(graph.buildGraph(primaryBank({'hole-closed-01': 'PENDING'})), [{from: 'READY', to: 'D.C2'}])[0];
+  assert.deepEqual([sided.take?.id, sided.why], ['hole-closed-01', 'SIDE']);
+  const fit = graph.resolveRound(graph.buildGraph(primaryBank()), graph.parseSequence('READY>P4.C1@p4-deal-01 | P4.C1>READY').steps);
+  assert.deepEqual(played(fit), [['READY>P4.C1', 'p4-deal-01', 'LOCKED', 96, 'FRAME'], ['P4.C1>READY', 'p4-back-ready-01', 'FITS_DEAL', null, null]]);
+  const file = JSON.parse(await readFile('data/clip-jobs.json', 'utf8')), motions: Record<string, MotionRecord> = {};
+  for (const name of await readdir('motions')) if (name.endsWith('.json')) motions[name.slice(0, -5)] = JSON.parse(await readFile(`motions/${name}`, 'utf8'));
+  for (const segments of [round, graph.resolveRound(graph.buildGraph({jobs: file.jobs, derived: file.derived, edits: file.edits, motions}), graph.roundSequence({seats: graph.SEATS, reveal: true, thirdDealerCard: true}))])
+    for (const s of segments) { assert.ok(s.why in graph.WHY_LABEL, s.id); assert.equal(s.why === 'GAP', !s.take, s.id); }
+});
+
 // ── Idle ────────────────────────────────────────────────────────────────────
 function idleBank(): BankData {
   const frame0 = {frame: {video: video('pamela-idle-ready-entry-01'), videoSha256: sha, index: 0}}, idle = (id: string) => job(id, 'IDLE', 'IDLE', {kind: 'IDLE', target: null, first: frame0, last: frame0});

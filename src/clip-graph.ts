@@ -270,12 +270,12 @@ export function buildGraph(data: BankData, options: {mode?: FilmMode; holeCardDo
     deal.landingFrame = Number.isInteger(explicit) ? explicit! : [...counts].sort((a, b) => b[1] - a[1])[0]?.[0] ?? null;
     deal.landingConflict = counts.size > 1;
   }
-  // Main deal first: a deal that already has a playable return that fits it wins among equals.
+  // Main deal first: among equals, a deal that a Primär return continues wins, then a deal that has any playable return that fits it.
   // A return's main is one that continues the main deal, so the default chain is seamless.
-  const backs = all.filter(r => r.kind === 'RETURN' && playable(r));
+  const backs = all.filter(r => r.kind === 'RETURN' && playable(r)), primaries = backs.filter(r => r.explicitMain && !r.hub && !edge[r.edge].experiment);
   // Takes written with a READY variant are offered beside the edge; status and main take follow the plain model poses.
-  const plain = (e: Edge) => e.takes.filter(t => !t.hub);
-  for (const e of edges.filter(e => e.kind === 'DEAL')) e.main = best(plain(e), rank, t => backs.some(r => edge[r.edge].from === e.to && returnFits(r, t)) ? 1 : 0);
+  const plain = (e: Edge) => e.takes.filter(t => !t.hub), followed = (list: Take[], e: Edge) => (t: Take) => list.some(r => edge[r.edge].from === e.to && returnFits(r, t)) ? 1 : 0;
+  for (const e of edges.filter(e => e.kind === 'DEAL')) e.main = best(plain(e), rank, followed(primaries, e), followed(backs, e));
   for (const e of edges.filter(e => e.kind !== 'DEAL')) {
     const deal = e.kind === 'RETURN' && e.target ? edge[`READY>${e.target}`]?.main : null;
     e.main = best(plain(e), t => t.explicitMain ? 1 : 0, t => deal && returnFits(t, deal) ? 1 : 0, rank);
@@ -408,42 +408,63 @@ export function filmCard(target: string, holeCardDown = true): string {
 export type Step = {from: string; to: string; take?: string};
 export type Gap = 'INVALID' | 'MISSING' | 'WAITING' | 'REJECTED' | 'LOCAL_ONLY';
 export const GAP_LABEL: Record<Gap, string> = {INVALID: 'ogiltig kant', MISSING: 'saknas', WAITING: 'inte klar', REJECTED: 'underkänd', LOCAL_ONLY: 'finns bara lokalt'};
+// Why a step plays its take, set where the take is chosen, so a page can say it without repeating the rule. LOCKED: the round names it.
+// PRIMARY: Jakob's Primär on the edge. MAIN: the edge's main take. SHARED: the main take of the seat's film, played for a second card.
+// FITS_DEAL: a return that continues the deal just played. FITS_PRIMARY_RETURN: a deal that the Primär return after it continues.
+// SIDE: the main take ends on the other side of the card than the round wants. GAP: nothing is played.
+export type Why = 'LOCKED' | 'PRIMARY' | 'MAIN' | 'SHARED' | 'FITS_DEAL' | 'FITS_PRIMARY_RETURN' | 'SIDE' | 'GAP';
+export const WHY_LABEL: Record<Why, string> = {LOCKED: 'låst', PRIMARY: 'primär', MAIN: 'huvudtagning', SHARED: 'platsens film', FITS_DEAL: 'passar given före', FITS_PRIMARY_RETURN: 'passar primär retur', SIDE: 'rätt kortsida krävs', GAP: 'lucka'};
 // start/end are source frames; end is exclusive and null means "play to the last frame".
 // cut says how a deal ends: FRAME = at the frame its return starts on, END = at its last frame because the
 // return starts from the landing anchor, null = not a deal or nothing known.
 // film: the edge whose film the step plays; in seat mode a second card's step plays the seat edge. shift: how far the rendered
 // card is then moved from the film's own card to this step's card, in the pixels of the places the caller gave.
-export type Segment = {index: number; id: string; from: string; to: string; kind: EdgeKind | null; edge: Edge | null; film: Edge | null; shift: {x: number; y: number} | null; take: Take | null; video: string | null; fps: number; start: number; end: number | null; cut: 'FRAME' | 'END' | null; gap: Gap | null; side: Side | null; notes: string[]};
+// why: why this take plays (WHY_LABEL), GAP when none does.
+export type Segment = {index: number; id: string; from: string; to: string; kind: EdgeKind | null; edge: Edge | null; film: Edge | null; shift: {x: number; y: number} | null; take: Take | null; video: string | null; fps: number; start: number; end: number | null; cut: 'FRAME' | 'END' | null; gap: Gap | null; side: Side | null; why: Why; notes: string[]};
 
-// Chooses one take per step and the frame range to play. A return prefers a take that continues the
-// deal chosen just before it. The deal is then cut by the anchor rule: at the frame a frame-started
-// return begins on, or at its own last frame when the return starts from the landing anchor.
+// What a step chooses from: its edge, the edge whose film it plays, the takes of its READY pose, their main take, and the take the
+// step names when that one can be played. A model edge in any spelling, or an experiment edge under the exact name the graph gave it.
+function choices(graph: Graph, step: Step) {
+  const id = formatEdge(step.from, step.to), ref = parseEdge(id), found = graph.edge[ref?.base ?? id], e = found && (ref || found.experiment) ? found : null;
+  if (!e) return null;
+  // Seat mode: the step plays the seat's film unless it names a film of its own card.
+  const film = e.shares && !(step.take && e.takes.some(t => t.id === step.take && playable(t))) ? graph.edge[e.shares] : e;
+  // A step written with a READY variant only uses takes made from that pose; a plain step never does.
+  const hub = ref?.hub ?? null, pool = film.takes.filter(t => t.hub === hub), main = hub ? best(pool, rank) : film.main;
+  return {e, film, pool, main, locked: step.take ? film.takes.find(t => t.id === step.take && playable(t)) ?? null : null};
+}
+
+// Chooses one take per step and the frame range to play. A named take plays; then a Primär take plays on its edge, also a return
+// right after a deal, and the deal before a Primär return is one that return continues when there is one. Otherwise a return prefers
+// a take that continues the deal chosen just before it. The deal is then cut by the anchor rule: at the frame a frame-started
+// return begins on, or at its own last frame when the return starts from the landing anchor. A seam that remains is named, never hidden.
 // places: each card's centre in film pixels (the placement plan); it gives a shared step its shift.
 export function resolveRound(graph: Graph, steps: Step[], options: {holeCardDown?: boolean; places?: Record<string, {x: number; y: number}> | null} = {}): Segment[] {
   const out: Segment[] = [];
   steps.forEach((step, index) => {
-    // A model edge in any spelling, or an experiment edge under the exact name the graph gave it.
-    const id = formatEdge(step.from, step.to), ref = parseEdge(id), found = graph.edge[ref?.base ?? id], e = found && (ref || found.experiment) ? found : null, prev = out[index - 1], notes: string[] = [];
+    const id = formatEdge(step.from, step.to), at = choices(graph, step), e = at?.e ?? null, prev = out[index - 1], notes: string[] = [];
     // The turn of the hole card ends in rest, so a step from IDLE continues it.
     if (prev && prev.to !== step.from && !(hubOf(prev.to) === 'IDLE' && hubOf(step.from) === 'IDLE')) notes.push(`Bryter kedjan: föregående steg slutar i ${prev.to}.`);
-    const seg: Segment = {index, id, from: step.from, to: step.to, kind: e?.kind ?? null, edge: e, film: e, shift: null, take: null, video: null, fps: 30, start: 0, end: null, cut: null, gap: null, side: null, notes};
+    const seg: Segment = {index, id, from: step.from, to: step.to, kind: e?.kind ?? null, edge: e, film: e, shift: null, take: null, video: null, fps: 30, start: 0, end: null, cut: null, gap: null, side: null, why: 'GAP', notes};
     out.push(seg);
-    if (!e) { seg.gap = 'INVALID'; notes.push('Kanten finns inte i klippbanken.'); return; }
+    if (!at || !e) { seg.gap = 'INVALID'; notes.push('Kanten finns inte i klippbanken.'); return; }
     seg.side = e.kind === 'REVEAL' ? 'FRONT' : e.kind === 'DEAL' && e.target ? wantedSide(e.target, options.holeCardDown !== false) : null;
-    // A step written with a READY variant only uses takes made from that pose; a plain step never does.
-    // Seat mode: the step plays the seat's film unless it names a film of its own card.
-    const film = e.shares && !(step.take && e.takes.some(t => t.id === step.take && playable(t))) ? graph.edge[e.shares] : e;
+    const {film, pool, main} = at;
     if (film !== e) { seg.film = film; const a = options.places?.[film.target!], b = options.places?.[e.target!];
       if (a && b && [a.x, a.y, b.x, b.y].every(Number.isFinite)) seg.shift = {x: b.x - a.x, y: b.y - a.y}; else notes.push('Kortets flytt är okänd utan placeringsplan: det renderade kortet ritas där filmens kort ligger.'); }
-    const hub = ref?.hub ?? null, pool = film.takes.filter(t => t.hub === hub), main = hub ? best(pool, rank) : film.main;
-    const after = prev?.take && prev.kind === 'DEAL' && prev.to === step.from ? prev.take : null;
-    let take = step.take ? film.takes.find(t => t.id === step.take && playable(t)) ?? null : null;
+    const after = prev?.take && prev.kind === 'DEAL' && prev.to === step.from ? prev.take : null, asMain = (t: Take): Why => t.explicitMain ? 'PRIMARY' : film !== e ? 'SHARED' : 'MAIN';
+    let take = at.locked, why: Why = 'LOCKED';
     if (step.take && !take) notes.push(`Låst tagning ${step.take} kan inte spelas här; huvudtagningen används.`);
-    if (!take && e.kind === 'DEAL' && main?.endSide && main.endSide !== seg.side) take = best(pool.filter(t => t.endSide === seg.side), rank);
-    if (!take && after) take = best(pool.filter(t => returnFits(t, after)), rank);
-    take ??= main;
+    // Look-ahead: when the next step is a return from this card and plays a Primär take, a deal that is neither named nor Primär itself
+    // is one that return continues, the best of them, unless the main deal already is one. A deal on the wrong side of the card never is.
+    const next = steps[index + 1], ahead = !take && e.kind === 'DEAL' && !main?.explicitMain && next?.from === step.to ? choices(graph, next) : null, primary = ahead?.e.kind === 'RETURN' ? ahead.locked ?? ahead.main : null;
+    if (primary?.explicitMain) { const fits = pool.filter(t => returnFits(primary, t) && !(t.endSide && seg.side && t.endSide !== seg.side)); if (!(main && fits.includes(main))) { take = best(fits, rank); why = 'FITS_PRIMARY_RETURN'; } }
+    if (!take && e.kind === 'DEAL' && main?.endSide && main.endSide !== seg.side) { take = best(pool.filter(t => t.endSide === seg.side), rank); why = 'SIDE'; }
+    // A Primär return plays on its edge also right after a deal it does not continue; the seam is then named below.
+    if (!take && after && !main?.explicitMain) { take = best(pool.filter(t => returnFits(t, after)), rank); why = take && take === main ? asMain(take) : 'FITS_DEAL'; }
+    if (!take && main) { take = main; why = asMain(main); }
     if (!take) { seg.gap = pool.some(t => t.stage === 'ORDERED' || t.stage === 'PREPARED' || t.stage === 'WRITTEN') ? 'WAITING' : pool.some(t => t.stage === 'DONE') ? 'REJECTED' : 'MISSING'; return; }
-    seg.take = take; seg.fps = take.fps ?? 30; seg.video = take.media.video ?? null;
+    seg.take = take; seg.why = why; seg.fps = take.fps ?? 30; seg.video = take.media.video ?? null;
     if (take.segment) { seg.start = take.segment.start; seg.end = take.frames !== null && take.segment.end >= take.frames - 1 ? null : take.segment.end + 1; } // a derived take shows only its own frames
     // A turn runs from rest to rest like an idle clip, and her coming and leaving have rest at one end: a generated film is brighter in its first frames and jumps in its last two, so they are not played.
     if (e.kind === 'REVEAL' || e.kind === 'ARRIVE' || e.kind === 'LEAVE') { const last = seg.end ?? take.frames; seg.start += IDLE_RULE.skipStart; if (last !== null && last - IDLE_RULE.skipEnd > seg.start) seg.end = last - IDLE_RULE.skipEnd; }

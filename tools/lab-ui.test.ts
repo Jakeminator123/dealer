@@ -571,6 +571,22 @@ test('the review list: every finished film without Jakob\'s word, in dealing ord
  runInContext("setTab('placement')",context);assert.equal(element('review').hidden,true);
 });
 
+test('a new Primär lowers the earlier Primär of its step to approved, and that take keeps its note once, without the old name and date',async()=>{
+ const bank:any=clipBank(),sha='f'.repeat(64),old='pamela-p4-c1-plan-deal-02',fresh='pamela-p4-c1-plan-deal-03';
+ bank.jobs.push({...bank.jobs[0],id:fresh});bank.motions[fresh]={source:{fps:30,frames:120,sha256:sha},review:{decision:'PENDING'}};bank.media[fresh]={video:`assets/motions/${fresh}/source.mp4`,first:null,last:null};
+ bank.motions[old].review={decision:'ACCEPTED',acceptedAs:'MAIN',userReview:'Jakob 2026-11-11: bra grepp',userAccepted:true};
+ bank.revisions=Object.fromEntries(Object.keys(bank.motions).map(id=>[id,`"${id}"`]));
+ const {context,respond,calls,fire}=await openBank(bank);
+ runInContext(`kbSelect('READY>P4.C1','${fresh}')`,context);assert.equal(runInContext('kbTake',context),fresh);
+ fire('kb-decide','click',{target:{closest:()=>({dataset:{decide:'MAIN'}})}});await settle();
+ respond({ok:true,json:async()=>({revision:'"r2"',review:{decision:'ACCEPTED',acceptedAs:'MAIN',userReview:'Jakob 2026-11-12: '}})},`/api/clip-bank/review/${fresh}`);await settle();
+ // The second write goes to the take that was Primär: plain approved, its own guard, and the words he wrote, not "Jakob 2026-11-11: " in front of them.
+ const put=calls.filter(call=>call.init?.method==='PUT');
+ assert.deepEqual(put.map(call=>call.url),[`/api/clip-bank/review/${fresh}`,`/api/clip-bank/review/${old}`]);
+ assert.equal(put[1].init!.headers!['if-match'],`"${old}"`);assert.deepEqual(JSON.parse(put[1].init!.body!),{decision:'ACCEPTED',note:'bra grepp'});
+ respond({ok:true,json:async()=>({})},`/api/clip-bank/review/${old}`);await settle();respond(served(bank),'/api/clip-bank');await settle();
+});
+
 test('the idle player: picks play back to back from frame 3, a calm clip is left at once and a gesture is played out faster before the entry',async()=>{
  const bank:any=clipBank(),sha='e'.repeat(64),src=(id:string)=>`assets/motions/${id}/source.mp4`;
  const idle=(id:string,record:unknown)=>{bank.jobs.push({...bank.jobs[0],id,kind:'IDLE',target:null,from:'IDLE',to:'IDLE'});if(record)bank.motions[id]=record;bank.media[id]={video:src(id),first:null,last:null};};

@@ -878,7 +878,7 @@ async function kbDecide(decision:string){
   const data=await res.json();if(!res.ok)throw Error(data.error||'Beslutet kunde inte sparas.');
   // One primary take per edge: another take that was primary there becomes a plain approved take, with its note kept.
   if(decision==='MAIN')for(const other of Object.values(kbGraph!.takes))if(other.id!==t.id&&other.edge===t.edge&&other.explicitMain&&other.revision)
-   await fetch(`/api/clip-bank/review/${other.id}`,{method:'PUT',headers:{'content-type':'application/json','if-match':other.revision},body:JSON.stringify({decision:'ACCEPTED',note:String(other.motion?.review?.userReview??'').replace(/^S+ d{4}-d{2}-d{2}: /,'')})}).catch(()=>{});
+   await fetch(`/api/clip-bank/review/${other.id}`,{method:'PUT',headers:{'content-type':'application/json','if-match':other.revision},body:JSON.stringify({decision:'ACCEPTED',note:String(other.motion?.review?.userReview??'').replace(/^\S+ \d{4}-\d{2}-\d{2}: /,'')})}).catch(()=>{});
   kbSaved={id:t.id,text:`Sparat i motions/${t.id}.json · ${data.review?.userReview??'återställd: filmen väntar på ditt beslut igen'}`,failed:false};kbNoteFor='';rvNext=after;rvStep=tab==='review'&&decision==='REJECTED'?t.edge:'';
   await kbRead().catch(()=>{}); // the bank is read again so every view shows the decision that is now on disk
  }catch(error){kbSaved={id:t.id,text:`Inte sparat: ${(error as Error).message}`,failed:true};}
