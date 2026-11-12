@@ -1569,6 +1569,265 @@
           "name": "Tidigare 3D-utkast",
           "proof": "pamela-3d-utkast"
         },
+        {
+          "id": "pamela-prov-3d-kanslan",
+          "role": "prov",
+          "name": "Vilken 3D-känsla menar du?",
+          "proof": "3d-kanslan",
+          "note": "Scenspåret (3D-scen, bord, spel, ljud); visas i vyn Prov. Roll satt i efterhand ur provets titel."
+        },
+        {
+          "id": "pamela-prov-bakgrund-3d",
+          "role": "prov",
+          "name": "Bakgrund och bord",
+          "proof": "bakgrund-3d",
+          "note": "Pamelas 2D-film i 3D-rum med 3D-bord. Scenspåret (3D-scen, bord, spel, ljud); visas i vyn Prov. Roll satt i efterhand ur provets titel."
+        },
+        {
+          "id": "pamela-prov-bakgrund-3d-bord",
+          "role": "prov",
+          "name": "3D-scenen: ny reling och försänkt markerbräde",
+          "proof": "bakgrund-3d-bord",
+          "note": "Scenspåret (3D-scen, bord, spel, ljud); visas i vyn Prov. Roll satt i efterhand ur provets titel."
+        },
+        {
+          "id": "pamela-prov-bakgrund-3d-fokus",
+          "role": "prov",
+          "name": "3D-scenen: styrbart fokus och fläktskugga",
+          "proof": "bakgrund-3d-fokus",
+          "note": "Scenspåret (3D-scen, bord, spel, ljud); visas i vyn Prov. Roll satt i efterhand ur provets titel."
+        },
+        {
+          "id": "pamela-prov-bakgrund-3d-kort",
+          "role": "prov",
+          "name": "3D-scenen: renderade kort",
+          "proof": "bakgrund-3d-kort",
+          "note": "Scenspåret (3D-scen, bord, spel, ljud); visas i vyn Prov. Roll satt i efterhand ur provets titel."
+        },
+        {
+          "id": "pamela-prov-bakgrund-3d-kort-2",
+          "role": "prov",
+          "name": "3D-scenen: kortet som riktigt föremål i scenen (nytt) mot …",
+          "proof": "bakgrund-3d-kort-2",
+          "note": "Scenspåret (3D-scen, bord, spel, ljud); visas i vyn Prov. Roll satt i efterhand ur provets titel."
+        },
+        {
+          "id": "pamela-prov-bakgrund-3d-miljoer",
+          "role": "prov",
+          "name": "3D-scenen: två miljöer till — Skyline och Skog",
+          "proof": "bakgrund-3d-miljoer",
+          "note": "Scenspåret (3D-scen, bord, spel, ljud); visas i vyn Prov. Roll satt i efterhand ur provets titel."
+        },
+        {
+          "id": "pamela-prov-bakgrund-3d-referens",
+          "role": "prov",
+          "name": "3D-scenen: referens för hemvyn (inte ett prov att bedöma)",
+          "proof": "bakgrund-3d-referens",
+          "note": "Scenspåret (3D-scen, bord, spel, ljud); visas i vyn Prov. Roll satt i efterhand ur provets titel."
+        },
+        {
+          "id": "pamela-prov-bakgrund-3d-rorelse",
+          "role": "prov",
+          "name": "3D-scenen: ständiga rörelser, händelser och ljuskalibrering",
+          "proof": "bakgrund-3d-rorelse",
+          "note": "Scenspåret (3D-scen, bord, spel, ljud); visas i vyn Prov. Roll satt i efterhand ur provets titel."
+        },
+        {
+          "id": "pamela-prov-bakgrund-3d-rorelse-2",
+          "role": "prov",
+          "name": "3D-scenen: tre rörelser i varje miljö (omgjort damm, …",
+          "proof": "bakgrund-3d-rorelse-2",
+          "note": "Scenspåret (3D-scen, bord, spel, ljud); visas i vyn Prov. Roll satt i efterhand ur provets titel."
+        },
+        {
+          "id": "pamela-prov-bakgrund-3d-vinklar",
+          "role": "prov",
+          "name": "Pamela från sidan",
+          "proof": "bakgrund-3d-vinklar",
+          "note": "Platt utklipp mot djuprelief (prov, vilande). Scenspåret (3D-scen, bord, spel, ljud); visas i vyn Prov. Roll satt i efterhand ur provets titel."
+        },
+        {
+          "id": "pamela-prov-bord-ljus-mugghallare-kontur",
+          "role": "prov",
+          "name": "Bordet: ljus i relingen, mugghållare, och rummets ljus runt …",
+          "proof": "bord-ljus-mugghallare-kontur",
+          "note": "Scenspåret (3D-scen, bord, spel, ljud); visas i vyn Prov. Roll satt i efterhand ur provets titel."
+        },
+        {
+          "id": "pamela-prov-bordets-underrede",
+          "role": "prov",
+          "name": "Bordets underrede",
+          "proof": "bordets-underrede",
+          "note": "Pelaren och två ben i fotograferat trä. Scenspåret (3D-scen, bord, spel, ljud); visas i vyn Prov. Roll satt i efterhand ur provets titel."
+        },
+        {
+          "id": "pamela-prov-bordets-yta-och-ljus",
+          "role": "prov",
+          "name": "Bordets yta",
+          "proof": "bordets-yta-och-ljus",
+          "note": "Fotomaterial och rummets eget ljus. Scenspåret (3D-scen, bord, spel, ljud); visas i vyn Prov. Roll satt i efterhand ur provets titel."
+        },
+        {
+          "id": "pamela-prov-bricka-med-husets-marker",
+          "role": "prov",
+          "name": "Brickan med husets marker",
+          "proof": "bricka-med-husets-marker",
+          "note": "Förlorad insats in, vinst ut. Scenspåret (3D-scen, bord, spel, ljud); visas i vyn Prov. Roll satt i efterhand ur provets titel."
+        },
+        {
+          "id": "pamela-prov-card-overlay",
+          "role": "prov",
+          "name": "Renderat kort över filmens kort (P4)",
+          "proof": "card-overlay",
+          "note": "Kortspåret; visas i vyn Prov. Roll satt i efterhand ur provets titel."
+        },
+        {
+          "id": "pamela-prov-fler-rum",
+          "role": "prov",
+          "name": "Fler rum",
+          "proof": "fler-rum",
+          "note": "Sex fotograferade 360°-rum bakom dealern. Scenspåret (3D-scen, bord, spel, ljud); visas i vyn Prov. Roll satt i efterhand ur provets titel."
+        },
+        {
+          "id": "pamela-prov-helhet-med-dealer",
+          "role": "prov",
+          "name": "Helhet",
+          "proof": "helhet-med-dealer",
+          "note": "Dealern, bordet med sko och bricka, och rummet. Scenspåret (3D-scen, bord, spel, ljud); visas i vyn Prov. Roll satt i efterhand ur provets titel."
+        },
+        {
+          "id": "pamela-prov-helkropp-i-scenen",
+          "role": "prov",
+          "name": "Helkropp bakom 3D-bordet",
+          "proof": "helkropp-i-scenen",
+          "note": "Proven sedda i spelet (stillbilder). Scenspåret (3D-scen, bord, spel, ljud); visas i vyn Prov. Roll satt i efterhand ur provets titel."
+        },
+        {
+          "id": "pamela-prov-kort-en-storlek",
+          "role": "prov",
+          "name": "Ett kortformat",
+          "proof": "kort-en-storlek",
+          "note": "Kortet har samma storlek från skon till bordet. Kortspåret; visas i vyn Prov. Roll satt i efterhand ur provets titel."
+        },
+        {
+          "id": "pamela-prov-kort-grepp",
+          "role": "prov",
+          "name": "Kortet: dagens spår, greppspår och kombinerat",
+          "proof": "kort-grepp",
+          "note": "Kortspåret; visas i vyn Prov. Roll satt i efterhand ur provets titel."
+        },
+        {
+          "id": "pamela-prov-kort-metoder",
+          "role": "prov",
+          "name": "Kortet: tre sätt att lägga vårt kort på filmens kort …",
+          "proof": "kort-metoder",
+          "note": "Kortspåret; visas i vyn Prov. Roll satt i efterhand ur provets titel."
+        },
+        {
+          "id": "pamela-prov-kortplan-forslag",
+          "role": "prov",
+          "name": "Kortplan",
+          "proof": "kortplan-forslag",
+          "note": "Förslag med ett större kort i perspektiv. Kortspåret; visas i vyn Prov. Roll satt i efterhand ur provets titel."
+        },
+        {
+          "id": "pamela-prov-kortvandning-i-dag",
+          "role": "prov",
+          "name": "Hur kortet vänds i dag",
+          "proof": "kortvandning-i-dag",
+          "note": "Kortspåret; visas i vyn Prov. Roll satt i efterhand ur provets titel."
+        },
+        {
+          "id": "pamela-prov-ljud-labb",
+          "role": "prov",
+          "name": "Ljud-labb",
+          "proof": "ljud-labb",
+          "note": "Marker, kort, bakgrunder och musik, gjorda i webbläsaren. Scenspåret (3D-scen, bord, spel, ljud); visas i vyn Prov. Roll satt i efterhand ur provets titel."
+        },
+        {
+          "id": "pamela-prov-meshy-bord-naturligt",
+          "role": "prov",
+          "name": "Meshy-bordet i rummets ljus",
+          "proof": "meshy-bord-naturligt",
+          "note": "Golv, skugga och händerna på filten. Scenspåret (3D-scen, bord, spel, ljud); visas i vyn Prov. Roll satt i efterhand ur provets titel."
+        },
+        {
+          "id": "pamela-prov-meshy-bord-slatt",
+          "role": "prov",
+          "name": "Nytt bord ur Meshy",
+          "proof": "meshy-bord-slatt",
+          "note": "Samma bord med slät, plan filt. Scenspåret (3D-scen, bord, spel, ljud); visas i vyn Prov. Roll satt i efterhand ur provets titel."
+        },
+        {
+          "id": "pamela-prov-modell-labb",
+          "role": "prov",
+          "name": "Modell-labb",
+          "proof": "modell-labb",
+          "note": "Sko, markerbricka och bord i elfenben och guld. Scenspåret (3D-scen, bord, spel, ljud); visas i vyn Prov. Roll satt i efterhand ur provets titel."
+        },
+        {
+          "id": "pamela-prov-skimmer-vid-miljobyte",
+          "role": "prov",
+          "name": "Skimmer vid miljöbyte",
+          "proof": "skimmer-vid-miljobyte",
+          "note": "Ett draperi av guldpaljetter över hela bakgrunden när rummet byts. Scenspåret (3D-scen, bord, spel, ljud); visas i vyn Prov. Roll satt i efterhand ur provets titel."
+        },
+        {
+          "id": "pamela-prov-sko-i-3d",
+          "role": "prov",
+          "name": "Skon som föremål i scenen",
+          "proof": "sko-i-3d",
+          "note": "Din Meshy-sko i stället för filmens sko. Scenspåret (3D-scen, bord, spel, ljud); visas i vyn Prov. Roll satt i efterhand ur provets titel."
+        },
+        {
+          "id": "pamela-prov-solfjader",
+          "role": "prov",
+          "name": "Solfjädern",
+          "proof": "solfjader",
+          "note": "Kort 3, 4 och 5 i spelet, i rörelse. Scenspåret (3D-scen, bord, spel, ljud); visas i vyn Prov. Roll satt i efterhand ur provets titel."
+        },
+        {
+          "id": "pamela-prov-spel-konsol",
+          "role": "prov",
+          "name": "Spelets konsol",
+          "proof": "spel-konsol",
+          "note": "Efter Scout Gamings. Scenspåret (3D-scen, bord, spel, ljud); visas i vyn Prov. Roll satt i efterhand ur provets titel."
+        },
+        {
+          "id": "pamela-prov-spel-overlay",
+          "role": "prov",
+          "name": "Spelet: blackjack i 3D-scenen (stillbilder ur riktiga …",
+          "proof": "spel-overlay",
+          "note": "Scenspåret (3D-scen, bord, spel, ljud); visas i vyn Prov. Roll satt i efterhand ur provets titel."
+        },
+        {
+          "id": "pamela-prov-spelhall",
+          "role": "prov",
+          "name": "Spelhall",
+          "proof": "spelhall",
+          "note": "Ett rum bakom dealern med spelautomater och låg rök. Scenspåret (3D-scen, bord, spel, ljud); visas i vyn Prov. Roll satt i efterhand ur provets titel."
+        },
+        {
+          "id": "pamela-prov-trailer-noir",
+          "role": "prov",
+          "name": "Noir-trailer",
+          "proof": "trailer-noir",
+          "note": "Reklamfilm i noirstil, fristående från banken. Jakob vill att den ligger kvar här. Går inte upp i nätkopian (studio-release blockerar trailer*)."
+        },
+        {
+          "id": "pamela-prov-trailer-noir-2",
+          "role": "prov",
+          "name": "Noir-trailer 2",
+          "proof": "trailer-noir-2",
+          "note": "Reklamfilm i noirstil, fristående från banken. Jakob vill att den ligger kvar här. Går inte upp i nätkopian (studio-release blockerar trailer*)."
+        },
+        {
+          "id": "pamela-prov-trailer-noir-3",
+          "role": "prov",
+          "name": "Noir-trailer 3",
+          "proof": "trailer-noir-3",
+          "note": "Reklamfilm i noirstil, fristående från banken. Jakob vill att den ligger kvar här. Går inte upp i nätkopian (studio-release blockerar trailer*)."
+        },
 
         {
           "id": "pamela-drawn-01",
