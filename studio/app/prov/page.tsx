@@ -2,10 +2,12 @@
 import { Suspense } from "react";
 import { ProofsView } from "@/components/proofs";
 import { Page } from "@/components/shell";
+import { ViewContext } from "@/lib/context";
 
 export default function Prov() {
   return (
     <Suspense fallback={<Page title="Prov" />}>
+      <ViewContext vy="prov" />
       <ProofsView />
     </Suspense>
   );

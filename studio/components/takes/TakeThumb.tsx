@@ -5,6 +5,8 @@
 // film: always a frame of the film (all deals to one card share one first.png, a frame near the landing tells them apart).
 // On hover (and while active, e.g. its card has keyboard focus) the film itself is shown, and the pointer scrubs through it.
 // Lazy: nothing is read before the thumbnail is on screen; stills are drawn by at most three videos at a time (frames.ts).
+// load={false} holds the still back even on screen: a long strip (RoundStrip) says which boxes are near where it rests, so
+// that boxes scrolled past on the way do not queue stills ahead of the ones that are looked at (frames.ts serves in order).
 import { Film } from "lucide-react";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import type { Take } from "../../../src/clip-graph.ts";
@@ -48,6 +50,7 @@ export function TakeThumb({
   frame,
   scrub = true,
   active = false,
+  load = true,
   className,
   children,
 }: {
@@ -59,6 +62,8 @@ export function TakeThumb({
   scrub?: boolean;
   /** Show the film at the still's frame without a pointer (its card has focus or is chosen). */
   active?: boolean;
+  /** false: do not read the still yet (the caller knows the thumbnail is not where the eye is). Default true. */
+  load?: boolean;
   className?: string;
   /** Laid over the picture: badges, a duration. */
   children?: ReactNode;
@@ -76,7 +81,7 @@ export function TakeThumb({
 
   // The still from the film, when that is what is shown.
   useEffect(() => {
-    if (!seen || !useFilm || !video) return;
+    if (!seen || !load || !useFilm || !video) return;
     let gone = false;
     const width = stillWidth(ref.current?.clientWidth || 320);
     frameStill(video, at, fps, width).then(
@@ -86,7 +91,7 @@ export function TakeThumb({
     return () => {
       gone = true;
     };
-  }, [seen, useFilm, video, at, fps, key, ref]);
+  }, [seen, load, useFilm, video, at, fps, key, ref]);
 
   // The film under the pointer.
   const [hover, setHover] = useState<number | null>(null); // the pointer's share across the picture, 0..1

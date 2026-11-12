@@ -4,6 +4,7 @@ import { Suspense } from "react";
 import { KartaView } from "@/components/map/KartaView";
 import { Page } from "@/components/shell";
 import { Skeleton } from "@/components/ui";
+import { ViewContext } from "@/lib/context";
 
 export default function Karta() {
   return (
@@ -16,6 +17,7 @@ export default function Karta() {
         </Page>
       }
     >
+      <ViewContext vy="karta" />
       <KartaView />
     </Suspense>
   );

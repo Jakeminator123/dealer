@@ -1,12 +1,13 @@
 "use client";
 
 // <RoundPicker rounds={readyRounds()} current={round} onPick={(round) => …} />: the rounds Jakob can play. The ready-made
-// ones as chips in his notation (his favourite to seat 4, the V6 deal, every seat, one seat at a time), and a field that
-// takes his notation ("A2.1 - P4C1 - A2.1 - P4C2 - A2.1") and says in plain Swedish what it could not read.
-import { CornerDownLeft } from "lucide-react";
+// ones as chips in his notation (his favourite to seat 4, seat 4 with two cards in V6's order, every seat, one seat at a
+// time), under "Referens" the finished films that are not the bank's (the V6 film), and a field that takes his notation
+// ("A2.1 - P4C1 - A2.1 - P4C2 - A2.1") and says in plain Swedish what it could not read.
+import { CornerDownLeft, Film } from "lucide-react";
 import { useState } from "react";
 import { formatJakob } from "../../lib/names.ts";
-import { roundFromText, type Round } from "../../lib/rounds.ts";
+import { isReference, roundFromText, type Round } from "../../lib/rounds.ts";
 import { Button } from "../ui/Button";
 import { cn } from "../ui/cn";
 import { TextField } from "../ui/TextField";
@@ -25,11 +26,12 @@ export function RoundPicker({
   onPick(round: Round): void;
   className?: string;
 }) {
-  const big = rounds.filter((r) => !/^P\d$/.test(r.name));
+  const big = rounds.filter((r) => !/^P\d$/.test(r.name) && !isReference(r));
   const seats = rounds.filter((r) => /^P\d$/.test(r.name));
+  const references = rounds.filter(isReference);
   const [draft, setDraft] = useState<string | null>(null); // null: the field shows the round on screen
   const [errors, setErrors] = useState<string[]>([]);
-  const shown = current ? formatJakob(current.steps) : "";
+  const shown = current && !isReference(current) ? formatJakob(current.steps) : "";
   const submit = () => {
     const text = (draft ?? shown).trim();
     if (!text) return;
@@ -55,7 +57,7 @@ export function RoundPicker({
         <div className="flex flex-col gap-1.5">
           {big.map((round) => {
             const on = current?.key === round.key;
-            const facts = round.key === "alla" ? `${round.steps.length} steg, alla platser och dealern` : formatJakob(round.steps);
+            const facts = round.sub ?? (round.key === "alla" ? `${round.steps.length} steg, alla platser och dealern` : formatJakob(round.steps));
             return (
               <button
                 key={round.key}
@@ -68,13 +70,39 @@ export function RoundPicker({
                 )}
               >
                 <span className={cn("text-sm font-semibold", on ? "text-brass-hi" : "text-ink")}>{round.name}</span>
-                <span className="truncate text-xs text-dim" title={formatJakob(round.steps)}>
+                <span className={cn("text-xs text-dim", !round.sub && "truncate")} title={facts}>
                   {facts}
                 </span>
               </button>
             );
           })}
         </div>
+        {references.length ? (
+          <div className="mt-1 flex flex-col gap-1.5">
+            <h3 className="text-2xs font-semibold uppercase tracking-[0.09em] text-faint">Referens</h3>
+            {references.map((round) => {
+              const on = current?.key === round.key;
+              return (
+                <button
+                  key={round.key}
+                  type="button"
+                  aria-pressed={on}
+                  onClick={() => pick(round)}
+                  className={cn(
+                    "flex flex-col gap-0.5 rounded-md border border-dashed px-3 py-2 text-left transition-[border-color,background-color] duration-150",
+                    on ? "border-brass/60 bg-brass/10" : "border-line-strong bg-transparent hover:border-brass/40 hover:bg-raised",
+                  )}
+                >
+                  <span className={cn("flex items-center gap-1.5 text-sm font-semibold", on ? "text-brass-hi" : "text-ink")}>
+                    <Film aria-hidden className="size-3.5 text-faint" />
+                    {round.name}
+                  </span>
+                  <span className="text-xs text-dim">{round.sub}</span>
+                </button>
+              );
+            })}
+          </div>
+        ) : null}
         <div className="mt-1 flex flex-col gap-1.5">
           <span className="text-xs text-dim">En plats: A1 - A2.1 - giv - A1</span>
           <div className="grid grid-cols-7 gap-1">

@@ -2,12 +2,17 @@
 
 // The left rail: the six views with the active one marked, counts where they help (takes waiting for Jakob beside Granska,
 // edges with a Primär beside Primära), whether the lab answers, and "Gamla labbet ↗" at the bottom (same tab).
-import { ArrowUpRight, FlaskConical, Play, ScanEye, SlidersHorizontal, Star, Workflow } from "lucide-react";
+// In the online copy (lib/mode.ts) there is no old lab, so that link is not drawn; instead the bot is there: the view
+// Önskemål (with the answers from Jakob not yet seen) and "Fråga", which opens and closes the panel (components/bot).
+import { ArrowUpRight, FlaskConical, Inbox, MessageCircleQuestion, Play, ScanEye, SlidersHorizontal, Star, Workflow } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useMemo, type ComponentType } from "react";
 import { useBank } from "../../lib/bank.ts";
+import { isSnapshot } from "../../lib/mode.ts";
 import { awaitingJakob, primarCount } from "../../lib/verdict.ts";
+import { useBot } from "../bot/BotProvider";
+import { useRequests } from "../requests/RequestsProvider";
 import { cn } from "../ui/cn";
 import { Tooltip } from "../ui/Tooltip";
 
@@ -21,6 +26,9 @@ export const VIEWS: readonly View[] = [
   { href: "/prov/", label: "Prov", hint: "Jämförelsefilmer och kontaktark", icon: FlaskConical },
   { href: "/scen/", label: "Scen", hint: "Rum, ljus, bord, kort och kamera", icon: SlidersHorizontal },
 ];
+
+/** The view of requests to Jakob: only where the bot is (the online copy). */
+export const REQUESTS_VIEW: View = { href: "/onskemal/", label: "Önskemål", hint: "Önskemål till Jakob, med status och hans svar", icon: Inbox };
 
 const trim = (path: string) => (path.length > 1 ? path.replace(/\/+$/, "") : path);
 
@@ -73,9 +81,34 @@ function RailItem({ view, active, count, tone }: { view: View; active: boolean; 
   );
 }
 
+/** "Fråga": opens and closes the bot's panel. Looks like a view in the rail; marked while the panel is open. */
+function AskButton() {
+  const bot = useBot();
+  if (!bot?.enabled) return null;
+  return (
+    <Tooltip content={bot.open ? "Stäng Fråga" : "Fråga om dealern, eller tyck till"} side="right">
+      <button
+        type="button"
+        aria-pressed={bot.open}
+        onClick={() => bot.setOpen(!bot.open)}
+        className={cn(
+          "group relative mx-2 flex flex-col items-center gap-1 rounded-lg px-1 pb-1.5 pt-2 transition-colors duration-150 focus-visible:outline-offset-0",
+          bot.open ? "bg-raised text-ink" : "text-dim hover:bg-raised/60 hover:text-ink",
+        )}
+      >
+        <MessageCircleQuestion className={cn("size-5 transition-colors duration-150", bot.open ? "text-brass" : "text-dim group-hover:text-ink")} />
+        <span className="text-[11px] font-medium leading-4 tracking-[0.01em]">Fråga</span>
+      </button>
+    </Tooltip>
+  );
+}
+
 export function Rail() {
   const pathname = usePathname();
   const active = activeView(pathname);
+  const bot = useBot();
+  const requests = useRequests();
+  const onRequests = trim(pathname ?? "/") === trim(REQUESTS_VIEW.href);
   const { graph, status, error } = useBank();
   const counts = useMemo(() => {
     if (!graph) return null;
@@ -103,8 +136,17 @@ export function Rail() {
             />
           </li>
         ))}
+        {bot?.enabled ? (
+          <>
+            <li aria-hidden className="mx-4 my-1 h-px bg-line" />
+            <li>
+              <RailItem view={REQUESTS_VIEW} active={onRequests} count={requests.unseen > 0 ? String(requests.unseen) : null} tone="brass" />
+            </li>
+          </>
+        ) : null}
       </ul>
       <div className="mt-auto flex flex-col items-center gap-2 pb-3">
+        <AskButton />
         <Tooltip content={status === "loading" ? "Läser klippbanken…" : offline ? `Labbet svarar inte: ${error?.message}` : "Labbet svarar · klippbanken läses var 4:e sekund"} side="right">
           <span role="status" aria-label={offline ? "Labbet svarar inte" : "Labbet svarar"} className="grid size-6 place-items-center">
             <span
@@ -115,18 +157,22 @@ export function Rail() {
             />
           </span>
         </Tooltip>
-        <div className="mx-2 h-px w-[calc(100%-32px)] bg-line" />
-        <a
-          href="/lab.html"
-          className="mx-2 flex flex-col items-center gap-0.5 rounded-lg px-1 py-1.5 text-center text-faint transition-colors hover:bg-raised/60 hover:text-ink focus-visible:outline-offset-0"
-        >
-          <ArrowUpRight className="size-4" />
-          <span className="text-[10.5px] font-medium leading-[13px]">
-            Gamla
-            <br />
-            labbet
-          </span>
-        </a>
+        {isSnapshot ? null : (
+          <>
+            <div className="mx-2 h-px w-[calc(100%-32px)] bg-line" />
+            <a
+              href="/lab.html"
+              className="mx-2 flex flex-col items-center gap-0.5 rounded-lg px-1 py-1.5 text-center text-faint transition-colors hover:bg-raised/60 hover:text-ink focus-visible:outline-offset-0"
+            >
+              <ArrowUpRight className="size-4" />
+              <span className="text-[10.5px] font-medium leading-[13px]">
+                Gamla
+                <br />
+                labbet
+              </span>
+            </a>
+          </>
+        )}
       </div>
     </nav>
   );

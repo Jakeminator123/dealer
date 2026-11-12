@@ -9,7 +9,9 @@
 // server serves them, and the scene's files. What goes up is decided by data/studio-release.json. It builds the studio in
 // snapshot mode (studio/scripts/build.mjs --snapshot), writes stills as small WebP, and adds the lock: the Routing
 // Middleware of cloud/studio/, with the map from each film's address to its object in Vercel Blob. Films and proof files go
-// to Blob, everything else is a static file of the deployment. It prints a table of what goes up and what was left out.
+// to Blob, everything else is a static file of the deployment. The bot and the request inbox are one Node.js function
+// (cloud/studio/bot.ts) with its knowledge beside it (tools/build-knowledge.ts), never a static file. It prints a table of
+// what goes up and what was left out.
 import {readFile, writeFile, mkdir, rm, realpath, lstat, readdir, stat} from 'node:fs/promises';
 import {createHash} from 'node:crypto';
 import {execFileSync, spawnSync} from 'node:child_process';
@@ -22,6 +24,7 @@ import {SCRIPTS, VENDOR, SCENE_FILES, forBrowser} from './lab-routes.ts';
 import {STUDIO_TYPES} from './studio-files.ts';
 import {readRelease, pickTakes, freezeBank, pickProofs, graphShape, roundShape, scrub, findLeaks, findTextLeaks, blockedPath, safeRelative, prefetchAlias, objectName, MEDIA_TYPES, type Proof, type Left} from './studio-freeze.ts';
 import type {MediaMap} from '../cloud/studio/gate.ts';
+import {buildKnowledge, BOT_FUNCTION_FILES} from './build-knowledge.ts';
 
 const root = path.resolve(fileURLToPath(new URL('../', import.meta.url)));
 if (path.resolve(process.cwd()) !== root) throw Error('Kör från dealer-katalogen.');
@@ -30,6 +33,8 @@ const deploy = path.join(root, '.runtime', 'studio-deploy');
 const output = path.join(deploy, '.vercel', 'output');
 const staticRoot = path.join(output, 'static');
 const middlewareRoot = path.join(output, 'functions', '_middleware.func');
+// The bot and the request inbox: one Node.js function (cloud/studio/bot-function.ts) with the knowledge beside it.
+const botRoot = path.join(output, 'functions', 'api', 'bot.func');
 // The export of studio/scripts/build.mjs --snapshot (studio/next.config.ts SNAPSHOT_OUT).
 const studioOut = path.join(root, '.runtime', 'studio-snapshot', 'out');
 
@@ -291,10 +296,28 @@ for (const file of [...blob.values()].sort((a, b) => a.path.localeCompare(b.path
   media[`/${file.path}`] = {url: entry?.url ?? null, type: file.type, bytes: file.bytes, sha256: file.sha256};
 }
 await mkdir(middlewareRoot, {recursive: true});
-const lockFiles: Record<string, string> = {'index.js': 'cloud/studio/middleware.ts', 'gate.js': 'cloud/studio/gate.ts', 'lock.js': 'cloud/studio/lock.ts', 'login-page.js': 'cloud/studio/login-page.ts'};
+const lockFiles: Record<string, string> = {'index.js': 'cloud/studio/middleware.ts', 'gate.js': 'cloud/studio/gate.ts', 'lock.js': 'cloud/studio/lock.ts', 'login-page.js': 'cloud/studio/login-page.ts', 'bot-routes.js': 'cloud/studio/bot-routes.ts'};
 for (const [name, source] of Object.entries(lockFiles)) await writeFile(path.join(middlewareRoot, name), forBrowser(await readFile(path.join(root, source), 'utf8')));
 await writeFile(path.join(middlewareRoot, 'media.js'), `// The films of this copy in Blob (tools/build-studio-snapshot.ts).\nexport default ${JSON.stringify(media, null, 1)};\n`);
 await writeFile(path.join(middlewareRoot, '.vc-config.json'), JSON.stringify({runtime: 'edge', entrypoint: 'index.js'}, null, 2));
+
+// ── The bot: its function and its knowledge, which ships only inside the function ──
+// The knowledge is made from the frozen bank and the proofs as the copy shows them (tools/build-knowledge.ts); its last scan
+// stops the build on a cost, a blocked name, a path, an id or a token pattern. Without Paow in the register, Paow is out too.
+const botRelease = release.paow ? release : {...release, blocked: {...release.blocked, names: [...release.blocked.names, 'Paow']}};
+const {knowledge, report: knowledgeReport} = await buildKnowledge({root, release: botRelease, graph: frozenGraph, proofs: allProofs, onSite: new Set(proofs.proofs.map(p => p.id))});
+await mkdir(botRoot, {recursive: true});
+const botTexts: Record<string, string> = {};
+for (const [name, source] of Object.entries(BOT_FUNCTION_FILES)) botTexts[name] = forBrowser(await readFile(path.join(root, source), 'utf8'));
+botTexts['bot-knowledge.js'] = `// The bot's knowledge (tools/build-knowledge.ts), built with this copy. Only the function reads it.\nexport default ${JSON.stringify(knowledge)};\n`;
+for (const [name, text] of Object.entries(botTexts)) {
+  const leaks = findTextLeaks(text, botRelease);
+  if (leaks.length) throw Error(`Får inte gå upp: functions/api/bot.func/${name}: ${leaks.join(', ')}`);
+  await writeFile(path.join(botRoot, name), text);
+}
+await writeFile(path.join(botRoot, 'package.json'), JSON.stringify({type: 'module'}));
+// Node.js 22 as in the Build Output API's own example; 300 s is the Hobby plan's maximum with Fluid compute.
+await writeFile(path.join(botRoot, '.vc-config.json'), JSON.stringify({runtime: 'nodejs22.x', handler: 'index.js', launcherType: 'Nodejs', shouldAddHelpers: false, supportsResponseStreaming: true, maxDuration: 300}, null, 2));
 
 // ── Small files, the routes, the receipt ────────────────────────────────────
 const sourceCommit = execFileSync('git', ['rev-parse', 'HEAD'], {cwd: root, encoding: 'utf8'}).trim();
@@ -321,6 +344,9 @@ const config = {
     {src: '^/studio$', status: 308, headers: {Location: '/studio/'}},
     {src: '^/lab\\.html$', status: 308, headers: {Location: '/studio/'}},
     {src: '^/api/(clip-bank|proofs|placements|library)$', dest: '/api/$1.json'},
+    // The bot's one function answers the draft and the inbox too (cloud/studio/bot.ts routeOf reads ?vag=…).
+    {src: '^/api/utkast/?$', dest: '/api/bot?vag=utkast'},
+    {src: '^/api/onskemal(?:/([^/]+?)(/bild)?)?/?$', dest: '/api/bot?vag=onskemal&id=$1&del=$2'},
     {src: '^/studio/((?:[^/]+/)*)$', dest: '/studio/$1index.html'},
     {handle: 'filesystem'},
     {src: '^/studio/((?:[^/.]+/)*[^/.]+)$', status: 308, headers: {Location: '/studio/$1/'}},
@@ -347,6 +373,8 @@ const plan = [...blob.values()].map(({path: p, sha256, bytes, type, object, grou
 await writeFile(path.join(deploy, 'media-plan.json'), JSON.stringify({schemaVersion: 1, builtAt: meta.builtAt, sourceCommit, files: plan}, null, 2));
 await writeFile(path.join(deploy, 'build.json'), JSON.stringify({builtAt: meta.builtAt, sourceCommit, sourceDirty, bankSha256: digest(bankText), proofsSha256: digest(proofsText), release: digest(await readFile(path.join(root, 'data/studio-release.json'))),
   deployable: missing === 0, filmsWithoutUpload: missing, staticBytes, blobBytes, static: written, blob: plan,
+  bot: {knowledgeBytes: knowledgeReport.bytes, core: knowledgeReport.karna, searched: knowledgeReport.rest, views: knowledgeReport.vyer, missingSources: knowledgeReport.saknas, removed: knowledgeReport.borttaget,
+    files: Object.fromEntries(Object.entries(botTexts).map(([name, text]) => [name, {bytes: Buffer.byteLength(text), sha256: digest(text)}]))},
   leftOut: {takes: takes.left, proofs: proofs.left, notInCopy}}, null, 2));
 
 // ── The table ───────────────────────────────────────────────────────────────
@@ -363,5 +391,9 @@ console.log('\nLämnas utanför');
 console.log(`  tagningar: ${tally(takes.left) || 'inga'}`);
 console.log(`  prov: ${tally(proofs.left) || 'inga'}`);
 if (notInCopy.length) console.log(`  studion frågar efter, finns inte i kopian: ${notInCopy.join(', ')}`);
+console.log('\nBoten (functions/api/bot.func, kunskapen bara där)');
+console.log(`  kunskapen: ${MB(knowledgeReport.bytes)} MB; kärnan ${knowledgeReport.karna.avsnitt} avsnitt, cirka ${knowledgeReport.karna.tokens} token; sökbart ${knowledgeReport.rest.avsnitt} avsnitt, cirka ${knowledgeReport.rest.tokens} token (skattat)`);
+console.log(`  vyerna ur ${knowledgeReport.vyer === 'guide' ? 'studio/lib/guide.ts' : 'botens egna texter'}; borttaget: ${Object.entries(knowledgeReport.borttaget).map(([k, n]) => `${n} ${k}`).join(', ') || 'inget'}`);
+if (knowledgeReport.saknas.length) console.log(`  källor som saknas: ${knowledgeReport.saknas.join(', ')}`);
 console.log(`\n${output}`);
 console.log(missing ? `Inte klar att publicera: ${missing} filer saknar Blob-adress (node tools/sync-studio-media.ts).` : 'Alla filer har en verifierad Blob-adress.');

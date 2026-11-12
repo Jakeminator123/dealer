@@ -1,21 +1,28 @@
 "use client";
 
 // Granska (/granska/?tagning=<id>, /granska/?vy=alla): the takes that wait for Jakob's word, one at a time and large, with
-// the queue beside it. After a decision the next waiting take opens by itself, and "Ångra" goes back to the last one.
+// the queue beside it. After a decision the next waiting take opens by itself, and "Ångra" goes back to the last one and
+// takes that decision back (the decision bar's own Återställ write, on his click on "Ångra").
 // The count is awaitingJakob, the same as the rail's. "Alla" lists every take with filters, for looking something up.
+// In the online copy (isSnapshot) the view opens on "Alla" (?vy=ko for the queue), and the queue says what waits
+// (WaitingInCopy) instead of a player without a film; a take opened from "Alla" opens large as in the lab.
 // Must be inside <Suspense> (useSearchParams).
 import { PartyPopper } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { Decision } from "../../lib/api.ts";
 import { useBank } from "../../lib/bank.ts";
+import { isSnapshot } from "../../lib/mode.ts";
 import { takeNames } from "../../lib/names.ts";
 import { nextWaiting, previousWaiting, reviewQueue } from "../../lib/review.ts";
 import { Page } from "../shell";
+import type { DecisionBarHandle } from "../takes/DecisionBar";
 import { Button, EmptyState, ErrorState, SegmentedControl, Skeleton } from "../ui";
 import { AllTakes } from "./AllTakes";
+import { tabOf, vyFor } from "./copy";
 import { QueueList } from "./QueueList";
 import { TakeReview, type LastDecision } from "./TakeReview";
+import { WaitingInCopy } from "./WaitingInCopy";
 
 const SITTING = "studio.granska.sitting";
 
@@ -49,14 +56,18 @@ function replaceParams(next: Record<string, string | null>) {
 
 export function ReviewView() {
   const params = useSearchParams();
-  const view = params.get("vy") === "alla" ? "alla" : "ko";
+  const view = tabOf(params.get("vy"), isSnapshot);
   const { graph, status, error, reload } = useBank();
   const [sitting, setSitting] = useState<Map<string, string>>(() => new Map());
   const [current, setCurrent] = useState<string | null>(() => params.get("tagning"));
+  // The copy: a take opened by hand (from "Alla", or by its address) is shown large; otherwise the queue says what waits.
+  const [chosen, setChosen] = useState(() => !!params.get("tagning"));
   const [advanceFrom, setAdvanceFrom] = useState<string | null>(null);
   const [last, setLast] = useState<LastDecision | null>(null);
   const [undoing, setUndoing] = useState<string | null>(null);
+  const [undoAsked, setUndoAsked] = useState<string | null>(null); // "Ångra" was clicked for this take
   const main = useRef<HTMLDivElement>(null);
+  const bar = useRef<DecisionBarHandle>(null);
 
   useEffect(() => setSitting(readSitting()), []);
   const queue = useMemo(() => (graph ? reviewQueue(graph, sitting) : null), [graph, sitting]);
@@ -75,15 +86,29 @@ export function ReviewView() {
   }, [queue, graph, advanceFrom, current]);
 
   useEffect(() => {
-    if (view === "ko") replaceParams({ tagning: current });
-  }, [current, view]);
+    if (view === "ko" && (!isSnapshot || chosen)) replaceParams({ tagning: current });
+  }, [current, view, chosen]);
 
   const open = useCallback((id: string) => {
     setCurrent(id);
+    setChosen(true);
     setUndoing(null);
+    setUndoAsked(null);
   }, []);
 
   const take = current && graph ? (graph.takes[current] ?? null) : null;
+
+  // "Ångra": the take is open again; now its decision bar makes its Återställ write. Only ever after his click on "Ångra".
+  useEffect(() => {
+    if (!undoAsked || take?.id !== undoAsked) return;
+    setUndoAsked(null);
+    const handle = bar.current;
+    if (!handle) return setUndoing(undoAsked);
+    const id = undoAsked;
+    void handle.reset().then((ok) => {
+      if (!ok) setUndoing(id);
+    });
+  }, [undoAsked, take]);
   const edge = take && graph ? graph.edge[take.edge] : null;
   const waitingItems = queue?.items.filter((i) => !i.decided) ?? [];
   const position = take ? waitingItems.findIndex((i) => i.take.id === take.id) + 1 || null : null;
@@ -114,7 +139,11 @@ export function ReviewView() {
     <SegmentedControl
       label="Visa"
       value={view}
-      onChange={(v) => replaceParams({ vy: v === "alla" ? "alla" : null, tagning: v === "alla" ? null : current })}
+      onChange={(v) => {
+        const tab = v === "alla" ? "alla" : "ko";
+        if (isSnapshot) setChosen(false); // the copy's queue tab shows what waits
+        replaceParams({ vy: vyFor(tab, isSnapshot), tagning: tab === "alla" || isSnapshot ? null : current });
+      }}
       options={[
         { value: "ko", label: queue ? `Kö · ${queue.waiting}` : "Kö" },
         { value: "alla", label: graph ? `Alla · ${Object.keys(graph.takes).length}` : "Alla" },
@@ -158,9 +187,16 @@ export function ReviewView() {
           graph={graph}
           onOpen={(id) => {
             open(id);
-            replaceParams({ vy: null, tagning: id });
+            replaceParams({ vy: vyFor("ko", isSnapshot), tagning: id });
           }}
         />
+      </Page>
+    );
+
+  if (isSnapshot && !chosen)
+    return (
+      <Page title="Granska" status={status_} actions={tabs} full>
+        <WaitingInCopy items={queue.items} onOpen={(id) => open(id)} onAll={() => replaceParams({ vy: vyFor("alla", isSnapshot), tagning: null })} />
       </Page>
     );
 
@@ -187,9 +223,10 @@ export function ReviewView() {
               onUndo={() => {
                 if (!last) return;
                 open(last.id);
-                setUndoing(last.id);
+                setUndoAsked(last.id);
               }}
               undoing={undoing === take.id}
+              barRef={bar}
             />
           ) : (
             <EmptyState

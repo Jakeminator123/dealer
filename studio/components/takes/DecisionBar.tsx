@@ -4,14 +4,16 @@
 // Nothing is written without his click. Primär lowers an earlier Primär on the same edge to plain accepted (its note kept);
 // a 409 says the record changed, reads the bank again and asks him to choose again. demo: shows and answers, never writes.
 // In the online copy (lib/mode.ts) there are no buttons at all: the bar shows his verdict and note and says "Bara Jakob
-// dömer", and putDecision refuses there too.
+// dömer", and putDecision refuses there too. The write itself, with the Primär rule, is lib/decide.ts (one copy).
+// ref (DecisionBarHandle): reset() makes the same write as "Återställ", for a button of his elsewhere ("Ångra" in the
+// review queue); the caller calls it only from his click there. It skips Återställ's second click: "Ångra" is the click.
 import { Check, Diamond, Lock, RotateCcw, Star, X } from "lucide-react";
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useEffect, useImperativeHandle, useRef, useState, type ReactNode, type Ref } from "react";
 import type { Take } from "../../../src/clip-graph.ts";
 import { ApiError, NOTE_LIMIT, putDecision, type Decision } from "../../lib/api.ts";
 import { useOptionalBank } from "../../lib/bank.ts";
+import { decide as write } from "../../lib/decide.ts";
 import { isSnapshot } from "../../lib/mode.ts";
-import { takeName } from "../../lib/names.ts";
 import { chosenDecision, reviewStamp, storedNote } from "../../lib/verdict.ts";
 import { Badge } from "../ui/Badge";
 import { cn } from "../ui/cn";
@@ -73,14 +75,21 @@ type BarProps = {
   /** After a saved decision and the bank read again. */
   onSaved?: (decision: Decision) => void;
   className?: string;
+  ref?: Ref<DecisionBarHandle>;
+};
+
+export type DecisionBarHandle = {
+  /** The same write as "Återställ" on the bar's take (it waits again, its note goes); true when it was saved. */
+  reset(): Promise<boolean>;
 };
 
 export function DecisionBar(props: BarProps) {
-  return isSnapshot ? <JakobJudges take={props.take} className={props.className} /> : <DecisionButtons {...props} />;
+  return isSnapshot ? <JakobJudges take={props.take} className={props.className} ref={props.ref} /> : <DecisionButtons {...props} />;
 }
 
 /** The online copy's bar: his verdict and his note as they stand, and who decides. Nothing here can be pressed. */
-function JakobJudges({ take, className }: { take: Take; className?: string }) {
+function JakobJudges({ take, className, ref }: { take: Take; className?: string; ref?: Ref<DecisionBarHandle> }) {
+  useImperativeHandle(ref, () => ({ reset: async () => false }), []);
   const note = storedNote(take.motion?.review);
   const stamp = reviewStamp(take.motion?.review);
   return (
@@ -102,7 +111,7 @@ function JakobJudges({ take, className }: { take: Take; className?: string }) {
   );
 }
 
-function DecisionButtons({ take, demo = false, compact = false, onSaved, className }: BarProps) {
+function DecisionButtons({ take, demo = false, compact = false, onSaved, className, ref }: BarProps) {
   const bank = useOptionalBank();
   const toast = useToast();
   const stored = storedNote(take.motion?.review);
@@ -138,45 +147,36 @@ function DecisionButtons({ take, demo = false, compact = false, onSaved, classNa
   const can = (demo || ready) && !saving;
   const hasWord = !!take.motion?.review?.userReview;
 
-  async function decide(decision: Decision) {
+  // A button of the bar: Återställ asks for a second click first.
+  function decide(decision: Decision) {
+    if (!demo && decision === "PENDING" && !confirmReset) {
+      if (ready && !saving) setConfirmReset(true);
+      return;
+    }
+    void save(decision);
+  }
+
+  async function save(decision: Decision): Promise<boolean> {
     if (demo) {
       setDemoChoice(decision === "PENDING" ? null : decision);
       setConfirmReset(false);
       toast({ tone: "info", title: `Demo: ${DONE_TEXT[decision]}`, detail: "På den här sidan sparas ingenting." });
-      return;
+      return false;
     }
-    if (!ready || saving) return;
-    if (decision === "PENDING" && !confirmReset) {
-      setConfirmReset(true);
-      return;
-    }
+    if (!ready || saving) return false;
     setConfirmReset(false);
     setSaving(decision);
     setLine(null);
     try {
-      await putDecision(take.id, decision, decision === "PENDING" ? "" : note, take.revision!);
-      // One Primär per edge: an earlier one becomes a plain approval, with Jakob's own note kept.
-      const lowered: string[] = [];
-      const failed: string[] = [];
-      if (decision === "MAIN" && bank?.graph) {
-        const edge = bank.graph.edge[take.edge];
-        for (const other of Object.values(bank.graph.takes)) {
-          if (other.id === take.id || other.edge !== take.edge || !other.explicitMain || !other.revision) continue;
-          const name = takeName(other, edge?.takes);
-          try {
-            await putDecision(other.id, "ACCEPTED", storedNote(other.motion?.review), other.revision);
-            lowered.push(name);
-          } catch {
-            failed.push(name);
-          }
-        }
-      }
+      // One Primär per edge: an earlier one becomes a plain approval, with Jakob's own note kept (lib/decide.ts).
+      const { lowered, failed } = await write(take, decision, note, bank?.graph ?? null, putDecision);
       setDirty(false);
       if (failed.length) toast({ tone: "bad", title: `${DONE_TEXT[decision]} sparat, men ${failed.join(", ")} är också kvar som Primär`, detail: "Läs om och sätt den andra till Godkänn." });
       else toast({ tone: "ok", title: `${DONE_TEXT[decision]} · sparat`, detail: lowered.length ? `${lowered.join(", ")} är nu godkänd i stället för Primär.` : undefined });
       setLine({ tone: "ok", text: decision === "PENDING" ? "Återställd: filmen väntar på ditt beslut igen." : `Sparat i motions/${take.id}.json.` });
       await bank?.reload();
       onSaved?.(decision);
+      return true;
     } catch (error) {
       if (error instanceof ApiError && error.kind === "conflict") {
         setLine({ tone: "bad", text: "Posten ändrades medan du tittade. Den är läst på nytt: välj igen." });
@@ -186,10 +186,14 @@ function DecisionButtons({ take, demo = false, compact = false, onSaved, classNa
         setLine({ tone: "bad", text: `Inte sparat: ${message}` });
         toast({ tone: "bad", title: "Inte sparat", detail: message });
       }
+      return false;
     } finally {
       setSaving(null);
     }
   }
+
+  // Made anew on every render (no deps), so a reset asked for right after a render reads this take and its revision.
+  useImperativeHandle(ref, () => ({ reset: () => save("PENDING") }));
 
   const stamp = reviewStamp(take.motion?.review);
   const hint: Line =

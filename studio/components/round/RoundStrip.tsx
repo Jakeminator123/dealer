@@ -3,32 +3,74 @@
 // <RoundStrip segments={segments} parts={parts} clock={clock} onCue={(step) => …} />: the round under the stage, one box
 // per step: a still of the take, the edge in Jakob's words ("A2.1 → P4C1"), the take's short name, its verdict chip and
 // why it plays. The step on screen is marked and kept in view; a click cues that step. A step with a note from the bank
-// (a seam, an unknown landing) says so; a step without a film is drawn as a gap.
-import { memo, useEffect, useRef } from "react";
+// (a seam, an unknown landing) says so; a step without a film is drawn as a gap. With film (a reference such as the V6
+// film, lib/rounds.ts) the strip is one box: that film, "referens, inte i banken".
+// Stills: a long round (all seats, 34 steps) reads only the stills of the boxes near where the strip rests (a box's own
+// on-screen check also fires for every box the strip scrolls past while it follows the round, and the stills are drawn
+// a few at a time in the order asked, so those passed boxes held up the ones in view). The thumbnails do not play the
+// film under the pointer here: moving across the strip started a whole film's download per box.
+import { memo, useEffect, useRef, useState } from "react";
 import { GAP_LABEL, WHY_LABEL, type Segment } from "../../../src/clip-graph.ts";
 import { useOptionalBank } from "../../lib/bank.ts";
 import { edgeName, takeName } from "../../lib/names.ts";
 import { lastFrame, type PlayPart } from "../../lib/parts.ts";
+import type { ReferenceFilm } from "../../lib/rounds.ts";
 import { TakeChip, TakeThumb } from "../takes";
 import { cn } from "../ui/cn";
 import { Tooltip } from "../ui/Tooltip";
 import { useClock, type Clock } from "../stage/clock.ts";
+import { nearSteps, sameSet, stillOf } from "./strip";
+
+/** How far beyond the strip's window a box still reads its still: about one box. */
+const NEAR_PX = 260;
+/** The strip is taken to rest when it has not scrolled for this long. */
+const REST_MS = 140;
 
 export function RoundStrip({
   segments,
   parts,
+  film,
   clock,
   onCue,
   className,
 }: {
   segments: Segment[];
   parts: PlayPart[];
+  /** A reference film instead of the bank's steps: one box. */
+  film?: ReferenceFilm | null;
   clock?: Clock | null;
   onCue(step: number): void;
   className?: string;
 }) {
   const current = useClock(clock, (s) => s.pos?.step ?? -1);
   const scroller = useRef<HTMLDivElement>(null);
+  const [near, setNear] = useState<ReadonlySet<number>>(() => new Set());
+  const count = film ? 1 : segments.length;
+
+  // Which boxes are near the window, measured where the strip comes to rest (and at once on a new round or size).
+  useEffect(() => {
+    const box = scroller.current;
+    if (!box) return;
+    let timer = 0;
+    const measure = () => {
+      const places = [...box.querySelectorAll<HTMLElement>("[data-step]")].map((el) => ({ step: Number(el.dataset.step), left: el.offsetLeft, width: el.offsetWidth }));
+      const next = nearSteps(box.scrollLeft, box.clientWidth, places, NEAR_PX);
+      setNear((now) => (sameSet(now, next) ? now : next));
+    };
+    const rest = () => {
+      window.clearTimeout(timer);
+      timer = window.setTimeout(measure, REST_MS);
+    };
+    measure();
+    box.addEventListener("scroll", rest, { passive: true });
+    const sized = new ResizeObserver(rest);
+    sized.observe(box);
+    return () => {
+      window.clearTimeout(timer);
+      box.removeEventListener("scroll", rest);
+      sized.disconnect();
+    };
+  }, [count]);
   // The step on screen stays in view.
   useEffect(() => {
     const box = scroller.current;
@@ -45,15 +87,40 @@ export function RoundStrip({
       aria-label="Rundans steg"
       className={cn("relative flex shrink-0 gap-2 overflow-x-auto px-3 py-2 [scrollbar-width:thin]", className)}
     >
-      {segments.map((seg, i) => (
-        <StepBox key={i} index={i} seg={seg} part={parts[i]} active={i === current} clock={clock} onCue={onCue} />
-      ))}
+      {film ? (
+        <FilmBox film={film} part={parts[0]} active={current === 0} clock={clock} load={near.has(0)} onCue={onCue} />
+      ) : (
+        segments.map((seg, i) => <StepBox key={i} index={i} seg={seg} part={parts[i]} active={i === current} clock={clock} load={near.has(i)} onCue={onCue} />)
+      )}
     </div>
   );
 }
 
-// The frame a box shows: where a deal lands (its last frame played), the middle of anything else.
-const stillOf = (part: PlayPart, seg: Segment) => (seg.kind === "DEAL" ? lastFrame(part) : Math.round((part.start + lastFrame(part)) / 2));
+/** The one box of a reference film: a still a third in, its name, and that it is not one of the bank's films. */
+function FilmBox({ film, part, active, clock, load, onCue }: { film: ReferenceFilm; part: PlayPart | undefined; active: boolean; clock?: Clock | null; load: boolean; onCue(step: number): void }) {
+  const thumb = { id: film.id, media: { video: film.path }, fps: film.fps, frames: film.frames, segment: null, landingFrame: null };
+  return (
+    <button
+      type="button"
+      data-step={0}
+      aria-current={active ? "step" : undefined}
+      onClick={() => onCue(0)}
+      className={cn(
+        "group relative flex w-[300px] shrink-0 items-stretch gap-2.5 rounded-lg border p-1 text-left transition-[border-color,background-color] duration-150",
+        active ? "border-brass/70 bg-brass/[0.07] shadow-[0_0_0_1px_rgb(217_185_106/0.25)]" : "border-line bg-surface hover:border-line-strong hover:bg-raised",
+      )}
+    >
+      <TakeThumb take={thumb} still="film" frame={Math.round(film.frames / 3)} scrub={false} load={load} className="w-[104px] shrink-0 rounded-[5px]">
+        {active && part ? <Progress clock={clock} part={part} /> : null}
+      </TakeThumb>
+      <span className="flex min-w-0 flex-1 flex-col justify-center gap-px pr-1">
+        <span className="truncate text-sm font-semibold text-ink">V6-filmen</span>
+        <span className="truncate text-xs text-dim">referens, inte i banken</span>
+        <span className="truncate text-2xs text-faint">färdig film · spelas som den är</span>
+      </span>
+    </button>
+  );
+}
 
 const StepBox = memo(function StepBox({
   index,
@@ -61,6 +128,7 @@ const StepBox = memo(function StepBox({
   part,
   active,
   clock,
+  load,
   onCue,
 }: {
   index: number;
@@ -68,6 +136,8 @@ const StepBox = memo(function StepBox({
   part: PlayPart | undefined;
   active: boolean;
   clock?: Clock | null;
+  /** Near the strip's window: read the still. */
+  load: boolean;
   onCue(step: number): void;
 }) {
   const bank = useOptionalBank();
@@ -110,7 +180,7 @@ const StepBox = memo(function StepBox({
         active ? "border-brass/70 bg-brass/[0.07] shadow-[0_0_0_1px_rgb(217_185_106/0.25)]" : "border-line bg-surface hover:border-line-strong hover:bg-raised",
       )}
     >
-      <TakeThumb take={take} still="film" frame={stillOf(part, seg)} className="w-[104px] shrink-0 rounded-[5px]">
+      <TakeThumb take={take} still="film" frame={stillOf(part, seg.kind)} scrub={false} load={load} className="w-[104px] shrink-0 rounded-[5px]">
         <span className="pointer-events-none absolute left-1 top-1 rounded-xs bg-black/65 px-1.5 py-px text-2xs font-semibold text-ink tabular-nums backdrop-blur-sm">
           {index + 1}
         </span>

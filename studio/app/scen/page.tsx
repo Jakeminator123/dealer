@@ -1,7 +1,15 @@
-// A stand-in until the Scen view is built (another builder replaces this file).
-import { SlidersHorizontal } from "lucide-react";
-import { ComingSoon } from "@/components/shell";
+"use client";
 
-export default function Scen() {
-  return <ComingSoon title="Scen" icon={<SlidersHorizontal />} />;
+// Scen: every part of the 3D scene can be changed here, with basgrund (what the game shows today) as the baseline to
+// return to. The address carries the look: /scen/?forval=levande&dust=0.8 (components/scene-editor/SceneEditor.tsx).
+import { Suspense } from "react";
+import { SceneEditor } from "@/components/scene-editor";
+import { Page } from "@/components/shell";
+
+export default function ScenPage() {
+  return (
+    <Suspense fallback={<Page title="Scen" full />}>
+      <SceneEditor />
+    </Suspense>
+  );
 }

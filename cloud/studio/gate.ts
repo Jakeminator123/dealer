@@ -2,12 +2,14 @@
 // the login route and robots.txt needs the signed cookie; without it the answer is the login page itself, whatever was
 // asked for: a page, a film or /api/clip-bank. With it, a film is sent on to its object in Vercel Blob (the browser keeps
 // the site's own address, so films stay same-origin for the 3D scene and stay behind the password), and everything else
-// goes on to the static files. Only GET and HEAD pass: the copy has no route that writes, and the gate refuses the rest.
+// goes on to the static files. Only GET and HEAD pass, except to the bot and the request inbox (cloud/studio/bot-routes.ts),
+// the copy's only addresses that write; the gate refuses the rest.
 //
 // The answers follow Vercel's middleware protocol for the Build Output API: a response with "x-middleware-next: 1" goes on
 // to the files, one with "x-middleware-rewrite: <url>" is served from that address, any other response is the answer.
 import {COOKIE, MAX_AGE, TryLimit, clearCookieHeader, clientAddress, cookieHeader, readCookies, samePassword, secrets, signCookie, verifyCookie, type Secrets} from './lock.ts';
 import {loginPage, safeNext} from './login-page.ts';
+import {isAdminCall, isBotPath} from './bot-routes.ts';
 
 /** A film or picture that lies in Blob: its address there (null until it is uploaded), its type, size and SHA-256. */
 export type MediaEntry = {url: string | null; type: string; bytes: number; sha256: string};
@@ -81,11 +83,15 @@ export async function gate(request: Request, ctx: GateContext): Promise<Response
     if (request.method !== 'POST') return text('Bara POST.', 405, {Allow: 'POST'});
     return new Response(null, {status: 303, headers: {Location: '/login', 'Set-Cookie': clearCookieHeader(secure), 'Cache-Control': 'no-store', ...ROBOTS}});
   }
+  // The bot's hook (cloud/studio/bot-routes.ts): the owner's tool reaches the inbox with its admin key, which the function
+  // itself compares; with the cookie, every method of the bot's addresses goes on to the function, which allows its own.
+  if (isAdminCall(path, request.headers)) return passOn();
   if (!await verifyCookie(s, readCookies(request.headers.get('cookie')).get(COOKIE), Math.floor(now / 1000))) {
     // The login page itself, for every address: a page asked for comes back to it after the login.
     const next = request.method === 'GET' && request.headers.get('sec-fetch-dest') !== 'video' ? safeNext(path + url.search) : '/studio/';
     return page(loginPage({next}), 401);
   }
+  if (isBotPath(path)) return passOn();
   if (request.method !== 'GET' && request.method !== 'HEAD') return text('Kopian går inte att ändra.', 405, {Allow: 'GET, HEAD'});
   const entry = Object.hasOwn(ctx.media, path) ? ctx.media[path] : null;
   if (entry) {

@@ -1,6 +1,6 @@
 // Primära: for every film of a whole round, what plays now against the best take Jakob has accepted outright, and what
-// making that take Primär would do to the seam between deal and return. Pure: no DOM; the one write (makePrimary) takes
-// its writer as an argument. Tests in studio/tests/primaries.test.ts.
+// making that take Primär would do to the seam between deal and return. Pure: no DOM; the one write (makePrimary, from
+// lib/decide.ts) takes its writer as an argument. Tests in studio/tests/primaries.test.ts and decide.test.ts.
 //
 // Nothing here decides anything: it proposes. Primär is Jakob's decision, written only by his click (makePrimary).
 import {
@@ -19,10 +19,9 @@ import {
   type Take,
   type Why,
 } from "../../src/clip-graph.ts";
-import type { Decision, DecisionResult } from "./api.ts";
 import { isOutright, primaryOf } from "./edge-stats.ts";
 import { nodeCode, takeName } from "./names.ts";
-import { VERDICT_LABEL, storedNote, verdictOf } from "./verdict.ts";
+import { VERDICT_LABEL, verdictOf } from "./verdict.ts";
 
 // The films of seat 4 Jakob called very good on 12 Nov (scene3d's own round): the first three proposals of the page.
 export const PRAISED = ["pamela-idle-ready-entry-01", "pamela-p4-c1-plan-deal-02", "pamela-p4-c1-plan-return-idle-01"] as const;
@@ -265,24 +264,6 @@ export function pairSeams(rows: Row[]): Seam[] {
 }
 
 // ── The one write ───────────────────────────────────────────────────────────
-// Makes one take Primär with Jakob's own note kept, then lowers an earlier Primär on the same edge to plain accepted (its
-// note kept too): the same two steps as DecisionBar's Primär (components/takes/DecisionBar.tsx). Called only from his click.
-export type Put = (id: string, decision: Decision, note: string, revision: string) => Promise<DecisionResult>;
-export async function makePrimary(take: Take, graph: Graph, put: Put): Promise<{ lowered: string[]; failed: string[] }> {
-  if (!take.revision) throw new Error("Tagningen har ingen post i motions/ ännu, så beslutet kan inte sparas.");
-  await put(take.id, "MAIN", storedNote(take.motion?.review), take.revision);
-  const lowered: string[] = [];
-  const failed: string[] = [];
-  const edge = graph.edge[take.edge];
-  for (const other of Object.values(graph.takes)) {
-    if (other.id === take.id || other.edge !== take.edge || !other.explicitMain || !other.revision) continue;
-    const name = takeName(other, edge?.takes);
-    try {
-      await put(other.id, "ACCEPTED", storedNote(other.motion?.review), other.revision);
-      lowered.push(name);
-    } catch {
-      failed.push(name);
-    }
-  }
-  return { lowered, failed };
-}
+// Makes one take Primär with Jakob's own note kept and lowers an earlier Primär on the same edge: the rule lives once, in
+// lib/decide.ts, which DecisionBar calls too. Called only from his click.
+export { makePrimary, type Put } from "./decide.ts";

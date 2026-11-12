@@ -8,15 +8,27 @@
 //
 // Use a throwaway password and key for a rehearsal, never the real ones. The server never reaches the internet: every
 // Blob address in the map is replaced by a local stand-in. It stops by itself after 30 minutes without a request.
+//
+// The bot (POST /api/bot, /api/utkast, /api/onskemal; cloud/studio/bot.ts) runs here too, as the built function would,
+// with the knowledge built beside it, a store of files under .runtime/bot-rehearsal/ instead of Blob, and BOT_FEJK=1: a
+// canned answer with real sources, no key and no model call. Set DEALER_ADMIN_NYCKEL (32+ characters, throwaway) to try
+// the owner's tool against it: DEALER_KOPIA_ADRESS=http://127.0.0.1:4330 node tools/onskemal.ts lista.
+// --riktig-modell lets the bot call the model with OPENAI_API_KEY instead: that costs money, and is the owner's choice.
 import http from 'node:http';
 import {readFile, writeFile, stat, realpath, unlink, mkdir} from 'node:fs/promises';
 import {createReadStream} from 'node:fs';
 import {randomUUID} from 'node:crypto';
 import path from 'node:path';
-import {fileURLToPath} from 'node:url';
+import {fileURLToPath, pathToFileURL} from 'node:url';
 import {gate, type MediaMap} from '../cloud/studio/gate.ts';
 import {TryLimit} from '../cloud/studio/lock.ts';
+import {handle as botHandle} from '../cloud/studio/bot.ts';
+import {isBotPath} from '../cloud/studio/bot-routes.ts';
+import {sendResponse} from '../cloud/studio/bot-node.ts';
+import {fileStore} from '../cloud/studio/store-file.ts';
+import type {Knowledge} from '../cloud/studio/bot-search.ts';
 import {forBrowser} from './lab-routes.ts';
+import {BOT_FUNCTION_FILES} from './build-knowledge.ts';
 
 const root = path.resolve(fileURLToPath(new URL('../', import.meta.url)));
 if (path.resolve(process.cwd()) !== root) throw Error('Kör från dealer-katalogen.');
@@ -35,8 +47,15 @@ if (process.argv.includes('--stop')) {
 
 // What ships is what is rehearsed: the built middleware must be the type-stripped cloud/studio/ files.
 const fn = path.join(output, 'functions', '_middleware.func');
-for (const [name, source] of Object.entries({'index.js': 'cloud/studio/middleware.ts', 'gate.js': 'cloud/studio/gate.ts', 'lock.js': 'cloud/studio/lock.ts', 'login-page.js': 'cloud/studio/login-page.ts'}))
-  if (await readFile(path.join(fn, name), 'utf8') !== forBrowser(await readFile(path.join(root, source), 'utf8'))) throw Error(`Den byggda ${name} är inte cloud/studio/ som den ser ut nu: bygg om.`);
+for (const [name, source] of Object.entries({'index.js': 'cloud/studio/middleware.ts', 'gate.js': 'cloud/studio/gate.ts', 'lock.js': 'cloud/studio/lock.ts', 'login-page.js': 'cloud/studio/login-page.ts', 'bot-routes.js': 'cloud/studio/bot-routes.ts'}))
+  if (await readFile(path.join(fn, name), 'utf8').catch(() => null) !== forBrowser(await readFile(path.join(root, source), 'utf8'))) throw Error(`Den byggda ${name} är inte cloud/studio/ som den ser ut nu: bygg om.`);
+const botFn = path.join(output, 'functions', 'api', 'bot.func');
+for (const [name, source] of Object.entries(BOT_FUNCTION_FILES))
+  if (await readFile(path.join(botFn, name), 'utf8').catch(() => null) !== forBrowser(await readFile(path.join(root, source), 'utf8'))) throw Error(`Botens byggda ${name} är inte cloud/studio/ som den ser ut nu: bygg om.`);
+const knowledge = (await import(pathToFileURL(path.join(botFn, 'bot-knowledge.js')).href)).default as Knowledge;
+const realModel = process.argv.includes('--riktig-modell');
+const botEnv = {...process.env, BOT_FEJK: realModel ? '' : '1'};
+const botStore = fileStore(path.join(root, '.runtime', 'bot-rehearsal'));
 const built = JSON.parse((await readFile(path.join(fn, 'media.js'), 'utf8')).replace(/^\/\/.*\n/, '').replace(/^export default /, '').replace(/;\s*$/, '')) as MediaMap;
 const plan = JSON.parse(await readFile(path.join(deploy, 'media-plan.json'), 'utf8')) as {files: {path: string; object: string; sha256: string}[]};
 const local = new Map(plan.files.map(f => [f.object, f.path]));
@@ -81,12 +100,24 @@ const server = http.createServer(async (req, res) => {
     if (req.url === '/__stopp' && req.method === 'POST' && req.headers['x-rehearsal-token'] === token) { res.end('stopp'); server.close(); setTimeout(() => server.closeAllConnections(), 300).unref(); return; }
     const url = new URL(req.url ?? '/', origin);
     const chunks: Buffer[] = []; let size = 0;
-    if (req.method === 'POST') for await (const chunk of req) { size += chunk.length; if (size > 65536) { res.writeHead(413).end(); return; } chunks.push(chunk); }
+    // The bot's routes take a screenshot (as the function does, up to about 2,7 MB); everything else stays small.
+    const withBody = !['GET', 'HEAD'].includes(req.method ?? 'GET'), limit = isBotPath(url.pathname) ? 2_700_000 : 65536;
+    if (withBody) for await (const chunk of req) { size += chunk.length; if (size > limit) { res.writeHead(413).end(); return; } chunks.push(chunk); }
     const headers = new Headers();
     for (const [k, v] of Object.entries(req.headers)) if (typeof v === 'string') headers.set(k, v); else if (Array.isArray(v)) headers.set(k, v.join(', '));
     headers.set('x-real-ip', req.socket.remoteAddress ?? 'okänd');
-    const request = new Request(url, {method: req.method, headers, body: req.method === 'POST' ? Buffer.concat(chunks) : undefined});
+    const body = withBody ? Buffer.concat(chunks) : undefined;
+    const request = new Request(url, {method: req.method, headers, body});
     let pathname = decodeURIComponent(url.pathname);
+    /** The bot's function, as Vercel would run it after the routes: the address as rewritten, the request as it came. */
+    const serveFunction = async (at: string) => {
+      if (at.split('?')[0] !== '/api/bot') return false;
+      const abort = new AbortController();
+      res.on('close', () => { if (!res.writableFinished) abort.abort(); });
+      const rewritten = new Request(new URL(at, origin), {method: req.method, headers, body, signal: abort.signal});
+      await sendResponse(res, await botHandle(rewritten, {env: botEnv, knowledge, store: botStore, signal: abort.signal}), added);
+      return true;
+    };
     const added: Record<string, string> = {};
     const match = (route: Record<string, any>) => new RegExp(route.src).exec(pathname);
     const fill = (text: string, m: RegExpExecArray) => text.replace(/\$(\d)/g, (_, n) => m[Number(n)] ?? '');
@@ -97,7 +128,7 @@ const server = http.createServer(async (req, res) => {
       return true;
     };
     for (const route of config.routes) {
-      if (route.handle === 'filesystem') { if (await serveStatic(pathname)) return; continue; }
+      if (route.handle === 'filesystem') { if (await serveStatic(pathname) || await serveFunction(pathname)) return; continue; }
       const m = match(route); if (!m) continue;
       if (route.middlewarePath) {
         const answer = await gate(request, {env: process.env, media, limiter});
@@ -138,6 +169,7 @@ server.listen(port, '127.0.0.1', async () => {
   await mkdir(path.dirname(state), {recursive: true});
   await writeFile(state, JSON.stringify({port, pid: process.pid, token, startedAt: new Date().toISOString()}));
   console.log(`${origin}/studio/  (lås: ${process.env.DEALER_LOSEN && (process.env.DEALER_KAKNYCKEL ?? '').length >= 32 ? 'inställt' : 'INTE inställt, allt ger inloggningssidan'})`);
+  console.log(`boten: ${realModel ? 'RIKTIG MODELL (kostar)' : 'BOT_FEJK=1, inget modellanrop'}; lagring ${path.join('.runtime', 'bot-rehearsal')}; kunskap ${knowledge ? `${knowledge.karna.length} + ${knowledge.avsnitt.length} avsnitt` : 'saknas'}; adminnyckel ${(process.env.DEALER_ADMIN_NYCKEL ?? '').length >= 32 ? 'inställd' : 'inte inställd'}`);
 });
 process.on('SIGINT', () => server.close(() => process.exit(0)));
 process.on('SIGTERM', () => server.close(() => process.exit(0)));

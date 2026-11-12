@@ -5,17 +5,23 @@ import { buildGraph, resolveRound, type BankData, type BankJob } from "../../src
 import { defaultPlan } from "../../src/placement-model.ts";
 import { formatJakob } from "../lib/names.ts";
 import { partsOf } from "../lib/parts.ts";
-import { SEAT_FOUR, addressOf, contextRound, contextSteps, matchReady, placesOf, readAddress, readyRounds, roundFacts, roundFromText } from "../lib/rounds.ts";
+import { readFileSync } from "node:fs";
+import { SEAT_FOUR, V6_FILM, addressOf, contextRound, contextSteps, isReference, matchReady, no3d, placesOf, readAddress, readyRounds, referencePart, roundFacts, roundFromText, roundParts, viewFor } from "../lib/rounds.ts";
+import { nearSteps, sameSet, stillOf } from "../components/round/strip.ts";
 
 test("the ready-made rounds, in his notation", () => {
-  const rounds = readyRounds();
-  assert.deepEqual(rounds.map((r) => r.name), ["Plats 4", "V6-given", "Alla platser", "P1", "P2", "P3", "P4", "P5", "P6", "P7"]);
+  const all_ = readyRounds();
+  assert.deepEqual(all_.map((r) => r.name), ["Plats 4", "Plats 4 · två kort", "Alla platser", "P1", "P2", "P3", "P4", "P5", "P6", "P7", "V6-filmen"]);
+  const rounds = all_.filter((r) => !isReference(r));
   assert.ok(rounds.every((r) => !r.errors.length && r.steps.length));
   const [four, v6, all, p1] = rounds;
   assert.equal(formatJakob(four.steps), "A1 - A2.1 - P4C1 - A1");
   assert.deepEqual(four.steps.map((s) => s.take), ["pamela-idle-ready-entry-01", "pamela-p4-c1-plan-deal-02", "pamela-p4-c1-plan-return-idle-01"]);
   assert.equal(four.text, SEAT_FOUR);
+  // the bank's films in V6's order: named so that it cannot be taken for the V6 film
   assert.equal(formatJakob(v6.steps), "A2.1 - P4C1 - A2.1 - P4C2 - A2.1");
+  assert.equal(v6.sub, "A2.1 - P4C1 - A2.1 - P4C2 - A2.1 · bankens filmer");
+  assert.ok(!/V6/.test(v6.name));
   // every seat and the dealer, two cards each, the last deal back to rest and the hole card turned: 1 + 16 × 2 + 1 steps
   assert.equal(all.steps.length, 34);
   assert.equal(`${all.steps.at(-1)!.from}>${all.steps.at(-1)!.to}`, "IDLE>REVEAL(D.C2)");
@@ -28,7 +34,7 @@ test("what he types becomes a round; a ready-made one is recognised; errors are 
   const own = roundFromText("A2.1 - P4C1 - A1");
   assert.equal(own.key, "egen");
   assert.deepEqual(own.steps.map((s) => `${s.from}>${s.to}`), ["READY>P4.C1", "P4.C1>IDLE"]);
-  assert.equal(roundFromText(" A2.1 - P4C1 - A2.1 - P4C2 - A2.1 ").key, "v6");
+  assert.equal(roundFromText(" A2.1 - P4C1 - A2.1 - P4C2 - A2.1 ").key, "plats-4-tva");
   assert.equal(roundFromText("A1 - A2.1 - P1C1 - A1").key, "p1");
   const bad = roundFromText("A2 - P4C1");
   assert.equal(bad.steps.length, 0);
@@ -91,6 +97,53 @@ test("the address: read and written", () => {
   assert.equal(addressOf(v6, "platt"), "?runda=A2.1+-+P4C1+-+A2.1+-+P4C2+-+A2.1&vy=platt");
   assert.equal(addressOf(null, "3d"), "");
   assert.deepEqual(read(addressOf(readyRounds()[0], "platt").slice(1)), { asked: { kind: "runda", text: SEAT_FOUR }, view: "platt" });
+});
+
+test("the V6 film: a reference of its own, the library's file, one part, only in Inte 3D", () => {
+  const film = readyRounds().find(isReference)!;
+  assert.equal(film.key, "v6-filmen");
+  assert.equal(film.sub, "den färdiga filmen från 10 nov · byter hand · större kort");
+  assert.deepEqual(film.steps, []);
+  // the file is the library's V6 item, the manifest's visual reference (the lab server hands out what the manifest lists)
+  const library = JSON.parse(readFileSync(new URL("../../data/library.json", import.meta.url), "utf8")) as { items: { id: string; path: string; fps: number; frameCount: number; width: number; height: number }[] };
+  const item = library.items.find((i) => i.id === V6_FILM.id)!;
+  assert.deepEqual({ path: item.path, fps: item.fps, frames: item.frameCount, width: item.width, height: item.height }, { path: V6_FILM.path, fps: V6_FILM.fps, frames: V6_FILM.frames, width: V6_FILM.width, height: V6_FILM.height });
+  const manifest = JSON.parse(readFileSync(new URL("../../manifest.json", import.meta.url), "utf8")) as { visualReference: { path: string } };
+  assert.equal(manifest.visualReference.path, V6_FILM.path);
+  // /?runda=v6-filmen opens it, and the address it writes is that, without a view (it is always flat)
+  assert.deepEqual(roundFromText("v6-filmen"), film);
+  assert.deepEqual(roundFromText(" V6-filmen "), film);
+  const asked = readAddress(new URLSearchParams("runda=v6-filmen"));
+  assert.equal(roundFromText((asked.asked as { text: string }).text).key, "v6-filmen");
+  assert.equal(addressOf(film, "3d"), "?runda=v6-filmen");
+  assert.equal(addressOf(film, "platt"), "?runda=v6-filmen");
+  // one part, the whole film, played as any film (transport and frame stepping read parts)
+  const parts = roundParts(film, []);
+  assert.deepEqual(parts, [referencePart(V6_FILM)]);
+  assert.deepEqual(
+    { path: parts[0].path, start: parts[0].start, end: parts[0].end, fps: parts[0].fps, speed: parts[0].speed, gap: parts[0].gap, track: parts[0].track },
+    { path: "/assets/reference/v6.mp4", start: 0, end: 926, fps: 30, speed: 1, gap: null, track: null },
+  );
+  assert.equal(roundFacts(parts), "1 steg · 30,9 s");
+  // only Inte 3D, with a reason for the disabled 3D choice; a round of the bank as asked
+  assert.equal(viewFor(film, "3d"), "platt");
+  assert.match(no3d(film)!, /färdig film/);
+  const bankRound = readyRounds()[1];
+  assert.equal(viewFor(bankRound, "3d"), "3d");
+  assert.equal(no3d(bankRound), null);
+  assert.equal(viewFor(null, "3d"), "3d");
+});
+
+test("the strip: a return's still a third in, a deal's at its landing; stills only near the window", () => {
+  assert.equal(stillOf({ start: 0, end: 91 }, "RETURN"), 30);
+  assert.equal(stillOf({ start: 10, end: 101 }, "DEAL"), 100);
+  assert.equal(stillOf({ start: 0, end: 61 }, "ENTRY"), 30);
+  const boxes = Array.from({ length: 34 }, (_, step) => ({ step, left: 12 + step * 252, width: 244 }));
+  // a strip 1000 px wide at its start: the four boxes in view and the one beyond, nothing of the other 29
+  assert.deepEqual([...nearSteps(0, 1000, boxes, 260)], [0, 1, 2, 3, 4]);
+  assert.deepEqual([...nearSteps(20 * 252, 1000, boxes, 260)], [18, 19, 20, 21, 22, 23, 24]);
+  assert.ok(sameSet(new Set([1, 2]), new Set([2, 1])));
+  assert.ok(!sameSet(new Set([1, 2]), new Set([1, 3])));
 });
 
 test("card places from the plan, as the old lab hands them to the bank", () => {

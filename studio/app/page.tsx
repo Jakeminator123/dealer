@@ -12,13 +12,13 @@ import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { resolveRound } from "../../src/clip-graph.ts";
 import { RoundPicker, RoundStrip } from "@/components/round";
 import { BankStatus, Page } from "@/components/shell";
-import { Stage, createClock, type SceneLook, type StageHandle } from "@/components/stage";
+import { Stage, createClock, type SceneLook, type ShownLook, type StageHandle } from "@/components/stage";
 import { ErrorState, Kbd, SegmentedControl, Skeleton, Switch } from "@/components/ui";
 import { getPlacements } from "@/lib/api";
 import { useBank } from "@/lib/bank";
+import { stepFacts, useViewContext } from "@/lib/context";
 import { formatJakob } from "@/lib/names";
-import { partsOf } from "@/lib/parts";
-import { addressOf, contextRound, placesOf, readAddress, readyRounds, roundFacts, roundFromText, type Round, type View } from "@/lib/rounds";
+import { addressOf, contextRound, isReference, no3d, placesOf, readAddress, readyRounds, roundFacts, roundFromText, roundParts, viewFor, type Round, type View } from "@/lib/rounds";
 
 export default function SpelaPage() {
   return (
@@ -45,7 +45,8 @@ function Spela() {
   const [address, setAddress] = useState(() => readAddress(params));
   const [chosen, setChosen] = useState<Round | null>(null);
   const [view, setView] = useState<View>(address.view);
-  const [look, setLook] = useState<SceneLook>("levande");
+  // null: a double click in the scene took it to the home view, which is neither look (the control then shows none).
+  const [look, setLook] = useState<ShownLook>("levande");
   const [cards, setCards] = useState(false);
   const [clock] = useState(() => createClock());
   const stage = useRef<StageHandle>(null);
@@ -91,9 +92,14 @@ function Spela() {
   }, []);
 
   const segments = useMemo(() => (graph && round?.steps.length ? resolveRound(graph, round.steps, { holeCardDown: true, places }) : []), [graph, round, places]);
-  const parts = useMemo(() => partsOf(segments), [segments]);
-  const notation = round?.steps.length ? formatJakob(round.steps) : "";
+  const parts = useMemo(() => roundParts(round, segments), [round, segments]);
+  const notation = isReference(round) ? round.name : round?.steps.length ? formatJakob(round.steps) : "";
   const failed = status === "error" && !graph;
+  // A reference film plays only as the film it is: "Inte 3D", with 3D unavailable while it is chosen.
+  const shownView = viewFor(round, view);
+  const blocked3d = no3d(round);
+  const views = blocked3d ? VIEWS.map((v) => (v.value === "3d" ? { ...v, disabled: true, title: blocked3d } : v)) : VIEWS;
+  useViewContext({ vy: "spela", val: { runda: notation, visning: shownView === "3d" ? "3D" : "Inte 3D" }, live: () => stepFacts(clock.get().pos, segments) });
 
   return (
     <Page
@@ -112,15 +118,22 @@ function Spela() {
         )
       }
       actions={
-        <SegmentedControl
-          label="Visning"
-          value={view}
-          onChange={(next) => {
-            setView(next);
-            write(round, next);
-          }}
-          options={VIEWS}
-        />
+        <>
+          {blocked3d ? (
+            <span className="text-xs text-faint" title={blocked3d}>
+              Färdig film: bara Inte 3D
+            </span>
+          ) : null}
+          <SegmentedControl
+            label="Visning"
+            value={shownView}
+            onChange={(next) => {
+              setView(next);
+              write(round, next);
+            }}
+            options={views}
+          />
+        </>
       }
     >
       <div className="grid h-full grid-cols-[minmax(0,1fr)_288px]">
@@ -128,7 +141,7 @@ function Spela() {
           {failed ? (
             <ErrorState className="min-h-0 flex-1" title="Klippbanken kunde inte läsas" error={error} onRetry={() => void reload()} />
           ) : (
-            <Stage ref={stage} className="min-h-0 flex-1" parts={parts} mode={view} look={look} cards={cards} clock={clock} />
+            <Stage ref={stage} className="min-h-0 flex-1" parts={parts} mode={shownView} look={look} onLook={setLook} cards={cards} clock={clock} />
           )}
           <div className="border-t border-line bg-canvas">
             {status === "loading" ? (
@@ -137,6 +150,8 @@ function Spela() {
                   <Skeleton key={i} className="h-[78px] w-[244px] rounded-lg" />
                 ))}
               </div>
+            ) : isReference(round) ? (
+              <RoundStrip segments={[]} parts={parts} film={round.film} clock={clock} onCue={(step) => stage.current?.cue(step)} />
             ) : segments.length ? (
               <RoundStrip segments={segments} parts={parts} clock={clock} onCue={(step) => stage.current?.cue(step)} />
             ) : (
@@ -157,8 +172,16 @@ function Spela() {
           />
           <section className="flex flex-col gap-2.5">
             <h2 className="text-2xs font-semibold uppercase tracking-[0.09em] text-faint">Scenen</h2>
-            <SegmentedControl label="Scenens känsla" value={look} onChange={setLook} options={LOOKS} disabled={view === "platt"} className="self-start" />
-            <Switch size="sm" checked={cards} onChange={setCards} disabled={view === "platt"} label="Rendera kort" hint={view === "platt" ? "Gäller 3D" : "Ritade kort i stället för filmens"} />
+            <SegmentedControl<SceneLook | "hemvy">
+              label="Scenens känsla"
+              value={look ?? "hemvy"}
+              onChange={(next) => next !== "hemvy" && setLook(next)}
+              options={LOOKS}
+              disabled={shownView === "platt"}
+              className="self-start"
+            />
+            {look === null && shownView === "3d" ? <span className="-mt-1 text-xs text-faint">Hemvyn efter dubbelklick: välj en känsla igen.</span> : null}
+            <Switch size="sm" checked={cards} onChange={setCards} disabled={shownView === "platt"} label="Rendera kort" hint={shownView === "platt" ? "Gäller 3D" : "Ritade kort i stället för filmens"} />
           </section>
           <section className="mt-auto flex flex-col gap-1.5 text-xs text-faint">
             <span className="flex items-center gap-1.5">

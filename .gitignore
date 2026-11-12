@@ -8,3 +8,6 @@ private/
 
 # The checklist between Jakob and the main agent: a working paper, rewritten many times a day
 CHECKLISTA.md
+
+# Requests from the online copy, fetched by tools/onskemal.ts for Jakob to read
+ONSKEMAL.md

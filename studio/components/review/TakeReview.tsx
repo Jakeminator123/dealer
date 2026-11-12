@@ -14,6 +14,7 @@ import { VERDICT_LABEL, type Verdict } from "../../lib/verdict.ts";
 import { compareHref } from "../compare/ChoiceList";
 import { FilmPlayer, type FilmMark, type FilmPlayerHandle } from "../player";
 import { DecisionBar, TakeChip } from "../takes";
+import type { DecisionBarHandle } from "../takes/DecisionBar";
 import { IconButton, buttonClasses, cn } from "../ui";
 import { Fold } from "./Fold";
 
@@ -32,6 +33,7 @@ export function TakeReview({
   onUndo,
   undoing,
   playerRef,
+  barRef,
 }: {
   take: Take;
   edge: Edge;
@@ -44,9 +46,11 @@ export function TakeReview({
   /** The decision just made, for "Ångra". */
   last: LastDecision | null;
   onUndo: () => void;
-  /** This take was opened again by "Ångra". */
+  /** "Ångra" opened this take again but could not take its decision back: he chooses again. */
   undoing: boolean;
   playerRef?: Ref<FilmPlayerHandle>;
+  /** The decision bar, so that "Ångra" can make its Återställ write. */
+  barRef?: Ref<DecisionBarHandle>;
 }) {
   const name = useMemo(() => takeNames(edge.takes).get(take.id) ?? take.id, [edge.takes, take.id]);
   const notes = reviewerNotes(take);
@@ -121,8 +125,8 @@ export function TakeReview({
       ) : null}
 
       <div ref={decisionBox} className={cn("rounded-lg border bg-surface px-4 py-3", undoing ? "border-brass/50" : "border-line")}>
-        {undoing ? <p className="mb-2 text-sm text-brass-hi">Ångra: välj ett annat beslut, eller Återställ så väntar den igen.</p> : null}
-        <DecisionBar take={take} compact onSaved={onSaved} />
+        {undoing ? <p className="mb-2 text-sm text-brass-hi">Ångra: beslutet kunde inte tas tillbaka. Välj igen, eller Återställ så väntar den igen.</p> : null}
+        <DecisionBar ref={barRef} take={take} compact onSaved={onSaved} />
       </div>
     </div>
   );

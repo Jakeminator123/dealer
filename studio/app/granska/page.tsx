@@ -2,10 +2,12 @@
 import { Suspense } from "react";
 import { ReviewView } from "@/components/review";
 import { Page } from "@/components/shell";
+import { ViewContext } from "@/lib/context";
 
 export default function Granska() {
   return (
     <Suspense fallback={<Page title="Granska" />}>
+      <ViewContext vy="granska" />
       <ReviewView />
     </Suspense>
   );

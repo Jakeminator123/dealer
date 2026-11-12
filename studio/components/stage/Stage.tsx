@@ -1,12 +1,14 @@
 "use client";
 
-// <Stage parts={parts} mode="3d|platt" look="levande|stilla" cards clock={clock} ref={stageRef} />
+// <Stage parts={parts} mode="3d|platt" look="levande|stilla" onLook={setLook} cards clock={clock} ref={stageRef} />
 // The one surface for playback: the round's parts in the lab's 3D scene or as plain films ("Inte 3D"), with one transport for
 // both. Switching mode keeps the place (same step, same frame) and whether it plays. The scene is built the first time 3D is
 // shown and then kept (stopped while the flat films are on screen), so switching back is at once. Space plays and pauses,
 // the arrow keys step one frame, also across a cut. A step without a film shows a card for a moment and the round goes on.
 // The scene's look: Levande is what Jakob remembers of the 3D lab (the camera leans and sways, focus follows the card, dust,
-// the clock); Stilla is the scene's own defaults in the home view. cards draws rendered cards (3D only).
+// the clock); Stilla is the scene's own defaults in the home view. cards draws rendered cards (3D only). A double click in
+// the scene goes to the home view and stops the sway (the scene's home()), which is neither look: the stage then says so
+// with onLook(null), and a look chosen after that (Levande again) is applied anew.
 import { useEffect, useImperativeHandle, useMemo, useRef, useState, type Ref } from "react";
 import { GAP_LABEL } from "../../../src/clip-graph.ts";
 import { edgeName } from "../../lib/names.ts";
@@ -21,6 +23,8 @@ import { Transport } from "./Transport";
 
 export type { StageMode };
 export type SceneLook = "levande" | "stilla";
+/** The look the scene shows: one of the two, or null after a double click took it to the home view by hand. */
+export type ShownLook = SceneLook | null;
 /** Levande, on top of the scene's defaults: found in the logs and shown in the proof 3d-kanslan (2026-11-12). */
 export const LEVANDE: Partial<SceneState> = { mode: "lean", sway: true, focus: "follow", dust: 0.6, clock: true };
 const STILLA_KEYS = ["mode", "sway", "focus", "dust", "clock"] as const;
@@ -48,6 +52,7 @@ export function Stage({
   parts,
   mode,
   look = "levande",
+  onLook,
   cards = false,
   clock: given,
   autoplay = true,
@@ -56,7 +61,10 @@ export function Stage({
 }: {
   parts: PlayPart[];
   mode: StageMode;
-  look?: SceneLook;
+  /** null: leave the scene as it is (the home view a double click gave it). */
+  look?: ShownLook;
+  /** The look changed in the scene itself: null after a double click (home view, sway stopped). */
+  onLook?: (look: ShownLook) => void;
   cards?: boolean;
   /** Where the stage is, for others to show (the round strip); one of its own when not given. */
   clock?: Clock;
@@ -75,7 +83,11 @@ export function Stage({
   if (mode === "3d" && !want3d) setWant3d(true); // the scene is built the first time 3D is asked for
   const [ctl] = useState(() => createController({ clock, mode, autoplay, onPlaying: setPlaying, onGap: setGap, onError: setFault }));
   const scene = useRef<{ scene: Scene; defaults: SceneState; engine: Engine } | null>(null);
-  const applied = useRef<{ look: SceneLook; cards: boolean } | null>(null);
+  const applied = useRef<{ look: ShownLook; cards: boolean } | null>(null);
+  const lookCall = useRef(onLook);
+  useEffect(() => {
+    lookCall.current = onLook;
+  });
   const [sceneReady, setSceneReady] = useState(false);
   const wasPlaying = useRef(false);
 
@@ -105,7 +117,7 @@ export function Stage({
     const s = scene.current;
     if (!sceneReady || !s) return;
     const was = applied.current;
-    if (was && was.look !== look) applyLook(s.scene, s.defaults, look);
+    if (was && was.look !== look && look) applyLook(s.scene, s.defaults, look);
     if (was ? was.cards !== cards : cards) s.scene.set({ cards });
     applied.current = { look, cards };
   }, [sceneReady, look, cards]);
@@ -174,7 +186,16 @@ export function Stage({
   const gapPart = gap !== null ? parts[gap] : null;
   return (
     <div className={cn("flex min-h-0 flex-col", className)}>
-      <div className="relative min-h-0 flex-1 bg-well">
+      <div
+        className="relative min-h-0 flex-1 bg-well"
+        onDoubleClick={(event) => {
+          // The scene's own double click (SceneCanvas) has just gone home and stopped the sway: neither look is on screen now.
+          if (mode !== "3d" || !(event.target instanceof HTMLCanvasElement) || !applied.current) return;
+          if (applied.current.look === null) return;
+          applied.current = { ...applied.current, look: null };
+          lookCall.current?.(null);
+        }}
+      >
         {want3d ? (
           <SceneCanvas
             className={cn("absolute inset-0", mode !== "3d" && "invisible")}
