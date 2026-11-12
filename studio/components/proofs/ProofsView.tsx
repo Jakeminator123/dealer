@@ -25,7 +25,9 @@ function replaceParams(next: Record<string, string | null>) {
     else p.delete(key);
   }
   const query = p.toString();
-  window.history.replaceState(window.history.state, "", `${window.location.pathname}${query ? `?${query}` : ""}`);
+  // null, never window.history.state: Next marks its own state (__NA) and takes a call that carries it for its own, so
+  // useSearchParams would not follow and a click in the list would change the address but not the film.
+  window.history.replaceState(null, "", `${window.location.pathname}${query ? `?${query}` : ""}`);
 }
 
 export function ProofsView() {

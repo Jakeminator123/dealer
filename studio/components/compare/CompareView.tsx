@@ -25,7 +25,8 @@ function replaceParams(next: Record<string, string | null>) {
     if (value) p.set(key, value);
     else p.delete(key);
   }
-  window.history.replaceState(window.history.state, "", `${window.location.pathname}?${p.toString()}`);
+  // null, never window.history.state: see components/proofs/ProofsView.tsx.
+  window.history.replaceState(null, "", `${window.location.pathname}?${p.toString()}`);
 }
 
 export function CompareView() {
