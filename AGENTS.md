@@ -1,6 +1,6 @@
 # Dealer – lokal arbetsyta
 
-- Läs README.md och HANDOFF.md. Arbeta endast här; gamla snyggare-dealer och Scoutgaming är läsbara referenser. Scoutgaming är slutmålet.
+- Läs README.md och HANDOFF.md. Arbeta endast här; gamla snyggare-dealer och Scoutgaming är läsbara referenser. Nu byggs en bättre version av blackjackspelet här; Scoutgaming är slutmålet på sikt (Jakob 2026-11-13).
 - V6 är Jakobs valda visuella referens. Bevara assets och original. Ändra inte referenshashar för att dölja en avvikelse.
 - Publikt källrepo: Jakeminator123/dealer. Jakobs uppdrag 2026-11-10 godkänner GitHub-upplägg, nödvändig lokal env-återanvändning och D:-slask. Media/hemligheter stannar utanför Git. Deploy, mediauppladdning, databasändring, betald generering och integration i Scout kräver uttryckligt uppdrag.
 - En skribent per fil; samordna index/commit. Huvudagenten äger commits, taggar och push; vem det är, och vem som äger vilka filer, står i HANDOFF tillsammans med aktuella blockerare. Roller är ord utan nummer (HUVUDAGENT, FILMAGENT). Huvudagentens adress står på en enda rad i HANDOFF ("Vem äger vad") och ingen annanstans; Jakob behöver inte döpa om chattar. Ny session: läs raden, kontrollera med ListAgents, skriv dit.

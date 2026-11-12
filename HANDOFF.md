@@ -6,7 +6,7 @@ Kontrakt står i [docs/SYSTEM.md](docs/SYSTEM.md), rutiner och filmbeställning 
 
 ## Målet
 
-Trovärdig utdelning: två kort till P1–P7, två eller tre till dealern, med separata returer från varje kort till redo och vila. Scoutgaming är slutmålet och äger regler, slump och kortvärden.
+Trovärdig utdelning: två kort till P1–P7, två eller tre till dealern, med separata returer från varje kort till redo och vila. Jakob 2026-11-13: "nu ska vi skapa en bättre version av blackjackspelet"; arbetet här gäller alltså spelet i studion först. Scoutgaming är slutmålet på sikt och äger regler, slump och kortvärden.
 
 Gul = stängd baksida (BACK), blå = öppen framsida (FRONT). Samma anatomiska vänsterhand tar kortet, vänder det fysiskt och lägger det på planens plats; givvarianter där höger hand tar över är önskade (Nästa steg). Färgbyte ensamt bevisar inte vändning. Framsidan måste vara en ren, nyckelbar yta eftersom Scout bestämmer kortvärdet.
 
