@@ -8,14 +8,35 @@ import path from 'node:path';
 import {placementStore,StoreError} from './placement-store.ts';
 import {reviewStore} from './review-store.ts';
 import {createSession,SessionError,type Session,type SessionOptions} from '../game/session.ts';
-import {tabRegistry,localPath,type Tab} from './tab-registry.ts';
+import {tabRegistry,localPath,type Tab,type Reason} from './tab-registry.ts';
+import {resolveStudio} from './studio-files.ts';
 const port=4319,origin=`http://127.0.0.1:${port}`,state='.runtime/preview.json';
 const args=process.argv.slice(2),has=(flag:string)=>args.includes(flag);
 // The same checkout, whatever case the shell wrote the drive letter in (Git Bash and PowerShell differ on Windows).
 const sameRoot=(a:unknown,b:string)=>typeof a==='string'&&(process.platform==='win32'?path.resolve(a).toLowerCase()===path.resolve(b).toLowerCase():path.resolve(a)===path.resolve(b));
 const readState=async()=>{try{return JSON.parse(await readFile(state,'utf8')) as {root?:string;token?:string};}catch{return null;}};
 const health=async()=>{try{const r=await fetch(origin+'/health',{signal:AbortSignal.timeout(1500)});return r.ok?await r.json() as {name?:string;root?:string}:null;}catch{return null;}};
-if(has('--stop')||has('--status')){
+// Starts the server as its own process, without a window, with scratch on D: where that folder exists, and waits until it
+// answers. It stops by itself when the lab tab has been closed for a minute. On Windows a child started by Node inherits
+// the caller's open handles, so a server started that way would hold the caller's output pipe and a command that reads it
+// (an agent's shell, "| more") would never end. Start-Process hands the start to the shell, which passes no handles on.
+const startServer=async()=>{
+ const scratch='D:/dealer-scratch/tmp',env=existsSync(scratch)?{...process.env,TEMP:scratch,TMP:scratch}:process.env;
+ const quote=(text:string)=>`'${text.replaceAll("'","''")}'`;
+ if(process.platform==='win32')spawn('powershell.exe',['-NoProfile','-NonInteractive','-Command',`Start-Process -FilePath ${quote(process.execPath)} -ArgumentList 'tools/preview.ts' -WorkingDirectory ${quote(process.cwd())} -WindowStyle Hidden`],{env,stdio:'ignore',windowsHide:true});
+ else spawn(process.execPath,['tools/preview.ts'],{cwd:process.cwd(),env,detached:true,stdio:'ignore'}).unref();
+ for(let i=0;i<60;i++){await new Promise(done=>setTimeout(done,250));if(await health())return;}
+ throw Error('Labbservern startade inte.');
+};
+if(has('--restart')){
+ // A new server for changed server code, without losing the lab tab: the tab is told, waits and reloads by itself.
+ const alive=await health();
+ if(alive&&(alive.name!=='dealer'||!sameRoot(alive.root,process.cwd())))throw Error('Preview identity differs');
+ if(alive){const s=await readState();if(!s?.token)throw Error('Preview control failed');
+  const r=await fetch(origin+'/stop?restart=1',{method:'POST',headers:{'x-dealer-token':s.token}});if(!r.ok)throw Error('Preview control failed');
+  for(let i=0;i<40&&await health();i++)await new Promise(done=>setTimeout(done,250));}
+ await startServer();console.log(alive?'Labbservern är omstartad; labbfliken laddar om sig själv.':'Labbservern är startad.');
+}else if(has('--stop')||has('--status')){
  const alive=await health();
  // Not running is an answer, not a failure; a status file left by a server that was killed is cleared on the way.
  if(!alive){const s=await readState();if(s&&sameRoot(s.root,process.cwd()))await unlink(state).catch(()=>{});console.log('Labbservern är inte igång.');}
@@ -32,18 +53,7 @@ if(has('--stop')||has('--status')){
  if(!target)throw Error('Ange en sida i labbet, till exempel lab.html?tab=prov');
  let alive=await health();
  if(alive&&(alive.name!=='dealer'||!sameRoot(alive.root,process.cwd())))throw Error('Preview identity differs');
- if(!alive){
-  // Its own process, without a window, with scratch on D: where that folder exists. It stops by itself when the lab tab has been closed for a minute.
-  const scratch='D:/dealer-scratch/tmp',env=existsSync(scratch)?{...process.env,TEMP:scratch,TMP:scratch}:process.env;
-  // On Windows a child started by Node inherits the caller's open handles, so a server started that way would hold the
-  // caller's output pipe and a command that reads it (an agent's shell, "| more") would never end. Start-Process hands
-  // the start to the shell, which passes no handles on.
-  const quote=(text:string)=>`'${text.replaceAll("'","''")}'`;
-  if(process.platform==='win32')spawn('powershell.exe',['-NoProfile','-NonInteractive','-Command',`Start-Process -FilePath ${quote(process.execPath)} -ArgumentList 'tools/preview.ts' -WorkingDirectory ${quote(process.cwd())} -WindowStyle Hidden`],{env,stdio:'ignore',windowsHide:true});
-  else spawn(process.execPath,['tools/preview.ts'],{cwd:process.cwd(),env,detached:true,stdio:'ignore'}).unref();
-  for(let i=0;i<60&&!alive;i++){await new Promise(done=>setTimeout(done,250));alive=await health();}
-  if(!alive)throw Error('Labbservern startade inte.');
- }
+ if(!alive)await startServer();
  let s=await readState();for(let i=0;i<20&&!s?.token;i++){await new Promise(done=>setTimeout(done,100));s=await readState();}
  const r=await fetch(origin+'/tab/show',{method:'POST',headers:{'x-dealer-token':s?.token??'','content-type':'application/json'},body:JSON.stringify({url:target})});
  if(!r.ok)throw Error('Preview control failed');
@@ -128,14 +138,14 @@ if(has('--stop')||has('--status')){
  const token=randomUUID(),tabs=tabRegistry();
  const types:Record<string,string>={'.html':'text/html; charset=utf-8','.css':'text/css; charset=utf-8','.js':'text/javascript; charset=utf-8','.mp4':'video/mp4','.png':'image/png','.jpg':'image/jpeg','.json':'application/json','.glb':'model/gltf-binary'};
  // Streams and films in flight would hold the server open: the lab tab is told first, and what is still connected after half a second is cut.
- const stop=()=>{tabs.retire('stop');server.close();setTimeout(()=>server.closeAllConnections(),500).unref();};
+ const stop=(reason:Reason='stop')=>{tabs.retire(reason);server.close();setTimeout(()=>server.closeAllConnections(),500).unref();};
  const server=http.createServer(async(req,res)=>{
   try{
    res.setHeader('Cache-Control','no-store');
    if(req.headers.host!==`127.0.0.1:${port}`){res.writeHead(403).end();return;}
    const url=new URL(req.url??'/',origin);
    if(url.pathname==='/health'){res.setHeader('Content-Type','application/json');res.end(JSON.stringify({name:'dealer',root:process.cwd(),pid:process.pid,port,tabs:tabs.status()}));return;}
-   if(url.pathname==='/stop'&&req.method==='POST'&&req.headers['x-dealer-token']===token){res.end('Stopped dealer preview');stop();return;}
+   if(url.pathname==='/stop'&&req.method==='POST'&&req.headers['x-dealer-token']===token){res.end('Stopped dealer preview');stop(url.searchParams.get('restart')==='1'?'restart':'stop');return;}
    if(url.pathname==='/heartbeat'&&req.method==='POST'&&req.headers.origin===origin){tabs.touch();res.end('ok');return;}
    // The stream of a lab page (src/preview-ui.ts), from a page of this lab only. What the server has to say to the tab goes out here.
    if(url.pathname==='/tab/events'&&req.method==='GET'){
@@ -215,11 +225,23 @@ if(has('--stop')||has('--status')){
     let source:string;try{source=await readFile(scripts[url.pathname]??vendor[url.pathname],'utf8');}catch{res.writeHead(404).end();return;} // a module that has not been written yet
     res.setHeader('Content-Type','text/javascript; charset=utf-8');res.end(scripts[url.pathname]?forBrowser(source):source);return;
    }
-   const file=url.pathname==='/'?'lab.html':decodeURIComponent(url.pathname.slice(1));
-   if(!allowed.has(file)&&!await clipFile(file)&&!await trackFile(file)&&!await proofPath(file)&&!await sceneFile(file)&&!await propFile(file)&&!(await library()).items.some((item:{path:string})=>item.path===file)){res.writeHead(404).end();return;}
-   const size=await stat(file).then(s=>s.isFile()?s.size:-1,()=>-1),ext=file.slice(file.lastIndexOf('.'));
+   // The studio (studio/, built to static files): everything under /studio/ is read from studio/out/ (tools/studio-files.ts).
+   // It is a client of this server like the lab's own pages: same origin, same routes, same single tab.
+   let file:string,type:string;
+   const studio=url.pathname==='/studio'||url.pathname.startsWith('/studio/')?await resolveStudio(url.pathname):null;
+   if(studio){
+    if(studio.kind==='redirect'){res.writeHead(301,{Location:studio.to+url.search}).end();return;}
+    if(studio.kind==='unbuilt'){res.writeHead(503,{'Content-Type':'text/html; charset=utf-8'}).end('<!doctype html><html lang="sv"><meta charset="utf-8"><title>Dealer · Studio</title><body style="margin:0;height:100vh;display:grid;place-items:center;background:#0d0f0e;color:#e8ece9;font:15px system-ui,sans-serif"><p>Studion är inte byggd på den här datorn. Kör <code>npm --prefix studio ci</code> och <code>npm --prefix studio run build</code>, och ladda om. <a style="color:#d9b96a" href="/lab.html">Till labbet</a></p></body></html>');return;}
+    if(studio.kind==='none'){res.writeHead(404).end();return;}
+    file=studio.file;type=studio.type;
+   }else{
+    file=url.pathname==='/'?'lab.html':decodeURIComponent(url.pathname.slice(1));
+    if(!allowed.has(file)&&!await clipFile(file)&&!await trackFile(file)&&!await proofPath(file)&&!await sceneFile(file)&&!await propFile(file)&&!(await library()).items.some((item:{path:string})=>item.path===file)){res.writeHead(404).end();return;}
+    type=types[file.slice(file.lastIndexOf('.'))]??'application/octet-stream';
+   }
+   const size=await stat(file).then(s=>s.isFile()?s.size:-1,()=>-1);
    if(size<0){res.writeHead(404).end();return;} // allowed, but not on this machine
-   res.setHeader('Content-Type',types[ext]??'application/octet-stream');res.setHeader('Accept-Ranges','bytes');
+   res.setHeader('Content-Type',type);res.setHeader('Accept-Ranges','bytes');
    let start=0,end=size-1;
    if(req.headers.range){
     const m=/^bytes=(\d+)-(\d*)$/.exec(req.headers.range);
@@ -238,5 +260,5 @@ if(has('--stop')||has('--status')){
   if(mine?.name==='dealer'&&sameRoot(mine.root,process.cwd()))console.log(`Labbservern går redan: ${origin}`);else{console.error(error.message);process.exitCode=1;}});
  server.on('close',()=>{clearInterval(timer);void unlink(state).catch(()=>{});});
  server.listen(port,'127.0.0.1',async()=>{await mkdir('.runtime',{recursive:true});await writeFile(state,JSON.stringify({root:process.cwd(),port,pid:process.pid,parent:process.ppid,executable:process.execPath,script:'tools/preview.ts',startedAt:new Date().toISOString(),token}));console.log(origin);});
- process.on('SIGINT',stop);process.on('SIGTERM',stop);
+ process.on('SIGINT',()=>stop());process.on('SIGTERM',()=>stop());
 }

@@ -23,6 +23,10 @@ else{
   events.close();
   for(const media of document.querySelectorAll('video,audio'))(media as HTMLMediaElement).pause();
   const {reason}=JSON.parse((event as MessageEvent).data);
+  // A restart of the server: the tab stays, waits for the new server and reloads. Only if none comes does it go blank.
+  if(reason==='restart'){void(async()=>{await new Promise(done=>setTimeout(done,1500));
+   for(let i=0;i<60;i++){if(await fetch('/health',{cache:'no-store'}).then(r=>r.ok,()=>false)){location.reload();return;}await new Promise(done=>setTimeout(done,500));}
+   blank('stop');})();return;}
   window.close();setTimeout(()=>blank(reason),250); // a tab that closed never runs the timer
  });
  // A page to show. It is shown at once when nobody is using the tab; a person in the middle of something is asked first.
