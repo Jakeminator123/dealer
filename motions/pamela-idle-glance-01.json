@@ -29,12 +29,13 @@
     }
   },
   "review": {
-    "decision": "PENDING",
+    "decision": "ACCEPTED",
     "basis": "Oberoende rutgranskning 2026-11-11: användbar, som beställt. Ögonen flyttas f14–19, huvudet vrids mot skons sida f20–29 och hålls f30–53, blinkning f54–58 på väg tillbaka. I vila från f69.",
     "limitations": "Inga anmärkningar utöver grönnivåns steg i klippets ändar.",
     "colorDoesNotProvePhysicalSide": true,
-    "userAccepted": false,
-    "productionReady": false
+    "userAccepted": true,
+    "productionReady": false,
+    "userReview": "Jakob 2026-11-12: Jag vill bara säga att om jag godkänner nu så vill jag fortfarande att det ska vara en variant, och den är jättebra som just variant. Jag tycker att beslutsunderlaget är missvisande. Jag vill ha in ett till klipp, eller en till liten box. Just nu finns godkänn, variant och underkänn. Jag skulle vilja ha en som heter primär eller något liknande. Om jag trycker på den, så är det den bästa tagningen som ska användas i första hand. Sen kommer jag senare kunna skapa dealen med kalibreringar av det som är `openclaw`, men också med alternativa tidsintervall för hur ofta något ska randomiseras. Jag är osäker på om godkänn kommer att konkurrera lika mycket som den bästa varianten för just den här tagningen. Det här är missvisande i största allmänhet, eftersom det skiljer sig om man är i en grundloop med instickande varianter och utdelningsklipp till olika spelare eller sig själv. Det skulle vara bra att ha den bästa tagningen och varianter som kan fyllas på. Frågan är om det ska vara godkänt eller en variant. Dessutom kommer vi nu att öka på med två olika ankare från position två, alltså ankare 2.1 och ankare 2.2. Jag kommer nu skriva detta till dig, och om ingenting händer med någon AI i `cursor` eller i `Claude Code`, så kommer jag ta upp det med en AI-modell här. Om inte du kan skriva tillbaka här i webbläsaren."
   },
   "postProcessing": "none",
   "generationRef": "assets/motions/pamela-idle-glance-01/generation.json",

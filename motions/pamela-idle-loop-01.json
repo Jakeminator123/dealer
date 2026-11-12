@@ -29,12 +29,14 @@
     }
   },
   "review": {
-    "decision": "PENDING",
+    "decision": "ACCEPTED",
     "basis": "Oberoende rutgranskning 2026-11-11: användbar med anmärkning. Nästan en stillbild: en halv blinkning f42–44 och ingen synlig andning. Ruta 0 och 119 är lika inom 1 px i pose; skillnaden sitter i ögonen.",
     "limitations": "Rutorna 0–2 har ljusare grönt än resten (G 237,7 mot 227,7), så loopen ska klippas 119→3 och inte 119→0, annars blinkar bakgrunden. Lite liv i klippet; en livligare tagning kan behövas.",
     "colorDoesNotProvePhysicalSide": true,
-    "userAccepted": false,
-    "productionReady": false
+    "userAccepted": true,
+    "productionReady": false,
+    "acceptedAs": "VARIANT",
+    "userReview": "Jakob 2026-11-12: Ja, klipp gärna till en sekund eller en halv sekund när hon blinkar"
   },
   "postProcessing": "none",
   "generationRef": "assets/motions/pamela-idle-loop-01/generation.json",

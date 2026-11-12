@@ -29,12 +29,14 @@
     }
   },
   "review": {
-    "decision": "PENDING",
+    "decision": "ACCEPTED",
     "basis": "Oberoende rutgranskning 2026-11-11: användbar. Axlarna stiger 14,4 px och 12,5 px f12–40 och har lagt sig f72. En blinkning f11–13, stängd mun. Skarvarna mot vilorutan mäter 0 avvikande bildpunkter.",
     "limitations": "Bara cirka 1,5 gånger ett vanligt andetag. Ett steg på 3,4 px vid f48 följt av en fryst ruta f49.",
     "colorDoesNotProvePhysicalSide": true,
-    "userAccepted": false,
-    "productionReady": false
+    "userAccepted": true,
+    "productionReady": false,
+    "acceptedAs": "VARIANT",
+    "userReview": "Jakob 2026-11-12: godkänd som variant i labbet."
   },
   "postProcessing": "none",
   "generationRef": "assets/motions/pamela-idle-deep-breath-01/generation.json",

@@ -29,12 +29,13 @@
     }
   },
   "review": {
-    "decision": "PENDING",
+    "decision": "ACCEPTED",
     "basis": "Oberoende rutgranskning 2026-11-11: användbar med anmärkning, men inte den beställda lilla rörelsen. Handen lyfts till brösthöjd (cirka 200 px), hålls med handflatan upp och nypande fingrar f30–52 och landar f58–66 inom 0,2 px från sin plats. Handen är hel.",
     "limitations": "En tydlig gest, inte ett lugnt klipp. Tillbaka i vila först f81.",
     "colorDoesNotProvePhysicalSide": true,
-    "userAccepted": false,
-    "productionReady": false
+    "userAccepted": true,
+    "productionReady": false,
+    "userReview": "Jakob 2026-11-12: godkänd i labbet."
   },
   "postProcessing": "none",
   "generationRef": "assets/motions/pamela-idle-hand-resettle-01/generation.json",
