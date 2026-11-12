@@ -56,7 +56,7 @@ Dokumenten länkar till dessa i stället för att föra egna statusregister. Med
 
 Enligt [reproduktionskvittot](evidence/reproduction.json) har hela V6 återrenderats lokalt: 926 rutor, 30 fps, 1762×1174 och 1080×1920. Båda MP4-filerna är byteidentiska med originalen; 18 kontrollrutor är pixelidentiska enligt [bildrutekvittot](evidence/frame-verification.json), också efter renderinläsningsrättningarna ([V6-kvitto](evidence/render-safety-frames.json)). Detta verifierar V6, inte utdelning till alla åtta platser. Kända begränsningar för fingermask, rörelsekanter och källskarvar kvarstår.
 
-`src/` och `tools/` kör utan gamla labbet. `materials/` är separata kort- och markerprov; TS-materialkällorna har inte återbyggts till de frysta JS-bundlarna. Labbet och 3D-scenen läser kortmaterialets TS-källa direkt; det ändrar inte V6-filmen eller de historiska bundlarna.
+`src/` och `tools/` kör utan det förra projektet (snyggare-dealer, arkivet på D:). `materials/` är separata kort- och markerprov; TS-materialkällorna har inte återbyggts till de frysta JS-bundlarna. Labbet och 3D-scenen läser kortmaterialets TS-källa direkt; det ändrar inte V6-filmen eller de historiska bundlarna.
 
 Publikt källrepo: [Jakeminator123/dealer](https://github.com/Jakeminator123/dealer). GitHub innehåller inte media eller hemligheter. Scout-integration, deploy och betald generering är separata uppdrag.
 
