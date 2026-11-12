@@ -5,3 +5,6 @@ output/
 .env*
 private/
 *.log
+
+# The checklist between Jakob and the main agent: a working paper, rewritten many times a day
+CHECKLISTA.md
