@@ -143,6 +143,8 @@ test('steps apply in order on what the steps before left, and one refused step r
 
 // ── The tool ────────────────────────────────────────────────────────────────
 const base = existsSync('D:/dealer-scratch/tmp') ? 'D:/dealer-scratch/tmp' : os.tmpdir();
+// Tests that make a film with ffmpeg; skipped where there is none.
+const needsFfmpeg = {skip: spawnSync('ffmpeg', ['-version'], {stdio: 'ignore'}).status !== 0 && 'ffmpeg is not on this machine (the hosted check has none)'};
 const sha = async (file: string) => createHash('sha256').update(await readFile(file)).digest('hex');
 async function tinyFilm(t: {after(fn: () => Promise<void>): void}) {
   const root = await mkdtemp(path.join(base, 'film-fix-test-')); t.after(() => rm(root, {recursive: true, force: true}));
@@ -154,7 +156,7 @@ async function tinyFilm(t: {after(fn: () => Promise<void>): void}) {
   return {root, dir, film};
 }
 
-test('the tool writes the fixed copy beside the film with its receipt and strip, and never touches the original', async t => {
+test('the tool writes the fixed copy beside the film with its receipt and strip, and never touches the original', needsFfmpeg, async t => {
   const {root, dir, film} = await tinyFilm(t), before = await sha(film), list = path.join(root, 'fixes.json');
   await writeFile(list, JSON.stringify([{op: 'trim', end: 2, why: 'mörka slutrutor'}, {op: 'key', to: 'key', why: 'jämna det gröna'}, {op: 'hold', frames: [5, 5]}, {op: 'blend', frames: [7, 8]}]));
   const outcome = await fixFilm(film, list);
@@ -176,7 +178,7 @@ test('the tool writes the fixed copy beside the film with its receipt and strip,
   assert.ok(second.ok); assert.equal(second.n, 2); assert.ok(existsSync(path.join(dir, 'fixed-1.mp4')));
 });
 
-test('a refused list writes nothing and the tool says why, with exit code 2', async t => {
+test('a refused list writes nothing and the tool says why, with exit code 2', needsFfmpeg, async t => {
   const {root, dir, film} = await tinyFilm(t), list = path.join(root, 'fixes.json');
   await writeFile(list, JSON.stringify([{op: 'blend', frames: [3, 7]}]));
   const run = spawnSync(process.execPath, ['tools/film-fix.ts', film, list], {encoding: 'utf8', windowsHide: true});

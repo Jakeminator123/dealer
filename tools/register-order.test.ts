@@ -5,7 +5,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {mkdtemp, mkdir, readFile, writeFile, rm, readdir} from 'node:fs/promises';
 import {existsSync} from 'node:fs';
-import {execFileSync} from 'node:child_process';
+import {execFileSync, spawnSync} from 'node:child_process';
 import {createHash} from 'node:crypto';
 import http from 'node:http';
 import os from 'node:os';
@@ -16,6 +16,8 @@ import {fixFilm} from './film-fix.ts';
 import {applyChange} from './review-store.ts';
 import {buildGraph, returnFits, resolveRound, parseSequence, type BankData} from '../src/clip-graph.ts';
 
+// Tests that make a film with ffmpeg; skipped where there is none.
+const needsFfmpeg = {skip: spawnSync('ffmpeg', ['-version'], {stdio: 'ignore'}).status !== 0 && 'ffmpeg is not on this machine (the hosted check has none)'};
 const base = existsSync('D:/dealer-scratch/tmp') ? 'D:/dealer-scratch/tmp' : os.tmpdir(), sha = (b: Buffer | string) => createHash('sha256').update(b).digest('hex');
 const ORDER = 'paow-giv-p4', TEXT = 'Locked camera. Same Paow. She pinches the card in the shoe, deals it to seat 4, turns it naturally and goes back to the shoe.';
 const pamelaJob = {id: 'pamela-p4-c1-plan-deal-02', kind: 'DEAL', target: 'P4.C1', from: 'READY', to: 'LAND(P4.C1)', model: 'wan3', duration: 4, ratio: 'auto_1080p', audio: false, promptText: 'x'.repeat(40), first: {file: {path: 'a.png', sha256: 'a'.repeat(64)}}, purpose: 'fixture'};
@@ -55,7 +57,7 @@ const graphOf = async (root: string, dealer?: string) => { const file = await re
   for (const d of file.derived ?? []) motions[d.id] = {source: (motions[d.clip] as {source?: unknown})?.source, motion: (motions[d.id] as {motion?: unknown})?.motion, review: (motions[d.id] as {review?: unknown})?.review};
   return buildGraph({jobs: file.jobs, derived: file.derived, edits: file.edits, motions, media} as BankData, dealer ? {dealer} : {}); };
 
-test('a delivered take is fetched into its take folder, hashed and probed; the signed address is never written down', async t => {
+test('a delivered take is fetched into its take folder, hashed and probed; the signed address is never written down', needsFfmpeg, async t => {
   // signature: made up for this test, standing in for the signature in a delivered file's address (no real value).
   const {root, film} = await bank(t), origin = await serve(t, film), signature = 'X-Amz-Signature=hemlig123';
   const done = await collectTake(root, ORDER, 1, {url: `${origin}/out/take.mp4?${signature}`});
@@ -79,7 +81,7 @@ test('a delivered take is fetched into its take folder, hashed and probed; the s
   assert.deepEqual((await readdir(path.join(root, `assets/orders/${ORDER}/take-1`))).sort(), ['fetched.json', 'source.mp4']);
 });
 
-test('a round trip enters the bank as two takes of its own clip under the order\'s dealer, in the inbox, and leaves Pamela\'s bank as it was', async t => {
+test('a round trip enters the bank as two takes of its own clip under the order\'s dealer, in the inbox, and leaves Pamela\'s bank as it was', needsFfmpeg, async t => {
   const {root, film} = await bank(t);
   await collectTake(root, ORDER, 1, {from: film});
   const pamelaBefore = await graphOf(root);
@@ -110,7 +112,7 @@ test('a round trip enters the bank as two takes of its own clip under the order\
   assert.equal(await readFile(path.join(root, 'data/clip-jobs.json'), 'utf8'), text);
 });
 
-test('a take Jakob has decided on is never written over, and an order that is not his to place is not registered', async t => {
+test('a take Jakob has decided on is never written over, and an order that is not his to place is not registered', needsFfmpeg, async t => {
   const {root, film} = await bank(t);
   await collectTake(root, ORDER, 1, {from: film});
   await register(root, await planRegistration(root, ORDER, 1, {split: 6}));
@@ -132,7 +134,7 @@ test('a take Jakob has decided on is never written over, and an order that is no
   assert.ok((await planRegistration(root, ORDER, 1, {split: 6}).catch(e => e)) instanceof OrderError);
 });
 
-test('a fixed copy becomes a corrected copy of each of its take\'s takes, in the inbox, with the original\'s frame numbers', async t => {
+test('a fixed copy becomes a corrected copy of each of its take\'s takes, in the inbox, with the original\'s frame numbers', needsFfmpeg, async t => {
   const {root, film} = await bank(t);
   const {path: delivered} = await collectTake(root, ORDER, 1, {from: film});
   await register(root, await planRegistration(root, ORDER, 1, {split: 6}));
@@ -156,7 +158,7 @@ test('a fixed copy becomes a corrected copy of each of its take\'s takes, in the
   await assert.rejects(planRegistration(root, ORDER, 1, {fixed: 9}), /finns inte bredvid/);
 });
 
-test('a one-way film is one take with its first and last picture, named after the order and its dealer', async t => {
+test('a one-way film is one take with its first and last picture, named after the order and its dealer', needsFfmpeg, async t => {
   const {root, film} = await bank(t), id = 'vila-prov';
   await writeFile(path.join(root, `data/orders/${id}.json`), JSON.stringify(order(id, {step: {key: 'VILA', label: 'Vila', edge: 'IDLE>IDLE', shape: 'ONE_WAY', cutInto: ['IDLE>IDLE'], makes: null}, generation: {provider: 'runway-app', tool: 'generate_video', model: 'wan3', params: {resolution: '1080p', ratio: 'adaptive', duration: 4}}})));
   await mkdir(path.join(root, `assets/orders/${id}`), {recursive: true}); await writeFile(path.join(root, `assets/orders/${id}/receipt.json`), JSON.stringify(receipt(id)));
