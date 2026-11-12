@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { Shell } from "../components/shell/Shell";
+import { SnapshotBanner } from "../components/shell/SnapshotBanner";
+import { isSnapshot } from "../lib/mode.ts";
 import "./globals.css";
 
 // The tab's icon: the rail's brass card, inline (no file to hand out, and no request for /favicon.ico).
@@ -15,6 +17,8 @@ export const metadata: Metadata = {
   title: "Dealer · Studio",
   description: "Dealerns studio: filmer, nodkarta, granskning och scen.",
   icons: { icon },
+  // The online copy is behind a password and is not to be found by search engines (its server says the same in X-Robots-Tag).
+  ...(isSnapshot ? { robots: { index: false, follow: false } } : {}),
 };
 
 // The 3D scene is the lab's own modules, read from the lab server as they are (src/scene3d-*.ts, see lib/lab.ts). Two
@@ -43,8 +47,11 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <body className="h-full overflow-hidden">
         {/* The rail and every view (components/shell): one bank, one tooltip and one toast provider for all of them. */}
         <Shell>{children}</Shell>
-        {/* The lab's one tab (src/preview-ui.ts): the studio is a lab page like the others, and its open stream keeps the lab server up. */}
-        <script type="module" src="/preview-ui.js" />
+        {/* The online copy (lib/mode.ts) says what it is; in the lab this is nothing. */}
+        <SnapshotBanner />
+        {/* The lab's one tab (src/preview-ui.ts): the studio is a lab page like the others, and its open stream keeps the lab
+            server up. The online copy has no lab server behind it, so it does not load it. */}
+        {isSnapshot ? null : <script type="module" src="/preview-ui.js" />}
       </body>
     </html>
   );

@@ -3,11 +3,14 @@
 // <DecisionBar take={take} />: Jakob's decision on one take: Primär, Godkänn, Variant, Underkänn, a note, Återställ.
 // Nothing is written without his click. Primär lowers an earlier Primär on the same edge to plain accepted (its note kept);
 // a 409 says the record changed, reads the bank again and asks him to choose again. demo: shows and answers, never writes.
-import { Check, Diamond, RotateCcw, Star, X } from "lucide-react";
+// In the online copy (lib/mode.ts) there are no buttons at all: the bar shows his verdict and note and says "Bara Jakob
+// dömer", and putDecision refuses there too.
+import { Check, Diamond, Lock, RotateCcw, Star, X } from "lucide-react";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import type { Take } from "../../../src/clip-graph.ts";
 import { ApiError, NOTE_LIMIT, putDecision, type Decision } from "../../lib/api.ts";
 import { useOptionalBank } from "../../lib/bank.ts";
+import { isSnapshot } from "../../lib/mode.ts";
 import { takeName } from "../../lib/names.ts";
 import { chosenDecision, reviewStamp, storedNote } from "../../lib/verdict.ts";
 import { Badge } from "../ui/Badge";
@@ -15,6 +18,7 @@ import { cn } from "../ui/cn";
 import { Spinner } from "../ui/Spinner";
 import { TextArea } from "../ui/TextField";
 import { useToast } from "../ui/Toast";
+import { TakeChip } from "./VerdictChip";
 
 type Choice = Exclude<Decision, "PENDING">;
 
@@ -60,13 +64,7 @@ const DONE_TEXT: Record<Decision, string> = { MAIN: "Primär", ACCEPTED: "Godkä
 
 type Line = { tone: "info" | "ok" | "bad"; text: string } | null;
 
-export function DecisionBar({
-  take,
-  demo = false,
-  compact = false,
-  onSaved,
-  className,
-}: {
+type BarProps = {
   take: Take;
   /** Shows the bar and lets the buttons answer, but never writes (the kit page). */
   demo?: boolean;
@@ -75,7 +73,36 @@ export function DecisionBar({
   /** After a saved decision and the bank read again. */
   onSaved?: (decision: Decision) => void;
   className?: string;
-}) {
+};
+
+export function DecisionBar(props: BarProps) {
+  return isSnapshot ? <JakobJudges take={props.take} className={props.className} /> : <DecisionButtons {...props} />;
+}
+
+/** The online copy's bar: his verdict and his note as they stand, and who decides. Nothing here can be pressed. */
+function JakobJudges({ take, className }: { take: Take; className?: string }) {
+  const note = storedNote(take.motion?.review);
+  const stamp = reviewStamp(take.motion?.review);
+  return (
+    <div className={cn("flex flex-col gap-2.5", className)}>
+      <div className="flex flex-wrap items-center gap-2">
+        <TakeChip take={take} />
+        <span className="ml-auto inline-flex items-center gap-1.5 rounded-md border border-line-strong bg-raised px-2.5 py-1 text-sm text-dim">
+          <Lock aria-hidden className="size-3.5 text-brass" />
+          Bara Jakob dömer
+        </span>
+      </div>
+      {note ? (
+        <p className="rounded-md border border-line bg-well px-3 py-2 text-sm text-ink">
+          {stamp ? <span className="mr-1.5 text-faint">{stamp}:</span> : null}
+          {note}
+        </p>
+      ) : null}
+    </div>
+  );
+}
+
+function DecisionButtons({ take, demo = false, compact = false, onSaved, className }: BarProps) {
   const bank = useOptionalBank();
   const toast = useToast();
   const stored = storedNote(take.motion?.review);

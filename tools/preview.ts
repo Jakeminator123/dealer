@@ -10,6 +10,7 @@ import {reviewStore} from './review-store.ts';
 import {createSession,SessionError,type Session,type SessionOptions} from '../game/session.ts';
 import {tabRegistry,localPath,type Tab,type Reason} from './tab-registry.ts';
 import {resolveStudio} from './studio-files.ts';
+import {SCRIPTS as scripts,VENDOR as vendor,forBrowser} from './lab-routes.ts';
 const port=4319,origin=`http://127.0.0.1:${port}`,state='.runtime/preview.json';
 const args=process.argv.slice(2),has=(flag:string)=>args.includes(flag);
 // The same checkout, whatever case the shell wrote the drive letter in (Git Bash and PowerShell differ on Windows).
@@ -65,16 +66,8 @@ if(has('--restart')){
 }else{
  const manifest=JSON.parse(await readFile('manifest.json','utf8'));
  const allowed=new Set(['preview.html','lab.html','lab.css','scene3d.html','game.html','game.css','props.html','props.css','data/props.json','sound.html','sound.css','generation.html','data/p4-generation-review.json','data/scene-contract.json','data/scene-rooms.json','assets/lab/native.jpg','assets/lab/portrait.jpg','assets/scene/room.png','assets/scene/panorama-vegas.jpg','assets/scene/panorama-la.jpg','assets/scene/panorama-skog.jpg',...['room-panorama','room-la','room-skog','room-hall','room-salong','dealer-pamela'].map(name=>`assets/scene/thumbs/${name}.jpg`),...['wood_table-diffuse','wood_table-nor_gl','wood_table-rough','brown_leather-nor_gl','brown_leather-rough','denim_fabric-nor_gl','denim_fabric-rough'].map(name=>`assets/scene/materials/${name}.webp`),'materials/kortmaterial.html','materials/markermaterial.html',...manifest.files.map((f:{path:string})=>f.path).filter((p:string)=>p.startsWith('assets/')||p.startsWith('materials/')||p.startsWith('output/v6/'))]);
- const scripts:Record<string,string>={'/preview-ui.js':'src/preview-ui.ts','/lab-ui.js':'src/lab-ui.ts','/placement-model.js':'src/placement-model.ts','/clip-graph.js':'src/clip-graph.ts','/card-track.js':'src/card-track.ts','/card-overlay.js':'src/card-overlay.ts','/card-overlay-view.js':'src/card-overlay-view.ts','/scene-geometry.js':'src/scene-geometry.ts',...Object.fromEntries(['geometry','film','light','table','rail','props','cards','deal','room','hall','exit','cardlab','shift','view','ui'].map(name=>[`/scene3d-${name}.js`,`src/scene3d-${name}.ts`])),...Object.fromEntries(['page','overlay','view','film','director','table','chat','panel'].map(name=>[`/game-${name}.js`,`src/game-${name}.ts`])),'/game3d-chips.js':'src/game3d-chips.ts','/game3d-props.js':'src/game3d-props.ts','/game3d-tray.js':'src/game3d-tray.ts','/props-lab.js':'src/props-lab.ts','/props-stage.js':'src/props-stage.ts','/lab-sound.js':'src/lab-sound.ts','/materials/source/src/card-material-study.js':'materials/source/src/card-material-study.ts','/materials/source/src/chip-material-study.js':'materials/source/src/chip-material-study.ts'};
- // Modules that are also run by Node name their neighbours with .ts; the browser asks for the same file as .js.
- const forBrowser=(source:string)=>stripTypeScriptTypes(source).replace(/((?:from|import)\s*\(?\s*)(['"])([^'"\n]+)\.ts\2/g,'$1$2$3.js$2');
- // three.js for the 3D scene (scene3d.html maps the bare name "three" to /vendor/three.module.js): exactly the two files its module build
- // consists of, read from the pinned dependency. Nothing else under node_modules is reachable.
- const vendor:Record<string,string>={'/vendor/three.module.js':'node_modules/three/build/three.module.js','/vendor/three.core.js':'node_modules/three/build/three.core.js',
-  // The GLB reader for table props (game.html maps "three/addons/" to /vendor/): the loader and the one helper it imports.
-  '/vendor/loaders/GLTFLoader.js':'node_modules/three/examples/jsm/loaders/GLTFLoader.js','/vendor/utils/BufferGeometryUtils.js':'node_modules/three/examples/jsm/utils/BufferGeometryUtils.js',
-  // For the model lab (props.html): turning a model with the mouse, and a neutral room to reflect in polished materials.
-  '/vendor/controls/OrbitControls.js':'node_modules/three/examples/jsm/controls/OrbitControls.js','/vendor/environments/RoomEnvironment.js':'node_modules/three/examples/jsm/environments/RoomEnvironment.js'};
+ // The modules and vendor files the pages ask for, and how a module is made ready for the browser: tools/lab-routes.ts, which the
+ // build of the online copy reads too (tools/build-studio-snapshot.ts), so that the copy serves exactly what this server serves.
  // Table props made by tools/prop-glb.ts: assets/props/<id>.glb, and only where the file really lies in that folder.
  const propFile=async(file:string)=>{const m=/^assets\/props\/([a-z0-9]+(?:-[a-z0-9]+)*\.glb)$/.exec(file);if(!m)return false;try{return await realpath(file)===path.join(await realpath('assets/props'),m[1]);}catch{return false;}};
  const placements=placementStore(process.cwd()),reviews=reviewStore(process.cwd());

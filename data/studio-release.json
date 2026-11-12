@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "about": "What the studio's locked, read-only online copy carries (tools/build-studio-snapshot.ts reads this; tools/studio-freeze.ts checks it). Decided by Jakob 2026-11-12: Pamela's material (the round, the map, primaries, proofs); Paow allowed as a switch that is on; the trailers and anything with Göran, Astrid or Kevin kept out until he says otherwise; costs and credits never shown; nothing on the site can change his decisions. takes: whose films go up (the round's takes, takes he accepted outright, variants; waiting takes off). Every take stays listed in the frozen clip bank with its verdict; a take whose film does not go up shows no film. proofs: the proof folders that go up, in this order, each with why; files narrows a proof to the files named. blocked: folder patterns and names the build refuses to cross: a selected take or proof that matches stops the build, and every written answer, page and module is scanned for the names. Sentences that name a cost or a blocked name are left out of every text. limits: bytes for Blob (films and proof files) and for the static files of the deployment.",
+  "takes": {
+    "round": true,
+    "accepted": true,
+    "variants": true,
+    "waiting": false
+  },
+  "round": {
+    "seats": ["P1", "P2", "P3", "P4", "P5", "P6", "P7"],
+    "reveal": true,
+    "holeCardDown": true
+  },
+  "proofs": [
+    {
+      "id": "pamela-film",
+      "why": "Pamela-film 2: the 90-second directed film with sound, made only from takes Jakob accepted outright, after his own notes on version 1. The clearest single view of where the work stands."
+    },
+    {
+      "id": "spel-overlay",
+      "why": "Blackjack played in the 3D scene: stills from real rounds (bets, the deal, your turn, outcome, a split) with the chips and Jakob's tray. Shows what the material is for."
+    },
+    {
+      "id": "fler-rum",
+      "why": "The six photographed 360-degree rooms behind the dealer, as they are in the room register today."
+    },
+    {
+      "id": "bakgrund-3d-kort-2",
+      "why": "The card as a real object in the 3D scene against the old drawn-in card: the method the scene uses now, with its known faults named in the proof."
+    },
+    {
+      "id": "solfjader",
+      "why": "Cards 3, 4 and 5 fanned out in the game, on every seat and for the dealer: the round beyond two cards."
+    },
+    {
+      "id": "paow-kavaj",
+      "why": "Paow, the second dealer, in the black jacket: her three anchors reviewed usable and the one with remarks. The 4K entry and profile pictures are left out: four are not reviewed, and each weighs 16-21 MB.",
+      "files": ["3-keystone-vila.png", "4-keystone-lage-2-1-nyp.png", "5-keystone-lage-2-2-slap.png", "6-vila-med-lage-2-skon.png"]
+    }
+  ],
+  "paow": true,
+  "library": false,
+  "blocked": {
+    "folders": ["trailer*"],
+    "names": ["Göran", "Astrid", "Kevin"]
+  },
+  "stills": {
+    "width": 480,
+    "quality": 78
+  },
+  "limits": {
+    "blobBytes": 900000000,
+    "staticBytes": 120000000
+  }
+}

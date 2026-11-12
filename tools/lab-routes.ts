@@ -1,0 +1,28 @@
+// The lab server's run-time modules as addresses: which TypeScript file in src/ (or materials/) is handed out as which
+// browser module, which three.js files are handed out under /vendor/, and how a module is made ready for the browser.
+// tools/preview.ts serves these; tools/build-studio-snapshot.ts freezes the same files for the studio's online copy.
+//
+// This is a copy of the maps in tools/preview.ts (lines 68-77, 2026-11-12), kept identical until preview.ts imports them from
+// here instead (the main agent's file; the change is proposed, not made). The snapshot build checks every module it takes
+// against the running server's own answer byte for byte, so a difference between the two copies stops the build.
+import {stripTypeScriptTypes} from 'node:module';
+
+export const SCRIPTS: Record<string, string> = {'/preview-ui.js': 'src/preview-ui.ts', '/lab-ui.js': 'src/lab-ui.ts', '/placement-model.js': 'src/placement-model.ts', '/clip-graph.js': 'src/clip-graph.ts', '/card-track.js': 'src/card-track.ts', '/card-overlay.js': 'src/card-overlay.ts', '/card-overlay-view.js': 'src/card-overlay-view.ts', '/scene-geometry.js': 'src/scene-geometry.ts', ...Object.fromEntries(['geometry', 'film', 'light', 'table', 'rail', 'props', 'cards', 'deal', 'room', 'hall', 'exit', 'cardlab', 'shift', 'view', 'ui'].map(name => [`/scene3d-${name}.js`, `src/scene3d-${name}.ts`])), ...Object.fromEntries(['page', 'overlay', 'view', 'film', 'director', 'table', 'chat', 'panel'].map(name => [`/game-${name}.js`, `src/game-${name}.ts`])), '/game3d-chips.js': 'src/game3d-chips.ts', '/game3d-props.js': 'src/game3d-props.ts', '/game3d-tray.js': 'src/game3d-tray.ts', '/props-lab.js': 'src/props-lab.ts', '/props-stage.js': 'src/props-stage.ts', '/lab-sound.js': 'src/lab-sound.ts', '/materials/source/src/card-material-study.js': 'materials/source/src/card-material-study.ts', '/materials/source/src/chip-material-study.js': 'materials/source/src/chip-material-study.ts'};
+
+// three.js for the 3D scene: the module build's two files, the GLB reader with its one helper, and the model lab's controls.
+export const VENDOR: Record<string, string> = {'/vendor/three.module.js': 'node_modules/three/build/three.module.js', '/vendor/three.core.js': 'node_modules/three/build/three.core.js',
+  '/vendor/loaders/GLTFLoader.js': 'node_modules/three/examples/jsm/loaders/GLTFLoader.js', '/vendor/utils/BufferGeometryUtils.js': 'node_modules/three/examples/jsm/utils/BufferGeometryUtils.js',
+  '/vendor/controls/OrbitControls.js': 'node_modules/three/examples/jsm/controls/OrbitControls.js', '/vendor/environments/RoomEnvironment.js': 'node_modules/three/examples/jsm/environments/RoomEnvironment.js'};
+
+/** Modules that are also run by Node name their neighbours with .ts; the browser asks for the same file as .js. */
+export const forBrowser = (source: string) => stripTypeScriptTypes(source).replace(/((?:from|import)\s*\(?\s*)(['"])([^'"\n]+)\.ts\2/g, '$1$2$3.js$2');
+
+/**
+ * The 3D scene's own files, as the lab server allows them by name (tools/preview.ts `allowed`): the scene contract and
+ * room register, the room plate and the three built-in panoramas, the table's material maps and the room menu's pictures.
+ * Rooms of the register (assets/scene/rooms/*.jpg) and table props (assets/props/*.glb) are named by the register and the
+ * modules and are added by the snapshot build from them.
+ */
+export const SCENE_FILES: readonly string[] = ['data/scene-contract.json', 'data/scene-rooms.json', 'assets/scene/room.png', 'assets/scene/panorama-vegas.jpg', 'assets/scene/panorama-la.jpg', 'assets/scene/panorama-skog.jpg',
+  ...['room-panorama', 'room-la', 'room-skog', 'room-hall', 'room-salong', 'dealer-pamela'].map(name => `assets/scene/thumbs/${name}.jpg`),
+  ...['wood_table-diffuse', 'wood_table-nor_gl', 'wood_table-rough', 'brown_leather-nor_gl', 'brown_leather-rough', 'denim_fabric-nor_gl', 'denim_fabric-rough'].map(name => `assets/scene/materials/${name}.webp`)];

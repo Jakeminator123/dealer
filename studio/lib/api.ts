@@ -5,6 +5,7 @@ import type { PlacementPlan } from "../../src/placement-model.ts";
 import type { RegisterRoom } from "../../src/scene3d-room.ts";
 import type { SceneData } from "../../src/scene3d-view.ts";
 import { labModule, labUrl } from "./lab.ts";
+import { isSnapshot } from "./mode.ts";
 
 // ── Shapes ──────────────────────────────────────────────────────────────────
 /** GET /api/clip-bank (tools/preview.ts clipBank). It is a BankData: hand it to buildGraph as it is. */
@@ -64,7 +65,7 @@ const kindOf = (status: number): ApiErrorKind =>
   : status === 403 || status === 413 || status === 415 ? "refused" : status >= 500 ? "server" : "invalid";
 
 const DEFAULT_TEXT: Record<ApiErrorKind, string> = {
-  network: "Labbet svarar inte. Starta det med START.cmd.",
+  network: isSnapshot ? "Kopian svarar inte. Ladda om sidan." : "Labbet svarar inte. Starta det med START.cmd.",
   conflict: "Posten har ändrats sedan den lästes.",
   missing: "Finns inte.",
   precondition: "Läs klippbanken innan du sparar.",
@@ -77,7 +78,12 @@ const DEFAULT_TEXT: Record<ApiErrorKind, string> = {
 export const asApiError = (error: unknown, what = "Det"): ApiError =>
   error instanceof ApiError ? error : new ApiError(`${what} gick inte: ${(error as Error)?.message ?? String(error)}`, 0, "server");
 
+/** What the online copy answers to any attempt to save: Jakob's decisions are made in his lab only. */
+export const SNAPSHOT_REFUSAL = "Bara Jakob dömer. Det här är en kopia: inget sparas här.";
+
 async function send(path: string, what: string, init?: RequestInit): Promise<string> {
+  // The online copy only reads: a request that could write is refused here, before anything leaves the page.
+  if (isSnapshot && (init?.method ?? "GET").toUpperCase() !== "GET") throw new ApiError(SNAPSHOT_REFUSAL, 403, "refused");
   let response: Response;
   try {
     response = await fetch(labUrl(path), { cache: "no-store", ...init });
@@ -142,9 +148,10 @@ export const getProofs = (): Promise<ProofList> => read<ProofList>("api/proofs",
 /**
  * Saves one review decision for one take (PUT /api/clip-bank/review/<id>). revision is the take's revision from the bank
  * (take.revision); a 409 means the record changed since: read the bank again and let Jakob choose again. Only call this
- * from his click.
+ * from his click. In the online copy it always refuses (lib/mode.ts).
  */
 export async function putDecision(id: string, decision: Decision, note: string, revision: string): Promise<DecisionResult> {
+  if (isSnapshot) throw new ApiError(SNAPSHOT_REFUSAL, 403, "refused");
   if (note.length > NOTE_LIMIT) throw new ApiError(`Anteckningen får vara högst ${NOTE_LIMIT} tecken.`, 400, "invalid");
   if (!revision) throw new ApiError("Tagningen har ingen post i motions/ ännu, så beslutet kan inte sparas.", 428, "precondition");
   const text = await send(`api/clip-bank/review/${encodeURIComponent(id)}`, "Beslutet", {

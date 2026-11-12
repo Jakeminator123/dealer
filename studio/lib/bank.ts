@@ -3,9 +3,21 @@
 // The clip bank for every view: one provider in the shell reads /api/clip-bank on start and again every 4 s while the tab
 // is visible (as the old lab does), and builds the graph with the lab's own buildGraph only when the answer changed.
 // When nothing changed, the same objects are kept, so a view that reads useBank() does not render again every 4 s.
+// The online copy (lib/mode.ts) never changes: there the bank is read once, and the graph carries no cost.
 import { createContext, createElement, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { buildGraph, type Edge, type Graph, type Take } from "../../src/clip-graph.ts";
 import { ApiError, asApiError, readBank, type ClipBankResponse } from "./api.ts";
+import { isSnapshot } from "./mode.ts";
+
+/**
+ * The graph without what it reckons in credits. The copy's bank has no receipts' costs and no budget, but buildGraph still
+ * estimates a take's cost from its length and resolution; costs are never shown in the copy, so the estimate is taken out.
+ */
+export function withoutCosts(graph: Graph): Graph {
+  for (const take of Object.values(graph.takes)) take.credits = 0;
+  graph.summary.credits = { committed: null, maximum: null };
+  return graph;
+}
 
 export type BankStatus = "loading" | "ready" | "error";
 
@@ -42,7 +54,7 @@ export function BankProvider({ children, every = 4000 }: { children: ReactNode; 
         setData((d) => (d.error ? { ...d, error: null, status: "ready" } : d));
         return;
       }
-      const graph = buildGraph(bank);
+      const graph = isSnapshot ? withoutCosts(buildGraph(bank)) : buildGraph(bank);
       last.current = text;
       setData({ bank, graph, status: "ready", error: null, readAt: Date.now() });
     } catch (error) {
@@ -56,6 +68,8 @@ export function BankProvider({ children, every = 4000 }: { children: ReactNode; 
 
   useEffect(() => {
     void read();
+    // The online copy is frozen: one read is all there is (reload() still reads again when a view asks).
+    if (isSnapshot) return;
     const tick = () => {
       if (document.visibilityState === "visible" && !busy.current) void read();
     };
