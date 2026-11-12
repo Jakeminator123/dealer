@@ -317,7 +317,9 @@ export function createPlayers(onShow: (texture: T.Texture, path: string) => void
   // While a queue plays, `parts`, `count`, `seek` and `step` describe the one part on screen.
   type Media = {path: string; video: HTMLVideoElement; texture: T.VideoTexture; busy: boolean; used: number; hook: ((mediaTime: number | null) => void) | null; fail: (() => void) | null};
   type Chain = {parts: Part[]; media: (Media | undefined)[]; options: PlayOptions};
-  const POOL = 8, partStart = (part: Part) => ((part.start ?? 0) + 0.5) / (part.fps ?? FPS), frameOf = (seconds: number, part: Part) => Math.floor(seconds * (part.fps ?? FPS) + 1e-6);
+  // frameOf: a frame's media time comes in whole microseconds, so the start of frame 58 reads 1.933333 s, 57.99999 frames;
+  // the margin reads it as 58, and stays far below the half frame that a seek or a playing clock sits past a frame start.
+  const POOL = 8, LEAD_MS = 4, partStart = (part: Part) => ((part.start ?? 0) + 0.5) / (part.fps ?? FPS), frameOf = (seconds: number, part: Part) => Math.floor(seconds * (part.fps ?? FPS) + 1e-3);
   let pool: Media[] = [], loaded: Player[] = [], used = 0, chain: Chain | null = null, waiting: Chain | null = null, entering: Chain | null = null, shown: Media | null = null, token = 0, held = false;
   function discard(m: Media) { pool = pool.filter(p => p !== m); m.hook = m.fail = null; drop(m.video, m.texture); }
   // An element for the path that nothing else is using; a new one if there is none. The pool is trimmed of the longest unused.
@@ -353,8 +355,19 @@ export function createPlayers(onShow: (texture: T.Texture, path: string) => void
       for (const p of loaded) drop(p.video, p.texture); loaded = [];
       players = [{part, path: part.path, start: part.start ?? 0, end: part.end ?? null, fps: part.fps ?? FPS, video: v, texture: m.texture}]; current = 0;
       const last = (part.end ?? Math.max(1, Math.round(v.duration * (part.fps ?? FPS)))) - 1;
-      // A hurried part slows to normal speed for its last frames, so it stops on its end frame and not a few frames past it.
-      m.hook = time => { if (my !== token || paused) return; if (time === null || frameOf(time, part) >= last) finish(c, i); else if (v.playbackRate > 1 && last - frameOf(time, part) <= 2 * v.playbackRate) v.playbackRate = 1; };
+      // The part is done when the frame after its last is due, not when its last arrives: a frame request is answered in the
+      // rendering step that draws that frame, before the scene's own animation frame, so a change of film there would put the
+      // next part in the last frame's place and the last frame would never be drawn. So the change comes with the first frame
+      // past the last (exact: the next part takes that frame's place), with `ended`, or one frame time at the rate it plays
+      // after the last frame arrived, a few ms early so that it lands before the rendering step that frame would have had
+      // (the clip's own last frame has no frame after it, and a frame past the end may be late). Whichever comes first.
+      let done = false, due: ReturnType<typeof setTimeout> | null = null;
+      const end = () => { if (done || my !== token || paused) return; done = true; if (due !== null) { clearTimeout(due); timers.delete(due); } finish(c, i); };
+      m.hook = time => { if (my !== token || paused) return; const at = time === null ? Infinity : frameOf(time, part);
+        if (at > last) end();
+        else if (at === last) { if (due === null) due = later(() => { due = null; end(); }, Math.max(0, 1000 / ((part.fps ?? FPS) * v.playbackRate) - LEAD_MS)); }
+        // A hurried part slows to normal speed for its last frames, so it stops on its end frame and not a few frames past it.
+        else if (v.playbackRate > 1 && last - at <= 2 * v.playbackRate) v.playbackRate = 1; };
       // what comes next is decoded before it is needed
       if (waiting) prime(waiting, 0); else if (i + 1 < c.parts.length) prime(c, i + 1); else if (c.options.loop) prime(c, 0);
       c.options.onPart?.(i, part); onShow(m.texture, m.path); onChange();

@@ -1,6 +1,6 @@
 // The film queue taken down (createPlayers().dispose in src/scene3d-film.ts), with stand-in video elements: no browser, no media.
 // What a React view needs of it: every element the queue made is stopped and emptied, its frame requests and listeners are
-// gone, its texture is freed, and nothing the queue does afterwards reaches the page.
+// gone, its texture is freed, and nothing the queue does afterwards reaches the page. Also where a part of a chain ends.
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
@@ -66,6 +66,41 @@ test('a part that waits on its first frame is not shown after dispose, also wher
     for (const v of made) assert.ok(emptied(v));
   }
   withFrameCalls = true;
+});
+
+// ---- where a part ends (enter() in the queue): its last frame is drawn before the next part takes its place --------------
+// A frame request is answered in the rendering step that draws that frame, before the scene's own animation frame, so the
+// change of film must not come with the last frame itself. Media times as the browser gives them, in whole microseconds.
+const at = (frame: number) => Math.round(frame / 30 * 1e6) / 1e6, wait = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+test('a part with an end changes film on the first frame past its last, not on its last', async () => {
+  const {players} = queue();
+  players.play([{path: 'a.mp4', end: 58}, {path: 'b.mp4'}], {cut: true}); await settle();
+  const a = made[0]; assert.equal(players.path, 'a.mp4');
+  a.present(at(56)); a.present(at(57)); assert.equal(players.path, 'a.mp4', 'frame 57, the last, is still drawn');
+  a.present(at(58)); assert.equal(players.path, 'b.mp4', 'frame 58 (1.933333 s, 57.99999 frames) is past the end: the change comes at once');
+  assert.ok(a.paused, 'the part that is done stops where it is'); players.dispose();
+});
+
+test('a part that ends with its clip changes film one frame time after its last frame, at the rate it plays, or on ended', async () => {
+  const {players} = queue(); // duration 2 s: frames 0 to 59
+  players.play([{path: 'a.mp4', rate: 0.5}, {path: 'b.mp4'}, {path: 'c.mp4'}], {cut: true}); await settle();
+  const a = made[0]; a.present(at(59)); await wait(30);
+  assert.equal(players.path, 'a.mp4', 'at half speed the last frame stays for about 67 ms'); await wait(60);
+  assert.equal(players.path, 'b.mp4');
+  const b = made.find(v => v.src === 'b.mp4')!; b.present(at(59)); b.dispatchEvent(new Event('ended'));
+  assert.equal(players.path, 'c.mp4', 'ended changes at once'); await wait(50); assert.equal(players.path, 'c.mp4', 'and the timer of the last frame does not change again');
+  players.dispose();
+});
+
+test('a part waiting on the time of its last frame is not changed after dispose or while paused', async () => {
+  for (const how of ['dispose', 'pause'] as const) {
+    const {players, seen} = queue();
+    players.play([{path: 'a.mp4', end: 30}, {path: 'b.mp4'}], {cut: true}); await settle();
+    made[0].present(at(29)); const shows = seen.shows; if (how === 'dispose') players.dispose(); else players.toggle(true);
+    await wait(60); assert.equal(seen.shows, shows, how); assert.equal(players.path, how === 'dispose' ? '' : 'a.mp4');
+    if (how === 'pause') { players.toggle(false); made[0].present(at(30)); assert.equal(players.path, 'b.mp4', 'played on, the frame past the end changes it'); players.dispose(); }
+  }
 });
 
 test('a chain loaded with load() is taken down too, and a load that is still waiting never shows', async () => {
