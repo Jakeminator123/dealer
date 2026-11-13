@@ -83,7 +83,7 @@ inte.
 
 **7. Vad saknas, och med vilken metod.** `node tools/produce.ts <dealer>` (eller Beställs block "Det här saknas för en
 runda") räknar de 33 filmerna med samma funktioner som Karta och ger varje steg ett läge i Jakobs ord: klar, levererad
-och väntar på hans dom, preliminärt godkänd, beställd, utkast, kommer med given, kan beställas nu, kan provas, väntar på
+och väntar på hans dom, godkänd åt honom, beställd, utkast, kommer med given, kan beställas nu, kan provas, väntar på
 en bild, ingen metod än, inte byggd (V). Metoden per steg och platsklass (mitten P3–P5, ytter P1, P2, P6, P7, dealerns
 kort) står i `data/order-methods.json` med status `gäller`, `prov` eller `saknas` och belägg (V). Välj och ändra en
 metod efter Jakobs domar: `node tools/verdicts-per-method.ts <dealer>` räknar dem per modell, vändning, referensfilm och
@@ -144,7 +144,8 @@ skrivet bara i `review` i `motions/<klipp>.json` (`tools/review-store.ts`). Bild
 Primära (`/studio/primara/`): en Primär per kant, bara hans klick (V). Har han uttryckligen lämnat över domen för vissa
 filmer (2026-11-13: "jag måste sova och du får granska och godkänna alla klipp"): `node tools/review-put.ts <klipp>
 <ACCEPTED|VARIANT|REJECTED> --by … --mandate … --note …` sätter en preliminär dom som spelas som beslutet säger, aldrig
-blir Primär eller rakt godkänd, ligger först i hans kö i Granska och tas bort av hans eget beslut (V, `8e9664c`).
+blir Primär eller rakt godkänd, inte väntar i hans kö (Granska visar den i Alla under Dömda åt dig; Jakob 2026-11-13)
+och tas bort av hans eget beslut (V, `8e9664c`).
 
 **15. Protokoll och handbok.** `node tools/order-ledger.ts` eller vyn Protokoll: en rad per tagning med granskarens poäng
 och Jakobs ord, och en rad per metod (V). Den som har provat för in raden i handbokens tabeller (§5) och ändrar
@@ -242,7 +243,7 @@ Där en källa bara är text eller ett skript utanför repot står det "inget i 
 | Kant och nod | `A>B`; `IDLE` ankare 1, `READY` 2.1, `READY-B` 2.2, `P1.C1` … `P7.C2`, `D.C1`, `D.C2`, `LAND(P4.C1)`, `REVEAL(D.C2)`, `AWAY` | `parseEdge` i `src/clip-graph.ts`; `ANCHOR_NODE`, `edgeOf` i `src/order-model.ts` |
 | Orderstatus | UTKAST, GODKÄND (fryst), AVBRUTEN | `OrderStatus` i `src/order-model.ts` |
 | Tagningsstatus | GODKÄND → LAGD → KLAR → HÄMTAD → EFTERARBETAD → MÄTT → GRANSKAD (granskarens) → INFÖRD; OSÄKER (läggs aldrig om), MISSLYCKAD, AVBRUTEN | `TAKE_FLOW` i `src/order-model.ts` |
-| Domord i banken | Primär (`MAIN`), Godkänd (`ACCEPTED`), Variant (`VARIANT`), Underkänd (`REJECTED`), Väntar (`PENDING`); preliminär dom = `review.provisional`, `userAccepted: false`; `review.inbox` = från en order, inte dömd | `DECISIONS`, `applyProvisional` i `tools/review-store.ts` |
+| Domord i banken | Primär (`MAIN`), Godkänd (`ACCEPTED`), Variant (`VARIANT`), Underkänd (`REJECTED`), Väntar (`PENDING`); preliminär dom = `review.provisional`, `userAccepted: false`, i studion "dömd åt dig" (väntar inte i hans kö); `review.inbox` = från en order, inte dömd | `DECISIONS`, `applyProvisional` i `tools/review-store.ts` |
 | Bildtillstånd i Material | `kandidat` → `gäller` eller `ersatt`; `gäller` → `ersatt`; en `gäller` per roll, nod och kort | `STATES` i `studio/lib/media.ts`; `CHANGES` i `studio/components/material/state.ts` |
 | Filer per order | `data/orders/<id>.json`; `assets/orders/<id>/`: `first.png`, `last.png`, `reference.mp4`, `anchor.png`, `pose-figure.png`, `receipt.json`; `take-<n>/`: `source.*`, `fetched.json`, `after.*`, `after.json`, `fixed-<k>.*` | `src/order-model.ts`; `tools/order-collect.ts`; `tools/film-after.ts` |
 | Filer i banken | `assets/motions/<klipp>/source.mp4`, `generation.json`; `motions/<klipp>.json`; `assets/tracking/<klipp>/card-track.json`; utanför banken `assets/films/<dealer>/<namn>/` | `tools/register-order.ts`; `tools/track-card.ts`; `tools/order-bring.ts` |

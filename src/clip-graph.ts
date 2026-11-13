@@ -21,7 +21,8 @@ export type MotionRecord = {
   // inbox: a take that came in from an order (tools/register-order.ts) and that Jakob has not decided on yet. It plays only where its
   // step has nothing else to play; tools/review-store.ts takes the flag away with his decision, or with a provisional one.
   // provisional: a verdict the main agent and a reviewer gave in his place (tools/review-put.ts); it plays as its decision says,
-  // is never his (no userReview, userAccepted false) and waits for him in Granska; his decision takes it away.
+  // is never his (no userReview, userAccepted false) and does not wait for him in Granska, which lists it as judged for him; his
+  // decision takes it away.
   review?: {decision?: string; acceptedAs?: string; basis?: string; limitations?: string; userReview?: string; userAccepted?: boolean; inbox?: boolean; provisional?: {by?: string; at?: string; mandate?: string; note?: string}};
 };
 export type Receipt = {status?: string; estimatedCredits?: number; requestedAt?: string; completedAt?: string; output?: {bytes?: number; fps?: number; frames?: number; width?: number; height?: number} | null};

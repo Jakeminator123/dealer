@@ -4,7 +4,7 @@
 // Pure: no DOM, no network; tests in studio/tests/review.test.ts.
 import { hubOf, playable, type Edge, type Graph, type Take } from "../../src/clip-graph.ts";
 import { formatSeconds, takeFacts } from "./names.ts";
-import { awaitingJakob, provisionalOf, verdictOf, VERDICTS, type Verdict } from "./verdict.ts";
+import { awaitingJakob, verdictOf, VERDICTS, type Verdict } from "./verdict.ts";
 
 type EdgeLike = Pick<Edge, "id" | "kind" | "target" | "to" | "experiment">;
 
@@ -42,23 +42,18 @@ export function inReviewOrder(takes: readonly Take[], graph: Pick<Graph, "edge">
 /** decided: what Jakob chose for it in this sitting (MAIN, ACCEPTED, VARIANT, REJECTED), null while it waits. */
 export type QueueItem = { take: Take; edge: Edge; group: string; decided: string | null };
 
-/** The heading of the takes the main agent and a reviewer judged in Jakob's place: first in the queue. */
-export const PROVISIONAL_GROUP = "Preliminärt dömda · väntar på dig";
-
 /**
  * The takes waiting for Jakob (awaitingJakob: the same rule as the rail's count) and those he decided in this sitting,
- * which stay in the list ticked. A take he reset in this sitting waits again. Takes with a provisional verdict come
- * first, under their own heading; the rest in dealing order.
+ * which stay in the list ticked, in dealing order. A take he reset in this sitting waits again. A take judged for him
+ * (a provisional verdict) is not in it; "Alla" lists those under "Dömda åt dig" (TakeFilter forYou).
  */
 export function reviewQueue(graph: Graph, sitting: ReadonlyMap<string, string>): { items: QueueItem[]; waiting: number } {
   const waiting = awaitingJakob(graph);
   const open = new Set(waiting.map((t) => t.id));
   const decided = [...sitting.keys()].filter((id) => !open.has(id) && graph.takes[id]).map((id) => graph.takes[id]);
-  const provisional = (t: Take) => open.has(t.id) && !!provisionalOf(t.motion?.review);
-  const ordered = inReviewOrder([...waiting, ...decided], graph);
-  const items = [...ordered.filter(provisional), ...ordered.filter((t) => !provisional(t))].map((take) => {
+  const items = inReviewOrder([...waiting, ...decided], graph).map((take) => {
     const edge = graph.edge[take.edge];
-    return { take, edge, group: provisional(take) ? PROVISIONAL_GROUP : reviewGroup(edge), decided: open.has(take.id) ? null : (sitting.get(take.id) ?? null) };
+    return { take, edge, group: reviewGroup(edge), decided: open.has(take.id) ? null : (sitting.get(take.id) ?? null) };
   });
   return { items, waiting: waiting.length };
 }
@@ -157,12 +152,18 @@ export function seatOptions(graph: Graph): string[] {
   return ["P1", "P2", "P3", "P4", "P5", "P6", "P7", "D", "övrigt"].filter((s) => seats.has(s));
 }
 
-export type TakeFilter = { verdicts: ReadonlySet<Verdict>; seat: string | null };
+/** forYou: only the takes judged for him (the main agent and a reviewer, on his hand-over): "Dömda åt dig". */
+export type TakeFilter = { verdicts: ReadonlySet<Verdict>; seat: string | null; forYou?: boolean };
 
-/** The takes that pass the filter: one of the chosen verdicts (none chosen: all) and the chosen seat (null: all). */
+/**
+ * The takes that pass the filter: one of the chosen verdicts (none chosen: all), the chosen seat (null: all), and with
+ * forYou only those judged for him.
+ */
 export function filterTakes(takes: readonly Take[], graph: Pick<Graph, "edge">, filter: TakeFilter): Take[] {
   return takes.filter((t) => {
-    if (filter.verdicts.size && !filter.verdicts.has(verdictOf(t).verdict)) return false;
+    const v = verdictOf(t);
+    if (filter.forYou && !v.provisional) return false;
+    if (filter.verdicts.size && !filter.verdicts.has(v.verdict)) return false;
     if (filter.seat === null) return true;
     return (seatOf(graph.edge[t.edge]) ?? "övrigt") === filter.seat;
   });
@@ -180,7 +181,8 @@ export function verdictCounts(takes: readonly Take[]): Record<Verdict, number> {
  * from an order carries two sentences from its intake, "Inte granskad av Jakob: …" and "I inkorgen: …"
  * (tools/register-order.ts). His verdict takes the take out of the inbox but leaves those words in the record, where they
  * are then untrue (81 takes on 2026-11-13). The record is his and is not rewritten: the words are left out here instead,
- * and what a reviewer wrote after them stays. A provisional verdict keeps them, since he has not judged the take.
+ * and what a reviewer wrote after them stays. A verdict given for him takes the take out of the inbox too (the store
+ * removes the flag), so its intake words are left out the same way; only a take still in the inbox shows them.
  */
 export function reviewerNotes(take: Pick<Take, "motion">): { label: string; text: string }[] {
   const review = take.motion?.review;

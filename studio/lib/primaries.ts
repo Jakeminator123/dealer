@@ -140,7 +140,7 @@ export function withPrimary(bank: BankData, graph: Graph, take: Take): BankData 
   return { ...bank, motions };
 }
 
-// "Giv 01 (variant)", "Giv 03 (underkänd, sekundär)", "Giv 01 (godkänd, granskarens)", "Giv 02 (preliminärt godkänd, väntar på din dom)".
+// "Giv 01 (variant)", "Giv 03 (underkänd, sekundär)", "Giv 01 (godkänd, granskarens)", "Giv 02 (godkänd åt dig)".
 const label = (take: Take, graph: Graph) => {
   const v = verdictOf(take);
   const words = v.provisional ? [verdictPhrase(v)] : [VERDICT_LABEL[v.verdict].toLowerCase(), v.detail, v.byJakob || v.verdict === "vantar" ? null : "granskarens"].filter(Boolean);

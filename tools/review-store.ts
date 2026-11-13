@@ -1,9 +1,10 @@
 // Review decisions from the lab. Rewrites only the `review` block of motions/<id>.json: the rest of the
 // record, its key order included, stays byte for byte as it was. Same guards as the placement store:
 // the caller must hold the revision it read, writes are queued and the file is replaced atomically.
-// A provisional verdict (applyProvisional, tools/review-put.ts) is the reviewer's and the main agent's while Jakob cannot
-// judge: it plays like his, never carries his words (userReview) or his acceptance (userAccepted), and his next decision
-// through applyChange, a reset included, takes it away.
+// A provisional verdict (applyProvisional, tools/review-put.ts) is one the reviewer and the main agent gave for Jakob on
+// his hand-over ("dömd åt dig"): it plays as its decision says, never carries his words (userReview) or his acceptance
+// (userAccepted), does not wait in his queue (studio/lib/verdict.ts awaitingJakob), and his next decision through
+// applyChange, a reset included, replaces it.
 import {readFile, writeFile, mkdir, rename} from 'node:fs/promises';
 import {createHash, randomUUID} from 'node:crypto';
 import path from 'node:path';
@@ -48,11 +49,11 @@ export type Provisional = {by: string; at: string; mandate: string; note: string
 export const PROVISIONAL_TEXT_LIMIT = 300; // by and mandate; the note has NOTE_LIMIT as his notes
 
 export function validateProvisional(value: unknown): ProvisionalChange {
-  if (!object(value) || Object.keys(value).some(key => !['decision', 'by', 'mandate', 'note'].includes(key))) throw new StoreError(400, 'En preliminär dom ska bara innehålla decision, by, mandate och note.');
-  if (!PROVISIONAL_DECISIONS.includes(value.decision as ProvisionalDecision)) throw new StoreError(400, 'En preliminär dom är ACCEPTED, VARIANT eller REJECTED; Primär sätter bara Jakob.');
+  if (!object(value) || Object.keys(value).some(key => !['decision', 'by', 'mandate', 'note'].includes(key))) throw new StoreError(400, 'En dom åt Jakob ska bara innehålla decision, by, mandate och note.');
+  if (!PROVISIONAL_DECISIONS.includes(value.decision as ProvisionalDecision)) throw new StoreError(400, 'En dom åt Jakob är ACCEPTED, VARIANT eller REJECTED; Primär sätter bara Jakob.');
   const text = (key: 'by' | 'mandate' | 'note', limit: number) => {
     const raw = value[key];
-    if (typeof raw !== 'string' || !raw.trim()) throw new StoreError(400, `En preliminär dom kräver ${key}.`);
+    if (typeof raw !== 'string' || !raw.trim()) throw new StoreError(400, `En dom åt Jakob kräver ${key}.`);
     if (raw.length > limit) throw new StoreError(400, `${key} får vara högst ${limit} tecken.`);
     return raw.replace(/\s+/g, ' ').trim();
   };
@@ -62,9 +63,9 @@ export function validateProvisional(value: unknown): ProvisionalChange {
 /** Why a review block may not take a provisional verdict (it carries Jakob's own), or null when it may. */
 export function refusesProvisional(review: unknown): string | null {
   const r = object(review) ? review : {};
-  if (typeof r.userReview === 'string' && r.userReview.trim()) return `Tagningen har redan Jakobs dom (${r.userReview.slice(0, 60)}); en preliminär dom ersätter den aldrig.`;
+  if (typeof r.userReview === 'string' && r.userReview.trim()) return `Tagningen har redan Jakobs dom (${r.userReview.slice(0, 60)}); en dom åt honom ersätter den aldrig.`;
   const decision = String(r.decision ?? 'PENDING').toUpperCase();
-  if (decision !== 'PENDING' && !object(r.provisional)) return `Tagningen har redan beslutet ${decision} utan preliminär dom; bara Jakob ändrar det.`;
+  if (decision !== 'PENDING' && !object(r.provisional)) return `Tagningen har redan beslutet ${decision} utan en dom åt honom; bara Jakob ändrar det.`;
   return null;
 }
 

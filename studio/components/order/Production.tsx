@@ -12,6 +12,7 @@ import { useCallback, useEffect, useState } from "react";
 import { asApiError } from "../../lib/api.ts";
 import { dealerHref } from "../../lib/dealer.ts";
 import { labUrl } from "../../lib/lab.ts";
+import { FOR_YOU } from "../../lib/verdict.ts";
 import { PRODUCTION_CHIP, draftProduction, getProduction, productionCount, type Production as List, type ProductionAnchor, type ProductionRow } from "../../lib/orders.ts";
 import type { PlanAnswer } from "../../../src/order-model.ts";
 import { Badge, Button, cn, useToast } from "../ui";
@@ -69,14 +70,14 @@ function StepCard({ row, plan, dealer, onOpen }: { row: ProductionRow; plan: Pla
         </p>
         <Badge tone={chip.tone} className="self-start" title={row.words}>
           <span aria-hidden>{chip.sign}</span> {chip.word}
-          {row.state === "KLAR" && row.provisional ? " · preliminär" : ""}
+          {row.state === "KLAR" && row.provisional ? ` · ${FOR_YOU}` : ""}
         </Badge>
         <p className="line-clamp-2 text-xs leading-4 text-dim" title={row.method?.recipe}>
           {row.state === "KAN" || row.state === "PROV" ? (row.method?.recipe ?? row.words) : row.words}
         </p>
         {(row.state === "DOM" || (row.state === "KLAR" && row.provisional)) && row.take ? (
           <Link href={dealerHref(`/granska/?tagning=${encodeURIComponent(row.take)}`, dealer)} className="text-xs text-brass-hi hover:underline">
-            Döm i Granska
+            {row.state === "DOM" ? "Döm i Granska" : "Se i Granska"}
           </Link>
         ) : order ? (
           <button type="button" onClick={() => onOpen(order.id)} className="self-start truncate text-xs text-brass-hi hover:underline" title={row.orders.map((o) => o.title).join(" · ")}>
@@ -162,8 +163,8 @@ export function Production({ dealer, dealerName, plan, onOpen, onMade }: { deale
         </button>
         <span className="text-sm tabular-nums text-ink">{productionCount(list.counts)}</span>
         {list.counts.provisional ? (
-          <span className="text-sm tabular-nums text-vantar" title="Dömda av huvudagenten och en granskare medan du sov. De spelas, men väntar på din dom i Granska.">
-            · {list.counts.provisional} av de klara preliminärt dömda, väntar på din dom
+          <span className="text-sm tabular-nums text-dim" title="Dömda av huvudagenten och en granskare när du lämnade över domen. De spelas och väntar inte på dig; Granska visar dem under Dömda åt dig, och ditt eget beslut ersätter dem.">
+            · {list.counts.provisional} av de klara dömda åt dig
           </span>
         ) : null}
         <div className="ml-auto flex items-center gap-2">

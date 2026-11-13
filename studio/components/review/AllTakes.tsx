@@ -1,13 +1,14 @@
 "use client";
 
 // <AllTakes graph={graph} onOpen={(id) => …} />: every take, for looking something up: filters by verdict (several at
-// once) and by seat, then the takes in dealing order under the old lab's headings. A card opens the take large for a
+// once), "Dömda åt dig" (the takes the main agent and a reviewer judged for him, which are not in his queue) and seat,
+// then the takes in dealing order under the old lab's headings. A card opens the take large for a
 // decision; its ⤢ button opens the film over the whole window (FilmViewer, ‹ › through the list as filtered).
 import { useMemo, useState } from "react";
 import type { Graph } from "../../../src/clip-graph.ts";
 import { edgeName, takeNames } from "../../lib/names.ts";
 import { filterTakes, inReviewOrder, reviewGroup, seatOptions, verdictCounts } from "../../lib/review.ts";
-import { VERDICTS, type Verdict } from "../../lib/verdict.ts";
+import { JUDGED_FOR_YOU, VERDICTS, judgedForJakob, type Verdict } from "../../lib/verdict.ts";
 import { TakeCard, VerdictChip } from "../takes";
 import { FilmViewer } from "../takes/FilmViewer";
 import { Button, EmptyState, SegmentedControl, cn } from "../ui";
@@ -15,11 +16,13 @@ import { Button, EmptyState, SegmentedControl, cn } from "../ui";
 export function AllTakes({ graph, onOpen }: { graph: Graph; onOpen: (id: string) => void }) {
   const [verdicts, setVerdicts] = useState<ReadonlySet<Verdict>>(new Set());
   const [seat, setSeat] = useState<string>("alla");
+  const [forYou, setForYou] = useState(false);
   const all = useMemo(() => inReviewOrder(Object.values(graph.takes), graph), [graph]);
   const seats = useMemo(() => seatOptions(graph), [graph]);
   const inSeat = useMemo(() => filterTakes(all, graph, { verdicts: new Set(), seat: seat === "alla" ? null : seat }), [all, graph, seat]);
   const counts = useMemo(() => verdictCounts(inSeat), [inSeat]);
-  const shown = useMemo(() => filterTakes(inSeat, graph, { verdicts, seat: null }), [inSeat, graph, verdicts]);
+  const forYouCount = useMemo(() => judgedForJakob(inSeat).length, [inSeat]);
+  const shown = useMemo(() => filterTakes(inSeat, graph, { verdicts, seat: null, forYou }), [inSeat, graph, verdicts, forYou]);
   // The films over the whole window, in the order the list shows them (FilmViewer: ‹ › through them).
   const withFilm = useMemo(() => shown.filter((t) => t.media.video), [shown]);
   const [viewing, setViewing] = useState<number | null>(null);
@@ -69,8 +72,29 @@ export function AllTakes({ graph, onOpen }: { graph: Graph; onOpen: (id: string)
               </button>
             );
           })}
-          {verdicts.size ? (
-            <Button variant="quiet" size="sm" onClick={() => setVerdicts(new Set())}>
+          <button
+            type="button"
+            aria-pressed={forYou}
+            onClick={() => setForYou((on) => !on)}
+            disabled={!forYouCount && !forYou}
+            title="Dömda av huvudagenten och en granskare när du lämnade över domen. De väntar inte på dig; ditt eget beslut ersätter dem."
+            className={cn(
+              "inline-flex h-8 items-center gap-2 rounded-md border px-2 transition-colors duration-150 disabled:cursor-not-allowed disabled:opacity-40",
+              forYou ? "border-brass/60 bg-brass/10" : "border-line bg-surface hover:border-line-strong",
+            )}
+          >
+            <span className="inline-flex h-5 items-center rounded-full border border-dashed border-line-strong px-1.5 text-2xs font-medium text-dim">{JUDGED_FOR_YOU}</span>
+            <span className="text-xs text-dim tabular-nums">{forYouCount}</span>
+          </button>
+          {verdicts.size || forYou ? (
+            <Button
+              variant="quiet"
+              size="sm"
+              onClick={() => {
+                setVerdicts(new Set());
+                setForYou(false);
+              }}
+            >
               Alla omdömen
             </Button>
           ) : null}
@@ -112,7 +136,7 @@ export function AllTakes({ graph, onOpen }: { graph: Graph; onOpen: (id: string)
           </section>
         ))
       ) : (
-        <EmptyState compact title="Inga tagningar med det urvalet" action={<Button size="sm" onClick={() => { setVerdicts(new Set()); setSeat("alla"); }}>Visa alla</Button>} />
+        <EmptyState compact title="Inga tagningar med det urvalet" action={<Button size="sm" onClick={() => { setVerdicts(new Set()); setForYou(false); setSeat("alla"); }}>Visa alla</Button>} />
       )}
       <FilmViewer takes={withFilm} index={viewing} onIndex={setViewing} />
     </div>

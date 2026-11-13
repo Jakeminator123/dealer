@@ -9,7 +9,7 @@ import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { buildGraph, dealersOf, resolveRound, type BankData, type BankJob, type DerivedTake, type MotionRecord } from "../../src/clip-graph.ts";
-import { reviewStore } from "../../tools/review-store.ts";
+import { applyProvisional, reviewStore } from "../../tools/review-store.ts";
 import { decide, type Put } from "../lib/decide.ts";
 import {
   DEFAULT_DEALER,
@@ -247,4 +247,18 @@ test("a decision on a take of the second dealer is written by the same route to 
   const data = bank();
   data.motions![id] = { ...data.motions![id], review: saved.review as MotionRecord["review"] };
   assert.deepEqual(awaitingJakob(buildGraph(data, { dealer: "paow" })).map((t) => t.id), ["paow-entry-01", "paow-p4-01-return-ready"]);
+});
+
+test("a take judged for Jakob does not count as waiting, in the dealer switch nor in her queue", () => {
+  const data = bank();
+  const forHim = applyProvisional(data.motions!["paow-entry-01"].review, { decision: "ACCEPTED", by: "huvudagenten och en oberoende granskare", mandate: "Jakob 2026-11-13: godkänn allt.", note: "Ren ingång." }, "2026-11-13T16:00:00.000Z");
+  data.motions!["paow-entry-01"] = { ...data.motions!["paow-entry-01"], review: forHim as MotionRecord["review"] };
+  const graphs = dealerGraphs(data, ["pamela", "paow"]);
+  assert.deepEqual(dealerEntries(["pamela", "paow"], graphs, null).map((e) => [e.id, e.takes, e.waiting]), [
+    ["pamela", 4, 0],
+    ["paow", 3, 2],
+  ]);
+  const queue = reviewQueue(graphs.paow, new Map());
+  assert.equal(queue.waiting, 2);
+  assert.deepEqual(queue.items.map((i) => i.take.id), ["paow-p4-01-deal", "paow-p4-01-return-ready"]);
 });

@@ -386,7 +386,7 @@ blått syntes och bytte storlek); hålkortets vändning har bara hålkortet på 
   någon ruta; storleksbytet döljs under handflatan). Hålkortets vändning med bara hålkortet på bilderna: 2 av 4 användbara,
   `paow-halkort-04` tagning 2 (Kling 4, den beställda handen, en ren kantruta i luften) och `paow-halkort-02` (WAN 3, en
   mörk suddig rand där kanten skulle synas, Variant). Utgången: `paow-utgang-01` håller (blicken går ned till skon och
-  upp igen), 1 av 2. Alla dessa är preliminära domar och väntar på Jakob.
+  upp igen), 1 av 2. Alla dessa är preliminära domar, dömda åt Jakob, och väntar inte i hans kö.
 
 **Öppen fråga: hur hon rör sig utan att det kostar kortet.** Jakob vill att hon rör kropp, huvud och högerarm mer.
 Rörelsemeningen i mall 7 gjorde det och förstörde kortet i 15 av 18 tagningar; blicken ensam (tillägget ovan, 2 tagningar)

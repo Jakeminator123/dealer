@@ -559,8 +559,10 @@ IDLE>READY | READY>P1.C1 | P1.C1>READY | READY>D.C1 | D.C1>READY | READY>P1.C2 |
 - En preliminär dom (`node tools/review-put.ts`, `applyProvisional` i `tools/review-store.ts`) sätts bara när Jakob har
   lämnat över domen för vissa filmer: `decision` `ACCEPTED`, eventuellt med `acceptedAs: "VARIANT"` men aldrig `MAIN`,
   eller `REJECTED`; `userAccepted: false`, ingen `userReview`, `inbox` borttagen och ett block
-  `provisional {by, at, mandate, note}`. Tagningen spelas som beslutet säger, räknas aldrig som rakt godkänd, ligger
-  först i hans kö i Granska, och hans nästa beslut (också en återställning) tar bort blocket. En tagning som bär hans
+  `provisional {by, at, mandate, note}`. Tagningen spelas som beslutet säger, räknas aldrig som rakt godkänd och
+  väntar inte i hans kö (`awaitingJakob` i `studio/lib/verdict.ts`; Jakob 2026-11-13). Studion kallar den dömd åt
+  honom: chippet är streckat med domens eget namn och "åt dig", och Granska visar sådana tagningar i Alla under Dömda
+  åt dig. Hans nästa beslut (också en återställning) tar bort blocket. En tagning som bär hans
   dom tar inte emot en preliminär.
 - En post kan bära `motion.takeHand` och `motion.releaseHand` (`LH`, `RH`): handen som tar kortet ur skon och handen
   som lägger det, eller på en retur handen som kommer tillbaka. Rundan väljer en retur som kommer tillbaka med den hand

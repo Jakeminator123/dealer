@@ -4,7 +4,7 @@ import assert from "node:assert/strict";
 import { buildGraph, type BankData, type BankJob } from "../../src/clip-graph.ts";
 import { DECISIONS, NOTE_LIMIT as STORE_LIMIT, applyChange, applyProvisional } from "../../tools/review-store.ts";
 import { NOTE_LIMIT, type Decision } from "../lib/api.ts";
-import { SAID_WITHOUT_NOTE, awaitingJakob, chosenDecision, primarCount, proofVerdict, provisionalChip, provisionalOf, reviewStamp, splitLabel, storedNote, verdictOf, verdictPhrase } from "../lib/verdict.ts";
+import { SAID_WITHOUT_NOTE, awaitingJakob, chosenDecision, judgedForJakob, primarCount, proofVerdict, provisionalChip, provisionalOf, provisionalWords, reviewStamp, splitLabel, storedNote, verdictOf, verdictPhrase } from "../lib/verdict.ts";
 
 type R = Record<string, unknown>;
 const take = (review: R | null, extra: R = {}) => ({
@@ -103,7 +103,7 @@ test("proof files: stated verdict first, then the label's words", () => {
   assert.deepEqual(splitLabel("Hemvy salong. Kameran står still"), { name: "Hemvy salong", rest: "Kameran står still" });
 });
 
-test("a provisional verdict: its own chip and words, never Jakob's, never a pressed button of his, and waiting for him first", () => {
+test("a verdict judged for him: its own chip and words, never Jakob's, never a pressed button of his, and not waiting for him", () => {
   const by = "huvudagenten och en oberoende granskare";
   const mandate = 'Jakob 2026-11-13: "bedöm de sista filmerna, för jag måste sova."';
   const prov = (decision: "ACCEPTED" | "VARIANT" | "REJECTED", before: R = { decision: "PENDING", inbox: true, userAccepted: false }) =>
@@ -114,11 +114,17 @@ test("a provisional verdict: its own chip and words, never Jakob's, never a pres
   assert.equal(verdictOf(take(prov("VARIANT"))).provisional, true);
   const bad = verdictOf(take(prov("REJECTED")));
   assert.deepEqual([bad.verdict, bad.byJakob, bad.provisional], ["underkand", false, true]);
-  assert.equal(provisionalChip(ok), "Preliminär · godkänd av granskaren");
-  assert.equal(provisionalChip(bad), "Preliminär · underkänd av granskaren");
-  assert.equal(verdictPhrase(ok), "preliminärt godkänd, väntar på din dom");
-  assert.equal(verdictPhrase(bad), "preliminärt underkänd, väntar på din dom");
+  assert.deepEqual(provisionalChip(ok), { label: "Godkänd", note: "åt dig" });
+  assert.deepEqual(provisionalChip(bad), { label: "Underkänd", note: "åt dig" });
+  assert.equal(verdictPhrase(ok), "godkänd åt dig");
+  assert.equal(verdictPhrase(verdictOf(take(prov("VARIANT")))), "variant åt dig");
+  assert.equal(verdictPhrase(bad), "underkänd åt dig");
   assert.equal(verdictPhrase({ verdict: "godkand", provisional: false }), "godkänd");
+  // The tooltip: who, when, under which words of his, and that his decision replaces it; nothing says it waits.
+  const words = provisionalWords(ok, provisionalOf(prov("ACCEPTED") as never));
+  assert.equal(words, `Godkänd åt dig av ${by}, 2026-11-13, på ditt uppdrag: ${mandate}. Inte din egen dom; ditt beslut ersätter den.`);
+  assert.equal(provisionalWords(bad), "Underkänd åt dig. Inte din egen dom; ditt beslut ersätter den.");
+  for (const said of [words, verdictPhrase(ok), verdictPhrase(bad)]) assert.doesNotMatch(said, /väntar|preliminär/i);
   // Not his note, not his stamp, no button of his pressed.
   assert.equal(storedNote(prov("ACCEPTED") as never), "");
   assert.equal(reviewStamp(prov("ACCEPTED") as never), null);
@@ -130,7 +136,8 @@ test("a provisional verdict: its own chip and words, never Jakob's, never a pres
   assert.equal(verdictOf(take(applyChange(prov("ACCEPTED"), { decision: "ACCEPTED", note: "" }, "2026-11-13"))).provisional, false);
   assert.equal(verdictOf(take(applyChange(prov("ACCEPTED"), { decision: "ACCEPTED", note: "" }, "2026-11-13"))).byJakob, true);
 
-  // The queue: provisional takes wait for him, a provisional rejection too, and come first.
+  // The queue (Jakob 2026-11-13: "Med andra ord vill jag inte se en sån här lista när jag är tillbaka!"): a take
+  // judged for him, approved or rejected, does not wait for him; judgedForJakob lists exactly those.
   const job = (id: string, from: string, to: string, kind: string): BankJob => ({ id, kind, target: null, from, to, model: "wan3", duration: 4, ratio: "auto_1080p", audio: false, promptText: "", first: {}, purpose: "" });
   const bank: BankData = {
     jobs: [job("a-deal-01", "READY", "P4.C1", "DEAL"), job("a-deal-02", "READY", "P4.C1", "DEAL"), job("a-deal-03", "READY", "P4.C1", "DEAL"), job("a-deal-04", "READY", "P4.C1", "DEAL")],
@@ -141,5 +148,31 @@ test("a provisional verdict: its own chip and words, never Jakob's, never a pres
       "a-deal-04": { source: { frames: 120 }, review: { decision: "REJECTED" } },
     },
   };
-  assert.deepEqual(awaitingJakob(buildGraph(bank)).map((t) => t.id), ["a-deal-02", "a-deal-03", "a-deal-01"]);
+  const graph = buildGraph(bank);
+  assert.deepEqual(awaitingJakob(graph).map((t) => t.id), ["a-deal-01"]);
+  assert.deepEqual(judgedForJakob(Object.values(graph.takes)).map((t) => t.id).sort(), ["a-deal-02", "a-deal-03"]);
+});
+
+test("the queue is the unjudged takes; one judged by him and one judged for him are not in it", () => {
+  const job = (id: string): BankJob => ({ id, kind: "DEAL", target: null, from: "READY", to: "P4.C1", model: "wan3", duration: 4, ratio: "auto_1080p", audio: false, promptText: "", first: {}, purpose: "" });
+  const forHim = applyProvisional({ decision: "PENDING", inbox: true }, { decision: "ACCEPTED", by: "huvudagenten och en oberoende granskare", mandate: "Jakob 2026-11-13: godkänn allt.", note: "Ren giv." }, "2026-11-13T16:00:00.000Z");
+  const bank: BankData = {
+    jobs: [job("unjudged-01"), job("his-01"), job("for-him-01")],
+    motions: {
+      "unjudged-01": { source: { frames: 120 }, review: { decision: "PENDING", inbox: true } },
+      "his-01": { source: { frames: 120 }, review: { decision: "ACCEPTED", userAccepted: true, userReview: jakob } },
+      "for-him-01": { source: { frames: 120 }, review: forHim },
+    },
+  };
+  const graph = buildGraph(bank);
+  assert.deepEqual(awaitingJakob(graph).map((t) => t.id), ["unjudged-01"]);
+  assert.deepEqual(judgedForJakob(Object.values(graph.takes)).map((t) => t.id), ["for-him-01"]);
+  // His decision on it replaces the verdict judged for him: his own, and still not waiting.
+  bank.motions!["for-him-01"] = { source: { frames: 120 }, review: applyChange(forHim, { decision: "REJECTED", note: "" }, "2026-11-14") };
+  const after = buildGraph(bank);
+  assert.deepEqual(judgedForJakob(Object.values(after.takes)), []);
+  assert.deepEqual(awaitingJakob(after).map((t) => t.id), ["unjudged-01"]);
+  // A reset of it makes it wait again, without the verdict judged for him.
+  bank.motions!["for-him-01"] = { source: { frames: 120 }, review: applyChange(forHim, { decision: "PENDING", note: "" }, "2026-11-14") };
+  assert.deepEqual(awaitingJakob(buildGraph(bank)).map((t) => t.id), ["unjudged-01", "for-him-01"]);
 });

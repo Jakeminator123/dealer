@@ -85,7 +85,7 @@ test('a real tracked record survives a round of decisions with everything outsid
   for (const key of ['basis', 'limitations', 'agentFirstVerdict', 'colorDoesNotProvePhysicalSide', 'productionReady']) assert.deepEqual(now[key], was[key], key);
 });
 
-test('a provisional verdict plays like a decision but is never his, and his next decision takes it away', async t => {
+test('a provisional verdict (judged for him) plays like a decision but is never his, and his next decision takes it away', async t => {
   const mandate = 'Jakob 2026-11-13: "Tillsammans med videogranskaren, som är duktig, bedöm de sista filmerna, för jag måste sova."';
   const change = (decision: string, note = 'Handen landar rent på f88.') => validateProvisional({decision, by: 'huvudagenten och en oberoende granskare', mandate, note});
   const inbox = {decision: 'PENDING', basis: 'b', userAccepted: false, inbox: true};
@@ -103,6 +103,9 @@ test('a provisional verdict plays like a decision but is never his, and his next
   assert.throws(() => applyProvisional({decision: 'ACCEPTED', userAccepted: true, userReview: 'Jakob 2026-11-12: ja'}, change('REJECTED'), at), fails(409));
   assert.throws(() => applyProvisional({decision: 'REJECTED'}, change('ACCEPTED'), at), fails(409));
   assert.equal(refusesProvisional(null), null); assert.equal(refusesProvisional({decision: 'PENDING', inbox: true}), null); assert.equal(refusesProvisional(rejected), null);
+  // The refusal says it in the words of the rule: a verdict judged for him ("åt honom"), never "preliminär".
+  assert.equal(refusesProvisional({decision: 'REJECTED'}), 'Tagningen har redan beslutet REJECTED utan en dom åt honom; bara Jakob ändrar det.');
+  assert.match(String(refusesProvisional({decision: 'PENDING', userReview: 'Jakob 2026-11-12: nej'})), /en dom åt honom ersätter den aldrig/);
   // Never MAIN, every field required, the note as long as his may be.
   for (const bad of [{decision: 'MAIN', by: 'a', mandate: 'm', note: 'n'}, {decision: 'ACCEPTED', by: '', mandate: 'm', note: 'n'}, {decision: 'ACCEPTED', by: 'a', mandate: 'm'},
     {decision: 'ACCEPTED', by: 'a', mandate: 'm', note: 'x'.repeat(NOTE_LIMIT + 1)}, {decision: 'ACCEPTED', by: 'a', mandate: 'm', note: 'n', userReview: 'Jakob'}, null])

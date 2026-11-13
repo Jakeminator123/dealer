@@ -36,8 +36,9 @@ Jakob äger projektet; han är inte programmerare, så förklara val i vanliga o
 - Deploy, mediauppladdning, databasändring och integration i Scoutgaming bara på Jakobs uttryckliga ord.
 - Jakobs domar i Granska och Material, och valet av Primär, är hans: inget verktyg och ingen agent sätter eller skriver
   över dem. En agent eller granskare föreslår. Bara när han uttryckligen har lämnat över domen för vissa filmer kan
-  huvudagenten och en oberoende granskare sätta en preliminär dom (`node tools/review-put.ts`): den ser aldrig ut som
-  hans, ligger kvar först i hans kö i Granska, och hans eget beslut ersätter den.
+  huvudagenten och en oberoende granskare döma i hans ställe (`node tools/review-put.ts`): domen ser aldrig ut som
+  hans, den väntar inte i hans kö (Jakob 2026-11-13: "Med andra ord vill jag inte se en sån här lista när jag är
+  tillbaka!"), den går att hitta i Granska under Dömda åt dig, och hans eget beslut ersätter den.
 - V6 är Jakobs visuella referens och återskapas byteidentiskt. Bevara original och referenser; ändra aldrig en
   referenshash för att dölja en avvikelse.
 - Det tidigare projektet (arkivet snyggare-dealer) och Scoutgaming är bara läsreferenser: inga länkar, junctions eller

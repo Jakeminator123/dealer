@@ -13,7 +13,8 @@ export const VERDICT_SIGN: Record<Verdict, string> = { primar: "★", godkand: "
  * verdict: the chip. byJakob: the decision is Jakob's own (an acceptance with review.userAccepted, a rejection with his
  * words in review.userReview); false means a reviewer (an agent) decided and the chip says "av granskare". detail: a
  * word more where the five verdicts are too coarse ("sekundär", "renderas", "misslyckad"). provisional: the main agent and
- * a reviewer judged it in his place (review.provisional, tools/review-put.ts); never byJakob, and it waits for his word.
+ * a reviewer judged it for him, on his hand-over (review.provisional, tools/review-put.ts), in his words "dömd åt dig".
+ * Never byJakob, not in his queue (awaitingJakob), and his own decision replaces it.
  */
 export type VerdictInfo = { verdict: Verdict; byJakob: boolean; label: string; sign: string; detail: string | null; provisional: boolean };
 
@@ -56,17 +57,30 @@ export function verdictOf(take: TakeLike): VerdictInfo {
   return info("vantar", false);
 }
 
-// The verdict in words for a sentence. A provisional one says so and that it waits for him, in words he reads at a glance.
-const PROVISIONAL_WORD: Partial<Record<Verdict, string>> = { godkand: "preliminärt godkänd", variant: "preliminärt godkänd som variant", underkand: "preliminärt underkänd" };
-export const WAITS_FOR_YOU = "väntar på din dom";
-/** "godkänd", "variant"; provisional: "preliminärt godkänd, väntar på din dom". */
+// A verdict the main agent and a reviewer gave for him (provisional) reads "dömd åt dig": the verdict's own word and
+// "åt dig". It does not wait for him (Jakob 2026-11-13: "Med andra ord vill jag inte se en sån här lista när jag är
+// tillbaka!"); Granska lists such takes under JUDGED_FOR_YOU in "Alla".
+export const FOR_YOU = "åt dig";
+export const JUDGED_FOR_YOU = "Dömda åt dig";
+const FOR_YOU_WORD: Partial<Record<Verdict, string>> = { godkand: "godkänd", variant: "variant", underkand: "underkänd" };
+/** The verdict in words for a sentence: "godkänd", "variant"; judged for him: "godkänd åt dig", "underkänd åt dig". */
 export function verdictPhrase(v: Pick<VerdictInfo, "verdict" | "provisional">): string {
-  const word = v.provisional ? PROVISIONAL_WORD[v.verdict] : null;
-  return word ? `${word}, ${WAITS_FOR_YOU}` : VERDICT_LABEL[v.verdict].toLowerCase();
+  const word = v.provisional ? FOR_YOU_WORD[v.verdict] : null;
+  return word ? `${word} ${FOR_YOU}` : VERDICT_LABEL[v.verdict].toLowerCase();
 }
-/** The chip's words for a provisional verdict: "Preliminär · godkänd av granskaren". */
-export function provisionalChip(v: Pick<VerdictInfo, "verdict">): string {
-  return `Preliminär · ${v.verdict === "underkand" ? "underkänd" : v.verdict === "variant" ? "variant" : "godkänd"} av granskaren`;
+/** The chip of a verdict judged for him: the verdict's own label and the note "åt dig" (the chip is drawn dashed). */
+export function provisionalChip(v: Pick<VerdictInfo, "verdict">): { label: string; note: string } {
+  return { label: VERDICT_LABEL[v.verdict], note: FOR_YOU };
+}
+/**
+ * Who judged it for him, when, under which words of his, and that his decision replaces it; the chip's tooltip and the
+ * line above his buttons. "Godkänd åt dig av huvudagenten och en granskare, 2026-11-13, på ditt uppdrag: Jakob …. Inte
+ * din egen dom; ditt beslut ersätter den." Without the block (only the verdict known) it names neither who nor his words.
+ */
+export function provisionalWords(v: Pick<VerdictInfo, "verdict">, p: Provisional | null = null): string {
+  const said = verdictPhrase({ verdict: v.verdict, provisional: true });
+  const head = [`${said[0].toUpperCase()}${said.slice(1)}${p?.by ? ` av ${p.by}` : ""}`, p?.at ? p.at.slice(0, 10) : "", p?.mandate ? `på ditt uppdrag: ${p.mandate}` : ""];
+  return `${head.filter(Boolean).join(", ")}. Inte din egen dom; ditt beslut ersätter den.`;
 }
 
 /**
@@ -106,15 +120,19 @@ export function reviewStamp(review: Review | null | undefined): string | null {
 }
 
 /**
- * Finished takes still waiting for Jakob's word: no userReview yet and not set aside by a reviewer (rejected or
- * secondary), and every take with a provisional verdict, a provisional rejection too. The rail's count beside Granska.
- * Provisional ones first, then as the bank lists them.
+ * Finished takes still waiting for Jakob's word, as the bank lists them: no userReview yet, not set aside by a reviewer
+ * (rejected or secondary), and not judged for him (a provisional verdict does not wait for him; judgedForJakob lists
+ * those). The rail's count beside Granska.
  */
 export function awaitingJakob(graph: Graph): Take[] {
-  const provisional = (t: Take) => (provisionalOf(t.motion?.review) ? 1 : 0);
   return Object.values(graph.takes)
-    .filter((t) => t.stage === "DONE" && !jakobSaid(t.motion?.review) && ((t.decision !== "REJECTED" && t.decision !== "SECONDARY") || provisional(t)))
-    .sort((a, b) => provisional(b) - provisional(a) || a.order - b.order);
+    .filter((t) => t.stage === "DONE" && !jakobSaid(t.motion?.review) && t.decision !== "REJECTED" && t.decision !== "SECONDARY" && !provisionalOf(t.motion?.review))
+    .sort((a, b) => a.order - b.order);
+}
+
+/** The takes judged for him (the chip's "åt dig", verdictOf provisional), in the order given: Granska's "Dömda åt dig". */
+export function judgedForJakob(takes: readonly Take[]): Take[] {
+  return takes.filter((t) => verdictOf(t).provisional);
 }
 
 /** The films the round needs (graph.summary.films.required) and how many of them have a Primär: the count beside Primära. */

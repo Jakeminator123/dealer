@@ -1,8 +1,9 @@
-// A provisional verdict on one take, while Jakob cannot judge it himself: the main agent and an independent reviewer
-// approve (ACCEPTED, or VARIANT) or reject (REJECTED) it under his mandate, and the take plays like an approved one until he
-// judges. It never looks like his word: no userReview, userAccepted false, and a block review.provisional
-// {by, at, mandate, note} (tools/review-store.ts applyProvisional). Granska lists it first among what waits for him;
-// his decision there, a reset included, takes the provisional verdict away.
+// A verdict on one take judged for Jakob ("dömd åt dig"), when he has handed the verdict over: the main agent and an
+// independent reviewer approve (ACCEPTED, or VARIANT) or reject (REJECTED) it under his mandate, and the take plays as the
+// verdict says. It never looks like his word: no userReview, userAccepted false, and a block review.provisional
+// {by, at, mandate, note} (tools/review-store.ts applyProvisional). It does not wait in his queue (Jakob 2026-11-13: "Med
+// andra ord vill jag inte se en sån här lista när jag är tillbaka!"); Granska lists it in "Alla" under "Dömda åt dig",
+// and his own decision there, a reset included, replaces it.
 //
 //   node tools/review-put.ts <clip-id> <ACCEPTED|VARIANT|REJECTED> --by "<who>" --mandate "<his words and date>" --note "<why>"
 //   … --dry                  prints the review block it would write and writes nothing
@@ -10,7 +11,7 @@
 //
 // Same store as the lab's decisions: the revision read is the one presented, writes are queued and atomic, and only the
 // `review` block of motions/<clip-id>.json changes. Refused where his verdict stands (a userReview, or a decision other than
-// PENDING without a provisional block); an earlier provisional verdict may be replaced. Tests: tools/review-put.test.ts.
+// PENDING without a provisional block); an earlier verdict judged for him may be replaced. Tests: tools/review-put.test.ts.
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {StoreError} from './placement-store.ts';
@@ -40,8 +41,8 @@ export async function reviewPut(args: string[], options: {root?: string; now?: (
     return {id, dry: true, review, revision: null, text: `Torrkörning, inget skrivet. motions/${id}.json skulle få review:\n${JSON.stringify(review, null, 2)}`};
   }
   const saved = await store.saveProvisional(id, change, read.revision);
-  const said = change.decision === 'REJECTED' ? 'preliminärt underkänd' : change.decision === 'VARIANT' ? 'preliminärt godkänd som variant' : 'preliminärt godkänd';
-  return {id, dry: false, review: saved.review, revision: saved.revision, text: `motions/${id}.json: ${said} av ${change.by}. Väntar på Jakobs dom i Granska; hans beslut ersätter den.`};
+  const said = change.decision === 'REJECTED' ? 'underkänd' : change.decision === 'VARIANT' ? 'variant' : 'godkänd';
+  return {id, dry: false, review: saved.review, revision: saved.revision, text: `motions/${id}.json: ${said} åt Jakob av ${change.by}. Väntar inte i hans kö; Granska visar den under Dömda åt dig, och hans eget beslut ersätter den.`};
 }
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {

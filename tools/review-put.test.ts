@@ -1,4 +1,4 @@
-// Offline tests for tools/review-put.ts, the provisional verdict given in Jakob's place. Every write goes to a temporary
+// Offline tests for tools/review-put.ts, the provisional verdict judged for Jakob ("åt dig"). Every write goes to a temporary
 // copy; the checkout's own motions/ is only read.
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -10,7 +10,8 @@ import {reviewPut} from './review-put.ts';
 import {applyChange, applyProvisional, reviewStore} from './review-store.ts';
 import {buildGraph, type BankData, type BankJob} from '../src/clip-graph.ts';
 import {verdictOf, referenceCandidates, stepOf} from '../src/order-model.ts';
-import {productionList} from './produce.ts';
+import {printList, productionList} from './produce.ts';
+import {awaitingJakob} from '../studio/lib/verdict.ts';
 
 const base = existsSync('D:/dealer-scratch/tmp') ? 'D:/dealer-scratch/tmp' : os.tmpdir();
 const id = 'paow-test-01-deal';
@@ -36,7 +37,7 @@ test('the command writes a provisional verdict through the store and touches onl
   assert.deepEqual(after.review, {decision: 'ACCEPTED', basis: 'Handen lyfter f24.', userAccepted: false,
     provisional: {by, at, mandate, note: 'Ren landning på f88, kortet ligger still.'}});
   assert.equal(await readFile(file, 'utf8'), JSON.stringify({...JSON.parse(text), review: after.review}, null, 2) + '\n');
-  assert.match(out.text, /preliminärt godkänd av huvudagenten/);
+  assert.equal(out.text, `motions/${id}.json: godkänd åt Jakob av ${by}. Väntar inte i hans kö; Granska visar den under Dömda åt dig, och hans eget beslut ersätter den.`);
   assert.deepEqual(await readdir(path.join(root, 'motions')), [`${id}.json`]);
   // It may replace an earlier provisional verdict: a variant, then a rejection.
   assert.equal((await reviewPut(args('variant'), {root, now: () => at})).review.acceptedAs, 'VARIANT');
@@ -101,17 +102,21 @@ test('a provisional approval plays as his approval would, a provisional rejectio
   assert.equal(rejected.edge['READY>P4.C1'].main?.id, 'p4-old-01'); assert.equal(rejected.takes['p4-new-01'].decision, 'REJECTED');
 });
 
-test('a provisional approval is not his: never "rakt godkänd", so never a reference film; the production list says it waits', () => {
+test('a provisional approval is not his: never "rakt godkänd", so never a reference film; it does not wait, and the production list says it was judged for him', () => {
   const review = applyProvisional({decision: 'PENDING', inbox: true}, change('ACCEPTED'), at);
   assert.deepEqual(verdictOf(review as never), {verdict: 'GODKÄND', straight: false, words: null});
   assert.equal(verdictOf(applyChange(review, {decision: 'ACCEPTED', note: ''}, '2026-11-13') as never).straight, true);
   const bank = bankWith(review);
   const candidates = referenceCandidates(bank as never, {dealer: 'pamela', step: stepOf('GIV-2.1')!, target: 'P4.C1'});
   assert.equal(candidates.find(c => c.take === 'p4-new-01')?.approvedStraight, false);
-  // The production list: klar, but in words that say it waits for his verdict, and counted as provisional.
+  // Not in his queue (Jakob 2026-11-13: "Med andra ord vill jag inte se en sån här lista när jag är tillbaka!").
   const graph = buildGraph(bank);
+  assert.ok(!awaitingJakob(graph).some(t => t.id === 'p4-new-01'));
+  // The production list: klar, in words that say it was judged for him, and counted as provisional.
   const list = productionList({graph, entries: [], dealer: {id: 'pamela', name: 'Pamela'}, orders: [], methods: {schemaVersion: 1, methods: []}, bank: bank as never} as never);
   const row = list.rows.find(r => r.edge === 'READY>P4.C1')!;
-  assert.deepEqual([row.state, row.provisional, row.byJakob, row.words], ['KLAR', true, false, 'klar · preliminärt godkänd, väntar på din dom']);
+  assert.deepEqual([row.state, row.provisional, row.byJakob, row.words], ['KLAR', true, false, 'klar · godkänd åt dig']);
   assert.equal(list.counts.provisional, 1);
+  assert.match(printList(list), /klara \(1 dömda åt dig\)/);
+  assert.doesNotMatch(printList(list), /preliminär|väntar på din dom/);
 });

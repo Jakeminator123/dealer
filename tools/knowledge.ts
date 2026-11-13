@@ -10,7 +10,7 @@
 // the named documents are read; its environment variables, operations and incidents are not read at all.
 import type {Graph, Take} from '../src/clip-graph.ts';
 import {edgeName, takeNames} from '../studio/lib/names.ts';
-import {verdictOf, storedNote, awaitingJakob, proofVerdict, PROOF_VERDICT_LABEL, type ProofVerdict} from '../studio/lib/verdict.ts';
+import {verdictOf, storedNote, awaitingJakob, judgedForJakob, proofVerdict, PROOF_VERDICT_LABEL, type ProofVerdict} from '../studio/lib/verdict.ts';
 import {COST, PRIVATE_PATH, blockedName, type Proof, type Release} from './studio-freeze.ts';
 import {inspectBlob} from './publication-check.ts';
 import {roughTokens} from '../cloud/studio/bot-models.ts';
@@ -214,7 +214,7 @@ export function bankSections(graph: Graph, release: Blocked, removed: Removed): 
   }
   const all = Object.values(graph.takes), byVerdict: Record<string, number> = {};
   for (const t of all) { const v = verdictOf(t).label.toLowerCase(); byVerdict[v] = (byVerdict[v] ?? 0) + 1; }
-  const waiting = awaitingJakob(graph), tally = (r: Record<string, number>) => Object.entries(r).map(([k, n]) => `${n} ${k}`).join(', ');
+  const waiting = awaitingJakob(graph), forJakob = judgedForJakob(all), tally = (r: Record<string, number>) => Object.entries(r).map(([k, n]) => `${n} ${k}`).join(', ');
   const summary = [
     `Räknat med buildGraph på klippbanken som den var när kopian byggdes, i läget en film per plats (${graph.summary.films.mode === 'SEAT' ? 'platsens andra kort spelar första kortets filmer' : 'en film per kort'}).`,
     `- Huvudfilmer som en runda behöver: ${required.length}.`,
@@ -223,6 +223,8 @@ export function bankSections(graph: Graph, release: Blocked, removed: Removed): 
     `- Primära tagningar satta av Jakob: ${required.filter(e => e.takes.some(t => t.explicitMain)).length} av ${required.length}.`,
     `- Tagningar totalt: ${all.length} (${tally(byVerdict)}).`,
     `- Väntar på Jakobs ord: ${waiting.length}${waiting.length ? `: ${waiting.map(t => `${t.id} (${edgeName(t.edge)})`).join(', ')}` : ''}.`,
+    // A verdict the main agent and a reviewer gave for him on his hand-over (tools/review-put.ts) does not wait for him.
+    `- Dömda åt Jakob av huvudagenten och en granskare (väntar inte på honom, hans beslut ersätter domen; Granska, Alla, Dömda åt dig): ${forJakob.length}.`,
     `- Experimentsteg utanför modellen: ${graph.experiments.length}.`,
     // Jakob's words (2026-11-12): a "steg" is one move between two anchors; a film or a take is what plays there.
     'Ankare: A1 = vila (IDLE), A2.1 = nyp i skons fönster (READY), A2.2 = hand över kortet (READY-B). Ett steg är en rörelse mellan två ankare och skrivs till exempel A2.1 → P4C1 (READY>P4.C1); varje steg kan ha flera tagningar, och en av dem spelas. Syns i vyerna Karta och Primära.',

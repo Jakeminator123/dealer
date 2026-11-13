@@ -113,7 +113,7 @@ export type ProductionRow = {
   /** A round needs it (roundSequence with every seat, the dealer and the hole card turned, and the rest between). */
   needed: boolean;
   have: Have;
-  /** The take that plays now, and whether the verdict is Jakob's own, or provisional (given in his place, waiting for his). */
+  /** The take that plays now, and whether the verdict is Jakob's own, or provisional (judged for him: "åt dig", not waiting). */
   take: string | null;
   byJakob: boolean;
   provisional: boolean;
@@ -138,7 +138,7 @@ export type Production = {
   rows: ProductionRow[];
   anchors: Anchor[];
   landings: string[];
-  /** provisional: of the klar steps, those whose verdict is provisional (tools/review-put.ts), still waiting for his. */
+  /** provisional: of the klar steps, those whose verdict was given for him (tools/review-put.ts); his own decision replaces it. */
   counts: { total: number; done: number; needed: number; neededDone: number; missing: number; provisional: number; byState: Record<RowState, number> };
   /** Karta's own count over the same graph (bankSummary): its "saknas" is counts.missing. */
   karta: Summary;
@@ -397,7 +397,7 @@ const SIGN: Record<RowState, string> = { KLAR: '✓', DOM: '○', BESTÄLLD: '�
 export function printList(list: Production): string {
   const lines: string[] = [];
   const c = list.counts;
-  lines.push(`Produktionslistan för ${list.dealer.name}: ${c.done} av ${c.total} klara${c.provisional ? ` (${c.provisional} preliminärt dömda, väntar på din dom)` : ''}, ${c.neededDone} av ${c.needed} som en runda kräver. Karta: ${list.karta.missing} saknas.`);
+  lines.push(`Produktionslistan för ${list.dealer.name}: ${c.done} av ${c.total} klara${c.provisional ? ` (${c.provisional} dömda åt dig)` : ''}, ${c.neededDone} av ${c.needed} som en runda kräver. Karta: ${list.karta.missing} saknas.`);
   const flight = (o: InFlight) => `${o.id} (${SHOWN_LABEL[o.shown].toLowerCase()})`;
   lines.push(`Ankare: ${list.anchors.map((a) => `${a.at} ${a.state}${a.orders.length ? ` (${a.orders.map(flight).join(', ')})` : ''}`).join(' · ')}. Landningsbilder: ${list.landings.length ? list.landings.join(', ') : 'inga'}.`);
   lines.push(`Läge: ${ROW_STATES.filter((s) => c.byState[s]).map((s) => `${c.byState[s]} ${ROW_STATE_LABEL[s]}`).join(', ')}.`);

@@ -1,9 +1,11 @@
 // <VerdictChip verdict="godkand" byJakob={false} size="sm|md" />: a verdict as sign AND colour (never colour alone).
 // <TakeChip take={take} /> reads it from a take; <ProofChip verdict="remarks" /> is the same chip for a proof file.
-// A decision that is not Jakob's own (a reviewer's) is drawn with a dashed edge, and md says "granskare". A provisional
-// verdict (lib/verdict.ts provisionalOf) is dashed too and says "Preliminär" (md: "Preliminär · godkänd av granskaren").
+// A decision that is not Jakob's own (a reviewer's) is drawn with a dashed edge, and md says "granskare". A verdict the
+// main agent and a reviewer gave for him (lib/verdict.ts provisionalOf) is dashed too, keeps its own label and sign, and
+// md adds "åt dig" ("Godkänd · åt dig"); its tooltip says who judged, under which words of his, and that his decision
+// replaces it (provisionalWords).
 import type { Take } from "../../../src/clip-graph.ts";
-import { PROOF_VERDICT_LABEL, VERDICT_LABEL, VERDICT_SIGN, provisionalChip, verdictOf, type ProofVerdict, type Verdict } from "../../lib/verdict.ts";
+import { PROOF_VERDICT_LABEL, VERDICT_LABEL, VERDICT_SIGN, provisionalChip, provisionalOf, provisionalWords, verdictOf, type Provisional, type ProofVerdict, type Verdict } from "../../lib/verdict.ts";
 import { cn } from "../ui/cn";
 
 type Tone = Verdict | "anmarkning";
@@ -61,6 +63,7 @@ export function VerdictChip({
   byJakob = true,
   detail = null,
   provisional = false,
+  judged = null,
   size = "md",
   className,
 }: {
@@ -69,14 +72,16 @@ export function VerdictChip({
   byJakob?: boolean;
   /** A word more, shown in md and in the tooltip: "sekundär", "renderas". */
   detail?: string | null;
-  /** The main agent and a reviewer judged it in Jakob's place; it waits for his word. */
+  /** The main agent and a reviewer judged it for Jakob ("åt dig"); not his, not in his queue, replaced by his decision. */
   provisional?: boolean;
+  /** Who judged it for him and under which words of his, for the tooltip (lib/verdict.ts provisionalOf). */
+  judged?: Provisional | null;
   size?: "sm" | "md";
   className?: string;
 }) {
   if (provisional && verdict !== "vantar" && verdict !== "primar") {
-    const [label, ...rest] = provisionalChip({ verdict }).split(" · ");
-    return <Chip tone={verdict} sign={VERDICT_SIGN[verdict]} label={label} note={rest.join(" · ")} solid={false} size={size} title={`${provisionalChip({ verdict })} · inte Jakobs dom, väntar på honom`} className={className} />;
+    const { label, note } = provisionalChip({ verdict });
+    return <Chip tone={verdict} sign={VERDICT_SIGN[verdict]} label={label} note={note} solid={false} size={size} title={provisionalWords({ verdict }, judged)} className={className} />;
   }
   const reviewer = !byJakob && verdict !== "vantar";
   const note = [detail, reviewer ? "granskare" : null].filter(Boolean).join(" · ") || null;
@@ -87,7 +92,7 @@ export function VerdictChip({
 /** The chip of one take, read from its review (lib/verdict.ts verdictOf). */
 export function TakeChip({ take, size = "md", className }: { take: Parameters<typeof verdictOf>[0] | Take; size?: "sm" | "md"; className?: string }) {
   const v = verdictOf(take);
-  return <VerdictChip verdict={v.verdict} byJakob={v.byJakob} detail={v.detail} provisional={v.provisional} size={size} className={className} />;
+  return <VerdictChip verdict={v.verdict} byJakob={v.byJakob} detail={v.detail} provisional={v.provisional} judged={v.provisional ? provisionalOf(take.motion?.review) : null} size={size} className={className} />;
 }
 
 const PROOF_TONE: Record<ProofVerdict, { tone: Tone; sign: string }> = {

@@ -87,8 +87,8 @@ export function cardRecords(table: TableCards, faces: CardFace[]): {shoeDraw: nu
 }
 
 // ── What the game may play ──────────────────────────────────────────────────
-// The game plays what has a verdict: Jakob's, or a provisional one given in his place (it plays as its decision says and waits for
-// him in Granska). A take without one (decision PENDING, or in the inbox) is left out of the game's bank, so no step can fall back
+// The game plays what has a verdict: Jakob's, or one given in his place (provisional: it plays as its decision says, and Granska
+// lists it as judged for him). A take without one (decision PENDING, or in the inbox) is left out of the game's bank, so no step can fall back
 // on it, with one exception: a rest take played on request only (motion.idle.onRequest, a talk film), which chance never picks and
 // the game plays only when the dealer says its line. Rejected takes stay: the clip bank never plays them, and says so.
 // A stopgap (its record says motion.stopgap: a film made of another, as her entry played backwards for the exit) gives way by

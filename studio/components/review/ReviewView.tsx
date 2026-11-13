@@ -3,7 +3,9 @@
 // Granska (/granska/?tagning=<id>, /granska/?vy=alla): the takes that wait for Jakob's word, one at a time and large, with
 // the queue beside it. After a decision the next waiting take opens by itself, and "Ångra" goes back to the last one and
 // takes that decision back (the decision bar's own Återställ write, on his click on "Ångra").
-// The count is awaitingJakob, the same as the rail's. "Alla" lists every take with filters, for looking something up.
+// The count is awaitingJakob, the same as the rail's. "Alla" lists every take with filters, for looking something up;
+// a take judged for him (a provisional verdict, "åt dig") is not in the queue but there, under the filter "Dömda åt
+// dig", and opens large like any other: its note above his buttons, none of them pressed, his click replacing it.
 // In the online copy (isSnapshot) the view opens on "Alla" (?vy=ko for the queue), and the queue says what waits
 // (WaitingInCopy) instead of a player without a film; a take opened from "Alla" opens large as in the lab.
 // Everything is the chosen dealer's (the rail's switch, lib/bank.ts); when nothing of hers waits and another dealer has takes

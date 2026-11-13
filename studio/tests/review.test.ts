@@ -196,6 +196,8 @@ test("every take: filters by verdict and seat, counts and reviewer notes", () =>
   assert.deepEqual(filterTakes(takes, graph, { verdicts: new Set(["primar"]), seat: null }).map((t) => t.id), ["p1-deal-01"]);
   assert.deepEqual(filterTakes(takes, graph, { verdicts: new Set(), seat: "P4" }).map((t) => t.id).sort(), ["p4-back-01", "p4-deal-01", "p4-deal-02", "p4-deal-03"]);
   assert.deepEqual(filterTakes(takes, graph, { verdicts: new Set(["vantar"]), seat: "övrigt" }).map((t) => t.id), ["entry-01", "idle-01", "idle-02", "idle-03", "readyb-draw-01"]);
+  // Nothing judged for him in this bank: the filter "Dömda åt dig" lists nothing.
+  assert.deepEqual(filterTakes(takes, graph, { verdicts: new Set(), seat: null, forYou: true }), []);
   assert.deepEqual(reviewerNotes(graph.takes["p4-deal-02"]), [
     { label: "Granskaren", text: "Handen lyfter f24." },
     { label: "Begränsning", text: "Kortet glider f80." },
@@ -211,26 +213,41 @@ test("every take: filters by verdict and seat, counts and reviewer notes", () =>
   assert.deepEqual(noted({ decision: "REJECTED", limitations: "Kortet glider f80." }).map((n) => n.label), ["Granskaren", "Begränsning"]);
 });
 
-test("Granska: takes judged provisionally come first in the queue under their own heading, and leave it with his decision", async () => {
+test("Granska: a take judged for him is not in the queue; \"Alla\" lists it under Dömda åt dig, and his decision replaces it", async () => {
   const { applyProvisional, applyChange } = await import("../../tools/review-store.ts");
-  const { PROVISIONAL_GROUP } = await import("../lib/review.ts");
+  const { chosenDecision, judgedForJakob, provisionalOf, JUDGED_FOR_YOU } = await import("../lib/verdict.ts");
+  assert.equal(JUDGED_FOR_YOU, "Dömda åt dig");
   const data = bank();
   const prov = (decision: "ACCEPTED" | "REJECTED") => applyProvisional({ decision: "PENDING", inbox: true }, { decision, by: "huvudagenten och en oberoende granskare", mandate: "Jakob 2026-11-13: bedöm de sista filmerna.", note: "n" }, "2026-11-13T03:00:00.000Z") as Review;
   data.motions!["idle-03"] = { ...data.motions!["idle-03"], review: prov("ACCEPTED") };
   data.motions!["d-deal-01"] = { ...data.motions!["d-deal-01"], review: prov("REJECTED") };
   const graph = buildGraph(data);
   const { items, waiting } = reviewQueue(graph, new Map());
-  assert.deepEqual(items.slice(0, 2).map((i) => [i.take.id, i.group]), [["d-deal-01", PROVISIONAL_GROUP], ["idle-03", PROVISIONAL_GROUP]]);
-  assert.ok(items.slice(2).every((i) => i.group !== PROVISIONAL_GROUP));
+  // Neither waits, an approval nor a rejection; the queue is the unjudged takes in dealing order, under the old headings.
+  assert.ok(!items.some((i) => i.take.id === "idle-03" || i.take.id === "d-deal-01"));
+  assert.deepEqual(items.map((i) => i.take.id), inReviewOrder(awaitingJakob(graph), graph).map((t) => t.id));
+  assert.ok(items.every((i) => i.group === reviewGroup(i.edge)));
   assert.equal(waiting, awaitingJakob(graph).length);
-  assert.equal(nextWaiting(items, null), "d-deal-01");
-  // The provisional approval plays like an approval; the provisional rejection does not play.
+  assert.ok(!items.some((i) => /preliminär|åt dig/i.test(i.group)));
+  // "Alla": the filter lists exactly the two, with their count; with a verdict too, the one of that verdict.
+  const takes = Object.values(graph.takes);
+  assert.deepEqual(filterTakes(takes, graph, { verdicts: new Set(), seat: null, forYou: true }).map((t) => t.id).sort(), ["d-deal-01", "idle-03"]);
+  assert.equal(judgedForJakob(takes).length, 2);
+  assert.deepEqual(filterTakes(takes, graph, { verdicts: new Set(["underkand"]), seat: null, forYou: true }).map((t) => t.id), ["d-deal-01"]);
+  assert.deepEqual(filterTakes(takes, graph, { verdicts: new Set(), seat: "övrigt", forYou: true }).map((t) => t.id), ["idle-03"]);
+  // Opened, it still says who judged and why, and none of his buttons is pressed.
+  assert.deepEqual(provisionalOf(graph.takes["idle-03"].motion?.review), { by: "huvudagenten och en oberoende granskare", at: "2026-11-13T03:00:00.000Z", mandate: "Jakob 2026-11-13: bedöm de sista filmerna.", note: "n" });
+  assert.equal(chosenDecision(graph.takes["idle-03"]), null);
+  // The approval judged for him plays like an approval; the rejection does not play.
   assert.equal(graph.takes["idle-03"].inbox, false);
   assert.equal(graph.takes["d-deal-01"].decision, "REJECTED");
   assert.equal(graph.edge["READY>D.C1"].main, null);
-  // His decision: the take leaves the provisional heading and is ticked as decided in this sitting.
+  // His decision on it, opened from "Alla": it replaces the verdict judged for him and is ticked as decided in this sitting.
   data.motions!["idle-03"] = { ...data.motions!["idle-03"], review: applyChange(data.motions!["idle-03"].review, { decision: "REJECTED", note: "" }, "2026-11-13") as Review };
-  const after = reviewQueue(buildGraph(data), new Map([["idle-03", "REJECTED"]]));
-  assert.deepEqual(after.items.filter((i) => i.group === PROVISIONAL_GROUP).map((i) => i.take.id), ["d-deal-01"]);
+  const later = buildGraph(data);
+  const after = reviewQueue(later, new Map([["idle-03", "REJECTED"]]));
   assert.equal(after.items.find((i) => i.take.id === "idle-03")!.decided, "REJECTED");
+  assert.equal(after.waiting, waiting);
+  assert.deepEqual(judgedForJakob(Object.values(later.takes)).map((t) => t.id), ["d-deal-01"]);
+  assert.equal(chosenDecision(later.takes["idle-03"]), "REJECTED");
 });
