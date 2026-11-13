@@ -2,9 +2,9 @@
   "about": "Limits for orders approved in the studio's view Beställ (tools/order-routes.ts refuses an approval beyond them) and the price table the cost is computed from (src/order-model.ts priceOf). The worst case counts: the tool's listed price where it is higher than what the ledgers show. Set enabled to false to stop every approval. The balance is the last one known; a receipt's creditsRemainingAfter is newer when there is one.",
   "schemaVersion": 1,
   "enabled": true,
-  "dailyCapCredits": 17200,
+  "dailyCapCredits": 1000000,
   "maxPerOrder": 400,
-  "minBalance": 150,
+  "minBalance": 0,
   "timeZone": "Europe/Stockholm",
   "balance": { "credits": 5192, "at": "2026-11-13", "source": "beställningsagentens avläsning efter paow-giv-2-1-p6-09 och -10, omgång 11" },
   "prices": [

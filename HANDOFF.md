@@ -299,9 +299,11 @@ Det som hindrar en runda först. Han kan svara rad för rad.
   i rundan, en retur som kommer tillbaka med den hand som är ute (`motion.releaseHand`).
 - **Budgeten** (2026-11-13 cirka 07:25): "jag ger 6000 mer i budget eller till krediterna tar slut för runway". Samma
   dag cirka 13:30, för nya vilor, kaffet, vinkningen, fingrarna och givar från ankare 2.2: "Du får 5k i budget och
-  godkänner själv efter granskning". Dagstaket är 17 200 för 2026-11-13 (12 181 var intecknade före det, plus hans
-  5 000) och golvet 150, eftersom saldot var 5 192 (`data/order-policy.json`); 400 per beställning står. "Godkänner
-  själv" gäller de filmerna: beställningarna godkänns på hans uppdrag, och domarna blir preliminära tills han har sett.
+  godkänner själv efter granskning". Och cirka 15:13, när huvudagenten sade att saldot kunde hamna runt 2 300: "Nej du
+  får obegränsat i budget!" Dagstaket och golvet är därför borttagna i praktiken (`data/order-policy.json`: taket en
+  miljon, golvet 0); 400 per beställning står som skydd mot ett misstag. Saldot sätter gränsen tills han fyller på.
+  "Godkänner själv" gäller de filmerna: beställningarna godkänns på hans uppdrag, och domarna blir preliminära tills
+  han har sett. Betalda anrop utanför Beställ rapporteras fortfarande med belopp.
 - **Önskemål samma natt, inte byggda:** att kunna slå av de ritade korten; ett tredje och fjärde dealerkort (platsen
   lägger han i Placering när ordermodellen har den); en film där hon kommer in och en där hon går ("en där hon reser sig och går ut och en när hon kommer in och sätter sig"; gjorda i natt utanför Beställ, handboken 3.9, preliminärt dömda); senare en andra spelarfigur, "Astrid", som kommer in från sidan och satsar.
 - **Labbet först** (2026-11-11, två gånger): prov och effekter hör hemma i labbets sidor. Spelet (`game.html`) är ett
@@ -344,8 +346,8 @@ Det som hindrar en runda först. Han kan svara rad för rad.
 - **Betald generering (2026-11-13, ersätter de äldre beskeden):** "Kan vi nu göra så att du beställer lämpliga filmer
   automatiskt utan mitt godkännande, för det är bara jobbigt för mig att göra allt detta med att godkänna!" Huvudagenten
   godkänner alltså beställningar på hans uppdrag (`approval.by: "huvudagent"` med uppdraget citerat; hans eget klick
-  står som `"jakob"`), inom gränserna i `data/order-policy.json` (dagstaket 17 200 den 2026-11-13, se nedan; högst 400
-  per beställning, golvet 150 på saldot). Ramen, som huvudagenten har satt och han kan ändra: allt beställs genom
+  står som `"jakob"`), inom gränserna i `data/order-policy.json` (sedan 2026-11-13 kl. 15:13 utan dagstak och golv, se nedan;
+  högst 400 per beställning). Ramen, som huvudagenten har satt och han kan ändra: allt beställs genom
   Beställ och handboken `tools/film-prompting.md`, så att det går att göra om; en ändring per metodprov och en tagning
   per prov, två tagningar per klipp när metoden är vald; varje omgång oberoende granskad innan nästa bygger på den;
   kostnaden berättas efter varje omgång. Det som fortfarande är hans: domarna i Granska och Material (vilket ankare som

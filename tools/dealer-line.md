@@ -108,8 +108,8 @@ En order lagrad med en äldre version återges med sina egna ord. Hur texten och
 
 **9. Godkänn.** Jakobs "Godkänn och lägg i kön" i Beställ, eller `node tools/order-approve.ts <id> --mandate "<vems ord
 och när>"`. Prövas mot `data/order-policy.json`: 400 krediter per order, golvet på saldot och dagstaket. Båda sätts av
-Jakobs ord för dagen och står med hans ord i HANDOFF ("Jakobs besked som gäller", Budgeten): 2026-11-13 är taket
-17 200 och golvet 150 (V). Hashen fryses i `approval.orderSha256`, och en godkänd order ändras aldrig (V).
+Jakobs ord för dagen och står med hans ord i HANDOFF ("Jakobs besked som gäller", Budgeten): sedan 2026-11-13
+kl. 15:13 gäller "obegränsat", så taket och golvet stoppar inget (V). Hashen fryses i `approval.orderSha256`, och en godkänd order ändras aldrig (V).
 
 **10. Lägg och hämta.** Beställningsagenten enligt [order-clerk.md §1–4](order-clerk.md):
 `node tools/order-put.ts check|begin|placed|failed|status`, uppladdning med `init_upload` och `complete_upload`,
@@ -246,4 +246,4 @@ Där en källa bara är text eller ett skript utanför repot står det "inget i 
 | Bildtillstånd i Material | `kandidat` → `gäller` eller `ersatt`; `gäller` → `ersatt`; en `gäller` per roll, nod och kort | `STATES` i `studio/lib/media.ts`; `CHANGES` i `studio/components/material/state.ts` |
 | Filer per order | `data/orders/<id>.json`; `assets/orders/<id>/`: `first.png`, `last.png`, `reference.mp4`, `anchor.png`, `pose-figure.png`, `receipt.json`; `take-<n>/`: `source.*`, `fetched.json`, `after.*`, `after.json`, `fixed-<k>.*` | `src/order-model.ts`; `tools/order-collect.ts`; `tools/film-after.ts` |
 | Filer i banken | `assets/motions/<klipp>/source.mp4`, `generation.json`; `motions/<klipp>.json`; `assets/tracking/<klipp>/card-track.json`; utanför banken `assets/films/<dealer>/<namn>/` | `tools/register-order.ts`; `tools/track-card.ts`; `tools/order-bring.ts` |
-| Pris och tak | WAN 3 20 per s (480p 5); Kling 4 7 s: 124 utan referens, 149–189 med; Nano Banana Pro 4K 40. Dagstak och golv efter Jakobs ord för dagen (2026-11-13: 17 200 och 150), 400 per order | `data/order-policy.json`; `creditsRemainingAfter` i kvittona |
+| Pris och tak | WAN 3 20 per s (480p 5); Kling 4 7 s: 124 utan referens, 149–189 med; Nano Banana Pro 4K 40. Dagstak och golv efter Jakobs ord för dagen (sedan 2026-11-13: obegränsat), 400 per order | `data/order-policy.json`; `creditsRemainingAfter` i kvittona |
