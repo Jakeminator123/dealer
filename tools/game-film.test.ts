@@ -133,6 +133,26 @@ test('while calm is asked for the rest rotation picks only calm rests, and the g
   assert.ok(cuts.every(c => !c)); held.rest({cut: true}); await new Promise(r => setTimeout(r, 0)); assert.equal(cuts.at(-1), true);
 });
 
+test('a rest held on its first frame stands until she speaks or it is let go, and a film played since is left alone', async () => {
+  const log: string[] = []; let entered: () => void = () => {};
+  const stub = {play(list: FilmPart[], options: {cut?: boolean; onPart?(index: number): void} = {}) { log.push(`${list[0].sound ? 'talk' : 'rest'}${options.cut ? ' cut' : ''}`); entered = () => options.onPart?.(0); },
+    hurry() {}, preload() {}, toggle(force?: boolean) { log.push(force ? 'hold' : 'run'); }};
+  const film = createFilm(stub, buildGraph(bank(), {dealer: 'paow'}), createLayout(defaultPlan()), async () => null, () => 0.5), tick = () => new Promise(r => setTimeout(r, 0));
+  // without hold nothing is stopped, and there is nothing to let go
+  film.rest({cut: true}); await tick(); entered(); film.release(); assert.deepEqual(log, ['rest cut']);
+  // held: stopped when its first frame is on screen, and let go once
+  log.length = 0; film.rest({cut: true, hold: true}); await tick(); assert.deepEqual(log, ['rest cut'], 'not stopped before its frame is on screen'); entered(); assert.deepEqual(log, ['rest cut', 'hold']);
+  film.release(); film.release(); assert.deepEqual(log, ['rest cut', 'hold', 'run']);
+  // held, and then she speaks: the talk film's own play lets the queue run, so nothing is let go behind it
+  log.length = 0; film.rest({cut: true, hold: true}); await tick(); entered();
+  assert.equal(film.say('tal'), true); film.release(); assert.deepEqual(log, ['rest cut', 'hold', 'talk cut']);
+  // a held rest whose first frame comes on screen after another film took over is not stopped
+  log.length = 0; film.rest({cut: true, hold: true}); await tick(); const late = entered; film.say('tal'); late(); film.release(); assert.deepEqual(log, ['rest cut', 'talk cut']);
+  // a queue without a stop (a stub, an older scene) plays the rest as before
+  const plain: string[] = [], bare = createFilm({play(list: FilmPart[], options: {onPart?(index: number): void} = {}) { plain.push(list[0].path); options.onPart?.(0); }, hurry() {}, preload() {}}, buildGraph(bank(), {dealer: 'paow'}), createLayout(defaultPlan()), async () => null, () => 0.5);
+  bare.rest({cut: true, hold: true}); await tick(); bare.release(); assert.deepEqual(plain, [video('vila')]);
+});
+
 test('who decides the drawn cards: the address, then the player\'s own menu, then on; a look\'s preset has no say', () => {
   // the player switched them off in the game's menu: off, also after the frame reloads, whatever look is played
   assert.deepEqual(cardsChoice({memory: 'off'}), {cards: false, carry: 'object'});

@@ -397,14 +397,16 @@ scene.onFrame(() => {
 });
 render();
 // The film before the game is over: her gestures may come again, and after a beat (INTRO_BEAT_MS, so that she does not begin to speak in
-// the frame the film is gone) she says her opening line.
-const INTRO_BEAT_MS = 700;
-introOver = () => { film.calm = false; setTimeout(() => { introOn = false; render(); }, INTRO_BEAT_MS); };
+// the frame the film is gone) she says her opening line; a rest that was held for the film's end and has no line after it runs on.
+const INTRO_BEAT_MS = 400;
+introOver = () => { film.calm = false; setTimeout(() => { introOn = false; render(); film.release(); }, INTRO_BEAT_MS); };
 // The film ends in her rest pose, held for its last 0.75 s. A little before its end (the module's onLead), while the film still
 // covers the stage, her rest is started over with a cut from its first frame, which is that pose (every rest film begins on the
 // same frame): the cut is not seen, and the fade goes from her to her. Queued instead, the rest that played went on with her head
-// turned and her face showed twice in the fade (measured by the trailer session on the wired page).
-introLead = () => { if (introOn && page.stage === 'BETTING' && !page.busy) film.rest({cut: true}); };
+// turned and her face showed twice in the fade (measured by the trailer session on the wired page). The rest is held on that
+// frame until she speaks: running, it had lifted her face 13 px by the end of the fade (30 px on a standing phone, where it
+// showed as a double face) and her head hopped 8 px as the talk film, which begins in the same pose, took over.
+introLead = () => { if (introOn && page.stage === 'BETTING' && !page.busy) film.rest({cut: true, hold: true}); };
 if (!introOn) film.calm = false; // it was over before the page was built (skipped at once)
 
 // How the round ended is said by her speech when it has the line (the settle's speak signal); then the status line is not said again.

@@ -291,12 +291,20 @@ säger något ibland, och det man skriver besvaras ur en kort lista. Inget skick
 **En film före spelet** (`src/game-intro.ts`; `game.html?intro=noir-3`, Jakob 2026-11-13: "så att man övergår till henne
 i URL:en på vercel. kanske genom en ny knapp"): en startruta med knapparna Spela och Hoppa över läggs över scenen innan
 något annat läses, filmen hämtas först vid trycket och spelas med ljud, och när den slutar tonar den över i spelet
-(0,4 s liggande; stående visas filmen hel på svart och växer mot där spelet har henne under 1,2 s). Filmen ligger i
+(0,4 s liggande; stående visas filmen hel på svart, växer i 0,7 s till där spelet har henne och tonar först därefter
+över, i 0,5 s: tonad medan den ännu växte syntes hon dubbelt). Filmen ligger i
 spelets egen skala och mitt, inte som en täckande bild (`introLayout`), eftersom spelet ramar om på andra format än
 16:9. Filmens sista ruta är spelets egen bild i rummet Monaco med rörelse i rummet, så adressen ber också om
 `room=monaco&roomLife=1` och inget annat utseende. Medan filmen är på säger hon inget, chatten är stilla och vilan väljer
-bara lugna vilofilmer; när filmen ger vika (`onFade`) börjar vilan om från sin första ruta, som är den pose filmen
-slutar i, och hennes öppningsreplik sägs när spelet syns. Trycket på Spela är också det som låter henne höras. Filmen
+bara lugna vilofilmer. 0,4 s före filmens slut (`onLead`), medan filmen ännu täcker, klipps vilan in från sin första
+ruta, som är den pose filmen slutar i, och **hålls där** (`rest({cut, hold})` i `src/game-film.ts`) tills hon talar:
+varje talfilm börjar i samma pose, så repliken börjar i just den bild som syns. Gick vilan i stället, hade den lyft
+hennes ansikte 13 bildpunkter när toningen var klar (30 på en stående telefon) och huvudet hoppade 8 när repliken
+tog över; hållen skiljer filmens sista ruta och spelets bild högst 2 bildpunkter i båda formaten (mätt i varje ruta
+webbläsaren ritade). Öppningsrepliken sägs 0,4 s efter att spelet syns; har hon ingen replik går vilan vidare
+(`release`). Från samma stund ritas spelet under filmen (täckning 0,999), eftersom den första ruta där webbläsaren
+lägger ihop de två kostade 0,08 till 0,18 s och syntes som ett stopp när den kom med toningens första ruta. Trycket
+på Spela är också det som låter henne höras. Filmen
 och startrutan ligger i `assets/films/intro/noir-3/` med kvitto; filmen måste spelas in på nytt när spelets vilobild
 ändras (trailersessionens `efter3/`, ett kommando, inga krediter).
 **Ljud-labbet** (`sound.html`, länken Ljud ↗; `src/lab-sound.ts`): markernas klirr, kortens ljud, bakgrundsljud per

@@ -5,7 +5,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {FILM} from '../src/scene3d-geometry.ts';
-import {INTRO_FRAME, INTRO_FRAMING, INTRO_FILM, INTRO_START, createIntro, introLayout, introNext, type IntroOptions, type IntroSignal, type IntroState} from '../src/game-intro.ts';
+import {INTRO_FRAME, INTRO_FRAMING, INTRO_FILM, INTRO_GROW_SHARE, INTRO_START, createIntro, introLayout, introNext, type IntroOptions, type IntroSignal, type IntroState} from '../src/game-intro.ts';
 
 const run = (signals: IntroSignal[], from: IntroState = INTRO_START) => signals.reduce(introNext, from);
 
@@ -81,8 +81,9 @@ class Doc extends El { made: El[] = []; constructor() { super('#document', null 
 const observers: {observed: number; disconnected: boolean}[] = [];
 (globalThis as Record<string, unknown>).ResizeObserver = class { o = {observed: 0, disconnected: false}; constructor() { observers.push(this.o); } observe() { this.o.observed++; } disconnect() { this.o.disconnected = true; } };
 const tick = (ms = 0) => new Promise(r => setTimeout(r, ms));
-function setup(answer: 'ok' | 'fail' = 'ok', more: Partial<IntroOptions> = {}) {
+function setup(answer: 'ok' | 'fail' = 'ok', more: Partial<IntroOptions> = {}, size: {width: number; height: number} | null = null) {
   const doc = new Doc(), stage = doc.createElement('div'), canvas = doc.createElement('canvas'); stage.append(canvas); doc.made.length = 0;
+  if (size) stage.getBoundingClientRect = () => ({...size, left: 0, top: 0});
   const intro = createIntro(stage as unknown as HTMLElement, canvas as unknown as HTMLCanvasElement, {film: 'film.mp4', poster: 'poster.jpg', fade: {lying: 0.02, tall: 0.02}, ...more});
   const root = stage.children.find(c => c !== canvas)!, video = doc.made.find(e => e instanceof Video) as Video, buttons = doc.made.filter(e => e.tag === 'button');
   video.playAnswer = answer;
@@ -133,10 +134,10 @@ test('the page: the start picture is shown only once it has arrived; the lead co
   assert.equal(a.still.attrs.src ?? (a.still as unknown as {src?: string}).src, 'poster.jpg');
   a.still.fire('load'); assert.equal(a.still.style.visibility, 'visible', 'shown whole when it has');
   a.play.fire('click');
-  a.video.currentTime = 45.5; a.video.fire('timeupdate'); assert.deepEqual(seen, [], '0.5 s left: not yet');
+  a.video.currentTime = 45.5; a.video.fire('timeupdate'); assert.deepEqual(seen, [], '0.5 s left: not yet'); assert.equal(a.root.style.opacity, undefined, 'the film alone is composed');
   assert.equal(a.still.style.visibility, 'hidden', 'the film has passed the poster\'s frame');
   a.still.fire('load'); assert.equal(a.still.style.visibility, 'hidden', 'a start picture that arrives late stays away');
-  a.video.currentTime = 45.7; a.video.fire('timeupdate'); assert.deepEqual(seen, ['lead'], '0.3 s left');
+  a.video.currentTime = 45.7; a.video.fire('timeupdate'); assert.deepEqual(seen, ['lead'], '0.3 s left'); assert.equal(a.root.style.opacity, '0.999', 'from the lead the game is composed under the film, unseen');
   a.video.currentTime = 45.9; a.video.fire('timeupdate'); assert.deepEqual(seen, ['lead'], 'once');
   a.video.fire('ended'); assert.deepEqual(seen, ['lead', 'fade true'], 'the lead before the fade');
   await end(a);
@@ -149,4 +150,24 @@ test('the page: the start picture is shown only once it has arrived; the lead co
 
   const thrown = setup('ok', {onLead: () => { throw Error('the page\'s own fault'); }}); thrown.play.fire('click'); thrown.video.fire('ended');
   assert.equal(thrown.root.style.opacity, '0', 'a hook that throws does not stop the fade'); await end(thrown);
+
+  // a page without a lead hook gets the same early composing
+  const bare = setup(); bare.play.fire('click'); bare.video.currentTime = 45.8; bare.video.fire('timeupdate'); assert.equal(bare.root.style.opacity, '0.999'); bare.video.fire('ended'); await end(bare);
+});
+
+test('the page, standing: the film grows first and dissolves into the game only when it has arrived; lying it only fades', async () => {
+  const seconds = (text: string) => [...text.matchAll(/([\d.]+)s/g)].map(m => Number(m[1]));
+  const tall = setup('ok', {fade: {lying: 0.4, tall: 1.2}}, {width: 390, height: 844}); tall.play.fire('click'); tall.video.fire('ended');
+  const [grow] = seconds(tall.video.style.transition), [dissolve, wait] = seconds(tall.root.style.transition);
+  assert.match(tall.video.style.transition, /^transform /); assert.match(tall.video.style.transform, /^translate\(.+\) scale\(/);
+  assert.ok(Math.abs(grow - 1.2 * INTRO_GROW_SHARE) < 1e-9 && Math.abs(wait - grow) < 1e-9, `the dissolve waits for the growth: ${tall.video.style.transition} / ${tall.root.style.transition}`);
+  assert.ok(Math.abs(grow + dissolve - 1.2) < 1e-9, 'and the two fill the fade');
+  tall.root.fire('transitionend', {propertyName: 'opacity'}); assert.deepEqual(await tall.intro, {played: true}); assertGone(tall);
+  // skipped standing: nothing grows, the start picture only fades
+  const skipped = setup('ok', {fade: {lying: 0.4, tall: 1.2}}, {width: 390, height: 844}); skipped.skip.fire('click');
+  assert.equal(skipped.video.style.transform, undefined); assert.deepEqual(seconds(skipped.root.style.transition), [1.2]);
+  skipped.root.fire('transitionend', {propertyName: 'opacity'}); await skipped.intro; assertGone(skipped);
+  const lying = setup('ok', {fade: {lying: 0.4, tall: 1.2}}); lying.play.fire('click'); lying.video.fire('ended');
+  assert.equal(lying.video.style.transform, undefined); assert.deepEqual(seconds(lying.root.style.transition), [0.4]);
+  lying.root.fire('transitionend', {propertyName: 'opacity'}); await lying.intro; assertGone(lying);
 });

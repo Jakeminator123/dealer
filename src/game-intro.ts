@@ -88,6 +88,8 @@ export type IntroOptions = {
   lead?: number;
 };
 export const INTRO_DEFAULTS = {fade: {lying: 0.4, tall: 1.2}, grow: true, posterUntil: 12.5 / 24, stall: 10, lead: 0.4};
+/** Standing: the share of the fade in which the film grows; it dissolves into the game in the rest, standing where the game has her. */
+export const INTRO_GROW_SHARE = 0.6;
 
 const BUTTON = 'box-sizing:border-box;min-width:168px;min-height:56px;padding:0 28px;border-radius:14px;font:700 17px/1 system-ui,"Segoe UI",sans-serif;letter-spacing:.06em;cursor:pointer;touch-action:manipulation';
 const PRIMARY = `${BUTTON};border:0;background:linear-gradient(180deg,var(--tc-accent,#e9c873),var(--tc-accent-2,#b98f3e));color:var(--tc-ink,#1b1305);text-transform:uppercase;box-shadow:0 8px 22px -8px var(--tc-glow,rgba(233,200,115,.3)),inset 0 1px 0 rgba(255,255,255,.4)`;
@@ -114,7 +116,7 @@ export function createIntro(stage: HTMLElement, canvas: HTMLCanvasElement, optio
   bar.append(play, skip); root.append(video, still, bar); stage.append(root);
 
   let state = INTRO_START, layout = introLayout(1, 1), timer: ReturnType<typeof setTimeout> | null = null, watch: ReturnType<typeof setInterval> | null = null;
-  let lastTime = -1, still0 = 0, posterGone = false, led = !options.onLead, resolve: (value: {played: boolean}) => void = () => {};
+  let lastTime = -1, still0 = 0, posterGone = false, led = false, resolve: (value: {played: boolean}) => void = () => {};
   const done = new Promise<{played: boolean}>(r => { resolve = r; });
   const place = (el: HTMLElement, box: Box) => { el.style.left = `${box.x}px`; el.style.top = `${box.y}px`; el.style.width = `${box.width}px`; el.style.height = `${box.height}px`; };
   const lay = () => { const r = stage.getBoundingClientRect(); layout = introLayout(r.width, r.height); if (state.phase !== 'fading') { place(video, layout.film); place(still, layout.film); } };
@@ -122,7 +124,10 @@ export function createIntro(stage: HTMLElement, canvas: HTMLCanvasElement, optio
   const key = (e: KeyboardEvent) => { if (e.key === 'Escape') { e.preventDefault(); send('skip'); } };
   doc.addEventListener('keydown', key, true);
   const clear = () => { if (timer !== null) clearTimeout(timer); if (watch !== null) clearInterval(watch); timer = watch = null; };
-  const leadNow = () => { if (led) return; led = true; try { options.onLead?.(); } catch { /* the page's own business never holds the game back */ } };
+  // From the lead on the game under the film is composed with it (an opacity a hair under 1, which nobody sees): the first
+  // frame in which the browser composes the two cost 0.08 s lying and 0.18 s standing, a stall in the middle of the picture when it
+  // came with the fade's first frame. Here it falls in the film's last hold, where nothing moves.
+  const leadNow = () => { if (led) return; led = true; root.style.opacity = '0.999'; try { options.onLead?.(); } catch { /* the page's own business never holds the game back */ } };
   const onEnded = () => send('ended'), onError = () => send('error'), onStill = () => { if (!posterGone) still.style.visibility = 'visible'; };
   const onTime = () => {
     if (!posterGone && video.currentTime >= posterUntil) { posterGone = true; still.style.visibility = 'hidden'; }
@@ -158,14 +163,14 @@ export function createIntro(stage: HTMLElement, canvas: HTMLCanvasElement, optio
     const seconds = layout.tall ? fade.tall : fade.lying;
     if (!state.played) video.pause();
     // Standing, the film first grows on black toward where the game has her (a transform, so that the browser moves it smoothly)
-    // and dissolves into the game only over the last part, when the two nearly agree: dissolving while it grows showed her twice.
-    const growing = layout.tall && grow && state.played;
+    // and dissolves into the game only when it has arrived: dissolving while it still grew showed her twice, 20 to 30 px apart.
+    const growing = layout.tall && grow && state.played, growFor = seconds * INTRO_GROW_SHARE;
     if (growing) {
       const from = layout.film, to = layout.end, s = to.width / from.width;
-      video.style.transformOrigin = '0 0'; video.style.transition = `transform ${seconds}s cubic-bezier(.4,0,.2,1)`;
+      video.style.transformOrigin = '0 0'; video.style.transition = `transform ${growFor}s cubic-bezier(.4,0,.2,1)`;
       void video.offsetWidth; video.style.transform = `translate(${to.x - from.x}px,${to.y - from.y}px) scale(${s})`;
     }
-    root.style.transition = growing ? `opacity ${seconds * 0.45}s ease ${seconds * 0.55}s` : `opacity ${seconds}s ease`; void root.offsetWidth; root.style.opacity = '0';
+    root.style.transition = growing ? `opacity ${seconds - growFor}s ease ${growFor}s` : `opacity ${seconds}s ease`; void root.offsetWidth; root.style.opacity = '0';
     root.addEventListener('transitionend', onFaded);
     timer = setTimeout(() => send('faded'), seconds * 1000 + 250); // a fade the browser never reports ends all the same
   }
