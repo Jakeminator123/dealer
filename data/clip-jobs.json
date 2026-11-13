@@ -7027,6 +7027,108 @@
         "id": "paow-giv-2-2-p6-03",
         "take": 1
       }
+    },
+    {
+      "id": "paow-ingang-2-2-01-02",
+      "kind": "ENTRY",
+      "from": "IDLE",
+      "to": "READY-B",
+      "clip": "paow-ingang-2-2-01-02",
+      "frames": [
+        0,
+        117
+      ],
+      "purpose": "Beställning paow-ingang-2-2-01, tagning 2: Omgång 15 · ingång · ankare 1 → 2.2.",
+      "dealer": "paow",
+      "model": "wan3",
+      "duration": 4,
+      "promptText": "Locked camera, one continuous shot. Both hands rest on the felt. Her hand nearest the shoe rises calmly and reaches straight to the yellow card in the window and lays its fingertips flat on the card, as in the last frame. Her eyes follow her hand down to the shoe and come back up. The other hand rests on the felt. The yellow card in the window is plain, one flat solid yellow from edge to edge.",
+      "first": {
+        "file": {
+          "path": "assets/orders/paow-ingang-2-2-01/first.png",
+          "sha256": "cdaa59756e2eb0f7b839f23254f9999f8c8da4c8eef0e37bf23e9643ba6586ee"
+        },
+        "note": "Första bilden i beställningen paow-ingang-2-2-01."
+      },
+      "last": {
+        "file": {
+          "path": "assets/orders/paow-ingang-2-2-01/last.png",
+          "sha256": "451fbaafa65a82b22818dab6904d5a1c5a23941dba11213709995b1f5d8d1fd4"
+        },
+        "note": "Sista bilden i beställningen paow-ingang-2-2-01."
+      },
+      "order": {
+        "id": "paow-ingang-2-2-01",
+        "take": 2
+      }
+    },
+    {
+      "id": "paow-utgang-2-2-01-01",
+      "kind": "RETURN",
+      "from": "READY-B",
+      "to": "IDLE",
+      "clip": "paow-utgang-2-2-01-01",
+      "frames": [
+        0,
+        117
+      ],
+      "purpose": "Beställning paow-utgang-2-2-01, tagning 1: Omgång 15 · utgång · ankare 2.2 → 1.",
+      "dealer": "paow",
+      "model": "wan3",
+      "duration": 4,
+      "promptText": "Locked camera, one continuous shot. Her fingertips lift off the yellow card in the shoe's window, which stays where it lies, and her hand comes back low over the felt, palm down, and rests flat on the felt, as in the last frame. Her eyes come up from the shoe towards the players. The other hand rests on the felt. The yellow card in the window is plain, one flat solid yellow from edge to edge.",
+      "first": {
+        "file": {
+          "path": "assets/orders/paow-utgang-2-2-01/first.png",
+          "sha256": "451fbaafa65a82b22818dab6904d5a1c5a23941dba11213709995b1f5d8d1fd4"
+        },
+        "note": "Första bilden i beställningen paow-utgang-2-2-01."
+      },
+      "last": {
+        "file": {
+          "path": "assets/orders/paow-utgang-2-2-01/last.png",
+          "sha256": "cdaa59756e2eb0f7b839f23254f9999f8c8da4c8eef0e37bf23e9643ba6586ee"
+        },
+        "note": "Sista bilden i beställningen paow-utgang-2-2-01."
+      },
+      "order": {
+        "id": "paow-utgang-2-2-01",
+        "take": 1
+      }
+    },
+    {
+      "id": "paow-utgang-2-2-01-02",
+      "kind": "RETURN",
+      "from": "READY-B",
+      "to": "IDLE",
+      "clip": "paow-utgang-2-2-01-02",
+      "frames": [
+        0,
+        117
+      ],
+      "purpose": "Beställning paow-utgang-2-2-01, tagning 2: Omgång 15 · utgång · ankare 2.2 → 1.",
+      "dealer": "paow",
+      "model": "wan3",
+      "duration": 4,
+      "promptText": "Locked camera, one continuous shot. Her fingertips lift off the yellow card in the shoe's window, which stays where it lies, and her hand comes back low over the felt, palm down, and rests flat on the felt, as in the last frame. Her eyes come up from the shoe towards the players. The other hand rests on the felt. The yellow card in the window is plain, one flat solid yellow from edge to edge.",
+      "first": {
+        "file": {
+          "path": "assets/orders/paow-utgang-2-2-01/first.png",
+          "sha256": "451fbaafa65a82b22818dab6904d5a1c5a23941dba11213709995b1f5d8d1fd4"
+        },
+        "note": "Första bilden i beställningen paow-utgang-2-2-01."
+      },
+      "last": {
+        "file": {
+          "path": "assets/orders/paow-utgang-2-2-01/last.png",
+          "sha256": "cdaa59756e2eb0f7b839f23254f9999f8c8da4c8eef0e37bf23e9643ba6586ee"
+        },
+        "note": "Sista bilden i beställningen paow-utgang-2-2-01."
+      },
+      "order": {
+        "id": "paow-utgang-2-2-01",
+        "take": 2
+      }
     }
   ],
   "edits": [

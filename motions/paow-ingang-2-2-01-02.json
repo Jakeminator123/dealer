@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "id": "paow-ingang-2-2-01-02",
+  "dealer": "paow",
+  "source": {
+    "path": "assets/motions/paow-ingang-2-2-01-02/source.mp4",
+    "sha256": "410db2c5cdea6bf5467b3f049f84977003502a5878c31883af926fd8d63fed7c",
+    "bytes": 7416289,
+    "width": 1764,
+    "height": 1174,
+    "fps": 30,
+    "frames": 118,
+    "provider": "Runway MCP server (app account credits)",
+    "model": "wan3"
+  },
+  "motion": {
+    "kind": "ENTRY",
+    "from": "IDLE",
+    "to": "READY-B",
+    "pass": false,
+    "basis": "SOURCE_FRAME_REVIEW"
+  },
+  "review": {
+    "decision": "PENDING",
+    "inbox": true,
+    "basis": "Inte granskad av Jakob: förd in från beställningen paow-ingang-2-2-01, tagning 2 (tools/register-order.ts). Oberoende rutgranskning: tools/film-review.md.",
+    "limitations": "I inkorgen: spelas bara där steget inte har någon annan film, tills Jakob dömer den.",
+    "colorDoesNotProvePhysicalSide": true,
+    "userAccepted": false,
+    "productionReady": false
+  },
+  "order": {
+    "id": "paow-ingang-2-2-01",
+    "take": 2,
+    "path": "data/orders/paow-ingang-2-2-01.json",
+    "orderSha256": "706ba745e3a59798c7ec912c5846c4732fe979494e991d4f20321dc948526471",
+    "receipt": "assets/orders/paow-ingang-2-2-01/receipt.json",
+    "taskId": "849917be-8340-4cba-88bc-84b76d8e2957",
+    "delivered": {
+      "path": "assets/orders/paow-ingang-2-2-01/take-2/after.mp4",
+      "sha256": "410db2c5cdea6bf5467b3f049f84977003502a5878c31883af926fd8d63fed7c"
+    }
+  },
+  "postProcessing": "none",
+  "generationRef": "assets/motions/paow-ingang-2-2-01-02/generation.json",
+  "jobRef": "data/clip-jobs.json",
+  "scoutIntegrated": false,
+  "published": false
+}

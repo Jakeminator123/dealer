@@ -4920,6 +4920,48 @@
           }
         },
         {
+          "id": "paow-film-ingang-2-2-01-t2",
+          "role": "film",
+          "name": "Omgång 15 · ingång · ankare 1 → 2.2, tagning 2",
+          "path": "assets/films/paow/ingang-2-2-01-t2/source.mp4",
+          "still": 65,
+          "fps": 30,
+          "state": "kandidat",
+          "note": "Ingang 1 -> 2.2, omgang 15 tagning 2. Ren start och slut, handen 0 px fran ankare 2.2; MARKERAT ansiktet mjukare an ankaret vid skarven, handen ror sig latt in i sista rutan.",
+          "source": {
+            "from": "beställningen paow-ingang-2-2-01, tagning 2 (studions vy Beställ)",
+            "when": "2026-11-13"
+          }
+        },
+        {
+          "id": "paow-film-utgang-2-2-01-t1",
+          "role": "film",
+          "name": "Omgång 15 · utgång · ankare 2.2 → 1, tagning 1",
+          "path": "assets/films/paow/utgang-2-2-01-t1/source.mp4",
+          "still": 65,
+          "fps": 30,
+          "state": "kandidat",
+          "note": "Utgang 2.2 -> 1, omgang 15 tagning 1. Ren start och slut, handen 0 px fran ankare 1; MARKERAT handen gar hogt och doppar fram forbi bordskanten r 50-80.",
+          "source": {
+            "from": "beställningen paow-utgang-2-2-01, tagning 1 (studions vy Beställ)",
+            "when": "2026-11-13"
+          }
+        },
+        {
+          "id": "paow-film-utgang-2-2-01-t2",
+          "role": "film",
+          "name": "Omgång 15 · utgång · ankare 2.2 → 1, tagning 2",
+          "path": "assets/films/paow/utgang-2-2-01-t2/source.mp4",
+          "still": 65,
+          "fps": 30,
+          "state": "kandidat",
+          "note": "Utgang 2.2 -> 1, omgang 15 tagning 2. Ren start och slut, handen 0 px fran ankare 1; MARKERAT den andra handen glider fram mot kameran r 50-100 och tillbaka.",
+          "source": {
+            "from": "beställningen paow-utgang-2-2-01, tagning 2 (studions vy Beställ)",
+            "when": "2026-11-13"
+          }
+        },
+        {
           "id": "paow-ankare-2-2-t1",
           "role": "ankare-2.2",
           "name": "Paow · ankare 2.2 (släp), tagning 1",
