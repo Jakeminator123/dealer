@@ -17,6 +17,10 @@ import {
  type DealerAnswer, type Entry, type EntryAnswer, type Found, type ImageType, type JobLike, type MediaAnswer, type Register, type UploadRole,
 } from '../studio/lib/media.ts';
 import {allowed, isDecidable, replacedBy, stateLine} from '../studio/components/material/state.ts';
+import {ANCHOR_NODE} from '../src/order-model.ts';
+
+/** The node an anchor stands for (ankare-2.1 → READY); an order finds the anchor that holds by role and node. */
+export const nodeOfRole = (role: string): string | undefined => role.startsWith('ankare-') ? ANCHOR_NODE[role.slice(7) as keyof typeof ANCHOR_NODE] : undefined;
 
 // ── Headers of pictures and films (pure) ────────────────────────────────────
 /** PNG or JPEG by its first bytes. */
@@ -271,7 +275,7 @@ export function mediaRoles(root: string) {
      note: 'Lagd till från studion. Kandidat tills Jakob säger annat.',
     };
     await writeFile(path.join(dir, 'receipt.json'), JSON.stringify(receipt, null, 2) + '\n', {flag: 'wx'});
-    const entry: Entry = {id: target.id, role: role as UploadRole, name: title, path: target.path, state: 'kandidat', note: `${ROLE_LABEL[role as UploadRole]} lagd till i studion ${day}.`, source: {from: `uppladdad: ${original}`, when: day}};
+    const entry: Entry = {id: target.id, role: role as UploadRole, name: title, path: target.path, ...(nodeOfRole(role) ? {node: nodeOfRole(role)} : {}), state: 'kandidat', note: `${ROLE_LABEL[role as UploadRole]} lagd till i studion ${day}.`, source: {from: `uppladdad: ${original}`, when: day}};
     const next = structuredClone(register);
     next.dealers[dealer].entries.push(entry);
     const out = JSON.stringify(next, null, 2) + '\n';

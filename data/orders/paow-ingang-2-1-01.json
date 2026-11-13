@@ -35,15 +35,16 @@
       "name": "last.png",
       "label": "Sista bild · Paows ankare 2.1",
       "goesAs": "endFrame",
-      "path": null,
-      "sha256": null,
-      "from": null,
-      "waits": {
-        "dealer": "paow",
-        "role": "ankare-2.1",
-        "node": "READY",
-        "label": "ankare 2.1"
-      }
+      "path": "assets/orders/paow-ingang-2-1-01/last.png",
+      "sha256": "74eebfdc1388f8de362c0151546bbe08aeb1fed74fca097f8ca6999d833dc702",
+      "from": {
+        "entry": "paow-nyp-ung-1",
+        "path": "assets/anchors/paow-nyp-ung-1/anchor.png",
+        "note": "Nyp, yngre, tagning 1 (gäller)"
+      },
+      "waits": null,
+      "width": 1764,
+      "height": 1174
     }
   ],
   "reference": {

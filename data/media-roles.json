@@ -3131,24 +3131,28 @@
           "role": "ankare-2.1",
           "name": "Nyp, yngre, tagning 1",
           "path": "assets/anchors/paow-nyp-ung-1/anchor.png",
-          "state": "kandidat",
+          "node": "READY",
+          "state": "gäller",
           "note": "Ankare 2.1 lagd till i studion 2026-11-13.",
           "source": {
             "from": "uppladdad: after.png",
             "when": "2026-11-13"
-          }
+          },
+          "stateBy": "Jakob 2026-11-13 01:29: kandidat → gäller (Material)"
         },
         {
           "id": "paow-nyp-ung-2",
           "role": "ankare-2.1",
           "name": "Nyp, yngre, tagning 2",
           "path": "assets/anchors/paow-nyp-ung-2/anchor.png",
-          "state": "kandidat",
+          "node": "READY",
+          "state": "ersatt",
           "note": "Ankare 2.1 lagd till i studion 2026-11-13.",
           "source": {
             "from": "uppladdad: after.png",
             "when": "2026-11-13"
-          }
+          },
+          "stateBy": "Jakob 2026-11-13 01:29: kandidat → ersatt (Nyp, yngre, tagning 1 godkändes i Material)"
         }
       ]
     }

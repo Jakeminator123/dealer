@@ -149,6 +149,9 @@ test('add: a new folder with the picture and its receipt, a candidate in the reg
  // An anchor goes under assets/anchors/; the same name again is refused and the first stays as it was.
  const anchor = await store.add({dealer: 'paow', role: 'ankare-2.1', name: 'nyp-ung', title: 'Nyp, yngre', filename: 'a.jpg', type: 'jpeg', bytes: jpeg(1764, 1174), now});
  assert.equal(anchor.entry.path, 'assets/anchors/paow-nyp-ung/anchor.jpg');
+ // An added anchor says which node it stands for, or a draft that waits for "ankare 2.1 (READY)" never finds it; a keystone has none.
+ assert.equal(anchor.entry.node, 'READY');
+ assert.equal(result.entry.node, undefined);
  await assert.rejects(store.add({dealer: 'paow', role: 'keystone', name: 'sittande-c', title: 'Igen', filename: 'b.png', type: 'png', bytes: png(100, 200), now}), fails(409));
  const kept = await readFile(path.join(root, 'assets/keystones/paow-sittande-c/keystone.png'));
  assert.equal(imageSize(kept)?.width, 4800);
