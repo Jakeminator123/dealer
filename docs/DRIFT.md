@@ -114,7 +114,9 @@ bilder och filmer som används eller kan användas ligger i `assets/` (AGENTS). 
 - **Sidor och headless Chrome:** en inspelning eller skärmbild av 3D-sidan belastar Jakobs dator: en körning i taget,
   kort, aviserad, och den som startar ett fönster stänger det. Spelsidan körs mot 4319 med `spelagent/drive.mjs`
   (steglistor bredvid); `POST /api/game/new` med en `stacked` sko ger samma runda varje gång. 3D-scenens skärmbild,
-  bildjämförelse och provfilm: `bakgrund-3d/` (`LÄSMIG.txt`). Pamela-filmens regisida: `reel/` (`LASMIG.md`).
+  bildjämförelse och provfilm: `bakgrund-3d/` (`LÄSMIG.txt`). Pamela-filmens regisida: `reel/` (`LASMIG.md`). Spelet med
+  Paow (`game.html?dealer=paow`, eller Casino med Paow vald) spelas in med `huvudagent11/spel/drive.mjs` (en skärmbild per
+  ruta) och `mix.mjs` (rutorna till 30 bilder/s, rösten lagd där talfilmen började).
 - **Meshy:** Jakobs inloggade Chrome-fönster styrs med `spelagent/meshy.mjs` (DevTools på 127.0.0.1:9391, profilen
   `chrome-meshy` bredvid, som inte får raderas). Inga lösenord hanteras av agenten.
 

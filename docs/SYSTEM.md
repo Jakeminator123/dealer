@@ -95,8 +95,9 @@ sedan 2026-11-13: `/` och `lab.html` leder dit (`studioAddress` i `tools/lab-rou
 med antalet tagningar som väntar på Jakob, den pausade dämpad; namn och paus ur `data/dealers.json`) väljer vems
 tagningar varje vy läser (`studio/lib/bank.ts` bygger `buildGraph(bank, {dealer})` per dealer); valet står i adressen
 som `?dealer=`, samma ord som vyn Material, och minns i webbläsaren; adressen går först, sedan en tagning som adressen
-nämner, och utan val gäller Pamela. Scen spelar det en annan dealer har och visar resten som luckor; Casino spelar bara
-Pamelas runda (spelsidan läser bara hennes filmer).
+nämner, och utan val gäller Pamela. Scen spelar det en annan dealer har och visar resten som luckor; Casino spelar den valda
+dealerns runda: `?dealer=` går vidare till spelsidan, som bygger en graf per dealer och aldrig spelar en annan dealers
+film (skrivs 2026-11-13).
 
 ## Spelet (`game/` och `/api/game`)
 
@@ -114,6 +115,24 @@ aldrig servern före vändningen. Signalerna är Scouts: `speak`, `deal`, `revea
 `reveal` bär `shoeDraw`, handens summa efter kortet (`total`, `soft`) och `natural`/`blackjack`, så att sidan aldrig
 räknar kortvärden. Vinsten når saldot vid `collect`. Känd egenhet i Scouts kärna: `outcome` i `settle` räknar in
 försäkringens utbetalning.
+
+Spelet med flera dealers (skrivs 2026-11-13; koden ligger i arbetsträdet):
+
+- Spelet spelar bara tagningar med dom, Jakobs eller en preliminär (`judgedBank` i `src/game-director.ts`); en tagning
+  utan dom finns inte i spelets bank. Undantaget är en talfilm, en vilotagning på begäran (`motion.idle.onRequest`), som
+  slumpen aldrig väljer. En nödlösning (`motion.stopgap`, som `paow-utgang-baklanges-01`) spelas bara där samma dealer
+  saknar annan dömd tagning på kanten.
+- En retur till vila som saknar film spelas som returen till skon och utgången (`READY>IDLE`). Ett kort vars giv saknar
+  film ges med filmen i `STAND_IN_FILM` (per dealer, i dag bara Paows; hålkortet med hennes första korts film, kortet
+  ritat på sin egen plats med baksidan upp); ersättaren viker när kortets egen film finns. Dealerns tredje och fjärde kort
+  läggs utan hand.
+- Efter en giv väljs en retur av samma hand som lade kortet (`motion.releaseHand`); finns ingen retur av rätt hand spelas
+  den andra med en anteckning om felet.
+- Dealern säger sina repliker med talfilm och ljud (`src/speech-lines.ts`, rösten Jessica): `goodluck` före given,
+  `dealerplays`, `insurance`, `double`, utfallet och `placebets`; chattens svar spelar sin talfilm när den finns, och en
+  replik utan film står som text i chatten. Talfilmen spelas hel, i vila, aldrig inne i en kedja av kort. Nyckeln `tal`
+  (`repliker`, förval, eller `av`) stänger av talfilmerna. Brytaren Ritade kort (nyckeln `cards`, förval på) i Miljö och
+  Casino slår av de ritade korten. Talet i sin helhet: [docs/TAL.md](TAL.md).
 
 `src/game-director.ts` gör signalerna till slag, ett per kant i klippbanken (vila till sko en gång, retur mellan korten,
 hålkortet vänds från vila), och `src/game-table.ts` ger varje kort en plats: planens två platser per plats, därefter en

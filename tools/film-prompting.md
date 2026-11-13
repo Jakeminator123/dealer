@@ -53,7 +53,7 @@ tillsammans med referensfilm. Schemat gäller för oss.
 
 En beställning är en ren funktion av valen i Beställ: samma val ger samma bilder, text, modell och kostnad. Texten
 skrivs aldrig för hand i en order; ändras den, ändras mallen och versionen räknas upp. De exakta orden står i `SAY` i
-`src/order-prompts.ts` (mall 7, `TEMPLATE_VERSION`; Utförlig = mall 3; en order återges med sin egen version, så mall
+`src/order-prompts.ts` (mall 8, `TEMPLATE_VERSION`; Utförlig = mall 3; en order återges med sin egen version, så mall
 6:s ord gäller bara dess egna ordrar); reglerna och recepten står här. Kort är förvalet, Minimal är Jakobs prov,
 Utförlig bara för jämförelse. Skiljer orden sig från reglerna här, rättas orden. Format, filer och priser:
 [dealer-line.md](dealer-line.md), "Format och namn".
@@ -226,6 +226,25 @@ inga ringar. Sitt som dealern, andra handen platt. Verkligt tempo: Kling 4 kopie
 snabbats upp föll (V). Börja och sluta i ankarets pose, en obruten tagning på 4–8 s, kortet till orderns plats, flera
 tagningar; välj en där kortet syns på kant. Risk: Jakobs hand läcker in som Pamelas (S).
 
+### 3.9 Helfigur: hon kommer in och sätter sig, hon reser sig och går
+Den enda beskrivningen av hur en helfigursfilm görs (Beställ har inget steg för den). Gjord 2026-11-13 för Paow efter
+Pamelas godkända par, 552 krediter (V: `assets/motions/paow-table-arrive-wide-01/generation.json`,
+`paow-table-leave-wide-01/generation.json`, liggaren `D:/dealer-scratch/tmp/huvudagent11/helfigur/ledger.md`):
+1. Ramen är Pamelas breda: 2088 × 1174 i halv skala, dealerkantens mitt i (1044, 656) (`motion.frame`, SYSTEM).
+2. Tre stillbilder placeras utan bildmodell (`helfigur/build-stills.py`): tom ram med en ljusare grön skiva, ankare 1 i
+   halv skala utan sko (sittande), och den stående keystonen med ögonen Pamelas stående höjd (165,5 px) över de sittande.
+3. Varje film är två delar som möts i den stående bilden: in = går in (tom → stående) + sätter sig (stående →
+   sittande); ut = reser sig (sittande → stående) + går ut (stående → tom).
+4. Kling 4, 1080p, 16:9, första och sista bild, kort text utan förbud, 3–6 s per del; ljudet tas bort.
+5. Texten säger vart hon går och att hon är lika hög hela vägen ("the same height as in the last image the whole way"),
+   och skivan som "the flat lighter green rectangle"; skivan målas efteråt i varje rutas bakgrundsgröna.
+6. Sätter sig: "brings both hands forward, close to her body" (tagning 1 svängde armarna ut åt sidorna, f44–52).
+7. Delarna sätts ihop i den stående bilden; skarven syns inte i utgången (granskaren 4/5).
+8. Posten får `motion.frame` med `layer: "BEHIND_TABLE"`, så att bordet skymmer henne tills hon sitter.
+9. Utfall: utgången godkänd preliminärt; ingången Variant preliminärt: hon står stilla i drygt 20 rutor innan hon sätter
+   sig och bär pumps där keystonen har platta skor (`review.provisional` i `motions/`).
+10. Används inte: sätter sig t1 (armarna ut), går in t2 (snabbare gång, lika lång paus), reser sig t2 (sjunker 12 px).
+
 ## 4. Felsökning
 
 | Fel | Sett i (V) | Trolig orsak (S) | Ändring |
@@ -240,7 +259,7 @@ tagningar; välj en där kortet syns på kant. Risk: Jakobs hand läcker in som 
 | Kortet tappas eller läggs före platsen och skjuts dit | `paow-giv-p4` t2 (104 px kort), `p1-04` (cirka 790 px), `p2-03` (cirka 725 px), `p4-14` t2 (165 px) | Vändning i luften; referens från en annan startpose (`p2-03`) | Inget fel i sig: Jakob godkände `p1-04` och `p2-03`; ange sträckan |
 | Kortet växer eller krymper | `p4-04` +21 %, `p3-02` +47–70 %, `p1-06` +20 %, b17 1,5×; `d-01` krymper till hälften (f144–166) | Kortet lyfts mot kameran | Lågt längs filten; mät ±10 %; inte lagbart |
 | Hon lutar sig långt ut | `p1-05` (näsan 245 px), `p1-06` (183 px) | Ytterplatsen långt bort | Oprövat; handbyte från P1–P3 (Beställ föreslår det) |
-| Hon är stel | `p4-09` (Jakob: "Hon är väldigt stel"), `p4-12` retur ("hon borde kunna röra sig mer") | `SAY.otherRests` håller allt annat stilla (S) | Oprövat: ett tillägg om huvud eller blick |
+| Hon är stel | `p4-09` (Jakob: "Hon är väldigt stel"), `p4-12` retur ("hon borde kunna röra sig mer"), `p5-03` ("så sjukt stel i ansiktet") | `SAY.otherRests` håller allt annat stilla (S) | Mall 7:s rörelsemening rörde henne men kostade kortet (15 av 18); tillägget "Her eyes follow the card." rörde blicken utan att hjälpa kortet: öppen fråga (§5) |
 | Handen till knytnäve i brösthöjd på returen | `paow-giv-p4` t1 (y 466), `p4-04` (120–128) | Retur i samma film som given | Jakob godkände ändå 16 av 21 returer; ingen ändring krävs |
 | Fingertopp på fönstrets ram | Ingång WAN 44–59, 4K 38–55 | Geometrin | Ordet "rim" struket; annars Variant |
 | Skon flyttad eller fel sko (stillbild) | Ankare 2.2, tre ordrar: öppen sko kopierad ur posebilden, sedan fönsterskon 81–129 px åt vänster | Bildmodellen ritar om skon med handen | Inte text; en ruta ur en film från ankare 2.1 (oprövat) |
@@ -356,12 +375,32 @@ läggs plant framför skon och skjuts (`SAY.layAndSlide`, eftersom omgång 6:s s
 blått syntes och bytte storlek); hålkortets vändning har bara hålkortet på sina bilder (med båda korten lyfte hon båda,
 `paow-halkort-01`).
 
-**Pågår: omgång 7 och 8, mall 7:s första.** Kling 4 utan referens och fri vändning till plats 1–5 och 7 (`p1-09`,
-`p2-04`, `p3-03`, `p4-15`, `p5-05`, `p6-05`, `p7-06`), WAN 3 med vändning vid platsen till plats 6 (`p6-06`),
-hålkortet stängt (`paow-giv-2-1-d-c2-03`), dess vändning (`paow-halkort-02` WAN 3, `-03` Kling 4) och utgången
-(`paow-utgang-01`). Utfallet och granskningen förs in här.
+**Omgång 7–10 (2026-11-13, 31 tagningar på de 6 000 krediter Jakob lade till; V: kvittona och `motions/`).**
+- Mall 7 (hon rör sig medan hon delar ut) i 18 tagningar: hon rör sig (huvudet cirka tre gånger så långt), men kortet
+  gick fel i 15 (färgbyte utan kantruta, kortet långt i handen och kort när det läggs, en vickning mot kant), och i 3
+  delade hennes andra hand (`c81c548`). Mall 8 tar bort meningen; givar slutar åter på "The other hand rests on the felt."
+- Tillägget "Her eyes follow the card." (orderns `extra`) i två tagningar till plats 6: blicken följer kortet hela given
+  (huvudet 20–39 px mot 11–12), men kortet blev inte bättre.
+- Av mall 7:s och 8:s givar spelas bara `p7-06` tagning 1 (preliminärt godkänd: en verklig vändning, kantruta f37).
+- Hålkortet stängt med orden "lägg plant och skjut": 1 av 3 håller, `paow-giv-2-1-d-c2-03` tagning 1 (inget blått i
+  någon ruta; storleksbytet döljs under handflatan). Hålkortets vändning med bara hålkortet på bilderna: 2 av 4 användbara,
+  `paow-halkort-04` tagning 2 (Kling 4, den beställda handen, en ren kantruta i luften) och `paow-halkort-02` (WAN 3, en
+  mörk suddig rand där kanten skulle synas, Variant). Utgången: `paow-utgang-01` håller (blicken går ned till skon och
+  upp igen), 1 av 2. Alla dessa är preliminära domar och väntar på Jakob.
 
-**Oprövat:** retur som egen film från en landningsbild; vändningen som egen film; landningsbild som stillbild; ankare
+**Öppen fråga: hur hon rör sig utan att det kostar kortet.** Jakob vill att hon rör kropp, huvud och högerarm mer.
+Rörelsemeningen i mall 7 gjorde det och förstörde kortet i 15 av 18 tagningar; blicken ensam (tillägget ovan, 2 tagningar)
+gav rörelse i huvudet men inget bättre kort. Oprövat: rörelsen i en egen vilofilm före eller efter given, eller en
+referensfilm där en hand rör sig medan den andra delar ut.
+
+**Plats 6 är det enda steg som saknas för en runda** (`node tools/produce.ts paow`). Elva tagningar
+(`paow-giv-2-1-p6-01`–`-08`) har fallit, för Jakob, för granskaren eller på ett mätt fel, med samma mönster: vägen från
+skon till plats 6 är kort, och kortet vänds i ett sudd, är mjukt eller byter sida utan kantruta. Prövat: Kling 4 med fri
+vändning på mall 5, 6, 7 och 8, och WAN 3 med vändning vid platsen. Inte prövat: en referensfilm (Pamelas giv till plats
+6 är bara godkänd som variant, och hans regel tillåter bara rakt godkända som referens), Kling 4 med vändning vid platsen,
+och handbyte. I spelet läggs plats 6:s kort utan hand.
+
+**Oprövat:** referensfilm eller handbyte till plats 6; rörelse i en egen vilofilm; retur som egen film från en landningsbild; vändningen som egen film; landningsbild som stillbild; ankare
 2.2 som ruta ur en film; referensfilm av Jakobs hand; renderat kort i vändningens rutor.
 
 ## 6. Källor

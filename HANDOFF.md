@@ -67,7 +67,7 @@ inte vändning. Framsidan måste vara en ren, nyckelbar yta eftersom Scout best�
   - **Scen (`dealer-f6`):** bordet, rummet och ljuset i 3D-scenen (`src/scene3d-table.ts`, `src/scene3d-room.ts`,
     `src/scene3d-ui.ts`, `src/scene3d-view.ts`, `data/scene-materials.json`, `data/scene-rooms.json`,
     `data/scene-presets/`), och sidovinkeln av Paow som egna Prov.
-  - **Tal (`dealer-0b`):** talfilmer med röst och läppsynk (`tools/speech.ts`, `src/speech-plan.ts`,
+  - **Tal (`dealer-0b`, sidan [docs/TAL.md](docs/TAL.md)):** talfilmer med röst och läppsynk (`tools/speech.ts`, `src/speech-plan.ts`,
     `src/speech-lines.ts`, `data/speech.json`), media under `assets/speech/paow/`, levererat som patch.
 - Avslutade sessioner: `dealer-bf` (kortet, sidokameran, Petra; 2026-11-13), `dealer-82` (Paow,
   `D:/dealer-scratch/tmp/paow/`), `dealer-db` (Pamela-filmen, `D:/dealer-scratch/tmp/reel/`), FILMAGENT, FILMAGENT-2,
@@ -79,7 +79,10 @@ inte vändning. Framsidan måste vara en ren, nyckelbar yta eftersom Scout best�
   och ger vika för hans.
 - `CHECKLISTA.md` i repots rot (utanför Git) är Jakobs och huvudagentens gemensamma lista.
 
-## Läget i banken (räknat 2026-11-12, domarna omräknade 2026-11-13)
+## Läget i banken (Pamelas, räknat 2026-11-12; inte omräknat)
+
+Paows läge räknas med `node tools/produce.ts paow` (Nästa steg, punkt 0), Pamelas med `node tools/produce.ts pamela`;
+siffrorna nedan är från 2026-11-12 och gäller Pamela.
 
 Räknat med `buildGraph` ur `src/clip-graph.ts` på samma data som labbets `/api/clip-bank` (`data/clip-jobs.json`,
 `motions/`, kvitton och filmer under `assets/motions/`), i läget en film per plats med stängt hålkort. Skriptet ligger i
@@ -171,115 +174,54 @@ skript i `skript/`, liggare i `bestallningar-*.json`. Den sessionens filmer och 
 
 ## Öppet hos Jakob
 
-1. Primära: han väljer en primär tagning per steg (0 av 33 satta) i studions vy Primära; underlaget finns i Granska och
-   i Prov `pamela-film`.
-2. (Avgjort 2026-11-12: Jakob dömde vilofilmerna i studions Granska; inget väntar där.)
-3. Hålkortets giv: variant av den underkända `pamela-d-c2-arkiv-deal-01` eller en ny, rakare tagning (Granska).
-4. `READY>IDLE`: om den underkända `pamela-ready-idle-exit-02` ska prövas baklänges som variant (Granska).
-5. Kortet: ska planens kort ligga på tvären och ha V6:s yta (1,6 gånger, k ≈ 1,67, samma klass som förslaget K = 1,65),
-   Prov `v6-referens` och `kortplan-forslag`; säger han ja kan godkända givar behöva göras om (FILMAGENT-2:s bedömning
-   2026-11-11).
-6. Skokortet: ska kortet i skon luta några grader mer mot dealern, vilket kräver en ny skobild och inte en
-   labbinställning (ingen Prov-mapp).
-7. Paow: grundstandarden står i `data/dealer-standard.json` (införd 2026-11-12 ur det huvudagenten och `dealer-82` var
-   eniga om). Jakob har inte sett den som bild; den prövas i de första beställningarna.
-8. Paow: utseendet är avgjort (2026-11-12: "jag vill ha de yngre och nättare bilderna", svart kavaj). **Ankare 1 är
-   valt: `paow-vila-ung-2` gäller (Jakob godkände i Material 2026-11-13, "svinbra").** Parkerad tanke samma natt:
-   måttbilden i Prov `grundstandard-utkast` med dealern borttagen som generisk mall för nya dealers, "bara om eller när
-   vi vet hur allt funkar"; som kedja: profilbild först, sedan klipper en bildmodell in personen i just den yta
-   Placerings neutrala figur visar (rätt person på rätt yta), och en stående helkroppsbild för in- och utgång, där
-   måtten kan skilja lite från sittande. **Ankare 2.1:** två tagningar ligger som kandidater i Material
-   (`paow-nyp-ung-1`, `-2`); Jakob om tagning 1: "ser jättebra ut", blicken kunde ligga på kortet ("men är lugnt"). Han
-   vill pröva två ingångsfilmer ankare 1 → 2.1: en med WAN 3 (utkast `paow-ingang-2-1-01`, en tagning) och en i 4K
-   (modellen inte vald; Beställ har ännu ingen 4K-modell). Kvar: de tre utkasten i Beställ (ankare 2.1, ankare 2.2 och
-   första filmen, ett kort till plats 4 och tillbaka på 7 s; tillsammans högst 490 krediter) utgår från kandidat 2 och
-   väntar på hans Godkänn. Inget är skickat.
-9. Paow: om bankens variantgodkända giv till plats 7 får vara referensfilm (Prov `paow-kavaj-filmer`).
-10. (Avgjort 2026-11-12: lagning, "med ett api som är inbyggt i studion". Den målar bara den ruta och de bildrutor
-    granskaren pekar ut, skriver en ny fil bredvid originalet, går på ny granskning och visas före och efter innan Jakob
-    godkänner. Håller för stilla ytor, inte där en hand rör sig; förlaga `paow/skript/lagafilm.py`, byggs som
-    `tools/film-fix.ts`.)
-11. Två konkurrerande vägar, där huvudagenten kommer med förslag: renderat kort (platt överlägg eller 3D-kort) och
-    uppspelning (V6:s tidslinje eller klippbankens rundor); filmbeställning är avgjord: Beställ
-    (`tools/dealer-line.md`); underlag i `CHECKLISTA.md`. Om det renderade kortet lade sessionen `dealer-bf` ett förslag
-    2026-11-13 (läsande utredning, inte beslutat av Jakob; rapport `D:/dealer-scratch/tmp/dealer-bf/kort/RAPPORT.md`;
-    öppen fråga till honom: får baksidan vara utan tryck i handen): kortet skakar för att `src/card-track.ts` passar
-    varje ruta för sig och tonar bort utjämningen i snabba rutor. Ordning: (1) klistra mindre: med Jakobs sex steg är
-    baksidan upp till platsen, så filmens eget kort kan färgas om till enfärgad baksida och det renderade kortet behövs
-    bara i de sista rutorna och på filten; (2) byt mätningen för de rutorna (stelt kort med fast mått, löst för hela
-    klippet på en gång); (3) reserv: helt 3D-kort på skriven bana som handen mimar; (4) inte en videomodell som skriver
-    valören. Återbruk: kortgeometri och 52 framsidor som vektorer i
-    `D:/dealer-archive/snyggare-dealer/references/card-materials/new-front2/`. En 3D-modell av dealern som delar ut i
-    webbläsaren bedömde den som inte görlig i dag (dess skattning, inte visad). Samma session gjorde Prov `plats-3-prov`
-    (given till plats 3 med scenens ritade kort, sedd framifrån och från plats 3:s öga, cirka 8°; samma platta film i
-    båda, inte oberoende granskat). Räknat ur planen ligger platsernas ögon på −29, −18, −8, 0, +8, +18 och +29 grader
-    (skalan skattad; `D:/dealer-scratch/tmp/dealer-bf/demo/numbers.mjs`), så kameror på plats 2, 4 och 6 ger varje plats
-    högst 11° till närmaste kamera; Jakob lutar åt plats 2 och 6 som extra kameror, inget beslutat. En andra kamera
-    prövad av `dealer-bf` 2026-11-13 (Prov `kamera-2-plats-2`, 512 krediter i ett avskilt spår, sett i stillbilder, inte
-    oberoende granskat): Pamelas godkända giv `pamela-p4-c1-plan-deal-02` sedd från plats 2:s öga (17,7°). Det som höll:
-    filmens eget djup ger en råfilm från den nya vinkeln lokalt och gratis (kameran står exakt i modellen, men kroppens
-    djup och dealerns lins är skattade; Jakobs externa granskare rättade orden "geometriskt riktig")
-    (`D:/dealer-scratch/tmp/dealer-bf/kamera2/relief/`), en bildmodell lagar en nyckelruta, och `edit_video` (Aleph, 28
-    krediter per s) lagar hela filmen efter den; att be bildmodellen flytta kameran själv föll fyra gånger. Fel i
-    tagningen: det stängda kortet blir grått i ruta 0–50, och filmen kommer i 1920 × 1080 med bilden i mitten. Inte
-    prövad i 3D-scenen (kräver en andra filmkamera där). Samma granskare: 20°-gränsen är mätt på stillbilder och håller
-    inte som löfte för en giv, och tre kameror löser inte en glidning mellan platserna. Kortet med filmens eget kort som
-    matt (Prov kort-matt-ur-filmen, dealer-bf): varje gul eller blå bildpunkt byts mot kortets yta, så kanten är filmens
-    och fingrarna ligger framför utan handmask; P4 brus 0,72 px mot dagens spår 3,35, P1 inte bättre (7,41 mot 6,47);
-    skriptet D:/dealer-scratch/tmp/dealer-bf/kort/kortprov.py utanför repot, inte prövat i scenen. Samma spår gjorde
-    keystone för en avskild dealer med arbetsnamn Petra (Prov `petra-keystone`); på Jakobs ord ("en egen dealer av Petra
-    eller något", så att hon inte står som material hos Pamela eller Paow) är hon en egen dealer i
-    `data/media-roles.json` med spårets tre prov, men inte i `data/dealers.json`: inget beställs för henne. Jakobs
-    externa granskare läste grenen `jakob/test` (a5821f1 från 2026-11-10, långt efter `claude/deal-clips`) och fann där
-    kortvinklar som inte gäller längre; i dagens plan är `geometry.native` 0° och perspektiv 0,87 på alla platser, men
-    `geometry.portrait` har kvar 21/14/7° och 0,9 (mätt av `dealer-bf`). Om `jakob/test` ska flyttas fram är Jakobs
-    beslut. Gamla 3D-sidans `?clip=` vill ha bankens tagningsnamn, inte filmmappens; ett fel namn faller tyst tillbaka
-    på plats 4-rundan.
-12. Meshy-bordet `table-plain` och vad hans större bordsmodell (`assets/props/source/table-meshy.glb`) är till för (Prov
-    `meshy-bord-slatt` och `meshy-bord-naturligt`).
-13. Obedömda prov: spelets konsol (`spel-konsol`), sex nya rum (`fler-rum`; ett rum når spelet först med
-    `"game": true`), skimret vid miljöbyte (`skimmer-vid-miljobyte`), 3D-skon (`sko-i-3d`), bordets yta och underrede
-    (`bordets-yta-och-ljus`, `bordets-underrede`), ljud och musik som ingen har lyssnat på (`ljud-labb`),
-    helkroppsfilmen i scenen (`helkropp-i-scenen`) och reklamfilmen (`trailer-noir-3`).
-14. (Avgjort 2026-11-12: `placements/default.json` är incheckad på hans ja.)
-15. Flikregeln: om han ser mer än en labbflik i sin Chrome; det som inte är sett där är att en äldre flik stänger sig
-    och vad som händer med flikar som Chrome återställer efter en omstart.
-16. Publika sajten visar 22 filmer från `b65fd9b`; att föra dit dagens läge kräver hans uppdrag (mediauppladdning och
-    ombyggnad).
-17. Skuggan under armarna: den snabba rättningen i 3D-scenen nu, och om grunden (ankare 1, 2.1, 2.2) ska göras om (Prov
-    `original-ankare-keystone`, bild 8).
-18. Primär på plats 5 och 6 (ur regelns prov 2026-11-12): på plats 5 drar en primär retur in variantgiven som den
-    fortsätter, framför den rakt godkända arkivgiven; på plats 6 ger en primär retur en synlig skarv tills en giv finns
-    som slutar på returens ankare.
-19. Skon: en enda sko för läge 2.1 och 2.2, vilken av de två, och om dess kort ska göras i rätt storlek (mätt mot
-    knogbredden är kortet i fönsterskon 0,9 × 1,29 av ett riktigt kort och i läge 2-skon 1,04 × 1,13; Prov
-    `grundstandard-utkast`).
-20. Reklamfilmen version 3 (Prov `trailer-noir-3`): med eller utan barnet i spelhallen.
-21. Fyra kandidatgivar till plats 2, 3 och 6 (Prov `givar-omgang-15`, mappar i `assets/motions/`, inte i banken): in i
-    banken som väntande i inkorgen (huvudagentens förslag) eller till arkivet.
-22. Placering i studion: ska korten öppnas som "Kort" (som de spelas) eller "Färg" (gult och blått), och ska varje plats
-    visa ett eget kort i stället för A♠.
-23. Underkända och ersatta filmer (32 bankklipp, 567 MB; Paows 8 ersatta bilder) ligger kvar i `assets/`, eftersom
-    banken visar dem och en underkänd ibland blir variant; förslaget är att vyerna visar dem för sig. Inventeringen:
-    `D:/dealer-scratch/tmp/huvudagent/assets-inventering/RAPPORT.md`.
-24. Duken: Jakob vill ha V6-bordets lurvigare gröna filt (den han ser i Placering) i stället för filten på 3D-bordet.
-    Den finns som valet Duk → V6-duken i vyn Scen (`/studio/?forval=levande&cloth=v6`); han har inte sagt om den ska in
-    i förvalen. Han saknar också rummen (panorama, 3D) som bakgrund i Placering; planen ligger i filmrutans mått och är
-    densamma i alla rum, så förslaget är en knapp "Visa i scenen".
-25. Prov mot Granska: i Prov går det inte att döma (märkena där är granskarens), och han väntade sig det. Paows 18
-    filmer i `paow-kavaj-filmer` är första omgången, från utseendet före de yngre bilderna; nya filmer kommer genom
-    Beställ till bankens inkorg och döms i Granska.
+Det som hindrar en runda först. Han kan svara rad för rad.
+
+1. **Plats 6:** elva tagningar har fallit (kort väg, kortet vänds i ett sudd eller byter sida utan kantruta), så kortet
+   läggs utan hand i spelet. Får Pamelas giv till plats 6, som bara är godkänd som variant, vara referensfilm? Annars:
+   Kling 4 med vändning vid platsen, eller handbyte.
+2. **De nio preliminära domarna** från natten ("jag måste sova och du får granska och godkänna alla klipp"), först i hans
+   kö i Granska; hans eget beslut ersätter var och en:
+   - `paow-giv-2-1-d-c2-03-01` (hålkortet stängt): godkänd; se att kortet är 119 px på filten och 59 px när handen släpper,
+     bytet dolt under handflatan.
+   - `paow-halkort-04-02` (hålkortets vändning, Kling 4): godkänd; granskaren föreslog variant, eftersom hon ser in i
+     kameran och knappt rör huvudet.
+   - `paow-halkort-02-01` (hålkortets vändning, WAN 3): variant; ingen ren kantruta, en mörk suddig rand i tre rutor.
+   - `paow-giv-2-1-p7-06-01` (plats 7): godkänd; en verklig vändning, men hon är stel (huvudet 30 px).
+   - `paow-utgang-01-01` (utgången): godkänd; ersätter nödlösningen med ingången baklänges.
+   - `paow-table-arrive-wide-01` (hon kommer in och sätter sig): variant; hon står helt stilla i drygt 20 rutor innan hon
+     sätter sig, och bär pumps där keystonen har platta skor.
+   - `paow-table-leave-wide-01` (hon reser sig och går): godkänd; uppresningen går cirka 20 px för högt och sjunker tillbaka.
+   - `paow-giv-2-1-p6-05-01` och `paow-giv-2-1-p6-07-01`, `-02` (plats 6): underkända; vändningen är ett sudd utan
+     kantruta.
+   - `paow-giv-2-1-p2-04-02` (plats 2): underkänd; kortet byter färg utan kantruta cirka 80 px före platsen.
+   - Returerna i samma filmer (`d-c2-03`, `p2-04`, `p6-05`, `p7-06`) är preliminärt godkända.
+3. **Ett tredje och fjärde dealerkort:** var ligger de i hans plan? Ordermodellen vägrar `D.C3` tills planen har platsen;
+   han lägger den i Placering.
+4. **Orden för kortets sidor:** hans ord om "baksida" (det kan läsas som undersidan); orden efter färg i mall 6 förlorade
+   två par; ett neutralt tredje sätt är oprövat. Vill han att det provas?
+5. **Hur hon ska röra sig:** rörelsemeningen i mall 7 rörde henne men förstörde kortet i 15 av 18 tagningar; blicken ensam
+   hjälpte inte kortet. Vilken rörelse är viktigast: huvud, blick eller högerarm?
+6. **Ingångsfilmen** (`paow-table-arrive-wide-01`): hon står stilla i ungefär två sekunder innan hon sätter sig. Duger det,
+   eller ska den göras om?
+7. **De ritade korten:** kortagentens fynd kommer 09:05 och står då under "Kända brister".
+8. **En andra spelarfigur, "Astrid",** som kommer in från sidan och satsar: hans önskemål, inte påbörjat.
+9. **Bordets tryck:** ska trycket följa bordets storlek (`tableSize`)? Scenbanans fråga.
+10. **Talet:** två röst-id han gav finns inte i något konto eller delat bibliotek som nyckeln ser (Jessica står); ett tomt
+    Blob-lager `dealer-lab-tal` skapades i hans eget Vercel-team för en RunPod-mätning som inte kördes: ta bort det, eller
+    ge dess nyckel som `DEALER_SPEECH_BLOB_TOKEN`; den andra produktens gren `kevin-staging` ligger före den commit som
+    lästes (docs/TAL.md).
+11. **Äldre frågor om Pamela** (pausad): primära på hennes kanter, hålkortets giv, skokortets lutning, ett kortformat på
+    tvären, Meshy-bordet, obedömda prov och den publika sajten står kvar i Git-historiken för HANDOFF före 2026-11-13 och
+    tas upp när pausen hävs.
 
 ## Nästa steg
 
-0. **Paow, läget 2026-11-13 klockan 07:50** (`node tools/produce.ts paow`): 18 av 33 filmer klara, 17 av de 21 som en
-   runda kräver. Ankare 1 och 2.1 gäller; ankare 2.2 behövs inte för första uppsättningen. Klara för rundan: ingång,
-   vila, given och returen till redo på plats 1–5 och 7, dealerns första kort och utgången (en nödlösning, ingången
-   spelad baklänges). Kvar för en runda: given till plats 6 (`paow-giv-2-1-p6-05`, `-p6-06` levererade), hålkortet
-   stängt (`paow-giv-2-1-d-c2-03`), hålkortets retur till vila (ingen metod) och hålkortets vändning (`paow-halkort-02`,
-   `-03`). Omgång 7 och 8, mall 7:s första (`-p3-03`, `-p4-15`, `-p5-05`, `-p1-09`, `-p2-04`, `-p6-05`, `-p6-06`,
-   `-p7-06`), är lagda; utfallet och granskningen pågår. Pamela är pausad (Jakob 2026-11-12: "Vi pausar Pamela när vi är
-   klara. Sedan går vi vidare med Paow.").
+0. **Paow, läget 2026-11-13 klockan 08:36** (`node tools/produce.ts paow`): 23 av 33 filmer klara, varav 9 preliminärt
+   dömda, och 19 av de 21 som en runda kräver. Kvar för en runda: given till plats 6 (Öppet hos Jakob, punkt 1) och
+   hålkortets retur till vila (ingen metod). Omgång 7–10 (31 tagningar) och vad de lärde står i handboken §5; mall 8
+   gäller. I spelet spelas rundan med hennes filmer; nödlösningar finns för plats 6 och dealerns tredje och fjärde kort
+   (lagda utan hand). Saldo efter sista tagningen: 5 580 krediter (kvittot för `paow-giv-2-1-p6-08`). Pamela är pausad
+   (Jakob 2026-11-12: "Vi pausar Pamela när vi är klara. Sedan går vi vidare med Paow.").
 1. **Studion** (`http://127.0.0.1:4319/studio/`) är skalet, med bland annat vyerna Scen, Karta, Primära, Jämför,
    Granska, Prov, Placering, Material, Beställ, Protokoll och Casino; gamla labbet nås med `lab.html?gamla=1` tills
    Modeller (`props.html`) och Ljud (`sound.html`) har flyttats. Den låsta kopian åt Jakobs chef publiceras först på
@@ -338,8 +280,7 @@ skript i `skript/`, liggare i `bestallningar-*.json`. Den sessionens filmer och 
 - **Budgeten** (2026-11-13 cirka 07:25): "jag ger 6000 mer i budget eller till krediterna tar slut för runway".
   Dagstaket är 14 000 för 2026-11-13 (`data/order-policy.json`); golvet 2 000 och 400 per beställning står.
 - **Önskemål samma natt, inte byggda:** att kunna slå av de ritade korten; ett tredje och fjärde dealerkort (platsen
-  lägger han i Placering när ordermodellen har den); en film där hon kommer in och en där hon går (görs i natt utanför
-  Beställ); senare en andra spelarfigur, "Astrid", som kommer in från sidan och satsar.
+  lägger han i Placering när ordermodellen har den); en film där hon kommer in och en där hon går ("en där hon reser sig och går ut och en när hon kommer in och sätter sig"; gjorda i natt utanför Beställ, handboken 3.9, preliminärt dömda); senare en andra spelarfigur, "Astrid", som kommer in från sidan och satsar.
 - **Labbet först** (2026-11-11, två gånger): prov och effekter hör hemma i labbets sidor. Spelet (`game.html`) är ett
   mellansteg mot Scout och får bara det han har godkänt i labbet.
 - **Naturligt utseende:** ljus ska komma ur rummet (rumsstudiens teknik: panoramat som ljuskälla, skuggor i världens
@@ -397,6 +338,8 @@ skript i `skript/`, liggare i `bestallningar-*.json`. Den sessionens filmer och 
 
 ## Kända brister
 
+- **De ritade korten** (Jakob 2026-11-13: "Det lixom kletar fast sig på korten"; brytaren Ritade kort slår av dem):
+  kortagentens fynd förs in här 2026-11-13 efter 09:05.
 - **Det bandet inte kan än** står samlat i `tools/dealer-line.md` ("Vad bandet inte kan än"): ett tredje eller fjärde
   kort, helfiguren, ankare 2.2, landningsbild, keystone och ankare 1 som steg i Beställ, och retur till vila från en
   plats.

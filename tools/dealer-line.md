@@ -95,14 +95,14 @@ retur eller bara dit; `GIV-2.1` också till hålkortet `D.C2`, som landar stäng
 `UTGANG` (`READY>IDLE`), `HALKORT` (`IDLE>REVEAL(D.C2)`) och `VILA` (`STEPS`, `SEAT_TARGETS`) (V).
 `node tools/produce.ts <dealer> --draft` gör utkast där metoden gäller, `--draft --trial <steg|plats>` ett provutkast;
 den godkänner aldrig (V). Utkastet blir `data/orders/<id>.json` med bilderna i `assets/orders/<id>/`. Texten skrivs av
-`promptFor` (`src/order-prompts.ts`), aldrig för hand. Mall 7 (`TEMPLATE_VERSION`, orden i `SAY`) (V):
+`promptFor` (`src/order-prompts.ts`), aldrig för hand. Mall 8 (`TEMPLATE_VERSION`, orden i `SAY`) (V):
 
-- hon rör sig lite medan hon delar ut (huvud och blick följer kortet, axlarna vrids med, andra handen flyttar sig lite:
-  `SAY.moveOwn`, `SAY.moveBoth`);
+- en giv slutar åter på "The other hand rests on the felt.": mall 7:s mening om att hon rör sig medan hon delar ut gav
+  rörelse men förstörde kortet i 15 av 18 tagningar (`c81c548`); hur hon rör sig är en öppen fråga (handboken §5);
 - efter ett handbyte går den arm som är ute tillbaka och handen som gav kortet går till skon (`SAY.backPass`);
 - en stängd giv från nypet läggs plant framför skon och skjuts till platsen (`SAY.layAndSlide`);
-- kortets sidor heter åter "its back is yellow and its face is blue" (`SAY.colours`); mall 6:s ord efter färg förlorade
-  båda paren i omgång 6 och gäller bara ordrar med version 6;
+- kortets sidor heter "its back is yellow and its face is blue" (`SAY.colours`); mall 6:s ord efter färg förlorade båda
+  paren i omgång 6 och gäller bara ordrar med version 6;
 - hålkortets vändning (`HALKORT`) har bara hålkortet ritat på sina bilder.
 
 En order lagrad med en äldre version återges med sina egna ord. Hur texten och bilderna väljs: handboken §2–3.
@@ -151,19 +151,21 @@ blir Primär eller rakt godkänd, ligger först i hans kö i Granska och tas bor
 och Jakobs ord, och en rad per metod (V). Den som har provat för in raden i handbokens tabeller (§5) och ändrar
 metoden i `data/order-methods.json` med belägg; ingen dagbok.
 
-**16. Spelet.** Studions Casino följer `?dealer=` och skickar valet vidare till spelsidan (`CasinoView`) (V). Skrivs
-2026-11-13 (inte incheckat): spelet erbjuder Paow i konsolens Dealer-meny och med `game.html?dealer=paow`
-(`DEALERS` i `src/game-page.ts`), och där en dealers film saknas spelas en ersättare som står namngiven i
-`STAND_IN_FILM` i `src/game-director.ts` (i dag hålkortet och ett tredje dealerkort med filmen till dealerns första kort;
-det ritade kortet läggs på sin egen plats och visar baksidan när kortet är stängt). Ersättaren ger vika av sig själv när
-banken har en spelbar film till kortet.
+**16. Spelet.** Skrivs 2026-11-13 (koden ligger i arbetsträdet): spelet erbjuder Paow i konsolens Dealer-meny och med
+`game.html?dealer=paow`, och studions Casino skickar sitt `?dealer=` vidare; varje dealer spelar bara sina egna dömda
+tagningar (Jakobs eller en preliminär dom). Efter en giv väljs en retur av samma hand som lade kortet
+(`motion.releaseHand`). Där en film saknas spelas en ersättare per dealer ur `STAND_IN_FILM` i `src/game-director.ts`,
+och den viker av sig själv när en dömd tagning finns; i dag läggs bara plats 6:s kort och ett tredje och fjärde dealerkort
+utan hand. Brytaren Ritade kort (nyckeln `cards`, förval på) slår av de ritade korten (Jakob: "Det lixom kletar fast sig
+på korten").
 
 **17. Tal.** En talfilm är en vilotagning där munnen ritas efter ljudet: `node tools/speech.ts` (`bank`, `say`, `reel`,
 `proof`) med planen i `src/speech-plan.ts` och rösterna och repliker i `data/speech.json`; rösten är ElevenLabs
 (`ELEVENLABS_API_KEY` i `.env.local`, betalt per tecken) och munnen ritas lokalt (V). `src/speech-lines.ts` säger vilken
 talfilm som säger en replik i rundan eller svarar i chatten (V). Talfilmer spelas på begäran, inte i vilans slump.
-Skrivs 2026-11-13: spelets nyckel `tal` (`repliker` eller `av`) i `src/scene3d-view.ts` och `src/game-page.ts`. Ägs av
-banan Tal (HANDOFF).
+I spelet säger dealern sina fasta repliker med talfilm och ljud, och chatten svarar med fasta svar; nyckeln `tal`
+(`repliker` eller `av`) slår av talfilmerna (skrivs 2026-11-13). Hela ämnet: [docs/TAL.md](../docs/TAL.md). Ägs av banan Tal
+(HANDOFF).
 
 ### Ordningen per dealer, och när hon är färdig
 
@@ -171,16 +173,21 @@ Ankare 1 → 2.1 → ingång 1 → 2.1 → vila → en giv till en ytterplats (P
 platser → returer → dealerns kort, hålkortet och dess vändning → utgången. Färdig för en runda är hon när
 produktionslistan säger att de 21 steg en runda kräver är klara; hela banken är 33 filmer (`summary.films` i
 `buildGraph`, `src/clip-graph.ts`): 6 utan kort (`IDLE>READY`, `READY>IDLE`, `IDLE>IDLE`, `IDLE>REVEAL(D.C2)`,
-`AWAY>IDLE`, `IDLE>AWAY`), 3 per plats P1–P7 och 3 var för `D.C1` och `D.C2` (V). Paow 2026-11-13 klockan 07:50: 18 av
-33 klara, 17 av de 21 som en runda kräver (`node tools/produce.ts paow`, V).
+`AWAY>IDLE`, `IDLE>AWAY`), 3 per plats P1–P7 och 3 var för `D.C1` och `D.C2` (V). Paow 2026-11-13 klockan 08:36: 23 av
+33 klara, varav 9 preliminärt dömda, och 19 av de 21 som en runda kräver; kvar är given till plats 6 och hålkortets
+retur till vila (`node tools/produce.ts paow`, V).
 
 ## Vad bandet inte kan än
 
 - **Ett tredje eller fjärde kort.** Planen har sexton platser, så ordermodellen vägrar `D.C3` och en plats tredje kort
   (`tools/order-store.ts`: platsen måste finnas i `placements/default.json`) (V). Jakob bad 2026-11-13 om ett tredje och
   fjärde dealerkort; platsen lägger han själv i Placering när modellen har den.
-- **Helfiguren** (hon kommer in och sätter sig, `AWAY>IDLE`; hon reser sig och går, `IDLE>AWAY`, egen ruta, DRIFT
-  "Lärdomar som gäller") har inget steg; produktionslistan säger "inte byggd" (V).
+- **Plats 6** är det enda giv-steg som saknas för en runda: elva tagningar har fallit med samma mönster (kort väg, kortet
+  vänds i ett sudd eller byter sida utan kantruta). Prövat och inte prövat: handboken §5. I spelet läggs kortet utan hand.
+- **Hur hon rör sig** utan att det kostar kortet är en öppen fråga (handboken §5).
+- **Helfiguren** (hon kommer in och sätter sig, `AWAY>IDLE`; hon reser sig och går, `IDLE>AWAY`) har inget steg i
+  Beställ; receptet finns i handboken 3.9, och Paows par är gjort så (`paow-table-arrive-wide-01`,
+  `paow-table-leave-wide-01`, 552 krediter) (V).
 - **Ankare 2.2** (släp): föll i tre ordrar (`paow-ankare-2-2`, `-01`, `-02`), bildmodellen flyttade skon varje gång (V);
   kvar är en ruta ur en film som börjar på ankare 2.1 (S, oprövat). Varje giv börjar på 2.1.
 - **Landningsbild, keystone och ankare 1** har inget steg i Beställ; de beställs med handskrivna ordrar eller väljs som
@@ -230,7 +237,7 @@ Där en källa bara är text eller ett skript utanför repot står det "inget i 
 | Bordskantsraden | 831,5; kroppen slutar på rad 825–831; inget 10 nivåer mörkare än grönt ovanför | `dealerEdgeImageRow` i scenkontraktet; `FRAME_FIX`; `edgeCheck`, `EDGE` i `src/film-after.ts`; inget i repot vägrar |
 | Kortets färger | Baksida gul, framsida blå, enfärgade; i texten "its back is yellow and its face is blue" | `card.colours` i standarden; `SAY.colours`; spårarens `is.yellow`, `is.blue` |
 | Kortets storlek | Planens kort (P4 86,6 × 71,8 px); i flykten inom ±10 %; landat inom ±10 % yta och 5 px | `placements/default.json`; ±10 % och 5 px är granskningens regel, inget i repot vägrar |
-| Mall | `film-giv-kort@7` = stil och version; i dag 7; Utförlig är mall 3 | `TEMPLATE_VERSION`, `LONG_VERSION`, `PromptInput.version` i `src/order-prompts.ts` |
+| Mall | `film-giv-kort@8` = stil och version; i dag 8; Utförlig är mall 3 | `TEMPLATE_VERSION`, `LONG_VERSION`, `PromptInput.version` i `src/order-prompts.ts` |
 | Order-id | `<dealer>-<steg>-<plats>-<nn>`, till exempel `paow-giv-2-1-p4-15`, `paow-halkort-02` | `nextId` i `tools/order-store.ts` |
 | Klipp-id | `<order-id>-<tagning nn>`; tur och retur ger `…-deal` och `…-return-ready` (eller `-idle`); rättad kopia `…-fix-<k>` | `clipIdOf` i `tools/register-order.ts` |
 | Kant och nod | `A>B`; `IDLE` ankare 1, `READY` 2.1, `READY-B` 2.2, `P1.C1` … `P7.C2`, `D.C1`, `D.C2`, `LAND(P4.C1)`, `REVEAL(D.C2)`, `AWAY` | `parseEdge` i `src/clip-graph.ts`; `ANCHOR_NODE`, `edgeOf` i `src/order-model.ts` |
