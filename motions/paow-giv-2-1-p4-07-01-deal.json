@@ -28,13 +28,13 @@
     }
   },
   "review": {
-    "decision": "PENDING",
-    "inbox": true,
+    "decision": "REJECTED",
     "basis": "Inte granskad av Jakob: förd in från beställningen paow-giv-2-1-p4-07, tagning 1 (tools/register-order.ts). Oberoende rutgranskning: tools/film-review.md.",
     "limitations": "I inkorgen: spelas bara där steget inte har någon annan film, tills Jakob dömer den.",
     "colorDoesNotProvePhysicalSide": true,
     "userAccepted": false,
-    "productionReady": false
+    "productionReady": false,
+    "userReview": "Jakob 2026-11-13: Det känns som något är konstigt här. Hon landar alltid, men gör två vridningsmoment. När hon vänder upp kortet är det återigen fel färg. Hon gör redan vridningen så att kortet som ska vara blått syns när hon börjar fösa det framför sig, men gör sedan ytterligare en vridning. Det blir fel färg eftersom hon har visat kortet tidigt och sedan vänder tillbaka. Det verkar som att det kan vara ett promptfel, kanske dubbla angivelser. Jag är verkligen nyfiken på om det kan vara så att det används en annan prompt än den som står här."
   },
   "order": {
     "id": "paow-giv-2-1-p4-07",

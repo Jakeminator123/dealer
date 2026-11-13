@@ -1,0 +1,156 @@
+{
+  "schemaVersion": 1,
+  "id": "paow-giv-2-1-p1-03",
+  "title": "Omgång 3b · öppen giv till P1 (WAN 3, kort text, som 2b)",
+  "summary": "Gör en film av Paow: från ankare 2.1 (nyp) tar hon ett kort ur skon med vänster hand; hon för fram det med baksidan upp, vänder upp det vid plats 1 och lägger det öppet; handen går tillbaka till nypet.",
+  "group": null,
+  "dealer": "paow",
+  "kind": "FILM",
+  "step": {
+    "key": "GIV-2.1",
+    "label": "Nyp, ett kort till platsen och tillbaka",
+    "edge": "READY>P1.C1",
+    "shape": "ROUND_TRIP",
+    "cutInto": [
+      "READY>P1.C1",
+      "P1.C1>READY"
+    ],
+    "makes": null
+  },
+  "motion": {
+    "grip": "PINCH",
+    "hand": "LH",
+    "pass": false,
+    "turn": true,
+    "flipAxis": "AT_PLACE",
+    "target": "P1.C1",
+    "side": "FRONT",
+    "fromPlan": true
+  },
+  "pictures": [
+    {
+      "name": "first.png",
+      "label": "Första bild · Paows ankare 2.1",
+      "goesAs": "startFrame",
+      "path": "assets/orders/paow-giv-2-1-p1-03/first.png",
+      "sha256": "74eebfdc1388f8de362c0151546bbe08aeb1fed74fca097f8ca6999d833dc702",
+      "width": 1764,
+      "height": 1174,
+      "from": {
+        "entry": "paow-nyp-ung-1",
+        "path": "assets/anchors/paow-nyp-ung-1/anchor.png",
+        "note": "Nyp, yngre, tagning 1 (gäller)"
+      },
+      "waits": null
+    },
+    {
+      "name": "last.png",
+      "label": "Sista bild · samma + kortet öppet på plats 1",
+      "goesAs": "endFrame",
+      "path": "assets/orders/paow-giv-2-1-p1-03/last.png",
+      "sha256": "4bad4039f27c815b872bb5f30d30d09eeae06f3d4cc22faf9b4b3349f1d4b08c",
+      "from": {
+        "built": "första bilden + kortet P1.C1 där planen säger"
+      },
+      "waits": null,
+      "width": 1764,
+      "height": 1174,
+      "drawn": {
+        "target": "P1.C1",
+        "side": "FRONT",
+        "as": "flatQuad från P4.C1 (planens plana bord, som labbet ritar)",
+        "plan": {
+          "path": "placements/default.json",
+          "sha256": "e0fb924d27dc1311ff9cd079a72eeaa81e218eae8dd48990068d1cf0a5fbd67f",
+          "updatedAt": "2026-11-11T14:46:38.185Z"
+        },
+        "texture": {
+          "video": "assets/motions/pamela-p4-c1-plan-return-idle-01/source.mp4",
+          "frame": 89,
+          "sha256": "0b3cba9be4a969334bf1ba23623b80be6d0bd119a3c4dd8236db27145d479aa7",
+          "quadFrom": "assets/anchors/pamela-idle-p4-c1-plan-01/receipt.json"
+        },
+        "quad": [
+          [
+            240.4,
+            959.1
+          ],
+          [
+            299.2,
+            959.1
+          ],
+          [
+            236.4,
+            1001.2
+          ],
+          [
+            171,
+            1001.2
+          ]
+        ],
+        "centre": [
+          236.7,
+          980.1
+        ],
+        "measured": {
+          "centre": [
+            236,
+            980.7
+          ],
+          "area": 2850,
+          "box": [
+            131,
+            44
+          ],
+          "changedElsewhere": 0
+        },
+        "measuredOffsetPx": 1
+      }
+    }
+  ],
+  "reference": {
+    "status": "INGEN",
+    "why": "WAN 3 tar ingen referensfilm tillsammans med första och sista bild."
+  },
+  "generation": {
+    "provider": "runway-app",
+    "tool": "generate_video",
+    "model": "wan3",
+    "params": {
+      "resolution": "1080p",
+      "duration": 7,
+      "ratio": "adaptive",
+      "generateAudio": false
+    }
+  },
+  "prompt": {
+    "template": "film-giv-kort@4",
+    "style": "KORT",
+    "text": "Locked camera, one continuous shot. Her hand at the shoe draws the yellow card out of the window and carries it low over the felt, yellow side up, to its place. There her thumb slides under the long edge nearest it and lifts it as her wrist turns thumb side up; the card rolls over on its opposite long edge, which stays on the felt, and her thumb comes over onto the blue face. Then her open hand glides back low over the felt, palm down, to the shoe and takes the next card. The other hand rests on the felt. Only one card moves; its back is yellow and its face is blue.",
+    "sha256": "6827a6a99339ad8994d3f9b2085636f533c7b55a56e374ed215b87e0b42b6f28",
+    "extra": null,
+    "middle": false
+  },
+  "takes": 1,
+  "cost": {
+    "perTake": 140,
+    "total": 140,
+    "worstPerTake": 140,
+    "worstTotal": 140,
+    "basis": "20 krediter per s × 7 s. DRIFT, Lärdomar: 20 per s i full storlek; planen: 4 s = 80."
+  },
+  "limits": {
+    "maxCredits": 140,
+    "stopBelowCredits": 2000
+  },
+  "notes": [],
+  "created": "2026-11-13T03:56:35.648Z",
+  "createdBy": "huvudagenten (dealer-94) på Jakobs ord 2026-11-13: omgång 3b, den giv han godkände till övriga platser",
+  "approval": {
+    "by": "huvudagent",
+    "at": "2026-11-13T03:56:35.962Z",
+    "orderSha256": "184f8defff363b467e61bd242b6aaa2ae9fa48ec3dede0d43dcd0d6937d53b58",
+    "mandate": "Jakob 2026-11-13: beställ lämpliga filmer automatiskt utan mitt godkännande; omgång 3b: den giv han godkände rakt av (p4-08, WAN 3, kort text, öppet) till övriga platser"
+  },
+  "status": "GODKÄND"
+}

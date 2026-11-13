@@ -190,17 +190,20 @@ This is an edit of the picture @anchor. Keep everything in @anchor exactly as it
 | Metod | Belägg (V) | Status |
 |---|---|---|
 | Text utan förbudslista och nästan utan utseende | b6 (127 ord), b17, b19, b20 (212–216 ord) höll; nattens 414 ord med 34 om utseendet och åtta förbud: 2/5 och 2,5/5 | håller (samband) |
-| Nyp-giv, Kling 4, referens till samma plats, 7 s | b6 P4, b17 P4, b19 D, b20 P1 2/2 | håller |
+| Nyp-giv, Kling 4, referens till samma plats, 7 s | b6 P4, b17 P4, b19 D, b20 P1 2/2; kort text `p4-11` med Pamelas giv: given 3/5 (lägst hand, lagt utan skjut, vänd i luften som referensen), returen 1/5 (sveper över andra handen) | håller för given, inte för returen |
 | Nyp-giv, referens till annan plats | b19 P1 med anmärkningar, P7 föll | faller |
-| Nyp-giv, WAN 3 från två bilder | b6: kortet 2× i luften, vänds på bordet, hack | faller (1 film) |
-| Nyp-giv, Kling 4 utan referens, mall `@3` | `paow-giv-p4`: Jakob t1 Underkänd, t2 Godkänd | oavgjort (2 tagningar) |
+| Nyp-giv öppet, WAN 3 från två bilder | b6: kortet 2× i luften; omgång 2 kort text `p4-08`: färgbyte utan kantruta 1,5/5; minimal text `p4-09`: mönstrat spelkort 1/5 | faller (3 filmer) |
+| Nyp-giv öppet, Kling 4 utan referens | mall `@3` `paow-giv-p4`: 2/5 och 2,5/5 (Jakob: t2 "ganska bra deal"); kort text `p4-07`: 2,5/5, enda vändningen vid platsen men kortet till bröstet och +13–35 %; minimal `p4-10`: snurr 1/5 | oavgjort (4 tagningar, ingen användbar) |
 | Rullas kring långsidan på vägen, Kling 4, mall `@3` | `paow-giv-2-1-p4-04` (1 tagning, mätt, ej granskad): vänds en gång (ruta 43–50), kortet +21 % i brösthöjd, knytnäve på returen | oavgjort (1 tagning) |
-| Vändning vid platsen (sex steg) | Ingen film visar den; metodproven `paow-giv-2-1-p4-01`–`03`, `05`, `06` ej lagda | oprövat |
+| Vändning vid platsen (sex steg) i given | Bara `p4-07` (Kling 4, kort text) vände vid platsen, 43–63 px före, men lyfte kortet och fällde det genom ett halvgenomskinligt kort | faller i given (1 av 7) |
 | Släp, WAN 3, stängt, 6 s | P1 cirka 7/9; P4 0/2; P7 0/2 | håller till P1 |
 | Ingång 1 → 2.1, WAN 3, 4 s | 3,5/5, Jakob Variant; kavaj 1/2 | håller med anmärkning |
 | Ingång, Kling 3.0 4K | 3/5, Jakob Godkänd ("bra men tråkig"), ingen skärpevinst | håller, ingen vinst |
 | Retur i tur och retur | `paow-giv-p4` 1/5 och 1,5/5 (knytnäve), Jakob godkände t1; `p4-04` knytnäve (mätt) | faller för granskaren, oavgjort för Jakob |
-| Retur som egen film från landningsbild | – | oprövat |
+| Stängd giv (ingen vändning), WAN 3, kort text | `p4-12`: given 3/5, kortet gult, lågt (78 px) och i storlek (−2 %, max +17 %), lagt utan skjut; fel: skons nästa kort blev blått och mönstrat f28–207 | bäst i omgång 2; omgång 3 med meningen "The next card waits plain yellow in the shoe's window" till alla platser |
+| Stängd giv, Kling 4, kort text | `p4-13`: blått f31–46 fast stängt, handen 176 px upp, kortet +30 % | faller |
+| Minimal text (bara färger och mål) | `p4-09` WAN 3 mönstrat kort, `p4-10` Kling 4 snurr | faller (2 filmer, cirka 75 % säkert) |
+| Retur som egen film från landningsbild | – | oprövat; landningsrutor ur omgång 3 |
 | Hela rundan i en tagning | 7 filmer, 0 användbara | faller |
 | Mellanbild i Kling 4 | b1b, b4: läses som start, slut eller följd | faller |
 | Kling 3.0 Motion Control, Pamelas film | b1a: 44/100, kortet genomskinligt, 73 px fel | faller (1 film) |
@@ -208,7 +211,8 @@ This is an edit of the picture @anchor. Keep everything in @anchor exactly as it
 | Ultrarapid som snabbas upp; uttaget baklänges | DRIFT | faller |
 | Ankare 2.1, Nano Banana Pro, posearm ur Pamelas ruta | 4/5 (Jakob godkänd) och 2/5 | håller (1 av 2) |
 | Ankare 2.2, pose med Pamelas öppna sko | 0/2 | faller |
-| Ankare 2.2, pose på egen sko | – | oprövat |
+| Ankare 2.2, pose på egen sko | `paow-ankare-2-2-01`: fingrarna på kortet, men skon ritad 89–129 px för långt åt vänster, 0/2 | faller; nästa ur ankare 2.1 |
+| Vila, kort text med tillägg | `vila-07` leende: tänder f52–96, 2,5/5; `vila-08` nick: munnen stängd men bugning med slutna ögon, 2/5; lång text: tänder i 3 av 4, "rätar på ryggen" 3/5 | munnen håller bara delvis; nästa text utan tider: "her lips stay together as the corners of her mouth lift a little" |
 | Ansiktsuttryck genom redigerad stillbild i grundrutan | DRIFT | håller |
 | Referensfilm av Jakobs hand | – | oprövat |
 | Renderat kort i vändningens rutor | – | oprövat |

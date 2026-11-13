@@ -28,13 +28,13 @@
     }
   },
   "review": {
-    "decision": "PENDING",
-    "inbox": true,
+    "decision": "REJECTED",
     "basis": "Inte granskad av Jakob: förd in från beställningen paow-giv-2-1-p4-09, tagning 1 (tools/register-order.ts). Oberoende rutgranskning: tools/film-review.md.",
     "limitations": "I inkorgen: spelas bara där steget inte har någon annan film, tills Jakob dömer den.",
     "colorDoesNotProvePhysicalSide": true,
     "userAccepted": false,
-    "productionReady": false
+    "productionReady": false,
+    "userReview": "Jakob 2026-11-13: Jag underkänner det eftersom det inte är ett riktigt blått kort som hon visar, utan ett blått spelkort. Om du kan göra om spelkortet så att det blir helt blått kan vi absolut använda det, men metoden bör ändå betraktas som felaktig.I största allmänhet, se till att hon kan röra på sin högra arm, vrida huvudet eller göra något. Hon är väldigt stel."
   },
   "order": {
     "id": "paow-giv-2-1-p4-09",

@@ -32,13 +32,14 @@
     }
   },
   "review": {
-    "decision": "PENDING",
-    "inbox": true,
+    "decision": "ACCEPTED",
     "basis": "Inte granskad av Jakob: förd in från beställningen paow-giv-2-1-p4-07, tagning 1 (tools/register-order.ts). Oberoende rutgranskning: tools/film-review.md.",
     "limitations": "I inkorgen: spelas bara där steget inte har någon annan film, tills Jakob dömer den.",
     "colorDoesNotProvePhysicalSide": true,
-    "userAccepted": false,
-    "productionReady": false
+    "userAccepted": true,
+    "productionReady": false,
+    "acceptedAs": "VARIANT",
+    "userReview": "Jakob 2026-11-13: Den här är lite annorlunda än de andra. Hon drar handen bakåt på ett annat sätt, vilket fungerar utmärkt som godkänd. Jag vet inte varför jag väljer `click`-varianten nu, men jag ser det nästan som samma sak när det gäller den här dealerklippen som ger ut ett kort. Jag sätter nu en variant eftersom den skiljer sig lite, så då är den varierad."
   },
   "order": {
     "id": "paow-giv-2-1-p4-07",
