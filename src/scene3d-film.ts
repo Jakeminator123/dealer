@@ -39,6 +39,7 @@ export const FRAME_FIX = {x: 881.5, y: 831.5};
 const CARD_KEY = `const vec2 FRAME_FIX = vec2(${FRAME_FIX.x}, ${FRAME_FIX.y});
 uniform float cardOn, cardRim, cardSides, cardTint, cardTrust, cardOverOn, cardHeld, seatOn; uniform vec2 cardZone[4], cardCore[4], cardOver[4], cardDrawn[4], seatZone[4], seatCore[4]; uniform vec3 cardColour; uniform vec4 cardShoe;
 ${CARD_GLSL}
+const float CARD_SHADOW = .4;
 const vec3 BACK_LIT = vec3(.91, .82, .02), FACE_LIT = vec3(0., .475, .89); // the film card's yellow back and blue face, lit
 // Skin, the hand that must stay in front, from a pale fingertip to a knuckle in warm shadow: warm (red over blue, red at least
 // green), blue at least about half of green (skin 0.6 to 0.95; the yellow card has almost none), green not far under red (a red
@@ -86,6 +87,9 @@ vec4 keyCard(vec4 o, vec2 px, vec3 c, vec3 key, vec2 zoneQ[4], vec2 coreQ[4], ve
   float lit = (bb * kx - kb * bx + kk * bx - kb * kx) / max(kk * bb - kb * kb, 1e-6), dark = (1. - clamp((lit - lo) / (hi - lo), 0., 1.)) * shadow;
   // on the card a shadow is a finger's, so it lies next to (bright) skin; dark without skin near is a mark on the film's card
   dark *= mix(1., near, inside);
+  // ... and there it is kept at CARD_SHADOW of its strength: at full strength the shadow under a fingertip was a grey ring round it
+  // on the drawn card (seen 2026-11-13: with no shadow kept the ring is gone and the finger looks laid on; this much keeps contact)
+  dark *= mix(1., CARD_SHADOW, inside);
   vec4 keyed = mix(mix(o, f, zone * onCard), vec4(0., 0., 0., dark), bg * zone);
   // While the card is held, its pale edge beyond the drawn card (its white edge, thick when seen steeply) is the card's own: it
   // stays as the film draws it, without the film card's tint, instead of opening onto the felt.
