@@ -18,7 +18,13 @@
     "from": "IDLE",
     "to": "IDLE",
     "pass": false,
-    "basis": "SOURCE_FRAME_REVIEW"
+    "basis": "SOURCE_FRAME_REVIEW",
+    "idle": {
+      "weight": 8,
+      "calm": true,
+      "label": "lugn vila",
+      "onRequest": false
+    }
   },
   "review": {
     "decision": "ACCEPTED",

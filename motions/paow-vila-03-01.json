@@ -18,7 +18,14 @@
     "from": "IDLE",
     "to": "IDLE",
     "pass": false,
-    "basis": "SOURCE_FRAME_REVIEW"
+    "basis": "SOURCE_FRAME_REVIEW",
+    "idle": {
+      "weight": 14,
+      "calm": true,
+      "cut": false,
+      "label": "ler",
+      "onRequest": false
+    }
   },
   "review": {
     "decision": "ACCEPTED",

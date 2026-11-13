@@ -11,9 +11,11 @@ export type BankJob = {id: string; kind: string; target: string | null; from: st
 export type MotionRecord = {
   source?: {path?: string; sha256?: string; bytes?: number; fps?: number; frames?: number; width?: number; height?: number};
   // idle: how a take of IDLE>IDLE takes part in the idle. weight: its share among the takes that may be picked. calm: breathing and
-  // the like, as opposed to a gesture. onRequest: never picked by chance. label: what it shows, in a word or two.
+  // the like, as opposed to a gesture. onRequest: never picked by chance. label: what it shows, in a word or two. cut: whether a
+  // deal may cut into it at any frame (a calm take says yes unless it says cut: false: a rest where she turns her head counts as
+  // calm in the rotation, but is played out before the deal takes over).
   // takeHand / releaseHand: the hand that takes the card at the shoe and the hand that lays it (LH, RH); on a return, the hand that comes back.
-  motion?: {physicalEndSide?: string; landingFrame?: number; startsOn?: {clip?: string; frame?: number; seamPixelsOverThreshold?: number}; idle?: {weight?: number; calm?: boolean; onRequest?: boolean; label?: string}; takeHand?: string; releaseHand?: string};
+  motion?: {physicalEndSide?: string; landingFrame?: number; startsOn?: {clip?: string; frame?: number; seamPixelsOverThreshold?: number}; idle?: {weight?: number; calm?: boolean; onRequest?: boolean; label?: string; cut?: boolean}; takeHand?: string; releaseHand?: string};
   // inbox: a take that came in from an order (tools/register-order.ts) and that Jakob has not decided on yet. It plays only where its
   // step has nothing else to play; tools/review-store.ts takes the flag away with his decision, or with a provisional one.
   // provisional: a verdict the main agent and a reviewer gave in his place (tools/review-put.ts); it plays as its decision says,
@@ -182,14 +184,14 @@ export type Take = {
 export type Hand = 'LH' | 'RH';
 const handWord = (value: unknown): Hand | null => value === 'LH' || value === 'RH' ? value : null;
 // The idle is many short clips that all begin and end on the same frame. Breathing dominates, gestures are rare.
-export type Idle = {weight: number; calm: boolean; onRequest: boolean; label: string};
+export type Idle = {weight: number; calm: boolean; onRequest: boolean; label: string; cut: boolean};
 export const IDLE_WEIGHT = {calm: 20, gesture: 3};
 const IDLE_WORDS: [RegExp, string][] = [[/deep-breath/, 'djupt andetag'], [/breath/, 'andning'], [/hand-resettle/, 'handen läggs om'], [/glance/, 'blick åt sidan'], [/smile/, 'leende'], [/stretch/, 'sträcker på sig'], [/scratch/, 'kliar sig'], [/coffee/, 'kaffe'], [/loop/, 'lugn vila']];
 // Without a word in the record, only the plain loop counts as calm; every other idle take is a gesture until its record says otherwise.
 function idleOf(id: string, motion: MotionRecord | null): Idle {
   const said = motion?.motion?.idle, calm = typeof said?.calm === 'boolean' ? said.calm : /-idle-loop-/.test(id), weight = Number(said?.weight);
   return {calm, weight: Number.isFinite(weight) && weight >= 0 ? weight : calm ? IDLE_WEIGHT.calm : IDLE_WEIGHT.gesture, onRequest: said?.onRequest === true,
-    label: typeof said?.label === 'string' && said.label.trim() ? said.label.trim() : IDLE_WORDS.find(([word]) => word.test(id))?.[1] ?? ''};
+    label: typeof said?.label === 'string' && said.label.trim() ? said.label.trim() : IDLE_WORDS.find(([word]) => word.test(id))?.[1] ?? '', cut: typeof said?.cut === 'boolean' ? said.cut : calm};
 }
 // experiment: a job whose from/to is outside the model. It keeps its takes and detail view but is never one of the 54.
 // rendering: takes of this edge that are ordered and not back yet, whether or not the edge already has a main take.
@@ -414,7 +416,9 @@ export function experimentChains(graph: Graph): Chain[] {
 // ── Idle ────────────────────────────────────────────────────────────────────
 // The rules, borrowed as they are: a weighted pick among the takes; never the same clip twice in a row; at least three calm
 // clips between two gestures; rejected takes and takes marked on request are never picked by chance. Unreviewed takes may be picked.
-export const IDLE_RULE = {calmBetweenGestures: 3, exitRate: 2.5, skipStart: 3, skipEnd: 3};
+// exitRate was borrowed as 2,5; a film review 2026-11-13 found her head jumping when a rest was played out that fast before a deal
+// (a rest looks fast-forwarded above about 1,25), so it is 1,5: she finishes what she is doing a little quicker, and then deals.
+export const IDLE_RULE = {calmBetweenGestures: 3, exitRate: 1.5, skipStart: 3, skipEnd: 3};
 export type IdlePick = {take: Take; why: string};
 export function pickIdle(takes: Take[], played: string[], random: number): IdlePick | null {
   // Takes in the inbox only when there is nothing else.
@@ -435,8 +439,9 @@ export function pickIdle(takes: Take[], played: string[], random: number): IdleP
 }
 // The frames of an idle clip that are played: a generated clip is brighter in its first frames and jumps in its last two.
 export const idleRange = (frames: number): {start: number; end: number} => ({start: Math.min(IDLE_RULE.skipStart, Math.max(0, frames - 1)), end: Math.max(Math.min(IDLE_RULE.skipStart, Math.max(0, frames - 1)) + 1, frames - IDLE_RULE.skipEnd)});
-// Leaving the idle to deal: a calm clip is cut at once; a gesture is played out faster, so that it lands, and then the entry starts.
-export const idleExit = (take: Take): 'CUT' | 'FINISH_FAST' => take.idle?.calm === false ? 'FINISH_FAST' : 'CUT';
+// Leaving the idle to deal: a clip that may be cut is cut at once; a gesture, or a calm take that says cut: false, is played out
+// faster, so that it lands, and then the entry starts.
+export const idleExit = (take: Take): 'CUT' | 'FINISH_FAST' => take.idle && !take.idle.cut ? 'FINISH_FAST' : 'CUT';
 
 // ── Round ───────────────────────────────────────────────────────────────────
 export type RoundOptions = {seats: string[]; dealer?: boolean; cards?: number; reveal?: boolean; thirdDealerCard?: boolean};

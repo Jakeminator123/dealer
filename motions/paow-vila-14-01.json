@@ -18,16 +18,28 @@
     "from": "IDLE",
     "to": "IDLE",
     "pass": false,
-    "basis": "SOURCE_FRAME_REVIEW"
+    "basis": "SOURCE_FRAME_REVIEW",
+    "idle": {
+      "weight": 1.5,
+      "calm": false,
+      "label": "vinkar och ler",
+      "onRequest": false
+    }
   },
   "review": {
-    "decision": "PENDING",
-    "inbox": true,
+    "decision": "ACCEPTED",
     "basis": "Inte granskad av Jakob: förd in från beställningen paow-vila-14, tagning 1 (tools/register-order.ts). Oberoende rutgranskning: tools/film-review.md.",
     "limitations": "I inkorgen: spelas bara där steget inte har någon annan film, tills Jakob dömer den.",
     "colorDoesNotProvePhysicalSide": true,
     "userAccepted": false,
-    "productionReady": false
+    "productionReady": false,
+    "acceptedAs": "VARIANT",
+    "provisional": {
+      "by": "huvudagenten med en oberoende granskare (omgång 12)",
+      "at": "2026-11-13T13:43:24.441Z",
+      "mandate": "Jakob 2026-11-13 cirka 13:30 om de nya vilorna, kaffet, vinkningen och fingrarna: \"Du får 5k i budget och godkänner själv efter granskning\"",
+      "note": "Granskaren 3/5, vinkningen: hon vinkar fem gånger (beställt två) och till tittaren, inte till någon snett bakom kameran; blinkar inte på 5,9 s; handen tillbaka på 1 px [M]."
+    }
   },
   "order": {
     "id": "paow-vila-14",

@@ -784,11 +784,11 @@ function idleBank(): BankData {
 
 test('an idle take carries its weight, calm flag, on-request flag and a word for what it shows, with defaults when the record is silent', () => {
   const g = graph.buildGraph(idleBank()), idle = (id: string) => g.takes[`pamela-idle-${id}-01`].idle;
-  assert.deepEqual(idle('loop'), {calm: true, weight: 20, onRequest: false, label: 'lugn vila'});        // only the plain loop is calm by default
-  assert.deepEqual(idle('breath-b'), {calm: true, weight: 10, onRequest: false, label: 'andning'});      // the record's own words
-  assert.deepEqual(idle('smile'), {calm: false, weight: 3, onRequest: false, label: 'leende'});          // a gesture until its record says otherwise
-  assert.deepEqual(idle('coffee'), {calm: false, weight: 3, onRequest: true, label: 'kaffe'});
-  assert.deepEqual(idle('glance'), {calm: false, weight: 3, onRequest: false, label: 'blick åt sidan'}); assert.equal(g.takes['pamela-idle-glance-01'].stage, 'DONE', 'a film without a record is still a film');
+  assert.deepEqual(idle('loop'), {calm: true, weight: 20, onRequest: false, label: 'lugn vila', cut: true});        // only the plain loop is calm by default, and may be cut
+  assert.deepEqual(idle('breath-b'), {calm: true, weight: 10, onRequest: false, label: 'andning', cut: true});      // the record's own words
+  assert.deepEqual(idle('smile'), {calm: false, weight: 3, onRequest: false, label: 'leende', cut: false});          // a gesture until its record says otherwise, played out
+  assert.deepEqual(idle('coffee'), {calm: false, weight: 3, onRequest: true, label: 'kaffe', cut: false});
+  assert.deepEqual(idle('glance'), {calm: false, weight: 3, onRequest: false, label: 'blick åt sidan', cut: false}); assert.equal(g.takes['pamela-idle-glance-01'].stage, 'DONE', 'a film without a record is still a film');
   assert.equal(graph.buildGraph(seatBank()).takes['p4-deal-01'].idle, null);
   // The round's idle step is the calmest film, not the newest: calm before gesture, the highest weight, the older take on a tie.
   assert.equal(g.edge['IDLE>IDLE'].main?.id, 'pamela-idle-loop-01');
@@ -829,7 +829,10 @@ test('the idle picker: weighted, never the same clip twice in a row, three calm 
   const only = takes.filter(t => [smile, glance].includes(t.id)); assert.equal(graph.pickIdle(only, [smile], 0.1)!.take.id, glance);
   // What is played of a clip, and how the idle is left to deal.
   assert.deepEqual(graph.idleRange(120), {start: 3, end: 117}); assert.deepEqual(graph.idleRange(4), {start: 3, end: 4});
-  assert.equal(graph.idleExit(g.takes[loop]), 'CUT'); assert.equal(graph.idleExit(g.takes[smile]), 'FINISH_FAST'); assert.equal(graph.IDLE_RULE.exitRate, 2.5);
+  assert.equal(graph.idleExit(g.takes[loop]), 'CUT'); assert.equal(graph.idleExit(g.takes[smile]), 'FINISH_FAST'); assert.equal(graph.IDLE_RULE.exitRate, 1.5);
+  // A calm take that says cut: false (a rest where she turns her head) stays calm in the rotation but is played out before a deal.
+  assert.equal(g.takes[loop].idle!.cut, true); assert.equal(g.takes[smile].idle!.cut, false);
+  assert.equal(graph.idleExit({...g.takes[loop], idle: {...g.takes[loop].idle!, cut: false}}), 'FINISH_FAST');
 });
 
 // ── Dealers ─────────────────────────────────────────────────────────────────

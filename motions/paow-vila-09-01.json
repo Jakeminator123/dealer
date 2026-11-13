@@ -18,16 +18,29 @@
     "from": "IDLE",
     "to": "IDLE",
     "pass": false,
-    "basis": "SOURCE_FRAME_REVIEW"
+    "basis": "SOURCE_FRAME_REVIEW",
+    "idle": {
+      "weight": 20,
+      "calm": true,
+      "cut": false,
+      "label": "blicken runt bordet",
+      "onRequest": false
+    }
   },
   "review": {
-    "decision": "PENDING",
-    "inbox": true,
+    "decision": "ACCEPTED",
     "basis": "Inte granskad av Jakob: förd in från beställningen paow-vila-09, tagning 1 (tools/register-order.ts). Oberoende rutgranskning: tools/film-review.md.",
     "limitations": "I inkorgen: spelas bara där steget inte har någon annan film, tills Jakob dömer den.",
     "colorDoesNotProvePhysicalSide": true,
     "userAccepted": false,
-    "productionReady": false
+    "productionReady": false,
+    "provisional": {
+      "by": "huvudagenten med en oberoende granskare (omgång 12)",
+      "at": "2026-11-13T13:43:23.394Z",
+      "mandate": "Jakob 2026-11-13 cirka 13:30 om de nya vilorna, kaffet, vinkningen och fingrarna: \"Du får 5k i budget och godkänner själv efter granskning\"",
+      "note": "Granskaren 4/5, användbar som huvudtagning: blick och huvud går till spelarna åt båda håll och tillbaka, munnen stängd, händerna stilla, skarvarna under 1 px från ankaret [M]. Blinkar tre gånger; beställt var en. Föreslagen som den vila som bär vilan."
+    },
+    "acceptedAs": "VARIANT"
   },
   "order": {
     "id": "paow-vila-09",
