@@ -40,8 +40,12 @@ import type { FlipAxis, StepKey, TextStyle } from './order-model.ts';
  * states by colour, which may invite a change of colour, where "its back is yellow and its face is blue" says one
  * two-sided object. Jakob's worry about "back" stays open. A closed deal from the pinch is laid on the felt in front of
  * the shoe and slid to its place (SAY.layAndSlide): round 6's closed takes were carried tilted and changed size.
+ * 8 (2026-11-13): the movement sentences of 7 are taken out again, and a deal by the hand at the shoe ends on "The other
+ * hand rests on the felt." as in 4 to 6: in eighteen takes on 7 she moved, but the card went wrong in fifteen, and in
+ * three her other hand dealt the card ("her other hand shifts a little"); on the old sentence Jakob approved three of
+ * five. Everything else of 7 stays.
  */
-export const TEMPLATE_VERSION = 7;
+export const TEMPLATE_VERSION = 8;
 /** The version of the long text (template 3, 2026-11-13); Utförlig writes it unchanged. */
 export const LONG_VERSION = 3;
 export type Dealer = { name: string; look: string };
@@ -132,8 +136,8 @@ export const SAY = {
   backPass: (drag: boolean) => `Then the hand that laid it glides back low over the felt, palm down, to where it lay in the first frame, and the hand that gave it goes back to the shoe and ${drag ? 'rests over the next card in the window' : 'takes the next card'}.`,
   endAtCard: 'Her hand ends at the card, as in the last frame.',
   otherRests: 'The other hand rests on the felt.',
-  // A deal moves her a little (from template 7; Jakob: "Hon är väldigt stel", "rör sin kropp och huvud och SIN högerarm
-  // aningen mer"): with the other hand resting, or with both hands at work.
+  // A deal moved her a little in template 7 alone (Jakob: "Hon är väldigt stel", "rör sin kropp och huvud och SIN högerarm
+  // aningen mer"): kept word for word for its stored orders; the card went wrong in 15 of 18 takes.
   moveOwn: 'As she deals, her head and eyes follow the card, her shoulders turn a little with the reach, and her other hand shifts a little where it lies on the felt.',
   moveBoth: 'As she deals, her head and eyes follow the card and her shoulders turn a little with the reach.',
   // Minimal.
@@ -308,8 +312,10 @@ const DEFAULT_MOTION: DealMotion = { grip: 'PINCH', hand: 'LH', pass: false, tur
 /** Template 6 alone said the card's sides by colour and by which one is up (SAY.v6); before and after, back and face. */
 const byColour = (input: PromptInput) => (input.version ?? TEMPLATE_VERSION) === 6;
 const turnAtPlace = (input: PromptInput) => (byColour(input) ? SAY.v6.turnAtPlace : SAY.turnAtPlace);
-/** From template 7 a deal moves her a little and the way back after two hands follows the arm that is out. */
+/** From template 7 the way back after two hands follows the arm that is out (and a closed card from the pinch is slid). */
 const twoHands = (input: PromptInput) => (input.version ?? TEMPLATE_VERSION) >= 7;
+/** Template 7 alone moved her as she deals (SAY.moveOwn, SAY.moveBoth): in 15 of 18 takes the card went wrong. */
+const moves = (input: PromptInput) => (input.version ?? TEMPLATE_VERSION) === 7;
 
 /**
  * A deal, sentence by sentence in the order the hand works: the scene; the take (nyp, dra); the carry (för fram), with
@@ -428,8 +434,8 @@ function shortDeal(input: PromptInput): Prompt {
   // The arm out at the card comes back: the hand at the shoe itself, or the hand that laid it (after a handover the
   // hand that gave it goes back to the shoe, from template 7).
   const back = input.oneWay ? SAY.endAtCard : own ? (drag ? SAY.backDrag : SAY.backPinch) : pass && seven ? SAY.backPass(drag) : SAY.backOther(drag);
-  // Her body as she deals: from template 7 she moves a little; before, the other hand only rested (own hand alone).
-  const body = seven ? (own ? SAY.moveOwn : SAY.moveBoth) : own ? SAY.otherRests : '';
+  // Her body as she deals: in template 7 alone she moves a little; before and after, the other hand rests (own hand alone).
+  const body = moves(input) ? (own ? SAY.moveOwn : SAY.moveBoth) : own ? SAY.otherRests : '';
   // The card: one two-sided object; in template 6 alone, which colour is up at the end, following the side it lands with.
   const colours = byColour(input);
   const card = colours ? SAY.v6.oneCardIs(open ? SAY.v6.sides.open : SAY.v6.sides.closed) : SAY.oneCardMoves;
@@ -596,7 +602,7 @@ function restText(input: PromptInput, style: TextStyle = 'UTFÖRLIG'): Prompt {
 export function promptFor(input: PromptInput): Prompt {
   const p = written(input);
   // An older version's text is today's but for what the version changed (the place words of 5, the card's sides by colour
-  // of 6, her body and the way back after two hands of 7); its name keeps its number.
+  // of 6, the way back after two hands of 7, her body in 7 alone); its name keeps its number.
   const today = '@' + TEMPLATE_VERSION;
   return input.version && input.version !== TEMPLATE_VERSION && p.template.endsWith(today) ? { ...p, template: p.template.slice(0, -today.length) + '@' + input.version } : p;
 }
