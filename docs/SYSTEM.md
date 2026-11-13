@@ -1,21 +1,40 @@
 # System och koordinater
 
-Kontrakt: koordinater, register, scen, spel och klippbank. Engelska systemord, svensk förklaring. Två uppspelningar finns. Klippbankens rundor (`resolveRound` i `src/clip-graph.ts`) spelas i studion, i 3D-scenen och i spelet. V6:s bildrutetidslinje (`assets/timeline.json`, `tools/render.ts`) återskapar V6 byteidentiskt och används inte för andra filmer. Beslutet 2026-11-10 (med TILLBAKA-2) att V6:s tidslinje är enda uppspelningsgrund gäller inte längre i praktiken; vilken väg som ska gälla är ett öppet val hos Jakob (HANDOFF). Sekvenssträngar och nodvy är presentation av samma metadata, aldrig en andra motor. Nodvyn visar planerad avsikt; den fastställer inte en källfilms händelser.
+Kontrakt: koordinater, register, scen, spel och klippbank. Engelska systemord, svensk förklaring. Två uppspelningar
+finns. Klippbankens rundor (`resolveRound` i `src/clip-graph.ts`) spelas i studion, i 3D-scenen och i spelet. V6:s
+bildrutetidslinje (`assets/timeline.json`, `tools/render.ts`) återskapar V6 byteidentiskt och används inte för andra
+filmer. Beslutet 2026-11-10 (med TILLBAKA-2) att V6:s tidslinje är enda uppspelningsgrund gäller inte längre i
+praktiken; vilken väg som ska gälla är ett öppet val hos Jakob (HANDOFF). Sekvenssträngar och nodvy är presentation av
+samma metadata, aldrig en andra motor. Nodvyn visar planerad avsikt; den fastställer inte en källfilms händelser.
 
 ## V6: tre ytor, två format
 
-V6 komponerar tre ytor: bakgrund (rummet, `assets/scene/room.png`), bord (matta, bordskant och mottagaryta, `assets/scene/table.png`) och dealer (frilagd person och rörelse, `assets/frames/` och `assets/tracking/`). Kort, marker, masker och kontaktskuggor komponerar dessa tre ytor; de är inga ytterligare valbara scenytor. Hand-/kortocklusion måste bevaras. V6 ger slutkomponerade bildrutor, inte tre fristående videolager. 3D-scenen nedan har egna lager.
+V6 komponerar tre ytor: bakgrund (rummet, `assets/scene/room.png`), bord (matta, bordskant och mottagaryta,
+`assets/scene/table.png`) och dealer (frilagd person och rörelse, `assets/frames/` och `assets/tracking/`). Kort,
+marker, masker och kontaktskuggor komponerar dessa tre ytor; de är inga ytterligare valbara scenytor.
+Hand-/kortocklusion måste bevaras. V6 ger slutkomponerade bildrutor, inte tre fristående videolager. 3D-scenen nedan har
+egna lager.
 
 | Format | Storlek | Regel |
 | --- | --- | --- |
 | Native / desktop | 1762×1174, exakt 881:587 | Bevara godkänd vinkel och yta. Ingen automatisk omformning till 16:9 eller exakt 3:2. |
 | Porträtt / mobil | 1080×1920, 9:16 | Egen bord-/bakgrundskomposition och dealertransform. |
 
-Verifierad kod i `src/pamela-card-contact-v6.ts`: native dealerkomposition skalas till 1586×1057, beskärs vid `(left=250,top=0,width=1080,height=1057)` och placeras på porträttytan vid `(0,80)`. Mattans native-utsnitt `(278,838,1200,336)` blir 1080×1086 vid `(0,834)`; kanten `(278,817,1200,21)` blir 1080×19 vid `(0,815)`. En global bildtransform kan därför inte beskriva alla tre ytorna. Återinför inte äldre bordskanter/magklippning utan separat granskning.
+Verifierad kod i `src/pamela-card-contact-v6.ts`: native dealerkomposition skalas till 1586×1057, beskärs vid
+`(left=250,top=0,width=1080,height=1057)` och placeras på porträttytan vid `(0,80)`. Mattans native-utsnitt
+`(278,838,1200,336)` blir 1080×1086 vid `(0,834)`; kanten `(278,817,1200,21)` blir 1080×19 vid `(0,815)`. En global
+bildtransform kan därför inte beskriva alla tre ytorna. Återinför inte äldre bordskanter/magklippning utan separat
+granskning.
 
 ## 3D-scenen (`scene3d.html`)
 
-Pamelas film visas i ett tredimensionellt rum med ett tredimensionellt bord. Fristående TypeScript-moduler som webbläsaren läser direkt, typavskalade av `tools/preview.ts`, med three.js 0.180.0 via importmappen. Ingen React, ingen React Three Fiber, ingen bundler, inget byggsteg. Byggd av bakgrundsagenten (avslutad 2026-11-11); ägaren står i HANDOFF. `scene3d.html` är utvecklarens sida med alla reglage; `game.html` bygger samma scen utan panel. Första tabellen är lagren bakifrån och fram. Den andra är funktionerna: nycklar i `SceneState` (`scene.set({...})`, och adressparametrar på `scene3d.html`, t.ex. `?room=skog&dust=0.7&ui=0`), med förval inom parentes; allt utöver kontrollpunkt v1 är avstängt från start. D = bör nå demospelaren som val eller fast förval i spelet, U = utvecklarens reglage.
+Pamelas film visas i ett tredimensionellt rum med ett tredimensionellt bord. Fristående TypeScript-moduler som
+webbläsaren läser direkt, typavskalade av `tools/preview.ts`, med three.js 0.180.0 via importmappen. Ingen React, ingen
+React Three Fiber, ingen bundler, inget byggsteg. Byggd av bakgrundsagenten (avslutad 2026-11-11); ägaren står i
+HANDOFF. `scene3d.html` är utvecklarens sida med alla reglage; `game.html` bygger samma scen utan panel. Första tabellen
+är lagren bakifrån och fram. Den andra är funktionerna: nycklar i `SceneState` (`scene.set({...})`, och adressparametrar
+på `scene3d.html`, t.ex. `?room=skog&dust=0.7&ui=0`), med förval inom parentes; allt utöver kontrollpunkt v1 är avstängt
+från start. D = bör nå demospelaren som val eller fast förval i spelet, U = utvecklarens reglage.
 
 | Lager | Vad | Fil |
 | --- | --- | --- |
@@ -34,44 +53,219 @@ Pamelas film visas i ett tredimensionellt rum med ett tredimensionellt bord. Fri
 | Bord och kort: filtfärg, logga, markerbräde, mugghållare, renderade kort | `felt` (green, blue, vin, svart), `logo`, `tray` (av), `base` (column; legs), `surface` (painted; photo; natur, natur-2, natur-3 = photo med Runway-läder på relingen och lyster i filten, hud och finish per rad i `NATURES`, prov 2026-11-13), `roomLight` (1), `dealerRoom` (0; 0–1: dealerfilmen tar 360°-rummets färg och nivå, ljusare mot rummets ljusa sida; byggda rum ändrar inget; prov 2026-11-13), `roomLife` (av; filmer med folk i rörelse som lappar på 360°-rummets sfär, finns i Venedig, görs först när valet slås på; prov 2026-11-13), `cups` (av), `marks` (all; none eller en lista av trim, arc, text, logo, boxes, rings, numbers: filtens markeringar som val), `cloth` (print; v6 = V6-dukens färg och korn; runway, runway-2, runway-3 = filtens färg och ludd ur Runway-bilder av hemvyn, en rad per version i `RUNWAY_CLOTHS`, kartorna av `tools/scene-material.ts`, prov), `lamp` 0–1 (0; ljus som faller av över filten från en lampa över dealern), `chipGloss` 0–1 (0,5), `shadowAbove` 0–1 (1; 0 ritar ingen filmskugga ovanför bordskanten, där grundbildens armbågsskugga annars hänger i luften); `cards` (av), `cardRank`, `cardSuit`, `cardScale` (1,2), `cardHand` (film; standard: kortet har vilans storlek hela vägen, mätt som vårt vilokort mot filmens), per filmdel `Part.cards` | Bordsprofilen U (ett bord per demo); spelet slår på korten |
 | Kalibrering: rummets oskärpa och ljus, dealerns ljus mot rummet, filmkamera, skala, nyckel, hjälplinjer | `blur` (11), `depthBlur`, `dofRange`, `exposure`, `panoramaTurn`; `filmBright` (1), `filmWarm` (0), `wrap` (0); `lens` (plan, estimate), `scale` (0 = kontraktets k), `keyLo`, `keyHi`, `shadow`, `fold`, `guides` | U, per miljö |
 
-Gränssnitt för spelsidan (`createScene(canvas, host, data)` i `src/scene3d-view.ts`; mått i dealermeter: x tvärs bordet, s från dealerkanten mot spelarna, y upp från filten): `scene.spots()` ger kortplatser och insatsringar som filmkameran lägger dem (läs dem i rekvisitans `build`, de flyttar sig med lins och skala); `project(x, s, y)` ger skärmpunkt och punkter per meter, `pick(clientX, clientY)` punkten på filten, `onFrame(fn)` ett anrop per ritad ruta, `addProp({group, build(edgeZ, scale)})` och `lit(material)` rekvisita, `canvas` elementet. Filmkön: `players.play(delar, {loop, cut, onPart, onEnd, onError})`, `hurry(fart)`, `preload(sökvägar)`; en del är `{path, start, end, rate, track, cards}`. En ny kedja börjar när delen på skärmen är klar (klipp passar bara ihop i ändarna), `cut` byter direkt, och gamla rutan ligger kvar tills den nya finns. Två lärdomar i den koden: en bildrutebegäran som väntat länge på en pausad video avfrågas inte längre av webbläsaren, så en ny begäran görs vid start (annars kommer första rutan en kvarts sekund sent); och varje del börjar med en riktig sökning till sin första ruta.
+Gränssnitt för spelsidan (`createScene(canvas, host, data)` i `src/scene3d-view.ts`; mått i dealermeter: x tvärs bordet,
+s från dealerkanten mot spelarna, y upp från filten): `scene.spots()` ger kortplatser och insatsringar som filmkameran
+lägger dem (läs dem i rekvisitans `build`, de flyttar sig med lins och skala); `project(x, s, y)` ger skärmpunkt och
+punkter per meter, `pick(clientX, clientY)` punkten på filten, `onFrame(fn)` ett anrop per ritad ruta,
+`addProp({group, build(edgeZ, scale)})` och `lit(material)` rekvisita, `canvas` elementet. Filmkön:
+`players.play(delar, {loop, cut, onPart, onEnd, onError})`, `hurry(fart)`, `preload(sökvägar)`; en del är
+`{path, start, end, rate, track, cards}`. En ny kedja börjar när delen på skärmen är klar (klipp passar bara ihop i
+ändarna), `cut` byter direkt, och gamla rutan ligger kvar tills den nya finns. Två lärdomar i den koden: en
+bildrutebegäran som väntat länge på en pausad video avfrågas inte längre av webbläsaren, så en ny begäran görs vid start
+(annars kommer första rutan en kvarts sekund sent); och varje del börjar med en riktig sökning till sin första ruta.
 
-Filmkameran läses ur `data/scene-contract.json` i `src/scene3d-geometry.ts` (ren geometri, test `tools/scene3d-geometry.test.ts` utan media). Tre lägen hålls isär: från filmkamerans plats är bilden filmen pixel för pixel; vridning och zoom är geometriskt exakta; förflyttning är ett närmevärde som bryter vid ungefär en stols avstånd. Rundor spelas med klippbankens klippunkter (`resolveRound`). Verifiering: med allt avslaget ska hemvyn (klipp 1 vid 2,9 s, 1764×1174) vara identisk med en av referensbilderna i `assets/proofs/bakgrund-3d-referens/`; filtens guldlinjer kantutjämnas på två sätt mellan webbläsarkörningar (medel 0,02, högst cirka 30 av 255 längs linjerna), allt annat är en verklig ändring. Verktygen för skärmbild, bildjämförelse, provfilm och spelgränssnittets prov ligger i `D:/dealer-scratch/tmp/bakgrund-3d/` (se `LÄSMIG.txt` där). Etapper heter `jakob-N` (se DRIFT). Kända gränser: planens kamera passar kortrutorna men tänjer dealern vid bildkanten när vyn vrids (cirka 90° bildvinkel); skalan k är skattad (1,8–2,5); filmens sko kan inte läggas bakom något utan egen matt och smetas ut när vyn flyttas, och 3D-skon som ersätter den (`?sko=3d`) är ett prov där en hand som sträcks in över skon klipps; dealern är ett platt utklipp (en djuprelief prövad 2026-11-11 håller till cirka 20° åt sidan, underlag i `assets/proofs/bakgrund-3d-vinklar/`); GLB läses med three:s `GLTFLoader`, som servern lämnar ut under `/vendor/loaders/`; telefon är inte provad; salong, bordsmått och tryck är platshållare. Sko och lyft arm korsar bordskantsraden 831,5, så skon bör stå helt på filten och vara oförändrad mellan klipp.
+Filmkameran läses ur `data/scene-contract.json` i `src/scene3d-geometry.ts` (ren geometri, test
+`tools/scene3d-geometry.test.ts` utan media). Tre lägen hålls isär: från filmkamerans plats är bilden filmen pixel för
+pixel; vridning och zoom är geometriskt exakta; förflyttning är ett närmevärde som bryter vid ungefär en stols avstånd.
+Rundor spelas med klippbankens klippunkter (`resolveRound`). Verifiering: med allt avslaget ska hemvyn (klipp 1 vid 2,9
+s, 1764×1174) vara identisk med en av referensbilderna i `assets/proofs/bakgrund-3d-referens/`; filtens guldlinjer
+kantutjämnas på två sätt mellan webbläsarkörningar (medel 0,02, högst cirka 30 av 255 längs linjerna), allt annat är en
+verklig ändring. Verktygen för skärmbild, bildjämförelse, provfilm och spelgränssnittets prov ligger i
+`D:/dealer-scratch/tmp/bakgrund-3d/` (se `LÄSMIG.txt` där). Etapper heter `jakob-N` (se DRIFT). Kända gränser: planens
+kamera passar kortrutorna men tänjer dealern vid bildkanten när vyn vrids (cirka 90° bildvinkel); skalan k är skattad
+(1,8–2,5); filmens sko kan inte läggas bakom något utan egen matt och smetas ut när vyn flyttas, och 3D-skon som
+ersätter den (`?sko=3d`) är ett prov där en hand som sträcks in över skon klipps; dealern är ett platt utklipp (en
+djuprelief prövad 2026-11-11 håller till cirka 20° åt sidan, underlag i `assets/proofs/bakgrund-3d-vinklar/`); GLB läses
+med three:s `GLTFLoader`, som servern lämnar ut under `/vendor/loaders/`; telefon är inte provad; salong, bordsmått och
+tryck är platshållare. Sko och lyft arm korsar bordskantsraden 831,5, så skon bör stå helt på filten och vara oförändrad
+mellan klipp.
 
-**Studion (`studio/`, `http://127.0.0.1:4319/studio/`).** Det nya labbet (Jakobs uppdrag 2026-11-12): en Next.js-app (App Router, React, Tailwind) med eget `package.json`, byggd till statiska filer (`npm --prefix studio run build` ger `studio/out/`) som labbservern lämnar ut under `/studio/` (`tools/studio-files.ts`: bara det som verkligen ligger i mappen och bara en byggd studios filtyper). Den är en klient mot samma API:er och samma enda flik som labbets egna sidor. De rena modulerna (`clip-graph`, `placement-model`, `card-overlay`, `card-track`) byggs in i appen. 3D-scenen byggs inte in: den läses i körtid från servern (`labModule` i `studio/lib/lab.ts`) med samma importkarta som `scene3d.html`, så att sidan har en enda three.js och visar exakt spelets scen, och `<base href="/">` låter scenens relativa adresser peka som på labbets sidor. `npm --prefix studio run types` kontrollerar studions egna filer; `src/` har 29 typanmärkningar som räknas men inte fäller. Next 16 skiljer sig från äldre versioner: läs `studio/node_modules/next/dist/docs/` före ändringar (`studio/AGENTS.md`, som Next själv skriver). Studion är skalet sedan 2026-11-13: `/` och `lab.html` leder dit (`studioAddress` i `tools/lab-routes.ts`); gamla labbet nås med `?gamla=1` tills Modeller och Ljud har flyttats. Studion visar en dealer i taget: växeln överst i listen (Pamela | Paow, med antalet tagningar som väntar på Jakob, den pausade dämpad; namn och paus ur `data/dealers.json`) väljer vems tagningar varje vy läser (`studio/lib/bank.ts` bygger `buildGraph(bank, {dealer})` per dealer); valet står i adressen som `?dealer=`, samma ord som vyn Material, och minns i webbläsaren; adressen går först, sedan en tagning som adressen nämner, och utan val gäller Pamela. Scen spelar det en annan dealer har och visar resten som luckor; Casino spelar bara Pamelas runda (spelsidan läser bara hennes filmer).
+**Studion (`studio/`, `http://127.0.0.1:4319/studio/`).** Det nya labbet (Jakobs uppdrag 2026-11-12): en Next.js-app
+(App Router, React, Tailwind) med eget `package.json`, byggd till statiska filer (`npm --prefix studio run build` ger
+`studio/out/`) som labbservern lämnar ut under `/studio/` (`tools/studio-files.ts`: bara det som verkligen ligger i
+mappen och bara en byggd studios filtyper). Den är en klient mot samma API:er och samma enda flik som labbets egna
+sidor. De rena modulerna (`clip-graph`, `placement-model`, `card-overlay`, `card-track`) byggs in i appen. 3D-scenen
+byggs inte in: den läses i körtid från servern (`labModule` i `studio/lib/lab.ts`) med samma importkarta som
+`scene3d.html`, så att sidan har en enda three.js och visar exakt spelets scen, och `<base href="/">` låter scenens
+relativa adresser peka som på labbets sidor. `npm --prefix studio run types` kontrollerar studions egna filer; `src/`
+har 29 typanmärkningar som räknas men inte fäller. Next 16 skiljer sig från äldre versioner: läs
+`studio/node_modules/next/dist/docs/` före ändringar (`studio/AGENTS.md`, som Next själv skriver). Studion är skalet
+sedan 2026-11-13: `/` och `lab.html` leder dit (`studioAddress` i `tools/lab-routes.ts`); gamla labbet nås med
+`?gamla=1` tills Modeller och Ljud har flyttats. Studion visar en dealer i taget: växeln överst i listen (Pamela | Paow,
+med antalet tagningar som väntar på Jakob, den pausade dämpad; namn och paus ur `data/dealers.json`) väljer vems
+tagningar varje vy läser (`studio/lib/bank.ts` bygger `buildGraph(bank, {dealer})` per dealer); valet står i adressen
+som `?dealer=`, samma ord som vyn Material, och minns i webbläsaren; adressen går först, sedan en tagning som adressen
+nämner, och utan val gäller Pamela. Scen spelar det en annan dealer har och visar resten som luckor; Casino spelar bara
+Pamelas runda (spelsidan läser bara hennes filmer).
 
 ## Spelet (`game/` och `/api/game`)
 
-`game/` är Scouts blackjackkärna, förd hit oförändrad i sak (regler, sko med bränt kort och skärkort, slump med journal, signaler); `game/provenance.json` anger Scout-fil, commit, blob och avvikelse per fil. Ren TypeScript utan DOM som aldrig importerar från `src/`. Scouts boxar 0–6 finns bara inne i kärnan: `game/seats.ts` är den enda översättningen, och allt utanför räknar platser 1–7 (plats 1 kamerans vänster). `game/session.ts` är en lokal enspelarsession i minnet: saldo, `requestId` (samma svar vid omsändning), `expectedVersion`, och svar med signaler och vy. Skon är `secure` som förval; `seeded` och `stacked` (förutbestämda kort, bara labb) syns som `view.shoe.source`.
+`game/` är Scouts blackjackkärna, förd hit oförändrad i sak (regler, sko med bränt kort och skärkort, slump med journal,
+signaler); `game/provenance.json` anger Scout-fil, commit, blob och avvikelse per fil. Ren TypeScript utan DOM som
+aldrig importerar från `src/`. Scouts boxar 0–6 finns bara inne i kärnan: `game/seats.ts` är den enda översättningen,
+och allt utanför räknar platser 1–7 (plats 1 kamerans vänster). `game/session.ts` är en lokal enspelarsession i minnet:
+saldo, `requestId` (samma svar vid omsändning), `expectedVersion`, och svar med signaler och vy. Skon är `secure` som
+förval; `seeded` och `stacked` (förutbestämda kort, bara labb) syns som `view.shoe.source`.
 
-Labbservern håller en session per bordsnamn (`?table=<namn>` på sidan och på vägarna, `main` utan; en andra flik eller ett test spelar då sitt eget bord): `GET /api/game` (läget), `POST /api/game/command` (`start`, `act`, `insurance`, `collect`) och `POST /api/game/new` (nytt saldo och sko), med samma skydd som granskningsvägen. Hålkortets valör lämnar aldrig servern före vändningen. Signalerna är Scouts: `speak`, `deal`, `reveal`, `turn`, `settle`, `idle`; `deal` och `reveal` bär `shoeDraw`, handens summa efter kortet (`total`, `soft`) och `natural`/`blackjack`, så att sidan aldrig räknar kortvärden. Vinsten når saldot vid `collect`. Känd egenhet i Scouts kärna: `outcome` i `settle` räknar in försäkringens utbetalning.
+Labbservern håller en session per bordsnamn (`?table=<namn>` på sidan och på vägarna, `main` utan; en andra flik eller
+ett test spelar då sitt eget bord): `GET /api/game` (läget), `POST /api/game/command` (`start`, `act`, `insurance`,
+`collect`) och `POST /api/game/new` (nytt saldo och sko), med samma skydd som granskningsvägen. Hålkortets valör lämnar
+aldrig servern före vändningen. Signalerna är Scouts: `speak`, `deal`, `reveal`, `turn`, `settle`, `idle`; `deal` och
+`reveal` bär `shoeDraw`, handens summa efter kortet (`total`, `soft`) och `natural`/`blackjack`, så att sidan aldrig
+räknar kortvärden. Vinsten når saldot vid `collect`. Känd egenhet i Scouts kärna: `outcome` i `settle` räknar in
+försäkringens utbetalning.
 
-`src/game-director.ts` gör signalerna till slag, ett per kant i klippbanken (vila till sko en gång, retur mellan korten, hålkortet vänds från vila), och `src/game-table.ts` ger varje kort en plats: planens två platser per plats, därefter en solfjäder i steg om 24 px (plats 5: 16, plats 7: 12; `game.html?fan=<px>` prövar ett annat steg), splittade händer 66 px mot dealern, och dealerns tredje kort där dess film lägger det (1069, 926 i filmpixlar). FILMAGENTs prov i rörelse (Prov: Solfjädern, sett av den, inte oberoende granskat): 24 px håller på plats 1–4 och 6 till och med kort 5, 12 px håller på plats 7, 16 px på plats 5 är en möjlig variant (femte kortet ligger 50–60 px bortom fingertopparna), och dealerns tredje kort landar under fingrarna med en lucka på cirka 90 px till raden. Med de täta stegen går valörerna på de undre korten inte att läsa; det avgörs med kortstorleken.
+`src/game-director.ts` gör signalerna till slag, ett per kant i klippbanken (vila till sko en gång, retur mellan korten,
+hålkortet vänds från vila), och `src/game-table.ts` ger varje kort en plats: planens två platser per plats, därefter en
+solfjäder i steg om 24 px (plats 5: 16, plats 7: 12; `game.html?fan=<px>` prövar ett annat steg), splittade händer 66 px
+mot dealern, och dealerns tredje kort där dess film lägger det (1069, 926 i filmpixlar). FILMAGENTs prov i rörelse
+(Prov: Solfjädern, sett av den, inte oberoende granskat): 24 px håller på plats 1–4 och 6 till och med kort 5, 12 px
+håller på plats 7, 16 px på plats 5 är en möjlig variant (femte kortet ligger 50–60 px bortom fingertopparna), och
+dealerns tredje kort landar under fingrarna med en lucka på cirka 90 px till raden. Med de täta stegen går valörerna på
+de undre korten inte att läsa; det avgörs med kortstorleken.
 
-`game.html` visar spelet i 3D-scenen. Sidan (`src/game-page.ts`) bygger scenen med `createScene`, håller insatserna före given, skickar kommandon och spelar svaret: `src/game-film.ts` löser stegets slag med `resolveRound`, lägger kedjan i scenens filmkö med varje dels kortspår och kortval (kortets landningsruta, liggande kort, valör per kort) och spelar vilan (`pickIdle`) däremellan. Liggande kort ritas på layoutens platser, inte där filmen lämnade dem. `src/game-view.ts` gör motorns läge till det som visas, och en summa visas först när dess kort har landat. Overlayen (`src/game-overlay.ts`, `game.css`) är HTML över canvasen: ringarnas träffytor, markerstaplar, summor, utfall och en panel med markerrad och knappar (en marker väljs med ett tryck och läggs med ett tryck på ringen, eller dras från raden till ringen); den visar vad den får och rapporterar tryck, inget mer. Markerna i ringarna är föremål i scenen (`src/game3d-chips.ts`, in genom `scene.addProp`): husets marker ur markerstudien (`materials/source/src/chip-material-study.ts`: yta, tryck, färger) byggd med scenens three i verklig storlek (39 mm), staplad per ring, och varje ny marker släpps 6 cm ovanför sin plats, faller, studsar två gånger och ligger still; kan modulen inte läsas ritar overlayen platta marker. Inramningen är liggande (lutad 8°, zoom 0,84) eller stående (zoom 1,9, lutad 10°, vriden mot platsen som har turen); ett sidledsdrag vrider vyn. Gränser: korten försvinner utan film vid ny runda, markerna har ingen film där dealern tar eller betalar dem och ligger framför filmens händer om en hand passerar en ring, splittade händer flyttas utan rörelse, och telefon är bara sedd som stillbild i två fönsterstorlekar. Kvar mot Scouts konsol: nedräkningen i ringen (motorn har ingen beslutstid), ikoner i stället för ord på smal skärm och Scouts typsnitt. Konsolen är vanliga moduler utan React, som Scouts spelkonsol; studion (ovan) är Next/React.
+`game.html` visar spelet i 3D-scenen. Sidan (`src/game-page.ts`) bygger scenen med `createScene`, håller insatserna före
+given, skickar kommandon och spelar svaret: `src/game-film.ts` löser stegets slag med `resolveRound`, lägger kedjan i
+scenens filmkö med varje dels kortspår och kortval (kortets landningsruta, liggande kort, valör per kort) och spelar
+vilan (`pickIdle`) däremellan. Liggande kort ritas på layoutens platser, inte där filmen lämnade dem. `src/game-view.ts`
+gör motorns läge till det som visas, och en summa visas först när dess kort har landat. Overlayen
+(`src/game-overlay.ts`, `game.css`) är HTML över canvasen: ringarnas träffytor, markerstaplar, summor, utfall och en
+panel med markerrad och knappar (en marker väljs med ett tryck och läggs med ett tryck på ringen, eller dras från raden
+till ringen); den visar vad den får och rapporterar tryck, inget mer. Markerna i ringarna är föremål i scenen
+(`src/game3d-chips.ts`, in genom `scene.addProp`): husets marker ur markerstudien
+(`materials/source/src/chip-material-study.ts`: yta, tryck, färger) byggd med scenens three i verklig storlek (39 mm),
+staplad per ring, och varje ny marker släpps 6 cm ovanför sin plats, faller, studsar två gånger och ligger still; kan
+modulen inte läsas ritar overlayen platta marker. Inramningen är liggande (lutad 8°, zoom 0,84) eller stående (zoom 1,9,
+lutad 10°, vriden mot platsen som har turen); ett sidledsdrag vrider vyn. Gränser: korten försvinner utan film vid ny
+runda, markerna har ingen film där dealern tar eller betalar dem och ligger framför filmens händer om en hand passerar
+en ring, splittade händer flyttas utan rörelse, och telefon är bara sedd som stillbild i två fönsterstorlekar. Kvar mot
+Scouts konsol: nedräkningen i ringen (motorn har ingen beslutstid), ikoner i stället för ord på smal skärm och Scouts
+typsnitt. Konsolen är vanliga moduler utan React, som Scouts spelkonsol; studion (ovan) är Next/React.
 
-Sko och markerbricka som GLB: Jakobs modeller ur Meshy (2026-11-11) ligger som original under `assets/props/source/` och namnges med SHA-256 i `data/props.json`. De är för tunga för scenen (skon 191 672 trianglar, brickan 3,8 miljoner, 4K-texturer, storlek normerad till cirka två enheter, origo i mitten), så `node tools/prop-glb.ts <id>` gör dem scenfärdiga: nätet glesas genom att kanter viks bort en i taget, den som ändrar ytan minst först (`simplifyTo`, meshoptimizers förenklare, npm-paketet `meshoptimizer`): inget hörn flyttas, så en plan skiva förblir plan och en skarp kant ligger kvar; sedan räknas ytornas riktning om med brytvinkel 40° (`creasedNormals`), så att en skiva skuggas plan ända ut till kanten och rundade delar förblir mjuka. Före 2026-11-11 slogs hörn ihop kubvis (hörnklustring), vilket knycklade plana ytor längs kanterna och syntes i varje blankt utseende; felet var vårt, inte modellernas. Texturerna krymps till 1024 px (bordet 2048), och storlek i meter och origo under föremålet bakas in; resultatet är en vanlig GLB utan Draco, meshopt eller KTX2 i `assets/props/<id>.glb` med kvitto bredvid (skon 16 000 trianglar och 0,45 m lång, brickan 39 984 trianglar och 0,54 m bred; förenklarens eget mått på avvikelsen från originalet är omkring 0,1 respektive 1,2 mm). Kraven på en ny fil: Y upp, mynning eller långsida mot +Z, PBR-material, inga inbakade skuggor. Servern lämnar ut `assets/props/<id>.glb` och three:s `GLTFLoader` (`/vendor/loaders/`), och `src/game3d-props.ts` läser modellen, för materialen genom `scene.lit` och lägger den med `scene.addProp`. Brickan ligger försänkt vid dealerns kant med sin högsta punkt i filtens nivå och tar med sig sitt eget urtag (`scene.notch`), varvid den byggda brickan kliver undan; modellen är dubbelt så djup som urtaget (0,215 m) och pressas därför ihop längs raderna till 0,105 m, annars hamnar den under dealerns kort. Den har markerna modellerade i raderna (kravet var en tom bricka). **Prov, `game.html?bricka=hus`** (`src/game3d-tray.ts`): brickan är i stället den byggda försänkningen med husets egna marker på högkant i tolv rader (samma fem marker som spelarna satsar med; en rad är en cylinder med markerns kant upprepad och dess tryck på änden, `TRAY_ROWS`, `rowFor`). När rundan är avgjord bärs en förlorad insats marker för marker in i sin rad (`chips.send`: den lyfts, vänds på högkant och sätts ner) och en vinst ut ur brickan till en egen stapel bredvid insatsen (`chips.pay`, `chipCarry`); utan film, så ingen hand syns; samma marker och bricka prövas utan spel bakom i labbet (3D-scen, panelen Marker och bricka). **Konsolen** (`game.css`, `src/game-overlay.ts`) är gjord efter Scouts spelkonsol (`services/game/public/table-console.css` där): en panel dockad längs nederkanten, saldot i accentfärgen, markerna i en försänkt bricka, små knappar som var och en behåller sin plats, och en enda fylld knapp i accentfärgen längst ut (Dela ut, Ny runda). Den som ska besluta får platsens nummer i en ring och handen mot dealerns kort före sina val; ett val som inte är tillåtet lämnar sin plats tom. På stående telefon är konsolen ett blad med rader. Fem teman med Scouts namn och färger (`game.html?tema=noir|scout|smaragd|bordeaux|midnatt`, noir om inget sägs). Tre knappar längst till vänster visar vad som är valt (rummets bild och namn, dealerns ansikte, spåret som spelas) och öppnar paneler ovanför konsolen (`src/game-panel.ts`): **Miljö** och **Dealer** är två flikar i samma panel. Miljö väljer rum (bilder av bordet i varje rum, `assets/scene/thumbs/`; valet sparas i webbläsaren och bytet görs med scenens skimmer, `roomShift`); Dealer byter dealer (`film.swap`: hon går, bordet står tomt, en dealer kommer in; utan godkända filmer i banken står labbets utgångstagning och den äldre ingången in, och kameran backar medan filmen är helkropp, `exitView`); **Musik** väljer spår ur ljud-labbet (`MUSIC`, `sound.music`), volym, och slår på bordets och rummets ljud. Allt ljud är tyst tills spelaren slår på det. **Chatten** (`src/game-chat.ts`; `game.html?chatt=0` tar bort den): bordets chatt som attrapp, en knapp nere till vänster som öppnar en ruta; dealerns repliker följer rundans faser och utfall, två påhittade spelare säger något ibland, och det man skriver besvaras ur en kort lista. Inget skickas någonstans; en riktig chatt är Scouts. **Ljud-labbet** (`sound.html`, länken Ljud ↗; `src/lab-sound.ts`): markernas klirr, kortens ljud, bakgrundsljud per miljö och musik (fyra spår som skrivs medan de spelas: `MUSIC`, `music(track)`, `set({music})`; `LEVEL.musicDbA` −38, 5 dB över rummen), syntetiserade i webbläsaren utan ljudfiler (`createSound()`). Spelets meny Musik läser samma modul; sidans egen halva startar bara där `body` har `data-page="ljud-labb"`. **Modell-labbet** (`props.html`, länken Modeller ↗; `src/props-lab.ts`) är ett sidospår som inte rör spelet: de tre omgjorda modellerna (sko, bricka, bord) i en egen vy med utseendena som den kom, elfenben, guld, elfenben och guld samt svart lack och guld, räknade i webbläsaren ur modellens egen färgbild (`accentScore`: det som är guld, mässing eller starkt färgat i originalet blir guld; reglage för hur mycket), med fyra rörelser och tre ljus. Valet Scen "Med dealer och rum" (`src/props-stage.ts`; finns för en modell vars post i `data/props.json` har `stage`: filtens höjd, dealerkantens z uppmätt i modellen, och filtens halva bredd, i modellens meter) ställer spelets vilofilm (filmlagret ur `src/scene3d-film.ts`) bakom bordsmodellen i ett av scenens tre panoraman, med filmens egen sko utelämnad (`film.setHide`, en ruta i filmpunkter; en hand som sträcks in i rutan klipps också). Med rumsstudiens recept, var del ett val (Prov "meshy-bord-naturligt"): bordet lyses av panoramat som syns, förfiltrerat, och av en mjuk lampa där panoramat är ljusast (`roomKey`), så stark att filten under hennes händer får det ljus händerna har i filmen (`KEY.table`, en uppskattning; förval, eftersom studions ljus på ett bord i ett annat rum var fel); panoramat kan läggas på golv och väggar runt bordet, som tar bordets skugga och en kontaktskugga vid foten; filmen kan vikas som i scenen (överkroppen vid kanten, händerna på filten med en mjuk skugga ur hennes egen kontur) i stället för att stå på en skiva bakom kanten, som skär av fingrarna; och utseendet Fotomaterial lägger rumsstudiens fotograferade väv, trä och läder på de texlar som modellens egen färg säger är filt, trä eller läder. Meshy-bordet är ett enda nät med en enda bild (2048 px här, omkring 410 texlar per meter), filtens text är påhittad, skivan lutar 3,6° mot spelarna på en plan fot, och brickan och skon är gjutna i bordet. Vyn börjar på spelkamerans siktlinje men längre bak och med längre brännvidd (knappen Backa visar ben och golv); det är en bild för att bedöma en helhet, inte spelets vy. Ett utseende blir verkligt först med en egen genererad bilduppsättning per modell. Skon är omgjord men visas inte i spelet: filmens egen sko ligger kvar i filmen, och en 3D-sko kan ersätta den först när filmens skopixlar maskas bort (oprövad idé: gör oförändrade pixlar i skoområdet genomskinliga mot en stillbild; underlag `assets/props/source/sko-ur-filmen.png`).
+Sko och markerbricka som GLB: Jakobs modeller ur Meshy (2026-11-11) ligger som original under `assets/props/source/` och
+namnges med SHA-256 i `data/props.json`. De är för tunga för scenen (skon 191 672 trianglar, brickan 3,8 miljoner,
+4K-texturer, storlek normerad till cirka två enheter, origo i mitten), så `node tools/prop-glb.ts <id>` gör dem
+scenfärdiga: nätet glesas genom att kanter viks bort en i taget, den som ändrar ytan minst först (`simplifyTo`,
+meshoptimizers förenklare, npm-paketet `meshoptimizer`): inget hörn flyttas, så en plan skiva förblir plan och en skarp
+kant ligger kvar; sedan räknas ytornas riktning om med brytvinkel 40° (`creasedNormals`), så att en skiva skuggas plan
+ända ut till kanten och rundade delar förblir mjuka. Före 2026-11-11 slogs hörn ihop kubvis (hörnklustring), vilket
+knycklade plana ytor längs kanterna och syntes i varje blankt utseende; felet var vårt, inte modellernas. Texturerna
+krymps till 1024 px (bordet 2048), och storlek i meter och origo under föremålet bakas in; resultatet är en vanlig GLB
+utan Draco, meshopt eller KTX2 i `assets/props/<id>.glb` med kvitto bredvid (skon 16 000 trianglar och 0,45 m lång,
+brickan 39 984 trianglar och 0,54 m bred; förenklarens eget mått på avvikelsen från originalet är omkring 0,1 respektive
+1,2 mm). Kraven på en ny fil: Y upp, mynning eller långsida mot +Z, PBR-material, inga inbakade skuggor. Servern lämnar
+ut `assets/props/<id>.glb` och three:s `GLTFLoader` (`/vendor/loaders/`), och `src/game3d-props.ts` läser modellen, för
+materialen genom `scene.lit` och lägger den med `scene.addProp`. Brickan ligger försänkt vid dealerns kant med sin
+högsta punkt i filtens nivå och tar med sig sitt eget urtag (`scene.notch`), varvid den byggda brickan kliver undan;
+modellen är dubbelt så djup som urtaget (0,215 m) och pressas därför ihop längs raderna till 0,105 m, annars hamnar den
+under dealerns kort. Den har markerna modellerade i raderna (kravet var en tom bricka). **Prov, `game.html?bricka=hus`**
+(`src/game3d-tray.ts`): brickan är i stället den byggda försänkningen med husets egna marker på högkant i tolv rader
+(samma fem marker som spelarna satsar med; en rad är en cylinder med markerns kant upprepad och dess tryck på änden,
+`TRAY_ROWS`, `rowFor`). När rundan är avgjord bärs en förlorad insats marker för marker in i sin rad (`chips.send`: den
+lyfts, vänds på högkant och sätts ner) och en vinst ut ur brickan till en egen stapel bredvid insatsen (`chips.pay`,
+`chipCarry`); utan film, så ingen hand syns; samma marker och bricka prövas utan spel bakom i labbet (3D-scen, panelen
+Marker och bricka). **Konsolen** (`game.css`, `src/game-overlay.ts`) är gjord efter Scouts spelkonsol
+(`services/game/public/table-console.css` där): en panel dockad längs nederkanten, saldot i accentfärgen, markerna i en
+försänkt bricka, små knappar som var och en behåller sin plats, och en enda fylld knapp i accentfärgen längst ut (Dela
+ut, Ny runda). Den som ska besluta får platsens nummer i en ring och handen mot dealerns kort före sina val; ett val som
+inte är tillåtet lämnar sin plats tom. På stående telefon är konsolen ett blad med rader. Fem teman med Scouts namn och
+färger (`game.html?tema=noir|scout|smaragd|bordeaux|midnatt`, noir om inget sägs). Tre knappar längst till vänster visar
+vad som är valt (rummets bild och namn, dealerns ansikte, spåret som spelas) och öppnar paneler ovanför konsolen
+(`src/game-panel.ts`): **Miljö** och **Dealer** är två flikar i samma panel. Miljö väljer rum (bilder av bordet i varje
+rum, `assets/scene/thumbs/`; valet sparas i webbläsaren och bytet görs med scenens skimmer, `roomShift`); Dealer byter
+dealer (`film.swap`: hon går, bordet står tomt, en dealer kommer in; utan godkända filmer i banken står labbets
+utgångstagning och den äldre ingången in, och kameran backar medan filmen är helkropp, `exitView`); **Musik** väljer
+spår ur ljud-labbet (`MUSIC`, `sound.music`), volym, och slår på bordets och rummets ljud. Allt ljud är tyst tills
+spelaren slår på det. **Chatten** (`src/game-chat.ts`; `game.html?chatt=0` tar bort den): bordets chatt som attrapp, en
+knapp nere till vänster som öppnar en ruta; dealerns repliker följer rundans faser och utfall, två påhittade spelare
+säger något ibland, och det man skriver besvaras ur en kort lista. Inget skickas någonstans; en riktig chatt är Scouts.
+**Ljud-labbet** (`sound.html`, länken Ljud ↗; `src/lab-sound.ts`): markernas klirr, kortens ljud, bakgrundsljud per
+miljö och musik (fyra spår som skrivs medan de spelas: `MUSIC`, `music(track)`, `set({music})`; `LEVEL.musicDbA` −38, 5
+dB över rummen), syntetiserade i webbläsaren utan ljudfiler (`createSound()`). Spelets meny Musik läser samma modul;
+sidans egen halva startar bara där `body` har `data-page="ljud-labb"`. **Modell-labbet** (`props.html`, länken Modeller
+↗; `src/props-lab.ts`) är ett sidospår som inte rör spelet: de tre omgjorda modellerna (sko, bricka, bord) i en egen vy
+med utseendena som den kom, elfenben, guld, elfenben och guld samt svart lack och guld, räknade i webbläsaren ur
+modellens egen färgbild (`accentScore`: det som är guld, mässing eller starkt färgat i originalet blir guld; reglage för
+hur mycket), med fyra rörelser och tre ljus. Valet Scen "Med dealer och rum" (`src/props-stage.ts`; finns för en modell
+vars post i `data/props.json` har `stage`: filtens höjd, dealerkantens z uppmätt i modellen, och filtens halva bredd, i
+modellens meter) ställer spelets vilofilm (filmlagret ur `src/scene3d-film.ts`) bakom bordsmodellen i ett av scenens tre
+panoraman, med filmens egen sko utelämnad (`film.setHide`, en ruta i filmpunkter; en hand som sträcks in i rutan klipps
+också). Med rumsstudiens recept, var del ett val (Prov "meshy-bord-naturligt"): bordet lyses av panoramat som syns,
+förfiltrerat, och av en mjuk lampa där panoramat är ljusast (`roomKey`), så stark att filten under hennes händer får det
+ljus händerna har i filmen (`KEY.table`, en uppskattning; förval, eftersom studions ljus på ett bord i ett annat rum var
+fel); panoramat kan läggas på golv och väggar runt bordet, som tar bordets skugga och en kontaktskugga vid foten; filmen
+kan vikas som i scenen (överkroppen vid kanten, händerna på filten med en mjuk skugga ur hennes egen kontur) i stället
+för att stå på en skiva bakom kanten, som skär av fingrarna; och utseendet Fotomaterial lägger rumsstudiens
+fotograferade väv, trä och läder på de texlar som modellens egen färg säger är filt, trä eller läder. Meshy-bordet är
+ett enda nät med en enda bild (2048 px här, omkring 410 texlar per meter), filtens text är påhittad, skivan lutar 3,6°
+mot spelarna på en plan fot, och brickan och skon är gjutna i bordet. Vyn börjar på spelkamerans siktlinje men längre
+bak och med längre brännvidd (knappen Backa visar ben och golv); det är en bild för att bedöma en helhet, inte spelets
+vy. Ett utseende blir verkligt först med en egen genererad bilduppsättning per modell. Skon är omgjord men visas inte i
+spelet: filmens egen sko ligger kvar i filmen, och en 3D-sko kan ersätta den först när filmens skopixlar maskas bort
+(oprövad idé: gör oförändrade pixlar i skoområdet genomskinliga mot en stillbild; underlag
+`assets/props/source/sko-ur-filmen.png`).
 
 ## Bottom-up och koordinatreferenser
 
-Bottom-up betyder att höjd ökar uppåt. V6 mäter idag bildpixlar från övre vänstra hörnet med y nedåt. Originalmätningar och referenshashar bevaras; en adapter ska konvertera vid en uttrycklig systemgräns.
+Bottom-up betyder att höjd ökar uppåt. V6 mäter idag bildpixlar från övre vänstra hörnet med y nedåt. Originalmätningar
+och referenshashar bevaras; en adapter ska konvertera vid en uttrycklig systemgräns.
 
-Dokumenterat förslag för normaliserad **bildrymd**: `u` ökar åt höger, `v` uppåt, båda i `[0,1]`. `(0,0)` är nedersta vänstra pixelcentrum och `(1,1)` översta högra pixelcentrum. För `W×H`:
+Dokumenterat förslag för normaliserad **bildrymd**: `u` ökar åt höger, `v` uppåt, båda i `[0,1]`. `(0,0)` är nedersta
+vänstra pixelcentrum och `(1,1)` översta högra pixelcentrum. För `W×H`:
 
 ```text
 x_px = u × (W − 1)        u = x_px / (W − 1)
 y_px = (1 − v) × (H − 1)  v = 1 − y_px / (H − 1)
 ```
 
-Native centrum `(0.5,0.5)` ger `(880.5,586.5)` före rasteravrundning. Native-punkten `(820,1026)` blir `(820/1761,147/1173)`. Utsnitt med `left/top/width/height` beskriver pixelkanter, inte denna pixelcentrumkonvention. Bordets fysiska plan och 3D-kameran kräver egna kalibreringar; normaliserad bildrymd är inte ett perspektivmått.
+Native centrum `(0.5,0.5)` ger `(880.5,586.5)` före rasteravrundning. Native-punkten `(820,1026)` blir
+`(820/1761,147/1173)`. Utsnitt med `left/top/width/height` beskriver pixelkanter, inte denna pixelcentrumkonvention.
+Bordets fysiska plan och 3D-kameran kräver egna kalibreringar; normaliserad bildrymd är inte ett perspektivmått.
 
-Placeringseditorns utkast finns i `placements/default.json`; vyprofiler och pixelkonvertering finns i `src/placement-model.ts`. Geometri lagras separat per `native`/`portrait`; hand-/sidavsikt och materialval hålls skilda från geometrin. Alla standardplatser börjar ogranskade (`reviewed=false`), inte uppmätta. `angle` är grader medurs i bildens y-ned-rymd; `width`/`height` är andelar av respektive vys pixelcentrumspann. `taper` formar konturen och bevisar inte en kalibrerad 3D-projektion.
+Placeringseditorns utkast finns i `placements/default.json`; vyprofiler och pixelkonvertering finns i
+`src/placement-model.ts`. Geometri lagras separat per `native`/`portrait`; hand-/sidavsikt och materialval hålls skilda
+från geometrin. Alla standardplatser börjar ogranskade (`reviewed=false`), inte uppmätta. `angle` är grader medurs i
+bildens y-ned-rymd; `width`/`height` är andelar av respektive vys pixelcentrumspann. `taper` formar konturen och bevisar
+inte en kalibrerad 3D-projektion.
 
-`tableProjection` sparar editorns gemensamma visningsval: `mode: flat | individual` och `heading` i grader (`-90,-45,-15,0,15,45,90`). Plant bord med 0° är standard. Äldre schema-v1-filer utan fältet accepteras; editorn erbjuder att spara standardinställningen utan att flytta koordinater. Planändringen går att ångra. Läget/riktningen följer med i export/import och publicerade webbläsarutkast. Plant bord beräknas från P4.C1 och är fortfarande inte en uppmätt fysisk kamera. Riktning i bordplanet är skild från kamerans lutning och kortets böjning. Utdelningsteknik i `intent` (2026-11-11): `grip` är `PINCH` (nyp i skons fönster och lyft, ankare 2 läge 1; standard) eller `DRAG` (fingertopparna på kortet i skons öppning, släp längs filten, läge 2); `turnAt` är `AIR` (standard) eller `PLACE` (vid platsen på filten) och gäller bara när `turn` är sant. Vänds senare är inget eget värde: `turn=false` och landning på startsidan. Äldre filer utan nycklarna läses överallt: `validatePlan` fyller i standardvärdena när planen godkänts, så sparning och export skriver dem. Sekvensen skriver `DRAG(LH,BACK)` och `TURN(LH,BACK>FRONT,PLACE)`; ritningen och kortbaneanimeringen är oförändrade. I fliken: listan Kortplatser väljer kortet som panelen till höger ändrar; Rörelse har Grepp vid skon, Var kortet vänds, tre tekniker med ett klick (`TECHNIQUES`; hand och handbyte står kvar) och Använd rörelsen på alla spelarkort (de 14); Placering har Kortstorlek, alla kort (`scaleCards`: en faktor 0,50–2,50 kring varje korts mitt, stopp vid bildkanten och storleksgränserna; med Plant bord ritas alla kort i P4.C1:s storlek); Material har Använd materialet på alla kort. Allt går genom Ångra och når disken med Spara placeringar. Grundmaterialet i utkastet är böjning 0,14 (av 0,18) och glans 0,35. Kortet i skons fönster målas gult på scenen (`SHOE_CARD`, hörnen mätta i `assets/lab/native.jpg` och `portrait.jpg`): bilden visar spelets svarta baksida där, men ett stängt kort är gult i filmerna och planen; bilden och filmerna är orörda. Förslag bredvid utkastet ligger i `placements/proposals/<namn>.json` (i dag `forslag` och `forslag-slump`, K = 1,65): servern läser dem med `api/placements?plan=<namn>` och skriver aldrig till dem, bara 3D-scenen visar dem (`scene3d.html?plan=forslag&kort=1.65`), och Placering visar dem inte, eftersom den sparar till utkastet. **Placering i studion: bakgrunden.** Dator öppnar på en neutral bild (Jakob 2026-11-13: ingen dealers bild, och studions eget bord): 3D-scenens bord i hemvyn med filmen dold, en grå figur med händerna där `data/dealer-standard.json` lägger dem (ingen kontur av en dealer) och bankens sko. I hemvyn är filmrutan hela duken, en rektangel utan skevning, så bilden ligger i filmpixlar (1764 → 1762 ger planens). `node tools/placement-backdrop.ts` bygger `assets/lab/placement-backdrop/native.jpg` med `receipt.json` (källor med SHA-256, figurens mått och passningen: filmens kort i scenen mot samma ruta ur filmen 0,2–0,3 px, bordet under filmen lika pixel för pixel); bilden byggs om när bordet, skon eller grundstandarden ändras. V6-bilden (`bakgrund=v6`) och filmerna är kvar i listan; Mobil har ingen hemvy i sina pixlar och behåller V6-bilden. Beställ film hit (C1-platserna och D.C1) leder till `/bestall/?ny=1&plats=P4.C1`.
+`tableProjection` sparar editorns gemensamma visningsval: `mode: flat | individual` och `heading` i grader
+(`-90,-45,-15,0,15,45,90`). Plant bord med 0° är standard. Äldre schema-v1-filer utan fältet accepteras; editorn
+erbjuder att spara standardinställningen utan att flytta koordinater. Planändringen går att ångra. Läget/riktningen
+följer med i export/import och publicerade webbläsarutkast. Plant bord beräknas från P4.C1 och är fortfarande inte en
+uppmätt fysisk kamera. Riktning i bordplanet är skild från kamerans lutning och kortets böjning. Utdelningsteknik i
+`intent` (2026-11-11): `grip` är `PINCH` (nyp i skons fönster och lyft, ankare 2 läge 1; standard) eller `DRAG`
+(fingertopparna på kortet i skons öppning, släp längs filten, läge 2); `turnAt` är `AIR` (standard) eller `PLACE` (vid
+platsen på filten) och gäller bara när `turn` är sant. Vänds senare är inget eget värde: `turn=false` och landning på
+startsidan. Äldre filer utan nycklarna läses överallt: `validatePlan` fyller i standardvärdena när planen godkänts, så
+sparning och export skriver dem. Sekvensen skriver `DRAG(LH,BACK)` och `TURN(LH,BACK>FRONT,PLACE)`; ritningen och
+kortbaneanimeringen är oförändrade. I fliken: listan Kortplatser väljer kortet som panelen till höger ändrar; Rörelse
+har Grepp vid skon, Var kortet vänds, tre tekniker med ett klick (`TECHNIQUES`; hand och handbyte står kvar) och Använd
+rörelsen på alla spelarkort (de 14); Placering har Kortstorlek, alla kort (`scaleCards`: en faktor 0,50–2,50 kring varje
+korts mitt, stopp vid bildkanten och storleksgränserna; med Plant bord ritas alla kort i P4.C1:s storlek); Material har
+Använd materialet på alla kort. Allt går genom Ångra och når disken med Spara placeringar. Grundmaterialet i utkastet är
+böjning 0,14 (av 0,18) och glans 0,35. Kortet i skons fönster målas gult på scenen (`SHOE_CARD`, hörnen mätta i
+`assets/lab/native.jpg` och `portrait.jpg`): bilden visar spelets svarta baksida där, men ett stängt kort är gult i
+filmerna och planen; bilden och filmerna är orörda. Förslag bredvid utkastet ligger i `placements/proposals/<namn>.json`
+(i dag `forslag` och `forslag-slump`, K = 1,65): servern läser dem med `api/placements?plan=<namn>` och skriver aldrig
+till dem, bara 3D-scenen visar dem (`scene3d.html?plan=forslag&kort=1.65`), och Placering visar dem inte, eftersom den
+sparar till utkastet. **Placering i studion: bakgrunden.** Dator öppnar på en neutral bild (Jakob 2026-11-13: ingen
+dealers bild, och studions eget bord): 3D-scenens bord i hemvyn med filmen dold, en grå figur med händerna där
+`data/dealer-standard.json` lägger dem (ingen kontur av en dealer) och bankens sko. I hemvyn är filmrutan hela duken, en
+rektangel utan skevning, så bilden ligger i filmpixlar (1764 → 1762 ger planens). `node tools/placement-backdrop.ts`
+bygger `assets/lab/placement-backdrop/native.jpg` med `receipt.json` (källor med SHA-256, figurens mått och passningen:
+filmens kort i scenen mot samma ruta ur filmen 0,2–0,3 px, bordet under filmen lika pixel för pixel); bilden byggs om
+när bordet, skon eller grundstandarden ändras. V6-bilden (`bakgrund=v6`) och filmerna är kvar i listan; Mobil har ingen
+hemvy i sina pixlar och behåller V6-bilden. Beställ film hit (C1-platserna och D.C1) leder till
+`/bestall/?ny=1&plats=P4.C1`.
 
-En analys av de nuvarande separata native-/mobilprojektionerna finns i [table-projection-review](../evidence/table-projection-review.md). Den flyttar inga sparade punkter och ändrar inte V6. Villkorliga målskillnader i analysen är inte uppmätt handkontakt i en framtida film.
+En analys av de nuvarande separata native-/mobilprojektionerna finns i
+[table-projection-review](../evidence/table-projection-review.md). Den flyttar inga sparade punkter och ändrar inte V6.
+Villkorliga målskillnader i analysen är inte uppmätt handkontakt i en framtida film.
 
-Rörelsernas framtida bindning använder `placementRef`, `sceneProfileId`, `viewProfileId`; inga x/y-tal i sekvenssträngen. Film och varje overlay (spelets i `game.html`, studions) ska använda samma uppslag och samma resize/crop/letterbox-offset. Editorns placeringsfil är ännu inte kopplad till V6-renderern eller Scout. DRAFT-ordningen i en planerad sekvens är inte uppmätta filmannoteringar; noder eller dokument får inte hitta på saknade mätningar.
+Rörelsernas framtida bindning använder `placementRef`, `sceneProfileId`, `viewProfileId`; inga x/y-tal i
+sekvenssträngen. Film och varje overlay (spelets i `game.html`, studions) ska använda samma uppslag och samma
+resize/crop/letterbox-offset. Editorns placeringsfil är ännu inte kopplad till V6-renderern eller Scout. DRAFT-ordningen
+i en planerad sekvens är inte uppmätta filmannoteringar; noder eller dokument får inte hitta på saknade mätningar.
 
 ## Ordlista och gräns mot Scout
 
@@ -89,9 +283,17 @@ Rörelsernas framtida bindning använder `placementRef`, `sceneProfileId`, `view
 | `LAND`, `RELEASE`, `RETURN(IDLE)` | Bordkontakt, släpp och återgång; kan ha olika bildrutor. |
 | `P4.C2`, `D.C2`, `VAR03` | Placeringsnycklar och rörelsevariant. V6 är historisk renderingsversion. |
 
-Målet är P1–P7 och D, två kortplatser vardera: 14 spelarkort plus två dealerkort. Platsnumrering och utdelningsordning följer Scout (läst 2026-11-11): plats 1 är kamerans vänster, plats = Scouts box + 1, given börjar på plats 7 och går mot plats 1, sedan dealern, och det dolda kortet kommer sist. Koordinaterna är Jakobs placeringsplan. Historisk P4=`deal.player.centre/box3` är proveniens, inte en verifierad åttaplatskarta. DL1/v2 är inte importerat.
+Målet är P1–P7 och D, två kortplatser vardera: 14 spelarkort plus två dealerkort. Platsnumrering och utdelningsordning
+följer Scout (läst 2026-11-11): plats 1 är kamerans vänster, plats = Scouts box + 1, given börjar på plats 7 och går mot
+plats 1, sedan dealern, och det dolda kortet kommer sist. Koordinaterna är Jakobs placeringsplan. Historisk
+P4=`deal.player.centre/box3` är proveniens, inte en verifierad åttaplatskarta. DL1/v2 är inte importerat.
 
-Scoutgaming äger regler, slump, kortvärden och händelser. `P4.C2` är inte kortets runtime-ID; vid split krävs även hand-ID, medan Scout behåller kortinstansens ID (dragnumret i skon). Ingen ny spelmotor skrivs i dealer. Jakobs undantag 2026-11-11: labbets speloverlay får en avskild motor i mappen `game/`, och spelagentens rekommendation är att lägga Scouts egen kärna där oförändrad i sak, med hashar som proveniens; blackjack-studions regelfil `rules.mjs` är byte för byte Scouts `round.mjs`; dess `rules.ts` lägger till typer och sen uppgivning. Filmkoden importerar från `game/`, aldrig tvärtom, och inget ändras i Scout.
+Scoutgaming äger regler, slump, kortvärden och händelser. `P4.C2` är inte kortets runtime-ID; vid split krävs även
+hand-ID, medan Scout behåller kortinstansens ID (dragnumret i skon). Ingen ny spelmotor skrivs i dealer. Jakobs undantag
+2026-11-11: labbets speloverlay får en avskild motor i mappen `game/`, och spelagentens rekommendation är att lägga
+Scouts egen kärna där oförändrad i sak, med hashar som proveniens; blackjack-studions regelfil `rules.mjs` är byte för
+byte Scouts `round.mjs`; dess `rules.ts` lägger till typer och sen uppgivning. Filmkoden importerar från `game/`, aldrig
+tvärtom, och inget ändras i Scout.
 
 Exempel, **inte klassning av en befintlig film**:
 
@@ -99,61 +301,249 @@ Exempel, **inte klassning av en befintlig film**:
 P4.C2@VAR03 | TAKE(LH,BACK) > LAND(BACK) > RELEASE(LH) > RETURN(IDLE)
 ```
 
-Överlappande PASS/TURN beskrivs med faktiska intervall, inte påhittad ordning. Färgbyte eller passage genom kantläge bevisar ensam ingen vändning. En tidigare rapporterad CLOSED→CLOSED-etikett får inte överordnas sammanhängande källbevis: den nyare P4.C2-källan stöder BACK→EDGE→FRONT, medan dess lokala `review-v04` färgar blå motsida gul. [p4Followup](../evidence/anchor-color-audit.json) skiljer fysisk observation från författad etikett och diagnostiskt överlägg. Detta ändrar inte P7-direktprovets separata klassning.
+Överlappande PASS/TURN beskrivs med faktiska intervall, inte påhittad ordning. Färgbyte eller passage genom kantläge
+bevisar ensam ingen vändning. En tidigare rapporterad CLOSED→CLOSED-etikett får inte överordnas sammanhängande
+källbevis: den nyare P4.C2-källan stöder BACK→EDGE→FRONT, medan dess lokala `review-v04` färgar blå motsida gul.
+[p4Followup](../evidence/anchor-color-audit.json) skiljer fysisk observation från författad etikett och diagnostiskt
+överlägg. Detta ändrar inte P7-direktprovets separata klassning.
 
 ## Ett rörelseregister och tydliga bevis
 
-- `motions/<clip-id>.json` är ensam källa för rörelsens klassning/beslut. Hand, pose, fysisk sida, spelstatus, mål och variant hålls separata.
-- `data/library.json` är visningskatalogen utan mediekopior. Original, historiska sekvenser och diagnostiska överlägg hålls isär; beslut hämtas från `motionRef`. P4-gulprovet och de återställda native-sekvenserna är 1764×1174 i källrymd, inte V6:s native-vy 1762×1174.
-- `data/public-media.json` binder publicerade katalogfilmer till Blob-URL:er med samma SHA-256. Nya lokala poster kan invänta publicering. `publicReview` anger exakt publicerad granskningsfil; publicering innebär inte godkänd rörelse eller Scoutintegration.
-- Nya original placeras i `assets/motions/<clip-id>/source.mp4`. Korrigerad visningsversion har egen hash/relation till original. Befintliga registrerade original får refereras där de ligger; inga kopior per godkännandestatus.
-- `KEYFRAME` är en källruta. `ANCHOR` är en utpekad källruta för exempelvis grepp, kantläge, kontakt, släpp eller vila: källhash + rutnummer. Saknad kunskap är `null`/`UNKNOWN`, inte uppskattade tider.
-- Bevisgrund `MEASURED/OBSERVED/REPORTED/HYPOTHESIS/UNKNOWN` skiljs från beslut `PENDING/ACCEPTED/REJECTED`. Rörelse, mask/geometri, scen och Scoutanslutning bedöms separat.
-- Maskkontrakt enligt TILLBAKA-2:s senaste användarkorrigering: CLOSED RGB `[255,255,0]`, OPEN `[0,0,255]`, bakgrund `[0,0,0]`, förlustfri mask; kontur separat. MP4 är visningsmaterial, inte exakt färgmask. Författad maskfärg bevisar inte originalets kortsida.
+- `motions/<clip-id>.json` är ensam källa för rörelsens klassning/beslut. Hand, pose, fysisk sida, spelstatus, mål och
+  variant hålls separata.
+- `data/library.json` är visningskatalogen utan mediekopior. Original, historiska sekvenser och diagnostiska överlägg
+  hålls isär; beslut hämtas från `motionRef`. P4-gulprovet och de återställda native-sekvenserna är 1764×1174 i
+  källrymd, inte V6:s native-vy 1762×1174.
+- `data/public-media.json` binder publicerade katalogfilmer till Blob-URL:er med samma SHA-256. Nya lokala poster kan
+  invänta publicering. `publicReview` anger exakt publicerad granskningsfil; publicering innebär inte godkänd rörelse
+  eller Scoutintegration.
+- Nya original placeras i `assets/motions/<clip-id>/source.mp4`. Korrigerad visningsversion har egen hash/relation till
+  original. Befintliga registrerade original får refereras där de ligger; inga kopior per godkännandestatus.
+- `KEYFRAME` är en källruta. `ANCHOR` är en utpekad källruta för exempelvis grepp, kantläge, kontakt, släpp eller vila:
+  källhash + rutnummer. Saknad kunskap är `null`/`UNKNOWN`, inte uppskattade tider.
+- Bevisgrund `MEASURED/OBSERVED/REPORTED/HYPOTHESIS/UNKNOWN` skiljs från beslut `PENDING/ACCEPTED/REJECTED`. Rörelse,
+  mask/geometri, scen och Scoutanslutning bedöms separat.
+- Maskkontrakt enligt TILLBAKA-2:s senaste användarkorrigering: CLOSED RGB `[255,255,0]`, OPEN `[0,0,255]`, bakgrund
+  `[0,0,0]`, förlustfri mask; kontur separat. MP4 är visningsmaterial, inte exakt färgmask. Författad maskfärg bevisar
+  inte originalets kortsida.
 
-Genererad gul/blå färg kan också vara fel trots en fysisk vändning. Bedöm först rörelsen och märk BACK/EDGE/FRONT från sammanhängande källrutor; lägg därefter lokalt kortutseende. P4.C2-originalet bedöms separat från det sekundära gula överlägget: i källan smalnar gult vid f57–60, kantläge följer f61–62 och blå motsida öppnas från f63. Det bevisar inte färdig mask-, kontakt- eller produktionsacceptans. Editorns gul=BACK och blå=FRONT gäller fortsatt; rosa är en separat maskhjälpsyta. Filmklassning och beslut finns endast i motions-registret.
+Genererad gul/blå färg kan också vara fel trots en fysisk vändning. Bedöm först rörelsen och märk BACK/EDGE/FRONT från
+sammanhängande källrutor; lägg därefter lokalt kortutseende. P4.C2-originalet bedöms separat från det sekundära gula
+överlägget: i källan smalnar gult vid f57–60, kantläge följer f61–62 och blå motsida öppnas från f63. Det bevisar inte
+färdig mask-, kontakt- eller produktionsacceptans. Editorns gul=BACK och blå=FRONT gäller fortsatt; rosa är en separat
+maskhjälpsyta. Filmklassning och beslut finns endast i motions-registret.
 
-Filmgranskningen använder klippets fps för steg ±1 bildruta och källbundna kapitel. Hastigheterna 0,25×/0,5×/1× ändrar bara visningen. `clip` och `frame` i URL:en anger granskningsläge, inte nya filmannoteringar. En sekvensruta måste mappas via sin frysta tidslinje innan den anges som en ingående råfilms källruta.
+Filmgranskningen använder klippets fps för steg ±1 bildruta och källbundna kapitel. Hastigheterna 0,25×/0,5×/1× ändrar
+bara visningen. `clip` och `frame` i URL:en anger granskningsläge, inte nya filmannoteringar. En sekvensruta måste
+mappas via sin frysta tidslinje innan den anges som en ingående råfilms källruta.
 
-Behåll JSON/manifest som dagens lagring: rörelseregistret äger besluten, katalogerna refererar till dem och lokal preview har en sparväg per placeringsfil. Publika webbläsarutkast är separata och flyttas med export/import. Ingen tillfällig SQLite- eller ny produktdatabas införs nu; skäl och begränsningar finns i [lagringsbedömningen](../evidence/storage-choice-review.json). Media förblir separata filer/Blob-objekt med hashreferenser. En framtida beställd Scout-import får ett uttryckligt kontrakt utan dubbla produktstatusägare.
+Behåll JSON/manifest som dagens lagring: rörelseregistret äger besluten, katalogerna refererar till dem och lokal
+preview har en sparväg per placeringsfil. Publika webbläsarutkast är separata och flyttas med export/import. Ingen
+tillfällig SQLite- eller ny produktdatabas införs nu; skäl och begränsningar finns i
+[lagringsbedömningen](../evidence/storage-choice-review.json). Media förblir separata filer/Blob-objekt med
+hashreferenser. En framtida beställd Scout-import får ett uttryckligt kontrakt utan dubbla produktstatusägare.
 
 ## Vad labbet skickar till genereringen
 
-Placeringsvyn visar målgeometri och avsikt. Blå/gul i editorn hjälper granskaren att skilja avsedd fram-/baksida; rosa behövs inte där. Rosa i en källfilm är en hjälp för att senare hitta och ersätta kortytan. Det avgör inte vilken fysisk sida som syns. Kortmaterialet ritas ovanpå filmen i labbet och i 3D-scenen (Renderade kort) men bakas aldrig in i en film.
+Placeringsvyn visar målgeometri och avsikt. Blå/gul i editorn hjälper granskaren att skilja avsedd fram-/baksida; rosa
+behövs inte där. Rosa i en källfilm är en hjälp för att senare hitta och ersätta kortytan. Det avgör inte vilken fysisk
+sida som syns. Kortmaterialet ritas ovanpå filmen i labbet och i 3D-scenen (Renderade kort) men bakas aldrig in i en
+film.
 
-En beställning innehåller exakt textprompt, modell, längd och format samt bilder: första bild, oftast sista bild (en film kan beställas med enbart första bild) och ibland en referensvideo. Planen ger målkortets hörn i sista bilden. Studions beställningar (`data/orders/<id>.json`, form i `src/order-model.ts`): en giv bär sina val i `motion` med Placeringens ord: `hand` (handen som tar kortet ur skon), `pass` (handbyte, bara vänster till höger), `side` (BACK stängt, FRONT öppet; kortet lämnar skon stängt, så `turn` följer av sidan) och `flipAxis` (`AT_PLACE` vänd vid platsen efter Jakobs sex steg nyp, dra, för fram, vrid, vänd upp, lägg, förvalet följer planens "Var kortet vänds" (`defaultFlip`: `PLACE` ger `AT_PLACE`, annars `FREE`); `FREE`; `LONG_EDGE`). Förvalen kommer från planens kort, och `fromPlan` säger om valen är planens. Vyn Beställ föreslår handbyte där kortet landar mer än ett halvt kort till vänster om hennes mitt (mitten mellan dealerns två kort), alltså P1–P3 i dagens plan. "Alla sju" gör ett utkast per plats med samma `group`. Texten skrivs av `promptFor` i `src/order-prompts.ts` (mall 6, `TEMPLATE_VERSION`; en order återges med sin egen version; orden i `SAY`, reglerna i `tools/film-prompting.md`), samma funktion som visar texten innan utkastet finns, i stilen `prompt.style`: Kort (förval, bara rörelsen, inga förbud), Minimal (Jakobs prov) eller Utförlig (mall `@3` oförändrad; en order utan `style` är Utförlig). En retur är en egen film från platsens landningsbild (roll `landning`, `LAND(<plats>)`, gäller) till ett ankare, och en giv kan beställas "bara dit" (`step.shape: ONE_WAY`) till landningsbilden; en Kling 4-order kan bära en referensfilm ur banken (`reference`, kopierad med hash, en annan dealers film tillåten och namngiven), kortets storlek kan provas per order (`motion.cardScale`, planen orörd), och ett val som inte gäller lagras inte (`flipAxis` null för ett kort som inte vänds). Ett filmsteg har sin modell som förval men kan beställas med varje modell i `MODELS` som tar första och sista bild (`modelsFor`, värdena ur `paramsOf`; i dag WAN 3 och Kling 4; Kling 3.0 4K läses för den levererade ordern men beställs inte längre, `off`); en ny modell är en post i `MODELS` och ett pris i `data/order-policy.json`. Ett utkast följer det ankare som gäller i Material (`picture.replaced` säger vad bilden var) och posebildens gröna görs som ankarets (`cut.matched`); ankare 2.2:s posebild är bara den andra dealerns underarm och hand, lagda på dealerns egen sko och kort ur ankaret och flyttade så att mitten av källkortets översida möter fönsterkortets (`cut.laid`, `poseOnShoe` i `tools/order-images.ts`), medan 2.1:s är bankens ruta med samma fönstersko inom 2 px och kortet i nypet; en godkänd beställning ändras aldrig. En hel bild av en annan dealer i ett utkast stoppar godkännandet; bara posebildens utklippta arm får vara en annan dealers. Varken hela labbskärmbilden, placerings-JSON, nodkartan eller 3D-materialet skickas till Runway. Ändringar i editorn beställer inga filmer. Prompt och bildhashar står i jobbet i `data/clip-jobs.json` och i `motions`-posten; bilderna och kvittot ligger i `assets/motions/<clip-id>/`. Protokollet räknas och skrivs aldrig för hand: `node tools/order-ledger.ts` och vyn Protokoll (`/protokoll/`, `GET /api/orders/ledger`) ger en rad per tagning ur beställningen, kvittot (granskarens poäng ur GRANSKAD-noten), bankens `motions`-poster och Materials bilder, och per metod antal, granskarens medel och Jakobs omdömen (`studio/lib/ledger.ts`); granskarens dom kan också föras in bredvid en tagning från HÄMTAD utan att läget flyttas (`order-put.ts review`), och `tools/order-bring.ts` för en levererad tagning till bankens inkorg och Material. Metoden per steg och platsklass står i `data/order-methods.json` (`gäller`, `prov`, `saknas`; `src/order-methods.ts`), och produktionslistan (`node tools/produce.ts <dealer>`, överst i Beställ, `GET /api/production`) säger för vart och ett av grafens 33 steg vad som spelas (samma funktion som Kartan), vad som är på väg, om en runda kräver det, vad det väntar på och dess metod, och gör utkast där metoden gäller (`--draft`, knappen; aldrig ett godkännande); hålkortets giv (`GIV-2.1` till `D.C2`), dess vändning från vila (`HALKORT`, `IDLE>REVEAL(D.C2)`, båda bilderna med dealerns två kort ritade) och utgången (`UTGANG`, `READY>IDLE`) är steg i Beställ. Hela vägen från bild till färdig dealer, med alla format och namn: `tools/dealer-line.md`.
+En beställning innehåller exakt textprompt, modell, längd och format samt bilder: första bild, oftast sista bild (en
+film kan beställas med enbart första bild) och ibland en referensvideo. Planen ger målkortets hörn i sista bilden.
+Studions beställningar (`data/orders/<id>.json`, form i `src/order-model.ts`): en giv bär sina val i `motion` med
+Placeringens ord: `hand` (handen som tar kortet ur skon), `pass` (handbyte, bara vänster till höger), `side` (BACK
+stängt, FRONT öppet; kortet lämnar skon stängt, så `turn` följer av sidan) och `flipAxis` (`AT_PLACE` vänd vid platsen
+efter Jakobs sex steg nyp, dra, för fram, vrid, vänd upp, lägg, förvalet följer planens "Var kortet vänds"
+(`defaultFlip`: `PLACE` ger `AT_PLACE`, annars `FREE`); `FREE`; `LONG_EDGE`). Förvalen kommer från planens kort, och
+`fromPlan` säger om valen är planens. Vyn Beställ föreslår handbyte där kortet landar mer än ett halvt kort till vänster
+om hennes mitt (mitten mellan dealerns två kort), alltså P1–P3 i dagens plan. "Alla sju" gör ett utkast per plats med
+samma `group`. Texten skrivs av `promptFor` i `src/order-prompts.ts` (mall 6, `TEMPLATE_VERSION`; en order återges med
+sin egen version; orden i `SAY`, reglerna i `tools/film-prompting.md`), samma funktion som visar texten innan utkastet
+finns, i stilen `prompt.style`: Kort (förval, bara rörelsen, inga förbud), Minimal (Jakobs prov) eller Utförlig (mall
+`@3` oförändrad; en order utan `style` är Utförlig). En retur är en egen film från platsens landningsbild (roll
+`landning`, `LAND(<plats>)`, gäller) till ett ankare, och en giv kan beställas "bara dit" (`step.shape: ONE_WAY`) till
+landningsbilden; en Kling 4-order kan bära en referensfilm ur banken (`reference`, kopierad med hash, en annan dealers
+film tillåten och namngiven), kortets storlek kan provas per order (`motion.cardScale`, planen orörd), och ett val som
+inte gäller lagras inte (`flipAxis` null för ett kort som inte vänds). Ett filmsteg har sin modell som förval men kan
+beställas med varje modell i `MODELS` som tar första och sista bild (`modelsFor`, värdena ur `paramsOf`; i dag WAN 3 och
+Kling 4; Kling 3.0 4K läses för den levererade ordern men beställs inte längre, `off`); en ny modell är en post i
+`MODELS` och ett pris i `data/order-policy.json`. Ett utkast följer det ankare som gäller i Material (`picture.replaced`
+säger vad bilden var) och posebildens gröna görs som ankarets (`cut.matched`); ankare 2.2:s posebild är bara den andra
+dealerns underarm och hand, lagda på dealerns egen sko och kort ur ankaret och flyttade så att mitten av källkortets
+översida möter fönsterkortets (`cut.laid`, `poseOnShoe` i `tools/order-images.ts`), medan 2.1:s är bankens ruta med
+samma fönstersko inom 2 px och kortet i nypet; en godkänd beställning ändras aldrig. En hel bild av en annan dealer i
+ett utkast stoppar godkännandet; bara posebildens utklippta arm får vara en annan dealers. Varken hela labbskärmbilden,
+placerings-JSON, nodkartan eller 3D-materialet skickas till Runway. Ändringar i editorn beställer inga filmer. Prompt
+och bildhashar står i jobbet i `data/clip-jobs.json` och i `motions`-posten; bilderna och kvittot ligger i
+`assets/motions/<clip-id>/`. Protokollet räknas och skrivs aldrig för hand: `node tools/order-ledger.ts` och vyn
+Protokoll (`/protokoll/`, `GET /api/orders/ledger`) ger en rad per tagning ur beställningen, kvittot (granskarens poäng
+ur GRANSKAD-noten), bankens `motions`-poster och Materials bilder, och per metod antal, granskarens medel och Jakobs
+omdömen (`studio/lib/ledger.ts`); granskarens dom kan också föras in bredvid en tagning från HÄMTAD utan att läget
+flyttas (`order-put.ts review`), och `tools/order-bring.ts` för en levererad tagning till bankens inkorg och Material.
+Metoden per steg och platsklass står i `data/order-methods.json` (`gäller`, `prov`, `saknas`; `src/order-methods.ts`),
+och produktionslistan (`node tools/produce.ts <dealer>`, överst i Beställ, `GET /api/production`) säger för vart och ett
+av grafens 33 steg vad som spelas (samma funktion som Kartan), vad som är på väg, om en runda kräver det, vad det väntar
+på och dess metod, och gör utkast där metoden gäller (`--draft`, knappen; aldrig ett godkännande); hålkortets giv
+(`GIV-2.1` till `D.C2`), dess vändning från vila (`HALKORT`, `IDLE>REVEAL(D.C2)`, båda bilderna med dealerns två kort
+ritade) och utgången (`UTGANG`, `READY>IDLE`) är steg i Beställ. Hela vägen från bild till färdig dealer, med alla
+format och namn: `tools/dealer-line.md`.
 
 ## Klippbank och nodnotation
 
-Studions vy **Karta** (`/studio/karta/`) visar kanterna och tagningarna; gamla labbets flik Klippbank (nodträdet) nås med `lab.html?gamla=1&tab=klippbank`. Noderna är ankarposer: `IDLE`, `READY` och ett landningsankare per kort (`P4.C1`, `D.C2`). Varje klipp är en kant `A>B` med en enda handling; en runda är kanter i följd:
+Studions vy **Karta** (`/studio/karta/`) visar kanterna och tagningarna; gamla labbets flik Klippbank (nodträdet) nås
+med `lab.html?gamla=1&tab=klippbank`. Noderna är ankarposer: `IDLE`, `READY` och ett landningsankare per kort (`P4.C1`,
+`D.C2`). Varje klipp är en kant `A>B` med en enda handling; en runda är kanter i följd:
 
 ```text
 IDLE>READY | READY>P1.C1 | P1.C1>READY | READY>D.C1 | D.C1>READY | READY>P1.C2 | P1.C2>READY | READY>D.C2 | D.C2>IDLE
 ```
 
-- Banken är 54 kanter: 16 kort × giv, retur till READY och retur till IDLE, samt `IDLE>READY`, `READY>IDLE`, `IDLE>IDLE`, `AWAY>IDLE`, `IDLE>AWAY` och `IDLE>REVEAL(D.C2)`, vändningen av dealerns hålkort. `AWAY` är bilden utan dealer: hon kommer in och sätter sig (`AWAY>IDLE`) och reser sig och går (`IDLE>AWAY`), med vila som fast punkt. Utgången beställs med enbart första bild, och dess sista rutor ger den verkliga rutan utan henne som ingången börjar på. Den filmen går från vila till vila; noden `REVEAL(D.C2)` är vila med kortet uppvänt, så nästa steg utgår från IDLE. I en runda spelas den från ruta 3 till tre rutor före slutet. `D.C3` är tre valfria kanter utöver dem. `@<klipp-id>` efter en kant låser en viss tagning, till exempel en variant. Jobbfilens `LAND(P4.C1)`/`RELEASE(P4.C1)` och VILA/REDO läses som samma noder.
-- READY kan ha namngivna varianter (`READY-B`): `READY-B>P4.C1` är en tagning av kanten `READY>P4.C1` med annan startpose, visad som variant-start och spelad bara när rundan skriver den så. Jobb med andra noder (`READY-B>DRAWN`, `DRAWN>P4.C1`) tappas aldrig: de bildar gruppen Experiment utanför de 54, med samma detaljvy och som egna kedjor att jämföra med modellens väg.
-- Fliken är presentation, inget eget statusregister. `src/clip-graph.ts` räknar grafen ur `data/clip-jobs.json`, lokala kvitton (förberedd/renderas/klar) och `motions/<id>.json` (beslut), och läser om var fjärde sekund. Huvudtagning är godkänd före ogranskad och, bland lika, den senaste som har en passande retur. Underkända tagningar väljs aldrig; de och ersatta tagningar ligger hopfällda per kant och i den skrivskyddade städlistan. `review.acceptedAs: "MAIN"` går före härledningen; en tagning med `"VARIANT"` visas bredvid och väljs först när ingen annan spelbar tagning finns (för returer gäller skarven före, se nästa punkt).
-- Ankarregeln och skarvregeln för klipp: en retur vars första bild är en fil (landningsankaret) passar varje tagning av given, som spelas till sin sista ruta. En retur vars första bild är en ruta ur ett visst givklipp passar bara den tagningen, som klipps vid den rutan (`first.frame.index`; `motion.landingFrame` går före om det anges). Hela klipp efter varandra ger annars ett hack: handen lyfter och hoppar tillbaka ner på kortet. Huvudtagningen för en retur är, efter en Primär, den som skarvar mot givens huvudtagning, också när en rakt godkänd retur finns som inte gör det. `resolveRound` räknar ut intervallen; rundbyggaren spelar kedjan, stegar ruta för ruta över klippen och visar saknade kanter som luckor. Scout äger fortsatt ordning, regler och kortvärden.
-- En härledd tagning är inget nytt klipp utan rutorna A–B ur ett befintligt: `"derived": [{id, kind, from, to, clip, frames: [A, B]}]` i jobbfilen.
-- **En film per plats** är förvalt läge (Jakobs beslut 2026-11-11; i gamla labbet ger `lab.html?gamla=1&…&filmer=kort` en film per kort). Platsens andra kort har då ingen egen film: `READY>P4.C2` spelar platsens giv `READY>P4.C1` och `P4.C2>READY`/`P4.C2>IDLE` platsens returer, med det renderade kortet flyttat planens avstånd C1→C2 (visas per plats, varning över 50 px). Regeln är sidan, inte namnet (`filmCard`): kort 2 delar bara film när det slutar på samma sida som kort 1, så dealerns stängda `D.C2` har egna filmer och banken behöver 33 filmer (6 utan kort: `IDLE>READY`, `READY>IDLE`, `IDLE>IDLE`, vändningen av hålkortet, `AWAY>IDLE` och `IDLE>AWAY`; 7 platser × 3; `D.C1` × 3; `D.C2` × 3). Huvudet visar hur många som finns, delat i kandidater (huvudtagning ogranskad eller godkänd), kända brister (huvudtagning sekundär) och saknade. Notationen är fortsatt kort för kort; `buildGraph(data, {mode})` sätter `edge.shares` och `summary.films`, `resolveRound(…, {places})` ger steget `film` och `shift`. En egen film för kort 2 ligger kvar som "egen film för kort 2" och spelas bara när rundan namnger den. I rundan ligger tidigare utdelade kort kvar renderade där deras senaste film lämnade dem.
-- **Vilan** (panelen Vila i gamla labbet, `lab.html?gamla=1&tab=klippbank&panel=vila`) är korta klipp på `IDLE>IDLE` som alla börjar och slutar på samma bild, efter Kevins och Emils vila i Scout (läst 2026-11-11 i `origin/kevin-staging` `b4a78b44c`, `kevin/croupier-scoutgg/`, och `origin/main` `5428c0593`). `pickIdle` i `src/clip-graph.ts` väljer nästa klipp med viktad slump: aldrig samma klipp två gånger i rad, minst tre lugna mellan två gester, aldrig underkända klipp eller klipp märkta bara på begäran; ogranskade får komma i labbet. Varje klipp spelas från ruta 3 till tre rutor före slutet, nästa laddas i ett dolt videoelement och tar över med rakt klipp. "Dela ut nu" klipper ett lugnt klipp direkt till ingången och spelar klart en gest i 2,5× fart först. Klippets del i vilan står i dess post: `motion.idle = {weight, calm, onRequest, label}`; utan uppgift är bara `pamela-idle-loop-01` lugnt (vikt 20), övriga gester (vikt 3), och ordet för klippet tas ur id:t. Rundans `IDLE>IDLE`-steg spelar det lugnaste klippet (lugnt före gest, högst vikt, äldst vid lika), om inte ett klipp är godkänt eller märkt `acceptedAs: "MAIN"`.
-- En rättad kopia (`"edits": [{id, source: {clip}, model, promptText, purpose}]`) är ännu en tagning av källklippets kant och visas bland de aktuella tills den granskats. `playbackSpeed: 2` på ett jobb spelar tagningen i dubbel fart; rutnumren är filens. Ligger `source-reversed.mp4` bredvid filmen erbjuds "Spela baklänges" i tagningen.
-- **Renderat kort** (kryssruta under filmen och under rundans kedja) ritar Materialpanelens eget kort ovanpå filmen. Läge, vridning och sida kommer ur kortspåret `assets/tracking/<klipp>/card-track.json` (`node tools/track-card.ts <klipp>`); filmens kort är bara en markör. Storleken kommer ur `data/scene-contract.json` och är densamma på varje plats: Kortskala 1,0 är planens kort och förvalet 1,2 en femtedel större, så filmens kort täcks utan att korten tar över bordet; det som sticker ut av ett större filmkort tar bakgrundsfyllningen. Varje sammanhängande fläck av filmkortets gula eller blå om minst 50 bildpunkter utanför skofönstret målas över med bakgrunden omkring, var den än ligger (kort som legat sedan en tidigare giv, eller filmens kort där spåret tappat det); handen ligger kvar framför. I handen ritas filmens fyrhörning 20 % större. I vila ligger kortet på planens plats och i planens riktning i bordets perspektiv, inte där filmens sista ruta råkade lägga det; flytten dit växer från noll vid skon. Pappret exponeras så att det läses som vitt bredvid filmens vita. Varje kort kan bära sitt eget värde: en post per utdelat kort, `{shoeDraw, target, r, s, faceDown}` (`cardRecord`/`cardFace` i `src/card-overlay.ts`; `cards`, `target` och `shoeDraw` i ritarens val), där `faceDown` visar baksidan vad filmen än visar och ett kort utan post behåller panelens valda motiv; "Olika kort" i rundbyggaren provar det. Filmens eget kort som sticker ut målas med bakgrunden runt om, hand och ärm ligger framför (matt ur aktuell filmruta). `assets/tracking/<klipp>/overrides.json` med `{"cardInFront": [{"from": 72, "to": 78, "note": "…"}]}` lägger kortet framför handen i de rutorna. Modell och matt: `src/card-overlay.ts`; ritning: `src/card-overlay-view.ts`. Saknas spår visas filmen som den är och fliken säger det i klartext. Spåraren (`src/card-track.ts`) följer markörregeln: filmtypen ur jobbfilen avgör vad som kan synas (en giv vänder en gång, en retur visar en sida, ingång och vila har inget utdelat kort), fynd som strider mot det är ett annat föremål och stryks, kort som legat på bordet sedan före given tas ur bilden, det sittande kortet i skon lämnas så fort ett fritt kort syns, och korta hål överbryggas ur rutorna omkring. `node tools/card-coverage.ts --all` mäter per film och ruta hur mycket av filmens eget kort som ändå syns utanför skofönstret (`coverage.json` och `receipt.json` bredvid spåret); tagningen och granskningslistan visar "täcker allt" eller "läcker ruta 61–63".
-- **Ett kortformat** (Jakob 2026-11-11: "Storleken är inte problemet, utan att det finns olika format"): kortet i `pamela-p4-c1-plan-deal-02` är standard och allt annat anpassar sig. Filmens kort ligger nära standard på P4 och P1 (3 och 5 %) men är 1,76 gånger för stort på dealerns första kort. Krav på en ny film: kortet har standardstorlek (`scaleNeeded` nära 1,2 i `coverage.json`). Skalan: planens kortrutor passar ett plan (1,1 px), medan händer, sko och modellens kort är cirka dubbelt så stora (k ≈ 2, skattat; mått per mål i `data/scene-contract.json`). I 3D-scenen håller `cardHand: standard` vilans storlek från skon till bordet.
-- Granskningsbeslut sätts i tagningen: Primär (den bästa tagningen, `acceptedAs: "MAIN"`, spelas i första hand på sin kant; en annan primär på samma kant blir då vanligt godkänd; en primär spelas alltid på sin kant, även en retur direkt efter en giv: given före väljs så att returen fortsätter den, två primära som inte passar ihop spelas båda med en skarvnotis, och bara en låst tagning `@id` och kravet på kortsida går före; varje steg i en runda bär skälet till sin tagning i `why`, med ord i `WHY_LABEL`), Godkänn, Variant, Underkänn och en anteckning. `PUT /api/clip-bank/review/<id>` skriver bara `review` i `motions/<id>.json` (`decision`, `acceptedAs`, `userReview` med datum, `userAccepted`) med samma skydd som placeringarna: eget ursprung, `If-Match` mot postens revision och atomiskt namnbyte (`tools/review-store.ts`). Inget skrivs vid inläsning; en tagning utan post i `motions/` kan inte beslutas.
-- Jobbutkast för saknade kanter kopieras ur fliken, som aldrig skriver i jobbfilen eller beställer något. Preview-servern lämnar utöver det bara ut läsvägarna `/api/clip-bank` och `/api/proofs`, `source.mp4`, `source-reversed.mp4`, `first.png` och `last.png` för klipp i jobbfilen, deras spårfiler under `assets/tracking/<klipp>/` samt mp4, png och json under `assets/proofs/`. För 3D-scenen (`scene3d.html`, länk i labbet när sidan finns) lämnas three.js ut som `/vendor/three.module.js` och `/vendor/three.core.js` ur det låsta beroendet `three`, inget annat ur `node_modules`. Fliken Prov (`?tab=prov&proof=<mapp>`) är granskningsrummet för provmapparna: senast ändrade mapp först och sökbar lista, filmen stor med spellista, bilderna i ett galleri med visare. `proof.json` får bära `title`, `description`, `labels`, `chapters` och `verdicts` (per fil: `ok`, `remarks`, `failed` eller `unreviewed`). En etikett skrivs som ett kort namn följt av allt annat (delas vid första parentes, punkt eller kolon): listan visar namnet och en omdömesbricka, resten visas för den valda filen; saknas `verdicts` läses brickan ur etikettens ord (inte användbar, användbar med, bara mätt, användbar). Publika sidan saknar underlaget och visar "finns bara lokalt".
+- Banken är 54 kanter: 16 kort × giv, retur till READY och retur till IDLE, samt `IDLE>READY`, `READY>IDLE`,
+  `IDLE>IDLE`, `AWAY>IDLE`, `IDLE>AWAY` och `IDLE>REVEAL(D.C2)`, vändningen av dealerns hålkort. `AWAY` är bilden utan
+  dealer: hon kommer in och sätter sig (`AWAY>IDLE`) och reser sig och går (`IDLE>AWAY`), med vila som fast punkt.
+  Utgången beställs med enbart första bild, och dess sista rutor ger den verkliga rutan utan henne som ingången börjar
+  på. Den filmen går från vila till vila; noden `REVEAL(D.C2)` är vila med kortet uppvänt, så nästa steg utgår från
+  IDLE. I en runda spelas den från ruta 3 till tre rutor före slutet. `D.C3` är tre valfria kanter utöver dem.
+  `@<klipp-id>` efter en kant låser en viss tagning, till exempel en variant. Jobbfilens `LAND(P4.C1)`/`RELEASE(P4.C1)`
+  och VILA/REDO läses som samma noder.
+- READY kan ha namngivna varianter (`READY-B`): `READY-B>P4.C1` är en tagning av kanten `READY>P4.C1` med annan
+  startpose, visad som variant-start och spelad bara när rundan skriver den så. Jobb med andra noder (`READY-B>DRAWN`,
+  `DRAWN>P4.C1`) tappas aldrig: de bildar gruppen Experiment utanför de 54, med samma detaljvy och som egna kedjor att
+  jämföra med modellens väg.
+- Fliken är presentation, inget eget statusregister. `src/clip-graph.ts` räknar grafen ur `data/clip-jobs.json`, lokala
+  kvitton (förberedd/renderas/klar) och `motions/<id>.json` (beslut), och läser om var fjärde sekund. Huvudtagning är
+  godkänd före ogranskad och, bland lika, den senaste som har en passande retur. Underkända tagningar väljs aldrig; de
+  och ersatta tagningar ligger hopfällda per kant och i den skrivskyddade städlistan. `review.acceptedAs: "MAIN"` går
+  före härledningen; en tagning med `"VARIANT"` visas bredvid och väljs först när ingen annan spelbar tagning finns (för
+  returer gäller skarven före, se nästa punkt).
+- Ankarregeln och skarvregeln för klipp: en retur vars första bild är en fil (landningsankaret) passar varje tagning av
+  given, som spelas till sin sista ruta. En retur vars första bild är en ruta ur ett visst givklipp passar bara den
+  tagningen, som klipps vid den rutan (`first.frame.index`; `motion.landingFrame` går före om det anges). Hela klipp
+  efter varandra ger annars ett hack: handen lyfter och hoppar tillbaka ner på kortet. Huvudtagningen för en retur är,
+  efter en Primär, den som skarvar mot givens huvudtagning, också när en rakt godkänd retur finns som inte gör det.
+  `resolveRound` räknar ut intervallen; rundbyggaren spelar kedjan, stegar ruta för ruta över klippen och visar saknade
+  kanter som luckor. Scout äger fortsatt ordning, regler och kortvärden.
+- En härledd tagning är inget nytt klipp utan rutorna A–B ur ett befintligt:
+  `"derived": [{id, kind, from, to, clip, frames: [A, B]}]` i jobbfilen.
+- **En film per plats** är förvalt läge (Jakobs beslut 2026-11-11; i gamla labbet ger `lab.html?gamla=1&…&filmer=kort`
+  en film per kort). Platsens andra kort har då ingen egen film: `READY>P4.C2` spelar platsens giv `READY>P4.C1` och
+  `P4.C2>READY`/`P4.C2>IDLE` platsens returer, med det renderade kortet flyttat planens avstånd C1→C2 (visas per plats,
+  varning över 50 px). Regeln är sidan, inte namnet (`filmCard`): kort 2 delar bara film när det slutar på samma sida
+  som kort 1, så dealerns stängda `D.C2` har egna filmer och banken behöver 33 filmer (6 utan kort: `IDLE>READY`,
+  `READY>IDLE`, `IDLE>IDLE`, vändningen av hålkortet, `AWAY>IDLE` och `IDLE>AWAY`; 7 platser × 3; `D.C1` × 3; `D.C2` ×
+  3). Huvudet visar hur många som finns, delat i kandidater (huvudtagning ogranskad eller godkänd), kända brister
+  (huvudtagning sekundär) och saknade. Notationen är fortsatt kort för kort; `buildGraph(data, {mode})` sätter
+  `edge.shares` och `summary.films`, `resolveRound(…, {places})` ger steget `film` och `shift`. En egen film för kort 2
+  ligger kvar som "egen film för kort 2" och spelas bara när rundan namnger den. I rundan ligger tidigare utdelade kort
+  kvar renderade där deras senaste film lämnade dem.
+- **Vilan** (panelen Vila i gamla labbet, `lab.html?gamla=1&tab=klippbank&panel=vila`) är korta klipp på `IDLE>IDLE` som
+  alla börjar och slutar på samma bild, efter Kevins och Emils vila i Scout (läst 2026-11-11 i `origin/kevin-staging`
+  `b4a78b44c`, `kevin/croupier-scoutgg/`, och `origin/main` `5428c0593`). `pickIdle` i `src/clip-graph.ts` väljer nästa
+  klipp med viktad slump: aldrig samma klipp två gånger i rad, minst tre lugna mellan två gester, aldrig underkända
+  klipp eller klipp märkta bara på begäran; ogranskade får komma i labbet. Varje klipp spelas från ruta 3 till tre rutor
+  före slutet, nästa laddas i ett dolt videoelement och tar över med rakt klipp. "Dela ut nu" klipper ett lugnt klipp
+  direkt till ingången och spelar klart en gest i 2,5× fart först. Klippets del i vilan står i dess post:
+  `motion.idle = {weight, calm, onRequest, label}`; utan uppgift är bara `pamela-idle-loop-01` lugnt (vikt 20), övriga
+  gester (vikt 3), och ordet för klippet tas ur id:t. Rundans `IDLE>IDLE`-steg spelar det lugnaste klippet (lugnt före
+  gest, högst vikt, äldst vid lika), om inte ett klipp är godkänt eller märkt `acceptedAs: "MAIN"`.
+- En rättad kopia (`"edits": [{id, source: {clip}, model, promptText, purpose}]`) är ännu en tagning av källklippets
+  kant och visas bland de aktuella tills den granskats. `playbackSpeed: 2` på ett jobb spelar tagningen i dubbel fart;
+  rutnumren är filens. Ligger `source-reversed.mp4` bredvid filmen erbjuds "Spela baklänges" i tagningen.
+- **Renderat kort** (kryssruta under filmen och under rundans kedja) ritar Materialpanelens eget kort ovanpå filmen.
+  Läge, vridning och sida kommer ur kortspåret `assets/tracking/<klipp>/card-track.json`
+  (`node tools/track-card.ts <klipp>`); filmens kort är bara en markör. Storleken kommer ur `data/scene-contract.json`
+  och är densamma på varje plats: Kortskala 1,0 är planens kort och förvalet 1,2 en femtedel större, så filmens kort
+  täcks utan att korten tar över bordet; det som sticker ut av ett större filmkort tar bakgrundsfyllningen. Varje
+  sammanhängande fläck av filmkortets gula eller blå om minst 50 bildpunkter utanför skofönstret målas över med
+  bakgrunden omkring, var den än ligger (kort som legat sedan en tidigare giv, eller filmens kort där spåret tappat
+  det); handen ligger kvar framför. I handen ritas filmens fyrhörning 20 % större. I vila ligger kortet på planens plats
+  och i planens riktning i bordets perspektiv, inte där filmens sista ruta råkade lägga det; flytten dit växer från noll
+  vid skon. Pappret exponeras så att det läses som vitt bredvid filmens vita. Varje kort kan bära sitt eget värde: en
+  post per utdelat kort, `{shoeDraw, target, r, s, faceDown}` (`cardRecord`/`cardFace` i `src/card-overlay.ts`; `cards`,
+  `target` och `shoeDraw` i ritarens val), där `faceDown` visar baksidan vad filmen än visar och ett kort utan post
+  behåller panelens valda motiv; "Olika kort" i rundbyggaren provar det. Filmens eget kort som sticker ut målas med
+  bakgrunden runt om, hand och ärm ligger framför (matt ur aktuell filmruta). `assets/tracking/<klipp>/overrides.json`
+  med `{"cardInFront": [{"from": 72, "to": 78, "note": "…"}]}` lägger kortet framför handen i de rutorna. Modell och
+  matt: `src/card-overlay.ts`; ritning: `src/card-overlay-view.ts`. Saknas spår visas filmen som den är och fliken säger
+  det i klartext. Spåraren (`src/card-track.ts`) följer markörregeln: filmtypen ur jobbfilen avgör vad som kan synas (en
+  giv vänder en gång, en retur visar en sida, ingång och vila har inget utdelat kort), fynd som strider mot det är ett
+  annat föremål och stryks, kort som legat på bordet sedan före given tas ur bilden, det sittande kortet i skon lämnas
+  så fort ett fritt kort syns, och korta hål överbryggas ur rutorna omkring. `node tools/card-coverage.ts --all` mäter
+  per film och ruta hur mycket av filmens eget kort som ändå syns utanför skofönstret (`coverage.json` och
+  `receipt.json` bredvid spåret); tagningen och granskningslistan visar "täcker allt" eller "läcker ruta 61–63".
+- **Ett kortformat** (Jakob 2026-11-11: "Storleken är inte problemet, utan att det finns olika format"): kortet i
+  `pamela-p4-c1-plan-deal-02` är standard och allt annat anpassar sig. Filmens kort ligger nära standard på P4 och P1 (3
+  och 5 %) men är 1,76 gånger för stort på dealerns första kort. Krav på en ny film: kortet har standardstorlek
+  (`scaleNeeded` nära 1,2 i `coverage.json`). Skalan: planens kortrutor passar ett plan (1,1 px), medan händer, sko och
+  modellens kort är cirka dubbelt så stora (k ≈ 2, skattat; mått per mål i `data/scene-contract.json`). I 3D-scenen
+  håller `cardHand: standard` vilans storlek från skon till bordet.
+- Granskningsbeslut sätts i tagningen: Primär (den bästa tagningen, `acceptedAs: "MAIN"`, spelas i första hand på sin
+  kant; en annan primär på samma kant blir då vanligt godkänd; en primär spelas alltid på sin kant, även en retur direkt
+  efter en giv: given före väljs så att returen fortsätter den, två primära som inte passar ihop spelas båda med en
+  skarvnotis, och bara en låst tagning `@id` och kravet på kortsida går före; varje steg i en runda bär skälet till sin
+  tagning i `why`, med ord i `WHY_LABEL`), Godkänn, Variant, Underkänn och en anteckning.
+  `PUT /api/clip-bank/review/<id>` skriver bara `review` i `motions/<id>.json` (`decision`, `acceptedAs`, `userReview`
+  med datum, `userAccepted`) med samma skydd som placeringarna: eget ursprung, `If-Match` mot postens revision och
+  atomiskt namnbyte (`tools/review-store.ts`). Inget skrivs vid inläsning; en tagning utan post i `motions/` kan inte
+  beslutas.
+- Jobbutkast för saknade kanter kopieras ur fliken, som aldrig skriver i jobbfilen eller beställer något.
+  Preview-servern lämnar utöver det bara ut läsvägarna `/api/clip-bank` och `/api/proofs`, `source.mp4`,
+  `source-reversed.mp4`, `first.png` och `last.png` för klipp i jobbfilen, deras spårfiler under
+  `assets/tracking/<klipp>/` samt mp4, png och json under `assets/proofs/`. För 3D-scenen (`scene3d.html`, länk i labbet
+  när sidan finns) lämnas three.js ut som `/vendor/three.module.js` och `/vendor/three.core.js` ur det låsta beroendet
+  `three`, inget annat ur `node_modules`. Fliken Prov (`?tab=prov&proof=<mapp>`) är granskningsrummet för provmapparna:
+  senast ändrade mapp först och sökbar lista, filmen stor med spellista, bilderna i ett galleri med visare. `proof.json`
+  får bära `title`, `description`, `labels`, `chapters` och `verdicts` (per fil: `ok`, `remarks`, `failed` eller
+  `unreviewed`). En etikett skrivs som ett kort namn följt av allt annat (delas vid första parentes, punkt eller kolon):
+  listan visar namnet och en omdömesbricka, resten visas för den valda filen; saknas `verdicts` läses brickan ur
+  etikettens ord (inte användbar, användbar med, bara mätt, användbar). Publika sidan saknar underlaget och visar "finns
+  bara lokalt".
 
 ## Återbruk och införande
 
-Två historiska banker måste hållas isär. Den **äldre vita banken** på 182,867 s byggdes av fjorton separata 12-sekunderstagningar plus vila/bryggor. Kortversionen 146,8 s trimmade hela bildrutor utan retime/blend. P4.C1/C2-promptarna begärde vita kort och komplett dragning–placering–släpp–tom retur, ingen uttrycklig sidvändning. Dess senare materialvisning tilldelade kortsidor; råfilmens semantiska sida var UNKNOWN. Dessa vita original är inte källan till den nyare gula/blå P4.C2 och dess felaktigt helgula `review-v04`. Exakta äldre instruktioner, trimintervall och hashkontroller: [historiskt underlag](../evidence/historical-p4-generation-inputs.json).
+Två historiska banker måste hållas isär. Den **äldre vita banken** på 182,867 s byggdes av fjorton separata
+12-sekunderstagningar plus vila/bryggor. Kortversionen 146,8 s trimmade hela bildrutor utan retime/blend.
+P4.C1/C2-promptarna begärde vita kort och komplett dragning–placering–släpp–tom retur, ingen uttrycklig sidvändning.
+Dess senare materialvisning tilldelade kortsidor; råfilmens semantiska sida var UNKNOWN. Dessa vita original är inte
+källan till den nyare gula/blå P4.C2 och dess felaktigt helgula `review-v04`. Exakta äldre instruktioner, trimintervall
+och hashkontroller: [historiskt underlag](../evidence/historical-p4-generation-inputs.json).
 
-Den **nyare r2-banken** är återställd som fyra hela historiska alternativ i native/porträtt: `motions/pamela-sequence-{16,17}-{native,portrait}-r2.json`. Sekvensen med 16 kort är 3296 rutor/109,867 s; den med 17 kort är 3598 rutor/119,933 s, båda 30 fps. Jakob accepterar dem som alternativ men anger fel koordinater/format; de är inte identifieringen av den efterfrågade äldre sekvensen. Den äldre bankens kandidater på 182,867/146,8 s måste matchas separat mot hans önskade prov. P1–P7 får två kort i r2, D.C1 visas öppet och D.C2 slutar dolt i 16-kortsfilmen. 17-kortsfilmen fortsätter med separat reveal av D.C2 och dragning av D.C3. Scout äger även fortsättningsvis när reveal och dragning tillåts.
+Den **nyare r2-banken** är återställd som fyra hela historiska alternativ i native/porträtt:
+`motions/pamela-sequence-{16,17}-{native,portrait}-r2.json`. Sekvensen med 16 kort är 3296 rutor/109,867 s; den med 17
+kort är 3598 rutor/119,933 s, båda 30 fps. Jakob accepterar dem som alternativ men anger fel koordinater/format; de är
+inte identifieringen av den efterfrågade äldre sekvensen. Den äldre bankens kandidater på 182,867/146,8 s måste matchas
+separat mot hans önskade prov. P1–P7 får två kort i r2, D.C1 visas öppet och D.C2 slutar dolt i 16-kortsfilmen.
+17-kortsfilmen fortsätter med separat reveal av D.C2 och dragning av D.C3. Scout äger även fortsättningsvis när reveal
+och dragning tillåts.
 
-Filmerna börjar och slutar i IDLE men bordstillståndet ändras från tomt till 16/17 kort; de får inte loopas direkt till tom start. Gemensam READY/IDLE-pose betyder inte identiskt bord eller fria skarvar mellan godtyckliga klipp. Historisk tidslinje, placeringsplan, inbakade kort och kvalificerade skarvar följer med som beroenden. Den nuvarande editorns mål har inte applicerats på filmerna. Återbrukets hash-/bildruteverifiering finns i [sequence-reuse-audit](../evidence/sequence-reuse-audit.json) och [sequence-review-production](../evidence/sequence-review-production.json); besluten är PENDING, inte produktionsacceptans.
+Filmerna börjar och slutar i IDLE men bordstillståndet ändras från tomt till 16/17 kort; de får inte loopas direkt till
+tom start. Gemensam READY/IDLE-pose betyder inte identiskt bord eller fria skarvar mellan godtyckliga klipp. Historisk
+tidslinje, placeringsplan, inbakade kort och kvalificerade skarvar följer med som beroenden. Den nuvarande editorns mål
+har inte applicerats på filmerna. Återbrukets hash-/bildruteverifiering finns i
+[sequence-reuse-audit](../evidence/sequence-reuse-audit.json) och
+[sequence-review-production](../evidence/sequence-review-production.json); besluten är PENDING, inte
+produktionsacceptans.
 
-Jakobs fristående blackjack-studio (`local-studio/blackjack-studio`, "Göran", läst 2026-11-11): Görans grundbild är framställd ur ett uppladdat foto utan noterat tillstånd, så hans projekt, klipp, kortlägen och ankare används inte, och inte heller trä-casinobilden `c7ef9e9c` (Jakobs besked 2026-11-11: Pamela är dealern). Fritt att återbruka: `blackjack/` (regelmotor), `money/`, `players/`, `scene/furniture.ts`, `panorama-room.ts`, `atmosphere.ts`, miljöerna Las Vegas och Los Angeles och Poly Havens texturer (CC0, `material-sources.json`). Gamla labbets 3D-utkast med Pamela som platt stillbild (`runs/20261109-pamela-stage/`, `runs/20261110-pamela-studio-integration/take-02/`) visas i Prov `pamela-3d-utkast`.
+Jakobs fristående blackjack-studio (`local-studio/blackjack-studio`, "Göran", läst 2026-11-11): Görans grundbild är
+framställd ur ett uppladdat foto utan noterat tillstånd, så hans projekt, klipp, kortlägen och ankare används inte, och
+inte heller trä-casinobilden `c7ef9e9c` (Jakobs besked 2026-11-11: Pamela är dealern). Fritt att återbruka: `blackjack/`
+(regelmotor), `money/`, `players/`, `scene/furniture.ts`, `panorama-room.ts`, `atmosphere.ts`, miljöerna Las Vegas och
+Los Angeles och Poly Havens texturer (CC0, `material-sources.json`). Gamla labbets 3D-utkast med Pamela som platt
+stillbild (`runs/20261109-pamela-stage/`, `runs/20261110-pamela-studio-integration/take-02/`) visas i Prov
+`pamela-3d-utkast`.
 
-`materials/source/references/card-materials/new-front2/` innehåller medföljande 3D-materialreferenser; `new-front2` är en läsbar syskonreferens, inte ett runtime-beroende. Namnen Pamela/Göran i äldre material måste kopplas till verifierad filhash/proveniens innan identitet antas. Nya läsningar från gamla labbet registreras; inga gamla node_modules eller junctions importeras.
+`materials/source/references/card-materials/new-front2/` innehåller medföljande 3D-materialreferenser; `new-front2` är
+en läsbar syskonreferens, inte ett runtime-beroende. Namnen Pamela/Göran i äldre material måste kopplas till verifierad
+filhash/proveniens innan identitet antas. Nya läsningar från gamla labbet registreras; inga gamla node_modules eller
+junctions importeras.
 
-Underlag: `Dealer_sekvensguide_2026-11-10.md` och `Dealer_studio_skiss_2026-11-10.html` i Jakobs Downloads samt bifogad diskussion `2363882c-7e08-4c16-98fc-37620eb14bf9/Inklistrad text.txt`. De är referensförslag. Guidens semantik har sammanvägts här; HTML-skissen är inte installerad och texten är inte behörighet att ändra runtime. Källsökvägar/hashar finns i `.runtime/documentation-sources.json`. Nästa steg för de äldre sekvenserna: identifiera den efterfrågade äldre sekvensen och granska P4.C2-originalet och kontrollprovet; r2-filmerna förblir alternativa underlag. Bind därefter en accepterad rörelse till vald placeringsrevision. Full acceptans kräver obruten tvåkortsutdelning till alla åtta platser i båda format, verifierad kontakt/mask och bevarad V6-referens. V6-reproduktionskvitton och återställda sekvensfiler bevisar olika saker; inget av dem ersätter aktuell visuell acceptans eller Scoutintegration.
+Underlag: `Dealer_sekvensguide_2026-11-10.md` och `Dealer_studio_skiss_2026-11-10.html` i Jakobs Downloads samt bifogad
+diskussion `2363882c-7e08-4c16-98fc-37620eb14bf9/Inklistrad text.txt`. De är referensförslag. Guidens semantik har
+sammanvägts här; HTML-skissen är inte installerad och texten är inte behörighet att ändra runtime. Källsökvägar/hashar
+finns i `.runtime/documentation-sources.json`. Nästa steg för de äldre sekvenserna: identifiera den efterfrågade äldre
+sekvensen och granska P4.C2-originalet och kontrollprovet; r2-filmerna förblir alternativa underlag. Bind därefter en
+accepterad rörelse till vald placeringsrevision. Full acceptans kräver obruten tvåkortsutdelning till alla åtta platser
+i båda format, verifierad kontakt/mask och bevarad V6-referens. V6-reproduktionskvitton och återställda sekvensfiler
+bevisar olika saker; inget av dem ersätter aktuell visuell acceptans eller Scoutintegration.

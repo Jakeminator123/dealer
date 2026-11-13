@@ -1,6 +1,7 @@
 # Dealer – arbetsregler
 
-Här byggs en filmad dealer till Jakobs blackjackspel: korta filmklipp mellan fasta ankare, spelade i studion, i 3D-scenen
+Här byggs en filmad dealer till Jakobs blackjackspel: korta filmklipp mellan fasta ankare, spelade i studion, i
+3D-scenen
 och i spelet. Scoutgaming (ett annat repo) är slutmålet på sikt och äger regler, slump och kortvärden. Jakob äger
 projektet; han är inte programmerare, så förklara val i vanliga ord.
 
@@ -15,7 +16,8 @@ projektet; han är inte programmerare, så förklara val i vanliga ord.
 ## Var kunskap står
 
 - Läget nu, ägare och Jakobs gällande besked: `HANDOFF.md`. Ersätt det som inte längre gäller; ingen dagbok per körning.
-- Kontrakt och format: `docs/SYSTEM.md`. Rutiner, anslutningar och sådant som gäller en viss dator eller ett visst verktyg:
+- Kontrakt och format: `docs/SYSTEM.md`. Rutiner, anslutningar och sådant som gäller en viss dator eller ett visst
+  verktyg:
   `docs/DRIFT.md`.
 - Ett ämne som växer ur sitt avsnitt får en egen sida under `docs/`, länkad från README:s tabell.
 - Hur ett arbetsmoment görs: en instruktion i `tools/` bredvid verktygen (som `tools/dealer-line.md`,
