@@ -4862,12 +4862,13 @@
           "name": "Paow · ankare 2.2 (släp), tagning 1",
           "path": "assets/anchors/paow-ankare-2-2-t1/anchor.png",
           "node": "READY-B",
-          "state": "kandidat",
+          "state": "gäller",
           "note": "Ankare 2.2 lagd till i studion 2026-11-13.",
           "source": {
             "from": "uppladdad: after-2.png",
             "when": "2026-11-13"
-          }
+          },
+          "stateBy": "Jakob (besked 15:47 till huvudagenten: kandidaten för ankare 2.2 gäller; infört av filmproducenten) 2026-11-13 16:00: kandidat → gäller (Material)"
         }
       ]
     },

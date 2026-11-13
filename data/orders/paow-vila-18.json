@@ -1,0 +1,97 @@
+{
+  "schemaVersion": 1,
+  "id": "paow-vila-18",
+  "title": "Omgång 14 · knäcker fingrarna · handflatorna utåt och fram, lågt",
+  "summary": "Gör en vilofilm av Paow: hon sitter still, och filmen börjar och slutar på ankare 1.",
+  "group": null,
+  "dealer": "paow",
+  "kind": "FILM",
+  "step": {
+    "key": "VILA",
+    "label": "Vila, samma bild först och sist",
+    "edge": "IDLE>IDLE",
+    "shape": "ONE_WAY",
+    "cutInto": [],
+    "makes": null
+  },
+  "motion": null,
+  "pictures": [
+    {
+      "name": "first.png",
+      "label": "Första bild · Paows ankare 1",
+      "goesAs": "startFrame",
+      "path": "assets/orders/paow-vila-18/first.png",
+      "sha256": "cdaa59756e2eb0f7b839f23254f9999f8c8da4c8eef0e37bf23e9643ba6586ee",
+      "width": 1764,
+      "height": 1174,
+      "from": {
+        "entry": "paow-vila-ung-2",
+        "path": "assets/anchors/paow-vila-ung-2/anchor.png",
+        "note": "Vila, yngre, kandidat 2 (gäller)"
+      },
+      "waits": null
+    },
+    {
+      "name": "last.png",
+      "label": "Sista bild · Paows ankare 1",
+      "goesAs": "endFrame",
+      "path": "assets/orders/paow-vila-18/last.png",
+      "sha256": "cdaa59756e2eb0f7b839f23254f9999f8c8da4c8eef0e37bf23e9643ba6586ee",
+      "width": 1764,
+      "height": 1174,
+      "from": {
+        "entry": "paow-vila-ung-2",
+        "path": "assets/anchors/paow-vila-ung-2/anchor.png",
+        "note": "Vila, yngre, kandidat 2 (gäller)"
+      },
+      "waits": null
+    }
+  ],
+  "reference": {
+    "status": "INGEN",
+    "why": "WAN 3 tar ingen referensfilm tillsammans med första och sista bild."
+  },
+  "generation": {
+    "provider": "runway-app",
+    "tool": "generate_video",
+    "model": "wan3",
+    "params": {
+      "resolution": "1080p",
+      "duration": 6,
+      "ratio": "adaptive",
+      "generateAudio": false
+    }
+  },
+  "prompt": {
+    "template": "film-vila-kort@8",
+    "style": "KORT",
+    "text": "Locked camera, one continuous shot. She starts and ends exactly as in the first frame, and holds still for the last half second. She glances down at her hands, brings them together just above where they lay and laces her fingers. With her fingers laced she turns her palms outward and pushes her arms straight forward, away from her body, in one short stretch until her knuckles crack, then unlaces her fingers and lays each hand back on the felt where it lay. Her elbows stay low, and her eyes come back up to the camera with a small smile, her lips together.",
+    "sha256": "3b1bbb09b67af6e067e0e099fb0936f60a7717ff60bba192185891f2faa9dcf6",
+    "extra": "She glances down at her hands, brings them together just above where they lay and laces her fingers. With her fingers laced she turns her palms outward and pushes her arms straight forward, away from her body, in one short stretch until her knuckles crack, then unlaces her fingers and lays each hand back on the felt where it lay. Her elbows stay low, and her eyes come back up to the camera with a small smile, her lips together.",
+    "middle": false
+  },
+  "takes": 1,
+  "cost": {
+    "perTake": 120,
+    "total": 120,
+    "worstPerTake": 120,
+    "worstTotal": 120,
+    "basis": "20 krediter per s × 6 s. DRIFT, Lärdomar: 20 per s i full storlek; planen: 4 s = 80."
+  },
+  "limits": {
+    "maxCredits": 120,
+    "stopBelowCredits": 0
+  },
+  "notes": [
+    "Prov, en tagning. Jakob ville ha \"när hon knäcker fingrarna\". paow-vila-15 (händerna \"low over the felt\") ritade ett grått bord; paow-vila-16 (händerna \"in front of her chest\") knäppte händerna som i bön och kavajen kapades snett vid bordskanten när armarna var uppe (Jakob: Variant, \"hon gör någon slags bön\"). Här: fingrarna flätas strax ovanför där händerna låg, handflatorna vänds utåt och armarna skjuts rakt fram tills knogarna knäcks, armbågarna låga."
+  ],
+  "created": "2026-11-13T15:01:58.419Z",
+  "createdBy": "filmproducenten åt huvudagenten (dealer-94), på Jakobs besked 2026-11-13 15:47 och 15:50 (\"Nej du får obegränsat i budget!\", \"jag vill nu för jag ska iväg att du godkänner allt videomaterial som innehåller de där kriterierna så vi får en roligare grundloop i idle/ankjare 1\"): omgång 14",
+  "approval": {
+    "by": "huvudagent",
+    "at": "2026-11-13T15:04:27.510Z",
+    "orderSha256": "f6e0ab13bb6afcccb8f6b5b9c07604edd50e4192e422cec495b45131c4853082",
+    "mandate": "Jakob 2026-11-13 kl. 15.47 om listan (plats 6: fler tagningar från ankare 2.2 med enfärgat kort): \"Jag håller med om allt annat du nämnde, så jag kan acceptera det rakt av\"; vinkningen och fingrarna på hans ord cirka 13.30; budget: hans \"obegränsat\" kl. 15.13; texterna lästa av huvudagenten"
+  },
+  "status": "GODKÄND"
+}

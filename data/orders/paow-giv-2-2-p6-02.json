@@ -1,0 +1,159 @@
+{
+  "schemaVersion": 1,
+  "id": "paow-giv-2-2-p6-02",
+  "title": "Omgång 14 · plats 6 från ankare 2.2 · A · WAN 3, kortet enfärgat i texten",
+  "summary": "Gör en film av Paow: från ankare 2.2 (släp) släpar hon ett kort ur skon med vänster hand; hon för fram det med baksidan upp, vänder upp det vid plats 6 och lägger det öppet; handen går tillbaka över skon.",
+  "group": null,
+  "dealer": "paow",
+  "kind": "FILM",
+  "step": {
+    "key": "GIV-2.2",
+    "label": "Släp, ett kort till platsen och tillbaka",
+    "edge": "READY-B>P6.C1",
+    "shape": "ROUND_TRIP",
+    "cutInto": [
+      "READY-B>P6.C1",
+      "P6.C1>READY-B"
+    ],
+    "makes": null
+  },
+  "motion": {
+    "grip": "DRAG",
+    "hand": "LH",
+    "pass": false,
+    "turn": true,
+    "flipAxis": "AT_PLACE",
+    "target": "P6.C1",
+    "side": "FRONT",
+    "fromPlan": true
+  },
+  "pictures": [
+    {
+      "name": "first.png",
+      "label": "Första bild · Paows ankare 2.2",
+      "goesAs": "startFrame",
+      "path": "assets/orders/paow-giv-2-2-p6-02/first.png",
+      "sha256": "451fbaafa65a82b22818dab6904d5a1c5a23941dba11213709995b1f5d8d1fd4",
+      "width": 1764,
+      "height": 1174,
+      "from": {
+        "entry": "paow-ankare-2-2-t1",
+        "path": "assets/anchors/paow-ankare-2-2-t1/anchor.png",
+        "note": "Paow · ankare 2.2 (släp), tagning 1 (gäller)"
+      },
+      "waits": null
+    },
+    {
+      "name": "last.png",
+      "label": "Sista bild · samma + kortet öppet på plats 6",
+      "goesAs": "endFrame",
+      "path": "assets/orders/paow-giv-2-2-p6-02/last.png",
+      "sha256": "86ae49a59656fe6f6ca113c54459361d28ee158d4896aac4453d46886fe6f488",
+      "from": {
+        "built": "första bilden + kortet P6.C1 där planen säger"
+      },
+      "waits": null,
+      "width": 1764,
+      "height": 1174,
+      "drawn": {
+        "target": "P6.C1",
+        "side": "FRONT",
+        "as": "flatQuad från P4.C1 (planens plana bord, som labbet ritar)",
+        "plan": {
+          "path": "placements/default.json",
+          "sha256": "e0fb924d27dc1311ff9cd079a72eeaa81e218eae8dd48990068d1cf0a5fbd67f",
+          "updatedAt": "2026-11-11T14:46:38.185Z"
+        },
+        "texture": {
+          "video": "assets/motions/pamela-p4-c1-plan-return-idle-01/source.mp4",
+          "frame": 89,
+          "sha256": "0b3cba9be4a969334bf1ba23623b80be6d0bd119a3c4dd8236db27145d479aa7",
+          "quadFrom": "assets/anchors/pamela-idle-p4-c1-plan-01/receipt.json"
+        },
+        "quad": [
+          [
+            1226.7,
+            995
+          ],
+          [
+            1291.1,
+            995
+          ],
+          [
+            1345.3,
+            1046.1
+          ],
+          [
+            1272.9,
+            1046.1
+          ]
+        ],
+        "centre": [
+          1284,
+          1020.5
+        ],
+        "measured": {
+          "centre": [
+            1284.8,
+            1021.3
+          ],
+          "area": 3786,
+          "box": [
+            119,
+            53
+          ],
+          "changedElsewhere": 0
+        },
+        "measuredOffsetPx": 1.1
+      }
+    }
+  ],
+  "reference": {
+    "status": "INGEN",
+    "why": "WAN 3 tar ingen referensfilm tillsammans med första och sista bild."
+  },
+  "generation": {
+    "provider": "runway-app",
+    "tool": "generate_video",
+    "model": "wan3",
+    "params": {
+      "resolution": "1080p",
+      "duration": 6,
+      "ratio": "adaptive",
+      "generateAudio": false
+    }
+  },
+  "prompt": {
+    "template": "film-giv-kort@8",
+    "style": "KORT",
+    "text": "Locked camera, one continuous shot. Her hand at the shoe slides the yellow card out of the window and drags it flat along the felt under its fingertips, yellow side up, to its place well to the right of the middle of the picture, in front of the shoe, where the last frame shows it. There her thumb slides under the long edge nearest it and lifts it as her wrist turns thumb side up; the card rolls over on its opposite long edge, which stays on the felt, and her thumb comes over onto the blue face. Then her open hand glides back low over the felt, palm down, to the shoe and rests over the next card in the window. The other hand rests on the felt. Only one card moves; its back is yellow and its face is blue. The card is plain, one flat solid yellow from edge to edge on its back and one flat solid blue from edge to edge on its face, and the next card in the window is the same plain solid yellow.",
+    "sha256": "d92d9119505eebfc46efefaaf834eb15ece42006b5490d9864b511444132f739",
+    "extra": "The card is plain, one flat solid yellow from edge to edge on its back and one flat solid blue from edge to edge on its face, and the next card in the window is the same plain solid yellow.",
+    "middle": false
+  },
+  "takes": 1,
+  "cost": {
+    "perTake": 120,
+    "total": 120,
+    "worstPerTake": 120,
+    "worstTotal": 120,
+    "basis": "20 krediter per s × 6 s. DRIFT, Lärdomar: 20 per s i full storlek; planen: 4 s = 80."
+  },
+  "limits": {
+    "maxCredits": 120,
+    "stopBelowCredits": 0
+  },
+  "notes": [
+    "Prov, en tagning, en ändring: en mening om att kortet är enfärgat på båda sidorna och att skons nästa kort är enfärgat gult (orderns tillägg). Allt annat som omgång 13: WAN 3, 1080p, 6 s, mall 8, vänster hand, vänd vid platsen, ankare 2.2 (paow-ankare-2-2-t1, gäller) först, samma kort ritat i planens storlek sist.",
+    "Jämförelsen är paow-giv-2-2-p6-01 (omgång 13): släpet till plats 6 och en vändning med kantläge kring långsidan cirka 85 px före platsen, men kortet tryckt på båda sidorna (vit kant, guldram, emblem) och skons nästa kort tryckt; Jakob: \"Tryck på båda sidorna, men hon trycker eller pressar ner kortet som man gör med en blackjack-sko\" (Variant)."
+  ],
+  "created": "2026-11-13T15:01:57.238Z",
+  "createdBy": "filmproducenten åt huvudagenten (dealer-94), på Jakobs besked 2026-11-13 15:47 och 15:50 (\"Nej du får obegränsat i budget!\", \"jag vill nu för jag ska iväg att du godkänner allt videomaterial som innehåller de där kriterierna så vi får en roligare grundloop i idle/ankjare 1\"): omgång 14",
+  "approval": {
+    "by": "huvudagent",
+    "at": "2026-11-13T15:04:21.941Z",
+    "orderSha256": "c0785fd6c3abd0a337748366ffcbd2693e421fedf6bcdd4ee4a671c406f65f68",
+    "mandate": "Jakob 2026-11-13 kl. 15.47 om listan (plats 6: fler tagningar från ankare 2.2 med enfärgat kort): \"Jag håller med om allt annat du nämnde, så jag kan acceptera det rakt av\"; vinkningen och fingrarna på hans ord cirka 13.30; budget: hans \"obegränsat\" kl. 15.13; texterna lästa av huvudagenten"
+  },
+  "status": "GODKÄND"
+}
