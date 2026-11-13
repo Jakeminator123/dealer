@@ -3639,6 +3639,20 @@
           "note": "Det som beställdes natten till 2026-11-13 från Paows nya ankare 1 och 2.1 (ingångsfilmen med WAN 3 och Kling 3.0 4K, första given till plats 4, ankare 2.2); kopior av assets/orders/, originalen ligger kvar där."
         },
         {
+          "id": "paow-prov-paow-tal",
+          "role": "prov",
+          "name": "Tal: läppsynk över vilan",
+          "proof": "paow-tal",
+          "note": "Tolv talfilmer av Paow med ljud (dealer-0b, 2026-11-13): Scouts tio repliker på svenska med rösten Jessica, och Lägg era insatser även med Laura och Sarah. Oberoende granskad: ingen duger som huvudtagning, 7 av 12 får 3/5; felen sitter i munnen (tunnare läppar, munnen stänger 5–7 rutor efter ljudet)."
+        },
+        {
+          "id": "paow-prov-paow-fran-sidan",
+          "role": "prov",
+          "name": "Paow från sidan (kamera 2, 40°)",
+          "proof": "paow-fran-sidan",
+          "note": "Sidokamera 40° till vänster som principprov (dealer-f6, 2026-11-13): nyckelbild i 4K, film A (ingångsfilmen omräknad ur sitt djup och lagad i ett Aleph-svep) och film B (Aleph flyttar kameran; sko och kort faller). Oberoende granskad: godkänd som principprov med förbehåll. 808 krediter. Inga roller för paow."
+        },
+        {
           "id": "paow-profil-kavaj",
           "role": "arbetsmaterial",
           "name": "Profilbild i kavaj",

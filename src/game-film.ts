@@ -12,7 +12,7 @@ import {planBeats, type Beat, type FilmSignal} from './game-director.ts';
 // What this file uses of the scene's film queue.
 // frame: a film whose picture is not the standard frame (the entrance and the exit, drawn behind the table) says so in its
 // record as motion.frame; the scene reads it from the part (FilmFrame in src/scene3d-film.ts).
-export type FilmPart = {path: string; start?: number; end?: number | null; rate?: number; track?: unknown; cards?: Record<string, unknown>; frame?: unknown; fps?: number};
+export type FilmPart = {path: string; start?: number; end?: number | null; rate?: number; track?: unknown; cards?: Record<string, unknown>; frame?: unknown; fps?: number; sound?: boolean};
 const frameOf = (take: Take | null | undefined) => (take?.motion?.motion as {frame?: unknown} | undefined)?.frame ?? null;
 // A film that is not 30 frames a second says so in the bank (take.fps); its frame numbers are its own.
 const fpsOf = (take: Take | null | undefined) => typeof take?.fps === 'number' && take.fps > 0 && take.fps !== 30 ? {fps: take.fps} : {};

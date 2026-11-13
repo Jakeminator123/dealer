@@ -1,0 +1,356 @@
+// Speech for a dealer, made on this machine: a rest film of the bank becomes a film in which she says a line, with sound.
+//   node tools/speech.ts check
+//   node tools/speech.ts bank  --dealer paow
+//   node --env-file=.env.local tools/speech.ts say --dealer paow --line placebets [--lang sv] [--voice <name>] [--text "…" --as <word>] [--again ja]
+//   node tools/speech.ts proof --dealer paow
+// The mouth is drawn by Scoutgaming's lip-sync renderer (services/moving-gpu-worker in Jakeminator123/scoutgaming, MuseTalk), run as
+// the image data/speech.json names, in Docker inside WSL on this machine's graphics card and without network. Nothing is sent to
+// Scoutgaming's production, and RunPod is not used. The voice is ElevenLabs (ELEVENLABS_API_KEY in .env.local; paid per character).
+//
+//   bank   once per dealer and rest film: the film is bridged to the renderer's frame (src/speech-plan.ts), the renderer's own
+//          builder makes the frame pool and prepares it on the graphics card. Written to assets/speech/<dealer>/bank/: sources/
+//          (the bridged clip and sources.json), prepared/ (bank-receipt.json and <id>.tar) and receipt.json. An existing bank of
+//          the same film is kept.
+//   say    one line: the voice reads the text (once; the sound is kept and reused), the plan goes out from the rest frame and back,
+//          the renderer bakes the clip, the answer is checked against exactly what was sent, and the drawn face is laid back into
+//          the film's own frames. Written to assets/speech/<dealer>/<dealer>-tal-<line>-<lang>-<nn>/: tts.mp3, job.json, worker.mp4
+//          (the renderer's answer, 1080 × 1920), source.mp4 (the bank's frame, 24 frames a second, H.264 CRF 12, AAC sound) and
+//          receipt.json. The film starts and ends on the rest film's first played frame, as every rest film does.
+//   proof  gathers the newest take of every line in assets/proofs/<dealer>-tal/ with a proof.json, for the studio's view Prov.
+// A film made here is a take like any other: it is reviewed frame by frame (tools/film-review.md) before Jakob judges it.
+import {readFile, writeFile, mkdir, mkdtemp, rm, rename, copyFile, readdir, stat, open} from 'node:fs/promises';
+import {existsSync, createReadStream} from 'node:fs';
+import {spawn, execFileSync} from 'node:child_process';
+import {createHash, randomBytes} from 'node:crypto';
+import os from 'node:os';
+import path from 'node:path';
+import {fileURLToPath} from 'node:url';
+import {BRIDGE, RENDER, bridgeProblems, bridgeFilter, clipLength, filmFrameOf, lineFrames, longestSound, restPath, planRows, canonical, sourcesOf, bakeJob, answerVideo, sameWords,
+  changedBox, unionBox, grownBox, featherMask, blendFrame, type BakeJob, type BankId, type Box, type Sources} from '../src/speech-plan.ts';
+
+const scratch = 'D:/dealer-scratch/tmp', env = existsSync(scratch) ? {...process.env, TEMP: scratch, TMP: scratch} : process.env;
+const ffmpeg = process.env.FFMPEG ?? 'ffmpeg', ffprobe = process.env.FFPROBE ?? 'ffprobe';
+const repo = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+export const ENCODING = 'H.264 High, yuv420p (4:2:0), CRF 12, preset slow, untagged like the bank\'s films; sound AAC as the renderer wrote it';
+// What is laid back: the box around everything the renderer changed, grown by MARGIN, eased over FEATHER pixels from its edge.
+const LEVEL = 6, MARGIN = 40, FEATHER = 24;
+
+export type Voice = {provider: 'elevenlabs'; voiceId: string; name: string; modelId: string; settings: Record<string, number | boolean>};
+export type Register = {schemaVersion: 1; renderer: {image: string; wsl: string}; voices: Record<string, Voice>;
+  dealers: Record<string, {bankId: string; rest: string; voice: string; language: string}>; names?: Record<string, string>; lines: Record<string, Record<string, string>>};
+export async function readRegister(file = path.join(repo, 'data/speech.json')): Promise<Register> {
+  const r = JSON.parse(await readFile(file, 'utf8')) as Register;
+  if (r.schemaVersion !== 1 || !/^[\w./-]+@sha256:[a-f0-9]{64}$/.test(r.renderer?.image ?? '')) throw Error('data/speech.json: renderer.image ska vara en image med digest (…@sha256:…).');
+  for (const [id, d] of Object.entries(r.dealers ?? {})) if (!r.voices?.[d.voice] || !r.lines?.[d.language] || !/^[a-z][a-z0-9-]{0,39}$/.test(d.bankId)) throw Error(`data/speech.json: dealern ${id} pekar på en röst, ett språk eller ett bank-id som inte finns.`);
+  return r;
+}
+
+// ── files and films ──────────────────────────────────────────────────────────
+export const sha256File = (file: string) => new Promise<string>((resolve, reject) => { const hash = createHash('sha256'); createReadStream(file).on('data', c => hash.update(c)).on('error', reject).on('end', () => resolve(hash.digest('hex'))); });
+const sha256 = (data: string | Uint8Array) => createHash('sha256').update(data).digest('hex');
+const json = (value: unknown) => JSON.stringify(value, null, 2) + '\n';
+export type Probe = {width: number; height: number; fps: string; frames: number; audio: boolean};
+export function probe(file: string): Probe {
+  const streams: Record<string, string>[] = JSON.parse(execFileSync(ffprobe, ['-v', 'error', '-count_frames', '-show_entries', 'stream=codec_type,width,height,r_frame_rate,nb_read_frames', '-of', 'json', file], {env, windowsHide: true}).toString()).streams ?? [];
+  const v = streams.find(s => s.codec_type === 'video');
+  if (!v) throw Error(`${file}: ingen videoström.`);
+  return {width: Number(v.width), height: Number(v.height), fps: String(v.r_frame_rate), frames: Number(v.nb_read_frames), audio: streams.some(s => s.codec_type === 'audio')};
+}
+const run = (bin: string, args: string[], input?: (stdin: NodeJS.WritableStream) => Promise<void>) => new Promise<string>((resolve, reject) => {
+  const child = spawn(bin, args, {stdio: [input ? 'pipe' : 'ignore', 'pipe', 'pipe'], windowsHide: true, env: {...env, WSL_UTF8: '1'}});
+  let out = '', err = ''; child.stdout!.on('data', c => { out += c; }); child.stderr!.on('data', c => { err += c; });
+  child.on('error', reject); child.on('close', code => code === 0 ? resolve(out) : reject(Object.assign(Error(`${path.basename(bin)} ${code}: ${(err || out).trim().slice(-600)}`), {code, out})));
+  if (input) { child.stdin!.on('error', () => {}); input(child.stdin!).then(() => child.stdin!.end(), reject); }
+});
+const ff = (args: string[], input?: (stdin: NodeJS.WritableStream) => Promise<void>) => run(ffmpeg, ['-hide_banner', '-loglevel', 'error', '-nostdin', ...args].filter(a => input ? a !== '-nostdin' : true), input);
+/** A film's frames as planar 4:2:0, one buffer per frame, exactly as decoded (no colour conversion). */
+export async function* rawFrames(file: string, bytes: number): AsyncGenerator<Buffer> {
+  const child = spawn(ffmpeg, ['-hide_banner', '-loglevel', 'error', '-nostdin', '-i', file, '-map', '0:v:0', '-an', '-fps_mode', 'passthrough', '-f', 'rawvideo', '-pix_fmt', 'yuv420p', '-'], {stdio: ['ignore', 'pipe', 'inherit'], windowsHide: true, env});
+  let frame = Buffer.allocUnsafe(bytes), filled = 0;
+  for await (const chunk of child.stdout as AsyncIterable<Buffer>) { let at = 0;
+    while (at < chunk.length) { const take = Math.min(chunk.length - at, bytes - filled); chunk.copy(frame, filled, at, at + take); filled += take; at += take;
+      if (filled === bytes) { yield frame; frame = Buffer.allocUnsafe(bytes); filled = 0; } } }
+  if (filled) throw Error(`${file}: en ofullständig bildruta i slutet.`);
+}
+/** The bridge: the bank's film to the renderer's clip (src/speech-plan.ts). Lossless by default (crf 0), so a pixel of the clip
+ * is the film's pixel exactly and the only encoding between the film and the answer is the renderer's own. */
+export async function bridgeFilm(film: string, out: string, crf = 0): Promise<Probe> {
+  const source = probe(film), problems = bridgeProblems(BRIDGE);
+  if (source.width !== BRIDGE.film.width || source.height !== BRIDGE.film.height) problems.push(`${film} är ${source.width} × ${source.height}; bryggan gäller bankens ruta ${BRIDGE.film.width} × ${BRIDGE.film.height}.`);
+  const frames = clipLength(source.frames);
+  if (frames < 2 || frames > RENDER.maxFrames) problems.push(`${film} ger ${frames} rutor; ett klipp ska ha 2–${RENDER.maxFrames}.`);
+  if (problems.length) throw Error(problems.join(' '));
+  await ff(['-y', '-i', film, '-filter_complex', bridgeFilter(source.frames), '-map', '[out]', '-r', String(RENDER.fps), '-an', '-c:v', 'libx264', '-preset', 'slow', '-crf', String(crf), '-bf', '0', '-pix_fmt', 'yuv420p',
+    '-colorspace', 'bt709', '-color_primaries', 'bt709', '-color_trc', 'bt709', '-color_range', 'tv', '-movflags', '+faststart', out]);
+  const made = probe(out);
+  if (made.width !== RENDER.width || made.height !== RENDER.height || made.fps !== `${RENDER.fps}/1` || made.frames !== frames) throw Error(`Bryggan gav ${made.width} × ${made.height}, ${made.fps}, ${made.frames} rutor; väntat ${RENDER.width} × ${RENDER.height}, ${RENDER.fps}/1, ${frames}.`);
+  return made;
+}
+
+// ── the renderer in Docker ───────────────────────────────────────────────────
+// Run as a file (wsl -d <distro> -- bash <file> …), never as bash -c with values in the text. The stores live in the Linux home,
+// because the renderer's user writes there and Windows folders are slow and owned differently. No container gets a network.
+const DOCKER = String.raw`#!/usr/bin/env bash
+# tools/speech.ts: the lip-sync renderer on this machine's graphics card.
+#   check <image> | bank <image> <sources> <out> | bake <image> <tar> <receipt> <job> <result>
+set -uo pipefail
+mode="$1"; img="$2"
+py=/workspace/mt-venv/bin/python; worker=/opt/moving-worker
+command -v docker >/dev/null 2>&1 || { echo "NO_DOCKER"; exit 21; }
+docker info >/dev/null 2>&1 || { echo "DOCKER_NOT_RUNNING"; exit 22; }
+{ command -v nvidia-smi >/dev/null 2>&1 && nvidia-smi -L >/dev/null 2>&1; } || { echo "NO_GPU"; exit 23; }
+docker image inspect "$img" >/dev/null 2>&1 || { echo "NO_IMAGE"; exit 24; }
+if [ "$mode" = check ]; then
+  echo "GPU $(nvidia-smi --query-gpu=name,memory.total,memory.used --format=csv,noheader | head -n 1)"
+  echo "RELEASE $(docker image inspect "$img" --format '{{index .Config.Labels "org.scoutgaming.moving.release"}}')"
+  exit 0
+fi
+home="$HOME/.cache/dealer-speech"
+if [ "$mode" = bank ]; then
+  sources="$3"; out="$4"
+  stage="$home/bank-$$"; rm -rf "$stage"; mkdir -p "$stage/out"; chmod 777 "$stage/out"; cp -r "$sources" "$stage/sources"
+  # The pool on the processor, then the preparation on the graphics card, both with the renderer's own builder.
+  docker run --rm --network none -v "$stage/sources:/in/sources:ro" -v "$stage/out:/out" --entrypoint "$py" "$img" \
+    -I "$worker/prep/build-moving-speech-bank.py" --sources /in/sources --output /out/pool >"$stage/pool.log" 2>&1 || { tail -n 5 "$stage/pool.log"; echo "POOL_FAILED"; exit 25; }
+  sha=$(sha256sum "$stage/out/pool/bank-receipt.json" | cut -c1-64)
+  docker run --rm --gpus all --network none -v "$stage/out/pool:/in/pool:ro" -v "$stage/out:/out" -w "$worker" --entrypoint "$py" "$img" \
+    -I "$worker/prep/build-moving-speech-bank.py" --pool /in/pool --expected-receipt-sha256 "$sha" --prepare-with "$worker/vendor" --output /out/bank >"$stage/prep.log" 2>&1 || { tail -n 12 "$stage/prep.log"; echo "PREP_FAILED"; exit 26; }
+  rm -rf "$out"; mkdir -p "$(dirname "$out")"; cp -r "$stage/out/bank" "$out"; cp "$stage/out/pool/bank-receipt.json" "$out/pool-receipt.json"; rm -rf "$stage"
+  echo "POOL_RECEIPT $sha"; echo "BANK_DONE"; exit 0
+fi
+if [ "$mode" = bake ]; then
+  tar="$3"; receipt="$4"; job="$5"; result="$6"
+  store="$home/banks"; mkdir -p "$store"
+  a=$(sha256sum "$tar" | cut -c1-64); r=$(sha256sum "$receipt" | cut -c1-64)
+  [ -f "$store/$a.tar" ] || cp "$tar" "$store/$a.tar"
+  [ -f "$store/$r.json" ] || cp "$receipt" "$store/$r.json"
+  docker run --rm -i --gpus all --network none -e MOVING_BANK_STORE=/banks -v "$store:/banks:ro" \
+    --entrypoint "$py" "$img" "$worker/bake.py" < "$job" > "$result.part" 2>"$result.log"
+  code=$?
+  mv "$result.part" "$result"
+  echo "BAKE_EXIT $code"
+  exit 0
+fi
+echo "BAD_MODE"; exit 2
+`;
+const DOCKER_SAYS: Record<number, string> = {21: 'Docker finns inte i WSL.', 22: 'Docker är installerat men svarar inte (docker info).', 23: 'Inget NVIDIA-grafikkort syns i WSL (nvidia-smi).',
+  24: 'Rendererns image finns inte här. Hämta den en gång i WSL: docker pull <image i data/speech.json> (kräver inloggning mot ghcr.io).', 25: 'Rutpoolen kunde inte byggas.', 26: 'Förberedelsen på grafikkortet föll.'};
+const toWsl = (p: string) => { const full = path.resolve(p), m = /^([A-Za-z]):[\\/](.*)$/.exec(full); return m ? `/mnt/${m[1].toLowerCase()}/${m[2].replaceAll('\\', '/')}` : full.replaceAll('\\', '/'); };
+async function docker(register: Register, work: string, mode: string, ...paths: string[]): Promise<string> {
+  const script = path.join(work, 'speech-docker.sh');
+  await mkdir(work, {recursive: true}); await writeFile(script, DOCKER.replaceAll('\r\n', '\n'));
+  const args = ['bash', process.platform === 'win32' ? toWsl(script) : script, mode, register.renderer.image, ...paths.map(p => process.platform === 'win32' ? toWsl(p) : path.resolve(p))];
+  try { return await (process.platform === 'win32' ? run('wsl', ['-d', register.renderer.wsl, '--', ...args]) : run(args[0], args.slice(1))); }
+  catch (e) { const {code, out} = e as {code?: number; out?: string}; throw Error(`${DOCKER_SAYS[code ?? 0] ?? 'Docker-steget föll.'} ${(out ?? String((e as Error).message)).trim().slice(-500)}`); }
+}
+export async function check(register: Register, work: string): Promise<{gpu: string; release: string}> {
+  const out = await docker(register, work, 'check'), gpu = /^GPU (.+)$/m.exec(out)?.[1] ?? '', release = /^RELEASE ([a-f0-9]{64})$/m.exec(out)?.[1] ?? '';
+  if (!release) throw Error(`Imagen ${register.renderer.image} säger inte vilken release den är (etiketten org.scoutgaming.moving.release).`);
+  return {gpu, release};
+}
+
+// ── the bank ─────────────────────────────────────────────────────────────────
+type BankReceipt = BankId & {status: string; poolFrames: number; visualApproval: boolean};
+export type Bank = {dir: string; id: BankId; sources: Sources; tar: string; receipt: string; film: string};
+const bankDir = (root: string, dealer: string) => path.join(root, 'assets/speech', dealer, 'bank');
+export async function readBank(root: string, dealer: string): Promise<Bank | null> {
+  const dir = bankDir(root, dealer), receiptFile = path.join(dir, 'prepared/bank-receipt.json'), own = path.join(dir, 'receipt.json');
+  if (!existsSync(receiptFile) || !existsSync(own)) return null;
+  const receipt = JSON.parse(await readFile(receiptFile, 'utf8')) as BankReceipt, sources = JSON.parse(await readFile(path.join(dir, 'sources/sources.json'), 'utf8')) as Sources & {sourceSetSha256: string};
+  const tar = path.join(dir, 'prepared', receipt.workerAvatar + '.tar');
+  if (receipt.status !== 'prepared' || await sha256File(tar) !== receipt.avatarSha256 || receipt.sourceSetSha256 !== sources.sourceSetSha256) throw Error(`Banken i ${dir} stämmer inte med sitt kvitto; flytta den åt sidan och bygg om.`);
+  const film = (JSON.parse(await readFile(own, 'utf8')) as {film: {path: string}}).film.path;
+  return {dir, sources, tar, receipt: receiptFile, film, id: {dealerId: receipt.dealerId, workerAvatar: receipt.workerAvatar, sourceSetSha256: receipt.sourceSetSha256, avatarSha256: receipt.avatarSha256, bankReceiptSha256: await sha256File(receiptFile)}};
+}
+export async function makeBank(register: Register, root: string, dealer: string, log = console.log): Promise<Bank> {
+  const d = register.dealers[dealer]; if (!d) throw Error(`data/speech.json har ingen dealer ${dealer}.`);
+  const filmRel = `assets/motions/${d.rest}/source.mp4`, film = path.join(root, filmRel), dir = bankDir(root, dealer);
+  if (!existsSync(film)) throw Error(`${filmRel} finns inte.`);
+  const filmSha = await sha256File(film), had = await readBank(root, dealer);
+  if (had) { const own = JSON.parse(await readFile(path.join(dir, 'receipt.json'), 'utf8')) as {film: {sha256: string}};
+    if (own.film.sha256 !== filmSha || had.id.dealerId !== d.bankId) throw Error(`Banken i ${dir} är gjord av en annan film eller för ett annat id; flytta den åt sidan innan en ny görs.`);
+    log(`Banken finns redan och återanvänds: ${dir}`); return had; }
+  const {gpu, release} = await check(register, path.join(dir, '_work'));
+  log(`Grafikkort: ${gpu} · renderer ${release.slice(0, 12)}…`);
+  await mkdir(path.join(dir, 'sources/sources'), {recursive: true});
+  const bridged = path.join(dir, 'sources/bridged.mp4'), made = await bridgeFilm(film, bridged), clipSha = await sha256File(bridged);
+  const sources = sourcesOf(d.bankId, {sha256: clipSha, bytes: (await stat(bridged)).size, frameCount: made.frames});
+  // The builder wants the clip under its id, beside sources.json.
+  const clip = path.join(dir, 'sources/sources', sources.clips[0].videoId + '.mp4'); await rename(bridged, clip);
+  await writeFile(path.join(dir, 'sources/sources.json'), json({...sources, sourceSetSha256: sha256(canonical(sources))}));
+  log(`Klippet: ${made.frames} rutor ur ${filmRel} (rutorna ${BRIDGE.skipStart}–${filmFrameOf(made.frames - 1)}). Förbereder banken på grafikkortet …`);
+  const started = Date.now(), out = await docker(register, path.join(dir, '_work'), 'bank', path.join(dir, 'sources'), path.join(dir, 'prepared'));
+  await rm(path.join(dir, 'prepared', d.bankId), {recursive: true, force: true}); // the builder's working copy; the archive beside it holds the same files
+  await writeFile(path.join(dir, 'receipt.json'), json({schemaVersion: 1, dealer, bankId: d.bankId, createdAt: new Date().toISOString(), by: 'tools/speech.ts bank',
+    film: {path: filmRel, sha256: filmSha}, bridge: BRIDGE, clip: {path: path.relative(root, clip).replaceAll('\\', '/'), sha256: clipSha, frames: made.frames, fps: RENDER.fps, restFrame: 0, longestSoundSeconds: Number(longestSound(made.frames).toFixed(2))},
+    renderer: {image: register.renderer.image, releaseSha256: release, gpu, seconds: Math.round((Date.now() - started) / 1000)}, poolReceiptSha256: /^POOL_RECEIPT ([a-f0-9]{64})$/m.exec(out)?.[1] ?? null}));
+  await rm(path.join(dir, '_work'), {recursive: true, force: true});
+  const bank = await readBank(root, dealer); if (!bank) throw Error('Banken skrevs inte.');
+  log(`Banken klar: ${dir} (längsta ljud ${longestSound(made.frames).toFixed(1)} s)`);
+  return bank;
+}
+
+// ── a line ───────────────────────────────────────────────────────────────────
+/** What the renderer must attest for a job: the binding, the job's id and the hashes of exactly the sound and plan that were sent. */
+export function attestationOf(job: BakeJob, jobId: string) {
+  return {...job.binding, jobId, pcmSha256: sha256(Buffer.from(job.audio.base64, 'base64')), planSha256: sha256(canonical(job.karta)), frameCount: job.karta.reduce((n, row) => n + row[2], 0)};
+}
+/** The same value whatever order its fields were written in. */
+export function sameValue(a: unknown, b: unknown): boolean {
+  if (a === b) return true;
+  if (typeof a !== 'object' || typeof b !== 'object' || !a || !b || Array.isArray(a) !== Array.isArray(b)) return false;
+  const ka = Object.keys(a), kb = Object.keys(b);
+  return ka.length === kb.length && ka.every(k => k in b && sameValue((a as Record<string, unknown>)[k], (b as Record<string, unknown>)[k]));
+}
+/** One call to ElevenLabs, never repeated by itself: a call that did not answer may still have been charged. */
+async function readAloud(voice: Voice, text: string, out: string): Promise<void> {
+  const key = process.env.ELEVENLABS_API_KEY?.trim();
+  if (!key) throw Error('ELEVENLABS_API_KEY saknas (kör med node --env-file=.env.local …).');
+  const r = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voice.voiceId}?output_format=mp3_44100_128`, {method: 'POST', signal: AbortSignal.timeout(120_000),
+    headers: {'xi-api-key': key, 'content-type': 'application/json', accept: 'audio/mpeg'}, body: JSON.stringify({text, model_id: voice.modelId, voice_settings: voice.settings})});
+  if (!r.ok) throw Error(`ElevenLabs nekade (${r.status}): ${(await r.text()).slice(0, 200)}`);
+  const bytes = Buffer.from(await r.arrayBuffer());
+  if (!bytes.length) throw Error('ElevenLabs gav ett tomt svar; kontrollera historiken där innan ett nytt anrop.');
+  await writeFile(out, bytes);
+}
+/** What the sound says according to ElevenLabs' speech-to-text (a paid call, a fraction of the reading's price): the check that
+ * the voice read the words of the line. Null when the service does not answer; the take is then marked as not listened to. */
+async function listen(mp3: string, language: string): Promise<string | null> {
+  const key = process.env.ELEVENLABS_API_KEY?.trim(); if (!key) return null;
+  const form = new FormData(); form.set('model_id', 'scribe_v1'); form.set('language_code', language); form.set('file', new Blob([await readFile(mp3)]), 'tts.mp3');
+  try { const r = await fetch('https://api.elevenlabs.io/v1/speech-to-text', {method: 'POST', headers: {'xi-api-key': key}, body: form, signal: AbortSignal.timeout(120_000)});
+    return r.ok ? String(((await r.json()) as {text?: string}).text ?? '') : null; }
+  catch { return null; }
+}
+/** The voice's sound as the renderer wants it: 24 kHz mono 16-bit, silence at both ends removed (the renderer adds its own). */
+async function toPcm(mp3: string, out: string): Promise<Buffer> {
+  const edge = 'silenceremove=start_periods=1:start_threshold=-60dB:start_silence=0.02';
+  await ff(['-y', '-i', mp3, '-af', `${edge},areverse,${edge},areverse`, '-ac', '1', '-ar', String(RENDER.pcmRate), '-f', 's16le', '-c:a', 'pcm_s16le', out]);
+  const pcm = await readFile(out); if (!pcm.length || pcm.length % 2) throw Error('Ljudet blev tomt efter omvandlingen.');
+  return pcm;
+}
+/** Lays the renderer's clip back into the film's frames and writes the film with the clip's sound. Returns what was laid back. */
+export async function layBack(film: string, worker: string, frames: number[], out: string, work: string): Promise<{box: Box; changed: Box; frames: number}> {
+  const {width: W, height: H} = BRIDGE.film, filmBytes = W * H * 3 / 2, clipBytes = RENDER.width * RENDER.height * 3 / 2, raw = path.join(work, 'film.yuv');
+  await ff(['-y', '-i', film, '-map', '0:v:0', '-an', '-fps_mode', 'passthrough', '-f', 'rawvideo', '-pix_fmt', 'yuv420p', raw]);
+  const handle = await open(raw, 'r'), filmFrames = (await handle.stat()).size / filmBytes;
+  const read = async (frame: number) => { if (!Number.isInteger(frame) || frame < 0 || frame >= filmFrames) throw Error(`Planen pekar på ruta ${frame}; filmen har ${filmFrames}.`); const b = Buffer.allocUnsafe(filmBytes); await handle.read(b, 0, filmBytes, frame * filmBytes); return b; };
+  try {
+    let changed: Box | null = null, k = 0;
+    for await (const clip of rawFrames(worker, clipBytes)) { if (k >= frames.length) throw Error('Rendererns klipp är längre än planen.'); changed = unionBox(changed, changedBox(await read(filmFrameOf(frames[k++])), clip, BRIDGE, LEVEL)); }
+    if (k !== frames.length) throw Error(`Rendererns klipp har ${k} rutor; planen ${frames.length}.`);
+    if (!changed) throw Error('Rendererns klipp skiljer sig inte från filmen: ingen mun är ritad.');
+    const box = grownBox(changed, MARGIN), mask = featherMask(box.w, box.h, FEATHER), clips = rawFrames(worker, clipBytes);
+    await ff(['-y', '-f', 'rawvideo', '-pix_fmt', 'yuv420p', '-s', `${W}x${H}`, '-r', String(RENDER.fps), '-i', 'pipe:0', '-i', worker, '-map', '0:v:0', '-map', '1:a:0',
+      '-c:v', 'libx264', '-preset', 'slow', '-crf', '12', '-pix_fmt', 'yuv420p', '-c:a', 'copy', '-movflags', '+faststart', out], async stdin => {
+      let n = 0;
+      for await (const clip of clips) { const frame = await read(filmFrameOf(frames[n++])); blendFrame(frame, clip, box, mask); if (!stdin.write(frame)) await new Promise(resolve => stdin.once('drain', resolve)); }
+    });
+    return {box, changed, frames: frames.length};
+  } finally { await handle.close(); await rm(raw, {force: true}); }
+}
+export type SayOptions = {dealer: string; line: string; language?: string; voice?: string; text?: string; again?: boolean; log?: (text: string) => void};
+export async function say(register: Register, root: string, options: SayOptions): Promise<{dir: string; id: string}> {
+  const log = options.log ?? console.log, d = register.dealers[options.dealer]; if (!d) throw Error(`data/speech.json har ingen dealer ${options.dealer}.`);
+  const language = options.language ?? d.language, voiceName = options.voice ?? d.voice, voice = register.voices[voiceName], text = options.text ?? register.lines[language]?.[options.line];
+  if (!voice) throw Error(`data/speech.json har ingen röst ${voiceName}.`);
+  if (!text) throw Error(`Ingen text för ${options.line} på ${language}; ge --text.`);
+  if (!/^[a-z0-9]{1,24}$/.test(options.line) || !/^[a-z]{2}$/.test(language)) throw Error('Repliken ska heta med små bokstäver och siffror, språket med två bokstäver.');
+  const bank = await readBank(root, options.dealer); if (!bank) throw Error(`Ingen bank för ${options.dealer}; kör först: node tools/speech.ts bank --dealer ${options.dealer}`);
+  const base = path.join(root, 'assets/speech', options.dealer), stem = `${options.dealer}-tal-${options.line}-${language}-`;
+  // The same text in the same voice is not read twice by accident: a finished take is answered with (unless a new reading is asked
+  // for), and one that has its sound but no film (the renderer or the laying back fell) is taken up again. Otherwise the next number.
+  const taken = existsSync(base) ? (await readdir(base)).filter(n => n.startsWith(stem)).sort() : [];
+  let id = '';
+  for (const name of taken) { const told = path.join(base, name, 'said.json'); if (!existsSync(told)) continue;
+    const s = JSON.parse(await readFile(told, 'utf8')) as {text: string; voice: Voice}; if (s.text !== text || !sameValue(s.voice, voice)) continue;
+    if (!existsSync(path.join(base, name, 'source.mp4'))) { id = name; break; }
+    if (!options.again) { log(`${name}: finns redan med samma text och röst; --again ja ger en ny läsning.`); return {dir: path.join(base, name), id: name}; } }
+  if (!id) id = stem + String(Math.max(0, ...taken.map(n => Number(n.slice(stem.length)) || 0)) + 1).padStart(2, '0');
+  const dir = path.join(base, id), mp3 = path.join(dir, 'tts.mp3'), work = await mkdtemp(path.join(existsSync(scratch) ? scratch : os.tmpdir(), 'speech-'));
+  try {
+    const {gpu, release} = await check(register, work);
+    await mkdir(dir, {recursive: true});
+    const saidFile = path.join(dir, 'said.json');
+    if (!existsSync(mp3)) { log(`${id}: ${voice.name} läser "${text}" (${text.length} tecken hos ElevenLabs)`); await writeFile(saidFile, json({text, voice, language, at: new Date().toISOString()})); await readAloud(voice, text, mp3); }
+    else log(`${id}: ljudet finns redan och återanvänds (inget nytt anrop).`);
+    const said = JSON.parse(await readFile(saidFile, 'utf8')) as {heard?: string | null};
+    if (typeof said.heard !== 'string') { said.heard = await listen(mp3, language); await writeFile(saidFile, json(said)); }
+    const heard = said.heard ?? null, wordsMatch = heard === null ? null : sameWords(heard, text);
+    if (wordsMatch === false) log(`${id}: OBS, avlyssningen hörde "${heard}"; läs och lyssna innan filmen används.`);
+    if (heard === null) log(`${id}: ljudet är inte avlyssnat (tjänsten svarade inte).`);
+    const pcm = await toPcm(mp3, path.join(work, 'speech.pcm')), total = lineFrames(pcm.length), clipFrames = bank.sources.clips[0].frameCount;
+    if (pcm.length / 2 / RENDER.pcmRate > longestSound(clipFrames, bank.sources.rest.frame)) throw Error(`Ljudet är ${(pcm.length / 2 / RENDER.pcmRate).toFixed(1)} s; vilofilmen bär högst ${longestSound(clipFrames, bank.sources.rest.frame).toFixed(1)} s.`);
+    const frames = restPath(bank.sources.rest.frame, clipFrames, total), rows = planRows(bank.sources.clips[0].take, frames);
+    const job = bakeJob(bank.id, release, rows, {bytes: pcm.length, sha256: sha256(pcm), base64: pcm.toString('base64')}, `${id}-${randomBytes(4).toString('hex')}`), jobId = `local-${randomBytes(8).toString('hex')}`;
+    const jobFile = path.join(work, 'job.json'), resultFile = path.join(work, 'result.json');
+    await writeFile(jobFile, JSON.stringify({id: jobId, input: job}));
+    await writeFile(path.join(dir, 'job.json'), json({id: jobId, input: {...job, audio: {...job.audio, base64: `(${pcm.length} byte, se tts.mp3)`}}}));
+    log(`${id}: ljud ${(pcm.length / 2 / RENDER.pcmRate).toFixed(2)} s → ${total} rutor (${(total / RENDER.fps).toFixed(2)} s). Renderar på ${gpu.split(',')[0]} …`);
+    const started = Date.now(); await docker(register, work, 'bake', bank.tar, bank.receipt, jobFile, resultFile);
+    const answer = JSON.parse(await readFile(resultFile, 'utf8')) as {status: string; code?: string; attestation?: unknown; video?: Record<string, unknown> & {base64?: string}};
+    if (answer.status !== 'complete') throw Error(`Renderern nekade: ${answer.code ?? 'okänt fel'}.`);
+    if (!sameValue(answer.attestation, attestationOf(job, jobId))) throw Error('Rendererns intyg stämmer inte med jobbet (bank, ljud, plan, release eller jobb-id).');
+    const {base64, ...video} = answer.video ?? {}, data = Buffer.from(String(base64 ?? ''), 'base64');
+    if (!sameValue(video, {...answerVideo(total), sha256: sha256(data), bytes: data.length})) throw Error('Klippet i svaret stämmer inte med kontraktet (rutor, mått, spår eller bytes).');
+    const worker = path.join(dir, 'worker.mp4'), out = path.join(dir, 'source.mp4'); await writeFile(worker, data);
+    const filmRel = bank.film, laid = await layBack(path.join(root, filmRel), worker, frames, out, work), made = probe(out);
+    if (made.width !== BRIDGE.film.width || made.height !== BRIDGE.film.height || made.frames !== total || !made.audio) throw Error(`Filmen blev ${made.width} × ${made.height}, ${made.frames} rutor, ljud ${made.audio}; väntat ${total} rutor med ljud.`);
+    await writeFile(path.join(dir, 'receipt.json'), json({schemaVersion: 1, id, dealer: options.dealer, role: 'film', createdAt: new Date().toISOString(), by: 'tools/speech.ts say',
+      line: options.line, language, text, voice, sound: {path: 'tts.mp3', sha256: await sha256File(mp3), characters: text.length, pcmSha256: sha256(pcm), seconds: Number((pcm.length / 2 / RENDER.pcmRate).toFixed(3)), heard, wordsMatch},
+      plan: {restFilm: filmRel, restFilmSha256: await sha256File(path.join(root, filmRel)), clipFrames: [frames[0], Math.max(...frames), frames[frames.length - 1]], filmFrames: [filmFrameOf(frames[0]), filmFrameOf(Math.max(...frames)), filmFrameOf(frames[frames.length - 1])], rows},
+      bank: bank.id, renderer: {image: register.renderer.image, releaseSha256: release, gpu, jobId, requestId: job.binding.requestId, seconds: Math.round((Date.now() - started) / 1000)},
+      worker: {path: 'worker.mp4', sha256: sha256(data), bytes: data.length, width: RENDER.width, height: RENDER.height},
+      laidBack: {bridge: BRIDGE, changed: laid.changed, box: laid.box, level: LEVEL, margin: MARGIN, feather: FEATHER},
+      output: {path: 'source.mp4', sha256: await sha256File(out), width: made.width, height: made.height, fps: RENDER.fps, frames: made.frames, audio: true, encoding: ENCODING},
+      note: 'Outside the box every pixel is the rest film\'s own frame (encoded once more). Not reviewed: tools/film-review.md before Jakob judges it.'}));
+    log(`${id}: klart → ${path.relative(root, out).replaceAll('\\', '/')} (${total} rutor, munnen lagd i ${laid.box.w} × ${laid.box.h} vid ${laid.box.x},${laid.box.y})`);
+    return {dir, id};
+  } finally { await rm(work, {recursive: true, force: true}); }
+}
+
+/** The newest finished take of every line, gathered for the studio's view Prov. */
+export async function proof(register: Register, root: string, dealer: string, log = console.log): Promise<string> {
+  const base = path.join(root, 'assets/speech', dealer), dir = path.join(root, 'assets/proofs', `${dealer}-tal`), newest = new Map<string, {id: string; receipt: Record<string, any>}>();
+  for (const id of existsSync(base) ? (await readdir(base)).sort() : []) { const file = path.join(base, id, 'receipt.json'); if (id === 'bank' || !existsSync(file) || !existsSync(path.join(base, id, 'source.mp4'))) continue;
+    const receipt = JSON.parse(await readFile(file, 'utf8')); newest.set(`${receipt.line}-${receipt.language}-${receipt.voice.name}`, {id, receipt}); }
+  if (!newest.size) throw Error(`Inga färdiga repliker för ${dealer}.`);
+  await mkdir(dir, {recursive: true});
+  // The dealer's own voice first, in the register's order of lines; other voices after. A label is a short name, a colon and the
+  // rest (the view splits there). review.json beside a take ({verdict, note}, written after the independent review) is shown.
+  const d = register.dealers[dealer], own = register.voices[d?.voice ?? '']?.name, order = (line: string, language: string) => { const i = Object.keys(register.lines[language] ?? {}).indexOf(line); return i < 0 ? 999 : i; };
+  const takes = [...newest.values()].sort((a, b) => Number(a.receipt.voice.name !== own) - Number(b.receipt.voice.name !== own) || order(a.receipt.line, a.receipt.language) - order(b.receipt.line, b.receipt.language) || a.id.localeCompare(b.id));
+  const labels: Record<string, string> = {}, verdicts: Record<string, string> = {}; let reviewed = 0;
+  for (const {id, receipt} of takes) { const name = `${id}.mp4`, reviewFile = path.join(base, id, 'review.json'); await copyFile(path.join(base, id, 'source.mp4'), path.join(dir, name));
+    const review = existsSync(reviewFile) ? JSON.parse(await readFile(reviewFile, 'utf8')) as {verdict?: string; score?: string; note?: string} : null, title = register.names?.[receipt.line] ?? receipt.line;
+    if (review) reviewed++;
+    const misheard = typeof receipt.sound.heard === 'string' && !sameWords(receipt.sound.heard, receipt.text);
+    labels[name] = `${title}${receipt.voice.name === own ? '' : `, röst ${receipt.voice.name}`}: "${receipt.text}" ${receipt.voice.name}, ${(receipt.output.frames / RENDER.fps).toFixed(1).replace('.', ',')} s.${misheard ? ` Avlyssnat som "${receipt.sound.heard}".` : ''}${review?.note ? ` Granskaren${review.score ? ` ${review.score}` : ''}: ${review.note}` : ''}`;
+    verdicts[name] = ['ok', 'remarks', 'failed'].includes(review?.verdict ?? '') ? review!.verdict! : 'unreviewed'; }
+  const who = dealer[0].toUpperCase() + dealer.slice(1);
+  await writeFile(path.join(dir, 'proof.json'), json({schemaVersion: 1, createdAt: new Date().toISOString(), tool: 'tools/speech.ts proof', title: `${who} talar: läppsynk över vilan`,
+    description: `Vilofilmen ${register.dealers[dealer]?.rest} med munnen ritad efter ljudet (Scoutgamings renderer, körd på den här datorn) och rösten från ElevenLabs. Varje film börjar och slutar på vilans första ruta. Slå på ljudet. ${reviewed === takes.length ? 'Oberoende granskat ruta för ruta; domen står vid varje film.' : reviewed ? `Oberoende granskat: ${reviewed} av ${takes.length} filmer.` : 'Inte oberoende granskat.'}`,
+    film: {fps: RENDER.fps}, labels, verdicts}));
+  // A film that is no longer the newest take of its line is taken out of the proof (it stays where it was made).
+  for (const file of await readdir(dir)) if (file.endsWith('.mp4') && !(file in labels)) await rm(path.join(dir, file));
+  log(`Prov: ${path.relative(root, dir).replaceAll('\\', '/')} (${newest.size} filmer)`);
+  return dir;
+}
+
+// ── the command ──────────────────────────────────────────────────────────────
+async function main(argv: string[]): Promise<number> {
+  const [command, ...rest] = argv, flags: Record<string, string> = {};
+  for (let i = 0; i < rest.length; i++) { const m = /^--([a-z-]+)$/.exec(rest[i]); if (!m || rest[i + 1] === undefined) { console.error(`Okänt argument: ${rest[i]}`); return 2; } flags[m[1]] = rest[++i]; }
+  const register = await readRegister(), root = path.resolve(flags.root ?? process.cwd());
+  if (command === 'check') { const work = await mkdtemp(path.join(existsSync(scratch) ? scratch : os.tmpdir(), 'speech-'));
+    try { const {gpu, release} = await check(register, work); console.log(`Grafikkort: ${gpu}\nRenderer: ${register.renderer.image}\nRelease: ${release}`);
+      for (const dealer of Object.keys(register.dealers)) { const bank = await readBank(root, dealer); console.log(`${dealer}: ${bank ? `bank ${bank.id.dealerId}, ${bank.sources.clips[0].frameCount} rutor ur ${bank.film}` : 'ingen bank än'}`); } }
+    finally { await rm(work, {recursive: true, force: true}); } return 0; }
+  if (!flags.dealer) { console.error('Ange --dealer.'); return 2; }
+  if (command === 'bank') { await makeBank(register, root, flags.dealer); return 0; }
+  if (command === 'say') { if (!flags.line && !flags.as) { console.error('Ange --line (eller --text med --as).'); return 2; }
+    await say(register, root, {dealer: flags.dealer, line: flags.as ?? flags.line, language: flags.lang, voice: flags.voice, text: flags.text, again: flags.again !== undefined}); return 0; }
+  if (command === 'proof') { await proof(register, root, flags.dealer); return 0; }
+  console.error('Kommandon: check | bank --dealer <id> | say --dealer <id> --line <replik> | proof --dealer <id>'); return 2;
+}
+if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) main(process.argv.slice(2)).then(code => { process.exitCode = code; }, error => { console.error(String(error?.message ?? error)); process.exitCode = 1; });

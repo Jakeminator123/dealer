@@ -1,0 +1,54 @@
+{
+  "about": "Speech for the dealers (tools/speech.ts): which renderer draws the mouth, which voice reads, which rest film a dealer speaks over and the exact text of every line. The renderer is Scoutgaming's lip-sync worker (services/moving-gpu-worker in Jakeminator123/scoutgaming, release 8b1386c2…, its production image since 2026-11-11 according to docs/operations/images.json there), run in Docker inside WSL on this machine's graphics card and without network; nothing here touches Scoutgaming's production. bankId is the name the bank is bound to: 'paow-v2' because Scoutgaming already has an older dealer and film bank called PAOW, and calls a dealer from this repo Dealer V2.0 (as 'pamela-v2'). The lines are the ten a table needs (the SpeakLine ids of game/presentation.ts) with Scoutgaming's own texts, word for word (packages/presentation/contracts/recorded-line-texts.mjs and speech-lines.mjs, read 2026-11-13). names are the short Swedish names the studio's view Prov shows for the lines. The voice settings are the ones Scoutgaming's bakes use (runpod_bake.py, PROVEN_VOICE_SETTINGS); which voice is Paow's is Jakob's to choose, and 'jessica' stands until he has heard the three. Films made from this are takes of the step IDLE>IDLE with sound; they lie in assets/speech/<dealer>/ until they are entered in the bank.",
+  "schemaVersion": 1,
+  "renderer": {
+    "image": "ghcr.io/jakeminator123/moving-gpu-worker@sha256:f4008bbf811d1eeac673252249967c8c2ffb3da1322bdf1e75b4ed79d69119de",
+    "wsl": "Ubuntu"
+  },
+  "voices": {
+    "jessica": { "provider": "elevenlabs", "voiceId": "cgSgspJ2msm6clMCkdW9", "name": "Jessica", "modelId": "eleven_multilingual_v2", "settings": { "stability": 0.6, "similarity_boost": 0.8, "style": 0, "use_speaker_boost": true } },
+    "laura": { "provider": "elevenlabs", "voiceId": "FGY2WhTYpPnrIDTdsKH5", "name": "Laura", "modelId": "eleven_multilingual_v2", "settings": { "stability": 0.6, "similarity_boost": 0.8, "style": 0, "use_speaker_boost": true } },
+    "sarah": { "provider": "elevenlabs", "voiceId": "EXAVITQu4vr4xnSDxMaL", "name": "Sarah", "modelId": "eleven_multilingual_v2", "settings": { "stability": 0.6, "similarity_boost": 0.8, "style": 0, "use_speaker_boost": true } }
+  },
+  "dealers": {
+    "paow": { "bankId": "paow-v2", "rest": "paow-vila-01-01", "voice": "jessica", "language": "sv" }
+  },
+  "names": {
+    "placebets": "Insatser",
+    "goodluck": "Lycka till",
+    "insurance": "Försäkring",
+    "double": "Dubbling",
+    "blackjack": "Blackjack",
+    "dealerblackjack": "Dealern har blackjack",
+    "dealerbust": "Dealern spricker",
+    "win": "Vinst",
+    "push": "Lika",
+    "lose": "Förlust"
+  },
+  "lines": {
+    "sv": {
+      "placebets": "Lägg era insatser, tack.",
+      "goodluck": "Insatserna är stängda. Lycka till vid mitt bord!",
+      "insurance": "Försäkringen är öppen. Vill du försäkra din hand?",
+      "double": "Du dubblar. Ett kort, nu gör vi det bästa av det.",
+      "blackjack": "Blackjack! Vackert spelat. Grattis!",
+      "dealerblackjack": "Dealern har blackjack. Den här rundan går till huset.",
+      "dealerbust": "Dealern är över tjugoett! Grattis, bordet vinner.",
+      "win": "Bra spelat! Njut av din vinst.",
+      "push": "Det är lika. Din insats betalas tillbaka.",
+      "lose": "Dealern vinner den här gången. Bättre lycka nästa runda."
+    },
+    "en": {
+      "placebets": "Place your bets, please.",
+      "goodluck": "Bets are closed. Good luck at my table!",
+      "insurance": "Insurance is open. Would you like to protect your hand?",
+      "double": "Doubling down. One card, let's make it count.",
+      "blackjack": "Blackjack! That is beautifully done. Congratulations!",
+      "dealerblackjack": "Dealer has blackjack. This round goes to the house.",
+      "dealerbust": "Dealer busts! Congratulations, the table wins.",
+      "win": "Well played! Enjoy your winnings.",
+      "push": "It's a push. Your stake is returned.",
+      "lose": "Dealer wins this one. Better luck next round."
+    }
+  }
+}

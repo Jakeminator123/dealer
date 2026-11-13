@@ -306,8 +306,10 @@ export function createFilmLayers(filmVP: T.Matrix4, light: Record<string, {value
 // Optional per part: `rate` playback speed, `track` the card track of this piece (the scene then uses it while the
 // piece is on screen; null = no card), `cards` extra options for the rendered cards (lying cards, a value per card).
 // `frame`: a film with a frame of its own (see FilmFrame). `fps`: the film's own frames per second when it is not 30; start,
-// end and every frame number of the part are counted in the film's own frames.
-export type Part = {path: string; start?: number; end?: number | null; rate?: number; track?: CardTrack | null; cards?: Partial<OverlayOptions> | null; frame?: FilmFrame | null; fps?: number};
+// end and every frame number of the part are counted in the film's own frames. `sound`: the film has a sound track that is to be
+// heard (a spoken line, tools/speech.ts); every other film is muted. A browser lets a page sound only after the visitor has
+// touched it, so before that a spoken line plays muted like the rest instead of not playing at all.
+export type Part = {path: string; start?: number; end?: number | null; rate?: number; track?: CardTrack | null; cards?: Partial<OverlayOptions> | null; frame?: FilmFrame | null; fps?: number; sound?: boolean};
 export type PlayOptions = {loop?: boolean; cut?: boolean; onPart?: (index: number, part: Part) => void; onEnd?: () => void; onError?: (error: Error) => void};
 type Player = {part: Part; path: string; start: number; end: number | null; fps: number; video: HTMLVideoElement; texture: T.VideoTexture};
 const FPS = 30;
@@ -333,7 +335,7 @@ export function createPlayers(onShow: (texture: T.Texture, path: string) => void
   // of a second to get going and drops its first frames; one that waits on a seeked frame starts on the next frame.
   const startTime = (p: Player) => (p.start + 0.5) / p.fps;
   const make = (part: Part): Player => {
-    const video = document.createElement('video'); video.muted = true; video.playsInline = true; video.preload = 'auto'; video.src = part.path;
+    const video = document.createElement('video'); video.muted = !(part.sound === true && globalThis.navigator?.userActivation?.hasBeenActive === true); video.playsInline = true; video.preload = 'auto'; video.src = part.path;
     const texture = new T.VideoTexture(video); texture.colorSpace = T.NoColorSpace; texture.minFilter = texture.magFilter = T.LinearFilter; texture.generateMipmaps = false;
     return {part, path: part.path, start: part.start ?? 0, end: part.end ?? null, fps: part.fps ?? FPS, video, texture};
   };
