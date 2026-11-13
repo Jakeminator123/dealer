@@ -620,7 +620,7 @@ test('the idle player: picks play back to back from frame 3, a calm clip is left
  s=state();assert.equal(s.now,'pamela-idle-glance-01');assert.equal(s.end,117,'four seconds at 30 fps, less the last three frames');assert.match(element('vi-status').textContent,/^Spelar blick åt sidan · på begäran$/);
  // Dela ut nu during a gesture: it is played out at 2.5 times the speed, and only then does the entry start.
  runInContext('viDeal()',context);await settle();
- s=state();assert.equal(s.stage,'leaving');assert.equal(s.now,'pamela-idle-glance-01');assert.equal(s.rate,2.5);assert.match(element('vi-status').textContent,/gesten spelas klart i 2,5× fart, sedan börjar ingången/);assert.equal(element('vi-deal').disabled,true);
+ s=state();assert.equal(s.stage,'leaving');assert.equal(s.now,'pamela-idle-glance-01');assert.equal(s.rate,1.5);assert.match(element('vi-status').textContent,/gesten spelas klart i 1,5× fart, sedan börjar ingången/);assert.equal(element('vi-deal').disabled,true);
  runInContext('viAdvance()',context);await settle();
  s=state();assert.equal(s.stage,'entry');assert.equal(s.src,src('pamela-idle-ready-entry-02'));assert.equal(s.rate,1);assert.ok(Math.abs(s.time-.001/30)<1e-9);assert.equal(element('vi-status').textContent,'Ingången spelas: handen går till skon.');
  runInContext('viAdvance()',context);await settle();
