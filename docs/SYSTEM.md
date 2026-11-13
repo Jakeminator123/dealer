@@ -41,7 +41,7 @@ från start. D = bör nå demospelaren som val eller fast förval i spelet, U = 
 | Rum | Byggd salong, 360°-panoraman ur rumsregistret, V6-plåten som kuliss eller fast i rutan, och en spelhall som byggs av en egen modul och hämtas första gången den visas (`BuiltRoom`; 73 spelautomater utan varumärken, bar, neon och låg rök som tätnar med `dust`, allt rörligt ur tiden; 11 ritanrop; byggd av en underagent 2026-11-11, Prov "spelhall"). Halv upplösning, oskarpt efter avstånd. Här bor också de tre rörelserna. | `src/scene3d-room.ts`, `src/scene3d-hall.ts` |
 | Bord och rekvisita | Filten är en platt bild sedd uppifrån (linjer, kortrutor och insatsringar ur placeringsplanen, logga); reling och sarg är geometri. Rekvisita är sådant händerna vilar på eller passerar över och ritas före filmen, så att händerna hamnar överst: markerbrädet ligger försänkt i ett urtag i filten (`TRAY`, `table.build(edgeZ, scale, notch)`), och spelets föremål läggs dit med `scene.addProp`. Skon som föremål (prov, panelen Bord eller `?sko=3d`): `loadShoe` i `src/game3d-props.ts` ställer Jakobs skomodell på filmskons fot (`FILM_SHOE`, `shoeFit`) och `scene.hideFilm` låter filmens sko vara oritad; en hand som sträcks in i rutan klipps med. I relingen finns mugghållare i guld mellan platserna, försänkta i lädret som riktiga hål (`cupAngles`, nyckeln `cups`, av som förval); ljuslinjen som stod där togs bort 2026-11-11 (Jakob: inte naturligt ljus), ljus på bordet kommer ur rummet. Underredet har två utföranden (`base`): pelaren som var, och två ben i fotograferat trä med mässingsfötter, tvärslå, fotstöd i mässing och bordets skugga på golvet, efter rumsstudien 2026-11-07 (kartorna är lokal media, `data/scene-materials.json`). Ytan har också två utföranden (`surface`): målad som förut (filten en obelyst bild, bordet speglar ett målat rum), eller rumsstudiens "fotomaterial på 3D": filten är ett belyst tyg med fotograferad väv, och filt, läder, trä och mässing tar ljus och speglingar ur det rum som visas (panoramat, förfiltrerat en gång per rum; `table.setEnvironment`, styrka `roomLight`). | `src/scene3d-table.ts`, `src/scene3d-props.ts`, `src/scene3d-rail.ts` |
 | Film | Nycklas i shadern mot rutans egen gröna nivå, läst i övre och nedre vänstra hörnet (skuggor blir svart med delalfa), och projiceras från filmkameran på ett lodrätt plan på bordets bakkant och på bordsskivan. Filmkö för spelet. En film med egen ruta (`Part.frame`, i filmens post `motion.frame = {scale, anchor, layer, shadow}`) visar dealern i annan skala på större yta: punkten (881,5; 831,5) i standardrutan, dealerkantens mitt, ligger på `anchor` i filmen, och med `layer: "BEHIND_TABLE"` ritas hela rutan på ett plan bakom bordskanten, djuptestat, så att 3D-bordet skymmer henne (in- och utgången; prövat med `assets/proofs/helkropp-prov/`); med `behindFrom` (rutnummer i filmen) gäller det först från den rutan och filmen ritas dessförinnan i de vanliga två lagren, så att en utgång kan börja i vilans pose med händerna på bordet (`frameAt`; kräver att bordet fram till den rutan ligger där en vanlig film har det). Utgången prövas i labbet, panelen Film (`src/scene3d-exit.ts`): kameran backar längs sin siktlinje medan hon reser sig (`exitView`). Kortprov i labbet: ett klipp med ett andra spår bredvid sitt eget (`card-track-grip.json`, samma format; en ruta får också säga `film`, filmens eget kort när kortet ritas någon annanstans, och `held`, 1 i handen och 0 när kortet ligger) spelas med det när panelen Kort eller `?spar=grepp` säger så, och `src/scene3d-cardlab.ts` (filmagentens fil, läses in om den finns) får scenen och panelen genom `mountCardLab`. | `src/scene3d-film.ts` |
-| Renderade kort | Två sätt (`cardMethod`). `scene` (förval): kortet är ett eget föremål i scenen under filmen, med kortstudiens kontur och tryck; läget följer kortlagrets regler (`poseAt`, `land`, `placed`, valör per kort), filmens eget kort nycklas bort i filmshadern så att filmens fingrar och deras skuggor ligger över det, kortet tar filmens ljus ruta för ruta, böjs i handen och får rörelseoskärpa. Cirka 0,6 ms per ruta. Där spåret är fel är kortet fel (P1 ruta 30–48, P7 ruta 18–54, dealerns kort ruta 102–126), kortet växer cirka 15 % vid landningen, och skofönstret visar en renderad baksida när kort är på. `film`: labbets kortritare ritar kortet in i filmrutan (filmens upplösning, klipps vid rutans kant, cirka 38 ms per ruta); kvar för jämförelse. Underlag: `D:/dealer-scratch/tmp/bakgrund-3d/kort/RAPPORT.md`. | `src/scene3d-deal.ts`, `src/scene3d-cards.ts` |
+| Renderade kort | Se "Ritade kort" under Spelet. | `src/scene3d-deal.ts`, `src/card-overlay.ts`, `src/scene3d-matte.ts` |
 | Ljus och bild | Fläktskuggan multipliceras ovanpå film, bord och rekvisita (`lit`); filmens eget ljus går inte att ändra, men rummet som syns bakom dealern kan läggas som ett svagt ljus längs hennes kontur (`wrap`, `film.setWrap`) så att hon står i rummet och inte framför det. Vykamera, oskärpa, fokus, slutkomposit och gränssnittet utåt. | `src/scene3d-light.ts`, `src/scene3d-view.ts` |
 
 | Funktion | Nycklar (förval) | För |
@@ -130,9 +130,47 @@ Spelet med flera dealers (2026-11-13):
   den andra med en anteckning om felet.
 - Dealern säger sina repliker med talfilm och ljud (`src/speech-lines.ts`, hennes egen röst enligt `data/speech.json`): `goodluck` före given,
   `dealerplays`, `insurance`, `double`, utfallet och `placebets`; chattens svar spelar sin talfilm när den finns, och en
-  replik utan film står som text i chatten. Talfilmen spelas hel, i vila, aldrig inne i en kedja av kort. Nyckeln `tal`
-  (`repliker`, förval, eller `av`) stänger av talfilmerna. Brytaren Ritade kort (nyckeln `cards`, förval på) i Miljö och
-  Casino slår av de ritade korten. Talet i sin helhet: [docs/TAL.md](TAL.md).
+  replik utan film står som text i chatten. En talfilm spelas hel, i vila. En replik som har en munlapp för den första
+  filmen i stegets kedja sägs i stället över den filmen (munlagret: `src/scene3d-mouth.ts`, `src/speech-patch.ts`,
+  registret `data/speech-patches.json`). Nyckeln `tal` (`repliker`, förval, eller `av`) stänger av talet. Talet i
+  sin helhet: [docs/TAL.md](TAL.md).
+- **Ritade kort.** Filmens gula och blå kort är bara en markör. Kortspåret (`assets/tracking/<klipp>/card-track.json`)
+  säger var kortet är i varje ruta, och scenen ritar ett riktigt kort där (`cardMethod: 'scene'`, förval): ett föremål
+  under filmen, där filmens eget kort nycklas bort så att hennes fingrar ligger över det ritade.
+  - Kortet ritas för den ruta som visas. Filmkön håller reda på vilken ruta varje film senast visade
+    (`requestVideoFrameCallback`), inte filmelementets klocka, som går upp till en ruta före bilden; med klockan stod
+    det ritade kortet där filmens kort är i nästa ruta, och filmens gula stack fram bredvid.
+  - Ett kort ritas bara när fyrhörningen är ett troligt kort (`plausible` i `src/card-overlay.ts`): hörnen går åt
+    samma håll och korsar inte varandra, kortet är högst 180 bildpunkter (roten ur ytan), inte en tunn sliver (längsta
+    sidan högst 3,6 gånger roten) och perspektivet är högst 3 (ett hörn förstoras högst tre gånger mer än ett annat).
+    Filmernas egna kort håller sig inom 1,9 i nio rutor av tio.
+  - En ruta utan troligt kort behåller det senaste troliga kortet i högst tre rutor (`HOLD`); därefter ritas inget.
+    När kortet lägger sig och spåret ger en kil under handen, glider kortet vidare till sin plats från den senaste
+    troliga formen, på kilens plats.
+  - Kortet i handen böjs lite. Böjningen mäts på den yta kortet ligger på (dealerns plan ovanför bordskanten, filten
+    nedanför) och är högst en tjugondel av vägen till ögat. Förut mättes den på filten, och ett kort som hölls upp
+    nära horisonten kastades ut som en strimma när kameran flyttades eller vreds.
+  - Kontaktskuggan läggs bara när den, en fjärdedel av kortet utanför kortet, ligger under bordskanten och långt från
+    den linje där kortets perspektiv går mot oändligheten.
+  - Ett spår märkt `hand: false` håller inte kortet i handen. Där färgas filmens eget kort om på plats medan hon bär
+    det (matten, `src/scene3d-matte.ts`: baksidan i baksidans färg, framsidan med trycket), och det ritade kortet tar
+    över tolv rutor innan kortet ligger (`EASE`). I dag gäller det plats 1 och 2 (`paow-giv-2-1-p1-06-01`,
+    `paow-giv-2-1-p2-03-01`). En framsida som filmen bleker till ljust lila räknas som kortets, men bara där kortet
+    var i rutorna före.
+  - Ett kort som ligger sedan en tidigare film ritas i samma storlek som det givna kortet vilade i (Kortens storlek
+    gånger kontraktets kort, på planens plats), så att det inte krymper eller växer när nästa film börjar.
+  - Hålkortets valör och dealerns summa visas när kortets framsida syns i vändningsfilmen, inte när filmen slutar.
+  - Hur kortet i hennes hand visas väljs i spelet. Miljö har två brytare: Ritade kort (på eller av; av betyder att
+    inget ritas på något kort, varken i handen eller liggande) och under den Bara liggande (filmens eget kort i handen,
+    det ritade först när kortet ligger; av från början). Adressen kan säga samma sak: `cards=0` eller `cards=1`, och
+    ordet `kort`: `kort=liggande`, `kort=hand` (som förut) eller `kort=matt` (filmens kort omfärgat i handen, ett
+    labbval). Vem som bestämmer (`cardsChoice` i `src/game-film.ts`): adressens ord först (Casino-vyns knapp skriver
+    adressen, och en inspelning med ordet ändras aldrig av det en webbläsare minns), sedan spelarens val i menyn, som
+    minns också under ett förval, sedan förvalet, annars på.
+  - Med skomodellen (Sko i 3D i Scen, där filmens sko inte ritas) ritas det givna kortet först två rutor efter att
+    det har lämnat skon (`leavesShoe` i spåret), så att det inte står ovanpå modellen som ett klistermärke. Kortet i
+    skons fönster ritas som förut. Provet klipper fortfarande bort hennes hand i skons ruta.
+  - Sätten jämförda på samma rutor: Prov `kort-tre-satt` (`assets/proofs/kort-tre-satt/`).
 
 `src/game-director.ts` gör signalerna till slag, ett per kant i klippbanken (vila till sko en gång, retur mellan korten,
 hålkortet vänds från vila), och `src/game-table.ts` ger varje kort en plats: planens två platser per plats, därefter en
