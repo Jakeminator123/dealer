@@ -112,8 +112,9 @@ if (lookNote) { const note = Object.assign(document.createElement('p'), {textCon
 scene.rebuild(); scene.start();
 new ResizeObserver(frame).observe(stage); frame();
 const film = createFilm(scene.players as unknown as FilmPlayers, graph, layout, path => fetch(path).then(res => res.ok ? res.json() : null));
-// How the card in her hand is shown (src/game-film.ts Carry): kort=liggande (the film's own card in her hand, the drawn card once it
-// lies: "Bara liggande" in the Miljö menu), kort=matt (the film's card recoloured in her hand, a lab choice), kort=hand (as before).
+// How the card in her hand is shown (src/game-film.ts Carry) is a word in the address only, for the lab and for recordings:
+// kort=liggande (the film's own card in her hand, the drawn card once it lies), kort=matt (the film's card recoloured in her hand),
+// kort=hand (the drawn card in her hand, which is what the game does without the word).
 film.carry = cardsNow.carry;
 // Her lines over the films that play (src/scene3d-mouth.ts, src/speech-patch.ts): the mouth patches of data/speech-patches.json in her
 // voice and the game's language, each record checked against the register's sha256 and its film against the bank's file, and read
@@ -284,13 +285,11 @@ const panel = mountPanel(overlay.root.querySelector<HTMLElement>('.go-bar')!, RO
   table(on) { heard.table = on; panel.set({table: on}); if (on) withSound(s => s.chip('stack', {height: 1, pan: 0})); },
   ambience(on) { heard.ambience = on; panel.set({ambience: on}); withSound(s => s.ambience(on ? soundOf(room) : null)); },
   // Off: nothing is drawn over the film, lying cards included; the film's own coloured cards show and the round plays as before.
-  cards(on) { scene.set({cards: on}); panel.set({cards: on}); remember(on ? film.carry === 'film' ? 'lying' : 'on' : 'off'); },
-  // Only lying: the film's own card in her hand, the drawn card once it lies; from the next step of the round.
-  lying(on) { film.carry = on ? 'film' : 'object'; panel.set({lying: on}); remember(on ? 'lying' : 'on'); },
+  cards(on) { scene.set({cards: on}); panel.set({cards: on}); remember(on ? 'on' : 'off'); },
 });
-panel.set({room, dealer, cards: scene.state.cards, lying: film.carry === 'film'});
+panel.set({room, dealer, cards: scene.state.cards});
 // The menu's choice is kept also under a preset; a word in the address still wins over it when the page is opened (cardsNow).
-function remember(value: 'on' | 'off' | 'lying') { try { localStorage.setItem('dealer.cards', value); } catch { /* a private window keeps nothing */ } }
+function remember(value: 'on' | 'off') { try { localStorage.setItem('dealer.cards', value); } catch { /* a private window keeps nothing */ } }
 // Jakob's chip tray (assets/props/tray.glb, local media) takes the place of the built tray when it can be read; game.html?tray=built keeps the built one.
 // A trial, game.html?bricka=hus: the tray holds the house's own chips (src/game3d-tray.ts), a lost bet is carried into it and winnings out of it.
 type HouseTray = {mouth(value: number, taking: boolean): {x: number; y: number; s: number}; add(value: number): boolean; remove(value: number): boolean};

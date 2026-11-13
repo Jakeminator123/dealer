@@ -70,8 +70,10 @@ test('who decides the drawn cards: the address, then the player\'s own menu (als
   assert.equal(cardsChoice({address: false, memory: 'on', preset: true}).cards, false);
   // nothing remembered: the preset, else on
   assert.equal(cardsChoice({preset: false}).cards, false); assert.equal(cardsChoice({}).cards, true); assert.equal(cardsChoice({memory: 'on', preset: false}).cards, true);
-  // Bara liggande the same way: the address's kort first (and a kort word means the cards are on), then the menu
-  assert.deepEqual(cardsChoice({memory: 'lying', preset: true}), {cards: true, carry: 'film'});
+  // how the card in her hand is shown is the address's kort word alone (and a kort word means the cards are on); the menu has no
+  // switch for it, and a browser that still remembers the removed switch reads as cards on, carried as the game does
+  assert.deepEqual(cardsChoice({memory: 'lying', preset: true}), {cards: true, carry: 'object'});
+  assert.deepEqual(cardsChoice({memory: 'lying', preset: false}), {cards: true, carry: 'object'});
   assert.deepEqual(cardsChoice({kort: 'hand', memory: 'lying'}), {cards: true, carry: 'object'});
   assert.deepEqual(cardsChoice({kort: 'liggande', memory: 'off', preset: true}), {cards: true, carry: 'film'});
   assert.deepEqual(cardsChoice({kort: 'liggande', address: false}), {cards: false, carry: 'film'});
