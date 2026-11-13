@@ -11,9 +11,13 @@ export const allowed = (from: State | undefined, to: State): boolean => !!from &
 export const isDecidable = (e: Pick<Entry, "role" | "path" | "frame" | "proof">): boolean =>
   e.role !== "film" && e.role !== "prov" && !e.proof && !!e.path && (e.frame !== undefined || kindOfPath(e.path) === "image");
 
-/** The candidates that become ersatt when `entry` is approved: same role, same node, same card, still a candidate. */
+/**
+ * The pictures that become ersatt when `entry` is approved: same role, same node, same card, and either still a candidate
+ * or the one that held until now. Only one picture holds per role, node and card: an order finds its anchor that way, and a
+ * repaired copy approved after its original must take the original's place (2026-11-13).
+ */
 export function replacedBy<T extends Pick<Entry, "id" | "role" | "node" | "card" | "state">>(entries: readonly T[], entry: T): T[] {
-  return entries.filter((e) => e.id !== entry.id && e.role === entry.role && e.node === entry.node && e.card === entry.card && e.state === "kandidat");
+  return entries.filter((e) => e.id !== entry.id && e.role === entry.role && e.node === entry.node && e.card === entry.card && (e.state === "kandidat" || e.state === "gäller"));
 }
 
 /** "Jakob 2026-11-12 22:40: kandidat → gäller (Material)". */

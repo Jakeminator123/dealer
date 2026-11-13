@@ -56,7 +56,7 @@ export function StateDecision({ entry, row, revision, onDecided }: { entry: Entr
                     <p>Bilden gäller från nu. Filmer och bilder beställs från den.</p>
                     {replaced.length ? (
                       <div>
-                        <p className="text-dim">De här kandidaterna blir ersatta:</p>
+                        <p className="text-dim">De här bilderna blir ersatta:</p>
                         <ul className="mt-1 list-disc pl-5">
                           {replaced.map((r) => (
                             <li key={r.id}>{r.name}</li>
@@ -64,7 +64,7 @@ export function StateDecision({ entry, row, revision, onDecided }: { entry: Entr
                         </ul>
                       </div>
                     ) : (
-                      <p className="text-dim">Inga andra kandidater ersätts.</p>
+                      <p className="text-dim">Inga andra bilder ersätts.</p>
                     )}
                   </>
                 ) : (

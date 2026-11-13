@@ -175,7 +175,7 @@ test('Material: Godk채nn replaces the other candidates of the same role, Underk�
   assert.equal((await call('PUT', '/api/media/nobody/state', { body: { state: 'ersatt' }, match: await revision() })).status, 404);
   assert.equal(allowed('g채ller', 'ersatt') && !allowed('ersatt', 'g채ller') && !allowed(undefined, 'g채ller'), true);
   assert.equal(isDecidable({ role: 'ankare-1', path: 'assets/x/source.mp4', frame: 3 }), true);
-  assert.equal(replacedBy([{ id: 'a', role: 'ankare-1', state: 'kandidat' }, { id: 'b', role: 'ankare-1', state: 'kandidat' }, { id: 'c', role: 'ankare-1', state: 'g채ller' }], { id: 'a', role: 'ankare-1', state: 'kandidat' }).map((e) => e.id).join(), 'b');
+  assert.equal(replacedBy([{ id: 'a', role: 'ankare-1', state: 'kandidat' }, { id: 'b', role: 'ankare-1', state: 'kandidat' }, { id: 'c', role: 'ankare-1', state: 'g채ller' }], { id: 'a', role: 'ankare-1', state: 'kandidat' }).map((e) => e.id).join(), 'b,c', 'the one that held gives way too: one picture holds per role');
 });
 
 test('a draft that waits fetches its picture once the anchor holds: with refresh, or at once on Godk채nn in Material', async (t) => {

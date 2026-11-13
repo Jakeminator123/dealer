@@ -315,7 +315,7 @@ export function mediaRoles(root: string) {
    if (!isDecidable(entry)) throw new StoreError(400, 'Bara en bild (inte en film eller en provmapp) kan godkännas här.');
    if (!allowed(entry.state, to)) throw new StoreError(409, `${entry.name} är ${entry.state ?? 'utan tillstånd'}: bara kandidat → gäller, kandidat → ersatt och gäller → ersatt.`);
    const replaced = to === 'gäller' ? replacedBy(dealer.entries, entry) : [];
-   for (const other of replaced) Object.assign(other, {state: 'ersatt', stateBy: stateLine(who, now, 'kandidat', 'ersatt', `${entry.name} godkändes i Material`)});
+   for (const other of replaced) Object.assign(other, {state: 'ersatt', stateBy: stateLine(who, now, other.state ?? 'kandidat', 'ersatt', `${entry.name} godkändes i Material`)});
    Object.assign(entry, {state: to, stateBy: stateLine(who, now, entry.state!, to)});
    const out = JSON.stringify(next, null, 2) + '\n';
    if (validateRegister(JSON.parse(out)).errors.length) throw new StoreError(400, 'Ändringen gick inte att föra in i registret.');

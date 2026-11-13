@@ -3153,6 +3153,19 @@
             "when": "2026-11-13"
           },
           "stateBy": "Jakob 2026-11-13 01:29: kandidat → ersatt (Nyp, yngre, tagning 1 godkändes i Material)"
+        },
+        {
+          "id": "paow-nyp-ung-1-lagad",
+          "role": "ankare-2.1",
+          "name": "Nyp, yngre, tagning 1, lagad",
+          "path": "assets/anchors/paow-nyp-ung-1-lagad/anchor.png",
+          "node": "READY",
+          "state": "kandidat",
+          "note": "Ankare 2.1 lagd till i studion 2026-11-13.",
+          "source": {
+            "from": "uppladdad: fixed-2.png",
+            "when": "2026-11-13"
+          }
         }
       ]
     }
