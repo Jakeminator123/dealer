@@ -30,7 +30,10 @@ skript").
    i WAN 3. WAN 3 blir dessutom cirka 2 nivåer ljusare under en film. Där en WAN 3-film slutar och en Kling 4-film
    börjar hoppar hon därför cirka 6 nivåer, mellan två WAN 3-filmer cirka 2, mellan två Kling 4-filmer inget (M).
    Hoppets storlek beror inte på hur webbläsaren läser filmerna; vilken familj som ser ut som ankaret gör det. Chrome
-   läser dem som BT.709, och då är det Kling 4 som ser ut som ankaret (M, scenbanan 2026-11-13).
+   läser dem som BT.709, och då är det Kling 4 som ser ut som ankaret (M, scenbanan 2026-11-13). Mätt en gång till
+   samma dag i Scen på champagnefilmen (`paow-vila-17`, en oberoende granskare): i Chrome ligger Kling 4 +1,6, +2,0
+   och −1,6 nivåer från ankaret i rött, grönt och blått, WAN 3 +5,9, +5,9 och −2,1. Med ljuset utjämnat mellan filmer
+   (`filmEven`, förval sedan 2026-11-13) är tonen i skarven högst 2,2 nivåer fel och tonar ut över 3 s.
 4. **Takten skiljer.** WAN 3 ger 30 bilder i sekunden, alla Kling-modeller 24. Talfilmerna är 24 i sekunden men gjorda
    av en WAN 3-vila på 30, så hon andas i 0,8 gånger farten där (M).
 5. **I Jakobs domar skiljer sig modellerna mindre än hos granskaren.** Paows öppna givar (till spelarna och dealerns
@@ -57,7 +60,7 @@ kvittonas historia (`assets/orders/*/receipt.json`), en övre gräns eftersom be
 | Kling 3.0 Pro (`kling3.0_pro`) | Kontrollprovet 2026-11-10, underkänt för vändningen | 48 för 4 s (API, `generation.json`) | 3,1 min (1) | Pamela 1 (arkivet) |
 | Kling 3.0 Motion Control | Inget; prov b1a 2026-11-11 föll | – | – | 0 |
 | Aleph 2 (`aleph2`) | Inget; rättad kopia av en film, underkänd | 112 (API) | 1,6 min (1) | Pamela 1 |
-| Seedance 2.5 | Inget; bara en förhandsfil via MCP | 68 per s plus 34 per s referensfilm (handboken §2) | – | 0 |
+| Seedance 2.5 | Inget i banken. Uppgiftens eget svar gav en förhandsfil (cirka 1 Mbit/s); den fulla filen (5–6 Mbit/s) kom ur listan över senaste genereringar (rapporterat av trailersessionen 2026-11-13, handboken §4) | 68 per s plus 34 per s referensfilm (handboken §2) | – | 0 |
 | MuseTalk på en WAN 3-vila | Talfilmerna: munnen ritas lokalt, rösten från ElevenLabs | ElevenLabs per tecken; renderingen lokal | – | Paow 50 |
 | Nano Banana Pro | Stillbilder, inte film: keystone, ankare 1 och 2.1 | 40 per 4K-bild, 20 per 2K | 1,8 min (0,8–3,7; 8) | – |
 
