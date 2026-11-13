@@ -153,8 +153,9 @@ Spelet med flera dealers (2026-11-13):
   (lyckoönskan, dubblingen) sägs i stället över den första filmen i kedjan som har en munlapp för den, och "Dealern
   spelar." över hålkortets vändning, om lappen ryms i delens utsnitt och ljudet börjar högst 8 s efter att den egna
   delen börjar (`placeLines` i `src/speech-patch.ts`; munlagret: `src/scene3d-mouth.ts`, registret
-  `data/speech-patches.json`); annars spelas talfilmen i vila som förut. En del med lapp spelas i takt 1 också när
-  givarna går i dubbel fart, så att munnen och rösten följs åt. Försäkringen och utfallet sägs i vila efter kedjan. Nyckeln `tal` (`repliker`, förval, eller `av`) stänger av talet. Talet i
+  `data/speech-patches.json`); annars spelas talfilmen i vila som förut. En del med lapp, och en del med eget ljud,
+  spelas alltid i takt 1, också när reglaget Givarnas tempo (`filmTempo`, förval 1) står högre, så att munnen och
+  rösten följs åt. Försäkringen och utfallet sägs i vila efter kedjan. Nyckeln `tal` (`repliker`, förval, eller `av`) stänger av talet. Talet i
   sin helhet: [docs/TAL.md](TAL.md).
 - **Ritade kort.** Filmens gula och blå kort är bara en markör. Kortspåret (`assets/tracking/<klipp>/card-track.json`)
   säger var kortet är i varje ruta, och scenen ritar ett riktigt kort där (`cardMethod: 'scene'`, förval): ett föremål

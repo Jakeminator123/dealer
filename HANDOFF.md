@@ -329,9 +329,23 @@ svaren står i "Jakobs besked som gäller" och i "Nästa steg", punkt 0. Det hä
   bild av kortet vid skon: ".. och korten vafan. De är ju itne bra". Huvudagenten bestämmer linjen åt honom och visar
   resultatet, inte valen: ritade kort på, en storlek (1,2), en brytare i spelet (SYSTEM).
 - **Förvalen han sade ja till** (samma svar: "Jag håller med om allt annat du nämnde, så jag kan acceptera det rakt
-  av"): ljuset utjämnat mellan filmer, givarna i dubbel fart, liv i överkroppen och kopparna i relingen (de två sista
-  först när de är sedda rena i bild); nästa försök för plats 6 från ankare 2.2, kandidaten för ankare 2.2 gäller, en
-  runda ska kunna gå via 2.2; projektet `dealer` som v0 skapade hos Vercel tas bort.
+  av"): ljuset utjämnat mellan filmer, liv i överkroppen och kopparna i relingen (de två sista först när de är sedda
+  rena i bild); nästa försök för plats 6 från ankare 2.2, kandidaten för ankare 2.2 gäller, en runda ska kunna gå via
+  2.2; projektet `dealer` som v0 skapade hos Vercel tas bort. Givarna i dubbel fart hörde dit, men det tog han
+  tillbaka samma kväll (nästa punkt).
+- **Farten** (kl. 19.13, efter att ha sett kopian): "Dessutom har jag tyvärr bett om att snabba upp vissa typer av
+  rörelser, kanske till och med vissa `talk clips`, vilket har resulterat i att hon är jättesnabb i vissa lägen och
+  ser konstig ut." Förvalet för `filmTempo` är 1 (som filmat) sedan dess, och reglaget Givarnas tempo står kvar. Med
+  förvalet 2 gick också ingången, utgången, hålkortets vändning och gången vid dealerbyte i dubbel fart; talfilmer
+  har aldrig gått fortare än filmat. Förslag som väntar på hans öga (scenbanan): fart bara på givar och returer, och
+  hellre 1,3–1,5 än 2.
+- **Korten börjar om** (kl. 19.13): "På sajten har det nästan blivit värre, eftersom korten fortfarande renderas på
+  [Vercels] URL. Du kanske kan skicka en underagent ... för att undersöka vad som orsakar detta. Den bör också gå
+  igenom ignorerade sökvägar för att hitta orsaken till att vi inte kan behålla det blått och gult, så att vi kan
+  börja om med att hantera överlägg, pålägg och underlägg med kort." En oberoende utredare läser hela kedjan, på
+  kopian och här. Inget mer lagas i den ritade linjen innan utredningen är läst: kortagentens steg 3 (vändningen)
+  ligger oskrivet i `D:/dealer-scratch/tmp/kortagent3/stage3/`, och lagren som de är i dag står i
+  `D:/dealer-scratch/tmp/kortagent3/LAGREN.md`.
 - **Kopian till chefen** (kl. 15.38 till talbanan): "när jag vill kunna komma till en supenekle mockupsida med
   lösenordet "john". Sedan valet att spela i casinot eller komma till studio/labbet … Eller bara samma radda av
   alternativ som finns på vänsterspalten". Och kl. 16.30 till scenbanan: "Se nu till att inga luckor i nodträdet
