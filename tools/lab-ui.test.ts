@@ -587,7 +587,7 @@ test('a new Primär lowers the earlier Primär of its step to approved, and that
  respond({ok:true,json:async()=>({})},`/api/clip-bank/review/${old}`);await settle();respond(served(bank),'/api/clip-bank');await settle();
 });
 
-test('the idle player: picks play back to back from frame 3, a calm clip is left at once and a gesture is played out faster before the entry',async()=>{
+test('the idle player: picks play back to back from frame 3, a calm clip is left at once and a gesture is played out before the entry',async()=>{
  const bank:any=clipBank(),sha='e'.repeat(64),src=(id:string)=>`assets/motions/${id}/source.mp4`;
  const idle=(id:string,record:unknown)=>{bank.jobs.push({...bank.jobs[0],id,kind:'IDLE',target:null,from:'IDLE',to:'IDLE'});if(record)bank.motions[id]=record;bank.media[id]={video:src(id),first:null,last:null};};
  idle('pamela-idle-loop-01',{source:{fps:30,frames:120,sha256:sha},review:{decision:'PENDING'}});idle('pamela-idle-smile-01',{source:{fps:30,frames:90,sha256:sha},review:{decision:'PENDING'}});
@@ -618,9 +618,9 @@ test('the idle player: picks play back to back from frame 3, a calm clip is left
  runInContext("viAsk('pamela-idle-glance-01')",context);await settle();assert.equal(state().next,'pamela-idle-glance-01');
  runInContext('viAdvance()',context);await settle();
  s=state();assert.equal(s.now,'pamela-idle-glance-01');assert.equal(s.end,117,'four seconds at 30 fps, less the last three frames');assert.match(element('vi-status').textContent,/^Spelar blick åt sidan · på begäran$/);
- // Dela ut nu during a gesture: it is played out at 2.5 times the speed, and only then does the entry start.
+ // Dela ut nu during a gesture: it is played out at the speed it was filmed (IDLE_RULE.exitRate 1 since 2026-11-13), and only then does the entry start.
  runInContext('viDeal()',context);await settle();
- s=state();assert.equal(s.stage,'leaving');assert.equal(s.now,'pamela-idle-glance-01');assert.equal(s.rate,1.5);assert.match(element('vi-status').textContent,/gesten spelas klart i 1,5× fart, sedan börjar ingången/);assert.equal(element('vi-deal').disabled,true);
+ s=state();assert.equal(s.stage,'leaving');assert.equal(s.now,'pamela-idle-glance-01');assert.equal(s.rate,1);assert.match(element('vi-status').textContent,/gesten spelas klart, sedan börjar ingången/);assert.equal(element('vi-deal').disabled,true);
  runInContext('viAdvance()',context);await settle();
  s=state();assert.equal(s.stage,'entry');assert.equal(s.src,src('pamela-idle-ready-entry-02'));assert.equal(s.rate,1);assert.ok(Math.abs(s.time-.001/30)<1e-9);assert.equal(element('vi-status').textContent,'Ingången spelas: handen går till skon.');
  runInContext('viAdvance()',context);await settle();

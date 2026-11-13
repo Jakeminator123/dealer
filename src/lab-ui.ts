@@ -945,7 +945,7 @@ function paintIdle(){
  const G=clipGraph!,takes=viTakes(),pool=takes.filter(t=>t.idle&&G.playable(t)&&!t.idle.onRequest&&t.idle.weight>0&&!!t.media.video),total=pool.reduce((sum,t)=>sum+t.idle!.weight,0),now=vi.now,rate=String(G.IDLE_RULE.exitRate).replace('.',',');
  $('vi-play').textContent=vi.on?'Stoppa vilan':'Starta vilan';$<HTMLButtonElement>('vi-play').disabled=!pool.length&&!vi.on;$<HTMLButtonElement>('vi-deal').disabled=!vi.on||vi.stage!=='idle';
  $('vi-label').hidden=!now;$('vi-label').textContent=!now?'':vi.stage==='entry'||vi.stage==='done'?'ingången · IDLE>READY':`${viName(now.take)} · ${now.take.idle?.calm?'lugnt':'gest'}`;
- $('vi-status').textContent=vi.note||(!now?(pool.length?`${pool.length} klipp kan komma av slumpen.`:'Inga vilofilmer finns att spela ännu.'):vi.stage==='done'?'Ingången är spelad: härifrån tar given vid.':vi.stage==='entry'?'Ingången spelas: handen går till skon.':vi.stage==='leaving'?`Dela ut: gesten spelas klart i ${rate}× fart, sedan börjar ingången.`:`Spelar ${viName(now.take)} · ${now.why}`);
+ $('vi-status').textContent=vi.note||(!now?(pool.length?`${pool.length} klipp kan komma av slumpen.`:'Inga vilofilmer finns att spela ännu.'):vi.stage==='done'?'Ingången är spelad: härifrån tar given vid.':vi.stage==='entry'?'Ingången spelas: handen går till skon.':vi.stage==='leaving'?`Dela ut: gesten spelas klart${rate==='1'?'':` i ${rate}× fart`}, sedan börjar ingången.`:`Spelar ${viName(now.take)} · ${now.why}`);
  $('vi-why').textContent=now&&vi.stage==='idle'&&vi.next?`Därefter: ${viName(vi.next.take)} · ${vi.next.why}`:'';
  $('vi-log').innerHTML=vi.log.map(line=>`<li>${esc(line)}</li>`).join('');
  $('vi-takes').innerHTML=takes.map(t=>{const i=t.idle!,able=G.playable(t)&&!!t.media.video;
