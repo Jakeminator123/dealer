@@ -8,9 +8,11 @@ import {classify, morph, blobs, grown, centre, signedArea, inside, clockwise, is
 // carries an even card in the grip): what is covered and keyed is then this quad, and quad is only where the card is drawn.
 // held: 1 while the card hangs in the hand, 0 once it lies (measured contact); absent, the scene goes by the frames before restFrom.
 export type TrackFrame = {frame: number; side: Side; quad: number[][] | null; edge: number[][] | null; confidence?: number; shoeShare?: number; film?: number[][] | null; held?: number};
-// hand: false when the track does not hold the card in the hand well enough to draw it there (tools/track-card.ts --no-hand): the
-// film's own card shows while it is carried, and the rendered card is drawn from the frame it lies still.
-export type CardTrack = {clip?: string; width: number; height: number; hand?: boolean; frames: TrackFrame[]; edgeWindow: [number, number] | null; flips?: {from: number; to: number; quarterTurns: number}[];
+// hand: false when the track does not hold the card in the hand well enough to draw it there (tools/track-card.ts --no-hand): no
+// card object is drawn while it is carried; it comes in over the last EASE frames before it lies, settling from the film's own card
+// onto its place (the 3D scene shows the film's card recoloured until then: src/scene3d-deal.ts, carry). drawnFrom: the first frame
+// a card is drawn at all, set by a drawing that wants the card only once it lies (the game's "Bara liggande").
+export type CardTrack = {clip?: string; width: number; height: number; hand?: boolean; drawnFrom?: number; frames: TrackFrame[]; edgeWindow: [number, number] | null; flips?: {from: number; to: number; quarterTurns: number}[];
   leavesShoe?: number | null; restFrom: number | null; restQuad: number[][] | null; shoeWindow?: {box: number[]} | null};
 // toImage/toTable are homographies as eight numbers (the ninth is 1): table millimetres <-> image pixels.
 export type Scene = {toImage: number[]; toTable: number[]; cardWidth: number; cardHeight: number; bodyScale: number};
@@ -32,6 +34,8 @@ export const HELD_MAX = 180;
 export const PLAUSIBLE = {keystone: 3, sliver: 3.6, size: HELD_MAX, edge: HELD_MAX};
 // A frame whose card is not plausible keeps the last plausible pose for at most this many frames; after that no card is drawn.
 export const HOLD = 3;
+// Frames over which the card settles from the film's card in the hand to its own size and place on the table (poseAt's ease).
+export const EASE = 12;
 const pts = (q: number[][]): Pt[] => q.map(([x, y]) => ({x, y}));
 /**
  * The weights of the homography that carries the unit square onto `q` (texture order), at the square's corners (0,0), (1,0),
@@ -141,7 +145,7 @@ export type Pose = {
  * Whatever the data, what is drawn is a plausible card (plausible, plausibleEdge): a frame whose card is not keeps the last
  * plausible pose of the same side for at most HOLD frames (`kept` says so), and after that draws nothing.
  */
-export function poseAt(track: CardTrack, scene: Scene | null, frame: number, scale: number, ease = 12, shift: {x: number; y: number} | null = null, land: Pt[] | null = null): Pose | null {
+export function poseAt(track: CardTrack, scene: Scene | null, frame: number, scale: number, ease = EASE, shift: {x: number; y: number} | null = null, land: Pt[] | null = null): Pose | null {
   const at = Math.max(0, Math.min(track.frames.length - 1, Math.round(frame))), pose = rawPose(track, scene, at, scale, ease, shift, land);
   if (!pose || (pose !== BAD && drawable(pose))) return pose;
   const f = track.frames[at];
@@ -157,7 +161,7 @@ function rawPose(track: CardTrack, scene: Scene | null, at: number, scale: numbe
   if (!f) return null;
   const none: Pose = {frame: at, side: f.side, quad: null, edge: null, film: null, resting: 0, turned: false};
   const landed = restOf(track);
-  if (track.hand === false && !(landed && at >= landed.from)) return none; // not drawn in the hand: see CardTrack.hand
+  if (at < firstDrawn(track)) return none; // not drawn in the hand: see CardTrack.hand and drawnFrom
   const goal = land?.length === 4 && landed ? sameStart(land, landed.quad) : null;
   // The film's card is only a marker. Where the rendered card must end is the plan's place (land), or the place of the seat's
   // second card (shift). Either way the move grows from nothing at the shoe to all of it at the landing, so the card never jumps.
@@ -198,9 +202,15 @@ function sameStart(plan: Pt[], film: Pt[]): Pt[] {
   for (let turn = 0; turn < 4; turn++) { const q = way.map((_, i) => way[(i + turn) % 4]), off = q.reduce((sum, p, i) => sum + Math.hypot(p.x - a.x - film[i].x + b.x, p.y - a.y - film[i].y + b.y), 0); if (off < least) { least = off; best = q; } }
   return best;
 }
+/** The first frame a card is drawn: drawnFrom when it is set; for a track not drawn in the hand, EASE frames before it lies (never, if it does not lie); else the first. */
+export function firstDrawn(track: CardTrack): number {
+  if (typeof track.drawnFrom === 'number') return track.drawnFrom;
+  if (track.hand !== false) return -Infinity;
+  const rest = restOf(track); return rest ? rest.from - EASE : Infinity;
+}
 /** How much of a move applies in a frame: none while the card sits in the shoe, all of it once it lies; in between it grows smoothly while the card is carried. */
 export function shiftShare(track: CardTrack, frame: number): number {
-  const rest = restOf(track), to = rest ? rest.from : track.frames.length - 1, from = Math.min(to, Math.max(0, track.leavesShoe ?? 0));
+  const rest = restOf(track), to = rest ? rest.from : track.frames.length - 1, from = Math.min(to, Math.max(0, track.leavesShoe ?? 0, firstDrawn(track)));
   return frame >= to ? 1 : frame <= from ? 0 : smooth((frame - from) / (to - from));
 }
 /** Where a film leaves its card lying, for the films that follow it in a round: the resting card, at the plan's place or moved with its step's shift. */

@@ -15,7 +15,7 @@
 // no card object is drawn while a film shows its card; the passes that make the matte run here, on targets of the film's size.
 // The cards lying since earlier films are drawn as objects either way: a film lays one card, and later films do not show it.
 import * as T from 'three';
-import {poseAt, restOf, sceneOf, cardRecord, cardFace, overridesOf, cardInFront, plausible, skirtSound, RIM, MARGIN, PLAUSIBLE, type CardTrack, type CardRecord} from './card-overlay.ts';
+import {poseAt, restOf, sceneOf, cardRecord, cardFace, overridesOf, cardInFront, plausible, skirtSound, firstDrawn, RIM, MARGIN, PLAUSIBLE, EASE, type CardTrack, type CardRecord} from './card-overlay.ts';
 import {centre, clockwise, grown, signedArea, sound, type Pt} from './card-track.ts';
 import {FILM, edgeQuad, heldScale, solveCamera, squareToQuad, type FilmCamera} from './scene3d-geometry.ts';
 import {CARD_GLSL, type CardKey, type MatteKey} from './scene3d-film.ts';
@@ -117,7 +117,13 @@ const COMPOSITE_FRAGMENT = 'uniform sampler2D sum; uniform vec2 size; void main(
 // format, the card that lies on seat 4; everything else adapts to it).
 type Choice = {rank: string; suit: string; scale: number; hand?: 'film' | 'standard'};
 type Placed = {quad: Pt[]; back: boolean; target?: string | null; shoeDraw?: number | null};
-type Extra = {shift?: Pt | null; land?: Pt[] | null; placed?: Placed[]; cards?: CardRecord[] | null; target?: string | null; shoeDraw?: number | null};
+// carry: how the card the film carries is shown while it is in her hand (the page's choice, src/game-film.ts): 'object' (as before:
+// the card object, except where the track does not hold the card in the hand, CardTrack.hand false, where the film's own card is
+// recoloured in place, the matte, until the object takes over EASE frames before it lies); 'matte' (the film's card recoloured
+// while carried for every take, the object from the same frame on); 'film' (the film's own card while carried, the object from
+// the frame it lies: "Bara liggande"). The cards already lying are objects whatever carry says.
+export type Carry = 'object' | 'matte' | 'film';
+type Extra = {shift?: Pt | null; land?: Pt[] | null; placed?: Placed[]; cards?: CardRecord[] | null; target?: string | null; shoeDraw?: number | null; carry?: Carry};
 type FilmLayers = {shared: {map: {value: T.Texture | null}; grade: {value: T.Vector3}}; setCards(key: CardKey | null): void; setMatte(m: MatteKey | null): void};
 // renderer and view: for the motion samples, drawn into a target of their own before the frame; pixels: screen pixels per film pixel.
 // way: 'scene' (the card an object under the film) or 'matte' (the film's own card drawn over in place).
@@ -302,18 +308,23 @@ export function createDealLayer(o: Options) {
   // The side an edge-on frame is turning from or to: the nearest frame that shows one.
   const sideNear = (track: CardTrack, frame: number): 'BACK' | 'FRONT' => { for (let d = 1; d < track.frames.length; d++) for (const i of [frame - d, frame + d]) { const s = track.frames[i]?.side; if (s === 'BACK' || s === 'FRONT') return s; } return 'BACK'; };
   function off() { hide(dealt); hide(seated); composite.visible = depth.visible = seatDepth.visible = false; for (const c of lying) hide(c); o.film.setCards(null); o.film.setMatte(null); }
-  // The matte way: its passes, and the back print as one colour (its mean in linear light), which the film's back is recoloured to.
-  const matte = o.way === 'matte' ? mattePasses(o.renderer, keep) : null;
-  const backColour = matte ? (() => { const c = print().image as HTMLCanvasElement; return meanLinear(c.getContext('2d')!.getImageData(0, 0, c.width, c.height).data); })() : [0, 0, 0];
+  // The matte: its passes (their targets are made the first time they run), and the back print as one colour (its mean in linear
+  // light), which the film's back is recoloured to. The way 'matte' uses it for every frame; the way 'scene' while a card is carried
+  // that is not drawn as an object then (carry).
+  const matte = mattePasses(o.renderer, keep), alwaysMatte = o.way === 'matte';
+  let backColour: number[] | null = null;
+  const backMean = () => backColour ??= (() => { const c = print().image as HTMLCanvasElement; return meanLinear(c.getContext('2d')!.getImageData(0, 0, c.width, c.height).data); })();
   // While a film shows its card: the film's own card drawn over in place, the back in the back's colour and the face with its print
-  // laid by the track's quad, both shaded by the film (src/scene3d-matte.ts). No card object then; the seated card in the shoe
-  // window is film too, recoloured like the dealt one. `print`: another file's quads for the face (card-track-matt.json), if read.
-  function drawMatte(track: CardTrack | null, at: number, choice: Choice, extra: Extra) {
-    hide(dealt); hide(seated); composite.visible = depth.visible = seatDepth.visible = false; o.film.setCards(null);
+  // laid by the track's quad, both shaded by the film (src/scene3d-matte.ts). `alone` (the way 'matte'): no card object then, and the
+  // seated card in the shoe window is film too, recoloured like the dealt one; otherwise the objects and the key the scene has laid
+  // this frame stay (the seated card, keyed out of the film first, so the matte never sees it). `print`: another file's quads for
+  // the face (card-track-matt.json), if read. A print quad that is no card lays no print: the face takes the print's border colour.
+  function drawMatte(track: CardTrack | null, at: number, choice: Choice, extra: Extra, alone = true) {
+    if (alone) { hide(dealt); hide(seated); composite.visible = depth.visible = seatDepth.visible = false; o.film.setCards(null); }
     const film = o.film.shared.map.value; if (!film) { o.film.setMatte(null); return; }
     const own = track as unknown as MatteTrack, shoe = track?.shoeWindow?.box ?? SHOE_BOX, box = matteBox(own, at, shoe), face = cardFace(cardRecord(extra.cards, extra), false, art(choice));
-    const quad = at >= 0 ? printQuad(own, at, (track as {print?: Parameters<typeof printQuad>[2]} | null)?.print) : null;
-    o.film.setMatte({box, ...matte!.run(film, box, shoe), print: print(face.art), toPrint: toPrint(quad), back: backColour, paper: PAPER, lying: [LYING.BACK, LYING.FRONT], zone: at >= 0 ? matteZone(own, at) : null,
+    const laid = at >= 0 ? printQuad(own, at, (track as {print?: Parameters<typeof printQuad>[2]} | null)?.print) : null, quad = laid && plausible(laid.map(([x, y]) => ({x, y})), 2.5 * PLAUSIBLE.size) ? laid : null;
+    o.film.setMatte({box, ...matte.run(film, box, shoe), print: print(face.art), toPrint: toPrint(quad), back: backMean(), paper: PAPER, lying: [LYING.BACK, LYING.FRONT], zone: at >= 0 ? matteZone(own, at) : null,
       shoe: [shoe[0] - MATTE.shoeRoom, shoe[1] - MATTE.shoeRoom, shoe[2] + MATTE.shoeRoom, shoe[3] + MATTE.shoeRoom], faceBack: face.back});
   }
 
@@ -366,7 +377,15 @@ export function createDealLayer(o: Options) {
       const camera = o.camera(), solved = solveCamera(camera), track = trackIn as CardTrack | null, extra = (extraIn ?? {}) as Extra;
       lens.lens.value.set((FILM.width - 1) / 2, (FILM.height - 1) / 2, camera.focalPx, solved.pitch); lens.eye.value.set(0, camera.heightM, 0); lens.edgeRow.value = camera.edgeRow; lens.edgeZ.value = o.edgeZ();
       const at = track?.frames?.length ? Math.max(0, Math.min(track.frames.length - 1, Math.round(frame))) : -1;
-      if (matte) drawMatte(track, at, choice, extra); else dealCard(track, at, choice, extra);
+      if (alwaysMatte) drawMatte(track, at, choice, extra);
+      else {
+        // While the card is carried and is not drawn as an object (carry), the film's card is recoloured in place, or (carry 'film')
+        // left as the film has it; the object comes in where poseAt starts drawing (firstDrawn).
+        const carry = extra.carry ?? 'object', late = !!track && (carry !== 'object' || track.hand === false), landed = late ? restOf(track!) : null;
+        const drawn = late ? {...track!, drawnFrom: landed ? (carry === 'film' ? landed.from : landed.from - EASE) : Infinity} : track;
+        dealCard(drawn, at, choice, extra);
+        if (late && carry !== 'film' && at >= 0 && at < firstDrawn(drawn!)) drawMatte(track, at, choice, extra, false); else o.film.setMatte(null);
+      }
       // cards dealt by earlier films of the round, which this film does not show: lying flat where they landed
       const placed = extra.placed ?? [];
       placed.forEach((p, i) => {

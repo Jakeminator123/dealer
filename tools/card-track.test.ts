@@ -291,12 +291,17 @@ test('a crossed, folded or empty quad is unsound; a short run of them is bridged
   assert.equal(poseAt(big, null, 0, 1.2)?.quad, null, 'larger than any card a film holds');
 });
 
-test('a track marked not good enough in the hand (hand: false) draws no card while it is carried, and the card once it lies', async () => {
-  const {poseAt} = await import('../src/card-overlay.ts');
+test('a track marked not good enough in the hand (hand: false) draws no card while it is carried, and the card as it settles and lies', async () => {
+  const {poseAt, firstDrawn, shiftShare, EASE} = await import('../src/card-overlay.ts');
   const q = (x: number) => [[x, 100], [x + 60, 100], [x + 60, 180], [x, 180]];
-  const frames = Array.from({length: 10}, (_, i) => ({frame: i, side: 'FRONT' as const, quad: q(i < 6 ? i * 20 : 120), edge: null}));
-  const track = {width: 1764, height: 1174, hand: false, edgeWindow: null, restFrom: 6, restQuad: q(120), frames};
-  for (const i of [0, 3, 5]) assert.equal(poseAt(track, null, i, 1.2)?.quad, null, `frame ${i} in the hand`);
-  for (const i of [6, 9]) assert.ok(poseAt(track, null, i, 1.2)?.quad, `frame ${i} lying`);
+  const frames = Array.from({length: 40}, (_, i) => ({frame: i, side: 'FRONT' as const, quad: q(i < 30 ? i * 4 : 120), edge: null}));
+  const track = {width: 1764, height: 1174, hand: false, edgeWindow: null, leavesShoe: 2, restFrom: 30, restQuad: q(120), frames};
+  // the object comes in EASE frames before the card lies, settling from the film's card (the scene recolours the film's card before that)
+  assert.equal(firstDrawn(track), 30 - EASE);
+  for (const i of [0, 5, 30 - EASE - 1]) assert.equal(poseAt(track, null, i, 1.2)?.quad, null, `frame ${i} in the hand`);
+  for (const i of [30 - EASE, 25, 30, 39]) assert.ok(poseAt(track, null, i, 1.2)?.quad, `frame ${i} settling or lying`);
+  assert.equal(shiftShare(track, 30 - EASE), 0, 'a move to another place grows only while the card is drawn');
   assert.ok(poseAt({...track, hand: undefined}, null, 3, 1.2)?.quad, 'without the mark the card is drawn in the hand as before');
+  // a drawing that wants the card only once it lies ("Bara liggande") says from which frame
+  assert.equal(poseAt({...track, hand: undefined, drawnFrom: 30}, null, 29, 1.2)?.quad, null); assert.ok(poseAt({...track, hand: undefined, drawnFrom: 30}, null, 30, 1.2)?.quad);
 });
