@@ -169,8 +169,9 @@ tagningar vänder kortet en gång vid platsen så som en hand kan, med kortet in
 - Orden: `SAY.slideOut`, `SAY.dragBack`, `SAY.stopClosed`, `SAY.backDrag`. WAN 3, 1080p, 6 s, två tagningar. Höll till
   P1: cirka 7 verkliga släp av 9 tagningar (b9–b17, V). Föll till P4 (0 av 2) och P7 (0 av 2: kortet går först åt
   vänster) (V). Pröva P1 först.
-- Förutsättning: ett ankare 2.2 som gäller (Paow saknar). Skon i b17 hade öppen front; fönsterskon är oprövad för släp
-  (V).
+- Förutsättning: ett ankare 2.2 som gäller; Paows gäller sedan 2026-11-13 (`paow-ankare-2-2-t1`, 3.7). Skon i b17 hade
+  öppen front (V). Med fönsterskon, kortet öppet och vänt vid platsen: P1 0 av 1, P4 och P6 Variant för Jakob men med
+  tryckt kort, och P6 med enfärgat kort när tillägget om enfärgat kort står i ordern (§5, omgång 12–15).
 
 ### 3.5 Retur
 - **I samma film som given (tur och retur):** Jakob har godkänt 16 av 21 returer, två som Primär (`paow-giv-2-1-p4-04`:
@@ -188,7 +189,8 @@ tagningar vänder kortet en gång vid platsen så som en hand kan, med kortet in
   ankare 1.
 - Jakob godkände alla åtta (`paow-vila-01` rakt; 02–08 som Variant: "Jättebra variant!", "Jättebra.. Hon ler!",
   "Kanon!", "Toppen!") (V). Granskaren gav 1–3/5, mest för munnen: öppen eller tänder i 4 av 6 granskade (V). Nästa text
-  för munnen (oprövad): "her lips stay together as the corners of her mouth lift a little".
+  för munnen: "her lips stay together as the corners of her mouth lift a little"; prövad i omgång 12 (`paow-vila-10`):
+  leendet kom med stängda läppar i båda tagningarna, men andetaget i `paow-vila-11` togs ändå med öppen mun (§5, V).
 - Jakob om ordet: "Det är fortfarande oklart vad som ska vara en variant och vad som är godkänt." (`paow-vila-08`, V).
 
 ### 3.7 Stillbilder: ankare 2.1, 2.2, landningsbild
@@ -203,9 +205,13 @@ This is an edit of the picture @anchor. Keep everything in @anchor exactly as it
   och skon tas från ankare 1 (`tools/python/skolagning-21.py`, order-clerk §5).
 - **Ankare 2.1:** `paow-ankare-2-1` gav 4/5 och 2/5 (dubbla kort); Jakob godkände tagning 1 och underkände tagning 2
   (V).
-- **Ankare 2.2:** föll i tre ordrar; varje gång flyttade bildmodellen skon, också när ankare 2.1 var `@anchor` (§5, V).
-  Kvar: en ruta ur en film som börjar på ankare 2.1, eftersom filmen behåller skon där första rutan har den (S,
-  oprövat). Ankare 2.2 är inte på vägen till första hela uppsättningen: varje giv börjar på ankare 2.1.
+- **Ankare 2.2:** 1 av 6 tagningar i tre ordrar, och bara efter lagning; varje gång ritade bildmodellen om skon, också
+  när ankare 2.1 var `@anchor` (§5, V). `paow-ankare-2-2` tagning 1 (Pamelas öppna sko ritad) gäller sedan skolagningen
+  satt ankare 1:s sko och kort i fönstret, ett förpass med `fillDark` vid snitt 828 fått kroppen att sluta på rad 831
+  och tre lokala lagningar gjorts (kavajens hörnsteg 24 × 10 px, glipan vid pekfingret, manschettskarven): granskaren
+  3/5 för provfilmer, Jakob: gäller (besked 15:47; `paow-ankare-2-2-t1`) (V, kvittot och Material). Oprövat: en ruta ur
+  en film som börjar på ankare 2.1, eftersom filmen behåller skon där första rutan har den (S). En runda kan dela en
+  plats från ankare 2.2 (`SEAT_HUB`, SYSTEM), i dag Paows plats 6, när ingången, given, returen och utgången är dömda.
 - **Före vändningen** (3.3): ingen pose finns i banken; en ruta ur Jakobs egen film (3.8), utklippt till handen, är
   förslaget (S).
 
@@ -262,13 +268,14 @@ Pamelas godkända par, 552 krediter (V: `assets/motions/paow-table-arrive-wide-0
 | Hon är stel | `p4-09` (Jakob: "Hon är väldigt stel"), `p4-12` retur ("hon borde kunna röra sig mer"), `p5-03` ("så sjukt stel i ansiktet") | `SAY.otherRests` håller allt annat stilla (S) | Mall 7:s rörelsemening rörde henne men kostade kortet (15 av 18); tillägget "Her eyes follow the card." rörde blicken utan att hjälpa kortet: öppen fråga (§5) |
 | Handen till knytnäve i brösthöjd på returen | `paow-giv-p4` t1 (y 466), `p4-04` (120–128) | Retur i samma film som given | Jakob godkände ändå 16 av 21 returer; ingen ändring krävs |
 | Fingertopp på fönstrets ram | Ingång WAN 44–59, 4K 38–55 | Geometrin | Ordet "rim" struket; annars Variant |
-| Skon flyttad eller fel sko (stillbild) | Ankare 2.2, tre ordrar: öppen sko kopierad ur posebilden, sedan fönsterskon 81–129 px åt vänster | Bildmodellen ritar om skon med handen | Inte text; en ruta ur en film från ankare 2.1 (oprövat) |
+| Skon flyttad eller fel sko (stillbild) | Ankare 2.2, tre ordrar: öppen sko kopierad ur posebilden, sedan fönsterskon 81–129 px åt vänster | Bildmodellen ritar om skon med handen | Inte text: skolagningen (ankare 1:s sko och kort) och lokal lagning gav 1 av 6 (`paow-ankare-2-2` t1, 3.7); en ruta ur en film från ankare 2.1 är oprövad |
 | Kroppen kapad, skon omritad (stillbild) | 12–40 rader ovanför bordsraden i varje bild (DRIFT till `f6f68ef`) | Bildmodellen | `tools/still-after.ts` (fyll-morkt), `tools/python/skolagning-21.py` (order-clerk §5); `tools/python/forlang-plagg.py` för ett ljust plagg |
 | Ett andra kort | Hel runda (b2, b9c), ankare 2.1 t2, `p7-01` (två gula) | Flera kort, bilderna stämmer inte | Ett kort per film; samma kort i första och sista bild |
 | Ansiktet mjuknar, tatueringar suddas | Kling 4; 4K-ingången | Modellen | WAN 3 för vila och ingång |
 | Grönt glider eller pulserar | WAN cirka 11 nivåer på 6 s; Kling 4 G 206–234 i 30 s | Långa filmer, olika grönt | Kort film; samma grönt i bilderna; `level` |
 | Hopp eller scenbyte | Kling 4 i 30 s (b2: 16,3 och 20,2 s) | Klings scenindelning | Kort film, "one continuous shot" |
-| Ett grått bord ritas över det gröna under kanten och står kvar till sista rutan (vila där händerna lyfts) | WAN 3, 3 av 6 (2026-11-13): `paow-vila-15` från ruta 27, `-18` från ruta 15 (innan händerna rör sig), `-19` från ruta 45; inte i `-12`, `-14`, `-16`. Cirka 398 000 px under rad 836 mot ankarets 9 043, skarven mot ankaret 54–60 mot 3 | Okänd: inget ord i texten skiljer de tre från de tre andra | Känd risk, ingen lagning; mät med inget av henne under kanten innan en sådan vila förs in |
+| Ett grått bord ritas över det gröna under kanten och står kvar till sista rutan (en hand lyfts) | WAN 3, 4 av 10 filmer 2026-11-13 där en hand lyfts (vilor, in- och utgång): `paow-vila-15` från ruta 27, `-18` från ruta 15 (innan händerna rör sig), `-19` från ruta 45, `paow-ingang-2-2-01` t1 från ruta 15; inte i `-12`, `-14`, `-16`, `ingang-2-2-01` t2 eller `paow-utgang-2-2-01` t1–t2; 0 av 4 givar från skon (`2-2-p1-01`, `-p4-01`, `-p6-01`, `-p6-02`). Upp till cirka 398 000 px under rad 836 mot ankarets 9 043. Syns redan i film-afters anteckning: "kropp slutar … sista" 879–899 och "slut" över 7, mot 829–847 och under 5 i de rena | Okänd: inget ord i texten skiljer filmerna med bord från dem utan | Känd risk, ingen lagning; en ny tagning av samma order har varit ren (`ingang-2-2-01` t2). Läs film-afters anteckning och mät under kanten innan en sådan film förs in |
+| Den hämtade filmen är en förhandsfil (låg bitrate) | Rapporterat av trailersessionens producent 2026-11-13, inte mätt av oss: för Seedance gav uppgiftens eget svar en förhandsfil på cirka 1 Mbit/s, och den fulla filen (5–6 Mbit/s) kom bara ur listan över senaste generationer; för Kling 4 gav hämtningen den fulla filen (5,8–6,4 Mbit/s). Våra egna hämtningar (`fetched.json`, V): WAN 3 15–19 Mbit/s, Kling 4 5,1–6,6 Mbit/s | Uppgiftens svar pekar för vissa modeller på en förhandsfil (S) | Räkna bitraten efter varje hämtning (`file.bytes` × 8 / sekunder ur `fetched.json`, eller `ffprobe`); ligger den nära 1 Mbit/s, hämta filen ur listan över senaste generationer (`list_recent`) och hämta igen |
 
 ## 5. Prov och protokoll
 
@@ -317,6 +324,7 @@ belägget.
 | `paow-giv-p4` t2, mall 3, Kling 4 | 2,5/5 möjlig variant | "Denna är bra" |
 | `p4-12` stängd giv, WAN 3 | 3/5, bäst i omgång 2 | underkänd: "… Dessutom har hon kvar ett gult kort som hon lämnar till spelare fyra." |
 | `p4-14` t2 stängd giv, WAN 3 | 3,5/5, användbar med anmärkning | underkänd: "… endast om det är gjort med avsikten att hon ska hålla kortet stängt så att det blir gult till gult. Jag tror dock inte att det är så." |
+| `2-2-p6-01` släp från ankare 2.2 till P6, WAN 3 (omgång 13) | beställarens mått: faller (tryckt kort på båda sidor; kortspåraren tappar det efter vändningen) | given Variant: "Tryck på båda sidorna, men hon trycker eller pressar ner kortet som man gör med en blackjack-sko. En eller ett par sånna kan vara roliga och bra att ha i alal fall"; returen underkänd: "Tråkigt! och med tryck på kortet" |
 | Returerna i tur och retur, vilorna | 0,5–4/5 och 1–3/5 | 16 av 21 och 8 av 8 godkända |
 
 **Oavgjort**
@@ -342,10 +350,10 @@ belägget.
 | Mellanbild i Kling 4 | b1b, b4: läses som start, slut eller följd | faller |
 | Kling 3.0 Motion Control, Pamelas film | b1a 44/100, kortet genomskinligt | faller (1 film) |
 | Aleph, aleph2, Kling 4 edit, WAN video-till-video, `edit_video` med egen nyckelruta | `paow-samma-film`: Pamelas ansikte tillbaka, fönstret töms; DRIFT till `f6f68ef` | faller |
-| Ultrarapid som snabbas upp; uttaget baklänges; Seedance 2.5 via MCP (bara en förhandsfil) | DRIFT till `f6f68ef` | faller |
+| Ultrarapid som snabbas upp; uttaget baklänges; Seedance 2.5 via MCP (bara en förhandsfil) | DRIFT till `f6f68ef`; för Seedance kom den fulla filen ur listan över senaste generationer, rapporterat av trailersessionens producent 2026-11-13, inte mätt av oss (§4) | faller; för Seedance var felet kanske hämtningen (S) |
 | Hopklippta ankare, platt målad kortyta | Pamela: för litet kort, fingertopp bredvid, påhittad tryckt framsida (DRIFT till `f6f68ef`) | faller |
 | Ny person i en annans bankruta (stillbild, b23) | vaxig hud, kroppen 58 rader för kort (`order-b24.json`) | faller; redigera i stället |
-| Ankare 2.2 som redigerad stillbild | tre ordrar, sex tagningar, 0 användbara: `paow-ankare-2-2` (Pamelas öppna sko kopierad), `-01` (fönsterskon cirka 100 px åt vänster), `-02` ur ankare 2.1 (104 och 81 px åt vänster) | faller; kvar: en ruta ur en film som börjar på ankare 2.1 |
+| Ankare 2.2 som redigerad stillbild | tre ordrar, sex tagningar, 1 användbar efter lagning: `paow-ankare-2-2` (Pamelas öppna sko kopierad i båda; t1 gäller efter skolagning, förpass och tre lokala lagningar, granskaren 3/5 för provfilmer, Jakob: gäller, 3.7; t2 två skofronter och två kort), `-01` (fönsterskon cirka 100 px åt vänster), `-02` ur ankare 2.1 (104 och 81 px åt vänster) | 1 av 6, och bara med lagning; oprövat: en ruta ur en film som börjar på ankare 2.1 |
 | 4K-filmmodell för skärpa | `paow-ingang-2-1-02`: ingen skärpevinst i bankens ruta, 172 mot 80 | faller |
 | Bildmodellen flyttar kameran (sidovy) | fyra försök, 160 krediter (`D:/dealer-scratch/tmp/dealer-bf/LASMIG.md`) | faller |
 
@@ -391,8 +399,9 @@ blått syntes och bytte storlek); hålkortets vändning har bara hålkortet på 
 
 **Öppen fråga: hur hon rör sig utan att det kostar kortet.** Jakob vill att hon rör kropp, huvud och högerarm mer.
 Rörelsemeningen i mall 7 gjorde det och förstörde kortet i 15 av 18 tagningar; blicken ensam (tillägget ovan, 2 tagningar)
-gav rörelse i huvudet men inget bättre kort. Oprövat: rörelsen i en egen vilofilm före eller efter given, eller en
-referensfilm där en hand rör sig medan den andra delar ut.
+gav rörelse i huvudet men inget bättre kort. Prövat i omgång 12–15 (nedan): rörelsen i egna vilofilmer före eller efter
+given; av vilorna med blick, leende eller andetag fann granskaren 5 av 6 användbara, och Jakob godkände de två han själv
+har dömt. Oprövat: en referensfilm där en hand rör sig medan den andra delar ut.
 
 **Plats 6 är det enda steg som saknas för en runda** (`node tools/produce.ts paow`). Fjorton tagningar
 (`paow-giv-2-1-p6-01`–`-10`) har fallit, för Jakob, för granskaren eller på ett mätt fel, med samma mönster: vägen från
@@ -400,10 +409,64 @@ skon till plats 6 är kort, och kortet vänds i ett sudd, är mjukt eller byter 
 vändning på mall 5, 6, 7 och 8, och vändning vid platsen med WAN 3 (två tagningar) och Kling 4 (två, omgång 11: mjukt
 kort och en suddig blandruta i vändningen). Inte prövat: en referensfilm (Pamelas giv till plats 6 är bara godkänd som
 variant, och hans regel tillåter bara rakt godkända som referens) och handbyte; platsen kan också flyttas en bit från
-skon i planen. I spelet läggs plats 6:s kort utan hand.
+skon i planen. I spelet läggs plats 6:s kort utan hand. Från ankare 2.2 har plats 6 sin första användbara giv
+(`2-2-p6-02`, omgång 14: given Variant och returen godkänd, dömda åt honom); i spelet ändras inget förrän ingången till
+och utgången från 2.2 är dömda (omgång 15, nedan).
 
-**Oprövat:** referensfilm eller handbyte till plats 6; rörelse i en egen vilofilm; retur som egen film från en landningsbild; vändningen som egen film; landningsbild som stillbild; ankare
-2.2 som ruta ur en film; referensfilm av Jakobs hand; renderat kort i vändningens rutor.
+**Omgång 12–15 (2026-11-13, 22 tagningar av filmproducenten åt huvudagenten; V: kvittona och `motions/`).** Order-id
+förkortas `vila-09` = `paow-vila-09` och `2-2-p6-02` = `paow-giv-2-2-p6-02`. Domar som huvudagenten och en oberoende
+granskare gav på Jakobs mandat står som dömda åt honom; hans egna står med hans ord.
+- Vilor med en handling i orderns tillägg, WAN 3, 5 s (`vila-09`–`-11`, två tagningar var): 5 av 6 användbara för
+  granskaren (4, 4, 4, 4, 3 och 2/5). Blicken till spelarna åt båda håll och tillbaka håller (`vila-09`), men hon
+  blinkar tre gånger där en beställdes. Blick ned och leende med stängda läppar (`vila-10`): leendet som beställt, men
+  huvudet lutar 16° och 10° i stället för lite och tillbaka, och i tagning 1 sluts båda ögonen samtidigt (ingen enögd
+  blinkning). Andetaget (`vila-11`) tas med öppen mun i båda (8–13 px), och i tagning 2 går blicken aldrig ned till
+  skon. Jakob: `vila-09` t2 Variant ("Ja, den är okej och kan användas ibland."), `vila-10` t2 godkänd ("Bra, hon har
+  rört på sig i alla fall."); `vila-09` t1, `vila-10` t1 och `vila-11` t1 Variant och `vila-11` t2 underkänd, dömda åt
+  honom.
+- Ett större steg var femte ruta (1,4–2,2 gånger, granskarens mått) i alla åtta granskade tagningar i omgång 12; det
+  syns som ett ryck i vridningar och armar. Oprövat: att jämna ut det i efterarbetet.
+- Kaffet ur Scout Gaming-koppen, 8 s, en tagning per modell: WAN 3 (`vila-12`) 3/5: koppen kommer upp under
+  bordskanten och går ned igen, "Scout Gaming" läsligt i cirka 40 av 79 rutor och förvrängt i ruta 89–97, 132 och
+  136–147; den andra handen är borta från filten i fem sekunder, och hon böjer sig långt (näsan 250 px); Variant, dömd
+  åt honom. Kling 4 (`vila-13`) föll på beställarens mått: "Gaming" blir "Oaming" i varje ruta, och hon är 4,7 nivåer
+  mörk. Tryck på en rekvisita håller delvis, bättre med WAN 3 (en tagning var).
+- Vinkningen till någon snett bakom kameran, WAN 3, 6 s: `vila-14` 3/5: fem vinkningar i stället för två, till tittaren
+  och inte snett bakom kameran (huvudet 10–15° åt sidan, ögonen nära kameran), ingen blinkning på 5,9 s, och kroppen
+  glider 2–3 px fram till ruta 174; Variant, dömd åt honom. Omtagningen `vila-19` (huvudet åt hennes höger, två
+  vinkningar) föll på ritat bord (§4), och huvudet vreds åt fel håll.
+- Knäcka fingrarna, WAN 3, 6 s: 0 av 3 knäck. `vila-15` (händerna lågt över filten) och `vila-18` (armarna rakt fram)
+  föll på ritat bord (§4) fast rörelsen var den beställda; `vila-16` (händerna framför bröstet) knäppte händerna utan
+  knäck, granskaren 3/5, Jakob Variant ("Ja, det här är en udda variant. Den knäcker inte fingrarna, utan hon gör någon
+  slags bön. Men den här kan man ha att köra ibland. Det kommer säkert till användning.").
+- Givar från ankare 2.2 med släp, WAN 3, 6 s, öppet och vänt vid platsen (omgång 13, en tagning per plats): alla tre
+  kort tryckta. P1 (`2-2-p1-01`) föll på beställarens mått: kortet vändes i luften till ett tryckt spelkort, slutbildens
+  kort dök upp av sig självt, och hon bar det tryckta kortet tillbaka till skon. P4 (`2-2-p4-01`): granskaren 2,5/5 för
+  given och 4/5 för returen, vänt i luften cirka 190 px före platsen, vilar inom 1 px av planen; Jakob: given Variant
+  ("Den här är bra, men kortbaksidan har ett tryck på sig. Annars är den lite rolig."), returen godkänd ("Observera 2.2
+  och inte 2.1"). P6 (`2-2-p6-01`): den första vändningen med kantläge till plats 6 (kring långsidan cirka 85 px före
+  platsen), men tryckt kort; Jakobs domar står i tabellen ovan.
+- Tillägget om enfärgat kort, en ändring mot `2-2-p6-01` (omgång 14): "The card is plain, one flat solid yellow from
+  edge to edge on its back and one flat solid blue from edge to edge on its face, and the next card in the window is the
+  same plain solid yellow." Med WAN 3 (`2-2-p6-02`): kortet och skons kort enfärgade hela filmen, kortet vilar 1,5 px
+  från planen (+0,4 och +3,7 %), vänt i luften cirka 91 px före platsen och 17 % för långt i handen. Granskaren 3/5 för
+  given (en vit kant på cirka 4 px på den gula sidan) och 4/5 för returen; given Variant och returen godkänd, dömda åt
+  honom. Den första given till plats 6 som kan spelas med ritat kort, när kortspåret har rättats (ruta 51–81 och
+  97–102). Samma text med Kling 4 (`2-2-p6-03`): 1/5 (kortet byter sida utan kantruta, 2,2 gånger för stort i handen,
+  vit kant, 5,5 nivåer mörk), underkänd, dömd åt honom.
+- Ankare 2.2 gäller (`paow-ankare-2-2-t1`): 1 av 6 tagningar, och bara efter lagning (3.7).
+- In och ut ur ankare 2.2, WAN 3, 4 s, två tagningar var (omgång 15; Beställ har steget `UTGANG-2.2`), med en mening om
+  enfärgat kort i fönstret: ingången (`paow-ingang-2-2-01`) 1 av 2 ren, tagning 1 föll på ritat bord från ruta 15;
+  utgången (`paow-utgang-2-2-01`) 2 av 2 med rena skarvar. I de tre rena: starten 2,98–3,10 mot ankaret (tonlyftet),
+  slutet 6,4–6,5 mot 6,13 i den godkända 2.1-ingången (`paow-ingang-2-1-01`); handen i sista rutan utan förskjutning mot
+  ankaret; kortet i fönstret enfärgat (sett) och stilla (mitten inom 1 px av ankare 1:s när det syns). Ansiktet är
+  mjukare än ankaret vid skarven (skillnad 10–11 mot 8 i 2.1-ingången). Utgången tagning 1: handen går högt och doppar
+  fram förbi bordskanten (ruta 50–80); tagning 2: den vilande handen glider fram mot kameran (ruta 50–100) och tillbaka.
+  Granskning pågår.
+
+**Oprövat:** referensfilm eller handbyte till plats 6; retur som egen film från en landningsbild; vändningen som egen
+film; landningsbild som stillbild; ankare 2.2 som ruta ur en film; referensfilm av Jakobs hand; renderat kort i
+vändningens rutor.
 
 ## 6. Källor
 
