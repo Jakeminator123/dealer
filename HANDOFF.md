@@ -183,33 +183,39 @@ skript i `skript/`, liggare i `bestallningar-*.json`. Den sessionens filmer och 
 
 ## Öppet hos Jakob
 
-Skrivet 2026-11-13 kl. 17.00. Samma eftermiddag svarade han på listan som stod här ("Jag håller med om allt annat du
+Skrivet 2026-11-13 kl. 18.30. Samma eftermiddag svarade han på listan som stod här ("Jag håller med om allt annat du
 nämnde, så jag kan acceptera det rakt av", och om korten "Jag vill bara att det ska bli en linje"); det som följde av
 svaren står i "Jakobs besked som gäller" och i "Nästa steg", punkt 0. Det här är det som bara han kan göra eller säga.
 
-1. **Fylla på Runway.** Saldot var cirka 500 krediter kl. 17.00 efter dagens beställningar. Hans "inga tak idag" tar
-   bort taken, inte saldots botten, och påfyllningen gör bara han (arbetsytan "Jakob", sidan för betalning hos Runway).
-   Det som väntar på krediter: nio returer till vila för Paow (luckorna i nodträdet utöver plats 6; skattat 1 800), nya
-   försök på fingrarna och vinkningen (båda föll i omgång 14), och fler tagningar till plats 6 om han vill ha en giv
-   utan omvägen framför henne.
-2. **Vilken film som går till hans chef.** På skrivbordet ligger `paow-runda-2-profilval-1-spelet.mp4` (och
-   `-scenen.mp4`), första tagningen med den nya inspelaren: 3/5 av en oberoende granskare, mot 2/5 för morgonens.
-   Nästa tagningar spelas in när läpparna, kortlinjen och dammet framför henne är rättade (Nästa steg, punkt 0), i
-   Profilval 1 som han har det och en gång utan utseendets fläkt och flimmer, som granskaren läste som ett pulserande
-   ljus. Han väljer.
-3. **Hans två utseenden, sedda av granskaren.** I Jakob-1 följer skärpan kortet, så hennes ansikte är oskarpt i 28 %
-   av filmen och korten på bordet går inte att läsa; förslaget är skärpan på henne (`focus=dealer`), och han sparar om
-   utseendet om han vill ha det så. Profilval 1 kapar toppen av hennes huvud i 93 % av rutorna.
-4. **Läpparna** sköter han med talbanan: "läpprover var skitbra", sedan "lite clownläppar i mungiporna", som är rättat
-   i verktyget. Talfilmerna och munlapparna läggs om med det; de döms åt honom när de kommer in.
-5. **Trailerns nya slut** sköter han med `dealer-1e` (loggan står kvar, hon harklar sig, "Ehhh, okej tagningen är
-   över? Bra", och sedan syns hon med fötterna på bordet). Ingen har lyssnat på rösten i trailern åt honom.
-6. **Ett tredje och fjärde dealerkort** (hans ord 2026-11-13: "Skapa då ett tredje och fjärde till dealer"): planen
+1. **Fylla på Runway.** Saldot var 516 krediter kl. 18.00. Hans "inga tak idag" tar bort taken, inte saldots botten, och
+   påfyllningen gör bara han (arbetsytan "Jakob", sidan för betalning hos Runway). Det som väntar på krediter: nio
+   returer till vila för Paow (luckorna på Kartan utöver hålkortets retur; skattat 1 800), nya försök på fingrarna och
+   vinkningen (båda föll i omgång 14 på ett ritat grått bord), och en giv till plats 6 utan omvägen framför henne.
+2. **Vilken film som går till hans chef.** På skrivbordet ligger filmerna med namn som börjar `paow-runda-`; vilka
+   som är de senaste och vad den oberoende granskaren sade om dem står i "Nästa steg", punkt 0. Profilval 1 finns som
+   han sparade det och utan utseendets fläkt och flimmer (granskaren läste dem som ett pulserande ljus), och Jakob-1
+   med skärpan av (i hans sparade utseende följer skärpan kortet, och då är hennes ansikte oskarpt i 28 % av filmen).
+3. **Blackjackrepliken har de gamla läpparna** tills han själv dömer den nya: `paow-tal-blackjack-sv-04` bär hans egen
+   dom och går före, och `paow-tal-blackjack-sv-08` (nya läppar, jämn ljudstyrka, granskarna 4/5) är dömd åt honom.
+   I Granska: Alla, filtret Dömda åt dig, "Tal blackjack sv 08", Godkänn.
+4. **Läpparna, det fjärde provet** (munnen flyttad ned medan den är öppen) ligger i Prov `paow-mun` bredvid det som
+   gäller och väntar på hans ord; granskarna gav det lägre poäng. Dubblingens replik över ingången är den svagaste
+   lappen (2/5: munnen öppnas för lite); talbanan har en kandidat hos en granskare.
+5. **Champagnefilmen: hylla eller ny tagning.** Armen och glaset slutar i luften ovanför bordskanten, eftersom filmens
+   generator tänkte sig ett bord där. Två sätt: en hylla vid hennes högra sida som står där hela tiden (Prov
+   `hyllan-vid-dealern`, valet Hylla vid dealern, av; i dag en enkel skiva som behöver en kant och en kylare), eller
+   en ny tagning där glaset lyfts helt i bild (krediter).
+6. **Det han bör se själv i normal fart, allt i Prov:** liv i överkroppen (på från början sedan i dag;
+   `liv-i-overkroppen`), blixten med spelhålan i svartvitt (`blixten`; varianten spelas i spelets vila), de fyra nya
+   rummen (`monaco-och-spelhalan`; i Scen, inte i spelet: ska något av dem in i spelet?), röken över bordet
+   (`rok-over-bordet`, av), guldkopparna utan svarta fyrkanter (`koppar-i-relingen`), korten sida vid sida
+   (`kort-en-linje`) och trailerns nya slut (`trailer-noir-3`: tre ställen att lyssna på, se `dealer-1e`:s besked).
+7. **Ett tredje och fjärde dealerkort** (hans ord 2026-11-13: "Skapa då ett tredje och fjärde till dealer"): planen
    har sexton platser, två per spelare och dealerns två (`TARGETS` i `src/placement-model.ts`), och ordermodellen tar
    bara de platserna, så en film dit går inte att beställa och korten läggs utan hand. Förslag, inte byggt: planen får
    `D.C3` och `D.C4` i rad efter `D.C2`; sedan flyttar han dem i Placering och filmerna beställs som hennes första
    kort. Vill han ha det så?
-7. **Mindre saker som väntar på ett ord:**
+8. **Mindre saker som väntar på ett ord:**
    - `placements/proposals/` (två förslag till plan från 2026-11-11 som bara gamla scensidan visar): tas bort?
    - De tre långa biblioteksfilerna under `materials/` (three.js och två färdigbyggda sidor): byggas ur vår egen
      källa när gamla publika sajten stängs?
@@ -218,43 +224,52 @@ svaren står i "Jakobs besked som gäller" och i "Nästa steg", punkt 0. Det hä
    - Ska bordets tryck följa bordets storlek (`tableSize`)? Scenbanans fråga.
    - Hans första röst-id är inte färdigtränat hos ElevenLabs (bara kontots ägare kan göra klart det). Paows talbank
      ligger kvar i hans privata Blob-lager `dealer-lab-tal` efter mätningen hos RunPod (0,05 USD): ska den bort?
-   - Orden för kortets sidor: meningen om enfärgat kort höll kortet rent i omgång 14; ett neutralt tredje sätt att
-     säga baksida och framsida är oprövat och behövs kanske inte längre.
-8. **Äldre frågor om Pamela** (pausad): primära på hennes kanter, hålkortets giv, skokortets lutning, ett kortformat på
+   - Profilval 1 kapar toppen av hennes huvud i 93 % av rutorna: flytta kameran en aning, eller låta stå?
+9. **Äldre frågor om Pamela** (pausad): primära på hennes kanter, hålkortets giv, skokortets lutning, ett kortformat på
    tvären, Meshy-bordet, obedömda prov och den publika sajten står kvar i Git-historiken för HANDOFF före 2026-11-13 och
    tas upp när pausen hävs.
 
 ## Nästa steg
 
-0. **Paow, läget 2026-11-13 klockan 17.00** (`node tools/produce.ts paow`: 23 av 33 steg klara, 19 av de 21 en runda
-   kräver). En runda spelas i spelet med hennes filmer och hennes egen röst, två repliker sägs över filmerna medan hon
-   arbetar (munlagret), och vilan växlar mellan sexton filmer där gesterna kommer oftare (27 % av vikten). Det som
-   pågick när detta skrevs, med ägare:
-   - **Plats 6** har sin första användbara giv, från ankare 2.2 (omgång 14: `paow-giv-2-2-p6-02-01`, given variant
-     och returen godkänd, båda dömda åt honom). Kedjan för en runda via 2.2 är byggd (`SEAT_HUB`, SYSTEM); i spelet
-     ändras inget förrän ingången till och utgången från 2.2 är dömda (`paow-ingang-2-2-01`, `paow-utgang-2-2-01`,
-     två tagningar var, lagda 16.40). Givens kortspår är trasigt i släpet (ruta 51–81) och lagas av kortagenten.
-   - **Champagnefilmen** (`paow-vila-17`, två tagningar, i inkorgen): `dealer-1e`:s granskare ser dem; sedan döms
-     de åt honom som variant. Blixtvarianten är samma film med ett märke i posten (`motion.effect`, SYSTEM); scenbanan
-     har byggt effekten, rummet heter `spelhalan-sv`.
-   - **Filmen till chefen:** inspelaren ligger i `D:/dealer-scratch/tmp/huvudagent11/chefsfilm/inspelare/` (en
-     tagning är ett kommando, `node alla.mjs <namn>`; varje nyckel som kan ändras skrivs ut i adressen). Första
-     tagningen fick 3/5 (`…/chefsfilm/granskning-2/`). Före nästa: de nya läpparna (talbanan), kortlinjen
-     (kortagenten), inget damm framför henne (scenbanan), repliken över ingången lika stark som talfilmerna,
-     resultatskyltarna som inte täcker grannarna (filmagenten bygger det i spelets överlägg), tre sekunder efter
-     resultatet.
-   - **Korten:** en linje (Jakobs besked). Kortagenten jämför det ritade kortet i handen med filmens eget kort
-     omfärgat i handen, sida vid sida i Prov `kort-en-linje`; en oberoende granskare väljer, och spelet får den
-     linjen. De omlagda kortspåren förs in oavsett.
-   - **Talet:** talbanan lägger om alla 25 repliker och de fyra munlapparna med rättade läppar och lämnar dem med
-     sina granskares ord (STABILT 9); de döms åt honom samma stund, och `rost8`:s 25 tas ur banken.
-   - **Scenen:** förvalen `filmEven` på och `filmTempo` 2 (hans ja), de svarta fyrkanterna vid kopparna rättade i
-     kod (kopparna blir förval när bilden är ren), `dealerLife` 1 inte sedd av en granskare än.
-   - **Kön i Granska** ska vara tom när han kommer tillbaka: allt som kommer in döms åt honom efter en oberoende
-     granskning (Jakobs besked). `node D:/dealer-scratch/tmp/huvudagent11/look/ko-nu.mjs` räknar den.
-   Saldot hos Runway var cirka 500 krediter kl. 17.00; flera sessioner beställer, så läs det före en beställning. Mall 8
-   gäller; meningen om enfärgat kort (omgång 14) står i handboken. Pamela är pausad (Jakob 2026-11-12: "Vi pausar
-   Pamela när vi är klara. Sedan går vi vidare med Paow.").
+0. **Paow, läget 2026-11-13 klockan 19.00** (`node tools/produce.ts paow`: 24 av 33 steg klara, 20 av de 21 en runda
+   kräver; det som saknas för en runda är hålkortets retur till vila, som inte har någon metod). En runda spelas i
+   spelet med hennes filmer och hennes egen röst i en jämn styrka, replikerna har hennes egen överläpp och egna
+   mungipor (STABILT 9 och 10), tre repliker sägs över filmerna medan hon arbetar (munlagret), givarna går i dubbel
+   fart, ljuset är utjämnat mellan filmerna och hon har liv i överkroppen (alla tre förval sedan i dag). Vilan växlar
+   mellan arton filmer, gesterna 31 % av vikten, bland dem champagnefilmen och dess variant med blixt. Kön i Granska är
+   tom: allt som kom in dömdes åt honom efter en oberoende granskning (`node
+   D:/dealer-scratch/tmp/huvudagent11/look/ko-nu.mjs` räknar den).
+   - **Plats 6** ges från ankare 2.2 (`SEAT_HUB`, SYSTEM): ingången `paow-ingang-2-2-01-02`, given
+     `paow-giv-2-2-p6-02-01-deal`, dess retur och utgången `paow-utgang-2-2-01-01`, alla dömda åt honom. Givens
+     kortspår är lagat i släpet. Ett kort dit tar cirka 14 s längre än ett utan hand (hälften i dubbel fart); ett byte
+     direkt vid skon mellan 2.1 och 2.2 vore snabbare och är inte byggt (planen:
+     `D:/dealer-scratch/tmp/huvudagent11/nya-filmer/plan-runda-via-2-2.md`).
+   - **Filmen till chefen:** på hans skrivbord ligger `paow-runda-3-jakob-1-spelet.mp4` (och `-scenen.mp4`), den
+     tagning en oberoende granskare valde: 3,5/5, "kan skickas som den är" (morgonens film 2/5, eftermiddagens första
+     3/5; `D:/dealer-scratch/tmp/huvudagent11/chefsfilm/granskning-3/`). Bredvid ligger Profilval 1 utan fläkt och
+     flimmer (3,5/5 minus) och Profilval 1 som han sparade det (3/5: fläkten läses som ett pulserande ljus och hjässan
+     klipps). Det som lyfter den mest: munnen i lyckoönskan över ingången, som är nästan stängd med de nya läpparna
+     (talbanan gör om lappen som den gjorde dubblingens), och trycket som tänds på kortet i en enda ruta vid skon
+     (kortagenten). Inspelaren: `D:/dealer-scratch/tmp/huvudagent11/chefsfilm/inspelare/` (`node alla.mjs <namn>`: en
+     tagning är ett kommando, varje nyckel som kan ändras skrivs ut i adressen, vilofilmerna väljs av inspelaren, och
+     mixen för varje replik till samma styrka). Granskaren har inte hört filmerna; Jakob bör lyssna.
+   - **Korten:** en linje (Jakobs besked): det ritade kortet hela vägen, valt av en blind granskare som gav det 2/5
+     som det stod. Gjort sedan dess: ett kort vid skon och aldrig två, trycket mjukat och dämpat till filmens skärpa,
+     vändningen omfärgad på plats, filmens ljus som ett plan över kortet, skuggan under fingrarna sänkt (Prov
+     `kort-en-linje`, ett ark per steg). Kvar, hos kortagenten (underagent; planen och verktygen i
+     `D:/dealer-scratch/tmp/huvudagent11/kort2/` och `D:/dealer-scratch/tmp/kortagent3/`): vändningen (7 av 32
+     rutor fel), landningen, och plats 1 och 2, som saknar ritat kort i handen tills deras tagningar har spårats om.
+   - **Scenen** (`dealer-f6`): kvar är skarven talfilm till ingång (den enda fog filmens granskare såg; en ändring
+     ligger prövad i arbetskopia), vilan som växlar i Scen som i spelet, en riktig 360°-bild till de fyra nya rummen
+     (vridna 20° syns bildens speglade kant), och kant och kylare på hyllan om Jakob vill ha den.
+   - **Talet** (`dealer-0b`): kvar är filmer i 30 rutor per sekund som inte kan bära tal (en till två timmar, inte
+     beställt) och "Du dubblar" över varje plats egen giv (inte beställt). Samma läppmått på alla repliker väntar på
+     hans ord (Prov `paow-mun`).
+   - **Trailern** (`dealer-1e`): det nya slutet med grön tagning ligger i Prov `trailer-noir-3`; ett slut byggt i
+     spelets egen scen pågick när detta skrevs.
+   Saldot hos Runway var 516 krediter kl. 18.00; flera sessioner beställer, så läs det före en beställning. Mall 8
+   gäller, med meningen om enfärgat kort; omgång 12 till 15 står i handboken §5. Pamela är pausad (Jakob 2026-11-12:
+   "Vi pausar Pamela när vi är klara. Sedan går vi vidare med Paow.").
 1. **Studion** (`http://127.0.0.1:4319/studio/`) är skalet, med bland annat vyerna Scen, Karta, Primära, Jämför,
    Granska, Prov, Placering, Material, Beställ, Protokoll och Casino; gamla labbet nås med `lab.html?gamla=1` tills
    Modeller (`props.html`) och Ljud (`sound.html`) har flyttats. Den låsta kopian åt Jakobs chef ligger ute (Arbetsyta)
@@ -394,24 +409,27 @@ svaren står i "Jakobs besked som gäller" och i "Nästa steg", punkt 0. Det hä
 
 ## Kända brister
 
-- **De ritade korten** (Jakob 2026-11-13: "Det lixom kletar fast sig på korten", "linjer flyger dit och dit"). Reglerna
-  som de nu är står i SYSTEM, "Ritade kort". Det som hände samma dag:
-  - Strimman är borta: kortets böjning kastade kortets ändar bakom kameran när hon höll kortet nära horisonten, och
-    med flyttad eller vriden kamera (hans Profilval 1) drogs de ut över bordet. Ett kort som inte är ett troligt kort
-    ritas inte.
-  - Kortet ritades en ruta för tidigt (filmkön svarade med filmelementets klocka), så filmens gula stack fram bredvid
-    det ritade. Rättat i filmkön: 0 av 9 rutor med gult bredvid i bärningen vid dubbel fart, mot 4 av 9 förut.
-  - Plats 1 och 2 visar ett kort hela vägen: filmens eget kort färgas om medan hon bär det (baksidan blir jämnt mörk
-    utan tryck), och det ritade kortet tar över innan det ligger. Det är matten, som han sade "ja som val i labbet,
-    nej för spelet" om; den används bara för de två tagningarna, och han avgör om det får stå.
-  - Ritade kort av stannade inte av under ett förval; nu minns spelet hans val också då (SYSTEM säger vem som
-    bestämmer).
-  - Kvar: i själva vändningen, när kortet står på kant, syns filmens eget kort bart i 4–6 rutor. Dealerns första kort
-    ser dubbelt så stort ut i handen som när det ligger; det är filmens eget kort (128 mot 42 bildpunkter).
-  - Kvar: Sko i 3D (ett prov i Scen, inte spelet) klipper bort hennes hand i skons ruta. Pamelas spår är inte gjorda
-    om med dagens regler.
-  - Kortens storlek bestäms av `cardScale` gånger kontraktets kort (63 × 88 mm); planen ger bara plats och riktning.
-    Förvalet är 1,2; chefsfilmen spelas in med 1,65.
+- **De ritade korten** (Jakob 2026-11-13: "Det lixom kletar fast sig på korten", "linjer flyger dit och dit", och
+  till en bild av kortet vid skon ".. och korten vafan. De är ju itne bra"). En linje gäller sedan samma dag (Jakobs
+  besked): det ritade kortet hela vägen, i storlek 1,2, med en brytare i spelet; reglerna står i SYSTEM, "Ritade kort".
+  En blind granskare gav linjen 2/5 som den stod (9 av 32 rutor klart fel) och filmens granskare såg sedan tre hela
+  tagningar. Det som är kvar, med ägare (kortagenten, en underagent till huvudagenten, om inget annat sägs):
+  - Trycket tänds på kortet i en enda ruta när kortet lämnar skons fönster, vid varje dragning; det ska tonas in.
+  - Gula hörn i skons fönster i 3–7 rutor när handen kommer tillbaka (13,6 s och 39,2 s i filmen).
+  - Vändningen: 7 av 32 rutor fel enligt kortagentens egen räkning (den tunna flisan när kortet står på kant, gula
+    och blå spetsar vid tummen).
+  - Landningen: dubbel nederkant och ingen kontaktskugga; det liggande kortet är skarpare än filmen.
+  - Dealerns första kort är dubbelt så stort med baksidan upp som när det ligger (80 mot 41 bildpunkter): filmens
+    eget kort ritas i filmens storlek medan hennes fingrar ligger på det. Förslag, inte byggt: ett kort som ligger på
+    sin plats ritas i liggande storlek.
+  - Plats 1 och 2 visar filmens eget kort omfärgat i handen (svart, utan tryck), eftersom deras tagningar saknar
+    spår i handen; de spåras om en i taget och får då ritat kort som de andra.
+  - Den ljusgrå randen strax utanför det ritade kortet under fingrarna står kvar: där den syns sticker filmens kort
+    ut utanför det ritade, och regeln som behåller den hindrar hål mot filten (scenbanans utredning 2026-11-13).
+  - Sko i 3D (ett prov i Scen, inte spelet) klipper bort hennes hand i skons ruta. Pamelas spår är inte gjorda om
+    med dagens regler.
+  Uppskattat arbete för det som är kvar: en och en halv till två dagar, med varje steg visat på samma rutor (Prov
+  `kort-en-linje`) innan nästa.
 - **Produktionslistan och fallna tagningar:** raden för plats 6 står som "levererad, efterarbetas och granskas"
   fast alla fjorton tagningarna är bedömda och fallna. En tagning som beställaren själv mätte bort ligger kvar på
   MÄTT med domen i kvittots `review` (GRANSKAD är den oberoende granskarens), och listan räknar en order som på
@@ -466,11 +484,11 @@ svaren står i "Jakobs besked som gäller" och i "Nästa steg", punkt 0. Det hä
   den; en agent ändrar den aldrig på eget bevåg. 2026-11-11 kväll lades den om på hans ord: alla kort ×1,20 (P4 86,6 ×
   71,8 px), perspektiv 87 %, vridning 0°, platserna speglade kring bildens mitt, dealerns två kort centrerade. Skriptet
   och kopiorna från före ändringen: `D:/dealer-scratch/tmp/paow/labb/`.
-- **Den låsta kopian** (åt Jakobs chef): `https://dealer-studio-one.vercel.app`, lösenord `john` eller `jon`. Projekt
-  `dealer-studio` och Blob-lagret `dealer-studio-media` i teamet jakeminator, publicerad första gången 2026-11-13
-  kl. 16.50. Ny publicering: `node tools/publish-studio.ts --kor` (DRIFT, "Den låsta kopian på nätet"). Det tomma
-  projektet `dealer` som v0 skapade tas bort och adressen `dealer-lake.vercel.app` flyttas till kopian (hans ja
-  2026-11-13), efter att chefen har tittat.
+- **Den låsta kopian** (åt Jakobs chef): `https://dealer-lake.vercel.app` (adressen han kände till) och
+  `https://dealer-studio-one.vercel.app`, lösenord `john` eller `jon`. Projekt `dealer-studio` och Blob-lagret
+  `dealer-studio-media` i teamet jakeminator; publicerad tre gånger 2026-11-13, sist på kvällen med dagens hela läge.
+  Ny publicering: `DEALER_LOSEN_PROV=john node tools/publish-studio.ts --kor` (DRIFT, "Den låsta kopian på nätet").
+  Det tomma projektet `dealer` som v0 skapade togs bort samma dag på hans ja.
 - **Publika sajten** visar 22 filmer från `b65fd9b` (`evidence/public-release.json`).
 - **Media:** bilder och filmer som används eller kan användas ligger i `assets/` med `receipt.json` och roll i
   `data/media-roles.json`; på D: ligger slask, arkiv och säkerhetskopior (DRIFT).
