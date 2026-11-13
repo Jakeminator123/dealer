@@ -10,6 +10,12 @@ import {BET, spotToScene, tableToFilm, type FilmCamera, type Spot} from './scene
 
 export const FELTS: Record<string, [string, string]> = {green: ['#134232', '#0a2a20'], blue: ['#16325e', '#0b1c38'], vin: ['#571a26', '#330d15'], svart: ['#23272a', '#101214']};
 export const TABLE = {a: 0.95, b: 0.6, rail: 0.1}; // half width, depth toward the players, rail width
+// The table's size (state key tableSize): how many times TABLE's half width and depth the felt is. The dealer's edge stays where the
+// film has it (the felt grows sideways and toward the players), the rail keeps its own width, and the print stays where the film
+// deals: a larger table has more plain felt round it. Below 1 the outer bet rings reach the rail; above 1.4 the felt image ends.
+export const TABLE_SIZE = {min: 0.9, max: 1.4};
+/** The felt's half width and depth at a size (held within TABLE_SIZE; anything that is no number is 1). */
+export function sized(size = 1): {a: number; b: number} { const k = Number.isFinite(size) ? Math.min(TABLE_SIZE.max, Math.max(TABLE_SIZE.min, size)) : 1; return {a: TABLE.a * k, b: TABLE.b * k}; }
 // What the table stands on. column: the first base, one thick leg on a brass foot; it was never meant to be seen, and from a
 // camera that has backed away it is ugly (Jakob, 2026-11-11). legs: two tapered legs of photographed wood on brass plinths with
 // a stretcher between them, a brass foot rail on the players' side, a board that closes the underside, and the table's shadow
@@ -126,14 +132,37 @@ export const isRunwayCloth = (cloth: string | undefined): cloth is RunwayCloth =
 // darkest crease to its lightest crown. grain: the size, in tile pixels, below which its brightness is read as relief.
 // rough: the roughness of the leather's crowns (its creases are 0.22 duller). coat: a clear finish over it, 0 to 1, as on polished
 // leather. folds: how deep, in millimetres, the soft puckers are that run across the roll where the leather is drawn over the
-// padding (0: none). light: how much of the room's light the leather takes.
-export type Finish = {hide: string; repeat: number; depth: number; grain: number; rough: number; coat: number; folds: number; light: number; name: string};
+// padding (0: none). light: how much of the room's light the leather takes. duk: the felt is no lit cloth but the cloth as it
+// is drawn, in its own even light (as on the painted table), laid over this table: only the rail, the wood and the metal take the
+// room's light. (Jakob 2026-11-13: the cloth he liked, V6's, over the table that answers to light. Lit by a dim warm room that
+// cloth loses its green; drawn as it is, it keeps it.)
+// Such a cloth still follows how bright the room is, not its colour (DUK_LIGHT): drawn at one level it sat nearly black under a
+// bright rail in a daylight room.
+export type Finish = {hide: string; repeat: number; depth: number; grain: number; rough: number; coat: number; folds: number; light: number; duk?: boolean; name: string};
 export const NATURES = {
   'natur': {hide: `${MATERIALS}runway_leather-diffuse.webp`, repeat: 2, depth: 0.05, grain: 4, rough: 0.34, coat: 0, folds: 0, light: 1.6, name: 'Naturmaterial: Runway-läder, filt med lyster'},
   'natur-2': {hide: `${MATERIALS}runway_leather-diffuse.webp`, repeat: 2, depth: 0.05, grain: 4, rough: 0.18, coat: 0.9, folds: 0.5, light: 2, name: 'Naturmaterial 2: samma läder, blankt och med veck'},
   'natur-3': {hide: `${MATERIALS}runway_leather_2-diffuse.webp`, repeat: 2, depth: 0.035, grain: 4, rough: 0.2, coat: 0.7, folds: 0.4, light: 1.5, name: 'Naturmaterial 3: slätt polerat läder med veck'},
+  'natur-duk': {hide: `${MATERIALS}runway_leather-diffuse.webp`, repeat: 2, depth: 0.05, grain: 4, rough: 0.18, coat: 0.9, folds: 0.5, light: 2, duk: true, name: 'Duken på naturbordet: blankt läder, filten som duk i eget ljus'},
 } as const satisfies Record<string, Finish>;
 export type Nature = keyof typeof NATURES;
+// The cloth of a surface "duk" and the room's light. light: what the room throws on a level table as it is shown (lightFromAbove
+// of its panorama, times the exposure it is shown with, times the key roomLight). At `ref`, the Las Vegas room it was judged in, the
+// cloth is as it is drawn; in a brighter room it is lifted by the square root of how much brighter, at most to `hi`, and in a
+// darker one lowered, at most to `lo`. Only its level: the cloth keeps its own colour in every room.
+export const DUK_LIGHT = {ref: 0.046, gamma: 0.5, lo: 0.7, hi: 1.8};
+/** How many times its drawn brightness the cloth of a surface "duk" is shown at, for the room's light on the table (DUK_LIGHT); 1 without a room's light. */
+export function dukLevel(light?: number): number { return light !== undefined && light > 0 ? Math.min(DUK_LIGHT.hi, Math.max(DUK_LIGHT.lo, (light / DUK_LIGHT.ref) ** DUK_LIGHT.gamma)) : 1; }
+/**
+ * The light a room throws on a level table: the mean linear luminance of its panorama's upper half (rgba bytes, 2:1, rows from the
+ * top), each row weighted by how squarely its light falls on the table and by how much of the sky lies at that height.
+ */
+export function lightFromAbove(rgba: ArrayLike<number>, width: number, height: number): number {
+  const linear = (c: number) => { const v = c / 255; return v <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; }; let sum = 0, weight = 0;
+  for (let y = 0; y < height / 2; y++) { const theta = (y + 0.5) / height * Math.PI, w = Math.cos(theta) * Math.sin(theta);
+    for (let x = 0; x < width; x++) { const i = (y * width + x) * 4; sum += w * (0.2126 * linear(rgba[i]) + 0.7152 * linear(rgba[i + 1]) + 0.0722 * linear(rgba[i + 2])); weight += w; } }
+  return weight > 0 ? sum / weight : 0;
+}
 export const isNature = (surface: string | undefined): surface is Nature => !!surface && Object.hasOwn(NATURES, surface);
 /**
  * The soft puckers across the rail's roll, as a depth from 0 to 1 at a point of the leather's tile (u along the rail, v round the
@@ -234,8 +263,8 @@ const APRON = section([[0.0985, -0.006], [0.0993, -0.018], [0.1, -0.03], [0.1, -
 // section shrinks toward `core` while it moves `length` on. u runs along the arc in tiles of `tile` metres (the length along that line
 // of the section, so the grain does not stretch round the ends); v runs once round the section, 0 to 1, so textures can follow it.
 type Cap = {length: number; core: number[]; steps: number};
-export function sweep(sec: Section, rings: number, tile: number, cap: Cap | null) {
-  const {a, b} = TABLE, M = sec.points.length, K = cap ? cap.steps : 0, position: number[] = [], uv: number[] = [], index: number[] = [];
+export function sweep(sec: Section, rings: number, tile: number, cap: Cap | null, size = 1) {
+  const {a, b} = sized(size), M = sec.points.length, K = cap ? cap.steps : 0, position: number[] = [], uv: number[] = [], index: number[] = [];
   const list: {t: number; push: number; shrink: number}[] = [];
   for (let k = K; k >= 1; k--) list.push({t: 0, push: cap!.length * Math.sin(k / K * Math.PI / 2), shrink: Math.cos(k / K * Math.PI / 2)});
   for (let i = 0; i <= rings; i++) list.push({t: Math.PI * i / rings, push: 0, shrink: 1});
@@ -367,7 +396,8 @@ export function roomReflection() {
 }
 
 // camera: the film camera in use, through which V6's cloth is laid flat; marks: the kinds of print drawn (feltMarks; absent = all).
-export type FeltPrint = {spots: Spot[]; logo: string; felt: string; scale: number; marks?: string; cloth?: TableCloth; camera?: FilmCamera};
+// size: the table's size (sized); the rail's shadow on the felt follows the felt's edge.
+export type FeltPrint = {spots: Spot[]; logo: string; felt: string; scale: number; marks?: string; cloth?: TableCloth; camera?: FilmCamera; size?: number};
 export function createTable(lit: <M extends T.Material>(material: M) => M = m => m) {
   const canvas = document.createElement('canvas'); canvas.width = PRINT.pxW; canvas.height = PRINT.pxH;
   const texture = new T.CanvasTexture(canvas); texture.colorSpace = T.SRGBColorSpace; texture.anisotropy = 16;
@@ -387,6 +417,8 @@ export function createTable(lit: <M extends T.Material>(material: M) => M = m =>
   // Materials and textures live as long as the table; build() only replaces geometry.
   const room = roomReflection();
   const felt = own(new T.MeshBasicMaterial({map: texture, side: T.DoubleSide}));
+  // the same cloth for a surface "duk": its own material, since its level follows the room (setEnvironment) and the painted table's does not
+  const dukFelt = own(new T.MeshBasicMaterial({map: texture, side: T.DoubleSide}));
   const leather = own(new T.MeshStandardMaterial({...leatherTextures(ROLL, ROLL.seams), normalScale: new T.Vector2(0.75, 0.75), roughness: 1, metalness: 0, envMap: room, envMapIntensity: 3}));
   const bead = own(new T.MeshStandardMaterial({map: shadeTexture(BEAD), color: 0x9c7a45, roughness: 0.36, metalness: 1, envMap: room, envMapIntensity: 1.1}));
   const walnut = walnutTexture();
@@ -483,9 +515,10 @@ export function createTable(lit: <M extends T.Material>(material: M) => M = m =>
     // dealer-side trim: the film's body ends exactly at s = 0
     if (on.has('trim')) { g.fillStyle = '#17110c'; g.fillRect(0, 0, PRINT.pxW, Y(0.016)); g.fillStyle = GOLD; g.globalAlpha = 0.55; g.fillRect(0, Y(0.016), PRINT.pxW, 3); g.globalAlpha = 1; }
     // the rail's soft shadow on the felt along the arc: a dark band just outside the felt edge, blurred inward and clipped to the felt
-    g.save(); g.beginPath(); g.ellipse(X(0), Y(0), TABLE.a * k, TABLE.b * k, 0, 0, 2 * Math.PI); g.clip();
+    const edge = sized(print.size);
+    g.save(); g.beginPath(); g.ellipse(X(0), Y(0), edge.a * k, edge.b * k, 0, 0, 2 * Math.PI); g.clip();
     for (const [width, blur, alpha] of [[0.04, 0.016, 0.55], [0.01, 0.0035, 0.65]]) { g.filter = `blur(${Math.round(blur * k)}px)`; g.strokeStyle = `rgba(3,2,1,${alpha})`; g.lineWidth = 2 * width * k;
-      g.beginPath(); g.ellipse(X(0), Y(0), (TABLE.a + width) * k, (TABLE.b + width) * k, 0, 0, 2 * Math.PI); g.stroke(); }
+      g.beginPath(); g.ellipse(X(0), Y(0), (edge.a + width) * k, (edge.b + width) * k, 0, 0, 2 * Math.PI); g.stroke(); }
     g.restore();
     const seats = print.spots.filter(p => /^P\d\.C1$/.test(p.id)), row = seats.length ? seats.reduce((t, p) => t + p.s, 0) / seats.length : 0.35, span = Math.max(0.3, ...seats.map(p => Math.abs(p.x))) * 1.5;
     if (on.has('arc')) { g.strokeStyle = GOLD; g.lineWidth = 3; g.globalAlpha = 0.5; g.beginPath(); g.ellipse(X(0), Y(0), span * k * 1.015, row * 0.83 * k, 0, 0.1 * Math.PI, 0.9 * Math.PI); g.stroke(); g.globalAlpha = 1; }
@@ -512,10 +545,11 @@ export function createTable(lit: <M extends T.Material>(material: M) => M = m =>
   // `notch`: a rectangle cut into the felt from the dealer-side edge, for something sunk into the table there (x across,
   // s1 = how far it reaches toward the players; dealer metres). A notch, not a hole: a hole this close to the edge is
   // triangulated shut by ShapeGeometry.
-  function build(edgeZ: number, scale: number, notch?: {x0: number; x1: number; s1: number}, base: TableBase = 'column', surface: TableSurface = 'painted') {
+  // `size`: the table's size (sized): the felt, the rail round it and the base under it; 1 is TABLE as it stands.
+  function build(edgeZ: number, scale: number, notch?: {x0: number; x1: number; s1: number}, base: TableBase = 'column', surface: TableSurface = 'painted', size = 1) {
     for (const child of [...group.children]) { group.remove(child); (child as T.Mesh).geometry?.dispose(); }
     group.position.set(0, 0, edgeZ); group.scale.setScalar(scale); setLamp(lampStrength);
-    const N = 96, {a, b, rail} = TABLE, uvOf = (x: number, s: number) => [(x + PRINT.width / 2) / PRINT.width, 1 - (s + PRINT.back) / PRINT.depth];
+    const N = 96, {a, b} = sized(size), grown = a / TABLE.a, {rail} = TABLE, uvOf = (x: number, s: number) => [(x + PRINT.width / 2) / PRINT.width, 1 - (s + PRINT.back) / PRINT.depth];
     const position = [0, 0, b * 0.4], uv = [...uvOf(0, b * 0.4)], index: number[] = [];
     for (let i = 0; i <= N; i++) { const t = Math.PI * i / N, x = a * Math.cos(t), s = b * Math.sin(t); position.push(x, 0, s); uv.push(...uvOf(x, s)); if (i) index.push(0, i, i + 1); }
     index.push(0, N + 1, 1); // the dealer-side triangle between the two ends of the arc
@@ -526,16 +560,17 @@ export function createTable(lit: <M extends T.Material>(material: M) => M = m =>
       for (let i = 0; i < p.count; i++) cut.push(...uvOf(p.getX(i), p.getZ(i))); feltGeometry.setAttribute('uv', new T.Float32BufferAttribute(cut, 2)); }
     const nature = isNature(surface) ? natural(surface) : null;
     if (surface !== 'painted') { weave(); feltGeometry.computeVertexNormals(); const normal = feltGeometry.getAttribute('normal') as T.BufferAttribute; for (let i = 0; i < normal.count; i++) normal.setXYZ(i, 0, 1, 0); } // the cloth faces up
-    group.add(new T.Mesh(feltGeometry, nature ? nature.wool : surface === 'photo' ? cloth : felt));
+    group.add(new T.Mesh(feltGeometry, nature ? ((NATURES[surface as Nature] as Finish).duk ? dukFelt : nature.wool) : surface === 'photo' ? cloth : felt));
     // padded rail round the players' arc with rounded ends past the dealer's edge, the brass bead along the felt, then the apron
-    group.add(new T.Mesh(sweep(ROLL, 128, ROLL.length, {length: 0.036, core: CORE, steps: 9}), nature ? nature.hide : leather));
-    group.add(new T.Mesh(sweep(BEAD, 128, 1, {length: 0.004, core: [0.0035, 0], steps: 3}), bead));
-    group.add(new T.Mesh(sweep(APRON, 96, 0.6, null), base === 'legs' ? skirt : apron));
+    group.add(new T.Mesh(sweep(ROLL, 128, ROLL.length, {length: 0.036, core: CORE, steps: 9}, size), nature ? nature.hide : leather));
+    group.add(new T.Mesh(sweep(BEAD, 128, 1, {length: 0.004, core: [0.0035, 0], steps: 3}, size), bead));
+    group.add(new T.Mesh(sweep(APRON, 96, 0.6, null, size), base === 'legs' ? skirt : apron));
     const add = (geometry: T.BufferGeometry, material: T.Material, x: number, y: number, z: number) => { const m = new T.Mesh(geometry, material); m.position.set(x, y, z); group.add(m); return m; };
     add(new T.BoxGeometry(2 * (a + rail), 0.16, 0.02), wood, 0, -0.082, -0.011);
     if (base === 'column') { add(new T.CylinderGeometry(0.16, 0.24, 0.78, 32), wood, 0, -0.55, b * 0.45); add(new T.CylinderGeometry(0.42, 0.46, 0.05, 48), brass, 0, -0.93, b * 0.45); return; }
     photographed();
-    const {floor, under, legX, legZ} = BASE, height = under - floor - 0.02, oval = (geometry: T.BufferGeometry, deep: number) => geometry.scale(1, 1, deep);
+    // the legs stand as far in under a larger top as under this one
+    const {floor, under} = BASE, legX = BASE.legX * grown, legZ = BASE.legZ * grown, height = under - floor - 0.02, oval = (geometry: T.BufferGeometry, deep: number) => geometry.scale(1, 1, deep);
     // the grain runs up a leg, not round it: the cylinder's texture coordinates change places
     const upright = (geometry: T.BufferGeometry) => { const uv = geometry.getAttribute('uv') as T.BufferAttribute; for (let i = 0; i < uv.count; i++) uv.setXY(i, uv.getY(i) * 0.9, uv.getX(i) * 1.6); return geometry; };
     // a board under the top, so that nothing looks up into the table
@@ -551,15 +586,16 @@ export function createTable(lit: <M extends T.Material>(material: M) => M = m =>
     const railPath = new T.CatmullRomCurve3(Array.from({length: 33}, (_, i) => { const t = Math.PI * (0.13 + 0.74 * i / 32); return new T.Vector3((a - 0.06) * Math.cos(t), BASE.rail, (b + 0.02) * Math.sin(t)); }));
     add(new T.TubeGeometry(railPath, 96, 0.013, 12), polished, 0, 0, 0);
     for (const u of [0.02, 0.34, 0.66, 0.98]) { const p = railPath.getPoint(u); add(new T.CylinderGeometry(0.009, 0.009, BASE.rail - floor, 12), polished, p.x, (BASE.rail + floor) / 2, p.z); }
-    add(new T.PlaneGeometry(3.3, 2.5).rotateX(-Math.PI / 2), shadow, 0, floor + 0.001, b * 0.42).renderOrder = -2; // the table's own shadow on the floor
+    add(new T.PlaneGeometry(3.3 * grown, 2.5 * grown).rotateX(-Math.PI / 2), shadow, 0, floor + 0.001, b * 0.42).renderOrder = -2; // the table's own shadow on the floor
   }
   // The room the table reflects and is lit by: a prefiltered map of the room that is showing, turned as that room is, or null
   // for the room painted for the table. Only the photographed surfaces ask for it. `lights`: the lit materials and how much of
   // the room each takes; the materials of the surfaces "natur" join them when they are made, in the room that is showing then.
   const lights: [T.MeshStandardMaterial, number][] = [[cloth, 0.6], [leather, 3], [bead, 1.1], [apron, 1.5], [skirt, 1.6], [timber, 1.1], [polished, 1.5]];
   let env: {map: T.Texture | null; turn: number; strength: number} = {map: null, turn: 0, strength: 1};
-  function setEnvironment(map: T.Texture | null, turn = 0, strength = 1) {
-    env = {map, turn, strength};
+  // `light`: what that room throws on a level table as it is shown (lightFromAbove times its exposure), for the cloth of a surface "duk".
+  function setEnvironment(map: T.Texture | null, turn = 0, strength = 1, light?: number) {
+    env = {map, turn, strength}; dukFelt.color.setScalar(map && light !== undefined ? dukLevel(light * strength) : 1);
     for (const [material, own] of lights) {
       material.envMap = map ?? room; material.envMapRotation.set(0, map ? turn : 0, 0); material.envMapIntensity = map ? own * strength : own; material.needsUpdate = true; }
   }

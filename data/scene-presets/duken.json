@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "name": "duken",
+  "label": "Duken på bordet",
+  "about": "Levande med V6-duken lagd över naturbordet: filten som duken var, mörkgrön och i sitt eget jämna ljus, medan relingens läder och mässingen tar rummets ljus. Inte bedömd av Jakob än.",
+  "state": {
+    "format": "fill",
+    "room": "panorama",
+    "blur": 5,
+    "tray": true,
+    "cards": true,
+    "pitch": -8,
+    "zoom": 0.84,
+    "roomShift": "shimmer",
+    "mode": "lean",
+    "sway": true,
+    "focus": "follow",
+    "dust": 0.6,
+    "clock": true,
+    "surface": "natur-duk",
+    "cloth": "v6"
+  },
+  "updatedAt": "2026-11-13T06:40:00.000Z"
+}

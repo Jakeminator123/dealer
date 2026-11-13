@@ -5,7 +5,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {DEFAULTS} from '../src/scene3d-view.ts';
 import {DEALER_LIGHT, FRAME_FIX, SHADOW_BAND, lightOnDealer, roomGlow, shadowAboveAt, type RoomGlow} from '../src/scene3d-film.ts';
-import {FELT_MARKS, FELT_PX_PER_M, LAMP, NATURES, RUNWAY_CLOTH, RUNWAY_CLOTHS, feltMarks, flatten, foldDepth, isNature, isRunwayCloth, lampShade, marksText, rectify, reliefOf, seamless, type Picture} from '../src/scene3d-table.ts';
+import {DUK_LIGHT, FELT_MARKS, FELT_PX_PER_M, LAMP, NATURES, RUNWAY_CLOTH, RUNWAY_CLOTHS, TABLE, TABLE_SIZE, dukLevel, feltMarks, flatten, foldDepth, isNature, isRunwayCloth, lampShade, lightFromAbove, marksText, rectify, reliefOf, seamless, section, sized, sweep, type Picture} from '../src/scene3d-table.ts';
+import {cupAngles, railTop} from '../src/scene3d-rail.ts';
 import {SCENE_KEYS} from '../studio/lib/scene-keys.ts';
 import {KEYS as GAME_KEYS} from '../src/game-look.ts';
 import {CHIP_GLOSS, chipRoughness} from '../src/game3d-chips.ts';
@@ -145,7 +146,11 @@ test('the generated felt and the natural surface start switched off', () => {
 
 test('the versions of the generated felt and of the natural surface: one table each, and every menu names the same words', () => {
   const cloths = Object.keys(RUNWAY_CLOTHS), natures = Object.keys(NATURES);
-  assert.deepEqual(cloths, ['runway', 'runway-2', 'runway-3']); assert.deepEqual(natures, ['natur', 'natur-2', 'natur-3']);
+  assert.deepEqual(cloths, ['runway', 'runway-2', 'runway-3']); assert.deepEqual(natures, ['natur', 'natur-2', 'natur-3', 'natur-duk']);
+  // the cloth over the natural table (Jakob 2026-11-13): the one surface whose felt keeps its own even light; its rail is natur-2's
+  assert.deepEqual(natures.filter(id => (NATURES[id as keyof typeof NATURES] as {duk?: boolean}).duk), ['natur-duk']);
+  const finishOf = (f: object) => Object.fromEntries(Object.entries(f).filter(([k]) => k !== 'name' && k !== 'duk'));
+  assert.deepEqual(finishOf(NATURES['natur-duk']), finishOf(NATURES['natur-2']), 'the same leather and finish as natur-2');
   for (const id of cloths) { assert.ok(isRunwayCloth(id)); assert.match(RUNWAY_CLOTHS[id as keyof typeof RUNWAY_CLOTHS].url, /^assets\/scene\/materials\/runway_felt(_\d+)?-diffuse\.webp$/); }
   assert.equal(new Set(Object.values(RUNWAY_CLOTHS).map(c => c.url)).size, cloths.length, 'each cloth its own tile');
   for (const id of natures) { const f = NATURES[id as keyof typeof NATURES]; assert.ok(isNature(id)); assert.match(f.hide, /^assets\/scene\/materials\/runway_leather(_\d+)?-diffuse\.webp$/);
@@ -198,4 +203,42 @@ test('the chips gloss follows the chip study round their own look', () => {
   assert.ok(Math.abs(chipRoughness(1).face - 0.36) < 1e-9 && Math.abs(chipRoughness(0).face - 0.64) < 1e-9); // the study's 0.64 - 0.28 x gloss
   let last = 2; for (let g = 0; g <= 1; g += 0.1) { const r = chipRoughness(g); assert.ok(r.face < last && Math.abs(r.face - r.edge - 0.02) < 1e-9); last = r.face; }
   assert.deepEqual(chipRoughness(3), chipRoughness(1)); assert.deepEqual(chipRoughness(-1), chipRoughness(0)); assert.deepEqual(chipRoughness(Number.NaN), chipRoughness(CHIP_GLOSS));
+});
+
+// ---- the table's size (state key tableSize, 2026-11-13) ---------------------------------------------------------------------------
+test('the table size: 1 is the table as it stands, the dealer edge stays, and the felt image holds the largest table', () => {
+  assert.equal(DEFAULTS.tableSize, 1);
+  assert.deepEqual(sized(), {a: TABLE.a, b: TABLE.b}); assert.deepEqual(sized(1), {a: TABLE.a, b: TABLE.b}); assert.deepEqual(sized(NaN), {a: TABLE.a, b: TABLE.b});
+  assert.deepEqual(sized(1.2), {a: TABLE.a * 1.2, b: TABLE.b * 1.2}); assert.deepEqual(sized(9), sized(TABLE_SIZE.max)); assert.deepEqual(sized(0.1), sized(TABLE_SIZE.min));
+  // the felt image is 4096 px across at FELT_PX_PER_M and starts 0.1 m behind the dealer edge: the largest table lies inside it
+  const largest = sized(TABLE_SIZE.max); assert.ok(2 * (largest.a + 0.05) <= 4096 / FELT_PX_PER_M && largest.b + 0.05 <= 2048 / FELT_PX_PER_M - 0.1, 'the felt image covers the largest table and its edge shadow');
+  // a rail section swept round the arc: at size 1 the same numbers as without a size; larger, its ends lie further out along the
+  // dealer edge (z stays 0 there: the edge stays where the film has it) and its middle further toward the players
+  const strip = section([[0, 0], [0.01, 0]], () => 1), at = (g: {getAttribute(n: string): {getX(i: number): number; getZ(i: number): number; count: number}}, i: number) => [g.getAttribute('position').getX(i), g.getAttribute('position').getZ(i)];
+  const plain = sweep(strip, 8, 1, null), one = sweep(strip, 8, 1, null, 1), big = sweep(strip, 8, 1, null, 1.2);
+  assert.deepEqual([...plain.getAttribute('position').array], [...one.getAttribute('position').array]);
+  assert.deepEqual(at(plain, 0), [Math.fround(TABLE.a), 0]); assert.deepEqual(at(big, 0), [Math.fround(TABLE.a * 1.2), 0]); // positions are stored as 32-bit numbers
+  const mid = 4 * 2; assert.ok(Math.abs(at(big, mid)[1] - TABLE.b * 1.2) < 1e-6 && Math.abs(at(big, mid)[0]) < 1e-6, 'the middle of the arc lies a larger depth out');
+  // what is set into the rail follows: the same angles round the arc, the roll's top further out
+  const seats = [{x: -0.6, s: 0.3}, {x: 0, s: 0.42}, {x: 0.6, s: 0.3}], angles = cupAngles(seats); assert.ok(angles.length >= 2);
+  assert.deepEqual(railTop(angles[0]), railTop(angles[0], 1)); assert.ok(Math.hypot(railTop(angles[0], 1.2)[0], railTop(angles[0], 1.2)[2]) > Math.hypot(railTop(angles[0])[0], railTop(angles[0])[2]) + 0.05);
+  assert.equal(railTop(angles[0], 1.2)[1], railTop(angles[0])[1], 'the rail is as high on a larger table');
+  // the catalogues hold the same range as the table
+  const studio = SCENE_KEYS.find(k => k.key === 'tableSize')!, game = GAME_KEYS.tableSize;
+  assert.ok(studio.kind === 'slider' && studio.min === TABLE_SIZE.min && studio.max === TABLE_SIZE.max); assert.deepEqual(game, {kind: 'slider', min: TABLE_SIZE.min, max: TABLE_SIZE.max});
+});
+
+// ---- the cloth over the natural table follows the room's light level (surface natur-duk, 2026-11-13) ----------------------------------
+test('the cloth of a surface "duk": as drawn in the room it was judged in, lifted in a brighter room and lowered in a darker, within limits', () => {
+  assert.equal(dukLevel(), 1, 'no room light (a built room, the painted table): as drawn'); assert.equal(dukLevel(0), 1); assert.equal(dukLevel(DUK_LIGHT.ref), 1);
+  assert.ok(Math.abs(dukLevel(4 * DUK_LIGHT.ref) - Math.min(DUK_LIGHT.hi, 2)) < 1e-9, 'four times the light: twice as bright, or the upper limit');
+  assert.equal(dukLevel(100), DUK_LIGHT.hi); assert.equal(dukLevel(1e-6), DUK_LIGHT.lo); assert.ok(DUK_LIGHT.lo < 1 && DUK_LIGHT.hi > 1 && DUK_LIGHT.hi <= 2);
+  assert.ok(dukLevel(0.1) > dukLevel(0.06) && dukLevel(0.06) > dukLevel(0.03), 'more light, a brighter cloth');
+  // the light from above: an evenly grey sky gives that grey's linear luminance whatever lies under the horizon; a bright zenith counts
+  // for more than a bright horizon (the table lies level); the colour of the light does not matter beyond its luminance
+  const sky = (at: (x: number, y: number) => number[], W = 32, H = 16) => { const d = new Uint8ClampedArray(W * H * 4); for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) d.set([...at(x, y), 255], (y * W + x) * 4); return lightFromAbove(d, W, H); };
+  const grey = sky((_x, y) => y < 8 ? [128, 128, 128] : [255, 0, 0]); assert.ok(Math.abs(grey - ((128 / 255 + 0.055) / 1.055) ** 2.4) < 1e-6);
+  assert.equal(sky(() => [0, 0, 0]), 0); assert.ok(Math.abs(sky(() => [255, 255, 255]) - 1) < 1e-9);
+  assert.ok(sky((_x, y) => y < 3 ? [255, 255, 255] : [0, 0, 0]) < sky((_x, y) => y >= 3 && y < 6 ? [255, 255, 255] : [0, 0, 0]), 'the same number of rows weigh more half way up, where the sky is largest and still falls steeply');
+  assert.ok(sky((_x, y) => y < 8 ? [0, 255, 0] : [0, 0, 0]) > sky((_x, y) => y < 8 ? [255, 0, 0] : [0, 0, 0]), 'green light counts for more than red, as luminance has it');
 });

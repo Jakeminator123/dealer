@@ -3,12 +3,13 @@
 // (A line of light along the felt edge stood here until 2026-11-11; Jakob turned it down as not natural light. Light on the
 // table comes from the room: the table's surface 'photo' and roomLight.)
 import * as T from 'three';
-import {RAIL, TABLE, roomReflection} from './scene3d-table.ts';
+import {RAIL, TABLE, roomReflection, sized} from './scene3d-table.ts';
 
 /**
  * Where cup holders sit along the rail: the angle on the players' arc (0 at the +x end, π at the -x end) of one between
  * each pair of neighbouring seats and one outside each end seat, as far out as the seats are apart. `seats` are the bet rings
- * (dealer metres: x across, s from the dealer-side edge). One that would land on the rail's rounded ends is left out.
+ * (dealer metres: x across, s from the dealer-side edge). One that would land on the rail's rounded ends is left out. The angles
+ * are those of TABLE's own oval; a table of another size (sized) has the same oval larger, so they hold for it too.
  */
 export function cupAngles(seats: {x: number; s: number}[]): number[] {
   const at = seats.map(p => Math.atan2(p.s / TABLE.b, p.x / TABLE.a)).sort((p, q) => p - q); if (at.length < 2) return [];
@@ -17,9 +18,9 @@ export function cupAngles(seats: {x: number; s: number}[]): number[] {
   out.push(at[at.length - 1] + step / 2);
   return out.filter(t => t > 0.12 && t < Math.PI - 0.12);
 }
-/** The middle of the leather roll's top at arc angle t: [x, y, z] in the table's own metres (z from the dealer-side edge toward the players). */
-export function railTop(t: number): number[] {
-  const {a, b} = TABLE, l = Math.hypot(b * Math.cos(t), a * Math.sin(t));
+/** The middle of the leather roll's top at arc angle t: [x, y, z] in the table's own metres (z from the dealer-side edge toward the players), for a table of `size` (sized). */
+export function railTop(t: number, size = 1): number[] {
+  const {a, b} = sized(size), l = Math.hypot(b * Math.cos(t), a * Math.sin(t));
   return [a * Math.cos(t) + RAIL.centre * b * Math.cos(t) / l, RAIL.top, b * Math.sin(t) + RAIL.centre * a * Math.sin(t) / l];
 }
 
@@ -40,12 +41,12 @@ export function createRailExtras(lit: <M extends T.Material>(material: M) => M =
 
   return {
     group,
-    /** Built with the table: the same place and scale, and the seats' bet rings for where the cups go. */
-    build(edgeZ: number, scale: number, seats: {x: number; s: number}[]) {
+    /** Built with the table: the same place, scale and size, and the seats' bet rings for where the cups go. */
+    build(edgeZ: number, scale: number, seats: {x: number; s: number}[], size = 1) {
       group.position.set(0, 0, edgeZ); group.scale.setScalar(scale);
       // cup holders: a ring, its skirt and the dark inside, each drawn once for all cups
       for (const child of [...cups.children]) { cups.remove(child); (child as T.InstancedMesh).geometry.dispose(); }
-      const places = cupAngles(seats).map(railTop), parts: [T.BufferGeometry, T.Material][] = [
+      const places = cupAngles(seats).map(t => railTop(t, size)), parts: [T.BufferGeometry, T.Material][] = [
         [new T.TorusGeometry(CUP.radius, CUP.tube, 10, 48).rotateX(Math.PI / 2).translate(0, CUP.lift, 0), brass],
         [new T.CylinderGeometry(CUP.radius + CUP.tube * 0.5, CUP.radius + CUP.tube * 0.5, CUP.skirt, 48, 1, true).translate(0, CUP.lift - CUP.skirt / 2, 0), brass],
         [new T.CircleGeometry(CUP.inside, 48).rotateX(-Math.PI / 2).translate(0, CUP.lift - 0.0018, 0), hollow]];

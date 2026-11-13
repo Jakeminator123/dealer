@@ -7,10 +7,6 @@ import { cn } from "../ui";
 
 const ITEMS: { what: string; takes: string }[] = [
   {
-    what: "Bordets storlek",
-    takes: "Ett fast mått i koden (TABLE i src/scene3d-table.ts). Kräver en ny nyckel som bordet, filttrycket, relingen, urtaget och träffytan läser; dealerkanten står kvar där filmen har den.",
-  },
-  {
     what: "Bordets form och tryck",
     takes: "Ovalen och tryckets layout är platshållare i samma fil; ett nytt bord är ny geometri, eller en modell som läggs som föremål.",
   },
@@ -20,11 +16,11 @@ const ITEMS: { what: string; takes: string }[] = [
   },
   {
     what: "Nya rörelser i rummen",
-    takes: "Kod i src/scene3d-room.ts: varje rum har samma tre (klocka, luft, ljusskifte). En ny rörelse är ny kod där och en ny nyckel i scenen.",
+    takes: "Varje rum har klocka, luft och ljusskifte, och i Venedig rör sig folket (Rörelse i rummet). Folk i ett annat rum är en ny film och en rad i ROOM_LIFE i src/scene3d-room.ts; en ny sorts rörelse är ny kod där och en ny nyckel.",
   },
   {
-    what: "Dealerns eget ljus",
-    takes: "Ljuset är filmens. Här går bara nivå och färgton att ändra; ett annat ljus på henne kräver nya filmer.",
+    what: "Ljusets riktning på dealern",
+    takes: "Filmen är ljussatt i en studio. Nivå, färgton och rummets ljus på henne går att ställa (Rumsljus på dealern); varifrån ljuset faller på henne kräver nya filmer.",
   },
 ];
 

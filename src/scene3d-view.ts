@@ -9,7 +9,7 @@ import {createFanLight} from './scene3d-light.ts';
 import {createChipTray, TRAY} from './scene3d-props.ts';
 import {createRooms, type Panorama, type RoomId} from './scene3d-room.ts';
 import {CHANGE_FRAGMENT, SHIMMER_GLSL, readyFrom, retake, roomChange, shiftProgress, shimmerLevel} from './scene3d-shift.ts';
-import {TABLE, createTable, type TableBase, type TableCloth, type TableSurface} from './scene3d-table.ts';
+import {createTable, lightFromAbove, sized, type TableBase, type TableCloth, type TableSurface} from './scene3d-table.ts';
 import {createRailExtras} from './scene3d-rail.ts';
 
 export type SceneState = {
@@ -19,7 +19,7 @@ export type SceneState = {
   keyLo: number; keyHi: number; shadow: number;
   focus: 'off' | 'dealer' | 'card' | 'follow' | 'manual'; focusDistance: number; tolerance: number;
   fan: boolean; fanStrength: number; fanPeriod: number;
-  tray: boolean; cups: boolean; base: TableBase; surface: TableSurface; roomLight: number;
+  tray: boolean; cups: boolean; base: TableBase; surface: TableSurface; roomLight: number; tableSize: number;
   cards: boolean; cardMethod: 'scene' | 'film'; cardRank: string; cardSuit: string; cardScale: number; cardHand: 'film' | 'standard';
   clock: boolean; dust: number; flicker: boolean; flickerEvery: number; flickerStrength: number;
   filmBright: number; filmWarm: number; wrap: number;
@@ -32,6 +32,7 @@ export type SceneState = {
   // Lab trials of 2026-11-13, at their defaults the picture before them. roomLife: films over the people of a panorama, where the
   // room has them (ROOM_LIFE in scene3d-room.ts). dealerRoom: share of the panorama's light the film takes (0 to 1; lightOnDealer in scene3d-film.ts).
   roomLife: boolean; dealerRoom: number;
+  tal: 'repliker' | 'av'; // the game's: the dealer says her fixed lines with her talk films ('av': as text in the chat only; src/game-page.ts)
 };
 // Everything added after checkpoint v1 starts switched off, so the page opens as v1. scale 0 = the contract's own k.
 export const DEFAULTS: SceneState = {
@@ -41,13 +42,14 @@ export const DEFAULTS: SceneState = {
   keyLo: 0.12, keyHi: 0.9, shadow: 1,
   focus: 'off', focusDistance: 1.5, tolerance: 0.4,
   fan: false, fanStrength: 0.16, fanPeriod: 5,
-  tray: false, cups: false, base: 'column', surface: 'painted', roomLight: 1,
+  tray: false, cups: false, base: 'column', surface: 'painted', roomLight: 1, tableSize: 1,
   cards: false, cardMethod: 'scene', cardRank: 'A', cardSuit: 'spades', cardScale: 1.2, cardHand: 'film',
   clock: false, dust: 0, flicker: false, flickerEvery: 20, flickerStrength: 0.6,
   filmBright: 1, filmWarm: 0, wrap: 0,
   roomShift: 'cut', roomShiftSeconds: 2.6,
   shadowAbove: 1, marks: 'all', cloth: 'print', lamp: 0, chipGloss: 0.5,
   roomLife: false, dealerRoom: 0,
+  tal: 'repliker',
 };
 // rooms: the panorama rooms of the register (data/scene-rooms.json, readRegister in scene3d-room.ts); without it the first three, at urls.
 export type SceneData = {contract: Parameters<typeof cameraFromContract>[0]; plan: Parameters<typeof cardSpots>[0]; urls: {plate: string; panorama: string; la: string; skog: string}; rooms?: Panorama[]; onChange: () => void; onMissingRoom: (room: RoomId) => void};
@@ -186,9 +188,9 @@ export function createScene(canvas: HTMLCanvasElement, host: HTMLElement, data: 
     if (gone) return; camera = filmCamera(); const solved = solveCamera(camera); pitch = solved.pitch; edgeZ = -solved.edgeDistance;
     filmCam.fov = solved.fovYDeg; filmCam.aspect = W / H; filmCam.position.set(0, camera.heightM, 0); filmCam.rotation.set(-pitch, 0, 0, 'YXZ'); filmCam.updateProjectionMatrix(); filmCam.updateMatrixWorld(true);
     filmVP.multiplyMatrices(filmCam.projectionMatrix, filmCam.matrixWorldInverse);
-    table.build(edgeZ, camera.scale, ownNotch ?? (state.tray ? TRAY : undefined), state.base, state.surface); tray.group.visible = state.tray && !ownNotch; if (tray.group.visible) tray.build(edgeZ, camera.scale); rail.build(edgeZ, camera.scale, betSpots(data.plan, camera)); drawFelt(); rooms.place(camera); light.place(camera); buildGuides(); focusNow = NaN; built = true; for (const prop of props) prop.build(edgeZ, camera.scale); apply();
+    table.build(edgeZ, camera.scale, ownNotch ?? (state.tray ? TRAY : undefined), state.base, state.surface, state.tableSize); tray.group.visible = state.tray && !ownNotch; if (tray.group.visible) tray.build(edgeZ, camera.scale); rail.build(edgeZ, camera.scale, betSpots(data.plan, camera), state.tableSize); drawFelt(); rooms.place(camera); light.place(camera); buildGuides(); focusNow = NaN; built = true; for (const prop of props) prop.build(edgeZ, camera.scale); apply();
   }
-  const drawFelt = () => table.draw({spots: cardSpots(data.plan, camera), logo: state.logo, felt: state.felt, scale: camera.scale, marks: state.marks, cloth: state.cloth, camera});
+  const drawFelt = () => table.draw({spots: cardSpots(data.plan, camera), logo: state.logo, felt: state.felt, scale: camera.scale, marks: state.marks, cloth: state.cloth, camera, size: state.tableSize});
   function apply() {
     if (gone) return; if (!rooms.rooms[state.room]) state.room = 'salong'; // a room the scene does not have (an old address, a room taken out of the register)
     useCards(); rooms.show(state.room); rail.set({cups: state.cups}); film.place(edgeZ, state.fold, state.focus !== 'off', camera.scale); film.setKey({lo: state.keyLo, hi: state.keyHi, shadow: state.shadow, above: state.shadowAbove}); film.setGrade(state.filmBright, state.filmWarm);
@@ -317,15 +319,17 @@ export function createScene(canvas: HTMLCanvasElement, host: HTMLElement, data: 
   // With the photographed surface the table is lit by the room that is showing: the room's panorama as the sphere shows it
   // from inside (mirrored for a mirrored room: an environment map reads a picture the right way round), prefiltered once per
   // room and turned as the sphere is. A built room has no panorama; the table then keeps its painted room.
-  const pmrem = new T.PMREMGenerator(renderer); let litBy: T.Texture | null = null, litKey = '', litMap: T.WebGLRenderTarget | null = null;
-  function roomLight(look: {room: RoomId; panoramaTurn: number}) {
+  const pmrem = new T.PMREMGenerator(renderer); let litBy: T.Texture | null = null, litKey = '', litMap: T.WebGLRenderTarget | null = null, litLevel = 0;
+  function roomLight(look: {room: RoomId; panoramaTurn: number; exposure: number}) {
     const room = rooms.rooms[look.room], sphere = state.surface !== 'painted' ? room.group as T.Mesh | null : null, map = sphere && room.follow ? (sphere.material as T.MeshBasicMaterial).map : null;
-    const image = map?.image as HTMLImageElement | undefined, ready = map && image && image.width > 0 ? map : null, key = `${ready?.uuid ?? ''}:${look.panoramaTurn}:${state.roomLight}`;
+    const image = map?.image as HTMLImageElement | undefined, ready = map && image && image.width > 0 ? map : null, key = `${ready?.uuid ?? ''}:${look.panoramaTurn}:${state.roomLight}:${look.exposure}`;
     if (key === litKey) return; litKey = key;
     if (ready !== litBy) { litBy = ready; litMap?.dispose(); litMap = null;
       if (ready) { const picture = document.createElement('canvas'); picture.width = image!.width; picture.height = image!.height; const g = picture.getContext('2d')!; if (room.mirror) { g.translate(picture.width, 0); g.scale(-1, 1); } g.drawImage(image!, 0, 0);
+        // how much light the room throws on a level table, read from the picture made small (for the cloth of a surface "duk")
+        const small = document.createElement('canvas'); small.width = 64; small.height = 32; const sg = small.getContext('2d', {willReadFrequently: true})!; sg.imageSmoothingQuality = 'high'; sg.drawImage(image!, 0, 0, 64, 32); litLevel = lightFromAbove(sg.getImageData(0, 0, 64, 32).data, 64, 32);
         const source = new T.CanvasTexture(picture); source.colorSpace = T.SRGBColorSpace; source.mapping = T.EquirectangularReflectionMapping; litMap = pmrem.fromEquirectangular(source); source.dispose(); } }
-    table.setEnvironment(litMap?.texture ?? null, ROOM_TURN + (look.panoramaTurn + room.turn) * RAD, state.roomLight);
+    table.setEnvironment(litMap?.texture ?? null, ROOM_TURN + (look.panoramaTurn + room.turn) * RAD, state.roomLight, litMap ? litLevel * room.exposure * look.exposure : undefined);
   }
   // With dealerRoom the film takes the light of the room that is showing (lightOnDealer in scene3d-film.ts): the room's
   // panorama read small once per picture, and its light on her front and sides worked out again when the room turns. A built
@@ -378,7 +382,7 @@ export function createScene(canvas: HTMLCanvasElement, host: HTMLElement, data: 
     start() { if (!running && !gone) { running = true; requestAnimationFrame(loop); } }, stop() { running = false; },
     dispose: takeDown,
     home() { if (gone) return; Object.assign(state, {yaw: 0, pitch: 0, zoom: 1, dx: 0, dy: 0, dz: 0, sway: false}); apply(); },
-    set(patch: Partial<SceneState>) { if (gone) return; if (patch.cards) loadCards(); const relens = 'lens' in patch && patch.lens !== state.lens || 'scale' in patch && patch.scale !== state.scale || 'tray' in patch && patch.tray !== state.tray || 'base' in patch && patch.base !== state.base || 'surface' in patch && patch.surface !== state.surface, reprint = 'logo' in patch || 'felt' in patch || 'marks' in patch || 'cloth' in patch;
+    set(patch: Partial<SceneState>) { if (gone) return; if (patch.cards) loadCards(); const relens = 'lens' in patch && patch.lens !== state.lens || 'scale' in patch && patch.scale !== state.scale || 'tray' in patch && patch.tray !== state.tray || 'base' in patch && patch.base !== state.base || 'surface' in patch && patch.surface !== state.surface || 'tableSize' in patch && patch.tableSize !== state.tableSize, reprint = 'logo' in patch || 'felt' in patch || 'marks' in patch || 'cloth' in patch;
       // Another room: with the shimmer the change is an animation that render() carries through; without it, or before the scene is built, a cut as before.
       const other = 'room' in patch && patch.room !== state.room, before = lookNow(); Object.assign(state, patch);
       if (other) { if (state.roomShift === 'shimmer' && built) beginShift(before); else if (shift) endShift(); }
@@ -409,7 +413,8 @@ export function createScene(canvas: HTMLCanvasElement, host: HTMLElement, data: 
       const box = canvas.getBoundingClientRect(), nx = (clientX - box.left) / box.width * 2 - 1, ny = 1 - (clientY - box.top) / box.height * 2; if (Math.abs(nx) > 1 || Math.abs(ny) > 1) return null;
       const dir = new T.Vector3(nx, ny, 0.5).unproject(view).sub(view.position).normalize(); if (dir.y > -1e-6) return null;
       const t = -view.position.y / dir.y, spot = sceneToSpot(camera, view.position.x + dir.x * t, view.position.z + dir.z * t);
-      return spot.s >= 0 && (spot.x / TABLE.a) ** 2 + (spot.s / TABLE.b) ** 2 <= 1 ? spot : null;
+      const felt = sized(state.tableSize); // the felt as large as the table is built
+      return spot.s >= 0 && (spot.x / felt.a) ** 2 + (spot.s / felt.b) ** 2 <= 1 ? spot : null;
     },
     // What the picture is right now: the film itself, the film turned (still exact) or the film seen from another place (approximate).
     // shift: null when the room is not changing, otherwise how far a change with the shimmer has come, 0 to 1, as last drawn.

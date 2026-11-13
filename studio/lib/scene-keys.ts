@@ -74,7 +74,7 @@ const NEEDS: Partial<Record<SceneKey, Needs>> = {
   flickerStrength: { key: "flicker", is: [true] },
   fanStrength: { key: "fan", is: [true] },
   fanPeriod: { key: "fan", is: [true] },
-  roomLight: { key: "surface", is: ["photo", "natur", "natur-2", "natur-3"] },
+  roomLight: { key: "surface", is: ["photo", "natur", "natur-2", "natur-3", "natur-duk"] },
   felt: { key: "cloth", is: ["print"] },
   cardMethod: { key: "cards", is: [true] },
   cardHand: { key: "cards", is: [true] },
@@ -105,6 +105,7 @@ export const SCENE_KEYS: readonly KeySpec[] = [
   spec("fanStrength", "rorelser", "U", "Fläktens styrka", slider(0, 0.4, 0.01), "Hur mörk fläktens skugga är; håll den svag."),
   spec("fanPeriod", "rorelser", "U", "Sekunder per blad", slider(2, 12, 0.5, " s"), "Fläktens fart: sekunder mellan två blad."),
   spec("roomLife", "rorelser", "U", "Rörelse i rummet", toggle, "Folk som står stilla i ett 360°-rum rör sig: en film över dem i bilden (prov; finns i Venedig)."),
+  spec("tal", "rorelser", "U", "Dealerns repliker", choice(["repliker", "Med munnen"], ["av", "Bara text"]), "I spelet säger dealern sina fasta repliker med talfilm och ljud; Bara text visar dem i chatten."),
   // ── Ljus ──
   spec("exposure", "ljus", "U", "Ljus i rummet", slider(0.3, 2, 0.05), "Rummets ljusstyrka bakom dealern; 1 är som förut."),
   spec("roomLight", "ljus", "U", "Rumsljus på bordet", slider(0, 2.5, 0.05), "Hur starkt rummet lyser upp och speglas i bordet (gäller ytan Fotomaterial)."),
@@ -119,15 +120,16 @@ export const SCENE_KEYS: readonly KeySpec[] = [
   spec("felt", "bord", "U", "Filtens färg", choice(["green", "Grön"], ["blue", "Blå"], ["vin", "Vinröd"], ["svart", "Svart"]), "Filtens färg; gäller inte V6-duken."),
   spec("marks", "bord", "U", "Markeringar", { kind: "set", options: MARKS }, "Vad filten bär för tryck, varje slag för sig."),
   spec("logo", "bord", "U", "Logotext", { kind: "text", maxLength: 28 }, "Texten på filten."),
-  spec("surface", "bord", "U", "Yta", choice(["painted", "Målad"], ["photo", "Fotomaterial"], ["natur", "Naturmaterial"], ["natur-2", "Naturmaterial 2: blankt läder"], ["natur-3", "Naturmaterial 3: slätt läder"]), "Fotomaterial tar ljus och speglingar ur rummet; Naturmaterial lägger till Runway-läder och lyster i filten (prov)."),
+  spec("surface", "bord", "U", "Yta", choice(["painted", "Målad"], ["photo", "Fotomaterial"], ["natur", "Naturmaterial"], ["natur-2", "Naturmaterial 2: blankt läder"], ["natur-3", "Naturmaterial 3: slätt läder"], ["natur-duk", "Duken på naturbordet"]), "Fotomaterial tar rummets ljus; Naturmaterial ger Runway-läder; Duken: filten i eget ljus, reling och metall i rummets."),
   spec("base", "bord", "U", "Underrede", choice(["column", "Pelare"], ["legs", "Två ben"]), "Bordets fot; syns när kameran backar."),
+  spec("tableSize", "bord", "U", "Bordets storlek", slider(0.9, 1.4, 0.05, " ×"), "Filt, reling och fot växer åt sidorna och mot spelarna; dealerns kant och trycket står kvar. 1 är som förut (prov)."),
   spec("tray", "bord", "U", "Markerbräde", toggle, "Det byggda markerbrädet, försänkt vid dealern."),
   spec("cups", "bord", "U", "Mugghållare", toggle, "Mässingsringar i relingen mellan platserna."),
   // ── Kort och marker ──
   spec("cards", "kort", "D", "Renderade kort", toggle, "Ritade kort i stället för filmens färgyta; spelet har dem på."),
   spec("cardMethod", "kort", "U", "Ritsätt", choice(["scene", "I scenen"], ["film", "I filmrutan"]), "I scenen: kortet är ett föremål under filmen. I filmrutan: det äldre sättet, kvar för jämförelse."),
   spec("cardHand", "kort", "U", "Kortet i handen", choice(["film", "Filmens storlek"], ["standard", "Standard"]), "Standard: kortet har vilans storlek hela vägen."),
-  spec("cardScale", "kort", "U", "Kortets storlek", slider(1, 2.5, 0.05, "×"), "De ritade kortens storlek."),
+  spec("cardScale", "kort", "U", "Kortens storlek", slider(0.8, 2, 0.05, "×"), "Alla ritade kort: 1 är kontraktets kort (63 × 88 mm på bordet), förval 1,2. Planens kort är i dag 1,10–1,16 av det."),
   spec("cardRank", "kort", "U", "Valör", choice(...["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"].map((r): [string, string] => [r, r])), "Bara för provet: i spelet bestämmer Scout."),
   spec("cardSuit", "kort", "U", "Kortets färg", choice(["spades", "Spader"], ["hearts", "Hjärter"], ["diamonds", "Ruter"], ["clubs", "Klöver"]), "Bara för provet: i spelet bestämmer Scout."),
   spec("chipGloss", "kort", "U", "Markernas glans", slider(0, 1, 0.01), "Markernas glans; 0,50 är deras utseende förut. Syns när insatser ligger."),
@@ -166,7 +168,7 @@ export const isSceneKey = (key: string): key is SceneKey => BY_KEY.has(key);
 export const keysOf = (group: GroupId): KeySpec[] => SCENE_KEYS.filter((s) => s.group === group);
 
 /** Keys whose change builds the table again (src/scene3d-view.ts set: relens); a slider among them is debounced. */
-export const REBUILDS: ReadonlySet<SceneKey> = new Set<SceneKey>(["lens", "scale", "tray", "base", "surface"]);
+export const REBUILDS: ReadonlySet<SceneKey> = new Set<SceneKey>(["lens", "scale", "tray", "base", "surface", "tableSize"]);
 /** Keys whose change paints the felt again; text among them is debounced. */
 export const REPRINTS: ReadonlySet<SceneKey> = new Set<SceneKey>(["logo", "felt", "marks", "cloth"]);
 
