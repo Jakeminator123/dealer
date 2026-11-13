@@ -3737,6 +3737,13 @@
           "note": "Röstjämförelsen 2026-11-13 (dealer-0b): Paows röst med eleven v3, med multilingual v2 (Jakobs val), röstbyte på nattens ljud, och Jessica som jämförelse. Inte oberoende granskat."
         },
         {
+          "id": "paow-prov-kort-tre-satt",
+          "role": "prov",
+          "name": "Korten: fem sätt jämförda, och rättningarna",
+          "proof": "kort-tre-satt",
+          "note": "Kortagentens prov 2026-11-13 efter Jakobs skärmbilder: strimman som flög ut ur kortet före och efter, skon, och samma rutor på fem sätt (ritat kort, matten, bara liggande, matt i handen, ritat i storlek 1,65) för plats 1, 4, 7, dealerns första kort och hålkortet. Förslag till filmen: ritat kort med Kortens storlek 1,65. Inte bedömt av Jakob."
+        },
+        {
           "id": "paow-profil-kavaj",
           "role": "arbetsmaterial",
           "name": "Profilbild i kavaj",
