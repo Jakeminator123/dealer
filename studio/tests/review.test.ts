@@ -201,6 +201,14 @@ test("every take: filters by verdict and seat, counts and reviewer notes", () =>
     { label: "Begränsning", text: "Kortet glider f80." },
   ]);
   assert.deepEqual(reviewerNotes(graph.takes["idle-01"]), []);
+  // A take from an order carries its intake's words. They are shown while it waits, also under a provisional verdict, and
+  // left out once he has judged it; what a reviewer wrote after them stays.
+  const intake = { basis: "Inte granskad av Jakob: förd in från beställningen x, tagning 1. Granskaren: given 3/5.", limitations: "I inkorgen: spelas bara där steget inte har någon annan film, tills Jakob dömer den." };
+  const noted = (review: Record<string, unknown>) => reviewerNotes({ motion: { review: { ...intake, ...review } } } as never);
+  assert.equal(noted({ decision: "PENDING", inbox: true }).length, 2);
+  assert.equal(noted({ decision: "ACCEPTED", inbox: true, provisional: { by: "huvudagent" } }).length, 2);
+  assert.deepEqual(noted({ decision: "ACCEPTED", userAccepted: true }), [{ label: "Granskaren", text: "Förd in från beställningen x, tagning 1. Granskaren: given 3/5." }]);
+  assert.deepEqual(noted({ decision: "REJECTED", limitations: "Kortet glider f80." }).map((n) => n.label), ["Granskaren", "Begränsning"]);
 });
 
 test("Granska: takes judged provisionally come first in the queue under their own heading, and leave it with his decision", async () => {

@@ -38,11 +38,11 @@
     "soundEndsAtSeconds": 2.694
   },
   "review": {
-    "decision": "PENDING",
-    "basis": "Inte granskad av Jakob. Gjord av tools/speech.ts ur assets/motions/paow-vila-01-01/source.mp4. Oberoende granskning 3/5: m/b-stängning 50–51, 56–57 och o-rundning i takt; munnen öppen i pausen 32–36, stänger 6 rutor sent. Tunnare läppar än vilan.",
+    "decision": "SECONDARY",
+    "basis": "Ersatt 2026-11-13: samma replik finns i hennes egen röst (paow, Jakobs val), och spelet spelar inte den här. Inte granskad av Jakob. Gjord av tools/speech.ts ur assets/motions/paow-vila-01-01/source.mp4. Oberoende granskning 3/5: m/b-stängning 50–51, 56–57 och o-rundning i takt; munnen öppen i pausen 32–36, stänger 6 rutor sent. Tunnare läppar än vilan.",
     "userAccepted": false,
     "productionReady": false,
-    "inbox": true
+    "inbox": false
   },
   "postProcessing": "the rendered face laid back into the rest film's own frames (assets/speech/paow/paow-tal-goodluck-sv-01/receipt.json, laidBack)",
   "generationRef": "assets/motions/paow-tal-goodluck-sv-01/generation.json",

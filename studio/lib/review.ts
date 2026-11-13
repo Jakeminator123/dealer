@@ -175,11 +175,21 @@ export function verdictCounts(takes: readonly Take[]): Record<Verdict, number> {
   return counts;
 }
 
-/** The two lines a reviewer wrote about a take (review.basis, review.limitations), when there are any. */
+/**
+ * The two lines a reviewer wrote about a take (review.basis, review.limitations), when there are any. A take brought in
+ * from an order carries two sentences from its intake, "Inte granskad av Jakob: …" and "I inkorgen: …"
+ * (tools/register-order.ts). His verdict takes the take out of the inbox but leaves those words in the record, where they
+ * are then untrue (81 takes on 2026-11-13). The record is his and is not rewritten: the words are left out here instead,
+ * and what a reviewer wrote after them stays. A provisional verdict keeps them, since he has not judged the take.
+ */
 export function reviewerNotes(take: Pick<Take, "motion">): { label: string; text: string }[] {
   const review = take.motion?.review;
+  const judged = !!review && review.inbox !== true && (review.decision ?? "PENDING") !== "PENDING";
+  const basis = String(review?.basis ?? "").trim();
+  const limitations = String(review?.limitations ?? "").trim();
+  const said = judged ? basis.replace(/^Inte granskad av Jakob:\s*/u, "").replace(/^\p{Ll}/u, (c) => c.toUpperCase()) : basis;
   return [
-    { label: "Granskaren", text: String(review?.basis ?? "").trim() },
-    { label: "Begränsning", text: String(review?.limitations ?? "").trim() },
+    { label: "Granskaren", text: said },
+    { label: "Begränsning", text: judged && limitations.startsWith("I inkorgen:") ? "" : limitations },
   ].filter((n) => n.text);
 }

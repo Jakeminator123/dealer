@@ -38,11 +38,11 @@
     "soundEndsAtSeconds": 3.943
   },
   "review": {
-    "decision": "PENDING",
-    "basis": "Inte granskad av Jakob. Gjord av tools/speech.ts ur assets/motions/paow-vila-01-01/source.mp4. Oberoende granskning 3/5: Bättre än -01: munnen stänger i pausen (48–50), avlyssnat ”21”. b i ”bordet” 3 rutor sent, öppnar tidigt 51–57, stänger 5 rutor sent.",
+    "decision": "SECONDARY",
+    "basis": "Ersatt 2026-11-13: samma replik finns i hennes egen röst (paow, Jakobs val), och spelet spelar inte den här. Inte granskad av Jakob. Gjord av tools/speech.ts ur assets/motions/paow-vila-01-01/source.mp4. Oberoende granskning 3/5: Bättre än -01: munnen stänger i pausen (48–50), avlyssnat ”21”. b i ”bordet” 3 rutor sent, öppnar tidigt 51–57, stänger 5 rutor sent.",
     "userAccepted": false,
     "productionReady": false,
-    "inbox": true
+    "inbox": false
   },
   "postProcessing": "the rendered face laid back into the rest film's own frames (assets/speech/paow/paow-tal-dealerbust-sv-02/receipt.json, laidBack)",
   "generationRef": "assets/motions/paow-tal-dealerbust-sv-02/generation.json",
