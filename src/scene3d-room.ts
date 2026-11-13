@@ -76,9 +76,19 @@ export function readRegister(json: unknown): {rooms: RegisterRoom[]; problems: s
 // room's own sphere, so it turns and mirrors with it and goes through every pass the room goes through (blur, depth blur,
 // exposure, the light's shifts). A room without a line shows nothing more. Made 2026-11-13 from the Poly Haven photograph
 // (CC0): the two quays of Venedig, each WAN 3 at 480p, 5 s, frames 10 to 148 forward and back (9.2 s).
+// The rooms made from one flat still (Monaco and the den, source.lens in the register) have one box each, around the whole
+// still with 72 picture pixels to spare at the sides, so the feather fades in outside the still and no moving person who is
+// cut by its edge is half seen. Their films are the still's own loop (WAN 3, 480p, 281 frames, 9.37 s, already seamless, so
+// played forward only) laid through the same lens as the still, levelled to it, with the panorama's own pixels where the
+// still does not reach; the night and the grey copy use the same box (the grey film made grey with the grey still's formula).
+// Made by dealer-f6 with D:/dealer-scratch/tmp/levande-objekt/rum2/life.mjs.
 export type RoomLife = {url: string; box: readonly [number, number, number, number]; feather: number};
 export const ROOM_LIFE: Readonly<Partial<Record<string, readonly RoomLife[]>>> = {
   venedig: [{url: 'assets/scene/rooms/venedig-liv.mp4', box: [836 / 4096, 968 / 2048, 1268 / 4096, 1211 / 2048], feather: 0.08}, {url: 'assets/scene/rooms/venedig-liv-2.mp4', box: [3026 / 4096, 935 / 2048, 3634 / 4096, 1277 / 2048], feather: 0.08}],
+  monaco: [{url: 'assets/scene/rooms/monaco-liv.mp4', box: [1350 / 4096, 631 / 2048, 2746 / 4096, 1417 / 2048], feather: 0.05}],
+  'monaco-natt': [{url: 'assets/scene/rooms/monaco-natt-liv.mp4', box: [1350 / 4096, 631 / 2048, 2746 / 4096, 1417 / 2048], feather: 0.05}],
+  spelhalan: [{url: 'assets/scene/rooms/spelhalan-liv.mp4', box: [1350 / 4096, 631 / 2048, 2746 / 4096, 1417 / 2048], feather: 0.05}],
+  'spelhalan-sv': [{url: 'assets/scene/rooms/spelhalan-sv-liv.mp4', box: [1350 / 4096, 631 / 2048, 2746 / 4096, 1417 / 2048], feather: 0.05}],
 };
 /** Where a film of ROOM_LIFE lies on its room's sphere (three's SphereGeometry phi and theta, radians), and whether the film is read backwards across: a picture shown the right way round (mirror false) is, as the sphere's own is (show below). */
 export function lifePatch(box: readonly number[], mirror: boolean) {

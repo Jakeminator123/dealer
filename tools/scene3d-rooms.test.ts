@@ -75,7 +75,30 @@ test('life in a room: each line names a room of the register, a film where the l
       assert.ok(Math.abs(lifeAspect(line.box) / (854 / 480) - 1) < 0.01, `${id}: rutan har filmens form (854 × 480)`);
     }
   }
-  assert.deepEqual(Object.keys(ROOM_LIFE), ['venedig']);
+  assert.deepEqual(Object.keys(ROOM_LIFE), ['venedig', 'monaco', 'monaco-natt', 'spelhalan', 'spelhalan-sv']);
+});
+
+test('a room made from a flat still: its film lies over the still, fades in outside it, and the room stays in the lab', () => {
+  // A wide still seen through a level lens (source.lens, degrees) lies on the sphere with its middle behind the dealer, on the
+  // horizon: the middle of the picture, u 0.5 to each side by hfov / 360 and v 0.5 by vfov / 360 up and down (its middle column).
+  const flat = register.rooms.filter(r => r.source.lens);
+  assert.deepEqual(flat.map(r => r.id), ['monaco', 'monaco-natt', 'spelhalan', 'spelhalan-sv']);
+  for (const r of flat) {
+    const {hfov, vfov} = r.source.lens as {hfov: number; vfov: number}, lines = ROOM_LIFE[r.id]!;
+    assert.equal(r.kind, 'generated'); assert.equal(r.game, false); assert.equal(r.mirror, false, `${r.id}: bilden visas rättvänd`);
+    assert.ok(hfov > 60 && hfov < 140 && vfov > 0 && vfov < hfov, r.id); assert.match(String(r.source.film), /^assets\/scene\/source\/[a-z0-9-]+\.mp4$/, r.id);
+    assert.equal(lines.length, 1, r.id); const [{url, box, feather}] = lines, [u0, v0, u1, v1] = box, w = hfov / 720, h = vfov / 360;
+    assert.equal(url, `assets/scene/rooms/${r.id}-liv.mp4`);
+    assert.ok(Math.abs((u0 + u1) / 2 - 0.5) < 1e-9 && Math.abs((v0 + v1) / 2 - 0.5) < 1e-9, `${r.id}: rutan har stillbildens mitt`);
+    assert.ok(u0 < 0.5 - w && u1 > 0.5 + w && v0 < 0.5 - h && v1 > 0.5 + h, `${r.id}: rutan täcker stillbilden`);
+    // the feather lies outside the still at the sides, where the people are cut by its edge: no half-seen ghost of a moving person
+    assert.ok(u0 + feather * (u1 - u0) <= 0.5 - w, `${r.id}: kanten tonar utanför stillbilden`);
+  }
+  // the night and the grey copy are the same room as their main room, through the same lens and the same box
+  for (const [main, copy] of [['monaco', 'monaco-natt'], ['spelhalan', 'spelhalan-sv']]) {
+    const a = register.rooms.find(r => r.id === main)!, b = register.rooms.find(r => r.id === copy)!;
+    assert.deepEqual(b.source.lens, a.source.lens); assert.deepEqual(ROOM_LIFE[copy]![0].box, ROOM_LIFE[main]![0].box); assert.notEqual(b.sha256, a.sha256);
+  }
 });
 
 test('a film lies on its room sphere where its box is in the picture, the right way round, mirrored or not', () => {
