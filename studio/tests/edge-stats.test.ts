@@ -2,7 +2,8 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { buildGraph, type BankData, type BankJob, type ImageRef, type MotionRecord } from "../../src/clip-graph.ts";
-import { bankSummary, bucketOf, chainFor, countsText, edgeCounts, edgeInfo, edgeTag, groupTakes, isOutright, playing, primaryOf } from "../lib/edge-stats.ts";
+import { hubDeals } from "../../src/game-director.ts";
+import { bankSummary, bucketOf, chainFor, countsText, edgeCounts, edgeInfo, edgeTag, groupTakes, hubLine, isOutright, playing, primaryOf } from "../lib/edge-stats.ts";
 
 // ── A small bank: no media files, only the records the graph reads ──
 type Review = NonNullable<MotionRecord["review"]>;
@@ -109,4 +110,39 @@ test("the bank in numbers", () => {
   assert.equal(s.outright, 3, "the P4 deal, the P4 return and her coming in");
   assert.equal(s.variant, 0);
   assert.equal(s.missing, s.films - 4, "four films play: entry, P4 deal, P4 return, coming in");
+});
+
+test("a seat the round deals from A2.2 is shown as played, from there, only when the game would deal it so", () => {
+  // Paow's seat 6 from READY-B (data/dealers' second dealer, on the game's map): the entry to 2.2, the deal, its return cut from it, the exit.
+  const viaHub = (pending: string | null) => {
+    const rows: Parameters<typeof bank>[0] = [
+      ["paow-in-b", "IDLE", "READY-B", "ENTRY", jakob()],
+      ["paow-p6-deal-b", "READY-B", "P6.C1", "DEAL", jakob(), {}, file("L6b")],
+      ["paow-p6-back-b", "P6.C1", "READY-B", "RETURN", jakob(), { frame: { video: "assets/motions/paow-p6-deal-b/source.mp4", videoSha256: "x", index: 100 } }],
+      ["paow-out-b", "READY-B", "IDLE", "RETURN", jakob()],
+      ["paow-p4-deal", "READY", "P4.C1", "DEAL", jakob(), {}, file("L4p")],
+    ];
+    const b = bank(rows.map((r) => (r[0] === pending ? [r[0], r[1], r[2], r[3], { decision: "PENDING", inbox: true }, ...r.slice(5)] : r) as (typeof rows)[number]));
+    for (const j of b.jobs!) j.dealer = "paow";
+    return b;
+  };
+  const data = viaHub(null), g = buildGraph(data, { dealer: "paow" }), hubs = hubDeals(data, "paow");
+  // Without the game's rule the deal to seat 6 plays nothing: the takes from A2.2 are variant starts of the edge.
+  assert.equal(playing(g, "READY>P6.C1").take, null);
+  const deal = playing(g, "READY>P6.C1", hubs), back = playing(g, "P6.C1>READY", hubs);
+  assert.deepEqual([deal.take?.id, deal.hub, deal.gap, back.take?.id, back.hub, back.before?.id], ["paow-p6-deal-b", "READY-B", null, "paow-p6-back-b", "READY-B", "paow-p6-deal-b"]);
+  assert.deepEqual(edgeTag(deal), { kind: "take", verdict: "godkand", byJakob: true });
+  assert.equal(edgeInfo(g, "READY>P6.C1", hubs)!.title, "A2.1 → P6C1 · spelar Giv B (godkänd) · via ankare 2.2 · 1 variant");
+  assert.equal(hubLine("READY-B"), "I rundan ges platsen från A2.2 (ankare 2.2), via vila");
+  assert.equal(bankSummary(g, hubs).missing, bankSummary(g).missing - 2, "the deal and its return");
+  // Any other edge is as without the rule.
+  for (const id of ["READY>P4.C1", "IDLE>READY", "READY>IDLE", "READY>P5.C1"]) assert.deepEqual(playing(g, id, hubs), playing(g, id));
+  // One of the four without a verdict, or a dealer without a map: nothing changes.
+  for (const pending of ["paow-out-b", "paow-in-b", "paow-p6-back-b"]) {
+    const d = viaHub(pending), h = hubDeals(d, "paow"), gg = buildGraph(d, { dealer: "paow" });
+    assert.deepEqual(h, {}, pending);
+    assert.deepEqual(bankSummary(gg, h), bankSummary(gg));
+  }
+  const hers = bank([["pamela-in-b", "IDLE", "READY-B", "ENTRY", jakob()], ["pamela-p6-deal-b", "READY-B", "P6.C1", "DEAL", jakob()], ["pamela-p6-back-b", "P6.C1", "READY-B", "RETURN", jakob()], ["pamela-out-b", "READY-B", "IDLE", "RETURN", jakob()]]);
+  assert.deepEqual(hubDeals(hers, "pamela"), {});
 });

@@ -16,7 +16,7 @@ import { FilmViewer } from "@/components/takes/FilmViewer";
 import { Origin } from "@/components/takes/Origin";
 import { REST_EDGE, restGroups, restWord } from "./rest.ts";
 import { Button, EmptyState, Sheet, buttonClasses, cn } from "@/components/ui";
-import { edgeInfo, groupTakes, primaryOf, type TakeGroups } from "@/lib/edge-stats";
+import { edgeInfo, groupTakes, hubLine, primaryOf, type Hubs, type TakeGroups } from "@/lib/edge-stats";
 import { edgeName, nodeCode, takeName } from "@/lib/names";
 
 // Wide enough for DecisionBar's four buttons on one row.
@@ -39,6 +39,7 @@ export function EdgeSheet({
   onClose,
   onPickTake,
   onPickEdge,
+  hubs,
 }: {
   graph: Graph | null;
   edgeId: string | null;
@@ -46,8 +47,10 @@ export function EdgeSheet({
   onClose: () => void;
   onPickTake: (id: string | null) => void;
   onPickEdge: (id: string) => void;
+  /** What the round deals from another pose at the shoe (KartaView: hubDeals). */
+  hubs?: Hubs;
 }) {
-  const info = graph && edgeId ? edgeInfo(graph, edgeId) : null;
+  const info = graph && edgeId ? edgeInfo(graph, edgeId, hubs) : null;
   const edge = info?.edge ?? null;
   const subtitle = edge
     ? `${edge.experiment ? "Experiment utanför kartan" : describeEdge(edge)} · ${edge.takes.length} ${edge.takes.length === 1 ? "tagning" : "tagningar"}`
@@ -177,6 +180,7 @@ function NowBlock({ graph, edge, info, onPickEdge }: { graph: Graph; edge: Edge;
       ) : (
         <span className="text-sm font-medium text-[#ef8b8b]">Inget spelas här · {info.tag.kind === "gap" ? info.tag.word : "saknas"}</span>
       )}
+      {now.hub ? <span className="text-xs text-dim">{hubLine(now.hub)}.</span> : null}
       {shared ? (
         <div className="flex flex-wrap items-center gap-2 text-xs text-dim">
           En film per plats: {nodeCode(edge.target ?? "")} spelar {edgeName(shared)}.

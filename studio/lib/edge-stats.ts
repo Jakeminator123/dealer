@@ -2,7 +2,8 @@
 // the takes sorted into Jakob's five groups and counted, and the bank in numbers. Pure: no DOM, no network; tests in
 // studio/tests/edge-stats.test.ts.
 import { GAP_LABEL, playable, resolveRound, type Edge, type Gap, type Graph, type Step, type Take, type Why } from "../../src/clip-graph.ts";
-import { edgeName, takeName } from "./names.ts";
+import type { HubDeal } from "../../src/game-director.ts";
+import { edgeName, nodeCode, takeName } from "./names.ts";
 import { verdictOf, verdictPhrase, type Verdict } from "./verdict.ts";
 
 // ── Takes in groups ─────────────────────────────────────────────────────────
@@ -74,10 +75,18 @@ export function chainFor(edge: Pick<Edge, "from" | "to" | "kind" | "target" | "e
   return { steps: [own], at: 0 };
 }
 
-export type Playing = { take: Take | null; why: Why; gap: Gap | null; notes: string[]; film: Edge | null; before: Take | null };
-export function playing(graph: Graph, edgeId: string): Playing {
+// hubs: what the round deals from another pose at the shoe (hubDeals in src/game-director.ts, the game's own rule): such an edge
+// plays the take the game deals with, from that pose (hub), and is no gap. Without hubs every edge is resolved as above.
+export type Hubs = Readonly<Record<string, HubDeal>>;
+export type Playing = { take: Take | null; why: Why; gap: Gap | null; notes: string[]; film: Edge | null; before: Take | null; hub: string | null };
+export function playing(graph: Graph, edgeId: string, hubs: Hubs = {}): Playing {
   const edge = graph.edge[edgeId];
-  if (!edge) return { take: null, why: "GAP", gap: "INVALID", notes: [], film: null, before: null };
+  if (!edge) return { take: null, why: "GAP", gap: "INVALID", notes: [], film: null, before: null, hub: null };
+  const via = hubs[edgeId], dealt = via ? graph.takes[via.take] : null;
+  if (via && dealt) {
+    const deal = edge.kind === "RETURN" ? Object.entries(hubs).find(([id, h]) => h.hub === via.hub && graph.edge[id]?.kind === "DEAL" && graph.edge[id]?.target === edge.target)?.[1] : null;
+    return { take: dealt, why: via.why, gap: null, notes: [], film: graph.edge[dealt.edge] ?? edge, before: deal ? (graph.takes[deal.take] ?? null) : null, hub: via.hub };
+  }
   const { steps, at } = chainFor(edge);
   const segments = resolveRound(graph, steps, {});
   const seg = segments[at];
@@ -89,6 +98,7 @@ export function playing(graph: Graph, edgeId: string): Playing {
     notes: seg.notes.filter((note) => !note.startsWith("Kortets flytt")),
     film: seg.film,
     before: at > 0 ? (segments[at - 1].take ?? null) : null,
+    hub: null,
   };
 }
 
@@ -107,16 +117,20 @@ export function edgeTag(now: Pick<Playing, "take" | "gap">): Tag {
 
 /** Everything the map shows of one edge, and the same said in words (a tooltip and a screen reader's name). */
 export type EdgeInfo = { edge: Edge; now: Playing; tag: Tag; counts: Counts; title: string };
-export function edgeInfo(graph: Graph, edgeId: string): EdgeInfo | null {
+/** "ankare 2.2": the anchor a READY pose is, in Jakob's words. */
+export const hubAnchor = (hub: string): string => `ankare ${nodeCode(hub).replace(/^A/, "")}`;
+/** "I rundan ges platsen från A2.2 (ankare 2.2), via vila": the line for an edge the round plays from another pose at the shoe. */
+export const hubLine = (hub: string): string => `I rundan ges platsen från ${nodeCode(hub)} (${hubAnchor(hub)}), via vila`;
+export function edgeInfo(graph: Graph, edgeId: string, hubs: Hubs = {}): EdgeInfo | null {
   const edge = graph.edge[edgeId];
   if (!edge) return null;
-  const now = playing(graph, edgeId);
+  const now = playing(graph, edgeId, hubs);
   const tag = edgeTag(now);
   const counts = edgeCounts(edge);
   const plays = now.take
     ? `spelar ${takeName(now.take, graph.edge[now.take.edge]?.takes)} (${verdictPhrase(verdictOf(now.take))})`
     : tag.kind === "gap" ? tag.word : "";
-  return { edge, now, tag, counts, title: `${edgeName(edge)} · ${plays} · ${countsText(counts)}` };
+  return { edge, now, tag, counts, title: `${edgeName(edge)} · ${plays}${now.hub ? ` · via ${hubAnchor(now.hub)}` : ""} · ${countsText(counts)}` };
 }
 
 // ── The bank in numbers ─────────────────────────────────────────────────────
@@ -124,12 +138,12 @@ export function edgeInfo(graph: Graph, edgeId: string): EdgeInfo | null {
 // play a variant now, how many play nothing, how many have a Primär. The first two can overlap: an edge can have his
 // accepted take and still play a variant (the variant continues the deal before it).
 export type Summary = { films: number; outright: number; variant: number; missing: number; primary: number };
-export function bankSummary(graph: Graph): Summary {
+export function bankSummary(graph: Graph, hubs: Hubs = {}): Summary {
   const out: Summary = { films: 0, outright: 0, variant: 0, missing: 0, primary: 0 };
   for (const id of graph.summary.films.required) {
     const edge = graph.edge[id];
     if (!edge) continue;
-    const now = playing(graph, id);
+    const now = playing(graph, id, hubs);
     out.films++;
     if (edge.takes.some(isOutright)) out.outright++;
     if (now.take && verdictOf(now.take).verdict === "variant") out.variant++;

@@ -26,7 +26,8 @@ import { fileURLToPath } from 'node:url';
 import { SEATS, bankEdges, buildGraph, parseEdge, roundSequence, type BankData, type EdgeKind, type Graph } from '../src/clip-graph.ts';
 import { ANCHOR_NODE, ANCHOR_ROLE, FLIP_AXES, LANDING_ROLE, MODELS, SHOWN_LABEL, landingNode, referenceCandidates, seatWords, stepOf, type BankFacts, type FlipAxis, type Order, type Shown, type StepKey } from '../src/order-model.ts';
 import { methodFor, readMethods, recipeWords, type Method, type MethodRegister } from '../src/order-methods.ts';
-import { bankSummary, playing, type Summary } from '../studio/lib/edge-stats.ts';
+import { bankSummary, hubAnchor, playing, type Hubs, type Summary } from '../studio/lib/edge-stats.ts';
+import { hubDeals } from '../src/game-director.ts';
 import { VERDICT_LABEL, verdictOf, verdictPhrase, type Verdict } from '../studio/lib/verdict.ts';
 import type { Entry } from '../studio/lib/media.ts';
 import { mediaRoles } from './media-roles.ts';
@@ -102,6 +103,8 @@ export type ProductionInput = {
   /** Each card's side as the plan lays it (Placering): what the pictures draw. */
   sides?: Readonly<Record<string, 'FRONT' | 'BACK'>>;
   createdBy?: string;
+  /** What the dealer's round deals from another pose at the shoe, by the game's rule (hubDeals in src/game-director.ts); none: every step as its edge plays. */
+  hubs?: Hubs;
 };
 export type InFlight = { id: string; title: string; shown: Shown; approved: boolean; delivered: boolean };
 export type RowPicture = { path: string | null; frame: number | null; waits: string | null; cards: { target: string; side: 'FRONT' | 'BACK' }[] };
@@ -115,6 +118,8 @@ export type ProductionRow = {
   have: Have;
   /** The take that plays now, and whether the verdict is Jakob's own, or provisional (judged for him: "åt dig", not waiting). */
   take: string | null;
+  /** The pose at the shoe the round plays this step from when it is not the edge's own (READY-B for a seat dealt via anchor 2.2). */
+  hub: string | null;
   byJakob: boolean;
   provisional: boolean;
   orders: InFlight[];
@@ -216,7 +221,7 @@ export function productionList(input: ProductionInput): Production {
   const rows: ProductionRow[] = [];
   for (const id of ids) {
     const edge = graph.edge[id];
-    const now = playing(graph, id);
+    const now = playing(graph, id, input.hubs);
     const v = now.take ? verdictOf(now.take) : null;
     const have: Have = v ? v.verdict : 'saknas';
     const at = stepFor(edge);
@@ -258,7 +263,7 @@ export function productionList(input: ProductionInput): Production {
     else if (needs.length) state = 'VÄNTAR';
     else state = method.status === 'gäller' ? 'KAN' : 'PROV';
     const words =
-      state === 'KLAR' ? `klar · ${v?.provisional ? verdictPhrase(v) : `${VERDICT_LABEL[have as Verdict].toLowerCase()}${v && !v.byJakob ? ' (granskaren)' : ''}`}`
+      state === 'KLAR' ? `klar · ${v?.provisional ? verdictPhrase(v) : `${VERDICT_LABEL[have as Verdict].toLowerCase()}${v && !v.byJakob ? ' (granskaren)' : ''}`}${now.hub ? ` · ges via ${hubAnchor(now.hub)}: ${now.take!.id}` : ''}`
       : state === 'BESTÄLLD' && flying.some((f) => f.approved && f.delivered) ? 'levererad, efterarbetas och granskas'
       : state === 'MED_GIVEN' ? `kommer med given till ${cardWords(edge.target!)} (tur och retur)`
       : state === 'VÄNTAR' ? `väntar på ${needs.join(' och ')}`
@@ -275,7 +280,7 @@ export function productionList(input: ProductionInput): Production {
       ? { path: anchor.path ?? null, frame: null, waits: null, cards }
       : { path: null, frame: null, waits: def ? anchorWords(shownAnchor!) : 'bild utan henne', cards };
     rows.push({
-      edge: id, label: stepLabel(edge), kind: edge.kind, target: edge.target, needed: needed.has(id), have, take: now.take?.id ?? null, byJakob: !!v?.byJakob, provisional: !!v?.provisional,
+      edge: id, label: now.hub && edge.kind === 'RETURN' ? stepLabel(edge).replace('ankare 2.1', hubAnchor(now.hub)) : stepLabel(edge), kind: edge.kind, target: edge.target, needed: needed.has(id), have, take: now.take?.id ?? null, hub: now.hub, byJakob: !!v?.byJakob, provisional: !!v?.provisional,
       orders: flying, step: at?.step ?? null, method: method ? { id: method.id, status: method.status, recipe: recipeWords(method, withoutReference), reference } : null, needs,
       comesWith: state === 'MED_GIVEN' ? dealEdge : null, state, words, orderable,
       draft: orderable && method && at ? draftOf(input, { label: stepLabel(edge), edge: id }, at, withoutReference ? { ...method, model: method.noReferenceModel!, reference: 'ingen' } : method, reference, orderable === 'PROV') : null,
@@ -301,7 +306,8 @@ export function productionList(input: ProductionInput): Production {
     'Dealerns tredje kort (D.C3) är valfritt och räknas inte bland stegen: READY>D.C3 och D.C3>IDLE.',
     'En plats andra kort spelar första kortets filmer med det ritade kortet flyttat, så det behöver ingen egen film.',
   ];
-  return { dealer, rows, anchors, landings, counts, karta: bankSummary(graph), notes };
+  if (rows.some((r) => r.hub)) notes.push(`En plats som ges via ett annat ankare vid skon spelas i rundan med vila före och efter (src/game-director.ts SEAT_HUB): ${rows.filter((r) => r.hub && r.kind === 'DEAL').map((r) => `${cardWords(r.target!)} via ${hubAnchor(r.hub!)}`).join(', ')}.`);
+  return { dealer, rows, anchors, landings, counts, karta: bankSummary(graph, input.hubs), notes };
 }
 
 // ── Reading ─────────────────────────────────────────────────────────────────
@@ -351,7 +357,7 @@ export async function readProduction(root: string, dealerId: string, options: { 
   const sides = Object.fromEntries(Object.entries(all.plan?.seats ?? {}).map(([t, s]) => [t, s.side]));
   return {
     input: {
-      dealer: { id: known.id, name: known.name }, graph, bank: bank as BankFacts, methods: methodsRead.register,
+      dealer: { id: known.id, name: known.name }, graph, bank: bank as BankFacts, methods: methodsRead.register, hubs: hubDeals(bank, dealerId),
       entries: register?.dealers[dealerId]?.entries ?? [], orders: all.orders.map((a) => ({ order: a.order, shown: a.shown })), sides, createdBy: options.createdBy,
     },
     problems,

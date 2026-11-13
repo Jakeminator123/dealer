@@ -8,6 +8,7 @@ import { Scan, ZoomIn, ZoomOut } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { TARGETS, buildGraph, type FilmMode } from "../../../src/clip-graph.ts";
+import { hubDeals } from "../../../src/game-director.ts";
 import { toPixels, type PlacementPlan } from "../../../src/placement-model.ts";
 import { BankStatus, Page } from "@/components/shell";
 import { Button, ErrorState, IconButton, Skeleton, Switch } from "@/components/ui";
@@ -106,16 +107,18 @@ function Karta() {
   // One film per card is the chosen dealer's too (seatGraph is null until the dealer is known).
   const graph = useMemo(() => (mode === "SEAT" ? seatGraph : bank && seatGraph ? buildGraph(bank, { mode: "CARD", dealer }) : null), [mode, seatGraph, bank, dealer]);
   const layout = useMemo(() => mapLayout({ mode, points }), [mode, points]);
+  // A seat the round deals from another pose at the shoe (anchor 2.2) counts as played, by the game's own rule.
+  const hubs = useMemo(() => (bank ? hubDeals(bank, dealer) : {}), [bank, dealer]);
   const infos = useMemo(() => {
     const out = new Map<string, EdgeInfo>();
     if (!graph) return out;
     for (const e of layout.edges) {
-      const info = edgeInfo(graph, e.id);
+      const info = edgeInfo(graph, e.id, hubs);
       if (info) out.set(e.id, info);
     }
     return out;
-  }, [graph, layout]);
-  const summary = useMemo(() => (graph ? bankSummary(graph) : null), [graph]);
+  }, [graph, layout, hubs]);
+  const summary = useMemo(() => (graph ? bankSummary(graph, hubs) : null), [graph, hubs]);
 
   const edge = graph && edgeId ? (graph.edge[edgeId] ?? null) : null;
   const sheetOpen = !!edge;
@@ -190,6 +193,7 @@ function Karta() {
         onClose={() => set({ kant: null, tagning: null })}
         onPickTake={(id) => set({ tagning: id })}
         onPickEdge={pick}
+        hubs={hubs}
       />
     </Page>
   );

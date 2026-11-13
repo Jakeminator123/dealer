@@ -141,7 +141,10 @@ Spelet med flera dealers (2026-11-13):
   `IDLE>READY`. Två kort i rad till platsen stannar vid READY-B mellan sig. Labbets rundbyggare gör likadant med
   `roundSequence({..., hubs})`; utan `hubs` blir rundan densamma som förut. Varje kort som ges så tar ungefär 14 s
   längre än ett kort som läggs utan hand (skattat; hälften med givarna i dubbel fart). Steget för utgången i Beställ
-  heter `UTGANG-2.2`.
+  heter `UTGANG-2.2`. En plats som rundan ger från en navvariant räknas som klar i produktionslistan och på Kartan
+  bara när spelet själv skulle ge den så, alltså när alla fyra filmerna i kedjan är dömda (`hubDeals` i
+  `src/game-director.ts`, samma regel som spelet använder); raden och kanten säger då att den ges via ankare 2.2 och
+  med vilken tagning.
 - Efter en giv väljs en retur av samma hand som lade kortet (`motion.releaseHand`); finns ingen retur av rätt hand spelas
   den andra med en anteckning om felet.
 - Dealern säger sina repliker med talfilm och ljud (`src/speech-lines.ts`, hennes egen röst enligt `data/speech.json`): `goodluck` före given,

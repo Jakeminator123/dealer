@@ -9,6 +9,7 @@ import assert from 'node:assert/strict';
 import { buildGraph, type BankData, type BankJob } from '../src/clip-graph.ts';
 import { readMethods, type Method, type MethodRegister } from '../src/order-methods.ts';
 import type { Entry } from '../studio/lib/media.ts';
+import { hubDeals } from '../src/game-director.ts';
 import { makeDrafts, productionList, readProduction, roundFilms, stepFor, trialRows, type OrderLike, type ProductionInput } from './produce.ts';
 import type { NewOrder } from './order-store.ts';
 
@@ -157,6 +158,39 @@ test('the drafts: only what is missing and can be ordered with a method that hol
   assert.match((await makeDrafts(list, store, { trial: 'P2' })).skipped[0].why, /redan på väg \(--again beställer ändå\)/);
   assert.equal((await makeDrafts(list, store, { trial: 'P2', again: true })).made.length, 1);
   assert.match((await makeDrafts(list, store, { trial: 'P9' })).skipped[0].why, /inget steg heter så/);
+});
+
+test('a seat the round deals from anchor 2.2 counts as done, says so with the take, and only with all four films judged', async () => {
+  // Paow's seat 6 from READY-B: the entry to 2.2, a deal and its return cut from it, and the exit; no plain deal to seat 6.
+  const via = (pending: string[] = []): BankData => {
+    const data = bank(), more = [job('paow-in-b', 'IDLE', 'READY-B'), job('paow-p6-deal-b', 'READY-B', 'P6.C1'), { ...job('paow-p6-back-b', 'P6.C1', 'READY-B'), first: { frame: { video: 'assets/motions/paow-p6-deal-b/source.mp4', videoSha256: 'a'.repeat(64), index: 120 } } }, job('paow-out-b', 'READY-B', 'IDLE')];
+    for (const j of more) { data.jobs!.push(j); data.motions![j.id] = { source: { frames: 168, fps: 24, sha256: 'a'.repeat(64) }, review: pending.includes(j.id) ? { decision: 'PENDING', inbox: true } : { decision: 'ACCEPTED', provisional: { by: 'huvudagenten' } } } as never; data.media![j.id] = { video: `assets/motions/${j.id}/source.mp4` }; }
+    return data;
+  };
+  const listOf = async (data: BankData, dealer = 'paow', hubs = hubDeals(data, dealer)) => productionList(await input({ dealer: { id: dealer, name: dealer === 'paow' ? 'Paow' : dealer }, graph: buildGraph(data, { dealer }), bank: data as never, hubs }));
+  const before = productionList(await input()), after = await listOf(via());
+  const deal = row(after, 'READY>P6.C1'), back = row(after, 'P6.C1>READY');
+  assert.deepEqual([deal.state, deal.take, deal.hub, deal.have], ['KLAR', 'paow-p6-deal-b', 'READY-B', 'godkand']);
+  assert.equal(deal.words, 'klar · godkänd åt dig · ges via ankare 2.2: paow-p6-deal-b');
+  assert.deepEqual([back.state, back.take, back.label, back.words], ['KLAR', 'paow-p6-back-b', 'Retur · plats 6 → ankare 2.2', 'klar · godkänd åt dig · ges via ankare 2.2: paow-p6-back-b']);
+  // The numbers follow: two more steps done, both judged for him, two fewer missing on Karta, and the list's count is still Karta's.
+  assert.deepEqual([after.counts.done, after.counts.neededDone, after.counts.missing, after.counts.provisional], [before.counts.done + 2, before.counts.neededDone + 2, before.counts.missing - 2, before.counts.provisional + 2]);
+  assert.equal(after.counts.missing, after.karta.missing); assert.equal(after.karta.missing, before.karta.missing - 2);
+  assert.match(after.notes.at(-1)!, /plats 6 via ankare 2\.2/);
+  // The entry and exit of 2.2 are no steps of their own here: they stand in no row, and no other row changes.
+  const others = (list: typeof before) => list.rows.filter((r) => !['READY>P6.C1', 'P6.C1>READY'].includes(r.edge)).map(({ draft, ...r }) => ({ ...r, draft: draft ? { ...draft, notes: [] } : null }));
+  assert.deepEqual(others(after), others(before));
+  // One of the four films without a verdict (the exit, the entry or the return), or the map not given: every row and number as before.
+  const same = (list: typeof before) => ({ rows: list.rows.map(({ draft, ...r }) => r), counts: list.counts, karta: list.karta, notes: list.notes });
+  for (const pending of [['paow-out-b'], ['paow-in-b'], ['paow-p6-back-b']]) {
+    const fallen = await listOf(via(pending));
+    assert.deepEqual([row(fallen, 'READY>P6.C1').state, row(fallen, 'READY>P6.C1').hub, fallen.counts.done, fallen.counts.missing, fallen.karta], [row(before, 'READY>P6.C1').state, null, before.counts.done, before.counts.missing, before.karta], pending[0]);
+  }
+  const plain = productionList(await input({ graph: buildGraph(via(), { dealer: 'paow' }), bank: via() as never }));
+  assert.deepEqual(same(await listOf(via(), 'paow', {})), same(plain), 'no hubs given: every step as its edge plays');
+  assert.deepEqual([row(plain, 'READY>P6.C1').hub, plain.counts.done, plain.karta], [null, before.counts.done, before.karta]);
+  assert.deepEqual(hubDeals(via(), 'pamela'), {}, 'a dealer without a map');
+  assert.deepEqual(hubDeals(via(), 'paow'), { 'READY>P6.C1': { hub: 'READY-B', take: 'paow-p6-deal-b', why: 'MAIN' }, 'P6.C1>READY': { hub: 'READY-B', take: 'paow-p6-back-b', why: 'MAIN' } });
 });
 
 test('on the checkout: 33 steps for Paow and the same count of missing films as Karta', async () => {

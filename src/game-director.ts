@@ -15,7 +15,7 @@
 // A card on the dealer's SEAT_HUB is dealt from that other pose at the shoe (READY-B) when the films for it can be played, and the
 // chain goes through rest around it: IDLE>READY-B, the deal, the return to READY-B and READY-B>IDLE (roundSequence in the clip bank
 // does the same).
-import {dealersOf, dealHub, parseEdge, type BankData, type Step} from './clip-graph.ts';
+import {buildGraph, dealersOf, dealHub, parseEdge, resolveRound, type BankData, type Graph, type Segment, type Step, type Why} from './clip-graph.ts';
 import {slotOf, slotFilm, slotLabel, type Slot, type TableCards} from './game-table.ts';
 
 // The signals this file reads; everything else in the engine's list is for the overlay.
@@ -48,6 +48,32 @@ export const STAND_IN_FILM: Readonly<Record<string, Readonly<Record<string, stri
 // IDLE>READY-B, the deal from READY-B, the return to READY-B and the exit READY-B>IDLE, each with a verdict (the game's bank, judgedBank
 // below); without them the card is dealt as before, from READY, with its stand-in, or laid without a hand. Pamela has none.
 export const SEAT_HUB: Readonly<Record<string, Readonly<Record<string, string>>>> = {paow: {'P6.C1': 'READY-B'}};
+
+/** The four steps of a deal from another pose at the shoe: rest to the pose, the deal, back to the pose, and to rest. */
+export const hubSteps = (hub: string, film: string): Step[] => [{from: 'IDLE', to: hub}, {from: hub, to: film}, {from: film, to: hub}, {from: hub, to: 'IDLE'}];
+/**
+ * The rule SEAT_HUB applies by, in one place: the four steps resolved on the game's graph (built from judgedBank, so judged takes
+ * only), or null when one of them has no film it can play. The game asks it as it plans a step (src/game-film.ts); what counts the
+ * films a round has asks it through hubDeals.
+ */
+export function hubChain(graph: Graph, hub: string, film: string, places?: Record<string, {x: number; y: number}> | null): Segment[] | null {
+  const chain = resolveRound(graph, hubSteps(hub, film), {places});
+  return chain.every(s => !!s.video) ? chain : null;
+}
+// What the game deals from another pose, by the edge of the model it stands in for: the deal READY>P6.C1 and the return P6.C1>READY
+// are played as READY-B>P6.C1 and P6.C1>READY-B. take: the take the game plays (an id of the bank); why: why it plays.
+export type HubDeal = {hub: string; take: string; why: Why};
+/** For a dealer, the seats her round deals from another pose as the game decides it (SEAT_HUB, judgedBank, hubChain). Empty without a map or without the films. */
+export function hubDeals(bank: BankData, dealer: string): Readonly<Record<string, HubDeal>> {
+  const map = SEAT_HUB[dealer], out: Record<string, HubDeal> = {};
+  if (!map) return out;
+  const graph = buildGraph(judgedBank(bank), {dealer});
+  for (const card of Object.keys(map)) {
+    const hub = dealHub(card, map), chain = hub === 'READY' ? null : hubChain(graph, hub, card);
+    for (const s of chain?.slice(1, 3) ?? []) out[parseEdge(s.id)!.base] = {hub, take: s.take!.id, why: s.why};
+  }
+  return out;
+}
 
 /**
  * The beats of one step of the game.
