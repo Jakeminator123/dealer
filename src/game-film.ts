@@ -102,15 +102,18 @@ export function createFilm(players: FilmPlayers, bank: Graph, layout: Layout, re
   for (let seat = 0; seat <= 7; seat++) for (const index of [0, 1]) places[`${seat ? `P${seat}` : 'D'}.C${index + 1}`] = layout.centre({owner: seat ? 'P' : 'D', seat, hand: 0, hands: 1, index});
 
   // ── rest: short clips that all begin and end on the same frame, one after the other until a step takes over ──
-  function rest() {
-    // calmOnly (the page's, while a film plays before the game): only calm rests, where she has any, so that she is at rest when it is seen
-    const rests = graph.edge['IDLE>IDLE']?.takes ?? [], calm = calmOnly ? rests.filter(t => t.idle?.calm === true) : [];
-    const mine = ++token, pick = pickIdle(calm.length ? calm : rests, played, random());
+  /** The next rest film. how.cut: shown at once from its first frame, instead of after the rest that plays (the queue's own cut). */
+  function rest(how: {cut?: boolean} = {}) {
+    // calmOnly (the page's, while a film plays before the game): only rests where she holds still, so that she sits as the film
+    // ends: calm ones that may be cut (a calm rest marked cut: false is one where she turns her head or looks round the table),
+    // else any calm one, else whatever she has.
+    const rests = graph.edge['IDLE>IDLE']?.takes ?? [], calm = calmOnly ? rests.filter(t => t.idle?.calm === true) : [], still = calm.filter(t => t.idle?.cut !== false);
+    const mine = ++token, pick = pickIdle(still.length ? still : calm.length ? calm : rests, played, random());
     if (!pick?.take.media.video) { resting = null; return; }
     const take = pick.take, range = idleRange(take.frames ?? 90);
     resting = take; played.push(take.id); played.splice(0, Math.max(0, played.length - 12));
     void trackOf(take).then(track => { if (mine !== token) return;
-      players.play([{path: take.media.video!, start: range.start, end: range.end, ...fpsOf(take), ...modelOf(take), ...effectPart(take), rest: true, track, cards: cardOptions({own: null, lying}, table, records, layout, carry)}], {onEnd: () => { if (mine === token) rest(); }}); });
+      players.play([{path: take.media.video!, start: range.start, end: range.end, ...fpsOf(take), ...modelOf(take), ...effectPart(take), rest: true, track, cards: cardOptions({own: null, lying}, table, records, layout, carry)}], {onEnd: () => { if (mine === token) rest(); }, ...(how.cut === true ? {cut: true} : {})}); });
   }
 
   // A card whose deal has no film that can be played (none made, or the only take rejected) is laid without a hand.

@@ -36,8 +36,8 @@ const query = new URLSearchParams(location.search);
 // Until it is over she says nothing and the chat is still (introOn, in render): the press on Spela is also what lets her be heard.
 const INTROS: Record<string, {film: string; poster: string}> = {'noir-3': {film: 'assets/films/intro/noir-3/film.mp4', poster: 'assets/films/intro/noir-3/poster.jpg'}};
 const introAsked = INTROS[query.get('intro') ?? ''] as {film: string; poster: string} | undefined;
-let introOn = !!introAsked, introOver = () => { introOn = false; }, introFade = () => {};
-if (introAsked) void import('./game-intro.ts').then(m => m.createIntro(stage, canvas, {...introAsked, onFade: played => { if (played) introFade(); }})).catch(() => null).then(() => introOver());
+let introOn = !!introAsked, introOver = () => { introOn = false; }, introLead = () => {};
+if (introAsked) void import('./game-intro.ts').then(m => m.createIntro(stage, canvas, {...introAsked, onLead: () => introLead()})).catch(() => null).then(() => introOver());
 stage.dataset.theme = THEMES.includes(query.get('tema') ?? '') ? query.get('tema')! : 'noir';
 // The server keeps one session per table name; a second tab or a test opens game.html?table=<name> and plays its own.
 const table = /^[a-z0-9-]{1,40}$/.test(query.get('table') ?? '') ? `?table=${query.get('table')}` : '';
@@ -397,9 +397,11 @@ scene.onFrame(() => {
 });
 render();
 introOver = () => { introOn = false; film.calm = false; render(); }; // the film before the game is over: now she says her opening line, and her gestures may come
-// The film ends in her rest pose: as it gives way, her rest starts over from its first frame, which is that pose (every rest film
-// begins on the same frame), under the film's last frame, so that the fade goes from her to her.
-introFade = () => { if (introOn && page.stage === 'BETTING' && !page.busy) film.rest(); };
+// The film ends in her rest pose, held for its last 0.75 s. A little before its end (the module's onLead), while the film still
+// covers the stage, her rest is started over with a cut from its first frame, which is that pose (every rest film begins on the
+// same frame): the cut is not seen, and the fade goes from her to her. Queued instead, the rest that played went on with her head
+// turned and her face showed twice in the fade (measured by the trailer session on the wired page).
+introLead = () => { if (introOn && page.stage === 'BETTING' && !page.busy) film.rest({cut: true}); };
 if (!introOn) film.calm = false; // it was over before the page was built (skipped at once)
 
 // How the round ended is said by her speech when it has the line (the settle's speak signal); then the status line is not said again.

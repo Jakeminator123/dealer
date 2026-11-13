@@ -121,6 +121,16 @@ test('while calm is asked for the rest rotation picks only calm rests, and the g
   film.calm = false; queue.parts.length = 0;
   for (let i = 0; i < 12; i++) { film.rest(); await new Promise(r => setTimeout(r, 0)); }
   assert.ok(paths().includes(video('gest')), `the gesture comes again: ${paths().join(' ')}`);
+  // a calm rest that may not be cut (she turns her head in it) is left out too while calm is asked for, where a still one exists
+  const turning = {...data, jobs: [...data.jobs!, job('blick', 'IDLE', 'IDLE', 'wan3')], motions: {...data.motions, blick: record('wan3', {motion: {idle: {calm: true, cut: false, weight: 1000}}} as never)},
+    receipts: {...data.receipts, blick: {status: 'SUCCEEDED', estimatedCredits: 0}} as never, media: {...data.media, blick: {video: video('blick'), first: null, last: null}}};
+  const cuts: boolean[] = [], seen: string[] = [], stub = {play(list: FilmPart[], options: {cut?: boolean} = {}) { seen.push(list[0].path); cuts.push(options.cut === true); }, hurry() {}, preload() {}};
+  const held = createFilm(stub, buildGraph(turning, {dealer: 'paow'}), createLayout(defaultPlan()), async () => null, () => 0.999);
+  held.calm = true;
+  for (let i = 0; i < 6; i++) { held.rest(); await new Promise(r => setTimeout(r, 0)); }
+  assert.ok(seen.length >= 6 && seen.every(p => p === video('vila')), `only the rest where she holds still: ${seen.join(' ')}`);
+  // started over with a cut: the queue is told to show it at once, not after the rest that plays
+  assert.ok(cuts.every(c => !c)); held.rest({cut: true}); await new Promise(r => setTimeout(r, 0)); assert.equal(cuts.at(-1), true);
 });
 
 test('who decides the drawn cards: the address, then the player\'s own menu, then on; a look\'s preset has no say', () => {

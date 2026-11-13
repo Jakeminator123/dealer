@@ -5,7 +5,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {FILM} from '../src/scene3d-geometry.ts';
-import {INTRO_FRAME, INTRO_FRAMING, INTRO_FILM, INTRO_START, createIntro, introLayout, introNext, type IntroSignal, type IntroState} from '../src/game-intro.ts';
+import {INTRO_FRAME, INTRO_FRAMING, INTRO_FILM, INTRO_START, createIntro, introLayout, introNext, type IntroOptions, type IntroSignal, type IntroState} from '../src/game-intro.ts';
 
 const run = (signals: IntroSignal[], from: IntroState = INTRO_START) => signals.reduce(introNext, from);
 
@@ -72,7 +72,7 @@ class El {
   getBoundingClientRect() { return {width: 1920, height: 1080, left: 0, top: 0}; }
 }
 class Video extends El {
-  src = ''; preload = ''; muted = true; playsInline = false; controls = true; disablePictureInPicture = false; currentTime = 0; paused = true; ended = false; loads = 0; playAnswer: 'ok' | 'fail' = 'ok';
+  src = ''; preload = ''; muted = true; playsInline = false; controls = true; disablePictureInPicture = false; currentTime = 0; duration = 46; paused = true; ended = false; loads = 0; playAnswer: 'ok' | 'fail' = 'ok';
   play() { if (this.playAnswer === 'fail') return Promise.reject(Error('NotAllowedError')); this.paused = false; return Promise.resolve(); }
   pause() { this.paused = true; } load() { this.loads++; }
 }
@@ -81,12 +81,12 @@ class Doc extends El { made: El[] = []; constructor() { super('#document', null 
 const observers: {observed: number; disconnected: boolean}[] = [];
 (globalThis as Record<string, unknown>).ResizeObserver = class { o = {observed: 0, disconnected: false}; constructor() { observers.push(this.o); } observe() { this.o.observed++; } disconnect() { this.o.disconnected = true; } };
 const tick = (ms = 0) => new Promise(r => setTimeout(r, ms));
-function setup(answer: 'ok' | 'fail' = 'ok') {
+function setup(answer: 'ok' | 'fail' = 'ok', more: Partial<IntroOptions> = {}) {
   const doc = new Doc(), stage = doc.createElement('div'), canvas = doc.createElement('canvas'); stage.append(canvas); doc.made.length = 0;
-  const intro = createIntro(stage as unknown as HTMLElement, canvas as unknown as HTMLCanvasElement, {film: 'film.mp4', poster: 'poster.jpg', fade: {lying: 0.02, tall: 0.02}});
+  const intro = createIntro(stage as unknown as HTMLElement, canvas as unknown as HTMLCanvasElement, {film: 'film.mp4', poster: 'poster.jpg', fade: {lying: 0.02, tall: 0.02}, ...more});
   const root = stage.children.find(c => c !== canvas)!, video = doc.made.find(e => e instanceof Video) as Video, buttons = doc.made.filter(e => e.tag === 'button');
   video.playAnswer = answer;
-  return {doc, stage, canvas, intro, root, video, play: buttons.find(b => b.textContent === 'Spela')!, skip: buttons.find(b => b.textContent === 'Hoppa över')!};
+  return {doc, stage, canvas, intro, root, video, still: doc.made.find(e => e.tag === 'img')!, play: buttons.find(b => b.textContent === 'Spela')!, skip: buttons.find(b => b.textContent === 'Hoppa över')!};
 }
 /** Nothing left: the stage holds only the canvas, no listener on the document, the observer let go, the film's source released. */
 function assertGone(s: ReturnType<typeof setup>) {
@@ -122,4 +122,31 @@ test('the page: "Hoppa över", Escape, a film that fails, and a fade the browser
   assert.deepEqual(await d.intro, {played: false}, 'a film that breaks, and no transitionend: the timer ends the fade'); assertGone(d);
   const e = setup(); e.play.fire('click'); e.video.fire('ended'); e.doc.fire('keydown', {key: 'Escape'});
   assert.deepEqual(await e.intro, {played: true}, 'Escape during the fade ends it at once and keeps played'); assertGone(e);
+});
+
+test('the page: the start picture is shown only once it has arrived; the lead comes once before the film\'s end, before the fade, never after a skip', async () => {
+  const hooks = (calls: string[]): Partial<IntroOptions> => ({lead: 0.4, onLead: () => calls.push('lead'), onFade: played => calls.push(`fade ${played}`)});
+  const end = async (s: ReturnType<typeof setup>) => { s.root.fire('transitionend', {propertyName: 'opacity'}); await s.intro; assertGone(s); };
+
+  const seen: string[] = [], a = setup('ok', hooks(seen));
+  assert.match(a.still.style.cssText ?? '', /visibility:hidden/, 'no start picture before it has arrived');
+  assert.equal(a.still.attrs.src ?? (a.still as unknown as {src?: string}).src, 'poster.jpg');
+  a.still.fire('load'); assert.equal(a.still.style.visibility, 'visible', 'shown whole when it has');
+  a.play.fire('click');
+  a.video.currentTime = 45.5; a.video.fire('timeupdate'); assert.deepEqual(seen, [], '0.5 s left: not yet');
+  assert.equal(a.still.style.visibility, 'hidden', 'the film has passed the poster\'s frame');
+  a.still.fire('load'); assert.equal(a.still.style.visibility, 'hidden', 'a start picture that arrives late stays away');
+  a.video.currentTime = 45.7; a.video.fire('timeupdate'); assert.deepEqual(seen, ['lead'], '0.3 s left');
+  a.video.currentTime = 45.9; a.video.fire('timeupdate'); assert.deepEqual(seen, ['lead'], 'once');
+  a.video.fire('ended'); assert.deepEqual(seen, ['lead', 'fade true'], 'the lead before the fade');
+  await end(a);
+
+  const late: string[] = [], b = setup('ok', hooks(late)); b.play.fire('click'); b.video.fire('ended');
+  assert.deepEqual(late, ['lead', 'fade true'], 'a film whose time was never read near its end: the lead still comes first'); await end(b);
+
+  const skipped: string[] = [], c = setup('ok', hooks(skipped)); c.play.fire('click'); c.video.currentTime = 10; c.video.fire('timeupdate'); c.skip.fire('click');
+  assert.deepEqual(skipped, ['fade false'], 'no lead after a skip'); await end(c);
+
+  const thrown = setup('ok', {onLead: () => { throw Error('the page\'s own fault'); }}); thrown.play.fire('click'); thrown.video.fire('ended');
+  assert.equal(thrown.root.style.opacity, '0', 'a hook that throws does not stop the fade'); await end(thrown);
 });

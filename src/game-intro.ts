@@ -3,7 +3,9 @@
 //
 // The page calls createIntro(stage, canvas, {film, poster}) once, as early as it can, and goes on building the game under it; the
 // promise resolves when the game is seen, with {played}, so the page knows when its own sound may start. A film that cannot be
-// loaded or played never holds the game back: it counts as a skip, and so does Escape at any time.
+// loaded or played never holds the game back: it counts as a skip, and so does Escape at any time. A page that wants the game to
+// stand in the film's last picture when the fade begins is called a little before the film ends (onLead), while the film still
+// covers the game, and again as the fade begins (onFade).
 //
 // Where the film lies. Its last frame is the game's own picture at 16:9 (the scene at FRAMING.wide in src/game-page.ts, pitch -8,
 // zoom 0.84). The game frames that picture differently on other stages: the scene keeps the film frame's height on a stage wider
@@ -76,8 +78,16 @@ export type IntroOptions = {
   stall?: number;
   /** Called once as the film gives way to the game (the fade begins), with whether the film ran to its end: the page can then put the game in the picture the film ends in. */
   onFade?: (played: boolean) => void;
+  /**
+   * Called once, `lead` seconds before the film's end, only for a film that is running to its end (never after a skip), and always
+   * before onFade(true). The film still covers the game then, so the page can cut the game to the picture the film ends in (the
+   * dealer's rest from its first frame) without the cut being seen; when the fade begins the two agree.
+   */
+  onLead?: () => void;
+  /** How long before the film's end onLead is called, seconds. The film's last 0.75 s is her hold in the rest pose. */
+  lead?: number;
 };
-export const INTRO_DEFAULTS = {fade: {lying: 0.4, tall: 1.2}, grow: true, posterUntil: 12.5 / 24, stall: 10};
+export const INTRO_DEFAULTS = {fade: {lying: 0.4, tall: 1.2}, grow: true, posterUntil: 12.5 / 24, stall: 10, lead: 0.4};
 
 const BUTTON = 'box-sizing:border-box;min-width:168px;min-height:56px;padding:0 28px;border-radius:14px;font:700 17px/1 system-ui,"Segoe UI",sans-serif;letter-spacing:.06em;cursor:pointer;touch-action:manipulation';
 const PRIMARY = `${BUTTON};border:0;background:linear-gradient(180deg,var(--tc-accent,#e9c873),var(--tc-accent-2,#b98f3e));color:var(--tc-ink,#1b1305);text-transform:uppercase;box-shadow:0 8px 22px -8px var(--tc-glow,rgba(233,200,115,.3)),inset 0 1px 0 rgba(255,255,255,.4)`;
@@ -89,21 +99,22 @@ const SECONDARY = `${BUTTON};border:1px solid var(--tc-line-strong,rgba(226,191,
  */
 export function createIntro(stage: HTMLElement, canvas: HTMLCanvasElement, options: IntroOptions): Promise<{played: boolean}> {
   const fade = {...INTRO_DEFAULTS.fade, ...(options.fade ?? {})}, grow = options.grow ?? INTRO_DEFAULTS.grow;
-  const posterUntil = options.posterUntil ?? INTRO_DEFAULTS.posterUntil, stall = options.stall ?? INTRO_DEFAULTS.stall;
+  const posterUntil = options.posterUntil ?? INTRO_DEFAULTS.posterUntil, stall = options.stall ?? INTRO_DEFAULTS.stall, lead = options.lead ?? INTRO_DEFAULTS.lead;
   const doc = stage.ownerDocument, made = (tag: string, css: string) => { const el = doc.createElement(tag); el.style.cssText = css; return el; };
   const root = made('div', 'position:absolute;inset:0;z-index:1000;overflow:hidden;background:#000;opacity:1');
   root.setAttribute('role', 'dialog'); root.setAttribute('aria-label', 'Film före spelet'); root.dataset.intro = canvas.id || 'intro';
   const video = made('video', 'position:absolute;object-fit:fill;background:#000') as HTMLVideoElement;
   video.playsInline = true; video.preload = 'none'; video.controls = false; video.setAttribute('playsinline', ''); video.disablePictureInPicture = true;
-  const still = made('img', 'position:absolute;object-fit:fill;pointer-events:none') as HTMLImageElement;
-  still.alt = ''; still.decoding = 'async'; still.src = options.poster;
+  // The start picture is shown whole or not at all: one still arriving would be drawn in halves over the black.
+  const still = made('img', 'position:absolute;object-fit:fill;pointer-events:none;visibility:hidden') as HTMLImageElement;
+  still.alt = ''; still.decoding = 'async';
   const bar = made('div', 'position:absolute;left:0;right:0;bottom:max(7%,24px);display:flex;flex-wrap:wrap;justify-content:center;gap:14px;padding:0 16px');
   const play = made('button', PRIMARY) as HTMLButtonElement, skip = made('button', SECONDARY) as HTMLButtonElement;
   play.type = skip.type = 'button'; play.textContent = 'Spela'; skip.textContent = 'Hoppa över';
   bar.append(play, skip); root.append(video, still, bar); stage.append(root);
 
   let state = INTRO_START, layout = introLayout(1, 1), timer: ReturnType<typeof setTimeout> | null = null, watch: ReturnType<typeof setInterval> | null = null;
-  let lastTime = -1, still0 = 0, resolve: (value: {played: boolean}) => void = () => {};
+  let lastTime = -1, still0 = 0, posterGone = false, led = !options.onLead, resolve: (value: {played: boolean}) => void = () => {};
   const done = new Promise<{played: boolean}>(r => { resolve = r; });
   const place = (el: HTMLElement, box: Box) => { el.style.left = `${box.x}px`; el.style.top = `${box.y}px`; el.style.width = `${box.width}px`; el.style.height = `${box.height}px`; };
   const lay = () => { const r = stage.getBoundingClientRect(); layout = introLayout(r.width, r.height); if (state.phase !== 'fading') { place(video, layout.film); place(still, layout.film); } };
@@ -111,8 +122,14 @@ export function createIntro(stage: HTMLElement, canvas: HTMLCanvasElement, optio
   const key = (e: KeyboardEvent) => { if (e.key === 'Escape') { e.preventDefault(); send('skip'); } };
   doc.addEventListener('keydown', key, true);
   const clear = () => { if (timer !== null) clearTimeout(timer); if (watch !== null) clearInterval(watch); timer = watch = null; };
-  const onEnded = () => send('ended'), onError = () => send('error'), onTime = () => { if (video.currentTime >= posterUntil) still.style.visibility = 'hidden'; };
+  const leadNow = () => { if (led) return; led = true; try { options.onLead?.(); } catch { /* the page's own business never holds the game back */ } };
+  const onEnded = () => send('ended'), onError = () => send('error'), onStill = () => { if (!posterGone) still.style.visibility = 'visible'; };
+  const onTime = () => {
+    if (!posterGone && video.currentTime >= posterUntil) { posterGone = true; still.style.visibility = 'hidden'; }
+    if (!led && state.phase === 'playing' && video.duration - video.currentTime <= lead) leadNow(); // no duration yet: not a number, so not yet
+  };
   video.addEventListener('ended', onEnded); video.addEventListener('error', onError); video.addEventListener('timeupdate', onTime);
+  still.addEventListener('load', onStill); still.src = options.poster;
   play.addEventListener('click', () => send('play')); skip.addEventListener('click', () => send('skip'));
   play.focus({preventScroll: true});
 
@@ -127,7 +144,8 @@ export function createIntro(stage: HTMLElement, canvas: HTMLCanvasElement, optio
     bar.style.display = 'none';
     video.preload = 'auto'; video.muted = false; video.src = options.film;
     const frames = (video as {requestVideoFrameCallback?: (cb: () => void) => number}).requestVideoFrameCallback?.bind(video);
-    if (frames) { const look = () => { if (state.phase !== 'playing') return; onTime(); if (still.style.visibility !== 'hidden') frames(look); }; frames(look); }
+    // each frame the film shows, for as long as something waits on its time: the poster's frame, and the lead before its end
+    if (frames) { const look = () => { if (state.phase !== 'playing') return; onTime(); if (!posterGone || !led) frames(look); }; frames(look); }
     video.play().catch(() => send('error'));
     // a film that stops moving (a network that gives up) counts as failed
     watch = setInterval(() => { if (state.phase !== 'playing' || video.paused && video.ended) return; if (video.currentTime !== lastTime) { lastTime = video.currentTime; still0 = Date.now(); } else if (Date.now() - still0 > stall * 1000) send('error'); }, 500);
@@ -135,6 +153,7 @@ export function createIntro(stage: HTMLElement, canvas: HTMLCanvasElement, optio
   }
   function fadeOut() {
     clear(); bar.style.display = 'none';
+    if (state.played) leadNow(); // a film whose time was never read near its end: the lead comes late, but before the fade
     try { options.onFade?.(state.played); } catch { /* the page's own business never holds the game back */ }
     const seconds = layout.tall ? fade.tall : fade.lying;
     if (!state.played) video.pause();
@@ -155,7 +174,7 @@ export function createIntro(stage: HTMLElement, canvas: HTMLCanvasElement, optio
     clear(); resized?.disconnect(); doc.removeEventListener('keydown', key, true); root.removeEventListener('transitionend', onFaded);
     video.removeEventListener('ended', onEnded); video.removeEventListener('error', onError); video.removeEventListener('timeupdate', onTime);
     video.pause(); video.removeAttribute('src'); video.load(); // the browser lets go of the film's data
-    still.removeAttribute('src'); root.remove();
+    still.removeEventListener('load', onStill); still.removeAttribute('src'); root.remove();
     resolve({played: state.played});
   }
   return done;
