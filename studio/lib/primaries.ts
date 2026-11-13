@@ -21,7 +21,7 @@ import {
 } from "../../src/clip-graph.ts";
 import { isOutright, primaryOf } from "./edge-stats.ts";
 import { nodeCode, takeName } from "./names.ts";
-import { VERDICT_LABEL, verdictOf } from "./verdict.ts";
+import { VERDICT_LABEL, verdictOf, verdictPhrase } from "./verdict.ts";
 
 // The films of seat 4 Jakob called very good on 12 Nov (scene3d's own round): the first three proposals of the page.
 export const PRAISED = ["pamela-idle-ready-entry-01", "pamela-p4-c1-plan-deal-02", "pamela-p4-c1-plan-return-idle-01"] as const;
@@ -140,10 +140,10 @@ export function withPrimary(bank: BankData, graph: Graph, take: Take): BankData 
   return { ...bank, motions };
 }
 
-// "Giv 01 (variant)", "Giv 03 (underkänd, sekundär)", "Giv 01 (godkänd, granskarens)".
+// "Giv 01 (variant)", "Giv 03 (underkänd, sekundär)", "Giv 01 (godkänd, granskarens)", "Giv 02 (preliminärt godkänd, väntar på din dom)".
 const label = (take: Take, graph: Graph) => {
   const v = verdictOf(take);
-  const words = [VERDICT_LABEL[v.verdict].toLowerCase(), v.detail, v.byJakob || v.verdict === "vantar" ? null : "granskarens"].filter(Boolean);
+  const words = v.provisional ? [verdictPhrase(v)] : [VERDICT_LABEL[v.verdict].toLowerCase(), v.detail, v.byJakob || v.verdict === "vantar" ? null : "granskarens"].filter(Boolean);
   return `${takeName(take, graph.edge[take.edge]?.takes)} (${words.join(", ")})`;
 };
 // A take that would come in beside his choice: his own ✓ is fine, a variant or a reviewer's word is worth a look, a

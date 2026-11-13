@@ -4,7 +4,7 @@
 // Pure: no DOM, no network; tests in studio/tests/review.test.ts.
 import { hubOf, playable, type Edge, type Graph, type Take } from "../../src/clip-graph.ts";
 import { formatSeconds, takeFacts } from "./names.ts";
-import { awaitingJakob, verdictOf, VERDICTS, type Verdict } from "./verdict.ts";
+import { awaitingJakob, provisionalOf, verdictOf, VERDICTS, type Verdict } from "./verdict.ts";
 
 type EdgeLike = Pick<Edge, "id" | "kind" | "target" | "to" | "experiment">;
 
@@ -42,17 +42,23 @@ export function inReviewOrder(takes: readonly Take[], graph: Pick<Graph, "edge">
 /** decided: what Jakob chose for it in this sitting (MAIN, ACCEPTED, VARIANT, REJECTED), null while it waits. */
 export type QueueItem = { take: Take; edge: Edge; group: string; decided: string | null };
 
+/** The heading of the takes the main agent and a reviewer judged in Jakob's place: first in the queue. */
+export const PROVISIONAL_GROUP = "Preliminärt dömda · väntar på dig";
+
 /**
  * The takes waiting for Jakob (awaitingJakob: the same rule as the rail's count) and those he decided in this sitting,
- * which stay in the list ticked. A take he reset in this sitting waits again.
+ * which stay in the list ticked. A take he reset in this sitting waits again. Takes with a provisional verdict come
+ * first, under their own heading; the rest in dealing order.
  */
 export function reviewQueue(graph: Graph, sitting: ReadonlyMap<string, string>): { items: QueueItem[]; waiting: number } {
   const waiting = awaitingJakob(graph);
   const open = new Set(waiting.map((t) => t.id));
   const decided = [...sitting.keys()].filter((id) => !open.has(id) && graph.takes[id]).map((id) => graph.takes[id]);
-  const items = inReviewOrder([...waiting, ...decided], graph).map((take) => {
+  const provisional = (t: Take) => open.has(t.id) && !!provisionalOf(t.motion?.review);
+  const ordered = inReviewOrder([...waiting, ...decided], graph);
+  const items = [...ordered.filter(provisional), ...ordered.filter((t) => !provisional(t))].map((take) => {
     const edge = graph.edge[take.edge];
-    return { take, edge, group: reviewGroup(edge), decided: open.has(take.id) ? null : (sitting.get(take.id) ?? null) };
+    return { take, edge, group: provisional(take) ? PROVISIONAL_GROUP : reviewGroup(edge), decided: open.has(take.id) ? null : (sitting.get(take.id) ?? null) };
   });
   return { items, waiting: waiting.length };
 }

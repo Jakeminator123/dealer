@@ -202,3 +202,27 @@ test("every take: filters by verdict and seat, counts and reviewer notes", () =>
   ]);
   assert.deepEqual(reviewerNotes(graph.takes["idle-01"]), []);
 });
+
+test("Granska: takes judged provisionally come first in the queue under their own heading, and leave it with his decision", async () => {
+  const { applyProvisional, applyChange } = await import("../../tools/review-store.ts");
+  const { PROVISIONAL_GROUP } = await import("../lib/review.ts");
+  const data = bank();
+  const prov = (decision: "ACCEPTED" | "REJECTED") => applyProvisional({ decision: "PENDING", inbox: true }, { decision, by: "huvudagenten och en oberoende granskare", mandate: "Jakob 2026-11-13: bedöm de sista filmerna.", note: "n" }, "2026-11-13T03:00:00.000Z") as Review;
+  data.motions!["idle-03"] = { ...data.motions!["idle-03"], review: prov("ACCEPTED") };
+  data.motions!["d-deal-01"] = { ...data.motions!["d-deal-01"], review: prov("REJECTED") };
+  const graph = buildGraph(data);
+  const { items, waiting } = reviewQueue(graph, new Map());
+  assert.deepEqual(items.slice(0, 2).map((i) => [i.take.id, i.group]), [["d-deal-01", PROVISIONAL_GROUP], ["idle-03", PROVISIONAL_GROUP]]);
+  assert.ok(items.slice(2).every((i) => i.group !== PROVISIONAL_GROUP));
+  assert.equal(waiting, awaitingJakob(graph).length);
+  assert.equal(nextWaiting(items, null), "d-deal-01");
+  // The provisional approval plays like an approval; the provisional rejection does not play.
+  assert.equal(graph.takes["idle-03"].inbox, false);
+  assert.equal(graph.takes["d-deal-01"].decision, "REJECTED");
+  assert.equal(graph.edge["READY>D.C1"].main, null);
+  // His decision: the take leaves the provisional heading and is ticked as decided in this sitting.
+  data.motions!["idle-03"] = { ...data.motions!["idle-03"], review: applyChange(data.motions!["idle-03"].review, { decision: "REJECTED", note: "" }, "2026-11-13") as Review };
+  const after = reviewQueue(buildGraph(data), new Map([["idle-03", "REJECTED"]]));
+  assert.deepEqual(after.items.filter((i) => i.group === PROVISIONAL_GROUP).map((i) => i.take.id), ["d-deal-01"]);
+  assert.equal(after.items.find((i) => i.take.id === "idle-03")!.decided, "REJECTED");
+});

@@ -3,7 +3,7 @@
 // studio/tests/edge-stats.test.ts.
 import { GAP_LABEL, playable, resolveRound, type Edge, type Gap, type Graph, type Step, type Take, type Why } from "../../src/clip-graph.ts";
 import { edgeName, takeName } from "./names.ts";
-import { VERDICT_LABEL, verdictOf, type Verdict } from "./verdict.ts";
+import { verdictOf, verdictPhrase, type Verdict } from "./verdict.ts";
 
 // ── Takes in groups ─────────────────────────────────────────────────────────
 // accepted: Primär or Godkänd (his or a reviewer's). variants: accepted as a variant, or written from another READY pose
@@ -114,7 +114,7 @@ export function edgeInfo(graph: Graph, edgeId: string): EdgeInfo | null {
   const tag = edgeTag(now);
   const counts = edgeCounts(edge);
   const plays = now.take
-    ? `spelar ${takeName(now.take, graph.edge[now.take.edge]?.takes)} (${VERDICT_LABEL[verdictOf(now.take).verdict].toLowerCase()})`
+    ? `spelar ${takeName(now.take, graph.edge[now.take.edge]?.takes)} (${verdictPhrase(verdictOf(now.take))})`
     : tag.kind === "gap" ? tag.word : "";
   return { edge, now, tag, counts, title: `${edgeName(edge)} · ${plays} · ${countsText(counts)}` };
 }

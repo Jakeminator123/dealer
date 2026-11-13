@@ -6,7 +6,7 @@ import {mkdtemp, mkdir, readFile, writeFile, readdir, rm, copyFile} from 'node:f
 import {existsSync} from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import {reviewStore, applyChange, validateChange, NOTE_LIMIT} from './review-store.ts';
+import {reviewStore, applyChange, validateChange, applyProvisional, validateProvisional, refusesProvisional, DECISIONS, NOTE_LIMIT} from './review-store.ts';
 
 const base = existsSync('D:/dealer-scratch/tmp') ? 'D:/dealer-scratch/tmp' : os.tmpdir();
 async function temp(t: {after(fn: () => Promise<void>): void}) {
@@ -83,4 +83,44 @@ test('a real tracked record survives a round of decisions with everything outsid
   assert.deepEqual(kept, rest); assert.deepEqual(Object.keys(after), Object.keys(original)); assert.ok(text.endsWith('}\n'));
   assert.equal(now.decision, 'PENDING'); assert.equal(now.userAccepted, false); assert.equal(now.acceptedAs, undefined); assert.equal(now.userReview, undefined);
   for (const key of ['basis', 'limitations', 'agentFirstVerdict', 'colorDoesNotProvePhysicalSide', 'productionReady']) assert.deepEqual(now[key], was[key], key);
+});
+
+test('a provisional verdict plays like a decision but is never his, and his next decision takes it away', async t => {
+  const mandate = 'Jakob 2026-11-13: "Tillsammans med videogranskaren, som är duktig, bedöm de sista filmerna, för jag måste sova."';
+  const change = (decision: string, note = 'Handen landar rent på f88.') => validateProvisional({decision, by: 'huvudagenten och en oberoende granskare', mandate, note});
+  const inbox = {decision: 'PENDING', basis: 'b', userAccepted: false, inbox: true};
+  const at = '2026-11-13T03:10:00.000Z';
+  assert.deepEqual(applyProvisional(inbox, change('ACCEPTED'), at), {decision: 'ACCEPTED', basis: 'b', userAccepted: false,
+    provisional: {by: 'huvudagenten och en oberoende granskare', at, mandate, note: 'Handen landar rent på f88.'}});
+  assert.equal(applyProvisional(inbox, change('VARIANT'), at).acceptedAs, 'VARIANT');
+  const rejected = applyProvisional(inbox, change('REJECTED', 'Kortet glider.'), at);
+  assert.equal(rejected.decision, 'REJECTED'); assert.equal(rejected.inbox, undefined); assert.equal(rejected.userReview, undefined); assert.equal(rejected.userAccepted, false);
+  // An earlier provisional verdict may be replaced; a plain approval takes the variant marker away.
+  const again = applyProvisional(applyProvisional(inbox, change('VARIANT'), at), change('ACCEPTED', 'Ändå bäst.'), '2026-11-13T04:00:00.000Z');
+  assert.equal(again.acceptedAs, undefined); assert.deepEqual(again.provisional, {by: 'huvudagenten och en oberoende granskare', at: '2026-11-13T04:00:00.000Z', mandate, note: 'Ändå bäst.'});
+  // Refused where his verdict stands: his words, or a decision without a provisional block.
+  assert.throws(() => applyProvisional({decision: 'PENDING', userReview: 'Jakob 2026-11-12: nej'}, change('ACCEPTED'), at), fails(409));
+  assert.throws(() => applyProvisional({decision: 'ACCEPTED', userAccepted: true, userReview: 'Jakob 2026-11-12: ja'}, change('REJECTED'), at), fails(409));
+  assert.throws(() => applyProvisional({decision: 'REJECTED'}, change('ACCEPTED'), at), fails(409));
+  assert.equal(refusesProvisional(null), null); assert.equal(refusesProvisional({decision: 'PENDING', inbox: true}), null); assert.equal(refusesProvisional(rejected), null);
+  // Never MAIN, every field required, the note as long as his may be.
+  for (const bad of [{decision: 'MAIN', by: 'a', mandate: 'm', note: 'n'}, {decision: 'ACCEPTED', by: '', mandate: 'm', note: 'n'}, {decision: 'ACCEPTED', by: 'a', mandate: 'm'},
+    {decision: 'ACCEPTED', by: 'a', mandate: 'm', note: 'x'.repeat(NOTE_LIMIT + 1)}, {decision: 'ACCEPTED', by: 'a', mandate: 'm', note: 'n', userReview: 'Jakob'}, null])
+    assert.throws(() => validateProvisional(bad), fails(400));
+  // His decision, whatever it is, a reset included, removes the provisional block.
+  for (const decision of DECISIONS) {
+    const after = applyChange(applyProvisional(inbox, change('ACCEPTED'), at), validateChange({decision, note: ''}), '2026-11-13');
+    assert.equal(after.provisional, undefined, decision);
+  }
+  // Through the store: the revision guard and an untouched rest of the record, as for his decisions.
+  const root = await temp(t), before = await put(root, {...record(), review: {...record().review, inbox: true}} as ReturnType<typeof record>), store = reviewStore(root, () => '2026-11-13', () => at);
+  const read = await store.load('pamela-test-01');
+  await assert.rejects(store.saveProvisional('pamela-test-01', change('ACCEPTED'), '"stale"'), fails(409));
+  const saved = await store.saveProvisional('pamela-test-01', change('ACCEPTED'), read.revision);
+  const text = await readFile(path.join(root, 'motions/pamela-test-01.json'), 'utf8');
+  assert.equal(text, JSON.stringify({...JSON.parse(before), review: saved.review}, null, 2) + '\n');
+  assert.equal(saved.review.inbox, undefined); assert.equal((saved.review.provisional as {at: string}).at, at);
+  const his = await store.save('pamela-test-01', {decision: 'REJECTED', note: 'nej'}, saved.revision);
+  assert.equal(his.review.provisional, undefined); assert.equal(his.review.userReview, 'Jakob 2026-11-13: nej');
+  await assert.rejects(store.saveProvisional('pamela-test-01', change('ACCEPTED'), his.revision), fails(409));
 });

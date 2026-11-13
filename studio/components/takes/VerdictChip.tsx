@@ -1,8 +1,9 @@
 // <VerdictChip verdict="godkand" byJakob={false} size="sm|md" />: a verdict as sign AND colour (never colour alone).
 // <TakeChip take={take} /> reads it from a take; <ProofChip verdict="remarks" /> is the same chip for a proof file.
-// A decision that is not Jakob's own (a reviewer's) is drawn with a dashed edge, and md says "granskare".
+// A decision that is not Jakob's own (a reviewer's) is drawn with a dashed edge, and md says "granskare". A provisional
+// verdict (lib/verdict.ts provisionalOf) is dashed too and says "Preliminär" (md: "Preliminär · godkänd av granskaren").
 import type { Take } from "../../../src/clip-graph.ts";
-import { PROOF_VERDICT_LABEL, VERDICT_LABEL, VERDICT_SIGN, verdictOf, type ProofVerdict, type Verdict } from "../../lib/verdict.ts";
+import { PROOF_VERDICT_LABEL, VERDICT_LABEL, VERDICT_SIGN, provisionalChip, verdictOf, type ProofVerdict, type Verdict } from "../../lib/verdict.ts";
 import { cn } from "../ui/cn";
 
 type Tone = Verdict | "anmarkning";
@@ -59,6 +60,7 @@ export function VerdictChip({
   verdict,
   byJakob = true,
   detail = null,
+  provisional = false,
   size = "md",
   className,
 }: {
@@ -67,9 +69,15 @@ export function VerdictChip({
   byJakob?: boolean;
   /** A word more, shown in md and in the tooltip: "sekundär", "renderas". */
   detail?: string | null;
+  /** The main agent and a reviewer judged it in Jakob's place; it waits for his word. */
+  provisional?: boolean;
   size?: "sm" | "md";
   className?: string;
 }) {
+  if (provisional && verdict !== "vantar" && verdict !== "primar") {
+    const [label, ...rest] = provisionalChip({ verdict }).split(" · ");
+    return <Chip tone={verdict} sign={VERDICT_SIGN[verdict]} label={label} note={rest.join(" · ")} solid={false} size={size} title={`${provisionalChip({ verdict })} · inte Jakobs dom, väntar på honom`} className={className} />;
+  }
   const reviewer = !byJakob && verdict !== "vantar";
   const note = [detail, reviewer ? "granskare" : null].filter(Boolean).join(" · ") || null;
   const title = [VERDICT_LABEL[verdict], detail, reviewer ? "av granskare, inte Jakob" : verdict === "vantar" ? null : "Jakobs beslut"].filter(Boolean).join(" · ");
@@ -79,7 +87,7 @@ export function VerdictChip({
 /** The chip of one take, read from its review (lib/verdict.ts verdictOf). */
 export function TakeChip({ take, size = "md", className }: { take: Parameters<typeof verdictOf>[0] | Take; size?: "sm" | "md"; className?: string }) {
   const v = verdictOf(take);
-  return <VerdictChip verdict={v.verdict} byJakob={v.byJakob} detail={v.detail} size={size} className={className} />;
+  return <VerdictChip verdict={v.verdict} byJakob={v.byJakob} detail={v.detail} provisional={v.provisional} size={size} className={className} />;
 }
 
 const PROOF_TONE: Record<ProofVerdict, { tone: Tone; sign: string }> = {

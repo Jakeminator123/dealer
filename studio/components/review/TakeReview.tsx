@@ -3,7 +3,8 @@
 // <TakeReview take={take} edge={edge} … />: one take, large, for Jakob's decision: its name in his words (the step
 // "A2.1 → P4C1" and the take's short name), the film, what a reviewer noted (two lines, more on demand), the decision
 // bar, "Ursprung" (what the film was made from, folded), and "Jämför mot primär" when the step has another film. Space
-// plays, ← → step a frame.
+// plays, ← → step a frame. A take judged provisionally in his place (review.provisional) shows that verdict and its note
+// above his buttons, marked as not his; his click replaces it.
 import { ArrowLeftRight, ChevronLeft, ChevronRight, Undo2 } from "lucide-react";
 import Link from "next/link";
 import { useMemo, useRef, type Ref } from "react";
@@ -11,7 +12,7 @@ import { describeEdge, type Edge, type Take } from "../../../src/clip-graph.ts";
 import type { Decision } from "../../lib/api.ts";
 import { edgeName, factsLine, takeFacts, takeNames } from "../../lib/names.ts";
 import { comparePair, playableFilm, reviewerNotes } from "../../lib/review.ts";
-import { VERDICT_LABEL, type Verdict } from "../../lib/verdict.ts";
+import { VERDICT_LABEL, provisionalChip, provisionalOf, verdictOf, type Verdict } from "../../lib/verdict.ts";
 import { compareHref } from "../compare/ChoiceList";
 import { FilmPlayer, type FilmMark, type FilmPlayerHandle } from "../player";
 import { DecisionBar, TakeChip } from "../takes";
@@ -63,6 +64,7 @@ export function TakeReview({
   const marks: FilmMark[] = take.landingFrame !== null ? [{ frame: take.landingFrame, label: "Landning", kind: "landing" }] : [];
   const decisionBox = useRef<HTMLDivElement>(null);
   const { graph } = useBank();
+  const provisional = provisionalOf(take.motion?.review);
 
   return (
     <div className="flex h-full min-h-0 flex-col gap-3 overflow-y-auto px-5 pb-4 pt-4 [scrollbar-gutter:stable]">
@@ -130,6 +132,16 @@ export function TakeReview({
 
       <div ref={decisionBox} className={cn("rounded-lg border bg-surface px-4 py-3", undoing ? "border-brass/50" : "border-line")}>
         {undoing ? <p className="mb-2 text-sm text-brass-hi">Ångra: beslutet kunde inte tas tillbaka. Välj igen, eller Återställ så väntar den igen.</p> : null}
+        {provisional ? (
+          <div className="mb-3 rounded-md border border-dashed border-line-strong bg-well px-3 py-2 text-sm leading-5">
+            <p className="text-xs text-faint">
+              {provisionalChip(verdictOf(take))} · inte din dom · {provisional.by}
+              {provisional.at ? `, ${provisional.at.slice(0, 10)}` : ""}. Ditt beslut ersätter den.
+            </p>
+            {provisional.note ? <p className="mt-1 text-dim">{provisional.note}</p> : null}
+            {provisional.mandate ? <p className="mt-1 text-2xs text-faint">På ditt uppdrag: {provisional.mandate}</p> : null}
+          </div>
+        ) : null}
         <DecisionBar ref={barRef} take={take} compact onSaved={onSaved} />
       </div>
 

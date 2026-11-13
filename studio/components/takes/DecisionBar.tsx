@@ -15,7 +15,7 @@ import { ApiError, NOTE_LIMIT, putDecision, type Decision } from "../../lib/api.
 import { useOptionalBank } from "../../lib/bank.ts";
 import { decide as write } from "../../lib/decide.ts";
 import { isSnapshot } from "../../lib/mode.ts";
-import { chosenDecision, reviewStamp, storedNote } from "../../lib/verdict.ts";
+import { chosenDecision, provisionalOf, reviewStamp, storedNote } from "../../lib/verdict.ts";
 import { Badge } from "../ui/Badge";
 import { cn } from "../ui/cn";
 import { Spinner } from "../ui/Spinner";
@@ -167,7 +167,8 @@ function DecisionButtons({ take, demo = false, compact = false, help = true, onS
   const ready = take.stage === "DONE" && !!take.revision;
   const blocked = take.stage !== "DONE" ? "Beslut kan sättas när filmen är klar." : !take.revision ? "Kan inte sparas ännu: tagningen har ingen post i motions/." : null;
   const can = (demo || ready) && !saving;
-  const hasWord = !!take.motion?.review?.userReview;
+  // A provisional verdict can be reset as his own decision can (it then waits, without it).
+  const hasWord = !!take.motion?.review?.userReview || !!provisionalOf(take.motion?.review);
 
   // A button of the bar: Återställ asks for a second click first.
   function decide(decision: Decision) {

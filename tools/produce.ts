@@ -27,7 +27,7 @@ import { SEATS, bankEdges, buildGraph, parseEdge, roundSequence, type BankData, 
 import { ANCHOR_NODE, ANCHOR_ROLE, FLIP_AXES, LANDING_ROLE, MODELS, SHOWN_LABEL, landingNode, referenceCandidates, seatWords, stepOf, type BankFacts, type FlipAxis, type Order, type Shown, type StepKey } from '../src/order-model.ts';
 import { methodFor, readMethods, recipeWords, type Method, type MethodRegister } from '../src/order-methods.ts';
 import { bankSummary, playing, type Summary } from '../studio/lib/edge-stats.ts';
-import { VERDICT_LABEL, verdictOf, type Verdict } from '../studio/lib/verdict.ts';
+import { VERDICT_LABEL, verdictOf, verdictPhrase, type Verdict } from '../studio/lib/verdict.ts';
 import type { Entry } from '../studio/lib/media.ts';
 import { mediaRoles } from './media-roles.ts';
 import { orderStore, type NewOrder } from './order-store.ts';
@@ -113,9 +113,10 @@ export type ProductionRow = {
   /** A round needs it (roundSequence with every seat, the dealer and the hole card turned, and the rest between). */
   needed: boolean;
   have: Have;
-  /** The take that plays now, and whether the verdict is Jakob's own. */
+  /** The take that plays now, and whether the verdict is Jakob's own, or provisional (given in his place, waiting for his). */
   take: string | null;
   byJakob: boolean;
+  provisional: boolean;
   orders: InFlight[];
   step: StepKey | null;
   /** The method of record, its recipe as it would be ordered for this seat, and the reference film chosen (a take of the bank). */
@@ -137,7 +138,8 @@ export type Production = {
   rows: ProductionRow[];
   anchors: Anchor[];
   landings: string[];
-  counts: { total: number; done: number; needed: number; neededDone: number; missing: number; byState: Record<RowState, number> };
+  /** provisional: of the klar steps, those whose verdict is provisional (tools/review-put.ts), still waiting for his. */
+  counts: { total: number; done: number; needed: number; neededDone: number; missing: number; provisional: number; byState: Record<RowState, number> };
   /** Karta's own count over the same graph (bankSummary): its "saknas" is counts.missing. */
   karta: Summary;
   notes: string[];
@@ -256,7 +258,7 @@ export function productionList(input: ProductionInput): Production {
     else if (needs.length) state = 'VÄNTAR';
     else state = method.status === 'gäller' ? 'KAN' : 'PROV';
     const words =
-      state === 'KLAR' ? `klar · ${VERDICT_LABEL[have as Verdict].toLowerCase()}${v && !v.byJakob ? ' (granskaren)' : ''}`
+      state === 'KLAR' ? `klar · ${v?.provisional ? verdictPhrase(v) : `${VERDICT_LABEL[have as Verdict].toLowerCase()}${v && !v.byJakob ? ' (granskaren)' : ''}`}`
       : state === 'BESTÄLLD' && flying.some((f) => f.approved && f.delivered) ? 'levererad, efterarbetas och granskas'
       : state === 'MED_GIVEN' ? `kommer med given till ${cardWords(edge.target!)} (tur och retur)`
       : state === 'VÄNTAR' ? `väntar på ${needs.join(' och ')}`
@@ -273,7 +275,7 @@ export function productionList(input: ProductionInput): Production {
       ? { path: anchor.path ?? null, frame: null, waits: null, cards }
       : { path: null, frame: null, waits: def ? anchorWords(shownAnchor!) : 'bild utan henne', cards };
     rows.push({
-      edge: id, label: stepLabel(edge), kind: edge.kind, target: edge.target, needed: needed.has(id), have, take: now.take?.id ?? null, byJakob: !!v?.byJakob,
+      edge: id, label: stepLabel(edge), kind: edge.kind, target: edge.target, needed: needed.has(id), have, take: now.take?.id ?? null, byJakob: !!v?.byJakob, provisional: !!v?.provisional,
       orders: flying, step: at?.step ?? null, method: method ? { id: method.id, status: method.status, recipe: recipeWords(method, withoutReference), reference } : null, needs,
       comesWith: state === 'MED_GIVEN' ? dealEdge : null, state, words, orderable,
       draft: orderable && method && at ? draftOf(input, { label: stepLabel(edge), edge: id }, at, withoutReference ? { ...method, model: method.noReferenceModel!, reference: 'ingen' } : method, reference, orderable === 'PROV') : null,
@@ -293,7 +295,7 @@ export function productionList(input: ProductionInput): Production {
   const byState = Object.fromEntries(ROW_STATES.map((s) => [s, rows.filter((r) => r.state === s).length])) as Record<RowState, number>;
   const counts = {
     total: rows.length, done: byState.KLAR, needed: rows.filter((r) => r.needed).length, neededDone: rows.filter((r) => r.needed && r.state === 'KLAR').length,
-    missing: rows.filter((r) => r.have === 'saknas').length, byState,
+    missing: rows.filter((r) => r.have === 'saknas').length, provisional: rows.filter((r) => r.state === 'KLAR' && r.provisional).length, byState,
   };
   const notes = [
     'Dealerns tredje kort (D.C3) är valfritt och räknas inte bland stegen: READY>D.C3 och D.C3>IDLE.',
@@ -395,7 +397,7 @@ const SIGN: Record<RowState, string> = { KLAR: '✓', DOM: '○', BESTÄLLD: '�
 export function printList(list: Production): string {
   const lines: string[] = [];
   const c = list.counts;
-  lines.push(`Produktionslistan för ${list.dealer.name}: ${c.done} av ${c.total} klara, ${c.neededDone} av ${c.needed} som en runda kräver. Karta: ${list.karta.missing} saknas.`);
+  lines.push(`Produktionslistan för ${list.dealer.name}: ${c.done} av ${c.total} klara${c.provisional ? ` (${c.provisional} preliminärt dömda, väntar på din dom)` : ''}, ${c.neededDone} av ${c.needed} som en runda kräver. Karta: ${list.karta.missing} saknas.`);
   const flight = (o: InFlight) => `${o.id} (${SHOWN_LABEL[o.shown].toLowerCase()})`;
   lines.push(`Ankare: ${list.anchors.map((a) => `${a.at} ${a.state}${a.orders.length ? ` (${a.orders.map(flight).join(', ')})` : ''}`).join(' · ')}. Landningsbilder: ${list.landings.length ? list.landings.join(', ') : 'inga'}.`);
   lines.push(`Läge: ${ROW_STATES.filter((s) => c.byState[s]).map((s) => `${c.byState[s]} ${ROW_STATE_LABEL[s]}`).join(', ')}.`);

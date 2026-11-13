@@ -69,11 +69,12 @@ function StepCard({ row, plan, dealer, onOpen }: { row: ProductionRow; plan: Pla
         </p>
         <Badge tone={chip.tone} className="self-start" title={row.words}>
           <span aria-hidden>{chip.sign}</span> {chip.word}
+          {row.state === "KLAR" && row.provisional ? " · preliminär" : ""}
         </Badge>
         <p className="line-clamp-2 text-xs leading-4 text-dim" title={row.method?.recipe}>
           {row.state === "KAN" || row.state === "PROV" ? (row.method?.recipe ?? row.words) : row.words}
         </p>
-        {row.state === "DOM" && row.take ? (
+        {(row.state === "DOM" || (row.state === "KLAR" && row.provisional)) && row.take ? (
           <Link href={dealerHref(`/granska/?tagning=${encodeURIComponent(row.take)}`, dealer)} className="text-xs text-brass-hi hover:underline">
             Döm i Granska
           </Link>
@@ -160,6 +161,11 @@ export function Production({ dealer, dealerName, plan, onOpen, onMade }: { deale
           <span className="text-sm text-dim">· {dealerName}</span>
         </button>
         <span className="text-sm tabular-nums text-ink">{productionCount(list.counts)}</span>
+        {list.counts.provisional ? (
+          <span className="text-sm tabular-nums text-vantar" title="Dömda av huvudagenten och en granskare medan du sov. De spelas, men väntar på din dom i Granska.">
+            · {list.counts.provisional} av de klara preliminärt dömda, väntar på din dom
+          </span>
+        ) : null}
         <div className="ml-auto flex items-center gap-2">
           {open ? (
             <button type="button" onClick={() => setAll((a) => !a)} className="text-sm text-dim hover:text-ink hover:underline">
