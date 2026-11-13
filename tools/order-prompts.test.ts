@@ -6,7 +6,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile, readdir } from 'node:fs/promises';
-import { BANS_FILM, BANS_STILL, LONG_VERSION, SAY, TEMPLATE_VERSION, bansFor, handsIn, orderPrompt, placeWords, promptFor, turnSentence, wordCount, type DealMotion } from '../src/order-prompts.ts';
+import { BANS_FILM, BANS_STILL, LONG_VERSION, SAY, TEMPLATE_VERSION, bansFor, handsIn, orderPrompt, placeWords, promptFor, turnSentence, whereShort, wordCount, type DealMotion } from '../src/order-prompts.ts';
 import { STEPS, TEXT_STYLES, type StepKey, type TextStyle } from '../src/order-model.ts';
 
 const paow = { name: 'Paow', look: 'a young, slim woman in a black blazer' };
@@ -28,17 +28,17 @@ test('every Utförlig text ends with what must not happen, a short or minimal on
       const bans = step.kind === 'STILL' ? BANS_STILL : step.card && step.start !== 'LAND' ? bansFor(motion) : BANS_FILM;
       assert.ok(text.endsWith(bans), at);
       assert.deepEqual(parts.filter((p) => p.text).at(-1)!.from, ['bans']);
-      assert.match(template, step.start === 'LAND' ? /^film-retur@4$/ : new RegExp(`@${LONG_VERSION}$`), `${at}: template 3's own text where there is one`);
+      assert.match(template, step.start === 'LAND' ? new RegExp(`^film-retur@${TEMPLATE_VERSION}$`) : new RegExp(`@${LONG_VERSION}$`), `${at}: template 3's own text where there is one`);
     } else {
       const expected = step.kind === 'STILL' ? 'KORT' : style; // a still has no minimal text
       assert.equal(written, expected, at);
       assert.equal(template.split('@')[1], String(TEMPLATE_VERSION));
-      assert.match(template, new RegExp(`-${expected === 'KORT' ? 'kort' : 'minimal'}@4$`), at);
+      assert.match(template, new RegExp(`-${expected === 'KORT' ? 'kort' : 'minimal'}@${TEMPLATE_VERSION}$`), at);
       assert.doesNotMatch(text, /Nothing of this happens|\bnot\b|\bno\b|\bnever\b|n't|without/i, `${at}: positive statements only`);
       assert.doesNotMatch(text, /blonde|blazer|black blazer|young/, `${at}: nothing of her look`);
     }
   }
-  assert.equal(TEMPLATE_VERSION, 4);
+  assert.equal(TEMPLATE_VERSION, 5);
   assert.equal(LONG_VERSION, 3);
   for (const ban of ['a second card', 'a finger passes through the card', 'grows or shrinks', 'hovers in the air', 'the picture cuts']) assert.ok(BANS_FILM.includes(ban), ban);
   assert.equal(bansFor(null), BANS_FILM, 'without a motion the bans are the film bans');
@@ -249,7 +249,7 @@ test('every order on disk keeps reproducing its text and template: the long text
     const order = JSON.parse(await readFile(`data/orders/${name}`, 'utf8'));
     if (order.kind === 'STILL' && order.approval) continue; // a still approved on an older wording keeps its frozen text
     const dealer = dealers.find((d: { id: string }) => d.id === order.dealer);
-    const p = orderPrompt(order, dealer, null);
+    const p = orderPrompt(order, dealer, null, { asStored: true }); // with the version it was written with (template 4 or 5)
     assert.equal(p.template, order.prompt.template, `${order.id}: template`);
     assert.equal(p.style, order.prompt.style ?? 'UTFÖRLIG', `${order.id}: style`);
     // The place words come from the drawn card; a deal without one (bara dit) is checked in the studio's test with the plan.
@@ -270,10 +270,31 @@ test('a card drawn larger than the plan: no sentence says it keeps its size; the
     const long = promptFor({ dealer: paow, step: grip === 'PINCH' ? 'GIV-2.1' : 'GIV-2.2', model: 'kling-4', motion: { ...m, grip, flipAxis }, style: 'UTFÖRLIG', cardScale: 1.5 });
     assert.doesNotMatch(long.text, /same size and shape|as it does in the shoe|keeping its size|grows or shrinks/, `${grip} ${flipAxis}`);
     assert.match(long.text, /lands at the size shown in the last frame/);
-    assert.equal(long.template, 'film-giv@4', 'not template 3\'s own text');
+    assert.equal(long.template, `film-giv@${TEMPLATE_VERSION}`, 'not template 3\'s own text');
     assert.ok(long.text.endsWith(bansFor({ ...m, grip, flipAxis }, false)));
   }
   const plain = promptFor({ dealer: paow, step: 'GIV-2.1', model: 'kling-4', motion: m, style: 'UTFÖRLIG', cardScale: 1 });
   assert.equal(plain.text, promptFor({ dealer: paow, step: 'GIV-2.1', model: 'kling-4', motion: m, style: 'UTFÖRLIG' }).text, 'the plan\'s size: template 3 as it was');
   for (const style of ['KORT', 'MINIMAL'] as const) assert.doesNotMatch(promptFor({ dealer: paow, step: 'GIV-2.1', model: 'kling-4', motion: m, style, cardScale: 2 }).text, /size/, style);
+});
+
+test('template 5: the short deal says where the place is, with words of its own for every seat; a template 4 order is reproduced without them', () => {
+  const dealer = { name: 'Paow', look: 'x' };
+  const motion: DealMotion = { grip: 'PINCH', hand: 'LH', pass: false, turn: true, flipAxis: 'FREE', side: 'FRONT' };
+  const at = (x: number, version?: number) => promptFor({ dealer, step: 'GIV-2.1', model: 'wan3', motion, place: { x, y: 1000 }, style: 'KORT', version });
+  // The seven seats of the plan in bank pixels (P1 … P7), and the dealer's own card close to her.
+  const seats = [237, 437, 643, 856, 1073, 1283, 1488];
+  assert.equal(new Set(seats.map((x) => whereShort({ x, y: 1000 }))).size, 7, 'no two seats share their words');
+  assert.match(at(237).text, /towards its place at the far left of the picture, where the last frame shows it\./);
+  assert.match(at(856).text, /its place in the middle of the picture, where the last frame shows it/);
+  assert.match(at(1488).text, /its place at the far right of the picture, in front of the shoe, where the last frame shows it/);
+  assert.match(whereShort({ x: 850, y: 927 }), /^close in front of her, in the middle of the picture/);
+  const closed = promptFor({ dealer, step: 'GIV-2.1', model: 'wan3', motion: { ...motion, turn: false, flipAxis: null, side: 'BACK' }, place: { x: 237, y: 1000 }, style: 'KORT' });
+  assert.match(closed.text, /yellow side up, to its place at the far left of the picture, where the last frame shows it\. She lays it flat there/);
+  assert.equal(at(237).template, `film-giv-kort@${TEMPLATE_VERSION}`);
+  // Rounds 2 and 3 were written with template 4 ("to its place" alone): reproduced as they were, under their own name.
+  const old = at(237, 4);
+  assert.doesNotMatch(old.text, /far left|last frame shows/);
+  assert.match(old.text, /towards its place\./);
+  assert.equal(old.template, 'film-giv-kort@4');
 });

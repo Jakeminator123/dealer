@@ -24,13 +24,18 @@
 // poseOnShoe), so that only the hand's place and grip can be taken from it. Tests: tools/order-prompts.test.ts.
 import type { FlipAxis, StepKey, TextStyle } from './order-model.ts';
 
-/** The formula's version: the short and minimal texts are @4; Utförlig keeps @3 where its text is template 3's own. */
-export const TEMPLATE_VERSION = 4;
+/**
+ * The formula's version. 4: the short and minimal texts (Utförlig keeps @3 where its text is template 3's own).
+ * 5 (2026-11-13): the short deal says where the card's place is, after rounds 3 and 3b laid the card in front of her.
+ */
+export const TEMPLATE_VERSION = 5;
 /** The version of the long text (template 3, 2026-11-13); Utförlig writes it unchanged. */
 export const LONG_VERSION = 3;
 export type Dealer = { name: string; look: string };
 export type DealMotion = { grip: 'PINCH' | 'DRAG'; hand?: 'LH' | 'RH'; pass?: boolean; turn: boolean; flipAxis: FlipAxis | null; side: 'FRONT' | 'BACK' };
 export type PromptInput = {
+  /** The formula's version the text is written with (absent: today's). An order stored with an older one is reproduced with it. */
+  version?: number;
   dealer: Dealer;
   step: StepKey;
   model: string;
@@ -185,6 +190,24 @@ export function placeWords(place: { x: number; y: number }): string {
   return near + across;
 }
 
+/**
+ * Where a card's place is, for the short text: one phrase per seat of the plan, so that the hand goes there. Without it
+ * ("to its place" alone, template 4) WAN 3 laid the card in front of her at five of six other seats than the middle ones
+ * and let the last frame's card appear by itself (rounds 3 and 3b, 2026-11-13).
+ */
+export function whereShort(place: { x: number; y: number }): string {
+  const x = place.x;
+  const across =
+    x < 340 ? 'at the far left of the picture'
+    : x < 540 ? 'well to the left of the middle of the picture'
+    : x < 760 ? 'a little to the left of the middle of the picture'
+    : x <= 960 ? 'in the middle of the picture'
+    : x <= 1180 ? 'a little to the right of the middle of the picture'
+    : x <= 1390 ? 'well to the right of the middle of the picture, in front of the shoe'
+    : 'at the far right of the picture, in front of the shoe';
+  return (place.y < 960 ? 'close in front of her, ' : '') + across + ', where the last frame shows it';
+}
+
 /** What the dealer's standard says about the body, for a still made as an edit of @anchor. */
 export const STANDARD_STILL =
   "She sits on a chair that is not in the picture: her elbows hang free at her sides and her forearms come down to the felt; nothing supports her elbows or forearms. Her jacket continues down to the same straight horizontal line where her body is cut off in @anchor, with no green between the jacket and that line. The green is one even colour everywhere, right up to her outline: no shadows under or beside her arms, her hands, the card or the shoe. Soft, even frontal studio light; natural skin with fine texture, sharp eyes, matte black cloth with soft folds.";
@@ -335,7 +358,10 @@ function shortDeal(input: PromptInput): Prompt {
   // Back up along the felt to the place: a closed card, or one turned at the place; else turned on the way.
   const alongFelt = !open || m.flipAxis === 'AT_PLACE';
   const out = drag ? SAY.slideOut : SAY.pinchOut;
-  const carry = alongFelt ? (drag && !pass ? SAY.dragBack : SAY.carryBack) : drag && !pass ? SAY.liftTowards : SAY.carryTowards;
+  // The place in words (from template 5): the last frame shows it, and the text says which way the hand goes.
+  const carryTo = alongFelt ? (drag && !pass ? SAY.dragBack : SAY.carryBack) : drag && !pass ? SAY.liftTowards : SAY.carryTowards;
+  const placed = !!input.place && (input.version ?? TEMPLATE_VERSION) >= 5;
+  const carry = placed ? carryTo.replace('its place', 'its place ' + whereShort(input.place!)) : carryTo;
   const take =
     pass ? `${SAY.handAtShoe} ${out} and ${SAY.handover} ${carry.replace('carries it', 'carries it on')}.`
     : takes === 'RH' ? `${SAY.otherReaches} ${out} and ${carry}.`
@@ -346,7 +372,7 @@ function shortDeal(input: PromptInput): Prompt {
   const parts: Part[] = [
     { text: SAY.camera, from: [] },
     referencePart(input),
-    { text: take, from: ['hand', ...(alongFelt ? ([open ? 'turn' : 'side'] as Choice[]) : [])] },
+    { text: take, from: ['hand', ...(placed ? (['place'] as Choice[]) : []), ...(alongFelt ? ([open ? 'turn' : 'side'] as Choice[]) : [])] },
     { text: turn, from: open ? ['turn'] : ['side'] },
     { text: back, from: input.oneWay ? ['shape'] : ['hand'] },
     { text: own ? SAY.otherRests : '', from: ['hand'] },
@@ -459,6 +485,13 @@ function restText(input: PromptInput, style: TextStyle = 'UTFÖRLIG'): Prompt {
  * the template it came from ("film-giv-kort@4", "film-giv@3") and its parts with the choices they come from.
  */
 export function promptFor(input: PromptInput): Prompt {
+  const p = written(input);
+  // An older version's text is today's but for what the version changed (the place words of 5); its name keeps its number.
+  const today = '@' + TEMPLATE_VERSION;
+  return input.version && input.version !== TEMPLATE_VERSION && p.template.endsWith(today) ? { ...p, template: p.template.slice(0, -today.length) + '@' + input.version } : p;
+}
+
+function written(input: PromptInput): Prompt {
   const style = input.style ?? 'KORT';
   switch (input.step) {
     case 'ANKARE-2.1':
@@ -496,12 +529,16 @@ export function orderPrompt(
     motion: (DealMotion & { target?: string | null; cardScale?: number }) | null;
     generation: { model: string };
     pictures: readonly { goesAs: string; drawn?: { centre: [number, number] } | null }[];
-    prompt: { extra: string | null; style?: TextStyle | null };
+    prompt: { extra: string | null; style?: TextStyle | null; template?: string };
     reference?: { status: string } | null;
   },
   dealer: Dealer,
   planPlace: { x: number; y: number } | null,
+  /** asStored: with the version in the order's own template name (an approved order is reproduced, not rewritten). */
+  options: { asStored?: boolean } = {},
 ): Prompt {
+  const at = (order.prompt.template ?? '').lastIndexOf('@');
+  const stored = options.asStored && at >= 0 ? Number(order.prompt.template!.slice(at + 1)) || undefined : undefined;
   const drawn = order.pictures.find((p) => p.goesAs === 'endFrame')?.drawn ?? null;
   const place = drawn ? { x: drawn.centre[0], y: drawn.centre[1] } : planPlace;
   const m = order.motion;
@@ -514,5 +551,6 @@ export function orderPrompt(
     oneWay: deal && order.step.shape === 'ONE_WAY',
     reference: order.reference?.status === 'FINNS',
     cardScale: m?.cardScale ?? 1,
+    version: stored,
   });
 }

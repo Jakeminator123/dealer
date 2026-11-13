@@ -276,7 +276,7 @@ export const markOf = (part: Part): Choice | null => (part.from.find((c) => CHOI
 export function storedParts(order: Order, look: string | null | undefined, plan: PlanAnswer | null | undefined, dealerName: string): Part[] | null {
   if (!look) return null;
   const seat = order.motion?.target ? plan?.seats[order.motion.target] : null;
-  const prompt = orderPrompt(order, { name: dealerName, look }, seat ? { x: seat.centre[0], y: seat.centre[1] } : null);
+  const prompt = orderPrompt(order, { name: dealerName, look }, seat ? { x: seat.centre[0], y: seat.centre[1] } : null, { asStored: true });
   return prompt.text === order.prompt.text ? prompt.parts : null;
 }
 
