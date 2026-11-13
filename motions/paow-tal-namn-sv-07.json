@@ -1,11 +1,11 @@
 {
   "schemaVersion": 1,
-  "id": "paow-tal-namn-sv-04",
+  "id": "paow-tal-namn-sv-07",
   "dealer": "paow",
   "source": {
-    "path": "assets/motions/paow-tal-namn-sv-04/source.mp4",
-    "sha256": "fc31849b9e8b33001cf350f3775e3f30a200cf03a58fecd232d3dce0c0f85509",
-    "bytes": 6547444,
+    "path": "assets/motions/paow-tal-namn-sv-07/source.mp4",
+    "sha256": "b1e2b1ffb92a3af276913bd373c4f79e7fad539b429ec2e5cd3be62d1f4cae23",
+    "bytes": 6548121,
     "width": 1764,
     "height": 1174,
     "fps": 24,
@@ -39,18 +39,18 @@
   },
   "review": {
     "decision": "ACCEPTED",
-    "basis": "Inte granskad av Jakob. Gjord av tools/speech.ts ur assets/motions/paow-vila-01-01/source.mp4 och inlagd bara kring det som hörs. Inte oberoende granskad; före grinden (namn-sv-03) 3/5: Avlyssnat: \"Jag heter Pau och jag är din dealer i kväll\" (namnet). Munnen öppen 4–53, ljud 5–50; pausen 21–24 halvöppen; läpparna sväller 54–56.",
+    "basis": "Inte granskad av Jakob. Gjord av tools/speech.ts ur assets/motions/paow-vila-01-01/source.mp4, inlagd bara kring det som hörs och under hennes egen överläpp. Granskaren 3/5 (samma bild, namn-sv-05): Avlyssnat: \"Jag heter Pau och jag är din dealer i kväll\". Överläpp och gipor egna. \"Paow\" (16-17) rundar inte; två lösa framtänder i 28.",
     "userAccepted": false,
     "productionReady": false,
     "provisional": {
-      "by": "huvudagenten med talbanans oberoende granskare",
-      "at": "2026-11-13T15:01:10.070Z",
+      "by": "huvudagenten med talbanans tre oberoende granskare (omgång 9)",
+      "at": "2026-11-13T17:06:53.385Z",
       "mandate": "Jakob 2026-11-13 kl. 15.50, med en bild av kön i Granska: \"jag vill nu för jag ska iväg att du godkänner allt videomaterial som innehåller de där kriterierna\" och \"Med andra ord vill jag inte se en sån här lista när jag är tillbaka!\"",
-      "note": "Granskaren 3/5, användbar med anmärkningar: Hört: \"Jag heter Pau och jag är din dealer i kväll\" (wordsMatch false). Läpparna byter form i växlingen r 3 och 53; i pausen r 21–24 står munnen på glänt. Avlyssningen hörde: \"Jag heter Pau och jag är din dealer i kväll\"."
+      "note": "Granskaren 3/5, användbar med anmärkningar: Avlyssnat: \"Jag heter Pau och jag är din dealer i kväll\". Överläpp och gipor egna. \"Paow\" (16-17) rundar inte; två lösa framtänder i 28. Avlyssningen hörde: \"Jag heter Pau och jag är din dealer i kväll\"."
     }
   },
-  "postProcessing": "the rendered face laid back into the rest film's own frames (assets/speech/paow/paow-tal-namn-sv-04/receipt.json, laidBack)",
-  "generationRef": "assets/motions/paow-tal-namn-sv-04/generation.json",
+  "postProcessing": "the rendered face laid back into the rest film's own frames (assets/speech/paow/paow-tal-namn-sv-07/receipt.json, laidBack)",
+  "generationRef": "assets/motions/paow-tal-namn-sv-07/generation.json",
   "scoutIntegrated": false,
   "published": false
 }

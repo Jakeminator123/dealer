@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "id": "paow-tal-hurmardu-sv-11",
+  "dealer": "paow",
+  "source": {
+    "path": "assets/motions/paow-tal-hurmardu-sv-11/source.mp4",
+    "sha256": "f5b2c11c41bade419cf7176fb9002375a5895b66ba9699e1b82b7542ef55e35f",
+    "bytes": 7715254,
+    "width": 1764,
+    "height": 1174,
+    "fps": 24,
+    "frames": 79,
+    "audio": true,
+    "provider": "tools/speech.ts: Scoutgaming's lip-sync renderer on this machine, voice from ElevenLabs",
+    "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Paow"
+  },
+  "motion": {
+    "kind": "IDLE",
+    "from": "IDLE",
+    "to": "IDLE",
+    "pass": false,
+    "basis": "SOURCE_FRAME_REVIEW",
+    "idle": {
+      "onRequest": true,
+      "calm": true,
+      "weight": 0,
+      "label": "säger: Jag mår fint, tack. Korten verkar vara på gott humör i kväll."
+    }
+  },
+  "speech": {
+    "line": "hurmardu",
+    "language": "sv",
+    "text": "Jag mår fint, tack. Korten verkar vara på gott humör i kväll.",
+    "voice": "Paow",
+    "heard": "Jag mår fint, tack. Korten verkar vara på gott humör ikväll.",
+    "restFilm": "paow-vila-01-01",
+    "soundStartsAtSeconds": 0.22,
+    "soundEndsAtSeconds": 2.787
+  },
+  "review": {
+    "decision": "ACCEPTED",
+    "basis": "Inte granskad av Jakob. Gjord av tools/speech.ts ur assets/motions/paow-vila-01-01/source.mp4, inlagd bara kring det som hörs och under hennes egen överläpp. Granskaren 3/5 (samma bild, hurmardu-sv-09): Överläpp och gipor egna. I tystnaden efter \"fint,\" (22-25) står munnen öppen med tänder; två lösa framtänder (28-30, 46); \"humör\" rundar inte.",
+    "userAccepted": false,
+    "productionReady": false,
+    "provisional": {
+      "by": "huvudagenten med talbanans tre oberoende granskare (omgång 9)",
+      "at": "2026-11-13T17:06:53.348Z",
+      "mandate": "Jakob 2026-11-13 kl. 15.50, med en bild av kön i Granska: \"jag vill nu för jag ska iväg att du godkänner allt videomaterial som innehåller de där kriterierna\" och \"Med andra ord vill jag inte se en sån här lista när jag är tillbaka!\"",
+      "note": "Granskaren 3/5, användbar med anmärkningar: Överläpp och gipor egna. I tystnaden efter \"fint,\" (22-25) står munnen öppen med tänder; två lösa framtänder (28-30, 46); \"humör\" rundar inte."
+    }
+  },
+  "postProcessing": "the rendered face laid back into the rest film's own frames (assets/speech/paow/paow-tal-hurmardu-sv-11/receipt.json, laidBack)",
+  "generationRef": "assets/motions/paow-tal-hurmardu-sv-11/generation.json",
+  "scoutIntegrated": false,
+  "published": false
+}

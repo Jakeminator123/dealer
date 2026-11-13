@@ -9,8 +9,8 @@ import {execFileSync, spawnSync} from 'node:child_process';
 import os from 'node:os';
 import path from 'node:path';
 import {BRIDGE, RENDER, bridgeProblems, clipLength, filmFrameOf, bridgeFilter, lineFrames, longestSound, restPath, planRows, canonical, videoIdOf, sourcesOf, bakeJob, answerVideo, sameWords,
-  changedBox, unionBox, grownBox, featherMask, blendFrame, heardFrames, speechGate, GATE, type Bridge} from '../src/speech-plan.ts';
-import {bridgeFilm, rawFrames, attestationOf, sameValue, voiceIn, readRegister, type Voice} from './speech.ts';
+  changedBox, unionBox, grownBox, featherMask, blendFrame, heardFrames, speechGate, mixFrame, GATE, LIPS, mouthWindow, cutPlanes, lipMap, lipsMiddle, lipsHalf, lipLine, mouthGap, mouthDrop, layMouth, type Bridge, type Lips} from '../src/speech-plan.ts';
+import {bridgeFilm, rawFrames, attestationOf, sameValue, voiceIn, readRegister, levelled, LOUDNESS, type Voice} from './speech.ts';
 
 const sha = (text: string | Uint8Array) => createHash('sha256').update(text).digest('hex');
 const SHA = 'ab'.repeat(32), VID = 'abababab-abab-abab-abab-abababababab', TAKE = 'clip-' + VID;
@@ -95,24 +95,79 @@ test('a voice reads each language with one model, and names its account by the n
 test('the drawn mouth is laid in only around what is heard, and changes where the two mouths are most alike', () => {
   const frames = 40, track = Buffer.alloc(frames * 1000 * 2), tone = (from: number, to: number, level = 8000) => { for (let i = from * 1000; i < to * 1000; i++) track.writeInt16LE(Math.round(level * Math.sin(i / 8)), i * 2); };
   tone(8, 15); tone(24, 30);
-  const heard = heardFrames(track, frames);
-  assert.deepEqual(heard.flatMap((h, k) => h ? [k] : []), [8, 9, 10, 11, 12, 13, 14, 24, 25, 26, 27, 28, 29]);
-  // Without a measure of the two mouths each change lies one frame from the sound, and is one frame of both.
-  const g = speechGate(heard);
-  assert.deepEqual(g.slice(5, 18), [0, 0, 0.5, 1, 1, 1, 1, 1, 1, 1, 0.5, 0, 0]);
-  // Her own mouth at both ends of the film, so that it starts and ends as the rest film does, and in the middle of a pause of nine frames.
-  assert.deepEqual(g.slice(0, 7), new Array(7).fill(0)); assert.deepEqual(g.slice(31), new Array(9).fill(0)); assert.deepEqual(g.slice(16, 23), new Array(7).fill(0));
+  const heard = heardFrames(track, frames), run = (from: number, to: number) => Array.from({length: to - from + 1}, (_, i) => from + i);
+  const shape = (g: number[]) => ({drawn: g.flatMap((w, k) => w === 1 ? [k] : []), both: g.flatMap((w, k) => w === 0.5 ? [k] : []), other: g.filter(w => w !== 0 && w !== 0.5 && w !== 1).length});
+  assert.deepEqual(heard.flatMap((h, k) => h ? [k] : []), [...run(8, 14), ...run(24, 29)]);
+  // Without a measure of the two mouths each change lies one frame from the sound and is one frame of both; her own mouth has
+  // both ends of the film and the middle of a pause of nine frames.
+  assert.deepEqual(shape(speechGate(heard)), {drawn: [...run(8, 14), ...run(24, 29)], both: [7, 15, 23, 30], other: 0});
   // With one, a change lies where they are least apart, within the gate's reach of the sound (two frames before, three after) and no further.
   const apart = new Array<number>(frames).fill(5); apart[5] = 0; apart[6] = 1; apart[17] = 1; apart[18] = 0;
-  assert.deepEqual(speechGate(heard, GATE, apart).slice(5, 19), [0, 0.5, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0.5, 0]);
-  // A silence of three frames is spoken through, and a sound far under the line's own level is not heard.
-  tone(15, 21); tone(34, 38, 20);
-  const h = speechGate(heardFrames(track, frames));
-  assert.deepEqual(h.slice(7, 31), [0.5, ...new Array(22).fill(1), 0.5]); assert.equal(h[35], 0);
-  // No sound at all: nothing is drawn. A line that fills the film to its edges has no frame to change on and is drawn throughout.
+  assert.deepEqual(shape(speechGate(heard, GATE, apart)), {drawn: [...run(7, 16), ...run(24, 29)], both: [6, 17, 23, 30], other: 0});
+  // A silence of five frames is spoken through; one of six is a pause, and her own mouth gets four whole frames of it.
+  const six = heard.map((h, k) => h || (k >= 15 && k <= 17)), five = heard.map((h, k) => h || (k >= 15 && k <= 18));
+  assert.deepEqual(shape(speechGate(six)), {drawn: [...run(8, 17), ...run(24, 29)], both: [7, 18, 23, 30], other: 0});
+  assert.deepEqual(shape(speechGate(five)), {drawn: run(8, 29), both: [7, 30], other: 0});
+  // A sound far under the line's own level is not heard; no sound at all: nothing is drawn; a line that fills the film is drawn throughout.
+  tone(34, 38, 20); assert.deepEqual(heardFrames(track, frames), heard);
   assert.deepEqual(speechGate(heardFrames(Buffer.alloc(10 * 1000 * 2), 10)), new Array(10).fill(0));
   assert.deepEqual(speechGate([true, true, false, false, true]), [1, 1, 1, 1, 1]);
+  // The hard change that was tried and fell: the frame at each change is her own mouth.
+  assert.deepEqual(shape(speechGate(heard, {...GATE, both: 0})), {drawn: [...run(8, 14), ...run(24, 29)], both: [], other: 0});
   assert.throws(() => speechGate(heard, GATE, [1, 2, 3]), /invalid_gate/);
+  // The frame of both is half the laid mouth and half the film's own, and nothing else in it is touched.
+  const own = Uint8Array.from([10, 200, 77, 0]), laid = Uint8Array.from([10, 100, 78, 255]); mixFrame(laid, own, 0.5);
+  assert.deepEqual([...laid], [10, 150, 78, 128]); assert.throws(() => mixFrame(laid, own.subarray(1), 0.5), /invalid_mix/);
+});
+
+test('only the mouth is laid in, around her own lips, larger and in her lips\' colour', () => {
+  // A film frame of plain skin with lips painted redder in the middle of the window, and a drawn frame with smaller, paler lips.
+  const b: Bridge = {film: {width: 400, height: 300}, cropX: 0, padY: 0, skipStart: 0, skipEnd: 0}, W = 400, H = 300, changed = {x: 148, y: 100, w: 104, h: 112}, win = mouthWindow(changed, b);
+  assert.deepEqual(win, {x: 120, y: 76, w: 160, h: 132});
+  const paint = (rx: number, ry: number, red: number) => { const f = new Uint8Array(W * H * 3 / 2).fill(150); f.fill(110, W * H, W * H + W * H / 4); f.fill(160, W * H + W * H / 4);
+    for (let y = 0; y < H / 2; y++) for (let x = 0; x < W / 2; x++) if (Math.hypot((2 * x - 200) / rx, (2 * y - 136) / ry) <= 1) f[W * H + W * H / 4 + y * W / 2 + x] = red; return f; };
+  const film = paint(34, 10, 182), clip = paint(28, 6, 176), own = cutPlanes(film, W, H, win.x, win.y, win.w, win.h), lip = lipMap(own.V), middle = lipsMiddle(lip, win.w, win.h)!;
+  assert.ok(Math.abs(middle.x - 80) <= 2 && Math.abs(middle.y - 60) <= 2, 'her lips are found in the middle of the window');
+  assert.equal(lipsMiddle(lipMap(cutPlanes(new Uint8Array(W * H * 3 / 2).fill(150), W, H, win.x, win.y, win.w, win.h).V), win.w, win.h), null, 'no lips, no middle');
+  // The same frame laid into itself, as drawn, without colour or sharpening, changes nothing.
+  const plain: Lips = {wide: 1, tall: 1, colour: 0, sharpen: 0, reach: LIPS.reach, grow: LIPS.grow, under: null, corners: null, drop: 0, fall: 30, open: [2, 5], closed: 0}, wider: Lips = {...plain, wide: 1.14, tall: 1.3, colour: 1, sharpen: 0.5}, same = Uint8Array.from(film);
+  layMouth(same, own, win, middle, {y: 0, u: 0, v: 0}, plain, b); assert.deepEqual(same, film);
+  // The drawn mouth laid in: nothing outside the ellipse around her lips is touched, the drawn lips are wider than they were
+  // drawn, and their colour is hers.
+  const laid = Uint8Array.from(film), theirs = cutPlanes(clip, W, H, win.x, win.y, win.w, win.h);
+  layMouth(laid, theirs, win, middle, {y: 0, u: 0, v: 6}, wider, b);
+  const v0 = W * H + W * H / 4, at = (x: number, y: number) => v0 + (y >> 1) * W / 2 + (x >> 1);
+  for (let y = 0; y < H; y += 2) for (let x = 0; x < W; x += 2) if (Math.hypot((x - 200) / (LIPS.reach[0] + 2), (y - 140) / (LIPS.reach[1] + 2)) > 1) assert.equal(laid[at(x, y)], film[at(x, y)], `untouched at ${x},${y}`);
+  const widthOf = (f: Uint8Array) => { let n = 0; for (let x = 120; x < 280; x += 2) if (f[at(x, 136)] > 170) n += 2; return n; };
+  assert.equal(widthOf(clip), 58); assert.ok(widthOf(laid) >= 62 && widthOf(laid) <= 66, `the drawn lips are made wider: ${widthOf(laid)}`);
+  assert.ok(Math.abs(laid[at(200, 136)] - 182) <= 1, 'and have her lips\' colour');
+  // Her own upper lip kept: with a dark line between her lips at row 136, nothing above the line is touched, and below it the
+  // drawn mouth is laid in.
+  const lined = Uint8Array.from(film); for (let x = 166; x <= 234; x++) { lined[136 * W + x] = 60; lined[137 * W + x] = 60; }
+  const line = lipLine(lined, win, middle, b); assert.ok(Math.abs(line[80] - 60.5) <= 1, `the line between her lips is found: ${line[80]}`);
+  const kept = Uint8Array.from(lined), drawnOpen = Uint8Array.from(clip); for (let y = 138; y < 150; y++) for (let x = 180; x <= 220; x++) drawnOpen[y * W + x] = 235;
+  layMouth(kept, cutPlanes(drawnOpen, W, H, win.x, win.y, win.w, win.h), win, middle, {y: 0, u: 0, v: 0}, {...plain, under: 1}, b);
+  for (let y = 100; y <= 132; y++) for (let x = 140; x <= 260; x++) assert.equal(kept[y * W + x], lined[y * W + x], `her upper lip untouched at ${x},${y}`);
+  assert.equal(kept[144 * W + 200], 235, 'and the drawn mouth, here its teeth, is laid in below the line');
+  // The model opens the mouth at her lip line and above it. Laid in as it is, most of the opening lies behind her kept upper lip;
+  // moved down four pixels at the line, it opens under it.
+  const high = Uint8Array.from(clip); for (let y = 132; y < 140; y++) for (let x = 180; x <= 220; x++) high[y * W + x] = 235;
+  const behind = Uint8Array.from(lined), moved = Uint8Array.from(lined), opened = cutPlanes(high, W, H, win.x, win.y, win.w, win.h);
+  layMouth(behind, opened, win, middle, {y: 0, u: 0, v: 0}, {...plain, under: 1}, b); layMouth(moved, opened, win, middle, {y: 0, u: 0, v: 0}, {...plain, under: 1, drop: 4}, b);
+  assert.equal(behind[141 * W + 200], 150, 'as drawn, the teeth end three rows under her line'); assert.equal(moved[141 * W + 200], 235, 'moved down, they show four rows further');
+  for (let y = 100; y <= 132; y++) for (let x = 140; x <= 260; x += 4) assert.equal(moved[y * W + x], lined[y * W + x], `her upper lip untouched at ${x},${y} when the mouth is moved down`);
+  // It is moved down only while it is open: the gap between the drawn lips is measured (here a band of four rows that is not
+  // lip, across the lips' middle), evened over three frames, and the drop comes in between a gap of two pixels and one of five.
+  const gapped = Uint8Array.from(clip), v = W * H + W * H / 4; for (let y = 134; y < 138; y += 2) for (let x = 170; x <= 230; x += 2) gapped[v + (y >> 1) * W / 2 + (x >> 1)] = 160;
+  assert.equal(mouthGap(theirs, win.w, win.h, middle, line), 0, 'closed: no gap'); assert.equal(mouthGap(cutPlanes(gapped, W, H, win.x, win.y, win.w, win.h), win.w, win.h, middle, line), 4);
+  assert.deepEqual(mouthDrop([0, 0, 8, 8, 8, 0, 8, 0, 0], {...plain, drop: 4}), [0, 0, 4, 4, 4, 4, 0, 0, 0]);
+  assert.deepEqual(mouthDrop([2, 2, 2], {...plain, drop: 4}), [0, 0, 0]); assert.deepEqual(mouthDrop([0, 8, 8, 8, 0], {...plain, drop: 4, closed: -2}), [-2, 4, 4, 4, -2], 'closed, it is lifted onto her own line'); assert.ok(mouthDrop([4, 4, 4], {...plain, drop: 4})[1] > 2.5 && mouthDrop([4, 4, 4], {...plain, drop: 4})[1] < 3.5);
+  // The drawn mouth ends at her own lips' corners: her lips are 34 pixels to either side here, a drawn mouth 50 to either side
+  // is laid in only between her corners, and nothing of it beside them.
+  assert.ok(Math.abs(lipsHalf(lip, win.w, middle)! - 34) <= 2);
+  const wide = Uint8Array.from(clip); for (let y = 138; y < 150; y++) for (let x = 150; x <= 250; x++) wide[y * W + x] = 235;
+  const ended = Uint8Array.from(film); layMouth(ended, cutPlanes(wide, W, H, win.x, win.y, win.w, win.h), win, middle, {y: 0, u: 0, v: 0}, {...plain, corners: 0}, b);
+  assert.equal(ended[144 * W + 200], 235); for (const x of [150, 160, 240, 250]) assert.equal(ended[144 * W + x], film[144 * W + x], `nothing drawn beside her corner at ${x}`);
 });
 
 test('the bridge keeps a pixel a pixel, on even offsets', () => {
@@ -187,4 +242,14 @@ test('FFmpeg cuts the bridge where the arithmetic says: frame 0 of the clip is f
   // The rows above and below the film are filled from its own edge rows, not left black.
   const c = clipFrames[0], row = (y: number) => c.subarray(y * 1080, y * 1080 + 1080);
   assert.deepEqual(row(0), row(BRIDGE.padY)); assert.deepEqual(row(1919), row(BRIDGE.padY + H - 1));
+});
+
+test('a quiet reading and a loud one are heard at the same strength, as long as they were and without clipping', needsFfmpeg, async t => {
+  const dir = await mkdtemp(path.join(os.tmpdir(), 'speech-level-')); t.after(() => rm(dir, {recursive: true, force: true}));
+  const tone = (level: number) => { const b = Buffer.alloc(24000 * 2 * 2); for (let i = 0; i < 48000; i++) b.writeInt16LE(Math.round(32767 * level * Math.sin(i * 2 * Math.PI * 440 / 24000)), i * 2); return b; };
+  const quiet = await levelled(tone(0.03), dir), loud = await levelled(tone(0.9), dir);
+  for (const made of [quiet, loud]) { assert.equal(made.pcm.length, 96000); assert.ok(Math.abs(made.level.lufs! - LOUDNESS.lufs) <= 0.7, `${made.level.lufs} LUFS`); assert.ok(made.level.peakDb! <= LOUDNESS.peakDb + 0.3, `${made.level.peakDb} dBFS`); }
+  assert.ok(quiet.level.gainDb > 10 && loud.level.gainDb < -5);
+  // Silence cannot be measured and is handed back as it is.
+  const none = await levelled(Buffer.alloc(48000), dir); assert.equal(none.level.gainDb, 0); assert.equal(none.pcm.length, 48000);
 });

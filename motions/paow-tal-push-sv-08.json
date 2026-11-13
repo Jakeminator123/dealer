@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "id": "paow-tal-push-sv-08",
+  "dealer": "paow",
+  "source": {
+    "path": "assets/motions/paow-tal-push-sv-08/source.mp4",
+    "sha256": "05bb132d37af308439819b78a0af9a8f99e956466342095400d960b9d15dbfe7",
+    "bytes": 7359627,
+    "width": 1764,
+    "height": 1174,
+    "fps": 24,
+    "frames": 76,
+    "audio": true,
+    "provider": "tools/speech.ts: Scoutgaming's lip-sync renderer on this machine, voice from ElevenLabs",
+    "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Paow"
+  },
+  "motion": {
+    "kind": "IDLE",
+    "from": "IDLE",
+    "to": "IDLE",
+    "pass": false,
+    "basis": "SOURCE_FRAME_REVIEW",
+    "idle": {
+      "onRequest": true,
+      "calm": true,
+      "weight": 0,
+      "label": "säger: Det är lika. Din insats betalas tillbaka."
+    }
+  },
+  "speech": {
+    "line": "push",
+    "language": "sv",
+    "text": "Det är lika. Din insats betalas tillbaka.",
+    "voice": "Paow",
+    "heard": "Det är lika. Din insats betalas tillbaka.",
+    "restFilm": "paow-vila-01-01",
+    "soundStartsAtSeconds": 0.22,
+    "soundEndsAtSeconds": 2.661
+  },
+  "review": {
+    "decision": "ACCEPTED",
+    "basis": "Inte granskad av Jakob. Gjord av tools/speech.ts ur assets/motions/paow-vila-01-01/source.mp4, inlagd bara kring det som hörs och under hennes egen överläpp. Granskaren 3/5 (samma bild, push-sv-06): Egen överläpp, inga sömmar. Pausen 23-26 sluts men växlar på en ruta från öppen till stängd och tillbaka (22, 27) med skymt av tänder; slutet likaså (64-66).",
+    "userAccepted": false,
+    "productionReady": false,
+    "provisional": {
+      "by": "huvudagenten med talbanans tre oberoende granskare (omgång 9)",
+      "at": "2026-11-13T17:06:53.402Z",
+      "mandate": "Jakob 2026-11-13 kl. 15.50, med en bild av kön i Granska: \"jag vill nu för jag ska iväg att du godkänner allt videomaterial som innehåller de där kriterierna\" och \"Med andra ord vill jag inte se en sån här lista när jag är tillbaka!\"",
+      "note": "Granskaren 3/5, användbar med anmärkningar: Egen överläpp, inga sömmar. Pausen 23-26 sluts men växlar på en ruta från öppen till stängd och tillbaka (22, 27) med skymt av tänder; slutet likaså (64-66)."
+    }
+  },
+  "postProcessing": "the rendered face laid back into the rest film's own frames (assets/speech/paow/paow-tal-push-sv-08/receipt.json, laidBack)",
+  "generationRef": "assets/motions/paow-tal-push-sv-08/generation.json",
+  "scoutIntegrated": false,
+  "published": false
+}

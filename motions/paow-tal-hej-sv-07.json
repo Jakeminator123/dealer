@@ -1,11 +1,11 @@
 {
   "schemaVersion": 1,
-  "id": "paow-tal-hej-sv-04",
+  "id": "paow-tal-hej-sv-07",
   "dealer": "paow",
   "source": {
-    "path": "assets/motions/paow-tal-hej-sv-04/source.mp4",
-    "sha256": "4183e849017f20521eb550487291bfdb7b9258c8268c92de335c3dc4618ebadc",
-    "bytes": 4056797,
+    "path": "assets/motions/paow-tal-hej-sv-07/source.mp4",
+    "sha256": "2058e66ef9f5c9889f5e05dd038296b8f0c2b5bcc4fddc0697a8dcbc84dd4e09",
+    "bytes": 4054017,
     "width": 1764,
     "height": 1174,
     "fps": 24,
@@ -39,18 +39,18 @@
   },
   "review": {
     "decision": "ACCEPTED",
-    "basis": "Inte granskad av Jakob. Gjord av tools/speech.ts ur assets/motions/paow-vila-01-01/source.mp4 och inlagd bara kring det som hörs. Inte oberoende granskad; före grinden (hej-sv-03) 3/5: Munnen öppen 4–31, ljud 6–26 (svag svans till 29): vidöppen med tänder i tysta 5, tänder i 28–31; slutet stänger mjukare än i de andra, läpparna sväller 32–34.",
+    "basis": "Inte granskad av Jakob. Gjord av tools/speech.ts ur assets/motions/paow-vila-01-01/source.mp4, inlagd bara kring det som hörs och under hennes egen överläpp. Granskaren 3/5 (samma bild, hej-sv-05): Överläpp och gipor egna; m och b sluter (17-18, 23-24). \"Hej\" (5-6) öppnar snett med ett vitt band under stel överläpp, inget lyft.",
     "userAccepted": false,
     "productionReady": false,
     "provisional": {
-      "by": "huvudagenten med talbanans oberoende granskare",
-      "at": "2026-11-13T15:01:10.054Z",
+      "by": "huvudagenten med talbanans tre oberoende granskare (omgång 9)",
+      "at": "2026-11-13T17:06:53.324Z",
       "mandate": "Jakob 2026-11-13 kl. 15.50, med en bild av kön i Granska: \"jag vill nu för jag ska iväg att du godkänner allt videomaterial som innehåller de där kriterierna\" och \"Med andra ord vill jag inte se en sån här lista när jag är tillbaka!\"",
-      "note": "Granskaren 3/5, användbar med anmärkningar: Bra slutningar på m och b (r 12–13, 23–24), hakan rör sig över tatueringen utan att mönstret ändras; men läpparna byter form i växlingen r 4 och 29."
+      "note": "Granskaren 3/5, användbar med anmärkningar: Överläpp och gipor egna; m och b sluter (17-18, 23-24). \"Hej\" (5-6) öppnar snett med ett vitt band under stel överläpp, inget lyft."
     }
   },
-  "postProcessing": "the rendered face laid back into the rest film's own frames (assets/speech/paow/paow-tal-hej-sv-04/receipt.json, laidBack)",
-  "generationRef": "assets/motions/paow-tal-hej-sv-04/generation.json",
+  "postProcessing": "the rendered face laid back into the rest film's own frames (assets/speech/paow/paow-tal-hej-sv-07/receipt.json, laidBack)",
+  "generationRef": "assets/motions/paow-tal-hej-sv-07/generation.json",
   "scoutIntegrated": false,
   "published": false
 }

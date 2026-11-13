@@ -1,11 +1,11 @@
 {
   "schemaVersion": 1,
-  "id": "paow-tal-chat1-sv-04",
+  "id": "paow-tal-chat1-sv-07",
   "dealer": "paow",
   "source": {
-    "path": "assets/motions/paow-tal-chat1-sv-04/source.mp4",
-    "sha256": "98733a017df13d64265831991fa6992354121c0a96ffd27ca438e5ae96c8d001",
-    "bytes": 4570734,
+    "path": "assets/motions/paow-tal-chat1-sv-07/source.mp4",
+    "sha256": "c03e2cee7b09e6641e0ee1a6eaaf7dcf6fac9e30b0e43cac0b879f871aa9608e",
+    "bytes": 4571223,
     "width": 1764,
     "height": 1174,
     "fps": 24,
@@ -39,18 +39,18 @@
   },
   "review": {
     "decision": "ACCEPTED",
-    "basis": "Inte granskad av Jakob. Gjord av tools/speech.ts ur assets/motions/paow-vila-01-01/source.mp4 och inlagd bara kring det som hörs. Inte oberoende granskad; före grinden (chat1-sv-03) 3/5: Munnen öppen 6–33, ljud 8–29: öppen i tysta 7, 31–32; läpparna sväller från tunna till vilans fylliga på 2 rutor (33–34), svag dubbelkontur i 6 och 33.",
+    "basis": "Inte granskad av Jakob. Gjord av tools/speech.ts ur assets/motions/paow-vila-01-01/source.mp4, inlagd bara kring det som hörs och under hennes egen överläpp. Granskaren 3/5 (samma bild, chat1-sv-05): Överläpp och gipor är filmens egna, ingen söm. Munnen öppnar bara en smal springa med tänder under en stel överläpp; läses som mummel.",
     "userAccepted": false,
     "productionReady": false,
     "provisional": {
-      "by": "huvudagenten med talbanans oberoende granskare",
-      "at": "2026-11-13T15:01:09.978Z",
+      "by": "huvudagenten med talbanans tre oberoende granskare (omgång 9)",
+      "at": "2026-11-13T17:06:52.848Z",
       "mandate": "Jakob 2026-11-13 kl. 15.50, med en bild av kön i Granska: \"jag vill nu för jag ska iväg att du godkänner allt videomaterial som innehåller de där kriterierna\" och \"Med andra ord vill jag inte se en sån här lista när jag är tillbaka!\"",
-      "note": "Granskaren 3/5, användbar med anmärkningar: Läpparna byter form i växlingen (r 6 och 32: fylliga egna mot tunna ritade, dubbel kontur i 0,5-rutan); munnen står öppen i pausen r 16–18."
+      "note": "Granskaren 3/5, användbar med anmärkningar: Överläpp och gipor är filmens egna, ingen söm. Munnen öppnar bara en smal springa med tänder under en stel överläpp; läses som mummel."
     }
   },
-  "postProcessing": "the rendered face laid back into the rest film's own frames (assets/speech/paow/paow-tal-chat1-sv-04/receipt.json, laidBack)",
-  "generationRef": "assets/motions/paow-tal-chat1-sv-04/generation.json",
+  "postProcessing": "the rendered face laid back into the rest film's own frames (assets/speech/paow/paow-tal-chat1-sv-07/receipt.json, laidBack)",
+  "generationRef": "assets/motions/paow-tal-chat1-sv-07/generation.json",
   "scoutIntegrated": false,
   "published": false
 }

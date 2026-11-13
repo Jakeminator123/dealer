@@ -1,11 +1,11 @@
 {
   "schemaVersion": 1,
-  "id": "paow-tal-dealerbust-sv-05",
+  "id": "paow-tal-dealerbust-sv-08",
   "dealer": "paow",
   "source": {
-    "path": "assets/motions/paow-tal-dealerbust-sv-05/source.mp4",
-    "sha256": "da22d3f68ae6f623c2f0fd84739b5011ad78704eb7140bc08626ecdc6e7a97de",
-    "bytes": 7592359,
+    "path": "assets/motions/paow-tal-dealerbust-sv-08/source.mp4",
+    "sha256": "21000c15ac28ca119de846c1df4c0348eeff24aad871c52ff7e68c4fa715a03a",
+    "bytes": 7709193,
     "width": 1764,
     "height": 1174,
     "fps": 24,
@@ -39,18 +39,18 @@
   },
   "review": {
     "decision": "ACCEPTED",
-    "basis": "Inte granskad av Jakob. Gjord av tools/speech.ts ur assets/motions/paow-vila-01-01/source.mp4 och inlagd bara kring det som hörs. Inte oberoende granskad; före grinden (dealerbust-sv-04) 4/5: Ändarna inom +2 rutor, ingen lång paus; kvar är metodens fel: tunnare, mattare läppar än vilans, och bytet mellan dem syns på 2 rutor.",
+    "basis": "Inte granskad av Jakob. Gjord av tools/speech.ts ur assets/motions/paow-vila-01-01/source.mp4, inlagd bara kring det som hörs och under hennes egen överläpp. Granskaren 3/5 (samma bild, dealerbust-sv-06): Egen överläpp, inga sömmar, lugnt slut 63-66. Ö och o (31-33, 49-52) blir ett mörkt hål under stel överläpp utan rundning; tystnaden 36-37 hålls öppen.",
     "userAccepted": false,
     "productionReady": false,
     "provisional": {
-      "by": "huvudagenten med talbanans oberoende granskare",
-      "at": "2026-11-13T15:01:10.012Z",
+      "by": "huvudagenten med talbanans tre oberoende granskare (omgång 9)",
+      "at": "2026-11-13T17:06:53.030Z",
       "mandate": "Jakob 2026-11-13 kl. 15.50, med en bild av kön i Granska: \"jag vill nu för jag ska iväg att du godkänner allt videomaterial som innehåller de där kriterierna\" och \"Med andra ord vill jag inte se en sån här lista när jag är tillbaka!\"",
-      "note": "Granskaren 3/5, användbar med anmärkningar: Mjukaste slutet: munnen nästan stängd i 64, inga spöktänder i 65. Början 7 har spöktänder; pausen efter tjugoett (36–37) hålls öppen."
+      "note": "Granskaren 3/5, användbar med anmärkningar: Egen överläpp, inga sömmar, lugnt slut 63-66. Ö och o (31-33, 49-52) blir ett mörkt hål under stel överläpp utan rundning; tystnaden 36-37 hålls öppen."
     }
   },
-  "postProcessing": "the rendered face laid back into the rest film's own frames (assets/speech/paow/paow-tal-dealerbust-sv-05/receipt.json, laidBack)",
-  "generationRef": "assets/motions/paow-tal-dealerbust-sv-05/generation.json",
+  "postProcessing": "the rendered face laid back into the rest film's own frames (assets/speech/paow/paow-tal-dealerbust-sv-08/receipt.json, laidBack)",
+  "generationRef": "assets/motions/paow-tal-dealerbust-sv-08/generation.json",
   "scoutIntegrated": false,
   "published": false
 }

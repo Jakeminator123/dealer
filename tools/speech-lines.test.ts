@@ -58,6 +58,11 @@ test('the film is the dealer\'s own, never a rejected take, the newest first, an
   const line = 'Blackjack! Vackert spelat. Grattis!', approved = take('paow-tal-blackjack-sv-04', 'blackjack', line, {voice: 'Paow', inbox: false});
   for (const newer of [take('paow-tal-blackjack-sv-05', 'blackjack', line, {voice: 'Paow', decision: 'PENDING', inbox: false}), take('paow-tal-blackjack-sv-05', 'blackjack', line, {voice: 'Paow', decision: 'PENDING', inbox: true})])
     assert.equal(spokenFilm([rest, approved, newer], 'paow', 'blackjack', {voice: 'Paow'})!.clip, 'paow-tal-blackjack-sv-04');
+  // A newer take accepted in his place (a provisional verdict) does not take its place either; among takes accepted in his
+  // place the newest plays.
+  const inHisPlace = (id: string) => { const t = take(id, 'blackjack', line, {voice: 'Paow', inbox: false}); return {...t, motion: {...(t.motion as object), review: {decision: 'ACCEPTED', provisional: {by: 'huvudagenten'}}}}; };
+  assert.equal(spokenFilm([rest, approved, inHisPlace('paow-tal-blackjack-sv-05')], 'paow', 'blackjack')!.clip, 'paow-tal-blackjack-sv-04');
+  assert.equal(spokenFilm([rest, inHisPlace('paow-tal-blackjack-sv-05'), inHisPlace('paow-tal-blackjack-sv-06')], 'paow', 'blackjack')!.clip, 'paow-tal-blackjack-sv-06');
   // A take he rejects is never played, and one set aside for a newer plays only when nothing else does.
   const unjudged = take('paow-tal-chat1-sv-04', 'chat1', 'Tack! Lycka till.', {voice: 'Paow', decision: 'PENDING', inbox: false});
   assert.equal(spokenFilm([rest, take('paow-tal-chat1-sv-03', 'chat1', 'Tack! Lycka till.', {voice: 'Paow', decision: 'REJECTED', inbox: false}), unjudged], 'paow', 'chat1')!.clip, 'paow-tal-chat1-sv-04');

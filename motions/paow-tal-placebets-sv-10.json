@@ -1,11 +1,11 @@
 {
   "schemaVersion": 1,
-  "id": "paow-tal-placebets-sv-07",
+  "id": "paow-tal-placebets-sv-10",
   "dealer": "paow",
   "source": {
-    "path": "assets/motions/paow-tal-placebets-sv-07/source.mp4",
-    "sha256": "ceb6ce6b6539ba89edd467076ed07523af0c1e83e451541529aaa70ae90f7f85",
-    "bytes": 4573664,
+    "path": "assets/motions/paow-tal-placebets-sv-10/source.mp4",
+    "sha256": "0e4d3d95971714412d85272df4bfc836a773aa895fa0143ac23d5157884f460f",
+    "bytes": 4571225,
     "width": 1764,
     "height": 1174,
     "fps": 24,
@@ -39,18 +39,18 @@
   },
   "review": {
     "decision": "ACCEPTED",
-    "basis": "Inte granskad av Jakob. Gjord av tools/speech.ts ur assets/motions/paow-vila-01-01/source.mp4 och inlagd bara kring det som hörs. Inte oberoende granskad; före grinden (placebets-sv-06) 3/5: Munnen står öppen med tänder 4 rutor efter ljudet (sista öppna 34, ljudet slut 30) och stängs av tonningen; läpparna tunnare och mattare än vilans.",
+    "basis": "Inte granskad av Jakob. Gjord av tools/speech.ts ur assets/motions/paow-vila-01-01/source.mp4, inlagd bara kring det som hörs och under hennes egen överläpp. Granskaren 3/5 (samma bild, placebets-sv-08): Överläpp och gipor är hennes egna, ingen söm. Ritad underläpp 27 % fylligare utan glans, tänder som vit list; skymt av tänder i växlingsruta 33.",
     "userAccepted": false,
     "productionReady": false,
     "provisional": {
-      "by": "huvudagenten med talbanans oberoende granskare",
-      "at": "2026-11-13T15:01:10.090Z",
+      "by": "huvudagenten med talbanans tre oberoende granskare (omgång 9)",
+      "at": "2026-11-13T17:06:53.396Z",
       "mandate": "Jakob 2026-11-13 kl. 15.50, med en bild av kön i Granska: \"jag vill nu för jag ska iväg att du godkänner allt videomaterial som innehåller de där kriterierna\" och \"Med andra ord vill jag inte se en sån här lista när jag är tillbaka!\"",
-      "note": "Granskaren 3/5, användbar med anmärkningar: Ljud 7–30, ritad mun 6–32. Växlingsrutorna 5 och 33 visar spöktänder genom stängda läppar; läpparna byter fyllighet och glans på två rutor."
+      "note": "Granskaren 3/5, användbar med anmärkningar: Överläpp och gipor är hennes egna, ingen söm. Ritad underläpp 27 % fylligare utan glans, tänder som vit list; skymt av tänder i växlingsruta 33."
     }
   },
-  "postProcessing": "the rendered face laid back into the rest film's own frames (assets/speech/paow/paow-tal-placebets-sv-07/receipt.json, laidBack)",
-  "generationRef": "assets/motions/paow-tal-placebets-sv-07/generation.json",
+  "postProcessing": "the rendered face laid back into the rest film's own frames (assets/speech/paow/paow-tal-placebets-sv-10/receipt.json, laidBack)",
+  "generationRef": "assets/motions/paow-tal-placebets-sv-10/generation.json",
   "scoutIntegrated": false,
   "published": false
 }

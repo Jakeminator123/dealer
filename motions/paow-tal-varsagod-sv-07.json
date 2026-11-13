@@ -1,11 +1,11 @@
 {
   "schemaVersion": 1,
-  "id": "paow-tal-varsagod-sv-04",
+  "id": "paow-tal-varsagod-sv-07",
   "dealer": "paow",
   "source": {
-    "path": "assets/motions/paow-tal-varsagod-sv-04/source.mp4",
-    "sha256": "2243e88d7588fff24e30c4796821b6b76ea583e98c850070fde57e895da9b74e",
-    "bytes": 5117083,
+    "path": "assets/motions/paow-tal-varsagod-sv-07/source.mp4",
+    "sha256": "642e9ef6fffd31c98edb90708d84b7646b0417822d75586d4a9a69ece18c2e5b",
+    "bytes": 5117774,
     "width": 1764,
     "height": 1174,
     "fps": 24,
@@ -39,18 +39,18 @@
   },
   "review": {
     "decision": "ACCEPTED",
-    "basis": "Inte granskad av Jakob. Gjord av tools/speech.ts ur assets/motions/paow-vila-01-01/source.mp4 och inlagd bara kring det som hörs. Inte oberoende granskad; före grinden (varsagod-sv-03) 3/5: Munnen öppen 7–41, ljud 9–38: tänder i tysta 8 och 39–40, genom läpparna i 7 och 41; läpparna sväller 41–43. Sluter för b i 24–25.",
+    "basis": "Inte granskad av Jakob. Gjord av tools/speech.ts ur assets/motions/paow-vila-01-01/source.mp4, inlagd bara kring det som hörs och under hennes egen överläpp. Granskaren 3/5 (samma bild, varsagod-sv-05): Överläpp och gipor egna; b sluter (24-25). Slutet (36-40) visar ett platt, kritvitt tandband under stel överläpp, också i tystnaden 36-37.",
     "userAccepted": false,
     "productionReady": false,
     "provisional": {
-      "by": "huvudagenten med talbanans oberoende granskare",
-      "at": "2026-11-13T15:01:10.105Z",
+      "by": "huvudagenten med talbanans tre oberoende granskare (omgång 9)",
+      "at": "2026-11-13T17:06:53.419Z",
       "mandate": "Jakob 2026-11-13 kl. 15.50, med en bild av kön i Granska: \"jag vill nu för jag ska iväg att du godkänner allt videomaterial som innehåller de där kriterierna\" och \"Med andra ord vill jag inte se en sån här lista när jag är tillbaka!\"",
-      "note": "Granskaren 3/5, användbar med anmärkningar: Ändarna inom ±2 (öppnar r 10, ljud r 9); i tystnaden r 36–37 öppnas munnen mer i stället för att slutas; läpparna byter form i växlingen r 7 och 41."
+      "note": "Granskaren 3/5, användbar med anmärkningar: Överläpp och gipor egna; b sluter (24-25). Slutet (36-40) visar ett platt, kritvitt tandband under stel överläpp, också i tystnaden 36-37."
     }
   },
-  "postProcessing": "the rendered face laid back into the rest film's own frames (assets/speech/paow/paow-tal-varsagod-sv-04/receipt.json, laidBack)",
-  "generationRef": "assets/motions/paow-tal-varsagod-sv-04/generation.json",
+  "postProcessing": "the rendered face laid back into the rest film's own frames (assets/speech/paow/paow-tal-varsagod-sv-07/receipt.json, laidBack)",
+  "generationRef": "assets/motions/paow-tal-varsagod-sv-07/generation.json",
   "scoutIntegrated": false,
   "published": false
 }

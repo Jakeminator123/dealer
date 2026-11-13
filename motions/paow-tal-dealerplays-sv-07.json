@@ -1,11 +1,11 @@
 {
   "schemaVersion": 1,
-  "id": "paow-tal-dealerplays-sv-04",
+  "id": "paow-tal-dealerplays-sv-07",
   "dealer": "paow",
   "source": {
-    "path": "assets/motions/paow-tal-dealerplays-sv-04/source.mp4",
-    "sha256": "63548dfe47b807188dfb424fdfd1654402fda239b9433ed8e09df876f131ed3b",
-    "bytes": 3935776,
+    "path": "assets/motions/paow-tal-dealerplays-sv-07/source.mp4",
+    "sha256": "507aaaa560bb9e4c0c949db2a47a70a8a595c93ab38b15e086b38f7c5b5de9c0",
+    "bytes": 3932077,
     "width": 1764,
     "height": 1174,
     "fps": 24,
@@ -39,18 +39,18 @@
   },
   "review": {
     "decision": "ACCEPTED",
-    "basis": "Inte granskad av Jakob. Gjord av tools/speech.ts ur assets/motions/paow-vila-01-01/source.mp4 och inlagd bara kring det som hörs. Inte oberoende granskad; före grinden (dealerplays-sv-03) 3/5: Munnen öppen 4–28, ljud 6–25: tänder i tysta 5 och 26–27, genom läpparna i 4 och 28; läpparna sväller till vilans på 2 rutor. Sluter rätt för p i 15–17.",
+    "basis": "Inte granskad av Jakob. Gjord av tools/speech.ts ur assets/motions/paow-vila-01-01/source.mp4, inlagd bara kring det som hörs och under hennes egen överläpp. Granskaren 3/5 (samma bild, dealerplays-sv-05): Överläpp och gipor egna; p:et sluter (16-17). I \"Dealern\" (7-14) syns ett blekt, platt band utan tandluckor under stel överläpp, som en protes.",
     "userAccepted": false,
     "productionReady": false,
     "provisional": {
-      "by": "huvudagenten med talbanans oberoende granskare",
-      "at": "2026-11-13T15:01:10.021Z",
+      "by": "huvudagenten med talbanans tre oberoende granskare (omgång 9)",
+      "at": "2026-11-13T17:06:53.097Z",
       "mandate": "Jakob 2026-11-13 kl. 15.50, med en bild av kön i Granska: \"jag vill nu för jag ska iväg att du godkänner allt videomaterial som innehåller de där kriterierna\" och \"Med andra ord vill jag inte se en sån här lista när jag är tillbaka!\"",
-      "note": "Granskaren 3/5, användbar med anmärkningar: Munnen sluts på p:et i r 15–16, ändarna inom ±2; men läpparna byter form i växlingen r 4 och 28 (fylliga egna mot tunna ritade, dubbel kontur)."
+      "note": "Granskaren 3/5, användbar med anmärkningar: Överläpp och gipor egna; p:et sluter (16-17). I \"Dealern\" (7-14) syns ett blekt, platt band utan tandluckor under stel överläpp, som en protes."
     }
   },
-  "postProcessing": "the rendered face laid back into the rest film's own frames (assets/speech/paow/paow-tal-dealerplays-sv-04/receipt.json, laidBack)",
-  "generationRef": "assets/motions/paow-tal-dealerplays-sv-04/generation.json",
+  "postProcessing": "the rendered face laid back into the rest film's own frames (assets/speech/paow/paow-tal-dealerplays-sv-07/receipt.json, laidBack)",
+  "generationRef": "assets/motions/paow-tal-dealerplays-sv-07/generation.json",
   "scoutIntegrated": false,
   "published": false
 }

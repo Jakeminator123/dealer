@@ -1,11 +1,11 @@
 {
   "schemaVersion": 1,
-  "id": "paow-tal-chat4-sv-04",
+  "id": "paow-tal-chat4-sv-07",
   "dealer": "paow",
   "source": {
-    "path": "assets/motions/paow-tal-chat4-sv-04/source.mp4",
-    "sha256": "decc0d80be8abdf75cea3db3e9e5216dfd7a3b4a28c05aa99f57a0a623d4e51a",
-    "bytes": 5490996,
+    "path": "assets/motions/paow-tal-chat4-sv-07/source.mp4",
+    "sha256": "9d2aab1e378872f9813a8d3ab76a2b26cdadf40189173a1af296f5ec9ffff0cc",
+    "bytes": 5492169,
     "width": 1764,
     "height": 1174,
     "fps": 24,
@@ -39,18 +39,18 @@
   },
   "review": {
     "decision": "ACCEPTED",
-    "basis": "Inte granskad av Jakob. Gjord av tools/speech.ts ur assets/motions/paow-vila-01-01/source.mp4 och inlagd bara kring det som hörs. Inte oberoende granskad; före grinden (chat4-sv-03) 3/5: Munnen öppen 7–41, ljud 9–37: tänder i tysta 8 och 39–40, genom läpparna i 7 och 41; läpparna sväller till vilans på 2 rutor. Sluter för m i 20–21.",
+    "basis": "Inte granskad av Jakob. Gjord av tools/speech.ts ur assets/motions/paow-vila-01-01/source.mp4, inlagd bara kring det som hörs och under hennes egen överläpp. Granskaren 3/5 (samma bild, chat4-sv-05): Överläpp och gipor egna; m i \"med\" sluter (20-21). \"hand\" (30-33): käken faller under stel överläpp, kantig mörk munhåla; tandrad nästan gipa till gipa (25-27).",
     "userAccepted": false,
     "productionReady": false,
     "provisional": {
-      "by": "huvudagenten med talbanans oberoende granskare",
-      "at": "2026-11-13T15:01:09.997Z",
+      "by": "huvudagenten med talbanans tre oberoende granskare (omgång 9)",
+      "at": "2026-11-13T17:06:52.889Z",
       "mandate": "Jakob 2026-11-13 kl. 15.50, med en bild av kön i Granska: \"jag vill nu för jag ska iväg att du godkänner allt videomaterial som innehåller de där kriterierna\" och \"Med andra ord vill jag inte se en sån här lista när jag är tillbaka!\"",
-      "note": "Granskaren 3/5, användbar med anmärkningar: Ändarna inom ±2, munnen sluts kort i r 20–21; men läpparna byter form i växlingen r 7 och 40 (fylliga egna mot tunna ritade, dubbel kontur)."
+      "note": "Granskaren 3/5, användbar med anmärkningar: Överläpp och gipor egna; m i \"med\" sluter (20-21). \"hand\" (30-33): käken faller under stel överläpp, kantig mörk munhåla; tandrad nästan gipa till gipa (25-27)."
     }
   },
-  "postProcessing": "the rendered face laid back into the rest film's own frames (assets/speech/paow/paow-tal-chat4-sv-04/receipt.json, laidBack)",
-  "generationRef": "assets/motions/paow-tal-chat4-sv-04/generation.json",
+  "postProcessing": "the rendered face laid back into the rest film's own frames (assets/speech/paow/paow-tal-chat4-sv-07/receipt.json, laidBack)",
+  "generationRef": "assets/motions/paow-tal-chat4-sv-07/generation.json",
   "scoutIntegrated": false,
   "published": false
 }

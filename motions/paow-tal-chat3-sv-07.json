@@ -1,11 +1,11 @@
 {
   "schemaVersion": 1,
-  "id": "paow-tal-chat3-sv-04",
+  "id": "paow-tal-chat3-sv-07",
   "dealer": "paow",
   "source": {
-    "path": "assets/motions/paow-tal-chat3-sv-04/source.mp4",
-    "sha256": "99e7d967736b7323b0b8642eb971fa0105bb1e865503c8f9f0f032464044b448",
-    "bytes": 3647356,
+    "path": "assets/motions/paow-tal-chat3-sv-07/source.mp4",
+    "sha256": "833b7ae89b4a5acc377bb7d105bdbec2aaede10eb0bdd3bd0e671e6f579e3198",
+    "bytes": 3640193,
     "width": 1764,
     "height": 1174,
     "fps": 24,
@@ -39,18 +39,18 @@
   },
   "review": {
     "decision": "ACCEPTED",
-    "basis": "Inte granskad av Jakob. Gjord av tools/speech.ts ur assets/motions/paow-vila-01-01/source.mp4 och inlagd bara kring det som hörs. Inte oberoende granskad; före grinden (chat3-sv-03) 3/5: Munnen öppen 4–25, ljud 5–22: tänder i tysta 23–24 och genom läpparna i 25; läpparna sväller till vilans på 2 rutor (25–26). Tydligt o i 10–13.",
+    "basis": "Inte granskad av Jakob. Gjord av tools/speech.ts ur assets/motions/paow-vila-01-01/source.mp4, inlagd bara kring det som hörs och under hennes egen överläpp. Granskaren 3/5 (samma bild, chat3-sv-05): Överläpp och gipor egna, ingen söm. O:et i \"ordnar\" (ruta 10-13) är ett mörkt hål under platt överläpp; underläppen 3 px tjockare än hennes.",
     "userAccepted": false,
     "productionReady": false,
     "provisional": {
-      "by": "huvudagenten med talbanans oberoende granskare",
-      "at": "2026-11-13T15:01:09.991Z",
+      "by": "huvudagenten med talbanans tre oberoende granskare (omgång 9)",
+      "at": "2026-11-13T17:06:52.869Z",
       "mandate": "Jakob 2026-11-13 kl. 15.50, med en bild av kön i Granska: \"jag vill nu för jag ska iväg att du godkänner allt videomaterial som innehåller de där kriterierna\" och \"Med andra ord vill jag inte se en sån här lista när jag är tillbaka!\"",
-      "note": "Granskaren 3/5, användbar med anmärkningar: Ändarna inom ±2, rundat o i r 12; men läpparna byter form i växlingen r 3 och 25 (fylliga egna mot tunna ritade, dubbel kontur i 0,5-rutan)."
+      "note": "Granskaren 3/5, användbar med anmärkningar: Överläpp och gipor egna, ingen söm. O:et i \"ordnar\" (ruta 10-13) är ett mörkt hål under platt överläpp; underläppen 3 px tjockare än hennes."
     }
   },
-  "postProcessing": "the rendered face laid back into the rest film's own frames (assets/speech/paow/paow-tal-chat3-sv-04/receipt.json, laidBack)",
-  "generationRef": "assets/motions/paow-tal-chat3-sv-04/generation.json",
+  "postProcessing": "the rendered face laid back into the rest film's own frames (assets/speech/paow/paow-tal-chat3-sv-07/receipt.json, laidBack)",
+  "generationRef": "assets/motions/paow-tal-chat3-sv-07/generation.json",
   "scoutIntegrated": false,
   "published": false
 }

@@ -1,11 +1,11 @@
 {
   "schemaVersion": 1,
-  "id": "paow-tal-win-sv-04",
+  "id": "paow-tal-win-sv-07",
   "dealer": "paow",
   "source": {
-    "path": "assets/motions/paow-tal-win-sv-04/source.mp4",
-    "sha256": "bbf8900cacf8f2ba1726db790dfac1c7245bd8795b4413ec8f59e5eefb4ed1c1",
-    "bytes": 5891753,
+    "path": "assets/motions/paow-tal-win-sv-07/source.mp4",
+    "sha256": "9ee5fed40fc12b580fb499b755405393b9b80fdd220e6a5df525bd4721d071d1",
+    "bytes": 5895246,
     "width": 1764,
     "height": 1174,
     "fps": 24,
@@ -39,18 +39,18 @@
   },
   "review": {
     "decision": "ACCEPTED",
-    "basis": "Inte granskad av Jakob. Gjord av tools/speech.ts ur assets/motions/paow-vila-01-01/source.mp4 och inlagd bara kring det som hörs. Inte oberoende granskad; före grinden (win-sv-03) 3/5: B i Bra sluten (9–10); i pausen 23–27 står munnen stilla halvöppen med tänder; sista öppna ruta 48 mot ljudets slut 45.",
+    "basis": "Inte granskad av Jakob. Gjord av tools/speech.ts ur assets/motions/paow-vila-01-01/source.mp4, inlagd bara kring det som hörs och under hennes egen överläpp. Granskaren 4/5 (samma bild, win-sv-05): Egen överläpp, inga sömmar; b/p sluter (9-10, 14-15), lugnt slut 43-49. Tänderna har svarta luckor (24-31) och underläppen är fylligare utan glans.",
     "userAccepted": false,
     "productionReady": false,
     "provisional": {
-      "by": "huvudagenten med talbanans oberoende granskare",
-      "at": "2026-11-13T15:01:10.112Z",
+      "by": "huvudagenten med talbanans tre oberoende granskare (omgång 9)",
+      "at": "2026-11-13T17:06:53.429Z",
       "mandate": "Jakob 2026-11-13 kl. 15.50, med en bild av kön i Granska: \"jag vill nu för jag ska iväg att du godkänner allt videomaterial som innehåller de där kriterierna\" och \"Med andra ord vill jag inte se en sån här lista när jag är tillbaka!\"",
-      "note": "Granskaren 3/5, användbar med anmärkningar: Mjuk början (stängd ritad mun på B, 9–10). Pausen 24–26 hålls öppen; i slutet 48 svaga spöktänder och läpparna byter fyllighet."
+      "note": "Granskaren 4/5, användbar med anmärkningar: Egen överläpp, inga sömmar; b/p sluter (9-10, 14-15), lugnt slut 43-49. Tänderna har svarta luckor (24-31) och underläppen är fylligare utan glans."
     }
   },
-  "postProcessing": "the rendered face laid back into the rest film's own frames (assets/speech/paow/paow-tal-win-sv-04/receipt.json, laidBack)",
-  "generationRef": "assets/motions/paow-tal-win-sv-04/generation.json",
+  "postProcessing": "the rendered face laid back into the rest film's own frames (assets/speech/paow/paow-tal-win-sv-07/receipt.json, laidBack)",
+  "generationRef": "assets/motions/paow-tal-win-sv-07/generation.json",
   "scoutIntegrated": false,
   "published": false
 }
