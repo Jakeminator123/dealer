@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "id": "paow-tal-chat1-sv-09",
+  "dealer": "paow",
+  "source": {
+    "path": "assets/motions/paow-tal-chat1-sv-09/source.mp4",
+    "sha256": "d7f0887c1dece67b1620d4bd55147de6287ed12ae57f3ceb4e7ebea38b803eab",
+    "bytes": 4573081,
+    "width": 1764,
+    "height": 1174,
+    "fps": 24,
+    "frames": 48,
+    "audio": true,
+    "provider": "tools/speech.ts: Scoutgaming's lip-sync renderer on this machine, voice from ElevenLabs",
+    "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Paow"
+  },
+  "motion": {
+    "kind": "IDLE",
+    "from": "IDLE",
+    "to": "IDLE",
+    "pass": false,
+    "basis": "SOURCE_FRAME_REVIEW",
+    "idle": {
+      "onRequest": true,
+      "calm": true,
+      "weight": 0,
+      "label": "säger: Tack! Lycka till."
+    }
+  },
+  "speech": {
+    "line": "chat1",
+    "language": "sv",
+    "text": "Tack! Lycka till.",
+    "voice": "Paow",
+    "heard": "Tack, lycka till!",
+    "restFilm": "paow-vila-01-01",
+    "soundStartsAtSeconds": 0.22,
+    "soundEndsAtSeconds": 1.487
+  },
+  "review": {
+    "decision": "ACCEPTED",
+    "basis": "Inte granskad av Jakob. Gjord av tools/speech.ts ur assets/motions/paow-vila-01-01/source.mp4, inlagd bara kring det som hörs och under hennes egen överläpp, som lyfts när munnen öppnar. Granskaren 4/5: Båda läpparna rör sig (100 %). Mot -08: överläppen ligger kvar lyft genom pausen 16–18 och till 31; men den står nästan still (inom 1,3 px) i 10–30 medan käken rör sig.",
+    "userAccepted": false,
+    "productionReady": false,
+    "provisional": {
+      "by": "huvudagenten med talbanans oberoende granskare",
+      "at": "2026-11-13T22:19:05.387Z",
+      "mandate": "Jakob 2026-11-13 kl. 15.50, med en bild av kön i Granska: \"jag vill nu för jag ska iväg att du godkänner allt videomaterial som innehåller de där kriterierna\" och \"Med andra ord vill jag inte se en sån här lista när jag är tillbaka!\"",
+      "note": "Granskaren 4/5, användbar med anmärkningar: Båda läpparna rör sig (100 %). Mot -08: överläppen ligger kvar lyft genom pausen 16–18 och till 31; men den står nästan still (inom 1,3 px) i 10–30 medan käken rör sig."
+    }
+  },
+  "postProcessing": "the rendered face laid back into the rest film's own frames (assets/speech/paow/paow-tal-chat1-sv-09/receipt.json, laidBack)",
+  "generationRef": "assets/motions/paow-tal-chat1-sv-09/generation.json",
+  "scoutIntegrated": false,
+  "published": false
+}

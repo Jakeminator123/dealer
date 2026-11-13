@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "id": "paow-tal-double-sv-10",
+  "dealer": "paow",
+  "source": {
+    "path": "assets/motions/paow-tal-double-sv-10/source.mp4",
+    "sha256": "72ab2cdad93535f9801e3a0c2b4933fec63eed5c81ce5d52fb4d0a68c7b751e9",
+    "bytes": 7231562,
+    "width": 1764,
+    "height": 1174,
+    "fps": 24,
+    "frames": 74,
+    "audio": true,
+    "provider": "tools/speech.ts: Scoutgaming's lip-sync renderer on this machine, voice from ElevenLabs",
+    "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Paow"
+  },
+  "motion": {
+    "kind": "IDLE",
+    "from": "IDLE",
+    "to": "IDLE",
+    "pass": false,
+    "basis": "SOURCE_FRAME_REVIEW",
+    "idle": {
+      "onRequest": true,
+      "calm": true,
+      "weight": 0,
+      "label": "säger: Du dubblar. Ett kort, nu gör vi det bästa av det."
+    }
+  },
+  "speech": {
+    "line": "double",
+    "language": "sv",
+    "text": "Du dubblar. Ett kort, nu gör vi det bästa av det.",
+    "voice": "Paow",
+    "heard": "Du dubblar. Ett kort, nu gör vi det bästa av det",
+    "restFilm": "paow-vila-01-01",
+    "soundStartsAtSeconds": 0.22,
+    "soundEndsAtSeconds": 2.56
+  },
+  "review": {
+    "decision": "ACCEPTED",
+    "basis": "Inte granskad av Jakob. Gjord av tools/speech.ts ur assets/motions/paow-vila-01-01/source.mp4, inlagd bara kring det som hörs och under hennes egen överläpp, som lyfts när munnen öppnar. Granskaren 4/5: Båda läpparna rör sig. Håller överläppen lyft i 20–24, 33, 45 och slutet 55–57 där -09 sjunker medan munnen är öppen. Sämre i 15–17 (bb i dubblar): en mörk springa där -09 är sluten.",
+    "userAccepted": false,
+    "productionReady": false,
+    "provisional": {
+      "by": "huvudagenten med talbanans oberoende granskare",
+      "at": "2026-11-13T22:19:05.447Z",
+      "mandate": "Jakob 2026-11-13 kl. 15.50, med en bild av kön i Granska: \"jag vill nu för jag ska iväg att du godkänner allt videomaterial som innehåller de där kriterierna\" och \"Med andra ord vill jag inte se en sån här lista när jag är tillbaka!\"",
+      "note": "Granskaren 4/5, användbar med anmärkningar: Båda läpparna rör sig. Håller överläppen lyft i 20–24, 33, 45 och slutet 55–57 där -09 sjunker medan munnen är öppen. Sämre i 15–17 (bb i dubblar): en mörk springa där -09 är sluten."
+    }
+  },
+  "postProcessing": "the rendered face laid back into the rest film's own frames (assets/speech/paow/paow-tal-double-sv-10/receipt.json, laidBack)",
+  "generationRef": "assets/motions/paow-tal-double-sv-10/generation.json",
+  "scoutIntegrated": false,
+  "published": false
+}

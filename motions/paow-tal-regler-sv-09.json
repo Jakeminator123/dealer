@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "id": "paow-tal-regler-sv-09",
+  "dealer": "paow",
+  "source": {
+    "path": "assets/motions/paow-tal-regler-sv-09/source.mp4",
+    "sha256": "fe1cf0ad83c8c3cf364b3ac154e020d7bde47d37115ec965c089008f79d742c4",
+    "bytes": 6549164,
+    "width": 1764,
+    "height": 1174,
+    "fps": 24,
+    "frames": 67,
+    "audio": true,
+    "provider": "tools/speech.ts: Scoutgaming's lip-sync renderer on this machine, voice from ElevenLabs",
+    "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Paow"
+  },
+  "motion": {
+    "kind": "IDLE",
+    "from": "IDLE",
+    "to": "IDLE",
+    "pass": false,
+    "basis": "SOURCE_FRAME_REVIEW",
+    "idle": {
+      "onRequest": true,
+      "calm": true,
+      "weight": 0,
+      "label": "säger: Närmast tjugoett vinner, men gå inte över."
+    }
+  },
+  "speech": {
+    "line": "regler",
+    "language": "sv",
+    "text": "Närmast tjugoett vinner, men gå inte över.",
+    "voice": "Paow",
+    "heard": "Närmast 21 vinner, men gå inte över",
+    "restFilm": "paow-vila-01-01",
+    "soundStartsAtSeconds": 0.22,
+    "soundEndsAtSeconds": 2.289
+  },
+  "review": {
+    "decision": "ACCEPTED",
+    "basis": "Inte granskad av Jakob. Gjord av tools/speech.ts ur assets/motions/paow-vila-01-01/source.mp4, inlagd bara kring det som hörs och under hennes egen överläpp, som lyfts när munnen öppnar. Granskaren 4/5: Båda läpparna (63 %, 81 % vid öppning ≥5 px), lyft till sista öppna rutan (51). Sämre än -08 på en punkt: lyft 3 px i slutna m-rutan i men (29). Bättre totalt.",
+    "userAccepted": false,
+    "productionReady": false,
+    "provisional": {
+      "by": "huvudagenten med talbanans oberoende granskare",
+      "at": "2026-11-13T22:19:05.560Z",
+      "mandate": "Jakob 2026-11-13 kl. 15.50, med en bild av kön i Granska: \"jag vill nu för jag ska iväg att du godkänner allt videomaterial som innehåller de där kriterierna\" och \"Med andra ord vill jag inte se en sån här lista när jag är tillbaka!\"",
+      "note": "Granskaren 4/5, användbar med anmärkningar: Båda läpparna (63 %, 81 % vid öppning ≥5 px), lyft till sista öppna rutan (51). Sämre än -08 på en punkt: lyft 3 px i slutna m-rutan i men (29). Bättre totalt."
+    }
+  },
+  "postProcessing": "the rendered face laid back into the rest film's own frames (assets/speech/paow/paow-tal-regler-sv-09/receipt.json, laidBack)",
+  "generationRef": "assets/motions/paow-tal-regler-sv-09/generation.json",
+  "scoutIntegrated": false,
+  "published": false
+}

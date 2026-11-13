@@ -185,6 +185,29 @@ test('only the mouth is laid in, around her own lips, larger and in her lips\' c
   // With a base, a small opening lifts her lip too; and a closed drawn mouth whose lips lie three pixels under hers is moved up three.
   const small = mouthMoves([{gap: 3, rise: 0, low: 1}, {gap: 3, rise: 0, low: 1}, {gap: 3, rise: 0, low: 1}, {gap: 0, rise: 0, low: 3}, {gap: 0, rise: 0, low: 3}, {gap: 0, rise: 0, low: 3}], {...plain, lift: 6, share: 0.3, base: 1.5});
   assert.deepEqual(small.lifts, [2.4, 2.4, 2.4, 0, 0, 0]); assert.deepEqual(small.drops, [-2.4, -2.4, -2.4, -3, -3, -3]);
+  // A rounded mouth is red all the way between its lips but dark in the middle: no gap, and a dark run (here five rows, from two
+  // and a half above her line). Where the recipe counts it (`round`), that run is the opening: her lip is lifted by it and the
+  // dark is moved to begin at the lifted edge. Without it the frame is closed and moved up by how low its lips lie, and the
+  // opening goes behind her lip. A closed lip line, a shorter run, is no opening.
+  const hole = Uint8Array.from(clip); for (let y = 134; y < 139; y++) for (let x = 166; x <= 234; x++) hole[y * W + x] = 60;
+  const rounded = mouthOpens(cutPlanes(hole, W, H, win.x, win.y, win.w, win.h), win.w, win.h, middle, line); assert.equal(rounded.gap, 0); assert.equal(rounded.dark, 5); assert.equal(rounded.deep, 5); assert.ok(Math.abs(rounded.darkRise - 2.5) <= 1, `the dark begins ${rounded.darkRise} above her line`);
+  assert.equal(mouthOpens(theirs, win.w, win.h, middle, line).dark, 0, 'no dark in lips that are closed and evenly lit');
+  // The line between closed lips is dark too, but not deeply: it is a dark run and no deep one.
+  const shut = Uint8Array.from(clip); for (let y = 134; y < 139; y++) for (let x = 166; x <= 234; x++) shut[y * W + x] = 110;
+  const closedLine = mouthOpens(cutPlanes(shut, W, H, win.x, win.y, win.w, win.h), win.w, win.h, middle, line); assert.equal(closedLine.dark, 5); assert.equal(closedLine.deep, 0);
+  const o = Array.from({length: 3}, () => ({gap: 0, rise: 0, low: 4, dark: 6, darkRise: -2, deep: 3})), share = {...plain, lift: 6, share: 0.3, base: 1.5};
+  assert.deepEqual(mouthMoves(o, share).drops, [-4, -4, -4]); assert.deepEqual(mouthMoves(o, share).lifts, [0, 0, 0]);
+  const round = mouthMoves(o, {...share, round: 2.5}); assert.deepEqual(round.lifts, [3.3, 3.3, 3.3]); assert.deepEqual(round.drops, [-5.3, -5.3, -5.3]);
+  assert.deepEqual(mouthMoves(o.map(f => ({...f, deep: 1.25})), {...share, round: 2.5}).lifts, [0, 0, 0], 'a broad line between closed lips is not an opening');
+  // Moved only where the drawn mouth is laid whole (`whole`): not in the gate's frame of half each mouth; and with `heard` false
+  // also where she is no longer heard but the drawn mouth is still shown open, at the end of a line's last word.
+  const tail = Array.from({length: 4}, () => ({gap: 10, rise: 0})), heardThere = [true, true, false, false], wholeThere = [true, true, true, false];
+  assert.deepEqual(mouthMoves(tail, {...share, heard: true}, heardThere, wholeThere).lifts, [4.5, 4.5, 0, 0]);
+  assert.deepEqual(mouthMoves(tail, {...share, heard: false, whole: true}, heardThere, wholeThere).lifts, [4.5, 4.5, 4.5, 0]);
+  // And a frame where the drawn lips meet between two open ones stays closed (a b said in one frame); without `whole` the
+  // median of three frames fills it.
+  const b1 = [{gap: 10, rise: 0}, {gap: 10, rise: 0}, {gap: 0, rise: 0, low: 2}, {gap: 10, rise: 0}, {gap: 10, rise: 0}];
+  assert.deepEqual(mouthMoves(b1, {...share, whole: true}).lifts, [4.5, 4.5, 0, 4.5, 4.5]); assert.deepEqual(mouthMoves(b1, share).lifts, [4.5, 4.5, 4.5, 4.5, 4.5]);
   // Lifted, the dark line between her lips lies that much higher in the middle, by her own pixels above it drawn together;
   // nothing above the reach of the lift and nothing at her corner is touched, and the drawn mouth is laid in from the lifted edge.
   const lifted = Uint8Array.from(lined); layMouth(lifted, opened, win, middle, {y: 0, u: 0, v: 0}, {...plain, under: 1}, b, 0, 4);

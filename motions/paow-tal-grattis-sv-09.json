@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "id": "paow-tal-grattis-sv-09",
+  "dealer": "paow",
+  "source": {
+    "path": "assets/motions/paow-tal-grattis-sv-09/source.mp4",
+    "sha256": "27a692919301bc8e10803141891844634f9ce706aebb460c0f7d3af23a1967fa",
+    "bytes": 6912843,
+    "width": 1764,
+    "height": 1174,
+    "fps": 24,
+    "frames": 71,
+    "audio": true,
+    "provider": "tools/speech.ts: Scoutgaming's lip-sync renderer on this machine, voice from ElevenLabs",
+    "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Paow"
+  },
+  "motion": {
+    "kind": "IDLE",
+    "from": "IDLE",
+    "to": "IDLE",
+    "pass": false,
+    "basis": "SOURCE_FRAME_REVIEW",
+    "idle": {
+      "onRequest": true,
+      "calm": true,
+      "weight": 0,
+      "label": "säger: Grattis! Det där var snyggt spelat."
+    }
+  },
+  "speech": {
+    "line": "grattis",
+    "language": "sv",
+    "text": "Grattis! Det där var snyggt spelat.",
+    "voice": "Paow",
+    "heard": "Grattis, det där var snyggt spelat",
+    "restFilm": "paow-vila-01-01",
+    "soundStartsAtSeconds": 0.22,
+    "soundEndsAtSeconds": 2.45
+  },
+  "review": {
+    "decision": "ACCEPTED",
+    "basis": "Inte granskad av Jakob. Gjord av tools/speech.ts ur assets/motions/paow-vila-01-01/source.mp4, inlagd bara kring det som hörs och under hennes egen överläpp, som lyfts när munnen öppnar. Granskaren 4/5: Båda läpparna: 86 % av öppna rutor. Överläppen ligger kvar i pausen efter Grattis (22–24) och till slutet (55). Bättre än -08, där läppen sjunker och stiger i pausen och faller i slutet.",
+    "userAccepted": false,
+    "productionReady": false,
+    "provisional": {
+      "by": "huvudagenten med talbanans oberoende granskare",
+      "at": "2026-11-13T22:19:05.471Z",
+      "mandate": "Jakob 2026-11-13 kl. 15.50, med en bild av kön i Granska: \"jag vill nu för jag ska iväg att du godkänner allt videomaterial som innehåller de där kriterierna\" och \"Med andra ord vill jag inte se en sån här lista när jag är tillbaka!\"",
+      "note": "Granskaren 4/5, användbar med anmärkningar: Båda läpparna: 86 % av öppna rutor. Överläppen ligger kvar i pausen efter Grattis (22–24) och till slutet (55). Bättre än -08, där läppen sjunker och stiger i pausen och faller i slutet."
+    }
+  },
+  "postProcessing": "the rendered face laid back into the rest film's own frames (assets/speech/paow/paow-tal-grattis-sv-09/receipt.json, laidBack)",
+  "generationRef": "assets/motions/paow-tal-grattis-sv-09/generation.json",
+  "scoutIntegrated": false,
+  "published": false
+}

@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "id": "paow-tal-dealerbust-sv-10",
+  "dealer": "paow",
+  "source": {
+    "path": "assets/motions/paow-tal-dealerbust-sv-10/source.mp4",
+    "sha256": "a342692d6fcb83ddbf665f9cf135be2a4fc0121980f2929ff7a39c2b87a3cd2b",
+    "bytes": 7713404,
+    "width": 1764,
+    "height": 1174,
+    "fps": 24,
+    "frames": 79,
+    "audio": true,
+    "provider": "tools/speech.ts: Scoutgaming's lip-sync renderer on this machine, voice from ElevenLabs",
+    "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Paow"
+  },
+  "motion": {
+    "kind": "IDLE",
+    "from": "IDLE",
+    "to": "IDLE",
+    "pass": false,
+    "basis": "SOURCE_FRAME_REVIEW",
+    "idle": {
+      "onRequest": true,
+      "calm": true,
+      "weight": 0,
+      "label": "säger: Dealern är över tjugoett! Grattis, bordet vinner."
+    }
+  },
+  "speech": {
+    "line": "dealerbust",
+    "language": "sv",
+    "text": "Dealern är över tjugoett! Grattis, bordet vinner.",
+    "voice": "Paow",
+    "heard": "Dealern är över 21. Grattis, bordet vinner.",
+    "restFilm": "paow-vila-01-01",
+    "soundStartsAtSeconds": 0.22,
+    "soundEndsAtSeconds": 2.79
+  },
+  "review": {
+    "decision": "ACCEPTED",
+    "basis": "Inte granskad av Jakob. Gjord av tools/speech.ts ur assets/motions/paow-vila-01-01/source.mp4, inlagd bara kring det som hörs och under hennes egen överläpp, som lyfts när munnen öppnar. Granskaren 4/5: Båda läpparna rör sig; läppen hålls lyft i pausen 36–37 och slutet 62–63, och o:et i \"bordet\" (49–50) syns. Kvar: nederkanten i vila 21–26 och 31–35.",
+    "userAccepted": false,
+    "productionReady": false,
+    "provisional": {
+      "by": "huvudagenten med talbanans oberoende granskare",
+      "at": "2026-11-13T22:19:05.422Z",
+      "mandate": "Jakob 2026-11-13 kl. 15.50, med en bild av kön i Granska: \"jag vill nu för jag ska iväg att du godkänner allt videomaterial som innehåller de där kriterierna\" och \"Med andra ord vill jag inte se en sån här lista när jag är tillbaka!\"",
+      "note": "Granskaren 4/5, användbar med anmärkningar: Båda läpparna rör sig; läppen hålls lyft i pausen 36–37 och slutet 62–63, och o:et i \"bordet\" (49–50) syns. Kvar: nederkanten i vila 21–26 och 31–35."
+    }
+  },
+  "postProcessing": "the rendered face laid back into the rest film's own frames (assets/speech/paow/paow-tal-dealerbust-sv-10/receipt.json, laidBack)",
+  "generationRef": "assets/motions/paow-tal-dealerbust-sv-10/generation.json",
+  "scoutIntegrated": false,
+  "published": false
+}

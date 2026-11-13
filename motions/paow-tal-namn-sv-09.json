@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "id": "paow-tal-namn-sv-09",
+  "dealer": "paow",
+  "source": {
+    "path": "assets/motions/paow-tal-namn-sv-09/source.mp4",
+    "sha256": "6af57444dec51f046b7e5fd1fe2d8f6da13e51c87ff487793276b8da2c71f350",
+    "bytes": 6550915,
+    "width": 1764,
+    "height": 1174,
+    "fps": 24,
+    "frames": 67,
+    "audio": true,
+    "provider": "tools/speech.ts: Scoutgaming's lip-sync renderer on this machine, voice from ElevenLabs",
+    "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Paow"
+  },
+  "motion": {
+    "kind": "IDLE",
+    "from": "IDLE",
+    "to": "IDLE",
+    "pass": false,
+    "basis": "SOURCE_FRAME_REVIEW",
+    "idle": {
+      "onRequest": true,
+      "calm": true,
+      "weight": 0,
+      "label": "säger: Jag heter Paow, och jag är din dealer i kväll."
+    }
+  },
+  "speech": {
+    "line": "namn",
+    "language": "sv",
+    "text": "Jag heter Paow, och jag är din dealer i kväll.",
+    "voice": "Paow",
+    "heard": "Jag heter Pau och jag är din dealer i kväll",
+    "restFilm": "paow-vila-01-01",
+    "soundStartsAtSeconds": 0.22,
+    "soundEndsAtSeconds": 2.267
+  },
+  "review": {
+    "decision": "ACCEPTED",
+    "basis": "Inte granskad av Jakob. Gjord av tools/speech.ts ur assets/motions/paow-vila-01-01/source.mp4, inlagd bara kring det som hörs och under hennes egen överläpp, som lyfts när munnen öppnar. Granskaren 4/5: Hört: Jag heter Pau och jag är din dealer i kväll. Båda läpparna (66 %, 81 % vid öppning ≥5 px), lyft till slutet (52). Lyft 3,6 px vid nästan sluten mun (20, 22). Bättre än -08.",
+    "userAccepted": false,
+    "productionReady": false,
+    "provisional": {
+      "by": "huvudagenten med talbanans oberoende granskare",
+      "at": "2026-11-13T22:19:05.526Z",
+      "mandate": "Jakob 2026-11-13 kl. 15.50, med en bild av kön i Granska: \"jag vill nu för jag ska iväg att du godkänner allt videomaterial som innehåller de där kriterierna\" och \"Med andra ord vill jag inte se en sån här lista när jag är tillbaka!\"",
+      "note": "Granskaren 4/5, användbar med anmärkningar: Hört: Jag heter Pau och jag är din dealer i kväll. Båda läpparna (66 %, 81 % vid öppning ≥5 px), lyft till slutet (52). Lyft 3,6 px vid nästan sluten mun (20, 22). Bättre än -08. Avlyssningen hörde: \"Jag heter Pau och jag är din dealer i kväll\"."
+    }
+  },
+  "postProcessing": "the rendered face laid back into the rest film's own frames (assets/speech/paow/paow-tal-namn-sv-09/receipt.json, laidBack)",
+  "generationRef": "assets/motions/paow-tal-namn-sv-09/generation.json",
+  "scoutIntegrated": false,
+  "published": false
+}

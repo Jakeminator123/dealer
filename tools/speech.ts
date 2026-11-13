@@ -437,7 +437,7 @@ export async function layBack(film: string, worker: string, frames: number[], ou
     const box = grownBox(changed, MARGIN, b), mask = featherMask(box.w, box.h, FEATHER), win = mouthWindow(changed, b), soundFile = path.join(work, 'film.pcm');
     // Every frame once more: how far the drawn mouth is from the film's own (the mean difference in brightness inside what the
     // renderer changed), where her own lips are, their colour against the drawn lips' colour, and how open the drawn mouth is.
-    const apart: number[] = [], gaps: number[] = [], rises: number[] = [], laid: {gap: number; rise: number; low: number}[] = [], middles: ({x: number; y: number} | null)[] = [], tones: {own: ReturnType<typeof lipTone>; drawn: ReturnType<typeof lipTone>}[] = [];
+    const apart: number[] = [], gaps: number[] = [], rises: number[] = [], laid: {gap: number; rise: number; low: number; dark?: number; darkRise?: number; deep?: number}[] = [], middles: ({x: number; y: number} | null)[] = [], tones: {own: ReturnType<typeof lipTone>; drawn: ReturnType<typeof lipTone>}[] = [];
     if (options.heard || lips) { let n = 0; for await (const clip of rawFrames(worker, clipBytes)) { if (n >= frames.length) { n++; continue; } const own = await read(filmFrameOf(frames[n++], b)); let sum = 0;
       for (let y = changed.y; y < changed.y + changed.h; y++) { const f = y * W + changed.x, c = (y + b.padY) * RW + (changed.x - b.cropX); for (let x = 0; x < changed.w; x++) sum += Math.abs(own[f + x] - clip[c + x]); }
       apart.push(sum / (changed.w * changed.h));
@@ -447,12 +447,12 @@ export async function layBack(film: string, worker: string, frames: number[], ou
         if ((lips.drop || lips.closed || lips.lift) && lips.under !== null) { const line = lipLine(own, win, at, b), opens = mouthOpens(theirs, win.w, win.h, at, line), mid = line[Math.min(win.w - 1, Math.max(0, Math.round(at.x)))];
           const rise = opens.gap > 0 ? (mid - at.y) * (1 - lips.tall) + opens.rise * lips.tall : 0;
           const drawnAt = lipsMiddle(lipMap(theirs.V), win.w, win.h, at);
-          gaps.push(opens.gap); rises.push(opens.gap >= lips.open[0] ? rise : 0); laid.push({gap: opens.gap * lips.tall, rise, low: drawnAt ? (drawnAt.y - at.y) * lips.tall : 0}); }
+          gaps.push(opens.gap); rises.push(opens.gap >= lips.open[0] ? rise : 0); laid.push({gap: opens.gap * lips.tall, rise, low: drawnAt ? (drawnAt.y - at.y) * lips.tall : 0, dark: opens.dark * lips.tall, darkRise: opens.dark > 0 ? (mid - at.y) * (1 - lips.tall) + opens.darkRise * lips.tall : 0, deep: opens.deep * lips.tall}); }
         else { gaps.push(0); rises.push(0); laid.push({gap: 0, rise: 0, low: 0}); } } } }
     // How far the drawn mouth is moved in each frame (nothing with the recipe as it stands).
-    const heardIn = options.heard ? heardFrames(options.heard, frames.length) : null, shared = lips && lips.share !== undefined ? mouthMoves(laid, lips, heardIn ?? undefined) : null;
+    const heardIn = options.heard ? heardFrames(options.heard, frames.length) : null, weights = heardIn ? speechGate(heardIn, RECIPE.gate, apart) : new Array<number>(frames.length).fill(1);
+    const shared = lips && lips.share !== undefined ? mouthMoves(laid, lips, heardIn ?? undefined, weights.map(weight => weight === 1)) : null;
     const drops = shared ? shared.drops : lips ? mouthDrop(gaps, lips, heardIn ?? undefined) : [], lifts = shared ? shared.lifts : lips ? mouthLift(rises, lips, heardIn ?? undefined) : [];
-    const weights = heardIn ? speechGate(heardIn, RECIPE.gate, apart) : new Array<number>(frames.length).fill(1);
     // The drawn lips' colour is moved by the mean difference to her own lips, over the frames that get the drawn mouth.
     const sums = {own: {y: 0, u: 0, v: 0, n: 0}, drawn: {y: 0, u: 0, v: 0, n: 0}}; tones.forEach((t, i) => { if (weights[i] > 0) for (const side of ['own', 'drawn'] as const) for (const key of ['y', 'u', 'v', 'n'] as const) sums[side][key] += t[side][key]; });
     const shift = lips && sums.own.n && sums.drawn.n ? {y: sums.own.y / sums.own.n - sums.drawn.y / sums.drawn.n, u: sums.own.u / sums.own.n - sums.drawn.u / sums.drawn.n, v: sums.own.v / sums.own.n - sums.drawn.v / sums.drawn.n} : lips ? {y: 0, u: 0, v: 0} : null;
@@ -469,7 +469,7 @@ export async function layBack(film: string, worker: string, frames: number[], ou
           cells?.put(at, frame, W, H, box.x, box.y); }
         n++; if (!stdin.write(frame)) await new Promise(resolve => stdin.once('drain', resolve)); }
     });
-    return {box, changed, frames: frames.length, weights, drops, lifts, lips, shift: shift && {y: Number(shift.y.toFixed(2)), u: Number(shift.u.toFixed(2)), v: Number(shift.v.toFixed(2))}};
+    return {box, changed, frames: frames.length, weights, drops, lifts, opens: laid, lips, shift: shift && {y: Number(shift.y.toFixed(2)), u: Number(shift.u.toFixed(2)), v: Number(shift.v.toFixed(2))}};
   } finally { await handle.close(); }
 }
 

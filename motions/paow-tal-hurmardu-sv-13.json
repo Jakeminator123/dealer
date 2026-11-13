@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "id": "paow-tal-hurmardu-sv-13",
+  "dealer": "paow",
+  "source": {
+    "path": "assets/motions/paow-tal-hurmardu-sv-13/source.mp4",
+    "sha256": "c445b9ea29f2d2a2664a9707c622725a5211be4556b02738d95df5a414e1d4d7",
+    "bytes": 7714058,
+    "width": 1764,
+    "height": 1174,
+    "fps": 24,
+    "frames": 79,
+    "audio": true,
+    "provider": "tools/speech.ts: Scoutgaming's lip-sync renderer on this machine, voice from ElevenLabs",
+    "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Paow"
+  },
+  "motion": {
+    "kind": "IDLE",
+    "from": "IDLE",
+    "to": "IDLE",
+    "pass": false,
+    "basis": "SOURCE_FRAME_REVIEW",
+    "idle": {
+      "onRequest": true,
+      "calm": true,
+      "weight": 0,
+      "label": "säger: Jag mår fint, tack. Korten verkar vara på gott humör i kväll."
+    }
+  },
+  "speech": {
+    "line": "hurmardu",
+    "language": "sv",
+    "text": "Jag mår fint, tack. Korten verkar vara på gott humör i kväll.",
+    "voice": "Paow",
+    "heard": "Jag mår fint, tack. Korten verkar vara på gott humör ikväll.",
+    "restFilm": "paow-vila-01-01",
+    "soundStartsAtSeconds": 0.22,
+    "soundEndsAtSeconds": 2.787
+  },
+  "review": {
+    "decision": "ACCEPTED",
+    "basis": "Inte granskad av Jakob. Gjord av tools/speech.ts ur assets/motions/paow-vila-01-01/source.mp4, inlagd bara kring det som hörs och under hennes egen överläpp, som lyfts när munnen öppnar. Granskaren 4/5: Båda läpparna rör sig. Överläppen hålls lyft i pausen 19–25 och till slutet 63–65, där -12 sjunker medan munnen står öppen. Kvar: öppen mun i tystnad 23–25, matt underläpp.",
+    "userAccepted": false,
+    "productionReady": false,
+    "provisional": {
+      "by": "huvudagenten med talbanans oberoende granskare",
+      "at": "2026-11-13T22:19:05.500Z",
+      "mandate": "Jakob 2026-11-13 kl. 15.50, med en bild av kön i Granska: \"jag vill nu för jag ska iväg att du godkänner allt videomaterial som innehåller de där kriterierna\" och \"Med andra ord vill jag inte se en sån här lista när jag är tillbaka!\"",
+      "note": "Granskaren 4/5, användbar med anmärkningar: Båda läpparna rör sig. Överläppen hålls lyft i pausen 19–25 och till slutet 63–65, där -12 sjunker medan munnen står öppen. Kvar: öppen mun i tystnad 23–25, matt underläpp."
+    }
+  },
+  "postProcessing": "the rendered face laid back into the rest film's own frames (assets/speech/paow/paow-tal-hurmardu-sv-13/receipt.json, laidBack)",
+  "generationRef": "assets/motions/paow-tal-hurmardu-sv-13/generation.json",
+  "scoutIntegrated": false,
+  "published": false
+}

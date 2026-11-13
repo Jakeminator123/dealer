@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "id": "paow-tal-chat4-sv-09",
+  "dealer": "paow",
+  "source": {
+    "path": "assets/motions/paow-tal-chat4-sv-09/source.mp4",
+    "sha256": "ea7d5c247300e964b1028ac006840dc6d310e9895be01e2c4aaa992950626d2d",
+    "bytes": 5492887,
+    "width": 1764,
+    "height": 1174,
+    "fps": 24,
+    "frames": 56,
+    "audio": true,
+    "provider": "tools/speech.ts: Scoutgaming's lip-sync renderer on this machine, voice from ElevenLabs",
+    "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Paow"
+  },
+  "motion": {
+    "kind": "IDLE",
+    "from": "IDLE",
+    "to": "IDLE",
+    "pass": false,
+    "basis": "SOURCE_FRAME_REVIEW",
+    "idle": {
+      "onRequest": true,
+      "calm": true,
+      "weight": 0,
+      "label": "säger: Lycka till med nästa hand."
+    }
+  },
+  "speech": {
+    "line": "chat4",
+    "language": "sv",
+    "text": "Lycka till med nästa hand.",
+    "voice": "Paow",
+    "heard": "Lycka till med nästa hand!",
+    "restFilm": "paow-vila-01-01",
+    "soundStartsAtSeconds": 0.22,
+    "soundEndsAtSeconds": 1.821
+  },
+  "review": {
+    "decision": "ACCEPTED",
+    "basis": "Inte granskad av Jakob. Gjord av tools/speech.ts ur assets/motions/paow-vila-01-01/source.mp4, inlagd bara kring det som hörs och under hennes egen överläpp, som lyfts när munnen öppnar. Granskaren 4/5: Båda läpparna rör sig; överläppen följer munnen till sista öppna rutan (37–39), där sv-08 faller till vila. I övrigt lika: tjock överläpp med nederkant i vila 19, 23–24, 32.",
+    "userAccepted": false,
+    "productionReady": false,
+    "provisional": {
+      "by": "huvudagenten med talbanans oberoende granskare",
+      "at": "2026-11-13T22:19:05.408Z",
+      "mandate": "Jakob 2026-11-13 kl. 15.50, med en bild av kön i Granska: \"jag vill nu för jag ska iväg att du godkänner allt videomaterial som innehåller de där kriterierna\" och \"Med andra ord vill jag inte se en sån här lista när jag är tillbaka!\"",
+      "note": "Granskaren 4/5, användbar med anmärkningar: Båda läpparna rör sig; överläppen följer munnen till sista öppna rutan (37–39), där sv-08 faller till vila. I övrigt lika: tjock överläpp med nederkant i vila 19, 23–24, 32."
+    }
+  },
+  "postProcessing": "the rendered face laid back into the rest film's own frames (assets/speech/paow/paow-tal-chat4-sv-09/receipt.json, laidBack)",
+  "generationRef": "assets/motions/paow-tal-chat4-sv-09/generation.json",
+  "scoutIntegrated": false,
+  "published": false
+}

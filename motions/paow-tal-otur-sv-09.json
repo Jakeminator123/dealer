@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "id": "paow-tal-otur-sv-09",
+  "dealer": "paow",
+  "source": {
+    "path": "assets/motions/paow-tal-otur-sv-09/source.mp4",
+    "sha256": "e86e1bd74b91915e5c480382871fbdff0a5161ba28729c18831e654ce1e677a1",
+    "bytes": 6553420,
+    "width": 1764,
+    "height": 1174,
+    "fps": 24,
+    "frames": 67,
+    "audio": true,
+    "provider": "tools/speech.ts: Scoutgaming's lip-sync renderer on this machine, voice from ElevenLabs",
+    "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Paow"
+  },
+  "motion": {
+    "kind": "IDLE",
+    "from": "IDLE",
+    "to": "IDLE",
+    "pass": false,
+    "basis": "SOURCE_FRAME_REVIEW",
+    "idle": {
+      "onRequest": true,
+      "calm": true,
+      "weight": 0,
+      "label": "säger: Det vänder snart, det brukar det göra."
+    }
+  },
+  "speech": {
+    "line": "otur",
+    "language": "sv",
+    "text": "Det vänder snart, det brukar det göra.",
+    "voice": "Paow",
+    "heard": "Det vänder snart. Det brukar det göra.",
+    "restFilm": "paow-vila-01-01",
+    "soundStartsAtSeconds": 0.22,
+    "soundEndsAtSeconds": 2.294
+  },
+  "review": {
+    "decision": "ACCEPTED",
+    "basis": "Inte granskad av Jakob. Gjord av tools/speech.ts ur assets/motions/paow-vila-01-01/source.mp4, inlagd bara kring det som hörs och under hennes egen överläpp, som lyfts när munnen öppnar. Granskaren 4/5: Båda läpparna: 83 % av öppna rutor. Överläppen ligger kvar vid kommat (24–27) och till sista öppna rutan (51). Lyft cirka 2 px i de slutna rutorna i brukar (30–31). Bättre än -08.",
+    "userAccepted": false,
+    "productionReady": false,
+    "provisional": {
+      "by": "huvudagenten med talbanans oberoende granskare",
+      "at": "2026-11-13T22:19:05.535Z",
+      "mandate": "Jakob 2026-11-13 kl. 15.50, med en bild av kön i Granska: \"jag vill nu för jag ska iväg att du godkänner allt videomaterial som innehåller de där kriterierna\" och \"Med andra ord vill jag inte se en sån här lista när jag är tillbaka!\"",
+      "note": "Granskaren 4/5, användbar med anmärkningar: Båda läpparna: 83 % av öppna rutor. Överläppen ligger kvar vid kommat (24–27) och till sista öppna rutan (51). Lyft cirka 2 px i de slutna rutorna i brukar (30–31). Bättre än -08."
+    }
+  },
+  "postProcessing": "the rendered face laid back into the rest film's own frames (assets/speech/paow/paow-tal-otur-sv-09/receipt.json, laidBack)",
+  "generationRef": "assets/motions/paow-tal-otur-sv-09/generation.json",
+  "scoutIntegrated": false,
+  "published": false
+}
