@@ -102,9 +102,10 @@ export function createMouthLayer(set: (shown: MouthShown | null) => void, option
     l.asked = video.requestVideoFrameCallback(call);
   }
   // Sets the line's sound to begin as the film's time of its first sample is shown, once that is less than LEAD away; or, with
-  // the page silent, only says when it begins. A line found late by more than a few frames is not heard.
+  // the page silent, only says when it begins. A line found late by more than a few frames is not heard. A film that stands still
+  // (a lab page stepping it frame by frame) shows each frame's mouth and sets no sound.
   function schedule(l: Line) {
-    if (l.begun || !l.meta || !l.read?.sound) return;
+    if (l.begun || !l.meta || !l.read?.sound || l.video?.paused) return;
     const p = l.part.patch, t0 = p.sound.startsAtSeconds, show = l.meta.expectedDisplayTime + (t0 - l.meta.mediaTime) * 1000 / l.meta.rate, wait = show - now();
     if (wait > LEAD * 1000) return;
     // a page that has been touched but whose sound is still starting (resume takes a moment) gets until the frame before the line

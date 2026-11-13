@@ -30,7 +30,7 @@ g.AudioContext = class { state = 'running'; currentTime = 5; outputLatency = 0; 
   createBufferSource() { return {buffer: null, connect: (x: unknown) => x, start: (at: number, offset?: number) => started.push({at, offset}), stop: (at: number) => stopped.push(at)}; } };
 g.VideoFrame = class { timestamp: number; constructor(v: {currentTime: number}) { this.timestamp = Math.round(v.currentTime * 1e6); } close() {} };
 Object.defineProperty(globalThis, 'navigator', {value: {userActivation: {hasBeenActive: true}}, configurable: true});
-const video = () => { const v = {readyState: 4, currentTime: 0, playbackRate: 1, calls: [] as Call[], requestVideoFrameCallback(f: Call) { v.calls.push(f); return v.calls.length; }, cancelVideoFrameCallback() {},
+const video = () => { const v = {readyState: 4, currentTime: 0, playbackRate: 1, paused: false, calls: [] as Call[], requestVideoFrameCallback(f: Call) { v.calls.push(f); return v.calls.length; }, cancelVideoFrameCallback() {},
   /** shows film frame k at `at` ms on the page's clock */ show(k: number, at: number) { v.currentTime = (k + 0.5) / 24; const fs = v.calls.splice(0); for (const f of fs) f(at, {mediaTime: k / 24, expectedDisplayTime: at}); } }; return v; };
 // The layer's clock and its put-off calls are the test's: nothing here waits on the wall clock.
 const queue: {at: number; call: () => void}[] = [];
@@ -75,6 +75,15 @@ test('a patch not read in time is not laid: the part plays as before and the lin
   assert.equal(layer.state(part), 'failed');
   const v = video(); v.currentTime = 12.5 / 24; layer.update({mouth: part, fps: 24}, v as never); layer.update({mouth: part, fps: 24}, v as never);
   assert.deepEqual(said, [false]); assert.equal(shown.length, 0); assert.match(layer.log.at(-1)!.note[0], /inte inläst/);
+  layer.dispose();
+});
+
+test('a film that stands still (stepped frame by frame) shows each frame\'s mouth and sets no sound', async () => {
+  files = {'mouth.webp': strip, 'line.wav': wav}; started.length = stopped.length = 0;
+  const shown: (MouthShown | null)[] = [], layer = layerFor(shown), part: MouthPart = {patch: patchOf(), base: 'd/'}; await layer.preload([part]);
+  const v = video(); v.paused = true; const on = {mouth: part, fps: 24};
+  for (const k of [11, 18, 20, 12]) { v.show(k, clock = 5000 + k); layer.update(on, v as never, k); assert.ok(shown.at(-1), `frame ${k} laid`); assert.equal(shown.at(-1)!.cell.x, ((k - 10) % 4) * 184); }
+  assert.equal(started.length, 0, 'no sound while it stands still'); assert.equal(layer.log.at(-1)!.note.length, 0);
   layer.dispose();
 });
 
