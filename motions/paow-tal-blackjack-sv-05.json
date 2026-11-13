@@ -1,0 +1,50 @@
+{
+  "schemaVersion": 1,
+  "id": "paow-tal-blackjack-sv-05",
+  "dealer": "paow",
+  "source": {
+    "path": "assets/motions/paow-tal-blackjack-sv-05/source.mp4",
+    "sha256": "3a52575059e5a6553d1554f4a93382d8faae66b12ebe901ebb7f47c0dd9f32e5",
+    "bytes": 6723566,
+    "width": 1764,
+    "height": 1174,
+    "fps": 24,
+    "frames": 70,
+    "audio": true,
+    "provider": "tools/speech.ts: Scoutgaming's lip-sync renderer on this machine, voice from ElevenLabs",
+    "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Paow"
+  },
+  "motion": {
+    "kind": "IDLE",
+    "from": "IDLE",
+    "to": "IDLE",
+    "pass": false,
+    "basis": "SOURCE_FRAME_REVIEW",
+    "idle": {
+      "onRequest": true,
+      "calm": true,
+      "weight": 0,
+      "label": "säger: Blackjack! Vackert spelat. Grattis!"
+    }
+  },
+  "speech": {
+    "line": "blackjack",
+    "language": "sv",
+    "text": "Blackjack! Vackert spelat. Grattis!",
+    "voice": "Paow",
+    "heard": "Blackjack, vackert spelat. Grattis!",
+    "restFilm": "paow-vila-01-01",
+    "soundStartsAtSeconds": 0.22,
+    "soundEndsAtSeconds": 2.428
+  },
+  "review": {
+    "decision": "PENDING",
+    "basis": "Inte granskad av Jakob. Gjord av tools/speech.ts ur assets/motions/paow-vila-01-01/source.mp4 och inlagd bara kring det som hörs. Inte oberoende granskad; före grinden (blackjack-sv-04) 4/5: Bäst i listan: läpparna slutna för B (8–11), pausen 22–24 sluts naturligt, slut +3; men läpparna tunnare och mattare än vilans.",
+    "userAccepted": false,
+    "productionReady": false
+  },
+  "postProcessing": "the rendered face laid back into the rest film's own frames (assets/speech/paow/paow-tal-blackjack-sv-05/receipt.json, laidBack)",
+  "generationRef": "assets/motions/paow-tal-blackjack-sv-05/generation.json",
+  "scoutIntegrated": false,
+  "published": false
+}

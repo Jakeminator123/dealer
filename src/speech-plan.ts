@@ -156,23 +156,48 @@ export function blendFrame(film: Uint8Array, clip: Uint8Array, box: Box, mask: F
 // in a pause. Reviewed frame by frame (2026-11-13, 58 films) that was the fault they shared: the mouth opened 2–6 frames before she
 // was heard and closed 5–8 after, hung half open in pauses, and her lips were the drawn, thinner ones from the first frame. So the
 // drawn mouth is laid in only around what is heard, and elsewhere the film keeps its own mouth, closed, as in the rest film.
+// A first gate eased the drawn mouth in and out over two frames at a fixed distance from the sound. Reviewed the same day (28
+// films), the eased frames showed two mouths at once (teeth through her closed lips), the drawn mouth could open again in the
+// silence it was let through, and in a pause it was only half taken away. So a change is now one frame, it is put where the two
+// mouths are most alike, and a pause is taken only when her own mouth gets at least two whole frames in it (a shorter closing
+// reads as a twitch).
 //   floorDb  a frame is heard when its sound is louder than this, counted from the line's loudest frame
-//   before   frames of drawn mouth kept before a heard frame (the mouth forms a sound a moment before it sounds), after: after one
+//   before   how many frames before a heard frame the change to the drawn mouth may lie (1 … before), after: how many frames
+//            after a heard frame the change back may lie (1 … after)
 //   pause    a silence of fewer frames than this inside the line is spoken through (the drawn mouth stays)
-//   ramp     frames over which the drawn mouth comes and goes, outside the frames above
-export type Gate = {floorDb: number; before: number; after: number; pause: number; ramp: number};
-export const GATE: Gate = {floorDb: -35, before: 1, after: 2, pause: 5, ramp: 2};
-/**
- * How much of the drawn mouth each frame of a film gets, 0 (the film's own mouth) to 1 (the drawn one). track is the film's own
- * sound from its first frame, 24 kHz mono 16-bit, as it will be heard (the line's sound already set at its place in the film).
- */
-export function speechGate(track: Uint8Array, frames: number, gate: Gate = GATE): number[] {
+export type Gate = {floorDb: number; before: number; after: number; pause: number};
+export const GATE: Gate = {floorDb: -30, before: 2, after: 3, pause: 5};
+/** Which frames of a film are heard: louder than the gate's floor under the film's loudest frame. track is the film's own sound
+ * from its first frame, 24 kHz mono 16-bit, as it will be heard (the line's sound already set at its place in the film). */
+export function heardFrames(track: Uint8Array, frames: number, gate: Gate = GATE): boolean[] {
   if (!Number.isInteger(frames) || frames < 1 || track.length % 2) throw Error('invalid_gate');
   const view = new DataView(track.buffer, track.byteOffset, track.byteLength), db: number[] = [];
   for (let k = 0; k < frames; k++) { let sum = 0, n = 0; for (let i = k * SAMPLES_PER_FRAME; i < (k + 1) * SAMPLES_PER_FRAME && i * 2 + 1 < track.length; i++) { const v = view.getInt16(i * 2, true) / 32768; sum += v * v; n++; } db.push(n ? 10 * Math.log10(sum / n + 1e-12) : -120); }
-  const peak = Math.max(...db), heard = db.map(d => peak > -90 && d > peak + gate.floorDb), drawn = new Array<boolean>(frames).fill(false);
-  for (let k = 0; k < frames; k++) if (heard[k]) for (let j = Math.max(0, k - gate.before); j <= Math.min(frames - 1, k + gate.after); j++) drawn[j] = true;
-  // A short silence between two heard stretches is spoken through.
-  for (let k = 0; k < frames;) { if (drawn[k]) { k++; continue; } let end = k; while (end < frames && !drawn[end]) end++; if (k > 0 && end < frames && end - k < gate.pause - gate.before - gate.after) for (let j = k; j < end; j++) drawn[j] = true; k = end; }
-  return drawn.map((on, k) => { if (on) return 1; let d = frames; for (let j = Math.max(0, k - gate.ramp); j <= Math.min(frames - 1, k + gate.ramp); j++) if (drawn[j]) d = Math.min(d, Math.abs(j - k)); const t = Math.max(0, 1 - d / (gate.ramp + 1)); return Number((t * t * (3 - 2 * t)).toFixed(3)); });
+  const peak = Math.max(...db);
+  return db.map(d => peak > -90 && d > peak + gate.floorDb);
+}
+/**
+ * How much of the drawn mouth each frame of a film gets: 1 (the drawn mouth) from just before she is heard to just after, 0 (the
+ * film's own mouth) elsewhere, and one frame of both, 0.5, at each change. apart says for every frame how far the drawn mouth is
+ * from the film's own there (any measure, the same for all frames): each change is put on the silent frame, within the gate's
+ * reach of the sound, where they are least apart, the nearest to the sound when several are alike. Without it the changes lie
+ * one frame from the sound.
+ */
+export function speechGate(heard: boolean[], gate: Gate = GATE, apart?: number[]): number[] {
+  const frames = heard.length, weights = new Array<number>(frames).fill(0);
+  if (apart && apart.length !== frames) throw Error('invalid_gate');
+  // The silent frame between from and to where the two mouths are least apart; −1 when there is none.
+  const least = (from: number, to: number, near: number) => { let best = -1;
+    for (let k = Math.max(0, from); k <= Math.min(to, frames - 1); k++) { if (heard[k]) continue; const d = apart ? apart[k] - (best < 0 ? Infinity : apart[best]) : 0; if (best < 0 || d < -1e-9 || (Math.abs(d) <= 1e-9 && Math.abs(k - near) < Math.abs(best - near))) best = k; }
+    return best; };
+  // The stretches she is heard in. A silence shorter than a pause is spoken through, and so is one in which her own mouth would
+  // not get two whole frames between the change back and the change to the drawn mouth again.
+  const stretches: {first: number; last: number; come: number; go: number}[] = [];
+  for (let k = 0; k < frames; k++) { if (!heard[k]) continue; const now = stretches[stretches.length - 1];
+    if (now && k - now.last - 1 < gate.pause) { now.last = k; continue; }
+    if (now) { const go = least(now.last + 1, Math.min(now.last + gate.after, k - 4), now.last + 1), come = go < 0 ? -1 : least(Math.max(go + 3, k - gate.before), k - 1, k - 1); if (come < 0) { now.last = k; continue; } now.go = go; stretches.push({first: k, last: k, come, go: -1}); }
+    else stretches.push({first: k, last: k, come: least(k - gate.before, k - 1, k - 1), go: -1}); }
+  const end = stretches[stretches.length - 1]; if (end) end.go = least(end.last + 1, end.last + gate.after, end.last + 1);
+  for (const s of stretches) { for (let k = s.come < 0 ? s.first : s.come + 1; k <= (s.go < 0 ? s.last : s.go - 1); k++) weights[k] = 1; if (s.come >= 0) weights[s.come] = 0.5; if (s.go >= 0) weights[s.go] = 0.5; }
+  return weights;
 }

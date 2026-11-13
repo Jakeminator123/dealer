@@ -1,0 +1,50 @@
+{
+  "schemaVersion": 1,
+  "id": "paow-tal-chat2-sv-04",
+  "dealer": "paow",
+  "source": {
+    "path": "assets/motions/paow-tal-chat2-sv-04/source.mp4",
+    "sha256": "c9211ec32754a2b4201b98c826361ecf87ee5d175fafa7c72b6b2860e1a7f84a",
+    "bytes": 4963007,
+    "width": 1764,
+    "height": 1174,
+    "fps": 24,
+    "frames": 51,
+    "audio": true,
+    "provider": "tools/speech.ts: Scoutgaming's lip-sync renderer on this machine, voice from ElevenLabs",
+    "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Paow"
+  },
+  "motion": {
+    "kind": "IDLE",
+    "from": "IDLE",
+    "to": "IDLE",
+    "pass": false,
+    "basis": "SOURCE_FRAME_REVIEW",
+    "idle": {
+      "onRequest": true,
+      "calm": true,
+      "weight": 0,
+      "label": "säger: Roligt att du är här."
+    }
+  },
+  "speech": {
+    "line": "chat2",
+    "language": "sv",
+    "text": "Roligt att du är här.",
+    "voice": "Paow",
+    "heard": "Roligt att du är här",
+    "restFilm": "paow-vila-01-01",
+    "soundStartsAtSeconds": 0.22,
+    "soundEndsAtSeconds": 1.598
+  },
+  "review": {
+    "decision": "PENDING",
+    "basis": "Inte granskad av Jakob. Gjord av tools/speech.ts ur assets/motions/paow-vila-01-01/source.mp4 och inlagd bara kring det som hörs. Inte oberoende granskad; före grinden (chat2-sv-03) 3/5: Munnen öppen 7–37, ljud 9–33: tänder i tysta 8 och 35–36, tänder genom halvtransparenta läppar i 7 och 37; läpparna sväller till vilans på 2 rutor.",
+    "userAccepted": false,
+    "productionReady": false
+  },
+  "postProcessing": "the rendered face laid back into the rest film's own frames (assets/speech/paow/paow-tal-chat2-sv-04/receipt.json, laidBack)",
+  "generationRef": "assets/motions/paow-tal-chat2-sv-04/generation.json",
+  "scoutIntegrated": false,
+  "published": false
+}

@@ -1,0 +1,50 @@
+{
+  "schemaVersion": 1,
+  "id": "paow-tal-hurmardu-sv-06",
+  "dealer": "paow",
+  "source": {
+    "path": "assets/motions/paow-tal-hurmardu-sv-06/source.mp4",
+    "sha256": "6c45389c5de9446db9a574399cc361e43bd50111217b070f4e4f1c556f765ed9",
+    "bytes": 8432797,
+    "width": 1764,
+    "height": 1174,
+    "fps": 24,
+    "frames": 87,
+    "audio": true,
+    "provider": "tools/speech.ts: Scoutgaming's lip-sync renderer on this machine, voice from ElevenLabs",
+    "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Paow"
+  },
+  "motion": {
+    "kind": "IDLE",
+    "from": "IDLE",
+    "to": "IDLE",
+    "pass": false,
+    "basis": "SOURCE_FRAME_REVIEW",
+    "idle": {
+      "onRequest": true,
+      "calm": true,
+      "weight": 0,
+      "label": "säger: Jag mår fint, tack. Korten verkar vara på gott humör i kväll."
+    }
+  },
+  "speech": {
+    "line": "hurmardu",
+    "language": "sv",
+    "text": "Jag mår fint, tack. Korten verkar vara på gott humör i kväll.",
+    "voice": "Paow",
+    "heard": "Jag mår fint, tack. Kortet verkar vara på gott humör i kväll",
+    "restFilm": "paow-vila-01-01",
+    "soundStartsAtSeconds": 0.22,
+    "soundEndsAtSeconds": 3.116
+  },
+  "review": {
+    "decision": "PENDING",
+    "basis": "Inte granskad av Jakob. Gjord av tools/speech.ts ur assets/motions/paow-vila-01-01/source.mp4 och inlagd bara kring det som hörs. Inte oberoende granskad; före grinden (hurmardu-sv-05) 3/5: Avlyssnat: \"Kortet verkar …\" i stället för \"Korten\". Munnen öppen 7–74, ljud 9–71; vid punkten efter \"tack\" (29–34) står munnen öppen med tänder.",
+    "userAccepted": false,
+    "productionReady": false
+  },
+  "postProcessing": "the rendered face laid back into the rest film's own frames (assets/speech/paow/paow-tal-hurmardu-sv-06/receipt.json, laidBack)",
+  "generationRef": "assets/motions/paow-tal-hurmardu-sv-06/generation.json",
+  "scoutIntegrated": false,
+  "published": false
+}

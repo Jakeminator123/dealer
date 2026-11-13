@@ -40,7 +40,7 @@ import os from 'node:os';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {BRIDGE, RENDER, bridgeProblems, bridgeFilter, clipLength, filmFrameOf, lineFrames, longestSound, restPath, planRows, canonical, sourcesOf, bakeJob, answerVideo, sameWords,
-  changedBox, unionBox, grownBox, featherMask, blendFrame, speechGate, GATE, type Gate, type BakeJob, type BankId, type Box, type Bridge, type PlanRow, type Sources} from '../src/speech-plan.ts';
+  changedBox, unionBox, grownBox, featherMask, blendFrame, heardFrames, speechGate, GATE, type Gate, type BakeJob, type BankId, type Box, type Bridge, type PlanRow, type Sources} from '../src/speech-plan.ts';
 
 const scratch = 'D:/dealer-scratch/tmp', env = existsSync(scratch) ? {...process.env, TEMP: scratch, TMP: scratch} : process.env;
 const ffmpeg = process.env.FFMPEG ?? 'ffmpeg', ffprobe = process.env.FFPROBE ?? 'ffprobe';
@@ -383,24 +383,32 @@ async function openRaw(film: string, work: string): Promise<Raw> {
 /** Lays the renderer's clip back into the film's frames and writes the film with the clip's sound. Returns what was laid back. */
 // options: b the bridge the clip was cut with (the rest bank's by default); extra how many frames the renderer's clip has after the
 // plan's last (a film that does not end on its first frame gets that frame added last for the renderer, and it is left out here);
-// pcm the film's whole sound at 24 kHz when it is not the renderer's own track (then one frame longer than the film); gate how
-// much of the drawn mouth each frame gets (speechGate), all of it when none is given.
-export async function layBack(film: string, worker: string, frames: number[], out: string, work: string, options: {b?: Bridge; extra?: number; pcm?: Buffer; gate?: number[]} = {}): Promise<{box: Box; changed: Box; frames: number}> {
+// pcm the film's whole sound at 24 kHz when it is not the renderer's own track (then one frame longer than the film); heard the
+// film's sound as it will play, 24 kHz: the drawn mouth is then laid in only around what is heard (speechGate), each change on the
+// frame where the drawn mouth is least apart from the film's own; without it every frame gets the drawn mouth. weights is what
+// each frame got.
+export async function layBack(film: string, worker: string, frames: number[], out: string, work: string, options: {b?: Bridge; extra?: number; pcm?: Buffer; heard?: Uint8Array} = {}): Promise<{box: Box; changed: Box; frames: number; weights: number[]}> {
   const b = options.b ?? BRIDGE, extra = options.extra ?? 0, {width: W, height: H} = b.film, clipBytes = CLIP_BYTES, opened = await openRaw(film, work), read = opened.read, handle = {close: opened.close};
   try {
     let changed: Box | null = null, k = 0;
     for await (const clip of rawFrames(worker, clipBytes)) { if (k >= frames.length + extra) throw Error('Rendererns klipp är längre än planen.'); if (k < frames.length) changed = unionBox(changed, changedBox(await read(filmFrameOf(frames[k], b)), clip, b, LEVEL)); k++; }
     if (k !== frames.length + extra) throw Error(`Rendererns klipp har ${k} rutor; planen ${frames.length + extra}.`);
     if (!changed) throw Error('Rendererns klipp skiljer sig inte från filmen: ingen mun är ritad.');
+    // How far the drawn mouth is from the film's own in each frame: the mean difference in brightness inside what the renderer changed.
+    const apart: number[] = [], RW = RENDER.width;
+    if (options.heard) { let n = 0; for await (const clip of rawFrames(worker, clipBytes)) { if (n >= frames.length) { n++; continue; } const own = await read(filmFrameOf(frames[n++], b)); let sum = 0;
+      for (let y = changed.y; y < changed.y + changed.h; y++) { const f = y * W + changed.x, c = (y + b.padY) * RW + (changed.x - b.cropX); for (let x = 0; x < changed.w; x++) sum += Math.abs(own[f + x] - clip[c + x]); }
+      apart.push(sum / (changed.w * changed.h)); } }
+    const weights = options.heard ? speechGate(heardFrames(options.heard, frames.length), GATE, apart) : new Array<number>(frames.length).fill(1);
     const box = grownBox(changed, MARGIN, b), mask = featherMask(box.w, box.h, FEATHER), clips = rawFrames(worker, clipBytes), soundFile = path.join(work, 'film.pcm');
     if (options.pcm) await writeFile(soundFile, options.pcm);
     const sound = options.pcm ? ['-f', 's16le', '-ar', String(RENDER.pcmRate), '-ac', '1', '-i', soundFile] : ['-i', worker], coded = options.pcm ? ['-c:a', 'aac', '-b:a', '128k', '-ar', '48000'] : ['-c:a', 'copy'];
     await ff(['-y', '-f', 'rawvideo', '-pix_fmt', 'yuv420p', '-s', `${W}x${H}`, '-r', String(RENDER.fps), '-i', 'pipe:0', ...sound, '-map', '0:v:0', '-map', '1:a:0',
       '-c:v', 'libx264', '-preset', 'slow', '-crf', '12', '-pix_fmt', 'yuv420p', ...coded, '-movflags', '+faststart', out], async stdin => {
       let n = 0;
-      for await (const clip of clips) { if (n >= frames.length) { n++; continue; } const weight = options.gate ? options.gate[n] ?? 0 : 1, frame = await read(filmFrameOf(frames[n++], b)); if (weight > 0) blendFrame(frame, clip, box, weighed(mask, weight), b); if (!stdin.write(frame)) await new Promise(resolve => stdin.once('drain', resolve)); }
+      for await (const clip of clips) { if (n >= frames.length) { n++; continue; } const weight = weights[n], frame = await read(filmFrameOf(frames[n++], b)); if (weight > 0) blendFrame(frame, clip, box, weighed(mask, weight), b); if (!stdin.write(frame)) await new Promise(resolve => stdin.once('drain', resolve)); }
     });
-    return {box, changed, frames: frames.length};
+    return {box, changed, frames: frames.length, weights};
   } finally { await handle.close(); }
 }
 
@@ -520,14 +528,14 @@ export async function say(register: Register, root: string, options: SayOptions)
       rendered = {image: register.renderer.image, releaseSha256: baked.release, gpu: baked.gpu, jobId: baked.jobId, requestId: baked.job.binding.requestId, warm: baked.warm, seconds: Math.round((Date.now() - started) / 1000)}; }
     // The drawn mouth only around what is heard: the film's own sound as it will play (the renderer's lead, then the line).
     const track = Buffer.alloc(total * (RENDER.pcmRate / RENDER.fps) * 2); pcm.copy(track, RENDER.leadSamples * 2, 0, Math.min(pcm.length, track.length - RENDER.leadSamples * 2));
-    const weights = speechGate(track, total), filmRel = bank.film, laid = await layBack(path.join(root, filmRel), worker, frames, out, work, {gate: weights}), made = probe(out);
+    const filmRel = bank.film, laid = await layBack(path.join(root, filmRel), worker, frames, out, work, {heard: track}), made = probe(out);
     if (made.width !== BRIDGE.film.width || made.height !== BRIDGE.film.height || made.frames !== total || !made.audio) throw Error(`Filmen blev ${made.width} × ${made.height}, ${made.frames} rutor, ljud ${made.audio}; väntat ${total} rutor med ljud.`);
     await writeFile(path.join(dir, 'receipt.json'), json({schemaVersion: 1, id, dealer: options.dealer, role: 'film', createdAt: new Date().toISOString(), by: 'tools/speech.ts say',
       line: options.line, language, text, voice, sound: {path: 'tts.mp3', sha256: await sha256File(mp3), characters: text.length, pcmSha256: sha256(pcm), seconds: Number((pcm.length / 2 / RENDER.pcmRate).toFixed(3)), heard, wordsMatch},
       plan: {restFilm: filmRel, restFilmSha256: await sha256File(path.join(root, filmRel)), clipFrames: [frames[0], Math.max(...frames), frames[frames.length - 1]], filmFrames: [filmFrameOf(frames[0]), filmFrameOf(Math.max(...frames)), filmFrameOf(frames[frames.length - 1])], rows},
       bank: bank.id, renderer: rendered,
       worker: {path: 'worker.mp4', sha256: sha256(data), bytes: data.length, width: RENDER.width, height: RENDER.height},
-      laidBack: {bridge: BRIDGE, changed: laid.changed, box: laid.box, level: LEVEL, margin: MARGIN, feather: FEATHER, gate: GATE, weights},
+      laidBack: {bridge: BRIDGE, changed: laid.changed, box: laid.box, level: LEVEL, margin: MARGIN, feather: FEATHER, gate: GATE, weights: laid.weights},
       output: {path: 'source.mp4', sha256: await sha256File(out), width: made.width, height: made.height, fps: RENDER.fps, frames: made.frames, audio: true, encoding: ENCODING},
       note: 'Outside the box every pixel is the rest film\'s own frame (encoded once more), and so is the mouth where she is not heard (laidBack.weights, one per frame). Not reviewed: tools/film-review.md before Jakob judges it.'}));
     log(`${id}: klart → ${path.relative(root, out).replaceAll('\\', '/')} (${total} rutor, munnen lagd i ${laid.box.w} × ${laid.box.h} vid ${laid.box.x},${laid.box.y})`);
@@ -591,13 +599,16 @@ export async function over(register: Register, root: string, options: OverOption
   if (!take) throw Error(`Ingen färdig tagning av ${options.line} med rösten ${own}; gör den först med say.`);
   const lead = RENDER.leadSamples / RENDER.pcmRate; if (!(at >= lead)) throw Error(`Ljudet kan börja tidigast ${lead} s in i filmen.`);
   const bank = await makeBank(register, root, options.dealer, log, options.film), clip = bank.sources.clips[0], total = clip.frameCount + 1;
-  // The proof keeps its name while it is made from the same reading (the same sound file, whichever take holds it); made from
-  // another (a new voice, a new reading) it gets the next number, and the earlier film stays where it is.
+  // A film never changes under its id: the proof gets the next number when it is made from another reading (a new voice, a new
+  // reading) and when the same rendering is laid back another way than before, and the earlier film stays where it is. The same
+  // reading (the same sound file, whichever take holds it) over the same film from the same place is rendered once: its kept
+  // answer is carried to the new number.
   const stem = `${options.dealer}-tal-${options.line}-over-${options.film.replace(new RegExp(`^${options.dealer}-`), '')}`; let id = stem;
   type Made = {sound?: {from?: string; startsAtSeconds?: number}; film?: {sha256?: string}; plan?: {rows?: unknown}; renderer?: {releaseSha256: string; gpu: string; jobId: string; requestId: string; seconds: number}; laidBack?: {gate?: Gate}};
   const reading = await sha256File(path.join(base, take.id, 'tts.mp3')), madeAs = async (name: string) => { const file = path.join(base, name, 'receipt.json'); if (!existsSync(file)) return null;
     const r = JSON.parse(await readFile(file, 'utf8')) as Made, from = path.join(base, String(r.sound?.from ?? '-')); return {r, same: existsSync(from) && await sha256File(from) === reading}; };
-  let earlier = await madeAs(id); for (let n = 2; earlier && !earlier.same; n++) { id = `${stem}-${String(n).padStart(2, '0')}`; earlier = await madeAs(id); }
+  let kept: {name: string; r: Made} | null = null;
+  for (let n = 2, here = await madeAs(id); here; n++) { if (here.same && existsSync(path.join(base, id, 'worker.mp4'))) kept = {name: id, r: here.r}; id = `${stem}-${String(n).padStart(2, '0')}`; here = await madeAs(id); }
   const dir = path.join(base, id), work = await mkdtemp(path.join(existsSync(scratch) ? scratch : os.tmpdir(), 'speech-'));
   try {
     const said = await toPcm(path.join(base, take.id, 'tts.mp3'), path.join(work, 'speech.pcm')), samples = total * (RENDER.pcmRate / RENDER.fps) - RENDER.leadSamples - RENDER.trailSamples, before = Math.round(at * RENDER.pcmRate) - RENDER.leadSamples;
@@ -607,23 +618,23 @@ export async function over(register: Register, root: string, options: OverOption
     const rows = planRows(clip.take, [...Array.from({length: clip.frameCount}, (_, k) => k), 0]);
     // The same reading over the same film from the same place has been rendered before: the renderer's kept answer is laid back
     // again, and the graphics card is not used. Laid back as the tool lays a mouth back now, the film is already there.
-    const old = earlier?.r, keptAnswer = !!old?.renderer && old.sound?.startsAtSeconds === at && old.film?.sha256 === await sha256File(path.join(root, filmRel)) && sameValue(old.plan?.rows, rows) && existsSync(path.join(dir, 'worker.mp4'));
-    if (keptAnswer && sameValue(old!.laidBack?.gate ?? null, GATE)) { log(`${id}: finns redan.`); return {dir, id}; }
-    log(`${id}: "${take.receipt.text}" från ${at} s över ${options.film} (${clip.frameCount} rutor). ${keptAnswer ? 'Samma rendering som förut; munnen läggs tillbaka på nytt (inget grafikkort).' : 'Renderar …'}`);
-    const made = keptAnswer ? {data: await readFile(path.join(dir, 'worker.mp4')), release: old!.renderer!.releaseSha256, gpu: old!.renderer!.gpu, jobId: old!.renderer!.jobId, job: {binding: {requestId: old!.renderer!.requestId}}, seconds: old!.renderer!.seconds}
+    const old = kept?.r, keptAnswer = !!old?.renderer && old.sound?.startsAtSeconds === at && old.film?.sha256 === await sha256File(path.join(root, filmRel)) && sameValue(old.plan?.rows, rows);
+    if (keptAnswer && sameValue(old!.laidBack?.gate ?? null, GATE)) { log(`${kept!.name}: finns redan.`); return {dir: path.join(base, kept!.name), id: kept!.name}; }
+    log(`${id}: "${take.receipt.text}" från ${at} s över ${options.film} (${clip.frameCount} rutor). ${keptAnswer ? `Samma rendering som ${kept!.name}; munnen läggs tillbaka på nytt (inget grafikkort).` : 'Renderar …'}`);
+    const made = keptAnswer ? {data: await readFile(path.join(base, kept!.name, 'worker.mp4')), release: old!.renderer!.releaseSha256, gpu: old!.renderer!.gpu, jobId: old!.renderer!.jobId, job: {binding: {requestId: old!.renderer!.requestId}}, seconds: old!.renderer!.seconds}
       : await render(register, work, bank, rows, pcm, id);
     await mkdir(dir, {recursive: true});
     const worker = path.join(dir, 'worker.mp4'), out = path.join(dir, 'source.mp4'); await writeFile(worker, made.data);
     // The film's sound: the renderer's timeline (its lead, then the padded sound), cut to the film's own length.
     const track = Buffer.alloc(clip.frameCount * (RENDER.pcmRate / RENDER.fps) * 2); pcm.copy(track, RENDER.leadSamples * 2, 0, Math.min(pcm.length, track.length - RENDER.leadSamples * 2));
-    const weights = speechGate(track, clip.frameCount), laid = await layBack(path.join(root, filmRel), worker, Array.from({length: clip.frameCount}, (_, k) => k), out, work, {b: WHOLE, extra: 1, pcm: track, gate: weights}), film = probe(out);
+    const laid = await layBack(path.join(root, filmRel), worker, Array.from({length: clip.frameCount}, (_, k) => k), out, work, {b: WHOLE, extra: 1, pcm: track, heard: track}), film = probe(out);
     if (film.frames !== clip.frameCount || !film.audio) throw Error(`Filmen blev ${film.frames} rutor, ljud ${film.audio}; väntat ${clip.frameCount} med ljud.`);
     await writeFile(path.join(dir, 'receipt.json'), json({schemaVersion: 1, id, dealer: options.dealer, role: 'film', kind: 'over', createdAt: new Date().toISOString(), by: 'tools/speech.ts over',
       line: options.line, language: take.receipt.language, text: take.receipt.text, voice: take.receipt.voice, film: {id: options.film, path: filmRel, sha256: await sha256File(path.join(root, filmRel))},
       sound: {from: `${take.id}/tts.mp3`, seconds: Number((said.length / 2 / RENDER.pcmRate).toFixed(3)), heard: take.receipt.sound.heard ?? null, startsAtSeconds: at, endsAtSeconds: Number((at + said.length / 2 / RENDER.pcmRate).toFixed(3))},
       plan: {rows, note: 'the film\'s frames in order and its first frame once more for the renderer; that last frame is not in the film'}, bank: bank.id,
       renderer: {image: register.renderer.image, releaseSha256: made.release, gpu: made.gpu, jobId: made.jobId, requestId: made.job.binding.requestId, seconds: made.seconds},
-      worker: {path: 'worker.mp4', sha256: sha256(made.data), bytes: made.data.length}, laidBack: {bridge: WHOLE, changed: laid.changed, box: laid.box, level: LEVEL, margin: MARGIN, feather: FEATHER, gate: GATE, weights},
+      worker: {path: 'worker.mp4', sha256: sha256(made.data), bytes: made.data.length}, laidBack: {bridge: WHOLE, changed: laid.changed, box: laid.box, level: LEVEL, margin: MARGIN, feather: FEATHER, gate: GATE, weights: laid.weights},
       output: {path: 'source.mp4', sha256: await sha256File(out), width: film.width, height: film.height, fps: RENDER.fps, frames: film.frames, audio: true, encoding: ENCODING.replace('as the renderer wrote it', '128 kbit/s')},
       note: 'A proof of speech over a deal. Outside the box every pixel is the film\'s own frame (encoded once more). Not a take of the bank: it has no card track and no verdict.'}));
     log(`${id}: klart → ${path.relative(root, out).replaceAll('\\', '/')} (${film.frames} rutor, munnen lagd i ${laid.box.w} × ${laid.box.h} vid ${laid.box.x},${laid.box.y})`);
@@ -638,7 +649,8 @@ export async function proof(register: Register, root: string, dealer: string, lo
   const d = register.dealers[dealer], own = register.voices[d?.voice ?? '']?.name;
   for (const id of existsSync(base) ? (await readdir(base)).sort() : []) { const file = path.join(base, id, 'receipt.json'); if (id === 'bank' || !existsSync(file) || !existsSync(path.join(base, id, 'source.mp4'))) continue;
     const receipt = JSON.parse(await readFile(file, 'utf8')); if ((typeof receipt.voice === 'string' ? receipt.voice : receipt.voice?.name) !== own) continue;
-    if (receipt.kind) shown.set(receipt.kind === 'reel' ? id : `${receipt.line}-${receipt.film.id}`, {id, receipt}); else newest.set(`${receipt.line}-${receipt.language}`, {id, receipt}); }
+    // The newest reel of the same lines, the newest film of a line over a film, the newest take of a line.
+    if (receipt.kind) shown.set(receipt.kind === 'reel' ? `reel-${(receipt.segments as {text?: string}[]).map(s => s.text ?? '').join('|')}` : `${receipt.line}-${receipt.film.id}`, {id, receipt}); else newest.set(`${receipt.line}-${receipt.language}`, {id, receipt}); }
   if (!newest.size) throw Error(`Inga färdiga repliker för ${dealer} med rösten ${own}.`);
   const reels = [...shown.values()];
   await mkdir(dir, {recursive: true});

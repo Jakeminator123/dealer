@@ -1,0 +1,50 @@
+{
+  "schemaVersion": 1,
+  "id": "paow-tal-vetej-sv-04",
+  "dealer": "paow",
+  "source": {
+    "path": "assets/motions/paow-tal-vetej-sv-04/source.mp4",
+    "sha256": "5a15fda5f07c3526424fd8ead8678c521d9860bc2765d8cc039292fa9507d6fd",
+    "bytes": 8332353,
+    "width": 1764,
+    "height": 1174,
+    "fps": 24,
+    "frames": 85,
+    "audio": true,
+    "provider": "tools/speech.ts: Scoutgaming's lip-sync renderer on this machine, voice from ElevenLabs",
+    "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Paow"
+  },
+  "motion": {
+    "kind": "IDLE",
+    "from": "IDLE",
+    "to": "IDLE",
+    "pass": false,
+    "basis": "SOURCE_FRAME_REVIEW",
+    "idle": {
+      "onRequest": true,
+      "calm": true,
+      "weight": 0,
+      "label": "säger: Det kan jag tyvärr inte svara på, men korten ljuger aldrig."
+    }
+  },
+  "speech": {
+    "line": "vetej",
+    "language": "sv",
+    "text": "Det kan jag tyvärr inte svara på, men korten ljuger aldrig.",
+    "voice": "Paow",
+    "heard": "Det kan jag tyvärr inte svara på, men korten ljuger aldrig.",
+    "restFilm": "paow-vila-01-01",
+    "soundStartsAtSeconds": 0.22,
+    "soundEndsAtSeconds": 3.022
+  },
+  "review": {
+    "decision": "PENDING",
+    "basis": "Inte granskad av Jakob. Gjord av tools/speech.ts ur assets/motions/paow-vila-01-01/source.mp4 och inlagd bara kring det som hörs. Inte oberoende granskad; före grinden (vetej-sv-03) 2/5: Pausen efter \"svara på\" (tyst 38–43): vikten bara ned till 0,26 i 41, där vilans fylliga läppar syns med tänder igenom; läpparna pulserar, sluter inte.",
+    "userAccepted": false,
+    "productionReady": false
+  },
+  "postProcessing": "the rendered face laid back into the rest film's own frames (assets/speech/paow/paow-tal-vetej-sv-04/receipt.json, laidBack)",
+  "generationRef": "assets/motions/paow-tal-vetej-sv-04/generation.json",
+  "scoutIntegrated": false,
+  "published": false
+}

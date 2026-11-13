@@ -1,0 +1,50 @@
+{
+  "schemaVersion": 1,
+  "id": "paow-tal-otur-sv-04",
+  "dealer": "paow",
+  "source": {
+    "path": "assets/motions/paow-tal-otur-sv-04/source.mp4",
+    "sha256": "d6de17991e28d8d1619a02ee8987420590e83b029847a88f38e2fcca65bf22e5",
+    "bytes": 6550858,
+    "width": 1764,
+    "height": 1174,
+    "fps": 24,
+    "frames": 67,
+    "audio": true,
+    "provider": "tools/speech.ts: Scoutgaming's lip-sync renderer on this machine, voice from ElevenLabs",
+    "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Paow"
+  },
+  "motion": {
+    "kind": "IDLE",
+    "from": "IDLE",
+    "to": "IDLE",
+    "pass": false,
+    "basis": "SOURCE_FRAME_REVIEW",
+    "idle": {
+      "onRequest": true,
+      "calm": true,
+      "weight": 0,
+      "label": "säger: Det vänder snart, det brukar det göra."
+    }
+  },
+  "speech": {
+    "line": "otur",
+    "language": "sv",
+    "text": "Det vänder snart, det brukar det göra.",
+    "voice": "Paow",
+    "heard": "Det vänder snart. Det brukar det göra.",
+    "restFilm": "paow-vila-01-01",
+    "soundStartsAtSeconds": 0.22,
+    "soundEndsAtSeconds": 2.294
+  },
+  "review": {
+    "decision": "PENDING",
+    "basis": "Inte granskad av Jakob. Gjord av tools/speech.ts ur assets/motions/paow-vila-01-01/source.mp4 och inlagd bara kring det som hörs. Inte oberoende granskad; före grinden (otur-sv-03) 2/5: Munnen vidöppen i tysta 51–52 (ljud 9–49), smäller igen på 2 rutor med tänder genom läpparna i 53; pausen 25–27 halvöppen och stilla. Sluter för b i 30–31.",
+    "userAccepted": false,
+    "productionReady": false
+  },
+  "postProcessing": "the rendered face laid back into the rest film's own frames (assets/speech/paow/paow-tal-otur-sv-04/receipt.json, laidBack)",
+  "generationRef": "assets/motions/paow-tal-otur-sv-04/generation.json",
+  "scoutIntegrated": false,
+  "published": false
+}

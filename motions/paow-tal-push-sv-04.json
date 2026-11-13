@@ -1,0 +1,50 @@
+{
+  "schemaVersion": 1,
+  "id": "paow-tal-push-sv-04",
+  "dealer": "paow",
+  "source": {
+    "path": "assets/motions/paow-tal-push-sv-04/source.mp4",
+    "sha256": "58a4525a0a07cf72949989e7670bafe95b8eed192cc1d3c19d5acc2a930d39ff",
+    "bytes": 7358683,
+    "width": 1764,
+    "height": 1174,
+    "fps": 24,
+    "frames": 76,
+    "audio": true,
+    "provider": "tools/speech.ts: Scoutgaming's lip-sync renderer on this machine, voice from ElevenLabs",
+    "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Paow"
+  },
+  "motion": {
+    "kind": "IDLE",
+    "from": "IDLE",
+    "to": "IDLE",
+    "pass": false,
+    "basis": "SOURCE_FRAME_REVIEW",
+    "idle": {
+      "onRequest": true,
+      "calm": true,
+      "weight": 0,
+      "label": "säger: Det är lika. Din insats betalas tillbaka."
+    }
+  },
+  "speech": {
+    "line": "push",
+    "language": "sv",
+    "text": "Det är lika. Din insats betalas tillbaka.",
+    "voice": "Paow",
+    "heard": "Det är lika. Din insats betalas tillbaka.",
+    "restFilm": "paow-vila-01-01",
+    "soundStartsAtSeconds": 0.22,
+    "soundEndsAtSeconds": 2.661
+  },
+  "review": {
+    "decision": "PENDING",
+    "basis": "Inte granskad av Jakob. Gjord av tools/speech.ts ur assets/motions/paow-vila-01-01/source.mp4 och inlagd bara kring det som hörs. Inte oberoende granskad; före grinden (push-sv-03) 2/5: Pausen 22–27 sluts aldrig: ruta 25 visar vilans läppar med tänder igenom (dubbelbild), sedan öppet igen; slut +4 rutor.",
+    "userAccepted": false,
+    "productionReady": false
+  },
+  "postProcessing": "the rendered face laid back into the rest film's own frames (assets/speech/paow/paow-tal-push-sv-04/receipt.json, laidBack)",
+  "generationRef": "assets/motions/paow-tal-push-sv-04/generation.json",
+  "scoutIntegrated": false,
+  "published": false
+}
