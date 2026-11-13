@@ -215,8 +215,13 @@ Det som hindrar en runda först. Han kan svara rad för rad.
    3D-skon är kvar (se "Kända brister"). Vill han ha korten större som förval? Det stora kortet han minns på plats 4 var
    skalan 1,65–2 den 11 november; förvalet är 1,2, och reglaget heter nu Kortens storlek (0,8–2) i Scen. Brytaren Ritade
    kort tar i dag bort alla ritade kort, även de liggande, så bordet visar bara filmens eget kort för den giv som pågår
-   (sett i scenbanans inspelning med `cards=0`). Förslag, inte byggt: ett tredje läge där kortet ritas först när det
-   ligger och inget ritas över kortet i hennes hand, vilket är det han beskrev ("kletar fast sig på korten").
+   (sett i scenbanans inspelning med `cards=0`). Förslag, inte byggt: ett tredje läge, Bara liggande (`cards=liggande`), där kortet ritas först när det
+   ligger och inget ritas över kortet i hennes hand, vilket är det han beskrev ("kletar fast sig på korten"). Spelagentens
+   plan: spelsidan och Casino hanterar läget själva, utanför utseendenyckeln `cards` som förblir på eller av (scenen
+   läser varje ord som på); en giv spelas då utan kortspår och utan eget kort, och kortet ritas från returen
+   (`src/game-film.ts`); brytaren i panelen Miljö och i Casino blir ett val i tre steg. Före bygget kontrolleras, ruta
+   för ruta på en giv till plats 4 och en vändning, att kortet kommer fram när handen släpper och inte över fingrarna.
+   Hennes röst i spelet hörs efter ett klick på själva bordet (talfilmerna var tysta i spelets kö till f63e0ec).
 8. **En andra spelarfigur, "Astrid",** som kommer in från sidan och satsar: hans önskemål, inte påbörjat.
 9. **Bordets tryck:** ska trycket följa bordets storlek (`tableSize`)? Scenbanans fråga.
 10. **Talet:** två röst-id han gav finns inte i något konto eller delat bibliotek som nyckeln ser (Jessica står); ett tomt
