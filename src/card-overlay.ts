@@ -2,13 +2,15 @@
 // drawn and what the film shows around it. Position, rotation and side come from the card track
 // (tools/track-card.ts); size does not: a card has one physical size, taken from the scene contract.
 // No DOM, WebGL or file access here. The drawing itself is src/card-overlay-view.ts.
-import {classify, morph, blobs, grown, centre, signedArea, inside, clockwise, is, YELLOW, BLUE, SHADE, TINT, TABLE, SKIN, DARK, type Pt, type Side} from './card-track.ts';
+import {classify, morph, blobs, grown, centre, signedArea, inside, clockwise, is, sound, YELLOW, BLUE, SHADE, TINT, TABLE, SKIN, DARK, type Pt, type Side} from './card-track.ts';
 
 // film: where the film's own card is in the frame, when the track draws the card somewhere else than the film has it (a track that
 // carries an even card in the grip): what is covered and keyed is then this quad, and quad is only where the card is drawn.
 // held: 1 while the card hangs in the hand, 0 once it lies (measured contact); absent, the scene goes by the frames before restFrom.
 export type TrackFrame = {frame: number; side: Side; quad: number[][] | null; edge: number[][] | null; confidence?: number; shoeShare?: number; film?: number[][] | null; held?: number};
-export type CardTrack = {clip?: string; width: number; height: number; frames: TrackFrame[]; edgeWindow: [number, number] | null; flips?: {from: number; to: number; quarterTurns: number}[];
+// hand: false when the track does not hold the card in the hand well enough to draw it there (tools/track-card.ts --no-hand): the
+// film's own card shows while it is carried, and the rendered card is drawn from the frame it lies still.
+export type CardTrack = {clip?: string; width: number; height: number; hand?: boolean; frames: TrackFrame[]; edgeWindow: [number, number] | null; flips?: {from: number; to: number; quarterTurns: number}[];
   leavesShoe?: number | null; restFrom: number | null; restQuad: number[][] | null; shoeWindow?: {box: number[]} | null};
 // toImage/toTable are homographies as eight numbers (the ninth is 1): table millimetres <-> image pixels.
 export type Scene = {toImage: number[]; toTable: number[]; cardWidth: number; cardHeight: number; bodyScale: number};
@@ -17,6 +19,9 @@ export const SCALE = {min: 1, max: 2.5, fallback: 2};
 export const MARGIN = 1.2; // the rendered card is this much larger than the film's card wherever it follows it
 export const BESIDE = 12;  // film card colour this close beside the rendered card is cleaned too
 export const STRAY = 50;   // a connected patch of the film card's colour of at least this many pixels is a film card, wherever it is
+// The largest card a film holds, as the square root of its area in film pixels: 131 in the bank (2026-11-13; the card in the shoe
+// window is 80). A tracked quad larger than this is no card and is not drawn (poseAt).
+export const HELD_MAX = 180;
 const pts = (q: number[][]): Pt[] => q.map(([x, y]) => ({x, y}));
 const apply = (h: number[], p: Pt): Pt => { const w = h[6] * p.x + h[7] * p.y + 1; return {x: (h[0] * p.x + h[1] * p.y + h[2]) / w, y: (h[3] * p.x + h[4] * p.y + h[5]) / w}; };
 const smooth = (t: number) => t <= 0 ? 0 : t >= 1 ? 1 : t * t * (3 - 2 * t);
@@ -90,7 +95,9 @@ export function poseAt(track: CardTrack, scene: Scene | null, frame: number, sca
   const at = Math.max(0, Math.min(track.frames.length - 1, Math.round(frame))), f = track.frames[at];
   if (!f) return null;
   const none: Pose = {frame: at, side: f.side, quad: null, edge: null, film: null, resting: 0, turned: false};
-  const landed = restOf(track), goal = land?.length === 4 && landed ? sameStart(land, landed.quad) : null;
+  const landed = restOf(track);
+  if (track.hand === false && !(landed && at >= landed.from)) return none; // not drawn in the hand: see CardTrack.hand
+  const goal = land?.length === 4 && landed ? sameStart(land, landed.quad) : null;
   // The film's card is only a marker. Where the rendered card must end is the plan's place (land), or the place of the seat's
   // second card (shift). Either way the move grows from nothing at the shoe to all of it at the landing, so the card never jumps.
   const d = goal ? {x: centre(goal).x - centre(landed!.quad).x, y: centre(goal).y - centre(landed!.quad).y} : shift ?? {x: 0, y: 0};
@@ -98,6 +105,9 @@ export function poseAt(track: CardTrack, scene: Scene | null, frame: number, sca
   if (f.side === 'EDGE' && f.edge?.length === 2) { const line: [Pt, Pt] = [{x: f.edge[0][0], y: f.edge[0][1]}, {x: f.edge[1][0], y: f.edge[1][1]}];
     return k ? {...none, edge: [move(line[0]), move(line[1])], at: line} : {...none, edge: line}; }
   if ((f.side !== 'BACK' && f.side !== 'FRONT') || f.quad?.length !== 4) return none;
+  // A quad no card can be laid by (crossed, folded or empty: card-track.ts sound), or larger than any card a film holds, is drawn as
+  // nothing in this frame: one bad quad must never smear the card across the picture.
+  if (!sound(pts(f.quad)) || size(pts(f.quad)) > HELD_MAX) return none;
   // In the hand the rendered card is the film's card and a margin more, so the film's card and its rim never show beside it.
   const film = grown(pts(f.film?.length === 4 ? f.film : f.quad), RIM), held = about(pts(f.quad), MARGIN);
   if (!landed) return {...none, quad: held.map(move), film};

@@ -263,3 +263,37 @@ test('a return shows one side all through, and a card mostly hidden under the ha
   const moved = settleRaws([seen('FRONT', lie, 4200), seen('FRONT', rect(300, 100, 30, 60), 1500)], 'RETURN');
   assert.equal(moved[1].corners![0].x, 300);
 });
+
+// A crossed quad lays the card through infinity: the tracker never writes one, and the drawing never draws one (card-overlay.ts poseAt).
+test('a crossed, folded or empty quad is unsound; a short run of them is bridged from its neighbours, a long one loses its quad', async () => {
+  const {sound, soundFrames, SOUND} = await import('../src/card-track.ts');
+  const {poseAt} = await import('../src/card-overlay.ts');
+  const card = (x: number): Pt[] => [{x, y: 100}, {x: x + 60, y: 100}, {x: x + 60, y: 180}, {x, y: 180}];
+  const crossed = (x: number): Pt[] => [{x, y: 100}, {x: x + 60, y: 100}, {x, y: 180}, {x: x + 60, y: 180}];
+  assert.equal(sound(card(0)), true); assert.equal(sound(crossed(0)), false); assert.equal(sound([{x: 0, y: 0}, {x: 10, y: 0}, {x: 20, y: 0}, {x: 30, y: 0}]), false);
+  assert.equal(sound([{x: 1123, y: 688}, {x: 1135, y: 700}, {x: 1108, y: 712}, {x: 1095, y: 712}]), true, 'a thin card seen nearly edge-on is still a card');
+  const frame = (i: number, q: Pt[]) => ({frame: i, side: 'BACK' as const, quad: q, edge: null, area: Math.abs(signedArea(q)), confidence: 0.6});
+  const short = Array.from({length: 12}, (_, i) => frame(i, i >= 4 && i <= 7 ? crossed(i * 10) : card(i * 10)));
+  assert.deepEqual(soundFrames(short), {bridged: [4, 5, 6, 7], dropped: []});
+  for (const f of short) assert.ok(sound(f.quad), `frame ${f.frame} sound`);
+  assert.ok(Math.abs(short[5].quad![0].x - 50) < 1e-9, 'bridged corner by corner between frames 3 and 8');
+  const long = Array.from({length: 20}, (_, i) => frame(i, i >= 4 && i < 4 + SOUND.bridge + 1 ? crossed(i * 10) : card(i * 10)));
+  assert.equal(soundFrames(long).dropped.length, SOUND.bridge + 1); assert.equal(long[5].quad, null);
+  const huge = Array.from({length: 20}, (_, i) => frame(i, i === 9 ? [{x: 0, y: 0}, {x: 300, y: 0}, {x: 300, y: 300}, {x: 0, y: 300}] : card(i * 10)));
+  assert.deepEqual(soundFrames(huge), {bridged: [9], dropped: []}, 'a quad far larger than the frames around it is two things taken for one');
+  // the drawing: a crossed quad in a track gives no card in that frame, the frames around it give theirs
+  const track = {width: 1764, height: 1174, edgeWindow: null, restFrom: null, restQuad: null, frames: [0, 1, 2].map(i => ({frame: i, side: 'BACK' as const, quad: (i === 1 ? crossed(100) : card(100)).map(p => [p.x, p.y]), edge: null}))};
+  assert.equal(poseAt(track, null, 1, 1.2)?.quad, null); assert.ok(poseAt(track, null, 0, 1.2)?.quad); assert.ok(poseAt(track, null, 2, 1.2)?.quad);
+  const big = {...track, frames: [{frame: 0, side: 'BACK' as const, quad: [[0, 0], [400, 0], [400, 400], [0, 400]], edge: null}]};
+  assert.equal(poseAt(big, null, 0, 1.2)?.quad, null, 'larger than any card a film holds');
+});
+
+test('a track marked not good enough in the hand (hand: false) draws no card while it is carried, and the card once it lies', async () => {
+  const {poseAt} = await import('../src/card-overlay.ts');
+  const q = (x: number) => [[x, 100], [x + 60, 100], [x + 60, 180], [x, 180]];
+  const frames = Array.from({length: 10}, (_, i) => ({frame: i, side: 'FRONT' as const, quad: q(i < 6 ? i * 20 : 120), edge: null}));
+  const track = {width: 1764, height: 1174, hand: false, edgeWindow: null, restFrom: 6, restQuad: q(120), frames};
+  for (const i of [0, 3, 5]) assert.equal(poseAt(track, null, i, 1.2)?.quad, null, `frame ${i} in the hand`);
+  for (const i of [6, 9]) assert.ok(poseAt(track, null, i, 1.2)?.quad, `frame ${i} lying`);
+  assert.ok(poseAt({...track, hand: undefined}, null, 3, 1.2)?.quad, 'without the mark the card is drawn in the hand as before');
+});

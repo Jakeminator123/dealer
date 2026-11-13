@@ -12,7 +12,7 @@
 // bend are the card's own: the scene's room reflected in the paper, and a slight curve while it is held.
 import * as T from 'three';
 import {poseAt, restOf, sceneOf, cardRecord, cardFace, overridesOf, cardInFront, RIM, MARGIN, type CardTrack, type CardRecord} from './card-overlay.ts';
-import {centre, clockwise, grown, signedArea, type Pt} from './card-track.ts';
+import {centre, clockwise, grown, signedArea, sound, type Pt} from './card-track.ts';
 import {FILM, edgeQuad, heldScale, solveCamera, squareToQuad, type FilmCamera} from './scene3d-geometry.ts';
 import {CARD_GLSL, type CardKey} from './scene3d-film.ts';
 import {FAN_GLSL} from './scene3d-light.ts';
@@ -152,7 +152,8 @@ export function createDealLayer(o: Options) {
     return {mesh, shadow, material, under};
   };
   const lay = (c: Card, q: number[][], how: {print: T.Texture; edge?: boolean; bend?: number; tilt?: number; shade?: {core: number[][]; colour: number[]; lying: number} | null; contact: number; gloss?: number}) => {
-    let H: number[]; try { H = squareToQuad(q); } catch { c.mesh.visible = c.shadow.visible = false; return; }
+    // a quad that does not go one way round (crossed or folded) would lay the card through infinity, across the whole picture
+    let H: number[]; try { if (!sound(q.map(([x, y]) => ({x, y})))) throw Error('unsound quad'); H = squareToQuad(q); } catch { c.mesh.visible = c.shadow.visible = false; return; }
     for (const m of [c.material, c.under]) (m.uniforms.cardH.value as T.Matrix3).set(H[0], H[1], H[2], H[3], H[4], H[5], H[6], H[7], H[8]);
     const u = c.material.uniforms; u.print.value = how.print; u.edgeOn.value = how.edge ? 1 : 0; u.bend.value = how.bend ?? 0; u.tilt.value = how.tilt ?? 0;
     u.sheen.value = 2 * (how.gloss ?? GLOSS); u.shadeOn.value = how.shade ? 1 : 0; // gloss 0.35: the coat's lobe at 0.7 of the paper's

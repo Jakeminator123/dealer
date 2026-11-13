@@ -499,3 +499,47 @@ export function buildTrack(raws: Raw[]): Track {
   return {frames, ranges, flips, edgeWindow: lastBack >= 0 && firstFront > lastBack + 1 ? [lastBack + 1, firstFront - 1] : null, leavesShoe: left < 0 ? null : left, restFrom, restQuad: restQuad && restQuad.map(round), restJitter,
     lowConfidence: frames.filter(f => f.side !== 'NONE' && f.confidence < 0.6).map(f => f.frame)};
 }
+
+/**
+ * A quad a card can be laid by: its four corners go one way round with no fold or crossing, and it has some area. A crossed
+ * quad is no card at all: the homography that lays a card on it runs through infinity and smears the card across the picture.
+ */
+export function sound(q: readonly Pt[] | null | undefined): boolean {
+  if (!q || q.length !== 4 || q.some(p => !Number.isFinite(p.x) || !Number.isFinite(p.y))) return false;
+  let way = 0;
+  for (let i = 0; i < 4; i++) { const a = q[i], b = q[(i + 1) % 4], c = q[(i + 2) % 4], turn = Math.sign((b.x - a.x) * (c.y - b.y) - (b.y - a.y) * (c.x - b.x));
+    if (!turn || (way && turn !== way)) return false; way = turn; }
+  return Math.abs(signedArea(q as Pt[])) >= SOUND.minArea;
+}
+// minArea: square pixels a quad needs at all; large: a quad this many times the area of the middle one of the frames around it
+// (SOUND.reach each way) is two things taken for one (the dealt card and the seated card as it leaves the shoe); small: a quad this
+// share of it or less is a corner of a card the colour rules lost (the face drawn dark teal by the film just after the turn,
+// Paow P4 frames 51-52: the film's card wide open, the quad a corner of it); bridge: the longest run of unsound frames filled in
+// from the sound frames on either side.
+export const SOUND = {minArea: 2, large: 2.5, small: 0.12, reach: 8, bridge: 6};
+/**
+ * Makes a track's quads sound (`sound`): a crossed, folded or empty quad, or one far larger or smaller than the frames around it, is filled
+ * in from the sound frames on both sides when the run is short and shows the same side at both ends (corner by corner), and
+ * otherwise loses its quad, so that no card is drawn in that frame. Changes `frames` in place; returns the frames it changed.
+ */
+export function soundFrames(frames: Frame[]): {bridged: number[]; dropped: number[]} {
+  const flat = (f: Frame | undefined) => !!f && (f.side === 'BACK' || f.side === 'FRONT') && !!f.quad;
+  // the frames around are measured by their sound quads only: a crossed quad has next to no area and would make its neighbours look large
+  const areas = frames.map(f => flat(f) && sound(f.quad) ? Math.abs(signedArea(f.quad!)) : null);
+  const odd = (i: number) => { const near = areas.slice(Math.max(0, i - SOUND.reach), i + SOUND.reach + 1).filter((v, k) => v !== null && k !== Math.min(i, SOUND.reach)).sort((a, b) => a! - b!);
+    return near.length >= 3 && (areas[i]! > SOUND.large * near[near.length >> 1]! || areas[i]! < SOUND.small * near[near.length >> 1]!); };
+  const bad = frames.map((f, i) => flat(f) && (areas[i] === null || odd(i)));
+  const bridged: number[] = [], dropped: number[] = [];
+  for (let i = 0; i < frames.length; i++) {
+    if (!bad[i]) continue; let j = i; while (j + 1 < frames.length && bad[j + 1]) j++;
+    const a = frames[i - 1], b = frames[j + 1], side = frames[i].side;
+    const fill = j - i + 1 <= SOUND.bridge && flat(a) && flat(b) && !bad[i - 1] && !bad[j + 1] && a.side === side && b.side === side && frames.slice(i, j + 1).every(f => f.side === side);
+    for (let k = i; k <= j; k++) {
+      const f = frames[k], t = (k - i + 1) / (j - i + 2), q = fill ? a.quad!.map((p, n) => ({x: p.x + (b.quad![n].x - p.x) * t, y: p.y + (b.quad![n].y - p.y) * t})) : null;
+      if (q && sound(q)) { f.quad = q; f.area = Math.round(Math.abs(signedArea(q))); f.confidence = Math.min(f.confidence, 0.4); f.note = `${f.note ? f.note + '; ' : ''}unsound quad bridged from frames ${i - 1} and ${j + 1}`; bridged.push(k); }
+      else { f.quad = null; f.confidence = 0; f.note = `${f.note ? f.note + '; ' : ''}unsound quad (crossed, folded, empty or far too large): no card drawn`; dropped.push(k); }
+    }
+    i = j;
+  }
+  return {bridged, dropped};
+}
