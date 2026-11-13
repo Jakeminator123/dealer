@@ -16,7 +16,7 @@ import {readRegister} from './scene3d-room.ts';
 import {filmToScene, sceneToSpot, solveCamera, type FilmCamera} from './scene3d-geometry.ts';
 import {createLayout, slotOf} from './game-table.ts';
 import {cardRecords, judgedBank, speakMoments, talkOn} from './game-director.ts';
-import {cardsChoice, createFilm, type FilmPlayers, type Said} from './game-film.ts';
+import {cardsChoice, cardWords, createFilm, type FilmPlayers, type Said} from './game-film.ts';
 import {chipsFor, mountOverlay, type Action, type Anchors} from './game-overlay.ts';
 import {mountPanel} from './game-panel.ts';
 import {EXIT_TRIAL, exitView, type ExitView} from './scene3d-exit.ts';
@@ -46,7 +46,7 @@ const table = /^[a-z0-9-]{1,40}$/.test(query.get('table') ?? '') ? `?table=${que
 // frame) hides nothing: the frame shows none of what this page shows, and src/preview-ui.ts keeps a framed page from
 // taking the lab tab by itself.
 const OWN_WORDS = ['table', 'tema', 'bricka', 'chatt', 'robot', 'inbaddad', 'dealer', 'intro'], forval = query.get('forval');
-const lookAsked = [...query.keys()].some(word => !OWN_WORDS.includes(word) && word !== 'kort'); // kort: how the card in her hand is shown (below)
+const lookAsked = [...query.keys()].some(word => !OWN_WORDS.includes(word) && !['kort', 'cardBack', 'cardFace'].includes(word)); // kort, cardBack, cardFace: how the card in her hand is shown (below), not a look
 
 const [contract, placements, bank, first, register, lookCode, presetAnswer] = await Promise.all([read('data/scene-contract.json', 'Scenkontraktet'), read('api/placements', 'Placeringsplanen'), read('api/clip-bank', 'Klippbanken'), read(`api/game${table}`, 'Spelet'), read('data/scene-rooms.json', 'Rumsregistret'),
   lookAsked ? import('./game-look.ts').catch(() => null) : null, forval ? fetch(`api/scene-presets/${encodeURIComponent(forval)}`).then(res => res.ok ? res.json() : null, () => null) : null]);
@@ -132,6 +132,9 @@ film.calm = introOn; // under the film before the game she only rests calmly: th
 // kort=hand (the drawn card in her hand: what the game does without the word), kort=liggande (the film's own card in her hand, the
 // drawn card once it lies), kort=matt (the film's card recoloured in her hand).
 film.carry = cardsNow.carry;
+// The film card's own colours recoloured (src/game-film.ts CardWords), a lab trial for recordings and Jakob's own eye: cardBack=dark,
+// cardFace=paper. Without them the game is as before.
+film.words = cardWords(query);
 // Her lines over the films that play (src/scene3d-mouth.ts, src/speech-patch.ts): the mouth patches of data/speech-patches.json in her
 // voice and the game's language, each record checked against the register's sha256 and its film against the bank's file, and read
 // ahead by the scene. A step lays a line over the first of its films that has its patch (src/game-film.ts); without the register, or

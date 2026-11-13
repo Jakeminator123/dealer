@@ -16,13 +16,13 @@
 // no card object is drawn while a film shows its card; the passes that make the matte run here, on targets of the film's size.
 // The cards lying since earlier films are drawn as objects either way: a film lays one card, and later films do not show it.
 import * as T from 'three';
-import {poseAt, restOf, restFade, restShare, restingQuad, sceneOf, cardRecord, cardFace, overridesOf, cardInFront, plausible, skirtSound, firstDrawn, turnOf, CARRY, RIM, MARGIN, PLAUSIBLE, EASE, HOLD, type CardTrack, type CardRecord} from './card-overlay.ts';
+import {poseAt, restOf, restFade, restShare, restingQuad, sceneOf, cardRecord, cardFace, overridesOf, cardInFront, plausible, skirtSound, firstDrawn, turnOf, BACK, CARRY, FACE, RIM, MARGIN, PLAUSIBLE, EASE, HOLD, type CardTrack, type CardRecord} from './card-overlay.ts';
 import {centre, clockwise, grown, signedArea, sound, type Pt} from './card-track.ts';
 import {FILM, edgeQuad, heldScale, solveCamera, squareToQuad, type FilmCamera} from './scene3d-geometry.ts';
-import {CARD_GLSL, type CardKey, type MatteKey} from './scene3d-film.ts';
+import {CARD_GLSL, type BackKey, type CardKey, type MatteKey} from './scene3d-film.ts';
 import {FAN_GLSL} from './scene3d-light.ts';
 import {roomReflection} from './scene3d-table.ts';
-import {CLASSIFY_FRAGMENT, MATTE, MORPH_FRAGMENT, PASS_VERTEX, PLANE_GLSL, SHADE_FRAGMENT, SHOE_BOX, matteBox, matteZone, meanLinear, paleZone, printQuad, toPrint, turnZone, type MatteTrack} from './scene3d-matte.ts';
+import {CLASSIFY_FRAGMENT, DARK_BACK, MATTE, PAPER_FACE, MORPH_FRAGMENT, PASS_VERTEX, PLANE_GLSL, SHADE_FRAGMENT, SHOE_BOX, backZone, matteBox, matteZone, meanLinear, paleZone, printQuad, toPrint, turnZone, type MatteTrack} from './scene3d-matte.ts';
 
 // The card material study, for its print, outline and paper. Imported as an instance of its own (the query): the import map in
 // scene3d.html binds that instance's three.js to the scene's, so the page holds one three.js. The canvas method
@@ -125,7 +125,9 @@ const COMPOSITE_FRAGMENT = 'uniform sampler2D sum; uniform vec2 size; void main(
 // hand: the card's size while it is carried. 'film' (as it was): the film's own card, which the model draws at a size of its own in
 // every clip, so the card changes size as it lands. 'standard': the size it lies in, from the shoe to the table (Jakob 2026-11-11: one
 // format, the card that lies on seat 4; everything else adapts to it).
-type Choice = {rank: string; suit: string; scale: number; hand?: 'film' | 'standard'};
+// back, face: how the film's own back and face show under the line (BACK and FACE in src/card-overlay.ts; 'dark' and 'paper' the trials
+// "pålägg"), a page's words.
+type Choice = {rank: string; suit: string; scale: number; hand?: 'film' | 'standard'; back?: 'film' | 'dark'; face?: 'film' | 'paper'};
 type Placed = {quad: Pt[]; back: boolean; target?: string | null; shoeDraw?: number | null};
 // carry: how the card the film carries is shown while it is in her hand (the page's choice, src/game-film.ts; where the page says
 // nothing, the game's line: carryOf): 'object' (the card object, except where the track does not hold the card in the hand, CardTrack.hand false, where the film's own card is
@@ -133,11 +135,14 @@ type Placed = {quad: Pt[]; back: boolean; target?: string | null; shoeDraw?: num
 // while carried for every take, the object from the same frame on); 'film' (the film's own card while carried, the object from
 // the frame it lies: "Bara liggande"). The cards already lying are objects whatever carry says.
 export type Carry = 'object' | 'matte' | 'film';
-type Extra = {shift?: Pt | null; land?: Pt[] | null; placed?: Placed[]; cards?: CardRecord[] | null; target?: string | null; shoeDraw?: number | null; carry?: Carry};
+type Extra = {shift?: Pt | null; land?: Pt[] | null; placed?: Placed[]; cards?: CardRecord[] | null; target?: string | null; shoeDraw?: number | null; carry?: Carry; back?: 'film' | 'dark'; face?: 'film' | 'paper'};
 // What carry is where the page says nothing: the game's line (CARRY in src/card-overlay.ts), so that Scen and the lab pages show a
 // round as the game does.
 const carryOf = (extra: Extra): Carry => extra.carry ?? CARRY;
-type FilmLayers = {shared: {map: {value: T.Texture | null}; grade: {value: T.Vector3}}; setCards(key: CardKey | null): void; setMatte(m: MatteKey | null): void};
+// How the film's own back shows: a part's word (a recording), else the page's (a key), else the line (BACK: as filmed).
+const backOf = (choice: Choice, extra: Extra): 'film' | 'dark' => extra.back ?? choice.back ?? BACK;
+const faceOf = (choice: Choice, extra: Extra): 'film' | 'paper' => extra.face ?? choice.face ?? FACE;
+type FilmLayers = {shared: {map: {value: T.Texture | null}; grade: {value: T.Vector3}}; setCards(key: CardKey | null): void; setMatte(m: MatteKey | null): void; setBack(b: BackKey | null): void};
 // renderer and view: for the motion samples, drawn into a target of their own before the frame; pixels: screen pixels per film pixel.
 // way: 'scene' (the card an object under the film) or 'matte' (the film's own card drawn over in place).
 type Options = {contract: unknown; plan: unknown; film: FilmLayers; light: Record<string, {value: unknown}>; camera: () => FilmCamera; edgeZ: () => number; renderer: T.WebGLRenderer; view: () => T.Camera; pixels: () => number; way?: 'scene' | 'matte'};
@@ -332,7 +337,7 @@ export function createDealLayer(o: Options) {
   // Read from the film's own uniform, as the scene has no word for it yet.
   const shoeModel = () => { const v = (((o.film as {body?: T.Mesh}).body?.material as T.ShaderMaterial | undefined)?.uniforms?.hide?.value) as T.Vector4 | undefined;
     return !!v && v.z > v.x && v.x <= SHOE_BOX[0] && v.y <= SHOE_BOX[1] && v.z >= SHOE_BOX[2] && v.w >= SHOE_BOX[3]; };
-  function off() { hide(dealt); hide(seated); composite.visible = depth.visible = seatDepth.visible = false; for (const c of lying) hide(c); o.film.setCards(null); o.film.setMatte(null); }
+  function off() { hide(dealt); hide(seated); composite.visible = depth.visible = seatDepth.visible = false; for (const c of lying) hide(c); o.film.setCards(null); o.film.setMatte(null); o.film.setBack(null); }
   // The matte: its passes (their targets are made the first time they run), and the back print as one colour (its mean in linear
   // light), which the film's back is recoloured to. The way 'matte' uses it for every frame; the way 'scene' while a card is carried
   // that is not drawn as an object then (carry).
@@ -455,7 +460,7 @@ export function createDealLayer(o: Options) {
       const camera = o.camera(), solved = solveCamera(camera), track = trackIn as CardTrack | null, extra = (extraIn ?? {}) as Extra;
       lens.lens.value.set((FILM.width - 1) / 2, (FILM.height - 1) / 2, camera.focalPx, solved.pitch); lens.eye.value.set(0, camera.heightM, 0); lens.edgeRow.value = camera.edgeRow; lens.edgeZ.value = o.edgeZ();
       const at = track?.frames?.length ? Math.max(0, Math.min(track.frames.length - 1, Math.round(frame))) : -1;
-      if (alwaysMatte) drawMatte(track, at, choice, extra);
+      if (alwaysMatte) { drawMatte(track, at, choice, extra); o.film.setBack(null); }
       else {
         // While the card is carried and is not drawn as an object (carry), the film's card is recoloured in place, or (carry 'film')
         // left as the film has it; the object comes in where poseAt starts drawing (firstDrawn).
@@ -471,6 +476,17 @@ export function createDealLayer(o: Options) {
         // the window's card is the film's own (dealCard), and so is the dealt card until it has left the window
         else if (filmSeat(extra)) drawMatte(track, at, choice, extra, false, !inShoe(track, at), true); // in the drawn back's black field: lifted, the window read as an empty grey box
         else o.film.setMatte(null);
+        // The film card's yellow back as the dark back and its blue face as paper in its own pixels ("pålägg", lab trials: a word asks for
+        // each, backOf and faceOf), not with the shoe model, whose window is drawn. With carry 'film' the card in her hand and in the shoe
+        // window is the film's own; with the drawn card it lies under it ("underlägg"): the key and the matte read the film as filmed, so
+        // only what of the film's card they leave beside the drawn card is recoloured, and the shoe window, fingers and skin are left as the
+        // matte and the key have them (under, BackKey). They act only where the film's card can be: the track's zone in this frame and the
+        // card seated in the shoe window.
+        const dark = backOf(choice, extra) === 'dark', paper = faceOf(choice, extra) === 'paper';
+        if ((dark || paper) && !shoeModel()) { const first = track?.frames?.[0], seat = first?.quad?.length === 4 && (first.shoeShare ?? 0) >= 0.9 ? first.quad : SEATED;
+          o.film.setBack({zone: at >= 0 ? backZone(track as unknown as MatteTrack, at) : null, seat: grown(clockwise(seat.map(([x, y]) => ({x, y}))), 2).map(p => [p.x, p.y]), shoe: track?.shoeWindow?.box ?? SHOE_BOX,
+            back: dark ? DARK_BACK.field : null, face: paper ? PAPER_FACE.field : null, lying: [LYING.BACK, LYING.FRONT], under: carry !== 'film'}); }
+        else o.film.setBack(null);
       }
       // cards dealt by earlier films of the round, which this film does not show: lying flat where they landed, in the size the dealt
       // card came to rest in (restingQuad at Kortens storlek, as poseAt lays it on its place). The plan's quad itself is about the card

@@ -297,3 +297,171 @@ export function unmix(c: number[], k: number[], t: number[]): {card: number; scr
   const card = (tt * kc - kt * tc) / det, screen = (kk * tc - kt * kc) / det;
   return {card, screen, off: Math.hypot(...c.map((v, i) => v - card * k[i] - screen * t[i])) / (Math.hypot(...c) + 0.04)};
 }
+
+// ---- "pålägg": the film's own back, yellow, becomes the dark back in the film's own pixels (a lab trial, off: card-overlay.ts BACK) ---
+// Not a matte and not a drawn card: every pixel where the film's card can be (the track's zone of the frame and the shoe window's
+// seated card, nothing else, so skin, her jacket's edge and the shoe's gold frame are left alone) is split into the card's yellow, the
+// screen's green and white (the card washed out light in a blurred frame), three colours that span every colour; a pixel is the card's
+// as far as those shares are a card's: some yellow, no screen taken away (or, with little blue, the yellow's orange shade under a
+// finger), no white taken away and not much more white than yellow (her cream blouse has five times as much), and not skin. The card's
+// part becomes the dark back in the pixel's own light, and the screen's part stays screen, for the key. So the film's shape, blur and
+// fingers stay as they are, with no morphology and no quad (the opening and erosion of the matte gave its edges bites). Beside surely
+// card a looser rule takes the film card's pale rim and the blend of its edge with the screen; where the card is blurred over a finger,
+// the pixel is split into the card, skin and white instead, and only the card's part goes dark. Prototyped on the film's own frames
+// before it was a shader (Prov kort-palagg): a fixed yellow with white beside it held where a two-colour split with the frame's own
+// yellow left a pale card yellow-green (seat 7 frame 26) and the turn olive (the dealer's first card, frame 140).
+export const DARK_BACK = {
+  card: [0.91, 0.82, 0.02], finger: [0.96, 0.64, 0.52], // the film card's yellow back lit, and skin in the film's light
+  share: 0.15,                                // a pixel is card from this share of the card's colour in it
+  screen: [-0.11, -0.06] as const,            // ... with no more screen than this taken away (the washed card takes 0.05 away, the shoe's
+                                              // gold and her hair 0.11 to 0.14) ...
+  shade: [-0.5, -0.4] as const, blue: [0.25, 0.38] as const, // ... or, with little blue (blue at most blue[0] of green), its orange shade
+                                              // (its blue a quarter of green or less; the darker gold 0.43)
+  noise: [0.04, 0.12] as const,               // a screen share under this inside the card is the video's noise, and goes with the card
+  green: 0.15,                                // ... and a screen share stays screen only as far as the pixel is green as the key reads it (green over
+                                              // red and blue against the screen's): the yellow's drift toward green is the card's
+  white: [-0.12, -0.05] as const, pale: [1.8, 3.2] as const, // white: not taken away (the yellow's own lack of blue reads as a little), and at most pale times the card's share
+  skinRed: [0.08, 0.16] as const, skinBlue: [0.45, 0.6] as const, // skin: red over green by this much and blue at least this of green
+  near: [1.5, 3] as const, rim: [-0.4, -0.25] as const, rimPale: [3.5, 5] as const, // within near px of surely card: its rim, looser
+  tolerance: 0.06, fingerWhite: [-0.5, -0.3] as const, // the card blurred with a finger: card, skin and white, none taken away beyond this; white
+                                              // more: a fingertip's edge on the card is warmer than the skin colour (the dealer's films: 250/157/58 takes 0.3 away)
+  shoeRoom: 10, skinNear: 4,                  // ... and not in the shoe window or this close to it, and only within skinNear px of skin: the
+                                              // shoe's gold frame and trim have that blend's colours
+  blurredSkin: {red: [0.06, 0.12] as const, blue: [0.3, 0.42] as const, reach: [3, 6] as const, shoeFar: 40}, // ... or, shoeFar px or more from
+                                              // the shoe window, within reach px of skin blurred with the card (her hand at a fast card's end)
+  bright: 1.15,                               // the dark back's light at most this many times its light lying flat
+  // The dark back in the film's values, lit as the film's card lying flat: the drawn back's black field as the scene shows it (Prov
+  // kort-palagg, measured at the hole card's cut into its turn film: the drawn back's darker half 55/43/26 on screen), so that the
+  // film's card and the drawn card are one colour there.
+  field: [0.224, 0.177, 0.108],
+};
+const v3 = (v: number[]) => `vec3(${v.map(x => x.toFixed(4)).join(', ')})`, f = (x: number) => x.toFixed(4);
+// The film card's face, blue, as plain paper in the film's own pixels (the restart's second step, "pålägg: framsidan"; a lab trial, off:
+// card-overlay.ts FACE), the same way as the back: the face's blue, the screen and white split every pixel, and the card's part
+// becomes paper in the pixel's own light. The blue has about half the yellow's brightness (lying flat 0.44 against 0.835), so the light
+// is taken against that and smoothed over the pixels round it (the doubling would show the video's noise); the face washed out to
+// lilac (seat 1) has five times as much white as blue, which the back's rule would have left. No print: the drawn card's print comes
+// in with the hand-over at rest (restFade).
+export const PAPER_FACE = {
+  card: [0, 0.475, 0.89],                     // the film card's blue face lit (scene3d-deal.ts COLOUR.FRONT)
+  pale: [6, 10] as const,                     // white at most pale times the blue: the lilac face (seat 1, 205/206/243) has about 5
+  screen: [-0.2, -0.14] as const,             // ... and screen taken away: the lilac's 0.11 to 0.13 (the face has no red, so a lilac tint reads so);
+                                              // at 0.26 her fingertips on the lilac card went white
+  red: [0.03, 0.07] as const,                 // ... but with red no more than this over green: her pale nails are pink (the face and its lilac are not)
+  dim: [0.12, 0.2] as const,                  // a pixel darker than this (luminance) is no face: her dark jacket has some blue too
+  lying: 0.44,                                // its luminance lying flat in the film's light (scene3d-deal.ts LYING.FRONT)
+  smooth: 1.5,                                // the light read as the mean of the pixel and four this far round it
+  bright: 1,                                  // its light at most that of lying flat: the paper is no whiter than paper (lilac at 1.95)
+  response: 0.4,                              // ... and the light to this power: the film's blue swings from 0.68 to 1.95 of lying flat between
+                                              // frames (seat 1, 60-80), and the takes lie at 0.9 to 0.97 of it (seat 4, the hole card's turn), a pulse
+                                              // from grey to white on paper: at 0.75 the lying paper was grey beside the drawn card; at 0.4, with the
+                                              // field below, it lies as the drawn face does at the hand-over in both
+  finger: false,                              // no split with skin: on the face skin and white are the same light colours, and the finger's
+                                              // blend with the blue went white (paper for the white share) under her fingertips
+  // Plain paper in the film's values, lit as the card lying flat: the drawn face's paper as the scene shows it (225/222/216 on screen at
+  // seats 4 and 7, the hole card's turn 231/227/219; Prov kort-palagg), so that the paper and the drawn face are one colour when the
+  // print comes in at rest.
+  field: [0.916, 0.902, 0.877],
+};
+type Side = {card: number[]; pale: readonly [number, number]; rimPale: readonly [number, number]; screen: readonly [number, number]; dim: readonly [number, number] | null; red: readonly [number, number] | null; shade: boolean; bright: number; response: number; finger: boolean};
+const SIDES: Record<'back' | 'face', Side> = {back: {card: DARK_BACK.card, pale: DARK_BACK.pale, rimPale: DARK_BACK.rimPale, screen: DARK_BACK.screen, dim: null, red: null, shade: true, bright: DARK_BACK.bright, response: 1, finger: true}, face: {card: PAPER_FACE.card, pale: PAPER_FACE.pale, rimPale: [10, 14], screen: PAPER_FACE.screen, dim: PAPER_FACE.dim, red: PAPER_FACE.red, shade: false, bright: PAPER_FACE.bright, response: PAPER_FACE.response, finger: PAPER_FACE.finger}};
+// One side of the film's card (the back, or the face) in the shader: `${name}Side(c, px, key, zone, shoe, field, lying, w)` gives the
+// pixel with the side's colour taken as the card and `w`, how far it was.
+const sideGlsl = (name: 'back' | 'face', S: Side) => { const D = DARK_BACK, C = `${name.toUpperCase()}_CARD`;
+  return `const vec3 ${C} = ${v3(S.card)};
+float ${name}CardOf(vec3 c, mat3 toCard, out vec3 u){
+  u = toCard * c; float low = ${S.shade ? `1. - smoothstep(${f(D.blue[0])}, ${f(D.blue[1])}, c.b / max(c.g, .01))` : '0.'};
+  float screen = max(smoothstep(${f(S.screen[0])}, ${f(S.screen[1])}, u.y), low * smoothstep(${f(D.shade[0])}, ${f(D.shade[1])}, u.y));
+  float white = smoothstep(${f(D.white[0])}, ${f(D.white[1])}, u.z) * (1. - smoothstep(${f(S.pale[0])}, ${f(S.pale[1])}, u.z / max(u.x, 1e-3)));
+  return smoothstep(0., ${f(D.share)}, u.x) * screen * white * (1. - backSkin(c))${S.dim ? ` * smoothstep(${f(S.dim[0])}, ${f(S.dim[1])}, dot(c, BACK_LUMA))` : ''}${S.red ? ` * (1. - smoothstep(${f(S.red[0])}, ${f(S.red[1])}, c.r - c.g))` : ''};
+}
+float ${name}RimOf(vec3 c, vec3 u){ return smoothstep(0., ${f(D.share)}, u.x) * smoothstep(${f(D.rim[0])}, ${f(D.rim[1])}, u.y) * (1. - smoothstep(${f(S.rimPale[0])}, ${f(S.rimPale[1])}, u.z / max(u.x, 1e-3))) * (1. - backSkin(c)); }
+float ${name}FingerOf(vec3 c, mat3 toFinger, out vec3 v){
+  v = toFinger * c;
+  return smoothstep(0., ${f(D.share)}, v.x) * smoothstep(-${f(D.tolerance)}, 0., v.y) * smoothstep(${f(D.fingerWhite[0])}, ${f(D.fingerWhite[1])}, v.z) * (1. - smoothstep(${f(S.pale[0])}, ${f(S.pale[1])}, v.z / max(v.x, 1e-3)));
+}
+vec3 ${name}Side(vec3 c, vec2 px, vec3 key, float zone, float shoe, vec3 field, float lying, out float w){
+  mat3 toCard = inverse(mat3(${C}, key, vec3(1.))), toFinger = inverse(mat3(${C}, BACK_FINGER, vec3(1.)));
+  vec3 u, v, t; float w1 = ${name}CardOf(c, toCard, u), w2 = ${S.finger ? `${name}FingerOf(c, toFinger, v) * (1. - shoe) * (1. - backUnder)` : '0.'};${S.finger ? '' : ' v = vec3(0.);'}
+  if (w2 > 0.) { float skin = 0., far = 1. - step(backShoe.x - ${f(D.blurredSkin.shoeFar)}, px.x) * step(px.x, backShoe.z + ${f(D.blurredSkin.shoeFar)}) * step(backShoe.y - ${f(D.blurredSkin.shoeFar)}, px.y) * step(px.y, backShoe.w + ${f(D.blurredSkin.shoeFar)});
+    for (int k = 0; k < 8; k++) { float a = float(k) * .7854; vec2 d = vec2(cos(a), sin(a)); skin = max(skin, backSkin(filmAt(map, px + ${f(D.skinNear)} * d)));
+      if (far > .5) for (int j = 0; j < 2; j++) { vec3 s = filmAt(map, px + (j == 0 ? ${f(D.blurredSkin.reach[0])} : ${f(D.blurredSkin.reach[1])}) * d); skin = max(skin, smoothstep(${f(D.blurredSkin.red[0])}, ${f(D.blurredSkin.red[1])}, s.r - s.g) * smoothstep(${f(D.blurredSkin.blue[0])}, ${f(D.blurredSkin.blue[1])}, s.b / max(s.g, .01))); } }
+    w2 *= smoothstep(.3, .7, skin); }
+  // the film card's pale rim and its edge blended with the screen, beside surely card
+  float rim = ${name}RimOf(c, u);
+  if (w1 < .7 && rim > 0.) { float near = 0.;
+    for (int k = 0; k < 16; k++) { float a = float(k) * .7854 + (k < 8 ? 0. : .3927); if (${name}CardOf(filmAt(map, px + (k < 8 ? ${f(D.near[0])} : ${f(D.near[1])}) * vec2(cos(a), sin(a))), toCard, t) > .7) { near = 1.; break; } }
+    w1 = max(w1, near * rim); }
+  // the video's blocks where the card is blurred over a finger: there the card's weight is the mean of the 3 x 3 pixels round it, so
+  // the two splits do not lie side by side in dots (seat 4, frame 43)
+  if (w2 > 0. && shoe < .5) { float sum = w1, blur = w2 * (1. - w1);
+    for (int k = 0; k < 8; k++) { vec3 s = filmAt(map, px + BACK_AROUND[k]);
+      float n1 = ${name}CardOf(s, toCard, t), n2 = ${name}FingerOf(s, toFinger, t); sum += n1; blur = max(blur, n2 * (1. - n1)); }
+    if (blur > .3) w1 = sum / 9.; }
+${name === 'face' ? `  if (backUnder > .5) w1 *= smoothstep(.4, .7, u.x); // beneath the drawn card a blue rim blended into the felt reads as felt: only a solid share goes paper
+` : ''}  w2 *= (1. - w1); w1 *= zone; w2 *= zone; w = w1 + w2; if (w <= 0.) return c;
+  float green = (c.g - max(c.r, c.b)) / max(key.g - max(key.r, key.b), .05), screen = max(u.y, 0.) * smoothstep(${f(D.noise[0])}, ${f(D.noise[1])}, u.y) * smoothstep(0., ${f(D.green)}, green);
+  float l = dot(c - screen * key, BACK_LUMA);${name === 'face' ? `
+  // the face's light, a doubling of the blue's: read as the mean of the pixel and four round it, so the video's noise is not doubled too
+  for (int k = 0; k < 4; k++) { vec2 d = ${f(PAPER_FACE.smooth)} * vec2(k == 0 ? 1. : k == 1 ? -1. : 0., k == 2 ? 1. : k == 3 ? -1. : 0.); vec3 s = filmAt(map, px + d); vec3 us = toCard * s; l += us.x > .3 ? dot(s - max(us.y, 0.) * smoothstep(${f(D.noise[0])}, ${f(D.noise[1])}, us.y) * key, BACK_LUMA) : dot(c - screen * key, BACK_LUMA); }
+  l /= 5.;` : ''}
+  vec3 card = field * ${S.response === 1 ? `clamp(l / lying, 0., ${f(S.bright)})` : `min(pow(max(l / lying, 0.), ${f(S.response)}), ${f(S.bright)})`} + screen * key;
+${name === 'back' ? `  // beneath the drawn card the card blurred into skin goes as the key takes it off fingers, de-yellowed, not dark (a dark stain on her hand)
+  if (backUnder > .5) { float near = 0.; for (int k = 0; k < 16; k++) { float a = float(k) * .7854 + (k < 8 ? 0. : .3927); near = max(near, backSkin(filmAt(map, px + (k < 8 ? 3. : 6.) * vec2(cos(a), sin(a))))); }
+    card = mix(card, vec3(c.r, c.g, max(c.b, .8 * c.g)), near); }
+` : ''}  vec3 part = max(v.x, 0.) * ${C} + vec3(max(v.z, 0.)), finger = clamp(c - part + field * ${S.response === 1 ? `clamp(dot(part, BACK_LUMA) / lying, 0., ${f(S.bright)})` : `min(pow(max(dot(part, BACK_LUMA) / lying, 0.), ${f(S.response)}), ${f(S.bright)})`}, 0., 1.);
+  return c * (1. - w1 - w2) + w1 * card + w2 * finger;
+}`; };
+/** filmCard(c, px, key): the film pixel c at film pixel px (y down) with the film card's back dark (backOn) and its face paper (faceOn); needs scene3d-film.ts CARD_GLSL (quadIn, filmAt) and the film shader's map and colour evening (evenOn, even, evenGain, evenLift). */
+export const FILM_CARD_GLSL = `uniform float backOn, faceOn, backLying, faceLying, backUnder; uniform vec2 backZone[4], backSeat[4]; uniform vec4 backShoe; uniform vec3 backFieldLit, faceFieldLit;
+const vec3 BACK_FINGER = ${v3(DARK_BACK.finger)}, BACK_LUMA = vec3(.2126, .7152, .0722);
+const vec2 BACK_AROUND[8] = vec2[8](vec2(-1., -1.), vec2(0., -1.), vec2(1., -1.), vec2(-1., 0.), vec2(1., 0.), vec2(-1., 1.), vec2(0., 1.), vec2(1., 1.));
+float backSkin(vec3 c){ return smoothstep(${f(DARK_BACK.skinRed[0])}, ${f(DARK_BACK.skinRed[1])}, c.r - c.g) * smoothstep(${f(DARK_BACK.skinBlue[0])}, ${f(DARK_BACK.skinBlue[1])}, c.b / max(c.g, .01)); }
+${sideGlsl('back', SIDES.back)}
+${sideGlsl('face', SIDES.face)}
+// the film's colour evening comes after this and would move the card's colours with the film: they are laid in that much the other way
+vec3 beforeEven(vec3 lit){ return evenOn > .5 ? max(inverse(even) * ((lit - evenLift) / max(evenGain, vec3(.05))), 0.) : lit; } // (a solid pixel's lift)
+vec3 filmCard(vec3 c, vec2 px, vec3 key){
+  float zone = max(smoothstep(-2., 2., quadIn(px, backZone)), smoothstep(-1., 1., quadIn(px, backSeat))); if (zone <= 0.) return c;
+  float shoe = step(backShoe.x - ${f(DARK_BACK.shoeRoom)}, px.x) * step(px.x, backShoe.z + ${f(DARK_BACK.shoeRoom)}) * step(backShoe.y - ${f(DARK_BACK.shoeRoom)}, px.y) * step(px.y, backShoe.w + ${f(DARK_BACK.shoeRoom)});
+  if (backUnder > .5 && shoe > .5) return c; // beneath the drawn card the shoe window is the matte's
+  float wb = 0., wf = 0.; vec3 b = c, f = c;
+  if (backOn > .5) b = backSide(c, px, key, zone, shoe, beforeEven(backFieldLit), backLying, wb);
+  if (faceOn > .5) f = faceSide(c, px, key, zone, shoe, beforeEven(faceFieldLit), faceLying, wf);
+  return wf > wb ? f : b;
+}`;
+const solve3 = (cols: number[][], c: number[]): number[] => {
+  const [a, b, d] = cols, det = (p: number[], q: number[], r: number[]) => p[0] * (q[1] * r[2] - q[2] * r[1]) - q[0] * (p[1] * r[2] - p[2] * r[1]) + r[0] * (p[1] * q[2] - p[2] * q[1]), D = det(a, b, d);
+  return Math.abs(D) < 1e-12 ? [0, 0, 0] : [det(c, b, d) / D, det(a, c, d) / D, det(a, b, c) / D];
+};
+const step = (e0: number, e1: number, x: number) => { const t = Math.min(1, Math.max(0, (x - e0) / (e1 - e0))); return t * t * (3 - 2 * t); };
+const lumaOf = (c: number[]) => 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
+/**
+ * darkBack in the shader for one pixel, for the tests: c the film's colour and key the screen's (0-1), shoe whether it lies in the shoe
+ * window or within DARK_BACK.shoeRoom of it, skin how much skin lies within DARK_BACK.skinNear of it (0 to 1), rim whether surely card lies within DARK_BACK.near of it. The neighbourhood's mean over a blurred finger is left out. card
+ * and finger: how far the pixel is taken as the card and as the card blurred with a finger; colour: what the film then shows.
+ */
+export function darkBackOf(c: number[], key: number[], o: {shoe?: boolean; skin?: number; rim?: boolean; field?: number[]; lying?: number; side?: 'back' | 'face'} = {}): {card: number; finger: number; colour: number[]} {
+  const D = {...DARK_BACK, ...(o.side === 'face' ? {card: PAPER_FACE.card, pale: PAPER_FACE.pale, rimPale: SIDES.face.rimPale, screen: PAPER_FACE.screen, bright: PAPER_FACE.bright} : {})}, dimOk = o.side === 'face' ? step(PAPER_FACE.dim[0], PAPER_FACE.dim[1], lumaOf(c)) * (1 - step(PAPER_FACE.red[0], PAPER_FACE.red[1], c[0] - c[1])) : 1, response = o.side === 'face' ? PAPER_FACE.response : 1, field = o.field ?? (o.side === 'face' ? PAPER_FACE.field : DARK_BACK.field), lying = o.lying ?? (o.side === 'face' ? PAPER_FACE.lying : 0.835), shade = o.side !== 'face', skin = step(D.skinRed[0], D.skinRed[1], c[0] - c[1]) * step(D.skinBlue[0], D.skinBlue[1], c[2] / Math.max(c[1], 0.01));
+  const cardOf = (u: number[]) => { const low = shade ? 1 - step(D.blue[0], D.blue[1], c[2] / Math.max(c[1], 0.01)) : 0;
+    return step(0, D.share, u[0]) * Math.max(step(D.screen[0], D.screen[1], u[1]), low * step(D.shade[0], D.shade[1], u[1])) * step(D.white[0], D.white[1], u[2]) * (1 - step(D.pale[0], D.pale[1], u[2] / Math.max(u[0], 1e-3))) * (1 - skin) * dimOk; };
+  const u = solve3([D.card, key, [1, 1, 1]], c), v = solve3([D.card, D.finger, [1, 1, 1]], c);
+  let w1 = cardOf(u); if (o.rim && w1 < 0.7) w1 = Math.max(w1, step(0, D.share, u[0]) * step(D.rim[0], D.rim[1], u[1]) * (1 - step(D.rimPale[0], D.rimPale[1], u[2] / Math.max(u[0], 1e-3))) * (1 - skin));
+  const w2 = o.shoe || o.side === 'face' ? 0 : step(0.3, 0.7, o.skin ?? 0) * step(0, D.share, v[0]) * step(-D.tolerance, 0, v[1]) * step(D.fingerWhite[0], D.fingerWhite[1], v[2]) * (1 - step(D.pale[0], D.pale[1], v[2] / Math.max(v[0], 1e-3))) * (1 - w1);
+  const green = (c[1] - Math.max(c[0], c[2])) / Math.max(key[1] - Math.max(key[0], key[2]), 0.05), screen = Math.max(u[1], 0) * step(D.noise[0], D.noise[1], u[1]) * step(0, D.green, green), light = Math.min(D.bright, Math.max(0, lumaOf(c.map((x, i) => x - screen * key[i])) / lying) ** response), card = field.map((x, i) => x * light + screen * key[i]);
+  const part = D.card.map(x => Math.max(v[0], 0) * x + Math.max(v[2], 0)), dim = Math.min(D.bright, Math.max(0, lumaOf(part) / lying) ** response), finger = c.map((x, i) => Math.min(1, Math.max(0, x - part[i] + field[i] * dim)));
+  return {card: w1, finger: w2, colour: c.map((x, i) => x * (1 - w1 - w2) + w1 * card[i] + w2 * finger[i])};
+}
+/**
+ * Where the film's card can be in a frame, for the dark back (clockwise on screen, film pixels, y down), or null: the box round the
+ * track's card (its film quad, quad or edge line) over this frame, the four before it and the two after it, grown by 16 px. Not the
+ * frame's own quad: a card slides on under her fingertips while its track already rests (the hole card's deal, frames 56-57: its
+ * yellow strip lay outside), and a card turning fast has no shape in the track for frames.
+ */
+export const BACK_ZONE = {before: 4, after: 2, grow: 16};
+export function backZone(track: MatteTrack, frame: number): number[][] | null {
+  const points: number[][] = []; for (let k = frame - BACK_ZONE.before; k <= frame + BACK_ZONE.after; k++) { const g = track?.frames?.[k]; points.push(...(g?.film?.length === 4 ? g.film : g?.quad?.length === 4 ? g.quad : g?.edge?.length === 2 ? g.edge : [])); }
+  if (!points.length) return null;
+  const xs = points.map(p => p[0]), ys = points.map(p => p[1]), r = BACK_ZONE.grow;
+  return [[Math.min(...xs) - r, Math.min(...ys) - r], [Math.max(...xs) + r, Math.min(...ys) - r], [Math.max(...xs) + r, Math.max(...ys) + r], [Math.min(...xs) - r, Math.max(...ys) + r]];
+}

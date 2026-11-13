@@ -3,9 +3,9 @@
 // edge; where the passes run; which quad lays the face print and how a film pixel finds its place on it.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {CLASS_GLSL, CLASSIFY_FRAGMENT, LIT, MATTE, MATTE_GLSL, MORPH_FRAGMENT, PLANE, PLANE_GLSL, RULES, SHADE_FRAGMENT, SHOE_BOX, bodyOf, matteBox, matteZone, meanLinear, paleZone, planeLight, printQuad, toPrint, turnZone, unmix} from '../src/scene3d-matte.ts';
+import {BACK_ZONE, CLASS_GLSL, CLASSIFY_FRAGMENT, DARK_BACK, FILM_CARD_GLSL, LIT, MATTE, MATTE_GLSL, MORPH_FRAGMENT, PAPER_FACE, PLANE, PLANE_GLSL, RULES, SHADE_FRAGMENT, SHOE_BOX, backZone, bodyOf, darkBackOf, matteBox, matteZone, meanLinear, paleZone, planeLight, printQuad, toPrint, turnZone, unmix} from '../src/scene3d-matte.ts';
 import {is} from '../src/card-track.ts';
-import {CARRY} from '../src/card-overlay.ts';
+import {BACK, CARRY, FACE} from '../src/card-overlay.ts';
 import {squareToQuad, onSquare} from '../src/scene3d-geometry.ts';
 import {DEFAULTS} from '../src/scene3d-view.ts';
 import {readFile} from 'node:fs/promises';
@@ -209,4 +209,77 @@ test('the drawn card takes how the film\'s light falls across the film\'s card, 
   assert.ok(deal.includes('if (shadeOn > .5 && localOn > .5) vPlane = lightPlane(map, core, cardColour, vMean);') && deal.includes('vShade * vLight * planeLight(vPlane, vMean, filmPixel)'), 'the paper lit by it');
   assert.ok(deal.includes("local: carryOf(extra) !== 'film'}"), 'the dealt card, not with Bara liggande');
   assert.ok(deal.includes("lay(seated, seat, {print: print(), shade: {core: seat, colour: COLOUR.BACK, lying: LYING.BACK}, contact: 0})") && deal.includes('u.localOn.value = how.shade?.local ? 1 : 0;'), 'the seated card and the lying cards as before');
+});
+
+test('the dark back ("pålägg"): the film\'s yellow back goes dark in the film\'s own pixels, and skin, sleeve, blouse, screen and the shoe\'s gold do not', async () => {
+  const key = [0, 201, 38].map(v => v / 255), c = (r: number, g: number, b: number) => [r, g, b].map(v => v / 255), luma = (v: number[]) => 0.2126 * v[0] + 0.7152 * v[1] + 0.0722 * v[2];
+  const dark = (col: number[], o = {}) => darkBackOf(col, key, o), same = (a: number[], b: number[]) => a.every((v, i) => Math.abs(v - b[i]) < 1e-3);
+  // the film card's back as the films show it (Paow, 2026-11-13): lit at seat 4, oranger in the dealer's films, washed light in a
+  // blurred frame (seat 7, frame 26), its orange shade under a finger, olive in the dealer's turn (frame 140): all of it the card,
+  // and all of it the dark field in its own light (the washed card no lighter than a third over the field, the shade darker)
+  for (const [name, col] of [['lit', c(240, 208, 3)], ['the dealer\'s', c(255, 201, 0)], ['washed', c(251, 232, 106)], ['shade', c(196, 134, 34)], ['the turn\'s olive', c(150, 140, 20)], ['her fingertip\'s orange edge', c(239, 151, 0)]] as const) {
+    const r = dark(col); assert.ok(r.card > 0.95, `${name}: the card`);
+    assert.ok(r.colour.every((v, i) => Math.abs(v - DARK_BACK.field[i] * r.colour[0] / DARK_BACK.field[0]) < 0.02) && luma(r.colour) <= DARK_BACK.bright * luma(DARK_BACK.field), `${name}: the dark field in its own light`); }
+  assert.ok(luma(dark(c(196, 134, 34)).colour) < luma(dark(c(240, 208, 3)).colour), 'the shade stays darker than the lit card');
+  // the card blurred with the screen: its part goes dark and the screen's stays for the key (the key then makes it partly see-through)
+  const half = c(240, 208, 3).map((v, i) => (v + key[i]) / 2), h = dark(half);
+  assert.ok(h.card > 0.95 && h.colour[1] - Math.max(h.colour[0], h.colour[2]) > 0.3, 'half card, half screen: the screen half stays screen');
+  // a screen share of a few hundredths inside the card is the video's noise and goes with the card (it left the dark card mottled olive)
+  const noisy = c(240, 208, 3).map((v, i) => v * 0.97 + key[i] * 0.03); assert.ok(dark(noisy).colour[1] - dark(noisy).colour[0] < 0.01, 'no green from noise');
+  // what is not the card stays as the film has it, wherever it lies: skin, a pale fingertip, her cream blouse, her jacket, the screen,
+  // the shoe's dark plastic, her lips; and the shoe's gold, in its window and beside it, with or without a finger near
+  for (const col of [c(249, 157, 124), c(240, 200, 190), c(230, 215, 190), c(40, 30, 45), key, c(60, 58, 62), c(180, 80, 80)]) assert.ok(same(dark(col).colour, col), `${col.map(v => Math.round(v * 255))} stays`);
+  for (const gold of [c(200, 160, 80), c(230, 190, 100)]) { assert.ok(same(dark(gold, {shoe: true, skin: 1}).colour, gold), 'gold in the shoe window'); assert.ok(same(dark(gold).colour, gold), 'gold with no skin near'); }
+  // the card blurred over a finger (seat 4, frame 43): beside skin, outside the shoe window, its part goes dark and the finger's stays
+  for (const col of [c(252, 210, 88), c(253, 215, 101)]) { const r = dark(col, {skin: 1}); assert.ok(r.card + r.finger > 0.95, 'the card and the finger');
+    assert.ok(luma(r.colour) < 0.6 * luma(col) && r.colour[0] > r.colour[2] + 0.05, 'darker, and the finger\'s warmth kept'); assert.deepEqual(dark(col, {skin: 1, shoe: true}).finger, 0, 'not in the shoe window'); }
+  // the film card's pale cream rim is the card's
+  assert.ok(dark(c(245, 232, 170)).card > 0.8);
+  // the shader is the same arithmetic
+  for (const v of [...DARK_BACK.card, ...DARK_BACK.finger, DARK_BACK.share, ...DARK_BACK.shade, ...DARK_BACK.blue, ...DARK_BACK.noise, DARK_BACK.skinNear, DARK_BACK.shoeRoom, ...DARK_BACK.blurredSkin.red, ...DARK_BACK.blurredSkin.blue, ...DARK_BACK.blurredSkin.reach, DARK_BACK.blurredSkin.shoeFar]) assert.ok(FILM_CARD_GLSL.includes(v.toFixed(4)), `${v} in the shader`);
+  // where it acts: the box round the track's card over this frame, the four before and the two after, grown; nothing without a card
+  const q = (x: number, y: number) => [[x, y], [x + 60, y], [x + 60, y + 90], [x, y + 90]];
+  const track = {frames: Array.from({length: 12}, (_, i) => ({frame: i, side: i === 6 ? 'EDGE' : 'BACK', quad: i === 6 ? null : q(100 + 10 * i, 200), edge: i === 6 ? [[150, 230], [200, 260]] : null}))};
+  const z = backZone(track, 6)!; assert.deepEqual(z, [[100 + 20 - BACK_ZONE.grow, 200 - BACK_ZONE.grow], [100 + 80 + 60 + BACK_ZONE.grow, 200 - BACK_ZONE.grow], [100 + 80 + 60 + BACK_ZONE.grow, 290 + BACK_ZONE.grow], [100 + 20 - BACK_ZONE.grow, 290 + BACK_ZONE.grow]]);
+  assert.equal(backZone({frames: track.frames.map(f => ({...f, side: 'NONE', quad: null, edge: null}))}, 6), null);
+  // the scene: a word asks for it (BACK is 'film', the back as filmed), with the film's own card in her hand and beneath the drawn card
+  // alike ("underlägg"), and not with the shoe model; the film's shader recolours before its key, and the card key and the matte read
+  // the film's own colour, so beneath the drawn card only what they leave of the film's card is recoloured
+  assert.equal(BACK, 'film');
+  const deal = await readFile('src/scene3d-deal.ts', 'utf8'), film = await readFile('src/scene3d-film.ts', 'utf8');
+  assert.ok(deal.includes("const backOf = (choice: Choice, extra: Extra): 'film' | 'dark' => extra.back ?? choice.back ?? BACK;") && deal.includes("if ((dark || paper) && !shoeModel())"), 'asked for, under either carry');
+  // beneath the drawn card the shoe window is the matte's and a card blurred with a finger is the key's: neither is recoloured there
+  const matteSrc = await readFile('src/scene3d-matte.ts', 'utf8');
+  assert.ok(deal.includes("under: carry !== 'film'}); }") && film.includes('back.backUnder.value = b.under ? 1 : 0;') && matteSrc.includes('if (backUnder > .5 && shoe > .5) return c;') && matteSrc.includes('(1. - shoe) * (1. - backUnder)'), 'beneath the drawn card: not the window, not fingers');
+  // ... and beside skin the back's share is de-yellowed, not darkened, and the face goes paper only where it is solid card
+  const glsl = (await import('../src/scene3d-matte.ts')).FILM_CARD_GLSL, backFn = glsl.slice(glsl.indexOf('vec3 backSide'), glsl.indexOf('float faceCardOf')), faceFn = glsl.slice(glsl.indexOf('vec3 faceSide'), glsl.indexOf('vec3 beforeEven'));
+  assert.ok(backFn.includes('card = mix(card, vec3(c.r, c.g, max(c.b, .8 * c.g)), near);') && !faceFn.includes('card = mix(card, vec3(c.r'), 'beside skin the back is de-yellowed');
+  assert.ok(faceFn.includes('if (backUnder > .5) w1 *= smoothstep(.4, .7, u.x);') && !backFn.includes('w1 *= smoothstep(.4, .7, u.x)'), 'the face paper only where solid');
+  assert.ok(deal.includes('o.film.setMatte(null); o.film.setBack(null); }') && deal.includes('drawMatte(track, at, choice, extra); o.film.setBack(null); }'), 'off with the cards, and with the matte');
+  assert.ok(film.includes('vec3 raw = c; if ((backOn > .5 || faceOn > .5) && frameOn < .5) c = filmCard(c, vec2(uv.x, 1. - uv.y) * FILM_PX, key);') && film.includes('o = keyCards(o, uv, raw, key)') && film.includes('matteCard(o, vec2(uv.x, 1. - uv.y) * FILM_PX, raw, key'), 'before the key; the card key reads the film');
+});
+
+test('the paper face ("pålägg: framsidan"): the blue face of the film goes paper in its own pixels, washed lilac and the teal of the turn too, and nothing else', async () => {
+  const key = [0, 201, 38].map(v => v / 255), c = (r: number, g: number, b: number) => [r, g, b].map(v => v / 255), luma = (v: number[]) => 0.2126 * v[0] + 0.7152 * v[1] + 0.0722 * v[2];
+  // (what stays may move by a level or two: her jacket's darkest blue is a hundredth the face's)
+  const face = (col: number[], o = {}) => darkBackOf(col, key, {side: 'face', ...o}), same = (a: number[], b: number[]) => a.every((v, i) => Math.abs(v - b[i]) < 0.008);
+  // the face as the films show it: lit (seat 4), in a finger's shadow, washed to lilac (seat 1, frames 74-81), the turn's teal and mint
+  // with the screen (seat 4, frames 50-52): all the card, and paper in its own light, at most PAPER_FACE.bright over the paper lying flat
+  for (const [name, col] of [['lit', c(0, 121, 227)], ['shadow', c(0, 70, 140)], ['lilac', c(205, 206, 243)], ['teal', c(14, 98, 104)], ['mint', c(51, 101, 106)]] as const) {
+    const r = face(col); assert.ok(r.card > 0.9, `${name}: the face`); assert.ok(luma(r.colour) <= PAPER_FACE.bright * luma(PAPER_FACE.field) + 1e-6, `${name}: no brighter than paper allows`); }
+  assert.ok(Math.abs(luma(face(c(0, 121, 227)).colour) - luma(PAPER_FACE.field) * (luma(c(0, 121, 227)) / PAPER_FACE.lying) ** PAPER_FACE.response) < 0.02, 'lit about as lying flat: the paper');
+  assert.ok(luma(face(c(0, 70, 140)).colour) < 0.85 * luma(face(c(0, 121, 227)).colour), 'the shadow of a finger stays a shadow');
+  assert.ok(same(face(c(14, 98, 104)).colour, face(c(14, 98, 104)).colour.map((v, i, a) => v)) && face(c(14, 98, 104)).colour[1] - face(c(14, 98, 104)).colour[0] < 0.05, 'teal is the card, not screen: no green kept');
+  // half face, half screen: the screen half stays for the key
+  const half = c(0, 121, 227).map((v, i) => (v + key[i]) / 2), h = face(half); assert.ok(h.card > 0.9 && h.colour[1] - Math.max(h.colour[0], h.colour[2]) > 0.2, 'the screen half stays screen');
+  // not the face: the yellow back, skin, a pale fingertip, her blouse, her jacket, the screen, gold, lips
+  for (const col of [c(240, 208, 3), c(249, 157, 124), c(240, 200, 190), c(225, 200, 215), c(230, 215, 190), c(40, 30, 45), key, c(200, 160, 80), c(180, 80, 80)]) assert.ok(same(face(col).colour, col), `${col.map(v => Math.round(v * 255))} stays`);
+  // and the back's rule does not take the face
+  assert.ok(darkBackOf(c(0, 121, 227), key).card < 0.05);
+  // the shader has both sides, the face with its own colour, whiteness and light; the deal asks for each by its word (FACE: as filmed)
+  for (const v of [...PAPER_FACE.card, ...PAPER_FACE.pale, ...PAPER_FACE.screen, ...PAPER_FACE.red, ...PAPER_FACE.dim, PAPER_FACE.smooth, PAPER_FACE.bright, PAPER_FACE.response]) assert.ok(FILM_CARD_GLSL.includes(v.toFixed(4)), `${v} in the shader`);
+  assert.ok(FILM_CARD_GLSL.includes('vec3 backSide(') && FILM_CARD_GLSL.includes('vec3 faceSide(') && FILM_CARD_GLSL.includes('return wf > wb ? f : b;'));
+  assert.equal(FACE, 'film');
+  const deal = await readFile('src/scene3d-deal.ts', 'utf8');
+  assert.ok(deal.includes("const faceOf = (choice: Choice, extra: Extra): 'film' | 'paper' => extra.face ?? choice.face ?? FACE;") && deal.includes('face: paper ? PAPER_FACE.field : null'), 'the face by its own word');
 });

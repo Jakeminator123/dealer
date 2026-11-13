@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import {buildGraph, effectOf, type BankData, type BankJob, type MotionRecord} from '../src/clip-graph.ts';
 import {defaultPlan} from '../src/placement-model.ts';
 import {createLayout} from '../src/game-table.ts';
-import {cardsChoice, createFilm, effectPart, faceFrame, filmModel, type FilmPart} from '../src/game-film.ts';
+import {cardOptions, cardsChoice, cardWords, createFilm, effectPart, faceFrame, filmModel, type FilmPart} from '../src/game-film.ts';
 import {judgedBank} from '../src/game-director.ts';
 
 const sha = 'a'.repeat(64), first = {file: {path: 'assets/anchors/paow-ready-01/anchor.png', sha256: sha}};
@@ -181,4 +181,16 @@ test('a rest film that asks for an effect hands it to the scene with its part; a
   for (const broken of [undefined, null, {}, {...flash, kind: 'blixt'}, {...flash, room: 'Spelhålan!'}, {...flash, at: -1}, {...flash, at: '4'}, {...flash, seconds: 0}, {...flash, seconds: 9}])
     assert.equal('effect' in (await restPart(broken)), false, JSON.stringify(broken));
   assert.equal(effectOf(null), null); assert.deepEqual(effectPart(null), {});
+});
+
+test('the film card recoloured (cardBack=dark, cardFace=paper) goes with every part only when the address asks for it', () => {
+  const q = (s: string) => new URLSearchParams(s);
+  assert.deepEqual(cardWords(q('')), {});
+  assert.deepEqual(cardWords(q('cardBack=film&cardFace=blue')), {}, 'only the trial words count');
+  assert.deepEqual(cardWords(q('cardBack=dark')), {back: 'dark'});
+  assert.deepEqual(cardWords(q('kort=liggande&cardBack=dark&cardFace=paper')), {back: 'dark', face: 'paper'});
+  const layout = createLayout(defaultPlan()), table = {hands: [], dealer: []};
+  const plain = cardOptions({own: null, lying: []}, table, [], layout, 'object'), asked = cardOptions({own: null, lying: []}, table, [], layout, 'object', {back: 'dark', face: 'paper'});
+  assert.ok(!('back' in plain) && !('face' in plain), 'without a word the part says nothing, so the card layer keeps its line');
+  assert.equal(asked.back, 'dark'); assert.equal(asked.face, 'paper'); assert.equal(asked.carry, 'object');
 });

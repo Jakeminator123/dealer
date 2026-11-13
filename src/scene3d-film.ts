@@ -5,7 +5,7 @@
 import * as T from 'three';
 import {FILM} from './scene3d-geometry.ts';
 import {FAN_GLSL} from './scene3d-light.ts';
-import {MATTE_GLSL} from './scene3d-matte.ts';
+import {FILM_CARD_GLSL, MATTE_GLSL} from './scene3d-matte.ts';
 import type {FilmEffect} from './clip-graph.ts';
 import {MOUTH_GLSL, mouthUniforms, putMouth, type MouthPart, type MouthShown} from './scene3d-mouth.ts';
 
@@ -264,6 +264,7 @@ ${FAN_GLSL}
 ${CARD_KEY}
 ${LIFE_GLSL}
 ${MATTE_GLSL}
+${FILM_CARD_GLSL}
 ${ABOVE_GLSL}
 ${MOUTH_GLSL}
 float screenAt(vec2 uv, vec3 key, float dk){ vec3 c = texture2D(map, uv).rgb; return clamp(((c.g - max(c.r, c.b)) / dk - lo) / (hi - lo), 0., 1.); }
@@ -280,6 +281,10 @@ void main(){
   if (hide.z > hide.x) { vec2 hp = vec2(uv.x, 1. - uv.y) * FILM_PX; if (hp.x > hide.x && hp.x < hide.z && hp.y > hide.y && hp.y < hide.w) discard; }
   // a spoken line's mouth (src/scene3d-mouth.ts) goes into the film's colour before the key and everything after it reads it
   vec3 c = mouthOver(uv, texture2D(map, uv).rgb), key = texture2D(map, refUv).rgb;
+  // the film card's yellow back as the dark back and its blue face as paper in its own pixels ("pålägg", lab trials: scene3d-matte.ts
+  // DARK_BACK, PAPER_FACE), before the key, so that the screen's share of a blurred card is keyed as before; the card key and the matte
+  // read the film's own colour (raw)
+  vec3 raw = c; if ((backOn > .5 || faceOn > .5) && frameOn < .5) c = filmCard(c, vec2(uv.x, 1. - uv.y) * FILM_PX, key);
   float dk = max(key.g - max(key.r, key.b), .05), s = (c.g - max(c.r, c.b)) / dk;
   float screen = clamp((s - lo) / (hi - lo), 0., 1.);
   // pull the matte in by about one source pixel: the outermost pixel of skin and hair carries the screen's green
@@ -295,7 +300,8 @@ void main(){
     vec2 d = texel * 2.; float x1 = screenAt(uv + vec2(d.x, 0.), key, dk), x0 = screenAt(uv - vec2(d.x, 0.), key, dk), y1 = screenAt(uv + vec2(0., d.y), key, dk), y0 = screenAt(uv - vec2(0., d.y), key, dk);
     vec2 slope = vec2(x1 - x0, y1 - y0); float near = max(max(screen, around), max(max(x1, x0), max(y1, y0)));
     if (near > .02 && dot(slope, slope) > 1e-4) {
-      vec3 ci = texture2D(map, uv - normalize(slope) * texel * 5.).rgb; float si = clamp(((ci.g - max(ci.r, ci.b)) / dk - lo) / (hi - lo), 0., 1.);
+      vec2 ui = uv - normalize(slope) * texel * 5.; vec3 ci = texture2D(map, ui).rgb; if ((backOn > .5 || faceOn > .5) && frameOn < .5) ci = filmCard(ci, vec2(ui.x, 1. - ui.y) * FILM_PX, key); // a card's edge takes the colour further in: recoloured too
+      float si = clamp(((ci.g - max(ci.r, ci.b)) / dk - lo) / (hi - lo), 0., 1.);
       vec3 inner = max(ci - si * key, 0.); inner.g = min(inner.g, max(inner.r, inner.b));
       float own = dot(pm, vec3(.2126, .7152, .0722)), theirs = max(dot(inner, vec3(.2126, .7152, .0722)), .02);
       pm = mix(pm, inner * min(own / theirs, 2.), edgeClean * smoothstep(.02, .2, near) * (1. - si));
@@ -326,9 +332,9 @@ void main(){
     vec3 room = texture2D(roomMap, gl_FragCoord.xy / roomSize).rgb * roomExposure; room = pow(max(room / (1. + room) * 1.3, 0.), vec3(1. / 2.2));
     o.rgb += room * a * wrap * smoothstep(.06, .62, open / 8.);
   }
-  if (cardOn > .5) { o = keyCards(o, uv, c, key); if (o.a < .004) discard; }
+  if (cardOn > .5) { o = keyCards(o, uv, raw, key); if (o.a < .004) discard; }
   // the film's own card as the matte of the rendered card (cardMethod 'matte', src/scene3d-matte.ts): recoloured in place
-  if (matteOn > .5) o = matteCard(o, vec2(uv.x, 1. - uv.y) * FILM_PX, c, key, grade * fanShade(vWorld));
+  if (matteOn > .5) o = matteCard(o, vec2(uv.x, 1. - uv.y) * FILM_PX, raw, key, grade * fanShade(vWorld));
   gl_FragColor = o;
 }`;
 
@@ -372,6 +378,15 @@ export type CardKey = {zone: number[][]; core: number[][] | null; colour: number
 // lying flat (back, face), `zone` the track's card grown (or null), `shoe` the shoe window box, `faceBack` the face shows the back
 // too (a card dealt face down).
 export type MatteKey = {box: number[]; cover: T.Texture; shade: T.Texture; print: T.Texture; toPrint: number[]; back: number[]; paper: number[]; lying: number[]; zone: number[][] | null; shoe: number[]; faceBack: boolean};
+// The film card's colours in its own pixels (src/scene3d-matte.ts DARK_BACK, PAPER_FACE): `zone` where the dealt card can be in this
+// frame and `seat` the card seated in the shoe window (quads clockwise on screen, film pixels; zone null: the seat alone), `shoe` the
+// shoe window box, where a card blurred with a finger is not looked for (its gold frame has that blend's colours); `back` the dark back
+// and `face` the paper in the film's values lit as the card lying flat (null: that side as filmed), `lying` the luminance of the
+// film's back and face lying flat. `under`: beneath the drawn card, where the matte draws the shoe window and the key takes the card's
+// tint off fingers: the window and a card blurred with a finger are left, the back's colour beside skin is de-yellowed instead of
+// darkened and the face goes paper only where it is solid card (with the dark back the window's gold frame went dark and her hand took
+// black stains; with the paper face the drawn face card took a white rim).
+export type BackKey = {zone: number[][] | null; seat: number[][]; shoe: number[]; back: number[] | null; face: number[] | null; lying: number[]; under?: boolean};
 export function createFilmLayers(filmVP: T.Matrix4, light: Record<string, {value: unknown}>) {
   // One frame, grade and card key for both layers; the rendered cards (scene3d-deal.ts) read the same frame and grade.
   const map = {value: null as T.Texture | null}, grade = {value: new T.Vector3(1, 1, 1)}, quad = () => [0, 1, 2, 3].map(() => new T.Vector2());
@@ -387,10 +402,11 @@ export function createFilmLayers(filmVP: T.Matrix4, light: Record<string, {value
   const matte = {matteOn: {value: 0}, matteFaceBack: {value: 0}, matteZoneOn: {value: 0}, matteBox: {value: new T.Vector4(0, 0, -1, -1)}, matteShoe: {value: new T.Vector4(0, 0, -1, -1)}, matteLying: {value: new T.Vector2(1, 1)}, matteZone: {value: quad()},
     matteBack: {value: new T.Vector3()}, mattePaper: {value: new T.Vector3(1, 1, 1)}, matteToPrint: {value: new T.Matrix3()},
     matteCover: {value: null as T.Texture | null}, matteShade: {value: null as T.Texture | null}, mattePrint: {value: null as T.Texture | null}};
+  const back = {backOn: {value: 0}, faceOn: {value: 0}, backUnder: {value: 0}, backLying: {value: 0.835}, faceLying: {value: 0.44}, backZone: {value: quad()}, backSeat: {value: quad()}, backShoe: {value: new T.Vector4(0, 0, -1, -1)}, backFieldLit: {value: new T.Vector3()}, faceFieldLit: {value: new T.Vector3()}};
   const mouth = mouthUniforms(); // a spoken line's mouth over the film (src/scene3d-mouth.ts)
   const material = (refUv: T.Vector2) => new T.ShaderMaterial({vertexShader: VERTEX, fragmentShader: FRAGMENT, transparent: true, depthWrite: false, side: T.DoubleSide,
     blending: T.CustomBlending, blendSrc: T.OneFactor, blendDst: T.OneMinusSrcAlphaFactor, blendSrcAlpha: T.OneFactor, blendDstAlpha: T.OneMinusSrcAlphaFactor,
-    uniforms: {...light, ...card, ...matte, ...mouth, ...frame, ...room, ...side, ...even, ...life, wrap: {value: 0}, hide, map, filmVP: {value: filmVP}, refUv: {value: refUv}, lo: {value: 0.12}, hi: {value: 0.9}, shadow: {value: 1}, above: {value: 1}, erode: {value: 0.6}, edgeClean: {value: 0}, grade, texel: {value: new T.Vector2(1.4 / FILM.width, 1.4 / FILM.height)}}});
+    uniforms: {...light, ...card, ...matte, ...back, ...mouth, ...frame, ...room, ...side, ...even, ...life, wrap: {value: 0}, hide, map, filmVP: {value: filmVP}, refUv: {value: refUv}, lo: {value: 0.12}, hi: {value: 0.9}, shadow: {value: 1}, above: {value: 1}, erode: {value: 0.6}, edgeClean: {value: 0}, grade, texel: {value: new T.Vector2(1.4 / FILM.width, 1.4 / FILM.height)}}});
   // The screen reference is read in a corner that stays empty: top left for the backdrop, bottom left for the table.
   const bodyMat = material(new T.Vector2(0.02, 0.97)), tableMat = material(new T.Vector2(0.02, 0.03));
   const body = new T.Mesh(new T.PlaneGeometry(10, 3), bodyMat), table = new T.Mesh(new T.PlaneGeometry(10, 2).rotateX(-Math.PI / 2), tableMat);
@@ -427,6 +443,13 @@ export function createFilmLayers(filmVP: T.Matrix4, light: Record<string, {value
       matte.matteCover.value = m.cover; matte.matteShade.value = m.shade; matte.mattePrint.value = m.print; matte.matteFaceBack.value = m.faceBack ? 1 : 0;
       matte.matteBack.value.set(m.back[0], m.back[1], m.back[2]); matte.mattePaper.value.set(m.paper[0], m.paper[1], m.paper[2]); matte.matteLying.value.set(m.lying[0], m.lying[1]);
       matte.matteZoneOn.value = m.zone ? 1 : 0; if (m.zone) m.zone.forEach((p, i) => matte.matteZone.value[i].set(p[0], p[1]));
+    },
+    // The film card's back dark and its face paper (BackKey), or null: the film as it is.
+    setBack(b: BackKey | null) {
+      back.backOn.value = b?.back ? 1 : 0; back.faceOn.value = b?.face ? 1 : 0; if (!b) return;
+      const put = (to: T.Vector2[], q: number[][]) => q.forEach((p, i) => to[i].set(p[0], p[1]));
+      put(back.backZone.value, b.zone ?? [[-9, -9], [-8, -9], [-8, -8], [-9, -8]]); put(back.backSeat.value, b.seat); back.backShoe.value.set(b.shoe[0], b.shoe[1], b.shoe[2], b.shoe[3]);
+      if (b.back) back.backFieldLit.value.set(b.back[0], b.back[1], b.back[2]); if (b.face) back.faceFieldLit.value.set(b.face[0], b.face[1], b.face[2]); back.backUnder.value = b.under ? 1 : 0; back.backLying.value = b.lying[0]; back.faceLying.value = b.lying[1];
     },
     // A box of the film that is left undrawn (film pixels, y down: x0, y0, x1, y1), for a page that has an object of its own where
     // the film has one; null draws the whole film. Nothing in the game uses it yet: a hand that reaches into the box is cut too.

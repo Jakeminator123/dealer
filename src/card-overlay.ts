@@ -25,6 +25,13 @@ export type Scene = {toImage: number[]; toTable: number[]; cardWidth: number; ca
 // stays what a visitor meets until the film's own card can be recoloured in the film's pixels (the restart: "pålägg"), and
 // kort=liggande is there for Jakob's own eye. Lying cards are drawn either way: a film lays one card and the next does not show it.
 export const CARRY: 'object' | 'film' | 'matte' = 'object';
+// How the film's own back shows, in her hand (carry 'film') or beside the drawn card (carry 'object', where it lies under it: "underlägg"):
+// as filmed, yellow ('film'), or recoloured to the dark back in the film's own pixels ('dark': "pålägg", src/scene3d-matte.ts DARK_BACK),
+// the restart's first step, which a page or a part asks for by its word (scene3d-deal.ts backOf) until it has been seen.
+export const BACK: 'film' | 'dark' = 'film';
+// ... and its face: as filmed, blue ('film'), or plain paper in the film's own pixels ('paper': src/scene3d-matte.ts PAPER_FACE), the
+// restart's second step, a lab trial asked for by its word (scene3d-deal.ts faceOf).
+export const FACE: 'film' | 'paper' = 'film';
 export const RIM = 4; // the film's pale rim and its blur outside the tracked colour core, in pixels
 export const SCALE = {min: 1, max: 2.5, fallback: 2};
 export const MARGIN = 1.2; // the rendered card is this much larger than the film's card wherever it follows it
