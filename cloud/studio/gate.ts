@@ -1,8 +1,10 @@
 // What the middleware does with one request (cloud/studio/middleware.ts is only its entry). Everything but the login page,
 // the login route and robots.txt needs the signed cookie; without it the answer is the login page itself, whatever was
-// asked for: a page, a film or /api/clip-bank. With it, a film is sent on to its object in Vercel Blob (the browser keeps
-// the site's own address, so films stay same-origin for the 3D scene and stay behind the password), and everything else
-// goes on to the static files. Only GET and HEAD pass, except to the bot and the request inbox (cloud/studio/bot-routes.ts),
+// asked for: a page, a film or /api/clip-bank. With it, a film is fetched from its object in Vercel Blob by this function,
+// with the Range asked for, and answered as private (the browser keeps the site's own address, so films stay same-origin for
+// the 3D scene and stay behind the password), and everything else goes on to the static files. A rewrite to Blob would cost
+// less, but Vercel's CDN keeps the first answer of a rewritten film for its address whatever Range is asked later (measured on
+// the copy 2026-11-13: every request then got the first 1 000 bytes), so it is used only with DEALER_MEDIA_MODE=rewrite. Only GET and HEAD pass, except to the bot and the request inbox (cloud/studio/bot-routes.ts),
 // the copy's only addresses that write; the gate refuses the rest.
 //
 // The answers follow Vercel's middleware protocol for the Build Output API: a response with "x-middleware-next: 1" goes on
@@ -59,7 +61,7 @@ async function login(request: Request, s: Secrets, ctx: GateContext, now: number
   return new Response(null, {status: 303, headers: {Location: next, 'Set-Cookie': cookieHeader(value, secure), 'Cache-Control': 'no-store', ...ROBOTS}});
 }
 
-/** A film from Blob through this function, the Range header passed on as it came (DEALER_MEDIA_MODE=proxy). */
+/** A film from Blob through this function, the Range header passed on as it came; private, so no CDN keeps it. */
 async function proxy(request: Request, entry: MediaEntry, ctx: GateContext): Promise<Response> {
   const range = request.headers.get('range');
   const upstream = await (ctx.fetch ?? fetch)(entry.url!, {method: request.method, headers: range ? {range} : {}});
@@ -96,7 +98,7 @@ export async function gate(request: Request, ctx: GateContext): Promise<Response
   const entry = Object.hasOwn(ctx.media, path) ? ctx.media[path] : null;
   if (entry) {
     if (!entry.url) return text('Filmen är inte uppladdad.', 503);
-    return ctx.env.DEALER_MEDIA_MODE === 'proxy' ? proxy(request, entry, ctx) : rewriteTo(entry.url);
+    return ctx.env.DEALER_MEDIA_MODE === 'rewrite' ? rewriteTo(entry.url) : proxy(request, entry, ctx);
   }
   return passOn();
 }

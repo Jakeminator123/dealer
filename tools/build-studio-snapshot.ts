@@ -17,6 +17,12 @@
 // inbox are one Node.js function (cloud/studio/bot.ts) with its knowledge beside it (tools/build-knowledge.ts), never a
 // static file. It prints a table of what goes up and what was left out.
 //
+// --lab <address> and --hem <checkout> build the copy of a commit from a checkout of its own (tools/publish-studio.ts does,
+// from a worktree of origin/main): the code, the registers and the lab server's answers are that checkout's (its own lab
+// server, on another port), while the media (assets/, outside Git) and the copy's state (.runtime/studio-deploy with the
+// project's link, .runtime/studio-blob with the store's key and the receipt) are the home checkout's, Jakob's own. Without
+// them both are this checkout, and the lab server is the one on 127.0.0.1:4319.
+//
 // --prov is for learning what breaks while the tree is being worked on: a machine path or a blocked name in a module's code
 // is listed instead of stopping the build, and the tree goes to its own folder, which no Vercel project is linked to and
 // tools/sync-studio-media.ts will not upload from. Everything else is checked as for the copy.
@@ -41,9 +47,14 @@ import {isBotPath} from '../cloud/studio/bot-routes.ts';
 const root = path.resolve(fileURLToPath(new URL('../', import.meta.url)));
 if (path.resolve(process.cwd()) !== root) throw Error('Kör från dealer-katalogen.');
 const trial = process.argv.includes('--prov');
-const LAB = 'http://127.0.0.1:4319';
+const option = (name: string) => { const at = process.argv.indexOf(name); if (at < 0) return null; const value = process.argv[at + 1]; if (!value || value.startsWith('--')) throw Error(`${name} saknar värde.`); return value; };
+const LAB = option('--lab') ?? 'http://127.0.0.1:4319';
+if (!/^http:\/\/127\.0\.0\.1:\d{2,5}$/.test(LAB)) throw Error('--lab ska vara http://127.0.0.1:<port>.');
+// The home checkout: its assets/ are the media, its .runtime/ holds the copy's state. A folder of its own, never a link.
+const home = path.resolve(option('--hem') ?? root);
+if (!existsSync(path.join(home, 'assets')) || !existsSync(path.join(home, 'data', 'studio-release.json'))) throw Error(`--hem är ingen utcheckning av dealer med media: ${home}`);
 const deployName = trial ? '.runtime/studio-deploy/prov' : '.runtime/studio-deploy';
-const deploy = path.join(root, ...deployName.split('/'));
+const deploy = path.join(home, ...deployName.split('/'));
 const output = path.join(deploy, '.vercel', 'output');
 const staticRoot = path.join(output, 'static');
 const middlewareRoot = path.join(output, 'functions', '_middleware.func');
@@ -53,11 +64,11 @@ const botRoot = path.join(output, 'functions', 'api', 'bot.func');
 const studioOut = path.join(root, '.runtime', 'studio-snapshot', 'out');
 
 // ── One fixed, disposable output tree, never reached through a link ─────────
-if (output !== path.resolve(root, `${deployName}/.vercel/output`)) throw Error('Unsafe build output.');
-const realRoot = await realpath(root);
+if (output !== path.resolve(home, `${deployName}/.vercel/output`)) throw Error('Unsafe build output.');
+const realRoot = await realpath(root), realHome = await realpath(home);
 await mkdir(path.dirname(output), {recursive: true});
-if (await realpath(deploy) !== path.join(realRoot, ...deployName.split('/'))) throw Error('Linked studio build directory.');
-if (await realpath(path.dirname(output)) !== path.join(realRoot, ...deployName.split('/'), '.vercel')) throw Error('Linked Vercel output parent.');
+if (await realpath(deploy) !== path.join(realHome, ...deployName.split('/'))) throw Error('Linked studio build directory.');
+if (await realpath(path.dirname(output)) !== path.join(realHome, ...deployName.split('/'), '.vercel')) throw Error('Linked Vercel output parent.');
 // A trial tree never sits where a Vercel project could be linked (.vercel/project.json is written by `vercel link`).
 if (trial && existsSync(path.join(deploy, '.vercel', 'project.json'))) throw Error('Provbyggets mapp är länkad till ett Vercel-projekt; ta bort länken först.');
 if ((await lstat(output).catch(() => null))?.isSymbolicLink()) throw Error('Linked studio build output.');
@@ -80,13 +91,17 @@ async function lab(pathname: string): Promise<Buffer> {
 }
 const health = JSON.parse((await lab('/health')).toString('utf8'));
 const same = (a: unknown, b: string) => typeof a === 'string' && (process.platform === 'win32' ? path.resolve(a).toLowerCase() === b.toLowerCase() : path.resolve(a) === b);
-if (health?.name !== 'dealer' || !same(health.root, root)) throw Error('Labbservern på 4319 är inte den här utcheckningens.');
+if (health?.name !== 'dealer' || !same(health.root, root)) throw Error(`Labbservern på ${LAB} är inte den här utcheckningens.`);
 
-/** A file of the checkout that really lies where its path says (no link along the way), or null. */
+/**
+ * A file of the checkout that really lies where its path says (no link along the way), or null. Media (assets/) are the home
+ * checkout's, everything else this checkout's.
+ */
 async function localFile(relative: string): Promise<string | null> {
   if (!safeRelative(relative)) return null;
-  const wanted = path.join(realRoot, ...relative.split('/'));
-  const real = await realpath(path.join(root, relative)).catch(() => null);
+  const [base, realBase] = relative.startsWith('assets/') ? [home, realHome] : [root, realRoot];
+  const wanted = path.join(realBase, ...relative.split('/'));
+  const real = await realpath(path.join(base, relative)).catch(() => null);
   if (real !== wanted) return null;
   return (await stat(real).catch(() => null))?.isFile() ? real : null;
 }
@@ -279,7 +294,13 @@ for (const room of (rooms as {rooms: {id: string; file: string}[]}).rooms) {
 // menu): what the lab server hands out goes up, a film to Blob and the rest as a static file; what it does not hand out (a
 // file of another tool, or not on this machine) is named and left out.
 const namedLeft: string[] = [];
-const labServes = async (relative: string) => (await fetch(`${LAB}/${relative}`, {method: 'HEAD', signal: AbortSignal.timeout(30000)}).catch(() => null))?.ok === true;
+// The media are the home checkout's: built from another checkout, whether a medium is handed out is asked of the home's own lab
+// server (a HEAD only, when it answers as that checkout's), since the other one reaches the media through a junction and hands
+// out no medium that lies outside its own folder (tools/media-roles.ts).
+const HOME_LAB = 'http://127.0.0.1:4319';
+const homeHealth = home === root ? null : await fetch(`${HOME_LAB}/health`, {signal: AbortSignal.timeout(3000)}).then(r => r.ok ? r.json() : null, () => null);
+const mediaLab = homeHealth?.name === 'dealer' && same(homeHealth.root, realHome) ? HOME_LAB : LAB;
+const labServes = async (relative: string) => (await fetch(`${relative.startsWith('assets/') ? mediaLab : LAB}/${relative}`, {method: 'HEAD', signal: AbortSignal.timeout(30000)}).catch(() => null))?.ok === true;
 for (const relative of named) {
   if (written.some(w => w.path === relative) || blob.has(relative)) continue;
   const rule = blockedPath(relative, release);
@@ -312,6 +333,41 @@ if (release.casino.on) for (const address of ['/game.html', '/game.css']) {
   const text = await readFile(path.join(root, source), 'utf8');
   if ((await lab(address)).toString('utf8') !== text) throw Error(`Labbservern serverar ${address} annorlunda än filen ${source}.`);
   await emit(address.slice(1), address === '/game.html' ? copyGamePage(text) : text, 'spelet');
+}
+
+// ── Her lines over the films: the mouth patches the game may lay ────────────
+// data/speech-patches.json names each patch by its record (assets/speech/<dealer>/patches/<id>/patch.json, src/speech-patch.ts),
+// and the record names its strip and sound in the same folder. They go up as static files, each checked against the sha256
+// the register and the record give. A patch of a dealer the Casino does not play, over a film that does not go up, or whose
+// files do not check, is left out of the copy's register; the game then says that line with its talk film, as without patches.
+const patchLeft: string[] = [];
+const PATCH_FOLDER = /^assets\/speech\/([a-z0-9]+)\/patches\/([a-z0-9]+(?:-[a-z0-9]+)*)\/patch\.json$/;
+const patchRegister = release.casino.on ? await localFile('data/speech-patches.json') : null;
+if (patchRegister) {
+  const register = JSON.parse(await readFile(patchRegister, 'utf8')) as {patches?: {id: string; dealer: string; film: string; path: string; sha256: string}[]} & Record<string, unknown>;
+  const kept: typeof register.patches = [];
+  for (const p of register.patches ?? []) {
+    const m = PATCH_FOLDER.exec(String(p.path));
+    if (!m || m[1] !== p.dealer || m[2] !== p.id) throw Error(`Oväntad sökväg till munlappen ${p.id}: ${p.path}`);
+    if (!release.casino.dealers.includes(p.dealer)) { patchLeft.push(`${p.id} (dealern spelas inte i Casino)`); continue; }
+    if (!blob.has(p.film)) { patchLeft.push(`${p.id} (filmen går inte upp)`); continue; }
+    const record = await localFile(p.path);
+    const recordBytes = record ? await readFile(record) : null;
+    if (!recordBytes || digest(recordBytes) !== p.sha256) { patchLeft.push(`${p.id} (posten saknas eller stämmer inte med registret)`); continue; }
+    const r = JSON.parse(recordBytes.toString('utf8')) as {strip?: {path?: string; sha256?: string}; sound?: {path?: string; sha256?: string}};
+    const folder = p.path.slice(0, -'patch.json'.length), parts: [string, Buffer][] = [];
+    for (const part of [r.strip, r.sound]) {
+      const relative = `${folder}${part?.path}`, file = /^(?:mouth\.(?:webp|png)|line\.wav)$/.test(String(part?.path)) ? await localFile(relative) : null;
+      const bytes = file ? await readFile(file) : null;
+      if (bytes && digest(bytes) === part!.sha256) parts.push([relative, bytes]);
+    }
+    if (parts.length !== 2) { patchLeft.push(`${p.id} (remsan eller ljudet saknas eller stämmer inte med posten)`); continue; }
+    if (blockedPath(p.path, release)) { patchLeft.push(`${p.id} (spärrad)`); continue; }
+    await emit(p.path, recordBytes, 'munlappar');
+    for (const [relative, bytes] of parts) await emit(relative, bytes, 'munlappar');
+    kept.push(p);
+  }
+  dataFiles['data/speech-patches.json'] = scrub({...register, patches: kept}, release);
 }
 // Other scene data the studio's code names (data/…json): only registers of the scene, scrubbed like the rest.
 const notInCopy: string[] = [];
@@ -369,7 +425,7 @@ if (!pages || !written.some(w => w.path === 'studio/index.html')) throw Error('S
 // ── The lock: the middleware and the map of the films in Blob ───────────────
 // After an upload, .runtime/studio-blob/studio-media.json (tools/sync-studio-media.ts) holds each object's address; until then
 // it is null. The receipt stays outside Git: the repo is public, and the list of addresses would open every film without the lock.
-const uploaded = await readFile(path.join(root, '.runtime/studio-blob/studio-media.json'), 'utf8').then(JSON.parse).catch(() => null) as {host?: string; entries?: {object: string; sha256: string; bytes: number; url: string}[]} | null;
+const uploaded = await readFile(path.join(home, '.runtime/studio-blob/studio-media.json'), 'utf8').then(JSON.parse).catch(() => null) as {host?: string; entries?: {object: string; sha256: string; bytes: number; url: string}[]} | null;
 const media: MediaMap = {};
 for (const file of [...blob.values()].sort((a, b) => a.path.localeCompare(b.path))) {
   const entry = uploaded?.entries?.find(e => e.object === file.object && e.sha256 === file.sha256 && e.bytes === file.bytes);
@@ -466,11 +522,11 @@ const plan = [...blob.values()].map(({path: p, sha256, bytes, type, object, grou
 await writeFile(path.join(deploy, 'media-plan.json'), JSON.stringify({schemaVersion: 1, builtAt: meta.builtAt, sourceCommit, ...(trial ? {trial: true} : {}), files: plan}, null, 2));
 const perDealer = Object.fromEntries([...parts].map(([dealer, p]) => [dealer, {takes: p.picked.length, groups: p.picked.reduce((m: Record<string, number>, t) => (m[t.group] = (m[t.group] ?? 0) + 1, m), {}), game: p.game.size,
   roundGaps: p.round.filter(s => !s.video).map(s => s.id)}]));
-await writeFile(path.join(deploy, 'build.json'), JSON.stringify({builtAt: meta.builtAt, sourceCommit, sourceDirty, trial, codeLeaks, bankSha256: digest(bankText), proofsSha256: digest(proofsText), release: digest(await readFile(path.join(root, 'data/studio-release.json'))),
+await writeFile(path.join(deploy, 'build.json'), JSON.stringify({builtAt: meta.builtAt, sourceCommit, sourceDirty, from: {checkout: root, home, lab: LAB}, trial, codeLeaks, bankSha256: digest(bankText), proofsSha256: digest(proofsText), release: digest(await readFile(path.join(root, 'data/studio-release.json'))),
   deployable: !trial && missing === 0, filmsWithoutUpload: missing, staticBytes, blobBytes, dealers: perDealer, casino: release.casino, presets: Object.keys(presetAnswers).length - (release.presets ? 1 : 0), static: written, blob: plan,
   bot: {knowledgeBytes: knowledgeReport.bytes, core: knowledgeReport.karna, searched: knowledgeReport.rest, views: knowledgeReport.vyer, missingSources: knowledgeReport.saknas, removed: knowledgeReport.borttaget,
     files: Object.fromEntries(Object.entries(botTexts).map(([name, text]) => [name, {bytes: Buffer.byteLength(text), sha256: digest(text)}]))},
-  leftOut: {takes: takes.left, proofs: proofs.left, notInCopy, named: namedLeft}}, null, 2));
+  leftOut: {takes: takes.left, proofs: proofs.left, notInCopy, named: namedLeft, patches: patchLeft}}, null, 2));
 
 // ── The table ───────────────────────────────────────────────────────────────
 const rows = new Map<string, {where: string; files: number; bytes: number}>();
@@ -489,6 +545,7 @@ console.log('\nLämnas utanför');
 console.log(`  tagningar: ${tally(takes.left) || 'inga'}`);
 console.log(`  prov: ${tally(proofs.left) || 'inga'}`);
 if (namedLeft.length) console.log(`  filer modulerna nämner: ${namedLeft.join(', ')}`);
+if (patchLeft.length) console.log(`  munlappar: ${patchLeft.join(', ')}`);
 if (notInCopy.length) console.log(`  studion frågar efter, finns inte i kopian: ${notInCopy.join(', ')}`);
 if (codeLeaks.length) console.log(`\nPROVBYGGE, får inte publiceras. I modulernas kod:\n  ${codeLeaks.join('\n  ')}`);
 console.log('\nBoten (functions/api/bot.func, kunskapen bara där)');

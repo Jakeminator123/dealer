@@ -261,6 +261,80 @@ beställningsagentens instruktion; här står det som rör banken, uppspelningen
   separat gammalt GitHub-repo identifierades. Specialvyerna för äldre bildrute-/kortkontaktgranskning är bevarade i
   D:-arkivet.
 
+## Den låsta kopian på nätet
+
+Studion som låst kopia för Jakobs chef (Jakob 2026-11-12 och 2026-11-13: lösenordet "john", Scen och Casino med Paow).
+Allt går att läsa och spela, inget går att ändra, och inga kostnader visas.
+
+- **Adress:** `https://dealer-studio-one.vercel.app` (projektets egen; `dealer-lake.vercel.app` hör än så länge till v0:s
+  projekt `dealer`). Lösenordet är `john` (även `jon`, som Jakob skrev 2026-11-13). Efter lösenordet kommer studion med
+  vänsterspalten: Scen, Karta, Primära, Granska, Prov, Placering, Material, Casino och Önskemål. Första publiceringen
+  2026-11-13 kl. 16.35–16.45 är `e7c006d`.
+- **Vercel:** team `jakeminator123s-projects` (Pro), projekt `dealer-studio`, utan Git-
+  koppling: varje version läggs upp färdigbyggd. Projektets och teamets id står bara i länken
+  `.runtime/studio-deploy/.vercel/project.json` (utanför Git). Skydd: Vercels standard (förhandsversioner och de genererade
+  deployadresserna bakom Vercels egen inloggning; produktionsadresserna öppna fram till kopians eget lås).
+- **Blob:** `dealer-studio-media`, public, `arn1`, kopplad till `dealer-studio`. Storens id står bara i kvittot (nedan) och
+  skrivs inte i repot: objekten heter efter sitt innehåll (`studio/<sha256>.<ext>`), filmernas sha256 står i `motions/`, och
+  med id:t går varje film att hämta direkt ur den publika storen utan lösenord. Ett objekt skrivs aldrig över. Låset
+  hämtar en film ur Blob med det intervall
+  (Range) som webbläsaren frågar efter och svarar privat, så webbläsaren ser aldrig Blob-adressen och ingen CDN behåller
+  filmen. En omskrivning till Blob (`DEALER_MEDIA_MODE=rewrite`) används inte: mätt 2026-11-13 behöll Vercels CDN då den
+  första delen av en film för dess adress och lämnade samma 1 000 byte till varje senare fråga, så filmerna spelade inte.
+  Projektet har `DEALER_MEDIA_MODE=proxy`, och från `cloud/studio/gate.ts` efter 2026-11-13 är det förvalet.
+- **Låset:** miljövariablerna `DEALER_LOSEN` (`john,jon`; flera lösenord skiljs med komma) och `DEALER_KAKNYCKEL` (48
+  slumptecken, gjorda i röret till `vercel env add` och aldrig nedskrivna), Production, känsliga (går inte att läsa
+  tillbaka). Nytt lösenord: `vercel env rm DEALER_LOSEN production` och `printf '<ord>' | vercel env add DEALER_LOSEN
+  production`, båda med `--cwd .runtime/studio-deploy`, sedan en ny deploy; alla gamla inloggningar slutar då gälla.
+- **Boten** följer med men har ingen `BOT_BLOB_TOKEN`: den svarar att den saknar lagring och anropar ingen modell, så den
+  kostar inget. Att slå på den (egen privat store, nyckel, tak) är Jakobs beslut.
+- **Vad som går upp** avgör `data/studio-release.json` (tagningar per dealer, vad spelet kan spela, prov, förval, spärrade
+  namn, gränser); `tools/build-studio-snapshot.ts` bygger kopian och skriver tabellen. I kopian spelar spelmotorn i
+  `game/` i själva spelsidan (`cloud/studio/game-local.ts`), eftersom det inte finns någon server som håller ett spel.
+  Munlapparna i `data/speech-patches.json` följer med som statiska filer (post, remsa, ljud), var och en kontrollerad mot
+  registrets och postens sha256; en lapp vars film inte går upp eller vars filer inte stämmer lämnas ute, och spelet säger
+  då repliken med talfilmen. Vercel lämnar ut `line.wav` som `audio/wave`.
+- **Tillståndet ligger utanför Git, i Jakobs utcheckning:** `.runtime/studio-deploy/` (länken `.vercel/project.json`,
+  `build.json`, `media-plan.json`, trädet som läggs upp), `.runtime/studio-blob/.env.local` (storens nyckel och inget
+  annat) och `.runtime/studio-blob/studio-media.json` (kvittot med varje films Blob-adress). Kvittot hör aldrig hemma i
+  Git: repot är publikt, och adresserna skulle öppna varje film utan lösenord. Nyckeln `BLOB_READ_WRITE_TOKEN` i
+  utcheckningens egen `.env.local` hör till `dealer-lab-tal` (talbanan) och används aldrig här;
+  `tools/sync-studio-media.ts` vägrar den och varje nyckel i miljön. Kör aldrig `vercel blob …` eller `vercel env …` i
+  repots rot.
+
+### Publicera igen från en nyare commit
+
+```
+node tools/publish-studio.ts                         planen: commit, arbetskopia, stegen; inget körs
+DEALER_LOSEN_PROV=john node tools/publish-studio.ts --kor
+```
+
+`--kor` bygger `origin/main` (eller `--commit <ref>`) i en egen ren arbetskopia,
+`D:/dealer-scratch/tmp/publiceringsagent/kopia` (detached, `npm ci` när en låsfil har ändrats, `assets/` som en koppling
+till Jakobs media), med arbetskopians egen labbserver på 4341. Den startas oförändrad med en startmodul som flyttar porten
+och låter bli att städa D:; labbservern på 4319 startas, stoppas och frågas aldrig, utom om en mediefil lämnas ut. Sedan:
+bygget, uppladdning av de filmer och bilder som är nya (oförändrade objekt skickas inte igen), bygget en gång till så att
+låset får adresserna, `vercel deploy --prebuilt --prod` från `.runtime/studio-deploy` och kontrollen utifrån: utan kaka ska
+varje sida, svar och film ge inloggningssidan; med `DEALER_LOSEN_PROV` loggar den in och prövar första sidan, en film med
+Range och att kopian säger rätt commit. Bygget stannar om arbetskopian inte är ren, om en modul har en maskinsökväg eller
+ett spärrat namn, om klippbanken ändras under bygget eller om Blob-delen går över gränsen i registret. Första
+publiceringen 2026-11-13 tog cirka 40 minuter, mest uppladdningen (1,7 GB); en ny publicering skickar bara det nya.
+
+- **Taket för Blob** är `limits.blobBytes` i `data/studio-release.json`, 2,2 GB sedan 2026-11-13 (Paows andra omgång
+  talfilmer gjorde delen 1,72 GB). Går delen över taket stannar bygget innan planen skrivs: inget laddas upp och inget läggs
+  ut, och kopian på nätet står kvar som den var. Höj taket i registret först när tabellen visar vad som har vuxit.
+- **Storen rymmer** (2026-11-13 kl. 16.30) 233 objekt, 1 725 MB: Paows filmer för spelet och rundan med 51 talfilmer,
+  Pamelas runda, godkända och varianter, sex prov och tre filmer för scenen. Objekt som en senare kopia inte längre visar
+  ligger kvar i storen (de skrivs aldrig över och tas inte bort av verktyget); kvittot listar dem.
+
+- Provbygge utan publicering: `node tools/build-studio-snapshot.ts --prov` och `node tools/serve-studio-snapshot.ts
+  --prov` (port 4330, med påhittat lösenord och nyckel), se verktygens huvuden.
+- Ta bort kopian (på Jakobs ord): `vercel project rm dealer-studio` och `vercel blob delete-store <storens id ur kvittot>`, båda
+  med `--scope jakeminator123s-projects`.
+- **Kostnad** (Pro, ur teamets månadskredit på 20 USD): lagringen cirka 1,7 GB × 0,023 USD per GB och månad ≈ 0,04 USD;
+  trafiken ingår i Pro-planens Flat Rate CDN (1 TB) och kostar annars cirka 0,05 USD per GB; en visning av Casino med en
+  runda läser cirka 150 MB film. Uppladdningen är cirka 250 Blob-operationer ≈ 0,001 USD.
+
 ## D: och städning
 
 Slaskmapparna är skapade. Efter arkivraderingen 2026-11-10 hade C: cirka 106,2 GiB ledigt. Diskflytt frigör diskutrymme,

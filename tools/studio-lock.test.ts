@@ -120,8 +120,8 @@ test('a wrong password does not get in; the right one sets a locked-down cookie 
   const cookie = cookieOf(right)!;
   const page = await gate(ask('/studio/', {headers: {cookie: `${COOKIE}=${cookie}`}}), ctx);
   assert.equal(page.headers.get('x-middleware-next'), '1');
-  const movie = await gate(ask(film, {headers: {cookie: `${COOKIE}=${cookie}`, range: 'bytes=0-1'}}), ctx);
-  assert.equal(movie.headers.get('x-middleware-rewrite'), media[film].url);
+  const movie = await gate(ask(film, {headers: {cookie: `${COOKIE}=${cookie}`, range: 'bytes=0-1'}}), context({env: {...env, DEALER_MEDIA_MODE: 'rewrite'}}));
+  assert.equal(movie.headers.get('x-middleware-rewrite'), media[film].url, 'rewrite only when asked for');
   // the copy writes nothing, whatever is sent
   for (const method of ['PUT', 'POST', 'DELETE', 'PATCH']) assert.equal((await gate(ask('/api/clip-bank/review/x', {method, headers: {cookie: `${COOKIE}=${cookie}`}}), ctx)).status, 405, method);
   // a stranger's next is not followed
@@ -138,16 +138,18 @@ test('the eleventh try in ten minutes is refused, even with the right password',
   assert.equal((await gate(login('prov-losen', '/studio/', '8.8.8.8'), ctx)).status, 303);
 });
 
-test('a film not yet uploaded is a 503, and proxy mode passes Range on', async () => {
+test('a film not yet uploaded is a 503, and a film is fetched from Blob with its Range and answered as private', async () => {
   const s = (await secrets(env))!, cookie = `${COOKIE}=${await signCookie(s, now + 60)}`;
   const empty = await gate(ask(film, {headers: {cookie}}), context({media: {[film]: {...media[film], url: null}}}));
   assert.equal(empty.status, 503);
   let seen: string | null = null;
   const fakeFetch = (async (_url: string, init: RequestInit) => { seen = new Headers(init.headers).get('range'); return new Response('ab', {status: 206, headers: {'content-range': 'bytes 0-1/10', 'content-length': '2'}}); }) as typeof fetch;
-  const proxied = await gate(ask(film, {headers: {cookie, range: 'bytes=0-1'}}), context({env: {...env, DEALER_MEDIA_MODE: 'proxy'}, fetch: fakeFetch}));
+  const proxied = await gate(ask(film, {headers: {cookie, range: 'bytes=0-1'}}), context({fetch: fakeFetch}));
   assert.equal(seen, 'bytes=0-1');
   assert.equal(proxied.status, 206);
   assert.equal(proxied.headers.get('content-range'), 'bytes 0-1/10');
   assert.equal(proxied.headers.get('content-type'), 'video/mp4');
+  assert.equal(proxied.headers.get('cache-control'), 'private, max-age=86400', 'no CDN keeps a film: its first range would be served for every range');
+  assert.equal(proxied.headers.get('x-middleware-rewrite'), null);
   assert.equal(await proxied.text(), 'ab');
 });

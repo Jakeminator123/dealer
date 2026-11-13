@@ -55,7 +55,7 @@
     "quality": 78
   },
   "limits": {
-    "blobBytes": 1600000000,
+    "blobBytes": 2200000000,
     "staticBytes": 120000000
   }
 }

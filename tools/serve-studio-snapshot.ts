@@ -1,7 +1,8 @@
 // A local rehearsal of the studio's online copy, before anything is published: serves the built Build Output tree
 // (.runtime/studio-deploy/.vercel/output, tools/build-studio-snapshot.ts) on http://127.0.0.1:4330 and behaves as Vercel
 // would with it: the routes of its config.json in order, the lock of cloud/studio/gate.ts as the middleware (cookie,
-// login, try limit), and a film's rewrite to Blob answered from the local file it was made from, with Range.
+// login, try limit), and a film's fetch from Blob (the gate's default, cloud/studio/gate.ts) answered from the local file it was
+// made from, with Range; with DEALER_MEDIA_MODE=rewrite the rewrite is answered the same way.
 //
 //   DEALER_LOSEN=… DEALER_KAKNYCKEL=… node tools/serve-studio-snapshot.ts      start (in the foreground)
 //   … node tools/serve-studio-snapshot.ts --prov                              the trial build instead (build-studio-snapshot --prov)
@@ -20,6 +21,7 @@
 import http from 'node:http';
 import {readFile, writeFile, stat, realpath, unlink, mkdir} from 'node:fs/promises';
 import {createReadStream} from 'node:fs';
+import {Readable} from 'node:stream';
 import {randomUUID} from 'node:crypto';
 import path from 'node:path';
 import {fileURLToPath, pathToFileURL} from 'node:url';
@@ -67,8 +69,28 @@ const media: MediaMap = Object.fromEntries(Object.entries(built).map(([at, entry
 const config = JSON.parse(await readFile(path.join(output, 'config.json'), 'utf8')) as {routes: Record<string, any>[]};
 const limiter = new TryLimit();
 
-const TYPES: Record<string, string> = {'.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.json': 'application/json', '.txt': 'text/plain; charset=utf-8', '.svg': 'image/svg+xml', '.ico': 'image/x-icon', '.woff2': 'font/woff2', '.webmanifest': 'application/manifest+json', '.mp4': 'video/mp4', '.png': 'image/png', '.jpg': 'image/jpeg', '.webp': 'image/webp', '.glb': 'model/gltf-binary'};
+const TYPES: Record<string, string> = {'.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.json': 'application/json', '.txt': 'text/plain; charset=utf-8', '.svg': 'image/svg+xml', '.ico': 'image/x-icon', '.woff2': 'font/woff2', '.webmanifest': 'application/manifest+json', '.mp4': 'video/mp4', '.png': 'image/png', '.jpg': 'image/jpeg', '.webp': 'image/webp', '.glb': 'model/gltf-binary', '.wav': 'audio/wav'};
 const realStatic = await realpath(staticRoot), realRoot = await realpath(root);
+
+/** Blob as the rehearsal has it: a stand-in address answered from the local file its object was made from, with Range. */
+const localBlob = (async (input: string | URL | Request, init?: RequestInit) => {
+  const url = String(input instanceof Request ? input.url : input);
+  const object = url.startsWith(STAND_IN) ? url.slice(STAND_IN.length) : null, from = object ? local.get(object) : null;
+  const file = from ? await inside(realRoot, from) : null;
+  if (!file) return new Response('Ingen lokal fil för Blob-objektet.', {status: 502});
+  const size = (await stat(file)).size, range = new Headers(init?.headers).get('range'), head = init?.method === 'HEAD';
+  let start = 0, end = size - 1, status = 200;
+  const headers: Record<string, string> = {'content-type': 'application/octet-stream', 'accept-ranges': 'bytes', etag: `"${object}"`};
+  if (range) {
+    const m = /^bytes=(\d*)-(\d*)$/.exec(range);
+    if (!m || (!m[1] && !m[2])) return new Response(null, {status: 416, headers: {'content-range': `bytes */${size}`}});
+    if (m[1]) { start = Number(m[1]); end = m[2] ? Math.min(Number(m[2]), size - 1) : size - 1; } else start = Math.max(0, size - Number(m[2]));
+    if (start > end || start >= size) return new Response(null, {status: 416, headers: {'content-range': `bytes */${size}`}});
+    status = 206; headers['content-range'] = `bytes ${start}-${end}/${size}`;
+  }
+  headers['content-length'] = String(end - start + 1);
+  return new Response(head ? null : Readable.toWeb(createReadStream(file, {start, end})) as ReadableStream, {status, headers});
+}) as typeof fetch;
 
 /** A file under base that really lies there, or null. */
 async function inside(base: string, relative: string): Promise<string | null> {
@@ -135,7 +157,7 @@ const server = http.createServer(async (req, res) => {
       if (route.handle === 'filesystem') { if (await serveStatic(pathname) || await serveFunction(pathname)) return; continue; }
       const m = match(route); if (!m) continue;
       if (route.middlewarePath) {
-        const answer = await gate(request, {env: process.env, media, limiter});
+        const answer = await gate(request, {env: process.env, media, limiter, fetch: localBlob});
         const rewrite = answer.headers.get('x-middleware-rewrite');
         for (const [k, v] of answer.headers) if (!k.startsWith('x-middleware-')) added[k] = v;
         if (rewrite) {
