@@ -202,12 +202,13 @@ function dealText(input: PromptInput): Prompt {
 function entryText(input: PromptInput, to: '2.1' | '2.2'): Prompt {
   const reach =
     to === '2.1'
-      ? "She calmly lifts her left hand, at the right of the picture, reaches to the shoe and pinches the top of the yellow card in the shoe's window between thumb and forefinger, settling exactly into the pose of the last image."
+      ? "She calmly lifts her left hand, at the right of the picture, reaches to the shoe and pinches the top of the yellow card in the shoe's window between thumb and forefinger, her fingertips on the card itself and not on the shoe's rim, and draws it a little way out of the window, settling exactly into the pose of the last image."
       : "She calmly lifts her left hand, at the right of the picture, reaches to the shoe and lays it over the yellow card in the shoe's window, fingertips resting flat on the card, settling exactly into the pose of the last image.";
   const parts: Part[] = [
     { text: `Locked camera. ${cap(input.dealer.look)} sits at a green table with a black card shoe fixed at the right of the picture, a yellow card in its window. One continuous, calm and natural movement from the exact first pose, both hands resting on the felt.`, from: [] },
     { text: reach, from: [] },
-    { text: 'The yellow card stays seated in the shoe; nothing is dealt. Her right hand, at the left of the picture, rests on the table the whole time.', from: [] },
+    // Anchor 2.1 holds the card a little out of the window (Jakob 2026-11-13: the pinch is on the card), so it is not "seated" there.
+    { text: `${to === '2.1' ? 'The card stays in her pinch at the shoe, as in the last image' : 'The yellow card stays seated in the shoe'}; nothing is dealt. Her right hand, at the left of the picture, rests on the table the whole time.`, from: [] },
     { text: input.extra?.trim() || '', from: ['extra'] },
     { text: BANS_FILM, from: ['bans'] },
   ];
