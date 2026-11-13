@@ -115,6 +115,54 @@ void main(){
   gl_FragColor = sum / vec4(total.x, total.x, total.y, total.y);
 }`;
 
+// ---- the film's light across a drawn card (src/scene3d-deal.ts, way 'scene') ----------------------------------------------
+// The drawn card as a whole takes the film card's brightness (scene3d-deal.ts vShade: the lighter half of the film's card against
+// the card lying flat). Across it, it takes how the film's light falls over the film's card: a plane fitted to the brightness of
+// the film's card (a + b·x + c·y in film pixels), so the drawn card is darker on the side where the film's card is darker (toward
+// her hand, away from the lamp) and keeps its own mean. A plane and not the film pixel under each drawn pixel: the film's card is
+// nearly flat in colour, and read pixel by pixel its small differences against the card's mean made seams wherever the reading
+// had to stop (at the film card's blurred edge, beside her fingers, beyond the film's card, which is smaller than the drawn card in
+// the hand): a lighter frame round the card and a halo round her fingers (Prov kort-en-linje, step 2b, the first try). The
+// finger's own shadow on the card is the film key's (scene3d-film.ts keyCard keeps it as a shadow over the drawn card).
+// The samples: a PLANE.grid × PLANE.grid grid over the film's card from PLANE.inset to 1 - inset of its quad, those of the card's
+// own colour (as cardBase takes them: fingers, felt and jacket do not count) and not darker than PLANE.dark of their mean (a
+// finger's shadow, which the key keeps). With fewer than PLANE.least of them, or no spread to fit a slope to, the card is flat.
+// The plane's value against its mean is held to PLANE.range, and taken to PLANE.gamma: the paper is lit in linear light, the
+// film's values are not (10 % darker on screen is about 20 % less light).
+export const PLANE = {grid: 7, inset: 0.2, dark: 0.6, least: 12, range: [0.8, 1.15] as const, gamma: 2.2};
+/** lightPlane(map, q, ref): the plane of the film card's brightness over quad q (texture order) as (mean x, mean y, slope x, slope y) and its mean (w of a second return through `mean`); planeLight(plane, mean, px): the factor on the drawn card's light at film pixel px. Needs scene3d-film.ts CARD_GLSL. */
+export const PLANE_GLSL = `vec4 lightPlane(sampler2D map, vec2 q[4], vec3 ref, out float mean){
+  vec3 dir = normalize(ref), w = vec3(.2126, .7152, .0722); float n = 0., m = 0.;
+  for (int j = 0; j < ${PLANE.grid}; j++) for (int i = 0; i < ${PLANE.grid}; i++) { vec2 st = vec2(${PLANE.inset.toFixed(2)}) + vec2(float(i), float(j)) * ${((1 - 2 * PLANE.inset) / (PLANE.grid - 1)).toFixed(5)};
+    vec3 s = filmAt(map, mix(mix(q[0], q[1], st.x), mix(q[3], q[2], st.x), st.y)); if (length(s) > .12 && dot(normalize(s), dir) > .96) { m += dot(s, w); n += 1.; } }
+  m /= max(n, 1.); n = 0.; float sx = 0., sy = 0., sl = 0., sxx = 0., sxy = 0., syy = 0., sxl = 0., syl = 0.;
+  for (int j = 0; j < ${PLANE.grid}; j++) for (int i = 0; i < ${PLANE.grid}; i++) { vec2 st = vec2(${PLANE.inset.toFixed(2)}) + vec2(float(i), float(j)) * ${((1 - 2 * PLANE.inset) / (PLANE.grid - 1)).toFixed(5)};
+    vec2 p = mix(mix(q[0], q[1], st.x), mix(q[3], q[2], st.x), st.y); vec3 s = filmAt(map, p); float l = dot(s, w);
+    if (length(s) > .12 && dot(normalize(s), dir) > .96 && l >= ${PLANE.dark.toFixed(2)} * m) { n += 1.; sx += p.x; sy += p.y; sl += l; sxx += p.x * p.x; sxy += p.x * p.y; syy += p.y * p.y; sxl += p.x * l; syl += p.y * l; } }
+  mean = 0.; if (n < ${PLANE.least}.) return vec4(0.);
+  float mx = sx / n, my = sy / n, ml = sl / n, cxx = sxx / n - mx * mx, cxy = sxy / n - mx * my, cyy = syy / n - my * my, cxl = sxl / n - mx * ml, cyl = syl / n - my * ml, det = cxx * cyy - cxy * cxy;
+  mean = ml; if (det < 1e-3 * max(cxx * cyy, 1e-6) || det <= 0.) return vec4(mx, my, 0., 0.);
+  return vec4(mx, my, (cyy * cxl - cxy * cyl) / det, (cxx * cyl - cxy * cxl) / det);
+}
+float planeLight(vec4 plane, float mean, vec2 px){
+  if (mean <= 0.) return 1.;
+  return pow(clamp(1. + (plane.z * (px.x - plane.x) + plane.w * (px.y - plane.y)) / mean, ${PLANE.range[0].toFixed(2)}, ${PLANE.range[1].toFixed(2)}), ${PLANE.gamma.toFixed(1)});
+}`;
+/** lightPlane and planeLight in the shader, on the CPU for the tests: film(x, y) the video's colour (0-1) at a film pixel, q the film's card (texture order), ref its lit colour; the factor at film pixel px. */
+export function planeLight(film: (x: number, y: number) => number[], q: number[][], ref: number[], px: number[]): number {
+  const lum = (c: number[]) => 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2], len = (c: number[]) => Math.hypot(c[0], c[1], c[2]), dir = ref.map(v => v / len(ref));
+  const step = (1 - 2 * PLANE.inset) / (PLANE.grid - 1), samples: {p: number[]; s: number[]}[] = [];
+  for (let j = 0; j < PLANE.grid; j++) for (let i = 0; i < PLANE.grid; i++) { const u = PLANE.inset + i * step, v = PLANE.inset + j * step, at = (k: number) => (q[0][k] + (q[1][k] - q[0][k]) * u) * (1 - v) + (q[3][k] + (q[2][k] - q[3][k]) * u) * v;
+    const p = [at(0), at(1)], s = film(p[0], p[1]); if (len(s) > 0.12 && (s[0] * dir[0] + s[1] * dir[1] + s[2] * dir[2]) / len(s) > 0.96) samples.push({p, s}); }
+  const m = samples.reduce((a, x) => a + lum(x.s), 0) / Math.max(samples.length, 1), kept = samples.filter(x => lum(x.s) >= PLANE.dark * m), n = kept.length;
+  if (n < PLANE.least) return 1;
+  const mean = (f: (x: {p: number[]; s: number[]}) => number) => kept.reduce((a, x) => a + f(x), 0) / n;
+  const mx = mean(x => x.p[0]), my = mean(x => x.p[1]), ml = mean(x => lum(x.s)), cxx = mean(x => x.p[0] ** 2) - mx * mx, cxy = mean(x => x.p[0] * x.p[1]) - mx * my, cyy = mean(x => x.p[1] ** 2) - my * my;
+  const cxl = mean(x => x.p[0] * lum(x.s)) - mx * ml, cyl = mean(x => x.p[1] * lum(x.s)) - my * ml, det = cxx * cyy - cxy * cxy;
+  const [b, c] = det < 1e-3 * Math.max(cxx * cyy, 1e-6) || det <= 0 ? [0, 0] : [(cyy * cxl - cxy * cyl) / det, (cxx * cyl - cxy * cxl) / det];
+  return Math.min(PLANE.range[1], Math.max(PLANE.range[0], 1 + (b * (px[0] - mx) + c * (px[1] - my)) / ml)) ** PLANE.gamma;
+}
+
 // ---- the replacement, in the film's shader (src/scene3d-film.ts) ---------------------------------------------------------
 // o: the keyed film pixel (premultiplied, graded), c: its video colour, key: the screen colour, tone: the grade and the fan's shade
 // it was given. The body and its covered rim become the card, solid (the trial's composite: the film's pale rim is painted over,

@@ -8,7 +8,8 @@
 // below the table edge row, the dealer plane above it) like the hands that hold it. Turning the view keeps it exact; moving the
 // view keeps it with the hand. scene3d-geometry.ts (cardPoint) says why it is not a solved 3D pose.
 // Light: the film's card shows how the film's light falls on the card in each frame. Its brightness against the same card lying
-// flat scales the paper, so the rendered card brightens and dims with the film's card (tilting away, turning over). Gloss and
+// flat scales the paper, so the rendered card brightens and dims with the film's card (tilting away, turning over), and a plane
+// fitted to its brightness shades the paper across the card as the film's light falls over it (scene3d-matte.ts PLANE). Gloss and
 // bend are the card's own: the scene's room reflected in the paper, and a slight curve while it is held.
 //
 // The other way (way 'matte', src/scene3d-matte.ts): the film's own card is the matte and is drawn over in the film's shader, so
@@ -21,7 +22,7 @@ import {FILM, edgeQuad, heldScale, solveCamera, squareToQuad, type FilmCamera} f
 import {CARD_GLSL, type CardKey, type MatteKey} from './scene3d-film.ts';
 import {FAN_GLSL} from './scene3d-light.ts';
 import {roomReflection} from './scene3d-table.ts';
-import {CLASSIFY_FRAGMENT, MATTE, MORPH_FRAGMENT, PASS_VERTEX, SHADE_FRAGMENT, SHOE_BOX, matteBox, matteZone, meanLinear, paleZone, printQuad, toPrint, turnZone, type MatteTrack} from './scene3d-matte.ts';
+import {CLASSIFY_FRAGMENT, MATTE, MORPH_FRAGMENT, PASS_VERTEX, PLANE_GLSL, SHADE_FRAGMENT, SHOE_BOX, matteBox, matteZone, meanLinear, paleZone, printQuad, toPrint, turnZone, type MatteTrack} from './scene3d-matte.ts';
 
 // The card material study, for its print, outline and paper. Imported as an instance of its own (the query): the import map in
 // scene3d.html binds that instance's three.js to the scene's, so the page holds one three.js. The canvas method
@@ -48,10 +49,11 @@ const PAPER = [0.93, 0.91, 0.86]; // light on the paper of a card lying flat: a 
 // agree within half a pixel. A track that starts with its card in the shoe gives its own.
 const SEATED = [[1292.9, 752.7], [1343.2, 777.8], [1283.2, 858.6], [1239.5, 831.4]];
 
-const VERTEX = `uniform mat3 cardH; uniform vec4 lens; uniform vec3 eye; uniform float edgeRow, edgeZ, lift, bend, tilt, shadeOn, lying, shadow, depthOnly;
+const VERTEX = `uniform mat3 cardH; uniform vec4 lens; uniform vec3 eye; uniform float edgeRow, edgeZ, lift, bend, tilt, shadeOn, localOn, lying, shadow, depthOnly;
 uniform sampler2D map; uniform vec2 core[4]; uniform vec3 cardColour;
-varying vec2 vUv, vSt; varying vec3 vWorld, vNormal; varying float vShade, vLight;
+varying vec2 vUv, vSt; varying vec3 vWorld, vNormal; varying float vShade, vLight, vMean; varying vec4 vPlane;
 ${CARD_GLSL}
+${PLANE_GLSL}
 // the film camera's ray through a film pixel, and where the film's surfaces carry that pixel (scene3d-geometry.ts filmToScene)
 vec3 rayOf(vec2 px){ vec2 n = (px - lens.xy) / lens.z; float c = cos(lens.w), s = sin(lens.w); return vec3(n.x, -n.y * c - s, n.y * s - c); }
 vec2 pixelOf(vec2 st){ vec3 h = cardH * vec3(st, 1.); return h.xy / h.z; }
@@ -61,7 +63,7 @@ void main(){
   vUv = uv;
   // card coordinates of the study's model: u to the right, v down the visible print
   vec2 st = vec2(position.x / ${study.CARD.width} + .5, .5 - position.y / ${study.CARD.height}); vSt = st;
-  vec3 p = onFilm(st); vNormal = vec3(0., 1., 0.); vShade = vLight = 1.;
+  vec3 p = onFilm(st); vNormal = vec3(0., 1., 0.); vShade = vLight = 1.; vPlane = vec4(0.); vMean = 0.;
   if (shadow > .5) { vWorld = onFelt(st) - vec3(0., lift * .5, 0.); gl_Position = projectionMatrix * viewMatrix * vec4(vWorld, 1.); return; }
   if (depthOnly > .5) { vWorld = p; gl_Position = projectionMatrix * viewMatrix * vec4(p, 1.); return; }
   // the card's own axes, taken on the surface the card is laid on (onFilm: the dealer plane above the edge row, the felt below it):
@@ -79,13 +81,18 @@ void main(){
   vLight = clamp(max(dot(n, l), 0.) / max(dot(n0, l), .2), .7, 1.2);
   // the film's light on its own card in this frame, against the same card lying flat
   vShade = shadeOn > .5 ? clamp(dot(cardBase(map, core, cardColour), vec3(.2126, .7152, .0722)) / lying, .55, 1.3) : 1.;
+  // and how that light falls across it (scene3d-matte.ts PLANE): the same for every vertex
+  if (shadeOn > .5 && localOn > .5) vPlane = lightPlane(map, core, cardColour, vMean);
   gl_Position = projectionMatrix * viewMatrix * vec4(p, 1.);
 }`;
 // Output is sRGB-encoded like the film's, whatever the target, so it composites the same way with focus on or off. `accum`:
 // one of several motion samples added up in a target of their own, premultiplied and weighted.
 const FRAGMENT = `uniform sampler2D print, room; uniform vec3 paper, grade; uniform float edgeOn, sheen, roomLod, shadow, shade, accum, weight, soft, level;
+uniform sampler2D map; uniform mat3 cardH;
 ${FAN_GLSL}
-varying vec2 vUv, vSt; varying vec3 vWorld, vNormal; varying float vShade, vLight;
+${CARD_GLSL}
+${PLANE_GLSL}
+varying vec2 vUv, vSt; varying vec3 vWorld, vNormal; varying float vShade, vLight, vMean; varying vec4 vPlane;
 vec2 equirect(vec3 d){ return vec2(atan(d.z, d.x) * .15915494 + .5, asin(clamp(d.y, -1., 1.)) * .31830989 + .5); }
 void main(){
   if (shadow > .5) {
@@ -101,11 +108,12 @@ void main(){
     gl_FragColor = accum > .5 ? vec4(e * a, a) * weight : vec4(e, a); return;
   }
   // the print as soft as the film around it (a mip level coarser than the screen asks for) and at the film's level (PRINT)
+  vec3 h = cardH * vec3(vSt, 1.); vec2 filmPixel = h.xy / h.z; // the film pixel under this one
   vec3 albedo = texture2D(print, vUv, soft).rgb * level, N = normalize(vNormal), V = normalize(cameraPosition - vWorld), R = reflect(-V, N);
   // the paper's reflection of the room: weak head-on (the study's paper reflects about 2 %), stronger toward grazing angles;
   // a broad lobe for the paper and a sharper one for its coat, which catches the lamp over the table as the card turns
   float NoV = max(dot(N, V), 1e-3), F = .025 + .975 * pow(1. - NoV, 5.);
-  vec3 col = albedo * paper * vShade * vLight + (textureLod(room, equirect(R), roomLod).rgb + sheen * textureLod(room, equirect(R), roomLod - 2.5).rgb) * F;
+  vec3 col = albedo * paper * vShade * vLight * planeLight(vPlane, vMean, filmPixel) + (textureLod(room, equirect(R), roomLod).rgb + sheen * textureLod(room, equirect(R), roomLod - 2.5).rgb) * F;
   col = mix(col * 12.92, 1.055 * pow(max(col, 0.), vec3(1. / 2.4)) - .055, step(.0031308, col));
   gl_FragColor = vec4(col * grade * fanShade(vWorld), 1.) * (accum > .5 ? weight : 1.);
 }`;
@@ -205,7 +213,7 @@ export function createDealLayer(o: Options) {
   const made = (shadow: boolean) => keep(new T.ShaderMaterial({vertexShader: VERTEX, fragmentShader: FRAGMENT, transparent: true, depthWrite: false,
     ...(shadow ? {blending: T.CustomBlending, blendSrc: T.OneFactor, blendDst: T.OneMinusSrcAlphaFactor, blendSrcAlpha: T.OneFactor, blendDstAlpha: T.OneMinusSrcAlphaFactor} : {}),
     uniforms: {...shared, cardH: {value: new T.Matrix3()}, bend: {value: 0}, tilt: {value: 0}, shadeOn: {value: 0}, lying: {value: 1}, core: {value: quad()}, cardColour: {value: new T.Vector3(1, 1, 0)},
-      print: {value: null}, soft: {value: PRINT.soft}, level: {value: 1}, edgeOn: {value: 0}, sheen: {value: 1.4}, shadow: {value: shadow ? 1 : 0}, shade: {value: 0}, accum: {value: 0}, weight: {value: 1}, depthOnly: {value: 0}}}));
+      localOn: {value: 0}, print: {value: null}, soft: {value: PRINT.soft}, level: {value: 1}, edgeOn: {value: 0}, sheen: {value: 1.4}, shadow: {value: shadow ? 1 : 0}, shade: {value: 0}, accum: {value: 0}, weight: {value: 1}, depthOnly: {value: 0}}}));
   // A card: its surface and its contact shadow on the felt (drawn first, so the card covers it), both laid by the same homography.
   // Draw order: felt and props (opaque), then shadows (2), cards (3), then the film (5, 6) over them.
   type Card = {mesh: T.Mesh; shadow: T.Mesh; material: T.ShaderMaterial; under: T.ShaderMaterial};
@@ -224,12 +232,13 @@ export function createDealLayer(o: Options) {
   // clear of the homography's line at infinity (skirtSound) and lies below the table's edge row, on the felt; otherwise there is none.
   const shadowFits = (q: number[][]) => { const p = q.map(([x, y]) => ({x, y})); if (!skirtSound(p, REACH)) return false;
     try { const H = squareToQuad(q), row = o.camera().edgeRow; return [[-REACH, -REACH], [1 + REACH, -REACH], [1 + REACH, 1 + REACH], [-REACH, 1 + REACH]].every(([u, v]) => { const w = H[6] * u + H[7] * v + H[8]; return w > 0 && (H[3] * u + H[4] * v + H[5]) / w >= row; }); } catch { return false; } };
-  const lay = (c: Card, q: number[][], how: {print: T.Texture; edge?: boolean; bend?: number; tilt?: number; shade?: {core: number[][]; colour: number[]; lying: number} | null; contact: number; gloss?: number}) => {
+  const lay = (c: Card, q: number[][], how: {print: T.Texture; edge?: boolean; bend?: number; tilt?: number; shade?: {core: number[][]; colour: number[]; lying: number; local?: boolean} | null; contact: number; gloss?: number}) => {
     let H: number[]; try { if (!drawable(q, !!how.edge)) throw Error('no plausible card'); H = squareToQuad(q); } catch { c.mesh.visible = c.shadow.visible = false; return; }
     for (const m of [c.material, c.under]) (m.uniforms.cardH.value as T.Matrix3).set(H[0], H[1], H[2], H[3], H[4], H[5], H[6], H[7], H[8]);
     const u = c.material.uniforms; u.print.value = how.print; const back = how.print === print(); u.level.value = back ? PRINT.back : PRINT.face; u.soft.value = back ? PRINT.soft : PRINT.softFace; u.edgeOn.value = how.edge ? 1 : 0; u.bend.value = how.bend ?? 0; u.tilt.value = how.tilt ?? 0;
     u.sheen.value = 2 * (how.gloss ?? GLOSS); u.shadeOn.value = how.shade ? 1 : 0; // gloss 0.35: the coat's lobe at 0.7 of the paper's
     if (how.shade) { how.shade.core.forEach((p, i) => (u.core.value as T.Vector2[])[i].set(p[0], p[1])); (u.cardColour.value as T.Vector3).set(how.shade.colour[0], how.shade.colour[1], how.shade.colour[2]); u.lying.value = how.shade.lying; }
+    u.localOn.value = how.shade?.local ? 1 : 0;
     c.under.uniforms.shade.value = CONTACT * how.contact; c.mesh.visible = true; c.shadow.visible = how.contact > 0.01 && !how.edge && shadowFits(q);
   };
   const dealt = card(), seated = card(), lying: Card[] = [];
@@ -397,7 +406,7 @@ export function createDealLayer(o: Options) {
       // the film's own card, for its light and for what is keyed: the track's film quad where it has one, else the quad the card is drawn by
       const own4 = f.film?.length === 4 ? f.film : f.quad, q = now.q, core = own4?.length === 4 ? own4 : null;
       lay(dealt, q, {print: face.back ? print() : print(face.art), edge, bend: (material?.bend ?? BEND) * held, tilt: TILT * held, gloss: material?.gloss,
-        shade: core && !edge ? {core, colour: COLOUR[side], lying: LYING[side]} : null, contact: measured ? 1 - inHand : Math.max(0, Math.min(1, (pose.resting - 0.3) / 0.6))});
+        shade: core && !edge ? {core, colour: COLOUR[side], lying: LYING[side], local: (extra.carry ?? 'object') !== 'film'} : null, contact: measured ? 1 - inHand : Math.max(0, Math.min(1, (pose.resting - 0.3) / 0.6))});
       // moving fast: drawn along its path over the shutter time instead, like the film's hand
       const path = pose.resting < 1 ? shutter(now, drawnAt(track!, at - 1, choice, extra), drawnAt(track!, at + 1, choice, extra)) : [q];
       // (only a card that was laid at all: its samples are rigid copies of it, so they are as plausible as it is)

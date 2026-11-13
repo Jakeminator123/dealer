@@ -3,7 +3,7 @@
 // edge; where the passes run; which quad lays the face print and how a film pixel finds its place on it.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {CLASS_GLSL, CLASSIFY_FRAGMENT, MATTE, MATTE_GLSL, MORPH_FRAGMENT, RULES, SHADE_FRAGMENT, SHOE_BOX, bodyOf, matteBox, matteZone, meanLinear, paleZone, printQuad, toPrint, turnZone, unmix} from '../src/scene3d-matte.ts';
+import {CLASS_GLSL, CLASSIFY_FRAGMENT, LIT, MATTE, MATTE_GLSL, MORPH_FRAGMENT, PLANE, PLANE_GLSL, RULES, SHADE_FRAGMENT, SHOE_BOX, bodyOf, matteBox, matteZone, meanLinear, paleZone, planeLight, printQuad, toPrint, turnZone, unmix} from '../src/scene3d-matte.ts';
 import {is} from '../src/card-track.ts';
 import {squareToQuad, onSquare} from '../src/scene3d-geometry.ts';
 import {DEFAULTS} from '../src/scene3d-view.ts';
@@ -170,4 +170,29 @@ test('the drawn print at the film\'s sharpness and level (Prov kort-en-linje, st
   assert.ok(back < face && face <= 1 && back >= 0.5, 'the gold of the back dimmed more than the face');
   assert.ok(deal.includes('texture2D(print, vUv, soft).rgb * level'), 'the shader reads the print with them');
   assert.ok(deal.includes('u.soft.value = back ? PRINT.soft : PRINT.softFace'), 'each print its own');
+});
+
+test('the drawn card takes how the film\'s light falls across the film\'s card, and keeps its own mean (Prov kort-en-linje, step 2b)', async () => {
+  // a film frame: felt, and the film's yellow card (x 100-160, y 100-190), lit evenly or brighter toward the right
+  const felt = [20, 90, 60], lit = [230, 207, 5], card = [[100, 100], [160, 100], [160, 190], [100, 190]], inCard = (x: number, y: number) => x >= 100 && x <= 160 && y >= 100 && y <= 190;
+  const frame = (paint: (x: number, y: number) => number[] | null) => (x: number, y: number) => (inCard(x, y) ? paint(x, y) ?? lit : felt).map(v => v / 255);
+  const even = frame(() => null), ramp = frame(x => lit.map(v => v * (0.85 + 0.3 * (x - 100) / 60)));
+  for (const px of [[130, 145], [95, 145], [170, 100]]) assert.ok(Math.abs(planeLight(even, card, LIT.BACK, px) - 1) < 1e-9, `even light: flat at ${px}`);
+  const left = planeLight(ramp, card, LIT.BACK, [100, 145]), mid = planeLight(ramp, card, LIT.BACK, [130, 145]), right = planeLight(ramp, card, LIT.BACK, [160, 145]);
+  assert.ok(Math.abs(mid - 1) < 0.02, 'its own mean in the middle');
+  assert.ok(left < 0.8 && right > 1.2, 'darker on the darker side, in linear light');
+  assert.ok(Math.abs(right ** (1 / PLANE.gamma) - 1.15) < 0.02 && Math.abs(left ** (1 / PLANE.gamma) - 0.85) < 0.02, 'as much darker on screen as the film\'s card');
+  assert.ok(planeLight(ramp, card, LIT.BACK, [190, 145]) === PLANE.range[1] ** PLANE.gamma, 'held to its range beyond the card');
+  // a finger over the left third and its deep shadow beside it are neither card colour nor light across the card: still even
+  const finger = frame(x => (x < 120 ? [240, 180, 140] : x < 126 ? lit.map(v => v * 0.4) : null));
+  assert.ok(Math.abs(planeLight(finger, card, LIT.BACK, [100, 145]) - 1) < 0.01 && Math.abs(planeLight(finger, card, LIT.BACK, [160, 145]) - 1) < 0.01, 'a finger and its shadow tilt nothing');
+  // a card mostly hidden (too few samples of its colour): flat
+  const hidden = frame((x, y) => (y < 180 ? [240, 180, 140] : null));
+  assert.equal(planeLight(hidden, card, LIT.BACK, [100, 145]), 1, 'too few samples');
+  // the shader is the same arithmetic, and the deal uses it for the dealt card only, and not with Bara liggande
+  for (const v of [`j < ${PLANE.grid}`, PLANE.inset.toFixed(2), PLANE.dark.toFixed(2), `${PLANE.least}.`, PLANE.range[0].toFixed(2), PLANE.range[1].toFixed(2), PLANE.gamma.toFixed(1)]) assert.ok(PLANE_GLSL.includes(v), v);
+  const deal = await readFile('src/scene3d-deal.ts', 'utf8');
+  assert.ok(deal.includes('if (shadeOn > .5 && localOn > .5) vPlane = lightPlane(map, core, cardColour, vMean);') && deal.includes('vShade * vLight * planeLight(vPlane, vMean, filmPixel)'), 'the paper lit by it');
+  assert.ok(deal.includes("local: (extra.carry ?? 'object') !== 'film'}"), 'the dealt card, not with Bara liggande');
+  assert.ok(deal.includes("lay(seated, seat, {print: print(), shade: {core: seat, colour: COLOUR.BACK, lying: LYING.BACK}, contact: 0})") && deal.includes('u.localOn.value = how.shade?.local ? 1 : 0;'), 'the seated card and the lying cards as before');
 });
