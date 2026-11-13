@@ -1,0 +1,59 @@
+{
+  "schemaVersion": 1,
+  "id": "paow-giv-2-2-p6-01-01-deal",
+  "dealer": "paow",
+  "source": {
+    "path": "assets/motions/paow-giv-2-2-p6-01-01/source.mp4",
+    "sha256": "71f33d536002805d80061fae89e3f5b67663f3e346a7f68bab363379c4b5d73d",
+    "bytes": 10791103,
+    "width": 1764,
+    "height": 1174,
+    "fps": 30,
+    "frames": 178,
+    "provider": "Runway MCP server (app account credits)",
+    "model": "wan3"
+  },
+  "motion": {
+    "kind": "DEAL",
+    "from": "READY-B",
+    "to": "P6.C1",
+    "takeHand": "LH",
+    "releaseHand": "LH",
+    "pass": false,
+    "basis": "SOURCE_FRAME_REVIEW",
+    "segment": {
+      "clip": "paow-giv-2-2-p6-01-01",
+      "frames": [
+        0,
+        127
+      ]
+    }
+  },
+  "review": {
+    "decision": "ACCEPTED",
+    "basis": "Inte granskad av Jakob: förd in från beställningen paow-giv-2-2-p6-01, tagning 1 (tools/register-order.ts). Oberoende rutgranskning: tools/film-review.md.",
+    "limitations": "I inkorgen: spelas bara där steget inte har någon annan film, tills Jakob dömer den.",
+    "colorDoesNotProvePhysicalSide": true,
+    "userAccepted": true,
+    "productionReady": false,
+    "acceptedAs": "VARIANT",
+    "userReview": "Jakob 2026-11-13: Tryck på båda sidorna, men hon trycker eller pressar ner kortet som man gör med en blackjack-sko. En eller ett par sånna kan vara roliga och bra att ha i alal fall"
+  },
+  "order": {
+    "id": "paow-giv-2-2-p6-01",
+    "take": 1,
+    "path": "data/orders/paow-giv-2-2-p6-01.json",
+    "orderSha256": "87a7ca4ee9d462d34d9f70a1b606a69719bc5266ecbe23d09510ad50d23f9666",
+    "receipt": "assets/orders/paow-giv-2-2-p6-01/receipt.json",
+    "taskId": "4301c945-29b0-4b0f-a18a-9dffc86ff112",
+    "delivered": {
+      "path": "assets/orders/paow-giv-2-2-p6-01/take-1/after.mp4",
+      "sha256": "71f33d536002805d80061fae89e3f5b67663f3e346a7f68bab363379c4b5d73d"
+    }
+  },
+  "postProcessing": "none",
+  "generationRef": "assets/motions/paow-giv-2-2-p6-01-01/generation.json",
+  "jobRef": "data/clip-jobs.json",
+  "scoutIntegrated": false,
+  "published": false
+}

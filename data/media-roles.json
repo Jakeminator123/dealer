@@ -5123,6 +5123,48 @@
           }
         },
         {
+          "id": "paow-film-giv-2-2-p4-01-t1",
+          "role": "film",
+          "name": "Omgång 13 · prov B · släp från ankare 2.2 till plats 4 · WAN 3, vänd vid platsen",
+          "path": "assets/films/paow/giv-2-2-p4-01-t1/source.mp4",
+          "still": 98,
+          "fps": 30,
+          "state": "kandidat",
+          "note": "Efterarbetad tagning ur en beställning i studions vy Beställ. Kandidat tills Jakob har dömt.",
+          "source": {
+            "from": "beställningen paow-giv-2-2-p4-01, tagning 1 (studions vy Beställ)",
+            "when": "2026-11-13"
+          }
+        },
+        {
+          "id": "paow-film-giv-2-2-p6-01-t1",
+          "role": "film",
+          "name": "Omgång 13 · prov C · släp från ankare 2.2 till plats 6 · WAN 3, vänd vid platsen",
+          "path": "assets/films/paow/giv-2-2-p6-01-t1/source.mp4",
+          "still": 98,
+          "fps": 30,
+          "state": "kandidat",
+          "note": "Efterarbetad tagning ur en beställning i studions vy Beställ. Kandidat tills Jakob har dömt.",
+          "source": {
+            "from": "beställningen paow-giv-2-2-p6-01, tagning 1 (studions vy Beställ)",
+            "when": "2026-11-13"
+          }
+        },
+        {
+          "id": "paow-film-vila-16-t1",
+          "role": "film",
+          "name": "Omgång 13 · omtagning · knäcker fingrarna · händerna framför bröstet, tagning 1",
+          "path": "assets/films/paow/vila-16-t1/source.mp4",
+          "still": 98,
+          "fps": 30,
+          "state": "kandidat",
+          "note": "Efterarbetad tagning ur en beställning i studions vy Beställ. Kandidat tills Jakob har dömt.",
+          "source": {
+            "from": "beställningen paow-vila-16, tagning 1 (studions vy Beställ)",
+            "when": "2026-11-13"
+          }
+        },
+        {
           "id": "paow-ankare-2-2-t1",
           "role": "ankare-2.2",
           "name": "Paow · ankare 2.2 (släp), tagning 1",

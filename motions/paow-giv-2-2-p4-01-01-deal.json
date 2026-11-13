@@ -1,0 +1,59 @@
+{
+  "schemaVersion": 1,
+  "id": "paow-giv-2-2-p4-01-01-deal",
+  "dealer": "paow",
+  "source": {
+    "path": "assets/motions/paow-giv-2-2-p4-01-01/source.mp4",
+    "sha256": "c42bffd21c5c4f56adf8edf3773f7c64618554397ae70acb5335e66a383e99b1",
+    "bytes": 11774287,
+    "width": 1764,
+    "height": 1174,
+    "fps": 30,
+    "frames": 178,
+    "provider": "Runway MCP server (app account credits)",
+    "model": "wan3"
+  },
+  "motion": {
+    "kind": "DEAL",
+    "from": "READY-B",
+    "to": "P4.C1",
+    "takeHand": "LH",
+    "releaseHand": "LH",
+    "pass": false,
+    "basis": "SOURCE_FRAME_REVIEW",
+    "segment": {
+      "clip": "paow-giv-2-2-p4-01-01",
+      "frames": [
+        0,
+        126
+      ]
+    }
+  },
+  "review": {
+    "decision": "ACCEPTED",
+    "basis": "Inte granskad av Jakob: förd in från beställningen paow-giv-2-2-p4-01, tagning 1 (tools/register-order.ts). Oberoende rutgranskning: tools/film-review.md.",
+    "limitations": "I inkorgen: spelas bara där steget inte har någon annan film, tills Jakob dömer den.",
+    "colorDoesNotProvePhysicalSide": true,
+    "userAccepted": true,
+    "productionReady": false,
+    "acceptedAs": "VARIANT",
+    "userReview": "Jakob 2026-11-13: Den här är bra, men kortbaksidan har ett tryck på sig. Annars är den lite rolig."
+  },
+  "order": {
+    "id": "paow-giv-2-2-p4-01",
+    "take": 1,
+    "path": "data/orders/paow-giv-2-2-p4-01.json",
+    "orderSha256": "b9bd181eb0e72ac2cb6b7fefba1e40c614a5eeac8db1e6695b12de0002a278a1",
+    "receipt": "assets/orders/paow-giv-2-2-p4-01/receipt.json",
+    "taskId": "0745787e-8cbc-426b-9320-c25b40ff84a8",
+    "delivered": {
+      "path": "assets/orders/paow-giv-2-2-p4-01/take-1/after.mp4",
+      "sha256": "c42bffd21c5c4f56adf8edf3773f7c64618554397ae70acb5335e66a383e99b1"
+    }
+  },
+  "postProcessing": "none",
+  "generationRef": "assets/motions/paow-giv-2-2-p4-01-01/generation.json",
+  "jobRef": "data/clip-jobs.json",
+  "scoutIntegrated": false,
+  "published": false
+}

@@ -7031,6 +7031,148 @@
         "id": "paow-vila-14",
         "take": 1
       }
+    },
+    {
+      "id": "paow-giv-2-2-p4-01-01-deal",
+      "kind": "DEAL",
+      "from": "READY-B",
+      "to": "P4.C1",
+      "clip": "paow-giv-2-2-p4-01-01",
+      "frames": [
+        0,
+        126
+      ],
+      "purpose": "Beställning paow-giv-2-2-p4-01, tagning 1: Omgång 13 · prov B · släp från ankare 2.2 till plats 4 · WAN 3, vänd vid platsen.",
+      "dealer": "paow",
+      "model": "wan3",
+      "duration": 6,
+      "promptText": "Locked camera, one continuous shot. Her hand at the shoe slides the yellow card out of the window and drags it flat along the felt under its fingertips, yellow side up, to its place in the middle of the picture, where the last frame shows it. There her thumb slides under the long edge nearest it and lifts it as her wrist turns thumb side up; the card rolls over on its opposite long edge, which stays on the felt, and her thumb comes over onto the blue face. Then her open hand glides back low over the felt, palm down, to the shoe and rests over the next card in the window. The other hand rests on the felt. Only one card moves; its back is yellow and its face is blue.",
+      "first": {
+        "file": {
+          "path": "assets/orders/paow-giv-2-2-p4-01/first.png",
+          "sha256": "451fbaafa65a82b22818dab6904d5a1c5a23941dba11213709995b1f5d8d1fd4"
+        },
+        "note": "Första bilden i beställningen paow-giv-2-2-p4-01."
+      },
+      "order": {
+        "id": "paow-giv-2-2-p4-01",
+        "take": 1
+      }
+    },
+    {
+      "id": "paow-giv-2-2-p4-01-01-return-ready-b",
+      "kind": "RETURN",
+      "from": "P4.C1",
+      "to": "READY-B",
+      "clip": "paow-giv-2-2-p4-01-01",
+      "frames": [
+        127,
+        177
+      ],
+      "purpose": "Beställning paow-giv-2-2-p4-01, tagning 1: Omgång 13 · prov B · släp från ankare 2.2 till plats 4 · WAN 3, vänd vid platsen.",
+      "dealer": "paow",
+      "model": "wan3",
+      "duration": 6,
+      "promptText": "Locked camera, one continuous shot. Her hand at the shoe slides the yellow card out of the window and drags it flat along the felt under its fingertips, yellow side up, to its place in the middle of the picture, where the last frame shows it. There her thumb slides under the long edge nearest it and lifts it as her wrist turns thumb side up; the card rolls over on its opposite long edge, which stays on the felt, and her thumb comes over onto the blue face. Then her open hand glides back low over the felt, palm down, to the shoe and rests over the next card in the window. The other hand rests on the felt. Only one card moves; its back is yellow and its face is blue.",
+      "last": {
+        "file": {
+          "path": "assets/orders/paow-giv-2-2-p4-01/last.png",
+          "sha256": "70041dbbbdaa65b0a9e62260c81c3476b572193a1416b027e5dcd8fbfec405f3"
+        },
+        "note": "Sista bilden i beställningen paow-giv-2-2-p4-01."
+      },
+      "order": {
+        "id": "paow-giv-2-2-p4-01",
+        "take": 1
+      }
+    },
+    {
+      "id": "paow-giv-2-2-p6-01-01-deal",
+      "kind": "DEAL",
+      "from": "READY-B",
+      "to": "P6.C1",
+      "clip": "paow-giv-2-2-p6-01-01",
+      "frames": [
+        0,
+        127
+      ],
+      "purpose": "Beställning paow-giv-2-2-p6-01, tagning 1: Omgång 13 · prov C · släp från ankare 2.2 till plats 6 · WAN 3, vänd vid platsen.",
+      "dealer": "paow",
+      "model": "wan3",
+      "duration": 6,
+      "promptText": "Locked camera, one continuous shot. Her hand at the shoe slides the yellow card out of the window and drags it flat along the felt under its fingertips, yellow side up, to its place well to the right of the middle of the picture, in front of the shoe, where the last frame shows it. There her thumb slides under the long edge nearest it and lifts it as her wrist turns thumb side up; the card rolls over on its opposite long edge, which stays on the felt, and her thumb comes over onto the blue face. Then her open hand glides back low over the felt, palm down, to the shoe and rests over the next card in the window. The other hand rests on the felt. Only one card moves; its back is yellow and its face is blue.",
+      "first": {
+        "file": {
+          "path": "assets/orders/paow-giv-2-2-p6-01/first.png",
+          "sha256": "451fbaafa65a82b22818dab6904d5a1c5a23941dba11213709995b1f5d8d1fd4"
+        },
+        "note": "Första bilden i beställningen paow-giv-2-2-p6-01."
+      },
+      "order": {
+        "id": "paow-giv-2-2-p6-01",
+        "take": 1
+      }
+    },
+    {
+      "id": "paow-giv-2-2-p6-01-01-return-ready-b",
+      "kind": "RETURN",
+      "from": "P6.C1",
+      "to": "READY-B",
+      "clip": "paow-giv-2-2-p6-01-01",
+      "frames": [
+        128,
+        177
+      ],
+      "purpose": "Beställning paow-giv-2-2-p6-01, tagning 1: Omgång 13 · prov C · släp från ankare 2.2 till plats 6 · WAN 3, vänd vid platsen.",
+      "dealer": "paow",
+      "model": "wan3",
+      "duration": 6,
+      "promptText": "Locked camera, one continuous shot. Her hand at the shoe slides the yellow card out of the window and drags it flat along the felt under its fingertips, yellow side up, to its place well to the right of the middle of the picture, in front of the shoe, where the last frame shows it. There her thumb slides under the long edge nearest it and lifts it as her wrist turns thumb side up; the card rolls over on its opposite long edge, which stays on the felt, and her thumb comes over onto the blue face. Then her open hand glides back low over the felt, palm down, to the shoe and rests over the next card in the window. The other hand rests on the felt. Only one card moves; its back is yellow and its face is blue.",
+      "last": {
+        "file": {
+          "path": "assets/orders/paow-giv-2-2-p6-01/last.png",
+          "sha256": "86ae49a59656fe6f6ca113c54459361d28ee158d4896aac4453d46886fe6f488"
+        },
+        "note": "Sista bilden i beställningen paow-giv-2-2-p6-01."
+      },
+      "order": {
+        "id": "paow-giv-2-2-p6-01",
+        "take": 1
+      }
+    },
+    {
+      "id": "paow-vila-16-01",
+      "kind": "IDLE",
+      "from": "IDLE",
+      "to": "IDLE",
+      "clip": "paow-vila-16-01",
+      "frames": [
+        0,
+        177
+      ],
+      "purpose": "Beställning paow-vila-16, tagning 1: Omgång 13 · omtagning · knäcker fingrarna · händerna framför bröstet.",
+      "dealer": "paow",
+      "model": "wan3",
+      "duration": 6,
+      "promptText": "Locked camera, one continuous shot. She starts and ends exactly as in the first frame, and holds still for the last half second. She glances down at her hands, brings them together in front of her chest and laces her fingers. With her fingers laced she turns her palms outward and pushes them forward in one short stretch, as if cracking her knuckles, then unlaces her fingers and lays each hand back on the felt where it lay. Her eyes come back up to the camera with a small smile, her lips together.",
+      "first": {
+        "file": {
+          "path": "assets/orders/paow-vila-16/first.png",
+          "sha256": "cdaa59756e2eb0f7b839f23254f9999f8c8da4c8eef0e37bf23e9643ba6586ee"
+        },
+        "note": "Första bilden i beställningen paow-vila-16."
+      },
+      "last": {
+        "file": {
+          "path": "assets/orders/paow-vila-16/last.png",
+          "sha256": "cdaa59756e2eb0f7b839f23254f9999f8c8da4c8eef0e37bf23e9643ba6586ee"
+        },
+        "note": "Sista bilden i beställningen paow-vila-16."
+      },
+      "order": {
+        "id": "paow-vila-16",
+        "take": 1
+      }
     }
   ],
   "edits": [
