@@ -145,5 +145,10 @@
   "created": "2026-11-13T01:55:34.646Z",
   "createdBy": "huvudagenten (dealer-94) på Jakobs ord 2026-11-13: metodprov, given till plats 4",
   "approval": null,
-  "status": "UTKAST"
+  "status": "AVBRUTEN",
+  "setAside": {
+    "at": "2026-11-13T03:03:47.909Z",
+    "by": "huvudagenten",
+    "why": "Metodprov serie 1 med den långa texten (mall 3); ersatt av serie 2 i kort text (2a–2g) efter receptet och handboken 2026-11-13"
+  }
 }

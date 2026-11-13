@@ -144,6 +144,11 @@
   "notes": [],
   "created": "2026-11-13T02:50:37.181Z",
   "createdBy": "huvudagenten (dealer-94) på Jakobs ord 2026-11-13: metodprov, mall 4",
-  "approval": null,
-  "status": "UTKAST"
+  "approval": {
+    "by": "huvudagent",
+    "at": "2026-11-13T03:03:37.749Z",
+    "orderSha256": "8165c7ce4b1b4a3625cafb5a24b86643eb55b1f1deed937ef449465bc290e2cf",
+    "mandate": "Jakob 2026-11-13: beställ lämpliga filmer automatiskt utan mitt godkännande (metodprov omgång 2 och vila i kort text)"
+  },
+  "status": "GODKÄND"
 }

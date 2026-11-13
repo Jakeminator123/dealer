@@ -30,6 +30,9 @@ test('the checkout: every order file holds, a draft is on today\'s template, an 
       assert.equal(order.status, 'GODKÄND', order.id);
       assert.ok(order.approval.by === 'jakob' || (order.approval.by === 'huvudagent' && !!order.approval.mandate), `${order.id}: Jakob's, or the main agent's on his mandate`);
       assert.equal(order.approval.orderSha256, sha(hashInput(order)), `${order.id}: unchanged since the approval`);
+    } else if (order.status === 'AVBRUTEN') {
+      // Set aside (tools/order-approve.ts --set-aside): kept as it was, with who set it aside and why.
+      assert.ok(order.setAside && typeof order.setAside.why === 'string' && order.setAside.why.length > 0, `${order.id}: set aside with a reason`);
     } else {
       assert.equal(order.status, 'UTKAST', order.id);
       // Today's template for its style: a draft without a style is Utförlig, still template 3's text.

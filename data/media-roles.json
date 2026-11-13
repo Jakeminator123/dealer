@@ -3140,6 +3140,76 @@
           }
         },
         {
+          "id": "paow-film-ny-vila-ler",
+          "role": "film",
+          "name": "Vila: ler (WAN 3, lång text)",
+          "path": "assets/films/paow/ny-vila-ler/source.mp4",
+          "still": 65,
+          "fps": 30,
+          "state": "kandidat",
+          "note": "Leendet öppnar läpparna (ruta 18–36) och visar tänder (38–96), stängd igen kring ruta 100; stilla från 108. Händer inom 1,3 px. Inte oberoende granskad.",
+          "source": {
+            "from": "beställningen paow-vila-03, tagning 1 (studions vy Beställ)",
+            "when": "2026-11-13"
+          }
+        },
+        {
+          "id": "paow-film-ny-vila-nickar",
+          "role": "film",
+          "name": "Vila: nickar (WAN 3, lång text)",
+          "path": "assets/films/paow/ny-vila-nickar/source.mp4",
+          "still": 65,
+          "fps": 30,
+          "state": "kandidat",
+          "note": "Tänder synliga ruta 24–48; nick 48–60 (20 px), möjligen en andra liten nick kring 68; stilla från 108. Inte oberoende granskad.",
+          "source": {
+            "from": "beställningen paow-vila-04, tagning 1 (studions vy Beställ)",
+            "when": "2026-11-13"
+          }
+        },
+        {
+          "id": "paow-film-ny-vila-ratar-ryggen",
+          "role": "film",
+          "name": "Vila: rätar på ryggen (WAN 3, lång text)",
+          "path": "assets/films/paow/ny-vila-ratar-ryggen/source.mp4",
+          "still": 81,
+          "fps": 30,
+          "state": "kandidat",
+          "note": "Munnen stängd; rätar ryggen ruta 36–76, blicken åt vänster 102–126; stilla från 140. Händer inom 1,3 px. Inte oberoende granskad.",
+          "source": {
+            "from": "beställningen paow-vila-05, tagning 1 (studions vy Beställ)",
+            "when": "2026-11-13"
+          }
+        },
+        {
+          "id": "paow-film-ny-vila-trummar",
+          "role": "film",
+          "name": "Vila: trummar med fingrarna (WAN 3, lång text)",
+          "path": "assets/films/paow/ny-vila-trummar/source.mp4",
+          "still": 65,
+          "fps": 30,
+          "state": "kandidat",
+          "note": "Två fingerslag (ruta 60 och 93), men handflatan välvs upp och handleden lyfter upp till 18 px; munnen öppen 21–39; stilla från 114. Inte oberoende granskad.",
+          "source": {
+            "from": "beställningen paow-vila-06, tagning 1 (studions vy Beställ)",
+            "when": "2026-11-13"
+          }
+        },
+        {
+          "id": "paow-film-ny-giv-p1-handbyte",
+          "role": "film",
+          "name": "Giv till plats 1 med handbyte (Kling 4, lång text)",
+          "path": "assets/films/paow/ny-giv-p1-handbyte/source.mp4",
+          "still": 93,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Inget handbyte: höger hand drar själv ett kort ur skon medan vänster håller kvar sitt; kortet vänds mitt på bordet och bärs upprätt, +21–25 % långt; landar 0,5 px från planen. Inte oberoende granskad.",
+          "source": {
+            "from": "beställningen paow-giv-2-1-p1-01, tagning 1 (studions vy Beställ)",
+            "when": "2026-11-13"
+          }
+        },
+        {
           "id": "paow-prov-ankare-ung",
           "role": "prov",
           "name": "Ankare 1, yngre, kandidater",

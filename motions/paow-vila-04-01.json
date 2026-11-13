@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "id": "paow-vila-04-01",
+  "dealer": "paow",
+  "source": {
+    "path": "assets/motions/paow-vila-04-01/source.mp4",
+    "sha256": "a063a138e9bd02aee3fbcf5d3efd64f34a9c52cf8c881fd22b3a94616592946e",
+    "bytes": 10908764,
+    "width": 1764,
+    "height": 1174,
+    "fps": 30,
+    "frames": 118,
+    "provider": "Runway MCP server (app account credits)",
+    "model": "wan3"
+  },
+  "motion": {
+    "kind": "IDLE",
+    "from": "IDLE",
+    "to": "IDLE",
+    "pass": false,
+    "basis": "SOURCE_FRAME_REVIEW"
+  },
+  "review": {
+    "decision": "PENDING",
+    "inbox": true,
+    "basis": "Inte granskad av Jakob: förd in från beställningen paow-vila-04, tagning 1 (tools/register-order.ts). Oberoende rutgranskning: tools/film-review.md.",
+    "limitations": "I inkorgen: spelas bara där steget inte har någon annan film, tills Jakob dömer den.",
+    "colorDoesNotProvePhysicalSide": true,
+    "userAccepted": false,
+    "productionReady": false
+  },
+  "order": {
+    "id": "paow-vila-04",
+    "take": 1,
+    "path": "data/orders/paow-vila-04.json",
+    "orderSha256": "3a347d2d485658c9149de91b8f38058230d29aa6d13b220898b950459b6714e4",
+    "receipt": "assets/orders/paow-vila-04/receipt.json",
+    "taskId": "ad73cb67-c62f-4e69-a688-99c25dfd87d4",
+    "delivered": {
+      "path": "assets/orders/paow-vila-04/take-1/after.mp4",
+      "sha256": "a063a138e9bd02aee3fbcf5d3efd64f34a9c52cf8c881fd22b3a94616592946e"
+    }
+  },
+  "postProcessing": "none",
+  "generationRef": "assets/motions/paow-vila-04-01/generation.json",
+  "jobRef": "data/clip-jobs.json",
+  "scoutIntegrated": false,
+  "published": false
+}
