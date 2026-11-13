@@ -31,8 +31,12 @@ import type { FlipAxis, StepKey, TextStyle } from './order-model.ts';
  * 5 (2026-11-13): the short deal says where the card's place is, after rounds 3 and 3b laid the card in front of her.
  * 6 (2026-11-13): the card's two sides said only by colour and by which one is up (SAY.sides), never back or face: Jakob
  * of a rejected take, "Baksida kan betyda olika saker, som baksidan på ett kort, men det kan också referera till undersidan".
+ * 7 (2026-11-13): the short deal lets her move a little as she deals (SAY.moveOwn, SAY.moveBoth) instead of holding the
+ * other hand still ("Hon är väldigt stel"), and after two hands the arm stretched out at the card is the one that comes
+ * back while the hand at the shoe takes the next card or comes to rest (SAY.backPass, SAY.otherFromShoe): Jakob, "OM hon
+ * har någon deal där hon använder sin vänster och högerarm så måste retreat/tillbakagången vara annorlunda".
  */
-export const TEMPLATE_VERSION = 6;
+export const TEMPLATE_VERSION = 7;
 /** The version of the long text (template 3, 2026-11-13); Utförlig writes it unchanged. */
 export const LONG_VERSION = 3;
 export type Dealer = { name: string; look: string };
@@ -116,8 +120,14 @@ export const SAY = {
   backPinch: 'Then her open hand glides back low over the felt, palm down, to the shoe and takes the next card.',
   backDrag: 'Then her open hand glides back low over the felt, palm down, to the shoe and rests over the next card in the window.',
   backOther: (drag: boolean) => `Then the hand that laid it glides back low over the felt, palm down, to where it lay in the first frame, and her hand at the shoe ${drag ? 'rests over the next card in the window' : 'takes the next card'}.`,
+  // After a handover the hand that gave the card is in the middle, not at the shoe (from template 7): it goes back there.
+  backPass: (drag: boolean) => `Then the hand that laid it glides back low over the felt, palm down, to where it lay in the first frame, and the hand that gave it goes back to the shoe and ${drag ? 'rests over the next card in the window' : 'takes the next card'}.`,
   endAtCard: 'Her hand ends at the card, as in the last frame.',
   otherRests: 'The other hand rests on the felt.',
+  // A deal moves her a little (from template 7; Jakob: "Hon är väldigt stel", "rör sin kropp och huvud och SIN högerarm
+  // aningen mer"): with the other hand resting, or with both hands at work.
+  moveOwn: 'As she deals, her head and eyes follow the card, her shoulders turn a little with the reach, and her other hand shifts a little where it lies on the felt.',
+  moveBoth: 'As she deals, her head and eyes follow the card and her shoulders turn a little with the reach.',
   // Minimal.
   oneCard: 'One card goes from the shoe to where the last frame shows it.',
   oneCardBack: 'One card goes from the shoe to where the last frame shows it, and the hand comes back to its pose in the first frame.',
@@ -129,6 +139,8 @@ export const SAY = {
     '1': 'Her open hand glides back low over the felt, palm down, and comes to rest flat on the felt.',
   },
   glideOther: (to: '2.1' | '2.2') => `Her open hand glides back low over the felt, palm down, to where it rests in the last frame, and her other hand, at the shoe, ${to === '2.1' ? 'takes the top edge of the next yellow card' : 'comes to rest over the next yellow card'}.`,
+  // To rest after her other hand laid the card: the hand that waited at the shoe comes to rest too (from template 7).
+  otherFromShoe: 'Her other hand comes away from the shoe and rests flat on the felt too.',
   leaveCard: 'The hand leaves the card where it lies and goes back to its pose in the last frame.',
   // An entry, from rest.
   bothRest: 'Both hands rest on the felt.',
@@ -288,6 +300,8 @@ const DEFAULT_MOTION: DealMotion = { grip: 'PINCH', hand: 'LH', pass: false, tur
 /** From template 6 the card's sides are said by colour and by which one is up; an older order keeps back and face (SAY.v5). */
 const byColour = (input: PromptInput) => (input.version ?? TEMPLATE_VERSION) >= 6;
 const turnAtPlace = (input: PromptInput) => (byColour(input) ? SAY.turnAtPlace : SAY.v5.turnAtPlace);
+/** From template 7 a deal moves her a little and the way back after two hands follows the arm that is out. */
+const twoHands = (input: PromptInput) => (input.version ?? TEMPLATE_VERSION) >= 7;
 
 /**
  * A deal, sentence by sentence in the order the hand works: the scene; the take (nyp, dra); the carry (för fram), with
@@ -398,8 +412,12 @@ function shortDeal(input: PromptInput): Prompt {
     : takes === 'RH' ? `${SAY.otherReaches} ${out} and ${carry}.`
     : `${SAY.handAtShoe} ${out} and ${carry}.`;
   const turn = !open ? (drag && !pass ? SAY.stopClosed : SAY.layClosed) : m.flipAxis === 'AT_PLACE' ? turnAtPlace(input) : m.flipAxis === 'LONG_EDGE' ? SAY.rollOnTheWay : SAY.turnOnTheWay;
-  const own = takes === 'LH' && !pass;
-  const back = input.oneWay ? SAY.endAtCard : own ? (drag ? SAY.backDrag : SAY.backPinch) : SAY.backOther(drag);
+  const own = takes === 'LH' && !pass, seven = twoHands(input);
+  // The arm out at the card comes back: the hand at the shoe itself, or the hand that laid it (after a handover the
+  // hand that gave it goes back to the shoe, from template 7).
+  const back = input.oneWay ? SAY.endAtCard : own ? (drag ? SAY.backDrag : SAY.backPinch) : pass && seven ? SAY.backPass(drag) : SAY.backOther(drag);
+  // Her body as she deals: from template 7 she moves a little; before, the other hand only rested (own hand alone).
+  const body = seven ? (own ? SAY.moveOwn : SAY.moveBoth) : own ? SAY.otherRests : '';
   // The card (template 6): which colour is up at the end follows the side it lands with.
   const colours = byColour(input);
   const card = colours ? SAY.oneCardIs(open ? SAY.sides.open : SAY.sides.closed) : SAY.v5.oneCardMoves;
@@ -409,7 +427,7 @@ function shortDeal(input: PromptInput): Prompt {
     { text: take, from: ['hand', ...(placed ? (['place'] as Choice[]) : []), ...(alongFelt ? ([open ? 'turn' : 'side'] as Choice[]) : [])] },
     { text: turn, from: open ? ['turn'] : ['side'] },
     { text: back, from: input.oneWay ? ['shape'] : ['hand'] },
-    { text: own ? SAY.otherRests : '', from: ['hand'] },
+    { text: body, from: ['hand'] },
     { text: card, from: colours ? ['side'] : [] },
     extraPart(input),
   ];
@@ -448,12 +466,15 @@ function returnText(input: PromptInput, to: '1' | '2.1' | '2.2', style: TextStyl
   }
   if (style === 'KORT') {
     const glide = lays === 'LH' || to === '1' ? SAY.glideTo[to] : SAY.glideOther(to);
+    // The other hand: resting when the left laid the card; to rest after the right laid it, it comes from the shoe (from
+    // template 7; before, it was said to rest already).
+    const other = lays === 'LH' ? SAY.otherRests : to !== '1' ? '' : twoHands(input) ? SAY.otherFromShoe : SAY.otherRests;
     const parts: Part[] = [
       { text: SAY.camera, from: [] },
       referencePart(input),
       { text: SAY.liftOff(colour), from: ['side'] },
       { text: glide, from: ['hand'] },
-      { text: lays === 'LH' || to === '1' ? SAY.otherRests : '', from: ['hand'] },
+      { text: other, from: ['hand'] },
       extraPart(input),
     ];
     return { template: templateOf('film-retur', 'KORT'), style, text: joined(parts), parts };
@@ -563,7 +584,7 @@ function restText(input: PromptInput, style: TextStyle = 'UTFÖRLIG'): Prompt {
 export function promptFor(input: PromptInput): Prompt {
   const p = written(input);
   // An older version's text is today's but for what the version changed (the place words of 5, the card's sides by colour
-  // of 6); its name keeps its number.
+  // of 6, her body and the way back after two hands of 7); its name keeps its number.
   const today = '@' + TEMPLATE_VERSION;
   return input.version && input.version !== TEMPLATE_VERSION && p.template.endsWith(today) ? { ...p, template: p.template.slice(0, -today.length) + '@' + input.version } : p;
 }

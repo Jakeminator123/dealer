@@ -113,7 +113,7 @@ test('drafts, changes and approval go through the routes with their guards', asy
   assert.equal(changed.status, 200);
   assert.equal(changed.json.order.cost.total, 40);
   assert.match(changed.json.order.prompt.text, /She smiles\.$/, 'a new still is written short: the addition last, no list of bans');
-  assert.equal(changed.json.order.prompt.template, 'bild-ankare-kort@6');
+  assert.equal(changed.json.order.prompt.template, 'bild-ankare-kort@7');
 
   // Approval: own origin, revision, then frozen with its hash.
   assert.equal((await call('POST', `/api/orders/${id}/approve`, { match: changed.json.revision, from: null })).status, 403);
@@ -145,7 +145,7 @@ test('drafts, changes and approval go through the routes with their guards', asy
   assert.deepEqual(film.waiting.map((w: { label: string; ready: boolean }) => [w.label, w.ready]), [['ankare 2.1', false], ['ankare 2.1', false]]);
   assert.equal(film.order.step.edge, 'READY>P4.C1');
   assert.equal(film.order.pictures[1].path, null, 'the last picture waits; no other dealer stands in');
-  assert.deepEqual([film.order.prompt.style, film.order.prompt.template], ['KORT', 'film-giv-kort@6'], 'a new film is written in the short text');
+  assert.deepEqual([film.order.prompt.style, film.order.prompt.template], ['KORT', 'film-giv-kort@7'], 'a new film is written in the short text');
   const long = (await call('POST', '/api/orders', { body: { dealer: 'paow', step: 'GIV-2.1', target: 'P4.C1', duration: 4, style: 'UTFÖRLIG' } })).json;
   assert.match(long.order.prompt.text, /exactly where the blue card lies in the last frame, in the middle of the picture/, 'the place from the plan before the last picture exists');
   assert.deepEqual([long.order.prompt.style, long.order.prompt.template], ['UTFÖRLIG', 'film-giv@3']);
@@ -499,7 +499,7 @@ test('the steps a round needs: a deal to the hole card, its turn from rest and t
   assert.deepEqual(o.pictures.map((p: { name: string; goesAs: string; path: string | null; waits: { label: string } | null }) => [p.name, p.goesAs, p.path, p.waits?.label]), [['first.png', 'startFrame', null, 'ankare 1'], ['last.png', 'endFrame', null, 'ankare 1']]);
   assert.match(o.pictures[0].label, /hålkortet stängt$/);
   assert.match(o.pictures[1].label, /hålkortet öppet$/);
-  assert.deepEqual([o.prompt.style, o.prompt.template, o.generation.model, o.generation.params.duration, o.cost.total], ['KORT', 'film-halkort-kort@6', 'wan3', 5, 200]);
+  assert.deepEqual([o.prompt.style, o.prompt.template, o.generation.model, o.generation.params.duration, o.cost.total], ['KORT', 'film-halkort-kort@7', 'wan3', 5, 200]);
   assert.match(o.prompt.text, /to the yellow card lying close in front of her, in the middle of the picture, where the last frame shows it\. There her thumb slides under/);
   assert.equal(turn.json.shown, 'VÄNTAR');
   assert.match((await call('POST', '/api/orders', { body: { dealer: 'paow', step: 'HALKORT', style: 'UTFÖRLIG' } })).json.error, /skrivs KORT eller MINIMAL/);

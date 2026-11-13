@@ -40,7 +40,7 @@ test('every Utförlig text ends with what must not happen, a short or minimal on
       assert.doesNotMatch(text, /blonde|blazer|black blazer|young/, `${at}: nothing of her look`);
     }
   }
-  assert.equal(TEMPLATE_VERSION, 6);
+  assert.equal(TEMPLATE_VERSION, 7);
   assert.equal(LONG_VERSION, 3);
   for (const ban of ['a second card', 'a finger passes through the card', 'grows or shrinks', 'hovers in the air', 'the picture cuts']) assert.ok(BANS_FILM.includes(ban), ban);
   assert.equal(bansFor(null), BANS_FILM, 'without a motion the bans are the film bans');
@@ -185,8 +185,9 @@ test('the short text: the movement in order, the turn said once with the wrist, 
     return promptFor({ dealer: paow, step, model: 'kling-4', motion, style: 'KORT', ...extra });
   };
   const a = kort('GIV-2.1', {});
-  assert.equal(a.text, [SAY.camera, `${SAY.handAtShoe} ${SAY.pinchOut} and ${SAY.carryBack}.`, SAY.turnAtPlace, SAY.backPinch, SAY.otherRests, SAY.oneCardIs(SAY.sides.open)].join(' '));
-  assert.ok(wordCount(a.text) < 140, `short: ${wordCount(a.text)} words`);
+  assert.equal(a.text, [SAY.camera, `${SAY.handAtShoe} ${SAY.pinchOut} and ${SAY.carryBack}.`, SAY.turnAtPlace, SAY.backPinch, SAY.moveOwn, SAY.oneCardIs(SAY.sides.open)].join(' '));
+  // Template 7 lets her move as she deals (SAY.moveOwn, 24 words more than "The other hand rests on the felt."): 157 words.
+  assert.ok(wordCount(a.text) < 158, `short: ${wordCount(a.text)} words`);
   // The turn, once: the wrist's direction, the thumb before and after, the long edge that stays on the felt.
   assert.match(SAY.turnAtPlace, /thumb slides under the long edge nearest it/);
   assert.match(SAY.turnAtPlace, /wrist turns thumb side up/);
@@ -195,7 +196,7 @@ test('the short text: the movement in order, the turn said once with the wrist, 
   assert.equal(a.text.split(/turns|rolls over/).length - 1, 2, 'one sentence turns the card: its wrist and its roll');
   // Closed: no turn sentence at all; a slid card is let go where it stops.
   const closed = kort('GIV-2.2', { side: 'BACK' }).text;
-  assert.doesNotMatch(closed, /turn|roll|blue side/);
+  assert.doesNotMatch(closed, /turns|turned|turn(?! a little)|roll|blue side/, 'the shoulders turn a little; the card does not');
   assert.match(closed, /drags it flat along the felt under its fingertips, yellow side up, to its place\. She stops it there, yellow side up, and lifts her fingertips off it\./);
   assert.match(closed, /rests over the next card in the window\./);
   // On the way: free or rolled about the long side.
@@ -339,21 +340,21 @@ test('template 6: the card\'s two sides said by colour and by which one is up, n
   const open = write(motion, 'KORT');
   assert.ok(open.text.endsWith('Only one card moves. It is yellow on one side and blue on the other: yellow side up when it leaves the shoe, blue side up when it lies at its place.'), open.text);
   assert.match(open.text, /her thumb comes over onto the blue side\./);
-  assert.equal(open.template, 'film-giv-kort@6');
+  assert.equal(open.template, `film-giv-kort@${TEMPLATE_VERSION}`);
   assert.deepEqual(open.parts.find((p) => p.text.startsWith('Only one card moves.'))!.from, ['side'], 'which colour ends up follows the side it lands with');
   const closed = write(closedMotion, 'KORT');
   assert.ok(closed.text.endsWith('Only one card moves. It is yellow on one side and blue on the other, and it stays yellow side up the whole way.'), closed.text);
   const minOpen = write(motion, 'MINIMAL'), minClosed = write(closedMotion, 'MINIMAL');
   assert.match(minOpen.text, /^Locked camera\. The card is yellow on one side and blue on the other: yellow side up when it leaves the shoe, blue side up when it lies at its place\. One card goes/);
   assert.match(minClosed.text, /^Locked camera\. The card is yellow on one side and blue on the other, and it stays yellow side up the whole way\. One card goes/);
-  assert.equal(minOpen.template, 'film-giv-minimal@6');
+  assert.equal(minOpen.template, `film-giv-minimal@${TEMPLATE_VERSION}`);
   const reveal = promptFor({ dealer, step: 'HALKORT', model: 'wan3', style: 'KORT', place: { x: 912.9, y: 927.3 } });
   assert.ok(reveal.text.endsWith('Only one card moves. It is yellow on one side and blue on the other: it lies yellow side up, and after the turn it lies blue side up.'));
   // Every new text in Kort and Minimal, of every step, says nothing of a back or a face of the card (the hand may glide back).
   for (const step of STEPS) for (const style of ['KORT', 'MINIMAL'] as const) for (const m of [motion, closedMotion]) {
     const p = promptFor({ dealer, step: step.key as StepKey, model: step.model, motion: step.card ? m : null, place: { x: 1073, y: 1000 }, style });
     assert.doesNotMatch(p.text, aboutTheCard, `${step.key} ${style}`);
-    assert.match(p.template, /@6$/, `${step.key} ${style}`);
+    assert.match(p.template, new RegExp(`@${TEMPLATE_VERSION}$`), `${step.key} ${style}`);
   }
   for (const p of [open, closed, minOpen, minClosed, write(motion, 'KORT', { reference: true }), write({ ...motion, flipAxis: 'FREE' }, 'KORT', { oneWay: true })]) assert.doesNotMatch(p.text, aboutTheCard);
   // The long text (template 3) is left as it was.
@@ -372,4 +373,53 @@ test('template 6: the card\'s two sides said by colour and by which one is up, n
   assert.equal(again.text, order.prompt.text);
   assert.equal(again.template, 'film-giv-kort@5');
   assert.notEqual(orderPrompt(order, dealers.find((d: { id: string }) => d.id === order.dealer), null).text, order.prompt.text, 'rewritten today it would say the sides by colour');
+});
+
+test('template 7: she moves a little as she deals; after two hands the arm out at the card comes back; older orders keep their words', async () => {
+  const dealer = { name: 'Paow', look: 'x' };
+  const m: DealMotion = { grip: 'PINCH', hand: 'LH', pass: false, turn: true, flipAxis: 'FREE', side: 'FRONT' };
+  const kort = (motion: DealMotion, extra: Partial<Parameters<typeof promptFor>[0]> = {}) => promptFor({ dealer, step: motion.grip === 'DRAG' ? 'GIV-2.2' : 'GIV-2.1', model: 'wan3', motion, place: { x: 1073, y: 1000 }, style: 'KORT', ...extra });
+  // Her own hand out and back: she moves a little, and the other hand is no longer held still.
+  const own = kort(m);
+  assert.ok(own.text.includes(`${SAY.backPinch} ${SAY.moveOwn} Only one card moves.`), own.text);
+  assert.doesNotMatch(own.text, /The other hand rests on the felt\./);
+  assert.deepEqual(own.parts.find((p) => p.text === SAY.moveOwn)!.from, ['hand']);
+  assert.equal(own.template, 'film-giv-kort@7');
+  // A handover: the right hand laid it and goes back to where it lay; the left, which gave it, goes back to the shoe.
+  for (const drag of [false, true]) {
+    const pass = kort({ ...m, pass: true, grip: drag ? 'DRAG' : 'PINCH' });
+    assert.ok(pass.text.includes(`${SAY.backPass(drag)} ${SAY.moveBoth} Only one card moves.`), pass.text);
+    assert.match(pass.text, /Then the hand that laid it glides back low over the felt, palm down, to where it lay in the first frame, and the hand that gave it goes back to the shoe and (takes the next card|rests over the next card in the window)\./);
+    assert.doesNotMatch(pass.text, /her hand at the shoe (takes|rests)|her other hand shifts/);
+  }
+  // Her other hand reaches across and lays it: it goes back to where it lay, the hand waiting at the shoe takes the next card.
+  const right = kort({ ...m, hand: 'RH' });
+  assert.ok(right.text.includes(`${SAY.backOther(false)} ${SAY.moveBoth}`), right.text);
+  // Bara dit: the end on the landing picture, with her body as she deals.
+  assert.ok(kort(m, { oneWay: true }).text.includes(`${SAY.endAtCard} ${SAY.moveOwn}`));
+  // The minimal deal says nothing of how; the rest, the entry and the way out keep their texts.
+  assert.doesNotMatch(promptFor({ dealer, step: 'GIV-2.1', model: 'wan3', motion: m, style: 'MINIMAL' }).text, /As she deals/);
+  // A return to rest after her right hand laid the card: the left comes from the shoe to rest as well.
+  const ret = (motion: DealMotion, step: StepKey, version?: number) => promptFor({ dealer, step, model: 'wan3', motion, style: 'KORT', version }).text;
+  for (const hand of [{ hand: 'RH' as const, pass: false }, { hand: 'LH' as const, pass: true }]) {
+    assert.ok(ret({ ...m, ...hand }, 'RETUR-1').endsWith(`${SAY.glideTo['1']} ${SAY.otherFromShoe}`), JSON.stringify(hand));
+    assert.ok(ret({ ...m, ...hand }, 'RETUR-2.1').endsWith(SAY.glideOther('2.1')));
+    assert.ok(ret({ ...m, ...hand }, 'RETUR-1', 6).endsWith(`${SAY.glideTo['1']} ${SAY.otherRests}`), 'template 6 as it was');
+  }
+  assert.ok(ret(m, 'RETUR-1').endsWith(`${SAY.glideTo['1']} ${SAY.otherRests}`), 'after her left hand the right still rests');
+  assert.ok(ret(m, 'RETUR-2.2').endsWith(`${SAY.glideTo['2.2']} ${SAY.otherRests}`));
+  // Template 6 and older: the other hand rests, a handover goes back as before, under the order's own name.
+  const six = kort(m, { version: 6 });
+  assert.ok(six.text.includes(`${SAY.backPinch} ${SAY.otherRests} Only one card moves.`));
+  assert.equal(six.template, 'film-giv-kort@6');
+  assert.ok(kort({ ...m, pass: true }, { version: 6 }).text.includes(`${SAY.backOther(false)} Only one card moves.`));
+  // Stored ones, word for word: round 6's P5 deal (template 6) and round 5c's P1 deal (template 5).
+  const { dealers } = JSON.parse(await readFile('data/dealers.json', 'utf8'));
+  for (const [id, template] of [['paow-giv-2-1-p5-04', 'film-giv-kort@6'], ['paow-giv-2-1-p1-08', 'film-giv-kort@5']]) {
+    const order = JSON.parse(await readFile(`data/orders/${id}.json`, 'utf8'));
+    assert.equal(order.prompt.template, template, id);
+    const again = orderPrompt(order, dealers.find((d: { id: string }) => d.id === order.dealer), null, { asStored: true });
+    assert.equal(again.text, order.prompt.text, id);
+    assert.equal(again.template, template, id);
+  }
 });
