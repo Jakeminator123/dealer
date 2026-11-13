@@ -112,7 +112,8 @@ test('drafts, changes and approval go through the routes with their guards', asy
   const changed = await call('PUT', `/api/orders/${id}`, { body: { takes: 1, extra: 'She smiles.' }, match: a.revision });
   assert.equal(changed.status, 200);
   assert.equal(changed.json.order.cost.total, 40);
-  assert.match(changed.json.order.prompt.text, /She smiles\. Nothing of this happens/);
+  assert.match(changed.json.order.prompt.text, /She smiles\.$/, 'a new still is written short: the addition last, no list of bans');
+  assert.equal(changed.json.order.prompt.template, 'bild-ankare-kort@4');
 
   // Approval: own origin, revision, then frozen with its hash.
   assert.equal((await call('POST', `/api/orders/${id}/approve`, { match: changed.json.revision, from: null })).status, 403);
@@ -144,11 +145,22 @@ test('drafts, changes and approval go through the routes with their guards', asy
   assert.deepEqual(film.waiting.map((w: { label: string; ready: boolean }) => [w.label, w.ready]), [['ankare 2.1', false], ['ankare 2.1', false]]);
   assert.equal(film.order.step.edge, 'READY>P4.C1');
   assert.equal(film.order.pictures[1].path, null, 'the last picture waits; no other dealer stands in');
-  assert.match(film.order.prompt.text, /exactly where the blue card lies in the last frame, in the middle of the picture/, 'the place from the plan before the last picture exists');
+  assert.deepEqual([film.order.prompt.style, film.order.prompt.template], ['KORT', 'film-giv-kort@4'], 'a new film is written in the short text');
+  const long = (await call('POST', '/api/orders', { body: { dealer: 'paow', step: 'GIV-2.1', target: 'P4.C1', duration: 4, style: 'UTFÖRLIG' } })).json;
+  assert.match(long.order.prompt.text, /exactly where the blue card lies in the last frame, in the middle of the picture/, 'the place from the plan before the last picture exists');
+  assert.deepEqual([long.order.prompt.style, long.order.prompt.template], ['UTFÖRLIG', 'film-giv@3']);
   const waiting = await call('POST', `/api/orders/${film.order.id}/approve`, { match: film.revision });
   assert.equal(waiting.status, 409);
   assert.match(waiting.json.error, /Väntar på ankare 2\.1/);
-  assert.equal((await call('POST', '/api/orders', { body: { dealer: 'paow', step: 'RETUR-2.1', target: 'P4.C1' } })).status, 400, 'a step that is off');
+  const noLanding = await call('POST', '/api/orders', { body: { dealer: 'paow', step: 'RETUR-2.1', target: 'P4.C1' } });
+  assert.equal(noLanding.status, 400, 'a return needs a landing picture that holds');
+  assert.match(noLanding.json.error, /Ingen landningsbild gäller för Paows plats 4\. Godkänn en i Material/);
+  assert.match((await call('POST', '/api/orders', { body: { dealer: 'paow', step: 'GIV-2.1', target: 'P4.C1', shape: 'ONE_WAY' } })).json.error, /Ingen landningsbild gäller/, 'and so does a deal bara dit');
+  assert.match((await call('POST', '/api/orders', { body: { dealer: 'paow', step: 'ANKARE-2.1', style: 'MINIMAL' } })).json.error, /En bild skrivs KORT eller UTFÖRLIG/);
+  // Only a dealer of data/dealers.json can be ordered for; the register may hold others (a separate track).
+  const unknown = await call('POST', '/api/orders', { body: { dealer: 'petra', step: 'VILA' } });
+  assert.equal(unknown.status, 400);
+  assert.equal(unknown.json.error, 'petra finns inte i data/dealers.json, så inget kan beställas för henne här.');
 });
 
 test('Material: Godkänn replaces the other candidates of the same role, Underkänn sets one aside, against the revision', async (t) => {
@@ -242,20 +254,20 @@ test('a deal: the hand, handbyte and how the card lands, defaulted from the plan
   const one = (await call('POST', '/api/orders', { body: { dealer: 'paow', step: 'GIV-2.2', target: 'P1.C1' } })).json;
   const m = one.order.motion;
   assert.deepEqual([m.hand, m.pass, m.side, m.turn, m.fromPlan, m.flipAxis], ['LH', false, 'FRONT', true, true, 'FREE']);
-  const sheet = promptFor({ dealer: list.dealers[1], step: 'GIV-2.2', model: 'wan3', motion: m, place: { x: seats['P1.C1'].centre[0], y: seats['P1.C1'].centre[1] } });
+  const sheet = promptFor({ dealer: list.dealers[1], step: 'GIV-2.2', model: 'wan3', motion: m, place: { x: seats['P1.C1'].centre[0], y: seats['P1.C1'].centre[1] }, style: 'KORT' });
   assert.equal(one.order.prompt.text, sheet.text, 'the sheet shows exactly what is stored');
   assert.equal((await call('POST', '/api/orders', { body: { dealer: 'paow', step: 'GIV-2.1', target: 'P4.C1' } })).json.order.motion.flipAxis, 'AT_PLACE', 'from 2.1 the card turns at the place');
 
   // Closed, with handbyte; then changed on the draft.
-  const closed = (await call('POST', '/api/orders', { body: { dealer: 'paow', step: 'GIV-2.2', target: 'P2.C1', side: 'BACK', pass: true } })).json;
+  const closed = (await call('POST', '/api/orders', { body: { dealer: 'paow', step: 'GIV-2.2', target: 'P2.C1', side: 'BACK', pass: true, style: 'UTFÖRLIG' } })).json;
   const c = closed.order.motion;
-  assert.deepEqual([c.hand, c.pass, c.side, c.turn, c.fromPlan], ['LH', true, 'BACK', false, false]);
+  assert.deepEqual([c.hand, c.pass, c.side, c.turn, c.fromPlan, c.flipAxis], ['LH', true, 'BACK', false, false, null], 'a card that is not turned stores no turn');
   assert.equal(closed.order.pictures[1].label, 'Sista bild · samma + kortet stängt på plats 2');
   assert.match(closed.order.prompt.text, /takes the same card by its edges/);
   assert.match(closed.order.summary, /ger det till höger lågt framför kroppen; höger lägger det stängt/);
   const changed = (await call('PUT', `/api/orders/${closed.order.id}`, { body: { hand: 'RH', side: 'FRONT' }, match: closed.revision })).json;
   const d = changed.order.motion;
-  assert.deepEqual([d.hand, d.pass, d.side, d.turn], ['RH', false, 'FRONT', true]);
+  assert.deepEqual([d.hand, d.pass, d.side, d.turn, d.flipAxis], ['RH', false, 'FRONT', true, 'FREE'], 'opened again: the turn the plan suggests');
   assert.match(changed.order.prompt.text, /Her left hand waits by the shoe/);
   assert.equal(changed.order.pictures[1].label, 'Sista bild · samma + kortet öppet på plats 2');
   assert.equal((await call('PUT', `/api/orders/${closed.order.id}`, { body: { pass: true, hand: 'RH' }, match: changed.revision })).status, 400, 'handbyte goes from left to right');
@@ -263,7 +275,7 @@ test('a deal: the hand, handbyte and how the card lands, defaulted from the plan
 
   // Alla sju: one draft per seat, a group, handbyte only where the left hand would cross her body.
   const all = ['P1.C1', 'P2.C1', 'P3.C1', 'P4.C1', 'P5.C1', 'P6.C1', 'P7.C1'].map((target) => ({ target, hand: 'LH', pass: seats[target].crosses }));
-  const group = await call('POST', '/api/orders', { body: { dealer: 'paow', step: 'GIV-2.2', seats: all, takes: 2 } });
+  const group = await call('POST', '/api/orders', { body: { dealer: 'paow', step: 'GIV-2.2', seats: all, takes: 2, style: 'UTFÖRLIG' } });
   assert.equal(group.status, 201);
   assert.equal(group.json.made.length, 7);
   type A = { order: { group: { id: string; label: string } | null; motion: { target: string; pass: boolean }; prompt: { text: string }; cost: { total: number } } };
@@ -274,7 +286,7 @@ test('a deal: the hand, handbyte and how the card lands, defaulted from the plan
   assert.deepEqual(orders.map((a) => [a.order.motion.target, a.order.motion.pass]), all.map((s) => [s.target, s.pass]));
   for (const a of orders) {
     const s = seats[a.order.motion.target];
-    assert.equal(a.order.prompt.text, promptFor({ dealer: list.dealers[1], step: 'GIV-2.2', model: 'wan3', motion: a.order.motion as never, place: { x: s.centre[0], y: s.centre[1] } }).text, `${a.order.motion.target}: its own text`);
+    assert.equal(a.order.prompt.text, promptFor({ dealer: list.dealers[1], step: 'GIV-2.2', model: 'wan3', motion: a.order.motion as never, place: { x: s.centre[0], y: s.centre[1] }, style: 'UTFÖRLIG' }).text, `${a.order.motion.target}: its own text`);
   }
   assert.match(orders[0].order.prompt.text, /far to the left of the picture/);
   assert.match(orders[6].order.prompt.text, /far to the right of the picture/);
@@ -289,12 +301,16 @@ test('a deal: the hand, handbyte and how the card lands, defaulted from the plan
 
 test('a film made with another model: the 4K model for the entry, its parameters, title and price; a model the step cannot use is refused', async (t) => {
   const { call } = await lab(t);
-  const made = await call('POST', '/api/orders', { body: { dealer: 'paow', step: 'INGANG-2.1', model: 'kling-3-4k', duration: 4, takes: 1 } });
+  // The 4K model was tried (paow-ingang-2-1-02) and is not offered for a new order; that order still reads.
+  const off = await call('POST', '/api/orders', { body: { dealer: 'paow', step: 'INGANG-2.1', model: 'kling-3-4k', duration: 4, takes: 1 } });
+  assert.equal(off.status, 400);
+  assert.match(off.json.error, /^Kling 3\.0 4K beställs inte längre: Provad 2026-11-13 \(paow-ingang-2-1-02\)/);
+  const made = await call('POST', '/api/orders', { body: { dealer: 'paow', step: 'INGANG-2.1', model: 'kling-4', duration: 4, takes: 1 } });
   assert.equal(made.status, 201);
   const o = made.json.order;
-  assert.deepEqual(o.generation, { provider: 'runway-app', tool: 'generate_video', model: 'kling-3-4k', params: { resolution: '4k', duration: 4, generateAudio: false } });
-  assert.deepEqual([o.cost.perTake, o.cost.total, o.cost.worstTotal, o.limits.maxCredits], [172, 172, 172, 172]);
-  assert.equal(o.title, 'Paow · Ankare 1 → 2.1 · Kling 3.0 4K', 'another model than the step\'s own is said in the title');
+  assert.deepEqual(o.generation, { provider: 'runway-app', tool: 'generate_video', model: 'kling-4', params: { resolution: '1080p', duration: 4 } });
+  assert.deepEqual([o.cost.perTake, o.cost.total, o.cost.worstTotal, o.limits.maxCredits], [86, 86, 94, 94]);
+  assert.equal(o.title, 'Paow · Ankare 1 → 2.1 · Kling 4', 'another model than the step\'s own is said in the title');
   assert.deepEqual(o.pictures.map((p: { goesAs: string }) => p.goesAs), ['startFrame', 'endFrame']);
   assert.equal(o.reference.status, 'INGEN');
   // None asked for: the step's own model, as before.
@@ -305,18 +321,72 @@ test('a film made with another model: the 4K model for the entry, its parameters
   const deal = (await call('POST', '/api/orders', { body: { dealer: 'paow', step: 'GIV-2.1', target: 'P4.C1', model: 'wan3' } })).json.order;
   assert.deepEqual(deal.generation.params, { resolution: '1080p', duration: 7, ratio: 'adaptive', generateAudio: false });
   for (const [body, why] of [
-    [{ dealer: 'paow', step: 'INGANG-2.1', model: 'nano-banana-pro' }, /kan inte göra Ankare 1 → 2\.1: välj wan3, kling-4, kling-3-4k/],
+    [{ dealer: 'paow', step: 'INGANG-2.1', model: 'nano-banana-pro' }, /kan inte göra Ankare 1 → 2\.1: välj wan3, kling-4\.$/],
     [{ dealer: 'paow', step: 'ANKARE-2.1', model: 'kling-3-4k' }, /kan inte göra/],
     [{ dealer: 'paow', step: 'INGANG-2.1', model: 'gen-9' }, /kan inte göra/],
     [{ dealer: 'paow', step: 'INGANG-2.1', model: 7 }, /kan inte göra/],
-    [{ dealer: 'paow', step: 'INGANG-2.1', model: 'kling-3-4k', duration: 20 }, /3–15 s för Kling 3\.0 4K/],
-    [{ dealer: 'paow', step: 'INGANG-2.1', model: 'kling-3-4k', resolution: '1080p' }, /tar 4k, inte 1080p/],
+    [{ dealer: 'paow', step: 'INGANG-2.1', model: 'kling-4', duration: 40 }, /3–30 s för Kling 4/],
+    [{ dealer: 'paow', step: 'INGANG-2.1', model: 'kling-4', resolution: '4k' }, /tar 720p, 1080p, inte 4k/],
   ] as const) {
     const refused = await call('POST', '/api/orders', { body });
     assert.equal(refused.status, 400, JSON.stringify(body));
     assert.match(refused.json.error, why);
   }
   assert.equal((await call('GET', '/api/orders')).json.orders.length, 3, 'nothing left of a refused draft');
+});
+
+test('one action per film: a return from the landing picture, a deal bara dit to it, and a reference film copied from the bank', async (t) => {
+  const { root, call, files } = await lab(t);
+  // Paow's anchor 2.1 and a landing picture for seat 4 hold; the bank has Pamela's approved deal to seat 4.
+  const register = JSON.parse(await readFile(path.join(root, 'data/media-roles.json'), 'utf8'));
+  register.dealers.paow.entries.find((e: { id: string }) => e.id === 'paow-nyp-ny').state = 'gäller';
+  register.dealers.paow.entries.push({ id: 'paow-landning-p4', role: 'landning', name: 'Plats 4, landning', path: 'assets/anchors/paow-landning-p4/anchor.png', node: 'LAND(P4.C1)', card: 'P4.C1', state: 'gäller' });
+  await writeFile(path.join(root, 'data/media-roles.json'), JSON.stringify(register, null, 2));
+  const landing = await picture(3, 233, 48);
+  await mkdir(path.join(root, 'assets/anchors/paow-landning-p4'), { recursive: true });
+  await writeFile(path.join(root, 'assets/anchors/paow-landning-p4/anchor.png'), landing);
+  const film = Buffer.from('a film of four seconds');
+  await mkdir(path.join(root, 'assets/motions/pamela-p4-c1-plan-deal-02'), { recursive: true });
+  await mkdir(path.join(root, 'motions'), { recursive: true });
+  await writeFile(path.join(root, 'assets/motions/pamela-p4-c1-plan-deal-02/source.mp4'), film);
+  await writeFile(path.join(root, 'data/clip-jobs.json'), JSON.stringify({ jobs: [{ id: 'pamela-p4-c1-plan-deal-02', from: 'READY', to: 'RELEASE(P4.C1)', duration: 4 }, { id: 'pamela-kort-01', from: 'READY', to: 'LAND(P4.C1)', duration: 2 }] }));
+  await writeFile(path.join(root, 'motions/pamela-p4-c1-plan-deal-02.json'), JSON.stringify({ source: { frames: 120, fps: 30, sha256: sha(film) }, review: { decision: 'ACCEPTED', userAccepted: true, userReview: 'Jakob 2026-11-11: Det ser bra ut.' } }));
+  await writeFile(path.join(root, 'motions/pamela-kort-01.json'), JSON.stringify({ source: { frames: 60, fps: 30 } }));
+
+  // The return: the landing picture first, anchor 2.1 last; WAN 3, 3 s, the short return text.
+  const back = await call('POST', '/api/orders', { body: { dealer: 'paow', step: 'RETUR-2.1', target: 'P4.C1', takes: 1 } });
+  assert.equal(back.status, 201);
+  const r = back.json.order;
+  assert.deepEqual([r.step.edge, r.step.shape, r.step.cutInto, r.generation.model, r.generation.params.duration, r.cost.total], ['P4.C1>READY', 'ONE_WAY', ['P4.C1>READY'], 'wan3', 3, 60]);
+  assert.deepEqual(r.pictures.map((p: { name: string; label: string; from: { entry: string } }) => [p.name, p.label, p.from.entry]), [['first.png', 'Första bild · Paows landning på plats 4', 'paow-landning-p4'], ['last.png', 'Sista bild · Paows ankare 2.1', 'paow-nyp-ny']]);
+  assert.equal(r.pictures[0].sha256, sha(landing));
+  assert.deepEqual([r.motion.turn, r.motion.side], [false, 'FRONT']);
+  assert.match(r.prompt.text, /^Locked camera, one continuous shot\. Her fingertips lift off the blue card, which stays where it lies\. Her open hand glides back low over the felt, palm down, to the shoe/);
+  assert.equal(back.json.shown, 'KLAR_ATT_TRYCKA');
+  assert.equal(back.json.refresh, null);
+
+  // Bara dit: anchor 2.1 first, the landing picture last (not drawn); the deal alone.
+  const dit = (await call('POST', '/api/orders', { body: { dealer: 'paow', step: 'GIV-2.1', target: 'P4.C1', shape: 'ONE_WAY', model: 'wan3', takes: 1 } })).json.order;
+  assert.deepEqual([dit.step.shape, dit.step.cutInto, dit.title], ['ONE_WAY', ['READY>P4.C1'], 'Paow · Nyp, ett kort till platsen och tillbaka · plats 4 · bara dit · WAN 3']);
+  assert.deepEqual(dit.pictures.map((p: { name: string; sha256: string }) => [p.name, p.sha256]), [['first.png', sha(files['paow-nyp-ny'])], ['last.png', sha(landing)]]);
+  assert.match(dit.prompt.text, /Her hand ends at the card, as in the last frame\./);
+  assert.match(dit.summary, /filmen slutar med handen vid kortet \(bara dit\)/);
+
+  // A reference film: only for a model that takes one; copied with its hash; another dealer's film is named.
+  assert.match((await call('POST', '/api/orders', { body: { dealer: 'paow', step: 'GIV-2.1', target: 'P4.C1', model: 'wan3', reference: 'pamela-p4-c1-plan-deal-02' } })).json.error, /WAN 3 tar ingen referensfilm/);
+  assert.match((await call('POST', '/api/orders', { body: { dealer: 'paow', step: 'GIV-2.1', target: 'P4.C1', shape: 'ONE_WAY', reference: 'pamela-kort-01' } })).json.error, /Referensfilmen är 2 s; Kling 4 tar 3–30 s/);
+  assert.match((await call('POST', '/api/orders', { body: { dealer: 'paow', step: 'GIV-2.1', target: 'P4.C1', shape: 'ONE_WAY', reference: 'nobody' } })).json.error, /nobody finns inte bland bankens tagningar/);
+  const withRef = await call('POST', '/api/orders', { body: { dealer: 'paow', step: 'GIV-2.1', target: 'P4.C1', shape: 'ONE_WAY', reference: 'pamela-p4-c1-plan-deal-02', takes: 1 } });
+  assert.equal(withRef.status, 201);
+  const f = withRef.json.order;
+  assert.deepEqual([f.reference.status, f.reference.clips, f.reference.path, f.reference.sha256, f.reference.seconds, f.reference.dealer, f.reference.approvedStraight, f.reference.from.verdict, f.reference.from.words], ['FINNS', ['pamela-p4-c1-plan-deal-02'], `assets/orders/${f.id}/reference.mp4`, sha(film), 4, 'pamela', true, 'GODKÄND', 'Det ser bra ut.']);
+  assert.equal((await call('GET', `/${f.reference.path}`)).bytes!.equals(film), true, 'the film is copied byte for byte');
+  assert.match(f.prompt.text, /Video 1 shows only the movement: she moves like the dealer in video 1, with the same timing\./);
+  assert.equal(f.cost.perTake, 150, 'the price table\'s Kling 4 price is the price with a reference');
+  assert.deepEqual(withRef.json.problems, [], 'another dealer\'s film is allowed as a reference');
+  // A changed film in the bank is not copied.
+  await writeFile(path.join(root, 'assets/motions/pamela-p4-c1-plan-deal-02/source.mp4'), 'another film');
+  assert.equal((await call('POST', '/api/orders', { body: { dealer: 'paow', step: 'GIV-2.1', target: 'P4.C1', shape: 'ONE_WAY', reference: 'pamela-p4-c1-plan-deal-02' } })).status, 409);
 });
 
 test("whose each picture is: the dealer's own, the other dealer's arm only, never another dealer's whole picture", async (t) => {
@@ -400,4 +470,12 @@ test('a pose figure keeps only the region, fills the rest of the person with the
   assert.ok(at(840, 190)[1] >= 235 && at(840, 190)[0] < 10, `the head is green: ${at(840, 190)}`);
   assert.deepEqual(at(1540, 740), [20, 20, 20], 'what lies in the region is kept');
   assert.ok(one.filledPx > 6400 && one.keptPx === 6400, `${one.filledPx} filled, ${one.keptPx} kept`);
+});
+
+test('Jakob\'s click through the route is always his: a body saying otherwise is not read', async (t) => {
+  const { call } = await lab(t);
+  const made = (await call('POST', '/api/orders', { body: { dealer: 'paow', step: 'ANKARE-2.1', base: 'paow-vila-ung-2' } })).json;
+  const approved = await call('POST', `/api/orders/${made.order.id}/approve`, { match: made.revision, body: { by: 'huvudagent', mandate: 'x' } });
+  assert.equal(approved.status, 200);
+  assert.deepEqual([approved.json.order.approval.by, approved.json.order.approval.mandate], ['jakob', undefined]);
 });

@@ -1,9 +1,18 @@
-// The text that goes to Runway with an order: scene(dealer) + action(step, motion) + bans, per kind of step and for the
-// stills an anchor is made from. Pure; the dealer's look comes from data/dealers.json, the card's place from the plan
-// (where the last picture draws the card). Every text ends with what must not happen. A deal's text is built as parts,
-// each marked with the choices it comes from (hand, how the card lands and turns, the place, the free addition, the
-// bans), so that the studio can show which words a choice made; the text is the parts joined, and the studio's sheet and
-// the stored draft both get it from promptFor, so the preview cannot drift from what is sent.
+// The text that goes to Runway with an order, per kind of step, in one of three styles (template 4, 2026-11-13):
+//   KORT     only the movement, in the order it happens, in positive statements: nothing of her look (the first frame
+//            shows her), no list of bans, one action, the turn said once (SAY.turnAtPlace). The default for a film.
+//   MINIMAL  Jakob's trial: the card's colours and that one card goes from the shoe to where the last frame shows it.
+//   UTFÖRLIG the text of template 3 exactly as it was (scene(dealer) + action(step, motion) + bans), so that a comparison
+//            can be made again and an order made before template 4 keeps reproducing its text.
+// Every sentence of the short and minimal texts lies in SAY, once, so that a wording can be changed in one edit (the
+// rules are the handbook's, tools/film-prompting.md; this file holds the exact words). Pure; the dealer's look comes from
+// data/dealers.json, the card's place from the plan (where the last picture draws the card). A text is built as parts,
+// each marked with the choices it comes from (hand, how the card lands and turns, the place, the reference film, the free
+// addition, the bans), so that the studio can show which words a choice made; the text is the parts joined, and the
+// studio's sheet and the stored draft both get it from promptFor, so the preview cannot drift from what is sent.
+//
+// A return is a film of its own: from the seat's landing picture back to an anchor. A deal "bara dit" (oneWay) ends on the
+// landing picture. A reference film adds one sentence (SAY.reference) in every style: it shows the movement only.
 //
 // A deal follows the hand chosen: the left hand all the way, the right hand all the way, or handbyte (the left hand takes
 // the card and gives it to the right hand low in front of her body; the right lays it). Every sentence that names a hand
@@ -13,11 +22,14 @@
 // do. The pose picture of a still is a cut-out: only the dealing forearm and hand of another dealer at the window shoe,
 // the rest of her filled with green (tools/order-images.ts cutFigure; for 2.2 laid on the dealer's own shoe and card,
 // poseOnShoe), so that only the hand's place and grip can be taken from it. Tests: tools/order-prompts.test.ts.
-import type { FlipAxis, StepKey } from './order-model.ts';
+import type { FlipAxis, StepKey, TextStyle } from './order-model.ts';
 
-export const TEMPLATE_VERSION = 3;
+/** The formula's version: the short and minimal texts are @4; Utförlig keeps @3 where its text is template 3's own. */
+export const TEMPLATE_VERSION = 4;
+/** The version of the long text (template 3, 2026-11-13); Utförlig writes it unchanged. */
+export const LONG_VERSION = 3;
 export type Dealer = { name: string; look: string };
-export type DealMotion = { grip: 'PINCH' | 'DRAG'; hand?: 'LH' | 'RH'; pass?: boolean; turn: boolean; flipAxis: FlipAxis; side: 'FRONT' | 'BACK' };
+export type DealMotion = { grip: 'PINCH' | 'DRAG'; hand?: 'LH' | 'RH'; pass?: boolean; turn: boolean; flipAxis: FlipAxis | null; side: 'FRONT' | 'BACK' };
 export type PromptInput = {
   dealer: Dealer;
   step: StepKey;
@@ -28,11 +40,93 @@ export type PromptInput = {
   place?: { x: number; y: number } | null;
   /** Jakob's own addition, put before the bans. */
   extra?: string | null;
+  /** The text's style; absent: Kort (a new order). Utförlig is the text of template 3. */
+  style?: TextStyle;
+  /** A deal that ends on the landing picture (bara dit) instead of going back to the shoe. */
+  oneWay?: boolean;
+  /** A reference film goes with the order. */
+  reference?: boolean;
+  /** The card drawn at this factor of the plan's size (a trial): no sentence may then say it keeps the size it has in the shoe. */
+  cardScale?: number;
 };
-/** What a part of the text comes from: a choice in the sheet, Jakob's addition, or the bans. */
-export type Choice = 'hand' | 'side' | 'turn' | 'place' | 'extra' | 'bans';
+/** What a part of the text comes from: a choice in the sheet, Jakob's addition, the reference film, or the bans. */
+export type Choice = 'hand' | 'side' | 'turn' | 'place' | 'shape' | 'reference' | 'extra' | 'bans';
 export type Part = { text: string; from: Choice[] };
-export type Prompt = { template: string; text: string; parts: Part[] };
+export type Prompt = { template: string; style: TextStyle; text: string; parts: Part[] };
+
+/**
+ * Every sentence of the short (Kort) and minimal texts, each once, in the order of the handbook's skeleton
+ * (tools/film-prompting.md §2: camera, reference, the action with the hand named by where it is, the turn, the way back,
+ * the other hand, the card, Jakob's addition). The turn (turnAtPlace, the handbook's turn A) is one a left hand can make
+ * from a card that has come back up under its fingertips: palm down, the thumb lies at the card's inner long edge, slides
+ * under it and lifts it; the forearm turns thumb side up (outward); the opposite long edge stays on the felt as a hinge, so
+ * the card never flies and keeps its size; the thumb comes over onto the blue face. Said by the hand's own parts, it holds
+ * for the right hand too, mirrored.
+ */
+export const SAY = {
+  camera: 'Locked camera, one continuous shot.',
+  cameraMinimal: 'Locked camera.',
+  // Kling 4 ignores tags and reads the reference films in order: the texts that held called it "video 1".
+  reference: 'Video 1 shows only the movement: she moves like the dealer in video 1, with the same timing.',
+  colours: "The card's back is yellow and its face is blue.",
+  oneCardMoves: 'Only one card moves; its back is yellow and its face is blue.',
+  // A deal: take and carry.
+  pinchOut: 'draws the yellow card out of the window',
+  slideOut: 'slides the yellow card out of the window',
+  carryBack: 'carries it low over the felt, yellow side up, to its place',
+  dragBack: 'drags it flat along the felt under its fingertips, yellow side up, to its place',
+  carryTowards: 'carries it low over the felt towards its place',
+  liftTowards: 'lifts it off the felt and carries it low over the felt towards its place',
+  handAtShoe: 'Her hand at the shoe',
+  otherReaches: 'Her hand at the shoe lets go of the card and waits beside the shoe, and her other hand reaches across to the shoe,',
+  handover: 'brings it low over the felt to the middle in front of her, where her other hand takes it by its edges and',
+  // A deal: the turn, said once, or no turn.
+  turnAtPlace: 'There her thumb slides under the long edge nearest it and lifts it as her wrist turns thumb side up; the card rolls over on its opposite long edge, which stays on the felt, and her thumb comes over onto the blue face.',
+  turnOnTheWay: 'On the way her hand turns the card over once, holding it the whole time, and lays it flat at its place, blue side up.',
+  rollOnTheWay: 'On the way her wrist turns thumb side up and the card, held between thumb and fingers, rolls over once about its long side; she lays it flat at its place, blue side up.',
+  layClosed: 'She lays it flat there, yellow side up.',
+  stopClosed: 'She stops it there, yellow side up, and lifts her fingertips off it.',
+  // A deal: back to the shoe, or the end on the landing picture.
+  backPinch: 'Then her open hand glides back low over the felt, palm down, to the shoe and takes the next card.',
+  backDrag: 'Then her open hand glides back low over the felt, palm down, to the shoe and rests over the next card in the window.',
+  backOther: (drag: boolean) => `Then the hand that laid it glides back low over the felt, palm down, to where it lay in the first frame, and her hand at the shoe ${drag ? 'rests over the next card in the window' : 'takes the next card'}.`,
+  endAtCard: 'Her hand ends at the card, as in the last frame.',
+  otherRests: 'The other hand rests on the felt.',
+  // Minimal.
+  oneCard: 'One card goes from the shoe to where the last frame shows it.',
+  oneCardBack: 'One card goes from the shoe to where the last frame shows it, and the hand comes back to its pose in the first frame.',
+  // A return, from the landing picture.
+  liftOff: (colour: string) => `Her fingertips lift off the ${colour} card, which stays where it lies.`,
+  glideTo: {
+    '2.1': 'Her open hand glides back low over the felt, palm down, to the shoe, where her thumb and forefinger take the top edge of the next yellow card.',
+    '2.2': 'Her open hand glides back low over the felt, palm down, to the shoe and comes to rest over the next yellow card, fingertips flat on it.',
+    '1': 'Her open hand glides back low over the felt, palm down, and comes to rest flat on the felt.',
+  },
+  glideOther: (to: '2.1' | '2.2') => `Her open hand glides back low over the felt, palm down, to where it rests in the last frame, and her other hand, at the shoe, ${to === '2.1' ? 'takes the top edge of the next yellow card' : 'comes to rest over the next yellow card'}.`,
+  leaveCard: 'The hand leaves the card where it lies and goes back to its pose in the last frame.',
+  // An entry, from rest.
+  bothRest: 'Both hands rest on the felt.',
+  reach: {
+    '2.1': "Her hand nearest the shoe rises calmly and reaches straight to the yellow card in the window; her thumb and forefinger close on the card's upper edge, the forefinger touching only that edge, and draw the card a little way up out of the window, as in the last frame.",
+    '2.2': 'Her hand nearest the shoe rises calmly and reaches straight to the yellow card in the window and lays its fingertips flat on the card, as in the last frame.',
+  },
+  // Jakob of the entry film: "hon rör inte blicken, vilket är tråkigt".
+  eyes: 'Her eyes follow her hand down to the shoe and come back up.',
+  reachMinimal: 'Her hand goes from the table to the yellow card in the shoe, as in the last frame.',
+  // A rest: the fixed part; Jakob's addition says what happens.
+  rest: 'She starts and ends exactly as in the first frame, and holds still for the last half second.',
+  restMinimal: 'She starts and ends as in the first frame.',
+  // A still (an edit of @anchor with @pose), said positively: what is there, no list of bans.
+  stillEdit: 'This is an edit of the picture @anchor.',
+  stillKeep: "Keep everything in @anchor exactly as it is: the framing and camera, the flat chroma-green background and table, the black card shoe at the right with the yellow card in its window, and the woman's face, hair, clothes, build and her hand at the left of the picture, lying flat on the felt.",
+  stillChange: {
+    'ANKARE-2.1': "Change only her hand nearest the shoe: it holds the yellow card between thumb and forefinger, the fingertips resting on the card's own upper edge, and has drawn the card a little way up out of the window, placed and shaped as the hand in @pose.",
+    'ANKARE-2.2': 'Change only her hand nearest the shoe: it lies over the yellow card in the window, the tips of her index, middle and ring fingers resting flat on the card itself and her little finger on the shoe beside the window, ready to slide the card out along the felt, placed and shaped as the hand in @pose.',
+  },
+  stillPose: '@pose is a cut-out on plain green that shows only a forearm and hand at the same window shoe; take from it only where the hand is and how the wrist and fingers hold the card. Her own sleeve, skin and hand stay as in @anchor, and her forearm continues up to her own elbow and shoulder.',
+  stillStandard: 'Her elbows hang free at her sides and her forearms come down to the felt. Her jacket continues down to the straight horizontal line where her body is cut off in @anchor. The green is one even colour right up to her outline, her hands, the card and the shoe. Soft, even frontal studio light; natural skin with fine texture, sharp eyes, matte black cloth with soft folds.',
+  stillCard: 'There is one card, the one in the window, with the size and shape it has in @anchor.',
+} as const;
 
 const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 const LEFT = 'her left hand, at the right of the picture';
@@ -46,26 +140,29 @@ export function handsIn(m: Pick<DealMotion, 'hand' | 'pass'> | null | undefined)
 }
 const handWord = (h: 'LH' | 'RH') => (h === 'LH' ? 'left' : 'right');
 
-/** The turn, one sentence per choice and per grip; the hand that holds the card while it turns follows the hand chosen. */
-export function turnSentence(axis: FlipAxis, grip: 'PINCH' | 'DRAG' = 'PINCH', hands: Pick<DealMotion, 'hand' | 'pass'> | null = null): string {
+/**
+ * The turn of the long text, one sentence per choice and per grip; the hand that holds the card while it turns follows the
+ * hand chosen. keepsSize false (a card drawn larger than the plan's): the words that it keeps its size are left out.
+ */
+export function turnSentence(axis: FlipAxis, grip: 'PINCH' | 'DRAG' = 'PINCH', hands: Pick<DealMotion, 'hand' | 'pass'> | null = null, keepsSize = true): string {
   const { lays, pass } = handsIn(hands);
   if (axis === 'AT_PLACE') {
     const start = grip === 'DRAG' && !pass ? 'At the place her fingertips tip the card up onto its long edge and her thumb and fingers take hold of it; her wrist rolls it on' : `At the place the wrist of her ${handWord(lays)} hand rolls: the card tilts up onto its long edge, held between thumb and fingers, and the roll goes on`;
-    return `${start} until its blue face is up, one edge staying near the felt; it is one card turned over once, keeping its size.`;
+    return `${start} until its blue face is up, one edge staying near the felt; it is one card turned over once${keepsSize ? ', keeping its size' : ''}.`;
   }
   if (axis === 'LONG_EDGE') {
     const lift = grip === 'DRAG' && !pass ? 'On the way she lifts the card from the felt and rolls it' : 'On the way she rolls the card';
     return `${lift} over about its long side: she turns her wrist once, the yellow back narrows to a thin pale edge along the card's long side, then the blue face comes up; ${pass ? 'her right hand' : 'the same hand'} holds the card the whole time.`;
   }
   const from = pass ? 'from its grip on the card' : grip === 'DRAG' ? 'once she has lifted it from the felt with her fingertips' : 'from this pinch';
-  return `On the way ${pass ? 'her right hand turns' : 'she turns'} the card over once, the way a real hand can ${from}: one natural movement of fingers and wrist that a human hand can actually make, the card held firmly the whole time and keeping its size, until its blue face is up.`;
+  return `On the way ${pass ? 'her right hand turns' : 'she turns'} the card over once, the way a real hand can ${from}: one natural movement of fingers and wrist that a human hand can actually make, the card held firmly the whole time${keepsSize ? ' and keeping its size' : ''}, until its blue face is up.`;
 }
 
 /** What must not happen in a film that deals no card (an entrance, a rest). */
 export const BANS_FILM =
   'Nothing of this happens: a second card appears, a finger passes through the card, the card grows or shrinks on its way, a hand hovers in the air without holding or laying anything, the shoe changes, the picture cuts or the camera moves.';
 /** What must not happen in a deal: the film bans, with what the chosen hand and side must not do. */
-export function bansFor(m: Pick<DealMotion, 'hand' | 'pass' | 'side' | 'flipAxis' | 'turn'> | null | undefined): string {
+export function bansFor(m: Pick<DealMotion, 'hand' | 'pass' | 'side' | 'flipAxis' | 'turn'> | null | undefined, keepsSize = true): string {
   const { takes, pass } = handsIn(m);
   const own: string[] = [];
   if (m) {
@@ -75,7 +172,7 @@ export function bansFor(m: Pick<DealMotion, 'hand' | 'pass' | 'side' | 'flipAxis
     if (m.side === 'BACK') own.push('the card shows its blue face');
     else if (m.flipAxis === 'AT_PLACE') own.push('the card is turned in the air on the way');
   }
-  return `Nothing of this happens: ${['a second card appears', ...own, 'a finger passes through the card', 'the card grows or shrinks on its way', 'a hand hovers in the air without holding or laying anything', 'the shoe changes', 'the picture cuts or the camera moves'].join(', ')}.`;
+  return `Nothing of this happens: ${['a second card appears', ...own, 'a finger passes through the card', ...(keepsSize ? ['the card grows or shrinks on its way'] : []), 'a hand hovers in the air without holding or laying anything', 'the shoe changes', 'the picture cuts or the camera moves'].join(', ')}.`;
 }
 export const BANS_STILL =
   "Nothing of this happens: the fingers rest on the shoe instead of on the card, a second card appears, a finger passes through the card, the card has another size or shape than the card in the shoe's window, a hand floats in the air without holding anything, a second shoe appears, the framing changes.";
@@ -100,6 +197,19 @@ export const POSE_IS =
   '@pose is a cut-out on plain green: it shows only a left forearm in a black sleeve, cut off at the elbow, and its hand at the yellow card of the black card shoe, the same window shoe that stands at the right in @anchor; nothing else of that person is in it.';
 
 function stillText(input: PromptInput): Prompt {
+  if ((input.style ?? 'KORT') !== 'UTFÖRLIG') {
+    // The short still: what is there, positively; nothing of her look (@anchor shows her) and no list of bans.
+    const parts: Part[] = [
+      { text: SAY.stillEdit, from: [] },
+      { text: SAY.stillKeep, from: [] },
+      { text: SAY.stillChange[input.step === 'ANKARE-2.2' ? 'ANKARE-2.2' : 'ANKARE-2.1'], from: [] },
+      { text: SAY.stillPose, from: [] },
+      { text: SAY.stillStandard, from: [] },
+      { text: SAY.stillCard, from: [] },
+      extraPart(input),
+    ];
+    return { template: templateOf('bild-ankare', 'KORT'), style: 'KORT', text: joined(parts), parts };
+  }
   const look = input.dealer.look;
   // 2.2: the pose's hand is wider than the window card, so its little finger rests on the shoe beside the window, as it
   // rests beside the card in the bank's own 2.2 (tools/order-store.ts POSE).
@@ -116,8 +226,14 @@ function stillText(input: PromptInput): Prompt {
     { text: input.extra?.trim() || '', from: ['extra'] },
     { text: BANS_STILL, from: ['bans'] },
   ];
-  return { template: `bild-ankare@${TEMPLATE_VERSION}`, text: joined(parts), parts };
+  return { template: `bild-ankare@${LONG_VERSION}`, style: 'UTFÖRLIG', text: joined(parts), parts };
 }
+
+/** The template a text is written with: "film-giv-kort@4"; Utförlig "film-giv@3" where its text is template 3's own, else @4. */
+const templateOf = (kind: string, style: TextStyle, long = true) => (style === 'UTFÖRLIG' ? `${kind}@${long ? LONG_VERSION : TEMPLATE_VERSION}` : `${kind}-${style === 'KORT' ? 'kort' : 'minimal'}@${TEMPLATE_VERSION}`);
+const referencePart = (input: PromptInput): Part => ({ text: input.reference ? SAY.reference : '', from: ['reference'] });
+const extraPart = (input: PromptInput): Part => ({ text: input.extra?.trim() || '', from: ['extra'] });
+const DEFAULT_MOTION: DealMotion = { grip: 'PINCH', hand: 'LH', pass: false, turn: true, flipAxis: 'FREE', side: 'FRONT' };
 
 /**
  * A deal, sentence by sentence in the order the hand works: the scene; the take (nyp, dra); the carry (för fram), with
@@ -125,9 +241,12 @@ function stillText(input: PromptInput): Prompt {
  * back; what the other hand does; the end; Jakob's addition; the bans.
  */
 function dealText(input: PromptInput): Prompt {
-  const m: DealMotion = input.motion ?? { grip: 'PINCH', hand: 'LH', pass: false, turn: true, flipAxis: 'FREE', side: 'FRONT' };
+  const m: DealMotion = input.motion ?? DEFAULT_MOTION;
   const { takes, lays, pass } = handsIn(m);
   const kling = input.model === 'kling-4';
+  const oneWay = !!input.oneWay;
+  // A card drawn at another size than the plan's (a trial): nothing says it keeps the size it has in the shoe.
+  const sized = !!input.cardScale && input.cardScale !== 1;
   const look = input.dealer.look;
   const drag = m.grip === 'DRAG';
   const open = m.side === 'FRONT';
@@ -137,14 +256,14 @@ function dealText(input: PromptInput): Prompt {
   const sideWords = open ? 'blue face' : 'yellow back';
   const where = input.place ? `${placeWords(input.place)}, ` : '';
   const scene = kling
-    ? `One continuous take with a locked-off camera and no cuts. The woman in the first frame is ${look}; she sits at a green table, seen from the front, with the black card shoe fixed at the right of the picture and a yellow card in its window. She deals one card and comes back to the pose she started in.`
+    ? `One continuous take with a locked-off camera and no cuts. The woman in the first frame is ${look}; she sits at a green table, seen from the front, with the black card shoe fixed at the right of the picture and a yellow card in its window. ${oneWay ? 'She deals one card to its place.' : 'She deals one card and comes back to the pose she started in.'}`
     : `Locked camera. ${cap(look)} sits at a green table with a black card shoe fixed at the right of the picture. One continuous, calm and natural movement from the exact first pose.`;
 
   // Nyp and dra: the first frame always shows the left hand on the card (anchor 2.1 or 2.2).
   const out = alongFelt ? ' down onto the felt, its yellow back up' : '';
   const pinch = "pinches the yellow card in the shoe's window between thumb and forefinger, the fingertips on the card's own upper edge and not on the shoe's rim";
-  const pinched = `and draws it out of the shoe${out}: the card looks as it does in the shoe, the same size and shape, one plain rigid card.`;
-  const slid = 'slides that one card straight out of the shoe, and it lies flat on the felt, yellow back up, the same size and shape as it was in the shoe.';
+  const pinched = sized ? `and draws it out of the shoe${out}: one plain rigid card, which lands at the size shown in the last frame.` : `and draws it out of the shoe${out}: the card looks as it does in the shoe, the same size and shape, one plain rigid card.`;
+  const slid = sized ? 'slides that one card straight out of the shoe, and it lies flat on the felt, yellow back up; it lands at the size shown in the last frame.' : 'slides that one card straight out of the shoe, and it lies flat on the felt, yellow back up, the same size and shape as it was in the shoe.';
   const take =
     takes === 'LH'
       ? drag
@@ -163,7 +282,7 @@ function dealText(input: PromptInput): Prompt {
         : 'The same hand carries it low over the table towards the place where it will lie.';
 
   // Vrid and vänd upp, or not turned.
-  const turn = m.turn && open ? turnSentence(m.flipAxis, m.grip, m) : 'She keeps its yellow back up all the way; the card is not turned.';
+  const turn = m.turn && open ? turnSentence(m.flipAxis ?? 'FREE', m.grip, m, !sized) : 'She keeps its yellow back up all the way; the card is not turned.';
 
   // Lägg: a closed card slid along the felt is let go where it stops; any other card is laid flat.
   const by = ` with her ${handWord(lays)} hand`;
@@ -186,85 +305,214 @@ function dealText(input: PromptInput): Prompt {
         ? 'Her right hand, at the left of the picture, rests on the table the whole time.'
         : 'Her left hand waits by the shoe and holds no card while her right hand deals.';
   const card = open ? 'Only one card moves; it is solid yellow on its back and solid blue on its face.' : 'Only one card moves; its back is solid yellow, and its face never shows.';
-  const end = kling ? 'She ends exactly as in the last frame.' : 'The clip ends in exactly the pose of the last image, which is the first pose again with the card lying on the table.';
+  const end = kling ? 'She ends exactly as in the last frame.' : oneWay ? 'The clip ends in exactly the pose of the last image, her hand at the card lying on the table.' : 'The clip ends in exactly the pose of the last image, which is the first pose again with the card lying on the table.';
 
   const parts: Part[] = [
-    { text: scene, from: [] },
+    { text: scene, from: oneWay ? ['shape'] : [] },
+    referencePart(input),
     { text: take, from: ['hand'] },
     { text: carry, from: [...(pass ? (['hand'] as Choice[]) : []), ...(alongFelt ? ([open ? 'turn' : 'side'] as Choice[]) : [])] },
     { text: turn, from: open ? ['turn'] : ['side'] },
     { text: land, from: ['side', 'place', 'hand'] },
-    { text: back, from: ['hand'] },
+    { text: oneWay ? '' : back, from: ['hand'] },
     { text: other, from: ['hand'] },
     { text: card, from: ['side'] },
-    { text: end, from: [] },
-    { text: input.extra?.trim() || '', from: ['extra'] },
-    { text: bansFor(m), from: ['bans'] },
+    { text: end, from: oneWay ? ['shape'] : [] },
+    extraPart(input),
+    { text: bansFor(m, !sized), from: ['bans'] },
   ];
-  return { template: `film-giv@${TEMPLATE_VERSION}`, text: joined(parts), parts };
+  return { template: templateOf('film-giv', 'UTFÖRLIG', !oneWay && !input.reference && !sized), style: 'UTFÖRLIG', text: joined(parts), parts };
 }
 
-function entryText(input: PromptInput, to: '2.1' | '2.2'): Prompt {
+/**
+ * A deal in the short text: only the movement, in the order it happens, the hand named by what it does (the hand at the
+ * shoe, her other hand), the turn said once (or none for a closed card), the way back or the end on the landing picture.
+ */
+function shortDeal(input: PromptInput): Prompt {
+  const m: DealMotion = input.motion ?? DEFAULT_MOTION;
+  const { takes, pass } = handsIn(m);
+  const drag = m.grip === 'DRAG', open = m.side === 'FRONT';
+  // Back up along the felt to the place: a closed card, or one turned at the place; else turned on the way.
+  const alongFelt = !open || m.flipAxis === 'AT_PLACE';
+  const out = drag ? SAY.slideOut : SAY.pinchOut;
+  const carry = alongFelt ? (drag && !pass ? SAY.dragBack : SAY.carryBack) : drag && !pass ? SAY.liftTowards : SAY.carryTowards;
+  const take =
+    pass ? `${SAY.handAtShoe} ${out} and ${SAY.handover} ${carry.replace('carries it', 'carries it on')}.`
+    : takes === 'RH' ? `${SAY.otherReaches} ${out} and ${carry}.`
+    : `${SAY.handAtShoe} ${out} and ${carry}.`;
+  const turn = !open ? (drag && !pass ? SAY.stopClosed : SAY.layClosed) : m.flipAxis === 'AT_PLACE' ? SAY.turnAtPlace : m.flipAxis === 'LONG_EDGE' ? SAY.rollOnTheWay : SAY.turnOnTheWay;
+  const own = takes === 'LH' && !pass;
+  const back = input.oneWay ? SAY.endAtCard : own ? (drag ? SAY.backDrag : SAY.backPinch) : SAY.backOther(drag);
+  const parts: Part[] = [
+    { text: SAY.camera, from: [] },
+    referencePart(input),
+    { text: take, from: ['hand', ...(alongFelt ? ([open ? 'turn' : 'side'] as Choice[]) : [])] },
+    { text: turn, from: open ? ['turn'] : ['side'] },
+    { text: back, from: input.oneWay ? ['shape'] : ['hand'] },
+    { text: own ? SAY.otherRests : '', from: ['hand'] },
+    { text: SAY.oneCardMoves, from: [] },
+    extraPart(input),
+  ];
+  return { template: templateOf('film-giv', 'KORT'), style: 'KORT', text: joined(parts), parts };
+}
+
+/** Jakob's minimal deal: the card's colours and that one card goes to where the last frame shows it (and the hand comes back). */
+function minimalDeal(input: PromptInput): Prompt {
+  const parts: Part[] = [
+    { text: SAY.cameraMinimal, from: [] },
+    referencePart(input),
+    { text: SAY.colours, from: [] },
+    { text: input.oneWay ? SAY.oneCard : SAY.oneCardBack, from: ['shape'] },
+    extraPart(input),
+  ];
+  return { template: templateOf('film-giv', 'MINIMAL'), style: 'MINIMAL', text: joined(parts), parts };
+}
+
+/**
+ * A return, from the seat's landing picture back to an anchor (2.1 the pinch, 2.2 the hand over the shoe, 1 rest): the
+ * hand at the card lifts off it and glides back low and open. The hand that laid the card is the one that returns.
+ */
+function returnText(input: PromptInput, to: '1' | '2.1' | '2.2', style: TextStyle): Prompt {
+  const m: DealMotion = input.motion ?? DEFAULT_MOTION;
+  const { lays } = handsIn(m);
+  const colour = m.side === 'BACK' ? 'yellow' : 'blue';
+  if (style === 'MINIMAL') {
+    const parts: Part[] = [{ text: SAY.cameraMinimal, from: [] }, referencePart(input), { text: SAY.colours, from: [] }, { text: SAY.leaveCard, from: [] }, extraPart(input)];
+    return { template: templateOf('film-retur', 'MINIMAL'), style, text: joined(parts), parts };
+  }
+  if (style === 'KORT') {
+    const glide = lays === 'LH' || to === '1' ? SAY.glideTo[to] : SAY.glideOther(to);
+    const parts: Part[] = [
+      { text: SAY.camera, from: [] },
+      referencePart(input),
+      { text: SAY.liftOff(colour), from: ['side'] },
+      { text: glide, from: ['hand'] },
+      { text: lays === 'LH' || to === '1' ? SAY.otherRests : '', from: ['hand'] },
+      extraPart(input),
+    ];
+    return { template: templateOf('film-retur', 'KORT'), style, text: joined(parts), parts };
+  }
+  // Utförlig: the long text's manner (her look, the hands by left and right, the bans); there was no return in template 3.
+  const hand = `her ${handWord(lays)} hand, at the ${lays === 'LH' ? 'right' : 'left'} of the picture`;
+  const goes =
+    to === '1' ? 'goes back low over the felt, open and palm down, and comes to rest flat on the felt, settling exactly into the pose of the last image.'
+    : lays === 'LH' ? `goes back low over the felt, open and palm down, to the shoe and ${to === '2.1' ? 'pinches the next yellow card between thumb and forefinger at its upper edge' : "comes to rest over the next yellow card in the shoe's window, fingertips on the card"}, settling exactly into the pose of the last image.`
+    : `goes back low over the felt, open and palm down, to where it rests in the last image, while her left hand, at the shoe, ${to === '2.1' ? 'pinches the next yellow card between thumb and forefinger at its upper edge' : "comes to rest over the next yellow card in the shoe's window"}.`;
+  const parts: Part[] = [
+    { text: `Locked camera. ${cap(input.dealer.look)} sits at a green table with a black card shoe fixed at the right of the picture. One continuous, calm and natural movement from the exact first pose.`, from: [] },
+    referencePart(input),
+    { text: `${cap(hand)}, lifts off the ${colour} card, which stays exactly where it lies.`, from: ['hand', 'side'] },
+    { text: `The same hand ${goes}`, from: ['hand'] },
+    { text: lays === 'LH' ? 'Her right hand, at the left of the picture, rests on the table the whole time.' : to === '1' ? 'Her left hand, at the right of the picture, rests on the table the whole time.' : '', from: ['hand'] },
+    extraPart(input),
+    { text: BANS_FILM, from: ['bans'] },
+  ];
+  return { template: templateOf('film-retur', 'UTFÖRLIG', false), style, text: joined(parts), parts };
+}
+
+function entryText(input: PromptInput, to: '2.1' | '2.2', style: TextStyle = 'UTFÖRLIG'): Prompt {
+  if (style !== 'UTFÖRLIG') {
+    const short = style === 'KORT';
+    const parts: Part[] = short
+      ? [{ text: SAY.camera, from: [] }, referencePart(input), { text: SAY.bothRest, from: [] }, { text: SAY.reach[to], from: [] }, { text: SAY.eyes, from: [] }, { text: SAY.otherRests, from: [] }, extraPart(input)]
+      : [{ text: SAY.cameraMinimal, from: [] }, referencePart(input), { text: SAY.reachMinimal, from: [] }, extraPart(input)];
+    return { template: templateOf('film-ingang', style), style, text: joined(parts), parts };
+  }
   const reach =
     to === '2.1'
       ? "She calmly lifts her left hand, at the right of the picture, reaches to the shoe and pinches the top of the yellow card in the shoe's window between thumb and forefinger, her fingertips on the card itself and not on the shoe's rim, and draws it a little way out of the window, settling exactly into the pose of the last image."
       : "She calmly lifts her left hand, at the right of the picture, reaches to the shoe and lays it over the yellow card in the shoe's window, fingertips resting flat on the card, settling exactly into the pose of the last image.";
   const parts: Part[] = [
     { text: `Locked camera. ${cap(input.dealer.look)} sits at a green table with a black card shoe fixed at the right of the picture, a yellow card in its window. One continuous, calm and natural movement from the exact first pose, both hands resting on the felt.`, from: [] },
+    referencePart(input),
     { text: reach, from: [] },
     // Anchor 2.1 holds the card a little out of the window (Jakob 2026-11-13: the pinch is on the card), so it is not "seated" there.
     { text: `${to === '2.1' ? 'The card stays in her pinch at the shoe, as in the last image' : 'The yellow card stays seated in the shoe'}; nothing is dealt. Her right hand, at the left of the picture, rests on the table the whole time.`, from: [] },
-    { text: input.extra?.trim() || '', from: ['extra'] },
+    extraPart(input),
     { text: BANS_FILM, from: ['bans'] },
   ];
-  return { template: `film-ingang@${TEMPLATE_VERSION}`, text: joined(parts), parts };
+  return { template: templateOf('film-ingang', 'UTFÖRLIG', !input.reference), style: 'UTFÖRLIG', text: joined(parts), parts };
 }
 
-function restText(input: PromptInput): Prompt {
+/**
+ * A rest. Utförlig: the long text, which says what she does (looks gently around, her hands stay). Kort and Minimal: the
+ * fixed part says only that she starts and ends in the first picture (and holds still for the last half second); Jakob's
+ * addition says what happens, a nod or tapping fingers, without a fixed sentence against it.
+ */
+function restText(input: PromptInput, style: TextStyle = 'UTFÖRLIG'): Prompt {
+  if (style !== 'UTFÖRLIG') {
+    const parts: Part[] = [{ text: style === 'KORT' ? SAY.camera : SAY.cameraMinimal, from: [] }, referencePart(input), { text: style === 'KORT' ? SAY.rest : SAY.restMinimal, from: [] }, extraPart(input)];
+    return { template: templateOf('film-vila', style), style, text: joined(parts), parts };
+  }
   const parts: Part[] = [
     { text: `Locked camera. ${cap(input.dealer.look)} sits at a green table with a black card shoe fixed at the right of the picture, both hands resting on the felt.`, from: [] },
+    referencePart(input),
     { text: 'She waits calmly at her table: she breathes, blinks and looks gently around, and ends exactly in the pose she started in, as in the last image. Her hands stay where they are; nothing is dealt and the yellow card stays seated in the shoe.', from: [] },
-    { text: input.extra?.trim() || '', from: ['extra'] },
+    extraPart(input),
     { text: BANS_FILM, from: ['bans'] },
   ];
-  return { template: `film-vila@${TEMPLATE_VERSION}`, text: joined(parts), parts };
+  return { template: templateOf('film-vila', 'UTFÖRLIG', !input.reference), style: 'UTFÖRLIG', text: joined(parts), parts };
 }
 
-/** The text for an order, the template it came from ("film-giv@3") and its parts with the choices they come from. */
+/**
+ * The text for an order in its style (absent: Kort, as for every new order; a stored order says its own, orderPrompt),
+ * the template it came from ("film-giv-kort@4", "film-giv@3") and its parts with the choices they come from.
+ */
 export function promptFor(input: PromptInput): Prompt {
+  const style = input.style ?? 'KORT';
   switch (input.step) {
     case 'ANKARE-2.1':
     case 'ANKARE-2.2':
       return stillText(input);
     case 'GIV-2.1':
     case 'GIV-2.2':
+      return style === 'KORT' ? shortDeal(input) : style === 'MINIMAL' ? minimalDeal(input) : dealText(input);
     case 'RETUR-2.1':
+      return returnText(input, '2.1', style);
+    case 'RETUR-2.2':
+      return returnText(input, '2.2', style);
     case 'RETUR-1':
-      return dealText(input);
+      return returnText(input, '1', style);
     case 'INGANG-2.1':
-      return entryText(input, '2.1');
+      return entryText(input, '2.1', style);
     case 'INGANG-2.2':
-      return entryText(input, '2.2');
+      return entryText(input, '2.2', style);
     case 'VILA':
-      return restText(input);
+      return restText(input, style);
   }
 }
 
+/** Words in a text, as the sheet counts them ("414 ord"). */
+export const wordCount = (text: string) => text.trim().split(/\s+/).filter(Boolean).length;
+
 /**
- * The text of a stored order from its own choices: the place where its last picture drew the card, else the plan's point
- * for the card (`planPlace`). The store writes it with this; "Det här skickas" marks its parts with it.
+ * The text of a stored order from its own choices: its style (absent: Utförlig), the place where its last picture drew
+ * the card, else the plan's point for the card (`planPlace`), a deal bara dit, a reference film. The store writes it with
+ * this; "Det här skickas" marks its parts with it.
  */
 export function orderPrompt(
-  order: { step: { key: StepKey }; motion: (DealMotion & { target?: string | null }) | null; generation: { model: string }; pictures: readonly { goesAs: string; drawn?: { centre: [number, number] } | null }[]; prompt: { extra: string | null } },
+  order: {
+    step: { key: StepKey; shape?: 'ROUND_TRIP' | 'ONE_WAY' | null };
+    motion: (DealMotion & { target?: string | null; cardScale?: number }) | null;
+    generation: { model: string };
+    pictures: readonly { goesAs: string; drawn?: { centre: [number, number] } | null }[];
+    prompt: { extra: string | null; style?: TextStyle | null };
+    reference?: { status: string } | null;
+  },
   dealer: Dealer,
   planPlace: { x: number; y: number } | null,
 ): Prompt {
   const drawn = order.pictures.find((p) => p.goesAs === 'endFrame')?.drawn ?? null;
   const place = drawn ? { x: drawn.centre[0], y: drawn.centre[1] } : planPlace;
   const m = order.motion;
+  const deal = order.step.key === 'GIV-2.1' || order.step.key === 'GIV-2.2';
   return promptFor({
     dealer, step: order.step.key, model: order.generation.model,
     motion: m ? { grip: m.grip, hand: m.hand, pass: !!m.pass, turn: m.turn, flipAxis: m.flipAxis, side: m.side } : null,
     place, extra: order.prompt.extra,
+    style: order.prompt.style ?? 'UTFÖRLIG',
+    oneWay: deal && order.step.shape === 'ONE_WAY',
+    reference: order.reference?.status === 'FINNS',
+    cardScale: m?.cardScale ?? 1,
   });
 }

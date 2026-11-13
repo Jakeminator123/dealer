@@ -297,6 +297,10 @@
   "notes": [],
   "created": "2026-11-13T01:56:17.244Z",
   "createdBy": "huvudagenten (dealer-94) på Jakobs ord 2026-11-13: ankare 2.2 på nytt, posebild med Paows egen sko",
-  "approval": null,
-  "status": "UTKAST"
+  "approval": {
+    "by": "jakob",
+    "at": "2026-11-13T02:48:51.670Z",
+    "orderSha256": "16cd97e355f8a961f442dea737d46e9de87986713723386b12b74d32abdb77f8"
+  },
+  "status": "GODKÄND"
 }

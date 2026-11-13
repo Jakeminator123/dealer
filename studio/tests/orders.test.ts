@@ -5,7 +5,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFile, readdir } from "node:fs/promises";
-import { HANDOVER, PRESET_PARAMS, SHOWN_CHIP, anchorFor, costWords, firstLacking, goesWords, markOf, motionWords, offsetWords, ownerWords, paramRows, picturesInOrder, presetOf, sections, shownWords, storedParts, type Order, type OrderAnswer } from "../lib/orders.ts";
+import { HANDOVER, PRESET_PARAMS, SHOWN_CHIP, anchorFor, costWords, firstLacking, goesWords, markOf, motionWords, offsetWords, ownerWords, paramRows, picturesInOrder, presetOf, recipeOf, referenceWords, sections, shownWords, storedParts, styleWords, type Order, type OrderAnswer } from "../lib/orders.ts";
 import { MODELS, SHOWN_LABEL } from "../../src/order-model.ts";
 import { planAnswerOf } from "../../tools/order-store.ts";
 import { readPlan } from "../../tools/order-images.ts";
@@ -106,8 +106,28 @@ test("a new order asked for by address: dealer, step and seat, or the seat's pla
   assert.equal(q("ny=1&steg=INGANG-2.1&modell=gen-9")?.model, null, "a model that does not exist is not chosen");
   assert.equal(q("ny=1&modell=toString")?.model, null);
   assert.ok(PRESET_PARAMS.includes("modell"), "closing the sheet takes the model out of the address");
-  assert.equal(q("ny=1&steg=RETUR-2.1")?.step, null, "a step that is off is not chosen");
+  assert.equal(q("ny=1&steg=RETUR-2.1")?.step, "RETUR-2.1", "a return is its own film now");
+  assert.equal(q("ny=1&steg=MELLANBILD")?.step, null, "a step that does not exist is not chosen");
   assert.equal(q("plats=P4.C1"), null, "without ny=1 nothing opens");
+  assert.deepEqual(q("ny=1&som=paow-giv-p4"), { dealer: null, step: null, target: null, all: false, model: null, like: "paow-giv-p4" }, "a new order like an old one");
+  assert.equal(q("ny=1&som=../x")?.like, undefined, "only an order's id");
+  assert.ok(PRESET_PARAMS.includes("som"));
+});
+
+test("a new order like an old one: every choice of it, never its pictures", async () => {
+  const all = await drafts();
+  const film = all.find((o) => o.id === "paow-giv-p4")!;
+  assert.deepEqual(recipeOf(film), { dealer: "paow", step: "GIV-2.1", target: "P4.C1", hand: "LH", side: "FRONT", flipAxis: "AT_PLACE", style: "UTFÖRLIG", model: "kling-4", duration: 7, takes: 2, extra: "", reference: null, shape: "ROUND_TRIP", cardScale: 1 });
+  const rest = all.find((o) => o.id === "paow-vila-03")!;
+  const r = recipeOf(rest);
+  assert.deepEqual([r.step, r.target, r.hand, r.style, r.model, r.duration, r.takes], ["VILA", null, null, "UTFÖRLIG", "wan3", 4, 1]);
+  assert.match(r.extra, /warm, friendly smile/);
+  const trial = { ...film, prompt: { ...film.prompt, style: "KORT" as const }, motion: { ...film.motion!, hand: "LH" as const, pass: true, cardScale: 1.5 }, reference: { status: "FINNS" as const, clips: ["pamela-p4-c1-plan-deal-02"], path: "assets/orders/x/reference.mp4", sha256: "a".repeat(64), seconds: 4, goesTo: "P4.C1", approvedStraight: true, dealer: "pamela" } };
+  assert.deepEqual([recipeOf(trial).hand, recipeOf(trial).style, recipeOf(trial).reference, recipeOf(trial).cardScale], ["PASS", "KORT", "pamela-p4-c1-plan-deal-02", 1.5]);
+  assert.equal(referenceWords(trial.reference, "paow", { pamela: "Pamela" }), "pamela-p4-c1-plan-deal-02 · Pamelas film · 4 s", "another dealer's film is named");
+  assert.equal(referenceWords(film.reference, "paow"), null);
+  assert.equal(styleWords(film), "Utförlig · 414 ord", "the long text of tonight's deal");
+  assert.equal(motionWords({ ...film, step: { ...film.step, key: "RETUR-2.1" } })!.turn, null, "nothing turns in a return");
 });
 
 test("whose a picture is, in words: the dealer's own, the other dealer's arm, and a mix-up", () => {

@@ -48,7 +48,8 @@ test('the checkout: the register holds, and every first and last picture of the 
  const {errors} = validateRegister(register);
  assert.deepEqual(errors, []);
  assert.deepEqual(unassigned(register as Register, jobs), [], 'a picture of data/clip-jobs.json has no role in data/media-roles.json');
- assert.deepEqual(Object.keys(register.dealers), ['pamela', 'paow']);
+ // Pamela and Paow come first; a dealer added later (Petra, a separate track with proofs only, 2026-11-13) follows them.
+ assert.deepEqual(Object.keys(register.dealers).slice(0, 2), ['pamela', 'paow']);
  // Today's facts: Pamela has no ingångsbild and no keystone in high resolution, and says so; her three anchors hold, one each.
  const pamela = register.dealers.pamela;
  assert.ok(pamela.missing.ingangsbild && pamela.missing.keystone);

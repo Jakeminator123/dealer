@@ -2253,20 +2253,6 @@
           "note": "Reklamfilm i noirstil, fristående från banken. Jakob vill att den ligger kvar här. Går inte upp i nätkopian (studio-release blockerar trailer*)."
         },
         {
-          "id": "pamela-prov-plats-3-prov",
-          "role": "prov",
-          "name": "Plats 3 mot framifrån",
-          "proof": "plats-3-prov",
-          "note": "Samma giv till plats 3 med scenens ritade kort, sedd framifrån och från plats 3:s öga (cirka 8°); samma platta film i båda. Gjort av sessionen dealer-bf 2026-11-13, inte oberoende granskat."
-        },
-        {
-          "id": "pamela-prov-petra-keystone",
-          "role": "prov",
-          "name": "Keystone för en avskild dealer (arbetsnamn Petra)",
-          "proof": "petra-keystone",
-          "note": "Profilbild, stående och sittande i 4K på ljus bakgrund, två tagningar var, med Pamelas utseende; gjort av sessionen dealer-bf 2026-11-13 i ett avskilt spår (Jakobs uppdrag samma natt). Ingen ny dealer i registren: Jakob har inte valt namn. Står under Pamela eftersom utseendet är hennes."
-        },
-        {
           "id": "pamela-drawn-01",
           "role": "arbetsmaterial",
           "name": "Kortet utdraget",
@@ -2409,10 +2395,8 @@
     "paow": {
       "name": "Paow",
       "missing": {
-        "ankare-1": "Inget godkänt ankare 1 i det yngre utseendet: två kandidater väntar på oberoende granskning och Jakobs val.",
-        "ankare-2.1": "Inget nyp i det yngre utseendet. Det görs ur det ankare 1 Jakob väljer.",
-        "ankare-2.2": "Ingen hand över kortet i det yngre utseendet. Den görs ur det ankare 1 Jakob väljer.",
-        "landning": "Inga landningsankare. Med receptet tur och retur från ankare 2 ritas slutbilden per plats ur kortplanen.",
+        "ankare-2.2": "Ingen hand över kortet än: första beställningen föll på posebildens sko, en ny väntar (paow-ankare-2-2-01).",
+        "landning": "Inget landningsankare som gäller. En ruta ur given till plats 4 är kandidat, men visar handryggen; en riktig landningsbild görs som stillbild.",
         "referens": "Inga egna. Hennes filmer beställs med Pamelas rakt godkända filmer som referens."
       },
       "films": {
@@ -3114,6 +3098,48 @@
           }
         },
         {
+          "id": "paow-film-ny-vila-andas",
+          "role": "film",
+          "name": "Vila: andas djupt (WAN 3)",
+          "path": "assets/films/paow/ny-vila-andas/source.mp4",
+          "still": 65,
+          "fps": 30,
+          "state": "kandidat",
+          "note": "Ett djupt andetag, blinkar; tillbaka i posen runt ruta 96 och still till slutet. Händerna rör sig högst 0,3 px. Inte oberoende granskad.",
+          "source": {
+            "from": "beställningen paow-vila-01, tagning 1 (studions vy Beställ)",
+            "when": "2026-11-13"
+          }
+        },
+        {
+          "id": "paow-film-ny-vila-ser-over-bordet",
+          "role": "film",
+          "name": "Vila: ser över bordet (WAN 3)",
+          "path": "assets/films/paow/ny-vila-ser-over-bordet/source.mp4",
+          "still": 81,
+          "fps": 30,
+          "state": "kandidat",
+          "note": "Vänder huvudet åt ena sidan och sedan andra, med slutna ögon under svepen; munnen står öppen i ruta 23–33. Tillbaka mot kameran i ruta 126. Inte oberoende granskad.",
+          "source": {
+            "from": "beställningen paow-vila-02, tagning 1 (studions vy Beställ)",
+            "when": "2026-11-13"
+          }
+        },
+        {
+          "id": "paow-film-ny-giv-p4-prov-1d",
+          "role": "film",
+          "name": "Giv till plats 4, metodprov 1d (Kling 4, rullas kring långsidan)",
+          "path": "assets/films/paow/ny-giv-p4-prov-1d/source.mp4",
+          "still": 93,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Vänds en gång i luften kring långsidan, ställs stående på filten, fälls och skjuts cirka 160 px till platsen; kortet +21 % på vägen; returen via lös knytnäve. Landar 0,8 px från planen. Inte oberoende granskad.",
+          "source": {
+            "from": "beställningen paow-giv-2-1-p4-04, tagning 1 (studions vy Beställ)",
+            "when": "2026-11-13"
+          }
+        },
+        {
           "id": "paow-prov-ankare-ung",
           "role": "prov",
           "name": "Ankare 1, yngre, kandidater",
@@ -3261,6 +3287,40 @@
             "from": "uppladdad: fixed-2.png",
             "when": "2026-11-13"
           }
+        }
+      ]
+    },
+    "petra": {
+      "name": "Petra",
+      "missing": {
+        "ankare-1": "Inga ankare. Petra är ett arbetsnamn för ett avskilt spår (dealer-bf, 2026-11-13) med Pamelas utseende; Jakob har inte bestämt namnet, och inget beställs för henne i Beställ.",
+        "keystone": "Sex kandidater ligger i Prov petra-keystone; ingen är vald."
+      },
+      "films": {
+        "from": null,
+        "note": "Inga filmer i banken."
+      },
+      "entries": [
+        {
+          "id": "petra-prov-petra-keystone",
+          "role": "prov",
+          "name": "Keystone: profil, stående och sittande",
+          "proof": "petra-keystone",
+          "note": "Profilbild, stående och sittande i 4K på ljus bakgrund, två tagningar var, med Pamelas utseende; oberoende granskade (fem användbara, stående B underkänd). Gjort av sessionen dealer-bf 2026-11-13."
+        },
+        {
+          "id": "petra-prov-kamera-2-plats-2",
+          "role": "prov",
+          "name": "Kamera 2: given till plats 4 sedd från plats 2",
+          "proof": "kamera-2-plats-2",
+          "note": "Pamelas godkända giv pamela-p4-c1-plan-deal-02 sedd från plats 2:s öga (17,7°): råfilm ur filmens eget djup, en nyckelruta lagad med bildmodell, filmen lagad med edit_video, och fyra försök som föll. dealer-bf 2026-11-13; inte oberoende granskat."
+        },
+        {
+          "id": "petra-prov-plats-3-prov",
+          "role": "prov",
+          "name": "Plats 3 mot framifrån",
+          "proof": "plats-3-prov",
+          "note": "Samma giv till plats 3 med scenens ritade kort, sedd framifrån och från plats 3:s öga (cirka 8°); Pamelas platta film i båda. dealer-bf 2026-11-13; inte oberoende granskat."
         }
       ]
     }

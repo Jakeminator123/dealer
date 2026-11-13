@@ -10,22 +10,29 @@
 // picture and the pose) each with whose it is, the exact text with the parts a choice made marked (from promptFor, the
 // function the store writes the draft's text with), and the cost of all of it against the limits. "Skapa utkast" makes
 // the draft(s) (POST /api/orders) and opens "Det här skickas"; nothing is approved here. Opened with values from the
-// address (presetOf); the view mounts it anew per address, so the choices start from what the address asks.
+// address (presetOf); the view mounts it anew per address, so the choices start from what the address asks. With som=<id>
+// every choice of that order is chosen (recipeOf), the pictures fetched fresh from what holds now.
+//
+// Template 4: the text (Kort förval, Minimal, Utförlig) with its length in words; tur och retur or bara dit for a deal, and
+// a return as its own film, where the seat's landing picture holds (else what is missing and how to get one); a
+// reference film from the bank for a model that takes one; the card's size in this order (a trial). Only the dealers of
+// data/dealers.json are offered (the register may hold others).
 import { Clock } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 import { asApiError } from "../../lib/api.ts";
+import { useBank } from "../../lib/bank.ts";
 import { labUrl } from "../../lib/lab.ts";
 import type { DealerAnswer, EntryAnswer, MediaAnswer } from "../../lib/media.ts";
-import { anchorFor, createOrder, firstLacking, stepGroups, type OrderAnswer, type OrdersAnswer, type Preset, type StepKey } from "../../lib/orders.ts";
+import { anchorFor, createOrder, firstLacking, recipeOf, stepGroups, type OrderAnswer, type OrdersAnswer, type Preset, type StepKey } from "../../lib/orders.ts";
 import {
-  ALL_SEVEN, CROSSING_WHY, FLIP_LABEL, HAND_LABEL, LANDS_LABEL, SEAT_TARGETS, STEPS, TAKES_MAX,
-  costOf, credits, defaultFlip, genitive, groupBudget, handChoiceOf, handsOf, lengthFor, modelFor, modelsFor, paramsOf, seatList, seatWords, startWords, stepOf, summaryOf,
-  type FlipAxis, type HandChoice, type ModelDef, type Owner, type SeatPlan,
+  ALL_SEVEN, CROSSING_WHY, FLIP_LABEL, HAND_LABEL, LANDS_LABEL, SEAT_TARGETS, SHAPE_LABEL, STEPS, STYLE_LABEL, TAKES_MAX,
+  costOf, credits, defaultFlip, genitive, groupBudget, handChoiceOf, handsOf, landingMissing, landingOf, lengthFor, modelFor, modelsFor, paramsOf, referenceCandidates, scaleQuad, scaleWords, seatList, seatWords, startWords, stepOf, stylesFor, summaryOf,
+  type BankFacts, type FlipAxis, type HandChoice, type ModelDef, type Owner, type SeatPlan, type Shape, type TextStyle,
 } from "../../../src/order-model.ts";
-import { promptFor } from "../../../src/order-prompts.ts";
+import { promptFor, wordCount } from "../../../src/order-prompts.ts";
 import { getMedia } from "../material/client.ts";
 import { Button, SegmentedControl, Sheet, TextArea, cn, useToast } from "../ui";
-import { FlipChoice, HandChoiceRow, LandsChoice, ModelChoice } from "./Choices";
+import { FlipChoice, HandChoiceRow, LandsChoice, ModelChoice, ReferenceChoice, ScaleChoice, ShapeChoice, TextChoice } from "./Choices";
 import { OwnerChip } from "./Pictures";
 import { PromptText } from "./PromptText";
 
@@ -49,11 +56,14 @@ function Step({ n, title, aside, children }: { n: number; title: string; aside?:
 }
 
 /** A picture as it will go out: a thumbnail, its short name, whose it is; the card drawn over it where the plan says. */
-function Thumb({ src, name, owner, dealer, waiting, drawn, cards }: { src: string | null; name: string; owner: Owner | null; dealer: string; waiting?: string | null; drawn?: boolean; cards?: { quad: [number, number][]; side: "FRONT" | "BACK"; faint?: boolean }[] }) {
+function Thumb({ src, frame, name, owner, dealer, waiting, drawn, cards }: { src: string | null; frame?: { video: string; time: number } | null; name: string; owner: Owner | null; dealer: string; waiting?: string | null; drawn?: boolean; cards?: { quad: [number, number][]; side: "FRONT" | "BACK"; faint?: boolean }[] }) {
   return (
     <figure className="flex min-w-0 flex-col gap-1.5">
       <div className="relative aspect-[1764/1174] overflow-hidden rounded-md border border-line bg-well">
-        {src ? (
+        {frame ? (
+          // One frame of a film (a landing picture taken from a take): the film paused at that frame.
+          <video src={`${frame.video}#t=${frame.time.toFixed(3)}`} muted playsInline preload="auto" className="size-full object-cover" aria-label={name} />
+        ) : src ? (
           // eslint-disable-next-line @next/next/no-img-element -- a lab file
           <img src={src} alt={name} className="size-full object-cover" />
         ) : (
@@ -80,35 +90,47 @@ function Thumb({ src, name, owner, dealer, waiting, drawn, cards }: { src: strin
 }
 
 const served = (e: EntryAnswer | null) => (e?.served && !e.served.endsWith(".mp4") ? labUrl(e.served) : null);
+/** A register entry that is one frame of a film, as the film and the moment to show. */
+const frameOf = (e: EntryAnswer | null) => (e?.served?.endsWith(".mp4") && e.frame !== undefined ? { video: labUrl(e.served), time: (e.frame + 0.5) / (e.fps ?? 24) } : null);
 /** "1080p", "4K": a film's resolution or a still's size as the screens write it. */
 const resolutionWords = (p: Record<string, string | number | boolean>) => String(p.resolution ?? p.imageSize ?? "").replace(/k$/, "K");
 const entryName = (e: EntryAnswer | null, dealerName: string, at: string) => `${genitive(dealerName)} ankare ${at}${e && e.state && e.state !== "gäller" ? ` · ${/kandidat\s*\d+/i.exec(e.name)?.[0] ?? e.state}` : ""}`;
 
 export function NewOrder({ open, onOpenChange, all, preset, onCreated }: { open: boolean; onOpenChange: (o: boolean) => void; all: OrdersAnswer; preset: Preset | null; onCreated: (a: OrderAnswer) => void }) {
+  // "Ny beställning som den här": every choice of that order (its pictures are fetched fresh when the draft is made).
+  const like = preset?.like ? (all.orders.find((a) => a.order.id === preset.like)?.order ?? null) : null;
+  const r = like ? recipeOf(like) : null;
   const [media, setMedia] = useState<MediaAnswer | null>(null);
-  const [dealerId, setDealerId] = useState(preset?.dealer ?? "paow");
-  const [stepKey, setStepKey] = useState<StepKey | null>(preset?.step ?? null);
-  const [target, setTarget] = useState(preset?.target ?? "P4.C1");
+  const [dealerId, setDealerId] = useState(r?.dealer ?? preset?.dealer ?? "paow");
+  const [stepKey, setStepKey] = useState<StepKey | null>(r?.step ?? preset?.step ?? null);
+  const [target, setTarget] = useState(r?.target ?? preset?.target ?? "P4.C1");
   const [allSeven, setAllSeven] = useState(preset?.all ?? false);
   // null: what Placering says for the card.
-  const [side, setSide] = useState<"FRONT" | "BACK" | null>(null);
-  const [hand, setHand] = useState<HandChoice | null>(null);
+  const [side, setSide] = useState<"FRONT" | "BACK" | null>(r?.side ?? null);
+  const [hand, setHand] = useState<HandChoice | null>(r?.hand ?? null);
   const [passEverywhere, setPassEverywhere] = useState(false);
-  const [flip, setFlip] = useState<{ key: string; axis: FlipAxis } | null>(null);
-  const [duration, setDuration] = useState<{ key: string; seconds: number } | null>(null);
+  const [flip, setFlip] = useState<{ key: string; axis: FlipAxis } | null>(r?.flipAxis ? { key: r.step, axis: r.flipAxis } : null);
+  const [duration, setDuration] = useState<{ key: string; seconds: number } | null>(r?.duration ? { key: r.step, seconds: r.duration } : null);
   // The model chosen for a step (key null: asked for by address, for whatever step the sheet opens on).
-  const [modelChoice, setModelChoice] = useState<{ key: string | null; id: string } | null>(preset?.model ? { key: preset.step, id: preset.model } : null);
-  const [takes, setTakes] = useState(2);
+  const [modelChoice, setModelChoice] = useState<{ key: string | null; id: string } | null>(r ? { key: r.step, id: r.model } : preset?.model ? { key: preset.step, id: preset.model } : null);
+  const [takes, setTakes] = useState(r?.takes ?? 2);
   const [base, setBase] = useState<{ key: string; id: string } | null>(null);
-  const [extra, setExtra] = useState("");
+  const [extra, setExtra] = useState(r?.extra ?? "");
+  const [styleChoice, setStyle] = useState<TextStyle>(r?.style ?? "KORT");
+  const [shapeChoice, setShape] = useState<Shape>(r?.shape === "ONE_WAY" ? "ONE_WAY" : "ROUND_TRIP");
+  const [refChoice, setRef] = useState<string | null>(r?.reference ?? null);
+  const [scaleChoice, setScale] = useState(r?.cardScale ?? 1);
   const [shownSeat, setShownSeat] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const toast = useToast();
+  const { bank } = useBank();
 
   useEffect(() => {
     if (open && !media) void getMedia().then(setMedia, () => setMedia(null));
   }, [open, media]);
-  const dealer: DealerAnswer | null = media?.dealers.find((d) => d.id === dealerId) ?? null;
+  // Only a dealer of data/dealers.json can be ordered for; the register may hold others (a separate track).
+  const orderable = (media?.dealers ?? []).filter((d) => !all.dealers || all.dealers.some((x) => x.id === d.id));
+  const dealer: DealerAnswer | null = orderable.find((d) => d.id === dealerId) ?? null;
   const dealerName = dealer?.name ?? all.dealers?.find((d) => d.id === dealerId)?.name ?? dealerId;
   const look = all.dealers?.find((d) => d.id === dealerId)?.look ?? null;
   const entries = dealer?.entries ?? [];
@@ -120,16 +142,19 @@ export function NewOrder({ open, onOpenChange, all, preset, onCreated }: { open:
   const seconds = lengthFor(model, duration?.key === key ? duration.seconds : (step.duration ?? 4));
   const start = anchorFor(entries, step.from);
   const startEntry = start.holds ?? (step.kind === "STILL" ? (start.candidates.find((c) => c.id === (base?.key === `${dealerId}:${key}` ? base.id : null)) ?? start.candidates[0] ?? null) : null);
-  const end = step.kind === "FILM" && !step.card && step.to ? anchorFor(entries, step.to).holds : null;
+  // The anchor a film ends on: an entry or a rest, and a return (from the landing picture back to its anchor).
+  const end = step.kind === "FILM" && (!step.card || step.start === "LAND") && step.to ? anchorFor(entries, step.to).holds : null;
 
   // ── The seats and what each gets ──
-  const targets = step.card ? (allSeven ? ALL_SEVEN : [target]) : [];
+  // "Alla sju" is for a deal; a return is ordered seat by seat.
+  const seven = allSeven && step.start !== "LAND";
+  const targets = step.card ? (seven ? ALL_SEVEN : [target]) : [];
   const seatOf = (t: string): SeatPlan | null => plan?.seats[t] ?? null;
   const crossing = ALL_SEVEN.filter((t) => seatOf(t)?.crosses);
   const handsAt = (t: string) => {
     const s = seatOf(t);
     if (hand === null) return { hand: s?.hand ?? ("LH" as const), pass: s?.pass ?? false };
-    if (hand === "PASS" && allSeven && !passEverywhere) return { hand: "LH" as const, pass: !!s?.crosses };
+    if (hand === "PASS" && seven && !passEverywhere) return { hand: "LH" as const, pass: !!s?.crosses };
     return handsOf(hand);
   };
   const sideAt = (t: string) => side ?? seatOf(t)?.side ?? "FRONT";
@@ -143,11 +168,28 @@ export function NewOrder({ open, onOpenChange, all, preset, onCreated }: { open:
   const focus = step.card ? (shownSeat && targets.includes(shownSeat) ? shownSeat : targets[0]) : null;
   const motionAt = (t: string) => ({ grip: step.grip ?? ("PINCH" as const), ...handsAt(t), turn: sideAt(t) === "FRONT", flipAxis, side: sideAt(t), target: t });
 
+  // ── The text's style, tur och retur or bara dit, the landing picture, the card's size, a reference film ──
+  const styles = stylesFor(step.kind);
+  const style: TextStyle = styles.includes(styleChoice) ? styleChoice : "KORT";
+  const deal = step.card && step.start !== "LAND";
+  const shape: Shape | null = step.kind !== "FILM" ? null : deal ? shapeChoice : "ONE_WAY";
+  const oneWay = deal && shape === "ONE_WAY";
+  // A return starts on the seat's landing picture and a deal bara dit ends on it: one must hold for every seat ordered.
+  const needsLanding = step.start === "LAND" || oneWay;
+  const landing = step.card ? landingOf(entries, focus) : null;
+  const lacking = needsLanding ? targets.filter((t) => !landingOf(entries, t)) : [];
+  const landingWhy = lacking.length ? landingMissing(dealerName, lacking[0]) + (lacking.length > 1 ? ` (saknas för ${seatList(lacking)})` : "") : null;
+  const scalable = deal && shape === "ROUND_TRIP";
+  const cardScale = scalable ? scaleChoice : 1;
+  const candidates = model.videos && bank ? referenceCandidates(bank as BankFacts, { dealer: dealerId, step, target: focus, model }) : [];
+  const reference = model.videos ? (candidates.find((c) => c.take === refChoice && c.fits)?.take ?? null) : null;
+  const names = Object.fromEntries((all.dealers ?? []).map((d) => [d.id, d.name]));
+
   // ── What it turns into ──
   const focusSeat = focus ? seatOf(focus) : null;
   const motion = focus ? motionAt(focus) : null;
-  const prompt = look ? promptFor({ dealer: { name: dealerName, look }, step: key, model: model.id, motion, place: focusSeat ? { x: focusSeat.centre[0], y: focusSeat.centre[1] } : null, extra: extra.trim() || null }) : null;
-  const summary = summaryOf(step, dealerName, motion);
+  const prompt = look ? promptFor({ dealer: { name: dealerName, look }, step: key, model: model.id, motion, place: focusSeat ? { x: focusSeat.centre[0], y: focusSeat.centre[1] } : null, extra: extra.trim() || null, style, oneWay, reference: !!reference, cardScale }) : null;
+  const summary = summaryOf(step, dealerName, motion, shape);
   // The same parameters the store gives the draft (paramsOf), so the cost here is the draft's.
   const params = paramsOf(step, model, step.kind === "FILM" ? { duration: seconds } : {});
   const cost = all.policy ? costOf({ model: model.id, params }, takes, all.policy.prices) : null;
@@ -172,18 +214,25 @@ export function NewOrder({ open, onOpenChange, all, preset, onCreated }: { open:
         <Thumb src={served(startEntry)} name={`Dealerns bild · ${entryName(startEntry, dealerName, step.from)}`} owner={me} dealer={dealerId} waiting={startEntry ? null : `ankare ${step.from}`} />
         <Thumb src={pose ? labUrl(`${pose.served}${startEntry ? `?anchor=${encodeURIComponent(startEntry.id)}` : ""}`) : null} name="Pose · bara armen, handen och skon" owner={pose?.owner ?? null} dealer={dealerId} waiting="posebilden" />
       </>
+    ) : step.start === "LAND" ? (
+      <>
+        <Thumb src={served(landing)} frame={frameOf(landing)} name={`Första bild · ${genitive(dealerName)} landning på ${seatWords(focus)}`} owner={me} dealer={dealerId} waiting={landing ? null : "landningsbilden"} />
+        <Thumb src={served(end)} name={`Sista bild · ${entryName(end, dealerName, step.to ?? step.from)}`} owner={me} dealer={dealerId} waiting={end ? null : `ankare ${step.to}`} />
+      </>
     ) : (
       <>
         <Thumb src={served(start.holds)} name={`Första bild · ${entryName(start.holds, dealerName, step.from)}`} owner={me} dealer={dealerId} waiting={start.holds ? null : `ankare ${step.from}`} />
-        {step.card && focus && focusSeat ? (
+        {oneWay ? (
+          <Thumb src={served(landing)} frame={frameOf(landing)} name={`Sista bild · ${genitive(dealerName)} landning på ${seatWords(focus)}`} owner={me} dealer={dealerId} waiting={landing ? null : "landningsbilden"} />
+        ) : step.card && focus && focusSeat ? (
           <Thumb
             src={served(start.holds)}
-            name={`Sista bild · samma + kortet ${sideAt(focus) === "BACK" ? "stängt" : "öppet"} på ${seatWords(focus)}`}
+            name={`Sista bild · samma + kortet ${sideAt(focus) === "BACK" ? "stängt" : "öppet"} på ${seatWords(focus)}${cardScale !== 1 ? ` · ${scaleWords(cardScale)}` : ""}`}
             owner={me}
             dealer={dealerId}
             waiting={start.holds ? null : `ankare ${step.from}`}
             drawn
-            cards={[...targets.filter((t) => t !== focus).map((t) => ({ quad: seatOf(t)!.quad, side: sideAt(t), faint: true })), { quad: focusSeat.quad, side: sideAt(focus) }]}
+            cards={[...targets.filter((t) => t !== focus).map((t) => ({ quad: scaleQuad(seatOf(t)!.quad, cardScale).quad, side: sideAt(t), faint: true })), { quad: scaleQuad(focusSeat.quad, cardScale).quad, side: sideAt(focus) }]}
           />
         ) : (
           <Thumb src={served(end)} name={`Sista bild · ${entryName(end, dealerName, step.to ?? step.from)}`} owner={me} dealer={dealerId} waiting={end ? null : `ankare ${step.to}`} />
@@ -194,11 +243,11 @@ export function NewOrder({ open, onOpenChange, all, preset, onCreated }: { open:
   const create = async () => {
     setBusy(true);
     try {
-      const common = { dealer: dealerId, step: key, takes, extra: extra.trim() || null, ...(model.id !== step.model ? { model: model.id } : {}), ...(step.kind === "FILM" ? { duration: seconds } : {}) };
-      const card = step.card ? { flipAxis } : {};
+      const common = { dealer: dealerId, step: key, takes, extra: extra.trim() || null, style, ...(model.id !== step.model ? { model: model.id } : {}), ...(step.kind === "FILM" ? { duration: seconds } : {}), ...(reference ? { reference } : {}) };
+      const card = step.card ? { flipAxis, ...(deal && shape ? { shape } : {}), ...(cardScale !== 1 ? { cardScale } : {}) } : {};
       const made = !step.card
         ? await createOrder({ ...common, ...(step.kind === "STILL" && !start.holds && startEntry ? { base: startEntry.id } : {}) })
-        : allSeven
+        : seven
           ? await createOrder({ ...common, ...card, seats: targets.map((t) => ({ target: t, ...handsAt(t), side: sideAt(t) })) })
           : await createOrder({ ...common, ...card, target, ...handsAt(target), side: sideAt(target) });
       onCreated(made);
@@ -211,7 +260,7 @@ export function NewOrder({ open, onOpenChange, all, preset, onCreated }: { open:
 
   const recommend = (() => {
     if (!step.card || !plan) return null;
-    if (allSeven)
+    if (seven)
       return crossing.length ? `Förslag: handbyte på ${seatList(crossing)}. Där ${CROSSING_WHY}.` : "Vänsterhanden når alla sju utan att korsa kroppen.";
     const s = seatOf(target);
     if (!s?.crosses) return `Vänsterhanden når ${seatWords(target)} utan att korsa kroppen.`;
@@ -235,7 +284,7 @@ export function NewOrder({ open, onOpenChange, all, preset, onCreated }: { open:
           <Button variant="quiet" onClick={() => onOpenChange(false)}>
             Avbryt
           </Button>
-          <Button variant="primary" loading={busy} disabled={!cost || !!step.off || (step.card && !plan)} onClick={() => void create()}>
+          <Button variant="primary" loading={busy} disabled={!cost || !!step.off || (step.card && !plan) || !!landingWhy || !!model.off} title={landingWhy ?? model.off ?? undefined} onClick={() => void create()}>
             {count > 1 ? `Skapa ${count} utkast` : "Skapa utkast"}
           </Button>
         </>
@@ -245,7 +294,8 @@ export function NewOrder({ open, onOpenChange, all, preset, onCreated }: { open:
         {/* The choices */}
         <div className="min-h-0 overflow-y-auto py-4 pr-2">
           <Step n={next()} title="Dealer">
-            <SegmentedControl label="Dealer" value={dealerId} onChange={setDealerId} options={(media?.dealers ?? [{ id: "paow", name: "Paow" }]).map((d) => ({ value: d.id, label: d.id === "pamela" ? `${d.name} (pausad)` : d.name }))} />
+            <SegmentedControl label="Dealer" value={dealerId} onChange={setDealerId} options={(orderable.length ? orderable : (all.dealers ?? [{ id: "paow", name: "Paow" }])).map((d) => ({ value: d.id, label: d.id === "pamela" ? `${d.name} (pausad)` : d.name }))} />
+            {like ? <p className="text-xs text-brass-hi">Som {like.title}: alla val därifrån; bilderna hämtas som de gäller nu.</p> : null}
           </Step>
           <Step n={next()} title="Vad">
             <div className="grid grid-cols-2 gap-x-4 gap-y-3">
@@ -268,8 +318,13 @@ export function NewOrder({ open, onOpenChange, all, preset, onCreated }: { open:
                 </div>
               ))}
             </div>
-            <p className="rounded-sm bg-raised px-2.5 py-1.5 text-sm text-ink">{startWords(step)}</p>
+            <p className="rounded-sm bg-raised px-2.5 py-1.5 text-sm text-ink">{startWords(step, shape)}</p>
           </Step>
+          {step.kind === "FILM" || styles.length > 1 ? (
+            <Step n={next()} title="Text" aside={prompt ? `${wordCount(prompt.text)} ord` : undefined}>
+              <TextChoice value={style} styles={styles} onChange={setStyle} />
+            </Step>
+          ) : null}
           {step.card ? (
             <>
               <Step n={next()} title="Plats på bordet">
@@ -277,26 +332,38 @@ export function NewOrder({ open, onOpenChange, all, preset, onCreated }: { open:
                   <SegmentedControl
                     label="Plats"
                     size="sm"
-                    value={allSeven ? "" : target}
+                    value={seven ? "" : target}
                     onChange={(t) => {
                       setTarget(t);
                       setAllSeven(false);
                     }}
                     options={SEAT_TARGETS.map((t) => ({ value: t, label: t === "D.C1" ? "Dealer" : t.replace(".C1", ""), title: seatOf(t)?.crosses ? `${seatWords(t)}: vänsterhanden korsar kroppen` : seatWords(t) }))}
                   />
-                  <button type="button" onClick={() => setAllSeven(true)} className={cn("h-7 rounded-md border px-2.5 text-sm", allSeven ? "border-brass/60 bg-brass/12 text-brass-hi" : "border-line text-ink hover:bg-raised")}>
-                    Alla sju
-                  </button>
+                  {step.start !== "LAND" ? (
+                    <button type="button" onClick={() => setAllSeven(true)} className={cn("h-7 rounded-md border px-2.5 text-sm", seven ? "border-brass/60 bg-brass/12 text-brass-hi" : "border-line text-ink hover:bg-raised")}>
+                      Alla sju
+                    </button>
+                  ) : null}
                 </div>
-                <p className="text-xs text-dim">{allSeven ? "Första kortet till varje spelare: ett utkast per plats, i en grupp, var och ett med sin text och sin sista bild." : `Ett kort till ${seatWords(target)}.`}</p>
+                <p className="text-xs text-dim">{seven ? "Första kortet till varje spelare: ett utkast per plats, i en grupp, var och ett med sin text och sin sista bild." : `Ett kort till ${seatWords(target)}.`}</p>
               </Step>
-              <Step n={next()} title="Hur kortet landar">
+              {deal ? (
+                <Step n={next()} title="Tur och retur eller bara dit">
+                  <ShapeChoice value={shapeChoice} missing={targets.some((t) => !landingOf(entries, t)) ? landingMissing(dealerName, targets.find((t) => !landingOf(entries, t))) : null} onChange={setShape} />
+                </Step>
+              ) : null}
+              {needsLanding ? (
+                <p className={cn("rounded-sm px-2.5 py-1.5 text-sm", landingWhy ? "bg-[#3a1d1d] text-[#ef8b8b]" : "bg-raised text-ink")}>
+                  {landingWhy ?? `Landningsbild: ${landing?.name ?? ""} (gäller).${landing?.note ? ` ${landing.note}` : ""}`}
+                </p>
+              ) : null}
+              <Step n={next()} title={step.start === "LAND" ? "Hur kortet ligger på platsen" : "Hur kortet landar"}>
                 <LandsChoice value={shownSide} plan={planSides.length === 1 ? planSides[0] : null} onChange={setSide} />
                 {!side && planSides.length > 1 ? <p className="text-xs text-dim">Placering säger olika per plats; utan val följer varje plats sin.</p> : null}
               </Step>
               <Step n={next()} title="Hand">
                 <HandChoiceRow value={shownHand} plan={planHands.length === 1 ? planHands[0] : null} onChange={setHand} />
-                {shownHand === "PASS" && allSeven && crossing.length && crossing.length < 7 ? (
+                {shownHand === "PASS" && seven && crossing.length && crossing.length < 7 ? (
                   <div className="flex items-center gap-2 text-sm">
                     <span className="text-dim">Handbyte på</span>
                     <SegmentedControl label="Handbyte på" size="sm" value={passEverywhere ? "alla" : "korsar"} onChange={(v) => setPassEverywhere(v === "alla")} options={[{ value: "korsar", label: `${seatList(crossing)} (förslaget)` }, { value: "alla", label: "alla sju" }]} />
@@ -313,9 +380,15 @@ export function NewOrder({ open, onOpenChange, all, preset, onCreated }: { open:
                   </p>
                 ) : null}
               </Step>
-              {open_ ? (
+              {open_ && step.start !== "LAND" ? (
                 <Step n={next()} title="Hur kortet vänds">
                   <FlipChoice value={flipAxis} suggested={suggestedFlip} onChange={(axis) => setFlip({ key, axis })} />
+                </Step>
+              ) : null}
+              {scalable ? (
+                <Step n={next()} title="Kortets storlek i den här beställningen" aside={cardScale !== 1 ? "prov" : undefined}>
+                  <ScaleChoice value={scaleChoice} onChange={setScale} />
+                  <p className="text-xs text-dim">{cardScale === 1 ? "Som planen säger (placements/default.json)." : `Sista bilden ritar kortet ${scaleWords(cardScale)} av planens kring sin mitt; planen ändras inte. Utkastet märks som prov.`}</p>
                 </Step>
               ) : null}
             </>
@@ -336,6 +409,14 @@ export function NewOrder({ open, onOpenChange, all, preset, onCreated }: { open:
               {durations.length ? <SegmentedControl label="Längd" size="sm" value={seconds} onChange={(s) => setDuration({ key, seconds: s })} options={durations.map((d) => ({ value: d, label: `${d} s` }))} /> : <span className="text-dim">{step.imageSize} · {step.ratio}</span>}
               {durations.length ? <span className="text-dim">{resolutionWords(params)}</span> : null}
             </div>
+            {model.videos ? (
+              <div className="flex flex-col gap-1.5">
+                <span className="text-sm text-dim">Referensfilm</span>
+                <ReferenceChoice candidates={candidates} value={reference} dealer={dealerId} names={names} range={model.referenceSeconds ?? null} onChange={setRef} />
+              </div>
+            ) : step.kind === "FILM" ? (
+              <p className="text-xs text-dim">{model.label} tar ingen referensfilm tillsammans med första och sista bild.</p>
+            ) : null}
             <div className="flex items-center gap-3 text-sm">
               <span className="text-dim">Tagningar</span>
               <SegmentedControl label="Tagningar" size="sm" value={takes} onChange={setTakes} options={Array.from({ length: TAKES_MAX }, (_, i) => ({ value: i + 1, label: String(i + 1) }))} />
@@ -351,8 +432,10 @@ export function NewOrder({ open, onOpenChange, all, preset, onCreated }: { open:
             {step.card && motion ? (
               <p className="-mt-3 text-sm text-dim">
                 {HAND_LABEL[handChoiceOf(motion)]} · {LANDS_LABEL[motion.side]}
-                {motion.side === "FRONT" ? ` · ${FLIP_LABEL[flipAxis]}` : ""}
-                {allSeven ? ` · visar ${seatWords(focus)} av sju` : ""}
+                {motion.side === "FRONT" && step.start !== "LAND" ? ` · ${FLIP_LABEL[flipAxis]}` : ""}
+                {shape && deal ? ` · ${SHAPE_LABEL[shape]}` : ""}
+                {cardScale !== 1 ? ` · prov: kortet ${scaleWords(cardScale)} av planens` : ""}
+                {seven ? ` · visar ${seatWords(focus)} av sju` : ""}
               </p>
             ) : null}
             <section className="flex flex-col gap-2">
@@ -385,9 +468,9 @@ export function NewOrder({ open, onOpenChange, all, preset, onCreated }: { open:
             <section className="flex flex-col gap-2">
               <h4 className="flex items-center gap-3 text-xs font-medium uppercase tracking-[0.08em] text-faint">
                 Texten som skickas
-                {prompt ? <span className="font-normal normal-case tracking-normal text-dim">{prompt.text.length.toLocaleString("sv-SE")} tecken · mall {prompt.template}</span> : null}
+                {prompt ? <span className="font-normal normal-case tracking-normal text-dim">{STYLE_LABEL[prompt.style]} · {wordCount(prompt.text)} ord · {prompt.text.length.toLocaleString("sv-SE")} tecken · mall {prompt.template}</span> : null}
               </h4>
-              {allSeven && step.card ? (
+              {seven && step.card ? (
                 <SegmentedControl label="Visa texten för" size="sm" value={focus ?? ""} onChange={setShownSeat} options={targets.map((t) => ({ value: t, label: `${t.replace(".C1", "")}${handsAt(t).pass ? " · byte" : ""}` }))} />
               ) : null}
               {prompt ? <PromptText text={prompt.text} parts={prompt.parts} /> : <p className="text-sm text-[#f0b07a]">Labbservern behöver startas om för att visa texten här (den saknar dealerns utseende och planen).</p>}

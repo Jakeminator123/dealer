@@ -1,0 +1,61 @@
+{
+  "schemaVersion": 1,
+  "id": "paow-giv-2-1-p4-04-01-return-ready",
+  "dealer": "paow",
+  "source": {
+    "path": "assets/motions/paow-giv-2-1-p4-04-01/source.mp4",
+    "sha256": "c14287343b02d3e43ffd0491cefc7d6c7b2c98af6ffb34edd273b9fd0c2128e3",
+    "bytes": 6503259,
+    "width": 1764,
+    "height": 1174,
+    "fps": 24,
+    "frames": 169,
+    "provider": "Runway MCP server (app account credits)",
+    "model": "kling-4"
+  },
+  "motion": {
+    "kind": "RETURN",
+    "from": "P4.C1",
+    "to": "READY",
+    "pass": false,
+    "basis": "SOURCE_FRAME_REVIEW",
+    "segment": {
+      "clip": "paow-giv-2-1-p4-04-01",
+      "frames": [
+        109,
+        168
+      ]
+    },
+    "startsOn": {
+      "clip": "paow-giv-2-1-p4-04-01-deal",
+      "frame": 109
+    }
+  },
+  "review": {
+    "decision": "ACCEPTED",
+    "basis": "Inte granskad av Jakob: förd in från beställningen paow-giv-2-1-p4-04, tagning 1 (tools/register-order.ts). Oberoende rutgranskning: tools/film-review.md.",
+    "limitations": "I inkorgen: spelas bara där steget inte har någon annan film, tills Jakob dömer den.",
+    "colorDoesNotProvePhysicalSide": true,
+    "userAccepted": true,
+    "productionReady": false,
+    "acceptedAs": "MAIN",
+    "userReview": "Jakob 2026-11-13: förmodligen den bästa\""
+  },
+  "order": {
+    "id": "paow-giv-2-1-p4-04",
+    "take": 1,
+    "path": "data/orders/paow-giv-2-1-p4-04.json",
+    "orderSha256": "98450e0d0e1ded88a10f2ad43a0d0d7f67c36b7f49a117cefa28575844cfacb6",
+    "receipt": "assets/orders/paow-giv-2-1-p4-04/receipt.json",
+    "taskId": "6c027e68-4669-4214-9f83-1da0817aa83e",
+    "delivered": {
+      "path": "assets/orders/paow-giv-2-1-p4-04/take-1/after.mp4",
+      "sha256": "c14287343b02d3e43ffd0491cefc7d6c7b2c98af6ffb34edd273b9fd0c2128e3"
+    }
+  },
+  "postProcessing": "none",
+  "generationRef": "assets/motions/paow-giv-2-1-p4-04-01/generation.json",
+  "jobRef": "data/clip-jobs.json",
+  "scoutIntegrated": false,
+  "published": false
+}

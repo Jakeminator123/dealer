@@ -143,6 +143,10 @@
   "notes": [],
   "created": "2026-11-13T01:42:32.865Z",
   "createdBy": "huvudagenten (dealer-94) på Jakobs ord 2026-11-13: byta hand och dela till plats 1",
-  "approval": null,
-  "status": "UTKAST"
+  "approval": {
+    "by": "jakob",
+    "at": "2026-11-13T02:49:51.982Z",
+    "orderSha256": "12be6ce560c19facfd7d2d2d1510d985394e706536963bdd9ca6e182a37a6b41"
+  },
+  "status": "GODKÄND"
 }

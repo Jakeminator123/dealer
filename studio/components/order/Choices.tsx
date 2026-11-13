@@ -3,10 +3,15 @@
 // The choices of a deal as large buttons with a line under each, shared by the sheet "Ny beställning" and the draft's
 // "Ändra utkastet": how the card lands (stängt → stängt, stängt → öppet), which hand deals (vänster hela vägen, höger hela
 // vägen, handbyte) and how the card turns. "enligt Placering" marks the choice the plan makes for the card. The sheet's
-// model choice too: the models that can make the step, the step's own marked "förval".
-import type { ReactNode } from "react";
-import { FLIP_ABOUT, FLIP_AXES, FLIP_LABEL, HAND_ABOUT, HAND_LABEL, LANDS_ABOUT, LANDS_LABEL, type FlipAxis, type HandChoice, type ModelDef } from "../../../src/order-model.ts";
-import { Badge, Switch, cn } from "../ui";
+// model choice too: the models that can make the step, the step's own marked "förval"; the text's style (Kort förval,
+// Minimal, Utförlig), tur och retur or bara dit, the card's size in one order, and a reference film from the bank.
+import { useState, type ReactNode } from "react";
+import {
+  CARD_SCALES, FLIP_ABOUT, FLIP_AXES, FLIP_LABEL, HAND_ABOUT, HAND_LABEL, LANDS_ABOUT, LANDS_LABEL, REF_MATCH_LABEL, REF_VERDICT_LABEL, SHAPE_ABOUT, SHAPE_LABEL, STYLE_ABOUT, STYLE_LABEL, genitive, scaleWords, secondsWords,
+  type FlipAxis, type HandChoice, type ModelDef, type RefCandidate, type Shape, type TextStyle,
+} from "../../../src/order-model.ts";
+import { labUrl } from "../../lib/lab.ts";
+import { Badge, SegmentedControl, Switch, cn } from "../ui";
 
 export function ChoiceCard({ on, title, about, badge, disabled, onClick }: { on: boolean; title: ReactNode; about: ReactNode; badge?: ReactNode; disabled?: boolean; onClick: () => void }) {
   return (
@@ -68,14 +73,14 @@ export function ModelChoice({ models, value, own, what, onChange, disabled }: { 
         <ChoiceCard
           key={m.id}
           on={value === m.id}
-          disabled={disabled}
+          disabled={disabled || !!m.off}
           title={
             <>
               {m.label}
               <span className="text-xs tabular-nums text-dim">{what(m)}</span>
             </>
           }
-          about={m.about}
+          about={m.off ? `Beställs inte längre. ${m.off}` : m.about}
           badge={m.id === own ? (
             <Badge tone="neutral" size="sm">
               förval
@@ -107,6 +112,99 @@ export function FlipChoice({ value, onChange, disabled, suggested }: { value: Fl
           onClick={() => onChange(axis)}
         />
       ))}
+    </div>
+  );
+}
+
+const Forval = () => (
+  <Badge tone="neutral" size="sm">
+    förval
+  </Badge>
+);
+
+/** The text: Kort (förval), Minimal, Utförlig; a still offers Kort and Utförlig. */
+export function TextChoice({ value, styles, onChange, disabled }: { value: TextStyle; styles: readonly TextStyle[]; onChange: (style: TextStyle) => void; disabled?: boolean }) {
+  return (
+    <div role="radiogroup" aria-label="Text" className="flex gap-2">
+      {styles.map((s) => (
+        <ChoiceCard key={s} on={value === s} disabled={disabled} title={STYLE_LABEL[s]} about={STYLE_ABOUT[s]} badge={s === "KORT" ? <Forval /> : null} onClick={() => onChange(s)} />
+      ))}
+    </div>
+  );
+}
+
+/** Tur och retur or bara dit; bara dit needs the seat's landing picture (`missing` says what lacks). */
+export function ShapeChoice({ value, missing, onChange, disabled }: { value: Shape; missing: string | null; onChange: (shape: Shape) => void; disabled?: boolean }) {
+  return (
+    <div role="radiogroup" aria-label="Tur och retur eller bara dit" className="flex gap-2">
+      {(["ROUND_TRIP", "ONE_WAY"] as const).map((s) => (
+        <ChoiceCard key={s} on={value === s} disabled={disabled || (s === "ONE_WAY" && !!missing)} title={SHAPE_LABEL[s]} about={s === "ONE_WAY" && missing ? "Landningsbild saknas för platsen." : SHAPE_ABOUT[s]} badge={s === "ROUND_TRIP" ? <Forval /> : null} onClick={() => onChange(s)} />
+      ))}
+    </div>
+  );
+}
+
+/** The card's size in this order: som planen (förval), 125 %, 150 %, 200 %; another than the plan's is a trial. */
+export function ScaleChoice({ value, onChange, disabled }: { value: number; onChange: (factor: number) => void; disabled?: boolean }) {
+  return <SegmentedControl label="Kortets storlek" size="sm" value={value} disabled={disabled} onChange={onChange} options={CARD_SCALES.map((f) => ({ value: f, label: scaleWords(f) }))} />;
+}
+
+const VERDICT_TONE = { GODKÄND: "ok", VARIANT: "variant", EJ_DÖMD: "neutral", UNDERKÄND: "bad" } as const;
+
+/**
+ * A reference film: ingen, or a take of the bank, the same step and seat first, the dealer's own before another dealer's.
+ * Each with whose it is (another dealer's named), Jakob's verdict and words, its length; one the model cannot take is shown
+ * greyed with why. The chosen one plays beside the list.
+ */
+export function ReferenceChoice({ candidates, value, dealer, names, range, onChange, disabled }: { candidates: readonly RefCandidate[]; value: string | null; dealer: string; names: Record<string, string>; range: [number, number] | null; onChange: (take: string | null) => void; disabled?: boolean }) {
+  const [all, setAll] = useState(false);
+  const shown = all ? candidates : candidates.slice(0, 6);
+  const chosen = candidates.find((c) => c.take === value) ?? null;
+  return (
+    <div className="flex flex-col gap-1.5">
+      <div role="radiogroup" aria-label="Referensfilm" className="flex flex-col gap-1">
+        <ChoiceCard on={!value} disabled={disabled} title="Ingen" about="Bilderna och texten bär rörelsen." onClick={() => onChange(null)} />
+        {shown.map((c) => {
+          const other = c.dealer !== dealer;
+          return (
+            <ChoiceCard
+              key={c.take}
+              on={value === c.take}
+              disabled={disabled || !c.fits}
+              title={
+                <span className="flex min-w-0 flex-wrap items-center gap-1.5">
+                  <span className="truncate font-mono text-xs">{c.take}</span>
+                  <Badge tone={other ? "wait" : "ok"} size="sm">
+                    {other ? `${genitive(names[c.dealer] ?? c.dealer)} film` : "egen"}
+                  </Badge>
+                  <Badge tone={VERDICT_TONE[c.verdict]} size="sm">
+                    {REF_VERDICT_LABEL[c.verdict]}
+                  </Badge>
+                  <span className="text-xs tabular-nums text-dim">{secondsWords(c.seconds)}</span>
+                </span>
+              }
+              about={[
+                REF_MATCH_LABEL[c.match],
+                c.frames ? `hela filmen ${c.film} skickas (tagningen är ruta ${c.frames[0]}–${c.frames[1]}${c.also.length ? ", returen följer med" : ""})` : null,
+                !c.fits && range ? `för ${c.seconds !== null && c.seconds < range[0] ? "kort" : "lång"}: modellen tar ${range[0]}–${range[1]} s` : null,
+                c.words ? `Jakob: ”${c.words}”` : null,
+              ].filter(Boolean).join(" · ")}
+              onClick={() => onChange(c.take)}
+            />
+          );
+        })}
+      </div>
+      {candidates.length > shown.length || all ? (
+        <button type="button" className="self-start text-xs text-brass-hi underline underline-offset-2" onClick={() => setAll(!all)}>
+          {all ? "Visa färre" : `Visa alla (${candidates.length})`}
+        </button>
+      ) : null}
+      {chosen ? (
+        <div className="flex flex-col gap-1">
+          <video src={labUrl(chosen.path)} controls muted playsInline preload="metadata" className="w-full rounded-md border border-line bg-well" />
+          {chosen.dealer !== dealer ? <p className="text-xs text-[#f0b07a]">{genitive(names[chosen.dealer] ?? chosen.dealer)} film: tillåten som referens. Texten säger att den bara visar rörelsen; hennes hand kan läcka in.</p> : null}
+        </div>
+      ) : null}
     </div>
   );
 }

@@ -8,12 +8,12 @@ import { ApiError } from "./api.ts";
 import { labUrl } from "./lab.ts";
 import { isSnapshot } from "./mode.ts";
 import {
-  ANCHOR_NODE, ANCHOR_ROLE, FLIP_LABEL, HAND_LABEL, LANDS_LABEL, genitive, MODELS, SEAT_TARGETS, SHOWN_LABEL, STEPS, credits, handChoiceOf, requestOf, stepOf, waitWords,
-  type FlipAxis, type HandChoice, type Order, type OrderAnswer, type OrdersAnswer, type Owner, type Picture, type PlanAnswer, type Shown, type StepKey,
+  ANCHOR_NODE, ANCHOR_ROLE, FLIP_LABEL, HAND_LABEL, LANDS_LABEL, REF_VERDICT_LABEL, STYLE_LABEL, genitive, MODELS, SEAT_TARGETS, SHOWN_LABEL, STEPS, credits, handChoiceOf, requestOf, secondsWords, stepOf, styleOf, waitWords,
+  type FlipAxis, type HandChoice, type Order, type OrderAnswer, type OrdersAnswer, type Owner, type Picture, type PlanAnswer, type Shape, type Shown, type StepKey, type TextStyle,
 } from "../../src/order-model.ts";
-import { orderPrompt, type Choice, type Part } from "../../src/order-prompts.ts";
+import { orderPrompt, wordCount, type Choice, type Part } from "../../src/order-prompts.ts";
 
-export type { Order, OrderAnswer, OrdersAnswer, Picture, Shown, FlipAxis, StepKey, HandChoice, Owner, Part, Choice };
+export type { Order, OrderAnswer, OrdersAnswer, Picture, Shown, FlipAxis, StepKey, HandChoice, Owner, Part, Choice, Shape, TextStyle };
 
 // ── Calls ───────────────────────────────────────────────────────────────────
 const kind = (status: number) => (status === 409 ? "conflict" : status === 404 ? "missing" : status === 428 ? "precondition" : status === 403 || status === 413 || status === 415 ? "refused" : status >= 500 ? "server" : "invalid");
@@ -61,6 +61,12 @@ export type NewOrderInput = {
   takes?: number;
   extra?: string | null;
   base?: string;
+  /** The text's style; tur och retur or bara dit for a deal; a reference film (the bank's take) for a model that takes one. */
+  style?: TextStyle;
+  shape?: Shape;
+  reference?: string | null;
+  /** The card's size on a round trip's last picture as a factor of the plan's (a trial); sent only when not 1. */
+  cardScale?: number;
 };
 /** The first draft made, and every draft made (seven for "Alla sju"). */
 export const createOrder = (input: NewOrderInput) => call<OrderAnswer & { made?: string[] }>("api/orders", "Utkastet", send("POST", input));
@@ -136,7 +142,7 @@ export function paramRows(order: Order): ParamRow[] {
 }
 
 /** "Naturlig vändning", or nothing for a step without a turn. */
-export const turnWords = (order: Pick<Order, "motion">): string | null => (order.motion?.turn ? FLIP_LABEL[order.motion.flipAxis] : null);
+export const turnWords = (order: Pick<Order, "motion">): string | null => (order.motion?.turn && order.motion.flipAxis ? FLIP_LABEL[order.motion.flipAxis] : null);
 
 /** "1,1 px från planen". */
 export const offsetWords = (px: number | null | undefined): string | null => (px === null || px === undefined ? null : `${String(px).replace(".", ",")} px från planen`);
@@ -178,9 +184,12 @@ export const HANDOVER = "Säg 'lägg kön' till filmagenten eller huvudagenten, 
  * modell=kling-3-4k: that model, when it can make the step). A seat without a step gets the deal its card is planned with
  * in Placering (nyp → GIV-2.1, släp → GIV-2.2). Null without ny=1.
  */
-export type Preset = { dealer: string | null; step: StepKey | null; target: string | null; all: boolean; model: string | null };
+export type Preset = { dealer: string | null; step: StepKey | null; target: string | null; all: boolean; model: string | null; like?: string | null };
 export function presetOf(params: { get(name: string): string | null }, plan: Pick<PlanAnswer, "seats"> | null | undefined): Preset | null {
   if (params.get("ny") !== "1") return null;
+  // som=<id>: every choice of that order (recipeOf); the sheet reads them from the order itself.
+  const like = params.get("som")?.toLowerCase() ?? null;
+  if (like && /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(like)) return { dealer: null, step: null, target: null, all: false, model: null, like };
   const dealer = params.get("dealer")?.toLowerCase() || null;
   const asked = params.get("steg")?.toUpperCase() ?? null;
   const plats = params.get("plats")?.toUpperCase() ?? null;
@@ -192,7 +201,28 @@ export function presetOf(params: { get(name: string): string | null }, plan: Pic
   return { dealer, step, target, all, model: modell && Object.hasOwn(MODELS, modell) ? modell : null };
 }
 /** The address params a new order is asked with, removed when the sheet closes. */
-export const PRESET_PARAMS = ["ny", "dealer", "steg", "plats", "modell"] as const;
+export const PRESET_PARAMS = ["ny", "dealer", "steg", "plats", "modell", "som"] as const;
+
+/**
+ * Every choice of an order, so that "Ny beställning som den här" opens the sheet with them chosen and one change gives a
+ * clean comparison: dealer, step, seat, hand and handbyte, closed or open, the turn, the text's style (Utförlig for an
+ * order before template 4), model, seconds, takes, Jakob's addition, the reference film, tur och retur or bara dit, the
+ * card's size. The pictures are never taken from it: a new draft fetches what holds now.
+ */
+export type Recipe = {
+  dealer: string; step: StepKey; target: string | null; hand: HandChoice | null; side: "FRONT" | "BACK" | null; flipAxis: FlipAxis | null;
+  style: TextStyle; model: string; duration: number | null; takes: number; extra: string; reference: string | null; shape: Shape | null; cardScale: number;
+};
+export function recipeOf(order: Order): Recipe {
+  const m = order.motion, d = order.generation.params.duration;
+  return {
+    dealer: order.dealer, step: order.step.key, target: m?.target ?? null,
+    hand: m ? handChoiceOf(m) : null, side: m?.side ?? null, flipAxis: m?.flipAxis ?? null,
+    style: styleOf(order.prompt), model: order.generation.model, duration: typeof d === "number" ? d : null, takes: order.takes,
+    extra: order.prompt.extra ?? "", reference: order.reference.status === "FINNS" ? (order.reference.clips[0] ?? null) : null,
+    shape: order.step.shape, cardScale: m?.cardScale ?? 1,
+  };
+}
 
 // ── Whose a picture is ──────────────────────────────────────────────────────
 /** "Paow", "Pamela · bara armen", or a warning when a whole picture of another dealer would go out. */
@@ -205,10 +235,24 @@ export function ownerWords(owner: Owner | null | undefined, dealer: string): { t
 
 // ── The choices of a deal, in words ─────────────────────────────────────────
 /** "Handbyte", "Stängt → öppet", "Vänd vid platsen": the three choices of a stored deal. */
-export function motionWords(order: Pick<Order, "motion">): { hand: string; lands: string; turn: string | null } | null {
+export function motionWords(order: Pick<Order, "motion"> & { step?: Pick<Order["step"], "key"> }): { hand: string; lands: string; turn: string | null } | null {
   const m = order.motion;
   if (!m) return null;
-  return { hand: HAND_LABEL[handChoiceOf(m)], lands: LANDS_LABEL[m.side], turn: m.side === "FRONT" ? FLIP_LABEL[m.flipAxis] : null };
+  // In a return the card lies where it was laid: nothing turns.
+  const back = !!order.step && stepOf(order.step.key)?.start === "LAND";
+  return { hand: HAND_LABEL[handChoiceOf(m)], lands: LANDS_LABEL[m.side], turn: m.side === "FRONT" && !back && m.flipAxis ? FLIP_LABEL[m.flipAxis] : null };
+}
+
+/** "Kort · 108 ord": a stored order's text style (Utförlig when it was written before template 4) and its length. */
+export function styleWords(order: Pick<Order, "prompt">): string {
+  return `${STYLE_LABEL[styleOf(order.prompt)]} · ${wordCount(order.prompt.text)} ord`;
+}
+
+/** "Pamelas film · godkänd · 4 s": a reference film as it is shown, with whose it is when it is another dealer's. */
+export function referenceWords(reference: Order["reference"], dealer: string, names: Record<string, string> = {}): string | null {
+  if (reference.status !== "FINNS") return null;
+  const whose = reference.dealer && reference.dealer !== dealer ? `${genitive(names[reference.dealer] ?? reference.dealer)} film` : reference.dealer ? "egen film" : null;
+  return [reference.clips.join(", "), whose, reference.from ? REF_VERDICT_LABEL[reference.from.verdict] : null, secondsWords(reference.seconds)].filter(Boolean).join(" · ");
 }
 
 /** The marks of the text: a quiet underline per choice, and its word in the legend. */
@@ -217,6 +261,8 @@ export const CHOICE_MARK: Record<Choice, { word: string; className: string; swat
   side: { word: "stängt / öppet", className: "underline decoration-[#e8cb85]/70 decoration-1 underline-offset-[5px]", swatch: "bg-[#e8cb85]" },
   turn: { word: "vändning", className: "underline decoration-[#e8cb85]/70 decoration-dotted decoration-2 underline-offset-[5px]", swatch: "bg-[#e8cb85]/60" },
   place: { word: "plats", className: "", swatch: "" },
+  shape: { word: "bara dit", className: "underline decoration-[#7fd1b9]/60 decoration-1 underline-offset-[5px]", swatch: "bg-[#7fd1b9]" },
+  reference: { word: "referensfilm", className: "underline decoration-[#9ec5ff]/70 decoration-wavy decoration-1 underline-offset-[5px]", swatch: "bg-[#9ec5ff]" },
   extra: { word: "ditt tillägg", className: "bg-variant/12 text-[#b6c6fa]", swatch: "bg-variant/50" },
   bans: { word: "det som inte får hända", className: "text-[#ef9a9a]", swatch: "bg-underkand/60" },
 };

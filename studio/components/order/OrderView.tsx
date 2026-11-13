@@ -2,7 +2,8 @@
 
 // Beställ (/bestall/?order=<id>): the queue of orders for Runway, and for one order the screen "Det här skickas". The
 // address holds the open order, so a link brings it back. /bestall/?ny=1&dealer=paow&steg=GIV-2.2&plats=P4.C1 (plats=alla
-// for the first card to every player) opens "Ny beställning" with those values chosen; the sheet is mounted anew for each
+// for the first card to every player) opens "Ny beställning" with those values chosen, ?ny=1&som=<id> with every choice of
+// that order ("Ny beställning som den här"); the sheet is mounted anew for each
 // such address, and closing it takes the values out of the address. Reads GET /api/orders on load and when the tab is
 // seen again; writes only on Jakob's clicks (a new draft, a change, an approval). Not in the online copy. Inside <Suspense>.
 import { useSearchParams } from "next/navigation";
@@ -17,6 +18,15 @@ import { OrderList } from "./OrderList";
 import { SendScreen } from "./SendScreen";
 
 type State = { status: "loading" } | { status: "ready"; all: OrdersAnswer } | { status: "error"; error: ApiError };
+
+/** Opens "Ny beställning" with every choice of an order (?ny=1&som=<id>); the open order stays in the address. */
+function askLike(id: string) {
+  const p = new URLSearchParams(window.location.search);
+  for (const name of PRESET_PARAMS) p.delete(name);
+  p.set("ny", "1");
+  p.set("som", id);
+  window.history.replaceState(null, "", `${window.location.pathname}?${p.toString()}`);
+}
 
 /** Writes the address: the open order, and without the values a new order was asked with. Next's own state is not handed back. */
 function setOrderParam(id: string | null, dropPreset = false) {
@@ -85,7 +95,7 @@ export function OrderView() {
 
   return (
     <>
-      {open ? <SendScreen answer={open} all={all} onBack={() => setOrderParam(null)} onOpen={(id) => setOrderParam(id)} onSaved={saved} /> : <OrderList all={all} onOpen={(id) => setOrderParam(id)} onNew={() => setCreating(true)} />}
+      {open ? <SendScreen answer={open} all={all} onBack={() => setOrderParam(null)} onOpen={(id) => setOrderParam(id)} onSaved={saved} onLike={askLike} /> : <OrderList all={all} onOpen={(id) => setOrderParam(id)} onNew={() => setCreating(true)} />}
       <NewOrder
         key={presetKey}
         open={creating}

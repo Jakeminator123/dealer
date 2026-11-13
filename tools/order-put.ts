@@ -18,7 +18,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { StoreError } from './placement-store.ts';
 import { orderHash, orderStore } from './order-store.ts';
-import { TAKE_FLOW, requestOf, type Order, type Receipt, type TakeStatus } from '../src/order-model.ts';
+import { TAKE_FLOW, approvalWords, requestOf, type Order, type Receipt, type TakeStatus } from '../src/order-model.ts';
 
 const sha = (b: Buffer | string) => createHash('sha256').update(b).digest('hex');
 type Take = Receipt['takes'][number];
@@ -37,8 +37,9 @@ export function receipts(root: string, options: { now?: () => Date } = {}) {
   /** The order may be placed: approved by Jakob, unchanged since, its files the approved ones, ordering switched on. */
   async function check(id: string): Promise<{ order: Order; receipt: Receipt | null; files: { name: string; path: string; sha256: string; bytes: number; mimeType: string; tag?: string; goesAs: string }[] }> {
     const { order } = await store.load(id);
-    if (order.status !== 'GODKÄND' || !order.approval) throw new StoreError(409, `${id} är inte godkänd av Jakob.`);
-    if (order.approval.by !== 'jakob') throw new StoreError(409, `${id}: godkännandet är inte Jakobs.`);
+    if (order.status !== 'GODKÄND' || !order.approval) throw new StoreError(409, `${id} är inte godkänd (av Jakob eller av huvudagenten på hans uppdrag).`);
+    // Jakob's click, or the main agent on his mandate (2026-11-13); the latter only with the mandate it acts on.
+    if (order.approval.by === 'huvudagent' ? !order.approval.mandate?.trim() : order.approval.by !== 'jakob') throw new StoreError(409, order.approval.by === 'huvudagent' ? `${id}: huvudagentens godkännande saknar uppdrag (mandate); lägg den inte.` : `${id}: godkännandet är varken Jakobs eller huvudagentens på hans uppdrag.`);
     if (orderHash(order) !== order.approval.orderSha256) throw new StoreError(409, `${id} har ändrats efter godkännandet (hashen stämmer inte). Lägg den inte.`);
     if (sha(order.prompt.text) !== order.prompt.sha256) throw new StoreError(409, `${id}: textens hash stämmer inte.`);
     const policy = JSON.parse(await readFile(path.join(root, 'data/order-policy.json'), 'utf8'));
@@ -152,7 +153,7 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
     const r = receipts(root);
     if (command === 'check') {
       const { order, receipt, files } = await r.check(id);
-      out({ ok: true, id, title: order.title, orderSha256: order.approval!.orderSha256, takes: Array.from({ length: order.takes }, (_, i) => { const t = receipt?.takes.find((x) => x.take === i + 1); return { take: i + 1, status: t?.status ?? 'GODKÄND', mayBegin: !t }; }), stopBelowCredits: order.limits.stopBelowCredits, files });
+      out({ ok: true, id, title: order.title, approvedBy: `${approvalWords(order.approval!)}${order.approval!.mandate ? `: ${order.approval!.mandate}` : ''}`, orderSha256: order.approval!.orderSha256, takes: Array.from({ length: order.takes }, (_, i) => { const t = receipt?.takes.find((x) => x.take === i + 1); return { take: i + 1, status: t?.status ?? 'GODKÄND', mayBegin: !t }; }), stopBelowCredits: order.limits.stopBelowCredits, files });
     } else if (command === 'begin') out(await r.begin(id, take));
     else if (command === 'placed') out((await r.placed(id, take, rest[0], rest[1] !== undefined ? Number(rest[1]) : null)).take);
     else if (command === 'failed') out((await r.failed(id, take, rest.join(' '))).take);

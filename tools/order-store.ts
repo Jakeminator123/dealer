@@ -18,17 +18,23 @@
 // than the one a draft was made from, refresh copies the one that holds and keeps what the picture was (picture.replaced),
 // and follow(dealer) does that for every draft of the dealer after a decision in Material. Every picture's owner is read
 // from its source, and a whole picture of another dealer in a dealer's draft keeps it from being approved.
+//
+// Template 4 (2026-11-13): a new film draft is written in the short text unless another style is asked for (prompt.style);
+// a draft without a style was written before and is Utförlig, and keeps its text. A return starts on the seat's landing
+// picture and a deal "bara dit" ends on it (a register entry, role landning, that holds); where none holds, the draft is
+// refused with what is missing. A reference film is a take of the bank (referenceCandidates), copied into the order's
+// folder with its hash like the pictures; another dealer's film is allowed there and named.
 import { readFile, writeFile, mkdir, rename, rm, stat, realpath, readdir } from 'node:fs/promises';
 import { createHash, randomUUID } from 'node:crypto';
 import path from 'node:path';
 import { StoreError } from './placement-store.ts';
 import { mediaRoles } from './media-roles.ts';
 import {
-  ANCHOR_NODE, ANCHOR_ROLE, EXTRA_LIMIT, FILE_NAME, FLIP_AXES, ORDER_ID, SEAT_TARGETS, TAKES_MAX,
-  bodyLine, checkPolicy, costOf, crossesBody, dayOf, defaultFlip, draftProblems, edgeOf, genitive, hashInput, modelFor, modelsFor, paramsOf, seatList, seatWords, shownOf, spentOn, stepOf, summaryOf, validateOrder, waitingOf,
-  type Drawn, type FlipAxis, type Motion, type Order, type OrderAnswer, type OrdersAnswer, type Owner, type Picture, type PlanAnswer, type Policy, type PoseAnswer, type Receipt, type SeatPlan, type StepKey, type Waits,
+  ANCHOR_NODE, ANCHOR_ROLE, CARD_SCALES, EXTRA_LIMIT, MODELS, FILE_NAME, FLIP_AXES, ORDER_ID, SEAT_TARGETS, TAKES_MAX, scaleWords,
+  bodyLine, checkPolicy, costOf, crossesBody, cutIntoOf, tidyMotion, dayOf, defaultFlip, defaultStyle, draftProblems, edgeOf, genitive, hashInput, landingMissing, landingOf, modelFor, modelsFor, paramsOf, referenceCandidates, seatList, seatWords, secondsWords, shownOf, spentOn, stepOf, stylesFor, summaryOf, validateOrder, waitingOf,
+  type BankFacts, type Drawn, type FlipAxis, type Motion, type Order, type OrderAnswer, type OrdersAnswer, type Owner, type Picture, type PlanAnswer, type Policy, type PoseAnswer, type Receipt, type Reference, type SeatPlan, type Shape, type StepKey, type TextStyle, type Waits,
 } from '../src/order-model.ts';
-import { TEMPLATE_VERSION, orderPrompt } from '../src/order-prompts.ts';
+import { orderPrompt } from '../src/order-prompts.ts';
 import { CUT, LAY, armAlone, cardTexture, cutFigure, drawCard, matchGreen, pictureBytes, planQuad, pngOf, poseOnShoe, readPlan, readRgb, type CardOutline, type Pt, type Texture } from './order-images.ts';
 import type { PlacementPlan } from '../src/placement-model.ts';
 import type { Entry, Register } from '../studio/lib/media.ts';
@@ -68,6 +74,14 @@ export type NewOrder = {
   /** The register entry a still is made from, or a film starts on (default: the dealer's anchor that holds). */
   base?: string | null;
   pose?: Source | null;
+  /** The text's style (default: Kort for a film; a still has one text). */
+  style?: TextStyle;
+  /** A deal: tur och retur (default) or bara dit, ending on the seat's landing picture. */
+  shape?: Shape;
+  /** A reference film: the bank's take (referenceCandidates), for a model that takes one; absent or null: none. */
+  reference?: string | null;
+  /** The card's size on the last picture of a round trip, as a factor of the plan's (CARD_SCALES; a trial); absent: 1. */
+  cardScale?: number;
   id?: string;
   title?: string;
   group?: { id: string; label: string } | null;
@@ -152,6 +166,16 @@ const isPicture = (e: Entry) => !!e.path && (e.frame !== undefined || /\.(?:png|
 export function holding(register: Register, dealer: string, role: string, node?: string): Entry | null {
   return register.dealers[dealer]?.entries.find((e) => e.role === role && e.state === 'gäller' && !e.card && (!node || e.node === node) && isPicture(e)) ?? null;
 }
+/** Why a draft has no reference film, in words of today (rewritten with the draft; the screen computes its own). */
+export const noReferenceWhy = (model: string) => (MODELS[model]?.videos ? 'Ingen referensfilm vald.' : `${MODELS[model]?.label ?? model} tar ingen referensfilm tillsammans med första och sista bild.`);
+/** Only the dealers data/dealers.json knows can be ordered for (the register may hold others, such as a separate track). */
+export const unknownDealer = (id: unknown) =>
+  `${typeof id === 'string' && id ? id.slice(0, 40) : 'Dealern'} finns inte i data/dealers.json, så inget kan beställas för henne här.`;
+/** A seat's landing picture that holds (role landning, LAND(<seat>), gäller, the card on that seat), as a picture. */
+export function landingEntry(register: Register, dealer: string, target: string | null): Entry | null {
+  const found = landingOf(register.dealers[dealer]?.entries ?? [], target);
+  return found && isPicture(found) ? found : null;
+}
 export function entryOf(register: Register, id: string): { dealer: string; entry: Entry } | null {
   for (const [dealer, d] of Object.entries(register.dealers)) { const entry = d.entries.find((e) => e.id === id); if (entry) return { dealer, entry }; }
   return null;
@@ -225,12 +249,30 @@ export function orderStore(root: string, options: StoreOptions = {}) {
     return register;
   }
   async function readReceipt(id: string): Promise<Receipt | null> { const r = await readJson<Receipt>(path.join(root, folderOf(id), 'receipt.json')); return r?.schemaVersion === 1 ? r : null; }
+  /**
+   * The bank as a reference film needs it, read as the lab's GET /api/clip-bank reads it (tools/preview.ts clipBank): the
+   * job file's takes, each take's record (a derived take's own review, its film's facts) from motions/<id>.json.
+   */
+  async function readBank(): Promise<BankFacts> {
+    const file = await readJson<{ jobs?: unknown[]; derived?: unknown[]; edits?: unknown[] }>(path.join(root, 'data/clip-jobs.json'));
+    const named = <T>(list: unknown): T[] => (Array.isArray(list) ? list : []).filter((x) => typeof (x as { id?: unknown })?.id === 'string' && ORDER_ID.test((x as { id: string }).id)) as T[];
+    const jobs = named<NonNullable<BankFacts['jobs']>[number]>(file?.jobs), edits = named<NonNullable<BankFacts['edits']>[number]>(file?.edits);
+    const derived = named<NonNullable<BankFacts['derived']>[number]>(file?.derived).filter((d) => typeof d.clip === 'string' && ORDER_ID.test(d.clip));
+    const motions: NonNullable<BankFacts['motions']> = {};
+    const record = (id: string) => readJson<{ source?: NonNullable<NonNullable<BankFacts['motions']>[string]>['source']; review?: NonNullable<NonNullable<BankFacts['motions']>[string]>['review'] }>(path.join(root, 'motions', `${id}.json`));
+    for (const j of [...jobs, ...edits]) motions[j.id] = await record(j.id);
+    for (const d of derived) { const own = await record(d.id), clip = await record(d.clip); motions[d.id] = { source: clip?.source, review: own?.review }; }
+    return { jobs, derived, edits, motions };
+  }
 
   async function load(id: string): Promise<{ order: Order; revision: string; text: string }> {
     let text: string;
     try { text = await readFile(fileOf(id), 'utf8'); } catch (error) { if ((error as NodeJS.ErrnoException).code === 'ENOENT') throw new StoreError(404, 'Beställningen finns inte.'); throw error; }
     let value: unknown;
     try { value = JSON.parse(text); } catch { throw new StoreError(422, 'Beställningen är inte giltig JSON.'); }
+    // A draft made before 2026-11-13 may store a turn for a card that is not turned: read without it, written clean on its next change.
+    const raw = value as Partial<Order> | null;
+    if (raw && typeof raw === 'object' && raw.status === 'UTKAST' && raw.motion) raw.motion = tidyMotion(raw.motion);
     const { order, errors } = validateOrder(value);
     if (!order) throw new StoreError(422, `Beställningen håller inte: ${errors.join(' ')}`);
     if (order.id !== id) throw new StoreError(422, 'Beställningens id stämmer inte med filnamnet.');
@@ -279,9 +321,9 @@ export function orderStore(root: string, options: StoreOptions = {}) {
     if (!source.path) throw new StoreError(400, 'Bilden saknar källa.');
     return { bytes: await pictureBytes(root, { path: source.path, frame: source.frame }), from: { path: source.path, ...(source.frame !== undefined ? { frame: source.frame } : {}), note: source.label } };
   }
-  async function drawOn(base: Buffer, target: string, side: 'FRONT' | 'BACK' | null) {
+  async function drawOn(base: Buffer, target: string, side: 'FRONT' | 'BACK' | null, scale = 1) {
     const { plan, file } = await readPlan(root);
-    const { rgb, drawn } = drawCard(await readRgb(base), await tex(), plan, file, target, side);
+    const { rgb, drawn } = drawCard(await readRgb(base), await tex(), plan, file, target, side, scale);
     return { bytes: await pngOf(rgb), drawn };
   }
 
@@ -375,11 +417,11 @@ export function orderStore(root: string, options: StoreOptions = {}) {
    * The draft's text from its choices: the dealer's look, the step, the motion, and where the card lands: where the last
    * picture draws it, or before that picture exists the plan's own point for the card.
    */
-  async function textOf(order: Pick<Order, 'step' | 'motion' | 'generation' | 'pictures' | 'prompt'>, dealer: DealerInfo, extra: string | null) {
+  async function textOf(order: Pick<Order, 'step' | 'motion' | 'generation' | 'pictures' | 'prompt' | 'reference'>, dealer: DealerInfo, extra: string | null): Promise<Order['prompt']> {
     const drawn = order.pictures.find((p) => p.goesAs === 'endFrame')?.drawn ?? null;
     const planPlace = !drawn && order.motion?.target ? planCentre((await readPlan(root)).plan, order.motion.target) : null;
-    const { template, text } = orderPrompt({ ...order, prompt: { ...order.prompt, extra } }, dealer, planPlace);
-    return { template, text, sha256: sha(text), extra, middle: false };
+    const { template, style, text } = orderPrompt({ ...order, prompt: { ...order.prompt, extra } }, dealer, planPlace);
+    return { template, style, text, sha256: sha(text), extra, middle: false };
   }
 
   async function create(input: NewOrder): Promise<{ order: Order; revision: string }> {
@@ -387,13 +429,14 @@ export function orderStore(root: string, options: StoreOptions = {}) {
     if (!step) throw new StoreError(400, 'Okänt steg.');
     if (step.off) throw new StoreError(400, `${step.label}: ${step.off}`);
     const dealers = await readDealers(), dealer = dealers.find((d) => d.id === input.dealer);
-    if (!dealer) throw new StoreError(400, 'Okänd dealer.');
+    if (!dealer) throw new StoreError(400, unknownDealer(input.dealer));
     const policy = await readPolicy();
     if (!policy) throw new StoreError(500, 'data/order-policy.json kunde inte läsas.');
     const register = await readRegister();
     // The step's own model, or one asked for that can make it (a film: first and last picture, no reference).
     const model = input.model === undefined || input.model === null ? modelFor(step) : typeof input.model === 'string' ? modelFor(step, input.model) : null;
-    if (!model) throw new StoreError(400, `${String(input.model)} kan inte göra ${step.label}: välj ${modelsFor(step).map((m) => m.id).join(', ')}.`);
+    if (!model) throw new StoreError(400, `${String(input.model)} kan inte göra ${step.label}: välj ${modelsFor(step).filter((m) => !m.off).map((m) => m.id).join(', ')}.`);
+    if (model.off) throw new StoreError(400, `${model.label} beställs inte längre: ${model.off}`);
     const target = step.card ? (input.target ?? null) : null;
     const { plan } = await readPlan(root);
     if (step.card && (!target || !plan.targets[target])) throw new StoreError(400, 'Välj en plats på bordet (P1.C1 … D.C1).');
@@ -406,6 +449,20 @@ export function orderStore(root: string, options: StoreOptions = {}) {
     if (input.hand !== undefined && input.hand !== 'LH' && input.hand !== 'RH') throw new StoreError(400, 'Handen ska vara LH eller RH.');
     if (input.pass !== undefined && typeof input.pass !== 'boolean') throw new StoreError(400, 'Handbyte ska vara sant eller falskt.');
     if (input.side !== undefined && input.side !== 'FRONT' && input.side !== 'BACK') throw new StoreError(400, 'Kortet landar FRONT (öppet) eller BACK (stängt).');
+    const style = input.style ?? defaultStyle(step.kind);
+    if (!stylesFor(step.kind).includes(style)) throw new StoreError(400, step.kind === 'STILL' ? 'En bild skrivs KORT eller UTFÖRLIG.' : 'Texten är KORT, MINIMAL eller UTFÖRLIG.');
+    const deal = step.card && step.start !== 'LAND';
+    if (input.shape !== undefined && input.shape !== 'ROUND_TRIP' && input.shape !== 'ONE_WAY') throw new StoreError(400, 'En giv är ROUND_TRIP (tur och retur) eller ONE_WAY (bara dit).');
+    if (input.shape !== undefined && !deal && input.shape !== 'ONE_WAY') throw new StoreError(400, 'Bara en giv kan gå tur och retur.');
+    const shape: Shape | null = step.kind !== 'FILM' ? null : deal ? (input.shape ?? 'ROUND_TRIP') : 'ONE_WAY';
+    // A return starts on the seat's landing picture and a deal bara dit ends on it: one must hold.
+    const landing = step.start === 'LAND' || (deal && shape === 'ONE_WAY') ? landingEntry(register, dealer.id, target) : null;
+    if ((step.start === 'LAND' || (deal && shape === 'ONE_WAY')) && !landing) throw new StoreError(400, landingMissing(dealer.name, target));
+    if (input.reference !== undefined && input.reference !== null && typeof input.reference !== 'string') throw new StoreError(400, 'Referensfilmen ska vara en tagnings id.');
+    const cardScale = input.cardScale ?? 1;
+    if (!(CARD_SCALES as readonly unknown[]).includes(cardScale)) throw new StoreError(400, `Kortets storlek ska vara ${CARD_SCALES.map((f) => scaleWords(f)).join(', ')}.`);
+    if (cardScale !== 1 && !(deal && shape === 'ROUND_TRIP')) throw new StoreError(400, 'Kortets storlek väljs bara för tur och retur, där sista bilden ritas; i bara dit och en retur är kortet som i landningsbilden.');
+    if (input.reference && !model.videos) throw new StoreError(400, `${model.label} tar ingen referensfilm tillsammans med första och sista bild.`);
     const seat = target ? target.toLowerCase().replace('.c1', '').replace('.', '-') : null;
     const id = input.id ?? (await nextId([dealer.id, step.key.toLowerCase().replace('.', '-'), seat].filter(Boolean).join('-')));
     if (!ORDER_ID.test(id)) throw new StoreError(400, 'Ogiltigt beställnings-id.');
@@ -440,25 +497,37 @@ export function orderStore(root: string, options: StoreOptions = {}) {
         return { picture: { name, label: label(words), goesAs, ...(tag ? { tag } : {}), path: null, sha256: null, from: null, waits: { dealer: dealer.id, role: ANCHOR_ROLE[at], node: ANCHOR_NODE[at], label: `ankare ${at}` } }, bytes: null };
       };
 
+      // A seat's landing picture, copied byte for byte from the register like an anchor (a still, or one frame of a film).
+      const landingPicture = async (name: string, label: string, goesAs: Picture['goesAs']): Promise<Picture> => {
+        const { bytes, from } = await sourceBytes(register, { entry: landing!.id });
+        return { name, label, goesAs, ...(await put(id, name, bytes)), width: 1764, height: 1174, from, waits: null };
+      };
+      const landingWords = `${genitive(dealer.name)} landning på ${seatWords(target)}`;
       let motion: Order['motion'] = null;
       if (step.kind === 'FILM') {
-        const first = await anchorPicture('first.png', (w) => `Första bild · ${w}`, 'startFrame', step.from);
+        const first = step.start === 'LAND' ? { picture: await landingPicture('first.png', `Första bild · ${landingWords}`, 'startFrame'), bytes: null } : await anchorPicture('first.png', (w) => `Första bild · ${w}`, 'startFrame', step.from);
         pictures.push(first.picture);
         if (step.card && intent) {
-          // The choices made in the sheet, else what Placering says for the card. Every card leaves the shoe closed.
+          // The choices made in the sheet, else what Placering says for the card. Every card leaves the shoe closed; in a
+          // return it lies where it was laid and is not turned.
           const pass = input.pass ?? (input.hand === undefined ? intent.pass : false);
           const hand = pass ? 'LH' : (input.hand ?? intent.takeHand);
           if (pass && input.hand === 'RH') throw new StoreError(400, 'Handbyte går från vänster hand till höger: vänster tar kortet ur skon.');
           const side = input.side ?? intent.endSide;
-          motion = { grip: step.grip ?? 'PINCH', hand, pass, turn: side !== intent.startSide, flipAxis, target, side, fromPlan: false };
+          const turn = step.start === 'LAND' ? false : side !== intent.startSide;
+          motion = { grip: step.grip ?? 'PINCH', hand, pass, turn, flipAxis: turn ? flipAxis : null, target, side, fromPlan: false, ...(cardScale !== 1 ? { cardScale } : {}) };
           motion.fromPlan = fromPlanOf(plan, motion);
-          // Drawn on the dealer's own anchor only; while it waits, the picture shows that it waits (no other dealer stands in).
-          const last: Picture = { name: 'last.png', label: `Sista bild · samma + kortet ${side === 'BACK' ? 'stängt' : 'öppet'} på ${seatWords(target)}`, goesAs: 'endFrame', path: null, sha256: null, from: { built: `första bilden + kortet ${target} där planen säger` }, waits: first.picture.waits ?? null };
-          if (first.bytes) {
-            const { bytes, drawn } = await drawOn(first.bytes, target!, side);
-            Object.assign(last, await put(id, 'last.png', bytes), { width: 1764, height: 1174, drawn, waits: null });
+          if (step.start === 'LAND') pictures.push((await anchorPicture('last.png', (w) => `Sista bild · ${w}`, 'endFrame', step.to ?? step.from)).picture);
+          else if (shape === 'ONE_WAY') pictures.push(await landingPicture('last.png', `Sista bild · ${landingWords}`, 'endFrame'));
+          else {
+            // Drawn on the dealer's own anchor only; while it waits, the picture shows that it waits (no other dealer stands in).
+            const last: Picture = { name: 'last.png', label: `Sista bild · samma + kortet ${side === 'BACK' ? 'stängt' : 'öppet'} på ${seatWords(target)}`, goesAs: 'endFrame', path: null, sha256: null, from: { built: `första bilden + kortet ${target} där planen säger` }, waits: first.picture.waits ?? null };
+            if (first.bytes) {
+              const { bytes, drawn } = await drawOn(first.bytes, target!, side, cardScale);
+              Object.assign(last, await put(id, 'last.png', bytes), { width: 1764, height: 1174, drawn, waits: null });
+            }
+            pictures.push(last);
           }
-          pictures.push(last);
         } else {
           const last = await anchorPicture('last.png', (w) => `Sista bild · ${w}`, 'endFrame', step.to ?? step.from);
           pictures.push(last.picture);
@@ -480,23 +549,40 @@ export function orderStore(root: string, options: StoreOptions = {}) {
         }
       }
 
+      // A reference film: a take of the bank for this step, copied into the order's folder with its hash.
+      let reference: Reference = { status: 'INGEN', why: noReferenceWhy(model.id) };
+      if (input.reference) {
+        const found = referenceCandidates(await readBank(), { dealer: dealer.id, step, target, model }).find((c) => c.take === input.reference || c.film === input.reference);
+        if (!found) throw new StoreError(400, `${input.reference} finns inte bland bankens tagningar för ${step.label}${target ? ` till ${seatWords(target)}` : ''}.`);
+        if (!found.fits) throw new StoreError(400, `Referensfilmen är ${secondsWords(found.seconds)}; ${model.label} tar ${model.referenceSeconds?.join('–')} s.`);
+        const file = path.join(root, ...found.path.split('/'));
+        try { if ((await realpath(file)) !== path.join(await realpath(path.join(root, 'assets', 'motions')), found.film, 'source.mp4')) throw new Error('outside'); } catch { throw new StoreError(404, `Filmen ${found.path} finns inte i banken.`); }
+        const bytes = await readFile(file);
+        if (found.sha256 && sha(bytes) !== found.sha256) throw new StoreError(409, `${found.path} är inte den film banken mätte (sha256 skiljer).`);
+        const copied = await put(id, 'reference.mp4', bytes);
+        reference = {
+          status: 'FINNS', clips: [found.take], ...copied, seconds: found.seconds!, goesTo: found.goesTo ?? found.edge, approvedStraight: found.approvedStraight, dealer: found.dealer,
+          from: { film: found.film, path: found.path, sha256: copied.sha256, edge: found.edge, verdict: found.verdict, words: found.words, frames: found.frames, also: found.also },
+        };
+      }
+
       // What the still becomes: a candidate of its role in the register.
       const makes = step.makes ? { role: step.makes.role, label: step.makes.label } : null;
       const edge = edgeOf(step, target);
       const order: Order = {
         schemaVersion: 1,
         id,
-        title: input.title ?? `${dealer.name} · ${step.label}${target ? ` · ${seatWords(target)}` : ''}${model.id !== step.model ? ` · ${model.label}` : ''}`,
-        summary: summaryOf(step, dealer.name, motion),
+        title: input.title ?? `${dealer.name} · ${step.label}${target ? ` · ${seatWords(target)}` : ''}${deal && shape === 'ONE_WAY' ? ' · bara dit' : ''}${model.id !== step.model ? ` · ${model.label}` : ''}${cardScale !== 1 ? ` · prov: kortet ${scaleWords(cardScale)}` : ''}`,
+        summary: summaryOf(step, dealer.name, motion, shape),
         group: input.group ?? null,
         dealer: dealer.id,
         kind: step.kind,
-        step: { key: step.key, label: step.label, edge, shape: step.kind === 'FILM' ? (step.card ? 'ROUND_TRIP' : 'ONE_WAY') : null, cutInto: step.card && target ? [`${ANCHOR_NODE[step.from]}>${target}`, `${target}>${ANCHOR_NODE[step.from]}`] : [], makes },
+        step: { key: step.key, label: step.label, edge, shape, cutInto: cutIntoOf(step, target, shape), makes },
         motion,
         pictures,
-        reference: { status: 'INGEN', why: step.card ? 'Ingen referensfilm. Mallen som höll hade bankens tur och retur till samma plats som referens; den klipps inte här än.' : 'Ingen referensfilm behövs för steget.' },
+        reference,
         generation: { provider: 'runway-app', tool: model.tool, model: model.id, params },
-        prompt: { template: '', text: '', sha256: '', extra, middle: false },
+        prompt: { template: '', style, text: '', sha256: '', extra, middle: false },
         takes,
         cost,
         limits: { maxCredits: cost.worstTotal, stopBelowCredits: policy.minBalance },
@@ -526,8 +612,8 @@ export function orderStore(root: string, options: StoreOptions = {}) {
     if (targets.some((t) => typeof t !== 'string' || !SEAT_TARGETS.includes(t)) || new Set(targets).size !== targets.length) throw new StoreError(400, 'Platserna ska vara olika och finnas i planen (P1.C1 … D.C1).');
     for (const s of seats) for (const key of Object.keys(s)) if (!['target', 'hand', 'pass', 'side'].includes(key)) throw new StoreError(400, `${key} kan inte sättas per plats.`);
     const step = stepOf(input.step), dealer = (await readDealers()).find((d) => d.id === input.dealer);
-    if (!step?.card) throw new StoreError(400, 'Flera platser går bara för en giv.');
-    if (!dealer) throw new StoreError(400, 'Okänd dealer.');
+    if (!step?.card || step.start === 'LAND') throw new StoreError(400, 'Flera platser går bara för en giv.');
+    if (!dealer) throw new StoreError(400, unknownDealer(input.dealer));
     const taken = new Set<string>();
     for (const name of (await readdir(dir).catch(() => [] as string[])).filter((f) => f.endsWith('.json'))) { const g = (await readJson<Order>(path.join(dir, name)))?.group?.id; if (g) taken.add(g); }
     const prefix = `${dealer.id}-${step.key.toLowerCase().replace('.', '-')}-grupp`;
@@ -580,7 +666,7 @@ export function orderStore(root: string, options: StoreOptions = {}) {
       const next: Order = structuredClone(order);
       if (changes.title !== undefined) next.title = changes.title.trim();
       if (changes.takes !== undefined) next.takes = changes.takes;
-      if (changes.flipAxis !== undefined) { if (!next.motion) throw new StoreError(400, 'Steget har ingen vändning.'); next.motion.flipAxis = changes.flipAxis; }
+      if (changes.flipAxis !== undefined) { if (!next.motion?.turn) throw new StoreError(400, 'Kortet vänds inte i det här utkastet.'); next.motion.flipAxis = changes.flipAxis; }
       if (changes.duration !== undefined) { if (next.kind !== 'FILM') throw new StoreError(400, 'En bild har ingen längd.'); next.generation.params.duration = changes.duration; }
       if (changes.hand !== undefined || changes.pass !== undefined || changes.side !== undefined) {
         if (!next.motion) throw new StoreError(400, 'Steget har ingen hand eller sida att välja.');
@@ -588,13 +674,17 @@ export function orderStore(root: string, options: StoreOptions = {}) {
         const hand = changes.hand ?? (pass ? 'LH' : next.motion.hand);
         if (pass && hand !== 'LH') throw new StoreError(400, 'Handbyte går från vänster hand till höger: vänster tar kortet ur skon.');
         const side = changes.side ?? next.motion.side, redraw = side !== next.motion.side;
-        Object.assign(next.motion, { hand, pass, side, turn: side !== 'BACK' });
+        // In a return the card lies where it was laid and is not turned.
+        const turn = stepOf(next.step.key)?.start === 'LAND' ? false : side !== 'BACK';
+        const intent = next.motion.target ? (await readPlan(root)).plan.targets[next.motion.target]?.intent : null;
+        Object.assign(next.motion, { hand, pass, side, turn, flipAxis: turn ? (next.motion.flipAxis ?? defaultFlip(next.step.key, intent?.turnAt)) : null });
         const { plan } = await readPlan(root);
         next.motion.fromPlan = fromPlanOf(plan, next.motion);
         await labelLast(next);
         if (redraw) await drawLast(id, next, null);
       }
-      next.summary = summaryOf(next.step, dealer.name, next.motion);
+      next.summary = summaryOf(next.step, dealer.name, next.motion, next.step.shape);
+      if (next.reference.status === 'INGEN') next.reference.why = noReferenceWhy(next.generation.model);
       const extra = changes.extra !== undefined ? (changes.extra?.trim() || null) : next.prompt.extra;
       next.prompt = await textOf(next, dealer, extra);
       const cost = costOf(next.generation, next.takes, policy.prices);
@@ -616,7 +706,7 @@ export function orderStore(root: string, options: StoreOptions = {}) {
     const last = order.pictures.find((p) => p.goesAs === 'endFrame' && p.from?.built);
     if (!first?.path || !last || !order.motion?.target) return;
     const base = firstBytes ?? (await readFile(path.join(root, ...first.path.split('/'))));
-    const { bytes, drawn } = await drawOn(base, order.motion.target, order.motion.side);
+    const { bytes, drawn } = await drawOn(base, order.motion.target, order.motion.side, order.motion.cardScale ?? 1);
     Object.assign(last, await put(id, 'last.png', bytes), { drawn, waits: null, width: 1764, height: 1174 });
   }
 
@@ -668,7 +758,8 @@ export function orderStore(root: string, options: StoreOptions = {}) {
       const last = next.pictures.find((p) => p.goesAs === 'endFrame' && p.from?.built);
       if (last && (firstBytes || !last.path || last.drawn?.plan.sha256 !== planFile.sha256 || (last.drawn && last.drawn.side !== next.motion?.side))) await drawLast(id, next, firstBytes);
       await labelLast(next);
-      next.summary = summaryOf(next.step, dealer.name, next.motion);
+      next.summary = summaryOf(next.step, dealer.name, next.motion, next.step.shape);
+      if (next.reference.status === 'INGEN') next.reference.why = noReferenceWhy(next.generation.model);
       next.prompt = await textOf(next, dealer, next.prompt.extra);
       return { order: next, revision: await write(next) };
     });
@@ -692,7 +783,8 @@ export function orderStore(root: string, options: StoreOptions = {}) {
     }
     if (planSha && order.pictures.some((p) => p.drawn && p.drawn.plan.sha256 !== planSha)) reasons.push('Planen har ändrats sedan kortet ritades.');
     if (poseStale(order)) reasons.push('Posebildens gröna är inte ankarets än.');
-    if (!order.prompt.template.endsWith(`@${TEMPLATE_VERSION}`)) reasons.push('Texten är skriven med en äldre mall.');
+    // The template its style writes today (a draft without a style is Utförlig, whose deal text is still template 3's).
+    if (dealer && order.prompt.template !== orderPrompt(order, dealer, null).template) reasons.push('Texten är skriven med en äldre mall.');
     return reasons.length ? reasons.join(' ') : null;
   }
 
@@ -813,9 +905,14 @@ export function orderStore(root: string, options: StoreOptions = {}) {
     return found;
   }
 
-  // ── Jakob's click ──────────────────────────────────────────────────────────
-  /** Freezes a draft: its hash in approval. Refused while anything waits or is missing, and beyond the policy. */
-  async function approve(id: string, expected: string | undefined) {
+  // ── Jakob's click, or the main agent on his mandate ────────────────────────
+  /**
+   * Freezes a draft: its hash in approval. Refused while anything waits or is missing, and beyond the policy. Jakob's
+   * click (the route) is by jakob; the main agent's (tools/order-approve.ts) is by huvudagent and carries the mandate it
+   * acts on. The checks and the hash are the same for both.
+   */
+  async function approve(id: string, expected: string | undefined, who: { by: 'huvudagent'; mandate: string } | null = null) {
+    if (who && (who.by !== 'huvudagent' || typeof who.mandate !== 'string' || !who.mandate.trim() || who.mandate.length > 300)) throw new StoreError(400, 'Huvudagentens godkännande kräver uppdraget (mandate: vems ord och när, högst 300 tecken).');
     return serial(async () => {
       const { order, revision } = await load(id);
       guardDraft(order, revision, expected);
@@ -832,8 +929,20 @@ export function orderStore(root: string, options: StoreOptions = {}) {
       const balance = (await balanceNow(policy, receipts))?.credits ?? 0;
       const check = checkPolicy(order, policy, spentOn(others, dayOf(at, zone), zone), balance);
       if (!check.ok) throw new StoreError(403, check.refusals.join(' '));
-      const next: Order = { ...order, status: 'GODKÄND', approval: { by: 'jakob', at, orderSha256: orderHash(order) } };
+      const approval: Order['approval'] = who ? { by: 'huvudagent', at, orderSha256: orderHash(order), mandate: who.mandate.trim() } : { by: 'jakob', at, orderSha256: orderHash(order) };
+      const next: Order = { ...order, status: 'GODKÄND', approval };
       return { order: next, revision: await write(next), check };
+    });
+  }
+
+  /** Sets a draft aside (AVBRUTEN) with why: never placed, kept as the record of what was prepared. */
+  async function setAside(id: string, expected: string | undefined, why: string, by: string) {
+    if (typeof why !== 'string' || !why.trim() || why.length > 300) throw new StoreError(400, 'Säg varför (högst 300 tecken).');
+    return serial(async () => {
+      const { order, revision } = await load(id);
+      guardDraft(order, revision, expected);
+      const next: Order = { ...order, status: 'AVBRUTEN', setAside: { at: now().toISOString(), by, why: why.trim() } };
+      return { order: next, revision: await write(next) };
     });
   }
 
@@ -846,7 +955,7 @@ export function orderStore(root: string, options: StoreOptions = {}) {
     return (await stat(file).then((s) => s.isFile(), () => false)) ? file : null;
   }
 
-  return { list, one, load, create, createMany, change, refresh, follow, approve, servable, readReceipt, posePicture };
+  return { list, one, load, create, createMany, change, refresh, follow, approve, setAside, servable, readReceipt, posePicture };
 }
 
 export type { Drawn, OrderAnswer, OrdersAnswer };

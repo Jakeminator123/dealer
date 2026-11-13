@@ -110,7 +110,7 @@
   ],
   "reference": {
     "status": "INGEN",
-    "why": "Ingen referensfilm. Mallen som höll hade bankens tur och retur till samma plats som referens; den klipps inte här än."
+    "why": "WAN 3 tar ingen referensfilm tillsammans med första och sista bild."
   },
   "generation": {
     "provider": "runway-app",
@@ -125,6 +125,7 @@
   },
   "prompt": {
     "template": "film-giv@3",
+    "style": "UTFÖRLIG",
     "text": "Locked camera. A young, slim, petite woman with a platinum-blonde chin-length bob, warm-coloured tattoos on her throat and upper chest and a small white flower pendant, in a black tailored blazer over a cream V-neck top sits at a green table with a black card shoe fixed at the right of the picture. One continuous, calm and natural movement from the exact first pose. Her left hand, at the right of the picture, pinches the yellow card in the shoe's window between thumb and forefinger, the fingertips on the card's own upper edge and not on the shoe's rim, as in the first frame, and draws it out of the shoe: the card looks as it does in the shoe, the same size and shape, one plain rigid card. The same hand carries it low over the table towards the place where it will lie. On the way she turns the card over once, the way a real hand can from this pinch: one natural movement of fingers and wrist that a human hand can actually make, the card held firmly the whole time and keeping its size, until its blue face is up. She lays it flat with her left hand, blue face up, exactly where the blue card lies in the last frame, in the middle of the picture, at the same size and angle, lets go of it, and the card stays there. Then her left hand returns to the shoe and pinches the next yellow card, exactly as in the first frame. Her right hand, at the left of the picture, rests on the table the whole time. Only one card moves; it is solid yellow on its back and solid blue on its face. The clip ends in exactly the pose of the last image, which is the first pose again with the card lying on the table. Nothing of this happens: a second card appears, her right hand lifts from the table or touches the card, a finger passes through the card, the card grows or shrinks on its way, a hand hovers in the air without holding or laying anything, the shoe changes, the picture cuts or the camera moves.",
     "sha256": "97aa39cb8b85aa9f69fcd1309a29e2d2c42ff3599b459ac6c8d6163704a0dc35",
     "extra": null,

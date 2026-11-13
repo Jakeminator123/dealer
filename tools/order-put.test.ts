@@ -75,3 +75,32 @@ test('nothing is placed for an order that changed after approval or whose pictur
   await writeFile(path.join(root, 'assets/orders/prov-ett/pose-figure.png'), 'other');
   await assert.rejects(r.begin('prov-ett', 1), /inte den godkända filen/);
 });
+
+test('the main agent approves on Jakob\'s mandate with the same checks; check takes it only with the mandate; a draft can be set aside', async (t) => {
+  const { root, store } = await approved(t);
+  const { approveCommand } = await import('./order-approve.ts');
+  const draft = await store.create({ dealer: 'paow', step: 'ANKARE-2.1', id: 'prov-tva', pose: { entry: 'pamela-nyp', keep: ARM_AT_SHOE, what: POSE_WHAT } });
+  await assert.rejects(approveCommand(root, ['prov-tva', '--mandate', ' ']), /Använd/);
+  const out = await approveCommand(root, ['prov-tva', '--mandate', 'Jakob 2026-11-13: beställ lämpliga filmer automatiskt utan mitt godkännande'], { now: () => new Date('2026-11-12T22:00:00Z') });
+  const approval = out.approval as { by: string; mandate: string; orderSha256: string };
+  assert.deepEqual([approval.by, approval.mandate], ['huvudagent', 'Jakob 2026-11-13: beställ lämpliga filmer automatiskt utan mitt godkännande']);
+  assert.match(String((out.day as { words: string }).words), /krediter intecknade i dag med den här/);
+  const { order } = await store.load('prov-tva');
+  assert.equal(order.approval!.orderSha256, (await import('./order-store.ts')).orderHash(order), 'the hash frozen as for his click');
+  assert.equal(draft.order.id, 'prov-tva');
+  const r = receipts(root);
+  assert.equal((await r.check('prov-tva')).order.approval!.by, 'huvudagent');
+  // Without its mandate the approval is refused: by the order check and by check.
+  const file = path.join(root, 'data/orders/prov-tva.json');
+  const value = JSON.parse(await readFile(file, 'utf8'));
+  delete value.approval.mandate;
+  await writeFile(file, JSON.stringify(value, null, 2));
+  await assert.rejects(r.check('prov-tva'), /uppdrag/);
+  await assert.rejects(r.begin('prov-tva', 1), /uppdrag/);
+  // Set aside with why: AVBRUTEN, the reason kept; an approved order cannot be set aside.
+  await store.create({ dealer: 'paow', step: 'ANKARE-2.1', id: 'prov-tre', pose: { entry: 'pamela-nyp', keep: ARM_AT_SHOE, what: POSE_WHAT } });
+  const aside = await approveCommand(root, ['prov-tre', '--set-aside', 'Långa textens metodprov körs inte (huvudagenten 2026-11-13).']);
+  assert.equal(aside.status, 'AVBRUTEN');
+  assert.match(String((aside.setAside as { why: string }).why), /körs inte/);
+  await assert.rejects(approveCommand(root, ['prov-ett', '--set-aside', 'x']), /godkänd/);
+});

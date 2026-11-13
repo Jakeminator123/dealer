@@ -51,8 +51,9 @@ For take n of an order:
      ("4:3"), `imageSize` ("4K"), `count: 1`, `referenceImages: [{url, tag: "anchor"}, {url, tag: "pose"}]` (the text says
      `@anchor` and `@pose`), and `confirmRepeat: true` from take 2.
    - **generate_video, `kling-4`**: `model`, `promptText`, `resolution` ("1080p"), `duration`, `startFrame: {url}`,
-     `endFrame: {url}`, and optionally `referenceVideos: [{url, durationSeconds}]` (a reference film; `durationSeconds`
-     required). No `generateAudio` (Kling's
+     `endFrame: {url}`, and optionally `referenceVideos: [{url, durationSeconds}]` (a reference film: the order's
+     `reference.mp4`, listed by `check` with `goesAs: referenceVideo`, a take of the bank copied with its hash; it may be
+     another dealer's, which Jakob allows; the text calls it "video 1"; `durationSeconds` required). No `generateAudio` (Kling's
      sound is always on and the tool refuses false) and no `ratio` (it follows the first picture: 1764 × 1172).
    - **generate_video, `wan3`**: `model`, `promptText`, `resolution`, `ratio: "adaptive"` (gives exactly 1764 × 1174),
      `duration`, `startFrame`, `endFrame`, `generateAudio: false`. WAN takes no reference pictures together with start and end.
@@ -62,6 +63,9 @@ For take n of an order:
      but the `endFrame` field's own list of models leaves it out: if the tool refuses, that is `failed`, never a call
      without `endFrame`.
    - From take 2 the request carries `confirmRepeat: true`; without it the tool returns the earlier task instead of a new one.
+   - A return (`RETUR-2.1`, `RETUR-2.2`, `RETUR-1`) starts on the seat's landing picture and a deal "bara dit"
+     (`step.shape: ONE_WAY`) ends on it: that picture is `first.png` or `last.png` like any other, copied from the register.
+     The call is the same; the bank edge is `step.edge` (`P4.C1>READY` for a return), and `step.cutInto` has one edge.
 3. **After the call:**
    - It answered with a task id: `node tools/order-put.ts placed <id> <n> <taskId> <creditsRemaining>` at once.
    - It answered with an error and no task: `node tools/order-put.ts failed <id> <n> "<error verbatim>"`. Do not retry; a

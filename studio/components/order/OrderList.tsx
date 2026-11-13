@@ -5,9 +5,10 @@
 // length, and the cost. A click opens "Det här skickas". Under the queue the one line on how
 // approved orders get placed.
 import { Clock, Film, ImageIcon, Plus } from "lucide-react";
+import Link from "next/link";
 import { labUrl } from "../../lib/lab.ts";
-import { HANDOVER, costWords, picturesInOrder, sections, type OrderAnswer, type OrdersAnswer, type Picture } from "../../lib/orders.ts";
-import { MODELS, credits } from "../../../src/order-model.ts";
+import { HANDOVER, costWords, picturesInOrder, sections, styleWords, type OrderAnswer, type OrdersAnswer, type Picture } from "../../lib/orders.ts";
+import { MODELS, approvalWords, credits, scaleWords } from "../../../src/order-model.ts";
 import { Page } from "../shell";
 import { Button, Card, EmptyState } from "../ui";
 import { StatusChip } from "./Pictures";
@@ -50,7 +51,13 @@ function OrderCard({ answer, onOpen }: { answer: OrderAnswer; onOpen: () => void
           <p className="truncate font-display text-md font-semibold text-ink">{order.title}</p>
           {order.group ? <p className="truncate text-xs text-brass-hi">Grupp: {order.group.label}</p> : null}
           {order.summary ? <p className="mt-0.5 text-sm leading-5 text-ink">{order.summary}</p> : null}
-          <p className="mt-0.5 truncate text-xs text-dim">{what}</p>
+          <p className="mt-0.5 truncate text-xs text-dim">
+            {what} · {styleWords(order)}
+            {order.reference.status === "FINNS" ? " · referensfilm" : ""}
+          </p>
+          {order.approval?.by === "huvudagent" ? <p className="mt-0.5 truncate text-xs text-dim" title={order.approval.mandate}>{approvalWords(order.approval)}</p> : null}
+          {order.status === "AVBRUTEN" && order.setAside ? <p className="mt-0.5 text-xs text-dim">Avbruten: {order.setAside.why}</p> : null}
+          {order.motion?.cardScale && order.motion.cardScale !== 1 ? <p className="mt-0.5 text-xs text-[#f0b07a]">Prov: kortet {scaleWords(order.motion.cardScale)} av planens</p> : null}
         </div>
       </div>
       <div className="mt-2.5 flex flex-wrap items-center gap-x-2 gap-y-1.5">
@@ -73,9 +80,15 @@ export function OrderList({ all, onOpen, onNew }: { all: OrdersAnswer; onOpen: (
         </span>
       }
       actions={
-        <Button variant="primary" icon={<Plus />} onClick={onNew}>
-          Ny beställning
-        </Button>
+        <>
+          {/* The protocol of every take (another view, /protokoll/). */}
+          <Link href="/protokoll/" className="text-sm text-dim hover:text-ink hover:underline">
+            Protokoll
+          </Link>
+          <Button variant="primary" icon={<Plus />} onClick={onNew}>
+            Ny beställning
+          </Button>
+        </>
       }
     >
       <div className="flex flex-col gap-8">

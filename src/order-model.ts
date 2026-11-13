@@ -2,8 +2,11 @@
 // Pure: the order's shape and its check, the steps a dealer can be ordered for with their defaults, what goes out per take
 // (requestOf), the cost from the price table in data/order-policy.json, the policy check (also for a group of drafts),
 // the hash the approval freezes, and the status a person sees. The choices of a deal (hand, handbyte, how the card lands
-// and turns) and the plan's cards as an order sees them, with the seats where the left hand would cross her body. No fs, no network, no hashing (the caller hashes hashInput()); the studio builds it in.
+// and turns, the text's style, tur och retur or bara dit) and the plan's cards as an order sees them, with the seats where
+// the left hand would cross her body; the bank's takes a reference film can be chosen from (referenceCandidates). No fs,
+// no network, no hashing (the caller hashes hashInput()); the studio builds it in.
 // Tests: tools/order-model.test.ts.
+import { dealersOf, parseEdge } from './clip-graph.ts';
 
 // ── Words ───────────────────────────────────────────────────────────────────
 export const ORDER_ID = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
@@ -51,6 +54,59 @@ export const HAND_ABOUT: Record<HandChoice, string> = {
 export const handChoiceOf = (m: { hand: 'LH' | 'RH'; pass?: boolean }): HandChoice => (m.pass ? 'PASS' : m.hand);
 export const handsOf = (choice: HandChoice): { hand: 'LH' | 'RH'; pass: boolean } => (choice === 'PASS' ? { hand: 'LH', pass: true } : { hand: choice, pass: false });
 
+/**
+ * The text's style (template 4, 2026-11-13). KORT: only the movement in the order it happens, positive, nothing of her
+ * look and no list of bans, the turn said once (the default for a film). MINIMAL: Jakob's trial: the card's colours and
+ * that one card goes from the shoe to where the last picture shows it, nothing about how. UTFÖRLIG: the text of template 3
+ * as it was, kept so that a comparison can be made again; every order made before template 4 is Utförlig. A still is
+ * written Kort (what is there, said positively, no list of bans) or Utförlig; Minimal says nothing a still can use.
+ */
+export type TextStyle = 'KORT' | 'MINIMAL' | 'UTFÖRLIG';
+export const TEXT_STYLES: readonly TextStyle[] = ['KORT', 'MINIMAL', 'UTFÖRLIG'];
+export const STYLE_LABEL: Record<TextStyle, string> = { KORT: 'Kort', MINIMAL: 'Minimal', UTFÖRLIG: 'Utförlig' };
+export const STYLE_ABOUT: Record<TextStyle, string> = {
+  KORT: 'Bara rörelsen, i den ordning den sker. Inget om hennes utseende, inga förbud; vändningen i en mening.',
+  MINIMAL: 'Jakobs prov: kortets färger och att ett kort går från skon dit sista bilden visar. Inget om hur. Inte för en bild.',
+  UTFÖRLIG: 'Mall 3, som den var: hennes utseende, varje led och listan över det som inte får hända. För jämförelse.',
+};
+export const stylesFor = (kind: Kind): readonly TextStyle[] => (kind === 'STILL' ? ['KORT', 'UTFÖRLIG'] : TEXT_STYLES);
+/** A new order is written Kort, a still too; only an order made before template 4 reads as Utförlig (styleOf). */
+export const defaultStyle = (_kind?: Kind): TextStyle => 'KORT';
+/** A stored order's style: its own, else Utförlig (every order before template 4 was written with the long text). */
+export const styleOf = (prompt: { style?: TextStyle | null } | null | undefined): TextStyle => prompt?.style ?? 'UTFÖRLIG';
+
+/** A deal goes to the place and back to the shoe in one film (tur och retur), or ends at the place on the landing picture (bara dit). */
+export type Shape = 'ROUND_TRIP' | 'ONE_WAY';
+export const SHAPE_LABEL: Record<Shape, string> = { ROUND_TRIP: 'Tur och retur', ONE_WAY: 'Bara dit' };
+export const SHAPE_ABOUT: Record<Shape, string> = {
+  ROUND_TRIP: 'Ett kort till platsen och handen tillbaka, i samma film; sista bilden är ankaret med kortet ritat.',
+  ONE_WAY: 'En handling: filmen slutar på landningsbilden, handen vid kortet. Returen beställs som en egen film.',
+};
+
+/**
+ * The card's size in one order (Jakob 2026-11-13: "en helt annan storlek, bara för att se om det funkar"): a factor about
+ * the card's own centre on the last picture, the saved plan untouched. 1 is the plan's size; any other is a trial.
+ */
+export const CARD_SCALES = [1, 1.25, 1.5, 2] as const;
+export const scaleWords = (factor: number | null | undefined) => (!factor || factor === 1 ? 'som planen' : `${Math.round(factor * 100)} %`);
+/**
+ * A card's outline grown about its own centre, stopped where the first corner meets the picture's edge, as the plan's
+ * scaleCards stops a card (src/placement-model.ts); factor is the one used (smaller than asked where it stopped).
+ */
+export function scaleQuad(q: readonly (readonly [number, number])[], asked: number, size: { width: number; height: number } = { width: 1764, height: 1174 }): { quad: [number, number][]; factor: number } {
+  const cx = q.reduce((s, p) => s + p[0], 0) / q.length, cy = q.reduce((s, p) => s + p[1], 0) / q.length;
+  let f = asked;
+  if (asked > 1) {
+    for (const [x, y] of q) {
+      const dx = x - cx, dy = y - cy;
+      if (dx > 0) f = Math.min(f, (size.width - 1 - cx) / dx); else if (dx < 0) f = Math.min(f, cx / -dx);
+      if (dy > 0) f = Math.min(f, (size.height - 1 - cy) / dy); else if (dy < 0) f = Math.min(f, cy / -dy);
+    }
+    f = Math.max(1, f);
+  }
+  return { quad: q.map(([x, y]) => [cx + (x - cx) * f, cy + (y - cy) * f] as [number, number]), factor: Math.round(f * 1000) / 1000 };
+}
+
 /** How the card lands. Every card leaves the shoe closed (yellow back up); open lands with the blue face up, so it turns. */
 export const LANDS_LABEL: Record<'BACK' | 'FRONT', string> = { BACK: 'Stängt → stängt', FRONT: 'Stängt → öppet' };
 export const LANDS_ABOUT: Record<'BACK' | 'FRONT', string> = {
@@ -97,6 +153,8 @@ export type Drawn = {
   centre: [number, number];
   measured: { centre: [number, number]; area: number; box: [number, number]; changedElsewhere: number } | null;
   measuredOffsetPx: number | null;
+  /** The card drawn at this factor of the plan's size about its centre (the order's motion.cardScale; stopped at the picture's edge). Absent: the plan's size. */
+  scale?: number;
 };
 export type GoesAs = 'startFrame' | 'endFrame' | 'referenceImage';
 /**
@@ -153,10 +211,20 @@ export type Picture = {
   /** When a draft followed a newer anchor chosen in Material: when, and what the picture was before. */
   replaced?: { at: string; was: string; entry: string | null; sha256: string | null } | null;
 };
+/**
+ * A reference film (FINNS): a take of the bank copied into the order's folder (path, sha256) with its length. clips: the
+ * bank's take it was chosen as; dealer: whose it is (another dealer's film is allowed as a reference and is named
+ * wherever it is shown); from: the bank's film it was copied from, its edge, Jakob's verdict and, when the film holds more
+ * than the take, the take's frames. dealer and from are absent on orders made before 2026-11-13.
+ */
 export type Reference =
   | { status: 'INGEN'; why: string }
   | { status: 'SAKNAS'; why: string; candidates: string[] }
-  | { status: 'FINNS'; clips: string[]; path: string; sha256: string; seconds: number; goesTo: string; approvedStraight: boolean };
+  | {
+      status: 'FINNS'; clips: string[]; path: string; sha256: string; seconds: number; goesTo: string; approvedStraight: boolean;
+      dealer?: string;
+      from?: { film: string; path: string; sha256: string; edge: string; verdict: RefVerdict; words: string | null; frames: [number, number] | null; also: string[] };
+    };
 export type Generation = {
   provider: 'runway-app';
   tool: 'generate_image' | 'generate_video';
@@ -168,9 +236,17 @@ export type Generation = {
  * How the card moves in a deal. hand: the hand that takes it from the shoe; pass: it is handed over to the other hand,
  * which lays it (handbyte; only from left to right). side: how it lands (BACK closed, FRONT open); turn: it is turned on
  * the way (every card leaves the shoe closed). fromPlan: hand, pass and side are what Placering says for the card.
- * Orders made before 2026-11-13 lack pass (read as false).
+ * Orders made before 2026-11-13 lack pass (read as false). cardScale: the card's size on the last picture as a factor of the
+ * plan's (CARD_SCALES), a trial; absent: the plan's size.
  */
-export type Motion = { grip: 'PINCH' | 'DRAG'; hand: 'LH' | 'RH'; pass: boolean; turn: boolean; flipAxis: FlipAxis; target: string | null; side: 'FRONT' | 'BACK'; fromPlan: boolean };
+export type Motion = { grip: 'PINCH' | 'DRAG'; hand: 'LH' | 'RH'; pass: boolean; turn: boolean; flipAxis: FlipAxis | null; target: string | null; side: 'FRONT' | 'BACK'; fromPlan: boolean; cardScale?: number };
+/**
+ * A draft's choices with what does not apply taken out: no turn for a card that is not turned (flipAxis null). Drafts made
+ * before 2026-11-13 stored one anyway; the store reads them through this, and writes them clean on their next change.
+ */
+export function tidyMotion(m: Motion | null): Motion | null {
+  return m && !m.turn && m.flipAxis !== null ? { ...m, flipAxis: null } : m;
+}
 export type Order = {
   schemaVersion: 1;
   id: string;
@@ -180,33 +256,54 @@ export type Order = {
   group?: { id: string; label: string } | null;
   dealer: string;
   kind: Kind;
-  /** The step: a film between two anchors (edge "READY>P4.C1"), or the picture a still makes (makes). */
-  step: { key: StepKey; label: string; edge: string | null; shape: 'ROUND_TRIP' | 'ONE_WAY' | null; cutInto: string[]; makes?: { role: string; entry?: string; label: string } | null };
+  /**
+   * The step: a film between two anchors (edge "READY>P4.C1"), or the picture a still makes (makes). shape: a deal goes to
+   * the place and back (ROUND_TRIP) or ends on the landing picture (ONE_WAY); every other film is one way.
+   */
+  step: { key: StepKey; label: string; edge: string | null; shape: Shape | null; cutInto: string[]; makes?: { role: string; entry?: string; label: string } | null };
   motion: Motion | null;
   pictures: Picture[];
   reference: Reference;
   generation: Generation;
-  prompt: { template: string; text: string; sha256: string; extra: string | null; middle: boolean };
+  /** style: absent on orders made before template 4 (read as Utförlig, styleOf). */
+  prompt: { template: string; style?: TextStyle; text: string; sha256: string; extra: string | null; middle: boolean };
   takes: number;
   cost: { perTake: number; total: number; worstPerTake: number; worstTotal: number; basis: string };
   limits: { maxCredits: number; stopBelowCredits: number };
   notes: string[];
   created: string;
   createdBy: string;
-  approval: { by: 'jakob'; at: string; orderSha256: string } | null;
+  /**
+   * The approval freezes the order's hash: Jakob's click in the studio (by jakob), or the main agent on his mandate (by
+   * huvudagent, with mandate: whose word and when; Jakob 2026-11-13: "beställ lämpliga filmer automatiskt utan mitt
+   * godkännande"). The same policy limits hold for both.
+   */
+  approval: Approval | null;
+  /** A draft set aside (AVBRUTEN): when, by whom and why; shown in the studio and the protocol. */
+  setAside?: { at: string; by: string; why: string } | null;
   status: OrderStatus;
 };
 
+/** Who may approve: Jakob by his click, or the main agent on his mandate (it then carries mandate). */
+export const APPROVERS = ['jakob', 'huvudagent'] as const;
+export type Approval = { by: (typeof APPROVERS)[number]; at: string; orderSha256: string; mandate?: string };
+/** "Godkänd av Jakob", "Godkänd av huvudagenten på Jakobs uppdrag": whose approval it is, in words. */
+export const approvalWords = (a: Pick<Approval, 'by'>) => (a.by === 'huvudagent' ? 'Godkänd av huvudagenten på Jakobs uppdrag' : 'Godkänd av Jakob');
+
 // ── Steps and their defaults (bestall-plan "Defaults per kind of step") ─────
-export type StepKey = 'INGANG-2.1' | 'INGANG-2.2' | 'GIV-2.1' | 'GIV-2.2' | 'RETUR-2.1' | 'RETUR-1' | 'VILA' | 'ANKARE-2.1' | 'ANKARE-2.2';
+export type StepKey = 'INGANG-2.1' | 'INGANG-2.2' | 'GIV-2.1' | 'GIV-2.2' | 'RETUR-2.1' | 'RETUR-2.2' | 'RETUR-1' | 'VILA' | 'ANKARE-2.1' | 'ANKARE-2.2';
 export type StepDef = {
   key: StepKey;
   group: string;
   label: string;
   kind: Kind;
-  /** The anchor the film starts on and the one it ends on ("1", "2.1", "2.2"), or the still's base picture. */
+  /**
+   * The anchor the film starts on and the one it ends on ("1", "2.1", "2.2"), or the still's base picture. A return
+   * (start LAND) starts on the seat's landing picture instead and ends on `to`; its `from` is the same anchor.
+   */
   from: '1' | '2.1' | '2.2';
   to: '1' | '2.1' | '2.2' | null;
+  start?: 'LAND';
   card: boolean;
   grip?: 'PINCH' | 'DRAG';
   /** The model it is made with unless another is chosen (förval); modelsFor gives every model that can make it. */
@@ -225,8 +322,11 @@ export const STEPS: readonly StepDef[] = [
   { key: 'INGANG-2.2', group: 'Ingång', label: 'Ankare 1 → 2.2', kind: 'FILM', from: '1', to: '2.2', card: false, model: 'wan3', resolution: '1080p', duration: 4 },
   { key: 'GIV-2.1', group: 'Giv från ankare 2.1', label: 'Nyp, ett kort till platsen och tillbaka', kind: 'FILM', from: '2.1', to: '2.1', card: true, grip: 'PINCH', model: 'kling-4', resolution: '1080p', duration: 7 },
   { key: 'GIV-2.2', group: 'Giv från ankare 2.2', label: 'Släp, ett kort till platsen och tillbaka', kind: 'FILM', from: '2.2', to: '2.2', card: true, grip: 'DRAG', model: 'wan3', resolution: '1080p', duration: 6 },
-  { key: 'RETUR-2.1', group: 'Retur → 2.1', label: 'Tillbaka till skon', kind: 'FILM', from: '2.1', to: '2.1', card: true, model: 'kling-4', duration: 3, off: 'Ingår i tur och retur-filmen från ankare 2.' },
-  { key: 'RETUR-1', group: 'Retur → 1', label: 'Tillbaka till vila', kind: 'FILM', from: '2.1', to: '1', card: true, model: 'wan3', duration: 3, off: 'Inte byggd här än.' },
+  // A return is a film of its own (one action per film, 2026-11-13): from the seat's landing picture back to an anchor.
+  // It can be ordered where a landing picture holds for the seat (landingMissing says what is lacking otherwise).
+  { key: 'RETUR-2.1', group: 'Retur från landningen', label: 'Tillbaka till nypet (2.1)', kind: 'FILM', from: '2.1', to: '2.1', start: 'LAND', card: true, grip: 'PINCH', model: 'wan3', resolution: '1080p', duration: 3 },
+  { key: 'RETUR-2.2', group: 'Retur från landningen', label: 'Tillbaka över skon (2.2)', kind: 'FILM', from: '2.2', to: '2.2', start: 'LAND', card: true, grip: 'DRAG', model: 'wan3', resolution: '1080p', duration: 3 },
+  { key: 'RETUR-1', group: 'Retur från landningen', label: 'Tillbaka till vila (1)', kind: 'FILM', from: '1', to: '1', start: 'LAND', card: true, grip: 'PINCH', model: 'wan3', resolution: '1080p', duration: 3 },
   { key: 'VILA', group: 'Vila', label: 'Vila, samma bild först och sist', kind: 'FILM', from: '1', to: '1', card: false, model: 'wan3', resolution: '1080p', duration: 4 },
   { key: 'ANKARE-2.1', group: 'Bild', label: 'Ankare 2.1 (nyp)', kind: 'STILL', from: '1', to: null, card: false, model: 'nano-banana-pro', ratio: '4:3', imageSize: '4K', makes: { role: 'ankare-2.1', node: 'READY', label: 'ankare 2.1' } },
   { key: 'ANKARE-2.2', group: 'Bild', label: 'Ankare 2.2 (släp)', kind: 'STILL', from: '1', to: null, card: false, model: 'nano-banana-pro', ratio: '4:3', imageSize: '4K', makes: { role: 'ankare-2.2', node: 'READY-B', label: 'ankare 2.2' } },
@@ -239,11 +339,25 @@ export const ANCHOR_WORDS: Record<'1' | '2.1' | '2.2', string> = {
   '2.2': 'ankare 2.2 (släp): handen över kortet i skons öppning',
 };
 /** Where a step starts and ends, in one line: "Börjar och slutar på ankare 2.2 (släp): …". */
-export function startWords(step: Pick<StepDef, 'kind' | 'from' | 'to'>): string {
+export function startWords(step: Pick<StepDef, 'kind' | 'from' | 'to' | 'start' | 'card'>, shape: Shape | null = null): string {
   if (step.kind === 'STILL') return `Görs ur ${ANCHOR_WORDS[step.from]}.`;
+  if (step.start === 'LAND') return `Börjar på platsens landningsbild (handen vid kortet) och slutar på ${ANCHOR_WORDS[step.to ?? step.from]}.`;
+  if (step.card && shape === 'ONE_WAY') return `Börjar på ${ANCHOR_WORDS[step.from]}, och slutar på platsens landningsbild.`;
   if (!step.to || step.to === step.from) return `Börjar och slutar på ${ANCHOR_WORDS[step.from]}.`;
   return `Börjar på ankare ${step.from} och slutar på ${ANCHOR_WORDS[step.to]}.`;
 }
+
+// ── The landing picture (a return starts on it, a deal "bara dit" ends on it) ──
+/** The register's node and role of a seat's landing picture: LAND(P4.C1), role landning, with the card on the table. */
+export const landingNode = (target: string) => `LAND(${target})`;
+export const LANDING_ROLE = 'landning';
+/** The landing picture of a seat that holds: role landning, node LAND(<seat>), state gäller, the card on that seat. */
+export function landingOf<E extends { role: string; node?: string; state?: string; card?: string }>(entries: readonly E[], target: string | null | undefined): E | null {
+  return target ? (entries.find((e) => e.role === LANDING_ROLE && e.node === landingNode(target) && e.state === 'gäller' && e.card === target) ?? null) : null;
+}
+/** What is missing where no landing picture holds, and how to get one, in Jakob's words. */
+export const landingMissing = (dealerName: string, target: string | null | undefined) =>
+  `Ingen landningsbild gäller för ${genitive(dealerName)} ${seatWords(target)}. Godkänn en i Material (roll landning, ${landingNode(target ?? 'P4.C1')}): en stillbild eller en ruta ur en giv där handen just har lagt kortet. Då kan returen och Bara dit beställas.`;
 
 /** "Paows", "Agnes". */
 export const genitive = (name: string) => (/[sxz]$/i.test(name) ? name : `${name}s`);
@@ -259,7 +373,7 @@ export function seatWords(target: string | null | undefined): string {
  */
 export type SummaryMotion = Pick<Motion, 'turn' | 'target'> & Partial<Pick<Motion, 'hand' | 'pass' | 'side' | 'flipAxis'>>;
 /** A deal in one line: which hand, how it turns, how it lands, where; the same words for every deal step. */
-function dealWords(from: '2.1' | '2.2', dealerName: string, motion: SummaryMotion | null): string {
+function dealWords(from: '2.1' | '2.2', dealerName: string, motion: SummaryMotion | null, oneWay = false): string {
   const seat = seatWords(motion?.target), hand = motion?.hand ?? 'LH', pass = !!motion?.pass, open = motion ? (motion.side ?? (motion.turn ? 'FRONT' : 'BACK')) === 'FRONT' : true;
   const take = from === '2.1' ? 'från ankare 2.1 (nyp) tar hon ett kort ur skon' : 'från ankare 2.2 (släp) släpar hon ett kort ur skon';
   const by = pass ? ' med vänster hand och ger det till höger lågt framför kroppen' : hand === 'RH' ? ' med höger hand' : ' med vänster hand';
@@ -270,17 +384,18 @@ function dealWords(from: '2.1' | '2.2', dealerName: string, motion: SummaryMotio
     : flip === 'AT_PLACE'
       ? `${who} för fram det med baksidan upp, vänder upp det vid ${seat} och lägger det öppet`
       : `${who} ${flip === 'LONG_EDGE' ? 'rullar det kring långsidan' : 'vänder det som en hand kan'} på vägen och lägger det öppet på ${seat}`;
-  const back = pass || hand === 'RH' ? 'händerna går tillbaka till ankaret' : `handen går tillbaka ${from === '2.1' ? 'till nypet' : 'över skon'}`;
+  const back = oneWay ? 'filmen slutar med handen vid kortet (bara dit)' : pass || hand === 'RH' ? 'händerna går tillbaka till ankaret' : `handen går tillbaka ${from === '2.1' ? 'till nypet' : 'över skon'}`;
   return `Gör en film av ${dealerName}: ${take}${by}; ${lay}; ${back}.`;
 }
-export function summaryOf(step: Pick<StepDef, 'key'>, dealerName: string, motion: SummaryMotion | null): string {
-  const of = genitive(dealerName), seat = seatWords(motion?.target);
+export function summaryOf(step: Pick<StepDef, 'key'>, dealerName: string, motion: SummaryMotion | null, shape: Shape | null = null): string {
+  const of = genitive(dealerName), seat = seatWords(motion?.target), oneWay = shape === 'ONE_WAY';
   switch (step.key) {
     case 'ANKARE-2.1': return `Gör ${of} ankare 2.1: hennes ankare 1 där bara vänsterarmen flyttas till nypet vid skon.`;
     case 'ANKARE-2.2': return `Gör ${of} ankare 2.2: hennes ankare 1 där bara vänsterarmen flyttas, så att handen ligger över kortet vid skons öppning.`;
-    case 'GIV-2.1': return dealWords('2.1', dealerName, motion);
-    case 'GIV-2.2': return dealWords('2.2', dealerName, motion);
+    case 'GIV-2.1': return dealWords('2.1', dealerName, motion, oneWay);
+    case 'GIV-2.2': return dealWords('2.2', dealerName, motion, oneWay);
     case 'RETUR-2.1': return `Gör en film av ${dealerName}: handen går från kortet på ${seat} tillbaka till nypet vid skon.`;
+    case 'RETUR-2.2': return `Gör en film av ${dealerName}: handen går från kortet på ${seat} tillbaka och lägger sig över kortet vid skons öppning.`;
     case 'RETUR-1': return `Gör en film av ${dealerName}: handen går från kortet på ${seat} tillbaka till vila.`;
     case 'INGANG-2.1': return `Gör en film av ${dealerName}: från vila (ankare 1) flyttar hon vänsterhanden till nypet vid skon (ankare 2.1).`;
     case 'INGANG-2.2': return `Gör en film av ${dealerName}: från vila (ankare 1) lägger hon vänsterhanden över kortet vid skons öppning (ankare 2.2).`;
@@ -294,8 +409,14 @@ export const ANCHOR_ROLE: Record<'1' | '2.1' | '2.2', string> = { '1': 'ankare-1
 /** The edge a film step is filed under, in the graph's notation: READY>P4.C1, IDLE>READY. */
 export function edgeOf(step: StepDef, target: string | null): string | null {
   if (step.kind !== 'FILM') return null;
-  if (step.card && target) return step.to === '1' ? `${target}>IDLE` : `${ANCHOR_NODE[step.from]}>${target}`;
+  if (step.card && target) return step.start === 'LAND' ? `${target}>${ANCHOR_NODE[step.to ?? step.from]}` : step.to === '1' ? `${target}>IDLE` : `${ANCHOR_NODE[step.from]}>${target}`;
   return `${ANCHOR_NODE[step.from]}>${ANCHOR_NODE[step.to ?? step.from]}`;
+}
+/** The bank's edges a film is cut into: a round trip gives the deal and the return, every other film its one edge. */
+export function cutIntoOf(step: StepDef, target: string | null, shape: Shape | null): string[] {
+  if (step.kind !== 'FILM' || !step.card || !target) return [];
+  const edge = edgeOf(step, target)!;
+  return step.start !== 'LAND' && shape !== 'ONE_WAY' ? [edge, `${target}>${ANCHOR_NODE[step.from]}`] : [edge];
 }
 export const SEAT_TARGETS = ['P1.C1', 'P2.C1', 'P3.C1', 'P4.C1', 'P5.C1', 'P6.C1', 'P7.C1', 'D.C1'];
 /** "Alla sju": the first card to every player. */
@@ -366,15 +487,19 @@ export type ModelDef = {
   frames?: boolean;
   middle?: boolean;
   videos?: boolean;
+  /** The length a reference film may have, in seconds (Kling 4: 3–30 s each, Runway's schema 2026-11-13). */
+  referenceSeconds?: [number, number];
   ratio?: string;
   shape?: string;
   audio: 'always' | 'off' | 'none';
   about: string;
   note: string;
   delivered?: string;
+  /** Why it is not offered for a new order (an order made with it still reads and validates). */
+  off?: string;
 };
 export const MODELS: Record<string, ModelDef> = {
-  'kling-4': { id: 'kling-4', tool: 'generate_video', label: 'Kling 4', durations: [3, 30], resolutions: ['720p', '1080p'], frames: true, middle: true, videos: true, shape: 'följer första bilden', audio: 'always', about: 'Ljudet alltid på; tas bort efteråt.', note: 'Följer första och sista bild; ljudet är alltid på och tas bort i efterarbetet.' },
+  'kling-4': { id: 'kling-4', tool: 'generate_video', label: 'Kling 4', durations: [3, 30], resolutions: ['720p', '1080p'], frames: true, middle: true, videos: true, referenceSeconds: [3, 30], shape: 'följer första bilden', audio: 'always', about: 'Ljudet alltid på; tas bort efteråt.', note: 'Följer första och sista bild; ljudet är alltid på och tas bort i efterarbetet.' },
   wan3: { id: 'wan3', tool: 'generate_video', label: 'WAN 3', durations: [2, 30], resolutions: ['480p', '720p', '1080p'], frames: true, middle: false, videos: false, ratio: 'adaptive', audio: 'off', about: 'Ger bankens 1764 × 1174 direkt.', note: 'Två bilder och en text; ratio adaptive ger bankens 1764 × 1174.' },
   // Runway's generate_video schema 2026-11-13: 3–15 s, resolution fixed 4k ("omit or pass 4k"), audio optional, no reference
   // pictures or films. Its model table says it takes an end frame; the endFrame field's own list of models leaves it out.
@@ -384,6 +509,8 @@ export const MODELS: Record<string, ModelDef> = {
     about: 'Ljudet av; skalas till bankens 1764 × 1174 efteråt.',
     note: 'Verktygets schema 2026-11-13: 3–15 s, upplösningen fast 4k, ljud valbart (här av), inga referensbilder eller referensfilmer. Osäkert: modelltabellen säger att den tar sista bild (Runways API-sida likaså), men endFrame-fältets egen lista nämner den inte; vägrar verktyget blir tagningen misslyckad utan film. Schemat säger inte heller om filmen följer första bildens form eller kommer i 16:9.',
     delivered: 'Filmen levereras i 4K och skalas i efterarbetet till bankens 1764 × 1174; 4K-originalet sparas orört som source.mp4.',
+    // Tried 2026-11-13 (paow-ingang-2-1-02): no sharper than WAN 3 in the bank's frame, softer tattoos, 172 credits against 80.
+    off: 'Provad 2026-11-13 (paow-ingang-2-1-02): inte skarpare än WAN 3 i bankens ruta, mjukare tatueringar, 172 krediter mot 80. Jakob: ”det är dumt att ta ett klipp i 4K om övriga klipp inte är i 4K”.',
   },
   'nano-banana-pro': { id: 'nano-banana-pro', tool: 'generate_image', label: 'Nano Banana Pro', audio: 'none', about: 'Redigerar dealerns egen bild.', note: 'Redigering av dealerns egen bild med referensbilder (@tagg i texten).' },
 };
@@ -410,6 +537,88 @@ export function paramsOf(step: StepDef, model: ModelDef, choice: { duration?: nu
 }
 /** A length the model takes: the one asked for, brought within the model's range. */
 export const lengthFor = (model: Pick<ModelDef, 'durations'>, seconds: number) => (model.durations ? Math.min(model.durations[1], Math.max(model.durations[0], seconds)) : seconds);
+
+// ── A reference film from the bank ──────────────────────────────────────────
+/** Jakob's verdict on a take of the bank, as it is shown beside a reference film. */
+export type RefVerdict = 'GODKÄND' | 'VARIANT' | 'EJ_DÖMD' | 'UNDERKÄND';
+export const REF_VERDICT_LABEL: Record<RefVerdict, string> = { GODKÄND: 'godkänd', VARIANT: 'variant', EJ_DÖMD: 'ej dömd', UNDERKÄND: 'underkänd' };
+const VERDICT_RANK: Record<RefVerdict, number> = { GODKÄND: 0, VARIANT: 1, EJ_DÖMD: 2, UNDERKÄND: 3 };
+/** How near a take is to what is ordered: the same step and seat, the same seat from another grip, the same step to another seat. */
+export const REF_MATCH_LABEL = ['samma steg och plats', 'samma plats, annat grepp', 'samma steg, annan plats'] as const;
+/** The bank as GET /api/clip-bank answers it (src/clip-graph.ts BankData), only what a reference needs. */
+export type BankFacts = {
+  jobs?: { id: string; from: string; to: string; duration?: number; dealer?: string }[];
+  derived?: { id: string; from: string; to: string; clip: string; frames: [number, number]; dealer?: string; editOf?: string }[];
+  edits?: { id: string; source?: { clip?: string }; dealer?: string }[];
+  motions?: Record<string, { source?: { sha256?: string; fps?: number; frames?: number }; review?: { decision?: string; acceptedAs?: string; userAccepted?: boolean; userReview?: string } } | null | undefined>;
+  media?: Record<string, { video?: string | null } | null | undefined>;
+};
+/**
+ * A take of the bank that can go as a reference film: the take, the film it lies in (assets/motions/<film>/source.mp4;
+ * a take cut from a longer film sends the whole film, and `frames` says which part is the take, `also` the other takes
+ * cut from it), whose it is, Jakob's verdict and his words, the film's length and whether the model takes that length.
+ */
+export type RefCandidate = {
+  take: string; film: string; path: string; dealer: string; edge: string; goesTo: string | null;
+  match: 0 | 1 | 2; verdict: RefVerdict; approvedStraight: boolean; words: string | null;
+  seconds: number | null; frames: [number, number] | null; also: string[]; fits: boolean; sha256: string | null;
+};
+/** Jakob's verdict from a take's review: underkänd, godkänd straight or as a variant, else not judged; his words without the date. */
+export function verdictOf(review: { decision?: string; acceptedAs?: string; userAccepted?: boolean; userReview?: string } | null | undefined): { verdict: RefVerdict; straight: boolean; words: string | null } {
+  const words = typeof review?.userReview === 'string' ? review.userReview.replace(/^\S+ \d{4}-\d{2}-\d{2}: /, '').trim() || null : null;
+  const d = review?.decision;
+  if (d === 'REJECTED') return { verdict: 'UNDERKÄND', straight: false, words };
+  if (d === 'ACCEPTED' || d === 'MAIN') return review?.acceptedAs === 'VARIANT' ? { verdict: 'VARIANT', straight: false, words } : { verdict: 'GODKÄND', straight: review?.userAccepted === true, words };
+  return { verdict: 'EJ_DÖMD', straight: false, words };
+}
+/** The edge a film step shows, in the graph's notation: a deal from its anchor to the seat, a return from the seat to its anchor, else anchor to anchor. */
+export function wantedEdge(step: StepDef, target: string | null): string | null {
+  if (step.kind !== 'FILM') return null;
+  if (step.card) return target ? edgeOf(step, target) : null;
+  return `${ANCHOR_NODE[step.from]}>${ANCHOR_NODE[step.to ?? step.from]}`;
+}
+/**
+ * The bank's takes a reference film can be chosen from for a step: takes of the same step and seat first, then the same
+ * seat from another grip, then the same step to another seat. Within that a take Jakob has rejected comes last, the
+ * dealer's own before another dealer's, then by his verdict. One per film (the best placed take names it).
+ */
+export function referenceCandidates(bank: BankFacts, want: { dealer: string; step: StepDef; target: string | null; model?: Pick<ModelDef, 'referenceSeconds'> | null }): RefCandidate[] {
+  const w = parseEdge(wantedEdge(want.step, want.target) ?? '');
+  if (!w) return [];
+  const owners = dealersOf(bank as never);
+  const jobs = bank.jobs ?? [], derived = bank.derived ?? [], edits = bank.edits ?? [];
+  const byId = new Map(jobs.map((j) => [j.id, j]));
+  const takes = [
+    ...jobs.map((j) => ({ id: j.id, from: j.from, to: j.to, film: j.id, frames: null as [number, number] | null })),
+    ...edits.flatMap((x) => { const src = byId.get(x.source?.clip ?? ''); return src ? [{ id: x.id, from: src.from, to: src.to, film: x.id, frames: null }] : []; }),
+    ...derived.map((d) => ({ id: d.id, from: d.from, to: d.to, film: d.clip, frames: d.frames })),
+  ];
+  const range = want.model?.referenceSeconds ?? null;
+  const out: RefCandidate[] = [];
+  for (const t of takes) {
+    const e = parseEdge(`${t.from}>${t.to}`);
+    if (!e || typeof t.film !== 'string') continue;
+    const sameHub = w.kind === 'RETURN' ? e.to === w.to : e.from === w.from;
+    const match = e.id === w.id ? 0 : e.base === w.base ? 1 : e.kind === w.kind && sameHub && w.target && e.target && e.target !== w.target ? 2 : null;
+    if (match === null) continue;
+    if (bank.media && t.id in bank.media && !bank.media[t.id]?.video) continue;
+    const record = bank.motions?.[t.id], source = record?.source ?? bank.motions?.[t.film]?.source;
+    const seconds = source?.frames && source.fps ? Math.round((source.frames / source.fps) * 1000) / 1000 : (byId.get(t.film)?.duration ?? null);
+    const whole = !t.frames || !source?.frames || (t.frames[0] <= 0 && t.frames[1] >= source.frames - 1);
+    const { verdict, straight, words } = verdictOf(record?.review);
+    out.push({
+      take: t.id, film: t.film, path: `assets/motions/${t.film}/source.mp4`, dealer: owners[t.id] ?? 'pamela', edge: `${t.from}>${t.to}`, goesTo: e.target,
+      match, verdict, approvedStraight: straight, words, seconds, frames: whole ? null : t.frames, also: derived.filter((d) => d.clip === t.film && d.id !== t.id).map((d) => d.id),
+      fits: !range || (seconds !== null && seconds >= range[0] && seconds <= range[1]), sha256: source?.sha256 ?? null,
+    });
+  }
+  const key = (c: RefCandidate) => [c.match, c.verdict === 'UNDERKÄND' ? 1 : 0, c.dealer === want.dealer ? 0 : 1, VERDICT_RANK[c.verdict]];
+  out.sort((a, b) => { const ka = key(a), kb = key(b); for (let i = 0; i < ka.length; i++) if (ka[i] !== kb[i]) return ka[i] - kb[i]; return a.take.localeCompare(b.take); });
+  const films = new Set<string>();
+  return out.filter((c) => (films.has(c.film) ? false : (films.add(c.film), true)));
+}
+/** "7,04 s", "4 s". */
+export const secondsWords = (s: number | null | undefined) => (s === null || s === undefined ? 'okänd längd' : `${String(Math.round(s * 100) / 100).replace('.', ',')} s`);
 
 // ── Policy and prices (data/order-policy.json) ──────────────────────────────
 export type Price = { model: string; resolution?: string; imageSize?: string; perSecond?: number; perImage?: number; listedPerSecond?: number; source: string };
@@ -579,8 +788,14 @@ export function validateOrder(value: unknown): { order: Order | null; errors: st
   if (o.summary !== undefined && (typeof o.summary !== 'string' || o.summary.length > 320)) errors.push('summary ska vara en rad text.');
   if (o.motion != null) {
     const m = o.motion as Partial<Motion>;
-    if (!isObject(m) || !['LH', 'RH'].includes(String(m.hand)) || !['FRONT', 'BACK'].includes(String(m.side)) || typeof m.turn !== 'boolean' || !FLIP_AXES.includes(m.flipAxis as FlipAxis)) errors.push('motion: hand (LH/RH), side (FRONT/BACK), turn och flipAxis krävs.');
+    if (!isObject(m) || !['LH', 'RH'].includes(String(m.hand)) || !['FRONT', 'BACK'].includes(String(m.side)) || typeof m.turn !== 'boolean' || (m.flipAxis !== null && !FLIP_AXES.includes(m.flipAxis as FlipAxis))) errors.push('motion: hand (LH/RH), side (FRONT/BACK), turn och flipAxis krävs.');
+    // A choice that does not apply is not stored (2026-11-13): no turn for a card that is not turned, no card size but on a
+    // round trip's drawn last picture. Approved orders made before keep what they were approved with.
+    else if (o.status !== 'GODKÄND' && !m.turn && m.flipAxis !== null) errors.push('motion.flipAxis: kortet vänds inte, så ingen vändning lagras (null).');
+    else if (o.status !== 'GODKÄND' && m.turn && !m.flipAxis) errors.push('motion.flipAxis saknas: kortet vänds.');
+    else if (m.cardScale !== undefined && isObject(o.step) && o.step.shape !== 'ROUND_TRIP') errors.push('motion.cardScale gäller bara tur och retur, där sista bilden ritas.');
     else if (m.pass !== undefined && (typeof m.pass !== 'boolean' || (m.pass && m.hand !== 'LH'))) errors.push('motion.pass: handbyte går från vänster hand till höger.');
+    else if (m.cardScale !== undefined && !(CARD_SCALES as readonly number[]).includes(m.cardScale)) errors.push(`motion.cardScale ska vara ${CARD_SCALES.join(', ')}.`);
   }
   if (typeof o.dealer !== 'string' || !/^[a-z0-9]+$/.test(o.dealer)) errors.push('dealer ska vara ett id.');
   if (o.kind !== 'STILL' && o.kind !== 'FILM') errors.push('kind ska vara STILL eller FILM.');
@@ -615,16 +830,25 @@ export function validateOrder(value: unknown): { order: Order | null; errors: st
       if (Array.isArray(o.pictures) && !m.middle && o.kind === 'FILM' && o.pictures.some((p) => p?.goesAs === 'referenceImage')) errors.push(`${m.label} tar ingen mellanbild här.`);
       if (Array.isArray(o.pictures) && !m.frames && o.kind === 'FILM' && o.pictures.some((p) => p?.goesAs === 'endFrame')) errors.push(`${m.label} tar ingen sista bild.`);
       if (isObject(o.reference) && o.reference.status === 'FINNS' && !m.videos) errors.push(`${m.label} tar ingen referensfilm här.`);
+      if (isObject(o.reference) && o.reference.status === 'FINNS' && m.videos) {
+        const r = o.reference as Extract<Reference, { status: 'FINNS' }>;
+        if (typeof r.path !== 'string' || !new RegExp(`^assets/orders/${o.id}/[a-z0-9][a-z0-9-]*\\.mp4$`).test(r.path) || !SHA.test(String(r.sha256))) errors.push('reference: filmen ska ligga i assets/orders/<id>/ med sin sha256.');
+        if (m.referenceSeconds && !(r.seconds >= m.referenceSeconds[0] && r.seconds <= m.referenceSeconds[1])) errors.push(`Referensfilmen ska vara ${m.referenceSeconds[0]}–${m.referenceSeconds[1]} s för ${m.label}.`);
+      }
       if (m.resolutions && o.generation.params.resolution !== undefined && !m.resolutions.includes(String(o.generation.params.resolution))) errors.push(`Upplösningen ska vara ${m.resolutions.join(', ')} för ${m.label}.`);
     }
   }
   if (!isObject(o.prompt) || typeof o.prompt.text !== 'string' || o.prompt.text.length > TEXT_LIMIT || typeof o.prompt.sha256 !== 'string') errors.push('prompt: text och sha256 krävs.');
   else if (o.prompt.extra !== null && (typeof o.prompt.extra !== 'string' || o.prompt.extra.length > EXTRA_LIMIT)) errors.push(`prompt.extra får vara högst ${EXTRA_LIMIT} tecken.`);
+  else if (o.prompt.style !== undefined && !TEXT_STYLES.includes(o.prompt.style)) errors.push('prompt.style ska vara KORT, MINIMAL eller UTFÖRLIG.');
+  if (isObject(o.step) && o.step.shape !== undefined && o.step.shape !== null && o.step.shape !== 'ROUND_TRIP' && o.step.shape !== 'ONE_WAY') errors.push('step.shape ska vara ROUND_TRIP, ONE_WAY eller null.');
   if (!Number.isInteger(o.takes) || (o.takes as number) < 1 || (o.takes as number) > TAKES_MAX) errors.push(`takes ska vara 1–${TAKES_MAX}.`);
   if (!isObject(o.cost) || !(Number(o.cost.total) >= 0) || !(Number(o.cost.worstTotal) >= Number(o.cost.total))) errors.push('cost saknas.');
   if (!isObject(o.reference) || !['INGEN', 'SAKNAS', 'FINNS'].includes(String(o.reference.status))) errors.push('reference.status ska vara INGEN, SAKNAS eller FINNS.');
   if (!['UTKAST', 'GODKÄND', 'AVBRUTEN'].includes(String(o.status))) errors.push('status ska vara UTKAST, GODKÄND eller AVBRUTEN.');
-  if (o.approval !== null && (!isObject(o.approval) || o.approval.by !== 'jakob' || typeof o.approval.at !== 'string' || !SHA.test(String(o.approval.orderSha256)))) errors.push('approval ska vara null eller {by: "jakob", at, orderSha256}.');
+  if (o.approval !== null && (!isObject(o.approval) || !APPROVERS.includes(o.approval.by) || typeof o.approval.at !== 'string' || !SHA.test(String(o.approval.orderSha256)))) errors.push('approval ska vara null eller {by: "jakob" eller "huvudagent", at, orderSha256}.');
+  else if (o.approval && o.approval.by === 'huvudagent' && (typeof o.approval.mandate !== 'string' || !o.approval.mandate.trim() || o.approval.mandate.length > 300)) errors.push('approval: huvudagentens godkännande bär sitt uppdrag (mandate: vems ord och när).');
+  if (o.setAside != null && (!isObject(o.setAside) || typeof o.setAside.why !== 'string' || !o.setAside.why.trim() || typeof o.setAside.at !== 'string' || o.status !== 'AVBRUTEN')) errors.push('setAside: en avbruten beställning säger när och varför (why).');
   if (o.status === 'GODKÄND' && !o.approval) errors.push('En godkänd beställning måste ha approval.');
   if (o.status === 'UTKAST' && o.approval) errors.push('Ett utkast har ingen approval.');
   if (!Array.isArray(o.notes)) errors.push('notes ska vara en lista.');

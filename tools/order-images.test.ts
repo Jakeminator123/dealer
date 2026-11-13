@@ -117,3 +117,21 @@ test('the card is drawn where the plan says, at the plan size, from real card pi
     assert.ok(blues.size > 3, `${target}: ${blues.size} shades of blue`);
   }
 });
+
+test('a card size for one order: the last picture draws the card 150 % about its own centre; the plan is not touched', { skip: !media && 'the bank films are not on this machine' }, async () => {
+  const root = process.cwd();
+  const { plan, file } = await readPlan(root);
+  const before = JSON.stringify(plan);
+  const texture = await cardTexture(root);
+  const green = Buffer.alloc(W * H * 3);
+  for (let i = 0; i < W * H; i++) { green[i * 3] = 0; green[i * 3 + 1] = 237; green[i * 3 + 2] = 44; }
+  const plain = drawCard(green, texture, plan, file, 'P4.C1').drawn;
+  const big = drawCard(green, texture, plan, file, 'P4.C1', 'FRONT', 1.5).drawn;
+  assert.equal(plain.scale, undefined, 'the plan\'s size says nothing');
+  assert.equal(big.scale, 1.5);
+  assert.deepEqual(big.centre, plain.centre, 'about its own centre');
+  const ratio = big.measured!.box[0] / plain.measured!.box[0];
+  assert.ok(Math.abs(ratio - 1.5) < 0.06, `drawn ${ratio.toFixed(3)} × as wide`);
+  assert.ok(big.measuredOffsetPx! < 2);
+  assert.equal(JSON.stringify(plan), before);
+});

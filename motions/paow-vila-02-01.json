@@ -1,0 +1,50 @@
+{
+  "schemaVersion": 1,
+  "id": "paow-vila-02-01",
+  "dealer": "paow",
+  "source": {
+    "path": "assets/motions/paow-vila-02-01/source.mp4",
+    "sha256": "80249b3b5f053c6d338813d3d212cfdceccd3abe3f29f2e6aa71e27a35493998",
+    "bytes": 13511835,
+    "width": 1764,
+    "height": 1174,
+    "fps": 30,
+    "frames": 148,
+    "provider": "Runway MCP server (app account credits)",
+    "model": "wan3"
+  },
+  "motion": {
+    "kind": "IDLE",
+    "from": "IDLE",
+    "to": "IDLE",
+    "pass": false,
+    "basis": "SOURCE_FRAME_REVIEW"
+  },
+  "review": {
+    "decision": "ACCEPTED",
+    "basis": "Inte granskad av Jakob: förd in från beställningen paow-vila-02, tagning 1 (tools/register-order.ts). Oberoende rutgranskning: tools/film-review.md.",
+    "limitations": "I inkorgen: spelas bara där steget inte har någon annan film, tills Jakob dömer den.",
+    "colorDoesNotProvePhysicalSide": true,
+    "userAccepted": true,
+    "productionReady": false,
+    "acceptedAs": "VARIANT",
+    "userReview": "Jakob 2026-11-13: Jättebra variant!"
+  },
+  "order": {
+    "id": "paow-vila-02",
+    "take": 1,
+    "path": "data/orders/paow-vila-02.json",
+    "orderSha256": "6bfa01128b5a3f1b738b5d6efb58170671965c17fb1dfc0ea37a9c5162d20469",
+    "receipt": "assets/orders/paow-vila-02/receipt.json",
+    "taskId": "270d8207-c099-4404-a61f-4521f96c9e7c",
+    "delivered": {
+      "path": "assets/orders/paow-vila-02/take-1/after.mp4",
+      "sha256": "80249b3b5f053c6d338813d3d212cfdceccd3abe3f29f2e6aa71e27a35493998"
+    }
+  },
+  "postProcessing": "none",
+  "generationRef": "assets/motions/paow-vila-02-01/generation.json",
+  "jobRef": "data/clip-jobs.json",
+  "scoutIntegrated": false,
+  "published": false
+}

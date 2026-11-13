@@ -20,7 +20,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import sharp from 'sharp';
 import { flatQuad, quad, validatePlan, type PlacementPlan } from '../src/placement-model.ts';
-import type { Drawn } from '../src/order-model.ts';
+import { scaleQuad, type Drawn } from '../src/order-model.ts';
 
 export const W = 1764, H = 1174, N = W * H;
 export type Pt = [number, number];
@@ -164,9 +164,10 @@ export function measureChange(a: Rgb, b: Rgb): NonNullable<Drawn['measured']> {
  * Draws one card of the plan on `base` and measures it: the picture and what to keep in the order. The side is the order's
  * own choice (closed or open) where it has one, else what the plan says for the card.
  */
-export function drawCard(base: Rgb, texture: Texture, plan: PlacementPlan, planFile: { path: string; sha256: string }, target: string, chosen?: 'FRONT' | 'BACK' | null): { rgb: Rgb; drawn: Drawn } {
+export function drawCard(base: Rgb, texture: Texture, plan: PlacementPlan, planFile: { path: string; sha256: string }, target: string, chosen?: 'FRONT' | 'BACK' | null, scale = 1): { rgb: Rgb; drawn: Drawn } {
   const side = chosen ?? plan.targets[target]?.intent.endSide ?? 'FRONT';
-  const to = planQuad(plan, target);
+  // A card size for one order (a trial): the plan's outline grown about its centre; the saved plan is not touched.
+  const { quad: to, factor } = scale === 1 ? { quad: planQuad(plan, target), factor: 1 } : scaleQuad(planQuad(plan, target), scale, { width: W, height: H });
   const rgb = layCard(base, texture, to, side);
   const measured = measureChange(base, rgb);
   const r = (v: number) => Math.round(v * 10) / 10;
@@ -184,6 +185,7 @@ export function drawCard(base: Rgb, texture: Texture, plan: PlacementPlan, planF
       centre: [r(centre[0]), r(centre[1])],
       measured,
       measuredOffsetPx: measured.area ? r(Math.hypot(measured.centre[0] - centre[0], measured.centre[1] - centre[1])) : null,
+      ...(scale !== 1 ? { scale: factor } : {}),
     },
   };
 }

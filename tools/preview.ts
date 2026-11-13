@@ -171,6 +171,7 @@ if(has('--restart')){
     res.end(JSON.stringify(tabs.show(target)));return;
    }
    // Film orders and the state of a candidate picture (tools/order-routes.ts): answered there when the address is theirs.
+   if(url.pathname==='/api/orders/ledger'){await (await import('./order-ledger.ts')).serveLedger(req,res);return;} // Protokoll (tools/order-ledger.ts), before the orders' own routes, which would take "ledger" for an order id.
    if(await handleOrders(req,res,url))return;
    if(url.pathname==='/api/placements'){
     res.setHeader('Content-Type','application/json; charset=utf-8');

@@ -137,6 +137,13 @@ export function PictureCard({ picture, owner, dealer, planned, className }: { pi
         {picture.from?.built ? `Ritad: ${picture.from.built}${drawn ? " (i rutan: kortet förstorat, planens kontur streckad)" : ""}` :picture.from?.note ? `Ur: ${picture.from.note}${picture.from.frame !== undefined ? `, ruta ${picture.from.frame}` : ""}` : picture.waits ? `Väntar på ${picture.waits.label}` : ""}
         {picture.sha256 ? <span className="ml-2 font-mono text-faint">sha256 {picture.sha256.slice(0, 12)}</span> : null}
       </p>
+      {drawn ? (
+        // The drawn card's pixels come from a frame of another film: only the card itself is taken, nothing of the person in it.
+        <p className="text-xs text-dim" title={drawn.texture.video}>
+          Kortets yta: ur filmruta {drawn.texture.frame} av {drawn.texture.video.split("/").slice(-2, -1)[0]}, bara kortet; resten är första bilden.
+          {drawn.scale ? <span className="ml-1 text-[#f0b07a]">Prov: kortet {Math.round(drawn.scale * 100)} % av planens.</span> : null}
+        </p>
+      ) : null}
       {picture.replaced ? (
         <p className="text-xs text-[#f0b07a]">
           Bytt {swedishMoment(picture.replaced.at) ?? picture.replaced.at}, efter valet i Material. Var: {picture.replaced.was}.
