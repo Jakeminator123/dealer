@@ -42,7 +42,7 @@ export const KEYS: Readonly<Record<LookKey, KeyKind>> = {
   room: {kind: 'choice', options: BUILT_ROOMS, open: true}, roomShift: one('cut', 'shimmer'), roomShiftSeconds: range(1, 5), blur: range(0, 30), depthBlur: on, dofRange: range(0.5, 12),
   clock: on, dust: range(0, 1), flicker: on, flickerEvery: range(4, 90), flickerStrength: range(0, 1), fan: on, fanStrength: range(0, 0.4), fanPeriod: range(2, 12),
   exposure: range(0.3, 2), roomLight: range(0, 2.5), lamp: range(0, 1), wrap: range(0, 1.5), filmBright: range(0.6, 1.4), filmWarm: range(-0.2, 0.2), shadowAbove: range(0, 1),
-  cloth: one('print', 'v6', 'runway'), felt: one('green', 'blue', 'vin', 'svart'), marks: {kind: 'set', options: MARKS}, logo: {kind: 'text', maxLength: 28}, surface: one('painted', 'photo', 'natur'), base: one('column', 'legs'), tray: on, cups: on,
+  cloth: one('print', 'v6', 'runway', 'runway-2', 'runway-3'), felt: one('green', 'blue', 'vin', 'svart'), marks: {kind: 'set', options: MARKS}, logo: {kind: 'text', maxLength: 28}, surface: one('painted', 'photo', 'natur', 'natur-2', 'natur-3'), base: one('column', 'legs'), tray: on, cups: on,
   cards: on, cardMethod: one('scene', 'film'), cardHand: one('film', 'standard'), cardScale: range(1, 2.5), cardRank: one('A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'), cardSuit: one('spades', 'hearts', 'diamonds', 'clubs'), chipGloss: range(0, 1),
   mode: one('look', 'lean'), sway: on, focus: one('off', 'dealer', 'follow', 'card', 'manual'), focusDistance: range(0.3, 12), tolerance: range(0, 0.8),
   yaw: range(-60, 60), pitch: range(-35, 25), zoom: range(0.45, 2.5), dx: range(-0.9, 0.9), dy: range(-0.3, 0.5), dz: range(-0.5, 1.6), aim: on, format: one('desk', 'mob', 'fill'),

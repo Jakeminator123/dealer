@@ -19,13 +19,15 @@ export type TableBase = 'column' | 'legs';
 // that is the table as it was. photo: the room study's "photographed material on 3D": the felt is a lit cloth with a
 // photographed weave for its relief, and every surface of the table takes its light and its reflections from the room that
 // is showing (the panorama itself), so that the table stands in that room's light and not in a light of its own.
-// natur: the photographed surface with two things more (a lab trial of 2026-11-13, HIDE below): the rail's leather is a picture of
-// a real hide, with the seams and stitches still drawn on it, and the felt has the soft sheen of a napped cloth at low angles.
-export type TableSurface = 'painted' | 'photo' | 'natur';
+// natur, natur-2 ...: the photographed surface with two things more (a lab trial of 2026-11-13, NATURES below): the rail's leather
+// is a picture of a real hide, with the seams and stitches still drawn on it, and the felt has the soft sheen of a napped cloth
+// at low angles. Each is one line of NATURES: which hide, and how the leather is finished.
+export type TableSurface = 'painted' | 'photo' | Nature;
 // What the felt's own colour and weave are. print: the colour of FELTS with a painted pool of light and a fine noise, as it was.
 // v6: V6's cloth (V6_CLOTH below), its colour and grain, evenly lit; the light across it is then the lamp's (LAMP).
-// runway: the felt of a generated photograph of this table (RUNWAY_CLOTH below), its colour and its nap, evenly lit like V6's.
-export type TableCloth = 'print' | 'v6' | 'runway';
+// runway, runway-2 ...: the felt of a generated photograph of this table (RUNWAY_CLOTHS below), its colour and its nap, evenly
+// lit like V6's. Each is one line of RUNWAY_CLOTHS.
+export type TableCloth = 'print' | 'v6' | RunwayCloth;
 // The kinds of print on the felt, each its own switch. The state key holds them as one word: "all", "none" or a comma list.
 // trim: the dark list along the dealer's edge and its gold line; arc: the gold arc in front of the card places; text: BLACKJACK
 // PAYS 3 TO 2; logo: the logo text and its two lines; boxes: the card places; rings: the bet rings; numbers: the seat numbers in them.
@@ -104,13 +106,46 @@ export function seamless(p: Picture, fade: number): Picture {
 // the nap's soft clouds, which are smaller) and scatters pieces of it into a larger tile that repeats; the tile is stored at the
 // print's own pixels per metre, so the page draws it as it is. Its colour is the picture's: lighter than the print's green and
 // more saturated.
-export const RUNWAY_CLOTH = {url: 'assets/scene/materials/runway_felt-diffuse.webp', x: 0.35, s0: 0.19, s1: 0.4, flat: 0.12};
-// The hide: a generated flat picture of full-grain leather, its light divided out and made to repeat (tools/scene-material.ts),
-// laid `repeat` times each way in the leather's tile, which goes once round the rail's roll (27 cm): the picture then shows about
-// the 15 cm it was ordered as, and its grain is about as fine as a real hide's. `depth`: how deep its grain is taken to be,
-// millimetres from its darkest crease to its lightest crown; `grain`: the size, in tile pixels, below which its brightness is
-// read as relief.
-export const HIDE = {url: 'assets/scene/materials/runway_leather-diffuse.webp', repeat: 2, depth: 0.05, grain: 4};
+export const RUNWAY_CLOTH = {x: 0.35, s0: 0.19, s1: 0.4, flat: 0.12};
+// The cloths made that way, by the word the state key `cloth` holds: the tile, and the name the lab's menu shows. A new cloth is
+// a new picture, an entry for it under "generated" in data/scene-materials.json (which tools/scene-material.ts makes the tile
+// from) and a line here; the menus of the studio (studio/lib/scene-keys.ts) and the game's key catalogue (src/game-look.ts)
+// name the same words, and tools/scene3d-looks.test.ts holds them to this list.
+const MATERIALS = 'assets/scene/materials/';
+export const RUNWAY_CLOTHS = {
+  'runway': {url: `${MATERIALS}runway_felt-diffuse.webp`, name: 'Runway-filten'},
+  'runway-2': {url: `${MATERIALS}runway_felt_2-diffuse.webp`, name: 'Runway-filten 2: tät kamgarnsduk'},
+  'runway-3': {url: `${MATERIALS}runway_felt_3-diffuse.webp`, name: 'Runway-filten 3: borstad boj'},
+} as const;
+export type RunwayCloth = keyof typeof RUNWAY_CLOTHS;
+export const isRunwayCloth = (cloth: string | undefined): cloth is RunwayCloth => !!cloth && Object.hasOwn(RUNWAY_CLOTHS, cloth);
+// The surfaces "natur", by the word the state key `surface` holds: a hide and a finish for the rail's leather.
+// hide: a generated flat picture of leather, its light divided out and made to repeat (tools/scene-material.ts), laid `repeat`
+// times each way in the leather's tile, which goes once round the rail's roll (27 cm): the picture then shows about the 15 cm it
+// was ordered as, and its grain is about as fine as a real hide's. depth: how deep its grain is taken to be, millimetres from its
+// darkest crease to its lightest crown. grain: the size, in tile pixels, below which its brightness is read as relief.
+// rough: the roughness of the leather's crowns (its creases are 0.22 duller). coat: a clear finish over it, 0 to 1, as on polished
+// leather. folds: how deep, in millimetres, the soft puckers are that run across the roll where the leather is drawn over the
+// padding (0: none). light: how much of the room's light the leather takes.
+export type Finish = {hide: string; repeat: number; depth: number; grain: number; rough: number; coat: number; folds: number; light: number; name: string};
+export const NATURES = {
+  'natur': {hide: `${MATERIALS}runway_leather-diffuse.webp`, repeat: 2, depth: 0.05, grain: 4, rough: 0.34, coat: 0, folds: 0, light: 1.6, name: 'Naturmaterial: Runway-läder, filt med lyster'},
+  'natur-2': {hide: `${MATERIALS}runway_leather-diffuse.webp`, repeat: 2, depth: 0.05, grain: 4, rough: 0.18, coat: 0.9, folds: 0.5, light: 2, name: 'Naturmaterial 2: samma läder, blankt och med veck'},
+  'natur-3': {hide: `${MATERIALS}runway_leather_2-diffuse.webp`, repeat: 2, depth: 0.035, grain: 4, rough: 0.2, coat: 0.7, folds: 0.4, light: 1.5, name: 'Naturmaterial 3: slätt polerat läder med veck'},
+} as const satisfies Record<string, Finish>;
+export type Nature = keyof typeof NATURES;
+export const isNature = (surface: string | undefined): surface is Nature => !!surface && Object.hasOwn(NATURES, surface);
+/**
+ * The soft puckers across the rail's roll, as a depth from 0 to 1 at a point of the leather's tile (u along the rail, v round the
+ * roll, both 0 to 1 and repeating in u): five shallow valleys per tile, unevenly spaced, each wandering a little as it goes
+ * round, deepest on the roll's inner shoulder (v `shoulder`) where the leather is drawn tight and fading toward the underside.
+ */
+export function foldDepth(u: number, v: number, shoulder: number): number {
+  const reach = 0.3 + 0.7 * Math.exp(-(((v - shoulder) / 0.22) ** 2)); let deep = 0;
+  for (const [at, wide, sway, phase] of FOLDS) { let d = Math.abs(u - at - sway * Math.sin(2 * Math.PI * (v + phase))) % 1; if (d > 0.5) d = 1 - d; deep = Math.max(deep, Math.exp(-((d / wide) ** 2))); }
+  return reach * deep;
+}
+const FOLDS = [[0.07, 0.013, 0.012, 0.1], [0.24, 0.017, 0.016, 0.55], [0.46, 0.012, 0.01, 0.3], [0.63, 0.018, 0.014, 0.8], [0.86, 0.014, 0.012, 0.45]]; // where along the tile, how wide, how far it wanders, where in its wander it starts
 /**
  * The relief of a square photographed surface read from its brightness: each pixel's brightness less the mean within `radius`
  * pixels round it (the picture repeats, so the mean wraps), over 2.5 standard deviations and held within -1 to 1. Creases and
@@ -241,10 +276,11 @@ function canvasTexture(image: ImageData, srgb: boolean) {
 // Leather for the roll, one tile as many metres square as the section is long, since v runs once round the section and u repeats along
 // the arc: pebble grain about 1.3 mm across, a soft colour mottle, and the two seams with a row of slanted stitches beside each at the
 // rows where the section puts them. The roughness texture carries the section's crease shade in its red channel for the aoMap.
-// `hide`: a photographed hide of the tile's own size (HIDE) in place of the drawn pebbles and the drawn colour: its colour is
-// the leather's, and its relief (reliefOf) is the grain. The seams and the stitches are drawn on it as on the drawn leather.
+// `hide`: a photographed hide of the tile's own size, with its finish (NATURES), in place of the drawn pebbles and the drawn
+// colour: its colour is the leather's, and its relief (reliefOf) is the grain. The seams and the stitches are drawn on it as on
+// the drawn leather, and the finish's puckers (foldDepth) are pressed into it, a little darker where they are deep.
 const LEATHER_PX = 1024;
-function leatherTextures(sec: Section, seams: {v: number; toward: number}[], hide?: {data: ArrayLike<number>; width: number}) {
+function leatherTextures(sec: Section, seams: {v: number; toward: number}[], hide?: {data: ArrayLike<number>; width: number} & Pick<Finish, 'depth' | 'grain' | 'rough' | 'folds'>) {
   const S = LEATHER_PX, P = 512, size = sec.length, mm = size * 1000 / S, rand = random(5), G = Math.round(size / 0.0026), cell = P / G, jitter = Float32Array.from({length: 2 * G * G}, rand);
   // pebbles (F2 - F1 of a jittered grid, 0 on the creases between them) on a half-size tile that repeats 2 x 2
   const pebbles = new Float32Array(P * P);
@@ -264,18 +300,19 @@ function leatherTextures(sec: Section, seams: {v: number; toward: number}[], hid
   for (let j = 0; j < R; j++) for (let i = 0; i < R; i++) tone[j * R + i] = mottle(i / R, j / R);
   const height = new Float32Array(S * S), colour = new ImageData(S, S), rough = new ImageData(S, S), normal = new ImageData(S, S), cd = colour.data, rd = rough.data, nd = normal.data;
   if (hide && hide.width !== S) throw Error(`The hide must be ${S} pixels square, as the leather's tile is.`);
-  const grain = hide ? reliefOf(hide.data, S, HIDE.grain) : null;
+  const grain = hide ? reliefOf(hide.data, S, hide.grain) : null, shoulder = seams[0]?.v ?? 0.5;
   for (let y = 0; y < S; y++) for (let x = 0; x < S; x++) {
     const fx = x / 4, fy = y / 4, i = fx | 0, j = fy | 0, sx = fx - i, sy = fy - j, a = j * R + i, b = j * R + (i + 1) % R, c = ((j + 1) % R) * R + i, d = ((j + 1) % R) * R + (i + 1) % R;
     const wa = (1 - sx) * (1 - sy), wb = sx * (1 - sy), wc = (1 - sx) * sy, wd = sx * sy, pebble = grain ? 0.5 + 0.5 * grain[y * S + x] : pebbles[(y % P) * P + x % P];
-    let h = (grain ? HIDE.depth : 0.022) * pebble + rowHeight[y], thread = 0; // millimetres; the grain is kept shallow so it does not streak where the roll is seen edge-on
+    const fold = hide?.folds ? foldDepth((x + 0.5) / S, 1 - (y + 0.5) / S, shoulder) : 0;
+    let h = (hide ? hide.depth : 0.022) * pebble + rowHeight[y] - (hide?.folds ?? 0) * fold, thread = 0; // millimetres; the grain is kept shallow so it does not streak where the roll is seen edge-on
     const e = rowStitch[y];
     if (e > -0.4 && e < 0.4) { const phase = ((x + 0.7 * e / mm) % pitch + pitch) % pitch / pitch; if (phase < 0.72) { thread = Math.sqrt((1 - (e / 0.4) ** 2) * Math.sin(Math.PI * phase / 0.72)); h += 0.18 * thread; } }
     height[y * S + x] = h;
     const groove = rowGroove[y], p = 4 * (y * S + x), w = 0.85 * thread;
-    if (hide) { // the hide's own colour, darker in the seam's groove; the thread a lighter brown of the same leather
-      const f = 1 - 0.3 * groove; cd[p] = hide.data[p] * f * (1 - w) + 104 * w; cd[p + 1] = hide.data[p + 1] * f * (1 - w) + 70 * w; cd[p + 2] = hide.data[p + 2] * f * (1 - w) + 50 * w; cd[p + 3] = 255;
-      rd[p] = 255 * rowShade[y]; rd[p + 1] = rd[p + 2] = 255 * ((0.34 + 0.22 * (1 - pebble) + 0.08 * groove) * (1 - thread) + 0.75 * thread); rd[p + 3] = 255; // worn smooth on the crowns, dull in the creases
+    if (hide) { // the hide's own colour, darker in the seam's groove and in a pucker; the thread a lighter brown of the same leather
+      const f = (1 - 0.3 * groove) * (1 - 0.18 * fold); cd[p] = hide.data[p] * f * (1 - w) + 104 * w; cd[p + 1] = hide.data[p + 1] * f * (1 - w) + 70 * w; cd[p + 2] = hide.data[p + 2] * f * (1 - w) + 50 * w; cd[p + 3] = 255;
+      rd[p] = 255 * rowShade[y]; rd[p + 1] = rd[p + 2] = 255 * ((hide.rough + 0.22 * (1 - pebble) + 0.08 * groove) * (1 - thread) + 0.75 * thread); rd[p + 3] = 255; // worn smooth on the crowns, dull in the creases
       continue; }
     const f = (0.86 + 0.14 * pebble) * (1 - 0.3 * groove) * (0.94 + 0.12 * (tone[a] * wa + tone[b] * wb + tone[c] * wc + tone[d] * wd));
     cd[p] = 52 * f * (1 - w) + 80 * w; cd[p + 1] = 21 * f * (1 - w) + 50 * w; cd[p + 2] = 15 * f * (1 - w) + 35 * w; cd[p + 3] = 255;
@@ -378,22 +415,24 @@ export function createTable(lit: <M extends T.Material>(material: M) => M = m =>
     Promise.all([read('nor_gl'), read('rough')]).then(([normalMap, roughnessMap]) => { Object.assign(cloth, {normalMap, roughnessMap}); cloth.normalScale.set(0.6, 0.6); cloth.needsUpdate = true;
       if (wool) { Object.assign(wool, {normalMap, roughnessMap}); wool.needsUpdate = true; } }, () => {});
   }
-  // The surface 'natur', made the first time it is asked for: the felt as the lit cloth with a napped cloth's sheen (a pale green
-  // that shows where the felt is seen at a low angle; its weave is laid on more faintly, since a felt has none of its own), and the
-  // rail in the photographed hide (HIDE). Until the hide is read, and where it cannot be, the rail wears the drawn leather.
-  let wool: T.MeshPhysicalMaterial | null = null, hideLeather: T.MeshStandardMaterial | null = null;
-  function natural() {
-    if (!wool || !hideLeather) {
-      const felted = wool = own(new T.MeshPhysicalMaterial({map: texture, normalMap: cloth.normalMap, roughnessMap: cloth.roughnessMap, roughness: 1, metalness: 0, side: T.DoubleSide, sheen: 1, sheenRoughness: 0.55, sheenColor: new T.Color(0.42, 0.62, 0.46)}));
-      felted.color.setScalar(2.1); felted.normalScale.set(0.3, 0.3);
-      const upholstered = hideLeather = own(new T.MeshStandardMaterial({map: leather.map, normalMap: leather.normalMap, roughnessMap: leather.roughnessMap, aoMap: leather.aoMap, normalScale: new T.Vector2(0.9, 0.9), roughness: 1, metalness: 0}));
-      lights.push([felted, 0.6], [upholstered, 1.6]); setEnvironment(env.map, env.turn, env.strength); // a dark hide with a sheen: less of the room's light than the drawn leather takes, on a smoother surface
-      const image = new Image(); image.src = HIDE.url;
-      image.decode().then(() => { const c = document.createElement('canvas'); c.width = c.height = LEATHER_PX; const g = c.getContext('2d', {willReadFrequently: true})!, cell = LEATHER_PX / HIDE.repeat; g.imageSmoothingQuality = 'high';
-        for (let j = 0; j < HIDE.repeat; j++) for (let i = 0; i < HIDE.repeat; i++) g.drawImage(image, i * cell, j * cell, cell, cell);
-        Object.assign(upholstered, leatherTextures(ROLL, ROLL.seams, g.getImageData(0, 0, LEATHER_PX, LEATHER_PX))); upholstered.needsUpdate = true; }, () => {});
+  // A surface "natur" (NATURES), made the first time it is asked for: the felt as the lit cloth with a napped cloth's sheen (a pale
+  // green that shows where the felt is seen at a low angle; its weave is laid on more faintly, since a felt has none of its own),
+  // and the rail in that surface's hide and finish. Until the hide is read, and where it cannot be, the rail wears the drawn leather.
+  // A dark hide with a sheen takes less of the room's light than the drawn leather does, on a smoother surface.
+  let wool: T.MeshPhysicalMaterial | null = null; const hides = new Map<Nature, T.MeshStandardMaterial>();
+  function natural(nature: Nature) {
+    if (!wool) { const felted = wool = own(new T.MeshPhysicalMaterial({map: texture, normalMap: cloth.normalMap, roughnessMap: cloth.roughnessMap, roughness: 1, metalness: 0, side: T.DoubleSide, sheen: 1, sheenRoughness: 0.55, sheenColor: new T.Color(0.42, 0.62, 0.46)}));
+      felted.color.setScalar(2.1); felted.normalScale.set(0.3, 0.3); lights.push([felted, 0.6]); setEnvironment(env.map, env.turn, env.strength); }
+    let hide = hides.get(nature);
+    if (!hide) { const finish: Finish = NATURES[nature], drawn = {map: leather.map, normalMap: leather.normalMap, roughnessMap: leather.roughnessMap, aoMap: leather.aoMap, normalScale: new T.Vector2(0.9, 0.9), roughness: 1, metalness: 0};
+      const upholstered = hide = own(finish.coat > 0 ? new T.MeshPhysicalMaterial({...drawn, clearcoat: finish.coat, clearcoatRoughness: 0.16}) : new T.MeshStandardMaterial(drawn));
+      hides.set(nature, upholstered); lights.push([upholstered, finish.light]); setEnvironment(env.map, env.turn, env.strength);
+      const image = new Image(); image.src = finish.hide;
+      image.decode().then(() => { const c = document.createElement('canvas'); c.width = c.height = LEATHER_PX; const g = c.getContext('2d', {willReadFrequently: true})!, cell = LEATHER_PX / finish.repeat; g.imageSmoothingQuality = 'high';
+        for (let j = 0; j < finish.repeat; j++) for (let i = 0; i < finish.repeat; i++) g.drawImage(image, i * cell, j * cell, cell, cell);
+        Object.assign(upholstered, leatherTextures(ROLL, ROLL.seams, {data: g.getImageData(0, 0, LEATHER_PX, LEATHER_PX).data, width: LEATHER_PX, depth: finish.depth, grain: finish.grain, rough: finish.rough, folds: finish.folds})); upholstered.needsUpdate = true; }, () => {});
     }
-    return {wool: wool!, hide: hideLeather!};
+    return {wool: wool!, hide};
   }
   let asked = false;
   function photographed() {
@@ -420,19 +459,19 @@ export function createTable(lit: <M extends T.Material>(material: M) => M = m =>
     const c = document.createElement('canvas'); c.width = tile.width; c.height = tile.height; c.getContext('2d')!.putImageData(image, 0, 0);
     const pattern = g.createPattern(c, 'repeat')!; v6Tile = {camera: id, pattern}; return pattern;
   }
-  // The generated photograph's felt (RUNWAY_CLOTH): a finished tile at the print's own pixels per metre, read the first time the
+  // A generated photograph's felt (RUNWAY_CLOTHS): a finished tile at the print's own pixels per metre, read the first time the
   // cloth is asked for; until it is there, or where it cannot be read, the felt keeps its print colour.
-  let runwayTile: CanvasPattern | null = null, runwayAsked = false;
-  function runwayPattern(g: CanvasRenderingContext2D): CanvasPattern | null {
-    if (!runwayTile && !runwayAsked) { runwayAsked = true; const image = new Image(); image.src = RUNWAY_CLOTH.url;
-      image.decode().then(() => { runwayTile = g.createPattern(image, 'repeat'); if (lastPrint?.cloth === 'runway') draw(lastPrint); }, () => {}); }
-    return runwayTile;
+  const runwayTiles = new Map<RunwayCloth, CanvasPattern | null>();
+  function runwayPattern(g: CanvasRenderingContext2D, which: RunwayCloth): CanvasPattern | null {
+    if (!runwayTiles.has(which)) { runwayTiles.set(which, null); const image = new Image(); image.src = RUNWAY_CLOTHS[which].url;
+      image.decode().then(() => { runwayTiles.set(which, g.createPattern(image, 'repeat')); if (lastPrint?.cloth === which) draw(lastPrint); }, () => {}); }
+    return runwayTiles.get(which) ?? null;
   }
 
   function draw(print: FeltPrint) {
     lastPrint = print;
     const g = canvas.getContext('2d')!, [light, dark] = FELTS[print.felt] ?? FELTS.green, on = feltMarks(print.marks);
-    const weave = print.cloth === 'v6' && print.camera ? v6Pattern(g, print.camera) : print.cloth === 'runway' ? runwayPattern(g) : null;
+    const weave = print.cloth === 'v6' && print.camera ? v6Pattern(g, print.camera) : isRunwayCloth(print.cloth) ? runwayPattern(g, print.cloth) : null;
     g.setTransform(1, 0, 0, 1, 0, 0); g.globalAlpha = 1;
     if (weave) { g.fillStyle = weave; g.fillRect(0, 0, PRINT.pxW, PRINT.pxH); }
     else {
@@ -485,7 +524,7 @@ export function createTable(lit: <M extends T.Material>(material: M) => M = m =>
       const outline = [...Array.from({length: N + 1}, (_, i) => new T.Vector2(a * Math.cos(Math.PI * i / N), b * Math.sin(Math.PI * i / N))), new T.Vector2(notch.x0, 0), new T.Vector2(notch.x0, notch.s1), new T.Vector2(notch.x1, notch.s1), new T.Vector2(notch.x1, 0)];
       feltGeometry.dispose(); feltGeometry = new T.ShapeGeometry(new T.Shape(outline)).rotateX(Math.PI / 2); const p = feltGeometry.getAttribute('position'), cut: number[] = [];
       for (let i = 0; i < p.count; i++) cut.push(...uvOf(p.getX(i), p.getZ(i))); feltGeometry.setAttribute('uv', new T.Float32BufferAttribute(cut, 2)); }
-    const nature = surface === 'natur' ? natural() : null;
+    const nature = isNature(surface) ? natural(surface) : null;
     if (surface !== 'painted') { weave(); feltGeometry.computeVertexNormals(); const normal = feltGeometry.getAttribute('normal') as T.BufferAttribute; for (let i = 0; i < normal.count; i++) normal.setXYZ(i, 0, 1, 0); } // the cloth faces up
     group.add(new T.Mesh(feltGeometry, nature ? nature.wool : surface === 'photo' ? cloth : felt));
     // padded rail round the players' arc with rounded ends past the dealer's edge, the brass bead along the felt, then the apron
@@ -516,7 +555,7 @@ export function createTable(lit: <M extends T.Material>(material: M) => M = m =>
   }
   // The room the table reflects and is lit by: a prefiltered map of the room that is showing, turned as that room is, or null
   // for the room painted for the table. Only the photographed surfaces ask for it. `lights`: the lit materials and how much of
-  // the room each takes; the materials of the surface 'natur' join them when they are made, in the room that is showing then.
+  // the room each takes; the materials of the surfaces "natur" join them when they are made, in the room that is showing then.
   const lights: [T.MeshStandardMaterial, number][] = [[cloth, 0.6], [leather, 3], [bead, 1.1], [apron, 1.5], [skirt, 1.6], [timber, 1.1], [polished, 1.5]];
   let env: {map: T.Texture | null; turn: number; strength: number} = {map: null, turn: 0, strength: 1};
   function setEnvironment(map: T.Texture | null, turn = 0, strength = 1) {

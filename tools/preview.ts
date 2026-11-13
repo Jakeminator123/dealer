@@ -103,7 +103,8 @@ if(has('--restart')){
  const tracking=async(id:string)=>({track:await tracked(id,'card-track.json')?`assets/tracking/${id}/card-track.json`:null,overrides:await tracked(id,'overrides.json')?`assets/tracking/${id}/overrides.json`:null});
  // Proofs: finished comparison films and contact sheets under assets/proofs/<id>/. Read-only, and only mp4, png and json.
  // Rooms for the 3D scene: panoramas under assets/scene/rooms/ and the menu's pictures under assets/scene/thumbs/ (local media, listed in data/scene-rooms.json). Read-only, jpg only.
- const sceneMedia=/^assets\/scene\/(rooms|thumbs)\/([a-z0-9][a-z0-9_-]*\.jpg)$/;
+ // Rooms and thumbs by name, and the table's generated material maps (tools/scene-material.ts, one per version) by pattern.
+ const sceneMedia=/^assets\/scene\/(rooms|thumbs|materials)\/([a-z0-9][a-z0-9_-]*\.jpg|runway_[a-z0-9_-]+-diffuse\.webp)$/;
  const sceneFile=async(file:string)=>{const m=sceneMedia.exec(file);if(!m)return false;try{return await realpath(file)===path.join(await realpath('assets/scene'),m[1],m[2]);}catch{return false;}};
  const proofFile=/^assets\/proofs\/((?:[a-z0-9][a-z0-9._-]*\/)+[a-z0-9][a-z0-9._-]*\.(?:mp4|png|json))$/;
  const proofPath=async(file:string)=>{const m=proofFile.exec(file);if(!m)return false;try{return await realpath(file)===path.join(await realpath('assets/proofs'),...m[1].split('/'));}catch{return false;}};

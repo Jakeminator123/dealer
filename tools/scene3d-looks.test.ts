@@ -5,7 +5,9 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {DEFAULTS} from '../src/scene3d-view.ts';
 import {FRAME_FIX, SHADOW_BAND, shadowAboveAt} from '../src/scene3d-film.ts';
-import {FELT_MARKS, FELT_PX_PER_M, HIDE, LAMP, RUNWAY_CLOTH, feltMarks, flatten, lampShade, marksText, rectify, reliefOf, seamless, type Picture} from '../src/scene3d-table.ts';
+import {FELT_MARKS, FELT_PX_PER_M, LAMP, NATURES, RUNWAY_CLOTH, RUNWAY_CLOTHS, feltMarks, flatten, foldDepth, isNature, isRunwayCloth, lampShade, marksText, rectify, reliefOf, seamless, type Picture} from '../src/scene3d-table.ts';
+import {SCENE_KEYS} from '../studio/lib/scene-keys.ts';
+import {KEYS as GAME_KEYS} from '../src/game-look.ts';
 import {CHIP_GLOSS, chipRoughness} from '../src/game3d-chips.ts';
 import {cameraFromContract, filmToTable, solveCamera, tableToFilm} from '../src/scene3d-geometry.ts';
 
@@ -95,7 +97,34 @@ test('the generated felt and the natural surface start switched off', () => {
   assert.ok(at(0, RUNWAY_CLOTH.s0).y > 905 + 15); assert.ok(at(0, RUNWAY_CLOTH.s1).y < 1174);
   for (const side of [-1, 1]) { const f = at(side * RUNWAY_CLOTH.x, RUNWAY_CLOTH.s1); assert.ok(f.x > 0 && f.x < 1764, `x ${f.x}`); }
   assert.equal(FELT_PX_PER_M, 4096 / 2.8); // a cloth tile is stored at the felt image's own pixels per metre
-  assert.ok(1024 % HIDE.repeat === 0 && HIDE.depth > 0 && HIDE.depth < 0.2); // the hide fits the leather's tile a whole number of times, and its grain is shallow
+  assert.ok(!isRunwayCloth(DEFAULTS.cloth) && !isNature(DEFAULTS.surface) && !isRunwayCloth('print') && !isRunwayCloth('v6') && !isNature('photo') && !isNature('toString'));
+});
+
+test('the versions of the generated felt and of the natural surface: one table each, and every menu names the same words', () => {
+  const cloths = Object.keys(RUNWAY_CLOTHS), natures = Object.keys(NATURES);
+  assert.deepEqual(cloths, ['runway', 'runway-2', 'runway-3']); assert.deepEqual(natures, ['natur', 'natur-2', 'natur-3']);
+  for (const id of cloths) { assert.ok(isRunwayCloth(id)); assert.match(RUNWAY_CLOTHS[id as keyof typeof RUNWAY_CLOTHS].url, /^assets\/scene\/materials\/runway_felt(_\d+)?-diffuse\.webp$/); }
+  assert.equal(new Set(Object.values(RUNWAY_CLOTHS).map(c => c.url)).size, cloths.length, 'each cloth its own tile');
+  for (const id of natures) { const f = NATURES[id as keyof typeof NATURES]; assert.ok(isNature(id)); assert.match(f.hide, /^assets\/scene\/materials\/runway_leather(_\d+)?-diffuse\.webp$/);
+    assert.ok(1024 % f.repeat === 0, 'the hide fits the leather\'s tile a whole number of times'); assert.ok(f.depth > 0 && f.depth < 0.2 && f.folds >= 0 && f.folds < 1, 'grain and puckers are shallow, in millimetres');
+    assert.ok(f.rough > 0.1 && f.rough + 0.3 <= 1 && f.coat >= 0 && f.coat <= 1 && f.light > 0); }
+  // the first surface is the one of the first night, unchanged: no finish over it and no puckers
+  assert.deepEqual([NATURES.natur.rough, NATURES.natur.coat, NATURES.natur.folds, NATURES.natur.depth, NATURES.natur.repeat], [0.34, 0, 0, 0.05, 2]);
+  // the studio's menus and the game's key catalogue name the same words, after the ones that were there before
+  const studio = (key: string) => { const spec = SCENE_KEYS.find(s => s.key === key)!; return spec.kind === 'choice' ? spec.options.map(o => o.value) : []; };
+  const game = (key: 'cloth' | 'surface') => { const kind = GAME_KEYS[key]; return kind.kind === 'choice' ? [...kind.options] : []; };
+  assert.deepEqual(studio('cloth'), ['print', 'v6', ...cloths]); assert.deepEqual(game('cloth'), ['print', 'v6', ...cloths]);
+  assert.deepEqual(studio('surface'), ['painted', 'photo', ...natures]); assert.deepEqual(game('surface'), ['painted', 'photo', ...natures]);
+  assert.deepEqual(SCENE_KEYS.find(s => s.key === 'roomLight')!.needs, {key: 'surface', is: ['photo', ...natures]}, 'the room lights every surface but the painted one');
+});
+
+test('the puckers across the rail: shallow valleys that repeat with the tile, deepest on the inner shoulder', () => {
+  const shoulder = 0.3; let deepest = 0, sum = 0, n = 0;
+  for (let u = 0; u < 1; u += 0.002) for (const v of [0.1, shoulder, 0.6, 0.9]) { const d = foldDepth(u, v, shoulder); assert.ok(d >= 0 && d <= 1); if (v === shoulder) { deepest = Math.max(deepest, d); sum += d; n++; } }
+  assert.ok(deepest > 0.95, 'a pucker reaches its full depth on the shoulder'); assert.ok(sum / n < 0.2, 'most of the leather between them lies smooth');
+  for (const [u, v] of [[0.07, 0.3], [0.5, 0.7], [0.99, 0.2]]) assert.ok(Math.abs(foldDepth(u, v, shoulder) - foldDepth(u + 1, v, shoulder)) < 1e-9 && Math.abs(foldDepth(u, v, shoulder) - foldDepth(u - 1, v, shoulder)) < 1e-9);
+  // far round the roll from the shoulder a pucker is less than half as deep
+  let far = 0; for (let u = 0; u < 1; u += 0.002) far = Math.max(far, foldDepth(u, shoulder + 0.5, shoulder)); assert.ok(far < 0.45 && far > 0.2);
 });
 
 test('a picture of the frame that is larger than the frame is laid flat as the frame itself would be', () => {

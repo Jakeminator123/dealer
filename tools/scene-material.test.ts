@@ -5,7 +5,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {FILM, cameraFromContract} from '../src/scene3d-geometry.ts';
-import {FELT_PX_PER_M, HIDE, RUNWAY_CLOTH, type Picture} from '../src/scene3d-table.ts';
+import {FELT_PX_PER_M, NATURES, RUNWAY_CLOTH, RUNWAY_CLOTHS, type Picture} from '../src/scene3d-table.ts';
 import {feltTile, hideTile, meanOf, scattered, seamRatio} from './scene-material.ts';
 
 const camera = cameraFromContract({keyFigures: {focalPx: {value: 886}, tiltDownDeg: {value: 2.5}, dealerEdgeImageRow: {value: 831.5}, heightAboveFeltMm: {value: 493}}, cardSizeAtTargets: {scale: {bodyScale: {k: 2}}}});
@@ -51,7 +51,10 @@ test('a flat material picture is made to repeat at the size asked for', () => {
 test('the register names the maps the scene asks for, each with its source and its order', () => {
   const register = JSON.parse(readFileSync('data/scene-materials.json', 'utf8')).generated;
   const files = register.maps.map((m: {file: string}) => `assets/scene/materials/${m.file}`);
-  assert.deepEqual([...files].sort(), [RUNWAY_CLOTH.url, HIDE.url].sort());
-  for (const m of register.maps) { assert.match(m.sourceSha256, /^[0-9a-f]{64}$/); assert.match(m.task, /^[0-9a-f-]{36}$/); assert.ok(['felt', 'hide'].includes(m.kind) && m.prompt.length > 40 && m.use.length > 10, m.id); }
+  const asked = [...new Set([...Object.values(RUNWAY_CLOTHS).map(c => c.url), ...Object.values(NATURES).map(n => n.hide)])];
+  assert.deepEqual([...files].sort(), asked.sort(), 'every version of the scene has its map in the register, and the register no map the scene does not ask for');
+  for (const m of register.maps) { assert.match(m.sourceSha256, /^[0-9a-f]{64}$/); assert.match(m.task, /^[0-9a-f-]{36}$/); assert.ok(['felt', 'hide'].includes(m.kind) && m.prompt.length > 40 && m.use.length > 10, m.id);
+    assert.equal(m.file.startsWith('runway_felt') ? 'felt' : 'hide', m.kind, m.id); }
+  assert.equal(new Set(register.maps.map((m: {id: string}) => m.id)).size, register.maps.length);
   assert.ok(Number.isFinite(FELT_PX_PER_M));
 });

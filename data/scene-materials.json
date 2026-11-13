@@ -74,7 +74,46 @@
         "task": "5ec5820f-112b-4f25-a0f3-ccdd3d9b59b0",
         "from": "Text only, 2048 x 2048.",
         "prompt": "Flat-lay material scan of dark chestnut-brown full-grain upholstery leather, the kind that covers the padded armrest of a casino table, photographed from directly above, perfectly perpendicular, filling the entire frame edge to edge. Natural pebbled grain with fine pores, small irregular creases and slight tonal variation from hide to hide; matte satin finish, lightly worn. The frame shows an area about 15 centimetres wide. Completely even, shadowless diffuse light over the whole frame: no vignette, no gradient, no glossy highlights, no reflections, no folds, no stitching, no seams, no scratches, no objects, no text, no border. Uniform colour and grain density everywhere, so that the image can repeat as a seamless tile. Photographic texture reference, sharp focus throughout.",
-        "use": "the rail's leather with surface \"natur\" (src/scene3d-table.ts, HIDE): its colour, and its grain as relief"
+        "use": "the rail's leather with surface \"natur\" and \"natur-2\" (src/scene3d-table.ts, NATURES): its colour, and its grain as relief"
+      },
+      {
+        "id": "runway_felt_2",
+        "kind": "felt",
+        "file": "runway_felt_2-diffuse.webp",
+        "source": "runway-hemvy-filt-2.png",
+        "sourceSha256": "04f15641d6165edccb4b35889ae409babc92a8ee90177865bfa3ce15079f9708",
+        "task": "b9114dcf-f34a-4ac4-b6e7-57e0480a1d48",
+        "from": "The same screenshot of the home view as runway_felt; the result is 5056 x 3392. Second round, on Jakob's word through the main agent that he liked the first pictures and wanted more versions (\"kan man få det ännu mera naturligt så kör igen\").",
+        "prompt": "Make @scene look like a photograph of a real casino blackjack table seen from a player's seat. Keep the camera, the framing, the woman, the black card shoe and the blurred room exactly where they are, and keep the far edge of the table on the same straight horizontal line. Change only the flat green surface in the lower part of the picture: it becomes a professional casino layout cloth of worsted wool in a deep emerald green, smooth and tightly made, with a very short even nap and a fine fibre texture that is just visible, completely matte, lit softly and evenly from the warm ceiling lamps of the room. The cloth stays plain: no printed lines, no markings, no text, no cards, no chips, nothing added on it. Photographic, natural, nothing glossy or plastic.",
+        "use": "the felt with cloth \"runway-2\": a tight, fine cloth in a deeper green"
+      },
+      {
+        "id": "runway_felt_3",
+        "kind": "felt",
+        "file": "runway_felt_3-diffuse.webp",
+        "source": "runway-hemvy-filt-3.png",
+        "sourceSha256": "889880157242177fd398d1fa71abf295dabb43d2f38ce639de5183f54af8cdb8",
+        "band": {
+          "s0": 0.3,
+          "flat": 0.06
+        },
+        "task": "51e1cfa7-c583-4168-8c57-24f6cf537079",
+        "from": "The same screenshot of the home view as runway_felt; the result is 5056 x 3392. The picture's bright brush strokes are few, and scattered into a tile the same strokes showed over and over; the band is therefore taken nearer the camera, in front of the strokes, and only its fuzzy nap and its colour are kept (light larger than 6 cm divided out).",
+        "prompt": "Make @scene look like a photograph of a real casino blackjack table seen from a player's seat. Keep the camera, the framing, the woman, the black card shoe and the blurred room exactly where they are, and keep the far edge of the table on the same straight horizontal line. Change only the flat green surface in the lower part of the picture: it becomes a thick wool baize in a warm classic green, well used and well kept, with a soft fuzzy nap that shows gentle brush marks and slight natural variation where hands and cards have passed over it, lit softly from the warm ceiling lamps of the room. The cloth stays plain: no printed lines, no markings, no text, no cards, no chips, nothing added on it. Photographic, natural, nothing glossy or plastic.",
+        "use": "the felt with cloth \"runway-3\": a thick baize in a warmer green, its fuzzy nap even"
+      },
+      {
+        "id": "runway_leather_2",
+        "kind": "hide",
+        "file": "runway_leather_2-diffuse.webp",
+        "source": "runway-lader-2.png",
+        "sourceSha256": "92f71faecd074e7e4197af39d3ed5261d6941515de6d1e5252454ea9e2357c0f",
+        "size": 1024,
+        "fade": 96,
+        "task": "cd4584f1-75fc-4b3f-a3ee-0aa194e7251b",
+        "from": "Text only, 2048 x 2048.",
+        "prompt": "Flat-lay material scan of smooth top-grain upholstery leather in a deep chestnut brown, the kind that covers the padded armrest of a fine gaming table, photographed from directly above, perfectly perpendicular, filling the entire frame edge to edge. A very fine, tight natural grain with tiny pores, and a few long, soft, shallow wrinkles as on leather stretched over padding; a polished finish, but photographed in completely even, shadowless diffuse light, so that no highlight shows. The frame shows an area about 15 centimetres wide. No vignette, no gradient, no glossy highlights, no reflections, no deep folds, no stitching, no seams, no scratches, no objects, no text, no border. Uniform colour and grain density everywhere, so that the image can repeat as a seamless tile. Photographic texture reference, sharp focus throughout.",
+        "use": "the rail's leather with surface \"natur-3\": a smoother, redder hide under a polished finish"
       }
     ],
     "unused": [

@@ -5,9 +5,9 @@
 //
 //   felt   a picture of the scene's home view, turned into a photograph by the model. A band of its felt is laid flat through
 //          the film camera of data/scene-contract.json, the lamp's light is divided out, and the band is mirrored into a tile
-//          that repeats, at the pixels per metre of the scene's felt image (RUNWAY_CLOTH, src/scene3d-table.ts).
+//          that repeats, at the pixels per metre of the scene's felt image (RUNWAY_CLOTHS, src/scene3d-table.ts).
 //   hide   a flat picture of a material seen from straight above. Its uneven light is divided out and its edges are faded into
-//          each other, so that it repeats, at the size of the rail's leather tile (HIDE).
+//          each other, so that it repeats, at the size of the rail's leather tile (NATURES).
 //
 //   node tools/scene-material.ts <id>        one entry of "generated" in data/scene-materials.json
 //   node tools/scene-material.ts --all
@@ -75,7 +75,8 @@ export function seamRatio(p: Picture): number {
 }
 
 // ── command ─────────────────────────────────────────────────────────────────
-type Job = {id: string; kind: 'felt' | 'hide'; source: string; sourceSha256: string; file: string; size?: number; fade?: number};
+// band: where a felt's band lies and how much light is divided out, where a picture needs other than RUNWAY_CLOTH's (a part of it is enough).
+type Job = {id: string; kind: 'felt' | 'hide'; source: string; sourceSha256: string; file: string; size?: number; fade?: number; band?: Partial<typeof RUNWAY_CLOTH>};
 const sha256 = (data: Buffer) => createHash('sha256').update(data).digest('hex');
 async function make(job: Job, directory: string, camera: FilmCamera) {
   const source = await readFile(path.join(directory, job.source)), sha = sha256(source);
@@ -83,7 +84,7 @@ async function make(job: Job, directory: string, camera: FilmCamera) {
   const sharp = (await import('sharp')).default;
   const rgb = (raw: {data: Buffer; info: {width: number; height: number}}): Picture => ({data: Float32Array.from(raw.data), width: raw.info.width, height: raw.info.height});
   let tile: Picture;
-  if (job.kind === 'felt') { const raw = await sharp(source).ensureAlpha().raw().toBuffer({resolveWithObject: true}); tile = feltTile({data: raw.data, width: raw.info.width, height: raw.info.height}, camera); }
+  if (job.kind === 'felt') { const raw = await sharp(source).ensureAlpha().raw().toBuffer({resolveWithObject: true}); tile = feltTile({data: raw.data, width: raw.info.width, height: raw.info.height}, camera, FELT_PX_PER_M, {...RUNWAY_CLOTH, ...job.band}); }
   else { const size = job.size ?? 1024, fade = job.fade ?? 96; tile = hideTile(rgb(await sharp(source).removeAlpha().resize(size + fade, size + fade, {fit: 'cover', kernel: 'lanczos3'}).raw().toBuffer({resolveWithObject: true})), size, fade); }
   const bytes = Buffer.from(Uint8ClampedArray.from(tile.data).buffer), target = `assets/scene/materials/${job.file}`;
   const out = await sharp(bytes, {raw: {width: tile.width, height: tile.height, channels: 3}}).webp({quality: 92, effort: 5}).toBuffer();
