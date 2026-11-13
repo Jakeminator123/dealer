@@ -68,6 +68,13 @@ inte med av misstag. Git-push är separat från webbdeploy, mediauppladdning och
   till vila och renderade kort i 3D-scenen; `jakob-5` (`9a6ca01`) klippen ur gamla labbet, Jakobs första domar och
   spårning för alla filmer; `jakob-6` (`784f231`) grundfilmerna, vilan med väljare och variant B; `jakob-7` (`f4b3ee3`)
   spelet i 3D-scenen med Scouts kärna i `game/` och vändningen av hålkortet; Jakob: "skitsnyggt".
+- **Återställningsbara versioner** (Jakob 2026-11-13: "Spara dock nuläget efter push som typ "Återställningsbart
+  version 2" för allt är bra"). En tagg på den pushade commiten, och i `D:/dealer-archive/<namn>/` en bundle av hela
+  historiken och en kopia av allt som ligger utanför Git (`assets/`, `output/`, `.runtime/` utan hemligheter), jämförd
+  mot källan med SHA-256 fil för fil. Mappens `LASMIG.md` säger hur läget återställs, och skripten i `kvitton/skript/`
+  körs om med nytt namn för nästa version. Version 1 är `D:/dealer-archive/V2-backup-studio/` (taggen `fore-struktur`,
+  `ce901d6`, 2026-11-12). Version 2 är `D:/dealer-archive/aterstallningsbar-version-2/` (taggen
+  `aterstallningsbar-version-2`, `c9c3cf2`, 2026-11-13: 4 103 mediefiler, 10,7 GB, 0 avvikelser).
 - Fem kanoniska dokument måste finnas: README (start), AGENTS (arbetsregler), HANDOFF (läget nu, ansvar, hinder), SYSTEM
   (kontrakt) och DRIFT (rutiner, anslutningar). Saknas ett av dem stoppar kontrollen (rött; listan `CANONICAL` i
   `tools/publication-check.ts`). Längden mäts inte, och en ny sida under `docs/` eller en arbetsinstruktion i `tools/`
