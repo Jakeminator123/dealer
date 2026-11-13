@@ -466,15 +466,23 @@ export function createPlayers(onShow: (texture: T.Texture, path: string) => void
   // The middle of the part's first frame, also for frame 0: an element that has never been seeked takes about a quarter
   // of a second to get going and drops its first frames; one that waits on a seeked frame starts on the next frame.
   const startTime = (p: Player) => (p.start + 0.5) / p.fps;
+  // The media time of the frame an element last presented: the frame its texture holds. currentTime is the element's clock and runs
+  // ahead of that frame, by up to a frame's time and more often the faster the film plays; a card drawn for the frame after the one
+  // on screen lies beside the film's card. Forgotten when the queue moves an element (the next frame it presents sets it anew), and
+  // not believed when it lies far from the clock.
+  const presented = new WeakMap<HTMLVideoElement, number>();
+  const moveTo = (video: HTMLVideoElement, seconds: number) => { presented.delete(video); video.currentTime = seconds; };
+  const shownAt = (video: HTMLVideoElement) => { const at = presented.get(video); return at !== undefined && !video.seeking && Math.abs(at - video.currentTime) < 0.25 ? at : video.currentTime; };
   const make = (part: Part): Player => {
     const video = document.createElement('video'); video.muted = !(part.sound === true && globalThis.navigator?.userActivation?.hasBeenActive === true); video.playsInline = true; video.preload = 'auto'; video.src = part.path;
     const texture = new T.VideoTexture(video); texture.colorSpace = T.NoColorSpace; texture.minFilter = texture.magFilter = T.LinearFilter; texture.generateMipmaps = false;
+    if (video.requestVideoFrameCallback) { const note = (_now: number, frame: {mediaTime: number}) => { presented.set(video, frame.mediaTime); frameCall(video, note); }; frameCall(video, note); }
     return {part, path: part.path, start: part.start ?? 0, end: part.end ?? null, fps: part.fps ?? FPS, video, texture};
   };
   // The part on screen is done: stop it where it is and bring in the next one on its first decoded frame.
   function advance(list: Player[], i: number) {
     if (gone || paused || list !== players || current !== i) return;
-    const n = (i + 1) % list.length, next = list[n]; list[i].video.pause(); next.video.currentTime = startTime(next);
+    const n = (i + 1) % list.length, next = list[n]; list[i].video.pause(); moveTo(next.video, startTime(next));
     const swap = () => { if (list === players) show(n); };
     if (next.video.requestVideoFrameCallback) frameCall(next.video, swap); else later(swap, 40);
     next.video.play().catch(() => {});
@@ -494,13 +502,13 @@ export function createPlayers(onShow: (texture: T.Texture, path: string) => void
     // After dispose() neither listener is left, and the promise stays open: nothing waits on a queue that is gone.
     await Promise.all(list.map(p => new Promise<void>((resolve, reject) => { if (p.video.readyState >= 2) resolve(); else { listen(p.video, 'loadeddata', () => resolve(), true); listen(p.video, 'error', () => reject(Error(`Filmen kunde inte läsas: ${p.path}`)), true); } })));
     if (list !== players) return;
-    list[0].video.currentTime = startTime(list[0]); show(0); if (!paused) list[0].video.play().catch(() => {});
+    moveTo(list[0].video, startTime(list[0])); show(0); if (!paused) list[0].video.play().catch(() => {});
   }
   async function seek(i: number, seconds: number) {
     if (gone) return;
     paused = true; players.forEach(p => p.video.pause()); const v = players[i].video;
     await new Promise<void>(resolve => { const done = () => { if (v.requestVideoFrameCallback) { const fallback = later(resolve, 250); frameCall(v, () => { clearTimeout(fallback); timers.delete(fallback); resolve(); }); } else later(resolve, 60); };
-      if (Math.abs(v.currentTime - seconds) < 1e-4 && v.readyState >= 2) done(); else { listen(v, 'seeked', done, true); v.currentTime = seconds; } });
+      if (Math.abs(v.currentTime - seconds) < 1e-4 && v.readyState >= 2) done(); else { listen(v, 'seeked', done, true); moveTo(v, seconds); } });
     if (gone) return;
     players[i].texture.needsUpdate = true; show(i);
   }
@@ -532,7 +540,7 @@ export function createPlayers(onShow: (texture: T.Texture, path: string) => void
   // The part's element, waiting on its first frame. A part that is on screen itself (a loop of one) gets a second element.
   function prime(c: Chain, i: number): Media {
     let m = c.media[i]; if (!m || m === shown) m = c.media[i] = media(c.parts[i].path);
-    const at = partStart(c.parts[i]); if (Math.abs(m.video.currentTime - at) > 1e-3) m.video.currentTime = at; return m;
+    const at = partStart(c.parts[i]); if (Math.abs(m.video.currentTime - at) > 1e-3) moveTo(m.video, at); return m;
   }
   // Brings part i of the chain on screen. `ended`: the part on screen is done and stops where it is; otherwise it runs on
   // until the new frame exists (and stops by itself if it gets to its end first).
@@ -618,7 +626,8 @@ export function createPlayers(onShow: (texture: T.Texture, path: string) => void
     get current() { const p = players[current]; return p ? {video: p.video, texture: p.texture} : null; }, get count() { return players.length; },
     // The chain as source frame ranges, end exclusive; for stepping through it frame by frame from outside.
     get parts() { return players.map(p => ({path: p.path, start: p.start, end: p.end ?? Math.round(p.video.duration * p.fps)})); },
-    // Source frame of the clip on screen, by the queue's one rule (frameAtTime): card tracks are indexed by it.
-    frame() { const p = players[current]; return p ? frameAtTime(p.video.currentTime, p.fps) : 0; },
+    // Source frame of the clip on screen, by the queue's one rule (frameAtTime): card tracks are indexed by it. The frame the element
+    // last presented, which is the one in its texture (shownAt).
+    frame() { const p = players[current]; return p ? frameAtTime(shownAt(p.video), p.fps) : 0; },
   };
 }
