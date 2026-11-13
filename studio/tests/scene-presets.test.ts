@@ -6,7 +6,10 @@ import { readFile } from "node:fs/promises";
 import { DEFAULTS, type SceneState } from "../../src/scene3d-view.ts";
 import {
   BASE,
+  NAME_LIMIT,
+  PRESET_NAME,
   SHIPPED,
+  SLOTS,
   differences,
   effective,
   isShipped,
@@ -14,6 +17,11 @@ import {
   oldLabAddress,
   patchOf,
   readAddress,
+  slotLabel,
+  slotName,
+  slotOf,
+  slotToSave,
+  slotsOf,
   slugOf,
   validatePreset,
   validateState,
@@ -27,9 +35,12 @@ test("three ship with the lab; basgrund is the baseline", async () => {
   assert.equal(BASE, "basgrund");
   assert.ok(isShipped("levande") && !isShipped("min-egen"));
   for (const p of SHIPPED) assert.deepEqual(validatePreset(p, p.name).errors, [], p.name);
-  // levande is basgrund with exactly the five keys of the look Jakob remembers (proof 3d-kanslan); the Scen view starts there
-  const alive = { mode: "lean", sway: true, focus: "follow", dust: 0.6, clock: true };
+  // levande is basgrund with exactly the four keys of the look Jakob remembers (proof 3d-kanslan); the Scen view starts
+  // there, and its camera does not sway by itself (Jakob 2026-11-13: "Autoläget ska inte gunga heller")
+  const alive = { mode: "lean", focus: "follow", dust: 0.6, clock: true };
   assert.deepEqual(patchOf(levande, basgrund), alive);
+  assert.equal(levande.sway, false);
+  assert.equal(rumsstudien.sway, false);
   // the data file that ships with the lab says the same
   const file = JSON.parse(await readFile("data/scene-presets/levande.json", "utf8")) as { state: Partial<SceneState> };
   assert.deepEqual(patchOf(effective(DEFAULTS, file.state), basgrund), alive);
@@ -55,13 +66,37 @@ test("a name for the file from what he called it", () => {
   assert.ok(slugOf("x".repeat(80)).length <= 40);
 });
 
+test("the ten places: place n is the preset profilval-<n>, what Spara som… makes of the name Profilval n", () => {
+  assert.equal(SLOTS, 10);
+  for (let n = 1; n <= SLOTS; n++) {
+    assert.equal(slotOf(slotName(n)), n);
+    assert.equal(slugOf(slotLabel(n)), slotName(n), `"${slotLabel(n)}" typed in Spara som… is place ${n}`);
+    assert.ok(PRESET_NAME.test(slotName(n)) && slotName(n).length <= NAME_LIMIT && !isShipped(slotName(n)));
+    assert.deepEqual(validatePreset({ label: slotLabel(n), state: { dust: 0.2 } }, slotName(n)).errors, []);
+  }
+  assert.equal(slotName(1), "profilval-1");
+  assert.equal(slotLabel(10), "Profilval 10");
+  for (const name of ["profilval-0", "profilval-11", "profilval-01", "profilval", "profilval-1-b", "min-profilval-1", "basgrund", ""]) assert.equal(slotOf(name), null, name);
+  // the places in order, the named presets left out; a place without a file is empty
+  const list = [...SHIPPED, { name: "profilval-3" }, { name: "kvall" }, { name: "profilval-10" }, { name: "profilval-12" }];
+  const slots = slotsOf(list);
+  assert.equal(slots.length, SLOTS);
+  assert.deepEqual(slots.map((p) => p?.name ?? null), [null, null, "profilval-3", null, null, null, null, null, null, "profilval-10"]);
+  assert.deepEqual(slotsOf([]), Array(SLOTS).fill(null));
+  // a save offers the place the look started from, else the first empty one, else none
+  assert.equal(slotToSave("profilval-3", slots), 3);
+  assert.equal(slotToSave("levande", slots), 1);
+  assert.equal(slotToSave("levande", slotsOf(Array.from({ length: SLOTS }, (_, i) => ({ name: slotName(i + 1) })))), null);
+  assert.equal(slotToSave("profilval-7", slotsOf(Array.from({ length: SLOTS }, (_, i) => ({ name: slotName(i + 1) })))), 7);
+});
+
 test("which preset a state is, and what differs", () => {
   assert.equal(matchPreset(levande, DEFAULTS, SHIPPED)?.name, "levande");
   const changed: SceneState = { ...levande, dust: 0.8 };
   assert.equal(matchPreset(changed, DEFAULTS, SHIPPED), null);
   assert.deepEqual(differences(changed, levande), ["dust"]);
-  assert.deepEqual(differences(changed, basgrund), ["clock", "dust", "mode", "sway", "focus"]); // in the catalogue's order
-  assert.deepEqual(patchOf(basgrund, changed), { dust: 0, clock: false, mode: "look", sway: false, focus: "off" });
+  assert.deepEqual(differences(changed, basgrund), ["clock", "dust", "mode", "focus"]); // in the catalogue's order
+  assert.deepEqual(patchOf(basgrund, changed), { dust: 0, clock: false, mode: "look", focus: "off" });
 });
 
 test("the address: the preset and the keys that differ from it, and back", () => {
@@ -85,7 +120,8 @@ test("the old lab's address starts from the scene's defaults", () => {
   assert.ok(url.startsWith("/scene3d.html?"));
   const params = new URLSearchParams(url.split("?")[1]);
   assert.equal(params.get("room"), "panorama");
-  assert.equal(params.get("sway"), "1");
+  assert.equal(params.get("mode"), "lean");
+  assert.equal(params.get("sway"), null, "levande does not sway: the old page's own default");
   assert.equal(params.get("pitch"), "-8");
   assert.equal(params.get("sko"), "3d");
   assert.equal(oldLabAddress(DEFAULTS, DEFAULTS), "/scene3d.html");

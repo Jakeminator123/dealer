@@ -2,13 +2,15 @@
 
 // const editor = useSceneEditor(firstLook): the scene editor of the Scen view (app/page.tsx), without a scene of its own.
 // The view's stage builds the one scene and hands it here (editor.onScene); the editor drives that same object: every key
-// of its state as a control (studio/lib/scene-keys.ts) in the panel, presets in the bar over the scene with basgrund, what
-// the game shows today, as the baseline (a key that differs from it carries a brass dot and its own "återställ"), "Jämför
-// med basgrund" (or hold B), the objects on the table and the cards' bend and gloss. Nothing here changes the game: a look
-// reaches game.html only when Jakob has approved it and someone moves it there; "Spela i Casino" shows it there to try.
-// The look travels in the address (address.ts): editor.lookText says it, and editor.ask takes a new one from outside.
-// Saved: his own presets (data/scene-presets/, on his click) and, on a confirmed click, the cards' bend and gloss in his
-// placement plan. In the online copy nothing is saved.
+// of its state as a control (studio/lib/scene-keys.ts) in the panel, presets and his ten numbered places (Profilval 1–10)
+// in the bar over the scene (PresetBar) with basgrund, what the game shows today, as the baseline (a key that differs from
+// it carries a brass dot and its own "återställ"), "Jämför med basgrund" (or hold B), the objects on the table and the
+// cards' bend and gloss. Loading a preset or a place makes it the look's origin: what has changed since is measured from
+// it, and the bar's "Återställ" for a place goes back to it. Nothing here changes the game: a look reaches game.html only
+// when Jakob has approved it and someone moves it there; "Spela i Casino" shows it there to try. The look travels in the
+// address (address.ts): editor.lookText says it, and editor.ask takes a new one from outside. Saved: his own presets and
+// places (data/scene-presets/, on his click; a place is the preset profilval-<n>) and, on a confirmed click, the cards'
+// bend and gloss in his placement plan. In the online copy nothing is saved.
 import { useCallback, useEffect, useMemo, useRef, useState, type PointerEvent } from "react";
 import type { PlacementPlan } from "../../../src/placement-model.ts";
 import type { RegisterRoom } from "../../../src/scene3d-room.ts";
@@ -18,7 +20,7 @@ import { casinoAddress } from "../../lib/casino.ts";
 import { isSnapshot } from "../../lib/mode.ts";
 import { placesOf } from "../../lib/rounds.ts";
 import { BUILT_BLUR, sameValue, type GroupId, type SceneKey } from "../../lib/scene-keys.ts";
-import { BASE, SHIPPED, differences, effective, isShipped, matchPreset, oldLabAddress, patchOf } from "../../lib/scene-presets.ts";
+import { BASE, SHIPPED, differences, effective, isShipped, matchPreset, oldLabAddress, patchOf, slotLabel, slotOf } from "../../lib/scene-presets.ts";
 import type { Scene } from "../stage";
 import { SegmentedControl, Skeleton, Switch, useToast } from "../ui";
 import { askedPart, lookPart, type LookAsk } from "./address.ts";
@@ -231,16 +233,29 @@ export function useSceneEditor(firstLook: () => LookAsk) {
 
   // ── saving ──
   const canSave = !isSnapshot;
+  // A named preset or a place (name profilval-<n>): revision is the one last read when the name exists, null for a new one.
   const saveAs = async (name: string, label: string, about: string, revision: string | null) => {
     if (!current || !defaults) return;
-    await savePreset(name, { label, about, state: patchOf(current, defaults) }, revision);
+    try {
+      await savePreset(name, { label, about, state: patchOf(current, defaults) }, revision);
+    } catch (error) {
+      void reloadPresets(); // made or changed in another tab: the bar shows it as the lab holds it, and the next try can work
+      throw error;
+    }
     await reloadPresets();
     setOrigin(name);
-    toast({ tone: "ok", title: `Sparat som ${label}`, detail: "Finns bland förvalen; adressen pekar på det." });
+    const place = slotOf(name);
+    toast(place ? { tone: "ok", title: `Sparat i ${slotLabel(place)}` } : { tone: "ok", title: `Sparat som ${label}`, detail: "Finns bland förvalen; adressen pekar på det." });
   };
+  // A named preset or a place ("Töm"), against the revision last read.
   const remove = async (p: Preset) => {
     if (!p.revision) return;
-    await deletePreset(p.name, p.revision);
+    try {
+      await deletePreset(p.name, p.revision);
+    } catch (error) {
+      void reloadPresets();
+      throw error;
+    }
     await reloadPresets();
     if (origin === p.name) setOrigin(BASE);
   };
@@ -320,6 +335,7 @@ export function useSceneEditor(firstLook: () => LookAsk) {
   const bar = (
     <PresetBar
       presets={presets}
+      listed={presetsRead}
       active={active}
       origin={originPreset?.name ?? BASE}
       changed={changedFromOrigin}

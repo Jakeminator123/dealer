@@ -13,12 +13,11 @@
     "zoom": 0.84,
     "roomShift": "shimmer",
     "mode": "lean",
-    "sway": true,
     "focus": "follow",
     "dust": 0.6,
     "clock": true,
     "surface": "natur-duk",
     "cloth": "v6"
   },
-  "updatedAt": "2026-11-13T06:40:00.000Z"
+  "updatedAt": "2026-11-13T12:00:00.000Z"
 }

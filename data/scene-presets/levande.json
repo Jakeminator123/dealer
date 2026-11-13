@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "name": "levande",
   "label": "Levande",
-  "about": "Basgrund med det Jakob minns av 3D-labbet: kameran lutar och gungar, skärpan följer kortet, damm i luften och klockan.",
+  "about": "Basgrund med det Jakob minns av 3D-labbet: kameran lutar men gungar inte, skärpan följer kortet, damm i luften och klockan.",
   "state": {
     "format": "fill",
     "room": "panorama",
@@ -13,7 +13,6 @@
     "zoom": 0.84,
     "roomShift": "shimmer",
     "mode": "lean",
-    "sway": true,
     "focus": "follow",
     "dust": 0.6,
     "clock": true

@@ -1,9 +1,12 @@
 // Presets of the 3D scene: a named look, the keys that differ from the scene's DEFAULTS (src/scene3d-view.ts), kept in
 // data/scene-presets/<name>.json and served by the lab server (tools/scene-preset-store.ts, /api/scene-presets). Three
 // ship with the lab and cannot be changed: basgrund (what the game shows today), levande (basgrund with the look Jakob
-// remembers of the 3D lab) and rumsstudien (levande with the room study's table, not yet judged by him). The Scen view's
-// baseline is basgrund: what differs from it is marked. A look also travels as an address, /scen/?forval=levande&dust=0.8,
-// and as the old lab's own, scene3d.html?…. Pure: no DOM, no network; tests in studio/tests/scene-presets.test.ts.
+// remembers of the 3D lab, the camera leaning but not swaying) and rumsstudien (levande with the room study's table, not
+// yet judged by him). The Scen view's baseline is basgrund: what differs from it is marked. Jakob's ten numbered places,
+// Profilval 1–10 (2026-11-13), are presets of his own like any other, each under the name profilval-<n> (slotOf), so that
+// ?forval=profilval-3 plays place 3 wherever a preset is read. A look also travels as an address,
+// /scen/?forval=levande&dust=0.8, and as the old lab's own, scene3d.html?…. Pure: no DOM, no network; tests in
+// studio/tests/scene-presets.test.ts.
 import type { SceneState } from "../../src/scene3d-view.ts";
 import { SCENE_KEYS, checkValue, decodeValue, encodeValue, hasControl, isSceneKey, keySpec, sameValue, type SceneKey } from "./scene-keys.ts";
 
@@ -23,8 +26,10 @@ export const BASE = "basgrund";
 // room is Las Vegas when the player has chosen none, line 57; its blur 5 is its entry in data/scene-rooms.json; pitch −8 and
 // zoom 0,84 are FRAMING.wide, line 39), and the shimmer when the room changes, line 173. Everything else is the scene's own.
 const GAME: Partial<SceneState> = { format: "fill", room: "panorama", blur: 5, tray: true, cards: true, pitch: -8, zoom: 0.84, roomShift: "shimmer" };
-// What Jakob remembers of the 3D lab (proof 3d-kanslan); the Scen view starts with it.
-const ALIVE: Partial<SceneState> = { mode: "lean", sway: true, focus: "follow", dust: 0.6, clock: true };
+// What Jakob remembers of the 3D lab (proof 3d-kanslan), without the sway: the camera leans and stays where it is put
+// (Jakob 2026-11-13, "Autoläget ska inte gunga heller"; the scene's own sway is off and its switch is under Kamera). The
+// Scen view starts with it.
+const ALIVE: Partial<SceneState> = { mode: "lean", focus: "follow", dust: 0.6, clock: true };
 // The room study of 2026-11-07 (docs/SYSTEM.md "3D-scenen") with the lab trials of 2026-11-12.
 const STUDY: Partial<SceneState> = { surface: "photo", base: "legs", shadowAbove: 0, lamp: 0.5 };
 const SHIPPED_AT = "2026-11-12T20:00:00.000Z";
@@ -43,7 +48,7 @@ export const SHIPPED: readonly ScenePreset[] = [
     schemaVersion: 1,
     name: "levande",
     label: "Levande",
-    about: "Basgrund med det Jakob minns av 3D-labbet: kameran lutar och gungar, skärpan följer kortet, damm i luften och klockan.",
+    about: "Basgrund med det Jakob minns av 3D-labbet: kameran lutar men gungar inte, skärpan följer kortet, damm i luften och klockan.",
     state: { ...GAME, ...ALIVE },
     updatedAt: SHIPPED_AT,
   },
@@ -110,6 +115,35 @@ export function slugOf(label: string): string {
     .replace(/^-+|-+$/g, "")
     .slice(0, NAME_LIMIT)
     .replace(/-+$/, "");
+}
+
+// ── Places ──
+// Jakob 2026-11-13: "Profilval 1" … "Profilval 10", ten numbered places for a look, to save, load and go back to. A place
+// is no store of its own: place n is his preset profilval-<n> (what "Spara som…" makes of the name "Profilval 3" too),
+// counted among his own (OWN_LIMIT) and read by name like any preset. A file that is not there is an empty place.
+export const SLOTS = 10;
+export const slotName = (n: number) => `profilval-${n}`;
+export const slotLabel = (n: number) => `Profilval ${n}`;
+/** The place a preset is, 1–10, or null: profilval-3 is 3; profilval-03, profilval-11 and the rest are named presets. */
+export function slotOf(name: string): number | null {
+  const n = /^profilval-([1-9][0-9]?)$/.exec(name) ? Number(name.slice("profilval-".length)) : 0;
+  return n >= 1 && n <= SLOTS ? n : null;
+}
+/** The ten places in order: each its preset, or null when empty. */
+export function slotsOf<T extends { name: string }>(presets: readonly T[]): (T | null)[] {
+  const slots: (T | null)[] = Array.from({ length: SLOTS }, () => null);
+  for (const p of presets) {
+    const n = slotOf(p.name);
+    if (n && !slots[n - 1]) slots[n - 1] = p;
+  }
+  return slots;
+}
+/** The place a save offers first: the one the look started from, else the first empty one, else none. */
+export function slotToSave(origin: string, slots: readonly unknown[]): number | null {
+  const from = slotOf(origin);
+  if (from) return from;
+  const empty = slots.findIndex((p) => !p);
+  return empty < 0 ? null : empty + 1;
 }
 
 // ── States ──

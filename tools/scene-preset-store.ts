@@ -3,7 +3,9 @@
 // reads them for its pages and writes Jakob's own on his click. Like the placement store: every write is checked against the
 // catalogue, made against the revision the page last read (If-Match), queued, and written to a temporary file that is renamed
 // into place. The three that ship with the lab (basgrund, levande, rumsstudien) are read-only here. A room must be one the
-// scene has: a built room or an entry of data/scene-rooms.json.
+// scene has: a built room or an entry of data/scene-rooms.json. Jakob's ten places (Profilval 1–10, profilval-<n>.json)
+// are presets of his own like any other: no rule here knows them, they count towards OWN_LIMIT, and a place without a file
+// is empty.
 import {readFile, readdir, writeFile, mkdir, rename, unlink} from 'node:fs/promises';
 import {createHash, randomUUID} from 'node:crypto';
 import path from 'node:path';

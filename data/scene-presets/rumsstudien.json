@@ -13,7 +13,6 @@
     "zoom": 0.84,
     "roomShift": "shimmer",
     "mode": "lean",
-    "sway": true,
     "focus": "follow",
     "dust": 0.6,
     "clock": true,
