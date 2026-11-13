@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "id": "paow-giv-p4-02",
+  "dealer": "paow",
+  "source": {
+    "path": "assets/motions/paow-giv-p4-02/source.mp4",
+    "sha256": "37e42f2cfb073b0e51f776ef35a665d80b14eac6dafed886e3935b4bc245a4b9",
+    "bytes": 6491868,
+    "width": 1764,
+    "height": 1174,
+    "fps": 24,
+    "frames": 169,
+    "provider": "Runway MCP server (app account credits)",
+    "model": "kling-4"
+  },
+  "cutInto": [
+    "paow-giv-p4-02-deal",
+    "paow-giv-p4-02-return-ready"
+  ],
+  "order": {
+    "id": "paow-giv-p4",
+    "take": 2,
+    "path": "data/orders/paow-giv-p4.json",
+    "orderSha256": "b6022024ddd2ac78d1994df0c23c1df0af9be3be719da602dc27cd05e516dde1",
+    "receipt": "assets/orders/paow-giv-p4/receipt.json",
+    "taskId": "0e55f459-76a2-41bb-9b6e-c4ff5b50dec0",
+    "delivered": {
+      "path": "assets/orders/paow-giv-p4/take-2/after.mp4",
+      "sha256": "37e42f2cfb073b0e51f776ef35a665d80b14eac6dafed886e3935b4bc245a4b9"
+    }
+  },
+  "generationRef": "assets/motions/paow-giv-p4-02/generation.json",
+  "jobRef": "data/clip-jobs.json",
+  "scoutIntegrated": false,
+  "published": false
+}

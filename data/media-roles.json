@@ -3076,6 +3076,20 @@
           }
         },
         {
+          "id": "paow-film-ny-ingang-2-1-4k",
+          "role": "film",
+          "name": "Ankare 1 → 2.1 (Kling 3.0 4K)",
+          "path": "assets/films/paow/ny-ingang-2-1-4k/source.mp4",
+          "still": 80,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Samma film som WAN-tagningen, med Kling 3.0 4K, inpassad i bankens ruta. 4K-originalet ligger i assets/orders/.",
+          "source": {
+            "from": "beställningen paow-ingang-2-1-02, tagning 1 (studions vy Beställ)",
+            "when": "2026-11-13"
+          }
+        },
+        {
           "id": "paow-prov-ankare-ung",
           "role": "prov",
           "name": "Ankare 1, yngre, kandidater",

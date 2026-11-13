@@ -3393,6 +3393,148 @@
         "id": "paow-ingang-2-1-01",
         "take": 1
       }
+    },
+    {
+      "id": "paow-giv-p4-01-deal",
+      "kind": "DEAL",
+      "from": "READY",
+      "to": "P4.C1",
+      "clip": "paow-giv-p4-01",
+      "frames": [
+        0,
+        102
+      ],
+      "purpose": "Beställning paow-giv-p4, tagning 1: Paow · första filmen: ett kort till plats 4.",
+      "dealer": "paow",
+      "model": "kling-4",
+      "duration": 7,
+      "promptText": "One continuous take with a locked-off camera and no cuts. The woman in the first frame is a young, slim, petite woman with a platinum-blonde chin-length bob, warm-coloured tattoos on her throat and upper chest and a small white flower pendant, in a black tailored blazer over a cream V-neck top; she sits at a green table, seen from the front, with the black card shoe fixed at the right of the picture and a yellow card in its window. She deals one card and comes back to the pose she started in. Her left hand, at the right of the picture, pinches the yellow card in the shoe's window between thumb and forefinger, the fingertips on the card's own upper edge and not on the shoe's rim, as in the first frame, and draws it out of the shoe down onto the felt, its yellow back up: the card looks as it does in the shoe, the same size and shape, one plain rigid card. The same hand brings it forward low along the felt, still yellow back up, to the place where it will lie; it is not turned in the air on the way. At the place the wrist of her left hand rolls: the card tilts up onto its long edge, held between thumb and fingers, and the roll goes on until its blue face is up, one edge staying near the felt; it is one card turned over once, keeping its size. She lays it flat with her left hand, blue face up, exactly where the blue card lies in the last frame, in the middle of the picture, at the same size and angle, lets go of it, and the card stays there. Then her left hand returns to the shoe and pinches the next yellow card, exactly as in the first frame. Her right hand, at the left of the picture, rests on the table the whole time. Only one card moves; it is solid yellow on its back and solid blue on its face. She ends exactly as in the last frame. Nothing of this happens: a second card appears, her right hand lifts from the table or touches the card, the card is turned in the air on the way, a finger passes through the card, the card grows or shrinks on its way, a hand hovers in the air without holding or laying anything, the shoe changes, the picture cuts or the camera moves.",
+      "first": {
+        "file": {
+          "path": "assets/orders/paow-giv-p4/first.png",
+          "sha256": "74eebfdc1388f8de362c0151546bbe08aeb1fed74fca097f8ca6999d833dc702"
+        },
+        "note": "Första bilden i beställningen paow-giv-p4."
+      },
+      "order": {
+        "id": "paow-giv-p4",
+        "take": 1
+      }
+    },
+    {
+      "id": "paow-giv-p4-01-return-ready",
+      "kind": "RETURN",
+      "from": "P4.C1",
+      "to": "READY",
+      "clip": "paow-giv-p4-01",
+      "frames": [
+        103,
+        168
+      ],
+      "purpose": "Beställning paow-giv-p4, tagning 1: Paow · första filmen: ett kort till plats 4.",
+      "dealer": "paow",
+      "model": "kling-4",
+      "duration": 7,
+      "promptText": "One continuous take with a locked-off camera and no cuts. The woman in the first frame is a young, slim, petite woman with a platinum-blonde chin-length bob, warm-coloured tattoos on her throat and upper chest and a small white flower pendant, in a black tailored blazer over a cream V-neck top; she sits at a green table, seen from the front, with the black card shoe fixed at the right of the picture and a yellow card in its window. She deals one card and comes back to the pose she started in. Her left hand, at the right of the picture, pinches the yellow card in the shoe's window between thumb and forefinger, the fingertips on the card's own upper edge and not on the shoe's rim, as in the first frame, and draws it out of the shoe down onto the felt, its yellow back up: the card looks as it does in the shoe, the same size and shape, one plain rigid card. The same hand brings it forward low along the felt, still yellow back up, to the place where it will lie; it is not turned in the air on the way. At the place the wrist of her left hand rolls: the card tilts up onto its long edge, held between thumb and fingers, and the roll goes on until its blue face is up, one edge staying near the felt; it is one card turned over once, keeping its size. She lays it flat with her left hand, blue face up, exactly where the blue card lies in the last frame, in the middle of the picture, at the same size and angle, lets go of it, and the card stays there. Then her left hand returns to the shoe and pinches the next yellow card, exactly as in the first frame. Her right hand, at the left of the picture, rests on the table the whole time. Only one card moves; it is solid yellow on its back and solid blue on its face. She ends exactly as in the last frame. Nothing of this happens: a second card appears, her right hand lifts from the table or touches the card, the card is turned in the air on the way, a finger passes through the card, the card grows or shrinks on its way, a hand hovers in the air without holding or laying anything, the shoe changes, the picture cuts or the camera moves.",
+      "last": {
+        "file": {
+          "path": "assets/orders/paow-giv-p4/last.png",
+          "sha256": "d16aa316bc5cabbf16b3511a940bdc8d9f7b10d80501a2f589e1166bb94db64c"
+        },
+        "note": "Sista bilden i beställningen paow-giv-p4."
+      },
+      "order": {
+        "id": "paow-giv-p4",
+        "take": 1
+      }
+    },
+    {
+      "id": "paow-giv-p4-02-deal",
+      "kind": "DEAL",
+      "from": "READY",
+      "to": "P4.C1",
+      "clip": "paow-giv-p4-02",
+      "frames": [
+        0,
+        104
+      ],
+      "purpose": "Beställning paow-giv-p4, tagning 2: Paow · första filmen: ett kort till plats 4.",
+      "dealer": "paow",
+      "model": "kling-4",
+      "duration": 7,
+      "promptText": "One continuous take with a locked-off camera and no cuts. The woman in the first frame is a young, slim, petite woman with a platinum-blonde chin-length bob, warm-coloured tattoos on her throat and upper chest and a small white flower pendant, in a black tailored blazer over a cream V-neck top; she sits at a green table, seen from the front, with the black card shoe fixed at the right of the picture and a yellow card in its window. She deals one card and comes back to the pose she started in. Her left hand, at the right of the picture, pinches the yellow card in the shoe's window between thumb and forefinger, the fingertips on the card's own upper edge and not on the shoe's rim, as in the first frame, and draws it out of the shoe down onto the felt, its yellow back up: the card looks as it does in the shoe, the same size and shape, one plain rigid card. The same hand brings it forward low along the felt, still yellow back up, to the place where it will lie; it is not turned in the air on the way. At the place the wrist of her left hand rolls: the card tilts up onto its long edge, held between thumb and fingers, and the roll goes on until its blue face is up, one edge staying near the felt; it is one card turned over once, keeping its size. She lays it flat with her left hand, blue face up, exactly where the blue card lies in the last frame, in the middle of the picture, at the same size and angle, lets go of it, and the card stays there. Then her left hand returns to the shoe and pinches the next yellow card, exactly as in the first frame. Her right hand, at the left of the picture, rests on the table the whole time. Only one card moves; it is solid yellow on its back and solid blue on its face. She ends exactly as in the last frame. Nothing of this happens: a second card appears, her right hand lifts from the table or touches the card, the card is turned in the air on the way, a finger passes through the card, the card grows or shrinks on its way, a hand hovers in the air without holding or laying anything, the shoe changes, the picture cuts or the camera moves.",
+      "first": {
+        "file": {
+          "path": "assets/orders/paow-giv-p4/first.png",
+          "sha256": "74eebfdc1388f8de362c0151546bbe08aeb1fed74fca097f8ca6999d833dc702"
+        },
+        "note": "Första bilden i beställningen paow-giv-p4."
+      },
+      "order": {
+        "id": "paow-giv-p4",
+        "take": 2
+      }
+    },
+    {
+      "id": "paow-giv-p4-02-return-ready",
+      "kind": "RETURN",
+      "from": "P4.C1",
+      "to": "READY",
+      "clip": "paow-giv-p4-02",
+      "frames": [
+        105,
+        168
+      ],
+      "purpose": "Beställning paow-giv-p4, tagning 2: Paow · första filmen: ett kort till plats 4.",
+      "dealer": "paow",
+      "model": "kling-4",
+      "duration": 7,
+      "promptText": "One continuous take with a locked-off camera and no cuts. The woman in the first frame is a young, slim, petite woman with a platinum-blonde chin-length bob, warm-coloured tattoos on her throat and upper chest and a small white flower pendant, in a black tailored blazer over a cream V-neck top; she sits at a green table, seen from the front, with the black card shoe fixed at the right of the picture and a yellow card in its window. She deals one card and comes back to the pose she started in. Her left hand, at the right of the picture, pinches the yellow card in the shoe's window between thumb and forefinger, the fingertips on the card's own upper edge and not on the shoe's rim, as in the first frame, and draws it out of the shoe down onto the felt, its yellow back up: the card looks as it does in the shoe, the same size and shape, one plain rigid card. The same hand brings it forward low along the felt, still yellow back up, to the place where it will lie; it is not turned in the air on the way. At the place the wrist of her left hand rolls: the card tilts up onto its long edge, held between thumb and fingers, and the roll goes on until its blue face is up, one edge staying near the felt; it is one card turned over once, keeping its size. She lays it flat with her left hand, blue face up, exactly where the blue card lies in the last frame, in the middle of the picture, at the same size and angle, lets go of it, and the card stays there. Then her left hand returns to the shoe and pinches the next yellow card, exactly as in the first frame. Her right hand, at the left of the picture, rests on the table the whole time. Only one card moves; it is solid yellow on its back and solid blue on its face. She ends exactly as in the last frame. Nothing of this happens: a second card appears, her right hand lifts from the table or touches the card, the card is turned in the air on the way, a finger passes through the card, the card grows or shrinks on its way, a hand hovers in the air without holding or laying anything, the shoe changes, the picture cuts or the camera moves.",
+      "last": {
+        "file": {
+          "path": "assets/orders/paow-giv-p4/last.png",
+          "sha256": "d16aa316bc5cabbf16b3511a940bdc8d9f7b10d80501a2f589e1166bb94db64c"
+        },
+        "note": "Sista bilden i beställningen paow-giv-p4."
+      },
+      "order": {
+        "id": "paow-giv-p4",
+        "take": 2
+      }
+    },
+    {
+      "id": "paow-ingang-2-1-02-01",
+      "kind": "ENTRY",
+      "from": "IDLE",
+      "to": "READY",
+      "clip": "paow-ingang-2-1-02-01",
+      "frames": [
+        0,
+        96
+      ],
+      "purpose": "Beställning paow-ingang-2-1-02, tagning 1: Paow · Ankare 1 → 2.1 · Kling 3.0 4K.",
+      "dealer": "paow",
+      "model": "kling-3-4k",
+      "duration": 4,
+      "promptText": "Locked camera. A young, slim, petite woman with a platinum-blonde chin-length bob, warm-coloured tattoos on her throat and upper chest and a small white flower pendant, in a black tailored blazer over a cream V-neck top sits at a green table with a black card shoe fixed at the right of the picture, a yellow card in its window. One continuous, calm and natural movement from the exact first pose, both hands resting on the felt. She calmly lifts her left hand, at the right of the picture, reaches to the shoe and pinches the top of the yellow card in the shoe's window between thumb and forefinger, her fingertips on the card itself and not on the shoe's rim, and draws it a little way out of the window, settling exactly into the pose of the last image. The card stays in her pinch at the shoe, as in the last image; nothing is dealt. Her right hand, at the left of the picture, rests on the table the whole time. Nothing of this happens: a second card appears, a finger passes through the card, the card grows or shrinks on its way, a hand hovers in the air without holding or laying anything, the shoe changes, the picture cuts or the camera moves.",
+      "first": {
+        "file": {
+          "path": "assets/orders/paow-ingang-2-1-02/first.png",
+          "sha256": "cdaa59756e2eb0f7b839f23254f9999f8c8da4c8eef0e37bf23e9643ba6586ee"
+        },
+        "note": "Första bilden i beställningen paow-ingang-2-1-02."
+      },
+      "last": {
+        "file": {
+          "path": "assets/orders/paow-ingang-2-1-02/last.png",
+          "sha256": "74eebfdc1388f8de362c0151546bbe08aeb1fed74fca097f8ca6999d833dc702"
+        },
+        "note": "Sista bilden i beställningen paow-ingang-2-1-02."
+      },
+      "order": {
+        "id": "paow-ingang-2-1-02",
+        "take": 1
+      }
     }
   ],
   "edits": [
