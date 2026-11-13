@@ -46,7 +46,9 @@ test('the checkout: every order file holds, a draft is on today\'s template, an 
   assert.equal(film.takes, 2);
   assert.equal(film.group, null);
   assert.deepEqual(film.pictures.map((p) => p.name), ['first.png', 'last.png']);
-  assert.match(draftProblems(film).join(' '), /Väntar på ankare 2\.1/);
+  // The checkout moves on: the draft waits for anchor 2.1 until Jakob has approved one, and then carries both pictures.
+  if (film.status === 'UTKAST' && film.pictures.some((p) => !p.path)) assert.match(draftProblems(film).join(' '), /Väntar på ankare 2\.1/);
+  else assert.doesNotMatch(draftProblems(film).join(' '), /Väntar på/);
   const still = list.find((o) => o.id === 'paow-ankare-2-1')!;
   assert.deepEqual(still.pictures.map((p) => [p.name, p.label]), [['anchor.png', 'Paows ankare 1 · kandidat 2'], ['pose-figure.png', 'Pose · bara armen, handen och skon']]);
   assert.equal(still.summary, 'Gör Paows ankare 2.1: hennes ankare 1 där bara vänsterarmen flyttas till nypet vid skon.');
@@ -106,7 +108,10 @@ test('what a person sees: waiting, ready, then the least advanced take; doubt an
   const order = { ...found, status: 'UTKAST', approval: null } as Order;
   assert.equal(shownOf(order, [], null), 'KLAR_ATT_TRYCKA');
   assert.equal(shownOf(order, ['x'], null), 'UTKAST');
-  const film = (await drafts()).find((o) => o.id === 'paow-giv-p4')!;
+  // A film whose pictures wait for an anchor, whatever the checkout's own draft has reached.
+  const made = (await drafts()).find((o) => o.id === 'paow-giv-p4')!;
+  const waits = { dealer: 'paow', role: 'ankare-2.1', node: 'READY', label: 'ankare 2.1' };
+  const film = { ...made, status: 'UTKAST', approval: null, pictures: made.pictures.map((p) => ({ ...p, path: null, sha256: null, waits })) } as Order;
   assert.equal(shownOf(film, draftProblems(film), null), 'VÄNTAR');
   const approved = { ...order, status: 'GODKÄND', approval: { by: 'jakob', at: '2026-11-12T22:00:00Z', orderSha256: 'a'.repeat(64) } } as Order;
   const take = (n: number, status: Receipt['takes'][number]['status']) => ({ take: n, status, requestedAt: '2026-11-12T22:01:00Z', taskId: null, history: [] });
