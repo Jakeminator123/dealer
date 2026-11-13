@@ -444,8 +444,8 @@ export async function layBack(film: string, worker: string, frames: number[], ou
         middles.push(middle); const at = middle ?? {x: win.w / 2, y: win.h * 0.45}; tones.push({own: lipTone(mine, lip, win.w, at), drawn: lipTone(theirs, lipMap(theirs.V), win.w, at)});
         gaps.push((lips.drop || lips.closed) && lips.under !== null ? mouthGap(theirs, win.w, win.h, at, lipLine(own, win, at, b)) : 0); } } }
     // How far the drawn mouth is moved in each frame (nothing with the recipe as it stands).
-    const drops = lips ? mouthDrop(gaps, lips) : [];
-    const weights = options.heard ? speechGate(heardFrames(options.heard, frames.length), RECIPE.gate, apart) : new Array<number>(frames.length).fill(1);
+    const heardIn = options.heard ? heardFrames(options.heard, frames.length) : null, drops = lips ? mouthDrop(gaps, lips, heardIn ?? undefined) : [];
+    const weights = heardIn ? speechGate(heardIn, RECIPE.gate, apart) : new Array<number>(frames.length).fill(1);
     // The drawn lips' colour is moved by the mean difference to her own lips, over the frames that get the drawn mouth.
     const sums = {own: {y: 0, u: 0, v: 0, n: 0}, drawn: {y: 0, u: 0, v: 0, n: 0}}; tones.forEach((t, i) => { if (weights[i] > 0) for (const side of ['own', 'drawn'] as const) for (const key of ['y', 'u', 'v', 'n'] as const) sums[side][key] += t[side][key]; });
     const shift = lips && sums.own.n && sums.drawn.n ? {y: sums.own.y / sums.own.n - sums.drawn.y / sums.drawn.n, u: sums.own.u / sums.own.n - sums.drawn.u / sums.drawn.n, v: sums.own.v / sums.own.n - sums.drawn.v / sums.drawn.n} : lips ? {y: 0, u: 0, v: 0} : null;

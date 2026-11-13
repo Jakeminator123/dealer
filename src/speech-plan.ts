@@ -248,9 +248,20 @@ export function mixFrame(laid: Uint8Array, own: Uint8Array, weight: number): voi
 //   open        the drawn mouth is moved down only while it is open: not at all when the gap between its lips is under the first
 //               number of pixels, wholly from the second (mouthDrop). Moved down while closed, its own lip line lay under hers,
 //               a second contour in every frame where the lips meet (m, b, p).
+//   taper       where it is given, the move is whole only within this share of the way from the lips' middle to her corner, and
+//               eased out to nothing at the corner: a mouth opens in the middle, not at its corners. Without it the moved
+//               lower lip ended in a step at her corner (a reviewer: "en mörk lodrät söm").
+//   arc         where it is given, the drawn mouth ends toward her corners along an arc under her lip line and not along an
+//               upright line: an ellipse from corner to corner, this many pixels deep under the line in the middle, whole inside
+//               70 % of it. A lower lip that reaches lower than hers then narrows toward the corner as hers does; ended
+//               upright, it stood as a block with an edge beside her corner (a reviewer: "en lodrät rosa kant").
+//   ease        where it is given, the move is evened over this many frames to either side (1: a quarter, a half, a quarter), so
+//               that the mouth does not shut in one frame where the move ends (a reviewer: "slår igen på en ruta").
+//   heard       where it is true, the mouth is not moved down in frames where she is not heard: in a short silence the model
+//               keeps the mouth open, and moved down it stood open with teeth where it was nearly shut before.
 //   closed      how far it is moved while its lips meet (negative: up). The model's closed lip line lies a couple of pixels
 //               under hers (seen in three films); lifted onto hers it is covered by her own line, and one line shows.
-export type Lips = {wide: number; tall: number; colour: number; sharpen: number; reach: [number, number]; grow: [number, number]; under: number | null; corners: number | null; drop: number; fall: number; open: [number, number]; closed: number};
+export type Lips = {wide: number; tall: number; colour: number; sharpen: number; reach: [number, number]; grow: [number, number]; under: number | null; corners: number | null; drop: number; fall: number; open: [number, number]; closed: number; taper?: number; arc?: number; ease?: number; heard?: boolean};
 export const LIPS: Lips = {wide: 1, tall: 1.25, colour: 1, sharpen: 0.5, reach: [60, 42], grow: [44, 30], under: 1, corners: 0, drop: 0, fall: 20, open: [2, 5], closed: 0};
 /** How open the drawn mouth is in a window: the height in pixels of what is not lip between its upper and its lower lip (teeth,
  * the dark of the mouth), the median over the columns at the lips' middle; 0 when its lips meet. line is her own lip line. */
@@ -263,10 +274,14 @@ export function mouthGap(drawn: Planes, w: number, h: number, middle: {x: number
 }
 /** How far the drawn mouth is moved down in each frame: the recipe's drop while it is open, its `closed` while its lips meet, eased
  * between the two gaps of `open`; the gaps are first evened over three frames (their median), so that one frame's mismeasure
- * does not move the mouth. */
-export function mouthDrop(gaps: number[], lips: Lips = LIPS): number[] {
+ * does not move the mouth. With `heard` (which frames she is heard in) and the recipe's `heard`, a silent frame is not moved
+ * down; with the recipe's `ease`, the moves are then evened over the frames to either side. */
+export function mouthDrop(gaps: number[], lips: Lips = LIPS, heard?: boolean[]): number[] {
   const [from, to] = lips.open, even = gaps.map((_, k) => [gaps[Math.max(0, k - 1)], gaps[k], gaps[Math.min(gaps.length - 1, k + 1)]].sort((a, c) => a - c)[1]);
-  return even.map(g => { const t = Math.min(1, Math.max(0, (g - from) / Math.max(1e-6, to - from))); return Number((lips.closed + (lips.drop - lips.closed) * t * t * (3 - 2 * t)).toFixed(2)); });
+  let moves = even.map(g => { const t = Math.min(1, Math.max(0, (g - from) / Math.max(1e-6, to - from))); return lips.closed + (lips.drop - lips.closed) * t * t * (3 - 2 * t); });
+  if (lips.heard && heard) moves = moves.map((m, k) => heard[k] ? m : Math.min(m, lips.closed));
+  const reach = lips.ease ?? 0; if (reach > 0) { const still = moves; moves = still.map((_, k) => { let sum = 0, n = 0; for (let j = -reach; j <= reach; j++) { const w = reach + 1 - Math.abs(j); sum += w * still[Math.min(still.length - 1, Math.max(0, k + j))]; n += w; } return sum / n; }); }
+  return moves.map(m => Number(m.toFixed(2)));
 }
 /** Half the width of the red of her lips in a window: how far the lip pixels reach to either side of the lips' middle, near it. */
 export function lipsHalf(lip: Float32Array, w: number, middle: {x: number; y: number}): number | null {
@@ -327,7 +342,9 @@ const eased = (r: number, whole: number) => r <= whole ? 1 : r >= 1 ? 0 : 0.5 + 
 export function layMouth(film: Uint8Array, drawn: Planes, win: Box, middle: {x: number; y: number}, shift: {y: number; u: number; v: number}, lips: Lips = LIPS, b: Bridge = BRIDGE, drop: number = lips.drop): void {
   const W = b.film.width, H = b.film.height, {w, h} = win, hw = w / 2, hh = h / 2, [gx, gy] = lips.grow, [rx, ry] = lips.reach;
   const line = lips.under === null ? null : lipLine(film, win, middle, b), lineAt = (x: number) => line ? line[Math.min(w - 1, Math.max(0, Math.round(x)))] : middle.y;
-  const fallen = (x: number, y: number) => { if (!drop) return 0; const u = (y - lineAt(x)) / lips.fall; return drop * (u <= 0 ? 1 : u >= 1 ? 0 : 0.5 + 0.5 * Math.cos(Math.PI * u)); };
+  const half = lips.corners === null && lips.taper === undefined ? null : lipsHalf(lipMap(cutPlanes(film, W, H, win.x, win.y, w, h).V), w, middle), edge = half === null || lips.corners === null ? null : half + lips.corners;
+  const side = (x: number) => { if (lips.taper === undefined || half === null) return 1; const d = Math.abs(x - middle.x) / half; return d <= lips.taper ? 1 : d >= 1 ? 0 : 0.5 + 0.5 * Math.cos(Math.PI * (d - lips.taper) / (1 - lips.taper)); };
+  const fallen = (x: number, y: number) => { if (!drop) return 0; const u = (y - lineAt(x)) / lips.fall; return drop * side(x) * (u <= 0 ? 1 : u >= 1 ? 0 : 0.5 + 0.5 * Math.cos(Math.PI * u)); };
   const from = (x: number, y: number): [number, number] => { const t = eased(Math.hypot((x - middle.x) / gx, (y - middle.y) / gy) / 1.8, 1 / 1.8); return [middle.x + (x - middle.x) / (1 + (lips.wide - 1) * t), middle.y + (y - middle.y) / (1 + (lips.tall - 1) * t) - fallen(x, y)]; };
   const Y = new Float32Array(w * h), U = new Float32Array(hw * hh), V = new Float32Array(hw * hh);
   for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) { const [sx, sy] = from(x, y); Y[y * w + x] = bilinear(drawn.Y, w, h, sx, sy); }
@@ -337,9 +354,9 @@ export function layMouth(film: Uint8Array, drawn: Planes, win: Box, middle: {x: 
     for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) Y[y * w + x] += lips.colour * shift.y * lip[(y >> 1) * hw + (x >> 1)]; }
   if (lips.sharpen > 0) { const src = Float32Array.from(Y); for (let y = 1; y < h - 1; y++) for (let x = 1; x < w - 1; x++) { const i = y * w + x, blur = (4 * src[i] + 2 * (src[i - 1] + src[i + 1] + src[i - w] + src[i + w]) + src[i - w - 1] + src[i - w + 1] + src[i + w - 1] + src[i + w + 1]) / 16; Y[i] = src[i] + lips.sharpen * (src[i] - blur); } }
   const below = (x: number, y: number) => { if (!line) return 1; const t = Math.min(1, Math.max(0, (y - (lineAt(x) - lips.under!)) / 4)); return t * t * (3 - 2 * t); };
-  const half = lips.corners === null ? null : lipsHalf(lipMap(cutPlanes(film, W, H, win.x, win.y, w, h).V), w, middle), edge = half === null ? null : half + lips.corners!;
-  const inside = (x: number) => { if (edge === null) return 1; const d = Math.abs(x - middle.x); return d <= edge - 10 ? 1 : d >= edge ? 0 : 0.5 + 0.5 * Math.cos(Math.PI * (d - (edge - 10)) / 10); };
-  const mask = (x: number, y: number) => eased(Math.hypot((x - middle.x) / rx, (y - middle.y - 4) / ry), 0.7) * below(x, y) * inside(x), byte = (v: number) => v < 0 ? 0 : v > 255 ? 255 : Math.round(v), cw = W / 2, u0 = W * H, v0 = u0 + cw * (H / 2);
+  const inside = (x: number, y: number) => { if (edge === null) return 1; if (lips.arc !== undefined) return eased(Math.hypot((x - middle.x) / edge, (y - lineAt(x)) / lips.arc), 0.7);
+    const d = Math.abs(x - middle.x); return d <= edge - 10 ? 1 : d >= edge ? 0 : 0.5 + 0.5 * Math.cos(Math.PI * (d - (edge - 10)) / 10); };
+  const mask = (x: number, y: number) => eased(Math.hypot((x - middle.x) / rx, (y - middle.y - 4) / ry), 0.7) * below(x, y) * inside(x, y), byte = (v: number) => v < 0 ? 0 : v > 255 ? 255 : Math.round(v), cw = W / 2, u0 = W * H, v0 = u0 + cw * (H / 2);
   for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) { const m = mask(x, y); if (m > 0) { const i = (win.y + y) * W + win.x + x; film[i] = byte(film[i] + (Y[y * w + x] - film[i]) * m); } }
   for (let y = 0; y < hh; y++) for (let x = 0; x < hw; x++) { const m = mask(2 * x + 0.5, 2 * y + 0.5); if (m > 0) { const i = (win.y / 2 + y) * cw + win.x / 2 + x; film[u0 + i] = byte(film[u0 + i] + (U[y * hw + x] - film[u0 + i]) * m); film[v0 + i] = byte(film[v0 + i] + (V[y * hw + x] - film[v0 + i]) * m); } }
 }

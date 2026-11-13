@@ -156,12 +156,27 @@ test('only the mouth is laid in, around her own lips, larger and in her lips\' c
   layMouth(behind, opened, win, middle, {y: 0, u: 0, v: 0}, {...plain, under: 1}, b); layMouth(moved, opened, win, middle, {y: 0, u: 0, v: 0}, {...plain, under: 1, drop: 4}, b);
   assert.equal(behind[141 * W + 200], 150, 'as drawn, the teeth end three rows under her line'); assert.equal(moved[141 * W + 200], 235, 'moved down, they show four rows further');
   for (let y = 100; y <= 132; y++) for (let x = 140; x <= 260; x += 4) assert.equal(moved[y * W + x], lined[y * W + x], `her upper lip untouched at ${x},${y} when the mouth is moved down`);
+  // Eased out toward her corners, the move is whole in the middle and nothing at the corner: her lips are 34 pixels to either
+  // side, and a column 30 pixels out shows the teeth where they were drawn, not four rows further down.
+  const across = Uint8Array.from(clip); for (let y = 132; y < 140; y++) for (let x = 166; x <= 234; x++) across[y * W + x] = 235;
+  const eased = Uint8Array.from(lined); layMouth(eased, cutPlanes(across, W, H, win.x, win.y, win.w, win.h), win, middle, {y: 0, u: 0, v: 0}, {...plain, under: 1, drop: 4, taper: 0.5}, b);
+  assert.equal(eased[141 * W + 200], 235, 'whole in the middle'); assert.equal(eased[141 * W + 230], 150, 'nothing 30 pixels out, near her corner');
+  // Ended along an arc under her lip line, a drawn mouth that is bright far down shows deep in the middle and not at all low
+  // beside her corner, where the upright end would have let it through.
+  const deep = Uint8Array.from(clip); for (let y = 138; y < 170; y++) for (let x = 166; x <= 234; x++) deep[y * W + x] = 235;
+  const arced = Uint8Array.from(lined), upright = Uint8Array.from(lined), low = cutPlanes(deep, W, H, win.x, win.y, win.w, win.h);
+  layMouth(arced, low, win, middle, {y: 0, u: 0, v: 0}, {...plain, under: 1, corners: 0, arc: 30}, b); layMouth(upright, low, win, middle, {y: 0, u: 0, v: 0}, {...plain, under: 1, corners: 0}, b);
+  assert.equal(arced[150 * W + 200], 235, 'deep in the middle'); assert.equal(arced[160 * W + 222], 150, 'not low beside her corner'); assert.ok(upright[160 * W + 222] > 200, 'where the upright end lets it through');
   // It is moved down only while it is open: the gap between the drawn lips is measured (here a band of four rows that is not
   // lip, across the lips' middle), evened over three frames, and the drop comes in between a gap of two pixels and one of five.
   const gapped = Uint8Array.from(clip), v = W * H + W * H / 4; for (let y = 134; y < 138; y += 2) for (let x = 170; x <= 230; x += 2) gapped[v + (y >> 1) * W / 2 + (x >> 1)] = 160;
   assert.equal(mouthGap(theirs, win.w, win.h, middle, line), 0, 'closed: no gap'); assert.equal(mouthGap(cutPlanes(gapped, W, H, win.x, win.y, win.w, win.h), win.w, win.h, middle, line), 4);
   assert.deepEqual(mouthDrop([0, 0, 8, 8, 8, 0, 8, 0, 0], {...plain, drop: 4}), [0, 0, 4, 4, 4, 4, 0, 0, 0]);
-  assert.deepEqual(mouthDrop([2, 2, 2], {...plain, drop: 4}), [0, 0, 0]); assert.deepEqual(mouthDrop([0, 8, 8, 8, 0], {...plain, drop: 4, closed: -2}), [-2, 4, 4, 4, -2], 'closed, it is lifted onto her own line'); assert.ok(mouthDrop([4, 4, 4], {...plain, drop: 4})[1] > 2.5 && mouthDrop([4, 4, 4], {...plain, drop: 4})[1] < 3.5);
+  assert.deepEqual(mouthDrop([2, 2, 2], {...plain, drop: 4}), [0, 0, 0]);
+  // Not moved down where she is not heard, and evened over the frames to either side: the mouth does not shut in one frame.
+  assert.deepEqual(mouthDrop([8, 8, 8, 8, 8, 8], {...plain, drop: 4, heard: true}, [true, true, false, false, true, true]), [4, 4, 0, 0, 4, 4]);
+  assert.deepEqual(mouthDrop([8, 8, 8, 8, 8, 8], {...plain, drop: 4, heard: true, ease: 1}, [true, true, false, false, true, true]), [4, 3, 1, 1, 3, 4]);
+  assert.deepEqual(mouthDrop([8, 8, 8, 8, 8, 8], {...plain, drop: 4}, [true, true, false, false, true, true]), [4, 4, 4, 4, 4, 4], 'only where the recipe says so'); assert.deepEqual(mouthDrop([0, 8, 8, 8, 0], {...plain, drop: 4, closed: -2}), [-2, 4, 4, 4, -2], 'closed, it is lifted onto her own line'); assert.ok(mouthDrop([4, 4, 4], {...plain, drop: 4})[1] > 2.5 && mouthDrop([4, 4, 4], {...plain, drop: 4})[1] < 3.5);
   // The drawn mouth ends at her own lips' corners: her lips are 34 pixels to either side here, a drawn mouth 50 to either side
   // is laid in only between her corners, and nothing of it beside them.
   assert.ok(Math.abs(lipsHalf(lip, win.w, middle)! - 34) <= 2);
