@@ -5121,6 +5121,19 @@
             "from": "tools/speech.ts say --dealer paow --line win (Paow)",
             "when": "2026-11-13"
           }
+        },
+        {
+          "id": "paow-ankare-2-2-t1",
+          "role": "ankare-2.2",
+          "name": "Paow · ankare 2.2 (släp), tagning 1",
+          "path": "assets/anchors/paow-ankare-2-2-t1/anchor.png",
+          "node": "READY-B",
+          "state": "kandidat",
+          "note": "Ankare 2.2 lagd till i studion 2026-11-13.",
+          "source": {
+            "from": "uppladdad: after-2.png",
+            "when": "2026-11-13"
+          }
         }
       ]
     },

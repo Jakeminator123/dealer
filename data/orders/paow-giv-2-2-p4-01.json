@@ -1,0 +1,160 @@
+{
+  "schemaVersion": 1,
+  "id": "paow-giv-2-2-p4-01",
+  "title": "Omgång 13 · prov B · släp från ankare 2.2 till plats 4 · WAN 3, vänd vid platsen",
+  "summary": "Gör en film av Paow: från ankare 2.2 (släp) släpar hon ett kort ur skon med vänster hand; hon för fram det med baksidan upp, vänder upp det vid plats 4 och lägger det öppet; handen går tillbaka över skon.",
+  "group": null,
+  "dealer": "paow",
+  "kind": "FILM",
+  "step": {
+    "key": "GIV-2.2",
+    "label": "Släp, ett kort till platsen och tillbaka",
+    "edge": "READY-B>P4.C1",
+    "shape": "ROUND_TRIP",
+    "cutInto": [
+      "READY-B>P4.C1",
+      "P4.C1>READY-B"
+    ],
+    "makes": null
+  },
+  "motion": {
+    "grip": "DRAG",
+    "hand": "LH",
+    "pass": false,
+    "turn": true,
+    "flipAxis": "AT_PLACE",
+    "target": "P4.C1",
+    "side": "FRONT",
+    "fromPlan": true
+  },
+  "pictures": [
+    {
+      "name": "first.png",
+      "label": "Första bild · Paows ankare 2.2 · kandidat",
+      "goesAs": "startFrame",
+      "path": "assets/orders/paow-giv-2-2-p4-01/first.png",
+      "sha256": "451fbaafa65a82b22818dab6904d5a1c5a23941dba11213709995b1f5d8d1fd4",
+      "width": 1764,
+      "height": 1174,
+      "from": {
+        "entry": "paow-ankare-2-2-t1",
+        "path": "assets/anchors/paow-ankare-2-2-t1/anchor.png",
+        "note": "Paow · ankare 2.2 (släp), tagning 1 (kandidat)"
+      },
+      "waits": null
+    },
+    {
+      "name": "last.png",
+      "label": "Sista bild · samma + kortet öppet på plats 4",
+      "goesAs": "endFrame",
+      "path": "assets/orders/paow-giv-2-2-p4-01/last.png",
+      "sha256": "70041dbbbdaa65b0a9e62260c81c3476b572193a1416b027e5dcd8fbfec405f3",
+      "from": {
+        "built": "första bilden + kortet P4.C1 där planen säger"
+      },
+      "waits": null,
+      "width": 1764,
+      "height": 1174,
+      "drawn": {
+        "target": "P4.C1",
+        "side": "FRONT",
+        "as": "flatQuad från P4.C1 (planens plana bord, som labbet ritar)",
+        "plan": {
+          "path": "placements/default.json",
+          "sha256": "e0fb924d27dc1311ff9cd079a72eeaa81e218eae8dd48990068d1cf0a5fbd67f",
+          "updatedAt": "2026-11-11T14:46:38.185Z"
+        },
+        "texture": {
+          "video": "assets/motions/pamela-p4-c1-plan-return-idle-01/source.mp4",
+          "frame": 89,
+          "sha256": "0b3cba9be4a969334bf1ba23623b80be6d0bd119a3c4dd8236db27145d479aa7",
+          "quadFrom": "assets/anchors/pamela-idle-p4-c1-plan-01/receipt.json"
+        },
+        "quad": [
+          [
+            818.9,
+            1065.5
+          ],
+          [
+            894.3,
+            1065.5
+          ],
+          [
+            900,
+            1137.3
+          ],
+          [
+            813.2,
+            1137.3
+          ]
+        ],
+        "centre": [
+          856.6,
+          1101.4
+        ],
+        "measured": {
+          "centre": [
+            856.7,
+            1102.5
+          ],
+          "area": 6339,
+          "box": [
+            87,
+            75
+          ],
+          "changedElsewhere": 0
+        },
+        "measuredOffsetPx": 1.1
+      }
+    }
+  ],
+  "reference": {
+    "status": "INGEN",
+    "why": "WAN 3 tar ingen referensfilm tillsammans med första och sista bild."
+  },
+  "generation": {
+    "provider": "runway-app",
+    "tool": "generate_video",
+    "model": "wan3",
+    "params": {
+      "resolution": "1080p",
+      "duration": 6,
+      "ratio": "adaptive",
+      "generateAudio": false
+    }
+  },
+  "prompt": {
+    "template": "film-giv-kort@8",
+    "style": "KORT",
+    "text": "Locked camera, one continuous shot. Her hand at the shoe slides the yellow card out of the window and drags it flat along the felt under its fingertips, yellow side up, to its place in the middle of the picture, where the last frame shows it. There her thumb slides under the long edge nearest it and lifts it as her wrist turns thumb side up; the card rolls over on its opposite long edge, which stays on the felt, and her thumb comes over onto the blue face. Then her open hand glides back low over the felt, palm down, to the shoe and rests over the next card in the window. The other hand rests on the felt. Only one card moves; its back is yellow and its face is blue.",
+    "sha256": "9f31084f3683438341ea04aa1a9aad977ec15aba08f861f6bb587e234cfafb80",
+    "extra": null,
+    "middle": false
+  },
+  "takes": 1,
+  "cost": {
+    "perTake": 120,
+    "total": 120,
+    "worstPerTake": 120,
+    "worstTotal": 120,
+    "basis": "20 krediter per s × 6 s. DRIFT, Lärdomar: 20 per s i full storlek; planen: 4 s = 80."
+  },
+  "limits": {
+    "maxCredits": 120,
+    "stopBelowCredits": 150
+  },
+  "notes": [
+    "Prov, en tagning. Jämförelsen är släpet från 2.2 som höll till plats 1 för det tidigare utseendet (WAN 3, 6 s, stängt; cirka 7 av 9, handboken 3.4); ändringen: kortet landar öppet och vänds vid platsen (Jakobs sex steg, med släp i stället för nyp).",
+    "Första bilden är kandidaten paow-ankare-2-2-t1 (efterarbetad på nytt och lagad efter oberoende granskning: användbar med anmärkningar för provfilmer, 3/5); huvudagentens beslut på Jakobs uppdrag, Jakob har inte satt den som gäller.",
+    "En giv från 2.2 är en variant av navet: rundans vanliga steg READY>Px.C1 spelar den inte (src/clip-graph.ts choices). Provet är för att se metoden."
+  ],
+  "created": "2026-11-13T13:51:27.369Z",
+  "createdBy": "filmproducenten åt huvudagenten (dealer-94), på Jakobs ord 2026-11-13 cirka 13:30 (\"Du får 5k i budget och godkänner själv efter granskning\"): omgång 13",
+  "approval": {
+    "by": "huvudagent",
+    "at": "2026-11-13T13:52:43.420Z",
+    "orderSha256": "b9bd181eb0e72ac2cb6b7fefba1e40c614a5eeac8db1e6695b12de0002a278a1",
+    "mandate": "Jakob 2026-11-13 cirka 13:30: \"Någon eller några när hon kör från ankare 2.2 till olika platser. Du får 5k i budget och godkänner själv efter granskning\"; ankare 2.2 är kandidaten paow-ankare-2-2-t1, oberoende granskad 3/5 för provfilmer; texterna lästa av huvudagenten"
+  },
+  "status": "GODKÄND"
+}
