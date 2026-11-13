@@ -580,7 +580,12 @@ export function createPlayers(onShow: (texture: T.Texture, path: string) => void
   type Media = {path: string; video: HTMLVideoElement; texture: T.VideoTexture; busy: boolean; used: number; hook: ((mediaTime: number | null) => void) | null; fail: (() => void) | null; broken: boolean};
   // gaps: the parts in a row that could not be read (a loop of nothing but gaps ends instead of going round for ever)
   type Chain = {parts: Part[]; media: (Media | undefined)[]; options: PlayOptions; gaps?: number};
-  const POOL = 8, LEAD_MS = 4, partStart = (part: Part) => ((part.start ?? 0) + 0.5) / (part.fps ?? FPS), frameOf = (seconds: number, part: Part) => frameAtTime(seconds, part.fps ?? FPS);
+  // START_MS: a part's film is started by this timer if the page draws nothing (a hidden tab), so that a round is never left waiting.
+  const START_MS = 50;
+  // partStart: a part waits a tenth of a frame into its first frame, which is still a real seek that lands on that frame. Its film
+  // starts to run when the frame has been drawn (enter); from the middle of the frame the second frame got half a frame's time
+  // less, and at 30 fps on a 60 Hz screen it was then lost at 8 of 36 starts.
+  const POOL = 8, LEAD_MS = 4, partStart = (part: Part) => ((part.start ?? 0) + 0.1) / (part.fps ?? FPS), frameOf = (seconds: number, part: Part) => frameAtTime(seconds, part.fps ?? FPS);
   let pool: Media[] = [], loaded: Player[] = [], used = 0, chain: Chain | null = null, waiting: Chain | null = null, entering: Chain | null = null, shown: Media | null = null, token = 0, held = false;
   function discard(m: Media) { pool = pool.filter(p => p !== m); m.hook = m.fail = null; drop(m.video, m.texture); }
   // An element for the path that nothing else is using; a new one if there is none. The pool is trimmed of the longest unused.
@@ -645,9 +650,19 @@ export function createPlayers(onShow: (texture: T.Texture, path: string) => void
     // a spoken line (part.sound) once the page has been touched, everything else muted. Without this line a talk film in
     // a chain was always muted: she moved her mouth in the game and said nothing.
     v.muted = !(part.sound === true && globalThis.navigator?.userActivation?.hasBeenActive === true);
-    v.playbackRate = speedOf(part, true); v.play().catch(() => {});
-    // Waiting on its first frame already: shown at once, so the join costs no frame. Otherwise on the first frame it presents.
-    if (v.readyState >= 2 && !v.seeking) { m.texture.needsUpdate = true; swap(); } else { m.hook = swap; if (!v.requestVideoFrameCallback) later(swap, 40); }
+    v.playbackRate = speedOf(part, true);
+    let run = false;
+    const start = () => { if (run || my !== token) return; run = true; if (!paused) v.play().catch(() => {}); };
+    // Waiting on its first frame already: shown at once, so the join costs no frame, and the film starts to run when that frame has
+    // been drawn, not here. Started here, it had run on before the picture was drawn (a join made by the timer above falls between
+    // two drawings, and a drawing can come late), and a frame among the part's first two was never seen: at 13 of 35 joins in a
+    // round recorded on a stepped clock and at 21 of 91 starts in a browser, against 0 of 35 and 1 of 79 this way (2026-11-13).
+    // The price is that every part gets going about a frame later. The start is asked for as an animation frame, which comes
+    // after the scene's own drawing in the same rendering step, because the scene asked for its frame first.
+    if (v.readyState >= 2 && !v.seeking) { m.texture.needsUpdate = true; swap(); if (globalThis.requestAnimationFrame) globalThis.requestAnimationFrame(start); later(start, START_MS); }
+    // Otherwise it runs from here and is shown on the first frame it presents: an element that is not ready stays so while it
+    // stands still (tried: shown standing, a new element's first frame came 0.9 s after the last frame of the part before).
+    else { start(); m.hook = swap; if (!v.requestVideoFrameCallback) later(swap, 40); }
   }
   function finish(c: Chain, i: number) {
     if (waiting) return enter(waiting, 0, true);

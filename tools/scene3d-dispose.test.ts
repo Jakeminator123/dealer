@@ -1,6 +1,6 @@
 // The film queue taken down (createPlayers().dispose in src/scene3d-film.ts), with stand-in video elements: no browser, no media.
 // What a React view needs of it: every element the queue made is stopped and emptied, its frame requests and listeners are
-// gone, its texture is freed, and nothing the queue does afterwards reaches the page. Also where a part of a chain ends.
+// gone, its texture is freed, and nothing the queue does afterwards reaches the page. Also where a part of a chain ends and starts.
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
@@ -164,4 +164,45 @@ test('a spoken line is never hurried, and the tempo leaves it and a rest film al
   players.hurry(1.5); assert.equal(made.find(v => v.src === 'vila.mp4')!.playbackRate, 1.5, 'a rest film can be played out faster before a deal');
   players.play([{path: 'giv.mp4'}], {cut: true}); await settle(); assert.equal(made.find(v => v.src === 'giv.mp4')!.playbackRate, 2, 'a deal takes the tempo');
   players.tempo(1); assert.equal(made.find(v => v.src === 'giv.mp4')!.playbackRate, 1); players.dispose();
+});
+
+// ---- where a part starts (enter() in the queue): its first frame is drawn before its film runs ----------------------------
+// A part waits inside its first frame. Started when the queue changed part, its film had run on before the picture was drawn, and
+// at one start in four a frame among its first two was never seen; so the film starts in the animation frame after the change.
+test('a part that waits on its first frame is shown at once and its film starts when that frame has been drawn', async () => {
+  const frames: (() => void)[] = [], g = globalThis as {requestAnimationFrame?: unknown}, draw = () => { for (const call of frames.splice(0)) call(); };
+  g.requestAnimationFrame = (call: () => void) => frames.push(call);
+  try {
+    const {players} = queue();
+    players.play([{path: 'a.mp4', end: 30}, {path: 'b.mp4', start: 12}], {cut: true}); await settle();
+    const a = made[0], b = made.find(v => v.src === 'b.mp4')!;
+    assert.equal(players.path, 'a.mp4'); assert.ok(a.paused, 'shown, and standing until it has been drawn');
+    draw(); assert.ok(!a.paused, 'the drawing is done: it runs');
+    assert.ok(b.paused && Math.abs(b.currentTime - 12.1 / 30) < 1e-9, 'the next part waits a tenth of a frame into its first frame');
+    a.present(at(29)); a.present(at(30)); assert.equal(players.path, 'b.mp4'); assert.ok(b.paused, 'the change of film does not start it');
+    draw(); assert.ok(!b.paused);
+    // paused between the change and the drawing: the drawing does not start it, playing on does
+    players.play([{path: 'c.mp4'}], {cut: true}); const c = made.find(v => v.src === 'c.mp4')!; assert.equal(players.path, 'c.mp4');
+    players.toggle(true); draw(); await wait(80); assert.ok(c.paused, 'a paused queue stays paused'); players.toggle(false); assert.ok(!c.paused);
+    players.dispose();
+    // a film that is not ready when it is entered runs from the entry, and is shown on the first frame it presents
+    readyAtStart = 0; const late = queue(); late.players.play([{path: 'd.mp4'}]); await settle();
+    const d = made[0]; assert.ok(!d.paused, 'it runs at once: standing, an element that is not ready stays so'); assert.equal(late.players.path, '');
+    d.readyState = 2; d.present(0.02); assert.equal(late.players.path, 'd.mp4'); late.players.dispose();
+  } finally { readyAtStart = 2; delete g.requestAnimationFrame; }
+});
+
+test('where the page draws nothing a part is started by the timer, so a round is never left waiting', async () => {
+  const g = globalThis as {requestAnimationFrame?: unknown}; g.requestAnimationFrame = () => 0; // a hidden tab: asked for, never answered
+  try {
+    const {players} = queue();
+    players.play([{path: 'a.mp4'}, {path: 'b.mp4'}], {cut: true}); await settle();
+    const a = made[0]; assert.ok(a.paused); await wait(80); assert.ok(!a.paused, 'started 50 ms after the change');
+    a.dispatchEvent(new Event('ended')); const b = made.find(v => v.src === 'b.mp4')!; assert.equal(players.path, 'b.mp4'); assert.ok(b.paused);
+    await wait(80); assert.ok(!b.paused, 'and the next part the same way');
+    // a part that was left before its timer came is not started by it
+    players.play([{path: 'c.mp4'}], {cut: true}); const c = made.find(v => v.src === 'c.mp4')!; players.play([{path: 'e.mp4'}], {cut: true});
+    await wait(80); assert.ok(c.paused, 'the part that was left stands');
+    players.dispose(); await wait(80); for (const v of made) assert.ok(emptied(v));
+  } finally { delete g.requestAnimationFrame; }
 });

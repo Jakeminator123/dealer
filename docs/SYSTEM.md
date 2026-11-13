@@ -63,9 +63,15 @@ punkter per meter, `pick(clientX, clientY)` punkten på filten, `onFrame(fn)` et
 docs/TAL.md; `effect`: en vilofilms begäran om en effekt i scenen, `FilmEffect` i `src/clip-graph.ts`); `scene.mouth`
 läser lappar i förväg (`preload`), säger om en är inläst (`state`) och för logg över varje replik (`log`). En ny kedja
 börjar när delen på skärmen är klar (klipp passar bara ihop i
-ändarna), `cut` byter direkt, och gamla rutan ligger kvar tills den nya finns. Två lärdomar i den koden: en
+ändarna), `cut` byter direkt, och gamla rutan ligger kvar tills den nya finns. Tre lärdomar i den koden: en
 bildrutebegäran som väntat länge på en pausad video avfrågas inte längre av webbläsaren, så en ny begäran görs vid start
-(annars kommer första rutan en kvarts sekund sent); och varje del börjar med en riktig sökning till sin första ruta.
+(annars kommer första rutan en kvarts sekund sent); varje del börjar med en riktig sökning till sin första ruta, en
+tiondels ruta in; och en film som redan väntar på sin första ruta startas först när den rutan är ritad (en animationsruta
+efter bytet, med en reservtimer på 50 ms för en sida som inte ritar). Startad vid själva bytet hann filmen vidare innan bilden
+ritades, och en av delens två första rutor visades aldrig: vid 13 av 35 skarvar i en stegad inspelning och 21 av 91
+delstarter i en webbläsare, mot 0 av 35 och 1 av 79 efter ändringen (2026-11-13). Priset är att varje del kommer igång
+ungefär en ruta senare (en runda blev 0,67 s längre). En film som inte står färdig när den tas in går däremot från början
+och visas på sin första presenterade ruta; den kan sakna sin första ruta tills spelet beställer nästa film tidigare.
 
 Filmkameran läses ur `data/scene-contract.json` i `src/scene3d-geometry.ts` (ren geometri, test
 `tools/scene3d-geometry.test.ts` utan media). Tre lägen hålls isär: från filmkamerans plats är bilden filmen pixel för
