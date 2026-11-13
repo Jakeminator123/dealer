@@ -160,3 +160,14 @@ test('the recoloured back keeps the film\'s light on it, stronger, and a lighter
   assert.ok(MATTE_GLSL.includes(`pow(shadeB, ${MATTE.contrast.toFixed(1)})`) && MATTE_GLSL.includes('float edgeB = (1. - smoothstep('), 'light and edge in the shader');
   assert.ok(MATTE.contrast > 1 && MATTE.edgeShare > 0 && MATTE.edgeShare < 1 && MATTE.edge[0] < MATTE.edge[1]);
 });
+
+test('the drawn print at the film\'s sharpness and level (Prov kort-en-linje, step 2): the back read coarser and dimmer, the face less so', async () => {
+  const deal = await readFile('src/scene3d-deal.ts', 'utf8');
+  const m = /export const PRINT = \{soft: ([\d.]+), softFace: ([\d.]+), back: ([\d.]+), face: ([\d.]+)\};/.exec(deal);
+  assert.ok(m, 'PRINT stands in the deal');
+  const [soft, softFace, back, face] = m.slice(1).map(Number);
+  assert.ok(soft > softFace && softFace > 0 && soft <= 2, 'the back softer than the face, whose value must stay legible');
+  assert.ok(back < face && face <= 1 && back >= 0.5, 'the gold of the back dimmed more than the face');
+  assert.ok(deal.includes('texture2D(print, vUv, soft).rgb * level'), 'the shader reads the print with them');
+  assert.ok(deal.includes('u.soft.value = back ? PRINT.soft : PRINT.softFace'), 'each print its own');
+});

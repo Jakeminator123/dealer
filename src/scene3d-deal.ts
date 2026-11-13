@@ -83,7 +83,7 @@ void main(){
 }`;
 // Output is sRGB-encoded like the film's, whatever the target, so it composites the same way with focus on or off. `accum`:
 // one of several motion samples added up in a target of their own, premultiplied and weighted.
-const FRAGMENT = `uniform sampler2D print, room; uniform vec3 paper, grade; uniform float edgeOn, sheen, roomLod, shadow, shade, accum, weight;
+const FRAGMENT = `uniform sampler2D print, room; uniform vec3 paper, grade; uniform float edgeOn, sheen, roomLod, shadow, shade, accum, weight, soft, level;
 ${FAN_GLSL}
 varying vec2 vUv, vSt; varying vec3 vWorld, vNormal; varying float vShade, vLight;
 vec2 equirect(vec3 d){ return vec2(atan(d.z, d.x) * .15915494 + .5, asin(clamp(d.y, -1., 1.)) * .31830989 + .5); }
@@ -100,7 +100,8 @@ void main(){
     float w = 1. - abs(2. * vSt.y - 1.), a = .8 * smoothstep(0., .7, w); vec3 e = (1.055 * pow(vec3(.3) * paper * vShade, vec3(1. / 2.4)) - .055) * grade * fanShade(vWorld);
     gl_FragColor = accum > .5 ? vec4(e * a, a) * weight : vec4(e, a); return;
   }
-  vec3 albedo = texture2D(print, vUv).rgb, N = normalize(vNormal), V = normalize(cameraPosition - vWorld), R = reflect(-V, N);
+  // the print as soft as the film around it (a mip level coarser than the screen asks for) and at the film's level (PRINT)
+  vec3 albedo = texture2D(print, vUv, soft).rgb * level, N = normalize(vNormal), V = normalize(cameraPosition - vWorld), R = reflect(-V, N);
   // the paper's reflection of the room: weak head-on (the study's paper reflects about 2 %), stronger toward grazing angles;
   // a broad lobe for the paper and a sharper one for its coat, which catches the lamp over the table as the card turns
   float NoV = max(dot(N, V), 1e-3), F = .025 + .975 * pow(1. - NoV, 5.);
@@ -133,6 +134,11 @@ type Options = {contract: unknown; plan: unknown; film: FilmLayers; light: Recor
 // a pixel apart, and never smeared over more than 12 screen pixels: a dark back blurred further reads as smoked glass, not as a
 // card. A card that hardly moves is drawn once, sharp.
 const SHUTTER = 0.25, SAMPLES = 14, MAX_BLUR = 12;
+// The print brought to the film (Prov kort-en-linje, step 2): the film is softer than the screen it is shown on and the drawn card was
+// sharper than her fingers, its gold frame brighter. soft: how many mip levels coarser the print is read (each one halves its
+// resolution), on the back and, less, on the face, whose value must stay legible; back, face: the print's level on the back (the
+// gold frame and mark) and on the face.
+export const PRINT = {soft: 1.5, softFace: 0.75, back: 0.72, face: 0.94};
 
 // The matte's passes (src/scene3d-matte.ts) on five targets of the film's size, made the first time they run: the classes, two
 // for the separable steps, the card's body, its cover with what lies beside it (kept: the film's shader reads it), and the shading.
@@ -199,7 +205,7 @@ export function createDealLayer(o: Options) {
   const made = (shadow: boolean) => keep(new T.ShaderMaterial({vertexShader: VERTEX, fragmentShader: FRAGMENT, transparent: true, depthWrite: false,
     ...(shadow ? {blending: T.CustomBlending, blendSrc: T.OneFactor, blendDst: T.OneMinusSrcAlphaFactor, blendSrcAlpha: T.OneFactor, blendDstAlpha: T.OneMinusSrcAlphaFactor} : {}),
     uniforms: {...shared, cardH: {value: new T.Matrix3()}, bend: {value: 0}, tilt: {value: 0}, shadeOn: {value: 0}, lying: {value: 1}, core: {value: quad()}, cardColour: {value: new T.Vector3(1, 1, 0)},
-      print: {value: null}, edgeOn: {value: 0}, sheen: {value: 1.4}, shadow: {value: shadow ? 1 : 0}, shade: {value: 0}, accum: {value: 0}, weight: {value: 1}, depthOnly: {value: 0}}}));
+      print: {value: null}, soft: {value: PRINT.soft}, level: {value: 1}, edgeOn: {value: 0}, sheen: {value: 1.4}, shadow: {value: shadow ? 1 : 0}, shade: {value: 0}, accum: {value: 0}, weight: {value: 1}, depthOnly: {value: 0}}}));
   // A card: its surface and its contact shadow on the felt (drawn first, so the card covers it), both laid by the same homography.
   // Draw order: felt and props (opaque), then shadows (2), cards (3), then the film (5, 6) over them.
   type Card = {mesh: T.Mesh; shadow: T.Mesh; material: T.ShaderMaterial; under: T.ShaderMaterial};
@@ -221,7 +227,7 @@ export function createDealLayer(o: Options) {
   const lay = (c: Card, q: number[][], how: {print: T.Texture; edge?: boolean; bend?: number; tilt?: number; shade?: {core: number[][]; colour: number[]; lying: number} | null; contact: number; gloss?: number}) => {
     let H: number[]; try { if (!drawable(q, !!how.edge)) throw Error('no plausible card'); H = squareToQuad(q); } catch { c.mesh.visible = c.shadow.visible = false; return; }
     for (const m of [c.material, c.under]) (m.uniforms.cardH.value as T.Matrix3).set(H[0], H[1], H[2], H[3], H[4], H[5], H[6], H[7], H[8]);
-    const u = c.material.uniforms; u.print.value = how.print; u.edgeOn.value = how.edge ? 1 : 0; u.bend.value = how.bend ?? 0; u.tilt.value = how.tilt ?? 0;
+    const u = c.material.uniforms; u.print.value = how.print; const back = how.print === print(); u.level.value = back ? PRINT.back : PRINT.face; u.soft.value = back ? PRINT.soft : PRINT.softFace; u.edgeOn.value = how.edge ? 1 : 0; u.bend.value = how.bend ?? 0; u.tilt.value = how.tilt ?? 0;
     u.sheen.value = 2 * (how.gloss ?? GLOSS); u.shadeOn.value = how.shade ? 1 : 0; // gloss 0.35: the coat's lobe at 0.7 of the paper's
     if (how.shade) { how.shade.core.forEach((p, i) => (u.core.value as T.Vector2[])[i].set(p[0], p[1])); (u.cardColour.value as T.Vector3).set(how.shade.colour[0], how.shade.colour[1], how.shade.colour[2]); u.lying.value = how.shade.lying; }
     c.under.uniforms.shade.value = CONTACT * how.contact; c.mesh.visible = true; c.shadow.visible = how.contact > 0.01 && !how.edge && shadowFits(q);
