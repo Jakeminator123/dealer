@@ -20,7 +20,7 @@
       "language": "sv",
       "voice": "Paow",
       "path": "assets/speech/paow/patches/paow-mun-double-sv-ingang-2-1-02-01/patch.json",
-      "sha256": "b5d26cd2adb10cc099e350a48a4a42537abd4195c990afafbf000a555d320664"
+      "sha256": "afdde928fe0ed582e7094d7445319ea4583293101ddfea111c4bdd5d92666e22"
     },
     {
       "id": "paow-mun-goodluck-sv-giv-2-1-p4-04-01",
@@ -30,7 +30,7 @@
       "language": "sv",
       "voice": "Paow",
       "path": "assets/speech/paow/patches/paow-mun-goodluck-sv-giv-2-1-p4-04-01/patch.json",
-      "sha256": "886326e0ae37f64a4564f05599bb3a97818bcaeb69032180aa1c5b6e900e1728"
+      "sha256": "3f81a8a1858c5c98fb4250e543d9f42f69c12ec79414b94ffed665e3e0c33690"
     },
     {
       "id": "paow-mun-goodluck-sv-ingang-2-1-02-01",
@@ -40,7 +40,7 @@
       "language": "sv",
       "voice": "Paow",
       "path": "assets/speech/paow/patches/paow-mun-goodluck-sv-ingang-2-1-02-01/patch.json",
-      "sha256": "84ad0a9d4e08ced6cc6c235095528d236523faf816e605178bfd07d096d92228"
+      "sha256": "c64daa824d14f72515af5559245d0dbe8e6d21a84efecb6326c2dfea6e5cb24f"
     }
   ]
 }

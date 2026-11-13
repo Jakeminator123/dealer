@@ -199,6 +199,18 @@ test('only the mouth is laid in, around her own lips, larger and in her lips\' c
   assert.deepEqual(mouthMoves(o, share).drops, [-4, -4, -4]); assert.deepEqual(mouthMoves(o, share).lifts, [0, 0, 0]);
   const round = mouthMoves(o, {...share, round: 2.5}); assert.deepEqual(round.lifts, [3.3, 3.3, 3.3]); assert.deepEqual(round.drops, [-5.3, -5.3, -5.3]);
   assert.deepEqual(mouthMoves(o.map(f => ({...f, deep: 1.25})), {...share, round: 2.5}).lifts, [0, 0, 0], 'a broad line between closed lips is not an opening');
+  // A rounded mouth has its lips lower than hers, by the jaw (`jaw`): lips that lie where hers do, one pixel under, with a
+  // deep dark run between them are a closed b, and her lip stays down.
+  assert.deepEqual(mouthMoves(o.map(f => ({...f, low: 1})), {...share, round: 2.5, jaw: 2.5}).lifts, [0, 0, 0]); assert.deepEqual(mouthMoves(o, {...share, round: 2.5, jaw: 2.5}).lifts, [3.3, 3.3, 3.3]);
+  // Where she is not heard the drawn mouth must be clearly open to count (`quiet`): a gap of five pixels in a silent frame is
+  // closed lips, one of ten is a mouth held open in a pause; and an o does not count in a silent frame.
+  const hush = [true, true, true, false, false, false], pause = (gap: number) => Array.from({length: 6}, () => ({gap, rise: 0}));
+  assert.deepEqual(mouthMoves(pause(5), {...share, quiet: 7.5}, hush).lifts, [3, 3, 3, 0, 0, 0]); assert.deepEqual(mouthMoves(pause(10), {...share, quiet: 7.5}, hush).lifts, [4.5, 4.5, 4.5, 4.5, 4.5, 4.5]);
+  assert.deepEqual(mouthMoves(pause(5), share, hush).lifts, [3, 3, 3, 3, 3, 3], 'without quiet, as before');
+  assert.deepEqual(mouthMoves([...o, ...o], {...share, round: 2.5, quiet: 7.5}, hush).lifts, [3.3, 3.3, 3.3, 0, 0, 0]);
+  // A small gap that begins far under her lip line is a highlight in the lower lip (`sunk`), no opening; a larger one is.
+  assert.deepEqual(mouthMoves(Array.from({length: 3}, () => ({gap: 2.5, rise: -7})), {...share, sunk: 5}).lifts, [0, 0, 0]); assert.deepEqual(mouthMoves(Array.from({length: 3}, () => ({gap: 2.5, rise: -3})), {...share, sunk: 5}).lifts, [2.25, 2.25, 2.25]);
+  assert.deepEqual(mouthMoves(Array.from({length: 3}, () => ({gap: 7.5, rise: -7})), {...share, sunk: 5}).lifts, [3.75, 3.75, 3.75]);
   // Moved only where the drawn mouth is laid whole (`whole`): not in the gate's frame of half each mouth; and with `heard` false
   // also where she is no longer heard but the drawn mouth is still shown open, at the end of a line's last word.
   const tail = Array.from({length: 4}, () => ({gap: 10, rise: 0})), heardThere = [true, true, false, false], wholeThere = [true, true, true, false];

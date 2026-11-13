@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "id": "paow-tal-chat3-sv-11",
+  "dealer": "paow",
+  "source": {
+    "path": "assets/motions/paow-tal-chat3-sv-11/source.mp4",
+    "sha256": "4463afc8a4bfe299cfec908c810edf9e48b11303a41a0c94b5a6507bb1b91861",
+    "bytes": 3639775,
+    "width": 1764,
+    "height": 1174,
+    "fps": 24,
+    "frames": 39,
+    "audio": true,
+    "provider": "tools/speech.ts: Scoutgaming's lip-sync renderer on this machine, voice from ElevenLabs",
+    "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Paow"
+  },
+  "motion": {
+    "kind": "IDLE",
+    "from": "IDLE",
+    "to": "IDLE",
+    "pass": false,
+    "basis": "SOURCE_FRAME_REVIEW",
+    "idle": {
+      "onRequest": true,
+      "calm": true,
+      "weight": 0,
+      "label": "säger: Det ordnar vi."
+    }
+  },
+  "speech": {
+    "line": "chat3",
+    "language": "sv",
+    "text": "Det ordnar vi.",
+    "voice": "Paow",
+    "heard": "Det ordnar vi",
+    "restFilm": "paow-vila-01-01",
+    "soundStartsAtSeconds": 0.22,
+    "soundEndsAtSeconds": 1.097
+  },
+  "review": {
+    "decision": "ACCEPTED",
+    "basis": "Inte granskad av Jakob. Gjord av tools/speech.ts ur assets/motions/paow-vila-01-01/source.mp4, inlagd bara kring det som hörs och under hennes egen överläpp, som lyfts när munnen öppnar. Granskaren 3/5 (samma bild, chat3-sv-10): Båda läpparna rör sig (2–6 px). Mot -09: stängd med läppen i vila i den tysta ruta 4 före \"Det\"; -09 visar tänder en ruta före ljudet. Liten skillnad.",
+    "userAccepted": false,
+    "productionReady": false,
+    "provisional": {
+      "by": "huvudagenten med talbanans oberoende granskare",
+      "at": "2026-11-13T23:29:05.199Z",
+      "mandate": "Jakob 2026-11-13 kl. 15.50, med en bild av kön i Granska: \"jag vill nu för jag ska iväg att du godkänner allt videomaterial som innehåller de där kriterierna\" och \"Med andra ord vill jag inte se en sån här lista när jag är tillbaka!\"",
+      "note": "Granskaren 3/5, användbar med anmärkningar: Båda läpparna rör sig (2–6 px). Mot -09: stängd med läppen i vila i den tysta ruta 4 före \"Det\"; -09 visar tänder en ruta före ljudet. Liten skillnad."
+    }
+  },
+  "postProcessing": "the rendered face laid back into the rest film's own frames (assets/speech/paow/paow-tal-chat3-sv-11/receipt.json, laidBack)",
+  "generationRef": "assets/motions/paow-tal-chat3-sv-11/generation.json",
+  "scoutIntegrated": false,
+  "published": false
+}

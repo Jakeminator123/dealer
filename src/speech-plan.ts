@@ -284,10 +284,22 @@ export function mixFrame(laid: Uint8Array, own: Uint8Array, weight: number): voi
 //               that is shown through a short pause and to the end of a line's last word, where the sound has died away but
 //               the drawn mouth is still open (reviewers: the lip fell back while the mouth stood open). And a frame where
 //               the drawn lips meet is closed whatever the frames beside it show: her lip comes down for a b said in one frame.
+//   quiet       with share, where it is given: in a frame where she is not heard the drawn mouth counts as open only from a gap
+//               this high, and never as a rounded one. In a pause the model holds the mouth open ten to fifteen pixels, and
+//               her lip stays up there; a gap of a few pixels in a silent frame is closed lips (reviewers of the films laid
+//               without it: her lip lifted two to three pixels over a closed mouth, "V i Vackert", "sluten och tyst").
+//   sunk        with share, where it is given: a gap smaller than the second of `open` that begins more than this many pixels
+//               under her lip line is no opening: it is a highlight in the drawn lower lip (measured six to eight pixels
+//               under her line in three films).
+//   jaw         with round, where it is given: a rounded mouth counts as open only when the drawn lips' middle lies at least
+//               this many pixels under her own lips' middle. The jaw drops for an o or a u; between lips that lie where hers
+//               do, the model sometimes draws the line deeply dark for a b or bb (measured: 0.7 to 2.2 pixels under hers
+//               there, 2.7 to 5.2 in every o and u). Where the dark begins was tried first and told them apart no better
+//               than chance: it hid small real openings in loud frames (three films reviewed worse for it).
 //   closed      how far it is moved while its lips meet (negative: up). The model's closed lip line lies a couple of pixels
 //               under hers (seen in three films); lifted onto hers it is covered by her own line, and one line shows.
-export type Lips = {wide: number; tall: number; colour: number; sharpen: number; reach: [number, number]; grow: [number, number]; under: number | null; corners: number | null; drop: number; fall: number; open: [number, number]; closed: number; taper?: number; arc?: number; lift?: number; share?: number; base?: number; round?: number; whole?: boolean; ease?: number; heard?: boolean};
-export const LIPS: Lips = {wide: 1, tall: 1.25, colour: 1, sharpen: 0.5, reach: [60, 42], grow: [44, 30], under: 1, corners: 0, drop: 0, fall: 60, open: [2, 5], closed: 0, lift: 6, share: 0.3, base: 1.5, round: 2.5, whole: true, taper: 0.5, arc: 44, ease: 1, heard: false};
+export type Lips = {wide: number; tall: number; colour: number; sharpen: number; reach: [number, number]; grow: [number, number]; under: number | null; corners: number | null; drop: number; fall: number; open: [number, number]; closed: number; taper?: number; arc?: number; lift?: number; share?: number; base?: number; round?: number; whole?: boolean; quiet?: number; sunk?: number; jaw?: number; ease?: number; heard?: boolean};
+export const LIPS: Lips = {wide: 1, tall: 1.25, colour: 1, sharpen: 0.5, reach: [60, 42], grow: [44, 30], under: 1, corners: 0, drop: 0, fall: 60, open: [2, 5], closed: 0, lift: 6, share: 0.3, base: 1.5, round: 2.5, jaw: 2.5, whole: true, quiet: 7.5, sunk: 5, taper: 0.5, arc: 44, ease: 1, heard: false};
 /** How the drawn mouth is open in a window. gap: the height in pixels of what is not lip between its upper and its lower lip
  * (teeth, the dark of the mouth), the median over the columns at the lips' middle; 0 when its lips meet. rise: how many pixels
  * above her own lip line that gap begins (the lower edge of the drawn upper lip; negative: under her line), the median over the
@@ -329,7 +341,14 @@ export function mouthMoves(opens: {gap: number; rise: number; low?: number; dark
   const cap = lips.lift ?? 0, share = lips.share ?? 0, mid = (a: number[]) => a.map((_, k) => [a[Math.max(0, k - 1)], a[k], a[Math.min(a.length - 1, k + 1)]].sort((p, q) => p - q)[1]);
   // The opening of a frame: what is not lip between the drawn lips, or, where the recipe counts it (`round`), the dark of a mouth
   // whose lips are red all the way round.
-  const open = opens.map(o => o.gap >= lips.open[0] ? {size: o.gap, rise: o.rise} : lips.round !== undefined && (o.deep ?? 0) >= lips.round ? {size: o.dark ?? 0, rise: o.darkRise ?? 0} : {size: 0, rise: 0});
+  // Where she is not heard the drawn mouth must be clearly open to count (`quiet`), a small gap that begins far under her lip
+  // line is a highlight in the lower lip and no opening (`sunk`), and a rounded mouth has its lips lower than hers, by the
+  // jaw (`jaw`): lips that lie where hers do with dark between them are closed.
+  const silent = (k: number) => lips.quiet !== undefined && !!heard && !heard[k];
+  const open = opens.map((o, k) => {
+    if (o.gap >= (silent(k) ? lips.quiet! : lips.open[0]) && !(lips.sunk !== undefined && o.gap < lips.open[1] && o.rise < -lips.sunk)) return {size: o.gap, rise: o.rise};
+    const rounded = lips.round !== undefined && (o.deep ?? 0) >= lips.round && !silent(k) && (lips.jaw === undefined || (o.low ?? 0) >= lips.jaw);
+    return rounded ? {size: o.dark ?? 0, rise: o.darkRise ?? 0} : {size: 0, rise: 0}; });
   // The median of three frames takes away an opening seen in one frame only; with `whole` it does not fill a frame where the
   // drawn lips meet between two open ones (a b or a p said in one frame).
   const sizes = open.map(o => o.size), evenly = mid(sizes), gaps = lips.whole ? sizes.map((size, k) => size > 0 ? evenly[k] : 0) : evenly, rises = mid(open.map(o => o.rise)), lows = mid(opens.map(o => o.low ?? 0));

@@ -5794,6 +5794,118 @@
           }
         },
         {
+          "id": "paow-tal-blackjack-sv-12",
+          "role": "film",
+          "name": "Tal: Blackjack! Vackert spelat. Grattis!",
+          "path": "assets/motions/paow-tal-blackjack-sv-12/source.mp4",
+          "still": 35,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Vilan paow-vila-01-01 med munnen ritad efter ljudet, inlagd bara kring det som hörs och under hennes egen överläpp, som lyfts när munnen öppnar (tools/speech.ts), rösten Paow (ElevenLabs), 70 rutor i 24 per sekund med ljud. Granskaren 3/5: Båda läpparna rör sig. Skiljer bara i ruta 23-26 och 32-37: munnen stängs med läppen i vila i de tysta rutorna 24 och 33, där -10 visar en springa. Lite tyd",
+          "source": {
+            "from": "tools/speech.ts say --dealer paow --line blackjack (Paow)",
+            "when": "2026-11-13"
+          }
+        },
+        {
+          "id": "paow-tal-chat3-sv-11",
+          "role": "film",
+          "name": "Tal: Det ordnar vi.",
+          "path": "assets/motions/paow-tal-chat3-sv-11/source.mp4",
+          "still": 20,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Vilan paow-vila-01-01 med munnen ritad efter ljudet, inlagd bara kring det som hörs och under hennes egen överläpp, som lyfts när munnen öppnar (tools/speech.ts), rösten Paow (ElevenLabs), 39 rutor i 24 per sekund med ljud. Granskaren 3/5 (samma bild, chat3-sv-10): Båda läpparna rör sig (2–6 px). Mot -09: stängd med läppen i vila i den tysta ruta 4 före \"Det\"; -09 visar tänder en ruta före lju",
+          "source": {
+            "from": "tools/speech.ts say --dealer paow --line chat3 (Paow)",
+            "when": "2026-11-13"
+          }
+        },
+        {
+          "id": "paow-tal-chat4-sv-11",
+          "role": "film",
+          "name": "Tal: Lycka till med nästa hand.",
+          "path": "assets/motions/paow-tal-chat4-sv-11/source.mp4",
+          "still": 28,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Vilan paow-vila-01-01 med munnen ritad efter ljudet, inlagd bara kring det som hörs och under hennes egen överläpp, som lyfts när munnen öppnar (tools/speech.ts), rösten Paow (ElevenLabs), 56 rutor i 24 per sekund med ljud. Granskaren 4/5 (samma bild, chat4-sv-10): Båda läpparna rör sig (3–7 px). Mot sv-09: tysta r7–8 nästan slutna med läppen i vila, öppningen kommer med ljudet i r9. Lika från",
+          "source": {
+            "from": "tools/speech.ts say --dealer paow --line chat4 (Paow)",
+            "when": "2026-11-13"
+          }
+        },
+        {
+          "id": "paow-tal-dealerplays-sv-11",
+          "role": "film",
+          "name": "Tal: Dealern spelar.",
+          "path": "assets/motions/paow-tal-dealerplays-sv-11/source.mp4",
+          "still": 21,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Vilan paow-vila-01-01 med munnen ritad efter ljudet, inlagd bara kring det som hörs och under hennes egen överläpp, som lyfts när munnen öppnar (tools/speech.ts), rösten Paow (ElevenLabs), 41 rutor i 24 per sekund med ljud. Granskaren 4/5 (samma bild, dealerplays-sv-10): Båda läpparna rör sig (3–6 px). Mot sv-09: sluter i r27 när ljudet tystnat och läppen vilar i pausen r15–16; fallet r14→15 ä",
+          "source": {
+            "from": "tools/speech.ts say --dealer paow --line dealerplays (Paow)",
+            "when": "2026-11-13"
+          }
+        },
+        {
+          "id": "paow-tal-double-sv-12",
+          "role": "film",
+          "name": "Tal: Du dubblar. Ett kort, nu gör vi det bästa av det.",
+          "path": "assets/motions/paow-tal-double-sv-12/source.mp4",
+          "still": 37,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Vilan paow-vila-01-01 med munnen ritad efter ljudet, inlagd bara kring det som hörs och under hennes egen överläpp, som lyfts när munnen öppnar (tools/speech.ts), rösten Paow (ElevenLabs), 74 rutor i 24 per sekund med ljud. Granskaren 3/5 (samma bild, double-sv-11): Båda läpparna rör sig. Mot sv-10: stänger vid b i \"dubblar\" (15-17), nästan stängd i tyst ruta 8; läppen sjunker lite i 32-34. De",
+          "source": {
+            "from": "tools/speech.ts say --dealer paow --line double (Paow)",
+            "when": "2026-11-13"
+          }
+        },
+        {
+          "id": "paow-tal-goodluck-sv-14",
+          "role": "film",
+          "name": "Tal: Insatserna är stängda. Lycka till vid mitt bord!",
+          "path": "assets/motions/paow-tal-goodluck-sv-14/source.mp4",
+          "still": 42,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Vilan paow-vila-01-01 med munnen ritad efter ljudet, inlagd bara kring det som hörs och under hennes egen överläpp, som lyfts när munnen öppnar (tools/speech.ts), rösten Paow (ElevenLabs), 83 rutor i 24 per sekund med ljud. Granskaren 3/5: Båda läpparna rör sig. Skiljer bara i ruta 53-55 och 66-68: liten springa i den ljudande 54 (i i mitt), och munnen stänger med läppen nära vila i de tysta 6",
+          "source": {
+            "from": "tools/speech.ts say --dealer paow --line goodluck (Paow)",
+            "when": "2026-11-13"
+          }
+        },
+        {
+          "id": "paow-tal-namn-sv-11",
+          "role": "film",
+          "name": "Tal: Jag heter Paow, och jag är din dealer i kväll.",
+          "path": "assets/motions/paow-tal-namn-sv-11/source.mp4",
+          "still": 34,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Vilan paow-vila-01-01 med munnen ritad efter ljudet, inlagd bara kring det som hörs och under hennes egen överläpp, som lyfts när munnen öppnar (tools/speech.ts), rösten Paow (ElevenLabs), 67 rutor i 24 per sekund med ljud. Avlyssnat som \"Jag heter Pau och jag är din dealer i kväll\". Granskaren 3/5 (samma bild, namn-sv-10): Hört: \"Pau\". Båda läpparna rör sig. Mot sv-09: munnen sluten, läppen i",
+          "source": {
+            "from": "tools/speech.ts say --dealer paow --line namn (Paow)",
+            "when": "2026-11-13"
+          }
+        },
+        {
+          "id": "paow-tal-push-sv-12",
+          "role": "film",
+          "name": "Tal: Det är lika. Din insats betalas tillbaka.",
+          "path": "assets/motions/paow-tal-push-sv-12/source.mp4",
+          "still": 38,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Vilan paow-vila-01-01 med munnen ritad efter ljudet, inlagd bara kring det som hörs och under hennes egen överläpp, som lyfts när munnen öppnar (tools/speech.ts), rösten Paow (ElevenLabs), 76 rutor i 24 per sekund med ljud. Granskaren 4/5 (samma bild, push-sv-11): Båda läpparna rör sig (3–6 px). Mot sv-10: i ”Din” r40–41 vilar läppen när munnen är sluten och öppningen syns i r42 med ljudet. r7",
+          "source": {
+            "from": "tools/speech.ts say --dealer paow --line push (Paow)",
+            "when": "2026-11-13"
+          }
+        },
+        {
           "id": "paow-film-intro-noir-3-startruta",
           "role": "arbetsmaterial",
           "name": "Startrutan till filmen före spelet",

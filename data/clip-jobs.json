@@ -6655,6 +6655,118 @@
       "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Paow"
     },
     {
+      "id": "paow-tal-blackjack-sv-12",
+      "kind": "IDLE",
+      "from": "IDLE",
+      "to": "IDLE",
+      "clip": "paow-tal-blackjack-sv-12",
+      "frames": [
+        0,
+        69
+      ],
+      "purpose": "Talfilm på begäran: Blackjack! Vackert spelat. Grattis! (tools/speech.ts, Paow).",
+      "dealer": "paow",
+      "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Paow"
+    },
+    {
+      "id": "paow-tal-chat3-sv-11",
+      "kind": "IDLE",
+      "from": "IDLE",
+      "to": "IDLE",
+      "clip": "paow-tal-chat3-sv-11",
+      "frames": [
+        0,
+        38
+      ],
+      "purpose": "Talfilm på begäran: Det ordnar vi. (tools/speech.ts, Paow).",
+      "dealer": "paow",
+      "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Paow"
+    },
+    {
+      "id": "paow-tal-chat4-sv-11",
+      "kind": "IDLE",
+      "from": "IDLE",
+      "to": "IDLE",
+      "clip": "paow-tal-chat4-sv-11",
+      "frames": [
+        0,
+        55
+      ],
+      "purpose": "Talfilm på begäran: Lycka till med nästa hand. (tools/speech.ts, Paow).",
+      "dealer": "paow",
+      "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Paow"
+    },
+    {
+      "id": "paow-tal-dealerplays-sv-11",
+      "kind": "IDLE",
+      "from": "IDLE",
+      "to": "IDLE",
+      "clip": "paow-tal-dealerplays-sv-11",
+      "frames": [
+        0,
+        40
+      ],
+      "purpose": "Talfilm på begäran: Dealern spelar. (tools/speech.ts, Paow).",
+      "dealer": "paow",
+      "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Paow"
+    },
+    {
+      "id": "paow-tal-double-sv-12",
+      "kind": "IDLE",
+      "from": "IDLE",
+      "to": "IDLE",
+      "clip": "paow-tal-double-sv-12",
+      "frames": [
+        0,
+        73
+      ],
+      "purpose": "Talfilm på begäran: Du dubblar. Ett kort, nu gör vi det bästa av det. (tools/speech.ts, Paow).",
+      "dealer": "paow",
+      "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Paow"
+    },
+    {
+      "id": "paow-tal-goodluck-sv-14",
+      "kind": "IDLE",
+      "from": "IDLE",
+      "to": "IDLE",
+      "clip": "paow-tal-goodluck-sv-14",
+      "frames": [
+        0,
+        82
+      ],
+      "purpose": "Talfilm på begäran: Insatserna är stängda. Lycka till vid mitt bord! (tools/speech.ts, Paow).",
+      "dealer": "paow",
+      "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Paow"
+    },
+    {
+      "id": "paow-tal-namn-sv-11",
+      "kind": "IDLE",
+      "from": "IDLE",
+      "to": "IDLE",
+      "clip": "paow-tal-namn-sv-11",
+      "frames": [
+        0,
+        66
+      ],
+      "purpose": "Talfilm på begäran: Jag heter Paow, och jag är din dealer i kväll. (tools/speech.ts, Paow).",
+      "dealer": "paow",
+      "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Paow"
+    },
+    {
+      "id": "paow-tal-push-sv-12",
+      "kind": "IDLE",
+      "from": "IDLE",
+      "to": "IDLE",
+      "clip": "paow-tal-push-sv-12",
+      "frames": [
+        0,
+        75
+      ],
+      "purpose": "Talfilm på begäran: Det är lika. Din insats betalas tillbaka. (tools/speech.ts, Paow).",
+      "dealer": "paow",
+      "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Paow"
+    },
+    {
       "id": "paow-utgang-01-01",
       "kind": "RETURN",
       "from": "READY",
