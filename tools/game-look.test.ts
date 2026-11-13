@@ -102,7 +102,8 @@ test('the drawn cards and her lines: the game draws cards unless the player or a
   assert.equal(lookState(DEFAULTS, {cards: true}, {cards: false}, blurOf).cards, false);
   assert.equal(lookState(DEFAULTS, null, {}, blurOf).cards, undefined, 'without a look the game keeps its own (on)');
   const page = await readFile('src/game-page.ts', 'utf8');
-  assert.ok(page.includes(`if (cardsMemory === 'off') scene.set({cards: false});`), 'on unless the player switched them off');
+  // who decides (src/game-film.ts cardsChoice, pinned in tools/game-film.test.ts): the address, then the menu's memory, then the preset
+  assert.ok(page.includes('scene.set({cards: cardsNow.cards});'), 'on unless the address, the player or the look says off');
   assert.match(page, /cards\(on\) \{ scene\.set\(\{cards: on\}\);/, 'the console switch sets the scene key');
   assert.match(await readFile('src/game-panel.ts', 'utf8'), /toggle\('Ritade kort'/);
   // tal: repliker (the default) or av; anything else is not used.

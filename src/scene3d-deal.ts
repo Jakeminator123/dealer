@@ -15,7 +15,7 @@
 // no card object is drawn while a film shows its card; the passes that make the matte run here, on targets of the film's size.
 // The cards lying since earlier films are drawn as objects either way: a film lays one card, and later films do not show it.
 import * as T from 'three';
-import {poseAt, restOf, restingQuad, sceneOf, cardRecord, cardFace, overridesOf, cardInFront, plausible, skirtSound, firstDrawn, RIM, MARGIN, PLAUSIBLE, EASE, type CardTrack, type CardRecord} from './card-overlay.ts';
+import {poseAt, restOf, restingQuad, sceneOf, cardRecord, cardFace, overridesOf, cardInFront, plausible, skirtSound, firstDrawn, RIM, MARGIN, PLAUSIBLE, EASE, HOLD, type CardTrack, type CardRecord} from './card-overlay.ts';
 import {centre, clockwise, grown, signedArea, sound, type Pt} from './card-track.ts';
 import {FILM, edgeQuad, heldScale, solveCamera, squareToQuad, type FilmCamera} from './scene3d-geometry.ts';
 import {CARD_GLSL, type CardKey, type MatteKey} from './scene3d-film.ts';
@@ -327,7 +327,10 @@ export function createDealLayer(o: Options) {
     if (alone) { hide(dealt); hide(seated); composite.visible = depth.visible = seatDepth.visible = false; o.film.setCards(null); }
     const film = o.film.shared.map.value; if (!film) { o.film.setMatte(null); return; }
     const own = track as unknown as MatteTrack, shoe = track?.shoeWindow?.box ?? SHOE_BOX, box = matteBox(own, at, shoe), face = cardFace(cardRecord(extra.cards, extra), false, art(choice));
-    const laid = at >= 0 ? printQuad(own, at, (track as {print?: Parameters<typeof printQuad>[2]} | null)?.print) : null, quad = laid && plausible(laid.map(([x, y]) => ({x, y})), 2.5 * PLAUSIBLE.size) ? laid : null;
+    // the print is laid by this frame's quad when that is a card, else by the last frame's that is, for at most HOLD frames (as poseAt
+    // keeps a pose): one wedge frame then shows the printed face, not the border colour (seat 1, paow-giv-2-1-p1-06-01 frame 81)
+    const printed = (i: number) => { const q = i >= 0 ? printQuad(own, i, (track as {print?: Parameters<typeof printQuad>[2]} | null)?.print) : null; return q && plausible(q.map(([x, y]) => ({x, y})), 2.5 * PLAUSIBLE.size) ? q : null; };
+    let quad = printed(at); for (let back = 1; !quad && at >= 0 && back <= HOLD; back++) quad = printed(at - back);
     o.film.setMatte({box, ...matte.run(film, box, shoe, at >= 0 ? paleZone(own, at) : null), print: print(face.art), toPrint: toPrint(quad), back: backMean(), paper: PAPER, lying: [LYING.BACK, LYING.FRONT], zone: at >= 0 ? matteZone(own, at) : null,
       shoe: [shoe[0] - MATTE.shoeRoom, shoe[1] - MATTE.shoeRoom, shoe[2] + MATTE.shoeRoom, shoe[3] + MATTE.shoeRoom], faceBack: face.back});
   }

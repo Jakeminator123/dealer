@@ -16,7 +16,7 @@ import {readRegister} from './scene3d-room.ts';
 import {filmToScene, sceneToSpot, solveCamera, type FilmCamera} from './scene3d-geometry.ts';
 import {createLayout, slotOf} from './game-table.ts';
 import {cardRecords, judgedBank, speakMoments, talkOn} from './game-director.ts';
-import {createFilm, type FilmPlayers, type Said} from './game-film.ts';
+import {cardsChoice, createFilm, type FilmPlayers, type Said} from './game-film.ts';
 import {chipsFor, mountOverlay, type Action, type Anchors} from './game-overlay.ts';
 import {mountPanel} from './game-panel.ts';
 import {EXIT_TRIAL, exitView, type ExitView} from './scene3d-exit.ts';
@@ -96,24 +96,24 @@ const ROOMS = [
 const soundOf = (id: string) => ROOMS.find(r => r.id === id)?.sound ?? null;
 const remembered = (() => { try { return localStorage.getItem('dealer.room'); } catch { return null; } })();
 let room = ROOMS.find(r => r.id === (asked.room ?? query.get('room') ?? remembered))?.id ?? 'panorama';
-// The drawn cards: on unless the player switched them off (remembered; the console's Miljö menu) or a look says otherwise.
+// The drawn cards and how the card in her hand is shown (cardsChoice in src/game-film.ts): the address's cards= and kort= first, then
+// the player's choice in the console's Miljö menu (remembered in the browser, also under a preset), then the look's preset, then on.
 const cardsMemory = (() => { try { return localStorage.getItem('dealer.cards'); } catch { return null; } })();
+const cardsNow = cardsChoice({address: (look?.keys as {cards?: boolean} | undefined)?.cards, kort: query.get('kort'), memory: cardsMemory, preset: (preset?.state as {cards?: boolean} | undefined)?.cards});
 scene.set({format: 'fill', room: room as never, blur: ROOMS.find(r => r.id === room)!.blur, tray: true, cards: true, pitch: Number(query.get('pitch') ?? FRAMING.wide.pitch), zoom: Number(query.get('zoom') ?? FRAMING.wide.zoom)});
-if (cardsMemory === 'off') scene.set({cards: false});
 // The look over the game's own settings, before the first picture. A room of it that the menu does not offer (a built room
 // of the lab) is shown all the same, and the menu marks none. The table is built by now, so the room is changed with a cut,
 // and the look's own way of changing rooms holds from then on.
 if (Object.keys(asked).length) { scene.set({...asked, roomShift: 'cut'}); if (asked.roomShift) scene.set({roomShift: asked.roomShift}); room = asked.room ?? room; }
+scene.set({cards: cardsNow.cards}); // over the look: see cardsNow
 if (lookNote) { const note = Object.assign(document.createElement('p'), {textContent: lookNote}); note.setAttribute('role', 'status');
   note.style.cssText = 'position:absolute;left:50%;top:12px;transform:translateX(-50%);z-index:30;margin:0;max-width:min(92%,680px);padding:6px 14px;border:1px solid rgba(226,191,109,.32);border-radius:999px;background:rgba(8,7,6,.84);color:#f6eedc;font-size:13px;pointer-events:none'; stage.append(note); }
 scene.rebuild(); scene.start();
 new ResizeObserver(frame).observe(stage); frame();
 const film = createFilm(scene.players as unknown as FilmPlayers, graph, layout, path => fetch(path).then(res => res.ok ? res.json() : null));
-// How the card in her hand is shown (src/game-film.ts Carry): the address's kort=liggande (the film's own card in her hand, the drawn
-// card once it lies: "Bara liggande" in the Miljö menu), kort=matt (the film's card recoloured in her hand, a lab choice) or kort=hand
-// (the drawn card, as before); without it the menu's choice remembered in the browser, else as before.
-const carryWord = ({liggande: 'film', matt: 'matte', hand: 'object'} as const)[query.get('kort') as 'liggande' | 'matt' | 'hand'];
-film.carry = carryWord ?? (cardsMemory === 'lying' ? 'film' : 'object');
+// How the card in her hand is shown (src/game-film.ts Carry): kort=liggande (the film's own card in her hand, the drawn card once it
+// lies: "Bara liggande" in the Miljö menu), kort=matt (the film's card recoloured in her hand, a lab choice), kort=hand (as before).
+film.carry = cardsNow.carry;
 
 // ── state ──
 let snapshot: Snapshot = first, paid: Snapshot | null = null; // snapshot: the round on the table. paid: the engine's state after that round was collected.
@@ -268,7 +268,8 @@ const panel = mountPanel(overlay.root.querySelector<HTMLElement>('.go-bar')!, RO
   lying(on) { film.carry = on ? 'film' : 'object'; panel.set({lying: on}); remember(on ? 'lying' : 'on'); },
 });
 panel.set({room, dealer, cards: scene.state.cards, lying: film.carry === 'film'});
-function remember(value: 'on' | 'off' | 'lying') { if (forval === null && !carryWord) try { localStorage.setItem('dealer.cards', value); } catch { /* a private window keeps nothing */ } }
+// The menu's choice is kept also under a preset; a word in the address still wins over it when the page is opened (cardsNow).
+function remember(value: 'on' | 'off' | 'lying') { try { localStorage.setItem('dealer.cards', value); } catch { /* a private window keeps nothing */ } }
 // Jakob's chip tray (assets/props/tray.glb, local media) takes the place of the built tray when it can be read; game.html?tray=built keeps the built one.
 // A trial, game.html?bricka=hus: the tray holds the house's own chips (src/game3d-tray.ts), a lost bet is carried into it and winnings out of it.
 type HouseTray = {mouth(value: number, taking: boolean): {x: number; y: number; s: number}; add(value: number): boolean; remove(value: number): boolean};

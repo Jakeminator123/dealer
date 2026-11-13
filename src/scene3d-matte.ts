@@ -41,7 +41,7 @@ export const SHOE_BOX = [1242, 754, 1339, 855];
 // own colour, so the shoe's tan frame, a knuckle or a dark sleeve are not taken for card. pale: the face as some films wash it out
 // (light lavender instead of blue: Paow at seat 1, paow-giv-2-1-p1-06-01 frames 74-81, mean 192-215/193-219/239-246); it counts only
 // inside the zone where the card was in the frames before (paleZone) and only while the track shows the face. Skin is red-led, her
-// blouse cream, so neither passes; across every tracked Paow take it fires nowhere else (D:/dealer-scratch/tmp/huvudagent11/kort2/scan/palecheck.mjs).
+// blouse cream, so neither passes; across every tracked Paow take it fires nowhere else (dealer-scratch, huvudagent11/kort2/scan/palecheck.mjs).
 export const RULES = {
   back: 'r > 95. && g > 95. && g > .82 * r && r > .6 * g && b < .45 * min(r, g)',
   face: 'b > 90. && b > 1.5 * r && b > 1.15 * g',

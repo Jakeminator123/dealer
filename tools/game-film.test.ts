@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import {buildGraph, type BankData, type BankJob, type MotionRecord} from '../src/clip-graph.ts';
 import {defaultPlan} from '../src/placement-model.ts';
 import {createLayout} from '../src/game-table.ts';
-import {createFilm, faceFrame, filmModel, type FilmPart} from '../src/game-film.ts';
+import {cardsChoice, createFilm, faceFrame, filmModel, type FilmPart} from '../src/game-film.ts';
 
 const sha = 'a'.repeat(64), first = {file: {path: 'assets/anchors/paow-ready-01/anchor.png', sha256: sha}};
 const video = (id: string) => `assets/motions/${id}/source.mp4`;
@@ -60,4 +60,20 @@ test('the hole card\'s turn is shown when its face shows in the film: the first 
   assert.equal(faceFrame(sides('BBBBEEEFFFF')), 7);
   assert.equal(faceFrame(sides('BBFBBEEFFF')), 7, 'a face glimpsed before the last back frame is not the turn');
   assert.equal(faceFrame(sides('BBBBNN')), null); assert.equal(faceFrame(null), null); assert.equal(faceFrame({}), null);
+});
+
+test('who decides the drawn cards: the address, then the player\'s own menu (also under a preset), then the preset, then on', () => {
+  // the preset says on (Profilval 1), the player switched them off in the game's menu: off, also after the frame reloads
+  assert.deepEqual(cardsChoice({preset: true, memory: 'off'}), {cards: false, carry: 'object'});
+  // the address (the Casino view's button, a recording) wins over what a browser remembers, both ways
+  assert.equal(cardsChoice({address: true, memory: 'off', preset: false}).cards, true);
+  assert.equal(cardsChoice({address: false, memory: 'on', preset: true}).cards, false);
+  // nothing remembered: the preset, else on
+  assert.equal(cardsChoice({preset: false}).cards, false); assert.equal(cardsChoice({}).cards, true); assert.equal(cardsChoice({memory: 'on', preset: false}).cards, true);
+  // Bara liggande the same way: the address's kort first (and a kort word means the cards are on), then the menu
+  assert.deepEqual(cardsChoice({memory: 'lying', preset: true}), {cards: true, carry: 'film'});
+  assert.deepEqual(cardsChoice({kort: 'hand', memory: 'lying'}), {cards: true, carry: 'object'});
+  assert.deepEqual(cardsChoice({kort: 'liggande', memory: 'off', preset: true}), {cards: true, carry: 'film'});
+  assert.deepEqual(cardsChoice({kort: 'liggande', address: false}), {cards: false, carry: 'film'});
+  assert.equal(cardsChoice({kort: 'matt'}).carry, 'matte'); assert.equal(cardsChoice({kort: 'nej'}).carry, 'object');
 });
