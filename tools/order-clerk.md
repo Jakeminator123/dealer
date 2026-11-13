@@ -107,10 +107,10 @@ read the order, only read the original, write beside it and never over a file; t
   `--no-lock`, `--fps <rate>`, `--anchor <png>`, `--seats <P1.C1,…>`, `--out <dir>` (a trial), `--compare <film>`. Open: it reads
   Kling 4's BT.709-tagged film as BT.601, as the Python did, so the result matches the approved takes; a correct decode would
   shift the colours slightly, and that is not decided. Hands and body per frame still need
-  `D:/dealer-scratch/tmp/paow/skript/filmmatt.py` (MediaPipe). Do not paint where a hand or arm moves.
+  `tools/python/filmmatt.py` (MediaPipe). Do not paint where a hand or arm moves.
 - **A still** (Nano Banana Pro gives 4800 × 3584 at 4:3), four steps; Python is
-  `D:/dealer-scratch/tmp/filmagent/py/venv/Scripts/python.exe -I`, the two MediaPipe scripts lie in
-  `D:/dealer-scratch/tmp/bestall/paow-ankare-2-1/`:
+  `tools/python/.venv/Scripts/python.exe -I` (made as `tools/python/README.md` says), the two MediaPipe scripts lie in
+  `tools/python/`:
   1. `grundbild-21.py assets/orders/<id>/anchor.png assets/orders/<id>/take-<n>/source.png t<n> <dir> --fit-skip handB,elbowB
      --keep-shoe-region` fits it into the bank's frame (a rest anchor with no moved arm: without both flags).
   2. `node tools/still-after.ts <id> <n> --fitted <dir>/t<n>-final.png` → `ren.png` and `ren.json` (fyll-morkt, ta-bort-skugga,

@@ -12,6 +12,10 @@ private/
 # Dependencies and build output (studio/.gitignore covers studio/.next/ and studio/out/)
 node_modules/
 *.tsbuildinfo
+# The Python environment and model files of tools/python/ (its README says how to make them)
+tools/python/.venv/
+tools/python/models/
+__pycache__/
 *.log
 
 # Binary material outside the source repo wherever it lands: the types tools/publication-check.ts stops at push
