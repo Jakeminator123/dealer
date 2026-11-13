@@ -12,7 +12,9 @@ function fixture(t:TestContext){
   const env={...process.env};for(const key of ['GIT_DIR','GIT_WORK_TREE','GIT_INDEX_FILE','GIT_COMMON_DIR','GIT_OBJECT_DIRECTORY','GIT_ALTERNATE_OBJECT_DIRECTORIES'])delete env[key];
   const git=(...args:string[])=>execFileSync('git',args,{cwd:root,env,encoding:'utf8',stdio:['ignore','pipe','pipe']}).trim();
   git('init');git('config','user.name','Publication test');git('config','user.email','test@example.invalid');git('config','core.hooksPath',path.join(root,'no-hooks'));
-  const commit=(name:string,text:string)=>{mkdirSync(path.dirname(path.join(root,name)),{recursive:true});writeFileSync(path.join(root,name),text);git('add','--',name);git('commit','-m','Fixture');return git('rev-parse','HEAD');};
+  // add -f: the fixture commits names that a machine's own ignore rules may hold back (.env.local in a global excludes
+  // file, as in an outside sandbox); what is tested is the scan of the history, not what git add lets through.
+  const commit=(name:string,text:string)=>{mkdirSync(path.dirname(path.join(root,name)),{recursive:true});writeFileSync(path.join(root,name),text);git('add','-f','--',name);git('commit','-m','Fixture');return git('rev-parse','HEAD');};
   return {root,git,commit};
 }
 
