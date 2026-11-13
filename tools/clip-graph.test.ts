@@ -637,6 +637,32 @@ test('two Primär takes that do not fit both play: the deal to its own landing f
   assert.deepEqual(round[0].notes, []); assert.deepEqual(round[1].notes, ['Skarv: returen startar på p4-deal-01, inte på föregående giv p4-deal-02.']);
 });
 
+// Paow's seat 1 as it stood 2026-11-13: the Primär deal lays the card with the left hand, the Primär return was cut from a deal whose
+// right hand laid it (a hand switch), and the deal's own return is accepted. Jakob: the return must be the arm that is out.
+function handBank(back: string = 'VARIANT', hands: Record<string, string> = {'p4-deal-01': 'RH', 'p4-deal-02': 'LH'}): BankData {
+  const data = primaryBank({'p4-deal-02': 'MAIN', 'p4-back-ready-01': 'MAIN', 'p4-back-ready-02': back});
+  for (const [id, hand] of Object.entries(hands)) data.motions![id] = {...data.motions![id], motion: {...data.motions![id].motion, takeHand: 'LH', releaseHand: hand}};
+  return data;
+}
+test('after a deal the return comes back with the hand that laid the card: a Primär return of the other hand gives way to the deal\'s own', () => {
+  const steps = graph.parseSequence('READY>P4.C1 | P4.C1>READY').steps, g = graph.buildGraph(handBank());
+  // A return without a hand of its own has the hand of the deal it was cut from.
+  assert.deepEqual(['p4-deal-01', 'p4-deal-02', 'p4-back-ready-01', 'p4-back-ready-02', 'entry-01'].map(id => g.takes[id].releaseHand), ['RH', 'LH', 'RH', 'LH', null]);
+  const round = graph.resolveRound(g, steps);
+  assert.deepEqual(played(round), [['READY>P4.C1', 'p4-deal-02', 'PRIMARY', 104, 'FRAME'], ['P4.C1>READY', 'p4-back-ready-02', 'FITS_DEAL', null, null]]);
+  assert.deepEqual(round[1].notes, ['Primärreturen p4-back-ready-01 kommer tillbaka med höger hand; given p4-deal-02 lade kortet med vänster.']);
+  // Without its own return, another return of the left hand plays, a seam said; with none, the Primär of the other hand, the fault said.
+  const other = graph.buildGraph(handBank('REJECTED', {'p4-deal-01': 'RH', 'p4-deal-02': 'LH', 'p4-back-idle-01': 'LH'}));
+  assert.equal(graph.resolveRound(other, steps)[1].take?.id, 'p4-back-ready-01', 'a return to IDLE is no return to READY');
+  const lone = graph.resolveRound(graph.buildGraph(handBank('REJECTED')), steps);
+  assert.equal(lone[1].take?.id, 'p4-back-ready-01'); assert.match(lone[1].notes.join(' '), /^Fel hand: returen p4-back-ready-01 kommer tillbaka med höger hand/);
+  // The same hand, or a hand that is not known, leaves Primär as it was: it plays and the seam is named.
+  for (const hands of [{'p4-deal-01': 'LH', 'p4-deal-02': 'LH'}, {}]) {
+    const same = graph.resolveRound(graph.buildGraph(handBank('VARIANT', hands)), steps);
+    assert.deepEqual(played(same), [['READY>P4.C1', 'p4-deal-02', 'PRIMARY', 104, 'FRAME'], ['P4.C1>READY', 'p4-back-ready-01', 'PRIMARY', null, null]], JSON.stringify(hands)); assert.match(same[1].notes.join(' '), /^Skarv/);
+  }
+});
+
 test('a take the round names beats Primär, on the return and on the deal', () => {
   const g = graph.buildGraph(primaryBank({'p4-back-ready-01': 'MAIN'})), round = (text: string) => graph.resolveRound(g, graph.parseSequence(text).steps);
   // A named return: the deal is not chosen for the Primär that does not play.
@@ -732,7 +758,7 @@ test('a bank without any Primär resolves as before: the takes of the rule befor
 });
 
 test('every segment of a whole round says why its take plays, with a short Swedish word for each reason', async () => {
-  assert.deepEqual(graph.WHY_LABEL, {LOCKED: 'låst', PRIMARY: 'primär', MAIN: 'huvudtagning', SHARED: 'platsens film', FITS_DEAL: 'passar given före', FITS_PRIMARY_RETURN: 'passar primär retur', SIDE: 'rätt kortsida krävs', GAP: 'lucka'});
+  assert.deepEqual(graph.WHY_LABEL, {LOCKED: 'låst', PRIMARY: 'primär', MAIN: 'huvudtagning', SHARED: 'platsens film', FITS_DEAL: 'passar given före', FITS_PRIMARY_RETURN: 'passar primär retur', SIDE: 'rätt kortsida krävs', HAND: 'samma hand som given', GAP: 'lucka'});
   const whole = graph.roundSequence({seats: graph.SEATS, reveal: true}), round = graph.resolveRound(graph.buildGraph(primaryBank({'p4-back-ready-01': 'MAIN'})), whole);
   assert.deepEqual(round.filter(s => s.take).map(s => [s.id, s.take!.id, s.why]), [['IDLE>READY', 'entry-01', 'MAIN'], ['READY>P4.C1', 'p4-deal-01', 'FITS_PRIMARY_RETURN'], ['P4.C1>READY', 'p4-back-ready-01', 'PRIMARY'],
     ['READY>P4.C2', 'p4-deal-01', 'FITS_PRIMARY_RETURN'], ['P4.C2>READY', 'p4-back-ready-01', 'PRIMARY'], ['READY>D.C2', 'hole-closed-01', 'MAIN'], ['D.C2>IDLE', 'hole-back-idle-01', 'MAIN']]);

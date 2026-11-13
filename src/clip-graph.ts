@@ -12,10 +12,13 @@ export type MotionRecord = {
   source?: {path?: string; sha256?: string; bytes?: number; fps?: number; frames?: number; width?: number; height?: number};
   // idle: how a take of IDLE>IDLE takes part in the idle. weight: its share among the takes that may be picked. calm: breathing and
   // the like, as opposed to a gesture. onRequest: never picked by chance. label: what it shows, in a word or two.
-  motion?: {physicalEndSide?: string; landingFrame?: number; startsOn?: {clip?: string; frame?: number; seamPixelsOverThreshold?: number}; idle?: {weight?: number; calm?: boolean; onRequest?: boolean; label?: string}};
+  // takeHand / releaseHand: the hand that takes the card at the shoe and the hand that lays it (LH, RH); on a return, the hand that comes back.
+  motion?: {physicalEndSide?: string; landingFrame?: number; startsOn?: {clip?: string; frame?: number; seamPixelsOverThreshold?: number}; idle?: {weight?: number; calm?: boolean; onRequest?: boolean; label?: string}; takeHand?: string; releaseHand?: string};
   // inbox: a take that came in from an order (tools/register-order.ts) and that Jakob has not decided on yet. It plays only where its
-  // step has nothing else to play; tools/review-store.ts takes the flag away with his decision.
-  review?: {decision?: string; acceptedAs?: string; basis?: string; limitations?: string; userReview?: string; userAccepted?: boolean; inbox?: boolean};
+  // step has nothing else to play; tools/review-store.ts takes the flag away with his decision, or with a provisional one.
+  // provisional: a verdict the main agent and a reviewer gave in his place (tools/review-put.ts); it plays as its decision says,
+  // is never his (no userReview, userAccepted false) and waits for him in Granska; his decision takes it away.
+  review?: {decision?: string; acceptedAs?: string; basis?: string; limitations?: string; userReview?: string; userAccepted?: boolean; inbox?: boolean; provisional?: {by?: string; at?: string; mandate?: string; note?: string}};
 };
 export type Receipt = {status?: string; estimatedCredits?: number; requestedAt?: string; completedAt?: string; output?: {bytes?: number; fps?: number; frames?: number; width?: number; height?: number} | null};
 // track and overrides: the card track from tools/track-card.ts and hand-written occlusion overrides, when they exist locally.
@@ -171,8 +174,13 @@ export type Take = {
   speed: number;           // the speed the film is meant to be watched at (a clip generated in slow motion says 2); frame numbers stay the file's
   dealer: string;          // whose take it is; every take of a graph is its dealer's
   inbox: boolean;          // came in from an order and waits for Jakob: it plays only where its step has nothing else to play
+  // The hand that lays the card (a deal) or comes back from it (a return): its record's motion.releaseHand; a return without one
+  // has the hand of the deal it was cut from. null: not known.
+  releaseHand: Hand | null;
   motion: MotionRecord | null; receipt: Receipt | null; media: Media;
 };
+export type Hand = 'LH' | 'RH';
+const handWord = (value: unknown): Hand | null => value === 'LH' || value === 'RH' ? value : null;
 // The idle is many short clips that all begin and end on the same frame. Breathing dominates, gestures are rare.
 export type Idle = {weight: number; calm: boolean; onRequest: boolean; label: string};
 export const IDLE_WEIGHT = {calm: 20, gesture: 3};
@@ -300,10 +308,12 @@ export function buildGraph(data: BankData, options: {mode?: FilmMode; holeCardDo
       fps: motion?.source?.fps ?? receipt?.output?.fps ?? null, frames: motion?.source?.frames ?? receipt?.output?.frames ?? null,
       credits: receipt?.estimatedCredits ?? job.duration * (CREDITS_PER_SECOND[job.ratio] ?? 0), startsOn, anchorStart, landingFrame: null, landingConflict: false, segment, revision: data.revisions?.[job.id] ?? null,
       idle: e.id === 'IDLE>IDLE' ? idleOf(job.id, motion) : null, editOf: editOf.get(job.id) ?? null, speed: Number(job.playbackSpeed) >= 0.25 && Number(job.playbackSpeed) <= 4 ? Number(job.playbackSpeed) : 1,
-      dealer, inbox: motion?.review?.inbox === true, motion, receipt, media};
+      dealer, inbox: motion?.review?.inbox === true, releaseHand: handWord(motion?.motion?.releaseHand), motion, receipt, media};
     takes[job.id] = take; e.takes.push(take);
   });
   const all = Object.values(takes);
+  // A return that says no hand comes back with the hand that laid the card in the deal it was cut from.
+  for (const back of all.filter(t => t.kind === 'RETURN' && !t.releaseHand)) back.releaseHand = all.find(d => d.kind === 'DEAL' && d.releaseHand && cutFrom(back, d))?.releaseHand ?? null;
   // A deal's landing/cut frame is the frame its returns start on. An explicit motion.landingFrame wins. Returns in the inbox count
   // only when no other return was cut from the deal.
   for (const deal of all.filter(t => t.kind === 'DEAL')) {
@@ -459,9 +469,10 @@ export const GAP_LABEL: Record<Gap, string> = {INVALID: 'ogiltig kant', MISSING:
 // Why a step plays its take, set where the take is chosen, so a page can say it without repeating the rule. LOCKED: the round names it.
 // PRIMARY: Jakob's Primär on the edge. MAIN: the edge's main take. SHARED: the main take of the seat's film, played for a second card.
 // FITS_DEAL: a return that continues the deal just played. FITS_PRIMARY_RETURN: a deal that the Primär return after it continues.
-// SIDE: the main take ends on the other side of the card than the round wants. GAP: nothing is played.
-export type Why = 'LOCKED' | 'PRIMARY' | 'MAIN' | 'SHARED' | 'FITS_DEAL' | 'FITS_PRIMARY_RETURN' | 'SIDE' | 'GAP';
-export const WHY_LABEL: Record<Why, string> = {LOCKED: 'låst', PRIMARY: 'primär', MAIN: 'huvudtagning', SHARED: 'platsens film', FITS_DEAL: 'passar given före', FITS_PRIMARY_RETURN: 'passar primär retur', SIDE: 'rätt kortsida krävs', GAP: 'lucka'};
+// SIDE: the main take ends on the other side of the card than the round wants. HAND: a return of the hand that laid the card, in
+// place of a main take of the other hand. GAP: nothing is played.
+export type Why = 'LOCKED' | 'PRIMARY' | 'MAIN' | 'SHARED' | 'FITS_DEAL' | 'FITS_PRIMARY_RETURN' | 'SIDE' | 'HAND' | 'GAP';
+export const WHY_LABEL: Record<Why, string> = {LOCKED: 'låst', PRIMARY: 'primär', MAIN: 'huvudtagning', SHARED: 'platsens film', FITS_DEAL: 'passar given före', FITS_PRIMARY_RETURN: 'passar primär retur', SIDE: 'rätt kortsida krävs', HAND: 'samma hand som given', GAP: 'lucka'};
 // start/end are source frames; end is exclusive and null means "play to the last frame".
 // cut says how a deal ends: FRAME = at the frame its return starts on, END = at its last frame because the
 // return starts from the landing anchor, null = not a deal or nothing known.
@@ -509,9 +520,18 @@ export function resolveRound(graph: Graph, steps: Step[], options: {holeCardDown
     const next = steps[index + 1], ahead = !take && e.kind === 'DEAL' && !main?.explicitMain && next?.from === step.to ? choices(graph, next) : null, primary = ahead?.e.kind === 'RETURN' ? ahead.locked ?? ahead.main : null;
     if (primary?.explicitMain) { const fits = pool.filter(t => returnFits(primary, t) && !(t.endSide && seg.side && t.endSide !== seg.side)); if (!(main && fits.includes(main))) { take = best(fits, rank); why = 'FITS_PRIMARY_RETURN'; } }
     if (!take && e.kind === 'DEAL' && main?.endSide && main.endSide !== seg.side) { take = best(pool.filter(t => t.endSide === seg.side), rank); why = 'SIDE'; }
-    // A Primär return plays on its edge also right after a deal it does not continue; the seam is then named below.
-    if (!take && after && !main?.explicitMain) { take = best(pool.filter(t => returnFits(t, after)), rank); why = take && take === main ? asMain(take) : 'FITS_DEAL'; }
-    if (!take && main) { take = main; why = asMain(main); }
+    // After a deal the hand that comes back is the hand that laid the card (Jakob 2026-11-13: when she deals with one arm, the
+    // return must be that arm's). A return of the other hand is never chosen while one of the right hand can play: a known hand of
+    // either take that differs rules it out; an unknown one rules out nothing.
+    const sameHand = (t: Take) => !after?.releaseHand || !t.releaseHand || t.releaseHand === after.releaseHand;
+    // A Primär return of the right hand plays on its edge also right after a deal it does not continue; the seam is then named below.
+    // Else the return that continues the deal, then the main take, then the best return of the right hand.
+    if (!take && after && !(main?.explicitMain && sameHand(main))) {
+      take = best(pool.filter(t => returnFits(t, after) && sameHand(t)), rank); why = take && take === main ? asMain(take) : 'FITS_DEAL';
+      if (!take && main && !sameHand(main)) { take = best(pool.filter(sameHand), rank); why = 'HAND'; }
+      if (take && main && take !== main && !sameHand(main)) notes.push(`${main.explicitMain ? 'Primär' : 'Huvud'}returen ${main.id} kommer tillbaka med ${main.releaseHand === 'RH' ? 'höger' : 'vänster'} hand; given ${after.id} lade kortet med ${after.releaseHand === 'RH' ? 'höger' : 'vänster'}.`);
+    }
+    if (!take && main) { take = main; why = asMain(main); if (after && !sameHand(main)) notes.push(`Fel hand: returen ${main.id} kommer tillbaka med ${main.releaseHand === 'RH' ? 'höger' : 'vänster'} hand, och ingen retur med ${after.releaseHand === 'RH' ? 'höger' : 'vänster'} kan spelas.`); }
     if (!take) { seg.gap = pool.some(t => t.stage === 'ORDERED' || t.stage === 'PREPARED' || t.stage === 'WRITTEN') ? 'WAITING' : pool.some(t => t.stage === 'DONE') ? 'REJECTED' : 'MISSING'; return; }
     seg.take = take; seg.why = why; seg.fps = take.fps ?? 30; seg.video = take.media.video ?? null;
     if (take.segment) { seg.start = take.segment.start; seg.end = take.frames !== null && take.segment.end >= take.frames - 1 ? null : take.segment.end + 1; } // a derived take shows only its own frames
@@ -540,7 +560,7 @@ export function resolveRound(graph: Graph, steps: Step[], options: {holeCardDown
 }
 
 // ── Job drafts for missing edges ────────────────────────────────────────────
-// Never written anywhere by the lab: ordering is a paid, CLI-only step (tools/clip-job.ts).
+// Never written anywhere by the lab: ordering is a paid step outside it (Beställ; the register is read and checked by src/clip-job.ts).
 const TODO_SHA = 'TODO: sha256 of this file';
 const PLACE: Record<string, {deal: string; spot: string; lies: string}> = {
   P1: {deal: 'to the far left of the image', spot: 'far-left', lies: 'at the far left of the image'},

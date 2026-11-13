@@ -4,10 +4,13 @@
 // (resolveRound); this file hands the chain to the scene's film queue, with what the rendered cards need for each part: the
 // card the film carries (its landing quad and its value) and the cards already lying on the table. Between steps it plays the
 // rest loop the lab uses (pickIdle). The film queue itself belongs to the 3D scene (players.play in src/scene3d-film.ts).
+//
+// What she says: a talk film (a rest take on request, with sound) is played whole at rest, before a step's chain of cards or after
+// it (speakMoments), or between rounds (say). A line without a film is said at the same moment, in the chat only.
 import {resolveRound, pickIdle, idleRange, idleExit, IDLE_RULE, type Graph, type Take, type Segment} from './clip-graph.ts';
 import type {CardRecord} from './card-overlay.ts';
-import {slotOf, slotLabel, type Layout, type Pt, type TableCards} from './game-table.ts';
-import {planBeats, type Beat, type FilmSignal} from './game-director.ts';
+import {slotOf, slotLabel, slotFilm, type Layout, type Pt, type TableCards} from './game-table.ts';
+import {planBeats, STAND_IN_FILM, type Beat, type FilmSignal} from './game-director.ts';
 
 // What this file uses of the scene's film queue.
 // frame: a film whose picture is not the standard frame (the entrance and the exit, drawn behind the table) says so in its
@@ -34,7 +37,11 @@ export function cardOptions(beat: Pick<Beat, 'own' | 'lying'>, table: TableCards
   return {...base, land: layout.quad(beat.own.slot), target: beat.own.label, shoeDraw: beat.own.shoeDraw, bend: material.bend, gloss: material.gloss};
 }
 
-export function createFilm(players: FilmPlayers, graph: Graph, layout: Layout, readJson: (path: string) => Promise<unknown>, random: () => number = Math.random) {
+// A line she says in a step: its talk film (null: text only) and what is done when she begins it (the page writes it in the chat).
+export type Said = {part: FilmPart | null; begin(): void};
+
+export function createFilm(players: FilmPlayers, bank: Graph, layout: Layout, readJson: (path: string) => Promise<unknown>, random: () => number = Math.random) {
+  let graph = bank; // whose films: another dealer at the table is another graph (use)
   let table: TableCards = {hands: [], dealer: []}, records: CardRecord[] = [], lying: number[] = [];
   let token = 0, resting: Take | null = null; const played: string[] = [], tracks = new Map<string, Promise<unknown>>();
   const trackOf = (take: Take | null) => { const path = take?.media.track; if (!path) return Promise.resolve(null); let hit = tracks.get(path); if (!hit) { hit = readJson(path).catch(() => null); tracks.set(path, hit); } return hit; };
@@ -54,19 +61,28 @@ export function createFilm(players: FilmPlayers, graph: Graph, layout: Layout, r
 
   // A card whose deal has no film that can be played (none made, or the only take rejected) is laid without a hand.
   const filmless = (target: string) => !resolveRound(graph, [{from: 'READY', to: target}], {places})[0]?.video;
+  // A seat film whose return to rest has no film: the hand goes back to the shoe and from there to rest (planBeats).
+  const toRest = (film: string) => !!resolveRound(graph, [{from: film, to: 'IDLE'}], {places})[0]?.video;
+  /** A talk film as a part of the queue: the whole film, at rest, with the cards lying as they lie, and with sound. */
+  function talkPart(clip: string): FilmPart | null {
+    const take = graph.takes[clip];
+    if (!take?.media.video || take.kind !== 'IDLE' || !take.idle?.onRequest || take.stage !== 'DONE' || take.decision === 'REJECTED') return null;
+    return {path: take.media.video, start: 0, end: null, ...fpsOf(take), track: null, cards: cardOptions({own: null, lying}, table, records, layout), sound: true};
+  }
   /**
    * Plays one step of the game. signals: the engine's signals for the step. next: the table and card values after it.
    * landed(beat) is called when a beat's film has ended (a dealt card lies there, the hole card is open); a beat without
    * a playable film lands at once, in order. Resolves when the chain has played; the rest loop then goes on with the new table.
    */
-  async function play(signals: FilmSignal[], next: {table: TableCards; records: CardRecord[]}, landed: (beat: Beat, index: number) => void = () => {}): Promise<{gaps: string[]; beats: Beat[]}> {
+  async function play(signals: FilmSignal[], next: {table: TableCards; records: CardRecord[]}, landed: (beat: Beat, index: number) => void = () => {}, said: {before?: Said[]; after?: Said[]} = {}): Promise<{gaps: string[]; beats: Beat[]}> {
     const mine = ++token, leaving = resting; resting = null;
-    const beats = planBeats(next.table, lying, signals, filmless);
+    const standIn = STAND_IN_FILM[graph.dealer] ?? {}, beats = planBeats(next.table, lying, signals, filmless, toRest, standIn);
     table = next.table; records = next.records;
     // PLACE beats have no edge; the others are resolved as one chain, so each deal is cut where its return begins.
     const filmed = beats.map((b, i) => b.step ? i : -1).filter(i => i >= 0), resolved: Segment[] = resolveRound(graph, filmed.map(i => beats[i].step!), {places});
     const segments: (Segment | null)[] = beats.map(() => null); filmed.forEach((i, k) => { segments[i] = resolved[k]; });
-    const gaps = beats.flatMap((b, i) => b.kind === 'PLACE' ? [`${b.own!.label}: ingen spelbar film, kortet läggs utan hand`] : !segments[i]?.video ? [`${segments[i]?.id}: ${segments[i]?.gap ?? 'ingen film'}`] : []);
+    const gaps = beats.flatMap((b, i) => b.kind === 'PLACE' ? [`${b.own!.label}: ingen spelbar film, kortet läggs utan hand`] : !segments[i]?.video ? [`${segments[i]?.id}: ${segments[i]?.gap ?? 'ingen film'}`]
+      : b.kind === 'DEAL' && b.own && b.step!.to !== slotFilm(b.own.slot) && standIn[slotFilm(b.own.slot)] === b.step!.to ? [`${b.own.label}: nödlösning, given med ${b.step!.to}s film, kortet ritat på sin egen plats`] : []);
     const loaded = await Promise.all(segments.map(s => trackOf(s?.video ? s.take : null)));
     if (mine !== token) return {gaps, beats};
     // A hole card that is turned later in this chain stays closed and without a value until that beat.
@@ -76,12 +92,24 @@ export function createFilm(players: FilmPlayers, graph: Graph, layout: Layout, r
     segments.forEach((s, i) => { if (!s?.video) return; beatOf.push(i); parts.push({path: s.video, start: s.start, end: s.end, track: loaded[i], cards: cardOptions(beats[i], table, i < turn ? closed : records, layout), frame: frameOf(s.take), ...fpsOf(s.take)}); });
     let done = 0; // beats landed so far, in order
     const land = (upTo: number) => { for (; done < upTo; done++) { const beat = beats[done]; if (beat.own && beat.kind !== 'DEAL' && !lying.includes(beat.own.shoeDraw)) lying = [...lying, beat.own.shoeDraw]; landed(beat, done); } };
-    if (!parts.length) { land(beats.length); rest(); return {gaps, beats}; }
+    // What she says before the cards and after them: the talk films around the chain, each line begun as its film begins.
+    const before = said.before ?? [], after = said.after ?? [], talkBefore = before.filter(t => t.part), talkAfter = after.filter(t => t.part);
+    for (const t of talkBefore) t.part = {...t.part!, cards: cardOptions({own: null, lying}, table, turn >= 0 ? closed : records, layout)};
+    for (const t of talkAfter) t.part = {...t.part!, cards: cardOptions({own: null, lying: [...new Set([...lying, ...beats.filter(b => b.own).map(b => b.own!.shoeDraw)])]}, table, records, layout)};
+    for (const t of before) if (!t.part) t.begin();
+    const all = [...talkBefore.map(t => t.part!), ...parts, ...talkAfter.map(t => t.part!)], lead = talkBefore.length;
+    const silentAfter = () => { for (const t of after) if (!t.part) t.begin(); };
+    if (!all.length) { land(beats.length); silentAfter(); rest(); return {gaps, beats}; }
     await new Promise<void>(resolve => {
       // A calm rest clip is cut at once; a gesture is played out faster, so that it lands, and the chain starts after it.
       const cut = !leaving || idleExit(leaving) === 'CUT'; if (!cut) players.hurry(IDLE_RULE.exitRate);
-      players.preload?.(parts.map(p => p.path));
-      players.play(parts, {cut, onPart: index => { if (mine === token) land(beatOf[index]); }, onEnd: () => { if (mine === token) land(beats.length); resolve(); }});
+      players.preload?.(all.map(p => p.path));
+      let afterBegun = false;
+      players.play(all, {cut, onPart: index => { if (mine !== token) return;
+        if (index < lead) { talkBefore[index].begin(); return; }
+        if (index < lead + parts.length) { land(beatOf[index - lead]); return; }
+        land(beats.length); if (!afterBegun) { afterBegun = true; silentAfter(); } talkAfter[index - lead - parts.length].begin(); },
+      onEnd: () => { if (mine === token) { land(beats.length); if (!afterBegun) silentAfter(); } resolve(); }});
     });
     if (mine === token) rest();
     return {gaps, beats};
@@ -91,23 +119,40 @@ export function createFilm(players: FilmPlayers, graph: Graph, layout: Layout, r
    * that comes next; the page may change what it shows), and a dealer comes in and sits down. True when rest has begun again; false when the bank has no film to
    * leave with or to arrive with, and nothing is played then. Only between rounds: no card lies on the table. `own`: films
    * the page brings itself, played instead of the bank's (a stand-in while the bank has no approved film for the change).
+   * next: another dealer comes in, with her own films (her graph); then a side without a film is a cut (she is cut out, or the
+   * table cut to her at rest), and true means she is at the table. Without next the same dealer leaves and comes back.
    */
-  async function swap(away: (arrive: FilmPart[]) => void | Promise<void> = () => {}, own: {leave?: FilmPart[]; arrive?: FilmPart[]} | null = null): Promise<boolean> {
+  async function swap(away: (arrive: FilmPart[]) => void | Promise<void> = () => {}, own: {leave?: FilmPart[]; arrive?: FilmPart[]} | null = null, next: Graph | null = null): Promise<boolean> {
     const part = (s: Segment | undefined): FilmPart[] => s?.video ? [{path: s.video, start: s.start, end: s.end, track: null, frame: frameOf(s.take), ...fpsOf(s.take)}] : [];
-    const banked = (from: string, to: string) => part(resolveRound(graph, [{from, to}], {places})[0]); // the bank's own film comes first; the page's stands in where the bank has none
-    let leave = banked('IDLE', 'AWAY'), arrive = banked('AWAY', 'IDLE'); if (!leave.length) leave = own?.leave ?? []; if (!arrive.length) arrive = own?.arrive ?? [];
-    if (!leave.length || !arrive.length) return false;
+    const banked = (of: Graph, from: string, to: string) => part(resolveRound(of, [{from, to}], {places})[0]); // the bank's own film comes first; the page's stands in where the bank has none
+    let leave = banked(graph, 'IDLE', 'AWAY'), arrive = banked(next ?? graph, 'AWAY', 'IDLE'); if (!leave.length) leave = own?.leave ?? []; if (!arrive.length) arrive = own?.arrive ?? [];
+    if (!next && (!leave.length || !arrive.length)) return false;
     const mine = ++token, leaving = resting; resting = null;
-    const run = (parts: FilmPart[], cut: boolean) => new Promise<void>(resolve => players.play(parts, {cut, onEnd: resolve}));
-    const cut = !leaving || idleExit(leaving) === 'CUT'; if (!cut) players.hurry(IDLE_RULE.exitRate);
+    const run = (parts: FilmPart[], cut: boolean) => parts.length ? new Promise<void>(resolve => players.play(parts, {cut, onEnd: resolve})) : Promise.resolve();
+    const cut = !leaving || idleExit(leaving) === 'CUT'; if (!cut && leave.length) players.hurry(IDLE_RULE.exitRate);
     players.preload?.([...leave, ...arrive].map(p => p.path));
     await run(leave, cut); if (mine !== token) return true;
-    await away(arrive); if (mine !== token) return true;
+    if (leave.length) { await away(arrive); if (mine !== token) return true; } // without a film she leaves no empty table to wait at
+    if (next) { graph = next; played.length = 0; }
     await run(arrive, true); if (mine === token) rest();
     return true;
   }
+  /**
+   * She says one line between steps: its talk film, whole and with sound, when she rests (no step is playing), then rest again.
+   * False when there is no film for it or a step is playing; the page then shows the line as text only.
+   */
+  function say(clip: string, begin: () => void = () => {}): boolean {
+    const part = talkPart(clip); if (!part || resting === null) return false;
+    const mine = ++token, leaving = resting; resting = null;
+    const cut = idleExit(leaving) === 'CUT'; if (!cut) players.hurry(IDLE_RULE.exitRate);
+    players.play([part], {cut, onPart: () => { if (mine === token) begin(); }, onEnd: () => { if (mine === token) rest(); }});
+    return true;
+  }
   return {
-    play, rest, swap,
+    play, rest, swap, say, talkPart,
+    /** Another dealer's films from now on (she has come to the table); rest goes on with hers. */
+    use(next: Graph) { graph = next; tracks.clear(); played.length = 0; },
+    get graph() { return graph; },
     set(next: {table: TableCards; records: CardRecord[]; lying: number[]}) { table = next.table; records = next.records; lying = [...next.lying]; rest(); },
     get lying() { return [...lying]; },
   };

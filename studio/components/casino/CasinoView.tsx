@@ -4,11 +4,11 @@
 // behind /api/game, the overlay with chips and buttons, the console's menus) plays in a frame as large as the window
 // allows, with the chosen preset and keys (src/game-look.ts reads them). The plain game.html keeps its own look; here any
 // preset can be played. The address carries the look and the table (lib/casino.ts), so a calibrated look can be sent as a
-// link. The online copy has no game engine: there the view says so (and the rail should not offer it). The game page reads
-// Pamela's films only (src/game-page.ts): with another dealer chosen in the rail the view says how many films she has and
-// offers Pamela's round or Scen, which plays what she has; it never plays Pamela's films under another name. The address's
-// ?dealer= is the rail's word: it is neither a look key nor dropped when the view writes its address.
-import { Expand, Plus, SlidersHorizontal, Spade } from "lucide-react";
+// link. The online copy has no game engine: there the view says so (and the rail should not offer it). The game plays the
+// dealer chosen in the rail (?dealer=, passed on to the game page, src/game-page.ts), with her own films only: a step she has no
+// film for is cut or laid without a hand, never played with another dealer's film. The address's ?dealer= is the rail's word:
+// it is neither a look key nor dropped when the view writes its address.
+import { Expand, Plus, SlidersHorizontal, Spade, SquareStack } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -16,7 +16,7 @@ import { asApiError } from "../../lib/api.ts";
 import { useBank } from "../../lib/bank.ts";
 import { casinoSearch, freshTable, gameSrc, readCasino, scenHref, type CasinoLook } from "../../lib/casino.ts";
 import { useViewContext } from "../../lib/context.ts";
-import { DEALER_PARAM, DEFAULT_DEALER, dealerHref, filmsLine, withDealer, withoutDealer } from "../../lib/dealer.ts";
+import { DEALER_PARAM, withDealer, withoutDealer } from "../../lib/dealer.ts";
 import { isSnapshot } from "../../lib/mode.ts";
 import { SHIPPED } from "../../lib/scene-presets.ts";
 import { listPresets, type Preset } from "../scene-editor/presetApi.ts";
@@ -28,7 +28,7 @@ const shipped = (): Preset[] => SHIPPED.map((p) => ({ ...p, shipped: true, revis
 const write = (search: string) => window.history.replaceState(null, "", `${window.location.pathname}${withDealer(search, new URLSearchParams(window.location.search).get(DEALER_PARAM))}`);
 
 export function CasinoView() {
-  const { dealer, status } = useBank();
+  const { status } = useBank();
   if (isSnapshot) return <OnlyInLab />;
   // The game is not started before it is known whose studio this is.
   if (status === "loading")
@@ -39,36 +39,7 @@ export function CasinoView() {
         </div>
       </Page>
     );
-  return dealer === DEFAULT_DEALER ? <Casino /> : <OnlyPamela />;
-}
-
-/** Another dealer than Pamela: the game has only Pamela's round, so the view says what she has and where it plays. */
-function OnlyPamela() {
-  const { graph, dealer, dealers, setDealer } = useBank();
-  const name = dealers.find((d) => d.id === dealer)?.name ?? dealer;
-  const pamela = dealers.find((d) => d.id === DEFAULT_DEALER)?.name ?? "Pamela";
-  const few = graph ? filmsLine(graph, name) : null;
-  useViewContext({ vy: "Casino", val: { dealer: name } });
-  return (
-    <Page title="Casino">
-      <EmptyState
-        icon={<Spade />}
-        title={`Casino spelar bara ${pamela}s runda än`}
-        action={
-          <div className="flex flex-wrap items-center justify-center gap-2">
-            <Button variant="primary" onClick={() => setDealer(DEFAULT_DEALER)}>
-              Spela med {pamela}
-            </Button>
-            <Link href={dealerHref("/", dealer)} className={buttonClasses({ variant: "secondary" })}>
-              Se {name}s filmer i Scen
-            </Link>
-          </div>
-        }
-      >
-        {few ? `${few}; rundan spelas här när fler finns.` : `Spelet läser ännu bara ${pamela}s filmer.`}
-      </EmptyState>
-    </Page>
-  );
+  return <Casino />;
 }
 
 function OnlyInLab() {
@@ -84,6 +55,8 @@ function OnlyInLab() {
 
 function Casino() {
   const params = useSearchParams();
+  const { dealer, dealers } = useBank();
+  const name = dealers.find((d) => d.id === dealer)?.name ?? dealer;
   // The address without the rail's word for the dealer, which is no look key.
   const query = withoutDealer(params.toString()).slice(1);
   const toast = useToast();
@@ -115,12 +88,15 @@ function Casino() {
   }, [presets, look.forval]);
 
   // ── the game in the frame: a new address loads it anew (a new element, so the studio's back button is not the frame's) ──
-  const src = gameSrc(look);
+  // The dealer is the rail's: the game page reads it as its own word (?dealer=), so another dealer is another game in the frame.
+  const src = `${gameSrc(look)}&${new URLSearchParams({ [DEALER_PARAM]: dealer })}`;
   const frame = useRef<HTMLIFrameElement | null>(null);
   const [loaded, setLoaded] = useState<string | null>(null);
 
   const changed = Object.keys(look.patch).length;
-  useViewContext({ vy: "Casino", val: { forval: look.forval, bord: look.table } });
+  // The drawn cards (the scene's key cards): the address's word, else the preset's, else on. Off shows the film's own coloured cards.
+  const cardsOn = look.patch.cards ?? presets.find((p) => p.name === look.forval)?.state?.cards ?? true;
+  useViewContext({ vy: "Casino", val: { forval: look.forval, bord: look.table, dealer: name } });
 
   return (
     <Page
@@ -129,6 +105,8 @@ function Casino() {
       status={
         <>
           <span className={changed ? "text-brass-hi" : undefined}>{changed ? `${changed} reglage utöver förvalet` : "som förvalet"}</span>
+          <span>·</span>
+          <span>{name}</span>
           <span>·</span>
           <span className="tabular-nums">bord {look.table}</span>
           {dropped.length ? <span className="text-faint">· okänt i adressen: {dropped.join(", ")}</span> : null}
@@ -140,6 +118,9 @@ function Casino() {
           <Link href={scenHref(look)} className={buttonClasses({ variant: "quiet", size: "sm" })} title="Öppna samma look i Scen och kalibrera den vidare">
             <SlidersHorizontal /> Kalibrera i Scen
           </Link>
+          <Button size="sm" variant={cardsOn ? "quiet" : "secondary"} icon={<SquareStack />} aria-pressed={cardsOn} title="Ritade kort på eller av: av visar filmens egna färgade kort, och inget ritas över dem" onClick={() => go({ ...look, patch: { ...look.patch, cards: !cardsOn } })}>
+            Ritade kort: {cardsOn ? "på" : "av"}
+          </Button>
           <Button size="sm" variant="quiet" icon={<Plus />} title="Ett nytt bord: ny spelomgång med nytt saldo och ny sko" onClick={() => go({ ...look, table: freshTable() })}>
             Nytt bord
           </Button>

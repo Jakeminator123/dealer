@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {parseEdge, formatEdge} from '../src/clip-graph.ts';
 import {defaultPlan} from '../src/placement-model.ts';
 import {slotOf, slotFilm, slotLabel, slotImprovised, createLayout, FAN, FAN_AT, SPLIT, DEALER_THIRD, type TableCards} from '../src/game-table.ts';
-import {planBeats, lyingAfter, cardRecords, REVEAL_NODE} from '../src/game-director.ts';
+import {planBeats, lyingAfter, cardRecords, judgedBank, unjudgedTakes, speakMoments, talkOn, REVEAL_NODE, STAND_IN_FILM} from '../src/game-director.ts';
 
 // Seats 4 and 7 play. Opening deal as the engine draws it: seat 7, seat 4, dealer up, seat 7, seat 4, hole card.
 // Draw 1 is the burn card.
@@ -119,4 +119,51 @@ test('layout: a shorter fan where the hand does not reach, and the third dealer 
   // One step for every seat, as the page takes it from its address.
   const tried = createLayout(plan, {fan: 10}), a = tried.centre({owner: 'P', seat: 7, hand: 0, hands: 1, index: 1}), b = tried.centre({owner: 'P', seat: 7, hand: 0, hands: 1, index: 2});
   assert.ok(Math.abs(step(a, b) - 10) < 2);
+});
+
+test('a return to rest without a film goes back to the shoe and from there to rest; a hole card without a film is dealt with the stopgap', () => {
+  // Paow 2026-11-13: no return to rest from any card, and no closed deal to D.C2.
+  const noRest = () => false, noHole = (target: string) => target === 'D.C2';
+  const beats = planBeats(opening, [], [deal(2), deal(3), deal(4), deal(5), deal(6), deal(7)], noHole, noRest, STAND_IN_FILM.paow);
+  assert.deepEqual(edges(beats), ['IDLE>READY', 'READY>P7.C1', 'P7.C1>READY', 'READY>P4.C1', 'P4.C1>READY', 'READY>D.C1', 'D.C1>READY', 'READY>P7.C2', 'P7.C2>READY', 'READY>P4.C2', 'P4.C2>READY',
+    'READY>D.C1', 'D.C1>READY', 'READY>IDLE']);
+  const hole = beats[11];
+  assert.deepEqual([hole.kind, hole.own!.label, hole.own!.shoeDraw], ['DEAL', 'D.C2', 7], 'the stand-in film carries the hole card, laid at its own place');
+  assert.deepEqual(beats[beats.length - 1].lying, [2, 3, 4, 5, 6, 7], 'the exit has every card lying, none in the hand');
+  assert.deepEqual(STAND_IN_FILM, {paow: {'D.C2': 'D.C1'}}, 'Paow only: Pamela is paused and her game stays as it was');
+  // The dealer's third card has no stand-in (its card would lie 219 px from her hand): without a film of its own it is laid without a hand.
+  const drawn: TableCards = {hands: [{seat: 4, cards: [3, 6]}], dealer: [4, 7, 8]};
+  assert.deepEqual(edges(planBeats(drawn, [3, 4, 6, 7], [deal(8)], target => target === 'D.C3', noRest, STAND_IN_FILM.paow)), ['PLACE(D.C3)']);
+  assert.deepEqual(edges(planBeats(drawn, [3, 4, 6, 7], [deal(8)], () => false, noRest, STAND_IN_FILM.paow)), ['IDLE>READY', 'READY>D.C3', 'D.C3>READY', 'READY>IDLE']);
+  // Without the stopgap the hole card is laid without a hand, and the hand rests through the shoe before it.
+  assert.deepEqual(edges(planBeats(opening, [], [deal(2), deal(3), deal(4), deal(5), deal(6), deal(7)], noHole, noRest)).slice(-3), ['P4.C2>READY', 'READY>IDLE', 'PLACE(D.C2)']);
+  // A hit: from rest to the shoe, the card, back to the shoe and out.
+  const table: TableCards = {hands: [{seat: 4, cards: [3, 6, 8]}, {seat: 7, cards: [2, 5]}], dealer: [4, 7]};
+  assert.deepEqual(edges(planBeats(table, [2, 3, 4, 5, 6, 7], [deal(8)], () => false, noRest)), ['IDLE>READY', 'READY>P4.C1', 'P4.C1>READY', 'READY>IDLE']);
+});
+
+test('the game\'s bank: takes without a verdict are left out, except a talk film on request; a provisional verdict counts', () => {
+  const take = (id: string) => ({id, kind: 'DEAL', target: null, from: 'READY', to: 'P4.C1', model: 'x', duration: 4, ratio: '', audio: false, promptText: '', first: {file: {path: 'a.png', sha256: 'a'}}, purpose: ''});
+  const bank = {jobs: [take('judged'), take('pending'), take('inbox'), take('rejected'), take('provisional')], derived: [{id: 'tal', from: 'IDLE', to: 'IDLE', clip: 'tal', frames: [0, 40] as [number, number]}, {id: 'vila', from: 'IDLE', to: 'IDLE', clip: 'vila', frames: [0, 40] as [number, number]}],
+    motions: {judged: {review: {decision: 'ACCEPTED'}}, pending: {review: {decision: 'PENDING'}}, inbox: {review: {decision: 'PENDING', inbox: true}}, rejected: {review: {decision: 'REJECTED'}},
+      provisional: {review: {decision: 'ACCEPTED', provisional: {by: 'huvudagenten'}}}, tal: {review: {decision: 'PENDING', inbox: true}, motion: {idle: {onRequest: true}}}, vila: {review: {decision: 'PENDING', inbox: true}, motion: {idle: {calm: true}}}}};
+  const kept = judgedBank(bank);
+  assert.deepEqual([...kept.jobs!, ...kept.derived!].map(t => t.id), ['judged', 'rejected', 'provisional', 'tal']);
+  assert.deepEqual(unjudgedTakes(bank), ['pending', 'inbox', 'vila']);
+  assert.equal(bank.jobs.length, 5, 'the bank itself is left as it was');
+  // A stopgap (Paow's entry played backwards as her exit) plays until a judged take of her own stands on the edge; another dealer's does not count.
+  const exit = (id: string, dealer = 'paow') => ({id, from: 'READY', to: 'IDLE', clip: id, frames: [0, 90] as [number, number], dealer});
+  const gap = {derived: [exit('baklanges'), exit('pamela-exit', 'pamela')], motions: {baklanges: {review: {decision: 'ACCEPTED'}, motion: {stopgap: true}}, 'pamela-exit': {review: {decision: 'ACCEPTED'}}, 'paow-exit': {review: {decision: 'PENDING', inbox: true}}}};
+  assert.deepEqual(judgedBank(gap).derived!.map(t => t.id), ['baklanges', 'pamela-exit']);
+  const judgedExit = {...gap, derived: [...gap.derived, exit('paow-exit')]};
+  assert.deepEqual(judgedBank(judgedExit).derived!.map(t => t.id), ['baklanges', 'pamela-exit'], 'an unjudged exit does not push the stopgap out');
+  judgedExit.motions['paow-exit'] = {review: {decision: 'ACCEPTED'}} as never;
+  assert.deepEqual(judgedBank(judgedExit).derived!.map(t => t.id), ['pamela-exit', 'paow-exit'], 'a judged exit of her own does');
+});
+
+test('what she says in a step: the lines before its first card and after its last', () => {
+  assert.deepEqual(speakMoments([{type: 'speak', line: 'goodluck'} as never, deal(2), deal(3), {type: 'speak', line: 'insurance'} as never, {type: 'turn'}]), {before: ['goodluck'], after: ['insurance']});
+  assert.deepEqual(speakMoments([{type: 'speak', line: 'double'} as never, deal(8), {type: 'reveal', shoeDraw: 7}, deal(9), {type: 'speak', line: 'win'} as never]), {before: ['double'], after: ['win']});
+  assert.deepEqual(speakMoments([{type: 'speak', line: 'placebets'} as never, {type: 'idle'}]), {before: ['placebets'], after: []});
+  assert.equal(talkOn('av'), false); assert.equal(talkOn('repliker'), true); assert.equal(talkOn(undefined), true);
 });

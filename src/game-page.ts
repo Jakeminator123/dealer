@@ -1,4 +1,4 @@
-// Page code of game.html: blackjack on top of Pamela's film in the 3D scene.
+// Page code of game.html: blackjack on top of the dealer's film in the 3D scene (Pamela's or Paow's: ?dealer=paow, or the console's Dealer menu).
 //
 // Three parts meet here and stay apart. The engine (game/, in the lab server behind /api/game) owns rules, shuffle, card
 // values and money. The 3D scene (src/scene3d-*.ts) owns the picture and the film queue. This page owns the bets in progress
@@ -7,13 +7,16 @@
 //
 // The look is the game's own. The studio's Casino view plays another one calibrated in its Scen view: ?forval=<preset> and
 // scene keys in the address (src/game-look.ts); without them the page is as before.
-import {buildGraph} from './clip-graph.ts';
+//
+// The game plays only takes with a verdict (judgedBank in src/game-director.ts): Jakob's, or a provisional one given in his place.
+// The one exception is a talk film, a rest take on request, which is played only when the dealer says its line (src/speech-lines.ts).
+import {buildGraph, type Graph} from './clip-graph.ts';
 import {createScene, DEFAULTS, type SceneState} from './scene3d-view.ts';
 import {readRegister} from './scene3d-room.ts';
 import {filmToScene, sceneToSpot, solveCamera, type FilmCamera} from './scene3d-geometry.ts';
 import {createLayout, slotOf} from './game-table.ts';
-import {cardRecords} from './game-director.ts';
-import {createFilm, type FilmPlayers} from './game-film.ts';
+import {cardRecords, judgedBank, speakMoments, talkOn} from './game-director.ts';
+import {createFilm, type FilmPlayers, type Said} from './game-film.ts';
 import {chipsFor, mountOverlay, type Action, type Anchors} from './game-overlay.ts';
 import {mountPanel} from './game-panel.ts';
 import {EXIT_TRIAL, exitView, type ExitView} from './scene3d-exit.ts';
@@ -32,7 +35,7 @@ const table = /^[a-z0-9-]{1,40}$/.test(query.get('table') ?? '') ? `?table=${que
 // so the page without them reads and does exactly what it did before. ?inbaddad=1 (the Casino view shows the game in a
 // frame) hides nothing: the frame shows none of what this page shows, and src/preview-ui.ts keeps a framed page from
 // taking the lab tab by itself.
-const OWN_WORDS = ['table', 'tema', 'bricka', 'chatt', 'robot', 'inbaddad'], forval = query.get('forval');
+const OWN_WORDS = ['table', 'tema', 'bricka', 'chatt', 'robot', 'inbaddad', 'dealer'], forval = query.get('forval');
 const lookAsked = [...query.keys()].some(word => !OWN_WORDS.includes(word));
 
 const [contract, placements, bank, first, register, lookCode, presetAnswer] = await Promise.all([read('data/scene-contract.json', 'Scenkontraktet'), read('api/placements', 'Placeringsplanen'), read('api/clip-bank', 'Klippbanken'), read(`api/game${table}`, 'Spelet'), read('data/scene-rooms.json', 'Rumsregistret'),
@@ -48,7 +51,25 @@ const lookNote = lookCode && look ? lookCode.lookNotice(look.asked, !!preset, [.
 const panoramas = registered.filter(r => r.game || r.id === asked.room);
 // ?fan=<px>: one fan step for every seat, for trying values; 0 and 1 are the scene's fan shadow when a look is read.
 const fanWord = query.get('fan'), fanStep = fanWord !== null && Number.isFinite(Number(fanWord)) && !(lookCode && ['0', '1'].includes(fanWord)) ? Math.max(0, Math.min(80, Number(fanWord))) : null;
-const plan = placements.plan ?? placements, graph = buildGraph(bank), layout = createLayout(plan, {fan: fanStep});
+// The dealers the game offers, each with her own films. ?dealer=paow (the studio's word, which the Casino view passes on) or the
+// choice remembered from the console's Dealer menu; Pamela, the bank's first dealer, without either.
+const DEALERS = [{id: 'pamela', label: 'Pamela', note: 'Hela rundan', thumb: 'assets/scene/thumbs/dealer-pamela.jpg'}, {id: 'paow', label: 'Paow', note: 'Ny dealer, inte alla filmer än', thumb: 'assets/anchors/paow-vila-ung-2/anchor.png'}];
+const dealerMemory = (() => { try { return localStorage.getItem('dealer.dealer'); } catch { return null; } })();
+let dealer = DEALERS.find(d => d.id === query.get('dealer'))?.id ?? DEALERS.find(d => d.id === dealerMemory)?.id ?? 'pamela';
+const nameOf = (id: string) => DEALERS.find(d => d.id === id)?.label ?? id;
+const plan = placements.plan ?? placements, judged = judgedBank(bank), graphs = new Map<string, Graph>(), layout = createLayout(plan, {fan: fanStep});
+const graphOf = (id: string) => { let g = graphs.get(id); if (!g) { g = buildGraph(judged, {dealer: id}); graphs.set(id, g); } return g; };
+const graph = graphOf(dealer);
+// What she says: the talk film of a line, from src/speech-lines.ts (read once, beside the page; without it she says everything as
+// text, as before). ?tal=av, the look key, keeps her silent and the module is never asked.
+type Spoken = {key: string; clip: string; text: string};
+type SpeechLines = {spokenFilm(takes: unknown[], dealer: string, keyOrPhase: string, options?: {voice?: string}): Spoken | null; chatReply(takes: unknown[], dealer: string, written: string, count?: number, options?: {voice?: string}): Spoken | null};
+const talking = talkOn((asked as {tal?: unknown}).tal ?? query.get('tal')), VOICE = {voice: 'Jessica'}; // Jessica until Jakob has heard the three
+let lines: SpeechLines | null = null;
+if (talking) void import('./speech-lines.ts').then(m => { lines = m as unknown as SpeechLines; }).catch(() => {});
+const restTakes = () => film.graph.edge['IDLE>IDLE']?.takes ?? [];
+/** Her talk film for a line's key or a phase, or null: no film (the chat shows the text it always did), or her lines are off. */
+const spokenOf = (keyOrPhase: string): Spoken | null => talking && lines ? lines.spokenFilm(restTakes(), dealer, keyOrPhase, VOICE) : null;
 
 // ── the picture: the 3D scene, seen a little from above so that all seven bet rings and the bar have room ──
 const scene = createScene(canvas, stage, {contract, plan, urls: {plate: 'assets/scene/room.png', panorama: 'assets/scene/panorama-vegas.jpg', la: 'assets/scene/panorama-la.jpg', skog: 'assets/scene/panorama-skog.jpg'}, rooms: panoramas, onChange: () => {}, onMissingRoom: () => {}});
@@ -73,10 +94,12 @@ const ROOMS = [
   {id: 'hall', label: 'Spelhallen', note: 'En spelhall med spelautomater och låg rök', blur: 11, sound: 'hall'}, {id: 'salong', label: 'Salongen', note: 'En stillsam salong', blur: 11, sound: 'salong'},
 ].map(r => ({...r, thumb: `assets/scene/thumbs/room-${r.id}.jpg`}));
 const soundOf = (id: string) => ROOMS.find(r => r.id === id)?.sound ?? null;
-const DEALERS = [{id: 'pamela', label: 'Pamela', note: 'Vid bordet nu', thumb: 'assets/scene/thumbs/dealer-pamela.jpg'}];
 const remembered = (() => { try { return localStorage.getItem('dealer.room'); } catch { return null; } })();
 let room = ROOMS.find(r => r.id === (asked.room ?? query.get('room') ?? remembered))?.id ?? 'panorama';
+// The drawn cards: on unless the player switched them off (remembered; the console's Miljö menu) or a look says otherwise.
+const cardsMemory = (() => { try { return localStorage.getItem('dealer.cards'); } catch { return null; } })();
 scene.set({format: 'fill', room: room as never, blur: ROOMS.find(r => r.id === room)!.blur, tray: true, cards: true, pitch: Number(query.get('pitch') ?? FRAMING.wide.pitch), zoom: Number(query.get('zoom') ?? FRAMING.wide.zoom)});
+if (cardsMemory === 'off') scene.set({cards: false});
 // The look over the game's own settings, before the first picture. A room of it that the menu does not offer (a built room
 // of the lab) is shown all the same, and the menu marks none. The table is built by now, so the room is changed with a cut,
 // and the look's own way of changing rooms holds from then on.
@@ -111,13 +134,20 @@ async function present(next: Snapshot, dealerPlays: boolean) {
   // The stakes leave the balance at once; what the round pays back shows when its film has played.
   if (page.stage === 'BETTING') { page.balance -= betTotal(page.bets); page.stage = 'ROUND'; }
   snapshot = next; page.busy = true; page.dealerPlays = dealerPlays;
+  // Her lines in this step (the engine's speak signals): each with its talk film when there is one, written in the chat as she begins it.
+  spoken.clear();
+  const moments = speakMoments(next.events), saying = (key: string): Said[] => { const talk = spokenOf(key), part = talk && film.talkPart(talk.clip); if (!talk || !part) return [];
+    spoken.add(key); return [{part, begin: () => chat?.say(talk.text)}]; };
+  // When the dealer plays her hand she says so first ("Dealern spelar.": the phase DEALER, which the engine gives no line of its own).
+  const said = {before: [...(dealerPlays ? saying('DEALER') : []), ...moments.before.flatMap(saying)], after: moments.after.flatMap(saying)};
   render();
-  await film.play(next.events, {table, records: cardRecords(table, cardFaces(next))}, beat => {
+  const result = await film.play(next.events, {table, records: cardRecords(table, cardFaces(next))}, beat => {
     if (beat.kind !== 'DEAL' && beat.kind !== 'REVEAL' && beat.kind !== 'PLACE') return;
     const event = next.events.find(e => (e.type === 'deal' || e.type === 'reveal') && e.shoeDraw === beat.own!.shoeDraw), shown = event && shownBy(event);
     if (shown) { page.shown[shown.key] = shown; render(); }
     if (heard.table && beat.own) sound?.card(beat.kind === 'REVEAL' ? 'turn' : 'land', {pan: beat.own.slot.owner === 'P' ? panOf(beat.own.slot.seat) : 0});
-  });
+  }, said);
+  gaps.push(...result.gaps); gaps.splice(0, Math.max(0, gaps.length - 40));
   page.busy = false; page.balance = next.balance; page.line = lineOf(next.events) ?? page.line;
   if (settle || next.view.round?.phase === 'settled') {
     page.stage = 'SETTLED'; page.settled = settle ?? page.settled; render();
@@ -136,7 +166,7 @@ function nearestSeat(clientX: number, clientY: number): number | null {
   for (const spot of scene.spots().bets) { const distance = Math.hypot(spot.x - at.x, spot.s - at.s); if (!best || distance < best.distance) best = {seat: Number(spot.id.slice(1)), distance}; }
   return best?.seat ?? null;
 }
-const overlay = mountOverlay(stage, {
+const controls: Parameters<typeof mountOverlay>[1] = {
   aim: nearestSeat,
   chip(value) { page.chip = value; render(); },
   bet(seat, value = page.chip) {
@@ -181,7 +211,8 @@ const overlay = mountOverlay(stage, {
     snapshot = next; paid = null; Object.assign(page, {stage: 'BETTING', bets: {}, shown: {}, settled: null, line: null, balance: next.balance}); order.length = 0; taken.clear(); chips?.clearWinnings();
     film.set({table: {hands: [], dealer: []}, records: [], lying: []}); render();
   },
-});
+};
+const overlay = mountOverlay(stage, controls);
 const order: number[] = []; // the seats the chips were laid on, in order, for Ångra
 
 // ── the console's menus (src/game-panel.ts): the room and the dealer, music and sound ──
@@ -202,8 +233,10 @@ const panel = mountPanel(overlay.root.querySelector<HTMLElement>('.go-bar')!, RO
     else scene.set({roomShift: 'shimmer', room: id, blur: next.blur} as never); // the background shimmers and changes under the shimmer
     if (heard.ambience) sound?.ambience(soundOf(id)); panel.set({room: id});
   },
-  // Only one dealer has films yet, so the change is shown with her: she leaves, the table stands empty, a dealer comes in.
-  async dealer() {
+  // She leaves, the table stands empty, the dealer chosen comes in (the same one again when she is chosen). A dealer without a film
+  // for leaving or coming is cut out or in: Paow has neither yet.
+  async dealer(id) {
+    const next = DEALERS.find(d => d.id === id) ?? DEALERS.find(d => d.id === dealer)!;
     if (page.busy || page.stage === 'ROUND') return;
     page.busy = true; page.error = 'Dealern byts …'; comeHome = false; panel.set({changing: true}); render(); chat?.say('Tack för mig. Lycka till vid bordet!');
     // The table stands empty for a moment. An entrance that shows her whole body is watched from where the camera stands, backed
@@ -211,18 +244,23 @@ const panel = mountPanel(overlay.root.querySelector<HTMLElement>('.go-bar')!, RO
     const away = (arrive: {frame?: unknown}[]) => new Promise<void>(resolve => { const whole = arrive.some(p => (p.frame as {layer?: string} | null | undefined)?.layer === 'BEHIND_TABLE');
       if (!whole) { comeHome = true; shot = null; } setTimeout(resolve, whole ? 700 : 1500); });
     // Until the bank has approved films for the change, a stand-in: the first full-resolution exit (not a main take) and the older entrance.
-    const entrance = graph.edge['AWAY>IDLE']?.takes.find(t => t.media.video)?.media.video;
-    const standIn = entrance ? {leave: [{...EXIT_TRIAL.lead, track: null}, {...EXIT_TRIAL.probe, track: null}], arrive: [{path: entrance, track: null}]} : null;
-    const played = await film.swap(away, standIn);
+    const entrance = graphOf('pamela').edge['AWAY>IDLE']?.takes.find(t => t.media.video)?.media.video;
+    const standIn = {leave: dealer === 'pamela' ? [{...EXIT_TRIAL.lead, track: null}, {...EXIT_TRIAL.probe, track: null}] : [], arrive: next.id === 'pamela' && entrance ? [{path: entrance, track: null}] : []};
+    const changed = next.id !== dealer, played = await film.swap(away, standIn, changed ? graphOf(next.id) : null);
     shot = null;
+    if (changed && played) { dealer = next.id; chat?.dealer(next.label); panel.set({dealer});
+      try { localStorage.setItem('dealer.dealer', dealer); } catch { /* a private window keeps nothing */ }
+      const address = new URL(location.href); address.searchParams.set('dealer', dealer); history.replaceState(null, '', address); }
     page.busy = false; page.error = played ? null : 'Det finns ingen film för dealerbytet än.'; panel.set({changing: false}); if (played) chat?.say('Hej! Nu är det jag som delar ut.'); render();
   },
   music(track) { heard.track = track; panel.set({track}); withSound(s => s.music?.(track)); },
   level(music) { heard.music = music; panel.set({music}); sound?.set({music}); },
   table(on) { heard.table = on; panel.set({table: on}); if (on) withSound(s => s.chip('stack', {height: 1, pan: 0})); },
   ambience(on) { heard.ambience = on; panel.set({ambience: on}); withSound(s => s.ambience(on ? soundOf(room) : null)); },
+  // Off: nothing is drawn over the film, lying cards included; the film's own coloured cards show and the round plays as before.
+  cards(on) { scene.set({cards: on}); panel.set({cards: on}); if (forval === null) try { localStorage.setItem('dealer.cards', on ? 'on' : 'off'); } catch { /* a private window keeps nothing */ } },
 });
-panel.set({room, dealer: 'pamela'});
+panel.set({room, dealer, cards: scene.state.cards});
 // Jakob's chip tray (assets/props/tray.glb, local media) takes the place of the built tray when it can be read; game.html?tray=built keeps the built one.
 // A trial, game.html?bricka=hus: the tray holds the house's own chips (src/game3d-tray.ts), a lost bet is carried into it and winnings out of it.
 type HouseTray = {mouth(value: number, taking: boolean): {x: number; y: number; s: number}; add(value: number): boolean; remove(value: number): boolean};
@@ -249,12 +287,23 @@ let chips: Chips | null = null;
 const seconds = () => performance.now() / 1000;
 void import('./game3d-chips.ts').then(m => { const made = m.createChips(scene); if (asked.chipGloss !== undefined) made.setGloss(asked.chipGloss); scene.addProp(made); chips = made; stage.classList.add('chips3d'); render(); }).catch(() => {});
 // The table chat as a dummy (src/game-chat.ts; game.html?chatt=0 leaves it out). The dealer's lines follow the round's phases and how it ended.
-type Chat = {phase(phase: string): void; say(text: string): void};
+type Chat = {phase(phase: string, said?: string | null): void; say(text: string): void; dealer(name: string): void};
 let chat: Chat | null = null, chatPhase = '', chatLine: string | null = null;
-if (query.get('chatt') !== '0') void import('./game-chat.ts').then(m => { chat = m.mountChat(stage); render(); }).catch(() => {});
+// What she answers a player is the speech's ready answer when it has one (its film plays as she answers), else the dummy's own.
+const answer = (typed: string, n: number) => { const talk = talking && lines ? lines.chatReply(restTakes(), dealer, typed, n, VOICE) : null; if (!talk || !film.talkPart(talk.clip)) return null; film.say(talk.clip); return talk.text; };
+if (query.get('chatt') !== '0') void import('./game-chat.ts').then(m => { chat = m.mountChat(stage, {name: nameOf(dealer), answer}); render(); }).catch(() => {});
+// The lines of this step that her speech says (their own words replace the chat's for the phase and for how the round ended), and
+// the gaps the film met (for the console and the proof recorder).
+const spoken = new Set<string>(), gaps: string[] = [];
+/** The chat's line for a phase she has entered: her talk film's words when she has one (and the film for a new round), else the dummy's. */
+function phaseLine(phase: string): string | null | undefined {
+  const talk = spokenOf(phase); if (!talk || !film.talkPart(talk.clip)) return undefined;
+  if (phase !== 'BETTING') return null; // said as its film plays, with the engine's own signal for it (present)
+  return film.say(talk.clip, () => chat?.say(talk.text)) ? null : talk.text; // a new round: she says it now, or the chat does when a step is playing
+}
 const render = () => { const view = tableView(snapshot, page);
   panel.set({canChange: !page.busy && page.stage !== 'ROUND'});
-  if (chat) { if (view.phase !== chatPhase) { chatPhase = view.phase; chat.phase(view.phase); } if (page.line !== chatLine) { chatLine = page.line; if (page.line && view.phase === 'SETTLED') chat.say(page.line.replace(/<[^>]+>/g, '')); } } chips?.set(Object.fromEntries(view.seats.map(s => [s.seat, taken.has(s.seat) ? [] : s.chips])), seconds()); if (view.phase === 'TURN' || view.phase === 'BETTING') { if (view.phase === 'TURN') byHand = false; aimAt(view.phase === 'TURN' ? snapshot.view.round?.activeSeat ?? null : null); } overlay.render(view); };
+  if (chat) { if (view.phase !== chatPhase) { chatPhase = view.phase; chat.phase(view.phase, phaseLine(view.phase)); } if (page.line !== chatLine) { chatLine = page.line; if (page.line && view.phase === 'SETTLED' && !settledSpoken()) chat.say(page.line.replace(/<[^>]+>/g, '')); } } chips?.set(Object.fromEntries(view.seats.map(s => [s.seat, taken.has(s.seat) ? [] : s.chips])), seconds()); if (view.phase === 'TURN' || view.phase === 'BETTING') { if (view.phase === 'TURN') byHand = false; aimAt(view.phase === 'TURN' ? snapshot.view.round?.activeSeat ?? null : null); } overlay.render(view); };
 
 // ── where things are in the picture ──
 // A film pixel on the felt as the scene's own table point (dealer metres: x across, s from the dealer's edge).
@@ -300,4 +349,6 @@ scene.onFrame(() => {
 });
 render();
 
-Object.assign(window, {game: {scene, film, page, state: () => snapshot}}); // for the proof recorder and the console; not an interface
+// How the round ended is said by her speech when it has the line (the settle's speak signal); then the status line is not said again.
+function settledSpoken() { return ['blackjack', 'dealerblackjack', 'dealerbust', 'win', 'push', 'lose'].some(key => spoken.has(key)); }
+Object.assign(window, {game: {scene, film, page, state: () => snapshot, dealer: () => dealer, gaps, controls}}); // for the proof recorder and the console; not an interface

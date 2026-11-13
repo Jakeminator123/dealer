@@ -5,6 +5,7 @@
 //
 // The first half is the dummy's script and has no page in it (tools/game-view.test.ts runs it under Node).
 export type ChatLine = {who: 'dealer' | 'player' | 'other' | 'note'; name: string; text: string};
+// The dealer's name when the page gives none; the page gives the name of the dealer at the table, and a new one when she changes.
 export const DEALER_NAME = 'Pamela';
 // What the dealer says when the round enters a phase (the overlay's phases); a phase without a line is passed in silence.
 export const DEALER_LINES: Record<string, string[]> = {
@@ -25,7 +26,10 @@ export const otherLine = (count: number): ChatLine => { const [name, text] = OTH
 export function cleanMessage(text: string): string | null { const t = text.replace(/\s+/g, ' ').trim().slice(0, 140); return t ? t : null; }
 
 // ── the page ────────────────────────────────────────────────────────────────
-export function mountChat(host: HTMLElement) {
+// name: the dealer at the table. answer(typed, n): what she says back to the n:th thing a player wrote (null: the dummy's own answer);
+// the page may play her talk film for it as it answers.
+export function mountChat(host: HTMLElement, options: {name?: string; answer?(typed: string, n: number): string | null} = {}) {
+  let name = options.name ?? DEALER_NAME;
   const el = <K extends keyof HTMLElementTagNameMap>(tag: K, className = '', text = ''): HTMLElementTagNameMap[K] => { const n = document.createElement(tag); if (className) n.className = className; if (text) n.textContent = text; return n; };
   const root = el('div', 'gc'), toggle = el('button', 'gc-toggle'), panel = el('div', 'gc-panel'), list = el('div', 'gc-list'), form = el('form', 'gc-form'), input = el('input'), send = el('button', '', 'Skicka'), unread = el('span', 'gc-unread');
   toggle.type = 'button'; toggle.append(el('span', '', 'Chatt'), unread); toggle.setAttribute('aria-expanded', 'false');
@@ -39,17 +43,19 @@ export function mountChat(host: HTMLElement) {
   }
   toggle.addEventListener('click', () => { panel.hidden = !panel.hidden; toggle.setAttribute('aria-expanded', String(!panel.hidden)); if (!panel.hidden) { missed = 0; unread.textContent = ''; list.scrollTop = list.scrollHeight; input.focus(); } });
   form.addEventListener('submit', event => { event.preventDefault(); const text = cleanMessage(input.value); input.value = ''; if (!text) return;
-    add({who: 'player', name: 'Du', text}); const n = written++; window.setTimeout(() => add({who: 'dealer', name: DEALER_NAME, text: replyTo(n)}), 1300); });
+    add({who: 'player', name: 'Du', text}); const n = written++; window.setTimeout(() => add({who: 'dealer', name, text: options.answer?.(text, n) ?? replyTo(n)}), 1300); });
   // the keys the game listens to must not reach it while the player writes
   input.addEventListener('keydown', event => event.stopPropagation());
-  add({who: 'note', name: '', text: `Välkommen till bordet. ${DEALER_NAME} är din dealer.`});
+  add({who: 'note', name: '', text: `Välkommen till bordet. ${name} är din dealer.`});
   const chatter = () => { timer = window.setTimeout(() => { add(otherLine(others++)); chatter(); }, 22000 + (others * 7919) % 15000); }; chatter();
   return {
     root,
-    /** The round has entered a phase: the dealer says her line for it. */
-    phase(phase: string) { const n = phases[phase] = (phases[phase] ?? -1) + 1, text = dealerLine(phase, n); if (text) add({who: 'dealer', name: DEALER_NAME, text}); },
+    /** The round has entered a phase: the dealer says her line for it; said: the words she says there instead (her talk film's), null for nothing. */
+    phase(phase: string, said?: string | null) { const n = phases[phase] = (phases[phase] ?? -1) + 1, text = said === undefined ? dealerLine(phase, n) : said; if (text) add({who: 'dealer', name, text}); },
     /** Something the dealer says about the round (how it ended). */
-    say(text: string) { add({who: 'dealer', name: DEALER_NAME, text}); },
+    say(text: string) { add({who: 'dealer', name, text}); },
+    /** Another dealer has come to the table. */
+    dealer(next: string) { if (next === name) return; name = next; add({who: 'note', name: '', text: `${name} är din dealer nu.`}); },
     destroy() { clearTimeout(timer); root.remove(); },
   };
 }

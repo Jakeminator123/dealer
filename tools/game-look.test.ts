@@ -89,7 +89,24 @@ test('game.html without a look reads no look module and sets what it set before'
   const page = await readFile('src/game-page.ts', 'utf8');
   // the module is read only when the address holds more than the game's own words
   assert.match(page, /lookAsked \? import\('\.\/game-look\.ts'\)\.catch\(\(\) => null\) : null/);
-  assert.match(page, /const OWN_WORDS = \['table', 'tema', 'bricka', 'chatt', 'robot', 'inbaddad'\]/);
+  // dealer: whose films the game plays (?dealer=paow, which the Casino view passes on), no look
+  assert.match(page, /const OWN_WORDS = \['table', 'tema', 'bricka', 'chatt', 'robot', 'inbaddad', 'dealer'\]/);
   // and the look is laid only when there is one
   assert.match(page, /if \(Object\.keys\(asked\)\.length\) \{ scene\.set\(/);
+});
+
+test('the drawn cards and her lines: the game draws cards unless the player or a look says off; tal=av keeps her silent', async () => {
+  const rooms = [...BUILT_ROOMS], blurOf = () => 11;
+  // cards is the scene's own key: ?cards=0 (the Casino view's switch writes it) turns the drawn cards off, over a preset too.
+  assert.deepEqual(readLook(params('cards=0'), rooms).keys, {cards: false});
+  assert.equal(lookState(DEFAULTS, {cards: true}, {cards: false}, blurOf).cards, false);
+  assert.equal(lookState(DEFAULTS, null, {}, blurOf).cards, undefined, 'without a look the game keeps its own (on)');
+  const page = await readFile('src/game-page.ts', 'utf8');
+  assert.ok(page.includes(`if (cardsMemory === 'off') scene.set({cards: false});`), 'on unless the player switched them off');
+  assert.match(page, /cards\(on\) \{ scene\.set\(\{cards: on\}\);/, 'the console switch sets the scene key');
+  assert.match(await readFile('src/game-panel.ts', 'utf8'), /toggle\('Ritade kort'/);
+  // tal: repliker (the default) or av; anything else is not used.
+  assert.equal(DEFAULTS.tal, 'repliker');
+  assert.deepEqual(readLook(params('tal=av'), rooms).keys, {tal: 'av'});
+  assert.deepEqual(readLook(params('tal=ja'), rooms).ignored, ['tal']);
 });

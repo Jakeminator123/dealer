@@ -99,6 +99,8 @@ test('a round trip enters the bank as two takes of its own clip under the order\
   assert.deepEqual([generation.taskId, generation.model, generation.estimatedCredits, generation.appCredits, generation.output.frames, generation.order.delivered.path], ['task-0001', 'kling-4', 0, 86, 12, `assets/orders/${ORDER}/take-1/source.mp4`]);
   const dealRecord = await read(root, `motions/${clip}-deal.json`), backRecord = await read(root, `motions/${clip}-return-ready.json`), clipRecord = await read(root, `motions/${clip}.json`);
   for (const r of [dealRecord, backRecord]) { assert.equal(r.dealer, 'paow'); assert.equal(r.review.decision, 'PENDING'); assert.equal(r.review.inbox, true); assert.equal(r.source.frames, 12); }
+  // The order says the left hand takes and lays the card: the deal and the return cut from it carry it, the return as the hand that comes back.
+  for (const r of [dealRecord, backRecord]) assert.deepEqual([r.motion.takeHand, r.motion.releaseHand], ['LH', 'LH']);
   assert.deepEqual(backRecord.motion.startsOn, {clip: `${clip}-deal`, frame: 6}); assert.equal(clipRecord.review, undefined); assert.deepEqual(clipRecord.cutInto, [`${clip}-deal`, `${clip}-return-ready`]);
   // In Paow's graph: placed, unreviewed, the return continuing the deal on frame 6. Pamela's graph is as it was.
   const paow = await graphOf(root, 'paow'), d = paow.takes[`${clip}-deal`], r = paow.takes[`${clip}-return-ready`];
@@ -110,6 +112,15 @@ test('a round trip enters the bank as two takes of its own clip under the order\
   const text = await readFile(path.join(root, 'data/clip-jobs.json'), 'utf8');
   await register(root, await planRegistration(root, ORDER, 1, {split: 6}));
   assert.equal(await readFile(path.join(root, 'data/clip-jobs.json'), 'utf8'), text);
+});
+
+test('with a hand switch in the order the other hand lays the card, and the return cut from it brings that hand back', needsFfmpeg, async t => {
+  const {root, film} = await bank(t), switched = order(ORDER);
+  switched.motion = {...switched.motion, pass: true};
+  await writeFile(path.join(root, `data/orders/${ORDER}.json`), JSON.stringify(switched, null, 2));
+  await collectTake(root, ORDER, 1, {from: film});
+  const plan = await planRegistration(root, ORDER, 1, {split: 6}), hands = (id: string) => (plan.records[id] as {motion: {takeHand: string; releaseHand: string}}).motion;
+  assert.deepEqual(plan.takes.map(x => [x.id, hands(x.id).takeHand, hands(x.id).releaseHand]), [['paow-giv-p4-01-deal', 'LH', 'RH'], ['paow-giv-p4-01-return-ready', 'LH', 'RH']]);
 });
 
 test('a take Jakob has decided on is never written over, and an order that is not his to place is not registered', needsFfmpeg, async t => {

@@ -126,8 +126,12 @@ export async function planRegistration(root: string, id: string, take: number, o
   const orderRef = {id, take, path: `data/orders/${id}.json`, orderSha256: order.approval.orderSha256 ?? null, receipt: `assets/orders/${id}/receipt.json`, taskId: entry.taskId, delivered: {path: posix(root, delivered), sha256: deliveredSha}};
   const review = {decision: 'PENDING', inbox: true, basis: `Inte granskad av Jakob: förd in från beställningen ${id}, tagning ${take}${ref.fix ? `, rättad kopia ${ref.fix}` : ''} (tools/register-order.ts). Oberoende rutgranskning: tools/film-review.md.`,
     limitations: 'I inkorgen: spelas bara där steget inte har någon annan film, tills Jakob dömer den.', colorDoesNotProvePhysicalSide: true, userAccepted: false, productionReady: false};
+  // The hands of a card's film, from the order: the hand at the shoe takes the card; with a hand switch (pass) the other hand lays
+  // it. A return cut from a round trip carries its deal's releasing hand, as the hand that comes back (resolveRound matches them).
+  const hand = order.motion?.hand === 'LH' || order.motion?.hand === 'RH' ? order.motion.hand as 'LH' | 'RH' : null;
+  const hands = hand ? {takeHand: hand, releaseHand: order.motion?.pass === true ? (hand === 'LH' ? 'RH' : 'LH') : hand} : {};
   const record = (t: Entry, extra: Record<string, unknown> = {}) => ({schemaVersion: 1, id: t.id, dealer: order.dealer, source: facts2,
-    motion: {kind: t.kind, from: t.from, to: t.to, pass: false, basis: 'SOURCE_FRAME_REVIEW', ...(t.id !== target ? {segment: {clip: target, frames: t.frames}} : {}), ...extra},
+    motion: {kind: t.kind, from: t.from, to: t.to, ...hands, pass: false, basis: 'SOURCE_FRAME_REVIEW', ...(t.id !== target ? {segment: {clip: target, frames: t.frames}} : {}), ...extra},
     review, order: orderRef, ...(fix ? {fix} : {}), postProcessing: fix ? `tools/film-fix.ts, ${fix.receipt}` : 'none', generationRef: `assets/motions/${target}/generation.json`, jobRef: 'data/clip-jobs.json', scoutIntegrated: false, published: false});
   for (const t of takes) records[t.id] = record(t, records[t.id] ?? {});
   // The clip's own record when the film is split: its facts, read by the bank for both halves (tools/preview.ts clipBank).
