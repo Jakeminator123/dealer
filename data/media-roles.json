@@ -3751,6 +3751,13 @@
           "note": "Prov 2026-11-13: repliker lagda på filmen som spelas, ur munlappar gjorda i förväg. Spelet i dubbel fart, två rundor på plats 4, med ljud: lyckoönskan över ingången och över given, \"Du dubblar\" över ingången, \"Dealern spelar.\" över vändningen, och en talfilm som reserv. Färgprov, kantbilder, rutark och mätningar. Inte oberoende granskat."
         },
         {
+          "id": "paow-prov-kort-en-linje",
+          "role": "prov",
+          "name": "Korten: en linje, två sätt sida vid sida",
+          "proof": "kort-en-linje",
+          "note": "Kortagentens prov 2026-11-13 efter Jakobs ord att det ska bli en linje för korten: samma rutor av given till plats 3, 4 och 7 och av dealerns första kort (vid skon, i handen, i vändningen, när det landar och ligger), med filmens eget kort omfärgat i handen och det ritade först när det ligger, mot det ritade kortet hela vägen. En oberoende granskare väljer."
+        },
+        {
           "id": "paow-profil-kavaj",
           "role": "arbetsmaterial",
           "name": "Profilbild i kavaj",
