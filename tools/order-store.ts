@@ -2,8 +2,9 @@
 // assets/orders/<id>/ (outside Git). Builds a draft from a few choices (create), changes a draft (change), fetches what a
 // draft waits for, or the dealer's anchor Jakob has since chosen in Material, and draws its last picture again (refresh),
 // and freezes an order on Jakob's click (approve: the order's hash in approval, refused beyond data/order-policy.json).
-// The pose picture of a still is a figure cut from the other dealer's anchor: only her dealing forearm, hand, the shoe
-// and the card are kept (tools/order-images.ts cutFigure), so that nothing else of her goes out. Nothing of another
+// The pose picture of a still is a figure cut from the other dealer's picture: only her dealing forearm, hand, the shoe
+// and the card are kept (tools/order-images.ts cutFigure), or for anchor 2.2 only her forearm and hand, laid on the
+// dealer's own shoe and card from the anchor (poseOnShoe), so that nothing else of her goes out. Nothing of another
 // dealer is shown as a stand-in: a picture that waits shows that it waits. The receipt beside the pictures
 // (receipt.json) is never written here: only tools/order-put.ts writes it. Same guards as tools/review-store.ts: the
 // caller presents the revision it read (If-Match), writes are queued, and a file is replaced through a temporary file
@@ -28,7 +29,7 @@ import {
   type Drawn, type FlipAxis, type Motion, type Order, type OrderAnswer, type OrdersAnswer, type Owner, type Picture, type PlanAnswer, type Policy, type PoseAnswer, type Receipt, type SeatPlan, type StepKey, type Waits,
 } from '../src/order-model.ts';
 import { TEMPLATE_VERSION, orderPrompt } from '../src/order-prompts.ts';
-import { CUT, cardTexture, cutFigure, drawCard, matchGreen, pictureBytes, planQuad, pngOf, readPlan, readRgb, type Pt, type Texture } from './order-images.ts';
+import { CUT, LAY, armAlone, cardTexture, cutFigure, drawCard, matchGreen, pictureBytes, planQuad, pngOf, poseOnShoe, readPlan, readRgb, type CardOutline, type Pt, type Texture } from './order-images.ts';
 import type { PlacementPlan } from '../src/placement-model.ts';
 import type { Entry, Register } from '../studio/lib/media.ts';
 
@@ -41,8 +42,10 @@ export type DealerInfo = { id: string; name: string; look: string; paused?: stri
 /**
  * Where the pose of a still comes from: an entry of the register, or a frame of a bank film. keep: the region of the
  * picture that is kept (bank pixels); the rest of the person is filled with green, and what is kept is said in `what`.
+ * lay: only the forearm and hand are kept (`sleeve`: where black is her sleeve and not the shoe) and laid on the dealer's
+ * own anchor cut down to her shoe and card (`shoe`), moved so that the fingertips lie on her card (order-images.ts poseOnShoe).
  */
-export type Source = { entry?: string; path?: string; frame?: number; label?: string; keep?: Pt[]; what?: string };
+export type Source = { entry?: string; path?: string; frame?: number; label?: string; keep?: Pt[]; what?: string; lay?: { sleeve: Pt[]; shoe: Pt[] } };
 /** One seat of a new deal: its card, and the choices that differ from the plan (absent: what Placering says). */
 export type SeatChoice = { target: string; hand?: 'LH' | 'RH'; pass?: boolean; side?: 'FRONT' | 'BACK' };
 export type NewOrder = {
@@ -84,15 +87,28 @@ export const POSE_WHAT = 'armen från armbågen, handen, skon och kortet';
 /** The label of a pose figure, on the screen "Det här skickas". */
 export const POSE_LABEL = 'Pose · bara armen, handen och skon';
 /**
+ * Only the forearm and hand of the bank's dealer in her anchor 2.2 (frame 112 of pamela-ready-b-shoe-plate-01), in bank
+ * pixels. ARM_ALONE: where the arm may be, cut at the elbow as ARM_AT_SHOE; skin in it is arm, the shoe and the card under
+ * the hand are not. SLEEVE_AT_SHOE: where black in it is her sleeve: along the cuff's own edge against the shoe (x 1350 at
+ * y 706–725, 1338 at y 742; measured 2026-11-13), above the shoe's top edge and the back of her hand.
+ */
+export const ARM_ALONE: Pt[] = [[1225, 500], [1440, 560], [1440, 890], [1170, 890], [1150, 712], [1070, 655]];
+export const SLEEVE_AT_SHOE: Pt[] = [[1225, 500], [1440, 560], [1360, 690], [1350, 706], [1349, 725], [1344, 734], [1338, 742], [1300, 750], [1215, 752], [1150, 712], [1070, 655]];
+/** The shoe and its card in a dealer's anchor (the bank's shoe stands at the same place for every dealer): off her sleeve and hand. */
+export const SHOE_AT_ANCHOR: Pt[] = [[1182, 930], [1182, 818], [1300, 700], [1480, 610], [1730, 560], [1730, 930]];
+export const POSE_ARM_WHAT = 'armen från armbågen och handen';
+/**
  * The pose pictures come from the bank's own dealer, cut down to the arm at the shoe. 2.1: not her anchor (there the
  * fingertips sit at the card's corner by the window's rim, and Paow's earlier pinch copied it as a grip on the rim; Jakob
  * 2026-11-13) but frame 16 of her seat-4 deal that Jakob approved: thumb and forefinger on the card's upper edge, the card
- * drawn a little out of the window. Its shoe lies within 2 px of Paow's (best match dx +1, dy −2 on the shoe's body).
- * 2.2: her anchor, the fingertips flat on the card (the shoe there has an open front and is not copied).
+ * drawn a little out of the window. Its shoe is the window shoe, within 2 px of Paow's (best match dx +1, dy −2 on the
+ * shoe's body), and the card is part of the grip, so it is kept as it is. 2.2: her anchor, the fingertips flat on the
+ * card; its shoe has an open front and taught the model a wrong shoe (paow-ankare-2-2, 2026-11-13), so only her forearm
+ * and hand are kept and laid on the dealer's own shoe and card from the anchor the still is made from.
  */
 export const POSE: Record<'ANKARE-2.1' | 'ANKARE-2.2', Source> = {
   'ANKARE-2.1': { path: 'assets/motions/pamela-p4-c1-plan-deal-02/source.mp4', frame: 16, label: 'Pamelas giv till plats 4 (godkänd), ruta 16: nypet på kortet, kortet en bit ur fönstret', keep: ARM_AT_SHOE, what: POSE_WHAT },
-  'ANKARE-2.2': { entry: 'pamela-slap', label: 'Pamelas ankare 2.2 (godkänt; skon där har öppen front och kopieras inte)', keep: ARM_AT_SHOE, what: POSE_WHAT },
+  'ANKARE-2.2': { entry: 'pamela-slap', label: 'armen och handen ur Pamelas ankare 2.2 (godkänt), lagda på dealerns egen sko ur ankaret', keep: ARM_ALONE, what: POSE_ARM_WHAT, lay: { sleeve: SLEEVE_AT_SHOE, shoe: SHOE_AT_ANCHOR } },
 };
 /**
  * The centre of a card of the plan in film pixels, to a tenth as the drawn card keeps it (drawn.centre): where the text
@@ -276,6 +292,7 @@ export function orderStore(root: string, options: StoreOptions = {}) {
   async function cutPose(register: Register, pose: Source, anchor: { bytes: Buffer; sha256: string } | null): Promise<{ bytes: Buffer; from: NonNullable<Picture['from']>; cut: NonNullable<Picture['cut']> }> {
     if (!pose.keep) throw new StoreError(500, 'Posebilden saknar området som behålls.');
     const { bytes, from } = await sourceBytes(register, pose);
+    if (pose.lay) return { from, ...(await layPose(bytes, { keep: pose.keep, what: pose.what ?? POSE_ARM_WHAT, ...pose.lay }, anchor)) };
     const result = cutFigure(await readRgb(bytes), pose.keep);
     const match = anchor ? matchGreen(result.rgb, await readRgb(anchor.bytes)) : null;
     return {
@@ -284,6 +301,35 @@ export function orderStore(root: string, options: StoreOptions = {}) {
       cut: {
         keep: pose.keep.map(([x, y]) => [x, y] as [number, number]), what: pose.what ?? POSE_WHAT, source: { sha256: sha(bytes) }, settings: { ...CUT }, filledPx: result.filledPx, keptPx: result.keptPx, green: result.green,
         matched: match && anchor ? { anchorSha256: anchor.sha256, anchor: match.anchor, before: match.before, after: match.after } : null,
+      },
+    };
+  }
+
+  /**
+   * A pose laid on the dealer's own shoe: only the forearm and hand of the source, laid on the anchor cut down to her shoe
+   * and card, moved by the two cards' top sides; then the green brought to the anchor's (it is hers already, so this
+   * only records it). What is kept says the cut: filledPx and green of her own picture cut down to the shoe, keptPx the
+   * arm's pixels, `laid` the regions, the move and both cards. While the anchor waits: the arm alone on the source's
+   * green, unmoved (laid.by null), until the anchor is there and the draft is brought up to date (poseStale).
+   */
+  async function layPose(bytes: Buffer, lay: { keep: Pt[]; what: string; sleeve: Pt[]; shoe: Pt[] }, anchor: { bytes: Buffer; sha256: string } | null): Promise<{ bytes: Buffer; cut: NonNullable<Picture['cut']> }> {
+    const source = await readRgb(bytes), copy = (q: readonly Pt[]) => q.map(([x, y]) => [x, y] as [number, number]);
+    const card = (c: CardOutline) => ({ quad: copy(c.quad), top: copy(c.top) as [[number, number], [number, number]] });
+    const fixed = { keep: copy(lay.keep), what: lay.what, source: { sha256: sha(bytes) }, settings: { ...CUT, ...LAY } };
+    if (!anchor) {
+      const alone = armAlone(source, lay);
+      return { bytes: await pngOf(alone.rgb), cut: { ...fixed, filledPx: alone.base.filledPx, keptPx: alone.armPx, green: alone.base.green, matched: null, laid: { sleeve: copy(lay.sleeve), shoe: copy(lay.shoe), by: null, cards: null } } };
+    }
+    const own = await readRgb(anchor.bytes);
+    let made;
+    try { made = poseOnShoe(source, own, lay); } catch (error) { throw new StoreError(422, `Posebilden kan inte läggas på dealerns sko: ${(error as Error).message}`); }
+    const match = matchGreen(made.rgb, own);
+    return {
+      bytes: await pngOf(match.rgb),
+      cut: {
+        ...fixed, filledPx: made.base.filledPx, keptPx: made.armPx, green: made.base.green,
+        matched: { anchorSha256: anchor.sha256, anchor: match.anchor, before: match.before, after: match.after },
+        laid: { sleeve: copy(lay.sleeve), shoe: copy(lay.shoe), by: made.by, cards: { source: card(made.cards.source), anchor: card(made.cards.anchor) } },
       },
     };
   }
@@ -426,7 +472,7 @@ export function orderStore(root: string, options: StoreOptions = {}) {
           const { bytes: figure, from, cut } = await cutPose(register, pose, base.bytes && base.picture.sha256 ? { bytes: base.bytes, sha256: base.picture.sha256 } : null);
           pictures.push({
             name: 'pose-figure.png', label: POSE_LABEL, goesAs: 'referenceImage', tag: 'pose', ...(await put(id, 'pose-figure.png', figure)), width: 1764, height: 1174,
-            from: { ...from, note: `${pose.label ?? from.note}; allt av henne utom ${pose.what ?? POSE_WHAT} är bortklippt och grönt` }, waits: null, cut,
+            from: { ...from, note: pose.lay ? `${pose.label ?? from.note}; allt annat av henne är bortklippt, hennes sko och kort också` : `${pose.label ?? from.note}; allt av henne utom ${pose.what ?? POSE_WHAT} är bortklippt och grönt` }, waits: null, cut,
           });
         } else {
           const { bytes, from } = await sourceBytes(register, pose);
@@ -614,7 +660,7 @@ export function orderStore(root: string, options: StoreOptions = {}) {
       const stale = poseStale(next);
       if (stale) {
         const { anchor, pose } = stale, cut = pose.cut!;
-        const source: Source = { ...(pose.from?.entry ? { entry: pose.from.entry } : { path: pose.from?.path, frame: pose.from?.frame }), keep: cut.keep, what: cut.what };
+        const source: Source = { ...(pose.from?.entry ? { entry: pose.from.entry } : { path: pose.from?.path, frame: pose.from?.frame }), keep: cut.keep, what: cut.what, ...(cut.laid ? { lay: { sleeve: cut.laid.sleeve, shoe: cut.laid.shoe } } : {}) };
         const made = await cutPose(register, source, { bytes: await readFile(path.join(root, ...anchor.path!.split('/'))), sha256: anchor.sha256! });
         Object.assign(pose, await put(id, pose.name, made.bytes), { cut: made.cut });
       }

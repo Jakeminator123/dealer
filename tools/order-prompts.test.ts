@@ -146,13 +146,15 @@ test('the stills: an edit of @anchor, only the left arm and hand change, @pose a
   assert.match(a21, /Change only her left arm and hand/);
   assert.match(a21, /holds the yellow card itself between thumb and forefinger at its upper edge: the fingertips are on the card, not on the shoe's rim/);
   assert.match(a21, /drawn the card a little out of the window so that her grip on it is plain to see/);
-  assert.match(a21, /@pose is a cut-out on plain green: it shows only a left forearm/);
+  assert.match(a21, /@pose is a cut-out on plain green: it shows only a left forearm in a black sleeve, cut off at the elbow, and its hand at the yellow card of the black card shoe, the same window shoe that stands at the right in @anchor/);
   assert.match(a21, /Take from @pose only where the hand is and how the wrist and fingers hold the card/);
   assert.match(a21, /elbows hang free/);
   assert.doesNotMatch(a21, /Pamela|in exactly the pose of the dealer's left hand/);
+  // 2.2: the pose is a forearm and hand laid on the dealer's own shoe; its little finger rests on the shoe beside the window.
   const a22 = promptFor({ dealer: paow, step: 'ANKARE-2.2', model: 'nano-banana-pro' }).text;
-  assert.match(a22, /the fingertips resting flat on the card itself, not on the shoe/);
-  assert.match(a22, /The shoe in @pose has an open front: do not copy it/);
+  assert.match(a22, /the tips of her index, middle and ring fingers resting flat on the card itself, not on the gold frame of the window, and her little finger on the shoe beside the window/);
+  assert.match(a22, /the same window shoe that stands at the right in @anchor/);
+  for (const text of [a21, a22]) assert.doesNotMatch(text, /open front|do not copy/, 'nothing is said of another shoe');
 });
 
 test('place words follow the script the bank was ordered with', () => {

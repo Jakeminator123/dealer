@@ -4,7 +4,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { existsSync } from 'node:fs';
-import { H, W, apply, cardTexture, components, drawCard, greenOf, homography, matchGreen, planQuad, readPlan, type Pt } from './order-images.ts';
+import { H, W, apply, armAlone, cardOutline, cardTexture, components, drawCard, greenOf, homography, matchGreen, planQuad, poseOnShoe, readPlan, type Pt } from './order-images.ts';
+import { ARM_ALONE, SHOE_AT_ANCHOR, SLEEVE_AT_SHOE } from './order-store.ts';
 
 test('the homography maps the four corners onto the four corners', () => {
   const from: Pt[] = [[0, 0], [10, 0], [10, 10], [0, 10]], to: Pt[] = [[100, 200], [180, 205], [190, 280], [95, 270]];
@@ -44,6 +45,56 @@ test("the pose figure's green is brought to the anchor's: the whole green moves,
   assert.ok(Math.abs(edge[1] - 122 - 7) <= 2 && Math.abs(edge[2] - 42 + 8) <= 2, `an edge pixel moves by its green part, no fringe: ${edge}`);
   assert.ok(matchGreen(figure, anchor).rgb.equals(m.rgb), 'the same pictures give the same bytes');
   assert.deepEqual(greenOf(figure, [0, 0, 200, 200]), [10, 223, 61], 'a box is measured on its own');
+});
+
+/**
+ * A source like the bank's anchor 2.2: on her green a black shoe, a yellow card on it, a black sleeve and a hand whose
+ * fingertips lie over the card's top, with one column at the hand's edge half skin and half green. A dealer's anchor: her
+ * own green, the same shoe, her card at another place, and her body (to be cut away).
+ */
+function layScene() {
+  const source = Buffer.alloc(W * H * 3), anchor = Buffer.alloc(W * H * 3);
+  const fill = (rgb: Buffer, x0: number, y0: number, x1: number, y1: number, c: number[]) => { for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) rgb.set(c, (y * W + x) * 3); };
+  fill(source, 0, 0, W - 1, H - 1, [10, 230, 60]); fill(anchor, 0, 0, W - 1, H - 1, [0, 238, 45]);
+  for (const rgb of [source, anchor]) fill(rgb, 1180, 780, 1500, 900, [40, 40, 40]);
+  fill(source, 1200, 820, 1270, 880, [248, 220, 0]);
+  fill(source, 1220, 620, 1300, 744, [15, 15, 15]);
+  fill(source, 1210, 745, 1260, 840, [230, 150, 120]);
+  fill(source, 1209, 755, 1209, 775, [120, 190, 90]);
+  fill(anchor, 1260, 760, 1320, 830, [248, 220, 0]);
+  fill(anchor, 600, 300, 1000, 830, [30, 30, 30]);
+  return { source, anchor };
+}
+
+test("a pose on the dealer's own shoe: only the forearm and hand, moved by the cards' top sides, no other shoe or card", () => {
+  const { source, anchor } = layScene();
+  const at = (rgb: Buffer, x: number, y: number) => [...rgb.subarray((y * W + x) * 3, (y * W + x) * 3 + 3)];
+  // The card: its four corners though a hand lies over its top, and its top side.
+  const card = cardOutline(source);
+  assert.deepEqual(card.topMid, [1235.5, 820]);
+  assert.equal(card.quad.length, 4);
+  assert.throws(() => cardOutline(Buffer.alloc(W * H * 3)), /Inget gult kort/);
+  const lay = { keep: ARM_ALONE, sleeve: SLEEVE_AT_SHOE, shoe: SHOE_AT_ANCHOR };
+  const made = poseOnShoe(source, anchor, lay);
+  assert.deepEqual(made.by, [55, -60], 'the middle of the source card\'s top side onto the middle of hers');
+  assert.deepEqual(made.cards.anchor.topMid, [1290.5, 760]);
+  assert.deepEqual(at(made.rgb, 1235 + 55, 790 - 60), [230, 150, 120], 'the hand, moved');
+  assert.deepEqual(at(made.rgb, 1260 + 55, 680 - 60), [15, 15, 15], 'the sleeve, moved');
+  assert.deepEqual(at(made.rgb, 1235 + 55, 838 - 60), [230, 150, 120], 'the fingertips lie on her card');
+  assert.deepEqual(at(made.rgb, 1235 + 55, 850 - 60), [248, 220, 0], 'just below them her own card, not the source card');
+  assert.deepEqual(at(made.rgb, 1235, 870), [40, 40, 40], 'where the source card lay, her own shoe');
+  assert.deepEqual(at(made.rgb, 1455, 790), [40, 40, 40], 'nothing of the source shoe comes along');
+  assert.deepEqual(at(made.rgb, 800, 500), [0, 238, 45], 'the rest of her is her own green');
+  // The edge: half skin and half the source's green becomes half skin and half her green.
+  const edge = at(made.rgb, 1209 + 55, 765 - 60);
+  assert.ok([115, 194, 83].every((v, c) => Math.abs(edge[c] - v) <= 1), `the edge is unmixed: ${edge}`);
+  assert.ok(made.base.filledPx > 100000 && made.armPx > 10000, `${made.base.filledPx} filled, ${made.armPx} arm`);
+  assert.ok(poseOnShoe(source, anchor, lay).rgb.equals(made.rgb), 'the same pictures give the same bytes');
+  // While the anchor waits: the arm alone where it lies, the source's shoe and card cut away too.
+  const alone = armAlone(source, lay);
+  assert.deepEqual(at(alone.rgb, 1235, 790), [230, 150, 120]);
+  assert.deepEqual(at(alone.rgb, 1235, 870), [10, 230, 60], 'the source card is green');
+  assert.deepEqual(at(alone.rgb, 1400, 850), [10, 230, 60], 'the source shoe is green');
 });
 
 const media = existsSync('assets/motions/pamela-p4-c1-plan-return-idle-01/source.mp4') && existsSync('assets/anchors/pamela-idle-p4-c1-plan-01/receipt.json');

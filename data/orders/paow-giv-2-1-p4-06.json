@@ -1,0 +1,150 @@
+{
+  "schemaVersion": 1,
+  "id": "paow-giv-2-1-p4-06",
+  "title": "Metodprov 1f · WAN 3, stängt hela vägen (ingen vändning)",
+  "summary": "Gör en film av Paow: från ankare 2.1 (nyp) tar hon ett kort ur skon med vänster hand; hon lägger det stängt, baksidan upp, på plats 4; handen går tillbaka till nypet.",
+  "group": null,
+  "dealer": "paow",
+  "kind": "FILM",
+  "step": {
+    "key": "GIV-2.1",
+    "label": "Nyp, ett kort till platsen och tillbaka",
+    "edge": "READY>P4.C1",
+    "shape": "ROUND_TRIP",
+    "cutInto": [
+      "READY>P4.C1",
+      "P4.C1>READY"
+    ],
+    "makes": null
+  },
+  "motion": {
+    "grip": "PINCH",
+    "hand": "LH",
+    "pass": false,
+    "turn": false,
+    "flipAxis": "AT_PLACE",
+    "target": "P4.C1",
+    "side": "BACK",
+    "fromPlan": false
+  },
+  "pictures": [
+    {
+      "name": "first.png",
+      "label": "Första bild · Paows ankare 2.1",
+      "goesAs": "startFrame",
+      "path": "assets/orders/paow-giv-2-1-p4-06/first.png",
+      "sha256": "74eebfdc1388f8de362c0151546bbe08aeb1fed74fca097f8ca6999d833dc702",
+      "width": 1764,
+      "height": 1174,
+      "from": {
+        "entry": "paow-nyp-ung-1",
+        "path": "assets/anchors/paow-nyp-ung-1/anchor.png",
+        "note": "Nyp, yngre, tagning 1 (gäller)"
+      },
+      "waits": null
+    },
+    {
+      "name": "last.png",
+      "label": "Sista bild · samma + kortet stängt på plats 4",
+      "goesAs": "endFrame",
+      "path": "assets/orders/paow-giv-2-1-p4-06/last.png",
+      "sha256": "fa1222487a7c56be33fe1d7d607971c27a0b242a7a9455c0e8f71aadf6893b1b",
+      "from": {
+        "built": "första bilden + kortet P4.C1 där planen säger"
+      },
+      "waits": null,
+      "width": 1764,
+      "height": 1174,
+      "drawn": {
+        "target": "P4.C1",
+        "side": "BACK",
+        "as": "flatQuad från P4.C1 (planens plana bord, som labbet ritar)",
+        "plan": {
+          "path": "placements/default.json",
+          "sha256": "e0fb924d27dc1311ff9cd079a72eeaa81e218eae8dd48990068d1cf0a5fbd67f",
+          "updatedAt": "2026-11-11T14:46:38.185Z"
+        },
+        "texture": {
+          "video": "assets/motions/pamela-p4-c1-plan-return-idle-01/source.mp4",
+          "frame": 89,
+          "sha256": "0b3cba9be4a969334bf1ba23623b80be6d0bd119a3c4dd8236db27145d479aa7",
+          "quadFrom": "assets/anchors/pamela-idle-p4-c1-plan-01/receipt.json"
+        },
+        "quad": [
+          [
+            818.9,
+            1065.5
+          ],
+          [
+            894.3,
+            1065.5
+          ],
+          [
+            900,
+            1137.3
+          ],
+          [
+            813.2,
+            1137.3
+          ]
+        ],
+        "centre": [
+          856.6,
+          1101.4
+        ],
+        "measured": {
+          "centre": [
+            856.7,
+            1102.4
+          ],
+          "area": 6367,
+          "box": [
+            87,
+            75
+          ],
+          "changedElsewhere": 0
+        },
+        "measuredOffsetPx": 1
+      }
+    }
+  ],
+  "reference": {
+    "status": "INGEN",
+    "why": "Ingen referensfilm. Mallen som höll hade bankens tur och retur till samma plats som referens; den klipps inte här än."
+  },
+  "generation": {
+    "provider": "runway-app",
+    "tool": "generate_video",
+    "model": "wan3",
+    "params": {
+      "resolution": "1080p",
+      "duration": 7,
+      "ratio": "adaptive",
+      "generateAudio": false
+    }
+  },
+  "prompt": {
+    "template": "film-giv@3",
+    "text": "Locked camera. A young, slim, petite woman with a platinum-blonde chin-length bob, warm-coloured tattoos on her throat and upper chest and a small white flower pendant, in a black tailored blazer over a cream V-neck top sits at a green table with a black card shoe fixed at the right of the picture. One continuous, calm and natural movement from the exact first pose. Her left hand, at the right of the picture, pinches the yellow card in the shoe's window between thumb and forefinger, the fingertips on the card's own upper edge and not on the shoe's rim, as in the first frame, and draws it out of the shoe down onto the felt, its yellow back up: the card looks as it does in the shoe, the same size and shape, one plain rigid card. The same hand brings it forward low along the felt, still yellow back up, to the place where it will lie. She keeps its yellow back up all the way; the card is not turned. She lays it flat with her left hand, yellow back up, exactly where the yellow card lies in the last frame, in the middle of the picture, at the same size and angle, lets go of it, and the card stays there. Then her left hand returns to the shoe and pinches the next yellow card, exactly as in the first frame. Her right hand, at the left of the picture, rests on the table the whole time. Only one card moves; its back is solid yellow, and its face never shows. The clip ends in exactly the pose of the last image, which is the first pose again with the card lying on the table. Nothing of this happens: a second card appears, her right hand lifts from the table or touches the card, the card shows its blue face, a finger passes through the card, the card grows or shrinks on its way, a hand hovers in the air without holding or laying anything, the shoe changes, the picture cuts or the camera moves.",
+    "sha256": "a521cbc20598a57f105762d411e8f8cbe5f11cf4ea98f9e793f71a443ff3d796",
+    "extra": null,
+    "middle": false
+  },
+  "takes": 1,
+  "cost": {
+    "perTake": 140,
+    "total": 140,
+    "worstPerTake": 140,
+    "worstTotal": 140,
+    "basis": "20 krediter per s × 7 s. DRIFT, Lärdomar: 20 per s i full storlek; planen: 4 s = 80."
+  },
+  "limits": {
+    "maxCredits": 140,
+    "stopBelowCredits": 2000
+  },
+  "notes": [],
+  "created": "2026-11-13T01:55:35.583Z",
+  "createdBy": "huvudagenten (dealer-94) på Jakobs ord 2026-11-13: metodprov, given till plats 4",
+  "approval": null,
+  "status": "UTKAST"
+}

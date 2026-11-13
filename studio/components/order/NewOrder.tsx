@@ -358,7 +358,7 @@ export function NewOrder({ open, onOpenChange, all, preset, onCreated }: { open:
             <section className="flex flex-col gap-2">
               <h4 className="text-xs font-medium uppercase tracking-[0.08em] text-faint">Bilderna som skickas</h4>
               <div className="grid grid-cols-2 gap-3">{pictures}</div>
-              {step.kind === "STILL" ? <p className="text-xs text-dim">Posebilden är bara armen, handen och skon ur {pose?.label ?? "den andra dealerns bild"}; resten av henne är bortklippt, och det gröna görs som ankarets.</p> : null}
+              {step.kind === "STILL" ? <p className="text-xs text-dim">Posebilden är bara armen, handen och skon: {pose?.label ?? "ur den andra dealerns bild"}; resten av henne är bortklippt, och det gröna görs som ankarets.</p> : null}
             </section>
             <section className="flex flex-col gap-1.5">
               <h4 className="text-xs font-medium uppercase tracking-[0.08em] text-faint">Kostnad</h4>

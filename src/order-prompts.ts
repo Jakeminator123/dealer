@@ -10,9 +10,9 @@
 // follows that choice, the bans too. The turn: at the place after the carry in Jakob's six steps of 2026-11-13 (nyp, dra,
 // för fram, vrid, vänd upp, lägg; a closed card goes nyp, dra, för fram, lägg), free on the way (a turn a human hand can
 // make, with a card that keeps its size; Jakob 2026-11-12), or rolled about the long side on the way as the bank's films
-// do. The pose picture of a still is a cut-out: only the dealing forearm, its hand, the shoe and the card of another
-// dealer, the rest of her filled with green (tools/order-images.ts cutFigure), so that only the hand's place and grip can
-// be taken from it. Tests: tools/order-prompts.test.ts.
+// do. The pose picture of a still is a cut-out: only the dealing forearm and hand of another dealer at the window shoe,
+// the rest of her filled with green (tools/order-images.ts cutFigure; for 2.2 laid on the dealer's own shoe and card,
+// poseOnShoe), so that only the hand's place and grip can be taken from it. Tests: tools/order-prompts.test.ts.
 import type { FlipAxis, StepKey } from './order-model.ts';
 
 export const TEMPLATE_VERSION = 3;
@@ -92,16 +92,21 @@ export function placeWords(place: { x: number; y: number }): string {
 export const STANDARD_STILL =
   "She sits on a chair that is not in the picture: her elbows hang free at her sides and her forearms come down to the felt; nothing supports her elbows or forearms. Her jacket continues down to the same straight horizontal line where her body is cut off in @anchor, with no green between the jacket and that line. The green is one even colour everywhere, right up to her outline: no shadows under or beside her arms, her hands, the card or the shoe. Soft, even frontal studio light; natural skin with fine texture, sharp eyes, matte black cloth with soft folds.";
 
-/** What @pose is, said before it is used: a cut-out of a hand at the shoe, nothing of a person. */
+/**
+ * What @pose is, said before it is used: a forearm and hand at the dealer's own window shoe, nothing else of a person. For
+ * 2.2 the shoe and card are the dealer's own from @anchor; for 2.1 the bank's frame of the same window shoe, within 2 px.
+ */
 export const POSE_IS =
-  '@pose is a cut-out on plain green: it shows only a left forearm in a black sleeve, cut off at the elbow, its hand, the card shoe and the yellow card; nothing else of that person is in it.';
+  '@pose is a cut-out on plain green: it shows only a left forearm in a black sleeve, cut off at the elbow, and its hand at the yellow card of the black card shoe, the same window shoe that stands at the right in @anchor; nothing else of that person is in it.';
 
 function stillText(input: PromptInput): Prompt {
   const look = input.dealer.look;
+  // 2.2: the pose's hand is wider than the window card, so its little finger rests on the shoe beside the window, as it
+  // rests beside the card in the bank's own 2.2 (tools/order-store.ts POSE).
   const pose =
     input.step === 'ANKARE-2.1'
       ? "she reaches to the shoe and holds the yellow card itself between thumb and forefinger at its upper edge: the fingertips are on the card, not on the shoe's rim, and she has drawn the card a little out of the window so that her grip on it is plain to see; the card may bend slightly in the pinch. Her hand is placed and shaped as the hand in @pose."
-      : "her hand lies over the yellow card in the shoe's window, the fingertips resting flat on the card itself, not on the shoe, ready to slide it out along the felt; her hand is placed and shaped as the hand in @pose. The shoe in @pose has an open front: do not copy it.";
+      : "her hand lies over the yellow card in the shoe's window, the tips of her index, middle and ring fingers resting flat on the card itself, not on the gold frame of the window, and her little finger on the shoe beside the window, ready to slide the card out along the felt; her hand is placed and shaped as the hand in @pose.";
   const parts: Part[] = [
     { text: 'This is an edit of the picture @anchor.', from: [] },
     { text: `Keep everything in @anchor exactly as it is: the framing and camera, the flat pure chroma-green background and green table surface with no visible edge, the black card shoe at the right with the yellow card in its window, and the woman herself, ${look}: her face, hair, clothes and build, the place and size of her head and body, and her right hand, at the left of the picture, lying flat on the felt.`, from: [] },

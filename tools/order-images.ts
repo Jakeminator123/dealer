@@ -8,7 +8,9 @@
 // against the plan (the centre of the changed pixels against the plan's point, in pixels). The pose picture of a still is
 // cut down to a figure (cutFigure): only the region the order keeps of the other dealer (her dealing forearm, hand, the
 // shoe and the card), the rest of her filled with the picture's own green; then its green is brought to the green of the
-// anchor it is sent with (matchGreen), so that the two pictures of a still have one green.
+// anchor it is sent with (matchGreen), so that the two pictures of a still have one green. Or only her forearm and hand
+// are kept (armMatte) and laid on the dealer's own anchor cut down to her shoe and card (poseOnShoe), moved by the two
+// cards' top sides, so that no other shoe or card goes out (anchor 2.2, 2026-11-13).
 //
 //   node tools/order-images.ts <order id>     fetch what a draft waits for or follows when it holds, and (re)draw its last picture
 import { readFile } from 'node:fs/promises';
@@ -386,6 +388,192 @@ export function matchGreen(figure: Rgb, anchor: Rgb, block: number = CUT.block):
     for (let c = 0; c < 3; c++) out[i * 3 + c] = Math.max(0, Math.min(255, Math.round(figure[i * 3 + c] + key * (to[i * 3 + c] - from[i * 3 + c]))));
   }
   return { rgb: out, anchor: greenOf(anchor), before: greenOf(figure), after: greenOf(out) };
+}
+
+// ── A pose laid on the dealer's own shoe ────────────────────────────────────
+/**
+ * Where the card lies at the front of the shoe in the bank's frame (x, y, width, height): the box the yellow card is looked
+ * for in, in the source of a pose and in the dealer's anchor.
+ */
+export const SHOE_FRONT: [number, number, number, number] = [1100, 650, 400, 300];
+/**
+ * The settings an arm is laid with (kept in picture.cut.settings beside CUT): the band at the arm's edge, in px on each
+ * side, where a pixel is unmixed from what lay under it in the source; the window, in px, its arm and background colours
+ * are taken from; and the least difference between them, in levels, for unmixing (below it, as a black sleeve against
+ * the black shoe, the edge is the mask's own, one pixel soft).
+ */
+export const LAY = { band: 2, window: 4, contrast: 30 } as const;
+export type LayOptions = { band: number; window: number; contrast: number };
+
+const cardYellow = (rgb: Rgb, i: number) => { const r = rgb[i * 3], g = rgb[i * 3 + 1], b = rgb[i * 3 + 2]; return r > 205 && g > 175 && b < 60 && r - g < 60; };
+function hullOf(points: Pt[]): Pt[] {
+  const pts = [...points].sort((a, b) => a[0] - b[0] || a[1] - b[1]);
+  const cross = (o: Pt, a: Pt, b: Pt) => (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0]);
+  const lower: Pt[] = [], upper: Pt[] = [];
+  for (const p of pts) { while (lower.length >= 2 && cross(lower[lower.length - 2], lower[lower.length - 1], p) <= 0) lower.pop(); lower.push(p); }
+  for (const p of pts.reverse()) { while (upper.length >= 2 && cross(upper[upper.length - 2], upper[upper.length - 1], p) <= 0) upper.pop(); upper.push(p); }
+  return lower.slice(0, -1).concat(upper.slice(0, -1));
+}
+const areaOf = (q: readonly Pt[]) => { let a = 0; for (let i = 0, j = q.length - 1; i < q.length; j = i++) a += q[j][0] * q[i][1] - q[i][0] * q[j][1]; return Math.abs(a) / 2; };
+
+export type CardOutline = { quad: Pt[]; top: [Pt, Pt]; topMid: Pt; px: number };
+/**
+ * The yellow card at the shoe: its largest plainly yellow part in the box, the four corners of its outline (the four
+ * points of its convex hull that enclose the most, so that a finger lying on it does not move them), and its top side,
+ * the side whose middle lies highest: the side the fingertips of a hand over the card lie along.
+ */
+export function cardOutline(rgb: Rgb, box: readonly [number, number, number, number] = SHOE_FRONT): CardOutline {
+  const [x0, y0, w, h] = box, mask = new Uint8Array(N);
+  for (let y = y0; y < y0 + h; y++) for (let x = x0; x < x0 + w; x++) if (cardYellow(rgb, y * W + x)) mask[y * W + x] = 1;
+  const { labels, parts } = components(mask);
+  let best = 0;
+  for (let k = 1; k < parts.length; k++) if (!best || parts[k].area > parts[best].area) best = k;
+  if (!best || parts[best].area < 500) throw Error('Inget gult kort vid skons front.');
+  const corners: Pt[] = [];
+  const p = parts[best];
+  for (let y = p.y0; y <= p.y1; y++) for (let x = p.x0; x <= p.x1; x++) if (labels[y * W + x] === best) corners.push([x, y], [x + 1, y], [x, y + 1], [x + 1, y + 1]);
+  let hull = hullOf(corners);
+  if (hull.length > 48) hull = hull.filter((_, i) => i % Math.ceil(hull.length / 48) === 0);
+  let quad: Pt[] = hull.slice(0, 4), most = -1;
+  const n = hull.length;
+  for (let a = 0; a < n; a++) for (let b = a + 1; b < n; b++) for (let c = b + 1; c < n; c++) for (let d = c + 1; d < n; d++) {
+    const q = [hull[a], hull[b], hull[c], hull[d]], s = areaOf(q);
+    if (s > most) { most = s; quad = q; }
+  }
+  let top: [Pt, Pt] = [quad[0], quad[1]];
+  for (let i = 0; i < 4; i++) { const side: [Pt, Pt] = [quad[i], quad[(i + 1) % 4]]; if (side[0][1] + side[1][1] < top[0][1] + top[1][1]) top = side; }
+  return { quad, top, topMid: [(top[0][0] + top[1][0]) / 2, (top[0][1] + top[1][1]) / 2], px: p.area };
+}
+
+export type ArmMatte = { alpha: Float32Array; under: Float32Array; box: [number, number, number, number]; px: number };
+/**
+ * The arm's matte in the source of a pose: how much of each pixel is her forearm or hand (0–1), and for an edge pixel the
+ * colour that lay under it. Each pixel is skin (warm, leaning to red), the card (warm, leaning to yellow, on the source
+ * card's outline `card` only: skin against green is yellowish too), black, or a mix. Inside `keep`, skin is arm, and so is
+ * black inside `sleeve` (the sleeve, kept off the shoe, which is as black); its largest part is the arm, its small holes
+ * filled. In the band at its edge a pixel is unmixed: of the arm and background colours nearby, the pair that explains it
+ * best (nearest when equal) gives how much of it is arm, so that the source's green, black shoe or yellow card under a
+ * finger's edge does not come along; the card's colour is unmixed only against the card. Black against black (the cuff
+ * at the shoe) and pairs too alike take the mask's own edge, one pixel soft; at the edge of `keep` (the elbow) the cut is
+ * sharp. The same picture and settings always give the same matte.
+ */
+export function armMatte(rgb: Rgb, keep: readonly Pt[], sleeve: readonly Pt[], card: readonly Pt[] | null, options: LayOptions = LAY): ArmMatte {
+  if (rgb.length !== N * 3) throw Error(`Posebilden är inte bankens ruta ${W} × ${H}.`);
+  // The card's colour counts as the card only on it (within 3 px of its outline): skin against green is yellowish too.
+  const onTheCard = (x: number, y: number) => !!card && (inPolygon(card, x + 0.5, y + 0.5) || outlineDistance(card, x + 0.5, y + 0.5) <= 3);
+  const margin = options.band + options.window + 1;
+  const x0 = Math.max(margin, Math.floor(Math.min(...keep.map((p) => p[0])))), x1 = Math.min(W - 1 - margin, Math.ceil(Math.max(...keep.map((p) => p[0]))));
+  const y0 = Math.max(margin, Math.floor(Math.min(...keep.map((p) => p[1])))), y1 = Math.min(H - 1 - margin, Math.ceil(Math.max(...keep.map((p) => p[1]))));
+  // Skin and the card are both warm; skin leans to red (its green nearer its blue), the card and its pale edge to yellow.
+  const green = (r: number, g: number, b: number) => g - Math.max(r, b) > 25;
+  const skin = (r: number, g: number, b: number) => r > 80 && r - g >= 20 && r - b >= 30 && 2 * (g - b) < r - b;
+  const yellowish = (r: number, g: number, b: number) => r > 150 && g > 110 && r - b >= 30 && 2 * (g - b) >= r - b;
+  // What each pixel is made of: 1 skin, 2 the yellow card, 3 black (the sleeve, the shoe), 4 a mix of these at an edge.
+  const arm = new Uint8Array(N), stuff = new Uint8Array(N);
+  for (let y = y0 - options.band; y <= y1 + options.band; y++) for (let x = x0 - options.band; x <= x1 + options.band; x++) {
+    const i = y * W + x, r = rgb[i * 3], g = rgb[i * 3 + 1], b = rgb[i * 3 + 2];
+    if (green(r, g, b)) continue;
+    stuff[i] = skin(r, g, b) ? 1 : yellowish(r, g, b) && onTheCard(x, y) ? 2 : Math.max(r, g, b) < 100 ? 3 : 4;
+    if (!inPolygon(keep, x + 0.5, y + 0.5)) continue;
+    if (stuff[i] === 1 || (stuff[i] === 3 && inPolygon(sleeve, x + 0.5, y + 0.5))) arm[i] = 1;
+  }
+  // The arm is its largest part; holes smaller than 40 px in it (a highlight on a nail) are arm too.
+  const parts = components(arm);
+  let best = 0;
+  for (let k = 1; k < parts.parts.length; k++) if (!best || parts.parts[k].area > parts.parts[best].area) best = k;
+  for (let i = 0; i < N; i++) arm[i] = best && parts.labels[i] === best ? 1 : 0;
+  const rest = new Uint8Array(N);
+  for (let i = 0; i < N; i++) rest[i] = arm[i] ? 0 : 1;
+  const holes = components(rest);
+  for (let i = 0; i < N; i++) { const k = holes.labels[i]; if (k && holes.parts[k].area < 40) arm[i] = 1; }
+  // Inside: arm at least `band` px from its edge; outside: background at least `band` px from it; between them the band.
+  const grown = growMask(arm, options.band), shrunk = growMask(rest.map((_, i) => (arm[i] ? 0 : 1)), options.band);
+  // The black that is not her sleeve (the shoe, the shadow between her fingers), and what lies within a band of it.
+  const shoe = new Uint8Array(N);
+  for (let i = 0; i < N; i++) if (stuff[i] === 3 && !arm[i]) shoe[i] = 1;
+  const nearShoe = growMask(shoe, options.band + 1);
+  const alpha = new Float32Array(N), under = new Float32Array(N * 3);
+  const R = options.window, least = options.contrast ** 2;
+  let px = 0;
+  for (let y = y0 - options.band; y <= y1 + options.band; y++) for (let x = x0 - options.band; x <= x1 + options.band; x++) {
+    const i = y * W + x;
+    if (!shrunk[i]) { alpha[i] = 1; px++; continue; }
+    if (!grown[i]) continue;
+    const P0 = rgb[i * 3], P1 = rgb[i * 3 + 1], P2 = rgb[i * 3 + 2];
+    under[i * 3] = P0; under[i * 3 + 1] = P1; under[i * 3 + 2] = P2;
+    // Black against black (the cuff at the shoe) takes the sleeve's own edge, one pixel soft; a pixel of the card's colour
+    // is unmixed only against the card (a fingertip's edge on it), never against the shoe or the green.
+    if (stuff[i] === 3 && nearShoe[i]) { alpha[i] = inPolygon(keep, x + 0.5, y + 0.5) ? coverage(sleeve, x + 0.5, y + 0.5) : 0; if (alpha[i] >= 0.5) px++; continue; }
+    const onCard = stuff[i] === 2;
+    let cost = Infinity, a = 0, B0 = P0, B1 = P1, B2 = P2;
+    for (let fy = -R; fy <= R; fy++) for (let fx = -R; fx <= R; fx++) {
+      const f = (y + fy) * W + x + fx;
+      if (shrunk[f]) continue;
+      const F0 = rgb[f * 3], F1 = rgb[f * 3 + 1], F2 = rgb[f * 3 + 2];
+      for (let by = -R; by <= R; by++) for (let bx = -R; bx <= R; bx++) {
+        const k = (y + by) * W + x + bx;
+        if (grown[k] || (onCard && stuff[k] !== 2)) continue;
+        const b0 = rgb[k * 3], b1 = rgb[k * 3 + 1], b2 = rgb[k * 3 + 2], d0 = F0 - b0, d1 = F1 - b1, d2 = F2 - b2, dd = d0 * d0 + d1 * d1 + d2 * d2;
+        if (dd < least) continue;
+        const t = Math.max(0, Math.min(1, ((P0 - b0) * d0 + (P1 - b1) * d1 + (P2 - b2) * d2) / dd));
+        const e0 = P0 - b0 - t * d0, e1 = P1 - b1 - t * d1, e2 = P2 - b2 - t * d2;
+        const c = e0 * e0 + e1 * e1 + e2 * e2 + 2 * (fx * fx + fy * fy + bx * bx + by * by);
+        if (c < cost) { cost = c; a = t; B0 = b0; B1 = b1; B2 = b2; }
+      }
+    }
+    if (cost === Infinity) a = onCard ? 0 : stuff[i] === 3 && inPolygon(keep, x + 0.5, y + 0.5) ? coverage(sleeve, x + 0.5, y + 0.5) : arm[i];
+    alpha[i] = a;
+    under[i * 3] = B0; under[i * 3 + 1] = B1; under[i * 3 + 2] = B2;
+    if (a >= 0.5) px++;
+  }
+  // The elbow: the edge of the region kept, sharp.
+  for (let y = y0 - options.band; y <= y1 + options.band; y++) for (let x = x0 - options.band; x <= x1 + options.band; x++) { const i = y * W + x; if (alpha[i] > 0) alpha[i] *= coverage(keep, x + 0.5, y + 0.5); }
+  return { alpha, under, box: [x0 - options.band, y0 - options.band, x1 + options.band, y1 + options.band], px };
+}
+
+/**
+ * The arm laid on `base`, moved by `by` (whole pixels, so that nothing is resampled): where the matte is whole, the
+ * source's pixel; at its edge, the source's pixel with what lay under it in the source swapped for what lies there in the
+ * base. The same pictures give the same bytes.
+ */
+export function layArm(rgb: Rgb, base: Rgb, matte: ArmMatte, by: readonly [number, number]): Rgb {
+  const out = Buffer.from(base), [x0, y0, x1, y1] = matte.box;
+  for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) {
+    const i = y * W + x, a = matte.alpha[i], tx = x + by[0], ty = y + by[1];
+    if (a <= 0 || tx < 0 || ty < 0 || tx >= W || ty >= H) continue;
+    const t = ty * W + tx;
+    for (let c = 0; c < 3; c++) {
+      const v = a >= 1 ? rgb[i * 3 + c] : rgb[i * 3 + c] + (1 - a) * (base[t * 3 + c] - matte.under[i * 3 + c]);
+      out[t * 3 + c] = Math.max(0, Math.min(255, Math.round(v)));
+    }
+  }
+  return out;
+}
+
+/** A region outside the frame: cut with it, every pixel of the person is filled with green. */
+const NOWHERE: Pt[] = [[-4, -4], [-3, -4], [-4, -3]];
+export type Lay = { keep: readonly Pt[]; sleeve: readonly Pt[]; shoe: readonly Pt[] };
+export type LaidPose = { rgb: Rgb; by: [number, number]; cards: { source: CardOutline; anchor: CardOutline }; base: CutResult; armPx: number };
+/**
+ * A pose on the dealer's own shoe: of the source only the forearm and hand (`keep`, `sleeve`), not her shoe or card; laid
+ * on the dealer's anchor cut down to her shoe and card (`shoe`; the rest of her is filled with her own green, cutFigure),
+ * moved so that the fingertips lie on the card in her window as they lie on the card in the source: the middle of the
+ * source card's top side is brought onto the middle of the window card's top side.
+ */
+export function poseOnShoe(source: Rgb, anchor: Rgb, lay: Lay, cut: CutOptions = CUT, options: LayOptions = LAY): LaidPose {
+  const cards = { source: cardOutline(source), anchor: cardOutline(anchor) };
+  const by: [number, number] = [Math.round(cards.anchor.topMid[0] - cards.source.topMid[0]), Math.round(cards.anchor.topMid[1] - cards.source.topMid[1])];
+  const base = cutFigure(anchor, lay.shoe, cut);
+  const matte = armMatte(source, lay.keep, lay.sleeve, cards.source.quad, options);
+  return { rgb: layArm(source, base.rgb, matte, by), by, cards, base, armPx: matte.px };
+}
+/** The arm alone where it lies in the source, on the source's own green (her shoe and card cut away too): while the anchor waits. */
+export function armAlone(source: Rgb, lay: Pick<Lay, 'keep' | 'sleeve'>, cut: CutOptions = CUT, options: LayOptions = LAY): { rgb: Rgb; base: CutResult; armPx: number } {
+  const base = cutFigure(source, NOWHERE, cut);
+  let card: Pt[] | null = null;
+  try { card = cardOutline(source).quad; } catch { /* no card under the hand: nothing is taken for the card */ }
+  const matte = armMatte(source, lay.keep, lay.sleeve, card, options);
+  return { rgb: layArm(source, base.rgb, matte, [0, 0]), base, armPx: matte.px };
 }
 
 /** The plan as saved, with its hash. */

@@ -3091,12 +3091,13 @@
           "fps": 24,
           "card": "P4.C1",
           "node": "LAND(P4.C1)",
-          "state": "kandidat",
-          "note": "Ruta 104 ur given till plats 4, tagning 2: kortet ligger öppet på platsen och handen ligger platt på det. Jakob 2026-11-13: ta ett ankare vid kortplats 4 ur den givens. Härifrån kan returen beställas som egen film. Inte efterarbetad som stillbild (en mjuk skugga under armen finns kvar).",
+          "state": "gäller",
+          "note": "Ruta 104 ur given till plats 4, tagning 2: kortet ligger öppet och handen ligger platt på det. Jakob 2026-11-13: bilden visar handryggen, alltså en hand som inte har vridit handleden för att vända kortet; den duger inte som landningsbild för en vändning. En riktig landningsbild görs som stillbild.",
           "source": {
             "from": "beställningen paow-giv-p4, tagning 2, ruta 104",
             "when": "2026-11-13"
-          }
+          },
+          "stateBy": "Jakob 2026-11-13 02:39: kandidat → gäller (Material)"
         },
         {
           "id": "paow-film-ny-ingang-2-1-4k",

@@ -119,6 +119,19 @@ export type Cut = {
    * 2026-11-13; null while the anchor waits.
    */
   matched?: { anchorSha256: string; anchor: [number, number, number]; before: [number, number, number]; after: [number, number, number] } | null;
+  /**
+   * A figure laid on the dealer's own shoe (tools/order-images.ts poseOnShoe; from 2026-11-13): of the source only the
+   * forearm and hand (keep, and `sleeve` where black is her sleeve), laid on the anchor cut down to the dealer's shoe and
+   * card (`shoe`), moved `by` px so that the middle of the source card's top side meets the middle of her window card's
+   * (both cards' corners and top sides). filledPx and green are then of the anchor's cut, keptPx the arm's. by and cards
+   * are null while the anchor waits (the arm alone on green). Absent on the figures cut before.
+   */
+  laid?: {
+    sleeve: [number, number][];
+    shoe: [number, number][];
+    by: [number, number] | null;
+    cards: { source: { quad: [number, number][]; top: [[number, number], [number, number]] }; anchor: { quad: [number, number][]; top: [[number, number], [number, number]] } } | null;
+  } | null;
 };
 /**
  * One picture that goes out. name: the file in assets/orders/<id>/ ("first.png"); path and sha256 are null while it waits.

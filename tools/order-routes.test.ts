@@ -12,7 +12,7 @@ import os from 'node:os';
 import path from 'node:path';
 import sharp from 'sharp';
 import { orderRoutes } from './order-routes.ts';
-import { ARM_AT_SHOE, POSE_WHAT, orderStore, orderHash } from './order-store.ts';
+import { ARM_ALONE, ARM_AT_SHOE, POSE_ARM_WHAT, POSE_WHAT, SHOE_AT_ANCHOR, SLEEVE_AT_SHOE, orderStore, orderHash } from './order-store.ts';
 import { promptFor } from '../src/order-prompts.ts';
 import { mediaRoles } from './media-roles.ts';
 import { replacedBy, allowed, isDecidable } from '../studio/components/material/state.ts';
@@ -330,6 +330,61 @@ test("whose each picture is: the dealer's own, the other dealer's arm only, neve
   const mixed = (await call('POST', '/api/orders', { body: { dealer: 'paow', step: 'ANKARE-2.1', base: 'pamela-vila' } })).json;
   assert.match(mixed.problems.join(' '), /Paows ankare 1: bilden är Pamelas, inte Paows/);
   assert.equal((await call('POST', `/api/orders/${mixed.order.id}/approve`, { match: mixed.revision })).status, 409, 'a mix-up cannot be approved');
+});
+
+test("anchor 2.2's pose: the other dealer's forearm and hand on the dealer's own shoe, moved by the cards; it follows her anchor", async (t) => {
+  const { root } = await lab(t);
+  const { W, H } = await import('./order-images.ts');
+  const fill = (rgb: Buffer, x0: number, y0: number, x1: number, y1: number, c: number[]) => { for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) rgb.set(c, (y * W + x) * 3); };
+  const png = (rgb: Buffer) => sharp(rgb, { raw: { width: W, height: H, channels: 3 } }).png().toBuffer();
+  // Pamela's picture: a black shoe, a yellow card on it, her sleeve and a hand whose fingertips lie over the card's top.
+  const source = Buffer.alloc(W * H * 3);
+  fill(source, 0, 0, W - 1, H - 1, [10, 230, 60]); fill(source, 1180, 780, 1500, 900, [40, 40, 40]); fill(source, 1200, 820, 1270, 880, [248, 220, 0]);
+  fill(source, 1220, 620, 1300, 744, [15, 15, 15]); fill(source, 1210, 745, 1260, 840, [230, 150, 120]);
+  // Paow's two anchors 1: her shoe, her card at two places, her body.
+  const anchor = (card: [number, number, number, number]) => { const rgb = Buffer.alloc(W * H * 3); fill(rgb, 0, 0, W - 1, H - 1, [0, 238, 45]); fill(rgb, 1180, 780, 1500, 900, [40, 40, 40]); fill(rgb, ...card, [248, 220, 0]); fill(rgb, 600, 300, 1000, 830, [30, 30, 30]); return rgb; };
+  const [a, b] = [await png(anchor([1260, 760, 1320, 830])), await png(anchor([1250, 770, 1310, 840]))];
+  await writeFile(path.join(root, 'assets/anchors/pamela-nyp/anchor.png'), await png(source));
+  await writeFile(path.join(root, 'assets/anchors/paow-vila-ung-2/anchor.png'), a);
+  await writeFile(path.join(root, 'assets/anchors/paow-vila-ung-1/anchor.png'), b);
+  const lay = { sleeve: SLEEVE_AT_SHOE, shoe: SHOE_AT_ANCHOR };
+  const store = orderStore(root, { now: () => new Date('2026-11-13T09:00:00Z'), poses: { 'ANKARE-2.2': { entry: 'pamela-nyp', label: 'armen och handen ur Pamelas nyp, lagda på dealerns egen sko ur ankaret', keep: ARM_ALONE, what: POSE_ARM_WHAT, lay } } });
+  const states = async (s: Record<string, string>) => {
+    const file = path.join(root, 'data/media-roles.json'), reg = JSON.parse(await readFile(file, 'utf8'));
+    for (const e of reg.dealers.paow.entries) if (s[e.id]) e.state = s[e.id];
+    await writeFile(file, JSON.stringify(reg, null, 2));
+  };
+  const poseOf = (o: { pictures: { name: string }[] }) => o.pictures.find((p) => p.name === 'pose-figure.png') as import('../src/order-model.ts').Picture;
+  const pixel = async (rel: string, x: number, y: number) => { const raw = await sharp(path.join(root, rel)).removeAlpha().raw().toBuffer(); return [...raw.subarray((y * W + x) * 3, (y * W + x) * 3 + 3)]; };
+
+  // While her anchor 1 waits: the arm alone, not moved, nothing matched.
+  const made = await store.create({ dealer: 'paow', step: 'ANKARE-2.2' });
+  let pose = poseOf(made.order);
+  assert.deepEqual([pose.cut!.laid!.by, pose.cut!.matched, pose.cut!.what], [null, null, POSE_ARM_WHAT]);
+  assert.match(pose.from!.note!, /lagda på dealerns egen sko ur ankaret; allt annat av henne är bortklippt, hennes sko och kort också$/);
+  assert.deepEqual(await pixel(pose.path!, 1235, 870), [10, 230, 60], 'her card is cut away');
+
+  // Her anchor holds: the arm is laid on her own shoe, the fingertips on her card.
+  await states({ 'paow-vila-ung-2': 'gäller' });
+  let next = await store.refresh(made.order.id, made.revision);
+  pose = poseOf(next.order);
+  assert.deepEqual(pose.cut!.laid!.by, [55, -60]);
+  assert.deepEqual(pose.cut!.laid!.cards!.anchor.top.map((p) => p[1]), [760, 760]);
+  assert.deepEqual([pose.cut!.laid!.sleeve, pose.cut!.laid!.shoe, pose.cut!.keep], [SLEEVE_AT_SHOE, SHOE_AT_ANCHOR, ARM_ALONE]);
+  assert.equal(pose.cut!.matched!.anchorSha256, sha(a));
+  assert.equal(pose.cut!.settings.band, 2);
+  assert.deepEqual(await pixel(pose.path!, 1290, 778), [230, 150, 120], 'a fingertip on her card');
+  assert.deepEqual(await pixel(pose.path!, 1290, 790), [248, 220, 0], 'her card under it');
+  assert.deepEqual(await pixel(pose.path!, 1235, 870), [40, 40, 40], 'her shoe where the other card lay');
+
+  // Another anchor 1 approved in Material: the pose is laid again on it.
+  await states({ 'paow-vila-ung-2': 'ersatt', 'paow-vila-ung-1': 'gäller' });
+  next = await store.refresh(next.order.id, next.revision);
+  pose = poseOf(next.order);
+  assert.equal(next.order.pictures[0].from!.entry, 'paow-vila-ung-1');
+  assert.deepEqual(pose.cut!.laid!.by, [45, -50]);
+  assert.equal(pose.cut!.matched!.anchorSha256, sha(b));
+  assert.deepEqual(await pixel(pose.path!, 1280, 788), [230, 150, 120]);
 });
 
 test('a pose figure keeps only the region, fills the rest of the person with the picture\'s green, and cuts the same every time', async () => {

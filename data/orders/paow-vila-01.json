@@ -84,6 +84,10 @@
   "notes": [],
   "created": "2026-11-13T01:34:27.294Z",
   "createdBy": "huvudagentens beställare (dealer-94) på Jakobs ord 2026-11-13: varianter i vilokedjan",
-  "approval": null,
-  "status": "UTKAST"
+  "approval": {
+    "by": "jakob",
+    "at": "2026-11-13T01:56:50.971Z",
+    "orderSha256": "6c27aa27b82648af46dc17a15f57bf394549227049cb05192e304d19e910f2b8"
+  },
+  "status": "GODKÄND"
 }
