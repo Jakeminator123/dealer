@@ -12,6 +12,8 @@ export function safeNext(value: string | null | undefined): string {
 export type LoginState = {next?: string; error?: 'wrong' | 'many' | 'closed'; wait?: number};
 
 export function loginPage({next = '/studio/', error, wait = 0}: LoginState = {}): string {
+  // On the way to the game alone the page says so: the visitor may never have heard of the studio.
+  const game = next.startsWith('/game.html'), title = game ? 'Blackjack' : 'Dealer Studio', about = game ? 'Skriv lösenordet för att spela.' : 'En kopia att titta i. Inget här går att ändra.';
   const minutes = Math.max(1, Math.ceil(wait / 60000));
   const message = error === 'wrong' ? 'Fel lösenord. Försök igen.'
     : error === 'many' ? `För många försök. Vänta ${minutes} ${minutes === 1 ? 'minut' : 'minuter'} och försök igen.`
@@ -22,7 +24,7 @@ export function loginPage({next = '/studio/', error, wait = 0}: LoginState = {})
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<title>Dealer Studio · Lösenord</title>
+<title>${title} · Lösenord</title>
 <link rel="icon" href="data:,">
 <meta name="referrer" content="same-origin">
 <style>
@@ -47,8 +49,8 @@ button:focus-visible{outline:2px solid #e8cb85;outline-offset:2px}
 <body>
 <main>
 <svg class="mark" viewBox="0 0 32 32" aria-hidden="true"><rect x="8.5" y="5.5" width="15" height="21" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.5" transform="rotate(-8 16 16)"/><path d="M16 11.2 19.6 16 16 20.8 12.4 16Z" fill="currentColor" transform="rotate(-8 16 16)"/></svg>
-<h1>Dealer Studio</h1>
-<p>En kopia att titta i. Inget här går att ändra.</p>
+<h1>${title}</h1>
+<p>${about}</p>
 <form method="post" action="/api/login">
 <label for="losen">Lösenord</label>
 <input id="losen" name="losen" type="password" autocomplete="current-password" required autofocus>

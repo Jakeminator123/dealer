@@ -19,7 +19,9 @@
 // films that changed or were added. The deploy is `vercel deploy --prebuilt --prod` from .runtime/studio-deploy, never from
 // the repo root (its .env.local holds another store's key). Afterwards the copy is asked, without the cookie, for a page, a
 // film and an answer: each must be the login page. With DEALER_LOSEN_PROV set (the password, for this run only, never
-// written down) it also logs in and checks the first page, a film by range and the commit the copy says it is.
+// written down) it also logs in and checks the first page, a film by range and the commit the copy says it is; with
+// DEALER_LOSEN_SPEL_PROV (a password of the game alone, DEALER_LOSEN_SPEL in the project) that it leads to the game, plays a
+// film and does not open the studio.
 import {spawn, spawnSync, type ChildProcess} from 'node:child_process';
 import {existsSync, lstatSync, readFileSync, realpathSync} from 'node:fs';
 import {readFile, mkdir} from 'node:fs/promises';
@@ -155,13 +157,13 @@ const domains = (() => { const r = spawnSync('vercel', ['api', `/v9/projects/${l
   try { return (JSON.parse(r.stdout).domains as {name: string}[]).map(d => d.name); } catch { return []; } })();
 if (!domains.length) throw Error('Projektets adresser kunde inte läsas; kontrollera kopian för hand.');
 const built = JSON.parse(readFileSync(path.join(deployDir, 'build.json'), 'utf8')) as {blob: {path: string; type: string}[]};
-const film = built.blob.find(f => f.type === 'video/mp4')!.path, password = process.env.DEALER_LOSEN_PROV ?? '';
+const film = built.blob.find(f => f.type === 'video/mp4')!.path, password = process.env.DEALER_LOSEN_PROV ?? '', gameWord = process.env.DEALER_LOSEN_SPEL_PROV ?? '';
 let bad = 0;
 const check = (name: string, ok: boolean, detail = '') => { if (!ok) bad++; say(`   ${ok ? 'ok ' : 'FEL'} ${name}${detail ? ` (${detail})` : ''}`); };
 for (const domain of domains) {
   const site = `https://${domain}`;
   say(`\n── ${site}`);
-  for (const p of ['/studio/', '/studio/game/', '/api/clip-bank', '/game.html', `/${film}`]) {
+  for (const p of ['/studio/', '/studio/game/', '/api/clip-bank', '/game.html', '/casino', `/${film}`]) {
     const r = await fetch(site + p, {redirect: 'manual'}).catch(() => null);
     const text = r ? await r.text() : '';
     check(`utan kaka ${p}`, r?.status === 401 && text.includes('name="losen"'), String(r?.status ?? 'inget svar'));
@@ -177,6 +179,18 @@ for (const domain of domains) {
   const range = await fetch(`${site}/${film}`, {headers: {cookie, range: 'bytes=0-1023'}});
   const bytes = Buffer.from(await range.arrayBuffer());
   check(`film med Range /${film}`, range.status === 206 && bytes.subarray(4, 8).toString() === 'ftyp', `${range.status} ${range.headers.get('content-range')}`);
+  // The game's own password (DEALER_LOSEN_SPEL in the project; DEALER_LOSEN_SPEL_PROV here, for this run only): it leads to the
+  // game, plays a film, and does not open the studio.
+  if (!gameWord) { say('   (DEALER_LOSEN_SPEL_PROV är inte satt: spelets lösenord prövas inte)'); continue; }
+  const play = await fetch(`${site}/api/login`, {method: 'POST', redirect: 'manual', headers: {'content-type': 'application/x-www-form-urlencoded'}, body: new URLSearchParams({losen: gameWord, next: '/studio/'})});
+  const gameCookie = (play.headers.get('set-cookie') ?? '').split(';')[0], home = play.headers.get('location') ?? '';
+  check('spelets lösenord leder till spelet', play.status === 303 && home.startsWith('/game.html') && gameCookie.startsWith('dealer_studio=g1.'), `${play.status} ${home.split('?')[0]}`);
+  const table = await fetch(site + home, {headers: {cookie: gameCookie}});
+  check('spelsidan med spelets lösenord', table.status === 200 && (await table.text()).includes('game-page'), String(table.status));
+  const shut = await fetch(`${site}/studio/`, {headers: {cookie: gameCookie}, redirect: 'manual'});
+  check('studion är stängd med spelets lösenord', shut.status === 303 && (shut.headers.get('location') ?? '').startsWith('/game.html'), String(shut.status));
+  const gameFilm = await fetch(`${site}/${film}`, {headers: {cookie: gameCookie, range: 'bytes=0-1023'}});
+  check('film med spelets lösenord', gameFilm.status === 206, String(gameFilm.status));
 }
 say(bad ? `\n${bad} kontroller föll.` : `\nKopian är publicerad från ${commit.slice(0, 7)} och svarar som den ska.`);
 process.exit(bad ? 1 : 0);

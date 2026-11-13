@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {secrets, passwordsOf, signCookie, verifyCookie, samePassword, readCookies, TryLimit, MAX_AGE, COOKIE, TRIES, WINDOW} from '../cloud/studio/lock.ts';
-import {gate, type GateContext, type MediaMap} from '../cloud/studio/gate.ts';
+import {secrets, passwordsOf, signCookie, verifyCookie, samePassword, passwordScope, signGameCookie, cookieScope, readCookies, TryLimit, MAX_AGE, COOKIE, TRIES, WINDOW} from '../cloud/studio/lock.ts';
+import {gate, GAME_HOME, type GateContext, type MediaMap} from '../cloud/studio/gate.ts';
 import {loginPage, safeNext} from '../cloud/studio/login-page.ts';
 
 // Throwaway values for the tests only; the real ones live in the Vercel project's environment.
@@ -152,4 +152,65 @@ test('a film not yet uploaded is a 503, and a film is fetched from Blob with its
   assert.equal(proxied.headers.get('cache-control'), 'private, max-age=86400', 'no CDN keeps a film: its first range would be served for every range');
   assert.equal(proxied.headers.get('x-middleware-rewrite'), null);
   assert.equal(await proxied.text(), 'ab');
+});
+
+// ── A password for the game alone (DEALER_LOSEN_SPEL) ───────────────────────
+// Jakob 2026-11-13: a link "för någon som bara vill spela", with a password of its own "för bara casinot".
+const gameEnv = {...env, DEALER_LOSEN_SPEL: 'spela, prov-losen'};
+
+test('the game\'s passwords have their own kind of cookie, which neither opens the rest nor is made from the other kind', async () => {
+  const s = (await secrets(gameEnv))!;
+  assert.deepEqual(s.game, ['spela'], 'a word that stands in both lists opens everything and is not one of the game\'s');
+  assert.equal(await passwordScope(s, 'prov-losen'), 'all'); assert.equal(await passwordScope(s, 'spela'), 'game');
+  for (const wrong of ['', 'spel', 'Spela', 'spela ', 'spela,prov-losen']) assert.equal(await passwordScope(s, wrong), null, JSON.stringify(wrong));
+  assert.equal(await samePassword(s, 'spela'), false, 'not a password of the whole copy');
+  const game = await signGameCookie(s, now + 60), all = await signCookie(s, now + 60);
+  assert.match(game, /^g1\.\d+\.[A-Za-z0-9_-]{43}$/);
+  assert.equal(await cookieScope(s, game, now), 'game'); assert.equal(await cookieScope(s, all, now), 'all');
+  assert.equal(await verifyCookie(s, game, now), false, 'the bot asks verifyCookie: a game cookie is none');
+  // neither kind from the other: the same signature under the other prefix does not hold
+  assert.equal(await cookieScope(s, game.replace(/^g1/, 'v1'), now), null); assert.equal(await cookieScope(s, all.replace(/^v1/, 'g1'), now), null);
+  assert.equal(await cookieScope(s, game, now + 61), null, 'expired');
+  // the game's passwords changed or taken away: its cookies end, the others hold
+  assert.equal(await cookieScope((await secrets({...env, DEALER_LOSEN_SPEL: 'annat'}))!, game, now), null);
+  assert.equal(await cookieScope((await secrets(env))!, game, now), null);
+  assert.equal(await cookieScope((await secrets(env))!, all, now), 'all', 'a cookie given before the game had a password still holds');
+  assert.equal(await passwordScope((await secrets(env))!, 'spela'), null, 'without the variable there is no such password');
+});
+
+test('with a game password the game and what it loads pass; the studio and every other page lead back to the game, and the bot is shut', async () => {
+  const ctx = context({env: gameEnv});
+  // /casino without a cookie: the login page on its way to the game, and it says Blackjack, not Dealer Studio
+  const door = await gate(ask('/casino'), ctx), doorPage = await door.text();
+  assert.equal(door.status, 401);
+  assert.match(doorPage, /<title>Blackjack · Lösenord<\/title>/); assert.ok(doorPage.includes(`name="next" value="${GAME_HOME.replaceAll('&', '&amp;')}"`));
+  // the game's password leads to the game whatever page was asked for; a game address that was asked for is kept
+  const inStudio = await gate(login('spela', '/studio/karta/'), ctx);
+  assert.equal(inStudio.status, 303); assert.equal(inStudio.headers.get('location'), GAME_HOME);
+  assert.equal((await gate(login('spela', '/game.html?dealer=paow&table=x'), ctx)).headers.get('location'), '/game.html?dealer=paow&table=x');
+  assert.match(cookieOf(inStudio)!, /^g1\./);
+  const cookie = `${COOKIE}=${cookieOf(inStudio)!}`;
+  // what the game loads passes
+  for (const path of ['/game.html', '/game-page.js', '/scene3d-view.js', '/vendor/three.module.js', '/api/clip-bank', '/api/placements', '/data/speech-patches.json', '/meta.json'])
+    assert.equal((await gate(ask(path, {headers: {cookie}}), ctx)).headers.get('x-middleware-next'), '1', path);
+  const movie = await gate(ask(film, {headers: {cookie, range: 'bytes=0-1'}}), context({env: gameEnv, fetch: async () => new Response('ab', {status: 206, headers: {'content-range': 'bytes 0-1/10'}})}));
+  assert.equal(movie.status, 206, 'a film is fetched for the game as for the studio');
+  // another page leads back to the game
+  for (const path of ['/studio/', '/studio/game/', '/studio', '/', '/lab.html', '/scene3d.html', '/materials/']) {
+    const answer = await gate(ask(path, {headers: {cookie}}), ctx);
+    assert.equal(answer.status, 303, path); assert.equal(answer.headers.get('location'), GAME_HOME, path);
+  }
+  assert.equal((await gate(ask('/casino', {headers: {cookie}}), ctx)).headers.get('location'), GAME_HOME);
+  // the bot and the inbox are shut, and nothing is written
+  for (const path of ['/api/bot', '/api/utkast', '/api/onskemal']) assert.equal((await gate(ask(path, {method: 'POST', headers: {cookie}}), ctx)).status, 403, path);
+  assert.equal((await gate(ask('/api/clip-bank/review/x', {method: 'POST', headers: {cookie}}), ctx)).status, 405);
+  // the whole copy's password still opens everything, and the game's door too
+  const whole = await gate(login('prov-losen', '/studio/karta/'), ctx), wholeCookie = `${COOKIE}=${cookieOf(whole)!}`;
+  assert.equal(whole.headers.get('location'), '/studio/karta/');
+  assert.equal((await gate(ask('/studio/', {headers: {cookie: wholeCookie}}), ctx)).headers.get('x-middleware-next'), '1');
+  assert.equal((await gate(ask('/casino', {headers: {cookie: wholeCookie}}), ctx)).headers.get('location'), GAME_HOME);
+  // without the variable the game's password is a wrong password; /casino is still the door to the game for the others
+  const plain = context();
+  assert.equal((await gate(login('spela'), plain)).status, 401);
+  assert.equal((await gate(ask('/casino'), plain)).status, 401);
 });

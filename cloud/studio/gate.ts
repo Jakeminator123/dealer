@@ -6,10 +6,13 @@
 // less, but Vercel's CDN keeps the first answer of a rewritten film for its address whatever Range is asked later (measured on
 // the copy 2026-11-13: every request then got the first 1 000 bytes), so it is used only with DEALER_MEDIA_MODE=rewrite. Only GET and HEAD pass, except to the bot and the request inbox (cloud/studio/bot-routes.ts),
 // the copy's only addresses that write; the gate refuses the rest.
+// A second kind of password (DEALER_LOSEN_SPEL, lock.ts) opens only the game: /casino leads to the game page alone (GAME_HOME),
+// and with such a cookie the game page and what it loads are let through, while the studio, every other page and the bot
+// lead back to the game.
 //
 // The answers follow Vercel's middleware protocol for the Build Output API: a response with "x-middleware-next: 1" goes on
 // to the files, one with "x-middleware-rewrite: <url>" is served from that address, any other response is the answer.
-import {COOKIE, MAX_AGE, TryLimit, clearCookieHeader, clientAddress, cookieHeader, readCookies, samePassword, secrets, signCookie, verifyCookie, type Secrets} from './lock.ts';
+import {COOKIE, MAX_AGE, TryLimit, clearCookieHeader, clientAddress, cookieHeader, cookieScope, passwordScope, readCookies, secrets, signCookie, signGameCookie, type Secrets} from './lock.ts';
 import {loginPage, safeNext} from './login-page.ts';
 import {isAdminCall, isBotPath} from './bot-routes.ts';
 
@@ -17,7 +20,7 @@ import {isAdminCall, isBotPath} from './bot-routes.ts';
 export type MediaEntry = {url: string | null; type: string; bytes: number; sha256: string};
 /** The site's own path ("/assets/motions/<id>/source.mp4") to its object in Blob. Written by tools/build-studio-snapshot.ts. */
 export type MediaMap = Record<string, MediaEntry>;
-export type Env = {DEALER_LOSEN?: string; DEALER_KAKNYCKEL?: string; DEALER_MEDIA_MODE?: string};
+export type Env = {DEALER_LOSEN?: string; DEALER_LOSEN_SPEL?: string; DEALER_KAKNYCKEL?: string; DEALER_MEDIA_MODE?: string};
 export type GateContext = {
   env: Env;
   media: MediaMap;
@@ -30,6 +33,18 @@ export type GateContext = {
 
 export const ROBOTS = {'X-Robots-Tag': 'noindex, nofollow'} as const;
 export const OPEN = new Set(['/robots.txt']);
+/**
+ * The game alone, for someone who is only to play: the look, the table and the dealer of the link Jakob himself uses for the
+ * Casino view (2026-11-13). /casino leads here, and so does every login with one of the game's passwords.
+ */
+export const GAME_HOME = '/game.html?forval=levande&dx=-0.0624&dy=0.016&table=casino&dealer=paow';
+const GAME_DOOR = new Set(['/casino', '/casino/']);
+/** A page of the copy other than the game: the studio, the root, a folder or another .html. */
+const otherPage = (path: string): boolean => path !== '/game.html' && (path === '/studio' || path.startsWith('/studio/') || path.endsWith('/') || path.endsWith('.html'));
+/** What a visitor with one of the game's passwords may ask for: the game page and what it loads, never another page or the bot. */
+export const gameMay = (path: string): boolean => !otherPage(path) && !isBotPath(path);
+/** Where a login with one of the game's passwords leads: the game address that was asked for, else the game's own. */
+const gameNext = (next: string): string => next.startsWith('/game.html') ? next : GAME_HOME;
 const BODY_LIMIT = 4096;
 
 const page = (body: string, status: number, extra: Record<string, string> = {}) =>
@@ -38,12 +53,13 @@ const text = (body: string, status: number, extra: Record<string, string> = {}) 
   new Response(body, {status, headers: {'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'no-store', ...ROBOTS, ...extra}});
 export const passOn = () => new Response(null, {headers: {'x-middleware-next': '1', ...ROBOTS}});
 export const rewriteTo = (url: string) => new Response(null, {headers: {'x-middleware-rewrite': url, ...ROBOTS}});
+const goTo = (location: string) => new Response(null, {status: 303, headers: {Location: location, 'Cache-Control': 'no-store', ...ROBOTS}});
 
 // The secrets are read once per pair of values: a cold instance pays one key import, a warm one none.
-let memo: {password: string; key: string; secrets: Promise<Secrets | null>} | null = null;
+let memo: {password: string; game: string; key: string; secrets: Promise<Secrets | null>} | null = null;
 function lockOf(env: Env): Promise<Secrets | null> {
-  const password = env.DEALER_LOSEN ?? '', key = env.DEALER_KAKNYCKEL ?? '';
-  if (!memo || memo.password !== password || memo.key !== key) memo = {password, key, secrets: secrets(env)};
+  const password = env.DEALER_LOSEN ?? '', game = env.DEALER_LOSEN_SPEL ?? '', key = env.DEALER_KAKNYCKEL ?? '';
+  if (!memo || memo.password !== password || memo.game !== game || memo.key !== key) memo = {password, game, key, secrets: secrets(env)};
   return memo.secrets;
 }
 
@@ -55,10 +71,12 @@ async function login(request: Request, s: Secrets, ctx: GateContext, now: number
   const body = await request.text();
   if (body.length > BODY_LIMIT) return text('För stort.', 413);
   const form = new URLSearchParams(body), next = safeNext(form.get('next'));
-  if (!await samePassword(s, form.get('losen') ?? '')) return page(loginPage({next, error: 'wrong'}), 401);
+  const scope = await passwordScope(s, form.get('losen') ?? '');
+  if (!scope) return page(loginPage({next, error: 'wrong'}), 401);
   ctx.limiter.clear(address);
-  const value = await signCookie(s, Math.floor(now / 1000) + MAX_AGE);
-  return new Response(null, {status: 303, headers: {Location: next, 'Set-Cookie': cookieHeader(value, secure), 'Cache-Control': 'no-store', ...ROBOTS}});
+  // One of the game's passwords gives the game's kind of cookie and leads to the game, whatever page was asked for.
+  const expires = Math.floor(now / 1000) + MAX_AGE, value = scope === 'game' ? await signGameCookie(s, expires) : await signCookie(s, expires);
+  return new Response(null, {status: 303, headers: {Location: scope === 'game' ? gameNext(next) : next, 'Set-Cookie': cookieHeader(value, secure), 'Cache-Control': 'no-store', ...ROBOTS}});
 }
 
 /** A film from Blob through this function, the Range header passed on as it came; private, so no CDN keeps it. */
@@ -88,11 +106,19 @@ export async function gate(request: Request, ctx: GateContext): Promise<Response
   // The bot's hook (cloud/studio/bot-routes.ts): the owner's tool reaches the inbox with its admin key, which the function
   // itself compares; with the cookie, every method of the bot's addresses goes on to the function, which allows its own.
   if (isAdminCall(path, request.headers)) return passOn();
-  if (!await verifyCookie(s, readCookies(request.headers.get('cookie')).get(COOKIE), Math.floor(now / 1000))) {
+  const scope = await cookieScope(s, readCookies(request.headers.get('cookie')).get(COOKIE), Math.floor(now / 1000));
+  // The door for someone who is only to play: the game's own address, behind the same lock.
+  if (GAME_DOOR.has(path)) {
+    if (request.method !== 'GET' && request.method !== 'HEAD') return text('Bara GET.', 405, {Allow: 'GET, HEAD'});
+    return scope ? goTo(GAME_HOME) : page(loginPage({next: GAME_HOME}), 401);
+  }
+  if (!scope) {
     // The login page itself, for every address: a page asked for comes back to it after the login.
     const next = request.method === 'GET' && request.headers.get('sec-fetch-dest') !== 'video' ? safeNext(path + url.search) : '/studio/';
     return page(loginPage({next}), 401);
   }
+  // With one of the game's passwords: the game and what it loads. Another page leads back to the game; the bot is shut.
+  if (scope === 'game' && !gameMay(path)) return isBotPath(path) || request.method !== 'GET' && request.method !== 'HEAD' ? text('Bara spelet är öppet med det här lösenordet.', 403) : goTo(GAME_HOME);
   if (isBotPath(path)) return passOn();
   if (request.method !== 'GET' && request.method !== 'HEAD') return text('Kopian går inte att ändra.', 405, {Allow: 'GET, HEAD'});
   const entry = Object.hasOwn(ctx.media, path) ? ctx.media[path] : null;

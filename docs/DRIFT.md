@@ -288,6 +288,15 @@ Allt går att läsa och spela, inget går att ändra, och inga kostnader visas.
   slumptecken, gjorda i röret till `vercel env add` och aldrig nedskrivna), Production, känsliga (går inte att läsa
   tillbaka). Nytt lösenord: `vercel env rm DEALER_LOSEN production` och `printf '<ord>' | vercel env add DEALER_LOSEN
   production`, båda med `--cwd .runtime/studio-deploy`, sedan en ny deploy; alla gamla inloggningar slutar då gälla.
+- **Ett lösenord för bara spelet** (Jakob 2026-11-13: en länk "för någon som bara vill spela", med ett eget lösenord
+  "för bara casinot"): miljövariabeln `DEALER_LOSEN_SPEL`, i samma form som `DEALER_LOSEN` och satt på samma sätt (`printf
+  '<ord>' | vercel env add DEALER_LOSEN_SPEL production --cwd .runtime/studio-deploy`, sedan en ny deploy). Ordet skrivs
+  inte i repot. Adressen `/casino` leder till spelsidan ensam, utan studion runt (`GAME_HOME` i `cloud/studio/gate.ts`:
+  utseendet, bordet och dealern i Jakobs egen länk till Casino-vyn), och inloggningssidan heter då Blackjack. Med ett
+  sådant lösenord släpps spelsidan och det den läser igenom (moduler, banken, filmer, spår); studion, varje annan sida och
+  boten leder tillbaka till spelet eller är stängda. Ett ord som står i båda variablerna öppnar allt. Att byta eller ta
+  bort variabeln avslutar bara spelets inloggningar; de andra står kvar. Publiceringens kontroll prövar det med
+  `DEALER_LOSEN_SPEL_PROV=<ordet>` framför kommandot.
 - **Boten** följer med men har ingen `BOT_BLOB_TOKEN`: den svarar att den saknar lagring och anropar ingen modell, så den
   kostar inget. Att slå på den (egen privat store, nyckel, tak) är Jakobs beslut.
 - **Vad som går upp** avgör `data/studio-release.json` (tagningar per dealer, vad spelet kan spela, prov, förval, spärrade

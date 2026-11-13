@@ -4,6 +4,9 @@
 // repo: they are the environment variables DEALER_LOSEN and DEALER_KAKNYCKEL, set in the Vercel project by the owner.
 // DEALER_LOSEN may name more than one password, separated by commas ("john,jon": the word Jakob decided and the one he wrote
 // later), each of which opens the lock; a password can then hold no comma. Spaces around each are not part of it.
+// DEALER_LOSEN_SPEL names, in the same way, passwords that open only the game (Jakob 2026-11-13: one for someone who is only
+// to play): such a cookie is another kind (signGameCookie), and the gate lets it reach the game page and what the game loads,
+// never the studio. Without the variable there is no such password and nothing changes.
 
 export const COOKIE = 'dealer_studio';
 export const MAX_AGE = 30 * 24 * 60 * 60; // seconds: 30 days
@@ -27,7 +30,9 @@ export function sameBytes(a: Uint8Array, b: Uint8Array): boolean {
   return diff === 0;
 }
 
-export type Secrets = {passwords: string[]; key: CryptoKey; fingerprint: string};
+/** What a login opens: everything on the copy, or only the game. */
+export type Scope = 'all' | 'game';
+export type Secrets = {passwords: string[]; game: string[]; key: CryptoKey; fingerprint: string; gameFingerprint: string};
 
 /** The passwords DEALER_LOSEN names: separated by commas, each trimmed, empty ones dropped, each once. */
 export const passwordsOf = (value: string | undefined): string[] => [...new Set((value ?? '').split(',').map(p => p.trim()).filter(Boolean))];
@@ -36,13 +41,17 @@ export const passwordsOf = (value: string | undefined): string[] => [...new Set(
  * The lock's secrets from the environment, or null when they are missing or too weak (the lock then stays shut). The
  * fingerprint of the passwords is signed into every cookie, so a new password (or one taken away) makes every old cookie worthless.
  */
-export async function secrets(env: {DEALER_LOSEN?: string; DEALER_KAKNYCKEL?: string}): Promise<Secrets | null> {
+export async function secrets(env: {DEALER_LOSEN?: string; DEALER_LOSEN_SPEL?: string; DEALER_KAKNYCKEL?: string}): Promise<Secrets | null> {
   const passwords = passwordsOf(env.DEALER_LOSEN), raw = env.DEALER_KAKNYCKEL ?? '';
   if (!passwords.length || raw.length < MIN_KEY) return null;
+  // The game's passwords: a word that stands in both lists opens everything, so it is not one of these.
+  const game = passwordsOf(env.DEALER_LOSEN_SPEL).filter(p => !passwords.includes(p));
   const key = await crypto.subtle.importKey('raw', bytes(raw), {name: 'HMAC', hash: 'SHA-256'}, false, ['sign']);
   // One password: the same fingerprint as before there could be several, so cookies already given keep holding.
   const fingerprint = hex(await crypto.subtle.digest('SHA-256', bytes(`dealer-studio|losen|${passwords.join('\n')}`))).slice(0, 32);
-  return {passwords, key, fingerprint};
+  // The game's cookies carry their own fingerprint, so a change of the game's passwords ends them and leaves the others holding.
+  const gameFingerprint = hex(await crypto.subtle.digest('SHA-256', bytes(`dealer-studio|losen-spel|${game.join('\n')}`))).slice(0, 32);
+  return {passwords, game, key, fingerprint, gameFingerprint};
 }
 
 const mac = async (s: Secrets, message: string) => new Uint8Array(await crypto.subtle.sign('HMAC', s.key, bytes(message)));
@@ -51,11 +60,17 @@ const mac = async (s: Secrets, message: string) => new Uint8Array(await crypto.s
  * The posted password against each of DEALER_LOSEN's in constant time: all are run through the HMAC first, so each comparison is
  * of two 32-byte digests whatever their lengths, every one is made, and none stops at the first wrong character.
  */
-export async function samePassword(s: Secrets, given: string): Promise<boolean> {
-  const [a, ...known] = await Promise.all([mac(s, `dealer-studio|try|${given}`), ...s.passwords.map(p => mac(s, `dealer-studio|try|${p}`))]);
+export const samePassword = (s: Secrets, given: string): Promise<boolean> => among(s, given, s.passwords);
+async function among(s: Secrets, given: string, list: string[]): Promise<boolean> {
+  const [a, ...known] = await Promise.all([mac(s, `dealer-studio|try|${given}`), ...list.map(p => mac(s, `dealer-studio|try|${p}`))]);
   let hit = false;
   for (const b of known) hit = sameBytes(a, b) || hit;
   return hit;
+}
+/** What the posted password opens: everything, only the game, or nothing. Both lists are always compared, whatever the first says. */
+export async function passwordScope(s: Secrets, given: string): Promise<Scope | null> {
+  const [all, game] = await Promise.all([among(s, given, s.passwords), among(s, given, s.game)]);
+  return all ? 'all' : game ? 'game' : null;
 }
 
 const signed = (s: Secrets, expires: number) => `dealer-studio|v1|${expires}|${s.fingerprint}`;
@@ -74,6 +89,28 @@ export async function verifyCookie(s: Secrets, value: string | null | undefined,
   // An expiry further away than one cookie lifetime was never written by signCookie with MAX_AGE.
   if (!given || expires <= now || expires > now + MAX_AGE + 60) return false;
   return sameBytes(given, await mac(s, signed(s, expires)));
+}
+
+const signedGame = (s: Secrets, expires: number) => `dealer-studio|g1|${expires}|${s.gameFingerprint}`;
+
+/** A cookie value for the game alone: "g1.<expires>.<HMAC-SHA256>". Another message than signCookie's, so neither kind can be made from the other. */
+export async function signGameCookie(s: Secrets, expires: number): Promise<string> {
+  if (!Number.isSafeInteger(expires) || expires <= 0) throw Error('Ogiltig giltighetstid.');
+  return `g1.${expires}.${base64url((await mac(s, signedGame(s, expires))).buffer as ArrayBuffer)}`;
+}
+
+/** Whether a cookie value is a game cookie this lock signed, with the game's passwords as they are now, and has not expired. */
+export async function verifyGameCookie(s: Secrets, value: string | null | undefined, now: number): Promise<boolean> {
+  const m = /^g1\.(\d{1,12})\.([A-Za-z0-9_-]{43})$/.exec(value ?? '');
+  if (!m || !s.game.length) return false;
+  const expires = Number(m[1]), given = unbase64url(m[2]);
+  if (!given || expires <= now || expires > now + MAX_AGE + 60) return false;
+  return sameBytes(given, await mac(s, signedGame(s, expires)));
+}
+
+/** What a cookie value opens: everything, only the game, or nothing. */
+export async function cookieScope(s: Secrets, value: string | null | undefined, now: number): Promise<Scope | null> {
+  return await verifyCookie(s, value, now) ? 'all' : await verifyGameCookie(s, value, now) ? 'game' : null;
 }
 
 /** The cookies of a request as a map (the first of a repeated name wins). */
