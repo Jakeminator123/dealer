@@ -77,7 +77,7 @@ if(has('--restart')){
 }else{
  const manifest=JSON.parse(await readFile('data/manifest.json','utf8'));
  // The pages themselves (old-lab/, game/page/) are served at their root addresses through PAGES (tools/lab-routes.ts), below.
- const allowed=new Set(['data/props.json','data/dealers.json','data/p4-generation-review.json','data/scene-contract.json','data/scene-rooms.json','assets/lab/native.jpg','assets/lab/portrait.jpg','assets/lab/placement-backdrop/native.jpg','assets/scene/room.png','assets/scene/panorama-vegas.jpg','assets/scene/panorama-la.jpg','assets/scene/panorama-skog.jpg',...['room-panorama','room-la','room-skog','room-hall','room-salong','dealer-pamela'].map(name=>`assets/scene/thumbs/${name}.jpg`),...['wood_table-diffuse','wood_table-nor_gl','wood_table-rough','brown_leather-nor_gl','brown_leather-rough','denim_fabric-nor_gl','denim_fabric-rough','runway_felt-diffuse','runway_leather-diffuse'].map(name=>`assets/scene/materials/${name}.webp`),'materials/kortmaterial.html','materials/markermaterial.html',...manifest.files.map((f:{path:string})=>f.path).filter((p:string)=>p.startsWith('assets/')||p.startsWith('materials/')||p.startsWith('output/v6/'))]);
+ const allowed=new Set(['data/props.json','data/dealers.json','data/p4-generation-review.json','data/scene-contract.json','data/scene-rooms.json','data/speech-patches.json','assets/lab/native.jpg','assets/lab/portrait.jpg','assets/lab/placement-backdrop/native.jpg','assets/scene/room.png','assets/scene/panorama-vegas.jpg','assets/scene/panorama-la.jpg','assets/scene/panorama-skog.jpg',...['room-panorama','room-la','room-skog','room-hall','room-salong','dealer-pamela'].map(name=>`assets/scene/thumbs/${name}.jpg`),...['wood_table-diffuse','wood_table-nor_gl','wood_table-rough','brown_leather-nor_gl','brown_leather-rough','denim_fabric-nor_gl','denim_fabric-rough','runway_felt-diffuse','runway_leather-diffuse'].map(name=>`assets/scene/materials/${name}.webp`),'materials/kortmaterial.html','materials/markermaterial.html',...manifest.files.map((f:{path:string})=>f.path).filter((p:string)=>p.startsWith('assets/')||p.startsWith('materials/')||p.startsWith('output/v6/'))]);
  // The modules and vendor files the pages ask for, and how a module is made ready for the browser: tools/lab-routes.ts, which the
  // build of the online copy reads too (tools/build-studio-snapshot.ts), so that the copy serves exactly what this server serves.
  // Table props made by tools/prop-glb.ts: assets/props/<id>.glb, and only where the file really lies in that folder.
@@ -109,6 +109,9 @@ if(has('--restart')){
  const sceneFile=async(file:string)=>{const m=sceneMedia.exec(file);if(!m)return false;try{return await realpath(file)===path.join(await realpath('assets/scene'),m[1],m[2]);}catch{return false;}};
  const proofFile=/^assets\/proofs\/((?:[a-z0-9][a-z0-9._-]*\/)+[a-z0-9][a-z0-9._-]*\.(?:mp4|png|json))$/;
  const proofPath=async(file:string)=>{const m=proofFile.exec(file);if(!m)return false;try{return await realpath(file)===path.join(await realpath('assets/proofs'),...m[1].split('/'));}catch{return false;}};
+ // Mouth patches (src/speech-patch.ts): assets/speech/<dealer>/patches/<id>/ with patch.json, mouth.webp or mouth.png and line.wav, and only where the file really lies there.
+ const patchMedia=/^assets\/speech\/([a-z0-9]+(?:-[a-z0-9]+)*)\/patches\/([a-z0-9]+(?:-[a-z0-9]+)*)\/(patch\.json|mouth\.webp|mouth\.png|line\.wav)$/;
+ const patchFile=async(file:string)=>{const m=patchMedia.exec(file);if(!m)return false;try{return await realpath(file)===path.join(await realpath('assets/speech'),m[1],'patches',m[2],m[3]);}catch{return false;}};
  const proofs=async()=>{
   const list:unknown[]=[];
   for(const dir of await readdir('assets/proofs',{withFileTypes:true}).catch(()=>[])){
@@ -145,7 +148,7 @@ if(has('--restart')){
  const tableOf=(name:string)=>{let game=games.get(name);if(!game){if(games.size>=24)games.delete(games.keys().next().value!);game=createSession();games.set(name,game);}return game;};
  // The lab's pages: one tab at a time (tools/tab-registry.ts). A page with a stream keeps the server up for as long as it is open.
  const token=randomUUID(),tabs=tabRegistry();
- const types:Record<string,string>={'.html':'text/html; charset=utf-8','.css':'text/css; charset=utf-8','.js':'text/javascript; charset=utf-8','.mp4':'video/mp4','.png':'image/png','.jpg':'image/jpeg','.json':'application/json','.glb':'model/gltf-binary'};
+ const types:Record<string,string>={'.html':'text/html; charset=utf-8','.css':'text/css; charset=utf-8','.js':'text/javascript; charset=utf-8','.mp4':'video/mp4','.png':'image/png','.jpg':'image/jpeg','.json':'application/json','.glb':'model/gltf-binary','.webp':'image/webp','.wav':'audio/wav'};
  // Streams and films in flight would hold the server open: the lab tab is told first, and what is still connected after half a second is cut.
  const stop=(reason:Reason='stop')=>{tabs.retire(reason);server.close();setTimeout(()=>server.closeAllConnections(),500).unref();};
  const server=http.createServer(async(req,res)=>{
@@ -294,7 +297,7 @@ if(has('--restart')){
     const name=url.pathname==='/'?'lab.html':decodeURIComponent(url.pathname.slice(1)),page=pages[`/${name}`];
     file=page??name;
     // media.servable: a picture or film data/media-roles.json names (keystones, anchors and frames of the view Material), inside the repo and no link out of it.
-    if(!page&&!allowed.has(file)&&!await clipFile(file)&&!await trackFile(file)&&!await proofPath(file)&&!await sceneFile(file)&&!await propFile(file)&&!await media.servable(file)&&!(await library()).items.some((item:{path:string})=>item.path===file)){res.writeHead(404).end();return;}
+    if(!page&&!allowed.has(file)&&!await clipFile(file)&&!await trackFile(file)&&!await proofPath(file)&&!await patchFile(file)&&!await sceneFile(file)&&!await propFile(file)&&!await media.servable(file)&&!(await library()).items.some((item:{path:string})=>item.path===file)){res.writeHead(404).end();return;}
     type=types[file.slice(file.lastIndexOf('.'))]??'application/octet-stream';
    }
    const size=await stat(file).then(s=>s.isFile()?s.size:-1,()=>-1);
