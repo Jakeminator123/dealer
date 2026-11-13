@@ -163,10 +163,13 @@ async function present(next: Snapshot, dealerPlays: boolean) {
   // Her lines in this step (the engine's speak signals): each with its talk film when there is one, written in the chat as she begins it.
   spoken.clear();
   // A line with neither a talk film nor a mouth patch is the chat's own; with a patch and no film it is written as the patch says it.
-  const moments = speakMoments(next.events), saying = (key: string): Said[] => { const talk = spokenOf(key), part = talk && film.talkPart(talk.clip), over = mouthFor(key); if (!(talk && part) && !over) return [];
-    const text = talk && part ? talk.text : over!.patch.line.text; spoken.add(key); return [{key: lineKey(key), part: talk && part ? part : null, begin: () => chat?.say(text)}]; };
-  // When the dealer plays her hand she says so first ("Dealern spelar.": the phase DEALER, which the engine gives no line of its own).
-  const said = {before: [...(dealerPlays ? saying('DEALER') : []), ...moments.before.flatMap(saying)], after: moments.after.flatMap(saying)};
+  const moments = speakMoments(next.events), saying = (key: string, beat?: Said['beat']): Said[] => { const talk = spokenOf(key), part = talk && film.talkPart(talk.clip), over = mouthFor(key); if (!(talk && part) && !over) return [];
+    const text = talk && part ? talk.text : over!.patch.line.text; spoken.add(key); return [{key: lineKey(key), part: talk && part ? part : null, begin: () => chat?.say(text), ...(beat ? {beat} : {})}]; };
+  // The engine says 'double' after the card it deals (game/presentation.ts), but the line belongs to the step's beginning, where the
+  // other product says it (600 ms into the reach for the shoe), so it goes with the lines before the chain. When the dealer plays her
+  // hand she says so ("Dealern spelar.": the phase DEALER, which the engine gives no line of its own): last, with the hole card's turn.
+  const early = moments.after.filter(key => key === 'double'), later = moments.after.filter(key => key !== 'double');
+  const said = {before: [...[...moments.before, ...early].flatMap(key => saying(key)), ...(dealerPlays ? saying('DEALER', 'REVEAL') : [])], after: later.flatMap(key => saying(key))};
   render();
   const result = await film.play(next.events, {table, records: cardRecords(table, cardFaces(next))}, beat => {
     if (beat.kind !== 'DEAL' && beat.kind !== 'REVEAL' && beat.kind !== 'PLACE') return;

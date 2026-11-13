@@ -183,22 +183,25 @@ export function fitsPart(p: Pick<MouthPatch, 'film' | 'first' | 'count'>, part: 
 /** The rule of the game: how late after a chain begins a line before it may still be said over one of its films, in seconds. */
 export const LATE_SECONDS = 8;
 /**
- * Which lines of a step are said over which films of its chain. lines: the keys due before the chain, in order. parts: the
+ * Which lines of a step are said over which films of its chain. lines: the keys due in the step, in order; a line that belongs to
+ * a later part than the first (the dealer's line belongs to the hole card's turn) says from which part (`from`). parts: the
  * chain's films in order. patches: those the game may use (its dealer, language and voice; their film's sha256 the bank's).
- * Each line goes over the first part that has a patch for it, if that patch fits the part, the part carries no other line, and
- * its sound begins at most `late` seconds after the chain begins (the parts before it counted at their own speed, which is the
- * slowest they play). Returns per line the part's index and the patch, or null: that line is said as before (its talk film at
- * rest before the chain, or as text). Lines are never laid on one part together, and a later line never on an earlier part.
+ * Each line goes over the first part from its own that has a patch for it, if that patch fits the part, the part carries no other
+ * line, and its sound begins at most `late` seconds after its own part begins (the parts between counted at their own speed,
+ * which is the slowest they play). Returns per line the part's index and the patch, or null: that line is said as before (its
+ * talk film at rest, or as text). Lines are never laid on one part together, and a later line never on an earlier part.
  */
-export function placeLines(lines: readonly string[], parts: readonly ChainPart[], patches: readonly MouthPatch[], late = LATE_SECONDS): ({part: number; patch: MouthPatch} | null)[] {
+export type DueLine = string | {key: string; from?: number};
+export function placeLines(lines: readonly DueLine[], parts: readonly ChainPart[], patches: readonly MouthPatch[], late = LATE_SECONDS): ({part: number; patch: MouthPatch} | null)[] {
   const starts: number[] = []; let t = 0;
   for (const part of parts) { starts.push(t); const fps = part.fps ?? 30, end = part.end ?? part.frames ?? patches.find(p => p.film.path === part.path)?.film.frames ?? null; t += end === null ? Infinity : Math.max(0, end - (part.start ?? 0)) / fps; }
   let after = -1; const taken = new Set<number>();
-  return lines.map(key => {
-    for (let i = after + 1; i < parts.length; i++) {
+  return lines.map(line => {
+    const key = typeof line === 'string' ? line : line.key, from = Math.min(parts.length, Math.max(0, typeof line === 'string' ? 0 : line.from ?? 0));
+    for (let i = Math.max(after + 1, from); i < parts.length; i++) {
       if (taken.has(i)) continue;
       const patch = patches.find(p => p.line.key === key && fitsPart(p, parts[i])); if (!patch) continue;
-      const begins = starts[i] + patch.sound.startsAtSeconds - (parts[i].start ?? 0) / patch.film.fps;
+      const begins = starts[i] - (starts[from] ?? 0) + patch.sound.startsAtSeconds - (parts[i].start ?? 0) / patch.film.fps;
       if (!(begins <= late)) return null;
       taken.add(i); after = i; return {part: i, patch};
     }

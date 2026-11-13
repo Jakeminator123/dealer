@@ -79,6 +79,11 @@ test('a line goes over the first film of the chain that has a patch for it, in t
   assert.deepEqual(placeLines(['goodluck', 'double'], chain, [entry, double]).map(p => p && p.part), [0, null]); // never two on one part
   assert.deepEqual(placeLines(['double', 'goodluck'], chain, [entry, double, deal]).map(p => p && p.part), [0, 1]);
   assert.deepEqual(placeLines(['nothing'], chain, [entry]), [null]);
+  // a line that belongs to a later part (the dealer's to the hole card's turn) is placed from there, and its 8 s count from there
+  const reveal = patchOf({id: 'paow-mun-dealerplays-sv-halkort-04-02', line: {key: 'dealerplays', language: 'sv', text: 'Dealern spelar.', voice: 'Paow'}, film: {...film, id: 'paow-halkort-04-02', path: 'assets/motions/paow-halkort-04-02/source.mp4', frames: 121}, first: 13, count: 25, weights: new Array(25).fill(1), strip: {...patchOf().strip, columns: 5, rows: 5, width: 920, height: 880}});
+  const long = [chain[0], chain[1], {path: 'assets/motions/ret/source.mp4', start: 109, end: 169, fps: 24}, {path: reveal.film.path, start: 3, end: 118, fps: 24, frames: 121}];
+  assert.deepEqual(placeLines(['dealerplays'], long, [reveal]), [null], 'from the chain\'s start the turn is 11 s in: too late');
+  assert.deepEqual(placeLines([{key: 'double'}, {key: 'dealerplays', from: 3}], long, [double, reveal]).map(p => p && p.part), [0, 3]);
 });
 
 test('writePatch writes a whole folder: a lossless strip, the sound and the record last', async () => {

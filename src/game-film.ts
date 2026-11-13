@@ -80,8 +80,9 @@ export function cardOptions(beat: Pick<Beat, 'own' | 'lying'>, table: TableCards
 }
 
 // A line she says in a step: its talk film (null: text only) and what is done when she begins it (the page writes it in the chat).
-// key: the line's key (data/speech.json), by which a mouth patch over one of the step's films is found.
-export type Said = {part: FilmPart | null; begin(): void; key?: string};
+// key: the line's key (data/speech.json), by which a mouth patch over one of the step's films is found. beat: the kind of beat the
+// line belongs to when that is not the chain's first ('REVEAL': the dealer's line goes with the hole card's turn).
+export type Said = {part: FilmPart | null; begin(): void; key?: string; beat?: Beat['kind']};
 
 export function createFilm(players: FilmPlayers, bank: Graph, layout: Layout, readJson: (path: string) => Promise<unknown>, random: () => number = Math.random) {
   let graph = bank; // whose films: another dealer at the table is another graph (use)
@@ -142,10 +143,11 @@ export function createFilm(players: FilmPlayers, bank: Graph, layout: Layout, re
     // What she says before the cards and after them: the talk films around the chain, each line begun as its film begins.
     const before = said.before ?? [], after = said.after ?? [];
     // A line due before the chain is said over the first of its films that has a mouth patch for it (placeLines in src/speech-patch.ts:
-    // the patch lies inside the part's cut, its sound begins at most 8 s into the chain, one line a part). Its talk film is then not
+    // the patch lies inside the part's cut, its sound begins at most 8 s after the line's own part, one line a part). Its talk film is then not
     // played, and its chat line is written as its sound begins. The others are said as before.
     const ready = mouths(), over = new Set<Said>(), chain = parts.map((p, k) => ({path: p.path, start: p.start, end: p.end, fps: p.fps ?? 30, frames: segments[beatOf[k]]?.take?.frames ?? null}));
-    if (ready.length) placeLines(before.map(t => t.key ?? ''), chain, ready.map(m => m.patch)).forEach((at, k) => { if (!at) return; const t = before[k], m = ready.find(x => x.patch === at.patch)!;
+    const due = (t: Said) => ({key: t.key ?? '', from: t.beat ? Math.max(0, beatOf.findIndex(b => beats[b].kind === t.beat)) : 0});
+    if (ready.length) placeLines(before.map(due), chain, ready.map(m => m.patch)).forEach((at, k) => { if (!at) return; const t = before[k], m = ready.find(x => x.patch === at.patch)!;
       parts[at.part] = {...parts[at.part], mouth: {...m, begin: () => t.begin()}}; over.add(t); });
     const talkBefore = before.filter(t => t.part && !over.has(t)), talkAfter = after.filter(t => t.part);
     for (const t of talkBefore) t.part = {...t.part!, cards: cardOptions({own: null, lying}, table, turn >= 0 ? closed : records, layout)};
