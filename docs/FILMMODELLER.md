@@ -23,7 +23,9 @@ skript").
    `assets/motions/`).
 2. **De lagrar färgerna olika.** Kling 4 skriver färgerna för BT.709 och märker filen så. WAN 3 skriver färger som
    ligger närmast första bilden när de läses som BT.601, och märker inget. Efterarbetet tar bort märkningen och behåller
-   värdena, så banken har två familjer av filmer i omärkta filer (M).
+   värdena, så banken har två familjer av filmer i omärkta filer (M). Skärmens gröna är ändå lika i båda familjerna,
+   eftersom efterarbetet sätter det gröna på ankarets nivå ruta för ruta: skillnaden sitter på henne, och är så stor
+   som ett byte av matris ger (M, scenbanan: grönt Y 139,5 mot 139,4, ansiktet Y 156,8 mot 160,1).
 3. **Det syns vid en skarv.** Vid första rutan är hon i Kling 4 cirka 4 nivåer mörkare i rött och grönt och 2 blåare än
    i WAN 3. WAN 3 blir dessutom cirka 2 nivåer ljusare under en film. Där en WAN 3-film slutar och en Kling 4-film
    börjar hoppar hon därför cirka 6 nivåer, mellan två WAN 3-filmer cirka 2, mellan två Kling 4-filmer inget (M).
