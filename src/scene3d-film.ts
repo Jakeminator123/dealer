@@ -459,6 +459,10 @@ export function createPlayers(onShow: (texture: T.Texture, path: string) => void
     // A frame request that has waited long on a paused video is no longer polled by the browser, and the first frame after
     // play() then arrives a quarter of a second late with the frames in between dropped. A fresh request sets that right.
     if (v.requestVideoFrameCallback) frameCall(v, () => {});
+    // A pooled element is made for its path alone (media), so whether it is heard is decided here, each time a part starts:
+    // a spoken line (part.sound) once the page has been touched, everything else muted. Without this line a talk film in
+    // a chain was always muted: she moved her mouth in the game and said nothing.
+    v.muted = !(part.sound === true && globalThis.navigator?.userActivation?.hasBeenActive === true);
     v.playbackRate = part.rate ?? 1; v.play().catch(() => {});
     // Waiting on its first frame already: shown at once, so the join costs no frame. Otherwise on the first frame it presents.
     if (v.readyState >= 2 && !v.seeking) { m.texture.needsUpdate = true; swap(); } else { m.hook = swap; if (!v.requestVideoFrameCallback) later(swap, 40); }
