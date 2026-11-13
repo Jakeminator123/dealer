@@ -371,6 +371,11 @@ Det som hindrar en runda först. Han kan svara rad för rad.
     rutor); Pamelas spår är inte omgjorda med de nya reglerna. Tabellen per tagning och bilderna:
     `D:/dealer-scratch/tmp/huvudagent11/kort/`.
   - Kortens storlek bestäms av `cardScale` gånger kontraktets kort (63 × 88 mm); planen ger bara plats och riktning.
+- **Produktionslistan och fallna tagningar:** raden för plats 6 står som "levererad, efterarbetas och granskas"
+  fast alla fjorton tagningarna är bedömda och fallna. En tagning som beställaren själv mätte bort ligger kvar på
+  MÄTT med domen i kvittots `review` (GRANSKAD är den oberoende granskarens), och listan räknar en order som på
+  väg tills varje tagning är GRANSKAD eller INFÖRD (`IN_FLIGHT` i `tools/produce.ts`). Rättningen: en tagning med
+  dom i kvittot räknas som avslutad, så att raden åter visar vad som kan beställas.
 - **Det bandet inte kan än** står samlat i `tools/dealer-line.md` ("Vad bandet inte kan än"): ett tredje eller fjärde
   kort, helfiguren, ankare 2.2, landningsbild, keystone och ankare 1 som steg i Beställ, och retur till vila från en
   plats.
