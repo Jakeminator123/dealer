@@ -5,7 +5,9 @@ import {fileURLToPath} from 'node:url';
 
 export type Finding = {level:'RED'|'YELLOW'; path:string; message:string};
 export const TESTS = ['tools/placements.test.ts','tools/public-storage.test.ts','tools/lab-ui.test.ts','tools/render-safety.test.ts','tools/publication-check.test.ts','tools/clip-job.test.ts','tools/clip-graph.test.ts','tools/card-track.test.ts','tools/scene-geometry.test.ts','tools/scene3d-geometry.test.ts','tools/clip-edit.test.ts','tools/card-overlay.test.ts','tools/review-store.test.ts','tools/game-director.test.ts','tools/game-rules.test.ts','tools/game-rng.test.ts','tools/game-shoe.test.ts','tools/game-presentation.test.ts','tools/game-session.test.ts','tools/game-seats.test.ts','tools/game-fuzz.test.ts','tools/game-view.test.ts','tools/game3d-chips.test.ts','tools/prop-glb.test.ts','tools/props-lab.test.ts','tools/scene3d-hall.test.ts','tools/lab-sound.test.ts','tools/scene3d-shift.test.ts','tools/scene3d-rooms.test.ts','tools/tab-registry.test.ts','tools/studio-files.test.ts','tools/scene3d-dispose.test.ts','tools/scratch-clean.test.ts','tools/scene3d-looks.test.ts','tools/studio-freeze.test.ts','tools/studio-lock.test.ts','tools/scene-preset-store.test.ts','tools/knowledge.test.ts','tools/bot.test.ts','tools/media-roles.test.ts','tools/pages.test.ts','tools/flip-axis.test.ts','tools/game-look.test.ts','tools/order-model.test.ts','tools/order-prompts.test.ts','tools/order-images.test.ts','tools/order-routes.test.ts','tools/order-put.test.ts','tools/film-fix.test.ts','tools/register-order.test.ts','tools/placement-backdrop.test.ts','tools/order-ledger.test.ts','tools/scene-material.test.ts','tools/order-methods.test.ts','tools/produce.test.ts','tools/order-bring.test.ts','studio/tests/*.test.ts','tools/film-after.test.ts','tools/still-after.test.ts','tools/speech-plan.test.ts'];
-const DOC_LIMITS:Record<string,number> = {'AGENTS.md':50,'README.md':100,'HANDOFF.md':200,'docs/SYSTEM.md':160,'docs/DRIFT.md':150};
+// The documents every reader starts from: a push without one of them stops. Their length is not checked, and new pages
+// under docs/ or tools/ are welcome where a subject needs one (AGENTS.md, "Var kunskap står").
+export const CANONICAL = ['AGENTS.md','README.md','HANDOFF.md','docs/SYSTEM.md','docs/DRIFT.md'];
 const zero = /^0+$/;
 const oid = /^[a-f0-9]{40,64}$/i;
 const git = (root:string,...args:string[]) => {
@@ -29,15 +31,6 @@ export function inspectBlob(name:string, bytes:Buffer):Finding[] {
   // Only report file names, never the matching credential or source line.
   if(/gh[pousr]_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,}|sk-[A-Za-z0-9_-]{32,}|AKIA[A-Z0-9]{16}|-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----/.test(text)
     || /(?:api[_-]?key|secret|password|token)\s*[:=]\s*["'][A-Za-z0-9_+\/=.-]{24,}["']/i.test(text)) add('RED','Möjlig incheckad hemlighet; utred utan att skriva ut värdet.');
-  return result;
-}
-
-export function inspectDocument(name:string,text:string):Finding[] {
-  const result:Finding[]=[];
-  if(!name.endsWith('.md'))return result;
-  if((name.startsWith('docs/')||!name.includes('/')) && !(name in DOC_LIMITS)) result.push({level:'YELLOW',path:name,message:'Nytt dokument: kontrollera om innehållet hör hemma i SYSTEM eller DRIFT.'});
-  const lines=text.trimEnd().split('\n').length;
-  if(DOC_LIMITS[name] && lines>DOC_LIMITS[name]) result.push({level:'YELLOW',path:name,message:`${lines} rader över riktvärdet ${DOC_LIMITS[name]}; förenkla eller motivera strukturen.`});
   return result;
 }
 
@@ -77,8 +70,6 @@ export function scanRange(root:string,head:string,base:string):Finding[] {
     const names=git(root,'diff-tree','--root','--no-commit-id','--name-only','-z','-r','-m','--diff-filter=ACMRT',commit).split('\0').filter(Boolean);
     for(const name of names) findings.push(...inspectBlob(name,Buffer.alloc(0)));
   }
-  const names=git(root,'ls-tree','-r','--name-only','-z',head).split('\0').filter(Boolean);
-  for(const name of names.filter(p=>p.endsWith('.md')&&(p.startsWith('docs/')||!p.includes('/')))) findings.push(...inspectDocument(name,git(root,'show',`${head}:${name}`)));
   return [...new Map(findings.map(f=>[JSON.stringify(f),f])).values()];
 }
 
@@ -119,7 +110,7 @@ function main() {
   if(dirty.length)throw Error('Testindata skiljer sig från HEAD: '+dirty.join(', ')+'. Samordna arbetet; återställ inte någon annans filer.');
   const findings=ranges.flatMap(r=>scanRange(root,r.local,r.remote));
   const names=git(root,'ls-tree','-r','--name-only','-z',head).split('\0');
-  for(const name of Object.keys(DOC_LIMITS))if(!names.includes(name))findings.push({level:'RED',path:name,message:'Ett kanoniskt dokument saknas; återställ eller samordna dokumentstrukturen.'});
+  for(const name of CANONICAL)if(!names.includes(name))findings.push({level:'RED',path:name,message:'Ett kanoniskt dokument saknas; återställ eller samordna dokumentstrukturen.'});
   findings.forEach(emit);
   if(findings.some(f=>f.level==='RED'))throw Error('Publiceringen stoppad. Utred fynd och eventuell felaktig kontroll; använd inte --no-verify.');
   const env={...process.env};
@@ -127,7 +118,7 @@ function main() {
   const test=spawnSync(process.execPath,['--test','--test-concurrency=4',...TESTS],{cwd:root,env,stdio:'inherit'});
   if(test.error||test.status!==0)throw Error('Testkörningen misslyckades. Kontrollera både produktkod och test/hook innan publicering.');
   if(git(root,'rev-parse','HEAD').trim()!==head||changedTestInputs(root).length)throw Error('Kod eller HEAD ändrades under kontrollen; kör om på stabil version.');
-  console.log(`Kontrollerad HEAD ${head}; ${findings.filter(f=>f.level==='YELLOW').length} dokumentvarningar. Eventuella Node-varningar visas separat. Detta verifierar inte media, rendering eller deploy.`);
+  console.log(`Kontrollerad HEAD ${head}; ${findings.filter(f=>f.level==='YELLOW').length} varningar. Eventuella Node-varningar visas separat. Detta verifierar inte media, rendering eller deploy.`);
 }
 
 if(process.argv[1]&&path.resolve(process.argv[1])===fileURLToPath(import.meta.url)) {

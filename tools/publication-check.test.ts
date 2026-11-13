@@ -1,10 +1,10 @@
 import test,{type TestContext} from 'node:test';
 import assert from 'node:assert/strict';
-import {mkdtempSync,writeFileSync,mkdirSync,rmSync,readFileSync,readdirSync} from 'node:fs';
+import {mkdtempSync,writeFileSync,mkdirSync,rmSync,readFileSync,readdirSync,existsSync} from 'node:fs';
 import {tmpdir} from 'node:os';
 import path from 'node:path';
 import {execFileSync} from 'node:child_process';
-import {inspectBlob,inspectDocument,parsePush,dirtyTestInputs,scanRange,TESTS} from './publication-check.ts';
+import {inspectBlob,parsePush,dirtyTestInputs,scanRange,TESTS,CANONICAL} from './publication-check.ts';
 
 function fixture(t:TestContext){
   const root=mkdtempSync(path.join(tmpdir(),'dealer-publication-test-'));
@@ -26,10 +26,18 @@ test('private paths, media and token-like values block without exposing the valu
   assert.deepEqual(inspectBlob('src/client.ts',Buffer.from('const key = process.env.RUNWAY_API_KEY;')),[]);
 });
 
-test('documentation warnings remain warnings; user placement drafts are not test inputs',()=>{
-  assert.equal(inspectDocument('docs/DRIFT.md','line\n'.repeat(151))[0].level,'YELLOW');
-  assert.equal(inspectDocument('docs/new-plan.md','# Plan')[0].level,'YELLOW');
-  assert.deepEqual(inspectDocument('docs/DRIFT.md','# Drift'),[]);
+test('documents are not measured: a long document or a new page under docs/ gives no finding',t=>{
+  const f=fixture(t),base=f.commit('README.md','# Fixture');
+  f.commit('docs/DRIFT.md','line\n'.repeat(400));
+  const head=f.commit('docs/new-subject.md','# A new subject');
+  assert.deepEqual(scanRange(f.root,head,base),[]);
+});
+
+test('the canonical documents, whose absence stops a push, are all in the repository',()=>{
+  assert.deepEqual(CANONICAL.filter(name=>!existsSync(name)),[]);
+});
+
+test('user placement drafts are not test inputs',()=>{
   assert.deepEqual(dirtyTestInputs(['placements/default.json','HANDOFF.md']),[]);
   assert.deepEqual(dirtyTestInputs(['src/lab-ui.ts','package-lock.json','placements/default.json']),['src/lab-ui.ts','package-lock.json']);
   assert.deepEqual(dirtyTestInputs(['studio/app/page.tsx','studio/package.json','studio/lib/api.ts','src/studio/x.ts']),['src/studio/x.ts']);
