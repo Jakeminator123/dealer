@@ -3359,6 +3359,40 @@
         89
       ],
       "purpose": "As pamela-ready-idle-exit-01 but three seconds with the calm template wording, to compare: the entry moved its hand in about 0.5 s of its 2 s, and the head lift and smile also need time. Ordered through Runway's MCP server (batch 15, 2026-11-11)."
+    },
+    {
+      "id": "paow-ingang-2-1-01-01",
+      "kind": "ENTRY",
+      "from": "IDLE",
+      "to": "READY",
+      "clip": "paow-ingang-2-1-01-01",
+      "frames": [
+        0,
+        117
+      ],
+      "purpose": "Beställning paow-ingang-2-1-01, tagning 1: Paow · Ankare 1 → 2.1.",
+      "dealer": "paow",
+      "model": "wan3",
+      "duration": 4,
+      "promptText": "Locked camera. A young, slim, petite woman with a platinum-blonde chin-length bob, warm-coloured tattoos on her throat and upper chest and a small white flower pendant, in a black tailored blazer over a cream V-neck top sits at a green table with a black card shoe fixed at the right of the picture, a yellow card in its window. One continuous, calm and natural movement from the exact first pose, both hands resting on the felt. She calmly lifts her left hand, at the right of the picture, reaches to the shoe and pinches the top of the yellow card in the shoe's window between thumb and forefinger, her fingertips on the card itself and not on the shoe's rim, and draws it a little way out of the window, settling exactly into the pose of the last image. The card stays in her pinch at the shoe, as in the last image; nothing is dealt. Her right hand, at the left of the picture, rests on the table the whole time. Nothing of this happens: a second card appears, a finger passes through the card, the card grows or shrinks on its way, a hand hovers in the air without holding or laying anything, the shoe changes, the picture cuts or the camera moves.",
+      "first": {
+        "file": {
+          "path": "assets/orders/paow-ingang-2-1-01/first.png",
+          "sha256": "cdaa59756e2eb0f7b839f23254f9999f8c8da4c8eef0e37bf23e9643ba6586ee"
+        },
+        "note": "Första bilden i beställningen paow-ingang-2-1-01."
+      },
+      "last": {
+        "file": {
+          "path": "assets/orders/paow-ingang-2-1-01/last.png",
+          "sha256": "74eebfdc1388f8de362c0151546bbe08aeb1fed74fca097f8ca6999d833dc702"
+        },
+        "note": "Sista bilden i beställningen paow-ingang-2-1-01."
+      },
+      "order": {
+        "id": "paow-ingang-2-1-01",
+        "take": 1
+      }
     }
   ],
   "edits": [

@@ -2409,8 +2409,9 @@
         "referens": "Inga egna. Hennes filmer beställs med Pamelas rakt godkända filmer som referens."
       },
       "films": {
-        "from": null,
-        "note": "Banken skiljer ännu inte dealer per namn, så hennes filmer är inte införda."
+        "from": "data/clip-jobs.json",
+        "prefix": "paow-",
+        "note": "Banken: tagningar förda in ur beställningar (tools/register-order.ts); de väntar i inkorgen tills Jakob har dömt. Första tagningen infördes 2026-11-13."
       },
       "outside": {
         "path": "D:/dealer-scratch/tmp/paow/",
@@ -3033,6 +3034,48 @@
           }
         },
         {
+          "id": "paow-film-ny-ingang-2-1-wan",
+          "role": "film",
+          "name": "Ankare 1 → 2.1 (WAN 3)",
+          "path": "assets/films/paow/ny-ingang-2-1-wan/source.mp4",
+          "still": 100,
+          "fps": 30,
+          "state": "kandidat",
+          "note": "Ingångsfilmen från det nya ankare 1 till ankare 2.1. Pekfingret vilar först på fönstrets ram, sedan nyper hon kortet. Ligger också i bankens inkorg (paow-ingang-2-1-01-01).",
+          "source": {
+            "from": "beställningen paow-ingang-2-1-01, tagning 1 (studions vy Beställ)",
+            "when": "2026-11-13"
+          }
+        },
+        {
+          "id": "paow-film-ny-giv-p4-t1",
+          "role": "film",
+          "name": "Giv till plats 4, tagning 1 (Kling 4)",
+          "path": "assets/films/paow/ny-giv-p4-t1/source.mp4",
+          "still": 84,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Första given från det nya ankare 2.1: nyp, dra, för fram, vänd vid platsen, lägg, tillbaka till nypet. Utan referensfilm.",
+          "source": {
+            "from": "beställningen paow-giv-p4, tagning 1 (studions vy Beställ)",
+            "when": "2026-11-13"
+          }
+        },
+        {
+          "id": "paow-film-ny-giv-p4-t2",
+          "role": "film",
+          "name": "Giv till plats 4, tagning 2 (Kling 4)",
+          "path": "assets/films/paow/ny-giv-p4-t2/source.mp4",
+          "still": 84,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Första given från det nya ankare 2.1, andra tagningen. Utan referensfilm.",
+          "source": {
+            "from": "beställningen paow-giv-p4, tagning 2 (studions vy Beställ)",
+            "when": "2026-11-13"
+          }
+        },
+        {
           "id": "paow-prov-ankare-ung",
           "role": "prov",
           "name": "Ankare 1, yngre, kandidater",
@@ -3110,6 +3153,13 @@
           "role": "prov",
           "name": "Grundbilden",
           "proof": "paow-grundbild"
+        },
+        {
+          "id": "paow-prov-forsta-natten",
+          "role": "prov",
+          "name": "Paow: första nattens leveranser",
+          "proof": "paow-forsta-natten",
+          "note": "Det som beställdes natten till 2026-11-13 från Paows nya ankare 1 och 2.1 (ingångsfilmen med WAN 3 och Kling 3.0 4K, första given till plats 4, ankare 2.2); kopior av assets/orders/, originalen ligger kvar där."
         },
         {
           "id": "paow-profil-kavaj",
