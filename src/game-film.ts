@@ -93,7 +93,7 @@ export type Said = {part: FilmPart | null; begin(): void; key?: string; beat?: B
 export function createFilm(players: FilmPlayers, bank: Graph, layout: Layout, readJson: (path: string) => Promise<unknown>, random: () => number = Math.random) {
   let graph = bank; // whose films: another dealer at the table is another graph (use)
   let table: TableCards = {hands: [], dealer: []}, records: CardRecord[] = [], lying: number[] = [];
-  let token = 0, resting: Take | null = null, carry: Carry = CARRY; const played: string[] = [], tracks = new Map<string, Promise<unknown>>();
+  let token = 0, resting: Take | null = null, carry: Carry = CARRY, calmOnly = false; const played: string[] = [], tracks = new Map<string, Promise<unknown>>();
   let mouths: () => Mouth[] = () => []; // the mouth patches the page has read and may lay now, asked for as a step begins
   const modelOf = (take: Take | null | undefined) => { const model = filmModel(take, graph.takes); return model ? {model} : {}; };
   const trackOf = (take: Take | null) => { const path = take?.media.track; if (!path) return Promise.resolve(null); let hit = tracks.get(path); if (!hit) { hit = readJson(path).catch(() => null); tracks.set(path, hit); } return hit; };
@@ -103,7 +103,9 @@ export function createFilm(players: FilmPlayers, bank: Graph, layout: Layout, re
 
   // ── rest: short clips that all begin and end on the same frame, one after the other until a step takes over ──
   function rest() {
-    const mine = ++token, pick = pickIdle(graph.edge['IDLE>IDLE']?.takes ?? [], played, random());
+    // calmOnly (the page's, while a film plays before the game): only calm rests, where she has any, so that she is at rest when it is seen
+    const rests = graph.edge['IDLE>IDLE']?.takes ?? [], calm = calmOnly ? rests.filter(t => t.idle?.calm === true) : [];
+    const mine = ++token, pick = pickIdle(calm.length ? calm : rests, played, random());
     if (!pick?.take.media.video) { resting = null; return; }
     const take = pick.take, range = idleRange(take.frames ?? 90);
     resting = take; played.push(take.id); played.splice(0, Math.max(0, played.length - 12));
@@ -217,6 +219,8 @@ export function createFilm(players: FilmPlayers, bank: Graph, layout: Layout, re
     play, rest, swap, say, talkPart,
     /** How the carried card is shown from the next step on (Carry). */
     set carry(next: Carry) { carry = next; }, get carry() { return carry; },
+    /** Only calm rest films from the next pick on (true), or the whole rotation with its gestures (false). */
+    set calm(next: boolean) { calmOnly = next; }, get calm() { return calmOnly; },
     /** The mouth patches that may be laid on a step's films, asked for as each step begins (the page's, read and ready). */
     set mouths(next: () => Mouth[]) { mouths = next; },
     /** Another dealer's films from now on (she has come to the table); rest goes on with hers. */

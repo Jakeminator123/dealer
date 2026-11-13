@@ -296,7 +296,10 @@ Allt går att läsa och spela, inget går att ändra, och inga kostnader visas.
   sådant lösenord släpps spelsidan och det den läser igenom (moduler, banken, filmer, spår); studion, varje annan sida och
   boten leder tillbaka till spelet eller är stängda. Ett ord som står i båda variablerna öppnar allt. Att byta eller ta
   bort variabeln avslutar bara spelets inloggningar; de andra står kvar. Publiceringens kontroll prövar det med
-  `DEALER_LOSEN_SPEL_PROV=<ordet>` framför kommandot.
+  `DEALER_LOSEN_SPEL_PROV=<ordet>` framför kommandot. En andra dörr, `/trailer`, leder till spelet med filmen före
+  (`TRAILER_HOME`: `intro=noir-3`, rummet Monaco med rörelse, bordet och Paow; SYSTEM, "En film före spelet"), bakom
+  samma lås och med båda sorters lösenord. Trailerproven i Prov går fortfarande inte upp (`blocked.folders` i
+  `data/studio-release.json`); bara filmen före spelet gör det, på Jakobs ord 2026-11-13 kl. 21.23.
 - **Boten** följer med men har ingen `BOT_BLOB_TOKEN`: den svarar att den saknar lagring och anropar ingen modell, så den
   kostar inget. Att slå på den (egen privat store, nyckel, tak) är Jakobs beslut.
 - **Vad som går upp** avgör `data/studio-release.json` (tagningar per dealer, vad spelet kan spela, prov, förval, spärrade

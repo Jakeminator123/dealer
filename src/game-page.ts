@@ -29,6 +29,15 @@ const $ = (id: string) => document.getElementById(id)!, stage = $('stage'), canv
 const fail = (message: string): never => { failBox.textContent = message; throw Error(message); };
 const read = async (url: string, what: string) => { const res = await fetch(url).catch(() => null); if (!res?.ok) fail(`${what} kunde inte läsas (${url}).`); return res!.json(); };
 const query = new URLSearchParams(location.search);
+// A film before the game (src/game-intro.ts): ?intro=noir-3 lays the short noir trailer over the stage, with Spela and Hoppa över,
+// and fades into the game when it ends (Jakob 2026-11-13: "så att man övergår till henne i URL:en på vercel. kanske genom en ny
+// knapp"). It is laid before anything is read, so that it covers the first picture, and the game is built under it. The film's last
+// frame is the game's own picture in the room Monaco with life in the room, so the address asks for room=monaco and roomLife=1 too.
+// Until it is over she says nothing and the chat is still (introOn, in render): the press on Spela is also what lets her be heard.
+const INTROS: Record<string, {film: string; poster: string}> = {'noir-3': {film: 'assets/films/intro/noir-3/film.mp4', poster: 'assets/films/intro/noir-3/poster.jpg'}};
+const introAsked = INTROS[query.get('intro') ?? ''] as {film: string; poster: string} | undefined;
+let introOn = !!introAsked, introOver = () => { introOn = false; }, introFade = () => {};
+if (introAsked) void import('./game-intro.ts').then(m => m.createIntro(stage, canvas, {...introAsked, onFade: played => { if (played) introFade(); }})).catch(() => null).then(() => introOver());
 stage.dataset.theme = THEMES.includes(query.get('tema') ?? '') ? query.get('tema')! : 'noir';
 // The server keeps one session per table name; a second tab or a test opens game.html?table=<name> and plays its own.
 const table = /^[a-z0-9-]{1,40}$/.test(query.get('table') ?? '') ? `?table=${query.get('table')}` : '';
@@ -36,7 +45,7 @@ const table = /^[a-z0-9-]{1,40}$/.test(query.get('table') ?? '') ? `?table=${que
 // so the page without them reads and does exactly what it did before. ?inbaddad=1 (the Casino view shows the game in a
 // frame) hides nothing: the frame shows none of what this page shows, and src/preview-ui.ts keeps a framed page from
 // taking the lab tab by itself.
-const OWN_WORDS = ['table', 'tema', 'bricka', 'chatt', 'robot', 'inbaddad', 'dealer'], forval = query.get('forval');
+const OWN_WORDS = ['table', 'tema', 'bricka', 'chatt', 'robot', 'inbaddad', 'dealer', 'intro'], forval = query.get('forval');
 const lookAsked = [...query.keys()].some(word => !OWN_WORDS.includes(word) && word !== 'kort'); // kort: how the card in her hand is shown (below)
 
 const [contract, placements, bank, first, register, lookCode, presetAnswer] = await Promise.all([read('data/scene-contract.json', 'Scenkontraktet'), read('api/placements', 'Placeringsplanen'), read('api/clip-bank', 'Klippbanken'), read(`api/game${table}`, 'Spelet'), read('data/scene-rooms.json', 'Rumsregistret'),
@@ -118,6 +127,7 @@ if (lookNote) { const note = Object.assign(document.createElement('p'), {textCon
 scene.rebuild(); scene.start();
 new ResizeObserver(frame).observe(stage); frame();
 const film = createFilm(scene.players as unknown as FilmPlayers, graph, layout, path => fetch(path).then(res => res.ok ? res.json() : null));
+film.calm = introOn; // under the film before the game she only rests calmly: the film ends with her at rest
 // How the card in her hand is shown (src/game-film.ts Carry) is a word in the address only, for the lab and for recordings:
 // kort=hand (the drawn card in her hand: what the game does without the word), kort=liggande (the film's own card in her hand, the
 // drawn card once it lies), kort=matt (the film's card recoloured in her hand).
@@ -341,7 +351,7 @@ function phaseLine(phase: string): string | null | undefined {
 }
 const render = () => { const view = tableView(snapshot, page);
   panel.set({canChange: !page.busy && page.stage !== 'ROUND'});
-  if (chat) { if (view.phase !== chatPhase) { chatPhase = view.phase; chat.phase(view.phase, phaseLine(view.phase)); } if (page.line !== chatLine) { chatLine = page.line; if (page.line && view.phase === 'SETTLED' && !settledSpoken()) chat.say(page.line.replace(/<[^>]+>/g, '')); } } chips?.set(Object.fromEntries(view.seats.map(s => [s.seat, taken.has(s.seat) ? [] : s.chips])), seconds()); if (view.phase === 'TURN' || view.phase === 'BETTING') { if (view.phase === 'TURN') byHand = false; aimAt(view.phase === 'TURN' ? snapshot.view.round?.activeSeat ?? null : null); } overlay.render(view); };
+  if (chat && !introOn) { if (view.phase !== chatPhase) { chatPhase = view.phase; chat.phase(view.phase, phaseLine(view.phase)); } if (page.line !== chatLine) { chatLine = page.line; if (page.line && view.phase === 'SETTLED' && !settledSpoken()) chat.say(page.line.replace(/<[^>]+>/g, '')); } } chips?.set(Object.fromEntries(view.seats.map(s => [s.seat, taken.has(s.seat) ? [] : s.chips])), seconds()); if (view.phase === 'TURN' || view.phase === 'BETTING') { if (view.phase === 'TURN') byHand = false; aimAt(view.phase === 'TURN' ? snapshot.view.round?.activeSeat ?? null : null); } overlay.render(view); };
 
 // ── where things are in the picture ──
 // A film pixel on the felt as the scene's own table point (dealer metres: x across, s from the dealer's edge).
@@ -386,6 +396,11 @@ scene.onFrame(() => {
   overlay.place({left: box.left - host.left, top: box.top - host.top, width: box.width, height: box.height}, anchors());
 });
 render();
+introOver = () => { introOn = false; film.calm = false; render(); }; // the film before the game is over: now she says her opening line, and her gestures may come
+// The film ends in her rest pose: as it gives way, her rest starts over from its first frame, which is that pose (every rest film
+// begins on the same frame), under the film's last frame, so that the fade goes from her to her.
+introFade = () => { if (introOn && page.stage === 'BETTING' && !page.busy) film.rest(); };
+if (!introOn) film.calm = false; // it was over before the page was built (skipped at once)
 
 // How the round ended is said by her speech when it has the line (the settle's speak signal); then the status line is not said again.
 function settledSpoken() { return ['blackjack', 'dealerblackjack', 'dealerbust', 'win', 'push', 'lose'].some(key => spoken.has(key)); }

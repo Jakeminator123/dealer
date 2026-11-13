@@ -7,6 +7,7 @@
 // the copy 2026-11-13: every request then got the first 1 000 bytes), so it is used only with DEALER_MEDIA_MODE=rewrite. Only GET and HEAD pass, except to the bot and the request inbox (cloud/studio/bot-routes.ts),
 // the copy's only addresses that write; the gate refuses the rest.
 // A second kind of password (DEALER_LOSEN_SPEL, lock.ts) opens only the game: /casino leads to the game page alone (GAME_HOME),
+// /trailer to the game with the film before it (TRAILER_HOME),
 // and with such a cookie the game page and what it loads are let through, while the studio, every other page and the bot
 // lead back to the game.
 //
@@ -38,7 +39,13 @@ export const OPEN = new Set(['/robots.txt']);
  * Casino view (2026-11-13). /casino leads here, and so does every login with one of the game's passwords.
  */
 export const GAME_HOME = '/game.html?forval=levande&dx=-0.0624&dy=0.016&table=casino&dealer=paow';
-const GAME_DOOR = new Set(['/casino', '/casino/']);
+/**
+ * The game with the film before it (src/game-intro.ts): the short noir trailer, which ends in the game's own picture in the room
+ * Monaco with life in the room, so this address asks for that room and no other look. Jakob 2026-11-13: "så att man övergår till
+ * henne i URL:en på vercel. kanske genom en ny knapp". /trailer leads here.
+ */
+export const TRAILER_HOME = '/game.html?intro=noir-3&room=monaco&roomLife=1&table=casino&dealer=paow';
+const GAME_DOORS: Record<string, string> = {'/casino': GAME_HOME, '/casino/': GAME_HOME, '/trailer': TRAILER_HOME, '/trailer/': TRAILER_HOME};
 /** A page of the copy other than the game: the studio, the root, a folder or another .html. */
 const otherPage = (path: string): boolean => path !== '/game.html' && (path === '/studio' || path.startsWith('/studio/') || path.endsWith('/') || path.endsWith('.html'));
 /** What a visitor with one of the game's passwords may ask for: the game page and what it loads, never another page or the bot. */
@@ -107,10 +114,11 @@ export async function gate(request: Request, ctx: GateContext): Promise<Response
   // itself compares; with the cookie, every method of the bot's addresses goes on to the function, which allows its own.
   if (isAdminCall(path, request.headers)) return passOn();
   const scope = await cookieScope(s, readCookies(request.headers.get('cookie')).get(COOKIE), Math.floor(now / 1000));
-  // The door for someone who is only to play: the game's own address, behind the same lock.
-  if (GAME_DOOR.has(path)) {
+  // The doors for someone who is only to play: the game's own address, with or without the film before it, behind the same lock.
+  const door = Object.hasOwn(GAME_DOORS, path) ? GAME_DOORS[path] : null;
+  if (door) {
     if (request.method !== 'GET' && request.method !== 'HEAD') return text('Bara GET.', 405, {Allow: 'GET, HEAD'});
-    return scope ? goTo(GAME_HOME) : page(loginPage({next: GAME_HOME}), 401);
+    return scope ? goTo(door) : page(loginPage({next: door}), 401);
   }
   if (!scope) {
     // The login page itself, for every address: a page asked for comes back to it after the login.

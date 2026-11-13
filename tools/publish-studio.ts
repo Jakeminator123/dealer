@@ -163,7 +163,7 @@ const check = (name: string, ok: boolean, detail = '') => { if (!ok) bad++; say(
 for (const domain of domains) {
   const site = `https://${domain}`;
   say(`\n── ${site}`);
-  for (const p of ['/studio/', '/studio/game/', '/api/clip-bank', '/game.html', '/casino', `/${film}`]) {
+  for (const p of ['/studio/', '/studio/game/', '/api/clip-bank', '/game.html', '/casino', '/trailer', `/${film}`]) {
     const r = await fetch(site + p, {redirect: 'manual'}).catch(() => null);
     const text = r ? await r.text() : '';
     check(`utan kaka ${p}`, r?.status === 401 && text.includes('name="losen"'), String(r?.status ?? 'inget svar'));

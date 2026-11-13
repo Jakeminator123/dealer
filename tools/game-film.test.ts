@@ -106,6 +106,23 @@ test('the hole card\'s turn is shown when its face shows in the film: the first 
   assert.equal(faceFrame(sides('BBBBNN')), null); assert.equal(faceFrame(null), null); assert.equal(faceFrame({}), null);
 });
 
+test('while calm is asked for the rest rotation picks only calm rests, and the gestures come again afterwards', async () => {
+  // a gesture so heavy that the weighted pick would take it nearly every time it may
+  const base = bank(), gesture = job('gest', 'IDLE', 'IDLE', 'wan3');
+  const data: BankData = {...base, jobs: [...base.jobs!, gesture], motions: {...base.motions, gest: record('wan3', {motion: {idle: {calm: false, weight: 1000}}} as never)},
+    receipts: {...base.receipts, gest: {status: 'SUCCEEDED', estimatedCredits: 0}} as never, media: {...base.media, gest: {video: video('gest'), first: null, last: null}}};
+  const graph = buildGraph(data, {dealer: 'paow'}), rests = graph.edge['IDLE>IDLE']?.takes ?? [];
+  assert.ok(rests.some(t => t.id === 'gest' && t.idle?.calm === false) && rests.some(t => t.idle?.calm === true), 'the bank of this test has a gesture and a calm rest');
+  const queue = players(), film = createFilm(queue.players, graph, createLayout(defaultPlan()), async () => null, () => 0.999);
+  const paths = () => queue.parts.map(list => list[0].path);
+  film.calm = true; assert.equal(film.calm, true);
+  for (let i = 0; i < 6; i++) { film.rest(); await new Promise(r => setTimeout(r, 0)); }
+  assert.ok(paths().length >= 6 && !paths().includes(video('gest')), `calm only: ${paths().join(' ')}`);
+  film.calm = false; queue.parts.length = 0;
+  for (let i = 0; i < 12; i++) { film.rest(); await new Promise(r => setTimeout(r, 0)); }
+  assert.ok(paths().includes(video('gest')), `the gesture comes again: ${paths().join(' ')}`);
+});
+
 test('who decides the drawn cards: the address, then the player\'s own menu, then on; a look\'s preset has no say', () => {
   // the player switched them off in the game's menu: off, also after the frame reloads, whatever look is played
   assert.deepEqual(cardsChoice({memory: 'off'}), {cards: false, carry: 'object'});

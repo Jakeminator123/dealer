@@ -5417,6 +5417,30 @@
           }
         },
         {
+          "id": "paow-film-intro-noir-3",
+          "role": "film",
+          "name": "Filmen före spelet (noir-trailer 3, 46 s)",
+          "path": "assets/films/intro/noir-3/film.mp4",
+          "still": 12,
+          "fps": 24,
+          "note": "Utanför banken. Spelas över spelets scen före spelet och tonar över i spelet när den slutar (src/game-intro.ts; adressordet intro=noir-3). Jakob 2026-11-13 kl. 21.23: \"så att man övergår till henne i URL:en på vercel. kanske genom en ny knapp\". Sista rutan är spelets egen bild i rummet Monaco med rörelse i rummet.",
+          "source": {
+            "from": "Trailersessionen (dealer-1e): noir-trailer 3 med det nya slutet, klippt till 46,4 s och gjord för webben (720p); inget betalt för klippningen",
+            "when": "2026-11-13"
+          }
+        },
+        {
+          "id": "paow-film-intro-noir-3-startruta",
+          "role": "arbetsmaterial",
+          "name": "Startrutan till filmen före spelet",
+          "path": "assets/films/intro/noir-3/poster.jpg",
+          "note": "Ruta 12 ur filmen före spelet: bilden som visas med knapparna Spela och Hoppa över innan filmen hämtas.",
+          "source": {
+            "from": "Trailersessionen (dealer-1e): noir-trailer 3 med det nya slutet, klippt till 46,4 s och gjord för webben (720p); inget betalt för klippningen",
+            "when": "2026-11-13"
+          }
+        },
+        {
           "id": "paow-ankare-2-2-t1",
           "role": "ankare-2.2",
           "name": "Paow · ankare 2.2 (släp), tagning 1",

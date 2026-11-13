@@ -288,6 +288,17 @@ spår ur ljud-labbet (`MUSIC`, `sound.music`), volym, och slår på bordets och 
 spelaren slår på det. **Chatten** (`src/game-chat.ts`; `game.html?chatt=0` tar bort den): bordets chatt som attrapp, en
 knapp nere till vänster som öppnar en ruta; dealerns repliker följer rundans faser och utfall, två påhittade spelare
 säger något ibland, och det man skriver besvaras ur en kort lista. Inget skickas någonstans; en riktig chatt är Scouts.
+**En film före spelet** (`src/game-intro.ts`; `game.html?intro=noir-3`, Jakob 2026-11-13: "så att man övergår till henne
+i URL:en på vercel. kanske genom en ny knapp"): en startruta med knapparna Spela och Hoppa över läggs över scenen innan
+något annat läses, filmen hämtas först vid trycket och spelas med ljud, och när den slutar tonar den över i spelet
+(0,4 s liggande; stående visas filmen hel på svart och växer mot där spelet har henne under 1,2 s). Filmen ligger i
+spelets egen skala och mitt, inte som en täckande bild (`introLayout`), eftersom spelet ramar om på andra format än
+16:9. Filmens sista ruta är spelets egen bild i rummet Monaco med rörelse i rummet, så adressen ber också om
+`room=monaco&roomLife=1` och inget annat utseende. Medan filmen är på säger hon inget, chatten är stilla och vilan väljer
+bara lugna vilofilmer; när filmen ger vika (`onFade`) börjar vilan om från sin första ruta, som är den pose filmen
+slutar i, och hennes öppningsreplik sägs när spelet syns. Trycket på Spela är också det som låter henne höras. Filmen
+och startrutan ligger i `assets/films/intro/noir-3/` med kvitto; filmen måste spelas in på nytt när spelets vilobild
+ändras (trailersessionens `efter3/`, ett kommando, inga krediter).
 **Ljud-labbet** (`sound.html`, länken Ljud ↗; `src/lab-sound.ts`): markernas klirr, kortens ljud, bakgrundsljud per
 miljö och musik (fyra spår som skrivs medan de spelas: `MUSIC`, `music(track)`, `set({music})`; `LEVEL.musicDbA` −38, 5
 dB över rummen), syntetiserade i webbläsaren utan ljudfiler (`createSound()`). Spelets meny Musik läser samma modul;

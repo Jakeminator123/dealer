@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {secrets, passwordsOf, signCookie, verifyCookie, samePassword, passwordScope, signGameCookie, cookieScope, readCookies, TryLimit, MAX_AGE, COOKIE, TRIES, WINDOW} from '../cloud/studio/lock.ts';
-import {gate, GAME_HOME, type GateContext, type MediaMap} from '../cloud/studio/gate.ts';
+import {gate, GAME_HOME, TRAILER_HOME, type GateContext, type MediaMap} from '../cloud/studio/gate.ts';
 import {loginPage, safeNext} from '../cloud/studio/login-page.ts';
 
 // Throwaway values for the tests only; the real ones live in the Vercel project's environment.
@@ -209,6 +209,15 @@ test('with a game password the game and what it loads pass; the studio and every
   assert.equal(whole.headers.get('location'), '/studio/karta/');
   assert.equal((await gate(ask('/studio/', {headers: {cookie: wholeCookie}}), ctx)).headers.get('x-middleware-next'), '1');
   assert.equal((await gate(ask('/casino', {headers: {cookie: wholeCookie}}), ctx)).headers.get('location'), GAME_HOME);
+  // /trailer is the second door: the game with the film before it. The login keeps that address, also with the game's password,
+  // and the film itself is something the game loads.
+  assert.match(TRAILER_HOME, /^\/game\.html\?intro=noir-3&room=monaco&roomLife=1&/);
+  const trailer = await gate(ask('/trailer'), ctx);
+  assert.equal(trailer.status, 401); assert.ok((await trailer.text()).includes(`name="next" value="${TRAILER_HOME.replaceAll('&', '&amp;')}"`));
+  assert.equal((await gate(login('spela', TRAILER_HOME), ctx)).headers.get('location'), TRAILER_HOME);
+  assert.equal((await gate(ask('/trailer', {headers: {cookie}}), ctx)).headers.get('location'), TRAILER_HOME);
+  assert.equal((await gate(ask('/trailer/', {headers: {cookie: wholeCookie}}), ctx)).headers.get('location'), TRAILER_HOME);
+  for (const path of ['/game-intro.js', '/assets/films/intro/noir-3/poster.jpg']) assert.equal((await gate(ask(path, {headers: {cookie}}), ctx)).headers.get('x-middleware-next'), '1', path);
   // without the variable the game's password is a wrong password; /casino is still the door to the game for the others
   const plain = context();
   assert.equal((await gate(login('spela'), plain)).status, 401);

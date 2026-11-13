@@ -89,8 +89,10 @@ test('game.html without a look reads no look module and sets what it set before'
   const page = await readFile('src/game-page.ts', 'utf8');
   // the module is read only when the address holds more than the game's own words
   assert.match(page, /lookAsked \? import\('\.\/game-look\.ts'\)\.catch\(\(\) => null\) : null/);
-  // dealer: whose films the game plays (?dealer=paow, which the Casino view passes on), no look
-  assert.match(page, /const OWN_WORDS = \['table', 'tema', 'bricka', 'chatt', 'robot', 'inbaddad', 'dealer'\]/);
+  // dealer: whose films the game plays (?dealer=paow, which the Casino view passes on), no look; intro: a film before the game
+  // (src/game-intro.ts), read only when the address names one
+  assert.match(page, /const OWN_WORDS = \['table', 'tema', 'bricka', 'chatt', 'robot', 'inbaddad', 'dealer', 'intro'\]/);
+  assert.match(page, /if \(introAsked\) void import\('\.\/game-intro\.ts'\)/);
   // and the look is laid only when there is one
   assert.match(page, /if \(Object\.keys\(asked\)\.length\) \{ scene\.set\(/);
 });
