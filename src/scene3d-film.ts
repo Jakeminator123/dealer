@@ -224,10 +224,13 @@ export const matchLeft = (seconds: number): number => 1 - smooth(0, EVEN.fade, s
 // stretches there; it fades out down her upper arms and is nothing from LIFE.still down and LIFE.side out from her middle, where
 // hands, cards, shoe and table are. Rows and columns of the standard frame, y down; angles in degrees and the breath in pixels
 // at amount 1. sway: the parts of the sideways movement, each [period in seconds, share, phase]; no period is near the rest
-// films' own loop of about 3.9 s, and together they repeat only after minutes. Judged blind on 2026-11-13 by an independent eye
-// (four strengths of an earlier tuning, none rubbery, the strongest the best): amount 1 is the tuning that review asked for,
-// her head about 2.5 px each way on a 1080-row screen in the game's framing.
-export const LIFE = {fade: 540, still: 760, sideFade: 300, side: 400, pivot: 780, lean: 0.5, sway: [[11.3, 0.5, 0], [7.1, 0.35, 1.3], [4.7, 0.15, 2.1]], neck: 335, headFade: [300, 380], tilt: 0.4, own: 0.15, ownPeriod: 13.7, breath: 1.6, breathFade: [430, 640], breathPeriod: 6.3};
+// films' own loop of about 3.9 s, and together they repeat only after minutes. Judged blind twice on 2026-11-13 by an independent
+// eye. First four strengths of an earlier tuning: none rubbery, the strongest the best. Then this one at lean 0.5 with the head
+// tilting 0.4 with the sway: no artefact, natural 4/5, alive 3/5, "safe but a little too quiet", and at twice that the head read
+// as a flat picture being tilted. So amount 1 has 1.4 times that sway, the head tilts no more than the shoulders with it (tilt 0;
+// a real head stays level) and only a little by itself, and the fade reaches further down, so that the point of the jacket's V
+// follows a little instead of standing as a pivot.
+export const LIFE = {fade: 580, still: 790, sideFade: 300, side: 400, pivot: 800, lean: 0.7, sway: [[11.3, 0.5, 0], [7.1, 0.35, 1.3], [4.7, 0.15, 2.1]], neck: 335, headFade: [300, 380], tilt: 0, own: 0.1, ownPeriod: 13.7, breath: 1.6, breathFade: [430, 640], breathPeriod: 6.3};
 const smooth = (a: number, b: number, x: number) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
 /** The three movements at `seconds` with `amount` of life: the sway and the head's tilt in radians, the breath in pixels. */
 export function lifeNow(seconds: number, amount: number): [number, number, number] {
@@ -247,7 +250,7 @@ vec2 lifeShift(vec2 p){
   float head = lifeMove.y * (1. - smoothstep(${LIFE.headFade[0]}., ${LIFE.headFade[1]}., p.y)), up = lifeMove.z * (1. - smoothstep(${LIFE.breathFade[0]}., ${LIFE.breathFade[1]}., p.y));
   return vec2(lifeMove.x * (p.y - ${LIFE.pivot}.) + head * (p.y - ${LIFE.neck}.), up - (lifeMove.x + head) * (p.x - FRAME_FIX.x)) * body;
 }`;
-const FRAGMENT = `varying vec4 vFilm; varying vec3 vWorld; uniform sampler2D map; uniform vec2 refUv, texel, frameAnchor, frameSize; uniform float lo, hi, shadow, above, erode, frameOn, frameScale; uniform vec3 grade; uniform vec4 hide;
+const FRAGMENT = `varying vec4 vFilm; varying vec3 vWorld; uniform sampler2D map; uniform vec2 refUv, texel, frameAnchor, frameSize; uniform float lo, hi, shadow, above, erode, edgeClean, frameOn, frameScale; uniform vec3 grade; uniform vec4 hide;
 uniform sampler2D roomMap; uniform vec2 roomSize; uniform float wrap, roomExposure, evenOn; uniform mat3 even; uniform vec3 evenGain, evenLift; ${SIDE_GLSL}
 ${FAN_GLSL}
 ${CARD_KEY}
@@ -276,6 +279,20 @@ void main(){
   float a0 = 1. - screen, a = 1. - max(screen, mix(screen, around, erode));
   vec3 pm = max(c - screen * key, 0.);
   pm.g = min(pm.g, mix(max(pm.r, pm.b), .5 * (pm.r + pm.b), smoothstep(0., .1, s)));
+  // Her outline's colour (edgeClean, the upright layer only). The pixels nearest the screen are a mix of her and the screen, and what
+  // the key leaves of them is off in colour: a pale yellow-green line where too little green went, a pink one where too much did. Within
+  // about three film pixels of the screen a pixel therefore takes the colour of the film a few pixels further in, away from the screen
+  // (hair for hair, jacket for jacket), and keeps its own brightness.
+  if (edgeClean > 0.) {
+    vec2 d = texel * 2.; float x1 = screenAt(uv + vec2(d.x, 0.), key, dk), x0 = screenAt(uv - vec2(d.x, 0.), key, dk), y1 = screenAt(uv + vec2(0., d.y), key, dk), y0 = screenAt(uv - vec2(0., d.y), key, dk);
+    vec2 slope = vec2(x1 - x0, y1 - y0); float near = max(max(screen, around), max(max(x1, x0), max(y1, y0)));
+    if (near > .02 && dot(slope, slope) > 1e-4) {
+      vec3 ci = texture2D(map, uv - normalize(slope) * texel * 5.).rgb; float si = clamp(((ci.g - max(ci.r, ci.b)) / dk - lo) / (hi - lo), 0., 1.);
+      vec3 inner = max(ci - si * key, 0.); inner.g = min(inner.g, max(inner.r, inner.b));
+      float own = dot(pm, vec3(.2126, .7152, .0722)), theirs = max(dot(inner, vec3(.2126, .7152, .0722)), .02);
+      pm = mix(pm, inner * min(own / theirs, 2.), edgeClean * smoothstep(.02, .2, near) * (1. - si));
+    }
+  }
   pm *= a / max(a0, .001); // the pulled-in matte thins the pixel, it does not recolour it
   float tone = max(pm.r, max(pm.g, pm.b)) / max(a, .001);
   float isShadow = (1. - smoothstep(.03, .12, tone)) * (1. - smoothstep(.7, .95, a)), kept = shadow;
@@ -363,7 +380,7 @@ export function createFilmLayers(filmVP: T.Matrix4, light: Record<string, {value
   const mouth = mouthUniforms(); // a spoken line's mouth over the film (src/scene3d-mouth.ts)
   const material = (refUv: T.Vector2) => new T.ShaderMaterial({vertexShader: VERTEX, fragmentShader: FRAGMENT, transparent: true, depthWrite: false, side: T.DoubleSide,
     blending: T.CustomBlending, blendSrc: T.OneFactor, blendDst: T.OneMinusSrcAlphaFactor, blendSrcAlpha: T.OneFactor, blendDstAlpha: T.OneMinusSrcAlphaFactor,
-    uniforms: {...light, ...card, ...matte, ...mouth, ...frame, ...room, ...side, ...even, ...life, wrap: {value: 0}, hide, map, filmVP: {value: filmVP}, refUv: {value: refUv}, lo: {value: 0.12}, hi: {value: 0.9}, shadow: {value: 1}, above: {value: 1}, erode: {value: 0.6}, grade, texel: {value: new T.Vector2(1.4 / FILM.width, 1.4 / FILM.height)}}});
+    uniforms: {...light, ...card, ...matte, ...mouth, ...frame, ...room, ...side, ...even, ...life, wrap: {value: 0}, hide, map, filmVP: {value: filmVP}, refUv: {value: refUv}, lo: {value: 0.12}, hi: {value: 0.9}, shadow: {value: 1}, above: {value: 1}, erode: {value: 0.6}, edgeClean: {value: 0}, grade, texel: {value: new T.Vector2(1.4 / FILM.width, 1.4 / FILM.height)}}});
   // The screen reference is read in a corner that stays empty: top left for the backdrop, bottom left for the table.
   const bodyMat = material(new T.Vector2(0.02, 0.97)), tableMat = material(new T.Vector2(0.02, 0.03));
   const body = new T.Mesh(new T.PlaneGeometry(10, 3), bodyMat), table = new T.Mesh(new T.PlaneGeometry(10, 2).rotateX(-Math.PI / 2), tableMat);
@@ -409,6 +426,9 @@ export function createFilmLayers(filmVP: T.Matrix4, light: Record<string, {value
     // The room as the scene has just drawn it (before its tone curve; `exposure` is what that pass multiplies it by) and how much
     // of it is laid round the dealer's outline, 0 = none. Only the upright layer takes it: behind the hands lies the felt, not the room.
     setWrap(texture: T.Texture | null, width: number, height: number, exposure: number, amount: number) { room.roomMap.value = texture; room.roomSize.value.set(width, height); room.roomExposure.value = exposure; bodyMat.uniforms.wrap.value = texture ? amount : 0; },
+    // How much of the screen's green is taken out of her outline (key edgeClean, 0 to 1; 0 is the key as it is). Only on the upright
+    // layer: on the table layer the film's yellow card has an outline too, and it is yellow by itself.
+    setEdge(amount: number) { bodyMat.uniforms.edgeClean.value = Math.min(1, Math.max(0, amount || 0)); },
     setKey(key: KeySettings) { bodyMat.uniforms.lo.value = key.lo; bodyMat.uniforms.hi.value = key.hi - 0.08; bodyMat.uniforms.above.value = Math.max(0, Math.min(1, key.above ?? 1)); tableMat.uniforms.lo.value = key.lo; tableMat.uniforms.hi.value = key.hi; tableMat.uniforms.shadow.value = key.shadow; },
     // Folded: the plane stands on the table edge and the table layer carries hands, cards and shadows.
     // Unfolded: one plane carries the whole frame and nothing follows the felt when the camera moves.
@@ -451,14 +471,17 @@ export type Part = {path: string; start?: number; end?: number | null; rate?: nu
 // table, cards and dealer too. A white flash takes the picture there and a softer one takes it back (roomFlashAt).
 export type PartEffect = FilmEffect; // src/clip-graph.ts reads it from the record (effectOf)
 // The lightning's course in seconds of the film: the first flash rises to white in `rise` and falls away in `fall`; the other room
-// comes on at its peak. after: a faint second flash, at this share of the hold, this long each way, this strong. The flash back
-// rises to backPeak over `back` before the hold ends, the room goes back at its peak, and it falls away in backFall.
-export const FLASH = {rise: 0.08, fall: 0.27, after: {at: 0.5, half: 0.07, peak: 0.25}, back: 0.08, backPeak: 0.7, backFall: 0.2};
+// comes on at its peak. after: a second, fainter flash, at this share of the hold, this long each way, this strong. The flash back
+// rises to backPeak over `back`, stays there for backHold (so that the last frame of the other room and the first frame of the
+// room that comes back are both under its peak, whatever the film's frame rate: the change is hidden in the light, as the first
+// one is), the room goes back when the hold ends, and it falls away in backFall. The figures were set with the session that owns
+// the effect's look, against its mock-up of the second on the champagne film (2026-11-13).
+export const FLASH = {rise: 0.08, fall: 0.27, after: {at: 0.5, half: 0.07, peak: 0.4}, back: 0.08, backHold: 0.05, backPeak: 0.9, backFall: 0.2};
 /** `t` seconds of the film after a room-flash's `at`, for a hold of `seconds`: how white the picture is (0 to 1), and whether the other room (and the grey) is on. */
 export function roomFlashAt(t: number, seconds: number): {flash: number; on: boolean} {
   const F = FLASH; if (!(t >= 0) || !(seconds > 0) || t >= seconds + F.backFall) return {flash: 0, on: false};
   const first = t < F.rise ? t / F.rise : 1 - smooth(0, F.fall, t - F.rise), after = F.after.peak * Math.max(0, 1 - Math.abs(t - F.after.at * seconds) / F.after.half);
-  const back = t < seconds - F.back ? 0 : t < seconds ? F.backPeak * (t - (seconds - F.back)) / F.back : F.backPeak * (1 - smooth(0, F.backFall, t - seconds));
+  const up = seconds - F.backHold - F.back, back = t < up ? 0 : t < seconds - F.backHold ? F.backPeak * (t - up) / F.back : t < seconds ? F.backPeak : F.backPeak * (1 - smooth(0, F.backFall, t - seconds));
   return {flash: Math.min(1, Math.max(first, after, back)), on: t >= F.rise && t < seconds};
 }
 export type PlayOptions = {loop?: boolean; cut?: boolean; onPart?: (index: number, part: Part) => void; onEnd?: () => void; onError?: (error: Error) => void};

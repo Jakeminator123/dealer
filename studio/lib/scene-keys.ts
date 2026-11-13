@@ -115,6 +115,7 @@ export const SCENE_KEYS: readonly KeySpec[] = [
   spec("wrap", "ljus", "U", "Ljus runt dealern", slider(0, 1.5, 0.05), "Rummet bakom henne som ett svagt ljus längs konturen, så att hon står i rummet. 0 är av."),
   spec("dealerRoom", "ljus", "U", "Rumsljus på dealern", slider(0, 1, 0.05), "Dealern tar 360°-rummets färg och nivå, ljusare mot dess ljusa sida (prov). 0 är av; byggda rum ändrar inget."),
   spec("filmEven", "ljus", "U", "Jämna filmernas färg", toggle, "Filmer från olika generatorer får samma färg, så att ljuset på dealern inte hoppar i skarvarna. Förval på."),
+  spec("edgeClean", "ljus", "U", "Ren kant", slider(0, 1, 0.05), "Tar bort den gulgröna linjen som den gröna skärmen lämnar runt hår och axlar. 0 är nyckeln som den är (prov)."),
   spec("filmBright", "ljus", "U", "Dealerns ljusstyrka", slider(0.6, 1.4, 0.01), "Filmens nivå; 1 är filmen som den är."),
   spec("filmWarm", "ljus", "U", "Dealerns värme", slider(-0.2, 0.2, 0.005), "Filmens färgton, kallare eller varmare; 0 är filmen som den är."),
   spec("shadowAbove", "ljus", "U", "Skugga ovanför kanten", slider(0, 1, 0.05), "Filmens skugga ovanför bordskanten, där armbågarnas skugga annars hänger i luften. 0 tar bort den."),

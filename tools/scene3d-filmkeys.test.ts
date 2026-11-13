@@ -15,6 +15,7 @@ test('the defaults are Jakob\'s standard of 2026-11-13, and both catalogues hold
   assert.equal(DEFAULTS.filmEven, true); assert.equal(DEFAULTS.filmTempo, 2); assert.equal(DEFAULTS.cups, true); assert.equal(DEFAULTS.dealerLife, 0);
   assert.deepEqual(lifeNow(12.3, 0).map(Math.abs), [0, 0, 0], 'no life is no movement at all');
   assert.deepEqual(GAME_KEYS.filmEven, {kind: 'switch'}); assert.deepEqual(GAME_KEYS.filmTempo, {kind: 'slider', min: 1, max: 2}); assert.deepEqual(GAME_KEYS.dealerLife, {kind: 'slider', min: 0, max: 2});
+  assert.equal(DEFAULTS.edgeClean, 0); assert.deepEqual(GAME_KEYS.edgeClean, {kind: 'slider', min: 0, max: 1});
   const studio = (key: string) => SCENE_KEYS.find(s => s.key === key) as {kind: string; min?: number; max?: number} | undefined;
   assert.equal(studio('filmEven')?.kind, 'switch'); assert.deepEqual([studio('filmTempo')?.min, studio('filmTempo')?.max], [1, 2]); assert.deepEqual([studio('dealerLife')?.min, studio('dealerLife')?.max], [0, 2]);
 });
@@ -40,12 +41,12 @@ test('life in the upper body: nothing at the hands, the shoe and the table, a fe
   for (let t = 0; t < 120; t += 0.37) {
     const move = lifeNow(t, 1);
     // from LIFE.still down (wrists, hands, cards, the table edge at row 831.5) and LIFE.side out from her middle (the shoe): still
-    for (const [x, y] of [[FRAME_FIX.x, LIFE.still], [700, 780], [1000, 831.5], [FRAME_FIX.x + LIFE.side, 300], [1290, 760], [1500, 640], [200, 100]]) assert.deepEqual(lifeShiftAt(x, y, move).map(Math.abs), [0, 0], `${x}, ${y} at ${t}`);
+    for (const [x, y] of [[FRAME_FIX.x, LIFE.still], [700, 800], [1000, 831.5], [FRAME_FIX.x + LIFE.side, 300], [1290, 760], [1500, 640], [200, 100]]) assert.deepEqual(lifeShiftAt(x, y, move).map(Math.abs), [0, 0], `${x}, ${y} at ${t}`);
     const head = lifeShiftAt(FRAME_FIX.x, 190, move); most = Math.max(most, Math.hypot(...head));
     // above the chest and inside her width the lean is one turn about the pivot: two points on a row differ only by the turn across
     const a = lifeShiftAt(800, 450, move), b = lifeShiftAt(960, 450, move); assert.ok(Math.abs(a[0] - b[0]) < 1e-9); assert.ok(Math.abs((b[1] - a[1]) + move[0] * 160) < 1e-9);
   }
-  assert.ok(most > 3 && most < 8, `the head moves at most ${most.toFixed(2)} px at amount 1`);
+  assert.ok(most > 3 && most < 10, `the head moves at most ${most.toFixed(2)} px at amount 1`);
   const one = lifeShiftAt(900, 200, lifeNow(3.1, 1)), two = lifeShiftAt(900, 200, lifeNow(3.1, 2)); assert.ok(Math.abs(two[0] - 2 * one[0]) < 1e-9 && Math.abs(two[1] - 2 * one[1]) < 1e-9, 'twice the amount is twice the movement');
 });
 
@@ -75,7 +76,8 @@ test('a film\'s lightning: white at once, the other room for the hold, a softer 
   assert.deepEqual(roomFlashAt(0, 1), {flash: 0, on: false}); assert.deepEqual(roomFlashAt(FLASH.rise, 1), {flash: 1, on: true}, 'the room comes on at the peak, under full white');
   assert.ok(roomFlashAt(FLASH.rise / 2, 1).flash === 0.5 && !roomFlashAt(FLASH.rise / 2, 1).on);
   assert.equal(roomFlashAt(FLASH.rise + FLASH.fall + 0.01, 1).flash, 0, 'the first flash is over'); assert.ok(Math.abs(roomFlashAt(FLASH.after.at, 1).flash - FLASH.after.peak) < 1e-9, 'the faint second flash');
-  assert.ok(roomFlashAt(0.999, 1).on && roomFlashAt(0.999, 1).flash > FLASH.backPeak * 0.95, 'the flash back is nearly at its peak when the room goes back'); assert.ok(!roomFlashAt(1, 1).on && Math.abs(roomFlashAt(1, 1).flash - FLASH.backPeak) < 1e-9);
+  for (const t of [1 - FLASH.backHold, 0.97, 0.999]) assert.deepEqual(roomFlashAt(t, 1), {flash: FLASH.backPeak, on: true}, 'the flash back is at its peak over the last frame of the other room'); assert.ok(roomFlashAt(1 - FLASH.backHold - FLASH.back / 2, 1).flash < FLASH.backPeak);
+  assert.ok(roomFlashAt(1 + 1 / 30, 1).flash > FLASH.backPeak * 0.9, 'and nearly so over the first frame of the room that comes back'); assert.ok(!roomFlashAt(1, 1).on && Math.abs(roomFlashAt(1, 1).flash - FLASH.backPeak) < 1e-9);
   // a longer hold stretches the middle, not the flashes
   assert.ok(roomFlashAt(1.5, 2).on && roomFlashAt(1.5, 2).flash === 0); assert.ok(Math.abs(roomFlashAt(1, 2).flash - FLASH.after.peak) < 1e-9);
   for (let t = -0.2; t < 1.4; t += 0.01) { const f = roomFlashAt(t, 1).flash; assert.ok(f >= 0 && f <= 1); }

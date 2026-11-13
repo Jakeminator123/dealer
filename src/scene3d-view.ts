@@ -39,6 +39,7 @@ export type SceneState = {
   // line keep their speed, and a take played by itself is never hurried). dealerLife: a slow movement added to her head and upper body
   // (0 to 2; 0 is none; lifeShift).
   filmEven: boolean; filmTempo: number; dealerLife: number;
+  edgeClean: number; // the screen's green taken out of her outline, 0 to 1 (setEdge in src/scene3d-film.ts); 0 is the key as it is
   tal: 'repliker' | 'av'; // the game's: the dealer says her fixed lines with her talk films ('av': as text in the chat only; src/game-page.ts)
 };
 // What was added after checkpoint v1 starts switched off, so that the page opens as v1, except what Jakob has made the standard
@@ -59,6 +60,7 @@ export const DEFAULTS: SceneState = {
   shadowAbove: 1, marks: 'all', cloth: 'print', lamp: 0, chipGloss: 0.5,
   roomLife: false, dealerRoom: 0,
   filmEven: true, filmTempo: 2, dealerLife: 0,
+  edgeClean: 0,
   tal: 'repliker',
 };
 // rooms: the panorama rooms of the register (data/scene-rooms.json, readRegister in scene3d-room.ts); without it the first three, at urls.
@@ -211,7 +213,7 @@ export function createScene(canvas: HTMLCanvasElement, host: HTMLElement, data: 
   const drawFelt = () => table.draw({spots: cardSpots(data.plan, camera), logo: state.logo, felt: state.felt, scale: camera.scale, marks: state.marks, cloth: state.cloth, camera, size: state.tableSize});
   function apply() {
     if (gone) return; if (!rooms.rooms[state.room]) state.room = 'salong'; // a room the scene does not have (an old address, a room taken out of the register)
-    useCards(); rooms.show(state.room); rail.set({cups: state.cups}); film.place(edgeZ, state.fold, state.focus !== 'off', camera.scale); film.setKey({lo: state.keyLo, hi: state.keyHi, shadow: state.shadow, above: state.shadowAbove}); film.setGrade(state.filmBright, state.filmWarm); players.tempo(state.filmTempo);
+    useCards(); rooms.show(state.room); rail.set({cups: state.cups}); film.place(edgeZ, state.fold, state.focus !== 'off', camera.scale); film.setKey({lo: state.keyLo, hi: state.keyHi, shadow: state.shadow, above: state.shadowAbove}); film.setGrade(state.filmBright, state.filmWarm); film.setEdge(state.edgeClean); players.tempo(state.filmTempo);
     table.setLamp(state.lamp);
     if (guides) guides.visible = state.guides; resize(); data.onChange();
   }
