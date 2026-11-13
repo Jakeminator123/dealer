@@ -10,7 +10,7 @@
 //
 // The game plays only takes with a verdict (judgedBank in src/game-director.ts): Jakob's, or a provisional one given in his place.
 // The one exception is a talk film, a rest take on request, which is played only when the dealer says its line (src/speech-lines.ts).
-import {buildGraph, type Graph} from './clip-graph.ts';
+import {buildGraph, effectOf, type Graph} from './clip-graph.ts';
 import {createScene, DEFAULTS, type SceneState} from './scene3d-view.ts';
 import {readRegister} from './scene3d-room.ts';
 import {filmToScene, sceneToSpot, solveCamera, type FilmCamera} from './scene3d-geometry.ts';
@@ -61,6 +61,11 @@ const nameOf = (id: string) => DEALERS.find(d => d.id === id)?.label ?? id;
 const plan = placements.plan ?? placements, judged = judgedBank(bank), graphs = new Map<string, Graph>(), layout = createLayout(plan, {fan: fanStep});
 const graphOf = (id: string) => { let g = graphs.get(id); if (!g) { g = buildGraph(judged, {dealer: id}); graphs.set(id, g); } return g; };
 const graph = graphOf(dealer);
+// A rest film can ask the scene to show another room for a moment (FilmEffect in src/clip-graph.ts: the champagne film's flash turns
+// the room into the gambling den). The scene must have that room to do it, though it is no room the player can choose: it is given
+// to the scene and left out of the Miljö menu.
+const effectRooms = new Set(Object.values(judged.motions ?? {}).map(m => effectOf(m)?.room).filter((id): id is string => !!id));
+const sceneRooms = registered.filter(r => panoramas.includes(r) || effectRooms.has(r.id));
 // What she says: the talk film of a line, from src/speech-lines.ts (read once, beside the page; without it she says everything as
 // text, as before). ?tal=av, the look key, keeps her silent and the module is never asked.
 type Spoken = {key: string; clip: string; text: string};
@@ -73,7 +78,7 @@ const restTakes = () => film.graph.edge['IDLE>IDLE']?.takes ?? [];
 const spokenOf = (keyOrPhase: string): Spoken | null => talking && lines ? lines.spokenFilm(restTakes(), dealer, keyOrPhase, VOICE) : null;
 
 // ── the picture: the 3D scene, seen a little from above so that all seven bet rings and the bar have room ──
-const scene = createScene(canvas, stage, {contract, plan, urls: {plate: 'assets/scene/room.png', panorama: 'assets/scene/panorama-vegas.jpg', la: 'assets/scene/panorama-la.jpg', skog: 'assets/scene/panorama-skog.jpg'}, rooms: panoramas, onChange: () => {}, onMissingRoom: () => {}});
+const scene = createScene(canvas, stage, {contract, plan, urls: {plate: 'assets/scene/room.png', panorama: 'assets/scene/panorama-vegas.jpg', la: 'assets/scene/panorama-la.jpg', skog: 'assets/scene/panorama-skog.jpg'}, rooms: sceneRooms, onChange: () => {}, onMissingRoom: () => {}});
 // Two framings, both by turning and zooming from the film camera's own place (exact for a flat film). Lying: the whole table
 // with all seven rings. Standing (a phone): the film's width is locked to the screen's, so the view is zoomed in on seats 3–5
 // and turns toward the seat in play.
