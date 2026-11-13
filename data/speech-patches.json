@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "about": "The mouth patches the game may lay on its films (src/speech-patch.ts, docs/TAL.md): one film and one line each, with the sha256 of its record. Written by node tools/speech-patch.ts register and by nothing else; a folder that does not check is left out.",
+  "patches": [
+    {
+      "id": "paow-mun-dealerplays-sv-halkort-04-02",
+      "dealer": "paow",
+      "film": "assets/motions/paow-halkort-04-02/source.mp4",
+      "line": "dealerplays",
+      "language": "sv",
+      "voice": "Paow",
+      "path": "assets/speech/paow/patches/paow-mun-dealerplays-sv-halkort-04-02/patch.json",
+      "sha256": "7b1e1d9c76acc2283e1780aa63a724a06371cd5509344a587cf613e4f11ba5ed"
+    },
+    {
+      "id": "paow-mun-double-sv-ingang-2-1-02-01",
+      "dealer": "paow",
+      "film": "assets/motions/paow-ingang-2-1-02-01/source.mp4",
+      "line": "double",
+      "language": "sv",
+      "voice": "Paow",
+      "path": "assets/speech/paow/patches/paow-mun-double-sv-ingang-2-1-02-01/patch.json",
+      "sha256": "adf69f9947bceec0b880016e431bebc2e8bd38f99c456084445665ec1c8bc44f"
+    },
+    {
+      "id": "paow-mun-goodluck-sv-giv-2-1-p4-04-01",
+      "dealer": "paow",
+      "film": "assets/motions/paow-giv-2-1-p4-04-01/source.mp4",
+      "line": "goodluck",
+      "language": "sv",
+      "voice": "Paow",
+      "path": "assets/speech/paow/patches/paow-mun-goodluck-sv-giv-2-1-p4-04-01/patch.json",
+      "sha256": "dc17d3ac1daa1bd7ffba23f8915526b1bbba0df93d40bb39e572bda7f6f01711"
+    },
+    {
+      "id": "paow-mun-goodluck-sv-ingang-2-1-02-01",
+      "dealer": "paow",
+      "film": "assets/motions/paow-ingang-2-1-02-01/source.mp4",
+      "line": "goodluck",
+      "language": "sv",
+      "voice": "Paow",
+      "path": "assets/speech/paow/patches/paow-mun-goodluck-sv-ingang-2-1-02-01/patch.json",
+      "sha256": "d79eabcfc6259b4b1b8bd286b8f231786675c9fcff93f05b44d162a704da3530"
+    }
+  ]
+}

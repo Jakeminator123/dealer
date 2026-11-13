@@ -53,8 +53,9 @@ export type LineLog = {id: string; said: boolean | null; heard: boolean; soundAt
 // enough to set it). DRIFT: ms a shown frame may lie from where the sound is before the line is ended.
 const LEAD = 0.25, DRIFT = 80;
 
-export function createMouthLayer(set: (shown: MouthShown | null) => void, options: {now?: () => number} = {}) {
-  const now = options.now ?? (() => performance.now()), reads = new Map<string, Read>(), logs: LineLog[] = [];
+// options: the page's clock (now, ms) and how a call is put off (later); a test hands in its own of both.
+export function createMouthLayer(set: (shown: MouthShown | null) => void, options: {now?: () => number; later?: (call: () => void, ms: number) => void} = {}) {
+  const now = options.now ?? (() => performance.now()), later = options.later ?? ((call: () => void, ms: number) => { setTimeout(call, ms); }), reads = new Map<string, Read>(), logs: LineLog[] = [];
   // ended: the patch of the last line, while its part is still on screen (a line ended early is not begun again)
   let line: Line | null = null, ended: MouthPart | null = null, gone = false, audio: AudioContext | null = null, shownLast = false;
   const keyOf = (p: MouthPart) => `${p.base}${p.patch.id}:${p.patch.strip.sha256}:${p.patch.sound.sha256}`;
@@ -119,7 +120,7 @@ export function createMouthLayer(set: (shown: MouthShown | null) => void, option
       l.source = source; l.gain = gain; l.log.heard = true;
     }
     l.at = show; l.log.soundAt = show;
-    setTimeout(() => { if (line === l && !gone && !l.cut) finish(l, true); }, Math.max(0, wait));
+    later(() => { if (line === l && !gone && !l.cut) finish(l, true); }, Math.max(0, wait));
   }
   // begin is called once per line: true as its sound begins, false when it was not said (its text then stands in the chat).
   function finish(l: Line, said: boolean) { if (l.log.said !== null) return; l.log.said = said; l.part.begin?.(said); }
@@ -131,8 +132,8 @@ export function createMouthLayer(set: (shown: MouthShown | null) => void, option
     if (line === l) { line = null; ended = l.part; }
   }
   return {
-    /** Reads patches ahead (their strips and sounds), so that a line can begin the moment its film does. */
-    preload(parts: MouthPart[]) { if (!gone) for (const p of parts) read(p); },
+    /** Reads patches ahead (their strips and sounds), so that a line can begin the moment its film does; done when all are read or failed. */
+    preload(parts: MouthPart[]): Promise<void> { return gone ? Promise.resolve() : Promise.all(parts.map(p => read(p).done)).then(() => {}); },
     /** Whether a patch's files are read: 'ready', 'reading', 'failed' or 'unknown'. */
     state(p: MouthPart) { return reads.get(keyOf(p))?.state ?? 'unknown'; },
     /**

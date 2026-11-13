@@ -32,7 +32,11 @@ g.VideoFrame = class { timestamp: number; constructor(v: {currentTime: number}) 
 Object.defineProperty(globalThis, 'navigator', {value: {userActivation: {hasBeenActive: true}}, configurable: true});
 const video = () => { const v = {readyState: 4, currentTime: 0, playbackRate: 1, calls: [] as Call[], requestVideoFrameCallback(f: Call) { v.calls.push(f); return v.calls.length; }, cancelVideoFrameCallback() {},
   /** shows film frame k at `at` ms on the page's clock */ show(k: number, at: number) { v.currentTime = (k + 0.5) / 24; const fs = v.calls.splice(0); for (const f of fs) f(at, {mediaTime: k / 24, expectedDisplayTime: at}); } }; return v; };
-const settle = () => new Promise(r => setTimeout(r, 20));
+// The layer's clock and its put-off calls are the test's: nothing here waits on the wall clock.
+const queue: {at: number; call: () => void}[] = [];
+const later = (call: () => void, ms: number) => { queue.push({at: clock + ms, call}); };
+const runUntil = (t: number) => { clock = t; for (const q of queue.splice(0).sort((a, b) => a.at - b.at)) { if (q.at <= t) q.call(); else queue.push(q); } };
+const layerFor = (shown: (MouthShown | null)[]) => { queue.length = 0; return createMouthLayer(s => shown.push(s), {now: () => clock, later}); };
 
 test('putMouth sets the shader\'s uniforms, and null switches it off', () => {
   const u = mouthUniforms(), p = patchOf(), texture = {} as never;
@@ -45,8 +49,8 @@ test('putMouth sets the shader\'s uniforms, and null switches it off', () => {
 
 test('the layer lays the cell of the frame on screen, and the sound is set for when its first sample is shown', async () => {
   files = {'mouth.webp': strip, 'line.wav': wav}; started.length = stopped.length = 0;
-  const shown: (MouthShown | null)[] = [], layer = createMouthLayer(s => shown.push(s), {now: () => clock}), said: boolean[] = [];
-  const part: MouthPart = {patch: patchOf(), base: 'assets/speech/paow/patches/x/', begin: s => said.push(s)}; layer.preload([part]); await settle();
+  const shown: (MouthShown | null)[] = [], layer = layerFor(shown), said: boolean[] = [];
+  const part: MouthPart = {patch: patchOf(), base: 'assets/speech/paow/patches/x/', begin: s => said.push(s)}; await layer.preload([part]);
   assert.equal(layer.state(part), 'ready');
   const v = video(), onScreen = {mouth: part, fps: 24};
   v.currentTime = 0.5 / 24; layer.update(onScreen, v as never); assert.equal(shown.length, 0, 'frame 0: before the patch, nothing');
@@ -58,7 +62,7 @@ test('the layer lays the cell of the frame on screen, and the sound is set for w
   v.currentTime = 15.5 / 24; layer.update(onScreen, v as never); assert.deepEqual(shown.at(-1)?.cell, {x: 184, y: 176}, 'cell 5: second row, second column');
   layer.update(onScreen, v as never, 12); assert.deepEqual(shown.at(-1)?.cell, {x: 368, y: 0}, 'the frame the scene says is shown goes before the element\'s picture');
   v.currentTime = 22.5 / 24; layer.update(onScreen, v as never); assert.equal(shown.at(-1), null, 'past the patch: taken off');
-  await new Promise(r => setTimeout(r, 400)); assert.deepEqual(said, [true], 'begin(true) as the sound begins');
+  assert.deepEqual(said, [], 'not yet: the sound begins at 1274.7 ms'); runUntil(1300); assert.deepEqual(said, [true], 'begin(true) as the sound begins');
   layer.update(null, null); assert.equal(stopped.length, 1, 'the part gone: its sound stops'); assert.deepEqual(said, [true]);
   assert.equal(layer.log.at(-1)?.heard, true); assert.equal(layer.log.at(-1)?.soundFrame, 9);
   layer.dispose();
@@ -66,8 +70,8 @@ test('the layer lays the cell of the frame on screen, and the sound is set for w
 
 test('a patch not read in time is not laid: the part plays as before and the line is text', async () => {
   files = {'mouth.webp': strip}; // the sound is missing
-  const shown: (MouthShown | null)[] = [], layer = createMouthLayer(s => shown.push(s), {now: () => clock}), said: boolean[] = [];
-  const part: MouthPart = {patch: patchOf(), base: 'b/', begin: s => said.push(s)}; layer.preload([part]); await settle();
+  const shown: (MouthShown | null)[] = [], layer = layerFor(shown), said: boolean[] = [];
+  const part: MouthPart = {patch: patchOf(), base: 'b/', begin: s => said.push(s)}; await layer.preload([part]);
   assert.equal(layer.state(part), 'failed');
   const v = video(); v.currentTime = 12.5 / 24; layer.update({mouth: part, fps: 24}, v as never); layer.update({mouth: part, fps: 24}, v as never);
   assert.deepEqual(said, [false]); assert.equal(shown.length, 0); assert.match(layer.log.at(-1)!.note[0], /inte inläst/);
@@ -76,8 +80,8 @@ test('a patch not read in time is not laid: the part plays as before and the lin
 
 test('a film that falls behind its sound ends the line, sound and mouth', async () => {
   files = {'mouth.webp': strip, 'line.wav': wav}; started.length = stopped.length = 0;
-  const shown: (MouthShown | null)[] = [], layer = createMouthLayer(s => shown.push(s), {now: () => clock}), said: boolean[] = [];
-  const part: MouthPart = {patch: patchOf(), base: 'c/', begin: s => said.push(s)}; layer.preload([part]); await settle();
+  const shown: (MouthShown | null)[] = [], layer = layerFor(shown), said: boolean[] = [];
+  const part: MouthPart = {patch: patchOf(), base: 'c/', begin: s => said.push(s)}; await layer.preload([part]);
   const v = video(), on = {mouth: part, fps: 24};
   v.currentTime = 5.5 / 24; layer.update(on, v as never); v.show(5, clock = 2000); assert.equal(started.length, 1);
   v.show(12, clock = 2000 + (12 / 24 - 5 / 24) * 1000); v.currentTime = 12.5 / 24; layer.update(on, v as never); assert.ok(shown.at(-1), 'in step: laid');
