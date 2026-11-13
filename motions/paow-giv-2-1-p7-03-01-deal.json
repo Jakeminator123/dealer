@@ -28,13 +28,13 @@
     }
   },
   "review": {
-    "decision": "PENDING",
-    "inbox": true,
+    "decision": "REJECTED",
     "basis": "Inte granskad av Jakob: förd in från beställningen paow-giv-2-1-p7-03, tagning 1 (tools/register-order.ts). Oberoende rutgranskning: tools/film-review.md.",
     "limitations": "I inkorgen: spelas bara där steget inte har någon annan film, tills Jakob dömer den.",
     "colorDoesNotProvePhysicalSide": true,
     "userAccepted": false,
-    "productionReady": false
+    "productionReady": false,
+    "userReview": "Jakob 2026-11-13: Det här ser fuskigt ut från videoskaparen, eftersom sidan som visas i slutet är blå. Den borde inte vara blå, eftersom det är samma sida som var gul i skon."
   },
   "order": {
     "id": "paow-giv-2-1-p7-03",

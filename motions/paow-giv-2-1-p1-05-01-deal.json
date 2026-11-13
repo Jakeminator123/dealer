@@ -28,13 +28,13 @@
     }
   },
   "review": {
-    "decision": "PENDING",
-    "inbox": true,
+    "decision": "REJECTED",
     "basis": "Inte granskad av Jakob: förd in från beställningen paow-giv-2-1-p1-05, tagning 1 (tools/register-order.ts). Oberoende rutgranskning: tools/film-review.md.",
     "limitations": "I inkorgen: spelas bara där steget inte har någon annan film, tills Jakob dömer den.",
     "colorDoesNotProvePhysicalSide": true,
     "userAccepted": false,
-    "productionReady": false
+    "productionReady": false,
+    "userReview": "Jakob 2026-11-13: Här ändrar kortet färg ungefär halvvägs."
   },
   "order": {
     "id": "paow-giv-2-1-p1-05",

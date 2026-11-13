@@ -28,13 +28,13 @@
     }
   },
   "review": {
-    "decision": "PENDING",
-    "inbox": true,
+    "decision": "REJECTED",
     "basis": "Inte granskad av Jakob: förd in från beställningen paow-giv-2-1-p1-07, tagning 2 (tools/register-order.ts). Oberoende rutgranskning: tools/film-review.md.",
     "limitations": "I inkorgen: spelas bara där steget inte har någon annan film, tills Jakob dömer den.",
     "colorDoesNotProvePhysicalSide": true,
     "userAccepted": false,
-    "productionReady": false
+    "productionReady": false,
+    "userReview": "Jakob 2026-11-13: Granskningsmodellen verkar inte veta vad som är upp- och nedsida, eller förhoppningsvis inte modellen utan videoagenten som skapar videon. Den kan inte visa blått, gult, blått, gult eller gult, blått. Den här har underkänts eftersom kortet nästan inte syns, och på baksidan är den fortfarande gul. Det här får oss att tänka på vad som är baksida. Baksida kan betyda olika saker, som baksidan på ett kort, men det kan också referera till undersidan. Det här kan vara en semantisk felinstruktion. DETTA KNA vara viktigt för instruktioner i framtiden"
   },
   "order": {
     "id": "paow-giv-2-1-p1-07",

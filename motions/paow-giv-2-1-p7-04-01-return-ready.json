@@ -32,13 +32,14 @@
     }
   },
   "review": {
-    "decision": "PENDING",
-    "inbox": true,
+    "decision": "ACCEPTED",
     "basis": "Inte granskad av Jakob: förd in från beställningen paow-giv-2-1-p7-04, tagning 1 (tools/register-order.ts). Oberoende rutgranskning: tools/film-review.md.",
     "limitations": "I inkorgen: spelas bara där steget inte har någon annan film, tills Jakob dömer den.",
     "colorDoesNotProvePhysicalSide": true,
-    "userAccepted": false,
-    "productionReady": false
+    "userAccepted": true,
+    "productionReady": false,
+    "acceptedAs": "VARIANT",
+    "userReview": "Jakob 2026-11-13: Antingen är den dålig för att hon går upp och ner i slutet när hon återvänder till grundpositionen, men den är också väldigt rolig och bra just på grund av det. Jag antar att metoden, precis som i det förra klippet, är osäker, men den kan också vara genialiskt och är en rolig variant."
   },
   "order": {
     "id": "paow-giv-2-1-p7-04",

@@ -28,13 +28,13 @@
     }
   },
   "review": {
-    "decision": "PENDING",
-    "inbox": true,
+    "decision": "REJECTED",
     "basis": "Inte granskad av Jakob: förd in från beställningen paow-giv-2-1-p5-01, tagning 1 (tools/register-order.ts). Oberoende rutgranskning: tools/film-review.md.",
     "limitations": "I inkorgen: spelas bara där steget inte har någon annan film, tills Jakob dömer den.",
     "colorDoesNotProvePhysicalSide": true,
     "userAccepted": false,
-    "productionReady": false
+    "productionReady": false,
+    "userReview": "Jakob 2026-11-13: Jag kommer att gå emot mina egna regler här och godkänna denna som en variant eftersom jag tycker att den är ganska rolig. Men det som är fel är att ungefär halvvägs in i videon är det ett spelkort som är blått, vilket gör att det har ett vitt mönster. Om detta inte kan korrigeras ska den underkännas... Nej fasen det är ju stängt - gul till gult - kan inte godkänna"
   },
   "order": {
     "id": "paow-giv-2-1-p5-01",

@@ -28,13 +28,14 @@
     }
   },
   "review": {
-    "decision": "PENDING",
-    "inbox": true,
+    "decision": "ACCEPTED",
     "basis": "Inte granskad av Jakob: förd in från beställningen paow-giv-2-1-p1-06, tagning 1 (tools/register-order.ts). Oberoende rutgranskning: tools/film-review.md.",
     "limitations": "I inkorgen: spelas bara där steget inte har någon annan film, tills Jakob dömer den.",
     "colorDoesNotProvePhysicalSide": true,
-    "userAccepted": false,
-    "productionReady": false
+    "userAccepted": true,
+    "productionReady": false,
+    "acceptedAs": "MAIN",
+    "userReview": "Jakob 2026-11-13: Mycket bra, kan konkurrera om att bli den primära."
   },
   "order": {
     "id": "paow-giv-2-1-p1-06",

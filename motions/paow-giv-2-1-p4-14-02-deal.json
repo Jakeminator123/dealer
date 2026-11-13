@@ -28,13 +28,13 @@
     }
   },
   "review": {
-    "decision": "PENDING",
-    "inbox": true,
+    "decision": "REJECTED",
     "basis": "Inte granskad av Jakob: förd in från beställningen paow-giv-2-1-p4-14, tagning 2 (tools/register-order.ts). Oberoende rutgranskning: tools/film-review.md.",
     "limitations": "I inkorgen: spelas bara där steget inte har någon annan film, tills Jakob dömer den.",
     "colorDoesNotProvePhysicalSide": true,
     "userAccepted": false,
-    "productionReady": false
+    "productionReady": false,
+    "userReview": "Jakob 2026-11-13: Den här får du godkänna, men endast om det är gjort med avsikten att hon ska hålla kortet stängt så att det blir gult till gult. Jag tror dock inte att det är så. Därför kommer jag att underkänna."
   },
   "order": {
     "id": "paow-giv-2-1-p4-14",
