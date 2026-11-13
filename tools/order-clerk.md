@@ -71,6 +71,9 @@ For take n of an order:
    - A return (`RETUR-2.1`, `RETUR-2.2`, `RETUR-1`) starts on the seat's landing picture and a deal "bara dit"
      (`step.shape: ONE_WAY`) ends on it: that picture is `first.png` or `last.png` like any other, copied from the register.
      The call is the same; the bank edge is `step.edge` (`P4.C1>READY` for a return), and `step.cutInto` has one edge.
+   - `GIV-2.1` to `D.C2` (the hole card) is a deal like any other; it lands closed. `UTGANG` (`READY>IDLE`) and `HALKORT`
+     (`IDLE>REVEAL(D.C2)`) are films of one edge (`step.edge`, `cutInto` empty): they go into the bank without `--split`.
+     HALKORT's `first.png` and `last.png` are her anchor 1 with both dealer cards drawn, the hole card closed and then open.
 3. **After the call:**
    - It answered with a task id: `node tools/order-put.ts placed <id> <n> <taskId> <creditsRemaining>` at once.
    - It answered with an error and no task: `node tools/order-put.ts failed <id> <n> "<error verbatim>"`. Do not retry; a
@@ -92,27 +95,30 @@ Poll `get_task` per task every 60–120 s (a background `sleep 90`, or sleeps of
 - FAILED: `node tools/order-put.ts status <id> <n> MISSLYCKAD --note "<reason verbatim>"`.
 
 ## 5. After-work (what has held)
-**Byggs 2026-11-13: `tools/film-after.ts` and `tools/still-after.ts`, the port of these scripts; this section is replaced
-when they are in.** Until then the scripts live in `D:/dealer-scratch/tmp/paow/skript/`. Python:
-`D:/dealer-scratch/tmp/filmagent/py/venv/Scripts/python.exe -I <script> …`. Write beside the original, never over it:
-`take-<n>/after.<ext>`. Then `status … EFTERARBETAD --file <that file>`.
-- **A film:** `efterarbete.py <film> <anchor.png> <out.mp4> [--keep-tail] [--fps 24] [--lock <first.png>]` cuts WAN 3's two
-  darkening last frames, brings every frame's green to the anchor's level and a Kling 4 film to 1764 × 1174 (Kling: `--fps 24`,
-  sound dropped; without `--fps` the script writes 30 per s, so a 24 per s film would play too fast). `slutkoll.py <film> <last.png>` says whether the film ends in its end picture (the last frames' change and
-  difference, the skin's warmth). Do not paint where a hand or arm moves.
-- **A 4K film** (`kling-3-4k`): `source.mp4` stays the untouched 4K original. It is brought to the bank's frame 1764 × 1174
-  like a Kling 4 film, `efterarbete.py … --fps <fetched.json's fps>` (sound dropped). That script scales every frame
-  straight to the anchor's size, as `filmmatt.py` does: right when the film has the first picture's shape (width/height
-  1,50), a squeeze of about 15 % if it comes in 16:9 (3840 × 2160). Read `fetched.json`'s width and height first; for
-  anything but the first picture's shape, stop and report: the fit to the bank's frame is the main agent's and Jakob's.
-- **A still** (Nano Banana Pro gives 4800 × 3584 at 4:3): `grundbild.py <the dealer's anchor 1> <picture> <name> <outdir>`
-  fits it into the bank's frame and measures hands and eyes; `fyll-morkt.py` when the body ends 9 rows or less too high;
-  `ta-bort-skugga.py` takes shadows off the green above the edge; `kantkoll.py` must give 0 dark points and the body ending
-  on rows 825–831; then `skolagning.py <picture> <plate> <out>` (the shoe back from a plate without a hand),
-  `gron-till-niva.py` (the green of anchor 1) and `ton-till.py` (the tone of anchor 1). The standard: `data/dealer-standard.json`.
-  For an anchor 2.x, where the hand is at the shoe, the receipt of `paow-ankare-2-1` used variants instead:
-  `grundbild-21` (fit without `handB` and `elbowB`, the shoe's region kept) and `skolagning-21 --keep-card` (her drawn-out
-  card kept), in `D:/dealer-scratch/tmp/bestall/paow-ankare-2-1/`.
+In the repo since 2026-11-13: `tools/film-after.ts` and `tools/still-after.ts` (`src/film-after.ts`, `src/still-after.ts`). They
+read the order, only read the original, write beside it and never over a file; then `status … EFTERARBETAD --file <that file>`
+(both print the command). The standard: `data/dealer-standard.json`.
+- **A film:** `node tools/film-after.ts <id> <n>`. The model in the order chooses (`TREATMENTS`): WAN 3 loses its two darkening
+  last frames and the person is lifted to `first.png`; Kling 4 (1764 × 1172) is scaled to 1764 × 1174 with every frame kept;
+  Kling 3.0 4K is scaled down and lifted. The green goes to the anchor `first.png` was copied from; the delivery's own rate;
+  no sound. It writes `take-<n>/after.mp4` and `after.json` (the treatment, the flags, slutkoll, kantkoll on the first and last
+  frame, and filmmatt's pixel half: cards, landing, green, frozen frames). A delivery not of the first picture's shape (±1 %,
+  for example 16:9) is refused: stop and report. Flags for the cases the scripts had: `--keep-tail` or `--cut <n>`, `--lock` or
+  `--no-lock`, `--fps <rate>`, `--anchor <png>`, `--seats <P1.C1,…>`, `--out <dir>` (a trial), `--compare <film>`. Open: it reads
+  Kling 4's BT.709-tagged film as BT.601, as the Python did, so the result matches the approved takes; a correct decode would
+  shift the colours slightly, and that is not decided. Hands and body per frame still need
+  `D:/dealer-scratch/tmp/paow/skript/filmmatt.py` (MediaPipe). Do not paint where a hand or arm moves.
+- **A still** (Nano Banana Pro gives 4800 × 3584 at 4:3), four steps; Python is
+  `D:/dealer-scratch/tmp/filmagent/py/venv/Scripts/python.exe -I`, the two MediaPipe scripts lie in
+  `D:/dealer-scratch/tmp/bestall/paow-ankare-2-1/`:
+  1. `grundbild-21.py assets/orders/<id>/anchor.png assets/orders/<id>/take-<n>/source.png t<n> <dir> --fit-skip handB,elbowB
+     --keep-shoe-region` fits it into the bank's frame (a rest anchor with no moved arm: without both flags).
+  2. `node tools/still-after.ts <id> <n> --fitted <dir>/t<n>-final.png` → `ren.png` and `ren.json` (fyll-morkt, ta-bort-skugga,
+     kantkoll); `holds` must be true (0 dark points above the edge, the body ending on rows 825–831).
+  3. `skolagning-21.py <ren.png> assets/orders/<id>/anchor.png <dir>/sko-<n>.png --keep-card` puts the shoe back from anchor 1
+     and keeps the card her hand touches (hand not at the shoe: skip, and give `ren.png` to step 4).
+  4. `node tools/still-after.ts <id> <n> --shoe <dir>/sko-<n>.png` → `after.png` and `after.json` (gron-till-niva and ton-till
+     against anchor 1, ta-bort-skugga, kantkoll).
 
 ## 6. Granska och laga (Jakob 2026-11-12)
 Look at every frame of every take yourself in full size, and fix what is easy to fix; leave what is hard.
@@ -125,11 +131,12 @@ Look at every frame of every take yourself in full size, and fix what is easy to
   and writes the list of faults, each LAGBAR or not, with the fix list as JSON. Then `node tools/film-fix.ts <film.mp4>
   <fixes.json>` writes the fixed copy; a list beyond the limits (src/film-fix.ts) is refused whole and nothing is written. The
   fixed copy is a film of its own and is reviewed again.
-- Into the bank, waiting for Jakob in the inbox: `node tools/register-order.ts <id> <n> [--split <frame>]` for the delivered
-  film, and `node tools/register-order.ts <id> <n> --fixed <k>` for a fixed copy (`--dry` says what would be written). It
-  never writes over a take Jakob has decided on. The bank takes the after-worked film: add
-  `--film assets/orders/<id>/take-<n>/after.mp4` (without it the tool takes the untouched `source.mp4`). Today the main agent
-  runs this through `D:/dealer-scratch/tmp/huvudagent11/look/in-i-banken.mjs`; **byggs 2026-11-13: `tools/order-bring.ts`.**
+- Into the bank, waiting for Jakob in the inbox: `node tools/order-bring.ts <id> <n> [--split <frame>] [--prov <proof id>]
+  [--inford] [--dry]`. It takes `take-<n>/after.mp4` (or `after.png`) when there is one, registers a film through
+  `tools/register-order.ts` (a round trip split at `--split`, the first frame of the return), copies it to Material as a
+  candidate (`assets/films/<dealer>/<name>/`), brings a still into Material as a candidate of the role the order makes, and
+  sets `INFÖRD` once the reviewer's verdict is on the take (or with `--inford`). A part already there is left alone, so it can
+  be run again. A fixed copy: `node tools/register-order.ts <id> <n> --fixed <k>`. Neither writes over a take Jakob has decided on.
 
 ## 7. Measure
 Then `status … MÄTT`. Every measure is written in the report; a take outside a limit is **marked, not hidden**.
@@ -139,21 +146,24 @@ Then `status … MÄTT`. Every measure is written in the report; a take outside 
 - **The hand (a deal):** the order's `motion` says which hand takes the card (`hand`), whether it is handed over to the
   right hand (`pass`, handbyte: low in front of her body, one card, taken by its edges) and whether it lands closed or open
   (`side`). Note which hand lays the card in the take; a take where another hand lays it, where a second card appears at
-  the handover, or where a closed card shows its face is marked.
-- Landing against the plan (within 5 px), frozen frames, the green's level, nothing dark above the table edge (`kantkoll.py`
-  on the last frame), the person's tone against the anchor: `filmmatt.py <film> <name> <outdir> --start first.png --end last.png`.
+  the handover, or where a closed card shows its face is marked. HALKORT: one card turns once at its place, the first card
+  stays still, the hand ends at rest.
+- Landing against the plan (within 5 px), frozen frames, the green's level, nothing dark above the table edge, the end
+  against `last.png`: in `after.json` (§5). Hands and body per frame: `filmmatt.py <film> <name> <outdir> --start first.png
+  --end last.png`.
 - The card's turn: `node tools/flip-axis.ts <clip>` (KORTSIDAN / LÅNGSIDAN / OKLART) once the take has a card track
-  (`node tools/track-card.ts <id>` works on the bank's clips; until a take is in the bank, `filmmatt.py` gives the cards).
+  (`node tools/track-card.ts <id>` works on the bank's clips; until a take is in the bank, `after.json` gives the cards).
 
 ## 8. Independent review
 Ask the main agent for an independent frame reviewer in full resolution with `tools/film-review.md` (it replaces the older
 templates `granska-giv.md`, `granska-vila.md` and `granska-helfigur.md` in `D:/dealer-scratch/tmp/filmagent/mcp/`). You do
-not review your own takes as the final word. After the review: `status … GRANSKAD --note "<the verdict in one line>"`, with
-the scores written "given 3/5, returen 1/5" so that the protocol reads them. **Byggs 2026-11-13: a `review` command in
-`tools/order-put.ts`.**
+not review your own takes as the final word. After the review: `node tools/order-put.ts review <id> <n> --note "<the verdict
+in one line>"` keeps it beside the take wherever it stands from HÄMTAD on (often INFÖRD already), without moving its state;
+at MÄTT, `status … GRANSKAD --note "…"` does the same and moves it. Write the scores "given 3/5, returen 1/5": the protocol
+reads the newer of the two notes.
 
 ## 9. Into the bank or Material: not yours
-A film goes into the bank's inbox by the main agent or on its word (`tools/register-order.ts`, §6), never over Jakob's
+A film goes into the bank's inbox by the main agent or on its word (`tools/order-bring.ts`, §6), never over Jakob's
 decisions, with `review.inbox: true`; it plays only where its step has nothing else until he judges it in Granska. A still
 goes into Material as a candidate (the studio's "Lägg till bild"), never as gäller: Jakob approves it there. `INFÖRD` is set
 after that.

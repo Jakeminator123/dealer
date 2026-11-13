@@ -1,0 +1,154 @@
+{
+  "schemaVersion": 1,
+  "id": "paow-giv-2-1-p5-03",
+  "title": "Omgång 6a · P5, Kling 4, fri vändning, mall 5",
+  "summary": "Gör en film av Paow: från ankare 2.1 (nyp) tar hon ett kort ur skon med vänster hand; hon vänder det som en hand kan på vägen och lägger det öppet på plats 5; handen går tillbaka till nypet.",
+  "group": null,
+  "dealer": "paow",
+  "kind": "FILM",
+  "step": {
+    "key": "GIV-2.1",
+    "label": "Nyp, ett kort till platsen och tillbaka",
+    "edge": "READY>P5.C1",
+    "shape": "ROUND_TRIP",
+    "cutInto": [
+      "READY>P5.C1",
+      "P5.C1>READY"
+    ],
+    "makes": null
+  },
+  "motion": {
+    "grip": "PINCH",
+    "hand": "LH",
+    "pass": false,
+    "turn": true,
+    "flipAxis": "FREE",
+    "target": "P5.C1",
+    "side": "FRONT",
+    "fromPlan": true
+  },
+  "pictures": [
+    {
+      "name": "first.png",
+      "label": "Första bild · Paows ankare 2.1",
+      "goesAs": "startFrame",
+      "path": "assets/orders/paow-giv-2-1-p5-03/first.png",
+      "sha256": "74eebfdc1388f8de362c0151546bbe08aeb1fed74fca097f8ca6999d833dc702",
+      "width": 1764,
+      "height": 1174,
+      "from": {
+        "entry": "paow-nyp-ung-1",
+        "path": "assets/anchors/paow-nyp-ung-1/anchor.png",
+        "note": "Nyp, yngre, tagning 1 (gäller)"
+      },
+      "waits": null
+    },
+    {
+      "name": "last.png",
+      "label": "Sista bild · samma + kortet öppet på plats 5",
+      "goesAs": "endFrame",
+      "path": "assets/orders/paow-giv-2-1-p5-03/last.png",
+      "sha256": "ede5fef77f3a3b842fd373a9e628ba2f50ce68bdb122ab277798951df165a5f7",
+      "from": {
+        "built": "första bilden + kortet P5.C1 där planen säger"
+      },
+      "waits": null,
+      "width": 1764,
+      "height": 1174,
+      "drawn": {
+        "target": "P5.C1",
+        "side": "FRONT",
+        "as": "flatQuad från P4.C1 (planens plana bord, som labbet ritar)",
+        "plan": {
+          "path": "placements/default.json",
+          "sha256": "e0fb924d27dc1311ff9cd079a72eeaa81e218eae8dd48990068d1cf0a5fbd67f",
+          "updatedAt": "2026-11-11T14:46:38.185Z"
+        },
+        "texture": {
+          "video": "assets/motions/pamela-p4-c1-plan-return-idle-01/source.mp4",
+          "frame": 89,
+          "sha256": "0b3cba9be4a969334bf1ba23623b80be6d0bd119a3c4dd8236db27145d479aa7",
+          "quadFrom": "assets/anchors/pamela-idle-p4-c1-plan-01/receipt.json"
+        },
+        "quad": [
+          [
+            1025.5,
+            1026.9
+          ],
+          [
+            1094.9,
+            1026.9
+          ],
+          [
+            1127.2,
+            1086.9
+          ],
+          [
+            1048.4,
+            1086.9
+          ]
+        ],
+        "centre": [
+          1074,
+          1056.9
+        ],
+        "measured": {
+          "centre": [
+            1074.5,
+            1057.8
+          ],
+          "area": 4791,
+          "box": [
+            102,
+            62
+          ],
+          "changedElsewhere": 0
+        },
+        "measuredOffsetPx": 1
+      }
+    }
+  ],
+  "reference": {
+    "status": "INGEN",
+    "why": "Ingen referensfilm vald."
+  },
+  "generation": {
+    "provider": "runway-app",
+    "tool": "generate_video",
+    "model": "kling-4",
+    "params": {
+      "resolution": "1080p",
+      "duration": 7
+    }
+  },
+  "prompt": {
+    "template": "film-giv-kort@5",
+    "style": "KORT",
+    "text": "Locked camera, one continuous shot. Her hand at the shoe draws the yellow card out of the window and carries it low over the felt towards its place a little to the right of the middle of the picture, where the last frame shows it. On the way her hand turns the card over once, holding it the whole time, and lays it flat at its place, blue side up. Then her open hand glides back low over the felt, palm down, to the shoe and takes the next card. The other hand rests on the felt. Only one card moves; its back is yellow and its face is blue.",
+    "sha256": "8ba8010884a559b73b77680179c284a5f095e0a92601f2649c377138c4219b46",
+    "extra": null,
+    "middle": false
+  },
+  "takes": 1,
+  "cost": {
+    "perTake": 150,
+    "total": 150,
+    "worstPerTake": 165,
+    "worstTotal": 165,
+    "basis": "21,3 krediter per s × 7 s. Liggarna b19 och b20: 7 s i 1080p = 149 krediter; listpris 23,5 per s i verktyget generate_video 2026-11-12."
+  },
+  "limits": {
+    "maxCredits": 165,
+    "stopBelowCredits": 2000
+  },
+  "notes": [],
+  "created": "2026-11-13T05:49:00.283Z",
+  "createdBy": "huvudagenten (dealer-94) på Jakobs ord 2026-11-13: omgång 6",
+  "approval": {
+    "by": "huvudagent",
+    "at": "2026-11-13T05:49:00.649Z",
+    "orderSha256": "7ae298b8d60049f74925b05c76d5c79b51cf685f563f6a18f5b167357185454b",
+    "mandate": "Jakob 2026-11-13: beställ lämpliga filmer automatiskt utan mitt godkännande (omgång 6: plats 5 och 6 med receptet han godkände till ytterplatserna, mall 5 mot mall 6; hålkortet)"
+  },
+  "status": "GODKÄND"
+}
