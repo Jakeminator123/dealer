@@ -40,10 +40,10 @@ const SWITCH_WORDS = ['0', '1', 'true', 'false'];
 
 export const KEYS: Readonly<Record<LookKey, KeyKind>> = {
   room: {kind: 'choice', options: BUILT_ROOMS, open: true}, roomShift: one('cut', 'shimmer'), roomShiftSeconds: range(1, 5), blur: range(0, 30), depthBlur: on, dofRange: range(0.5, 12),
-  clock: on, dust: range(0, 1), flicker: on, flickerEvery: range(4, 90), flickerStrength: range(0, 1), fan: on, fanStrength: range(0, 0.4), fanPeriod: range(2, 12), roomLife: on, dealerLife: range(0, 2), filmTempo: range(1, 2),
+  clock: on, dust: range(0, 1), flicker: on, flickerEvery: range(4, 90), flickerStrength: range(0, 1), fan: on, fanStrength: range(0, 0.4), fanPeriod: range(2, 12), roomLife: on, smoke: range(0, 1), dealerLife: range(0, 2), filmTempo: range(1, 2),
   tal: one('repliker', 'av'), // the dealer's fixed lines as talk films, or as text only (src/game-page.ts)
   exposure: range(0.3, 2), roomLight: range(0, 2.5), lamp: range(0, 1), wrap: range(0, 1.5), dealerRoom: range(0, 1), filmEven: on, edgeClean: range(0, 1), filmBright: range(0.6, 1.4), filmWarm: range(-0.2, 0.2), shadowAbove: range(0, 1),
-  cloth: one('print', 'v6', 'runway', 'runway-2', 'runway-3'), felt: one('green', 'blue', 'vin', 'svart'), marks: {kind: 'set', options: MARKS}, logo: {kind: 'text', maxLength: 28}, surface: one('painted', 'photo', 'natur', 'natur-2', 'natur-3', 'natur-duk'), base: one('column', 'legs'), tableSize: range(0.9, 1.4), tray: on, cups: on,
+  cloth: one('print', 'v6', 'runway', 'runway-2', 'runway-3'), felt: one('green', 'blue', 'vin', 'svart'), marks: {kind: 'set', options: MARKS}, logo: {kind: 'text', maxLength: 28}, surface: one('painted', 'photo', 'natur', 'natur-2', 'natur-3', 'natur-duk'), base: one('column', 'legs'), tableSize: range(0.9, 1.4), tray: on, cups: on, shelf: on,
   cards: on, cardMethod: one('scene', 'film', 'matte'), cardHand: one('film', 'standard'), cardScale: range(0.8, 2), cardRank: one('A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'), cardSuit: one('spades', 'hearts', 'diamonds', 'clubs'), chipGloss: range(0, 1),
   mode: one('look', 'lean'), sway: on, focus: one('off', 'dealer', 'follow', 'card', 'manual'), focusDistance: range(0.3, 12), tolerance: range(0, 0.8),
   yaw: range(-60, 60), pitch: range(-35, 25), zoom: range(0.45, 2.5), dx: range(-0.9, 0.9), dy: range(-0.3, 0.5), dz: range(-0.5, 1.6), aim: on, format: one('desk', 'mob', 'fill'),

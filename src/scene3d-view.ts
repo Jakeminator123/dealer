@@ -11,6 +11,7 @@ import {createRooms, type Panorama, type RoomId} from './scene3d-room.ts';
 import {CHANGE_FRAGMENT, SHIMMER_GLSL, readyFrom, retake, roomChange, shiftProgress, shimmerLevel} from './scene3d-shift.ts';
 import {createTable, lightFromAbove, sized, type TableBase, type TableCloth, type TableSurface} from './scene3d-table.ts';
 import {createRailExtras} from './scene3d-rail.ts';
+import {createSmoke} from './scene3d-smoke.ts';
 import {createMouthLayer} from './scene3d-mouth.ts';
 
 export type SceneState = {
@@ -39,6 +40,8 @@ export type SceneState = {
   // line keep their speed, and a take played by itself is never hurried). dealerLife: a slow movement added to her head and upper body
   // (0 to 2; 0 is none; lifeShift).
   filmEven: boolean; filmTempo: number; dealerLife: number;
+  smoke: number; // low smoke over the table, 0 to 1 (src/scene3d-smoke.ts); 0 is none
+  shelf: boolean; // the serving shelf behind the dealer's edge at her right hand (SHELF in src/scene3d-table.ts)
   edgeClean: number; // the screen's green taken out of her outline, 0 to 1 (setEdge in src/scene3d-film.ts); 0 is the key as it is
   tal: 'repliker' | 'av'; // the game's: the dealer says her fixed lines with her talk films ('av': as text in the chat only; src/game-page.ts)
 };
@@ -60,7 +63,8 @@ export const DEFAULTS: SceneState = {
   shadowAbove: 1, marks: 'all', cloth: 'print', lamp: 0, chipGloss: 0.5,
   roomLife: false, dealerRoom: 0,
   filmEven: true, filmTempo: 2, dealerLife: 1,
-  edgeClean: 0,
+  edgeClean: 0, shelf: false,
+  smoke: 0,
   tal: 'repliker',
 };
 // rooms: the panorama rooms of the register (data/scene-rooms.json, readRegister in scene3d-room.ts); without it the first three, at urls.
@@ -115,9 +119,9 @@ export function createScene(canvas: HTMLCanvasElement, host: HTMLElement, data: 
   const state: SceneState = {...DEFAULTS};
   const renderer = new T.WebGLRenderer({canvas, antialias: true, preserveDrawingBuffer: true}); renderer.autoClear = false;
   const bg = new T.Scene(), fg = new T.Scene(), view = new T.PerspectiveCamera(40, W / H, 0.05, 200), filmCam = new T.PerspectiveCamera(40, W / H, 0.05, 200), filmVP = new T.Matrix4();
-  const light = createFanLight(), film = createFilmLayers(filmVP, light.uniforms), table = createTable(light.hook), tray = createChipTray(light.hook), rail = createRailExtras(light.hook), rooms = createRooms(bg, data.urls, data.onMissingRoom, data.rooms);
+  const light = createFanLight(), film = createFilmLayers(filmVP, light.uniforms), table = createTable(light.hook), tray = createChipTray(light.hook), rail = createRailExtras(light.hook), smoke = createSmoke(), rooms = createRooms(bg, data.urls, data.onMissingRoom, data.rooms);
   const sun = new T.DirectionalLight(0xfff1dd, 1.6); sun.position.set(-1.5, 3, 2.5);
-  fg.add(film.body, film.table, table.group, tray.group, rail.group, new T.AmbientLight(0xffe6cc, 1.1), sun, ...rooms.front);
+  fg.add(film.body, film.table, table.group, tray.group, rail.group, smoke.group, new T.AmbientLight(0xffe6cc, 1.1), sun, ...rooms.front);
   const players = createPlayers(texture => film.setTexture(texture), data.onChange);
   const mouth = createMouthLayer(shown => film.setMouth(shown)); // a spoken line's mouth on the part on screen (src/scene3d-mouth.ts)
   let camera: FilmCamera = DEALER_LENS_ESTIMATE, pitch = 0, edgeZ = -1, guides: T.Group | null = null, track: CardTrack | null = null;
@@ -208,13 +212,13 @@ export function createScene(canvas: HTMLCanvasElement, host: HTMLElement, data: 
     if (gone) return; camera = filmCamera(); const solved = solveCamera(camera); pitch = solved.pitch; edgeZ = -solved.edgeDistance;
     filmCam.fov = solved.fovYDeg; filmCam.aspect = W / H; filmCam.position.set(0, camera.heightM, 0); filmCam.rotation.set(-pitch, 0, 0, 'YXZ'); filmCam.updateProjectionMatrix(); filmCam.updateMatrixWorld(true);
     filmVP.multiplyMatrices(filmCam.projectionMatrix, filmCam.matrixWorldInverse);
-    table.build(edgeZ, camera.scale, ownNotch ?? (state.tray ? TRAY : undefined), state.base, state.surface, state.tableSize); tray.group.visible = state.tray && !ownNotch; if (tray.group.visible) tray.build(edgeZ, camera.scale); rail.build(edgeZ, camera.scale, betSpots(data.plan, camera), state.tableSize); drawFelt(); rooms.place(camera); light.place(camera); buildGuides(); focusNow = NaN; built = true; for (const prop of props) prop.build(edgeZ, camera.scale); apply();
+    table.build(edgeZ, camera.scale, ownNotch ?? (state.tray ? TRAY : undefined), state.base, state.surface, state.tableSize); tray.group.visible = state.tray && !ownNotch; if (tray.group.visible) tray.build(edgeZ, camera.scale); rail.build(edgeZ, camera.scale, betSpots(data.plan, camera), state.tableSize); smoke.build(edgeZ, camera.scale, state.tableSize); drawFelt(); rooms.place(camera); light.place(camera); buildGuides(); focusNow = NaN; built = true; for (const prop of props) prop.build(edgeZ, camera.scale); apply();
   }
   const drawFelt = () => table.draw({spots: cardSpots(data.plan, camera), logo: state.logo, felt: state.felt, scale: camera.scale, marks: state.marks, cloth: state.cloth, camera, size: state.tableSize});
   function apply() {
     if (gone) return; if (!rooms.rooms[state.room]) state.room = 'salong'; // a room the scene does not have (an old address, a room taken out of the register)
     useCards(); rooms.show(state.room); rail.set({cups: state.cups}); film.place(edgeZ, state.fold, state.focus !== 'off', camera.scale); film.setKey({lo: state.keyLo, hi: state.keyHi, shadow: state.shadow, above: state.shadowAbove}); film.setGrade(state.filmBright, state.filmWarm); film.setEdge(state.edgeClean); players.tempo(state.filmTempo);
-    table.setLamp(state.lamp);
+    table.setLamp(state.lamp); table.setShelf(state.shelf);
     if (guides) guides.visible = state.guides; resize(); data.onChange();
   }
   function resize() {
@@ -342,7 +346,10 @@ export function createScene(canvas: HTMLCanvasElement, host: HTMLElement, data: 
     rooms.life(shift?.from ? [state.room, shift.from.room] : effect ? [here.room, effect.room] : [state.room], state.roomLife);
     const picture = shift && change < 1 ? drawShift(shift, change, seconds) : drawRoom(here, seconds, half[1], half[2]); if (shift) shown = picture;
     // the dealer takes her light from the room as the table does: the outgoing room's until the rooms have half changed
-    const lit = shift?.from && change < 0.5 ? shift.from : lookNow(); dealerLight(lit, shift || struck ? lit.exposure * rooms.rooms[lit.room].exposure : picture.exposure);
+    const lit = shift?.from && change < 0.5 ? shift.from : lookNow();
+    // the smoke over the table is lit as the room is shown: darker in a dim room, never brighter than paper
+    { const level = Math.min(1, Math.max(0.35, 0.55 + 0.45 * lit.exposure * rooms.rooms[lit.room].exposure)); smoke.update(seconds, state.smoke, [0.86 * level, 0.84 * level, 0.82 * level]); }
+    dealerLight(lit, shift || struck ? lit.exposure * rooms.rooms[lit.room].exposure : picture.exposure);
     film.setWrap(state.wrap > 0 ? picture.target.texture : null, canvas.width, canvas.height, picture.exposure, state.wrap);
     // table and film; while a change of room is under way the shimmer is laid over the room in the same pass that writes it to the screen
     const out = shift ? shiftMat : outMat, o = out.uniforms; o.useFg.value = 0;
@@ -425,7 +432,7 @@ export function createScene(canvas: HTMLCanvasElement, host: HTMLElement, data: 
   // registers no observers or listeners of its own (the pages do). Afterwards every call is a no-op, dispose() too.
   function takeDown() {
     if (gone) return; gone = true; running = false; shift = null;
-    mouth.dispose(); players.dispose(); rooms.dispose();
+    mouth.dispose(); players.dispose(); rooms.dispose(); smoke.dispose();
     for (const prop of props.splice(0)) fg.remove(prop.group); frameCalls.clear();
     for (const layer of Object.values(cardLayers)) layer.off?.(); cardLayer = null;
     const freed = new Set<{dispose(): void}>(), textures = (value: unknown): void => { if (value instanceof T.Texture) freed.add(value as T.Texture); else if (Array.isArray(value)) value.forEach(textures); };

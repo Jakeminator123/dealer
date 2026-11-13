@@ -141,7 +141,7 @@ function build() {
     check('Ljuset skiftar till ibland', 'flicker'), slider('Ungefär var', 'flickerEvery', 4, 90, 1, ' s', live), slider('Hur djupt', 'flickerStrength', 0, 1, 0.01, '', live),
     el('div', {className: 'btns'}, button('Alla tre på', () => scene.set({clock: true, dust: 0.7, flicker: true})), button('Alla tre av', () => scene.set({clock: false, dust: 0, flicker: false}))), three,
     note('Samma tre i varje miljö, i den form som passar den. Det som svävar finns både bakom dealern och mellan dig och henne; nära kameran blir ett korn en stor, svag skiva. Skiftet bestäms av klockan, så det går att förutse.'),
-    check('Rörelse i rummet', 'roomLife'), slider('Liv i överkroppen', 'dealerLife', 0, 2, 0.05, '', live), slider('Filmernas tempo', 'filmTempo', 1, 2, 0.05, ' ×', live),
+    check('Rörelse i rummet', 'roomLife'), slider('Rök över bordet', 'smoke', 0, 1, 0.05, '', live), slider('Liv i överkroppen', 'dealerLife', 0, 2, 0.05, '', live), slider('Filmernas tempo', 'filmTempo', 1, 2, 0.05, ' ×', live),
     note('<b>Rörelse i rummet</b> (prov): där ett 360°-rum har folk som står stilla ligger en kort film över just den delen av bilden, så att de pratar, skiftar vikt och tar ett par steg. Den följer rummets oskärpa och ljus. Finns i Venedig (kajen till vänster om dealern); <b>Venedig, tom</b> är samma rum med folket borttaget.'));
   group('Ljus', slider('Ljus i rummet', 'exposure', 0.3, 2, 0.05, '', live), slider('Dealerns ljusstyrka', 'filmBright', 0.6, 1.4, 0.01), slider('Dealerns värme', 'filmWarm', -0.2, 0.2, 0.005), slider('Rummets ljus runt dealern', 'wrap', 0, 1.5, 0.05, '', live), slider('Rummets ljus på dealern', 'dealerRoom', 0, 1, 0.05, '', live), check('Jämna filmernas färg', 'filmEven'), slider('Ren kant runt dealern', 'edgeClean', 0, 1, 0.05, '', live),
     check('Fläktskugga över dealer och bord', 'fan'), slider('Fläktens styrka', 'fanStrength', 0, 0.4, 0.01, '', live), slider('Sekunder per blad', 'fanPeriod', 2, 12, 0.5, ' s', live),
@@ -192,7 +192,7 @@ function build() {
     note('<b>Två ben</b>: fotograferat trä, mässingsfötter, fotstöd i mässing och bordets skugga på golvet, efter rumsstudien 7 november. Syns när kameran backar: knappen <b>Hela bordet</b> under Kamera.'),
     (() => { const box = el('input', {type: 'checkbox'}); box.checked = query.get('sko') === '3d'; box.addEventListener('change', () => void shoe.set(box.checked)); return el('label', {className: 'check'}, box, el('span', {textContent: 'Sko i 3D i stället för filmens sko (prov)'})); })(),
     note('<b>Sko i 3D</b>: din skomodell står som ett föremål i scenen där filmens sko står, och filmens sko ritas inte. Den står kvar när dealern går. Inte löst än: i en giv klipps handen där den sträcker sig in till skon.'),
-    check('Mugghållare i relingen', 'cups'), note('<b>Mugghållare</b>: en mässingsring mellan varje plats, nedsänkt i lädret.'));
+    check('Mugghållare i relingen', 'cups'), check('Hylla vid dealerns högra sida', 'shelf'), note('<b>Mugghållare</b>: en mässingsring mellan varje plats, nedsänkt i lädret.'));
   group('Marker och bricka', el('div', {className: 'btns'}, button('Lägg insatser', () => chipsLab.lay()), button('En marker till på plats 4', () => chipsLab.more())),
     el('div', {className: 'btns'}, button('Dealern tar plats 2', () => chipsLab.take(2)), button('Betala plats 6', () => chipsLab.pay(6)), button('Rensa', () => chipsLab.clear())),
     slider('Markernas glans', 'chipGloss', 0, 1, 0.01, '', () => { chipsLab.gloss(); hud(); }),

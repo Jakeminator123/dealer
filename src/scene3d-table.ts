@@ -12,6 +12,13 @@ import {BET, spotToScene, tableToFilm, type FilmCamera, type Spot} from './scene
 
 export const FELTS: Record<string, [string, string]> = {green: ['#134232', '#0a2a20'], blue: ['#16325e', '#0b1c38'], vin: ['#571a26', '#330d15'], svart: ['#23272a', '#101214']};
 export const TABLE = {a: 0.95, b: 0.6, rail: 0.1}; // half width, depth toward the players, rail width
+// The serving shelf behind the dealer's edge at her right hand (state shelf; a lab trial of 2026-11-13, off from the start). The film
+// in which she takes a champagne glass from beside the table has her arm go down behind a table top that reaches further back
+// there than this table does (the film's own table: her arm ends against the green at rows 776 to 800 of the frame), so without
+// something there the arm ends in the air and the glass comes up out of nothing. deep: how far behind the edge the board reaches
+// (0.40 puts its far edge at about row 774 from the film camera, just over where the arm ends); inner: how near the table's middle
+// it comes (her body begins at about 0.57 and stands in front of it; at 0.4 the end of her arm showed beside the board); thick: the board.
+export const SHELF = {deep: 0.4, inner: 0.27, thick: 0.035};
 // The table's size (state key tableSize): how many times TABLE's half width and depth the felt is. The dealer's edge stays where the
 // film has it (the felt grows sideways and toward the players), the rail keeps its own width, and the print stays where the film
 // deals: a larger table has more plain felt round it. Below 1 the outer bet rings reach the rail; above 1.4 the felt image ends.
@@ -453,7 +460,7 @@ export function createTable(lit: <M extends T.Material>(material: M) => M = m =>
   // The lamp (LAMP) on every surface of the table: its light is worked out per pixel in world coordinates and multiplies the
   // colour before it is encoded, where light acts. At strength 0 the factor is exactly 1 and the table is as it was.
   const lamp = {lampAt: {value: new T.Vector3()}, lampAxis: {value: new T.Vector3(...LAMP_AXIS)}, lampCone: {value: Math.cos(LAMP.angle)}, lampRef: {value: 1}, lampOn: {value: 0}};
-  let lampStrength = 0;
+  let lampStrength = 0, shelf: T.Mesh | null = null, shelfOn = false;
   const lamped = <M extends T.Material>(material: M): M => {
     const before = material.onBeforeCompile, key = material.customProgramCacheKey.bind(material);
     material.onBeforeCompile = (shader: T.WebGLProgramParametersWithUniforms, renderer: T.WebGLRenderer) => { before.call(material, shader, renderer); Object.assign(shader.uniforms, lamp);
@@ -616,6 +623,10 @@ export function createTable(lit: <M extends T.Material>(material: M) => M = m =>
     group.add(new T.Mesh(sweep(APRON, 96, 0.6, null, size), base === 'legs' ? skirt : apron));
     const add = (geometry: T.BufferGeometry, material: T.Material, x: number, y: number, z: number) => { const m = new T.Mesh(geometry, material); m.position.set(x, y, z); group.add(m); return m; };
     add(new T.BoxGeometry(2 * (a + rail), 0.16, 0.02), wood, 0, -0.082, -0.011);
+    // A serving shelf behind the dealer's edge at her right hand (state shelf, SHELF): a board at the felt's height in the table's
+    // wood, from the table's end in to SHELF.inner of its middle and SHELF.deep back. The film stands in front of it, so she is drawn
+    // over it and it shows where the film is empty.
+    { const wide = a + rail - SHELF.inner; shelf = add(new T.BoxGeometry(wide, SHELF.thick, SHELF.deep), wood, -(SHELF.inner + wide / 2), -SHELF.thick / 2, -SHELF.deep / 2 - 0.001); shelf.visible = shelfOn; }
     if (base === 'column') { add(new T.CylinderGeometry(0.16, 0.24, 0.78, 32), wood, 0, -0.55, b * 0.45); add(new T.CylinderGeometry(0.42, 0.46, 0.05, 48), brass, 0, -0.93, b * 0.45); return; }
     photographed();
     // the legs stand as far in under a larger top as under this one
@@ -660,5 +671,7 @@ export function createTable(lit: <M extends T.Material>(material: M) => M = m =>
     lamp.lampAt.value.set(LAMP.x * kk, LAMP.y * kk, z + LAMP.s * kk); lamp.lampOn.value = lampStrength;
     lamp.lampRef.value = 1 / Math.max(1e-9, lampIrradiance([0, 0, z], lamp.lampAt.value.toArray(), LAMP_AXIS, lamp.lampCone.value));
   }
-  return {group, draw, build, setEnvironment, setLamp};
+  /** The serving shelf at the dealer's right hand, shown or not. */
+  const setShelf = (on: boolean) => { shelfOn = on; if (shelf) shelf.visible = on; };
+  return {group, draw, build, setEnvironment, setLamp, setShelf};
 }

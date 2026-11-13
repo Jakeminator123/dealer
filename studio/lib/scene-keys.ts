@@ -105,6 +105,7 @@ export const SCENE_KEYS: readonly KeySpec[] = [
   spec("fanStrength", "rorelser", "U", "Fläktens styrka", slider(0, 0.4, 0.01), "Hur mörk fläktens skugga är; håll den svag."),
   spec("fanPeriod", "rorelser", "U", "Sekunder per blad", slider(2, 12, 0.5, " s"), "Fläktens fart: sekunder mellan två blad."),
   spec("roomLife", "rorelser", "U", "Rörelse i rummet", toggle, "Folk som står stilla i ett 360°-rum rör sig: en film över dem i bilden (prov; finns i Venedig)."),
+  spec("smoke", "rorelser", "U", "Rök över bordet", slider(0, 1, 0.05), "En låg rök som ligger över filten och driver långsamt, tätast runt bordets kant. 0 är av (prov)."),
   spec("dealerLife", "rorelser", "U", "Liv i överkroppen", slider(0, 2, 0.05), "Dealerns huvud och överkropp rör sig lite och långsamt. Händer, kort och bord står still. 0 är av; förval 1."),
   spec("filmTempo", "rorelser", "U", "Givarnas tempo", slider(1, 2, 0.05, " ×"), "Hur fort hon delar ut: rundans filmer går så många gånger fortare. Vila och tal går i vanlig fart. Förval 2."),
   spec("tal", "rorelser", "U", "Dealerns repliker", choice(["repliker", "Med munnen"], ["av", "Bara text"]), "I spelet säger dealern sina fasta repliker med talfilm och ljud; Bara text visar dem i chatten."),
@@ -128,6 +129,7 @@ export const SCENE_KEYS: readonly KeySpec[] = [
   spec("base", "bord", "U", "Underrede", choice(["column", "Pelare"], ["legs", "Två ben"]), "Bordets fot; syns när kameran backar."),
   spec("tableSize", "bord", "U", "Bordets storlek", slider(0.9, 1.4, 0.05, " ×"), "Filt, reling och fot växer åt sidorna och mot spelarna; dealerns kant och trycket står kvar. 1 är som förut (prov)."),
   spec("tray", "bord", "U", "Markerbräde", toggle, "Det byggda markerbrädet, försänkt vid dealern."),
+  spec("shelf", "bord", "U", "Hylla vid dealern", toggle, "En låg hylla bakom bordskanten vid hennes högra sida, för filmen där hon tar ett glas därifrån (prov)."),
   spec("cups", "bord", "U", "Mugghållare", toggle, "Hållare i guld, försänkta i relingens läder mellan platserna. Förval på."),
   // ── Kort och marker ──
   spec("cards", "kort", "D", "Renderade kort", toggle, "Ritade kort i stället för filmens färgyta; spelet har dem på."),

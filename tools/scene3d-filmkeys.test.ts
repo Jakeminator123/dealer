@@ -7,6 +7,8 @@ import {DEFAULTS} from '../src/scene3d-view.ts';
 import {EVEN, FLASH, FRAME_FIX, LIFE, roomFlashAt, evenFor, lifeNow, lifeShiftAt, matchLeft, rematrix, toneMatch, toneOf, toneUnder} from '../src/scene3d-film.ts';
 import {SCENE_KEYS} from '../studio/lib/scene-keys.ts';
 import {KEYS as GAME_KEYS} from '../src/game-look.ts';
+import {SMOKE, smokeMask} from '../src/scene3d-smoke.ts';
+import {TABLE} from '../src/scene3d-table.ts';
 
 const times = (m: readonly number[], v: number[]) => [0, 1, 2].map(r => m[r * 3] * v[0] + m[r * 3 + 1] * v[1] + m[r * 3 + 2] * v[2]);
 
@@ -15,6 +17,7 @@ test('the defaults are Jakob\'s standard of 2026-11-13, and both catalogues hold
   assert.equal(DEFAULTS.filmEven, true); assert.equal(DEFAULTS.filmTempo, 2); assert.equal(DEFAULTS.cups, true); assert.equal(DEFAULTS.dealerLife, 1);
   assert.deepEqual(lifeNow(12.3, 0).map(Math.abs), [0, 0, 0], 'no life is no movement at all');
   assert.deepEqual(GAME_KEYS.filmEven, {kind: 'switch'}); assert.deepEqual(GAME_KEYS.filmTempo, {kind: 'slider', min: 1, max: 2}); assert.deepEqual(GAME_KEYS.dealerLife, {kind: 'slider', min: 0, max: 2});
+  assert.equal(DEFAULTS.shelf, false); assert.deepEqual(GAME_KEYS.shelf, {kind: 'switch'});
   assert.equal(DEFAULTS.edgeClean, 0); assert.deepEqual(GAME_KEYS.edgeClean, {kind: 'slider', min: 0, max: 1});
   const studio = (key: string) => SCENE_KEYS.find(s => s.key === key) as {kind: string; min?: number; max?: number} | undefined;
   assert.equal(studio('filmEven')?.kind, 'switch'); assert.deepEqual([studio('filmTempo')?.min, studio('filmTempo')?.max], [1, 2]); assert.deepEqual([studio('dealerLife')?.min, studio('dealerLife')?.max], [0, 2]);
@@ -90,4 +93,16 @@ test('life in the upper body never falls back in step: the sway is not like itse
   assert.ok(worst < 0.6, `after some delay of 2 to 40 s the sway is ${worst.toFixed(2)} like itself`);
   for (let loop = 3.7; loop <= 4.001; loop += 0.05) for (let turns = 1; turns <= 9; turns++) assert.ok(like(Math.round(turns * loop * rate)) < 0.6, `${turns} turns of a rest film of ${loop.toFixed(2)} s`);
   assert.ok(Math.abs(LIFE.sway.reduce((s, part) => s + part[1], 0) - 1) < 1e-9, 'the shares of the sway make one');
+});
+
+test('the smoke over the table: off from the start, thin where the cards are, round the rim, and never behind the dealer\'s edge', () => {
+  assert.equal(DEFAULTS.smoke, 0); assert.deepEqual(GAME_KEYS.smoke, {kind: 'slider', min: 0, max: 1});
+  const spec = SCENE_KEYS.find(s => s.key === 'smoke') as {min?: number; max?: number} | undefined; assert.deepEqual([spec?.min, spec?.max], [0, 1]);
+  const middle = smokeMask(0, TABLE.b * 0.5), rim = smokeMask(TABLE.a * 0.9, TABLE.b * 0.5);
+  assert.ok(Math.abs(middle - SMOKE.thin) < 1e-9, 'the middle of the felt has the thin share'); assert.ok(rim > 0.9, `the rim has nearly all: ${rim}`);
+  for (const [x, z] of [[0, 0], [0.5, -0.1], [-0.9, -0.3]]) assert.equal(smokeMask(x, z), 0, 'nothing at or behind the dealer\'s edge');
+  assert.equal(smokeMask(TABLE.a * 1.6, TABLE.b * 0.5), 0, 'nothing far outside the table'); assert.ok(smokeMask(TABLE.a * 1.1, TABLE.b * 0.5) > 0.5, 'still there over the rail');
+  for (let x = -2; x <= 2; x += 0.05) for (let z = -0.5; z <= 2; z += 0.05) { const m = smokeMask(x, z); assert.ok(m >= 0 && m <= 1); }
+  // a larger table carries its smoke out with it
+  assert.ok(smokeMask(TABLE.a * 1.25, TABLE.b * 0.6, TABLE.a * 1.3, TABLE.b * 1.3) < smokeMask(TABLE.a * 1.25, TABLE.b * 0.6) + 1 && smokeMask(TABLE.a * 1.8, TABLE.b * 0.65, TABLE.a * 1.3, TABLE.b * 1.3) > 0);
 });
