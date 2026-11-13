@@ -1,0 +1,308 @@
+{
+  "schemaVersion": 1,
+  "id": "paow-ankare-2-2-02",
+  "title": "Paow · ankare 2.2 ur ankare 2.1 (tredje försöket)",
+  "summary": "Gör Paows ankare 2.2: hennes ankare 1 där bara vänsterarmen flyttas, så att handen ligger över kortet vid skons öppning.",
+  "group": null,
+  "dealer": "paow",
+  "kind": "STILL",
+  "step": {
+    "key": "ANKARE-2.2",
+    "label": "Ankare 2.2 (släp)",
+    "edge": null,
+    "shape": null,
+    "cutInto": [],
+    "makes": {
+      "role": "ankare-2.2",
+      "label": "ankare 2.2"
+    }
+  },
+  "motion": null,
+  "pictures": [
+    {
+      "name": "anchor.png",
+      "label": "Paows ankare 1",
+      "goesAs": "referenceImage",
+      "tag": "anchor",
+      "path": "assets/orders/paow-ankare-2-2-02/anchor.png",
+      "sha256": "74eebfdc1388f8de362c0151546bbe08aeb1fed74fca097f8ca6999d833dc702",
+      "width": 1764,
+      "height": 1174,
+      "from": {
+        "entry": "paow-nyp-ung-1",
+        "path": "assets/anchors/paow-nyp-ung-1/anchor.png",
+        "note": "Nyp, yngre, tagning 1 (gäller)"
+      },
+      "waits": null
+    },
+    {
+      "name": "pose-figure.png",
+      "label": "Pose · bara armen, handen och skon",
+      "goesAs": "referenceImage",
+      "tag": "pose",
+      "path": "assets/orders/paow-ankare-2-2-02/pose-figure.png",
+      "sha256": "0d6a47c956273039dddcf0c1762d0503d8265899c09073f611c3fd72ac642ddd",
+      "width": 1764,
+      "height": 1174,
+      "from": {
+        "entry": "pamela-slap",
+        "path": "assets/motions/pamela-ready-b-shoe-plate-01/source.mp4",
+        "frame": 112,
+        "note": "armen och handen ur Pamelas ankare 2.2 (godkänt), lagda på dealerns egen sko ur ankaret; allt annat av henne är bortklippt, hennes sko och kort också"
+      },
+      "waits": null,
+      "cut": {
+        "keep": [
+          [
+            1225,
+            500
+          ],
+          [
+            1440,
+            560
+          ],
+          [
+            1440,
+            890
+          ],
+          [
+            1170,
+            890
+          ],
+          [
+            1150,
+            712
+          ],
+          [
+            1070,
+            655
+          ]
+        ],
+        "what": "armen från armbågen och handen",
+        "source": {
+          "sha256": "0901fc7b99d4383ece2245b5de868833841a695069abdfbeefb81184d14fb69c"
+        },
+        "settings": {
+          "grow": 10,
+          "feather": 5,
+          "tolerance": 10,
+          "block": 64,
+          "strip": 256,
+          "solid": 40,
+          "edge": 12,
+          "band": 2,
+          "window": 4,
+          "contrast": 30
+        },
+        "filledPx": 350624,
+        "keptPx": 33734,
+        "green": [
+          0.1,
+          236.3,
+          43.5
+        ],
+        "matched": {
+          "anchorSha256": "74eebfdc1388f8de362c0151546bbe08aeb1fed74fca097f8ca6999d833dc702",
+          "anchor": [
+            0,
+            238,
+            45
+          ],
+          "before": [
+            0,
+            238,
+            45
+          ],
+          "after": [
+            0,
+            238,
+            44
+          ]
+        },
+        "laid": {
+          "sleeve": [
+            [
+              1225,
+              500
+            ],
+            [
+              1440,
+              560
+            ],
+            [
+              1360,
+              690
+            ],
+            [
+              1350,
+              706
+            ],
+            [
+              1349,
+              725
+            ],
+            [
+              1344,
+              734
+            ],
+            [
+              1338,
+              742
+            ],
+            [
+              1300,
+              750
+            ],
+            [
+              1215,
+              752
+            ],
+            [
+              1150,
+              712
+            ],
+            [
+              1070,
+              655
+            ]
+          ],
+          "shoe": [
+            [
+              1182,
+              930
+            ],
+            [
+              1182,
+              818
+            ],
+            [
+              1300,
+              700
+            ],
+            [
+              1480,
+              610
+            ],
+            [
+              1730,
+              560
+            ],
+            [
+              1730,
+              930
+            ]
+          ],
+          "by": [
+            65,
+            -66
+          ],
+          "cards": {
+            "source": {
+              "quad": [
+                [
+                  1215,
+                  824
+                ],
+                [
+                  1288,
+                  823
+                ],
+                [
+                  1246,
+                  888
+                ],
+                [
+                  1186,
+                  873
+                ]
+              ],
+              "top": [
+                [
+                  1215,
+                  824
+                ],
+                [
+                  1288,
+                  823
+                ]
+              ]
+            },
+            "anchor": {
+              "quad": [
+                [
+                  1245,
+                  833
+                ],
+                [
+                  1294,
+                  744
+                ],
+                [
+                  1339,
+                  770
+                ],
+                [
+                  1284,
+                  861
+                ]
+              ],
+              "top": [
+                [
+                  1294,
+                  744
+                ],
+                [
+                  1339,
+                  770
+                ]
+              ]
+            }
+          }
+        }
+      }
+    }
+  ],
+  "reference": {
+    "status": "INGEN",
+    "why": "Nano Banana Pro tar ingen referensfilm tillsammans med första och sista bild."
+  },
+  "generation": {
+    "provider": "runway-app",
+    "tool": "generate_image",
+    "model": "nano-banana-pro",
+    "params": {
+      "ratio": "4:3",
+      "imageSize": "4K"
+    }
+  },
+  "prompt": {
+    "template": "bild-ankare-kort@5",
+    "style": "KORT",
+    "text": "This is an edit of the picture @anchor. Keep everything in @anchor exactly as it is: the framing and camera, the flat chroma-green background and table, the black card shoe at the right with the yellow card in its window, and the woman's face, hair, clothes, build and her hand at the left of the picture, lying flat on the felt. Change only her hand nearest the shoe: it lies over the yellow card in the window, the tips of her index, middle and ring fingers resting flat on the card itself and her little finger on the shoe beside the window, ready to slide the card out along the felt, placed and shaped as the hand in @pose. @pose is a cut-out on plain green that shows only a forearm and hand at the same window shoe; take from it only where the hand is and how the wrist and fingers hold the card. Her own sleeve, skin and hand stay as in @anchor, and her forearm continues up to her own elbow and shoulder. Her elbows hang free at her sides and her forearms come down to the felt. Her jacket continues down to the straight horizontal line where her body is cut off in @anchor. The green is one even colour right up to her outline, her hands, the card and the shoe. Soft, even frontal studio light; natural skin with fine texture, sharp eyes, matte black cloth with soft folds. There is one card, the one in the window, with the size and shape it has in @anchor.",
+    "sha256": "ccc3508b41a46d13b80e8df4fd1d207c8652e20f57d57f817ee0dab543ffecda",
+    "extra": null,
+    "middle": false
+  },
+  "takes": 2,
+  "cost": {
+    "perTake": 40,
+    "total": 80,
+    "worstPerTake": 40,
+    "worstTotal": 80,
+    "basis": "40 krediter per bild. LASMIG: Nano Banana Pro 40 krediter per bild i 4K."
+  },
+  "limits": {
+    "maxCredits": 80,
+    "stopBelowCredits": 2000
+  },
+  "notes": [],
+  "created": "2026-11-13T04:39:51.070Z",
+  "createdBy": "huvudagenten (dealer-94) på Jakobs ord 2026-11-13: ankare 2.2 ur ankare 2.1",
+  "approval": {
+    "by": "huvudagent",
+    "at": "2026-11-13T04:40:00.850Z",
+    "orderSha256": "bae245caf9e01807c10b0a5e9b0e77c86fce08b86ff9d8038d814290fb9aa786",
+    "mandate": "Jakob 2026-11-13: beställ lämpliga filmer automatiskt utan mitt godkännande (ankare 2.2 ur ankare 2.1, tredje försöket; han bad om ankare 2.2 samma natt)"
+  },
+  "status": "GODKÄND"
+}

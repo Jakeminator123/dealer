@@ -3406,6 +3406,76 @@
           }
         },
         {
+          "id": "paow-film-ny-giv-p1-4a",
+          "role": "film",
+          "name": "Giv till plats 1, omgång 4a (Kling 4, platsen i ord)",
+          "path": "assets/films/paow/ny-giv-p1-4a/source.mp4",
+          "still": 93,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Kortet når plats 1, men vänds högt vid skon (blekt genomskinligt ruta 46–53), släpps framför skon och skjuts platt cirka 790 px längs filten; landar 0,5 px från planen. Inte oberoende granskad.",
+          "source": {
+            "from": "beställningen paow-giv-2-1-p1-04, tagning 1 (studions vy Beställ)",
+            "when": "2026-11-13"
+          }
+        },
+        {
+          "id": "paow-film-ny-giv-p1-4b",
+          "role": "film",
+          "name": "Giv till plats 1, omgång 4b (Kling 4, platsen i ord, Pamelas giv som referens)",
+          "path": "assets/films/paow/ny-giv-p1-4b/source.mp4",
+          "still": 93,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Bäst i omgång 4: följer referensens väg och takt, kortet läggs på platsen med handen (högst 8 px), storleken håller (+0,5 %), landar 0,6 px från planen; vänds före platsen utan kantruta och hon lutar sig långt ut. Inte oberoende granskad.",
+          "source": {
+            "from": "beställningen paow-giv-2-1-p1-05, tagning 1 (studions vy Beställ)",
+            "when": "2026-11-13"
+          }
+        },
+        {
+          "id": "paow-film-ny-giv-p1-4c",
+          "role": "film",
+          "name": "Giv till plats 1, omgång 4c (WAN 3, platsen i ord)",
+          "path": "assets/films/paow/ny-giv-p1-4c/source.mp4",
+          "still": 114,
+          "fps": 30,
+          "state": "kandidat",
+          "note": "Kortet bärs upprätt ut till plats 1 och läggs med handen (högst 11 px); kortet +20 % på vägen och blekt vitlila ruta 76–82; hon lutar sig ut; landar 1,6 px från planen. Inte oberoende granskad.",
+          "source": {
+            "from": "beställningen paow-giv-2-1-p1-06, tagning 1 (studions vy Beställ)",
+            "when": "2026-11-13"
+          }
+        },
+        {
+          "id": "paow-film-ny-giv-p7-4d",
+          "role": "film",
+          "name": "Giv till plats 7, omgång 4d (WAN 3, platsen i ord)",
+          "path": "assets/films/paow/ny-giv-p7-4d/source.mp4",
+          "still": 114,
+          "fps": 30,
+          "state": "kandidat",
+          "note": "Kortet når plats 7 via en omväg framför henne och skjuts 29 px; skons kort är mönstrat från ruta 18 till slutet; landar 1,4 px från planen. Inte oberoende granskad.",
+          "source": {
+            "from": "beställningen paow-giv-2-1-p7-03, tagning 1 (studions vy Beställ)",
+            "when": "2026-11-13"
+          }
+        },
+        {
+          "id": "paow-film-ny-giv-p7-4e",
+          "role": "film",
+          "name": "Giv till plats 7, omgång 4e (Kling 4, platsen i ord)",
+          "path": "assets/films/paow/ny-giv-p7-4e/source.mp4",
+          "still": 93,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Kortet lyfts 171 px över nypet, bärs upprätt framför skon och skjuts 33 px till plats 7; handen tar en omväg på returen; landar 0,6 px från planen. Inte oberoende granskad.",
+          "source": {
+            "from": "beställningen paow-giv-2-1-p7-04, tagning 1 (studions vy Beställ)",
+            "when": "2026-11-13"
+          }
+        },
+        {
           "id": "paow-prov-ankare-ung",
           "role": "prov",
           "name": "Ankare 1, yngre, kandidater",
