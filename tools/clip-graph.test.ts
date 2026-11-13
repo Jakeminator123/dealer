@@ -885,7 +885,7 @@ test('the idle picker: weighted, never the same clip twice in a row, three calm 
   const only = takes.filter(t => [smile, glance].includes(t.id)); assert.equal(graph.pickIdle(only, [smile], 0.1)!.take.id, glance);
   // What is played of a clip, and how the idle is left to deal.
   assert.deepEqual(graph.idleRange(120), {start: 3, end: 117}); assert.deepEqual(graph.idleRange(4), {start: 3, end: 4});
-  assert.equal(graph.idleExit(g.takes[loop]), 'CUT'); assert.equal(graph.idleExit(g.takes[smile]), 'FINISH_FAST'); assert.equal(graph.IDLE_RULE.exitRate, 1.5);
+  assert.equal(graph.idleExit(g.takes[loop]), 'CUT'); assert.equal(graph.idleExit(g.takes[smile]), 'FINISH_FAST'); assert.equal(graph.IDLE_RULE.exitRate, 1, 'played out as filmed: nothing in a round is hurried from the start (Jakob 2026-11-13)');
   // A calm take that says cut: false (a rest where she turns her head) stays calm in the rotation but is played out before a deal.
   assert.equal(g.takes[loop].idle!.cut, true); assert.equal(g.takes[smile].idle!.cut, false);
   assert.equal(graph.idleExit({...g.takes[loop], idle: {...g.takes[loop].idle!, cut: false}}), 'FINISH_FAST');

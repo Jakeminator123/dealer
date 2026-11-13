@@ -541,8 +541,10 @@ IDLE>READY | READY>P1.C1 | P1.C1>READY | READY>D.C1 | D.C1>READY | READY>P1.C2 |
   klipp med viktad slump: aldrig samma klipp två gånger i rad, minst tre lugna mellan två gester, aldrig underkända
   klipp eller klipp märkta bara på begäran; ogranskade får komma i labbet. Varje klipp spelas från ruta 3 till tre rutor
   före slutet, nästa laddas i ett dolt videoelement och tar över med rakt klipp. "Dela ut nu" klipper ett lugnt klipp
-  direkt till ingången och spelar klart en gest i 1,5× fart först (`IDLE_RULE.exitRate`; över cirka 1,25 ser en vila
-  snabbspolad ut); ett lugnt klipp där hon vrider huvudet säger `cut: false` och spelas också klart. Klippets del i
+  direkt till ingången och spelar klart en gest först, i den fart den är filmad (`IDLE_RULE.exitRate` är 1 sedan
+  2026-11-13 kväll, Jakob om farten: "jättesnabb i vissa lägen och ser konstig ut"; över cirka 1,25 ser en vila
+  snabbspolad ut, och med Paows vilor väntar given i snitt knappt tre sekunder i en dryg tredjedel av fallen, som
+  längst åtta); ett lugnt klipp där hon vrider huvudet säger `cut: false` och spelas också klart. Klippets del i
   vilan står i dess post: `motion.idle = {weight, calm, onRequest, label, cut}`; utan uppgift är bara
   `pamela-idle-loop-01` lugnt (vikt 20), övriga gester (vikt 3), och ordet för klippet tas ur id:t. När en gest får
   komma väljs den med vikt bland alla klipp, så gesternas andel av vikten avgör hur ofta en gest faktiskt kommer (Paow

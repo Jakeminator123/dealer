@@ -423,9 +423,11 @@ export function experimentChains(graph: Graph): Chain[] {
 // ── Idle ────────────────────────────────────────────────────────────────────
 // The rules, borrowed as they are: a weighted pick among the takes; never the same clip twice in a row; at least three calm
 // clips between two gestures; rejected takes and takes marked on request are never picked by chance. Unreviewed takes may be picked.
-// exitRate was borrowed as 2,5; a film review 2026-11-13 found her head jumping when a rest was played out that fast before a deal
-// (a rest looks fast-forwarded above about 1,25), so it is 1,5: she finishes what she is doing a little quicker, and then deals.
-export const IDLE_RULE = {calmBetweenGestures: 3, exitRate: 1.5, skipStart: 3, skipEnd: 3};
+// exitRate is how fast a gesture is played out when a deal waits. It was borrowed as 2,5; a film review 2026-11-13 found her head
+// jumping at that speed (a rest looks fast-forwarded above about 1,25) and it became 1,5; the same evening Jakob wrote of the
+// speed-ups that she was "jättesnabb i vissa lägen och ser konstig ut", so it is 1: she finishes what she is doing as it was filmed,
+// and then deals. With Paow's rests that is a wait of just under three seconds on average in a good third of the deals, eight at most.
+export const IDLE_RULE = {calmBetweenGestures: 3, exitRate: 1, skipStart: 3, skipEnd: 3};
 export type IdlePick = {take: Take; why: string};
 export function pickIdle(takes: Take[], played: string[], random: number): IdlePick | null {
   // Takes in the inbox only when there is nothing else.

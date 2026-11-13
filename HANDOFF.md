@@ -337,7 +337,9 @@ svaren står i "Jakobs besked som gäller" och i "Nästa steg", punkt 0. Det hä
   rörelser, kanske till och med vissa `talk clips`, vilket har resulterat i att hon är jättesnabb i vissa lägen och
   ser konstig ut." Förvalet för `filmTempo` är 1 (som filmat) sedan dess, och reglaget Givarnas tempo står kvar. Med
   förvalet 2 gick också ingången, utgången, hålkortets vändning och gången vid dealerbyte i dubbel fart; talfilmer
-  har aldrig gått fortare än filmat. Förslag som väntar på hans öga (scenbanan): fart bara på givar och returer, och
+  har aldrig gått fortare än filmat. Det andra som gick fortare än filmat var en vilogest som spelades klart i 1,5
+  gånger farten när en giv väntade; den spelas nu klart som den är filmad (`IDLE_RULE.exitRate` 1), så inget i en
+  runda skyndas längre från början. Förslag som väntar på hans öga (scenbanan): fart bara på givar och returer, och
   hellre 1,3–1,5 än 2.
 - **Korten börjar om** (kl. 19.13): "På sajten har det nästan blivit värre, eftersom korten fortfarande renderas på
   [Vercels] URL. Du kanske kan skicka en underagent ... för att undersöka vad som orsakar detta. Den bör också gå
