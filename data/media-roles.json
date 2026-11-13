@@ -3723,6 +3723,13 @@
           "note": "En runda med Paow i studions Casino 2026-11-13 morgon: insatser, givar med hennes dömda tagningar (preliminära domar inräknade), hålkortet stängt och vänt, repliker med talfilm och ljud, chatten öppen. Inspelad headless av huvudagentens spelagent; ljudet lagt i efterhand där talfilmen började."
         },
         {
+          "id": "paow-prov-paow-kommer-och-gar",
+          "role": "prov",
+          "name": "Kommer in och går ut (helfigur)",
+          "proof": "paow-kommer-och-gar",
+          "note": "Paows helfigursfilmer 2026-11-13 (huvudagentens underagent): paow-table-arrive-wide-01 och paow-table-leave-wide-01, Pamelas breda ruta i halv skala, Kling 4 i två delar per film som möts på en placerad stående stillbild. Mätta; domen är preliminär tills Jakob har sett dem. 552 krediter."
+        },
+        {
           "id": "paow-profil-kavaj",
           "role": "arbetsmaterial",
           "name": "Profilbild i kavaj",
@@ -4230,6 +4237,48 @@
           "note": "Efterarbetad tagning ur en beställning i studions vy Beställ. Kandidat tills Jakob har dömt.",
           "source": {
             "from": "beställningen paow-giv-2-1-p6-05, tagning 1 (studions vy Beställ)",
+            "when": "2026-11-13"
+          }
+        },
+        {
+          "id": "paow-film-halkort-04-t2",
+          "role": "film",
+          "name": "Omgång 9a · hålkortet vänds upp ur vila, bara hålkortet i bilden (Kling 4, två t",
+          "path": "assets/films/paow/halkort-04-t2/source.mp4",
+          "still": 67,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Efterarbetad tagning ur en beställning i studions vy Beställ. Kandidat tills Jakob har dömt.",
+          "source": {
+            "from": "beställningen paow-halkort-04, tagning 2 (studions vy Beställ)",
+            "when": "2026-11-13"
+          }
+        },
+        {
+          "id": "paow-film-giv-2-1-p6-07-t2",
+          "role": "film",
+          "name": "Omgång 10a · P6, Kling 4, fri vändning, mall 8 (den gamla meningen), tagning 2",
+          "path": "assets/films/paow/giv-2-1-p6-07-t2/source.mp4",
+          "still": 93,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Efterarbetad tagning ur en beställning i studions vy Beställ. Kandidat tills Jakob har dömt.",
+          "source": {
+            "from": "beställningen paow-giv-2-1-p6-07, tagning 2 (studions vy Beställ)",
+            "when": "2026-11-13"
+          }
+        },
+        {
+          "id": "paow-film-giv-2-1-p6-07-t1",
+          "role": "film",
+          "name": "Omgång 10a · P6, Kling 4, fri vändning, mall 8 (den gamla meningen), tagning 1",
+          "path": "assets/films/paow/giv-2-1-p6-07-t1/source.mp4",
+          "still": 93,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Efterarbetad tagning ur en beställning i studions vy Beställ. Kandidat tills Jakob har dömt.",
+          "source": {
+            "from": "beställningen paow-giv-2-1-p6-07, tagning 1 (studions vy Beställ)",
             "when": "2026-11-13"
           }
         }

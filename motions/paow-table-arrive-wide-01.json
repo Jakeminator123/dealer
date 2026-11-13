@@ -1,0 +1,61 @@
+{
+  "schemaVersion": 1,
+  "id": "paow-table-arrive-wide-01",
+  "dealer": "paow",
+  "source": {
+    "path": "assets/motions/paow-table-arrive-wide-01/source.mp4",
+    "sha256": "0ffc604fe1bcdac607731edf3b68004da8eeddca54c8c5d49c7f4a0825f95811",
+    "bytes": 25201723,
+    "width": 2088,
+    "height": 1174,
+    "fps": 24,
+    "frames": 241,
+    "provider": "Runway MCP server (app account credits)",
+    "model": "kling-4"
+  },
+  "motion": {
+    "kind": "ARRIVE",
+    "from": "AWAY",
+    "to": "IDLE",
+    "pass": false,
+    "basis": "SOURCE_FRAME_REVIEW",
+    "frame": {
+      "scale": 0.5,
+      "anchor": [
+        1044,
+        656
+      ],
+      "size": [
+        2088,
+        1174
+      ],
+      "layer": "BEHIND_TABLE",
+      "shadow": false,
+      "behindUntil": 212,
+      "rise": [
+        157,
+        193
+      ]
+    }
+  },
+  "review": {
+    "decision": "ACCEPTED",
+    "basis": "Inte granskad av Jakob och inte oberoende granskad: gjord och mätt av huvudagent11:s helfigursuppdrag 2026-11-13 (Kling 4 genom Runways MCP-server, utanför studions beställningsvy), i samma bygge som Pamelas godkända pamela-table-arrive-wide-kling-01. Mätt i full upplösning ruta för ruta: tom bild f0-13, hon kommer in från höger kant f14, går jämnt (median 19 px per ruta f20-66, som Pamelas 17-20), helfigur 953-961 px f27-31, bakom skivans högra ände från f44, vänder sig mot kameran f78-88, står f88-156 med armarna längs sidorna, sätter sig f157-193 (ögonen 175 till 358), händerna upp nära kroppen f200-211, fingertopparna på kanten från f212 (behindUntil), sista rutan i viloposen. Skarven f144|145 ligger på den stående stillbilden: ögonen rör sig 0,4 px, rutsteget 0,86 mot 0,2-0,4 runt omkring. Sista rutan mot ankare 1 i halv skala: ögonen 0,2 och 1,6 px, händerna 0,2-1,2 px (handled, pekfinger, långfinger), kroppen slutar rad 655 vid skivans rad 656 i alla åtta mätta kolumner, silhuettöverlapp 0,985. Ansiktslikhet (SFace, cosinus) mot ankare 1: 0,85-0,93 stående och sittande; mot den stående keystone 0,92. Sedd: hon går som en människa, huvudet uppe, blicken framåt; sätter sig mjukt.",
+    "limitations": "24 rutor per sekund; rutnumren är filmens egna. Hon står still bakom platsen cirka 2,8 s (f88-156) innan hon sätter sig, med en långsam höjdglidning på 10 px (ögonen 171-181): kan läsas som stelt. Under sittandet sjunker huvudet 13 px under slutläget (ögonen 358 f193-196) och kommer upp till 345 vid f240. Strax före sittandet höjer hon sig 9 px (f149-156). Skorna är svarta pumps med blockklack, inte keystonens platta skor (benen finns inte i någon av bilderna). Kontaktskuggor under skorna när hon går och under fingertopparna på kanten (mörkare grönt). Kroppen under rad 656 är bortskuren rakt där skivan låg; 3D-bordet ska skymma den. Inte sedd i fart; inte prövad i scenen.",
+    "colorDoesNotProvePhysicalSide": true,
+    "userAccepted": false,
+    "productionReady": false,
+    "acceptedAs": "VARIANT",
+    "provisional": {
+      "by": "huvudagenten och en oberoende granskare",
+      "at": "2026-11-13T07:26:30.433Z",
+      "mandate": "Jakob 2026-11-13: \"jag måste sova och du får granska och godkänna alla klipp.\"",
+      "note": "Hon går jämnt in från sidan, ställer sig vid sin plats och sätter sig mjukt; sista rutan möter vilan inom 2 px. Variant därför att hon står helt stilla i drygt 20 rutor innan hon sätter sig, som en staty. Hon bär svarta pumps där keystonen har platta skor, och i gången syns en svagt ljusare grön rektangel där skivan målats bort. Granskaren 3,5/5."
+    }
+  },
+  "postProcessing": "Assembled: frames 0-144 are the walk-in film, frames 145-240 are frames 1-96 of the sit-down film, take 2 (the join lies on the standing still both parts were anchored on). Then scaled from 1920x1080 to 2088x1174 (lanczos), the drawn slab painted in each frame's own background green (the per-frame step of D:/dealer-scratch/tmp/filmagent/mcp/slab-to-bg.mjs, unchanged), every frame's green brought to anchor 1's green (src/film-after.ts levelFrame against a flat field of 0/237.5/44.5, no tone lock, nothing of her repainted), audio removed, frame rate kept at 24. Script: D:/dealer-scratch/tmp/huvudagent11/helfigur/after.ts. The joined 1920x1080 film lies beside it as original-1920x1080.mp4.",
+  "generationRef": "assets/motions/paow-table-arrive-wide-01/generation.json",
+  "jobRef": "data/clip-jobs.json",
+  "scoutIntegrated": false,
+  "published": false
+}

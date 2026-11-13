@@ -1,0 +1,63 @@
+{
+  "schemaVersion": 1,
+  "id": "paow-giv-2-1-p6-07-02-deal",
+  "dealer": "paow",
+  "source": {
+    "path": "assets/motions/paow-giv-2-1-p6-07-02/source.mp4",
+    "sha256": "5940487f1b1f89d73078f5bafd5d96fd928688827cbe51e3c603debdb711a7d3",
+    "bytes": 6243358,
+    "width": 1764,
+    "height": 1174,
+    "fps": 24,
+    "frames": 169,
+    "provider": "Runway MCP server (app account credits)",
+    "model": "kling-4"
+  },
+  "motion": {
+    "kind": "DEAL",
+    "from": "READY",
+    "to": "P6.C1",
+    "takeHand": "LH",
+    "releaseHand": "LH",
+    "pass": false,
+    "basis": "SOURCE_FRAME_REVIEW",
+    "segment": {
+      "clip": "paow-giv-2-1-p6-07-02",
+      "frames": [
+        0,
+        88
+      ]
+    }
+  },
+  "review": {
+    "decision": "REJECTED",
+    "basis": "Inte granskad av Jakob: förd in från beställningen paow-giv-2-1-p6-07, tagning 2 (tools/register-order.ts). Oberoende rutgranskning: tools/film-review.md.",
+    "limitations": "I inkorgen: spelas bara där steget inte har någon annan film, tills Jakob dömer den.",
+    "colorDoesNotProvePhysicalSide": true,
+    "userAccepted": false,
+    "productionReady": false,
+    "provisional": {
+      "by": "huvudagenten och en oberoende granskare",
+      "at": "2026-11-13T07:35:29.291Z",
+      "mandate": "Jakob 2026-11-13: \"jag måste sova och du får granska och godkänna alla klipp.\"",
+      "note": "Hon kastar kortet och det vänds i luften, det närmaste en riktig vändning på plats 6 hittills, men kortet är en mjuk rundad klump i tre rutor och vänds genom ett blandat gult-blått streck, och det hänger upprätt i en ruta och ligger plant i nästa. Samma fel som du har underkänt på den här platsen (\"sladdrigt kort\", \"fuskar med kortsidan\")."
+    }
+  },
+  "order": {
+    "id": "paow-giv-2-1-p6-07",
+    "take": 2,
+    "path": "data/orders/paow-giv-2-1-p6-07.json",
+    "orderSha256": "33324127fe67f6c5d01b98d61a154a22c1f4b9eff0390df37645c2ccfb3f5f8c",
+    "receipt": "assets/orders/paow-giv-2-1-p6-07/receipt.json",
+    "taskId": "127bba99-0732-4184-9bd3-1c8dc4210341",
+    "delivered": {
+      "path": "assets/orders/paow-giv-2-1-p6-07/take-2/after.mp4",
+      "sha256": "5940487f1b1f89d73078f5bafd5d96fd928688827cbe51e3c603debdb711a7d3"
+    }
+  },
+  "postProcessing": "none",
+  "generationRef": "assets/motions/paow-giv-2-1-p6-07-02/generation.json",
+  "jobRef": "data/clip-jobs.json",
+  "scoutIntegrated": false,
+  "published": false
+}

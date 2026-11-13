@@ -1,0 +1,54 @@
+{
+  "schemaVersion": 1,
+  "id": "paow-halkort-04-02",
+  "dealer": "paow",
+  "source": {
+    "path": "assets/motions/paow-halkort-04-02/source.mp4",
+    "sha256": "19df879a1a64c4e19b94147a7f4d9a3c8a8bf777845f9708dd8e4b126fd25565",
+    "bytes": 4269670,
+    "width": 1764,
+    "height": 1174,
+    "fps": 24,
+    "frames": 121,
+    "provider": "Runway MCP server (app account credits)",
+    "model": "kling-4"
+  },
+  "motion": {
+    "kind": "REVEAL",
+    "from": "IDLE",
+    "to": "REVEAL(D.C2)",
+    "pass": false,
+    "basis": "SOURCE_FRAME_REVIEW"
+  },
+  "review": {
+    "decision": "ACCEPTED",
+    "basis": "Inte granskad av Jakob: förd in från beställningen paow-halkort-04, tagning 2 (tools/register-order.ts). Oberoende rutgranskning: tools/film-review.md.",
+    "limitations": "I inkorgen: spelas bara där steget inte har någon annan film, tills Jakob dömer den.",
+    "colorDoesNotProvePhysicalSide": true,
+    "userAccepted": false,
+    "productionReady": false,
+    "provisional": {
+      "by": "huvudagenten och en oberoende granskare",
+      "at": "2026-11-13T07:18:33.137Z",
+      "mandate": "Jakob 2026-11-13: \"jag måste sova och du får granska och godkänna alla klipp.\"",
+      "note": "Hålkortet vänds upp med handen närmast skon: kortet lyfts, står som en ren tunn kant i luften i tre rutor och läggs blått på samma plats. Den bättre av de två vändningarna, därför satt som godkänd så att den spelas först. Granskaren föreslog variant för att hon är stel: hon ser in i kameran hela filmen och rör knappt huvudet."
+    }
+  },
+  "order": {
+    "id": "paow-halkort-04",
+    "take": 2,
+    "path": "data/orders/paow-halkort-04.json",
+    "orderSha256": "3f3a68861f8acba2e2897b291d8b65cdd37a3d9f4f0f1d8f873865642e4eb69f",
+    "receipt": "assets/orders/paow-halkort-04/receipt.json",
+    "taskId": "20465590-def4-499b-952a-5208e1e5f14e",
+    "delivered": {
+      "path": "assets/orders/paow-halkort-04/take-2/after.mp4",
+      "sha256": "19df879a1a64c4e19b94147a7f4d9a3c8a8bf777845f9708dd8e4b126fd25565"
+    }
+  },
+  "postProcessing": "none",
+  "generationRef": "assets/motions/paow-halkort-04-02/generation.json",
+  "jobRef": "data/clip-jobs.json",
+  "scoutIntegrated": false,
+  "published": false
+}

@@ -165,6 +165,8 @@ test('on the checkout: 33 steps for Paow and the same count of missing films as 
   assert.equal(list.rows.length, 33);
   assert.equal(list.counts.missing, list.karta.missing);
   assert.equal(list.counts.needed, roundFilms(real.graph).length);
-  assert.ok(list.rows.every((r) => r.method || r.state === 'INTE_BYGGD'), 'every step Beställ can make has a method of record');
+  // A row without a step is a film Beställ cannot make (she comes in, she leaves): it has no method, whether it is still
+  // unbuilt or a film made outside the order view already stands on its edge.
+  assert.ok(list.rows.every((r) => r.method || !r.step), 'every step Beställ can make has a method of record');
   await assert.rejects(readProduction(process.cwd(), 'nobody'), /finns inte i data\/dealers\.json/);
 });
