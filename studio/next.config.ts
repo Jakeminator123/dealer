@@ -23,6 +23,10 @@ const nextConfig: NextConfig = {
   typescript: { ignoreBuildErrors: true },
   ...(dev
     ? {
+        // Like the lab server, the bare origin leads to the studio.
+        async redirects() {
+          return [{ source: "/", destination: "/studio/", basePath: false as const, permanent: false }];
+        },
         async rewrites() {
           return [
             { source: "/:first((?!studio$|_next$)[^/]+)", destination: `${lab}/:first`, basePath: false as const },
