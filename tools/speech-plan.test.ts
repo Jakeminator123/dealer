@@ -9,7 +9,7 @@ import {execFileSync, spawnSync} from 'node:child_process';
 import os from 'node:os';
 import path from 'node:path';
 import {BRIDGE, RENDER, bridgeProblems, clipLength, filmFrameOf, bridgeFilter, lineFrames, longestSound, restPath, planRows, canonical, videoIdOf, sourcesOf, bakeJob, answerVideo, sameWords,
-  changedBox, unionBox, grownBox, featherMask, blendFrame, type Bridge} from '../src/speech-plan.ts';
+  changedBox, unionBox, grownBox, featherMask, blendFrame, speechGate, GATE, type Bridge} from '../src/speech-plan.ts';
 import {bridgeFilm, rawFrames, attestationOf, sameValue, voiceIn, readRegister, type Voice} from './speech.ts';
 
 const sha = (text: string | Uint8Array) => createHash('sha256').update(text).digest('hex');
@@ -90,6 +90,26 @@ test('a voice reads each language with one model, and names its account by the n
   try { await writeFile(file, JSON.stringify({...register, voices: {...register.voices, leaked: {...plain, key: 'sk_0123456789abcdef'}}}));
     await assert.rejects(readRegister(file), /aldrig nyckeln själv/); }
   finally { await rm(dir, {recursive: true, force: true}); }
+});
+
+test('the drawn mouth is laid in only around what is heard', () => {
+  const frames = 40, track = Buffer.alloc(frames * 1000 * 2), tone = (from: number, to: number, level = 8000) => { for (let i = from * 1000; i < to * 1000; i++) track.writeInt16LE(Math.round(level * Math.sin(i / 8)), i * 2); };
+  tone(8, 15); tone(24, 30);
+  const g = speechGate(track, frames);
+  // Her own mouth at both ends of the film, so that it starts and ends as the rest film does.
+  assert.deepEqual(g.slice(0, 5), [0, 0, 0, 0, 0]); assert.deepEqual(g.slice(35), [0, 0, 0, 0, 0]);
+  // The drawn mouth from one frame before she is heard to two after, coming and going over two frames.
+  assert.deepEqual(g.slice(5, 18), [g[5], g[6], 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, g[17]]);
+  assert.ok(g[5] > 0 && g[5] < g[6] && g[6] < 1 && g[17] > 0 && g[17] < 1 && g[19] === 0);
+  // A silence of nine frames is a pause: the mouth is her own in the middle of it.
+  assert.equal(g[20], 0); assert.equal(g[23], 1);
+  // A silence of four frames is spoken through, and a sound far under the line's own level is not heard.
+  tone(15, 20); tone(34, 38, 20);
+  const h = speechGate(track, frames);
+  assert.deepEqual(h.slice(7, 32), new Array(25).fill(1)); assert.equal(h[37], 0);
+  // No sound at all: nothing is drawn.
+  assert.deepEqual(speechGate(Buffer.alloc(10 * 1000 * 2), 10), new Array(10).fill(0));
+  assert.equal(GATE.before + GATE.after < GATE.pause, true);
 });
 
 test('the bridge keeps a pixel a pixel, on even offsets', () => {

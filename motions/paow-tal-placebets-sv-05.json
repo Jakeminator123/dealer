@@ -38,10 +38,11 @@
     "soundEndsAtSeconds": 1.497
   },
   "review": {
-    "decision": "PENDING",
-    "basis": "Inte granskad av Jakob. Gjord av tools/speech.ts ur assets/motions/paow-vila-01-01/source.mp4. Oberoende granskning 3/5: Rent utanför lådan och i skarvarna. Munnen öppen r28–29 i paus, stänger r36 (+6 efter rösten). Tunnare matta läppar, tänder som vitt band.",
+    "decision": "SECONDARY",
+    "basis": "Ersatt 2026-11-13: samma läsning finns med munnen inlagd bara kring det som hörs (paow-tal-placebets-sv-06), och spelet spelar inte den här. Inte granskad av Jakob. Gjord av tools/speech.ts ur assets/motions/paow-vila-01-01/source.mp4. Oberoende granskning 3/5: Rent utanför lådan och i skarvarna. Munnen öppen r28–29 i paus, stänger r36 (+6 efter rösten). Tunnare matta läppar, tänder som vitt band.",
     "userAccepted": false,
-    "productionReady": false
+    "productionReady": false,
+    "inbox": false
   },
   "postProcessing": "the rendered face laid back into the rest film's own frames (assets/speech/paow/paow-tal-placebets-sv-05/receipt.json, laidBack)",
   "generationRef": "assets/motions/paow-tal-placebets-sv-05/generation.json",

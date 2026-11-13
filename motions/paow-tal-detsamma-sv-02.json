@@ -38,10 +38,11 @@
     "soundEndsAtSeconds": 1.167
   },
   "review": {
-    "decision": "PENDING",
-    "basis": "Inte granskad av Jakob. Gjord av tools/speech.ts ur assets/motions/paow-vila-01-01/source.mp4. Oberoende granskning 2/5: m i 'samma' sluts rätt (19–21), men munnen glipar 4 rutor före ljudet och 6 efter (26–31); tunna matta läppar, suddig haka. Skarvar rena.",
+    "decision": "SECONDARY",
+    "basis": "Ersatt 2026-11-13: samma läsning finns med munnen inlagd bara kring det som hörs (paow-tal-detsamma-sv-03), och spelet spelar inte den här. Inte granskad av Jakob. Gjord av tools/speech.ts ur assets/motions/paow-vila-01-01/source.mp4. Oberoende granskning 2/5: m i 'samma' sluts rätt (19–21), men munnen glipar 4 rutor före ljudet och 6 efter (26–31); tunna matta läppar, suddig haka. Skarvar rena.",
     "userAccepted": false,
-    "productionReady": false
+    "productionReady": false,
+    "inbox": false
   },
   "postProcessing": "the rendered face laid back into the rest film's own frames (assets/speech/paow/paow-tal-detsamma-sv-02/receipt.json, laidBack)",
   "generationRef": "assets/motions/paow-tal-detsamma-sv-02/generation.json",

@@ -150,3 +150,29 @@ export function blendFrame(film: Uint8Array, clip: Uint8Array, box: Box, mask: F
     for (let i = 0; i < box.w / 2; i++) { const k = mask[m + 2 * i]; if (k > 0) film[f + i] = Math.round(film[f + i] + (clip[c + i] - film[f + i]) * k); }
   }
 }
+
+// ── the gate: the drawn mouth only while she is heard ─────────────────────────
+// The renderer draws a mouth for every frame of a line, also where the sound is silent: before her first word, after her last, and
+// in a pause. Reviewed frame by frame (2026-11-13, 58 films) that was the fault they shared: the mouth opened 2–6 frames before she
+// was heard and closed 5–8 after, hung half open in pauses, and her lips were the drawn, thinner ones from the first frame. So the
+// drawn mouth is laid in only around what is heard, and elsewhere the film keeps its own mouth, closed, as in the rest film.
+//   floorDb  a frame is heard when its sound is louder than this, counted from the line's loudest frame
+//   before   frames of drawn mouth kept before a heard frame (the mouth forms a sound a moment before it sounds), after: after one
+//   pause    a silence of fewer frames than this inside the line is spoken through (the drawn mouth stays)
+//   ramp     frames over which the drawn mouth comes and goes, outside the frames above
+export type Gate = {floorDb: number; before: number; after: number; pause: number; ramp: number};
+export const GATE: Gate = {floorDb: -35, before: 1, after: 2, pause: 5, ramp: 2};
+/**
+ * How much of the drawn mouth each frame of a film gets, 0 (the film's own mouth) to 1 (the drawn one). track is the film's own
+ * sound from its first frame, 24 kHz mono 16-bit, as it will be heard (the line's sound already set at its place in the film).
+ */
+export function speechGate(track: Uint8Array, frames: number, gate: Gate = GATE): number[] {
+  if (!Number.isInteger(frames) || frames < 1 || track.length % 2) throw Error('invalid_gate');
+  const view = new DataView(track.buffer, track.byteOffset, track.byteLength), db: number[] = [];
+  for (let k = 0; k < frames; k++) { let sum = 0, n = 0; for (let i = k * SAMPLES_PER_FRAME; i < (k + 1) * SAMPLES_PER_FRAME && i * 2 + 1 < track.length; i++) { const v = view.getInt16(i * 2, true) / 32768; sum += v * v; n++; } db.push(n ? 10 * Math.log10(sum / n + 1e-12) : -120); }
+  const peak = Math.max(...db), heard = db.map(d => peak > -90 && d > peak + gate.floorDb), drawn = new Array<boolean>(frames).fill(false);
+  for (let k = 0; k < frames; k++) if (heard[k]) for (let j = Math.max(0, k - gate.before); j <= Math.min(frames - 1, k + gate.after); j++) drawn[j] = true;
+  // A short silence between two heard stretches is spoken through.
+  for (let k = 0; k < frames;) { if (drawn[k]) { k++; continue; } let end = k; while (end < frames && !drawn[end]) end++; if (k > 0 && end < frames && end - k < gate.pause - gate.before - gate.after) for (let j = k; j < end; j++) drawn[j] = true; k = end; }
+  return drawn.map((on, k) => { if (on) return 1; let d = frames; for (let j = Math.max(0, k - gate.ramp); j <= Math.min(frames - 1, k + gate.ramp); j++) if (drawn[j]) d = Math.min(d, Math.abs(j - k)); const t = Math.max(0, 1 - d / (gate.ramp + 1)); return Number((t * t * (3 - 2 * t)).toFixed(3)); });
+}

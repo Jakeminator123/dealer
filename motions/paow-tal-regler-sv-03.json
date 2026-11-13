@@ -1,0 +1,50 @@
+{
+  "schemaVersion": 1,
+  "id": "paow-tal-regler-sv-03",
+  "dealer": "paow",
+  "source": {
+    "path": "assets/motions/paow-tal-regler-sv-03/source.mp4",
+    "sha256": "f021b37b880381add178225c8bfea94c27dad8a8fdd95b48a1947edab73a9c3a",
+    "bytes": 6549464,
+    "width": 1764,
+    "height": 1174,
+    "fps": 24,
+    "frames": 67,
+    "audio": true,
+    "provider": "tools/speech.ts: Scoutgaming's lip-sync renderer on this machine, voice from ElevenLabs",
+    "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Paow"
+  },
+  "motion": {
+    "kind": "IDLE",
+    "from": "IDLE",
+    "to": "IDLE",
+    "pass": false,
+    "basis": "SOURCE_FRAME_REVIEW",
+    "idle": {
+      "onRequest": true,
+      "calm": true,
+      "weight": 0,
+      "label": "säger: Närmast tjugoett vinner, men gå inte över."
+    }
+  },
+  "speech": {
+    "line": "regler",
+    "language": "sv",
+    "text": "Närmast tjugoett vinner, men gå inte över.",
+    "voice": "Paow",
+    "heard": "Närmast 21 vinner, men gå inte över",
+    "restFilm": "paow-vila-01-01",
+    "soundStartsAtSeconds": 0.22,
+    "soundEndsAtSeconds": 2.289
+  },
+  "review": {
+    "decision": "PENDING",
+    "basis": "Inte granskad av Jakob. Gjord av tools/speech.ts ur assets/motions/paow-vila-01-01/source.mp4 och inlagd bara kring det som hörs. Inte oberoende granskad; före grinden (regler-sv-02) 2/5: Mitt i repliken (24–40) knappt öppen mun trots starkt ljud; svagast synk (r 0,44). Tunna matta läppar, suddig haka, stänger 7 rutor efter ljudet.",
+    "userAccepted": false,
+    "productionReady": false
+  },
+  "postProcessing": "the rendered face laid back into the rest film's own frames (assets/speech/paow/paow-tal-regler-sv-03/receipt.json, laidBack)",
+  "generationRef": "assets/motions/paow-tal-regler-sv-03/generation.json",
+  "scoutIntegrated": false,
+  "published": false
+}

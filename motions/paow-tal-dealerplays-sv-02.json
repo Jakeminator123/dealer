@@ -38,10 +38,11 @@
     "soundEndsAtSeconds": 1.18
   },
   "review": {
-    "decision": "PENDING",
-    "basis": "Inte granskad av Jakob. Gjord av tools/speech.ts ur assets/motions/paow-vila-01-01/source.mp4. Oberoende granskning 2/5: Läpparna sluts rätt för p i 'spelar' (15–17), men tunna matta läppar, suddig haka och munnen glipar 6 rutor efter ljudet (26–31). Skarvar och tatuering rena.",
+    "decision": "SECONDARY",
+    "basis": "Ersatt 2026-11-13: samma läsning finns med munnen inlagd bara kring det som hörs (paow-tal-dealerplays-sv-03), och spelet spelar inte den här. Inte granskad av Jakob. Gjord av tools/speech.ts ur assets/motions/paow-vila-01-01/source.mp4. Oberoende granskning 2/5: Läpparna sluts rätt för p i 'spelar' (15–17), men tunna matta läppar, suddig haka och munnen glipar 6 rutor efter ljudet (26–31). Skarvar och tatuering rena.",
     "userAccepted": false,
-    "productionReady": false
+    "productionReady": false,
+    "inbox": false
   },
   "postProcessing": "the rendered face laid back into the rest film's own frames (assets/speech/paow/paow-tal-dealerplays-sv-02/receipt.json, laidBack)",
   "generationRef": "assets/motions/paow-tal-dealerplays-sv-02/generation.json",

@@ -38,10 +38,11 @@
     "soundEndsAtSeconds": 2.45
   },
   "review": {
-    "decision": "PENDING",
-    "basis": "Inte granskad av Jakob. Gjord av tools/speech.ts ur assets/motions/paow-vila-01-01/source.mp4. Oberoende granskning 2/5: I pausen efter 'Grattis' (22–24) står munnen halvöppen med tänder; glipar 5 rutor före och 7 efter ljudet (54–60). p i 'spelat' sluts (44–46).",
+    "decision": "SECONDARY",
+    "basis": "Ersatt 2026-11-13: samma läsning finns med munnen inlagd bara kring det som hörs (paow-tal-grattis-sv-03), och spelet spelar inte den här. Inte granskad av Jakob. Gjord av tools/speech.ts ur assets/motions/paow-vila-01-01/source.mp4. Oberoende granskning 2/5: I pausen efter 'Grattis' (22–24) står munnen halvöppen med tänder; glipar 5 rutor före och 7 efter ljudet (54–60). p i 'spelat' sluts (44–46).",
     "userAccepted": false,
-    "productionReady": false
+    "productionReady": false,
+    "inbox": false
   },
   "postProcessing": "the rendered face laid back into the rest film's own frames (assets/speech/paow/paow-tal-grattis-sv-02/receipt.json, laidBack)",
   "generationRef": "assets/motions/paow-tal-grattis-sv-02/generation.json",

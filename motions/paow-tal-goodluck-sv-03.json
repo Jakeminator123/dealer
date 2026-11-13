@@ -38,10 +38,11 @@
     "soundEndsAtSeconds": 2.933
   },
   "review": {
-    "decision": "PENDING",
-    "basis": "Inte granskad av Jakob. Gjord av tools/speech.ts ur assets/motions/paow-vila-01-01/source.mp4. Oberoende granskning 3/5: Tänder syns r6–8 före rösten (r9); öppen i pausen r36–38; stängd r69 (+4). Rent utanför lådan; tunnare matta läppar, mjukare haka.",
+    "decision": "SECONDARY",
+    "basis": "Ersatt 2026-11-13: samma läsning finns med munnen inlagd bara kring det som hörs (paow-tal-goodluck-sv-04), och spelet spelar inte den här. Inte granskad av Jakob. Gjord av tools/speech.ts ur assets/motions/paow-vila-01-01/source.mp4. Oberoende granskning 3/5: Tänder syns r6–8 före rösten (r9); öppen i pausen r36–38; stängd r69 (+4). Rent utanför lådan; tunnare matta läppar, mjukare haka.",
     "userAccepted": false,
-    "productionReady": false
+    "productionReady": false,
+    "inbox": false
   },
   "postProcessing": "the rendered face laid back into the rest film's own frames (assets/speech/paow/paow-tal-goodluck-sv-03/receipt.json, laidBack)",
   "generationRef": "assets/motions/paow-tal-goodluck-sv-03/generation.json",

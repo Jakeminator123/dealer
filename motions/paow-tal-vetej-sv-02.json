@@ -38,10 +38,11 @@
     "soundEndsAtSeconds": 3.022
   },
   "review": {
-    "decision": "PENDING",
-    "basis": "Inte granskad av Jakob. Gjord av tools/speech.ts ur assets/motions/paow-vila-01-01/source.mp4. Oberoende granskning 2/5: I längsta pausen (38–43, tyst 0,25 s) hänger munnen halvöppen med tänder i 4 rutor; m i 'men' sluts (44–45). Tunna matta läppar, suddig haka, stänger 7 sent.",
+    "decision": "SECONDARY",
+    "basis": "Ersatt 2026-11-13: samma läsning finns med munnen inlagd bara kring det som hörs (paow-tal-vetej-sv-03), och spelet spelar inte den här. Inte granskad av Jakob. Gjord av tools/speech.ts ur assets/motions/paow-vila-01-01/source.mp4. Oberoende granskning 2/5: I längsta pausen (38–43, tyst 0,25 s) hänger munnen halvöppen med tänder i 4 rutor; m i 'men' sluts (44–45). Tunna matta läppar, suddig haka, stänger 7 sent.",
     "userAccepted": false,
-    "productionReady": false
+    "productionReady": false,
+    "inbox": false
   },
   "postProcessing": "the rendered face laid back into the rest film's own frames (assets/speech/paow/paow-tal-vetej-sv-02/receipt.json, laidBack)",
   "generationRef": "assets/motions/paow-tal-vetej-sv-02/generation.json",

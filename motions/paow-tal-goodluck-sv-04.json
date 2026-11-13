@@ -1,0 +1,50 @@
+{
+  "schemaVersion": 1,
+  "id": "paow-tal-goodluck-sv-04",
+  "dealer": "paow",
+  "source": {
+    "path": "assets/motions/paow-tal-goodluck-sv-04/source.mp4",
+    "sha256": "5824700acfcc6837da914e4f6ccdfb5e8a972c0f9c8ed0d47fb47c110381f1fe",
+    "bytes": 8025390,
+    "width": 1764,
+    "height": 1174,
+    "fps": 24,
+    "frames": 83,
+    "audio": true,
+    "provider": "tools/speech.ts: Scoutgaming's lip-sync renderer on this machine, voice from ElevenLabs",
+    "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Paow"
+  },
+  "motion": {
+    "kind": "IDLE",
+    "from": "IDLE",
+    "to": "IDLE",
+    "pass": false,
+    "basis": "SOURCE_FRAME_REVIEW",
+    "idle": {
+      "onRequest": true,
+      "calm": true,
+      "weight": 0,
+      "label": "säger: Insatserna är stängda. Lycka till vid mitt bord!"
+    }
+  },
+  "speech": {
+    "line": "goodluck",
+    "language": "sv",
+    "text": "Insatserna är stängda. Lycka till vid mitt bord!",
+    "voice": "Paow",
+    "heard": "Insatserna är stängda. Lycka till vid mitt bord.",
+    "restFilm": "paow-vila-01-01",
+    "soundStartsAtSeconds": 0.22,
+    "soundEndsAtSeconds": 2.933
+  },
+  "review": {
+    "decision": "PENDING",
+    "basis": "Inte granskad av Jakob. Gjord av tools/speech.ts ur assets/motions/paow-vila-01-01/source.mp4 och inlagd bara kring det som hörs. Inte oberoende granskad; före grinden (goodluck-sv-03) 3/5: Tänder syns r6–8 före rösten (r9); öppen i pausen r36–38; stängd r69 (+4). Rent utanför lådan; tunnare matta läppar, mjukare haka.",
+    "userAccepted": false,
+    "productionReady": false
+  },
+  "postProcessing": "the rendered face laid back into the rest film's own frames (assets/speech/paow/paow-tal-goodluck-sv-04/receipt.json, laidBack)",
+  "generationRef": "assets/motions/paow-tal-goodluck-sv-04/generation.json",
+  "scoutIntegrated": false,
+  "published": false
+}

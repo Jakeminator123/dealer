@@ -1,0 +1,50 @@
+{
+  "schemaVersion": 1,
+  "id": "paow-tal-hej-sv-03",
+  "dealer": "paow",
+  "source": {
+    "path": "assets/motions/paow-tal-hej-sv-03/source.mp4",
+    "sha256": "ff2d10b19dc17a3228e4d907206ab41c96fff8c269620704a90234f9f831e163",
+    "bytes": 4056525,
+    "width": 1764,
+    "height": 1174,
+    "fps": 24,
+    "frames": 43,
+    "audio": true,
+    "provider": "tools/speech.ts: Scoutgaming's lip-sync renderer on this machine, voice from ElevenLabs",
+    "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Paow"
+  },
+  "motion": {
+    "kind": "IDLE",
+    "from": "IDLE",
+    "to": "IDLE",
+    "pass": false,
+    "basis": "SOURCE_FRAME_REVIEW",
+    "idle": {
+      "onRequest": true,
+      "calm": true,
+      "weight": 0,
+      "label": "säger: Hej och välkommen till bordet!"
+    }
+  },
+  "speech": {
+    "line": "hej",
+    "language": "sv",
+    "text": "Hej och välkommen till bordet!",
+    "voice": "Paow",
+    "heard": "Hej och välkommen till bordet",
+    "restFilm": "paow-vila-01-01",
+    "soundStartsAtSeconds": 0.22,
+    "soundEndsAtSeconds": 1.297
+  },
+  "review": {
+    "decision": "PENDING",
+    "basis": "Inte granskad av Jakob. Gjord av tools/speech.ts ur assets/motions/paow-vila-01-01/source.mp4 och inlagd bara kring det som hörs. Inte oberoende granskad; före grinden (hej-sv-02) 2/5: Munnen vidöppen redan i ruta 5 före ljudet (6) och glipar med tänder 27–31 efter; tunna matta läppar, suddig haka. Repliken är snabb: 8 stavelser på 0,9 s.",
+    "userAccepted": false,
+    "productionReady": false
+  },
+  "postProcessing": "the rendered face laid back into the rest film's own frames (assets/speech/paow/paow-tal-hej-sv-03/receipt.json, laidBack)",
+  "generationRef": "assets/motions/paow-tal-hej-sv-03/generation.json",
+  "scoutIntegrated": false,
+  "published": false
+}
