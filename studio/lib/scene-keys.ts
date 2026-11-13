@@ -127,7 +127,7 @@ export const SCENE_KEYS: readonly KeySpec[] = [
   spec("cups", "bord", "U", "Mugghållare", toggle, "Mässingsringar i relingen mellan platserna."),
   // ── Kort och marker ──
   spec("cards", "kort", "D", "Renderade kort", toggle, "Ritade kort i stället för filmens färgyta; spelet har dem på."),
-  spec("cardMethod", "kort", "U", "Ritsätt", choice(["scene", "I scenen"], ["film", "I filmrutan"]), "I scenen: kortet är ett föremål under filmen. I filmrutan: det äldre sättet, kvar för jämförelse."),
+  spec("cardMethod", "kort", "U", "Ritsätt", choice(["scene", "I scenen"], ["film", "I filmrutan"], ["matte", "Filmens matt"]), "I scenen: ett föremål under filmen. I filmrutan: det äldre sättet. Filmens matt (prov): filmens eget kort färgas om."),
   spec("cardHand", "kort", "U", "Kortet i handen", choice(["film", "Filmens storlek"], ["standard", "Standard"]), "Standard: kortet har vilans storlek hela vägen."),
   spec("cardScale", "kort", "U", "Kortens storlek", slider(0.8, 2, 0.05, "×"), "Alla ritade kort: 1 är kontraktets kort (63 × 88 mm på bordet), förval 1,2. Planens kort är i dag 1,10–1,16 av det."),
   spec("cardRank", "kort", "U", "Valör", choice(...["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"].map((r): [string, string] => [r, r])), "Bara för provet: i spelet bestämmer Scout."),

@@ -5,6 +5,7 @@
 import * as T from 'three';
 import {FILM} from './scene3d-geometry.ts';
 import {FAN_GLSL} from './scene3d-light.ts';
+import {MATTE_GLSL} from './scene3d-matte.ts';
 
 const VERTEX = `varying vec4 vFilm; varying vec3 vWorld; uniform mat4 filmVP;
 void main(){ vec4 w = modelMatrix * vec4(position, 1.); vWorld = w.xyz; vFilm = filmVP * w; gl_Position = projectionMatrix * viewMatrix * w; }`;
@@ -157,6 +158,7 @@ const FRAGMENT = `varying vec4 vFilm; varying vec3 vWorld; uniform sampler2D map
 uniform sampler2D roomMap; uniform vec2 roomSize; uniform float wrap, roomExposure; ${SIDE_GLSL}
 ${FAN_GLSL}
 ${CARD_KEY}
+${MATTE_GLSL}
 ${ABOVE_GLSL}
 float screenAt(vec2 uv, vec3 key, float dk){ vec3 c = texture2D(map, uv).rgb; return clamp(((c.g - max(c.r, c.b)) / dk - lo) / (hi - lo), 0., 1.); }
 void main(){
@@ -200,6 +202,8 @@ void main(){
     o.rgb += room * a * wrap * smoothstep(.06, .62, open / 8.);
   }
   if (cardOn > .5) { o = keyCards(o, uv, c, key); if (o.a < .004) discard; }
+  // the film's own card as the matte of the rendered card (cardMethod 'matte', src/scene3d-matte.ts): recoloured in place
+  if (matteOn > .5) o = matteCard(o, vec2(uv.x, 1. - uv.y) * FILM_PX, c, key, grade * fanShade(vWorld));
   gl_FragColor = o;
 }`;
 
@@ -234,6 +238,13 @@ const BEHIND = 0.15; // dealer metres behind the edge when the film does not say
 // and `held` how far it is still in the hand (its pale edge beyond the outline then stays, untinted).
 export type CardKey = {zone: number[][]; core: number[][] | null; colour: number[]; sides: number; tint: number; trust: number; rim: number; shoe: number[] | null; over: number[][] | null;
   drawn?: number[][] | null; held?: number; seated?: {zone: number[][]; core: number[][]} | null};
+// The film's own card as the matte (src/scene3d-matte.ts), as the passes left it for this frame: `box` the film pixels they ran in
+// (x0, y0, x1, y1), `cover` the card's body with its rim covered (back, face), how near the body is, and the zone beside it where
+// blurred card colour is unmixed, `shade` the film's shading over the body; `print` the face print and `toPrint` film pixel to print
+// (row-major 3 × 3), `back` the back's colour in linear light, `paper` the light on the paper, `lying` the film card's brightness
+// lying flat (back, face), `zone` the track's card grown (or null), `shoe` the shoe window box, `faceBack` the face shows the back
+// too (a card dealt face down).
+export type MatteKey = {box: number[]; cover: T.Texture; shade: T.Texture; print: T.Texture; toPrint: number[]; back: number[]; paper: number[]; lying: number[]; zone: number[][] | null; shoe: number[]; faceBack: boolean};
 export function createFilmLayers(filmVP: T.Matrix4, light: Record<string, {value: unknown}>) {
   // One frame, grade and card key for both layers; the rendered cards (scene3d-deal.ts) read the same frame and grade.
   const map = {value: null as T.Texture | null}, grade = {value: new T.Vector3(1, 1, 1)}, quad = () => [0, 1, 2, 3].map(() => new T.Vector2());
@@ -245,9 +256,12 @@ export function createFilmLayers(filmVP: T.Matrix4, light: Record<string, {value
   // the room's light on her (setRoomLight): its tint lies in grade with the calibration's; the sides have their own
   const side = {sideOn: {value: 0}, sideL: {value: new T.Vector3(1, 1, 1)}, sideR: {value: new T.Vector3(1, 1, 1)}}; let calibrated = [1, 1, 1], tint = [1, 1, 1];
   const putGrade = () => grade.value.set(calibrated[0] * tint[0], calibrated[1] * tint[1], calibrated[2] * tint[2]);
+  const matte = {matteOn: {value: 0}, matteFaceBack: {value: 0}, matteZoneOn: {value: 0}, matteBox: {value: new T.Vector4(0, 0, -1, -1)}, matteShoe: {value: new T.Vector4(0, 0, -1, -1)}, matteLying: {value: new T.Vector2(1, 1)}, matteZone: {value: quad()},
+    matteBack: {value: new T.Vector3()}, mattePaper: {value: new T.Vector3(1, 1, 1)}, matteToPrint: {value: new T.Matrix3()},
+    matteCover: {value: null as T.Texture | null}, matteShade: {value: null as T.Texture | null}, mattePrint: {value: null as T.Texture | null}};
   const material = (refUv: T.Vector2) => new T.ShaderMaterial({vertexShader: VERTEX, fragmentShader: FRAGMENT, transparent: true, depthWrite: false, side: T.DoubleSide,
     blending: T.CustomBlending, blendSrc: T.OneFactor, blendDst: T.OneMinusSrcAlphaFactor, blendSrcAlpha: T.OneFactor, blendDstAlpha: T.OneMinusSrcAlphaFactor,
-    uniforms: {...light, ...card, ...frame, ...room, ...side, wrap: {value: 0}, hide, map, filmVP: {value: filmVP}, refUv: {value: refUv}, lo: {value: 0.12}, hi: {value: 0.9}, shadow: {value: 1}, above: {value: 1}, erode: {value: 0.6}, grade, texel: {value: new T.Vector2(1.4 / FILM.width, 1.4 / FILM.height)}}});
+    uniforms: {...light, ...card, ...matte, ...frame, ...room, ...side, wrap: {value: 0}, hide, map, filmVP: {value: filmVP}, refUv: {value: refUv}, lo: {value: 0.12}, hi: {value: 0.9}, shadow: {value: 1}, above: {value: 1}, erode: {value: 0.6}, grade, texel: {value: new T.Vector2(1.4 / FILM.width, 1.4 / FILM.height)}}});
   // The screen reference is read in a corner that stays empty: top left for the backdrop, bottom left for the table.
   const bodyMat = material(new T.Vector2(0.02, 0.97)), tableMat = material(new T.Vector2(0.02, 0.03));
   const body = new T.Mesh(new T.PlaneGeometry(10, 3), bodyMat), table = new T.Mesh(new T.PlaneGeometry(10, 2).rotateX(-Math.PI / 2), tableMat);
@@ -269,6 +283,14 @@ export function createFilmLayers(filmVP: T.Matrix4, light: Record<string, {value
       card.seatOn.value = key.seated ? 1 : 0; if (key.seated) { put(card.seatZone.value, key.seated.zone); put(card.seatCore.value, key.seated.core); }
       if (key.shoe) card.cardShoe.value.set(key.shoe[0], key.shoe[1], key.shoe[2], key.shoe[3]); else card.cardShoe.value.set(-1, -1, -1, -1);
       card.cardOverOn.value = key.over ? 1 : 0; if (key.over) put(card.cardOver.value, key.over);
+    },
+    // The film's own card drawn as the rendered card in place (the matte, src/scene3d-matte.ts), or null: the film as it is.
+    setMatte(m: MatteKey | null) {
+      matte.matteOn.value = m ? 1 : 0; if (!m) return;
+      const t = m.toPrint; matte.matteBox.value.set(m.box[0], m.box[1], m.box[2], m.box[3]); matte.matteShoe.value.set(m.shoe[0], m.shoe[1], m.shoe[2], m.shoe[3]); matte.matteToPrint.value.set(t[0], t[1], t[2], t[3], t[4], t[5], t[6], t[7], t[8]);
+      matte.matteCover.value = m.cover; matte.matteShade.value = m.shade; matte.mattePrint.value = m.print; matte.matteFaceBack.value = m.faceBack ? 1 : 0;
+      matte.matteBack.value.set(m.back[0], m.back[1], m.back[2]); matte.mattePaper.value.set(m.paper[0], m.paper[1], m.paper[2]); matte.matteLying.value.set(m.lying[0], m.lying[1]);
+      matte.matteZoneOn.value = m.zone ? 1 : 0; if (m.zone) m.zone.forEach((p, i) => matte.matteZone.value[i].set(p[0], p[1]));
     },
     // A box of the film that is left undrawn (film pixels, y down: x0, y0, x1, y1), for a page that has an object of its own where
     // the film has one; null draws the whole film. Nothing in the game uses it yet: a hand that reaches into the box is cut too.

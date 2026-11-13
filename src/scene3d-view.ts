@@ -20,7 +20,7 @@ export type SceneState = {
   focus: 'off' | 'dealer' | 'card' | 'follow' | 'manual'; focusDistance: number; tolerance: number;
   fan: boolean; fanStrength: number; fanPeriod: number;
   tray: boolean; cups: boolean; base: TableBase; surface: TableSurface; roomLight: number; tableSize: number;
-  cards: boolean; cardMethod: 'scene' | 'film'; cardRank: string; cardSuit: string; cardScale: number; cardHand: 'film' | 'standard';
+  cards: boolean; cardMethod: 'scene' | 'film' | 'matte'; cardRank: string; cardSuit: string; cardScale: number; cardHand: 'film' | 'standard';
   clock: boolean; dust: number; flicker: boolean; flickerEvery: number; flickerStrength: number;
   filmBright: number; filmWarm: number; wrap: number;
   roomShift: 'cut' | 'shimmer'; roomShiftSeconds: number;
@@ -109,9 +109,10 @@ export function createScene(canvas: HTMLCanvasElement, host: HTMLElement, data: 
   const players = createPlayers(texture => film.setTexture(texture), data.onChange);
   let camera: FilmCamera = DEALER_LENS_ESTIMATE, pitch = 0, edgeZ = -1, guides: T.Group | null = null, track: CardTrack | null = null;
   let focusNow = NaN, focusWhat = '', lastSeconds = NaN, moved = false;
-  // Rendered cards, two ways: 'scene' makes each card an object in the scene under the film (scene3d-deal.ts); 'film' draws
-  // the card into the film frame (scene3d-cards.ts), the earlier way, kept to compare. A way's module is fetched the first time
-  // it is used and cards are switched off again if it cannot be read. update() returning true means "show my texture as the film".
+  // Rendered cards, three ways: 'scene' makes each card an object in the scene under the film (scene3d-deal.ts); 'film' draws
+  // the card into the film frame (scene3d-cards.ts), the earlier way, kept to compare; 'matte' (a trial) draws over the film's own
+  // card in place, with the film's card as the matte (scene3d-deal.ts and scene3d-matte.ts). A way's module is fetched the first
+  // time it is used and cards are switched off again if it cannot be read. update() returning true means "show my texture as the film".
   type CardLayer = {texture: T.Texture; update(video: HTMLVideoElement, frame: number, track: unknown, choice: {rank: string; suit: string; scale: number}, extra?: object | null): boolean; off?(): void; dispose?(): void};
   // Things another page adds: props lying on the table (built with the table, drawn under the film) and a call after every drawn frame.
   type Prop = {group: T.Object3D; build(edgeZ: number, scale: number): void};
@@ -121,8 +122,8 @@ export function createScene(canvas: HTMLCanvasElement, host: HTMLElement, data: 
   let gone = false;
   function loadCards() {
     const method = state.cardMethod; if (cardLayers[method] || cardLoads.has(method)) return; cardLoads.add(method);
-    (method === 'scene' ? import('./scene3d-deal.ts').then(m => { if (gone) return null; const layer = m.createDealLayer({contract: data.contract, plan: data.plan, film, light: light.uniforms, camera: () => camera, edgeZ: () => edgeZ,
-      renderer, view: () => view, pixels: () => Math.min(canvas.width / W, canvas.height / H) * state.zoom}); fg.add(layer.group); return layer; })
+    (method !== 'film' ? import('./scene3d-deal.ts').then(m => { if (gone) return null; const layer = m.createDealLayer({contract: data.contract, plan: data.plan, film, light: light.uniforms, camera: () => camera, edgeZ: () => edgeZ,
+      renderer, view: () => view, pixels: () => Math.min(canvas.width / W, canvas.height / H) * state.zoom, way: method}); fg.add(layer.group); return layer; })
       : import('./scene3d-cards.ts').then(m => gone ? null : m.createCardLayer(data.contract)))
       .then(layer => { if (!layer) return; cardLayers[method] = layer; cardError = ''; }, error => { cardError = String((error as Error)?.message ?? error); if (state.cardMethod === method) state.cards = false; })
       .then(() => { cardLoads.delete(method); if (gone) return; useCards(); data.onChange(); });

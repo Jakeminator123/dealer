@@ -97,7 +97,8 @@ if(has('--restart')){
  const confined=async(id:string,name:string)=>{try{return await realpath(`assets/motions/${id}/${name}`)===path.join(await realpath('assets/motions'),id,name);}catch{return false;}};
  const clipFile=async(file:string)=>{const m=clipMedia.exec(file);if(!m)return false;const {clips,derived}=await clipJobs();return (clips.some(job=>job.id===m[1])||derived.some(d=>d.clip===m[1]))&&await confined(m[1],m[2]);};
  // Card tracks from tools/track-card.ts and hand-written occlusion overrides, for the same clips and with the same confinement.
- const trackMedia=/^assets\/tracking\/([a-z0-9]+(?:-[a-z0-9]+)*)\/(card-track\.json|card-track-grip\.json|receipt\.json|overrides\.json)$/;
+ // card-track-matt.json: quads for the matte's face print (src/scene3d-matte.ts printQuad), read by the 3D scene with ?tryck=matt.
+ const trackMedia=/^assets\/tracking\/([a-z0-9]+(?:-[a-z0-9]+)*)\/(card-track\.json|card-track-grip\.json|card-track-matt\.json|receipt\.json|overrides\.json)$/;
  const tracked=async(id:string,name:string)=>{try{return await realpath(`assets/tracking/${id}/${name}`)===path.join(await realpath('assets/tracking'),id,name);}catch{return false;}};
  const trackFile=async(file:string)=>{const m=trackMedia.exec(file);if(!m)return false;const {clips,derived}=await clipJobs();return (clips.some(job=>job.id===m[1])||derived.some(d=>d.clip===m[1]))&&await tracked(m[1],m[2]);};
  const tracking=async(id:string)=>({track:await tracked(id,'card-track.json')?`assets/tracking/${id}/card-track.json`:null,overrides:await tracked(id,'overrides.json')?`assets/tracking/${id}/overrides.json`:null});
