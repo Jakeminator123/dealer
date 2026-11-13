@@ -2,18 +2,25 @@
 // dealer's, the one chosen in the rail (Jakob 2026-11-13: "but where can I review everything?"). The choice is in the address
 // (?dealer=paow, the word the view Material uses) and remembered in this browser; the address wins when it names a dealer,
 // then a take the address names (an old link to one of Pamela's takes opens her studio), then the remembered choice, then
-// Pamela, the bank's first dealer, so that every link without the word behaves as before. Names and the pause are
+// the first dealer (Paow since 2026-11-13: Pamela is paused, and a visitor who has chosen nothing should not meet the paused
+// dealer). The first dealer's addresses carry no word; every other dealer's do. Names and the pause are
 // data/dealers.json's. Pure: no DOM, no network; tests in studio/tests/dealer.test.ts. The provider is lib/bank.ts.
-import { DEALER, buildGraph, resolveRound, type BankData, type Graph, type Step } from "../../src/clip-graph.ts";
+import { DEALER, FIRST_DEALER, buildGraph, resolveRound, type BankData, type Graph, type Step } from "../../src/clip-graph.ts";
 import { awaitingJakob } from "./verdict.ts";
 
-export const DEFAULT_DEALER = DEALER;
+/** The dealer a visitor meets when nothing chooses: no word in the address, no take named, nothing remembered. */
+export const DEFAULT_DEALER = FIRST_DEALER;
+/** The bank's first dealer: whose every take without a dealer of its own is, first in the switch, and whose saved rounds the views open on. */
+export const BANK_DEALER = DEALER;
 /** The address's word for the dealer, shared with the view Material. */
 export const DEALER_PARAM = "dealer";
 /** The address's words that name a take: Granska's, Karta's and Scen's tagning, Jämför's a and b. */
 export const TAKE_PARAMS = ["tagning", "a", "b"] as const;
-/** Where the browser remembers the choice (localStorage). */
-export const DEALER_MEMORY = "studio.dealer";
+/**
+ * Where the browser remembers the choice (localStorage). The key before 2026-11-13, "studio.dealer", also kept a dealer the
+ * visitor had only been given (Pamela then), so it is left unread: no browser stays on her without having chosen her.
+ */
+export const DEALER_MEMORY = "studio.dealer.2";
 
 const ID = /^[a-z0-9]+$/;
 /** A dealer's id as the bank writes it (a–z, 0–9), or null. */
@@ -24,7 +31,7 @@ export const nameOf = (id: string): string => id.charAt(0).toUpperCase() + id.sl
 // ── Who there is ────────────────────────────────────────────────────────────
 /** The dealers the bank holds takes of: Pamela first (the bank's first dealer, with or without takes), then the others in the order their first take comes. */
 export function bankDealers(owners: Readonly<Record<string, string>>): string[] {
-  const out = [DEFAULT_DEALER];
+  const out = [BANK_DEALER];
   for (const id of Object.values(owners)) if (dealerId(id) && !out.includes(id)) out.push(id);
   return out;
 }
@@ -75,8 +82,9 @@ export type Chosen = { id: string; from: "address" | "take" | "memory" | "defaul
 
 /**
  * The dealer every view shows: the address's own word, else the dealer of a take the address names, else the remembered
- * choice, else Pamela. A word counts only for a dealer there is (known: the bank's and the register's); while the bank is
- * read (known null) any well-formed word is taken as it stands. owners: whose each take is (dealersOf).
+ * choice, else the first dealer (the bank's own where the bank does not hold her: a copy released without her). A word
+ * counts only for a dealer there is (known: the bank's and the register's); while the bank is read (known null) any
+ * well-formed word is taken as it stands. owners: whose each take is (dealersOf).
  */
 export function chooseDealer(input: { address: DealerAddress | null; remembered: string | null; known: readonly string[] | null; owners: Readonly<Record<string, string>> }): Chosen {
   const ok = (id: string | null | undefined): id is string => !!dealerId(id) && (!input.known || input.known.includes(id!));
@@ -85,7 +93,7 @@ export function chooseDealer(input: { address: DealerAddress | null; remembered:
   const owner = input.address?.takes.map((t) => input.owners[t]).find(ok);
   if (owner) return { id: owner, from: "take" };
   if (ok(input.remembered)) return { id: input.remembered, from: "memory" };
-  return { id: DEFAULT_DEALER, from: "default" };
+  return { id: !input.known || input.known.includes(DEFAULT_DEALER) ? DEFAULT_DEALER : BANK_DEALER, from: "default" };
 }
 
 // ── The address ─────────────────────────────────────────────────────────────
@@ -105,7 +113,7 @@ export function withDealer(search: string, dealer: string | null): string {
 /** The same query without the dealer's word: for a view that writes its whole address and compares it with what it wrote. */
 export const withoutDealer = (search: string): string => withDealer(search, null);
 
-/** An address of the studio ("/karta/", "/granska/?vy=alla") that keeps the dealer: Pamela's addresses stay as they were. */
+/** An address of the studio ("/karta/", "/granska/?vy=alla") that keeps the dealer: the first dealer's addresses carry no word. */
 export function dealerHref(href: string, dealer: string): string {
   if (dealer === DEFAULT_DEALER) return href;
   const at = href.indexOf("?");
@@ -114,8 +122,8 @@ export function dealerHref(href: string, dealer: string): string {
 }
 
 /**
- * The word the address should carry for `dealer`, or null for none: Pamela needs none (every address without one is hers
- * when nothing else is remembered), except where the address names a take of another dealer's (it would then decide).
+ * The word the address should carry for `dealer`, or null for none: the first dealer needs none (every address without one
+ * is hers when nothing else is remembered), except where the address names a take of another dealer's (it would then decide).
  */
 export function addressWord(dealer: string, address: DealerAddress, owners: Readonly<Record<string, string>>): string | null {
   if (dealer !== DEFAULT_DEALER) return dealer;

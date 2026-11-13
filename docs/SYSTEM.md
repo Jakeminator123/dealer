@@ -98,7 +98,10 @@ sedan 2026-11-13: `/` och `lab.html` leder dit (`studioAddress` i `tools/lab-rou
 med antalet tagningar som väntar på Jakob, den pausade dämpad; namn och paus ur `data/dealers.json`) väljer vems
 tagningar varje vy läser (`studio/lib/bank.ts` bygger `buildGraph(bank, {dealer})` per dealer); valet står i adressen
 som `?dealer=`, samma ord som vyn Material, och minns i webbläsaren; adressen går först, sedan en tagning som adressen
-nämner, och utan val gäller Pamela. Scen spelar det en annan dealer har och visar resten som luckor; Casino spelar den valda
+nämner, sedan det webbläsaren minns. Utan val gäller den första dealern, `FIRST_DEALER` i `src/clip-graph.ts`: Paow
+sedan 2026-11-13, eftersom Pamela är pausad och en ny besökare på kopian annars möter den pausade dealern. Hennes
+adresser bär inget ord, de andras gör det, och bara ett eget val minns (nyckeln `studio.dealer.2`), aldrig den
+dealer besökaren bara fick. Spelsidan utan ord och utan minne öppnar på samma dealer. Scen spelar det en annan dealer har och visar resten som luckor; Casino spelar den valda
 dealerns runda: `?dealer=` går vidare till spelsidan, som bygger en graf per dealer och aldrig spelar en annan dealers
 film.
 

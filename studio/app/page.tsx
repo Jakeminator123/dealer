@@ -25,7 +25,7 @@ import { Stage, createClock, type StageHandle } from "@/components/stage";
 import { ErrorState, IconButton, Kbd, SegmentedControl, Skeleton, Tabs, Tooltip, buttonClasses, cn, useToast } from "@/components/ui";
 import { useBank } from "@/lib/bank";
 import { stepFacts, useViewContext } from "@/lib/context";
-import { DEALER_PARAM, DEFAULT_DEALER, filmsLine, openingRound, ownSteps, withDealer, withoutDealer } from "@/lib/dealer";
+import { BANK_DEALER, DEALER_PARAM, filmsLine, openingRound, ownSteps, withDealer, withoutDealer } from "@/lib/dealer";
 import { isSnapshot } from "@/lib/mode";
 import { formatJakob } from "@/lib/names";
 import { addressOf, contextRound, isReference, no3d, readAddress, readyRounds, roundFacts, roundFromText, roundParts, viewFor, type Round, type View } from "@/lib/rounds";
@@ -83,7 +83,7 @@ function Scen() {
     if (asked.kind === "runda") return roundFromText(asked.text, rounds);
     if (asked.kind === "kant") return graph ? contextRound(graph, asked.edge, asked.take) : null;
     // Pamela opens on her favourite; another dealer on the ready round that plays most of her films.
-    if (graph && graph.dealer !== DEFAULT_DEALER) return openingRound(graph, rounds, owners) ?? rounds[0];
+    if (graph && graph.dealer !== BANK_DEALER) return openingRound(graph, rounds, owners) ?? rounds[0];
     return rounds[0];
   }, [chosen, address, graph, rounds, owners]);
 
@@ -104,7 +104,7 @@ function Scen() {
   const views = blocked3d ? VIEWS.map((v) => (v.value === "3d" ? { ...v, disabled: true, title: blocked3d } : v)) : VIEWS;
   const shownTab: Tab = flat ? "runda" : tab;
   // A dealer other than Pamela: how many of the films a whole round needs she has (the rest are gaps in the strip).
-  const few = graph && dealer !== DEFAULT_DEALER ? filmsLine(graph, dealers.find((d) => d.id === dealer)?.name ?? dealer) : null;
+  const few = graph && dealer !== BANK_DEALER ? filmsLine(graph, dealers.find((d) => d.id === dealer)?.name ?? dealer) : null;
 
   // The address follows the round and the look (a moment after the hand stops), so that the view can be sent as a link.
   const want = joinParts(roundText, editor.lookText);

@@ -4,7 +4,7 @@
 // while the tab is visible (as the old lab does), and builds each dealer's graph with the lab's own buildGraph only when the
 // answer changed. When nothing changed, the same objects are kept, so a view that reads useBank() does not render again every 4 s.
 // graph is the chosen dealer's (lib/dealer.ts: the address's ?dealer=, a take the address names, the remembered choice, else
-// Pamela), so every view that reads it shows that dealer's takes; the rail's switch (setDealer) changes it for all of them.
+// the first dealer), so every view that reads it shows that dealer's takes; the rail's switch (setDealer) changes it for all of them.
 // The online copy (lib/mode.ts) never changes: there the bank is read once, and the graph carries no cost.
 import { Suspense, createContext, createElement, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useSearchParams } from "next/navigation";
@@ -67,7 +67,7 @@ export type BankState = {
 type Data = { bank: ClipBankResponse | null; graphs: Record<string, Graph>; owners: Record<string, string>; status: BankStatus; error: ApiError | null; readAt: number | null };
 const BankContext = createContext<BankState | null>(null);
 
-// ── The memory of the choice (a convenience of this browser: it may be missing, and then the address or Pamela decides) ──
+// ── The memory of the choice (a convenience of this browser: it may be missing, and then the address or the first dealer decides) ──
 function remembered(): string | null {
   try {
     return dealerId(window.localStorage.getItem(DEALER_MEMORY));
@@ -164,16 +164,20 @@ export function BankProvider({ children, every = 4000 }: { children: ReactNode; 
   const address = seen?.address ?? null;
   const ids = useMemo(() => bankDealers(data.owners), [data.owners]);
   const known = useMemo(() => (loaded ? [...new Set([...ids, ...Object.keys(register ?? {})])] : null), [loaded, ids, register]);
-  const dealer = chooseDealer({ address, remembered: seen?.memory ?? null, known, owners: data.owners }).id;
+  const chosen = chooseDealer({ address, remembered: seen?.memory ?? null, known, owners: data.owners });
+  const dealer = chosen.id;
+  const given = chosen.from === "default";
   // A dealer the register knows and the bank has no take of yet still has a graph: every film missing.
   const graph = useMemo(() => (settled && data.bank ? (data.graphs[dealer] ?? build(data.bank, dealer)) : null), [settled, data.bank, data.graphs, dealer]);
   const shown = useMemo(() => (ids.includes(dealer) ? ids : [...ids, dealer]), [ids, dealer]);
   const dealers = useMemo(() => dealerEntries(shown, graph && !data.graphs[dealer] ? { ...data.graphs, [dealer]: graph } : data.graphs, register), [shown, data.graphs, graph, dealer, register]);
 
-  // The choice is remembered once it is known for certain (the bank read, so that an unknown word is not kept).
+  // The choice is remembered once it is known for certain (the bank read, so that an unknown word is not kept). A dealer the
+  // visitor was only given (no word, no take, nothing remembered) is no choice and is not kept: the first dealer can then
+  // change for everyone who has not chosen.
   useEffect(() => {
-    if (settled && loaded) remember(dealer);
-  }, [settled, loaded, dealer]);
+    if (settled && loaded && !given) remember(dealer);
+  }, [settled, loaded, dealer, given]);
 
   // The address says whose studio it is: a view reached without the word (a link inside a view, a typed address) gets it.
   // A view that keeps writing its whole address without it is left alone after twice (the memory still holds the choice).

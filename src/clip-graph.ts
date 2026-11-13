@@ -42,6 +42,10 @@ export type BankData = {jobs?: BankJob[]; derived?: DerivedTake[]; edits?: EditT
 // ── Dealers ─────────────────────────────────────────────────────────────────
 // The bank holds the takes of several dealers; a graph is always one dealer's. Pamela was the only dealer before the field existed.
 export const DEALER = 'pamela';
+// The dealer a visitor meets when nothing chooses for them (no word in the address, nothing remembered in the browser): Paow,
+// since Pamela is paused (data/dealers.json; Jakob 2026-11-12: "Vi pausar Pamela ... Sedan går vi vidare med Paow."). Until
+// 2026-11-13 it was Pamela, so the copy on the net opened on the paused dealer for everyone who came to it new.
+export const FIRST_DEALER = 'paow';
 const dealerWord = (value: unknown): string | null => typeof value === 'string' && /^[a-z0-9]+$/.test(value) ? value : null;
 // Whose each take is, by id. Its own dealer field first; without one, a derived take is the dealer's whose film it is cut from (or
 // corrects), an edit the dealer's whose clip it corrects, and anything left is Pamela's.

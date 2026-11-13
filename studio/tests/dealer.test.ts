@@ -12,6 +12,7 @@ import { buildGraph, dealersOf, resolveRound, type BankData, type BankJob, type 
 import { applyProvisional, reviewStore } from "../../tools/review-store.ts";
 import { decide, type Put } from "../lib/decide.ts";
 import {
+  BANK_DEALER,
   DEFAULT_DEALER,
   addressWord,
   bankDealers,
@@ -72,7 +73,8 @@ function bank(): BankData {
 test("the bank's dealers: Pamela first, also without a take, then the others as their first take comes", () => {
   const owners = dealersOf(bank());
   assert.deepEqual(bankDealers(owners), ["pamela", "paow"]);
-  assert.deepEqual(bankDealers({}), [DEFAULT_DEALER]);
+  assert.deepEqual(bankDealers({}), [BANK_DEALER]);
+  assert.equal(BANK_DEALER, "pamela");
   assert.deepEqual(bankDealers({ a: "paow", b: "BAD id", c: "paow" }), ["pamela", "paow"]);
 });
 
@@ -96,7 +98,7 @@ test("names and the pause come from data/dealers.json; without it a dealer is he
   );
 });
 
-test("the address wins, then a take it names, then the memory, then Pamela; only dealers there are", () => {
+test("the address wins, then a take it names, then the memory, then the first dealer (Paow: Pamela is paused); only dealers there are", () => {
   const owners = dealersOf(bank());
   const known = ["pamela", "paow"];
   const at = (query: string) => readDealerAddress(new URLSearchParams(query));
@@ -106,12 +108,15 @@ test("the address wins, then a take it names, then the memory, then Pamela; only
   assert.deepEqual(chooseDealer({ address: at("tagning=pamela-p4-deal-01"), remembered: "paow", known, owners }), { id: "pamela", from: "take" });
   assert.deepEqual(chooseDealer({ address: at("kant=READY%3EP4.C1&a=paow-p4-01-deal"), remembered: null, known, owners }), { id: "paow", from: "take" });
   assert.deepEqual(chooseDealer({ address: at("vy=alla"), remembered: "paow", known, owners }), { id: "paow", from: "memory" });
-  assert.deepEqual(chooseDealer({ address: at(""), remembered: null, known, owners }), { id: "pamela", from: "default" });
+  // Nothing chooses: the first dealer, who is Paow since Pamela was paused. A bank without her (a copy released without her) gives its own first.
+  assert.equal(DEFAULT_DEALER, "paow");
+  assert.deepEqual(chooseDealer({ address: at(""), remembered: null, known, owners }), { id: "paow", from: "default" });
+  assert.deepEqual(chooseDealer({ address: at(""), remembered: null, known: ["pamela"], owners }), { id: "pamela", from: "default" });
   // A dealer there is not: the next rule decides. While the bank is read, any well-formed word stands.
   assert.deepEqual(chooseDealer({ address: at("dealer=nobody"), remembered: "paow", known, owners }), { id: "paow", from: "memory" });
-  assert.deepEqual(chooseDealer({ address: at("dealer=Paow"), remembered: "gone", known, owners }), { id: "pamela", from: "default" });
+  assert.deepEqual(chooseDealer({ address: at("dealer=Paow"), remembered: "gone", known, owners }), { id: "paow", from: "default" });
   assert.deepEqual(chooseDealer({ address: at("dealer=nyn"), remembered: null, known: null, owners: {} }), { id: "nyn", from: "address" });
-  assert.deepEqual(chooseDealer({ address: null, remembered: null, known: null, owners: {} }), { id: "pamela", from: "default" });
+  assert.deepEqual(chooseDealer({ address: null, remembered: null, known: null, owners: {} }), { id: "paow", from: "default" });
 });
 
 test("the address keeps the dealer: set, replaced or taken out, every other word as it was written", () => {
@@ -123,19 +128,20 @@ test("the address keeps the dealer: set, replaced or taken out, every other word
   assert.equal(withoutDealer(""), "");
   // A dealer word that is a prefix of another word is no dealer word.
   assert.equal(withoutDealer("?dealers=2&dealer=paow"), "?dealers=2");
-  assert.equal(dealerHref("/granska/", "pamela"), "/granska/");
-  assert.equal(dealerHref("/granska/", "paow"), "/granska/?dealer=paow");
-  assert.equal(dealerHref("/granska/?vy=alla", "paow"), "/granska/?vy=alla&dealer=paow");
-  assert.equal(dealerHref("/", "paow"), "/?dealer=paow");
+  // The first dealer's addresses carry no word; another dealer's do.
+  assert.equal(dealerHref("/granska/", "paow"), "/granska/");
+  assert.equal(dealerHref("/granska/", "pamela"), "/granska/?dealer=pamela");
+  assert.equal(dealerHref("/granska/?vy=alla", "pamela"), "/granska/?vy=alla&dealer=pamela");
+  assert.equal(dealerHref("/", "pamela"), "/?dealer=pamela");
 });
 
-test("the address names Pamela only where a take of another dealer's would otherwise decide", () => {
+test("the address names the first dealer only where a take of another dealer's would otherwise decide", () => {
   const owners = dealersOf(bank());
   const at = (query: string) => readDealerAddress(new URLSearchParams(query));
-  assert.equal(addressWord("paow", at(""), owners), "paow");
-  assert.equal(addressWord("pamela", at("vy=alla"), owners), null);
-  assert.equal(addressWord("pamela", at("tagning=pamela-p4-deal-01"), owners), null);
-  assert.equal(addressWord("pamela", at("tagning=paow-p4-01-deal"), owners), "pamela");
+  assert.equal(addressWord("pamela", at(""), owners), "pamela");
+  assert.equal(addressWord("paow", at("vy=alla"), owners), null);
+  assert.equal(addressWord("paow", at("tagning=paow-p4-01-deal"), owners), null);
+  assert.equal(addressWord("paow", at("tagning=pamela-p4-deal-01"), owners), "paow");
 });
 
 test("Granska: each dealer's queue holds her own takes only, both takes of one film among them, and the films play their own frames", () => {

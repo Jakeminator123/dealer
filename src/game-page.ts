@@ -10,7 +10,7 @@
 //
 // The game plays only takes with a verdict (judgedBank in src/game-director.ts): Jakob's, or a provisional one given in his place.
 // The one exception is a talk film, a rest take on request, which is played only when the dealer says its line (src/speech-lines.ts).
-import {buildGraph, effectOf, type Graph} from './clip-graph.ts';
+import {DEALER, FIRST_DEALER, buildGraph, effectOf, type Graph} from './clip-graph.ts';
 import {createScene, DEFAULTS, type SceneState} from './scene3d-view.ts';
 import {readRegister} from './scene3d-room.ts';
 import {filmToScene, sceneToSpot, solveCamera, type FilmCamera} from './scene3d-geometry.ts';
@@ -53,10 +53,11 @@ const panoramas = registered.filter(r => r.game || r.id === asked.room);
 // ?fan=<px>: one fan step for every seat, for trying values; 0 and 1 are the scene's fan shadow when a look is read.
 const fanWord = query.get('fan'), fanStep = fanWord !== null && Number.isFinite(Number(fanWord)) && !(lookCode && ['0', '1'].includes(fanWord)) ? Math.max(0, Math.min(80, Number(fanWord))) : null;
 // The dealers the game offers, each with her own films. ?dealer=paow (the studio's word, which the Casino view passes on) or the
-// choice remembered from the console's Dealer menu; Pamela, the bank's first dealer, without either.
+// choice remembered from the console's Dealer menu; without either the first dealer (FIRST_DEALER in src/clip-graph.ts: Paow,
+// since Pamela is paused).
 const DEALERS = [{id: 'pamela', label: 'Pamela', note: 'Hela rundan', thumb: 'assets/scene/thumbs/dealer-pamela.jpg'}, {id: 'paow', label: 'Paow', note: 'Ny dealer, inte alla filmer än', thumb: 'assets/anchors/paow-vila-ung-2/anchor.png'}];
 const dealerMemory = (() => { try { return localStorage.getItem('dealer.dealer'); } catch { return null; } })();
-let dealer = DEALERS.find(d => d.id === query.get('dealer'))?.id ?? DEALERS.find(d => d.id === dealerMemory)?.id ?? 'pamela';
+let dealer = DEALERS.find(d => d.id === query.get('dealer'))?.id ?? DEALERS.find(d => d.id === dealerMemory)?.id ?? DEALERS.find(d => d.id === FIRST_DEALER)?.id ?? DEALER;
 const nameOf = (id: string) => DEALERS.find(d => d.id === id)?.label ?? id;
 const plan = placements.plan ?? placements, judged = judgedBank(bank), graphs = new Map<string, Graph>(), layout = createLayout(plan, {fan: fanStep});
 const graphOf = (id: string) => { let g = graphs.get(id); if (!g) { g = buildGraph(judged, {dealer: id}); graphs.set(id, g); } return g; };
