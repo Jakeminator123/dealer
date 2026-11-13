@@ -2260,6 +2260,13 @@
           "note": "Samma giv till plats 3 med scenens ritade kort, sedd framifrån och från plats 3:s öga (cirka 8°); samma platta film i båda. Gjort av sessionen dealer-bf 2026-11-13, inte oberoende granskat."
         },
         {
+          "id": "pamela-prov-petra-keystone",
+          "role": "prov",
+          "name": "Keystone för en avskild dealer (arbetsnamn Petra)",
+          "proof": "petra-keystone",
+          "note": "Profilbild, stående och sittande i 4K på ljus bakgrund, två tagningar var, med Pamelas utseende; gjort av sessionen dealer-bf 2026-11-13 i ett avskilt spår (Jakobs uppdrag samma natt). Ingen ny dealer i registren: Jakob har inte valt namn. Står under Pamela eftersom utseendet är hennes."
+        },
+        {
           "id": "pamela-drawn-01",
           "role": "arbetsmaterial",
           "name": "Kortet utdraget",
@@ -3072,6 +3079,22 @@
           "note": "Första given från det nya ankare 2.1, andra tagningen. Utan referensfilm.",
           "source": {
             "from": "beställningen paow-giv-p4, tagning 2 (studions vy Beställ)",
+            "when": "2026-11-13"
+          }
+        },
+        {
+          "id": "paow-landning-p4-giv-t2",
+          "role": "landning",
+          "name": "Plats 4, landning (ur given, tagning 2)",
+          "path": "assets/films/paow/ny-giv-p4-t2/source.mp4",
+          "frame": 104,
+          "fps": 24,
+          "card": "P4.C1",
+          "node": "LAND(P4.C1)",
+          "state": "kandidat",
+          "note": "Ruta 104 ur given till plats 4, tagning 2: kortet ligger öppet på platsen och handen ligger platt på det. Jakob 2026-11-13: ta ett ankare vid kortplats 4 ur den givens. Härifrån kan returen beställas som egen film. Inte efterarbetad som stillbild (en mjuk skugga under armen finns kvar).",
+          "source": {
+            "from": "beställningen paow-giv-p4, tagning 2, ruta 104",
             "when": "2026-11-13"
           }
         },

@@ -6,6 +6,8 @@
 // The count is awaitingJakob, the same as the rail's. "Alla" lists every take with filters, for looking something up.
 // In the online copy (isSnapshot) the view opens on "Alla" (?vy=ko for the queue), and the queue says what waits
 // (WaitingInCopy) instead of a player without a film; a take opened from "Alla" opens large as in the lab.
+// Everything is the chosen dealer's (the rail's switch, lib/bank.ts); when nothing of hers waits and another dealer has takes
+// waiting, the empty queue offers that dealer's.
 // Must be inside <Suspense> (useSearchParams).
 import { PartyPopper } from "lucide-react";
 import { useSearchParams } from "next/navigation";
@@ -60,7 +62,7 @@ function replaceParams(next: Record<string, string | null>) {
 export function ReviewView() {
   const params = useSearchParams();
   const view = tabOf(params.get("vy"), isSnapshot);
-  const { graph, status, error, reload } = useBank();
+  const { graph, status, error, reload, dealer, dealers, setDealer } = useBank();
   const [sitting, setSitting] = useState<Map<string, string>>(() => new Map());
   const [current, setCurrent] = useState<string | null>(() => params.get("tagning"));
   // The copy: a take opened by hand (from "Alla", or by its address) is shown large; otherwise the queue says what waits.
@@ -240,9 +242,18 @@ export function ReviewView() {
               icon={<PartyPopper />}
               title={`Allt är granskat. Inget väntar på ${isSnapshot ? "Jakob" : "dig"}.`}
               action={
-                <Button variant="quiet" onClick={() => replaceParams({ vy: "alla", tagning: null })}>
-                  Se alla tagningar
-                </Button>
+                <div className="flex flex-wrap items-center justify-center gap-2">
+                  {dealers
+                    .filter((d) => d.id !== dealer && d.waiting > 0)
+                    .map((d) => (
+                      <Button key={d.id} variant="primary" onClick={() => setDealer(d.id)}>
+                        Granska {d.name}s · {d.waiting} väntar
+                      </Button>
+                    ))}
+                  <Button variant="quiet" onClick={() => replaceParams({ vy: "alla", tagning: null })}>
+                    Se alla tagningar
+                  </Button>
+                </div>
               }
               className="h-full"
             />

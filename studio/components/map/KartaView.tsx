@@ -93,7 +93,7 @@ export function KartaView() {
 }
 
 function Karta() {
-  const { bank, graph: seatGraph, status, error, reload } = useBank();
+  const { bank, graph: seatGraph, status, error, reload, dealer } = useBank();
   const { params, set } = useParams();
   const mode: FilmMode = params.get("filmer") === "kort" ? "CARD" : "SEAT";
   const edgeId = params.get("kant");
@@ -103,7 +103,8 @@ function Karta() {
   const [tray, setTray] = useState(false);
   const points = usePlanPoints();
 
-  const graph = useMemo(() => (mode === "SEAT" ? seatGraph : bank ? buildGraph(bank, { mode: "CARD" }) : null), [mode, seatGraph, bank]);
+  // One film per card is the chosen dealer's too (seatGraph is null until the dealer is known).
+  const graph = useMemo(() => (mode === "SEAT" ? seatGraph : bank && seatGraph ? buildGraph(bank, { mode: "CARD", dealer }) : null), [mode, seatGraph, bank, dealer]);
   const layout = useMemo(() => mapLayout({ mode, points }), [mode, points]);
   const infos = useMemo(() => {
     const out = new Map<string, EdgeInfo>();

@@ -1,7 +1,8 @@
 "use client";
 
-// The left rail: the seven views with the active one marked, counts where they help (takes waiting for Jakob beside Granska,
-// edges with a Primär beside Primära), whether the lab answers, and "Gamla labbet ↗" at the bottom (same tab).
+// The left rail: whose studio it is at the top (DealerSwitch: Pamela | Paow), the views with the active one marked, counts
+// where they help (the chosen dealer's takes waiting for Jakob beside Granska, edges with a Primär beside Primära), whether
+// the lab answers, and "Gamla labbet ↗" at the bottom (same tab). A view's link keeps the chosen dealer in the address.
 // In the online copy (lib/mode.ts) there is no old lab, so that link is not drawn; instead the bot is there: the view
 // Önskemål (with the answers from Jakob not yet seen) and "Fråga", which opens and closes the panel (components/bot).
 import { ArrowUpRight, Clapperboard, FlaskConical, Images, Inbox, MessageCircleQuestion, ScanEye, Send, Spade, SquareDashedMousePointer, Star, Workflow } from "lucide-react";
@@ -9,12 +10,14 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useMemo, type ComponentType } from "react";
 import { useBank } from "../../lib/bank.ts";
+import { dealerHref } from "../../lib/dealer.ts";
 import { isSnapshot } from "../../lib/mode.ts";
 import { awaitingJakob, primarCount } from "../../lib/verdict.ts";
 import { useBot } from "../bot/BotProvider";
 import { useRequests } from "../requests/RequestsProvider";
 import { cn } from "../ui/cn";
 import { Tooltip } from "../ui/Tooltip";
+import { DealerSwitch } from "./DealerSwitch";
 import { Glossary } from "./Glossary";
 
 type View = { href: string; label: string; hint: string; icon: ComponentType<{ className?: string }> };
@@ -56,12 +59,12 @@ function Mark() {
   );
 }
 
-function RailItem({ view, active, count, tone }: { view: View; active: boolean; count?: string | null; tone?: "brass" | "neutral" }) {
+function RailItem({ view, href, active, count, tone }: { view: View; href?: string; active: boolean; count?: string | null; tone?: "brass" | "neutral" }) {
   const Icon = view.icon;
   return (
     <Tooltip content={view.hint} side="right">
       <Link
-        href={view.href}
+        href={href ?? view.href}
         aria-current={active ? "page" : undefined}
         className={cn(
           "group relative mx-2 flex flex-col items-center gap-1 rounded-lg px-1 pb-1.5 pt-2 transition-colors duration-150",
@@ -118,7 +121,7 @@ export function Rail() {
   const bot = useBot();
   const requests = useRequests();
   const onRequests = trim(pathname ?? "/") === trim(REQUESTS_VIEW.href);
-  const { graph, status, error } = useBank();
+  const { graph, status, error, dealer } = useBank();
   const counts = useMemo(() => {
     if (!graph) return null;
     const p = primarCount(graph);
@@ -129,16 +132,18 @@ export function Rail() {
   return (
     <nav aria-label="Vyer" className="flex h-full w-[76px] flex-col border-r border-line bg-surface">
       <Tooltip content="Dealer Studio" side="right">
-        <Link href="/" aria-label="Dealer Studio, till Scen" className="mx-auto mb-2 mt-3 grid size-11 place-items-center rounded-lg text-brass transition-colors hover:bg-raised/60">
+        <Link href={dealerHref("/", dealer)} aria-label="Dealer Studio, till Scen" className="mx-auto mb-1.5 mt-3 grid size-11 place-items-center rounded-lg text-brass transition-colors hover:bg-raised/60">
           <Mark />
         </Link>
       </Tooltip>
-      <div className="mx-4 mb-2 h-px bg-line" />
+      <DealerSwitch />
+      <div className="mx-4 mb-2 mt-2.5 h-px bg-line" />
       <ul className="flex flex-col gap-1">
         {SHOWN.map((view) => (
           <li key={view.href}>
             <RailItem
               view={view}
+              href={dealerHref(view.href, dealer)}
               active={active === view.href}
               count={view.href === "/granska/" ? (counts && counts.waiting > 0 ? String(counts.waiting) : null) : view.href === "/primara/" ? (counts?.primar ?? null) : null}
               tone={view.href === "/granska/" ? "brass" : "neutral"}

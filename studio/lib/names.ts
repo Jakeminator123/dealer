@@ -44,8 +44,22 @@ const splitEdge = (id: string): [string, string] => {
 // word first (Giv, Retur, Ingång, Utgång, Vänd, Kommer, Går; nothing on the idle edge); translate the remaining words
 // that have a Swedish name (calm → lugn, readyb → B, edit → rättad, arkiv stays) and keep the rest, numbers as written.
 // The words dropped are the same for every take of one edge, so names stay apart. Should two takes of one edge still read
-// the same, both are shown by their id without "pamela-" (takeNames).
-export type TakeLike = Pick<Take, "id" | "edge" | "kind">;
+// the same, both are shown by their id without "pamela-" (takeNames). Another dealer's films are named after the order they
+// came from (tools/register-order.ts: "paow-giv-p4-01-deal" on READY>P4.C1); for them her name, the order's step ("giv",
+// "ingang 2 1") and the seat on its own repeat the edge too, so that one is "Giv 01" as Pamela's is. Pamela's names stay as they were.
+export type TakeLike = Pick<Take, "id" | "edge" | "kind"> & { dealer?: string };
+
+// The order steps' words in another dealer's ids, by what the edge does; a run is dropped only where it stands whole.
+const ORDER_WORDS: Partial<Record<EdgeKind, string[][]>> = {
+  DEAL: [["giv", "2", "1"], ["giv", "2", "2"], ["giv"]],
+  RETURN: [["giv", "2", "1"], ["giv", "2", "2"], ["giv"]],
+  ENTRY: [["ingang", "2", "1"], ["ingang", "2", "2"], ["ingang"]],
+};
+function dropRun(words: string[], run: readonly string[]): boolean {
+  const at = words.findIndex((_, i) => run.every((w, k) => words[i + k] === w));
+  if (at >= 0) words.splice(at, run.length);
+  return at >= 0;
+}
 
 const WORDS: [RegExp, string][] = [
   [/\bdeep breath\b/g, "djupt andetag"],
@@ -104,11 +118,14 @@ export function takeName(take: TakeLike, siblings?: readonly TakeLike[]): string
   if (siblings) return takeNames(siblings.some((s) => s.id === take.id) ? siblings : [...siblings, take]).get(take.id)!;
   const { card, drop, lead } = edgeWords(take);
   let words = take.id.split("-").filter(Boolean);
-  if (words[0] === "pamela") words = words.slice(1);
+  const other = !!take.dealer && take.dealer !== "pamela" && words[0] === take.dealer;
+  if (words[0] === "pamela" || other) words = words.slice(1);
   if (card.length) {
     const at = words.findIndex((w, i) => w === card[0] && words[i + 1] === card[1]);
     if (at >= 0) words.splice(at, 2);
+    else if (other) dropRun(words, [card[0]]);
   }
+  if (other && take.kind) for (const run of ORDER_WORDS[take.kind] ?? []) if (dropRun(words, run)) break;
   for (const word of drop) {
     const at = words.indexOf(word);
     if (at >= 0) words.splice(at, 1);

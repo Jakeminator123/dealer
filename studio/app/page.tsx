@@ -9,7 +9,10 @@
 // The header says the round in Jakob's notation ("A1 - A2.1 - P4C1 - A1 · 3 steg · 8,5 s"), never file names.
 // The address is the round and the look (components/scene-editor/address.ts): /?runda=<his notation>&vy=platt&forval=
 // levande&dust=0.8; /?kant=<edge>&tagning=<take> plays that take where it belongs. A look that names no preset is
-// Levande; the old /scen/ addresses lead here (app/scen/page.tsx).
+// Levande; the old /scen/ addresses lead here (app/scen/page.tsx). The round plays the chosen dealer's films (lib/bank.ts): a
+// step locked to another dealer's take plays hers, a dealer other than Pamela opens on the ready round that plays most of her
+// films, and the header says how many of the 33 she has; a step without a film is a gap, shown as one. The address's
+// ?dealer= is kept as it stands when the page writes its round and look.
 import { Box, Copy, ExternalLink, Film, Spade } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
@@ -22,6 +25,7 @@ import { Stage, createClock, type StageHandle } from "@/components/stage";
 import { ErrorState, IconButton, Kbd, SegmentedControl, Skeleton, Tabs, Tooltip, buttonClasses, cn, useToast } from "@/components/ui";
 import { useBank } from "@/lib/bank";
 import { stepFacts, useViewContext } from "@/lib/context";
+import { DEALER_PARAM, DEFAULT_DEALER, filmsLine, openingRound, ownSteps, withDealer, withoutDealer } from "@/lib/dealer";
 import { isSnapshot } from "@/lib/mode";
 import { formatJakob } from "@/lib/names";
 import { addressOf, contextRound, isReference, no3d, readAddress, readyRounds, roundFacts, roundFromText, roundParts, viewFor, type Round, type View } from "@/lib/rounds";
@@ -41,10 +45,11 @@ const VIEWS = [
 type Tab = "runda" | "scen";
 
 function Scen() {
-  const params = useSearchParams();
-  const query = params.toString();
+  // The address without the dealer's word: that word is the rail's, and a change of it is no new round or look.
+  const query = withoutDealer(useSearchParams().toString()).slice(1);
+  const params = useMemo(() => new URLSearchParams(query), [query]);
   const toast = useToast();
-  const { graph, status, error, reload } = useBank();
+  const { graph, status, error, reload, dealer, dealers, owners } = useBank();
   const rounds = useMemo(() => readyRounds(), []);
   const [address, setAddress] = useState(() => readAddress(params));
   // The round's words of the address as they stand, until a round or the view is chosen here.
@@ -77,15 +82,17 @@ function Scen() {
     const asked = address.asked;
     if (asked.kind === "runda") return roundFromText(asked.text, rounds);
     if (asked.kind === "kant") return graph ? contextRound(graph, asked.edge, asked.take) : null;
+    // Pamela opens on her favourite; another dealer on the ready round that plays most of her films.
+    if (graph && graph.dealer !== DEFAULT_DEALER) return openingRound(graph, rounds, owners) ?? rounds[0];
     return rounds[0];
-  }, [chosen, address, graph, rounds]);
+  }, [chosen, address, graph, rounds, owners]);
 
   // The round waits for Jakob's placement plan (a seat's second card then knows how far its card moves), so that it does
   // not start once without it and again with it.
   const { places, placesRead } = editor;
   const segments = useMemo(
-    () => (graph && placesRead && round?.steps.length ? resolveRound(graph, round.steps, { holeCardDown: true, places }) : []),
-    [graph, placesRead, round, places],
+    () => (graph && placesRead && round?.steps.length ? resolveRound(graph, ownSteps(round.steps, graph.dealer, owners), { holeCardDown: true, places }) : []),
+    [graph, placesRead, round, places, owners],
   );
   const parts = useMemo(() => roundParts(round, segments), [round, segments]);
   const notation = isReference(round) ? round.name : round?.steps.length ? formatJakob(round.steps) : "";
@@ -96,14 +103,16 @@ function Scen() {
   const blocked3d = no3d(round);
   const views = blocked3d ? VIEWS.map((v) => (v.value === "3d" ? { ...v, disabled: true, title: blocked3d } : v)) : VIEWS;
   const shownTab: Tab = flat ? "runda" : tab;
+  // A dealer other than Pamela: how many of the films a whole round needs she has (the rest are gaps in the strip).
+  const few = graph && dealer !== DEFAULT_DEALER ? filmsLine(graph, dealers.find((d) => d.id === dealer)?.name ?? dealer) : null;
 
   // The address follows the round and the look (a moment after the hand stops), so that the view can be sent as a link.
   const want = joinParts(roundText, editor.lookText);
   useEffect(() => {
     const timer = window.setTimeout(() => {
-      if (want === window.location.search || (!want && !window.location.search)) return;
+      if (want === withoutDealer(window.location.search)) return;
       setWritten(want.slice(1));
-      window.history.replaceState(null, "", `${window.location.pathname}${want}`);
+      window.history.replaceState(null, "", `${window.location.pathname}${withDealer(want, new URLSearchParams(window.location.search).get(DEALER_PARAM))}`);
     }, 300);
     return () => window.clearTimeout(timer);
   }, [want]);
@@ -115,7 +124,8 @@ function Scen() {
   });
 
   const copyLink = () => {
-    const link = `${window.location.origin}${window.location.pathname}${want}`;
+    // The link names the dealer: it opens her round wherever it is opened, whatever that browser remembers.
+    const link = `${window.location.origin}${window.location.pathname}${withDealer(want, dealer)}`;
     void navigator.clipboard.writeText(link).then(
       () => toast({ tone: "ok", title: "Länken är kopierad", detail: "Den öppnar samma runda och samma look här i studion." }),
       () => toast({ tone: "bad", title: "Kunde inte kopiera", detail: link }),
@@ -133,6 +143,7 @@ function Scen() {
               {notation || "Ingen runda"}
             </span>
             {parts.length ? <span className="shrink-0">· {roundFacts(parts)}</span> : null}
+            {few ? <span className="shrink-0 text-faint">· {few}</span> : null}
           </>
         ) : (
           <BankStatus />

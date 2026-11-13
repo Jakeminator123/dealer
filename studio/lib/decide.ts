@@ -21,7 +21,8 @@ export async function decide(take: Take, decision: Decision, note: string, graph
   await put(take.id, decision, decision === "PENDING" ? "" : note, take.revision);
   const lowered: string[] = [];
   const failed: string[] = [];
-  if (decision !== "MAIN" || !graph) return { lowered, failed };
+  // Only the take's own dealer's Primär is lowered: another dealer's graph has its own takes on the same edge.
+  if (decision !== "MAIN" || !graph || graph.dealer !== take.dealer) return { lowered, failed };
   const edge = graph.edge[take.edge];
   for (const other of Object.values(graph.takes)) {
     if (other.id === take.id || other.edge !== take.edge || !other.explicitMain || !other.revision) continue;

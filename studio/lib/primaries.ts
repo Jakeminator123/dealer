@@ -158,7 +158,7 @@ const toneOf = (take: Take): SeamTone => (isOutright(take) ? "ok" : verdictOf(ta
 export function seamWith(bank: BankData, graph: Graph, take: Take): Seam | null {
   const edge = graph.edge[take.edge];
   if (!edge?.target || (edge.kind !== "DEAL" && edge.kind !== "RETURN")) return null;
-  const after = buildGraph(withPrimary(bank, graph, take), { mode: graph.mode });
+  const after = buildGraph(withPrimary(bank, graph, take), { mode: graph.mode, dealer: graph.dealer });
   const card = edge.kind === "DEAL" ? edge.to : edge.from;
   if (edge.kind === "RETURN") {
     const steps = [{ from: "READY", to: card }, { from: card, to: edge.to }];
