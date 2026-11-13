@@ -1,0 +1,20 @@
+# Cursor follows .gitignore and its own default list (lock files, .env*, node_modules, pictures, film, sound) by itself;
+# this file adds to that. A line hides a path from Cursor's Agent, Tab, @-mentions and index; a line with "!" brings one
+# back. Not a lock: Cursor's terminal and MCP tools still reach everything (https://cursor.com/docs/reference/ignore-file).
+
+# Secrets: also in .gitignore, repeated so that Cursor's Agent never reads them even if .gitignore changes
+.env*
+private/
+*.pem
+.vercel/
+
+# assets/ is ignored by Git, so Cursor skips it entirely. Its small text (receipts, proof descriptions, generation
+# records, prompts: about 6 MB) should be findable, its media (about 9 GB) should not: bring the folder back, hide
+# everything in it again, then bring back only text. Cursor's docs promise "!" against .gitignore, not against a
+# folder .gitignore excludes as a whole; check in a chat that @assets/proofs/fler-rum/proof.json is offered.
+!assets/
+assets/**
+!assets/**/
+!assets/**/*.json
+!assets/**/*.txt
+!assets/**/*.md

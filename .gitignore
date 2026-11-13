@@ -1,10 +1,33 @@
-node_modules/
+# Media, renders and run data stay outside Git (AGENTS.md); media has a role in data/media-roles.json instead
 assets/
 output/
 .runtime/
+
+# Secrets and private material: never in Git
 .env*
 private/
+*.pem
+.vercel/
+
+# Dependencies and build output (studio/.gitignore covers studio/.next/ and studio/out/)
+node_modules/
+*.tsbuildinfo
 *.log
+
+# Binary material outside the source repo wherever it lands: the types tools/publication-check.ts stops at push
+*.mp4
+*.mov
+*.webm
+*.mkv
+*.avi
+*.wav
+*.mp3
+*.zip
+*.7z
+*.rar
+*.png
+*.jpg
+*.jpeg
 
 # The checklist between Jakob and the main agent: a working paper, rewritten many times a day
 CHECKLISTA.md

@@ -1,0 +1,9 @@
+# ripgrep (agents' rg, Claude Code's Grep/Glob) and VS Code/Cursor's search panel read this file before .gitignore.
+# assets/ is ignored by Git; its small text (receipts, proof descriptions, generation records, prompts: about 6 MB)
+# should be searchable, its media (about 9 GB) not. So: bring the folder back, hide all in it, bring back only text.
+!/assets/
+/assets/**
+!/assets/**/
+!/assets/**/*.json
+!/assets/**/*.txt
+!/assets/**/*.md
