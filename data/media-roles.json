@@ -3758,6 +3758,41 @@
           "note": "Kortagentens prov 2026-11-13 efter Jakobs ord att det ska bli en linje för korten: samma rutor av given till plats 3, 4 och 7 och av dealerns första kort (vid skon, i handen, i vändningen, när det landar och ligger), med filmens eget kort omfärgat i handen och det ritade först när det ligger, mot det ritade kortet hela vägen. En oberoende granskare väljer."
         },
         {
+          "id": "paow-prov-jamnat-ljus",
+          "role": "prov",
+          "name": "Jämnat ljus mellan filmer, och ren kant runt håret",
+          "proof": "jamnat-ljus",
+          "note": "Scenbanans prov 2026-11-13 efter Jakobs ord om att hennes ljus byts mellan filmerna: samma skarv utan och med Jämna filmernas färg (förval sedan samma dag), och håret utan och med valet Ren kant, som tar bort den gulgröna och rosa linjen mot skärmen (av från början)."
+        },
+        {
+          "id": "paow-prov-koppar-i-relingen",
+          "role": "prov",
+          "name": "Guldkoppar i relingen",
+          "proof": "koppar-i-relingen",
+          "note": "Scenbanans prov 2026-11-13 efter Jakobs ord om guldkoppar som är ihåliga och verkliga: fyra par före och efter (ringen med svart skiva har blivit ett hål med en brunn i borstat guld), och de svarta fyrkanterna han skickade en bild av, före och efter rättningen (solblänk i den blanka kanten som djuposkärpan spred)."
+        },
+        {
+          "id": "paow-prov-liv-i-overkroppen",
+          "role": "prov",
+          "name": "Liv i överkroppen",
+          "proof": "liv-i-overkroppen",
+          "note": "Scenbanans prov 2026-11-13 efter Jakobs ord om en mask över huvud och överdel så att hon rör sig lite mer: valet av och på sida vid sida på samma vila, och 23 s i spelet, med inställningen efter den andra blindgranskningens råd. Av från början tills en oberoende granskare har sett den nya inställningen."
+        },
+        {
+          "id": "paow-prov-blixten",
+          "role": "prov",
+          "name": "Blixten: spelhålan i svartvitt i en sekund",
+          "proof": "blixten",
+          "note": "Scenbanans prov 2026-11-13 efter Jakobs ord om champagnefilmen: medan hon dricker blixtrar det till, och rummet och bordet blir spelhålan i svartvitt i cirka en sekund. Sekunden i scenen med de slutliga talen, och samma i en fjärdedels fart, här lagd på en vanlig vilofilm. Utlöses av ett märke i filmens post (motion.effect)."
+        },
+        {
+          "id": "paow-prov-kortet-foljer-filmen",
+          "role": "prov",
+          "name": "Kortet följer filmen",
+          "proof": "kortet-foljer-filmen",
+          "note": "Scenbanans prov 2026-11-13 efter Jakobs ord att det ritade kortet kletar: kortet ritades för rutan efter den som filmen visade, så filmens gula kort stack fram bredvid; nu ritas det för rutan som visas. Given till plats 4 ruta för ruta före och efter, i dubbel fart (förval sedan samma dag) och i vanlig fart."
+        },
+        {
           "id": "paow-profil-kavaj",
           "role": "arbetsmaterial",
           "name": "Profilbild i kavaj",
