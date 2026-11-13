@@ -348,7 +348,7 @@ test('a card size for one order: grown about its centre, stopped at the picture\
   assert.match(validateOrder({ ...order, motion: { ...motion, cardScale: 3 } }).errors.join(' '), /motion\.cardScale ska vara 1, 1\.25, 1\.5, 2/);
 });
 
-test('the steps a round needs: the hole card as a deal\'s target, its turn from rest with two cards drawn, and the way out', () => {
+test('the steps a round needs: the hole card as a deal\'s target, its turn from rest with only the hole card drawn, and the way out', () => {
   // The dealer's second card is a seat a deal goes to; it lands closed, as the plan says, and is the hole card in words.
   assert.ok(SEAT_TARGETS.includes('D.C2'));
   assert.ok(!ALL_SEVEN.includes('D.C2'), '"Alla sju" stays the players');
@@ -358,13 +358,14 @@ test('the steps a round needs: the hole card as a deal\'s target, its turn from 
   assert.equal(edgeOf(give, 'D.C2'), 'READY>D.C2');
   assert.deepEqual(cutIntoOf(give, 'D.C2', 'ROUND_TRIP'), ['READY>D.C2', 'D.C2>READY']);
   assert.match(summaryOf(give, 'Paow', { turn: false, target: 'D.C2', side: 'BACK' }), /lägger det stängt, baksidan upp, på dealerns hålkort/);
-  // The hole card turned open from rest and back to rest: IDLE>REVEAL(D.C2), the card fixed, both pictures with the cards.
+  // The hole card turned open from rest and back to rest: IDLE>REVEAL(D.C2), the card fixed, both pictures with that card
+  // alone (the game draws every lying card itself; with both drawn she lifted both, round 6).
   const turn = stepOf('HALKORT')!;
   assert.deepEqual([turn.kind, turn.from, turn.to, turn.card, turn.target, turn.model, turn.duration], ['FILM', '1', '1', false, 'D.C2', 'wan3', 5]);
   assert.equal(edgeOf(turn, null), 'IDLE>REVEAL(D.C2)');
   assert.deepEqual(cutIntoOf(turn, null, 'ONE_WAY'), [], 'one edge, its step.edge');
-  assert.deepEqual(turn.cards, [{ target: 'D.C1', before: 'FRONT', after: 'FRONT' }, { target: 'D.C2', before: 'BACK', after: 'FRONT' }]);
-  assert.match(startWords(turn), /^Börjar och slutar på ankare 1 \(vila\).*hålkortet stängt i första bilden och öppet i sista/);
+  assert.deepEqual(turn.cards, [{ target: 'D.C2', before: 'BACK', after: 'FRONT' }]);
+  assert.match(startWords(turn), /^Börjar och slutar på ankare 1 \(vila\).*, med bara hålkortet ritat där planen säger: stängt i första bilden och öppet i sista\.$/);
   assert.match(summaryOf(turn, 'Paow', null), /vänder hon upp hålkortet/);
   // The way out: anchor 2.1 to anchor 1, READY>IDLE.
   const out = stepOf('UTGANG')!;

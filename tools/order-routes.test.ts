@@ -490,7 +490,8 @@ test('the steps a round needs: a deal to the hole card, its turn from rest and t
   assert.deepEqual([hole.order.step.edge, hole.order.step.cutInto], ['READY>D.C2', ['READY>D.C2', 'D.C2>READY']]);
   assert.deepEqual([hole.order.motion.side, hole.order.motion.turn, hole.order.motion.flipAxis], ['BACK', false, null], 'it lands closed, as the plan says');
   assert.match(hole.order.title, /dealerns hålkort/);
-  assert.match(hole.order.prompt.text, /to its place close in front of her, in the middle of the picture, where the last frame shows it\. She lays it flat there, yellow side up\./);
+  // Laid on the felt in front of the shoe and slid to its place (template 7: carried, round 6's closed takes tilted).
+  assert.match(hole.order.prompt.text, /lays it flat on the felt in front of the shoe and slides it under her fingertips, flat and yellow side up, to its place close in front of her, in the middle of the picture, where the last frame shows it\. She stops it there and lifts her fingertips off it\./);
   const turn = await call('POST', '/api/orders', { body: { dealer: 'paow', step: 'HALKORT' } });
   assert.equal(turn.status, 201);
   const o = turn.json.order;

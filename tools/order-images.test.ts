@@ -137,7 +137,7 @@ test('a card size for one order: the last picture draws the card 150 % about its
   assert.equal(JSON.stringify(plan), before);
 });
 
-test('the hole card\'s turn: both of the dealer\'s cards drawn one after the other, each where the plan says; the store draws its two pictures', { skip: !media && 'the bank films are not on this machine' }, async (t) => {
+test('several cards drawn one after the other, each where the plan says; the hole card\'s turn draws only the hole card on its two pictures', { skip: !media && 'the bank films are not on this machine' }, async (t) => {
   const root = process.cwd();
   const { plan, file } = await readPlan(root);
   const texture = await cardTexture(root);
@@ -151,7 +151,8 @@ test('the hole card\'s turn: both of the dealer\'s cards drawn one after the oth
   assert.ok(made.rgb[at] > 150 && made.rgb[at + 2] < 60, 'the hole card is yellow');
   assert.throws(() => drawCards(green, texture, plan, file, []), /Inga kort/);
 
-  // The store: her anchor 1 holds, so both pictures are drawn on it at once, the hole card closed and then open.
+  // The store: her anchor 1 holds, so both pictures are drawn on it at once, the hole card alone, closed and then open
+  // (the game draws the dealer's first card itself; with both drawn she lifted both, round 6).
   const { mkdtemp, mkdir, writeFile, copyFile, rm } = await import('node:fs/promises');
   const base = existsSync('D:/dealer-scratch/tmp') ? 'D:/dealer-scratch/tmp' : (await import('node:os')).tmpdir();
   const lab = await mkdtemp(path.join(base, 'order-images-'));
@@ -164,9 +165,9 @@ test('the hole card\'s turn: both of the dealer\'s cards drawn one after the oth
   const { orderStore } = await import('./order-store.ts');
   const { order } = await orderStore(lab).create({ dealer: 'paow', step: 'HALKORT' });
   const [first, last] = order.pictures;
-  assert.deepEqual([first.drawn!.target, first.drawn!.side, first.drawnBeside!.map((d) => d.side), last.drawn!.side, last.drawnBeside!.map((d) => d.side)], ['D.C2', 'BACK', ['FRONT'], 'FRONT', ['FRONT']]);
+  assert.deepEqual([first.drawn!.target, first.drawn!.side, first.drawnBeside!.map((d) => d.side), last.drawn!.side, last.drawnBeside!.map((d) => d.side)], ['D.C2', 'BACK', [], 'FRONT', []]);
   assert.equal(first.from!.entry, 'paow-vila');
-  assert.match(first.label, /^Första bild · Paows ankare 1 \+ dealerns kort, hålkortet stängt$/);
+  assert.match(first.label, /^Första bild · Paows ankare 1 \+ hålkortet stängt$/);
   assert.ok(first.sha256 && last.sha256 && first.sha256 !== last.sha256);
   assert.match(order.prompt.text, /lying close in front of her, in the middle of the picture, where the last frame shows it/, 'the place from the drawn card');
 });

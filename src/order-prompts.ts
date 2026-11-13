@@ -29,12 +29,17 @@ import type { FlipAxis, StepKey, TextStyle } from './order-model.ts';
 /**
  * The formula's version. 4: the short and minimal texts (Utförlig keeps @3 where its text is template 3's own).
  * 5 (2026-11-13): the short deal says where the card's place is, after rounds 3 and 3b laid the card in front of her.
- * 6 (2026-11-13): the card's two sides said only by colour and by which one is up (SAY.sides), never back or face: Jakob
+ * 6 (2026-11-13): the card's two sides said only by colour and by which one is up (SAY.v6), never back or face: Jakob
  * of a rejected take, "Baksida kan betyda olika saker, som baksidan på ett kort, men det kan också referera till undersidan".
  * 7 (2026-11-13): the short deal lets her move a little as she deals (SAY.moveOwn, SAY.moveBoth) instead of holding the
  * other hand still ("Hon är väldigt stel"), and after two hands the arm stretched out at the card is the one that comes
  * back while the hand at the shoe takes the next card or comes to rest (SAY.backPass, SAY.otherFromShoe): Jakob, "OM hon
- * har någon deal där hon använder sin vänster och högerarm så måste retreat/tillbakagången vara annorlunda".
+ * har någon deal där hon använder sin vänster och högerarm så måste retreat/tillbakagången vara annorlunda". The card's
+ * sides are said again in template 5's words (SAY.colours, SAY.oneCardMoves, "the blue face"): in round 6 both takes on
+ * template 6 failed at the turn and both on template 5 turned the card, and "yellow side up …, blue side up …" says two
+ * states by colour, which may invite a change of colour, where "its back is yellow and its face is blue" says one
+ * two-sided object. Jakob's worry about "back" stays open. A closed deal from the pinch is laid on the felt in front of
+ * the shoe and slid to its place (SAY.layAndSlide): round 6's closed takes were carried tilted and changed size.
  */
 export const TEMPLATE_VERSION = 7;
 /** The version of the long text (template 3, 2026-11-13); Utförlig writes it unchanged. */
@@ -73,32 +78,32 @@ export type Prompt = { template: string; style: TextStyle; text: string; parts: 
  * the other hand, the card, Jakob's addition). The turn (turnAtPlace, the handbook's turn A) is one a left hand can make
  * from a card that has come back up under its fingertips: palm down, the thumb lies at the card's inner long edge, slides
  * under it and lifts it; the forearm turns thumb side up (outward); the opposite long edge stays on the felt as a hinge, so
- * the card never flies and keeps its size; the thumb comes over onto the blue side. Said by the hand's own parts, it holds
- * for the right hand too, mirrored. The card's two sides are said by colour and by which one is up (template 6): "back"
- * can be read as the far side or the underside, and "face" with it; the template-5 words stay in `v5` for older orders.
+ * the card never flies and keeps its size; the thumb comes over onto the blue face. Said by the hand's own parts, it holds
+ * for the right hand too, mirrored. Template 6 alone said the card's two sides by colour and by which one is up; its
+ * words stay in `v6` so that an order stored with it reproduces its text.
  */
 export const SAY = {
   camera: 'Locked camera, one continuous shot.',
   cameraMinimal: 'Locked camera.',
   // Kling 4 ignores tags and reads the reference films in order: the texts that held called it "video 1".
   reference: 'Video 1 shows only the movement: she moves like the dealer in video 1, with the same timing.',
-  // The card: a plain two-coloured placeholder, yellow up while closed, blue up once turned open; after "Only one card
-  // moves. It is" (Kort) or "The card is" (Minimal).
-  sides: {
-    open: 'yellow on one side and blue on the other: yellow side up when it leaves the shoe, blue side up when it lies at its place.',
-    closed: 'yellow on one side and blue on the other, and it stays yellow side up the whole way.',
-    turned: 'yellow on one side and blue on the other: it lies yellow side up, and after the turn it lies blue side up.',
-    // A return starts with the card lying at its place.
-    liesOpen: 'yellow on one side and blue on the other: it lies blue side up.',
-    liesClosed: 'yellow on one side and blue on the other: it lies yellow side up.',
-  },
-  oneCardIs: (sides: string) => `Only one card moves. It is ${sides}`,
-  cardIs: (sides: string) => `The card is ${sides}`,
-  // Templates 4 and 5, kept word for word so that an order stored with them reproduces its text.
-  v5: {
-    colours: "The card's back is yellow and its face is blue.",
-    oneCardMoves: 'Only one card moves; its back is yellow and its face is blue.',
-    turnAtPlace: 'There her thumb slides under the long edge nearest it and lifts it as her wrist turns thumb side up; the card rolls over on its opposite long edge, which stays on the felt, and her thumb comes over onto the blue face.',
+  // The card: one two-sided object (templates 4, 5 and from 7).
+  colours: "The card's back is yellow and its face is blue.",
+  oneCardMoves: 'Only one card moves; its back is yellow and its face is blue.',
+  // Template 6 only, kept word for word: the two sides by colour and by which one is up, after "Only one card moves. It
+  // is" (Kort) or "The card is" (Minimal).
+  v6: {
+    sides: {
+      open: 'yellow on one side and blue on the other: yellow side up when it leaves the shoe, blue side up when it lies at its place.',
+      closed: 'yellow on one side and blue on the other, and it stays yellow side up the whole way.',
+      turned: 'yellow on one side and blue on the other: it lies yellow side up, and after the turn it lies blue side up.',
+      // A return starts with the card lying at its place.
+      liesOpen: 'yellow on one side and blue on the other: it lies blue side up.',
+      liesClosed: 'yellow on one side and blue on the other: it lies yellow side up.',
+    },
+    oneCardIs: (sides: string) => `Only one card moves. It is ${sides}`,
+    cardIs: (sides: string) => `The card is ${sides}`,
+    turnAtPlace: 'There her thumb slides under the long edge nearest it and lifts it as her wrist turns thumb side up; the card rolls over on its opposite long edge, which stays on the felt, and her thumb comes over onto the blue side.',
   },
   // A deal: take and carry.
   pinchOut: 'draws the yellow card out of the window',
@@ -111,11 +116,14 @@ export const SAY = {
   otherReaches: 'Her hand at the shoe lets go of the card and waits beside the shoe, and her other hand reaches across to the shoe,',
   handover: 'brings it low over the felt to the middle in front of her, where her other hand takes it by its edges and',
   // A deal: the turn, said once, or no turn.
-  turnAtPlace: 'There her thumb slides under the long edge nearest it and lifts it as her wrist turns thumb side up; the card rolls over on its opposite long edge, which stays on the felt, and her thumb comes over onto the blue side.',
+  turnAtPlace: 'There her thumb slides under the long edge nearest it and lifts it as her wrist turns thumb side up; the card rolls over on its opposite long edge, which stays on the felt, and her thumb comes over onto the blue face.',
   turnOnTheWay: 'On the way her hand turns the card over once, holding it the whole time, and lays it flat at its place, blue side up.',
   rollOnTheWay: 'On the way her wrist turns thumb side up and the card, held between thumb and fingers, rolls over once about its long side; she lays it flat at its place, blue side up.',
   layClosed: 'She lays it flat there, yellow side up.',
   stopClosed: 'She stops it there, yellow side up, and lifts her fingertips off it.',
+  // A closed card from the pinch (from template 7): laid flat in front of the shoe and slid, never carried tilted.
+  layAndSlide: 'lays it flat on the felt in front of the shoe and slides it under her fingertips, flat and yellow side up, to its place',
+  stopFlat: 'She stops it there and lifts her fingertips off it.',
   // A deal: back to the shoe, or the end on the landing picture.
   backPinch: 'Then her open hand glides back low over the felt, palm down, to the shoe and takes the next card.',
   backDrag: 'Then her open hand glides back low over the felt, palm down, to the shoe and rests over the next card in the window.',
@@ -297,9 +305,9 @@ const templateOf = (kind: string, style: TextStyle, long = true) => (style === '
 const referencePart = (input: PromptInput): Part => ({ text: input.reference ? SAY.reference : '', from: ['reference'] });
 const extraPart = (input: PromptInput): Part => ({ text: input.extra?.trim() || '', from: ['extra'] });
 const DEFAULT_MOTION: DealMotion = { grip: 'PINCH', hand: 'LH', pass: false, turn: true, flipAxis: 'FREE', side: 'FRONT' };
-/** From template 6 the card's sides are said by colour and by which one is up; an older order keeps back and face (SAY.v5). */
-const byColour = (input: PromptInput) => (input.version ?? TEMPLATE_VERSION) >= 6;
-const turnAtPlace = (input: PromptInput) => (byColour(input) ? SAY.turnAtPlace : SAY.v5.turnAtPlace);
+/** Template 6 alone said the card's sides by colour and by which one is up (SAY.v6); before and after, back and face. */
+const byColour = (input: PromptInput) => (input.version ?? TEMPLATE_VERSION) === 6;
+const turnAtPlace = (input: PromptInput) => (byColour(input) ? SAY.v6.turnAtPlace : SAY.turnAtPlace);
 /** From template 7 a deal moves her a little and the way back after two hands follows the arm that is out. */
 const twoHands = (input: PromptInput) => (input.version ?? TEMPLATE_VERSION) >= 7;
 
@@ -402,25 +410,29 @@ function shortDeal(input: PromptInput): Prompt {
   const drag = m.grip === 'DRAG', open = m.side === 'FRONT';
   // Back up along the felt to the place: a closed card, or one turned at the place; else turned on the way.
   const alongFelt = !open || m.flipAxis === 'AT_PLACE';
-  const out = drag ? SAY.slideOut : SAY.pinchOut;
+  const out = drag ? SAY.slideOut : SAY.pinchOut, seven = twoHands(input);
+  // A closed card from the pinch, by the hand that lays it (from template 7): laid flat in front of the shoe and slid,
+  // as the model does well; carried, it tilted and showed its blue face, and changed size when the hand left it.
+  const slid = seven && !open && !drag && !pass;
   // The place in words (from template 5): the last frame shows it, and the text says which way the hand goes.
-  const carryTo = alongFelt ? (drag && !pass ? SAY.dragBack : SAY.carryBack) : drag && !pass ? SAY.liftTowards : SAY.carryTowards;
+  const carryTo = slid ? SAY.layAndSlide : alongFelt ? (drag && !pass ? SAY.dragBack : SAY.carryBack) : drag && !pass ? SAY.liftTowards : SAY.carryTowards;
   const placed = !!input.place && (input.version ?? TEMPLATE_VERSION) >= 5;
   const carry = placed ? carryTo.replace('its place', 'its place ' + whereShort(input.place!)) : carryTo;
+  const and = slid ? ',' : ' and';
   const take =
     pass ? `${SAY.handAtShoe} ${out} and ${SAY.handover} ${carry.replace('carries it', 'carries it on')}.`
-    : takes === 'RH' ? `${SAY.otherReaches} ${out} and ${carry}.`
-    : `${SAY.handAtShoe} ${out} and ${carry}.`;
-  const turn = !open ? (drag && !pass ? SAY.stopClosed : SAY.layClosed) : m.flipAxis === 'AT_PLACE' ? turnAtPlace(input) : m.flipAxis === 'LONG_EDGE' ? SAY.rollOnTheWay : SAY.turnOnTheWay;
-  const own = takes === 'LH' && !pass, seven = twoHands(input);
+    : takes === 'RH' ? `${SAY.otherReaches} ${out}${and} ${carry}.`
+    : `${SAY.handAtShoe} ${out}${and} ${carry}.`;
+  const turn = slid ? SAY.stopFlat : !open ? (drag && !pass ? SAY.stopClosed : SAY.layClosed) : m.flipAxis === 'AT_PLACE' ? turnAtPlace(input) : m.flipAxis === 'LONG_EDGE' ? SAY.rollOnTheWay : SAY.turnOnTheWay;
+  const own = takes === 'LH' && !pass;
   // The arm out at the card comes back: the hand at the shoe itself, or the hand that laid it (after a handover the
   // hand that gave it goes back to the shoe, from template 7).
   const back = input.oneWay ? SAY.endAtCard : own ? (drag ? SAY.backDrag : SAY.backPinch) : pass && seven ? SAY.backPass(drag) : SAY.backOther(drag);
   // Her body as she deals: from template 7 she moves a little; before, the other hand only rested (own hand alone).
   const body = seven ? (own ? SAY.moveOwn : SAY.moveBoth) : own ? SAY.otherRests : '';
-  // The card (template 6): which colour is up at the end follows the side it lands with.
+  // The card: one two-sided object; in template 6 alone, which colour is up at the end, following the side it lands with.
   const colours = byColour(input);
-  const card = colours ? SAY.oneCardIs(open ? SAY.sides.open : SAY.sides.closed) : SAY.v5.oneCardMoves;
+  const card = colours ? SAY.v6.oneCardIs(open ? SAY.v6.sides.open : SAY.v6.sides.closed) : SAY.oneCardMoves;
   const parts: Part[] = [
     { text: SAY.camera, from: [] },
     referencePart(input),
@@ -435,15 +447,15 @@ function shortDeal(input: PromptInput): Prompt {
 }
 
 /**
- * Jakob's minimal deal: the card's colours (from template 6 with the one up at the end, which follows the side it lands
- * with) and that one card goes to where the last frame shows it (and the hand comes back).
+ * Jakob's minimal deal: the card's colours (in template 6 alone with the one up at the end, which follows the side it
+ * lands with) and that one card goes to where the last frame shows it (and the hand comes back).
  */
 function minimalDeal(input: PromptInput): Prompt {
   const open = (input.motion ?? DEFAULT_MOTION).side === 'FRONT', colours = byColour(input);
   const parts: Part[] = [
     { text: SAY.cameraMinimal, from: [] },
     referencePart(input),
-    { text: colours ? SAY.cardIs(open ? SAY.sides.open : SAY.sides.closed) : SAY.v5.colours, from: colours ? ['side'] : [] },
+    { text: colours ? SAY.v6.cardIs(open ? SAY.v6.sides.open : SAY.v6.sides.closed) : SAY.colours, from: colours ? ['side'] : [] },
     { text: input.oneWay ? SAY.oneCard : SAY.oneCardBack, from: ['shape'] },
     extraPart(input),
   ];
@@ -460,7 +472,7 @@ function returnText(input: PromptInput, to: '1' | '2.1' | '2.2', style: TextStyl
   const colour = m.side === 'BACK' ? 'yellow' : 'blue';
   if (style === 'MINIMAL') {
     const colours = byColour(input);
-    const card = colours ? SAY.cardIs(m.side === 'BACK' ? SAY.sides.liesClosed : SAY.sides.liesOpen) : SAY.v5.colours;
+    const card = colours ? SAY.v6.cardIs(m.side === 'BACK' ? SAY.v6.sides.liesClosed : SAY.v6.sides.liesOpen) : SAY.colours;
     const parts: Part[] = [{ text: SAY.cameraMinimal, from: [] }, referencePart(input), { text: card, from: colours ? ['side'] : [] }, { text: SAY.leaveCard, from: [] }, extraPart(input)];
     return { template: templateOf('film-retur', 'MINIMAL'), style, text: joined(parts), parts };
   }
@@ -540,7 +552,7 @@ function exitText(input: PromptInput, style: TextStyle): Prompt {
 function revealText(input: PromptInput, style: TextStyle): Prompt {
   const colours = byColour(input);
   if (style === 'MINIMAL') {
-    const parts: Part[] = [{ text: SAY.cameraMinimal, from: [] }, referencePart(input), { text: colours ? SAY.cardIs(SAY.sides.turned) : SAY.v5.colours, from: [] }, { text: SAY.revealMinimal, from: [] }, extraPart(input)];
+    const parts: Part[] = [{ text: SAY.cameraMinimal, from: [] }, referencePart(input), { text: colours ? SAY.v6.cardIs(SAY.v6.sides.turned) : SAY.colours, from: [] }, { text: SAY.revealMinimal, from: [] }, extraPart(input)];
     return { template: templateOf('film-halkort', 'MINIMAL'), style: 'MINIMAL', text: joined(parts), parts };
   }
   const parts: Part[] = [
@@ -551,7 +563,7 @@ function revealText(input: PromptInput, style: TextStyle): Prompt {
     { text: SAY.glideTo['1'], from: [] },
     { text: SAY.otherRests, from: [] },
     // The hole card always lies closed and is turned open: no choice decides its sides.
-    { text: colours ? SAY.oneCardIs(SAY.sides.turned) : SAY.v5.oneCardMoves, from: [] },
+    { text: colours ? SAY.v6.oneCardIs(SAY.v6.sides.turned) : SAY.oneCardMoves, from: [] },
     extraPart(input),
   ];
   return { template: templateOf('film-halkort', 'KORT'), style: 'KORT', text: joined(parts), parts };

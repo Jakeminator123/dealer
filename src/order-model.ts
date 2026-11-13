@@ -211,7 +211,7 @@ export type Picture = {
   from: { entry?: string; path?: string; frame?: number; built?: string; note?: string } | null;
   waits?: Waits | null;
   drawn?: Drawn | null;
-  /** Other cards of the plan drawn on the same picture (the hole card's turn: the dealer's first card, open). */
+  /** Other cards of the plan drawn on the same picture (the hole card's turn drew the dealer's first card, open, until round 6). */
   drawnBeside?: Drawn[] | null;
   cut?: Cut | null;
   /** When a draft followed a newer anchor chosen in Material: when, and what the picture was before. */
@@ -345,11 +345,12 @@ export const STEPS: readonly StepDef[] = [
   { key: 'RETUR-1', group: 'Retur från landningen', label: 'Tillbaka till vila (1)', kind: 'FILM', from: '1', to: '1', start: 'LAND', card: true, grip: 'PINCH', model: 'wan3', resolution: '1080p', duration: 3 },
   // The steps a round needs that Beställ could not order before 2026-11-13 (the dealer's second card is GIV-2.1 to D.C2):
   // the hand leaving the shoe for rest (READY>IDLE), and the hole card turned open from rest and the hand back to rest
-  // (IDLE>REVEAL(D.C2)), whose pictures are anchor 1 with the dealer's two cards drawn where the plan says.
+  // (IDLE>REVEAL(D.C2)), whose pictures are anchor 1 with only the hole card drawn where the plan says: the game draws
+  // every lying card itself, and with both drawn she lifted both together (round 6, 2026-11-13).
   { key: 'UTGANG', group: 'Utgång', label: 'Ankare 2.1 → 1: handen lämnar skon och vilar', kind: 'FILM', from: '2.1', to: '1', card: false, model: 'wan3', resolution: '1080p', duration: 4, styles: ['KORT', 'MINIMAL'] },
   {
     key: 'HALKORT', group: 'Hålkortet', label: 'Hålkortet vänds upp från vila, handen tillbaka', kind: 'FILM', from: '1', to: '1', card: false, target: 'D.C2', edge: 'IDLE>REVEAL(D.C2)',
-    cards: [{ target: 'D.C1', before: 'FRONT', after: 'FRONT' }, { target: 'D.C2', before: 'BACK', after: 'FRONT' }], model: 'wan3', resolution: '1080p', duration: 5, styles: ['KORT', 'MINIMAL'],
+    cards: [{ target: 'D.C2', before: 'BACK', after: 'FRONT' }], model: 'wan3', resolution: '1080p', duration: 5, styles: ['KORT', 'MINIMAL'],
   },
   { key: 'VILA', group: 'Vila', label: 'Vila, samma bild först och sist', kind: 'FILM', from: '1', to: '1', card: false, model: 'wan3', resolution: '1080p', duration: 4 },
   { key: 'ANKARE-2.1', group: 'Bild', label: 'Ankare 2.1 (nyp)', kind: 'STILL', from: '1', to: null, card: false, model: 'nano-banana-pro', ratio: '4:3', imageSize: '4K', makes: { role: 'ankare-2.1', node: 'READY', label: 'ankare 2.1' } },
@@ -365,7 +366,7 @@ export const ANCHOR_WORDS: Record<'1' | '2.1' | '2.2', string> = {
 /** Where a step starts and ends, in one line: "Börjar och slutar på ankare 2.2 (släp): …". */
 export function startWords(step: Pick<StepDef, 'kind' | 'from' | 'to' | 'start' | 'card' | 'cards'>, shape: Shape | null = null): string {
   if (step.kind === 'STILL') return `Görs ur ${ANCHOR_WORDS[step.from]}.`;
-  if (step.cards?.length) return `Börjar och slutar på ${ANCHOR_WORDS[step.from]}, med dealerns två kort ritade där planen säger: det första öppet, hålkortet stängt i första bilden och öppet i sista.`;
+  if (step.cards?.length) return `Börjar och slutar på ${ANCHOR_WORDS[step.from]}, med bara hålkortet ritat där planen säger: stängt i första bilden och öppet i sista.`;
   if (step.start === 'LAND') return `Börjar på platsens landningsbild (handen vid kortet) och slutar på ${ANCHOR_WORDS[step.to ?? step.from]}.`;
   if (step.card && shape === 'ONE_WAY') return `Börjar på ${ANCHOR_WORDS[step.from]}, och slutar på platsens landningsbild.`;
   if (!step.to || step.to === step.from) return `Börjar och slutar på ${ANCHOR_WORDS[step.from]}.`;

@@ -19,8 +19,9 @@
 // and follow(dealer) does that for every draft of the dealer after a decision in Material. Every picture's owner is read
 // from its source, and a whole picture of another dealer in a dealer's draft keeps it from being approved.
 //
-// The hole card's turn (HALKORT) draws the dealer's two cards on both its pictures from her anchor 1 (cardPictures), anew
-// on every refresh; a deal to D.C2 (her hole card) is a deal like any other and lands closed as the plan says.
+// The hole card's turn (HALKORT) draws only the hole card on both its pictures from her anchor 1 (cardPictures), closed and
+// then open, anew on every refresh: the game draws every lying card itself, and with both dealer cards in the pictures the
+// film lifted both. A deal to D.C2 (her hole card) is a deal like any other and lands closed as the plan says.
 //
 // Template 4 (2026-11-13): a new film draft is written in the short text unless another style is asked for (prompt.style);
 // a draft without a style was written before and is Utförlig, and keeps its text. A return starts on the seat's landing
@@ -338,7 +339,7 @@ export function orderStore(root: string, options: StoreOptions = {}) {
   async function cardPictures(id: string, step: StepDef, register: Register, dealer: DealerInfo): Promise<Picture[]> {
     const at = step.from, entry = holding(register, dealer.id, ANCHOR_ROLE[at], ANCHOR_NODE[at]), words = anchorWords(dealer.name, at, entry);
     const cards = step.cards ?? [], sideWords = (s: 'FRONT' | 'BACK') => (s === 'FRONT' ? 'öppet' : 'stängt');
-    const labels = { first: `Första bild · ${words} + dealerns kort, hålkortet ${sideWords(cards[cards.length - 1]?.before ?? 'BACK')}`, last: `Sista bild · samma, hålkortet ${sideWords(cards[cards.length - 1]?.after ?? 'FRONT')}` };
+    const labels = { first: `Första bild · ${words} + hålkortet ${sideWords(cards[cards.length - 1]?.before ?? 'BACK')}`, last: `Sista bild · samma, hålkortet ${sideWords(cards[cards.length - 1]?.after ?? 'FRONT')}` };
     if (!entry) {
       const waits: Waits = { dealer: dealer.id, role: ANCHOR_ROLE[at], node: ANCHOR_NODE[at], label: `ankare ${at}` };
       return [{ name: 'first.png', label: labels.first, goesAs: 'startFrame', path: null, sha256: null, from: null, waits }, { name: 'last.png', label: labels.last, goesAs: 'endFrame', path: null, sha256: null, from: null, waits }];

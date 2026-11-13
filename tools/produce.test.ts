@@ -83,7 +83,7 @@ test('every step of the graph, a round\'s first, each with one state in Jakob\'s
   assert.deepEqual(list.anchors.map((a) => [a.at, a.state, a.orders.map((o) => o.id)]), [['1', 'gäller', []], ['2.1', 'gäller', []], ['2.2', 'saknas', ['paow-ankare-2-2-09']]]);
   // What a step starts from, with its card where the plan lays it.
   assert.deepEqual(row(list, 'READY>D.C2').picture, { path: 'assets/anchors/paow-2.1/anchor.png', frame: null, waits: null, cards: [{ target: 'D.C2', side: 'BACK' }] });
-  assert.deepEqual(row(list, 'IDLE>REVEAL(D.C2)').picture.cards, [{ target: 'D.C1', side: 'FRONT' }, { target: 'D.C2', side: 'FRONT' }]);
+  assert.deepEqual(row(list, 'IDLE>REVEAL(D.C2)').picture.cards, [{ target: 'D.C2', side: 'FRONT' }]);
 });
 
 test('a step waits for the picture it is made from, and a return for its landing picture', async () => {
