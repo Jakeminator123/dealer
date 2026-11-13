@@ -30,13 +30,18 @@
     }
   },
   "review": {
-    "decision": "PENDING",
-    "inbox": true,
+    "decision": "REJECTED",
     "basis": "Inte granskad av Jakob: förd in från beställningen paow-giv-2-2-p6-03, tagning 1 (tools/register-order.ts). Oberoende rutgranskning: tools/film-review.md.",
     "limitations": "I inkorgen: spelas bara där steget inte har någon annan film, tills Jakob dömer den.",
     "colorDoesNotProvePhysicalSide": true,
     "userAccepted": false,
-    "productionReady": false
+    "productionReady": false,
+    "provisional": {
+      "by": "huvudagenten med en oberoende granskare (omgång 14)",
+      "at": "2026-11-13T15:43:13.254Z",
+      "mandate": "Jakob 2026-11-13 kl. 15.50, med en bild av kön i Granska: \"jag vill nu för jag ska iväg att du godkänner allt videomaterial som innehåller de där kriterierna\" och \"Med andra ord vill jag inte se en sån här lista när jag är tillbaka!\"",
+      "note": "Granskaren 1/5: kortet byter sida mellan ruta 56 och 59 utan kantruta, är 2,2 gånger för stort i handen, har vit kant på baksidan och prickigt skokort, och hon är 5,5 nivåer mörkare än ankaret."
+    }
   },
   "order": {
     "id": "paow-giv-2-2-p6-03",

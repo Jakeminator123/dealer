@@ -30,13 +30,19 @@
     }
   },
   "review": {
-    "decision": "PENDING",
-    "inbox": true,
+    "decision": "ACCEPTED",
     "basis": "Inte granskad av Jakob: förd in från beställningen paow-giv-2-2-p6-02, tagning 1 (tools/register-order.ts). Oberoende rutgranskning: tools/film-review.md.",
     "limitations": "I inkorgen: spelas bara där steget inte har någon annan film, tills Jakob dömer den.",
     "colorDoesNotProvePhysicalSide": true,
     "userAccepted": false,
-    "productionReady": false
+    "productionReady": false,
+    "acceptedAs": "VARIANT",
+    "provisional": {
+      "by": "huvudagenten med en oberoende granskare (omgång 14)",
+      "at": "2026-11-13T15:43:11.026Z",
+      "mandate": "Jakob 2026-11-13 kl. 15.50, med en bild av kön i Granska: \"jag vill nu för jag ska iväg att du godkänner allt videomaterial som innehåller de där kriterierna\" och \"Med andra ord vill jag inte se en sån här lista när jag är tillbaka!\"",
+      "note": "Granskaren 3/5, variant på ett villkor: första given till plats 6 med enfärgat kort som landar på planen (mitten 1,5 px). Hon lägger kortet framför sig och skjuter det till platsen, och vänder det med en knyck i luften. Kortspåret är trasigt i släpet (ruta 51–81) och i ruta 97–102 och måste rättas innan given spelas med ritat kort. Vit kant på cirka 4 px på den gula sidan."
+    }
   },
   "order": {
     "id": "paow-giv-2-2-p6-02",
