@@ -1,0 +1,60 @@
+{
+  "schemaVersion": 1,
+  "id": "paow-giv-2-1-p4-09-01-return-ready",
+  "dealer": "paow",
+  "source": {
+    "path": "assets/motions/paow-giv-2-1-p4-09-01/source.mp4",
+    "sha256": "6a7b4045b878325f479fb96a7dd171487a2ed231b5dd7317bb3ce000544274e5",
+    "bytes": 18382304,
+    "width": 1764,
+    "height": 1174,
+    "fps": 30,
+    "frames": 208,
+    "provider": "Runway MCP server (app account credits)",
+    "model": "wan3"
+  },
+  "motion": {
+    "kind": "RETURN",
+    "from": "P4.C1",
+    "to": "READY",
+    "pass": false,
+    "basis": "SOURCE_FRAME_REVIEW",
+    "segment": {
+      "clip": "paow-giv-2-1-p4-09-01",
+      "frames": [
+        124,
+        207
+      ]
+    },
+    "startsOn": {
+      "clip": "paow-giv-2-1-p4-09-01-deal",
+      "frame": 124
+    }
+  },
+  "review": {
+    "decision": "PENDING",
+    "inbox": true,
+    "basis": "Inte granskad av Jakob: förd in från beställningen paow-giv-2-1-p4-09, tagning 1 (tools/register-order.ts). Oberoende rutgranskning: tools/film-review.md.",
+    "limitations": "I inkorgen: spelas bara där steget inte har någon annan film, tills Jakob dömer den.",
+    "colorDoesNotProvePhysicalSide": true,
+    "userAccepted": false,
+    "productionReady": false
+  },
+  "order": {
+    "id": "paow-giv-2-1-p4-09",
+    "take": 1,
+    "path": "data/orders/paow-giv-2-1-p4-09.json",
+    "orderSha256": "27c6a11d8089a14fc846875b32f7af41ea8b5961beefcd1752eca3189dea2d81",
+    "receipt": "assets/orders/paow-giv-2-1-p4-09/receipt.json",
+    "taskId": "c4752490-9b10-4ded-8dda-ddcd7e4f6163",
+    "delivered": {
+      "path": "assets/orders/paow-giv-2-1-p4-09/take-1/after.mp4",
+      "sha256": "6a7b4045b878325f479fb96a7dd171487a2ed231b5dd7317bb3ce000544274e5"
+    }
+  },
+  "postProcessing": "none",
+  "generationRef": "assets/motions/paow-giv-2-1-p4-09-01/generation.json",
+  "jobRef": "data/clip-jobs.json",
+  "scoutIntegrated": false,
+  "published": false
+}

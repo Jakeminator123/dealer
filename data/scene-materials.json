@@ -45,5 +45,46 @@
       "source": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/denim_fabric/denim_fabric_rough_1k.jpg",
       "use": "the weave of the felt"
     }
-  ]
+  ],
+  "generated": {
+    "about": "Materials made from generated pictures for the lab trial of 2026-11-13 (cloth \"runway\", surface \"natur\"). The pictures were ordered by LEVANDE-OBJEKTAGENTEN on Jakob's word that day (\"Kan du med hjälp av Runway skapa ett pokerbord utifrån det vi har nu, men göra det mer naturalistiskt?\") through Runway's MCP server, on his app account, with the image model Nano Banana Pro, about 20 credits a picture. The sources are kept as they came; tools/scene-material.ts makes each map from its source and writes a receipt beside it. They are not CC0: generated pictures, Jakob's by his Runway account.",
+    "source": {
+      "directory": "assets/scene/source/runway"
+    },
+    "maps": [
+      {
+        "id": "runway_felt",
+        "kind": "felt",
+        "file": "runway_felt-diffuse.webp",
+        "source": "runway-hemvy-filt.png",
+        "sourceSha256": "6994453e91d20c18208355203fe3fe2fe46345bc23e001660afb44aabe0f9355",
+        "task": "09219206-8f49-4b2a-bdbb-38df2c23998a",
+        "from": "A screenshot of the scene's home view with a plain felt (scene3d.html?ui=0&marks=none&clip=pamela-idle-loop-01, 1764 x 1174), given to the model as reference; the result is 5056 x 3392. The model kept the camera and the dealer but moved the table's far edge about 40 rows up, so the picture is a source of felt and a target picture, not a frame to lay over the film.",
+        "prompt": "Make @scene look like a photograph of a real casino blackjack table seen from a player's seat. Keep the camera, the framing, the woman, the black card shoe and the blurred room exactly where they are. Change only the flat green surface in the lower part of the picture: it becomes real wool-blend casino felt in a rich natural green, with a soft visible nap and fine fibres, lit softly and evenly from the warm ceiling lamps of the room, slightly brighter in front of the woman. The felt stays plain: no printed lines, no markings, no text, no cards, no chips, nothing added on it. The far edge of the table stays one straight horizontal line. Photographic, natural, nothing glossy or plastic.",
+        "use": "the felt's colour and nap with cloth \"runway\" (src/scene3d-table.ts, RUNWAY_CLOTH)"
+      },
+      {
+        "id": "runway_leather",
+        "kind": "hide",
+        "file": "runway_leather-diffuse.webp",
+        "source": "runway-lader.png",
+        "sourceSha256": "f6608bce9182eecdae2014b6ffc34ad6763c40183f88ce278fc96049afcb7209",
+        "size": 1024,
+        "fade": 96,
+        "task": "5ec5820f-112b-4f25-a0f3-ccdd3d9b59b0",
+        "from": "Text only, 2048 x 2048.",
+        "prompt": "Flat-lay material scan of dark chestnut-brown full-grain upholstery leather, the kind that covers the padded armrest of a casino table, photographed from directly above, perfectly perpendicular, filling the entire frame edge to edge. Natural pebbled grain with fine pores, small irregular creases and slight tonal variation from hide to hide; matte satin finish, lightly worn. The frame shows an area about 15 centimetres wide. Completely even, shadowless diffuse light over the whole frame: no vignette, no gradient, no glossy highlights, no reflections, no folds, no stitching, no seams, no scratches, no objects, no text, no border. Uniform colour and grain density everywhere, so that the image can repeat as a seamless tile. Photographic texture reference, sharp focus throughout.",
+        "use": "the rail's leather with surface \"natur\" (src/scene3d-table.ts, HIDE): its colour, and its grain as relief"
+      }
+    ],
+    "unused": [
+      {
+        "source": "runway-valnot.png",
+        "sourceSha256": "0ee70e72e961d9ee1da3d6b3246fe874a2dd06d3ab7358fcf85614e7f79d4149",
+        "task": "f6c18528-597f-4d42-985e-d8ff3dff8c53",
+        "note": "A flat picture of dark walnut veneer, 2048 x 2048, ordered with the leather. Not used: the table's wood is Poly Haven's photographed wood_table and the drawn walnut."
+      }
+    ],
+    "refused": "A text-only order for a flat felt swatch (task a77874b3-f6da-4195-a5a6-36e26ee391ce) was stopped by the model provider's content filter and refunded; the felt was taken from a picture of the home view instead."
+  }
 }

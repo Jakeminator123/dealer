@@ -5,7 +5,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {DEFAULTS} from '../src/scene3d-view.ts';
 import {FRAME_FIX, SHADOW_BAND, shadowAboveAt} from '../src/scene3d-film.ts';
-import {FELT_MARKS, LAMP, feltMarks, flatten, lampShade, marksText, rectify, seamless, type Picture} from '../src/scene3d-table.ts';
+import {FELT_MARKS, FELT_PX_PER_M, HIDE, LAMP, RUNWAY_CLOTH, feltMarks, flatten, lampShade, marksText, rectify, reliefOf, seamless, type Picture} from '../src/scene3d-table.ts';
 import {CHIP_GLOSS, chipRoughness} from '../src/game3d-chips.ts';
 import {cameraFromContract, filmToTable, solveCamera, tableToFilm} from '../src/scene3d-geometry.ts';
 
@@ -85,6 +85,40 @@ test('V6 cloth: its own light is divided out and the tile repeats without a seam
   // the blend keeps the grain's contrast in the faded columns
   const strip = (x0: number): Picture => { const d = new Float32Array(tile.height * 10 * 3); for (let y = 0; y < tile.height; y++) for (let x = 0; x < 10; x++) for (let k = 0; k < 3; k++) d[(y * 10 + x) * 3 + k] = tile.data[(y * tile.width + x0 + x) * 3 + k]; return {data: d, width: 10, height: tile.height}; };
   assert.ok(Math.abs(sdOf(strip(15), 1) / sdOf(strip(150), 1) - 1) < 0.25);
+});
+
+// ---- the lab trial of 2026-11-13: the felt of a generated photograph (cloth "runway") and the surface "natur" ----
+test('the generated felt and the natural surface start switched off', () => {
+  assert.equal(DEFAULTS.cloth, 'print'); assert.equal(DEFAULTS.surface, 'painted');
+  // the felt's band lies in front of the shoe and the hands (the shoe's box reaches row 905) and inside the frame at its near end
+  const edge = solveCamera(camera).edgeDistance, at = (x: number, s: number) => tableToFilm(camera, x * camera.scale, s * camera.scale - edge);
+  assert.ok(at(0, RUNWAY_CLOTH.s0).y > 905 + 15); assert.ok(at(0, RUNWAY_CLOTH.s1).y < 1174);
+  for (const side of [-1, 1]) { const f = at(side * RUNWAY_CLOTH.x, RUNWAY_CLOTH.s1); assert.ok(f.x > 0 && f.x < 1764, `x ${f.x}`); }
+  assert.equal(FELT_PX_PER_M, 4096 / 2.8); // a cloth tile is stored at the felt image's own pixels per metre
+  assert.ok(1024 % HIDE.repeat === 0 && HIDE.depth > 0 && HIDE.depth < 0.2); // the hide fits the leather's tile a whole number of times, and its grain is shallow
+});
+
+test('a picture of the frame that is larger than the frame is laid flat as the frame itself would be', () => {
+  const W = 1764, H = 1174, Z = 2, small = new Float32Array(W * H * 4), large = new Float32Array(W * Z * H * Z * 4);
+  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) { small[(y * W + x) * 4] = y; small[(y * W + x) * 4 + 1] = x; }
+  for (let y = 0; y < H * Z; y++) for (let x = 0; x < W * Z; x++) { large[(y * W * Z + x) * 4] = y / Z; large[(y * W * Z + x) * 4 + 1] = x / Z; }
+  const box = {x: 0.2, s0: 0.25, s1: 0.4}, one = rectify({data: small, width: W, height: H}, camera, box, 300), two = rectify({data: large, width: W * Z, height: H * Z}, camera, box, 300, Z);
+  assert.equal(two.width, one.width); assert.equal(two.height, one.height);
+  for (let i = 0; i < one.data.length; i += 97) assert.ok(Math.abs(one.data[i] - two.data[i]) < 1e-2, `value ${i}`);
+});
+
+test('the relief of a photographed hide: a crease lies low, an even light and a slow change of tone are nothing', () => {
+  const S = 64, flat = new Float32Array(S * S * 4).fill(120);
+  assert.ok(reliefOf(flat, S, 4).every(v => v === 0));
+  // a tone that changes slowly across the tile (and wraps), with one dark crease down column 20
+  const data = new Float32Array(S * S * 4);
+  for (let y = 0; y < S; y++) for (let x = 0; x < S; x++) { const v = 100 + 8 * Math.sin(2 * Math.PI * x / S) - (x === 20 ? 40 : 0); for (let k = 0; k < 3; k++) data[(y * S + x) * 4 + k] = v; }
+  const relief = reliefOf(data, S, 4);
+  for (let y = 0; y < S; y += 7) { assert.equal(relief[y * S + 20], -1, 'the crease is as low as the relief goes'); assert.ok(Math.abs(relief[y * S + 45]) < 0.15, 'the slow tone leaves almost nothing'); }
+  assert.ok(relief.every(v => v >= -1 && v <= 1));
+  // the tile repeats: the mean round a pixel wraps, so the first and the last column of an even picture are alike
+  const stripes = new Float32Array(S * S * 4); for (let y = 0; y < S; y++) for (let x = 0; x < S; x++) for (let k = 0; k < 3; k++) stripes[(y * S + x) * 4 + k] = 100 + 20 * Math.cos(2 * Math.PI * x / 8);
+  const wrapped = reliefOf(stripes, S, 4); assert.ok(Math.abs(wrapped[0] - wrapped[8]) < 1e-4 && Math.abs(wrapped[S - 8] - wrapped[0]) < 1e-4);
 });
 
 test('the chips gloss follows the chip study round their own look', () => {

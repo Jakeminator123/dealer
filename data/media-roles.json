@@ -2260,6 +2260,13 @@
           "note": "Varje gul eller blå bildpunkt i filmen byts mot kortets yta, så kanten är filmens och fingrarna ligger framför utan handmask. Mätt: P4 sidlängdernas brus 0,72 px mot 3,35 i dagens spår; P1 inte bättre (7,41 mot 6,47). dealer-bf 2026-11-13; inte oberoende granskat, inte prövat i scenen."
         },
         {
+          "id": "pamela-prov-naturbord-runway",
+          "role": "prov",
+          "name": "Bordet med Runway-filt och naturmaterial",
+          "proof": "naturbord-runway",
+          "note": "Valen Duk → Runway-filten och Yta → Naturmaterial i 3D-scenen: filt, läder och valnöt ur Runway-bilder, gjorda till kartor med tools/scene-material.ts; avslagna från början. Gjort av LEVANDE-OBJEKTAGENTEN (dealer-f6) 2026-11-13; stillbilder, inte dömt av Jakob."
+        },
+        {
           "id": "pamela-drawn-01",
           "role": "arbetsmaterial",
           "name": "Kortet utdraget",
@@ -3269,6 +3276,76 @@
           "note": "Munnen stängd hela filmen, men nicken blir en djup bugning med slutna ögon (ruta 48–70); stilla från 107. Inte oberoende granskad.",
           "source": {
             "from": "beställningen paow-vila-08, tagning 1 (studions vy Beställ)",
+            "when": "2026-11-13"
+          }
+        },
+        {
+          "id": "paow-film-ny-giv-p4-prov-2a",
+          "role": "film",
+          "name": "Giv till plats 4, metodprov 2a (kort text, Kling 4)",
+          "path": "assets/films/paow/ny-giv-p4-prov-2a/source.mp4",
+          "still": 93,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Den enda i omgång 2 som vände kortet vid platsen (40–65 px före, en gång); lyfts först till brösthöjd (143 px över nypet), läggs utan att skjutas; kortet +17 % i luften; landar 0,6 px från planen. Inte oberoende granskad.",
+          "source": {
+            "from": "beställningen paow-giv-2-1-p4-07, tagning 1 (studions vy Beställ)",
+            "when": "2026-11-13"
+          }
+        },
+        {
+          "id": "paow-film-ny-giv-p4-prov-2b",
+          "role": "film",
+          "name": "Giv till plats 4, metodprov 2b (kort text, WAN 3)",
+          "path": "assets/films/paow/ny-giv-p4-prov-2b/source.mp4",
+          "still": 114,
+          "fps": 30,
+          "state": "kandidat",
+          "note": "Vänds en gång kring långsidan cirka 190 px före platsen; läggs, släps fram och dras tillbaka 85 px; kortet +10 % i luften; landar 0,5 px från planen. Inte oberoende granskad.",
+          "source": {
+            "from": "beställningen paow-giv-2-1-p4-08, tagning 1 (studions vy Beställ)",
+            "when": "2026-11-13"
+          }
+        },
+        {
+          "id": "paow-film-ny-giv-p4-prov-2c",
+          "role": "film",
+          "name": "Giv till plats 4, metodprov 2c (minimal text, WAN 3)",
+          "path": "assets/films/paow/ny-giv-p4-prov-2c/source.mp4",
+          "still": 114,
+          "fps": 30,
+          "state": "kandidat",
+          "note": "Vänds ovanför skon och blir ett mönstrat spelkort i stället för det blanka blå; landar 3,2 px från planen. Inte oberoende granskad.",
+          "source": {
+            "from": "beställningen paow-giv-2-1-p4-09, tagning 1 (studions vy Beställ)",
+            "when": "2026-11-13"
+          }
+        },
+        {
+          "id": "paow-film-ny-giv-p4-prov-2d",
+          "role": "film",
+          "name": "Giv till plats 4, metodprov 2d (minimal text, Kling 4)",
+          "path": "assets/films/paow/ny-giv-p4-prov-2d/source.mp4",
+          "still": 93,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Kortet snurrar i luften och skjuts cirka 100 px; handen kastas upp till ansiktshöjd på vägen tillbaka; kortet +26 %. Inte oberoende granskad.",
+          "source": {
+            "from": "beställningen paow-giv-2-1-p4-10, tagning 1 (studions vy Beställ)",
+            "when": "2026-11-13"
+          }
+        },
+        {
+          "id": "paow-film-ny-giv-p4-prov-2e",
+          "role": "film",
+          "name": "Giv till plats 4, metodprov 2e (kort text, Kling 4, Pamelas giv som referens)",
+          "path": "assets/films/paow/ny-giv-p4-prov-2e/source.mp4",
+          "still": 93,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Jämnast flöde och tiden följer referensen inom 0,2 s; handen lägst ut (84 px över nypet); vänds i luften 210 px före platsen och skjuts 55 px; ingen synlig läcka av Pamelas hand. Inte oberoende granskad.",
+          "source": {
+            "from": "beställningen paow-giv-2-1-p4-11, tagning 1 (studions vy Beställ)",
             "when": "2026-11-13"
           }
         },

@@ -4023,6 +4023,276 @@
         "id": "paow-vila-08",
         "take": 1
       }
+    },
+    {
+      "id": "paow-giv-2-1-p4-07-01-deal",
+      "kind": "DEAL",
+      "from": "READY",
+      "to": "P4.C1",
+      "clip": "paow-giv-2-1-p4-07-01",
+      "frames": [
+        0,
+        97
+      ],
+      "purpose": "Beställning paow-giv-2-1-p4-07, tagning 1: Metodprov 2a · Kort, Kling 4.",
+      "dealer": "paow",
+      "model": "kling-4",
+      "duration": 7,
+      "promptText": "Locked camera, one continuous shot. Her hand at the shoe draws the yellow card out of the window and carries it low over the felt, yellow side up, to its place. There her thumb slides under the long edge nearest it and lifts it as her wrist turns thumb side up; the card rolls over on its opposite long edge, which stays on the felt, and her thumb comes over onto the blue face. Then her open hand glides back low over the felt, palm down, to the shoe and takes the next card. The other hand rests on the felt. Only one card moves; its back is yellow and its face is blue.",
+      "first": {
+        "file": {
+          "path": "assets/orders/paow-giv-2-1-p4-07/first.png",
+          "sha256": "74eebfdc1388f8de362c0151546bbe08aeb1fed74fca097f8ca6999d833dc702"
+        },
+        "note": "Första bilden i beställningen paow-giv-2-1-p4-07."
+      },
+      "order": {
+        "id": "paow-giv-2-1-p4-07",
+        "take": 1
+      }
+    },
+    {
+      "id": "paow-giv-2-1-p4-07-01-return-ready",
+      "kind": "RETURN",
+      "from": "P4.C1",
+      "to": "READY",
+      "clip": "paow-giv-2-1-p4-07-01",
+      "frames": [
+        98,
+        168
+      ],
+      "purpose": "Beställning paow-giv-2-1-p4-07, tagning 1: Metodprov 2a · Kort, Kling 4.",
+      "dealer": "paow",
+      "model": "kling-4",
+      "duration": 7,
+      "promptText": "Locked camera, one continuous shot. Her hand at the shoe draws the yellow card out of the window and carries it low over the felt, yellow side up, to its place. There her thumb slides under the long edge nearest it and lifts it as her wrist turns thumb side up; the card rolls over on its opposite long edge, which stays on the felt, and her thumb comes over onto the blue face. Then her open hand glides back low over the felt, palm down, to the shoe and takes the next card. The other hand rests on the felt. Only one card moves; its back is yellow and its face is blue.",
+      "last": {
+        "file": {
+          "path": "assets/orders/paow-giv-2-1-p4-07/last.png",
+          "sha256": "d16aa316bc5cabbf16b3511a940bdc8d9f7b10d80501a2f589e1166bb94db64c"
+        },
+        "note": "Sista bilden i beställningen paow-giv-2-1-p4-07."
+      },
+      "order": {
+        "id": "paow-giv-2-1-p4-07",
+        "take": 1
+      }
+    },
+    {
+      "id": "paow-giv-2-1-p4-08-01-deal",
+      "kind": "DEAL",
+      "from": "READY",
+      "to": "P4.C1",
+      "clip": "paow-giv-2-1-p4-08-01",
+      "frames": [
+        0,
+        133
+      ],
+      "purpose": "Beställning paow-giv-2-1-p4-08, tagning 1: Metodprov 2b · Kort, WAN 3.",
+      "dealer": "paow",
+      "model": "wan3",
+      "duration": 7,
+      "promptText": "Locked camera, one continuous shot. Her hand at the shoe draws the yellow card out of the window and carries it low over the felt, yellow side up, to its place. There her thumb slides under the long edge nearest it and lifts it as her wrist turns thumb side up; the card rolls over on its opposite long edge, which stays on the felt, and her thumb comes over onto the blue face. Then her open hand glides back low over the felt, palm down, to the shoe and takes the next card. The other hand rests on the felt. Only one card moves; its back is yellow and its face is blue.",
+      "first": {
+        "file": {
+          "path": "assets/orders/paow-giv-2-1-p4-08/first.png",
+          "sha256": "74eebfdc1388f8de362c0151546bbe08aeb1fed74fca097f8ca6999d833dc702"
+        },
+        "note": "Första bilden i beställningen paow-giv-2-1-p4-08."
+      },
+      "order": {
+        "id": "paow-giv-2-1-p4-08",
+        "take": 1
+      }
+    },
+    {
+      "id": "paow-giv-2-1-p4-08-01-return-ready",
+      "kind": "RETURN",
+      "from": "P4.C1",
+      "to": "READY",
+      "clip": "paow-giv-2-1-p4-08-01",
+      "frames": [
+        134,
+        207
+      ],
+      "purpose": "Beställning paow-giv-2-1-p4-08, tagning 1: Metodprov 2b · Kort, WAN 3.",
+      "dealer": "paow",
+      "model": "wan3",
+      "duration": 7,
+      "promptText": "Locked camera, one continuous shot. Her hand at the shoe draws the yellow card out of the window and carries it low over the felt, yellow side up, to its place. There her thumb slides under the long edge nearest it and lifts it as her wrist turns thumb side up; the card rolls over on its opposite long edge, which stays on the felt, and her thumb comes over onto the blue face. Then her open hand glides back low over the felt, palm down, to the shoe and takes the next card. The other hand rests on the felt. Only one card moves; its back is yellow and its face is blue.",
+      "last": {
+        "file": {
+          "path": "assets/orders/paow-giv-2-1-p4-08/last.png",
+          "sha256": "d16aa316bc5cabbf16b3511a940bdc8d9f7b10d80501a2f589e1166bb94db64c"
+        },
+        "note": "Sista bilden i beställningen paow-giv-2-1-p4-08."
+      },
+      "order": {
+        "id": "paow-giv-2-1-p4-08",
+        "take": 1
+      }
+    },
+    {
+      "id": "paow-giv-2-1-p4-09-01-deal",
+      "kind": "DEAL",
+      "from": "READY",
+      "to": "P4.C1",
+      "clip": "paow-giv-2-1-p4-09-01",
+      "frames": [
+        0,
+        123
+      ],
+      "purpose": "Beställning paow-giv-2-1-p4-09, tagning 1: Metodprov 2c · Minimal, WAN 3.",
+      "dealer": "paow",
+      "model": "wan3",
+      "duration": 7,
+      "promptText": "Locked camera. The card's back is yellow and its face is blue. One card goes from the shoe to where the last frame shows it, and the hand comes back to its pose in the first frame.",
+      "first": {
+        "file": {
+          "path": "assets/orders/paow-giv-2-1-p4-09/first.png",
+          "sha256": "74eebfdc1388f8de362c0151546bbe08aeb1fed74fca097f8ca6999d833dc702"
+        },
+        "note": "Första bilden i beställningen paow-giv-2-1-p4-09."
+      },
+      "order": {
+        "id": "paow-giv-2-1-p4-09",
+        "take": 1
+      }
+    },
+    {
+      "id": "paow-giv-2-1-p4-09-01-return-ready",
+      "kind": "RETURN",
+      "from": "P4.C1",
+      "to": "READY",
+      "clip": "paow-giv-2-1-p4-09-01",
+      "frames": [
+        124,
+        207
+      ],
+      "purpose": "Beställning paow-giv-2-1-p4-09, tagning 1: Metodprov 2c · Minimal, WAN 3.",
+      "dealer": "paow",
+      "model": "wan3",
+      "duration": 7,
+      "promptText": "Locked camera. The card's back is yellow and its face is blue. One card goes from the shoe to where the last frame shows it, and the hand comes back to its pose in the first frame.",
+      "last": {
+        "file": {
+          "path": "assets/orders/paow-giv-2-1-p4-09/last.png",
+          "sha256": "d16aa316bc5cabbf16b3511a940bdc8d9f7b10d80501a2f589e1166bb94db64c"
+        },
+        "note": "Sista bilden i beställningen paow-giv-2-1-p4-09."
+      },
+      "order": {
+        "id": "paow-giv-2-1-p4-09",
+        "take": 1
+      }
+    },
+    {
+      "id": "paow-giv-2-1-p4-10-01-deal",
+      "kind": "DEAL",
+      "from": "READY",
+      "to": "P4.C1",
+      "clip": "paow-giv-2-1-p4-10-01",
+      "frames": [
+        0,
+        103
+      ],
+      "purpose": "Beställning paow-giv-2-1-p4-10, tagning 1: Metodprov 2d · Minimal, Kling 4.",
+      "dealer": "paow",
+      "model": "kling-4",
+      "duration": 7,
+      "promptText": "Locked camera. The card's back is yellow and its face is blue. One card goes from the shoe to where the last frame shows it, and the hand comes back to its pose in the first frame.",
+      "first": {
+        "file": {
+          "path": "assets/orders/paow-giv-2-1-p4-10/first.png",
+          "sha256": "74eebfdc1388f8de362c0151546bbe08aeb1fed74fca097f8ca6999d833dc702"
+        },
+        "note": "Första bilden i beställningen paow-giv-2-1-p4-10."
+      },
+      "order": {
+        "id": "paow-giv-2-1-p4-10",
+        "take": 1
+      }
+    },
+    {
+      "id": "paow-giv-2-1-p4-10-01-return-ready",
+      "kind": "RETURN",
+      "from": "P4.C1",
+      "to": "READY",
+      "clip": "paow-giv-2-1-p4-10-01",
+      "frames": [
+        104,
+        168
+      ],
+      "purpose": "Beställning paow-giv-2-1-p4-10, tagning 1: Metodprov 2d · Minimal, Kling 4.",
+      "dealer": "paow",
+      "model": "kling-4",
+      "duration": 7,
+      "promptText": "Locked camera. The card's back is yellow and its face is blue. One card goes from the shoe to where the last frame shows it, and the hand comes back to its pose in the first frame.",
+      "last": {
+        "file": {
+          "path": "assets/orders/paow-giv-2-1-p4-10/last.png",
+          "sha256": "d16aa316bc5cabbf16b3511a940bdc8d9f7b10d80501a2f589e1166bb94db64c"
+        },
+        "note": "Sista bilden i beställningen paow-giv-2-1-p4-10."
+      },
+      "order": {
+        "id": "paow-giv-2-1-p4-10",
+        "take": 1
+      }
+    },
+    {
+      "id": "paow-giv-2-1-p4-11-01-deal",
+      "kind": "DEAL",
+      "from": "READY",
+      "to": "P4.C1",
+      "clip": "paow-giv-2-1-p4-11-01",
+      "frames": [
+        0,
+        93
+      ],
+      "purpose": "Beställning paow-giv-2-1-p4-11, tagning 1: Metodprov 2e · Kort, Kling 4, referens Pamelas giv till plats 4.",
+      "dealer": "paow",
+      "model": "kling-4",
+      "duration": 7,
+      "promptText": "Locked camera, one continuous shot. Video 1 shows only the movement: she moves like the dealer in video 1, with the same timing. Her hand at the shoe draws the yellow card out of the window and carries it low over the felt, yellow side up, to its place. There her thumb slides under the long edge nearest it and lifts it as her wrist turns thumb side up; the card rolls over on its opposite long edge, which stays on the felt, and her thumb comes over onto the blue face. Then her open hand glides back low over the felt, palm down, to the shoe and takes the next card. The other hand rests on the felt. Only one card moves; its back is yellow and its face is blue.",
+      "first": {
+        "file": {
+          "path": "assets/orders/paow-giv-2-1-p4-11/first.png",
+          "sha256": "74eebfdc1388f8de362c0151546bbe08aeb1fed74fca097f8ca6999d833dc702"
+        },
+        "note": "Första bilden i beställningen paow-giv-2-1-p4-11."
+      },
+      "order": {
+        "id": "paow-giv-2-1-p4-11",
+        "take": 1
+      }
+    },
+    {
+      "id": "paow-giv-2-1-p4-11-01-return-ready",
+      "kind": "RETURN",
+      "from": "P4.C1",
+      "to": "READY",
+      "clip": "paow-giv-2-1-p4-11-01",
+      "frames": [
+        94,
+        168
+      ],
+      "purpose": "Beställning paow-giv-2-1-p4-11, tagning 1: Metodprov 2e · Kort, Kling 4, referens Pamelas giv till plats 4.",
+      "dealer": "paow",
+      "model": "kling-4",
+      "duration": 7,
+      "promptText": "Locked camera, one continuous shot. Video 1 shows only the movement: she moves like the dealer in video 1, with the same timing. Her hand at the shoe draws the yellow card out of the window and carries it low over the felt, yellow side up, to its place. There her thumb slides under the long edge nearest it and lifts it as her wrist turns thumb side up; the card rolls over on its opposite long edge, which stays on the felt, and her thumb comes over onto the blue face. Then her open hand glides back low over the felt, palm down, to the shoe and takes the next card. The other hand rests on the felt. Only one card moves; its back is yellow and its face is blue.",
+      "last": {
+        "file": {
+          "path": "assets/orders/paow-giv-2-1-p4-11/last.png",
+          "sha256": "d16aa316bc5cabbf16b3511a940bdc8d9f7b10d80501a2f589e1166bb94db64c"
+        },
+        "note": "Sista bilden i beställningen paow-giv-2-1-p4-11."
+      },
+      "order": {
+        "id": "paow-giv-2-1-p4-11",
+        "take": 1
+      }
     }
   ],
   "edits": [

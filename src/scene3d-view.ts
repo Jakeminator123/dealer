@@ -26,7 +26,7 @@ export type SceneState = {
   roomShift: 'cut' | 'shimmer'; roomShiftSeconds: number;
   // Lab trials of 2026-11-12, each at its default exactly the picture before them. shadowAbove: share of the keyed shadow kept above
   // the table edge (1 all, 0 none). marks: the kinds of print on the felt ("all", "none" or a comma list, FELT_MARKS). cloth: the
-  // felt's colour and weave (print, or v6: V6's cloth). lamp: share of the table's light from a lamp above the dealer (0 to 1).
+  // felt's colour and weave (print, v6: V6's cloth, or runway: the felt of a generated photograph of the table). lamp: share of the table's light from a lamp above the dealer (0 to 1).
   // chipGloss: the chips' gloss (0 to 1; 0.5 is their look before), read by the page that lays chips.
   shadowAbove: number; marks: string; cloth: TableCloth; lamp: number; chipGloss: number;
 };
@@ -312,7 +312,7 @@ export function createScene(canvas: HTMLCanvasElement, host: HTMLElement, data: 
   // room and turned as the sphere is. A built room has no panorama; the table then keeps its painted room.
   const pmrem = new T.PMREMGenerator(renderer); let litBy: T.Texture | null = null, litKey = '', litMap: T.WebGLRenderTarget | null = null;
   function roomLight(look: {room: RoomId; panoramaTurn: number}) {
-    const room = rooms.rooms[look.room], sphere = state.surface === 'photo' ? room.group as T.Mesh | null : null, map = sphere && room.follow ? (sphere.material as T.MeshBasicMaterial).map : null;
+    const room = rooms.rooms[look.room], sphere = state.surface !== 'painted' ? room.group as T.Mesh | null : null, map = sphere && room.follow ? (sphere.material as T.MeshBasicMaterial).map : null;
     const image = map?.image as HTMLImageElement | undefined, ready = map && image && image.width > 0 ? map : null, key = `${ready?.uuid ?? ''}:${look.panoramaTurn}:${state.roomLight}`;
     if (key === litKey) return; litKey = key;
     if (ready !== litBy) { litBy = ready; litMap?.dispose(); litMap = null;
