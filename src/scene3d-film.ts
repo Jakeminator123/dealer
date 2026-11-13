@@ -154,10 +154,102 @@ export function lightOnDealer(glow: RoomGlow | null, amount: number, exposure = 
 }
 // Across the standard frame, where her left side turns into her right (frame x, 0 to 1): her body is about 0.32 to 0.68 of it.
 const SIDE_GLSL = 'uniform float sideOn; uniform vec3 sideL, sideR;';
+// ---- the films' colour evened between the generators (key filmEven) ----------------------------------------------------
+// The bank's films come from two generators, and where a film of one follows a film of the other the light on her shifts (her
+// face about 4 levels in red and green and 2 in blue: Jakob saw it at 1.08 in the round filmed 2026-11-13). Measured that day
+// on the first frame of every film of Paow's that starts on an anchor picture (docs/FILMMODELLER.md has the figures):
+// - No film carries colour tags. The screen's green is the anchor's green in every film when the film is read with the BT.601
+//   matrix (2 levels off; 36 off with BT.709), so every film is written with BT.601.
+// - Chrome reads an untagged film of this size with BT.709. Read so, a Kling 4 film shows her as the anchor picture has her
+//   (face 0, 0, −3 levels), and every other film (WAN 3, the talk films made from a WAN 3 rest, Kling 3) shows her warmer and
+//   lighter (face +3, +4, −5). Read with BT.601 the other films are the anchor's (−3, −2, −3) and Kling 4 is darker and bluer:
+//   on her, though not on the screen, Kling 4 differs from the others by just the change of matrix.
+// So what the browser shows of a Kling 4 film is right as it is, and the other films are brought there by reading them with the
+// matrix they were written with: BT.709 as read turned into BT.601 (rematrix). The bank's files are not touched. A browser
+// that read untagged films with BT.601 would need the opposite (Kling 4 turned the other way); not measured in any other.
+const LUMA = {bt601: [0.299, 0.587, 0.114], bt709: [0.2126, 0.7152, 0.0722]} as const;
+/** What turns R′G′B′ read with the matrix `read` into what the same film values give read with `other` (row-major 3 × 3; each row sums to 1, so grey stays grey). */
+export function rematrix(read: keyof typeof LUMA, other: keyof typeof LUMA): number[] {
+  const [r, g, b] = LUMA[read], [R, G, B] = LUMA[other], kr = (1 - R) / (1 - r), kb = (1 - B) / (1 - b);
+  // red and blue keep their difference from the luma, scaled; green is what is left of the same luma
+  const red = [kr + (1 - kr) * r, (1 - kr) * g, (1 - kr) * b], blue = [(1 - kb) * r, (1 - kb) * g, kb + (1 - kb) * b];
+  return [...red, ...[r, g, b].map((c, i) => (c - R * red[i] - B * blue[i]) / G), ...blue];
+}
+const OTHER_FILMS = /^(wan3|kling-3)\b|MuseTalk/, AS_WRITTEN = rematrix('bt709', 'bt601');
+/** What a film's keyed colour is multiplied by to stand in the bank's one colour (row-major 3 × 3), by the generator that made it (a record's source.model); null: as it is (Kling 4, and a model that is not known). */
+export const evenFor = (model: string | null | undefined): readonly number[] | null => model && OTHER_FILMS.test(model) ? AS_WRITTEN : null;
+// The join between two films. Films of one generator differ too, less: a jacket that is coal grey in one take is blue-black in the
+// next, a face two levels darker. Films join where the pose is the same, so the frame before a join and the frame after it show
+// the same picture, and whatever differs in her tone there is the films' difference. With filmEven the page reads her tone in
+// both (toneOf, on the film made small): the mean colour of her dark parts (jacket, the shade in her hair) and of her light parts
+// (skin, blouse, hair). The new film starts in the old one's tone (toneMatch: per channel the gain and the lift that take its two
+// tones to the old film's two, so level and contrast both follow) and goes over to its own in EVEN.fade seconds (matchLeft): a
+// step becomes a slow drift. box: where her head and upper body are in the standard frame (x0, y0, x1, y1), read as cols × rows
+// samples. dark and light: the luma under which a sample is dark and over which it is light (what lies between counts for
+// neither). gain and lift: how far a match may go; a larger difference is another picture, not another tone, and is matched
+// only that far. least: the samples each tone needs. close and every: when the page reads (the last frames of a film, and every
+// so many frames before them).
+export const EVEN = {box: [520, 30, 1240, 720], cols: 72, rows: 69, fade: 3, dark: 0.3, light: 0.45, gain: [0.8, 1.25], lift: 0.08, least: 120, close: 8, every: 6};
+export type FilmTone = {dark: number[]; light: number[]};
+/** Her tone in the film made small (RGBA bytes, EVEN.cols × EVEN.rows of EVEN.box): the mean of her dark and of her light samples per channel, 0 to 1, the screen left out, each sample first through `matrix` (evenFor) when there is one. Null when too little of either is there. */
+export function toneOf(rgba: ArrayLike<number>, matrix: readonly number[] | null = null): FilmTone | null {
+  const dark = [0, 0, 0], light = [0, 0, 0]; let darks = 0, lights = 0;
+  for (let i = 0; i + 3 < rgba.length; i += 4) {
+    let r = rgba[i] / 255, g = rgba[i + 1] / 255, b = rgba[i + 2] / 255; if (g - Math.max(r, b) > 0.12) continue; // the screen, and her outline mixed with it
+    if (matrix) [r, g, b] = [matrix[0] * r + matrix[1] * g + matrix[2] * b, matrix[3] * r + matrix[4] * g + matrix[5] * b, matrix[6] * r + matrix[7] * g + matrix[8] * b];
+    const luma = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+    if (luma < EVEN.dark) { dark[0] += r; dark[1] += g; dark[2] += b; darks++; } else if (luma > EVEN.light) { light[0] += r; light[1] += g; light[2] += b; lights++; }
+  }
+  return darks < EVEN.least || lights < EVEN.least ? null : {dark: dark.map(v => v / darks), light: light.map(v => v / lights)};
+}
+export type ToneMatch = {gain: number[]; lift: number[]};
+/** What a film whose first frame has the tone `next` is multiplied by and lifted by to stand in the tone `last` of the frame before it, within EVEN's limits. */
+export function toneMatch(last: FilmTone, next: FilmTone): ToneMatch {
+  const within = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
+  const gain = [0, 1, 2].map(c => { const span = next.light[c] - next.dark[c]; return span > 0.05 ? within((last.light[c] - last.dark[c]) / span, EVEN.gain[0], EVEN.gain[1]) : 1; });
+  // the lift that sets the middle of the two tones right: both exactly when the gain is not held back
+  return {gain, lift: gain.map((g, c) => within((last.dark[c] + last.light[c] - g * (next.dark[c] + next.light[c])) / 2, -EVEN.lift, EVEN.lift))};
+}
+/** A tone as it is shown under a match of which `left` (0 to 1) remains. */
+export const toneUnder = (tone: FilmTone, match: ToneMatch | null, left: number): FilmTone => { if (!match || !(left > 0)) return tone; const under = (v: number[]) => v.map((m, c) => m * (1 + left * (match.gain[c] - 1)) + left * match.lift[c]); return {dark: under(tone.dark), light: under(tone.light)}; };
+/** How much of a join's match remains `seconds` after the join: all of it at first, none from EVEN.fade on. */
+export const matchLeft = (seconds: number): number => 1 - smooth(0, EVEN.fade, seconds);
+// ---- life in the upper body (key dealerLife) -----------------------------------------------------------------------------
+// A film that rests is nearly still, and a rest film that is looped repeats itself to the frame. With dealerLife her head and
+// upper body move a little, slowly and never the same way twice: she sways from side to side about a point at the table's edge
+// (as a body does with its hands planted), her head tilts about the neck with the sway and a little by itself, so that it turns
+// and does not only slide, and her shoulders rise and fall. Each is one rigid movement of everything above the chest, so nothing
+// stretches there; it fades out down her upper arms and is nothing from LIFE.still down and LIFE.side out from her middle, where
+// hands, cards, shoe and table are. Rows and columns of the standard frame, y down; angles in degrees and the breath in pixels
+// at amount 1. sway: the parts of the sideways movement, each [period in seconds, share, phase]; no period is near the rest
+// films' own loop of about 3.9 s, and together they repeat only after minutes. Judged blind on 2026-11-13 by an independent eye
+// (four strengths of an earlier tuning, none rubbery, the strongest the best): amount 1 is the tuning that review asked for,
+// her head about 2.5 px each way on a 1080-row screen in the game's framing.
+export const LIFE = {fade: 540, still: 760, sideFade: 300, side: 400, pivot: 780, lean: 0.5, sway: [[11.3, 0.5, 0], [7.1, 0.35, 1.3], [4.7, 0.15, 2.1]], neck: 335, headFade: [300, 380], tilt: 0.4, own: 0.15, ownPeriod: 13.7, breath: 1.6, breathFade: [430, 640], breathPeriod: 6.3};
+const smooth = (a: number, b: number, x: number) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
+/** The three movements at `seconds` with `amount` of life: the sway and the head's tilt in radians, the breath in pixels. */
+export function lifeNow(seconds: number, amount: number): [number, number, number] {
+  const L = LIFE, turn = 2 * Math.PI, rad = Math.PI / 180, a = amount > 0 ? amount : 0, sway = L.sway.reduce((sum, [period, share, phase]) => sum + share * Math.sin(turn * seconds / period + phase), 0);
+  return [a * L.lean * rad * sway, a * rad * (L.tilt * sway + L.own * Math.sin(turn * seconds / L.ownPeriod + 0.5)), a * L.breath * Math.sin(turn * seconds / L.breathPeriod)];
+}
+/** How far from a pixel of the standard frame (x, y down) the film is read for the movements of lifeNow: [dx, dy] in pixels. The shader's lifeShift, for the tests. */
+export function lifeShiftAt(x: number, y: number, [lean, tilt, breath]: readonly number[]): [number, number] {
+  const L = LIFE, body = (1 - smooth(L.fade, L.still, y)) * (1 - smooth(L.sideFade, L.side, Math.abs(x - FRAME_FIX.x))); if (body <= 0) return [0, 0];
+  const head = tilt * (1 - smooth(L.headFade[0], L.headFade[1], y)), up = breath * (1 - smooth(L.breathFade[0], L.breathFade[1], y));
+  return [(lean * (y - L.pivot) + head * (y - L.neck)) * body, (up - (lean + head) * (x - FRAME_FIX.x)) * body];
+}
+// lifeMove: the lean, the tilt and the breath of lifeNow; all zero is the film as it is.
+const LIFE_GLSL = `uniform vec3 lifeMove;
+vec2 lifeShift(vec2 p){
+  float body = (1. - smoothstep(${LIFE.fade}., ${LIFE.still}., p.y)) * (1. - smoothstep(${LIFE.sideFade}., ${LIFE.side}., abs(p.x - FRAME_FIX.x))); if (body <= 0.) return vec2(0.);
+  float head = lifeMove.y * (1. - smoothstep(${LIFE.headFade[0]}., ${LIFE.headFade[1]}., p.y)), up = lifeMove.z * (1. - smoothstep(${LIFE.breathFade[0]}., ${LIFE.breathFade[1]}., p.y));
+  return vec2(lifeMove.x * (p.y - ${LIFE.pivot}.) + head * (p.y - ${LIFE.neck}.), up - (lifeMove.x + head) * (p.x - FRAME_FIX.x)) * body;
+}`;
 const FRAGMENT = `varying vec4 vFilm; varying vec3 vWorld; uniform sampler2D map; uniform vec2 refUv, texel, frameAnchor, frameSize; uniform float lo, hi, shadow, above, erode, frameOn, frameScale; uniform vec3 grade; uniform vec4 hide;
-uniform sampler2D roomMap; uniform vec2 roomSize; uniform float wrap, roomExposure; ${SIDE_GLSL}
+uniform sampler2D roomMap; uniform vec2 roomSize; uniform float wrap, roomExposure, evenOn; uniform mat3 even; uniform vec3 evenGain, evenLift; ${SIDE_GLSL}
 ${FAN_GLSL}
 ${CARD_KEY}
+${LIFE_GLSL}
 ${MATTE_GLSL}
 ${ABOVE_GLSL}
 float screenAt(vec2 uv, vec3 key, float dk){ vec3 c = texture2D(map, uv).rgb; return clamp(((c.g - max(c.r, c.b)) / dk - lo) / (hi - lo), 0., 1.); }
@@ -167,6 +259,8 @@ void main(){
   // A film with a frame of its own (the dealer smaller on a larger screen, so that she can stand up and walk out): the point of
   // the standard frame is found in that film. The middle of the dealer-side table edge is the fixed point of the two frames.
   if (frameOn > .5) { vec2 px = (vec2(uv.x, 1. - uv.y) * FILM_PX - FRAME_FIX) * frameScale + frameAnchor; uv = vec2(px.x / frameSize.x, 1. - px.y / frameSize.y); }
+  // Life in her upper body (dealerLife): the film is read a little to the side of the pixel, where lifeShift says. Not in a film with a frame of its own (she walks).
+  else if (lifeMove != vec3(0.)) { vec2 px = vec2(uv.x, 1. - uv.y) * FILM_PX; px += lifeShift(px); uv = vec2(px.x / FILM_PX.x, 1. - px.y / FILM_PX.y); }
   if (uv.x < .001 || uv.x > .999 || uv.y < .001 || uv.y > .999) discard;
   // A box of the film that the page draws an object of its own for (the shoe): film pixels, y down. Off while x1 < x0.
   if (hide.z > hide.x) { vec2 hp = vec2(uv.x, 1. - uv.y) * FILM_PX; if (hp.x > hide.x && hp.x < hide.z && hp.y > hide.y && hp.y < hide.w) discard; }
@@ -190,6 +284,8 @@ void main(){
   }
   a *= mix(1., kept, isShadow);
   if (a < .004) discard;
+  // filmEven, after the key (the key reads the film as it is): the film's colour brought to its family's, then to the tone of the film before it while that match lasts
+  if (evenOn > .5) pm = max(max(even * pm, 0.) * evenGain + evenLift * a, 0.);
   vec4 o = vec4(pm * grade * fanShade(vWorld), a);
   // The room's light on her sides (dealerRoom; the tint over all of her is in grade): her left side's light turns into her right's across her body.
   if (sideOn > .5) o.rgb *= mix(sideL, sideR, smoothstep(.32, .68, frameUv.x));
@@ -256,12 +352,13 @@ export function createFilmLayers(filmVP: T.Matrix4, light: Record<string, {value
   // the room's light on her (setRoomLight): its tint lies in grade with the calibration's; the sides have their own
   const side = {sideOn: {value: 0}, sideL: {value: new T.Vector3(1, 1, 1)}, sideR: {value: new T.Vector3(1, 1, 1)}}; let calibrated = [1, 1, 1], tint = [1, 1, 1];
   const putGrade = () => grade.value.set(calibrated[0] * tint[0], calibrated[1] * tint[1], calibrated[2] * tint[2]);
+  const even = {evenOn: {value: 0}, even: {value: new T.Matrix3()}, evenGain: {value: new T.Vector3(1, 1, 1)}, evenLift: {value: new T.Vector3()}}, life = {lifeMove: {value: new T.Vector3()}};
   const matte = {matteOn: {value: 0}, matteFaceBack: {value: 0}, matteZoneOn: {value: 0}, matteBox: {value: new T.Vector4(0, 0, -1, -1)}, matteShoe: {value: new T.Vector4(0, 0, -1, -1)}, matteLying: {value: new T.Vector2(1, 1)}, matteZone: {value: quad()},
     matteBack: {value: new T.Vector3()}, mattePaper: {value: new T.Vector3(1, 1, 1)}, matteToPrint: {value: new T.Matrix3()},
     matteCover: {value: null as T.Texture | null}, matteShade: {value: null as T.Texture | null}, mattePrint: {value: null as T.Texture | null}};
   const material = (refUv: T.Vector2) => new T.ShaderMaterial({vertexShader: VERTEX, fragmentShader: FRAGMENT, transparent: true, depthWrite: false, side: T.DoubleSide,
     blending: T.CustomBlending, blendSrc: T.OneFactor, blendDst: T.OneMinusSrcAlphaFactor, blendSrcAlpha: T.OneFactor, blendDstAlpha: T.OneMinusSrcAlphaFactor,
-    uniforms: {...light, ...card, ...matte, ...frame, ...room, ...side, wrap: {value: 0}, hide, map, filmVP: {value: filmVP}, refUv: {value: refUv}, lo: {value: 0.12}, hi: {value: 0.9}, shadow: {value: 1}, above: {value: 1}, erode: {value: 0.6}, grade, texel: {value: new T.Vector2(1.4 / FILM.width, 1.4 / FILM.height)}}});
+    uniforms: {...light, ...card, ...matte, ...frame, ...room, ...side, ...even, ...life, wrap: {value: 0}, hide, map, filmVP: {value: filmVP}, refUv: {value: refUv}, lo: {value: 0.12}, hi: {value: 0.9}, shadow: {value: 1}, above: {value: 1}, erode: {value: 0.6}, grade, texel: {value: new T.Vector2(1.4 / FILM.width, 1.4 / FILM.height)}}});
   // The screen reference is read in a corner that stays empty: top left for the backdrop, bottom left for the table.
   const bodyMat = material(new T.Vector2(0.02, 0.97)), tableMat = material(new T.Vector2(0.02, 0.03));
   const body = new T.Mesh(new T.PlaneGeometry(10, 3), bodyMat), table = new T.Mesh(new T.PlaneGeometry(10, 2).rotateX(-Math.PI / 2), tableMat);
@@ -274,6 +371,13 @@ export function createFilmLayers(filmVP: T.Matrix4, light: Record<string, {value
     // The room's light on her (lightOnDealer): the tint goes over the calibration above, the sides across her body. 1, 1, 1 everywhere is the film as it is.
     setRoomLight(light: DealerLight) { tint = light.tint; putGrade(); side.sideL.value.set(light.left[0], light.left[1], light.left[2]); side.sideR.value.set(light.right[0], light.right[1], light.right[2]);
       side.sideOn.value = [...light.left, ...light.right].some(v => v !== 1) ? 1 : 0; },
+    // filmEven: the film's colour brought to its family's (evenFor: a row-major 3 × 3 over the keyed colour, null for none), then
+    // multiplied by gain and lifted by lift (what is left of a join's match, toneMatch). Neither: the film as it is.
+    setEven(matrix: readonly number[] | null, gain: readonly number[] | null = null, lift: readonly number[] | null = null) {
+      even.evenOn.value = matrix || gain ? 1 : 0; const m = matrix ?? [1, 0, 0, 0, 1, 0, 0, 0, 1], g = gain ?? [1, 1, 1], l = lift ?? [0, 0, 0];
+      even.even.value.set(m[0], m[1], m[2], m[3], m[4], m[5], m[6], m[7], m[8]); even.evenGain.value.set(g[0], g[1], g[2]); even.evenLift.value.set(l[0], l[1], l[2]); },
+    // Life in her upper body (lifeShift): how much of it (0 = the film as it is) at the scene's clock in seconds.
+    setLife(amount: number, seconds: number) { const [lean, tilt, breath] = lifeNow(seconds, amount); life.lifeMove.value.set(lean, tilt, breath); },
     // The film's own card keyed away (a rendered card lies under the film there), or null: the film as it is.
     setCards(key: CardKey | null) {
       card.cardOn.value = key ? 1 : 0; if (!key) return;
@@ -330,8 +434,10 @@ export function createFilmLayers(filmVP: T.Matrix4, light: Record<string, {value
 // `frame`: a film with a frame of its own (see FilmFrame). `fps`: the film's own frames per second when it is not 30; start,
 // end and every frame number of the part are counted in the film's own frames. `sound`: the film has a sound track that is to be
 // heard (a spoken line, tools/speech.ts); every other film is muted. A browser lets a page sound only after the visitor has
-// touched it, so before that a spoken line plays muted like the rest instead of not playing at all.
-export type Part = {path: string; start?: number; end?: number | null; rate?: number; track?: CardTrack | null; cards?: Partial<OverlayOptions> | null; frame?: FilmFrame | null; fps?: number; sound?: boolean};
+// touched it, so before that a spoken line plays muted like the rest instead of not playing at all. `model`: the generator that
+// made the film (its record's source.model), for the key filmEven; a part without it is drawn as it is. `rest`: a rest film, which
+// keeps its speed under the key filmTempo, as a spoken line does.
+export type Part = {path: string; start?: number; end?: number | null; rate?: number; track?: CardTrack | null; cards?: Partial<OverlayOptions> | null; frame?: FilmFrame | null; fps?: number; sound?: boolean; model?: string; rest?: boolean};
 export type PlayOptions = {loop?: boolean; cut?: boolean; onPart?: (index: number, part: Part) => void; onEnd?: () => void; onError?: (error: Error) => void};
 type Player = {part: Part; path: string; start: number; end: number | null; fps: number; video: HTMLVideoElement; texture: T.VideoTexture};
 const FPS = 30;
@@ -343,7 +449,11 @@ const FPS = 30;
 export const frameAtTime = (seconds: number, fps = FPS): number => Math.floor(seconds * fps + 1e-3);
 // One or more parts played as a chain, each on its own video element so the next one is decoded before it is shown.
 export function createPlayers(onShow: (texture: T.Texture, path: string) => void, onChange: () => void) {
-  let players: Player[] = [], current = 0, paused = false, gone = false;
+  let players: Player[] = [], current = 0, paused = false, gone = false, tempo = 1;
+  // The speed a part plays at: its own rate (a queue's part) times the tempo (key filmTempo). The tempo is for the films of a round:
+  // a spoken line does not take it (its sound is in the film), nor does a rest film (hurried, her breathing and blinking look
+  // wound forward). Card tracks and the end of a part are counted in the film's own frames, so they follow.
+  const speedOf = (part: Part, queued: boolean) => (queued ? part.rate ?? 1 : 1) * (part.sound === true || part.rest === true ? 1 : tempo);
   // What dispose() has to reach: every listener hangs on one signal, and every frame request and timer is kept until it fires,
   // so that a queue that is taken down leaves nothing behind that could call back into it.
   const ending = new AbortController(), asked = new Map<HTMLVideoElement, Set<number>>(), timers = new Set<ReturnType<typeof setTimeout>>();
@@ -374,7 +484,7 @@ export function createPlayers(onShow: (texture: T.Texture, path: string) => void
     const queued = !!chain; closeQueue(); if (queued) players = [];
     for (const p of players) drop(p.video, p.texture);
     const list = players = loaded = parts.map(make);
-    list.forEach((p, i) => {
+    list.forEach((p, i) => { p.video.playbackRate = speedOf(p.part, false);
       listen(p.video, 'ended', () => advance(list, i));
       if (p.end === null) return;
       const last = p.end - 1, reached = (seconds: number) => frameAtTime(seconds, p.fps) >= last;
@@ -463,7 +573,7 @@ export function createPlayers(onShow: (texture: T.Texture, path: string) => void
     // a spoken line (part.sound) once the page has been touched, everything else muted. Without this line a talk film in
     // a chain was always muted: she moved her mouth in the game and said nothing.
     v.muted = !(part.sound === true && globalThis.navigator?.userActivation?.hasBeenActive === true);
-    v.playbackRate = part.rate ?? 1; v.play().catch(() => {});
+    v.playbackRate = speedOf(part, true); v.play().catch(() => {});
     // Waiting on its first frame already: shown at once, so the join costs no frame. Otherwise on the first frame it presents.
     if (v.readyState >= 2 && !v.seeking) { m.texture.needsUpdate = true; swap(); } else { m.hook = swap; if (!v.requestVideoFrameCallback) later(swap, 40); }
   }
@@ -482,7 +592,10 @@ export function createPlayers(onShow: (texture: T.Texture, path: string) => void
   return {
     load, seek, play,
     // Speed of the part on screen, from now until it ends: a gesture hurried along because a deal is waiting.
-    hurry(rate: number) { const v = players[current]?.video; if (v) v.playbackRate = rate; },
+    // Never slower than the part already plays (the tempo).
+    hurry(rate: number) { const p = players[current]; if (p) p.video.playbackRate = Math.max(rate, speedOf(p.part, !!chain)); },
+    // The tempo of a round's films (key filmTempo; 1 = as filmed), from now on and for the part on screen.
+    tempo(value: number) { const next = Number.isFinite(value) ? Math.min(4, Math.max(0.25, value)) : 1; if (next === tempo) return; tempo = next; for (const p of players) p.video.playbackRate = speedOf(p.part, !!chain); },
     // Fetches clips the game may ask for next, so the change does not wait for the network. The pool holds ${POOL} elements.
     preload(paths: string[]) { if (!gone) for (const path of paths) if (!pool.some(m => m.path === path)) media(path).busy = false; },
     // The part on screen, with what it carries (track, cards).

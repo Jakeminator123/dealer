@@ -4,7 +4,7 @@
 // With focus on, they go through a full-size target and are blurred by their own distance from the focus.
 import * as T from 'three';
 import {DEALER_LENS_ESTIMATE, FILM, aimCorrection, betSpots, cameraFromContract, cardFocusPixel, cardPixel, cardSpots, cloudLevel, filmToScene, flickerLevel, sceneToSpot, solveCamera, spotToScene, viewFovDeg, type CardTrack, type FilmCamera} from './scene3d-geometry.ts';
-import {createFilmLayers, createPlayers, frameAt, lightOnDealer, roomGlow, type RoomGlow} from './scene3d-film.ts';
+import {EVEN, createFilmLayers, createPlayers, evenFor, frameAt, lightOnDealer, matchLeft, roomGlow, toneMatch, toneOf, toneUnder, type FilmTone, type Part, type RoomGlow, type ToneMatch} from './scene3d-film.ts';
 import {createFanLight} from './scene3d-light.ts';
 import {createChipTray, TRAY} from './scene3d-props.ts';
 import {createRooms, type Panorama, type RoomId} from './scene3d-room.ts';
@@ -32,6 +32,10 @@ export type SceneState = {
   // Lab trials of 2026-11-13, at their defaults the picture before them. roomLife: films over the people of a panorama, where the
   // room has them (ROOM_LIFE in scene3d-room.ts). dealerRoom: share of the panorama's light the film takes (0 to 1; lightOnDealer in scene3d-film.ts).
   roomLife: boolean; dealerRoom: number;
+  // The film itself (src/scene3d-film.ts), each at its default the film as it is. filmEven: the films of one generator brought to the
+  // colour of the other's, so that the light does not shift where they join (evenFor). filmTempo: how fast every film without a spoken
+  // line plays (1 to 2; a rest film keeps its speed too). dealerLife: a slow movement added to her head and upper body (0 to 2; lifeShift).
+  filmEven: boolean; filmTempo: number; dealerLife: number;
   tal: 'repliker' | 'av'; // the game's: the dealer says her fixed lines with her talk films ('av': as text in the chat only; src/game-page.ts)
 };
 // Everything added after checkpoint v1 starts switched off, so the page opens as v1. scale 0 = the contract's own k.
@@ -49,6 +53,7 @@ export const DEFAULTS: SceneState = {
   roomShift: 'cut', roomShiftSeconds: 2.6,
   shadowAbove: 1, marks: 'all', cloth: 'print', lamp: 0, chipGloss: 0.5,
   roomLife: false, dealerRoom: 0,
+  filmEven: false, filmTempo: 1, dealerLife: 0,
   tal: 'repliker',
 };
 // rooms: the panorama rooms of the register (data/scene-rooms.json, readRegister in scene3d-room.ts); without it the first three, at urls.
@@ -194,7 +199,7 @@ export function createScene(canvas: HTMLCanvasElement, host: HTMLElement, data: 
   const drawFelt = () => table.draw({spots: cardSpots(data.plan, camera), logo: state.logo, felt: state.felt, scale: camera.scale, marks: state.marks, cloth: state.cloth, camera, size: state.tableSize});
   function apply() {
     if (gone) return; if (!rooms.rooms[state.room]) state.room = 'salong'; // a room the scene does not have (an old address, a room taken out of the register)
-    useCards(); rooms.show(state.room); rail.set({cups: state.cups}); film.place(edgeZ, state.fold, state.focus !== 'off', camera.scale); film.setKey({lo: state.keyLo, hi: state.keyHi, shadow: state.shadow, above: state.shadowAbove}); film.setGrade(state.filmBright, state.filmWarm);
+    useCards(); rooms.show(state.room); rail.set({cups: state.cups}); film.place(edgeZ, state.fold, state.focus !== 'off', camera.scale); film.setKey({lo: state.keyLo, hi: state.keyHi, shadow: state.shadow, above: state.shadowAbove}); film.setGrade(state.filmBright, state.filmWarm); players.tempo(state.filmTempo);
     table.setLamp(state.lamp);
     if (guides) guides.visible = state.guides; resize(); data.onChange();
   }
@@ -294,6 +299,7 @@ export function createScene(canvas: HTMLCanvasElement, host: HTMLElement, data: 
     const playing = players.current, part = players.part; if (part && part.track !== undefined) track = part.track; // a part that names its track brings it along
     film.setFrame(frameAt(part?.frame ?? null, players.frame())); // and so does a part whose film has a frame of its own
     // A film with a frame of its own has no shoe and no card places in its picture: the rendered cards (the one seated in the shoe window among them) stay out of it.
+    evenFilm(playing?.video ?? null, part, seconds); film.setLife(state.dealerLife, seconds);
     const cardsOn = state.cards && !part?.frame; if (!cardsOn) cardLayer?.off?.();
     if (playing) film.setTexture(cardsOn && cardLayer?.update(playing.video, players.frame(), track, {rank: state.cardRank, suit: state.cardSuit, scale: state.cardScale, hand: state.cardHand}, part?.cards) ? cardLayer.texture : playing.texture);
     const focusOn = state.focus !== 'off', u = blurMat.uniforms, scale = canvas.width / W;
@@ -316,6 +322,28 @@ export function createScene(canvas: HTMLCanvasElement, host: HTMLElement, data: 
     renderer.setRenderTarget(null); renderer.setClearColor(0x050403, 1); renderer.clear(); o.map.value = picture.target.texture; o.exposure.value = picture.exposure; pass(out, null);
     if (!focusOn) { renderer.clearDepth(); renderer.render(fg, view); }
     for (const call of frameCalls) call();
+  }
+  // filmEven (src/scene3d-film.ts): the film on screen in its family's colour, and a new film begun in the tone of the one before
+  // it. Her tone is read off the film made small. A reading takes a few milliseconds, so it is made only where it is needed: on a
+  // film's first frame (the frame it joins with), on every frame of its last EVEN.close (the last of them is the frame before the
+  // join), and every EVEN.every-th frame in between, for a film that is cut short. A film with a frame of its own (she walks)
+  // joins nothing.
+  const toneCanvas = document.createElement('canvas'); toneCanvas.width = EVEN.cols; toneCanvas.height = EVEN.rows; const tonePen = toneCanvas.getContext('2d', {willReadFrequently: true});
+  let toned: {part: Part; tone: FilmTone | null; since: number} | null = null, joined: {match: ToneMatch; at: number} | null = null;
+  function evenFilm(video: HTMLVideoElement | null, part: Part | null, seconds: number) {
+    if (!state.filmEven || !video || !part) { if (toned || joined) film.setEven(null); toned = joined = null; return; }
+    const matrix = evenFor(part.model), [x0, y0, x1, y1] = EVEN.box, first = toned?.part !== part, fps = part.fps ?? 30;
+    const toEnd = (part.end ?? Math.round((video.duration || 0) * fps)) - 1 - players.frame(), since = first ? 0 : toned!.since + 1;
+    let left = joined ? matchLeft(seconds - joined.at) : 0;
+    if (first || toEnd <= EVEN.close || since >= EVEN.every) {
+      let tone: FilmTone | null = null;
+      if (tonePen && !part.frame && video.readyState >= 2) try { tonePen.drawImage(video, x0, y0, x1 - x0, y1 - y0, 0, 0, EVEN.cols, EVEN.rows); tone = toneOf(tonePen.getImageData(0, 0, EVEN.cols, EVEN.rows).data, matrix); } catch { /* a film the page may not read: no join */ }
+      // the film before as it was shown (its own tone under what was left of its match) against this film's first frame
+      if (first) { const last = toned?.tone ? toneUnder(toned.tone, joined?.match ?? null, left) : null; joined = last && tone ? {match: toneMatch(last, tone), at: seconds} : null; left = joined ? 1 : 0; }
+      toned = {part, tone, since: 0};
+    } else toned!.since = since;
+    if (joined && left <= 0) joined = null;
+    film.setEven(matrix, joined ? joined.match.gain.map(g => 1 + left * (g - 1)) : null, joined ? joined.match.lift.map(l => left * l) : null);
   }
   // With the photographed surface the table is lit by the room that is showing: the room's panorama as the sphere shows it
   // from inside (mirrored for a mirrored room: an environment map reads a picture the right way round), prefiltered once per
