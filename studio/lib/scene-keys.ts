@@ -105,7 +105,7 @@ export const SCENE_KEYS: readonly KeySpec[] = [
   spec("fanStrength", "rorelser", "U", "Fläktens styrka", slider(0, 0.4, 0.01), "Hur mörk fläktens skugga är; håll den svag."),
   spec("fanPeriod", "rorelser", "U", "Sekunder per blad", slider(2, 12, 0.5, " s"), "Fläktens fart: sekunder mellan två blad."),
   spec("roomLife", "rorelser", "U", "Rörelse i rummet", toggle, "Folk som står stilla i ett 360°-rum rör sig: en film över dem i bilden (prov; finns i Venedig)."),
-  spec("dealerLife", "rorelser", "U", "Liv i överkroppen", slider(0, 2, 0.05), "Dealerns huvud och överkropp rör sig lite och långsamt: lutar, andas. Händer, kort och bord står still. 0 är av (prov)."),
+  spec("dealerLife", "rorelser", "U", "Liv i överkroppen", slider(0, 2, 0.05), "Dealerns huvud och överkropp rör sig lite och långsamt. Händer, kort och bord står still. 0 är av; förval 1."),
   spec("filmTempo", "rorelser", "U", "Givarnas tempo", slider(1, 2, 0.05, " ×"), "Hur fort hon delar ut: rundans filmer går så många gånger fortare. Vila och tal går i vanlig fart. Förval 2."),
   spec("tal", "rorelser", "U", "Dealerns repliker", choice(["repliker", "Med munnen"], ["av", "Bara text"]), "I spelet säger dealern sina fasta repliker med talfilm och ljud; Bara text visar dem i chatten."),
   // ── Ljus ──

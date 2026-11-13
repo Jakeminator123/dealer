@@ -229,8 +229,11 @@ export const matchLeft = (seconds: number): number => 1 - smooth(0, EVEN.fade, s
 // tilting 0.4 with the sway: no artefact, natural 4/5, alive 3/5, "safe but a little too quiet", and at twice that the head read
 // as a flat picture being tilted. So amount 1 has 1.4 times that sway, the head tilts no more than the shoulders with it (tilt 0;
 // a real head stays level) and only a little by itself, and the fade reaches further down, so that the point of the jacket's V
-// follows a little instead of standing as a pivot.
-export const LIFE = {fade: 580, still: 790, sideFade: 300, side: 400, pivot: 800, lean: 0.7, sway: [[11.3, 0.5, 0], [7.1, 0.35, 1.3], [4.7, 0.15, 2.1]], neck: 335, headFade: [300, 380], tilt: 0, own: 0.1, ownPeriod: 13.7, breath: 1.6, breathFade: [430, 640], breathPeriod: 6.3};
+// follows a little instead of standing as a pivot. A third blind review (2026-11-13, the main agent's reviewer) found no fault
+// that gives the treatment away, and one thing to mend: the sway came back in step every two turns of the rest film. The four
+// parts of the sway are therefore searched out so that their sum is never much like itself again: over 80 s it is at most 0.48
+// like itself after any delay from 2 to 40 s, and at most 0.45 after any whole number of turns of a rest film (3.7 to 4.0 s).
+export const LIFE = {fade: 580, still: 790, sideFade: 300, side: 400, pivot: 800, lean: 0.7, sway: [[5.4, 0.32, 0], [9.9, 0.28, 1.3], [14.8, 0.22, 2.1], [21.2, 0.18, 4.0]], neck: 335, headFade: [300, 380], tilt: 0, own: 0.1, ownPeriod: 13.7, breath: 1.6, breathFade: [430, 640], breathPeriod: 6.3};
 const smooth = (a: number, b: number, x: number) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
 /** The three movements at `seconds` with `amount` of life: the sway and the head's tilt in radians, the breath in pixels. */
 export function lifeNow(seconds: number, amount: number): [number, number, number] {

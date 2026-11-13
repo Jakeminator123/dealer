@@ -11,8 +11,8 @@ import {KEYS as GAME_KEYS} from '../src/game-look.ts';
 const times = (m: readonly number[], v: number[]) => [0, 1, 2].map(r => m[r * 3] * v[0] + m[r * 3 + 1] * v[1] + m[r * 3 + 2] * v[2]);
 
 test('the defaults are Jakob\'s standard of 2026-11-13, and both catalogues hold the three keys', () => {
-  // the films evened, the deals at twice their speed and the cup holders in the rail from the start; life in her upper body until it is seen
-  assert.equal(DEFAULTS.filmEven, true); assert.equal(DEFAULTS.filmTempo, 2); assert.equal(DEFAULTS.cups, true); assert.equal(DEFAULTS.dealerLife, 0);
+  // the films evened, the deals at twice their speed and the cup holders in the rail and life in her upper body, all from the start
+  assert.equal(DEFAULTS.filmEven, true); assert.equal(DEFAULTS.filmTempo, 2); assert.equal(DEFAULTS.cups, true); assert.equal(DEFAULTS.dealerLife, 1);
   assert.deepEqual(lifeNow(12.3, 0).map(Math.abs), [0, 0, 0], 'no life is no movement at all');
   assert.deepEqual(GAME_KEYS.filmEven, {kind: 'switch'}); assert.deepEqual(GAME_KEYS.filmTempo, {kind: 'slider', min: 1, max: 2}); assert.deepEqual(GAME_KEYS.dealerLife, {kind: 'slider', min: 0, max: 2});
   assert.equal(DEFAULTS.edgeClean, 0); assert.deepEqual(GAME_KEYS.edgeClean, {kind: 'slider', min: 0, max: 1});
@@ -81,4 +81,13 @@ test('a film\'s lightning: white at once, the other room for the hold, a softer 
   // a longer hold stretches the middle, not the flashes
   assert.ok(roomFlashAt(1.5, 2).on && roomFlashAt(1.5, 2).flash === 0); assert.ok(Math.abs(roomFlashAt(1, 2).flash - FLASH.after.peak) < 1e-9);
   for (let t = -0.2; t < 1.4; t += 0.01) { const f = roomFlashAt(t, 1).flash; assert.ok(f >= 0 && f <= 1); }
+});
+
+test('life in the upper body never falls back in step: the sway is not like itself again after any delay, nor after whole turns of a rest film', () => {
+  const rate = 15, N = 80 * rate, x = Array.from({length: N + 40 * rate + 1}, (_, i) => lifeNow(i / rate, 1)[0]); let own = 0; for (let i = 0; i < N; i++) own += x[i] ** 2;
+  const like = (lag: number) => { let a = 0, c = 0; for (let i = 0; i < N; i++) { a += x[i] * x[i + lag]; c += x[i + lag] ** 2; } return a / Math.sqrt(own * c); };
+  let worst = 0; for (let lag = 2 * rate; lag <= 40 * rate; lag++) worst = Math.max(worst, like(lag));
+  assert.ok(worst < 0.6, `after some delay of 2 to 40 s the sway is ${worst.toFixed(2)} like itself`);
+  for (let loop = 3.7; loop <= 4.001; loop += 0.05) for (let turns = 1; turns <= 9; turns++) assert.ok(like(Math.round(turns * loop * rate)) < 0.6, `${turns} turns of a rest film of ${loop.toFixed(2)} s`);
+  assert.ok(Math.abs(LIFE.sway.reduce((s, part) => s + part[1], 0) - 1) < 1e-9, 'the shares of the sway make one');
 });

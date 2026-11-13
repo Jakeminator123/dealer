@@ -59,7 +59,7 @@ export const DEFAULTS: SceneState = {
   roomShift: 'cut', roomShiftSeconds: 2.6,
   shadowAbove: 1, marks: 'all', cloth: 'print', lamp: 0, chipGloss: 0.5,
   roomLife: false, dealerRoom: 0,
-  filmEven: true, filmTempo: 2, dealerLife: 0,
+  filmEven: true, filmTempo: 2, dealerLife: 1,
   edgeClean: 0,
   tal: 'repliker',
 };
