@@ -21,13 +21,18 @@
     "basis": "SOURCE_FRAME_REVIEW"
   },
   "review": {
-    "decision": "PENDING",
-    "inbox": true,
+    "decision": "ACCEPTED",
     "basis": "Inte granskad av Jakob: förd in från beställningen paow-utgang-2-2-01, tagning 1 (tools/register-order.ts). Oberoende rutgranskning: tools/film-review.md.",
     "limitations": "I inkorgen: spelas bara där steget inte har någon annan film, tills Jakob dömer den.",
     "colorDoesNotProvePhysicalSide": true,
     "userAccepted": false,
-    "productionReady": false
+    "productionReady": false,
+    "provisional": {
+      "by": "huvudagenten med en oberoende granskare (omgång 15)",
+      "at": "2026-11-13T16:09:23.782Z",
+      "mandate": "Jakob 2026-11-13 kl. 15.47: en runda ska kunna gå via ankare 2.2 (\"Jag håller med om allt annat du nämnde, så jag kan acceptera det rakt av\"); kl. 15.50: \"Med andra ord vill jag inte se en sån här lista när jag är tillbaka!\"",
+      "note": "Granskaren 3/5, den av de två som ska spelas: andra handen ligger helt still. Handen gör en omväg, högt och ned framåt på filten cirka 165 px framför viloplatsen, innan den lägger sig; ett litet ljushopp in i vilan (5 nivåer mot 3,6 för utgången från 2.1)."
+    }
   },
   "order": {
     "id": "paow-utgang-2-2-01",
