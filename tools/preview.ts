@@ -12,7 +12,7 @@ import {PRESET_BYTES} from '../studio/lib/scene-presets.ts';
 import {createSession,SessionError,type Session,type SessionOptions} from '../game/session.ts';
 import {tabRegistry,localPath,type Tab,type Reason} from './tab-registry.ts';
 import {resolveStudio} from './studio-files.ts';
-import {SCRIPTS as scripts,VENDOR as vendor,PAGES as pages,forBrowser} from './lab-routes.ts';
+import {SCRIPTS as scripts,VENDOR as vendor,PAGES as pages,forBrowser,studioAddress} from './lab-routes.ts';
 import {mediaRoles} from './media-roles.ts';
 import {handleOrders} from './order-routes.ts';
 import {UPLOAD_LIMIT} from '../studio/lib/media.ts';
@@ -61,8 +61,8 @@ if(has('--restart')){
  // The one way to put a lab page in front of Jakob: node tools/preview.ts --open "lab.html?tab=prov" (START.cmd does this
  // with the lab's first page). The server is started if it is not running, the page is shown in the lab tab that is
  // already open, and only when there is none is a tab opened. Opening the address itself adds a tab every time.
- const wanted=args[args.indexOf('--open')+1],target=localPath(wanted&&!wanted.startsWith('--')?wanted:'lab.html',origin);
- if(!target)throw Error('Ange en sida i labbet, till exempel lab.html?tab=prov');
+ const wanted=args[args.indexOf('--open')+1],target=localPath(wanted&&!wanted.startsWith('--')?wanted:'/studio/',origin);
+ if(!target)throw Error('Ange en sida i studion, till exempel /studio/prov/?prov=<id>');
  let alive=await health();
  if(alive&&(alive.name!=='dealer'||!sameRoot(alive.root,process.cwd())))throw Error('Preview identity differs');
  if(!alive)await startServer();
@@ -104,7 +104,7 @@ if(has('--restart')){
  // Proofs: finished comparison films and contact sheets under assets/proofs/<id>/. Read-only, and only mp4, png and json.
  // Rooms for the 3D scene: panoramas under assets/scene/rooms/ and the menu's pictures under assets/scene/thumbs/ (local media, listed in data/scene-rooms.json). Read-only, jpg only.
  // Rooms and thumbs by name, and the table's generated material maps (tools/scene-material.ts, one per version) by pattern.
- const sceneMedia=/^assets\/scene\/(rooms|thumbs|materials)\/([a-z0-9][a-z0-9_-]*\.jpg|runway_[a-z0-9_-]+-diffuse\.webp)$/;
+ const sceneMedia=/^assets\/scene\/(rooms|thumbs|materials)\/([a-z0-9][a-z0-9_-]*\.(?:jpg|mp4)|runway_[a-z0-9_-]+-diffuse\.webp)$/;
  const sceneFile=async(file:string)=>{const m=sceneMedia.exec(file);if(!m)return false;try{return await realpath(file)===path.join(await realpath('assets/scene'),m[1],m[2]);}catch{return false;}};
  const proofFile=/^assets\/proofs\/((?:[a-z0-9][a-z0-9._-]*\/)+[a-z0-9][a-z0-9._-]*\.(?:mp4|png|json))$/;
  const proofPath=async(file:string)=>{const m=proofFile.exec(file);if(!m)return false;try{return await realpath(file)===path.join(await realpath('assets/proofs'),...m[1].split('/'));}catch{return false;}};
@@ -284,7 +284,11 @@ if(has('--restart')){
     if(studio.kind==='none'){res.writeHead(404).end();return;}
     file=studio.file;type=studio.type;
    }else{
-    // A page of the old lab or the game: its root address ("/" is lab.html) maps to its file in old-lab/ or game/page/.
+    // The studio is the shell: "/" and the old lab's first page lead to the studio view that replaced the tab (studioAddress);
+    // the old lab itself is served only with ?gamla=1.
+    const moved=studioAddress(url.pathname,url.searchParams);
+    if(moved&&(req.method==='GET'||req.method==='HEAD')){res.writeHead(302,{Location:moved,'Cache-Control':'no-store'}).end();return;}
+    // A page of the old lab or the game: its root address maps to its file in old-lab/ or game/page/.
     const name=url.pathname==='/'?'lab.html':decodeURIComponent(url.pathname.slice(1)),page=pages[`/${name}`];
     file=page??name;
     // media.servable: a picture or film data/media-roles.json names (keystones, anchors and frames of the view Material), inside the repo and no link out of it.

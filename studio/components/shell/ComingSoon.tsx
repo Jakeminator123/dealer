@@ -32,7 +32,7 @@ export function ComingSoon({ title, icon = <Hammer />, children }: { title: stri
           icon={icon}
           title="Byggs just nu"
           action={
-            <a href="/lab.html" className={buttonClasses({ variant: "secondary" })}>
+            <a href="/lab.html?gamla=1" className={buttonClasses({ variant: "secondary" })}>
               Gamla labbet <ArrowUpRight />
             </a>
           }

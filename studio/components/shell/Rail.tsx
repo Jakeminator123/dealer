@@ -187,7 +187,7 @@ export function Rail() {
           <>
             <div className="mx-2 h-px w-[calc(100%-32px)] bg-line" />
             <a
-              href="/lab.html"
+              href="/lab.html?gamla=1"
               className="mx-2 flex flex-col items-center gap-0.5 rounded-lg px-1 py-1.5 text-center text-faint transition-colors hover:bg-raised/60 hover:text-ink focus-visible:outline-offset-0"
             >
               <ArrowUpRight className="size-4" />

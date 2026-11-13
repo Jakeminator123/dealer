@@ -3587,6 +3587,13 @@
           "name": "Plats 3 mot framifrån",
           "proof": "plats-3-prov",
           "note": "Samma giv till plats 3 med scenens ritade kort, sedd framifrån och från plats 3:s öga (cirka 8°); Pamelas platta film i båda. dealer-bf 2026-11-13; inte oberoende granskat."
+        },
+        {
+          "id": "petra-prov-kamera-2-foll",
+          "role": "prov",
+          "name": "Kamera 2: det som föll",
+          "proof": "kamera-2-foll",
+          "note": "Försöken som föll i spåret om en andra kamera (bildmodellen som flyttar kameran, fyra gånger, med flera), samlade för sig på Jakobs begäran; det som håller ligger i Prov kamera-2-plats-2. dealer-bf 2026-11-13."
         }
       ]
     }

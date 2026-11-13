@@ -5,6 +5,27 @@
 // pages from here. The snapshot build checks every module it takes against the running server's own answer byte for byte.
 import {stripTypeScriptTypes} from 'node:module';
 
+/**
+ * The studio is the lab's shell (Jakob 2026-11-13: "vi har ju bytt skalet till det mer moderna"): "/" and the old lab's
+ * first page lead to the studio view that replaced the tab asked for, with what was chosen carried over. The old lab itself
+ * is reached only on purpose, with ?gamla=1 (the studio's own link "Gamla labbet"); it keeps that word while its tabs are
+ * used. Returns the address to send the browser to, or null when the page itself is to be served.
+ */
+export function studioAddress(pathname: string, params: URLSearchParams): string | null {
+  if (pathname !== '/' && pathname !== '/lab.html') return null;
+  if (params.get('gamla') === '1') return null;
+  const out = new URLSearchParams(), dealer = params.get('dealer');
+  if (dealer && /^[a-z0-9]+$/.test(dealer)) out.set('dealer', dealer);
+  const tab = params.get('tab');
+  let view = '';
+  if (tab === 'prov') { view = 'prov/'; const proof = params.get('proof'), file = params.get('file'); if (proof) out.set('prov', proof); if (proof && file) out.set('fil', file); }
+  else if (tab === 'granska') { view = 'granska/'; const take = params.get('take'); if (take) out.set('tagning', take); }
+  else if (tab === 'klippbank') view = 'karta/';
+  else if (tab === 'placering') view = 'placering/';
+  const query = out.toString();
+  return `/studio/${view}${query ? `?${query}` : ''}`;
+}
+
 // The pages keep their root addresses although their files lie in folders, so that every relative reference inside them
 // (src="preview-ui.js", href="game.css", fetch('data/…'), ../preview.html in the material pages) resolves as before.
 // "/" is the old lab's first page (tools/preview.ts). tools/pages.test.ts checks this map against the folders.
