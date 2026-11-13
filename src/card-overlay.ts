@@ -16,6 +16,12 @@ export type CardTrack = {clip?: string; width: number; height: number; hand?: bo
   leavesShoe?: number | null; restFrom: number | null; restQuad: number[][] | null; shoeWindow?: {box: number[]} | null};
 // toImage/toTable are homographies as eight numbers (the ninth is 1): table millimetres <-> image pixels.
 export type Scene = {toImage: number[]; toTable: number[]; cardWidth: number; cardHeight: number; bodyScale: number};
+// How the card a film carries is shown while it is in her hand, when nothing says otherwise: the film's own card, and the drawn card
+// from the frame it lies ('film'; the address's kort=liggande). The line since 2026-11-13 19.13, on Jakob's words that evening:
+// "orsaken till att vi inte kan behålla det blått och gult, så att vi kan börja om med att hantera överlägg, pålägg och underlägg
+// med kort". What stays drawn is what the film cannot show: a film lays one card and the next film does not show it. The drawn
+// card in her hand too ('object', kort=hand) and the film's card recoloured ('matte', kort=matt) are words for the lab.
+export const CARRY: 'object' | 'film' | 'matte' = 'film';
 export const RIM = 4; // the film's pale rim and its blur outside the tracked colour core, in pixels
 export const SCALE = {min: 1, max: 2.5, fallback: 2};
 export const MARGIN = 1.2; // the rendered card is this much larger than the film's card wherever it follows it

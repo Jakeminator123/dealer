@@ -16,7 +16,7 @@
 // no card object is drawn while a film shows its card; the passes that make the matte run here, on targets of the film's size.
 // The cards lying since earlier films are drawn as objects either way: a film lays one card, and later films do not show it.
 import * as T from 'three';
-import {poseAt, restOf, restingQuad, sceneOf, cardRecord, cardFace, overridesOf, cardInFront, plausible, skirtSound, firstDrawn, turnOf, RIM, MARGIN, PLAUSIBLE, EASE, HOLD, type CardTrack, type CardRecord} from './card-overlay.ts';
+import {poseAt, restOf, restingQuad, sceneOf, cardRecord, cardFace, overridesOf, cardInFront, plausible, skirtSound, firstDrawn, turnOf, CARRY, RIM, MARGIN, PLAUSIBLE, EASE, HOLD, type CardTrack, type CardRecord} from './card-overlay.ts';
 import {centre, clockwise, grown, signedArea, sound, type Pt} from './card-track.ts';
 import {FILM, edgeQuad, heldScale, solveCamera, squareToQuad, type FilmCamera} from './scene3d-geometry.ts';
 import {CARD_GLSL, type CardKey, type MatteKey} from './scene3d-film.ts';
@@ -127,13 +127,16 @@ const COMPOSITE_FRAGMENT = 'uniform sampler2D sum; uniform vec2 size; void main(
 // format, the card that lies on seat 4; everything else adapts to it).
 type Choice = {rank: string; suit: string; scale: number; hand?: 'film' | 'standard'};
 type Placed = {quad: Pt[]; back: boolean; target?: string | null; shoeDraw?: number | null};
-// carry: how the card the film carries is shown while it is in her hand (the page's choice, src/game-film.ts): 'object' (as before:
-// the card object, except where the track does not hold the card in the hand, CardTrack.hand false, where the film's own card is
+// carry: how the card the film carries is shown while it is in her hand (the page's choice, src/game-film.ts; where the page says
+// nothing, the game's line: carryOf): 'object' (the card object, except where the track does not hold the card in the hand, CardTrack.hand false, where the film's own card is
 // recoloured in place, the matte, until the object takes over EASE frames before it lies); 'matte' (the film's card recoloured
 // while carried for every take, the object from the same frame on); 'film' (the film's own card while carried, the object from
 // the frame it lies: "Bara liggande"). The cards already lying are objects whatever carry says.
 export type Carry = 'object' | 'matte' | 'film';
 type Extra = {shift?: Pt | null; land?: Pt[] | null; placed?: Placed[]; cards?: CardRecord[] | null; target?: string | null; shoeDraw?: number | null; carry?: Carry};
+// What carry is where the page says nothing: the game's line (CARRY in src/card-overlay.ts), so that Scen and the lab pages show a
+// round as the game does.
+const carryOf = (extra: Extra): Carry => extra.carry ?? CARRY;
 type FilmLayers = {shared: {map: {value: T.Texture | null}; grade: {value: T.Vector3}}; setCards(key: CardKey | null): void; setMatte(m: MatteKey | null): void};
 // renderer and view: for the motion samples, drawn into a target of their own before the frame; pixels: screen pixels per film pixel.
 // way: 'scene' (the card an object under the film) or 'matte' (the film's own card drawn over in place).
@@ -372,7 +375,7 @@ export function createDealLayer(o: Options) {
   // nothing is keyed for it, except an edge line, which is drawn and keyed as before (a thin sliver is gone from the matte's body);
   // the film's own card is recoloured in place (drawMatte), its blur and all, so what was a yellow and then a blue card in the film
   // turns from the printed back to the printed face. Not with carry 'film', which leaves the film's card.
-  const turning = (track: CardTrack | null, at: number, extra: Extra) => { if (!track || at < 0 || (extra.carry ?? 'object') === 'film') return false; const t = turnOf(track); return !!t && at >= t.from && at <= t.to; };
+  const turning = (track: CardTrack | null, at: number, extra: Extra) => { if (!track || at < 0 || carryOf(extra) === 'film') return false; const t = turnOf(track); return !!t && at >= t.from && at <= t.to; };
   const widened = (box: number[], zone: number[][] | null) => { if (!zone) return box; const xs = zone.map(p => p[0]), ys = zone.map(p => p[1]);
     return [Math.max(0, Math.floor(Math.min(box[0], ...xs))), Math.max(0, Math.floor(Math.min(box[1], ...ys))), Math.min(FILM.width - 1, Math.ceil(Math.max(box[2], ...xs))), Math.min(FILM.height - 1, Math.ceil(Math.max(box[3], ...ys)))]; };
 
@@ -380,7 +383,10 @@ export function createDealLayer(o: Options) {
   // never drawn, and the dealt card is the film's own too until two frames after it has left the window (the track's leavesShoe):
   // a drawn card there lay over the window's drawn card, two cards with doubled gold frames, the pulled one sharper than the film.
   // Not with carry 'film', which leaves the film's cards, nor with the shoe model, whose window shows the drawn seated card.
-  const filmSeat = (extra: Extra) => (extra.carry ?? 'object') !== 'film' && !shoeModel();
+  const filmSeat = (extra: Extra) => carryOf(extra) !== 'film' && !shoeModel();
+  // With carry 'film' the window's card is left as the film has it, like the card in her hand: not drawn, not keyed, not recoloured.
+  // Until 2026-11-13 a black card was drawn in the window there, and she pulled the film's yellow card out of it.
+  const leftSeat = (extra: Extra) => carryOf(extra) === 'film' && !shoeModel();
   const inShoe = (track: CardTrack | null, at: number) => typeof track?.leavesShoe === 'number' && at >= 0 && at < track.leavesShoe + 2;
 
   // The card being dealt as an object under the film, with the film's own card keyed away (way 'scene').
@@ -394,8 +400,8 @@ export function createDealLayer(o: Options) {
     // the next card, seated in the shoe window: its back, lit by the film's light on the film's seated card. Only the window
     // shows it: the shoe around it is film and lies over it.
     const first = track?.frames?.[0], seat = first?.quad?.length === 4 && (first.shoeShare ?? 0) >= 0.9 ? first.quad : SEATED;
-    // the window's card the film's own (filmSeat): recoloured in place (drawMatte), neither drawn nor keyed
-    const ownSeat = filmSeat(extra);
+    // the window's card the film's own: recoloured in place (filmSeat, drawMatte) or left as it is (leftSeat), neither drawn nor keyed
+    const ownSeat = filmSeat(extra) || leftSeat(extra);
     if (ownSeat) { hide(seated); seatDepth.visible = false; } else { lay(seated, seat, {print: print(), shade: {core: seat, colour: COLOUR.BACK, lying: LYING.BACK}, contact: 0}); seatDepth.visible = true; }
     let key: CardKey = {zone: [], core: null, colour: COLOUR.BACK, sides: 2, tint: 2, trust: 0, rim: RIM, shoe: null, over: null, seated: ownSeat ? null : {zone: grown(clockwise(seat.map(([x, y]) => ({x, y}))), RIM + 3).map(p => [p.x, p.y]), core: seat}};
     composite.visible = false;
@@ -411,7 +417,7 @@ export function createDealLayer(o: Options) {
       // the back's print comes in over PRINT.in frames from the first frame the card is drawn after the shoe (inShoe), smoothly
       const since = filmSeat(extra) && typeof track!.leavesShoe === 'number' ? at - (track!.leavesShoe + 2) + 1 : Infinity, t = Math.max(0, Math.min(1, since / (PRINT.in + 1)));
       lay(dealt, q, {print: face.back ? print() : print(face.art), edge, printIn: t * t * (3 - 2 * t), bend: (material?.bend ?? BEND) * held, tilt: TILT * held, gloss: material?.gloss,
-        shade: core && !edge ? {core, colour: COLOUR[side], lying: LYING[side], local: (extra.carry ?? 'object') !== 'film'} : null, contact: measured ? 1 - inHand : Math.max(0, Math.min(1, (pose.resting - 0.3) / 0.6))});
+        shade: core && !edge ? {core, colour: COLOUR[side], lying: LYING[side], local: carryOf(extra) !== 'film'} : null, contact: measured ? 1 - inHand : Math.max(0, Math.min(1, (pose.resting - 0.3) / 0.6))});
       // moving fast: drawn along its path over the shutter time instead, like the film's hand
       const path = pose.resting < 1 ? shutter(now, drawnAt(track!, at - 1, choice, extra), drawnAt(track!, at + 1, choice, extra)) : [q];
       // (only a card that was laid at all: its samples are rigid copies of it, so they are as plausible as it is)
@@ -448,7 +454,7 @@ export function createDealLayer(o: Options) {
       else {
         // While the card is carried and is not drawn as an object (carry), the film's card is recoloured in place, or (carry 'film')
         // left as the film has it; the object comes in where poseAt starts drawing (firstDrawn).
-        const carry = extra.carry ?? 'object', late = !!track && (carry !== 'object' || track.hand === false), landed = late ? restOf(track!) : null;
+        const carry = carryOf(extra), late = !!track && (carry !== 'object' || track.hand === false), landed = late ? restOf(track!) : null;
         const drawn = late ? {...track!, drawnFrom: landed ? (carry === 'film' ? landed.from : landed.from - EASE) : Infinity} : track;
         dealCard(drawn, at, choice, extra);
         // in the turn of a card drawn before and after it, the film's back takes the drawn back's black field (it lies between two black cards)

@@ -5,6 +5,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {CLASS_GLSL, CLASSIFY_FRAGMENT, LIT, MATTE, MATTE_GLSL, MORPH_FRAGMENT, PLANE, PLANE_GLSL, RULES, SHADE_FRAGMENT, SHOE_BOX, bodyOf, matteBox, matteZone, meanLinear, paleZone, planeLight, printQuad, toPrint, turnZone, unmix} from '../src/scene3d-matte.ts';
 import {is} from '../src/card-track.ts';
+import {CARRY} from '../src/card-overlay.ts';
 import {squareToQuad, onSquare} from '../src/scene3d-geometry.ts';
 import {DEFAULTS} from '../src/scene3d-view.ts';
 import {readFile} from 'node:fs/promises';
@@ -147,11 +148,17 @@ test('in the turn the film\'s washed-out card counts as card, each side in its h
   const deal = await readFile('src/scene3d-deal.ts', 'utf8');
   // (only an edge line is still drawn and keyed there: a thin sliver is too thin for the matte's body)
   assert.ok(deal.includes('now = drawn && (drawn.line || !turning(track, at, extra)) ? drawn : null') && deal.includes('if (inHand || turning(track, at, extra)) drawMatte('), 'no card in the turn but an edge line, the matte there');
-  assert.ok(deal.includes("(extra.carry ?? 'object') === 'film') return false"), 'Bara liggande leaves the film\'s card');
+  assert.ok(deal.includes("carryOf(extra) === 'film') return false"), 'Bara liggande leaves the film\'s card');
   // one card at the shoe (Prov kort-en-linje, step 1): the shoe window's card is the film's own, recoloured, neither drawn nor
   // keyed, in every carry but 'film' and without the shoe model; the dealt card is the film's own until two frames after it has
   // left the window, and the matte recolours both there, then the window alone
-  assert.ok(deal.includes("const filmSeat = (extra: Extra) => (extra.carry ?? 'object') !== 'film' && !shoeModel();") && deal.includes('seated: ownSeat ? null :'), 'the window card the film\'s own');
+  assert.ok(deal.includes("const filmSeat = (extra: Extra) => carryOf(extra) !== 'film' && !shoeModel();") && deal.includes('seated: ownSeat ? null :'), 'the window card the film\'s own');
+  // with carry 'film', the game's line since 2026-11-13 19.13, the window's card is left as the film has it: not drawn, not keyed
+  // and not recoloured (a black card was drawn there, and she pulled the film's yellow card out of it). Where a page says no
+  // carry, the layer takes the line.
+  assert.equal(CARRY, 'film');
+  assert.ok(deal.includes('const carryOf = (extra: Extra): Carry => extra.carry ?? CARRY;'), 'a page that says nothing gets the line');
+  assert.ok(deal.includes("const leftSeat = (extra: Extra) => carryOf(extra) === 'film' && !shoeModel();") && deal.includes('const ownSeat = filmSeat(extra) || leftSeat(extra);'), 'the window card left to the film under the line');
   assert.ok(deal.includes('early = (model || filmSeat(extra)) && inShoe(track, at)') && deal.includes('at < track.leavesShoe + 2'), 'the dealt card drawn once it has left the window');
   assert.ok(deal.includes('else if (filmSeat(extra)) drawMatte(track, at, choice, extra, false, !inShoe(track, at), true);'), 'the matte at the shoe in every frame, in the drawn back\'s black field');
 });
@@ -200,6 +207,6 @@ test('the drawn card takes how the film\'s light falls across the film\'s card, 
   for (const v of [`j < ${PLANE.grid}`, PLANE.inset.toFixed(2), PLANE.dark.toFixed(2), `${PLANE.least}.`, PLANE.range[0].toFixed(2), PLANE.range[1].toFixed(2), PLANE.gamma.toFixed(1)]) assert.ok(PLANE_GLSL.includes(v), v);
   const deal = await readFile('src/scene3d-deal.ts', 'utf8');
   assert.ok(deal.includes('if (shadeOn > .5 && localOn > .5) vPlane = lightPlane(map, core, cardColour, vMean);') && deal.includes('vShade * vLight * planeLight(vPlane, vMean, filmPixel)'), 'the paper lit by it');
-  assert.ok(deal.includes("local: (extra.carry ?? 'object') !== 'film'}"), 'the dealt card, not with Bara liggande');
+  assert.ok(deal.includes("local: carryOf(extra) !== 'film'}"), 'the dealt card, not with Bara liggande');
   assert.ok(deal.includes("lay(seated, seat, {print: print(), shade: {core: seat, colour: COLOUR.BACK, lying: LYING.BACK}, contact: 0})") && deal.includes('u.localOn.value = how.shade?.local ? 1 : 0;'), 'the seated card and the lying cards as before');
 });

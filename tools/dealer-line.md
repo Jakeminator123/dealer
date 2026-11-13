@@ -156,8 +156,9 @@ metoden i `data/order-methods.json` med belägg; ingen dagbok.
 tagningar (Jakobs eller en preliminär dom). Efter en giv väljs en retur av samma hand som lade kortet
 (`motion.releaseHand`). Där en film saknas spelas en ersättare per dealer ur `STAND_IN_FILM` i `src/game-director.ts`,
 och den viker av sig själv när en dömd tagning finns; i dag läggs bara plats 6:s kort och ett tredje och fjärde dealerkort
-utan hand. Brytaren Ritade kort (nyckeln `cards`, förval på) slår av de ritade korten (Jakob: "Det lixom kletar fast sig
-på korten").
+utan hand. Korten: filmens eget gula och blå kort visas i hennes hand och i skons fönster, och ett ritat kort tar över
+när kortet ligger (SYSTEM, "Ritade kort"). Brytaren Ritade kort (nyckeln `cards`, förval på) slår av allt ritat, också
+de liggande korten.
 
 **17. Tal.** En talfilm är en vilotagning där munnen ritas efter ljudet: `node tools/speech.ts` (`bank`, `say`, `reel`,
 `proof`) med planen i `src/speech-plan.ts` och rösterna och repliker i `data/speech.json`; rösten är ElevenLabs (betalt

@@ -160,9 +160,11 @@ Spelet med flera dealers (2026-11-13):
   spelas alltid i takt 1, också när reglaget Givarnas tempo (`filmTempo`, förval 1) står högre, så att munnen och
   rösten följs åt. Försäkringen och utfallet sägs i vila efter kedjan. Nyckeln `tal` (`repliker`, förval, eller `av`) stänger av talet. Talet i
   sin helhet: [docs/TAL.md](TAL.md).
-- **Ritade kort.** Filmens gula och blå kort är bara en markör. Kortspåret (`assets/tracking/<klipp>/card-track.json`)
-  säger var kortet är i varje ruta, och scenen ritar ett riktigt kort där (`cardMethod: 'scene'`, förval): ett föremål
-  under filmen, där filmens eget kort nycklas bort så att hennes fingrar ligger över det ritade.
+- **Ritade kort.** Filmens egna kort är gula (baksidan) och blå (framsidan) och har ingen valör. Kortspåret
+  (`assets/tracking/<klipp>/card-track.json`) säger var kortet är i varje ruta, och scenen kan rita ett riktigt kort
+  där (`cardMethod: 'scene'`, förval): ett föremål under filmen, där filmens eget kort nycklas bort så att hennes
+  fingrar ligger över det ritade. Var det görs bestämmer linjen sist i den här punkten: i spelet först när kortet
+  ligger. Det som står om kortet i handen nedan gäller adressordet `kort=hand`.
   - Kortet ritas för den ruta som visas. Filmkön håller reda på vilken ruta varje film senast visade
     (`requestVideoFrameCallback`), inte filmelementets klocka, som går upp till en ruta före bilden; med klockan stod
     det ritade kortet där filmens kort är i nästa ruta, och filmens gula stack fram bredvid.
@@ -187,15 +189,24 @@ Spelet med flera dealers (2026-11-13):
     gånger kontraktets kort, på planens plats), så att det inte krymper eller växer när nästa film börjar.
   - Hålkortets valör och dealerns summa visas när kortets framsida syns i vändningsfilmen, inte när filmen slutar.
   - En linje för korten (Jakob 2026-11-13: "Jag vill bara att det ska bli en linje och att allt ska anpassas till en
-    standard som passar med det som för närvarande finns i systemet"): ritade kort är på, i en storlek överallt
-    (`cardScale` 1,2, den storlek filmernas egna kort och filtens tryckta kortrutor redan har), och spelet har en enda
-    brytare i Miljö, Ritade kort (av betyder att inget ritas på något kort, varken i handen eller liggande). Hur kortet
-    i hennes hand visas är inget val i spelet. Adressen kan säga det, för labbet och för inspelningar: `cards=0` eller
-    `cards=1`, och ordet `kort`: `kort=hand` (det ritade kortet i handen, som spelet gör utan ordet),
-    `kort=liggande` (filmens eget kort i handen, det ritade först när kortet ligger) eller `kort=matt` (filmens kort
-    omfärgat i handen). Vem som bestämmer om kort ritas (`cardsChoice` i `src/game-film.ts`): adressens ord först
-    (Casino-vyns knapp skriver adressen, och en inspelning med ordet ändras aldrig av det en webbläsare minns), sedan
-    spelarens val i menyn, som minns också under ett förval, sedan förvalet, annars på.
+    standard som passar med det som för närvarande finns i systemet"). Sedan kl. 19.13 samma dag är linjen **filmens
+    eget kort i handen och i skons fönster, ritade kort först när de ligger** (`CARRY` i `src/card-overlay.ts`,
+    bärsättet `film`). Hans ord: "orsaken till att vi inte kan behålla det blått och gult, så att vi kan börja om med
+    att hantera överlägg, pålägg och underlägg med kort". Det som ritas är det filmen inte kan visa: en film lägger ett
+    kort och nästa film visar det inte (sett i en hel runda med `cards=0`: kortet är borta i nästa films första ruta,
+    i 21 skarvar av 21), och filmens kort har ingen valör. Det ritade kortet tar över i den ruta kortet ligger
+    (`restFrom` i spåret); fram till dess rörs filmens kort inte, varken ritat, nycklat eller omfärgat, och kortet i
+    skons fönster lämnas som filmen har det i alla filmer. Eftermiddagens linje, det ritade kortet också i handen
+    (linje 2), finns kvar som adressordet `kort=hand`.
+    Storleken är en överallt (`cardScale` 1,2, den storlek filmernas egna kort och filtens tryckta kortrutor redan
+    har). Spelet har en enda brytare, i Miljö: Ritade kort. Av betyder att inget ritas alls, inte heller liggande kort,
+    så att bordet töms för varje ny film. Adressen kan säga mer, för labbet och för inspelningar: `cards=0` eller
+    `cards=1`, och ordet `kort`: `kort=liggande` (som spelet gör utan ordet), `kort=hand` eller `kort=matt` (filmens
+    kort omfärgat i handen). Vem som bestämmer om kort ritas (`cardsChoice` i `src/game-film.ts`): adressens ord först
+    (en inspelning med ordet ändras aldrig av det en webbläsare minns), sedan spelarens val i menyn (minns i
+    webbläsaren), annars på. Ett förval i Scen har inget att säga till om, och Casino-vyn har ingen egen knapp: med två
+    brytare kunde den ena säga på medan spelet var av. Scen och labbsidorna, som inte säger något bärsätt, följer
+    samma linje (`carryOf` i `src/scene3d-deal.ts`).
   - Med skomodellen (Sko i 3D i Scen, där filmens sko inte ritas) ritas det givna kortet först två rutor efter att
     det har lämnat skon (`leavesShoe` i spåret), så att det inte står ovanpå modellen som ett klistermärke. Kortet i
     skons fönster ritas som förut. Provet klipper fortfarande bort hennes hand i skons ruta.

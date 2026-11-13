@@ -8,7 +8,7 @@
 // What she says: a talk film (a rest take on request, with sound) is played whole at rest, before a step's chain of cards or after
 // it (speakMoments), or between rounds (say). A line without a film is said at the same moment, in the chat only.
 import {resolveRound, pickIdle, idleRange, idleExit, effectOf, IDLE_RULE, type FilmEffect, type Graph, type Take, type Segment} from './clip-graph.ts';
-import type {CardRecord} from './card-overlay.ts';
+import {CARRY, type CardRecord} from './card-overlay.ts';
 import {slotOf, slotLabel, slotFilm, type Layout, type Pt, type TableCards} from './game-table.ts';
 import {hubChain, planBeats, SEAT_HUB, STAND_IN_FILM, type Beat, type FilmSignal} from './game-director.ts';
 import {placeLines, type MouthPatch} from './speech-patch.ts';
@@ -57,29 +57,32 @@ export function faceFrame(track: unknown): number | null {
 export function placedCards(table: TableCards, records: CardRecord[], lying: number[], layout: Layout): Placed[] {
   return lying.flatMap(shoeDraw => { const slot = slotOf(table, shoeDraw); return slot ? [{quad: layout.quad(slot), back: records.find(r => r.shoeDraw === shoeDraw)?.faceDown === true, target: slotLabel(slot), shoeDraw}] : []; });
 }
-// How the card the film carries is shown while it is in her hand (src/scene3d-deal.ts, carry): 'object' (the drawn card: what the
-// game does), 'film' (the film's own card while carried, the drawn card from the frame it lies: the address's kort=liggande),
-// 'matte' (the film's card recoloured while carried: the address's kort=matt). The cards already lying are drawn either way.
+// How the card the film carries is shown while it is in her hand (src/scene3d-deal.ts, carry): 'film' (the film's own card while
+// carried, the drawn card from the frame it lies: what the game does, CARRY in src/card-overlay.ts; the address's kort=liggande),
+// 'object' (the drawn card in her hand too: kort=hand), 'matte' (the film's card recoloured while carried: kort=matt). The cards
+// already lying are drawn either way: a film lays one card and the next film does not show it.
 export type Carry = 'object' | 'film' | 'matte';
 /**
  * Whether the drawn cards are on, and how the card in her hand is shown, from who has a say (Jakob 2026-11-13 through the main
  * agent: a switch that turns itself on again when the frame reloads is what "bara går inte" sounds like). First a word in the
- * address: cards (1 or 0, as the Casino view's button and a recording write it) and kort (liggande, matt, hand; a kort word without
- * cards means the cards are on). Then the player's own choice in the game's menu, remembered in the browser also under a preset
- * (memory: 'on' or 'off'). Then the preset's cards. Then on. The menu has one switch for the cards and none for how the card in
- * her hand is shown (Jakob 2026-11-13: "Jag vill bara att det ska bli en linje"): only the address's kort word changes that. A
- * browser that still remembers 'lying', from the hours the menu had a second switch, reads as on.
+ * address: cards (1 or 0, as a link or a recording writes it) and kort (liggande, matt, hand; a kort word without cards means the
+ * cards are on). Then the player's own choice in the game's menu, remembered in the browser (memory: 'on' or 'off'). Then on. A
+ * look's preset has no say: every saved look carried cards on, so it turned the cards on again for whoever had not chosen. The
+ * menu has one switch for the cards and none for how the card in her hand is shown (Jakob 2026-11-13: "Jag vill bara att det ska
+ * bli en linje"): without a kort word it is the game's line, the film's own card in her hand (CARRY). A browser that still
+ * remembers 'lying', from the hours the menu had a second switch, reads as on.
  */
-export function cardsChoice(o: {address?: boolean; kort?: string | null; memory?: string | null; preset?: boolean}): {cards: boolean; carry: Carry} {
+export function cardsChoice(o: {address?: boolean; kort?: string | null; memory?: string | null}): {cards: boolean; carry: Carry} {
   const word = ({liggande: 'film', matt: 'matte', hand: 'object'} as Record<string, Carry>)[o.kort ?? ''], remembered = o.memory === 'off' ? false : o.memory === 'on' || o.memory === 'lying' ? true : undefined;
-  return {cards: o.address ?? (word ? true : undefined) ?? remembered ?? o.preset ?? true, carry: word ?? 'object'};
+  return {cards: o.address ?? (word ? true : undefined) ?? remembered ?? true, carry: word ?? CARRY};
 }
 /** What the card layer needs for one beat: the lying cards, every card's value, and for the film's own card where it lands and how it is carried. */
-export function cardOptions(beat: Pick<Beat, 'own' | 'lying'>, table: TableCards, records: CardRecord[], layout: Layout, carry: Carry = 'object'): Record<string, unknown> {
-  const base = {placed: placedCards(table, records, beat.lying, layout), cards: records};
+export function cardOptions(beat: Pick<Beat, 'own' | 'lying'>, table: TableCards, records: CardRecord[], layout: Layout, carry: Carry = CARRY): Record<string, unknown> {
+  // carry goes with every part, also one that carries no card (a rest, a line, a return): the shoe's window is shown by it too
+  const base = {placed: placedCards(table, records, beat.lying, layout), cards: records, carry};
   if (!beat.own) return base;
   const material = layout.material(beat.own.slot);
-  return {...base, land: layout.quad(beat.own.slot), target: beat.own.label, shoeDraw: beat.own.shoeDraw, bend: material.bend, gloss: material.gloss, ...(carry !== 'object' ? {carry} : {})};
+  return {...base, land: layout.quad(beat.own.slot), target: beat.own.label, shoeDraw: beat.own.shoeDraw, bend: material.bend, gloss: material.gloss};
 }
 
 // A line she says in a step: its talk film (null: text only) and what is done when she begins it (the page writes it in the chat).
@@ -90,7 +93,7 @@ export type Said = {part: FilmPart | null; begin(): void; key?: string; beat?: B
 export function createFilm(players: FilmPlayers, bank: Graph, layout: Layout, readJson: (path: string) => Promise<unknown>, random: () => number = Math.random) {
   let graph = bank; // whose films: another dealer at the table is another graph (use)
   let table: TableCards = {hands: [], dealer: []}, records: CardRecord[] = [], lying: number[] = [];
-  let token = 0, resting: Take | null = null, carry: Carry = 'object'; const played: string[] = [], tracks = new Map<string, Promise<unknown>>();
+  let token = 0, resting: Take | null = null, carry: Carry = CARRY; const played: string[] = [], tracks = new Map<string, Promise<unknown>>();
   let mouths: () => Mouth[] = () => []; // the mouth patches the page has read and may lay now, asked for as a step begins
   const modelOf = (take: Take | null | undefined) => { const model = filmModel(take, graph.takes); return model ? {model} : {}; };
   const trackOf = (take: Take | null) => { const path = take?.media.track; if (!path) return Promise.resolve(null); let hit = tracks.get(path); if (!hit) { hit = readJson(path).catch(() => null); tracks.set(path, hit); } return hit; };
@@ -105,7 +108,7 @@ export function createFilm(players: FilmPlayers, bank: Graph, layout: Layout, re
     const take = pick.take, range = idleRange(take.frames ?? 90);
     resting = take; played.push(take.id); played.splice(0, Math.max(0, played.length - 12));
     void trackOf(take).then(track => { if (mine !== token) return;
-      players.play([{path: take.media.video!, start: range.start, end: range.end, ...fpsOf(take), ...modelOf(take), ...effectPart(take), rest: true, track, cards: cardOptions({own: null, lying}, table, records, layout)}], {onEnd: () => { if (mine === token) rest(); }}); });
+      players.play([{path: take.media.video!, start: range.start, end: range.end, ...fpsOf(take), ...modelOf(take), ...effectPart(take), rest: true, track, cards: cardOptions({own: null, lying}, table, records, layout, carry)}], {onEnd: () => { if (mine === token) rest(); }}); });
   }
 
   // A card whose deal has no film that can be played (none made, or the only take rejected) is laid without a hand.
@@ -119,7 +122,7 @@ export function createFilm(players: FilmPlayers, bank: Graph, layout: Layout, re
   function talkPart(clip: string): FilmPart | null {
     const take = graph.takes[clip];
     if (!take?.media.video || take.kind !== 'IDLE' || !take.idle?.onRequest || take.stage !== 'DONE' || take.decision === 'REJECTED') return null;
-    return {path: take.media.video, start: 0, end: null, ...fpsOf(take), ...modelOf(take), track: null, cards: cardOptions({own: null, lying}, table, records, layout), sound: true};
+    return {path: take.media.video, start: 0, end: null, ...fpsOf(take), ...modelOf(take), track: null, cards: cardOptions({own: null, lying}, table, records, layout, carry), sound: true};
   }
   /**
    * Plays one step of the game. signals: the engine's signals for the step. next: the table and card values after it.
@@ -156,8 +159,8 @@ export function createFilm(players: FilmPlayers, bank: Graph, layout: Layout, re
     if (ready.length) placeLines(before.map(due), chain, ready.map(m => m.patch)).forEach((at, k) => { if (!at) return; const t = before[k], m = ready.find(x => x.patch === at.patch)!;
       parts[at.part] = {...parts[at.part], mouth: {...m, begin: () => t.begin()}}; over.add(t); });
     const talkBefore = before.filter(t => t.part && !over.has(t)), talkAfter = after.filter(t => t.part);
-    for (const t of talkBefore) t.part = {...t.part!, cards: cardOptions({own: null, lying}, table, turn >= 0 ? closed : records, layout)};
-    for (const t of talkAfter) t.part = {...t.part!, cards: cardOptions({own: null, lying: [...new Set([...lying, ...beats.filter(b => b.own).map(b => b.own!.shoeDraw)])]}, table, records, layout)};
+    for (const t of talkBefore) t.part = {...t.part!, cards: cardOptions({own: null, lying}, table, turn >= 0 ? closed : records, layout, carry)};
+    for (const t of talkAfter) t.part = {...t.part!, cards: cardOptions({own: null, lying: [...new Set([...lying, ...beats.filter(b => b.own).map(b => b.own!.shoeDraw)])]}, table, records, layout, carry)};
     for (const t of before) if (!t.part && !over.has(t)) t.begin();
     const all = [...talkBefore.map(t => t.part!), ...parts, ...talkAfter.map(t => t.part!)], lead = talkBefore.length;
     const silentAfter = () => { for (const t of after) if (!t.part) t.begin(); };

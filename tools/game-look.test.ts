@@ -97,12 +97,12 @@ test('game.html without a look reads no look module and sets what it set before'
 
 test('the drawn cards and her lines: the game draws cards unless the player or a look says off; tal=av keeps her silent', async () => {
   const rooms = [...BUILT_ROOMS], blurOf = () => 11;
-  // cards is the scene's own key: ?cards=0 (the Casino view's switch writes it) turns the drawn cards off, over a preset too.
+  // cards is the scene's own key: ?cards=0 (a link or a recording writes it) turns the drawn cards off, over a preset too.
   assert.deepEqual(readLook(params('cards=0'), rooms).keys, {cards: false});
   assert.equal(lookState(DEFAULTS, {cards: true}, {cards: false}, blurOf).cards, false);
   assert.equal(lookState(DEFAULTS, null, {}, blurOf).cards, undefined, 'without a look the game keeps its own (on)');
   const page = await readFile('src/game-page.ts', 'utf8');
-  // who decides (src/game-film.ts cardsChoice, pinned in tools/game-film.test.ts): the address, then the menu's memory, then the preset
+  // who decides (src/game-film.ts cardsChoice, pinned in tools/game-film.test.ts): the address, then the menu's memory, then on
   assert.ok(page.includes('scene.set({cards: cardsNow.cards});'), 'on unless the address, the player or the look says off');
   assert.match(page, /cards\(on\) \{ scene\.set\(\{cards: on\}\);/, 'the console switch sets the scene key');
   assert.match(await readFile('src/game-panel.ts', 'utf8'), /toggle\('Ritade kort'/);

@@ -4,11 +4,12 @@
 // behind /api/game, the overlay with chips and buttons, the console's menus) plays in a frame as large as the window
 // allows, with the chosen preset and keys (src/game-look.ts reads them). The plain game.html keeps its own look; here any
 // preset can be played. The address carries the look and the table (lib/casino.ts), so a calibrated look can be sent as a
-// link. In the online copy the game page runs the engine itself (cloud/studio/game-local.ts), so the view plays there too. The game plays the
+// link. The drawn cards have one switch, in the game's own menu (Miljö, Ritade kort): this view had a button of its own that
+// wrote cards= in the address, and the two could say different things (the investigation of 2026-11-13). In the online copy the game page runs the engine itself (cloud/studio/game-local.ts), so the view plays there too. The game plays the
 // dealer chosen in the rail (?dealer=, passed on to the game page, src/game-page.ts), with her own films only: a step she has no
 // film for is cut or laid without a hand, never played with another dealer's film. The address's ?dealer= is the rail's word:
 // it is neither a look key nor dropped when the view writes its address.
-import { Expand, Plus, SlidersHorizontal, SquareStack } from "lucide-react";
+import { Expand, Plus, SlidersHorizontal } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -81,8 +82,6 @@ function Casino() {
   const [loaded, setLoaded] = useState<string | null>(null);
 
   const changed = Object.keys(look.patch).length;
-  // The drawn cards (the scene's key cards): the address's word, else the preset's, else on. Off shows the film's own coloured cards.
-  const cardsOn = look.patch.cards ?? presets.find((p) => p.name === look.forval)?.state?.cards ?? true;
   useViewContext({ vy: "Casino", val: { forval: look.forval, bord: look.table, dealer: name } });
 
   return (
@@ -105,9 +104,6 @@ function Casino() {
           <Link href={scenHref(look)} className={buttonClasses({ variant: "quiet", size: "sm" })} title="Öppna samma look i Scen och kalibrera den vidare">
             <SlidersHorizontal /> Kalibrera i Scen
           </Link>
-          <Button size="sm" variant={cardsOn ? "quiet" : "secondary"} icon={<SquareStack />} aria-pressed={cardsOn} title="Ritade kort på eller av: av visar filmens egna färgade kort, och inget ritas över dem" onClick={() => go({ ...look, patch: { ...look.patch, cards: !cardsOn } })}>
-            Ritade kort: {cardsOn ? "på" : "av"}
-          </Button>
           <Button size="sm" variant="quiet" icon={<Plus />} title="Ett nytt bord: ny spelomgång med nytt saldo och ny sko" onClick={() => go({ ...look, table: freshTable() })}>
             Nytt bord
           </Button>

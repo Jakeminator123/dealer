@@ -93,7 +93,7 @@ export function mountPanel(bar: HTMLElement, rooms: RoomChoice[], dealers: Deale
   const tableSound = toggle('Bordets ljud', 'Marker som klirrar och kort som landar', next => on.table(next)), roomSound = toggle('Rummets ljud', 'Sorl och ljud från miljön du har valt', next => on.ambience(next));
   // Under the rooms: the drawn cards on or off, the one choice about cards in the game (Jakob 2026-11-13: "Jag vill bara att det
   // ska bli en linje"; off shows the film's own coloured cards). How the card in her hand is shown is not a choice here.
-  const cardsSwitch = toggle('Ritade kort', 'Spelkort ritas över filmens färgade kort; av visar filmens egna', next => on.cards?.(next)); roomPage.append(cardsSwitch);
+  const cardsSwitch = toggle('Ritade kort', 'Korten som ligger på bordet ritas som spelkort; av visar bara filmens egna färgade kort', next => on.cards?.(next)); roomPage.append(cardsSwitch);
   musicPanel.append(nowRow, el('h3', '', 'Musik'), trackList, empty, levelRow, el('h3', '', 'Ljud'), tableSound, roomSound);
   let shownTracks = '';
   const trackButton = (id: string | null, label: string, note: string, glyph: string) => { const b = el('button', 'gp-track'), text = el('span', 'gp-who'); b.type = 'button'; b.dataset.track = id ?? ''; b.title = note;
