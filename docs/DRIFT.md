@@ -47,6 +47,12 @@ inte med av misstag. Git-push är separat från webbdeploy, mediauppladdning och
   kortspår (`tools/order-images.test.ts`, `tools/card-overlay.test.ts`); 2026-11-13 var det 14 av 824. Studions tester behöver inte
   `studio/node_modules`. Före PR kör agenten `npm run check`. GitHub-kontrollen kör efter push och är inte ett
   serversidigt pushförbud eller aktiverat mergekrav.
+- **Push medan andra skriver** (2026-11-13). I huvudträdet stoppar kontrollen så länge någon sessions testindata
+  skiljer sig från HEAD eller en ospårad `.ts`-fil ligger där, och det gör den nästan alltid en dag med flera
+  sessioner. Huvudagenten pushar då från ett eget rent arbetsträd på slaskdisken: `git worktree add --detach
+  <mapp på D:> main`, `npm ci` (om paketlistan har ändrats), `npm test`, `npm run check`, `git push origin HEAD:main`,
+  och sedan fjärrens SHA och GitHub-kontrollen. Det som pushas är incheckade commits, aldrig någons öppna filer.
+  Arbetsträdet tas bort med `git worktree remove` när dagen är slut.
 - **Rött:** stoppa, undersök orsak och rätta innan nytt försök. **Gult:** granska och åtgärda eller förklara kvarvarande
   begränsning kort i HANDOFF före push/PR. Varningarna visas i agentens terminal och som CI-annoteringar. Granska även
   hook/testens relevans och falsklarm; vid verkligt kontrollfel, rätta med ett avgränsat regressionstest. Hoppa inte
@@ -90,6 +96,17 @@ inte med av misstag. Git-push är separat från webbdeploy, mediauppladdning och
   server utan att fliken stängs.
 - Gamla labbets sidor ligger i `old-lab/` och spelets sida i `game/page/`; servern lämnar ut dem på samma adresser som
   förut (`/lab.html`, `/game.html` …) via kartan `PAGES` i `tools/lab-routes.ts`.
+- **Servern lämnar ut arbetsträdet, och bara modulerna i sin lista** (`SCRIPTS` i `tools/lab-routes.ts`, läst när
+  servern startar). En halvfärdig ändring i en sessions fil syns alltså direkt för alla, Jakobs flik också. En ny
+  modul under `src/` görs i den här ordningen: filen på plats utan att något importerar den, raden i listan,
+  omstart (`node tools/preview.ts --restart`, huvudagenten, i en lucka utan tagning), och först därefter importen.
+  Importen före listan ger 404 för modulen, och då laddar varken spelet eller Scen i någon webbläsare; det hände två
+  gånger 2026-11-13 (15.20–15.34 och 15.34–15.46). `node --test tools/lab-modules.test.ts` läser varje utlämnad
+  moduls importer och säger vilken granne som saknas, utan webbläsare; kör det efter en ny import och före en
+  tagning.
+- **En inspelning säger varje nyckel som kan ändras.** Scenens förval ändras ibland samma dag som en film spelas in;
+  en tagning som utelämnar en nyckel får det trädet säger i den minut sidan laddas. Skriv ut nycklarna i tagningens
+  adress (`filmEven`, `filmTempo`, `dealerLife`, `cups`, `cards`).
 - **En labbflik** (2026-11-12): varje labbsida håller en ström öppen mot servern (`src/preview-ui.ts`, `/tab/events`).
   Den nyaste sidan är labbfliken; en äldre stänger sig själv, eller blir tom där webbläsaren vägrar.
   `node tools/preview.ts --open "<sida>"` visar en sida i den öppna fliken och öppnar en ny bara när ingen finns. Öppna
