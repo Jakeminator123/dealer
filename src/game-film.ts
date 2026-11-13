@@ -15,10 +15,21 @@ import {planBeats, STAND_IN_FILM, type Beat, type FilmSignal} from './game-direc
 // What this file uses of the scene's film queue.
 // frame: a film whose picture is not the standard frame (the entrance and the exit, drawn behind the table) says so in its
 // record as motion.frame; the scene reads it from the part (FilmFrame in src/scene3d-film.ts).
-export type FilmPart = {path: string; start?: number; end?: number | null; rate?: number; track?: unknown; cards?: Record<string, unknown>; frame?: unknown; fps?: number; sound?: boolean};
+// model: the film model the picture was made with (filmModel), for the scene's colour matching between models; left out when unknown.
+export type FilmPart = {path: string; start?: number; end?: number | null; rate?: number; track?: unknown; cards?: Record<string, unknown>; frame?: unknown; fps?: number; sound?: boolean; model?: string};
 const frameOf = (take: Take | null | undefined) => (take?.motion?.motion as {frame?: unknown} | undefined)?.frame ?? null;
 // A film that is not 30 frames a second says so in the bank (take.fps); its frame numbers are its own.
 const fpsOf = (take: Take | null | undefined) => typeof take?.fps === 'number' && take.fps > 0 && take.fps !== 30 ? {fps: take.fps} : {};
+/**
+ * The film model a take's picture was made with: its motion record's source.model ("wan3", "kling-4"). Not the order's job.model,
+ * which names a cut ("utsnitt") for a take cut out of an older film. A talk film is its rest film with a new mouth
+ * (speech.restFilm), so its picture, and its model, is that film's. Null when the bank does not say.
+ */
+export function filmModel(take: Take | null | undefined, takes: Record<string, Take> = {}): string | null {
+  const own = (t: Take | null | undefined) => { const m = (t?.motion?.source as {model?: unknown} | undefined)?.model; return typeof m === 'string' && m.trim() ? m.trim() : null; };
+  const rest = (take?.motion as {speech?: {restFilm?: unknown}} | null | undefined)?.speech?.restFilm;
+  return (typeof rest === 'string' ? own(takes[rest]) : null) ?? own(take);
+}
 export type FilmPlayers = {
   play(parts: FilmPart[], options?: {loop?: boolean; cut?: boolean; onPart?(index: number): void; onEnd?(): void}): unknown;
   hurry(rate: number): void; preload?(paths: string[]): void;
@@ -44,6 +55,7 @@ export function createFilm(players: FilmPlayers, bank: Graph, layout: Layout, re
   let graph = bank; // whose films: another dealer at the table is another graph (use)
   let table: TableCards = {hands: [], dealer: []}, records: CardRecord[] = [], lying: number[] = [];
   let token = 0, resting: Take | null = null; const played: string[] = [], tracks = new Map<string, Promise<unknown>>();
+  const modelOf = (take: Take | null | undefined) => { const model = filmModel(take, graph.takes); return model ? {model} : {}; };
   const trackOf = (take: Take | null) => { const path = take?.media.track; if (!path) return Promise.resolve(null); let hit = tracks.get(path); if (!hit) { hit = readJson(path).catch(() => null); tracks.set(path, hit); } return hit; };
   // Each plan card's centre in film pixels: the clip bank uses them to say how far a shared seat film's card is moved.
   const places: Record<string, Pt> = {};
@@ -56,7 +68,7 @@ export function createFilm(players: FilmPlayers, bank: Graph, layout: Layout, re
     const take = pick.take, range = idleRange(take.frames ?? 90);
     resting = take; played.push(take.id); played.splice(0, Math.max(0, played.length - 12));
     void trackOf(take).then(track => { if (mine !== token) return;
-      players.play([{path: take.media.video!, start: range.start, end: range.end, ...fpsOf(take), track, cards: cardOptions({own: null, lying}, table, records, layout)}], {onEnd: () => { if (mine === token) rest(); }}); });
+      players.play([{path: take.media.video!, start: range.start, end: range.end, ...fpsOf(take), ...modelOf(take), track, cards: cardOptions({own: null, lying}, table, records, layout)}], {onEnd: () => { if (mine === token) rest(); }}); });
   }
 
   // A card whose deal has no film that can be played (none made, or the only take rejected) is laid without a hand.
@@ -67,7 +79,7 @@ export function createFilm(players: FilmPlayers, bank: Graph, layout: Layout, re
   function talkPart(clip: string): FilmPart | null {
     const take = graph.takes[clip];
     if (!take?.media.video || take.kind !== 'IDLE' || !take.idle?.onRequest || take.stage !== 'DONE' || take.decision === 'REJECTED') return null;
-    return {path: take.media.video, start: 0, end: null, ...fpsOf(take), track: null, cards: cardOptions({own: null, lying}, table, records, layout), sound: true};
+    return {path: take.media.video, start: 0, end: null, ...fpsOf(take), ...modelOf(take), track: null, cards: cardOptions({own: null, lying}, table, records, layout), sound: true};
   }
   /**
    * Plays one step of the game. signals: the engine's signals for the step. next: the table and card values after it.
@@ -89,7 +101,7 @@ export function createFilm(players: FilmPlayers, bank: Graph, layout: Layout, re
     const turn = beats.findIndex(b => b.kind === 'REVEAL'), hole = turn >= 0 ? beats[turn].own!.shoeDraw : null;
     const closed = hole === null ? records : records.map(r => r.shoeDraw === hole ? {...r, r: null, s: null, faceDown: true} : r);
     const parts: FilmPart[] = [], beatOf: number[] = [];
-    segments.forEach((s, i) => { if (!s?.video) return; beatOf.push(i); parts.push({path: s.video, start: s.start, end: s.end, track: loaded[i], cards: cardOptions(beats[i], table, i < turn ? closed : records, layout), frame: frameOf(s.take), ...fpsOf(s.take)}); });
+    segments.forEach((s, i) => { if (!s?.video) return; beatOf.push(i); parts.push({path: s.video, start: s.start, end: s.end, track: loaded[i], cards: cardOptions(beats[i], table, i < turn ? closed : records, layout), frame: frameOf(s.take), ...fpsOf(s.take), ...modelOf(s.take)}); });
     let done = 0; // beats landed so far, in order
     const land = (upTo: number) => { for (; done < upTo; done++) { const beat = beats[done]; if (beat.own && beat.kind !== 'DEAL' && !lying.includes(beat.own.shoeDraw)) lying = [...lying, beat.own.shoeDraw]; landed(beat, done); } };
     // What she says before the cards and after them: the talk films around the chain, each line begun as its film begins.
@@ -123,7 +135,7 @@ export function createFilm(players: FilmPlayers, bank: Graph, layout: Layout, re
    * table cut to her at rest), and true means she is at the table. Without next the same dealer leaves and comes back.
    */
   async function swap(away: (arrive: FilmPart[]) => void | Promise<void> = () => {}, own: {leave?: FilmPart[]; arrive?: FilmPart[]} | null = null, next: Graph | null = null): Promise<boolean> {
-    const part = (s: Segment | undefined): FilmPart[] => s?.video ? [{path: s.video, start: s.start, end: s.end, track: null, frame: frameOf(s.take), ...fpsOf(s.take)}] : [];
+    const part = (s: Segment | undefined): FilmPart[] => s?.video ? [{path: s.video, start: s.start, end: s.end, track: null, frame: frameOf(s.take), ...fpsOf(s.take), ...modelOf(s.take)}] : [];
     const banked = (of: Graph, from: string, to: string) => part(resolveRound(of, [{from, to}], {places})[0]); // the bank's own film comes first; the page's stands in where the bank has none
     let leave = banked(graph, 'IDLE', 'AWAY'), arrive = banked(next ?? graph, 'AWAY', 'IDLE'); if (!leave.length) leave = own?.leave ?? []; if (!arrive.length) arrive = own?.arrive ?? [];
     if (!next && (!leave.length || !arrive.length)) return false;

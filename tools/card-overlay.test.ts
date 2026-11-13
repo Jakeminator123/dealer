@@ -2,9 +2,10 @@
 // here and the only file read is the tracked scene contract.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {readFile} from 'node:fs/promises';
-import {sceneOf, restingQuad, restOf, poseAt, cardToImage, projectionOf, regionOf, readMatte, filmZone, shiftShare, placedCard, landing, leakCount, strayBoxes, ranges, cardRecord, cardFace, CARD_RANKS, CARD_SUITS, MARGIN, STRAY, type CardRecord, overridesOf, cardInFront, describeTrack, RIM, type CardTrack, type Scene} from '../src/card-overlay.ts';
-import {signedArea, centre, dist, type Pt} from '../src/card-track.ts';
+import {readFile, readdir} from 'node:fs/promises';
+import {sceneOf, restingQuad, restOf, poseAt, cardToImage, projectionOf, regionOf, readMatte, filmZone, shiftShare, placedCard, landing, leakCount, strayBoxes, ranges, cardRecord, cardFace, CARD_RANKS, CARD_SUITS, MARGIN, STRAY, type CardRecord, overridesOf, cardInFront, describeTrack, RIM, plausible, keystone, skirtSound, PLAUSIBLE, HOLD, type CardTrack, type Scene} from '../src/card-overlay.ts';
+import {signedArea, centre, dist, sound, type Pt} from '../src/card-track.ts';
+import {cameraFromContract, solveCamera, squareToQuad, onSquare, filmToScene} from '../src/scene3d-geometry.ts';
 
 const contract = JSON.parse(await readFile('data/scene-contract.json', 'utf8')), scene = sceneOf(contract)!;
 const P4_FILM = [[817.5, 1069.5], [887.2, 1069.5], [891, 1133.5], [817.5, 1133.5]]; // resting quad of pamela-p4-c1-plan-deal-02
@@ -243,4 +244,86 @@ test('a value per card: each card has its own record by draw number or target, a
   // Every value the study prints is accepted: 13 ranks and 4 suits.
   assert.deepEqual([...CARD_RANKS], ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K']); assert.deepEqual([...CARD_SUITS], ['spades', 'hearts', 'diamonds', 'clubs']);
   for (const r of CARD_RANKS) for (const s of CARD_SUITS) assert.equal(cardFace({shoeDraw: 1, target: 'P4.C1', r, s}, false, chosen).own, true);
+});
+
+// ── No card that is not a card (Jakob 2026-11-13: "linjer flyger dit och dit") ──────────────────────────────────────────
+// Quads from Paow's hole card as it slides in under her hand (paow-giv-2-1-d-c2-03-01): frame 49 is still a card, frames 52 and 55
+// are wedges whose far side is a fraction of the near one. The night's guard (sound) let them through.
+const HOLE_49 = [[997, 871], [1012, 900], [953, 896], [966, 875]], HOLE_52 = [[960, 878], [969, 908], [909, 896], [941, 878]], HOLE_55 = [[915, 878], [917, 913], [898, 904], [875, 891]];
+const card = (x: number, y = 100) => [[x, y], [x + 60, y], [x + 60, y + 84], [x, y + 84]];
+test('a drawn card is a plausible card: a wedge, a sliver and a crossed quad are not, and a frame with one keeps the card before it for a few frames', () => {
+  for (const q of [card(0), P4_FILM, HOLE_49]) assert.equal(plausible(pts(q)), true);
+  for (const q of [HOLE_52, HOLE_55]) { assert.equal(sound(pts(q)), true, 'sound, which is all the night\'s guard asked'); assert.equal(plausible(pts(q)), false); assert.ok(keystone(pts(q)) > PLAUSIBLE.keystone); }
+  assert.equal(plausible(pts([[0, 0], [200, 0], [200, 12], [0, 12]])), false, 'a sliver'); assert.equal(plausible(pts([[0, 0], [60, 84], [60, 0], [0, 84]])), false, 'crossed');
+  assert.equal(plausible(pts(card(0).map(([x, y]) => [x * 4, y * 4]))), false, 'larger than any card a film holds'); assert.ok(Math.abs(keystone(pts(card(0))) - 1) < 1e-9);
+  // In the hand: two wedge frames keep the card of the frame before them; a longer run is drawn as nothing after HOLD frames.
+  const frames = (bad: number[]): CardTrack['frames'] => Array.from({length: 20}, (_, i) => ({frame: i, side: 'BACK' as const, quad: bad.includes(i) ? HOLE_55.map(([x, y]) => [x + i * 4, y]) : card(800 + i * 4, 860), edge: null}));
+  const short: CardTrack = {width: 1764, height: 1174, frames: frames([8, 9]), edgeWindow: null, restFrom: null, restQuad: null};
+  const before = poseAt(short, scene, 7, 1.2)!;
+  for (const i of [8, 9]) { const p = poseAt(short, scene, i, 1.2)!; assert.deepEqual(p.quad, before.quad); assert.equal(p.kept, i); assert.equal(p.frame, 7); }
+  assert.equal(poseAt(short, scene, 10, 1.2)!.kept, undefined);
+  const long: CardTrack = {...short, frames: frames([8, 9, 10, 11, 12])};
+  assert.deepEqual([8, 9, 10, 11, 12].map(i => !!poseAt(long, scene, i, 1.2)!.quad), [true, true, true, false, false], `held for ${HOLD} frames, then nothing`);
+  for (let i = 0; i < 20; i++) { const q = poseAt(long, scene, i, 1.2)!.quad; if (q) assert.ok(plausible(q), `frame ${i}`); }
+});
+
+test('a card that slides in under the hand settles on to its place from the last plausible shape, following the hand', () => {
+  // the hole card's last frames before it lies (rest from 57), as the track has them; the frames before are cards
+  const quads: Record<number, number[][]> = {49: HOLE_49, 50: [[987, 872], [1002, 903], [941, 896], [961, 876]], 51: [[974, 878], [987, 905], [925, 896], [950, 878]], 52: HOLE_52,
+    53: [[944, 880], [950, 909], [896, 896], [928, 880]], 54: [[929, 877], [934, 913], [893, 897], [890, 890]], 55: HOLE_55, 56: [[900, 879], [897, 913], [884, 904], [869, 889]]};
+  const rest = [[941.5, 911.5], [941.5, 943.5], [887, 943.5], [881.1, 911.5]], land = pts([[884, 911], [936, 911], [943, 943], [887, 943]]);
+  const track: CardTrack = {width: 1764, height: 1174, edgeWindow: null, restFrom: 57, restQuad: rest,
+    frames: Array.from({length: 70}, (_, i) => ({frame: i, side: 'BACK' as const, quad: i >= 57 ? rest : quads[i] ?? HOLE_49.map(([x, y]) => [x + (49 - i) * 6, y]), edge: null}))};
+  let last: Pt | null = null;
+  for (let i = 45; i <= 60; i++) { const p = poseAt(track, scene, i, 1.2, 12, null, land)!; assert.ok(p.quad && plausible(p.quad), `frame ${i} drawn as a card`); assert.equal(p.kept, undefined);
+    const c = centre(p.quad!); if (last) assert.ok(dist(c, last) < 30, `frame ${i}: no jump (${dist(c, last).toFixed(0)} px)`); last = c; }
+  // it follows the hand: the middle of the frame-53 wedge is where the card is drawn, give or take the settling toward its place
+  assert.ok(dist(centre(poseAt(track, scene, 53, 1.2, 12, null, land)!.quad!), centre(pts(quads[53]))) < 25);
+});
+
+test('the contact shadow, a quarter of a card beyond the card, is only laid where that skirt keeps clear of the line at infinity', () => {
+  assert.equal(skirtSound(pts(card(0)), 0.25), true); assert.equal(skirtSound(pts(P4_FILM), 0.25), true);
+  // what the old settling drew for the hole card in frame 52: a wedge whose shadow ran 1300 px across the table
+  assert.equal(skirtSound(pts([[977, 913], [897, 897], [940, 873], [964, 873]]), 0.25), false);
+  assert.equal(skirtSound(pts(HOLE_55), 0.25), false);
+});
+
+// The scene lays each point of a card where the film's surfaces carry its pixel and bends a held card toward the eye
+// (src/scene3d-deal.ts VERTEX). The same arithmetic in numbers, old measure and new, checked against the shader's text.
+const camera = cameraFromContract(contract), solved = solveCamera(camera), eye = [0, camera.heightM, 0];
+// the felt alone, as the old shader measured: the ray's meeting with y = 0 wherever it is, also behind the eye
+function feltPoint(x: number, y: number): number[] {
+  const n = [(x - (1764 - 1) / 2) / camera.focalPx, (y - (1174 - 1) / 2) / camera.focalPx], c = Math.cos(solved.pitch), s = Math.sin(solved.pitch), d = [n[0], -n[1] * c - s, n[1] * s - c], t = -eye[1] / d[1];
+  return eye.map((e, i) => e + d[i] * t);
+}
+function bentPoint(quad: number[][], u: number, v: number, bend: number, felt: boolean): number[] {
+  const H = squareToQuad(quad), on = (a: number, b: number) => { const [x, y] = onSquare(H, a, b); return felt ? feltPoint(x, y) : filmToScene(camera, x, y); };
+  const p = filmToScene(camera, ...onSquare(H, u, v)), top = on(0.5, 0), l = Math.hypot(...on(0.5, 1).map((c, i) => c - top[i])), k = 2 * bend / Math.max(l, 1e-4), y = (v - 0.5) * l;
+  if (k <= 1e-6) return p;
+  const d = p.map((c, i) => c - eye[i]), n = Math.hypot(...d), m = felt ? (1 - Math.cos(k * y)) / k : Math.min((1 - Math.cos(k * y)) / k, 0.05 * n);
+  return p.map((c, i) => c - d[i] / n * m);
+}
+const inFront = (p: number[]) => { const q = solved.pitch, y = p[1] - camera.heightM; return -y * Math.sin(q) - p[2] * Math.cos(q) > 0.05; };
+test('the bend of a card held up near the horizon row stays a few millimetres: no corner is thrown behind the eye', async () => {
+  // Paow P4 (paow-giv-2-1-p4-04-01) frame 34 as drawn: the card held up at the shoe, across the horizon row (548)
+  const held = [[1268, 517], [1319, 564], [1241, 643], [1172, 602]], grid = Array.from({length: 9}, (_, j) => Array.from({length: 5}, (_, i) => [i / 4, j / 8])).flat();
+  assert.ok(camera.horizonRow > 517 && camera.horizonRow < 643, 'the card spans the horizon row');
+  assert.ok(grid.some(([u, v]) => !inFront(bentPoint(held, u, v, 0.14, true))), 'the old measure threw corners behind the eye');
+  for (const [u, v] of grid) { const p = bentPoint(held, u, v, 0.14, false), flat = filmToScene(camera, ...onSquare(squareToQuad(held), u, v));
+    assert.ok(inFront(p), `(${u}, ${v}) in front`); assert.ok(Math.hypot(...p.map((c, i) => c - flat[i])) <= 0.05 * Math.hypot(...flat.map((c, i) => c - eye[i])) + 1e-9); }
+  // the shader says the same: the card's length on the surfaces it is laid on, and the shift held to a twentieth of the way to the eye
+  const shader = await readFile('src/scene3d-deal.ts', 'utf8');
+  assert.match(shader, /float len = length\(onFilm\(vec2\(\.5, 1\.\)\) - onFilm\(vec2\(\.5, 0\.\)\)\)/); assert.match(shader, /min\(\(1\. - cos\(k \* y\)\) \/ k, \.05 \* length\(p - eye\)\)/);
+  assert.doesNotMatch(shader, /length\(onFelt\(vec2/);
+});
+
+test('Paow\'s tracked takes, every frame: what is drawn is a card, and a bent card stays in front of the eye (skipped without the tracks)', async t => {
+  const dirs = await readdir('assets/tracking').catch(() => [] as string[]), paow = dirs.filter(d => d.startsWith('paow-'));
+  if (!paow.length) { t.skip('no tracks on this machine'); return; }
+  let frames = 0;
+  for (const d of paow) { const track = JSON.parse(await readFile(`assets/tracking/${d}/card-track.json`, 'utf8').catch(() => 'null')) as CardTrack | null; if (!track?.frames) continue;
+    for (let i = 0; i < track.frames.length; i++) for (const scale of [0.8, 1.2, 2]) { const p = poseAt(track, scene, i, scale); if (!p?.quad) continue; frames++;
+      assert.ok(plausible(p.quad), `${d} frame ${i}`); const q = (signedArea(p.quad) < 0 ? [p.quad[1], p.quad[0], p.quad[3], p.quad[2]] : p.quad).map(c => [c.x, c.y]);
+      for (const [u, v] of [[0, 0], [1, 0], [1, 1], [0, 1], [0.5, 0], [0.5, 1]]) assert.ok(inFront(bentPoint(q, u, v, 0.18, false)), `${d} frame ${i}: corner (${u}, ${v}) behind the eye`); } }
+  assert.ok(frames > 1000);
 });

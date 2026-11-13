@@ -15,7 +15,7 @@
 // no card object is drawn while a film shows its card; the passes that make the matte run here, on targets of the film's size.
 // The cards lying since earlier films are drawn as objects either way: a film lays one card, and later films do not show it.
 import * as T from 'three';
-import {poseAt, restOf, sceneOf, cardRecord, cardFace, overridesOf, cardInFront, RIM, MARGIN, type CardTrack, type CardRecord} from './card-overlay.ts';
+import {poseAt, restOf, sceneOf, cardRecord, cardFace, overridesOf, cardInFront, plausible, skirtSound, RIM, MARGIN, PLAUSIBLE, type CardTrack, type CardRecord} from './card-overlay.ts';
 import {centre, clockwise, grown, signedArea, sound, type Pt} from './card-track.ts';
 import {FILM, edgeQuad, heldScale, solveCamera, squareToQuad, type FilmCamera} from './scene3d-geometry.ts';
 import {CARD_GLSL, type CardKey, type MatteKey} from './scene3d-film.ts';
@@ -64,11 +64,15 @@ void main(){
   vec3 p = onFilm(st); vNormal = vec3(0., 1., 0.); vShade = vLight = 1.;
   if (shadow > .5) { vWorld = onFelt(st) - vec3(0., lift * .5, 0.); gl_Position = projectionMatrix * viewMatrix * vec4(vWorld, 1.); return; }
   if (depthOnly > .5) { vWorld = p; gl_Position = projectionMatrix * viewMatrix * vec4(p, 1.); return; }
-  // the card's own axes, taken on the felt: across its width, and its length
-  vec3 across = normalize(onFelt(st + vec2(.02, 0.)) - onFelt(st - vec2(.02, 0.)));
-  float len = length(onFelt(vec2(.5, 1.)) - onFelt(vec2(.5, 0.))), k = 2. * bend / max(len, 1e-4), y = (st.y - .5) * len;
-  // bend: the ends come toward the viewer, along the film camera's ray, so the film pixel stays; the normal turns with it
-  if (k > 1e-6) p -= normalize(p - eye) * (1. - cos(k * y)) / k;
+  // the card's own axes, taken on the surface the card is laid on (onFilm: the dealer plane above the edge row, the felt below it):
+  // across its width, and its length. Not on the felt alone: a card held up near the horizon row (548 of the film's 1174) meets the
+  // felt tens of metres away or behind the eye, its length came out that long, and the bend threw its ends behind the camera, where
+  // the clipped triangles were drawn out to the edge of the picture (Paow P4, paow-giv-2-1-p4-04-01 frames 30-38).
+  vec3 across = normalize(onFilm(st + vec2(.02, 0.)) - onFilm(st - vec2(.02, 0.)));
+  float len = length(onFilm(vec2(.5, 1.)) - onFilm(vec2(.5, 0.))), k = 2. * bend / max(len, 1e-4), y = (st.y - .5) * len;
+  // bend: the ends come toward the viewer, along the film camera's ray, so the film pixel stays; the normal turns with it. A bend is a
+  // few millimetres: never more than a twentieth of the way to the eye, whatever the measure gives.
+  if (k > 1e-6) p -= normalize(p - eye) * min((1. - cos(k * y)) / k, .05 * length(p - eye));
   vec3 n0 = normalize(vec3(0., 1., 0.) + normalize(eye - p) * tilt), n = n0, l = normalize(vec3(-.3, 1., .6));
   float a = k * y; n = n0 * cos(a) + cross(across, n0) * sin(a) + across * dot(across, n0) * (1. - cos(a));
   vNormal = n; vWorld = p;
@@ -198,14 +202,23 @@ export function createDealLayer(o: Options) {
     mesh.renderOrder = 3; shadow.renderOrder = 2; mesh.frustumCulled = shadow.frustumCulled = false; mesh.visible = shadow.visible = false; group.add(shadow, mesh);
     return {mesh, shadow, material, under};
   };
+  // The last word on what is drawn, for every card (the dealt one, the one seated in the shoe, the lying ones): a quad that is no
+  // plausible card (card-overlay.ts plausible: crossed, folded, a sliver, a wedge) would lay the card through or near infinity, across
+  // the whole picture, and is not drawn. The size bound here is only a backstop (poseAt holds the film's card to a card's size; a
+  // standard-size card in the hand at Kortens storlek 2 is about twice that). An edge-on card is a thin quad along a line no longer than a card.
+  const drawable = (q: number[][], edge: boolean) => { const p = q.map(([x, y]) => ({x, y}));
+    return edge ? sound(p) && Math.max(Math.hypot(q[1][0] - q[0][0], q[1][1] - q[0][1]), Math.hypot(q[2][0] - q[1][0], q[2][1] - q[1][1])) <= PLAUSIBLE.edge + 8 : plausible(p, 2.5 * PLAUSIBLE.size); };
+  // The contact shadow reaches REACH of the card beyond it, laid on the felt by the card's own homography: only where that skirt keeps
+  // clear of the homography's line at infinity (skirtSound) and lies below the table's edge row, on the felt; otherwise there is none.
+  const shadowFits = (q: number[][]) => { const p = q.map(([x, y]) => ({x, y})); if (!skirtSound(p, REACH)) return false;
+    try { const H = squareToQuad(q), row = o.camera().edgeRow; return [[-REACH, -REACH], [1 + REACH, -REACH], [1 + REACH, 1 + REACH], [-REACH, 1 + REACH]].every(([u, v]) => { const w = H[6] * u + H[7] * v + H[8]; return w > 0 && (H[3] * u + H[4] * v + H[5]) / w >= row; }); } catch { return false; } };
   const lay = (c: Card, q: number[][], how: {print: T.Texture; edge?: boolean; bend?: number; tilt?: number; shade?: {core: number[][]; colour: number[]; lying: number} | null; contact: number; gloss?: number}) => {
-    // a quad that does not go one way round (crossed or folded) would lay the card through infinity, across the whole picture
-    let H: number[]; try { if (!sound(q.map(([x, y]) => ({x, y})))) throw Error('unsound quad'); H = squareToQuad(q); } catch { c.mesh.visible = c.shadow.visible = false; return; }
+    let H: number[]; try { if (!drawable(q, !!how.edge)) throw Error('no plausible card'); H = squareToQuad(q); } catch { c.mesh.visible = c.shadow.visible = false; return; }
     for (const m of [c.material, c.under]) (m.uniforms.cardH.value as T.Matrix3).set(H[0], H[1], H[2], H[3], H[4], H[5], H[6], H[7], H[8]);
     const u = c.material.uniforms; u.print.value = how.print; u.edgeOn.value = how.edge ? 1 : 0; u.bend.value = how.bend ?? 0; u.tilt.value = how.tilt ?? 0;
     u.sheen.value = 2 * (how.gloss ?? GLOSS); u.shadeOn.value = how.shade ? 1 : 0; // gloss 0.35: the coat's lobe at 0.7 of the paper's
     if (how.shade) { how.shade.core.forEach((p, i) => (u.core.value as T.Vector2[])[i].set(p[0], p[1])); (u.cardColour.value as T.Vector3).set(how.shade.colour[0], how.shade.colour[1], how.shade.colour[2]); u.lying.value = how.shade.lying; }
-    c.under.uniforms.shade.value = CONTACT * how.contact; c.mesh.visible = true; c.shadow.visible = how.contact > 0.01;
+    c.under.uniforms.shade.value = CONTACT * how.contact; c.mesh.visible = true; c.shadow.visible = how.contact > 0.01 && !how.edge && shadowFits(q);
   };
   const dealt = card(), seated = card(), lying: Card[] = [];
   seated.mesh.renderOrder = 2.5; // under the card being dealt, which starts out as the seated card itself
@@ -326,7 +339,8 @@ export function createDealLayer(o: Options) {
         shade: core && !edge ? {core, colour: COLOUR[side], lying: LYING[side]} : null, contact: measured ? 1 - inHand : Math.max(0, Math.min(1, (pose.resting - 0.3) / 0.6))});
       // moving fast: drawn along its path over the shutter time instead, like the film's hand
       const path = pose.resting < 1 ? shutter(now, drawnAt(track!, at - 1, choice, extra), drawnAt(track!, at + 1, choice, extra)) : [q];
-      if (path.length > 1) { drawSamples(path); dealt.mesh.visible = false; composite.visible = true; }
+      // (only a card that was laid at all: its samples are rigid copies of it, so they are as plausible as it is)
+      if (path.length > 1 && dealt.mesh.visible) { drawSamples(path); dealt.mesh.visible = false; composite.visible = true; }
       depth.visible = true;
       // the film's own card goes: its zone is the overlay's (card-overlay.ts filmZone: the film's card and rim grown by 10 px
       // and an eighth of its size, room for motion blur), or a band along the line of an edge-on card

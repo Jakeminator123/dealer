@@ -22,7 +22,54 @@ export const STRAY = 50;   // a connected patch of the film card's colour of at 
 // The largest card a film holds, as the square root of its area in film pixels: 131 in the bank (2026-11-13; the card in the shoe
 // window is 80). A tracked quad larger than this is no card and is not drawn (poseAt).
 export const HELD_MAX = 180;
+// What a drawn card may look like. A card seen by the film camera is a mild perspective of a rectangle: the far side of a card lying
+// on the felt is about a tenth narrower than the near one, and the films' own cards keep within about 1.9 (keystone, nine frames in
+// ten of the bank's 10 555 flat frames) and 3.2 (sliver, all but one in a thousand). keystone: how many times more the homography that
+// lays the card on the quad magnifies at one corner than at another; at 3 the card's contact shadow, which reaches a quarter of a
+// card beyond the card, still stays on this side of the homography's line at infinity, beyond which it would be thrown across the
+// whole picture. sliver: the longest side against the square root of the area. size: square root of the area, film pixels. edge: the
+// longest line an edge-on card is drawn along.
+export const PLAUSIBLE = {keystone: 3, sliver: 3.6, size: HELD_MAX, edge: HELD_MAX};
+// A frame whose card is not plausible keeps the last plausible pose for at most this many frames; after that no card is drawn.
+export const HOLD = 3;
 const pts = (q: number[][]): Pt[] => q.map(([x, y]) => ({x, y}));
+/**
+ * The weights of the homography that carries the unit square onto `q` (texture order), at the square's corners (0,0), (1,0),
+ * (1,1), (0,1), scaled so the first is 1: where a weight is twice another, the card is drawn twice as large there. A sound quad
+ * has all four positive. `at` gives the weight at any point of the square, for the shadow's skirt outside it.
+ */
+export function weights(q: readonly Pt[]): {corners: number[]; at(u: number, v: number): number} | null {
+  if (q.length !== 4) return null;
+  const [a, b, c, d] = q, sx = a.x - b.x + c.x - d.x, sy = a.y - b.y + c.y - d.y, dx1 = b.x - c.x, dx2 = d.x - c.x, dy1 = b.y - c.y, dy2 = d.y - c.y, den = dx1 * dy2 - dx2 * dy1;
+  if (!Number.isFinite(den) || Math.abs(den) < 1e-9) return null;
+  const g = (sx * dy2 - dx2 * sy) / den, h = (dx1 * sy - sx * dy1) / den, at = (u: number, v: number) => 1 + g * u + h * v;
+  return {corners: [at(0, 0), at(1, 0), at(1, 1), at(0, 1)], at};
+}
+/** How much more one corner of the card is magnified than another (1: no perspective); Infinity for a quad that is no card. */
+export function keystone(q: readonly Pt[]): number { const w = weights(q)?.corners; return w && w.every(v => v > 0) ? Math.max(...w) / Math.min(...w) : Infinity; }
+/**
+ * Whether a quad can be drawn as a card: sound (one way round, some area), no larger than any card a film holds, not a sliver, and
+ * a perspective a card can show (PLAUSIBLE). The night's guard was sound() alone, and a sound quad can still be a trapezoid whose
+ * far side is a fifth of its near one (Paow's hole card under her hand, paow-giv-2-1-d-c2-03-01 frames 52-56): the card itself is
+ * then drawn as a long wedge, and its shadow through infinity.
+ */
+export function plausible(q: readonly Pt[] | null | undefined, largest: number = PLAUSIBLE.size): boolean {
+  if (!q || !sound(q)) return false;
+  const root = Math.sqrt(Math.abs(signedArea(q as Pt[]))), longest = Math.max(...q.map((p, i) => Math.hypot(p.x - q[(i + 1) % 4].x, p.y - q[(i + 1) % 4].y)));
+  return root <= largest && longest <= PLAUSIBLE.sliver * root && keystone(q) <= PLAUSIBLE.keystone;
+}
+/**
+ * Whether a card's contact shadow, which reaches `reach` of the card beyond its edges (scene3d-deal.ts REACH), can be laid by the
+ * card's homography: the skirt must stay well on this side of the line at infinity (no weight there below `least` of the largest
+ * corner's), or the shadow is thrown across the picture.
+ */
+export function skirtSound(q: readonly Pt[], reach: number, least = 0.3): boolean {
+  const w = weights(q); if (!w || !w.corners.every(v => v > 0)) return false;
+  const top = Math.max(...w.corners), lo = -reach, hi = 1 + reach;
+  return [w.at(lo, lo), w.at(hi, lo), w.at(hi, hi), w.at(lo, hi)].every(v => v >= least * top);
+}
+/** Whether an edge-on card's line can be drawn: finite, and no longer than a card. */
+export const plausibleEdge = (line: readonly Pt[] | null | undefined): boolean => !!line && line.length === 2 && line.every(p => Number.isFinite(p.x) && Number.isFinite(p.y)) && Math.hypot(line[1].x - line[0].x, line[1].y - line[0].y) <= PLAUSIBLE.edge;
 const apply = (h: number[], p: Pt): Pt => { const w = h[6] * p.x + h[7] * p.y + 1; return {x: (h[0] * p.x + h[1] * p.y + h[2]) / w, y: (h[3] * p.x + h[4] * p.y + h[5]) / w}; };
 const smooth = (t: number) => t <= 0 ? 0 : t >= 1 ? 1 : t * t * (3 - 2 * t);
 const size = (q: Pt[]) => Math.sqrt(Math.abs(signedArea(q)));
@@ -84,15 +131,29 @@ export type Pose = {
   resting: number;        // 0 in the hand, 1 lying still; in between while the size settles
   turned: boolean;
   at?: [Pt, Pt] | null;   // edge-on frames of a shifted card: where the film's own edge is, which is what must be covered
+  kept?: number;          // set when this is an earlier frame's pose kept for frame `kept`, whose own card was not plausible
 };
 /**
  * The rendered card in one frame. In the hand it follows the film's quad. From `restFrom` on it is
  * the constant-size card on the table. Over the last `ease` frames before that its size moves
  * smoothly to the resting size instead of following the film, which draws the card large in the
  * hand and shrinks it in the last two frames; the shape settles over the last three.
+ * Whatever the data, what is drawn is a plausible card (plausible, plausibleEdge): a frame whose card is not keeps the last
+ * plausible pose of the same side for at most HOLD frames (`kept` says so), and after that draws nothing.
  */
 export function poseAt(track: CardTrack, scene: Scene | null, frame: number, scale: number, ease = 12, shift: {x: number; y: number} | null = null, land: Pt[] | null = null): Pose | null {
-  const at = Math.max(0, Math.min(track.frames.length - 1, Math.round(frame))), f = track.frames[at];
+  const at = Math.max(0, Math.min(track.frames.length - 1, Math.round(frame))), pose = rawPose(track, scene, at, scale, ease, shift, land);
+  if (!pose || (pose !== BAD && drawable(pose))) return pose;
+  const f = track.frames[at];
+  for (let back = 1; back <= HOLD && at - back >= 0; back++) { const kept = rawPose(track, scene, at - back, scale, ease, shift, land);
+    if (kept && kept !== BAD && kept.side === f.side && (kept.quad || kept.edge) && drawable(kept)) return {...kept, kept: at}; }
+  return {frame: at, side: f.side, quad: null, edge: null, film: null, resting: 0, turned: false};
+}
+const drawable = (p: Pose) => (!p.quad || plausible(p.quad)) && (!p.edge || plausibleEdge(p.edge));
+// rawPose's answer for a frame whose tracked card is no card at all: poseAt keeps an earlier pose for it, or draws nothing.
+const BAD: Pose = {frame: -1, side: 'NONE', quad: null, edge: null, film: null, resting: 0, turned: false};
+function rawPose(track: CardTrack, scene: Scene | null, at: number, scale: number, ease: number, shift: {x: number; y: number} | null, land: Pt[] | null): Pose | null {
+  const f = track.frames[at];
   if (!f) return null;
   const none: Pose = {frame: at, side: f.side, quad: null, edge: null, film: null, resting: 0, turned: false};
   const landed = restOf(track);
@@ -105,18 +166,27 @@ export function poseAt(track: CardTrack, scene: Scene | null, frame: number, sca
   if (f.side === 'EDGE' && f.edge?.length === 2) { const line: [Pt, Pt] = [{x: f.edge[0][0], y: f.edge[0][1]}, {x: f.edge[1][0], y: f.edge[1][1]}];
     return k ? {...none, edge: [move(line[0]), move(line[1])], at: line} : {...none, edge: line}; }
   if ((f.side !== 'BACK' && f.side !== 'FRONT') || f.quad?.length !== 4) return none;
-  // A quad no card can be laid by (crossed, folded or empty: card-track.ts sound), or larger than any card a film holds, is drawn as
-  // nothing in this frame: one bad quad must never smear the card across the picture.
-  if (!sound(pts(f.quad)) || size(pts(f.quad)) > HELD_MAX) return none;
-  // In the hand the rendered card is the film's card and a margin more, so the film's card and its rim never show beside it.
-  const film = grown(pts(f.film?.length === 4 ? f.film : f.quad), RIM), held = about(pts(f.quad), MARGIN);
-  if (!landed) return {...none, quad: held.map(move), film};
-  // At rest it is the constant-size card on the table: at the plan's place and direction, else where the film laid it (moved by the shift).
-  const from = landed.from, rest = goal ?? landed.quad.map(p => ({x: p.x + d.x, y: p.y + d.y}));
-  const still = scene ? restingQuad(scene, rest, scale) : {quad: about(grown(rest, RIM), scale), turned: false};
-  if (at >= from) return {...none, quad: still.quad, film, resting: 1, turned: still.turned};
+  const film = grown(pts(f.film?.length === 4 ? f.film : f.quad), RIM);
+  // At rest it is the constant-size card on the table: at the plan's place and direction, else where the film laid it (moved by the
+  // shift). Its shape is the table's, whatever the film's card looks like under the hand.
+  const from = landed?.from ?? Infinity, rest = landed ? goal ?? landed.quad.map(p => ({x: p.x + d.x, y: p.y + d.y})) : null;
+  const still = rest ? scene ? restingQuad(scene, rest, scale) : {quad: about(grown(rest, RIM), scale), turned: false} : null;
+  if (still && at >= from) return {...none, quad: still.quad, film, resting: 1, turned: still.turned};
+  // A quad in the hand that is no card (crossed, folded, empty, larger than any card a film holds, a sliver or a wedge: plausible)
+  // is not drawn: one bad quad must never smear the card across the picture.
   // The size only starts to settle once the card shows the side it will lie on.
-  let start = Math.max(0, from - ease); for (let i = from - 1; i >= start; i--) if (track.frames[i].side !== track.frames[from].side || !track.frames[i].quad) { start = i + 1; break; }
+  let start = Math.max(0, from - ease); if (still) for (let i = from - 1; i >= start; i--) if (track.frames[i].side !== track.frames[from].side || !track.frames[i].quad) { start = i + 1; break; }
+  // While it settles, a frame whose card is no card (the card slid in under the hand, its tracked quad a wedge: Paow's hole card,
+  // paow-giv-2-1-d-c2-03-01 frames 50-56) settles on from the shape of the last plausible card before it, at this frame's place (the
+  // wedge's middle is still where the hand has the card), so the card goes on with the hand to its place.
+  let source = pts(f.quad);
+  if (!plausible(source)) { if (!still || at < start) return BAD;
+    let j = at - 1; while (j >= Math.max(0, start - HOLD) && !(track.frames[j].side === f.side && track.frames[j].quad?.length === 4 && plausible(pts(track.frames[j].quad!)))) j--;
+    if (j < Math.max(0, start - HOLD)) return BAD;
+    const shape = pts(track.frames[j].quad!), c = centre(shape), here = centre(source); source = shape.map(p => ({x: p.x + here.x - c.x, y: p.y + here.y - c.y})); }
+  // In the hand the rendered card is the film's card and a margin more, so the film's card and its rim never show beside it.
+  const held = about(source, MARGIN);
+  if (!still) return {...none, quad: held.map(move), film};
   const t = at < start ? 0 : smooth((at - start + 1) / (from - start + 1)), shape = smooth((at - (from - 4)) / 4);
   const order = still.turned ? [held[1], held[2], held[3], held[0]] : held, settled = about(order, 1 + (size(still.quad) / (size(order) || 1) - 1) * t).map(move);
   return {...none, quad: mix(settled, still.quad, shape), film, resting: t, turned: still.turned};

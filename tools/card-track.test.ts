@@ -281,9 +281,12 @@ test('a crossed, folded or empty quad is unsound; a short run of them is bridged
   assert.equal(soundFrames(long).dropped.length, SOUND.bridge + 1); assert.equal(long[5].quad, null);
   const huge = Array.from({length: 20}, (_, i) => frame(i, i === 9 ? [{x: 0, y: 0}, {x: 300, y: 0}, {x: 300, y: 300}, {x: 0, y: 300}] : card(i * 10)));
   assert.deepEqual(soundFrames(huge), {bridged: [9], dropped: []}, 'a quad far larger than the frames around it is two things taken for one');
-  // the drawing: a crossed quad in a track gives no card in that frame, the frames around it give theirs
+  // the drawing: a crossed quad in a track is never drawn; that frame keeps the card of the frame before it (card-overlay.ts HOLD)
   const track = {width: 1764, height: 1174, edgeWindow: null, restFrom: null, restQuad: null, frames: [0, 1, 2].map(i => ({frame: i, side: 'BACK' as const, quad: (i === 1 ? crossed(100) : card(100)).map(p => [p.x, p.y]), edge: null}))};
-  assert.equal(poseAt(track, null, 1, 1.2)?.quad, null); assert.ok(poseAt(track, null, 0, 1.2)?.quad); assert.ok(poseAt(track, null, 2, 1.2)?.quad);
+  const kept = poseAt(track, null, 1, 1.2)!; assert.deepEqual(kept.quad, poseAt(track, null, 0, 1.2)!.quad); assert.equal(kept.kept, 1); assert.equal(kept.frame, 0);
+  assert.ok(poseAt(track, null, 0, 1.2)?.quad); assert.ok(poseAt(track, null, 2, 1.2)?.quad); assert.equal(poseAt(track, null, 2, 1.2)?.kept, undefined);
+  const first = {...track, frames: [track.frames[1], track.frames[0]].map((f, i) => ({...f, frame: i}))};
+  assert.equal(poseAt(first, null, 0, 1.2)?.quad, null, 'with no card before it, nothing is drawn');
   const big = {...track, frames: [{frame: 0, side: 'BACK' as const, quad: [[0, 0], [400, 0], [400, 400], [0, 400]], edge: null}]};
   assert.equal(poseAt(big, null, 0, 1.2)?.quad, null, 'larger than any card a film holds');
 });
