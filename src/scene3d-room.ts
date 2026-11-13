@@ -81,7 +81,7 @@ export function readRegister(json: unknown): {rooms: RegisterRoom[]; problems: s
 // cut by its edge is half seen. Their films are the still's own loop (WAN 3, 480p, 281 frames, 9.37 s, already seamless, so
 // played forward only) laid through the same lens as the still, levelled to it, with the panorama's own pixels where the
 // still does not reach; the night and the grey copy use the same box (the grey film made grey with the grey still's formula).
-// Made by dealer-f6 with D:/dealer-scratch/tmp/levande-objekt/rum2/life.mjs.
+// Made by the scene session with a script of its own; each room's entry in data/scene-rooms.json says how.
 export type RoomLife = {url: string; box: readonly [number, number, number, number]; feather: number};
 export const ROOM_LIFE: Readonly<Partial<Record<string, readonly RoomLife[]>>> = {
   venedig: [{url: 'assets/scene/rooms/venedig-liv.mp4', box: [836 / 4096, 968 / 2048, 1268 / 4096, 1211 / 2048], feather: 0.08}, {url: 'assets/scene/rooms/venedig-liv-2.mp4', box: [3026 / 4096, 935 / 2048, 3634 / 4096, 1277 / 2048], feather: 0.08}],

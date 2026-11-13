@@ -9,6 +9,7 @@ import {existsSync, readFileSync} from 'node:fs';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {SCRIPTS, VENDOR, forBrowser} from './lab-routes.ts';
+import {PRIVATE_PATH} from './studio-freeze.ts';
 
 const repo = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 /** The relative module addresses a browser module asks for: static and dynamic imports and re-exports, comments left out. */
@@ -47,4 +48,15 @@ test('every neighbour that a module of the lab server imports is handed out too'
     }
   }
   assert.deepEqual(missing, []);
+});
+
+// The locked copy's build refuses a module that carries a machine path (tools/studio-freeze.ts), and says so only after it has
+// built the studio: on 2026-11-13 a publish stopped ten minutes in on one comment line. The same rule here, in seconds.
+test('no module the lab server hands out carries a machine path', () => {
+  const pattern = new RegExp(PRIVATE_PATH.source), found: string[] = [];
+  for (const file of Object.values(SCRIPTS)) {
+    if (!existsSync(path.join(repo, file))) continue;
+    forBrowser(readFileSync(path.join(repo, file), 'utf8')).split('\n').forEach((line, i) => { if (pattern.test(line)) found.push(`${file}:${i + 1}: ${line.trim().slice(0, 100)}`); });
+  }
+  assert.deepEqual(found, [], 'the copy for Jakob\'s boss cannot be built with these lines; say where the thing came from in the register or a document instead');
 });
