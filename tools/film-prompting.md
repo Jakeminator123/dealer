@@ -393,12 +393,13 @@ Rörelsemeningen i mall 7 gjorde det och förstörde kortet i 15 av 18 tagningar
 gav rörelse i huvudet men inget bättre kort. Oprövat: rörelsen i en egen vilofilm före eller efter given, eller en
 referensfilm där en hand rör sig medan den andra delar ut.
 
-**Plats 6 är det enda steg som saknas för en runda** (`node tools/produce.ts paow`). Elva tagningar
-(`paow-giv-2-1-p6-01`–`-08`) har fallit, för Jakob, för granskaren eller på ett mätt fel, med samma mönster: vägen från
+**Plats 6 är det enda steg som saknas för en runda** (`node tools/produce.ts paow`). Fjorton tagningar
+(`paow-giv-2-1-p6-01`–`-10`) har fallit, för Jakob, för granskaren eller på ett mätt fel, med samma mönster: vägen från
 skon till plats 6 är kort, och kortet vänds i ett sudd, är mjukt eller byter sida utan kantruta. Prövat: Kling 4 med fri
-vändning på mall 5, 6, 7 och 8, och WAN 3 med vändning vid platsen. Inte prövat: en referensfilm (Pamelas giv till plats
-6 är bara godkänd som variant, och hans regel tillåter bara rakt godkända som referens), Kling 4 med vändning vid platsen,
-och handbyte. I spelet läggs plats 6:s kort utan hand.
+vändning på mall 5, 6, 7 och 8, och vändning vid platsen med WAN 3 (två tagningar) och Kling 4 (två, omgång 11: mjukt
+kort och en suddig blandruta i vändningen). Inte prövat: en referensfilm (Pamelas giv till plats 6 är bara godkänd som
+variant, och hans regel tillåter bara rakt godkända som referens) och handbyte; platsen kan också flyttas en bit från
+skon i planen. I spelet läggs plats 6:s kort utan hand.
 
 **Oprövat:** referensfilm eller handbyte till plats 6; rörelse i en egen vilofilm; retur som egen film från en landningsbild; vändningen som egen film; landningsbild som stillbild; ankare
 2.2 som ruta ur en film; referensfilm av Jakobs hand; renderat kort i vändningens rutor.

@@ -181,7 +181,7 @@ retur till vila (`node tools/produce.ts paow`, V).
 - **Ett tredje eller fjärde kort.** Planen har sexton platser, så ordermodellen vägrar `D.C3` och en plats tredje kort
   (`tools/order-store.ts`: platsen måste finnas i `placements/default.json`) (V). Jakob bad 2026-11-13 om ett tredje och
   fjärde dealerkort; platsen lägger han själv i Placering när modellen har den.
-- **Plats 6** är det enda giv-steg som saknas för en runda: elva tagningar har fallit med samma mönster (kort väg, kortet
+- **Plats 6** är det enda giv-steg som saknas för en runda: fjorton tagningar har fallit med samma mönster (kort väg, kortet
   vänds i ett sudd eller byter sida utan kantruta). Prövat och inte prövat: handboken §5. I spelet läggs kortet utan hand.
 - **Hur hon rör sig** utan att det kostar kortet är en öppen fråga (handboken §5).
 - **Helfiguren** (hon kommer in och sätter sig, `AWAY>IDLE`; hon reser sig och går, `IDLE>AWAY`) har inget steg i

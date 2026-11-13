@@ -177,9 +177,11 @@ skript i `skript/`, liggare i `bestallningar-*.json`. Den sessionens filmer och 
 
 Det som hindrar en runda först. Han kan svara rad för rad.
 
-1. **Plats 6:** elva tagningar har fallit (kort väg, kortet vänds i ett sudd eller byter sida utan kantruta), så kortet
-   läggs utan hand i spelet. Får Pamelas giv till plats 6, som bara är godkänd som variant, vara referensfilm? Annars:
-   Kling 4 med vändning vid platsen, eller handbyte.
+1. **Plats 6:** fjorton tagningar har fallit (kort väg, kortet vänds i ett sudd eller byter sida utan kantruta), så
+   kortet läggs utan hand i spelet. Sist prövades vändning vid platsen (omgång 11, Kling 4 två tagningar och WAN 3 en):
+   kortet blev mjukt eller suddigt i vändningen, eller blått i luften utan vändning. Får Pamelas giv till plats 6, som
+   bara är godkänd som variant, vara referensfilm? Annars återstår handbyte, eller att flytta platsen en bit från skon i
+   hans plan.
 2. **De nio preliminära domarna** från natten ("jag måste sova och du får granska och godkänna alla klipp"), först i hans
    kö i Granska; hans eget beslut ersätter var och en:
    - `paow-giv-2-1-d-c2-03-01` (hålkortet stängt): godkänd; se att kortet är 119 px på filten och 59 px när handen släpper,
@@ -196,8 +198,13 @@ Det som hindrar en runda först. Han kan svara rad för rad.
      kantruta.
    - `paow-giv-2-1-p2-04-02` (plats 2): underkänd; kortet byter färg utan kantruta cirka 80 px före platsen.
    - Returerna i samma filmer (`d-c2-03`, `p2-04`, `p6-05`, `p7-06`) är preliminärt godkända.
-3. **Ett tredje och fjärde dealerkort:** var ligger de i hans plan? Ordermodellen vägrar `D.C3` tills planen har platsen;
-   han lägger den i Placering.
+3. **Ett tredje och fjärde dealerkort** (hans ord 2026-11-13: "Skapa då ett tredje och fjärde till dealer"): planen har
+   sexton platser, två per spelare och dealerns två (`TARGETS` i `src/placement-model.ts`), och ordermodellen tar bara
+   de platserna (`SEAT_TARGETS` i `src/order-model.ts`), så en film dit går inte att beställa i dag och korten läggs
+   utan hand i spelet. Förslag, inte byggt: planen får `D.C3` och `D.C4` i rad efter `D.C2` med samma avstånd som mellan
+   hennes två första (Placering, studions kortlager, beställningarnas sista bild och testerna som räknar sexton följer
+   med); sedan flyttar han dem i Placering och filmerna beställs som hennes första kort (WAN 3, vändning vid platsen:
+   "Den är mycket bra."). Vill han ha det så?
 4. **Orden för kortets sidor:** hans ord om "baksida" (det kan läsas som undersidan); orden efter färg i mall 6 förlorade
    två par; ett neutralt tredje sätt är oprövat. Vill han att det provas?
 5. **Hur hon ska röra sig:** rörelsemeningen i mall 7 rörde henne men förstörde kortet i 15 av 18 tagningar; blicken ensam
