@@ -12,6 +12,11 @@ const lock = '.next-build.lock', wait = ms => new Promise(done => setTimeout(don
 const snapshot = process.argv.includes('--snapshot');
 const env = {...process.env};
 if (snapshot) env.NEXT_PUBLIC_DEALER_MODE = 'snapshot'; else delete env.NEXT_PUBLIC_DEALER_MODE;
+// At most four workers (AGENTS: the machine is shared with the lab server and other sessions). Next 16 takes its default
+// worker count, when next.config.ts sets no experimental.cpus, as CIRCLE_NODE_TOTAL − 1 (else the cores − 1, 15 here), and
+// reads that variable for nothing else (next/dist/server/config-shared.js). Set for the copy's build only; experimental.cpus
+// in next.config.ts would hold it for every build.
+if (snapshot) env.CIRCLE_NODE_TOTAL = '5';
 for (let waited = 0; ; waited += 2) {
   try { mkdirSync(lock); break; } catch {
     let age = Infinity; try { age = Date.now() - statSync(lock).mtimeMs; } catch {}

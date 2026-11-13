@@ -2,6 +2,8 @@
 // Only Web APIs (crypto.subtle, TextEncoder, URL), so the same file runs in Vercel's Edge runtime (the middleware), in Node
 // (the local rehearsal, tools/serve-studio-snapshot.ts) and in the tests. The password and the signing key are never in the
 // repo: they are the environment variables DEALER_LOSEN and DEALER_KAKNYCKEL, set in the Vercel project by the owner.
+// DEALER_LOSEN may name more than one password, separated by commas ("john,jon": the word Jakob decided and the one he wrote
+// later), each of which opens the lock; a password can then hold no comma. Spaces around each are not part of it.
 
 export const COOKIE = 'dealer_studio';
 export const MAX_AGE = 30 * 24 * 60 * 60; // seconds: 30 days
@@ -25,29 +27,35 @@ export function sameBytes(a: Uint8Array, b: Uint8Array): boolean {
   return diff === 0;
 }
 
-export type Secrets = {password: string; key: CryptoKey; fingerprint: string};
+export type Secrets = {passwords: string[]; key: CryptoKey; fingerprint: string};
+
+/** The passwords DEALER_LOSEN names: separated by commas, each trimmed, empty ones dropped, each once. */
+export const passwordsOf = (value: string | undefined): string[] => [...new Set((value ?? '').split(',').map(p => p.trim()).filter(Boolean))];
 
 /**
  * The lock's secrets from the environment, or null when they are missing or too weak (the lock then stays shut). The
- * fingerprint of the password is signed into every cookie, so a new password makes every old cookie worthless.
+ * fingerprint of the passwords is signed into every cookie, so a new password (or one taken away) makes every old cookie worthless.
  */
 export async function secrets(env: {DEALER_LOSEN?: string; DEALER_KAKNYCKEL?: string}): Promise<Secrets | null> {
-  const password = env.DEALER_LOSEN ?? '', raw = env.DEALER_KAKNYCKEL ?? '';
-  if (!password || raw.length < MIN_KEY) return null;
+  const passwords = passwordsOf(env.DEALER_LOSEN), raw = env.DEALER_KAKNYCKEL ?? '';
+  if (!passwords.length || raw.length < MIN_KEY) return null;
   const key = await crypto.subtle.importKey('raw', bytes(raw), {name: 'HMAC', hash: 'SHA-256'}, false, ['sign']);
-  const fingerprint = hex(await crypto.subtle.digest('SHA-256', bytes(`dealer-studio|losen|${password}`))).slice(0, 32);
-  return {password, key, fingerprint};
+  // One password: the same fingerprint as before there could be several, so cookies already given keep holding.
+  const fingerprint = hex(await crypto.subtle.digest('SHA-256', bytes(`dealer-studio|losen|${passwords.join('\n')}`))).slice(0, 32);
+  return {passwords, key, fingerprint};
 }
 
 const mac = async (s: Secrets, message: string) => new Uint8Array(await crypto.subtle.sign('HMAC', s.key, bytes(message)));
 
 /**
- * The posted password against DEALER_LOSEN in constant time: both are run through the HMAC first, so the comparison is of
- * two 32-byte digests whatever their lengths, and it never stops at the first wrong character.
+ * The posted password against each of DEALER_LOSEN's in constant time: all are run through the HMAC first, so each comparison is
+ * of two 32-byte digests whatever their lengths, every one is made, and none stops at the first wrong character.
  */
 export async function samePassword(s: Secrets, given: string): Promise<boolean> {
-  const [a, b] = await Promise.all([mac(s, `dealer-studio|try|${given}`), mac(s, `dealer-studio|try|${s.password}`)]);
-  return sameBytes(a, b);
+  const [a, ...known] = await Promise.all([mac(s, `dealer-studio|try|${given}`), ...s.passwords.map(p => mac(s, `dealer-studio|try|${p}`))]);
+  let hit = false;
+  for (const b of known) hit = sameBytes(a, b) || hit;
+  return hit;
 }
 
 const signed = (s: Secrets, expires: number) => `dealer-studio|v1|${expires}|${s.fingerprint}`;

@@ -1,9 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {readFileSync} from 'node:fs';
+import {readFileSync, readdirSync} from 'node:fs';
 import {createHash} from 'node:crypto';
 import {buildGraph, resolveRound, type BankData} from '../src/clip-graph.ts';
-import {readRelease, blockedName, blockedPath, redactText, scrub, findLeaks, findTextLeaks, pickTakes, pickProofs, freezeBank, graphShape, roundShape, safeRelative, prefetchAlias, objectName, type Proof, type Release} from './studio-freeze.ts';
+import {readRelease, releaseDealers, gameTakes, namedAssets, engineSource, forEngine, copyGamePage, ENGINE_ENTRY, ENGINE_CRYPTO, blockedName, blockedPath, redactText, scrub, findLeaks, findTextLeaks, pickTakes, pickProofs, freezeBank, graphShape, roundShape, safeRelative, prefetchAlias, objectName, type Proof, type Release} from './studio-freeze.ts';
 
 const release: Release = readRelease(JSON.parse(readFileSync(new URL('../data/studio-release.json', import.meta.url), 'utf8')));
 const digest = (text: string) => createHash('sha256').update(text).digest('hex');
@@ -162,4 +162,197 @@ test('the output writer takes only plain relative paths', () => {
   assert.equal(objectName('a'.repeat(64), 'assets/motions/x/source.mp4'), `studio/${'a'.repeat(64)}.mp4`);
   assert.throws(() => objectName('xyz', 'a.mp4'));
   assert.throws(() => objectName('a'.repeat(64), 'a.exe'));
+});
+
+// ── The register's switches for the scene and the game ──────────────────────
+test('the presets and the game are switches of their own, and the game names only dealers the copy carries', () => {
+  assert.equal(release.presets, true);
+  assert.deepEqual(release.casino, {on: true, dealers: ['pamela', 'paow']});
+  assert.deepEqual(releaseDealers(release), ['pamela', 'paow']);
+  assert.deepEqual(releaseDealers({paow: false}), ['pamela']);
+  assert.throws(() => readRelease({...release, presets: 'ja'}));
+  assert.throws(() => readRelease({...release, casino: {on: true, dealers: []}}));
+  assert.throws(() => readRelease({...release, casino: {on: true, dealers: ['paow', 'paow']}}));
+  assert.throws(() => readRelease({...release, casino: {on: true, dealers: ['Paow']}}));
+  assert.throws(() => readRelease({...release, paow: false, casino: {on: true, dealers: ['paow']}}), /paow är avslagen/);
+  assert.throws(() => readRelease({...release, casino: undefined}));
+  assert.deepEqual(readRelease({...release, casino: {on: false, dealers: []}}).casino, {on: false, dealers: []});
+});
+
+test("the game's takes are those it can play: a verdict, Jakob's or a provisional one, or a talk film; they go up as spel", () => {
+  const bank = fixture();
+  // the return gets a provisional verdict, given in Jakob's place: the game plays it, the rule for his accepted takes does not pick it
+  bank.motions!['pamela-p4-c1-return-ready-01'].review = {decision: 'ACCEPTED', by: 'huvudagent'} as never;
+  // a talk film: a rest take played on request, waiting for Jakob; and a rest take that only waits, which the game never plays
+  const idle = (id: string, onRequest: boolean) => {
+    bank.jobs!.push({...bank.jobs![0], id, kind: 'IDLE', target: undefined, from: 'IDLE', to: 'IDLE', first: {file: {path: 'assets/anchors/idle.png'}}, last: {file: {path: 'assets/anchors/idle.png'}}} as never);
+    bank.motions![id] = {source: {fps: 30, frames: 90}, motion: {idle: {onRequest, calm: true}}, review: {decision: 'PENDING'}} as never;
+    bank.media![id] = {video: `assets/motions/${id}/source.mp4`, first: null, last: null, track: null, overrides: null};
+  };
+  idle('pamela-tal-hej-01', true);
+  idle('pamela-vila-vantar-01', false);
+  const game = gameTakes(bank, 'pamela');
+  assert.deepEqual([...game].sort(), ['pamela-p4-c1-deal-01', 'pamela-p4-c1-return-ready-01', 'pamela-tal-hej-01']);
+  assert.deepEqual([...gameTakes(bank, 'paow')], [], 'another dealer has none of these');
+  const graph = buildGraph(bank), rule = {...release, ...rules, takes: {...release.takes, round: false}};
+  const groups = Object.fromEntries(pickTakes(graph, [], rule, game).picked.map(p => [p.id, p.group]));
+  assert.deepEqual(groups, {'pamela-p4-c1-deal-01': 'godkänd', 'pamela-p4-c1-return-ready-01': 'spel', 'pamela-tal-hej-01': 'spel'});
+  const without = pickTakes(graph, [], rule);
+  assert.deepEqual(without.picked.map(p => p.id), ['pamela-p4-c1-deal-01']);
+  assert.ok(without.left.some(l => l.id === 'pamela-vila-vantar-01' && l.why === 'väntar på Jakob'));
+});
+
+test('the files a module names by a plain path are found; a path built at run time or leaving the folder is not', () => {
+  const text = "const a = 'assets/scene/table.png', b = \"assets/props/tray.glb\", c = `assets/scene/thumbs/room-${id}.jpg`;\n" +
+    "load('assets/scene/rooms/venedig-liv.mp4'); load('assets/scene/table.png'); load('assets/../secret.png'); load('assets/x.exe'); load('data/x.json');";
+  assert.deepEqual(namedAssets(text), ['assets/props/tray.glb', 'assets/scene/rooms/venedig-liv.mp4', 'assets/scene/table.png']);
+});
+
+// ── The game in the copy ────────────────────────────────────────────────────
+test("the engine's modules are game/ and the two of cloud/studio, under /engine/, and node:crypto becomes the shim", () => {
+  assert.equal(engineSource('/engine/game/rng.js'), 'game/rng.ts');
+  assert.equal(engineSource(ENGINE_ENTRY), 'cloud/studio/game-local.ts');
+  for (const other of ['/engine/cloud/studio/lock.js', '/engine/game/../tools/x.js', '/engine/game/sub/x.js', '/game-page.js', '/engine/game/rng.ts']) assert.equal(engineSource(other), null, other);
+  assert.equal(forEngine("import { createHash, randomFillSync } from 'node:crypto';\nexport const x = 1;", '/engine/game/rng.js'), "import { createHash, randomFillSync } from '../cloud/studio/node-crypto.js';\nexport const x = 1;");
+  assert.equal(forEngine('import {a} from "node:crypto";', ENGINE_ENTRY), 'import {a} from "./node-crypto.js";');
+  assert.throws(() => forEngine("import {readFile} from 'node:fs';", '/engine/game/rng.js'), /node:fs/);
+  assert.throws(() => forEngine('', '/scene3d-view.js'));
+  // whole-line comments go (their lines stay, empty); code, and a comment after code, are left as they are
+  assert.equal(forEngine("// ported from Kevin's croupier\nconst url = 'https://x//y'; // a note\n  // indented\nexport {url};", '/engine/game/round.js'), "\nconst url = 'https://x//y'; // a note\n\nexport {url};");
+  assert.throws(() => forEngine('const t = `one\n// two\nthree`;', '/engine/game/round.js'), /malltext/);
+  assert.doesNotThrow(() => forEngine('const t = `one ${1} two`; // `x` and `y`', '/engine/game/round.js'));
+  // every engine module of the repo is made ready without a blocked name left in it
+  for (const name of readdirSync(new URL('../game/', import.meta.url)).filter(n => n.endsWith('.ts'))) {
+    const text = forEngine(readFileSync(new URL(`../game/${name}`, import.meta.url), 'utf8'), `/engine/game/${name.replace(/\.ts$/, '.js')}`);
+    assert.deepEqual(findTextLeaks(text, release), [], name);
+  }
+});
+
+test("the copy's game.html is the lab's without the tab stream and with the engine before the page", () => {
+  const html = readFileSync(new URL('../game/page/game.html', import.meta.url), 'utf8');
+  const copy = copyGamePage(html), engine = `<script type="module" src="${ENGINE_ENTRY}"></script>\n`, tab = '<script type="module" src="preview-ui.js"></script>\n';
+  assert.ok(!copy.includes('preview-ui.js'));
+  assert.ok(copy.indexOf(engine) > 0 && copy.indexOf(engine) < copy.indexOf('src="game-page.js"'));
+  assert.equal(copy.replace(engine, ''), html.replace(tab, ''));
+  assert.throws(() => copyGamePage(html.replace('game-page.js', 'spel.js')));
+  assert.throws(() => copyGamePage(html.replace(tab, '')));
+});
+
+test("the shim of node:crypto hashes as Node does, copies a hash in progress, and its Buffer reads and writes as Node's", async () => {
+  const shim = await import('../cloud/studio/node-crypto.ts');
+  const node = await import('node:crypto');
+  for (let n = 0; n < 300; n += 7) {
+    const bytes = node.randomBytes(n);
+    assert.equal(shim.createHash('sha256').update(bytes).digest('hex'), node.createHash('sha256').update(bytes).digest('hex'), `length ${n}`);
+  }
+  const text = 'game-rng/1\nsecure\nÅÄÖ \u{1F0A1}';
+  assert.equal(shim.createHash('sha256').update(text, 'utf8').digest('hex'), node.createHash('sha256').update(text, 'utf8').digest('hex'));
+  // in pieces, and a copy taken half-way goes on by itself
+  const a = shim.createHash('sha256').update('abc'.repeat(40)), twin = a.copy();
+  a.update('x'); twin.update('y');
+  assert.equal(a.digest('hex'), node.createHash('sha256').update('abc'.repeat(40) + 'x').digest('hex'));
+  assert.deepEqual([...(twin.digest() as Uint8Array)], [...node.createHash('sha256').update('abc'.repeat(40) + 'y').digest()]);
+  assert.throws(() => a.update('z'));
+  assert.throws(() => shim.createHash('md5'));
+  const B = shim.ShimBuffer;
+  assert.equal(B.from('hej då', 'utf8').toString('hex'), Buffer.from('hej då', 'utf8').toString('hex'));
+  assert.equal(B.from('hej då', 'utf8').toString(), 'hej då');
+  assert.equal(B.from('00ff10', 'hex').toString('hex'), '00ff10');
+  assert.equal(B.from([1, 2, 300]).toString('hex'), Buffer.from([1, 2, 300]).toString('hex'));
+  const big = B.alloc(16), nodeBig = Buffer.alloc(16);
+  big.writeBigUInt64BE(0x0102030405060708n, 8); nodeBig.writeBigUInt64BE(0x0102030405060708n, 8);
+  assert.deepEqual([...big], [...nodeBig]);
+  assert.equal(big.readUInt32BE(12), nodeBig.readUInt32BE(12));
+  const into = new Uint8Array(4);
+  assert.equal(B.from('abcdef').copy(into, 1), 3);
+  assert.deepEqual([...into], [0, 97, 98, 99]);
+  assert.ok(big.map(x => x ^ 1) instanceof B, 'map keeps the shim');
+  const many = shim.randomFillSync(new Uint8Array(70000));
+  assert.ok(many.subarray(0, 65536).some(x => x !== 0) && many.subarray(65536).some(x => x !== 0), 'more than one call of getRandomValues');
+  assert.match(shim.randomBytes(32).toString('hex'), /^[0-9a-f]{64}$/);
+  assert.match(shim.randomUUID(), /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/);
+});
+
+/** The engine's folder as the copy ships it (every module from ENGINE_ENTRY on, made ready as the build does), in a temp folder. */
+async function engineFolder(): Promise<{dir: string; url: (address: string) => string}> {
+  const {mkdtemp, mkdir, writeFile} = await import('node:fs/promises');
+  const {tmpdir} = await import('node:os');
+  const {join, dirname} = await import('node:path');
+  const {pathToFileURL} = await import('node:url');
+  const {forBrowser} = await import('./lab-routes.ts');
+  const dir = await mkdtemp(join(tmpdir(), 'studio-engine-'));
+  await writeFile(join(dir, 'package.json'), '{"type":"module"}');
+  const queue = [ENGINE_ENTRY], seen = new Set<string>();
+  while (queue.length) {
+    const address = queue.shift()!;
+    if (seen.has(address)) continue;
+    seen.add(address);
+    const source = engineSource(address);
+    assert.ok(source, `outside the engine: ${address}`);
+    const text = forEngine(forBrowser(readFileSync(new URL(`../${source}`, import.meta.url), 'utf8')), address);
+    for (const m of text.matchAll(/\b(?:import|export)\s*(?:[\w$*{}\s,]+?from\s*)?(['"])([^'"\n]+)\1/g)) queue.push(new URL(m[2], 'http://copy' + address).pathname);
+    const file = join(dir, ...address.slice(1).split('/'));
+    await mkdir(dirname(file), {recursive: true});
+    await writeFile(file, text);
+  }
+  assert.ok(seen.has(ENGINE_CRYPTO) && seen.has('/engine/game/session.js'), [...seen].join(' '));
+  return {dir, url: (address: string) => pathToFileURL(join(dir, ...address.slice(1).split('/'))).href};
+}
+
+test('the engine as the copy ships it plays a round in the page, answers as the lab server does, and shuffles as game/ does', async () => {
+  const {rm} = await import('node:fs/promises');
+  const folder = await engineFolder();
+  try {
+    const local = await import(folder.url(ENGINE_ENTRY));
+    const answer = local.localEngine();
+    const at = (p: string) => new URL(p, 'https://kopian.example/game.html');
+    assert.equal(answer('GET', at('/data/scene-rooms.json'), null), null, 'not the engine: on to the network');
+    const first = answer('GET', at('/api/game?table=bord-1'), null);
+    assert.equal(first.status, 200);
+    assert.equal(first.body.balance, 1000);
+    assert.equal(first.body.view.shoe.source, 'secure');
+    let ver = first.body.ver, n = 0, state = first.body;
+    const send = (command: Record<string, unknown>) => {
+      const out = answer('POST', at('/api/game/command?table=bord-1'), JSON.stringify({...command, requestId: `r${++n}`, expectedVersion: ver}));
+      assert.equal(out.status, 200, JSON.stringify(out.body));
+      ver = out.body.ver; state = out.body;
+      return out.body;
+    };
+    send({op: 'start', bets: [{seat: 4, main: 25}]});
+    for (let i = 0; i < 12 && state.view.round?.phase !== 'settled'; i++) {
+      const r = state.view.round, v = state.view;
+      if (r.phase === 'insurance') send({op: 'insurance', roundId: v.roundId, take: false});
+      else if (state.legalActions.includes('stand')) send({op: 'act', action: 'stand', seat: r.activeSeat, handIndex: r.active, roundId: v.roundId, turnSeq: v.turnSeq});
+      else break;
+    }
+    assert.equal(state.view.round.phase, 'settled');
+    send({op: 'collect', roundId: state.view.roundId});
+    // the table is kept: the next read is the same session
+    assert.equal(answer('GET', at('/api/game?table=bord-1'), null).body.ver, ver);
+    // the lab server's refusals, in the lab's words
+    assert.equal(answer('POST', at('/api/game/command?table=bord-1'), JSON.stringify({op: 'start', bets: [{seat: 4, main: 25}], requestId: 'gammal', expectedVersion: 0})).status, 409);
+    assert.equal(answer('POST', at('/api/game/command?table=bord-1'), '{inte json').body.error.code, 'INVALID_COMMAND');
+    assert.equal(answer('GET', at('/api/game?table=Bord!'), null).status, 400);
+    assert.equal(answer('PUT', at('/api/game/command'), '{}').status, 405);
+    assert.equal(answer('POST', at('/api/game/new?table=bord-1'), JSON.stringify({shoe: {mode: 'stacked', seed: 'x', cards: []}})).status, 403, 'no lab shoe in the copy');
+    const fresh = answer('POST', at('/api/game/new?table=bord-1'), JSON.stringify({balance: 500}));
+    assert.equal(fresh.status, 200);
+    assert.equal(fresh.body.balance, 500);
+    assert.equal(fresh.body.ver, 0);
+    // in front of a page's fetch: the engine's addresses on the page's own origin, and nothing else
+    const asked: string[] = [];
+    const page = {location: {href: 'https://kopian.example/game.html?table=x'}, fetch: async (input: RequestInfo | URL) => { asked.push(input instanceof Request ? input.url : String(input)); return new Response('{}'); }};
+    local.install(page);
+    assert.equal((await (await page.fetch('api/game?table=x')).json()).balance, 1000);
+    assert.equal((await page.fetch(new Request('https://kopian.example/api/game/command?table=x', {method: 'POST', body: '{inte json'}))).status, 400);
+    await page.fetch('data/scene-rooms.json');
+    await page.fetch('https://annan.example/api/game');
+    assert.deepEqual(asked, ['data/scene-rooms.json', 'https://annan.example/api/game']);
+    // the seeded shoe of game/rng.ts draws the same cards through the shim (its HMAC copies a hash in progress), with the same proof
+    const copyRng = await import(folder.url('/engine/game/rng.js')), labRng = await import('../game/rng.ts');
+    const draw = (m: typeof labRng) => { const rng = m.createRng({mode: 'seeded', seed: 'kopian', allowDeterministic: true}); return {order: rng.shuffle([...Array(52).keys()]), proof: rng.proof()}; };
+    assert.deepEqual(draw(copyRng), draw(labRng));
+  } finally {
+    await rm(folder.dir, {recursive: true, force: true});
+  }
 });

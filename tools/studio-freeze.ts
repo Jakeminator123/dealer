@@ -2,7 +2,9 @@
 // checked, which takes and proofs go up, the block list that nothing may cross, and the frozen answers of the lab
 // server's read routes with every cost and private field taken out. No network and no files here: tools/build-studio-
 // snapshot.ts reads and writes, these decide. Tested in tools/studio-freeze.test.ts.
-import type {BankData, Graph, Segment, Take} from '../src/clip-graph.ts';
+import {buildGraph, type BankData, type Graph, type Segment, type Take} from '../src/clip-graph.ts';
+import {judgedBank} from '../src/game-director.ts';
+import {posix} from 'node:path';
 
 // ── The register ────────────────────────────────────────────────────────────
 export type ReleaseProof = {id: string; why: string; files?: string[]};
@@ -13,12 +15,18 @@ export type Release = {
   proofs: ReleaseProof[];
   paow: boolean;
   library: boolean;
+  /** The scene's presets (data/scene-presets/, /api/scene-presets) go up read-only, Jakob's numbered places among them. */
+  presets: boolean;
+  /** The game (game.html with the engine of game/ in the page) goes up, and every take it can play for these dealers. */
+  casino: {on: boolean; dealers: string[]};
   blocked: {folders: string[]; names: string[]};
   stills: {width: number; quality: number};
   limits: {blobBytes: number; staticBytes: number};
 };
 
 const SEAT = /^P[1-7]$/, ID = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+/** The dealers the copy carries: Pamela, the bank's first, and Paow while her switch is on. */
+export const releaseDealers = (release: Pick<Release, 'paow'>): string[] => ['pamela', ...(release.paow ? ['paow'] : [])];
 const flag = (v: unknown, what: string) => { if (typeof v !== 'boolean') throw Error(`studio-release: ${what} ska vara true eller false.`); return v; };
 const count = (v: unknown, what: string, lo: number, hi: number) => { if (!Number.isInteger(v) || (v as number) < lo || (v as number) > hi) throw Error(`studio-release: ${what} ska vara ett heltal ${lo}–${hi}.`); return v as number; };
 
@@ -37,11 +45,17 @@ export function readRelease(json: unknown): Release {
   });
   if (new Set(proofs.map(p => p.id)).size !== proofs.length) throw Error('studio-release: ett prov står två gånger.');
   const list = (v: unknown, what: string) => { if (!Array.isArray(v) || !v.length || v.some(x => typeof x !== 'string' || !x.trim())) throw Error(`studio-release: ${what} ska vara en lista med text.`); return [...v] as string[]; };
+  const paow = flag(r.paow, 'paow'), casino = r.casino ?? {};
+  const on = flag(casino.on, 'casino.on');
+  if (!Array.isArray(casino.dealers) || casino.dealers.some((d: unknown) => typeof d !== 'string' || !ID.test(d)) || new Set(casino.dealers).size !== casino.dealers.length) throw Error('studio-release: casino.dealers ska vara en lista med dealer-id, var och en en gång.');
+  for (const d of casino.dealers as string[]) if (!releaseDealers({paow}).includes(d)) throw Error(`studio-release: casino.dealers nämner ${d}, som inte följer med kopian${d === 'paow' ? ' (paow är avslagen)' : ''}.`);
+  if (on && !casino.dealers.length) throw Error('studio-release: casino.on kräver minst en dealer i casino.dealers.');
   return {
     schemaVersion: 1,
     takes: {round: flag(takes.round, 'takes.round'), accepted: flag(takes.accepted, 'takes.accepted'), variants: flag(takes.variants, 'takes.variants'), waiting: flag(takes.waiting, 'takes.waiting')},
     round: {seats: [...round.seats], reveal: flag(round.reveal, 'round.reveal'), holeCardDown: flag(round.holeCardDown, 'round.holeCardDown')},
-    proofs, paow: flag(r.paow, 'paow'), library: flag(r.library, 'library'),
+    proofs, paow, library: flag(r.library, 'library'),
+    presets: flag(r.presets, 'presets'), casino: {on, dealers: [...casino.dealers]},
     blocked: {folders: list(blocked.folders, 'blocked.folders'), names: list(blocked.names, 'blocked.names')},
     stills: {width: count(stills.width, 'stills.width', 120, 1920), quality: count(stills.quality, 'stills.quality', 40, 100)},
     limits: {blobBytes: count(limits.blobBytes, 'limits.blobBytes', 1, 5e9), staticBytes: count(limits.staticBytes, 'limits.staticBytes', 1, 1e9)},
@@ -127,18 +141,29 @@ export function findTextLeaks(text: string, release: Pick<Release, 'blocked'>): 
 }
 
 // ── Which takes go up ───────────────────────────────────────────────────────
-export type Picked = {id: string; group: 'runda' | 'godkänd' | 'variant' | 'väntar'};
+export type Picked = {id: string; group: 'runda' | 'godkänd' | 'variant' | 'spel' | 'väntar'};
 export type Left = {id: string; why: string};
 
 /** A take Jakob has accepted outright: accepted, not as a variant, by his own word, and playable (as Primära reads it). */
 export const acceptedOutright = (t: Take) => t.stage === 'DONE' && t.decision === 'ACCEPTED' && !t.variant && t.motion?.review?.userAccepted === true;
 
 /**
- * The takes whose films go up, by the register's rule: the takes the round plays, the takes accepted outright, the variants,
- * and (off by default) the takes that wait for Jakob. Every other take is named in left with the reason. A take whose id or
- * film names a blocked rule is never picked; when the rule would pick it, the build is stopped instead (refused).
+ * Every take the game can play for a dealer, as the game reads the bank (judgedBank in src/game-director.ts): a take with a
+ * verdict, Jakob's or a provisional one given in his place, and the talk films she plays on request; done, not rejected, with
+ * a film. The game's own bank decides, so a take it would never play (one that waits for Jakob) is not among them.
  */
-export function pickTakes(graph: Graph, round: Segment[], release: Release): {picked: Picked[]; left: Left[]; refused: Left[]} {
+export function gameTakes(bank: BankData, dealer: string): Set<string> {
+  const graph = buildGraph(judgedBank(bank), {dealer});
+  return new Set(Object.values(graph.takes).filter(t => t.stage === 'DONE' && t.decision !== 'REJECTED' && !!t.media.video).map(t => t.id));
+}
+
+/**
+ * The takes whose films go up, by the register's rule: the takes the round plays, the takes accepted outright, the variants,
+ * the takes the game can play (game: gameTakes, for a dealer of casino.dealers), and (off by default) the takes that wait for
+ * Jakob. Every other take is named in left with the reason. A take whose id or film names a blocked rule is never picked;
+ * when the rule would pick it, the build is stopped instead (refused).
+ */
+export function pickTakes(graph: Graph, round: Segment[], release: Release, game: ReadonlySet<string> = new Set()): {picked: Picked[]; left: Left[]; refused: Left[]} {
   const inRound = new Set(round.flatMap(s => s.take ? [s.take.id] : []));
   const picked: Picked[] = [], left: Left[] = [], refused: Left[] = [];
   for (const take of Object.values(graph.takes).sort((a, b) => a.order - b.order)) {
@@ -146,6 +171,7 @@ export function pickTakes(graph: Graph, round: Segment[], release: Release): {pi
     const group: Picked['group'] | null = release.takes.round && inRound.has(take.id) ? 'runda'
       : release.takes.variants && playable && take.variant ? 'variant'
       : release.takes.accepted && acceptedOutright(take) ? 'godkänd'
+      : playable && game.has(take.id) ? 'spel'
       : release.takes.waiting && playable && take.decision === 'PENDING' ? 'väntar' : null;
     const rule = blockedPath(take.id, release) ?? (take.media.video ? blockedPath(take.media.video, release) : null);
     const paow = !release.paow && namesPaow(take.id);
@@ -232,6 +258,61 @@ export function safeRelative(path: string): boolean {
 export function prefetchAlias(path: string): string | null {
   const m = /^((?:[^/]+\/)*)(__next\.[^/]+)\/(.+)\.txt$/.exec(path);
   return m ? `${m[1]}${m[2]}.${m[3].split('/').join('.')}.txt` : null;
+}
+
+/**
+ * The files of the checkout a module names by a plain literal ('assets/scene/table.png', "assets/props/tray.glb"): what the
+ * scene or the game loads by its own path, beside what the registers name. A path built at run time (`…${id}…`) is not one;
+ * those come from the registers (rooms, thumbs, materials, the bank's media).
+ */
+export function namedAssets(text: string): string[] {
+  const out = new Set<string>();
+  for (const m of text.matchAll(/(['"`])(assets\/[A-Za-z0-9._/-]+\.(?:png|jpg|webp|glb|json|mp4))\1/g)) if (safeRelative(m[2])) out.add(m[2]);
+  return [...out].sort();
+}
+
+// ── The game in the copy ────────────────────────────────────────────────────
+// The lab plays the game against its server (tools/preview.ts /api/game); the copy has none, so the engine of game/ runs in
+// the game page (cloud/studio/game-local.ts), with node:crypto from cloud/studio/node-crypto.ts. Its modules are the copy's
+// own: under /engine/ with their paths in the repo ("/engine/game/session.js" is game/session.ts made ready for the browser).
+export const ENGINE_ENTRY = '/engine/cloud/studio/game-local.js';
+export const ENGINE_CRYPTO = '/engine/cloud/studio/node-crypto.js';
+const ENGINE_SOURCE = /^\/engine\/((?:game\/[a-z0-9-]+|cloud\/studio\/(?:game-local|node-crypto))\.)js$/;
+
+/** The repo file behind an engine module's address ("/engine/game/rng.js" → "game/rng.ts"), or null for any other address. */
+export function engineSource(address: string): string | null {
+  const m = ENGINE_SOURCE.exec(address);
+  return m ? `${m[1]}ts` : null;
+}
+
+/**
+ * An engine module as the copy serves it (address: its own, "/engine/game/rng.js"): node:crypto is the shim, named relative to
+ * the module so that the engine's folder holds together by itself, and no other module of Node may be named. Its whole-line
+ * comments stay in the repo: they say where the code was ported from, by people's names the copy does not carry, and the
+ * browser needs none of them. Only a line that is a comment from its first character on is emptied (the line numbers stay),
+ * so no code is touched; a module with a template string over several lines, where such a line could be text, stops the
+ * build instead.
+ */
+export function forEngine(text: string, address: string): string {
+  if (!engineSource(address)) throw Error(`Ingen modul i spelmotorn: ${address}`);
+  const relative = posix.relative(posix.dirname(address), ENGINE_CRYPTO), shim = relative.startsWith('.') ? relative : `./${relative}`;
+  const out = text.replace(/((?:\bfrom|\bimport)\s*\(?\s*)(['"])node:crypto\2/g, `$1$2${shim}$2`);
+  const other = /(?:\bfrom|\bimport)\s*\(?\s*['"](node:[a-z/_]+)['"]/.exec(out);
+  if (other) throw Error(`Spelmotorn importerar ${other[1]}, som inte finns i en webbläsare.`);
+  const lines = out.split('\n');
+  if (lines.some(line => (line.replace(/\\./g, '').match(/`/g)?.length ?? 0) % 2)) throw Error(`${address} har en malltext över flera rader; kommentarerna kan inte tas bort säkert.`);
+  return lines.map(line => /^\s*\/\//.test(line) ? '' : line).join('\n');
+}
+
+/**
+ * The copy's game.html: the lab's own page, without the lab tab's stream (preview-ui.js, which talks to the lab server) and
+ * with the engine in front of game-page.js, so that the page's first read of /api/game is answered in the page. The page is
+ * matched exactly: a game.html that no longer has these two lines stops the build instead of going up half-changed.
+ */
+export function copyGamePage(html: string): string {
+  const tab = '<script type="module" src="preview-ui.js"></script>\n', page = '<script type="module" src="game-page.js"></script>';
+  if (html.split(tab).length !== 2 || html.split(page).length !== 2) throw Error('game.html har inte de två skriptrader kopian väntar sig (preview-ui.js och game-page.js).');
+  return html.replace(tab, '').replace(page, `<script type="module" src="${ENGINE_ENTRY}"></script>\n${page}`);
 }
 
 export const MEDIA_TYPES: Record<string, string> = {'.mp4': 'video/mp4', '.png': 'image/png', '.jpg': 'image/jpeg', '.webp': 'image/webp', '.json': 'application/json', '.glb': 'model/gltf-binary'};

@@ -2,16 +2,24 @@
 // .runtime/studio-deploy/.vercel/output. It uploads nothing and deploys nothing: tools/sync-studio-media.ts plans the
 // upload of the films, and the publish steps are the main agent's, on Jakob's word.
 //
-//   node tools/build-studio-snapshot.ts
+//   node tools/build-studio-snapshot.ts           the copy, in .runtime/studio-deploy/.vercel/output
+//   node tools/build-studio-snapshot.ts --prov    a trial build, in .runtime/studio-deploy/prov/.vercel/output
 //
-// With the lab server running on 127.0.0.1:4319 it freezes what the studio reads there: the clip bank, the proofs and the
-// placement plan (every cost and private field taken out, tools/studio-freeze.ts), the 3D scene's modules exactly as the
-// server serves them, and the scene's files. What goes up is decided by data/studio-release.json. It builds the studio in
-// snapshot mode (studio/scripts/build.mjs --snapshot), writes stills as small WebP, and adds the lock: the Routing
-// Middleware of cloud/studio/, with the map from each film's address to its object in Vercel Blob. Films and proof files go
-// to Blob, everything else is a static file of the deployment. The bot and the request inbox are one Node.js function
-// (cloud/studio/bot.ts) with its knowledge beside it (tools/build-knowledge.ts), never a static file. It prints a table of
-// what goes up and what was left out.
+// With the lab server running on 127.0.0.1:4319 it freezes what the studio reads there: the clip bank, the proofs, the
+// placement plan and the scene's presets (every cost and private field taken out, tools/studio-freeze.ts), the 3D scene's
+// and the game's modules exactly as the server serves them, and the files they name. What goes up is decided by
+// data/studio-release.json: the takes of each dealer it carries (Pamela, and Paow while her switch is on), and for a dealer of
+// casino.dealers every take the game can play, her talk films among them. It builds the studio in snapshot mode
+// (studio/scripts/build.mjs --snapshot), writes stills as small WebP, and adds the lock: the Routing Middleware of
+// cloud/studio/, with the map from each film's address to its object in Vercel Blob. Films and proof files go to Blob,
+// everything else is a static file of the deployment. With casino.on the game page goes up too, with the engine of game/
+// running in the page (cloud/studio/game-local.ts), since the copy has no server to hold a game. The bot and the request
+// inbox are one Node.js function (cloud/studio/bot.ts) with its knowledge beside it (tools/build-knowledge.ts), never a
+// static file. It prints a table of what goes up and what was left out.
+//
+// --prov is for learning what breaks while the tree is being worked on: a machine path or a blocked name in a module's code
+// is listed instead of stopping the build, and the tree goes to its own folder, which no Vercel project is linked to and
+// tools/sync-studio-media.ts will not upload from. Everything else is checked as for the copy.
 import {readFile, writeFile, mkdir, rm, realpath, lstat, readdir, stat} from 'node:fs/promises';
 import {createHash} from 'node:crypto';
 import {execFileSync, spawnSync} from 'node:child_process';
@@ -19,10 +27,12 @@ import {existsSync} from 'node:fs';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import sharp from 'sharp';
-import {buildGraph, resolveRound, roundSequence, type BankData} from '../src/clip-graph.ts';
-import {SCRIPTS, VENDOR, SCENE_FILES, forBrowser} from './lab-routes.ts';
+import {buildGraph, resolveRound, roundSequence, type BankData, type Graph} from '../src/clip-graph.ts';
+import {judgedBank} from '../src/game-director.ts';
+import {SCRIPTS, VENDOR, SCENE_FILES, PAGES, forBrowser} from './lab-routes.ts';
 import {STUDIO_TYPES} from './studio-files.ts';
-import {readRelease, pickTakes, freezeBank, pickProofs, graphShape, roundShape, scrub, findLeaks, findTextLeaks, blockedPath, safeRelative, prefetchAlias, objectName, MEDIA_TYPES, type Proof, type Left} from './studio-freeze.ts';
+import {readRelease, releaseDealers, gameTakes, pickTakes, freezeBank, pickProofs, graphShape, roundShape, scrub, findLeaks, findTextLeaks, blockedPath, safeRelative, prefetchAlias, objectName, namedAssets, engineSource, forEngine, copyGamePage, ENGINE_ENTRY, MEDIA_TYPES, type Proof, type Left, type Picked} from './studio-freeze.ts';
+import {PRESET_NAME} from '../studio/lib/scene-presets.ts';
 import type {MediaMap} from '../cloud/studio/gate.ts';
 import {buildKnowledge, BOT_FUNCTION_FILES} from './build-knowledge.ts';
 import {knowledgeLeaks} from './knowledge.ts';
@@ -30,8 +40,10 @@ import {isBotPath} from '../cloud/studio/bot-routes.ts';
 
 const root = path.resolve(fileURLToPath(new URL('../', import.meta.url)));
 if (path.resolve(process.cwd()) !== root) throw Error('Kör från dealer-katalogen.');
+const trial = process.argv.includes('--prov');
 const LAB = 'http://127.0.0.1:4319';
-const deploy = path.join(root, '.runtime', 'studio-deploy');
+const deployName = trial ? '.runtime/studio-deploy/prov' : '.runtime/studio-deploy';
+const deploy = path.join(root, ...deployName.split('/'));
 const output = path.join(deploy, '.vercel', 'output');
 const staticRoot = path.join(output, 'static');
 const middlewareRoot = path.join(output, 'functions', '_middleware.func');
@@ -41,13 +53,17 @@ const botRoot = path.join(output, 'functions', 'api', 'bot.func');
 const studioOut = path.join(root, '.runtime', 'studio-snapshot', 'out');
 
 // ── One fixed, disposable output tree, never reached through a link ─────────
-if (output !== path.resolve(root, '.runtime/studio-deploy/.vercel/output')) throw Error('Unsafe build output.');
+if (output !== path.resolve(root, `${deployName}/.vercel/output`)) throw Error('Unsafe build output.');
 const realRoot = await realpath(root);
 await mkdir(path.dirname(output), {recursive: true});
-if (await realpath(deploy) !== path.join(realRoot, '.runtime', 'studio-deploy')) throw Error('Linked studio build directory.');
-if (await realpath(path.dirname(output)) !== path.join(realRoot, '.runtime', 'studio-deploy', '.vercel')) throw Error('Linked Vercel output parent.');
+if (await realpath(deploy) !== path.join(realRoot, ...deployName.split('/'))) throw Error('Linked studio build directory.');
+if (await realpath(path.dirname(output)) !== path.join(realRoot, ...deployName.split('/'), '.vercel')) throw Error('Linked Vercel output parent.');
+// A trial tree never sits where a Vercel project could be linked (.vercel/project.json is written by `vercel link`).
+if (trial && existsSync(path.join(deploy, '.vercel', 'project.json'))) throw Error('Provbyggets mapp är länkad till ett Vercel-projekt; ta bort länken först.');
 if ((await lstat(output).catch(() => null))?.isSymbolicLink()) throw Error('Linked studio build output.');
 await rm(output, {recursive: true, force: true});
+// A real build makes an earlier trial build worthless, and nothing but the copy itself is to lie beside the deploy.
+if (!trial) await rm(path.join(deploy, 'prov'), {recursive: true, force: true});
 await mkdir(staticRoot, {recursive: true});
 
 const digest = (bytes: Buffer | string) => createHash('sha256').update(bytes).digest('hex');
@@ -92,7 +108,7 @@ const json = (value: unknown) => JSON.stringify(value);
 
 type BlobFile = {path: string; source: string; sha256: string; bytes: number; type: string; object: string; group: string};
 const blob = new Map<string, BlobFile>();
-const GROUP_RANK = ['runda', 'godkänd', 'variant', 'väntar', 'scen', 'prov'];
+const GROUP_RANK = ['runda', 'godkänd', 'variant', 'spel', 'väntar', 'scen', 'prov'];
 async function toBlob(relative: string, group: string) {
   const rule = blockedPath(relative, release);
   if (rule) throw Error(`Spärrad sökväg (${rule}): ${relative}`);
@@ -118,17 +134,28 @@ const canonical = (value: unknown): unknown => Array.isArray(value) ? value.map(
 const bankRead = async () => JSON.stringify(canonical(JSON.parse((await lab('/api/clip-bank')).toString('utf8'))));
 const bankText = await bankRead();
 const bank = JSON.parse(bankText) as BankData & Record<string, unknown>;
-const graph = buildGraph(bank);
 const roundSteps = roundSequence({seats: release.round.seats, reveal: release.round.reveal});
-const round = resolveRound(graph, roundSteps, {holeCardDown: release.round.holeCardDown});
-const takes = pickTakes(graph, round, release);
-if (takes.refused.length) throw Error(`Registret väljer spärrade tagningar: ${takes.refused.map(r => `${r.id} (${r.why})`).join(', ')}`);
+// Each dealer of the copy on her own graph (buildGraph keeps one dealer's takes), as the studio's dealer switch shows her.
+const dealers = releaseDealers(release);
+type DealerPart = {graph: Graph; round: ReturnType<typeof resolveRound>; game: Set<string>; picked: Picked[]; left: Left[]};
+const parts = new Map<string, DealerPart>();
+for (const dealer of dealers) {
+  const graph = buildGraph(bank, {dealer}), round = resolveRound(graph, roundSteps, {holeCardDown: release.round.holeCardDown});
+  const game = release.casino.on && release.casino.dealers.includes(dealer) ? gameTakes(bank, dealer) : new Set<string>();
+  const out = pickTakes(graph, round, release, game);
+  if (out.refused.length) throw Error(`Registret väljer spärrade tagningar: ${out.refused.map(r => `${r.id} (${r.why})`).join(', ')}`);
+  parts.set(dealer, {graph, round, game, picked: out.picked, left: out.left});
+}
+// The takes of every dealer the copy carries; a take of a dealer it does not carry is named, with the reason.
+const takes = {picked: [...parts.values()].flatMap(p => p.picked), left: [...parts.values()].flatMap(p => p.left)};
+const carried = new Set([...parts.values()].flatMap(p => Object.keys(p.graph.takes)));
+for (const job of [...(bank.jobs ?? []), ...(bank.derived ?? []), ...(bank.edits ?? [])]) if (!carried.has(job.id)) takes.left.push({id: job.id, why: 'dealern följer inte med kopian'});
 const shown = new Map<string, string>(); // a lab path of the bank to the copy's path
 const clipMedia = /^assets\/motions\/([a-z0-9]+(?:-[a-z0-9]+)*)\/(source\.mp4|source-reversed\.mp4|first\.png|last\.png)$/;
 const trackMedia = /^assets\/tracking\/([a-z0-9]+(?:-[a-z0-9]+)*)\/(card-track\.json|overrides\.json)$/;
 const stills = new Map<string, string>(); // png → webp, made below
 for (const {id, group} of takes.picked) {
-  const m = graph.takes[id].media;
+  const m = [...parts.values()].find(p => p.graph.takes[id])!.graph.takes[id].media;
   for (const film of [m.video, m.reversed]) if (film) {
     if (!clipMedia.test(film)) throw Error(`Oväntad filmväg för ${id}: ${film}`);
     await toBlob(film, group); shown.set(film, film);
@@ -159,12 +186,21 @@ for (const [from, to] of shown) if (/\.json$/.test(to) && from === to) {
 
 const pickedIds = new Set(takes.picked.map(p => p.id));
 const frozenBank = freezeBank(bank, shown, pickedIds, release, digest);
-// The copy must decide as the lab does: every edge's main take, variants and status, and the round frame by frame.
+// The copy must decide as the lab does, for each dealer: every edge's main take, variants and status, the round frame by
+// frame, and the same for the game's own bank (only takes with a verdict). Every film of the round and every take the game
+// can play goes up.
+const judgedLive = judgedBank(bank), judgedFrozen = judgedBank(frozenBank);
+for (const [dealer, part] of parts) {
+  const frozenGraph = buildGraph(frozenBank, {dealer});
+  const frozenRound = resolveRound(frozenGraph, roundSteps, {holeCardDown: release.round.holeCardDown});
+  if (json(graphShape(frozenGraph)) !== json(graphShape(part.graph))) throw Error(`Den frysta klippbanken ger en annan graf än labbet (${dealer}).`);
+  if (json(roundShape(frozenRound)) !== json(roundShape(part.round))) throw Error(`Den frysta klippbanken spelar rundan annorlunda än labbet (${dealer}).`);
+  for (const s of frozenRound) if (s.video && !blob.has(s.video)) throw Error(`Rundans film går inte upp (${dealer}): ${s.video}`);
+  if (!part.game.size) continue;
+  if (json(graphShape(buildGraph(judgedFrozen, {dealer}))) !== json(graphShape(buildGraph(judgedLive, {dealer})))) throw Error(`Spelets klippbank ger en annan graf i kopian än i labbet (${dealer}).`);
+  for (const id of part.game) { const video = frozenGraph.takes[id]?.media.video; if (!video || !blob.has(video)) throw Error(`En film spelet kan spela går inte upp (${dealer}): ${id}`); }
+}
 const frozenGraph = buildGraph(frozenBank);
-const frozenRound = resolveRound(frozenGraph, roundSteps, {holeCardDown: release.round.holeCardDown});
-if (json(graphShape(frozenGraph)) !== json(graphShape(graph))) throw Error('Den frysta klippbanken ger en annan graf än labbet.');
-if (json(roundShape(frozenRound)) !== json(roundShape(round))) throw Error('Den frysta klippbanken spelar rundan annorlunda än labbet.');
-for (const s of frozenRound) if (s.video && !blob.has(s.video)) throw Error(`Rundans film går inte upp: ${s.video}`);
 
 // ── Proofs ──────────────────────────────────────────────────────────────────
 const proofsText = (await lab('/api/proofs')).toString('utf8');
@@ -187,7 +223,8 @@ const studioSource = async function* (dir: string): AsyncGenerator<string> {
     else if (/\.(?:ts|tsx)$/.test(entry.name)) yield await readFile(full, 'utf8');
   }
 };
-const roots = new Set(['/scene3d-view.js', '/scene3d-room.js']);
+// With the game: its page's module, and the engine that answers the page's /api/game in the copy (tools/studio-freeze.ts).
+const roots = new Set(['/scene3d-view.js', '/scene3d-room.js', ...(release.casino.on ? ['/game-page.js', ENGINE_ENTRY] : [])]);
 const asked = new Set<string>();
 for (const folder of ['app', 'components', 'lib']) for await (const text of studioSource(path.join(root, 'studio', folder))) {
   for (const m of text.matchAll(/labModule(?:<[^>]*>)?\(\s*["']([a-z0-9-]+)(?:\.js)?["']/g)) roots.add(`/${m[1]}.js`);
@@ -202,26 +239,28 @@ const resolveSpecifier = (spec: string, from: string): string | null => {
 };
 const moduleFiles = new Map<string, string>(); // address → text
 const queue = [...roots];
-const sceneFilms = new Set<string>(), props = new Set<string>();
+const named = new Set<string>(); // files of the checkout the modules name by a plain path (tools/studio-freeze.ts namedAssets)
 while (queue.length) {
   const address = queue.shift()!;
   if (moduleFiles.has(address)) continue;
   let expected: string;
-  if (SCRIPTS[address]) expected = forBrowser(await readFile(path.join(root, SCRIPTS[address]), 'utf8'));
+  // The engine's modules are the copy's own (the lab runs game/ in its server): made ready here, not compared with the lab.
+  const engine = engineSource(address);
+  if (engine) { const file = await localFile(engine); if (!file) throw Error(`Spelmotorns modul saknas: ${engine}`); expected = forEngine(forBrowser(await readFile(file, 'utf8')), address); }
+  else if (SCRIPTS[address]) expected = forBrowser(await readFile(path.join(root, SCRIPTS[address]), 'utf8'));
   else if (VENDOR[address]) expected = await readFile(path.join(root, VENDOR[address]), 'utf8');
   else if (allowedMaterials.has(address.slice(1))) { const file = await localFile(address.slice(1)); if (!file) throw Error(`Modulen saknas: ${address}`); expected = await readFile(file, 'utf8'); }
   else throw Error(`Modulen ${address} hör inte till labbservern (tools/lab-routes.ts).`);
-  const served = (await lab(address)).toString('utf8');
-  if (served !== expected) throw Error(`Labbservern serverar ${address} annorlunda än tools/lab-routes.ts gör: kartorna har glidit isär.`);
+  if (!engine) {
+    const served = (await lab(address)).toString('utf8');
+    if (served !== expected) throw Error(`Labbservern serverar ${address} annorlunda än tools/lab-routes.ts gör: kartorna har glidit isär.`);
+  }
   moduleFiles.set(address, expected);
   for (const m of expected.matchAll(/\b(?:import|export)\s*(?:[\w$*{}\s,]+?from\s*)?(['"])([^'"\n]+)\1/g)) { const next = resolveSpecifier(m[2], address); if (next) queue.push(next); else throw Error(`${address} importerar ${m[2]}, som kopian inte kan lösa.`); }
   for (const m of expected.matchAll(/\bimport\s*\(\s*(['"])([^'"\n]+)\1\s*\)/g)) { const next = resolveSpecifier(m[2], address); if (next) queue.push(next); else throw Error(`${address} importerar ${m[2]}, som kopian inte kan lösa.`); }
-  for (const m of expected.matchAll(/['"`](assets\/motions\/[a-z0-9-]+\/source\.mp4)['"`]/g)) sceneFilms.add(m[1]);
-  for (const m of expected.matchAll(/['"`](assets\/props\/[a-z0-9-]+\.glb)['"`]/g)) props.add(m[1]);
+  for (const file of namedAssets(expected)) named.add(file);
 }
-for (const [address, text] of moduleFiles) await emit(address.slice(1), text, address.startsWith('/vendor/') || address.startsWith('/materials/') ? 'three.js' : 'scenens moduler');
-for (const film of sceneFilms) { await toBlob(film, 'scen'); }
-for (const prop of props) await copyStatic(prop, 'scenens filer');
+for (const [address, text] of moduleFiles) await emit(address.slice(1), text, address.startsWith('/vendor/') || address.startsWith('/materials/') ? 'three.js' : address.startsWith('/engine/') ? 'spelmotorn' : 'scenens moduler');
 
 // ── The scene's files and data ──────────────────────────────────────────────
 const frozenJson = async (relative: string, transform: (value: any) => unknown = v => v) => {
@@ -236,13 +275,51 @@ for (const room of (rooms as {rooms: {id: string; file: string}[]}).rooms) {
   const thumb = `assets/scene/thumbs/room-${room.id}.jpg`;
   if (!SCENE_FILES.includes(thumb) && await localFile(thumb)) await copyStatic(thumb, 'scenens filer');
 }
+// The files the modules name by their own path (V6's cloth, a room's live film, the trays, a dealer's picture in the game's
+// menu): what the lab server hands out goes up, a film to Blob and the rest as a static file; what it does not hand out (a
+// file of another tool, or not on this machine) is named and left out.
+const namedLeft: string[] = [];
+const labServes = async (relative: string) => (await fetch(`${LAB}/${relative}`, {method: 'HEAD', signal: AbortSignal.timeout(30000)}).catch(() => null))?.ok === true;
+for (const relative of named) {
+  if (written.some(w => w.path === relative) || blob.has(relative)) continue;
+  const rule = blockedPath(relative, release);
+  if (rule) { namedLeft.push(`${relative} (spärrad: ${rule})`); continue; }
+  if (!await localFile(relative) || !await labServes(relative)) { namedLeft.push(`${relative} (labbet lämnar inte ut den)`); continue; }
+  if (relative.endsWith('.mp4')) await toBlob(relative, 'scen'); else await copyStatic(relative, 'scenens filer');
+}
+
+// ── The scene's presets, read-only ──────────────────────────────────────────
+// The list as the Scen view reads it, and each preset as the game page asks for it by name. No revision goes up: nothing can
+// be saved against the copy. Jakob's numbered places (profilval-<n>) are presets like any other.
+const presetAnswers: Record<string, unknown> = {};
+if (release.presets) {
+  const list = JSON.parse((await lab('/api/scene-presets')).toString('utf8')) as {schemaVersion: 1; presets: {name: string; revision?: unknown}[]; problems?: unknown[]};
+  if (!Array.isArray(list?.presets) || !list.presets.length) throw Error('Labbet gav inga förval.');
+  if (list.problems?.length) throw Error(`Förvalen har fel i labbet: ${JSON.stringify(list.problems).slice(0, 300)}`);
+  presetAnswers['api/scene-presets.json'] = scrub({schemaVersion: 1, presets: list.presets.map(p => ({...p, revision: null})), problems: []}, release);
+  for (const {name} of list.presets) {
+    if (typeof name !== 'string' || !PRESET_NAME.test(name)) throw Error(`Oväntat förvalsnamn: ${JSON.stringify(name)}`);
+    const one = JSON.parse((await lab(`/api/scene-presets/${name}`)).toString('utf8')) as {preset: Record<string, unknown>};
+    if (one?.preset?.name !== name) throw Error(`Förvalet ${name} kom tillbaka med ett annat namn.`);
+    presetAnswers[`api/scene-presets/${name}.json`] = scrub({preset: {...one.preset, revision: null}}, release);
+  }
+}
+
+// ── The game page ───────────────────────────────────────────────────────────
+// The lab's own game.html and game.css as the server hands them out, with the engine in front of the page (copyGamePage).
+if (release.casino.on) for (const address of ['/game.html', '/game.css']) {
+  const source = PAGES[address]; if (!source) throw Error(`Spelets sida saknas i tools/lab-routes.ts: ${address}`);
+  const text = await readFile(path.join(root, source), 'utf8');
+  if ((await lab(address)).toString('utf8') !== text) throw Error(`Labbservern serverar ${address} annorlunda än filen ${source}.`);
+  await emit(address.slice(1), address === '/game.html' ? copyGamePage(text) : text, 'spelet');
+}
 // Other scene data the studio's code names (data/…json): only registers of the scene, scrubbed like the rest.
 const notInCopy: string[] = [];
 for (const name of asked) {
   if (name.startsWith('data/') && !(name in dataFiles)) {
     if (/^data\/(?:scene-[a-z-]+|props)\.json$/.test(name) && await localFile(name)) dataFiles[name] = await frozenJson(name);
     else notInCopy.push(name);
-  } else if (name.startsWith('api/') && !['api/clip-bank', 'api/proofs', 'api/placements', 'api/library'].includes(name.replace(/\?.*$/, '')) && !isBotPath(`/${name.replace(/\?.*$/, '')}`)) notInCopy.push(name);
+  } else if (name.startsWith('api/') && !['api/clip-bank', 'api/proofs', 'api/placements', 'api/library', ...(release.presets ? ['api/scene-presets'] : [])].includes(name.replace(/\?.*$/, '')) && !isBotPath(`/${name.replace(/\?.*$/, '')}`)) notInCopy.push(name);
 }
 
 // ── The frozen answers of the read routes ───────────────────────────────────
@@ -252,6 +329,7 @@ const answers: Record<string, unknown> = {
   'api/proofs.json': {schemaVersion: 1, proofs: proofs.proofs},
   'api/placements.json': placements,
   'api/library.json': release.library ? scrub(JSON.parse((await lab('/api/library')).toString('utf8')), release) : {schemaVersion: 1, items: []},
+  ...presetAnswers,
   ...dataFiles,
 };
 for (const [relative, value] of Object.entries(answers)) {
@@ -289,8 +367,9 @@ for await (const relative of tree(studioOut)) {
 if (!pages || !written.some(w => w.path === 'studio/index.html')) throw Error('Studions export saknar sidor.');
 
 // ── The lock: the middleware and the map of the films in Blob ───────────────
-// After an upload, data/studio-media.json (tools/sync-studio-media.ts) holds each object's address; until then it is null.
-const uploaded = await readFile(path.join(root, 'data/studio-media.json'), 'utf8').then(JSON.parse).catch(() => null) as {host?: string; entries?: {object: string; sha256: string; bytes: number; url: string}[]} | null;
+// After an upload, .runtime/studio-blob/studio-media.json (tools/sync-studio-media.ts) holds each object's address; until then
+// it is null. The receipt stays outside Git: the repo is public, and the list of addresses would open every film without the lock.
+const uploaded = await readFile(path.join(root, '.runtime/studio-blob/studio-media.json'), 'utf8').then(JSON.parse).catch(() => null) as {host?: string; entries?: {object: string; sha256: string; bytes: number; url: string}[]} | null;
 const media: MediaMap = {};
 for (const file of [...blob.values()].sort((a, b) => a.path.localeCompare(b.path))) {
   const entry = uploaded?.entries?.find(e => e.object === file.object && e.sha256 === file.sha256 && e.bytes === file.bytes);
@@ -334,12 +413,16 @@ await emit('robots.txt', 'User-agent: *\nDisallow: /\n', 'övrigt');
 await emit('404.html', '<!doctype html><html lang="sv"><meta charset="utf-8"><meta name="robots" content="noindex, nofollow"><title>Dealer Studio · Finns inte</title><body style="margin:0;height:100vh;display:grid;place-items:center;background:#0b0f0d;color:#e8ece9;font:15px system-ui,sans-serif"><p>Den här sidan finns inte i kopian. <a style="color:#d9b96a" href="/studio/">Till studion</a></p></body></html>', 'övrigt');
 meta.counts.files = written.length + blob.size + 1;
 await emit('meta.json', json(meta), 'övrigt');
-// Every text that goes up, once more: no machine path and no blocked name in a page, a module or an answer.
+// Every text that goes up, once more: no machine path and no blocked name in a page, a module or an answer. All findings are
+// named at once. A trial build (--prov) lists those in a module's code (a comment in src/ that names a folder on D:) and goes
+// on; a finding in a page, an answer or a data file stops it as it stops the copy.
+const textLeaks: string[] = [], codeLeaks: string[] = [];
 for (const w of written) if (/\.(?:html|js|json|txt|css)$/.test(w.path)) {
   const leaks = findTextLeaks(await readFile(path.join(staticRoot, ...w.path.split('/')), 'utf8'), release);
   // three.js and the studio's own bundle carry no data of ours; a machine path there would still be a leak.
-  if (leaks.length) throw Error(`Får inte gå upp: ${w.path}: ${leaks.join(', ')}`);
+  if (leaks.length) (trial && w.path.endsWith('.js') && !w.path.startsWith('studio/') ? codeLeaks : textLeaks).push(`${w.path}: ${leaks.join(', ')}`);
 }
+if (textLeaks.length || (!trial && codeLeaks.length)) throw Error(`Får inte gå upp:\n  ${[...textLeaks, ...codeLeaks].join('\n  ')}`);
 const config = {
   version: 3,
   routes: [
@@ -350,6 +433,9 @@ const config = {
     {src: '^/studio$', status: 308, headers: {Location: '/studio/'}},
     {src: '^/lab\\.html$', status: 308, headers: {Location: '/studio/'}},
     {src: '^/api/(clip-bank|proofs|placements|library)$', dest: '/api/$1.json'},
+    // The scene's presets: the list, and one by name as the game page asks for it (api/scene-presets/<name>).
+    {src: '^/api/scene-presets/?$', dest: '/api/scene-presets.json'},
+    {src: '^/api/scene-presets/([a-z0-9]+(?:-[a-z0-9]+)*)$', dest: '/api/scene-presets/$1.json'},
     // The bot's one function answers the draft and the inbox too (cloud/studio/bot.ts routeOf reads ?vag=…).
     {src: '^/api/utkast/?$', dest: '/api/bot?vag=utkast'},
     {src: '^/api/onskemal(?:/([^/]+?)(/bild)?)?/?$', dest: '/api/bot?vag=onskemal&id=$1&del=$2'},
@@ -376,12 +462,15 @@ if (staticBytes > release.limits.staticBytes) throw Error(`De statiska filerna v
 if (blobBytes > release.limits.blobBytes) throw Error(`Filerna till Blob väger ${MB(blobBytes)} MB, över gränsen ${MB(release.limits.blobBytes)} MB.`);
 const missing = Object.values(media).filter(m => !m.url).length;
 const plan = [...blob.values()].map(({path: p, sha256, bytes, type, object, group}) => ({path: p, sha256, bytes, type, object, group}));
-await writeFile(path.join(deploy, 'media-plan.json'), JSON.stringify({schemaVersion: 1, builtAt: meta.builtAt, sourceCommit, files: plan}, null, 2));
-await writeFile(path.join(deploy, 'build.json'), JSON.stringify({builtAt: meta.builtAt, sourceCommit, sourceDirty, bankSha256: digest(bankText), proofsSha256: digest(proofsText), release: digest(await readFile(path.join(root, 'data/studio-release.json'))),
-  deployable: missing === 0, filmsWithoutUpload: missing, staticBytes, blobBytes, static: written, blob: plan,
+// A trial's plan says so: tools/sync-studio-media.ts uploads nothing from it.
+await writeFile(path.join(deploy, 'media-plan.json'), JSON.stringify({schemaVersion: 1, builtAt: meta.builtAt, sourceCommit, ...(trial ? {trial: true} : {}), files: plan}, null, 2));
+const perDealer = Object.fromEntries([...parts].map(([dealer, p]) => [dealer, {takes: p.picked.length, groups: p.picked.reduce((m: Record<string, number>, t) => (m[t.group] = (m[t.group] ?? 0) + 1, m), {}), game: p.game.size,
+  roundGaps: p.round.filter(s => !s.video).map(s => s.id)}]));
+await writeFile(path.join(deploy, 'build.json'), JSON.stringify({builtAt: meta.builtAt, sourceCommit, sourceDirty, trial, codeLeaks, bankSha256: digest(bankText), proofsSha256: digest(proofsText), release: digest(await readFile(path.join(root, 'data/studio-release.json'))),
+  deployable: !trial && missing === 0, filmsWithoutUpload: missing, staticBytes, blobBytes, dealers: perDealer, casino: release.casino, presets: Object.keys(presetAnswers).length - (release.presets ? 1 : 0), static: written, blob: plan,
   bot: {knowledgeBytes: knowledgeReport.bytes, core: knowledgeReport.karna, searched: knowledgeReport.rest, views: knowledgeReport.vyer, missingSources: knowledgeReport.saknas, removed: knowledgeReport.borttaget,
     files: Object.fromEntries(Object.entries(botTexts).map(([name, text]) => [name, {bytes: Buffer.byteLength(text), sha256: digest(text)}]))},
-  leftOut: {takes: takes.left, proofs: proofs.left, notInCopy}}, null, 2));
+  leftOut: {takes: takes.left, proofs: proofs.left, notInCopy, named: namedLeft}}, null, 2));
 
 // ── The table ───────────────────────────────────────────────────────────────
 const rows = new Map<string, {where: string; files: number; bytes: number}>();
@@ -393,13 +482,18 @@ for (const [key, r] of [...rows].sort((a, b) => a[1].where.localeCompare(b[1].wh
 console.log(`  ${'summa'.padEnd(20)} ${'statisk'.padEnd(9)} ${String(written.length).padStart(6)} ${MB(staticBytes).padStart(9)}`);
 console.log(`  ${'summa'.padEnd(20)} ${'Blob'.padEnd(9)} ${String(blob.size).padStart(6)} ${MB(blobBytes).padStart(9)}`);
 const tally = (list: Left[]) => [...list.reduce((m, l) => m.set(l.why, (m.get(l.why) ?? 0) + 1), new Map<string, number>())].map(([why, n]) => `${n} ${why}`).join(', ');
+console.log('\nPer dealer');
+for (const [dealer, d] of Object.entries(perDealer)) console.log(`  ${dealer.padEnd(8)} ${String(d.takes).padStart(4)} tagningar (${Object.entries(d.groups).map(([g, n]) => `${n} ${g}`).join(', ')})${d.game ? `; spelet kan spela ${d.game}` : ''}; rundans luckor: ${d.roundGaps.join(', ') || 'inga'}`);
+console.log(`  förval: ${release.presets ? Object.keys(presetAnswers).filter(k => k !== 'api/scene-presets.json').map(k => k.replace(/^api\/scene-presets\/|\.json$/g, '')).join(', ') : 'av (studions tre inbyggda)'}; Casino: ${release.casino.on ? `på, ${release.casino.dealers.join(' och ')}` : 'av'}`);
 console.log('\nLämnas utanför');
 console.log(`  tagningar: ${tally(takes.left) || 'inga'}`);
 console.log(`  prov: ${tally(proofs.left) || 'inga'}`);
+if (namedLeft.length) console.log(`  filer modulerna nämner: ${namedLeft.join(', ')}`);
 if (notInCopy.length) console.log(`  studion frågar efter, finns inte i kopian: ${notInCopy.join(', ')}`);
+if (codeLeaks.length) console.log(`\nPROVBYGGE, får inte publiceras. I modulernas kod:\n  ${codeLeaks.join('\n  ')}`);
 console.log('\nBoten (functions/api/bot.func, kunskapen bara där)');
 console.log(`  kunskapen: ${MB(knowledgeReport.bytes)} MB; kärnan ${knowledgeReport.karna.avsnitt} avsnitt, cirka ${knowledgeReport.karna.tokens} token; sökbart ${knowledgeReport.rest.avsnitt} avsnitt, cirka ${knowledgeReport.rest.tokens} token (skattat)`);
 console.log(`  vyerna ur ${knowledgeReport.vyer === 'guide' ? 'studio/lib/guide.ts' : 'botens egna texter'}; borttaget: ${Object.entries(knowledgeReport.borttaget).map(([k, n]) => `${n} ${k}`).join(', ') || 'inget'}`);
 if (knowledgeReport.saknas.length) console.log(`  källor som saknas: ${knowledgeReport.saknas.join(', ')}`);
 console.log(`\n${output}`);
-console.log(missing ? `Inte klar att publicera: ${missing} filer saknar Blob-adress (node tools/sync-studio-media.ts).` : 'Alla filer har en verifierad Blob-adress.');
+console.log(trial ? 'Provbygge: repeteras med node tools/serve-studio-snapshot.ts --prov; publiceras aldrig.' : missing ? `Inte klar att publicera: ${missing} filer saknar Blob-adress (node tools/sync-studio-media.ts).` : 'Alla filer har en verifierad Blob-adress.');

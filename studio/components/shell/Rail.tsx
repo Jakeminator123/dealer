@@ -35,8 +35,8 @@ export const VIEWS: readonly View[] = [
   { href: "/game/", label: "Casino", hint: "Spela blackjack som i casinot: spelmotorn, marker och reglage, med valt förval", icon: Spade },
 ];
 
-/** The views the rail shows: the online copy has no game engine and orders nothing, so Casino and Beställ are only in the lab. */
-const LAB_ONLY: readonly string[] = ["/game/", "/bestall/"];
+/** The views the rail shows: the online copy orders nothing, so Beställ is only in the lab. Casino plays there too (the game page runs the engine itself). */
+const LAB_ONLY: readonly string[] = ["/bestall/"];
 const SHOWN: readonly View[] = isSnapshot ? VIEWS.filter((view) => !LAB_ONLY.includes(view.href)) : VIEWS;
 
 /** The view of requests to Jakob: only where the bot is (the online copy). */

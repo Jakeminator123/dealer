@@ -4,6 +4,7 @@
 // login, try limit), and a film's rewrite to Blob answered from the local file it was made from, with Range.
 //
 //   DEALER_LOSEN=… DEALER_KAKNYCKEL=… node tools/serve-studio-snapshot.ts      start (in the foreground)
+//   … node tools/serve-studio-snapshot.ts --prov                              the trial build instead (build-studio-snapshot --prov)
 //   node tools/serve-studio-snapshot.ts --stop                                stop it through its control token
 //
 // Use a throwaway password and key for a rehearsal, never the real ones. The server never reaches the internet: every
@@ -35,7 +36,8 @@ import {BOT_FUNCTION_FILES} from './build-knowledge.ts';
 const root = path.resolve(fileURLToPath(new URL('../', import.meta.url)));
 if (path.resolve(process.cwd()) !== root) throw Error('Kör från dealer-katalogen.');
 const port = 4330, origin = `http://127.0.0.1:${port}`, state = path.join(root, '.runtime', 'studio-rehearsal.json');
-const deploy = path.join(root, '.runtime', 'studio-deploy'), output = path.join(deploy, '.vercel', 'output'), staticRoot = path.join(output, 'static');
+const trial = process.argv.includes('--prov');
+const deploy = path.join(root, '.runtime', 'studio-deploy', ...(trial ? ['prov'] : [])), output = path.join(deploy, '.vercel', 'output'), staticRoot = path.join(output, 'static');
 const STAND_IN = 'https://blob.rehearsal.invalid/';
 
 if (process.argv.includes('--stop')) {
@@ -170,6 +172,7 @@ server.on('close', () => { void unlink(state).catch(() => {}); });
 server.listen(port, '127.0.0.1', async () => {
   await mkdir(path.dirname(state), {recursive: true});
   await writeFile(state, JSON.stringify({port, pid: process.pid, token, startedAt: new Date().toISOString()}));
+  if (trial) console.log('PROVBYGGE (.runtime/studio-deploy/prov): bara för repetition, publiceras aldrig.');
   console.log(`${origin}/studio/  (lås: ${process.env.DEALER_LOSEN && (process.env.DEALER_KAKNYCKEL ?? '').length >= 32 ? 'inställt' : 'INTE inställt, allt ger inloggningssidan'})`);
   console.log(`boten: ${realModel ? 'RIKTIG MODELL (kostar)' : 'BOT_FEJK=1, inget modellanrop'}; lagring ${path.join('.runtime', 'bot-rehearsal')}; kunskap ${knowledge ? `${knowledge.karna.length} + ${knowledge.avsnitt.length} avsnitt` : 'saknas'}; adminnyckel ${(process.env.DEALER_ADMIN_NYCKEL ?? '').length >= 32 ? 'inställd' : 'inte inställd'}`);
 });

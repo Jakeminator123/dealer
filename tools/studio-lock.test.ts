@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {secrets, signCookie, verifyCookie, samePassword, readCookies, TryLimit, MAX_AGE, COOKIE, TRIES, WINDOW} from '../cloud/studio/lock.ts';
+import {secrets, passwordsOf, signCookie, verifyCookie, samePassword, readCookies, TryLimit, MAX_AGE, COOKIE, TRIES, WINDOW} from '../cloud/studio/lock.ts';
 import {gate, type GateContext, type MediaMap} from '../cloud/studio/gate.ts';
 import {loginPage, safeNext} from '../cloud/studio/login-page.ts';
 
@@ -37,6 +37,20 @@ test('the password is compared whole', async () => {
   const s = (await secrets(env))!;
   assert.equal(await samePassword(s, 'prov-losen'), true);
   for (const wrong of ['', 'prov', 'prov-losen ', 'Prov-losen', 'prov-losen-prov-losen']) assert.equal(await samePassword(s, wrong), false);
+});
+
+test('DEALER_LOSEN may name several passwords, separated by commas; each opens, nothing else does', async () => {
+  assert.deepEqual(passwordsOf(' john, jon ,,john'), ['john', 'jon']);
+  assert.deepEqual(passwordsOf(undefined), []);
+  assert.equal(await secrets({DEALER_LOSEN: ' , ', DEALER_KAKNYCKEL: key}), null, 'only commas and spaces: the lock stays shut');
+  const s = (await secrets({DEALER_LOSEN: 'john,jon', DEALER_KAKNYCKEL: key}))!;
+  for (const right of ['john', 'jon']) assert.equal(await samePassword(s, right), true, right);
+  for (const wrong of ['', 'john,jon', 'jo', 'John', 'jon ', 'johnjon', ',']) assert.equal(await samePassword(s, wrong), false, JSON.stringify(wrong));
+  // one password signs as before; adding or taking one away makes every cookie worthless
+  const one = (await secrets(env))!, value = await signCookie(one, now + 60);
+  assert.equal(await verifyCookie((await secrets({...env, DEALER_LOSEN: ' prov-losen '}))!, value, now), true);
+  assert.equal(await verifyCookie((await secrets({...env, DEALER_LOSEN: 'prov-losen,jon'}))!, value, now), false);
+  assert.equal(await verifyCookie(s, await signCookie((await secrets({DEALER_LOSEN: 'jon', DEALER_KAKNYCKEL: key}))!, now + 60), now), false);
 });
 
 test('at most ten tries per address per ten minutes', () => {

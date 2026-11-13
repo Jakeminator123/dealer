@@ -165,14 +165,12 @@ function Scen() {
             }}
             options={views}
           />
-          {isSnapshot ? null : (
-            <Tooltip content="Spelet med spelmotorn och marker, i den här looken">
-              <Link href={editor.casino} className={buttonClasses({ variant: "secondary", size: "sm" })}>
-                <Spade />
-                Spela i Casino
-              </Link>
-            </Tooltip>
-          )}
+          <Tooltip content="Spelet med spelmotorn och marker, i den här looken">
+            <Link href={editor.casino} className={buttonClasses({ variant: "secondary", size: "sm" })}>
+              <Spade />
+              Spela i Casino
+            </Link>
+          </Tooltip>
           <IconButton label="Kopiera länken: samma runda och look" icon={<Copy />} variant="quiet" onClick={copyLink} />
           {!isSnapshot && editor.oldLab ? (
             <Tooltip content="Samma look på gamla labbets 3D-sida">

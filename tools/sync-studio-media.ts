@@ -8,7 +8,8 @@
 //
 // Same rules as tools/sync-public-media.ts: every object is named by its SHA-256 ("studio/<sha256>.<ext>"), an existing
 // object is never overwritten (allowOverwrite false; one of the right size is reused), and every object is read back
-// anonymously and hashed before it enters data/studio-media.json, the receipt the next snapshot build reads. The store's
+// anonymously and hashed before it enters .runtime/studio-blob/studio-media.json, the receipt the next snapshot build reads.
+// The receipt is not in Git: the repo is public, and every film's address in Blob would let anyone past the copy's lock. The store's
 // read/write token lies in .runtime/studio-blob/.env.local (BLOB_READ_WRITE_TOKEN), outside Git, and is never printed.
 import {readFile, writeFile, mkdir} from 'node:fs/promises';
 import {readFileSync} from 'node:fs';
@@ -26,24 +27,28 @@ const args = process.argv.slice(2), upload = args.includes('--upload');
 if (upload && args.includes('--dry-run')) throw Error('Välj --upload eller --dry-run, inte båda.');
 const digest = (bytes: Buffer) => createHash('sha256').update(bytes).digest('hex');
 const MB = (bytes: number) => (bytes / 1e6).toFixed(1).replace('.', ',');
-const HOBBY_BLOB_BYTES = 1e9; // Hobby includes 1 GB of Blob storage a month; over it Blob stops for 30 days.
+// A Hobby team has 1 GB of Blob storage and Blob stops for 30 days over it. The copy's team, jakeminator, is on Pro (read
+// 2026-11-13 with `vercel api /v2/teams`): there storage is billed by use, with no such stop. The note stays for another team.
+const HOBBY_BLOB_BYTES = 1e9;
 
 type Planned = {path: string; sha256: string; bytes: number; type: string; object: string; group: string};
 type Entry = {object: string; path: string; sha256: string; bytes: number; url: string};
 type Receipt = {schemaVersion: 1; provider: 'vercel-blob'; storeId: string; host: string; access: 'public'; entries: Entry[]};
 
-const plan = JSON.parse(await readFile(path.join(root, '.runtime/studio-deploy/media-plan.json'), 'utf8')) as {sourceCommit: string; files: Planned[]};
+const plan = JSON.parse(await readFile(path.join(root, '.runtime/studio-deploy/media-plan.json'), 'utf8')) as {sourceCommit: string; trial?: boolean; files: Planned[]};
+// A trial build (build-studio-snapshot --prov) writes its plan elsewhere; one that says it is a trial is never uploaded from.
+if (plan.trial) throw Error('Planen är ett provbygge; bygg kopian utan --prov först.');
 // The plan is checked again here, against the files as they lie now: a film changed since the build is not uploaded.
 for (const f of plan.files) {
   if (!safeRelative(f.path) || !/^assets\//.test(f.path) || f.object !== objectName(f.sha256, f.path) || MEDIA_TYPES[path.extname(f.path)] !== f.type) throw Error(`Ogiltig rad i planen: ${f.path}`);
   const bytes = await readFile(path.join(root, ...f.path.split('/')));
   if (bytes.length !== f.bytes || digest(bytes) !== f.sha256) throw Error(`Filen har ändrats sedan kopian byggdes: ${f.path}. Bygg om kopian.`);
 }
-const receiptFile = path.join(root, 'data/studio-media.json');
+const receiptFile = path.join(root, '.runtime/studio-blob/studio-media.json');
 const existing = await readFile(receiptFile, 'utf8').then(JSON.parse).catch(() => null) as Receipt | null;
 const at = args.indexOf('--store'), storeId = at >= 0 ? args[at + 1] : existing?.storeId;
 if (storeId !== undefined && !/^store_[A-Za-z0-9]{16}$/.test(storeId)) throw Error('Ogiltigt store-id (store_ följt av 16 tecken).');
-if (existing && storeId && existing.storeId !== storeId) throw Error('Kvittot data/studio-media.json gäller en annan Blob-store.');
+if (existing && storeId && existing.storeId !== storeId) throw Error('Kvittot .runtime/studio-blob/studio-media.json gäller en annan Blob-store.');
 const host = storeId ? `${storeId.slice(6).toLowerCase()}.public.blob.vercel-storage.com` : null;
 const known = new Map((existing?.entries ?? []).map(e => [e.object, e]));
 const todo = plan.files.filter(f => !known.has(f.object));
@@ -55,14 +60,20 @@ console.log(`${upload ? 'Laddar upp' : 'Torrkörning: inget skickas'} · kopian 
 console.log('  grupp        filer        MB   nya');
 for (const [name, g] of groups) console.log(`  ${name.padEnd(10)} ${String(g.files).padStart(7)} ${MB(g.bytes).padStart(9)} ${String(g.todo).padStart(5)}`);
 console.log(`  ${'summa'.padEnd(10)} ${String(plan.files.length).padStart(7)} ${MB(total).padStart(9)} ${String(todo.length).padStart(5)}  (${MB(toSend)} MB nytt)`);
-if (total > HOBBY_BLOB_BYTES * 0.8) console.log(`OBS: ${MB(total)} MB är nära eller över Hobby-planens 1 GB Blob. Kontrollera planen och vad storen redan rymmer innan uppladdning.`);
+if (total > HOBBY_BLOB_BYTES * 0.8) console.log(`OBS: ${MB(total)} MB är nära eller över 1 GB, Hobby-planens tak för Blob. Teamet jakeminator har Pro (inget sådant tak); kontrollera planen om storen ligger i ett annat team.`);
 if (!upload) process.exit(0);
 
 // ── Upload (only with --upload) ─────────────────────────────────────────────
 if (!storeId || !host) throw Error('Ange vilken Blob-store: --store store_….');
+// The checkout's own .env.local holds a Blob key of another store (the speech lane's). Neither it nor any key in the
+// environment is ever used here: a key in the environment stops the upload (it came from --env-file or a shell), and the
+// copy's key must be another than the checkout's. Only .runtime/studio-blob/.env.local is read for the key.
+if (process.env.BLOB_READ_WRITE_TOKEN) throw Error('BLOB_READ_WRITE_TOKEN står i miljön; kör utan --env-file. Kopians nyckel läses bara ur .runtime/studio-blob/.env.local.');
 const configured = parseEnv(await readFile(path.join(root, '.runtime/studio-blob/.env.local'), 'utf8'));
 const token = configured.BLOB_READ_WRITE_TOKEN;
 if (!token?.startsWith(`vercel_blob_rw_${storeId.slice(6)}_`)) throw Error('Nyckeln i .runtime/studio-blob/.env.local hör inte till den storen.');
+const checkout = await readFile(path.join(root, '.env.local'), 'utf8').then(text => parseEnv(text).BLOB_READ_WRITE_TOKEN, () => undefined);
+if (checkout && (checkout === token || checkout.startsWith(`vercel_blob_rw_${storeId.slice(6)}_`))) throw Error('Nyckeln eller storen är densamma som i utcheckningens .env.local, som hör till en annan bana. Välj kopians egen store.');
 // The Blob SDK that ships with the installed Vercel CLI: no new dependency of the project.
 const wrapper = execFileSync('volta', ['which', 'vercel'], {encoding: 'utf8', windowsHide: true}).trim();
 const packageRoot = path.join(path.dirname(wrapper), 'node_modules/vercel');
