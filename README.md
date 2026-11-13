@@ -21,7 +21,7 @@ data/         register: manifest.json (filernas SHA-256), klippjobb, scenkontrak
 motions/      en post per film med Jakobs dom
 placements/   Jakobs kortplan
 evidence/     verifieringskvitton
-docs/         SYSTEM och DRIFT
+docs/         SYSTEM, DRIFT och TAL
 assets/ output/ .runtime/        lokal media och lokala byggen, inte i Git
 ```
 

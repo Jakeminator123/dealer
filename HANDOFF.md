@@ -73,8 +73,8 @@ inte vändning. Framsidan måste vara en ren, nyckelbar yta eftersom Scout best�
 - Avslutade sessioner: `dealer-bf` (kortet, sidokameran, Petra; 2026-11-13), `dealer-82` (Paow,
   `D:/dealer-scratch/tmp/paow/`), `dealer-db` (Pamela-filmen, `D:/dealer-scratch/tmp/reel/`), FILMAGENT, FILMAGENT-2,
   SPELAGENT och Bakgrund och bord.
-- `tools/clip-job.ts` och engångsverktygen från 2026-11-10 är borttagna; `tools/build-anchor.ts` och
-  `tools/card-coverage.ts` står kvar, liksom den oanvända `tools/clip-edit.ts`.
+- `tools/clip-job.ts`, `tools/clip-edit.ts` och engångsverktygen från 2026-11-10 är borttagna; `tools/build-anchor.ts`
+  och `tools/card-coverage.ts` står kvar.
 - Jakobs egna: planen `placements/default.json` (se Arbetsyta) och hans domar i `motions/` (`review`), som skrivs från
   studions Granska och aldrig skrivs över av ett verktyg; en preliminär dom (`node tools/review-put.ts`) är aldrig hans
   och ger vika för hans.
@@ -390,8 +390,6 @@ Det som hindrar en runda först. Han kan svara rad för rad.
 - **Kling 4:s färger** läses som Python läste dem: en BT.709-märkt film som BT.601, så att efterarbetet ger samma bild
   som de godkända tagningarna; en korrekt avkodning skulle flytta färgerna något, och det är inte avgjort
   (`tools/film-after.ts`).
-- **`tools/clip-edit.ts`** kan fortfarande skicka ett betalt jobb till Runways utvecklar-API och används inte; den tas
-  bort eller spärras när städningen har visat att inget läser den.
 - **Paow ser lite smal ut:** bildmodellen gav henne Pamelas kroppsbredd under ett huvud som är 8,7 % högre (mätt
   2026-11-13, `D:/dealer-scratch/tmp/huvudagent11/proportioner/`); bilden är inte hoptryckt i pixlarna.
 - **Rösten:** spelet väljer talfilmerna med rösten Paow (`src/game-page.ts`, `data/speech.json`); nattens 25 med rösten
@@ -399,8 +397,8 @@ Det som hindrar en runda först. Han kan svara rad för rad.
   registret, aldrig nyckeln (docs/TAL.md, "Rösten"). Granskarna ger de nya 3/5: munnen är rendererns, som förut.
 - **Testerna utan FFmpeg:** elva tester hoppas över där FFmpeg saknas (`tools/film-after.test.ts`,
   `tools/film-fix.test.ts`, `tools/order-bring.test.ts`, `tools/register-order.test.ts`, `tools/speech-plan.test.ts`),
-  och tre i `tools/order-images.test.ts` kräver bankens filmer; GitHubs kontroll kör därför inte dem, den här datorn gör
-  det.
+  tre i `tools/order-images.test.ts` kräver bankens filmer och ett i `tools/card-overlay.test.ts` kortspåren; GitHubs
+  kontroll kör därför inte dem, den här datorn gör det.
 - **Kön** läggs bara när en huvudagentchatt är öppen (vakten `D:/dealer-scratch/tmp/huvudagent11/look/vakta-kon.mjs`,
   bara läsning).
 - **Paows landningsbild** `paow-landning-p4-giv-t2` står som `gäller` men visar handryggen och duger inte för en
@@ -454,6 +452,7 @@ Det som hindrar en runda först. Han kan svara rad för rad.
 
 ## Verifiering
 
-Node 24.21.0. `npm test` gick igenom 2026-11-13 med 813 av 813 tester, studions tester medräknade (enligt `3d60839`).
+Node 24.21.0. `npm test` är måttet och körs före varje push; antalet tester står i körningens utskrift (855 den
+2026-11-13, studions medräknade).
 Film granskas ruta för ruta av en oberoende granskare innan Jakob dömer (`tools/film-review.md`). Spelet och 3D-scenen
 prövas i headless Chrome mot 4319 med verktygen i DRIFT, en körning i taget; den som startar fönstret stänger det.

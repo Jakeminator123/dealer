@@ -20,6 +20,9 @@ function fixture(t:TestContext){
 
 test('private paths, media and token-like values block without exposing the value',()=>{
   for(const name of ['assets/source.png','output/movie.mp4','.env.local','nested/.env.secret','private/info.json','nested/node_modules/module.js','.runtime/log.json'])assert.ok(inspectBlob(name,Buffer.from('{}')).some(f=>f.level==='RED'),name);
+  // Binary material wherever it lands, also the picture, model and archive types that stills, props and rooms are kept in.
+  for(const name of ['docs/bild.webp','studio/public/still.avif','src/prov.gif','data/bord.glb','data/rum.hdr','data/rum.exr','docs/rapport.pdf','data/bank.tar.gz','src/film.MP4'])assert.ok(inspectBlob(name,Buffer.from('{}')).some(f=>f.level==='RED'),name);
+  for(const name of ['src/scene3d-film.ts','data/speech.json','docs/TAL.md','studio/app/icon.svg'])assert.ok(!inspectBlob(name,Buffer.from('{}')).some(f=>f.level==='RED'),name);
   const token='gh'+'p_'+'x'.repeat(30);
   const result=inspectBlob('src/client.ts',Buffer.from('const value="'+token+'"'));
   assert.ok(result.some(f=>f.level==='RED'));assert.ok(!JSON.stringify(result).includes(token));

@@ -36,15 +36,15 @@ inte med av misstag. Git-push är separat från webbdeploy, mediauppladdning och
 - Testerna ska avse exakt HEAD. Ändrade, nya eller ospårade kod- och testfiler stoppar kontrollen tills ägaren samordnat
   dem; undantaget är `studio/`, som har eget paket, typkontroll och bygge och granskas som alla andra filer när den
   committas (`da805da`). `placements/default.json` är ett separat användarutkast och inkluderas inte automatiskt.
-  Kontrollen kör testfilerna i `TESTS` i `tools/publication-check.ts` (59 poster 2026-11-13, bland dem
+  Kontrollen kör testfilerna i `TESTS` i `tools/publication-check.ts` (bland dem
   `studio/tests/*.test.ts`; `npm test` kör samma lista, och ett vakttest i `tools/publication-check.test.ts` fäller en
   testfil i `tools/` som ingen lista namnger) med högst fyra arbetare, utan Runway, media eller deploy; tester som gör
   en liten film med FFmpeg hoppas över där FFmpeg saknas. En ny testfil ska in i både `test`-skriptet i `package.json`
   och `TESTS`.
 - `.github/workflows/check.yml` kör samma kontroll på push och PR med Node 24.21.0, `npm ci`, enbart läsbehörighet och
   versionslåsta Actions; kontrollen kör alla tester i `TESTS`, så CI kör hela `npm test`. I en ren checkout utan media
-  och utan FFmpeg (som CI) gick 2026-11-13 810 av 824 tester igenom och 14 hoppades över: 11 som gör en liten film med
-  FFmpeg och 3 i `tools/order-images.test.ts` som läser bankens filmer. Studions tester behöver inte
+  och utan FFmpeg (som CI) hoppas de tester över som gör en liten film med FFmpeg eller läser bankens filmer och
+  kortspår (`tools/order-images.test.ts`, `tools/card-overlay.test.ts`); 2026-11-13 var det 14 av 824. Studions tester behöver inte
   `studio/node_modules`. Före PR kör agenten `npm run check`. GitHub-kontrollen kör efter push och är inte ett
   serversidigt pushförbud eller aktiverat mergekrav.
 - **Rött:** stoppa, undersök orsak och rätta innan nytt försök. **Gult:** granska och åtgärda eller förklara kvarvarande
@@ -178,8 +178,8 @@ förs in i handbokens tabeller, inte här. Vad som skickades och hur det gick: s
   klick eller av huvudagenten på hans uppdrag (`tools/order-approve.ts`) inom `data/order-policy.json`, lagt och hämtat
   av en beställningsagent genom Runways MCP-server på appkontot. Betalda anrop utanför Beställ rapporteras till
   huvudagenten med belopp (HANDOFF, "Vem äger vad").
-- **Äldre vägar, används inte:** API-vägen (developer-API:t med `RUNWAY_API_KEY`: `tools/clip-job.ts` togs bort
-  2026-11-13, `tools/clip-edit.ts` står kvar oanvänd; jobben och taket `budget.maximumCredits` 5 162 i
+- **Äldre vägar, används inte:** API-vägen (developer-API:t med `RUNWAY_API_KEY`: `tools/clip-job.ts` och
+  `tools/clip-edit.ts` togs bort 2026-11-13, och verktygets enda rättade kopia står kvar under `edits`; jobben och taket `budget.maximumCredits` 5 162 i
   `data/clip-jobs.json`, helt intecknat 2026-11-12) och orderfilerna på D: (`filmagent/mcp/order-*.json`,
   `clerk-brief.md`, `register-mcp.mjs`; Paows `paow/order/` och liggarna `paow/bestallningar-*.json`). Deras kvitton och
   liggare är källbevis och står kvar; ett osäkert API-anrop beställs aldrig om, och `request.lock` eller SUBMITTING tas

@@ -32,6 +32,14 @@ __pycache__/
 *.png
 *.jpg
 *.jpeg
+*.webp
+*.avif
+*.gif
+*.glb
+*.hdr
+*.exr
+*.pdf
+*.gz
 
 # The checklist between Jakob and the main agent: a working paper, rewritten many times a day
 CHECKLISTA.md
