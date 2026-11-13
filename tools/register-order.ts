@@ -58,7 +58,10 @@ function takeOf(id: string, edge: string, clip: string, frames: [number, number]
 export async function planRegistration(root: string, id: string, take: number, options: {split?: number; film?: string; clip?: string; fixed?: number} = {}): Promise<Plan> {
   const {order, entry, folder} = await orderTake(root, id, take), notes: string[] = [];
   if (order.kind !== 'FILM') throw new OrderError(`${id} är en stillbild: den förs in i Material, inte i klippbanken.`);
-  if (!order.approval || order.approval.by !== 'jakob') throw new OrderError(`${id} är inte godkänd av Jakob.`);
+  // Jakob's click, or the main agent on his mandate (2026-11-13), the same rule as tools/order-put.ts check.
+  const approval = order.approval as {by?: string; mandate?: string} | null;
+  const approved = !!approval && (approval.by === 'jakob' || (approval.by === 'huvudagent' && !!approval.mandate?.trim()));
+  if (!approved) throw new OrderError(`${id} är inte godkänd (av Jakob, eller av huvudagenten på hans uppdrag).`);
   if (!entry?.taskId) throw new OrderError(`${id} tagning ${take} har ingen task-id i kvittot: filmen kan inte knytas till beställningen.`);
   if (['MISSLYCKAD', 'AVBRUTEN', 'OSÄKER'].includes(entry.status)) throw new OrderError(`${id} tagning ${take} står som ${entry.status} i kvittot.`);
   const edges = edgesOf(order), trip = edges.length === 2, clip = options.clip ?? clipIdOf(order, take);

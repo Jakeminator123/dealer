@@ -28,13 +28,13 @@
     }
   },
   "review": {
-    "decision": "PENDING",
-    "inbox": true,
+    "decision": "REJECTED",
     "basis": "Inte granskad av Jakob: förd in från beställningen paow-giv-2-1-p1-01, tagning 1 (tools/register-order.ts). Oberoende rutgranskning: tools/film-review.md.",
     "limitations": "I inkorgen: spelas bara där steget inte har någon annan film, tills Jakob dömer den.",
     "colorDoesNotProvePhysicalSide": true,
     "userAccepted": false,
-    "productionReady": false
+    "productionReady": false,
+    "userReview": "Jakob 2026-11-13: Det känns konstigt att du inte har granskat det här innan du började. Utan att ens titta här verkar det som att du inte har följt riktlinjerna för hur vi ska skapa olika typer av videos. Hon har fortfarande den vänstra handen på det gula kortet, vilket är perfekt för `anchor` 2.1. Men den andra handen går också dit och dribblar innan den kommer ner, och jag ser inte om det är rätt. Om du tittar på hela den här långa fronten, skulle en tredjedel av den bli bättre. Du måste ge AI lite utrymme. Jag vill att du provar det här och berättar om det fungerar som referensmaterial. Om den här hade fått en bild på det blåa kortet, var skulle det ligga? Jag antar att det var det. Prova att göra om det här via placeringsmenyn. Skapa en film där hon lyfter det gula kortet och möter det halvvägs med den andra handen, som samtidigt vänder upp det blåa kortet. Det här får bli en specialvariant, en specialtestning. Vi kan säkert använda oss av det här för att vi har fått ett `anchor` för player one, card one."
   },
   "order": {
     "id": "paow-giv-2-1-p1-01",

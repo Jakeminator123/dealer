@@ -2253,6 +2253,13 @@
           "note": "Reklamfilm i noirstil, fristående från banken. Jakob vill att den ligger kvar här. Går inte upp i nätkopian (studio-release blockerar trailer*)."
         },
         {
+          "id": "pamela-prov-kort-matt-ur-filmen",
+          "role": "prov",
+          "name": "Kortet: filmens eget kort som matt",
+          "proof": "kort-matt-ur-filmen",
+          "note": "Varje gul eller blå bildpunkt i filmen byts mot kortets yta, så kanten är filmens och fingrarna ligger framför utan handmask. Mätt: P4 sidlängdernas brus 0,72 px mot 3,35 i dagens spår; P1 inte bättre (7,41 mot 6,47). dealer-bf 2026-11-13; inte oberoende granskat, inte prövat i scenen."
+        },
+        {
           "id": "pamela-drawn-01",
           "role": "arbetsmaterial",
           "name": "Kortet utdraget",
@@ -3206,6 +3213,62 @@
           "note": "Inget handbyte: höger hand drar själv ett kort ur skon medan vänster håller kvar sitt; kortet vänds mitt på bordet och bärs upprätt, +21–25 % långt; landar 0,5 px från planen. Inte oberoende granskad.",
           "source": {
             "from": "beställningen paow-giv-2-1-p1-01, tagning 1 (studions vy Beställ)",
+            "when": "2026-11-13"
+          }
+        },
+        {
+          "id": "paow-film-ny-giv-p4-prov-2f",
+          "role": "film",
+          "name": "Giv till plats 4, metodprov 2f (kort text, stängt, WAN 3)",
+          "path": "assets/films/paow/ny-giv-p4-prov-2f/source.mp4",
+          "still": 114,
+          "fps": 30,
+          "state": "kandidat",
+          "note": "Kortet gult upp hela vägen och lagt på platsen, inte skjutet; handen högst 80 px över nypet; kortet −8 till +25 % på vägen; landar 0,5 px från planen. Fel: nästa kort i skon blir blått från ruta 30. Inte oberoende granskad.",
+          "source": {
+            "from": "beställningen paow-giv-2-1-p4-12, tagning 1 (studions vy Beställ)",
+            "when": "2026-11-13"
+          }
+        },
+        {
+          "id": "paow-film-ny-giv-p4-prov-2g",
+          "role": "film",
+          "name": "Giv till plats 4, metodprov 2g (kort text, stängt, Kling 4)",
+          "path": "assets/films/paow/ny-giv-p4-prov-2g/source.mp4",
+          "still": 93,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Lyfts till axelhöjd och vänds två gånger trots stängt (blått 31–46), släpas på kant 51–66; kortet upp till +47 %; landar 0,6 px från planen. Inte oberoende granskad.",
+          "source": {
+            "from": "beställningen paow-giv-2-1-p4-13, tagning 1 (studions vy Beställ)",
+            "when": "2026-11-13"
+          }
+        },
+        {
+          "id": "paow-film-ny-vila-ler-kort",
+          "role": "film",
+          "name": "Vila: ler (WAN 3, kort text)",
+          "path": "assets/films/paow/ny-vila-ler-kort/source.mp4",
+          "still": 65,
+          "fps": 30,
+          "state": "kandidat",
+          "note": "Tänder synliga ruta 54–93, stängd från 96, stilla från 102; kortare tid med tänder än den långa textens. Inte oberoende granskad.",
+          "source": {
+            "from": "beställningen paow-vila-07, tagning 1 (studions vy Beställ)",
+            "when": "2026-11-13"
+          }
+        },
+        {
+          "id": "paow-film-ny-vila-nickar-kort",
+          "role": "film",
+          "name": "Vila: nickar (WAN 3, kort text)",
+          "path": "assets/films/paow/ny-vila-nickar-kort/source.mp4",
+          "still": 65,
+          "fps": 30,
+          "state": "kandidat",
+          "note": "Munnen stängd hela filmen, men nicken blir en djup bugning med slutna ögon (ruta 48–70); stilla från 107. Inte oberoende granskad.",
+          "source": {
+            "from": "beställningen paow-vila-08, tagning 1 (studions vy Beställ)",
             "when": "2026-11-13"
           }
         },

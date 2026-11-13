@@ -29,4 +29,4 @@ export const forBrowser = (source: string) => stripTypeScriptTypes(source).repla
  */
 export const SCENE_FILES: readonly string[] = ['data/scene-contract.json', 'data/scene-rooms.json', 'assets/scene/room.png', 'assets/scene/panorama-vegas.jpg', 'assets/scene/panorama-la.jpg', 'assets/scene/panorama-skog.jpg',
   ...['room-panorama', 'room-la', 'room-skog', 'room-hall', 'room-salong', 'dealer-pamela'].map(name => `assets/scene/thumbs/${name}.jpg`),
-  ...['wood_table-diffuse', 'wood_table-nor_gl', 'wood_table-rough', 'brown_leather-nor_gl', 'brown_leather-rough', 'denim_fabric-nor_gl', 'denim_fabric-rough'].map(name => `assets/scene/materials/${name}.webp`)];
+  ...['wood_table-diffuse', 'wood_table-nor_gl', 'wood_table-rough', 'brown_leather-nor_gl', 'brown_leather-rough', 'denim_fabric-nor_gl', 'denim_fabric-rough', 'runway_felt-diffuse', 'runway_leather-diffuse'].map(name => `assets/scene/materials/${name}.webp`)];

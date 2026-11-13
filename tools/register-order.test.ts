@@ -127,6 +127,13 @@ test('a take Jakob has decided on is never written over, and an order that is no
   // Not approved, never placed, or a still: refused before anything is read further.
   await writeFile(path.join(root, `data/orders/${ORDER}.json`), JSON.stringify(order(ORDER, {approval: null, status: 'UTKAST'})));
   await assert.rejects(planRegistration(root, ORDER, 1, {split: 6}), /inte godkänd/);
+  // The main agent's approval counts only with the mandate it acts on (2026-11-13), as in tools/order-put.ts.
+  const byAgent = (mandate?: string) => ({approval: {by: 'huvudagent', at: '2026-11-13T03:00:00Z', orderSha256: 'c'.repeat(64), ...(mandate ? {mandate} : {})}});
+  await writeFile(path.join(root, `data/orders/${ORDER}.json`), JSON.stringify(order(ORDER, byAgent())));
+  await assert.rejects(planRegistration(root, ORDER, 1, {split: 6}), /inte godkänd/);
+  await writeFile(path.join(root, `data/orders/${ORDER}.json`), JSON.stringify(order(ORDER, byAgent('Jakob 2026-11-13: beställ lämpliga filmer automatiskt'))));
+  // With the mandate the approval holds; what stops this run is the decision Jakob has made on the take above.
+  await assert.rejects(planRegistration(root, ORDER, 1, {split: 6}), /har Jakobs beslut/, 'the mandate passes the approval check');
   await writeFile(path.join(root, `data/orders/${ORDER}.json`), JSON.stringify(order(ORDER)));
   await assert.rejects(planRegistration(root, ORDER, 2, {split: 6}), /task-id|OSÄKER/);
   await writeFile(path.join(root, `data/orders/${ORDER}.json`), JSON.stringify(order(ORDER, {kind: 'STILL'})));

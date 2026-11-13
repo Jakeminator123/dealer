@@ -21,13 +21,14 @@
     "basis": "SOURCE_FRAME_REVIEW"
   },
   "review": {
-    "decision": "PENDING",
-    "inbox": true,
+    "decision": "ACCEPTED",
     "basis": "Inte granskad av Jakob: förd in från beställningen paow-vila-03, tagning 1 (tools/register-order.ts). Oberoende rutgranskning: tools/film-review.md.",
     "limitations": "I inkorgen: spelas bara där steget inte har någon annan film, tills Jakob dömer den.",
     "colorDoesNotProvePhysicalSide": true,
-    "userAccepted": false,
-    "productionReady": false
+    "userAccepted": true,
+    "productionReady": false,
+    "acceptedAs": "VARIANT",
+    "userReview": "Jakob 2026-11-13: Jättebra.. Hon ler! Sätter som variant till idle/Vänta/grundloop eller vad allt nu kallas"
   },
   "order": {
     "id": "paow-vila-03",

@@ -3847,6 +3847,182 @@
         "id": "paow-giv-2-1-p1-01",
         "take": 1
       }
+    },
+    {
+      "id": "paow-giv-2-1-p4-12-01-deal",
+      "kind": "DEAL",
+      "from": "READY",
+      "to": "P4.C1",
+      "clip": "paow-giv-2-1-p4-12-01",
+      "frames": [
+        0,
+        117
+      ],
+      "purpose": "Beställning paow-giv-2-1-p4-12, tagning 1: Metodprov 2f · Kort, stängt, WAN 3.",
+      "dealer": "paow",
+      "model": "wan3",
+      "duration": 7,
+      "promptText": "Locked camera, one continuous shot. Her hand at the shoe draws the yellow card out of the window and carries it low over the felt, yellow side up, to its place. She lays it flat there, yellow side up. Then her open hand glides back low over the felt, palm down, to the shoe and takes the next card. The other hand rests on the felt. Only one card moves; its back is yellow and its face is blue.",
+      "first": {
+        "file": {
+          "path": "assets/orders/paow-giv-2-1-p4-12/first.png",
+          "sha256": "74eebfdc1388f8de362c0151546bbe08aeb1fed74fca097f8ca6999d833dc702"
+        },
+        "note": "Första bilden i beställningen paow-giv-2-1-p4-12."
+      },
+      "order": {
+        "id": "paow-giv-2-1-p4-12",
+        "take": 1
+      }
+    },
+    {
+      "id": "paow-giv-2-1-p4-12-01-return-ready",
+      "kind": "RETURN",
+      "from": "P4.C1",
+      "to": "READY",
+      "clip": "paow-giv-2-1-p4-12-01",
+      "frames": [
+        118,
+        207
+      ],
+      "purpose": "Beställning paow-giv-2-1-p4-12, tagning 1: Metodprov 2f · Kort, stängt, WAN 3.",
+      "dealer": "paow",
+      "model": "wan3",
+      "duration": 7,
+      "promptText": "Locked camera, one continuous shot. Her hand at the shoe draws the yellow card out of the window and carries it low over the felt, yellow side up, to its place. She lays it flat there, yellow side up. Then her open hand glides back low over the felt, palm down, to the shoe and takes the next card. The other hand rests on the felt. Only one card moves; its back is yellow and its face is blue.",
+      "last": {
+        "file": {
+          "path": "assets/orders/paow-giv-2-1-p4-12/last.png",
+          "sha256": "fa1222487a7c56be33fe1d7d607971c27a0b242a7a9455c0e8f71aadf6893b1b"
+        },
+        "note": "Sista bilden i beställningen paow-giv-2-1-p4-12."
+      },
+      "order": {
+        "id": "paow-giv-2-1-p4-12",
+        "take": 1
+      }
+    },
+    {
+      "id": "paow-giv-2-1-p4-13-01-deal",
+      "kind": "DEAL",
+      "from": "READY",
+      "to": "P4.C1",
+      "clip": "paow-giv-2-1-p4-13-01",
+      "frames": [
+        0,
+        100
+      ],
+      "purpose": "Beställning paow-giv-2-1-p4-13, tagning 1: Metodprov 2g · Kort, stängt, Kling 4.",
+      "dealer": "paow",
+      "model": "kling-4",
+      "duration": 7,
+      "promptText": "Locked camera, one continuous shot. Her hand at the shoe draws the yellow card out of the window and carries it low over the felt, yellow side up, to its place. She lays it flat there, yellow side up. Then her open hand glides back low over the felt, palm down, to the shoe and takes the next card. The other hand rests on the felt. Only one card moves; its back is yellow and its face is blue.",
+      "first": {
+        "file": {
+          "path": "assets/orders/paow-giv-2-1-p4-13/first.png",
+          "sha256": "74eebfdc1388f8de362c0151546bbe08aeb1fed74fca097f8ca6999d833dc702"
+        },
+        "note": "Första bilden i beställningen paow-giv-2-1-p4-13."
+      },
+      "order": {
+        "id": "paow-giv-2-1-p4-13",
+        "take": 1
+      }
+    },
+    {
+      "id": "paow-giv-2-1-p4-13-01-return-ready",
+      "kind": "RETURN",
+      "from": "P4.C1",
+      "to": "READY",
+      "clip": "paow-giv-2-1-p4-13-01",
+      "frames": [
+        101,
+        168
+      ],
+      "purpose": "Beställning paow-giv-2-1-p4-13, tagning 1: Metodprov 2g · Kort, stängt, Kling 4.",
+      "dealer": "paow",
+      "model": "kling-4",
+      "duration": 7,
+      "promptText": "Locked camera, one continuous shot. Her hand at the shoe draws the yellow card out of the window and carries it low over the felt, yellow side up, to its place. She lays it flat there, yellow side up. Then her open hand glides back low over the felt, palm down, to the shoe and takes the next card. The other hand rests on the felt. Only one card moves; its back is yellow and its face is blue.",
+      "last": {
+        "file": {
+          "path": "assets/orders/paow-giv-2-1-p4-13/last.png",
+          "sha256": "fa1222487a7c56be33fe1d7d607971c27a0b242a7a9455c0e8f71aadf6893b1b"
+        },
+        "note": "Sista bilden i beställningen paow-giv-2-1-p4-13."
+      },
+      "order": {
+        "id": "paow-giv-2-1-p4-13",
+        "take": 1
+      }
+    },
+    {
+      "id": "paow-vila-07-01",
+      "kind": "IDLE",
+      "from": "IDLE",
+      "to": "IDLE",
+      "clip": "paow-vila-07-01",
+      "frames": [
+        0,
+        117
+      ],
+      "purpose": "Beställning paow-vila-07, tagning 1: Paow · vila (kort text): ler.",
+      "dealer": "paow",
+      "model": "wan3",
+      "duration": 4,
+      "promptText": "Locked camera, one continuous shot. She starts and ends exactly as in the first frame, and holds still for the last half second. About one second in her eyes rest on the camera and her soft smile grows into a warm, friendly smile with closed lips that reaches her eyes, holds for a moment, and relaxes back to the calm expression of the first image. From the third second she is in the first pose and holds still to the end.",
+      "first": {
+        "file": {
+          "path": "assets/orders/paow-vila-07/first.png",
+          "sha256": "cdaa59756e2eb0f7b839f23254f9999f8c8da4c8eef0e37bf23e9643ba6586ee"
+        },
+        "note": "Första bilden i beställningen paow-vila-07."
+      },
+      "last": {
+        "file": {
+          "path": "assets/orders/paow-vila-07/last.png",
+          "sha256": "cdaa59756e2eb0f7b839f23254f9999f8c8da4c8eef0e37bf23e9643ba6586ee"
+        },
+        "note": "Sista bilden i beställningen paow-vila-07."
+      },
+      "order": {
+        "id": "paow-vila-07",
+        "take": 1
+      }
+    },
+    {
+      "id": "paow-vila-08-01",
+      "kind": "IDLE",
+      "from": "IDLE",
+      "to": "IDLE",
+      "clip": "paow-vila-08-01",
+      "frames": [
+        0,
+        117
+      ],
+      "purpose": "Beställning paow-vila-08, tagning 1: Paow · vila (kort text): nickar.",
+      "dealer": "paow",
+      "model": "wan3",
+      "duration": 4,
+      "promptText": "Locked camera, one continuous shot. She starts and ends exactly as in the first frame, and holds still for the last half second. About one second in she looks into the camera and gives one small, quick nod of greeting, as to a player who has just sat down: her chin dips a little and comes straight back up, her eyes stay open and her lips closed in her soft smile. From the third second she is in the first pose and holds still to the end.",
+      "first": {
+        "file": {
+          "path": "assets/orders/paow-vila-08/first.png",
+          "sha256": "cdaa59756e2eb0f7b839f23254f9999f8c8da4c8eef0e37bf23e9643ba6586ee"
+        },
+        "note": "Första bilden i beställningen paow-vila-08."
+      },
+      "last": {
+        "file": {
+          "path": "assets/orders/paow-vila-08/last.png",
+          "sha256": "cdaa59756e2eb0f7b839f23254f9999f8c8da4c8eef0e37bf23e9643ba6586ee"
+        },
+        "note": "Sista bilden i beställningen paow-vila-08."
+      },
+      "order": {
+        "id": "paow-vila-08",
+        "take": 1
+      }
     }
   ],
   "edits": [
