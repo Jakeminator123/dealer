@@ -106,8 +106,55 @@ float aboveShare(float row, float above){ return mix(above, 1., smoothstep(FRAME
 export function shadowAboveAt(row: number, above: number): number {
   const t = Math.min(1, Math.max(0, (row - (FRAME_FIX.y - SHADOW_BAND)) / SHADOW_BAND)), s = t * t * (3 - 2 * t); return above + (1 - above) * s;
 }
+// ---- the room's light on the dealer (key dealerRoom) ----------------------------------------------------------------------
+// The film is lit in a studio, whatever room is shown. With dealerRoom the film takes the colour and level of the panorama
+// that is showing: roomGlow reads the panorama (small, sRGB bytes) as the scene's sphere shows it, turned and mirrored, and
+// gives the mean light over the half of the room each of three sides of her faces, weighted by how squarely it falls (her front
+// toward the camera, and the frame's left and right; below the felt the table and floor stand between her and the room, so
+// that light counts for a third). lightOnDealer makes of it what the film shader multiplies by: a tint and level over all of
+// her (the shared grade, so the rendered cards follow), and a soft difference from her left side to her right across the frame.
+// Against a neutral reference: a grey room gives no colour and no side difference, and a grey room as bright as REF gives
+// exactly 1, 1, 1. Amount 0 is the film as it is. A built room has no panorama and gives nothing (null).
+export type RoomGlow = {front: number[]; left: number[]; right: number[]};
+// ref: the room's shown light (linear, times its exposure) at which her level stays; gamma and lo/hi: how far the level
+// follows the room; colour: how much of the room's colour she takes (a power of each channel over the light's luminance, so a
+// strong cast is softened more than a slight one), and reach: at most this far from grey in any channel; sides and sideReach:
+// how strong the left-right difference is, and at most how far from 1 a side goes. Tuned by eye 2026-11-13 on Venedig, Skogen
+// and Las Vegas with Paow and Pamela: past these a room's cast reads as a filter over her, not as its light on her.
+export const DEALER_LIGHT = {ref: 0.14, gamma: 0.5, lo: 0.78, hi: 1.1, colour: 0.5, reach: 0.12, sides: 0.6, sideReach: 0.2};
+const LINEAR = Array.from({length: 256}, (_, i) => { const c = i / 255; return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4; });
+/** The room's light on the dealer's front and sides from its panorama, RGBA bytes `width` × `height` (2:1, as the file has it), turned by `turn` radians as the sphere is and read backwards across unless `mirror`, as the sphere shows it. Linear RGB. */
+export function roomGlow(rgba: ArrayLike<number>, width: number, height: number, turn: number, mirror: boolean): RoomGlow {
+  const sums = [[0, 0, 0], [0, 0, 0], [0, 0, 0]], weights = [0, 0, 0], ca = Math.cos(turn), sa = Math.sin(turn);
+  for (let y = 0; y < height; y++) {
+    const theta = (y + 0.5) / height * Math.PI, st = Math.sin(theta), up = Math.cos(theta), t = Math.min(1, Math.max(0, (up + 0.45) / 0.4)), w = st * (1 / 3 + 2 / 3 * t * t * (3 - 2 * t));
+    for (let x = 0; x < width; x++) {
+      // the direction this pixel is seen in (the sphere's own u, three's SphereGeometry), turned with the sphere: -z is behind her
+      const phi = (mirror ? (x + 0.5) / width : 1 - (x + 0.5) / width) * 2 * Math.PI, lx = -Math.cos(phi) * st, lz = Math.sin(phi) * st, dx = lx * ca + lz * sa, dz = -lx * sa + lz * ca, i = (y * width + x) * 4;
+      const facing = [dz, -dx, dx]; // her front faces the camera (+z); the frame's left is -x
+      for (let k = 0; k < 3; k++) if (facing[k] > 0) { const f = w * facing[k]; weights[k] += f; for (let c = 0; c < 3; c++) sums[k][c] += f * LINEAR[rgba[i + c]]; }
+    }
+  }
+  const mean = (k: number) => sums[k].map(v => weights[k] > 0 ? v / weights[k] : 0);
+  return {front: mean(0), left: mean(1), right: mean(2)};
+}
+export type DealerLight = {tint: number[]; left: number[]; right: number[]};
+/** What the film is multiplied by for `amount` (0 to 1) of the room's light, the room shown at `exposure`; null glow (no panorama) or amount 0: 1, 1, 1 everywhere. Float32, as the shader gets them. */
+export function lightOnDealer(glow: RoomGlow | null, amount: number, exposure = 1): DealerLight {
+  const a = Math.min(1, Math.max(0, amount || 0)), L = DEALER_LIGHT, all = glow ? [0, 1, 2].map(c => 0.5 * glow.front[c] + 0.25 * (glow.left[c] + glow.right[c])) : [0, 0, 0];
+  const y = 0.2126 * all[0] + 0.7152 * all[1] + 0.0722 * all[2];
+  if (!glow || !a || !(y > 0)) return {tint: [1, 1, 1], left: [1, 1, 1], right: [1, 1, 1]};
+  const level = Math.min(L.hi, Math.max(L.lo, (y * exposure / L.ref) ** L.gamma)), luma = (v: number[]) => 0.2126 * v[0] + 0.7152 * v[1] + 0.0722 * v[2];
+  // a colour of luminance 1 brought within reach of grey, its deviations scaled together so that its hue stays
+  const within = (v: number[], reach: number) => { const dev = Math.max(...v.map(c => Math.abs(c - 1))), k = dev > reach ? reach / dev : 1; return v.map(c => 1 + k * (c - 1)); };
+  const powered = all.map(c => (c / y) ** L.colour), colour = within(powered.map(c => c / luma(powered)), L.reach);
+  const side = (own: number[], other: number[]) => within(own.map((c, k) => { const mid = (c + other[k]) / 2; return mid > 0 ? 1 + L.sides * (c / mid - 1) : 1; }), L.sideReach).map(c => Math.fround(1 + a * (c - 1)));
+  return {tint: colour.map(c => Math.fround(1 + a * (c * level - 1))), left: side(glow.left, glow.right), right: side(glow.right, glow.left)};
+}
+// Across the standard frame, where her left side turns into her right (frame x, 0 to 1): her body is about 0.32 to 0.68 of it.
+const SIDE_GLSL = 'uniform float sideOn; uniform vec3 sideL, sideR;';
 const FRAGMENT = `varying vec4 vFilm; varying vec3 vWorld; uniform sampler2D map; uniform vec2 refUv, texel, frameAnchor, frameSize; uniform float lo, hi, shadow, above, erode, frameOn, frameScale; uniform vec3 grade; uniform vec4 hide;
-uniform sampler2D roomMap; uniform vec2 roomSize; uniform float wrap, roomExposure;
+uniform sampler2D roomMap; uniform vec2 roomSize; uniform float wrap, roomExposure; ${SIDE_GLSL}
 ${FAN_GLSL}
 ${CARD_KEY}
 ${ABOVE_GLSL}
@@ -142,6 +189,8 @@ void main(){
   a *= mix(1., kept, isShadow);
   if (a < .004) discard;
   vec4 o = vec4(pm * grade * fanShade(vWorld), a);
+  // The room's light on her sides (dealerRoom; the tint over all of her is in grade): her left side's light turns into her right's across her body.
+  if (sideOn > .5) o.rgb *= mix(sideL, sideR, smoothstep(.32, .68, frameUv.x));
   // The room's light round her outline (a light wrap): where the film around a pixel is mostly screen, the pixel lies at her
   // edge, and the room that is seen right behind it there is added to it, as light from behind spills round a real body. It
   // takes her out of the cut-out and into the room. The room is read as it is shown (the curve of the scene's last pass).
@@ -193,9 +242,12 @@ export function createFilmLayers(filmVP: T.Matrix4, light: Record<string, {value
   const card = {cardOn: {value: 0}, cardRim: {value: 4}, cardSides: {value: 0}, cardTint: {value: 2}, cardTrust: {value: 0}, cardOverOn: {value: 0}, cardHeld: {value: 0}, cardDrawn: {value: quad()}, cardZone: {value: quad()}, cardCore: {value: quad()}, cardOver: {value: quad()}, cardColour: {value: new T.Vector3(1, 1, 0)}, cardShoe: {value: new T.Vector4(-1, -1, -1, -1)},
     seatOn: {value: 0}, seatZone: {value: quad()}, seatCore: {value: quad()}};
   const room = {roomMap: {value: null as T.Texture | null}, roomSize: {value: new T.Vector2(1, 1)}, roomExposure: {value: 1}};
+  // the room's light on her (setRoomLight): its tint lies in grade with the calibration's; the sides have their own
+  const side = {sideOn: {value: 0}, sideL: {value: new T.Vector3(1, 1, 1)}, sideR: {value: new T.Vector3(1, 1, 1)}}; let calibrated = [1, 1, 1], tint = [1, 1, 1];
+  const putGrade = () => grade.value.set(calibrated[0] * tint[0], calibrated[1] * tint[1], calibrated[2] * tint[2]);
   const material = (refUv: T.Vector2) => new T.ShaderMaterial({vertexShader: VERTEX, fragmentShader: FRAGMENT, transparent: true, depthWrite: false, side: T.DoubleSide,
     blending: T.CustomBlending, blendSrc: T.OneFactor, blendDst: T.OneMinusSrcAlphaFactor, blendSrcAlpha: T.OneFactor, blendDstAlpha: T.OneMinusSrcAlphaFactor,
-    uniforms: {...light, ...card, ...frame, ...room, wrap: {value: 0}, hide, map, filmVP: {value: filmVP}, refUv: {value: refUv}, lo: {value: 0.12}, hi: {value: 0.9}, shadow: {value: 1}, above: {value: 1}, erode: {value: 0.6}, grade, texel: {value: new T.Vector2(1.4 / FILM.width, 1.4 / FILM.height)}}});
+    uniforms: {...light, ...card, ...frame, ...room, ...side, wrap: {value: 0}, hide, map, filmVP: {value: filmVP}, refUv: {value: refUv}, lo: {value: 0.12}, hi: {value: 0.9}, shadow: {value: 1}, above: {value: 1}, erode: {value: 0.6}, grade, texel: {value: new T.Vector2(1.4 / FILM.width, 1.4 / FILM.height)}}});
   // The screen reference is read in a corner that stays empty: top left for the backdrop, bottom left for the table.
   const bodyMat = material(new T.Vector2(0.02, 0.97)), tableMat = material(new T.Vector2(0.02, 0.03));
   const body = new T.Mesh(new T.PlaneGeometry(10, 3), bodyMat), table = new T.Mesh(new T.PlaneGeometry(10, 2).rotateX(-Math.PI / 2), tableMat);
@@ -204,7 +256,10 @@ export function createFilmLayers(filmVP: T.Matrix4, light: Record<string, {value
     body, table, shared: {map, grade},
     setTexture(texture: T.Texture) { map.value = texture; },
     // Calibration of the film against the room: brightness, and warmth as red up and blue down by the same share. 1 and 0 leave the film as it is.
-    setGrade(brightness: number, warmth: number) { grade.value.set(brightness * (1 + warmth), brightness, brightness * (1 - warmth)); },
+    setGrade(brightness: number, warmth: number) { calibrated = [brightness * (1 + warmth), brightness, brightness * (1 - warmth)]; putGrade(); },
+    // The room's light on her (lightOnDealer): the tint goes over the calibration above, the sides across her body. 1, 1, 1 everywhere is the film as it is.
+    setRoomLight(light: DealerLight) { tint = light.tint; putGrade(); side.sideL.value.set(light.left[0], light.left[1], light.left[2]); side.sideR.value.set(light.right[0], light.right[1], light.right[2]);
+      side.sideOn.value = [...light.left, ...light.right].some(v => v !== 1) ? 1 : 0; },
     // The film's own card keyed away (a rendered card lies under the film there), or null: the film as it is.
     setCards(key: CardKey | null) {
       card.cardOn.value = key ? 1 : 0; if (!key) return;

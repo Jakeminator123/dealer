@@ -47,7 +47,7 @@ test("each control: a group in order, a label of at most three words, one line o
     assert.ok(s.help.length > 10 && s.help.length <= 120 && !s.help.includes("\n"), `${s.key}: one line of help`);
     assert.ok(s.who === "D" || s.who === "U");
   }
-  assert.deepEqual(GROUPS.map((g) => keysOf(g.id).length), [6, 8, 7, 8, 7, 13, 8]);
+  assert.deepEqual(GROUPS.map((g) => keysOf(g.id).length), [6, 9, 8, 8, 7, 13, 8]);
   assert.deepEqual(SCENE_KEYS.filter((s) => s.who === "D").map((s) => s.key), ["room", "roomShift", "roomShiftSeconds", "clock", "dust", "flicker", "fan", "cards", "pitch", "zoom", "format"]);
 });
 

@@ -67,6 +67,35 @@ export function readRegister(json: unknown): {rooms: RegisterRoom[]; problems: s
   return {rooms, problems};
 }
 
+// ---- life in a room (key roomLife): looping films laid over the parts of a panorama where people stand ----------------
+// A panorama is a still, so the people in it stand frozen. A room's line lays a film over each part of its picture that holds
+// people. box: that part in fractions of the picture as its file has it (left, top, right, bottom). The film shows exactly that
+// part: its frames are the crop moved back where the panorama has it (the model's camera drifts) and levelled to it along the
+// edge, played forward and back so the loop has no jump. feather: how far in from the box's edge the film fades into the
+// panorama, as a share of the box's width (the same number of picture pixels at top and bottom). The film is a patch of the
+// room's own sphere, so it turns and mirrors with it and goes through every pass the room goes through (blur, depth blur,
+// exposure, the light's shifts). A room without a line shows nothing more. Made 2026-11-13 from the Poly Haven photograph
+// (CC0): the two quays of Venedig, each WAN 3 at 480p, 5 s, frames 10 to 148 forward and back (9.2 s).
+export type RoomLife = {url: string; box: readonly [number, number, number, number]; feather: number};
+export const ROOM_LIFE: Readonly<Partial<Record<string, readonly RoomLife[]>>> = {
+  venedig: [{url: 'assets/scene/rooms/venedig-liv.mp4', box: [836 / 4096, 968 / 2048, 1268 / 4096, 1211 / 2048], feather: 0.08}, {url: 'assets/scene/rooms/venedig-liv-2.mp4', box: [3026 / 4096, 935 / 2048, 3634 / 4096, 1277 / 2048], feather: 0.08}],
+};
+/** Where a film of ROOM_LIFE lies on its room's sphere (three's SphereGeometry phi and theta, radians), and whether the film is read backwards across: a picture shown the right way round (mirror false) is, as the sphere's own is (show below). */
+export function lifePatch(box: readonly number[], mirror: boolean) {
+  const [u0, v0, u1, v1] = box;
+  return {phiStart: (mirror ? u0 : 1 - u1) * 2 * Math.PI, phiLength: (u1 - u0) * 2 * Math.PI, thetaStart: v0 * Math.PI, thetaLength: (v1 - v0) * Math.PI, flip: !mirror};
+}
+/** How much of a film shows at (u, v) of its own frame, 0 to 1: it fades in over `feather` of the box's width from each edge; `aspect` is the box's width over its height in picture pixels. */
+export function lifeFeather(u: number, v: number, feather: number, aspect: number) {
+  const s = (t: number, f: number) => { const x = Math.min(1, Math.max(0, t / f)); return x * x * (3 - 2 * x); };
+  return s(u, feather) * s(1 - u, feather) * s(v, feather * aspect) * s(1 - v, feather * aspect);
+}
+/** A box's width over its height in pixels of its 2:1 picture. */
+export const lifeAspect = (box: readonly number[]) => (box[2] - box[0]) * 2 / (box[3] - box[1]);
+// Inside the room's sphere (60): its flat facets (64 × 32) lie up to about 0.15 inside the round sphere, and a film nearer to it
+// than that loses the depth test in a pattern of the facets. Seen from the middle, the radius changes nothing else.
+const LIFE_RADIUS = 58;
+
 function canvasTexture(w: number, h: number, draw: (c: CanvasRenderingContext2D, w: number, h: number) => void, repeat?: [number, number]) {
   const canvas = document.createElement('canvas'); canvas.width = w; canvas.height = h; draw(canvas.getContext('2d')!, w, h);
   const texture = new T.CanvasTexture(canvas); texture.colorSpace = T.SRGBColorSpace; texture.anisotropy = 8;
@@ -200,6 +229,27 @@ export function createRooms(scene: T.Scene, urls: {plate: string; panorama: stri
     salong: {back: [1.5, 1.23, 0.85], front: [0.95, 0.83, 0.66], leaves: 0}, hall: {back: [1.3, 1.1, 1.25], front: [0.85, 0.78, 0.82], leaves: 0},
     kuliss: {back: [1.5, 1.23, 0.85], front: [0.95, 0.83, 0.66], leaves: 0}, plat: {back: [0, 0, 0], front: [0.95, 0.83, 0.66], leaves: 0},
     ...Object.fromEntries(panoramas.map(p => [p.id, {back: p.tint.back, front: p.tint.front, leaves: p.air === 'leaves' ? 1 : 0}]))};
+  // The films over a room's people (ROOM_LIFE), made the first time they are wanted, as children of the room's sphere. A film
+  // is shown from its first decoded frame on; until then, or if it cannot be read, the room is the still picture.
+  type Life = {video: HTMLVideoElement; mesh: T.Mesh; ready: boolean};
+  const lives = new Map<RoomId, Life[]>();
+  function livesOf(id: RoomId): Life[] {
+    const had = lives.get(id); if (had) return had;
+    const lines = ROOM_LIFE[id], sphere = spheres.find(s => s.look.id === id); if (!lines || !sphere) return [];
+    const list = lines.map(line => {
+      const video = document.createElement('video'); video.muted = true; video.loop = true; video.playsInline = true; video.preload = 'auto'; video.src = line.url;
+      const patch = lifePatch(line.box, sphere.look.mirror), aspect = lifeAspect(line.box), map = new T.VideoTexture(video);
+      // mipmaps: the film is seen several times smaller than it is, and moves
+      map.colorSpace = T.SRGBColorSpace; map.generateMipmaps = true; map.minFilter = T.LinearMipmapLinearFilter; if (patch.flip) { map.repeat.x = -1; map.offset.x = 1; }
+      const S = 64, fade = new Uint8Array(S * S * 4); for (let y = 0; y < S; y++) for (let x = 0; x < S; x++) fade.fill(Math.round(255 * lifeFeather((x + 0.5) / S, (y + 0.5) / S, line.feather, aspect)), (y * S + x) * 4, (y * S + x) * 4 + 4);
+      const alpha = new T.DataTexture(fade, S, S); alpha.magFilter = alpha.minFilter = T.LinearFilter; alpha.needsUpdate = true;
+      const mesh = new T.Mesh(new T.SphereGeometry(LIFE_RADIUS, 24, 12, patch.phiStart, patch.phiLength, patch.thetaStart, patch.thetaLength), new T.MeshBasicMaterial({map, alphaMap: alpha, transparent: true, depthWrite: false, side: T.BackSide, fog: false}));
+      mesh.visible = false; sphere.mesh.add(mesh);
+      const life: Life = {video, mesh, ready: false}; video.addEventListener('loadeddata', () => { life.ready = true; }, {once: true});
+      return life;
+    });
+    lives.set(id, list); return list;
+  }
   return {
     rooms,
     // Rooms are built in dealer metres around the dealer-side table edge and scaled into the plan-scale world.
@@ -239,5 +289,12 @@ export function createRooms(scene: T.Scene, urls: {plate: string; panorama: stri
     },
     // A panorama follows the camera, turned by the scene's common turn and its own.
     followCamera(id: RoomId, position: T.Vector3, turnDeg: number) { const room = rooms[id]; if (room.follow && room.group) { room.group.position.copy(position); room.group.rotation.y = (turnDeg + room.turn) * Math.PI / 180; } },
+    // Life in the rooms drawn this frame (`ids`, ROOM_LIFE): their films play and show while `on`; every other film stands still, hidden.
+    life(ids: RoomId[], on: boolean) {
+      if (on) for (const id of ids) livesOf(id);
+      for (const [id, list] of lives) { const wanted = on && ids.includes(id); for (const l of list) { l.mesh.visible = wanted && l.ready; if (wanted && l.video.paused) l.video.play().catch(() => {}); else if (!wanted && !l.video.paused) l.video.pause(); } }
+    },
+    // With the scene: every film stopped and emptied (its mesh and textures go with the scene's own walk of what it holds).
+    dispose() { for (const list of lives.values()) for (const l of list) { l.video.pause(); l.video.removeAttribute('src'); l.video.load(); } lives.clear(); },
   };
 }

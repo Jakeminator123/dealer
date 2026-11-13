@@ -4,7 +4,7 @@
 // With focus on, they go through a full-size target and are blurred by their own distance from the focus.
 import * as T from 'three';
 import {DEALER_LENS_ESTIMATE, FILM, aimCorrection, betSpots, cameraFromContract, cardFocusPixel, cardPixel, cardSpots, cloudLevel, filmToScene, flickerLevel, sceneToSpot, solveCamera, spotToScene, viewFovDeg, type CardTrack, type FilmCamera} from './scene3d-geometry.ts';
-import {createFilmLayers, createPlayers, frameAt} from './scene3d-film.ts';
+import {createFilmLayers, createPlayers, frameAt, lightOnDealer, roomGlow, type RoomGlow} from './scene3d-film.ts';
 import {createFanLight} from './scene3d-light.ts';
 import {createChipTray, TRAY} from './scene3d-props.ts';
 import {createRooms, type Panorama, type RoomId} from './scene3d-room.ts';
@@ -29,6 +29,9 @@ export type SceneState = {
   // felt's colour and weave (print, v6: V6's cloth, or runway: the felt of a generated photograph of the table). lamp: share of the table's light from a lamp above the dealer (0 to 1).
   // chipGloss: the chips' gloss (0 to 1; 0.5 is their look before), read by the page that lays chips.
   shadowAbove: number; marks: string; cloth: TableCloth; lamp: number; chipGloss: number;
+  // Lab trials of 2026-11-13, at their defaults the picture before them. roomLife: films over the people of a panorama, where the
+  // room has them (ROOM_LIFE in scene3d-room.ts). dealerRoom: share of the panorama's light the film takes (0 to 1; lightOnDealer in scene3d-film.ts).
+  roomLife: boolean; dealerRoom: number;
 };
 // Everything added after checkpoint v1 starts switched off, so the page opens as v1. scale 0 = the contract's own k.
 export const DEFAULTS: SceneState = {
@@ -44,6 +47,7 @@ export const DEFAULTS: SceneState = {
   filmBright: 1, filmWarm: 0, wrap: 0,
   roomShift: 'cut', roomShiftSeconds: 2.6,
   shadowAbove: 1, marks: 'all', cloth: 'print', lamp: 0, chipGloss: 0.5,
+  roomLife: false, dealerRoom: 0,
 };
 // rooms: the panorama rooms of the register (data/scene-rooms.json, readRegister in scene3d-room.ts); without it the first three, at urls.
 export type SceneData = {contract: Parameters<typeof cameraFromContract>[0]; plan: Parameters<typeof cardSpots>[0]; urls: {plate: string; panorama: string; la: string; skog: string}; rooms?: Panorama[]; onChange: () => void; onMissingRoom: (room: RoomId) => void};
@@ -296,7 +300,10 @@ export function createScene(canvas: HTMLCanvasElement, host: HTMLElement, data: 
     lastSeconds = seconds;
     // room
     if (shift && change >= 1) rooms.show(state.room); // also after a frame so long that the rooms never were on screen together
+    rooms.life(shift?.from ? [state.room, shift.from.room] : [state.room], state.roomLife);
     const picture = shift && change < 1 ? drawShift(shift, change, seconds) : drawRoom(state, seconds, half[1], half[2]); if (shift) shown = picture;
+    // the dealer takes her light from the room as the table does: the outgoing room's until the rooms have half changed
+    const lit = shift?.from && change < 0.5 ? shift.from : lookNow(); dealerLight(lit, shift ? lit.exposure * rooms.rooms[lit.room].exposure : picture.exposure);
     film.setWrap(state.wrap > 0 ? picture.target.texture : null, canvas.width, canvas.height, picture.exposure, state.wrap);
     // table and film; while a change of room is under way the shimmer is laid over the room in the same pass that writes it to the screen
     const out = shift ? shiftMat : outMat, o = out.uniforms; o.useFg.value = 0;
@@ -320,6 +327,22 @@ export function createScene(canvas: HTMLCanvasElement, host: HTMLElement, data: 
         const source = new T.CanvasTexture(picture); source.colorSpace = T.SRGBColorSpace; source.mapping = T.EquirectangularReflectionMapping; litMap = pmrem.fromEquirectangular(source); source.dispose(); } }
     table.setEnvironment(litMap?.texture ?? null, ROOM_TURN + (look.panoramaTurn + room.turn) * RAD, state.roomLight);
   }
+  // With dealerRoom the film takes the light of the room that is showing (lightOnDealer in scene3d-film.ts): the room's
+  // panorama read small once per picture, and its light on her front and sides worked out again when the room turns. A built
+  // room has no panorama and leaves her as she is. Nothing is touched while the key is 0 and was 0 the frame before.
+  const GLOW = 128; let glowPixels: {uuid: string; data: Uint8ClampedArray} | null = null, glow: {key: string; value: RoomGlow | null} = {key: '', value: null}, dealerLit = false;
+  function dealerLight(look: Look, exposure: number) {
+    if (!(state.dealerRoom > 0) && !dealerLit) return; dealerLit = state.dealerRoom > 0;
+    const room = rooms.rooms[look.room], map = dealerLit && room.follow ? ((room.group as T.Mesh | null)?.material as T.MeshBasicMaterial | undefined)?.map ?? null : null, image = map?.image as HTMLImageElement | undefined;
+    let value: RoomGlow | null = null;
+    if (map && image && image.width > 0) {
+      const read = () => { const c = document.createElement('canvas'); c.width = GLOW; c.height = GLOW / 2; const g = c.getContext('2d', {willReadFrequently: true})!; g.imageSmoothingQuality = 'high'; g.drawImage(image, 0, 0, c.width, c.height); return {uuid: map.uuid, data: g.getImageData(0, 0, c.width, c.height).data}; };
+      const pixels = glowPixels && glowPixels.uuid === map.uuid ? glowPixels : glowPixels = read();
+      const key = `${map.uuid}:${look.panoramaTurn}`; if (glow.key !== key) glow = {key, value: roomGlow(pixels.data, GLOW, GLOW / 2, (look.panoramaTurn + room.turn) * RAD, room.mirror)};
+      value = glow.value;
+    }
+    film.setRoomLight(lightOnDealer(value, dealerLit ? state.dealerRoom : 0, exposure));
+  }
 
   let running = false; const loop = (ms: number) => { if (!running) return; render(ms / 1000); requestAnimationFrame(loop); };
 
@@ -334,7 +357,7 @@ export function createScene(canvas: HTMLCanvasElement, host: HTMLElement, data: 
   // registers no observers or listeners of its own (the pages do). Afterwards every call is a no-op, dispose() too.
   function takeDown() {
     if (gone) return; gone = true; running = false; shift = null;
-    players.dispose();
+    players.dispose(); rooms.dispose();
     for (const prop of props.splice(0)) fg.remove(prop.group); frameCalls.clear();
     for (const layer of Object.values(cardLayers)) layer.off?.(); cardLayer = null;
     const freed = new Set<{dispose(): void}>(), textures = (value: unknown): void => { if (value instanceof T.Texture) freed.add(value as T.Texture); else if (Array.isArray(value)) value.forEach(textures); };

@@ -4,7 +4,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {DEFAULTS} from '../src/scene3d-view.ts';
-import {FRAME_FIX, SHADOW_BAND, shadowAboveAt} from '../src/scene3d-film.ts';
+import {DEALER_LIGHT, FRAME_FIX, SHADOW_BAND, lightOnDealer, roomGlow, shadowAboveAt, type RoomGlow} from '../src/scene3d-film.ts';
 import {FELT_MARKS, FELT_PX_PER_M, LAMP, NATURES, RUNWAY_CLOTH, RUNWAY_CLOTHS, feltMarks, flatten, foldDepth, isNature, isRunwayCloth, lampShade, marksText, rectify, reliefOf, seamless, type Picture} from '../src/scene3d-table.ts';
 import {SCENE_KEYS} from '../studio/lib/scene-keys.ts';
 import {KEYS as GAME_KEYS} from '../src/game-look.ts';
@@ -23,6 +23,49 @@ test('every new key starts at the picture before it', () => {
   for (let row = 700; row <= 900; row += 0.5) assert.equal(shadowAboveAt(row, DEFAULTS.shadowAbove), 1);
   for (const [x, s] of [[0, 0], [0.4, 0.3], [-0.9, 0.6]]) assert.equal(lampShade(x, s, DEFAULTS.lamp), 1);
   assert.deepEqual(chipRoughness(DEFAULTS.chipGloss), {face: 0.5, edge: 0.48}); // the literals the chips had
+  // 2026-11-13: life in the room is off, and the room's light on the dealer leaves the film as it is
+  assert.equal(DEFAULTS.roomLife, false); assert.equal(DEFAULTS.dealerRoom, 0);
+  const warm: RoomGlow = {front: [0.4, 0.2, 0.1], left: [0.1, 0.1, 0.3], right: [0.9, 0.5, 0.2]}, same = {tint: [1, 1, 1], left: [1, 1, 1], right: [1, 1, 1]};
+  for (const exposure of [0.42, 1, 2]) assert.deepEqual(lightOnDealer(warm, DEFAULTS.dealerRoom, exposure), same);
+});
+
+// ---- the lab trial of 2026-11-13: the room's light on the dealer (dealerRoom) ----
+// A panorama of W × W/2 RGBA bytes made in the test, each pixel from its place in the picture (u, v from 0 to 1).
+const picture = (W: number, at: (u: number, v: number) => number[]) => { const H = W / 2, d = new Uint8Array(W * H * 4); for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) d.set([...at((x + 0.5) / W, (y + 0.5) / H), 255], (y * W + x) * 4); return d; };
+const lumaOf = (c: number[]) => 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
+const TURN = (90 - 25) * Math.PI / 180; // the scene's common panoramaTurn and Venedig's own turn
+
+test('the room light on the dealer: a grey room changes nothing, amount 0 and a built room leave the film as it is', () => {
+  const same = {tint: [1, 1, 1], left: [1, 1, 1], right: [1, 1, 1]};
+  for (const g of [40, 128, 230]) {
+    const glow = roomGlow(picture(64, () => [g, g, g]), 64, 32, TURN, false), lin = glow.front[0];
+    for (const side of [glow.front, glow.left, glow.right]) for (const c of side) assert.ok(Math.abs(c - lin) < 1e-12, 'a grey room gives the same light from every side');
+    // as bright as the reference: exactly 1, 1, 1 everywhere, at any amount
+    for (const amount of [0.3, 1]) assert.deepEqual(lightOnDealer(glow, amount, DEALER_LIGHT.ref / lin), same);
+    // brighter or darker: a level only, no colour and no side
+    const other = lightOnDealer(glow, 1, 0.5); assert.ok(other.tint[0] === other.tint[1] && other.tint[1] === other.tint[2]); assert.deepEqual([other.left, other.right], [[1, 1, 1], [1, 1, 1]]);
+  }
+  const coloured = roomGlow(picture(64, (u, v) => [200 * u, 120, 255 * v]), 64, 32, TURN, false);
+  assert.deepEqual(lightOnDealer(coloured, 0, 0.42), same); assert.deepEqual(lightOnDealer(null, 1, 0.42), same); assert.deepEqual(lightOnDealer(coloured, Number.NaN), same);
+  // the level follows the room only so far: a very dark or very bright room stays inside lo and hi
+  const L = DEALER_LIGHT; for (const exposure of [0.001, 100]) { const t = lightOnDealer(coloured, 1, exposure).tint; assert.ok(lumaOf(t) > L.lo * 0.8 && lumaOf(t) < L.hi * 1.25, `${exposure}: ${t}`); }
+});
+
+test('the room light on the dealer: the side of her toward the bright part of the room is lighter, and its colour is the room\'s', () => {
+  // As the scene turns Venedig (shown the right way round), the frame's right (+x) is seen at u 0.681 of its picture: there a
+  // warm light, the rest of the room a dim blue sky
+  const sun = picture(128, (u, v) => Math.abs(u - 0.681) < 0.06 && v > 0.3 && v < 0.55 ? [255, 190, 110] : [40, 55, 90]);
+  const glow = roomGlow(sun, 128, 64, TURN, false), light = lightOnDealer(glow, 1, 1);
+  assert.ok(lumaOf(glow.right) > 2 * lumaOf(glow.left), 'the light falls on the side toward the frame\'s right');
+  for (let c = 0; c < 3; c++) assert.ok(light.right[c] > 1 && light.left[c] < 1, `channel ${c}`);
+  assert.ok(light.right[0] - light.right[2] > 0.05, 'the lit side is warmer'); assert.ok(light.tint[2] > light.tint[0], 'over all of her the blue sky wins');
+  // half the amount: half the way
+  const half = lightOnDealer(glow, 0.5, 1); for (let c = 0; c < 3; c++) assert.ok(Math.abs((half.right[c] - 1) * 2 - (light.right[c] - 1)) < 1e-6);
+  // mirrored: the same room read the other way across (a picture flipped and shown mirrored) gives the same light
+  const W = 128, H = 64, flipped = new Uint8Array(sun.length); for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) flipped.set(sun.subarray((y * W + x) * 4, (y * W + x) * 4 + 4), (y * W + W - 1 - x) * 4);
+  const mirrored = roomGlow(flipped, W, H, TURN, true); for (const k of ['front', 'left', 'right'] as const) for (let c = 0; c < 3; c++) assert.ok(Math.abs(mirrored[k][c] - glow[k][c]) < 1e-9, `${k} ${c}`);
+  // turned half round, the light comes from the frame's left instead
+  const turned = roomGlow(sun, W, H, TURN + Math.PI, false); assert.ok(lumaOf(turned.left) > 2 * lumaOf(turned.right));
 });
 
 test('the shadow above the table edge goes, and fades in over the last rows so the felt shadow starts without a line', () => {

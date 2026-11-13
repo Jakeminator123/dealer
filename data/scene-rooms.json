@@ -274,6 +274,42 @@
       "sound": "la"
     },
     {
+      "id": "venedig-tom",
+      "label": "Venedig, tom",
+      "note": "Samma kaj i Venedig i solnedgången, med folket borttaget av en bildmodell",
+      "game": false,
+      "kind": "photo",
+      "file": "assets/scene/rooms/venedig-tom.jpg",
+      "size": [4096, 2048],
+      "bytes": 1191899,
+      "sha256": "db43e136548ebcc3a1880def4bf95a4e74884862723f64f0cd143ef95ca076ff",
+      "author": "Greg Zaal",
+      "licence": "CC0",
+      "page": "https://polyhaven.com/a/venice_sunset",
+      "source": {
+        "url": "https://dl.polyhaven.org/file/ph-assets/HDRIs/extra/Tonemapped%20JPG/venice_sunset.jpg",
+        "size": [8192, 4096],
+        "bytes": 4822313,
+        "sha256": "1fde00d96f688a4a10cf76781d7e8f51295819d7ef242a74d85f029ddd9346be",
+        "md5": "a94465af83fd4c9c2be08cca0389e33a",
+        "taken": "2017-11-03",
+        "fetched": "2026-11-11",
+        "from": "assets/scene/rooms/venedig.jpg",
+        "made": "venedig.jpg with the people on both quays removed, 2026-11-13: two crops of it (x 776, y 948, 528x297 and x 3040, y 930, 640x360) edited by an image model (Nano Banana Pro through Runway, 2K, tasks 82cb6049-8f00-4408-8e0f-39c4dc0cb5fc and 1e4ba6a4-7296-4fe4-a761-485a066cc63f), fitted back onto the crops and pasted only where the model changed the picture (the people), with a feathered mask; saved with sharp as JPEG quality 90 (mozjpeg). Outside the two crops the decoded picture differs from venedig.jpg by 0.09 of 255 on average (max 20) from saving it again."
+      },
+      "blur": 7,
+      "exposure": 0.42,
+      "turn": -25,
+      "mirror": false,
+      "air": "dust",
+      "tint": {
+        "back": [1.8, 1.17, 0.62],
+        "front": [1, 0.78, 0.48]
+      },
+      "light": "cloud",
+      "sound": "la"
+    },
+    {
       "id": "dimskog",
       "label": "Dimskogen",
       "note": "En tallskog i morgondimma",
