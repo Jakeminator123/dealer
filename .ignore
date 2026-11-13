@@ -7,3 +7,9 @@
 !/assets/**/*.json
 !/assets/**/*.txt
 !/assets/**/*.md
+
+# Library code, not the project's own: three.js as brought in with the card material study, and the two built pages of
+# that study (three.js plus about 300 lines of ours each). 163 000 lines that no search should wade through.
+/materials/kortmaterial.js
+/materials/markermaterial.js
+/materials/source/references/card-materials/vendor/three.module.js
