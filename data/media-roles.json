@@ -3706,7 +3706,7 @@
           "role": "prov",
           "name": "Tal: läppsynk över vilan",
           "proof": "paow-tal",
-          "note": "28 talfilmer av Paow med ljud i hennes egen röst (dealer-0b, 2026-11-13; ElevenLabs-rösten Paow, multilingual v2, Jakobs val): demofilmen, tal över en giv och över ingången, rundans tio repliker och chattens femton svar. Nattens filmer med rösten Jessica ligger kvar i assets/speech/paow/ och i banken men visas inte här."
+          "note": "28 talfilmer av Paow med ljud i hennes egen röst (ElevenLabs-rösten Paow, multilingual v2, Jakobs val 2026-11-13): demofilmen, tal över en giv och över ingången, rundans tio repliker och chattens femton svar. Tre oberoende granskare: alla användbara med anmärkningar (given 4/5, rundan 3/5, förlust 2/5, chatten 2/5); felen sitter i munnen. Nattens filmer med Jessica ligger kvar men visas inte här."
         },
         {
           "id": "paow-prov-paow-fran-sidan",
@@ -3732,7 +3732,7 @@
         {
           "id": "paow-prov-paow-rost",
           "role": "prov",
-          "name": "Paows röst: samma replik på fyra sätt",
+          "name": "Paows röst: samma replik på flera sätt",
           "proof": "paow-rost",
           "note": "Röstjämförelsen 2026-11-13 (dealer-0b): Paows röst med eleven v3, med multilingual v2 (Jakobs val), röstbyte på nattens ljud, och Jessica som jämförelse. Inte oberoende granskat."
         },
@@ -4297,7 +4297,7 @@
           "still": 136,
           "fps": 24,
           "state": "kandidat",
-          "note": "Repliker i följd med vila emellan, 34.21 s med ljud, rösten Paow. En film att visa, inte en tagning i banken (tools/speech.ts reel). Inte oberoende granskad.",
+          "note": "Repliker i följd med vila emellan, 34.21 s med ljud, rösten Paow. En film att visa, inte en tagning i banken (tools/speech.ts reel). Granskaren 3/5: Klippen rena (huvud ≤0,6 px), ljudet på 0 ms, vilorna tysta och orörda. Ärver replikernas munfel: tunnare läppar, öppen mun i pauser.",
           "source": {
             "from": "tools/speech.ts reel --dealer paow",
             "when": "2026-11-13"
@@ -4311,7 +4311,7 @@
           "still": 35,
           "fps": 24,
           "state": "kandidat",
-          "note": "Vilan paow-vila-01-01 med munnen ritad efter ljudet (tools/speech.ts), rösten Paow (ElevenLabs, eleven_multilingual_v2), 70 rutor i 24 per sekund med ljudspår. Börjar och slutar på vilans ruta 3. Inte oberoende granskad.",
+          "note": "Vilan paow-vila-01-01 med munnen ritad efter ljudet (tools/speech.ts), rösten Paow (ElevenLabs, eleven_multilingual_v2), 70 rutor i 24 per sekund med ljudspår. Börjar och slutar på vilans ruta 3. Granskaren 3/5: Bästa synken: läpparna sluts på B (r9) och i pausen r23–24; stänger r58 (+6). Rent utanför lådan; tunnare matta läppar, mjukare haka.",
           "source": {
             "from": "tools/speech.ts say --dealer paow --line blackjack (Paow)",
             "when": "2026-11-13"
@@ -4325,7 +4325,7 @@
           "still": 24,
           "fps": 24,
           "state": "kandidat",
-          "note": "Vilan paow-vila-01-01 med munnen ritad efter ljudet (tools/speech.ts), rösten Paow (ElevenLabs, eleven_multilingual_v2), 48 rutor i 24 per sekund med ljudspår. Börjar och slutar på vilans ruta 3. Inte oberoende granskad.",
+          "note": "Vilan paow-vila-01-01 med munnen ritad efter ljudet (tools/speech.ts), rösten Paow (ElevenLabs, eleven_multilingual_v2), 48 rutor i 24 per sekund med ljudspår. Börjar och slutar på vilans ruta 3. Granskaren 2/5: Läpparna blir tunna och matta när hon talar (ruta 5–35), hakan suddig; munnen öppnar 4 rutor före ljudet, stänger 7 efter. Skarvar, kant, tatuering rena.",
           "source": {
             "from": "tools/speech.ts say --dealer paow --line chat1 (Paow)",
             "when": "2026-11-13"
@@ -4339,7 +4339,7 @@
           "still": 26,
           "fps": 24,
           "state": "kandidat",
-          "note": "Vilan paow-vila-01-01 med munnen ritad efter ljudet (tools/speech.ts), rösten Paow (ElevenLabs, eleven_multilingual_v2), 51 rutor i 24 per sekund med ljudspår. Börjar och slutar på vilans ruta 3. Inte oberoende granskad.",
+          "note": "Vilan paow-vila-01-01 med munnen ritad efter ljudet (tools/speech.ts), rösten Paow (ElevenLabs, eleven_multilingual_v2), 51 rutor i 24 per sekund med ljudspår. Börjar och slutar på vilans ruta 3. Granskaren 2/5: Tunna matta läppar under talet, hakan suddig; munnen öppen med tänder 6 rutor efter att ljudet tystnat (34–40), öppnar 5 före. Skarvar och tatuering rena.",
           "source": {
             "from": "tools/speech.ts say --dealer paow --line chat2 (Paow)",
             "when": "2026-11-13"
@@ -4353,7 +4353,7 @@
           "still": 20,
           "fps": 24,
           "state": "kandidat",
-          "note": "Vilan paow-vila-01-01 med munnen ritad efter ljudet (tools/speech.ts), rösten Paow (ElevenLabs, eleven_multilingual_v2), 39 rutor i 24 per sekund med ljudspår. Börjar och slutar på vilans ruta 3. Inte oberoende granskad.",
+          "note": "Vilan paow-vila-01-01 med munnen ritad efter ljudet (tools/speech.ts), rösten Paow (ElevenLabs, eleven_multilingual_v2), 39 rutor i 24 per sekund med ljudspår. Börjar och slutar på vilans ruta 3. Granskaren 2/5: Bästa starten (munnen 2 rutor före ljudet) och ett synligt rundat o i 10–12, men tunna matta läppar, suddig haka och munnen stänger 6 rutor efter ljudet.",
           "source": {
             "from": "tools/speech.ts say --dealer paow --line chat3 (Paow)",
             "when": "2026-11-13"
@@ -4367,7 +4367,7 @@
           "still": 28,
           "fps": 24,
           "state": "kandidat",
-          "note": "Vilan paow-vila-01-01 med munnen ritad efter ljudet (tools/speech.ts), rösten Paow (ElevenLabs, eleven_multilingual_v2), 56 rutor i 24 per sekund med ljudspår. Börjar och slutar på vilans ruta 3. Inte oberoende granskad.",
+          "note": "Vilan paow-vila-01-01 med munnen ritad efter ljudet (tools/speech.ts), rösten Paow (ElevenLabs, eleven_multilingual_v2), 56 rutor i 24 per sekund med ljudspår. Börjar och slutar på vilans ruta 3. Granskaren 2/5: Munnen öppnar 5 rutor före ljudet och visar tänder 8 rutor efter (38–45); tunna matta läppar, suddig haka. m i 'med' stänger rätt (20–21). Skarvar rena.",
           "source": {
             "from": "tools/speech.ts say --dealer paow --line chat4 (Paow)",
             "when": "2026-11-13"
@@ -4381,7 +4381,7 @@
           "still": 44,
           "fps": 24,
           "state": "kandidat",
-          "note": "Vilan paow-vila-01-01 med munnen ritad efter ljudet (tools/speech.ts), rösten Paow (ElevenLabs, eleven_multilingual_v2), 88 rutor i 24 per sekund med ljudspår. Börjar och slutar på vilans ruta 3. Inte oberoende granskad.",
+          "note": "Vilan paow-vila-01-01 med munnen ritad efter ljudet (tools/speech.ts), rösten Paow (ElevenLabs, eleven_multilingual_v2), 88 rutor i 24 per sekund med ljudspår. Börjar och slutar på vilans ruta 3. Granskaren 3/5: Tänder syns r6–8 före rösten (r9); stänger r76 (+7 efter rösten, i svagt slutljud). Rent utanför lådan; tunnare matta läppar.",
           "source": {
             "from": "tools/speech.ts say --dealer paow --line dealerblackjack (Paow)",
             "when": "2026-11-13"
@@ -4395,7 +4395,7 @@
           "still": 40,
           "fps": 24,
           "state": "kandidat",
-          "note": "Vilan paow-vila-01-01 med munnen ritad efter ljudet (tools/speech.ts), rösten Paow (ElevenLabs, eleven_multilingual_v2), 79 rutor i 24 per sekund med ljudspår. Börjar och slutar på vilans ruta 3. Inte oberoende granskad.",
+          "note": "Vilan paow-vila-01-01 med munnen ritad efter ljudet (tools/speech.ts), rösten Paow (ElevenLabs, eleven_multilingual_v2), 79 rutor i 24 per sekund med ljudspår. Börjar och slutar på vilans ruta 3. Granskaren 3/5: Snabbast stängning (r65–66, +3). Tänder r6–8 före rösten. Avlyssnat '21' för 'tjugoett'. Rent utanför lådan; tunnare matta läppar.",
           "source": {
             "from": "tools/speech.ts say --dealer paow --line dealerbust (Paow)",
             "when": "2026-11-13"
@@ -4409,7 +4409,7 @@
           "still": 21,
           "fps": 24,
           "state": "kandidat",
-          "note": "Vilan paow-vila-01-01 med munnen ritad efter ljudet (tools/speech.ts), rösten Paow (ElevenLabs, eleven_multilingual_v2), 41 rutor i 24 per sekund med ljudspår. Börjar och slutar på vilans ruta 3. Inte oberoende granskad.",
+          "note": "Vilan paow-vila-01-01 med munnen ritad efter ljudet (tools/speech.ts), rösten Paow (ElevenLabs, eleven_multilingual_v2), 41 rutor i 24 per sekund med ljudspår. Börjar och slutar på vilans ruta 3. Granskaren 2/5: Läpparna sluts rätt för p i 'spelar' (15–17), men tunna matta läppar, suddig haka och munnen glipar 6 rutor efter ljudet (26–31). Skarvar och tatuering rena.",
           "source": {
             "from": "tools/speech.ts say --dealer paow --line dealerplays (Paow)",
             "when": "2026-11-13"
@@ -4423,7 +4423,7 @@
           "still": 20,
           "fps": 24,
           "state": "kandidat",
-          "note": "Vilan paow-vila-01-01 med munnen ritad efter ljudet (tools/speech.ts), rösten Paow (ElevenLabs, eleven_multilingual_v2), 40 rutor i 24 per sekund med ljudspår. Börjar och slutar på vilans ruta 3. Inte oberoende granskad.",
+          "note": "Vilan paow-vila-01-01 med munnen ritad efter ljudet (tools/speech.ts), rösten Paow (ElevenLabs, eleven_multilingual_v2), 40 rutor i 24 per sekund med ljudspår. Börjar och slutar på vilans ruta 3. Granskaren 2/5: m i 'samma' sluts rätt (19–21), men munnen glipar 4 rutor före ljudet och 6 efter (26–31); tunna matta läppar, suddig haka. Skarvar rena.",
           "source": {
             "from": "tools/speech.ts say --dealer paow --line detsamma (Paow)",
             "when": "2026-11-13"
@@ -4437,7 +4437,7 @@
           "still": 37,
           "fps": 24,
           "state": "kandidat",
-          "note": "Vilan paow-vila-01-01 med munnen ritad efter ljudet (tools/speech.ts), rösten Paow (ElevenLabs, eleven_multilingual_v2), 74 rutor i 24 per sekund med ljudspår. Börjar och slutar på vilans ruta 3. Inte oberoende granskad.",
+          "note": "Vilan paow-vila-01-01 med munnen ritad efter ljudet (tools/speech.ts), rösten Paow (ElevenLabs, eleven_multilingual_v2), 74 rutor i 24 per sekund med ljudspår. Börjar och slutar på vilans ruta 3. Granskaren 3/5: Halvöppen med tänder hela pausen r21–24 efter 'Du dubblar.'; stänger r61 (+6). Rent utanför lådan; tunnare matta läppar, tänder som band.",
           "source": {
             "from": "tools/speech.ts say --dealer paow --line double (Paow)",
             "when": "2026-11-13"
@@ -4451,7 +4451,7 @@
           "still": 42,
           "fps": 24,
           "state": "kandidat",
-          "note": "Vilan paow-vila-01-01 med munnen ritad efter ljudet (tools/speech.ts), rösten Paow (ElevenLabs, eleven_multilingual_v2), 83 rutor i 24 per sekund med ljudspår. Börjar och slutar på vilans ruta 3. Inte oberoende granskad.",
+          "note": "Vilan paow-vila-01-01 med munnen ritad efter ljudet (tools/speech.ts), rösten Paow (ElevenLabs, eleven_multilingual_v2), 83 rutor i 24 per sekund med ljudspår. Börjar och slutar på vilans ruta 3. Granskaren 3/5: Tänder syns r6–8 före rösten (r9); öppen i pausen r36–38; stängd r69 (+4). Rent utanför lådan; tunnare matta läppar, mjukare haka.",
           "source": {
             "from": "tools/speech.ts say --dealer paow --line goodluck (Paow)",
             "when": "2026-11-13"
@@ -4465,7 +4465,7 @@
           "still": 36,
           "fps": 24,
           "state": "kandidat",
-          "note": "Vilan paow-vila-01-01 med munnen ritad efter ljudet (tools/speech.ts), rösten Paow (ElevenLabs, eleven_multilingual_v2), 71 rutor i 24 per sekund med ljudspår. Börjar och slutar på vilans ruta 3. Inte oberoende granskad.",
+          "note": "Vilan paow-vila-01-01 med munnen ritad efter ljudet (tools/speech.ts), rösten Paow (ElevenLabs, eleven_multilingual_v2), 71 rutor i 24 per sekund med ljudspår. Börjar och slutar på vilans ruta 3. Granskaren 2/5: I pausen efter 'Grattis' (22–24) står munnen halvöppen med tänder; glipar 5 rutor före och 7 efter ljudet (54–60). p i 'spelat' sluts (44–46).",
           "source": {
             "from": "tools/speech.ts say --dealer paow --line grattis (Paow)",
             "when": "2026-11-13"
@@ -4479,7 +4479,7 @@
           "still": 22,
           "fps": 24,
           "state": "kandidat",
-          "note": "Vilan paow-vila-01-01 med munnen ritad efter ljudet (tools/speech.ts), rösten Paow (ElevenLabs, eleven_multilingual_v2), 43 rutor i 24 per sekund med ljudspår. Börjar och slutar på vilans ruta 3. Inte oberoende granskad.",
+          "note": "Vilan paow-vila-01-01 med munnen ritad efter ljudet (tools/speech.ts), rösten Paow (ElevenLabs, eleven_multilingual_v2), 43 rutor i 24 per sekund med ljudspår. Börjar och slutar på vilans ruta 3. Granskaren 2/5: Munnen vidöppen redan i ruta 5 före ljudet (6) och glipar med tänder 27–31 efter; tunna matta läppar, suddig haka. Repliken är snabb: 8 stavelser på 0,9 s.",
           "source": {
             "from": "tools/speech.ts say --dealer paow --line hej (Paow)",
             "when": "2026-11-13"
@@ -4493,7 +4493,7 @@
           "still": 29,
           "fps": 24,
           "state": "kandidat",
-          "note": "Vilan paow-vila-01-01 med munnen ritad efter ljudet (tools/speech.ts), rösten Paow (ElevenLabs, eleven_multilingual_v2), 58 rutor i 24 per sekund med ljudspår. Börjar och slutar på vilans ruta 3. Inte oberoende granskad.",
+          "note": "Vilan paow-vila-01-01 med munnen ritad efter ljudet (tools/speech.ts), rösten Paow (ElevenLabs, eleven_multilingual_v2), 58 rutor i 24 per sekund med ljudspår. Börjar och slutar på vilans ruta 3. Granskaren 2/5: Munnen vidöppen 4–8 på svagt försljud, 6 rutor före 'Tack'; nästan sluten 27–34 under starkt ljud; stänger 7 sent. Tunna matta läppar, suddig haka.",
           "source": {
             "from": "tools/speech.ts say --dealer paow --line hejda (Paow)",
             "when": "2026-11-13"
@@ -4507,7 +4507,7 @@
           "still": 44,
           "fps": 24,
           "state": "kandidat",
-          "note": "Vilan paow-vila-01-01 med munnen ritad efter ljudet (tools/speech.ts), rösten Paow (ElevenLabs, eleven_multilingual_v2), 87 rutor i 24 per sekund med ljudspår. Börjar och slutar på vilans ruta 3. Avlyssnat som \"Jag mår fint, tack. Kortet verkar vara på gott humör i kväll\". Inte oberoende granskad.",
+          "note": "Vilan paow-vila-01-01 med munnen ritad efter ljudet (tools/speech.ts), rösten Paow (ElevenLabs, eleven_multilingual_v2), 87 rutor i 24 per sekund med ljudspår. Börjar och slutar på vilans ruta 3. Avlyssnat som \"Jag mår fint, tack. Kortet verkar vara på gott humör i kväll\". Granskaren 2/5: Avlyssnat: \"Kortet verkar\" i stället för \"Korten\". Munnen öppnar 5 rutor före ljudet, stänger 5 efter; tunna m",
           "source": {
             "from": "tools/speech.ts say --dealer paow --line hurmardu (Paow)",
             "when": "2026-11-13"
@@ -4521,7 +4521,7 @@
           "still": 40,
           "fps": 24,
           "state": "kandidat",
-          "note": "Vilan paow-vila-01-01 med munnen ritad efter ljudet (tools/speech.ts), rösten Paow (ElevenLabs, eleven_multilingual_v2), 79 rutor i 24 per sekund med ljudspår. Börjar och slutar på vilans ruta 3. Inte oberoende granskad.",
+          "note": "Vilan paow-vila-01-01 med munnen ritad efter ljudet (tools/speech.ts), rösten Paow (ElevenLabs, eleven_multilingual_v2), 79 rutor i 24 per sekund med ljudspår. Börjar och slutar på vilans ruta 3. Granskaren 3/5: Tänder syns r4–8 i tystnad före rösten (r9); halvöppen i pausen r33–37, stängd r38. Rent utanför lådan; tunnare matta läppar.",
           "source": {
             "from": "tools/speech.ts say --dealer paow --line insurance (Paow)",
             "when": "2026-11-13"
@@ -4535,7 +4535,7 @@
           "still": 44,
           "fps": 24,
           "state": "kandidat",
-          "note": "Vilan paow-vila-01-01 med munnen ritad efter ljudet (tools/speech.ts), rösten Paow (ElevenLabs, eleven_multilingual_v2), 88 rutor i 24 per sekund med ljudspår. Börjar och slutar på vilans ruta 3. Inte oberoende granskad.",
+          "note": "Vilan paow-vila-01-01 med munnen ritad efter ljudet (tools/speech.ts), rösten Paow (ElevenLabs, eleven_multilingual_v2), 88 rutor i 24 per sekund med ljudspår. Börjar och slutar på vilans ruta 3. Granskaren 2/5: Munnen står öppen med tänder, stilla, i pausen r35–40 (7 tysta rutor) och sluts först r42. Rent utanför lådan; tunnare matta läppar.",
           "source": {
             "from": "tools/speech.ts say --dealer paow --line lose (Paow)",
             "when": "2026-11-13"
@@ -4549,7 +4549,7 @@
           "still": 34,
           "fps": 24,
           "state": "kandidat",
-          "note": "Vilan paow-vila-01-01 med munnen ritad efter ljudet (tools/speech.ts), rösten Paow (ElevenLabs, eleven_multilingual_v2), 67 rutor i 24 per sekund med ljudspår. Börjar och slutar på vilans ruta 3. Avlyssnat som \"Jag heter Pau och jag är din dealer i kväll\". Inte oberoende granskad.",
+          "note": "Vilan paow-vila-01-01 med munnen ritad efter ljudet (tools/speech.ts), rösten Paow (ElevenLabs, eleven_multilingual_v2), 67 rutor i 24 per sekund med ljudspår. Börjar och slutar på vilans ruta 3. Avlyssnat som \"Jag heter Pau och jag är din dealer i kväll\". Granskaren 2/5: Avlyssnat: \"Jag heter Pau\" (namnet). P sluts rätt (13–14); i pausen 21–24 glipar munnen. Tunna matta läppar, suddig haka, stäng",
           "source": {
             "from": "tools/speech.ts say --dealer paow --line namn (Paow)",
             "when": "2026-11-13"
@@ -4563,7 +4563,7 @@
           "still": 34,
           "fps": 24,
           "state": "kandidat",
-          "note": "Vilan paow-vila-01-01 med munnen ritad efter ljudet (tools/speech.ts), rösten Paow (ElevenLabs, eleven_multilingual_v2), 67 rutor i 24 per sekund med ljudspår. Börjar och slutar på vilans ruta 3. Inte oberoende granskad.",
+          "note": "Vilan paow-vila-01-01 med munnen ritad efter ljudet (tools/speech.ts), rösten Paow (ElevenLabs, eleven_multilingual_v2), 67 rutor i 24 per sekund med ljudspår. Börjar och slutar på vilans ruta 3. Granskaren 2/5: I pausen efter 'snart' (25–27, tyst) glipar munnen med tänder; munnen tycks ligga ~4 rutor efter ljudet och stänger 8 sent. Tunna matta läppar, suddig haka.",
           "source": {
             "from": "tools/speech.ts say --dealer paow --line otur (Paow)",
             "when": "2026-11-13"
@@ -4577,7 +4577,7 @@
           "still": 24,
           "fps": 24,
           "state": "kandidat",
-          "note": "Vilan paow-vila-01-01 med munnen ritad efter ljudet (tools/speech.ts), rösten Paow (ElevenLabs, eleven_multilingual_v2), 48 rutor i 24 per sekund med ljudspår. Börjar och slutar på vilans ruta 3. Inte oberoende granskad.",
+          "note": "Vilan paow-vila-01-01 med munnen ritad efter ljudet (tools/speech.ts), rösten Paow (ElevenLabs, eleven_multilingual_v2), 48 rutor i 24 per sekund med ljudspår. Börjar och slutar på vilans ruta 3. Granskaren 3/5: Rent utanför lådan och i skarvarna. Munnen öppen r28–29 i paus, stänger r36 (+6 efter rösten). Tunnare matta läppar, tänder som vitt band.",
           "source": {
             "from": "tools/speech.ts say --dealer paow --line placebets (Paow)",
             "when": "2026-11-13"
@@ -4591,7 +4591,7 @@
           "still": 38,
           "fps": 24,
           "state": "kandidat",
-          "note": "Vilan paow-vila-01-01 med munnen ritad efter ljudet (tools/speech.ts), rösten Paow (ElevenLabs, eleven_multilingual_v2), 76 rutor i 24 per sekund med ljudspår. Börjar och slutar på vilans ruta 3. Inte oberoende granskad.",
+          "note": "Vilan paow-vila-01-01 med munnen ritad efter ljudet (tools/speech.ts), rösten Paow (ElevenLabs, eleven_multilingual_v2), 76 rutor i 24 per sekund med ljudspår. Börjar och slutar på vilans ruta 3. Granskaren 3/5: Halvöppen mun med tänder, nästan stilla, i hela pausen r22–27; stänger r68 (+6). Rent utanför lådan; tunnare matta läppar.",
           "source": {
             "from": "tools/speech.ts say --dealer paow --line push (Paow)",
             "when": "2026-11-13"
@@ -4605,7 +4605,7 @@
           "still": 34,
           "fps": 24,
           "state": "kandidat",
-          "note": "Vilan paow-vila-01-01 med munnen ritad efter ljudet (tools/speech.ts), rösten Paow (ElevenLabs, eleven_multilingual_v2), 67 rutor i 24 per sekund med ljudspår. Börjar och slutar på vilans ruta 3. Inte oberoende granskad.",
+          "note": "Vilan paow-vila-01-01 med munnen ritad efter ljudet (tools/speech.ts), rösten Paow (ElevenLabs, eleven_multilingual_v2), 67 rutor i 24 per sekund med ljudspår. Börjar och slutar på vilans ruta 3. Granskaren 2/5: Mitt i repliken (24–40) knappt öppen mun trots starkt ljud; svagast synk (r 0,44). Tunna matta läppar, suddig haka, stänger 7 rutor efter ljudet.",
           "source": {
             "from": "tools/speech.ts say --dealer paow --line regler (Paow)",
             "when": "2026-11-13"
@@ -4619,7 +4619,7 @@
           "still": 26,
           "fps": 24,
           "state": "kandidat",
-          "note": "Vilan paow-vila-01-01 med munnen ritad efter ljudet (tools/speech.ts), rösten Paow (ElevenLabs, eleven_multilingual_v2), 52 rutor i 24 per sekund med ljudspår. Börjar och slutar på vilans ruta 3. Inte oberoende granskad.",
+          "note": "Vilan paow-vila-01-01 med munnen ritad efter ljudet (tools/speech.ts), rösten Paow (ElevenLabs, eleven_multilingual_v2), 52 rutor i 24 per sekund med ljudspår. Börjar och slutar på vilans ruta 3. Granskaren 2/5: Munnen öppnar 5 rutor före ljudet och visar tänder i tystnaden 36–43; b i 'bara' sluts (24–25). Tunna matta läppar, suddig haka. Skarvar rena.",
           "source": {
             "from": "tools/speech.ts say --dealer paow --line varsagod (Paow)",
             "when": "2026-11-13"
@@ -4633,7 +4633,7 @@
           "still": 43,
           "fps": 24,
           "state": "kandidat",
-          "note": "Vilan paow-vila-01-01 med munnen ritad efter ljudet (tools/speech.ts), rösten Paow (ElevenLabs, eleven_multilingual_v2), 85 rutor i 24 per sekund med ljudspår. Börjar och slutar på vilans ruta 3. Inte oberoende granskad.",
+          "note": "Vilan paow-vila-01-01 med munnen ritad efter ljudet (tools/speech.ts), rösten Paow (ElevenLabs, eleven_multilingual_v2), 85 rutor i 24 per sekund med ljudspår. Börjar och slutar på vilans ruta 3. Granskaren 2/5: I längsta pausen (38–43, tyst 0,25 s) hänger munnen halvöppen med tänder i 4 rutor; m i 'men' sluts (44–45). Tunna matta läppar, suddig haka, stänger 7 sent.",
           "source": {
             "from": "tools/speech.ts say --dealer paow --line vetej (Paow)",
             "when": "2026-11-13"
@@ -4647,7 +4647,7 @@
           "still": 30,
           "fps": 24,
           "state": "kandidat",
-          "note": "Vilan paow-vila-01-01 med munnen ritad efter ljudet (tools/speech.ts), rösten Paow (ElevenLabs, eleven_multilingual_v2), 60 rutor i 24 per sekund med ljudspår. Börjar och slutar på vilans ruta 3. Inte oberoende granskad.",
+          "note": "Vilan paow-vila-01-01 med munnen ritad efter ljudet (tools/speech.ts), rösten Paow (ElevenLabs, eleven_multilingual_v2), 60 rutor i 24 per sekund med ljudspår. Börjar och slutar på vilans ruta 3. Granskaren 3/5: Läpparna sluts på B (r9); halvöppen med tänder i pausen r24–26; stänger r51 (+6). Rent utanför lådan; tunnare matta läppar.",
           "source": {
             "from": "tools/speech.ts say --dealer paow --line win (Paow)",
             "when": "2026-11-13"
