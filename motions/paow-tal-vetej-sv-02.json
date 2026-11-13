@@ -39,7 +39,7 @@
   },
   "review": {
     "decision": "PENDING",
-    "basis": "Inte granskad av Jakob. Gjord av tools/speech.ts ur assets/motions/paow-vila-01-01/source.mp4. Inte oberoende granskad.",
+    "basis": "Inte granskad av Jakob. Gjord av tools/speech.ts ur assets/motions/paow-vila-01-01/source.mp4. Oberoende granskning 2/5: I längsta pausen (38–43, tyst 0,25 s) hänger munnen halvöppen med tänder i 4 rutor; m i 'men' sluts (44–45). Tunna matta läppar, suddig haka, stänger 7 sent.",
     "userAccepted": false,
     "productionReady": false
   },

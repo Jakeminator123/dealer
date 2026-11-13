@@ -39,7 +39,7 @@
   },
   "review": {
     "decision": "PENDING",
-    "basis": "Inte granskad av Jakob. Gjord av tools/speech.ts ur assets/motions/paow-vila-01-01/source.mp4. Inte oberoende granskad.",
+    "basis": "Inte granskad av Jakob. Gjord av tools/speech.ts ur assets/motions/paow-vila-01-01/source.mp4. Oberoende granskning 2/5: Munnen vidöppen redan i ruta 5 före ljudet (6) och glipar med tänder 27–31 efter; tunna matta läppar, suddig haka. Repliken är snabb: 8 stavelser på 0,9 s.",
     "userAccepted": false,
     "productionReady": false
   },

@@ -39,7 +39,7 @@
   },
   "review": {
     "decision": "PENDING",
-    "basis": "Inte granskad av Jakob. Gjord av tools/speech.ts ur assets/motions/paow-vila-01-01/source.mp4. Inte oberoende granskad.",
+    "basis": "Inte granskad av Jakob. Gjord av tools/speech.ts ur assets/motions/paow-vila-01-01/source.mp4. Oberoende granskning 2/5: I pausen efter 'Grattis' (22–24) står munnen halvöppen med tänder; glipar 5 rutor före och 7 efter ljudet (54–60). p i 'spelat' sluts (44–46).",
     "userAccepted": false,
     "productionReady": false
   },

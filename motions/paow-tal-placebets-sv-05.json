@@ -39,7 +39,7 @@
   },
   "review": {
     "decision": "PENDING",
-    "basis": "Inte granskad av Jakob. Gjord av tools/speech.ts ur assets/motions/paow-vila-01-01/source.mp4. Inte oberoende granskad.",
+    "basis": "Inte granskad av Jakob. Gjord av tools/speech.ts ur assets/motions/paow-vila-01-01/source.mp4. Oberoende granskning 3/5: Rent utanför lådan och i skarvarna. Munnen öppen r28–29 i paus, stänger r36 (+6 efter rösten). Tunnare matta läppar, tänder som vitt band.",
     "userAccepted": false,
     "productionReady": false
   },

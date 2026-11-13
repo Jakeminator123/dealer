@@ -39,7 +39,7 @@
   },
   "review": {
     "decision": "PENDING",
-    "basis": "Inte granskad av Jakob. Gjord av tools/speech.ts ur assets/motions/paow-vila-01-01/source.mp4. Inte oberoende granskad.",
+    "basis": "Inte granskad av Jakob. Gjord av tools/speech.ts ur assets/motions/paow-vila-01-01/source.mp4. Oberoende granskning 3/5: Tänder syns r4–8 i tystnad före rösten (r9); halvöppen i pausen r33–37, stängd r38. Rent utanför lådan; tunnare matta läppar.",
     "userAccepted": false,
     "productionReady": false
   },

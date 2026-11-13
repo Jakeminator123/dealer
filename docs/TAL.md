@@ -100,7 +100,25 @@ Här, på datorns RTX 3060: den varma renderern gör cirka 10 rutor per sekund (
 
 Uppgivet av dem, inte mätt av mig: en 4090 gör 55–63 rutor per sekund och första munbiten kommer efter 0,4–1,3 s; en varm renderer kostar 0,74–1,10 USD i timmen; kallt tar containern 30–55 s och modellen 31–52 s.
 
-Den egna mätningen hos RunPod blev inte körd (0 USD använt, inget startat där). Renderern tar bara emot en talbank genom en signerad adress till ett privat Blob-lager; ett eget lager (`dealer-lab-tal`, i Jakobs eget Vercel-team) skapades, men dess nyckel går inte att läsa med den åtkomst som finns, och banken lades inte i något av Scoutgamings lager. Med nyckeln i `.env.local` är mätningen en kort körning (`D:/dealer-scratch/tmp/tal/runpod/`).
+**Egen mätning hos RunPod, 13 november.** Jakob: "varför vi inte bara kan ladda upp allt till vercel på en egen blob … och kör min pod med lipsynk mot henne"; han lade lagrets nyckel i `.env.local` (`BLOB_READ_WRITE_TOKEN`). Det går, och så här:
+
+- Paows talbank (arkivet 30,2 MB och kvittot 1 kB) lades i labbets eget privata Blob-lager `dealer-lab-tal` (Jakobs eget Vercel-team), under `croupier/media/dealers/paow-v2/runtime/moving-bank/<uuid>/`: den mappen kräver renderern.
+- En egen serverless-endpoint, `dealer-lab-tal-paow`, skapades på Jakobs RunPod-konto med samma image som Scoutgamings, utan deras miljövariabler, 0 workers i vila och högst 1. Scoutgamings endpoints rördes inte.
+- Jobbet är det lokala bakjobbet oförändrat plus fältet `bankDownload`: två signerade läsadresser till bankens filer, giltiga en stund. Renderern får aldrig lagrets nyckel.
+- Tre repliker som redan fanns lokalt bakades där.
+
+| | Mätt hos RunPod |
+|---|---|
+| Första jobbet, ingen worker uppe | 264 s väntan medan en worker startade, sedan 36 s körning |
+| Följande två, workern kvar | 22 s och 24 s från skickat till svar (48 och 88 rutor) |
+| Själva ritandet | 32–33 rutor per sekund (83 rutor på 2,6 s); resten av körtiden är att modellen läses in för varje bakjobb |
+| Banken ur lagret | 1,8 s första gången, sedan kvar hos workern |
+| Samma film som här | intyg och mått stämde i alla tre; bild för bild 51–53 dB (PSNR) mot samma replik bakad lokalt, alltså bara avrundning |
+| Kostnad | 0,05 USD för allt (saldot 55,17 före, 55,12 efter) |
+
+Endpointen är raderad efter mätningen; banken ligger kvar i lagret (privat, gratis i den storleken). Skripten ligger utanför repot: `D:/dealer-scratch/tmp/tal/runpod/runpod.mjs` (endpointen) och `mat.ts` (banken, jobbet, kontrollen).
+
+Vad det säger: ett bakjobb hos RunPod (22–24 s) är inte snabbare än den varma renderern här (10–15 s med ledigt kort), eftersom ett bakjobb läser in modellen varje gång, och den första repliken efter en paus kostar fyra–fem minuters väntan. Vinsten med RunPod ligger i den strömmande vägen, där modellen ligger kvar och kortet ritar fortare än filmen spelas (33 rutor per sekund mätt, mot 24 i filmen och 10 här). För förinspelade repliker räcker den här datorn; RunPod behövs när hon ska tala fritt under spel, eller när repliker ska göras medan datorns grafikkort är upptaget.
 
 ### Vad som skulle byggas här
 
@@ -117,7 +135,9 @@ Den egna mätningen hos RunPod blev inte körd (0 USD använt, inget startat dä
 
 ## Kvaliteten
 
-Tre oberoende granskningar i full upplösning natten till 2026-11-13 (30 filmer): ingen talfilm duger som huvudtagning; de flesta får 3/5, några 2/5, en fälldes för fel ord i ljudet. Rent i mätningarna: skarvarna mot vilan, lådans kant, tatueringen på halsen, allt utanför lådan, det gröna. Felen sitter i munnen och är gemensamma för alla filmer, alltså rendererns: läpparna blir tunnare och matta, nedre ansiktet mjukare medan hon talar, munnen stänger 5–7 rutor efter ljudet och står halvöppen i pauser, tänderna är ett jämnt vitt band, och ruta 16 hoppar till i varje film (orsaken inte belagd). Blick och blinkningar är vilans och följer inte talet. Jakob dömer filmerna i Granska.
+Fyra oberoende granskningar i full upplösning natten till 2026-11-13 (30 filmer med rösten Jessica): ingen talfilm duger som huvudtagning; de flesta får 3/5, några 2/5, en fälldes för fel ord i ljudet. Rent i mätningarna: skarvarna mot vilan, lådans kant, tatueringen på halsen, allt utanför lådan, det gröna. Felen sitter i munnen och är gemensamma för alla filmer, alltså rendererns: läpparna blir tunnare och matta, nedre ansiktet mjukare medan hon talar, munnen stänger 5–7 rutor efter ljudet och står halvöppen i pauser, tänderna är ett jämnt vitt band, och ruta 16 hoppar till i varje film (orsaken inte belagd). Blick och blinkningar är vilans och följer inte talet. Jakob dömer filmerna i Granska.
+
+De 28 filmerna med Paows egen röst granskades samma dag av tre nya granskare, var för sig: alla är användbara med anmärkningar, ingen som huvudtagning. Talet över given fick 4/5 och över ingången 3/5 (given och ingången orörda utanför lådan), rundans tio repliker 3/5 utom förlusten 2/5 (munnen står öppen och stilla i en paus på sju rutor), demofilmen 3/5, och chattens femton svar 2/5 av en granskare som dömde samma fel hårdare. Felen är de som står ovan, och två saker till som hör till ljudet: rösten har 0,1–0,2 s nästan tyst ljud före och efter orden, och munnen följer hela ljudfilen, så den öppnar 2–6 rutor före det hörbara och stänger 5–8 efter; och i en tyst paus kortare än fyra rutor stänger munnen inte. Rent även här: skarvarna, lådans kant, tatueringen, allt utanför lådan. Domen står vid varje film i provet `paow-tal`.
 
 ## Det som medvetet inte är gjort
 

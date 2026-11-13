@@ -39,7 +39,7 @@
   },
   "review": {
     "decision": "PENDING",
-    "basis": "Inte granskad av Jakob. Gjord av tools/speech.ts ur assets/motions/paow-vila-01-01/source.mp4. Inte oberoende granskad.",
+    "basis": "Inte granskad av Jakob. Gjord av tools/speech.ts ur assets/motions/paow-vila-01-01/source.mp4. Oberoende granskning 2/5: Munnen öppnar 5 rutor före ljudet och visar tänder i tystnaden 36–43; b i 'bara' sluts (24–25). Tunna matta läppar, suddig haka. Skarvar rena.",
     "userAccepted": false,
     "productionReady": false
   },
