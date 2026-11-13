@@ -87,7 +87,7 @@ void main(){
 }`;
 // Output is sRGB-encoded like the film's, whatever the target, so it composites the same way with focus on or off. `accum`:
 // one of several motion samples added up in a target of their own, premultiplied and weighted.
-const FRAGMENT = `uniform sampler2D print, room; uniform vec3 paper, grade; uniform float edgeOn, sheen, roomLod, shadow, shade, accum, weight, soft, level;
+const FRAGMENT = `uniform sampler2D print, room; uniform vec3 paper, grade, field; uniform float edgeOn, sheen, roomLod, shadow, shade, accum, weight, soft, level, printIn;
 uniform sampler2D map; uniform mat3 cardH;
 ${FAN_GLSL}
 ${CARD_GLSL}
@@ -107,9 +107,10 @@ void main(){
     float w = 1. - abs(2. * vSt.y - 1.), a = .8 * smoothstep(0., .7, w); vec3 e = (1.055 * pow(vec3(.3) * paper * vShade, vec3(1. / 2.4)) - .055) * grade * fanShade(vWorld);
     gl_FragColor = accum > .5 ? vec4(e * a, a) * weight : vec4(e, a); return;
   }
-  // the print as soft as the film around it (a mip level coarser than the screen asks for) and at the film's level (PRINT)
+  // the print as soft as the film around it (a mip level coarser than the screen asks for) and at the film's level (PRINT), coming in
+  // over the back's field as the card leaves the shoe (printIn)
   vec3 h = cardH * vec3(vSt, 1.); vec2 filmPixel = h.xy / h.z; // the film pixel under this one
-  vec3 albedo = texture2D(print, vUv, soft).rgb * level, N = normalize(vNormal), V = normalize(cameraPosition - vWorld), R = reflect(-V, N);
+  vec3 albedo = mix(field, texture2D(print, vUv, soft).rgb, printIn) * level, N = normalize(vNormal), V = normalize(cameraPosition - vWorld), R = reflect(-V, N);
   // the paper's reflection of the room: weak head-on (the study's paper reflects about 2 %), stronger toward grazing angles;
   // a broad lobe for the paper and a sharper one for its coat, which catches the lamp over the table as the card turns
   float NoV = max(dot(N, V), 1e-3), F = .025 + .975 * pow(1. - NoV, 5.);
@@ -146,7 +147,9 @@ const SHUTTER = 0.25, SAMPLES = 14, MAX_BLUR = 12;
 // sharper than her fingers, its gold frame brighter. soft: how many mip levels coarser the print is read (each one halves its
 // resolution), on the back and, less, on the face, whose value must stay legible; back, face: the print's level on the back (the
 // gold frame and mark) and on the face.
-export const PRINT = {soft: 1.5, softFace: 0.75, back: 0.72, face: 0.94};
+// in: over how many frames the back's print comes in once the dealt card is drawn after the shoe (step 1 shows the film's own card,
+// recoloured to the back's field, until then): from the field alone to the whole print, so no single frame switches the gold on.
+export const PRINT = {soft: 1.5, softFace: 0.75, back: 0.72, face: 0.94, in: 6};
 
 // The matte's passes (src/scene3d-matte.ts) on five targets of the film's size, made the first time they run: the classes, two
 // for the separable steps, the card's body, its cover with what lies beside it (kept: the film's shader reads it), and the shading.
@@ -213,7 +216,7 @@ export function createDealLayer(o: Options) {
   const made = (shadow: boolean) => keep(new T.ShaderMaterial({vertexShader: VERTEX, fragmentShader: FRAGMENT, transparent: true, depthWrite: false,
     ...(shadow ? {blending: T.CustomBlending, blendSrc: T.OneFactor, blendDst: T.OneMinusSrcAlphaFactor, blendSrcAlpha: T.OneFactor, blendDstAlpha: T.OneMinusSrcAlphaFactor} : {}),
     uniforms: {...shared, cardH: {value: new T.Matrix3()}, bend: {value: 0}, tilt: {value: 0}, shadeOn: {value: 0}, lying: {value: 1}, core: {value: quad()}, cardColour: {value: new T.Vector3(1, 1, 0)},
-      localOn: {value: 0}, print: {value: null}, soft: {value: PRINT.soft}, level: {value: 1}, edgeOn: {value: 0}, sheen: {value: 1.4}, shadow: {value: shadow ? 1 : 0}, shade: {value: 0}, accum: {value: 0}, weight: {value: 1}, depthOnly: {value: 0}}}));
+      localOn: {value: 0}, field: {value: new T.Vector3()}, printIn: {value: 1}, print: {value: null}, soft: {value: PRINT.soft}, level: {value: 1}, edgeOn: {value: 0}, sheen: {value: 1.4}, shadow: {value: shadow ? 1 : 0}, shade: {value: 0}, accum: {value: 0}, weight: {value: 1}, depthOnly: {value: 0}}}));
   // A card: its surface and its contact shadow on the felt (drawn first, so the card covers it), both laid by the same homography.
   // Draw order: felt and props (opaque), then shadows (2), cards (3), then the film (5, 6) over them.
   type Card = {mesh: T.Mesh; shadow: T.Mesh; material: T.ShaderMaterial; under: T.ShaderMaterial};
@@ -232,10 +235,10 @@ export function createDealLayer(o: Options) {
   // clear of the homography's line at infinity (skirtSound) and lies below the table's edge row, on the felt; otherwise there is none.
   const shadowFits = (q: number[][]) => { const p = q.map(([x, y]) => ({x, y})); if (!skirtSound(p, REACH)) return false;
     try { const H = squareToQuad(q), row = o.camera().edgeRow; return [[-REACH, -REACH], [1 + REACH, -REACH], [1 + REACH, 1 + REACH], [-REACH, 1 + REACH]].every(([u, v]) => { const w = H[6] * u + H[7] * v + H[8]; return w > 0 && (H[3] * u + H[4] * v + H[5]) / w >= row; }); } catch { return false; } };
-  const lay = (c: Card, q: number[][], how: {print: T.Texture; edge?: boolean; bend?: number; tilt?: number; shade?: {core: number[][]; colour: number[]; lying: number; local?: boolean} | null; contact: number; gloss?: number}) => {
+  const lay = (c: Card, q: number[][], how: {print: T.Texture; edge?: boolean; bend?: number; tilt?: number; shade?: {core: number[][]; colour: number[]; lying: number; local?: boolean} | null; contact: number; gloss?: number; printIn?: number}) => {
     let H: number[]; try { if (!drawable(q, !!how.edge)) throw Error('no plausible card'); H = squareToQuad(q); } catch { c.mesh.visible = c.shadow.visible = false; return; }
     for (const m of [c.material, c.under]) (m.uniforms.cardH.value as T.Matrix3).set(H[0], H[1], H[2], H[3], H[4], H[5], H[6], H[7], H[8]);
-    const u = c.material.uniforms; u.print.value = how.print; const back = how.print === print(); u.level.value = back ? PRINT.back : PRINT.face; u.soft.value = back ? PRINT.soft : PRINT.softFace; u.edgeOn.value = how.edge ? 1 : 0; u.bend.value = how.bend ?? 0; u.tilt.value = how.tilt ?? 0;
+    const u = c.material.uniforms; u.print.value = how.print; const back = how.print === print(); u.level.value = back ? PRINT.back : PRINT.face; u.soft.value = back ? PRINT.soft : PRINT.softFace; u.edgeOn.value = how.edge ? 1 : 0; u.printIn.value = back ? how.printIn ?? 1 : 1; if (back) (u.field.value as T.Vector3).fromArray(backBody()); u.bend.value = how.bend ?? 0; u.tilt.value = how.tilt ?? 0;
     u.sheen.value = 2 * (how.gloss ?? GLOSS); u.shadeOn.value = how.shade ? 1 : 0; // gloss 0.35: the coat's lobe at 0.7 of the paper's
     if (how.shade) { how.shade.core.forEach((p, i) => (u.core.value as T.Vector2[])[i].set(p[0], p[1])); (u.cardColour.value as T.Vector3).set(how.shade.colour[0], how.shade.colour[1], how.shade.colour[2]); u.lying.value = how.shade.lying; }
     u.localOn.value = how.shade?.local ? 1 : 0;
@@ -405,7 +408,9 @@ export function createDealLayer(o: Options) {
       const out = track!.leavesShoe == null ? 1 : Math.max(0, Math.min(1, (pose.frame - track!.leavesShoe + 4) / 6)), held = inHand * out;
       // the film's own card, for its light and for what is keyed: the track's film quad where it has one, else the quad the card is drawn by
       const own4 = f.film?.length === 4 ? f.film : f.quad, q = now.q, core = own4?.length === 4 ? own4 : null;
-      lay(dealt, q, {print: face.back ? print() : print(face.art), edge, bend: (material?.bend ?? BEND) * held, tilt: TILT * held, gloss: material?.gloss,
+      // the back's print comes in over PRINT.in frames from the first frame the card is drawn after the shoe (inShoe), smoothly
+      const since = filmSeat(extra) && typeof track!.leavesShoe === 'number' ? at - (track!.leavesShoe + 2) + 1 : Infinity, t = Math.max(0, Math.min(1, since / (PRINT.in + 1)));
+      lay(dealt, q, {print: face.back ? print() : print(face.art), edge, printIn: t * t * (3 - 2 * t), bend: (material?.bend ?? BEND) * held, tilt: TILT * held, gloss: material?.gloss,
         shade: core && !edge ? {core, colour: COLOUR[side], lying: LYING[side], local: (extra.carry ?? 'object') !== 'film'} : null, contact: measured ? 1 - inHand : Math.max(0, Math.min(1, (pose.resting - 0.3) / 0.6))});
       // moving fast: drawn along its path over the shutter time instead, like the film's hand
       const path = pose.resting < 1 ? shutter(now, drawnAt(track!, at - 1, choice, extra), drawnAt(track!, at + 1, choice, extra)) : [q];

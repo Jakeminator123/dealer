@@ -163,13 +163,20 @@ test('the recoloured back keeps the film\'s light on it, stronger, and a lighter
 
 test('the drawn print at the film\'s sharpness and level (Prov kort-en-linje, step 2): the back read coarser and dimmer, the face less so', async () => {
   const deal = await readFile('src/scene3d-deal.ts', 'utf8');
-  const m = /export const PRINT = \{soft: ([\d.]+), softFace: ([\d.]+), back: ([\d.]+), face: ([\d.]+)\};/.exec(deal);
+  const m = /export const PRINT = \{soft: ([\d.]+), softFace: ([\d.]+), back: ([\d.]+), face: ([\d.]+), in: (\d+)\};/.exec(deal);
   assert.ok(m, 'PRINT stands in the deal');
-  const [soft, softFace, back, face] = m.slice(1).map(Number);
+  const [soft, softFace, back, face, frames] = m.slice(1).map(Number);
   assert.ok(soft > softFace && softFace > 0 && soft <= 2, 'the back softer than the face, whose value must stay legible');
   assert.ok(back < face && face <= 1 && back >= 0.5, 'the gold of the back dimmed more than the face');
-  assert.ok(deal.includes('texture2D(print, vUv, soft).rgb * level'), 'the shader reads the print with them');
+  assert.ok(deal.includes('mix(field, texture2D(print, vUv, soft).rgb, printIn) * level'), 'the shader reads the print with them');
   assert.ok(deal.includes('u.soft.value = back ? PRINT.soft : PRINT.softFace'), 'each print its own');
+  // the back's print comes in over several frames once the dealt card is drawn after the shoe (until then the film's own card,
+  // recoloured to the back's field): no single frame switches the gold on (the boss film's review: 14 draws of 14)
+  assert.ok(frames >= 4 && frames <= 12, 'over several frames, under half a second');
+  assert.ok(deal.includes("const since = filmSeat(extra) && typeof track!.leavesShoe === 'number' ? at - (track!.leavesShoe + 2) + 1 : Infinity, t = Math.max(0, Math.min(1, since / (PRINT.in + 1)));"), 'from the first frame drawn after the shoe, where the film showed its card before');
+  assert.ok(deal.includes('printIn: t * t * (3 - 2 * t)') && deal.includes('u.printIn.value = back ? how.printIn ?? 1 : 1; if (back) (u.field.value as T.Vector3).fromArray(backBody());'), 'smoothly, over the back\'s own field, on the back only');
+  const shown = Array.from({length: frames + 3}, (_, i) => { const s = Math.max(0, Math.min(1, (i + 1) / (frames + 1))); return s * s * (3 - 2 * s); });
+  assert.ok(shown[0] < 0.1 && shown[frames] === 1 && shown.every((s, i) => !i || s - shown[i - 1] < 0.3), 'no more than 30 % of the print comes on between two frames');
 });
 
 test('the drawn card takes how the film\'s light falls across the film\'s card, and keeps its own mean (Prov kort-en-linje, step 2b)', async () => {
