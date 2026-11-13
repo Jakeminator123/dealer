@@ -29,12 +29,13 @@ assets/ output/ .runtime/        lokal media och lokala byggen, inte i Git
 | [AGENTS](AGENTS.md) | Arbetsregler för agenter. |
 | [HANDOFF](HANDOFF.md) | Läget nu: ägare, banken, vad som väntar på Jakob, nästa steg. Läs den först. |
 | [SYSTEM](docs/SYSTEM.md) | Kontrakt: koordinater, register, 3D-scenen, spelet, klippbanken och ordlistan. |
-| [DRIFT](docs/DRIFT.md) | Rutiner och anslutningar: Git och kontroller, labbservern, filmbeställning, Runway, publicering, D:-slask. |
+| [DRIFT](docs/DRIFT.md) | Rutiner och anslutningar: Git och kontroller, labbservern, Runway, publicering, D:-slask. |
+| [Löpande bandet](tools/dealer-line.md) | Från en bild till en färdig dealer: stationer, format, namn och kommandon; länkar till handboken för beställningar, beställningsagentens instruktion och granskningen. |
 
 ## Register
 
 - `motions/<clip-id>.json` är ensam källa för en films klassning och Jakobs beslut.
-- `data/clip-jobs.json` är klippbankens uppdrag: ankare, jobb, utsnitt och kredittak.
+- `data/clip-jobs.json` är klippbankens register: ankare, jobb (den gamla API-vägen, används inte), härledda tagningar (bland dem allt från Beställ) och API-vägens kredittak. `data/orders/<id>.json` är studions beställningar; `data/dealers.json` och `data/media-roles.json` säger vilka dealers som finns och vilka bilder som gäller.
 - `placements/default.json` är Jakobs kortplan (16 kortplatser) och sparas från labbets Placering.
 - `data/manifest.json` registrerar filproveniens och SHA-256 (sökvägarna i den räknas från repots rot); `evidence/` innehåller verifieringskvitton.
 - `data/library.json` är V6-tidens filmkatalog (V6, sekvenser, original och diagnostiska prov); beslut hämtas från `motions/`.
@@ -44,9 +45,8 @@ Dokumenten länkar till dessa i stället för att föra egna statusregister. Med
 ## Kör lokalt
 
 - Arbeta här. `node -p process.version` ska visa `v24.21.0` via Volta; `package.json` kräver `>=24.21.0 <25`. `npm ci` behövs om beroenden saknas.
-- `START.cmd` startar labbservern på `http://127.0.0.1:4319` utan fönster och visar labbet i en enda flik; `STATUS.cmd` och `STOPP.cmd` frågar och stoppar. `node tools/preview.ts --open "<sida>"` visar en sida i den öppna fliken i stället för i en ny, och `--restart` byter server utan att fliken stängs. Öppnas en labbflik till stänger den äldre sig själv, eller blir tom där webbläsaren inte låter en sida stänga sin flik. Rutinen: [DRIFT](docs/DRIFT.md#labbservern-och-fliken). Servern står kvar tills `STOPP.cmd` körs.
-- [Labbet](http://127.0.0.1:4319/lab.html) har flikarna **Placering** (kortplanen: 16 kortplatser och sko, dator och mobil, hand- och sidavsikt, utdelningsteknik, material), **Klippbank** (nodträd, tagningar, rundbyggare, vila och renderat kort), **Granska** (Jakobs domar, som skrivs i `motions/`) och **Prov** (provmappar under `assets/proofs/`, `lab.html?tab=prov&proof=<mapp>`), samt länkarna 3D-scen, Spel, Modeller och Ljud. Sparning i Placering ändrar bara placeringsutkastet.
-- **Studion** (`http://127.0.0.1:4319/studio/`) är det nya labbet, en Next.js-app i `studio/` som byggs med `npm --prefix studio run build` och lämnas ut av samma server. Den byggs nu; gamla labbet ligger kvar tills Jakob har godkänt den ([SYSTEM](docs/SYSTEM.md)).
+- `START.cmd` startar labbservern på `http://127.0.0.1:4319` utan fönster och visar studion i en enda flik; `STATUS.cmd` och `STOPP.cmd` frågar och stoppar. `node tools/preview.ts --open "<sida>"` visar en sida i den öppna fliken i stället för i en ny, och `--restart` byter server utan att fliken stängs. Öppnas en labbflik till stänger den äldre sig själv, eller blir tom där webbläsaren inte låter en sida stänga sin flik. Rutinen: [DRIFT](docs/DRIFT.md#labbservern-och-fliken). Servern står kvar tills `STOPP.cmd` körs.
+- [Studion](http://127.0.0.1:4319/studio/) är skalet (`/` och `lab.html` leder dit): en Next.js-app i `studio/` som byggs med `npm --prefix studio run build` och lämnas ut av samma server. Vyerna: **Scen**, **Karta** (kanter och tagningar), **Primära**, **Granska** (Jakobs domar, som skrivs i `motions/`), **Prov** (provmappar under `assets/proofs/`, `/studio/prov/?prov=<mapp>`), **Placering** (kortplanen: 16 kortplatser och sko; sparning ändrar bara placeringsutkastet), **Material** (vilka bilder som gäller), **Beställ** (filmbeställningar), **Casino** och **Protokoll**. Gamla labbet nås med `lab.html?gamla=1` tills Modeller och Ljud har flyttats ([SYSTEM](docs/SYSTEM.md)).
 - Filmgranskningen har steg ±1 bildruta, kapitel och hastighet 0,25×/0,5×/1×. URL-parametrarna `clip` och `frame` pekar ut klipp och granskningsruta.
 - `npm test` kör offlinetesterna (placeringar, klippbank, kortspår, scen, spelmotor, labbserver och publiceringsskydd). `npm run hooks:install` aktiverar lokal pre-push; `npm run check` kontrollerar commitintervallet före push/PR. Se [rutinen](docs/DRIFT.md#git-och-kontroller).
 - `npm run verify` kontrollerar registrerade lokala filer. `npm run verify -- --frames` återrenderar 18 kontrollrutor och kräver pixelidentitet.

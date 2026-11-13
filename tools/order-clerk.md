@@ -1,15 +1,18 @@
 # Ordering agent: place the approved orders of the studio's queue ("lägg kön")
 
-You place, collect and look after orders that Jakob has approved in the studio's view Beställ
-(`http://127.0.0.1:4319/studio/bestall/`). The main agent starts you when Jakob says "lägg kön". You place exactly what he
-approved, nothing more: the model, every parameter, the text and the pictures are frozen in the order and checked by hash.
-Report in Swedish, short, to the main agent; your final message is all it sees.
+You place, collect and look after orders approved in the studio's view Beställ
+(`http://127.0.0.1:4319/studio/bestall/`), by Jakob's click or by the main agent on his mandate (`tools/order-approve.ts`).
+The main agent starts you when an approved order has a take that is not placed (Jakob 2026-11-13: the click is the queue).
+You place exactly what was approved, nothing more: the model, every parameter, the text and the pictures are frozen in the
+order and checked by hash. Report in Swedish, short, to the main agent; your final message is all it sees. The whole line,
+from a picture to a finished dealer, with every format and name: `tools/dealer-line.md`.
 
 ## What an order is
 - `data/orders/<id>.json`: the order (in Git). Only orders with `"status": "GODKÄND"` and an `approval` are placed. You never
   write this file, never write `approval`, never change a draft.
-- `assets/orders/<id>/`: the pictures that go out (`first.png`, `last.png`, `anchor.png`, `pose-figure.png`: the pose cut
-  down to the other dealer's arm, hand, shoe and card), and later what you fetch. Outside Git.
+- `assets/orders/<id>/`: the pictures that go out (a film: `first.png`, `last.png`, and `reference.mp4` when it has a
+  reference film; a still: `anchor.png` and `pose-figure.png`, the other dealer's forearm and hand cut out, for anchor 2.2
+  laid on the dealer's own shoe and card), and later what you fetch. Outside Git.
 - `assets/orders/<id>/receipt.json`: what happened to each take. Written ONLY by `node tools/order-put.ts`, never by hand.
 - The rules for the queue: `data/order-policy.json` (`enabled`, caps, `minBalance`). The approval already checked the caps.
 
@@ -25,7 +28,8 @@ with `bash <script>`. Never `node -e`. At most two ffmpeg processes at a time. R
 
 ## 1. Read the queue
 1. List the approved orders: the files in `data/orders/` with `"status": "GODKÄND"`, oldest `approval.at` first.
-2. For each: `node tools/order-put.ts check <id>`. It refuses an order that is not approved by Jakob, whose content has
+2. For each: `node tools/order-put.ts check <id>`. It refuses an order that is not approved (by Jakob, or by the main
+   agent with a mandate), whose content has
    changed since (its hash against `approval.orderSha256`), whose pictures on disk are not the approved ones (sha256), or
    when `enabled` is false. A refusal means: do not place it, report it verbatim.
 3. Its answer lists the takes: `mayBegin: true` = never begun, may be placed now. Any other status is left alone. A take that
@@ -57,7 +61,8 @@ For take n of an order:
      sound is always on and the tool refuses false) and no `ratio` (it follows the first picture: 1764 × 1172).
    - **generate_video, `wan3`**: `model`, `promptText`, `resolution`, `ratio: "adaptive"` (gives exactly 1764 × 1174),
      `duration`, `startFrame`, `endFrame`, `generateAudio: false`. WAN takes no reference pictures together with start and end.
-   - **generate_video, `kling-3-4k`** (Kling 3.0 4K, 43 credits per s): `model`, `promptText`, `resolution: "4k"` (fixed),
+   - **generate_video, `kling-3-4k`** (Kling 3.0 4K, 43 credits per s; no longer offered for new orders, `MODELS` in
+     `src/order-model.ts`, but an approved one is placed as follows): `model`, `promptText`, `resolution: "4k"` (fixed),
      `duration` (3–15), `startFrame: {url}`, `endFrame: {url}`, `generateAudio: false`. No `ratio` (the schema does not say
      which shape the film then gets), no reference pictures or films. The schema's model table says it takes an end frame,
      but the `endFrame` field's own list of models leaves it out: if the tool refuses, that is `failed`, never a call
@@ -87,12 +92,13 @@ Poll `get_task` per task every 60–120 s (a background `sleep 90`, or sleeps of
 - FAILED: `node tools/order-put.ts status <id> <n> MISSLYCKAD --note "<reason verbatim>"`.
 
 ## 5. After-work (what has held)
-The scripts still live in `D:/dealer-scratch/tmp/paow/skript/` until they are ported to `src/film-after.ts` +
-`tools/film-after.ts`. Python: `D:/dealer-scratch/tmp/filmagent/py/venv/Scripts/python.exe -I <script> …`. Write beside the
-original, never over it: `take-<n>/after.<ext>`. Then `status … EFTERARBETAD --file <that file>`.
+**Byggs 2026-11-13: `tools/film-after.ts` and `tools/still-after.ts`, the port of these scripts; this section is replaced
+when they are in.** Until then the scripts live in `D:/dealer-scratch/tmp/paow/skript/`. Python:
+`D:/dealer-scratch/tmp/filmagent/py/venv/Scripts/python.exe -I <script> …`. Write beside the original, never over it:
+`take-<n>/after.<ext>`. Then `status … EFTERARBETAD --file <that file>`.
 - **A film:** `efterarbete.py <film> <anchor.png> <out.mp4> [--keep-tail] [--fps 24] [--lock <first.png>]` cuts WAN 3's two
   darkening last frames, brings every frame's green to the anchor's level and a Kling 4 film to 1764 × 1174 (Kling: `--fps 24`,
-  sound dropped). `slutkoll.py <film> <last.png>` says whether the film ends in its end picture (the last frames' change and
+  sound dropped; without `--fps` the script writes 30 per s, so a 24 per s film would play too fast). `slutkoll.py <film> <last.png>` says whether the film ends in its end picture (the last frames' change and
   difference, the skin's warmth). Do not paint where a hand or arm moves.
 - **A 4K film** (`kling-3-4k`): `source.mp4` stays the untouched 4K original. It is brought to the bank's frame 1764 × 1174
   like a Kling 4 film, `efterarbete.py … --fps <fetched.json's fps>` (sound dropped). That script scales every frame
@@ -104,6 +110,9 @@ original, never over it: `take-<n>/after.<ext>`. Then `status … EFTERARBETAD -
   `ta-bort-skugga.py` takes shadows off the green above the edge; `kantkoll.py` must give 0 dark points and the body ending
   on rows 825–831; then `skolagning.py <picture> <plate> <out>` (the shoe back from a plate without a hand),
   `gron-till-niva.py` (the green of anchor 1) and `ton-till.py` (the tone of anchor 1). The standard: `data/dealer-standard.json`.
+  For an anchor 2.x, where the hand is at the shoe, the receipt of `paow-ankare-2-1` used variants instead:
+  `grundbild-21` (fit without `handB` and `elbowB`, the shoe's region kept) and `skolagning-21 --keep-card` (her drawn-out
+  card kept), in `D:/dealer-scratch/tmp/bestall/paow-ankare-2-1/`.
 
 ## 6. Granska och laga (Jakob 2026-11-12)
 Look at every frame of every take yourself in full size, and fix what is easy to fix; leave what is hard.
@@ -118,7 +127,9 @@ Look at every frame of every take yourself in full size, and fix what is easy to
   fixed copy is a film of its own and is reviewed again.
 - Into the bank, waiting for Jakob in the inbox: `node tools/register-order.ts <id> <n> [--split <frame>]` for the delivered
   film, and `node tools/register-order.ts <id> <n> --fixed <k>` for a fixed copy (`--dry` says what would be written). It
-  never writes over a take Jakob has decided on.
+  never writes over a take Jakob has decided on. The bank takes the after-worked film: add
+  `--film assets/orders/<id>/take-<n>/after.mp4` (without it the tool takes the untouched `source.mp4`). Today the main agent
+  runs this through `D:/dealer-scratch/tmp/huvudagent11/look/in-i-banken.mjs`; **byggs 2026-11-13: `tools/order-bring.ts`.**
 
 ## 7. Measure
 Then `status … MÄTT`. Every measure is written in the report; a take outside a limit is **marked, not hidden**.
@@ -135,14 +146,17 @@ Then `status … MÄTT`. Every measure is written in the report; a take outside 
   (`node tools/track-card.ts <id>` works on the bank's clips; until a take is in the bank, `filmmatt.py` gives the cards).
 
 ## 8. Independent review
-Ask the main agent for an independent frame reviewer in full resolution with the templates
-`D:/dealer-scratch/tmp/filmagent/mcp/granska-giv.md` (deals), `granska-vila.md` (rest) and `granska-helfigur.md`. You do not
-review your own takes as the final word. After the review: `status … GRANSKAD --note "<the verdict in one line>"`.
+Ask the main agent for an independent frame reviewer in full resolution with `tools/film-review.md` (it replaces the older
+templates `granska-giv.md`, `granska-vila.md` and `granska-helfigur.md` in `D:/dealer-scratch/tmp/filmagent/mcp/`). You do
+not review your own takes as the final word. After the review: `status … GRANSKAD --note "<the verdict in one line>"`, with
+the scores written "given 3/5, returen 1/5" so that the protocol reads them. **Byggs 2026-11-13: a `review` command in
+`tools/order-put.ts`.**
 
 ## 9. Into the bank or Material: not yours
-A film goes into the bank only on Jakob's word, by the main agent (`tools/register-order.ts` when it is built; until then
-`D:/dealer-scratch/tmp/filmagent/register-mcp.mjs`), never over his decisions, with `review.inbox: true`. A still goes into
-Material as a candidate (the studio's "Lägg till bild"), never as gäller: Jakob approves it there. `INFÖRD` is set after that.
+A film goes into the bank's inbox by the main agent or on its word (`tools/register-order.ts`, §6), never over Jakob's
+decisions, with `review.inbox: true`; it plays only where its step has nothing else until he judges it in Granska. A still
+goes into Material as a candidate (the studio's "Lägg till bild"), never as gäller: Jakob approves it there. `INFÖRD` is set
+after that.
 
 ## 10. Report
 A table, one row per take: order, take, model, task id, status, size and frames, sha256 (12 characters), the after-work
