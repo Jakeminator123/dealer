@@ -5,7 +5,7 @@ import assert from 'node:assert/strict';
 import { readFile, readdir } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 import {
-  ALL_SEVEN, STEPS, bodyLine, canonical, checkPolicy, costOf, crossesBody, dayOf, defaultFlip, draftProblems, edgeOf, genitive, groupBudget, handChoiceOf, handsOf, hashInput, priceOf, requestOf, seatList, seatWords, shownOf, spentOn, startWords, stepOf, summaryOf, takeStates, validateOrder, waitWords,
+  ALL_SEVEN, MODELS, STEPS, bodyLine, canonical, checkPolicy, costOf, crossesBody, dayOf, defaultFlip, draftProblems, edgeOf, genitive, groupBudget, handChoiceOf, handsOf, hashInput, lengthFor, modelFor, modelsFor, paramsOf, priceOf, requestOf, seatList, seatWords, shownOf, spentOn, startWords, stepOf, summaryOf, takeStates, validateOrder, waitWords,
   type Order, type Policy, type Receipt,
 } from '../src/order-model.ts';
 
@@ -70,6 +70,48 @@ test('the exact call per take: pictures by name, nothing the tool does not take,
   assert.deepEqual(requestOf(still, 1).args, { model: 'nano-banana-pro', promptText: 'T', ratio: '4:3', imageSize: '4K', referenceImages: [{ url: '$file:anchor.png', tag: 'anchor' }, { url: '$file:pose.png', tag: 'pose' }], count: 1 });
 });
 
+test('a film made with another model: the models that can make a step, their parameters, the exact call, the price and the check', async () => {
+  const entry = stepOf('INGANG-2.1')!, deal = stepOf('GIV-2.1')!, still = stepOf('ANKARE-2.1')!;
+  assert.deepEqual(modelsFor(entry).map((m) => m.id), ['wan3', 'kling-4', 'kling-3-4k'], 'its own first, then every model that takes a first and a last picture');
+  assert.deepEqual(modelsFor(deal).map((m) => m.id), ['kling-4', 'wan3', 'kling-3-4k']);
+  assert.deepEqual(modelsFor(still).map((m) => m.id), ['nano-banana-pro'], 'a still: only the picture model');
+  assert.equal(modelFor(entry)?.id, 'wan3');
+  assert.equal(modelFor(entry, 'nano-banana-pro'), null);
+  assert.equal(modelFor(still, 'kling-3-4k'), null);
+  assert.equal(modelFor(entry, 'gen-9'), null);
+  // The step's own model gets what it got before the choice existed.
+  assert.deepEqual(paramsOf(entry, MODELS.wan3), { resolution: '1080p', duration: 4, ratio: 'adaptive', generateAudio: false });
+  assert.deepEqual(paramsOf(deal, MODELS['kling-4']), { resolution: '1080p', duration: 7 });
+  assert.deepEqual(paramsOf(still, MODELS['nano-banana-pro']), { ratio: '4:3', imageSize: '4K' });
+  assert.deepEqual(paramsOf(deal, MODELS.wan3), { resolution: '1080p', duration: 7, ratio: 'adaptive', generateAudio: false }, 'the ratio and the sound are the model\'s');
+  // Kling 3.0 4K: resolution fixed 4k, no ratio, sound off, 3–15 s.
+  const k4k = modelFor(entry, 'kling-3-4k')!;
+  const params = paramsOf(entry, k4k, { duration: 4 });
+  assert.deepEqual(params, { resolution: '4k', duration: 4, generateAudio: false });
+  assert.deepEqual([lengthFor(k4k, 20), lengthFor(k4k, 2), lengthFor(k4k, 7)], [15, 3, 7]);
+  const order = {
+    generation: { provider: 'runway-app', tool: 'generate_video', model: 'kling-3-4k', params },
+    pictures: [{ name: 'first.png', goesAs: 'startFrame' }, { name: 'last.png', goesAs: 'endFrame' }],
+    reference: { status: 'INGEN', why: '' },
+    prompt: { text: 'T' },
+  } as unknown as Order;
+  assert.deepEqual(requestOf(order, 1), { tool: 'generate_video', args: { model: 'kling-3-4k', promptText: 'T', resolution: '4k', duration: 4, generateAudio: false, startFrame: { url: '$file:first.png' }, endFrame: { url: '$file:last.png' } } });
+  const { prices } = await policy();
+  assert.deepEqual(costOf({ model: 'kling-3-4k', params }, 1, prices), { perTake: 172, total: 172, worstPerTake: 172, worstTotal: 172, basis: priceOf({ model: 'kling-3-4k', params }, prices)!.basis }, '43 per s × 4 s');
+  assert.equal(costOf({ model: 'kling-3-4k', params: { ...params, resolution: '1080p' } }, 1, prices), null, 'only 4k has a price');
+  // The order check refuses what the tool does not take for it.
+  const film = (await drafts()).find((o) => o.id === 'paow-giv-p4')!;
+  const as4k = { ...film, status: 'UTKAST', approval: null, generation: { ...film.generation, model: 'kling-3-4k', params } } as Order;
+  assert.deepEqual(validateOrder(as4k).errors, []);
+  const errors = (o: unknown) => validateOrder(o).errors.join(' ');
+  assert.match(errors({ ...as4k, generation: { ...as4k.generation, params: { ...params, resolution: '1080p' } } }), /Upplösningen ska vara 4k för Kling 3\.0 4K/);
+  assert.match(errors({ ...as4k, generation: { ...as4k.generation, params: { ...params, duration: 20 } } }), /3–15 s för Kling 3\.0 4K/);
+  assert.match(errors({ ...as4k, reference: { status: 'FINNS', clips: [], path: 'assets/x/ref.mp4', sha256: 'a'.repeat(64), seconds: 4, goesTo: 'x', approvedStraight: true } }), /tar ingen referensfilm/);
+  const waits = { dealer: 'paow', label: 'mellanbilden' };
+  assert.match(errors({ ...as4k, pictures: [...as4k.pictures, { name: 'middle.png', label: 'Mellanbild', goesAs: 'referenceImage', path: null, sha256: null, from: null, waits }] }), /tar ingen mellanbild/);
+  assert.equal(MODELS['kling-3-4k'].ratio, undefined, 'no ratio goes out: the schema does not say which shape the film gets');
+});
+
 test('cost from the price table, with the worst case where the listed price is higher', async () => {
   const { prices } = await policy();
   assert.deepEqual(priceOf({ model: 'kling-4', params: { resolution: '1080p', duration: 7 } }, prices)?.perTake, 150, '21,3 × 7 = 149,1, rounded up');
@@ -81,7 +123,8 @@ test('cost from the price table, with the worst case where the listed price is h
 });
 
 test('the policy: switch, cap per order, cap per day, floor on the balance; the worst case counts', async () => {
-  const p = await policy();
+  // The limits are Jakob's and move (the daily cap went from 1 000 to 8 000 on 2026-11-13); the arithmetic is tested on fixed ones.
+  const p = { ...(await policy()), enabled: true, dailyCapCredits: 1000, maxPerOrder: 400, minBalance: 2000 };
   const order = { cost: { perTake: 86, total: 172, worstPerTake: 94, worstTotal: 188, basis: '' } };
   assert.equal(checkPolicy(order, p, 0, 17884).ok, true);
   assert.match(checkPolicy(order, { ...p, enabled: false }, 0, 17884).refusals[0], /avstängda/);
@@ -180,7 +223,7 @@ test('the seats where the left hand would cross her body, from the plan alone', 
 });
 
 test('a group of drafts against the limits: what all cost and how many fit today', async () => {
-  const p = await policy();
+  const p = { ...(await policy()), enabled: true, dailyCapCredits: 1000, maxPerOrder: 400, minBalance: 2000 };
   // Alla sju from 2.2 with two takes: WAN 3, 6 s, 1080p = 120 per take, 240 per draft.
   const cost = costOf({ model: 'wan3', params: { resolution: '1080p', duration: 6 } }, 2, p.prices)!;
   assert.deepEqual([cost.total, cost.worstTotal], [240, 240]);

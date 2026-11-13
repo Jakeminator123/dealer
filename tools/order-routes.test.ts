@@ -287,6 +287,38 @@ test('a deal: the hand, handbyte and how the card lands, defaulted from the plan
   assert.equal((await call('GET', '/api/orders')).json.orders.length, before, 'nothing left of a group that could not be made');
 });
 
+test('a film made with another model: the 4K model for the entry, its parameters, title and price; a model the step cannot use is refused', async (t) => {
+  const { call } = await lab(t);
+  const made = await call('POST', '/api/orders', { body: { dealer: 'paow', step: 'INGANG-2.1', model: 'kling-3-4k', duration: 4, takes: 1 } });
+  assert.equal(made.status, 201);
+  const o = made.json.order;
+  assert.deepEqual(o.generation, { provider: 'runway-app', tool: 'generate_video', model: 'kling-3-4k', params: { resolution: '4k', duration: 4, generateAudio: false } });
+  assert.deepEqual([o.cost.perTake, o.cost.total, o.cost.worstTotal, o.limits.maxCredits], [172, 172, 172, 172]);
+  assert.equal(o.title, 'Paow · Ankare 1 → 2.1 · Kling 3.0 4K', 'another model than the step\'s own is said in the title');
+  assert.deepEqual(o.pictures.map((p: { goesAs: string }) => p.goesAs), ['startFrame', 'endFrame']);
+  assert.equal(o.reference.status, 'INGEN');
+  // None asked for: the step's own model, as before.
+  const own = (await call('POST', '/api/orders', { body: { dealer: 'paow', step: 'INGANG-2.1', takes: 1 } })).json.order;
+  assert.deepEqual([own.generation.model, own.generation.params], ['wan3', { resolution: '1080p', duration: 4, ratio: 'adaptive', generateAudio: false }]);
+  assert.equal(own.title, 'Paow · Ankare 1 → 2.1');
+  // A deal from 2.1 with WAN 3 gets WAN's ratio and no sound.
+  const deal = (await call('POST', '/api/orders', { body: { dealer: 'paow', step: 'GIV-2.1', target: 'P4.C1', model: 'wan3' } })).json.order;
+  assert.deepEqual(deal.generation.params, { resolution: '1080p', duration: 7, ratio: 'adaptive', generateAudio: false });
+  for (const [body, why] of [
+    [{ dealer: 'paow', step: 'INGANG-2.1', model: 'nano-banana-pro' }, /kan inte göra Ankare 1 → 2\.1: välj wan3, kling-4, kling-3-4k/],
+    [{ dealer: 'paow', step: 'ANKARE-2.1', model: 'kling-3-4k' }, /kan inte göra/],
+    [{ dealer: 'paow', step: 'INGANG-2.1', model: 'gen-9' }, /kan inte göra/],
+    [{ dealer: 'paow', step: 'INGANG-2.1', model: 7 }, /kan inte göra/],
+    [{ dealer: 'paow', step: 'INGANG-2.1', model: 'kling-3-4k', duration: 20 }, /3–15 s för Kling 3\.0 4K/],
+    [{ dealer: 'paow', step: 'INGANG-2.1', model: 'kling-3-4k', resolution: '1080p' }, /tar 4k, inte 1080p/],
+  ] as const) {
+    const refused = await call('POST', '/api/orders', { body });
+    assert.equal(refused.status, 400, JSON.stringify(body));
+    assert.match(refused.json.error, why);
+  }
+  assert.equal((await call('GET', '/api/orders')).json.orders.length, 3, 'nothing left of a refused draft');
+});
+
 test("whose each picture is: the dealer's own, the other dealer's arm only, never another dealer's whole picture", async (t) => {
   const { call } = await lab(t);
   const still = (await call('POST', '/api/orders', { body: { dealer: 'paow', step: 'ANKARE-2.1', base: 'paow-vila-ung-2' } })).json;

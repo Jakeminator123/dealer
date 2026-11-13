@@ -196,7 +196,9 @@ export type StepDef = {
   to: '1' | '2.1' | '2.2' | null;
   card: boolean;
   grip?: 'PINCH' | 'DRAG';
+  /** The model it is made with unless another is chosen (förval); modelsFor gives every model that can make it. */
   model: string;
+  /** The resolution a film asks for when its model takes it (paramsOf); a still's ratio. A film's ratio is its model's. */
   resolution?: string;
   ratio?: string;
   imageSize?: string;
@@ -206,13 +208,13 @@ export type StepDef = {
   makes?: { role: string; node?: string; label: string };
 };
 export const STEPS: readonly StepDef[] = [
-  { key: 'INGANG-2.1', group: 'Ingång', label: 'Ankare 1 → 2.1', kind: 'FILM', from: '1', to: '2.1', card: false, model: 'wan3', resolution: '1080p', ratio: 'adaptive', duration: 4 },
-  { key: 'INGANG-2.2', group: 'Ingång', label: 'Ankare 1 → 2.2', kind: 'FILM', from: '1', to: '2.2', card: false, model: 'wan3', resolution: '1080p', ratio: 'adaptive', duration: 4 },
+  { key: 'INGANG-2.1', group: 'Ingång', label: 'Ankare 1 → 2.1', kind: 'FILM', from: '1', to: '2.1', card: false, model: 'wan3', resolution: '1080p', duration: 4 },
+  { key: 'INGANG-2.2', group: 'Ingång', label: 'Ankare 1 → 2.2', kind: 'FILM', from: '1', to: '2.2', card: false, model: 'wan3', resolution: '1080p', duration: 4 },
   { key: 'GIV-2.1', group: 'Giv från ankare 2.1', label: 'Nyp, ett kort till platsen och tillbaka', kind: 'FILM', from: '2.1', to: '2.1', card: true, grip: 'PINCH', model: 'kling-4', resolution: '1080p', duration: 7 },
-  { key: 'GIV-2.2', group: 'Giv från ankare 2.2', label: 'Släp, ett kort till platsen och tillbaka', kind: 'FILM', from: '2.2', to: '2.2', card: true, grip: 'DRAG', model: 'wan3', resolution: '1080p', ratio: 'adaptive', duration: 6 },
+  { key: 'GIV-2.2', group: 'Giv från ankare 2.2', label: 'Släp, ett kort till platsen och tillbaka', kind: 'FILM', from: '2.2', to: '2.2', card: true, grip: 'DRAG', model: 'wan3', resolution: '1080p', duration: 6 },
   { key: 'RETUR-2.1', group: 'Retur → 2.1', label: 'Tillbaka till skon', kind: 'FILM', from: '2.1', to: '2.1', card: true, model: 'kling-4', duration: 3, off: 'Ingår i tur och retur-filmen från ankare 2.' },
   { key: 'RETUR-1', group: 'Retur → 1', label: 'Tillbaka till vila', kind: 'FILM', from: '2.1', to: '1', card: true, model: 'wan3', duration: 3, off: 'Inte byggd här än.' },
-  { key: 'VILA', group: 'Vila', label: 'Vila, samma bild först och sist', kind: 'FILM', from: '1', to: '1', card: false, model: 'wan3', resolution: '1080p', ratio: 'adaptive', duration: 4 },
+  { key: 'VILA', group: 'Vila', label: 'Vila, samma bild först och sist', kind: 'FILM', from: '1', to: '1', card: false, model: 'wan3', resolution: '1080p', duration: 4 },
   { key: 'ANKARE-2.1', group: 'Bild', label: 'Ankare 2.1 (nyp)', kind: 'STILL', from: '1', to: null, card: false, model: 'nano-banana-pro', ratio: '4:3', imageSize: '4K', makes: { role: 'ankare-2.1', node: 'READY', label: 'ankare 2.1' } },
   { key: 'ANKARE-2.2', group: 'Bild', label: 'Ankare 2.2 (släp)', kind: 'STILL', from: '1', to: null, card: false, model: 'nano-banana-pro', ratio: '4:3', imageSize: '4K', makes: { role: 'ankare-2.2', node: 'READY-B', label: 'ankare 2.2' } },
 ];
@@ -333,13 +335,68 @@ export function bodyLine(centres: Readonly<Record<string, readonly [number, numb
 export const crossesBody = (x: number, line: { midline: number; halfCard: number }) => x < line.midline - line.halfCard;
 export const CROSSING_WHY = 'kortet landar till vänster om hennes mitt, så vänsterhanden från skon måste korsa kroppen';
 
-// ── Models: what each takes (from the tools' schemas, 2026-11-12) ──────────
-export type ModelDef = { id: string; tool: Generation['tool']; label: string; durations?: [number, number]; resolutions?: string[]; middle?: boolean; audio: 'always' | 'off' | 'none'; note: string };
-export const MODELS: Record<string, ModelDef> = {
-  'kling-4': { id: 'kling-4', tool: 'generate_video', label: 'Kling 4', durations: [3, 30], resolutions: ['720p', '1080p'], middle: true, audio: 'always', note: 'Följer första och sista bild; ljudet är alltid på och tas bort i efterarbetet.' },
-  wan3: { id: 'wan3', tool: 'generate_video', label: 'WAN 3', durations: [2, 30], resolutions: ['480p', '720p', '1080p'], middle: false, audio: 'off', note: 'Två bilder och en text; ratio adaptive ger bankens 1764 × 1174.' },
-  'nano-banana-pro': { id: 'nano-banana-pro', tool: 'generate_image', label: 'Nano Banana Pro', audio: 'none', note: 'Redigering av dealerns egen bild med referensbilder (@tagg i texten).' },
+// ── Models: what each takes (from the tools' schemas, 2026-11-12; Kling 3.0 4K 2026-11-13) ──
+/**
+ * A model as the sheet offers it and the store sends it. durations, resolutions: what the tool takes. frames: it takes a
+ * last picture with the first, so it can make every film step here; middle: a reference picture beside them; videos: a
+ * reference film beside them. ratio: the ratio always sent with it; without one none goes out, and shape says what the
+ * film's shape is then. audio: always on (no generateAudio: the tool refuses false), off (generateAudio: false goes out) or
+ * none (a still). about: one line in the sheet; note: what to know, on "Det här skickas"; delivered: when the film does not
+ * come in the bank's frame. A new model is one entry here and its price in data/order-policy.json.
+ */
+export type ModelDef = {
+  id: string;
+  tool: Generation['tool'];
+  label: string;
+  durations?: [number, number];
+  resolutions?: string[];
+  frames?: boolean;
+  middle?: boolean;
+  videos?: boolean;
+  ratio?: string;
+  shape?: string;
+  audio: 'always' | 'off' | 'none';
+  about: string;
+  note: string;
+  delivered?: string;
 };
+export const MODELS: Record<string, ModelDef> = {
+  'kling-4': { id: 'kling-4', tool: 'generate_video', label: 'Kling 4', durations: [3, 30], resolutions: ['720p', '1080p'], frames: true, middle: true, videos: true, shape: 'följer första bilden', audio: 'always', about: 'Ljudet alltid på; tas bort efteråt.', note: 'Följer första och sista bild; ljudet är alltid på och tas bort i efterarbetet.' },
+  wan3: { id: 'wan3', tool: 'generate_video', label: 'WAN 3', durations: [2, 30], resolutions: ['480p', '720p', '1080p'], frames: true, middle: false, videos: false, ratio: 'adaptive', audio: 'off', about: 'Ger bankens 1764 × 1174 direkt.', note: 'Två bilder och en text; ratio adaptive ger bankens 1764 × 1174.' },
+  // Runway's generate_video schema 2026-11-13: 3–15 s, resolution fixed 4k ("omit or pass 4k"), audio optional, no reference
+  // pictures or films. Its model table says it takes an end frame; the endFrame field's own list of models leaves it out.
+  'kling-3-4k': {
+    id: 'kling-3-4k', tool: 'generate_video', label: 'Kling 3.0 4K', durations: [3, 15], resolutions: ['4k'], frames: true, middle: false, videos: false, audio: 'off',
+    shape: 'okänt om 4K-filmen följer första bildens form eller kommer i 16:9 (3840 × 2160)',
+    about: 'Ljudet av; skalas till bankens 1764 × 1174 efteråt.',
+    note: 'Verktygets schema 2026-11-13: 3–15 s, upplösningen fast 4k, ljud valbart (här av), inga referensbilder eller referensfilmer. Osäkert: modelltabellen säger att den tar sista bild (Runways API-sida likaså), men endFrame-fältets egen lista nämner den inte; vägrar verktyget blir tagningen misslyckad utan film. Schemat säger inte heller om filmen följer första bildens form eller kommer i 16:9.',
+    delivered: 'Filmen levereras i 4K och skalas i efterarbetet till bankens 1764 × 1174; 4K-originalet sparas orört som source.mp4.',
+  },
+  'nano-banana-pro': { id: 'nano-banana-pro', tool: 'generate_image', label: 'Nano Banana Pro', audio: 'none', about: 'Redigerar dealerns egen bild.', note: 'Redigering av dealerns egen bild med referensbilder (@tagg i texten).' },
+};
+/** The models that can make a step, its own first (förval): a film needs one that takes a first and a last picture. */
+export function modelsFor(step: Pick<StepDef, 'kind' | 'model'>): ModelDef[] {
+  const own = MODELS[step.model];
+  return [own, ...Object.values(MODELS).filter((m) => m !== own && m.tool === own.tool && (step.kind === 'STILL' || !!m.frames))];
+}
+/** The model a step is made with: the step's own when none is asked for, the one asked for when it can make the step, else null. */
+export function modelFor(step: Pick<StepDef, 'kind' | 'model'>, id?: string | null): ModelDef | null {
+  if (id === undefined || id === null) return MODELS[step.model];
+  return modelsFor(step).find((m) => m.id === id) ?? null;
+}
+/**
+ * The generation parameters by name, as the tool takes them, for a step made with a model: a still's ratio and size; a
+ * film's resolution (the one asked for, else the step's when the model takes it, else the model's last and highest), its
+ * length, and what the model always gets (WAN 3: ratio adaptive; a model whose sound can be switched off: no sound).
+ */
+export function paramsOf(step: StepDef, model: ModelDef, choice: { duration?: number; resolution?: string } = {}): Record<string, string | number | boolean> {
+  if (step.kind === 'STILL') return { ratio: step.ratio!, imageSize: step.imageSize! };
+  const wanted = step.resolution ?? '1080p';
+  const resolution = choice.resolution ?? (!model.resolutions || model.resolutions.includes(wanted) ? wanted : model.resolutions[model.resolutions.length - 1]);
+  return { resolution, duration: choice.duration ?? step.duration!, ...(model.ratio ? { ratio: model.ratio } : {}), ...(model.audio === 'off' ? { generateAudio: false } : {}) };
+}
+/** A length the model takes: the one asked for, brought within the model's range. */
+export const lengthFor = (model: Pick<ModelDef, 'durations'>, seconds: number) => (model.durations ? Math.min(model.durations[1], Math.max(model.durations[0], seconds)) : seconds);
 
 // ── Policy and prices (data/order-policy.json) ──────────────────────────────
 export type Price = { model: string; resolution?: string; imageSize?: string; perSecond?: number; perImage?: number; listedPerSecond?: number; source: string };
@@ -543,6 +600,9 @@ export function validateOrder(value: unknown): { order: Order | null; errors: st
       if (m.durations && (typeof d !== 'number' || d < m.durations[0] || d > m.durations[1])) errors.push(`Längden ska vara ${m.durations[0]}–${m.durations[1]} s för ${m.label}.`);
       if (m.audio === 'always' && 'generateAudio' in o.generation.params) errors.push(`${m.label} tar inte generateAudio (ljudet är alltid på).`);
       if (Array.isArray(o.pictures) && !m.middle && o.kind === 'FILM' && o.pictures.some((p) => p?.goesAs === 'referenceImage')) errors.push(`${m.label} tar ingen mellanbild här.`);
+      if (Array.isArray(o.pictures) && !m.frames && o.kind === 'FILM' && o.pictures.some((p) => p?.goesAs === 'endFrame')) errors.push(`${m.label} tar ingen sista bild.`);
+      if (isObject(o.reference) && o.reference.status === 'FINNS' && !m.videos) errors.push(`${m.label} tar ingen referensfilm här.`);
+      if (m.resolutions && o.generation.params.resolution !== undefined && !m.resolutions.includes(String(o.generation.params.resolution))) errors.push(`Upplösningen ska vara ${m.resolutions.join(', ')} för ${m.label}.`);
     }
   }
   if (!isObject(o.prompt) || typeof o.prompt.text !== 'string' || o.prompt.text.length > TEXT_LIMIT || typeof o.prompt.sha256 !== 'string') errors.push('prompt: text och sha256 krävs.');

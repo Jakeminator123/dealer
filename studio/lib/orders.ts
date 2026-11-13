@@ -55,6 +55,8 @@ export type NewOrderInput = {
   side?: "FRONT" | "BACK";
   seats?: SeatInput[];
   flipAxis?: FlipAxis;
+  /** Sent only when it is not the step's own model, so that a server from before the choice still takes the rest. */
+  model?: string;
   duration?: number;
   takes?: number;
   extra?: string | null;
@@ -129,7 +131,7 @@ export function paramRows(order: Order): ParamRow[] {
   if (order.takes > 1) rows.push({ name: "confirmRepeat", value: "true", note: `från tagning 2 av ${order.takes}` });
   const model = MODELS[order.generation.model];
   if (model?.audio === "always") rows.push({ name: "generateAudio", value: "skickas inte", note: "ljudet är alltid på; tas bort i efterarbetet" });
-  if (model?.id === "kling-4" && !("ratio" in args)) rows.push({ name: "ratio", value: "skickas inte", note: "följer första bilden" });
+  if (model?.tool === "generate_video" && model.shape && !("ratio" in args)) rows.push({ name: "ratio", value: "skickas inte", note: model.shape });
   return rows;
 }
 
@@ -172,23 +174,25 @@ export const HANDOVER = "Säg 'lägg kön' till filmagenten eller huvudagenten, 
 
 // ── A new order from the address ────────────────────────────────────────────
 /**
- * What /bestall/?ny=1&dealer=paow&steg=GIV-2.2&plats=P4.C1 asks for (plats=alla: the first card to every player). A seat
- * without a step gets the deal its card is planned with in Placering (nyp → GIV-2.1, släp → GIV-2.2). Null without ny=1.
+ * What /bestall/?ny=1&dealer=paow&steg=GIV-2.2&plats=P4.C1 asks for (plats=alla: the first card to every player;
+ * modell=kling-3-4k: that model, when it can make the step). A seat without a step gets the deal its card is planned with
+ * in Placering (nyp → GIV-2.1, släp → GIV-2.2). Null without ny=1.
  */
-export type Preset = { dealer: string | null; step: StepKey | null; target: string | null; all: boolean };
+export type Preset = { dealer: string | null; step: StepKey | null; target: string | null; all: boolean; model: string | null };
 export function presetOf(params: { get(name: string): string | null }, plan: Pick<PlanAnswer, "seats"> | null | undefined): Preset | null {
   if (params.get("ny") !== "1") return null;
   const dealer = params.get("dealer")?.toLowerCase() || null;
   const asked = params.get("steg")?.toUpperCase() ?? null;
   const plats = params.get("plats")?.toUpperCase() ?? null;
+  const modell = params.get("modell")?.toLowerCase() ?? null;
   const all = plats === "ALLA";
   const target = plats && SEAT_TARGETS.includes(plats) ? plats : null;
   let step = asked && stepOf(asked) && !stepOf(asked)!.off ? (asked as StepKey) : null;
   if (!step && (target || all)) step = plan?.seats[target ?? "P1.C1"]?.grip === "DRAG" ? "GIV-2.2" : "GIV-2.1";
-  return { dealer, step, target, all };
+  return { dealer, step, target, all, model: modell && Object.hasOwn(MODELS, modell) ? modell : null };
 }
 /** The address params a new order is asked with, removed when the sheet closes. */
-export const PRESET_PARAMS = ["ny", "dealer", "steg", "plats"] as const;
+export const PRESET_PARAMS = ["ny", "dealer", "steg", "plats", "modell"] as const;
 
 // ── Whose a picture is ──────────────────────────────────────────────────────
 /** "Paow", "Pamela · bara armen", or a warning when a whole picture of another dealer would go out. */

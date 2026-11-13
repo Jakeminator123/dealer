@@ -4,8 +4,9 @@
 // closed or open, the turn), the group it belongs to with its other seats, the pictures large at the top (first,
 // in-between, last; or the dealer's picture and the pose), each with whose it is and, when a draft followed a newer anchor
 // in Material, what it was before; then the exact text in full (selectable; the parts a choice made, Jakob's addition and
-// the bans marked, from the same function the text was written with), every argument of the call by its name, the takes
-// and the cost against the day's cap and the balance. A draft can change its hand, how the card lands and turns, takes and
+// the bans marked, from the same function the text was written with), every argument of the call by its name with what the
+// model is known and not known to do (a 4K film: that it is scaled to the bank's frame), the takes and the cost against
+// the day's cap and the balance. A draft can change its hand, how the card lands and turns, takes and
 // free addition here, and fetch its pictures again when something has changed; "Godkänn och lägg i kön" freezes it (its
 // hash in approval), after which nothing in it changes. Writes only on Jakob's click.
 import { ArrowLeft, Check, ClipboardCopy, RefreshCw, TriangleAlert } from "lucide-react";
@@ -285,6 +286,7 @@ export function SendScreen({ answer, all, onBack, onOpen, onSaved }: { answer: O
                   </tr>
                 </tbody>
               </table>
+              {model?.delivered ? <p className="text-sm text-brass-hi">{model.delivered}</p> : null}
               {model ? <p className="text-xs text-faint">{model.note}</p> : null}
             </Section>
 

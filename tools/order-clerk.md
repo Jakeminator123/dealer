@@ -56,6 +56,11 @@ For take n of an order:
      sound is always on and the tool refuses false) and no `ratio` (it follows the first picture: 1764 × 1172).
    - **generate_video, `wan3`**: `model`, `promptText`, `resolution`, `ratio: "adaptive"` (gives exactly 1764 × 1174),
      `duration`, `startFrame`, `endFrame`, `generateAudio: false`. WAN takes no reference pictures together with start and end.
+   - **generate_video, `kling-3-4k`** (Kling 3.0 4K, 43 credits per s): `model`, `promptText`, `resolution: "4k"` (fixed),
+     `duration` (3–15), `startFrame: {url}`, `endFrame: {url}`, `generateAudio: false`. No `ratio` (the schema does not say
+     which shape the film then gets), no reference pictures or films. The schema's model table says it takes an end frame,
+     but the `endFrame` field's own list of models leaves it out: if the tool refuses, that is `failed`, never a call
+     without `endFrame`.
    - From take 2 the request carries `confirmRepeat: true`; without it the tool returns the earlier task instead of a new one.
 3. **After the call:**
    - It answered with a task id: `node tools/order-put.ts placed <id> <n> <taskId> <creditsRemaining>` at once.
@@ -85,6 +90,11 @@ original, never over it: `take-<n>/after.<ext>`. Then `status … EFTERARBETAD -
   darkening last frames, brings every frame's green to the anchor's level and a Kling 4 film to 1764 × 1174 (Kling: `--fps 24`,
   sound dropped). `slutkoll.py <film> <last.png>` says whether the film ends in its end picture (the last frames' change and
   difference, the skin's warmth). Do not paint where a hand or arm moves.
+- **A 4K film** (`kling-3-4k`): `source.mp4` stays the untouched 4K original. It is brought to the bank's frame 1764 × 1174
+  like a Kling 4 film, `efterarbete.py … --fps <fetched.json's fps>` (sound dropped). That script scales every frame
+  straight to the anchor's size, as `filmmatt.py` does: right when the film has the first picture's shape (width/height
+  1,50), a squeeze of about 15 % if it comes in 16:9 (3840 × 2160). Read `fetched.json`'s width and height first; for
+  anything but the first picture's shape, stop and report: the fit to the bank's frame is the main agent's and Jakob's.
 - **A still** (Nano Banana Pro gives 4800 × 3584 at 4:3): `grundbild.py <the dealer's anchor 1> <picture> <name> <outdir>`
   fits it into the bank's frame and measures hands and eyes; `fyll-morkt.py` when the body ends 9 rows or less too high;
   `ta-bort-skugga.py` takes shadows off the green above the edge; `kantkoll.py` must give 0 dark points and the body ending

@@ -1,12 +1,12 @@
 // The pure part of the view Beställ (studio/lib/orders.ts) on the checkout's orders: every argument of the call shown by
-// name, what is deliberately not sent, the sections of the queue, status words with sign, the anchors a new order starts
+// name (also for a film in 4K), what is deliberately not sent, the sections of the queue, status words with sign, the anchors a new order starts
 // from, a new order asked for by address, whose a picture is, a deal's choices in words, and the text's marks made by the
 // same function as the stored text. Run from the repo root: node --test "studio/tests/orders.test.ts".
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFile, readdir } from "node:fs/promises";
-import { HANDOVER, SHOWN_CHIP, anchorFor, costWords, firstLacking, goesWords, markOf, motionWords, offsetWords, ownerWords, paramRows, picturesInOrder, presetOf, sections, shownWords, storedParts, type Order, type OrderAnswer } from "../lib/orders.ts";
-import { SHOWN_LABEL } from "../../src/order-model.ts";
+import { HANDOVER, PRESET_PARAMS, SHOWN_CHIP, anchorFor, costWords, firstLacking, goesWords, markOf, motionWords, offsetWords, ownerWords, paramRows, picturesInOrder, presetOf, sections, shownWords, storedParts, type Order, type OrderAnswer } from "../lib/orders.ts";
+import { MODELS, SHOWN_LABEL } from "../../src/order-model.ts";
 import { planAnswerOf } from "../../tools/order-store.ts";
 import { readPlan } from "../../tools/order-images.ts";
 
@@ -48,11 +48,40 @@ test("Det här skickas: every argument by its name, as the ordering agent will s
   assert.equal(offsetWords(1.1), "1,1 px från planen");
 });
 
+test("Det här skickas for a film in 4K: the model, every argument, what is not sent, and that it is scaled to the bank's frame", async () => {
+  const film = (await drafts()).find((o) => o.id === "paow-giv-p4")!;
+  const as4k: Order = { ...film, takes: 1, generation: { ...film.generation, model: "kling-3-4k", params: { resolution: "4k", duration: 4, generateAudio: false } } };
+  const rows = paramRows(as4k);
+  assert.deepEqual(rows.map((r) => [r.name, r.value]), [
+    ["verktyg", "generate_video"],
+    ["model", "kling-3-4k"],
+    ["resolution", "4k"],
+    ["duration", "4"],
+    ["generateAudio", "false"],
+    ["startFrame", "first.png"],
+    ["endFrame", "last.png"],
+    ["ratio", "skickas inte"],
+  ]);
+  assert.match(rows.at(-1)!.note!, /16:9/, "the shape the schema does not give is said");
+  assert.match(MODELS["kling-3-4k"].delivered!, /levereras i 4K och skalas i efterarbetet till bankens 1764 × 1174; 4K-originalet sparas orört som source\.mp4/);
+  assert.match(MODELS["kling-3-4k"].note, /endFrame-fältets egen lista nämner den inte/);
+});
+
 test("the queue: sections, status words with sign, and the hand-over line", async () => {
+  // Made from the checkout's orders but placed in each state, so the test does not move when Jakob approves one.
   const all = await drafts();
-  const list = all.map((o) => answer(o, o.kind === "FILM" ? { shown: "VÄNTAR", waiting: [{ dealer: "paow", label: "ankare 2.1", ready: false }] } : o.approval ? { shown: "GODKÄND" } : {}));
-  assert.deepEqual(sections(list).map((s) => [s.key, s.orders.length]), [["redo", 1], ["vantar", 1], ["kon", 1]], "Jakob approved paow-ankare-2-1 on 2026-11-13");
-  assert.equal(shownWords(list.find((a) => a.order.kind === "FILM")!), "Väntar på ankare 2.1");
+  const film = all.find((o) => o.id === "paow-giv-p4")!, still = all.find((o) => o.id === "paow-ankare-2-1")!;
+  const draft = (o: Order): Order => ({ ...o, status: "UTKAST", approval: null });
+  const approved = (o: Order): Order => ({ ...o, status: "GODKÄND", approval: { by: "jakob", at: "2026-11-13T00:55:00Z", orderSha256: "a".repeat(64) } });
+  const list = [
+    answer(draft(still)),
+    answer(draft(film), { shown: "VÄNTAR", waiting: [{ dealer: "paow", label: "ankare 2.1", ready: false }] }),
+    answer(approved(still), { shown: "GODKÄND" }),
+    answer(approved(film), { shown: "HÄMTAD" }),
+    answer({ ...draft(film), status: "AVBRUTEN" }, { shown: "AVBRUTEN" }),
+  ];
+  assert.deepEqual(sections(list).map((s) => [s.key, s.orders.length]), [["redo", 1], ["vantar", 1], ["kon", 1], ["lagda", 1], ["avbrutna", 1]]);
+  assert.equal(shownWords(list[1]), "Väntar på ankare 2.1");
   for (const key of Object.keys(SHOWN_LABEL)) assert.ok(SHOWN_CHIP[key as keyof typeof SHOWN_CHIP].sign, key);
   assert.equal(HANDOVER, "Säg 'lägg kön' till filmagenten eller huvudagenten, så läggs godkända beställningar.");
 });
@@ -70,9 +99,13 @@ test("a new order asked for by address: dealer, step and seat, or the seat's pla
   const { plan, file } = await readPlan(process.cwd());
   const p = planAnswerOf(plan, file);
   const q = (s: string) => presetOf(new URLSearchParams(s), p);
-  assert.deepEqual(q("ny=1&dealer=paow&steg=GIV-2.2&plats=P4.C1"), { dealer: "paow", step: "GIV-2.2", target: "P4.C1", all: false });
-  assert.deepEqual(q("ny=1&plats=P3.C1"), { dealer: null, step: p.seats["P3.C1"].grip === "DRAG" ? "GIV-2.2" : "GIV-2.1", target: "P3.C1", all: false }, "the grip Placering plans the card with");
-  assert.deepEqual(q("ny=1&dealer=paow&steg=giv-2.2&plats=alla"), { dealer: "paow", step: "GIV-2.2", target: null, all: true });
+  assert.deepEqual(q("ny=1&dealer=paow&steg=GIV-2.2&plats=P4.C1"), { dealer: "paow", step: "GIV-2.2", target: "P4.C1", all: false, model: null });
+  assert.deepEqual(q("ny=1&plats=P3.C1"), { dealer: null, step: p.seats["P3.C1"].grip === "DRAG" ? "GIV-2.2" : "GIV-2.1", target: "P3.C1", all: false, model: null }, "the grip Placering plans the card with");
+  assert.deepEqual(q("ny=1&dealer=paow&steg=giv-2.2&plats=alla"), { dealer: "paow", step: "GIV-2.2", target: null, all: true, model: null });
+  assert.deepEqual(q("ny=1&dealer=paow&steg=INGANG-2.1&modell=kling-3-4k"), { dealer: "paow", step: "INGANG-2.1", target: null, all: false, model: "kling-3-4k" }, "a model chosen by address");
+  assert.equal(q("ny=1&steg=INGANG-2.1&modell=gen-9")?.model, null, "a model that does not exist is not chosen");
+  assert.equal(q("ny=1&modell=toString")?.model, null);
+  assert.ok(PRESET_PARAMS.includes("modell"), "closing the sheet takes the model out of the address");
   assert.equal(q("ny=1&steg=RETUR-2.1")?.step, null, "a step that is off is not chosen");
   assert.equal(q("plats=P4.C1"), null, "without ny=1 nothing opens");
 });

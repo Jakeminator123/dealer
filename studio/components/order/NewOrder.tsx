@@ -4,7 +4,8 @@
 // with the anchor it starts from said in a line) → place on the table (one seat, or "Alla sju": one draft per seat in a
 // group) → how the card lands (stängt → stängt, stängt → öppet; the plan's choice marked "enligt Placering") → which hand
 // (vänster hela vägen, höger hela vägen, handbyte as a tick; handbyte suggested where the left hand would cross her body)
-// → how the card turns → model, length, takes and his own addition. Right, what the choices turn into, changing as he
+// → how the card turns → model (every model that can make the step, its own marked "förval"; resolution, lengths, cost and
+// text follow it), length, takes and his own addition. Right, what the choices turn into, changing as he
 // sets them: one line in Swedish, the pictures (first, last with the card drawn where the plan says, or the dealer's
 // picture and the pose) each with whose it is, the exact text with the parts a choice made marked (from promptFor, the
 // function the store writes the draft's text with), and the cost of all of it against the limits. "Skapa utkast" makes
@@ -17,14 +18,14 @@ import { labUrl } from "../../lib/lab.ts";
 import type { DealerAnswer, EntryAnswer, MediaAnswer } from "../../lib/media.ts";
 import { anchorFor, createOrder, firstLacking, stepGroups, type OrderAnswer, type OrdersAnswer, type Preset, type StepKey } from "../../lib/orders.ts";
 import {
-  ALL_SEVEN, CROSSING_WHY, FLIP_LABEL, HAND_LABEL, LANDS_LABEL, MODELS, SEAT_TARGETS, STEPS, TAKES_MAX,
-  costOf, credits, defaultFlip, genitive, groupBudget, handChoiceOf, handsOf, seatList, seatWords, startWords, stepOf, summaryOf,
-  type FlipAxis, type HandChoice, type Owner, type SeatPlan,
+  ALL_SEVEN, CROSSING_WHY, FLIP_LABEL, HAND_LABEL, LANDS_LABEL, SEAT_TARGETS, STEPS, TAKES_MAX,
+  costOf, credits, defaultFlip, genitive, groupBudget, handChoiceOf, handsOf, lengthFor, modelFor, modelsFor, paramsOf, seatList, seatWords, startWords, stepOf, summaryOf,
+  type FlipAxis, type HandChoice, type ModelDef, type Owner, type SeatPlan,
 } from "../../../src/order-model.ts";
 import { promptFor } from "../../../src/order-prompts.ts";
 import { getMedia } from "../material/client.ts";
 import { Button, SegmentedControl, Sheet, TextArea, cn, useToast } from "../ui";
-import { FlipChoice, HandChoiceRow, LandsChoice } from "./Choices";
+import { FlipChoice, HandChoiceRow, LandsChoice, ModelChoice } from "./Choices";
 import { OwnerChip } from "./Pictures";
 import { PromptText } from "./PromptText";
 
@@ -79,6 +80,8 @@ function Thumb({ src, name, owner, dealer, waiting, drawn, cards }: { src: strin
 }
 
 const served = (e: EntryAnswer | null) => (e?.served && !e.served.endsWith(".mp4") ? labUrl(e.served) : null);
+/** "1080p", "4K": a film's resolution or a still's size as the screens write it. */
+const resolutionWords = (p: Record<string, string | number | boolean>) => String(p.resolution ?? p.imageSize ?? "").replace(/k$/, "K");
 const entryName = (e: EntryAnswer | null, dealerName: string, at: string) => `${genitive(dealerName)} ankare ${at}${e && e.state && e.state !== "gäller" ? ` · ${/kandidat\s*\d+/i.exec(e.name)?.[0] ?? e.state}` : ""}`;
 
 export function NewOrder({ open, onOpenChange, all, preset, onCreated }: { open: boolean; onOpenChange: (o: boolean) => void; all: OrdersAnswer; preset: Preset | null; onCreated: (a: OrderAnswer) => void }) {
@@ -93,6 +96,8 @@ export function NewOrder({ open, onOpenChange, all, preset, onCreated }: { open:
   const [passEverywhere, setPassEverywhere] = useState(false);
   const [flip, setFlip] = useState<{ key: string; axis: FlipAxis } | null>(null);
   const [duration, setDuration] = useState<{ key: string; seconds: number } | null>(null);
+  // The model chosen for a step (key null: asked for by address, for whatever step the sheet opens on).
+  const [modelChoice, setModelChoice] = useState<{ key: string | null; id: string } | null>(preset?.model ? { key: preset.step, id: preset.model } : null);
   const [takes, setTakes] = useState(2);
   const [base, setBase] = useState<{ key: string; id: string } | null>(null);
   const [extra, setExtra] = useState("");
@@ -109,9 +114,10 @@ export function NewOrder({ open, onOpenChange, all, preset, onCreated }: { open:
   const entries = dealer?.entries ?? [];
   const key = stepKey ?? (dealer ? firstLacking(entries) : "ANKARE-2.1");
   const step = stepOf(key)!;
-  const model = MODELS[step.model];
+  const models = modelsFor(step);
+  const model = (modelChoice && (modelChoice.key === null || modelChoice.key === key) ? modelFor(step, modelChoice.id) : null) ?? modelFor(step)!;
   const plan = all.plan ?? null;
-  const seconds = duration?.key === key ? duration.seconds : (step.duration ?? 4);
+  const seconds = lengthFor(model, duration?.key === key ? duration.seconds : (step.duration ?? 4));
   const start = anchorFor(entries, step.from);
   const startEntry = start.holds ?? (step.kind === "STILL" ? (start.candidates.find((c) => c.id === (base?.key === `${dealerId}:${key}` ? base.id : null)) ?? start.candidates[0] ?? null) : null);
   const end = step.kind === "FILM" && !step.card && step.to ? anchorFor(entries, step.to).holds : null;
@@ -140,14 +146,20 @@ export function NewOrder({ open, onOpenChange, all, preset, onCreated }: { open:
   // ── What it turns into ──
   const focusSeat = focus ? seatOf(focus) : null;
   const motion = focus ? motionAt(focus) : null;
-  const prompt = look ? promptFor({ dealer: { name: dealerName, look }, step: key, model: step.model, motion, place: focusSeat ? { x: focusSeat.centre[0], y: focusSeat.centre[1] } : null, extra: extra.trim() || null }) : null;
+  const prompt = look ? promptFor({ dealer: { name: dealerName, look }, step: key, model: model.id, motion, place: focusSeat ? { x: focusSeat.centre[0], y: focusSeat.centre[1] } : null, extra: extra.trim() || null }) : null;
   const summary = summaryOf(step, dealerName, motion);
-  const params: Record<string, string | number | boolean> =
-    step.kind === "STILL" ? { ratio: step.ratio!, imageSize: step.imageSize! } : { resolution: step.resolution ?? "1080p", duration: seconds, ...(step.model === "wan3" ? { ratio: "adaptive", generateAudio: false } : {}) };
-  const cost = all.policy ? costOf({ model: step.model, params }, takes, all.policy.prices) : null;
+  // The same parameters the store gives the draft (paramsOf), so the cost here is the draft's.
+  const params = paramsOf(step, model, step.kind === "FILM" ? { duration: seconds } : {});
+  const cost = all.policy ? costOf({ model: model.id, params }, takes, all.policy.prices) : null;
   const count = Math.max(1, targets.length);
   const budget = cost && all.policy ? groupBudget(cost, count, all.policy, all.day.spent, all.balance?.credits ?? 0) : null;
   const durations = model.durations ? Array.from({ length: Math.min(model.durations[1], 10) - model.durations[0] + 1 }, (_, i) => model.durations![0] + i) : [];
+  // Each model's resolution and price per take for the length chosen (within what that model takes).
+  const modelWhat = (m: ModelDef) => {
+    const p = paramsOf(step, m, step.kind === "FILM" ? { duration: lengthFor(m, seconds) } : {});
+    const c = all.policy ? costOf({ model: m.id, params: p }, 1, all.policy.prices) : null;
+    return [resolutionWords(p), c ? `${credits(c.perTake)} krediter per tagning` : "inget pris"].filter(Boolean).join(" · ");
+  };
   const groups = stepGroups();
   const pose = all.poses?.find((p) => p.step === key) ?? null;
   const me: Owner = { dealer: dealerId, name: dealerName, part: "whole" };
@@ -182,7 +194,7 @@ export function NewOrder({ open, onOpenChange, all, preset, onCreated }: { open:
   const create = async () => {
     setBusy(true);
     try {
-      const common = { dealer: dealerId, step: key, takes, extra: extra.trim() || null, ...(step.kind === "FILM" ? { duration: seconds } : {}) };
+      const common = { dealer: dealerId, step: key, takes, extra: extra.trim() || null, ...(model.id !== step.model ? { model: model.id } : {}), ...(step.kind === "FILM" ? { duration: seconds } : {}) };
       const card = step.card ? { flipAxis } : {};
       const made = !step.card
         ? await createOrder({ ...common, ...(step.kind === "STILL" && !start.holds && startEntry ? { base: startEntry.id } : {}) })
@@ -312,9 +324,17 @@ export function NewOrder({ open, onOpenChange, all, preset, onCreated }: { open:
             {step.kind === "STILL" && !start.holds && start.candidates.length > 1 ? (
               <SegmentedControl label="Dealerns bild" size="sm" value={startEntry?.id ?? ""} onChange={(id) => setBase({ key: `${dealerId}:${key}`, id })} options={start.candidates.map((c) => ({ value: c.id, label: c.name }))} />
             ) : null}
+            {models.length > 1 ? (
+              <>
+                <ModelChoice models={models} value={model.id} own={step.model} what={modelWhat} onChange={(id) => setModelChoice({ key, id })} />
+                {model.delivered ? <p className="text-sm text-brass-hi">{model.delivered}</p> : null}
+                {model.id !== step.model ? <p className="text-xs leading-[17px] text-dim">{model.note}</p> : null}
+              </>
+            ) : null}
             <div className="flex flex-wrap items-center gap-3 text-sm">
-              <span className="text-ink">{model.label}</span>
+              {models.length > 1 ? <span className="text-dim">Längd</span> : <span className="text-ink">{model.label}</span>}
               {durations.length ? <SegmentedControl label="Längd" size="sm" value={seconds} onChange={(s) => setDuration({ key, seconds: s })} options={durations.map((d) => ({ value: d, label: `${d} s` }))} /> : <span className="text-dim">{step.imageSize} · {step.ratio}</span>}
+              {durations.length ? <span className="text-dim">{resolutionWords(params)}</span> : null}
             </div>
             <div className="flex items-center gap-3 text-sm">
               <span className="text-dim">Tagningar</span>

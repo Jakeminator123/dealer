@@ -9,6 +9,8 @@
 // caller presents the revision it read (If-Match), writes are queued, and a file is replaced through a temporary file
 // renamed into place. Routes: tools/order-routes.ts.
 //
+// A film is made with its step's own model unless another that can make it is asked for (modelsFor in src/order-model.ts:
+// first and last picture); its parameters are the model's (paramsOf), as the sheet shows them.
 // A deal's choices (which hand, handbyte, how the card lands and turns) come with the new draft and default to what the
 // plan says for the card; the last picture draws the card closed or open as chosen. "Alla sju" makes one draft per seat
 // sharing a group (createMany). A draft follows Jakob's choice in Material: when another anchor of the same role holds
@@ -21,8 +23,8 @@ import path from 'node:path';
 import { StoreError } from './placement-store.ts';
 import { mediaRoles } from './media-roles.ts';
 import {
-  ANCHOR_NODE, ANCHOR_ROLE, EXTRA_LIMIT, FILE_NAME, FLIP_AXES, MODELS, ORDER_ID, SEAT_TARGETS, TAKES_MAX,
-  bodyLine, checkPolicy, costOf, crossesBody, dayOf, defaultFlip, draftProblems, edgeOf, genitive, hashInput, seatList, seatWords, shownOf, spentOn, stepOf, summaryOf, validateOrder, waitingOf,
+  ANCHOR_NODE, ANCHOR_ROLE, EXTRA_LIMIT, FILE_NAME, FLIP_AXES, ORDER_ID, SEAT_TARGETS, TAKES_MAX,
+  bodyLine, checkPolicy, costOf, crossesBody, dayOf, defaultFlip, draftProblems, edgeOf, genitive, hashInput, modelFor, modelsFor, paramsOf, seatList, seatWords, shownOf, spentOn, stepOf, summaryOf, validateOrder, waitingOf,
   type Drawn, type FlipAxis, type Motion, type Order, type OrderAnswer, type OrdersAnswer, type Owner, type Picture, type PlanAnswer, type Policy, type PoseAnswer, type Receipt, type SeatPlan, type StepKey, type Waits,
 } from '../src/order-model.ts';
 import { TEMPLATE_VERSION, orderPrompt } from '../src/order-prompts.ts';
@@ -54,6 +56,8 @@ export type NewOrder = {
   /** Several seats at once ("Alla sju"): one draft per seat, sharing a group (createMany). */
   seats?: SeatChoice[];
   flipAxis?: FlipAxis;
+  /** The model, when not the step's own (modelsFor: a film can be made by every model that takes a first and a last picture). */
+  model?: string;
   duration?: number;
   resolution?: string;
   takes?: number;
@@ -341,7 +345,9 @@ export function orderStore(root: string, options: StoreOptions = {}) {
     const policy = await readPolicy();
     if (!policy) throw new StoreError(500, 'data/order-policy.json kunde inte läsas.');
     const register = await readRegister();
-    const model = MODELS[step.model];
+    // The step's own model, or one asked for that can make it (a film: first and last picture, no reference).
+    const model = input.model === undefined || input.model === null ? modelFor(step) : typeof input.model === 'string' ? modelFor(step, input.model) : null;
+    if (!model) throw new StoreError(400, `${String(input.model)} kan inte göra ${step.label}: välj ${modelsFor(step).map((m) => m.id).join(', ')}.`);
     const target = step.card ? (input.target ?? null) : null;
     const { plan } = await readPlan(root);
     if (step.card && (!target || !plan.targets[target])) throw new StoreError(400, 'Välj en plats på bordet (P1.C1 … D.C1).');
@@ -358,15 +364,16 @@ export function orderStore(root: string, options: StoreOptions = {}) {
     const id = input.id ?? (await nextId([dealer.id, step.key.toLowerCase().replace('.', '-'), seat].filter(Boolean).join('-')));
     if (!ORDER_ID.test(id)) throw new StoreError(400, 'Ogiltigt beställnings-id.');
 
-    // Generation parameters by name, as the tools take them.
-    const params: Record<string, string | number | boolean> = {};
-    if (step.kind === 'STILL') { params.ratio = step.ratio!; params.imageSize = step.imageSize!; }
-    else {
-      params.resolution = input.resolution ?? step.resolution ?? '1080p';
-      params.duration = input.duration ?? step.duration!;
-      if (step.model === 'wan3') { params.ratio = step.ratio ?? 'adaptive'; params.generateAudio = false; }
+    // Generation parameters by name, as the tools take them for this model (the sheet shows the same, from paramsOf).
+    if (input.resolution !== undefined && typeof input.resolution !== 'string') throw new StoreError(400, 'Upplösningen ska vara en text.');
+    if (input.duration !== undefined && typeof input.duration !== 'number') throw new StoreError(400, 'Längden ska vara ett tal.');
+    const params = paramsOf(step, model, { duration: input.duration, resolution: input.resolution });
+    if (step.kind === 'FILM') {
+      if (model.resolutions && !model.resolutions.includes(String(params.resolution))) throw new StoreError(400, `${model.label} tar ${model.resolutions.join(', ')}, inte ${params.resolution}.`);
+      const d = Number(params.duration);
+      if (model.durations && !(d >= model.durations[0] && d <= model.durations[1])) throw new StoreError(400, `Längden ska vara ${model.durations[0]}–${model.durations[1]} s för ${model.label}.`);
     }
-    const cost = costOf({ model: step.model, params }, takes, policy.prices);
+    const cost = costOf({ model: model.id, params }, takes, policy.prices);
     if (!cost) throw new StoreError(400, `Inget pris för ${model.label} med de här värdena i data/order-policy.json.`);
 
     const folder = path.join(root, folderOf(id));
@@ -433,7 +440,7 @@ export function orderStore(root: string, options: StoreOptions = {}) {
       const order: Order = {
         schemaVersion: 1,
         id,
-        title: input.title ?? `${dealer.name} · ${step.label}${target ? ` · ${seatWords(target)}` : ''}`,
+        title: input.title ?? `${dealer.name} · ${step.label}${target ? ` · ${seatWords(target)}` : ''}${model.id !== step.model ? ` · ${model.label}` : ''}`,
         summary: summaryOf(step, dealer.name, motion),
         group: input.group ?? null,
         dealer: dealer.id,

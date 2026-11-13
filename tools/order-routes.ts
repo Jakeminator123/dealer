@@ -3,7 +3,7 @@
 //   GET  /api/orders                    every order with its state, the day's credits and the balance
 //   GET  /api/orders/<id>               one order
 //   POST /api/orders                    a new draft from a few choices (dealer, step, place, hand, how the card lands and
-//                                       turns, length, takes), or with seats one draft per seat sharing a group
+//                                       turns, model, length, takes), or with seats one draft per seat sharing a group
 //   PUT  /api/orders/<id>               change a draft: title, takes, hand, side, turn, free addition, length (If-Match)
 //   POST /api/orders/<id>/refresh       fetch what a draft waits for once it holds, draw its last picture again (If-Match)
 //   POST /api/orders/<id>/approve       Jakob's click: freezes the order with its hash, refused beyond the policy (If-Match)
@@ -23,7 +23,7 @@ import { mediaRoles } from './media-roles.ts';
 import { orderStore, type NewOrder, type StoreOptions } from './order-store.ts';
 
 const BODY_LIMIT = 16384;
-const NEW_KEYS = ['dealer', 'step', 'target', 'hand', 'pass', 'side', 'seats', 'flipAxis', 'duration', 'resolution', 'takes', 'extra', 'title', 'base'];
+const NEW_KEYS = ['dealer', 'step', 'target', 'hand', 'pass', 'side', 'seats', 'flipAxis', 'model', 'duration', 'resolution', 'takes', 'extra', 'title', 'base'];
 
 export function orderRoutes(options: { root: string; origin: string } & StoreOptions) {
   const { root, origin } = options;

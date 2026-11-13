@@ -2,9 +2,10 @@
 
 // The choices of a deal as large buttons with a line under each, shared by the sheet "Ny beställning" and the draft's
 // "Ändra utkastet": how the card lands (stängt → stängt, stängt → öppet), which hand deals (vänster hela vägen, höger hela
-// vägen, handbyte) and how the card turns. "enligt Placering" marks the choice the plan makes for the card.
+// vägen, handbyte) and how the card turns. "enligt Placering" marks the choice the plan makes for the card. The sheet's
+// model choice too: the models that can make the step, the step's own marked "förval".
 import type { ReactNode } from "react";
-import { FLIP_ABOUT, FLIP_AXES, FLIP_LABEL, HAND_ABOUT, HAND_LABEL, LANDS_ABOUT, LANDS_LABEL, type FlipAxis, type HandChoice } from "../../../src/order-model.ts";
+import { FLIP_ABOUT, FLIP_AXES, FLIP_LABEL, HAND_ABOUT, HAND_LABEL, LANDS_ABOUT, LANDS_LABEL, type FlipAxis, type HandChoice, type ModelDef } from "../../../src/order-model.ts";
 import { Badge, Switch, cn } from "../ui";
 
 export function ChoiceCard({ on, title, about, badge, disabled, onClick }: { on: boolean; title: ReactNode; about: ReactNode; badge?: ReactNode; disabled?: boolean; onClick: () => void }) {
@@ -55,6 +56,34 @@ export function HandChoiceRow({ value, plan, onChange, disabled }: { value: Hand
       <div className={cn("rounded-md border px-3 py-2", value === "PASS" ? "border-brass/60 bg-brass/8" : "border-line")}>
         <Switch checked={value === "PASS"} disabled={disabled} onChange={(on) => onChange(on ? "PASS" : "LH")} label={<span className="flex items-center gap-2">{HAND_LABEL.PASS}{plan === "PASS" ? <PlanBadge /> : null}</span>} hint={HAND_ABOUT.PASS} />
       </div>
+    </div>
+  );
+}
+
+/** The models that can make the step, its own first and marked "förval"; `what` gives each one's resolution and price. */
+export function ModelChoice({ models, value, own, what, onChange, disabled }: { models: readonly ModelDef[]; value: string; own: string; what: (m: ModelDef) => string; onChange: (id: string) => void; disabled?: boolean }) {
+  return (
+    <div role="radiogroup" aria-label="Modell" className="flex flex-col gap-1.5">
+      {models.map((m) => (
+        <ChoiceCard
+          key={m.id}
+          on={value === m.id}
+          disabled={disabled}
+          title={
+            <>
+              {m.label}
+              <span className="text-xs tabular-nums text-dim">{what(m)}</span>
+            </>
+          }
+          about={m.about}
+          badge={m.id === own ? (
+            <Badge tone="neutral" size="sm">
+              förval
+            </Badge>
+          ) : null}
+          onClick={() => onChange(m.id)}
+        />
+      ))}
     </div>
   );
 }

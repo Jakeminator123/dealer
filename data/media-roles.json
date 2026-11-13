@@ -2253,6 +2253,13 @@
           "note": "Reklamfilm i noirstil, fristående från banken. Jakob vill att den ligger kvar här. Går inte upp i nätkopian (studio-release blockerar trailer*)."
         },
         {
+          "id": "pamela-prov-plats-3-prov",
+          "role": "prov",
+          "name": "Plats 3 mot framifrån",
+          "proof": "plats-3-prov",
+          "note": "Samma giv till plats 3 med scenens ritade kort, sedd framifrån och från plats 3:s öga (cirka 8°); samma platta film i båda. Gjort av sessionen dealer-bf 2026-11-13, inte oberoende granskat."
+        },
+        {
           "id": "pamela-drawn-01",
           "role": "arbetsmaterial",
           "name": "Kortet utdraget",

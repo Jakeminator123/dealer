@@ -84,6 +84,10 @@
   "notes": [],
   "created": "2026-11-13T00:16:18.139Z",
   "createdBy": "huvudagenten (dealer-94) på Jakobs ord 2026-11-13: en film med WAN från ankare 1 till 2.1",
-  "approval": null,
-  "status": "UTKAST"
+  "approval": {
+    "by": "jakob",
+    "at": "2026-11-13T00:43:37.205Z",
+    "orderSha256": "21bc3dd15e4867c2f5134c0740d25d342bb93859f1432c4312693ecf442a3dfc"
+  },
+  "status": "GODKÄND"
 }
