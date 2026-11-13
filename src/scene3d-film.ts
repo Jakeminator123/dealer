@@ -37,7 +37,7 @@ vec3 cardBase(sampler2D map, vec2 q[4], vec3 ref){
 // The middle of the dealer-side table edge in the standard film frame (film pixels, y down): the fixed point of a film's own frame.
 export const FRAME_FIX = {x: 881.5, y: 831.5};
 const CARD_KEY = `const vec2 FRAME_FIX = vec2(${FRAME_FIX.x}, ${FRAME_FIX.y});
-uniform float cardOn, cardRim, cardSides, cardTint, cardTrust, cardOverOn, cardHeld, seatOn; uniform vec2 cardZone[4], cardCore[4], cardOver[4], cardDrawn[4], seatZone[4], seatCore[4]; uniform vec3 cardColour; uniform vec4 cardShoe;
+uniform float cardOn, cardRim, cardSides, cardTint, cardTrust, cardOverOn, cardHeld, cardStrength, seatOn; uniform vec2 cardZone[4], cardCore[4], cardOver[4], cardDrawn[4], seatZone[4], seatCore[4]; uniform vec3 cardColour; uniform vec4 cardShoe;
 ${CARD_GLSL}
 const float CARD_SHADOW = .4;
 const vec3 BACK_LIT = vec3(.91, .82, .02), FACE_LIT = vec3(0., .475, .89); // the film card's yellow back and blue face, lit
@@ -48,9 +48,10 @@ float skinOf(vec3 c){ return smoothstep(.03, .08, c.r - c.b) * smoothstep(-.02, 
 // One film card keyed away: zoneQ where it and its blur can be, coreQ its tracked colour, colour that colour lit, rim how far its
 // pale rim reaches, sides which colours count as card (0 the back, 1 the face, 2 both), tint whose tint fingers on it lose (0
 // the back's, 1 the face's, 2 none), trust how far the core is the card itself (the track's confidence); inside the shoe box
-// only the card itself and its rim go (the next card seated there stays).
-vec4 keyCard(vec4 o, vec2 px, vec3 c, vec3 key, vec2 zoneQ[4], vec2 coreQ[4], vec3 colour, float rim, float sides, float tint, float trust, vec4 shoe, vec2 drawnQ[4], float held){
-  float zone = smoothstep(-2., 2., quadIn(px, zoneQ)); if (zone <= 0.) return o;
+// only the card itself and its rim go (the next card seated there stays). strength: how far all of this is done (1 in full, 0 the
+// film as it is), so a card can be keyed away over a few frames while the drawn card lies under it (the hand-over at rest).
+vec4 keyCard(vec4 o, vec2 px, vec3 c, vec3 key, vec2 zoneQ[4], vec2 coreQ[4], vec3 colour, float rim, float sides, float tint, float trust, vec4 shoe, vec2 drawnQ[4], float held, float strength){
+  float zone = smoothstep(-2., 2., quadIn(px, zoneQ)) * strength; if (zone <= 0.) return o;
   float core = quadIn(px, coreQ), back = step(sides, .5) + step(1.5, sides), face = step(.5, sides);
   if (all(greaterThan(px, shoe.xy)) && all(lessThan(px, shoe.zw))) zone *= smoothstep(-rim - 3., -rim, core);
   // how far the colour lies off the plane of the screen and the card's colour, each in any light: 0 for card, felt and mixes of
@@ -99,9 +100,9 @@ vec4 keyCard(vec4 o, vec2 px, vec3 c, vec3 key, vec2 zoneQ[4], vec2 coreQ[4], ve
 // The card seated in the shoe window (its back), then the dealt card; a card drawn in front of the hand keeps no film inside it.
 vec4 keyCards(vec4 o, vec2 uv, vec3 c, vec3 key){
   vec2 px = vec2(uv.x, 1. - uv.y) * FILM_PX;
-  if (cardOverOn > .5 && quadIn(px, cardOver) > 0.) return vec4(0.);
-  if (seatOn > .5) o = keyCard(o, px, c, key, seatZone, seatCore, BACK_LIT, 4., 0., 2., 1., vec4(-1.), seatCore, 0.);
-  return keyCard(o, px, c, key, cardZone, cardCore, cardColour, cardRim, cardSides, cardTint, cardTrust, cardShoe, cardDrawn, cardHeld);
+  if (cardOverOn > .5 && quadIn(px, cardOver) > 0.) return o * (1. - cardStrength);
+  if (seatOn > .5) o = keyCard(o, px, c, key, seatZone, seatCore, BACK_LIT, 4., 0., 2., 1., vec4(-1.), seatCore, 0., 1.);
+  return keyCard(o, px, c, key, cardZone, cardCore, cardColour, cardRim, cardSides, cardTint, cardTrust, cardShoe, cardDrawn, cardHeld, cardStrength);
 }`;
 // The keyed shadow above the table edge, kept as a share `above` (1 = all of it, as before): rows of the standard frame, y down.
 // It fades in over SHADOW_BAND rows up to the edge row, so the shadow on the felt below does not start with a line. Mirrored in
@@ -359,9 +360,11 @@ const BEHIND = 0.15; // dealer metres behind the edge when the film does not say
 // seated in the shoe window (always its back), keyed away too when a rendered back lies under it. No dealt card: `core` null.
 // `sides`: which colours count as card (0 the back's, 1 the face's, 2 both); `tint`: whose tint fingers on it lose (0, 1, or 2
 // none); `trust`: how far the core is the card itself (the track's confidence in this frame); `drawn`: the rendered card's outline
-// and `held` how far it is still in the hand (its pale edge beyond the outline then stays, untinted).
+// and `held` how far it is still in the hand (its pale edge beyond the outline then stays, untinted). `strength`: how far the dealt
+// card's key is done, 1 (in full, as before) to 0 (the film as it is): the line's hand-over at rest keys the film's lying card away
+// over a few frames (src/card-overlay.ts restFade), so the drawn card comes up under it and under her fingers. The seated card's is full.
 export type CardKey = {zone: number[][]; core: number[][] | null; colour: number[]; sides: number; tint: number; trust: number; rim: number; shoe: number[] | null; over: number[][] | null;
-  drawn?: number[][] | null; held?: number; seated?: {zone: number[][]; core: number[][]} | null};
+  drawn?: number[][] | null; held?: number; strength?: number; seated?: {zone: number[][]; core: number[][]} | null};
 // The film's own card as the matte (src/scene3d-matte.ts), as the passes left it for this frame: `box` the film pixels they ran in
 // (x0, y0, x1, y1), `cover` the card's body with its rim covered (back, face), how near the body is, and the zone beside it where
 // blurred card colour is unmixed, `shade` the film's shading over the body; `print` the face print and `toPrint` film pixel to print
@@ -374,7 +377,7 @@ export function createFilmLayers(filmVP: T.Matrix4, light: Record<string, {value
   const map = {value: null as T.Texture | null}, grade = {value: new T.Vector3(1, 1, 1)}, quad = () => [0, 1, 2, 3].map(() => new T.Vector2());
   const frame = {frameOn: {value: 0}, frameScale: {value: 1}, frameAnchor: {value: new T.Vector2(FRAME_FIX.x, FRAME_FIX.y)}, frameSize: {value: new T.Vector2(FILM.width, FILM.height)}};
   let framed: FilmFrame | null = null, placed = {edgeZ: 0, fold: true, depth: false, scale: 1}; const hide = {value: new T.Vector4(0, 0, -1, -1)};
-  const card = {cardOn: {value: 0}, cardRim: {value: 4}, cardSides: {value: 0}, cardTint: {value: 2}, cardTrust: {value: 0}, cardOverOn: {value: 0}, cardHeld: {value: 0}, cardDrawn: {value: quad()}, cardZone: {value: quad()}, cardCore: {value: quad()}, cardOver: {value: quad()}, cardColour: {value: new T.Vector3(1, 1, 0)}, cardShoe: {value: new T.Vector4(-1, -1, -1, -1)},
+  const card = {cardOn: {value: 0}, cardRim: {value: 4}, cardSides: {value: 0}, cardTint: {value: 2}, cardTrust: {value: 0}, cardOverOn: {value: 0}, cardHeld: {value: 0}, cardStrength: {value: 1}, cardDrawn: {value: quad()}, cardZone: {value: quad()}, cardCore: {value: quad()}, cardOver: {value: quad()}, cardColour: {value: new T.Vector3(1, 1, 0)}, cardShoe: {value: new T.Vector4(-1, -1, -1, -1)},
     seatOn: {value: 0}, seatZone: {value: quad()}, seatCore: {value: quad()}};
   const room = {roomMap: {value: null as T.Texture | null}, roomSize: {value: new T.Vector2(1, 1)}, roomExposure: {value: 1}};
   // the room's light on her (setRoomLight): its tint lies in grade with the calibration's; the sides have their own
@@ -412,7 +415,7 @@ export function createFilmLayers(filmVP: T.Matrix4, light: Record<string, {value
       card.cardOn.value = key ? 1 : 0; if (!key) return;
       const put = (to: T.Vector2[], q: number[][]) => q.forEach((p, i) => to[i].set(p[0], p[1])), none = [[-9, -9], [-8, -9], [-8, -8], [-9, -8]]; // a quad off the frame
       put(card.cardZone.value, key.core ? key.zone : none); put(card.cardCore.value, key.core ?? none); card.cardColour.value.set(key.colour[0], key.colour[1], key.colour[2]); card.cardRim.value = key.rim; card.cardSides.value = key.sides; card.cardTint.value = key.tint; card.cardTrust.value = key.trust;
-      card.cardHeld.value = key.drawn ? key.held ?? 0 : 0; if (key.drawn) put(card.cardDrawn.value, key.drawn);
+      card.cardHeld.value = key.drawn ? key.held ?? 0 : 0; if (key.drawn) put(card.cardDrawn.value, key.drawn); card.cardStrength.value = Math.max(0, Math.min(1, key.strength ?? 1));
       card.seatOn.value = key.seated ? 1 : 0; if (key.seated) { put(card.seatZone.value, key.seated.zone); put(card.seatCore.value, key.seated.core); }
       if (key.shoe) card.cardShoe.value.set(key.shoe[0], key.shoe[1], key.shoe[2], key.shoe[3]); else card.cardShoe.value.set(-1, -1, -1, -1);
       card.cardOverOn.value = key.over ? 1 : 0; if (key.over) put(card.cardOver.value, key.over);

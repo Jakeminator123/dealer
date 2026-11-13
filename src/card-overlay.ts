@@ -136,6 +136,40 @@ export function restOf(track: CardTrack): {from: number; quad: Pt[]; assumed: bo
 export type Pose = {
   frame: number; side: Side;
   quad: Pt[] | null;      // where the rendered card is drawn, in texture order
+// The hand-over at rest under the line (CARRY 'film'): the drawn card does not replace the film's lying card in one frame. The film's
+// card is keyed away over a few frames instead (restShare; src/scene3d-deal.ts gives the card key its share as the key's strength), so
+// the drawn card comes up under it and under her fingers, which lie over the card in those frames. still: how near (film pixels, the mean of the four
+// corners) the track's card must lie to its resting quad for a frame to count as still; before: at most this many still frames before
+// the rest are used; after: a fade lasts at least this many frames, so a card still sliding at the rest (Paow's seat 3, the hole card's
+// deal: no still frame) fades over this many frames after it, and a short still run goes on past it. Measured 2026-11-13 on the line's
+// proof takes: still frames before the rest at seat 4 7, seat 7 9, the dealer's first card 15, the hole card's turn 2 (its corners lie
+// 2.0-2.3 px off for ten frames more), seat 3 and the hole card's deal 0. A card that comes to rest back up (the hole card's deal) keeps
+// the swap in one frame: there the film's yellow card slides on under her fingertips while the drawn back already lies on its place,
+// and the fade showed the felt through the drawn card and the yellow strip three frames longer (the independent review of the fade,
+// 2026-11-13). That rule can go once the film's back is dark in its own pixels (the trial "pålägg"), since the strip is then dark too.
+// card: the share of the fade over which the drawn card comes
+// in under the film's card before the key begins: it is a pixel or two larger than the film's card, and its pale edge and contact
+// shadow, which show beside the film's card, came on in one frame when it was there in full from the fade's first frame (seat 4).
+export const REST_FADE = {still: 2, before: 8, after: 6, card: 0.3};
+/** The frames over which the film's lying card is keyed away (restShare), or null where nothing fades: no rest, a card that lies from the clip's first frame (a return, drawn in full since the deal before it), or a card that comes to rest back up. */
+export function restFade(track: CardTrack): {from: number; to: number} | null {
+  const rest = restOf(track); if (!rest || rest.from <= 0 || track.frames[rest.from]?.side === 'BACK') return null;
+  const near = (i: number) => { const q = track.frames[i]?.quad; return q?.length === 4 && q.reduce((sum, p, k) => sum + Math.hypot(p[0] - rest.quad[k].x, p[1] - rest.quad[k].y), 0) / 4 <= REST_FADE.still; };
+  let from = rest.from; while (from > 0 && rest.from - from < REST_FADE.before && near(from - 1)) from--;
+  return {from, to: Math.min(Math.max(rest.from, from + REST_FADE.after), Math.max(rest.from, track.frames.length - 1))};
+}
+/**
+ * A frame of the hand-over: how far the drawn card has come in under the film's card (card: its opacity and its contact shadow) and how
+ * far the film's lying card is keyed away (key), each 0 before the fade and 1 from its last frame on, smoothly between. The card comes
+ * first, over REST_FADE.card of the fade, and the key only once it is there in full, so the felt never shows through the film's card.
+ * No fade: both 1.
+ */
+export function restShare(fade: {from: number; to: number} | null, frame: number): {card: number; key: number} {
+  if (!fade || frame >= fade.to) return {card: 1, key: 1};
+  const t = (frame - fade.from + 1) / (fade.to - fade.from + 1), c = REST_FADE.card;
+  return frame < fade.from ? {card: 0, key: 0} : {card: smooth(t / c), key: smooth((t - c) / (1 - c))};
+}
+
   edge: [Pt, Pt] | null;  // edge-on frames: the line the thin edge is drawn along
   film: Pt[] | null;      // the film's own card in this frame, rim included: what must be covered
   resting: number;        // 0 in the hand, 1 lying still; in between while the size settles

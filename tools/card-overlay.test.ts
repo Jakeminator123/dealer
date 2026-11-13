@@ -4,7 +4,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile, readdir} from 'node:fs/promises';
 import fs from 'node:fs';
-import {sceneOf, restingQuad, restOf, poseAt, cardToImage, projectionOf, regionOf, readMatte, filmZone, shiftShare, placedCard, landing, leakCount, strayBoxes, ranges, cardRecord, cardFace, CARD_RANKS, CARD_SUITS, MARGIN, STRAY, type CardRecord, overridesOf, cardInFront, describeTrack, RIM, plausible, keystone, skirtSound, turnOf, PLAUSIBLE, HOLD, type CardTrack, type Scene} from '../src/card-overlay.ts';
+import {sceneOf, restingQuad, restOf, poseAt, cardToImage, projectionOf, regionOf, readMatte, filmZone, shiftShare, placedCard, landing, leakCount, strayBoxes, ranges, cardRecord, cardFace, CARD_RANKS, CARD_SUITS, MARGIN, STRAY, type CardRecord, overridesOf, cardInFront, describeTrack, RIM, plausible, keystone, skirtSound, turnOf, restFade, restShare, PLAUSIBLE, HOLD, REST_FADE, type CardTrack, type Scene} from '../src/card-overlay.ts';
 import {signedArea, centre, dist, sound, type Pt} from '../src/card-track.ts';
 import {cameraFromContract, solveCamera, squareToQuad, onSquare, filmToScene} from '../src/scene3d-geometry.ts';
 
@@ -355,4 +355,45 @@ test('a card lying since an earlier film is laid in the size and place the dealt
     rest.forEach((p, i) => assert.ok(dist(p, lying[i]) < 1e-6 || lying.some(q => dist(p, q) < 1e-6), `scale ${scale} corner ${i}`));
     assert.ok(Math.abs(area(rest) - area(lying)) < 1e-6);
   }
+});
+
+test('under the line the drawn card takes over at rest by a fade: from the still frames before the rest, or over six frames after it; a card resting back up in one frame', async () => {
+  // the made-up deal shrinks its card in the two frames before it lies (28, 29): no still frame, so the fade runs over the six after the rest
+  const track = deal();
+  assert.deepEqual(restFade(track), {from: 30, to: 30 + REST_FADE.after});
+  // a card that lies on its place, give or take a pixel, from frame 20: the fade starts at most eight frames before the rest and ends there
+  const settle = (from: number, off = 1): CardTrack => ({...track, frames: track.frames.map(f => f.frame >= from && f.frame < 30 ? {...f, side: 'FRONT' as const, quad: shift(P4_FILM, off, -off / 2), edge: null} : f)});
+  assert.deepEqual(restFade(settle(20)), {from: 30 - REST_FADE.before, to: 30});
+  assert.deepEqual(restFade(settle(24)), {from: 24, to: 30});
+  // a short still run goes on past the rest, so that no fade is quicker than six frames; a card 3 px off is still moving
+  assert.deepEqual(restFade(settle(28)), {from: 28, to: 34});
+  assert.deepEqual(restFade(settle(20, 3)), {from: 30, to: 36});
+  // nothing fades where the card lies from the clip's first frame (a return: drawn in full since the deal before it), or never lies
+  const back: CardTrack = {width: 1764, height: 1174, edgeWindow: null, restFrom: 4, restQuad: P4_FILM, frames: Array.from({length: 10}, (_, i) => ({frame: i, side: 'FRONT' as const, quad: i < 4 ? shift(P4_FILM, 3 - i, 2) : P4_FILM, edge: null}))};
+  assert.equal(restFade(back), null); assert.equal(restFade({...track, restFrom: null, restQuad: null, frames: track.frames.slice(0, 14)}), null);
+  // a card that comes to rest back up (the hole card's deal) is swapped in one frame, however still it lies before its rest
+  const faceDown = settle(20); faceDown.frames = faceDown.frames.map(f => f.frame >= 20 ? {...f, side: 'BACK' as const} : f);
+  assert.equal(restFade(faceDown), null); assert.deepEqual(restShare(restFade(faceDown), 30), {card: 1, key: 1});
+  // the shares: nothing before the fade; the drawn card comes in first, under the film's card (its edge and shadow beside it), and the
+  // film's card is keyed away only once the drawn card is there in full, so the felt never shows through; all of both from the fade's
+  // last frame on, and without a fade
+  const fade = {from: 24, to: 30}, shares = Array.from({length: 12}, (_, i) => restShare(fade, 21 + i)), cards = shares.map(s => s.card), keys = shares.map(s => s.key);
+  assert.deepEqual(shares.slice(0, 3), [{card: 0, key: 0}, {card: 0, key: 0}, {card: 0, key: 0}]);
+  assert.ok(cards[3] > 0 && cards[3] < 0.6 && keys[3] === 0, 'its first frame: some of the drawn card, none of the key');
+  shares.forEach((s, i) => assert.ok(s.key === 0 || s.card === 1, `frame ${21 + i}: the key only under the whole drawn card`));
+  for (let i = 4; i <= 9; i++) assert.ok(cards[i] >= cards[i - 1] && keys[i] >= keys[i - 1] && keys[i] - keys[i - 1] < 0.35, `frame ${21 + i}: no more than 35 % of the key between two frames`);
+  assert.ok(keys[5] > 0 && keys[8] > 0.8 && keys[8] < 1, 'the key over most of the fade');
+  assert.deepEqual(shares.slice(9), [{card: 1, key: 1}, {card: 1, key: 1}, {card: 1, key: 1}]); assert.deepEqual(restShare(null, 0), {card: 1, key: 1});
+  // the proof's takes, measured on their tracks 2026-11-13 (skipped without them): seat 4 7 still frames, seat 7 9, the dealer's first
+  // card 15, the hole card's turn 2, seat 3 none; the hole card's deal rests back up and is swapped in one frame
+  const measured: [string, {from: number; to: number} | null][] = [['paow-giv-2-1-p4-04-01', {from: 111, to: 118}], ['paow-giv-2-1-p7-06-01', {from: 82, to: 90}], ['paow-giv-2-1-p3-02-01', {from: 121, to: 127}],
+    ['paow-giv-2-1-d-01-01', {from: 173, to: 181}], ['paow-giv-2-1-d-c2-03-01', null], ['paow-halkort-02-01', {from: 121, to: 127}]];
+  for (const [clip, want] of measured) { const file = `assets/tracking/${clip}/card-track.json`; if (fs.existsSync(file)) assert.deepEqual(restFade(JSON.parse(await readFile(file, 'utf8'))), want, clip); }
+  // the scene: only under the line, the drawn card lying under the film's card from the fade's first frame, the key's strength the share;
+  // in the film's shader the strength scales everything the key does to the dealt card, the seated card's in full
+  const deal3 = await readFile('src/scene3d-deal.ts', 'utf8'), film = await readFile('src/scene3d-film.ts', 'utf8');
+  assert.ok(deal3.includes("const fade = carry === 'film' && landed ? restFade(track!) : null, before = !!fade && at >= fade.from && at < landed!.from;") && deal3.includes('dealCard(drawn, at, choice, extra, restShare(fade, at), before ? landed!.from : at);'), 'the deal fades under the line only');
+  assert.ok(deal3.includes('held: inHand, strength: share.key, over:') && deal3.includes('contact: share.card * (') && deal3.includes('shown: share.card});'), 'the key takes its share, the drawn card and its contact shadow theirs');
+  assert.ok(deal3.includes('vec4(col * grade * fanShade(vWorld), shown)') && deal3.includes('u.shown.value = how.shown ?? 1;'), 'the opacity of the drawn card in its shader');
+  assert.ok(film.includes('float zone = smoothstep(-2., 2., quadIn(px, zoneQ)) * strength; if (zone <= 0.) return o;') && film.includes('cardHeld, cardStrength);') && film.includes('seatCore, 0., 1.);'), 'the shader scales the key of the dealt card');
 });
