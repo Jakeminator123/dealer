@@ -13,8 +13,7 @@ Detaljerna står där de hör hemma och kopieras inte hit:
 - `data/order-methods.json`: metoden som beställs per steg;
 - `HANDOFF.md`: läget nu och vem som äger vad.
 
-Skriven 2026-11-13 ur kod, register och kvitton. (V) = läst i kod, data eller kvitto; (S) = skattat. Det som bygger på
-filer som ännu inte är incheckade står som "skrivs 2026-11-13".
+Skriven 2026-11-13 ur kod, register och kvitton. (V) = läst i kod, data eller kvitto; (S) = skattat.
 
 ## Den enda vägen, kort
 
@@ -164,7 +163,7 @@ på korten").
 (`ELEVENLABS_API_KEY` i `.env.local`, betalt per tecken) och munnen ritas lokalt (V). `src/speech-lines.ts` säger vilken
 talfilm som säger en replik i rundan eller svarar i chatten (V). Talfilmer spelas på begäran, inte i vilans slump.
 I spelet säger dealern sina fasta repliker med talfilm och ljud, och chatten svarar med fasta svar; nyckeln `tal`
-(`repliker` eller `av`) slår av talfilmerna (skrivs 2026-11-13). Hela ämnet: [docs/TAL.md](../docs/TAL.md). Ägs av banan Tal
+(`repliker` eller `av`) slår av talfilmerna. Hela ämnet: [docs/TAL.md](../docs/TAL.md). Ägs av banan Tal
 (HANDOFF).
 
 ### Ordningen per dealer, och när hon är färdig

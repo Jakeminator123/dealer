@@ -62,8 +62,9 @@ inte vändning. Framsidan måste vara en ren, nyckelbar yta eftersom Scout best�
     registren (`data/order-methods.json`, `data/media-roles.json`, `data/dealers.json`, `data/order-policy.json`).
     Underagenter lägger, hämtar och granskar.
   - **Kort (huvudagenten):** det ritade kortet på filmerna, kortspåret (`src/card-track.ts`, `tools/track-card.ts`) och
-    kortproven. Kortmatten ur filmens eget kort väntar som patch
-    (`D:/dealer-scratch/tmp/dealer-bf/klon-ut/kortmatt.patch`, läget i `D:/dealer-scratch/tmp/dealer-bf/LASMIG.md`).
+    kortproven. Kortmatten ur filmens eget kort är inlagd som ett avslaget val (`cardMethod: 'matte'`, 96db96a; "ja som
+    val i labbet, nej för spelet"). Läget och det som är prövat: `D:/dealer-scratch/tmp/dealer-bf/LASMIG.md` (metoden och
+    måtten per plats) och `D:/dealer-scratch/tmp/huvudagent11/kort/` (nattens spår, bilder och jämförelser).
   - **Scen (`dealer-f6`):** bordet, rummet och ljuset i 3D-scenen (`src/scene3d-table.ts`, `src/scene3d-room.ts`,
     `src/scene3d-ui.ts`, `src/scene3d-view.ts`, `data/scene-materials.json`, `data/scene-rooms.json`,
     `data/scene-presets/`), och sidovinkeln av Paow som egna Prov.
@@ -203,7 +204,9 @@ Det som hindrar en runda först. Han kan svara rad för rad.
    hjälpte inte kortet. Vilken rörelse är viktigast: huvud, blick eller högerarm?
 6. **Ingångsfilmen** (`paow-table-arrive-wide-01`): hon står stilla i ungefär två sekunder innan hon sätter sig. Duger det,
    eller ska den göras om?
-7. **De ritade korten:** kortagentens fynd kommer 09:05 och står då under "Kända brister".
+7. **De ritade korten:** två av de tre felen i hans skärmbilder är borta för de tagningar som spelas; dubbelkortet vid
+   3D-skon är kvar (se "Kända brister"). Vill han ha korten större som förval? Det stora kortet han minns på plats 4 var
+   skalan 1,65–2 den 11 november; förvalet är 1,2, och reglaget heter nu Kortens storlek (0,8–2) i Scen.
 8. **En andra spelarfigur, "Astrid",** som kommer in från sidan och satsar: hans önskemål, inte påbörjat.
 9. **Bordets tryck:** ska trycket följa bordets storlek (`tableSize`)? Scenbanans fråga.
 10. **Talet:** två röst-id han gav finns inte i något konto eller delat bibliotek som nyckeln ser (Jessica står); ett tomt
@@ -276,7 +279,7 @@ Det som hindrar en runda först. Han kan svara rad för rad.
   högerarm aningen mer när HENNES vänsterarm dealar." Mall 7 (`SAY.moveOwn`, `SAY.moveBoth`).
 - **Returen efter en tvåhandsgiv** (samma ord): "OM hon har någon deal där hon använder sin vänster och högerarm så
   måste retreat/tillbakagången vara annorlunda då den andra armen är den som är utsträckt." Mall 7 (`SAY.backPass`) och,
-  i rundan, en retur som kommer tillbaka med den hand som är ute (skrivs 2026-11-13: `motion.releaseHand`).
+  i rundan, en retur som kommer tillbaka med den hand som är ute (`motion.releaseHand`).
 - **Budgeten** (2026-11-13 cirka 07:25): "jag ger 6000 mer i budget eller till krediterna tar slut för runway".
   Dagstaket är 14 000 för 2026-11-13 (`data/order-policy.json`); golvet 2 000 och 400 per beställning står.
 - **Önskemål samma natt, inte byggda:** att kunna slå av de ritade korten; ett tredje och fjärde dealerkort (platsen
@@ -338,8 +341,21 @@ Det som hindrar en runda först. Han kan svara rad för rad.
 
 ## Kända brister
 
-- **De ritade korten** (Jakob 2026-11-13: "Det lixom kletar fast sig på korten"; brytaren Ritade kort slår av dem):
-  kortagentens fynd förs in här 2026-11-13 efter 09:05.
+- **De ritade korten** (Jakob 2026-11-13: "Det lixom kletar fast sig på korten"; brytaren Ritade kort slår av dem).
+  Kortagentens fynd samma morgon, ur hans två skärmbilder:
+  - Dubbelt kort vid skon, som ett klistermärke: 3D-skon döljer filmens sko, och det dragna kortet klipps inte av skons
+    öppning. Kvar på alla platser. Ligger i `src/game3d-props.ts` och skoprovet i `src/scene3d-ui.ts`.
+  - Filmens gula eller blå yta lyser igenom: direkt efter vändningen är filmens framsida mörkt turkos, och spåret följde
+    då bara ett hörn (den lilla vita kortbiten i hans andra bild; borta). Kvar: det turkosa kortet syns i cirka fyra
+    rutor, vilket kräver en bredare regel för blått i spåraren, prövad mot grönskärmen. Där kortet är dolt i hennes
+    hand (plats 1 och 2) visas nu filmens eget kort, och det ritade kommer när kortet ligger.
+  - Kort som inte följer handen, och blixten över hela bilden: fyrhörningar med korsade hörn i spåret. Spåraren skriver
+    inga sådana längre, och ritningen (`poseAt` i `src/card-overlay.ts`, `lay` i `src/scene3d-deal.ts`) ritar inget
+    kort på en sådan ruta.
+  - Kvar i övrigt: spåren på plats 3 och 7, dealerns kort och hålkortet är delvis fel (kortet syns som filmens i 5–14
+    rutor); Pamelas spår är inte omgjorda med de nya reglerna. Tabellen per tagning och bilderna:
+    `D:/dealer-scratch/tmp/huvudagent11/kort/`.
+  - Kortens storlek bestäms av `cardScale` gånger kontraktets kort (63 × 88 mm); planen ger bara plats och riktning.
 - **Det bandet inte kan än** står samlat i `tools/dealer-line.md` ("Vad bandet inte kan än"): ett tredje eller fjärde
   kort, helfiguren, ankare 2.2, landningsbild, keystone och ankare 1 som steg i Beställ, och retur till vila från en
   plats.
@@ -354,7 +370,7 @@ Det som hindrar en runda först. Han kan svara rad för rad.
 - **Paow ser lite smal ut:** bildmodellen gav henne Pamelas kroppsbredd under ett huvud som är 8,7 % högre (mätt
   2026-11-13, `D:/dealer-scratch/tmp/huvudagent11/proportioner/`); bilden är inte hoptryckt i pixlarna.
 - **Två röst-id** för ElevenLabs som Jakob gav finns inte i kontot; spelet använder rösten Jessica tills han har lyssnat
-  (`src/game-page.ts`, skrivs 2026-11-13).
+  (`src/game-page.ts`).
 - **Testerna utan FFmpeg:** elva tester hoppas över där FFmpeg saknas (`tools/film-after.test.ts`,
   `tools/film-fix.test.ts`, `tools/order-bring.test.ts`, `tools/register-order.test.ts`, `tools/speech-plan.test.ts`),
   och tre i `tools/order-images.test.ts` kräver bankens filmer; GitHubs kontroll kör därför inte dem, den här datorn gör
