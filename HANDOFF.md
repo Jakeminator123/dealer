@@ -213,7 +213,10 @@ Det som hindrar en runda först. Han kan svara rad för rad.
    eller ska den göras om?
 7. **De ritade korten:** två av de tre felen i hans skärmbilder är borta för de tagningar som spelas; dubbelkortet vid
    3D-skon är kvar (se "Kända brister"). Vill han ha korten större som förval? Det stora kortet han minns på plats 4 var
-   skalan 1,65–2 den 11 november; förvalet är 1,2, och reglaget heter nu Kortens storlek (0,8–2) i Scen.
+   skalan 1,65–2 den 11 november; förvalet är 1,2, och reglaget heter nu Kortens storlek (0,8–2) i Scen. Brytaren Ritade
+   kort tar i dag bort alla ritade kort, även de liggande, så bordet visar bara filmens eget kort för den giv som pågår
+   (sett i scenbanans inspelning med `cards=0`). Förslag, inte byggt: ett tredje läge där kortet ritas först när det
+   ligger och inget ritas över kortet i hennes hand, vilket är det han beskrev ("kletar fast sig på korten").
 8. **En andra spelarfigur, "Astrid",** som kommer in från sidan och satsar: hans önskemål, inte påbörjat.
 9. **Bordets tryck:** ska trycket följa bordets storlek (`tableSize`)? Scenbanans fråga.
 10. **Talet:** två röst-id han gav finns inte i något konto eller delat bibliotek som nyckeln ser (Jessica står); ett tomt
