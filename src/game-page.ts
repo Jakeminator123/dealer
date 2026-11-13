@@ -396,7 +396,10 @@ scene.onFrame(() => {
   overlay.place({left: box.left - host.left, top: box.top - host.top, width: box.width, height: box.height}, anchors());
 });
 render();
-introOver = () => { introOn = false; film.calm = false; render(); }; // the film before the game is over: now she says her opening line, and her gestures may come
+// The film before the game is over: her gestures may come again, and after a beat (INTRO_BEAT_MS, so that she does not begin to speak in
+// the frame the film is gone) she says her opening line.
+const INTRO_BEAT_MS = 700;
+introOver = () => { film.calm = false; setTimeout(() => { introOn = false; render(); }, INTRO_BEAT_MS); };
 // The film ends in her rest pose, held for its last 0.75 s. A little before its end (the module's onLead), while the film still
 // covers the stage, her rest is started over with a cut from its first frame, which is that pose (every rest film begins on the
 // same frame): the cut is not seen, and the fade goes from her to her. Queued instead, the rest that played went on with her head
