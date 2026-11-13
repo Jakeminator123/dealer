@@ -20,7 +20,7 @@
     "pass": false,
     "basis": "SOURCE_FRAME_REVIEW",
     "idle": {
-      "weight": 1.5,
+      "weight": 4,
       "calm": false,
       "label": "vinkar och ler",
       "onRequest": false

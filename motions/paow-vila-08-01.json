@@ -20,7 +20,7 @@
     "pass": false,
     "basis": "SOURCE_FRAME_REVIEW",
     "idle": {
-      "weight": 5,
+      "weight": 6,
       "calm": false,
       "label": "nickar med lite ironi",
       "onRequest": false
