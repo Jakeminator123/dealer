@@ -95,12 +95,12 @@ export function bakeJob(bank: BankId, releaseSha256: string, rows: PlanRow[], au
   return {schemaVersion: 1, op: 'bake', ttlSeconds, binding: {schemaVersion: 1, releaseSha256, dealerId, workerAvatar, sourceSetSha256, avatarSha256, bankReceiptSha256, requestId},
     karta: rows, audio: {encoding: 's16le', rate: 24000, channels: 1, sha256: audio.sha256, base64: audio.base64}};
 }
-/** Whether what was heard in a sound is the line's words: letters and digits only, whatever the case and the punctuation. The one
- * number a dealer says is twenty-one, which a listener writes in digits; any other number heard as digits does not match and is
- * left for a person to read. */
+/** Whether what was heard in a sound is the line's words: letters and digits only, whatever the case, the punctuation and where
+ * the words are parted ("ikväll" for "i kväll"). The one number a dealer says is twenty-one, which a listener writes in digits;
+ * any other number heard as digits does not match and is left for a person to read. */
 export function sameWords(heard: string, text: string): boolean {
-  const words = (s: string) => s.toLowerCase().normalize('NFC').replace(/[^\p{L}\p{N}]+/gu, ' ').replace(/\b(tjugo ?ett|twenty ?one)\b/g, '21').trim();
-  return words(heard) === words(text);
+  const letters = (s: string) => s.toLowerCase().normalize('NFC').replace(/[^\p{L}\p{N}]+/gu, ' ').replace(/\b(tjugo ?ett|twenty ?one)\b/g, '21').replaceAll(' ', '');
+  return letters(heard) === letters(text);
 }
 /** What the answer's video must say for a clip of so many frames (bake.py's contract), apart from its bytes and their hash. */
 export const answerVideo = (frames: number) => ({schemaVersion: 1, frameCount: frames, fps: RENDER.fps, width: RENDER.width, height: RENDER.height, videoTrackId: 1, audioTrackId: 2, audioSampleRate: 48000});

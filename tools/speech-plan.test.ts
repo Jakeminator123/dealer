@@ -70,6 +70,8 @@ test('what was heard is compared with the line by its words, not its commas', ()
   assert.ok(sameWords('Dealern är över 21. Grattis, bordet vinner.', 'Dealern är över tjugoett! Grattis, bordet vinner.'), 'twenty-one is heard in digits');
   assert.ok(!sameWords('Dealern är över 20. Grattis, bordet vinner', 'Dealern är över tjugoett! Grattis, bordet vinner.'));
   assert.ok(!sameWords('Lägger en satser, tack!', 'Lägg era insatser, tack.'));
+  assert.ok(sameWords('Jag mår fint, tack. Korten är på gott humör ikväll.', 'Jag mår fint, tack. Korten är på gott humör i kväll.'), 'where the words are parted is not heard');
+  assert.ok(!sameWords('Jag heter Paul och jag är din dealer i kväll', 'Jag heter Paow, och jag är din dealer i kväll.'));
 });
 
 test('the bridge keeps a pixel a pixel, on even offsets', () => {
