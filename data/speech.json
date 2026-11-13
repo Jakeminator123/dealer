@@ -23,7 +23,41 @@
     "dealerbust": "Dealern spricker",
     "win": "Vinst",
     "push": "Lika",
-    "lose": "Förlust"
+    "lose": "Förlust",
+    "chat1": "Chatt, svar 1",
+    "chat2": "Chatt, svar 2",
+    "chat3": "Chatt, svar 3",
+    "chat4": "Chatt, svar 4",
+    "dealerplays": "Dealern spelar",
+    "hej": "Chatt, hälsning",
+    "namn": "Chatt, namn",
+    "hurmardu": "Chatt, hur mår du",
+    "regler": "Chatt, regler",
+    "varsagod": "Chatt, varsågod",
+    "detsamma": "Chatt, detsamma",
+    "otur": "Chatt, otur",
+    "grattis": "Chatt, grattis",
+    "hejda": "Chatt, hej då",
+    "vetej": "Chatt, vet ej"
+  },
+  "chat": {
+    "sv": {
+      "chat1": "Tack! Lycka till.",
+      "chat2": "Roligt att du är här.",
+      "chat3": "Det ordnar vi.",
+      "chat4": "Lycka till med nästa hand.",
+      "dealerplays": "Dealern spelar.",
+      "hej": "Hej och välkommen till bordet!",
+      "namn": "Jag heter Paow, och jag är din dealer i kväll.",
+      "hurmardu": "Jag mår fint, tack. Korten är på gott humör i kväll.",
+      "regler": "Närmast tjugoett vinner, men gå inte över.",
+      "varsagod": "Varsågod, det är bara roligt.",
+      "detsamma": "Tack detsamma!",
+      "otur": "Det vänder snart, det brukar det göra.",
+      "grattis": "Grattis! Det där var snyggt spelat.",
+      "hejda": "Tack för i kväll, välkommen tillbaka!",
+      "vetej": "Det kan jag tyvärr inte svara på, men korten ljuger aldrig."
+    }
   },
   "lines": {
     "sv": {

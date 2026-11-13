@@ -2,6 +2,7 @@
 //   node tools/speech.ts check
 //   node tools/speech.ts bank  --dealer paow
 //   node --env-file=.env.local tools/speech.ts say --dealer paow --line placebets [--lang sv] [--voice <name>] [--text "…" --as <word>] [--again ja]
+//   node tools/speech.ts reel  --dealer paow --lines placebets,goodluck,blackjack,win [--name demo] [--rests <rest film>,…]
 //   node tools/speech.ts proof --dealer paow
 // The mouth is drawn by Scoutgaming's lip-sync renderer (services/moving-gpu-worker in Jakeminator123/scoutgaming, MuseTalk), run as
 // the image data/speech.json names, in Docker inside WSL on this machine's graphics card and without network. Nothing is sent to
@@ -16,7 +17,10 @@
 //          the film's own frames. Written to assets/speech/<dealer>/<dealer>-tal-<line>-<lang>-<nn>/: tts.mp3, job.json, worker.mp4
 //          (the renderer's answer, 1080 × 1920), source.mp4 (the bank's frame, 24 frames a second, H.264 CRF 12, AAC sound) and
 //          receipt.json. The film starts and ends on the rest film's first played frame, as every rest film does.
-//   proof  gathers the newest take of every line in assets/proofs/<dealer>-tal/ with a proof.json, for the studio's view Prov.
+//   reel   one film of several lines in a row with rest in between, made from the takes that exist (nothing is read or rendered
+//          anew): assets/speech/<dealer>/<dealer>-tal-reel-<name>/source.mp4 and receipt.json. A film to show, not a take of the bank.
+//   proof  gathers the reels and the newest take of every line in assets/proofs/<dealer>-tal/ with a proof.json, for the studio's
+//          view Prov.
 // A film made here is a take like any other: it is reviewed frame by frame (tools/film-review.md) before Jakob judges it.
 import {readFile, writeFile, mkdir, mkdtemp, rm, rename, copyFile, readdir, stat, open} from 'node:fs/promises';
 import {existsSync, createReadStream} from 'node:fs';
@@ -37,7 +41,7 @@ const LEVEL = 6, MARGIN = 40, FEATHER = 24;
 
 export type Voice = {provider: 'elevenlabs'; voiceId: string; name: string; modelId: string; settings: Record<string, number | boolean>};
 export type Register = {schemaVersion: 1; renderer: {image: string; wsl: string}; voices: Record<string, Voice>;
-  dealers: Record<string, {bankId: string; rest: string; voice: string; language: string}>; names?: Record<string, string>; lines: Record<string, Record<string, string>>};
+  dealers: Record<string, {bankId: string; rest: string; voice: string; language: string}>; names?: Record<string, string>; lines: Record<string, Record<string, string>>; chat?: Record<string, Record<string, string>>};
 export async function readRegister(file = path.join(repo, 'data/speech.json')): Promise<Register> {
   const r = JSON.parse(await readFile(file, 'utf8')) as Register;
   if (r.schemaVersion !== 1 || !/^[\w./-]+@sha256:[a-f0-9]{64}$/.test(r.renderer?.image ?? '')) throw Error('data/speech.json: renderer.image ska vara en image med digest (…@sha256:…).');
@@ -229,12 +233,20 @@ async function toPcm(mp3: string, out: string): Promise<Buffer> {
   const pcm = await readFile(out); if (!pcm.length || pcm.length % 2) throw Error('Ljudet blev tomt efter omvandlingen.');
   return pcm;
 }
+const FILM_BYTES = BRIDGE.film.width * BRIDGE.film.height * 3 / 2, CLIP_BYTES = RENDER.width * RENDER.height * 3 / 2;
+type Raw = {frames: number; read(frame: number): Promise<Buffer>; close(): Promise<void>};
+/** A film of the bank decoded once to raw 4:2:0 in the work folder, so that any of its frames can be read in any order. */
+async function openRaw(film: string, work: string): Promise<Raw> {
+  const raw = path.join(work, `${sha256(path.resolve(film)).slice(0, 16)}.yuv`), size = probe(film);
+  if (size.width !== BRIDGE.film.width || size.height !== BRIDGE.film.height) throw Error(`${film} är ${size.width} × ${size.height}; bankens ruta är ${BRIDGE.film.width} × ${BRIDGE.film.height}.`);
+  await ff(['-y', '-i', film, '-map', '0:v:0', '-an', '-fps_mode', 'passthrough', '-f', 'rawvideo', '-pix_fmt', 'yuv420p', raw]);
+  const handle = await open(raw, 'r'), frames = (await handle.stat()).size / FILM_BYTES;
+  return {frames, close: async () => { await handle.close(); await rm(raw, {force: true}); },
+    read: async frame => { if (!Number.isInteger(frame) || frame < 0 || frame >= frames) throw Error(`Planen pekar på ruta ${frame}; ${path.basename(path.dirname(film))} har ${frames}.`); const b = Buffer.allocUnsafe(FILM_BYTES); await handle.read(b, 0, FILM_BYTES, frame * FILM_BYTES); return b; }};
+}
 /** Lays the renderer's clip back into the film's frames and writes the film with the clip's sound. Returns what was laid back. */
 export async function layBack(film: string, worker: string, frames: number[], out: string, work: string): Promise<{box: Box; changed: Box; frames: number}> {
-  const {width: W, height: H} = BRIDGE.film, filmBytes = W * H * 3 / 2, clipBytes = RENDER.width * RENDER.height * 3 / 2, raw = path.join(work, 'film.yuv');
-  await ff(['-y', '-i', film, '-map', '0:v:0', '-an', '-fps_mode', 'passthrough', '-f', 'rawvideo', '-pix_fmt', 'yuv420p', raw]);
-  const handle = await open(raw, 'r'), filmFrames = (await handle.stat()).size / filmBytes;
-  const read = async (frame: number) => { if (!Number.isInteger(frame) || frame < 0 || frame >= filmFrames) throw Error(`Planen pekar på ruta ${frame}; filmen har ${filmFrames}.`); const b = Buffer.allocUnsafe(filmBytes); await handle.read(b, 0, filmBytes, frame * filmBytes); return b; };
+  const {width: W, height: H} = BRIDGE.film, clipBytes = CLIP_BYTES, opened = await openRaw(film, work), read = opened.read, handle = {close: opened.close};
   try {
     let changed: Box | null = null, k = 0;
     for await (const clip of rawFrames(worker, clipBytes)) { if (k >= frames.length) throw Error('Rendererns klipp är längre än planen.'); changed = unionBox(changed, changedBox(await read(filmFrameOf(frames[k++])), clip, BRIDGE, LEVEL)); }
@@ -247,12 +259,80 @@ export async function layBack(film: string, worker: string, frames: number[], ou
       for await (const clip of clips) { const frame = await read(filmFrameOf(frames[n++])); blendFrame(frame, clip, box, mask); if (!stdin.write(frame)) await new Promise(resolve => stdin.once('drain', resolve)); }
     });
     return {box, changed, frames: frames.length};
-  } finally { await handle.close(); await rm(raw, {force: true}); }
+  } finally { await handle.close(); }
+}
+
+// ── a reel: several lines one after the other, with rest in between ───────────
+type TakeReceipt = {id: string; line: string; language: string; text: string; voice: Voice; kind?: string; sound: {heard?: string | null; seconds: number}; plan: {restFilm: string; rows: [string, number, number][]};
+  laidBack: {box: Box; feather: number}; output: {frames: number; sha256: string}};
+/** The finished takes of a dealer's lines, oldest first, without the ones the independent review failed. */
+async function finishedTakes(base: string): Promise<{id: string; receipt: TakeReceipt}[]> {
+  const out: {id: string; receipt: TakeReceipt}[] = [];
+  for (const id of existsSync(base) ? (await readdir(base)).sort() : []) { const file = path.join(base, id, 'receipt.json'), review = path.join(base, id, 'review.json');
+    if (id === 'bank' || !existsSync(file) || !existsSync(path.join(base, id, 'source.mp4'))) continue;
+    const receipt = JSON.parse(await readFile(file, 'utf8')) as TakeReceipt; if (receipt.kind === 'reel') continue;
+    if (existsSync(review) && (JSON.parse(await readFile(review, 'utf8')) as {verdict?: string}).verdict === 'failed') continue;
+    out.push({id, receipt}); }
+  return out;
+}
+export type ReelOptions = {dealer: string; lines: string[]; name?: string; rests?: string[]; log?: (text: string) => void};
+/**
+ * One film of several lines in a row: rest, a line, rest, the next line, … and rest last, all at 24 frames a second in the bank's
+ * frame, with sound. Every piece begins and ends on a rest film's first played frame, so the cuts are the bank's own cuts between
+ * rest clips. The lines are not rendered again: each line's frames are laid back from its take's kept answer (worker.mp4) exactly
+ * as its film was made, and its sound is the take's own, placed where the renderer placed it (0,22 s into the line).
+ */
+export async function reel(register: Register, root: string, options: ReelOptions): Promise<{dir: string; id: string}> {
+  const log = options.log ?? console.log, d = register.dealers[options.dealer]; if (!d) throw Error(`data/speech.json har ingen dealer ${options.dealer}.`);
+  const name = options.name ?? 'demo', own = register.voices[d.voice]?.name, base = path.join(root, 'assets/speech', options.dealer), id = `${options.dealer}-tal-reel-${name}`, dir = path.join(base, id);
+  if (!/^[a-z0-9]{1,24}$/.test(name) || !options.lines.length) throw Error('Ange --lines (repliker med komma emellan) och ett namn med små bokstäver och siffror.');
+  const all = await finishedTakes(base), takes = options.lines.map(line => { const hit = all.filter(t => t.receipt.line === line && t.receipt.language === d.language && t.receipt.voice.name === own).at(-1);
+    if (!hit) throw Error(`Ingen färdig tagning av ${line} med rösten ${own}.`); return hit; });
+  const restFilms = (options.rests?.length ? options.rests : [d.rest]).map(film => `assets/motions/${film}/source.mp4`), filmOf = (rel: string) => path.join(root, rel);
+  for (const rel of restFilms) if (!existsSync(filmOf(rel))) throw Error(`${rel} finns inte.`);
+  const work = await mkdtemp(path.join(existsSync(scratch) ? scratch : os.tmpdir(), 'speech-')), raws = new Map<string, Raw>();
+  const raw = async (rel: string) => { let r = raws.get(rel); if (!r) { r = await openRaw(filmOf(rel), work); raws.set(rel, r); } return r; };
+  try {
+    // The pieces: which film each frame comes from, and for a line the renderer's frames and the sound.
+    type Piece = {kind: 'rest' | 'line'; source: string; film: string; frames: number[]; text?: string; take?: {id: string; receipt: TakeReceipt}; pcm?: Buffer};
+    const pieces: Piece[] = [];
+    const rest = async (i: number) => { const rel = restFilms[i % restFilms.length], n = (await raw(rel)).frames; pieces.push({kind: 'rest', source: rel.split('/')[2], film: rel, frames: Array.from({length: clipLength(n)}, (_, k) => filmFrameOf(k))}); };
+    for (const [i, take] of takes.entries()) { await rest(i);
+      const pcm = await toPcm(path.join(base, take.id, 'tts.mp3'), path.join(work, `${take.id}.pcm`)), frames = take.receipt.plan.rows.flatMap(([, first, count]) => Array.from({length: count}, (_, k) => filmFrameOf(first + k)));
+      if (lineFrames(pcm.length) !== frames.length || frames.length !== take.receipt.output.frames) throw Error(`${take.id}: ljudet ger ${lineFrames(pcm.length)} rutor men tagningen har ${frames.length}; gör om tagningen.`);
+      pieces.push({kind: 'line', source: take.id, film: take.receipt.plan.restFilm, frames, text: take.receipt.text, take, pcm}); }
+    await rest(takes.length);
+    const total = pieces.reduce((n, p) => n + p.frames.length, 0), sound = Buffer.alloc(total * (RENDER.pcmRate / RENDER.fps) * 2); let at = 0;
+    for (const p of pieces) { if (p.pcm) p.pcm.copy(sound, (at * (RENDER.pcmRate / RENDER.fps) + RENDER.leadSamples) * 2); at += p.frames.length; }
+    const soundFile = path.join(work, 'reel.pcm'), out = path.join(dir, 'source.mp4'); await mkdir(dir, {recursive: true}); await writeFile(soundFile, sound);
+    log(`${id}: ${pieces.length} delar, ${total} rutor (${(total / RENDER.fps).toFixed(1)} s). Lägger ihop …`);
+    const {width: W, height: H} = BRIDGE.film, cuts: {after: string; before: string; meanLumaDifference: number}[] = [];
+    const differ = (a: Buffer, b: Buffer) => { let sum = 0, n = 0; for (let y = 0; y < H; y += 2) for (let x = 0; x < W; x += 2) { sum += Math.abs(a[y * W + x] - b[y * W + x]); n++; } return Number((sum / n).toFixed(2)); };
+    await ff(['-y', '-f', 'rawvideo', '-pix_fmt', 'yuv420p', '-s', `${W}x${H}`, '-r', String(RENDER.fps), '-i', 'pipe:0', '-f', 's16le', '-ar', String(RENDER.pcmRate), '-ac', '1', '-i', soundFile, '-map', '0:v:0', '-map', '1:a:0',
+      '-c:v', 'libx264', '-preset', 'slow', '-crf', '12', '-pix_fmt', 'yuv420p', '-c:a', 'aac', '-b:a', '128k', '-ar', '48000', '-movflags', '+faststart', out], async stdin => {
+      let last: Buffer | null = null, before = '';
+      for (const p of pieces) { const film = await raw(p.film), mask = p.take ? featherMask(p.take.receipt.laidBack.box.w, p.take.receipt.laidBack.box.h, p.take.receipt.laidBack.feather) : null;
+        const clips = p.take ? rawFrames(path.join(base, p.take.id, 'worker.mp4'), CLIP_BYTES) : null;
+        for (const [k, index] of p.frames.entries()) { const frame = await film.read(index);
+          if (clips && mask) { const clip = await clips.next(); if (clip.done) throw Error(`${p.source}: rendererns klipp är kortare än planen.`); blendFrame(frame, clip.value, p.take!.receipt.laidBack.box, mask); }
+          if (k === 0 && last) cuts.push({after: before, before: p.source, meanLumaDifference: differ(last, frame)});
+          if (k === p.frames.length - 1) { last = Buffer.from(frame); before = p.source; }
+          if (!stdin.write(frame)) await new Promise(resolve => stdin.once('drain', resolve)); }
+        if (clips) await clips.return(undefined); }
+    });
+    const made = probe(out); if (made.frames !== total || !made.audio) throw Error(`Filmen blev ${made.frames} rutor, ljud ${made.audio}; väntat ${total} med ljud.`);
+    let start = 0; const segments = pieces.map(p => { const s = {kind: p.kind, source: p.source, frames: p.frames.length, startSeconds: Number((start / RENDER.fps).toFixed(3)), ...(p.text ? {text: p.text, soundStartSeconds: Number((start / RENDER.fps + RENDER.leadSamples / RENDER.pcmRate).toFixed(3))} : {})}; start += p.frames.length; return s; });
+    await writeFile(path.join(dir, 'receipt.json'), json({schemaVersion: 1, id, dealer: options.dealer, role: 'film', kind: 'reel', createdAt: new Date().toISOString(), by: 'tools/speech.ts reel', voice: own, segments, cuts,
+      output: {path: 'source.mp4', sha256: await sha256File(out), width: made.width, height: made.height, fps: RENDER.fps, frames: made.frames, seconds: Number((total / RENDER.fps).toFixed(2)), audio: true, encoding: ENCODING.replace('as the renderer wrote it', '128 kbit/s')},
+      note: 'A film to show the lines in a row; not a take of the bank. The rest films run at 24 frames a second here (every frame kept), as inside the spoken films.'}));
+    log(`${id}: klart → ${path.relative(root, out).replaceAll('\\', '/')} (${(total / RENDER.fps).toFixed(1)} s; största skillnad i ett klipp ${Math.max(...cuts.map(c => c.meanLumaDifference))} nivåer)`);
+    return {dir, id};
+  } finally { for (const r of raws.values()) await r.close().catch(() => {}); await rm(work, {recursive: true, force: true}); }
 }
 export type SayOptions = {dealer: string; line: string; language?: string; voice?: string; text?: string; again?: boolean; log?: (text: string) => void};
 export async function say(register: Register, root: string, options: SayOptions): Promise<{dir: string; id: string}> {
   const log = options.log ?? console.log, d = register.dealers[options.dealer]; if (!d) throw Error(`data/speech.json har ingen dealer ${options.dealer}.`);
-  const language = options.language ?? d.language, voiceName = options.voice ?? d.voice, voice = register.voices[voiceName], text = options.text ?? register.lines[language]?.[options.line];
+  const language = options.language ?? d.language, voiceName = options.voice ?? d.voice, voice = register.voices[voiceName], text = options.text ?? register.lines[language]?.[options.line] ?? register.chat?.[language]?.[options.line];
   if (!voice) throw Error(`data/speech.json har ingen röst ${voiceName}.`);
   if (!text) throw Error(`Ingen text för ${options.line} på ${language}; ge --text.`);
   if (!/^[a-z0-9]{1,24}$/.test(options.line) || !/^[a-z]{2}$/.test(language)) throw Error('Repliken ska heta med små bokstäver och siffror, språket med två bokstäver.');
@@ -311,29 +391,34 @@ export async function say(register: Register, root: string, options: SayOptions)
 
 /** The newest finished take of every line, gathered for the studio's view Prov. */
 export async function proof(register: Register, root: string, dealer: string, log = console.log): Promise<string> {
-  const base = path.join(root, 'assets/speech', dealer), dir = path.join(root, 'assets/proofs', `${dealer}-tal`), newest = new Map<string, {id: string; receipt: Record<string, any>}>();
+  const base = path.join(root, 'assets/speech', dealer), dir = path.join(root, 'assets/proofs', `${dealer}-tal`), newest = new Map<string, {id: string; receipt: Record<string, any>}>(), reels: {id: string; receipt: Record<string, any>}[] = [];
   for (const id of existsSync(base) ? (await readdir(base)).sort() : []) { const file = path.join(base, id, 'receipt.json'); if (id === 'bank' || !existsSync(file) || !existsSync(path.join(base, id, 'source.mp4'))) continue;
-    const receipt = JSON.parse(await readFile(file, 'utf8')); newest.set(`${receipt.line}-${receipt.language}-${receipt.voice.name}`, {id, receipt}); }
+    const receipt = JSON.parse(await readFile(file, 'utf8')); if (receipt.kind === 'reel') reels.push({id, receipt}); else newest.set(`${receipt.line}-${receipt.language}-${receipt.voice.name}`, {id, receipt}); }
   if (!newest.size) throw Error(`Inga färdiga repliker för ${dealer}.`);
   await mkdir(dir, {recursive: true});
   // The dealer's own voice first, in the register's order of lines; other voices after. A label is a short name, a colon and the
   // rest (the view splits there). review.json beside a take ({verdict, note}, written after the independent review) is shown.
-  const d = register.dealers[dealer], own = register.voices[d?.voice ?? '']?.name, order = (line: string, language: string) => { const i = Object.keys(register.lines[language] ?? {}).indexOf(line); return i < 0 ? 999 : i; };
+  // The films of several lines in a row come first, then the round's lines in their order, then the chat's replies; other voices last.
+  const d = register.dealers[dealer], own = register.voices[d?.voice ?? '']?.name, order = (line: string, language: string) => { const i = [...Object.keys(register.lines[language] ?? {}), ...Object.keys(register.chat?.[language] ?? {})].indexOf(line); return i < 0 ? 999 : i; };
   const takes = [...newest.values()].sort((a, b) => Number(a.receipt.voice.name !== own) - Number(b.receipt.voice.name !== own) || order(a.receipt.line, a.receipt.language) - order(b.receipt.line, b.receipt.language) || a.id.localeCompare(b.id));
   const labels: Record<string, string> = {}, verdicts: Record<string, string> = {}; let reviewed = 0;
-  for (const {id, receipt} of takes) { const name = `${id}.mp4`, reviewFile = path.join(base, id, 'review.json'); await copyFile(path.join(base, id, 'source.mp4'), path.join(dir, name));
-    const review = existsSync(reviewFile) ? JSON.parse(await readFile(reviewFile, 'utf8')) as {verdict?: string; score?: string; note?: string} : null, title = register.names?.[receipt.line] ?? receipt.line;
+  const reviewOf = async (id: string) => { const file = path.join(base, id, 'review.json'); return existsSync(file) ? JSON.parse(await readFile(file, 'utf8')) as {verdict?: string; score?: string; note?: string} : null; };
+  const verdictOf = (review: {verdict?: string} | null) => ['ok', 'remarks', 'failed'].includes(review?.verdict ?? '') ? review!.verdict! : 'unreviewed';
+  for (const {id, receipt} of reels) { const name = `${id}.mp4`, review = await reviewOf(id), said = (receipt.segments as {kind: string}[]).filter(s => s.kind === 'line').length; await copyFile(path.join(base, id, 'source.mp4'), path.join(dir, name));
+    labels[name] = `Demo: ${said} repliker i följd med vila emellan. ${receipt.voice}, ${String(Math.round(receipt.output.seconds))} s.${review?.note ? ` Granskaren${review.score ? ` ${review.score}` : ''}: ${review.note}` : ''}`; verdicts[name] = verdictOf(review); }
+  for (const {id, receipt} of takes) { const name = `${id}.mp4`; await copyFile(path.join(base, id, 'source.mp4'), path.join(dir, name));
+    const review = await reviewOf(id), title = register.names?.[receipt.line] ?? receipt.line;
     if (review) reviewed++;
     const misheard = typeof receipt.sound.heard === 'string' && !sameWords(receipt.sound.heard, receipt.text);
     labels[name] = `${title}${receipt.voice.name === own ? '' : `, röst ${receipt.voice.name}`}: "${receipt.text}" ${receipt.voice.name}, ${(receipt.output.frames / RENDER.fps).toFixed(1).replace('.', ',')} s.${misheard ? ` Avlyssnat som "${receipt.sound.heard}".` : ''}${review?.note ? ` Granskaren${review.score ? ` ${review.score}` : ''}: ${review.note}` : ''}`;
-    verdicts[name] = ['ok', 'remarks', 'failed'].includes(review?.verdict ?? '') ? review!.verdict! : 'unreviewed'; }
+    verdicts[name] = verdictOf(review); }
   const who = dealer[0].toUpperCase() + dealer.slice(1);
   await writeFile(path.join(dir, 'proof.json'), json({schemaVersion: 1, createdAt: new Date().toISOString(), tool: 'tools/speech.ts proof', title: `${who} talar: läppsynk över vilan`,
     description: `Vilofilmen ${register.dealers[dealer]?.rest} med munnen ritad efter ljudet (Scoutgamings renderer, körd på den här datorn) och rösten från ElevenLabs. Varje film börjar och slutar på vilans första ruta. Slå på ljudet. ${reviewed === takes.length ? 'Oberoende granskat ruta för ruta; domen står vid varje film.' : reviewed ? `Oberoende granskat: ${reviewed} av ${takes.length} filmer.` : 'Inte oberoende granskat.'}`,
     film: {fps: RENDER.fps}, labels, verdicts}));
   // A film that is no longer the newest take of its line is taken out of the proof (it stays where it was made).
   for (const file of await readdir(dir)) if (file.endsWith('.mp4') && !(file in labels)) await rm(path.join(dir, file));
-  log(`Prov: ${path.relative(root, dir).replaceAll('\\', '/')} (${newest.size} filmer)`);
+  log(`Prov: ${path.relative(root, dir).replaceAll('\\', '/')} (${newest.size + reels.length} filmer)`);
   return dir;
 }
 
@@ -350,7 +435,8 @@ async function main(argv: string[]): Promise<number> {
   if (command === 'bank') { await makeBank(register, root, flags.dealer); return 0; }
   if (command === 'say') { if (!flags.line && !flags.as) { console.error('Ange --line (eller --text med --as).'); return 2; }
     await say(register, root, {dealer: flags.dealer, line: flags.as ?? flags.line, language: flags.lang, voice: flags.voice, text: flags.text, again: flags.again !== undefined}); return 0; }
+  if (command === 'reel') { await reel(register, root, {dealer: flags.dealer, lines: (flags.lines ?? '').split(',').map(s => s.trim()).filter(Boolean), name: flags.name, rests: flags.rests?.split(',').map(s => s.trim()).filter(Boolean)}); return 0; }
   if (command === 'proof') { await proof(register, root, flags.dealer); return 0; }
-  console.error('Kommandon: check | bank --dealer <id> | say --dealer <id> --line <replik> | proof --dealer <id>'); return 2;
+  console.error('Kommandon: check | bank --dealer <id> | say --dealer <id> --line <replik> | reel --dealer <id> --lines <a,b,c> | proof --dealer <id>'); return 2;
 }
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) main(process.argv.slice(2)).then(code => { process.exitCode = code; }, error => { console.error(String(error?.message ?? error)); process.exitCode = 1; });
