@@ -10,7 +10,7 @@
       "language": "sv",
       "voice": "Paow",
       "path": "assets/speech/paow/patches/paow-mun-dealerplays-sv-halkort-04-02/patch.json",
-      "sha256": "5af3479c46b025dc4ac0f90ca0a28e6a67c1529c7f65bc896050c34c4e699f22"
+      "sha256": "0f76634b5bf4765ac28e30797a4b08e3bb6a7dc145ca59fb7b46677608f9c985"
     },
     {
       "id": "paow-mun-double-sv-ingang-2-1-02-01",
@@ -40,7 +40,7 @@
       "language": "sv",
       "voice": "Paow",
       "path": "assets/speech/paow/patches/paow-mun-goodluck-sv-ingang-2-1-02-01/patch.json",
-      "sha256": "62c1fcd64e29e66e90706f43a17719f29bd465a57f8069e1a2cffbcaf890d4b9"
+      "sha256": "0982116586c28699487304ebda9cdc9021c417628462374be3cdcaee978d9449"
     }
   ]
 }
