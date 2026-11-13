@@ -4857,6 +4857,62 @@
           }
         },
         {
+          "id": "paow-film-vila-17-t1",
+          "role": "film",
+          "name": "Variant · champagneglaset under bordskanten · Kling 4, tagning 1",
+          "path": "assets/films/paow/vila-17-t1/source.mp4",
+          "still": 106,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Efterarbetad tagning ur en beställning i studions vy Beställ. Kandidat tills Jakob har dömt.",
+          "source": {
+            "from": "beställningen paow-vila-17, tagning 1 (studions vy Beställ)",
+            "when": "2026-11-13"
+          }
+        },
+        {
+          "id": "paow-film-vila-17-t2",
+          "role": "film",
+          "name": "Variant · champagneglaset under bordskanten · Kling 4, tagning 2",
+          "path": "assets/films/paow/vila-17-t2/source.mp4",
+          "still": 106,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Efterarbetad tagning ur en beställning i studions vy Beställ. Kandidat tills Jakob har dömt.",
+          "source": {
+            "from": "beställningen paow-vila-17, tagning 2 (studions vy Beställ)",
+            "when": "2026-11-13"
+          }
+        },
+        {
+          "id": "paow-film-giv-2-2-p6-02-t1",
+          "role": "film",
+          "name": "Omgång 14 · plats 6 från ankare 2.2 · A · WAN 3, kortet enfärgat i texten, tagni",
+          "path": "assets/films/paow/giv-2-2-p6-02-t1/source.mp4",
+          "still": 98,
+          "fps": 30,
+          "state": "kandidat",
+          "note": "Efterarbetad tagning ur en beställning i studions vy Beställ. Kandidat tills Jakob har dömt.",
+          "source": {
+            "from": "beställningen paow-giv-2-2-p6-02, tagning 1 (studions vy Beställ)",
+            "when": "2026-11-13"
+          }
+        },
+        {
+          "id": "paow-film-giv-2-2-p6-03-t1",
+          "role": "film",
+          "name": "Omgång 14 · plats 6 från ankare 2.2 · B · Kling 4, samma text som omgång 13, tag",
+          "path": "assets/films/paow/giv-2-2-p6-03-t1/source.mp4",
+          "still": 80,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Efterarbetad tagning ur en beställning i studions vy Beställ. Kandidat tills Jakob har dömt.",
+          "source": {
+            "from": "beställningen paow-giv-2-2-p6-03, tagning 1 (studions vy Beställ)",
+            "when": "2026-11-13"
+          }
+        },
+        {
           "id": "paow-ankare-2-2-t1",
           "role": "ankare-2.2",
           "name": "Paow · ankare 2.2 (släp), tagning 1",
