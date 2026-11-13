@@ -230,7 +230,7 @@ Det som hindrar en runda först. Han kan svara rad för rad.
    dömda, och 19 av de 21 som en runda kräver. Kvar för en runda: given till plats 6 (Öppet hos Jakob, punkt 1) och
    hålkortets retur till vila (ingen metod). Omgång 7–10 (31 tagningar) och vad de lärde står i handboken §5; mall 8
    gäller. I spelet spelas rundan med hennes filmer; nödlösningar finns för plats 6 och dealerns tredje och fjärde kort
-   (lagda utan hand). Saldo efter sista tagningen: 5 580 krediter (kvittot för `paow-giv-2-1-p6-08`). Pamela är pausad
+   (lagda utan hand). Saldo efter sista tagningen: 5 192 krediter (kvittot för `paow-giv-2-1-p6-09`, omgång 11). Pamela är pausad
    (Jakob 2026-11-12: "Vi pausar Pamela när vi är klara. Sedan går vi vidare med Paow.").
 1. **Studion** (`http://127.0.0.1:4319/studio/`) är skalet, med bland annat vyerna Scen, Karta, Primära, Jämför,
    Granska, Prov, Placering, Material, Beställ, Protokoll och Casino; gamla labbet nås med `lab.html?gamla=1` tills

@@ -6,7 +6,7 @@
   "maxPerOrder": 400,
   "minBalance": 2000,
   "timeZone": "Europe/Stockholm",
-  "balance": { "credits": 8941, "at": "2026-11-13", "source": "kvittot för paow-halkort-01 (creditsRemainingAfter), omgång 6" },
+  "balance": { "credits": 5192, "at": "2026-11-13", "source": "beställningsagentens avläsning efter paow-giv-2-1-p6-09 och -10, omgång 11" },
   "prices": [
     { "model": "kling-4", "resolution": "1080p", "perSecond": 21.3, "listedPerSecond": 23.5, "source": "Liggarna b19 och b20: 7 s i 1080p = 149 krediter; listpris 23,5 per s i verktyget generate_video 2026-11-12." },
     { "model": "kling-4", "resolution": "720p", "perSecond": 15.7, "listedPerSecond": 15.7, "source": "Listpris i verktyget generate_video 2026-11-12; inte mätt i någon liggare." },
