@@ -472,7 +472,10 @@ export function orderStore(root: string, options: StoreOptions = {}) {
     if (step.cards?.some((c) => !plan.targets[c.target])) throw new StoreError(400, `Planen saknar ${step.cards.filter((c) => !plan.targets[c.target]).map((c) => c.target).join(' och ')}.`);
     const takes = input.takes ?? 2;
     if (!Number.isInteger(takes) || takes < 1 || takes > TAKES_MAX) throw new StoreError(400, `Tagningar ska vara 1–${TAKES_MAX}.`);
-    const extra = input.extra?.trim() ? input.extra.trim().slice(0, EXTRA_LIMIT) : null;
+    // The free addition is refused beyond the limit, as change() refuses it: cut, it would end the text mid-sentence unseen.
+    if (input.extra !== undefined && input.extra !== null && typeof input.extra !== 'string') throw new StoreError(400, 'Tillägget ska vara en text.');
+    const extra = input.extra?.trim() || null;
+    if (extra && extra.length > EXTRA_LIMIT) throw new StoreError(400, `Tillägget får vara högst ${EXTRA_LIMIT} tecken (det här har ${extra.length}).`);
     const intent = target ? plan.targets[target].intent : null;
     const flipAxis = input.flipAxis ?? defaultFlip(step.key, intent?.turnAt);
     if (!FLIP_AXES.includes(flipAxis)) throw new StoreError(400, 'Okänd vändning.');

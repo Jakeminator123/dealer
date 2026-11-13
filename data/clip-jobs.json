@@ -6409,6 +6409,278 @@
         "id": "paow-giv-2-1-p6-07",
         "take": 1
       }
+    },
+    {
+      "id": "paow-vila-09-01",
+      "kind": "IDLE",
+      "from": "IDLE",
+      "to": "IDLE",
+      "clip": "paow-vila-09-01",
+      "frames": [
+        0,
+        147
+      ],
+      "purpose": "Beställning paow-vila-09, tagning 1: Omgång 12 · vila A · blicken runt bordet.",
+      "dealer": "paow",
+      "model": "wan3",
+      "duration": 5,
+      "promptText": "Locked camera, one continuous shot. She starts and ends exactly as in the first frame, and holds still for the last half second. Her eyes and head turn calmly to the players at the left of the picture and rest there a moment, then move across to the players at the right of the picture, and come back to the camera. She blinks once on the way, and her shoulders turn a little with her head. Her hands rest on the felt.",
+      "first": {
+        "file": {
+          "path": "assets/orders/paow-vila-09/first.png",
+          "sha256": "cdaa59756e2eb0f7b839f23254f9999f8c8da4c8eef0e37bf23e9643ba6586ee"
+        },
+        "note": "Första bilden i beställningen paow-vila-09."
+      },
+      "last": {
+        "file": {
+          "path": "assets/orders/paow-vila-09/last.png",
+          "sha256": "cdaa59756e2eb0f7b839f23254f9999f8c8da4c8eef0e37bf23e9643ba6586ee"
+        },
+        "note": "Sista bilden i beställningen paow-vila-09."
+      },
+      "order": {
+        "id": "paow-vila-09",
+        "take": 1
+      }
+    },
+    {
+      "id": "paow-vila-09-02",
+      "kind": "IDLE",
+      "from": "IDLE",
+      "to": "IDLE",
+      "clip": "paow-vila-09-02",
+      "frames": [
+        0,
+        147
+      ],
+      "purpose": "Beställning paow-vila-09, tagning 2: Omgång 12 · vila A · blicken runt bordet.",
+      "dealer": "paow",
+      "model": "wan3",
+      "duration": 5,
+      "promptText": "Locked camera, one continuous shot. She starts and ends exactly as in the first frame, and holds still for the last half second. Her eyes and head turn calmly to the players at the left of the picture and rest there a moment, then move across to the players at the right of the picture, and come back to the camera. She blinks once on the way, and her shoulders turn a little with her head. Her hands rest on the felt.",
+      "first": {
+        "file": {
+          "path": "assets/orders/paow-vila-09/first.png",
+          "sha256": "cdaa59756e2eb0f7b839f23254f9999f8c8da4c8eef0e37bf23e9643ba6586ee"
+        },
+        "note": "Första bilden i beställningen paow-vila-09."
+      },
+      "last": {
+        "file": {
+          "path": "assets/orders/paow-vila-09/last.png",
+          "sha256": "cdaa59756e2eb0f7b839f23254f9999f8c8da4c8eef0e37bf23e9643ba6586ee"
+        },
+        "note": "Sista bilden i beställningen paow-vila-09."
+      },
+      "order": {
+        "id": "paow-vila-09",
+        "take": 2
+      }
+    },
+    {
+      "id": "paow-vila-10-01",
+      "kind": "IDLE",
+      "from": "IDLE",
+      "to": "IDLE",
+      "clip": "paow-vila-10-01",
+      "frames": [
+        0,
+        147
+      ],
+      "purpose": "Beställning paow-vila-10, tagning 1: Omgång 12 · vila B · blick ned och ett litet leende.",
+      "dealer": "paow",
+      "model": "wan3",
+      "duration": 5,
+      "promptText": "Locked camera, one continuous shot. She starts and ends exactly as in the first frame, and holds still for the last half second. She blinks and lowers her eyes to the felt in front of her, then lifts them to the camera, and a small smile comes and goes: her lips stay together as the corners of her mouth lift a little. Her head tilts a little to one side with the smile and comes back. Her hands rest on the felt.",
+      "first": {
+        "file": {
+          "path": "assets/orders/paow-vila-10/first.png",
+          "sha256": "cdaa59756e2eb0f7b839f23254f9999f8c8da4c8eef0e37bf23e9643ba6586ee"
+        },
+        "note": "Första bilden i beställningen paow-vila-10."
+      },
+      "last": {
+        "file": {
+          "path": "assets/orders/paow-vila-10/last.png",
+          "sha256": "cdaa59756e2eb0f7b839f23254f9999f8c8da4c8eef0e37bf23e9643ba6586ee"
+        },
+        "note": "Sista bilden i beställningen paow-vila-10."
+      },
+      "order": {
+        "id": "paow-vila-10",
+        "take": 1
+      }
+    },
+    {
+      "id": "paow-vila-10-02",
+      "kind": "IDLE",
+      "from": "IDLE",
+      "to": "IDLE",
+      "clip": "paow-vila-10-02",
+      "frames": [
+        0,
+        147
+      ],
+      "purpose": "Beställning paow-vila-10, tagning 2: Omgång 12 · vila B · blick ned och ett litet leende.",
+      "dealer": "paow",
+      "model": "wan3",
+      "duration": 5,
+      "promptText": "Locked camera, one continuous shot. She starts and ends exactly as in the first frame, and holds still for the last half second. She blinks and lowers her eyes to the felt in front of her, then lifts them to the camera, and a small smile comes and goes: her lips stay together as the corners of her mouth lift a little. Her head tilts a little to one side with the smile and comes back. Her hands rest on the felt.",
+      "first": {
+        "file": {
+          "path": "assets/orders/paow-vila-10/first.png",
+          "sha256": "cdaa59756e2eb0f7b839f23254f9999f8c8da4c8eef0e37bf23e9643ba6586ee"
+        },
+        "note": "Första bilden i beställningen paow-vila-10."
+      },
+      "last": {
+        "file": {
+          "path": "assets/orders/paow-vila-10/last.png",
+          "sha256": "cdaa59756e2eb0f7b839f23254f9999f8c8da4c8eef0e37bf23e9643ba6586ee"
+        },
+        "note": "Sista bilden i beställningen paow-vila-10."
+      },
+      "order": {
+        "id": "paow-vila-10",
+        "take": 2
+      }
+    },
+    {
+      "id": "paow-vila-11-01",
+      "kind": "IDLE",
+      "from": "IDLE",
+      "to": "IDLE",
+      "clip": "paow-vila-11-01",
+      "frames": [
+        0,
+        147
+      ],
+      "purpose": "Beställning paow-vila-11, tagning 1: Omgång 12 · vila C · andetag, skon och en spelare.",
+      "dealer": "paow",
+      "model": "wan3",
+      "duration": 5,
+      "promptText": "Locked camera, one continuous shot. She starts and ends exactly as in the first frame, and holds still for the last half second. She takes one slow breath and her shoulders settle a little in her seat. Her eyes go down to the card shoe at the right of the picture, then across to a player at the left of the picture, and back to the camera; her head follows her eyes a little, and she blinks twice. Her hands rest on the felt.",
+      "first": {
+        "file": {
+          "path": "assets/orders/paow-vila-11/first.png",
+          "sha256": "cdaa59756e2eb0f7b839f23254f9999f8c8da4c8eef0e37bf23e9643ba6586ee"
+        },
+        "note": "Första bilden i beställningen paow-vila-11."
+      },
+      "last": {
+        "file": {
+          "path": "assets/orders/paow-vila-11/last.png",
+          "sha256": "cdaa59756e2eb0f7b839f23254f9999f8c8da4c8eef0e37bf23e9643ba6586ee"
+        },
+        "note": "Sista bilden i beställningen paow-vila-11."
+      },
+      "order": {
+        "id": "paow-vila-11",
+        "take": 1
+      }
+    },
+    {
+      "id": "paow-vila-11-02",
+      "kind": "IDLE",
+      "from": "IDLE",
+      "to": "IDLE",
+      "clip": "paow-vila-11-02",
+      "frames": [
+        0,
+        147
+      ],
+      "purpose": "Beställning paow-vila-11, tagning 2: Omgång 12 · vila C · andetag, skon och en spelare.",
+      "dealer": "paow",
+      "model": "wan3",
+      "duration": 5,
+      "promptText": "Locked camera, one continuous shot. She starts and ends exactly as in the first frame, and holds still for the last half second. She takes one slow breath and her shoulders settle a little in her seat. Her eyes go down to the card shoe at the right of the picture, then across to a player at the left of the picture, and back to the camera; her head follows her eyes a little, and she blinks twice. Her hands rest on the felt.",
+      "first": {
+        "file": {
+          "path": "assets/orders/paow-vila-11/first.png",
+          "sha256": "cdaa59756e2eb0f7b839f23254f9999f8c8da4c8eef0e37bf23e9643ba6586ee"
+        },
+        "note": "Första bilden i beställningen paow-vila-11."
+      },
+      "last": {
+        "file": {
+          "path": "assets/orders/paow-vila-11/last.png",
+          "sha256": "cdaa59756e2eb0f7b839f23254f9999f8c8da4c8eef0e37bf23e9643ba6586ee"
+        },
+        "note": "Sista bilden i beställningen paow-vila-11."
+      },
+      "order": {
+        "id": "paow-vila-11",
+        "take": 2
+      }
+    },
+    {
+      "id": "paow-vila-12-01",
+      "kind": "IDLE",
+      "from": "IDLE",
+      "to": "IDLE",
+      "clip": "paow-vila-12-01",
+      "frames": [
+        0,
+        237
+      ],
+      "purpose": "Beställning paow-vila-12, tagning 1: Omgång 12 · prov · kaffe ur Scout Gaming-koppen · WAN 3.",
+      "dealer": "paow",
+      "model": "wan3",
+      "duration": 8,
+      "promptText": "Locked camera, one continuous shot. She starts and ends exactly as in the first frame, and holds still for the last half second. Her eyes go down as she bends a little to her right, and her right hand, at the left of the picture, reaches down below the edge of the table, out of sight, and comes back up holding a white coffee mug with the words \"Scout Gaming\" printed in black on the side facing the camera. She bends her head a little to the mug and takes one small sip, then straightens up, and her hand takes the mug back down below the edge of the table and comes back to rest on the felt where it lay. Her eyes come back up to the camera. Her other hand rests on the felt.",
+      "first": {
+        "file": {
+          "path": "assets/orders/paow-vila-12/first.png",
+          "sha256": "cdaa59756e2eb0f7b839f23254f9999f8c8da4c8eef0e37bf23e9643ba6586ee"
+        },
+        "note": "Första bilden i beställningen paow-vila-12."
+      },
+      "last": {
+        "file": {
+          "path": "assets/orders/paow-vila-12/last.png",
+          "sha256": "cdaa59756e2eb0f7b839f23254f9999f8c8da4c8eef0e37bf23e9643ba6586ee"
+        },
+        "note": "Sista bilden i beställningen paow-vila-12."
+      },
+      "order": {
+        "id": "paow-vila-12",
+        "take": 1
+      }
+    },
+    {
+      "id": "paow-vila-14-01",
+      "kind": "IDLE",
+      "from": "IDLE",
+      "to": "IDLE",
+      "clip": "paow-vila-14-01",
+      "frames": [
+        0,
+        177
+      ],
+      "purpose": "Beställning paow-vila-14, tagning 1: Omgång 12 · prov · vinkar till någon snett bakom kameran.",
+      "dealer": "paow",
+      "model": "wan3",
+      "duration": 6,
+      "promptText": "Locked camera, one continuous shot. She starts and ends exactly as in the first frame, and holds still for the last half second. Her eyes go past the camera towards the left of the picture, as to someone standing behind the camera off to that side, and a warm smile comes, her lips together. Her right hand, at the left of the picture, rises from the felt to beside her shoulder, palm forward, and waves twice from side to side in a small friendly greeting, then comes back down to rest on the felt where it lay. Her eyes come back to the camera as the smile softens. Her other hand rests on the felt.",
+      "first": {
+        "file": {
+          "path": "assets/orders/paow-vila-14/first.png",
+          "sha256": "cdaa59756e2eb0f7b839f23254f9999f8c8da4c8eef0e37bf23e9643ba6586ee"
+        },
+        "note": "Första bilden i beställningen paow-vila-14."
+      },
+      "last": {
+        "file": {
+          "path": "assets/orders/paow-vila-14/last.png",
+          "sha256": "cdaa59756e2eb0f7b839f23254f9999f8c8da4c8eef0e37bf23e9643ba6586ee"
+        },
+        "note": "Sista bilden i beställningen paow-vila-14."
+      },
+      "order": {
+        "id": "paow-vila-14",
+        "take": 1
+      }
     }
   ],
   "edits": [

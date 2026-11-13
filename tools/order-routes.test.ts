@@ -157,6 +157,17 @@ test('drafts, changes and approval go through the routes with their guards', asy
   assert.match(noLanding.json.error, /Ingen landningsbild gäller för Paows plats 4\. Godkänn en i Material/);
   assert.match((await call('POST', '/api/orders', { body: { dealer: 'paow', step: 'GIV-2.1', target: 'P4.C1', shape: 'ONE_WAY' } })).json.error, /Ingen landningsbild gäller/, 'and so does a deal bara dit');
   assert.match((await call('POST', '/api/orders', { body: { dealer: 'paow', step: 'ANKARE-2.1', style: 'MINIMAL' } })).json.error, /En bild skrivs KORT eller UTFÖRLIG/);
+  // The free addition: up to the limit it is kept whole; beyond it a new draft is refused as a change is, never cut.
+  const words = (n: number) => 'She smiles. '.repeat(60).slice(0, n - 1).trimEnd().padEnd(n - 1, 'x') + '.';
+  const full = await call('POST', '/api/orders', { body: { dealer: 'paow', step: 'VILA', extra: words(600) } });
+  assert.equal(full.status, 201);
+  assert.equal(full.json.order.prompt.extra, words(600), 'six hundred characters are kept whole');
+  assert.ok(full.json.order.prompt.text.endsWith(words(600)));
+  const over = await call('POST', '/api/orders', { body: { dealer: 'paow', step: 'VILA', extra: words(601) } });
+  assert.equal(over.status, 400, 'one more is refused, not cut');
+  assert.equal(over.json.error, 'Tillägget får vara högst 600 tecken (det här har 601).');
+  assert.equal((await call('POST', '/api/orders', { body: { dealer: 'paow', step: 'VILA', extra: 7 } })).status, 400, 'an addition is text');
+  assert.equal((await call('PUT', `/api/orders/${full.json.order.id}`, { body: { extra: words(601) }, match: full.json.revision })).status, 400, 'as a change is');
   // Only a dealer of data/dealers.json can be ordered for; the register may hold others (a separate track).
   const unknown = await call('POST', '/api/orders', { body: { dealer: 'petra', step: 'VILA' } });
   assert.equal(unknown.status, 400);

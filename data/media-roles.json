@@ -4652,6 +4652,118 @@
             "from": "tools/speech.ts say --dealer paow --line win (Paow)",
             "when": "2026-11-13"
           }
+        },
+        {
+          "id": "paow-film-vila-09-t1",
+          "role": "film",
+          "name": "Omgång 12 · vila A · blicken runt bordet, tagning 1",
+          "path": "assets/films/paow/vila-09-t1/source.mp4",
+          "still": 81,
+          "fps": 30,
+          "state": "kandidat",
+          "note": "Efterarbetad tagning ur en beställning i studions vy Beställ. Kandidat tills Jakob har dömt.",
+          "source": {
+            "from": "beställningen paow-vila-09, tagning 1 (studions vy Beställ)",
+            "when": "2026-11-13"
+          }
+        },
+        {
+          "id": "paow-film-vila-09-t2",
+          "role": "film",
+          "name": "Omgång 12 · vila A · blicken runt bordet, tagning 2",
+          "path": "assets/films/paow/vila-09-t2/source.mp4",
+          "still": 81,
+          "fps": 30,
+          "state": "kandidat",
+          "note": "Efterarbetad tagning ur en beställning i studions vy Beställ. Kandidat tills Jakob har dömt.",
+          "source": {
+            "from": "beställningen paow-vila-09, tagning 2 (studions vy Beställ)",
+            "when": "2026-11-13"
+          }
+        },
+        {
+          "id": "paow-film-vila-10-t1",
+          "role": "film",
+          "name": "Omgång 12 · vila B · blick ned och ett litet leende, tagning 1",
+          "path": "assets/films/paow/vila-10-t1/source.mp4",
+          "still": 81,
+          "fps": 30,
+          "state": "kandidat",
+          "note": "Efterarbetad tagning ur en beställning i studions vy Beställ. Kandidat tills Jakob har dömt.",
+          "source": {
+            "from": "beställningen paow-vila-10, tagning 1 (studions vy Beställ)",
+            "when": "2026-11-13"
+          }
+        },
+        {
+          "id": "paow-film-vila-10-t2",
+          "role": "film",
+          "name": "Omgång 12 · vila B · blick ned och ett litet leende, tagning 2",
+          "path": "assets/films/paow/vila-10-t2/source.mp4",
+          "still": 81,
+          "fps": 30,
+          "state": "kandidat",
+          "note": "Efterarbetad tagning ur en beställning i studions vy Beställ. Kandidat tills Jakob har dömt.",
+          "source": {
+            "from": "beställningen paow-vila-10, tagning 2 (studions vy Beställ)",
+            "when": "2026-11-13"
+          }
+        },
+        {
+          "id": "paow-film-vila-11-t1",
+          "role": "film",
+          "name": "Omgång 12 · vila C · andetag, skon och en spelare, tagning 1",
+          "path": "assets/films/paow/vila-11-t1/source.mp4",
+          "still": 81,
+          "fps": 30,
+          "state": "kandidat",
+          "note": "Efterarbetad tagning ur en beställning i studions vy Beställ. Kandidat tills Jakob har dömt.",
+          "source": {
+            "from": "beställningen paow-vila-11, tagning 1 (studions vy Beställ)",
+            "when": "2026-11-13"
+          }
+        },
+        {
+          "id": "paow-film-vila-11-t2",
+          "role": "film",
+          "name": "Omgång 12 · vila C · andetag, skon och en spelare, tagning 2",
+          "path": "assets/films/paow/vila-11-t2/source.mp4",
+          "still": 81,
+          "fps": 30,
+          "state": "kandidat",
+          "note": "Efterarbetad tagning ur en beställning i studions vy Beställ. Kandidat tills Jakob har dömt.",
+          "source": {
+            "from": "beställningen paow-vila-11, tagning 2 (studions vy Beställ)",
+            "when": "2026-11-13"
+          }
+        },
+        {
+          "id": "paow-film-vila-12-t1",
+          "role": "film",
+          "name": "Omgång 12 · prov · kaffe ur Scout Gaming-koppen · WAN 3, tagning 1",
+          "path": "assets/films/paow/vila-12-t1/source.mp4",
+          "still": 131,
+          "fps": 30,
+          "state": "kandidat",
+          "note": "Efterarbetad tagning ur en beställning i studions vy Beställ. Kandidat tills Jakob har dömt.",
+          "source": {
+            "from": "beställningen paow-vila-12, tagning 1 (studions vy Beställ)",
+            "when": "2026-11-13"
+          }
+        },
+        {
+          "id": "paow-film-vila-14-t1",
+          "role": "film",
+          "name": "Omgång 12 · prov · vinkar till någon snett bakom kameran, tagning 1",
+          "path": "assets/films/paow/vila-14-t1/source.mp4",
+          "still": 98,
+          "fps": 30,
+          "state": "kandidat",
+          "note": "Efterarbetad tagning ur en beställning i studions vy Beställ. Kandidat tills Jakob har dömt.",
+          "source": {
+            "from": "beställningen paow-vila-14, tagning 1 (studions vy Beställ)",
+            "when": "2026-11-13"
+          }
         }
       ]
     },

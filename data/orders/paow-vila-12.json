@@ -1,0 +1,98 @@
+{
+  "schemaVersion": 1,
+  "id": "paow-vila-12",
+  "title": "Omgång 12 · prov · kaffe ur Scout Gaming-koppen · WAN 3",
+  "summary": "Gör en vilofilm av Paow: hon sitter still, och filmen börjar och slutar på ankare 1.",
+  "group": null,
+  "dealer": "paow",
+  "kind": "FILM",
+  "step": {
+    "key": "VILA",
+    "label": "Vila, samma bild först och sist",
+    "edge": "IDLE>IDLE",
+    "shape": "ONE_WAY",
+    "cutInto": [],
+    "makes": null
+  },
+  "motion": null,
+  "pictures": [
+    {
+      "name": "first.png",
+      "label": "Första bild · Paows ankare 1",
+      "goesAs": "startFrame",
+      "path": "assets/orders/paow-vila-12/first.png",
+      "sha256": "cdaa59756e2eb0f7b839f23254f9999f8c8da4c8eef0e37bf23e9643ba6586ee",
+      "width": 1764,
+      "height": 1174,
+      "from": {
+        "entry": "paow-vila-ung-2",
+        "path": "assets/anchors/paow-vila-ung-2/anchor.png",
+        "note": "Vila, yngre, kandidat 2 (gäller)"
+      },
+      "waits": null
+    },
+    {
+      "name": "last.png",
+      "label": "Sista bild · Paows ankare 1",
+      "goesAs": "endFrame",
+      "path": "assets/orders/paow-vila-12/last.png",
+      "sha256": "cdaa59756e2eb0f7b839f23254f9999f8c8da4c8eef0e37bf23e9643ba6586ee",
+      "width": 1764,
+      "height": 1174,
+      "from": {
+        "entry": "paow-vila-ung-2",
+        "path": "assets/anchors/paow-vila-ung-2/anchor.png",
+        "note": "Vila, yngre, kandidat 2 (gäller)"
+      },
+      "waits": null
+    }
+  ],
+  "reference": {
+    "status": "INGEN",
+    "why": "WAN 3 tar ingen referensfilm tillsammans med första och sista bild."
+  },
+  "generation": {
+    "provider": "runway-app",
+    "tool": "generate_video",
+    "model": "wan3",
+    "params": {
+      "resolution": "1080p",
+      "duration": 8,
+      "ratio": "adaptive",
+      "generateAudio": false
+    }
+  },
+  "prompt": {
+    "template": "film-vila-kort@8",
+    "style": "KORT",
+    "text": "Locked camera, one continuous shot. She starts and ends exactly as in the first frame, and holds still for the last half second. Her eyes go down as she bends a little to her right, and her right hand, at the left of the picture, reaches down below the edge of the table, out of sight, and comes back up holding a white coffee mug with the words \"Scout Gaming\" printed in black on the side facing the camera. She bends her head a little to the mug and takes one small sip, then straightens up, and her hand takes the mug back down below the edge of the table and comes back to rest on the felt where it lay. Her eyes come back up to the camera. Her other hand rests on the felt.",
+    "sha256": "5bea7af961cf712e20b6e145c203db95bfd7ada45febfd00aa50fe5f6c8c72f6",
+    "extra": "Her eyes go down as she bends a little to her right, and her right hand, at the left of the picture, reaches down below the edge of the table, out of sight, and comes back up holding a white coffee mug with the words \"Scout Gaming\" printed in black on the side facing the camera. She bends her head a little to the mug and takes one small sip, then straightens up, and her hand takes the mug back down below the edge of the table and comes back to rest on the felt where it lay. Her eyes come back up to the camera. Her other hand rests on the felt.",
+    "middle": false
+  },
+  "takes": 1,
+  "cost": {
+    "perTake": 160,
+    "total": 160,
+    "worstPerTake": 160,
+    "worstTotal": 160,
+    "basis": "20 krediter per s × 8 s. DRIFT, Lärdomar: 20 per s i full storlek; planen: 4 s = 80."
+  },
+  "limits": {
+    "maxCredits": 160,
+    "stopBelowCredits": 150
+  },
+  "notes": [
+    "Prov, en tagning: handlingen kaffet, 8 s. Jämförelsen är vilans recept (WAN 3, 1080p, kort text, ankare 1 först och sist).",
+    "Koppen finns inte i ankaret: höger hand hämtar den nedanför bordets kant och lägger tillbaka den där, så att första och sista bild är ankare 1 utan kopp. Texten på koppen granskas för läsbarhet; reserven (en vanlig kopp med trycket lagt efteråt) byggs inte nu."
+  ],
+  "created": "2026-11-13T12:43:16.395Z",
+  "createdBy": "filmproducenten åt huvudagenten (dealer-94), på Jakobs ord 2026-11-13 cirka 13:30: nya vilor, kaffet, vinkningen, fingrarna (\"Du får 5k i budget och godkänner själv efter granskning\")",
+  "approval": {
+    "by": "huvudagent",
+    "at": "2026-11-13T12:45:57.961Z",
+    "orderSha256": "fb367de47702c722d78212dca2cf22659c5d68c2ff14cb4c738ee6f019fbe4a4",
+    "mandate": "Jakob 2026-11-13 cirka 13:30: \"Du får 5k i budget och godkänner själv efter granskning\" (nya vilor med ögon som rör sig, kaffet ur Scout Gaming-koppen, vinkningen, fingrarna); texterna lästa av huvudagenten före godkännandet"
+  },
+  "status": "GODKÄND"
+}

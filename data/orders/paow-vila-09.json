@@ -1,0 +1,98 @@
+{
+  "schemaVersion": 1,
+  "id": "paow-vila-09",
+  "title": "Omgång 12 · vila A · blicken runt bordet",
+  "summary": "Gör en vilofilm av Paow: hon sitter still, och filmen börjar och slutar på ankare 1.",
+  "group": null,
+  "dealer": "paow",
+  "kind": "FILM",
+  "step": {
+    "key": "VILA",
+    "label": "Vila, samma bild först och sist",
+    "edge": "IDLE>IDLE",
+    "shape": "ONE_WAY",
+    "cutInto": [],
+    "makes": null
+  },
+  "motion": null,
+  "pictures": [
+    {
+      "name": "first.png",
+      "label": "Första bild · Paows ankare 1",
+      "goesAs": "startFrame",
+      "path": "assets/orders/paow-vila-09/first.png",
+      "sha256": "cdaa59756e2eb0f7b839f23254f9999f8c8da4c8eef0e37bf23e9643ba6586ee",
+      "width": 1764,
+      "height": 1174,
+      "from": {
+        "entry": "paow-vila-ung-2",
+        "path": "assets/anchors/paow-vila-ung-2/anchor.png",
+        "note": "Vila, yngre, kandidat 2 (gäller)"
+      },
+      "waits": null
+    },
+    {
+      "name": "last.png",
+      "label": "Sista bild · Paows ankare 1",
+      "goesAs": "endFrame",
+      "path": "assets/orders/paow-vila-09/last.png",
+      "sha256": "cdaa59756e2eb0f7b839f23254f9999f8c8da4c8eef0e37bf23e9643ba6586ee",
+      "width": 1764,
+      "height": 1174,
+      "from": {
+        "entry": "paow-vila-ung-2",
+        "path": "assets/anchors/paow-vila-ung-2/anchor.png",
+        "note": "Vila, yngre, kandidat 2 (gäller)"
+      },
+      "waits": null
+    }
+  ],
+  "reference": {
+    "status": "INGEN",
+    "why": "WAN 3 tar ingen referensfilm tillsammans med första och sista bild."
+  },
+  "generation": {
+    "provider": "runway-app",
+    "tool": "generate_video",
+    "model": "wan3",
+    "params": {
+      "resolution": "1080p",
+      "duration": 5,
+      "ratio": "adaptive",
+      "generateAudio": false
+    }
+  },
+  "prompt": {
+    "template": "film-vila-kort@8",
+    "style": "KORT",
+    "text": "Locked camera, one continuous shot. She starts and ends exactly as in the first frame, and holds still for the last half second. Her eyes and head turn calmly to the players at the left of the picture and rest there a moment, then move across to the players at the right of the picture, and come back to the camera. She blinks once on the way, and her shoulders turn a little with her head. Her hands rest on the felt.",
+    "sha256": "0c97d3e7aa009a1b738b2bd4154abbdd16acd84ec07c3588181acb068d4d591d",
+    "extra": "Her eyes and head turn calmly to the players at the left of the picture and rest there a moment, then move across to the players at the right of the picture, and come back to the camera. She blinks once on the way, and her shoulders turn a little with her head. Her hands rest on the felt.",
+    "middle": false
+  },
+  "takes": 2,
+  "cost": {
+    "perTake": 100,
+    "total": 200,
+    "worstPerTake": 100,
+    "worstTotal": 200,
+    "basis": "20 krediter per s × 5 s. DRIFT, Lärdomar: 20 per s i full storlek; planen: 4 s = 80."
+  },
+  "limits": {
+    "maxCredits": 200,
+    "stopBelowCredits": 150
+  },
+  "notes": [
+    "Vila med vald metod (WAN 3, 1080p, kort text, 5 s, två tagningar; handboken 3.6). Jakob: \"Hennes ögon måste röra sig mer i allmänhet för tusan.\"",
+    "Blicken till spelarna till vänster, över till höger och tillbaka till kameran; en blinkning; axlarna följer lite."
+  ],
+  "created": "2026-11-13T12:43:15.174Z",
+  "createdBy": "filmproducenten åt huvudagenten (dealer-94), på Jakobs ord 2026-11-13 cirka 13:30: nya vilor, kaffet, vinkningen, fingrarna (\"Du får 5k i budget och godkänner själv efter granskning\")",
+  "approval": {
+    "by": "huvudagent",
+    "at": "2026-11-13T12:45:55.587Z",
+    "orderSha256": "dace85daa2a05492ea3c9f54e0bb588680aa15da4fed6b9f6efa794527963d8c",
+    "mandate": "Jakob 2026-11-13 cirka 13:30: \"Du får 5k i budget och godkänner själv efter granskning\" (nya vilor med ögon som rör sig, kaffet ur Scout Gaming-koppen, vinkningen, fingrarna); texterna lästa av huvudagenten före godkännandet"
+  },
+  "status": "GODKÄND"
+}
