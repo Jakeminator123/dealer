@@ -19,6 +19,9 @@
 // and follow(dealer) does that for every draft of the dealer after a decision in Material. Every picture's owner is read
 // from its source, and a whole picture of another dealer in a dealer's draft keeps it from being approved.
 //
+// The hole card's turn (HALKORT) draws the dealer's two cards on both its pictures from her anchor 1 (cardPictures), anew
+// on every refresh; a deal to D.C2 (her hole card) is a deal like any other and lands closed as the plan says.
+//
 // Template 4 (2026-11-13): a new film draft is written in the short text unless another style is asked for (prompt.style);
 // a draft without a style was written before and is Utförlig, and keeps its text. A return starts on the seat's landing
 // picture and a deal "bara dit" ends on it (a register entry, role landning, that holds); where none holds, the draft is
@@ -32,10 +35,10 @@ import { mediaRoles } from './media-roles.ts';
 import {
   ANCHOR_NODE, ANCHOR_ROLE, CARD_SCALES, EXTRA_LIMIT, MODELS, FILE_NAME, FLIP_AXES, ORDER_ID, SEAT_TARGETS, TAKES_MAX, scaleWords,
   bodyLine, checkPolicy, costOf, crossesBody, cutIntoOf, tidyMotion, dayOf, defaultFlip, defaultStyle, draftProblems, edgeOf, genitive, hashInput, landingMissing, landingOf, modelFor, modelsFor, paramsOf, referenceCandidates, seatList, seatWords, secondsWords, shownOf, spentOn, stepOf, stylesFor, summaryOf, validateOrder, waitingOf,
-  type BankFacts, type Drawn, type FlipAxis, type Motion, type Order, type OrderAnswer, type OrdersAnswer, type Owner, type Picture, type PlanAnswer, type Policy, type PoseAnswer, type Receipt, type Reference, type SeatPlan, type Shape, type StepKey, type TextStyle, type Waits,
+  type BankFacts, type Drawn, type FlipAxis, type Motion, type Order, type OrderAnswer, type OrdersAnswer, type Owner, type Picture, type PlanAnswer, type Policy, type PoseAnswer, type Receipt, type Reference, type SeatPlan, type Shape, type StepDef, type StepKey, type TextStyle, type Waits,
 } from '../src/order-model.ts';
 import { orderPrompt } from '../src/order-prompts.ts';
-import { CUT, LAY, armAlone, cardTexture, cutFigure, drawCard, matchGreen, pictureBytes, planQuad, pngOf, poseOnShoe, readPlan, readRgb, type CardOutline, type Pt, type Texture } from './order-images.ts';
+import { CUT, LAY, armAlone, cardTexture, cutFigure, drawCard, drawCards, matchGreen, pictureBytes, planQuad, pngOf, poseOnShoe, readPlan, readRgb, type CardOutline, type Pt, type Texture } from './order-images.ts';
 import type { PlacementPlan } from '../src/placement-model.ts';
 import type { Entry, Register } from '../studio/lib/media.ts';
 
@@ -328,6 +331,29 @@ export function orderStore(root: string, options: StoreOptions = {}) {
   }
 
   /**
+   * The two pictures of a step whose cards are drawn on its anchor (the hole card's turn): the dealer's anchor that holds,
+   * with every card of step.cards as it lies before (first) and after (last), where the plan says. While the anchor waits,
+   * both pictures say that they wait. Drawn anew on every refresh, so they follow the anchor chosen in Material and the plan.
+   */
+  async function cardPictures(id: string, step: StepDef, register: Register, dealer: DealerInfo): Promise<Picture[]> {
+    const at = step.from, entry = holding(register, dealer.id, ANCHOR_ROLE[at], ANCHOR_NODE[at]), words = anchorWords(dealer.name, at, entry);
+    const cards = step.cards ?? [], sideWords = (s: 'FRONT' | 'BACK') => (s === 'FRONT' ? 'öppet' : 'stängt');
+    const labels = { first: `Första bild · ${words} + dealerns kort, hålkortet ${sideWords(cards[cards.length - 1]?.before ?? 'BACK')}`, last: `Sista bild · samma, hålkortet ${sideWords(cards[cards.length - 1]?.after ?? 'FRONT')}` };
+    if (!entry) {
+      const waits: Waits = { dealer: dealer.id, role: ANCHOR_ROLE[at], node: ANCHOR_NODE[at], label: `ankare ${at}` };
+      return [{ name: 'first.png', label: labels.first, goesAs: 'startFrame', path: null, sha256: null, from: null, waits }, { name: 'last.png', label: labels.last, goesAs: 'endFrame', path: null, sha256: null, from: null, waits }];
+    }
+    const { bytes, from } = await sourceBytes(register, { entry: entry.id });
+    const { plan, file } = await readPlan(root), base = await readRgb(bytes), texture = await tex();
+    const out: Picture[] = [];
+    for (const [name, goesAs, when] of [['first.png', 'startFrame', 'before'], ['last.png', 'endFrame', 'after']] as const) {
+      const made = drawCards(base, texture, plan, file, cards.map((c) => ({ target: c.target, side: c[when] })));
+      out.push({ name, label: labels[when === 'before' ? 'first' : 'last'], goesAs, ...(await put(id, name, await pngOf(made.rgb))), width: 1764, height: 1174, from: { ...from, note: `${from.note}; dealerns kort ritade där planen säger` }, waits: null, drawn: made.drawn, drawnBeside: made.beside });
+    }
+    return out;
+  }
+
+  /**
    * A pose figure: the source cut down to the arm at the shoe, its green then brought to the anchor's green when the
    * anchor is there (matched, with the greens before and after); while the anchor waits, the source's green (matched null).
    */
@@ -419,7 +445,8 @@ export function orderStore(root: string, options: StoreOptions = {}) {
    */
   async function textOf(order: Pick<Order, 'step' | 'motion' | 'generation' | 'pictures' | 'prompt' | 'reference'>, dealer: DealerInfo, extra: string | null): Promise<Order['prompt']> {
     const drawn = order.pictures.find((p) => p.goesAs === 'endFrame')?.drawn ?? null;
-    const planPlace = !drawn && order.motion?.target ? planCentre((await readPlan(root)).plan, order.motion.target) : null;
+    const target = order.motion?.target ?? stepOf(order.step.key)?.target ?? null;
+    const planPlace = !drawn && target ? planCentre((await readPlan(root)).plan, target) : null;
     const { template, style, text } = orderPrompt({ ...order, prompt: { ...order.prompt, extra } }, dealer, planPlace);
     return { template, style, text, sha256: sha(text), extra, middle: false };
   }
@@ -437,9 +464,11 @@ export function orderStore(root: string, options: StoreOptions = {}) {
     const model = input.model === undefined || input.model === null ? modelFor(step) : typeof input.model === 'string' ? modelFor(step, input.model) : null;
     if (!model) throw new StoreError(400, `${String(input.model)} kan inte göra ${step.label}: välj ${modelsFor(step).filter((m) => !m.off).map((m) => m.id).join(', ')}.`);
     if (model.off) throw new StoreError(400, `${model.label} beställs inte längre: ${model.off}`);
-    const target = step.card ? (input.target ?? null) : null;
+    // A step about one card that is not chosen (the hole card's turn) has its own; a deal or a return, the seat chosen.
+    const target = step.target ?? (step.card ? (input.target ?? null) : null);
     const { plan } = await readPlan(root);
-    if (step.card && (!target || !plan.targets[target])) throw new StoreError(400, 'Välj en plats på bordet (P1.C1 … D.C1).');
+    if (step.card && (!target || !plan.targets[target])) throw new StoreError(400, 'Välj en plats på bordet (P1.C1 … D.C2).');
+    if (step.cards?.some((c) => !plan.targets[c.target])) throw new StoreError(400, `Planen saknar ${step.cards.filter((c) => !plan.targets[c.target]).map((c) => c.target).join(' och ')}.`);
     const takes = input.takes ?? 2;
     if (!Number.isInteger(takes) || takes < 1 || takes > TAKES_MAX) throw new StoreError(400, `Tagningar ska vara 1–${TAKES_MAX}.`);
     const extra = input.extra?.trim() ? input.extra.trim().slice(0, EXTRA_LIMIT) : null;
@@ -450,7 +479,7 @@ export function orderStore(root: string, options: StoreOptions = {}) {
     if (input.pass !== undefined && typeof input.pass !== 'boolean') throw new StoreError(400, 'Handbyte ska vara sant eller falskt.');
     if (input.side !== undefined && input.side !== 'FRONT' && input.side !== 'BACK') throw new StoreError(400, 'Kortet landar FRONT (öppet) eller BACK (stängt).');
     const style = input.style ?? defaultStyle(step.kind);
-    if (!stylesFor(step.kind).includes(style)) throw new StoreError(400, step.kind === 'STILL' ? 'En bild skrivs KORT eller UTFÖRLIG.' : 'Texten är KORT, MINIMAL eller UTFÖRLIG.');
+    if (!stylesFor(step.kind, step).includes(style)) throw new StoreError(400, step.styles ? `${step.label} skrivs ${step.styles.join(' eller ')}.` : step.kind === 'STILL' ? 'En bild skrivs KORT eller UTFÖRLIG.' : 'Texten är KORT, MINIMAL eller UTFÖRLIG.');
     const deal = step.card && step.start !== 'LAND';
     if (input.shape !== undefined && input.shape !== 'ROUND_TRIP' && input.shape !== 'ONE_WAY') throw new StoreError(400, 'En giv är ROUND_TRIP (tur och retur) eller ONE_WAY (bara dit).');
     if (input.shape !== undefined && !deal && input.shape !== 'ONE_WAY') throw new StoreError(400, 'Bara en giv kan gå tur och retur.');
@@ -463,7 +492,7 @@ export function orderStore(root: string, options: StoreOptions = {}) {
     if (!(CARD_SCALES as readonly unknown[]).includes(cardScale)) throw new StoreError(400, `Kortets storlek ska vara ${CARD_SCALES.map((f) => scaleWords(f)).join(', ')}.`);
     if (cardScale !== 1 && !(deal && shape === 'ROUND_TRIP')) throw new StoreError(400, 'Kortets storlek väljs bara för tur och retur, där sista bilden ritas; i bara dit och en retur är kortet som i landningsbilden.');
     if (input.reference && !model.videos) throw new StoreError(400, `${model.label} tar ingen referensfilm tillsammans med första och sista bild.`);
-    const seat = target ? target.toLowerCase().replace('.c1', '').replace('.', '-') : null;
+    const seat = target && step.card ? target.toLowerCase().replace('.c1', '').replace('.', '-') : null;
     const id = input.id ?? (await nextId([dealer.id, step.key.toLowerCase().replace('.', '-'), seat].filter(Boolean).join('-')));
     if (!ORDER_ID.test(id)) throw new StoreError(400, 'Ogiltigt beställnings-id.');
 
@@ -504,7 +533,8 @@ export function orderStore(root: string, options: StoreOptions = {}) {
       };
       const landingWords = `${genitive(dealer.name)} landning på ${seatWords(target)}`;
       let motion: Order['motion'] = null;
-      if (step.kind === 'FILM') {
+      if (step.kind === 'FILM' && step.cards?.length) pictures.push(...(await cardPictures(id, step, register, dealer)));
+      else if (step.kind === 'FILM') {
         const first = step.start === 'LAND' ? { picture: await landingPicture('first.png', `Första bild · ${landingWords}`, 'startFrame'), bytes: null } : await anchorPicture('first.png', (w) => `Första bild · ${w}`, 'startFrame', step.from);
         pictures.push(first.picture);
         if (step.card && intent) {
@@ -572,7 +602,7 @@ export function orderStore(root: string, options: StoreOptions = {}) {
       const order: Order = {
         schemaVersion: 1,
         id,
-        title: input.title ?? `${dealer.name} · ${step.label}${target ? ` · ${seatWords(target)}` : ''}${deal && shape === 'ONE_WAY' ? ' · bara dit' : ''}${model.id !== step.model ? ` · ${model.label}` : ''}${cardScale !== 1 ? ` · prov: kortet ${scaleWords(cardScale)}` : ''}`,
+        title: input.title ?? `${dealer.name} · ${step.label}${target && step.card ? ` · ${seatWords(target)}` : ''}${deal && shape === 'ONE_WAY' ? ' · bara dit' : ''}${model.id !== step.model ? ` · ${model.label}` : ''}${cardScale !== 1 ? ` · prov: kortet ${scaleWords(cardScale)}` : ''}`,
         summary: summaryOf(step, dealer.name, motion, shape),
         group: input.group ?? null,
         dealer: dealer.id,
@@ -724,8 +754,14 @@ export function orderStore(root: string, options: StoreOptions = {}) {
       const next: Order = structuredClone(order);
       const { file: planFile } = await readPlan(root);
       let firstBytes: Buffer | null = null;
+      // A step whose cards are drawn on its anchor (the hole card's turn) is drawn anew from the anchor that holds now.
+      const drawnStep = stepOf(next.step.key);
+      if (drawnStep?.cards?.length && next.kind === 'FILM') {
+        const made = await cardPictures(id, drawnStep, register, dealer);
+        if (made.every((p) => p.path)) next.pictures = next.pictures.map((p) => made.find((m) => m.name === p.name) ?? p);
+      }
       for (const p of next.pictures) {
-        if (p.from?.built) continue;
+        if (p.from?.built || drawnStep?.cards?.length) continue;
         if (p.waits && !p.path) {
           const entry = resolveWaits(register, p.waits);
           if (!entry) continue;

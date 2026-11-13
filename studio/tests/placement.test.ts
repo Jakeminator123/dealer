@@ -180,7 +180,9 @@ test("under the cards: Dator opens on the neutral backdrop, Mobil on its V6 pict
 test("Beställ film hit: a place with a film of its own goes to a new order with the place as the order model writes it", () => {
   assert.equal(orderHref("P4.C1"), "/bestall/?ny=1&plats=P4.C1");
   assert.equal(orderHref("D.C1"), "/bestall/?ny=1&plats=D.C1");
-  for (const id of ["P4.C2", "D.C2", SHOE]) assert.equal(orderHref(id), null);
+  // The hole card's deal is a film of its own (it lands closed, so it shares no film with D.C1): a new order to D.C2.
+  assert.equal(orderHref("D.C2"), "/bestall/?ny=1&plats=D.C2");
+  for (const id of ["P4.C2", SHOE]) assert.equal(orderHref(id), null);
   assert.deepEqual(PLACES.filter((id) => orderHref(id)), [...SEAT_TARGETS].sort((a, b) => PLACES.indexOf(a) - PLACES.indexOf(b)));
 });
 

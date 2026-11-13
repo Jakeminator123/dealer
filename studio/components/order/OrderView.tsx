@@ -95,7 +95,7 @@ export function OrderView() {
 
   return (
     <>
-      {open ? <SendScreen answer={open} all={all} onBack={() => setOrderParam(null)} onOpen={(id) => setOrderParam(id)} onSaved={saved} onLike={askLike} /> : <OrderList all={all} onOpen={(id) => setOrderParam(id)} onNew={() => setCreating(true)} />}
+      {open ? <SendScreen answer={open} all={all} onBack={() => setOrderParam(null)} onOpen={(id) => setOrderParam(id)} onSaved={saved} onLike={askLike} /> : <OrderList all={all} onOpen={(id) => setOrderParam(id)} onNew={() => setCreating(true)} onChanged={() => void read()} />}
       <NewOrder
         key={presetKey}
         open={creating}

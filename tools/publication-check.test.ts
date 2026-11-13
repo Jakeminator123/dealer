@@ -1,10 +1,10 @@
 import test,{type TestContext} from 'node:test';
 import assert from 'node:assert/strict';
-import {mkdtempSync,writeFileSync,mkdirSync,rmSync} from 'node:fs';
+import {mkdtempSync,writeFileSync,mkdirSync,rmSync,readFileSync,readdirSync} from 'node:fs';
 import {tmpdir} from 'node:os';
 import path from 'node:path';
 import {execFileSync} from 'node:child_process';
-import {inspectBlob,inspectDocument,parsePush,dirtyTestInputs,scanRange} from './publication-check.ts';
+import {inspectBlob,inspectDocument,parsePush,dirtyTestInputs,scanRange,TESTS} from './publication-check.ts';
 
 function fixture(t:TestContext){
   const root=mkdtempSync(path.join(tmpdir(),'dealer-publication-test-'));
@@ -66,4 +66,16 @@ test('a hook inherited GIT_DIR cannot redirect an explicit repository scan',t=>{
   }finally{
     if(previous===undefined)delete process.env.GIT_DIR;else process.env.GIT_DIR=previous;
   }
+});
+
+test('the two lists of tests agree, and every test file is in them',()=>{
+  // "npm test" (package.json) and the pre-push run (TESTS) are two lists by hand; a test left out of either never runs
+  // there. The studio's tests go as one pattern, which node --test expands itself.
+  const script=JSON.parse(readFileSync('package.json','utf8')).scripts.test as string;
+  const listed=script.split(/\s+/).filter(word=>word.endsWith('.test.ts'));
+  assert.deepEqual(listed,[...TESTS],'package.json and TESTS in tools/publication-check.ts list the same tests in the same order');
+  assert.ok(listed.includes('studio/tests/*.test.ts'),'the tests of the studio are part of the run');
+  const onDisk=readdirSync('tools').filter(name=>name.endsWith('.test.ts')).map(name=>'tools/'+name).sort();
+  assert.deepEqual(onDisk.filter(name=>!listed.includes(name)),[],'a test file in tools/ that no list names');
+  assert.deepEqual(listed.filter(name=>name.startsWith('tools/')&&!onDisk.includes(name)),[],'a listed test that is not there');
 });

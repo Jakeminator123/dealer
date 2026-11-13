@@ -19,6 +19,7 @@ const sentences = (text: string) => text.split(/(?<=\.) (?=[A-Z])/);
 
 test('every Utförlig text ends with what must not happen, a short or minimal one has no ban and no look; the parts make the text', () => {
   for (const step of STEPS) for (const style of TEXT_STYLES) {
+    if (step.styles && !step.styles.includes(style)) continue; // a step made after template 3 has no long text
     const motion = step.card ? { grip: step.grip ?? 'PINCH', hand: 'LH' as const, pass: false, turn: true, flipAxis: 'FREE' as const, side: 'FRONT' as const } : null;
     const { text, template, parts, style: written } = promptFor({ dealer: paow, step: step.key as StepKey, model: step.model, place: { x: 852, y: 1101 }, motion, style });
     const at = `${step.key} ${style} (${template})`;
@@ -297,4 +298,29 @@ test('template 5: the short deal says where the place is, with words of its own 
   assert.doesNotMatch(old.text, /far left|last frame shows/);
   assert.match(old.text, /towards its place\./);
   assert.equal(old.template, 'film-giv-kort@4');
+});
+
+test('the steps a round needs that Beställ could not order before: the way out and the hole card\'s turn, short and minimal only', () => {
+  const dealer = { name: 'Paow', look: 'a young, slim woman in a black blazer' };
+  const out = promptFor({ dealer, step: 'UTGANG', model: 'wan3', style: 'KORT' });
+  assert.equal(out.text, "Locked camera, one continuous shot. Her thumb and forefinger let the yellow card settle back into the shoe's window, and her hand comes back low over the felt, palm down, and rests flat on the felt, as in the last frame. Her eyes come up from the shoe towards the players. The other hand rests on the felt.");
+  assert.equal(out.template, `film-utgang-kort@${TEMPLATE_VERSION}`);
+  // The hole card lies where the plan lays D.C2 (x 912, y 927 in bank pixels): close in front of her, in the middle.
+  const turn = promptFor({ dealer, step: 'HALKORT', model: 'wan3', style: 'KORT', place: { x: 912.9, y: 927.3 } });
+  assert.equal(turn.text, `Locked camera, one continuous shot. Her hand nearest the shoe goes low over the felt to the yellow card lying close in front of her, in the middle of the picture, where the last frame shows it. ${SAY.turnAtPlace} Her open hand glides back low over the felt, palm down, and comes to rest flat on the felt. The other hand rests on the felt. Only one card moves; its back is yellow and its face is blue.`);
+  assert.equal(turn.template, `film-halkort-kort@${TEMPLATE_VERSION}`);
+  assert.deepEqual(turn.parts.filter((p) => p.text).map((p) => p.from), [[], ['place'], ['turn'], [], [], []]);
+  for (const p of [out, turn]) {
+    assert.ok(wordCount(p.text) <= 120, `${p.template}: ${wordCount(p.text)} words`);
+    assert.equal(sentences(p.text).filter((s) => /turns|rolls over/.test(s)).length, p === turn ? 1 : 0, 'one turn, said once');
+  }
+  const minimal = promptFor({ dealer, step: 'HALKORT', model: 'wan3', style: 'MINIMAL', place: { x: 912.9, y: 927.3 } });
+  assert.equal(minimal.text, "Locked camera. The card's back is yellow and its face is blue. One card in front of her turns from yellow to blue, as in the last frame, and her hand goes back to rest.");
+  assert.equal(promptFor({ dealer, step: 'UTGANG', model: 'wan3', style: 'MINIMAL' }).text, 'Locked camera. Her hand goes from the yellow card in the shoe back to the table, as in the last frame.');
+  // No long text: asked for one, they are written short.
+  assert.equal(promptFor({ dealer, step: 'UTGANG', model: 'wan3', style: 'UTFÖRLIG' }).style, 'KORT');
+  assert.deepEqual(STEPS.find((s) => s.key === 'HALKORT')!.styles, ['KORT', 'MINIMAL']);
+  // The hole card's deal is a deal like any other: it lands closed, said with its place.
+  const hole = promptFor({ dealer, step: 'GIV-2.1', model: 'wan3', style: 'KORT', motion: { grip: 'PINCH', hand: 'LH', pass: false, turn: false, flipAxis: null, side: 'BACK' }, place: { x: 912.9, y: 927.3 } });
+  assert.match(hole.text, /carries it low over the felt, yellow side up, to its place close in front of her, in the middle of the picture, where the last frame shows it\. She lays it flat there, yellow side up\./);
 });

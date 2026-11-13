@@ -1,5 +1,6 @@
 // The pictures that go out with an order (tools/order-store.ts writes them into assets/orders/<id>/). A picture of the
-// register is copied byte for byte when it is a PNG file, or decoded from its film when it is a frame. The last picture
+// register is copied byte for byte when it is a PNG file, or decoded from its film when it is a frame. The hole card's
+// turn draws the dealer's two cards on both its pictures (drawCards: one card after the other). The last picture
 // of a deal is the first picture with ONE card drawn where the placement plan says, by the plan's own drawing rule
 // (flatQuad from P4.C1 when the table is flat, as the lab draws it) and with real card pixels, not flat colour: the bank's
 // seat-4 card from the last frame of pamela-p4-c1-plan-return-idle-01, whose outline is the quad its last picture was
@@ -188,6 +189,19 @@ export function drawCard(base: Rgb, texture: Texture, plan: PlacementPlan, planF
       ...(scale !== 1 ? { scale: factor } : {}),
     },
   };
+}
+
+/**
+ * Draws several cards of the plan on `base`, one after the other, each measured against the picture before it (the hole
+ * card's turn: the dealer's first card open and the hole card closed, then open). The last card is the one the step is
+ * about (`drawn`); the others are `beside`.
+ */
+export function drawCards(base: Rgb, texture: Texture, plan: PlacementPlan, planFile: { path: string; sha256: string }, cards: readonly { target: string; side: 'FRONT' | 'BACK' }[]): { rgb: Rgb; drawn: Drawn; beside: Drawn[] } {
+  if (!cards.length) throw Error('Inga kort att rita.');
+  let rgb = base;
+  const all: Drawn[] = [];
+  for (const c of cards) { const made = drawCard(rgb, texture, plan, planFile, c.target, c.side); rgb = made.rgb; all.push(made.drawn); }
+  return { rgb, drawn: all[all.length - 1], beside: all.slice(0, -1) };
 }
 
 // ── A pose figure: only part of the person kept ─────────────────────────────

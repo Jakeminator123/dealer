@@ -75,6 +75,32 @@ export const changeOrder = (id: string, change: OrderChange, revision: string) =
 export const approveOrder = (id: string, revision: string) => call<OrderAnswer>(`api/orders/${id}/approve`, "Godkännandet", send("POST", undefined, revision));
 export const refreshOrder = (id: string, revision: string) => call<OrderAnswer>(`api/orders/${id}/refresh`, "Bilderna", send("POST", undefined, revision));
 
+// ── The production list (tools/produce.ts, GET /api/production, POST /api/production/draft) ──
+export type { Production, ProductionRow, RowState, Anchor as ProductionAnchor } from "../../tools/produce.ts";
+type ProductionAnswer = { list: import("../../tools/produce.ts").Production; problems: string[] };
+export const getProduction = (dealer: string) => call<ProductionAnswer>(`api/production?dealer=${encodeURIComponent(dealer)}`, "Produktionslistan");
+/** The drafts the list makes for every step that is missing, can be ordered now and whose method holds; never an approval. */
+export const draftProduction = (dealer: string) =>
+  call<ProductionAnswer & { made: { id: string; edge: string; title: string }[]; skipped: { edge: string; why: string }[] }>("api/production/draft", "Utkasten", send("POST", { dealer }));
+
+/** A state of the production list as a chip: colour AND sign, and the short word the list's row shows. */
+export const PRODUCTION_CHIP: Record<import("../../tools/produce.ts").RowState, { tone: Tone; sign: string; word: string }> = {
+  KLAR: { tone: "ok", sign: "✓", word: "klar" },
+  DOM: { tone: "wait", sign: "○", word: "väntar på din dom" },
+  BESTÄLLD: { tone: "variant", sign: "↑", word: "beställd" },
+  UTKAST: { tone: "neutral", sign: "✎", word: "utkast" },
+  MED_GIVEN: { tone: "neutral", sign: "↳", word: "kommer med given" },
+  KAN: { tone: "brass", sign: "●", word: "kan beställas nu" },
+  PROV: { tone: "remark", sign: "◐", word: "kan provas" },
+  VÄNTAR: { tone: "wait", sign: "…", word: "väntar på bild" },
+  INGEN_METOD: { tone: "bad", sign: "?", word: "ingen metod än" },
+  INTE_BYGGD: { tone: "neutral", sign: "–", word: "inte byggd" },
+};
+/** "5 av 33 klara · 5 av 21 krävs för en runda": the list's count in one line. */
+export function productionCount(counts: Pick<import("../../tools/produce.ts").Production["counts"], "done" | "total" | "neededDone" | "needed">): string {
+  return `${counts.done} av ${counts.total} klara · ${counts.neededDone} av ${counts.needed} som en runda kräver`;
+}
+
 // ── Words ───────────────────────────────────────────────────────────────────
 export type Tone = "neutral" | "brass" | "ok" | "variant" | "wait" | "bad" | "remark";
 /** A status chip: colour AND sign, never colour alone. */

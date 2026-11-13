@@ -2,7 +2,8 @@
 // the three places that already hold it and that nothing else joins. What was sent: data/orders/<id>.json (model, length,
 // the exact text and its template, the deal's choices, the pictures, a reference film, the cost). What happened to the
 // take: assets/orders/<id>/receipt.json (tools/order-put.ts; the independent reviewer's verdict is the note of the step
-// GRANSKAD, "Oberoende granskare: given 2,5/5 …"). Jakob's verdict: the clip bank's records motions/<id>.json of the takes
+// GRANSKAD, "Oberoende granskare: given 2,5/5 …", or the one kept beside the take by order-put's review, the newer of the
+// two). Jakob's verdict: the clip bank's records motions/<id>.json of the takes
 // tools/register-order.ts brought in (each names its order and take), and for a still the state of the picture in
 // data/media-roles.json whose receipt came from the take. Then a summary per method: how many takes, the reviewer's mean,
 // and how many Jakob accepted, kept as a variant, rejected or has not judged; always with the count, two takes are little.
@@ -231,10 +232,15 @@ export function scoresOf(note: string | null | undefined): Scores {
   return out;
 }
 
-/** The reviewer's note of a take: the last GRANSKAD step, else a note that is the independent reviewer's. */
-export function reviewerNote(history: unknown): string | null {
+/**
+ * The reviewer's note of a take: the verdict kept beside it (review, tools/order-put.ts review) or the last GRANSKAD step,
+ * whichever is newer; else a note that is the independent reviewer's.
+ */
+export function reviewerNote(history: unknown, review?: unknown): string | null {
   const steps = list(history).filter(isObj);
   const graded = steps.filter((h) => h.status === "GRANSKAD" && str(h.note)).pop();
+  const beside = isObj(review) && str(review.note) ? review : null;
+  if (beside && (!graded || String(beside.at ?? "") >= String(graded.at ?? ""))) return str(beside.note);
   const note = str(graded?.note) ?? str(steps.filter((h) => /oberoende granskare/i.test(String(h.note ?? ""))).pop()?.note);
   return note;
 }
@@ -310,7 +316,7 @@ export function ledgerOf(input: LedgerInput): Ledger {
       const label = code === "INTE_LAGD" ? "Godkänd, inte lagd" : code === "UTKAST" ? "Utkast, inte lagd" : ((SHOWN_LABEL as Record<string, string>)[code] ?? code);
       const history = list(entry?.history).filter(isObj);
       const at = str(history[history.length - 1]?.at) ?? str(entry?.requestedAt) ?? null;
-      const note = reviewerNote(entry?.history);
+      const note = reviewerNote(entry?.history, entry?.review);
       const reviewer = note ? { ...scoresOf(note), note } : null;
       // Jakob's word: the bank's records for a film, the register's picture for a still.
       const parts: Part[] = [];

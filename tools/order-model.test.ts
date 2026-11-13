@@ -5,7 +5,7 @@ import assert from 'node:assert/strict';
 import { readFile, readdir } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 import {
-  ALL_SEVEN, CARD_SCALES, MODELS, STEPS, bodyLine, canonical, checkPolicy, costOf, crossesBody, cutIntoOf, dayOf, defaultFlip, defaultStyle, draftProblems, edgeOf, genitive, groupBudget, handChoiceOf, handsOf, hashInput, landingMissing, landingOf, lengthFor, modelFor, modelsFor, paramsOf, priceOf, referenceCandidates, requestOf, scaleQuad, scaleWords, seatList, seatWords, shownOf, spentOn, startWords, stepOf, styleOf, stylesFor, summaryOf, takeStates, tidyMotion, validateOrder, verdictOf, waitWords,
+  ALL_SEVEN, CARD_SCALES, MODELS, SEAT_TARGETS, STEPS, bodyLine, canonical, checkPolicy, costOf, crossesBody, cutIntoOf, dayOf, defaultFlip, defaultStyle, draftProblems, edgeOf, genitive, groupBudget, handChoiceOf, handsOf, hashInput, landingMissing, landingOf, lengthFor, modelFor, modelsFor, paramsOf, priceOf, referenceCandidates, requestOf, scaleQuad, scaleWords, seatList, seatWords, shownOf, spentOn, startWords, stepOf, styleOf, stylesFor, summaryOf, takeStates, tidyMotion, validateOrder, verdictOf, waitWords,
   type BankFacts, type Order, type Policy, type Receipt,
 } from '../src/order-model.ts';
 import { orderPrompt } from '../src/order-prompts.ts';
@@ -346,4 +346,36 @@ test('a card size for one order: grown about its centre, stopped at the picture\
   assert.deepEqual(tidyMotion({ ...motion, turn: false, side: 'BACK' } as never)!.flipAxis, null);
   assert.doesNotMatch(validateOrder({ ...order, motion: { ...motion, cardScale: 1.5 } }).errors.join(' '), /cardScale/);
   assert.match(validateOrder({ ...order, motion: { ...motion, cardScale: 3 } }).errors.join(' '), /motion\.cardScale ska vara 1, 1\.25, 1\.5, 2/);
+});
+
+test('the steps a round needs: the hole card as a deal\'s target, its turn from rest with two cards drawn, and the way out', () => {
+  // The dealer's second card is a seat a deal goes to; it lands closed, as the plan says, and is the hole card in words.
+  assert.ok(SEAT_TARGETS.includes('D.C2'));
+  assert.ok(!ALL_SEVEN.includes('D.C2'), '"Alla sju" stays the players');
+  assert.equal(seatWords('D.C2'), 'dealerns hålkort');
+  assert.equal(seatWords('D.C1'), 'dealerns plats', 'the dealer\'s first card keeps its words');
+  const give = stepOf('GIV-2.1')!;
+  assert.equal(edgeOf(give, 'D.C2'), 'READY>D.C2');
+  assert.deepEqual(cutIntoOf(give, 'D.C2', 'ROUND_TRIP'), ['READY>D.C2', 'D.C2>READY']);
+  assert.match(summaryOf(give, 'Paow', { turn: false, target: 'D.C2', side: 'BACK' }), /lägger det stängt, baksidan upp, på dealerns hålkort/);
+  // The hole card turned open from rest and back to rest: IDLE>REVEAL(D.C2), the card fixed, both pictures with the cards.
+  const turn = stepOf('HALKORT')!;
+  assert.deepEqual([turn.kind, turn.from, turn.to, turn.card, turn.target, turn.model, turn.duration], ['FILM', '1', '1', false, 'D.C2', 'wan3', 5]);
+  assert.equal(edgeOf(turn, null), 'IDLE>REVEAL(D.C2)');
+  assert.deepEqual(cutIntoOf(turn, null, 'ONE_WAY'), [], 'one edge, its step.edge');
+  assert.deepEqual(turn.cards, [{ target: 'D.C1', before: 'FRONT', after: 'FRONT' }, { target: 'D.C2', before: 'BACK', after: 'FRONT' }]);
+  assert.match(startWords(turn), /^Börjar och slutar på ankare 1 \(vila\).*hålkortet stängt i första bilden och öppet i sista/);
+  assert.match(summaryOf(turn, 'Paow', null), /vänder hon upp hålkortet/);
+  // The way out: anchor 2.1 to anchor 1, READY>IDLE.
+  const out = stepOf('UTGANG')!;
+  assert.deepEqual([out.from, out.to, out.card, edgeOf(out, null)], ['2.1', '1', false, 'READY>IDLE']);
+  assert.match(startWords(out), /^Börjar på ankare 2\.1 och slutar på ankare 1 \(vila\)/);
+  // Short or minimal only; the steps before keep every style of their kind.
+  for (const s of [turn, out]) assert.deepEqual(stylesFor(s.kind, s), ['KORT', 'MINIMAL']);
+  assert.deepEqual(stylesFor('FILM', stepOf('VILA')), ['KORT', 'MINIMAL', 'UTFÖRLIG']);
+  assert.deepEqual(stylesFor('STILL'), ['KORT', 'UTFÖRLIG']);
+  // Every model that can make them takes their length; a reference film is chosen from the bank's takes of that edge.
+  for (const s of [turn, out]) assert.ok(modelsFor(s).every((m) => !m.durations || (s.duration! >= m.durations[0] && s.duration! <= m.durations[1])), s.key);
+  const bank: BankFacts = { jobs: [{ id: 'pamela-reveal-01', from: 'IDLE', to: 'REVEAL(D.C2)', duration: 4 }], motions: { 'pamela-reveal-01': { source: { frames: 120, fps: 30 }, review: { decision: 'ACCEPTED', userAccepted: true } } } };
+  assert.deepEqual(referenceCandidates(bank, { dealer: 'paow', step: turn, target: null, model: MODELS['kling-4'] }).map((c) => [c.take, c.match, c.approvedStraight]), [['pamela-reveal-01', 0, true]]);
 });

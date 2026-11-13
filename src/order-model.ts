@@ -73,7 +73,7 @@ export const STYLE_ABOUT: Record<TextStyle, string> = {
   MINIMAL: 'Jakobs prov: kortets färger och att ett kort går från skon dit sista bilden visar. Inget om hur. Inte för en bild.',
   UTFÖRLIG: 'Mall 3, som den var: hennes utseende, varje led och listan över det som inte får hända. För jämförelse.',
 };
-export const stylesFor = (kind: Kind): readonly TextStyle[] => (kind === 'STILL' ? ['KORT', 'UTFÖRLIG'] : TEXT_STYLES);
+export const stylesFor = (kind: Kind, step?: { styles?: readonly TextStyle[] } | null): readonly TextStyle[] => step?.styles ?? (kind === 'STILL' ? ['KORT', 'UTFÖRLIG'] : TEXT_STYLES);
 /** A new order is written Kort, a still too; only an order made before template 4 reads as Utförlig (styleOf). */
 export const defaultStyle = (_kind?: Kind): TextStyle => 'KORT';
 /** A stored order's style: its own, else Utförlig (every order before template 4 was written with the long text). */
@@ -211,6 +211,8 @@ export type Picture = {
   from: { entry?: string; path?: string; frame?: number; built?: string; note?: string } | null;
   waits?: Waits | null;
   drawn?: Drawn | null;
+  /** Other cards of the plan drawn on the same picture (the hole card's turn: the dealer's first card, open). */
+  drawnBeside?: Drawn[] | null;
   cut?: Cut | null;
   /** When a draft followed a newer anchor chosen in Material: when, and what the picture was before. */
   replaced?: { at: string; was: string; entry: string | null; sha256: string | null } | null;
@@ -295,7 +297,7 @@ export type Approval = { by: (typeof APPROVERS)[number]; at: string; orderSha256
 export const approvalWords = (a: Pick<Approval, 'by'>) => (a.by === 'huvudagent' ? 'Godkänd av huvudagenten på Jakobs uppdrag' : 'Godkänd av Jakob');
 
 // ── Steps and their defaults (bestall-plan "Defaults per kind of step") ─────
-export type StepKey = 'INGANG-2.1' | 'INGANG-2.2' | 'GIV-2.1' | 'GIV-2.2' | 'RETUR-2.1' | 'RETUR-2.2' | 'RETUR-1' | 'VILA' | 'ANKARE-2.1' | 'ANKARE-2.2';
+export type StepKey = 'INGANG-2.1' | 'INGANG-2.2' | 'GIV-2.1' | 'GIV-2.2' | 'RETUR-2.1' | 'RETUR-2.2' | 'RETUR-1' | 'UTGANG' | 'HALKORT' | 'VILA' | 'ANKARE-2.1' | 'ANKARE-2.2';
 export type StepDef = {
   key: StepKey;
   group: string;
@@ -320,6 +322,16 @@ export type StepDef = {
   /** Why the step cannot be ordered here (yet). */
   off?: string;
   makes?: { role: string; node?: string; label: string };
+  /** The graph's edge when it is not an anchor-to-anchor one (the hole card's turn: IDLE>REVEAL(D.C2)). */
+  edge?: string;
+  /**
+   * A step about one card of the plan that is not chosen (the hole card's turn: D.C2), and the cards both of its pictures
+   * draw on the anchor it starts on: the first with the card as it lies before (`before`), the last as it lies after.
+   */
+  target?: string;
+  cards?: { target: string; before: 'FRONT' | 'BACK'; after: 'FRONT' | 'BACK' }[];
+  /** The text styles it is written in, when not every style of its kind (a step made after template 3 has no long text). */
+  styles?: readonly TextStyle[];
 };
 export const STEPS: readonly StepDef[] = [
   { key: 'INGANG-2.1', group: 'Ingång', label: 'Ankare 1 → 2.1', kind: 'FILM', from: '1', to: '2.1', card: false, model: 'wan3', resolution: '1080p', duration: 4 },
@@ -331,6 +343,14 @@ export const STEPS: readonly StepDef[] = [
   { key: 'RETUR-2.1', group: 'Retur från landningen', label: 'Tillbaka till nypet (2.1)', kind: 'FILM', from: '2.1', to: '2.1', start: 'LAND', card: true, grip: 'PINCH', model: 'wan3', resolution: '1080p', duration: 3 },
   { key: 'RETUR-2.2', group: 'Retur från landningen', label: 'Tillbaka över skon (2.2)', kind: 'FILM', from: '2.2', to: '2.2', start: 'LAND', card: true, grip: 'DRAG', model: 'wan3', resolution: '1080p', duration: 3 },
   { key: 'RETUR-1', group: 'Retur från landningen', label: 'Tillbaka till vila (1)', kind: 'FILM', from: '1', to: '1', start: 'LAND', card: true, grip: 'PINCH', model: 'wan3', resolution: '1080p', duration: 3 },
+  // The steps a round needs that Beställ could not order before 2026-11-13 (the dealer's second card is GIV-2.1 to D.C2):
+  // the hand leaving the shoe for rest (READY>IDLE), and the hole card turned open from rest and the hand back to rest
+  // (IDLE>REVEAL(D.C2)), whose pictures are anchor 1 with the dealer's two cards drawn where the plan says.
+  { key: 'UTGANG', group: 'Utgång', label: 'Ankare 2.1 → 1: handen lämnar skon och vilar', kind: 'FILM', from: '2.1', to: '1', card: false, model: 'wan3', resolution: '1080p', duration: 4, styles: ['KORT', 'MINIMAL'] },
+  {
+    key: 'HALKORT', group: 'Hålkortet', label: 'Hålkortet vänds upp från vila, handen tillbaka', kind: 'FILM', from: '1', to: '1', card: false, target: 'D.C2', edge: 'IDLE>REVEAL(D.C2)',
+    cards: [{ target: 'D.C1', before: 'FRONT', after: 'FRONT' }, { target: 'D.C2', before: 'BACK', after: 'FRONT' }], model: 'wan3', resolution: '1080p', duration: 5, styles: ['KORT', 'MINIMAL'],
+  },
   { key: 'VILA', group: 'Vila', label: 'Vila, samma bild först och sist', kind: 'FILM', from: '1', to: '1', card: false, model: 'wan3', resolution: '1080p', duration: 4 },
   { key: 'ANKARE-2.1', group: 'Bild', label: 'Ankare 2.1 (nyp)', kind: 'STILL', from: '1', to: null, card: false, model: 'nano-banana-pro', ratio: '4:3', imageSize: '4K', makes: { role: 'ankare-2.1', node: 'READY', label: 'ankare 2.1' } },
   { key: 'ANKARE-2.2', group: 'Bild', label: 'Ankare 2.2 (släp)', kind: 'STILL', from: '1', to: null, card: false, model: 'nano-banana-pro', ratio: '4:3', imageSize: '4K', makes: { role: 'ankare-2.2', node: 'READY-B', label: 'ankare 2.2' } },
@@ -343,8 +363,9 @@ export const ANCHOR_WORDS: Record<'1' | '2.1' | '2.2', string> = {
   '2.2': 'ankare 2.2 (släp): handen över kortet i skons öppning',
 };
 /** Where a step starts and ends, in one line: "Börjar och slutar på ankare 2.2 (släp): …". */
-export function startWords(step: Pick<StepDef, 'kind' | 'from' | 'to' | 'start' | 'card'>, shape: Shape | null = null): string {
+export function startWords(step: Pick<StepDef, 'kind' | 'from' | 'to' | 'start' | 'card' | 'cards'>, shape: Shape | null = null): string {
   if (step.kind === 'STILL') return `Görs ur ${ANCHOR_WORDS[step.from]}.`;
+  if (step.cards?.length) return `Börjar och slutar på ${ANCHOR_WORDS[step.from]}, med dealerns två kort ritade där planen säger: det första öppet, hålkortet stängt i första bilden och öppet i sista.`;
   if (step.start === 'LAND') return `Börjar på platsens landningsbild (handen vid kortet) och slutar på ${ANCHOR_WORDS[step.to ?? step.from]}.`;
   if (step.card && shape === 'ONE_WAY') return `Börjar på ${ANCHOR_WORDS[step.from]}, och slutar på platsens landningsbild.`;
   if (!step.to || step.to === step.from) return `Börjar och slutar på ${ANCHOR_WORDS[step.from]}.`;
@@ -369,6 +390,8 @@ export const genitive = (name: string) => (/[sxz]$/i.test(name) ? name : `${name
 export function seatWords(target: string | null | undefined): string {
   const m = /^P(\d)\.C(\d)$/.exec(target ?? '');
   if (m) return `plats ${m[1]}${m[2] === '1' ? '' : ', kort ' + m[2]}`;
+  // The dealer's second card is the hole card (it lands closed); her first keeps the words it was ordered with.
+  if (target === 'D.C2') return 'dealerns hålkort';
   return /^D\./.test(target ?? '') ? 'dealerns plats' : 'platsen';
 }
 /**
@@ -403,6 +426,8 @@ export function summaryOf(step: Pick<StepDef, 'key'>, dealerName: string, motion
     case 'RETUR-1': return `Gör en film av ${dealerName}: handen går från kortet på ${seat} tillbaka till vila.`;
     case 'INGANG-2.1': return `Gör en film av ${dealerName}: från vila (ankare 1) flyttar hon vänsterhanden till nypet vid skon (ankare 2.1).`;
     case 'INGANG-2.2': return `Gör en film av ${dealerName}: från vila (ankare 1) lägger hon vänsterhanden över kortet vid skons öppning (ankare 2.2).`;
+    case 'UTGANG': return `Gör en film av ${dealerName}: från nypet vid skon (ankare 2.1) släpper hon kortet, och handen går tillbaka till vila (ankare 1).`;
+    case 'HALKORT': return `Gör en film av ${dealerName}: från vila vänder hon upp hålkortet, dealerns andra kort, med handen närmast skon, och handen går tillbaka till vila.`;
     case 'VILA': return `Gör en vilofilm av ${dealerName}: hon sitter still, och filmen börjar och slutar på ankare 1.`;
   }
 }
@@ -413,6 +438,7 @@ export const ANCHOR_ROLE: Record<'1' | '2.1' | '2.2', string> = { '1': 'ankare-1
 /** The edge a film step is filed under, in the graph's notation: READY>P4.C1, IDLE>READY. */
 export function edgeOf(step: StepDef, target: string | null): string | null {
   if (step.kind !== 'FILM') return null;
+  if (step.edge) return step.edge;
   if (step.card && target) return step.start === 'LAND' ? `${target}>${ANCHOR_NODE[step.to ?? step.from]}` : step.to === '1' ? `${target}>IDLE` : `${ANCHOR_NODE[step.from]}>${target}`;
   return `${ANCHOR_NODE[step.from]}>${ANCHOR_NODE[step.to ?? step.from]}`;
 }
@@ -422,7 +448,8 @@ export function cutIntoOf(step: StepDef, target: string | null, shape: Shape | n
   const edge = edgeOf(step, target)!;
   return step.start !== 'LAND' && shape !== 'ONE_WAY' ? [edge, `${target}>${ANCHOR_NODE[step.from]}`] : [edge];
 }
-export const SEAT_TARGETS = ['P1.C1', 'P2.C1', 'P3.C1', 'P4.C1', 'P5.C1', 'P6.C1', 'P7.C1', 'D.C1'];
+/** The cards a deal can be ordered to: the first card of every seat, the dealer's first, and her hole card (lands closed). */
+export const SEAT_TARGETS = ['P1.C1', 'P2.C1', 'P3.C1', 'P4.C1', 'P5.C1', 'P6.C1', 'P7.C1', 'D.C1', 'D.C2'];
 /** "Alla sju": the first card to every player. */
 export const ALL_SEVEN = SEAT_TARGETS.filter((t) => t.startsWith('P'));
 /** "plats 1, 2 och 3", "plats 1–7", "dealerns plats". */
@@ -578,6 +605,7 @@ export function verdictOf(review: { decision?: string; acceptedAs?: string; user
 /** The edge a film step shows, in the graph's notation: a deal from its anchor to the seat, a return from the seat to its anchor, else anchor to anchor. */
 export function wantedEdge(step: StepDef, target: string | null): string | null {
   if (step.kind !== 'FILM') return null;
+  if (step.edge) return step.edge;
   if (step.card) return target ? edgeOf(step, target) : null;
   return `${ANCHOR_NODE[step.from]}>${ANCHOR_NODE[step.to ?? step.from]}`;
 }
@@ -751,7 +779,11 @@ export type Receipt = {
   schemaVersion: 1;
   order: string;
   orderSha256: string;
-  takes: { take: number; status: TakeStatus; requestedAt: string | null; taskId: string | null; creditsRemainingAfter?: number | null; error?: string | null; file?: string | null; sha256?: string | null; history: { at: string; status: TakeStatus; note?: string }[] }[];
+  /**
+   * review: the independent reviewer's verdict recorded beside the take's state, at any state from HÄMTAD on, without
+   * moving it (node tools/order-put.ts review); the protocol reads it as the reviewer's note when it is the newest.
+   */
+  takes: { take: number; status: TakeStatus; requestedAt: string | null; taskId: string | null; creditsRemainingAfter?: number | null; error?: string | null; file?: string | null; sha256?: string | null; review?: { at: string; note: string } | null; history: { at: string; status: TakeStatus; note?: string }[] }[];
 };
 /** The takes of an approved order as they stand: a take the receipt does not name waits in the queue. */
 export function takeStates(order: Pick<Order, 'takes'>, receipt: Receipt | null): TakeStatus[] {

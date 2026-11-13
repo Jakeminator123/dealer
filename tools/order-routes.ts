@@ -13,6 +13,9 @@
 //   GET  /assets/orders/<id>/<file>     a picture or film of an order, only from that folder
 //   PUT  /api/media/<id>/state          Godkänn / Underkänn of a picture in Material (If-Match on the register); the
 //                                       dealer's drafts then follow the anchor that holds (store.follow)
+//   GET  /api/production?dealer=<id>    the production list (tools/produce.ts): every step of the dealer's graph, its state
+//   POST /api/production/draft          {dealer}: drafts for every step that is missing, can be ordered now and whose method
+//                                       holds (gäller), as node tools/produce.ts <dealer> --draft; never an approval
 // Writes come from the lab's own origin only, with the revision last read, as in tools/review-store.ts. Nothing here
 // places an order: an ordering agent does that after tools/order-clerk.md. Tests: tools/order-routes.test.ts.
 import { createReadStream } from 'node:fs';
@@ -22,6 +25,7 @@ import type { IncomingMessage, ServerResponse } from 'node:http';
 import { StoreError } from './placement-store.ts';
 import { mediaRoles } from './media-roles.ts';
 import { orderStore, type NewOrder, type StoreOptions } from './order-store.ts';
+import { makeDrafts, productionList, readProduction } from './produce.ts';
 
 const BODY_LIMIT = 16384;
 const NEW_KEYS = ['dealer', 'step', 'target', 'hand', 'pass', 'side', 'seats', 'flipAxis', 'model', 'duration', 'resolution', 'takes', 'extra', 'title', 'base', 'style', 'shape', 'reference', 'cardScale'];
@@ -84,10 +88,27 @@ export function orderRoutes(options: { root: string; origin: string } & StoreOpt
       return true;
     }
     const mediaState = /^\/api\/media\/([^/]+)\/state$/.exec(p);
-    if (p !== '/api/orders' && !p.startsWith('/api/orders/') && !mediaState) return false;
+    if (p !== '/api/orders' && !p.startsWith('/api/orders/') && !mediaState && p !== '/api/production' && p !== '/api/production/draft') return false;
     try {
       const write = method !== 'GET' && method !== 'HEAD';
       if (write && req.headers.origin !== origin) throw new StoreError(403, 'Spara från det lokala labbet.');
+      // The production list of a dealer, and the drafts it makes for what can be ordered now (never an approval).
+      if (p === '/api/production') {
+        if (method !== 'GET') throw new StoreError(405, 'Bara GET.');
+        const { input, problems } = await readProduction(root, url.searchParams.get('dealer') ?? '', { store });
+        json(res, 200, { list: productionList(input), problems });
+        return true;
+      }
+      if (p === '/api/production/draft') {
+        if (method !== 'POST') throw new StoreError(405, 'Bara POST.');
+        const value = (await body(req, true)) as { dealer?: unknown } | null;
+        if (!value || typeof value !== 'object' || Object.keys(value).some((k) => k !== 'dealer') || typeof value.dealer !== 'string') throw new StoreError(400, 'Frågan ska bara innehålla dealer.');
+        const read = () => readProduction(root, value.dealer as string, { store, createdBy: 'Produktionslistan i Beställ (Jakobs knapp "Skapa utkast för det som kan beställas")' });
+        const result = await makeDrafts(productionList((await read()).input), store);
+        const { input, problems } = await read();
+        json(res, result.made.length ? 201 : 200, { ...result, list: productionList(input), problems });
+        return true;
+      }
       if (mediaState) {
         if (method !== 'PUT') throw new StoreError(405, 'Bara PUT.');
         const value = (await body(req, true)) as { state?: unknown } | null;

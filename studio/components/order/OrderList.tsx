@@ -1,17 +1,20 @@
 "use client";
 
+// Above the queue, "Det här saknas för en runda" for the dealer chosen in the rail (Production: the production list).
 // The queue: one card per order in sections (klara att godkänna, väntar på bilder, i kön, lagda), each with its pictures
 // (named for which of the dealer's pictures they are), one line on what the order makes, a status chip, the model and
 // length, and the cost. A click opens "Det här skickas". Under the queue the one line on how
 // approved orders get placed.
 import { Clock, Film, ImageIcon, Plus } from "lucide-react";
 import Link from "next/link";
+import { useBank } from "../../lib/bank.ts";
 import { labUrl } from "../../lib/lab.ts";
 import { HANDOVER, costWords, picturesInOrder, sections, styleWords, type OrderAnswer, type OrdersAnswer, type Picture } from "../../lib/orders.ts";
 import { MODELS, approvalWords, credits, scaleWords } from "../../../src/order-model.ts";
 import { Page } from "../shell";
 import { Button, Card, EmptyState } from "../ui";
 import { StatusChip } from "./Pictures";
+import { Production } from "./Production";
 
 function Thumb({ picture }: { picture: Picture }) {
   const src = picture.path ? labUrl(picture.path) : null;
@@ -68,8 +71,11 @@ function OrderCard({ answer, onOpen }: { answer: OrderAnswer; onOpen: () => void
   );
 }
 
-export function OrderList({ all, onOpen, onNew }: { all: OrdersAnswer; onOpen: (id: string) => void; onNew: () => void }) {
+export function OrderList({ all, onOpen, onNew, onChanged }: { all: OrdersAnswer; onOpen: (id: string) => void; onNew: () => void; onChanged?: () => void }) {
   const list = sections(all.orders);
+  // The production list is the dealer's chosen in the rail (Pamela's while the bank is read).
+  const { dealer } = useBank();
+  const dealerName = all.dealers?.find((d) => d.id === dealer)?.name ?? dealer;
   return (
     <Page
       title="Beställ"
@@ -93,6 +99,7 @@ export function OrderList({ all, onOpen, onNew }: { all: OrdersAnswer; onOpen: (
     >
       <div className="flex flex-col gap-8">
         {all.problems.length ? <p className="text-sm text-[#ef8b8b]">{all.problems.join(" ")}</p> : null}
+        <Production key={dealer} dealer={dealer} dealerName={dealerName} plan={all.plan ?? null} onOpen={onOpen} onMade={() => onChanged?.()} />
         {list.length ? (
           list.map((s) => (
             <section key={s.key} className="flex flex-col gap-3">

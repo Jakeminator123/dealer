@@ -155,3 +155,12 @@ test("a stored deal: its choices in words, and the text marked by the function i
   assert.equal(storedParts({ ...film, prompt: { ...film.prompt, text: film.prompt.text + " " } }, look, planAnswerOf(plan, file), "Paow"), null, "a text the function does not give is shown unmarked");
   assert.equal(storedParts(film, null, null, "Paow"), null);
 });
+
+test("the production list's states each have a chip with a sign and a word, and the count says how far a round is", async () => {
+  const { PRODUCTION_CHIP, productionCount } = await import("../lib/orders.ts");
+  const { ROW_STATES } = await import("../../tools/produce.ts");
+  assert.deepEqual(Object.keys(PRODUCTION_CHIP).sort(), [...ROW_STATES].sort());
+  const signs = Object.values(PRODUCTION_CHIP).map((c) => c.sign);
+  assert.equal(new Set(signs).size, signs.length, "a sign of its own for every state, never colour alone");
+  assert.equal(productionCount({ done: 5, total: 33, neededDone: 5, needed: 21 }), "5 av 33 klara · 5 av 21 som en runda kräver");
+});

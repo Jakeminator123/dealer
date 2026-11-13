@@ -169,7 +169,7 @@ export function NewOrder({ open, onOpenChange, all, preset, onCreated }: { open:
   const motionAt = (t: string) => ({ grip: step.grip ?? ("PINCH" as const), ...handsAt(t), turn: sideAt(t) === "FRONT", flipAxis, side: sideAt(t), target: t });
 
   // ── The text's style, tur och retur or bara dit, the landing picture, the card's size, a reference film ──
-  const styles = stylesFor(step.kind);
+  const styles = stylesFor(step.kind, step);
   const style: TextStyle = styles.includes(styleChoice) ? styleChoice : "KORT";
   const deal = step.card && step.start !== "LAND";
   const shape: Shape | null = step.kind !== "FILM" ? null : deal ? shapeChoice : "ONE_WAY";
@@ -188,7 +188,9 @@ export function NewOrder({ open, onOpenChange, all, preset, onCreated }: { open:
   // ── What it turns into ──
   const focusSeat = focus ? seatOf(focus) : null;
   const motion = focus ? motionAt(focus) : null;
-  const prompt = look ? promptFor({ dealer: { name: dealerName, look }, step: key, model: model.id, motion, place: focusSeat ? { x: focusSeat.centre[0], y: focusSeat.centre[1] } : null, extra: extra.trim() || null, style, oneWay, reference: !!reference, cardScale }) : null;
+  // A step about a card that is not chosen (the hole card's turn): its place is that card's.
+  const placeSeat = focusSeat ?? (step.target ? seatOf(step.target) : null);
+  const prompt = look ? promptFor({ dealer: { name: dealerName, look }, step: key, model: model.id, motion, place: placeSeat ? { x: placeSeat.centre[0], y: placeSeat.centre[1] } : null, extra: extra.trim() || null, style, oneWay, reference: !!reference, cardScale }) : null;
   const summary = summaryOf(step, dealerName, motion, shape);
   // The same parameters the store gives the draft (paramsOf), so the cost here is the draft's.
   const params = paramsOf(step, model, step.kind === "FILM" ? { duration: seconds } : {});
@@ -213,6 +215,22 @@ export function NewOrder({ open, onOpenChange, all, preset, onCreated }: { open:
       <>
         <Thumb src={served(startEntry)} name={`Dealerns bild · ${entryName(startEntry, dealerName, step.from)}`} owner={me} dealer={dealerId} waiting={startEntry ? null : `ankare ${step.from}`} />
         <Thumb src={pose ? labUrl(`${pose.served}${startEntry ? `?anchor=${encodeURIComponent(startEntry.id)}` : ""}`) : null} name="Pose · bara armen, handen och skon" owner={pose?.owner ?? null} dealer={dealerId} waiting="posebilden" />
+      </>
+    ) : step.cards?.length ? (
+      // The hole card's turn: her anchor 1 with the dealer's cards where the plan lays them, before and after.
+      <>
+        {(["before", "after"] as const).map((when) => (
+          <Thumb
+            key={when}
+            src={served(start.holds)}
+            name={`${when === "before" ? "Första bild" : "Sista bild"} · ${entryName(start.holds, dealerName, step.from)} + korten, hålkortet ${step.cards!.at(-1)![when] === "FRONT" ? "öppet" : "stängt"}`}
+            owner={me}
+            dealer={dealerId}
+            waiting={start.holds ? null : `ankare ${step.from}`}
+            drawn
+            cards={step.cards!.flatMap((c) => (seatOf(c.target) ? [{ quad: seatOf(c.target)!.quad, side: c[when] }] : []))}
+          />
+        ))}
       </>
     ) : step.start === "LAND" ? (
       <>
@@ -337,7 +355,7 @@ export function NewOrder({ open, onOpenChange, all, preset, onCreated }: { open:
                       setTarget(t);
                       setAllSeven(false);
                     }}
-                    options={SEAT_TARGETS.map((t) => ({ value: t, label: t === "D.C1" ? "Dealer" : t.replace(".C1", ""), title: seatOf(t)?.crosses ? `${seatWords(t)}: vänsterhanden korsar kroppen` : seatWords(t) }))}
+                    options={SEAT_TARGETS.map((t) => ({ value: t, label: t === "D.C1" ? "Dealer" : t === "D.C2" ? "Hålkort" : t.replace(".C1", ""), title: seatOf(t)?.crosses ? `${seatWords(t)}: vänsterhanden korsar kroppen` : seatWords(t) }))}
                   />
                   {step.start !== "LAND" ? (
                     <button type="button" onClick={() => setAllSeven(true)} className={cn("h-7 rounded-md border px-2.5 text-sm", seven ? "border-brass/60 bg-brass/12 text-brass-hi" : "border-line text-ink hover:bg-raised")}>

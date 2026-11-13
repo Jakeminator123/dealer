@@ -12,7 +12,9 @@
 // studio's sheet and the stored draft both get it from promptFor, so the preview cannot drift from what is sent.
 //
 // A return is a film of its own: from the seat's landing picture back to an anchor. A deal "bara dit" (oneWay) ends on the
-// landing picture. A reference film adds one sentence (SAY.reference) in every style: it shows the movement only.
+// landing picture. A reference film adds one sentence (SAY.reference) in every style: it shows the movement only. The way
+// out (UTGANG, READY>IDLE) and the hole card's turn from rest (HALKORT, IDLE>REVEAL(D.C2)) came after template 3 and are
+// written Kort or Minimal only.
 //
 // A deal follows the hand chosen: the left hand all the way, the right hand all the way, or handbyte (the left hand takes
 // the card and gives it to the right hand low in front of her body; the right lays it). Every sentence that names a hand
@@ -118,6 +120,13 @@ export const SAY = {
   // Jakob of the entry film: "hon rör inte blicken, vilket är tråkigt".
   eyes: 'Her eyes follow her hand down to the shoe and come back up.',
   reachMinimal: 'Her hand goes from the table to the yellow card in the shoe, as in the last frame.',
+  // The way out, from the pinch at the shoe to rest (READY>IDLE, anchor 2.1 to anchor 1): one action.
+  leaveShoe: "Her thumb and forefinger let the yellow card settle back into the shoe's window, and her hand comes back low over the felt, palm down, and rests flat on the felt, as in the last frame.",
+  eyesUp: 'Her eyes come up from the shoe towards the players.',
+  leaveMinimal: 'Her hand goes from the yellow card in the shoe back to the table, as in the last frame.',
+  // The hole card turned open from rest (IDLE>REVEAL(D.C2)): the reach, the turn at the place (turnAtPlace), the way back.
+  revealReach: (where: string | null) => `Her hand nearest the shoe goes low over the felt to the yellow card lying ${where ?? 'in front of her'}.`,
+  revealMinimal: 'One card in front of her turns from yellow to blue, as in the last frame, and her hand goes back to rest.',
   // A rest: the fixed part; Jakob's addition says what happens.
   rest: 'She starts and ends exactly as in the first frame, and holds still for the last half second.',
   restMinimal: 'She starts and ends as in the first frame.',
@@ -461,6 +470,40 @@ function entryText(input: PromptInput, to: '2.1' | '2.2', style: TextStyle = 'UT
 }
 
 /**
+ * The way out (READY>IDLE): from anchor 2.1 the pinch lets the card settle back into the window and the hand comes back
+ * low to rest on the felt (anchor 1). Written Kort or Minimal only: the step came after template 3.
+ */
+function exitText(input: PromptInput, style: TextStyle): Prompt {
+  const parts: Part[] = style === 'MINIMAL'
+    ? [{ text: SAY.cameraMinimal, from: [] }, referencePart(input), { text: SAY.leaveMinimal, from: [] }, extraPart(input)]
+    : [{ text: SAY.camera, from: [] }, referencePart(input), { text: SAY.leaveShoe, from: [] }, { text: SAY.eyesUp, from: [] }, { text: SAY.otherRests, from: [] }, extraPart(input)];
+  return { template: templateOf('film-utgang', style === 'MINIMAL' ? 'MINIMAL' : 'KORT'), style: style === 'MINIMAL' ? 'MINIMAL' : 'KORT', text: joined(parts), parts };
+}
+
+/**
+ * The hole card turned open from rest (IDLE>REVEAL(D.C2)): the hand nearest the shoe goes low to the closed card where the
+ * plan lays it (said in words, as a deal says its place), turns it at the place as the handbook's turn A (SAY.turnAtPlace),
+ * and glides back to rest. One card moves. Written Kort or Minimal only.
+ */
+function revealText(input: PromptInput, style: TextStyle): Prompt {
+  if (style === 'MINIMAL') {
+    const parts: Part[] = [{ text: SAY.cameraMinimal, from: [] }, referencePart(input), { text: SAY.colours, from: [] }, { text: SAY.revealMinimal, from: [] }, extraPart(input)];
+    return { template: templateOf('film-halkort', 'MINIMAL'), style: 'MINIMAL', text: joined(parts), parts };
+  }
+  const parts: Part[] = [
+    { text: SAY.camera, from: [] },
+    referencePart(input),
+    { text: SAY.revealReach(input.place ? whereShort(input.place) : null), from: input.place ? ['place'] : [] },
+    { text: SAY.turnAtPlace, from: ['turn'] },
+    { text: SAY.glideTo['1'], from: [] },
+    { text: SAY.otherRests, from: [] },
+    { text: SAY.oneCardMoves, from: [] },
+    extraPart(input),
+  ];
+  return { template: templateOf('film-halkort', 'KORT'), style: 'KORT', text: joined(parts), parts };
+}
+
+/**
  * A rest. Utförlig: the long text, which says what she does (looks gently around, her hands stay). Kort and Minimal: the
  * fixed part says only that she starts and ends in the first picture (and holds still for the last half second); Jakob's
  * addition says what happens, a nod or tapping fingers, without a fixed sentence against it.
@@ -510,6 +553,10 @@ function written(input: PromptInput): Prompt {
       return entryText(input, '2.1', style);
     case 'INGANG-2.2':
       return entryText(input, '2.2', style);
+    case 'UTGANG':
+      return exitText(input, style);
+    case 'HALKORT':
+      return revealText(input, style);
     case 'VILA':
       return restText(input, style);
   }

@@ -11,6 +11,8 @@
 //   node tools/order-put.ts status <id> <take> <STATUS> [--file <path>] [--note "<text>"]
 //                                                            KLAR, HÄMTAD (with --file), EFTERARBETAD, MÄTT, GRANSKAD,
 //                                                            INFÖRD; MISSLYCKAD (Runway failed it); AVBRUTEN (never begun)
+//   node tools/order-put.ts review <id> <take> --note "<verdict>"   the independent reviewer's verdict, beside the take
+//                                                            from HÄMTAD on, its state unchanged (the protocol reads it)
 //   node tools/order-put.ts show <id>                        the receipt
 import { readFile, writeFile, mkdir, rename, rm, open } from 'node:fs/promises';
 import { createHash, randomUUID } from 'node:crypto';
@@ -139,7 +141,20 @@ export function receipts(root: string, options: { now?: () => Date } = {}) {
       return { ...step(t, status, options.note), ...(fileBytes ? { file: rel, sha256: sha(fileBytes) } : {}) };
     });
   }
-  return { read, check, begin, placed, failed, advance };
+  /**
+   * The independent reviewer's verdict, kept beside the take (review: when and the note) at any state from HÄMTAD on,
+   * without moving the state: a take is often in the bank (INFÖRD) before the review is back. A later verdict replaces it.
+   */
+  async function review(id: string, takeValue: unknown, note: string) {
+    const text = String(note ?? '').trim();
+    if (!text || text.length > 2000) throw new StoreError(400, 'Granskarens dom ska vara en text på högst 2000 tecken (--note "…").');
+    return update(id, (receipt, order) => {
+      const take = takeNumber(order, takeValue), t = receipt.takes.find((x) => x.take === take);
+      if (!t || TAKE_FLOW.indexOf(t.status as (typeof TAKE_FLOW)[number]) < TAKE_FLOW.indexOf('HÄMTAD')) throw new StoreError(409, `${id} tagning ${take} är ${t?.status ?? 'inte lagd'}: granskarens dom förs in först när filmen är hämtad (HÄMTAD eller senare).`);
+      return { ...t, review: { at: now(), note: text } };
+    });
+  }
+  return { read, check, begin, placed, failed, advance, review };
 }
 
 // ── On the command line ─────────────────────────────────────────────────────
@@ -159,6 +174,7 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
     else if (command === 'failed') out((await r.failed(id, take, rest.join(' '))).take);
     else if (command === 'status') out((await r.advance(id, take, rest[0], { file: flag('--file'), note: flag('--note') })).take);
     else if (command === 'show') out(await r.read(id));
-    else { console.log('Använd: node tools/order-put.ts check|begin|placed|failed|status|show <id> [tagning] …'); process.exitCode = 2; }
+    else if (command === 'review') out((await r.review(id, take, flag('--note') ?? '')).take);
+    else { console.log('Använd: node tools/order-put.ts check|begin|placed|failed|status|review|show <id> [tagning] …'); process.exitCode = 2; }
   } catch (error) { console.error(`[RÖD] ${(error as Error).message}`); process.exitCode = 1; }
 }

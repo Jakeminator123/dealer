@@ -480,3 +480,44 @@ test('Jakob\'s click through the route is always his: a body saying otherwise is
   assert.equal(approved.status, 200);
   assert.deepEqual([approved.json.order.approval.by, approved.json.order.approval.mandate], ['jakob', undefined]);
 });
+
+test('the steps a round needs: a deal to the hole card, its turn from rest and the way out; and the production list through the routes', async (t) => {
+  const { root, call } = await lab(t);
+  await copyFile('data/order-methods.json', path.join(root, 'data/order-methods.json'));
+  // Her anchors are candidates here: every picture waits, and the text says the place from the plan.
+  const hole = (await call('POST', '/api/orders', { body: { dealer: 'paow', step: 'GIV-2.1', target: 'D.C2' } })).json;
+  assert.equal(hole.order.id, 'paow-giv-2-1-d-c2-01');
+  assert.deepEqual([hole.order.step.edge, hole.order.step.cutInto], ['READY>D.C2', ['READY>D.C2', 'D.C2>READY']]);
+  assert.deepEqual([hole.order.motion.side, hole.order.motion.turn, hole.order.motion.flipAxis], ['BACK', false, null], 'it lands closed, as the plan says');
+  assert.match(hole.order.title, /dealerns hålkort/);
+  assert.match(hole.order.prompt.text, /to its place close in front of her, in the middle of the picture, where the last frame shows it\. She lays it flat there, yellow side up\./);
+  const turn = await call('POST', '/api/orders', { body: { dealer: 'paow', step: 'HALKORT' } });
+  assert.equal(turn.status, 201);
+  const o = turn.json.order;
+  assert.equal(o.id, 'paow-halkort-01');
+  assert.deepEqual([o.step.edge, o.step.shape, o.step.cutInto, o.motion], ['IDLE>REVEAL(D.C2)', 'ONE_WAY', [], null]);
+  assert.deepEqual(o.pictures.map((p: { name: string; goesAs: string; path: string | null; waits: { label: string } | null }) => [p.name, p.goesAs, p.path, p.waits?.label]), [['first.png', 'startFrame', null, 'ankare 1'], ['last.png', 'endFrame', null, 'ankare 1']]);
+  assert.match(o.pictures[0].label, /hålkortet stängt$/);
+  assert.match(o.pictures[1].label, /hålkortet öppet$/);
+  assert.deepEqual([o.prompt.style, o.prompt.template, o.generation.model, o.generation.params.duration, o.cost.total], ['KORT', 'film-halkort-kort@5', 'wan3', 5, 200]);
+  assert.match(o.prompt.text, /to the yellow card lying close in front of her, in the middle of the picture, where the last frame shows it\. There her thumb slides under/);
+  assert.equal(turn.json.shown, 'VÄNTAR');
+  assert.match((await call('POST', '/api/orders', { body: { dealer: 'paow', step: 'HALKORT', style: 'UTFÖRLIG' } })).json.error, /skrivs KORT eller MINIMAL/);
+  const out = (await call('POST', '/api/orders', { body: { dealer: 'paow', step: 'UTGANG' } })).json.order;
+  assert.deepEqual([out.id, out.step.edge, out.pictures.map((p: { waits: { label: string } | null }) => p.waits?.label)], ['paow-utgang-01', 'READY>IDLE', ['ankare 2.1', 'ankare 1']]);
+  assert.match(out.prompt.text, /^Locked camera, one continuous shot\. Her thumb and forefinger let the yellow card settle back into the shoe's window/);
+
+  // The production list: read by anyone of the lab, drafts only from the lab's own origin, never an approval.
+  const list = await call('GET', '/api/production?dealer=paow');
+  assert.equal(list.status, 200);
+  assert.equal(list.json.list.rows.length, 33);
+  assert.deepEqual(list.json.list.rows.find((r: { edge: string }) => r.edge === 'IDLE>REVEAL(D.C2)').orders.map((x: { id: string }) => x.id), ['paow-halkort-01'], 'the draft is in flight for its step');
+  assert.equal(list.json.list.rows.find((r: { edge: string }) => r.edge === 'IDLE>REVEAL(D.C2)').state, 'UTKAST');
+  assert.equal((await call('GET', '/api/production?dealer=nobody')).status, 400);
+  assert.equal((await call('POST', '/api/production/draft', { body: { dealer: 'paow' }, from: 'http://evil.example' })).status, 403);
+  assert.equal((await call('POST', '/api/production/draft', { body: { dealer: 'paow', step: 'VILA' } })).status, 400, 'nothing but the dealer can be asked for');
+  const drafted = await call('POST', '/api/production/draft', { body: { dealer: 'paow' } });
+  assert.equal(drafted.status, 200);
+  assert.deepEqual(drafted.json.made, [], 'her anchors are only candidates: nothing can be ordered with a method that holds');
+  assert.equal((await call('GET', '/api/orders')).json.orders.filter((a: { order: { status: string } }) => a.order.status === 'GODKÄND').length, 0, 'nothing approved');
+});

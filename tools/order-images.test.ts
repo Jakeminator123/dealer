@@ -4,7 +4,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { existsSync } from 'node:fs';
-import { H, W, apply, armAlone, cardOutline, cardTexture, components, drawCard, greenOf, homography, matchGreen, planQuad, poseOnShoe, readPlan, type Pt } from './order-images.ts';
+import path from 'node:path';
+import { H, TEXTURE, W, apply, armAlone, cardOutline, cardTexture, components, drawCard, drawCards, greenOf, homography, matchGreen, planQuad, pngOf, poseOnShoe, readPlan, type Pt } from './order-images.ts';
 import { ARM_ALONE, SHOE_AT_ANCHOR, SLEEVE_AT_SHOE } from './order-store.ts';
 
 test('the homography maps the four corners onto the four corners', () => {
@@ -134,4 +135,38 @@ test('a card size for one order: the last picture draws the card 150 % about its
   assert.ok(Math.abs(ratio - 1.5) < 0.06, `drawn ${ratio.toFixed(3)} × as wide`);
   assert.ok(big.measuredOffsetPx! < 2);
   assert.equal(JSON.stringify(plan), before);
+});
+
+test('the hole card\'s turn: both of the dealer\'s cards drawn one after the other, each where the plan says; the store draws its two pictures', { skip: !media && 'the bank films are not on this machine' }, async (t) => {
+  const root = process.cwd();
+  const { plan, file } = await readPlan(root);
+  const texture = await cardTexture(root);
+  const green = Buffer.alloc(W * H * 3);
+  for (let i = 0; i < W * H; i++) { green[i * 3] = 0; green[i * 3 + 1] = 237; green[i * 3 + 2] = 44; }
+  const made = drawCards(green, texture, plan, file, [{ target: 'D.C1', side: 'FRONT' }, { target: 'D.C2', side: 'BACK' }]);
+  assert.deepEqual([made.drawn.target, made.drawn.side, made.beside.map((d) => [d.target, d.side])], ['D.C2', 'BACK', [['D.C1', 'FRONT']]]);
+  for (const d of [made.drawn, ...made.beside]) assert.ok(d.measuredOffsetPx! < 2, `${d.target}: ${d.measuredOffsetPx} px from the plan`);
+  assert.equal(made.drawn.measured!.changedElsewhere, 0, 'the second card is measured against the picture with the first');
+  const [cx, cy] = made.drawn.centre.map(Math.round), at = (cy * W + cx) * 3;
+  assert.ok(made.rgb[at] > 150 && made.rgb[at + 2] < 60, 'the hole card is yellow');
+  assert.throws(() => drawCards(green, texture, plan, file, []), /Inga kort/);
+
+  // The store: her anchor 1 holds, so both pictures are drawn on it at once, the hole card closed and then open.
+  const { mkdtemp, mkdir, writeFile, copyFile, rm } = await import('node:fs/promises');
+  const base = existsSync('D:/dealer-scratch/tmp') ? 'D:/dealer-scratch/tmp' : (await import('node:os')).tmpdir();
+  const lab = await mkdtemp(path.join(base, 'order-images-'));
+  t.after(() => rm(lab, { recursive: true, force: true }));
+  for (const f of ['data/order-policy.json', 'data/dealers.json', 'placements/default.json', TEXTURE.video, TEXTURE.quadFrom]) { await mkdir(path.dirname(path.join(lab, f)), { recursive: true }); await copyFile(f, path.join(lab, f)); }
+  await mkdir(path.join(lab, 'assets/anchors/paow-vila'), { recursive: true });
+  await writeFile(path.join(lab, 'assets/anchors/paow-vila/anchor.png'), await pngOf(green));
+  await writeFile(path.join(lab, 'data/clip-jobs.json'), '{"jobs": []}');
+  await writeFile(path.join(lab, 'data/media-roles.json'), JSON.stringify({ schemaVersion: 1, measures: [], dealers: { paow: { name: 'Paow', entries: [{ id: 'paow-vila', role: 'ankare-1', name: 'Vila', path: 'assets/anchors/paow-vila/anchor.png', node: 'IDLE', state: 'gäller' }] } } }));
+  const { orderStore } = await import('./order-store.ts');
+  const { order } = await orderStore(lab).create({ dealer: 'paow', step: 'HALKORT' });
+  const [first, last] = order.pictures;
+  assert.deepEqual([first.drawn!.target, first.drawn!.side, first.drawnBeside!.map((d) => d.side), last.drawn!.side, last.drawnBeside!.map((d) => d.side)], ['D.C2', 'BACK', ['FRONT'], 'FRONT', ['FRONT']]);
+  assert.equal(first.from!.entry, 'paow-vila');
+  assert.match(first.label, /^Första bild · Paows ankare 1 \+ dealerns kort, hålkortet stängt$/);
+  assert.ok(first.sha256 && last.sha256 && first.sha256 !== last.sha256);
+  assert.match(order.prompt.text, /lying close in front of her, in the middle of the picture, where the last frame shows it/, 'the place from the drawn card');
 });

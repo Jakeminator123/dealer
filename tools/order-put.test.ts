@@ -65,6 +65,29 @@ test('requestedAt before, task id after, and a begun take is never begun again',
   assert.deepEqual(receipt.takes[0].history.map((h: { status: string }) => h.status), ['OSÄKER', 'LAGD', 'HÄMTAD']);
 });
 
+test('the reviewer\'s verdict is kept beside a take from HÄMTAD on without moving its state, and the protocol reads it', async (t) => {
+  const { root, r } = await approved(t);
+  await r.begin('prov-ett', 1);
+  await assert.rejects(r.review('prov-ett', 1, 'Oberoende granskare: 3/5'), /OSÄKER: granskarens dom förs in först när filmen är hämtad/);
+  await r.placed('prov-ett', 1, 'b90b9362-7a13-4b80-b498-c324f02c41f8');
+  await assert.rejects(r.review('prov-ett', 1, 'Oberoende granskare: 3/5'), /LAGD/);
+  await assert.rejects(r.review('prov-ett', 2, 'x'), /inte lagd/);
+  await writeFile(path.join(root, 'assets/orders/prov-ett/tagning-1.png'), 'png');
+  await r.advance('prov-ett', 1, 'HÄMTAD', { file: 'assets/orders/prov-ett/tagning-1.png' });
+  await r.advance('prov-ett', 1, 'INFÖRD', { note: 'förd in före granskningen' });
+  await assert.rejects(r.review('prov-ett', 1, '  '), /--note/);
+  const kept = await r.review('prov-ett', 1, 'Oberoende granskare: given 2,5/5, returen 1/5 möjlig variant.');
+  assert.equal(kept.take.status, 'INFÖRD', 'the state does not move');
+  assert.deepEqual(kept.take.review, { at: '2026-11-12T22:00:00.000Z', note: 'Oberoende granskare: given 2,5/5, returen 1/5 möjlig variant.' });
+  assert.deepEqual(kept.take.history.map((h) => h.status), ['OSÄKER', 'LAGD', 'HÄMTAD', 'INFÖRD'], 'no step is added');
+  const { reviewerNote, scoresOf } = await import('../studio/lib/ledger.ts');
+  const receipt = JSON.parse(await readFile(path.join(root, 'assets/orders/prov-ett/receipt.json'), 'utf8'));
+  assert.deepEqual(scoresOf(reviewerNote(receipt.takes[0].history, receipt.takes[0].review)), { score: 2.5, deal: 2.5, back: 1 });
+  // A later GRANSKAD note is newer than the one kept beside, and the other way round.
+  assert.equal(reviewerNote([{ at: '2026-11-13T01:00:00Z', status: 'GRANSKAD', note: 'Oberoende granskare: 4/5' }], { at: '2026-11-12T22:00:00Z', note: 'Oberoende granskare: 1/5' }), 'Oberoende granskare: 4/5');
+  assert.equal(reviewerNote([{ at: '2026-11-12T21:00:00Z', status: 'GRANSKAD', note: 'Oberoende granskare: 4/5' }], { at: '2026-11-12T22:00:00Z', note: 'Oberoende granskare: 1/5' }), 'Oberoende granskare: 1/5');
+});
+
 test('nothing is placed for an order that changed after approval or whose picture changed on disk', async (t) => {
   const { root, r } = await approved(t);
   const file = path.join(root, 'data/orders/prov-ett.json');
