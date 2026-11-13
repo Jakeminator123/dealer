@@ -38,13 +38,17 @@ export const SHOE_BOX = [1242, 754, 1339, 855];
 // ||), so the shader and the tests read the same text: the tests compile it and hold the strict rules to the tracker's own
 // (src/card-track.ts `is`). back/face: the tracker's yellow and blue. shade: its yellow back in finger shadow. dimBack/dimFace:
 // the same colours below the tracker's brightness (a finger's shadow on the card); those two and shade count only near the card's
-// own colour, so the shoe's tan frame, a knuckle or a dark sleeve are not taken for card.
+// own colour, so the shoe's tan frame, a knuckle or a dark sleeve are not taken for card. pale: the face as some films wash it out
+// (light lavender instead of blue: Paow at seat 1, paow-giv-2-1-p1-06-01 frames 74-81, mean 192-215/193-219/239-246); it counts only
+// inside the zone where the card was in the frames before (paleZone) and only while the track shows the face. Skin is red-led, her
+// blouse cream, so neither passes; across every tracked Paow take it fires nowhere else (D:/dealer-scratch/tmp/huvudagent11/kort2/scan/palecheck.mjs).
 export const RULES = {
   back: 'r > 95. && g > 95. && g > .82 * r && r > .6 * g && b < .45 * min(r, g)',
   face: 'b > 90. && b > 1.5 * r && b > 1.15 * g',
   shade: 'r > 95. && g > .45 * r && g <= .82 * r && b < .12 * r',
   dimBack: 'r > 40. && g > 40. && g > .7 * r && g < 1.15 * r && b < .35 * min(r, g)',
   dimFace: 'b > 40. && b > 1.4 * r && b > 1.1 * g',
+  pale: 'r > 150. && g > 150. && b > 200. && b > r + 15. && b > g + 12. && b - min(r, g) < 80.',
 } as const;
 const rule = (name: keyof typeof RULES) => `bool ${name}Of(float r, float g, float b){ return ${RULES[name]}; }`;
 /** The rules as GLSL functions, and the four classes of a pixel: (back candidate, face candidate, back, face). */
@@ -55,10 +59,13 @@ vec4 cardClasses(vec3 c){ float r = c.r, g = c.g, b = c.b; bool y = backOf(r, g,
 // ---- the passes, in film pixels (src/scene3d-deal.ts runs them on film-sized targets, the frame's own size) -----------------
 // Every target is laid like the video texture: u to the right, v up, so a target and the film are read at the same uv.
 export const PASS_VERTEX = 'void main(){ gl_Position = vec4(position.xy, 0., 1.); }';
-/** The film frame's classes (cardClasses), read straight off the video. */
-export const CLASSIFY_FRAGMENT = `uniform sampler2D map; uniform vec2 size;
+/** The film frame's classes (cardClasses), read straight off the video; inside `paleZone` (while paleOn) a washed-out face is face too. */
+export const CLASSIFY_FRAGMENT = `uniform sampler2D map; uniform vec2 size, paleZone[4]; uniform float paleOn;
 ${CLASS_GLSL}
-void main(){ gl_FragColor = cardClasses(texture2D(map, gl_FragCoord.xy / size).rgb * 255.); }`;
+bool inZone(vec2 p){ for (int i = 0; i < 4; i++) { vec2 a = paleZone[i], b = paleZone[i == 3 ? 0 : i + 1]; if ((b.x - a.x) * (p.y - a.y) - (b.y - a.y) * (p.x - a.x) < 0.) return false; } return true; }
+void main(){ vec3 c = texture2D(map, gl_FragCoord.xy / size).rgb * 255.; vec4 o = cardClasses(c);
+  if (paleOn > .5 && paleOf(c.r, c.g, c.b) && inZone(vec2(gl_FragCoord.x - .5, size.y - gl_FragCoord.y - .5))) o.yw = vec2(1.);
+  gl_FragColor = o; }`;
 // One direction of a square erosion (grow 0) or dilation (grow 1), per channel with a radius of its own (0 passes it through).
 // Inside the shoe window (`shoe`, film pixels, y down) the first two channels take `shoeRadius` at most. `combine` (the last pass of
 // the body): the card's body is its candidates (`base`, the classes) where the opened mask reaches and the card's own colour is
@@ -148,6 +155,18 @@ export function matteBox(track: MatteTrack, frame: number, shoe: number[] = trac
     x0 = Math.min(x0, a - r); y0 = Math.min(y0, b - r); x1 = Math.max(x1, c + r); y1 = Math.max(y1, e + r);
   }
   return clampBox([x0, y0, x1, y1]);
+}
+/**
+ * Where a washed-out face may be taken for the card in a frame (RULES.pale), or null: only while the track shows the face, and only
+ * where the card was over this frame and the four before it (the box around their quads or edge lines, grown by 24 px and 0.15 of
+ * its size), clockwise on screen. The card hardly moves while the film washes its face out, and the track keeps its last shape there.
+ */
+export function paleZone(track: MatteTrack, frame: number): number[][] | null {
+  if (track?.frames?.[frame]?.side !== 'FRONT') return null;
+  const points: number[][] = []; for (let k = frame - 4; k <= frame; k++) { const f = track.frames[k]; points.push(...(f?.quad?.length === 4 ? f.quad : f?.edge?.length === 2 ? f.edge : [])); }
+  if (!points.length) return null;
+  const xs = points.map(p => p[0]), ys = points.map(p => p[1]), box: Pt[] = [{x: Math.min(...xs), y: Math.min(...ys)}, {x: Math.max(...xs), y: Math.min(...ys)}, {x: Math.max(...xs), y: Math.max(...ys)}, {x: Math.min(...xs), y: Math.max(...ys)}];
+  return grown(box, 24 + 0.15 * Math.sqrt(Math.abs(signedArea(box)))).map(p => [p.x, p.y]);
 }
 /** The track's card in a frame as the zone where blurred card colour is unmixed (card-overlay.ts filmZone's reach), or null. */
 export function matteZone(track: MatteTrack, frame: number): number[][] | null {

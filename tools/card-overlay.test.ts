@@ -327,3 +327,13 @@ test('Paow\'s tracked takes, every frame: what is drawn is a card, and a bent ca
       for (const [u, v] of [[0, 0], [1, 0], [1, 1], [0, 1], [0.5, 0], [0.5, 1]]) assert.ok(inFront(bentPoint(q, u, v, 0.18, false)), `${d} frame ${i}: corner (${u}, ${v}) behind the eye`); } }
   assert.ok(frames > 1000);
 });
+
+test('a card lying since an earlier film is laid in the size and place the dealt card came to rest in, at every card size', () => {
+  // src/scene3d-deal.ts lays a lying card with restingQuad(plan quad, Kortens storlek); the dealt card rests by poseAt with the plan's quad as land
+  const track = deal(), plan = pts(shift(P4_FILM, 30, -12));
+  for (const scale of [0.8, 1.2, 1.65, 2]) {
+    const rest = poseAt(track, scene, 35, scale, 12, null, plan)!.quad!, lying = restingQuad(scene, plan, scale).quad;
+    rest.forEach((p, i) => assert.ok(dist(p, lying[i]) < 1e-6 || lying.some(q => dist(p, q) < 1e-6), `scale ${scale} corner ${i}`));
+    assert.ok(Math.abs(area(rest) - area(lying)) < 1e-6);
+  }
+});

@@ -3,7 +3,7 @@
 // edge; where the passes run; which quad lays the face print and how a film pixel finds its place on it.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {CLASS_GLSL, MATTE, MATTE_GLSL, MORPH_FRAGMENT, RULES, SHADE_FRAGMENT, SHOE_BOX, bodyOf, matteBox, matteZone, meanLinear, printQuad, toPrint, unmix} from '../src/scene3d-matte.ts';
+import {CLASS_GLSL, CLASSIFY_FRAGMENT, MATTE, MATTE_GLSL, MORPH_FRAGMENT, RULES, SHADE_FRAGMENT, SHOE_BOX, bodyOf, matteBox, matteZone, meanLinear, paleZone, printQuad, toPrint, unmix} from '../src/scene3d-matte.ts';
 import {is} from '../src/card-track.ts';
 import {squareToQuad, onSquare} from '../src/scene3d-geometry.ts';
 import {DEFAULTS} from '../src/scene3d-view.ts';
@@ -105,4 +105,16 @@ test('the back print as one colour is its mean in linear light', () => {
 test('the passes\' loops reach as far as their widest step', () => {
   assert.ok(MORPH_FRAGMENT.includes(`i <= ${Math.max(MATTE.fringe, MATTE.near, MATTE.thin + MATTE.keep, MATTE.beside)}`));
   assert.ok(SHADE_FRAGMENT.includes(`i <= ${Math.ceil(3 * Math.max(MATTE.sigma.back, MATTE.sigma.face))}`));
+});
+
+test('a washed-out face is card only where the card was and while the track shows the face; skin, blouse, sleeve and felt never are', () => {
+  // seat 1 (paow-giv-2-1-p1-06-01), the face's mean colour in frames 75-80, and its lighter and bluer ends
+  for (const c of [[192, 193, 239], [201, 205, 244], [215, 219, 245], [197, 202, 246], [175, 185, 240]]) assert.equal(on('pale', c), true, `blek ${c}`);
+  // skin from fingertip to knuckle, the pale "skin" inside the card's quad in frames 70-74 (227/181/189), her cream blouse, her white, the jacket, the felt, the screen
+  for (const c of [[247, 181, 126], [246, 175, 151], [227, 181, 189], [230, 185, 198], [235, 222, 210], [240, 240, 235], [250, 250, 250], [20, 22, 25], [30, 140, 60], [50, 220, 90]]) assert.equal(on('pale', c), false, `inte blek ${c}`);
+  assert.ok(CLASSIFY_FRAGMENT.includes('paleOf(c.r, c.g, c.b) && inZone('), 'only inside the zone');
+  const q = (x: number) => [[x, 800], [x + 90, 800], [x + 90, 960], [x, 960]], frames = Array.from({length: 10}, (_, i) => ({frame: i, side: i < 5 ? 'BACK' : 'FRONT', quad: q(200 + i * 4), edge: null}));
+  assert.equal(paleZone({frames}, 4), null, 'not while the back shows'); assert.equal(paleZone({frames}, 3), null);
+  const zone = paleZone({frames}, 9)!, xs = zone.map(p => p[0]), ys = zone.map(p => p[1]);
+  assert.ok(Math.min(...xs) < 200 + 5 * 4 && Math.max(...xs) > 200 + 9 * 4 + 90, 'the frames before are in it'); assert.ok(Math.min(...ys) < 800 && Math.max(...ys) > 960 && Math.max(...ys) < 1020, 'grown, not far');
 });

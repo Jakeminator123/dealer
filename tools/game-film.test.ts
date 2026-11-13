@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import {buildGraph, type BankData, type BankJob, type MotionRecord} from '../src/clip-graph.ts';
 import {defaultPlan} from '../src/placement-model.ts';
 import {createLayout} from '../src/game-table.ts';
-import {createFilm, filmModel, type FilmPart} from '../src/game-film.ts';
+import {createFilm, faceFrame, filmModel, type FilmPart} from '../src/game-film.ts';
 
 const sha = 'a'.repeat(64), first = {file: {path: 'assets/anchors/paow-ready-01/anchor.png', sha256: sha}};
 const video = (id: string) => `assets/motions/${id}/source.mp4`;
@@ -39,16 +39,25 @@ test('the film model: the film\'s own record, not the order\'s cut; a talk film 
   const queue = players(), {parts, players: p} = queue, film = createFilm(p, graph, createLayout(defaultPlan()), async () => null, () => 0);
   film.rest(); await new Promise(r => setTimeout(r, 0));
   assert.equal(parts.at(-1)![0].path, video('vila')); assert.equal(parts.at(-1)![0].model, 'kling-4', 'the rest loop');
-  assert.equal(film.talkPart('tal')?.model, 'kling-4', 'a talk film');
+  assert.equal(parts.at(-1)![0].rest, true, 'the rest loop says it is the rest');
+  assert.equal(film.talkPart('tal')?.model, 'kling-4', 'a talk film'); assert.equal(film.talkPart('tal')?.rest, undefined, 'a talk film is no rest');
   // A round's chain: rest to the shoe, the deal to seat 4, back to rest. Every part names its model.
   const table = {hands: [{seat: 4, cards: [2]}], dealer: []};
   const round = film.play([{type: 'deal', shoeDraw: 2}] as never, {table, records: [{shoeDraw: 2, target: 'P4.C1', r: 'A', s: 'spades'}]});
   await new Promise(r => setTimeout(r, 0)); queue.end(); await round;
   const chain = parts.find(list => list.some(part => part.path === video('p4-deal')))!;
   assert.deepEqual(chain.map(part => [part.path.split('/')[2], part.model]), [['in', 'wan3'], ['p4-deal', 'wan3'], ['p4-rest', 'wan3']]);
+  assert.ok(chain.every(part => part.rest === undefined), "a round's films are no rest");
   // A part whose take says nothing has no model at all, not an empty one.
   const silent = buildGraph({...bank(), motions: {...bank().motions, vila: record(null, {motion: {idle: {calm: true, weight: 20}}} as never)}}, {dealer: 'paow'});
   const quiet = players(), still = createFilm(quiet.players, silent, createLayout(defaultPlan()), async () => null, () => 0);
   still.rest(); await new Promise(r => setTimeout(r, 0));
   assert.equal('model' in quiet.parts.at(-1)![0], false);
+});
+
+test('the hole card\'s turn is shown when its face shows in the film: the first face-up frame after the last face-down one', () => {
+  const sides = (list: string) => ({frames: list.split('').map(c => ({side: c === 'B' ? 'BACK' : c === 'F' ? 'FRONT' : c === 'E' ? 'EDGE' : 'NONE'}))});
+  assert.equal(faceFrame(sides('BBBBEEEFFFF')), 7);
+  assert.equal(faceFrame(sides('BBFBBEEFFF')), 7, 'a face glimpsed before the last back frame is not the turn');
+  assert.equal(faceFrame(sides('BBBBNN')), null); assert.equal(faceFrame(null), null); assert.equal(faceFrame({}), null);
 });

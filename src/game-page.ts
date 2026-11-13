@@ -36,7 +36,7 @@ const table = /^[a-z0-9-]{1,40}$/.test(query.get('table') ?? '') ? `?table=${que
 // frame) hides nothing: the frame shows none of what this page shows, and src/preview-ui.ts keeps a framed page from
 // taking the lab tab by itself.
 const OWN_WORDS = ['table', 'tema', 'bricka', 'chatt', 'robot', 'inbaddad', 'dealer'], forval = query.get('forval');
-const lookAsked = [...query.keys()].some(word => !OWN_WORDS.includes(word));
+const lookAsked = [...query.keys()].some(word => !OWN_WORDS.includes(word) && word !== 'kort'); // kort: how the card in her hand is shown (below)
 
 const [contract, placements, bank, first, register, lookCode, presetAnswer] = await Promise.all([read('data/scene-contract.json', 'Scenkontraktet'), read('api/placements', 'Placeringsplanen'), read('api/clip-bank', 'Klippbanken'), read(`api/game${table}`, 'Spelet'), read('data/scene-rooms.json', 'Rumsregistret'),
   lookAsked ? import('./game-look.ts').catch(() => null) : null, forval ? fetch(`api/scene-presets/${encodeURIComponent(forval)}`).then(res => res.ok ? res.json() : null, () => null) : null]);
@@ -109,6 +109,11 @@ if (lookNote) { const note = Object.assign(document.createElement('p'), {textCon
 scene.rebuild(); scene.start();
 new ResizeObserver(frame).observe(stage); frame();
 const film = createFilm(scene.players as unknown as FilmPlayers, graph, layout, path => fetch(path).then(res => res.ok ? res.json() : null));
+// How the card in her hand is shown (src/game-film.ts Carry): the address's kort=liggande (the film's own card in her hand, the drawn
+// card once it lies: "Bara liggande" in the Miljö menu), kort=matt (the film's card recoloured in her hand, a lab choice) or kort=hand
+// (the drawn card, as before); without it the menu's choice remembered in the browser, else as before.
+const carryWord = ({liggande: 'film', matt: 'matte', hand: 'object'} as const)[query.get('kort') as 'liggande' | 'matt' | 'hand'];
+film.carry = carryWord ?? (cardsMemory === 'lying' ? 'film' : 'object');
 
 // ── state ──
 let snapshot: Snapshot = first, paid: Snapshot | null = null; // snapshot: the round on the table. paid: the engine's state after that round was collected.
@@ -258,9 +263,12 @@ const panel = mountPanel(overlay.root.querySelector<HTMLElement>('.go-bar')!, RO
   table(on) { heard.table = on; panel.set({table: on}); if (on) withSound(s => s.chip('stack', {height: 1, pan: 0})); },
   ambience(on) { heard.ambience = on; panel.set({ambience: on}); withSound(s => s.ambience(on ? soundOf(room) : null)); },
   // Off: nothing is drawn over the film, lying cards included; the film's own coloured cards show and the round plays as before.
-  cards(on) { scene.set({cards: on}); panel.set({cards: on}); if (forval === null) try { localStorage.setItem('dealer.cards', on ? 'on' : 'off'); } catch { /* a private window keeps nothing */ } },
+  cards(on) { scene.set({cards: on}); panel.set({cards: on}); remember(on ? film.carry === 'film' ? 'lying' : 'on' : 'off'); },
+  // Only lying: the film's own card in her hand, the drawn card once it lies; from the next step of the round.
+  lying(on) { film.carry = on ? 'film' : 'object'; panel.set({lying: on}); remember(on ? 'lying' : 'on'); },
 });
-panel.set({room, dealer, cards: scene.state.cards});
+panel.set({room, dealer, cards: scene.state.cards, lying: film.carry === 'film'});
+function remember(value: 'on' | 'off' | 'lying') { if (forval === null && !carryWord) try { localStorage.setItem('dealer.cards', value); } catch { /* a private window keeps nothing */ } }
 // Jakob's chip tray (assets/props/tray.glb, local media) takes the place of the built tray when it can be read; game.html?tray=built keeps the built one.
 // A trial, game.html?bricka=hus: the tray holds the house's own chips (src/game3d-tray.ts), a lost bet is carried into it and winnings out of it.
 type HouseTray = {mouth(value: number, taking: boolean): {x: number; y: number; s: number}; add(value: number): boolean; remove(value: number): boolean};

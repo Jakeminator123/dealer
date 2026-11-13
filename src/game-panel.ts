@@ -11,8 +11,9 @@ export type PanelState = {
   room: string; dealer: string; canChange: boolean; changing: boolean; // canChange: between rounds, when room and dealer may be changed
   tracks: TrackChoice[]; track: string | null; music: number; table: boolean; ambience: boolean; // music: its level 0-1; table: chips and cards are heard; ambience: the room is heard
   cards: boolean; // the drawn cards are on (the scene's key cards); off: the film's own coloured cards show
+  lying: boolean; // with the drawn cards on: none is drawn in her hand, the card is drawn once it lies ("Bara liggande")
 };
-export type PanelHandlers = {room(id: string): void; dealer(id: string): void; music(track: string | null): void; level(music: number): void; table(on: boolean): void; ambience(on: boolean): void; cards?(on: boolean): void; open?(): void};
+export type PanelHandlers = {room(id: string): void; dealer(id: string): void; music(track: string | null): void; level(music: number): void; table(on: boolean): void; ambience(on: boolean): void; cards?(on: boolean): void; lying?(on: boolean): void; open?(): void};
 type Change = Pick<PanelState, 'canChange' | 'changing'>;
 
 /** Which room card is marked, and whether a card can be pressed: the room showing is marked and cannot be chosen again; nothing can be chosen during a round or a change. */
@@ -57,7 +58,7 @@ export function mountPanel(bar: HTMLElement, rooms: RoomChoice[], dealers: Deale
   const tablePanel = el('section', 'gp-panel gp-table'), musicPanel = el('section', 'gp-panel gp-music'); tablePanel.hidden = musicPanel.hidden = true;
   tablePanel.setAttribute('role', 'dialog'); tablePanel.setAttribute('aria-label', 'Miljö och dealer'); musicPanel.setAttribute('role', 'dialog'); musicPanel.setAttribute('aria-label', 'Musik och ljud');
   panels.append(tablePanel, musicPanel); bar.prepend(menu); bar.append(panels);
-  let state: PanelState = {room: '', dealer: '', canChange: true, changing: false, tracks: [], track: null, music: 0.6, table: false, ambience: false, cards: true};
+  let state: PanelState = {room: '', dealer: '', canChange: true, changing: false, tracks: [], track: null, music: 0.6, table: false, ambience: false, cards: true, lying: false};
 
   // ── Miljö and Dealer: one panel, two tabs ──
   const tabs = el('div', 'gp-tabs'), roomTab = el('button', 'gp-tab', 'Miljö'), dealerTab = el('button', 'gp-tab', 'Dealer'), roomPage = el('div', 'gp-page'), dealerPage = el('div', 'gp-page');
@@ -92,7 +93,9 @@ export function mountPanel(bar: HTMLElement, rooms: RoomChoice[], dealers: Deale
     b.addEventListener('click', () => press(b.getAttribute('aria-checked') !== 'true')); return b; };
   const tableSound = toggle('Bordets ljud', 'Marker som klirrar och kort som landar', next => on.table(next)), roomSound = toggle('Rummets ljud', 'Sorl och ljud från miljön du har valt', next => on.ambience(next));
   // Under the rooms: the drawn cards on or off (Jakob 2026-11-13: the drawn card's sides smear; off shows the film's own cards).
-  const cardsSwitch = toggle('Ritade kort', 'Spelkort ritas över filmens färgade kort; av visar filmens egna', next => on.cards?.(next)); roomPage.append(cardsSwitch);
+  const cardsSwitch = toggle('Ritade kort', 'Spelkort ritas över filmens färgade kort; av visar filmens egna', next => on.cards?.(next));
+  // ... and the step between (the plan in HANDOFF, "Öppet hos Jakob" 7): the film's own card in her hand, the drawn card once it lies.
+  const lyingSwitch = toggle('Bara liggande', 'Inget ritas i hennes hand; kortet ritas när det ligger på bordet', next => on.lying?.(next)); roomPage.append(cardsSwitch, lyingSwitch);
   musicPanel.append(nowRow, el('h3', '', 'Musik'), trackList, empty, levelRow, el('h3', '', 'Ljud'), tableSound, roomSound);
   let shownTracks = '';
   const trackButton = (id: string | null, label: string, note: string, glyph: string) => { const b = el('button', 'gp-track'), text = el('span', 'gp-who'); b.type = 'button'; b.dataset.track = id ?? ''; b.title = note;
@@ -136,6 +139,7 @@ export function mountPanel(bar: HTMLElement, rooms: RoomChoice[], dealers: Deale
     if (document.activeElement !== level) level.value = String(Math.round(state.music * 100)); levelValue.textContent = String(Math.round(state.music * 100));
     level.style.setProperty('--at', `${Math.round(state.music * 100)}%`);
     tableSound.setAttribute('aria-checked', String(state.table)); roomSound.setAttribute('aria-checked', String(state.ambience)); cardsSwitch.setAttribute('aria-checked', String(state.cards));
+    lyingSwitch.setAttribute('aria-checked', String(state.cards && state.lying)); lyingSwitch.disabled = !state.cards || !on.lying;
   }
   paint();
   return {set(next: Partial<PanelState>) { state = {...state, ...next}; paint(); }, close() { show(null); }, get state() { return state; }, get open() { return open; }};

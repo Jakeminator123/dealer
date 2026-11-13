@@ -16,7 +16,8 @@ import {planBeats, STAND_IN_FILM, type Beat, type FilmSignal} from './game-direc
 // frame: a film whose picture is not the standard frame (the entrance and the exit, drawn behind the table) says so in its
 // record as motion.frame; the scene reads it from the part (FilmFrame in src/scene3d-film.ts).
 // model: the film model the picture was made with (filmModel), for the scene's colour matching between models; left out when unknown.
-export type FilmPart = {path: string; start?: number; end?: number | null; rate?: number; track?: unknown; cards?: Record<string, unknown>; frame?: unknown; fps?: number; sound?: boolean; model?: string};
+// rest: the part is the rest loop's (rest()), which the scene never plays faster; a talk film is no rest in this sense (it has sound).
+export type FilmPart = {path: string; start?: number; end?: number | null; rate?: number; track?: unknown; cards?: Record<string, unknown>; frame?: unknown; fps?: number; sound?: boolean; model?: string; rest?: boolean};
 const frameOf = (take: Take | null | undefined) => (take?.motion?.motion as {frame?: unknown} | undefined)?.frame ?? null;
 // A film that is not 30 frames a second says so in the bank (take.fps); its frame numbers are its own.
 const fpsOf = (take: Take | null | undefined) => typeof take?.fps === 'number' && take.fps > 0 && take.fps !== 30 ? {fps: take.fps} : {};
@@ -35,17 +36,30 @@ export type FilmPlayers = {
   hurry(rate: number): void; preload?(paths: string[]): void;
 };
 export type Placed = {quad: Pt[]; back: boolean; target: string; shoeDraw: number};
+/**
+ * The frame from which a turned card shows its face, by its track: the first face-up frame after the last face-down one (the edge-on
+ * frames between them still hide it). Null without a track, or when the track never turns the card face up.
+ */
+export function faceFrame(track: unknown): number | null {
+  const frames = (track as {frames?: {side?: string}[]} | null)?.frames; if (!Array.isArray(frames)) return null;
+  let back = -1; frames.forEach((f, i) => { if (f?.side === 'BACK') back = i; });
+  const at = frames.findIndex((f, i) => i > back && f?.side === 'FRONT'); return at >= 0 ? at : null;
+}
 
 /** The lying cards as the card layer takes them: each on its own place in the layout, closed if its record says so. */
 export function placedCards(table: TableCards, records: CardRecord[], lying: number[], layout: Layout): Placed[] {
   return lying.flatMap(shoeDraw => { const slot = slotOf(table, shoeDraw); return slot ? [{quad: layout.quad(slot), back: records.find(r => r.shoeDraw === shoeDraw)?.faceDown === true, target: slotLabel(slot), shoeDraw}] : []; });
 }
-/** What the card layer needs for one beat: the lying cards, every card's value, and for the film's own card where it lands. */
-export function cardOptions(beat: Pick<Beat, 'own' | 'lying'>, table: TableCards, records: CardRecord[], layout: Layout): Record<string, unknown> {
+// How the card the film carries is shown while it is in her hand (src/scene3d-deal.ts, carry): 'object' (the drawn card, as before),
+// 'film' (the film's own card while carried, the drawn card from the frame it lies: the game's "Bara liggande"), 'matte' (the film's
+// card recoloured while carried: a lab choice, the address's kort=matt). The cards already lying are drawn either way.
+export type Carry = 'object' | 'film' | 'matte';
+/** What the card layer needs for one beat: the lying cards, every card's value, and for the film's own card where it lands and how it is carried. */
+export function cardOptions(beat: Pick<Beat, 'own' | 'lying'>, table: TableCards, records: CardRecord[], layout: Layout, carry: Carry = 'object'): Record<string, unknown> {
   const base = {placed: placedCards(table, records, beat.lying, layout), cards: records};
   if (!beat.own) return base;
   const material = layout.material(beat.own.slot);
-  return {...base, land: layout.quad(beat.own.slot), target: beat.own.label, shoeDraw: beat.own.shoeDraw, bend: material.bend, gloss: material.gloss};
+  return {...base, land: layout.quad(beat.own.slot), target: beat.own.label, shoeDraw: beat.own.shoeDraw, bend: material.bend, gloss: material.gloss, ...(carry !== 'object' ? {carry} : {})};
 }
 
 // A line she says in a step: its talk film (null: text only) and what is done when she begins it (the page writes it in the chat).
@@ -54,7 +68,7 @@ export type Said = {part: FilmPart | null; begin(): void};
 export function createFilm(players: FilmPlayers, bank: Graph, layout: Layout, readJson: (path: string) => Promise<unknown>, random: () => number = Math.random) {
   let graph = bank; // whose films: another dealer at the table is another graph (use)
   let table: TableCards = {hands: [], dealer: []}, records: CardRecord[] = [], lying: number[] = [];
-  let token = 0, resting: Take | null = null; const played: string[] = [], tracks = new Map<string, Promise<unknown>>();
+  let token = 0, resting: Take | null = null, carry: Carry = 'object'; const played: string[] = [], tracks = new Map<string, Promise<unknown>>();
   const modelOf = (take: Take | null | undefined) => { const model = filmModel(take, graph.takes); return model ? {model} : {}; };
   const trackOf = (take: Take | null) => { const path = take?.media.track; if (!path) return Promise.resolve(null); let hit = tracks.get(path); if (!hit) { hit = readJson(path).catch(() => null); tracks.set(path, hit); } return hit; };
   // Each plan card's centre in film pixels: the clip bank uses them to say how far a shared seat film's card is moved.
@@ -68,7 +82,7 @@ export function createFilm(players: FilmPlayers, bank: Graph, layout: Layout, re
     const take = pick.take, range = idleRange(take.frames ?? 90);
     resting = take; played.push(take.id); played.splice(0, Math.max(0, played.length - 12));
     void trackOf(take).then(track => { if (mine !== token) return;
-      players.play([{path: take.media.video!, start: range.start, end: range.end, ...fpsOf(take), ...modelOf(take), track, cards: cardOptions({own: null, lying}, table, records, layout)}], {onEnd: () => { if (mine === token) rest(); }}); });
+      players.play([{path: take.media.video!, start: range.start, end: range.end, ...fpsOf(take), ...modelOf(take), rest: true, track, cards: cardOptions({own: null, lying}, table, records, layout)}], {onEnd: () => { if (mine === token) rest(); }}); });
   }
 
   // A card whose deal has no film that can be played (none made, or the only take rejected) is laid without a hand.
@@ -100,8 +114,10 @@ export function createFilm(players: FilmPlayers, bank: Graph, layout: Layout, re
     // A hole card that is turned later in this chain stays closed and without a value until that beat.
     const turn = beats.findIndex(b => b.kind === 'REVEAL'), hole = turn >= 0 ? beats[turn].own!.shoeDraw : null;
     const closed = hole === null ? records : records.map(r => r.shoeDraw === hole ? {...r, r: null, s: null, faceDown: true} : r);
-    const parts: FilmPart[] = [], beatOf: number[] = [];
-    segments.forEach((s, i) => { if (!s?.video) return; beatOf.push(i); parts.push({path: s.video, start: s.start, end: s.end, track: loaded[i], cards: cardOptions(beats[i], table, i < turn ? closed : records, layout), frame: frameOf(s.take), ...fpsOf(s.take), ...modelOf(s.take)}); });
+    const parts: FilmPart[] = [], beatOf: number[] = [], shows: (number | null)[] = [];
+    segments.forEach((s, i) => { if (!s?.video) return; beatOf.push(i);
+      // the hole card's turn lands (its value and the dealer's total are shown) when its face shows in the film, not when the film ends
+      const face = beats[i].kind === 'REVEAL' ? faceFrame(loaded[i]) : null; shows.push(face !== null && face > s.start && (s.end === null || face < s.end) ? (face - s.start) / (s.fps || 30) : null); parts.push({path: s.video, start: s.start, end: s.end, track: loaded[i], cards: cardOptions(beats[i], table, i < turn ? closed : records, layout, carry), frame: frameOf(s.take), ...fpsOf(s.take), ...modelOf(s.take)}); });
     let done = 0; // beats landed so far, in order
     const land = (upTo: number) => { for (; done < upTo; done++) { const beat = beats[done]; if (beat.own && beat.kind !== 'DEAL' && !lying.includes(beat.own.shoeDraw)) lying = [...lying, beat.own.shoeDraw]; landed(beat, done); } };
     // What she says before the cards and after them: the talk films around the chain, each line begun as its film begins.
@@ -119,7 +135,7 @@ export function createFilm(players: FilmPlayers, bank: Graph, layout: Layout, re
       let afterBegun = false;
       players.play(all, {cut, onPart: index => { if (mine !== token) return;
         if (index < lead) { talkBefore[index].begin(); return; }
-        if (index < lead + parts.length) { land(beatOf[index - lead]); return; }
+        if (index < lead + parts.length) { land(beatOf[index - lead]); const at = shows[index - lead], beat = beatOf[index - lead] + 1; if (at !== null) setTimeout(() => { if (mine === token) land(beat); }, at * 1000); return; }
         land(beats.length); if (!afterBegun) { afterBegun = true; silentAfter(); } talkAfter[index - lead - parts.length].begin(); },
       onEnd: () => { if (mine === token) { land(beats.length); if (!afterBegun) silentAfter(); } resolve(); }});
     });
@@ -162,6 +178,8 @@ export function createFilm(players: FilmPlayers, bank: Graph, layout: Layout, re
   }
   return {
     play, rest, swap, say, talkPart,
+    /** How the carried card is shown from the next step on (Carry). */
+    set carry(next: Carry) { carry = next; }, get carry() { return carry; },
     /** Another dealer's films from now on (she has come to the table); rest goes on with hers. */
     use(next: Graph) { graph = next; tracks.clear(); played.length = 0; },
     get graph() { return graph; },
