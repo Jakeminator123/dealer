@@ -137,11 +137,21 @@ export function mountOverlay(host: HTMLElement, on: Handlers) {
     return node;
   }
   let anchors: Anchors = {bets: {}, hands: {}};
-  const RESULT_ROOM = 120; // pixels a result needs to the left of its total; nearer the stage's left edge than this it stands above
   const put = (pin: HTMLElement, at: {x: number; y: number} | undefined, show = true) => { pin.hidden = !at || !show; if (at) pin.style.transform = `translate(${at.x.toFixed(1)}px,${at.y.toFixed(1)}px)`; };
+  // A hand's result stands on the felt just in front of its seat's bet ring, where no other seat has its cards, total or amount: beside
+  // its total it lay on the next seat's amount or cards. The hands of a split seat stand there side by side, in their order. The pill
+  // is placed from its total (--dx, --dy: from the total's point to the ring's front edge, --slot: the hand's place in the row); a hand
+  // whose ring is not in the picture keeps its result beside its total.
+  function underRing(key: string, at: {x: number; y: number}) {
+    const seat = key.split(':')[0], ring = anchors.bets[Number(seat)]; if (!ring || !/^\d+$/.test(seat)) return null;
+    const row = [...totals.keys()].filter(k => k.split(':')[0] === seat).sort((a, b) => Number(a.split(':')[1]) - Number(b.split(':')[1]));
+    return {dx: ring.x - at.x, dy: ring.y + ring.ring * 0.31 - at.y, slot: row.indexOf(key) - (row.length - 1) / 2};
+  }
   function place() {
     for (const [seat, node] of seats) { const at = anchors.bets[seat]; put(node.pin, at); if (at) node.ring.style.setProperty('--ring', `${at.ring.toFixed(1)}px`); }
-    for (const [key, node] of totals) { const at = anchors.hands[key]; put(node.pin, at, node.sum.textContent !== '' || node.result.textContent !== ''); if (at) node.pin.classList.toggle('edge', at.x < RESULT_ROOM); }
+    for (const [key, node] of totals) { const at = anchors.hands[key]; put(node.pin, at, node.sum.textContent !== '' || node.result.textContent !== '');
+      const under = at ? underRing(key, at) : null; node.pin.classList.toggle('under', !!under);
+      if (under) { node.result.style.setProperty('--dx', `${under.dx.toFixed(1)}px`); node.result.style.setProperty('--dy', `${under.dy.toFixed(1)}px`); node.result.style.setProperty('--slot', String(under.slot)); } }
   }
 
   function render(view: TableView) {
