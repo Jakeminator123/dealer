@@ -371,8 +371,14 @@ test('the steps a round needs: the hole card as a deal\'s target, its turn from 
   const out = stepOf('UTGANG')!;
   assert.deepEqual([out.from, out.to, out.card, edgeOf(out, null)], ['2.1', '1', false, 'READY>IDLE']);
   assert.match(startWords(out), /^Börjar på ankare 2\.1 och slutar på ankare 1 \(vila\)/);
+  // The way out from the drag: anchor 2.2 to anchor 1, READY-B>IDLE (a round through 2.2 goes by rest, 2026-11-13).
+  const outDrag = stepOf('UTGANG-2.2')!;
+  assert.deepEqual([outDrag.kind, outDrag.from, outDrag.to, outDrag.card, outDrag.model, outDrag.duration, edgeOf(outDrag, null)], ['FILM', '2.2', '1', false, 'wan3', 4, 'READY-B>IDLE']);
+  assert.deepEqual(cutIntoOf(outDrag, null, 'ONE_WAY'), [], 'one edge');
+  assert.match(startWords(outDrag), /^Börjar på ankare 2\.2 och slutar på ankare 1 \(vila\)/);
+  assert.match(summaryOf(outDrag, 'Paow', null), /från handen över kortet vid skons öppning \(ankare 2\.2\) lyfter hon fingertopparna från kortet, och handen går tillbaka till vila/);
   // Short or minimal only; the steps before keep every style of their kind.
-  for (const s of [turn, out]) assert.deepEqual(stylesFor(s.kind, s), ['KORT', 'MINIMAL']);
+  for (const s of [turn, out, outDrag]) assert.deepEqual(stylesFor(s.kind, s), ['KORT', 'MINIMAL']);
   assert.deepEqual(stylesFor('FILM', stepOf('VILA')), ['KORT', 'MINIMAL', 'UTFÖRLIG']);
   assert.deepEqual(stylesFor('STILL'), ['KORT', 'UTFÖRLIG']);
   // Every model that can make them takes their length; a reference film is chosen from the bank's takes of that edge.

@@ -518,6 +518,12 @@ test('the steps a round needs: a deal to the hole card, its turn from rest and t
   const out = (await call('POST', '/api/orders', { body: { dealer: 'paow', step: 'UTGANG' } })).json.order;
   assert.deepEqual([out.id, out.step.edge, out.pictures.map((p: { waits: { label: string } | null }) => p.waits?.label)], ['paow-utgang-01', 'READY>IDLE', ['ankare 2.1', 'ankare 1']]);
   assert.match(out.prompt.text, /^Locked camera, one continuous shot\. Her thumb and forefinger let the yellow card settle back into the shoe's window/);
+  // The way out from the drag: anchor 2.2 to rest, its own id, its anchor 2.2 waited for (none holds in this lab).
+  const outDrag = (await call('POST', '/api/orders', { body: { dealer: 'paow', step: 'UTGANG-2.2' } })).json.order;
+  assert.deepEqual([outDrag.id, outDrag.step.edge, outDrag.step.cutInto, outDrag.pictures.map((p: { waits: { label: string } | null }) => p.waits?.label)], ['paow-utgang-2-2-01', 'READY-B>IDLE', [], ['ankare 2.2', 'ankare 1']]);
+  assert.deepEqual([outDrag.prompt.template, outDrag.generation.model, outDrag.generation.params.duration, outDrag.cost.total], ['film-utgang-kort@8', 'wan3', 4, 160]);
+  assert.match(outDrag.prompt.text, /^Locked camera, one continuous shot\. Her fingertips lift off the yellow card in the shoe's window/);
+  assert.match(outDrag.summary, /ankare 2\.2/);
 
   // The production list: read by anyone of the lab, drafts only from the lab's own origin, never an approval.
   const list = await call('GET', '/api/production?dealer=paow');

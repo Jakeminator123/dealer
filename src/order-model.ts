@@ -297,7 +297,7 @@ export type Approval = { by: (typeof APPROVERS)[number]; at: string; orderSha256
 export const approvalWords = (a: Pick<Approval, 'by'>) => (a.by === 'huvudagent' ? 'Godkänd av huvudagenten på Jakobs uppdrag' : 'Godkänd av Jakob');
 
 // ── Steps and their defaults (bestall-plan "Defaults per kind of step") ─────
-export type StepKey = 'INGANG-2.1' | 'INGANG-2.2' | 'GIV-2.1' | 'GIV-2.2' | 'RETUR-2.1' | 'RETUR-2.2' | 'RETUR-1' | 'UTGANG' | 'HALKORT' | 'VILA' | 'ANKARE-2.1' | 'ANKARE-2.2';
+export type StepKey = 'INGANG-2.1' | 'INGANG-2.2' | 'GIV-2.1' | 'GIV-2.2' | 'RETUR-2.1' | 'RETUR-2.2' | 'RETUR-1' | 'UTGANG' | 'UTGANG-2.2' | 'HALKORT' | 'VILA' | 'ANKARE-2.1' | 'ANKARE-2.2';
 export type StepDef = {
   key: StepKey;
   group: string;
@@ -348,6 +348,9 @@ export const STEPS: readonly StepDef[] = [
   // (IDLE>REVEAL(D.C2)), whose pictures are anchor 1 with only the hole card drawn where the plan says: the game draws
   // every lying card itself, and with both drawn she lifted both together (round 6, 2026-11-13).
   { key: 'UTGANG', group: 'Utgång', label: 'Ankare 2.1 → 1: handen lämnar skon och vilar', kind: 'FILM', from: '2.1', to: '1', card: false, model: 'wan3', resolution: '1080p', duration: 4, styles: ['KORT', 'MINIMAL'] },
+  // The way out from the drag at the shoe (READY-B>IDLE, anchor 2.2 to anchor 1), so that a round can go through 2.2 by rest
+  // (the main agent's decision 2026-11-13): the hand that lies over the card in the window lifts off it and comes to rest.
+  { key: 'UTGANG-2.2', group: 'Utgång', label: 'Ankare 2.2 → 1: handen lämnar kortet i skon och vilar', kind: 'FILM', from: '2.2', to: '1', card: false, model: 'wan3', resolution: '1080p', duration: 4, styles: ['KORT', 'MINIMAL'] },
   {
     key: 'HALKORT', group: 'Hålkortet', label: 'Hålkortet vänds upp från vila, handen tillbaka', kind: 'FILM', from: '1', to: '1', card: false, target: 'D.C2', edge: 'IDLE>REVEAL(D.C2)',
     cards: [{ target: 'D.C2', before: 'BACK', after: 'FRONT' }], model: 'wan3', resolution: '1080p', duration: 5, styles: ['KORT', 'MINIMAL'],
@@ -428,6 +431,7 @@ export function summaryOf(step: Pick<StepDef, 'key'>, dealerName: string, motion
     case 'INGANG-2.1': return `Gör en film av ${dealerName}: från vila (ankare 1) flyttar hon vänsterhanden till nypet vid skon (ankare 2.1).`;
     case 'INGANG-2.2': return `Gör en film av ${dealerName}: från vila (ankare 1) lägger hon vänsterhanden över kortet vid skons öppning (ankare 2.2).`;
     case 'UTGANG': return `Gör en film av ${dealerName}: från nypet vid skon (ankare 2.1) släpper hon kortet, och handen går tillbaka till vila (ankare 1).`;
+    case 'UTGANG-2.2': return `Gör en film av ${dealerName}: från handen över kortet vid skons öppning (ankare 2.2) lyfter hon fingertopparna från kortet, och handen går tillbaka till vila (ankare 1).`;
     case 'HALKORT': return `Gör en film av ${dealerName}: från vila vänder hon upp hålkortet, dealerns andra kort, med handen närmast skon, och handen går tillbaka till vila.`;
     case 'VILA': return `Gör en vilofilm av ${dealerName}: hon sitter still, och filmen börjar och slutar på ankare 1.`;
   }

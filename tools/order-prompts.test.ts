@@ -318,6 +318,13 @@ test('the steps a round needs that Beställ could not order before: the way out 
   const minimal = promptFor({ dealer, step: 'HALKORT', model: 'wan3', style: 'MINIMAL', place: { x: 912.9, y: 927.3 } });
   assert.equal(minimal.text, "Locked camera. The card's back is yellow and its face is blue. One card in front of her turns from yellow to blue, as in the last frame, and her hand goes back to rest.");
   assert.equal(promptFor({ dealer, step: 'UTGANG', model: 'wan3', style: 'MINIMAL' }).text, 'Locked camera. Her hand goes from the yellow card in the shoe back to the table, as in the last frame.');
+  // The way out from the drag (anchor 2.2): the hand lies over the card, so the fingertips lift off it; the rest as from 2.1.
+  const outDrag = promptFor({ dealer, step: 'UTGANG-2.2', model: 'wan3', style: 'KORT' });
+  assert.equal(outDrag.text, "Locked camera, one continuous shot. Her fingertips lift off the yellow card in the shoe's window, which stays where it lies, and her hand comes back low over the felt, palm down, and rests flat on the felt, as in the last frame. Her eyes come up from the shoe towards the players. The other hand rests on the felt.");
+  assert.equal(outDrag.template, `film-utgang-kort@${TEMPLATE_VERSION}`);
+  assert.ok(wordCount(outDrag.text) <= 120);
+  assert.equal(promptFor({ dealer, step: 'UTGANG-2.2', model: 'wan3', style: 'MINIMAL' }).text, 'Locked camera. Her hand goes from the yellow card in the shoe back to the table, as in the last frame.');
+  assert.equal(promptFor({ dealer, step: 'UTGANG-2.2', model: 'wan3', style: 'UTFÖRLIG' }).style, 'KORT');
   // No long text: asked for one, they are written short.
   assert.equal(promptFor({ dealer, step: 'UTGANG', model: 'wan3', style: 'UTFÖRLIG' }).style, 'KORT');
   assert.deepEqual(STEPS.find((s) => s.key === 'HALKORT')!.styles, ['KORT', 'MINIMAL']);

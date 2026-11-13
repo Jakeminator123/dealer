@@ -268,6 +268,7 @@ Pamelas godkända par, 552 krediter (V: `assets/motions/paow-table-arrive-wide-0
 | Ansiktet mjuknar, tatueringar suddas | Kling 4; 4K-ingången | Modellen | WAN 3 för vila och ingång |
 | Grönt glider eller pulserar | WAN cirka 11 nivåer på 6 s; Kling 4 G 206–234 i 30 s | Långa filmer, olika grönt | Kort film; samma grönt i bilderna; `level` |
 | Hopp eller scenbyte | Kling 4 i 30 s (b2: 16,3 och 20,2 s) | Klings scenindelning | Kort film, "one continuous shot" |
+| Ett grått bord ritas över det gröna under kanten och står kvar till sista rutan (vila där händerna lyfts) | WAN 3, 3 av 6 (2026-11-13): `paow-vila-15` från ruta 27, `-18` från ruta 15 (innan händerna rör sig), `-19` från ruta 45; inte i `-12`, `-14`, `-16`. Cirka 398 000 px under rad 836 mot ankarets 9 043, skarven mot ankaret 54–60 mot 3 | Okänd: inget ord i texten skiljer de tre från de tre andra | Känd risk, ingen lagning; mät med inget av henne under kanten innan en sådan vila förs in |
 
 ## 5. Prov och protokoll
 

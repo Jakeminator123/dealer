@@ -252,6 +252,28 @@
       "setAt": "2026-11-13"
     },
     {
+      "id": "utgang-2.2",
+      "step": "UTGANG-2.2",
+      "seats": null,
+      "status": "prov",
+      "model": "wan3",
+      "style": "KORT",
+      "seconds": 4,
+      "takes": 2,
+      "turn": null,
+      "shape": null,
+      "reference": "ingen",
+      "extra": null,
+      "evidence": {
+        "orders": [],
+        "reviewer": [],
+        "owner": [],
+        "note": "Ankare 2.2 till 1: fingertopparna lyfter från kortet i skons fönster och handen går till vila, så att en runda kan gå via 2.2 genom vila (huvudagentens beslut 2026-11-13). Samma recept som utgången från 2.1 (WAN 3, kort text, 4 s); oprövat."
+      },
+      "setBy": "filmproducenten åt huvudagenten (dealer-94), när steget UTGANG-2.2 byggdes",
+      "setAt": "2026-11-13"
+    },
+    {
       "id": "halkort",
       "step": "HALKORT",
       "seats": null,

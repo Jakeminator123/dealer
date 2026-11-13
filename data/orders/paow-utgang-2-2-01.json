@@ -1,0 +1,98 @@
+{
+  "schemaVersion": 1,
+  "id": "paow-utgang-2-2-01",
+  "title": "Omgång 15 · utgång · ankare 2.2 → 1",
+  "summary": "Gör en film av Paow: från handen över kortet vid skons öppning (ankare 2.2) lyfter hon fingertopparna från kortet, och handen går tillbaka till vila (ankare 1).",
+  "group": null,
+  "dealer": "paow",
+  "kind": "FILM",
+  "step": {
+    "key": "UTGANG-2.2",
+    "label": "Ankare 2.2 → 1: handen lämnar kortet i skon och vilar",
+    "edge": "READY-B>IDLE",
+    "shape": "ONE_WAY",
+    "cutInto": [],
+    "makes": null
+  },
+  "motion": null,
+  "pictures": [
+    {
+      "name": "first.png",
+      "label": "Första bild · Paows ankare 2.2",
+      "goesAs": "startFrame",
+      "path": "assets/orders/paow-utgang-2-2-01/first.png",
+      "sha256": "451fbaafa65a82b22818dab6904d5a1c5a23941dba11213709995b1f5d8d1fd4",
+      "width": 1764,
+      "height": 1174,
+      "from": {
+        "entry": "paow-ankare-2-2-t1",
+        "path": "assets/anchors/paow-ankare-2-2-t1/anchor.png",
+        "note": "Paow · ankare 2.2 (släp), tagning 1 (gäller)"
+      },
+      "waits": null
+    },
+    {
+      "name": "last.png",
+      "label": "Sista bild · Paows ankare 1",
+      "goesAs": "endFrame",
+      "path": "assets/orders/paow-utgang-2-2-01/last.png",
+      "sha256": "cdaa59756e2eb0f7b839f23254f9999f8c8da4c8eef0e37bf23e9643ba6586ee",
+      "width": 1764,
+      "height": 1174,
+      "from": {
+        "entry": "paow-vila-ung-2",
+        "path": "assets/anchors/paow-vila-ung-2/anchor.png",
+        "note": "Vila, yngre, kandidat 2 (gäller)"
+      },
+      "waits": null
+    }
+  ],
+  "reference": {
+    "status": "INGEN",
+    "why": "WAN 3 tar ingen referensfilm tillsammans med första och sista bild."
+  },
+  "generation": {
+    "provider": "runway-app",
+    "tool": "generate_video",
+    "model": "wan3",
+    "params": {
+      "resolution": "1080p",
+      "duration": 4,
+      "ratio": "adaptive",
+      "generateAudio": false
+    }
+  },
+  "prompt": {
+    "template": "film-utgang-kort@8",
+    "style": "KORT",
+    "text": "Locked camera, one continuous shot. Her fingertips lift off the yellow card in the shoe's window, which stays where it lies, and her hand comes back low over the felt, palm down, and rests flat on the felt, as in the last frame. Her eyes come up from the shoe towards the players. The other hand rests on the felt. The yellow card in the window is plain, one flat solid yellow from edge to edge.",
+    "sha256": "3820343f4799bd28282973873095a91c373bd165d697a3c3fb784fc054f25788",
+    "extra": "The yellow card in the window is plain, one flat solid yellow from edge to edge.",
+    "middle": false
+  },
+  "takes": 2,
+  "cost": {
+    "perTake": 80,
+    "total": 160,
+    "worstPerTake": 80,
+    "worstTotal": 160,
+    "basis": "20 krediter per s × 4 s. DRIFT, Lärdomar: 20 per s i full storlek; planen: 4 s = 80."
+  },
+  "limits": {
+    "maxCredits": 160,
+    "stopBelowCredits": 0
+  },
+  "notes": [
+    "Det nya steget UTGANG-2.2 (READY-B>IDLE), med samma recept som utgången från 2.1 (WAN 3, 1080p, kort text, 4 s), två tagningar. Behövs för att en runda ska kunna gå via 2.2 genom vila.",
+    "Tillägget om enfärgat kort kommer från omgång 14: utan det tryckte WAN 3 kortet och skons kort när handen hade täckt fönstret (omgång 13, 3 av 3), med det höll båda enfärgade (paow-giv-2-2-p6-02)."
+  ],
+  "created": "2026-11-13T15:34:03.738Z",
+  "createdBy": "filmproducenten åt huvudagenten (dealer-94): en runda via ankare 2.2 genom vila, huvudagentens beslut 2026-11-13 på Jakobs besked 15:47 (\"att en runda ska kunna gå via 2.2\"); omgång 15",
+  "approval": {
+    "by": "huvudagent",
+    "at": "2026-11-13T15:34:49.700Z",
+    "orderSha256": "ad3d2fed7a106c6e993eb6df592d36e5e7f511d6e348621abd3621642b5c463a",
+    "mandate": "Jakob 2026-11-13 kl. 15.47 om listan (ankare 2.2: \"ska en runda kunna gå via 2.2?\"): \"Jag håller med om allt annat du nämnde, så jag kan acceptera det rakt av\"; ingång till och utgång från 2.2 behövs för given till plats 6; budget: hans \"obegränsat\" kl. 15.13; texterna lästa av huvudagenten"
+  },
+  "status": "GODKÄND"
+}
