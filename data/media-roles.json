@@ -3706,7 +3706,7 @@
           "role": "prov",
           "name": "Tal: läppsynk över vilan",
           "proof": "paow-tal",
-          "note": "Tolv talfilmer av Paow med ljud (dealer-0b, 2026-11-13): Scouts tio repliker på svenska med rösten Jessica, och Lägg era insatser även med Laura och Sarah. Oberoende granskad: ingen duger som huvudtagning, 7 av 12 får 3/5; felen sitter i munnen (tunnare läppar, munnen stänger 5–7 rutor efter ljudet)."
+          "note": "28 talfilmer av Paow med ljud i hennes egen röst (dealer-0b, 2026-11-13; ElevenLabs-rösten Paow, multilingual v2, Jakobs val): demofilmen, tal över en giv och över ingången, rundans tio repliker och chattens femton svar. Nattens filmer med rösten Jessica ligger kvar i assets/speech/paow/ och i banken men visas inte här."
         },
         {
           "id": "paow-prov-paow-fran-sidan",
@@ -3728,6 +3728,13 @@
           "name": "Kommer in och går ut (helfigur)",
           "proof": "paow-kommer-och-gar",
           "note": "Paows helfigursfilmer 2026-11-13 (huvudagentens underagent): paow-table-arrive-wide-01 och paow-table-leave-wide-01, Pamelas breda ruta i halv skala, Kling 4 i två delar per film som möts på en placerad stående stillbild. Mätta; domen är preliminär tills Jakob har sett dem. 552 krediter."
+        },
+        {
+          "id": "paow-prov-paow-rost",
+          "role": "prov",
+          "name": "Paows röst: samma replik på fyra sätt",
+          "proof": "paow-rost",
+          "note": "Röstjämförelsen 2026-11-13 (dealer-0b): Paows röst med eleven v3, med multilingual v2 (Jakobs val), röstbyte på nattens ljud, och Jessica som jämförelse. Inte oberoende granskat."
         },
         {
           "id": "paow-profil-kavaj",
@@ -4279,6 +4286,370 @@
           "note": "Efterarbetad tagning ur en beställning i studions vy Beställ. Kandidat tills Jakob har dömt.",
           "source": {
             "from": "beställningen paow-giv-2-1-p6-07, tagning 1 (studions vy Beställ)",
+            "when": "2026-11-13"
+          }
+        },
+        {
+          "id": "paow-tal-reel-demo2",
+          "role": "film",
+          "name": "Tal, demo: 4 repliker i följd",
+          "path": "assets/speech/paow/paow-tal-reel-demo2/source.mp4",
+          "still": 136,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Repliker i följd med vila emellan, 34.21 s med ljud, rösten Paow. En film att visa, inte en tagning i banken (tools/speech.ts reel). Inte oberoende granskad.",
+          "source": {
+            "from": "tools/speech.ts reel --dealer paow",
+            "when": "2026-11-13"
+          }
+        },
+        {
+          "id": "paow-tal-blackjack-sv-03",
+          "role": "film",
+          "name": "Tal: Blackjack! Vackert spelat. Grattis!",
+          "path": "assets/motions/paow-tal-blackjack-sv-03/source.mp4",
+          "still": 35,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Vilan paow-vila-01-01 med munnen ritad efter ljudet (tools/speech.ts), rösten Paow (ElevenLabs, eleven_multilingual_v2), 70 rutor i 24 per sekund med ljudspår. Börjar och slutar på vilans ruta 3. Inte oberoende granskad.",
+          "source": {
+            "from": "tools/speech.ts say --dealer paow --line blackjack (Paow)",
+            "when": "2026-11-13"
+          }
+        },
+        {
+          "id": "paow-tal-chat1-sv-02",
+          "role": "film",
+          "name": "Tal: Tack! Lycka till.",
+          "path": "assets/motions/paow-tal-chat1-sv-02/source.mp4",
+          "still": 24,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Vilan paow-vila-01-01 med munnen ritad efter ljudet (tools/speech.ts), rösten Paow (ElevenLabs, eleven_multilingual_v2), 48 rutor i 24 per sekund med ljudspår. Börjar och slutar på vilans ruta 3. Inte oberoende granskad.",
+          "source": {
+            "from": "tools/speech.ts say --dealer paow --line chat1 (Paow)",
+            "when": "2026-11-13"
+          }
+        },
+        {
+          "id": "paow-tal-chat2-sv-02",
+          "role": "film",
+          "name": "Tal: Roligt att du är här.",
+          "path": "assets/motions/paow-tal-chat2-sv-02/source.mp4",
+          "still": 26,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Vilan paow-vila-01-01 med munnen ritad efter ljudet (tools/speech.ts), rösten Paow (ElevenLabs, eleven_multilingual_v2), 51 rutor i 24 per sekund med ljudspår. Börjar och slutar på vilans ruta 3. Inte oberoende granskad.",
+          "source": {
+            "from": "tools/speech.ts say --dealer paow --line chat2 (Paow)",
+            "when": "2026-11-13"
+          }
+        },
+        {
+          "id": "paow-tal-chat3-sv-02",
+          "role": "film",
+          "name": "Tal: Det ordnar vi.",
+          "path": "assets/motions/paow-tal-chat3-sv-02/source.mp4",
+          "still": 20,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Vilan paow-vila-01-01 med munnen ritad efter ljudet (tools/speech.ts), rösten Paow (ElevenLabs, eleven_multilingual_v2), 39 rutor i 24 per sekund med ljudspår. Börjar och slutar på vilans ruta 3. Inte oberoende granskad.",
+          "source": {
+            "from": "tools/speech.ts say --dealer paow --line chat3 (Paow)",
+            "when": "2026-11-13"
+          }
+        },
+        {
+          "id": "paow-tal-chat4-sv-02",
+          "role": "film",
+          "name": "Tal: Lycka till med nästa hand.",
+          "path": "assets/motions/paow-tal-chat4-sv-02/source.mp4",
+          "still": 28,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Vilan paow-vila-01-01 med munnen ritad efter ljudet (tools/speech.ts), rösten Paow (ElevenLabs, eleven_multilingual_v2), 56 rutor i 24 per sekund med ljudspår. Börjar och slutar på vilans ruta 3. Inte oberoende granskad.",
+          "source": {
+            "from": "tools/speech.ts say --dealer paow --line chat4 (Paow)",
+            "when": "2026-11-13"
+          }
+        },
+        {
+          "id": "paow-tal-dealerblackjack-sv-03",
+          "role": "film",
+          "name": "Tal: Dealern har blackjack. Den här rundan går till huset.",
+          "path": "assets/motions/paow-tal-dealerblackjack-sv-03/source.mp4",
+          "still": 44,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Vilan paow-vila-01-01 med munnen ritad efter ljudet (tools/speech.ts), rösten Paow (ElevenLabs, eleven_multilingual_v2), 88 rutor i 24 per sekund med ljudspår. Börjar och slutar på vilans ruta 3. Inte oberoende granskad.",
+          "source": {
+            "from": "tools/speech.ts say --dealer paow --line dealerblackjack (Paow)",
+            "when": "2026-11-13"
+          }
+        },
+        {
+          "id": "paow-tal-dealerbust-sv-03",
+          "role": "film",
+          "name": "Tal: Dealern är över tjugoett! Grattis, bordet vinner.",
+          "path": "assets/motions/paow-tal-dealerbust-sv-03/source.mp4",
+          "still": 40,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Vilan paow-vila-01-01 med munnen ritad efter ljudet (tools/speech.ts), rösten Paow (ElevenLabs, eleven_multilingual_v2), 79 rutor i 24 per sekund med ljudspår. Börjar och slutar på vilans ruta 3. Inte oberoende granskad.",
+          "source": {
+            "from": "tools/speech.ts say --dealer paow --line dealerbust (Paow)",
+            "when": "2026-11-13"
+          }
+        },
+        {
+          "id": "paow-tal-dealerplays-sv-02",
+          "role": "film",
+          "name": "Tal: Dealern spelar.",
+          "path": "assets/motions/paow-tal-dealerplays-sv-02/source.mp4",
+          "still": 21,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Vilan paow-vila-01-01 med munnen ritad efter ljudet (tools/speech.ts), rösten Paow (ElevenLabs, eleven_multilingual_v2), 41 rutor i 24 per sekund med ljudspår. Börjar och slutar på vilans ruta 3. Inte oberoende granskad.",
+          "source": {
+            "from": "tools/speech.ts say --dealer paow --line dealerplays (Paow)",
+            "when": "2026-11-13"
+          }
+        },
+        {
+          "id": "paow-tal-detsamma-sv-02",
+          "role": "film",
+          "name": "Tal: Tack detsamma!",
+          "path": "assets/motions/paow-tal-detsamma-sv-02/source.mp4",
+          "still": 20,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Vilan paow-vila-01-01 med munnen ritad efter ljudet (tools/speech.ts), rösten Paow (ElevenLabs, eleven_multilingual_v2), 40 rutor i 24 per sekund med ljudspår. Börjar och slutar på vilans ruta 3. Inte oberoende granskad.",
+          "source": {
+            "from": "tools/speech.ts say --dealer paow --line detsamma (Paow)",
+            "when": "2026-11-13"
+          }
+        },
+        {
+          "id": "paow-tal-double-sv-03",
+          "role": "film",
+          "name": "Tal: Du dubblar. Ett kort, nu gör vi det bästa av det.",
+          "path": "assets/motions/paow-tal-double-sv-03/source.mp4",
+          "still": 37,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Vilan paow-vila-01-01 med munnen ritad efter ljudet (tools/speech.ts), rösten Paow (ElevenLabs, eleven_multilingual_v2), 74 rutor i 24 per sekund med ljudspår. Börjar och slutar på vilans ruta 3. Inte oberoende granskad.",
+          "source": {
+            "from": "tools/speech.ts say --dealer paow --line double (Paow)",
+            "when": "2026-11-13"
+          }
+        },
+        {
+          "id": "paow-tal-goodluck-sv-03",
+          "role": "film",
+          "name": "Tal: Insatserna är stängda. Lycka till vid mitt bord!",
+          "path": "assets/motions/paow-tal-goodluck-sv-03/source.mp4",
+          "still": 42,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Vilan paow-vila-01-01 med munnen ritad efter ljudet (tools/speech.ts), rösten Paow (ElevenLabs, eleven_multilingual_v2), 83 rutor i 24 per sekund med ljudspår. Börjar och slutar på vilans ruta 3. Inte oberoende granskad.",
+          "source": {
+            "from": "tools/speech.ts say --dealer paow --line goodluck (Paow)",
+            "when": "2026-11-13"
+          }
+        },
+        {
+          "id": "paow-tal-grattis-sv-02",
+          "role": "film",
+          "name": "Tal: Grattis! Det där var snyggt spelat.",
+          "path": "assets/motions/paow-tal-grattis-sv-02/source.mp4",
+          "still": 36,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Vilan paow-vila-01-01 med munnen ritad efter ljudet (tools/speech.ts), rösten Paow (ElevenLabs, eleven_multilingual_v2), 71 rutor i 24 per sekund med ljudspår. Börjar och slutar på vilans ruta 3. Inte oberoende granskad.",
+          "source": {
+            "from": "tools/speech.ts say --dealer paow --line grattis (Paow)",
+            "when": "2026-11-13"
+          }
+        },
+        {
+          "id": "paow-tal-hej-sv-02",
+          "role": "film",
+          "name": "Tal: Hej och välkommen till bordet!",
+          "path": "assets/motions/paow-tal-hej-sv-02/source.mp4",
+          "still": 22,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Vilan paow-vila-01-01 med munnen ritad efter ljudet (tools/speech.ts), rösten Paow (ElevenLabs, eleven_multilingual_v2), 43 rutor i 24 per sekund med ljudspår. Börjar och slutar på vilans ruta 3. Inte oberoende granskad.",
+          "source": {
+            "from": "tools/speech.ts say --dealer paow --line hej (Paow)",
+            "when": "2026-11-13"
+          }
+        },
+        {
+          "id": "paow-tal-hejda-sv-02",
+          "role": "film",
+          "name": "Tal: Tack för i kväll, välkommen tillbaka!",
+          "path": "assets/motions/paow-tal-hejda-sv-02/source.mp4",
+          "still": 29,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Vilan paow-vila-01-01 med munnen ritad efter ljudet (tools/speech.ts), rösten Paow (ElevenLabs, eleven_multilingual_v2), 58 rutor i 24 per sekund med ljudspår. Börjar och slutar på vilans ruta 3. Inte oberoende granskad.",
+          "source": {
+            "from": "tools/speech.ts say --dealer paow --line hejda (Paow)",
+            "when": "2026-11-13"
+          }
+        },
+        {
+          "id": "paow-tal-hurmardu-sv-04",
+          "role": "film",
+          "name": "Tal: Jag mår fint, tack. Korten verkar vara på gott humör i kväll.",
+          "path": "assets/motions/paow-tal-hurmardu-sv-04/source.mp4",
+          "still": 44,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Vilan paow-vila-01-01 med munnen ritad efter ljudet (tools/speech.ts), rösten Paow (ElevenLabs, eleven_multilingual_v2), 87 rutor i 24 per sekund med ljudspår. Börjar och slutar på vilans ruta 3. Avlyssnat som \"Jag mår fint, tack. Kortet verkar vara på gott humör i kväll\". Inte oberoende granskad.",
+          "source": {
+            "from": "tools/speech.ts say --dealer paow --line hurmardu (Paow)",
+            "when": "2026-11-13"
+          }
+        },
+        {
+          "id": "paow-tal-insurance-sv-03",
+          "role": "film",
+          "name": "Tal: Försäkringen är öppen. Vill du försäkra din hand?",
+          "path": "assets/motions/paow-tal-insurance-sv-03/source.mp4",
+          "still": 40,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Vilan paow-vila-01-01 med munnen ritad efter ljudet (tools/speech.ts), rösten Paow (ElevenLabs, eleven_multilingual_v2), 79 rutor i 24 per sekund med ljudspår. Börjar och slutar på vilans ruta 3. Inte oberoende granskad.",
+          "source": {
+            "from": "tools/speech.ts say --dealer paow --line insurance (Paow)",
+            "when": "2026-11-13"
+          }
+        },
+        {
+          "id": "paow-tal-lose-sv-02",
+          "role": "film",
+          "name": "Tal: Dealern vinner den här gången. Bättre lycka nästa runda.",
+          "path": "assets/motions/paow-tal-lose-sv-02/source.mp4",
+          "still": 44,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Vilan paow-vila-01-01 med munnen ritad efter ljudet (tools/speech.ts), rösten Paow (ElevenLabs, eleven_multilingual_v2), 88 rutor i 24 per sekund med ljudspår. Börjar och slutar på vilans ruta 3. Inte oberoende granskad.",
+          "source": {
+            "from": "tools/speech.ts say --dealer paow --line lose (Paow)",
+            "when": "2026-11-13"
+          }
+        },
+        {
+          "id": "paow-tal-namn-sv-02",
+          "role": "film",
+          "name": "Tal: Jag heter Paow, och jag är din dealer i kväll.",
+          "path": "assets/motions/paow-tal-namn-sv-02/source.mp4",
+          "still": 34,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Vilan paow-vila-01-01 med munnen ritad efter ljudet (tools/speech.ts), rösten Paow (ElevenLabs, eleven_multilingual_v2), 67 rutor i 24 per sekund med ljudspår. Börjar och slutar på vilans ruta 3. Avlyssnat som \"Jag heter Pau och jag är din dealer i kväll\". Inte oberoende granskad.",
+          "source": {
+            "from": "tools/speech.ts say --dealer paow --line namn (Paow)",
+            "when": "2026-11-13"
+          }
+        },
+        {
+          "id": "paow-tal-otur-sv-02",
+          "role": "film",
+          "name": "Tal: Det vänder snart, det brukar det göra.",
+          "path": "assets/motions/paow-tal-otur-sv-02/source.mp4",
+          "still": 34,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Vilan paow-vila-01-01 med munnen ritad efter ljudet (tools/speech.ts), rösten Paow (ElevenLabs, eleven_multilingual_v2), 67 rutor i 24 per sekund med ljudspår. Börjar och slutar på vilans ruta 3. Inte oberoende granskad.",
+          "source": {
+            "from": "tools/speech.ts say --dealer paow --line otur (Paow)",
+            "when": "2026-11-13"
+          }
+        },
+        {
+          "id": "paow-tal-placebets-sv-05",
+          "role": "film",
+          "name": "Tal: Lägg era insatser, tack.",
+          "path": "assets/motions/paow-tal-placebets-sv-05/source.mp4",
+          "still": 24,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Vilan paow-vila-01-01 med munnen ritad efter ljudet (tools/speech.ts), rösten Paow (ElevenLabs, eleven_multilingual_v2), 48 rutor i 24 per sekund med ljudspår. Börjar och slutar på vilans ruta 3. Inte oberoende granskad.",
+          "source": {
+            "from": "tools/speech.ts say --dealer paow --line placebets (Paow)",
+            "when": "2026-11-13"
+          }
+        },
+        {
+          "id": "paow-tal-push-sv-02",
+          "role": "film",
+          "name": "Tal: Det är lika. Din insats betalas tillbaka.",
+          "path": "assets/motions/paow-tal-push-sv-02/source.mp4",
+          "still": 38,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Vilan paow-vila-01-01 med munnen ritad efter ljudet (tools/speech.ts), rösten Paow (ElevenLabs, eleven_multilingual_v2), 76 rutor i 24 per sekund med ljudspår. Börjar och slutar på vilans ruta 3. Inte oberoende granskad.",
+          "source": {
+            "from": "tools/speech.ts say --dealer paow --line push (Paow)",
+            "when": "2026-11-13"
+          }
+        },
+        {
+          "id": "paow-tal-regler-sv-02",
+          "role": "film",
+          "name": "Tal: Närmast tjugoett vinner, men gå inte över.",
+          "path": "assets/motions/paow-tal-regler-sv-02/source.mp4",
+          "still": 34,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Vilan paow-vila-01-01 med munnen ritad efter ljudet (tools/speech.ts), rösten Paow (ElevenLabs, eleven_multilingual_v2), 67 rutor i 24 per sekund med ljudspår. Börjar och slutar på vilans ruta 3. Inte oberoende granskad.",
+          "source": {
+            "from": "tools/speech.ts say --dealer paow --line regler (Paow)",
+            "when": "2026-11-13"
+          }
+        },
+        {
+          "id": "paow-tal-varsagod-sv-02",
+          "role": "film",
+          "name": "Tal: Varsågod, det är bara roligt.",
+          "path": "assets/motions/paow-tal-varsagod-sv-02/source.mp4",
+          "still": 26,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Vilan paow-vila-01-01 med munnen ritad efter ljudet (tools/speech.ts), rösten Paow (ElevenLabs, eleven_multilingual_v2), 52 rutor i 24 per sekund med ljudspår. Börjar och slutar på vilans ruta 3. Inte oberoende granskad.",
+          "source": {
+            "from": "tools/speech.ts say --dealer paow --line varsagod (Paow)",
+            "when": "2026-11-13"
+          }
+        },
+        {
+          "id": "paow-tal-vetej-sv-02",
+          "role": "film",
+          "name": "Tal: Det kan jag tyvärr inte svara på, men korten ljuger aldrig.",
+          "path": "assets/motions/paow-tal-vetej-sv-02/source.mp4",
+          "still": 43,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Vilan paow-vila-01-01 med munnen ritad efter ljudet (tools/speech.ts), rösten Paow (ElevenLabs, eleven_multilingual_v2), 85 rutor i 24 per sekund med ljudspår. Börjar och slutar på vilans ruta 3. Inte oberoende granskad.",
+          "source": {
+            "from": "tools/speech.ts say --dealer paow --line vetej (Paow)",
+            "when": "2026-11-13"
+          }
+        },
+        {
+          "id": "paow-tal-win-sv-02",
+          "role": "film",
+          "name": "Tal: Bra spelat! Njut av din vinst.",
+          "path": "assets/motions/paow-tal-win-sv-02/source.mp4",
+          "still": 30,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Vilan paow-vila-01-01 med munnen ritad efter ljudet (tools/speech.ts), rösten Paow (ElevenLabs, eleven_multilingual_v2), 60 rutor i 24 per sekund med ljudspår. Börjar och slutar på vilans ruta 3. Inte oberoende granskad.",
+          "source": {
+            "from": "tools/speech.ts say --dealer paow --line win (Paow)",
             "when": "2026-11-13"
           }
         }

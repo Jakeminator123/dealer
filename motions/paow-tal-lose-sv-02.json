@@ -1,0 +1,50 @@
+{
+  "schemaVersion": 1,
+  "id": "paow-tal-lose-sv-02",
+  "dealer": "paow",
+  "source": {
+    "path": "assets/motions/paow-tal-lose-sv-02/source.mp4",
+    "sha256": "62132b528fc8eef56a90ca301ae1162e20c18f4ebc2383177917700bdded8fb8",
+    "bytes": 8582209,
+    "width": 1764,
+    "height": 1174,
+    "fps": 24,
+    "frames": 88,
+    "audio": true,
+    "provider": "tools/speech.ts: Scoutgaming's lip-sync renderer on this machine, voice from ElevenLabs",
+    "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Paow"
+  },
+  "motion": {
+    "kind": "IDLE",
+    "from": "IDLE",
+    "to": "IDLE",
+    "pass": false,
+    "basis": "SOURCE_FRAME_REVIEW",
+    "idle": {
+      "onRequest": true,
+      "calm": true,
+      "weight": 0,
+      "label": "säger: Dealern vinner den här gången. Bättre lycka nästa runda."
+    }
+  },
+  "speech": {
+    "line": "lose",
+    "language": "sv",
+    "text": "Dealern vinner den här gången. Bättre lycka nästa runda.",
+    "voice": "Paow",
+    "heard": "Dealern vinner den här gången. Bättre lycka nästa runda.",
+    "restFilm": "paow-vila-01-01",
+    "soundStartsAtSeconds": 0.22,
+    "soundEndsAtSeconds": 3.175
+  },
+  "review": {
+    "decision": "PENDING",
+    "basis": "Inte granskad av Jakob. Gjord av tools/speech.ts ur assets/motions/paow-vila-01-01/source.mp4. Inte oberoende granskad.",
+    "userAccepted": false,
+    "productionReady": false
+  },
+  "postProcessing": "the rendered face laid back into the rest film's own frames (assets/speech/paow/paow-tal-lose-sv-02/receipt.json, laidBack)",
+  "generationRef": "assets/motions/paow-tal-lose-sv-02/generation.json",
+  "scoutIntegrated": false,
+  "published": false
+}

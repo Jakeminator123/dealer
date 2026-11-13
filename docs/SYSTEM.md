@@ -128,7 +128,7 @@ Spelet med flera dealers (2026-11-13):
   läggs utan hand.
 - Efter en giv väljs en retur av samma hand som lade kortet (`motion.releaseHand`); finns ingen retur av rätt hand spelas
   den andra med en anteckning om felet.
-- Dealern säger sina repliker med talfilm och ljud (`src/speech-lines.ts`, rösten Jessica): `goodluck` före given,
+- Dealern säger sina repliker med talfilm och ljud (`src/speech-lines.ts`, hennes egen röst enligt `data/speech.json`): `goodluck` före given,
   `dealerplays`, `insurance`, `double`, utfallet och `placebets`; chattens svar spelar sin talfilm när den finns, och en
   replik utan film står som text i chatten. Talfilmen spelas hel, i vila, aldrig inne i en kedja av kort. Nyckeln `tal`
   (`repliker`, förval, eller `av`) stänger av talfilmerna. Brytaren Ritade kort (nyckeln `cards`, förval på) i Miljö och

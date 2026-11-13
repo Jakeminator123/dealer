@@ -64,7 +64,7 @@ const graph = graphOf(dealer);
 // text, as before). ?tal=av, the look key, keeps her silent and the module is never asked.
 type Spoken = {key: string; clip: string; text: string};
 type SpeechLines = {spokenFilm(takes: unknown[], dealer: string, keyOrPhase: string, options?: {voice?: string}): Spoken | null; chatReply(takes: unknown[], dealer: string, written: string, count?: number, options?: {voice?: string}): Spoken | null};
-const talking = talkOn((asked as {tal?: unknown}).tal ?? query.get('tal')), VOICE = {voice: 'Jessica'}; // Jessica until Jakob has heard the three
+const talking = talkOn((asked as {tal?: unknown}).tal ?? query.get('tal')), VOICE = {voice: 'Paow'}; // her own voice (data/speech.json), Jakob 2026-11-13
 let lines: SpeechLines | null = null;
 if (talking) void import('./speech-lines.ts').then(m => { lines = m as unknown as SpeechLines; }).catch(() => {});
 const restTakes = () => film.graph.edge['IDLE>IDLE']?.takes ?? [];

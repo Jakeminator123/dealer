@@ -6,14 +6,14 @@ Skriven 2026-11-13 av banan Tal. Sidan säger vad som finns i dag, hur en replik
 
 En **talfilm** är en vilotagning med ljudspår: bankens ruta (1764 × 1174 på grönt), 24 rutor per sekund, H.264 med AAC. Den spelar vilofilmens rutor från första spelade rutan (ruta 3) ut och samma väg tillbaka, så den börjar och slutar på samma ruta som varje vila, med stängd mun. Munnen är ritad efter ljudet av en läppsynkmodell (MuseTalk), och bara ett stycke kring munnen är utbytt: utanför en låda på cirka 184 × 190 bildpunkter (kvittots `laidBack.box`) är varje bildpunkt vilofilmens egen. Ljudet börjar 0,22 s in i filmen.
 
-Munnen ritas av samma renderer som Scoutgamings dealers har (`services/moving-gpu-worker` i `Jakeminator123/scoutgaming`), hämtad som färdig image och körd i Docker i WSL på den här datorns grafikkort, utan nät. Rösten läses av ElevenLabs. Inget i Scoutgamings produktion används eller ändras: inga av deras GPU-platser hos RunPod, ingen databas, inget lager.
+Munnen ritas av samma renderer som Scoutgamings dealers har (`services/moving-gpu-worker` i `Jakeminator123/scoutgaming`), hämtad som färdig image och körd i Docker i WSL på den här datorns grafikkort, utan nät. Rösten läses av ElevenLabs: Paow har samma röst som Scoutgamings egen Paow, en klon i Kevins ElevenLabs-konto (Jakob 2026-11-13). Inget i Scoutgamings produktion används eller ändras: inga av deras GPU-platser hos RunPod, ingen databas, inget lager.
 
 - **Verktyget** `tools/speech.ts`: `check`, `bank`, `say`, `reel`, `over`, `warm`, `proof` (kommandona står överst i filen).
-- **Registret** `data/speech.json`: rendererns image, rösterna, vilken vilofilm dealern talar över, och replikernas exakta text. `lines` är de tio en runda behöver (samma nycklar som `SpeakLine` i `game/presentation.ts`, Scoutgamings egna texter), `chat` är chattens femton fasta svar.
+- **Registret** `data/speech.json`: rendererns image, rösterna (med modell och inställningar per språk, och namnet på den rad i `.env.local` som bär kontots nyckel), vilken vilofilm dealern talar över, och replikernas exakta text. `lines` är de tio en runda behöver (samma nycklar som `SpeakLine` i `game/presentation.ts`, Scoutgamings egna texter), `chat` är chattens femton fasta svar.
 - **Filmerna** ligger i `assets/speech/<dealer>/<id>/` (utanför Git) med `source.mp4`, kvittot `receipt.json`, rendererns råa svar `worker.mp4`, rösten `tts.mp3` och granskarens dom `review.json`. De som är införda i banken ligger som tagningar av `IDLE>IDLE` med `motion.idle.onRequest: true` och repliken i postens `speech`.
-- **Provet** `paow-tal` i studions Prov visar allt, med ljud: demofilmen först, sedan tal under en giv, de tio replikerna och chattens svar.
+- **Provet** `paow-tal` i studions Prov visar allt i dealerns egen röst, med ljud: demofilmen först, sedan tal under en giv, de tio replikerna och chattens svar. Filmer i en annan röst (ett tidigare val, ett prov) ligger kvar där de gjordes och visas inte. Provet `paow-rost` är röstjämförelsen från 13 november: samma replik på fyra sätt.
 
-För Paow finns 2026-11-13: de tio replikerna och femton chattsvar med rösten Jessica, en demofilm på 34 s, och prov av tal lagt över en annan film än vilan. Bankens id är `paow-v2`, eftersom Scoutgaming redan har en äldre dealer som heter PAOW.
+För Paow finns 2026-11-13: de tio replikerna och femton chattsvar i hennes egen röst, en demofilm på 34 s, och prov av tal lagt över en annan film än vilan. Nattens första omgång med rösten Jessica ligger kvar som egna mappar och tagningar, så att rösterna går att jämföra. Bankens id är `paow-v2`, eftersom Scoutgaming redan har en äldre dealer som heter PAOW.
 
 ## Hur spelet väljer en replik
 
@@ -22,6 +22,14 @@ För Paow finns 2026-11-13: de tio replikerna och femton chattsvar med rösten J
 Spelet (kopplat av huvudagentens spelagent natten till 2026-11-13) säger "Lycka till" när given börjar, "Dealern spelar." före dealerns hand, utfallet när rundan är avgjord och "Lägg era insatser, tack." vid ny runda, och svarar i chatten med ett av de fasta svaren. Reglaget `tal` (`av` eller `repliker`) står bland scenens reglage. Replikerna spelas som vilofilmer, alltså mellan givarna och inte under dem.
 
 Chattens svar är fasta: en hälsning, hennes namn, hur hon mår, reglerna, tack, lycka till, otur, vinst, hej då och "det kan jag inte svara på", plus attrappens fyra egna svar. Vilket svar som passar avgörs av ord i det spelaren skrev (`chatKey`). Hon svarar alltså direkt, men bara med det som redan är inspelat.
+
+## Rösten
+
+En röst hittas bara av det konto den ligger i. I registret namnger rösten därför den rad i `.env.local` som bär kontots nyckel (`key`, till exempel `ELEVENLABS_API_KEY_KEVIN`), aldrig nyckeln själv; en röst utan `key` läses med repots egen `ELEVENLABS_API_KEY`. Uppläsningen betalas per tecken av det konto rösten ligger i; avlyssningen går alltid på repots egen nyckel. `languages` ger modell och inställningar för ett annat språk än röstens eget.
+
+Paows röst är ElevenLabs-rösten `WZVEBKUreb9jAKojf0QF` ("Paow", en direktklon i Kevins konto), samma som Scoutgamings katalog har som förval för henne. Svenska läses med `eleven_multilingual_v2` (stability 0,5, similarity 0,85, style 0, speaker boost): Jakob lyssnade på provet `paow-rost` 2026-11-13 och valde den framför `eleven_v3`, som Scoutgaming läser hennes svenska med ("2 paow äldre modell är bäst"). Engelska har Scoutgamings inställning (`eleven_multilingual_v2`, 0,38 / 0,8 / style 0,3); ingen engelsk replik är läst än. Jakob gav två id och ville ha det andra i första hand: `ZJEktbBRUOiQlTc5zJBT`, en professionell klon med samma namn i samma konto. Den går inte att läsa med: ElevenLabs svarar `voice_not_fine_tuned` på uppläsning med båda modellerna och på röstbyte (prövat samma dag), alltså är träningen inte klar, och det kan bara kontots ägare göra. När den är klar är bytet en rad i registret och alla repliker om.
+
+Två vägar till ny röst prövades på en replik (provet `paow-rost`). **Ny läsning och ny mun** (vald, film 1 och 2 i provet): rösten läser texten själv, och munnen ritas efter just det ljudet. **Röstbyte på färdigt ljud** (film 3; ElevenLabs speech-to-speech): ljudet behåller sin längd och takt (2,79 s in, 2,79 s ut) och bilden behöver inte göras om, men tonfallet och takten är den gamla röstens; det blir en annan röst som låter som Paow. Skriptet för röstbytet ligger utanför repot (`D:/dealer-scratch/tmp/tal/skript/rostbyte.mjs`).
 
 ## Göra en replik, och en ny dealer
 
@@ -35,11 +43,11 @@ node tools/speech.ts proof --dealer paow
 
 En **ny replik** är en rad i `data/speech.json` (eller `--text` med `--as`) och ett `say`. Samma text i samma röst läses aldrig två gånger av misstag (`--again ja` ger en ny läsning). Varje ljud skickas tillbaka till ElevenLabs tal-till-text och jämförs med texten; en avvikelse skrivs ut och står i kvittot. Det fångade natten till 2026-11-13 "20" för "tjugoett" och en röst som läste "Lägger en satser".
 
-En **ny dealer** behöver en godkänd vilofilm i bankens ruta, en rad under `dealers` i registret (bank-id, vilofilm, röst, språk), `bank` en gång och sedan `say` per replik. Röstbyte är en rad och alla repliker om.
+En **ny dealer** behöver en godkänd vilofilm i bankens ruta, en rad under `dealers` i registret (bank-id, vilofilm, röst, språk), `bank` en gång och sedan `say` per replik. Röstbyte är en rad och alla repliker om (se Rösten); 13 november tog de 25 replikerna sju minuter med varm renderer.
 
-Tider, mätta på den här datorn (RTX 3060): banken 80–150 s; en replik 63–110 s när datorn i övrigt vilar, upp till 245 s när andra arbeten går samtidigt. Det mesta av tiden är att renderern läser in sin modell för varje replik. ElevenLabs kostade under natten cirka 1 050 tecken för 29 läsningar (skattat under 5 kr; kontots kvot går inte att läsa med nyckeln).
+Tider, mätta på den här datorn (RTX 3060): banken 80–150 s; en replik 63–110 s när datorn i övrigt vilar, upp till 245 s när andra arbeten går samtidigt. Det mesta av tiden är att renderern läser in sin modell för varje replik. ElevenLabs kostade under natten cirka 1 050 tecken för 29 läsningar på repots nyckel (skattat under 5 kr; kontots kvot går inte att läsa med den nyckeln). Röstbytet 13 november kostade 1 422 tecken uppläsning och 34 tecken röstbyte på Kevins konto: 1 116 tecken för de 25 replikerna med den valda modellen (tre omläsningar inräknade) och 306 för de sex läsningar med `eleven_v3` som hann göras före valet.
 
-**Den varma renderern** (`warm --dealer paow`) håller modellen och banken i minnet. Start 95–162 s (mätt tre gånger); därefter tog samma repliker 10–15 s i stället för en minut (mätt på tre repliker om 34, 58 och 77 rutor), och rutorna är desamma som kallt: ingen bildpunkt skiljer i någon ruta. Den tar nästan hela grafikkortets minne (11,8 av 12 GB mätt) medan den går, så den stänger sig själv efter fem minuter utan arbete och ska inte stå på medan 3D-scenen spelas in. Den är Scoutgamings egna funktioner för bakning, körda i en process som får leva kvar; den rör ingenting hos dem.
+**Den varma renderern** (`warm --dealer paow`) håller modellen och banken i minnet. Start 95–162 s (mätt tre gånger); därefter tog samma repliker 10–15 s i stället för en minut (mätt på tre repliker om 34, 58 och 77 rutor), och rutorna är desamma som kallt: ingen bildpunkt skiljer i någon ruta. Den tar nästan hela grafikkortets minne (11,8 av 12 GB mätt) medan den går, så den stänger sig själv efter fem minuter utan arbete och ska inte stå på medan 3D-scenen spelas in. När kortet delas med en webbläsare som visar spelet går allt långsammare: 13 november tog starten 181–213 s, en replik 11–21 s varmt och ett kallt bak 69–94 s (hela kommandot 72–247 s med läsning, väntan på kortet och inläggning). WSL stänger dessutom en distribution några sekunder efter dess sista kommando, och renderern med den (sett samma dag: borta 34 s efter en sats); `warm` håller därför ett tyst kommando öppet så länge renderern lever, och väntar ut starten i stället för att baka kallt bredvid. Den är Scoutgamings egna funktioner för bakning, körda i en process som får leva kvar; den rör ingenting hos dem.
 
 ## Tal medan hon ger ett kort
 
@@ -116,4 +124,4 @@ Tre oberoende granskningar i full upplösning natten till 2026-11-13 (30 filmer)
 - Ingen koppling till Scoutgamings tjänster: inga jobb på deras GPU-platser, inget i deras databas eller lager, ingen OpenClaw. Allt körs på den här datorn.
 - Ingen strömmande läppsynk; varje replik är en färdig film.
 - Inga talfilmer över givar i banken: provet är ett prov tills det har kortspår och dom.
-- Rösten: de två röst-id Jakob gav (`ZJEktbBRUOiQlTc5zJBT`, `WZVEBKUreb9jAKojf0QF`) finns varken i kontot bakom nyckeln eller bland ElevenLabs 22 097 delade röster (alla lästa 2026-11-13). Jessica står kvar tills rösten är tillagd i kontot.
+- Ingen talfilm med den professionella klonen av Paows röst: den är inte färdigtränad (se Rösten).

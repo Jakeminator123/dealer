@@ -1,0 +1,50 @@
+{
+  "schemaVersion": 1,
+  "id": "paow-tal-win-sv-02",
+  "dealer": "paow",
+  "source": {
+    "path": "assets/motions/paow-tal-win-sv-02/source.mp4",
+    "sha256": "3dcdd498920435a139be7bd8b1bc151870a1cdd02a61e28c30128f857f1724c4",
+    "bytes": 5891367,
+    "width": 1764,
+    "height": 1174,
+    "fps": 24,
+    "frames": 60,
+    "audio": true,
+    "provider": "tools/speech.ts: Scoutgaming's lip-sync renderer on this machine, voice from ElevenLabs",
+    "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Paow"
+  },
+  "motion": {
+    "kind": "IDLE",
+    "from": "IDLE",
+    "to": "IDLE",
+    "pass": false,
+    "basis": "SOURCE_FRAME_REVIEW",
+    "idle": {
+      "onRequest": true,
+      "calm": true,
+      "weight": 0,
+      "label": "säger: Bra spelat! Njut av din vinst."
+    }
+  },
+  "speech": {
+    "line": "win",
+    "language": "sv",
+    "text": "Bra spelat! Njut av din vinst.",
+    "voice": "Paow",
+    "heard": "Bra spelat! Njut av din vinst",
+    "restFilm": "paow-vila-01-01",
+    "soundStartsAtSeconds": 0.22,
+    "soundEndsAtSeconds": 1.988
+  },
+  "review": {
+    "decision": "PENDING",
+    "basis": "Inte granskad av Jakob. Gjord av tools/speech.ts ur assets/motions/paow-vila-01-01/source.mp4. Inte oberoende granskad.",
+    "userAccepted": false,
+    "productionReady": false
+  },
+  "postProcessing": "the rendered face laid back into the rest film's own frames (assets/speech/paow/paow-tal-win-sv-02/receipt.json, laidBack)",
+  "generationRef": "assets/motions/paow-tal-win-sv-02/generation.json",
+  "scoutIntegrated": false,
+  "published": false
+}

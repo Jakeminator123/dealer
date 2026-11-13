@@ -8,7 +8,8 @@
 //   node tools/speech.ts proof --dealer paow
 // The mouth is drawn by Scoutgaming's lip-sync renderer (services/moving-gpu-worker in Jakeminator123/scoutgaming, MuseTalk), run as
 // the image data/speech.json names, in Docker inside WSL on this machine's graphics card and without network. Nothing is sent to
-// Scoutgaming's production, and RunPod is not used. The voice is ElevenLabs (ELEVENLABS_API_KEY in .env.local; paid per character).
+// Scoutgaming's production, and RunPod is not used. The voice is ElevenLabs, paid per character on the account whose key the voice
+// names in data/speech.json (key: the name of a line in .env.local; ELEVENLABS_API_KEY when the voice names none).
 //
 //   bank   once per dealer and rest film: the film is bridged to the renderer's frame (src/speech-plan.ts), the renderer's own
 //          builder makes the frame pool and prepares it on the graphics card. Written to assets/speech/<dealer>/bank/: sources/
@@ -27,8 +28,8 @@
 //          more: the same bake as cold, frame for frame (measured 2026-11-13: no pixel differs). It holds nearly all of a 12 GB
 //          card while it is up, so it ends itself after --idle seconds without work (300 if nothing is said); start it for a
 //          batch or a chat and stop it after. Without it everything is baked cold as before.
-//   proof  gathers the reels, the lines over other films and the newest take of every line in assets/proofs/<dealer>-tal/ with a
-//          proof.json, for the studio's view Prov.
+//   proof  gathers the reels, the lines over other films and the newest take of every line, all in the dealer's own voice, in
+//          assets/proofs/<dealer>-tal/ with a proof.json, for the studio's view Prov.
 // A film made here is a take like any other: it is reviewed frame by frame (tools/film-review.md) before Jakob judges it.
 import {readFile, writeFile, mkdir, mkdtemp, rm, rename, copyFile, readdir, stat, open} from 'node:fs/promises';
 import {existsSync, createReadStream} from 'node:fs';
@@ -47,12 +48,18 @@ export const ENCODING = 'H.264 High, yuv420p (4:2:0), CRF 12, preset slow, untag
 // What is laid back: the box around everything the renderer changed, grown by MARGIN, eased over FEATHER pixels from its edge.
 const LEVEL = 6, MARGIN = 40, FEATHER = 24;
 
-export type Voice = {provider: 'elevenlabs'; voiceId: string; name: string; modelId: string; settings: Record<string, number | boolean>};
+type VoiceSettings = Record<string, number | boolean>;
+// key: the name of the line in .env.local that holds the key of the account the voice lives in (a voice is only found by its own
+// account). languages: the model and settings the voice reads another language with than its own.
+export type Voice = {provider: 'elevenlabs'; voiceId: string; name: string; modelId: string; settings: VoiceSettings; key?: string; languages?: Record<string, {modelId: string; settings: VoiceSettings}>};
+/** The voice as it reads one language: one model and one set of settings, the ones the register names for that language if any. */
+export function voiceIn(voice: Voice, language: string): Voice { const {languages, ...own} = voice; return {...own, ...(languages?.[language] ?? {})}; }
 export type Register = {schemaVersion: 1; renderer: {image: string; wsl: string}; voices: Record<string, Voice>;
   dealers: Record<string, {bankId: string; rest: string; voice: string; language: string}>; names?: Record<string, string>; lines: Record<string, Record<string, string>>; chat?: Record<string, Record<string, string>>};
 export async function readRegister(file = path.join(repo, 'data/speech.json')): Promise<Register> {
   const r = JSON.parse(await readFile(file, 'utf8')) as Register;
   if (r.schemaVersion !== 1 || !/^[\w./-]+@sha256:[a-f0-9]{64}$/.test(r.renderer?.image ?? '')) throw Error('data/speech.json: renderer.image ska vara en image med digest (…@sha256:…).');
+  for (const [id, v] of Object.entries(r.voices ?? {})) if (v.key !== undefined && !/^[A-Z][A-Z0-9_]*$/.test(v.key)) throw Error(`data/speech.json: röstens (${id}) key ska vara namnet på en rad i .env.local, aldrig nyckeln själv.`);
   for (const [id, d] of Object.entries(r.dealers ?? {})) if (!r.voices?.[d.voice] || !r.lines?.[d.language] || !/^[a-z][a-z0-9-]{0,39}$/.test(d.bankId)) throw Error(`data/speech.json: dealern ${id} pekar på en röst, ett språk eller ett bank-id som inte finns.`);
   return r;
 }
@@ -334,8 +341,8 @@ export function sameValue(a: unknown, b: unknown): boolean {
 }
 /** One call to ElevenLabs, never repeated by itself: a call that did not answer may still have been charged. */
 async function readAloud(voice: Voice, text: string, out: string): Promise<void> {
-  const key = process.env.ELEVENLABS_API_KEY?.trim();
-  if (!key) throw Error('ELEVENLABS_API_KEY saknas (kör med node --env-file=.env.local …).');
+  const name = voice.key ?? 'ELEVENLABS_API_KEY', key = process.env[name]?.trim();
+  if (!key) throw Error(`${name} saknas (kör med node --env-file=.env.local …).`);
   const r = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voice.voiceId}?output_format=mp3_44100_128`, {method: 'POST', signal: AbortSignal.timeout(120_000),
     headers: {'xi-api-key': key, 'content-type': 'application/json', accept: 'audio/mpeg'}, body: JSON.stringify({text, model_id: voice.modelId, voice_settings: voice.settings})});
   if (!r.ok) throw Error(`ElevenLabs nekade (${r.status}): ${(await r.text()).slice(0, 200)}`);
@@ -343,8 +350,8 @@ async function readAloud(voice: Voice, text: string, out: string): Promise<void>
   if (!bytes.length) throw Error('ElevenLabs gav ett tomt svar; kontrollera historiken där innan ett nytt anrop.');
   await writeFile(out, bytes);
 }
-/** What the sound says according to ElevenLabs' speech-to-text (a paid call, a fraction of the reading's price): the check that
- * the voice read the words of the line. Null when the service does not answer; the take is then marked as not listened to. */
+/** What the sound says according to ElevenLabs' speech-to-text (a paid call, a fraction of the reading's price, always on the
+ * repo's own key whichever account the voice lives in): the check that the voice read the words of the line. Null when the service does not answer; the take is then marked as not listened to. */
 async function listen(mp3: string, language: string): Promise<string | null> {
   const key = process.env.ELEVENLABS_API_KEY?.trim(); if (!key) return null;
   const form = new FormData(); form.set('model_id', 'scribe_v1'); form.set('language_code', language); form.set('file', new Blob([await readFile(mp3)]), 'tts.mp3');
@@ -463,7 +470,7 @@ export async function reel(register: Register, root: string, options: ReelOption
 export type SayOptions = {dealer: string; line: string; language?: string; voice?: string; text?: string; again?: boolean; log?: (text: string) => void};
 export async function say(register: Register, root: string, options: SayOptions): Promise<{dir: string; id: string}> {
   const log = options.log ?? console.log, d = register.dealers[options.dealer]; if (!d) throw Error(`data/speech.json har ingen dealer ${options.dealer}.`);
-  const language = options.language ?? d.language, voiceName = options.voice ?? d.voice, voice = register.voices[voiceName], text = options.text ?? register.lines[language]?.[options.line] ?? register.chat?.[language]?.[options.line];
+  const language = options.language ?? d.language, voiceName = options.voice ?? d.voice, listed = register.voices[voiceName], voice = listed && voiceIn(listed, language), text = options.text ?? register.lines[language]?.[options.line] ?? register.chat?.[language]?.[options.line];
   if (!voice) throw Error(`data/speech.json har ingen röst ${voiceName}.`);
   if (!text) throw Error(`Ingen text för ${options.line} på ${language}; ge --text.`);
   if (!/^[a-z0-9]{1,24}$/.test(options.line) || !/^[a-z]{2}$/.test(language)) throw Error('Repliken ska heta med små bokstäver och siffror, språket med två bokstäver.');
@@ -514,7 +521,8 @@ export async function say(register: Register, root: string, options: SayOptions)
 
 // ── a line over another film: she speaks while she does something else ────────
 /** One job in the renderer: sent, run, and its answer checked against exactly what was sent. Returns the renderer's clip. */
-export async function render(register: Register, work: string, bank: Bank, rows: PlanRow[], pcm: Buffer, name: string): Promise<{data: Buffer; job: BakeJob; jobId: string; release: string; gpu: string; warm: boolean; seconds: number}> {
+// warmWait: how many seconds the warm renderer gets to answer before the job is baked cold instead.
+export async function render(register: Register, work: string, bank: Bank, rows: PlanRow[], pcm: Buffer, name: string, warmWait = 120): Promise<{data: Buffer; job: BakeJob; jobId: string; release: string; gpu: string; warm: boolean; seconds: number}> {
   const {gpu, release} = await check(register, work), total = rows.reduce((n, row) => n + row[2], 0);
   const job = bakeJob(bank.id, release, rows, {bytes: pcm.length, sha256: sha256(pcm), base64: pcm.toString('base64')}, `${name}-${randomBytes(4).toString('hex')}`), jobId = `local-${randomBytes(8).toString('hex')}`;
   const jobFile = path.join(work, 'job.json'), resultFile = path.join(work, 'result.json'), started = Date.now();
@@ -522,7 +530,7 @@ export async function render(register: Register, work: string, bank: Bank, rows:
   type Answer = {status: string; code?: string; attestation?: unknown; video?: Record<string, unknown> & {base64?: string}};
   // The warm renderer first, when it is up and holds this bank; otherwise, or if it does not answer, a cold bake as always.
   let answer: Answer | null = null, warm = false;
-  if ((await docker(register, work, 'warm-job', bank.tar, bank.receipt, jobFile, resultFile, '120')).includes('WARM_DONE')) { const said = JSON.parse(await readFile(resultFile, 'utf8')) as Answer; if (said.status === 'complete') { answer = said; warm = true; } }
+  if ((await docker(register, work, 'warm-job', bank.tar, bank.receipt, jobFile, resultFile, String(warmWait))).includes('WARM_DONE')) { const said = JSON.parse(await readFile(resultFile, 'utf8')) as Answer; if (said.status === 'complete') { answer = said; warm = true; } }
   if (!answer) { await docker(register, work, 'bake', bank.tar, bank.receipt, jobFile, resultFile); answer = JSON.parse(await readFile(resultFile, 'utf8')) as Answer; }
   if (answer.status !== 'complete') throw Error(`Renderern nekade: ${answer.code ?? 'okänt fel'}.`);
   if (!sameValue(answer.attestation, attestationOf(job, jobId))) throw Error('Rendererns intyg stämmer inte med jobbet (bank, ljud, plan, release eller jobb-id).');
@@ -537,9 +545,14 @@ export async function warmUp(register: Register, root: string, dealer: string, i
   try {
     const script = path.join(work, 'warm.py'); await writeFile(script, WARM.replaceAll('\r\n', '\n'));
     const said = await docker(register, work, 'warm-start', script, String(idleSeconds)), started = Date.now();
+    // WSL ends a distribution a few seconds after its last command, and the renderer with it (seen 2026-11-13: gone within 34 s of
+    // a batch's last line). One quiet command that waits for the renderer keeps the distribution up exactly as long as it lives.
+    if (process.platform === 'win32' && said.includes('WARM_STARTED')) spawn('wsl', ['-d', register.renderer.wsl, '--', 'docker', 'wait', 'dealer-speech-warm'], {detached: true, stdio: 'ignore', windowsHide: true}).unref();
     log(said.includes('WARM_RUNNING') ? 'Den varma renderern går redan.' : 'Den varma renderern startar och läser in modellen och banken …');
     const pcm = Buffer.alloc(2 * RENDER.pcmRate / 10), clip = bank.sources.clips[0], rows = planRows(clip.take, restPath(bank.sources.rest.frame, clip.frameCount, lineFrames(pcm.length)));
-    const made = await render(register, work, bank, rows, pcm, `${dealer}-warm`);
+    // The first job waits while the model and the bank are read in (181 s measured with the card shared with a browser); a cold
+    // bake beside a renderer that is starting only makes both slow.
+    const made = await render(register, work, bank, rows, pcm, `${dealer}-warm`, 600);
     log(made.warm ? `Varm: en tyst provreplik på ${((Date.now() - started) / 1000).toFixed(0)} s. Den stänger sig själv efter ${Math.round(idleSeconds / 60)} min utan arbete; stoppa med: node tools/speech.ts warm --stop ja` : 'Den varma renderern svarade inte; repliker bakas kallt som förut.');
   } finally { await rm(work, {recursive: true, force: true}); }
 }
@@ -550,7 +563,7 @@ export type OverOptions = {dealer: string; film: string; line: string; at?: numb
  * and the renderer draws the mouth over every frame of the film in order. The renderer wants a clip to end on the frame it began
  * on, so the film's first frame is added last for it and left out again here: the film that comes out has the film's own frames,
  * all of them, and its length. Only for a film of 24 frames a second, the renderer's own rate.
- * Written to assets/speech/<dealer>/<dealer>-tal-<line>-over-<film>/. A proof: not a take of the bank until it has a card track
+ * Written to assets/speech/<dealer>/<dealer>-tal-<line>-over-<film>/ (with -02, -03 … when the line has been read anew). A proof: not a take of the bank until it has a card track
  * and a verdict.
  */
 export async function over(register: Register, root: string, options: OverOptions): Promise<{dir: string; id: string}> {
@@ -562,7 +575,11 @@ export async function over(register: Register, root: string, options: OverOption
   if (!take) throw Error(`Ingen färdig tagning av ${options.line} med rösten ${own}; gör den först med say.`);
   const lead = RENDER.leadSamples / RENDER.pcmRate; if (!(at >= lead)) throw Error(`Ljudet kan börja tidigast ${lead} s in i filmen.`);
   const bank = await makeBank(register, root, options.dealer, log, options.film), clip = bank.sources.clips[0], total = clip.frameCount + 1;
-  const id = `${options.dealer}-tal-${options.line}-over-${options.film.replace(new RegExp(`^${options.dealer}-`), '')}`, dir = path.join(base, id), work = await mkdtemp(path.join(existsSync(scratch) ? scratch : os.tmpdir(), 'speech-'));
+  // The proof keeps its name while it is made from the same reading; made from another (a new voice, a new reading) it gets the
+  // next number, and the earlier film stays where it is.
+  const stem = `${options.dealer}-tal-${options.line}-over-${options.film.replace(new RegExp(`^${options.dealer}-`), '')}`; let id = stem;
+  for (let n = 2; existsSync(path.join(base, id, 'receipt.json')) && (JSON.parse(await readFile(path.join(base, id, 'receipt.json'), 'utf8')) as {sound?: {from?: string}}).sound?.from !== `${take.id}/tts.mp3`; n++) id = `${stem}-${String(n).padStart(2, '0')}`;
+  const dir = path.join(base, id), work = await mkdtemp(path.join(existsSync(scratch) ? scratch : os.tmpdir(), 'speech-'));
   try {
     const said = await toPcm(path.join(base, take.id, 'tts.mp3'), path.join(work, 'speech.pcm')), samples = total * (RENDER.pcmRate / RENDER.fps) - RENDER.leadSamples - RENDER.trailSamples, before = Math.round(at * RENDER.pcmRate) - RENDER.leadSamples;
     if (before + said.length / 2 > samples) throw Error(`Ljudet (${(said.length / 2 / RENDER.pcmRate).toFixed(1)} s från ${at} s) ryms inte i filmens ${(clip.frameCount / RENDER.fps).toFixed(1)} s.`);
@@ -590,18 +607,22 @@ export async function over(register: Register, root: string, options: OverOption
   } finally { await rm(work, {recursive: true, force: true}); }
 }
 
-/** The newest finished take of every line, gathered for the studio's view Prov. */
+/** The newest finished take of every line in the dealer's own voice, gathered for the studio's view Prov. Films in another voice (an
+ * earlier choice, a trial) stay where they were made and are not shown. */
 export async function proof(register: Register, root: string, dealer: string, log = console.log): Promise<string> {
-  const base = path.join(root, 'assets/speech', dealer), dir = path.join(root, 'assets/proofs', `${dealer}-tal`), newest = new Map<string, {id: string; receipt: Record<string, any>}>(), reels: {id: string; receipt: Record<string, any>}[] = [];
+  const base = path.join(root, 'assets/speech', dealer), dir = path.join(root, 'assets/proofs', `${dealer}-tal`), newest = new Map<string, {id: string; receipt: Record<string, any>}>(), shown = new Map<string, {id: string; receipt: Record<string, any>}>();
+  const d = register.dealers[dealer], own = register.voices[d?.voice ?? '']?.name;
   for (const id of existsSync(base) ? (await readdir(base)).sort() : []) { const file = path.join(base, id, 'receipt.json'); if (id === 'bank' || !existsSync(file) || !existsSync(path.join(base, id, 'source.mp4'))) continue;
-    const receipt = JSON.parse(await readFile(file, 'utf8')); if (receipt.kind) reels.push({id, receipt}); else newest.set(`${receipt.line}-${receipt.language}-${receipt.voice.name}`, {id, receipt}); }
-  if (!newest.size) throw Error(`Inga färdiga repliker för ${dealer}.`);
+    const receipt = JSON.parse(await readFile(file, 'utf8')); if ((typeof receipt.voice === 'string' ? receipt.voice : receipt.voice?.name) !== own) continue;
+    if (receipt.kind) shown.set(receipt.kind === 'reel' ? id : `${receipt.line}-${receipt.film.id}`, {id, receipt}); else newest.set(`${receipt.line}-${receipt.language}`, {id, receipt}); }
+  if (!newest.size) throw Error(`Inga färdiga repliker för ${dealer} med rösten ${own}.`);
+  const reels = [...shown.values()];
   await mkdir(dir, {recursive: true});
-  // The dealer's own voice first, in the register's order of lines; other voices after. A label is a short name, a colon and the
-  // rest (the view splits there). review.json beside a take ({verdict, note}, written after the independent review) is shown.
-  // The films of several lines in a row come first, then the round's lines in their order, then the chat's replies; other voices last.
-  const d = register.dealers[dealer], own = register.voices[d?.voice ?? '']?.name, order = (line: string, language: string) => { const i = [...Object.keys(register.lines[language] ?? {}), ...Object.keys(register.chat?.[language] ?? {})].indexOf(line); return i < 0 ? 999 : i; };
-  const takes = [...newest.values()].sort((a, b) => Number(a.receipt.voice.name !== own) - Number(b.receipt.voice.name !== own) || order(a.receipt.line, a.receipt.language) - order(b.receipt.line, b.receipt.language) || a.id.localeCompare(b.id));
+  // A label is a short name, a colon and the rest (the view splits there). review.json beside a take ({verdict, note}, written
+  // after the independent review) is shown. The films of several lines in a row come first, then the lines over other films, then
+  // the round's lines in the register's order, then the chat's replies.
+  const order = (line: string, language: string) => { const i = [...Object.keys(register.lines[language] ?? {}), ...Object.keys(register.chat?.[language] ?? {})].indexOf(line); return i < 0 ? 999 : i; };
+  const takes = [...newest.values()].sort((a, b) => order(a.receipt.line, a.receipt.language) - order(b.receipt.line, b.receipt.language) || a.id.localeCompare(b.id));
   const labels: Record<string, string> = {}, verdicts: Record<string, string> = {}; let reviewed = 0;
   const reviewOf = async (id: string) => { const file = path.join(base, id, 'review.json'); return existsSync(file) ? JSON.parse(await readFile(file, 'utf8')) as {verdict?: string; score?: string; note?: string; more?: string} : null; };
   const verdictOf = (review: {verdict?: string} | null) => ['ok', 'remarks', 'failed'].includes(review?.verdict ?? '') ? review!.verdict! : 'unreviewed';
@@ -614,11 +635,11 @@ export async function proof(register: Register, root: string, dealer: string, lo
     const review = await reviewOf(id), title = register.names?.[receipt.line] ?? receipt.line;
     if (review) reviewed++;
     const misheard = typeof receipt.sound.heard === 'string' && !sameWords(receipt.sound.heard, receipt.text);
-    labels[name] = `${title}${receipt.voice.name === own ? '' : `, röst ${receipt.voice.name}`}: "${receipt.text}" ${receipt.voice.name}, ${(receipt.output.frames / RENDER.fps).toFixed(1).replace('.', ',')} s.${misheard ? ` Avlyssnat som "${receipt.sound.heard}".` : ''}${review?.note ? ` Granskaren${review.score ? ` ${review.score}` : ''}: ${review.note}` : ''}`;
+    labels[name] = `${title}: "${receipt.text}" ${receipt.voice.name}, ${(receipt.output.frames / RENDER.fps).toFixed(1).replace('.', ',')} s.${misheard ? ` Avlyssnat som "${receipt.sound.heard}".` : ''}${review?.note ? ` Granskaren${review.score ? ` ${review.score}` : ''}: ${review.note}` : ''}`;
     verdicts[name] = verdictOf(review); }
   const who = dealer[0].toUpperCase() + dealer.slice(1);
   await writeFile(path.join(dir, 'proof.json'), json({schemaVersion: 1, createdAt: new Date().toISOString(), tool: 'tools/speech.ts proof', title: `${who} talar: läppsynk över vilan`,
-    description: `Vilofilmen ${register.dealers[dealer]?.rest} med munnen ritad efter ljudet (Scoutgamings renderer, körd på den här datorn) och rösten från ElevenLabs. Varje film börjar och slutar på vilans första ruta. Slå på ljudet. ${reviewed === takes.length ? 'Oberoende granskat ruta för ruta; domen står vid varje film.' : reviewed ? `Oberoende granskat: ${reviewed} av ${takes.length} filmer.` : 'Inte oberoende granskat.'}`,
+    description: `Vilofilmen ${register.dealers[dealer]?.rest} med munnen ritad efter ljudet (Scoutgamings renderer, körd på den här datorn) och rösten ${own} från ElevenLabs. Varje film börjar och slutar på vilans första ruta. Slå på ljudet. ${reviewed === takes.length ? 'Oberoende granskat ruta för ruta; domen står vid varje film.' : reviewed ? `Oberoende granskat: ${reviewed} av ${takes.length} filmer.` : 'Inte oberoende granskat.'}`,
     film: {fps: RENDER.fps}, labels, verdicts}));
   // A film that is no longer the newest take of its line is taken out of the proof (it stays where it was made).
   for (const file of await readdir(dir)) if (file.endsWith('.mp4') && !(file in labels)) await rm(path.join(dir, file));

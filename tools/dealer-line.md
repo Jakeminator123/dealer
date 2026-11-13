@@ -159,8 +159,8 @@ utan hand. Brytaren Ritade kort (nyckeln `cards`, förval på) slår av de ritad
 på korten").
 
 **17. Tal.** En talfilm är en vilotagning där munnen ritas efter ljudet: `node tools/speech.ts` (`bank`, `say`, `reel`,
-`proof`) med planen i `src/speech-plan.ts` och rösterna och repliker i `data/speech.json`; rösten är ElevenLabs
-(`ELEVENLABS_API_KEY` i `.env.local`, betalt per tecken) och munnen ritas lokalt (V). `src/speech-lines.ts` säger vilken
+`proof`) med planen i `src/speech-plan.ts` och rösterna och repliker i `data/speech.json`; rösten är ElevenLabs (betalt
+per tecken av det konto rösten ligger i; rösten namnger sin nyckelrad i `.env.local`) och munnen ritas lokalt (V). `src/speech-lines.ts` säger vilken
 talfilm som säger en replik i rundan eller svarar i chatten (V). Talfilmer spelas på begäran, inte i vilans slump.
 I spelet säger dealern sina fasta repliker med talfilm och ljud, och chatten svarar med fasta svar; nyckeln `tal`
 (`repliker` eller `av`) slår av talfilmerna. Hela ämnet: [docs/TAL.md](../docs/TAL.md). Ägs av banan Tal

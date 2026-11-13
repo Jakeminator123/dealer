@@ -1,0 +1,50 @@
+{
+  "schemaVersion": 1,
+  "id": "paow-tal-placebets-sv-05",
+  "dealer": "paow",
+  "source": {
+    "path": "assets/motions/paow-tal-placebets-sv-05/source.mp4",
+    "sha256": "16355f5ce967f4541681dea71031cb7e77d63ee9c6ee0d398a6d8c1c0e7fbe4e",
+    "bytes": 4570757,
+    "width": 1764,
+    "height": 1174,
+    "fps": 24,
+    "frames": 48,
+    "audio": true,
+    "provider": "tools/speech.ts: Scoutgaming's lip-sync renderer on this machine, voice from ElevenLabs",
+    "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Paow"
+  },
+  "motion": {
+    "kind": "IDLE",
+    "from": "IDLE",
+    "to": "IDLE",
+    "pass": false,
+    "basis": "SOURCE_FRAME_REVIEW",
+    "idle": {
+      "onRequest": true,
+      "calm": true,
+      "weight": 0,
+      "label": "säger: Lägg era insatser, tack."
+    }
+  },
+  "speech": {
+    "line": "placebets",
+    "language": "sv",
+    "text": "Lägg era insatser, tack.",
+    "voice": "Paow",
+    "heard": "Lägg era insatser, tack",
+    "restFilm": "paow-vila-01-01",
+    "soundStartsAtSeconds": 0.22,
+    "soundEndsAtSeconds": 1.497
+  },
+  "review": {
+    "decision": "PENDING",
+    "basis": "Inte granskad av Jakob. Gjord av tools/speech.ts ur assets/motions/paow-vila-01-01/source.mp4. Inte oberoende granskad.",
+    "userAccepted": false,
+    "productionReady": false
+  },
+  "postProcessing": "the rendered face laid back into the rest film's own frames (assets/speech/paow/paow-tal-placebets-sv-05/receipt.json, laidBack)",
+  "generationRef": "assets/motions/paow-tal-placebets-sv-05/generation.json",
+  "scoutIntegrated": false,
+  "published": false
+}

@@ -224,10 +224,12 @@ Det som hindrar en runda först. Han kan svara rad för rad.
    Hennes röst i spelet hörs efter ett klick på själva bordet (talfilmerna var tysta i spelets kö till f63e0ec).
 8. **En andra spelarfigur, "Astrid",** som kommer in från sidan och satsar: hans önskemål, inte påbörjat.
 9. **Bordets tryck:** ska trycket följa bordets storlek (`tableSize`)? Scenbanans fråga.
-10. **Talet:** två röst-id han gav finns inte i något konto eller delat bibliotek som nyckeln ser (Jessica står); ett tomt
-    Blob-lager `dealer-lab-tal` skapades i hans eget Vercel-team för en RunPod-mätning som inte kördes: ta bort det, eller
-    ge dess nyckel som `DEALER_SPEECH_BLOB_TOKEN`; den andra produktens gren `kevin-staging` ligger före den commit som
-    lästes (docs/TAL.md).
+10. **Talet:** alla 25 repliker har Paows egen röst sedan 2026-11-13 (hans val 2 i provet `paow-rost`: klonen
+    `WZVEBKUreb9jAKojf0QF` med den äldre röstmodellen), och han bör själv höra `namn` och `hurmardu`, som avlyssningen
+    hörde fel. Hans första id är inte färdigtränat hos ElevenLabs, vilket bara kontots ägare kan göra klart. Kontot har
+    en tredje röst, "Paow (Danielsson)", som läggs som film 5 i provet: vill han byta? Mätningen hos RunPod görs med
+    nyckeln han lade i `.env.local` (lagret `dealer-lab-tal`, egen endpoint); banken ligger kvar i lagret tills han
+    säger annat. Den andra produktens gren `kevin-staging` ligger före den commit som lästes (docs/TAL.md).
 11. **Äldre frågor om Pamela** (pausad): primära på hennes kanter, hålkortets giv, skokortets lutning, ett kortformat på
     tvären, Meshy-bordet, obedömda prov och den publika sajten står kvar i Git-historiken för HANDOFF före 2026-11-13 och
     tas upp när pausen hävs.
@@ -392,8 +394,9 @@ Det som hindrar en runda först. Han kan svara rad för rad.
   bort eller spärras när städningen har visat att inget läser den.
 - **Paow ser lite smal ut:** bildmodellen gav henne Pamelas kroppsbredd under ett huvud som är 8,7 % högre (mätt
   2026-11-13, `D:/dealer-scratch/tmp/huvudagent11/proportioner/`); bilden är inte hoptryckt i pixlarna.
-- **Två röst-id** för ElevenLabs som Jakob gav finns inte i kontot; spelet använder rösten Jessica tills han har lyssnat
-  (`src/game-page.ts`).
+- **Rösten:** spelet väljer talfilmerna med rösten Paow (`src/game-page.ts`, `data/speech.json`); nattens 25 med rösten
+  Jessica ligger kvar i banken och spelas inte. Rösten ligger i Kevins ElevenLabs-konto, och nyckelradens namn står i
+  registret, aldrig nyckeln (docs/TAL.md, "Rösten"). Granskarna ger de nya 3/5: munnen är rendererns, som förut.
 - **Testerna utan FFmpeg:** elva tester hoppas över där FFmpeg saknas (`tools/film-after.test.ts`,
   `tools/film-fix.test.ts`, `tools/order-bring.test.ts`, `tools/register-order.test.ts`, `tools/speech-plan.test.ts`),
   och tre i `tools/order-images.test.ts` kräver bankens filmer; GitHubs kontroll kör därför inte dem, den här datorn gör

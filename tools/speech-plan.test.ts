@@ -3,14 +3,14 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {createHash} from 'node:crypto';
-import {mkdtemp, rm} from 'node:fs/promises';
+import {mkdtemp, rm, writeFile} from 'node:fs/promises';
 import {existsSync} from 'node:fs';
 import {execFileSync, spawnSync} from 'node:child_process';
 import os from 'node:os';
 import path from 'node:path';
 import {BRIDGE, RENDER, bridgeProblems, clipLength, filmFrameOf, bridgeFilter, lineFrames, longestSound, restPath, planRows, canonical, videoIdOf, sourcesOf, bakeJob, answerVideo, sameWords,
   changedBox, unionBox, grownBox, featherMask, blendFrame, type Bridge} from '../src/speech-plan.ts';
-import {bridgeFilm, rawFrames, attestationOf, sameValue} from './speech.ts';
+import {bridgeFilm, rawFrames, attestationOf, sameValue, voiceIn, readRegister, type Voice} from './speech.ts';
 
 const sha = (text: string | Uint8Array) => createHash('sha256').update(text).digest('hex');
 const SHA = 'ab'.repeat(32), VID = 'abababab-abab-abab-abab-abababababab', TAKE = 'clip-' + VID;
@@ -72,6 +72,24 @@ test('what was heard is compared with the line by its words, not its commas', ()
   assert.ok(!sameWords('Lägger en satser, tack!', 'Lägg era insatser, tack.'));
   assert.ok(sameWords('Jag mår fint, tack. Korten är på gott humör ikväll.', 'Jag mår fint, tack. Korten är på gott humör i kväll.'), 'where the words are parted is not heard');
   assert.ok(!sameWords('Jag heter Paul och jag är din dealer i kväll', 'Jag heter Paow, och jag är din dealer i kväll.'));
+});
+
+test('a voice reads each language with one model, and names its account by the name of its key only', async () => {
+  const own = {modelId: 'eleven_v3', settings: {stability: 0.5}}, english = {modelId: 'eleven_multilingual_v2', settings: {stability: 0.38, style: 0.3}};
+  const voice: Voice = {provider: 'elevenlabs', voiceId: 'v', name: 'Paow', key: 'ELEVENLABS_API_KEY_KEVIN', ...own, languages: {en: english}};
+  assert.deepEqual(voiceIn(voice, 'sv'), {provider: 'elevenlabs', voiceId: 'v', name: 'Paow', key: 'ELEVENLABS_API_KEY_KEVIN', ...own});
+  assert.deepEqual(voiceIn(voice, 'en'), {provider: 'elevenlabs', voiceId: 'v', name: 'Paow', key: 'ELEVENLABS_API_KEY_KEVIN', ...english});
+  // A voice of the first films, written before a voice could name a key or a language, is the same value as before: its takes are still found.
+  const plain: Voice = {provider: 'elevenlabs', voiceId: 'j', name: 'Jessica', modelId: 'eleven_multilingual_v2', settings: {stability: 0.6}};
+  assert.ok(sameValue(voiceIn(plain, 'sv'), plain));
+  // The register as it stands: every dealer's voice exists, and no voice carries a key itself.
+  const register = await readRegister();
+  for (const d of Object.values(register.dealers)) assert.ok(register.voices[d.voice], d.voice);
+  for (const v of Object.values(register.voices)) assert.match(v.key ?? 'ELEVENLABS_API_KEY', /^[A-Z][A-Z0-9_]*$/);
+  const dir = await mkdtemp(path.join(os.tmpdir(), 'speech-register-')), file = path.join(dir, 'speech.json');
+  try { await writeFile(file, JSON.stringify({...register, voices: {...register.voices, leaked: {...plain, key: 'sk_0123456789abcdef'}}}));
+    await assert.rejects(readRegister(file), /aldrig nyckeln själv/); }
+  finally { await rm(dir, {recursive: true, force: true}); }
 });
 
 test('the bridge keeps a pixel a pixel, on even offsets', () => {
