@@ -38,14 +38,9 @@
     "basis": "Inte granskad av Jakob: förd in från beställningen paow-giv-2-1-d-c2-03, tagning 1 (tools/register-order.ts). Oberoende rutgranskning: tools/film-review.md.",
     "limitations": "I inkorgen: spelas bara där steget inte har någon annan film, tills Jakob dömer den.",
     "colorDoesNotProvePhysicalSide": true,
-    "userAccepted": false,
+    "userAccepted": true,
     "productionReady": false,
-    "provisional": {
-      "by": "huvudagenten och en oberoende granskare",
-      "at": "2026-11-13T07:05:24.562Z",
-      "mandate": "Jakob 2026-11-13: \"jag måste sova och du får granska och godkänna alla klipp.\"",
-      "note": "Ren retur: inget andra kort, handen lågt tillbaka till skon, tillbaka i första bildens pose inom 1 px."
-    }
+    "userReview": "Jakob 2026-11-13: Kokt det för lite som man gör ner, men det har jag klagat på förut. Annars ser det bra ut."
   },
   "order": {
     "id": "paow-giv-2-1-d-c2-03",

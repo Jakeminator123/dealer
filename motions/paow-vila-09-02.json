@@ -32,15 +32,10 @@
     "basis": "Inte granskad av Jakob: förd in från beställningen paow-vila-09, tagning 2 (tools/register-order.ts). Oberoende rutgranskning: tools/film-review.md.",
     "limitations": "I inkorgen: spelas bara där steget inte har någon annan film, tills Jakob dömer den.",
     "colorDoesNotProvePhysicalSide": true,
-    "userAccepted": false,
+    "userAccepted": true,
     "productionReady": false,
-    "provisional": {
-      "by": "huvudagenten med en oberoende granskare (omgång 12)",
-      "at": "2026-11-13T13:43:23.538Z",
-      "mandate": "Jakob 2026-11-13 cirka 13:30 om de nya vilorna, kaffet, vinkningen och fingrarna: \"Du får 5k i budget och godkänner själv efter granskning\"",
-      "note": "Granskaren 4/5: samma rörelse som tagning 1; axlarna följer mindre och slutet ligger längre från ankaret (615 mot 308 bildpunkter i ansiktet) [M]."
-    },
-    "acceptedAs": "VARIANT"
+    "acceptedAs": "VARIANT",
+    "userReview": "Jakob 2026-11-13: Ja, den är okej och kan användas ibland."
   },
   "order": {
     "id": "paow-vila-09",

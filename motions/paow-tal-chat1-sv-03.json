@@ -38,10 +38,11 @@
     "soundEndsAtSeconds": 1.487
   },
   "review": {
-    "decision": "PENDING",
+    "decision": "REJECTED",
     "basis": "Inte granskad av Jakob. Gjord av tools/speech.ts ur assets/motions/paow-vila-01-01/source.mp4 och inlagd bara kring det som hörs. Inte oberoende granskad; före grinden (chat1-sv-02) 2/5: Läpparna blir tunna och matta när hon talar (ruta 5–35), hakan suddig; munnen öppnar 4 rutor före ljudet, stänger 7 efter. Skarvar, kant, tatuering rena.",
     "userAccepted": false,
-    "productionReady": false
+    "productionReady": false,
+    "userReview": "Jakob 2026-11-13: Jag ser nu för första gången att när lipsynken är aktiv så blir hennes läppar mycket mindre."
   },
   "postProcessing": "the rendered face laid back into the rest film's own frames (assets/speech/paow/paow-tal-chat1-sv-03/receipt.json, laidBack)",
   "generationRef": "assets/motions/paow-tal-chat1-sv-03/generation.json",

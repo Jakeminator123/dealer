@@ -38,10 +38,11 @@
     "soundEndsAtSeconds": 2.428
   },
   "review": {
-    "decision": "PENDING",
+    "decision": "ACCEPTED",
     "basis": "Inte granskad av Jakob. Gjord av tools/speech.ts ur assets/motions/paow-vila-01-01/source.mp4 och inlagd bara kring det som hörs. Inte oberoende granskad; före grinden (blackjack-sv-03) 3/5: Bästa synken: läpparna sluts på B (r9) och i pausen r23–24; stänger r58 (+6). Rent utanför lådan; tunnare matta läppar, mjukare haka.",
-    "userAccepted": false,
-    "productionReady": false
+    "userAccepted": true,
+    "productionReady": false,
+    "userReview": "Jakob 2026-11-13: bra talreplik!"
   },
   "postProcessing": "the rendered face laid back into the rest film's own frames (assets/speech/paow/paow-tal-blackjack-sv-04/receipt.json, laidBack)",
   "generationRef": "assets/motions/paow-tal-blackjack-sv-04/generation.json",

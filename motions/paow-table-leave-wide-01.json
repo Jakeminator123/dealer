@@ -43,14 +43,9 @@
     "basis": "Inte granskad av Jakob och inte oberoende granskad: gjord och mätt av huvudagent11:s helfigursuppdrag 2026-11-13 (Kling 4 genom Runways MCP-server, utanför studions beställningsvy), i Pamelas breda ruta och halva skala. Mätt i full upplösning ruta för ruta: första rutan mot ankare 1 i halv skala: ögonen 1,3 och 1,5 px, händerna 0,2-0,9 px, kroppen slutar rad 655, silhuettöverlapp 0,988. Vila f0-11, reser sig f12-36 (ögonen 342 till 160, en mjuk kurva), fingertopparna lämnar kanten f30, ingenting under kantraden från f31 (behindFrom), tar kavajens slag med båda händerna och rättar till den f40-66, armarna faller f66-80, står f80-108, vänder sig åt höger f108-136, går bakom skivan och i helfigur förbi dess högra ände från f156 (983-1013 px), jämn gång (median 20 px per ruta), sista foten ut f197, tom bild f198-216. Skarven f96|97 ligger på den stående stillbilden: ögonen rör sig 0,1 px, rutsteget 0,79 mot 0,2-0,4 runt omkring. Ansiktslikhet (SFace) mot ankare 1 0,85-0,93, mot den stående keystone 0,91-0,94; 0,72 i rörelseoskärpan under uppresningen. Sedd: hon reser sig först, rättar till kavajen och går sedan ut, som Jakob beskrev.",
     "limitations": "24 rutor per sekund; rutnumren är filmens egna. Hon reser sig 20 px högre än den stående stillbilden (ögonen 160 vid f36) och sjunker tillbaka till 180 medan hon rättar kavajen (f40-90): kan läsas som att knäna viker sig lite. Ansiktet suddas av rörelseoskärpa under uppresningen f22-30. Skorna är svarta pumps med klack, inte keystonens platta skor. Kontaktskugga under skorna i helfigur f160-197 (mörkare grönt) och en hälrest i högerkanten f194-197. Kroppen under rad 656 är bortskuren rakt där skivan låg; 3D-bordet ska skymma den. Inte sedd i fart; inte prövad i scenen.",
     "colorDoesNotProvePhysicalSide": true,
-    "userAccepted": false,
+    "userAccepted": true,
     "productionReady": false,
-    "provisional": {
-      "by": "huvudagenten och en oberoende granskare",
-      "at": "2026-11-13T07:26:30.184Z",
-      "mandate": "Jakob 2026-11-13: \"jag måste sova och du får granska och godkänna alla klipp.\"",
-      "note": "Hon reser sig, rättar till kavajen, vänder sig och går ut; skarven mellan de två delarna syns inte. Att väga: uppresningen går cirka 20 px för högt och sjunker tillbaka, en liten gungning. Granskaren 4/5. Gjord som Pamelas godkända par (helfigur i bred ruta, halv skala). Ansiktet mot keystonen är inte jämfört i full upplösning."
-    }
+    "userReview": "Jakob 2026-11-13: Godkänner för nu, men håll bara koll p hur detta kommer bli med 3dbordet"
   },
   "postProcessing": "Assembled: frames 0-96 are the stand-up film, frames 97-216 are frames 1-120 of the walk-out film (the join lies on the standing still both parts were anchored on). Then scaled from 1920x1080 to 2088x1174 (lanczos), the drawn slab painted in each frame's own background green (the per-frame step of D:/dealer-scratch/tmp/filmagent/mcp/slab-to-bg.mjs, unchanged), every frame's green brought to anchor 1's green (src/film-after.ts levelFrame against a flat field of 0/237.5/44.5, no tone lock, nothing of her repainted), audio removed, frame rate kept at 24. Script: D:/dealer-scratch/tmp/huvudagent11/helfigur/after.ts. The joined 1920x1080 film lies beside it as original-1920x1080.mp4.",
   "generationRef": "assets/motions/paow-table-leave-wide-01/generation.json",
