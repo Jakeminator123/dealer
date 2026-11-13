@@ -27,9 +27,9 @@ let made: BareVideo[] = [], withFrameCalls = true;
 (globalThis as {document?: unknown}).document = {createElement: (tag: string) => { assert.equal(tag, 'video'); const v = withFrameCalls ? new FakeVideo() : new BareVideo(); made.push(v); return v; }};
 const {createPlayers} = await import('../src/scene3d-film.ts');
 
-function queue() {
+function queue(hooks: Parameters<typeof createPlayers>[2] = {}) {
   made = []; const seen = {shows: 0, changes: 0, textures: [] as {addEventListener(type: string, call: () => void): void}[]};
-  const players = createPlayers(texture => { seen.shows++; seen.textures.push(texture); }, () => { seen.changes++; });
+  const players = createPlayers(texture => { seen.shows++; seen.textures.push(texture); }, () => { seen.changes++; }, hooks);
   return {players, seen};
 }
 const settle = () => new Promise(resolve => setTimeout(resolve, 0));
@@ -168,18 +168,20 @@ test('a spoken line is never hurried, and the tempo leaves it and a rest film al
 });
 
 test('a film with sound that the browser refuses to start is shown muted; a start that a pause interrupted is left standing', async () => {
-  withFrameCalls = true; readyAtStart = 2; const {players} = queue(), wait = () => new Promise(resolve => setTimeout(resolve, 90));
+  // told: what the queue said through its hook (refused), for the layer that then speaks the line (src/scene3d-voice.ts)
+  withFrameCalls = true; readyAtStart = 2; const told: {path: string; video: unknown}[] = [], {players} = queue({refused: (part, video) => told.push({path: part.path, video})}), wait = () => new Promise(resolve => setTimeout(resolve, 90));
   const nav = (globalThis as {navigator?: object}).navigator ?? ((globalThis as {navigator?: object}).navigator = {}), had = Object.getOwnPropertyDescriptor(nav, 'userActivation');
   Object.defineProperty(nav, 'userActivation', {value: {hasBeenActive: true}, configurable: true}); // the page has been touched: a line is started with its sound
   try {
     players.play([{path: 'hord.mp4', sound: true}]); await wait();
-    assert.equal(made.find(v => v.src === 'hord.mp4')!.muted, false, 'a line is heard where the browser lets it');
+    assert.equal(made.find(v => v.src === 'hord.mp4')!.muted, false, 'a line is heard where the browser lets it'); assert.equal(told.length, 0, 'and nothing is said about it');
     refuse = 'NotAllowedError'; players.play([{path: 'tal.mp4', sound: true}], {cut: true}); await wait();
     const tal = made.find(v => v.src === 'tal.mp4')!;
     assert.equal(tal.muted, true, 'refused with sound: muted'); assert.equal(tal.paused, false, 'and running, so the round goes on');
+    assert.equal(told.length, 1, 'the page is told once'); assert.equal(told[0].path, 'tal.mp4'); assert.equal(told[0].video, tal, 'with the part and its element');
     refuse = 'AbortError'; players.play([{path: 'tal2.mp4', sound: true}], {cut: true}); await wait();
     const tal2 = made.find(v => v.src === 'tal2.mp4')!;
-    assert.equal(tal2.muted, false, 'another refusal is not answered by muting'); assert.equal(tal2.paused, true, 'and the film is not started again');
+    assert.equal(tal2.muted, false, 'another refusal is not answered by muting'); assert.equal(tal2.paused, true, 'and the film is not started again'); assert.equal(told.length, 1, 'nor is the page told');
   } finally { refuse = null; if (had) Object.defineProperty(nav, 'userActivation', had); else delete (nav as {userActivation?: unknown}).userActivation; players.dispose(); }
 });
 

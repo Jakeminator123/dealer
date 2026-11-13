@@ -10,6 +10,7 @@
 // heard once the page has been touched, and before that the mouth moves without it, as a talk film then plays muted.
 import * as T from 'three';
 import {cellAt, cellOf, readWav, type MouthPatch} from './speech-patch.ts';
+import type {PageAudio} from './page-audio.ts';
 
 // The shader's half (src/scene3d-film.ts puts it in its fragment shader and calls mouthOver on the film's colour where it reads
 // it). uv: the film's own texture coordinate (y up) of the pixel being drawn, after any frame of its own or life in her body has
@@ -53,8 +54,10 @@ export type LineLog = {id: string; said: boolean | null; heard: boolean; soundAt
 // enough to set it). DRIFT: ms a shown frame may lie from where the sound is before the line is ended.
 const LEAD = 0.25, DRIFT = 80;
 
-// options: the page's clock (now, ms) and how a call is put off (later); a test hands in its own of both.
-export function createMouthLayer(set: (shown: MouthShown | null) => void, options: {now?: () => number; later?: (call: () => void, ms: number) => void} = {}) {
+// options: the page's clock (now, ms) and how a call is put off (later); a test hands in its own of both. audio: the page's one
+// audio (src/page-audio.ts), woken in a touch and shared with the voice of a refused talk film; without it the layer makes a
+// context of its own, which a phone's browser leaves suspended.
+export function createMouthLayer(set: (shown: MouthShown | null) => void, options: {now?: () => number; later?: (call: () => void, ms: number) => void; audio?: PageAudio} = {}) {
   const now = options.now ?? (() => performance.now()), later = options.later ?? ((call: () => void, ms: number) => { setTimeout(call, ms); }), reads = new Map<string, Read>(), logs: LineLog[] = [];
   // ended: the patch of the last line, while its part is still on screen (a line ended early is not begun again)
   let line: Line | null = null, ended: MouthPart | null = null, gone = false, audio: AudioContext | null = null, shownLast = false;
@@ -78,6 +81,7 @@ export function createMouthLayer(set: (shown: MouthShown | null) => void, option
   }
   // The page's audio, made the first time a line is to be heard; it runs once the page has been touched.
   function context(): AudioContext | null {
+    if (options.audio) return audio = options.audio.context();
     if (!globalThis.AudioContext) return null;
     if (!audio) audio = new AudioContext({latencyHint: 'interactive'});
     if (audio.state === 'suspended' && globalThis.navigator?.userActivation?.hasBeenActive) void audio.resume().catch(() => {});
@@ -167,7 +171,7 @@ export function createMouthLayer(set: (shown: MouthShown | null) => void, option
     dispose() {
       if (gone) return; if (line) stopLine(line); gone = true; set(null); shownLast = false;
       for (const r of reads.values()) { r.texture?.dispose(); ((r.texture?.image ?? null) as ImageBitmap | null)?.close?.(); } reads.clear();
-      void audio?.close().catch(() => {}); audio = null;
+      if (!options.audio) void audio?.close().catch(() => {}); audio = null; // the page's own audio is the page's to close
     },
   };
 }

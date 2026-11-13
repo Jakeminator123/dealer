@@ -99,3 +99,16 @@ test('a film that falls behind its sound ends the line, sound and mouth', async 
   assert.match(layer.log.at(-1)!.note.join(' '), /avbröts/);
   layer.dispose();
 });
+
+test('with the page\'s own audio the layer sets its sound on that context and leaves it open when the layer goes', async () => {
+  files = {'mouth.webp': strip, 'line.wav': wav}; started.length = stopped.length = 0;
+  // The page's audio (src/page-audio.ts) as far as the layer uses it: one context, woken by the page, closed by the page.
+  let asked = 0, closed = 0; const own = new (g.AudioContext as new () => {close(): Promise<void>})(); own.close = () => { closed++; return Promise.resolve(); };
+  const shown: (MouthShown | null)[] = []; queue.length = 0;
+  const layer = createMouthLayer(s => shown.push(s), {now: () => clock, later, audio: {context: () => { asked++; return own as unknown as AudioContext; }, running: true, wake() {}, dispose() {}}});
+  const part: MouthPart = {patch: patchOf(), base: 'd/'}; await layer.preload([part]);
+  const v = video(), on = {mouth: part, fps: 24};
+  v.currentTime = 5.5 / 24; layer.update(on, v as never); v.show(5, clock = 3000);
+  assert.equal(started.length, 1, 'the line is set'); assert.ok(asked > 0, 'on the page\'s context'); assert.equal(layer.audio, own as unknown as AudioContext);
+  layer.dispose(); assert.equal(closed, 0, 'which is the page\'s to close');
+});

@@ -13,6 +13,8 @@ import {createTable, lightFromAbove, sized, type TableBase, type TableCloth, typ
 import {createRailExtras} from './scene3d-rail.ts';
 import {createSmoke} from './scene3d-smoke.ts';
 import {createMouthLayer} from './scene3d-mouth.ts';
+import {createPageAudio} from './page-audio.ts';
+import {createVoice} from './scene3d-voice.ts';
 
 export type SceneState = {
   room: RoomId; blur: number; depthBlur: boolean; dofRange: number; exposure: number; panoramaTurn: number;
@@ -122,8 +124,11 @@ export function createScene(canvas: HTMLCanvasElement, host: HTMLElement, data: 
   const light = createFanLight(), film = createFilmLayers(filmVP, light.uniforms), table = createTable(light.hook), tray = createChipTray(light.hook), rail = createRailExtras(light.hook), smoke = createSmoke(), rooms = createRooms(bg, data.urls, data.onMissingRoom, data.rooms);
   const sun = new T.DirectionalLight(0xfff1dd, 1.6); sun.position.set(-1.5, 3, 2.5);
   fg.add(film.body, film.table, table.group, tray.group, rail.group, smoke.group, new T.AmbientLight(0xffe6cc, 1.1), sun, ...rooms.front);
-  const players = createPlayers(texture => film.setTexture(texture), data.onChange);
-  const mouth = createMouthLayer(shown => film.setMouth(shown)); // a spoken line's mouth on the part on screen (src/scene3d-mouth.ts)
+  // Her voice through the page's own audio: one context, woken in a touch (src/page-audio.ts), for the mouth layer's lines and
+  // for a talk film that a phone's browser will not start with sound (src/scene3d-voice.ts; the queue says so through refused).
+  const sound = createPageAudio({playback: true}), voice = createVoice(sound);
+  const players = createPlayers(texture => film.setTexture(texture), data.onChange, {refused: (part, video) => voice.refused(part, video)});
+  const mouth = createMouthLayer(shown => film.setMouth(shown), {audio: sound}); // a spoken line's mouth on the part on screen (src/scene3d-mouth.ts)
   let camera: FilmCamera = DEALER_LENS_ESTIMATE, pitch = 0, edgeZ = -1, guides: T.Group | null = null, track: CardTrack | null = null;
   let focusNow = NaN, focusWhat = '', lastSeconds = NaN, moved = false;
   // Rendered cards, three ways: 'scene' makes each card an object in the scene under the film (scene3d-deal.ts); 'film' draws
@@ -432,7 +437,7 @@ export function createScene(canvas: HTMLCanvasElement, host: HTMLElement, data: 
   // registers no observers or listeners of its own (the pages do). Afterwards every call is a no-op, dispose() too.
   function takeDown() {
     if (gone) return; gone = true; running = false; shift = null;
-    mouth.dispose(); players.dispose(); rooms.dispose(); smoke.dispose();
+    mouth.dispose(); voice.dispose(); players.dispose(); sound.dispose(); rooms.dispose(); smoke.dispose();
     for (const prop of props.splice(0)) fg.remove(prop.group); frameCalls.clear();
     for (const layer of Object.values(cardLayers)) layer.off?.(); cardLayer = null;
     const freed = new Set<{dispose(): void}>(), textures = (value: unknown): void => { if (value instanceof T.Texture) freed.add(value as T.Texture); else if (Array.isArray(value)) value.forEach(textures); };
@@ -449,7 +454,7 @@ export function createScene(canvas: HTMLCanvasElement, host: HTMLElement, data: 
   }
 
   return {
-    state, players, mouth, render, rebuild, apply, resize,
+    state, players, mouth, voice, render, rebuild, apply, resize,
     start() { if (!running && !gone) { running = true; requestAnimationFrame(loop); } }, stop() { running = false; },
     dispose: takeDown,
     home() { if (gone) return; Object.assign(state, {yaw: 0, pitch: 0, zoom: 1, dx: 0, dy: 0, dz: 0, sway: false}); apply(); },

@@ -529,7 +529,9 @@ const FPS = 30;
  */
 export const frameAtTime = (seconds: number, fps = FPS): number => Math.floor(seconds * fps + 1e-3);
 // One or more parts played as a chain, each on its own video element so the next one is decoded before it is shown.
-export function createPlayers(onShow: (texture: T.Texture, path: string) => void, onChange: () => void) {
+// hooks.refused: a film with sound was refused its start by the browser and now plays muted (enter); the page can say the line
+// another way (src/scene3d-voice.ts). Called with the part and its video element, once per refused start.
+export function createPlayers(onShow: (texture: T.Texture, path: string) => void, onChange: () => void, hooks: {refused?: (part: Part, video: HTMLVideoElement) => void} = {}) {
   let players: Player[] = [], current = 0, paused = false, gone = false, tempo = 1;
   // The speed a part plays at: in the queue its own rate times the tempo (key filmTempo). The tempo is for the films of a round:
   // a spoken line does not take it (its sound is in the film), nor does a rest film (hurried, her breathing and blinking look
@@ -679,7 +681,7 @@ export function createPlayers(onShow: (texture: T.Texture, path: string) => void
     // its own for every film that is heard) gets it muted instead, so that a round is never left standing on a line's first frame.
     // Only that refusal: a start that a pause interrupted is refused too, and that film is meant to stand.
     const start = () => { if (run || my !== token) return; run = true; if (!paused) v.play().catch((error: unknown) => {
-      if ((error as {name?: string} | null)?.name === 'NotAllowedError' && !v.muted && my === token && !paused) { v.muted = true; v.play().catch(() => {}); } }); };
+      if ((error as {name?: string} | null)?.name === 'NotAllowedError' && !v.muted && my === token && !paused) { v.muted = true; v.play().catch(() => {}); hooks.refused?.(part, v); } }); };
     // Waiting on its first frame already: shown at once, so the join costs no frame, and the film starts to run when that frame has
     // been drawn, not here. Started here, it had run on before the picture was drawn (a join made by the timer above falls between
     // two drawings, and a drawing can come late), and a frame among the part's first two was never seen: at 13 of 35 joins in a
