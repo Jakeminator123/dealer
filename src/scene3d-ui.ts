@@ -32,7 +32,9 @@ const rounds = [round('Runda P4: giv → retur till vila', [deal, {from: 'P4.C1'
   round('Runda P4: vila → redo → giv → vila', [{from: 'IDLE', to: 'READY', take: 'pamela-idle-ready-entry-01'}, deal, {from: 'P4.C1', to: 'IDLE', take: 'pamela-p4-c1-plan-return-idle-01'}])].filter(r => r.parts.length);
 // A film that is not 30 frames a second says so in its record (Paow's takes are 24/s); played at 30 its card track would run ahead.
 const fpsOf = (id: string): {fps?: number} => { const fps = (bank.motions?.[id] as {source?: {fps?: unknown}} | undefined)?.source?.fps; return typeof fps === 'number' && fps > 0 && fps !== 30 ? {fps} : {}; };
-const partsOf = (choice: string): Part[] => rounds[Number(choice.slice(6))]?.parts ?? [{path: clips.find(c => c.id === choice)!.video, ...fpsOf(choice)}];
+// A lab trial of a film's lightning (Part.effect, src/scene3d-film.ts): ?blixt=<room id>,<seconds into the film>,<seconds it lasts> lays it on every film played here.
+const flash = (() => { const [room, at, seconds] = (query.get('blixt') ?? '').split(','); return room ? {effect: {kind: 'room-flash' as const, room, at: Number(at) || 1, seconds: Number(seconds) || 1, mono: true}} : {}; })();
+const partsOf = (choice: string): Part[] => (rounds[Number(choice.slice(6))]?.parts ?? [{path: clips.find(c => c.id === choice)!.video, ...fpsOf(choice)}]).map(part => ({...part, ...flash}));
 if (!clips.length) fail('Klippbanken innehåller inga filmer.');
 
 const first = clips.find(c => c.id === query.get('clip'))?.id ?? (rounds.length ? 'round:0' : clips[0].id);

@@ -106,7 +106,7 @@ export const SCENE_KEYS: readonly KeySpec[] = [
   spec("fanPeriod", "rorelser", "U", "Sekunder per blad", slider(2, 12, 0.5, " s"), "Fläktens fart: sekunder mellan två blad."),
   spec("roomLife", "rorelser", "U", "Rörelse i rummet", toggle, "Folk som står stilla i ett 360°-rum rör sig: en film över dem i bilden (prov; finns i Venedig)."),
   spec("dealerLife", "rorelser", "U", "Liv i överkroppen", slider(0, 2, 0.05), "Dealerns huvud och överkropp rör sig lite och långsamt: lutar, andas. Händer, kort och bord står still. 0 är av (prov)."),
-  spec("filmTempo", "rorelser", "U", "Givarnas tempo", slider(1, 2, 0.05, " ×"), "Hur fort hon delar ut: rundans filmer spelas så många gånger fortare. Vila och tal behåller sin fart. 1 är som filmat."),
+  spec("filmTempo", "rorelser", "U", "Givarnas tempo", slider(1, 2, 0.05, " ×"), "Hur fort hon delar ut: rundans filmer går så många gånger fortare. Vila och tal går i vanlig fart. Förval 2."),
   spec("tal", "rorelser", "U", "Dealerns repliker", choice(["repliker", "Med munnen"], ["av", "Bara text"]), "I spelet säger dealern sina fasta repliker med talfilm och ljud; Bara text visar dem i chatten."),
   // ── Ljus ──
   spec("exposure", "ljus", "U", "Ljus i rummet", slider(0.3, 2, 0.05), "Rummets ljusstyrka bakom dealern; 1 är som förut."),
@@ -114,7 +114,7 @@ export const SCENE_KEYS: readonly KeySpec[] = [
   spec("lamp", "ljus", "U", "Lampa över dealern", slider(0, 1, 0.05), "Del av bordets ljus från en lampa ovanför henne; faller av mot spelarna. 0 är av."),
   spec("wrap", "ljus", "U", "Ljus runt dealern", slider(0, 1.5, 0.05), "Rummet bakom henne som ett svagt ljus längs konturen, så att hon står i rummet. 0 är av."),
   spec("dealerRoom", "ljus", "U", "Rumsljus på dealern", slider(0, 1, 0.05), "Dealern tar 360°-rummets färg och nivå, ljusare mot dess ljusa sida (prov). 0 är av; byggda rum ändrar inget."),
-  spec("filmEven", "ljus", "U", "Jämna filmernas färg", toggle, "Filmer från olika generatorer får samma färg, så att ljuset på dealern inte hoppar i skarvarna."),
+  spec("filmEven", "ljus", "U", "Jämna filmernas färg", toggle, "Filmer från olika generatorer får samma färg, så att ljuset på dealern inte hoppar i skarvarna. Förval på."),
   spec("filmBright", "ljus", "U", "Dealerns ljusstyrka", slider(0.6, 1.4, 0.01), "Filmens nivå; 1 är filmen som den är."),
   spec("filmWarm", "ljus", "U", "Dealerns värme", slider(-0.2, 0.2, 0.005), "Filmens färgton, kallare eller varmare; 0 är filmen som den är."),
   spec("shadowAbove", "ljus", "U", "Skugga ovanför kanten", slider(0, 1, 0.05), "Filmens skugga ovanför bordskanten, där armbågarnas skugga annars hänger i luften. 0 tar bort den."),
@@ -127,7 +127,7 @@ export const SCENE_KEYS: readonly KeySpec[] = [
   spec("base", "bord", "U", "Underrede", choice(["column", "Pelare"], ["legs", "Två ben"]), "Bordets fot; syns när kameran backar."),
   spec("tableSize", "bord", "U", "Bordets storlek", slider(0.9, 1.4, 0.05, " ×"), "Filt, reling och fot växer åt sidorna och mot spelarna; dealerns kant och trycket står kvar. 1 är som förut (prov)."),
   spec("tray", "bord", "U", "Markerbräde", toggle, "Det byggda markerbrädet, försänkt vid dealern."),
-  spec("cups", "bord", "U", "Mugghållare", toggle, "Mässingsringar i relingen mellan platserna."),
+  spec("cups", "bord", "U", "Mugghållare", toggle, "Hållare i guld, försänkta i relingens läder mellan platserna. Förval på."),
   // ── Kort och marker ──
   spec("cards", "kort", "D", "Renderade kort", toggle, "Ritade kort i stället för filmens färgyta; spelet har dem på."),
   spec("cardMethod", "kort", "U", "Ritsätt", choice(["scene", "I scenen"], ["film", "I filmrutan"], ["matte", "Filmens matt"]), "I scenen: ett föremål under filmen. I filmrutan: det äldre sättet. Filmens matt (prov): filmens eget kort färgas om."),

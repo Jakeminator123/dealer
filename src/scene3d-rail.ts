@@ -1,5 +1,5 @@
-// Things set into the players' rail that are not the rail itself: cup holders in the leather. Off until the scene is asked
-// for them (state cups), so the scene opens as it was. Sizes are dealer metres, as in the table.
+// Things set into the players' rail that are not the rail itself: cup holders in the leather (state cups; on from the start since
+// 2026-11-13, Jakob's standard, and built only while they are shown). Sizes are dealer metres, as in the table.
 // A cup holder is a hole in the padded roll: a deep gold well with a rolled lip that is pressed down into the leather, the leather
 // drawn down to the lip in soft folds round it and dark where it meets the metal. The roll itself is not cut. The cup is drawn
 // before the table (renderOrder below 0): the well, the lip and a ring of the roll's own leather (the material the roll wears, at

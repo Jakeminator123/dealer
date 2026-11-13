@@ -4,7 +4,7 @@
 // With focus on, they go through a full-size target and are blurred by their own distance from the focus.
 import * as T from 'three';
 import {DEALER_LENS_ESTIMATE, FILM, aimCorrection, betSpots, cameraFromContract, cardFocusPixel, cardPixel, cardSpots, cloudLevel, filmToScene, flickerLevel, sceneToSpot, solveCamera, spotToScene, viewFovDeg, type CardTrack, type FilmCamera} from './scene3d-geometry.ts';
-import {EVEN, createFilmLayers, createPlayers, evenFor, frameAt, lightOnDealer, matchLeft, roomGlow, toneMatch, toneOf, toneUnder, type FilmTone, type Part, type RoomGlow, type ToneMatch} from './scene3d-film.ts';
+import {EVEN, createFilmLayers, createPlayers, evenFor, frameAt, lightOnDealer, matchLeft, roomFlashAt, roomGlow, toneMatch, toneOf, toneUnder, type FilmTone, type Part, type RoomGlow, type ToneMatch} from './scene3d-film.ts';
 import {createFanLight} from './scene3d-light.ts';
 import {createChipTray, TRAY} from './scene3d-props.ts';
 import {createRooms, type Panorama, type RoomId} from './scene3d-room.ts';
@@ -33,13 +33,17 @@ export type SceneState = {
   // Lab trials of 2026-11-13, at their defaults the picture before them. roomLife: films over the people of a panorama, where the
   // room has them (ROOM_LIFE in scene3d-room.ts). dealerRoom: share of the panorama's light the film takes (0 to 1; lightOnDealer in scene3d-film.ts).
   roomLife: boolean; dealerRoom: number;
-  // The film itself (src/scene3d-film.ts), each at its default the film as it is. filmEven: the films of one generator brought to the
-  // colour of the other's, so that the light does not shift where they join (evenFor). filmTempo: how fast every film without a spoken
-  // line plays (1 to 2; a rest film keeps its speed too). dealerLife: a slow movement added to her head and upper body (0 to 2; lifeShift).
+  // The film itself (src/scene3d-film.ts). filmEven: the films of one generator brought to the colour of the other's, and each film
+  // begun in the tone of the one before it, so that the light does not shift where they join (evenFor, toneMatch); off is the films as
+  // they are. filmTempo: how many times faster the films of a round play in the queue (1 to 2; 1 is as filmed; a rest film and a spoken
+  // line keep their speed, and a take played by itself is never hurried). dealerLife: a slow movement added to her head and upper body
+  // (0 to 2; 0 is none; lifeShift).
   filmEven: boolean; filmTempo: number; dealerLife: number;
   tal: 'repliker' | 'av'; // the game's: the dealer says her fixed lines with her talk films ('av': as text in the chat only; src/game-page.ts)
 };
-// Everything added after checkpoint v1 starts switched off, so the page opens as v1. scale 0 = the contract's own k.
+// What was added after checkpoint v1 starts switched off, so that the page opens as v1, except what Jakob has made the standard
+// (2026-11-13: "det ska bli en linje"): the films evened in colour (filmEven), the deals at twice their speed (filmTempo 2), the
+// cup holders in the rail (cups) and life in her upper body (dealerLife). scale 0 = the contract's own k.
 export const DEFAULTS: SceneState = {
   room: 'salong', blur: 11, depthBlur: true, dofRange: 4.5, exposure: 1, panoramaTurn: 90,
   mode: 'look', yaw: 0, pitch: 0, zoom: 1, dx: 0, dy: 0, dz: 0, aim: true, sway: false, fold: true, guides: false,
@@ -47,14 +51,14 @@ export const DEFAULTS: SceneState = {
   keyLo: 0.12, keyHi: 0.9, shadow: 1,
   focus: 'off', focusDistance: 1.5, tolerance: 0.4,
   fan: false, fanStrength: 0.16, fanPeriod: 5,
-  tray: false, cups: false, base: 'column', surface: 'painted', roomLight: 1, tableSize: 1,
+  tray: false, cups: true, base: 'column', surface: 'painted', roomLight: 1, tableSize: 1,
   cards: false, cardMethod: 'scene', cardRank: 'A', cardSuit: 'spades', cardScale: 1.2, cardHand: 'film',
   clock: false, dust: 0, flicker: false, flickerEvery: 20, flickerStrength: 0.6,
   filmBright: 1, filmWarm: 0, wrap: 0,
   roomShift: 'cut', roomShiftSeconds: 2.6,
   shadowAbove: 1, marks: 'all', cloth: 'print', lamp: 0, chipGloss: 0.5,
   roomLife: false, dealerRoom: 0,
-  filmEven: false, filmTempo: 1, dealerLife: 0,
+  filmEven: true, filmTempo: 2, dealerLife: 0,
   tal: 'repliker',
 };
 // rooms: the panorama rooms of the register (data/scene-rooms.json, readRegister in scene3d-room.ts); without it the first three, at urls.
@@ -81,7 +85,7 @@ void main(){
   for (int i = -7; i <= 7; i++) {
     vec2 uv = vUv + dir * c * float(i); float g = exp(-float(i * i) / 10.);
     if (mode > 1.5 && i != 0) g *= clamp((amount(uv) * 3. - abs(float(i)) * c / 2.2) * 8. + 1., 0., 1.);
-    s += texture2D(map, uv) * g; w += g;
+    s += clamp(texture2D(map, uv), 0., 64.) * g; w += g; // bounded: one pixel without a number would become a black square
   }
   gl_FragColor = s / w;
 }`;
@@ -144,6 +148,12 @@ export function createScene(canvas: HTMLCanvasElement, host: HTMLElement, data: 
   const blurMat = shader(BLUR_FRAGMENT, {map: {value: null}, depthMap: {value: null}, dir: {value: new T.Vector2()}, near: {value: 0.05}, far: {value: 200}, mode: {value: 0}, start: {value: 2}, range: {value: 8}, focus: {value: 1.5}, tol: {value: 0.3}});
   const plateMat = shader(PLATE_FRAGMENT, {map: {value: null}, scale: {value: new T.Vector2(1, 1)}});
   const outMat = shader(OUT_FRAGMENT, {map: {value: null}, fg: {value: null}, exposure: {value: 1}, useFg: {value: 0}});
+  // A film's lightning (Part.effect room-flash): the finished picture once more, grey where `mono` says and whitened by `flash`.
+  const strikeMat = shader('varying vec2 vUv; uniform sampler2D map; uniform float mono, flash; void main(){ vec3 c = texture2D(map, vUv).rgb; c = mix(c, vec3(dot(c, vec3(.2126, .7152, .0722))), mono); gl_FragColor = vec4(c + flash * (1. - c), 1.); }', {map: {value: null}, mono: {value: 0}, flash: {value: 0}});
+  // warmed: the room whose picture has been asked for ahead of the lightning, and sent: the one whose picture is on the graphics card
+  // already (sending it when the lightning strikes would hold the picture still for a moment). struck: the room it shows while it is on. strikeTo: the
+  // full-size target the picture is drawn into while there is lightning, instead of the screen.
+  let warmed: RoomId | null = null, sent: RoomId | null = null, struck: RoomId | null = null, strikeTo: Target | null = null;
   const shiftMat = shader(SHIFT_OUT_FRAGMENT, {map: {value: null}, fg: {value: null}, exposure: {value: 1}, useFg: {value: 0}, shimmer: {value: 0}, glitter: {value: 0}, pixels: {value: new T.Vector2(1, 1)}});
   const changeMat = shader(CHANGE_FRAGMENT, {from: {value: null}, to: {value: null}, gainFrom: {value: 1}, gainTo: {value: 1}, change: {value: 0}, aspect: {value: 1}});
   type Target = T.WebGLRenderTarget;
@@ -235,8 +245,13 @@ export function createScene(canvas: HTMLCanvasElement, host: HTMLElement, data: 
   // What moves in a room at this time (rooms.ambient); returns the factor for the room's brightness. frontAir: the share of the
   // air shown in front of the dealer. It is the one thing of a room that is not behind her: a change of room thins it out
   // to nothing at the moment the rooms have half changed, when it becomes the new room's, and lets it come back.
+  // FRONT_AIR: how much of the air is shown in front of her at all. None since 2026-11-13: an independent review of the film for
+  // Jakob's chief found the specks nearest her plane to be sharp white dots on her face in nine frames of ten, read as dirt on the
+  // picture; behind her the dust is soft and stays. (The cloud is still built in src/scene3d-room.ts; it comes back as large soft
+  // discs only, near the lens, when that is made.)
+  const FRONT_AIR = 0;
   let frontAir = 1;
-  const ambient = (id: RoomId, seconds: number) => rooms.ambient(id, seconds, new Date(), {clock: state.clock, air: state.dust, lamp: state.flicker ? flickerLevel(seconds, state.flickerEvery, state.flickerStrength) : 1, cloud: state.flicker ? cloudLevel(seconds, state.flickerEvery, state.flickerStrength * 0.5) : 1, front: frontAir}, canvas.height / H);
+  const ambient = (id: RoomId, seconds: number) => rooms.ambient(id, seconds, new Date(), {clock: state.clock, air: state.dust, lamp: state.flicker ? flickerLevel(seconds, state.flickerEvery, state.flickerStrength) : 1, cloud: state.flicker ? cloudLevel(seconds, state.flickerEvery, state.flickerStrength * 0.5) : 1, front: frontAir * FRONT_AIR}, canvas.height / H);
   // One room into the half-size targets, blurred. The first target takes the room and its depth; `ping` and `pong` are the
   // blur's two, and the picture ends in `pong`, or stays in the first when there is no blur.
   function drawRoom(look: Look, seconds: number, ping: Target, pong: Target): Picture {
@@ -297,8 +312,18 @@ export function createScene(canvas: HTMLCanvasElement, host: HTMLElement, data: 
       if (shift.progress >= 1) { endShift(); data.onChange(); } else change = roomChange(shift.progress);
     }
     frontAir = shift ? Math.abs(1 - 2 * change) : 1;
+    const playing = players.current, part = players.part;
+    // A film's lightning (Part.effect): the other room's picture is asked for when the film begins, the room is shown while the
+    // lightning is on, and the room that is chosen comes back after it. Not during a change of room, which has its own course.
+    const effect = !shift && part?.effect?.kind === 'room-flash' && rooms.rooms[part.effect.room] ? part.effect : null;
+    const strike = effect ? roomFlashAt(players.frame() / (part!.fps ?? 30) - effect.at, effect.seconds) : null;
+    if (effect && warmed !== effect.room) { warmed = effect.room; rooms.show(effect.room); rooms.show(struck ?? state.room); }
+    if (effect && sent !== effect.room && roomReady(effect.room)) { const map = ((rooms.rooms[effect.room].group as T.Mesh | null)?.material as T.MeshBasicMaterial | undefined)?.map; if (map) renderer.initTexture(map); sent = effect.room; }
+    const on = effect && strike!.on ? effect.room : null; if (on !== struck) { struck = on; rooms.show(on ?? state.room); }
+    // Only the room behind her is the other one: the table and the dealer keep the light of the room that is chosen.
+    const here: Look = struck ? {...lookNow(), room: struck} : state;
     roomLight(shift?.from && change < 0.5 ? shift.from : state); // the table changes its light when the rooms have half changed
-    const playing = players.current, part = players.part; if (part && part.track !== undefined) track = part.track; // a part that names its track brings it along
+    if (part && part.track !== undefined) track = part.track; // a part that names its track brings it along
     mouth.update(part, playing?.video ?? null, players.frame()); // a part that says a line: the cell of the frame shown, as the cards have it
     film.setFrame(frameAt(part?.frame ?? null, players.frame())); // and so does a part whose film has a frame of its own
     // A film with a frame of its own has no shoe and no card places in its picture: the rendered cards (the one seated in the shoe window among them) stay out of it.
@@ -312,18 +337,23 @@ export function createScene(canvas: HTMLCanvasElement, host: HTMLElement, data: 
     lastSeconds = seconds;
     // room
     if (shift && change >= 1) rooms.show(state.room); // also after a frame so long that the rooms never were on screen together
-    rooms.life(shift?.from ? [state.room, shift.from.room] : [state.room], state.roomLife);
-    const picture = shift && change < 1 ? drawShift(shift, change, seconds) : drawRoom(state, seconds, half[1], half[2]); if (shift) shown = picture;
+    rooms.life(shift?.from ? [state.room, shift.from.room] : effect ? [here.room, effect.room] : [state.room], state.roomLife);
+    const picture = shift && change < 1 ? drawShift(shift, change, seconds) : drawRoom(here, seconds, half[1], half[2]); if (shift) shown = picture;
     // the dealer takes her light from the room as the table does: the outgoing room's until the rooms have half changed
-    const lit = shift?.from && change < 0.5 ? shift.from : lookNow(); dealerLight(lit, shift ? lit.exposure * rooms.rooms[lit.room].exposure : picture.exposure);
+    const lit = shift?.from && change < 0.5 ? shift.from : lookNow(); dealerLight(lit, shift || struck ? lit.exposure * rooms.rooms[lit.room].exposure : picture.exposure);
     film.setWrap(state.wrap > 0 ? picture.target.texture : null, canvas.width, canvas.height, picture.exposure, state.wrap);
     // table and film; while a change of room is under way the shimmer is laid over the room in the same pass that writes it to the screen
     const out = shift ? shiftMat : outMat, o = out.uniforms; o.useFg.value = 0;
     if (shift) { o.shimmer.value = shimmerLevel(shift.progress); o.glitter.value = seconds - shift.glitterFrom; (o.pixels.value as T.Vector2).set(canvas.width, canvas.height); }
     if (focusOn) { const [f, g, h] = full; light.uniforms.toTarget.value = 1; renderer.setRenderTarget(f); renderer.setClearColor(0x000000, 0); renderer.clear(); renderer.render(fg, view); light.uniforms.toTarget.value = 0;
       u.depthMap.value = f.depthTexture; u.mode.value = 2; o.fg.value = blur(f, g, h, state.blur * scale).texture; o.useFg.value = 1; }
-    renderer.setRenderTarget(null); renderer.setClearColor(0x050403, 1); renderer.clear(); o.map.value = picture.target.texture; o.exposure.value = picture.exposure; pass(out, null);
-    if (!focusOn) { renderer.clearDepth(); renderer.render(fg, view); }
+    // While there is lightning the picture goes into a target of its own and from there to the screen, grey and whitened.
+    const lightning = !!strike && (strike.flash > 0 || strike.on && !!effect!.mono);
+    if (lightning && (!strikeTo || strikeTo.width !== canvas.width || strikeTo.height !== canvas.height)) { if (strikeTo) dispose([strikeTo]); strikeTo = target(canvas.width, canvas.height, true); }
+    const screen = lightning ? strikeTo : null;
+    renderer.setRenderTarget(screen); renderer.setClearColor(0x050403, 1); renderer.clear(); o.map.value = picture.target.texture; o.exposure.value = picture.exposure; pass(out, screen);
+    if (!focusOn) { renderer.clearDepth(); light.uniforms.toTarget.value = screen ? 1 : 0; renderer.render(fg, view); light.uniforms.toTarget.value = 0; }
+    if (screen) { const s = strikeMat.uniforms; s.map.value = screen.texture; s.mono.value = strike!.on && effect!.mono ? 1 : 0; s.flash.value = strike!.flash; pass(strikeMat, null); }
     for (const call of frameCalls) call();
   }
   // filmEven (src/scene3d-film.ts): the film on screen in its family's colour, and a new film begun in the tone of the one before
@@ -405,7 +435,7 @@ export function createScene(canvas: HTMLCanvasElement, host: HTMLElement, data: 
     for (const layer of Object.values(cardLayers)) freed.add(layer.texture);
     for (const d of freed) d.dispose();
     for (const layer of Object.values(cardLayers)) layer.dispose?.(); // the rendered cards' own: their motion samples and prints not on show
-    dispose(half); dispose(full); held?.dispose(); half = full = []; held = shown = null; litMap?.dispose(); litMap = litBy = null; pmrem.dispose();
+    dispose(half); dispose(full); if (strikeTo) { dispose([strikeTo]); strikeTo = null; } held?.dispose(); half = full = []; held = shown = null; litMap?.dispose(); litMap = litBy = null; pmrem.dispose();
     renderer.setRenderTarget(null); renderer.dispose(); renderer.forceContextLoss();
   }
 

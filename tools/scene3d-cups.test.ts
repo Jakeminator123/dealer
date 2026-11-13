@@ -58,3 +58,11 @@ test('a cup is deep and stays inside the roll, and its rim sits down in the leat
   const shades = parts.well.shade.slice(0, parts.well.shade.length / angles.length); assert.ok(Math.max(...shades) > 0.95 && Math.min(...shades) < 0.4);
   assert.deepEqual(cupParts([]), {well: {position: [], normal: [], uv: [], shade: [], index: []}, lip: {position: [], normal: [], uv: [], shade: [], index: []}, collar: {position: [], normal: [], uv: [], shade: [], index: []}, cover: {position: [], normal: [], uv: [], shade: [], index: []}});
 });
+
+test('what a built-in material writes into a render target is bounded, so that the glint of the sun in the gold cannot become a black square in the focus blur', async () => {
+  const {createFanLight, TARGET_MOST} = await import('../src/scene3d-light.ts');
+  const material = {onBeforeCompile: (_shader: unknown) => {}, customProgramCacheKey: () => ''}, shader = {uniforms: {}, vertexShader: '#include <project_vertex>', fragmentShader: '#include <colorspace_fragment>'};
+  createFanLight().hook(material as never); material.onBeforeCompile(shader);
+  const at = shader.fragmentShader.indexOf('sRGBTransferOETF('), bound = shader.fragmentShader.indexOf(`clamp(gl_FragColor.rgb, 0., ${TARGET_MOST}.)`);
+  assert.ok(at > 0 && bound > at && bound < at + 40, 'the light is bounded before it is encoded for the target'); assert.ok(TARGET_MOST >= 4 && TARGET_MOST < 65504);
+});

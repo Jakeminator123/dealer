@@ -4,15 +4,16 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {DEFAULTS} from '../src/scene3d-view.ts';
-import {EVEN, FRAME_FIX, LIFE, evenFor, lifeNow, lifeShiftAt, matchLeft, rematrix, toneMatch, toneOf, toneUnder} from '../src/scene3d-film.ts';
+import {EVEN, FLASH, FRAME_FIX, LIFE, roomFlashAt, evenFor, lifeNow, lifeShiftAt, matchLeft, rematrix, toneMatch, toneOf, toneUnder} from '../src/scene3d-film.ts';
 import {SCENE_KEYS} from '../studio/lib/scene-keys.ts';
 import {KEYS as GAME_KEYS} from '../src/game-look.ts';
 
 const times = (m: readonly number[], v: number[]) => [0, 1, 2].map(r => m[r * 3] * v[0] + m[r * 3 + 1] * v[1] + m[r * 3 + 2] * v[2]);
 
-test('the defaults are the film as it is, and both catalogues hold the three keys', () => {
-  assert.equal(DEFAULTS.filmEven, false); assert.equal(DEFAULTS.filmTempo, 1); assert.equal(DEFAULTS.dealerLife, 0);
-  assert.deepEqual(lifeNow(12.3, DEFAULTS.dealerLife).map(Math.abs), [0, 0, 0]);
+test('the defaults are Jakob\'s standard of 2026-11-13, and both catalogues hold the three keys', () => {
+  // the films evened, the deals at twice their speed and the cup holders in the rail from the start; life in her upper body until it is seen
+  assert.equal(DEFAULTS.filmEven, true); assert.equal(DEFAULTS.filmTempo, 2); assert.equal(DEFAULTS.cups, true); assert.equal(DEFAULTS.dealerLife, 0);
+  assert.deepEqual(lifeNow(12.3, 0).map(Math.abs), [0, 0, 0], 'no life is no movement at all');
   assert.deepEqual(GAME_KEYS.filmEven, {kind: 'switch'}); assert.deepEqual(GAME_KEYS.filmTempo, {kind: 'slider', min: 1, max: 2}); assert.deepEqual(GAME_KEYS.dealerLife, {kind: 'slider', min: 0, max: 2});
   const studio = (key: string) => SCENE_KEYS.find(s => s.key === key) as {kind: string; min?: number; max?: number} | undefined;
   assert.equal(studio('filmEven')?.kind, 'switch'); assert.deepEqual([studio('filmTempo')?.min, studio('filmTempo')?.max], [1, 2]); assert.deepEqual([studio('dealerLife')?.min, studio('dealerLife')?.max], [0, 2]);
@@ -67,4 +68,15 @@ test('the join between two films: her tone read without the screen, the new film
   assert.equal(matchLeft(0), 1); assert.equal(matchLeft(EVEN.fade), 0); assert.equal(matchLeft(EVEN.fade + 5), 0);
   for (let t = 0; t < EVEN.fade; t += 0.1) assert.ok(matchLeft(t + 0.1) <= matchLeft(t));
   toneUnder(next, match, 1).dark.forEach((m, c) => assert.ok(Math.abs(m - old.dark[c]) < 1e-9)); toneUnder(next, match, 1).light.forEach((m, c) => assert.ok(Math.abs(m - old.light[c]) < 1e-9)); assert.equal(toneUnder(next, match, 0), next); assert.equal(toneUnder(next, null, 1), next);
+});
+
+test('a film\'s lightning: white at once, the other room for the hold, a softer flash back, and nothing before or after', () => {
+  for (const t of [-1, -0.001, 1 + FLASH.backFall, 5, NaN]) assert.deepEqual(roomFlashAt(t, 1), {flash: 0, on: false}, String(t));
+  assert.deepEqual(roomFlashAt(0, 1), {flash: 0, on: false}); assert.deepEqual(roomFlashAt(FLASH.rise, 1), {flash: 1, on: true}, 'the room comes on at the peak, under full white');
+  assert.ok(roomFlashAt(FLASH.rise / 2, 1).flash === 0.5 && !roomFlashAt(FLASH.rise / 2, 1).on);
+  assert.equal(roomFlashAt(FLASH.rise + FLASH.fall + 0.01, 1).flash, 0, 'the first flash is over'); assert.ok(Math.abs(roomFlashAt(FLASH.after.at, 1).flash - FLASH.after.peak) < 1e-9, 'the faint second flash');
+  assert.ok(roomFlashAt(0.999, 1).on && roomFlashAt(0.999, 1).flash > FLASH.backPeak * 0.95, 'the flash back is nearly at its peak when the room goes back'); assert.ok(!roomFlashAt(1, 1).on && Math.abs(roomFlashAt(1, 1).flash - FLASH.backPeak) < 1e-9);
+  // a longer hold stretches the middle, not the flashes
+  assert.ok(roomFlashAt(1.5, 2).on && roomFlashAt(1.5, 2).flash === 0); assert.ok(Math.abs(roomFlashAt(1, 2).flash - FLASH.after.peak) < 1e-9);
+  for (let t = -0.2; t < 1.4; t += 0.01) { const f = roomFlashAt(t, 1).flash; assert.ok(f >= 0 && f <= 1); }
 });

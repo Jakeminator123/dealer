@@ -6,6 +6,7 @@ import * as T from 'three';
 import {FILM} from './scene3d-geometry.ts';
 import {FAN_GLSL} from './scene3d-light.ts';
 import {MATTE_GLSL} from './scene3d-matte.ts';
+import type {FilmEffect} from './clip-graph.ts';
 import {MOUTH_GLSL, mouthUniforms, putMouth, type MouthPart, type MouthShown} from './scene3d-mouth.ts';
 
 const VERTEX = `varying vec4 vFilm; varying vec3 vWorld; uniform mat4 filmVP;
@@ -444,7 +445,22 @@ export function createFilmLayers(filmVP: T.Matrix4, light: Record<string, {value
 // made the film (its record's source.model), for the key filmEven; a part without it is drawn as it is. `rest`: a rest film, which
 // keeps its speed under the key filmTempo, as a spoken line does. `mouth`: a spoken line laid on the part from a mouth patch
 // (src/scene3d-mouth.ts); the part plays at its own speed, neither tempo nor hurry changes it, so that mouth and sound stay with it.
-export type Part = {path: string; start?: number; end?: number | null; rate?: number; track?: CardTrack | null; cards?: Partial<OverlayOptions> | null; frame?: FilmFrame | null; fps?: number; sound?: boolean; model?: string; rest?: boolean; mouth?: MouthPart | null};
+export type Part = {path: string; start?: number; end?: number | null; rate?: number; track?: CardTrack | null; cards?: Partial<OverlayOptions> | null; frame?: FilmFrame | null; fps?: number; sound?: boolean; model?: string; rest?: boolean; effect?: PartEffect | null; mouth?: MouthPart | null};
+// A film's effect on the scene (a record's motion.effect, carried on the part). room-flash, lightning: for `seconds` of the film's
+// own time from `at` the room is another (`room`, an id of the register), and with `mono` the whole picture is black and white,
+// table, cards and dealer too. A white flash takes the picture there and a softer one takes it back (roomFlashAt).
+export type PartEffect = FilmEffect; // src/clip-graph.ts reads it from the record (effectOf)
+// The lightning's course in seconds of the film: the first flash rises to white in `rise` and falls away in `fall`; the other room
+// comes on at its peak. after: a faint second flash, at this share of the hold, this long each way, this strong. The flash back
+// rises to backPeak over `back` before the hold ends, the room goes back at its peak, and it falls away in backFall.
+export const FLASH = {rise: 0.08, fall: 0.27, after: {at: 0.5, half: 0.07, peak: 0.25}, back: 0.08, backPeak: 0.7, backFall: 0.2};
+/** `t` seconds of the film after a room-flash's `at`, for a hold of `seconds`: how white the picture is (0 to 1), and whether the other room (and the grey) is on. */
+export function roomFlashAt(t: number, seconds: number): {flash: number; on: boolean} {
+  const F = FLASH; if (!(t >= 0) || !(seconds > 0) || t >= seconds + F.backFall) return {flash: 0, on: false};
+  const first = t < F.rise ? t / F.rise : 1 - smooth(0, F.fall, t - F.rise), after = F.after.peak * Math.max(0, 1 - Math.abs(t - F.after.at * seconds) / F.after.half);
+  const back = t < seconds - F.back ? 0 : t < seconds ? F.backPeak * (t - (seconds - F.back)) / F.back : F.backPeak * (1 - smooth(0, F.backFall, t - seconds));
+  return {flash: Math.min(1, Math.max(first, after, back)), on: t >= F.rise && t < seconds};
+}
 export type PlayOptions = {loop?: boolean; cut?: boolean; onPart?: (index: number, part: Part) => void; onEnd?: () => void; onError?: (error: Error) => void};
 type Player = {part: Part; path: string; start: number; end: number | null; fps: number; video: HTMLVideoElement; texture: T.VideoTexture};
 const FPS = 30;
@@ -457,10 +473,11 @@ export const frameAtTime = (seconds: number, fps = FPS): number => Math.floor(se
 // One or more parts played as a chain, each on its own video element so the next one is decoded before it is shown.
 export function createPlayers(onShow: (texture: T.Texture, path: string) => void, onChange: () => void) {
   let players: Player[] = [], current = 0, paused = false, gone = false, tempo = 1;
-  // The speed a part plays at: its own rate (a queue's part) times the tempo (key filmTempo). The tempo is for the films of a round:
+  // The speed a part plays at: in the queue its own rate times the tempo (key filmTempo). The tempo is for the films of a round:
   // a spoken line does not take it (its sound is in the film), nor does a rest film (hurried, her breathing and blinking look
-  // wound forward). Card tracks and the end of a part are counted in the film's own frames, so they follow.
-  const speedOf = (part: Part, queued: boolean) => part.mouth ? 1 : (queued ? part.rate ?? 1 : 1) * (part.sound === true || part.rest === true ? 1 : tempo);
+  // wound forward), and a chain from load(), a take played by itself to be looked at, is never hurried. Card tracks and the end of
+  // a part are counted in the film's own frames, so they follow.
+  const speedOf = (part: Part, queued: boolean) => part.mouth || !queued ? 1 : (part.rate ?? 1) * (part.sound === true || part.rest === true ? 1 : tempo);
   // What dispose() has to reach: every listener hangs on one signal, and every frame request and timer is kept until it fires,
   // so that a queue that is taken down leaves nothing behind that could call back into it.
   const ending = new AbortController(), asked = new Map<HTMLVideoElement, Set<number>>(), timers = new Set<ReturnType<typeof setTimeout>>();
@@ -525,16 +542,17 @@ export function createPlayers(onShow: (texture: T.Texture, path: string) => void
   // while a part is on screen starts when that part is done, because clips only fit together at their ends; `cut`
   // starts it as soon as its first frame is decoded. Either way the old frame stays up until the new one exists.
   // While a queue plays, `parts`, `count`, `seek` and `step` describe the one part on screen.
-  type Media = {path: string; video: HTMLVideoElement; texture: T.VideoTexture; busy: boolean; used: number; hook: ((mediaTime: number | null) => void) | null; fail: (() => void) | null};
-  type Chain = {parts: Part[]; media: (Media | undefined)[]; options: PlayOptions};
+  type Media = {path: string; video: HTMLVideoElement; texture: T.VideoTexture; busy: boolean; used: number; hook: ((mediaTime: number | null) => void) | null; fail: (() => void) | null; broken: boolean};
+  // gaps: the parts in a row that could not be read (a loop of nothing but gaps ends instead of going round for ever)
+  type Chain = {parts: Part[]; media: (Media | undefined)[]; options: PlayOptions; gaps?: number};
   const POOL = 8, LEAD_MS = 4, partStart = (part: Part) => ((part.start ?? 0) + 0.5) / (part.fps ?? FPS), frameOf = (seconds: number, part: Part) => frameAtTime(seconds, part.fps ?? FPS);
   let pool: Media[] = [], loaded: Player[] = [], used = 0, chain: Chain | null = null, waiting: Chain | null = null, entering: Chain | null = null, shown: Media | null = null, token = 0, held = false;
   function discard(m: Media) { pool = pool.filter(p => p !== m); m.hook = m.fail = null; drop(m.video, m.texture); }
   // An element for the path that nothing else is using; a new one if there is none. The pool is trimmed of the longest unused.
   function media(path: string): Media {
-    const free = pool.find(m => m.path === path && !m.busy); if (free) { free.busy = true; free.used = ++used; return free; }
-    const made = make({path}), m: Media = {path, video: made.video, texture: made.texture, busy: true, used: ++used, hook: null, fail: null}, v = m.video;
-    listen(v, 'ended', () => m.hook?.(null)); listen(v, 'error', () => m.fail?.());
+    const free = pool.find(m => m.path === path && !m.busy && !m.broken); if (free) { free.busy = true; free.used = ++used; return free; }
+    const made = make({path}), m: Media = {path, video: made.video, texture: made.texture, busy: true, used: ++used, hook: null, fail: null, broken: false}, v = m.video;
+    listen(v, 'ended', () => m.hook?.(null)); listen(v, 'error', () => { m.broken = true; m.fail?.(); }); // an error before the part is entered is remembered for then
     if (v.requestVideoFrameCallback) { const watch = (_now: number, frame: {mediaTime: number}) => { if (!pool.includes(m)) return; m.hook?.(frame.mediaTime); frameCall(v, watch); }; frameCall(v, watch); }
     else listen(v, 'timeupdate', () => m.hook?.(v.currentTime));
     pool.push(m);
@@ -557,7 +575,7 @@ export function createPlayers(onShow: (texture: T.Texture, path: string) => void
     if (from) { if (ended) { from.video.pause(); from.hook = null; } else { const last = onScreen ? (onScreen.end ?? Math.max(1, Math.round(onScreen.video.duration * onScreen.fps))) - 1 : Infinity; from.hook = time => { if (time === null || frameAtTime(time, onScreen?.fps ?? FPS) >= last) from.video.pause(); }; } }
     const swap = () => {
       if (my !== token) return;
-      const old = chain; shown = m; chain = c; entering = null; held = false; if (waiting === c) waiting = null;
+      const old = chain; shown = m; chain = c; entering = null; held = false; c.gaps = 0; if (waiting === c) waiting = null;
       if (from) { from.video.pause(); from.hook = null; if (!c.media.includes(from)) from.busy = false; }
       if (old && old !== c) forget(old);
       for (const p of loaded) drop(p.video, p.texture); loaded = [];
@@ -580,7 +598,11 @@ export function createPlayers(onShow: (texture: T.Texture, path: string) => void
       if (waiting) prime(waiting, 0); else if (i + 1 < c.parts.length) prime(c, i + 1); else if (c.options.loop) prime(c, 0);
       c.options.onPart?.(i, part); onShow(m.texture, m.path); onChange();
     };
-    m.fail = () => { if (my === token) c.options.onError?.(Error(`Filmen kunde inte läsas: ${part.path}`)); };
+    // A film that cannot be read (taken away, or missing in a store) is a gap, not a stop: the page is told, the element goes, and
+    // the queue goes on as if the part had played, to the next part or to the chain's end, so that a round is never left waiting.
+    m.fail = () => { if (my !== token) return; c.options.onError?.(Error(`Filmen kunde inte läsas: ${part.path}`));
+      c.media[i] = undefined; discard(m); c.gaps = (c.gaps ?? 0) + 1; if (waiting === c) waiting = null; if (entering === c) entering = null; finish(c, i); };
+    if (m.broken) { m.fail(); return; }
     // A frame request that has waited long on a paused video is no longer polled by the browser, and the first frame after
     // play() then arrives a quarter of a second late with the frames in between dropped. A fresh request sets that right.
     if (v.requestVideoFrameCallback) frameCall(v, () => {});
@@ -595,7 +617,7 @@ export function createPlayers(onShow: (texture: T.Texture, path: string) => void
   function finish(c: Chain, i: number) {
     if (waiting) return enter(waiting, 0, true);
     if (i + 1 < c.parts.length) return enter(c, i + 1, true);
-    if (c.options.loop) return enter(c, 0, true);
+    if (c.options.loop && (c.gaps ?? 0) < c.parts.length) return enter(c, 0, true);
     if (shown) { shown.video.pause(); shown.hook = null; } held = true; c.options.onEnd?.(); onChange(); // the last frame stays
   }
   function play(parts: Part[], options: PlayOptions = {}) {

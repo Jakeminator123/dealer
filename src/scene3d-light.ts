@@ -17,6 +17,8 @@ float fanShade(vec3 p){
   return 1. - fan.y * m;
 }`;
 
+/** The most light (linear, 1 = white) a built-in material writes into a render target. */
+export const TARGET_MOST = 16;
 export function createFanLight() {
   const uniforms = {fanLight: {value: new T.Vector3()}, fanCentre: {value: new T.Vector3()}, fan: {value: new T.Vector4(0, 0, 0.1, 0.7)}, toTarget: {value: 0}};
   return {
@@ -26,12 +28,14 @@ export function createFanLight() {
     place(camera: FilmCamera) { const k = camera.scale, edge = -solveCamera(camera).edgeDistance; uniforms.fanLight.value.set(-0.3 * k, 3.0 * k, edge + 0.25 * k); uniforms.fanCentre.value.set(-0.3 * k, 1.6 * k, edge + 0.25 * k); uniforms.fan.value.z = 0.08 * k; uniforms.fan.value.w = 0.9 * k; },
     update(seconds: number, on: boolean, strength: number, period: number) { uniforms.fan.value.x = seconds * (2 * Math.PI / 3) / Math.max(0.5, period); uniforms.fan.value.y = on ? strength : 0; },
     // Built-in materials of the table get the same shade as the film, applied after colour encoding so that both darken alike.
-    // `toTarget` makes them write sRGB values when the foreground is drawn into a render target (three.js writes linear there).
+    // `toTarget` makes them write sRGB values when the foreground is drawn into a render target (three.js writes linear there). The
+    // light is bounded first (TARGET_MOST): the sun's glint in polished metal (the gold of the cup holders) can be more than the
+    // target's half floats hold, or no number at all, and the focus blur spreads one such pixel into a black square.
     hook<M extends T.Material>(material: M): M {
       material.onBeforeCompile = shader => {
         Object.assign(shader.uniforms, uniforms);
         shader.vertexShader = 'varying vec3 vS3World;\n' + shader.vertexShader.replace('#include <project_vertex>', '#include <project_vertex>\n vS3World = (modelMatrix * vec4(transformed, 1.)).xyz;');
-        shader.fragmentShader = 'varying vec3 vS3World; uniform float toTarget;\n' + FAN_GLSL + '\n' + shader.fragmentShader.replace('#include <colorspace_fragment>', '#include <colorspace_fragment>\n if (toTarget > .5) gl_FragColor = sRGBTransferOETF(gl_FragColor);\n gl_FragColor.rgb *= fanShade(vS3World);');
+        shader.fragmentShader = 'varying vec3 vS3World; uniform float toTarget;\n' + FAN_GLSL + '\n' + shader.fragmentShader.replace('#include <colorspace_fragment>', `#include <colorspace_fragment>\n if (toTarget > .5) gl_FragColor = sRGBTransferOETF(vec4(clamp(gl_FragColor.rgb, 0., ${TARGET_MOST}.), gl_FragColor.a));\n gl_FragColor.rgb *= fanShade(vS3World);`);
       };
       material.customProgramCacheKey = () => 'scene3d-light';
       return material;

@@ -130,3 +130,29 @@ test('a chain loaded with load() is taken down too, and a load that is still wai
   }
   readyAtStart = 2;
 });
+
+test('a film that cannot be read is a gap: the chain plays what is left and ends, and the next chain goes straight in', async () => {
+  withFrameCalls = true;
+  for (const early of [true, false]) { // the error comes while the film is only being fetched ahead, or once its part has been entered
+    readyAtStart = 2; const {players} = queue(), shown: number[] = [], errors: string[] = []; let ended = 0;
+    players.play([{path: 'a.mp4'}, {path: 'b.mp4'}, {path: 'c.mp4'}], {onPart: index => shown.push(index), onEnd: () => ended++, onError: error => errors.push(error.message)}); await settle();
+    assert.deepEqual(shown, [0]); const b = made.find(v => v.src === 'b.mp4')!; assert.ok(b, 'the next part is fetched ahead');
+    if (early) b.dispatchEvent(new Event('error')); else b.readyState = 0; // not decoded yet: its part will wait on its first frame
+    made.find(v => v.src === 'a.mp4')!.dispatchEvent(new Event('ended')); await settle();
+    if (!early) { assert.deepEqual(shown, [0], 'the second part waits on its first frame'); b.dispatchEvent(new Event('error')); await settle(); }
+    assert.deepEqual(shown, [0, 2], 'the third part plays in the second one\'s place'); assert.equal(errors.length, 1); assert.match(errors[0], /b\.mp4/); assert.equal(ended, 0);
+    made.find(v => v.src === 'c.mp4')!.dispatchEvent(new Event('ended')); await settle();
+    assert.equal(ended, 1, 'the chain ends'); players.dispose();
+  }
+  // one part alone that cannot be read: the chain ends at once, and a chain asked for after it goes in without waiting behind it
+  readyAtStart = 0; const {players, seen} = queue(); let ended = 0, errors = 0;
+  players.play([{path: 'gone.mp4'}], {onEnd: () => ended++, onError: () => errors++}); await settle(); assert.equal(seen.shows, 0);
+  made[0].dispatchEvent(new Event('error')); await settle(); assert.equal(errors, 1); assert.equal(ended, 1);
+  readyAtStart = 2; players.play([{path: 'next.mp4'}]); await settle(); assert.equal(seen.shows, 1, 'the next chain is on screen'); assert.equal(players.path, 'next.mp4');
+  // a loop of nothing but gaps ends instead of going round for ever
+  readyAtStart = 0; const loop = queue(); let loopEnded = 0, loopErrors = 0;
+  loop.players.play([{path: 'x.mp4'}, {path: 'y.mp4'}], {loop: true, onEnd: () => loopEnded++, onError: () => loopErrors++}); await settle();
+  for (let round = 0; round < 6 && !loopEnded; round++) { for (const v of [...made]) if (v.attrs.has('src')) v.dispatchEvent(new Event('error')); await settle(); }
+  assert.equal(loopEnded, 1); assert.ok(loopErrors >= 2 && loopErrors <= 4, `${loopErrors} errors`);
+  readyAtStart = 2; players.dispose(); loop.players.dispose();
+});
