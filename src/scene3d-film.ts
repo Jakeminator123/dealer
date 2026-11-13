@@ -478,18 +478,20 @@ export type Part = {path: string; start?: number; end?: number | null; rate?: nu
 // table, cards and dealer too. A white flash takes the picture there and a softer one takes it back (roomFlashAt).
 export type PartEffect = FilmEffect; // src/clip-graph.ts reads it from the record (effectOf)
 // The lightning's course in seconds of the film: the first flash rises to white in `rise` and falls away in `fall`; the other room
-// comes on at its peak. after: a second, fainter flash, at this share of the hold, this long each way, this strong. The flash back
+// comes on at its peak. Between the two flashes the other room stands clean: a fainter flash in the middle was tried and taken out
+// (an independent review, 2026-11-13: three flashes of the whole picture in 0.87 s is at the limit of the rule of at most three a
+// second that protects light-sensitive viewers, and the room was seen clean for only 0.4 s in two pieces). The flash back
 // rises to backPeak over `back`, stays there for backHold (so that the last frame of the other room and the first frame of the
 // room that comes back are both under its peak, whatever the film's frame rate: the change is hidden in the light, as the first
 // one is), the room goes back when the hold ends, and it falls away in backFall. The figures were set with the session that owns
 // the effect's look, against its mock-up of the second on the champagne film (2026-11-13).
-export const FLASH = {rise: 0.08, fall: 0.27, after: {at: 0.5, half: 0.07, peak: 0.4}, back: 0.08, backHold: 0.05, backPeak: 0.9, backFall: 0.2};
+export const FLASH = {rise: 0.08, fall: 0.27, back: 0.08, backHold: 0.05, backPeak: 0.9, backFall: 0.2};
 /** `t` seconds of the film after a room-flash's `at`, for a hold of `seconds`: how white the picture is (0 to 1), and whether the other room (and the grey) is on. */
 export function roomFlashAt(t: number, seconds: number): {flash: number; on: boolean} {
   const F = FLASH; if (!(t >= 0) || !(seconds > 0) || t >= seconds + F.backFall) return {flash: 0, on: false};
-  const first = t < F.rise ? t / F.rise : 1 - smooth(0, F.fall, t - F.rise), after = F.after.peak * Math.max(0, 1 - Math.abs(t - F.after.at * seconds) / F.after.half);
+  const first = t < F.rise ? t / F.rise : 1 - smooth(0, F.fall, t - F.rise);
   const up = seconds - F.backHold - F.back, back = t < up ? 0 : t < seconds - F.backHold ? F.backPeak * (t - up) / F.back : t < seconds ? F.backPeak : F.backPeak * (1 - smooth(0, F.backFall, t - seconds));
-  return {flash: Math.min(1, Math.max(first, after, back)), on: t >= F.rise && t < seconds};
+  return {flash: Math.min(1, Math.max(first, back)), on: t >= F.rise && t < seconds};
 }
 export type PlayOptions = {loop?: boolean; cut?: boolean; onPart?: (index: number, part: Part) => void; onEnd?: () => void; onError?: (error: Error) => void};
 type Player = {part: Part; path: string; start: number; end: number | null; fps: number; video: HTMLVideoElement; texture: T.VideoTexture};

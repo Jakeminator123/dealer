@@ -78,11 +78,13 @@ test('a film\'s lightning: white at once, the other room for the hold, a softer 
   for (const t of [-1, -0.001, 1 + FLASH.backFall, 5, NaN]) assert.deepEqual(roomFlashAt(t, 1), {flash: 0, on: false}, String(t));
   assert.deepEqual(roomFlashAt(0, 1), {flash: 0, on: false}); assert.deepEqual(roomFlashAt(FLASH.rise, 1), {flash: 1, on: true}, 'the room comes on at the peak, under full white');
   assert.ok(roomFlashAt(FLASH.rise / 2, 1).flash === 0.5 && !roomFlashAt(FLASH.rise / 2, 1).on);
-  assert.equal(roomFlashAt(FLASH.rise + FLASH.fall + 0.01, 1).flash, 0, 'the first flash is over'); assert.ok(Math.abs(roomFlashAt(FLASH.after.at, 1).flash - FLASH.after.peak) < 1e-9, 'the faint second flash');
+  assert.equal(roomFlashAt(FLASH.rise + FLASH.fall + 0.01, 1).flash, 0, 'the first flash is over'); for (let t = FLASH.rise + FLASH.fall + 0.005; t < 1 - FLASH.backHold - FLASH.back - 0.005; t += 0.01) assert.deepEqual(roomFlashAt(t, 1), {flash: 0, on: true}, 'between the two flashes the other room stands clean');
   for (const t of [1 - FLASH.backHold, 0.97, 0.999]) assert.deepEqual(roomFlashAt(t, 1), {flash: FLASH.backPeak, on: true}, 'the flash back is at its peak over the last frame of the other room'); assert.ok(roomFlashAt(1 - FLASH.backHold - FLASH.back / 2, 1).flash < FLASH.backPeak);
   assert.ok(roomFlashAt(1 + 1 / 30, 1).flash > FLASH.backPeak * 0.9, 'and nearly so over the first frame of the room that comes back'); assert.ok(!roomFlashAt(1, 1).on && Math.abs(roomFlashAt(1, 1).flash - FLASH.backPeak) < 1e-9);
   // a longer hold stretches the middle, not the flashes
-  assert.ok(roomFlashAt(1.5, 2).on && roomFlashAt(1.5, 2).flash === 0); assert.ok(Math.abs(roomFlashAt(1, 2).flash - FLASH.after.peak) < 1e-9);
+  assert.ok(roomFlashAt(1.5, 2).on && roomFlashAt(1.5, 2).flash === 0); assert.ok(roomFlashAt(1, 2).on && roomFlashAt(1, 2).flash === 0);
+  // two flashes and no more: the picture goes light twice in the whole course
+  { let rises = 0, was = 0; for (let t = -0.1; t < 1.5; t += 0.005) { const f = roomFlashAt(t, 1.2).flash; if (f > 0.5 && was <= 0.5) rises++; was = f; } assert.equal(rises, 2); }
   for (let t = -0.2; t < 1.4; t += 0.01) { const f = roomFlashAt(t, 1).flash; assert.ok(f >= 0 && f <= 1); }
 });
 
