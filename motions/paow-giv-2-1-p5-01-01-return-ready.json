@@ -17,6 +17,8 @@
     "kind": "RETURN",
     "from": "P5.C1",
     "to": "READY",
+    "takeHand": "LH",
+    "releaseHand": "LH",
     "pass": false,
     "basis": "SOURCE_FRAME_REVIEW",
     "segment": {

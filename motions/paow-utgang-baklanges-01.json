@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "id": "paow-utgang-baklanges-01",
+  "dealer": "paow",
+  "source": {
+    "path": "assets/motions/paow-utgang-baklanges-01/source.mp4",
+    "sha256": "71785f4d49c02241be524fd6552f048fa60761df0659e0d10e6b33ec961511be",
+    "bytes": 4399020,
+    "width": 1764,
+    "height": 1174,
+    "fps": 24,
+    "frames": 97,
+    "provider": "ffmpeg reverse of assets/motions/paow-ingang-2-1-02-01/source.mp4 (CRF 12)",
+    "model": "kling-3-4k, written backwards"
+  },
+  "motion": {
+    "kind": "RETURN",
+    "from": "READY",
+    "to": "IDLE",
+    "takeHand": "LH",
+    "releaseHand": "LH",
+    "pass": false,
+    "basis": "SOURCE_FRAME_REVIEW",
+    "stopgap": true,
+    "reversedFrom": "paow-ingang-2-1-02-01"
+  },
+  "review": {
+    "decision": "ACCEPTED",
+    "basis": "NÖDLÖSNING (huvudagenten 2026-11-13, för att visa Paows runda): hennes godkända ingång paow-ingang-2-1-02-01 spelad baklänges som utgång. Inte granskad av Jakob. Uttaget baklänges föll för Pamela (tools/film-prompting.md §5).",
+    "limitations": "Sedd i full upplösning (rutor 36–96 och ansiktet): handen släpper kortet, kortet glider tillbaka in i skons fönster och handen går ned till vilan; ansiktet står still. Att kortet glider in medan fingrarna lyfts är det som avslöjar riktningen. De sista tre rutorna (ingångens ljusa första) spelas inte.",
+    "userAccepted": true,
+    "productionReady": false,
+    "userReview": "Jakob 2026-11-13: godkänd i labbet."
+  },
+  "postProcessing": "ffmpeg -vf reverse -an -c:v libx264 -preset slow -crf 12 -pix_fmt yuv420p",
+  "jobRef": "data/clip-jobs.json",
+  "scoutIntegrated": false,
+  "published": false
+}

@@ -17,6 +17,8 @@
     "kind": "DEAL",
     "from": "READY",
     "to": "P1.C1",
+    "takeHand": "LH",
+    "releaseHand": "RH",
     "pass": false,
     "basis": "SOURCE_FRAME_REVIEW",
     "segment": {

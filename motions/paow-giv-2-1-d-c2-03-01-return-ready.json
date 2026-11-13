@@ -1,0 +1,67 @@
+{
+  "schemaVersion": 1,
+  "id": "paow-giv-2-1-d-c2-03-01-return-ready",
+  "dealer": "paow",
+  "source": {
+    "path": "assets/motions/paow-giv-2-1-d-c2-03-01/source.mp4",
+    "sha256": "3d751b8c99b94195601aeb37afb14ff7815968ac9fe543495ded6768e10d3968",
+    "bytes": 6083540,
+    "width": 1764,
+    "height": 1174,
+    "fps": 24,
+    "frames": 169,
+    "provider": "Runway MCP server (app account credits)",
+    "model": "kling-4"
+  },
+  "motion": {
+    "kind": "RETURN",
+    "from": "D.C2",
+    "to": "READY",
+    "takeHand": "LH",
+    "releaseHand": "LH",
+    "pass": false,
+    "basis": "SOURCE_FRAME_REVIEW",
+    "segment": {
+      "clip": "paow-giv-2-1-d-c2-03-01",
+      "frames": [
+        105,
+        168
+      ]
+    },
+    "startsOn": {
+      "clip": "paow-giv-2-1-d-c2-03-01-deal",
+      "frame": 105
+    }
+  },
+  "review": {
+    "decision": "ACCEPTED",
+    "basis": "Inte granskad av Jakob: förd in från beställningen paow-giv-2-1-d-c2-03, tagning 1 (tools/register-order.ts). Oberoende rutgranskning: tools/film-review.md.",
+    "limitations": "I inkorgen: spelas bara där steget inte har någon annan film, tills Jakob dömer den.",
+    "colorDoesNotProvePhysicalSide": true,
+    "userAccepted": false,
+    "productionReady": false,
+    "provisional": {
+      "by": "huvudagenten och en oberoende granskare",
+      "at": "2026-11-13T07:05:24.562Z",
+      "mandate": "Jakob 2026-11-13: \"jag måste sova och du får granska och godkänna alla klipp.\"",
+      "note": "Ren retur: inget andra kort, handen lågt tillbaka till skon, tillbaka i första bildens pose inom 1 px."
+    }
+  },
+  "order": {
+    "id": "paow-giv-2-1-d-c2-03",
+    "take": 1,
+    "path": "data/orders/paow-giv-2-1-d-c2-03.json",
+    "orderSha256": "e852ea4c89a7788a5e0857d9ca0531220d157bacf42b8386e4015922607b1f68",
+    "receipt": "assets/orders/paow-giv-2-1-d-c2-03/receipt.json",
+    "taskId": "ce7bbb68-42a3-4ed1-af56-a70ea82c1d97",
+    "delivered": {
+      "path": "assets/orders/paow-giv-2-1-d-c2-03/take-1/after.mp4",
+      "sha256": "3d751b8c99b94195601aeb37afb14ff7815968ac9fe543495ded6768e10d3968"
+    }
+  },
+  "postProcessing": "none",
+  "generationRef": "assets/motions/paow-giv-2-1-d-c2-03-01/generation.json",
+  "jobRef": "data/clip-jobs.json",
+  "scoutIntegrated": false,
+  "published": false
+}

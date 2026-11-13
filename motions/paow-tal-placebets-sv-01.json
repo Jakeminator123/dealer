@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 1,
+  "id": "paow-tal-placebets-sv-01",
+  "dealer": "paow",
+  "source": {
+    "path": "assets/motions/paow-tal-placebets-sv-01/source.mp4",
+    "sha256": "44752a0a1ef3a81886747cd79386e6560174da070880f31fe8c6a3a563522b86",
+    "bytes": 4501654,
+    "width": 1764,
+    "height": 1174,
+    "fps": 24,
+    "frames": 47,
+    "audio": true,
+    "provider": "tools/speech.ts: Scoutgaming's lip-sync renderer on this machine, voice from ElevenLabs",
+    "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Jessica"
+  },
+  "motion": {
+    "kind": "IDLE",
+    "from": "IDLE",
+    "to": "IDLE",
+    "pass": false,
+    "basis": "SOURCE_FRAME_REVIEW",
+    "idle": {
+      "onRequest": true,
+      "calm": true,
+      "weight": 0,
+      "label": "säger: Lägg era insatser, tack."
+    }
+  },
+  "speech": {
+    "line": "placebets",
+    "language": "sv",
+    "text": "Lägg era insatser, tack.",
+    "voice": "Jessica",
+    "heard": null,
+    "restFilm": "paow-vila-01-01",
+    "soundStartsAtSeconds": 0.22,
+    "soundEndsAtSeconds": 1.43
+  },
+  "review": {
+    "decision": "PENDING",
+    "basis": "Inte granskad av Jakob. Gjord av tools/speech.ts ur assets/motions/paow-vila-01-01/source.mp4. Oberoende granskning 3/5: Orden ej avlyssnade (heard saknas i kvittot). Munnen öppen 5 rutor in i tystnaden (35–39), stänger 7 sent. Tunnare läppar än vilan.",
+    "userAccepted": false,
+    "productionReady": false,
+    "inbox": true
+  },
+  "postProcessing": "the rendered face laid back into the rest film's own frames (assets/speech/paow/paow-tal-placebets-sv-01/receipt.json, laidBack)",
+  "generationRef": "assets/motions/paow-tal-placebets-sv-01/generation.json",
+  "scoutIntegrated": false,
+  "published": false
+}

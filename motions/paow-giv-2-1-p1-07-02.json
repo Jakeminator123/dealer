@@ -13,6 +13,10 @@
     "provider": "Runway MCP server (app account credits)",
     "model": "wan3"
   },
+  "motion": {
+    "takeHand": "LH",
+    "releaseHand": "LH"
+  },
   "cutInto": [
     "paow-giv-2-1-p1-07-02-deal",
     "paow-giv-2-1-p1-07-02-return-ready"

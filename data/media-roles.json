@@ -2274,6 +2274,27 @@
           "note": "Tre val i 3D-scenen, alla avslagna från början (dealer-f6, 2026-11-13): rummet Venedig, tom (folket borttaget), Rörelse i rummet (filmer över kajerna, slinga som vänder var 4,6:e sekund) och Rumsljus på dealern (dealerfilmen tar 360°-rummets färg och nivå). Hemvyn oförändrad bildpunkt för bildpunkt med valen av."
         },
         {
+          "id": "pamela-prov-duken-pa-bordet",
+          "role": "prov",
+          "name": "Duken på bordet",
+          "proof": "duken-pa-bordet",
+          "note": "V6:s duk lagd på dagens bord (dealer-f6, 2026-11-13): ytvalet Duken på naturbordet har reling, trä och mässing i rummets ljus och filten som duken i sitt eget jämna ljus; förinställningen Duken på bordet. Hemvyn i Las Vegas, Venedig och Skogen mot dagens. Känd gräns: duken följer inte rummets ljusnivå."
+        },
+        {
+          "id": "pamela-prov-bordets-storlek",
+          "role": "prov",
+          "name": "Bordets storlek",
+          "proof": "bordets-storlek",
+          "note": "Bordets storlek som reglage 0,9–1,4 (dealer-f6, 2026-11-13): filt, reling, mugghållare och underrede växer åt sidorna och mot spelarna; dealerkanten och trycket står kvar där filmen delar ut. Fråga till Jakob: ska trycket följa med bordet eller ligga kvar."
+        },
+        {
+          "id": "pamela-prov-fler-rum-natten",
+          "role": "prov",
+          "name": "Fem nya rum",
+          "proof": "fler-rum-natten",
+          "note": "Fem 360°-rum ur bilder som redan fanns (dealer-f6, 2026-11-13, Poly Haven CC0, inga betalda anrop): Banketthallen, Balsalen, Foajén, Teatern och Loungen (svagast: rörig). De står i rumslistan men väljs inte av spelet."
+        },
+        {
           "id": "pamela-drawn-01",
           "role": "arbetsmaterial",
           "name": "Kortet utdraget",
@@ -3553,6 +3574,48 @@
           }
         },
         {
+          "id": "paow-film-giv-2-1-p5-03-t1",
+          "role": "film",
+          "name": "Omgång 6a · P5, Kling 4, fri vändning, mall 5, tagning 1",
+          "path": "assets/films/paow/giv-2-1-p5-03-t1/source.mp4",
+          "still": 93,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Efterarbetad tagning ur en beställning i studions vy Beställ. Kandidat tills Jakob har dömt.",
+          "source": {
+            "from": "beställningen paow-giv-2-1-p5-03, tagning 1 (studions vy Beställ)",
+            "when": "2026-11-13"
+          }
+        },
+        {
+          "id": "paow-film-giv-2-1-p6-03-t1",
+          "role": "film",
+          "name": "Omgång 6b · P6, Kling 4, fri vändning, mall 5, tagning 1",
+          "path": "assets/films/paow/giv-2-1-p6-03-t1/source.mp4",
+          "still": 93,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Efterarbetad tagning ur en beställning i studions vy Beställ. Kandidat tills Jakob har dömt.",
+          "source": {
+            "from": "beställningen paow-giv-2-1-p6-03, tagning 1 (studions vy Beställ)",
+            "when": "2026-11-13"
+          }
+        },
+        {
+          "id": "paow-film-giv-2-1-p6-04-t1",
+          "role": "film",
+          "name": "Omgång 6d · P6, Kling 4, fri vändning, mall 6 (sidorna sagda med färg), tagning ",
+          "path": "assets/films/paow/giv-2-1-p6-04-t1/source.mp4",
+          "still": 93,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Efterarbetad tagning ur en beställning i studions vy Beställ. Kandidat tills Jakob har dömt.",
+          "source": {
+            "from": "beställningen paow-giv-2-1-p6-04, tagning 1 (studions vy Beställ)",
+            "when": "2026-11-13"
+          }
+        },
+        {
           "id": "paow-prov-ankare-ung",
           "role": "prov",
           "name": "Ankare 1, yngre, kandidater",
@@ -3653,6 +3716,13 @@
           "note": "Sidokamera 40° till vänster som principprov (dealer-f6, 2026-11-13): nyckelbild i 4K, film A (ingångsfilmen omräknad ur sitt djup och lagad i ett Aleph-svep) och film B (Aleph flyttar kameran; sko och kort faller). Oberoende granskad: godkänd som principprov med förbehåll. 808 krediter. Inga roller för paow."
         },
         {
+          "id": "paow-prov-paow-runda",
+          "role": "prov",
+          "name": "Paows runda i spelet",
+          "proof": "paow-runda",
+          "note": "En runda med Paow i studions Casino 2026-11-13 morgon: insatser, givar med hennes dömda tagningar (preliminära domar inräknade), hålkortet stängt och vänt, repliker med talfilm och ljud, chatten öppen. Inspelad headless av huvudagentens spelagent; ljudet lagt i efterhand där talfilmen började."
+        },
+        {
           "id": "paow-profil-kavaj",
           "role": "arbetsmaterial",
           "name": "Profilbild i kavaj",
@@ -3712,6 +3782,454 @@
           "note": "Ankare 2.1 lagd till i studion 2026-11-13.",
           "source": {
             "from": "uppladdad: fixed-2.png",
+            "when": "2026-11-13"
+          }
+        },
+        {
+          "id": "paow-tal-blackjack-sv-01",
+          "role": "film",
+          "name": "Tal: Blackjack! Vackert spelat. Grattis!",
+          "path": "assets/motions/paow-tal-blackjack-sv-01/source.mp4",
+          "still": 37,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Vilan paow-vila-01-01 med munnen ritad efter ljudet (tools/speech.ts), rösten Jessica (ElevenLabs), 73 rutor i 24 per sekund med ljudspår. Börjar och slutar på vilans ruta 3. Granskaren 3/5: B 3–7 och p 36 nära takt (+1–2 rutor); i pausen 19–26 sluter munnen långsamt, efter sista ordet 6 rutor sent. Tunnare läppar, mjukare haka.",
+          "source": {
+            "from": "tools/speech.ts say --dealer paow --line blackjack (Jessica)",
+            "when": "2026-11-13"
+          }
+        },
+        {
+          "id": "paow-tal-chat1-sv-01",
+          "role": "film",
+          "name": "Tal: Tack! Lycka till.",
+          "path": "assets/motions/paow-tal-chat1-sv-01/source.mp4",
+          "still": 22,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Vilan paow-vila-01-01 med munnen ritad efter ljudet (tools/speech.ts), rösten Jessica (ElevenLabs), 43 rutor i 24 per sekund med ljudspår. Börjar och slutar på vilans ruta 3. Inte oberoende granskad.",
+          "source": {
+            "from": "tools/speech.ts say --dealer paow --line chat1 (Jessica)",
+            "when": "2026-11-13"
+          }
+        },
+        {
+          "id": "paow-tal-chat2-sv-01",
+          "role": "film",
+          "name": "Tal: Roligt att du är här.",
+          "path": "assets/motions/paow-tal-chat2-sv-01/source.mp4",
+          "still": 22,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Vilan paow-vila-01-01 med munnen ritad efter ljudet (tools/speech.ts), rösten Jessica (ElevenLabs), 43 rutor i 24 per sekund med ljudspår. Börjar och slutar på vilans ruta 3. Inte oberoende granskad.",
+          "source": {
+            "from": "tools/speech.ts say --dealer paow --line chat2 (Jessica)",
+            "when": "2026-11-13"
+          }
+        },
+        {
+          "id": "paow-tal-chat3-sv-01",
+          "role": "film",
+          "name": "Tal: Det ordnar vi.",
+          "path": "assets/motions/paow-tal-chat3-sv-01/source.mp4",
+          "still": 17,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Vilan paow-vila-01-01 med munnen ritad efter ljudet (tools/speech.ts), rösten Jessica (ElevenLabs), 34 rutor i 24 per sekund med ljudspår. Börjar och slutar på vilans ruta 3. Inte oberoende granskad.",
+          "source": {
+            "from": "tools/speech.ts say --dealer paow --line chat3 (Jessica)",
+            "when": "2026-11-13"
+          }
+        },
+        {
+          "id": "paow-tal-chat4-sv-01",
+          "role": "film",
+          "name": "Tal: Lycka till med nästa hand.",
+          "path": "assets/motions/paow-tal-chat4-sv-01/source.mp4",
+          "still": 23,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Vilan paow-vila-01-01 med munnen ritad efter ljudet (tools/speech.ts), rösten Jessica (ElevenLabs), 45 rutor i 24 per sekund med ljudspår. Börjar och slutar på vilans ruta 3. Inte oberoende granskad.",
+          "source": {
+            "from": "tools/speech.ts say --dealer paow --line chat4 (Jessica)",
+            "when": "2026-11-13"
+          }
+        },
+        {
+          "id": "paow-tal-dealerblackjack-sv-01",
+          "role": "film",
+          "name": "Tal: Dealern har blackjack. Den här rundan går till huset.",
+          "path": "assets/motions/paow-tal-dealerblackjack-sv-01/source.mp4",
+          "still": 43,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Vilan paow-vila-01-01 med munnen ritad efter ljudet (tools/speech.ts), rösten Jessica (ElevenLabs), 85 rutor i 24 per sekund med ljudspår. Börjar och slutar på vilans ruta 3. Granskaren 2/5: Munnen står halvöppen i pausen 31–37 och öppen i tystnad 73–75, stänger 6 rutor efter ljudet. Tunnare läppar, mjukare haka än vilan.",
+          "source": {
+            "from": "tools/speech.ts say --dealer paow --line dealerblackjack (Jessica)",
+            "when": "2026-11-13"
+          }
+        },
+        {
+          "id": "paow-tal-dealerbust-sv-02",
+          "role": "film",
+          "name": "Tal: Dealern är över tjugoett! Grattis, bordet vinner.",
+          "path": "assets/motions/paow-tal-dealerbust-sv-02/source.mp4",
+          "still": 54,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Vilan paow-vila-01-01 med munnen ritad efter ljudet (tools/speech.ts), rösten Jessica (ElevenLabs), 107 rutor i 24 per sekund med ljudspår. Börjar och slutar på vilans ruta 3. Granskaren 3/5: Bättre än -01: munnen stänger i pausen (48–50), avlyssnat ”21”. b i ”bordet” 3 rutor sent, öppnar tidigt 51–57, stänger 5 rutor sent.",
+          "source": {
+            "from": "tools/speech.ts say --dealer paow --line dealerbust (Jessica)",
+            "when": "2026-11-13"
+          }
+        },
+        {
+          "id": "paow-tal-dealerplays-sv-01",
+          "role": "film",
+          "name": "Tal: Dealern spelar.",
+          "path": "assets/motions/paow-tal-dealerplays-sv-01/source.mp4",
+          "still": 19,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Vilan paow-vila-01-01 med munnen ritad efter ljudet (tools/speech.ts), rösten Jessica (ElevenLabs), 38 rutor i 24 per sekund med ljudspår. Börjar och slutar på vilans ruta 3. Inte oberoende granskad.",
+          "source": {
+            "from": "tools/speech.ts say --dealer paow --line dealerplays (Jessica)",
+            "when": "2026-11-13"
+          }
+        },
+        {
+          "id": "paow-tal-detsamma-sv-01",
+          "role": "film",
+          "name": "Tal: Tack detsamma!",
+          "path": "assets/motions/paow-tal-detsamma-sv-01/source.mp4",
+          "still": 17,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Vilan paow-vila-01-01 med munnen ritad efter ljudet (tools/speech.ts), rösten Jessica (ElevenLabs), 34 rutor i 24 per sekund med ljudspår. Börjar och slutar på vilans ruta 3. Inte oberoende granskad.",
+          "source": {
+            "from": "tools/speech.ts say --dealer paow --line detsamma (Jessica)",
+            "when": "2026-11-13"
+          }
+        },
+        {
+          "id": "paow-tal-double-sv-01",
+          "role": "film",
+          "name": "Tal: Du dubblar. Ett kort, nu gör vi det bästa av det.",
+          "path": "assets/motions/paow-tal-double-sv-01/source.mp4",
+          "still": 44,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Vilan paow-vila-01-01 med munnen ritad efter ljudet (tools/speech.ts), rösten Jessica (ElevenLabs), 88 rutor i 24 per sekund med ljudspår. Börjar och slutar på vilans ruta 3. Granskaren 2/5: b-stängningar i takt (12–14, 56–57), men munnen står halvöppen och stilla i hela pausen 21–29 och stänger 6 rutor efter ljudet.",
+          "source": {
+            "from": "tools/speech.ts say --dealer paow --line double (Jessica)",
+            "when": "2026-11-13"
+          }
+        },
+        {
+          "id": "paow-tal-goodluck-sv-01",
+          "role": "film",
+          "name": "Tal: Insatserna är stängda. Lycka till vid mitt bord!",
+          "path": "assets/motions/paow-tal-goodluck-sv-01/source.mp4",
+          "still": 39,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Vilan paow-vila-01-01 med munnen ritad efter ljudet (tools/speech.ts), rösten Jessica (ElevenLabs), 77 rutor i 24 per sekund med ljudspår. Börjar och slutar på vilans ruta 3. Granskaren 3/5: m/b-stängning 50–51, 56–57 och o-rundning i takt; munnen öppen i pausen 32–36, stänger 6 rutor sent. Tunnare läppar än vilan.",
+          "source": {
+            "from": "tools/speech.ts say --dealer paow --line goodluck (Jessica)",
+            "when": "2026-11-13"
+          }
+        },
+        {
+          "id": "paow-tal-grattis-sv-01",
+          "role": "film",
+          "name": "Tal: Grattis! Det där var snyggt spelat.",
+          "path": "assets/motions/paow-tal-grattis-sv-01/source.mp4",
+          "still": 37,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Vilan paow-vila-01-01 med munnen ritad efter ljudet (tools/speech.ts), rösten Jessica (ElevenLabs), 74 rutor i 24 per sekund med ljudspår. Börjar och slutar på vilans ruta 3. Inte oberoende granskad.",
+          "source": {
+            "from": "tools/speech.ts say --dealer paow --line grattis (Jessica)",
+            "when": "2026-11-13"
+          }
+        },
+        {
+          "id": "paow-tal-hej-sv-01",
+          "role": "film",
+          "name": "Tal: Hej och välkommen till bordet!",
+          "path": "assets/motions/paow-tal-hej-sv-01/source.mp4",
+          "still": 26,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Vilan paow-vila-01-01 med munnen ritad efter ljudet (tools/speech.ts), rösten Jessica (ElevenLabs), 51 rutor i 24 per sekund med ljudspår. Börjar och slutar på vilans ruta 3. Inte oberoende granskad.",
+          "source": {
+            "from": "tools/speech.ts say --dealer paow --line hej (Jessica)",
+            "when": "2026-11-13"
+          }
+        },
+        {
+          "id": "paow-tal-hejda-sv-01",
+          "role": "film",
+          "name": "Tal: Tack för i kväll, välkommen tillbaka!",
+          "path": "assets/motions/paow-tal-hejda-sv-01/source.mp4",
+          "still": 29,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Vilan paow-vila-01-01 med munnen ritad efter ljudet (tools/speech.ts), rösten Jessica (ElevenLabs), 57 rutor i 24 per sekund med ljudspår. Börjar och slutar på vilans ruta 3. Inte oberoende granskad.",
+          "source": {
+            "from": "tools/speech.ts say --dealer paow --line hejda (Jessica)",
+            "when": "2026-11-13"
+          }
+        },
+        {
+          "id": "paow-tal-hurmardu-sv-01",
+          "role": "film",
+          "name": "Tal: Jag mår fint, tack. Korten är på gott humör i kväll.",
+          "path": "assets/motions/paow-tal-hurmardu-sv-01/source.mp4",
+          "still": 44,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Vilan paow-vila-01-01 med munnen ritad efter ljudet (tools/speech.ts), rösten Jessica (ElevenLabs), 88 rutor i 24 per sekund med ljudspår. Börjar och slutar på vilans ruta 3. Inte oberoende granskad.",
+          "source": {
+            "from": "tools/speech.ts say --dealer paow --line hurmardu (Jessica)",
+            "when": "2026-11-13"
+          }
+        },
+        {
+          "id": "paow-tal-insurance-sv-01",
+          "role": "film",
+          "name": "Tal: Försäkringen är öppen. Vill du försäkra din hand?",
+          "path": "assets/motions/paow-tal-insurance-sv-01/source.mp4",
+          "still": 42,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Vilan paow-vila-01-01 med munnen ritad efter ljudet (tools/speech.ts), rösten Jessica (ElevenLabs), 83 rutor i 24 per sekund med ljudspår. Börjar och slutar på vilans ruta 3. Granskaren 3/5: Bäst av alla: pp i ”öppen” stänger exakt 24–27. Som alla: tunnare matta läppar, mjukare haka, munnen stänger 5 rutor efter ljudet.",
+          "source": {
+            "from": "tools/speech.ts say --dealer paow --line insurance (Jessica)",
+            "when": "2026-11-13"
+          }
+        },
+        {
+          "id": "paow-tal-lose-sv-01",
+          "role": "film",
+          "name": "Tal: Dealern vinner den här gången. Bättre lycka nästa runda.",
+          "path": "assets/motions/paow-tal-lose-sv-01/source.mp4",
+          "still": 47,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Vilan paow-vila-01-01 med munnen ritad efter ljudet (tools/speech.ts), rösten Jessica (ElevenLabs), 93 rutor i 24 per sekund med ljudspår. Börjar och slutar på vilans ruta 3. Granskaren 2/5: Munnen står halvöppen i pausen 38–46 (stänger först till B 47), vidöppen i tystnad 81–82, stänger 6 rutor sent. Tunnare läppar.",
+          "source": {
+            "from": "tools/speech.ts say --dealer paow --line lose (Jessica)",
+            "when": "2026-11-13"
+          }
+        },
+        {
+          "id": "paow-tal-namn-sv-01",
+          "role": "film",
+          "name": "Tal: Jag heter Paow, och jag är din dealer i kväll.",
+          "path": "assets/motions/paow-tal-namn-sv-01/source.mp4",
+          "still": 35,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Vilan paow-vila-01-01 med munnen ritad efter ljudet (tools/speech.ts), rösten Jessica (ElevenLabs), 70 rutor i 24 per sekund med ljudspår. Börjar och slutar på vilans ruta 3. Inte oberoende granskad.",
+          "source": {
+            "from": "tools/speech.ts say --dealer paow --line namn (Jessica)",
+            "when": "2026-11-13"
+          }
+        },
+        {
+          "id": "paow-tal-otur-sv-01",
+          "role": "film",
+          "name": "Tal: Det vänder snart, det brukar det göra.",
+          "path": "assets/motions/paow-tal-otur-sv-01/source.mp4",
+          "still": 31,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Vilan paow-vila-01-01 med munnen ritad efter ljudet (tools/speech.ts), rösten Jessica (ElevenLabs), 62 rutor i 24 per sekund med ljudspår. Börjar och slutar på vilans ruta 3. Inte oberoende granskad.",
+          "source": {
+            "from": "tools/speech.ts say --dealer paow --line otur (Jessica)",
+            "when": "2026-11-13"
+          }
+        },
+        {
+          "id": "paow-tal-placebets-sv-01",
+          "role": "film",
+          "name": "Tal: Lägg era insatser, tack.",
+          "path": "assets/motions/paow-tal-placebets-sv-01/source.mp4",
+          "still": 24,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Vilan paow-vila-01-01 med munnen ritad efter ljudet (tools/speech.ts), rösten Jessica (ElevenLabs), 47 rutor i 24 per sekund med ljudspår. Börjar och slutar på vilans ruta 3. Granskaren 3/5: Orden ej avlyssnade (heard saknas i kvittot). Munnen öppen 5 rutor in i tystnaden (35–39), stänger 7 sent. Tunnare läppar än vilan.",
+          "source": {
+            "from": "tools/speech.ts say --dealer paow --line placebets (Jessica)",
+            "when": "2026-11-13"
+          }
+        },
+        {
+          "id": "paow-tal-push-sv-01",
+          "role": "film",
+          "name": "Tal: Det är lika. Din insats betalas tillbaka.",
+          "path": "assets/motions/paow-tal-push-sv-01/source.mp4",
+          "still": 37,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Vilan paow-vila-01-01 med munnen ritad efter ljudet (tools/speech.ts), rösten Jessica (ElevenLabs), 74 rutor i 24 per sekund med ljudspår. Börjar och slutar på vilans ruta 3. Granskaren 2/5: Munnen står vidöppen och stilla i pausen 21–26 efter ”lika” och i tystnad 62–65, stänger 6 rutor sent. Tunnare läppar, mjukare haka.",
+          "source": {
+            "from": "tools/speech.ts say --dealer paow --line push (Jessica)",
+            "when": "2026-11-13"
+          }
+        },
+        {
+          "id": "paow-tal-regler-sv-01",
+          "role": "film",
+          "name": "Tal: Närmast tjugoett vinner, men gå inte över.",
+          "path": "assets/motions/paow-tal-regler-sv-01/source.mp4",
+          "still": 35,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Vilan paow-vila-01-01 med munnen ritad efter ljudet (tools/speech.ts), rösten Jessica (ElevenLabs), 69 rutor i 24 per sekund med ljudspår. Börjar och slutar på vilans ruta 3. Inte oberoende granskad.",
+          "source": {
+            "from": "tools/speech.ts say --dealer paow --line regler (Jessica)",
+            "when": "2026-11-13"
+          }
+        },
+        {
+          "id": "paow-tal-varsagod-sv-01",
+          "role": "film",
+          "name": "Tal: Varsågod, det är bara roligt.",
+          "path": "assets/motions/paow-tal-varsagod-sv-01/source.mp4",
+          "still": 25,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Vilan paow-vila-01-01 med munnen ritad efter ljudet (tools/speech.ts), rösten Jessica (ElevenLabs), 50 rutor i 24 per sekund med ljudspår. Börjar och slutar på vilans ruta 3. Inte oberoende granskad.",
+          "source": {
+            "from": "tools/speech.ts say --dealer paow --line varsagod (Jessica)",
+            "when": "2026-11-13"
+          }
+        },
+        {
+          "id": "paow-tal-vetej-sv-01",
+          "role": "film",
+          "name": "Tal: Det kan jag tyvärr inte svara på, men korten ljuger aldrig.",
+          "path": "assets/motions/paow-tal-vetej-sv-01/source.mp4",
+          "still": 43,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Vilan paow-vila-01-01 med munnen ritad efter ljudet (tools/speech.ts), rösten Jessica (ElevenLabs), 86 rutor i 24 per sekund med ljudspår. Börjar och slutar på vilans ruta 3. Inte oberoende granskad.",
+          "source": {
+            "from": "tools/speech.ts say --dealer paow --line vetej (Jessica)",
+            "when": "2026-11-13"
+          }
+        },
+        {
+          "id": "paow-tal-win-sv-01",
+          "role": "film",
+          "name": "Tal: Bra spelat! Njut av din vinst.",
+          "path": "assets/motions/paow-tal-win-sv-01/source.mp4",
+          "still": 29,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Vilan paow-vila-01-01 med munnen ritad efter ljudet (tools/speech.ts), rösten Jessica (ElevenLabs), 58 rutor i 24 per sekund med ljudspår. Börjar och slutar på vilans ruta 3. Granskaren 3/5: B och p stänger i takt (5–6, 10–11), men munnen glipar i 3–4 före B och står öppen 46–49 i tystnad. Tunnare läppar, mjukare haka.",
+          "source": {
+            "from": "tools/speech.ts say --dealer paow --line win (Jessica)",
+            "when": "2026-11-13"
+          }
+        },
+        {
+          "id": "paow-tal-reel-demo",
+          "role": "film",
+          "name": "Tal, demo: 4 repliker i följd",
+          "path": "assets/speech/paow/paow-tal-reel-demo/source.mp4",
+          "still": 136,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Repliker i följd med vila emellan, 33.96 s med ljud, rösten Jessica. En film att visa, inte en tagning i banken (tools/speech.ts reel).",
+          "source": {
+            "from": "tools/speech.ts reel --dealer paow",
+            "when": "2026-11-13"
+          }
+        },
+        {
+          "id": "paow-film-utgang-01-t1",
+          "role": "film",
+          "name": "Omgång 6h · utgången: handen från skon till vila, tagning 1",
+          "path": "assets/films/paow/utgang-01-t1/source.mp4",
+          "still": 65,
+          "fps": 30,
+          "state": "kandidat",
+          "note": "Efterarbetad tagning ur en beställning i studions vy Beställ. Kandidat tills Jakob har dömt.",
+          "source": {
+            "from": "beställningen paow-utgang-01, tagning 1 (studions vy Beställ)",
+            "when": "2026-11-13"
+          }
+        },
+        {
+          "id": "paow-film-giv-2-1-d-c2-03-t1",
+          "role": "film",
+          "name": "Omgång 7b · hålkortet läggs stängt med avsikt: läggs på filten och skjuts, gult ",
+          "path": "assets/films/paow/giv-2-1-d-c2-03-t1/source.mp4",
+          "still": 93,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Efterarbetad tagning ur en beställning i studions vy Beställ. Kandidat tills Jakob har dömt.",
+          "source": {
+            "from": "beställningen paow-giv-2-1-d-c2-03, tagning 1 (studions vy Beställ)",
+            "when": "2026-11-13"
+          }
+        },
+        {
+          "id": "paow-film-halkort-02-t1",
+          "role": "film",
+          "name": "Omgång 7c · hålkortet vänds upp ur vila, bara hålkortet i bilden (WAN 3), tagnin",
+          "path": "assets/films/paow/halkort-02-t1/source.mp4",
+          "still": 81,
+          "fps": 30,
+          "state": "kandidat",
+          "note": "Efterarbetad tagning ur en beställning i studions vy Beställ. Kandidat tills Jakob har dömt.",
+          "source": {
+            "from": "beställningen paow-halkort-02, tagning 1 (studions vy Beställ)",
+            "when": "2026-11-13"
+          }
+        },
+        {
+          "id": "paow-film-giv-2-1-p2-04-t2",
+          "role": "film",
+          "name": "Omgång 8b · P2, Kling 4, fri vändning, mall 7 (hon rör sig), tagning 2",
+          "path": "assets/films/paow/giv-2-1-p2-04-t2/source.mp4",
+          "still": 93,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Efterarbetad tagning ur en beställning i studions vy Beställ. Kandidat tills Jakob har dömt.",
+          "source": {
+            "from": "beställningen paow-giv-2-1-p2-04, tagning 2 (studions vy Beställ)",
+            "when": "2026-11-13"
+          }
+        },
+        {
+          "id": "paow-film-giv-2-1-p7-06-t1",
+          "role": "film",
+          "name": "Omgång 8c · P7, Kling 4, fri vändning, mall 7 (hon rör sig), tagning 1",
+          "path": "assets/films/paow/giv-2-1-p7-06-t1/source.mp4",
+          "still": 93,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Efterarbetad tagning ur en beställning i studions vy Beställ. Kandidat tills Jakob har dömt.",
+          "source": {
+            "from": "beställningen paow-giv-2-1-p7-06, tagning 1 (studions vy Beställ)",
+            "when": "2026-11-13"
+          }
+        },
+        {
+          "id": "paow-film-giv-2-1-p6-05-t1",
+          "role": "film",
+          "name": "Omgång 7f · P6, Kling 4, fri vändning, mall 7 (hon rör sig), tagning 1",
+          "path": "assets/films/paow/giv-2-1-p6-05-t1/source.mp4",
+          "still": 93,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Efterarbetad tagning ur en beställning i studions vy Beställ. Kandidat tills Jakob har dömt.",
+          "source": {
+            "from": "beställningen paow-giv-2-1-p6-05, tagning 1 (studions vy Beställ)",
             "when": "2026-11-13"
           }
         }

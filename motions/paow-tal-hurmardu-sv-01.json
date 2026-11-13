@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 1,
+  "id": "paow-tal-hurmardu-sv-01",
+  "dealer": "paow",
+  "source": {
+    "path": "assets/motions/paow-tal-hurmardu-sv-01/source.mp4",
+    "sha256": "91c07608039661067f850b6373ff2fcaa5653bb3a622f0409e8abc41e829698e",
+    "bytes": 8613414,
+    "width": 1764,
+    "height": 1174,
+    "fps": 24,
+    "frames": 88,
+    "audio": true,
+    "provider": "tools/speech.ts: Scoutgaming's lip-sync renderer on this machine, voice from ElevenLabs",
+    "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Jessica"
+  },
+  "motion": {
+    "kind": "IDLE",
+    "from": "IDLE",
+    "to": "IDLE",
+    "pass": false,
+    "basis": "SOURCE_FRAME_REVIEW",
+    "idle": {
+      "onRequest": true,
+      "calm": true,
+      "weight": 0,
+      "label": "säger: Jag mår fint, tack. Korten är på gott humör i kväll."
+    }
+  },
+  "speech": {
+    "line": "hurmardu",
+    "language": "sv",
+    "text": "Jag mår fint, tack. Korten är på gott humör i kväll.",
+    "voice": "Jessica",
+    "heard": "Jag mår fint, tack. Korten är på gott humör ikväll.",
+    "restFilm": "paow-vila-01-01",
+    "soundStartsAtSeconds": 0.22,
+    "soundEndsAtSeconds": 3.152
+  },
+  "review": {
+    "decision": "PENDING",
+    "basis": "Inte granskad av Jakob. Gjord av tools/speech.ts ur assets/motions/paow-vila-01-01/source.mp4. Inte oberoende granskad.",
+    "userAccepted": false,
+    "productionReady": false,
+    "inbox": true
+  },
+  "postProcessing": "the rendered face laid back into the rest film's own frames (assets/speech/paow/paow-tal-hurmardu-sv-01/receipt.json, laidBack)",
+  "generationRef": "assets/motions/paow-tal-hurmardu-sv-01/generation.json",
+  "scoutIntegrated": false,
+  "published": false
+}

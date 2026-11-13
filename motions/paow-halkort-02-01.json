@@ -1,0 +1,55 @@
+{
+  "schemaVersion": 1,
+  "id": "paow-halkort-02-01",
+  "dealer": "paow",
+  "source": {
+    "path": "assets/motions/paow-halkort-02-01/source.mp4",
+    "sha256": "c87fb495eda8871d2dd1d8e921c30f224833478265e284e2b202d83e802913fb",
+    "bytes": 13350246,
+    "width": 1764,
+    "height": 1174,
+    "fps": 30,
+    "frames": 148,
+    "provider": "Runway MCP server (app account credits)",
+    "model": "wan3"
+  },
+  "motion": {
+    "kind": "REVEAL",
+    "from": "IDLE",
+    "to": "REVEAL(D.C2)",
+    "pass": false,
+    "basis": "SOURCE_FRAME_REVIEW"
+  },
+  "review": {
+    "decision": "ACCEPTED",
+    "basis": "Inte granskad av Jakob: förd in från beställningen paow-halkort-02, tagning 1 (tools/register-order.ts). Oberoende rutgranskning: tools/film-review.md.",
+    "limitations": "I inkorgen: spelas bara där steget inte har någon annan film, tills Jakob dömer den.",
+    "colorDoesNotProvePhysicalSide": true,
+    "userAccepted": false,
+    "productionReady": false,
+    "acceptedAs": "VARIANT",
+    "provisional": {
+      "by": "huvudagenten och en oberoende granskare",
+      "at": "2026-11-13T07:05:24.910Z",
+      "mandate": "Jakob 2026-11-13: \"jag måste sova och du får granska och godkänna alla klipp.\"",
+      "note": "Hålkortet vänds upp: hon lyfter kortet upprätt med gult mot kameran, det faller framåt och landar blått på samma plats. Läses som att dealern vänder sitt hålkort. Att väga: ögat ser ingen ren kantruta, bara en mörk suddig rand i tre rutor, nära det du kallade \"fuskar med kortsidan\"; därför variant. Två tagningar till med en annan modell är beställda."
+    }
+  },
+  "order": {
+    "id": "paow-halkort-02",
+    "take": 1,
+    "path": "data/orders/paow-halkort-02.json",
+    "orderSha256": "d24fd170309d11e749f36d215d2633e1f44f3c95fda50c68e2115077bfa8c9bb",
+    "receipt": "assets/orders/paow-halkort-02/receipt.json",
+    "taskId": "521d2df7-51e9-4cf8-a2b9-eaa56d7faaf8",
+    "delivered": {
+      "path": "assets/orders/paow-halkort-02/take-1/after.mp4",
+      "sha256": "c87fb495eda8871d2dd1d8e921c30f224833478265e284e2b202d83e802913fb"
+    }
+  },
+  "postProcessing": "none",
+  "generationRef": "assets/motions/paow-halkort-02-01/generation.json",
+  "jobRef": "data/clip-jobs.json",
+  "scoutIntegrated": false,
+  "published": false
+}

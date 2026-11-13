@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 1,
+  "id": "paow-tal-detsamma-sv-01",
+  "dealer": "paow",
+  "source": {
+    "path": "assets/motions/paow-tal-detsamma-sv-01/source.mp4",
+    "sha256": "1f805c3994cbe6c57c376cf6c9a400f50c34460f8593304b3bbf267aeca1f703",
+    "bytes": 3292276,
+    "width": 1764,
+    "height": 1174,
+    "fps": 24,
+    "frames": 34,
+    "audio": true,
+    "provider": "tools/speech.ts: Scoutgaming's lip-sync renderer on this machine, voice from ElevenLabs",
+    "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Jessica"
+  },
+  "motion": {
+    "kind": "IDLE",
+    "from": "IDLE",
+    "to": "IDLE",
+    "pass": false,
+    "basis": "SOURCE_FRAME_REVIEW",
+    "idle": {
+      "onRequest": true,
+      "calm": true,
+      "weight": 0,
+      "label": "säger: Tack detsamma!"
+    }
+  },
+  "speech": {
+    "line": "detsamma",
+    "language": "sv",
+    "text": "Tack detsamma!",
+    "voice": "Jessica",
+    "heard": "Tack detsamma!",
+    "restFilm": "paow-vila-01-01",
+    "soundStartsAtSeconds": 0.22,
+    "soundEndsAtSeconds": 0.918
+  },
+  "review": {
+    "decision": "PENDING",
+    "basis": "Inte granskad av Jakob. Gjord av tools/speech.ts ur assets/motions/paow-vila-01-01/source.mp4. Inte oberoende granskad.",
+    "userAccepted": false,
+    "productionReady": false,
+    "inbox": true
+  },
+  "postProcessing": "the rendered face laid back into the rest film's own frames (assets/speech/paow/paow-tal-detsamma-sv-01/receipt.json, laidBack)",
+  "generationRef": "assets/motions/paow-tal-detsamma-sv-01/generation.json",
+  "scoutIntegrated": false,
+  "published": false
+}

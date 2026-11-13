@@ -5049,6 +5049,816 @@
         "id": "paow-giv-2-1-d-01",
         "take": 1
       }
+    },
+    {
+      "id": "paow-giv-2-1-p5-03-01-deal",
+      "kind": "DEAL",
+      "from": "READY",
+      "to": "P5.C1",
+      "clip": "paow-giv-2-1-p5-03-01",
+      "frames": [
+        0,
+        99
+      ],
+      "purpose": "Beställning paow-giv-2-1-p5-03, tagning 1: Omgång 6a · P5, Kling 4, fri vändning, mall 5.",
+      "dealer": "paow",
+      "model": "kling-4",
+      "duration": 7,
+      "promptText": "Locked camera, one continuous shot. Her hand at the shoe draws the yellow card out of the window and carries it low over the felt towards its place a little to the right of the middle of the picture, where the last frame shows it. On the way her hand turns the card over once, holding it the whole time, and lays it flat at its place, blue side up. Then her open hand glides back low over the felt, palm down, to the shoe and takes the next card. The other hand rests on the felt. Only one card moves; its back is yellow and its face is blue.",
+      "first": {
+        "file": {
+          "path": "assets/orders/paow-giv-2-1-p5-03/first.png",
+          "sha256": "74eebfdc1388f8de362c0151546bbe08aeb1fed74fca097f8ca6999d833dc702"
+        },
+        "note": "Första bilden i beställningen paow-giv-2-1-p5-03."
+      },
+      "order": {
+        "id": "paow-giv-2-1-p5-03",
+        "take": 1
+      }
+    },
+    {
+      "id": "paow-giv-2-1-p5-03-01-return-ready",
+      "kind": "RETURN",
+      "from": "P5.C1",
+      "to": "READY",
+      "clip": "paow-giv-2-1-p5-03-01",
+      "frames": [
+        100,
+        168
+      ],
+      "purpose": "Beställning paow-giv-2-1-p5-03, tagning 1: Omgång 6a · P5, Kling 4, fri vändning, mall 5.",
+      "dealer": "paow",
+      "model": "kling-4",
+      "duration": 7,
+      "promptText": "Locked camera, one continuous shot. Her hand at the shoe draws the yellow card out of the window and carries it low over the felt towards its place a little to the right of the middle of the picture, where the last frame shows it. On the way her hand turns the card over once, holding it the whole time, and lays it flat at its place, blue side up. Then her open hand glides back low over the felt, palm down, to the shoe and takes the next card. The other hand rests on the felt. Only one card moves; its back is yellow and its face is blue.",
+      "last": {
+        "file": {
+          "path": "assets/orders/paow-giv-2-1-p5-03/last.png",
+          "sha256": "ede5fef77f3a3b842fd373a9e628ba2f50ce68bdb122ab277798951df165a5f7"
+        },
+        "note": "Sista bilden i beställningen paow-giv-2-1-p5-03."
+      },
+      "order": {
+        "id": "paow-giv-2-1-p5-03",
+        "take": 1
+      }
+    },
+    {
+      "id": "paow-giv-2-1-p6-03-01-deal",
+      "kind": "DEAL",
+      "from": "READY",
+      "to": "P6.C1",
+      "clip": "paow-giv-2-1-p6-03-01",
+      "frames": [
+        0,
+        112
+      ],
+      "purpose": "Beställning paow-giv-2-1-p6-03, tagning 1: Omgång 6b · P6, Kling 4, fri vändning, mall 5.",
+      "dealer": "paow",
+      "model": "kling-4",
+      "duration": 7,
+      "promptText": "Locked camera, one continuous shot. Her hand at the shoe draws the yellow card out of the window and carries it low over the felt towards its place well to the right of the middle of the picture, in front of the shoe, where the last frame shows it. On the way her hand turns the card over once, holding it the whole time, and lays it flat at its place, blue side up. Then her open hand glides back low over the felt, palm down, to the shoe and takes the next card. The other hand rests on the felt. Only one card moves; its back is yellow and its face is blue.",
+      "first": {
+        "file": {
+          "path": "assets/orders/paow-giv-2-1-p6-03/first.png",
+          "sha256": "74eebfdc1388f8de362c0151546bbe08aeb1fed74fca097f8ca6999d833dc702"
+        },
+        "note": "Första bilden i beställningen paow-giv-2-1-p6-03."
+      },
+      "order": {
+        "id": "paow-giv-2-1-p6-03",
+        "take": 1
+      }
+    },
+    {
+      "id": "paow-giv-2-1-p6-03-01-return-ready",
+      "kind": "RETURN",
+      "from": "P6.C1",
+      "to": "READY",
+      "clip": "paow-giv-2-1-p6-03-01",
+      "frames": [
+        113,
+        168
+      ],
+      "purpose": "Beställning paow-giv-2-1-p6-03, tagning 1: Omgång 6b · P6, Kling 4, fri vändning, mall 5.",
+      "dealer": "paow",
+      "model": "kling-4",
+      "duration": 7,
+      "promptText": "Locked camera, one continuous shot. Her hand at the shoe draws the yellow card out of the window and carries it low over the felt towards its place well to the right of the middle of the picture, in front of the shoe, where the last frame shows it. On the way her hand turns the card over once, holding it the whole time, and lays it flat at its place, blue side up. Then her open hand glides back low over the felt, palm down, to the shoe and takes the next card. The other hand rests on the felt. Only one card moves; its back is yellow and its face is blue.",
+      "last": {
+        "file": {
+          "path": "assets/orders/paow-giv-2-1-p6-03/last.png",
+          "sha256": "dc3375de5afabc587e1bdeb2b429dca0f0db3b5fac435ab457dee7c24bf35958"
+        },
+        "note": "Sista bilden i beställningen paow-giv-2-1-p6-03."
+      },
+      "order": {
+        "id": "paow-giv-2-1-p6-03",
+        "take": 1
+      }
+    },
+    {
+      "id": "paow-giv-2-1-p6-04-01-deal",
+      "kind": "DEAL",
+      "from": "READY",
+      "to": "P6.C1",
+      "clip": "paow-giv-2-1-p6-04-01",
+      "frames": [
+        0,
+        106
+      ],
+      "purpose": "Beställning paow-giv-2-1-p6-04, tagning 1: Omgång 6d · P6, Kling 4, fri vändning, mall 6 (sidorna sagda med färg).",
+      "dealer": "paow",
+      "model": "kling-4",
+      "duration": 7,
+      "promptText": "Locked camera, one continuous shot. Her hand at the shoe draws the yellow card out of the window and carries it low over the felt towards its place well to the right of the middle of the picture, in front of the shoe, where the last frame shows it. On the way her hand turns the card over once, holding it the whole time, and lays it flat at its place, blue side up. Then her open hand glides back low over the felt, palm down, to the shoe and takes the next card. The other hand rests on the felt. Only one card moves. It is yellow on one side and blue on the other: yellow side up when it leaves the shoe, blue side up when it lies at its place.",
+      "first": {
+        "file": {
+          "path": "assets/orders/paow-giv-2-1-p6-04/first.png",
+          "sha256": "74eebfdc1388f8de362c0151546bbe08aeb1fed74fca097f8ca6999d833dc702"
+        },
+        "note": "Första bilden i beställningen paow-giv-2-1-p6-04."
+      },
+      "order": {
+        "id": "paow-giv-2-1-p6-04",
+        "take": 1
+      }
+    },
+    {
+      "id": "paow-giv-2-1-p6-04-01-return-ready",
+      "kind": "RETURN",
+      "from": "P6.C1",
+      "to": "READY",
+      "clip": "paow-giv-2-1-p6-04-01",
+      "frames": [
+        107,
+        168
+      ],
+      "purpose": "Beställning paow-giv-2-1-p6-04, tagning 1: Omgång 6d · P6, Kling 4, fri vändning, mall 6 (sidorna sagda med färg).",
+      "dealer": "paow",
+      "model": "kling-4",
+      "duration": 7,
+      "promptText": "Locked camera, one continuous shot. Her hand at the shoe draws the yellow card out of the window and carries it low over the felt towards its place well to the right of the middle of the picture, in front of the shoe, where the last frame shows it. On the way her hand turns the card over once, holding it the whole time, and lays it flat at its place, blue side up. Then her open hand glides back low over the felt, palm down, to the shoe and takes the next card. The other hand rests on the felt. Only one card moves. It is yellow on one side and blue on the other: yellow side up when it leaves the shoe, blue side up when it lies at its place.",
+      "last": {
+        "file": {
+          "path": "assets/orders/paow-giv-2-1-p6-04/last.png",
+          "sha256": "dc3375de5afabc587e1bdeb2b429dca0f0db3b5fac435ab457dee7c24bf35958"
+        },
+        "note": "Sista bilden i beställningen paow-giv-2-1-p6-04."
+      },
+      "order": {
+        "id": "paow-giv-2-1-p6-04",
+        "take": 1
+      }
+    },
+    {
+      "id": "paow-utgang-baklanges-01",
+      "kind": "RETURN",
+      "from": "READY",
+      "to": "IDLE",
+      "clip": "paow-utgang-baklanges-01",
+      "frames": [
+        0,
+        93
+      ],
+      "purpose": "Nödlösning: Paows ingång paow-ingang-2-1-02-01 baklänges som utgång READY>IDLE, tills en egen utgång finns.",
+      "dealer": "paow",
+      "model": "kling-3-4k (baklänges)"
+    },
+    {
+      "id": "paow-tal-blackjack-sv-01",
+      "kind": "IDLE",
+      "from": "IDLE",
+      "to": "IDLE",
+      "clip": "paow-tal-blackjack-sv-01",
+      "frames": [
+        0,
+        72
+      ],
+      "purpose": "Talfilm på begäran: Blackjack! Vackert spelat. Grattis! (tools/speech.ts, Jessica).",
+      "dealer": "paow",
+      "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Jessica"
+    },
+    {
+      "id": "paow-tal-chat1-sv-01",
+      "kind": "IDLE",
+      "from": "IDLE",
+      "to": "IDLE",
+      "clip": "paow-tal-chat1-sv-01",
+      "frames": [
+        0,
+        42
+      ],
+      "purpose": "Talfilm på begäran: Tack! Lycka till. (tools/speech.ts, Jessica).",
+      "dealer": "paow",
+      "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Jessica"
+    },
+    {
+      "id": "paow-tal-chat2-sv-01",
+      "kind": "IDLE",
+      "from": "IDLE",
+      "to": "IDLE",
+      "clip": "paow-tal-chat2-sv-01",
+      "frames": [
+        0,
+        42
+      ],
+      "purpose": "Talfilm på begäran: Roligt att du är här. (tools/speech.ts, Jessica).",
+      "dealer": "paow",
+      "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Jessica"
+    },
+    {
+      "id": "paow-tal-chat3-sv-01",
+      "kind": "IDLE",
+      "from": "IDLE",
+      "to": "IDLE",
+      "clip": "paow-tal-chat3-sv-01",
+      "frames": [
+        0,
+        33
+      ],
+      "purpose": "Talfilm på begäran: Det ordnar vi. (tools/speech.ts, Jessica).",
+      "dealer": "paow",
+      "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Jessica"
+    },
+    {
+      "id": "paow-tal-chat4-sv-01",
+      "kind": "IDLE",
+      "from": "IDLE",
+      "to": "IDLE",
+      "clip": "paow-tal-chat4-sv-01",
+      "frames": [
+        0,
+        44
+      ],
+      "purpose": "Talfilm på begäran: Lycka till med nästa hand. (tools/speech.ts, Jessica).",
+      "dealer": "paow",
+      "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Jessica"
+    },
+    {
+      "id": "paow-tal-dealerblackjack-sv-01",
+      "kind": "IDLE",
+      "from": "IDLE",
+      "to": "IDLE",
+      "clip": "paow-tal-dealerblackjack-sv-01",
+      "frames": [
+        0,
+        84
+      ],
+      "purpose": "Talfilm på begäran: Dealern har blackjack. Den här rundan går till huset. (tools/speech.ts, Jessica).",
+      "dealer": "paow",
+      "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Jessica"
+    },
+    {
+      "id": "paow-tal-dealerbust-sv-02",
+      "kind": "IDLE",
+      "from": "IDLE",
+      "to": "IDLE",
+      "clip": "paow-tal-dealerbust-sv-02",
+      "frames": [
+        0,
+        106
+      ],
+      "purpose": "Talfilm på begäran: Dealern är över tjugoett! Grattis, bordet vinner. (tools/speech.ts, Jessica).",
+      "dealer": "paow",
+      "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Jessica"
+    },
+    {
+      "id": "paow-tal-dealerplays-sv-01",
+      "kind": "IDLE",
+      "from": "IDLE",
+      "to": "IDLE",
+      "clip": "paow-tal-dealerplays-sv-01",
+      "frames": [
+        0,
+        37
+      ],
+      "purpose": "Talfilm på begäran: Dealern spelar. (tools/speech.ts, Jessica).",
+      "dealer": "paow",
+      "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Jessica"
+    },
+    {
+      "id": "paow-tal-detsamma-sv-01",
+      "kind": "IDLE",
+      "from": "IDLE",
+      "to": "IDLE",
+      "clip": "paow-tal-detsamma-sv-01",
+      "frames": [
+        0,
+        33
+      ],
+      "purpose": "Talfilm på begäran: Tack detsamma! (tools/speech.ts, Jessica).",
+      "dealer": "paow",
+      "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Jessica"
+    },
+    {
+      "id": "paow-tal-double-sv-01",
+      "kind": "IDLE",
+      "from": "IDLE",
+      "to": "IDLE",
+      "clip": "paow-tal-double-sv-01",
+      "frames": [
+        0,
+        87
+      ],
+      "purpose": "Talfilm på begäran: Du dubblar. Ett kort, nu gör vi det bästa av det. (tools/speech.ts, Jessica).",
+      "dealer": "paow",
+      "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Jessica"
+    },
+    {
+      "id": "paow-tal-goodluck-sv-01",
+      "kind": "IDLE",
+      "from": "IDLE",
+      "to": "IDLE",
+      "clip": "paow-tal-goodluck-sv-01",
+      "frames": [
+        0,
+        76
+      ],
+      "purpose": "Talfilm på begäran: Insatserna är stängda. Lycka till vid mitt bord! (tools/speech.ts, Jessica).",
+      "dealer": "paow",
+      "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Jessica"
+    },
+    {
+      "id": "paow-tal-grattis-sv-01",
+      "kind": "IDLE",
+      "from": "IDLE",
+      "to": "IDLE",
+      "clip": "paow-tal-grattis-sv-01",
+      "frames": [
+        0,
+        73
+      ],
+      "purpose": "Talfilm på begäran: Grattis! Det där var snyggt spelat. (tools/speech.ts, Jessica).",
+      "dealer": "paow",
+      "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Jessica"
+    },
+    {
+      "id": "paow-tal-hej-sv-01",
+      "kind": "IDLE",
+      "from": "IDLE",
+      "to": "IDLE",
+      "clip": "paow-tal-hej-sv-01",
+      "frames": [
+        0,
+        50
+      ],
+      "purpose": "Talfilm på begäran: Hej och välkommen till bordet! (tools/speech.ts, Jessica).",
+      "dealer": "paow",
+      "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Jessica"
+    },
+    {
+      "id": "paow-tal-hejda-sv-01",
+      "kind": "IDLE",
+      "from": "IDLE",
+      "to": "IDLE",
+      "clip": "paow-tal-hejda-sv-01",
+      "frames": [
+        0,
+        56
+      ],
+      "purpose": "Talfilm på begäran: Tack för i kväll, välkommen tillbaka! (tools/speech.ts, Jessica).",
+      "dealer": "paow",
+      "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Jessica"
+    },
+    {
+      "id": "paow-tal-hurmardu-sv-01",
+      "kind": "IDLE",
+      "from": "IDLE",
+      "to": "IDLE",
+      "clip": "paow-tal-hurmardu-sv-01",
+      "frames": [
+        0,
+        87
+      ],
+      "purpose": "Talfilm på begäran: Jag mår fint, tack. Korten är på gott humör i kväll. (tools/speech.ts, Jessica).",
+      "dealer": "paow",
+      "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Jessica"
+    },
+    {
+      "id": "paow-tal-insurance-sv-01",
+      "kind": "IDLE",
+      "from": "IDLE",
+      "to": "IDLE",
+      "clip": "paow-tal-insurance-sv-01",
+      "frames": [
+        0,
+        82
+      ],
+      "purpose": "Talfilm på begäran: Försäkringen är öppen. Vill du försäkra din hand? (tools/speech.ts, Jessica).",
+      "dealer": "paow",
+      "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Jessica"
+    },
+    {
+      "id": "paow-tal-lose-sv-01",
+      "kind": "IDLE",
+      "from": "IDLE",
+      "to": "IDLE",
+      "clip": "paow-tal-lose-sv-01",
+      "frames": [
+        0,
+        92
+      ],
+      "purpose": "Talfilm på begäran: Dealern vinner den här gången. Bättre lycka nästa runda. (tools/speech.ts, Jessica).",
+      "dealer": "paow",
+      "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Jessica"
+    },
+    {
+      "id": "paow-tal-namn-sv-01",
+      "kind": "IDLE",
+      "from": "IDLE",
+      "to": "IDLE",
+      "clip": "paow-tal-namn-sv-01",
+      "frames": [
+        0,
+        69
+      ],
+      "purpose": "Talfilm på begäran: Jag heter Paow, och jag är din dealer i kväll. (tools/speech.ts, Jessica).",
+      "dealer": "paow",
+      "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Jessica"
+    },
+    {
+      "id": "paow-tal-otur-sv-01",
+      "kind": "IDLE",
+      "from": "IDLE",
+      "to": "IDLE",
+      "clip": "paow-tal-otur-sv-01",
+      "frames": [
+        0,
+        61
+      ],
+      "purpose": "Talfilm på begäran: Det vänder snart, det brukar det göra. (tools/speech.ts, Jessica).",
+      "dealer": "paow",
+      "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Jessica"
+    },
+    {
+      "id": "paow-tal-placebets-sv-01",
+      "kind": "IDLE",
+      "from": "IDLE",
+      "to": "IDLE",
+      "clip": "paow-tal-placebets-sv-01",
+      "frames": [
+        0,
+        46
+      ],
+      "purpose": "Talfilm på begäran: Lägg era insatser, tack. (tools/speech.ts, Jessica).",
+      "dealer": "paow",
+      "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Jessica"
+    },
+    {
+      "id": "paow-tal-push-sv-01",
+      "kind": "IDLE",
+      "from": "IDLE",
+      "to": "IDLE",
+      "clip": "paow-tal-push-sv-01",
+      "frames": [
+        0,
+        73
+      ],
+      "purpose": "Talfilm på begäran: Det är lika. Din insats betalas tillbaka. (tools/speech.ts, Jessica).",
+      "dealer": "paow",
+      "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Jessica"
+    },
+    {
+      "id": "paow-tal-regler-sv-01",
+      "kind": "IDLE",
+      "from": "IDLE",
+      "to": "IDLE",
+      "clip": "paow-tal-regler-sv-01",
+      "frames": [
+        0,
+        68
+      ],
+      "purpose": "Talfilm på begäran: Närmast tjugoett vinner, men gå inte över. (tools/speech.ts, Jessica).",
+      "dealer": "paow",
+      "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Jessica"
+    },
+    {
+      "id": "paow-tal-varsagod-sv-01",
+      "kind": "IDLE",
+      "from": "IDLE",
+      "to": "IDLE",
+      "clip": "paow-tal-varsagod-sv-01",
+      "frames": [
+        0,
+        49
+      ],
+      "purpose": "Talfilm på begäran: Varsågod, det är bara roligt. (tools/speech.ts, Jessica).",
+      "dealer": "paow",
+      "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Jessica"
+    },
+    {
+      "id": "paow-tal-vetej-sv-01",
+      "kind": "IDLE",
+      "from": "IDLE",
+      "to": "IDLE",
+      "clip": "paow-tal-vetej-sv-01",
+      "frames": [
+        0,
+        85
+      ],
+      "purpose": "Talfilm på begäran: Det kan jag tyvärr inte svara på, men korten ljuger aldrig. (tools/speech.ts, Jessica).",
+      "dealer": "paow",
+      "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Jessica"
+    },
+    {
+      "id": "paow-tal-win-sv-01",
+      "kind": "IDLE",
+      "from": "IDLE",
+      "to": "IDLE",
+      "clip": "paow-tal-win-sv-01",
+      "frames": [
+        0,
+        57
+      ],
+      "purpose": "Talfilm på begäran: Bra spelat! Njut av din vinst. (tools/speech.ts, Jessica).",
+      "dealer": "paow",
+      "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Jessica"
+    },
+    {
+      "id": "paow-utgang-01-01",
+      "kind": "RETURN",
+      "from": "READY",
+      "to": "IDLE",
+      "clip": "paow-utgang-01-01",
+      "frames": [
+        0,
+        117
+      ],
+      "purpose": "Beställning paow-utgang-01, tagning 1: Omgång 6h · utgången: handen från skon till vila.",
+      "dealer": "paow",
+      "model": "wan3",
+      "duration": 4,
+      "promptText": "Locked camera, one continuous shot. Her thumb and forefinger let the yellow card settle back into the shoe's window, and her hand comes back low over the felt, palm down, and rests flat on the felt, as in the last frame. Her eyes come up from the shoe towards the players. The other hand rests on the felt.",
+      "first": {
+        "file": {
+          "path": "assets/orders/paow-utgang-01/first.png",
+          "sha256": "74eebfdc1388f8de362c0151546bbe08aeb1fed74fca097f8ca6999d833dc702"
+        },
+        "note": "Första bilden i beställningen paow-utgang-01."
+      },
+      "last": {
+        "file": {
+          "path": "assets/orders/paow-utgang-01/last.png",
+          "sha256": "cdaa59756e2eb0f7b839f23254f9999f8c8da4c8eef0e37bf23e9643ba6586ee"
+        },
+        "note": "Sista bilden i beställningen paow-utgang-01."
+      },
+      "order": {
+        "id": "paow-utgang-01",
+        "take": 1
+      }
+    },
+    {
+      "id": "paow-giv-2-1-d-c2-03-01-deal",
+      "kind": "DEAL",
+      "from": "READY",
+      "to": "D.C2",
+      "clip": "paow-giv-2-1-d-c2-03-01",
+      "frames": [
+        0,
+        104
+      ],
+      "purpose": "Beställning paow-giv-2-1-d-c2-03, tagning 1: Omgång 7b · hålkortet läggs stängt med avsikt: läggs på filten och skjuts, gult hela vägen (Kling 4).",
+      "dealer": "paow",
+      "model": "kling-4",
+      "duration": 7,
+      "promptText": "Locked camera, one continuous shot. Her hand at the shoe draws the yellow card out of the window, lays it flat on the felt in front of the shoe and slides it under her fingertips, flat and yellow side up, to its place close in front of her, in the middle of the picture, where the last frame shows it. She stops it there and lifts her fingertips off it. Then her open hand glides back low over the felt, palm down, to the shoe and takes the next card. As she deals, her head and eyes follow the card, her shoulders turn a little with the reach, and her other hand shifts a little where it lies on the felt. Only one card moves; its back is yellow and its face is blue.",
+      "first": {
+        "file": {
+          "path": "assets/orders/paow-giv-2-1-d-c2-03/first.png",
+          "sha256": "74eebfdc1388f8de362c0151546bbe08aeb1fed74fca097f8ca6999d833dc702"
+        },
+        "note": "Första bilden i beställningen paow-giv-2-1-d-c2-03."
+      },
+      "order": {
+        "id": "paow-giv-2-1-d-c2-03",
+        "take": 1
+      }
+    },
+    {
+      "id": "paow-giv-2-1-d-c2-03-01-return-ready",
+      "kind": "RETURN",
+      "from": "D.C2",
+      "to": "READY",
+      "clip": "paow-giv-2-1-d-c2-03-01",
+      "frames": [
+        105,
+        168
+      ],
+      "purpose": "Beställning paow-giv-2-1-d-c2-03, tagning 1: Omgång 7b · hålkortet läggs stängt med avsikt: läggs på filten och skjuts, gult hela vägen (Kling 4).",
+      "dealer": "paow",
+      "model": "kling-4",
+      "duration": 7,
+      "promptText": "Locked camera, one continuous shot. Her hand at the shoe draws the yellow card out of the window, lays it flat on the felt in front of the shoe and slides it under her fingertips, flat and yellow side up, to its place close in front of her, in the middle of the picture, where the last frame shows it. She stops it there and lifts her fingertips off it. Then her open hand glides back low over the felt, palm down, to the shoe and takes the next card. As she deals, her head and eyes follow the card, her shoulders turn a little with the reach, and her other hand shifts a little where it lies on the felt. Only one card moves; its back is yellow and its face is blue.",
+      "last": {
+        "file": {
+          "path": "assets/orders/paow-giv-2-1-d-c2-03/last.png",
+          "sha256": "e4416c7ea6c8af01c8dbd83d907146a292447b8dc28c67acd24f1a27baa53970"
+        },
+        "note": "Sista bilden i beställningen paow-giv-2-1-d-c2-03."
+      },
+      "order": {
+        "id": "paow-giv-2-1-d-c2-03",
+        "take": 1
+      }
+    },
+    {
+      "id": "paow-halkort-02-01",
+      "kind": "REVEAL",
+      "from": "IDLE",
+      "to": "REVEAL(D.C2)",
+      "clip": "paow-halkort-02-01",
+      "frames": [
+        0,
+        147
+      ],
+      "purpose": "Beställning paow-halkort-02, tagning 1: Omgång 7c · hålkortet vänds upp ur vila, bara hålkortet i bilden (WAN 3).",
+      "dealer": "paow",
+      "model": "wan3",
+      "duration": 5,
+      "promptText": "Locked camera, one continuous shot. Her hand nearest the shoe goes low over the felt to the yellow card lying close in front of her, in the middle of the picture, where the last frame shows it. There her thumb slides under the long edge nearest it and lifts it as her wrist turns thumb side up; the card rolls over on its opposite long edge, which stays on the felt, and her thumb comes over onto the blue face. Her open hand glides back low over the felt, palm down, and comes to rest flat on the felt. The other hand rests on the felt. Only one card moves; its back is yellow and its face is blue.",
+      "first": {
+        "file": {
+          "path": "assets/orders/paow-halkort-02/first.png",
+          "sha256": "efc0266034587ea62af1846ed0a6b1fc6b05c1f740e6c92ab9002c3cb813f60b"
+        },
+        "note": "Första bilden i beställningen paow-halkort-02."
+      },
+      "last": {
+        "file": {
+          "path": "assets/orders/paow-halkort-02/last.png",
+          "sha256": "abbab2314b60737fd4d18e7f16dd306151bd67e30b54fb7d08b93affddb486b8"
+        },
+        "note": "Sista bilden i beställningen paow-halkort-02."
+      },
+      "order": {
+        "id": "paow-halkort-02",
+        "take": 1
+      }
+    },
+    {
+      "id": "paow-giv-2-1-p2-04-02-deal",
+      "kind": "DEAL",
+      "from": "READY",
+      "to": "P2.C1",
+      "clip": "paow-giv-2-1-p2-04-02",
+      "frames": [
+        0,
+        113
+      ],
+      "purpose": "Beställning paow-giv-2-1-p2-04, tagning 2: Omgång 8b · P2, Kling 4, fri vändning, mall 7 (hon rör sig).",
+      "dealer": "paow",
+      "model": "kling-4",
+      "duration": 7,
+      "promptText": "Locked camera, one continuous shot. Her hand at the shoe draws the yellow card out of the window and carries it low over the felt towards its place well to the left of the middle of the picture, where the last frame shows it. On the way her hand turns the card over once, holding it the whole time, and lays it flat at its place, blue side up. Then her open hand glides back low over the felt, palm down, to the shoe and takes the next card. As she deals, her head and eyes follow the card, her shoulders turn a little with the reach, and her other hand shifts a little where it lies on the felt. Only one card moves; its back is yellow and its face is blue.",
+      "first": {
+        "file": {
+          "path": "assets/orders/paow-giv-2-1-p2-04/first.png",
+          "sha256": "74eebfdc1388f8de362c0151546bbe08aeb1fed74fca097f8ca6999d833dc702"
+        },
+        "note": "Första bilden i beställningen paow-giv-2-1-p2-04."
+      },
+      "order": {
+        "id": "paow-giv-2-1-p2-04",
+        "take": 2
+      }
+    },
+    {
+      "id": "paow-giv-2-1-p2-04-02-return-ready",
+      "kind": "RETURN",
+      "from": "P2.C1",
+      "to": "READY",
+      "clip": "paow-giv-2-1-p2-04-02",
+      "frames": [
+        114,
+        168
+      ],
+      "purpose": "Beställning paow-giv-2-1-p2-04, tagning 2: Omgång 8b · P2, Kling 4, fri vändning, mall 7 (hon rör sig).",
+      "dealer": "paow",
+      "model": "kling-4",
+      "duration": 7,
+      "promptText": "Locked camera, one continuous shot. Her hand at the shoe draws the yellow card out of the window and carries it low over the felt towards its place well to the left of the middle of the picture, where the last frame shows it. On the way her hand turns the card over once, holding it the whole time, and lays it flat at its place, blue side up. Then her open hand glides back low over the felt, palm down, to the shoe and takes the next card. As she deals, her head and eyes follow the card, her shoulders turn a little with the reach, and her other hand shifts a little where it lies on the felt. Only one card moves; its back is yellow and its face is blue.",
+      "last": {
+        "file": {
+          "path": "assets/orders/paow-giv-2-1-p2-04/last.png",
+          "sha256": "9bef9716954b69c899ee05762d239b3b719a54a32cf7f0598ded15d4d3afdba4"
+        },
+        "note": "Sista bilden i beställningen paow-giv-2-1-p2-04."
+      },
+      "order": {
+        "id": "paow-giv-2-1-p2-04",
+        "take": 2
+      }
+    },
+    {
+      "id": "paow-giv-2-1-p7-06-01-deal",
+      "kind": "DEAL",
+      "from": "READY",
+      "to": "P7.C1",
+      "clip": "paow-giv-2-1-p7-06-01",
+      "frames": [
+        0,
+        83
+      ],
+      "purpose": "Beställning paow-giv-2-1-p7-06, tagning 1: Omgång 8c · P7, Kling 4, fri vändning, mall 7 (hon rör sig).",
+      "dealer": "paow",
+      "model": "kling-4",
+      "duration": 7,
+      "promptText": "Locked camera, one continuous shot. Her hand at the shoe draws the yellow card out of the window and carries it low over the felt towards its place at the far right of the picture, in front of the shoe, where the last frame shows it. On the way her hand turns the card over once, holding it the whole time, and lays it flat at its place, blue side up. Then her open hand glides back low over the felt, palm down, to the shoe and takes the next card. As she deals, her head and eyes follow the card, her shoulders turn a little with the reach, and her other hand shifts a little where it lies on the felt. Only one card moves; its back is yellow and its face is blue.",
+      "first": {
+        "file": {
+          "path": "assets/orders/paow-giv-2-1-p7-06/first.png",
+          "sha256": "74eebfdc1388f8de362c0151546bbe08aeb1fed74fca097f8ca6999d833dc702"
+        },
+        "note": "Första bilden i beställningen paow-giv-2-1-p7-06."
+      },
+      "order": {
+        "id": "paow-giv-2-1-p7-06",
+        "take": 1
+      }
+    },
+    {
+      "id": "paow-giv-2-1-p7-06-01-return-ready",
+      "kind": "RETURN",
+      "from": "P7.C1",
+      "to": "READY",
+      "clip": "paow-giv-2-1-p7-06-01",
+      "frames": [
+        84,
+        168
+      ],
+      "purpose": "Beställning paow-giv-2-1-p7-06, tagning 1: Omgång 8c · P7, Kling 4, fri vändning, mall 7 (hon rör sig).",
+      "dealer": "paow",
+      "model": "kling-4",
+      "duration": 7,
+      "promptText": "Locked camera, one continuous shot. Her hand at the shoe draws the yellow card out of the window and carries it low over the felt towards its place at the far right of the picture, in front of the shoe, where the last frame shows it. On the way her hand turns the card over once, holding it the whole time, and lays it flat at its place, blue side up. Then her open hand glides back low over the felt, palm down, to the shoe and takes the next card. As she deals, her head and eyes follow the card, her shoulders turn a little with the reach, and her other hand shifts a little where it lies on the felt. Only one card moves; its back is yellow and its face is blue.",
+      "last": {
+        "file": {
+          "path": "assets/orders/paow-giv-2-1-p7-06/last.png",
+          "sha256": "f2d58990935ffbf68027284688b9d70f458648adf7e2ec4d2338be6f6128d89c"
+        },
+        "note": "Sista bilden i beställningen paow-giv-2-1-p7-06."
+      },
+      "order": {
+        "id": "paow-giv-2-1-p7-06",
+        "take": 1
+      }
+    },
+    {
+      "id": "paow-giv-2-1-p6-05-01-deal",
+      "kind": "DEAL",
+      "from": "READY",
+      "to": "P6.C1",
+      "clip": "paow-giv-2-1-p6-05-01",
+      "frames": [
+        0,
+        95
+      ],
+      "purpose": "Beställning paow-giv-2-1-p6-05, tagning 1: Omgång 7f · P6, Kling 4, fri vändning, mall 7 (hon rör sig).",
+      "dealer": "paow",
+      "model": "kling-4",
+      "duration": 7,
+      "promptText": "Locked camera, one continuous shot. Her hand at the shoe draws the yellow card out of the window and carries it low over the felt towards its place well to the right of the middle of the picture, in front of the shoe, where the last frame shows it. On the way her hand turns the card over once, holding it the whole time, and lays it flat at its place, blue side up. Then her open hand glides back low over the felt, palm down, to the shoe and takes the next card. As she deals, her head and eyes follow the card, her shoulders turn a little with the reach, and her other hand shifts a little where it lies on the felt. Only one card moves; its back is yellow and its face is blue.",
+      "first": {
+        "file": {
+          "path": "assets/orders/paow-giv-2-1-p6-05/first.png",
+          "sha256": "74eebfdc1388f8de362c0151546bbe08aeb1fed74fca097f8ca6999d833dc702"
+        },
+        "note": "Första bilden i beställningen paow-giv-2-1-p6-05."
+      },
+      "order": {
+        "id": "paow-giv-2-1-p6-05",
+        "take": 1
+      }
+    },
+    {
+      "id": "paow-giv-2-1-p6-05-01-return-ready",
+      "kind": "RETURN",
+      "from": "P6.C1",
+      "to": "READY",
+      "clip": "paow-giv-2-1-p6-05-01",
+      "frames": [
+        96,
+        168
+      ],
+      "purpose": "Beställning paow-giv-2-1-p6-05, tagning 1: Omgång 7f · P6, Kling 4, fri vändning, mall 7 (hon rör sig).",
+      "dealer": "paow",
+      "model": "kling-4",
+      "duration": 7,
+      "promptText": "Locked camera, one continuous shot. Her hand at the shoe draws the yellow card out of the window and carries it low over the felt towards its place well to the right of the middle of the picture, in front of the shoe, where the last frame shows it. On the way her hand turns the card over once, holding it the whole time, and lays it flat at its place, blue side up. Then her open hand glides back low over the felt, palm down, to the shoe and takes the next card. As she deals, her head and eyes follow the card, her shoulders turn a little with the reach, and her other hand shifts a little where it lies on the felt. Only one card moves; its back is yellow and its face is blue.",
+      "last": {
+        "file": {
+          "path": "assets/orders/paow-giv-2-1-p6-05/last.png",
+          "sha256": "dc3375de5afabc587e1bdeb2b429dca0f0db3b5fac435ab457dee7c24bf35958"
+        },
+        "note": "Sista bilden i beställningen paow-giv-2-1-p6-05."
+      },
+      "order": {
+        "id": "paow-giv-2-1-p6-05",
+        "take": 1
+      }
     }
   ],
   "edits": [

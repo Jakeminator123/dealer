@@ -1,0 +1,197 @@
+{
+  "schemaVersion": 1,
+  "id": "paow-halkort-04",
+  "title": "Omgång 9a · hålkortet vänds upp ur vila, bara hålkortet i bilden (Kling 4, två tagningar)",
+  "summary": "Gör en film av Paow: från vila vänder hon upp hålkortet, dealerns andra kort, med handen närmast skon, och handen går tillbaka till vila.",
+  "group": null,
+  "dealer": "paow",
+  "kind": "FILM",
+  "step": {
+    "key": "HALKORT",
+    "label": "Hålkortet vänds upp från vila, handen tillbaka",
+    "edge": "IDLE>REVEAL(D.C2)",
+    "shape": "ONE_WAY",
+    "cutInto": [],
+    "makes": null
+  },
+  "motion": null,
+  "pictures": [
+    {
+      "name": "first.png",
+      "label": "Första bild · Paows ankare 1 + hålkortet stängt",
+      "goesAs": "startFrame",
+      "path": "assets/orders/paow-halkort-04/first.png",
+      "sha256": "efc0266034587ea62af1846ed0a6b1fc6b05c1f740e6c92ab9002c3cb813f60b",
+      "width": 1764,
+      "height": 1174,
+      "from": {
+        "entry": "paow-vila-ung-2",
+        "path": "assets/anchors/paow-vila-ung-2/anchor.png",
+        "note": "Vila, yngre, kandidat 2 (gäller); dealerns kort ritade där planen säger"
+      },
+      "waits": null,
+      "drawn": {
+        "target": "D.C2",
+        "side": "BACK",
+        "as": "flatQuad från P4.C1 (planens plana bord, som labbet ritar)",
+        "plan": {
+          "path": "placements/default.json",
+          "sha256": "e0fb924d27dc1311ff9cd079a72eeaa81e218eae8dd48990068d1cf0a5fbd67f",
+          "updatedAt": "2026-11-11T14:46:38.185Z"
+        },
+        "texture": {
+          "video": "assets/motions/pamela-p4-c1-plan-return-idle-01/source.mp4",
+          "frame": 89,
+          "sha256": "0b3cba9be4a969334bf1ba23623b80be6d0bd119a3c4dd8236db27145d479aa7",
+          "quadFrom": "assets/anchors/pamela-idle-p4-c1-plan-01/receipt.json"
+        },
+        "quad": [
+          [
+            884.3,
+            911.2
+          ],
+          [
+            935.6,
+            911.2
+          ],
+          [
+            943.2,
+            942.8
+          ],
+          [
+            887,
+            942.8
+          ]
+        ],
+        "centre": [
+          912.5,
+          927
+        ],
+        "measured": {
+          "centre": [
+            912.6,
+            927.1
+          ],
+          "area": 1855,
+          "box": [
+            61,
+            33
+          ],
+          "changedElsewhere": 0
+        },
+        "measuredOffsetPx": 0.1
+      },
+      "drawnBeside": []
+    },
+    {
+      "name": "last.png",
+      "label": "Sista bild · samma, hålkortet öppet",
+      "goesAs": "endFrame",
+      "path": "assets/orders/paow-halkort-04/last.png",
+      "sha256": "abbab2314b60737fd4d18e7f16dd306151bd67e30b54fb7d08b93affddb486b8",
+      "width": 1764,
+      "height": 1174,
+      "from": {
+        "entry": "paow-vila-ung-2",
+        "path": "assets/anchors/paow-vila-ung-2/anchor.png",
+        "note": "Vila, yngre, kandidat 2 (gäller); dealerns kort ritade där planen säger"
+      },
+      "waits": null,
+      "drawn": {
+        "target": "D.C2",
+        "side": "FRONT",
+        "as": "flatQuad från P4.C1 (planens plana bord, som labbet ritar)",
+        "plan": {
+          "path": "placements/default.json",
+          "sha256": "e0fb924d27dc1311ff9cd079a72eeaa81e218eae8dd48990068d1cf0a5fbd67f",
+          "updatedAt": "2026-11-11T14:46:38.185Z"
+        },
+        "texture": {
+          "video": "assets/motions/pamela-p4-c1-plan-return-idle-01/source.mp4",
+          "frame": 89,
+          "sha256": "0b3cba9be4a969334bf1ba23623b80be6d0bd119a3c4dd8236db27145d479aa7",
+          "quadFrom": "assets/anchors/pamela-idle-p4-c1-plan-01/receipt.json"
+        },
+        "quad": [
+          [
+            884.3,
+            911.2
+          ],
+          [
+            935.6,
+            911.2
+          ],
+          [
+            943.2,
+            942.8
+          ],
+          [
+            887,
+            942.8
+          ]
+        ],
+        "centre": [
+          912.5,
+          927
+        ],
+        "measured": {
+          "centre": [
+            912.6,
+            927.1
+          ],
+          "area": 1846,
+          "box": [
+            61,
+            33
+          ],
+          "changedElsewhere": 0
+        },
+        "measuredOffsetPx": 0.1
+      },
+      "drawnBeside": []
+    }
+  ],
+  "reference": {
+    "status": "INGEN",
+    "why": "Ingen referensfilm vald."
+  },
+  "generation": {
+    "provider": "runway-app",
+    "tool": "generate_video",
+    "model": "kling-4",
+    "params": {
+      "resolution": "1080p",
+      "duration": 5
+    }
+  },
+  "prompt": {
+    "template": "film-halkort-kort@7",
+    "style": "KORT",
+    "text": "Locked camera, one continuous shot. Her hand nearest the shoe goes low over the felt to the yellow card lying close in front of her, in the middle of the picture, where the last frame shows it. There her thumb slides under the long edge nearest it and lifts it as her wrist turns thumb side up; the card rolls over on its opposite long edge, which stays on the felt, and her thumb comes over onto the blue face. Her open hand glides back low over the felt, palm down, and comes to rest flat on the felt. The other hand rests on the felt. Only one card moves; its back is yellow and its face is blue.",
+    "sha256": "acd458a3f4d6a0954b1e72c1f0ead1771bc3e1a59ac7a5ff4aa87d9871977574",
+    "extra": null,
+    "middle": false
+  },
+  "takes": 2,
+  "cost": {
+    "perTake": 107,
+    "total": 214,
+    "worstPerTake": 118,
+    "worstTotal": 236,
+    "basis": "21,3 krediter per s × 5 s. Liggarna b19 och b20: 7 s i 1080p = 149 krediter; listpris 23,5 per s i verktyget generate_video 2026-11-12."
+  },
+  "limits": {
+    "maxCredits": 236,
+    "stopBelowCredits": 2000
+  },
+  "notes": [],
+  "created": "2026-11-13T06:59:18.513Z",
+  "createdBy": "huvudagenten (dealer-94) på Jakobs ord 2026-11-13: omgång 9",
+  "approval": {
+    "by": "huvudagent",
+    "at": "2026-11-13T06:59:22.762Z",
+    "orderSha256": "3f3a68861f8acba2e2897b291d8b65cdd37a3d9f4f0f1d8f873865642e4eb69f",
+    "mandate": "Jakob 2026-11-13 cirka 07:25: \"jag ger 6000 mer i budget eller till krediterna tar slut för runway\"; cirka 07:45: \"hon ska kunna dela ett dolt till sig själv hon senare kan ta upp\" (omgång 9: hålkortet)"
+  },
+  "status": "GODKÄND"
+}

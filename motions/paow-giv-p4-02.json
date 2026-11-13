@@ -13,6 +13,10 @@
     "provider": "Runway MCP server (app account credits)",
     "model": "kling-4"
   },
+  "motion": {
+    "takeHand": "LH",
+    "releaseHand": "LH"
+  },
   "cutInto": [
     "paow-giv-p4-02-deal",
     "paow-giv-p4-02-return-ready"

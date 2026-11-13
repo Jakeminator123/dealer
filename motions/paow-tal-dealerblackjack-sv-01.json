@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 1,
+  "id": "paow-tal-dealerblackjack-sv-01",
+  "dealer": "paow",
+  "source": {
+    "path": "assets/motions/paow-tal-dealerblackjack-sv-01/source.mp4",
+    "sha256": "1b0c0a10c0029b425364d6f4693eca85c1fa82f741c8a37b21eb80c4161d558e",
+    "bytes": 8325722,
+    "width": 1764,
+    "height": 1174,
+    "fps": 24,
+    "frames": 85,
+    "audio": true,
+    "provider": "tools/speech.ts: Scoutgaming's lip-sync renderer on this machine, voice from ElevenLabs",
+    "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Jessica"
+  },
+  "motion": {
+    "kind": "IDLE",
+    "from": "IDLE",
+    "to": "IDLE",
+    "pass": false,
+    "basis": "SOURCE_FRAME_REVIEW",
+    "idle": {
+      "onRequest": true,
+      "calm": true,
+      "weight": 0,
+      "label": "säger: Dealern har blackjack. Den här rundan går till huset."
+    }
+  },
+  "speech": {
+    "line": "dealerblackjack",
+    "language": "sv",
+    "text": "Dealern har blackjack. Den här rundan går till huset.",
+    "voice": "Jessica",
+    "heard": "Dealern har blackjack. Den här rundan går till huset",
+    "restFilm": "paow-vila-01-01",
+    "soundStartsAtSeconds": 0.22,
+    "soundEndsAtSeconds": 3.036
+  },
+  "review": {
+    "decision": "PENDING",
+    "basis": "Inte granskad av Jakob. Gjord av tools/speech.ts ur assets/motions/paow-vila-01-01/source.mp4. Oberoende granskning 2/5: Munnen står halvöppen i pausen 31–37 och öppen i tystnad 73–75, stänger 6 rutor efter ljudet. Tunnare läppar, mjukare haka än vilan.",
+    "userAccepted": false,
+    "productionReady": false,
+    "inbox": true
+  },
+  "postProcessing": "the rendered face laid back into the rest film's own frames (assets/speech/paow/paow-tal-dealerblackjack-sv-01/receipt.json, laidBack)",
+  "generationRef": "assets/motions/paow-tal-dealerblackjack-sv-01/generation.json",
+  "scoutIntegrated": false,
+  "published": false
+}

@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 1,
+  "id": "paow-tal-win-sv-01",
+  "dealer": "paow",
+  "source": {
+    "path": "assets/motions/paow-tal-win-sv-01/source.mp4",
+    "sha256": "da2ef33a11dc13af89016056f5ce6baec6195a6814697e17b8c1f6dec185ccdf",
+    "bytes": 5627173,
+    "width": 1764,
+    "height": 1174,
+    "fps": 24,
+    "frames": 58,
+    "audio": true,
+    "provider": "tools/speech.ts: Scoutgaming's lip-sync renderer on this machine, voice from ElevenLabs",
+    "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Jessica"
+  },
+  "motion": {
+    "kind": "IDLE",
+    "from": "IDLE",
+    "to": "IDLE",
+    "pass": false,
+    "basis": "SOURCE_FRAME_REVIEW",
+    "idle": {
+      "onRequest": true,
+      "calm": true,
+      "weight": 0,
+      "label": "säger: Bra spelat! Njut av din vinst."
+    }
+  },
+  "speech": {
+    "line": "win",
+    "language": "sv",
+    "text": "Bra spelat! Njut av din vinst.",
+    "voice": "Jessica",
+    "heard": "Bra spelat! Njut av din vinst.",
+    "restFilm": "paow-vila-01-01",
+    "soundStartsAtSeconds": 0.22,
+    "soundEndsAtSeconds": 1.921
+  },
+  "review": {
+    "decision": "PENDING",
+    "basis": "Inte granskad av Jakob. Gjord av tools/speech.ts ur assets/motions/paow-vila-01-01/source.mp4. Oberoende granskning 3/5: B och p stänger i takt (5–6, 10–11), men munnen glipar i 3–4 före B och står öppen 46–49 i tystnad. Tunnare läppar, mjukare haka.",
+    "userAccepted": false,
+    "productionReady": false,
+    "inbox": true
+  },
+  "postProcessing": "the rendered face laid back into the rest film's own frames (assets/speech/paow/paow-tal-win-sv-01/receipt.json, laidBack)",
+  "generationRef": "assets/motions/paow-tal-win-sv-01/generation.json",
+  "scoutIntegrated": false,
+  "published": false
+}

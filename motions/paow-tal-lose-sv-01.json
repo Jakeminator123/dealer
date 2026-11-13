@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 1,
+  "id": "paow-tal-lose-sv-01",
+  "dealer": "paow",
+  "source": {
+    "path": "assets/motions/paow-tal-lose-sv-01/source.mp4",
+    "sha256": "a1a61334023731f8d8d533fd06904dae0d9b0efd69ca4d610ad7fd588946f8cf",
+    "bytes": 9121013,
+    "width": 1764,
+    "height": 1174,
+    "fps": 24,
+    "frames": 93,
+    "audio": true,
+    "provider": "tools/speech.ts: Scoutgaming's lip-sync renderer on this machine, voice from ElevenLabs",
+    "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Jessica"
+  },
+  "motion": {
+    "kind": "IDLE",
+    "from": "IDLE",
+    "to": "IDLE",
+    "pass": false,
+    "basis": "SOURCE_FRAME_REVIEW",
+    "idle": {
+      "onRequest": true,
+      "calm": true,
+      "weight": 0,
+      "label": "säger: Dealern vinner den här gången. Bättre lycka nästa runda."
+    }
+  },
+  "speech": {
+    "line": "lose",
+    "language": "sv",
+    "text": "Dealern vinner den här gången. Bättre lycka nästa runda.",
+    "voice": "Jessica",
+    "heard": "Dealern vinner den här gången. Bättre lycka nästa runda",
+    "restFilm": "paow-vila-01-01",
+    "soundStartsAtSeconds": 0.22,
+    "soundEndsAtSeconds": 3.369
+  },
+  "review": {
+    "decision": "PENDING",
+    "basis": "Inte granskad av Jakob. Gjord av tools/speech.ts ur assets/motions/paow-vila-01-01/source.mp4. Oberoende granskning 2/5: Munnen står halvöppen i pausen 38–46 (stänger först till B 47), vidöppen i tystnad 81–82, stänger 6 rutor sent. Tunnare läppar.",
+    "userAccepted": false,
+    "productionReady": false,
+    "inbox": true
+  },
+  "postProcessing": "the rendered face laid back into the rest film's own frames (assets/speech/paow/paow-tal-lose-sv-01/receipt.json, laidBack)",
+  "generationRef": "assets/motions/paow-tal-lose-sv-01/generation.json",
+  "scoutIntegrated": false,
+  "published": false
+}

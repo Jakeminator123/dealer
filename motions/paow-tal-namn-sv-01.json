@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 1,
+  "id": "paow-tal-namn-sv-01",
+  "dealer": "paow",
+  "source": {
+    "path": "assets/motions/paow-tal-namn-sv-01/source.mp4",
+    "sha256": "beda1e7aacf8751fbb0f648a25a1e956889ffaf7935166b62bf2e31565e96d5a",
+    "bytes": 6720313,
+    "width": 1764,
+    "height": 1174,
+    "fps": 24,
+    "frames": 70,
+    "audio": true,
+    "provider": "tools/speech.ts: Scoutgaming's lip-sync renderer on this machine, voice from ElevenLabs",
+    "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Jessica"
+  },
+  "motion": {
+    "kind": "IDLE",
+    "from": "IDLE",
+    "to": "IDLE",
+    "pass": false,
+    "basis": "SOURCE_FRAME_REVIEW",
+    "idle": {
+      "onRequest": true,
+      "calm": true,
+      "weight": 0,
+      "label": "säger: Jag heter Paow, och jag är din dealer i kväll."
+    }
+  },
+  "speech": {
+    "line": "namn",
+    "language": "sv",
+    "text": "Jag heter Paow, och jag är din dealer i kväll.",
+    "voice": "Jessica",
+    "heard": "Jag heter Paul och jag är din dealer i kväll",
+    "restFilm": "paow-vila-01-01",
+    "soundStartsAtSeconds": 0.22,
+    "soundEndsAtSeconds": 2.411
+  },
+  "review": {
+    "decision": "PENDING",
+    "basis": "Inte granskad av Jakob. Gjord av tools/speech.ts ur assets/motions/paow-vila-01-01/source.mp4. Inte oberoende granskad.",
+    "userAccepted": false,
+    "productionReady": false,
+    "inbox": true
+  },
+  "postProcessing": "the rendered face laid back into the rest film's own frames (assets/speech/paow/paow-tal-namn-sv-01/receipt.json, laidBack)",
+  "generationRef": "assets/motions/paow-tal-namn-sv-01/generation.json",
+  "scoutIntegrated": false,
+  "published": false
+}

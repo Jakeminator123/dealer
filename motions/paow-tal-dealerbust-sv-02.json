@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 1,
+  "id": "paow-tal-dealerbust-sv-02",
+  "dealer": "paow",
+  "source": {
+    "path": "assets/motions/paow-tal-dealerbust-sv-02/source.mp4",
+    "sha256": "cf610058aef68112121ec624a2d47f7169a6184fb1782b819ac60edcfd27b18a",
+    "bytes": 10412339,
+    "width": 1764,
+    "height": 1174,
+    "fps": 24,
+    "frames": 107,
+    "audio": true,
+    "provider": "tools/speech.ts: Scoutgaming's lip-sync renderer on this machine, voice from ElevenLabs",
+    "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Jessica"
+  },
+  "motion": {
+    "kind": "IDLE",
+    "from": "IDLE",
+    "to": "IDLE",
+    "pass": false,
+    "basis": "SOURCE_FRAME_REVIEW",
+    "idle": {
+      "onRequest": true,
+      "calm": true,
+      "weight": 0,
+      "label": "säger: Dealern är över tjugoett! Grattis, bordet vinner."
+    }
+  },
+  "speech": {
+    "line": "dealerbust",
+    "language": "sv",
+    "text": "Dealern är över tjugoett! Grattis, bordet vinner.",
+    "voice": "Jessica",
+    "heard": "Dealern är över 21. Grattis, bordet vinner.",
+    "restFilm": "paow-vila-01-01",
+    "soundStartsAtSeconds": 0.22,
+    "soundEndsAtSeconds": 3.943
+  },
+  "review": {
+    "decision": "PENDING",
+    "basis": "Inte granskad av Jakob. Gjord av tools/speech.ts ur assets/motions/paow-vila-01-01/source.mp4. Oberoende granskning 3/5: Bättre än -01: munnen stänger i pausen (48–50), avlyssnat ”21”. b i ”bordet” 3 rutor sent, öppnar tidigt 51–57, stänger 5 rutor sent.",
+    "userAccepted": false,
+    "productionReady": false,
+    "inbox": true
+  },
+  "postProcessing": "the rendered face laid back into the rest film's own frames (assets/speech/paow/paow-tal-dealerbust-sv-02/receipt.json, laidBack)",
+  "generationRef": "assets/motions/paow-tal-dealerbust-sv-02/generation.json",
+  "scoutIntegrated": false,
+  "published": false
+}

@@ -40,12 +40,7 @@
       "shape": null,
       "reference": "ingen",
       "extra": null,
-      "evidence": {
-        "orders": [],
-        "reviewer": [],
-        "owner": [],
-        "note": "Oprövad för det yngre utseendet: ankare 2.2 håller inte än. Kavajomgången (det tidigare utseendet) gav en huvudtagning av två med WAN 3 (handboken 3.1)."
-      },
+      "evidence": { "orders": [], "reviewer": [], "owner": [], "note": "Oprövad för det yngre utseendet: ankare 2.2 håller inte än. Kavajomgången (det tidigare utseendet) gav en huvudtagning av två med WAN 3 (handboken 3.1)." },
       "setBy": "huvudagenten (dealer-94), ifyllt ur kvitton, protokoll och handbok",
       "setAt": "2026-11-13"
     },
@@ -89,25 +84,24 @@
       "style": "KORT",
       "seconds": 7,
       "takes": 2,
-      "turn": "AT_PLACE",
+      "turn": "FREE",
       "shape": "ROUND_TRIP",
-      "reference": "samma-plats-rakt-godkänd",
-      "noReferenceModel": "wan3",
+      "reference": "ingen",
       "extra": null,
       "evidence": {
-        "orders": ["paow-giv-2-1-p4-08", "paow-giv-2-1-p4-10", "paow-giv-2-1-p4-11", "paow-giv-2-1-p4-04", "paow-giv-2-1-p3-01", "paow-giv-2-1-p3-02", "paow-giv-2-1-p5-01", "paow-giv-2-1-p5-02"],
-        "reviewer": ["paow-giv-2-1-p4-08 t1 (WAN 3, kort text): given 1,5/5, returen 3,5/5", "paow-giv-2-1-p4-10 t1 (Kling 4, minimal text): given 1/5, returen 1/5", "paow-giv-2-1-p4-11 t1 (Kling 4, kort text, Pamelas giv till plats 4 som referens): given 3/5, returen 1/5", "paow-giv-2-1-p4-04 t1 (Kling 4, mall 3, rullas kring långsidan): given 2/5, returen 1,5/5", "paow-giv-2-1-p3-01 t1: given 3/5, returen 1/5", "paow-giv-2-1-p3-02 t1: given 2,5/5, returen 3,5/5", "paow-giv-2-1-p5-01 t1: given 1,5/5", "paow-giv-2-1-p5-02 t1: given 0/5"],
+        "orders": ["paow-giv-2-1-p3-02", "paow-giv-2-1-p4-04", "paow-giv-2-1-p4-08", "paow-giv-2-1-p4-10", "paow-giv-2-1-p4-11", "paow-giv-2-1-p5-03", "paow-giv-2-1-p3-03", "paow-giv-2-1-p4-15", "paow-giv-2-1-p5-05"],
+        "reviewer": ["paow-giv-2-1-p4-04 t1 (Kling 4, mall 3, rullas kring långsidan): mätt, en vändning, kortet +21 % i brösthöjd", "paow-giv-2-1-p4-08 t1 (WAN 3, vändning vid platsen): given 1,5/5, returen 3,5/5", "paow-giv-2-1-p4-10 t1 (Kling 4, minimal text): given 1/5", "paow-giv-2-1-p3-02 t1 (WAN 3, vändning vid platsen): given 2,5/5, returen 3,5/5", "p3-03, p4-15, p5-05 (mall 7): pågår"],
         "owner": [
+          { "take": "paow-giv-2-1-p4-04-01-deal", "words": "Jakob 2026-11-13: Kanske den bästa!" },
           { "take": "paow-giv-2-1-p4-08-01-deal", "words": "Jakob 2026-11-13: Dena funkar!" },
           { "take": "paow-giv-2-1-p4-10-01-deal", "words": "Jakob 2026-11-13: Ja, det här var bra." },
-          { "take": "paow-giv-2-1-p4-11-01-deal", "words": "Jakob 2026-11-13: Tack!" },
-          { "take": "paow-giv-2-1-p4-11-01-return-ready", "words": "Jakob 2026-11-13: Ja, den här är lite rolig. Här klappar de ombordet efter. Jag gillar när de varierar sig lite, så variant, verkligen godkänd." },
-          { "take": "paow-giv-2-1-p4-04-01-deal", "words": "Jakob 2026-11-13: Kanske den bästa!" },
-          { "take": "paow-giv-2-1-p4-04-01-return-ready", "words": "Jakob 2026-11-13: förmodligen den bästa\"" }
+          { "take": "paow-giv-2-1-p3-02-01-deal", "words": "Jakob 2026-11-13: Riktigt rolig variant. Jag kommer kalla det här en variant, men påminn mig om att den är riktigt bra. Den är mer exakt och fungerar utmärkt som en godkänd eller primär." },
+          { "take": "paow-giv-2-1-p5-03-01-deal", "words": "Jakob 2026-11-13: Altås här är hon så sjukt stel i ansiktet. Men handrörelsen är skitbra!" },
+          { "take": "paow-giv-2-1-p4-07-01-deal", "words": "Jakob 2026-11-13: Det känns som något är konstigt här. Hon landar alltid, men gör två vridningsmoment. När hon vänder upp kortet är det återigen fel färg. Hon gör redan vridningen så att kortet som ska vara blått syns när hon börjar fösa det framför sig, men gör sedan ytterligare en vridning. Det blir fel färg eftersom hon har visat kortet tidigt och sedan vänder tillbaka. Det verkar som att det kan vara ett promptfel, kanske dubbla angivelser. Jag är verkligen nyfiken på om det kan vara så att det används en annan prompt än den som står här." }
         ],
-        "note": "Jakob godkände rakt av tre givar till plats 4 med tre olika metoder (WAN 3 kort text, Kling 4 minimal text, Kling 4 med referensfilm) och satte p4-04 (Kling 4, mall 3) som Primär; granskaren gav ingen av dem över 3/5. Prövat och godkänt av honom: WAN 3 med vändning vid platsen (p4-08) och Kling 4 med en rakt godkänd giv till samma plats som referens och vändning vid platsen (p4-11). Plats 3 och 5 i omgång 3 och 3b (WAN 3, texten utan platsen i ord): bara P3 höll. Nästa prov: mall 5 (platsen i ord) med vändning vid platsen, Kling 4 med referens där en rakt godkänd giv till samma plats finns (plats 4: Paows egna och Pamelas; plats 5: Pamelas), annars WAN 3 utan referens (plats 3). Kling 4 utan referensfilm har fallit för givar (se ytterplatserna)."
+        "note": "Mittplatserna P3–P5. Jakobs domar (node tools/verdicts-per-method.ts paow, 2026-11-13 på morgonen): Kling 4 utan referensfilm med platsen i ord (mall 5–6, fri vändning) given 3 av 5, returen 5 av 5; WAN 3 med vändning vid platsen given 3 av 5, returen 4 av 5 (den andra metoden, noReferenceModel finns inte här eftersom ingen referens krävs); referensfilm till samma plats 2 av 4, och 1 av 1 med en referens från en annan pose (p2-03); stängt till en spelares plats 0 av 5, och det är ingen metod: spelarnas kort ligger öppna (placements/default.json). Granskarens poäng och hans domar skilde sig på ungefär en tredjedel av tagningarna, så metoden väljs efter hans. Mall 7:s första omgångar (7 och 8: p3-03, p4-15, p5-05, p6-05, p6-06, p1-09, p2-04, p7-06) är lagda med den här metoden (p6-06 med WAN 3 och vändning vid platsen); utfallet pågår."
       },
-      "setBy": "huvudagenten (dealer-94), ifyllt ur kvitton, protokoll och handbok",
+      "setBy": "dokumentagenten på huvudagentens uppdrag (dealer-94), ur kvittona, motions/ och node tools/verdicts-per-method.ts paow",
       "setAt": "2026-11-13"
     },
     {
@@ -119,43 +113,50 @@
       "style": "KORT",
       "seconds": 7,
       "takes": 2,
-      "turn": "AT_PLACE",
+      "turn": "FREE",
       "shape": "ROUND_TRIP",
-      "reference": "samma-plats-rakt-godkänd",
-      "noReferenceModel": "wan3",
+      "reference": "ingen",
       "extra": null,
       "evidence": {
-        "orders": ["paow-giv-2-1-p1-05", "paow-giv-2-1-p1-06", "paow-giv-2-1-p1-04", "paow-giv-2-1-p7-03", "paow-giv-2-1-p7-04", "paow-giv-2-1-p1-01", "paow-giv-2-1-p1-02", "paow-giv-2-1-p1-03", "paow-giv-2-1-p2-01", "paow-giv-2-1-p2-02", "paow-giv-2-1-p6-01", "paow-giv-2-1-p6-02", "paow-giv-2-1-p7-01", "paow-giv-2-1-p7-02"],
-        "reviewer": ["paow-giv-2-1-p1-05 t1 (Kling 4, Pamelas giv till plats 1 som referens, vändning på vägen): given 3,5/5, returen 3/5 användbar; färgbyte f35-36 utan kantruta, 330 px före platsen", "paow-giv-2-1-p1-06 t1 (WAN 3, vändning på vägen): given 3/5, returen 3,5/5 användbar; kortet +18-30 % i luften", "paow-giv-2-1-p7-04 t1 (Kling 4 utan referens): given 2,5/5, returen 1,5/5 möjlig variant; kortet lyft 171 px", "paow-giv-2-1-p1-04 t1 (Kling 4 utan referens): given 1,5/5, returen 3/5; spökkort, skjutet 790 px", "paow-giv-2-1-p7-03 t1 (WAN 3): given 1/5, returen 2/5; skons kort mönstrat från f18", "Omgång 3 och 3b (mall 4, \"to its place\"): P1, P2, P6, P7 given 0/5-1/5, 0 av 8", "paow-giv-2-1-p1-01 t1 (handbyte, mall 3): given 1/5, returen 3/5"],
+        "orders": ["paow-giv-2-1-p1-04", "paow-giv-2-1-p1-05", "paow-giv-2-1-p1-06", "paow-giv-2-1-p1-07", "paow-giv-2-1-p1-08", "paow-giv-2-1-p2-03", "paow-giv-2-1-p6-03", "paow-giv-2-1-p6-04", "paow-giv-2-1-p7-03", "paow-giv-2-1-p7-04", "paow-giv-2-1-p1-09", "paow-giv-2-1-p2-04", "paow-giv-2-1-p6-05", "paow-giv-2-1-p6-06", "paow-giv-2-1-p7-06"],
+        "reviewer": ["paow-giv-2-1-p1-04 t1 (Kling 4, utan referens): given 1,5/5, returen 3/5 (tappat, skjutet cirka 790 px)", "paow-giv-2-1-p1-06 t1 (WAN 3, fri vändning): given 3/5, returen 3,5/5", "paow-giv-2-1-p7-04 t1 (Kling 4, utan referens): given 2,5/5, returen 1,5/5", "paow-giv-2-1-p1-05 t1 (Kling 4, referens till samma plats): given 3,5/5, returen 3/5", "paow-giv-2-1-p1-08 t1 och t2 (Kling 4, referens, vändning vid platsen): vände vid platsen 2 av 2 (mätt)", "p1-09, p2-04, p6-05, p6-06, p7-06 (mall 7): pågår"],
         "owner": [
-          { "take": "paow-giv-2-1-p1-01-01-deal", "words": "Jakob 2026-11-13: Det känns konstigt att du inte har granskat det här innan du började. Utan att ens titta här verkar det som att du inte har följt riktlinjerna för hur vi ska skapa olika typer av videos. Hon har fortfarande den vänstra handen på det gula kortet, vilket är perfekt för `anchor` 2.1. Men den andra handen går också dit och dribblar innan den kommer ner, och jag ser inte om det är rätt. Om du tittar på hela den här långa fronten, skulle en tredjedel av den bli bättre. Du måste ge AI lite utrymme. Jag vill att du provar det här och berättar om det fungerar som referensmaterial. Om den här hade fått en bild på det blåa kortet, var skulle det ligga? Jag antar att det var det. Prova att göra om det här via placeringsmenyn. Skapa en film där hon lyfter det gula kortet och möter det halvvägs med den andra handen, som samtidigt vänder upp det blåa kortet. Det här får bli en specialvariant, en specialtestning. Vi kan säkert använda oss av det här för att vi har fått ett `anchor` för player one, card one." },
-          { "take": "paow-giv-2-1-p1-01-01-return-ready", "words": "Jakob 2026-11-13: hon går tilbaka från possitionen med handen vilket hon gör bra" }
+          { "take": "paow-giv-2-1-p1-04-01-deal", "words": "Jakob 2026-11-13: Jag tycker att den här är riktigt bra, givet att den är gjord på ett bra sätt." },
+          { "take": "paow-giv-2-1-p7-04-01-deal", "words": "Jakob 2026-11-13: Den här är faktiskt riktigt rolig och gjord med mycket finess, för hon gör någon form av trick med fingrarna som faktiskt fungerar." },
+          { "take": "paow-giv-2-1-p1-06-01-deal", "words": "Jakob 2026-11-13: Mycket bra, kan konkurrera om att bli den primära." },
+          { "take": "paow-giv-2-1-p1-05-01-deal", "words": "Jakob 2026-11-13: Här ändrar kortet färg ungefär halvvägs." },
+          { "take": "paow-giv-2-1-p6-03-01-deal", "words": "Jakob 2026-11-13: funskar med kortsidan" },
+          { "take": "paow-giv-2-1-p6-04-01-deal", "words": "Jakob 2026-11-13: som förra också - sladdrigt kort och fuskar med kortsidan" },
+          { "take": "paow-giv-2-1-p7-03-01-deal", "words": "Jakob 2026-11-13: Det här ser fuskigt ut från videoskaparen, eftersom sidan som visas i slutet är blå. Den borde inte vara blå, eftersom det är samma sida som var gul i skon." },
+          { "take": "paow-giv-2-1-p1-08-02-deal", "words": "Jakob 2026-11-13: Ser jättebra ut. Kortet kan möjligen vara lite litet, men jag är osäker." }
         ],
-        "note": "Med platsen i ord (mall 5) nådde handen ytterplatsen i 4 av 5 filmer i omgång 4 (i omgång 3 och 3b föll 12 av 14 när texten bara sade \"to its place\"). Omgång 4 hade vändning på vägen (förvalet följer Placering), och alla dess fel är kortets fel i luften; Jakobs godkända givar till plats 4 vändes vid platsen. Fallet: Kling 4 utan referensfilm (lyfte kortet 145-171 px i båda försöken). Obevisat för Paow: vändning på vägen. Nästa prov är därför mall 5 med vändning vid platsen: Kling 4 med en rakt godkänd giv till samma plats som referens där en finns (plats 1, och plats 2 från ankare 2.2, Pamelas), annars WAN 3 utan referens (plats 6 och 7). Omgång 5 prövar just det (p1-07, p1-08, p2-03, p7-05). Verklig kostnad 7 s: Kling 4 124 krediter, med referens 149, WAN 3 140."
+        "note": "Ytterplatserna P1, P2, P6, P7. Jakobs domar (node tools/verdicts-per-method.ts paow, 2026-11-13 på morgonen): Kling 4 utan referensfilm med platsen i ord (mall 5–6, fri vändning) given 3 av 5, returen 5 av 5; WAN 3 med vändning vid platsen given 3 av 5, returen 4 av 5 (den andra metoden, noReferenceModel finns inte här eftersom ingen referens krävs); referensfilm till samma plats 2 av 4, och 1 av 1 med en referens från en annan pose (p2-03); stängt till en spelares plats 0 av 5, och det är ingen metod: spelarnas kort ligger öppna (placements/default.json). Granskarens poäng och hans domar skilde sig på ungefär en tredjedel av tagningarna, så metoden väljs efter hans. Mall 7:s första omgångar (7 och 8: p3-03, p4-15, p5-05, p6-05, p6-06, p1-09, p2-04, p7-06) är lagda med den här metoden (p6-06 med WAN 3 och vändning vid platsen); utfallet pågår."
       },
-      "setBy": "huvudagenten (dealer-94), ifyllt ur kvitton, protokoll och handbok; omgång 4 ur kvittonas granskning",
+      "setBy": "dokumentagenten på huvudagentens uppdrag (dealer-94), ur kvittona, motions/ och node tools/verdicts-per-method.ts paow",
       "setAt": "2026-11-13"
     },
     {
       "id": "giv-2.1-dealer",
       "step": "GIV-2.1",
       "seats": "dealer",
-      "status": "saknas",
-      "model": null,
-      "style": null,
-      "seconds": null,
-      "takes": null,
+      "status": "prov",
+      "model": "kling-4",
+      "style": "KORT",
+      "seconds": 7,
+      "takes": 2,
       "turn": "plan",
       "shape": "ROUND_TRIP",
-      "reference": "samma-plats-rakt-godkänd",
+      "reference": "ingen",
       "extra": null,
       "evidence": {
-        "orders": [],
-        "reviewer": [],
-        "owner": [],
-        "note": "Inget prov för det yngre utseendet till dealerns kort. Liggarna: Kling 4 med bankens giv till samma plats som referens höll för D (b19, handboken 3.2), men Pamelas D.C1 är bara variantgodkänd och hennes D.C2-giv underkänd, så ingen rakt godkänd referens finns. Hålkortet (D.C2) landar stängt, som planen säger."
+        "orders": ["paow-giv-2-1-d-01", "paow-giv-2-1-d-c2-01", "paow-giv-2-1-d-c2-02", "paow-giv-2-1-d-c2-03"],
+        "reviewer": ["paow-giv-2-1-d-01 t1 (WAN 3, D.C1, vändning vid platsen): mätt, lagt i skokortets storlek, vänt i luften, krymper till hälften", "paow-giv-2-1-d-c2-01 t1 (Kling 4, mall 6, hålkortet stängt): inte användbar, blått syns 34–44, kortet +140 %", "paow-giv-2-1-d-c2-02 t1 (WAN 3, mall 6): inte användbar, skons kort tryckt, kortet 89 px fel", "paow-giv-2-1-d-c2-03 (Kling 4, mall 7: läggs plant framför skon och skjuts), två tagningar: pågår"],
+        "owner": [
+          { "take": "paow-giv-2-1-d-01-01-deal", "words": "Jakob 2026-11-13: Den är mycket bra." }
+        ],
+        "note": "Dealerns kort: D.C1 landar öppet, hålkortet D.C2 stängt (turn plan, som Placering säger per kort). Jakob godkände dealerns första kort med WAN 3. Hålkortet stängt föll två gånger med mall 6 (kortet bars lutat så att blått syntes och bytte storlek); mall 7 lägger det plant framför skon och skjuter det till platsen (SAY.layAndSlide), och paow-giv-2-1-d-c2-03 är dess första prov. Ingen rakt godkänd referensfilm finns till dealerns platser."
       },
-      "setBy": "huvudagenten (dealer-94), ifyllt ur kvitton, protokoll och handbok",
+      "setBy": "dokumentagenten på huvudagentens uppdrag (dealer-94), ur kvittona, motions/ och node tools/verdicts-per-method.ts paow",
       "setAt": "2026-11-13"
     },
     {
@@ -171,12 +172,7 @@
       "shape": "ROUND_TRIP",
       "reference": "ingen",
       "extra": null,
-      "evidence": {
-        "orders": [],
-        "reviewer": [],
-        "owner": [],
-        "note": "Släp från ankare 2.2 höll till plats 1 för det tidigare utseendet (WAN 3, 6 s, stängt; cirka 7 av 9, b9-b17) men föll till plats 4 och 7 (handboken 3.4). För det yngre utseendet håller inget ankare 2.2 än."
-      },
+      "evidence": { "orders": [], "reviewer": [], "owner": [], "note": "Släp från ankare 2.2 höll till plats 1 för det tidigare utseendet (WAN 3, 6 s, stängt; cirka 7 av 9, b9-b17) men föll till plats 4 och 7 (handboken 3.4). För det yngre utseendet håller inget ankare 2.2 än." },
       "setBy": "huvudagenten (dealer-94), ifyllt ur kvitton, protokoll och handbok",
       "setAt": "2026-11-13"
     },
@@ -193,12 +189,7 @@
       "shape": null,
       "reference": "ingen",
       "extra": null,
-      "evidence": {
-        "orders": [],
-        "reviewer": [],
-        "owner": [],
-        "note": "Retur som egen film från en landningsbild är oprövad (handboken 3.5). Returen till 2.1 kommer i dag med given tur och retur; granskaren gav de flesta en knytnäve i brösthöjd, men Jakob har godkänt flera."
-      },
+      "evidence": { "orders": [], "reviewer": [], "owner": [], "note": "Retur som egen film från en landningsbild är oprövad (handboken 3.5). Returen till 2.1 kommer i dag med given tur och retur; granskaren gav de flesta en knytnäve i brösthöjd, men Jakob har godkänt flera." },
       "setBy": "huvudagenten (dealer-94), ifyllt ur kvitton, protokoll och handbok",
       "setAt": "2026-11-13"
     },
@@ -240,34 +231,46 @@
       "id": "utgang",
       "step": "UTGANG",
       "seats": null,
-      "status": "saknas",
-      "model": null,
-      "style": null,
-      "seconds": null,
-      "takes": null,
+      "status": "prov",
+      "model": "wan3",
+      "style": "KORT",
+      "seconds": 4,
+      "takes": 1,
       "turn": null,
       "shape": null,
       "reference": "ingen",
       "extra": null,
-      "evidence": { "orders": [], "reviewer": [], "owner": [], "note": "Steget finns i Beställ sedan 2026-11-13 (ankare 2.1 till 1), oprövat. Pamelas pamela-ready-idle-exit-02 är underkänd; Jakob kallade den möjlig variant spelad baklänges (HANDOFF)." },
-      "setBy": "huvudagenten (dealer-94), ifyllt ur kvitton, protokoll och handbok",
+      "evidence": {
+        "orders": ["paow-utgang-01", "paow-utgang-02"],
+        "reviewer": ["paow-utgang-01 t1 (WAN 3, mall 7): efterarbetad, granskning pågår", "paow-utgang-02 t1: OSÄKER (anropet kan ha gått), läggs inte om"],
+        "owner": [
+          { "take": "paow-utgang-baklanges-01", "words": "Jakob 2026-11-13: godkänd i labbet." }
+        ],
+        "note": "Ankare 2.1 till 1: handen släpper kortet i skon och går till vila. Spelet har i dag en nödlösning, paow-utgang-baklanges-01 (hennes godkända ingång spelad baklänges); uttaget ur skon baklänges föll för Pamela. Den beställda utgången prövas med mall 7."
+      },
+      "setBy": "dokumentagenten på huvudagentens uppdrag (dealer-94), ur kvittona, motions/ och node tools/verdicts-per-method.ts paow",
       "setAt": "2026-11-13"
     },
     {
       "id": "halkort",
       "step": "HALKORT",
       "seats": null,
-      "status": "saknas",
-      "model": null,
-      "style": null,
-      "seconds": null,
-      "takes": null,
+      "status": "prov",
+      "model": "wan3",
+      "style": "KORT",
+      "seconds": 5,
+      "takes": 1,
       "turn": null,
       "shape": null,
       "reference": "ingen",
       "extra": null,
-      "evidence": { "orders": [], "reviewer": [], "owner": [], "note": "Steget finns i Beställ sedan 2026-11-13 (från vila, hålkortet vänds upp, handen tillbaka till vila), oprövat. Vändningen är handbokens vändning A (3.3), som ingen film i liggarna visar." },
-      "setBy": "huvudagenten (dealer-94), ifyllt ur kvitton, protokoll och handbok",
+      "evidence": {
+        "orders": ["paow-halkort-01", "paow-halkort-02", "paow-halkort-03"],
+        "reviewer": ["paow-halkort-01 t1 (WAN 3, mall 6, båda dealerkorten ritade): inte användbar, handen längst från skon lyfter båda korten 139 px", "paow-halkort-02 (WAN 3, mall 7, bara hålkortet ritat): pågår", "paow-halkort-03 (Kling 4, mall 7): pågår"],
+        "owner": [],
+        "note": "Hålkortet vänds upp från vila och handen går tillbaka till vila. Med båda korten ritade lyfte hon båda (paow-halkort-01); från mall 7 har bilderna bara hålkortet. WAN 3 och Kling 4 prövas sida vid sida."
+      },
+      "setBy": "dokumentagenten på huvudagentens uppdrag (dealer-94), ur kvittona, motions/ och node tools/verdicts-per-method.ts paow",
       "setAt": "2026-11-13"
     },
     {

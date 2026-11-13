@@ -1,0 +1,54 @@
+{
+  "schemaVersion": 1,
+  "id": "paow-utgang-01-01",
+  "dealer": "paow",
+  "source": {
+    "path": "assets/motions/paow-utgang-01-01/source.mp4",
+    "sha256": "5b33e823b3d363a09d34aa6d71bc75430b4e1b9f509725c87a10f71857177eb4",
+    "bytes": 10879439,
+    "width": 1764,
+    "height": 1174,
+    "fps": 30,
+    "frames": 118,
+    "provider": "Runway MCP server (app account credits)",
+    "model": "wan3"
+  },
+  "motion": {
+    "kind": "RETURN",
+    "from": "READY",
+    "to": "IDLE",
+    "pass": false,
+    "basis": "SOURCE_FRAME_REVIEW"
+  },
+  "review": {
+    "decision": "ACCEPTED",
+    "basis": "Inte granskad av Jakob: förd in från beställningen paow-utgang-01, tagning 1 (tools/register-order.ts). Oberoende rutgranskning: tools/film-review.md.",
+    "limitations": "I inkorgen: spelas bara där steget inte har någon annan film, tills Jakob dömer den.",
+    "colorDoesNotProvePhysicalSide": true,
+    "userAccepted": false,
+    "productionReady": false,
+    "provisional": {
+      "by": "huvudagenten och en oberoende granskare",
+      "at": "2026-11-13T07:05:24.113Z",
+      "mandate": "Jakob 2026-11-13: \"jag måste sova och du får granska och godkänna alla klipp.\"",
+      "note": "Utgången: handen lämnar skon och går till vila. Blicken går ned mot skon och kommer upp igen, huvudet rör sig; kortet i skons öppning är gult hela filmen. Börjar på ankare 2.1 och slutar inom 1,2 px från ankare 1. Ersätter nödlösningen med ingångsfilmen baklänges."
+    }
+  },
+  "order": {
+    "id": "paow-utgang-01",
+    "take": 1,
+    "path": "data/orders/paow-utgang-01.json",
+    "orderSha256": "9db6866ba0b8368187adda07b248127e4c59eaffa0c1ebd7dbb539b0dd1e86dd",
+    "receipt": "assets/orders/paow-utgang-01/receipt.json",
+    "taskId": "200e9684-2d5e-4981-9b01-c74276ce5a83",
+    "delivered": {
+      "path": "assets/orders/paow-utgang-01/take-1/after.mp4",
+      "sha256": "5b33e823b3d363a09d34aa6d71bc75430b4e1b9f509725c87a10f71857177eb4"
+    }
+  },
+  "postProcessing": "none",
+  "generationRef": "assets/motions/paow-utgang-01-01/generation.json",
+  "jobRef": "data/clip-jobs.json",
+  "scoutIntegrated": false,
+  "published": false
+}
