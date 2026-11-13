@@ -34,8 +34,12 @@ export const FLIP_ABOUT: Record<FlipAxis, string> = {
   FREE: 'Ingen bestämd kant: handen vänder kortet i luften som en människa kan, och kortet behåller sin storlek.',
   LONG_EDGE: 'Som bankens filmer gör i dag.',
 };
-/** The turn a new deal starts with: at the place for a deal from 2.1 (Jakob 2026-11-13), or where the plan turns it, else free. */
-export const defaultFlip = (step: string, turnAt?: 'AIR' | 'PLACE' | null): FlipAxis => (step === 'GIV-2.1' || turnAt === 'PLACE' ? 'AT_PLACE' : 'FREE');
+/**
+ * The turn a new deal starts with: where the plan turns it (Placering, "Var kortet vänds": at the place, or in the air as a
+ * hand can). Jakob 2026-11-13: the orders are driven from Placering, so the plan's word rules here too; his six steps (the
+ * turn at the place) are chosen there per card, not written over the plan by the step.
+ */
+export const defaultFlip = (_step: string, turnAt?: 'AIR' | 'PLACE' | null): FlipAxis => (turnAt === 'PLACE' ? 'AT_PLACE' : 'FREE');
 
 /**
  * Which hand deals. The shoe stands at the right of the picture, by her left hand; both anchors 2.1 and 2.2 show that hand

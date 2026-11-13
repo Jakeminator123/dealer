@@ -210,9 +210,12 @@ test('the hand: left, right or handbyte (left to right), stored as the plan stor
   assert.deepEqual(handsOf('RH'), { hand: 'RH', pass: false });
   assert.equal(handChoiceOf({ hand: 'LH', pass: true }), 'PASS');
   assert.equal(handChoiceOf({ hand: 'LH' }), 'LH', 'an older order without pass is left all the way');
-  assert.equal(defaultFlip('GIV-2.1'), 'AT_PLACE', 'a deal from 2.1 turns at the place (Jakob 2026-11-13)');
+  // Placering rules (Jakob 2026-11-13, "vi ska beställa via den primärt"): the plan's "Var kortet vänds" sets the turn.
+  assert.equal(defaultFlip('GIV-2.1'), 'FREE', 'without the plan\'s word the hand turns it as it can');
+  assert.equal(defaultFlip('GIV-2.1', 'AIR'), 'FREE');
   assert.equal(defaultFlip('GIV-2.2'), 'FREE');
-  assert.equal(defaultFlip('GIV-2.2', 'PLACE'), 'AT_PLACE', 'where the plan turns the card at its place');
+  assert.equal(defaultFlip('GIV-2.1', 'PLACE'), 'AT_PLACE', 'where the plan turns the card at its place');
+  assert.equal(defaultFlip('GIV-2.2', 'PLACE'), 'AT_PLACE');
   const order = { schemaVersion: 1, id: 'x', title: 'x', dealer: 'paow', kind: 'FILM', step: { key: 'GIV-2.1' }, pictures: [], generation: {}, prompt: {}, takes: 1, cost: {}, reference: {}, status: 'UTKAST', approval: null, notes: [] };
   const motion = { grip: 'PINCH', hand: 'RH', pass: true, turn: true, flipAxis: 'AT_PLACE', target: 'P1.C1', side: 'FRONT', fromPlan: false };
   assert.match(validateOrder({ ...order, motion }).errors.join(' '), /handbyte går från vänster hand till höger/);

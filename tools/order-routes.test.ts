@@ -256,7 +256,8 @@ test('a deal: the hand, handbyte and how the card lands, defaulted from the plan
   assert.deepEqual([m.hand, m.pass, m.side, m.turn, m.fromPlan, m.flipAxis], ['LH', false, 'FRONT', true, true, 'FREE']);
   const sheet = promptFor({ dealer: list.dealers[1], step: 'GIV-2.2', model: 'wan3', motion: m, place: { x: seats['P1.C1'].centre[0], y: seats['P1.C1'].centre[1] }, style: 'KORT' });
   assert.equal(one.order.prompt.text, sheet.text, 'the sheet shows exactly what is stored');
-  assert.equal((await call('POST', '/api/orders', { body: { dealer: 'paow', step: 'GIV-2.1', target: 'P4.C1' } })).json.order.motion.flipAxis, 'AT_PLACE', 'from 2.1 the card turns at the place');
+  // The plan of the checkout says turnAt AIR for every card, so a new deal from 2.1 turns as the hand can; PLACE there gives AT_PLACE.
+  assert.equal((await call('POST', '/api/orders', { body: { dealer: 'paow', step: 'GIV-2.1', target: 'P4.C1' } })).json.order.motion.flipAxis, 'FREE', 'the turn follows Placering');
 
   // Closed, with handbyte; then changed on the draft.
   const closed = (await call('POST', '/api/orders', { body: { dealer: 'paow', step: 'GIV-2.2', target: 'P2.C1', side: 'BACK', pass: true, style: 'UTFÖRLIG' } })).json;
