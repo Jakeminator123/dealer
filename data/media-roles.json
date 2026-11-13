@@ -3800,6 +3800,20 @@
           "note": "Scenbanans prov 2026-11-13 efter Jakobs ord att det ritade kortet kletar: kortet ritades för rutan efter den som filmen visade, så filmens gula kort stack fram bredvid; nu ritas det för rutan som visas. Given till plats 4 ruta för ruta före och efter, i dubbel fart (förval sedan samma dag) och i vanlig fart."
         },
         {
+          "id": "paow-prov-rok-over-bordet",
+          "role": "prov",
+          "name": "Rök över bordet",
+          "proof": "rok-over-bordet",
+          "note": "Scenbanans prov 2026-11-13 efter Jakobs ord om låg rök runt bordet: tre skikt strax över filten, tätast runt kanten och över relingen, tunt i mitten där korten läses. Stillbilder vid tre styrkor i Profilval 1, en i Spelhålan och åtta sekunder film. Valet Rök över bordet, av från början; inte oberoende granskat."
+        },
+        {
+          "id": "paow-prov-hyllan-vid-dealern",
+          "role": "prov",
+          "name": "Hyllan vid dealern",
+          "proof": "hyllan-vid-dealern",
+          "note": "Scenbanans prov 2026-11-13: i champagnefilmen slutar armen i luften ovanför bordskanten, eftersom filmens generator tänkte sig ett bord där. Med en hylla vid hennes högra sida går armen ned bakom den och glaset lyfts upp över den. Samma film utan och med. Valet Hylla vid dealern, av från början; en enkel skiva som behöver en kant om den ska vara kvar."
+        },
+        {
           "id": "paow-profil-kavaj",
           "role": "arbetsmaterial",
           "name": "Profilbild i kavaj",
