@@ -253,12 +253,10 @@ svaren står i "Jakobs besked som gäller" och i "Nästa steg", punkt 0. Det hä
      (kortagenten). Inspelaren: `D:/dealer-scratch/tmp/huvudagent11/chefsfilm/inspelare/` (`node alla.mjs <namn>`: en
      tagning är ett kommando, varje nyckel som kan ändras skrivs ut i adressen, vilofilmerna väljs av inspelaren, och
      mixen för varje replik till samma styrka). Granskaren har inte hört filmerna; Jakob bör lyssna.
-   - **Korten:** en linje (Jakobs besked): det ritade kortet hela vägen, valt av en blind granskare som gav det 2/5
-     som det stod. Gjort sedan dess: ett kort vid skon och aldrig två, trycket mjukat och dämpat till filmens skärpa,
-     vändningen omfärgad på plats, filmens ljus som ett plan över kortet, skuggan under fingrarna sänkt (Prov
-     `kort-en-linje`, ett ark per steg). Kvar, hos kortagenten (underagent; planen och verktygen i
-     `D:/dealer-scratch/tmp/huvudagent11/kort2/` och `D:/dealer-scratch/tmp/kortagent3/`): vändningen (7 av 32
-     rutor fel), landningen, och plats 1 och 2, som saknar ritat kort i handen tills deras tagningar har spårats om.
+   - **Korten:** linjen är filmens eget kort i handen och i skon, ritat när det ligger (Jakob kl. 19.13; "Kända
+     brister" har vad som syns och vem som har det). Nästa: kortbyggarens steg 0 (toningen när kortet lägger sig) till
+     en granskare och sedan in i spelet; steg 1 (pålägget för baksidan) som labbprov till Jakob. Eftermiddagens ark
+     över det ritade kortet i handen ligger kvar i Prov `kort-en-linje`.
    - **Scenen** (`dealer-f6`): kvar är skarven talfilm till ingång (den enda fog filmens granskare såg; en ändring
      ligger prövad i arbetskopia), vilan som växlar i Scen som i spelet, en riktig 360°-bild till de fyra nya rummen
      (vridna 20° syns bildens speglade kant), och kant och kylare på hyllan om Jakob vill ha den.
@@ -344,10 +342,11 @@ svaren står i "Jakobs besked som gäller" och i "Nästa steg", punkt 0. Det hä
 - **Korten börjar om** (kl. 19.13): "På sajten har det nästan blivit värre, eftersom korten fortfarande renderas på
   [Vercels] URL. Du kanske kan skicka en underagent ... för att undersöka vad som orsakar detta. Den bör också gå
   igenom ignorerade sökvägar för att hitta orsaken till att vi inte kan behålla det blått och gult, så att vi kan
-  börja om med att hantera överlägg, pålägg och underlägg med kort." En oberoende utredare läser hela kedjan, på
-  kopian och här. Inget mer lagas i den ritade linjen innan utredningen är läst: kortagentens steg 3 (vändningen)
-  ligger oskrivet i `D:/dealer-scratch/tmp/kortagent3/stage3/`, och lagren som de är i dag står i
-  `D:/dealer-scratch/tmp/kortagent3/LAGREN.md`.
+  börja om med att hantera överlägg, pålägg och underlägg med kort." Det som följde samma kväll: en oberoende utredning
+  (`D:/dealer-scratch/tmp/kortutredning/RAPPORT.md`), linjen att filmens eget kort står kvar i handen och i skon och
+  att bara liggande kort ritas (det filmen inte kan visa: en film lägger ett kort och nästa film visar det inte), en
+  enda brytare för ritade kort, och Paow som den dealer en ny besökare möter (kopian öppnade på den pausade Pamela).
+  Hans tidigare ord om en linje (punkten ovan) gäller fortfarande som form: en linje, inga val åt honom.
 - **Kopian till chefen** (kl. 15.38 till talbanan): "när jag vill kunna komma till en supenekle mockupsida med
   lösenordet "john". Sedan valet att spela i casinot eller komma till studio/labbet … Eller bara samma radda av
   alternativ som finns på vänsterspalten". Och kl. 16.30 till scenbanan: "Se nu till att inga luckor i nodträdet
@@ -425,27 +424,34 @@ svaren står i "Jakobs besked som gäller" och i "Nästa steg", punkt 0. Det hä
 
 ## Kända brister
 
-- **De ritade korten** (Jakob 2026-11-13: "Det lixom kletar fast sig på korten", "linjer flyger dit och dit", och
-  till en bild av kortet vid skon ".. och korten vafan. De är ju itne bra"). En linje gäller sedan samma dag (Jakobs
-  besked): det ritade kortet hela vägen, i storlek 1,2, med en brytare i spelet; reglerna står i SYSTEM, "Ritade kort".
-  En blind granskare gav linjen 2/5 som den stod (9 av 32 rutor klart fel) och filmens granskare såg sedan tre hela
-  tagningar. Det som är kvar, med ägare (kortagenten, en underagent till huvudagenten, om inget annat sägs):
-  - Trycket tänds på kortet i en enda ruta när kortet lämnar skons fönster, vid varje dragning; det ska tonas in.
-  - Gula hörn i skons fönster i 3–7 rutor när handen kommer tillbaka (13,6 s och 39,2 s i filmen).
-  - Vändningen: 7 av 32 rutor fel enligt kortagentens egen räkning (den tunna flisan när kortet står på kant, gula
-    och blå spetsar vid tummen).
-  - Landningen: dubbel nederkant och ingen kontaktskugga; det liggande kortet är skarpare än filmen.
-  - Dealerns första kort är dubbelt så stort med baksidan upp som när det ligger (80 mot 41 bildpunkter): filmens
-    eget kort ritas i filmens storlek medan hennes fingrar ligger på det. Förslag, inte byggt: ett kort som ligger på
-    sin plats ritas i liggande storlek.
-  - Plats 1 och 2 visar filmens eget kort omfärgat i handen (svart, utan tryck), eftersom deras tagningar saknar
-    spår i handen; de spåras om en i taget och får då ritat kort som de andra.
-  - Den ljusgrå randen strax utanför det ritade kortet under fingrarna står kvar: där den syns sticker filmens kort
-    ut utanför det ritade, och regeln som behåller den hindrar hål mot filten (scenbanans utredning 2026-11-13).
-  - Sko i 3D (ett prov i Scen, inte spelet) klipper bort hennes hand i skons ruta. Pamelas spår är inte gjorda om
-    med dagens regler.
-  Uppskattat arbete för det som är kvar: en och en halv till två dagar, med varje steg visat på samma rutor (Prov
-  `kort-en-linje`) innan nästa.
+- **Korten** (Jakob 2026-11-13: "Det lixom kletar fast sig på korten", "linjer flyger dit och dit", ".. och korten
+  vafan. De är ju itne bra", och kl. 19.13 "nästan blivit värre ... behålla det blått och gult ... börja om"). Linjen
+  sedan samma kväll: filmens eget kort i hennes hand och i skons fönster, ritat kort först när det ligger (SYSTEM,
+  "Ritade kort"). Utredningen som ledde dit, med varje påstående märkt som sett, mätt eller läst:
+  `D:/dealer-scratch/tmp/kortutredning/RAPPORT.md`; bladet åt Jakob är Prov `korten-tre-satt`. Det ritade kortet i
+  handen (eftermiddagens linje, adressordet `kort=hand`) lagas inte vidare: spåret är en färgsiluett som blir en kil
+  under fingrarna, och ett kort som rör sig 7–11 bildpunkter per ruta kräver exakt takt. Kortagentens sista steg dit
+  (vändningen) ligger oskrivet i `D:/dealer-scratch/tmp/kortagent3/stage3/`. Det som syns med linjen, sett i en hel
+  runda i fart 1 (`D:/dealer-scratch/tmp/huvudagent11/chefsfilm/bilder/liggande-v6-bytet.jpg` och
+  `liggande-v6-sommar.jpg`):
+  - Kortet är gult och blått i handen. Omstartens första steg, pålägget, färgar filmens eget kort i filmens egna
+    bildpunkter: baksidan gul till mörk först, sedan framsidan blå till papper, sist valören på liggande kort
+    (skattat 2,5–3 dagar med granskning; provet utanför scenen ligger i samma Prov).
+  - Det blå kortet blir det ritade vita på en enda ruta när kortet ligger, 16 gånger per runda, ibland när ingen hand
+    rör det (plats 4, dealerns öppna kort). Ska bli en toning genom kortnyckeln över 6–8 rutor (kortbyggaren, steg 0).
+  - Det andra kortet till en plats läggs av filmen ovanpå det första och täcker det i knappt en halv sekund; sedan
+    visas paret utspritt, och kortet flyttar sig ett steg (cirka 12 bildpunkter) på en ruta. Filmerna är desamma för
+    första och andra kortet.
+  - Hålkortet ligger med ritad mörk baksida och blir filmens gula när vändfilmen börjar. Pålägget för baksidan
+    stänger det.
+  - Dealerns första kort ligger i filmen med baksidan upp 1,7 gånger för stort innan det vänds (filmens eget fel i
+    den tagningen).
+  - Plats 1 (spåret märkt `hand: false`): det ritade kortet kommer en bit från där filmens blå låg.
+  - Pamelas filmer lägger kortet i 0,89 av planens storlek, så det ritade är lite större än det blå det ersätter; hon
+    är pausad.
+  Kortbyggaren (underagent till huvudagenten) arbetar i arbetskopior i `D:/dealer-scratch/tmp/kortbyggare/` och lämnar
+  varje steg som en mapp med LASMIG; inget går in i spelet förrän en oberoende granskare har sett det, och pålägget
+  inte förrän Jakob har sett det i Prov.
 - **Produktionslistan och fallna tagningar:** raden för plats 6 står som "levererad, efterarbetas och granskas"
   fast alla fjorton tagningarna är bedömda och fallna. En tagning som beställaren själv mätte bort ligger kvar på
   MÄTT med domen i kvittots `review` (GRANSKAD är den oberoende granskarens), och listan räknar en order som på
