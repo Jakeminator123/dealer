@@ -19,6 +19,9 @@ jobs:
           node-version: 24.21.0
           cache: npm
       - run: npm ci
-      - run: npm run check
+      # The check scans the pushed commits (secrets, media, large files, the canonical documents) and then runs every test
+      # that npm test runs (TESTS in tools/publication-check.ts). Tests that need FFmpeg or the bank's films skip here.
+      - name: Publication check and all tests
+        run: npm run check
         env:
           PUBLICATION_BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
