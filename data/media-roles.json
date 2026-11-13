@@ -3772,6 +3772,13 @@
           "note": "Kortutredningen 2026-11-13 efter Jakobs ord kl. 19.13 (behålla det blå och gula, börja om med överlägg, pålägg och underlägg): samma giv med filmens egna kort, med linjen som gäller nu (filmens eget kort i handen och i skon, ritat när det ligger) och med eftermiddagens ritade kort i handen. Sist ett prov utanför scenen på pålägget, där filmens gula kort färgas mörkt."
         },
         {
+          "id": "paow-prov-palagg-baksidan",
+          "role": "prov",
+          "name": "Pålägget: baksidan",
+          "proof": "palagg-baksidan",
+          "note": "Kortbyggarens första steg i omstarten för korten efter Jakobs ord 2026-11-13 kl. 19.13: filmens eget gula kort färgat mörkt i filmens egna bildpunkter, i skons fönster, i dragningen, i handen och i vändningens första halva. En giv per plats som film i filmad fart, och blad på samma rutor som de andra kortproven. Ligger inte i spelet; framsidan är nästa steg."
+        },
+        {
           "id": "paow-prov-jamnat-ljus",
           "role": "prov",
           "name": "Jämnat ljus mellan filmer, och ren kant runt håret",
