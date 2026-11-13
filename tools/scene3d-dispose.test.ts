@@ -5,6 +5,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 let readyAtStart = 2; // readyState of a new element: 2 = its first frame is decoded
+let refuse: string | null = null; // the name of the error a film with sound is refused with when it is started, as a browser does
 // A video element as far as the queue uses it. An EventTarget, so listeners added with a signal really go when it aborts.
 // BareVideo: a browser without frame requests (three and the queue test for the method itself).
 class BareVideo extends EventTarget {
@@ -13,7 +14,7 @@ class BareVideo extends EventTarget {
   get src() { return this.attrs.get('src') ?? ''; } set src(v: string) { this.attrs.set('src', v); }
   removeAttribute(name: string) { this.attrs.delete(name); }
   load() { this.loads++; }
-  play() { this.paused = false; return Promise.resolve(); }
+  play() { if (refuse && !this.muted) return Promise.reject(Object.assign(Error(refuse), {name: refuse})); this.paused = false; return Promise.resolve(); }
   pause() { this.paused = true; }
   // the browser presents a frame: every waiting request is answered once
   present(mediaTime = this.currentTime) { const calls = [...this.requests.values()]; this.requests.clear(); for (const call of calls) call(0, {mediaTime}); }
@@ -164,6 +165,22 @@ test('a spoken line is never hurried, and the tempo leaves it and a rest film al
   players.hurry(1.5); assert.equal(made.find(v => v.src === 'vila.mp4')!.playbackRate, 1.5, 'a rest film can be played out faster before a deal');
   players.play([{path: 'giv.mp4'}], {cut: true}); await settle(); assert.equal(made.find(v => v.src === 'giv.mp4')!.playbackRate, 2, 'a deal takes the tempo');
   players.tempo(1); assert.equal(made.find(v => v.src === 'giv.mp4')!.playbackRate, 1); players.dispose();
+});
+
+test('a film with sound that the browser refuses to start is shown muted; a start that a pause interrupted is left standing', async () => {
+  withFrameCalls = true; readyAtStart = 2; const {players} = queue(), wait = () => new Promise(resolve => setTimeout(resolve, 90));
+  const nav = (globalThis as {navigator?: object}).navigator ?? ((globalThis as {navigator?: object}).navigator = {}), had = Object.getOwnPropertyDescriptor(nav, 'userActivation');
+  Object.defineProperty(nav, 'userActivation', {value: {hasBeenActive: true}, configurable: true}); // the page has been touched: a line is started with its sound
+  try {
+    players.play([{path: 'hord.mp4', sound: true}]); await wait();
+    assert.equal(made.find(v => v.src === 'hord.mp4')!.muted, false, 'a line is heard where the browser lets it');
+    refuse = 'NotAllowedError'; players.play([{path: 'tal.mp4', sound: true}], {cut: true}); await wait();
+    const tal = made.find(v => v.src === 'tal.mp4')!;
+    assert.equal(tal.muted, true, 'refused with sound: muted'); assert.equal(tal.paused, false, 'and running, so the round goes on');
+    refuse = 'AbortError'; players.play([{path: 'tal2.mp4', sound: true}], {cut: true}); await wait();
+    const tal2 = made.find(v => v.src === 'tal2.mp4')!;
+    assert.equal(tal2.muted, false, 'another refusal is not answered by muting'); assert.equal(tal2.paused, true, 'and the film is not started again');
+  } finally { refuse = null; if (had) Object.defineProperty(nav, 'userActivation', had); else delete (nav as {userActivation?: unknown}).userActivation; players.dispose(); }
 });
 
 // ---- where a part starts (enter() in the queue): its first frame is drawn before its film runs ----------------------------

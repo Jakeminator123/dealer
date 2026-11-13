@@ -652,7 +652,11 @@ export function createPlayers(onShow: (texture: T.Texture, path: string) => void
     v.muted = !(part.sound === true && globalThis.navigator?.userActivation?.hasBeenActive === true);
     v.playbackRate = speedOf(part, true);
     let run = false;
-    const start = () => { if (run || my !== token) return; run = true; if (!paused) v.play().catch(() => {}); };
+    // A film that may not be heard is still shown: a browser that refuses to start a film with sound (one that wants a touch of
+    // its own for every film that is heard) gets it muted instead, so that a round is never left standing on a line's first frame.
+    // Only that refusal: a start that a pause interrupted is refused too, and that film is meant to stand.
+    const start = () => { if (run || my !== token) return; run = true; if (!paused) v.play().catch((error: unknown) => {
+      if ((error as {name?: string} | null)?.name === 'NotAllowedError' && !v.muted && my === token && !paused) { v.muted = true; v.play().catch(() => {}); } }); };
     // Waiting on its first frame already: shown at once, so the join costs no frame, and the film starts to run when that frame has
     // been drawn, not here. Started here, it had run on before the picture was drawn (a join made by the timer above falls between
     // two drawings, and a drawing can come late), and a frame among the part's first two was never seen: at 13 of 35 joins in a
