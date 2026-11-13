@@ -2295,6 +2295,13 @@
           "note": "Fem 360°-rum ur bilder som redan fanns (dealer-f6, 2026-11-13, Poly Haven CC0, inga betalda anrop): Banketthallen, Balsalen, Foajén, Teatern och Loungen (svagast: rörig). De står i rumslistan men väljs inte av spelet."
         },
         {
+          "id": "pamela-prov-monaco-och-spelhalan",
+          "role": "prov",
+          "name": "Monaco och Spelhålan",
+          "proof": "monaco-och-spelhalan",
+          "note": "Fyra rum ur en bred Runway-bild var (dealer-f6, 2026-11-13, inga betalda anrop i steget): Monaco 1930, Monaco natt, Spelhålan och Spelhålan svartvit, med filmer över folket. Står i labbet, inte i spelet."
+        },
+        {
           "id": "pamela-drawn-01",
           "role": "arbetsmaterial",
           "name": "Kortet utdraget",

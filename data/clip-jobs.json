@@ -6921,6 +6921,20 @@
       }
     },
     {
+      "id": "paow-vila-17-02-blixt",
+      "kind": "IDLE",
+      "from": "IDLE",
+      "to": "IDLE",
+      "clip": "paow-vila-17-02",
+      "frames": [
+        0,
+        192
+      ],
+      "purpose": "Champagnefilmen med blixt: samma film som paow-vila-17-02, och medan hon dricker blixtrar det till och rummet och bordet blir spelhålan i svartvitt i en sekund (motion.effect; Jakob 2026-11-13).",
+      "dealer": "paow",
+      "model": "kling-4"
+    },
+    {
       "id": "paow-giv-2-2-p6-02-01-deal",
       "kind": "DEAL",
       "from": "READY-B",

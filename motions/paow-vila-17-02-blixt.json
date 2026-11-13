@@ -1,0 +1,74 @@
+{
+  "schemaVersion": 1,
+  "id": "paow-vila-17-02-blixt",
+  "dealer": "paow",
+  "source": {
+    "path": "assets/motions/paow-vila-17-02/source.mp4",
+    "sha256": "78bb04903af6ce2b2aafc480ab7c50280f27decee78709ca802833e20ed82447",
+    "bytes": 8014699,
+    "width": 1764,
+    "height": 1174,
+    "fps": 24,
+    "frames": 193,
+    "provider": "Runway MCP server (app account credits)",
+    "model": "kling-4"
+  },
+  "motion": {
+    "kind": "IDLE",
+    "from": "IDLE",
+    "to": "IDLE",
+    "pass": false,
+    "basis": "SOURCE_FRAME_REVIEW",
+    "segment": {
+      "clip": "paow-vila-17-02",
+      "frames": [
+        0,
+        192
+      ]
+    },
+    "idle": {
+      "weight": 2,
+      "calm": false,
+      "label": "dricker champagne, med blixt",
+      "onRequest": false
+    },
+    "effect": {
+      "kind": "room-flash",
+      "room": "spelhalan-sv",
+      "at": 3.83,
+      "seconds": 1,
+      "mono": true
+    }
+  },
+  "review": {
+    "decision": "ACCEPTED",
+    "basis": "Inte granskad av Jakob: samma film som paow-vila-17-02 (oberoende granskad 3/5), med en effekt i scenen medan den spelas.",
+    "limitations": "I inkorgen: spelas bara där steget inte har någon annan film, tills Jakob dömer den.",
+    "userAccepted": false,
+    "productionReady": false,
+    "acceptedAs": "VARIANT",
+    "provisional": {
+      "by": "huvudagenten med en oberoende granskare (champagnefilmen)",
+      "at": "2026-11-13T16:33:14.845Z",
+      "mandate": "Jakob 2026-11-13 kl. 15.31: \"jag skulle vilja direkt ha en varaint på denna video ... medans hon dricker så blixtrar det till och i bakgrunden och bordet kanske växlar allt om till att bli den där spelhålemiljön i svartvitt för typ en sekund\"",
+      "note": "Samma film som paow-vila-17-02 (granskaren 3/5), med blixten 3,83 s in, medan glaset är vid läpparna: en vit blixt, spelhålan i svartvitt i en sekund och en blixt tillbaka. Effekten är sedd i bild av scenbanan och trailersessionen (Prov blixten); en oberoende granskning av effekten på just den här filmen återstår."
+    }
+  },
+  "order": {
+    "id": "paow-vila-17",
+    "take": 2,
+    "path": "data/orders/paow-vila-17.json",
+    "orderSha256": "97f4738c750ea95572d277214ab45e3ee5e6ae5c3a2de9c737fc225ce3d4f4bc",
+    "receipt": "assets/orders/paow-vila-17/receipt.json",
+    "taskId": "626fac54-1f3e-4c98-bc95-61b79030f00d",
+    "delivered": {
+      "path": "assets/orders/paow-vila-17/take-2/after.mp4",
+      "sha256": "78bb04903af6ce2b2aafc480ab7c50280f27decee78709ca802833e20ed82447"
+    }
+  },
+  "postProcessing": "none",
+  "generationRef": "assets/motions/paow-vila-17-02/generation.json",
+  "jobRef": "data/clip-jobs.json",
+  "scoutIntegrated": false,
+  "published": false
+}
