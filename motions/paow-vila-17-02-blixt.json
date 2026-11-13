@@ -36,7 +36,7 @@
       "kind": "room-flash",
       "room": "spelhalan-sv",
       "at": 3.83,
-      "seconds": 1,
+      "seconds": 1.2,
       "mono": true
     }
   },
@@ -48,10 +48,10 @@
     "productionReady": false,
     "acceptedAs": "VARIANT",
     "provisional": {
-      "by": "huvudagenten med en oberoende granskare (champagnefilmen)",
-      "at": "2026-11-13T16:33:14.845Z",
+      "by": "huvudagenten med en oberoende granskare (blixten)",
+      "at": "2026-11-13T17:59:04.075Z",
       "mandate": "Jakob 2026-11-13 kl. 15.31: \"jag skulle vilja direkt ha en varaint på denna video ... medans hon dricker så blixtrar det till och i bakgrunden och bordet kanske växlar allt om till att bli den där spelhålemiljön i svartvitt för typ en sekund\"",
-      "note": "Samma film som paow-vila-17-02 (granskaren 3/5), med blixten 3,83 s in, medan glaset är vid läpparna: en vit blixt, spelhålan i svartvitt i en sekund och en blixt tillbaka. Effekten är sedd i bild av scenbanan och trailersessionen (Prov blixten); en oberoende granskning av effekten på just den här filmen återstår."
+      "note": "Granskaren av effekten 4/5: läses som en blixt, ett ögonblick i en svartvit spelhåla och en blixt tillbaka, mitt i klunken; bytet döljs i det vita, hon och bordet går i grått och gränssnittet står stilla. Filmens eget fel drar helheten till 3/5: armen och glaset slutar i luften ovanför bordskanten i cirka 3 s. Efter granskningen: spelhålan står 0,2 s längre och den mellersta blixten tas bort."
     }
   },
   "order": {
