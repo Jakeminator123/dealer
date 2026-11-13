@@ -19,6 +19,11 @@ export type TableProjection = { mode:'flat'|'individual'; heading:number };
 export type PlacementPlan = { schemaVersion: 1; id: 'pamela-table'; space: 'image-normalized-bottom-up'; updatedAt: string | null; shoe: Record<View, Point>; targets: Record<string, Target>; tableProjection?:TableProjection };
 export const PLANE_HEADINGS=[-90,-45,-15,0,15,45,90] as const;
 export const VIEWS = { native: { width: 1762, height: 1174, label: 'Dator', profileId: 'v6-native', background: 'assets/lab/native.jpg' }, portrait: { width: 1080, height: 1920, label: 'Mobil', profileId: 'v6-portrait', background: 'assets/lab/portrait.jpg' } } as const;
+// The neutral backdrop of the studio's Placering view (Jakob 2026-11-13: no dealer's picture, and the table the studio uses):
+// the 3D scene's table at its home view, a neutral figure and the bank's shoe, in the view's own pixels. Built by
+// tools/placement-backdrop.ts with a receipt beside it; outside Git like all media. Only Dator has one: the scene has no home
+// view that matches the Mobil view's pixels (a separate V6 composition), so Mobil keeps its V6 picture.
+export const NEUTRAL_BACKDROP = { native: 'assets/lab/placement-backdrop/native.jpg' } as const;
 export const TARGETS = [...Array.from({length:7},(_,i)=>`P${i+1}`),'D'].flatMap(p=>[`${p}.C1`,`${p}.C2`]);
 export const PLAYER_TARGETS = TARGETS.filter(id=>id[0]==='P');
 // The card standing in the shoe's window in the lab's two background pictures: its corners in the picture's pixels, clockwise

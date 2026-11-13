@@ -1,22 +1,26 @@
 "use client";
 
-// "Det här skickas": one order exactly as it would go out. The pictures large at the top (first, in-between, last; or the
-// dealer's picture and the pose), then the exact text in full (selectable; the turn, Jakob's addition and the bans
-// marked), every argument of the call by its name, the takes and the cost against the day's cap and the balance. A draft
-// can change its turn, takes and free addition here; "Godkänn och lägg i kön" freezes it (its hash in approval), after
-// which nothing in it changes. Writes only on Jakob's click.
+// "Det här skickas": one order exactly as it would go out. One line on what it makes and its choices in words (hand,
+// closed or open, the turn), the group it belongs to with its other seats, the pictures large at the top (first,
+// in-between, last; or the dealer's picture and the pose), each with whose it is and, when a draft followed a newer anchor
+// in Material, what it was before; then the exact text in full (selectable; the parts a choice made, Jakob's addition and
+// the bans marked, from the same function the text was written with), every argument of the call by its name, the takes
+// and the cost against the day's cap and the balance. A draft can change its hand, how the card lands and turns, takes and
+// free addition here, and fetch its pictures again when something has changed; "Godkänn och lägg i kön" freezes it (its
+// hash in approval), after which nothing in it changes. Writes only on Jakob's click.
 import { ArrowLeft, Check, ClipboardCopy, RefreshCw, TriangleAlert } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import { asApiError } from "../../lib/api.ts";
 import { labUrl } from "../../lib/lab.ts";
 import { swedishMoment } from "../../lib/mode.ts";
-import { approveOrder, changeOrder, costWords, paramRows, picturesInOrder, refreshOrder, turnWords, type FlipAxis, type OrderAnswer, type OrdersAnswer } from "../../lib/orders.ts";
-import { FLIP_ABOUT, FLIP_AXES, FLIP_LABEL, MODELS, TAKES_MAX, credits, takeStates, waitWords } from "../../../src/order-model.ts";
-import { BANS_FILM, BANS_STILL, turnSentence } from "../../../src/order-prompts.ts";
+import { approveOrder, changeOrder, costWords, motionWords, paramRows, picturesInOrder, refreshOrder, storedParts, type OrderAnswer, type OrdersAnswer } from "../../lib/orders.ts";
+import { MODELS, TAKES_MAX, credits, defaultFlip, groupBudget, handChoiceOf, handsOf, seatWords, takeStates, waitWords } from "../../../src/order-model.ts";
 import { Page } from "../shell";
 import { Badge, Button, Dialog, SegmentedControl, TextArea, cn, useToast } from "../ui";
+import { FlipChoice, HandChoiceRow, LandsChoice } from "./Choices";
 import { PictureCard, StatusChip } from "./Pictures";
+import { PromptText } from "./PromptText";
 
 function Section({ title, aside, children, className }: { title: ReactNode; aside?: ReactNode; children: ReactNode; className?: string }) {
   return (
@@ -30,43 +34,12 @@ function Section({ title, aside, children, className }: { title: ReactNode; asid
   );
 }
 
-/** The text as it goes, with the turn sentence, the free addition and the bans marked (the characters are not changed). */
-function MarkedText({ answer }: { answer: OrderAnswer }) {
-  const { order } = answer;
-  const marks = useMemo(() => {
-    const list: { text: string; className: string; title: string }[] = [];
-    if (order.motion?.turn) list.push({ text: turnSentence(order.motion.flipAxis, order.motion.grip), className: "bg-brass/12 text-brass-hi", title: `Vändningen: ${FLIP_LABEL[order.motion.flipAxis]}` });
-    if (order.prompt.extra) list.push({ text: order.prompt.extra, className: "bg-variant/12 text-[#b6c6fa]", title: "Ditt tillägg" });
-    list.push({ text: order.kind === "STILL" ? BANS_STILL : BANS_FILM, className: "text-[#ef9a9a]", title: "Det som inte får hända" });
-    return list;
-  }, [order]);
-  const parts: ReactNode[] = [];
-  let rest = order.prompt.text,
-    key = 0;
-  while (rest) {
-    const hits = marks.map((m) => ({ m, at: rest.indexOf(m.text) })).filter((h) => h.at >= 0).sort((a, b) => a.at - b.at);
-    if (!hits.length) {
-      parts.push(rest);
-      break;
-    }
-    const { m, at } = hits[0];
-    if (at) parts.push(rest.slice(0, at));
-    parts.push(
-      <span key={key++} className={cn("rounded-xs", m.className)} title={m.title}>
-        {m.text}
-      </span>,
-    );
-    rest = rest.slice(at + m.text.length);
-  }
-  return <p className="select-text whitespace-pre-wrap rounded-lg border border-line bg-well px-4 py-3 font-mono text-[13px] leading-[22px] text-ink">{parts}</p>;
-}
-
-function Edit({ answer, onSaved }: { answer: OrderAnswer; onSaved: (a: OrderAnswer) => void }) {
+/** A draft's choices; mounted anew when the saved addition changes, so the field starts from what is saved. */
+function Edit({ answer, all, onSaved }: { answer: OrderAnswer; all: OrdersAnswer; onSaved: (a: OrderAnswer) => void }) {
   const { order } = answer;
   const [extra, setExtra] = useState(order.prompt.extra ?? "");
   const [busy, setBusy] = useState(false);
   const toast = useToast();
-  useEffect(() => setExtra(order.prompt.extra ?? ""), [order.prompt.extra]);
   const save = async (change: Parameters<typeof changeOrder>[1]) => {
     setBusy(true);
     try {
@@ -77,26 +50,28 @@ function Edit({ answer, onSaved }: { answer: OrderAnswer; onSaved: (a: OrderAnsw
       setBusy(false);
     }
   };
+  const m = order.motion;
+  const seat = m?.target ? all.plan?.seats[m.target] : null;
   return (
     <Section title="Ändra utkastet">
-      {order.motion?.turn ? (
-        <div className="flex flex-col gap-2">
-          <span className="text-sm text-dim">Hur kortet vänds</span>
-          <div className="flex flex-col gap-1.5">
-            {FLIP_AXES.map((axis) => (
-              <button
-                key={axis}
-                type="button"
-                disabled={busy}
-                onClick={() => axis !== order.motion!.flipAxis && void save({ flipAxis: axis as FlipAxis })}
-                className={cn("flex flex-col items-start rounded-md border px-3 py-2 text-left", axis === order.motion!.flipAxis ? "border-brass/60 bg-brass/8" : "border-line hover:border-line-strong hover:bg-raised")}
-              >
-                <span className="text-sm text-ink">{FLIP_LABEL[axis]}</span>
-                <span className="text-xs text-dim">{FLIP_ABOUT[axis]}</span>
-              </button>
-            ))}
+      {m ? (
+        <>
+          <div className="flex flex-col gap-2">
+            <span className="text-sm text-dim">Hur kortet landar</span>
+            <LandsChoice value={m.side} plan={seat?.side ?? null} disabled={busy} onChange={(side) => side !== m.side && void save({ side })} />
           </div>
-        </div>
+          <div className="flex flex-col gap-2">
+            <span className="text-sm text-dim">Hand</span>
+            <HandChoiceRow value={handChoiceOf(m)} plan={seat ? handChoiceOf({ hand: seat.hand, pass: seat.pass }) : null} disabled={busy} onChange={(c) => c !== handChoiceOf(m) && void save(handsOf(c))} />
+            {seat?.crosses && handChoiceOf(m) !== "PASS" ? <p className="text-sm text-brass-hi">Förslag: handbyte. På {seatWords(m.target)} måste vänsterhanden från skon korsa kroppen.</p> : null}
+          </div>
+          {m.side === "FRONT" ? (
+            <div className="flex flex-col gap-2">
+              <span className="text-sm text-dim">Hur kortet vänds</span>
+              <FlipChoice value={m.flipAxis} suggested={defaultFlip(order.step.key, seat?.turnAt)} disabled={busy} onChange={(axis) => axis !== m.flipAxis && void save({ flipAxis: axis })} />
+            </div>
+          ) : null}
+        </>
       ) : null}
       <div className="flex items-center gap-3">
         <span className="text-sm text-dim">Tagningar</span>
@@ -112,7 +87,7 @@ function Edit({ answer, onSaved }: { answer: OrderAnswer; onSaved: (a: OrderAnsw
   );
 }
 
-export function SendScreen({ answer, all, onBack, onSaved }: { answer: OrderAnswer; all: OrdersAnswer; onBack: () => void; onSaved: (a: OrderAnswer) => void }) {
+export function SendScreen({ answer, all, onBack, onOpen, onSaved }: { answer: OrderAnswer; all: OrdersAnswer; onBack: () => void; onOpen: (id: string) => void; onSaved: (a: OrderAnswer) => void }) {
   const { order } = answer;
   const [asking, setAsking] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -125,6 +100,15 @@ export function SendScreen({ answer, all, onBack, onSaved }: { answer: OrderAnsw
   const canApprove = draft && !answer.problems.length && !refusals.length;
   const why = answer.problems[0] ?? refusals[0] ?? null;
   const ready = answer.waiting.length > 0 && answer.waiting.every((w) => w.ready);
+  const dealer = all.dealers?.find((d) => d.id === order.dealer);
+  const parts = storedParts(order, dealer?.look, all.plan, dealer?.name ?? order.dealer);
+  const choices = motionWords(order);
+  const seatPlan = order.motion?.target ? all.plan?.seats[order.motion.target] : null;
+  const planned = seatPlan && order.motion ? { quad: seatPlan.quad, side: order.motion.side } : null;
+  // The other drafts of its group ("Alla sju"), by seat, and what the group costs against today's cap.
+  const group = order.group ? all.orders.filter((a) => a.order.group?.id === order.group!.id).sort((a, b) => (a.order.motion?.target ?? "").localeCompare(b.order.motion?.target ?? "")) : [];
+  const open = group.filter((a) => !a.order.approval);
+  const budget = group.length > 1 && all.policy && open.length ? groupBudget(order.cost, open.length, all.policy, all.day.spent, all.balance?.credits ?? 0) : null;
 
   const approve = async () => {
     setBusy(true);
@@ -176,11 +160,51 @@ export function SendScreen({ answer, all, onBack, onSaved }: { answer: OrderAnsw
       }
     >
       <div className="flex flex-col gap-7">
-        {order.summary ? <p className="font-display text-lg font-semibold leading-7 text-ink">{order.summary}</p> : null}
+        <div className="flex flex-col gap-1.5">
+          {order.summary ? <p className="font-display text-lg font-semibold leading-7 text-ink">{order.summary}</p> : null}
+          {choices ? (
+            <p className="flex flex-wrap items-center gap-2 text-sm text-dim">
+              <Badge tone="variant" size="md">{choices.hand}</Badge>
+              <Badge tone="brass" size="md">{choices.lands}</Badge>
+              {choices.turn ? <Badge tone="neutral" size="md">{choices.turn}</Badge> : null}
+              {order.motion?.fromPlan ? <span>som Placering säger för {seatWords(order.motion.target)}</span> : <span>ändrat från Placering</span>}
+            </p>
+          ) : null}
+        </div>
+        {group.length > 1 ? (
+          <div className="flex flex-wrap items-center gap-2 rounded-lg border border-line bg-surface px-4 py-2.5 text-sm">
+            <span className="text-dim">Grupp</span>
+            <span className="text-ink">{order.group!.label}</span>
+            <div className="flex flex-wrap gap-1">
+              {group.map((a) => (
+                <button
+                  key={a.order.id}
+                  type="button"
+                  onClick={() => onOpen(a.order.id)}
+                  title={`${a.order.title}${a.order.motion?.pass ? " · handbyte" : ""}`}
+                  className={cn("h-7 rounded-md border px-2 text-xs tabular-nums", a.order.id === order.id ? "border-brass/60 bg-brass/12 text-brass-hi" : "border-line text-ink hover:bg-raised", a.order.approval && "opacity-60")}
+                >
+                  {a.order.motion?.target?.replace(".C1", "") ?? a.order.id}
+                  {a.order.motion?.pass ? " · byte" : ""}
+                  {a.order.approval ? " ✓" : ""}
+                </button>
+              ))}
+            </div>
+            {budget ? <span className="ml-auto text-xs text-dim">{budget.words[0]}</span> : null}
+          </div>
+        ) : null}
+        {draft && answer.refresh && answer.shown !== "VÄNTAR" ? (
+          <div className="flex flex-wrap items-center gap-3 rounded-lg border border-brass/25 bg-brass/6 px-4 py-3 text-sm">
+            <span className="text-ink">{answer.refresh}</span>
+            <Button size="sm" className="ml-auto" icon={<RefreshCw />} loading={busy} onClick={() => void refresh()}>
+              Hämta bilderna igen
+            </Button>
+          </div>
+        ) : null}
         {answer.shown === "VÄNTAR" ? (
           <div className="flex flex-wrap items-center gap-3 rounded-lg border border-vantar/25 bg-vantar/6 px-4 py-3 text-sm">
             <span className="text-ink">
-              {why} {ready ? "Det finns nu: hämta bilderna hit." : `När ${waitWords(answer.waiting)} är ${new Set(answer.waiting.map((w) => w.label)).size > 1 ? "godkända" : "godkänd"} i Material hämtas bilderna hit med knappen.`}
+              {why} {ready ? "Det finns nu: hämta bilderna hit." : `När ${waitWords(answer.waiting)} är ${new Set(answer.waiting.map((w) => w.label)).size > 1 ? "godkända" : "godkänd"} i Material hämtas bilderna hit av sig själv.`}
             </span>
             <Link href={`/material/?dealer=${order.dealer}`} className="text-brass-hi hover:underline">
               Till Material
@@ -207,7 +231,7 @@ export function SendScreen({ answer, all, onBack, onSaved }: { answer: OrderAnsw
 
         <div className={cn("grid gap-5", pictures.length >= 3 ? "grid-cols-3" : "grid-cols-2")}>
           {pictures.map((p) => (
-            <PictureCard key={p.name} picture={p} />
+            <PictureCard key={p.name} picture={p} owner={answer.owners ? (answer.owners[p.name] ?? null) : undefined} dealer={order.dealer} planned={p.from?.built && planned ? planned : null} />
           ))}
         </div>
 
@@ -239,25 +263,7 @@ export function SendScreen({ answer, all, onBack, onSaved }: { answer: OrderAnsw
               </>
             }
           >
-            <MarkedText answer={answer} />
-            <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-dim">
-              {turnWords(order) ? (
-                <span>
-                  <span className="mr-1 inline-block size-2 rounded-xs bg-brass/50" />
-                  vändningen: {turnWords(order)}
-                </span>
-              ) : null}
-              {order.prompt.extra ? (
-                <span>
-                  <span className="mr-1 inline-block size-2 rounded-xs bg-variant/50" />
-                  ditt tillägg
-                </span>
-              ) : null}
-              <span>
-                <span className="mr-1 inline-block size-2 rounded-xs bg-underkand/60" />
-                det som inte får hända
-              </span>
-            </div>
+            <PromptText text={order.prompt.text} parts={parts} />
           </Section>
 
           <div className="flex flex-col gap-7">
@@ -341,7 +347,7 @@ export function SendScreen({ answer, all, onBack, onSaved }: { answer: OrderAnsw
                 </ul>
               </Section>
             ) : draft ? (
-              <Edit answer={answer} onSaved={onSaved} />
+              <Edit key={`${order.id}:${order.prompt.extra ?? ""}`} answer={answer} all={all} onSaved={onSaved} />
             ) : null}
           </div>
         </div>

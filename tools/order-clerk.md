@@ -111,6 +111,10 @@ Then `status … MÄTT`. Every measure is written in the report; a take outside 
 - **The card's size (Jakob 2026-11-12: the card looks the same size in every film):** measured from the card track, the
   card's size must stay within about ±10 % from the shoe to the table, and the landed card must match the plan's size
   (`placements/default.json`, as `last.png` draws it; its box is in the order's `drawn.measured`).
+- **The hand (a deal):** the order's `motion` says which hand takes the card (`hand`), whether it is handed over to the
+  right hand (`pass`, handbyte: low in front of her body, one card, taken by its edges) and whether it lands closed or open
+  (`side`). Note which hand lays the card in the take; a take where another hand lays it, where a second card appears at
+  the handover, or where a closed card shows its face is marked.
 - Landing against the plan (within 5 px), frozen frames, the green's level, nothing dark above the table edge (`kantkoll.py`
   on the last frame), the person's tone against the anchor: `filmmatt.py <film> <name> <outdir> --start first.png --end last.png`.
 - The card's turn: `node tools/flip-axis.ts <clip>` (KORTSIDAN / LÅNGSIDAN / OKLART) once the take has a card track

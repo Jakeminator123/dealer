@@ -5,7 +5,7 @@ import assert from 'node:assert/strict';
 import { readFile, readdir } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 import {
-  STEPS, canonical, checkPolicy, costOf, dayOf, draftProblems, edgeOf, genitive, hashInput, priceOf, requestOf, seatWords, shownOf, spentOn, stepOf, summaryOf, takeStates, validateOrder, waitWords,
+  ALL_SEVEN, STEPS, bodyLine, canonical, checkPolicy, costOf, crossesBody, dayOf, defaultFlip, draftProblems, edgeOf, genitive, groupBudget, handChoiceOf, handsOf, hashInput, priceOf, requestOf, seatList, seatWords, shownOf, spentOn, startWords, stepOf, summaryOf, takeStates, validateOrder, waitWords,
   type Order, type Policy, type Receipt,
 } from '../src/order-model.ts';
 
@@ -17,15 +17,23 @@ async function drafts(): Promise<Order[]> {
   return out;
 }
 
-test('the checkout: every order file holds, is a draft without approval, and its text has the hash it says', async () => {
+test('the checkout: every order file holds, a draft is on today\'s template, an approved one is Jakob\'s and unchanged', async () => {
   const list = await drafts();
   assert.ok(list.length >= 3, 'the three prepared drafts');
   for (const order of list) {
     const { errors } = validateOrder(order);
     assert.deepEqual(errors, [], order.id);
     assert.equal(order.prompt.sha256, sha(order.prompt.text), order.id);
-    assert.equal(order.status, 'UTKAST', `${order.id}: nothing is approved by a tool`);
-    assert.equal(order.approval, null);
+    if (order.approval) {
+      // Approved in the studio by Jakob (paow-ankare-2-1, 2026-11-13 00:55): never changed since, on the template it was approved on.
+      assert.equal(order.status, 'GODKÄND', order.id);
+      assert.equal(order.approval.by, 'jakob');
+      assert.equal(order.approval.orderSha256, sha(hashInput(order)), `${order.id}: unchanged since the approval`);
+    } else {
+      assert.equal(order.status, 'UTKAST', order.id);
+      assert.match(order.prompt.template, /@3$/, `${order.id}: a draft is written with today's template`);
+      if (order.motion) assert.equal(typeof order.motion.pass, 'boolean', `${order.id}: the hand is said`);
+    }
     assert.ok(!JSON.stringify(order).includes('_jwt'), `${order.id}: no signed address in data/`);
     assert.match(order.summary ?? '', /^Gör /, `${order.id}: one line on what it makes`);
     // Nothing of the other dealer goes out or is shown, but the cut figure of her arm at the shoe.
@@ -94,7 +102,8 @@ test('the hash covers everything but approval and status, whatever the key order
 });
 
 test('what a person sees: waiting, ready, then the least advanced take; doubt and failure first', async () => {
-  const order = (await drafts()).find((o) => o.id === 'paow-ankare-2-1')!;
+  const found = (await drafts()).find((o) => o.id === 'paow-ankare-2-1')!;
+  const order = { ...found, status: 'UTKAST', approval: null } as Order;
   assert.equal(shownOf(order, [], null), 'KLAR_ATT_TRYCKA');
   assert.equal(shownOf(order, ['x'], null), 'UTKAST');
   const film = (await drafts()).find((o) => o.id === 'paow-giv-p4')!;
@@ -123,8 +132,59 @@ test('the steps: defaults from the plan, edges in the graph notation, and an ord
 
 test('one line on what an order makes, in Jakob\'s words', () => {
   assert.equal(summaryOf(stepOf('ANKARE-2.2')!, 'Paow', null), 'Gör Paows ankare 2.2: hennes ankare 1 där bara vänsterarmen flyttas, så att handen ligger över kortet vid skons öppning.');
-  assert.equal(summaryOf(stepOf('GIV-2.1')!, 'Paow', { turn: true, target: 'P4.C1' }), 'Gör en film av Paow: från nypet vid skon (ankare 2.1) tar hon ett kort, vänder det som en hand kan och lägger det på plats 4; handen går tillbaka till nypet.');
+  assert.equal(summaryOf(stepOf('GIV-2.1')!, 'Paow', { turn: true, target: 'P4.C1' }), 'Gör en film av Paow: från ankare 2.1 (nyp) tar hon ett kort ur skon med vänster hand; hon vänder det som en hand kan på vägen och lägger det öppet på plats 4; handen går tillbaka till nypet.');
+  assert.equal(summaryOf(stepOf('GIV-2.1')!, 'Paow', { turn: true, target: 'P4.C1', hand: 'LH', pass: false, side: 'FRONT', flipAxis: 'AT_PLACE' }), 'Gör en film av Paow: från ankare 2.1 (nyp) tar hon ett kort ur skon med vänster hand; hon för fram det med baksidan upp, vänder upp det vid plats 4 och lägger det öppet; handen går tillbaka till nypet.');
+  assert.equal(summaryOf(stepOf('GIV-2.2')!, 'Paow', { turn: true, target: 'P1.C1', hand: 'LH', pass: true, side: 'FRONT', flipAxis: 'FREE' }), 'Gör en film av Paow: från ankare 2.2 (släp) släpar hon ett kort ur skon med vänster hand och ger det till höger lågt framför kroppen; höger vänder det som en hand kan på vägen och lägger det öppet på plats 1; händerna går tillbaka till ankaret.');
+  assert.equal(summaryOf(stepOf('GIV-2.2')!, 'Paow', { turn: false, target: 'P6.C1', hand: 'RH', pass: false, side: 'BACK' }), 'Gör en film av Paow: från ankare 2.2 (släp) släpar hon ett kort ur skon med höger hand; hon lägger det stängt, baksidan upp, på plats 6; händerna går tillbaka till ankaret.');
+  assert.equal(startWords(stepOf('GIV-2.2')!), 'Börjar och slutar på ankare 2.2 (släp): handen över kortet i skons öppning.');
+  assert.equal(startWords(stepOf('INGANG-2.1')!), 'Börjar på ankare 1 och slutar på ankare 2.1 (nyp): tummen och pekfingret på kortet i skons fönster.');
   assert.equal(genitive('Agnes'), 'Agnes');
   assert.equal(seatWords('D.C1'), 'dealerns plats');
   assert.equal(seatWords('P2.C2'), 'plats 2, kort 2');
+});
+
+test('the hand: left, right or handbyte (left to right), stored as the plan stores it', () => {
+  assert.deepEqual(handsOf('PASS'), { hand: 'LH', pass: true });
+  assert.deepEqual(handsOf('RH'), { hand: 'RH', pass: false });
+  assert.equal(handChoiceOf({ hand: 'LH', pass: true }), 'PASS');
+  assert.equal(handChoiceOf({ hand: 'LH' }), 'LH', 'an older order without pass is left all the way');
+  assert.equal(defaultFlip('GIV-2.1'), 'AT_PLACE', 'a deal from 2.1 turns at the place (Jakob 2026-11-13)');
+  assert.equal(defaultFlip('GIV-2.2'), 'FREE');
+  assert.equal(defaultFlip('GIV-2.2', 'PLACE'), 'AT_PLACE', 'where the plan turns the card at its place');
+  const order = { schemaVersion: 1, id: 'x', title: 'x', dealer: 'paow', kind: 'FILM', step: { key: 'GIV-2.1' }, pictures: [], generation: {}, prompt: {}, takes: 1, cost: {}, reference: {}, status: 'UTKAST', approval: null, notes: [] };
+  const motion = { grip: 'PINCH', hand: 'RH', pass: true, turn: true, flipAxis: 'AT_PLACE', target: 'P1.C1', side: 'FRONT', fromPlan: false };
+  assert.match(validateOrder({ ...order, motion }).errors.join(' '), /handbyte går från vänster hand till höger/);
+  assert.doesNotMatch(validateOrder({ ...order, motion: { ...motion, hand: 'LH' } }).errors.join(' '), /motion/);
+  assert.match(validateOrder({ ...order, motion: { ...motion, hand: 'LH', side: 'UP' } }).errors.join(' '), /motion: hand/);
+});
+
+test('the seats where the left hand would cross her body, from the plan alone', async () => {
+  const plan = JSON.parse(await readFile('placements/default.json', 'utf8'));
+  // The plan's points in film pixels (the order's own drawing is tested in tools/order-routes.test.ts).
+  const x = (t: string) => plan.targets[t].geometry.native.u * 1763;
+  const centres = Object.fromEntries(Object.keys(plan.targets).map((t) => [t, [x(t), 0] as [number, number]]));
+  const line = bodyLine(centres, { 'P4.C1': [[0, 0], [87, 0], [87, 70], [0, 70]] });
+  assert.ok(Math.abs(line.midline - 882) < 5, `her midline between the dealer's two cards: ${line.midline}`);
+  assert.equal(line.halfCard, 43.5);
+  assert.deepEqual(ALL_SEVEN.filter((t) => crossesBody(x(t), line)), ['P1.C1', 'P2.C1', 'P3.C1'], 'P4 lies in front of her');
+  assert.equal(crossesBody(x('D.C1'), line), false);
+  assert.deepEqual(bodyLine({}, {}), { midline: 881.5, halfCard: 43.5 });
+  assert.equal(seatList(['P1.C1', 'P2.C1', 'P3.C1']), 'plats 1–3');
+  assert.equal(seatList(['P1.C1', 'P3.C1']), 'plats 1 och 3');
+  assert.equal(seatList(['P5.C1', 'D.C1']), 'plats 5 och dealerns plats');
+});
+
+test('a group of drafts against the limits: what all cost and how many fit today', async () => {
+  const p = await policy();
+  // Alla sju from 2.2 with two takes: WAN 3, 6 s, 1080p = 120 per take, 240 per draft.
+  const cost = costOf({ model: 'wan3', params: { resolution: '1080p', duration: 6 } }, 2, p.prices)!;
+  assert.deepEqual([cost.total, cost.worstTotal], [240, 240]);
+  const seven = groupBudget(cost, 7, p, 0, 17884);
+  assert.deepEqual([seven.total, seven.worstTotal, seven.fitToday, seven.fitBalance, seven.overPerOrder], [1680, 1680, 4, 7, false]);
+  assert.match(seven.words[0], /räcker till 4 av 7 i dag/);
+  assert.equal(groupBudget(cost, 7, p, 900, 17884).fitToday, 0);
+  assert.match(groupBudget(cost, 3, p, 0, 17884).words[0], /^Ryms i dagens tak: 720 av 1 000/);
+  assert.equal(groupBudget({ total: 300, worstTotal: 450 }, 2, p, 0, 17884).overPerOrder, true);
+  assert.match(groupBudget(cost, 7, p, 0, 2600).words.join(' '), /räcker till 2 av 7 över golvet 2 000/);
+  assert.match(groupBudget(cost, 7, { ...p, enabled: false }, 0, 17884).words[0], /avstängda/);
 });

@@ -48,6 +48,7 @@ function OrderCard({ answer, onOpen }: { answer: OrderAnswer; onOpen: () => void
         {order.kind === "FILM" ? <Film className="mt-0.5 size-4 shrink-0 text-dim" /> : <ImageIcon className="mt-0.5 size-4 shrink-0 text-dim" />}
         <div className="min-w-0 flex-1">
           <p className="truncate font-display text-md font-semibold text-ink">{order.title}</p>
+          {order.group ? <p className="truncate text-xs text-brass-hi">Grupp: {order.group.label}</p> : null}
           {order.summary ? <p className="mt-0.5 text-sm leading-5 text-ink">{order.summary}</p> : null}
           <p className="mt-0.5 truncate text-xs text-dim">{what}</p>
         </div>

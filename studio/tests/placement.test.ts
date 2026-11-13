@@ -2,11 +2,12 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { buildGraph, type BankData } from "../../src/clip-graph.ts";
-import { SHOE, VIEWS, defaultPlan, editPlace, quad, sequence, toPixels, validatePlan, INTENT_DEFAULTS, type Geometry } from "../../src/placement-model.ts";
+import { SEAT_TARGETS } from "../../src/order-model.ts";
+import { NEUTRAL_BACKDROP, SHOE, VIEWS, defaultPlan, editPlace, quad, sequence, toPixels, validatePlan, INTENT_DEFAULTS, type Geometry } from "../../src/placement-model.ts";
 import {
-  GREEN_FILM, HISTORY, PLACES, START_PLACE, afterSave, amend, bankFilms, begin, changedPlaces, commit, decimal, end, filmView, isDirty, libraryFilms,
-  motionSteps, nudged, openDraft, parseDecimal, placeCode, placeFromCode, placeName, placementQuery, quadSize, readPlacementAddress, signature, sizeFromCorner,
-  taperFromCorner, toLocal, toSaved, turnHandle, undo,
+  GREEN_FILM, HISTORY, PLACES, START_PLACE, afterSave, amend, backdropForView, bankFilms, begin, changedPlaces, commit, decimal, defaultStill, end, filmView, isDirty,
+  isStill, libraryFilms, motionSteps, nudged, openDraft, orderHref, parseDecimal, placeCode, placeFromCode, placeName, placementQuery, quadSize, readPlacementAddress,
+  shownBackdrop, signature, sizeFromCorner, stillChoice, stillLabel, stillPath, stillsOf, taperFromCorner, toLocal, toSaved, turnHandle, undo, type Film,
 } from "../lib/placement.ts";
 
 test("places in his words: Plats 1–7 and dealern, the shoe, and their short forms", () => {
@@ -135,16 +136,52 @@ test("the card's way in his words: A2.1 or A2.2 by the grip, the code line kept 
   assert.equal(drag.steps.at(-1)!.detail, "A2.2");
 });
 
-test("the address: view, place and a film with its frame; defaults are left out and robot is kept", () => {
+test("the address: view, place and a film with its frame or a still; defaults are left out and robot is kept", () => {
   const none = { get: () => null };
-  assert.deepEqual(readPlacementAddress(none), { view: "native", place: START_PLACE, film: null, frame: 0 });
+  assert.deepEqual(readPlacementAddress(none), { view: "native", place: START_PLACE, backdrop: null, frame: 0 });
   const p = new URLSearchParams("vy=mobil&plats=dc1&bakgrund=pamela-p4-c2-source-turn&ruta=40&robot=1");
   const a = readPlacementAddress(p);
-  assert.deepEqual(a, { view: "portrait", place: "D.C1", film: GREEN_FILM, frame: 40 });
+  assert.deepEqual(a, { view: "portrait", place: "D.C1", backdrop: GREEN_FILM, frame: 40 });
   assert.equal(placementQuery(a, p), "?vy=mobil&plats=dc1&bakgrund=pamela-p4-c2-source-turn&ruta=40&robot=1");
-  assert.equal(placementQuery({ view: "native", place: START_PLACE, film: null, frame: 12 }), "");
-  assert.equal(readPlacementAddress(new URLSearchParams("bakgrund=../x&ruta=-3")).film, null);
+  assert.equal(placementQuery({ view: "native", place: START_PLACE, backdrop: null, frame: 12 }), "");
+  assert.equal(readPlacementAddress(new URLSearchParams("bakgrund=../x&ruta=-3")).backdrop, null);
   assert.equal(readPlacementAddress(new URLSearchParams("plats=zz")).place, START_PLACE);
+  // a still: V6 is written where it is not the default (Dator), the view's own default never, and a still has no frame
+  assert.equal(placementQuery({ view: "native", place: START_PLACE, backdrop: "v6", frame: 9 }), "?bakgrund=v6");
+  assert.equal(placementQuery({ view: "native", place: START_PLACE, backdrop: "neutral", frame: 0 }), "");
+  assert.equal(placementQuery({ view: "portrait", place: START_PLACE, backdrop: "v6", frame: 0 }), "?vy=mobil");
+  assert.equal(readPlacementAddress(new URLSearchParams("bakgrund=v6")).backdrop, "v6");
+});
+
+test("under the cards: Dator opens on the neutral backdrop, Mobil on its V6 picture; a film or a still holds where the view has it", () => {
+  const film = (id: string, width: number, height: number): Film => ({ id, title: id, path: `assets/motions/${id}/source.mp4`, width, height, frames: 90, fps: 30, group: "bank" });
+  const films = [film("pamela-p4-c1-plan-deal-02", 1764, 1174), film("v6-portrait-reference", 1080, 1920)];
+  assert.deepEqual(stillsOf("native"), ["neutral", "v6"]);
+  assert.deepEqual(stillsOf("portrait"), ["v6"]);
+  assert.deepEqual(shownBackdrop("native", null, films), { kind: "still", still: "neutral", path: NEUTRAL_BACKDROP.native });
+  assert.deepEqual(shownBackdrop("portrait", null, films), { kind: "still", still: "v6", path: VIEWS.portrait.background });
+  assert.deepEqual(shownBackdrop("native", "v6", films), { kind: "still", still: "v6", path: VIEWS.native.background });
+  assert.deepEqual(shownBackdrop("portrait", "neutral", films), { kind: "still", still: "v6", path: VIEWS.portrait.background });
+  assert.deepEqual(shownBackdrop("native", null, films, true), { kind: "still", still: "v6", path: VIEWS.native.background }, "the neutral picture is missing here");
+  assert.equal(shownBackdrop("native", "pamela-p4-c1-plan-deal-02", films).kind, "film");
+  assert.equal(shownBackdrop("native", "v6-portrait-reference", films).kind, "still", "a standing film is no film for Dator");
+  assert.equal(shownBackdrop("native", "pamela-p4-c1-plan-deal-02", []).kind, "still", "before the films are read: the default");
+  // changing the view
+  assert.equal(backdropForView("portrait", "neutral", films), null);
+  assert.equal(backdropForView("portrait", "v6", films), "v6");
+  assert.equal(backdropForView("portrait", "pamela-p4-c1-plan-deal-02", films), null);
+  assert.equal(backdropForView("native", "pamela-p4-c1-plan-deal-02", films), "pamela-p4-c1-plan-deal-02");
+  assert.equal(defaultStill("native"), "neutral");
+  assert.deepEqual([stillChoice("neutral", "native"), stillChoice("v6", "native"), stillLabel("neutral"), stillLabel("v6")], ["Neutral · studions bord", "V6-bild · dator", "Neutral · studions bord", "V6 · visuell referens"]);
+  assert.ok(isStill("v6") && isStill("neutral") && !isStill(GREEN_FILM));
+  assert.equal(stillPath("neutral", "portrait"), VIEWS.portrait.background);
+});
+
+test("Beställ film hit: a place with a film of its own goes to a new order with the place as the order model writes it", () => {
+  assert.equal(orderHref("P4.C1"), "/bestall/?ny=1&plats=P4.C1");
+  assert.equal(orderHref("D.C1"), "/bestall/?ny=1&plats=D.C1");
+  for (const id of ["P4.C2", "D.C2", SHOE]) assert.equal(orderHref(id), null);
+  assert.deepEqual(PLACES.filter((id) => orderHref(id)), [...SEAT_TARGETS].sort((a, b) => PLACES.indexOf(a) - PLACES.indexOf(b)));
 });
 
 test("films to lay the cards over: the bank's current takes, main take first, and the library's older ones", () => {

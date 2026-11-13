@@ -21,7 +21,10 @@
           "name": "Kropp v5 (gamla labbet)",
           "path": "assets/keystones/pamela-v5-kropp/keystone.png",
           "note": "Närmast en keystone, men bara 1536 × 1024. Gamla labbet kallar den keystone-candidate.",
-          "source": { "from": "gamla labbet, bildgenererad; kopia ur arkivet på D:, se receipt.json", "when": "2026-11-08" }
+          "source": {
+            "from": "gamla labbet, bildgenererad; kopia ur arkivet på D:, se receipt.json",
+            "when": "2026-11-08"
+          }
         },
         {
           "id": "pamela-keystone-v4-vila",
@@ -29,9 +32,11 @@
           "name": "Vila v4 (gamla labbet)",
           "path": "assets/keystones/pamela-v4-vila/keystone.png",
           "note": "Förlagan till gamla labbets vilobild, 1536 × 1024. Ur den och kropp v5 gjordes vila- och redo-station och V6:s råfilmer.",
-          "source": { "from": "gamla labbet, bildgenererad; kopia ur arkivet på D:, se receipt.json", "when": "2026-11-08" }
+          "source": {
+            "from": "gamla labbet, bildgenererad; kopia ur arkivet på D:, se receipt.json",
+            "when": "2026-11-08"
+          }
         },
-
         {
           "id": "pamela-vila",
           "role": "ankare-1",
@@ -42,7 +47,10 @@
           "node": "IDLE",
           "state": "gäller",
           "note": "Kallas rest keystone i jobbfilen men är ett ankare: ruta 0 i ingångsfilmen. Alla vilofilmer börjar och slutar här.",
-          "source": { "from": "ingångsfilmen pamela-idle-ready-entry-01 (WAN 3)", "when": "2026-11-11" }
+          "source": {
+            "from": "ingångsfilmen pamela-idle-ready-entry-01 (WAN 3)",
+            "when": "2026-11-11"
+          }
         },
         {
           "id": "pamela-vila-oppen-sko",
@@ -53,7 +61,10 @@
           "fps": 30,
           "node": "IDLE-B",
           "note": "Ingen fast vilobild med öppen sko finns. Ruta 60 i skoplåtsklippet är grunden för vila med öppen sko och kort P4. Blicken nedåt.",
-          "source": { "from": "skoplåtsklippet pamela-ready-b-shoe-plate-01 (WAN 3)", "when": "2026-11-10" }
+          "source": {
+            "from": "skoplåtsklippet pamela-ready-b-shoe-plate-01 (WAN 3)",
+            "when": "2026-11-10"
+          }
         },
         {
           "id": "pamela-idle-p1-c1-plan-01",
@@ -63,7 +74,10 @@
           "card": "P1.C1",
           "node": "IDLE",
           "note": "Vila med kortet kvar på planens plats: sista bilden i returen till vila.",
-          "source": { "from": "gamla labbets vilobild med kort (direct/end.png), kortet flyttat till planen", "when": "2026-11-10" }
+          "source": {
+            "from": "gamla labbets vilobild med kort (direct/end.png), kortet flyttat till planen",
+            "when": "2026-11-10"
+          }
         },
         {
           "id": "pamela-idle-p2-c1-plan-01",
@@ -73,7 +87,10 @@
           "card": "P2.C1",
           "node": "IDLE",
           "note": "Vila med kortet kvar på planens plats. Båda händerna vilar, så vilken hand som helst kan ha lagt kortet.",
-          "source": { "from": "gamla labbets vilobild med kort (direct/end.png), kortet flyttat till planen", "when": "2026-11-10" }
+          "source": {
+            "from": "gamla labbets vilobild med kort (direct/end.png), kortet flyttat till planen",
+            "when": "2026-11-10"
+          }
         },
         {
           "id": "pamela-idle-p3-c1-plan-01",
@@ -83,7 +100,10 @@
           "card": "P3.C1",
           "node": "IDLE",
           "note": "Vila med kortet kvar på planens plats.",
-          "source": { "from": "gamla labbets vilobild med kort (direct/end.png), kortet flyttat till planen", "when": "2026-11-10" }
+          "source": {
+            "from": "gamla labbets vilobild med kort (direct/end.png), kortet flyttat till planen",
+            "when": "2026-11-10"
+          }
         },
         {
           "id": "pamela-idle-p4-c1-plan-01",
@@ -93,7 +113,10 @@
           "card": "P4.C1",
           "node": "IDLE",
           "note": "Vila med kortet kvar på planens plats. Samma kortpixlar som givens slutbild.",
-          "source": { "from": "gamla labbets vilobild med kort (direct/end.png), kortet ur pamela-p4-c1-deal-calm-01 ruta 119", "when": "2026-11-10" }
+          "source": {
+            "from": "gamla labbets vilobild med kort (direct/end.png), kortet ur pamela-p4-c1-deal-calm-01 ruta 119",
+            "when": "2026-11-10"
+          }
         },
         {
           "id": "pamela-idle-p5-c1-plan-01",
@@ -103,7 +126,10 @@
           "card": "P5.C1",
           "node": "IDLE",
           "note": "Vila med kortet kvar på planens plats.",
-          "source": { "from": "gamla labbets vilobild med kort (direct/end.png), kortet flyttat till planen", "when": "2026-11-10" }
+          "source": {
+            "from": "gamla labbets vilobild med kort (direct/end.png), kortet flyttat till planen",
+            "when": "2026-11-10"
+          }
         },
         {
           "id": "pamela-idle-p6-c1-plan-01",
@@ -113,7 +139,10 @@
           "card": "P6.C1",
           "node": "IDLE",
           "note": "Vila med kortet kvar på planens plats.",
-          "source": { "from": "gamla labbets vilobild med kort (direct/end.png), kortet flyttat till planen", "when": "2026-11-10" }
+          "source": {
+            "from": "gamla labbets vilobild med kort (direct/end.png), kortet flyttat till planen",
+            "when": "2026-11-10"
+          }
         },
         {
           "id": "pamela-idle-p7-c1-plan-01",
@@ -123,7 +152,10 @@
           "card": "P7.C1",
           "node": "IDLE",
           "note": "Vila med kortet kvar på planens plats.",
-          "source": { "from": "gamla labbets vilobild med kort (direct/end.png), kortet flyttat till planen", "when": "2026-11-11" }
+          "source": {
+            "from": "gamla labbets vilobild med kort (direct/end.png), kortet flyttat till planen",
+            "when": "2026-11-11"
+          }
         },
         {
           "id": "pamela-idleb-p4-c1-plan-01",
@@ -133,7 +165,10 @@
           "card": "P4.C1",
           "node": "IDLE-B",
           "note": "Vila med den öppna skon och kortet på P4: returen från släpet slutar här.",
-          "source": { "from": "skoplåtsklippet ruta 60 plus kortet", "when": "2026-11-10" }
+          "source": {
+            "from": "skoplåtsklippet ruta 60 plus kortet",
+            "when": "2026-11-10"
+          }
         },
         {
           "id": "pamela-ruta-d-c2-dolt",
@@ -145,7 +180,10 @@
           "card": "D.C2",
           "node": "IDLE",
           "note": "Hel riktig ruta: D.C1 blått och hålkortet gult på bordet. Vändningen av hålkortet börjar här.",
-          "source": { "from": "arkivklippet pamela-arkiv-d-c2-hole-join", "when": "2026-11-11" }
+          "source": {
+            "from": "arkivklippet pamela-arkiv-d-c2-hole-join",
+            "when": "2026-11-11"
+          }
         },
         {
           "id": "pamela-ruta-d-c2-vant",
@@ -157,7 +195,10 @@
           "card": "D.C2",
           "node": "REVEAL(D.C2)",
           "note": "Hel riktig ruta: båda dealerkorten blå. Vändningen slutar här.",
-          "source": { "from": "arkivklippet pamela-arkiv-d-c2-reveal-01", "when": "2026-11-10" }
+          "source": {
+            "from": "arkivklippet pamela-arkiv-d-c2-reveal-01",
+            "when": "2026-11-10"
+          }
         },
         {
           "id": "pamela-idle-p2-c1-std-01",
@@ -167,7 +208,10 @@
           "card": "P2.C1",
           "node": "IDLE",
           "note": "Vila med kortet i standardformat. Skickad i Runway-ordrar utanför jobbfilen, inte i någon bankfilm.",
-          "source": { "from": "ruta 0 i ingångsfilmen plus standardkortet", "when": "2026-11-11" }
+          "source": {
+            "from": "ruta 0 i ingångsfilmen plus standardkortet",
+            "when": "2026-11-11"
+          }
         },
         {
           "id": "pamela-idle-p6-c1-std-01",
@@ -177,7 +221,10 @@
           "card": "P6.C1",
           "node": "IDLE",
           "note": "Vila med kortet i standardformat. Skickad i Runway-ordrar utanför jobbfilen.",
-          "source": { "from": "ruta 0 i ingångsfilmen plus standardkortet", "when": "2026-11-11" }
+          "source": {
+            "from": "ruta 0 i ingångsfilmen plus standardkortet",
+            "when": "2026-11-11"
+          }
         },
         {
           "id": "pamela-idle-d-c1-std-01",
@@ -187,7 +234,10 @@
           "card": "D.C1",
           "node": "IDLE",
           "note": "Vila med dealerns första kort i standardformat. Skickad i Runway-ordrar utanför jobbfilen.",
-          "source": { "from": "ruta 0 i ingångsfilmen plus standardkortet", "when": "2026-11-11" }
+          "source": {
+            "from": "ruta 0 i ingångsfilmen plus standardkortet",
+            "when": "2026-11-11"
+          }
         },
         {
           "id": "pamela-idle-wink-01",
@@ -196,7 +246,10 @@
           "path": "assets/anchors/pamela-idle-wink-01/anchor.png",
           "node": "IDLE",
           "note": "Vilan med redigerat ansikte. Skickad i Runway-ordrar utanför jobbfilen.",
-          "source": { "from": "vilan, ansiktet redigerat", "when": "2026-11-11" }
+          "source": {
+            "from": "vilan, ansiktet redigerat",
+            "when": "2026-11-11"
+          }
         },
         {
           "id": "pamela-idle-stern-02",
@@ -205,7 +258,10 @@
           "path": "assets/anchors/pamela-idle-stern-02/anchor.png",
           "node": "IDLE",
           "note": "Vilan med redigerat ansikte. Skickad i en Runway-order utanför jobbfilen.",
-          "source": { "from": "vilan, ansiktet redigerat", "when": "2026-11-11" }
+          "source": {
+            "from": "vilan, ansiktet redigerat",
+            "when": "2026-11-11"
+          }
         },
         {
           "id": "pamela-gamla-vila-kort-p4",
@@ -215,7 +271,10 @@
           "card": "P4.C1",
           "node": "IDLE",
           "note": "Gamla labbets vilobild med kortet på P4; samma fil som sista bilden i pamela-p4-c1-return-idle-calm-01. Grunden för alla bilder vila med kort ovan.",
-          "source": { "from": "gamla labbet", "when": "2026-11-10" }
+          "source": {
+            "from": "gamla labbet",
+            "when": "2026-11-10"
+          }
         },
         {
           "id": "pamela-gamla-vila-station",
@@ -225,9 +284,11 @@
           "node": "IDLE",
           "state": "ersatt",
           "note": "Gamla formatet (1536 × 1024, gammal sko med vitt kort). V6:s råfilmer börjar här. Ersatt av bankens vila.",
-          "source": { "from": "gamla labbet, ur vila v4 och kropp v5; kopia ur arkivet på D:, se receipt.json", "when": "2026-11-09" }
+          "source": {
+            "from": "gamla labbet, ur vila v4 och kropp v5; kopia ur arkivet på D:, se receipt.json",
+            "when": "2026-11-09"
+          }
         },
-
         {
           "id": "pamela-nyp",
           "role": "ankare-2.1",
@@ -236,7 +297,10 @@
           "node": "READY",
           "state": "gäller",
           "note": "Kallas READY i koden: en riktig filmruta med nypet på det gula kortet. Samma start som 4,5/5-klippet.",
-          "source": { "from": "exakt indata till kontrollklippet pamela-p4-c1-color-control-01 (gamla labbet)", "when": "2026-11-10" }
+          "source": {
+            "from": "exakt indata till kontrollklippet pamela-p4-c1-color-control-01 (gamla labbet)",
+            "when": "2026-11-10"
+          }
         },
         {
           "id": "pamela-ready-p1-c1-plan-01",
@@ -246,7 +310,10 @@
           "card": "P1.C1",
           "node": "READY",
           "note": "Nypet med kortet kvar på planens plats: sista bilden i returen till skon.",
-          "source": { "from": "nypet (start.png) plus kortet", "when": "2026-11-10" }
+          "source": {
+            "from": "nypet (start.png) plus kortet",
+            "when": "2026-11-10"
+          }
         },
         {
           "id": "pamela-ready-p2-c1-plan-01",
@@ -256,7 +323,10 @@
           "card": "P2.C1",
           "node": "READY",
           "note": "Nypet med kortet kvar på planens plats.",
-          "source": { "from": "nypet (start.png) plus kortet", "when": "2026-11-10" }
+          "source": {
+            "from": "nypet (start.png) plus kortet",
+            "when": "2026-11-10"
+          }
         },
         {
           "id": "pamela-ready-p3-c1-plan-01",
@@ -266,7 +336,10 @@
           "card": "P3.C1",
           "node": "READY",
           "note": "Nypet med kortet kvar på planens plats.",
-          "source": { "from": "nypet (start.png) plus kortet", "when": "2026-11-10" }
+          "source": {
+            "from": "nypet (start.png) plus kortet",
+            "when": "2026-11-10"
+          }
         },
         {
           "id": "pamela-ready-p4-c1-plan-01",
@@ -276,7 +349,10 @@
           "card": "P4.C1",
           "node": "READY",
           "note": "Nypet med kort 1 på P4: returen slutar här, och given av kort 2 till P4 börjar här.",
-          "source": { "from": "nypet (start.png) plus kortet", "when": "2026-11-10" }
+          "source": {
+            "from": "nypet (start.png) plus kortet",
+            "when": "2026-11-10"
+          }
         },
         {
           "id": "pamela-ready-p5-c1-plan-01",
@@ -286,7 +362,10 @@
           "card": "P5.C1",
           "node": "READY",
           "note": "Nypet med kortet kvar på planens plats.",
-          "source": { "from": "nypet (start.png) plus kortet", "when": "2026-11-10" }
+          "source": {
+            "from": "nypet (start.png) plus kortet",
+            "when": "2026-11-10"
+          }
         },
         {
           "id": "pamela-ready-p6-c1-plan-01",
@@ -296,7 +375,10 @@
           "card": "P6.C1",
           "node": "READY",
           "note": "Nypet med kortet kvar på planens plats.",
-          "source": { "from": "nypet (start.png) plus kortet", "when": "2026-11-10" }
+          "source": {
+            "from": "nypet (start.png) plus kortet",
+            "when": "2026-11-10"
+          }
         },
         {
           "id": "pamela-ready-p7-c1-plan-01",
@@ -306,7 +388,10 @@
           "card": "P7.C1",
           "node": "READY",
           "note": "Nypet med kortet kvar på planens plats.",
-          "source": { "from": "nypet (start.png) plus kortet", "when": "2026-11-11" }
+          "source": {
+            "from": "nypet (start.png) plus kortet",
+            "when": "2026-11-11"
+          }
         },
         {
           "id": "pamela-ready-p2-c1-std-01",
@@ -316,7 +401,10 @@
           "card": "P2.C1",
           "node": "READY",
           "note": "Nypet med kortet i standardformat. Skickad i en Runway-order utanför jobbfilen.",
-          "source": { "from": "nypet (start.png) plus standardkortet", "when": "2026-11-11" }
+          "source": {
+            "from": "nypet (start.png) plus standardkortet",
+            "when": "2026-11-11"
+          }
         },
         {
           "id": "pamela-ready-p6-c1-std-01",
@@ -326,7 +414,10 @@
           "card": "P6.C1",
           "node": "READY",
           "note": "Nypet med kortet i standardformat. Skickad i en Runway-order utanför jobbfilen.",
-          "source": { "from": "nypet (start.png) plus standardkortet", "when": "2026-11-11" }
+          "source": {
+            "from": "nypet (start.png) plus standardkortet",
+            "when": "2026-11-11"
+          }
         },
         {
           "id": "pamela-ready-d-c1-std-01",
@@ -336,7 +427,10 @@
           "card": "D.C1",
           "node": "READY",
           "note": "Nypet med dealerns första kort i standardformat. Skickad i en Runway-order utanför jobbfilen.",
-          "source": { "from": "nypet (start.png) plus standardkortet", "when": "2026-11-11" }
+          "source": {
+            "from": "nypet (start.png) plus standardkortet",
+            "when": "2026-11-11"
+          }
         },
         {
           "id": "pamela-gamla-nyp-kort-p4",
@@ -346,7 +440,10 @@
           "card": "P4.C1",
           "node": "READY",
           "note": "Gamla labbets redo-bild med kortet på P4; samma fil som sista bilden i pamela-p4-c1-return-ready-calm-01.",
-          "source": { "from": "gamla labbet", "when": "2026-11-10" }
+          "source": {
+            "from": "gamla labbet",
+            "when": "2026-11-10"
+          }
         },
         {
           "id": "pamela-gamla-redo-station",
@@ -356,9 +453,11 @@
           "node": "READY",
           "state": "ersatt",
           "note": "Gamla formatet (1536 × 1024, gammal sko med vitt kort). V6:s råfilmer går hit. Ersatt av bankens nyp.",
-          "source": { "from": "gamla labbet, ur vila v4 och kropp v5; kopia ur arkivet på D:, se receipt.json", "when": "2026-11-09" }
+          "source": {
+            "from": "gamla labbet, ur vila v4 och kropp v5; kopia ur arkivet på D:, se receipt.json",
+            "when": "2026-11-09"
+          }
         },
-
         {
           "id": "pamela-slap",
           "role": "ankare-2.2",
@@ -369,7 +468,10 @@
           "node": "READY-B",
           "state": "gäller",
           "note": "Kallas READY-B i koden: fingertopparna plant på kortet i skons öppning. Hel riktig ruta ur skoplåtsklippet.",
-          "source": { "from": "skoplåtsklippet pamela-ready-b-shoe-plate-01 (WAN 3)", "when": "2026-11-10" }
+          "source": {
+            "from": "skoplåtsklippet pamela-ready-b-shoe-plate-01 (WAN 3)",
+            "when": "2026-11-10"
+          }
         },
         {
           "id": "pamela-slap-bild",
@@ -379,7 +481,10 @@
           "node": "READY-B",
           "state": "ersatt",
           "note": "Den bildgenererade READY B-bilden. Ersatt av ruta 112 i skoplåtsklippet, men fortfarande första bild i fyra jobb.",
-          "source": { "from": "bildgenererad i gamla labbet (READY2-stillbilden)", "when": "2026-11-10" }
+          "source": {
+            "from": "bildgenererad i gamla labbet (READY2-stillbilden)",
+            "when": "2026-11-10"
+          }
         },
         {
           "id": "pamela-readyb-p4-c1-plan-01",
@@ -389,9 +494,11 @@
           "card": "P4.C1",
           "node": "READY-B",
           "note": "Med kortet på P4: returen till skon i läge 2.2 slutar här.",
-          "source": { "from": "ready-02.png plus kortet", "when": "2026-11-10" }
+          "source": {
+            "from": "ready-02.png plus kortet",
+            "when": "2026-11-10"
+          }
         },
-
         {
           "id": "pamela-p1-c1-plan-land-02",
           "role": "landning",
@@ -400,7 +507,10 @@
           "card": "P1.C1",
           "node": "LAND(P1.C1)",
           "note": "Riktig landningsruta ur den gamla P1-given; bara kortet flyttat 55 px till planen.",
-          "source": { "from": "gamla labbets P1-giv ruta 92", "when": "2026-11-10" }
+          "source": {
+            "from": "gamla labbets P1-giv ruta 92",
+            "when": "2026-11-10"
+          }
         },
         {
           "id": "pamela-p1-c1-plan-land-03",
@@ -410,7 +520,10 @@
           "card": "P1.C1",
           "node": "LAND(P1.C1)",
           "note": "Som föregående, med riktiga kortpixlar i stället för en platt fyllning.",
-          "source": { "from": "gamla labbets P1-giv", "when": "2026-11-10" }
+          "source": {
+            "from": "gamla labbets P1-giv",
+            "when": "2026-11-10"
+          }
         },
         {
           "id": "pamela-p1-c1-plan-land-b-01",
@@ -420,7 +533,10 @@
           "card": "P1.C1",
           "node": "LAND(P1.C1)",
           "note": "Landningen med den öppna skon, för givar från läge 2.2.",
-          "source": { "from": "pamela-p1-c1-plan-land-03 med skon bytt", "when": "2026-11-10" }
+          "source": {
+            "from": "pamela-p1-c1-plan-land-03 med skon bytt",
+            "when": "2026-11-10"
+          }
         },
         {
           "id": "pamela-ruta-p1-c1-plan-deal-02-112",
@@ -432,7 +548,10 @@
           "card": "P1.C1",
           "node": "LAND(P1.C1)",
           "note": "Exakt ruta 112 i given; given klipps här och returerna börjar här, så inget hopp.",
-          "source": { "from": "given pamela-p1-c1-plan-deal-02", "when": "2026-11-10" }
+          "source": {
+            "from": "given pamela-p1-c1-plan-deal-02",
+            "when": "2026-11-10"
+          }
         },
         {
           "id": "pamela-ruta-p1-c1-plan-deal-03-110",
@@ -444,7 +563,10 @@
           "card": "P1.C1",
           "node": "LAND(P1.C1)",
           "note": "Exakt ruta 110 i given, fingrarna på kortet. Given klipps här.",
-          "source": { "from": "given pamela-p1-c1-plan-deal-03", "when": "2026-11-10" }
+          "source": {
+            "from": "given pamela-p1-c1-plan-deal-03",
+            "when": "2026-11-10"
+          }
         },
         {
           "id": "pamela-ruta-p1-c1-drawn-deal-01-108",
@@ -456,7 +578,10 @@
           "card": "P1.C1",
           "node": "LAND(P1.C1)",
           "note": "Hel riktig ruta, fingertopparna på kortet, den öppna skon.",
-          "source": { "from": "släpgiven pamela-p1-c1-drawn-deal-01", "when": "2026-11-10" }
+          "source": {
+            "from": "släpgiven pamela-p1-c1-drawn-deal-01",
+            "when": "2026-11-10"
+          }
         },
         {
           "id": "pamela-p2-c1-plan-land-01",
@@ -466,7 +591,10 @@
           "card": "P2.C1",
           "node": "LAND(P2.C1)",
           "note": "Riktig ruta ur den gamla bankens giv, fingertoppen på kortet. Returerna börjar på bilden själv.",
-          "source": { "from": "gamla bankens P2-giv", "when": "2026-11-10" }
+          "source": {
+            "from": "gamla bankens P2-giv",
+            "when": "2026-11-10"
+          }
         },
         {
           "id": "pamela-p2-c1-plan-land-b-01",
@@ -476,7 +604,10 @@
           "card": "P2.C1",
           "node": "LAND(P2.C1)",
           "note": "Landningen med den öppna skon.",
-          "source": { "from": "pamela-p2-c1-plan-land-01 med skon bytt", "when": "2026-11-10" }
+          "source": {
+            "from": "pamela-p2-c1-plan-land-01 med skon bytt",
+            "when": "2026-11-10"
+          }
         },
         {
           "id": "pamela-p2-c1-std-land-02",
@@ -486,7 +617,10 @@
           "card": "P2.C1",
           "node": "LAND(P2.C1)",
           "note": "Landningen med kortet i standardformat. Skickad i Runway-ordrar utanför jobbfilen.",
-          "source": { "from": "pamela-p2-c1-plan-deal-01 ruta 110 plus standardkortet", "when": "2026-11-11" }
+          "source": {
+            "from": "pamela-p2-c1-plan-deal-01 ruta 110 plus standardkortet",
+            "when": "2026-11-11"
+          }
         },
         {
           "id": "pamela-ruta-p2-c1-drawn-deal-01-108",
@@ -498,7 +632,10 @@
           "card": "P2.C1",
           "node": "LAND(P2.C1)",
           "note": "Hel riktig ruta, fingertopparna på kortet, den öppna skon.",
-          "source": { "from": "släpgiven pamela-p2-c1-drawn-deal-01", "when": "2026-11-10" }
+          "source": {
+            "from": "släpgiven pamela-p2-c1-drawn-deal-01",
+            "when": "2026-11-10"
+          }
         },
         {
           "id": "pamela-p3-c1-plan-land-01",
@@ -508,7 +645,10 @@
           "card": "P3.C1",
           "node": "LAND(P3.C1)",
           "note": "Riktig ruta ur den gamla bankens giv, fingertoppen på kortet.",
-          "source": { "from": "gamla bankens P3-giv", "when": "2026-11-10" }
+          "source": {
+            "from": "gamla bankens P3-giv",
+            "when": "2026-11-10"
+          }
         },
         {
           "id": "pamela-p3-c1-plan-land-b-01",
@@ -518,7 +658,10 @@
           "card": "P3.C1",
           "node": "LAND(P3.C1)",
           "note": "Landningen med den öppna skon.",
-          "source": { "from": "pamela-p3-c1-plan-land-01 med skon bytt", "when": "2026-11-10" }
+          "source": {
+            "from": "pamela-p3-c1-plan-land-01 med skon bytt",
+            "when": "2026-11-10"
+          }
         },
         {
           "id": "pamela-ruta-p3-c1-plan-deal-01-112",
@@ -530,7 +673,10 @@
           "card": "P3.C1",
           "node": "LAND(P3.C1)",
           "note": "Hel riktig ruta ur den underkända första P3-given, fingrarna på kortet. Ingen komposit.",
-          "source": { "from": "given pamela-p3-c1-plan-deal-01 (underkänd)", "when": "2026-11-10" }
+          "source": {
+            "from": "given pamela-p3-c1-plan-deal-01 (underkänd)",
+            "when": "2026-11-10"
+          }
         },
         {
           "id": "pamela-p4-c1-plan-hover-02",
@@ -540,7 +686,10 @@
           "card": "P4.C1",
           "node": "RELEASE(P4.C1)",
           "note": "Handen svävar just efter släppet; bara kortet flyttat 63 px till planen.",
-          "source": { "from": "pamela-p4-c1-deal-calm-01 ruta 119", "when": "2026-11-10" }
+          "source": {
+            "from": "pamela-p4-c1-deal-calm-01 ruta 119",
+            "when": "2026-11-10"
+          }
         },
         {
           "id": "pamela-p4-c1-plan-hover-03",
@@ -550,7 +699,10 @@
           "card": "P4.C1",
           "node": "RELEASE(P4.C1)",
           "note": "Som föregående, med riktiga kortpixlar.",
-          "source": { "from": "pamela-p4-c1-deal-calm-01 ruta 119", "when": "2026-11-10" }
+          "source": {
+            "from": "pamela-p4-c1-deal-calm-01 ruta 119",
+            "when": "2026-11-10"
+          }
         },
         {
           "id": "pamela-ruta-p4-c1-plan-deal-02-105",
@@ -562,7 +714,10 @@
           "card": "P4.C1",
           "node": "LAND(P4.C1)",
           "note": "Exakt ruta 105 i den godkända P4-given, fingertoppen på kortet. Given klipps här och returerna börjar här.",
-          "source": { "from": "given pamela-p4-c1-plan-deal-02", "when": "2026-11-10" }
+          "source": {
+            "from": "given pamela-p4-c1-plan-deal-02",
+            "when": "2026-11-10"
+          }
         },
         {
           "id": "pamela-ruta-p4-c1-source-turn-80",
@@ -574,7 +729,10 @@
           "card": "P4.C1",
           "node": "RELEASE(P4.C1)",
           "note": "Riktig ruta: fingertopparna har just lämnat kortet, handen låg. Båda returerna från släppet börjar här.",
-          "source": { "from": "P4 rått original (4,5/5)", "when": "2026-11-10" }
+          "source": {
+            "from": "P4 rått original (4,5/5)",
+            "when": "2026-11-10"
+          }
         },
         {
           "id": "pamela-p4-c1-plan-land-b-01",
@@ -584,7 +742,10 @@
           "card": "P4.C1",
           "node": "LAND(P4.C1)",
           "note": "Den riktiga P4-landningen med skon bytt mot den öppna, så att båda bilderna har samma sko.",
-          "source": { "from": "P4-givens landningsruta, skon ur skoplåtsklippet", "when": "2026-11-10" }
+          "source": {
+            "from": "P4-givens landningsruta, skon ur skoplåtsklippet",
+            "when": "2026-11-10"
+          }
         },
         {
           "id": "pamela-ruta-p4-c1-drawn-deal-01-112",
@@ -596,7 +757,10 @@
           "card": "P4.C1",
           "node": "LAND(P4.C1)",
           "note": "Hel riktig ruta ur den godkända släpgiven till P4, före hoppet i ruta 117.",
-          "source": { "from": "släpgiven pamela-p4-c1-drawn-deal-01", "when": "2026-11-10" }
+          "source": {
+            "from": "släpgiven pamela-p4-c1-drawn-deal-01",
+            "when": "2026-11-10"
+          }
         },
         {
           "id": "pamela-p4-c1-k165-land-01",
@@ -606,7 +770,10 @@
           "card": "P4.C1",
           "node": "LAND(P4.C1)",
           "note": "Förslaget med större kort. Skickad i en Runway-order utanför jobbfilen.",
-          "source": { "from": "pamela-p4-c1-plan-deal-02 ruta 105, kortet förstorat", "when": "2026-11-11" }
+          "source": {
+            "from": "pamela-p4-c1-plan-deal-02 ruta 105, kortet förstorat",
+            "when": "2026-11-11"
+          }
         },
         {
           "id": "pamela-p4-c2-plan-land-01",
@@ -616,7 +783,10 @@
           "card": "P4.C2",
           "node": "LAND(P4.C2)",
           "note": "Fingertoppen på kort 2; kort 1 ligger orört bredvid.",
-          "source": { "from": "P4-givens landningsruta plus kort 2", "when": "2026-11-10" }
+          "source": {
+            "from": "P4-givens landningsruta plus kort 2",
+            "when": "2026-11-10"
+          }
         },
         {
           "id": "pamela-p5-c1-plan-land-01",
@@ -626,7 +796,10 @@
           "card": "P5.C1",
           "node": "LAND(P5.C1)",
           "note": "Riktig ruta ur den gamla bankens giv, fingertoppen på kortet.",
-          "source": { "from": "gamla bankens P5-giv", "when": "2026-11-10" }
+          "source": {
+            "from": "gamla bankens P5-giv",
+            "when": "2026-11-10"
+          }
         },
         {
           "id": "pamela-p5-c1-plan-land-b-02",
@@ -636,7 +809,10 @@
           "card": "P5.C1",
           "node": "LAND(P5.C1)",
           "note": "Landningen med den öppna skon (andra bygget).",
-          "source": { "from": "pamela-p5-c1-plan-land-01 med skon bytt", "when": "2026-11-10" }
+          "source": {
+            "from": "pamela-p5-c1-plan-land-01 med skon bytt",
+            "when": "2026-11-10"
+          }
         },
         {
           "id": "pamela-ruta-p5-c1-plan-deal-01-108",
@@ -648,7 +824,10 @@
           "card": "P5.C1",
           "node": "LAND(P5.C1)",
           "note": "Hel riktig ruta ur första P5-given, tre fingrar på kortet i den storlek modellen ritar det.",
-          "source": { "from": "given pamela-p5-c1-plan-deal-01", "when": "2026-11-10" }
+          "source": {
+            "from": "given pamela-p5-c1-plan-deal-01",
+            "when": "2026-11-10"
+          }
         },
         {
           "id": "pamela-ruta-p5-c1-drawn-deal-02-108",
@@ -660,7 +839,10 @@
           "card": "P5.C1",
           "node": "LAND(P5.C1)",
           "note": "Hel riktig ruta, fingertopparna på kortet, den öppna skon.",
-          "source": { "from": "släpgiven pamela-p5-c1-drawn-deal-02", "when": "2026-11-10" }
+          "source": {
+            "from": "släpgiven pamela-p5-c1-drawn-deal-02",
+            "when": "2026-11-10"
+          }
         },
         {
           "id": "pamela-p6-c1-plan-land-01",
@@ -670,7 +852,10 @@
           "card": "P6.C1",
           "node": "LAND(P6.C1)",
           "note": "Riktig ruta ur den gamla bankens giv, fingertoppen på kortet.",
-          "source": { "from": "gamla bankens P6-giv", "when": "2026-11-10" }
+          "source": {
+            "from": "gamla bankens P6-giv",
+            "when": "2026-11-10"
+          }
         },
         {
           "id": "pamela-p6-c1-std-land-02",
@@ -680,7 +865,10 @@
           "card": "P6.C1",
           "node": "LAND(P6.C1)",
           "note": "Landningen med kortet i standardformat. Skickad i Runway-ordrar utanför jobbfilen.",
-          "source": { "from": "pamela-arkiv-p6-c1-join ruta 86 plus standardkortet", "when": "2026-11-11" }
+          "source": {
+            "from": "pamela-arkiv-p6-c1-join ruta 86 plus standardkortet",
+            "when": "2026-11-11"
+          }
         },
         {
           "id": "pamela-p6-c1-k165-land-01",
@@ -690,7 +878,10 @@
           "card": "P6.C1",
           "node": "LAND(P6.C1)",
           "note": "Förslaget med större kort. Skickad i en Runway-order utanför jobbfilen.",
-          "source": { "from": "pamela-arkiv-p6-c1-join ruta 86, kortet förstorat", "when": "2026-11-11" }
+          "source": {
+            "from": "pamela-arkiv-p6-c1-join ruta 86, kortet förstorat",
+            "when": "2026-11-11"
+          }
         },
         {
           "id": "pamela-p7-c1-plan-land-03",
@@ -700,7 +891,10 @@
           "card": "P7.C1",
           "node": "LAND(P7.C1)",
           "note": "Riktig ruta ur det tidigare P7-provet; rosa kort borttagna, planens kort målat, skons fönster återställt.",
-          "source": { "from": "pamela-p7-c1-left-direct-pilot-01 ruta 112", "when": "2026-11-10" }
+          "source": {
+            "from": "pamela-p7-c1-left-direct-pilot-01 ruta 112",
+            "when": "2026-11-10"
+          }
         },
         {
           "id": "pamela-p7-c1-plan-land-04",
@@ -710,7 +904,10 @@
           "card": "P7.C1",
           "node": "LAND(P7.C1)",
           "note": "Som föregående, med riktiga kortpixlar.",
-          "source": { "from": "pamela-p7-c1-left-direct-pilot-01 ruta 112", "when": "2026-11-10" }
+          "source": {
+            "from": "pamela-p7-c1-left-direct-pilot-01 ruta 112",
+            "when": "2026-11-10"
+          }
         },
         {
           "id": "pamela-ruta-p7-c1-plan-deal-01-105",
@@ -722,7 +919,10 @@
           "card": "P7.C1",
           "node": "LAND(P7.C1)",
           "note": "Exakt ruta 105 i given, fingrarna på kortet. Given klipps här och returerna börjar här.",
-          "source": { "from": "given pamela-p7-c1-plan-deal-01", "when": "2026-11-10" }
+          "source": {
+            "from": "given pamela-p7-c1-plan-deal-01",
+            "when": "2026-11-10"
+          }
         },
         {
           "id": "pamela-p7-c1-std-land-02",
@@ -732,7 +932,10 @@
           "card": "P7.C1",
           "node": "LAND(P7.C1)",
           "note": "Landningen med kortet i standardformat. Skickad i Runway-ordrar utanför jobbfilen.",
-          "source": { "from": "pamela-p7-c1-plan-deal-01 ruta 105 plus standardkortet", "when": "2026-11-11" }
+          "source": {
+            "from": "pamela-p7-c1-plan-deal-01 ruta 105 plus standardkortet",
+            "when": "2026-11-11"
+          }
         },
         {
           "id": "pamela-d-c1-std-land-02",
@@ -742,9 +945,11 @@
           "card": "D.C1",
           "node": "LAND(D.C1)",
           "note": "Dealerns första kort i standardformat. Skickad i Runway-ordrar utanför jobbfilen.",
-          "source": { "from": "pamela-arkiv-d-c1-redo-join ruta 98 plus standardkortet", "when": "2026-11-11" }
+          "source": {
+            "from": "pamela-arkiv-d-c1-redo-join ruta 98 plus standardkortet",
+            "when": "2026-11-11"
+          }
         },
-
         {
           "id": "pamela-v6-filmen",
           "role": "referens",
@@ -754,7 +959,10 @@
           "fps": 30,
           "link": "/?runda=v6-filmen",
           "note": "Jakobs valda visuella referens: en hel giv till P4 med rum, bord och kort. Byter hand, större kort än planens.",
-          "source": { "from": "gamla labbet, byggd av de fyra råfilmerna", "when": "2026-11-10" }
+          "source": {
+            "from": "gamla labbet, byggd av de fyra råfilmerna",
+            "when": "2026-11-10"
+          }
         },
         {
           "id": "pamela-hel-giv-16",
@@ -765,7 +973,10 @@
           "fps": 30,
           "link": "/?runda=16-kort",
           "note": "Två kort till varje plats och två till dealern, det andra dolt. Färdig film från den gamla publika sidan.",
-          "source": { "from": "gamla bankens klipp hopsatta", "when": "2026-11-10" }
+          "source": {
+            "from": "gamla bankens klipp hopsatta",
+            "when": "2026-11-10"
+          }
         },
         {
           "id": "pamela-hel-giv-17",
@@ -776,7 +987,10 @@
           "fps": 30,
           "link": "/?runda=17-kort",
           "note": "Som 16 kort, sedan vänds dealerns dolda kort och hon tar ett tredje.",
-          "source": { "from": "gamla bankens klipp hopsatta", "when": "2026-11-10" }
+          "source": {
+            "from": "gamla bankens klipp hopsatta",
+            "when": "2026-11-10"
+          }
         },
         {
           "id": "pamela-hel-giv-14",
@@ -787,7 +1001,10 @@
           "fps": 30,
           "link": "/?runda=14-kort",
           "note": "Äldre färdig film: två kort till varje plats, inga till dealern, vita kort.",
-          "source": { "from": "V6-tidens komposition", "when": "2026-11-10" }
+          "source": {
+            "from": "V6-tidens komposition",
+            "when": "2026-11-10"
+          }
         },
         {
           "id": "pamela-p4-original",
@@ -797,7 +1014,10 @@
           "still": 60,
           "fps": 30,
           "note": "Jakobs högst betygsatta klipp. Heter original men ligger i assets/motions, inte i assets/originals.",
-          "source": { "from": "gamla labbets målpilot (center-arc-01)", "when": "2026-11-10" }
+          "source": {
+            "from": "gamla labbets målpilot (center-arc-01)",
+            "when": "2026-11-10"
+          }
         },
         {
           "id": "pamela-v6-ra-vila",
@@ -807,7 +1027,10 @@
           "still": 30,
           "fps": 30,
           "note": "WAN 3-råfilm (1762 × 1174) bakom V6, fem vilotakter. Inget jobb använder den.",
-          "source": { "from": "gamla labbet, ur vila-station", "when": "2026-11-09" }
+          "source": {
+            "from": "gamla labbet, ur vila-station",
+            "when": "2026-11-09"
+          }
         },
         {
           "id": "pamela-v6-ra-fram",
@@ -817,7 +1040,10 @@
           "still": 60,
           "fps": 30,
           "note": "WAN 3-råfilm bakom V6. Inget jobb använder den.",
-          "source": { "from": "gamla labbet, vila-station till redo-station", "when": "2026-11-09" }
+          "source": {
+            "from": "gamla labbet, vila-station till redo-station",
+            "when": "2026-11-09"
+          }
         },
         {
           "id": "pamela-v6-ra-giv",
@@ -827,7 +1053,10 @@
           "still": 100,
           "fps": 30,
           "note": "WAN 3-råfilm bakom V6: vänster hand tar, höger lägger. Inget jobb använder den.",
-          "source": { "from": "gamla labbet, ur redo-station", "when": "2026-11-09" }
+          "source": {
+            "from": "gamla labbet, ur redo-station",
+            "when": "2026-11-09"
+          }
         },
         {
           "id": "pamela-v6-ra-tillbaka",
@@ -837,7 +1066,10 @@
           "still": 45,
           "fps": 30,
           "note": "WAN 3-råfilm bakom V6. Inget jobb använder den.",
-          "source": { "from": "gamla labbet, redo-station till vila-station", "when": "2026-11-09" }
+          "source": {
+            "from": "gamla labbet, redo-station till vila-station",
+            "when": "2026-11-09"
+          }
         },
         {
           "id": "pamela-v6-aterskapad",
@@ -847,7 +1079,10 @@
           "still": 520,
           "fps": 30,
           "note": "V6 återskapad ruta för ruta ur råfilmerna och kontrollerad mot referensen (npm run verify).",
-          "source": { "from": "tools/render.ts", "when": "2026-11-10" }
+          "source": {
+            "from": "tools/render.ts",
+            "when": "2026-11-10"
+          }
         },
         {
           "id": "pamela-v6-rutor",
@@ -856,7 +1091,10 @@
           "path": "assets/reference/native-0000.png",
           "pattern": "assets/reference/native-*.png",
           "note": "Okomprimerade V6-rutor vid skarvarna, för kontroll. Inget ankare.",
-          "source": { "from": "V6-filmen", "when": "2026-11-10" }
+          "source": {
+            "from": "V6-filmen",
+            "when": "2026-11-10"
+          }
         },
         {
           "id": "pamela-v6-rarutor",
@@ -865,7 +1103,10 @@
           "path": "assets/frames/deal/frame-016.png",
           "pattern": "assets/frames/*/*.png",
           "note": "Råfilmernas rutor uppackade (vila, fram, giv, tillbaka), V6:s indata.",
-          "source": { "from": "assets/originals", "when": "2026-11-10" }
+          "source": {
+            "from": "assets/originals",
+            "when": "2026-11-10"
+          }
         },
         {
           "id": "pamela-ref-p4-tur-retur",
@@ -875,7 +1116,10 @@
           "still": 88,
           "fps": 30,
           "note": "Bankens godkända tur och retur till plats 4, klippt som resolveRound klipper den. Referensfilm för Kling 4 i receptet \"plats 4 som mall\" (Paow b6, b19).",
-          "source": { "from": "Paow-sessionen (dealer-82)", "when": "2026-11-11" }
+          "source": {
+            "from": "Paow-sessionen (dealer-82)",
+            "when": "2026-11-11"
+          }
         },
         {
           "id": "pamela-ref-p1-tur-retur",
@@ -885,7 +1129,10 @@
           "still": 94,
           "fps": 30,
           "note": "Bankens godkända tur och retur till plats 1. Referensfilm för nypet till P1 (Paow b20; kortet går rakt till P1).",
-          "source": { "from": "Paow-sessionen (dealer-82)", "when": "2026-11-11" }
+          "source": {
+            "from": "Paow-sessionen (dealer-82)",
+            "when": "2026-11-11"
+          }
         },
         {
           "id": "pamela-ref-slap-p2-96",
@@ -895,9 +1142,11 @@
           "still": 43,
           "fps": 30,
           "note": "De 96 första rutorna av den godkända pamela-p2-c1-readyb-deal-01, fram till strax före vändningen. Referens för släp ur skon (Paow b9).",
-          "source": { "from": "Paow-sessionen (dealer-82)", "when": "2026-11-11" }
+          "source": {
+            "from": "Paow-sessionen (dealer-82)",
+            "when": "2026-11-11"
+          }
         },
-
         {
           "id": "pamela-film-b13-leave-wide-02",
           "role": "film",
@@ -906,7 +1155,10 @@
           "still": 108,
           "fps": 30,
           "note": "Utanför banken. Obedömd av Jakob: alternativ till helkroppsfilmen som banken har i kling-4.",
-          "source": { "from": "FILMAGENT via Runways MCP, omgång b13", "when": "2026-11-11" }
+          "source": {
+            "from": "FILMAGENT via Runways MCP, omgång b13",
+            "when": "2026-11-11"
+          }
         },
         {
           "id": "pamela-film-b13-idle-sceptical-01",
@@ -916,7 +1168,10 @@
           "still": 40,
           "fps": 30,
           "note": "Utanför banken. Obedömd: ingen dom hittad i liggare, prov eller banken.",
-          "source": { "from": "FILMAGENT via Runways MCP, omgång b13", "when": "2026-11-11" }
+          "source": {
+            "from": "FILMAGENT via Runways MCP, omgång b13",
+            "when": "2026-11-11"
+          }
         },
         {
           "id": "pamela-film-b14-arrive-walk-01",
@@ -926,7 +1181,10 @@
           "still": 67,
           "fps": 30,
           "note": "Utanför banken. Obedömd av Jakob: alternativ till helkroppsfilmen som banken har i kling-4.",
-          "source": { "from": "FILMAGENT via Runways MCP, omgång b14", "when": "2026-11-11" }
+          "source": {
+            "from": "FILMAGENT via Runways MCP, omgång b14",
+            "when": "2026-11-11"
+          }
         },
         {
           "id": "pamela-film-b14-arrive-walk-02",
@@ -936,7 +1194,10 @@
           "still": 67,
           "fps": 30,
           "note": "Utanför banken. Obedömd av Jakob: alternativ till helkroppsfilmen som banken har i kling-4.",
-          "source": { "from": "FILMAGENT via Runways MCP, omgång b14", "when": "2026-11-11" }
+          "source": {
+            "from": "FILMAGENT via Runways MCP, omgång b14",
+            "when": "2026-11-11"
+          }
         },
         {
           "id": "pamela-film-b14-arrive-sit-01",
@@ -946,7 +1207,10 @@
           "still": 40,
           "fps": 30,
           "note": "Utanför banken. Obedömd av Jakob: alternativ till helkroppsfilmen som banken har i kling-4.",
-          "source": { "from": "FILMAGENT via Runways MCP, omgång b14", "when": "2026-11-11" }
+          "source": {
+            "from": "FILMAGENT via Runways MCP, omgång b14",
+            "when": "2026-11-11"
+          }
         },
         {
           "id": "pamela-film-b14-arrive-sit-02",
@@ -956,7 +1220,10 @@
           "still": 40,
           "fps": 30,
           "note": "Utanför banken. Obedömd av Jakob: alternativ till helkroppsfilmen som banken har i kling-4.",
-          "source": { "from": "FILMAGENT via Runways MCP, omgång b14", "when": "2026-11-11" }
+          "source": {
+            "from": "FILMAGENT via Runways MCP, omgång b14",
+            "when": "2026-11-11"
+          }
         },
         {
           "id": "pamela-film-b14-leave-wide-03",
@@ -966,7 +1233,10 @@
           "still": 108,
           "fps": 30,
           "note": "Utanför banken. Obedömd av Jakob: alternativ till helkroppsfilmen som banken har i kling-4.",
-          "source": { "from": "FILMAGENT via Runways MCP, omgång b14", "when": "2026-11-11" }
+          "source": {
+            "from": "FILMAGENT via Runways MCP, omgång b14",
+            "when": "2026-11-11"
+          }
         },
         {
           "id": "pamela-film-b14-leave-wide-04",
@@ -976,7 +1246,10 @@
           "still": 108,
           "fps": 30,
           "note": "Utanför banken. Obedömd av Jakob: alternativ till helkroppsfilmen som banken har i kling-4.",
-          "source": { "from": "FILMAGENT via Runways MCP, omgång b14", "when": "2026-11-11" }
+          "source": {
+            "from": "FILMAGENT via Runways MCP, omgång b14",
+            "when": "2026-11-11"
+          }
         },
         {
           "id": "pamela-film-b16-leave-wide-wan3prime-01",
@@ -986,7 +1259,10 @@
           "still": 108,
           "fps": 30,
           "note": "Utanför banken. Obedömd av Jakob: alternativ till helkroppsfilmen som banken har i kling-4.",
-          "source": { "from": "FILMAGENT via Runways MCP, omgång b16", "when": "2026-11-11" }
+          "source": {
+            "from": "FILMAGENT via Runways MCP, omgång b16",
+            "when": "2026-11-11"
+          }
         },
         {
           "id": "pamela-film-b18-idle-cough-02",
@@ -996,7 +1272,10 @@
           "still": 54,
           "fps": 30,
           "note": "Utanför banken. Inte vald: tagning 2 fördes in i banken som pamela-idle-cough-02.",
-          "source": { "from": "FILMAGENT via Runways MCP, omgång b18", "when": "2026-11-11" }
+          "source": {
+            "from": "FILMAGENT via Runways MCP, omgång b18",
+            "when": "2026-11-11"
+          }
         },
         {
           "id": "pamela-film-b17-leave-wide-kling4-02",
@@ -1006,7 +1285,10 @@
           "still": 108,
           "fps": 24,
           "note": "Utanför banken. Obedömd av Jakob: alternativ till helkroppsfilmen som banken har i kling-4.",
-          "source": { "from": "FILMAGENT via Runways MCP, omgång b17", "when": "2026-11-11" }
+          "source": {
+            "from": "FILMAGENT via Runways MCP, omgång b17",
+            "when": "2026-11-11"
+          }
         },
         {
           "id": "pamela-film-b17-leave-wide-kling4-02-t2",
@@ -1016,7 +1298,10 @@
           "still": 108,
           "fps": 24,
           "note": "Utanför banken. Obedömd av Jakob: alternativ till helkroppsfilmen som banken har i kling-4.",
-          "source": { "from": "FILMAGENT via Runways MCP, omgång b17", "when": "2026-11-11" }
+          "source": {
+            "from": "FILMAGENT via Runways MCP, omgång b17",
+            "when": "2026-11-11"
+          }
         },
         {
           "id": "pamela-film-b17-arrive-walk-kling4-01-t2",
@@ -1026,7 +1311,10 @@
           "still": 65,
           "fps": 24,
           "note": "Utanför banken. Inte vald: banken satte ihop ingången av tagning 1.",
-          "source": { "from": "FILMAGENT via Runways MCP, omgång b17", "when": "2026-11-11" }
+          "source": {
+            "from": "FILMAGENT via Runways MCP, omgång b17",
+            "when": "2026-11-11"
+          }
         },
         {
           "id": "pamela-film-b17-arrive-sit-kling4-01-t2",
@@ -1036,7 +1324,10 @@
           "still": 32,
           "fps": 24,
           "note": "Utanför banken. Inte vald: banken satte ihop ingången av tagning 1.",
-          "source": { "from": "FILMAGENT via Runways MCP, omgång b17", "when": "2026-11-11" }
+          "source": {
+            "from": "FILMAGENT via Runways MCP, omgång b17",
+            "when": "2026-11-11"
+          }
         },
         {
           "id": "pamela-film-b17-arrive-hel-kling4-01",
@@ -1046,7 +1337,10 @@
           "still": 86,
           "fps": 24,
           "note": "Utanför banken. Obedömd av Jakob: alternativ till helkroppsfilmen som banken har i kling-4.",
-          "source": { "from": "FILMAGENT via Runways MCP, omgång b17", "when": "2026-11-11" }
+          "source": {
+            "from": "FILMAGENT via Runways MCP, omgång b17",
+            "when": "2026-11-11"
+          }
         },
         {
           "id": "pamela-film-b17-arrive-hel-kling4-01-t2",
@@ -1056,7 +1350,10 @@
           "still": 86,
           "fps": 24,
           "note": "Utanför banken. Obedömd av Jakob: alternativ till helkroppsfilmen som banken har i kling-4.",
-          "source": { "from": "FILMAGENT via Runways MCP, omgång b17", "when": "2026-11-11" }
+          "source": {
+            "from": "FILMAGENT via Runways MCP, omgång b17",
+            "when": "2026-11-11"
+          }
         },
         {
           "id": "pamela-film-b15-p2-c1-plan-deal-02-t2",
@@ -1067,7 +1364,10 @@
           "fps": 30,
           "card": "P2.C1",
           "note": "Utanför banken. Inte vald: tagning 1 rutgranskades som möjlig variant (Prov givar-omgang-15, b15/domar-givar.json).",
-          "source": { "from": "FILMAGENT via Runways MCP, omgång b15", "when": "2026-11-11" }
+          "source": {
+            "from": "FILMAGENT via Runways MCP, omgång b15",
+            "when": "2026-11-11"
+          }
         },
         {
           "id": "pamela-film-b15-p6-c1-plan-deal-02-t2",
@@ -1078,7 +1378,10 @@
           "fps": 30,
           "card": "P6.C1",
           "note": "Utanför banken. Inte vald: tagning 1 rutgranskades som möjlig variant (Prov givar-omgang-15, b15/domar-givar.json).",
-          "source": { "from": "FILMAGENT via Runways MCP, omgång b15", "when": "2026-11-11" }
+          "source": {
+            "from": "FILMAGENT via Runways MCP, omgång b15",
+            "when": "2026-11-11"
+          }
         },
         {
           "id": "pamela-film-b15-p7-c1-plan-deal-03",
@@ -1089,7 +1392,10 @@
           "fps": 30,
           "card": "P7.C1",
           "note": "Utanför banken. Obedömd: giv till P7 i omgång b15, inte bland omgångens fyra kandidater, inte rutgranskad.",
-          "source": { "from": "FILMAGENT via Runways MCP, omgång b15", "when": "2026-11-11" }
+          "source": {
+            "from": "FILMAGENT via Runways MCP, omgång b15",
+            "when": "2026-11-11"
+          }
         },
         {
           "id": "pamela-film-b15-p7-c1-plan-deal-04",
@@ -1100,7 +1406,10 @@
           "fps": 30,
           "card": "P7.C1",
           "note": "Utanför banken. Obedömd: giv till P7 i omgång b15, inte bland omgångens fyra kandidater, inte rutgranskad.",
-          "source": { "from": "FILMAGENT via Runways MCP, omgång b15", "when": "2026-11-11" }
+          "source": {
+            "from": "FILMAGENT via Runways MCP, omgång b15",
+            "when": "2026-11-11"
+          }
         },
         {
           "id": "pamela-film-b15-p5-c1-plan-return-ready-02",
@@ -1111,7 +1420,10 @@
           "fps": 30,
           "card": "P5.C1",
           "note": "Utanför banken. Obedömd: inte bland omgångens fyra kandidater, inte rutgranskad.",
-          "source": { "from": "FILMAGENT via Runways MCP, omgång b15", "when": "2026-11-11" }
+          "source": {
+            "from": "FILMAGENT via Runways MCP, omgång b15",
+            "when": "2026-11-11"
+          }
         },
         {
           "id": "pamela-film-b15-p5-c1-plan-return-ready-02-t2",
@@ -1122,7 +1434,10 @@
           "fps": 30,
           "card": "P5.C1",
           "note": "Utanför banken. Obedömd: inte bland omgångens fyra kandidater, inte rutgranskad.",
-          "source": { "from": "FILMAGENT via Runways MCP, omgång b15", "when": "2026-11-11" }
+          "source": {
+            "from": "FILMAGENT via Runways MCP, omgång b15",
+            "when": "2026-11-11"
+          }
         },
         {
           "id": "pamela-film-b15-p5-c1-plan-return-idle-02-t2",
@@ -1133,7 +1448,10 @@
           "fps": 30,
           "card": "P5.C1",
           "note": "Utanför banken. Inte vald: tagning 1 rutgranskades och ligger i banken.",
-          "source": { "from": "FILMAGENT via Runways MCP, omgång b15", "when": "2026-11-11" }
+          "source": {
+            "from": "FILMAGENT via Runways MCP, omgång b15",
+            "when": "2026-11-11"
+          }
         },
         {
           "id": "pamela-film-b15-p6-c1-plan-return-ready-02",
@@ -1144,7 +1462,10 @@
           "fps": 30,
           "card": "P6.C1",
           "note": "Utanför banken. Obedömd: inte bland omgångens fyra kandidater, inte rutgranskad.",
-          "source": { "from": "FILMAGENT via Runways MCP, omgång b15", "when": "2026-11-11" }
+          "source": {
+            "from": "FILMAGENT via Runways MCP, omgång b15",
+            "when": "2026-11-11"
+          }
         },
         {
           "id": "pamela-film-b15-p6-c1-plan-return-ready-02-t2",
@@ -1155,7 +1476,10 @@
           "fps": 30,
           "card": "P6.C1",
           "note": "Utanför banken. Obedömd: inte bland omgångens fyra kandidater, inte rutgranskad.",
-          "source": { "from": "FILMAGENT via Runways MCP, omgång b15", "when": "2026-11-11" }
+          "source": {
+            "from": "FILMAGENT via Runways MCP, omgång b15",
+            "when": "2026-11-11"
+          }
         },
         {
           "id": "pamela-film-b15-p6-c1-plan-return-idle-02",
@@ -1166,7 +1490,10 @@
           "fps": 30,
           "card": "P6.C1",
           "note": "Utanför banken. Obedömd: inte bland omgångens fyra kandidater, inte rutgranskad.",
-          "source": { "from": "FILMAGENT via Runways MCP, omgång b15", "when": "2026-11-11" }
+          "source": {
+            "from": "FILMAGENT via Runways MCP, omgång b15",
+            "when": "2026-11-11"
+          }
         },
         {
           "id": "pamela-film-b15-p6-c1-plan-return-idle-02-t2",
@@ -1177,7 +1504,10 @@
           "fps": 30,
           "card": "P6.C1",
           "note": "Utanför banken. Obedömd: inte bland omgångens fyra kandidater, inte rutgranskad.",
-          "source": { "from": "FILMAGENT via Runways MCP, omgång b15", "when": "2026-11-11" }
+          "source": {
+            "from": "FILMAGENT via Runways MCP, omgång b15",
+            "when": "2026-11-11"
+          }
         },
         {
           "id": "pamela-film-b15-ready-idle-exit-01",
@@ -1187,7 +1517,10 @@
           "still": 27,
           "fps": 30,
           "note": "Utanför banken. Inte vald: 3 s-tagningen (exit-02) rutgranskades som bättre och fördes in.",
-          "source": { "from": "FILMAGENT via Runways MCP, omgång b15", "when": "2026-11-11" }
+          "source": {
+            "from": "FILMAGENT via Runways MCP, omgång b15",
+            "when": "2026-11-11"
+          }
         },
         {
           "id": "pamela-film-b19-p2-c1-plan-deal-02-kling",
@@ -1198,7 +1531,10 @@
           "fps": 24,
           "card": "P2.C1",
           "note": "Utanför banken. Obedömd: kling-4-tagning av samma beställning; bara P6 rutgranskades.",
-          "source": { "from": "FILMAGENT via Runways MCP, omgång b19", "when": "2026-11-11" }
+          "source": {
+            "from": "FILMAGENT via Runways MCP, omgång b19",
+            "when": "2026-11-11"
+          }
         },
         {
           "id": "pamela-film-b19-p3-c1-plan-deal-03-kling",
@@ -1209,7 +1545,10 @@
           "fps": 24,
           "card": "P3.C1",
           "note": "Utanför banken. Obedömd: kling-4-tagning av samma beställning; bara P6 rutgranskades.",
-          "source": { "from": "FILMAGENT via Runways MCP, omgång b19", "when": "2026-11-11" }
+          "source": {
+            "from": "FILMAGENT via Runways MCP, omgång b19",
+            "when": "2026-11-11"
+          }
         },
         {
           "id": "pamela-film-b19-p7-c1-plan-deal-03-kling",
@@ -1220,7 +1559,10 @@
           "fps": 24,
           "card": "P7.C1",
           "note": "Utanför banken. Obedömd: kling-4-tagning av samma beställning; bara P6 rutgranskades.",
-          "source": { "from": "FILMAGENT via Runways MCP, omgång b19", "when": "2026-11-11" }
+          "source": {
+            "from": "FILMAGENT via Runways MCP, omgång b19",
+            "when": "2026-11-11"
+          }
         },
         {
           "id": "pamela-film-b19-p5-c1-plan-return-ready-02-kling",
@@ -1231,7 +1573,10 @@
           "fps": 24,
           "card": "P5.C1",
           "note": "Utanför banken. Obedömd: kling-4-tagning av samma beställning; bara P6 rutgranskades.",
-          "source": { "from": "FILMAGENT via Runways MCP, omgång b19", "when": "2026-11-11" }
+          "source": {
+            "from": "FILMAGENT via Runways MCP, omgång b19",
+            "when": "2026-11-11"
+          }
         },
         {
           "id": "pamela-film-b19-p6-c1-plan-return-ready-02-kling",
@@ -1242,7 +1587,10 @@
           "fps": 24,
           "card": "P6.C1",
           "note": "Utanför banken. Obedömd: kling-4-tagning av samma beställning; bara P6 rutgranskades.",
-          "source": { "from": "FILMAGENT via Runways MCP, omgång b19", "when": "2026-11-11" }
+          "source": {
+            "from": "FILMAGENT via Runways MCP, omgång b19",
+            "when": "2026-11-11"
+          }
         },
         {
           "id": "pamela-film-b20-p2-c1-plan-deal-02-ref",
@@ -1253,7 +1601,10 @@
           "fps": 24,
           "card": "P2.C1",
           "note": "Utanför banken. Obedömd: kling-4 med referensfilm, inte rutgranskad.",
-          "source": { "from": "FILMAGENT via Runways MCP, omgång b20", "when": "2026-11-11" }
+          "source": {
+            "from": "FILMAGENT via Runways MCP, omgång b20",
+            "when": "2026-11-11"
+          }
         },
         {
           "id": "pamela-film-b20-p3-c1-plan-deal-03-ref",
@@ -1264,7 +1615,10 @@
           "fps": 24,
           "card": "P3.C1",
           "note": "Utanför banken. Obedömd: kling-4 med referensfilm, inte rutgranskad.",
-          "source": { "from": "FILMAGENT via Runways MCP, omgång b20", "when": "2026-11-11" }
+          "source": {
+            "from": "FILMAGENT via Runways MCP, omgång b20",
+            "when": "2026-11-11"
+          }
         },
         {
           "id": "pamela-film-b20-p6-c1-plan-deal-02-ref",
@@ -1275,7 +1629,10 @@
           "fps": 24,
           "card": "P6.C1",
           "note": "Utanför banken. Obedömd: kling-4 med referensfilm, inte rutgranskad.",
-          "source": { "from": "FILMAGENT via Runways MCP, omgång b20", "when": "2026-11-11" }
+          "source": {
+            "from": "FILMAGENT via Runways MCP, omgång b20",
+            "when": "2026-11-11"
+          }
         },
         {
           "id": "pamela-film-b20-p7-c1-plan-deal-03-ref",
@@ -1286,7 +1643,10 @@
           "fps": 24,
           "card": "P7.C1",
           "note": "Utanför banken. Obedömd: kling-4 med referensfilm, inte rutgranskad.",
-          "source": { "from": "FILMAGENT via Runways MCP, omgång b20", "when": "2026-11-11" }
+          "source": {
+            "from": "FILMAGENT via Runways MCP, omgång b20",
+            "when": "2026-11-11"
+          }
         },
         {
           "id": "pamela-film-b20-p5-c1-plan-return-ready-02-ref",
@@ -1297,7 +1657,10 @@
           "fps": 24,
           "card": "P5.C1",
           "note": "Utanför banken. Obedömd: kling-4 med referensfilm, inte rutgranskad.",
-          "source": { "from": "FILMAGENT via Runways MCP, omgång b20", "when": "2026-11-11" }
+          "source": {
+            "from": "FILMAGENT via Runways MCP, omgång b20",
+            "when": "2026-11-11"
+          }
         },
         {
           "id": "pamela-film-b20-p6-c1-plan-return-ready-02-ref",
@@ -1308,7 +1671,10 @@
           "fps": 24,
           "card": "P6.C1",
           "note": "Utanför banken. Obedömd: kling-4 med referensfilm, inte rutgranskad.",
-          "source": { "from": "FILMAGENT via Runways MCP, omgång b20", "when": "2026-11-11" }
+          "source": {
+            "from": "FILMAGENT via Runways MCP, omgång b20",
+            "when": "2026-11-11"
+          }
         },
         {
           "id": "pamela-film-b21-p6-c1-plan-deal-04-kling",
@@ -1319,7 +1685,10 @@
           "fps": 24,
           "card": "P6.C1",
           "note": "Utanför banken. Obedömd: giv med standardkortet, bara mätt (b21/work/verify21.json), inte rutgranskad.",
-          "source": { "from": "FILMAGENT via Runways MCP, omgång b21", "when": "2026-11-11" }
+          "source": {
+            "from": "FILMAGENT via Runways MCP, omgång b21",
+            "when": "2026-11-11"
+          }
         },
         {
           "id": "pamela-film-b21-p6-c1-plan-deal-04",
@@ -1330,7 +1699,10 @@
           "fps": 30,
           "card": "P6.C1",
           "note": "Utanför banken. Obedömd: giv med standardkortet, bara mätt (b21/work/verify21.json), inte rutgranskad.",
-          "source": { "from": "FILMAGENT via Runways MCP, omgång b21", "when": "2026-11-11" }
+          "source": {
+            "from": "FILMAGENT via Runways MCP, omgång b21",
+            "when": "2026-11-11"
+          }
         },
         {
           "id": "pamela-film-b21-p7-c1-plan-deal-05-kling",
@@ -1341,7 +1713,10 @@
           "fps": 24,
           "card": "P7.C1",
           "note": "Utanför banken. Obedömd: giv med standardkortet, bara mätt (b21/work/verify21.json), inte rutgranskad.",
-          "source": { "from": "FILMAGENT via Runways MCP, omgång b21", "when": "2026-11-11" }
+          "source": {
+            "from": "FILMAGENT via Runways MCP, omgång b21",
+            "when": "2026-11-11"
+          }
         },
         {
           "id": "pamela-film-b23-slide-p4-kling",
@@ -1351,7 +1726,10 @@
           "still": 54,
           "fps": 24,
           "note": "Utanför banken. Obedömd av Jakob. Provet \"bara platsen, inga färger\" (gult kort i K 1,65); kling-4 släppte och knuffade kortet i tre av fem, wan3 med ett kort var användbar med anmärkning.",
-          "source": { "from": "FILMAGENT via Runways MCP, omgång b23", "when": "2026-11-11" }
+          "source": {
+            "from": "FILMAGENT via Runways MCP, omgång b23",
+            "when": "2026-11-11"
+          }
         },
         {
           "id": "pamela-film-b23-slide-p4-wan3",
@@ -1361,7 +1739,10 @@
           "still": 67,
           "fps": 30,
           "note": "Utanför banken. Rutgranskad av FILMAGENT-2: användbar med anmärkning som \"lyft, bär, skjut på plats\" (kortet hålls upp mot kameran). Provet \"bara platsen, inga färger\" med gult kort i K 1,65; obedömd av Jakob.",
-          "source": { "from": "FILMAGENT via Runways MCP, omgång b23", "when": "2026-11-11" }
+          "source": {
+            "from": "FILMAGENT via Runways MCP, omgång b23",
+            "when": "2026-11-11"
+          }
         },
         {
           "id": "pamela-film-b23-slide-p1-kling",
@@ -1371,7 +1752,10 @@
           "still": 54,
           "fps": 24,
           "note": "Utanför banken. Obedömd av Jakob. Provet \"bara platsen, inga färger\" (gult kort i K 1,65); kling-4 släppte och knuffade kortet i tre av fem, wan3 med ett kort var användbar med anmärkning.",
-          "source": { "from": "FILMAGENT via Runways MCP, omgång b23", "when": "2026-11-11" }
+          "source": {
+            "from": "FILMAGENT via Runways MCP, omgång b23",
+            "when": "2026-11-11"
+          }
         },
         {
           "id": "pamela-film-b23-slide-p6-kling",
@@ -1381,7 +1765,10 @@
           "still": 54,
           "fps": 24,
           "note": "Utanför banken. Obedömd av Jakob. Provet \"bara platsen, inga färger\" (gult kort i K 1,65); kling-4 släppte och knuffade kortet i tre av fem, wan3 med ett kort var användbar med anmärkning.",
-          "source": { "from": "FILMAGENT via Runways MCP, omgång b23", "when": "2026-11-11" }
+          "source": {
+            "from": "FILMAGENT via Runways MCP, omgång b23",
+            "when": "2026-11-11"
+          }
         },
         {
           "id": "pamela-film-b23-slide-p7-kling",
@@ -1391,7 +1778,10 @@
           "still": 43,
           "fps": 24,
           "note": "Utanför banken. Obedömd av Jakob. Provet \"bara platsen, inga färger\" (gult kort i K 1,65); kling-4 släppte och knuffade kortet i tre av fem, wan3 med ett kort var användbar med anmärkning.",
-          "source": { "from": "FILMAGENT via Runways MCP, omgång b23", "when": "2026-11-11" }
+          "source": {
+            "from": "FILMAGENT via Runways MCP, omgång b23",
+            "when": "2026-11-11"
+          }
         },
         {
           "id": "pamela-film-b23-slide-tre-kling",
@@ -1401,7 +1791,10 @@
           "still": 108,
           "fps": 24,
           "note": "Utanför banken. Obedömd av Jakob. Provet \"bara platsen, inga färger\" (gult kort i K 1,65); kling-4 släppte och knuffade kortet i tre av fem, wan3 med ett kort var användbar med anmärkning.",
-          "source": { "from": "FILMAGENT via Runways MCP, omgång b23", "when": "2026-11-11" }
+          "source": {
+            "from": "FILMAGENT via Runways MCP, omgång b23",
+            "when": "2026-11-11"
+          }
         },
         {
           "id": "pamela-film-b23-slide-karta-p4-kling",
@@ -1411,7 +1804,10 @@
           "still": 54,
           "fps": 24,
           "note": "Utanför banken. Obedömd av Jakob. Provet \"bara platsen, inga färger\" (gult kort i K 1,65); kling-4 släppte och knuffade kortet i tre av fem, wan3 med ett kort var användbar med anmärkning.",
-          "source": { "from": "FILMAGENT via Runways MCP, omgång b23", "when": "2026-11-11" }
+          "source": {
+            "from": "FILMAGENT via Runways MCP, omgång b23",
+            "when": "2026-11-11"
+          }
         },
         {
           "id": "pamela-film-b22-p6-c1-plan-deal-05",
@@ -1422,7 +1818,10 @@
           "fps": 30,
           "card": "P6.C1",
           "note": "Utanför banken. Obedömd: prov med större kort (K 1,65) i landningsbilden, inte rutgranskat.",
-          "source": { "from": "FILMAGENT via Runways MCP, omgång b22", "when": "2026-11-11" }
+          "source": {
+            "from": "FILMAGENT via Runways MCP, omgång b22",
+            "when": "2026-11-11"
+          }
         },
         {
           "id": "pamela-film-b22-p6-c1-plan-deal-05-kling",
@@ -1433,7 +1832,10 @@
           "fps": 24,
           "card": "P6.C1",
           "note": "Utanför banken. Obedömd: prov med större kort (K 1,65) i landningsbilden, inte rutgranskat.",
-          "source": { "from": "FILMAGENT via Runways MCP, omgång b22", "when": "2026-11-11" }
+          "source": {
+            "from": "FILMAGENT via Runways MCP, omgång b22",
+            "when": "2026-11-11"
+          }
         },
         {
           "id": "pamela-film-b22-p4-c1-plan-deal-03",
@@ -1444,7 +1846,10 @@
           "fps": 30,
           "card": "P4.C1",
           "note": "Utanför banken. Obedömd: prov med större kort (K 1,65) i landningsbilden, inte rutgranskat.",
-          "source": { "from": "FILMAGENT via Runways MCP, omgång b22", "when": "2026-11-11" }
+          "source": {
+            "from": "FILMAGENT via Runways MCP, omgång b22",
+            "when": "2026-11-11"
+          }
         },
         {
           "id": "pamela-film-b22-p4-c1-plan-deal-03-kling",
@@ -1455,7 +1860,10 @@
           "fps": 24,
           "card": "P4.C1",
           "note": "Utanför banken. Obedömd: prov med större kort (K 1,65) i landningsbilden, inte rutgranskat.",
-          "source": { "from": "FILMAGENT via Runways MCP, omgång b22", "when": "2026-11-11" }
+          "source": {
+            "from": "FILMAGENT via Runways MCP, omgång b22",
+            "when": "2026-11-11"
+          }
         },
         {
           "id": "pamela-film-b15-giv-plats-2",
@@ -1466,7 +1874,10 @@
           "fps": 30,
           "state": "kandidat",
           "note": "Utanför banken (en kopia ligger också i assets/motions utan post). Rutgranskad: möjlig variant, vändning på bordet.",
-          "source": { "from": "FILMAGENT via Runways MCP", "when": "2026-11-11" }
+          "source": {
+            "from": "FILMAGENT via Runways MCP",
+            "when": "2026-11-11"
+          }
         },
         {
           "id": "pamela-film-b15-giv-plats-3",
@@ -1477,7 +1888,10 @@
           "fps": 30,
           "state": "kandidat",
           "note": "Utanför banken (en kopia ligger också i assets/motions utan post). Rutgranskad: möjlig variant, den bättre av två tagningar.",
-          "source": { "from": "FILMAGENT via Runways MCP", "when": "2026-11-11" }
+          "source": {
+            "from": "FILMAGENT via Runways MCP",
+            "when": "2026-11-11"
+          }
         },
         {
           "id": "pamela-film-b15-giv-plats-6",
@@ -1488,7 +1902,10 @@
           "fps": 30,
           "state": "kandidat",
           "note": "Utanför banken (en kopia ligger också i assets/motions utan post). Rutgranskad: möjlig variant, skjuts på plats; omgångens renaste wan3-giv.",
-          "source": { "from": "FILMAGENT via Runways MCP", "when": "2026-11-11" }
+          "source": {
+            "from": "FILMAGENT via Runways MCP",
+            "when": "2026-11-11"
+          }
         },
         {
           "id": "pamela-film-b15-giv-plats-6-kling",
@@ -1499,7 +1916,10 @@
           "fps": 24,
           "state": "kandidat",
           "note": "Utanför banken (en kopia ligger också i assets/motions utan post). Rutgranskad: kandidat till huvudtagning (vänds i luften, landar inom 2 px, en lätt klapp på kortet).",
-          "source": { "from": "FILMAGENT via Runways MCP", "when": "2026-11-11" }
+          "source": {
+            "from": "FILMAGENT via Runways MCP",
+            "when": "2026-11-11"
+          }
         },
         {
           "id": "pamela-film-b7-p3c2-kling4",
@@ -1510,7 +1930,10 @@
           "fps": 24,
           "state": "kandidat",
           "note": "Utanför banken, Pamela (beställd i Paow-sessionen). Jakob 2026-11-12: etta. Granskaren: närmast en huvudtagning, kortet 0,8 px från platsen (Prov plan-till-film-p3c2, film 8).",
-          "source": { "from": "Paow-sessionen (dealer-82) via Runways MCP, omgång b7", "when": "2026-11-11" }
+          "source": {
+            "from": "Paow-sessionen (dealer-82) via Runways MCP, omgång b7",
+            "when": "2026-11-11"
+          }
         },
         {
           "id": "pamela-film-reel-replik",
@@ -1520,10 +1943,11 @@
           "still": 86,
           "fps": 24,
           "note": "Utanför banken. \"Naturlig eller natur, vad önskas John?\" ur vilan; i Pamela-filmen (Prov pamela-film). Uttalet är inte avlyssnat av Jakob. source.mp4 är anpassad till bankens ruta, original.mp4 är leveransen.",
-          "source": { "from": "Pamela-filmen, session dealer-db", "when": "2026-11-12" }
+          "source": {
+            "from": "Pamela-filmen, session dealer-db",
+            "when": "2026-11-12"
+          }
         },
-
-
         {
           "id": "pamela-prov-original-ankare-keystone",
           "role": "prov",
@@ -1828,7 +2252,6 @@
           "proof": "trailer-noir-3",
           "note": "Reklamfilm i noirstil, fristående från banken. Jakob vill att den ligger kvar här. Går inte upp i nätkopian (studio-release blockerar trailer*)."
         },
-
         {
           "id": "pamela-drawn-01",
           "role": "arbetsmaterial",
@@ -1836,7 +2259,10 @@
           "path": "assets/anchors/pamela-drawn-01/anchor.png",
           "node": "DRAWN",
           "note": "Experimentnod mellan ankare 2.2 och given: kortet plant på filten framför skon.",
-          "source": { "from": "ruta 50 i det tidigare READY2-provet", "when": "2026-11-10" }
+          "source": {
+            "from": "ruta 50 i det tidigare READY2-provet",
+            "when": "2026-11-10"
+          }
         },
         {
           "id": "pamela-ruta-drawn-20",
@@ -1847,7 +2273,10 @@
           "fps": 30,
           "node": "DRAWN",
           "note": "Hel riktig ruta ur den godkända släpgiven till P4, innan kortet börjar röra sig.",
-          "source": { "from": "släpgiven pamela-p4-c1-drawn-deal-01", "when": "2026-11-10" }
+          "source": {
+            "from": "släpgiven pamela-p4-c1-drawn-deal-01",
+            "when": "2026-11-10"
+          }
         },
         {
           "id": "pamela-ruta-tomt-bord",
@@ -1858,7 +2287,10 @@
           "fps": 30,
           "node": "AWAY",
           "note": "Bordet utan dealer: steget där hon kommer in börjar här. Bästa tomma rutan enligt granskningen.",
-          "source": { "from": "pamela-table-leave-01", "when": "2026-11-11" }
+          "source": {
+            "from": "pamela-table-leave-01",
+            "when": "2026-11-11"
+          }
         },
         {
           "id": "pamela-wide-seated-01",
@@ -1867,7 +2299,10 @@
           "path": "assets/anchors/pamela-wide-seated-01/anchor.png",
           "node": "IDLE",
           "note": "Komposit på större grönt för ett lågupplöst prov; ingen riktig helfigursruta finns.",
-          "source": { "from": "pamela-table-leave-02 ruta 30 i halv skala", "when": "2026-11-11" }
+          "source": {
+            "from": "pamela-table-leave-02 ruta 30 i halv skala",
+            "when": "2026-11-11"
+          }
         },
         {
           "id": "pamela-wide-seated-02",
@@ -1875,7 +2310,10 @@
           "name": "Helfigur 2",
           "path": "assets/anchors/pamela-wide-seated-02/anchor.png",
           "note": "Brett format, inte bankens ruta. Bara bredvidfilen anchor-16x9.png har skickats till Runway.",
-          "source": { "from": "helfigursproven", "when": "2026-11-11" }
+          "source": {
+            "from": "helfigursproven",
+            "when": "2026-11-11"
+          }
         },
         {
           "id": "pamela-wide-seated-03",
@@ -1883,7 +2321,10 @@
           "name": "Helfigur 3",
           "path": "assets/anchors/pamela-wide-seated-03/anchor.png",
           "note": "1920 × 1080, inte bankens ruta. Skickad i en Runway-order utanför jobbfilen.",
-          "source": { "from": "helfigursproven", "when": "2026-11-11" }
+          "source": {
+            "from": "helfigursproven",
+            "when": "2026-11-11"
+          }
         },
         {
           "id": "pamela-away-wide-01",
@@ -1892,9 +2333,11 @@
           "path": "assets/anchors/pamela-away-wide-01/anchor.png",
           "node": "AWAY",
           "note": "1920 × 1080, inte bankens ruta. Skickad i Runway-ordrar utanför jobbfilen.",
-          "source": { "from": "helfigursproven", "when": "2026-11-11" }
+          "source": {
+            "from": "helfigursproven",
+            "when": "2026-11-11"
+          }
         },
-
         {
           "id": "pamela-p1-giv-keyframes-02-kalla",
           "role": "arbetsmaterial",
@@ -1903,7 +2346,10 @@
           "still": 92,
           "fps": 30,
           "note": "Gamla labbets P1-giv. Landningsankarna för P1 (pamela-p1-c1-plan-land-02, -03) byggdes ur en ruta här (data/clip-jobs.json, base).",
-          "source": { "from": "gamla labbet; kopia ur arkivet på D:, se receipt.json", "when": "2026-11-10" }
+          "source": {
+            "from": "gamla labbet; kopia ur arkivet på D:, se receipt.json",
+            "when": "2026-11-10"
+          }
         },
         {
           "id": "pamela-p2-mid-arc-02-kalla",
@@ -1913,7 +2359,10 @@
           "still": 104,
           "fps": 30,
           "note": "Gamla labbets P2-giv. Landningsankaret för P2 byggdes ur en ruta här (data/clip-jobs.json, base).",
-          "source": { "from": "gamla labbet; kopia ur arkivet på D:, se receipt.json", "when": "2026-11-10" }
+          "source": {
+            "from": "gamla labbet; kopia ur arkivet på D:, se receipt.json",
+            "when": "2026-11-10"
+          }
         },
         {
           "id": "pamela-p3-c2-mid-01-kalla",
@@ -1923,7 +2372,10 @@
           "still": 117,
           "fps": 30,
           "note": "Gamla labbets P3-giv. Landningsankaret för P3 byggdes ur en ruta här (data/clip-jobs.json, base).",
-          "source": { "from": "gamla labbet; kopia ur arkivet på D:, se receipt.json", "when": "2026-11-10" }
+          "source": {
+            "from": "gamla labbet; kopia ur arkivet på D:, se receipt.json",
+            "when": "2026-11-10"
+          }
         },
         {
           "id": "pamela-p6-c2-mid-01-kalla",
@@ -1933,7 +2385,10 @@
           "still": 84,
           "fps": 30,
           "note": "Gamla labbets P6-giv. Landningsankaret för P6 byggdes ur en ruta här (data/clip-jobs.json, base).",
-          "source": { "from": "gamla labbet; kopia ur arkivet på D:, se receipt.json", "when": "2026-11-10" }
+          "source": {
+            "from": "gamla labbet; kopia ur arkivet på D:, se receipt.json",
+            "when": "2026-11-10"
+          }
         }
       ]
     },
@@ -1954,31 +2409,156 @@
         "path": "D:/dealer-scratch/tmp/paow/",
         "note": "Filmerna från Paow-sessionen (dealer-82), räknade 2026-11-12 ur liggarna bestallningar-*.json. Användbar = rutgranskad och användbar, också med anmärkningar, enligt proven; reserver räknas inte. Inte införda i banken. De användbara har rollen film här (assets/films/paow/ eller provet de ligger i), liggarna ligger kvar i arbetsmappen.",
         "ledgers": [
-          { "file": "bestallningar-b1a.json", "films": 8, "usable": 1, "note": "Samma giv till P4 på åtta sätt. Kling 4 med Pamelas film som referens användbar med anmärkningar; 3 föll, 4 bara mätta. Prov paow-samma-film." },
-          { "file": "bestallningar-b1b.json", "films": 3, "usable": 0, "note": "Hela varvet i en tagning, första försöken. Inget användbart. Prov hel-runda-i-en-tagning." },
-          { "file": "bestallningar-b2.json", "films": 4, "usable": 0, "note": "Aleph i två varianter och hela varvet i full storlek: allt underkänt i rutgranskning." },
-          { "file": "bestallningar-b3.json", "films": 1, "usable": 0, "note": "Rundan med fjorton vita kort, Astrids klipp som referens: korten dubbleras och försvinner. Inte rutgranskad." },
-          { "file": "bestallningar-b4a.json", "films": 2, "usable": 0, "note": "Prov i låg upplösning med flera referensbilder. Inte rutgranskade. Prov paow-nyckelrutor-och-prov." },
-          { "file": "bestallningar-b4b.json", "films": 2, "usable": 0, "note": "Samma med bilderna i tidsordning; den ena sågs som den renaste släp-given dittills, bara på kontaktark." },
-          { "file": "bestallningar-b6.json", "films": 4, "usable": 2, "note": "Plats 4 som mall: redo, ett kort, redo. Kling 4 till P4 och till P3 användbara med anmärkningar. Prov paow-plats-4-som-mall." },
-          { "file": "bestallningar-b7.json", "films": 4, "usable": 2, "note": "Spelare 3 kort 2 ur labbets plan, två med Paow och två med Pamela. Kling 4-filmerna användbara med anmärkningar (Pamela etta, Paow tvåa). Prov plan-till-film-p3c2." },
-          { "file": "bestallningar-b8.json", "films": 0, "usable": 0, "note": "Bara bilder: profilbild i 4K och första keystone i linnet." },
-          { "file": "bestallningar-b9.json", "films": 7, "usable": 2, "note": "Linnet: vila till redo, släp till P1, 30 s till P2–P7. Släp till P1 kort 1 och 2 (WAN 3) användbara med anmärkningar. Prov paow-linne-forsta-filmer." },
-          { "file": "bestallningar-b10.json", "films": 4, "usable": 1, "note": "Linnet, rättade bilder. Släp till P1 kort 1 användbar med tunga anmärkningar. Prov paow-linne-omgang-2." },
-          { "file": "bestallningar-b11.json", "films": 3, "usable": 1, "note": "Linnet. Släp till P1 kort 2 användbar med anmärkningar; vila till redo inte användbar som den är." },
-          { "file": "bestallningar-b12.json", "films": 2, "usable": 0, "note": "Linnet, vila till redo med samma ton. Bara mätta, inte rutgranskade." },
-          { "file": "bestallningar-b13.json", "films": 0, "usable": 0, "note": "Bara bilder: ankarna och profilbilden i kavaj." },
-          { "file": "bestallningar-b14.json", "films": 2, "usable": 0, "note": "Kavaj, vila till redo. Kasserade: en andra sko vid bildkanten. Prov paow-kavaj." },
-          { "file": "bestallningar-b15.json", "films": 2, "usable": 0, "note": "Kavaj, vila till redo. Kasserade: block under manschetterna." },
-          { "file": "bestallningar-b16.json", "films": 0, "usable": 0, "note": "Bara bilder: stående och sittande i 4K, före det yngre utseendet." },
-          { "file": "bestallningar-b17.json", "films": 13, "usable": 5, "note": "Kavaj, äldre utseendet, rutgranskad. Användbara: 1→2.1 t1, 1→2.2 t2 (huvudtagning), släp P1 kort 1 t1 och kort 2 t2, nyp P4. Reserv 3, föll 5. Prov paow-kavaj-filmer." },
-          { "file": "bestallningar-b18.json", "films": 0, "usable": 0, "note": "Bara bilder: stående och sittande i det yngre utseendet, två av varje. A är keystone." },
-          { "file": "bestallningar-b19.json", "films": 3, "usable": 2, "note": "Kavaj, nyp med referens till P4. Dealerns kort användbart som huvudtagning, P1 bara med anmärkningar, P7 föll." },
-          { "file": "bestallningar-b20.json", "films": 2, "usable": 2, "note": "Kavaj, nyp till P1 med egen referens: båda användbara med anmärkningar." },
-          { "file": "bestallningar-b21.json", "films": 1, "usable": 0, "note": "Videoprovet: vila till vila, för att mäta tonskiftet. Inte för banken." },
-          { "file": "bestallningar-b22.json", "films": 1, "usable": 0, "note": "Videoprovet, andra länken. Inte för banken." },
-          { "file": "bestallningar-b23.json", "films": 0, "usable": 0, "note": "Bara bilder: nytt ankare 1, första försöket (ny person i Pamelas bild). Används inte." },
-          { "file": "bestallningar-b24.json", "films": 0, "usable": 0, "note": "Bara bilder: ankare 1 i det yngre utseendet, två kandidater." }
+          {
+            "file": "bestallningar-b1a.json",
+            "films": 8,
+            "usable": 1,
+            "note": "Samma giv till P4 på åtta sätt. Kling 4 med Pamelas film som referens användbar med anmärkningar; 3 föll, 4 bara mätta. Prov paow-samma-film."
+          },
+          {
+            "file": "bestallningar-b1b.json",
+            "films": 3,
+            "usable": 0,
+            "note": "Hela varvet i en tagning, första försöken. Inget användbart. Prov hel-runda-i-en-tagning."
+          },
+          {
+            "file": "bestallningar-b2.json",
+            "films": 4,
+            "usable": 0,
+            "note": "Aleph i två varianter och hela varvet i full storlek: allt underkänt i rutgranskning."
+          },
+          {
+            "file": "bestallningar-b3.json",
+            "films": 1,
+            "usable": 0,
+            "note": "Rundan med fjorton vita kort, Astrids klipp som referens: korten dubbleras och försvinner. Inte rutgranskad."
+          },
+          {
+            "file": "bestallningar-b4a.json",
+            "films": 2,
+            "usable": 0,
+            "note": "Prov i låg upplösning med flera referensbilder. Inte rutgranskade. Prov paow-nyckelrutor-och-prov."
+          },
+          {
+            "file": "bestallningar-b4b.json",
+            "films": 2,
+            "usable": 0,
+            "note": "Samma med bilderna i tidsordning; den ena sågs som den renaste släp-given dittills, bara på kontaktark."
+          },
+          {
+            "file": "bestallningar-b6.json",
+            "films": 4,
+            "usable": 2,
+            "note": "Plats 4 som mall: redo, ett kort, redo. Kling 4 till P4 och till P3 användbara med anmärkningar. Prov paow-plats-4-som-mall."
+          },
+          {
+            "file": "bestallningar-b7.json",
+            "films": 4,
+            "usable": 2,
+            "note": "Spelare 3 kort 2 ur labbets plan, två med Paow och två med Pamela. Kling 4-filmerna användbara med anmärkningar (Pamela etta, Paow tvåa). Prov plan-till-film-p3c2."
+          },
+          {
+            "file": "bestallningar-b8.json",
+            "films": 0,
+            "usable": 0,
+            "note": "Bara bilder: profilbild i 4K och första keystone i linnet."
+          },
+          {
+            "file": "bestallningar-b9.json",
+            "films": 7,
+            "usable": 2,
+            "note": "Linnet: vila till redo, släp till P1, 30 s till P2–P7. Släp till P1 kort 1 och 2 (WAN 3) användbara med anmärkningar. Prov paow-linne-forsta-filmer."
+          },
+          {
+            "file": "bestallningar-b10.json",
+            "films": 4,
+            "usable": 1,
+            "note": "Linnet, rättade bilder. Släp till P1 kort 1 användbar med tunga anmärkningar. Prov paow-linne-omgang-2."
+          },
+          {
+            "file": "bestallningar-b11.json",
+            "films": 3,
+            "usable": 1,
+            "note": "Linnet. Släp till P1 kort 2 användbar med anmärkningar; vila till redo inte användbar som den är."
+          },
+          {
+            "file": "bestallningar-b12.json",
+            "films": 2,
+            "usable": 0,
+            "note": "Linnet, vila till redo med samma ton. Bara mätta, inte rutgranskade."
+          },
+          {
+            "file": "bestallningar-b13.json",
+            "films": 0,
+            "usable": 0,
+            "note": "Bara bilder: ankarna och profilbilden i kavaj."
+          },
+          {
+            "file": "bestallningar-b14.json",
+            "films": 2,
+            "usable": 0,
+            "note": "Kavaj, vila till redo. Kasserade: en andra sko vid bildkanten. Prov paow-kavaj."
+          },
+          {
+            "file": "bestallningar-b15.json",
+            "films": 2,
+            "usable": 0,
+            "note": "Kavaj, vila till redo. Kasserade: block under manschetterna."
+          },
+          {
+            "file": "bestallningar-b16.json",
+            "films": 0,
+            "usable": 0,
+            "note": "Bara bilder: stående och sittande i 4K, före det yngre utseendet."
+          },
+          {
+            "file": "bestallningar-b17.json",
+            "films": 13,
+            "usable": 5,
+            "note": "Kavaj, äldre utseendet, rutgranskad. Användbara: 1→2.1 t1, 1→2.2 t2 (huvudtagning), släp P1 kort 1 t1 och kort 2 t2, nyp P4. Reserv 3, föll 5. Prov paow-kavaj-filmer."
+          },
+          {
+            "file": "bestallningar-b18.json",
+            "films": 0,
+            "usable": 0,
+            "note": "Bara bilder: stående och sittande i det yngre utseendet, två av varje. A är keystone."
+          },
+          {
+            "file": "bestallningar-b19.json",
+            "films": 3,
+            "usable": 2,
+            "note": "Kavaj, nyp med referens till P4. Dealerns kort användbart som huvudtagning, P1 bara med anmärkningar, P7 föll."
+          },
+          {
+            "file": "bestallningar-b20.json",
+            "films": 2,
+            "usable": 2,
+            "note": "Kavaj, nyp till P1 med egen referens: båda användbara med anmärkningar."
+          },
+          {
+            "file": "bestallningar-b21.json",
+            "films": 1,
+            "usable": 0,
+            "note": "Videoprovet: vila till vila, för att mäta tonskiftet. Inte för banken."
+          },
+          {
+            "file": "bestallningar-b22.json",
+            "films": 1,
+            "usable": 0,
+            "note": "Videoprovet, andra länken. Inte för banken."
+          },
+          {
+            "file": "bestallningar-b23.json",
+            "films": 0,
+            "usable": 0,
+            "note": "Bara bilder: nytt ankare 1, första försöket (ny person i Pamelas bild). Används inte."
+          },
+          {
+            "file": "bestallningar-b24.json",
+            "films": 0,
+            "usable": 0,
+            "note": "Bara bilder: ankare 1 i det yngre utseendet, två kandidater."
+          }
         ]
       },
       "entries": [
@@ -1988,7 +2568,10 @@
           "name": "Jakobs bild, vid",
           "path": "assets/proofs/paow-profilbild-och-keystone/9-jakobs-bild-vid.png",
           "note": "En av Jakobs två bilder av henne: linne, blond page, tatueringar. Allt annat om Paow är gjort ur dessa.",
-          "source": { "from": "Jakob (D:/dealer-scratch/tmp/paow/jakob/paow-jakob-1-vid.png, samma fil)", "when": "2026-11-11" }
+          "source": {
+            "from": "Jakob (D:/dealer-scratch/tmp/paow/jakob/paow-jakob-1-vid.png, samma fil)",
+            "when": "2026-11-11"
+          }
         },
         {
           "id": "paow-jakob-nara",
@@ -1996,9 +2579,11 @@
           "name": "Jakobs bild, nära",
           "path": "assets/proofs/paow-profilbild-och-keystone/8-jakobs-bild-nara.png",
           "note": "Jakobs närbild. Ansiktslikheten i allt senare material mäts mot den.",
-          "source": { "from": "Jakob (D:/dealer-scratch/tmp/paow/jakob/paow-jakob-2-nara.png, samma fil)", "when": "2026-11-11" }
+          "source": {
+            "from": "Jakob (D:/dealer-scratch/tmp/paow/jakob/paow-jakob-2-nara.png, samma fil)",
+            "when": "2026-11-11"
+          }
         },
-
         {
           "id": "paow-staende",
           "role": "keystone",
@@ -2006,7 +2591,10 @@
           "path": "assets/keystones/paow-staende/keystone.png",
           "state": "gäller",
           "note": "Jakobs val 2026-11-12: de yngre och nättare bilderna. 4K på vitt. Inte granskad i full storlek.",
-          "source": { "from": "Nano Banana Pro 4K, omgång b18 (D:/dealer-scratch/tmp/paow/filmer/b18/bas-helkropp-1.png)", "when": "2026-11-12" }
+          "source": {
+            "from": "Nano Banana Pro 4K, omgång b18 (D:/dealer-scratch/tmp/paow/filmer/b18/bas-helkropp-1.png)",
+            "when": "2026-11-12"
+          }
         },
         {
           "id": "paow-sittande",
@@ -2015,7 +2603,10 @@
           "path": "assets/keystones/paow-sittande/keystone.png",
           "state": "gäller",
           "note": "Samma inramning som ankare 1. Förlagan för nya ankare när grundstandarden är satt. Inte granskad i full storlek.",
-          "source": { "from": "Nano Banana Pro 4K, omgång b18 (D:/dealer-scratch/tmp/paow/filmer/b18/bas-sittande-2.png)", "when": "2026-11-12" }
+          "source": {
+            "from": "Nano Banana Pro 4K, omgång b18 (D:/dealer-scratch/tmp/paow/filmer/b18/bas-sittande-2.png)",
+            "when": "2026-11-12"
+          }
         },
         {
           "id": "paow-staende-b",
@@ -2023,7 +2614,10 @@
           "name": "Stående B (reserv)",
           "path": "assets/proofs/paow-kavaj/0a-ingangsbild-hel-kropp-b.png",
           "note": "Samma omgång, med pumps. Reserv.",
-          "source": { "from": "Nano Banana Pro 4K, omgång b18", "when": "2026-11-12" }
+          "source": {
+            "from": "Nano Banana Pro 4K, omgång b18",
+            "when": "2026-11-12"
+          }
         },
         {
           "id": "paow-sittande-b",
@@ -2031,7 +2625,10 @@
           "name": "Sittande B (reserv)",
           "path": "assets/proofs/paow-kavaj/0b-keystone-1-sittande-b.png",
           "note": "Samma omgång, tätare beskuren. Reserv.",
-          "source": { "from": "Nano Banana Pro 4K, omgång b18", "when": "2026-11-12" }
+          "source": {
+            "from": "Nano Banana Pro 4K, omgång b18",
+            "when": "2026-11-12"
+          }
         },
         {
           "id": "paow-redo-4k-linne",
@@ -2040,18 +2637,24 @@
           "path": "assets/proofs/paow-grundbild/8-paow-redo-4k.png",
           "state": "ersatt",
           "note": "Första keystone, i linnet och det första utseendet (3504 × 2336). Ligger i arbetsmappen under ankare/ men är en keystone.",
-          "source": { "from": "GPT Image 2.5 ur Pamelas redo-ruta och grundbilden förslag A", "when": "2026-11-11" }
+          "source": {
+            "from": "GPT Image 2.5 ur Pamelas redo-ruta och grundbilden förslag A",
+            "when": "2026-11-11"
+          }
         },
-
         {
           "id": "paow-vila-ung-2",
           "role": "ankare-1",
           "name": "Vila, yngre, kandidat 2",
           "path": "assets/anchors/paow-vila-ung-2/anchor.png",
           "node": "IDLE",
-          "state": "kandidat",
+          "state": "gäller",
           "note": "Bäst mätt: händer 2,4 och 4,4 px, ögon 7,7 px, kroppen slutar rad 830–831, inga skuggor ovanför kanten. Inte godkänd, inte oberoende granskad.",
-          "source": { "from": "redigering av kavajankaret, Nano Banana Pro 4K, omgång b24 (D:/dealer-scratch/tmp/paow/ankare/kandidat-paow-vila-ung-2.png)", "when": "2026-11-12" }
+          "source": {
+            "from": "redigering av kavajankaret, Nano Banana Pro 4K, omgång b24 (D:/dealer-scratch/tmp/paow/ankare/kandidat-paow-vila-ung-2.png)",
+            "when": "2026-11-12"
+          },
+          "stateBy": "Jakob 2026-11-13 00:51: kandidat → gäller (Material)"
         },
         {
           "id": "paow-vila-ung-1",
@@ -2059,9 +2662,13 @@
           "name": "Vila, yngre, kandidat 1",
           "path": "assets/anchors/paow-vila-ung-1/anchor.png",
           "node": "IDLE",
-          "state": "kandidat",
+          "state": "ersatt",
           "note": "Smalare, armbågarna närmare kroppen. Kroppen slutar rad 828, ögon 11,9 px (över gränsen 8). Inte godkänd.",
-          "source": { "from": "redigering av kavajankaret, Nano Banana Pro 4K, omgång b24 (D:/dealer-scratch/tmp/paow/ankare/kandidat-paow-vila-ung-1.png)", "when": "2026-11-12" }
+          "source": {
+            "from": "redigering av kavajankaret, Nano Banana Pro 4K, omgång b24 (D:/dealer-scratch/tmp/paow/ankare/kandidat-paow-vila-ung-1.png)",
+            "when": "2026-11-12"
+          },
+          "stateBy": "Jakob 2026-11-13 00:51: kandidat → ersatt (Vila, yngre, kandidat 2 godkändes i Material)"
         },
         {
           "id": "paow-vila-kavaj",
@@ -2071,7 +2678,10 @@
           "node": "IDLE",
           "state": "ersatt",
           "note": "Det äldre utseendet; granskad fem gånger: användbar. Ersätts av det yngre (Jakob 2026-11-12). Skuggor under armbågarna ovanför kanten.",
-          "source": { "from": "Nano Banana Pro ur linnebilden (D:/dealer-scratch/tmp/paow/ankare/paow-vila-kavaj.png)", "when": "2026-11-12" }
+          "source": {
+            "from": "Nano Banana Pro ur linnebilden (D:/dealer-scratch/tmp/paow/ankare/paow-vila-kavaj.png)",
+            "when": "2026-11-12"
+          }
         },
         {
           "id": "paow-vila-kavaj-sko2",
@@ -2081,7 +2691,10 @@
           "node": "IDLE-B",
           "state": "ersatt",
           "note": "Vilan med läge 2-skon; filmen till ankare 2.2 börjar här. Äldre utseendet, användbar, ersätts.",
-          "source": { "from": "som vila i kavaj (D:/dealer-scratch/tmp/paow/ankare/paow-vila-kavaj-sko2.png)", "when": "2026-11-12" }
+          "source": {
+            "from": "som vila i kavaj (D:/dealer-scratch/tmp/paow/ankare/paow-vila-kavaj-sko2.png)",
+            "when": "2026-11-12"
+          }
         },
         {
           "id": "paow-vila-linne",
@@ -2091,7 +2704,10 @@
           "node": "IDLE",
           "state": "ersatt",
           "note": "Det första utseendet. Filmerna b9–b12 utgår härifrån. Kallas keystone i provet men är ett ankare.",
-          "source": { "from": "GPT Image 2.5 ur Pamelas vila och Jakobs bilder, plagget förlängt lokalt", "when": "2026-11-11" }
+          "source": {
+            "from": "GPT Image 2.5 ur Pamelas vila och Jakobs bilder, plagget förlängt lokalt",
+            "when": "2026-11-11"
+          }
         },
         {
           "id": "paow-vila-forslag-a",
@@ -2101,9 +2717,11 @@
           "node": "IDLE",
           "state": "ersatt",
           "note": "Första grundbilden, i Pamelas ram med utseendet ur Kevins Paow-klipp. Experimentfilmerna b1–b7 utgår från den.",
-          "source": { "from": "GPT Image 2.5 Sunburst ur Pamelas vilobild", "when": "2026-11-11" }
+          "source": {
+            "from": "GPT Image 2.5 Sunburst ur Pamelas vilobild",
+            "when": "2026-11-11"
+          }
         },
-
         {
           "id": "paow-nyp-kavaj",
           "role": "ankare-2.1",
@@ -2112,7 +2730,10 @@
           "node": "READY",
           "state": "ersatt",
           "note": "Det äldre utseendet; granskad: användbar. Bankens sko, grönt jämnat till vilans nivå. Ersätts av det yngre.",
-          "source": { "from": "Nano Banana Pro ur linnebilden (D:/dealer-scratch/tmp/paow/ankare/paow-redo-a-kavaj-vilogron.png)", "when": "2026-11-12" }
+          "source": {
+            "from": "Nano Banana Pro ur linnebilden (D:/dealer-scratch/tmp/paow/ankare/paow-redo-a-kavaj-vilogron.png)",
+            "when": "2026-11-12"
+          }
         },
         {
           "id": "paow-nyp-linne",
@@ -2122,9 +2743,11 @@
           "node": "READY",
           "state": "ersatt",
           "note": "Det första utseendet; användbar med anmärkningar. Kallas keystone 2 i provet men är ett ankare.",
-          "source": { "from": "GPT Image 2.5, skon ur bankens egen bild", "when": "2026-11-11" }
+          "source": {
+            "from": "GPT Image 2.5, skon ur bankens egen bild",
+            "when": "2026-11-11"
+          }
         },
-
         {
           "id": "paow-slap-kavaj",
           "role": "ankare-2.2",
@@ -2133,7 +2756,10 @@
           "node": "READY-B",
           "state": "ersatt",
           "note": "Det äldre utseendet; användbar med anmärkningar (två tunna gröna linjer vid manschetten). Ersätts av det yngre.",
-          "source": { "from": "Nano Banana Pro ur linnebilden (D:/dealer-scratch/tmp/paow/ankare/paow-redo-b-kavaj-vilogron.png)", "when": "2026-11-12" }
+          "source": {
+            "from": "Nano Banana Pro ur linnebilden (D:/dealer-scratch/tmp/paow/ankare/paow-redo-b-kavaj-vilogron.png)",
+            "when": "2026-11-12"
+          }
         },
         {
           "id": "paow-slap-linne",
@@ -2143,9 +2769,11 @@
           "node": "READY-B",
           "state": "ersatt",
           "note": "Det första utseendet; användbar med anmärkningar. Bankens sko för läge 2.",
-          "source": { "from": "GPT Image 2.5, skon ur bankens egen bild", "when": "2026-11-11" }
+          "source": {
+            "from": "GPT Image 2.5, skon ur bankens egen bild",
+            "when": "2026-11-11"
+          }
         },
-
         {
           "id": "paow-film-b1a-p4-kling4-ref",
           "role": "film",
@@ -2155,7 +2783,10 @@
           "fps": 24,
           "state": "ersatt",
           "note": "Utanför banken, första utseendet. Granskaren: användbar med anmärkningar, 91 poäng (Prov paow-samma-film, film 1).",
-          "source": { "from": "Paow-sessionen (dealer-82) via Runways MCP, omgång b1a", "when": "2026-11-11" }
+          "source": {
+            "from": "Paow-sessionen (dealer-82) via Runways MCP, omgång b1a",
+            "when": "2026-11-11"
+          }
         },
         {
           "id": "paow-film-b6-p4-tur-retur-kling4",
@@ -2166,7 +2797,10 @@
           "fps": 24,
           "state": "ersatt",
           "note": "Utanför banken, första utseendet. Användbar med anmärkningar (Prov paow-plats-4-som-mall, film 1).",
-          "source": { "from": "Paow-sessionen (dealer-82) via Runways MCP, omgång b6", "when": "2026-11-11" }
+          "source": {
+            "from": "Paow-sessionen (dealer-82) via Runways MCP, omgång b6",
+            "when": "2026-11-11"
+          }
         },
         {
           "id": "paow-film-b6-p3-tur-retur-kling4",
@@ -2177,7 +2811,10 @@
           "fps": 24,
           "state": "ersatt",
           "note": "Utanför banken, första utseendet. Användbar med anmärkningar (Prov paow-plats-4-som-mall, film 2).",
-          "source": { "from": "Paow-sessionen (dealer-82) via Runways MCP, omgång b6", "when": "2026-11-11" }
+          "source": {
+            "from": "Paow-sessionen (dealer-82) via Runways MCP, omgång b6",
+            "when": "2026-11-11"
+          }
         },
         {
           "id": "paow-film-b7-p3c2-kling4",
@@ -2188,7 +2825,10 @@
           "fps": 24,
           "state": "ersatt",
           "note": "Utanför banken, första utseendet. Jakob 2026-11-12: tvåa. Granskaren: användbar med anmärkningar (Prov plan-till-film-p3c2, film 5).",
-          "source": { "from": "Paow-sessionen (dealer-82) via Runways MCP, omgång b7", "when": "2026-11-11" }
+          "source": {
+            "from": "Paow-sessionen (dealer-82) via Runways MCP, omgång b7",
+            "when": "2026-11-11"
+          }
         },
         {
           "id": "paow-film-b9-slap-p1c1-wan3",
@@ -2199,7 +2839,10 @@
           "fps": 30,
           "state": "ersatt",
           "note": "Utanför banken; filmen ligger i Prov paow-linne-forsta-filmer. Granskaren: användbar med anmärkningar, ett verkligt släp.",
-          "source": { "from": "Paow-sessionen (dealer-82) via Runways MCP, omgång b9", "when": "2026-11-11" }
+          "source": {
+            "from": "Paow-sessionen (dealer-82) via Runways MCP, omgång b9",
+            "when": "2026-11-11"
+          }
         },
         {
           "id": "paow-film-b9-slap-p1c2-wan3",
@@ -2210,7 +2853,10 @@
           "fps": 30,
           "state": "ersatt",
           "note": "Utanför banken; filmen ligger i Prov paow-linne-forsta-filmer. Granskaren: användbar med anmärkningar, ett verkligt släp.",
-          "source": { "from": "Paow-sessionen (dealer-82) via Runways MCP, omgång b9", "when": "2026-11-11" }
+          "source": {
+            "from": "Paow-sessionen (dealer-82) via Runways MCP, omgång b9",
+            "when": "2026-11-11"
+          }
         },
         {
           "id": "paow-film-b10-slap-p1c1",
@@ -2221,7 +2867,10 @@
           "fps": 30,
           "state": "ersatt",
           "note": "Utanför banken; filmen ligger i Prov paow-linne-omgang-2. Granskaren: användbar med tunga anmärkningar.",
-          "source": { "from": "Paow-sessionen (dealer-82) via Runways MCP, omgång b10", "when": "2026-11-11" }
+          "source": {
+            "from": "Paow-sessionen (dealer-82) via Runways MCP, omgång b10",
+            "when": "2026-11-11"
+          }
         },
         {
           "id": "paow-film-b11-slap-p1c2",
@@ -2232,7 +2881,10 @@
           "fps": 30,
           "state": "ersatt",
           "note": "Utanför banken; filmen ligger i Prov paow-linne-omgang-2. Granskaren: användbar med anmärkningar.",
-          "source": { "from": "Paow-sessionen (dealer-82) via Runways MCP, omgång b11", "when": "2026-11-11" }
+          "source": {
+            "from": "Paow-sessionen (dealer-82) via Runways MCP, omgång b11",
+            "when": "2026-11-11"
+          }
         },
         {
           "id": "paow-film-b17-ankare1-till-2-1-t1",
@@ -2243,7 +2895,10 @@
           "fps": 30,
           "state": "kandidat",
           "note": "Utanför banken; filmen ligger i Prov paow-kavaj-filmer. Granskaren: användbar med anmärkningar, den bättre av två.",
-          "source": { "from": "Paow-sessionen (dealer-82) via Runways MCP, omgång b17", "when": "2026-11-12" }
+          "source": {
+            "from": "Paow-sessionen (dealer-82) via Runways MCP, omgång b17",
+            "when": "2026-11-12"
+          }
         },
         {
           "id": "paow-film-b17-ankare1-till-2-2-t2",
@@ -2254,7 +2909,10 @@
           "fps": 30,
           "state": "kandidat",
           "note": "Utanför banken; filmen ligger i Prov paow-kavaj-filmer. Granskaren: användbar som huvudtagning, en anmärkning (skugga där underarmen låg).",
-          "source": { "from": "Paow-sessionen (dealer-82) via Runways MCP, omgång b17", "when": "2026-11-12" }
+          "source": {
+            "from": "Paow-sessionen (dealer-82) via Runways MCP, omgång b17",
+            "when": "2026-11-12"
+          }
         },
         {
           "id": "paow-film-b17-slap-p1c1-t1",
@@ -2265,7 +2923,10 @@
           "fps": 30,
           "state": "kandidat",
           "note": "Utanför banken; filmen ligger i Prov paow-kavaj-filmer. Granskaren: verkligt släp, användbar med anmärkningar.",
-          "source": { "from": "Paow-sessionen (dealer-82) via Runways MCP, omgång b17", "when": "2026-11-12" }
+          "source": {
+            "from": "Paow-sessionen (dealer-82) via Runways MCP, omgång b17",
+            "when": "2026-11-12"
+          }
         },
         {
           "id": "paow-film-b17-slap-p1c2-t2",
@@ -2276,7 +2937,10 @@
           "fps": 30,
           "state": "kandidat",
           "note": "Utanför banken; filmen ligger i Prov paow-kavaj-filmer. Granskaren: verkligt släp, användbar med anmärkningar, den bättre av två.",
-          "source": { "from": "Paow-sessionen (dealer-82) via Runways MCP, omgång b17", "when": "2026-11-12" }
+          "source": {
+            "from": "Paow-sessionen (dealer-82) via Runways MCP, omgång b17",
+            "when": "2026-11-12"
+          }
         },
         {
           "id": "paow-film-b17-nyp-p4c1-kling4",
@@ -2287,7 +2951,10 @@
           "fps": 24,
           "state": "kandidat",
           "note": "Utanför banken; filmen ligger i Prov paow-kavaj-filmer. Granskaren: användbar med anmärkningar, landar 2,6 px från platsen.",
-          "source": { "from": "Paow-sessionen (dealer-82) via Runways MCP, omgång b17", "when": "2026-11-12" }
+          "source": {
+            "from": "Paow-sessionen (dealer-82) via Runways MCP, omgång b17",
+            "when": "2026-11-12"
+          }
         },
         {
           "id": "paow-film-b19-nyp-dc1-kling4",
@@ -2298,7 +2965,10 @@
           "fps": 24,
           "state": "kandidat",
           "note": "Utanför banken; filmen ligger i Prov paow-kavaj-filmer. Granskaren: användbar som huvudtagning.",
-          "source": { "from": "Paow-sessionen (dealer-82) via Runways MCP, omgång b19", "when": "2026-11-12" }
+          "source": {
+            "from": "Paow-sessionen (dealer-82) via Runways MCP, omgång b19",
+            "when": "2026-11-12"
+          }
         },
         {
           "id": "paow-film-b19-nyp-p1c1-kling4",
@@ -2309,7 +2979,10 @@
           "fps": 24,
           "state": "kandidat",
           "note": "Utanför banken; filmen ligger i Prov paow-kavaj-filmer. Granskaren: användbar bara med anmärkningar (referensen gick till P4).",
-          "source": { "from": "Paow-sessionen (dealer-82) via Runways MCP, omgång b19", "when": "2026-11-12" }
+          "source": {
+            "from": "Paow-sessionen (dealer-82) via Runways MCP, omgång b19",
+            "when": "2026-11-12"
+          }
         },
         {
           "id": "paow-film-b20-nyp-p1c1-egen-referens-t1",
@@ -2320,7 +2993,10 @@
           "fps": 24,
           "state": "kandidat",
           "note": "Utanför banken; filmen ligger i Prov paow-kavaj-filmer. Granskaren: användbar med anmärkningar.",
-          "source": { "from": "Paow-sessionen (dealer-82) via Runways MCP, omgång b20", "when": "2026-11-12" }
+          "source": {
+            "from": "Paow-sessionen (dealer-82) via Runways MCP, omgång b20",
+            "when": "2026-11-12"
+          }
         },
         {
           "id": "paow-film-b20-nyp-p1c1-egen-referens-t2",
@@ -2331,7 +3007,10 @@
           "fps": 24,
           "state": "kandidat",
           "note": "Utanför banken; filmen ligger i Prov paow-kavaj-filmer. Granskaren: användbar med anmärkningar.",
-          "source": { "from": "Paow-sessionen (dealer-82) via Runways MCP, omgång b20", "when": "2026-11-12" }
+          "source": {
+            "from": "Paow-sessionen (dealer-82) via Runways MCP, omgång b20",
+            "when": "2026-11-12"
+          }
         },
         {
           "id": "paow-film-reel-kommer",
@@ -2341,9 +3020,11 @@
           "still": 97,
           "fps": 24,
           "note": "Utanför banken. Från tomt brett bord till Paow sittande i den breda rutan, Pamelas godkända ingång som referens; skivan bortmålad. I Pamela-filmen. source.mp4 är bortmålad, original.mp4 leveransen.",
-          "source": { "from": "Pamela-filmen, session dealer-db", "when": "2026-11-12" }
+          "source": {
+            "from": "Pamela-filmen, session dealer-db",
+            "when": "2026-11-12"
+          }
         },
-
         {
           "id": "paow-prov-ankare-ung",
           "role": "prov",
@@ -2423,14 +3104,16 @@
           "name": "Grundbilden",
           "proof": "paow-grundbild"
         },
-
         {
           "id": "paow-profil-kavaj",
           "role": "arbetsmaterial",
           "name": "Profilbild i kavaj",
           "path": "assets/proofs/paow-kavaj/1-profilbild-a.png",
           "note": "4096 × 4096, ansiktslikhet 0,91 mot Jakobs närbild.",
-          "source": { "from": "Nano Banana Pro 4K, omgång b13", "when": "2026-11-12" }
+          "source": {
+            "from": "Nano Banana Pro 4K, omgång b13",
+            "when": "2026-11-12"
+          }
         },
         {
           "id": "paow-profil-linne",
@@ -2438,7 +3121,10 @@
           "name": "Profilbild i linnet",
           "path": "assets/proofs/paow-profilbild-och-keystone/1-profilbild-4k-forslag-a.png",
           "note": "4096 × 4096, ansiktslikhet 0,91 mot Jakobs närbild.",
-          "source": { "from": "Nano Banana Pro 4K, omgång b8", "when": "2026-11-11" }
+          "source": {
+            "from": "Nano Banana Pro 4K, omgång b8",
+            "when": "2026-11-11"
+          }
         }
       ]
     }

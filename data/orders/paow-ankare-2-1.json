@@ -140,6 +140,10 @@
   ],
   "created": "2026-11-12T23:15:36.587Z",
   "createdBy": "huvudagentens byggare (uppdrag 2026-11-12 kväll: tydligare utkast)",
-  "approval": null,
-  "status": "UTKAST"
+  "approval": {
+    "by": "jakob",
+    "at": "2026-11-12T23:55:22.169Z",
+    "orderSha256": "94755a9fdd5c06083da14173c842c2040fd15e88d84f26d0322a66ccbfcfb0d1"
+  },
+  "status": "GODKÄND"
 }

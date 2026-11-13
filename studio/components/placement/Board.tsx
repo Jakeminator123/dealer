@@ -1,9 +1,10 @@
 "use client";
 
-// The picture, as large as the area allows, with the cards on it and the handles on the chosen one. Under the cards lies the
-// view's V6 picture (Dator or Mobil) or a film at a frame. The cards are drawn three ways: "Kort" lays the playback's own
-// rendered cards (cardLayer.ts); "Färg" and "Kontur" draw the old tab's yellow (closed) and blue (open) outlines, filled or
-// not, over the same quads (placement-model planQuad). Over that lies one SVG in the view's own pixels with the handles:
+// The picture, as large as the area allows, with the cards on it and the handles on the chosen one. Under the cards lies a
+// still in the view's own pixels (the neutral backdrop, or the V6 picture) or a film at a frame. The cards are drawn three
+// ways: "Kort" lays the playback's own rendered cards (cardLayer.ts); "Färg" and "Kontur" draw the old tab's yellow (closed)
+// and blue (open) outlines, filled or not, over the same quads (placement-model planQuad). Over that lies one SVG in the
+// view's own pixels with the handles:
 //   drag a card or the shoe: move it · the round handle beyond the far edge: riktning (Shift: 15°) · a near corner: size
 //   (Shift: same shape) · a far corner: perspektiv. Arrow keys: a pixel (Shift ten); on the round handle a degree (Shift 15).
 // On a flat table (Plant bord) only moving is possible, as in the old tab: size, riktning and perspektiv follow P4C1.
@@ -52,6 +53,8 @@ export function Board({
   grid,
   changed,
   backdrop,
+  shoeCard,
+  onBackdropMissing,
   face,
   zoom,
   onZoom,
@@ -74,6 +77,10 @@ export function Board({
   grid: boolean;
   changed: ReadonlySet<Place>;
   backdrop: Backdrop;
+  /** Paint the card in the shoe's window yellow (Färg, Kontur): the V6 picture shows the game's own back there; the neutral backdrop's shoe and the films already show it yellow. */
+  shoeCard: boolean;
+  /** The still could not be read (not on this machine): the view shows another. */
+  onBackdropMissing?: () => void;
   face: Face;
   zoom: number;
   onZoom: (zoom: number) => void;
@@ -289,6 +296,7 @@ export function Board({
               source.current = stillSource(e.currentTarget);
               schedule();
             }}
+            onError={onBackdropMissing}
             className="absolute inset-0 size-full select-none object-fill"
           />
         ) : (
@@ -316,8 +324,8 @@ export function Board({
             </filter>
           </defs>
           {grid ? <rect width="100%" height="100%" fill="url(#placering-grid)" pointerEvents="none" /> : null}
-          {look !== "kort" ? (
-            // the card standing in the shoe's window: yellow, as a closed card is in the films (the picture shows the game's own back)
+          {look !== "kort" && shoeCard ? (
+            // the card standing in the shoe's window: yellow, as a closed card is in the films (the V6 picture shows the game's own back)
             <polygon points={pts(SHOE_CARD[view])} fill="#ffff00" stroke="#8a7400" strokeWidth={1.5} strokeLinejoin="round" vectorEffect="non-scaling-stroke" pointerEvents="none">
               <title>Kortet i skon · stängt</title>
             </polygon>

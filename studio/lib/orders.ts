@@ -1,16 +1,19 @@
 // Beställ (/bestall/): the view's calls to the lab server (tools/order-routes.ts) and the pure words and rows it shows.
 // The order's shape, the exact call per take and the cost come from ../../src/order-model.ts (built in, never copied):
-// "Det här skickas" lists the arguments requestOf() gives, so the screen shows what the ordering agent will send.
+// "Det här skickas" lists the arguments requestOf() gives, so the screen shows what the ordering agent will send. The
+// text and its marks come from ../../src/order-prompts.ts, the same function the store writes a draft's text with. A new
+// order can be asked for by address (presetOf); whose each picture is is said in words (ownerWords).
 // In the online copy nothing is asked for or written. Tests: studio/tests/orders.test.ts.
 import { ApiError } from "./api.ts";
 import { labUrl } from "./lab.ts";
 import { isSnapshot } from "./mode.ts";
 import {
-  ANCHOR_NODE, ANCHOR_ROLE, FLIP_LABEL, MODELS, SHOWN_LABEL, credits, requestOf, waitWords,
-  type FlipAxis, type Order, type OrderAnswer, type OrdersAnswer, type Picture, type Shown, type StepKey,
+  ANCHOR_NODE, ANCHOR_ROLE, FLIP_LABEL, HAND_LABEL, LANDS_LABEL, genitive, MODELS, SEAT_TARGETS, SHOWN_LABEL, STEPS, credits, handChoiceOf, requestOf, stepOf, waitWords,
+  type FlipAxis, type HandChoice, type Order, type OrderAnswer, type OrdersAnswer, type Owner, type Picture, type PlanAnswer, type Shown, type StepKey,
 } from "../../src/order-model.ts";
+import { orderPrompt, type Choice, type Part } from "../../src/order-prompts.ts";
 
-export type { Order, OrderAnswer, OrdersAnswer, Picture, Shown, FlipAxis, StepKey };
+export type { Order, OrderAnswer, OrdersAnswer, Picture, Shown, FlipAxis, StepKey, HandChoice, Owner, Part, Choice };
 
 // ── Calls ───────────────────────────────────────────────────────────────────
 const kind = (status: number) => (status === 409 ? "conflict" : status === 404 ? "missing" : status === 428 ? "precondition" : status === 403 || status === 413 || status === 415 ? "refused" : status >= 500 ? "server" : "invalid");
@@ -41,9 +44,25 @@ const send = (method: string, body: unknown, revision?: string): RequestInit => 
 });
 
 export const getOrders = () => call<OrdersAnswer>("api/orders", "Beställningarna");
-export type NewOrderInput = { dealer: string; step: StepKey; target?: string | null; flipAxis?: FlipAxis; duration?: number; takes?: number; extra?: string | null };
-export const createOrder = (input: NewOrderInput) => call<OrderAnswer>("api/orders", "Utkastet", send("POST", input));
-export type OrderChange = { title?: string; takes?: number; flipAxis?: FlipAxis; extra?: string | null; duration?: number };
+/** One seat of a new deal with its own choices ("Alla sju" sends seven). */
+export type SeatInput = { target: string; hand: "LH" | "RH"; pass: boolean; side: "FRONT" | "BACK" };
+export type NewOrderInput = {
+  dealer: string;
+  step: StepKey;
+  target?: string | null;
+  hand?: "LH" | "RH";
+  pass?: boolean;
+  side?: "FRONT" | "BACK";
+  seats?: SeatInput[];
+  flipAxis?: FlipAxis;
+  duration?: number;
+  takes?: number;
+  extra?: string | null;
+  base?: string;
+};
+/** The first draft made, and every draft made (seven for "Alla sju"). */
+export const createOrder = (input: NewOrderInput) => call<OrderAnswer & { made?: string[] }>("api/orders", "Utkastet", send("POST", input));
+export type OrderChange = { title?: string; takes?: number; flipAxis?: FlipAxis; extra?: string | null; duration?: number; hand?: "LH" | "RH"; pass?: boolean; side?: "FRONT" | "BACK" };
 export const changeOrder = (id: string, change: OrderChange, revision: string) => call<OrderAnswer>(`api/orders/${id}`, "Ändringen", send("PUT", change, revision));
 export const approveOrder = (id: string, revision: string) => call<OrderAnswer>(`api/orders/${id}/approve`, "Godkännandet", send("POST", undefined, revision));
 export const refreshOrder = (id: string, revision: string) => call<OrderAnswer>(`api/orders/${id}/refresh`, "Bilderna", send("POST", undefined, revision));
@@ -150,3 +169,66 @@ export function firstLacking(entries: Parameters<typeof anchorFor>[0]): StepKey 
 
 /** The line under the queue: how the approved orders get placed. */
 export const HANDOVER = "Säg 'lägg kön' till filmagenten eller huvudagenten, så läggs godkända beställningar.";
+
+// ── A new order from the address ────────────────────────────────────────────
+/**
+ * What /bestall/?ny=1&dealer=paow&steg=GIV-2.2&plats=P4.C1 asks for (plats=alla: the first card to every player). A seat
+ * without a step gets the deal its card is planned with in Placering (nyp → GIV-2.1, släp → GIV-2.2). Null without ny=1.
+ */
+export type Preset = { dealer: string | null; step: StepKey | null; target: string | null; all: boolean };
+export function presetOf(params: { get(name: string): string | null }, plan: Pick<PlanAnswer, "seats"> | null | undefined): Preset | null {
+  if (params.get("ny") !== "1") return null;
+  const dealer = params.get("dealer")?.toLowerCase() || null;
+  const asked = params.get("steg")?.toUpperCase() ?? null;
+  const plats = params.get("plats")?.toUpperCase() ?? null;
+  const all = plats === "ALLA";
+  const target = plats && SEAT_TARGETS.includes(plats) ? plats : null;
+  let step = asked && stepOf(asked) && !stepOf(asked)!.off ? (asked as StepKey) : null;
+  if (!step && (target || all)) step = plan?.seats[target ?? "P1.C1"]?.grip === "DRAG" ? "GIV-2.2" : "GIV-2.1";
+  return { dealer, step, target, all };
+}
+/** The address params a new order is asked with, removed when the sheet closes. */
+export const PRESET_PARAMS = ["ny", "dealer", "steg", "plats"] as const;
+
+// ── Whose a picture is ──────────────────────────────────────────────────────
+/** "Paow", "Pamela · bara armen", or a warning when a whole picture of another dealer would go out. */
+export function ownerWords(owner: Owner | null | undefined, dealer: string): { text: string; tone: Tone } {
+  if (!owner) return { text: "okänd källa", tone: "remark" };
+  if (owner.dealer === dealer) return { text: owner.name, tone: "ok" };
+  if (owner.part === "arm") return { text: `${owner.name} · bara armen`, tone: "wait" };
+  return { text: `${genitive(owner.name)} bild!`, tone: "bad" };
+}
+
+// ── The choices of a deal, in words ─────────────────────────────────────────
+/** "Handbyte", "Stängt → öppet", "Vänd vid platsen": the three choices of a stored deal. */
+export function motionWords(order: Pick<Order, "motion">): { hand: string; lands: string; turn: string | null } | null {
+  const m = order.motion;
+  if (!m) return null;
+  return { hand: HAND_LABEL[handChoiceOf(m)], lands: LANDS_LABEL[m.side], turn: m.side === "FRONT" ? FLIP_LABEL[m.flipAxis] : null };
+}
+
+/** The marks of the text: a quiet underline per choice, and its word in the legend. */
+export const CHOICE_MARK: Record<Choice, { word: string; className: string; swatch: string }> = {
+  hand: { word: "hand", className: "underline decoration-[#c9a2f2]/55 decoration-1 underline-offset-[5px]", swatch: "bg-[#c9a2f2]" },
+  side: { word: "stängt / öppet", className: "underline decoration-[#e8cb85]/70 decoration-1 underline-offset-[5px]", swatch: "bg-[#e8cb85]" },
+  turn: { word: "vändning", className: "underline decoration-[#e8cb85]/70 decoration-dotted decoration-2 underline-offset-[5px]", swatch: "bg-[#e8cb85]/60" },
+  place: { word: "plats", className: "", swatch: "" },
+  extra: { word: "ditt tillägg", className: "bg-variant/12 text-[#b6c6fa]", swatch: "bg-variant/50" },
+  bans: { word: "det som inte får hända", className: "text-[#ef9a9a]", swatch: "bg-underkand/60" },
+};
+/** The mark a part gets: the first of its choices that has one (the place is said in the same sentence as the side). */
+export const markOf = (part: Part): Choice | null => (part.from.find((c) => CHOICE_MARK[c].className) as Choice | undefined) ?? null;
+
+/**
+ * The parts of a stored order's text, from the same function the store wrote it with, when that gives exactly the stored
+ * text (an order on an older template, or a plan changed since, gives null: the text is then shown unmarked).
+ */
+export function storedParts(order: Order, look: string | null | undefined, plan: PlanAnswer | null | undefined, dealerName: string): Part[] | null {
+  if (!look) return null;
+  const seat = order.motion?.target ? plan?.seats[order.motion.target] : null;
+  const prompt = orderPrompt(order, { name: dealerName, look }, seat ? { x: seat.centre[0], y: seat.centre[1] } : null);
+  return prompt.text === order.prompt.text ? prompt.parts : null;
+}
+
+/** The step groups in the order the sheet shows them: pictures first (a new dealer needs her anchors before any film). */
+export const stepGroups = () => [...new Set(STEPS.map((s) => s.group))].sort((a, b) => (a === "Bild" ? -1 : b === "Bild" ? 1 : 0));

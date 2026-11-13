@@ -8,35 +8,51 @@
 // (receipt.json) is never written here: only tools/order-put.ts writes it. Same guards as tools/review-store.ts: the
 // caller presents the revision it read (If-Match), writes are queued, and a file is replaced through a temporary file
 // renamed into place. Routes: tools/order-routes.ts.
+//
+// A deal's choices (which hand, handbyte, how the card lands and turns) come with the new draft and default to what the
+// plan says for the card; the last picture draws the card closed or open as chosen. "Alla sju" makes one draft per seat
+// sharing a group (createMany). A draft follows Jakob's choice in Material: when another anchor of the same role holds
+// than the one a draft was made from, refresh copies the one that holds and keeps what the picture was (picture.replaced),
+// and follow(dealer) does that for every draft of the dealer after a decision in Material. Every picture's owner is read
+// from its source, and a whole picture of another dealer in a dealer's draft keeps it from being approved.
 import { readFile, writeFile, mkdir, rename, rm, stat, realpath, readdir } from 'node:fs/promises';
 import { createHash, randomUUID } from 'node:crypto';
 import path from 'node:path';
 import { StoreError } from './placement-store.ts';
 import { mediaRoles } from './media-roles.ts';
 import {
-  ANCHOR_NODE, ANCHOR_ROLE, EXTRA_LIMIT, FILE_NAME, FLIP_AXES, MODELS, ORDER_ID, TAKES_MAX,
-  checkPolicy, costOf, dayOf, draftProblems, edgeOf, genitive, hashInput, seatWords, shownOf, spentOn, stepOf, summaryOf, validateOrder, waitingOf,
-  type Drawn, type FlipAxis, type Order, type OrderAnswer, type OrdersAnswer, type Picture, type Policy, type Receipt, type StepKey, type Waits,
+  ANCHOR_NODE, ANCHOR_ROLE, EXTRA_LIMIT, FILE_NAME, FLIP_AXES, MODELS, ORDER_ID, SEAT_TARGETS, TAKES_MAX,
+  bodyLine, checkPolicy, costOf, crossesBody, dayOf, defaultFlip, draftProblems, edgeOf, genitive, hashInput, seatList, seatWords, shownOf, spentOn, stepOf, summaryOf, validateOrder, waitingOf,
+  type Drawn, type FlipAxis, type Motion, type Order, type OrderAnswer, type OrdersAnswer, type Owner, type Picture, type PlanAnswer, type Policy, type PoseAnswer, type Receipt, type SeatPlan, type StepKey, type Waits,
 } from '../src/order-model.ts';
-import { promptFor } from '../src/order-prompts.ts';
-import { CUT, cardTexture, cutFigure, drawCard, pictureBytes, planQuad, pngOf, readPlan, readRgb, type Pt, type Texture } from './order-images.ts';
+import { TEMPLATE_VERSION, orderPrompt } from '../src/order-prompts.ts';
+import { CUT, cardTexture, cutFigure, drawCard, matchGreen, pictureBytes, planQuad, pngOf, readPlan, readRgb, type Pt, type Texture } from './order-images.ts';
 import type { PlacementPlan } from '../src/placement-model.ts';
 import type { Entry, Register } from '../studio/lib/media.ts';
 
 const sha = (b: Buffer | string) => createHash('sha256').update(b).digest('hex');
 const revisionOf = (text: string) => `"${sha(text)}"`;
 export const orderHash = (order: Order) => sha(hashInput(order));
+const r1 = (v: number) => Math.round(v * 10) / 10;
 
-export type DealerInfo = { id: string; name: string; look: string; paused?: string | null };
+export type DealerInfo = { id: string; name: string; look: string; paused?: string | null; films?: { prefix?: string } };
 /**
  * Where the pose of a still comes from: an entry of the register, or a frame of a bank film. keep: the region of the
  * picture that is kept (bank pixels); the rest of the person is filled with green, and what is kept is said in `what`.
  */
 export type Source = { entry?: string; path?: string; frame?: number; label?: string; keep?: Pt[]; what?: string };
+/** One seat of a new deal: its card, and the choices that differ from the plan (absent: what Placering says). */
+export type SeatChoice = { target: string; hand?: 'LH' | 'RH'; pass?: boolean; side?: 'FRONT' | 'BACK' };
 export type NewOrder = {
   dealer: string;
   step: StepKey;
   target?: string | null;
+  /** The hand that takes the card, handbyte (left to right), and how the card lands; absent: the plan's. */
+  hand?: 'LH' | 'RH';
+  pass?: boolean;
+  side?: 'FRONT' | 'BACK';
+  /** Several seats at once ("Alla sju"): one draft per seat, sharing a group (createMany). */
+  seats?: SeatChoice[];
   flipAxis?: FlipAxis;
   duration?: number;
   resolution?: string;
@@ -51,7 +67,7 @@ export type NewOrder = {
   notes?: string[];
   createdBy?: string;
 };
-export type Change = { title?: string; takes?: number; flipAxis?: FlipAxis; extra?: string | null; duration?: number };
+export type Change = { title?: string; takes?: number; flipAxis?: FlipAxis; extra?: string | null; duration?: number; hand?: 'LH' | 'RH'; pass?: boolean; side?: 'FRONT' | 'BACK' };
 
 /**
  * What is kept of the bank's dealer in a pose figure: her left forearm from about the elbow, its hand, the shoe and the
@@ -74,8 +90,36 @@ export const POSE: Record<'ANKARE-2.1' | 'ANKARE-2.2', Source> = {
   'ANKARE-2.1': { path: 'assets/motions/pamela-p4-c1-plan-deal-02/source.mp4', frame: 16, label: 'Pamelas giv till plats 4 (godkänd), ruta 16: nypet på kortet, kortet en bit ur fönstret', keep: ARM_AT_SHOE, what: POSE_WHAT },
   'ANKARE-2.2': { entry: 'pamela-slap', label: 'Pamelas ankare 2.2 (godkänt; skon där har öppen front och kopieras inte)', keep: ARM_AT_SHOE, what: POSE_WHAT },
 };
-/** The centre of a card of the plan in film pixels: where the text says the card lands before the last picture is drawn. */
-export const planCentre = (plan: PlacementPlan, target: string) => { const q = planQuad(plan, target); return { x: q.reduce((s, p) => s + p[0], 0) / 4, y: q.reduce((s, p) => s + p[1], 0) / 4 }; };
+/**
+ * The centre of a card of the plan in film pixels, to a tenth as the drawn card keeps it (drawn.centre): where the text
+ * says the card lands before the last picture is drawn, and where the sheet's preview says it lands.
+ */
+export const planCentre = (plan: PlacementPlan, target: string) => { const q = planQuad(plan, target); return { x: r1(q.reduce((s, p) => s + p[0], 0) / 4), y: r1(q.reduce((s, p) => s + p[1], 0) / 4) }; };
+
+/** The plan's cards as an order sees them: centre and outline in film pixels, what Placering says, and the crossing rule. */
+export function planAnswerOf(plan: PlacementPlan, file: { path: string; sha256: string }): PlanAnswer {
+  const centres: Record<string, [number, number]> = {}, quads: Record<string, [number, number][]> = {};
+  for (const target of Object.keys(plan.targets)) {
+    const q = planQuad(plan, target), c = planCentre(plan, target);
+    quads[target] = q.map(([x, y]) => [r1(x), r1(y)]);
+    centres[target] = [c.x, c.y];
+  }
+  const line = bodyLine(centres, quads), seats: Record<string, SeatPlan> = {};
+  for (const [target, t] of Object.entries(plan.targets)) {
+    const i = t.intent;
+    seats[target] = { target, centre: centres[target], quad: quads[target], side: i.endSide, startSide: i.startSide, hand: i.takeHand, pass: i.pass, grip: i.grip ?? 'PINCH', turnAt: i.turnAt ?? 'AIR', crosses: crossesBody(centres[target][0], line) };
+  }
+  return { path: file.path, sha256: file.sha256, updatedAt: plan.updatedAt, ...line, seats };
+}
+/** Whether a deal's hand and side are what Placering says for its card. */
+const fromPlanOf = (plan: PlacementPlan, m: Pick<Motion, 'target' | 'hand' | 'pass' | 'side'>) => {
+  const i = m.target ? plan.targets[m.target]?.intent : null;
+  return !!i && i.takeHand === m.hand && i.pass === !!m.pass && i.endSide === m.side;
+};
+
+/** The anchor ("1", "2.1", "2.2") an anchor role stands for. */
+const ANCHOR_OF: Record<string, '1' | '2.1' | '2.2'> = { 'ankare-1': '1', 'ankare-2.1': '2.1', 'ankare-2.2': '2.2' };
+const escapeRe = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
 /** "Paows ankare 1 · kandidat 2", "Paows ankare 2.1": which of the dealer's pictures a draft uses. */
 export function anchorWords(dealerName: string, at: string, entry: Pick<Entry, 'name' | 'state'> | null): string {
@@ -96,6 +140,44 @@ export function entryOf(register: Register, id: string): { dealer: string; entry
 export function resolveWaits(register: Register, waits: Waits): Entry | null {
   if (waits.entry) { const found = entryOf(register, waits.entry); return found && found.entry.state === 'gäller' && isPicture(found.entry) ? found.entry : null; }
   if (waits.role) return holding(register, waits.dealer, waits.role, waits.node);
+  return null;
+}
+
+/**
+ * What a draft's anchor picture should follow now: the entry it was made from (an anchor of the draft's own dealer, no
+ * card), and the entry of that role that holds now when it is another one, or the same one approved since (only its name
+ * in the label changes). Null when nothing has changed or the picture is not a dealer's anchor.
+ */
+export function followOf(register: Register, dealer: string, picture: Pick<Picture, 'from' | 'waits' | 'path' | 'label'>, dealerName: string): { was: Entry; now: Entry; at: '1' | '2.1' | '2.2'; swap: boolean } | null {
+  if (picture.from?.built || !picture.from?.entry || !picture.path) return null;
+  const found = entryOf(register, picture.from.entry);
+  if (!found || found.dealer !== dealer || found.entry.card) return null;
+  const at = ANCHOR_OF[found.entry.role];
+  if (!at) return null;
+  const now = holding(register, dealer, found.entry.role, found.entry.node);
+  if (!now) return null;
+  if (now.id !== found.entry.id) return { was: found.entry, now, at, swap: true };
+  return picture.label.endsWith(anchorWords(dealerName, at, now)) ? null : { was: found.entry, now, at, swap: false };
+}
+
+/** Whose a picture is, read from its source: a register entry, a bank film's folder, what it waits for, or the first picture it is drawn on. */
+export function ownerOf(picture: Picture, pictures: readonly Picture[], register: Register | null, dealers: readonly DealerInfo[]): Owner | null {
+  const named = (id: string) => dealers.find((d) => d.id === id)?.name ?? register?.dealers[id]?.name ?? id;
+  const part = picture.cut ? 'arm' : 'whole';
+  if (picture.from?.built) {
+    const first = pictures.find((p) => p.goesAs === 'startFrame');
+    return first && first !== picture ? ownerOf(first, [], register, dealers) : null;
+  }
+  if (picture.from?.entry && register) {
+    const found = entryOf(register, picture.from.entry);
+    if (found) return { dealer: found.dealer, name: named(found.dealer), part };
+  }
+  const folder = picture.from?.path?.split('/').slice(-2, -1)[0];
+  if (folder) {
+    const d = dealers.find((x) => folder.startsWith(x.films?.prefix ?? `${x.id}-`));
+    if (d) return { dealer: d.id, name: d.name, part };
+  }
+  if (picture.waits) return { dealer: picture.waits.dealer, name: named(picture.waits.dealer), part: 'whole' };
   return null;
 }
 
@@ -177,10 +259,59 @@ export function orderStore(root: string, options: StoreOptions = {}) {
     if (!source.path) throw new StoreError(400, 'Bilden saknar källa.');
     return { bytes: await pictureBytes(root, { path: source.path, frame: source.frame }), from: { path: source.path, ...(source.frame !== undefined ? { frame: source.frame } : {}), note: source.label } };
   }
-  async function drawOn(base: Buffer, target: string) {
+  async function drawOn(base: Buffer, target: string, side: 'FRONT' | 'BACK' | null) {
     const { plan, file } = await readPlan(root);
-    const { rgb, drawn } = drawCard(await readRgb(base), await tex(), plan, file, target);
+    const { rgb, drawn } = drawCard(await readRgb(base), await tex(), plan, file, target, side);
     return { bytes: await pngOf(rgb), drawn };
+  }
+
+  /**
+   * A pose figure: the source cut down to the arm at the shoe, its green then brought to the anchor's green when the
+   * anchor is there (matched, with the greens before and after); while the anchor waits, the source's green (matched null).
+   */
+  async function cutPose(register: Register, pose: Source, anchor: { bytes: Buffer; sha256: string } | null): Promise<{ bytes: Buffer; from: NonNullable<Picture['from']>; cut: NonNullable<Picture['cut']> }> {
+    if (!pose.keep) throw new StoreError(500, 'Posebilden saknar området som behålls.');
+    const { bytes, from } = await sourceBytes(register, pose);
+    const result = cutFigure(await readRgb(bytes), pose.keep);
+    const match = anchor ? matchGreen(result.rgb, await readRgb(anchor.bytes)) : null;
+    return {
+      bytes: await pngOf(match?.rgb ?? result.rgb),
+      from,
+      cut: {
+        keep: pose.keep.map(([x, y]) => [x, y] as [number, number]), what: pose.what ?? POSE_WHAT, source: { sha256: sha(bytes) }, settings: { ...CUT }, filledPx: result.filledPx, keptPx: result.keptPx, green: result.green,
+        matched: match && anchor ? { anchorSha256: anchor.sha256, anchor: match.anchor, before: match.before, after: match.after } : null,
+      },
+    };
+  }
+
+  // The pose figures for the sheet, before a draft exists: cut once per source (and anchor) and kept while the server runs.
+  const poseCache = new Map<string, Promise<Buffer>>();
+  const poseOf = (step: keyof typeof POSE): Source => options.poses?.[step] ?? POSE[step];
+  /** The pose figure a still would get, its green brought to the anchor entry given (the dealer's picture it is made from). */
+  async function posePicture(step: string, anchorEntry?: string | null): Promise<Buffer> {
+    if (!(step in POSE)) throw new StoreError(404, 'Ingen posebild för steget.');
+    const source = poseOf(step as keyof typeof POSE), key = JSON.stringify([source, anchorEntry ?? null]);
+    let made = poseCache.get(key);
+    if (!made) {
+      made = (async () => {
+        const register = await readRegister();
+        if (!source.keep) return (await sourceBytes(register, source)).bytes;
+        const found = anchorEntry ? entryOf(register, anchorEntry) : null;
+        if (anchorEntry && (!found || !isPicture(found.entry))) throw new StoreError(404, `${anchorEntry} finns inte som bild i registret.`);
+        const anchor = found ? (await sourceBytes(register, { entry: found.entry.id })).bytes : null;
+        return (await cutPose(register, source, anchor ? { bytes: anchor, sha256: sha(anchor) } : null)).bytes;
+      })();
+      made.catch(() => poseCache.delete(key));
+      poseCache.set(key, made);
+    }
+    return made;
+  }
+  function posesOf(register: Register | null, dealers: DealerInfo[]): PoseAnswer[] {
+    return (Object.keys(POSE) as (keyof typeof POSE)[]).map((step) => {
+      const source = poseOf(step);
+      const owner = ownerOf({ name: 'pose-figure.png', label: '', goesAs: 'referenceImage', path: null, sha256: null, from: { entry: source.entry, path: source.path }, cut: source.keep ? ({} as Picture['cut']) : null }, [], register, dealers);
+      return { step, label: source.label ?? step, owner: owner ?? { dealer: '?', name: 'okänd', part: 'arm' }, served: `api/orders/pose/${step}` };
+    });
   }
 
   // ── Building a draft ───────────────────────────────────────────────────────
@@ -196,12 +327,8 @@ export function orderStore(root: string, options: StoreOptions = {}) {
    */
   async function textOf(order: Pick<Order, 'step' | 'motion' | 'generation' | 'pictures' | 'prompt'>, dealer: DealerInfo, extra: string | null) {
     const drawn = order.pictures.find((p) => p.goesAs === 'endFrame')?.drawn ?? null;
-    const place = drawn ? { x: drawn.centre[0], y: drawn.centre[1] } : order.motion?.target ? planCentre((await readPlan(root)).plan, order.motion.target) : null;
-    const { template, text } = promptFor({
-      dealer, step: order.step.key, model: order.generation.model,
-      motion: order.motion ? { grip: order.motion.grip, turn: order.motion.turn, flipAxis: order.motion.flipAxis, side: order.motion.side } : null,
-      place, extra,
-    });
+    const planPlace = !drawn && order.motion?.target ? planCentre((await readPlan(root)).plan, order.motion.target) : null;
+    const { template, text } = orderPrompt({ ...order, prompt: { ...order.prompt, extra } }, dealer, planPlace);
     return { template, text, sha256: sha(text), extra, middle: false };
   }
 
@@ -221,8 +348,12 @@ export function orderStore(root: string, options: StoreOptions = {}) {
     const takes = input.takes ?? 2;
     if (!Number.isInteger(takes) || takes < 1 || takes > TAKES_MAX) throw new StoreError(400, `Tagningar ska vara 1–${TAKES_MAX}.`);
     const extra = input.extra?.trim() ? input.extra.trim().slice(0, EXTRA_LIMIT) : null;
-    const flipAxis = input.flipAxis ?? 'FREE';
+    const intent = target ? plan.targets[target].intent : null;
+    const flipAxis = input.flipAxis ?? defaultFlip(step.key, intent?.turnAt);
     if (!FLIP_AXES.includes(flipAxis)) throw new StoreError(400, 'Okänd vändning.');
+    if (input.hand !== undefined && input.hand !== 'LH' && input.hand !== 'RH') throw new StoreError(400, 'Handen ska vara LH eller RH.');
+    if (input.pass !== undefined && typeof input.pass !== 'boolean') throw new StoreError(400, 'Handbyte ska vara sant eller falskt.');
+    if (input.side !== undefined && input.side !== 'FRONT' && input.side !== 'BACK') throw new StoreError(400, 'Kortet landar FRONT (öppet) eller BACK (stängt).');
     const seat = target ? target.toLowerCase().replace('.c1', '').replace('.', '-') : null;
     const id = input.id ?? (await nextId([dealer.id, step.key.toLowerCase().replace('.', '-'), seat].filter(Boolean).join('-')));
     if (!ORDER_ID.test(id)) throw new StoreError(400, 'Ogiltigt beställnings-id.');
@@ -260,13 +391,18 @@ export function orderStore(root: string, options: StoreOptions = {}) {
       if (step.kind === 'FILM') {
         const first = await anchorPicture('first.png', (w) => `Första bild · ${w}`, 'startFrame', step.from);
         pictures.push(first.picture);
-        if (step.card) {
-          const intent = plan.targets[target!].intent;
-          motion = { grip: step.grip ?? 'PINCH', hand: intent.takeHand, turn: intent.turn, flipAxis, target, side: intent.endSide, fromPlan: true };
+        if (step.card && intent) {
+          // The choices made in the sheet, else what Placering says for the card. Every card leaves the shoe closed.
+          const pass = input.pass ?? (input.hand === undefined ? intent.pass : false);
+          const hand = pass ? 'LH' : (input.hand ?? intent.takeHand);
+          if (pass && input.hand === 'RH') throw new StoreError(400, 'Handbyte går från vänster hand till höger: vänster tar kortet ur skon.');
+          const side = input.side ?? intent.endSide;
+          motion = { grip: step.grip ?? 'PINCH', hand, pass, turn: side !== intent.startSide, flipAxis, target, side, fromPlan: false };
+          motion.fromPlan = fromPlanOf(plan, motion);
           // Drawn on the dealer's own anchor only; while it waits, the picture shows that it waits (no other dealer stands in).
-          const last: Picture = { name: 'last.png', label: `Sista bild · samma + kortet på ${seatWords(target)}`, goesAs: 'endFrame', path: null, sha256: null, from: { built: `första bilden + kortet ${target} där planen säger` }, waits: first.picture.waits ?? null };
+          const last: Picture = { name: 'last.png', label: `Sista bild · samma + kortet ${side === 'BACK' ? 'stängt' : 'öppet'} på ${seatWords(target)}`, goesAs: 'endFrame', path: null, sha256: null, from: { built: `första bilden + kortet ${target} där planen säger` }, waits: first.picture.waits ?? null };
           if (first.bytes) {
-            const { bytes, drawn } = await drawOn(first.bytes, target!);
+            const { bytes, drawn } = await drawOn(first.bytes, target!, side);
             Object.assign(last, await put(id, 'last.png', bytes), { width: 1764, height: 1174, drawn, waits: null });
           }
           pictures.push(last);
@@ -278,17 +414,17 @@ export function orderStore(root: string, options: StoreOptions = {}) {
         const base = await anchorPicture('anchor.png', (w) => w, 'referenceImage', step.from, 'anchor');
         pictures.push(base.picture);
         const pose = input.pose ?? options.poses?.[step.key as keyof typeof POSE] ?? POSE[step.key as keyof typeof POSE];
-        const { bytes, from } = await sourceBytes(register, pose);
         if (pose.keep) {
-          // The figure: only the arm at the shoe of the other dealer; the rest of her is the picture's own green.
-          const result = cutFigure(await readRgb(bytes), pose.keep);
-          const figure = await pngOf(result.rgb);
+          // The figure: only the arm at the shoe of the other dealer; the rest of her is green, the anchor's green.
+          const { bytes: figure, from, cut } = await cutPose(register, pose, base.bytes && base.picture.sha256 ? { bytes: base.bytes, sha256: base.picture.sha256 } : null);
           pictures.push({
             name: 'pose-figure.png', label: POSE_LABEL, goesAs: 'referenceImage', tag: 'pose', ...(await put(id, 'pose-figure.png', figure)), width: 1764, height: 1174,
-            from: { ...from, note: `${pose.label ?? from.note}; allt av henne utom ${pose.what ?? POSE_WHAT} är bortklippt och grönt` }, waits: null,
-            cut: { keep: pose.keep.map(([x, y]) => [x, y] as [number, number]), what: pose.what ?? POSE_WHAT, source: { sha256: sha(bytes) }, settings: { ...CUT }, filledPx: result.filledPx, keptPx: result.keptPx, green: result.green },
+            from: { ...from, note: `${pose.label ?? from.note}; allt av henne utom ${pose.what ?? POSE_WHAT} är bortklippt och grönt` }, waits: null, cut,
           });
-        } else pictures.push({ name: 'pose.png', label: 'Pose (@pose)', goesAs: 'referenceImage', tag: 'pose', ...(await put(id, 'pose.png', bytes)), width: 1764, height: 1174, from: { ...from, note: pose.label ?? from.note }, waits: null });
+        } else {
+          const { bytes, from } = await sourceBytes(register, pose);
+          pictures.push({ name: 'pose.png', label: 'Pose (@pose)', goesAs: 'referenceImage', tag: 'pose', ...(await put(id, 'pose.png', bytes)), width: 1764, height: 1174, from: { ...from, note: pose.label ?? from.note }, waits: null });
+        }
       }
 
       // What the still becomes: a candidate of its role in the register.
@@ -326,6 +462,39 @@ export function orderStore(root: string, options: StoreOptions = {}) {
     }
   }
 
+  /**
+   * One draft per seat, sharing a group ("Alla sju": the first card to every player), each with its own text and last
+   * picture. All or nothing: when one cannot be made, the ones already made are removed again (they are new drafts).
+   */
+  async function createMany(input: NewOrder): Promise<{ orders: Order[]; revisions: string[] }> {
+    const seats = input.seats;
+    if (!Array.isArray(seats) || seats.length < 2 || seats.length > SEAT_TARGETS.length) throw new StoreError(400, `Välj 2–${SEAT_TARGETS.length} platser.`);
+    const targets = seats.map((s) => s?.target);
+    if (targets.some((t) => typeof t !== 'string' || !SEAT_TARGETS.includes(t)) || new Set(targets).size !== targets.length) throw new StoreError(400, 'Platserna ska vara olika och finnas i planen (P1.C1 … D.C1).');
+    for (const s of seats) for (const key of Object.keys(s)) if (!['target', 'hand', 'pass', 'side'].includes(key)) throw new StoreError(400, `${key} kan inte sättas per plats.`);
+    const step = stepOf(input.step), dealer = (await readDealers()).find((d) => d.id === input.dealer);
+    if (!step?.card) throw new StoreError(400, 'Flera platser går bara för en giv.');
+    if (!dealer) throw new StoreError(400, 'Okänd dealer.');
+    const taken = new Set<string>();
+    for (const name of (await readdir(dir).catch(() => [] as string[])).filter((f) => f.endsWith('.json'))) { const g = (await readJson<Order>(path.join(dir, name)))?.group?.id; if (g) taken.add(g); }
+    const prefix = `${dealer.id}-${step.key.toLowerCase().replace('.', '-')}-grupp`;
+    let groupId = '';
+    for (let n = 1; n < 100 && !groupId; n++) { const id = `${prefix}-${String(n).padStart(2, '0')}`; if (!taken.has(id)) groupId = id; }
+    const all = targets.length === 7 && targets.every((t) => t.startsWith('P'));
+    const group = input.group ?? { id: groupId, label: `${dealer.name} · ${step.group.toLowerCase()} · ${all ? 'alla sju' : seatList(targets)}` };
+    const made: Order[] = [], revisions: string[] = [];
+    try {
+      for (const seat of seats) {
+        const { order, revision } = await create({ ...input, seats: undefined, id: undefined, title: undefined, target: seat.target, hand: seat.hand ?? input.hand, pass: seat.pass ?? input.pass, side: seat.side ?? input.side, group });
+        made.push(order); revisions.push(revision);
+      }
+    } catch (error) {
+      for (const order of made) { await rm(fileOf(order.id), { force: true }); await rm(path.join(root, folderOf(order.id)), { recursive: true, force: true }); }
+      throw error;
+    }
+    return { orders: made, revisions };
+  }
+
   // ── Changing a draft ───────────────────────────────────────────────────────
   function guardDraft(order: Order, revision: string, expected: string | undefined) {
     if (!expected) throw new StoreError(428, 'Läs beställningen innan du ändrar den.');
@@ -335,7 +504,10 @@ export function orderStore(root: string, options: StoreOptions = {}) {
 
   function validateChange(value: unknown): Change {
     if (!value || typeof value !== 'object' || Array.isArray(value)) throw new StoreError(400, 'Ändringen ska vara ett objekt.');
-    const v = value as Record<string, unknown>, allowed = ['title', 'takes', 'flipAxis', 'extra', 'duration'];
+    const v = value as Record<string, unknown>, allowed = ['title', 'takes', 'flipAxis', 'extra', 'duration', 'hand', 'pass', 'side'];
+    if (v.hand !== undefined && v.hand !== 'LH' && v.hand !== 'RH') throw new StoreError(400, 'Handen ska vara LH eller RH.');
+    if (v.pass !== undefined && typeof v.pass !== 'boolean') throw new StoreError(400, 'Handbyte ska vara sant eller falskt.');
+    if (v.side !== undefined && v.side !== 'FRONT' && v.side !== 'BACK') throw new StoreError(400, 'Kortet landar FRONT (öppet) eller BACK (stängt).');
     for (const key of Object.keys(v)) if (!allowed.includes(key)) throw new StoreError(400, `${key} kan inte ändras här (bara ${allowed.join(', ')}).`);
     if (v.title !== undefined && (typeof v.title !== 'string' || !v.title.trim() || v.title.length > 120)) throw new StoreError(400, 'Namnet saknas eller är för långt.');
     if (v.takes !== undefined && (!Number.isInteger(v.takes) || (v.takes as number) < 1 || (v.takes as number) > TAKES_MAX)) throw new StoreError(400, `Tagningar ska vara 1–${TAKES_MAX}.`);
@@ -357,6 +529,19 @@ export function orderStore(root: string, options: StoreOptions = {}) {
       if (changes.takes !== undefined) next.takes = changes.takes;
       if (changes.flipAxis !== undefined) { if (!next.motion) throw new StoreError(400, 'Steget har ingen vändning.'); next.motion.flipAxis = changes.flipAxis; }
       if (changes.duration !== undefined) { if (next.kind !== 'FILM') throw new StoreError(400, 'En bild har ingen längd.'); next.generation.params.duration = changes.duration; }
+      if (changes.hand !== undefined || changes.pass !== undefined || changes.side !== undefined) {
+        if (!next.motion) throw new StoreError(400, 'Steget har ingen hand eller sida att välja.');
+        const pass = changes.pass ?? (changes.hand !== undefined ? false : !!next.motion.pass);
+        const hand = changes.hand ?? (pass ? 'LH' : next.motion.hand);
+        if (pass && hand !== 'LH') throw new StoreError(400, 'Handbyte går från vänster hand till höger: vänster tar kortet ur skon.');
+        const side = changes.side ?? next.motion.side, redraw = side !== next.motion.side;
+        Object.assign(next.motion, { hand, pass, side, turn: side !== 'BACK' });
+        const { plan } = await readPlan(root);
+        next.motion.fromPlan = fromPlanOf(plan, next.motion);
+        await labelLast(next);
+        if (redraw) await drawLast(id, next, null);
+      }
+      next.summary = summaryOf(next.step, dealer.name, next.motion);
       const extra = changes.extra !== undefined ? (changes.extra?.trim() || null) : next.prompt.extra;
       next.prompt = await textOf(next, dealer, extra);
       const cost = costOf(next.generation, next.takes, policy.prices);
@@ -367,7 +552,26 @@ export function orderStore(root: string, options: StoreOptions = {}) {
     });
   }
 
-  /** Fetches what a draft waits for once it holds in the register, and draws its last picture when the first changed or the plan did. */
+  /** The built last picture's label says how the card lands and where. */
+  async function labelLast(order: Order) {
+    const last = order.pictures.find((p) => p.goesAs === 'endFrame' && p.from?.built);
+    if (last && order.motion?.target) last.label = `Sista bild · samma + kortet ${order.motion.side === 'BACK' ? 'stängt' : 'öppet'} på ${seatWords(order.motion.target)}`;
+  }
+  /** Draws the last picture again on the first, with the card as the draft has it (side), when the first is there. */
+  async function drawLast(id: string, order: Order, firstBytes: Buffer | null) {
+    const first = order.pictures.find((p) => p.goesAs === 'startFrame');
+    const last = order.pictures.find((p) => p.goesAs === 'endFrame' && p.from?.built);
+    if (!first?.path || !last || !order.motion?.target) return;
+    const base = firstBytes ?? (await readFile(path.join(root, ...first.path.split('/'))));
+    const { bytes, drawn } = await drawOn(base, order.motion.target, order.motion.side);
+    Object.assign(last, await put(id, 'last.png', bytes), { drawn, waits: null, width: 1764, height: 1174 });
+  }
+
+  /**
+   * Brings a draft up to date: fetches what it waits for once it holds in the register, follows the anchor that holds now
+   * when another of the same role has been approved in Material since (keeping what the picture was in `replaced`), draws
+   * its last picture again when the first changed or the plan did, and writes the text with the template of today.
+   */
   async function refresh(id: string, expected: string | undefined) {
     return serial(async () => {
       const { order, revision } = await load(id);
@@ -378,24 +582,88 @@ export function orderStore(root: string, options: StoreOptions = {}) {
       const { file: planFile } = await readPlan(root);
       let firstBytes: Buffer | null = null;
       for (const p of next.pictures) {
-        if (!p.waits || p.path) continue;
-        const entry = resolveWaits(register, p.waits);
-        if (!entry || p.from?.built) continue;
-        const { bytes, from } = await sourceBytes(register, { entry: entry.id });
-        Object.assign(p, await put(id, p.name, bytes), { from, waits: null, width: 1764, height: 1174 });
-        if (p.goesAs === 'startFrame') firstBytes = bytes;
+        if (p.from?.built) continue;
+        if (p.waits && !p.path) {
+          const entry = resolveWaits(register, p.waits);
+          if (!entry) continue;
+          const { bytes, from } = await sourceBytes(register, { entry: entry.id });
+          Object.assign(p, await put(id, p.name, bytes), { from, waits: null, width: 1764, height: 1174 });
+          if (p.goesAs === 'startFrame') firstBytes = bytes;
+          continue;
+        }
+        const f = followOf(register, order.dealer, p, dealer.name);
+        if (!f) continue;
+        const words = new RegExp(`${escapeRe(genitive(dealer.name))} ankare ${escapeRe(f.at)}(?: · .*)?$`);
+        const label = words.test(p.label) ? p.label.replace(words, anchorWords(dealer.name, f.at, f.now)) : p.label;
+        if (f.swap) {
+          const { bytes, from } = await sourceBytes(register, { entry: f.now.id });
+          const was = { at: now().toISOString(), was: `${p.label} (${f.was.name})`, entry: f.was.id, sha256: p.sha256 };
+          Object.assign(p, await put(id, p.name, bytes), { from, width: 1764, height: 1174, replaced: was });
+          if (p.goesAs === 'startFrame') firstBytes = bytes;
+        } else if (p.from) p.from = { ...p.from, note: `${f.now.name} (${f.now.state})` };
+        p.label = label;
       }
-      const first = next.pictures.find((p) => p.goesAs === 'startFrame');
+      // The pose figure's green follows the anchor it is sent with: cut again from its source and matched to the anchor of now.
+      const stale = poseStale(next);
+      if (stale) {
+        const { anchor, pose } = stale, cut = pose.cut!;
+        const source: Source = { ...(pose.from?.entry ? { entry: pose.from.entry } : { path: pose.from?.path, frame: pose.from?.frame }), keep: cut.keep, what: cut.what };
+        const made = await cutPose(register, source, { bytes: await readFile(path.join(root, ...anchor.path!.split('/'))), sha256: anchor.sha256! });
+        Object.assign(pose, await put(id, pose.name, made.bytes), { cut: made.cut });
+      }
+      if (next.motion && next.motion.pass === undefined) next.motion.pass = false;
       const last = next.pictures.find((p) => p.goesAs === 'endFrame' && p.from?.built);
-      if (first?.path && last && next.motion?.target && (firstBytes || !last.path || last.drawn?.plan.sha256 !== planFile.sha256)) {
-        firstBytes ??= await readFile(path.join(root, ...first.path.split('/')));
-        const { bytes, drawn } = await drawOn(firstBytes, next.motion.target);
-        Object.assign(last, await put(id, 'last.png', bytes), { drawn, waits: null, width: 1764, height: 1174 });
-      }
+      if (last && (firstBytes || !last.path || last.drawn?.plan.sha256 !== planFile.sha256 || (last.drawn && last.drawn.side !== next.motion?.side))) await drawLast(id, next, firstBytes);
+      await labelLast(next);
       next.summary = summaryOf(next.step, dealer.name, next.motion);
       next.prompt = await textOf(next, dealer, next.prompt.extra);
       return { order: next, revision: await write(next) };
     });
+  }
+
+  /** A still whose pose figure's green is not (yet) matched to the anchor it is sent with. */
+  function poseStale(order: Order): { anchor: Picture; pose: Picture } | null {
+    const anchor = order.pictures.find((p) => p.tag === 'anchor' && p.path && p.sha256);
+    const pose = order.pictures.find((p) => p.tag === 'pose' && p.cut && p.from);
+    return anchor && pose && pose.cut!.matched?.anchorSha256 !== anchor.sha256 ? { anchor, pose } : null;
+  }
+
+  /** Why "Hämta bilderna" would change a draft now, in words, or null. */
+  function refreshReason(order: Order, register: Register | null, dealer: DealerInfo | undefined, planSha: string | null): string | null {
+    if (order.approval || order.status !== 'UTKAST') return null;
+    const reasons: string[] = [];
+    if (register && waitingOf(order).some((w) => resolveWaits(register, w))) reasons.push('Det utkastet väntar på finns nu i Material.');
+    for (const p of order.pictures) {
+      const f = register && dealer ? followOf(register, order.dealer, p, dealer.name) : null;
+      if (f) reasons.push(f.swap ? `${f.now.name} gäller nu i Material i stället för ${f.was.name}.` : `${f.now.name} är godkänd i Material.`);
+    }
+    if (planSha && order.pictures.some((p) => p.drawn && p.drawn.plan.sha256 !== planSha)) reasons.push('Planen har ändrats sedan kortet ritades.');
+    if (poseStale(order)) reasons.push('Posebildens gröna är inte ankarets än.');
+    if (!order.prompt.template.endsWith(`@${TEMPLATE_VERSION}`)) reasons.push('Texten är skriven med en äldre mall.');
+    return reasons.length ? reasons.join(' ') : null;
+  }
+
+  /**
+   * After a decision in Material: every draft of the dealer that would change (a picture it waits for holds now, another
+   * anchor holds than the one it was made from) is brought up to date. Returns the drafts that followed; one that cannot
+   * be brought up to date stays as it is and shows why in Beställ.
+   */
+  async function follow(dealerId: string): Promise<string[]> {
+    const register = await media.readRegister().then((r) => r.register).catch(() => null);
+    const dealer = (await readDealers()).find((d) => d.id === dealerId);
+    if (!register || !dealer) return [];
+    const followed: string[] = [];
+    for (const name of (await readdir(dir).catch(() => [] as string[])).filter((f) => f.endsWith('.json')).sort()) {
+      const id = name.slice(0, -5);
+      if (!ORDER_ID.test(id)) continue;
+      const loaded = await load(id).catch(() => null);
+      if (!loaded || loaded.order.dealer !== dealerId || loaded.order.status !== 'UTKAST') continue;
+      const { order } = loaded;
+      const moves = waitingOf(order).some((w) => resolveWaits(register, w)) || order.pictures.some((p) => followOf(register, dealerId, p, dealer.name)) || !!poseStale(order);
+      if (!moves) continue;
+      try { await refresh(id, loaded.revision); followed.push(id); } catch { /* shown in Beställ as a reason to fetch the pictures */ }
+    }
+    return followed;
   }
 
   // ── Reading ────────────────────────────────────────────────────────────────
@@ -420,11 +688,27 @@ export function orderStore(root: string, options: StoreOptions = {}) {
     return out;
   }
 
-  async function answerOf(order: Order, revision: string, register: Register | null, policy: Policy | null, spentToday: number, balance: number): Promise<OrderAnswer> {
+  /**
+   * Whose each picture is. A whole picture of another dealer never lies in a dealer's draft (Jakob 2026-11-12); only the
+   * cut-out of her arm at the shoe may, as the pose of a still. Such a mix-up keeps the order from being approved.
+   */
+  function ownersOf(order: Order, register: Register | null, dealers: DealerInfo[]) {
+    const owners: Record<string, Owner | null> = {}, problems: string[] = [];
+    const mine = dealers.find((d) => d.id === order.dealer)?.name ?? order.dealer;
+    for (const p of order.pictures) {
+      const owner = (owners[p.name] = ownerOf(p, order.pictures, register, dealers));
+      if (owner && owner.dealer !== order.dealer && owner.part !== 'arm') problems.push(`${p.label}: bilden är ${genitive(owner.name)}, inte ${genitive(mine)}. En annan dealers bild ligger aldrig i ett utkast.`);
+    }
+    return { owners, problems };
+  }
+
+  async function answerOf(order: Order, revision: string, register: Register | null, policy: Policy | null, spentToday: number, balance: number, dealers: DealerInfo[] = []): Promise<OrderAnswer> {
     const receipt = await readReceipt(order.id);
     const problems = await problemsOf(order);
     const hash = orderHash(order);
     if (order.approval && order.approval.orderSha256 !== hash) problems.push('Beställningen har ändrats efter godkännandet: den läggs inte.');
+    const { owners, problems: mixed } = ownersOf(order, register, dealers);
+    problems.push(...mixed);
     // Warnings are read now, not stored: a dealer's own picture that does not hold (yet), a plan changed since the card was drawn.
     const warnings: string[] = [];
     for (const p of order.pictures) {
@@ -435,7 +719,8 @@ export function orderStore(root: string, options: StoreOptions = {}) {
     for (const p of order.pictures) if (!order.approval && p.drawn && planFile && p.drawn.plan.sha256 !== planFile.sha256) warnings.push(`${p.label}: planen har ändrats sedan kortet ritades. Hämta bilderna igen.`);
     const waiting = waitingOf(order).map((w) => ({ ...w, ready: !!register && !!resolveWaits(register, w) }));
     const check = !order.approval && policy ? checkPolicy(order, policy, spentToday, balance) : null;
-    return { order, revision, hash, shown: shownOf(order, problems, receipt), problems, warnings, waiting, receipt, check };
+    const why = refreshReason(order, register, dealers.find((d) => d.id === order.dealer), planFile?.sha256 ?? null);
+    return { order, revision, hash, shown: shownOf(order, problems, receipt), problems, warnings, waiting, receipt, check, owners, refresh: why };
   }
 
   async function list(): Promise<OrdersAnswer> {
@@ -443,6 +728,9 @@ export function orderStore(root: string, options: StoreOptions = {}) {
     const policy = await readPolicy();
     if (!policy) problems.push('data/order-policy.json kunde inte läsas.');
     const register = await media.readRegister().then((r) => r.register);
+    const dealers = await readDealers();
+    const plan = await readPlan(root).then(({ plan, file }) => planAnswerOf(plan, file)).catch(() => null);
+    if (!plan) problems.push('placements/default.json kunde inte läsas.');
     const loaded: { order: Order; revision: string }[] = [];
     for (const name of (await readdir(dir).catch(() => [] as string[])).filter((f) => f.endsWith('.json')).sort()) {
       const id = name.slice(0, -5);
@@ -454,10 +742,15 @@ export function orderStore(root: string, options: StoreOptions = {}) {
     const receipts = await Promise.all(loaded.map((l) => readReceipt(l.order.id)));
     const balance = await balanceNow(policy, receipts);
     const orders = [];
-    for (const { order, revision } of loaded) orders.push(await answerOf(order, revision, register, policy, spent, balance?.credits ?? 0));
+    for (const { order, revision } of loaded) orders.push(await answerOf(order, revision, register, policy, spent, balance?.credits ?? 0, dealers));
     // A queue: the oldest first.
     orders.sort((a, b) => (a.order.created < b.order.created ? -1 : a.order.created > b.order.created ? 1 : a.order.id.localeCompare(b.order.id)));
-    return { schemaVersion: 1, orders, policy, day: { date, spent, cap: policy?.dailyCapCredits ?? 0 }, balance, problems };
+    return {
+      schemaVersion: 1, orders, policy, day: { date, spent, cap: policy?.dailyCapCredits ?? 0 }, balance, problems,
+      dealers: dealers.map(({ id, name, look, paused }) => ({ id, name, look, paused: paused ?? null })),
+      plan,
+      poses: posesOf(register, dealers),
+    };
   }
 
   async function one(id: string): Promise<OrderAnswer> {
@@ -473,7 +766,8 @@ export function orderStore(root: string, options: StoreOptions = {}) {
     return serial(async () => {
       const { order, revision } = await load(id);
       guardDraft(order, revision, expected);
-      const problems = await problemsOf(order);
+      const register = await media.readRegister().then((r) => r.register).catch(() => null);
+      const problems = [...(await problemsOf(order)), ...ownersOf(order, register, await readDealers()).problems];
       if (problems.length) throw new StoreError(409, problems.join(' '));
       const policy = await readPolicy();
       if (!policy) throw new StoreError(500, 'data/order-policy.json kunde inte läsas.');
@@ -499,7 +793,7 @@ export function orderStore(root: string, options: StoreOptions = {}) {
     return (await stat(file).then((s) => s.isFile(), () => false)) ? file : null;
   }
 
-  return { list, one, load, create, change, refresh, approve, servable, readReceipt };
+  return { list, one, load, create, createMany, change, refresh, follow, approve, servable, readReceipt, posePicture };
 }
 
 export type { Drawn, OrderAnswer, OrdersAnswer };

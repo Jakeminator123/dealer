@@ -7,7 +7,8 @@
 // D:/dealer-scratch/tmp/paow/skript/plan-till-order-2.py (lines 75–109), ported; the drawn card is then measured
 // against the plan (the centre of the changed pixels against the plan's point, in pixels). The pose picture of a still is
 // cut down to a figure (cutFigure): only the region the order keeps of the other dealer (her dealing forearm, hand, the
-// shoe and the card), the rest of her filled with the picture's own green.
+// shoe and the card), the rest of her filled with the picture's own green; then its green is brought to the green of the
+// anchor it is sent with (matchGreen), so that the two pictures of a still have one green.
 //
 //   node tools/order-images.ts <order id>     fetch what a draft waits for or follows when it holds, and (re)draw its last picture
 import { readFile } from 'node:fs/promises';
@@ -157,9 +158,12 @@ export function measureChange(a: Rgb, b: Rgb): NonNullable<Drawn['measured']> {
   return { centre: [r(p.cx), r(p.cy)], area: p.area, box: [p.x1 - p.x0 + 1, p.y1 - p.y0 + 1], changedElsewhere: all - p.area };
 }
 
-/** Draws one card of the plan on `base` and measures it: the picture and what to keep in the order. */
-export function drawCard(base: Rgb, texture: Texture, plan: PlacementPlan, planFile: { path: string; sha256: string }, target: string): { rgb: Rgb; drawn: Drawn } {
-  const side = plan.targets[target]?.intent.endSide ?? 'FRONT';
+/**
+ * Draws one card of the plan on `base` and measures it: the picture and what to keep in the order. The side is the order's
+ * own choice (closed or open) where it has one, else what the plan says for the card.
+ */
+export function drawCard(base: Rgb, texture: Texture, plan: PlacementPlan, planFile: { path: string; sha256: string }, target: string, chosen?: 'FRONT' | 'BACK' | null): { rgb: Rgb; drawn: Drawn } {
+  const side = chosen ?? plan.targets[target]?.intent.endSide ?? 'FRONT';
   const to = planQuad(plan, target);
   const rgb = layCard(base, texture, to, side);
   const measured = measureChange(base, rgb);
@@ -348,6 +352,40 @@ export function cutFigure(rgb: Rgb, keep: readonly Pt[], options: CutOptions = C
   }
   const r1 = (v: number) => Math.round(v * 10) / 10;
   return { rgb: out, filledPx, keptPx, green: mean.map((s) => r1(s / Math.max(1, filledPx))) as [number, number, number], grain: grain.map(r1) as [number, number, number], stripAt };
+}
+
+// ── The pose figure's green, brought to the anchor's ────────────────────────
+/** A plainly green pixel: the same rule as the cut's first model of the background. */
+const plainGreen = (rgb: Rgb, i: number) => { const r = rgb[i * 3], g = rgb[i * 3 + 1], b = rgb[i * 3 + 2]; return g > 170 && g - r > 120 && g - b > 100; };
+/** The median of a picture's plainly green pixels, per channel (in a box when given: x0, y0, width, height). */
+export function greenOf(rgb: Rgb, box: [number, number, number, number] = [0, 0, W, H]): [number, number, number] {
+  const hist = [new Uint32Array(256), new Uint32Array(256), new Uint32Array(256)];
+  let n = 0;
+  const [x0, y0, w, h] = box;
+  for (let y = y0; y < y0 + h; y++) for (let x = x0; x < x0 + w; x++) { const i = y * W + x; if (!plainGreen(rgb, i)) continue; n++; for (let c = 0; c < 3; c++) hist[c][rgb[i * 3 + c]]++; }
+  return hist.map((hc) => { let seen = 0, v = 0; while (v < 255 && (seen += hc[v]) * 2 < n) v++; return n ? v : 0; }) as [number, number, number];
+}
+export type GreenMatch = { rgb: Rgb; anchor: [number, number, number]; before: [number, number, number]; after: [number, number, number] };
+/**
+ * Brings a pose figure's green to the level and tone of the anchor it is sent with (Jakob 2026-11-13: "why is the green
+ * different?"; the cut fills with the source film's own green). Per pixel the shift is the anchor's green model minus the
+ * figure's (both the median per block, as the cut models it), weighted by how green the pixel is: its green above its red
+ * and blue, against the figure's own green there (a chroma key's alpha). The whole green moves, plain and shadowed alike;
+ * the arm, the hand, the black shoe and the yellow card (no green above their red) do not; an edge pixel that is part
+ * green moves by its green part, so no fringe of the old green is left around them. The same pictures give the same bytes.
+ */
+export function matchGreen(figure: Rgb, anchor: Rgb, block: number = CUT.block): GreenMatch {
+  if (figure.length !== N * 3 || anchor.length !== N * 3) throw Error(`Bilderna är inte bankens ruta ${W} × ${H}.`);
+  const mask = (rgb: Rgb) => { const m = new Uint8Array(N); for (let i = 0; i < N; i++) if (plainGreen(rgb, i)) m[i] = 1; return m; };
+  const from = greenModel(figure, mask(figure), block), to = greenModel(anchor, mask(anchor), block);
+  const out = Buffer.alloc(N * 3);
+  for (let i = 0; i < N; i++) {
+    const r = figure[i * 3], g = figure[i * 3 + 1], b = figure[i * 3 + 2];
+    const fr = from[i * 3], fg = from[i * 3 + 1], fb = from[i * 3 + 2];
+    const key = Math.max(0, Math.min(1, (g - Math.max(r, b)) / Math.max(1, fg - Math.max(fr, fb))));
+    for (let c = 0; c < 3; c++) out[i * 3 + c] = Math.max(0, Math.min(255, Math.round(figure[i * 3 + c] + key * (to[i * 3 + c] - from[i * 3 + c]))));
+  }
+  return { rgb: out, anchor: greenOf(anchor), before: greenOf(figure), after: greenOf(out) };
 }
 
 /** The plan as saved, with its hash. */

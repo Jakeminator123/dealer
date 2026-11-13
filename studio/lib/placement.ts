@@ -1,9 +1,10 @@
 // The Placering view's thin helpers: places in Jakob's words, the draft with its undo and what differs from the saved plan,
-// the handles' arithmetic, numbers with a decimal comma, the view's address and the films the cards can be laid over.
-// The plan's own rules (where a card is drawn, how an edit is made) are src/placement-model.ts. Pure: no DOM, no network;
-// tests in studio/tests/placement.test.ts.
+// the handles' arithmetic, numbers with a decimal comma, the view's address, what the cards can be laid over (the neutral
+// backdrop, the V6 picture, the films) and the way on to Beställ. The plan's own rules (where a card is drawn, how an edit
+// is made) are src/placement-model.ts. Pure: no DOM, no network; tests in studio/tests/placement.test.ts.
 import { isCurrent, playable, takeRole, ROLE_LABEL, type Graph } from "../../src/clip-graph.ts";
-import { SHOE, TARGETS, VIEWS, editPlace, motionNodes, sequence, toPixels, type Geometry, type Hand, type Intent, type Place, type PlacementPlan, type Side, type View } from "../../src/placement-model.ts";
+import { SEAT_TARGETS } from "../../src/order-model.ts";
+import { NEUTRAL_BACKDROP, SHOE, TARGETS, VIEWS, editPlace, motionNodes, sequence, toPixels, type Geometry, type Hand, type Intent, type Place, type PlacementPlan, type Side, type View } from "../../src/placement-model.ts";
 import { nodeCode } from "./names.ts";
 
 // ── Places ──────────────────────────────────────────────────────────────────
@@ -177,21 +178,68 @@ export function motionSteps(id: string, intent: Intent): { steps: MotionStep[]; 
   return { steps: motionNodes(id, intent).map((n) => words[n.id](n.detail)), code: sequence(id, intent) };
 }
 
+// ── What lies under the cards ───────────────────────────────────────────────
+// A still of the view or a film. Dator opens on the neutral backdrop (Jakob 2026-11-13: "a neutral picture and not a picture
+// of this woman", on the table the studio uses): the 3D scene's table at its home view with a neutral figure and the bank's
+// shoe, built by tools/placement-backdrop.ts (NEUTRAL_BACKDROP). The V6 picture stays a choice. Mobil has no neutral
+// backdrop (the scene has no home view in the Mobil view's pixels), so it opens on its V6 picture as before.
+export type Still = "neutral" | "v6";
+export const isStill = (value: unknown): value is Still => value === "neutral" || value === "v6";
+const NEUTRAL: Partial<Record<View, string>> = NEUTRAL_BACKDROP;
+/** The stills a view has, its default first. */
+export const stillsOf = (view: View): Still[] => (NEUTRAL[view] ? ["neutral", "v6"] : ["v6"]);
+export const defaultStill = (view: View): Still => stillsOf(view)[0];
+/** The picture of a still in a view (a path from the lab server's root). */
+export const stillPath = (still: Still, view: View): string => (still === "neutral" && NEUTRAL[view]) || VIEWS[view].background;
+/** The choice in the list under the picture: "Neutral · studions bord", "V6-bild · dator". */
+export const stillChoice = (still: Still, view: View): string => (still === "neutral" ? "Neutral · studions bord" : `V6-bild · ${VIEW_WORD[view].toLowerCase()}`);
+/** The chip on the picture: what it is. */
+export const stillLabel = (still: Still): string => (still === "neutral" ? "Neutral · studions bord" : "V6 · visuell referens");
+export type Shown = { kind: "still"; still: Still; path: string } | { kind: "film"; film: Film };
+/**
+ * What lies under the cards in a view: the film the address names when it is known and has the view's shape, the still it
+ * names when the view has it, else the view's default still. `neutralMissing`: the neutral picture is not on this machine
+ * (the lab answered 404), so the V6 picture stands in.
+ */
+export function shownBackdrop(view: View, backdrop: string | null, films: readonly Film[], neutralMissing = false): Shown {
+  const film = backdrop && !isStill(backdrop) ? films.find((f) => f.id === backdrop) : undefined;
+  if (film && filmView(film) === view) return { kind: "film", film };
+  let still: Still = isStill(backdrop) && stillsOf(view).includes(backdrop) ? backdrop : defaultStill(view);
+  if (still === "neutral" && neutralMissing) still = "v6";
+  return { kind: "still", still, path: stillPath(still, view) };
+}
+/** The backdrop a chosen view keeps: a film of the other shape, or a still the view lacks, gives way to its default. */
+export function backdropForView(view: View, backdrop: string | null, films: readonly Film[]): string | null {
+  if (!backdrop) return null;
+  if (isStill(backdrop)) return stillsOf(view).includes(backdrop) ? backdrop : null;
+  const film = films.find((f) => f.id === backdrop);
+  return film && filmView(film) !== view ? null : backdrop;
+}
+
+// ── The way on to Beställ ───────────────────────────────────────────────────
+/**
+ * Beställ with a new order for a place's film (/bestall/?ny=1&plats=P4.C1), for the places that have a film of their own:
+ * the players' first cards and the dealer's first (SEAT_TARGETS in src/order-model.ts). null for every other place.
+ */
+export function orderHref(place: Place): string | null {
+  return SEAT_TARGETS.includes(place) ? `/bestall/?${new URLSearchParams({ ny: "1", plats: place }).toString()}` : null;
+}
+
 // ── The address ─────────────────────────────────────────────────────────────
-// /placering/?vy=mobil&plats=p4c2&bakgrund=<film id>&ruta=40: the view, the chosen place, and a film to lay the cards over
-// with its frame. Nothing chosen is the default: Dator, P4C2 (the old lab's first place), the V6 picture. "robot" belongs to
-// every lab page (src/preview-ui.ts) and is kept as it stands.
-export type PlacementAddress = { view: View; place: Place; film: string | null; frame: number };
+// /placering/?vy=mobil&plats=p4c2&bakgrund=<film id | v6 | neutral>&ruta=40: the view, the chosen place, and what to lay the
+// cards over (a film with its frame, or a still). Nothing chosen is the default: Dator, P4C2 (the old lab's first place), the
+// view's default still. "robot" belongs to every lab page (src/preview-ui.ts) and is kept as it stands.
+export type PlacementAddress = { view: View; place: Place; backdrop: string | null; frame: number };
 type Params = { get(name: string): string | null };
 export const START_PLACE: Place = "P4.C2";
 
 export function readPlacementAddress(params: Params): PlacementAddress {
-  const film = params.get("bakgrund")?.trim() || null;
+  const backdrop = params.get("bakgrund")?.trim() || null;
   const frame = Number(params.get("ruta"));
   return {
     view: params.get("vy") === "mobil" ? "portrait" : "native",
     place: placeFromCode(params.get("plats")) ?? START_PLACE,
-    film: film && /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(film) ? film : null,
+    backdrop: backdrop && /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(backdrop) ? backdrop : null,
     frame: Number.isSafeInteger(frame) && frame > 0 ? frame : 0,
   };
 }
@@ -200,9 +248,9 @@ export function placementQuery(a: PlacementAddress, keep?: Params): string {
   const p = new URLSearchParams();
   if (a.view === "portrait") p.set("vy", "mobil");
   if (a.place !== START_PLACE) p.set("plats", placeCode(a.place).toLowerCase());
-  if (a.film) {
-    p.set("bakgrund", a.film);
-    if (a.frame > 0) p.set("ruta", String(a.frame));
+  if (a.backdrop && a.backdrop !== defaultStill(a.view)) {
+    p.set("bakgrund", a.backdrop);
+    if (!isStill(a.backdrop) && a.frame > 0) p.set("ruta", String(a.frame));
   }
   const robot = keep?.get("robot");
   if (robot !== null && robot !== undefined) p.set("robot", robot);

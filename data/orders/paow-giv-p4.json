@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "paow-giv-p4",
   "title": "Paow · första filmen: ett kort till plats 4",
-  "summary": "Gör en film av Paow: från nypet vid skon (ankare 2.1) tar hon ett kort, vänder det som en hand kan och lägger det på plats 4; handen går tillbaka till nypet.",
+  "summary": "Gör en film av Paow: från ankare 2.1 (nyp) tar hon ett kort ur skon med vänster hand; hon för fram det med baksidan upp, vänder upp det vid plats 4 och lägger det öppet; handen går tillbaka till nypet.",
   "group": null,
   "dealer": "paow",
   "kind": "FILM",
@@ -21,10 +21,11 @@
     "grip": "PINCH",
     "hand": "LH",
     "turn": true,
-    "flipAxis": "FREE",
+    "flipAxis": "AT_PLACE",
     "target": "P4.C1",
     "side": "FRONT",
-    "fromPlan": true
+    "fromPlan": true,
+    "pass": false
   },
   "pictures": [
     {
@@ -43,7 +44,7 @@
     },
     {
       "name": "last.png",
-      "label": "Sista bild · samma + kortet på plats 4",
+      "label": "Sista bild · samma + kortet öppet på plats 4",
       "goesAs": "endFrame",
       "path": null,
       "sha256": null,
@@ -72,9 +73,9 @@
     }
   },
   "prompt": {
-    "template": "film-giv@2",
-    "text": "One continuous take with a locked-off camera and no cuts. The woman in the first frame is a young, slim, petite woman with a platinum-blonde chin-length bob, warm-coloured tattoos on her throat and upper chest and a small white flower pendant, in a black tailored blazer over a cream V-neck top; she sits at a green table, seen from the front, with the black card shoe fixed at the right of the picture and a yellow card in its window. She deals one card and comes back to the pose she started in. Her left hand, at the right of the picture, pinches the yellow card in the shoe's window between thumb and forefinger, as in the first frame, and draws it out: the card looks as it does in the shoe, the same size and shape, one plain rigid card. The same hand carries it low over the table towards the place where it will lie. On the way she turns the card over once, the way a real hand can from this pinch: one natural movement of fingers and wrist that a human hand can actually make, the card held firmly the whole time and keeping its size, until its blue face is up. She lays it flat, blue face up, exactly where the blue card lies in the last frame, in the middle of the picture, at the same size and angle, lets go of it, and the card stays there. Then the hand returns to the shoe and pinches the next yellow card, exactly as in the first frame. Her right hand, at the left of the picture, rests on the table the whole time. Only one card moves; it is solid yellow on its back and solid blue on its face. She ends exactly as in the last frame. Nothing of this happens: a second card appears, a finger passes through the card, the card grows or shrinks on its way, a hand hovers in the air without holding or laying anything, the shoe changes, the picture cuts or the camera moves.",
-    "sha256": "4502797f9cc13a9b86e7703a2ca028a8bc0a9aa56f5cea77b6e669569c3704bf",
+    "template": "film-giv@3",
+    "text": "One continuous take with a locked-off camera and no cuts. The woman in the first frame is a young, slim, petite woman with a platinum-blonde chin-length bob, warm-coloured tattoos on her throat and upper chest and a small white flower pendant, in a black tailored blazer over a cream V-neck top; she sits at a green table, seen from the front, with the black card shoe fixed at the right of the picture and a yellow card in its window. She deals one card and comes back to the pose she started in. Her left hand, at the right of the picture, pinches the yellow card in the shoe's window between thumb and forefinger, the fingertips on the card's own upper edge and not on the shoe's rim, as in the first frame, and draws it out of the shoe down onto the felt, its yellow back up: the card looks as it does in the shoe, the same size and shape, one plain rigid card. The same hand brings it forward low along the felt, still yellow back up, to the place where it will lie; it is not turned in the air on the way. At the place the wrist of her left hand rolls: the card tilts up onto its long edge, held between thumb and fingers, and the roll goes on until its blue face is up, one edge staying near the felt; it is one card turned over once, keeping its size. She lays it flat with her left hand, blue face up, exactly where the blue card lies in the last frame, in the middle of the picture, at the same size and angle, lets go of it, and the card stays there. Then her left hand returns to the shoe and pinches the next yellow card, exactly as in the first frame. Her right hand, at the left of the picture, rests on the table the whole time. Only one card moves; it is solid yellow on its back and solid blue on its face. She ends exactly as in the last frame. Nothing of this happens: a second card appears, her right hand lifts from the table or touches the card, the card is turned in the air on the way, a finger passes through the card, the card grows or shrinks on its way, a hand hovers in the air without holding or laying anything, the shoe changes, the picture cuts or the camera moves.",
+    "sha256": "78e2428b7fac87a9a9982f8a48729b95b14940c6c7263c8ad04482ac3b8d32d0",
     "extra": null,
     "middle": false
   },

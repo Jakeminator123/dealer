@@ -1,7 +1,8 @@
 // Orders for Runway, prepared in the studio's view Beställ and placed later by an ordering agent (tools/order-clerk.md).
 // Pure: the order's shape and its check, the steps a dealer can be ordered for with their defaults, what goes out per take
-// (requestOf), the cost from the price table in data/order-policy.json, the policy check, the hash the approval freezes,
-// and the status a person sees. No fs, no network, no hashing (the caller hashes hashInput()); the studio builds it in.
+// (requestOf), the cost from the price table in data/order-policy.json, the policy check (also for a group of drafts),
+// the hash the approval freezes, and the status a person sees. The choices of a deal (hand, handbyte, how the card lands
+// and turns) and the plan's cards as an order sees them, with the seats where the left hand would cross her body. No fs, no network, no hashing (the caller hashes hashInput()); the studio builds it in.
 // Tests: tools/order-model.test.ts.
 
 // ── Words ───────────────────────────────────────────────────────────────────
@@ -13,18 +14,48 @@ export const TAKES_MAX = 4;
 
 export type Kind = 'STILL' | 'FILM';
 /**
- * How the card turns on its way: free (the hand turns it as a human hand can, no fixed edge; Jakob 2026-11-12), or rolled
- * about the long side as the bank's films do. Folding it over the short edge was an idea Jakob has dropped.
+ * How the card turns: at its place after the carry, in Jakob's six steps of 2026-11-13 (nyp, dra, för fram, vrid, vänd
+ * upp, lägg: brought forward back up and low along the felt, then rolled up onto its long edge and over at the place);
+ * free on the way (the hand turns it as a human hand can, no fixed edge; Jakob 2026-11-12); or rolled about the long side
+ * on the way as the bank's films do. Folding it over the short edge was an idea Jakob has dropped.
  */
-export type FlipAxis = 'FREE' | 'LONG_EDGE';
-export const FLIP_AXES: readonly FlipAxis[] = ['FREE', 'LONG_EDGE'];
+export type FlipAxis = 'AT_PLACE' | 'FREE' | 'LONG_EDGE';
+export const FLIP_AXES: readonly FlipAxis[] = ['AT_PLACE', 'FREE', 'LONG_EDGE'];
 export const FLIP_LABEL: Record<FlipAxis, string> = {
-  FREE: 'Naturlig vändning',
-  LONG_EDGE: 'Rullas kring långsidan',
+  AT_PLACE: 'Vänd vid platsen',
+  FREE: 'Naturlig vändning på vägen',
+  LONG_EDGE: 'Rullas kring långsidan på vägen',
 };
 export const FLIP_ABOUT: Record<FlipAxis, string> = {
-  FREE: 'Ingen bestämd kant: handen vänder kortet som en människa kan, och kortet behåller sin storlek.',
+  AT_PLACE: 'Nyp, dra, för fram, vrid, vänd upp, lägg: kortet förs fram med baksidan upp längs filten och vänds först vid platsen.',
+  FREE: 'Ingen bestämd kant: handen vänder kortet i luften som en människa kan, och kortet behåller sin storlek.',
   LONG_EDGE: 'Som bankens filmer gör i dag.',
+};
+/** The turn a new deal starts with: at the place for a deal from 2.1 (Jakob 2026-11-13), or where the plan turns it, else free. */
+export const defaultFlip = (step: string, turnAt?: 'AIR' | 'PLACE' | null): FlipAxis => (step === 'GIV-2.1' || turnAt === 'PLACE' ? 'AT_PLACE' : 'FREE');
+
+/**
+ * Which hand deals. The shoe stands at the right of the picture, by her left hand; both anchors 2.1 and 2.2 show that hand
+ * on the card. LH: the left hand takes the card and lays it. RH: the right hand reaches over to the shoe, takes it and lays
+ * it. PASS (handbyte): the left hand takes it and gives it to the right hand low in front of her body; the right lays it.
+ * Stored as the plan stores it (Intent.takeHand and Intent.pass): hand = the hand that takes the card, pass = it is handed over.
+ */
+export type HandChoice = 'LH' | 'RH' | 'PASS';
+export const HAND_CHOICES: readonly HandChoice[] = ['LH', 'RH', 'PASS'];
+export const HAND_LABEL: Record<HandChoice, string> = { LH: 'Vänster hela vägen', RH: 'Höger hela vägen', PASS: 'Handbyte' };
+export const HAND_ABOUT: Record<HandChoice, string> = {
+  LH: 'Vänster hand tar kortet ur skon och lägger det; höger vilar på bordet.',
+  RH: 'Höger hand sträcker sig till skon, tar kortet och lägger det; vänster släpper kortet och väntar vid skon.',
+  PASS: 'Vänster tar kortet ur skon och ger det till höger lågt framför kroppen; höger lägger det.',
+};
+export const handChoiceOf = (m: { hand: 'LH' | 'RH'; pass?: boolean }): HandChoice => (m.pass ? 'PASS' : m.hand);
+export const handsOf = (choice: HandChoice): { hand: 'LH' | 'RH'; pass: boolean } => (choice === 'PASS' ? { hand: 'LH', pass: true } : { hand: choice, pass: false });
+
+/** How the card lands. Every card leaves the shoe closed (yellow back up); open lands with the blue face up, so it turns. */
+export const LANDS_LABEL: Record<'BACK' | 'FRONT', string> = { BACK: 'Stängt → stängt', FRONT: 'Stängt → öppet' };
+export const LANDS_ABOUT: Record<'BACK' | 'FRONT', string> = {
+  BACK: 'Gul baksida upp hela vägen; kortet vänds inte.',
+  FRONT: 'Kortet vänds och landar med blå framsida upp.',
 };
 
 /** Stored on the order. A draft (UTKAST) can change; an approved order (GODKÄND) never does; AVBRUTEN is set aside. */
@@ -82,6 +113,12 @@ export type Cut = {
   filledPx: number;
   keptPx: number;
   green: [number, number, number];
+  /**
+   * The figure's green brought to the anchor it is sent with (tools/order-images.ts matchGreen): the anchor's file, and
+   * the median of the plainly green pixels of the anchor, of the figure before and after. Absent on figures cut before
+   * 2026-11-13; null while the anchor waits.
+   */
+  matched?: { anchorSha256: string; anchor: [number, number, number]; before: [number, number, number]; after: [number, number, number] } | null;
 };
 /**
  * One picture that goes out. name: the file in assets/orders/<id>/ ("first.png"); path and sha256 are null while it waits.
@@ -100,6 +137,8 @@ export type Picture = {
   waits?: Waits | null;
   drawn?: Drawn | null;
   cut?: Cut | null;
+  /** When a draft followed a newer anchor chosen in Material: when, and what the picture was before. */
+  replaced?: { at: string; was: string; entry: string | null; sha256: string | null } | null;
 };
 export type Reference =
   | { status: 'INGEN'; why: string }
@@ -112,7 +151,13 @@ export type Generation = {
   /** Every parameter that goes out besides text and pictures, by its name in the tool. */
   params: Record<string, string | number | boolean>;
 };
-export type Motion = { grip: 'PINCH' | 'DRAG'; hand: 'LH' | 'RH'; turn: boolean; flipAxis: FlipAxis; target: string | null; side: 'FRONT' | 'BACK'; fromPlan: boolean };
+/**
+ * How the card moves in a deal. hand: the hand that takes it from the shoe; pass: it is handed over to the other hand,
+ * which lays it (handbyte; only from left to right). side: how it lands (BACK closed, FRONT open); turn: it is turned on
+ * the way (every card leaves the shoe closed). fromPlan: hand, pass and side are what Placering says for the card.
+ * Orders made before 2026-11-13 lack pass (read as false).
+ */
+export type Motion = { grip: 'PINCH' | 'DRAG'; hand: 'LH' | 'RH'; pass: boolean; turn: boolean; flipAxis: FlipAxis; target: string | null; side: 'FRONT' | 'BACK'; fromPlan: boolean };
 export type Order = {
   schemaVersion: 1;
   id: string;
@@ -163,8 +208,8 @@ export type StepDef = {
 export const STEPS: readonly StepDef[] = [
   { key: 'INGANG-2.1', group: 'Ingång', label: 'Ankare 1 → 2.1', kind: 'FILM', from: '1', to: '2.1', card: false, model: 'wan3', resolution: '1080p', ratio: 'adaptive', duration: 4 },
   { key: 'INGANG-2.2', group: 'Ingång', label: 'Ankare 1 → 2.2', kind: 'FILM', from: '1', to: '2.2', card: false, model: 'wan3', resolution: '1080p', ratio: 'adaptive', duration: 4 },
-  { key: 'GIV-2.1', group: 'Giv från 2.1', label: 'Nyp, ett kort till platsen och tillbaka', kind: 'FILM', from: '2.1', to: '2.1', card: true, grip: 'PINCH', model: 'kling-4', resolution: '1080p', duration: 7 },
-  { key: 'GIV-2.2', group: 'Giv från 2.2', label: 'Släp, ett kort till platsen och tillbaka', kind: 'FILM', from: '2.2', to: '2.2', card: true, grip: 'DRAG', model: 'wan3', resolution: '1080p', ratio: 'adaptive', duration: 6 },
+  { key: 'GIV-2.1', group: 'Giv från ankare 2.1', label: 'Nyp, ett kort till platsen och tillbaka', kind: 'FILM', from: '2.1', to: '2.1', card: true, grip: 'PINCH', model: 'kling-4', resolution: '1080p', duration: 7 },
+  { key: 'GIV-2.2', group: 'Giv från ankare 2.2', label: 'Släp, ett kort till platsen och tillbaka', kind: 'FILM', from: '2.2', to: '2.2', card: true, grip: 'DRAG', model: 'wan3', resolution: '1080p', ratio: 'adaptive', duration: 6 },
   { key: 'RETUR-2.1', group: 'Retur → 2.1', label: 'Tillbaka till skon', kind: 'FILM', from: '2.1', to: '2.1', card: true, model: 'kling-4', duration: 3, off: 'Ingår i tur och retur-filmen från ankare 2.' },
   { key: 'RETUR-1', group: 'Retur → 1', label: 'Tillbaka till vila', kind: 'FILM', from: '2.1', to: '1', card: true, model: 'wan3', duration: 3, off: 'Inte byggd här än.' },
   { key: 'VILA', group: 'Vila', label: 'Vila, samma bild först och sist', kind: 'FILM', from: '1', to: '1', card: false, model: 'wan3', resolution: '1080p', ratio: 'adaptive', duration: 4 },
@@ -172,6 +217,18 @@ export const STEPS: readonly StepDef[] = [
   { key: 'ANKARE-2.2', group: 'Bild', label: 'Ankare 2.2 (släp)', kind: 'STILL', from: '1', to: null, card: false, model: 'nano-banana-pro', ratio: '4:3', imageSize: '4K', makes: { role: 'ankare-2.2', node: 'READY-B', label: 'ankare 2.2' } },
 ];
 export const stepOf = (key: string): StepDef | null => STEPS.find((s) => s.key === key) ?? null;
+/** The anchors in Jakob's words: "ankare 2.1 (nyp): tummen och pekfingret på kortet i skons fönster". */
+export const ANCHOR_WORDS: Record<'1' | '2.1' | '2.2', string> = {
+  '1': 'ankare 1 (vila): båda händerna på bordet',
+  '2.1': 'ankare 2.1 (nyp): tummen och pekfingret på kortet i skons fönster',
+  '2.2': 'ankare 2.2 (släp): handen över kortet i skons öppning',
+};
+/** Where a step starts and ends, in one line: "Börjar och slutar på ankare 2.2 (släp): …". */
+export function startWords(step: Pick<StepDef, 'kind' | 'from' | 'to'>): string {
+  if (step.kind === 'STILL') return `Görs ur ${ANCHOR_WORDS[step.from]}.`;
+  if (!step.to || step.to === step.from) return `Börjar och slutar på ${ANCHOR_WORDS[step.from]}.`;
+  return `Börjar på ankare ${step.from} och slutar på ${ANCHOR_WORDS[step.to]}.`;
+}
 
 /** "Paows", "Agnes". */
 export const genitive = (name: string) => (/[sxz]$/i.test(name) ? name : `${name}s`);
@@ -185,13 +242,29 @@ export function seatWords(target: string | null | undefined): string {
  * What an order makes, in one line in Jakob's words: "Gör Paows ankare 2.1: hennes ankare 1 där bara vänsterarmen flyttas
  * till nypet vid skon." Shown on the order's card and at the top of "Det här skickas".
  */
-export function summaryOf(step: Pick<StepDef, 'key'>, dealerName: string, motion: Pick<Motion, 'turn' | 'target'> | null): string {
-  const of = genitive(dealerName), seat = seatWords(motion?.target), turn = motion?.turn ? ', vänder det som en hand kan' : '';
+export type SummaryMotion = Pick<Motion, 'turn' | 'target'> & Partial<Pick<Motion, 'hand' | 'pass' | 'side' | 'flipAxis'>>;
+/** A deal in one line: which hand, how it turns, how it lands, where; the same words for every deal step. */
+function dealWords(from: '2.1' | '2.2', dealerName: string, motion: SummaryMotion | null): string {
+  const seat = seatWords(motion?.target), hand = motion?.hand ?? 'LH', pass = !!motion?.pass, open = motion ? (motion.side ?? (motion.turn ? 'FRONT' : 'BACK')) === 'FRONT' : true;
+  const take = from === '2.1' ? 'från ankare 2.1 (nyp) tar hon ett kort ur skon' : 'från ankare 2.2 (släp) släpar hon ett kort ur skon';
+  const by = pass ? ' med vänster hand och ger det till höger lågt framför kroppen' : hand === 'RH' ? ' med höger hand' : ' med vänster hand';
+  const who = pass ? 'höger' : 'hon';
+  const flip = motion?.flipAxis ?? 'FREE';
+  const lay = !open
+    ? `${who} lägger det stängt, baksidan upp, på ${seat}`
+    : flip === 'AT_PLACE'
+      ? `${who} för fram det med baksidan upp, vänder upp det vid ${seat} och lägger det öppet`
+      : `${who} ${flip === 'LONG_EDGE' ? 'rullar det kring långsidan' : 'vänder det som en hand kan'} på vägen och lägger det öppet på ${seat}`;
+  const back = pass || hand === 'RH' ? 'händerna går tillbaka till ankaret' : `handen går tillbaka ${from === '2.1' ? 'till nypet' : 'över skon'}`;
+  return `Gör en film av ${dealerName}: ${take}${by}; ${lay}; ${back}.`;
+}
+export function summaryOf(step: Pick<StepDef, 'key'>, dealerName: string, motion: SummaryMotion | null): string {
+  const of = genitive(dealerName), seat = seatWords(motion?.target);
   switch (step.key) {
     case 'ANKARE-2.1': return `Gör ${of} ankare 2.1: hennes ankare 1 där bara vänsterarmen flyttas till nypet vid skon.`;
     case 'ANKARE-2.2': return `Gör ${of} ankare 2.2: hennes ankare 1 där bara vänsterarmen flyttas, så att handen ligger över kortet vid skons öppning.`;
-    case 'GIV-2.1': return `Gör en film av ${dealerName}: från nypet vid skon (ankare 2.1) tar hon ett kort${turn} och lägger det på ${seat}; handen går tillbaka till nypet.`;
-    case 'GIV-2.2': return `Gör en film av ${dealerName}: från handen över kortet (ankare 2.2) släpar hon ett kort ur skon${turn} till ${seat}; handen går tillbaka över skon.`;
+    case 'GIV-2.1': return dealWords('2.1', dealerName, motion);
+    case 'GIV-2.2': return dealWords('2.2', dealerName, motion);
     case 'RETUR-2.1': return `Gör en film av ${dealerName}: handen går från kortet på ${seat} tillbaka till nypet vid skon.`;
     case 'RETUR-1': return `Gör en film av ${dealerName}: handen går från kortet på ${seat} tillbaka till vila.`;
     case 'INGANG-2.1': return `Gör en film av ${dealerName}: från vila (ankare 1) flyttar hon vänsterhanden till nypet vid skon (ankare 2.1).`;
@@ -210,6 +283,55 @@ export function edgeOf(step: StepDef, target: string | null): string | null {
   return `${ANCHOR_NODE[step.from]}>${ANCHOR_NODE[step.to ?? step.from]}`;
 }
 export const SEAT_TARGETS = ['P1.C1', 'P2.C1', 'P3.C1', 'P4.C1', 'P5.C1', 'P6.C1', 'P7.C1', 'D.C1'];
+/** "Alla sju": the first card to every player. */
+export const ALL_SEVEN = SEAT_TARGETS.filter((t) => t.startsWith('P'));
+/** "plats 1, 2 och 3", "plats 1–7", "dealerns plats". */
+export function seatList(targets: readonly string[]): string {
+  const n = targets.map((t) => /^P(\d)\.C1$/.exec(t)?.[1]).filter((x): x is string => !!x).map(Number).sort((a, b) => a - b);
+  const rest = targets.filter((t) => !/^P\d\.C1$/.test(t)).map(seatWords);
+  const run = n.length > 2 && n.every((v, i) => !i || v === n[i - 1] + 1) ? [`${n[0]}–${n[n.length - 1]}`] : n.map(String);
+  const words = [...(run.length ? [`plats ${run.length > 1 ? `${run.slice(0, -1).join(', ')} och ${run[run.length - 1]}` : run[0]}`] : []), ...rest];
+  return words.length > 1 ? `${words.slice(0, -1).join(', ')} och ${words[words.length - 1]}` : (words[0] ?? '');
+}
+
+// ── The plan as an order sees it (GET /api/orders: plan) ────────────────────
+/**
+ * One card of the placement plan in film pixels: its centre and outline (drawn as the last picture draws it), what
+ * Placering says about it (how it lands, which hand, handbyte, grip, where it turns), and whether the left hand from the
+ * shoe would cross her body to lay it there (crossesBody).
+ */
+export type SeatPlan = {
+  target: string;
+  centre: [number, number];
+  quad: [number, number][];
+  side: 'FRONT' | 'BACK';
+  startSide: 'FRONT' | 'BACK';
+  hand: 'LH' | 'RH';
+  pass: boolean;
+  grip: 'PINCH' | 'DRAG';
+  turnAt: 'AIR' | 'PLACE';
+  crosses: boolean;
+};
+export type PlanAnswer = { path: string; sha256: string; updatedAt: string | null; midline: number; halfCard: number; seats: Record<string, SeatPlan> };
+/**
+ * Her midline and half a card, from the plan alone: the dealer's own two cards lie centred in front of her (D.C1 and
+ * D.C2, x 850 and 912 in the plan of 2026-11-11; Paow's torso between the arms is centred at x 867 in her anchor 1), and
+ * the card is the seat-4 card. Without them, the picture's middle and the plan's card of 87 px.
+ */
+export function bodyLine(centres: Readonly<Record<string, readonly [number, number]>>, quads: Readonly<Record<string, readonly (readonly [number, number])[]>>): { midline: number; halfCard: number } {
+  const own = ['D.C1', 'D.C2'].map((t) => centres[t]).filter(Boolean);
+  const midline = own.length ? own.reduce((s, c) => s + c[0], 0) / own.length : 1763 / 2;
+  const q = quads['P4.C1'];
+  const halfCard = q ? (Math.max(...q.map((p) => p[0])) - Math.min(...q.map((p) => p[0]))) / 2 : 43.5;
+  return { midline: Math.round(midline * 10) / 10, halfCard: Math.round(halfCard * 10) / 10 };
+}
+/**
+ * The left hand comes from the shoe at the right of the picture. A card that lands left of her midline by more than half a
+ * card makes it reach across her body (P1–P3 in the plan of 2026-11-11; P4 lies in front of her); there the sheet
+ * suggests handbyte. A suggestion only: nothing is set by it.
+ */
+export const crossesBody = (x: number, line: { midline: number; halfCard: number }) => x < line.midline - line.halfCard;
+export const CROSSING_WHY = 'kortet landar till vänster om hennes mitt, så vänsterhanden från skon måste korsa kroppen';
 
 // ── Models: what each takes (from the tools' schemas, 2026-11-12) ──────────
 export type ModelDef = { id: string; tool: Generation['tool']; label: string; durations?: [number, number]; resolutions?: string[]; middle?: boolean; audio: 'always' | 'off' | 'none'; note: string };
@@ -272,6 +394,27 @@ export function checkPolicy(order: Pick<Order, 'cost'>, policy: Policy, spentTod
   if (spentToday + cost > policy.dailyCapCredits) refusals.push(`I dag är ${spentToday} av ${policy.dailyCapCredits} krediter intecknade; den här skulle ta det till ${spentToday + cost}.`);
   if (balance - cost < policy.minBalance) refusals.push(`Saldot ${balance} minus ${cost} går under golvet ${policy.minBalance}.`);
   return { ok: refusals.length === 0, refusals, spentToday, afterToday: spentToday + cost, balance, balanceAfter: balance - cost };
+}
+
+/**
+ * A group of drafts (one per seat) against the policy: what all of them cost, and how many of them can be approved today
+ * (each approval counts its worst case against the day's cap) and above the balance's floor. The limits are Jakob's
+ * (data/order-policy.json); this only says where a group stands against them.
+ */
+export type GroupBudget = { count: number; total: number; worstTotal: number; overPerOrder: boolean; fitToday: number; fitBalance: number; words: string[] };
+export function groupBudget(cost: Pick<Order['cost'], 'total' | 'worstTotal'>, count: number, policy: Pick<Policy, 'enabled' | 'dailyCapCredits' | 'maxPerOrder' | 'minBalance'>, spentToday: number, balance: number): GroupBudget {
+  const worst = cost.worstTotal, overPerOrder = worst > policy.maxPerOrder;
+  const fit = (room: number) => (worst > 0 ? Math.max(0, Math.min(count, Math.floor(room / worst))) : count);
+  const fitToday = !policy.enabled || overPerOrder ? 0 : fit(policy.dailyCapCredits - spentToday);
+  const fitBalance = fit(balance - policy.minBalance);
+  const words: string[] = [];
+  if (!policy.enabled) words.push('Beställningar är avstängda (enabled: false i data/order-policy.json): inget kan godkännas.');
+  else if (overPerOrder) words.push(`Varje utkast kostar upp till ${credits(worst)} krediter; taket per beställning är ${credits(policy.maxPerOrder)}, så inget av dem kan godkännas.`);
+  else if (fitToday < count) words.push(`Dagens tak är ${credits(policy.dailyCapCredits)} krediter (${credits(spentToday)} intecknade): räcker till ${fitToday} av ${count} i dag; resten kan godkännas en annan dag.`);
+  else words.push(`Ryms i dagens tak: ${credits(spentToday + worst * count)} av ${credits(policy.dailyCapCredits)} krediter.`);
+  if (policy.enabled && fitBalance < count) words.push(`Saldot ${credits(balance)} räcker till ${fitBalance} av ${count} över golvet ${credits(policy.minBalance)}.`);
+  if (count > 1 && policy.enabled && !overPerOrder) words.push('Varje utkast godkänns för sig i Det här skickas.');
+  return { count, total: cost.total * count, worstTotal: worst * count, overPerOrder, fitToday, fitBalance, words };
 }
 
 // ── What goes out ───────────────────────────────────────────────────────────
@@ -363,7 +506,12 @@ export function validateOrder(value: unknown): { order: Order | null; errors: st
   if (o.schemaVersion !== 1) errors.push('schemaVersion ska vara 1.');
   if (typeof o.id !== 'string' || !ORDER_ID.test(o.id) || o.id.length > 80) errors.push('id ska vara a–z, 0–9 och bindestreck.');
   if (typeof o.title !== 'string' || !o.title.trim() || o.title.length > 120) errors.push('title saknas eller är för lång.');
-  if (o.summary !== undefined && (typeof o.summary !== 'string' || o.summary.length > 240)) errors.push('summary ska vara en rad text.');
+  if (o.summary !== undefined && (typeof o.summary !== 'string' || o.summary.length > 320)) errors.push('summary ska vara en rad text.');
+  if (o.motion != null) {
+    const m = o.motion as Partial<Motion>;
+    if (!isObject(m) || !['LH', 'RH'].includes(String(m.hand)) || !['FRONT', 'BACK'].includes(String(m.side)) || typeof m.turn !== 'boolean' || !FLIP_AXES.includes(m.flipAxis as FlipAxis)) errors.push('motion: hand (LH/RH), side (FRONT/BACK), turn och flipAxis krävs.');
+    else if (m.pass !== undefined && (typeof m.pass !== 'boolean' || (m.pass && m.hand !== 'LH'))) errors.push('motion.pass: handbyte går från vänster hand till höger.');
+  }
   if (typeof o.dealer !== 'string' || !/^[a-z0-9]+$/.test(o.dealer)) errors.push('dealer ska vara ett id.');
   if (o.kind !== 'STILL' && o.kind !== 'FILM') errors.push('kind ska vara STILL eller FILM.');
   if (!isObject(o.step) || !stepOf(String(o.step.key))) errors.push('step.key är okänd.');
@@ -412,6 +560,8 @@ export function validateOrder(value: unknown): { order: Order | null; errors: st
 
 // ── What GET /api/orders answers (tools/order-store.ts list) ────────────────
 /** Each order as the view gets it: its revision (If-Match), hash, shown status, what keeps it, what it waits for. */
+/** Whose a picture is: the dealer it shows, and whether all of her or only her arm at the shoe (a pose figure). */
+export type Owner = { dealer: string; name: string; part: 'whole' | 'arm' };
 export type OrderAnswer = {
   order: Order;
   revision: string;
@@ -422,7 +572,15 @@ export type OrderAnswer = {
   waiting: (Waits & { ready: boolean })[];
   receipt: Receipt | null;
   check: PolicyCheck | null;
+  /** Per picture name: whose it is (unknown when the picture says nothing about its source). */
+  owners?: Record<string, Owner | null>;
+  /** Why "Hämta bilderna" would change a draft now (a waited picture holds, a newer anchor holds, the plan changed), or null. */
+  refresh?: string | null;
 };
+/** A dealer as the texts know her (data/dealers.json). */
+export type DealerLook = { id: string; name: string; look: string; paused?: string | null };
+/** The pose figure a still is made with: the other dealer's arm at the shoe, served at /api/orders/pose/<step>. */
+export type PoseAnswer = { step: StepKey; label: string; owner: Owner; served: string };
 export type OrdersAnswer = {
   schemaVersion: 1;
   orders: OrderAnswer[];
@@ -430,6 +588,10 @@ export type OrdersAnswer = {
   day: { date: string; spent: number; cap: number };
   balance: { credits: number; at: string; source: string } | null;
   problems: string[];
+  /** For a new order: the dealers' looks, the plan's cards and the pose figures (older servers lack them). */
+  dealers?: DealerLook[];
+  plan?: PlanAnswer | null;
+  poses?: PoseAnswer[];
 };
 
 /** Words for a credit sum: "1 000". */

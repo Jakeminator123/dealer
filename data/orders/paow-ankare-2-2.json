@@ -21,7 +21,7 @@
   "pictures": [
     {
       "name": "anchor.png",
-      "label": "Paows ankare 1 · kandidat 2",
+      "label": "Paows ankare 1",
       "goesAs": "referenceImage",
       "tag": "anchor",
       "path": "assets/orders/paow-ankare-2-2/anchor.png",
@@ -31,7 +31,7 @@
       "from": {
         "entry": "paow-vila-ung-2",
         "path": "assets/anchors/paow-vila-ung-2/anchor.png",
-        "note": "Vila, yngre, kandidat 2 (kandidat)"
+        "note": "Vila, yngre, kandidat 2 (gäller)"
       },
       "waits": null
     },
@@ -41,7 +41,7 @@
       "goesAs": "referenceImage",
       "tag": "pose",
       "path": "assets/orders/paow-ankare-2-2/pose-figure.png",
-      "sha256": "424b49fd9aeba1c49ff78e6e1dfcedc6c5983691839bc5f5b515717c56a84552",
+      "sha256": "8902ff6f2c8a1bf807543a8a98fcbd764f49654cfea82ef922a07767f0aba81b",
       "width": 1764,
       "height": 1174,
       "from": {
@@ -97,7 +97,25 @@
           3.9,
           238.6,
           68.1
-        ]
+        ],
+        "matched": {
+          "anchorSha256": "cdaa59756e2eb0f7b839f23254f9999f8c8da4c8eef0e37bf23e9643ba6586ee",
+          "anchor": [
+            0,
+            238,
+            45
+          ],
+          "before": [
+            4,
+            237,
+            68
+          ],
+          "after": [
+            0,
+            238,
+            45
+          ]
+        }
       }
     }
   ],
@@ -115,7 +133,7 @@
     }
   },
   "prompt": {
-    "template": "bild-ankare@2",
+    "template": "bild-ankare@3",
     "text": "This is an edit of the picture @anchor. Keep everything in @anchor exactly as it is: the framing and camera, the flat pure chroma-green background and green table surface with no visible edge, the black card shoe at the right with the yellow card in its window, and the woman herself, a young, slim, petite woman with a platinum-blonde chin-length bob, warm-coloured tattoos on her throat and upper chest and a small white flower pendant, in a black tailored blazer over a cream V-neck top: her face, hair, clothes and build, the place and size of her head and body, and her right hand, at the left of the picture, lying flat on the felt. Change only her left arm and hand, at the right of the picture: her hand lies over the yellow card in the shoe's window, the fingertips resting flat on the card itself, not on the shoe, ready to slide it out along the felt; her hand is placed and shaped as the hand in @pose. The shoe in @pose has an open front: do not copy it. @pose is a cut-out on plain green: it shows only a left forearm in a black sleeve, cut off at the elbow, its hand, the card shoe and the yellow card; nothing else of that person is in it. Take from @pose only where the hand is and how the wrist and fingers hold the card. Her own sleeve, skin and hand stay as they are in @anchor, and her forearm goes up to her own elbow and shoulder as her body in @anchor allows; the shoe and the yellow card in its window keep exactly the look, size and shape they have in @anchor. She sits on a chair that is not in the picture: her elbows hang free at her sides and her forearms come down to the felt; nothing supports her elbows or forearms. Her jacket continues down to the same straight horizontal line where her body is cut off in @anchor, with no green between the jacket and that line. The green is one even colour everywhere, right up to her outline: no shadows under or beside her arms, her hands, the card or the shoe. Soft, even frontal studio light; natural skin with fine texture, sharp eyes, matte black cloth with soft folds. Nothing of this happens: the fingers rest on the shoe instead of on the card, a second card appears, a finger passes through the card, the card has another size or shape than the card in the shoe's window, a hand floats in the air without holding anything, a second shoe appears, the framing changes.",
     "sha256": "bdd188a47b44cd450329bf1482f8c0a736bc3f040624685619a91c4635af2ab1",
     "extra": null,

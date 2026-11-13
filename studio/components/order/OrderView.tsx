@@ -1,13 +1,15 @@
 "use client";
 
 // Beställ (/bestall/?order=<id>): the queue of orders for Runway, and for one order the screen "Det här skickas". The
-// address holds the open order, so a link brings it back. Reads GET /api/orders on load and when the tab is seen again;
-// writes only on Jakob's clicks (a new draft, a change, an approval). Not in the online copy. Inside <Suspense>.
+// address holds the open order, so a link brings it back. /bestall/?ny=1&dealer=paow&steg=GIV-2.2&plats=P4.C1 (plats=alla
+// for the first card to every player) opens "Ny beställning" with those values chosen; the sheet is mounted anew for each
+// such address, and closing it takes the values out of the address. Reads GET /api/orders on load and when the tab is
+// seen again; writes only on Jakob's clicks (a new draft, a change, an approval). Not in the online copy. Inside <Suspense>.
 import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { asApiError, type ApiError } from "../../lib/api.ts";
 import { useViewContext } from "../../lib/context.ts";
-import { getOrders, shownWords, type OrderAnswer, type OrdersAnswer } from "../../lib/orders.ts";
+import { PRESET_PARAMS, getOrders, presetOf, shownWords, type OrderAnswer, type OrdersAnswer } from "../../lib/orders.ts";
 import { Page } from "../shell";
 import { ErrorState, Skeleton } from "../ui";
 import { NewOrder } from "./NewOrder";
@@ -16,10 +18,12 @@ import { SendScreen } from "./SendScreen";
 
 type State = { status: "loading" } | { status: "ready"; all: OrdersAnswer } | { status: "error"; error: ApiError };
 
-function setOrderParam(id: string | null) {
+/** Writes the address: the open order, and without the values a new order was asked with. Next's own state is not handed back. */
+function setOrderParam(id: string | null, dropPreset = false) {
   const p = new URLSearchParams(window.location.search);
   if (id) p.set("order", id);
   else p.delete("order");
+  if (dropPreset) for (const name of PRESET_PARAMS) p.delete(name);
   const q = p.toString();
   window.history.replaceState(null, "", `${window.location.pathname}${q ? `?${q}` : ""}`);
 }
@@ -28,7 +32,15 @@ export function OrderView() {
   const params = useSearchParams();
   const asked = params.get("order");
   const [state, setState] = useState<State>({ status: "loading" });
-  const [creating, setCreating] = useState(params.get("ny") === "1");
+  const [opened, setOpened] = useState(false);
+  // A new order asked for by address is open while the address asks for it; "Ny beställning" opens one without.
+  const askedNew = params.get("ny") === "1";
+  const presetKey = PRESET_PARAMS.map((n) => params.get(n) ?? "").join("|");
+  const creating = opened || askedNew;
+  const setCreating = (open: boolean) => {
+    setOpened(open);
+    if (!open && askedNew) setOrderParam(asked, true);
+  };
 
   const read = useCallback(async () => {
     try {
@@ -73,15 +85,17 @@ export function OrderView() {
 
   return (
     <>
-      {open ? <SendScreen answer={open} all={all} onBack={() => setOrderParam(null)} onSaved={saved} /> : <OrderList all={all} onOpen={(id) => setOrderParam(id)} onNew={() => setCreating(true)} />}
+      {open ? <SendScreen answer={open} all={all} onBack={() => setOrderParam(null)} onOpen={(id) => setOrderParam(id)} onSaved={saved} /> : <OrderList all={all} onOpen={(id) => setOrderParam(id)} onNew={() => setCreating(true)} />}
       <NewOrder
+        key={presetKey}
         open={creating}
         onOpenChange={setCreating}
         all={all}
+        preset={presetOf(params, all.plan)}
         onCreated={(answer) => {
           saved(answer);
-          setCreating(false);
-          setOrderParam(answer.order.id);
+          setOpened(false);
+          setOrderParam(answer.order.id, true);
         }}
       />
     </>

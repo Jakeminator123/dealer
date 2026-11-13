@@ -8,12 +8,23 @@ import * as RD from "@radix-ui/react-dialog";
 import { Clock, Maximize2, Minimize2, X } from "lucide-react";
 import { useState } from "react";
 import { labUrl } from "../../lib/lab.ts";
-import { SHOWN_CHIP, goesWords, offsetWords, shownWords, type OrderAnswer, type Picture } from "../../lib/orders.ts";
+import { swedishMoment } from "../../lib/mode.ts";
+import { SHOWN_CHIP, goesWords, offsetWords, ownerWords, shownWords, type OrderAnswer, type Owner, type Picture } from "../../lib/orders.ts";
 import type { Drawn } from "../../../src/order-model.ts";
 import { Badge, IconButton, cn } from "../ui";
 
 const W = 1764,
   H = 1174;
+
+/** Whose a picture is, so that a mix-up cannot pass unseen: green for the dealer's own, amber for an arm only, red else. */
+export function OwnerChip({ owner, dealer, className }: { owner: Owner | null | undefined; dealer: string; className?: string }) {
+  const { text, tone } = ownerWords(owner, dealer);
+  return (
+    <Badge tone={tone} className={className} title={tone === "bad" ? "En annan dealers bild ligger aldrig i ett utkast." : `Bilden är ${text}`}>
+      {text}
+    </Badge>
+  );
+}
 
 export function StatusChip({ answer, size = "sm" }: { answer: Pick<OrderAnswer, "shown" | "waiting">; size?: "sm" | "md" }) {
   const chip = SHOWN_CHIP[answer.shown];
@@ -79,19 +90,20 @@ function PictureViewer({ src, title, open, onOpenChange }: { src: string; title:
   );
 }
 
-/** One picture of an order. */
-export function PictureCard({ picture, className }: { picture: Picture; className?: string }) {
+/** One picture of an order, with whose it is when the answer says. */
+export function PictureCard({ picture, owner, dealer, planned, className }: { picture: Picture; owner?: Owner | null; dealer?: string; planned?: { quad: [number, number][]; side: "FRONT" | "BACK" } | null; className?: string }) {
   const [open, setOpen] = useState(false);
   const src = picture.path ? labUrl(picture.path) : null;
   const drawn = picture.drawn ?? null;
   return (
     <figure className={cn("flex min-w-0 flex-col gap-2", className)}>
-      <figcaption className="flex items-baseline gap-2">
+      <figcaption className="flex flex-wrap items-center gap-2">
         <span className="font-display text-md font-semibold text-ink">{picture.label}</span>
+        {owner !== undefined && dealer ? <OwnerChip owner={owner} dealer={dealer} /> : null}
         <code className="truncate font-mono text-xs text-faint">{goesWords(picture)}</code>
         {drawn ? (
           <Badge tone="brass" className="ml-auto">
-            kortet {drawn.target} · {offsetWords(drawn.measuredOffsetPx)}
+            kortet {drawn.target} · {drawn.side === "BACK" ? "stängt" : "öppet"} · {offsetWords(drawn.measuredOffsetPx)}
           </Badge>
         ) : null}
       </figcaption>
@@ -108,6 +120,11 @@ export function PictureCard({ picture, className }: { picture: Picture; classNam
             <span className="max-w-[80%] text-xs text-dim">
               {picture.from?.built ? `Ritas när den är godkänd i Material: ${picture.from.built}.` : "Den kopieras hit när den är godkänd i Material."}
             </span>
+            {planned ? (
+              <svg viewBox={`0 0 ${W} ${H}`} className="pointer-events-none absolute inset-0 size-full" aria-label="Där kortet ritas">
+                <polygon points={planned.quad.map((p) => p.join(",")).join(" ")} fill={planned.side === "BACK" ? "#e6c229" : "#2f6fd8"} stroke="#0b0d0c" strokeWidth={2} />
+              </svg>
+            ) : null}
           </div>
         )}
         {drawn && src ? (
@@ -120,6 +137,16 @@ export function PictureCard({ picture, className }: { picture: Picture; classNam
         {picture.from?.built ? `Ritad: ${picture.from.built}${drawn ? " (i rutan: kortet förstorat, planens kontur streckad)" : ""}` :picture.from?.note ? `Ur: ${picture.from.note}${picture.from.frame !== undefined ? `, ruta ${picture.from.frame}` : ""}` : picture.waits ? `Väntar på ${picture.waits.label}` : ""}
         {picture.sha256 ? <span className="ml-2 font-mono text-faint">sha256 {picture.sha256.slice(0, 12)}</span> : null}
       </p>
+      {picture.replaced ? (
+        <p className="text-xs text-[#f0b07a]">
+          Bytt {swedishMoment(picture.replaced.at) ?? picture.replaced.at}, efter valet i Material. Var: {picture.replaced.was}.
+        </p>
+      ) : null}
+      {picture.cut?.matched ? (
+        <p className="text-xs text-dim">
+          Grönt som ankaret: {picture.cut.matched.before.join(" ")} → {picture.cut.matched.after.join(" ")} (ankaret {picture.cut.matched.anchor.join(" ")}).
+        </p>
+      ) : null}
       {src ? <PictureViewer src={src} title={picture.label} open={open} onOpenChange={setOpen} /> : null}
     </figure>
   );

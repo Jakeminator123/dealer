@@ -1,13 +1,16 @@
 "use client";
 
-// Placering (/placering/?vy=mobil&plats=p4c2&bakgrund=<film>&ruta=40): where the sixteen cards and the shoe lie on the table,
-// how each is turned and shaped, how the dealer takes and lays it, and its material. The old lab's Placering tab in the
+// Placering (/placering/?vy=mobil&plats=p4c2&bakgrund=<film|v6>&ruta=40): where the sixteen cards and the shoe lie on the
+// table, how each is turned and shaped, how the dealer takes and lays it, and its material. The old lab's Placering tab in the
 // studio, nothing left out. The picture is the largest thing: the cards on it are the playback's own rendered cards, and the
-// handles sit on the chosen one; the inspector beside it has the exact numbers. A brass mark says what is not saved; Ångra
-// goes a step back, "Till sparat" all the way, and Ändrat | Sparat (key X) flips the picture between the two. Nothing is
-// written to placements/default.json until Jakob presses Spara. In the online copy the view only shows.
+// handles sit on the chosen one; the inspector beside it has the exact numbers. Under the cards lies, in Dator, the neutral
+// backdrop (the studio's own table with a neutral figure; no dealer's picture), or the V6 picture or a film when chosen; in
+// Mobil the V6 picture. A brass mark says what is not saved; Ångra goes a step back, "Till sparat" all the way, and Ändrat |
+// Sparat (key X) flips the picture between the two. Nothing is written to placements/default.json until Jakob presses Spara.
+// "Beställ film hit" takes a place that has a film of its own on to Beställ. In the online copy the view only shows.
 // Must be inside <Suspense> (useSearchParams).
-import { Minus, Plus, RotateCcw, Save, Undo2 } from "lucide-react";
+import { Minus, Plus, RotateCcw, Save, Send, Undo2 } from "lucide-react";
+import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { SHOE, TARGETS, VIEWS, type Place, type View } from "../../../src/placement-model.ts";
@@ -16,12 +19,13 @@ import { useViewContext } from "../../lib/context.ts";
 import { labUrl } from "../../lib/lab.ts";
 import { isSnapshot, swedishMoment } from "../../lib/mode.ts";
 import {
-  GREEN_FILM, VIEW_WORD, bankFilms, changedPlaces, filmView, libraryFilms, nudged, placeCode, placeName, placementQuery, readPlacementAddress, type Film,
+  GREEN_FILM, VIEW_WORD, backdropForView, bankFilms, changedPlaces, defaultStill, filmView, libraryFilms, nudged, orderHref, placeCode, placeName, placementQuery,
+  readPlacementAddress, shownBackdrop, stillChoice, stillLabel, stillsOf, type Film,
 } from "../../lib/placement.ts";
 import { readLibrary } from "../../lib/placement-api.ts";
 import { DRAFT_FILE, draftText } from "../../lib/placement-files.ts";
 import { Page } from "../shell";
-import { Badge, Button, Dialog, ErrorState, IconButton, Kbd, SegmentedControl, Select, Skeleton, Switch, Tabs, useToast } from "../ui";
+import { Badge, Button, Dialog, ErrorState, IconButton, Kbd, SegmentedControl, Select, Skeleton, Switch, Tabs, buttonClasses, useToast } from "../ui";
 import { cn } from "../ui/cn";
 import { Board, useKeyRun, type Look, type PathRun } from "./Board";
 import type { Face } from "./cardLayer.ts";
@@ -32,14 +36,16 @@ import { SlotPicker } from "./SlotPicker";
 import { draftActions, useDraft } from "./useDraft.ts";
 
 type Tab = "plats" | "rorelse" | "material" | "bordet";
-const STILL = "v6";
+const filmLabel = (film: Film) => (film.id === GREEN_FILM ? "Grön film · P4C2" : film.title);
 
 export function PlacementView() {
   const params = useSearchParams();
   const [first] = useState(() => readPlacementAddress(params));
   const [view, setView] = useState<View>(first.view);
   const [place, setPlace] = useState<Place>(first.place);
-  const [filmId, setFilmId] = useState<string | null>(first.film);
+  // a film id, "v6" or "neutral"; null is the view's own default (Dator: neutral, Mobil: V6)
+  const [backdrop, setBackdrop] = useState<string | null>(first.backdrop);
+  const [neutralMissing, setNeutralMissing] = useState(false);
   const [frame, setFrame] = useState(first.frame);
   const [look, setLook] = useState<Look>("kort");
   const [cardsFailed, setCardsFailed] = useState(false);
@@ -63,14 +69,15 @@ export function PlacementView() {
   // The address follows what is chosen, so that a link brings back the same view, place and film frame.
   useEffect(() => {
     const keep = new URLSearchParams(window.location.search);
-    window.history.replaceState(null, "", `${window.location.pathname}${placementQuery({ view, place, film: filmId, frame }, keep)}`);
-  }, [view, place, filmId, frame]);
+    window.history.replaceState(null, "", `${window.location.pathname}${placementQuery({ view, place, backdrop, frame }, keep)}`);
+  }, [view, place, backdrop, frame]);
   useViewContext({ vy: "placering", val: { plats: placeCode(place), vy: VIEW_WORD[view] } });
 
   const films = useMemo(() => [...(graph ? bankFilms(graph) : []), ...library], [graph, library]);
-  const film = filmId ? (films.find((f) => f.id === filmId) ?? null) : null;
-  const onFilm = !!film && filmView(film) === view;
-  const backdrop = onFilm ? { kind: "film" as const, src: labUrl(film.path), fps: film.fps, frame } : { kind: "still" as const, src: labUrl(VIEWS[view].background) };
+  const shown = shownBackdrop(view, backdrop, films, neutralMissing);
+  const film = shown.kind === "film" ? shown.film : null;
+  const under = film ? { kind: "film" as const, src: labUrl(film.path), fps: film.fps, frame } : { kind: "still" as const, src: labUrl(shown.kind === "still" ? shown.path : VIEWS[view].background) };
+  const order = isSnapshot ? null : orderHref(place);
 
   const d = draft.draft;
   const showSaved = draft.showing === "saved" && draft.dirty;
@@ -91,7 +98,7 @@ export function PlacementView() {
   const setViewTo = (v: View) => {
     setView(v);
     setPath(null);
-    if (film && filmView(film) !== v) setFilmId(null);
+    setBackdrop((was) => backdropForView(v, was, films));
   };
 
   // Keys: Ctrl+Z ångra, X Ändrat | Sparat, arrows nudge the chosen place (on the picture, on the places, or with nothing in focus).
@@ -149,11 +156,11 @@ export function PlacementView() {
   const target = place === SHOE ? null : plan.targets[place];
   const lookShown: Look = look === "kort" && cardsFailed ? "farg" : look;
   const backdropOptions = [
-    { value: STILL, label: `V6-bild · ${VIEW_WORD[view].toLowerCase()}` },
+    ...stillsOf(view).map((s) => ({ value: s as string, label: stillChoice(s, view), hint: s === "neutral" ? "förval" : undefined })),
     ...films
       .filter((f) => filmView(f) === view)
       .sort((a, b) => Number(b.id === GREEN_FILM) - Number(a.id === GREEN_FILM))
-      .map((f) => ({ value: f.id, label: f.id === GREEN_FILM ? "Grön film · P4C2" : f.title, hint: f.id === GREEN_FILM ? undefined : f.group === "bank" ? "klippbanken" : "äldre" })),
+      .map((f) => ({ value: f.id, label: filmLabel(f), hint: f.id === GREEN_FILM ? undefined : f.group === "bank" ? "klippbanken" : "äldre" })),
   ];
 
   return (
@@ -207,9 +214,10 @@ export function PlacementView() {
             <Select
               size="sm"
               aria-label="Under korten"
-              value={onFilm ? film!.id : STILL}
+              value={film ? film.id : shown.kind === "still" ? shown.still : defaultStill(view)}
               onChange={(v) => {
-                setFilmId(v === STILL ? null : v);
+                setBackdrop(v === defaultStill(view) ? null : v);
+                if (v === "neutral") setNeutralMissing(false);
                 setFrame(0);
               }}
               options={backdropOptions}
@@ -253,6 +261,9 @@ export function PlacementView() {
           ) : null}
           {showSaved ? <p className="shrink-0 border-b border-brass/30 bg-brass/10 px-4 py-1.5 text-xs text-brass-hi">Visar sparat. Streckat: dina ändringar. X växlar.</p> : null}
           {cardsFailed && look === "kort" ? <p className="shrink-0 border-b border-line px-4 py-1.5 text-xs text-[#f0b07a]">Korten kunde inte ritas här; visar färg.</p> : null}
+          {neutralMissing && !film && (backdrop === null || backdrop === "neutral") && view === "native" ? (
+            <p className="shrink-0 border-b border-line px-4 py-1.5 text-xs text-[#f0b07a]">Den neutrala bilden finns inte på den här datorn än; visar V6-bilden.</p>
+          ) : null}
           <Board
             plan={plan}
             other={showSaved ? d.plan : d.saved}
@@ -264,7 +275,9 @@ export function PlacementView() {
             allCards={allCards}
             grid={grid}
             changed={changed}
-            backdrop={backdrop}
+            backdrop={under}
+            shoeCard={shown.kind === "still" && shown.still === "v6"}
+            onBackdropMissing={shown.kind === "still" && shown.still === "neutral" ? () => setNeutralMissing(true) : undefined}
             face={face}
             zoom={zoom}
             onZoom={setZoom}
@@ -272,10 +285,10 @@ export function PlacementView() {
             onPathEnd={() => setPath(null)}
             onCardsFailed={() => setCardsFailed(true)}
             videoRef={videoRef}
-            label={onFilm ? `${film!.id === GREEN_FILM ? "Grön film · P4C2" : film!.title}` : "V6 · visuell referens"}
+            label={film ? filmLabel(film) : shown.kind === "still" ? stillLabel(shown.still) : ""}
             className="flex-1"
           />
-          {onFilm ? <FilmBar key={film!.id} videoRef={videoRef} fps={film!.fps} frames={film!.frames} onFrame={setFrame} /> : null}
+          {film ? <FilmBar key={film.id} videoRef={videoRef} fps={film.fps} frames={film.frames} onFrame={setFrame} /> : null}
           <div className="flex h-8 shrink-0 items-center gap-3 border-t border-line px-3 text-2xs text-faint">
             <span className="font-mono text-dim">{placeCode(place)}</span>
             <span className="tabular-nums">
@@ -300,6 +313,12 @@ export function PlacementView() {
               ) : null}
             </div>
             <SlotPicker plan={plan} view={view} selected={place} changed={showSaved ? new Set() : changed} onSelect={choose} />
+            {order ? (
+              <Link href={order} className={buttonClasses({ variant: "quiet", size: "sm", className: "-ml-2.5 self-start" })} title={`En ny beställning i Beställ, med filmen till ${placeCode(place)}`}>
+                <Send aria-hidden />
+                Beställ film hit
+              </Link>
+            ) : null}
           </div>
           <Tabs
             label="Inställningar"

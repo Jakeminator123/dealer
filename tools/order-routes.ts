@@ -2,12 +2,16 @@
 // handleOrders(req, res, url) before its own routes; it answers true when the request was one of these.
 //   GET  /api/orders                    every order with its state, the day's credits and the balance
 //   GET  /api/orders/<id>               one order
-//   POST /api/orders                    a new draft from a few choices (dealer, step, place, turn, model, takes)
-//   PUT  /api/orders/<id>               change a draft: title, takes, turn, free addition, length (If-Match)
+//   POST /api/orders                    a new draft from a few choices (dealer, step, place, hand, how the card lands and
+//                                       turns, length, takes), or with seats one draft per seat sharing a group
+//   PUT  /api/orders/<id>               change a draft: title, takes, hand, side, turn, free addition, length (If-Match)
 //   POST /api/orders/<id>/refresh       fetch what a draft waits for once it holds, draw its last picture again (If-Match)
 //   POST /api/orders/<id>/approve       Jakob's click: freezes the order with its hash, refused beyond the policy (If-Match)
+//   GET  /api/orders/pose/<step>        the pose figure a still would get (ANKARE-2.1, ANKARE-2.2), before a draft exists;
+//                                       ?anchor=<entry> brings its green to that anchor's
 //   GET  /assets/orders/<id>/<file>     a picture or film of an order, only from that folder
-//   PUT  /api/media/<id>/state          Godkänn / Underkänn of a picture in Material (If-Match on the register)
+//   PUT  /api/media/<id>/state          Godkänn / Underkänn of a picture in Material (If-Match on the register); the
+//                                       dealer's drafts then follow the anchor that holds (store.follow)
 // Writes come from the lab's own origin only, with the revision last read, as in tools/review-store.ts. Nothing here
 // places an order: an ordering agent does that after tools/order-clerk.md. Tests: tools/order-routes.test.ts.
 import { createReadStream } from 'node:fs';
@@ -19,7 +23,7 @@ import { mediaRoles } from './media-roles.ts';
 import { orderStore, type NewOrder, type StoreOptions } from './order-store.ts';
 
 const BODY_LIMIT = 16384;
-const NEW_KEYS = ['dealer', 'step', 'target', 'flipAxis', 'duration', 'resolution', 'takes', 'extra', 'title', 'base'];
+const NEW_KEYS = ['dealer', 'step', 'target', 'hand', 'pass', 'side', 'seats', 'flipAxis', 'duration', 'resolution', 'takes', 'extra', 'title', 'base'];
 
 export function orderRoutes(options: { root: string; origin: string } & StoreOptions) {
   const { root, origin } = options;
@@ -68,6 +72,16 @@ export function orderRoutes(options: { root: string; origin: string } & StoreOpt
       try { await serve(req, res, file); } catch { if (!res.headersSent) res.writeHead(500); res.end(); }
       return true;
     }
+    const pose = /^\/api\/orders\/pose\/(ANKARE-2\.[12])$/.exec(p);
+    if (pose) {
+      if (method !== 'GET' && method !== 'HEAD') { res.writeHead(405).end(); return true; }
+      try {
+        const bytes = await store.posePicture(pose[1], url.searchParams.get('anchor'));
+        res.writeHead(200, { 'Content-Type': 'image/png', 'Content-Length': bytes.length, 'Cache-Control': 'no-store' });
+        res.end(method === 'HEAD' ? undefined : bytes);
+      } catch (error) { fail(res, error); }
+      return true;
+    }
     const mediaState = /^\/api\/media\/([^/]+)\/state$/.exec(p);
     if (p !== '/api/orders' && !p.startsWith('/api/orders/') && !mediaState) return false;
     try {
@@ -77,7 +91,12 @@ export function orderRoutes(options: { root: string; origin: string } & StoreOpt
         if (method !== 'PUT') throw new StoreError(405, 'Bara PUT.');
         const value = (await body(req, true)) as { state?: unknown } | null;
         if (!value || typeof value !== 'object' || Object.keys(value).some((k) => k !== 'state')) throw new StoreError(400, 'Ändringen ska bara innehålla state.');
-        json(res, 200, await media.setState({ id: decodeURIComponent(mediaState[1]), state: value.state, expected: ifMatch(req) }));
+        const decided = await media.setState({ id: decodeURIComponent(mediaState[1]), state: value.state, expected: ifMatch(req) });
+        // The dealer's drafts follow what holds now; a draft that cannot is left as it is and says why in Beställ.
+        const dealers = (await media.readRegister()).register?.dealers ?? {};
+        const dealer = Object.entries(dealers).find(([, d]) => d.entries.some((e) => e.id === decided.entry.id))?.[0];
+        const followed = dealer ? await store.follow(dealer).catch(() => [] as string[]) : [];
+        json(res, 200, { ...decided, followed });
         return true;
       }
       if (p === '/api/orders') {
@@ -86,8 +105,13 @@ export function orderRoutes(options: { root: string; origin: string } & StoreOpt
         const value = (await body(req, true)) as Record<string, unknown>;
         if (!value || typeof value !== 'object' || Array.isArray(value)) throw new StoreError(400, 'Beställningen ska vara ett objekt.');
         for (const key of Object.keys(value)) if (!NEW_KEYS.includes(key)) throw new StoreError(400, `${key} kan inte sättas från sidan.`);
-        const { order, revision } = await store.create(value as unknown as NewOrder);
-        json(res, 201, { ...(await store.one(order.id)), revision });
+        if (value.seats !== undefined) {
+          const { orders } = await store.createMany(value as unknown as NewOrder);
+          json(res, 201, { ...(await store.one(orders[0].id)), made: orders.map((o) => o.id) });
+          return true;
+        }
+        const { order } = await store.create(value as unknown as NewOrder);
+        json(res, 201, { ...(await store.one(order.id)), made: [order.id] });
         return true;
       }
       const m = /^\/api\/orders\/([a-z0-9]+(?:-[a-z0-9]+)*)(\/approve|\/refresh)?$/.exec(p);
