@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "id": "paow-tal-chat2-sv-08",
+  "dealer": "paow",
+  "source": {
+    "path": "assets/motions/paow-tal-chat2-sv-08/source.mp4",
+    "sha256": "9703b6080ebf408a2e8aa71701c851455544fb657f1128218697277dcc026657",
+    "bytes": 4964693,
+    "width": 1764,
+    "height": 1174,
+    "fps": 24,
+    "frames": 51,
+    "audio": true,
+    "provider": "tools/speech.ts: Scoutgaming's lip-sync renderer on this machine, voice from ElevenLabs",
+    "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Paow"
+  },
+  "motion": {
+    "kind": "IDLE",
+    "from": "IDLE",
+    "to": "IDLE",
+    "pass": false,
+    "basis": "SOURCE_FRAME_REVIEW",
+    "idle": {
+      "onRequest": true,
+      "calm": true,
+      "weight": 0,
+      "label": "säger: Roligt att du är här."
+    }
+  },
+  "speech": {
+    "line": "chat2",
+    "language": "sv",
+    "text": "Roligt att du är här.",
+    "voice": "Paow",
+    "heard": "Roligt att du är här",
+    "restFilm": "paow-vila-01-01",
+    "soundStartsAtSeconds": 0.22,
+    "soundEndsAtSeconds": 1.598
+  },
+  "review": {
+    "decision": "ACCEPTED",
+    "basis": "Inte granskad av Jakob. Gjord av tools/speech.ts ur assets/motions/paow-vila-01-01/source.mp4, inlagd bara kring det som hörs och under hennes egen överläpp, som lyfts när munnen öppnar. Granskaren 3/5: Båda läpparna: överläppen lyfts 4–7 px i \"här\" (ruta 27–32), näsan står still. Putande läpp och mörka gipor ruta 28–30; tänder strimmiga.",
+    "userAccepted": false,
+    "productionReady": false,
+    "provisional": {
+      "by": "huvudagenten med talbanans oberoende granskare",
+      "at": "2026-11-13T20:58:07.317Z",
+      "mandate": "Jakob 2026-11-13 kl. 15.50, med en bild av kön i Granska: \"jag vill nu för jag ska iväg att du godkänner allt videomaterial som innehåller de där kriterierna\" och \"Med andra ord vill jag inte se en sån här lista när jag är tillbaka!\"",
+      "note": "Granskaren 3/5, användbar med anmärkningar: Båda läpparna: överläppen lyfts 4–7 px i \"här\" (ruta 27–32), näsan står still. Putande läpp och mörka gipor ruta 28–30; tänder strimmiga."
+    }
+  },
+  "postProcessing": "the rendered face laid back into the rest film's own frames (assets/speech/paow/paow-tal-chat2-sv-08/receipt.json, laidBack)",
+  "generationRef": "assets/motions/paow-tal-chat2-sv-08/generation.json",
+  "scoutIntegrated": false,
+  "published": false
+}

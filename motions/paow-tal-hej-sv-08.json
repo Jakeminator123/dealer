@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "id": "paow-tal-hej-sv-08",
+  "dealer": "paow",
+  "source": {
+    "path": "assets/motions/paow-tal-hej-sv-08/source.mp4",
+    "sha256": "8875d3cc4d30ccea033b3f355ee70ab9ba3f98cffcca773b3838146e76527a9d",
+    "bytes": 4052892,
+    "width": 1764,
+    "height": 1174,
+    "fps": 24,
+    "frames": 43,
+    "audio": true,
+    "provider": "tools/speech.ts: Scoutgaming's lip-sync renderer on this machine, voice from ElevenLabs",
+    "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Paow"
+  },
+  "motion": {
+    "kind": "IDLE",
+    "from": "IDLE",
+    "to": "IDLE",
+    "pass": false,
+    "basis": "SOURCE_FRAME_REVIEW",
+    "idle": {
+      "onRequest": true,
+      "calm": true,
+      "weight": 0,
+      "label": "säger: Hej och välkommen till bordet!"
+    }
+  },
+  "speech": {
+    "line": "hej",
+    "language": "sv",
+    "text": "Hej och välkommen till bordet!",
+    "voice": "Paow",
+    "heard": "Hej och välkommen till bordet",
+    "restFilm": "paow-vila-01-01",
+    "soundStartsAtSeconds": 0.22,
+    "soundEndsAtSeconds": 1.297
+  },
+  "review": {
+    "decision": "ACCEPTED",
+    "basis": "Inte granskad av Jakob. Gjord av tools/speech.ts ur assets/motions/paow-vila-01-01/source.mp4, inlagd bara kring det som hörs och under hennes egen överläpp, som lyfts när munnen öppnar. Granskaren 4/5: Båda läpparna: överläppen upp 2–6 px i 82 % av öppna rutor; i 'bordet' still i ruta 23–24 och 27–28. Ingen söm, näsan stilla.",
+    "userAccepted": false,
+    "productionReady": false,
+    "provisional": {
+      "by": "huvudagenten med talbanans oberoende granskare",
+      "at": "2026-11-13T20:58:07.395Z",
+      "mandate": "Jakob 2026-11-13 kl. 15.50, med en bild av kön i Granska: \"jag vill nu för jag ska iväg att du godkänner allt videomaterial som innehåller de där kriterierna\" och \"Med andra ord vill jag inte se en sån här lista när jag är tillbaka!\"",
+      "note": "Granskaren 4/5, användbar som huvudtagning: Båda läpparna: överläppen upp 2–6 px i 82 % av öppna rutor; i 'bordet' still i ruta 23–24 och 27–28. Ingen söm, näsan stilla."
+    }
+  },
+  "postProcessing": "the rendered face laid back into the rest film's own frames (assets/speech/paow/paow-tal-hej-sv-08/receipt.json, laidBack)",
+  "generationRef": "assets/motions/paow-tal-hej-sv-08/generation.json",
+  "scoutIntegrated": false,
+  "published": false
+}

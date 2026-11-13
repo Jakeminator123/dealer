@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "id": "paow-tal-chat1-sv-08",
+  "dealer": "paow",
+  "source": {
+    "path": "assets/motions/paow-tal-chat1-sv-08/source.mp4",
+    "sha256": "4316c409b8f24996fe86f9902cc4869d5b5349f973058a15d396391d4f00b2b1",
+    "bytes": 4573682,
+    "width": 1764,
+    "height": 1174,
+    "fps": 24,
+    "frames": 48,
+    "audio": true,
+    "provider": "tools/speech.ts: Scoutgaming's lip-sync renderer on this machine, voice from ElevenLabs",
+    "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Paow"
+  },
+  "motion": {
+    "kind": "IDLE",
+    "from": "IDLE",
+    "to": "IDLE",
+    "pass": false,
+    "basis": "SOURCE_FRAME_REVIEW",
+    "idle": {
+      "onRequest": true,
+      "calm": true,
+      "weight": 0,
+      "label": "säger: Tack! Lycka till."
+    }
+  },
+  "speech": {
+    "line": "chat1",
+    "language": "sv",
+    "text": "Tack! Lycka till.",
+    "voice": "Paow",
+    "heard": "Tack, lycka till!",
+    "restFilm": "paow-vila-01-01",
+    "soundStartsAtSeconds": 0.22,
+    "soundEndsAtSeconds": 1.487
+  },
+  "review": {
+    "decision": "ACCEPTED",
+    "basis": "Inte granskad av Jakob. Gjord av tools/speech.ts ur assets/motions/paow-vila-01-01/source.mp4, inlagd bara kring det som hörs och under hennes egen överläpp, som lyfts när munnen öppnar. Granskaren 4/5: Båda läpparna: överläppen lyfts 3–6 px i 73 % av öppna rutor (stilla i pausen 16–18), hel och som hennes egen. Underläppen mjukare än filmens.",
+    "userAccepted": false,
+    "productionReady": false,
+    "provisional": {
+      "by": "huvudagenten med talbanans oberoende granskare",
+      "at": "2026-11-13T20:58:07.311Z",
+      "mandate": "Jakob 2026-11-13 kl. 15.50, med en bild av kön i Granska: \"jag vill nu för jag ska iväg att du godkänner allt videomaterial som innehåller de där kriterierna\" och \"Med andra ord vill jag inte se en sån här lista när jag är tillbaka!\"",
+      "note": "Granskaren 4/5, användbar med anmärkningar: Båda läpparna: överläppen lyfts 3–6 px i 73 % av öppna rutor (stilla i pausen 16–18), hel och som hennes egen. Underläppen mjukare än filmens."
+    }
+  },
+  "postProcessing": "the rendered face laid back into the rest film's own frames (assets/speech/paow/paow-tal-chat1-sv-08/receipt.json, laidBack)",
+  "generationRef": "assets/motions/paow-tal-chat1-sv-08/generation.json",
+  "scoutIntegrated": false,
+  "published": false
+}

@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "id": "paow-tal-varsagod-sv-08",
+  "dealer": "paow",
+  "source": {
+    "path": "assets/motions/paow-tal-varsagod-sv-08/source.mp4",
+    "sha256": "9f91f6ee875389bace0a8f2cb027ddb1ec9143ab490a12c735dbb76ae7428cc6",
+    "bytes": 5117850,
+    "width": 1764,
+    "height": 1174,
+    "fps": 24,
+    "frames": 52,
+    "audio": true,
+    "provider": "tools/speech.ts: Scoutgaming's lip-sync renderer on this machine, voice from ElevenLabs",
+    "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Paow"
+  },
+  "motion": {
+    "kind": "IDLE",
+    "from": "IDLE",
+    "to": "IDLE",
+    "pass": false,
+    "basis": "SOURCE_FRAME_REVIEW",
+    "idle": {
+      "onRequest": true,
+      "calm": true,
+      "weight": 0,
+      "label": "säger: Varsågod, det är bara roligt."
+    }
+  },
+  "speech": {
+    "line": "varsagod",
+    "language": "sv",
+    "text": "Varsågod, det är bara roligt.",
+    "voice": "Paow",
+    "heard": "Varsågod, det är bara roligt",
+    "restFilm": "paow-vila-01-01",
+    "soundStartsAtSeconds": 0.22,
+    "soundEndsAtSeconds": 1.66
+  },
+  "review": {
+    "decision": "ACCEPTED",
+    "basis": "Inte granskad av Jakob. Gjord av tools/speech.ts ur assets/motions/paow-vila-01-01/source.mp4, inlagd bara kring det som hörs och under hennes egen överläpp, som lyfts när munnen öppnar. Granskaren 3/5: Båda läpparna i det mesta (25/28 öppna rutor), men i sista ordet roligt (36-37, 40) lyfts överläppen bara 0-1 px. Ritad sluten mun 24-25 suddig.",
+    "userAccepted": false,
+    "productionReady": false,
+    "provisional": {
+      "by": "huvudagenten med talbanans oberoende granskare",
+      "at": "2026-11-13T20:58:07.506Z",
+      "mandate": "Jakob 2026-11-13 kl. 15.50, med en bild av kön i Granska: \"jag vill nu för jag ska iväg att du godkänner allt videomaterial som innehåller de där kriterierna\" och \"Med andra ord vill jag inte se en sån här lista när jag är tillbaka!\"",
+      "note": "Granskaren 3/5, användbar med anmärkningar: Båda läpparna i det mesta (25/28 öppna rutor), men i sista ordet roligt (36-37, 40) lyfts överläppen bara 0-1 px. Ritad sluten mun 24-25 suddig."
+    }
+  },
+  "postProcessing": "the rendered face laid back into the rest film's own frames (assets/speech/paow/paow-tal-varsagod-sv-08/receipt.json, laidBack)",
+  "generationRef": "assets/motions/paow-tal-varsagod-sv-08/generation.json",
+  "scoutIntegrated": false,
+  "published": false
+}

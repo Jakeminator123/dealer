@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "id": "paow-tal-dealerplays-sv-08",
+  "dealer": "paow",
+  "source": {
+    "path": "assets/motions/paow-tal-dealerplays-sv-08/source.mp4",
+    "sha256": "bb86f967969fabaa93fdcfe32822d20b50c21d2684be5b5b4317efc65b705f16",
+    "bytes": 3933779,
+    "width": 1764,
+    "height": 1174,
+    "fps": 24,
+    "frames": 41,
+    "audio": true,
+    "provider": "tools/speech.ts: Scoutgaming's lip-sync renderer on this machine, voice from ElevenLabs",
+    "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Paow"
+  },
+  "motion": {
+    "kind": "IDLE",
+    "from": "IDLE",
+    "to": "IDLE",
+    "pass": false,
+    "basis": "SOURCE_FRAME_REVIEW",
+    "idle": {
+      "onRequest": true,
+      "calm": true,
+      "weight": 0,
+      "label": "säger: Dealern spelar."
+    }
+  },
+  "speech": {
+    "line": "dealerplays",
+    "language": "sv",
+    "text": "Dealern spelar.",
+    "voice": "Paow",
+    "heard": "Dealern spelar",
+    "restFilm": "paow-vila-01-01",
+    "soundStartsAtSeconds": 0.22,
+    "soundEndsAtSeconds": 1.18
+  },
+  "review": {
+    "decision": "ACCEPTED",
+    "basis": "Inte granskad av Jakob. Gjord av tools/speech.ts ur assets/motions/paow-vila-01-01/source.mp4, inlagd bara kring det som hörs och under hennes egen överläpp, som lyfts när munnen öppnar. Granskaren 4/5: Båda läpparna: överläppen lyfts 3-6 px i 17/19 öppna rutor, även i spelar (18-25). Ritad sluten mun 15-17 matt och suddig. Näsan stilla, resten rent.",
+    "userAccepted": false,
+    "productionReady": false,
+    "provisional": {
+      "by": "huvudagenten med talbanans oberoende granskare",
+      "at": "2026-11-13T20:58:07.357Z",
+      "mandate": "Jakob 2026-11-13 kl. 15.50, med en bild av kön i Granska: \"jag vill nu för jag ska iväg att du godkänner allt videomaterial som innehåller de där kriterierna\" och \"Med andra ord vill jag inte se en sån här lista när jag är tillbaka!\"",
+      "note": "Granskaren 4/5, användbar med anmärkningar: Båda läpparna: överläppen lyfts 3-6 px i 17/19 öppna rutor, även i spelar (18-25). Ritad sluten mun 15-17 matt och suddig. Näsan stilla, resten rent."
+    }
+  },
+  "postProcessing": "the rendered face laid back into the rest film's own frames (assets/speech/paow/paow-tal-dealerplays-sv-08/receipt.json, laidBack)",
+  "generationRef": "assets/motions/paow-tal-dealerplays-sv-08/generation.json",
+  "scoutIntegrated": false,
+  "published": false
+}

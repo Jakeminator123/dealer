@@ -9,7 +9,7 @@ import {execFileSync, spawnSync} from 'node:child_process';
 import os from 'node:os';
 import path from 'node:path';
 import {BRIDGE, RENDER, bridgeProblems, clipLength, filmFrameOf, bridgeFilter, lineFrames, longestSound, restPath, planRows, canonical, videoIdOf, sourcesOf, bakeJob, answerVideo, sameWords,
-  changedBox, unionBox, grownBox, featherMask, blendFrame, heardFrames, speechGate, mixFrame, GATE, LIPS, mouthWindow, cutPlanes, lipMap, lipsMiddle, lipsHalf, lipLine, mouthGap, mouthDrop, layMouth, type Bridge, type Lips} from '../src/speech-plan.ts';
+  changedBox, unionBox, grownBox, featherMask, blendFrame, heardFrames, speechGate, mixFrame, GATE, LIPS, mouthWindow, cutPlanes, lipMap, lipsMiddle, lipsHalf, lipLine, mouthGap, mouthOpens, mouthDrop, mouthLift, mouthMoves, layMouth, type Bridge, type Lips} from '../src/speech-plan.ts';
 import {bridgeFilm, rawFrames, attestationOf, sameValue, voiceIn, readRegister, levelled, LOUDNESS, type Voice} from './speech.ts';
 
 const sha = (text: string | Uint8Array) => createHash('sha256').update(text).digest('hex');
@@ -173,6 +173,23 @@ test('only the mouth is laid in, around her own lips, larger and in her lips\' c
   assert.equal(mouthGap(theirs, win.w, win.h, middle, line), 0, 'closed: no gap'); assert.equal(mouthGap(cutPlanes(gapped, W, H, win.x, win.y, win.w, win.h), win.w, win.h, middle, line), 4);
   assert.deepEqual(mouthDrop([0, 0, 8, 8, 8, 0, 8, 0, 0], {...plain, drop: 4}), [0, 0, 4, 4, 4, 4, 0, 0, 0]);
   assert.deepEqual(mouthDrop([2, 2, 2], {...plain, drop: 4}), [0, 0, 0]);
+  // Her own upper lip follows the drawn mouth's opening. The drawn gap above begins at row 134, three rows above her line: that
+  // is how far the lip is lifted, at most the recipe's lift, not in silence, evened over the frames.
+  const opens = mouthOpens(cutPlanes(gapped, W, H, win.x, win.y, win.w, win.h), win.w, win.h, middle, line); assert.equal(opens.gap, 4); assert.ok(Math.abs(opens.rise - 2.5) <= 1, `opens ${opens.rise} above her line`);
+  assert.deepEqual(mouthLift([0, 3, 3, 3, 9, 9, 9, 0], {...plain, lift: 6}), [0, 3, 3, 3, 6, 6, 6, 0]); assert.deepEqual(mouthLift([3, 3, 3], plain), [0, 0, 0], 'nothing without a lift');
+  assert.deepEqual(mouthLift([4, 4, 4, 4, 4, 4], {...plain, lift: 6, heard: true, ease: 1}, [true, true, false, false, true, true]), [4, 3, 1, 1, 3, 4]);
+  // As a share of the opening: a gap of ten pixels lifts her lip three and a half, a gap of twenty the whole lift; the drawn
+  // mouth is moved so that its opening, which began one pixel above her line, begins at the lifted edge (up, here).
+  const moves = mouthMoves([{gap: 0, rise: 0}, {gap: 10, rise: 1}, {gap: 10, rise: 1}, {gap: 10, rise: 1}, {gap: 20, rise: 1}, {gap: 20, rise: 1}, {gap: 20, rise: 1}], {...plain, lift: 6, share: 0.35});
+  assert.deepEqual(moves.lifts, [0, 3.5, 3.5, 3.5, 6, 6, 6]); assert.deepEqual(moves.drops, [0, -2.5, -2.5, -2.5, -5, -5, -5]);
+  // With a base, a small opening lifts her lip too; and a closed drawn mouth whose lips lie three pixels under hers is moved up three.
+  const small = mouthMoves([{gap: 3, rise: 0, low: 1}, {gap: 3, rise: 0, low: 1}, {gap: 3, rise: 0, low: 1}, {gap: 0, rise: 0, low: 3}, {gap: 0, rise: 0, low: 3}, {gap: 0, rise: 0, low: 3}], {...plain, lift: 6, share: 0.3, base: 1.5});
+  assert.deepEqual(small.lifts, [2.4, 2.4, 2.4, 0, 0, 0]); assert.deepEqual(small.drops, [-2.4, -2.4, -2.4, -3, -3, -3]);
+  // Lifted, the dark line between her lips lies that much higher in the middle, by her own pixels above it drawn together;
+  // nothing above the reach of the lift and nothing at her corner is touched, and the drawn mouth is laid in from the lifted edge.
+  const lifted = Uint8Array.from(lined); layMouth(lifted, opened, win, middle, {y: 0, u: 0, v: 0}, {...plain, under: 1}, b, 0, 4);
+  assert.ok(lifted[132 * W + 200] < 100 && lined[132 * W + 200] === 150, `her lip line has moved up in the middle: ${lifted[132 * W + 200]}`); assert.equal(lifted[110 * W + 200], lined[110 * W + 200], 'untouched above the lift');
+  assert.ok(lifted[132 * W + 226] > 120, `less toward her corner, where the line has not come up to this row: ${lifted[132 * W + 226]}`); assert.equal(lifted[138 * W + 200], 235, 'the drawn mouth, here its teeth, shows from the lifted edge down');
   // Not moved down where she is not heard, and evened over the frames to either side: the mouth does not shut in one frame.
   assert.deepEqual(mouthDrop([8, 8, 8, 8, 8, 8], {...plain, drop: 4, heard: true}, [true, true, false, false, true, true]), [4, 4, 0, 0, 4, 4]);
   assert.deepEqual(mouthDrop([8, 8, 8, 8, 8, 8], {...plain, drop: 4, heard: true, ease: 1}, [true, true, false, false, true, true]), [4, 3, 1, 1, 3, 4]);

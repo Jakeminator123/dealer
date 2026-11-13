@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "id": "paow-tal-otur-sv-08",
+  "dealer": "paow",
+  "source": {
+    "path": "assets/motions/paow-tal-otur-sv-08/source.mp4",
+    "sha256": "089f1619f575f7cb7e5a826e49a44f9388284ae6729d03fb26ae55fbcc37777f",
+    "bytes": 6553554,
+    "width": 1764,
+    "height": 1174,
+    "fps": 24,
+    "frames": 67,
+    "audio": true,
+    "provider": "tools/speech.ts: Scoutgaming's lip-sync renderer on this machine, voice from ElevenLabs",
+    "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Paow"
+  },
+  "motion": {
+    "kind": "IDLE",
+    "from": "IDLE",
+    "to": "IDLE",
+    "pass": false,
+    "basis": "SOURCE_FRAME_REVIEW",
+    "idle": {
+      "onRequest": true,
+      "calm": true,
+      "weight": 0,
+      "label": "säger: Det vänder snart, det brukar det göra."
+    }
+  },
+  "speech": {
+    "line": "otur",
+    "language": "sv",
+    "text": "Det vänder snart, det brukar det göra.",
+    "voice": "Paow",
+    "heard": "Det vänder snart. Det brukar det göra.",
+    "restFilm": "paow-vila-01-01",
+    "soundStartsAtSeconds": 0.22,
+    "soundEndsAtSeconds": 2.294
+  },
+  "review": {
+    "decision": "ACCEPTED",
+    "basis": "Inte granskad av Jakob. Gjord av tools/speech.ts ur assets/motions/paow-vila-01-01/source.mp4, inlagd bara kring det som hörs och under hennes egen överläpp, som lyfts när munnen öppnar. Granskaren 4/5: Båda läpparna: överläppen lyfts i 84 % av öppna rutor och i sista ordet; öppnar med ljudet (r 9). Vid störst lyft lite trutig båge; underläppen matt.",
+    "userAccepted": false,
+    "productionReady": false,
+    "provisional": {
+      "by": "huvudagenten med talbanans oberoende granskare",
+      "at": "2026-11-13T20:58:07.468Z",
+      "mandate": "Jakob 2026-11-13 kl. 15.50, med en bild av kön i Granska: \"jag vill nu för jag ska iväg att du godkänner allt videomaterial som innehåller de där kriterierna\" och \"Med andra ord vill jag inte se en sån här lista när jag är tillbaka!\"",
+      "note": "Granskaren 4/5, användbar med anmärkningar: Båda läpparna: överläppen lyfts i 84 % av öppna rutor och i sista ordet; öppnar med ljudet (r 9). Vid störst lyft lite trutig båge; underläppen matt."
+    }
+  },
+  "postProcessing": "the rendered face laid back into the rest film's own frames (assets/speech/paow/paow-tal-otur-sv-08/receipt.json, laidBack)",
+  "generationRef": "assets/motions/paow-tal-otur-sv-08/generation.json",
+  "scoutIntegrated": false,
+  "published": false
+}
