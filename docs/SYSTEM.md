@@ -160,13 +160,16 @@ Spelet med flera dealers (2026-11-13):
   - Ett kort som ligger sedan en tidigare film ritas i samma storlek som det givna kortet vilade i (Kortens storlek
     gånger kontraktets kort, på planens plats), så att det inte krymper eller växer när nästa film börjar.
   - Hålkortets valör och dealerns summa visas när kortets framsida syns i vändningsfilmen, inte när filmen slutar.
-  - Hur kortet i hennes hand visas väljs i spelet. Miljö har två brytare: Ritade kort (på eller av; av betyder att
-    inget ritas på något kort, varken i handen eller liggande) och under den Bara liggande (filmens eget kort i handen,
-    det ritade först när kortet ligger; av från början). Adressen kan säga samma sak: `cards=0` eller `cards=1`, och
-    ordet `kort`: `kort=liggande`, `kort=hand` (som förut) eller `kort=matt` (filmens kort omfärgat i handen, ett
-    labbval). Vem som bestämmer (`cardsChoice` i `src/game-film.ts`): adressens ord först (Casino-vyns knapp skriver
-    adressen, och en inspelning med ordet ändras aldrig av det en webbläsare minns), sedan spelarens val i menyn, som
-    minns också under ett förval, sedan förvalet, annars på.
+  - En linje för korten (Jakob 2026-11-13: "Jag vill bara att det ska bli en linje och att allt ska anpassas till en
+    standard som passar med det som för närvarande finns i systemet"): ritade kort är på, i en storlek överallt
+    (`cardScale` 1,2, den storlek filmernas egna kort och filtens tryckta kortrutor redan har), och spelet har en enda
+    brytare i Miljö, Ritade kort (av betyder att inget ritas på något kort, varken i handen eller liggande). Hur kortet
+    i hennes hand visas är inget val i spelet. Adressen kan säga det, för labbet och för inspelningar: `cards=0` eller
+    `cards=1`, och ordet `kort`: `kort=hand` (det ritade kortet i handen, som spelet gör utan ordet),
+    `kort=liggande` (filmens eget kort i handen, det ritade först när kortet ligger) eller `kort=matt` (filmens kort
+    omfärgat i handen). Vem som bestämmer om kort ritas (`cardsChoice` i `src/game-film.ts`): adressens ord först
+    (Casino-vyns knapp skriver adressen, och en inspelning med ordet ändras aldrig av det en webbläsare minns), sedan
+    spelarens val i menyn, som minns också under ett förval, sedan förvalet, annars på.
   - Med skomodellen (Sko i 3D i Scen, där filmens sko inte ritas) ritas det givna kortet först två rutor efter att
     det har lämnat skon (`leavesShoe` i spåret), så att det inte står ovanpå modellen som ett klistermärke. Kortet i
     skons fönster ritas som förut. Provet klipper fortfarande bort hennes hand i skons ruta.
@@ -501,10 +504,18 @@ IDLE>READY | READY>P1.C1 | P1.C1>READY | READY>D.C1 | D.C1>READY | READY>P1.C2 |
   klipp med viktad slump: aldrig samma klipp två gånger i rad, minst tre lugna mellan två gester, aldrig underkända
   klipp eller klipp märkta bara på begäran; ogranskade får komma i labbet. Varje klipp spelas från ruta 3 till tre rutor
   före slutet, nästa laddas i ett dolt videoelement och tar över med rakt klipp. "Dela ut nu" klipper ett lugnt klipp
-  direkt till ingången och spelar klart en gest i 2,5× fart först. Klippets del i vilan står i dess post:
-  `motion.idle = {weight, calm, onRequest, label}`; utan uppgift är bara `pamela-idle-loop-01` lugnt (vikt 20), övriga
-  gester (vikt 3), och ordet för klippet tas ur id:t. Rundans `IDLE>IDLE`-steg spelar det lugnaste klippet (lugnt före
-  gest, högst vikt, äldst vid lika), om inte ett klipp är godkänt eller märkt `acceptedAs: "MAIN"`.
+  direkt till ingången och spelar klart en gest i 1,5× fart först (`IDLE_RULE.exitRate`; över cirka 1,25 ser en vila
+  snabbspolad ut); ett lugnt klipp där hon vrider huvudet säger `cut: false` och spelas också klart. Klippets del i
+  vilan står i dess post: `motion.idle = {weight, calm, onRequest, label, cut}`; utan uppgift är bara
+  `pamela-idle-loop-01` lugnt (vikt 20), övriga gester (vikt 3), och ordet för klippet tas ur id:t. När en gest får
+  komma väljs den med vikt bland alla klipp, så gesternas andel av vikten avgör hur ofta en gest faktiskt kommer (Paow
+  2026-11-13: 27 %). Rundans `IDLE>IDLE`-steg spelar det lugnaste klippet (lugnt före gest, högst vikt, äldst vid
+  lika), om inte ett klipp är godkänt eller märkt `acceptedAs: "MAIN"`.
+- En vilofilm kan be scenen om en effekt medan den spelas: `motion.effect = {kind: "room-flash", room, at, seconds,
+  mono}` i filmens post (en blixt, och under `seconds` från `at`, räknat i filmens egen tid, är rummet `room` ur
+  `data/scene-rooms.json` och bilden med `mono` svartvit). Spelet bär ett helt märke till delen scenen spelar
+  (`effectOf` i `src/clip-graph.ts`, `Part.effect`); scenen gör effekten. En variant med effekt är en egen post som
+  pekar på samma film.
 - En rättad kopia (`"edits": [{id, source: {clip}, model, promptText, purpose}]`) är ännu en tagning av källklippets
   kant och visas bland de aktuella tills den granskats. `playbackSpeed: 2` på ett jobb spelar tagningen i dubbel fart;
   rutnumren är filens. Ligger `source-reversed.mp4` bredvid filmen erbjuds "Spela baklänges" i tagningen.
