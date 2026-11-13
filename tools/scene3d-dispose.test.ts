@@ -156,3 +156,12 @@ test('a film that cannot be read is a gap: the chain plays what is left and ends
   assert.equal(loopEnded, 1); assert.ok(loopErrors >= 2 && loopErrors <= 4, `${loopErrors} errors`);
   readyAtStart = 2; players.dispose(); loop.players.dispose();
 });
+
+test('a spoken line is never hurried, and the tempo leaves it and a rest film alone', async () => {
+  withFrameCalls = true; readyAtStart = 2; const {players} = queue();
+  players.tempo(2); players.play([{path: 'tal.mp4', sound: true}]); await settle(); players.hurry(1.5); assert.equal(made[0].playbackRate, 1, 'a talk film keeps its speed under tempo and hurry');
+  players.play([{path: 'vila.mp4', rest: true}], {cut: true}); await settle(); assert.equal(made.find(v => v.src === 'vila.mp4')!.playbackRate, 1, 'a rest film keeps its speed under the tempo');
+  players.hurry(1.5); assert.equal(made.find(v => v.src === 'vila.mp4')!.playbackRate, 1.5, 'a rest film can be played out faster before a deal');
+  players.play([{path: 'giv.mp4'}], {cut: true}); await settle(); assert.equal(made.find(v => v.src === 'giv.mp4')!.playbackRate, 2, 'a deal takes the tempo');
+  players.tempo(1); assert.equal(made.find(v => v.src === 'giv.mp4')!.playbackRate, 1); players.dispose();
+});

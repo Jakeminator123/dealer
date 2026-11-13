@@ -662,7 +662,7 @@ export function createPlayers(onShow: (texture: T.Texture, path: string) => void
     load, seek, play,
     // Speed of the part on screen, from now until it ends: a gesture hurried along because a deal is waiting.
     // Never slower than the part already plays (the tempo).
-    hurry(rate: number) { const p = players[current]; if (p && !p.part.mouth) p.video.playbackRate = Math.max(rate, speedOf(p.part, !!chain)); },
+    hurry(rate: number) { const p = players[current]; if (p && !p.part.mouth && p.part.sound !== true) p.video.playbackRate = Math.max(rate, speedOf(p.part, !!chain)); }, // a spoken line is never hurried: its voice is in the film
     // The tempo of a round's films (key filmTempo; 1 = as filmed), from now on and for the part on screen.
     tempo(value: number) { const next = Number.isFinite(value) ? Math.min(4, Math.max(0.25, value)) : 1; if (next === tempo) return; tempo = next; for (const p of players) p.video.playbackRate = speedOf(p.part, !!chain); },
     // Fetches clips the game may ask for next, so the change does not wait for the network. The pool holds ${POOL} elements.

@@ -107,7 +107,7 @@ export const SCENE_KEYS: readonly KeySpec[] = [
   spec("roomLife", "rorelser", "U", "Rörelse i rummet", toggle, "Folk som står stilla i ett 360°-rum rör sig: en film över dem i bilden (prov; finns i Venedig)."),
   spec("smoke", "rorelser", "U", "Rök över bordet", slider(0, 1, 0.05), "En låg rök som ligger över filten och driver långsamt, tätast runt bordets kant. 0 är av (prov)."),
   spec("dealerLife", "rorelser", "U", "Liv i överkroppen", slider(0, 2, 0.05), "Dealerns huvud och överkropp rör sig lite och långsamt. Händer, kort och bord står still. 0 är av; förval 1."),
-  spec("filmTempo", "rorelser", "U", "Givarnas tempo", slider(1, 2, 0.05, " ×"), "Hur fort hon delar ut: rundans filmer går så många gånger fortare. Vila och tal går i vanlig fart. Förval 2."),
+  spec("filmTempo", "rorelser", "U", "Givarnas tempo", slider(1, 2, 0.05, " ×"), "Hur fort hon delar ut: rundans filmer går så många gånger fortare. Vila och tal går i vanlig fart. 1 är som filmat."),
   spec("tal", "rorelser", "U", "Dealerns repliker", choice(["repliker", "Med munnen"], ["av", "Bara text"]), "I spelet säger dealern sina fasta repliker med talfilm och ljud; Bara text visar dem i chatten."),
   // ── Ljus ──
   spec("exposure", "ljus", "U", "Ljus i rummet", slider(0.3, 2, 0.05), "Rummets ljusstyrka bakom dealern; 1 är som förut."),
@@ -116,7 +116,7 @@ export const SCENE_KEYS: readonly KeySpec[] = [
   spec("wrap", "ljus", "U", "Ljus runt dealern", slider(0, 1.5, 0.05), "Rummet bakom henne som ett svagt ljus längs konturen, så att hon står i rummet. 0 är av."),
   spec("dealerRoom", "ljus", "U", "Rumsljus på dealern", slider(0, 1, 0.05), "Dealern tar 360°-rummets färg och nivå, ljusare mot dess ljusa sida (prov). 0 är av; byggda rum ändrar inget."),
   spec("filmEven", "ljus", "U", "Jämna filmernas färg", toggle, "Filmer från olika generatorer får samma färg, så att ljuset på dealern inte hoppar i skarvarna. Förval på."),
-  spec("edgeClean", "ljus", "U", "Ren kant", slider(0, 1, 0.05), "Tar bort den gulgröna linjen som den gröna skärmen lämnar runt hår och axlar. 0 är nyckeln som den är (prov)."),
+  spec("edgeClean", "ljus", "U", "Ren kant", slider(0, 1, 0.05), "Tar bort den gulgröna linjen som den gröna skärmen lämnar runt hår, axlar och händer. 0 är av; förval 1."),
   spec("filmBright", "ljus", "U", "Dealerns ljusstyrka", slider(0.6, 1.4, 0.01), "Filmens nivå; 1 är filmen som den är."),
   spec("filmWarm", "ljus", "U", "Dealerns värme", slider(-0.2, 0.2, 0.005), "Filmens färgton, kallare eller varmare; 0 är filmen som den är."),
   spec("shadowAbove", "ljus", "U", "Skugga ovanför kanten", slider(0, 1, 0.05), "Filmens skugga ovanför bordskanten, där armbågarnas skugga annars hänger i luften. 0 tar bort den."),

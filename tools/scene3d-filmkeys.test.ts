@@ -13,12 +13,14 @@ import {TABLE} from '../src/scene3d-table.ts';
 const times = (m: readonly number[], v: number[]) => [0, 1, 2].map(r => m[r * 3] * v[0] + m[r * 3 + 1] * v[1] + m[r * 3 + 2] * v[2]);
 
 test('the defaults are Jakob\'s standard of 2026-11-13, and both catalogues hold the three keys', () => {
-  // the films evened, the deals at twice their speed and the cup holders in the rail and life in her upper body, all from the start
-  assert.equal(DEFAULTS.filmEven, true); assert.equal(DEFAULTS.filmTempo, 2); assert.equal(DEFAULTS.cups, true); assert.equal(DEFAULTS.dealerLife, 1);
+  // the films evened, the cup holders in the rail and life in her upper body, all from the start. The deals play as filmed: at twice
+  // their speed from the start she was "jättesnabb i vissa lägen" (Jakob, 2026-11-13); the slider stays.
+  assert.equal(DEFAULTS.filmEven, true); assert.equal(DEFAULTS.filmTempo, 1); assert.equal(DEFAULTS.cups, true); assert.equal(DEFAULTS.dealerLife, 1);
   assert.deepEqual(lifeNow(12.3, 0).map(Math.abs), [0, 0, 0], 'no life is no movement at all');
   assert.deepEqual(GAME_KEYS.filmEven, {kind: 'switch'}); assert.deepEqual(GAME_KEYS.filmTempo, {kind: 'slider', min: 1, max: 2}); assert.deepEqual(GAME_KEYS.dealerLife, {kind: 'slider', min: 0, max: 2});
   assert.equal(DEFAULTS.shelf, false); assert.deepEqual(GAME_KEYS.shelf, {kind: 'switch'});
-  assert.equal(DEFAULTS.edgeClean, 0); assert.deepEqual(GAME_KEYS.edgeClean, {kind: 'slider', min: 0, max: 1});
+  // the clean edge: seen in a whole take by two reviewers, a line of 1 to 3 px along her outline and nothing else
+  assert.equal(DEFAULTS.edgeClean, 1); assert.deepEqual(GAME_KEYS.edgeClean, {kind: 'slider', min: 0, max: 1});
   const studio = (key: string) => SCENE_KEYS.find(s => s.key === key) as {kind: string; min?: number; max?: number} | undefined;
   assert.equal(studio('filmEven')?.kind, 'switch'); assert.deepEqual([studio('filmTempo')?.min, studio('filmTempo')?.max], [1, 2]); assert.deepEqual([studio('dealerLife')?.min, studio('dealerLife')?.max], [0, 2]);
 });

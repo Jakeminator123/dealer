@@ -42,12 +42,12 @@ export type SceneState = {
   filmEven: boolean; filmTempo: number; dealerLife: number;
   smoke: number; // low smoke over the table, 0 to 1 (src/scene3d-smoke.ts); 0 is none
   shelf: boolean; // the serving shelf behind the dealer's edge at her right hand (SHELF in src/scene3d-table.ts)
-  edgeClean: number; // the screen's green taken out of her outline, 0 to 1 (setEdge in src/scene3d-film.ts); 0 is the key as it is
+  edgeClean: number; // the screen's green taken out of her outline, 0 to 1 (setEdge in src/scene3d-film.ts); 0 is the key as it is, 1 the standard since 2026-11-13
   tal: 'repliker' | 'av'; // the game's: the dealer says her fixed lines with her talk films ('av': as text in the chat only; src/game-page.ts)
 };
 // What was added after checkpoint v1 starts switched off, so that the page opens as v1, except what Jakob has made the standard
-// (2026-11-13: "det ska bli en linje"): the films evened in colour (filmEven), the deals at twice their speed (filmTempo 2), the
-// cup holders in the rail (cups) and life in her upper body (dealerLife). scale 0 = the contract's own k.
+// (2026-11-13: "det ska bli en linje"): the films evened in colour (filmEven), the
+// cup holders in the rail (cups), life in her upper body (dealerLife) and her outline cleaned of the screen's colour (edgeClean). scale 0 = the contract's own k.
 export const DEFAULTS: SceneState = {
   room: 'salong', blur: 11, depthBlur: true, dofRange: 4.5, exposure: 1, panoramaTurn: 90,
   mode: 'look', yaw: 0, pitch: 0, zoom: 1, dx: 0, dy: 0, dz: 0, aim: true, sway: false, fold: true, guides: false,
@@ -62,8 +62,8 @@ export const DEFAULTS: SceneState = {
   roomShift: 'cut', roomShiftSeconds: 2.6,
   shadowAbove: 1, marks: 'all', cloth: 'print', lamp: 0, chipGloss: 0.5,
   roomLife: false, dealerRoom: 0,
-  filmEven: true, filmTempo: 2, dealerLife: 1,
-  edgeClean: 0, shelf: false,
+  filmEven: true, filmTempo: 1, dealerLife: 1,
+  edgeClean: 1, shelf: false,
   smoke: 0,
   tal: 'repliker',
 };
