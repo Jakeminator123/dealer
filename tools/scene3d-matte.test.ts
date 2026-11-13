@@ -148,8 +148,12 @@ test('in the turn the film\'s washed-out card counts as card, each side in its h
   // (only an edge line is still drawn and keyed there: a thin sliver is too thin for the matte's body)
   assert.ok(deal.includes('now = drawn && (drawn.line || !turning(track, at, extra)) ? drawn : null') && deal.includes('if (inHand || turning(track, at, extra)) drawMatte('), 'no card in the turn but an edge line, the matte there');
   assert.ok(deal.includes("(extra.carry ?? 'object') === 'film') return false"), 'Bara liggande leaves the film\'s card');
-  // with carry 'matte' the shoe window's card is the film's own as well, recoloured, neither drawn nor keyed
-  assert.ok(deal.includes("const filmSeat = (extra.carry ?? 'object') === 'matte';") && deal.includes('seated: filmSeat ? null :'), 'the window card the film\'s own with kort=matt');
+  // one card at the shoe (Prov kort-en-linje, step 1): the shoe window's card is the film's own, recoloured, neither drawn nor
+  // keyed, in every carry but 'film' and without the shoe model; the dealt card is the film's own until two frames after it has
+  // left the window, and the matte recolours both there, then the window alone
+  assert.ok(deal.includes("const filmSeat = (extra: Extra) => (extra.carry ?? 'object') !== 'film' && !shoeModel();") && deal.includes('seated: ownSeat ? null :'), 'the window card the film\'s own');
+  assert.ok(deal.includes('early = (model || filmSeat(extra)) && inShoe(track, at)') && deal.includes('at < track.leavesShoe + 2'), 'the dealt card drawn once it has left the window');
+  assert.ok(deal.includes('else if (filmSeat(extra)) drawMatte(track, at, choice, extra, false, !inShoe(track, at), true);'), 'the matte at the shoe in every frame, in the drawn back\'s black field');
 });
 
 test('the recoloured back keeps the film\'s light on it, stronger, and a lighter edge: flat it read as a hole', () => {

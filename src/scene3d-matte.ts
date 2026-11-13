@@ -29,7 +29,7 @@ export const MATTE = {
   around: 2,     // ... over the frames this close, so a fast card's smear is inside; and the shoe window with `shoeRoom` more
   print: 1.8,    // the print's quad: the track's colour core grown this much at the corners, out to the card's pale edge (EDGE_PX in scene3d-deal.ts)
   contrast: 2,   // the film's light on its back, to this power on the recoloured back
-  edge: [0.45, 0.95] as const, edgeLight: 0.16, edgeShare: 0.6, // the back's edge: where the body's blurred weight falls from 0.95 to 0.45, lighter (linear) by this share
+  edge: [0.45, 0.95] as const, edgeLight: 0.16, edgeShare: 0.25, // the back's edge: where the body's blurred weight falls from 0.95 to 0.45, lighter (linear) by this share
 };
 // The film card's colours lit, as the video shows them (scene3d-deal.ts COLOUR, scene3d-film.ts BACK_LIT/FACE_LIT): the far end of
 // the line a blurred pixel is unmixed along.

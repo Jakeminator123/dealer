@@ -318,8 +318,9 @@ export function createDealLayer(o: Options) {
   const matte = mattePasses(o.renderer, keep), alwaysMatte = o.way === 'matte';
   let backColour: number[] | null = null;
   const backMean = () => backColour ??= (() => { const c = print().image as HTMLCanvasElement; return meanLinear(c.getContext('2d')!.getImageData(0, 0, c.width, c.height).data); })();
-  // A card carried without a drawn one: the black field lifted a third of the way to the print's mean, so the film's light shows on it.
-  const backDark = () => { const a = backBody(), b = backMean(); return a.map((v, i) => v + (b[i] - v) / 3); };
+  // A card carried without a drawn one, and the card in the shoe window: the black field lifted a third of the way to the print's
+  // mean, so the film's light shows on it, and grey (the mean's gold tint read as an olive lump).
+  const backDark = () => { const a = backBody(), b = backMean(), c = a.map((v, i) => v + (b[i] - v) / 3), l = 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2]; return [l, l, l]; };
   // In the turn of a card that is drawn before and after it (black), the film's back takes the back print's own field, not its mean:
   // the print is a black field with a gold border and mark, and their mean reads as khaki beside the black card. The field: the mean
   // of the darker half of the print's pixels. A card carried without a drawn one takes the field lifted towards the mean (backDark):
@@ -357,20 +358,28 @@ export function createDealLayer(o: Options) {
   const widened = (box: number[], zone: number[][] | null) => { if (!zone) return box; const xs = zone.map(p => p[0]), ys = zone.map(p => p[1]);
     return [Math.max(0, Math.floor(Math.min(box[0], ...xs))), Math.max(0, Math.floor(Math.min(box[1], ...ys))), Math.min(FILM.width - 1, Math.ceil(Math.max(box[2], ...xs))), Math.min(FILM.height - 1, Math.ceil(Math.max(box[3], ...ys)))]; };
 
+  // One card at the shoe (Prov kort-en-linje, step 1): the card in the shoe window is the film's own, recoloured dark in place and
+  // never drawn, and the dealt card is the film's own too until two frames after it has left the window (the track's leavesShoe):
+  // a drawn card there lay over the window's drawn card, two cards with doubled gold frames, the pulled one sharper than the film.
+  // Not with carry 'film', which leaves the film's cards, nor with the shoe model, whose window shows the drawn seated card.
+  const filmSeat = (extra: Extra) => (extra.carry ?? 'object') !== 'film' && !shoeModel();
+  const inShoe = (track: CardTrack | null, at: number) => typeof track?.leavesShoe === 'number' && at >= 0 && at < track.leavesShoe + 2;
+
   // The card being dealt as an object under the film, with the film's own card keyed away (way 'scene').
   function dealCard(track: CardTrack | null, at: number, choice: Choice, extra: Extra) {
     // A shoe model stands where the film's shoe stands (the 3D shoe trial: its box of the film is left undrawn). The film's shoe then
     // no longer lies over the card still in the shoe, which was drawn over the model like a sticker: the card is drawn from two frames
     // after it has left the shoe (the track's leavesShoe), out of the model's mouth. The seated card stays, the next card in the window.
-    const model = shoeModel(), early = model && typeof track?.leavesShoe === 'number' && at < track.leavesShoe + 2;
+    // Without the model the same holds, and the window's card is the film's own (filmSeat).
+    const model = shoeModel(), early = (model || filmSeat(extra)) && inShoe(track, at);
     const drawn = at >= 0 && !early ? drawnAt(track!, at, choice, extra) : null, now = drawn && (drawn.line || !turning(track, at, extra)) ? drawn : null, pose = now?.pose ?? null, f = pose ? track!.frames[pose.frame] : null;
     // the next card, seated in the shoe window: its back, lit by the film's light on the film's seated card. Only the window
     // shows it: the shoe around it is film and lies over it.
     const first = track?.frames?.[0], seat = first?.quad?.length === 4 && (first.shoeShare ?? 0) >= 0.9 ? first.quad : SEATED;
-    // With carry 'matte' the window's card is the film's own, recoloured in place (drawMatte), and is neither drawn nor keyed.
-    const filmSeat = (extra.carry ?? 'object') === 'matte';
-    if (filmSeat) { hide(seated); seatDepth.visible = false; } else { lay(seated, seat, {print: print(), shade: {core: seat, colour: COLOUR.BACK, lying: LYING.BACK}, contact: 0}); seatDepth.visible = true; }
-    let key: CardKey = {zone: [], core: null, colour: COLOUR.BACK, sides: 2, tint: 2, trust: 0, rim: RIM, shoe: null, over: null, seated: filmSeat ? null : {zone: grown(clockwise(seat.map(([x, y]) => ({x, y}))), RIM + 3).map(p => [p.x, p.y]), core: seat}};
+    // the window's card the film's own (filmSeat): recoloured in place (drawMatte), neither drawn nor keyed
+    const ownSeat = filmSeat(extra);
+    if (ownSeat) { hide(seated); seatDepth.visible = false; } else { lay(seated, seat, {print: print(), shade: {core: seat, colour: COLOUR.BACK, lying: LYING.BACK}, contact: 0}); seatDepth.visible = true; }
+    let key: CardKey = {zone: [], core: null, colour: COLOUR.BACK, sides: 2, tint: 2, trust: 0, rim: RIM, shoe: null, over: null, seated: ownSeat ? null : {zone: grown(clockwise(seat.map(([x, y]) => ({x, y}))), RIM + 3).map(p => [p.x, p.y]), core: seat}};
     composite.visible = false;
     if (now && pose && f) {
       const edge = !!now.line, side = pose.side === 'BACK' || pose.side === 'FRONT' ? pose.side : sideNear(track!, pose.frame);
@@ -425,7 +434,8 @@ export function createDealLayer(o: Options) {
         // in the turn of a card drawn before and after it, the film's back takes the drawn back's black field (it lies between two black cards)
         const inHand = late && carry !== 'film' && at >= 0 && at < firstDrawn(drawn!);
         if (inHand || turning(track, at, extra)) drawMatte(track, at, choice, extra, false, false, !inHand);
-        else if (carry === 'matte') drawMatte(track, at, choice, extra, false, true); // the window's card, the film's own (dealCard)
+        // the window's card is the film's own (dealCard), and so is the dealt card until it has left the window
+        else if (filmSeat(extra)) drawMatte(track, at, choice, extra, false, !inShoe(track, at), true); // in the drawn back's black field: lifted, the window read as an empty grey box
         else o.film.setMatte(null);
       }
       // cards dealt by earlier films of the round, which this film does not show: lying flat where they landed, in the size the dealt
