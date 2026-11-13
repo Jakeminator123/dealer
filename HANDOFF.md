@@ -70,6 +70,8 @@ inte vändning. Framsidan måste vara en ren, nyckelbar yta eftersom Scout best�
     `data/scene-presets/`), och sidovinkeln av Paow som egna Prov.
   - **Tal (`dealer-0b`, sidan [docs/TAL.md](docs/TAL.md)):** talfilmer med röst och läppsynk (`tools/speech.ts`, `src/speech-plan.ts`,
     `src/speech-lines.ts`, `data/speech.json`), media under `assets/speech/paow/`, levererat som patch.
+- Utan bana: `dealer-1e` (startad av Jakob 2026-11-13 för ett nytt slut på noir-trailer 3 och bilder till ett rum i
+  Monaco-stil; arbetet i `D:/dealer-scratch/tmp/trailer-3b/`, beloppen rapporterade till huvudagenten).
 - Avslutade sessioner: `dealer-bf` (kortet, sidokameran, Petra; 2026-11-13), `dealer-82` (Paow,
   `D:/dealer-scratch/tmp/paow/`), `dealer-db` (Pamela-filmen, `D:/dealer-scratch/tmp/reel/`), FILMAGENT, FILMAGENT-2,
   SPELAGENT och Bakgrund och bord.
@@ -175,73 +177,85 @@ skript i `skript/`, liggare i `bestallningar-*.json`. Den sessionens filmer och 
 
 ## Öppet hos Jakob
 
-Det som hindrar en runda först. Han kan svara rad för rad.
+Skrivet 2026-11-13 kl. 15.30, mitt i en dag då mycket rör sig; det som står som "pågår" har en ägare på raden. Han kan
+svara rad för rad.
 
-1. **Plats 6:** fjorton tagningar har fallit (kort väg, kortet vänds i ett sudd eller byter sida utan kantruta), så
-   kortet läggs utan hand i spelet. Sist prövades vändning vid platsen (omgång 11, Kling 4 två tagningar och WAN 3 en):
-   kortet blev mjukt eller suddigt i vändningen, eller blått i luften utan vändning. Får Pamelas giv till plats 6, som
-   bara är godkänd som variant, vara referensfilm? Annars återstår handbyte, eller att flytta platsen en bit från skon i
-   hans plan.
-2. **De nio preliminära domarna** från natten ("jag måste sova och du får granska och godkänna alla klipp"), först i hans
-   kö i Granska; hans eget beslut ersätter var och en:
-   - `paow-giv-2-1-d-c2-03-01` (hålkortet stängt): godkänd; se att kortet är 119 px på filten och 59 px när handen släpper,
-     bytet dolt under handflatan.
-   - `paow-halkort-04-02` (hålkortets vändning, Kling 4): godkänd; granskaren föreslog variant, eftersom hon ser in i
-     kameran och knappt rör huvudet.
-   - `paow-halkort-02-01` (hålkortets vändning, WAN 3): variant; ingen ren kantruta, en mörk suddig rand i tre rutor.
-   - `paow-giv-2-1-p7-06-01` (plats 7): godkänd; en verklig vändning, men hon är stel (huvudet 30 px).
-   - `paow-utgang-01-01` (utgången): godkänd; ersätter nödlösningen med ingången baklänges.
-   - `paow-table-arrive-wide-01` (hon kommer in och sätter sig): variant; hon står helt stilla i drygt 20 rutor innan hon
-     sätter sig, och bär pumps där keystonen har platta skor.
-   - `paow-table-leave-wide-01` (hon reser sig och går): godkänd; uppresningen går cirka 20 px för högt och sjunker tillbaka.
-   - `paow-giv-2-1-p6-05-01` och `paow-giv-2-1-p6-07-01`, `-02` (plats 6): underkända; vändningen är ett sudd utan
-     kantruta.
-   - `paow-giv-2-1-p2-04-02` (plats 2): underkänd; kortet byter färg utan kantruta cirka 80 px före platsen.
-   - Returerna i samma filmer (`d-c2-03`, `p2-04`, `p6-05`, `p7-06`) är preliminärt godkända.
-3. **Ett tredje och fjärde dealerkort** (hans ord 2026-11-13: "Skapa då ett tredje och fjärde till dealer"): planen har
+1. **Hans kö i Granska för Paow** (42 filmer kl. 15.20: 17 preliminära domar och 25 talfilmer). Han dömde tio själv
+   samma eftermiddag; de står som hans. De preliminära kommer från natten och från omgång 12 och 13, på hans ord "jag
+   måste sova och du får granska och godkänna alla klipp" och "Du får 5k i budget och godkänner själv efter
+   granskning", och ligger först i kön. En agent som läser kön räknar den med `awaitingJakob`
+   (`studio/lib/verdict.ts`).
+2. **Läpparna i talfilmerna.** Hans dom på första chattsvaret: "när lipsynken är aktiv så blir hennes läppar mycket
+   mindre". Mätt av talbanan: de ritade läpparna är 54–62 bildpunkter breda mot hennes egna 66–69; talbanken är rätt
+   (`paow-v2`, byggd ur hennes vila), det är renderern som målar om munnen. Talbanan visar honom ett prov sida vid sida
+   (munnen förstorad till hennes bredd, hennes egen läppfärg, snävare mask). Hans villkor för domen på talfilmerna, till
+   talbanan kl. 15.20: "om jag säger ja kan du godkänna dem". Han har inte sagt ja än.
+3. **Filmen till hans chef** ("Jag vill ha en riktigt bra film att skicka min chef"). Den spelas in i hans båda egna
+   utseenden, Profilval 1 och Jakob-1, med ritade kort i storlek 1,65, ljuset utjämnat och givarna i hans önskade
+   fart. Han väljer vilken som skickas. Läget för inspelningen står i "Nästa steg", punkt 0.
+4. **Förval han inte har bestämt.** Allt nedan är byggt som val och står av eller som förut tills han säger till:
+   - Kortens storlek 1,65 i stället för 1,2 (valörerna går då att läsa; vid 2 ligger paren nästan på varandra).
+   - Bara liggande: inget ritas i hennes hand, kortet ritas när det ligger (Miljö, under Ritade kort).
+   - Ljuset mellan filmerna (`filmEven`): bör rimligen vara på, eftersom det tar bort ett fel.
+   - Givarnas tempo (`filmTempo`, 1–2): han bad om cirka 2; ett kort tar då 3,7 s i stället för 7,0.
+   - Liv i överkroppen (`dealerLife`, 0–2): hans maskidé; blindgranskad i en tidigare inställning.
+   - Kopparna i relingen (`cups`): nu riktiga hål i guld; syns inte i Profilval 1, där relingen ligger utanför bild.
+5. **Plats 6** har ingen giv: fjorton tagningar från ankare 2.1 föll, och provet från ankare 2.2 (omgång 13) gav för
+   första gången en vändning med synlig kant, men kortet landade som ett tryckt spelkort som inte går att rita över.
+   Kortet läggs utan hand i spelet. Med hans "obegränsat i budget" är nästa försök fler tagningar från 2.2 med en text
+   som håller kortet enfärgat; alternativet är Pamelas giv dit som referensfilm, eller att flytta platsen i hans plan.
+6. **Ankare 2.2** har en kandidat, `paow-ankare-2-2-t1` (lagad bild, oberoende granskad 3/5 för provfilmer). Ska den
+   gälla? Och ska en runda kunna gå via 2.2? I dag är en giv därifrån en variant av navet (`READY-B`) som en vanlig
+   runda aldrig spelar, och Beställ saknar väg ut från 2.2 (handboken §5).
+7. **Ett tredje och fjärde dealerkort** (hans ord 2026-11-13: "Skapa då ett tredje och fjärde till dealer"): planen har
    sexton platser, två per spelare och dealerns två (`TARGETS` i `src/placement-model.ts`), och ordermodellen tar bara
-   de platserna (`SEAT_TARGETS` i `src/order-model.ts`), så en film dit går inte att beställa i dag och korten läggs
-   utan hand i spelet. Förslag, inte byggt: planen får `D.C3` och `D.C4` i rad efter `D.C2` med samma avstånd som mellan
-   hennes två första (Placering, studions kortlager, beställningarnas sista bild och testerna som räknar sexton följer
-   med); sedan flyttar han dem i Placering och filmerna beställs som hennes första kort (WAN 3, vändning vid platsen:
-   "Den är mycket bra."). Vill han ha det så?
-4. **Orden för kortets sidor:** hans ord om "baksida" (det kan läsas som undersidan); orden efter färg i mall 6 förlorade
-   två par; ett neutralt tredje sätt är oprövat. Vill han att det provas?
-5. **Hur hon ska röra sig:** rörelsemeningen i mall 7 rörde henne men förstörde kortet i 15 av 18 tagningar; blicken ensam
-   hjälpte inte kortet. Vilken rörelse är viktigast: huvud, blick eller högerarm?
-6. **Ingångsfilmen** (`paow-table-arrive-wide-01`): hon står stilla i ungefär två sekunder innan hon sätter sig. Duger det,
-   eller ska den göras om?
-7. **De ritade korten:** två av de tre felen i hans skärmbilder är borta för de tagningar som spelas; dubbelkortet vid
-   3D-skon är kvar (se "Kända brister"). Vill han ha korten större som förval? Det stora kortet han minns på plats 4 var
-   skalan 1,65–2 den 11 november; förvalet är 1,2, och reglaget heter nu Kortens storlek (0,8–2) i Scen. Brytaren Ritade
-   kort tar i dag bort alla ritade kort, även de liggande, så bordet visar bara filmens eget kort för den giv som pågår
-   (sett i scenbanans inspelning med `cards=0`). Förslag, inte byggt: ett tredje läge, Bara liggande (`cards=liggande`), där kortet ritas först när det
-   ligger och inget ritas över kortet i hennes hand, vilket är det han beskrev ("kletar fast sig på korten"). Spelagentens
-   plan: spelsidan och Casino hanterar läget själva, utanför utseendenyckeln `cards` som förblir på eller av (scenen
-   läser varje ord som på); en giv spelas då utan kortspår och utan eget kort, och kortet ritas från returen
-   (`src/game-film.ts`); brytaren i panelen Miljö och i Casino blir ett val i tre steg. Före bygget kontrolleras, ruta
-   för ruta på en giv till plats 4 och en vändning, att kortet kommer fram när handen släpper och inte över fingrarna.
-   Hennes röst i spelet hörs efter ett klick på själva bordet (talfilmerna var tysta i spelets kö till f63e0ec).
-8. **En andra spelarfigur, "Astrid",** som kommer in från sidan och satsar: hans önskemål, inte påbörjat.
-9. **Bordets tryck:** ska trycket följa bordets storlek (`tableSize`)? Scenbanans fråga.
-10. **Talet:** alla 25 repliker har Paows egen röst sedan 2026-11-13 (hans val 2 i provet `paow-rost`: klonen
-    `WZVEBKUreb9jAKojf0QF` med den äldre röstmodellen), och han bör själv höra `namn` och `hurmardu`, som avlyssningen
-    hörde fel. Hans första id är inte färdigtränat hos ElevenLabs, vilket bara kontots ägare kan göra klart. Kontot har
-    en tredje röst, "Paow (Danielsson)", som läggs som film 5 i provet: vill han byta? Mätningen hos RunPod görs med
-    nyckeln han lade i `.env.local` (lagret `dealer-lab-tal`, egen endpoint); banken ligger kvar i lagret tills han
-    säger annat. Den andra produktens gren `kevin-staging` ligger före den commit som lästes (docs/TAL.md).
-11. **Äldre frågor om Pamela** (pausad): primära på hennes kanter, hålkortets giv, skokortets lutning, ett kortformat på
+   de platserna, så en film dit går inte att beställa och korten läggs utan hand. Förslag, inte byggt: planen får
+   `D.C3` och `D.C4` i rad efter `D.C2`; sedan flyttar han dem i Placering och filmerna beställs som hennes första
+   kort. Vill han ha det så?
+8. **Hur hon rör sig.** Hans ord om flera returer: "som vanligt är hon så stel i ansiktet". En mening om rörelse i
+   givarnas text förstörde kortet i 15 av 18 tagningar (mall 7), så den vägen är stängd. Det som finns: de nya
+   vilorna med ögon som rör sig, hans egna sju vilovarianter som nu faktiskt spelas, och liv i överkroppen som val.
+9. **Retur till vila för Paow.** Pamela har dem från alla platser, Paow ingen ("ingen metod än" i produktionslistan).
+   En runda behöver dem inte; skattat 200 krediter per plats. Ska de beställas?
+10. **Vercel.** Kopian av studion med Scen och ett spelbart Casino är förberedd och repeterad lokalt, med låset kvar
+    (lösenorden "john" och "jon"). Läget står i "Nästa steg", punkt 0. I hans team finns sedan 2026-11-13 kl. 05.41
+    också ett projekt `dealer`, troligen skapat av v0, som bygger om vid varje push och svarar 404: ska det tas bort?
+11. **Talet i övrigt.** Hans första röst-id är inte färdigtränat hos ElevenLabs (bara kontots ägare kan göra klart
+    det); kontot har en tredje röst, "Paow (Danielsson)", som ligger som film 5 i provet `paow-rost`: vill han byta?
+    Paows talbank ligger kvar i hans privata Blob-lager `dealer-lab-tal` efter mätningen hos RunPod (0,05 USD): ska
+    den bort? Munlagret (tal medan hon delar ut) är inkopplat; en runda behöver tre munlappar och de är skurna, men
+    filmer i 30 bilder per sekund (plats 1 och 3, hennes första kort, utgången) kan inte bära tal än (docs/TAL.md).
+12. **Orden för kortets sidor:** hans ord om "baksida" (det kan läsas som undersidan); orden efter färg i mall 6
+    förlorade två par; ett neutralt tredje sätt är oprövat. Vill han att det provas?
+13. **Mindre saker han har frågat om eller som väntar på ett ord:**
+    - `placements/proposals/` (två förslag till plan från 2026-11-11 som bara gamla scensidan visar): tas bort?
+    - De tre långa biblioteksfilerna under `materials/` (three.js och två färdigbyggda sidor): byggas ur vår egen
+      källa när gamla publika sajten stängs?
+    - Fyra av Pamelas filmer från 2026-11-11 ligger kvar på disk utan post; en tidigare agent tog dem ur banken.
+    - En andra spelarfigur, "Astrid", som kommer in från sidan och satsar: inte påbörjad.
+    - Ett rum i Monaco-stil med folk som rör sig och låg rök runt bordet: pågår (bilder och filmer hos `dealer-1e`,
+      inbyggnaden hos scenbanan).
+    - Ska bordets tryck följa bordets storlek (`tableSize`)? Scenbanans fråga.
+14. **Äldre frågor om Pamela** (pausad): primära på hennes kanter, hålkortets giv, skokortets lutning, ett kortformat på
     tvären, Meshy-bordet, obedömda prov och den publika sajten står kvar i Git-historiken för HANDOFF före 2026-11-13 och
     tas upp när pausen hävs.
 
 ## Nästa steg
 
-0. **Paow, läget 2026-11-13 klockan 08:36** (`node tools/produce.ts paow`): 23 av 33 filmer klara, varav 9 preliminärt
-   dömda, och 19 av de 21 som en runda kräver. Kvar för en runda: given till plats 6 (Öppet hos Jakob, punkt 1) och
-   hålkortets retur till vila (ingen metod). Omgång 7–10 (31 tagningar) och vad de lärde står i handboken §5; mall 8
-   gäller. I spelet spelas rundan med hennes filmer; nödlösningar finns för plats 6 och dealerns tredje och fjärde kort
-   (lagda utan hand). Saldo efter sista tagningen: 5 192 krediter (kvittot för `paow-giv-2-1-p6-09`, omgång 11). Pamela är pausad
-   (Jakob 2026-11-12: "Vi pausar Pamela när vi är klara. Sedan går vi vidare med Paow.").
+0. **Paow, läget 2026-11-13 klockan 15.30** (`node tools/produce.ts paow`): en runda spelas i spelet med hennes filmer,
+   med hennes egen röst och en vila som växlar mellan femton filmer. Kvar för en runda: given till plats 6 (Öppet hos
+   Jakob, punkt 5) och hålkortets retur till vila (ingen metod). Mall 8 gäller; omgång 12 och 13 står i handboken §5.
+   Det som pågick när detta skrevs, med ägare:
+   - **Filmen till chefen:** en filmagent (underagent) har byggt en egen inspelare med jämn bild, rösten lagd där
+     munnen rör sig och ljud för kort och rum (`D:/dealer-scratch/tmp/huvudagent11/chefsfilm/inspelare/`).
+     Förmiddagens film fick 2/5 av en oberoende granskare (`…/chefsfilm/granskning-1/`: släta kort på plats 1 och 2,
+     rösten före munnen, tystnad, ljussteg); det är rättat i spelet, inte inspelat om än.
+   - **Korten:** kortagenten (underagent) stänger det som är kvar i vändningen.
+   - **Vercel:** kopian är förberedd och repeterad lokalt; uppladdningen görs när dagens arbete är incheckat.
+   - **Munlagret:** inkopplat, fyra lappar skurna; provet i spelet återstår.
+   - **Omgång 13** (givar från ankare 2.2, fingrarna) ligger hos en oberoende granskare.
+   Saldot hos Runway var 2 385 krediter kl. 15.25; flera sessioner beställer, så läs det före en beställning. Pamela är
+   pausad (Jakob 2026-11-12: "Vi pausar Pamela när vi är klara. Sedan går vi vidare med Paow.").
 1. **Studion** (`http://127.0.0.1:4319/studio/`) är skalet, med bland annat vyerna Scen, Karta, Primära, Jämför,
    Granska, Prov, Placering, Material, Beställ, Protokoll och Casino; gamla labbet nås med `lab.html?gamla=1` tills
    Modeller (`props.html`) och Ljud (`sound.html`) har flyttats. Den låsta kopian åt Jakobs chef publiceras först på
@@ -363,21 +377,24 @@ Det som hindrar en runda först. Han kan svara rad för rad.
 
 ## Kända brister
 
-- **De ritade korten** (Jakob 2026-11-13: "Det lixom kletar fast sig på korten"; brytaren Ritade kort slår av dem).
-  Kortagentens fynd samma morgon, ur hans två skärmbilder:
-  - Dubbelt kort vid skon, som ett klistermärke: 3D-skon döljer filmens sko, och det dragna kortet klipps inte av skons
-    öppning. Kvar på alla platser. Ligger i `src/game3d-props.ts` och skoprovet i `src/scene3d-ui.ts`.
-  - Filmens gula eller blå yta lyser igenom: direkt efter vändningen är filmens framsida mörkt turkos, och spåret följde
-    då bara ett hörn (den lilla vita kortbiten i hans andra bild; borta). Kvar: det turkosa kortet syns i cirka fyra
-    rutor, vilket kräver en bredare regel för blått i spåraren, prövad mot grönskärmen. Där kortet är dolt i hennes
-    hand (plats 1 och 2) visas nu filmens eget kort, och det ritade kommer när kortet ligger.
-  - Kort som inte följer handen, och blixten över hela bilden: fyrhörningar med korsade hörn i spåret. Spåraren skriver
-    inga sådana längre, och ritningen (`poseAt` i `src/card-overlay.ts`, `lay` i `src/scene3d-deal.ts`) ritar inget
-    kort på en sådan ruta.
-  - Kvar i övrigt: spåren på plats 3 och 7, dealerns kort och hålkortet är delvis fel (kortet syns som filmens i 5–14
-    rutor); Pamelas spår är inte omgjorda med de nya reglerna. Tabellen per tagning och bilderna:
-    `D:/dealer-scratch/tmp/huvudagent11/kort/`.
+- **De ritade korten** (Jakob 2026-11-13: "Det lixom kletar fast sig på korten", "linjer flyger dit och dit"). Reglerna
+  som de nu är står i SYSTEM, "Ritade kort". Det som hände samma dag:
+  - Strimman är borta: kortets böjning kastade kortets ändar bakom kameran när hon höll kortet nära horisonten, och
+    med flyttad eller vriden kamera (hans Profilval 1) drogs de ut över bordet. Ett kort som inte är ett troligt kort
+    ritas inte.
+  - Kortet ritades en ruta för tidigt (filmkön svarade med filmelementets klocka), så filmens gula stack fram bredvid
+    det ritade. Rättat i filmkön: 0 av 9 rutor med gult bredvid i bärningen vid dubbel fart, mot 4 av 9 förut.
+  - Plats 1 och 2 visar ett kort hela vägen: filmens eget kort färgas om medan hon bär det (baksidan blir jämnt mörk
+    utan tryck), och det ritade kortet tar över innan det ligger. Det är matten, som han sade "ja som val i labbet,
+    nej för spelet" om; den används bara för de två tagningarna, och han avgör om det får stå.
+  - Ritade kort av stannade inte av under ett förval; nu minns spelet hans val också då (SYSTEM säger vem som
+    bestämmer).
+  - Kvar: i själva vändningen, när kortet står på kant, syns filmens eget kort bart i 4–6 rutor. Dealerns första kort
+    ser dubbelt så stort ut i handen som när det ligger; det är filmens eget kort (128 mot 42 bildpunkter).
+  - Kvar: Sko i 3D (ett prov i Scen, inte spelet) klipper bort hennes hand i skons ruta. Pamelas spår är inte gjorda
+    om med dagens regler.
   - Kortens storlek bestäms av `cardScale` gånger kontraktets kort (63 × 88 mm); planen ger bara plats och riktning.
+    Förvalet är 1,2; chefsfilmen spelas in med 1,65.
 - **Produktionslistan och fallna tagningar:** raden för plats 6 står som "levererad, efterarbetas och granskas"
   fast alla fjorton tagningarna är bedömda och fallna. En tagning som beställaren själv mätte bort ligger kvar på
   MÄTT med domen i kvittots `review` (GRANSKAD är den oberoende granskarens), och listan räknar en order som på
