@@ -22,6 +22,7 @@ import {mountPanel} from './game-panel.ts';
 import {EXIT_TRIAL, exitView, type ExitView} from './scene3d-exit.ts';
 import {tableView, tableCards, cardFaces, shownBy, lineOf, betTotal, handKey, CHIP_VALUES, DEALER_KEY, type PageState, type Settled} from './game-view.ts';
 import type {Snapshot} from '../game/session.ts';
+import type {MouthPatch, PatchRegister} from './speech-patch.ts';
 
 const THEMES = ['noir', 'scout', 'smaragd', 'bordeaux', 'midnatt']; // the console's themes, Scout's own (game.css)
 const $ = (id: string) => document.getElementById(id)!, stage = $('stage'), canvas = $('view') as HTMLCanvasElement, failBox = $('fail');
@@ -63,7 +64,7 @@ const graph = graphOf(dealer);
 // What she says: the talk film of a line, from src/speech-lines.ts (read once, beside the page; without it she says everything as
 // text, as before). ?tal=av, the look key, keeps her silent and the module is never asked.
 type Spoken = {key: string; clip: string; text: string};
-type SpeechLines = {spokenFilm(takes: unknown[], dealer: string, keyOrPhase: string, options?: {voice?: string}): Spoken | null; chatReply(takes: unknown[], dealer: string, written: string, count?: number, options?: {voice?: string}): Spoken | null};
+type SpeechLines = {PHASE_LINE?: Record<string, string>; spokenFilm(takes: unknown[], dealer: string, keyOrPhase: string, options?: {voice?: string}): Spoken | null; chatReply(takes: unknown[], dealer: string, written: string, count?: number, options?: {voice?: string}): Spoken | null};
 const talking = talkOn((asked as {tal?: unknown}).tal ?? query.get('tal')), VOICE = {voice: 'Paow'}; // her own voice (data/speech.json), Jakob 2026-11-13
 let lines: SpeechLines | null = null;
 if (talking) void import('./speech-lines.ts').then(m => { lines = m as unknown as SpeechLines; }).catch(() => {});
@@ -114,6 +115,25 @@ const film = createFilm(scene.players as unknown as FilmPlayers, graph, layout, 
 // How the card in her hand is shown (src/game-film.ts Carry): kort=liggande (the film's own card in her hand, the drawn card once it
 // lies: "Bara liggande" in the Miljö menu), kort=matt (the film's card recoloured in her hand, a lab choice), kort=hand (as before).
 film.carry = cardsNow.carry;
+// Her lines over the films that play (src/scene3d-mouth.ts, src/speech-patch.ts): the mouth patches of data/speech-patches.json in her
+// voice and the game's language, each record checked against the register's sha256 and its film against the bank's file, and read
+// ahead by the scene. A step lays a line over the first of its films that has its patch (src/game-film.ts); without the register, or
+// with her lines off, she speaks as before.
+type Mouth = {patch: MouthPatch; base: string};
+const mouths: Mouth[] = [], mouthLayer = (scene as unknown as {mouth?: {preload(parts: Mouth[]): void; state(part: Mouth): string}}).mouth ?? null;
+const sha256 = async (data: ArrayBuffer) => [...new Uint8Array(await crypto.subtle.digest('SHA-256', data))].map(b => b.toString(16).padStart(2, '0')).join('');
+const lineKey = (keyOrPhase: string) => lines?.PHASE_LINE?.[keyOrPhase] ?? keyOrPhase.toLowerCase();
+const mouthFor = (keyOrPhase: string) => mouths.find(m => m.patch.dealer === dealer && m.patch.line.key === lineKey(keyOrPhase)) ?? null;
+if (talking && mouthLayer) void fetch('data/speech-patches.json').then(res => res.ok ? res.json() : null).then(async (register: PatchRegister | null) => {
+  for (const entry of register?.patches ?? []) { if (entry.voice !== VOICE.voice || entry.language !== 'sv') continue;
+    const res = await fetch(entry.path).catch(() => null), data = res?.ok ? await res.arrayBuffer() : null; if (!data || await sha256(data) !== entry.sha256) continue;
+    const patch = JSON.parse(new TextDecoder().decode(data)) as MouthPatch;
+    const files = Object.values((bank.motions ?? {}) as Record<string, {source?: {path?: string; sha256?: string}} | null>); // a take cut out of a film names the film's file
+    if (!files.some(m => m?.source?.path === patch.film.path && m.source.sha256 === patch.film.sha256)) continue; // made over another file than the bank's
+    mouths.push({patch, base: entry.path.replace(/patch\.json$/, '')}); }
+  mouthLayer.preload(mouths);
+}).catch(() => {});
+film.mouths = () => mouths.filter(m => m.patch.dealer === dealer && mouthLayer?.state(m) === 'ready');
 
 // ── state ──
 let snapshot: Snapshot = first, paid: Snapshot | null = null; // snapshot: the round on the table. paid: the engine's state after that round was collected.
@@ -141,8 +161,9 @@ async function present(next: Snapshot, dealerPlays: boolean) {
   snapshot = next; page.busy = true; page.dealerPlays = dealerPlays;
   // Her lines in this step (the engine's speak signals): each with its talk film when there is one, written in the chat as she begins it.
   spoken.clear();
-  const moments = speakMoments(next.events), saying = (key: string): Said[] => { const talk = spokenOf(key), part = talk && film.talkPart(talk.clip); if (!talk || !part) return [];
-    spoken.add(key); return [{part, begin: () => chat?.say(talk.text)}]; };
+  // A line with neither a talk film nor a mouth patch is the chat's own; with a patch and no film it is written as the patch says it.
+  const moments = speakMoments(next.events), saying = (key: string): Said[] => { const talk = spokenOf(key), part = talk && film.talkPart(talk.clip), over = mouthFor(key); if (!(talk && part) && !over) return [];
+    const text = talk && part ? talk.text : over!.patch.line.text; spoken.add(key); return [{key: lineKey(key), part: talk && part ? part : null, begin: () => chat?.say(text)}]; };
   // When the dealer plays her hand she says so first ("Dealern spelar.": the phase DEALER, which the engine gives no line of its own).
   const said = {before: [...(dealerPlays ? saying('DEALER') : []), ...moments.before.flatMap(saying)], after: moments.after.flatMap(saying)};
   render();
@@ -360,4 +381,4 @@ render();
 
 // How the round ended is said by her speech when it has the line (the settle's speak signal); then the status line is not said again.
 function settledSpoken() { return ['blackjack', 'dealerblackjack', 'dealerbust', 'win', 'push', 'lose'].some(key => spoken.has(key)); }
-Object.assign(window, {game: {scene, film, page, state: () => snapshot, dealer: () => dealer, gaps, controls}}); // for the proof recorder and the console; not an interface
+Object.assign(window, {game: {scene, film, page, state: () => snapshot, dealer: () => dealer, gaps, controls, mouths}}); // for the proof recorder and the console; not an interface

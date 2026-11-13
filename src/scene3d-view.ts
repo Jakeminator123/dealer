@@ -11,6 +11,7 @@ import {createRooms, type Panorama, type RoomId} from './scene3d-room.ts';
 import {CHANGE_FRAGMENT, SHIMMER_GLSL, readyFrom, retake, roomChange, shiftProgress, shimmerLevel} from './scene3d-shift.ts';
 import {createTable, lightFromAbove, sized, type TableBase, type TableCloth, type TableSurface} from './scene3d-table.ts';
 import {createRailExtras} from './scene3d-rail.ts';
+import {createMouthLayer} from './scene3d-mouth.ts';
 
 export type SceneState = {
   room: RoomId; blur: number; depthBlur: boolean; dofRange: number; exposure: number; panoramaTurn: number;
@@ -112,6 +113,7 @@ export function createScene(canvas: HTMLCanvasElement, host: HTMLElement, data: 
   const sun = new T.DirectionalLight(0xfff1dd, 1.6); sun.position.set(-1.5, 3, 2.5);
   fg.add(film.body, film.table, table.group, tray.group, rail.group, new T.AmbientLight(0xffe6cc, 1.1), sun, ...rooms.front);
   const players = createPlayers(texture => film.setTexture(texture), data.onChange);
+  const mouth = createMouthLayer(shown => film.setMouth(shown)); // a spoken line's mouth on the part on screen (src/scene3d-mouth.ts)
   let camera: FilmCamera = DEALER_LENS_ESTIMATE, pitch = 0, edgeZ = -1, guides: T.Group | null = null, track: CardTrack | null = null;
   let focusNow = NaN, focusWhat = '', lastSeconds = NaN, moved = false;
   // Rendered cards, three ways: 'scene' makes each card an object in the scene under the film (scene3d-deal.ts); 'film' draws
@@ -297,6 +299,7 @@ export function createScene(canvas: HTMLCanvasElement, host: HTMLElement, data: 
     frontAir = shift ? Math.abs(1 - 2 * change) : 1;
     roomLight(shift?.from && change < 0.5 ? shift.from : state); // the table changes its light when the rooms have half changed
     const playing = players.current, part = players.part; if (part && part.track !== undefined) track = part.track; // a part that names its track brings it along
+    mouth.update(part, playing?.video ?? null, players.frame()); // a part that says a line: the cell of the frame shown, as the cards have it
     film.setFrame(frameAt(part?.frame ?? null, players.frame())); // and so does a part whose film has a frame of its own
     // A film with a frame of its own has no shoe and no card places in its picture: the rendered cards (the one seated in the shoe window among them) stay out of it.
     evenFilm(playing?.video ?? null, part, seconds); film.setLife(state.dealerLife, seconds);
@@ -390,7 +393,7 @@ export function createScene(canvas: HTMLCanvasElement, host: HTMLElement, data: 
   // registers no observers or listeners of its own (the pages do). Afterwards every call is a no-op, dispose() too.
   function takeDown() {
     if (gone) return; gone = true; running = false; shift = null;
-    players.dispose(); rooms.dispose();
+    mouth.dispose(); players.dispose(); rooms.dispose();
     for (const prop of props.splice(0)) fg.remove(prop.group); frameCalls.clear();
     for (const layer of Object.values(cardLayers)) layer.off?.(); cardLayer = null;
     const freed = new Set<{dispose(): void}>(), textures = (value: unknown): void => { if (value instanceof T.Texture) freed.add(value as T.Texture); else if (Array.isArray(value)) value.forEach(textures); };
@@ -407,7 +410,7 @@ export function createScene(canvas: HTMLCanvasElement, host: HTMLElement, data: 
   }
 
   return {
-    state, players, render, rebuild, apply, resize,
+    state, players, mouth, render, rebuild, apply, resize,
     start() { if (!running && !gone) { running = true; requestAnimationFrame(loop); } }, stop() { running = false; },
     dispose: takeDown,
     home() { if (gone) return; Object.assign(state, {yaw: 0, pitch: 0, zoom: 1, dx: 0, dy: 0, dz: 0, sway: false}); apply(); },

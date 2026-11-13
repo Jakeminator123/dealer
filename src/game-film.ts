@@ -11,13 +11,17 @@ import {resolveRound, pickIdle, idleRange, idleExit, IDLE_RULE, type Graph, type
 import type {CardRecord} from './card-overlay.ts';
 import {slotOf, slotLabel, slotFilm, type Layout, type Pt, type TableCards} from './game-table.ts';
 import {planBeats, STAND_IN_FILM, type Beat, type FilmSignal} from './game-director.ts';
+import {placeLines, type MouthPatch} from './speech-patch.ts';
 
 // What this file uses of the scene's film queue.
 // frame: a film whose picture is not the standard frame (the entrance and the exit, drawn behind the table) says so in its
 // record as motion.frame; the scene reads it from the part (FilmFrame in src/scene3d-film.ts).
 // model: the film model the picture was made with (filmModel), for the scene's colour matching between models; left out when unknown.
 // rest: the part is the rest loop's (rest()), which the scene never plays faster; a talk film is no rest in this sense (it has sound).
-export type FilmPart = {path: string; start?: number; end?: number | null; rate?: number; track?: unknown; cards?: Record<string, unknown>; frame?: unknown; fps?: number; sound?: boolean; model?: string; rest?: boolean};
+// mouth: a line said over this part from a mouth patch (src/scene3d-mouth.ts); begin is called as its sound begins, or with false
+// when it could not be laid (its text then stands in the chat).
+export type Mouth = {patch: MouthPatch; base: string};
+export type FilmPart = {path: string; start?: number; end?: number | null; rate?: number; track?: unknown; cards?: Record<string, unknown>; frame?: unknown; fps?: number; sound?: boolean; model?: string; rest?: boolean; mouth?: Mouth & {begin?: (said: boolean) => void}};
 const frameOf = (take: Take | null | undefined) => (take?.motion?.motion as {frame?: unknown} | undefined)?.frame ?? null;
 // A film that is not 30 frames a second says so in the bank (take.fps); its frame numbers are its own.
 const fpsOf = (take: Take | null | undefined) => typeof take?.fps === 'number' && take.fps > 0 && take.fps !== 30 ? {fps: take.fps} : {};
@@ -74,12 +78,14 @@ export function cardOptions(beat: Pick<Beat, 'own' | 'lying'>, table: TableCards
 }
 
 // A line she says in a step: its talk film (null: text only) and what is done when she begins it (the page writes it in the chat).
-export type Said = {part: FilmPart | null; begin(): void};
+// key: the line's key (data/speech.json), by which a mouth patch over one of the step's films is found.
+export type Said = {part: FilmPart | null; begin(): void; key?: string};
 
 export function createFilm(players: FilmPlayers, bank: Graph, layout: Layout, readJson: (path: string) => Promise<unknown>, random: () => number = Math.random) {
   let graph = bank; // whose films: another dealer at the table is another graph (use)
   let table: TableCards = {hands: [], dealer: []}, records: CardRecord[] = [], lying: number[] = [];
   let token = 0, resting: Take | null = null, carry: Carry = 'object'; const played: string[] = [], tracks = new Map<string, Promise<unknown>>();
+  let mouths: () => Mouth[] = () => []; // the mouth patches the page has read and may lay now, asked for as a step begins
   const modelOf = (take: Take | null | undefined) => { const model = filmModel(take, graph.takes); return model ? {model} : {}; };
   const trackOf = (take: Take | null) => { const path = take?.media.track; if (!path) return Promise.resolve(null); let hit = tracks.get(path); if (!hit) { hit = readJson(path).catch(() => null); tracks.set(path, hit); } return hit; };
   // Each plan card's centre in film pixels: the clip bank uses them to say how far a shared seat film's card is moved.
@@ -132,10 +138,17 @@ export function createFilm(players: FilmPlayers, bank: Graph, layout: Layout, re
     let done = 0; // beats landed so far, in order
     const land = (upTo: number) => { for (; done < upTo; done++) { const beat = beats[done]; if (beat.own && beat.kind !== 'DEAL' && !lying.includes(beat.own.shoeDraw)) lying = [...lying, beat.own.shoeDraw]; landed(beat, done); } };
     // What she says before the cards and after them: the talk films around the chain, each line begun as its film begins.
-    const before = said.before ?? [], after = said.after ?? [], talkBefore = before.filter(t => t.part), talkAfter = after.filter(t => t.part);
+    const before = said.before ?? [], after = said.after ?? [];
+    // A line due before the chain is said over the first of its films that has a mouth patch for it (placeLines in src/speech-patch.ts:
+    // the patch lies inside the part's cut, its sound begins at most 8 s into the chain, one line a part). Its talk film is then not
+    // played, and its chat line is written as its sound begins. The others are said as before.
+    const ready = mouths(), over = new Set<Said>(), chain = parts.map((p, k) => ({path: p.path, start: p.start, end: p.end, fps: p.fps ?? 30, frames: segments[beatOf[k]]?.take?.frames ?? null}));
+    if (ready.length) placeLines(before.map(t => t.key ?? ''), chain, ready.map(m => m.patch)).forEach((at, k) => { if (!at) return; const t = before[k], m = ready.find(x => x.patch === at.patch)!;
+      parts[at.part] = {...parts[at.part], mouth: {...m, begin: () => t.begin()}}; over.add(t); });
+    const talkBefore = before.filter(t => t.part && !over.has(t)), talkAfter = after.filter(t => t.part);
     for (const t of talkBefore) t.part = {...t.part!, cards: cardOptions({own: null, lying}, table, turn >= 0 ? closed : records, layout)};
     for (const t of talkAfter) t.part = {...t.part!, cards: cardOptions({own: null, lying: [...new Set([...lying, ...beats.filter(b => b.own).map(b => b.own!.shoeDraw)])]}, table, records, layout)};
-    for (const t of before) if (!t.part) t.begin();
+    for (const t of before) if (!t.part && !over.has(t)) t.begin();
     const all = [...talkBefore.map(t => t.part!), ...parts, ...talkAfter.map(t => t.part!)], lead = talkBefore.length;
     const silentAfter = () => { for (const t of after) if (!t.part) t.begin(); };
     if (!all.length) { land(beats.length); silentAfter(); rest(); return {gaps, beats}; }
@@ -191,6 +204,8 @@ export function createFilm(players: FilmPlayers, bank: Graph, layout: Layout, re
     play, rest, swap, say, talkPart,
     /** How the carried card is shown from the next step on (Carry). */
     set carry(next: Carry) { carry = next; }, get carry() { return carry; },
+    /** The mouth patches that may be laid on a step's films, asked for as each step begins (the page's, read and ready). */
+    set mouths(next: () => Mouth[]) { mouths = next; },
     /** Another dealer's films from now on (she has come to the table); rest goes on with hers. */
     use(next: Graph) { graph = next; tracks.clear(); played.length = 0; },
     get graph() { return graph; },

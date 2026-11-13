@@ -46,8 +46,9 @@ type Read = {patch: MouthPatch; state: 'reading' | 'ready' | 'failed'; texture: 
 /** One line being said: the part it is laid on, when its sound was set to begin (ms on the page's clock) and what was seen. */
 type Line = {part: MouthPart; read: Read | null; video: HTMLVideoElement | null; source: AudioBufferSourceNode | null; gain: GainNode | null; at: number; begun: boolean; cut: boolean; asked: number;
   meta: {mediaTime: number; expectedDisplayTime: number; rate: number} | null; log: LineLog};
-/** What a line did, for the proof recorder: when its sound was set to begin and against which frame, which film frames were drawn with which cell. */
-export type LineLog = {id: string; said: boolean | null; heard: boolean; soundAt: number | null; soundFrame: number | null; shown: [number, number, number][]; note: string[]};
+/** What a line did, for the proof recorder: when its sound was set to begin and against which frame, and per drawn frame with a
+ * cell [ms on the page's clock, the film frame laid for, the cell, the frame of the element's picture now, the frame of its clock]. */
+export type LineLog = {id: string; said: boolean | null; heard: boolean; soundAt: number | null; soundFrame: number | null; shown: [number, number, number, number, number][]; note: string[]};
 // LEAD: seconds before its first sample that a line's sound is set to begin (late enough that the film plays at its pace, early
 // enough to set it). DRIFT: ms a shown frame may lie from where the sound is before the line is ended.
 const LEAD = 0.25, DRIFT = 80;
@@ -81,8 +82,8 @@ export function createMouthLayer(set: (shown: MouthShown | null) => void, option
     if (audio.state === 'suspended' && globalThis.navigator?.userActivation?.hasBeenActive) void audio.resume().catch(() => {});
     return audio;
   }
-  // The film frame on screen: the frame of the picture the video element gives now (its own timestamp), which is the one the
-  // film's texture takes in the same rendering; without VideoFrame the element's clock.
+  // The film frame of the picture the video element gives now (its own timestamp); without VideoFrame the element's clock. The scene
+  // gives the layer the frame its film queue says is shown (the one the cards are drawn for); this is for a page that does not.
   function frameOn(video: HTMLVideoElement, fps: number): number {
     if (globalThis.VideoFrame) { try { const frame = new VideoFrame(video), at = frame.timestamp; frame.close(); return Math.floor(at / 1e6 * fps + 1e-3); } catch { /* no frame yet */ } }
     return Math.floor(video.currentTime * fps + 1e-3);
@@ -105,8 +106,10 @@ export function createMouthLayer(set: (shown: MouthShown | null) => void, option
     if (l.begun || !l.meta || !l.read?.sound) return;
     const p = l.part.patch, t0 = p.sound.startsAtSeconds, show = l.meta.expectedDisplayTime + (t0 - l.meta.mediaTime) * 1000 / l.meta.rate, wait = show - now();
     if (wait > LEAD * 1000) return;
-    l.begun = true; l.log.soundFrame = Math.floor(t0 * p.film.fps + 1e-3);
+    // a page that has been touched but whose sound is still starting (resume takes a moment) gets until the frame before the line
     const ctx = context(), heard = !!ctx && ctx.state === 'running';
+    if (!heard && ctx && globalThis.navigator?.userActivation?.hasBeenActive && wait > 1000 / p.film.fps) return;
+    l.begun = true; l.log.soundFrame = Math.floor(t0 * p.film.fps + 1e-3);
     if (heard) {
       const stamp = ctx!.getOutputTimestamp?.(), at = stamp && stamp.performanceTime && stamp.contextTime !== undefined ? stamp.contextTime + (show - stamp.performanceTime) / 1000 : ctx!.currentTime + wait / 1000 - (ctx!.outputLatency || 0) - (ctx!.baseLatency || 0);
       const late = ctx!.currentTime - at;
@@ -133,10 +136,10 @@ export function createMouthLayer(set: (shown: MouthShown | null) => void, option
     /** Whether a patch's files are read: 'ready', 'reading', 'failed' or 'unknown'. */
     state(p: MouthPart) { return reads.get(keyOf(p))?.state ?? 'unknown'; },
     /**
-     * Each drawn frame: the part on screen and its video. Lays the cell of the frame on screen (or nothing), begins a line when its
-     * part comes on screen and ends it when the part goes.
+     * Each drawn frame: the part on screen, its video and the film frame shown (the film queue's frame(), which the cards use). Lays
+     * that frame's cell (or nothing), begins a line when its part comes on screen and ends it when the part goes.
      */
-    update(part: Shown, video: HTMLVideoElement | null) {
+    update(part: Shown, video: HTMLVideoElement | null, shownFrame?: number) {
       if (gone) return;
       const mouth = part?.mouth ?? null;
       if (line && line.part !== mouth) stopLine(line);
@@ -145,12 +148,13 @@ export function createMouthLayer(set: (shown: MouthShown | null) => void, option
         const r = read(mouth), log: LineLog = {id: mouth.patch.id, said: null, heard: false, soundAt: null, soundFrame: null, shown: [], note: []}; logs.push(log); if (logs.length > 40) logs.shift();
         line = {part: mouth, read: r.state === 'ready' ? r : null, video, source: null, gain: null, at: 0, begun: false, cut: false, asked: 0, meta: null, log};
         if (!line.read) { log.note.push(`lappen inte inläst (${r.state}${r.error ? `: ${r.error}` : ''})`); const l = line; line = null; ended = mouth; finish(l, false); }
-        else if (video) watch(line, video);
+        else { context(); if (video) watch(line, video); } // the page's sound is started now, well before the line's first sample
       }
       let shown: MouthShown | null = null;
       if (line?.read?.texture && !line.cut && video && video.readyState >= 2) {
-        const p = line.part.patch, frame = frameOn(video, p.film.fps), i = cellOf(p, frame);
-        if (i >= 0) { shown = {texture: line.read.texture, cell: cellAt(i, p.strip.columns, p.box.w, p.box.h), weight: p.weights[i], patch: p}; if (line.log.shown.length < 2000) line.log.shown.push([Math.round(now()), frame, i]); }
+        const p = line.part.patch, frame = shownFrame ?? frameOn(video, p.film.fps), i = cellOf(p, frame);
+        if (i >= 0) { shown = {texture: line.read.texture, cell: cellAt(i, p.strip.columns, p.box.w, p.box.h), weight: p.weights[i], patch: p};
+          if (line.log.shown.length < 2000) line.log.shown.push([Math.round(now()), frame, i, frameOn(video, p.film.fps), Math.floor(video.currentTime * p.film.fps + 1e-3)]); }
       }
       if (shown || shownLast) set(shown); shownLast = !!shown;
     },
