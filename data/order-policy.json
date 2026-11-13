@@ -2,11 +2,11 @@
   "about": "Limits for orders approved in the studio's view Beställ (tools/order-routes.ts refuses an approval beyond them) and the price table the cost is computed from (src/order-model.ts priceOf). The worst case counts: the tool's listed price where it is higher than what the ledgers show. Set enabled to false to stop every approval. The balance is the last one known; a receipt's creditsRemainingAfter is newer when there is one.",
   "schemaVersion": 1,
   "enabled": true,
-  "dailyCapCredits": 8000,
+  "dailyCapCredits": 14000,
   "maxPerOrder": 400,
   "minBalance": 2000,
   "timeZone": "Europe/Stockholm",
-  "balance": { "credits": 17884, "at": "2026-11-12", "source": "Paow-sessionens sista beställning (b24), D:/dealer-scratch/tmp/paow/LASMIG.md" },
+  "balance": { "credits": 8941, "at": "2026-11-13", "source": "kvittot för paow-halkort-01 (creditsRemainingAfter), omgång 6" },
   "prices": [
     { "model": "kling-4", "resolution": "1080p", "perSecond": 21.3, "listedPerSecond": 23.5, "source": "Liggarna b19 och b20: 7 s i 1080p = 149 krediter; listpris 23,5 per s i verktyget generate_video 2026-11-12." },
     { "model": "kling-4", "resolution": "720p", "perSecond": 15.7, "listedPerSecond": 15.7, "source": "Listpris i verktyget generate_video 2026-11-12; inte mätt i någon liggare." },

@@ -85,6 +85,11 @@
   "notes": [],
   "created": "2026-11-13T05:58:42.731Z",
   "createdBy": "huvudagenten (dealer-94) på Jakobs ord 2026-11-13: omgång 6",
-  "approval": null,
-  "status": "UTKAST"
+  "approval": {
+    "by": "huvudagent",
+    "at": "2026-11-13T06:29:32.659Z",
+    "orderSha256": "9db6866ba0b8368187adda07b248127e4c59eaffa0c1ebd7dbb539b0dd1e86dd",
+    "mandate": "Jakob 2026-11-13 cirka 07:25: \"jag ger 6000 mer i budget eller till krediterna tar slut för runway\"; och hans mandat samma natt att huvudagenten beställer lämpliga filmer (omgång 7: utgången, som en runda behöver efter sista kortet)"
+  },
+  "status": "GODKÄND"
 }

@@ -1,9 +1,8 @@
 # Dealer – arbetsregler
 
 Här byggs en filmad dealer till Jakobs blackjackspel: korta filmklipp mellan fasta ankare, spelade i studion, i
-3D-scenen
-och i spelet. Scoutgaming (ett annat repo) är slutmålet på sikt och äger regler, slump och kortvärden. Jakob äger
-projektet; han är inte programmerare, så förklara val i vanliga ord.
+3D-scenen och i spelet. Scoutgaming (ett annat repo) är slutmålet på sikt och äger regler, slump och kortvärden.
+Jakob äger projektet; han är inte programmerare, så förklara val i vanliga ord.
 
 ## Läs först
 
@@ -17,8 +16,7 @@ projektet; han är inte programmerare, så förklara val i vanliga ord.
 
 - Läget nu, ägare och Jakobs gällande besked: `HANDOFF.md`. Ersätt det som inte längre gäller; ingen dagbok per körning.
 - Kontrakt och format: `docs/SYSTEM.md`. Rutiner, anslutningar och sådant som gäller en viss dator eller ett visst
-  verktyg:
-  `docs/DRIFT.md`.
+  verktyg: `docs/DRIFT.md`.
 - Ett ämne som växer ur sitt avsnitt får en egen sida under `docs/`, länkad från README:s tabell.
 - Hur ett arbetsmoment görs: en instruktion i `tools/` bredvid verktygen (som `tools/dealer-line.md`,
   `tools/python/README.md`).
@@ -37,7 +35,9 @@ projektet; han är inte programmerare, så förklara val i vanliga ord.
   HANDOFF, "Jakobs besked som gäller"). Betalda anrop utanför Beställ rapporteras till huvudagenten med belopp.
 - Deploy, mediauppladdning, databasändring och integration i Scoutgaming bara på Jakobs uttryckliga ord.
 - Jakobs domar i Granska och Material, och valet av Primär, är hans: inget verktyg och ingen agent sätter eller skriver
-  över dem. En agent eller granskare föreslår.
+  över dem. En agent eller granskare föreslår. Bara när han uttryckligen har lämnat över domen för vissa filmer kan
+  huvudagenten och en oberoende granskare sätta en preliminär dom (`node tools/review-put.ts`): den ser aldrig ut som
+  hans, ligger kvar först i hans kö i Granska, och hans eget beslut ersätter den.
 - V6 är Jakobs visuella referens och återskapas byteidentiskt. Bevara original och referenser; ändra aldrig en
   referenshash för att dölja en avvikelse.
 - Det tidigare projektet (arkivet snyggare-dealer) och Scoutgaming är bara läsreferenser: inga länkar, junctions eller

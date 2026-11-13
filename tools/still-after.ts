@@ -3,8 +3,8 @@
 //   node tools/still-after.ts <order id> <take> --fitted <png>    steps 2–4: fillDark, removeShadow, edgeCheck → ren.png, ren.json
 //   node tools/still-after.ts <order id> <take> --shoe <png>      steps 6–9: greenTo, toneTo, removeShadow, edgeCheck → after.png, after.json
 // The recipe and its numbering are in src/still-after.ts. Steps 1 (the fit) and 5 (the shoe back from a plate) find hands, eyes and
-// shoulders with MediaPipe, which the repo does not have: they are still the Python of D:/dealer-scratch/tmp/bestall/paow-ankare-2-1/
-// (grundbild-21.py, skolagning-21.py), and this command prints them where they belong. --fitted is grundbild-21's <name>-final.png;
+// shoulders with MediaPipe, which the repo's TypeScript does not have: they are the Python of tools/python/ (grundbild-21.py,
+// skolagning-21.py; tools/python/README.md says how its environment is made), and this command prints them where they belong. --fitted is grundbild-21's <name>-final.png;
 // --shoe is skolagning-21's output (made from ren.png), or ren.png itself for an anchor whose shoe step was left out.
 // Reads data/orders/<id>.json (kind STILL) and anchor.png beside it (the dealer's anchor 1: plate, green and tone); the delivery
 // take-<n>/source.png is only read and its SHA-256 checked before and after. Writes into take-<n>/ (or --out <dir>), never over a file.
@@ -19,7 +19,7 @@ import {BANK, edgeCheck, EDGE} from '../src/film-after.ts';
 import {fillDark, removeShadow, greenTo, toneTo} from '../src/still-after.ts';
 
 const ROOT = process.cwd();
-const PY = 'D:/dealer-scratch/tmp/filmagent/py/venv/Scripts/python.exe -I', VARIANTS = 'D:/dealer-scratch/tmp/bestall/paow-ankare-2-1';
+const PY = 'tools/python/.venv/Scripts/python.exe -I', VARIANTS = 'tools/python';
 const posix = (file: string) => { const rel = path.relative(ROOT, path.resolve(file)); return (!rel.startsWith('..') && !path.isAbsolute(rel) ? rel : path.resolve(file)).split(path.sep).join('/'); };
 const sha = async (file: string) => createHash('sha256').update(await readFile(file)).digest('hex');
 

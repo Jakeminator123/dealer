@@ -125,12 +125,13 @@ if(has('--restart')){
   // A derived take borrows its film, film facts and card track from the clip it is cut from; a review of its own may lie in motions/<id>.json.
   await Promise.all(derived.map(async take=>{
    const own=await motionOf(take.id),clip=await readJson(`motions/${take.clip}.json`);
-   motions[take.id]={source:clip?.source,motion:own?.motion,review:own?.review};
+   // speech: a talk film's line and where its sound starts and ends (src/speech-lines.ts reads it in the browser).
+   motions[take.id]={source:clip?.source,motion:own?.motion,review:own?.review,speech:own?.speech};
    media[take.id]={video:await confined(take.clip,'source.mp4')?`assets/motions/${take.clip}/source.mp4`:null,first:null,last:null,...await tracking(take.clip)};
   }));
   await Promise.all(clips.map(async job=>{
    const dir=`assets/motions/${job.id}`,motion=await motionOf(job.id),receipt=await readJson(`${dir}/generation.json`);
-   if(motion)motions[job.id]={source:motion.source,motion:motion.motion,review:motion.review};
+   if(motion)motions[job.id]={source:motion.source,motion:motion.motion,review:motion.review,speech:motion.speech};
    if(receipt)receipts[job.id]={status:receipt.status,estimatedCredits:receipt.estimatedCredits,requestedAt:receipt.requestedAt,completedAt:receipt.completedAt,output:receipt.output?{bytes:receipt.output.bytes,fps:receipt.output.fps,frames:receipt.output.frames,width:receipt.output.width,height:receipt.output.height}:null};
    const present=async(name:string)=>await confined(job.id,name)?`${dir}/${name}`:null;
    media[job.id]={video:await present('source.mp4'),reversed:await present('source-reversed.mp4'),first:await present('first.png'),last:await present('last.png'),...await tracking(job.id)};
