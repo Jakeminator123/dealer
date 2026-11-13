@@ -16,12 +16,15 @@ export type CardTrack = {clip?: string; width: number; height: number; hand?: bo
   leavesShoe?: number | null; restFrom: number | null; restQuad: number[][] | null; shoeWindow?: {box: number[]} | null};
 // toImage/toTable are homographies as eight numbers (the ninth is 1): table millimetres <-> image pixels.
 export type Scene = {toImage: number[]; toTable: number[]; cardWidth: number; cardHeight: number; bodyScale: number};
-// How the card a film carries is shown while it is in her hand, when nothing says otherwise: the film's own card, and the drawn card
-// from the frame it lies ('film'; the address's kort=liggande). The line since 2026-11-13 19.13, on Jakob's words that evening:
-// "orsaken till att vi inte kan behålla det blått och gult, så att vi kan börja om med att hantera överlägg, pålägg och underlägg
-// med kort". What stays drawn is what the film cannot show: a film lays one card and the next film does not show it. The drawn
-// card in her hand too ('object', kort=hand) and the film's card recoloured ('matte', kort=matt) are words for the lab.
-export const CARRY: 'object' | 'film' | 'matte' = 'film';
+// How the card a film carries is shown while it is in her hand, when nothing says otherwise: the drawn card ('object'; the
+// address's kort=hand). On 2026-11-13 Jakob asked for the cards to be started over from the film's own ("orsaken till att vi inte
+// kan behålla det blått och gult, så att vi kan börja om med att hantera överlägg, pålägg och underlägg med kort"), and for an
+// hour that evening the film's own card in her hand was the line ('film', kort=liggande: the drawn card only from the frame it
+// lies). An independent reviewer of two whole rounds at the speed as filmed then gave the drawn card in her hand 3.5 of 5 and the
+// film's own 2.5: plain yellow and blue rectangles in every deal, each turning into a playing card on the table. So the drawn card
+// stays what a visitor meets until the film's own card can be recoloured in the film's pixels (the restart: "pålägg"), and
+// kort=liggande is there for Jakob's own eye. Lying cards are drawn either way: a film lays one card and the next does not show it.
+export const CARRY: 'object' | 'film' | 'matte' = 'object';
 export const RIM = 4; // the film's pale rim and its blur outside the tracked colour core, in pixels
 export const SCALE = {min: 1, max: 2.5, fallback: 2};
 export const MARGIN = 1.2; // the rendered card is this much larger than the film's card wherever it follows it
@@ -133,9 +136,6 @@ export function restOf(track: CardTrack): {from: number; quad: Pt[]; assumed: bo
   return {from: last.frame, quad: pts(last.quad), assumed: true};
 }
 
-export type Pose = {
-  frame: number; side: Side;
-  quad: Pt[] | null;      // where the rendered card is drawn, in texture order
 // The hand-over at rest under the line (CARRY 'film'): the drawn card does not replace the film's lying card in one frame. The film's
 // card is keyed away over a few frames instead (restShare; src/scene3d-deal.ts gives the card key its share as the key's strength), so
 // the drawn card comes up under it and under her fingers, which lie over the card in those frames. still: how near (film pixels, the mean of the four
@@ -170,6 +170,9 @@ export function restShare(fade: {from: number; to: number} | null, frame: number
   return frame < fade.from ? {card: 0, key: 0} : {card: smooth(t / c), key: smooth((t - c) / (1 - c))};
 }
 
+export type Pose = {
+  frame: number; side: Side;
+  quad: Pt[] | null;      // where the rendered card is drawn, in texture order
   edge: [Pt, Pt] | null;  // edge-on frames: the line the thin edge is drawn along
   film: Pt[] | null;      // the film's own card in this frame, rim included: what must be covered
   resting: number;        // 0 in the hand, 1 lying still; in between while the size settles

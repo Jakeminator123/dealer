@@ -108,21 +108,21 @@ test('the hole card\'s turn is shown when its face shows in the film: the first 
 
 test('who decides the drawn cards: the address, then the player\'s own menu, then on; a look\'s preset has no say', () => {
   // the player switched them off in the game's menu: off, also after the frame reloads, whatever look is played
-  assert.deepEqual(cardsChoice({memory: 'off'}), {cards: false, carry: 'film'});
+  assert.deepEqual(cardsChoice({memory: 'off'}), {cards: false, carry: 'object'});
   // the address (a link, a recording) wins over what a browser remembers, both ways
   assert.equal(cardsChoice({address: true, memory: 'off'}).cards, true);
   assert.equal(cardsChoice({address: false, memory: 'on'}).cards, false);
   // nothing remembered: on
   assert.equal(cardsChoice({}).cards, true); assert.equal(cardsChoice({memory: 'on'}).cards, true);
   // how the card in her hand is shown is the address's kort word alone (and a kort word means the cards are on). Without one it is
-  // the game's line: the film's own card in her hand, the drawn card once it lies (Jakob 2026-11-13: "behålla det blått och gult").
+  // the game's line, the drawn card in her hand (CARRY in src/card-overlay.ts says why); kort=liggande is the film's own card there.
   // The menu has no switch for it, and a browser that still remembers the removed switch reads as cards on.
-  assert.deepEqual(cardsChoice({}), {cards: true, carry: 'film'});
-  assert.deepEqual(cardsChoice({memory: 'lying'}), {cards: true, carry: 'film'});
+  assert.deepEqual(cardsChoice({}), {cards: true, carry: 'object'});
+  assert.deepEqual(cardsChoice({memory: 'lying'}), {cards: true, carry: 'object'});
   assert.deepEqual(cardsChoice({kort: 'hand', memory: 'lying'}), {cards: true, carry: 'object'});
   assert.deepEqual(cardsChoice({kort: 'liggande', memory: 'off'}), {cards: true, carry: 'film'});
   assert.deepEqual(cardsChoice({kort: 'liggande', address: false}), {cards: false, carry: 'film'});
-  assert.equal(cardsChoice({kort: 'matt'}).carry, 'matte'); assert.equal(cardsChoice({kort: 'nej'}).carry, 'film');
+  assert.equal(cardsChoice({kort: 'matt'}).carry, 'matte'); assert.equal(cardsChoice({kort: 'nej'}).carry, 'object');
 });
 
 test('a rest film that asks for an effect hands it to the scene with its part; a broken or missing effect is left out', async () => {

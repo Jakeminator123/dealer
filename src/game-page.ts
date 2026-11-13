@@ -119,8 +119,8 @@ scene.rebuild(); scene.start();
 new ResizeObserver(frame).observe(stage); frame();
 const film = createFilm(scene.players as unknown as FilmPlayers, graph, layout, path => fetch(path).then(res => res.ok ? res.json() : null));
 // How the card in her hand is shown (src/game-film.ts Carry) is a word in the address only, for the lab and for recordings:
-// kort=liggande (the film's own card in her hand, the drawn card once it lies: what the game does without the word), kort=matt (the
-// film's card recoloured in her hand), kort=hand (the drawn card in her hand too).
+// kort=hand (the drawn card in her hand: what the game does without the word), kort=liggande (the film's own card in her hand, the
+// drawn card once it lies), kort=matt (the film's card recoloured in her hand).
 film.carry = cardsNow.carry;
 // Her lines over the films that play (src/scene3d-mouth.ts, src/speech-patch.ts): the mouth patches of data/speech-patches.json in her
 // voice and the game's language, each record checked against the register's sha256 and its film against the bank's file, and read

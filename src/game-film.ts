@@ -57,10 +57,10 @@ export function faceFrame(track: unknown): number | null {
 export function placedCards(table: TableCards, records: CardRecord[], lying: number[], layout: Layout): Placed[] {
   return lying.flatMap(shoeDraw => { const slot = slotOf(table, shoeDraw); return slot ? [{quad: layout.quad(slot), back: records.find(r => r.shoeDraw === shoeDraw)?.faceDown === true, target: slotLabel(slot), shoeDraw}] : []; });
 }
-// How the card the film carries is shown while it is in her hand (src/scene3d-deal.ts, carry): 'film' (the film's own card while
-// carried, the drawn card from the frame it lies: what the game does, CARRY in src/card-overlay.ts; the address's kort=liggande),
-// 'object' (the drawn card in her hand too: kort=hand), 'matte' (the film's card recoloured while carried: kort=matt). The cards
-// already lying are drawn either way: a film lays one card and the next film does not show it.
+// How the card the film carries is shown while it is in her hand (src/scene3d-deal.ts, carry): 'object' (the drawn card in her hand:
+// what the game does, CARRY in src/card-overlay.ts; the address's kort=hand), 'film' (the film's own card while carried, the drawn
+// card from the frame it lies: kort=liggande), 'matte' (the film's card recoloured while carried: kort=matt). The cards already
+// lying are drawn either way: a film lays one card and the next film does not show it.
 export type Carry = 'object' | 'film' | 'matte';
 /**
  * Whether the drawn cards are on, and how the card in her hand is shown, from who has a say (Jakob 2026-11-13 through the main
@@ -69,7 +69,7 @@ export type Carry = 'object' | 'film' | 'matte';
  * cards are on). Then the player's own choice in the game's menu, remembered in the browser (memory: 'on' or 'off'). Then on. A
  * look's preset has no say: every saved look carried cards on, so it turned the cards on again for whoever had not chosen. The
  * menu has one switch for the cards and none for how the card in her hand is shown (Jakob 2026-11-13: "Jag vill bara att det ska
- * bli en linje"): without a kort word it is the game's line, the film's own card in her hand (CARRY). A browser that still
+ * bli en linje"): without a kort word it is the game's line (CARRY in src/card-overlay.ts). A browser that still
  * remembers 'lying', from the hours the menu had a second switch, reads as on.
  */
 export function cardsChoice(o: {address?: boolean; kort?: string | null; memory?: string | null}): {cards: boolean; carry: Carry} {

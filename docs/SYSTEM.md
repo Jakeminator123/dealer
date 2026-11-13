@@ -163,8 +163,7 @@ Spelet med flera dealers (2026-11-13):
 - **Ritade kort.** Filmens egna kort är gula (baksidan) och blå (framsidan) och har ingen valör. Kortspåret
   (`assets/tracking/<klipp>/card-track.json`) säger var kortet är i varje ruta, och scenen kan rita ett riktigt kort
   där (`cardMethod: 'scene'`, förval): ett föremål under filmen, där filmens eget kort nycklas bort så att hennes
-  fingrar ligger över det ritade. Var det görs bestämmer linjen sist i den här punkten: i spelet först när kortet
-  ligger. Det som står om kortet i handen nedan gäller adressordet `kort=hand`.
+  fingrar ligger över det ritade. Var det görs bestämmer linjen sist i den här punkten.
   - Kortet ritas för den ruta som visas. Filmkön håller reda på vilken ruta varje film senast visade
     (`requestVideoFrameCallback`), inte filmelementets klocka, som går upp till en ruta före bilden; med klockan stod
     det ritade kortet där filmens kort är i nästa ruta, och filmens gula stack fram bredvid.
@@ -189,19 +188,26 @@ Spelet med flera dealers (2026-11-13):
     gånger kontraktets kort, på planens plats), så att det inte krymper eller växer när nästa film börjar.
   - Hålkortets valör och dealerns summa visas när kortets framsida syns i vändningsfilmen, inte när filmen slutar.
   - En linje för korten (Jakob 2026-11-13: "Jag vill bara att det ska bli en linje och att allt ska anpassas till en
-    standard som passar med det som för närvarande finns i systemet"). Sedan kl. 19.13 samma dag är linjen **filmens
-    eget kort i handen och i skons fönster, ritade kort först när de ligger** (`CARRY` i `src/card-overlay.ts`,
-    bärsättet `film`). Hans ord: "orsaken till att vi inte kan behålla det blått och gult, så att vi kan börja om med
-    att hantera överlägg, pålägg och underlägg med kort". Det som ritas är det filmen inte kan visa: en film lägger ett
-    kort och nästa film visar det inte (sett i en hel runda med `cards=0`: kortet är borta i nästa films första ruta,
-    i 21 skarvar av 21), och filmens kort har ingen valör. Det ritade kortet tar över i den ruta kortet ligger
-    (`restFrom` i spåret); fram till dess rörs filmens kort inte, varken ritat, nycklat eller omfärgat, och kortet i
-    skons fönster lämnas som filmen har det i alla filmer. Eftermiddagens linje, det ritade kortet också i handen
-    (linje 2), finns kvar som adressordet `kort=hand`.
+    standard som passar med det som för närvarande finns i systemet"): **det ritade kortet hela vägen, också i hennes
+    hand** (`CARRY` i `src/card-overlay.ts`, bärsättet `object`, adressordet `kort=hand`). Kl. 19.13 samma dag bad han
+    om en omstart från filmens egna kort ("orsaken till att vi inte kan behålla det blått och gult, så att vi kan börja
+    om med att hantera överlägg, pålägg och underlägg med kort"), och en timme den kvällen var linjen filmens eget kort
+    i handen och i skons fönster, med ritat kort först när det ligger (bärsättet `film`, `kort=liggande`). En oberoende
+    granskare av två hela rundor i filmad fart gav sedan det ritade kortet i handen 3,5/5 och filmens eget 2,5/5 (gula
+    och blå rektanglar i varje giv, som blir spelkort på bordet), så det ritade kortet är det en besökare möter tills
+    omstartens pålägg är byggt och sett av Jakob: filmens eget kort omfärgat i filmens egna bildpunkter. Utredningen
+    och granskningen ligger på slaskdisken (HANDOFF, "Kända brister").
+    `kort=liggande` finns kvar för hans eget öga. Där rörs filmens kort inte medan hon håller det, kortet i skons
+    fönster lämnas som filmen har det i alla filmer, och det ritade kortet tonas fram under filmens när kortet lägger
+    sig (`restFade`, `restShare` i `src/card-overlay.ts`): från första rutan där spårets kort ligger inom 2 px från sin
+    vila, högst 8 rutor före `restFrom`, annars 6 rutor efter, och aldrig kortare än 6 rutor; ett kort som vilar med
+    baksidan upp byts på en ruta, eftersom filmens gula kant annars står kvar under fingrarna. Liggande kort ritas i
+    båda bärsätten: en film lägger ett kort och nästa film visar det inte (sett i en hel runda med `cards=0`: kortet
+    är borta i nästa films första ruta, i 21 skarvar av 21), och filmens kort har ingen valör.
     Storleken är en överallt (`cardScale` 1,2, den storlek filmernas egna kort och filtens tryckta kortrutor redan
     har). Spelet har en enda brytare, i Miljö: Ritade kort. Av betyder att inget ritas alls, inte heller liggande kort,
     så att bordet töms för varje ny film. Adressen kan säga mer, för labbet och för inspelningar: `cards=0` eller
-    `cards=1`, och ordet `kort`: `kort=liggande` (som spelet gör utan ordet), `kort=hand` eller `kort=matt` (filmens
+    `cards=1`, och ordet `kort`: `kort=hand` (som spelet gör utan ordet), `kort=liggande` eller `kort=matt` (filmens
     kort omfärgat i handen). Vem som bestämmer om kort ritas (`cardsChoice` i `src/game-film.ts`): adressens ord först
     (en inspelning med ordet ändras aldrig av det en webbläsare minns), sedan spelarens val i menyn (minns i
     webbläsaren), annars på. Ett förval i Scen har inget att säga till om, och Casino-vyn har ingen egen knapp: med två

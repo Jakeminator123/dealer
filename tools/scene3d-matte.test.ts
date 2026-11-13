@@ -153,10 +153,10 @@ test('in the turn the film\'s washed-out card counts as card, each side in its h
   // keyed, in every carry but 'film' and without the shoe model; the dealt card is the film's own until two frames after it has
   // left the window, and the matte recolours both there, then the window alone
   assert.ok(deal.includes("const filmSeat = (extra: Extra) => carryOf(extra) !== 'film' && !shoeModel();") && deal.includes('seated: ownSeat ? null :'), 'the window card the film\'s own');
-  // with carry 'film', the game's line since 2026-11-13 19.13, the window's card is left as the film has it: not drawn, not keyed
-  // and not recoloured (a black card was drawn there, and she pulled the film's yellow card out of it). Where a page says no
-  // carry, the layer takes the line.
-  assert.equal(CARRY, 'film');
+  // with carry 'film' (kort=liggande) the window's card is left as the film has it: not drawn, not keyed and not recoloured (a
+  // black card was drawn there, and she pulled the film's yellow card out of it). Where a page says no carry, the layer takes
+  // the game's line, which is the drawn card in her hand.
+  assert.equal(CARRY, 'object');
   assert.ok(deal.includes('const carryOf = (extra: Extra): Carry => extra.carry ?? CARRY;'), 'a page that says nothing gets the line');
   assert.ok(deal.includes("const leftSeat = (extra: Extra) => carryOf(extra) === 'film' && !shoeModel();") && deal.includes('const ownSeat = filmSeat(extra) || leftSeat(extra);'), 'the window card left to the film under the line');
   assert.ok(deal.includes('early = (model || filmSeat(extra)) && inShoe(track, at)') && deal.includes('at < track.leavesShoe + 2'), 'the dealt card drawn once it has left the window');
