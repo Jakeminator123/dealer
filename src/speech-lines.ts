@@ -59,8 +59,12 @@ type Record_ = {dealer?: unknown; source?: {path?: unknown; fps?: unknown; frame
 const LEAD = 0.22;
 const numberOf = (value: unknown): number | null => typeof value === 'number' && Number.isFinite(value) ? value : null;
 const takeNumber = (id: string) => Number(/-(\d+)$/.exec(id)?.[1] ?? 0);
+// A take's place among the takes of one line: one that is accepted (Jakob's own verdict or a provisional one), then one nobody has
+// judged, then one set aside for a newer, and last one that waits in the inbox. So what he has approved is played until he has
+// judged a newer take, whatever their numbers.
+const place = (take: SpeechTake) => take.inbox === true ? 0 : take.decision === 'ACCEPTED' ? 3 : take.decision === 'SECONDARY' ? 1 : 2;
 
-function read(take: SpeechTake): (Spoken & {dealer: string}) | null {
+function read(take: SpeechTake): (Spoken & {dealer: string; place: number}) | null {
   const record = (take.motion ?? null) as Record_ | null, said = record?.speech;
   if (!said || typeof said.line !== 'string' || typeof said.text !== 'string' || !said.text.trim()) return null;
   if (take.decision === 'REJECTED' || take.stage === 'FAILED') return null;
@@ -68,14 +72,15 @@ function read(take: SpeechTake): (Spoken & {dealer: string}) | null {
   return {key: said.line, clip: take.id, video: take.media?.video ?? (typeof record?.source?.path === 'string' ? record.source.path : null), text: said.text,
     language: typeof said.language === 'string' ? said.language : '', voice: typeof said.voice === 'string' ? said.voice : null, fps, frames, seconds: frames === null ? null : frames / fps,
     soundStart: numberOf(said.soundStartsAtSeconds) ?? LEAD, soundEnd: numberOf(said.soundEndsAtSeconds), judged: take.inbox !== true,
-    dealer: typeof take.dealer === 'string' ? take.dealer : typeof record?.dealer === 'string' ? record.dealer : ''};
+    dealer: typeof take.dealer === 'string' ? take.dealer : typeof record?.dealer === 'string' ? record.dealer : '', place: place(take)};
 }
-/** Every spoken film a dealer has, the one to play first per key: a take Jakob has judged before one still in the inbox, then the newest. */
+/** Every spoken film a dealer has, the one to play per key: an accepted take before one nobody has judged, that before one set
+ * aside, that before one still in the inbox; among equals the newest. */
 export function spokenFilms(takes: readonly SpeechTake[], dealer: string, options: SpokenOptions = {}): Record<string, Spoken> {
   const out: Record<string, Spoken> = {};
-  const mine = takes.map(read).filter((s): s is Spoken & {dealer: string} => !!s && s.dealer === dealer && (!options.language || s.language === options.language) && (!options.voice || s.voice === options.voice));
-  mine.sort((a, b) => Number(b.judged) - Number(a.judged) || takeNumber(b.clip) - takeNumber(a.clip) || b.clip.localeCompare(a.clip));
-  for (const {dealer: _, ...spoken} of mine) out[spoken.key] ??= spoken;
+  const mine = takes.map(read).filter((s): s is Spoken & {dealer: string; place: number} => !!s && s.dealer === dealer && (!options.language || s.language === options.language) && (!options.voice || s.voice === options.voice));
+  mine.sort((a, b) => b.place - a.place || takeNumber(b.clip) - takeNumber(a.clip) || b.clip.localeCompare(a.clip));
+  for (const {dealer: _, place: __, ...spoken} of mine) out[spoken.key] ??= spoken;
   return out;
 }
 /** The film for a line's key or for a phase of the round; null when the dealer has none. */

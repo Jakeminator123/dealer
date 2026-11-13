@@ -53,6 +53,17 @@ test('the film is the dealer\'s own, never a rejected take, the newest first, an
   const judged = TAKES.map(t => t.id === 'paow-tal-placebets-sv-01' ? {...t, inbox: false} : t);
   assert.equal(spokenFilm(judged, 'paow', 'placebets')!.clip, 'paow-tal-placebets-sv-01');
   assert.deepEqual(Object.keys(spokenFilms(TAKES, 'paow', {voice: 'Jessica'})).sort(), ['chat2', 'dealerbust', 'goodluck', 'hej', 'placebets']);
+  // What he has approved is played until he has judged a newer take: a newer one nobody has judged does not take its place,
+  // whether its record carries the inbox mark or not (2026-11-13: he approved blackjack 04, and 05 played).
+  const line = 'Blackjack! Vackert spelat. Grattis!', approved = take('paow-tal-blackjack-sv-04', 'blackjack', line, {voice: 'Paow', inbox: false});
+  for (const newer of [take('paow-tal-blackjack-sv-05', 'blackjack', line, {voice: 'Paow', decision: 'PENDING', inbox: false}), take('paow-tal-blackjack-sv-05', 'blackjack', line, {voice: 'Paow', decision: 'PENDING', inbox: true})])
+    assert.equal(spokenFilm([rest, approved, newer], 'paow', 'blackjack', {voice: 'Paow'})!.clip, 'paow-tal-blackjack-sv-04');
+  // A take he rejects is never played, and one set aside for a newer plays only when nothing else does.
+  const unjudged = take('paow-tal-chat1-sv-04', 'chat1', 'Tack! Lycka till.', {voice: 'Paow', decision: 'PENDING', inbox: false});
+  assert.equal(spokenFilm([rest, take('paow-tal-chat1-sv-03', 'chat1', 'Tack! Lycka till.', {voice: 'Paow', decision: 'REJECTED', inbox: false}), unjudged], 'paow', 'chat1')!.clip, 'paow-tal-chat1-sv-04');
+  const aside = take('paow-tal-chat1-sv-05', 'chat1', 'Tack! Lycka till.', {voice: 'Paow', decision: 'SECONDARY', inbox: false});
+  assert.equal(spokenFilm([rest, unjudged, aside], 'paow', 'chat1')!.clip, 'paow-tal-chat1-sv-04');
+  assert.equal(spokenFilm([rest, aside], 'paow', 'chat1')!.clip, 'paow-tal-chat1-sv-05');
 });
 
 test('what the player writes is answered with one of the fixed replies', () => {
