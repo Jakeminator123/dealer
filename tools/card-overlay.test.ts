@@ -3,7 +3,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile, readdir} from 'node:fs/promises';
-import {sceneOf, restingQuad, restOf, poseAt, cardToImage, projectionOf, regionOf, readMatte, filmZone, shiftShare, placedCard, landing, leakCount, strayBoxes, ranges, cardRecord, cardFace, CARD_RANKS, CARD_SUITS, MARGIN, STRAY, type CardRecord, overridesOf, cardInFront, describeTrack, RIM, plausible, keystone, skirtSound, PLAUSIBLE, HOLD, type CardTrack, type Scene} from '../src/card-overlay.ts';
+import fs from 'node:fs';
+import {sceneOf, restingQuad, restOf, poseAt, cardToImage, projectionOf, regionOf, readMatte, filmZone, shiftShare, placedCard, landing, leakCount, strayBoxes, ranges, cardRecord, cardFace, CARD_RANKS, CARD_SUITS, MARGIN, STRAY, type CardRecord, overridesOf, cardInFront, describeTrack, RIM, plausible, keystone, skirtSound, turnOf, PLAUSIBLE, HOLD, type CardTrack, type Scene} from '../src/card-overlay.ts';
 import {signedArea, centre, dist, sound, type Pt} from '../src/card-track.ts';
 import {cameraFromContract, solveCamera, squareToQuad, onSquare, filmToScene} from '../src/scene3d-geometry.ts';
 
@@ -326,6 +327,24 @@ test('Paow\'s tracked takes, every frame: what is drawn is a card, and a bent ca
       assert.ok(plausible(p.quad), `${d} frame ${i}`); const q = (signedArea(p.quad) < 0 ? [p.quad[1], p.quad[0], p.quad[3], p.quad[2]] : p.quad).map(c => [c.x, c.y]);
       for (const [u, v] of [[0, 0], [1, 0], [1, 1], [0, 1], [0.5, 0], [0.5, 1]]) assert.ok(inFront(bentPoint(q, u, v, 0.18, false)), `${d} frame ${i}: corner (${u}, ${v}) behind the eye`); } }
   assert.ok(frames > 1000);
+});
+
+test('the turn of a card carried face up: the frames between the last back that is a card and the first face; none when it is not turned', async () => {
+  const q = (x: number) => [[x, 500], [x + 60, 500], [x + 60, 590], [x, 590]];
+  const frame = (i: number, side: string, quad: number[][] | null, edge: number[][] | null = null) => ({frame: i, side, quad, edge, confidence: 1}) as never;
+  const track = (frames: unknown[]) => ({width: 1764, height: 1174, edgeWindow: null, leavesShoe: 2, frames}) as unknown as CardTrack;
+  // back, back, a wedge (no card), two edge lines, a face without a quad, then the face
+  const turned = track([frame(0, 'BACK', q(100)), frame(1, 'BACK', q(110)), frame(2, 'BACK', q(120)), frame(3, 'BACK', q(130)), frame(4, 'BACK', [[140, 500], [300, 500], [141, 501], [140, 590]]),
+    frame(5, 'EDGE', null, [[150, 520], [210, 540]]), frame(6, 'EDGE', null, [[160, 530], [220, 550]]), frame(7, 'FRONT', null), frame(8, 'FRONT', q(180)), frame(9, 'FRONT', q(190))]);
+  assert.deepEqual(turnOf(turned), {from: 4, to: 7});
+  assert.equal(turnOf(track([frame(0, 'BACK', q(100)), frame(1, 'BACK', q(110)), frame(2, 'BACK', q(120)), frame(3, 'BACK', q(130))])), null, 'dealt face down: no turn');
+  assert.equal(turnOf(track([frame(0, 'BACK', q(100)), frame(1, 'BACK', q(110)), frame(2, 'BACK', q(120)), frame(3, 'FRONT', q(130))])), null, 'turned between two frames: nothing between');
+  // seat 4's take, as the scene session filmed it at both speeds: the turn is frames 45-52 (short lines across the fingers, then no quad)
+  const file = 'assets/tracking/paow-giv-2-1-p4-04-01/card-track.json';
+  if (fs.existsSync(file)) assert.deepEqual(turnOf(JSON.parse(await readFile(file, 'utf8'))), {from: 45, to: 52});
+  // the dealer's hole card is dealt face down and never turns in the hand
+  const hole = 'assets/tracking/paow-giv-2-1-d-c2-03-01/card-track.json';
+  if (fs.existsSync(hole)) assert.equal(turnOf(JSON.parse(await readFile(hole, 'utf8'))), null);
 });
 
 test('a card lying since an earlier film is laid in the size and place the dealt card came to rest in, at every card size', () => {

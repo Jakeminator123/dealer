@@ -8,6 +8,7 @@
 // where they run, which quad lays the print, and CPU mirrors of the arithmetic for the tests (tools/scene3d-matte.test.ts). The
 // passes run in src/scene3d-deal.ts, which owns the targets; the replacement itself is in the film's shader (src/scene3d-film.ts).
 import {clockwise, grown, morph, signedArea, type Pt} from './card-track.ts';
+import {turnOf, type CardTrack} from './card-overlay.ts';
 import {FILM, squareToQuad} from './scene3d-geometry.ts';
 import {inv3} from './scene-geometry.ts';
 
@@ -27,6 +28,8 @@ export const MATTE = {
   reach: 48, spread: 0.6, // where the passes run: the track's card grown by at least `reach` px or `spread` of its longest side ...
   around: 2,     // ... over the frames this close, so a fast card's smear is inside; and the shoe window with `shoeRoom` more
   print: 1.8,    // the print's quad: the track's colour core grown this much at the corners, out to the card's pale edge (EDGE_PX in scene3d-deal.ts)
+  contrast: 2,   // the film's light on its back, to this power on the recoloured back
+  edge: [0.45, 0.95] as const, edgeLight: 0.16, edgeShare: 0.6, // the back's edge: where the body's blurred weight falls from 0.95 to 0.45, lighter (linear) by this share
 };
 // The film card's colours lit, as the video shows them (scene3d-deal.ts COLOUR, scene3d-film.ts BACK_LIT/FACE_LIT): the far end of
 // the line a blurred pixel is unmixed along.
@@ -42,6 +45,15 @@ export const SHOE_BOX = [1242, 754, 1339, 855];
 // (light lavender instead of blue: Paow at seat 1, paow-giv-2-1-p1-06-01 frames 74-81, mean 192-215/193-219/239-246); it counts only
 // inside the zone where the card was in the frames before (paleZone) and only while the track shows the face. Skin is red-led, her
 // blouse cream, so neither passes; across every tracked Paow take it fires nowhere else (dealer-scratch, huvudagent11/kort2/scan/palecheck.mjs).
+// In the turn (card-overlay.ts turnOf) the film's card is a blur of its two sides, the felt's screen and the jacket behind it, and
+// inside the turn's zone (turnZone) these count too: paleBack, the back washed light (248/241/112 at seat 7, paow-giv-2-1-p7-06-01);
+// turnBack, the back washed dull and light (178/159/91 at seat 4, paow-giv-2-1-p4-04-01 frame 45): more green to red than skin has, and
+// further from grey than skin, her cream top, her hair or skin blurred into the screen at the hand's edge (blue at least 0.6 of
+// red and green there); turnFace, the face blurred with the screen into teal (14/98/104 to 51/101/106,
+// the same take's frames 50-52), blue at least green, which the screen never is. The grey of the card's edge over the jacket (about
+// 90/85/87) is left as the film has it: a card's edge turning fast looks so. Neither turn rule counts within 3 px of skin (hand: red
+// over green, as a hand is in light and shadow) or in the shoe window: skin blurred into the screen at a finger's edge, and the
+// window's gold frame, have the dull back's colours too.
 export const RULES = {
   back: 'r > 95. && g > 95. && g > .82 * r && r > .6 * g && b < .45 * min(r, g)',
   face: 'b > 90. && b > 1.5 * r && b > 1.15 * g',
@@ -49,6 +61,10 @@ export const RULES = {
   dimBack: 'r > 40. && g > 40. && g > .7 * r && g < 1.15 * r && b < .35 * min(r, g)',
   dimFace: 'b > 40. && b > 1.4 * r && b > 1.1 * g',
   pale: 'r > 150. && g > 150. && b > 200. && b > r + 15. && b > g + 12. && b - min(r, g) < 80.',
+  paleBack: 'r > 200. && g > 195. && b > 60. && b < 160. && r - g < 25. && g - r < 25. && g - b > 70.',
+  turnBack: 'r > 140. && g > .78 * r && g < 1.12 * r && b < .58 * min(r, g)',
+  turnFace: 'b > 60. && b > 1.25 * r && b > .95 * g && g > .5 * b',
+  hand: 'r > 80. && g < .76 * r && g > .45 * r && b > .4 * g',
 } as const;
 const rule = (name: keyof typeof RULES) => `bool ${name}Of(float r, float g, float b){ return ${RULES[name]}; }`;
 /** The rules as GLSL functions, and the four classes of a pixel: (back candidate, face candidate, back, face). */
@@ -59,12 +75,16 @@ vec4 cardClasses(vec3 c){ float r = c.r, g = c.g, b = c.b; bool y = backOf(r, g,
 // ---- the passes, in film pixels (src/scene3d-deal.ts runs them on film-sized targets, the frame's own size) -----------------
 // Every target is laid like the video texture: u to the right, v up, so a target and the film are read at the same uv.
 export const PASS_VERTEX = 'void main(){ gl_Position = vec4(position.xy, 0., 1.); }';
-/** The film frame's classes (cardClasses), read straight off the video; inside `paleZone` (while paleOn) a washed-out face is face too. */
-export const CLASSIFY_FRAGMENT = `uniform sampler2D map; uniform vec2 size, paleZone[4]; uniform float paleOn;
+/** The film frame's classes (cardClasses), read straight off the video; inside the zone a washed-out face is face too (paleOn 1), and in the turn the turn's colours of the back (paleOn 3, its first half) or of the face (4, the rest). */
+export const CLASSIFY_FRAGMENT = `uniform sampler2D map; uniform vec2 size, paleZone[4]; uniform vec4 shoeBox; uniform float paleOn;
 ${CLASS_GLSL}
 bool inZone(vec2 p){ for (int i = 0; i < 4; i++) { vec2 a = paleZone[i], b = paleZone[i == 3 ? 0 : i + 1]; if ((b.x - a.x) * (p.y - a.y) - (b.y - a.y) * (p.x - a.x) < 0.) return false; } return true; }
-void main(){ vec3 c = texture2D(map, gl_FragCoord.xy / size).rgb * 255.; vec4 o = cardClasses(c);
-  if (paleOn > .5 && paleOf(c.r, c.g, c.b) && inZone(vec2(gl_FragCoord.x - .5, size.y - gl_FragCoord.y - .5))) o.yw = vec2(1.);
+bool handNear(vec2 uv){ for (int k = 0; k < 8; k++) { float a = float(k) * .785398; vec3 s = texture2D(map, uv + 3. * vec2(cos(a), sin(a)) / size).rgb * 255.; if (handOf(s.r, s.g, s.b)) return true; } return false; }
+void main(){ vec2 uv = gl_FragCoord.xy / size, p = vec2(gl_FragCoord.x - .5, size.y - gl_FragCoord.y - .5); vec3 c = texture2D(map, uv).rgb * 255.; vec4 o = cardClasses(c);
+  if (paleOn > .5 && inZone(p)) {
+    bool turn = paleOn > 2.5 && !(p.x >= shoeBox.x && p.y >= shoeBox.y && p.x <= shoeBox.z && p.y <= shoeBox.w) && !handNear(uv);
+    if (paleOn < 1.5 || paleOn > 3.5) { if (paleOf(c.r, c.g, c.b) || turn && turnFaceOf(c.r, c.g, c.b)) o.yw = vec2(1.); }
+    else if (turn && (paleBackOf(c.r, c.g, c.b) || turnBackOf(c.r, c.g, c.b))) o.xz = vec2(1.); }
   gl_FragColor = o; }`;
 // One direction of a square erosion (grow 0) or dilation (grow 1), per channel with a radius of its own (0 passes it through).
 // Inside the shoe window (`shoe`, film pixels, y down) the first two channels take `shoeRadius` at most. `combine` (the last pass of
@@ -118,7 +138,11 @@ vec4 matteCard(vec4 o, vec2 px, vec3 c, vec3 key, vec3 tone){
   vec4 sh = texture2D(matteShade, uv);
   // the film's light on its own card here, against the card lying flat in the film's light (scene3d-deal.ts LYING)
   float shadeB = sh.y > .02 ? clamp(sh.x / sh.y / matteLying.x, ${MATTE.back[0]}, ${MATTE.back[1]}) : 1., shadeF = sh.w > .02 ? clamp(sh.z / sh.w / matteLying.y, ${MATTE.face[0]}, ${MATTE.face[1]}) : 1.;
-  vec3 back = matteBack * mattePaper * shadeB, st = matteToPrint * vec3(pc, 1.);
+  // the back: its dark colour in the film's own light on its card, the light's differences made stronger (a dark card shows them
+  // less than the bright yellow it stands for, and flat it reads as a hole), and its edge, where the body's blur falls off, lighter,
+  // as a card's paper edge is
+  float edgeB = (1. - smoothstep(${MATTE.edge[0].toFixed(2)}, ${MATTE.edge[1].toFixed(2)}, sh.y)) * step(.02, sh.y);
+  vec3 back = mix(matteBack * pow(shadeB, ${MATTE.contrast.toFixed(1)}), vec3(${MATTE.edgeLight.toFixed(3)}), edgeB * ${MATTE.edgeShare.toFixed(2)}) * mattePaper, st = matteToPrint * vec3(pc, 1.);
   vec3 face = (matteFaceBack > .5 ? matteBack : texture2D(mattePrint, vec2(st.x / st.z, 1. - st.y / st.z)).rgb) * mattePaper * shadeF;
   float solid = max(cover.x, cover.y);
   vec3 card = matteSrgb((cover.x * back + cover.y * face) / max(cover.x + cover.y, 1e-4)) * tone;
@@ -167,6 +191,20 @@ export function paleZone(track: MatteTrack, frame: number): number[][] | null {
   if (!points.length) return null;
   const xs = points.map(p => p[0]), ys = points.map(p => p[1]), box: Pt[] = [{x: Math.min(...xs), y: Math.min(...ys)}, {x: Math.max(...xs), y: Math.min(...ys)}, {x: Math.max(...xs), y: Math.max(...ys)}, {x: Math.min(...xs), y: Math.max(...ys)}];
   return grown(box, 24 + 0.15 * Math.sqrt(Math.abs(signedArea(box)))).map(p => [p.x, p.y]);
+}
+/**
+ * Where the turn's colours count in a frame of the turn (turnOf), or null outside it: the box around the card over the whole turn,
+ * from the last back before it to the first face after it (their quads, and the edge lines between, which may lie anywhere across
+ * the card), grown by 24 px and 0.15 of its size, clockwise on screen; and which side's colours: the back's over the first half,
+ * the face's over the rest. Each side's alone, because the other's rule would take the hand's edge there (seat 4, frames 51-52:
+ * skin over the dark sleeve, olive as the dull back), and the film shows that side then anyway.
+ */
+export function turnZone(track: MatteTrack, frame: number): {zone: number[][]; back: boolean} | null {
+  const turn = track ? turnOf(track as unknown as CardTrack) : null; if (!turn || frame < turn.from || frame > turn.to) return null;
+  const points: number[][] = []; for (let k = turn.from - 1; k <= turn.to + 1; k++) { const f = track!.frames[k]; points.push(...(f?.quad?.length === 4 ? f.quad : f?.edge?.length === 2 ? f.edge : [])); }
+  if (!points.length) return null;
+  const xs = points.map(p => p[0]), ys = points.map(p => p[1]), box: Pt[] = [{x: Math.min(...xs), y: Math.min(...ys)}, {x: Math.max(...xs), y: Math.min(...ys)}, {x: Math.max(...xs), y: Math.max(...ys)}, {x: Math.min(...xs), y: Math.max(...ys)}];
+  return {zone: grown(box, 24 + 0.15 * Math.sqrt(Math.abs(signedArea(box)))).map(p => [p.x, p.y]), back: frame <= (turn.from + turn.to) / 2};
 }
 /** The track's card in a frame as the zone where blurred card colour is unmixed (card-overlay.ts filmZone's reach), or null. */
 export function matteZone(track: MatteTrack, frame: number): number[][] | null {

@@ -3,10 +3,11 @@
 // edge; where the passes run; which quad lays the face print and how a film pixel finds its place on it.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {CLASS_GLSL, CLASSIFY_FRAGMENT, MATTE, MATTE_GLSL, MORPH_FRAGMENT, RULES, SHADE_FRAGMENT, SHOE_BOX, bodyOf, matteBox, matteZone, meanLinear, paleZone, printQuad, toPrint, unmix} from '../src/scene3d-matte.ts';
+import {CLASS_GLSL, CLASSIFY_FRAGMENT, MATTE, MATTE_GLSL, MORPH_FRAGMENT, RULES, SHADE_FRAGMENT, SHOE_BOX, bodyOf, matteBox, matteZone, meanLinear, paleZone, printQuad, toPrint, turnZone, unmix} from '../src/scene3d-matte.ts';
 import {is} from '../src/card-track.ts';
 import {squareToQuad, onSquare} from '../src/scene3d-geometry.ts';
 import {DEFAULTS} from '../src/scene3d-view.ts';
+import {readFile} from 'node:fs/promises';
 
 // The rules as JavaScript: the same text, compiled here (the module itself never evaluates text).
 const rule = (name: keyof typeof RULES) => new Function('r', 'g', 'b', 'min', `return ${RULES[name]};`) as (r: number, g: number, b: number, min: (a: number, b: number) => number) => boolean;
@@ -112,9 +113,46 @@ test('a washed-out face is card only where the card was and while the track show
   for (const c of [[192, 193, 239], [201, 205, 244], [215, 219, 245], [197, 202, 246], [175, 185, 240]]) assert.equal(on('pale', c), true, `blek ${c}`);
   // skin from fingertip to knuckle, the pale "skin" inside the card's quad in frames 70-74 (227/181/189), her cream blouse, her white, the jacket, the felt, the screen
   for (const c of [[247, 181, 126], [246, 175, 151], [227, 181, 189], [230, 185, 198], [235, 222, 210], [240, 240, 235], [250, 250, 250], [20, 22, 25], [30, 140, 60], [50, 220, 90]]) assert.equal(on('pale', c), false, `inte blek ${c}`);
-  assert.ok(CLASSIFY_FRAGMENT.includes('paleOf(c.r, c.g, c.b) && inZone('), 'only inside the zone');
+  assert.ok(CLASSIFY_FRAGMENT.includes('if (paleOn > .5 && inZone(p)) {') && CLASSIFY_FRAGMENT.includes('if (paleOf(c.r, c.g, c.b) ||'), 'only inside the zone');
   const q = (x: number) => [[x, 800], [x + 90, 800], [x + 90, 960], [x, 960]], frames = Array.from({length: 10}, (_, i) => ({frame: i, side: i < 5 ? 'BACK' : 'FRONT', quad: q(200 + i * 4), edge: null}));
   assert.equal(paleZone({frames}, 4), null, 'not while the back shows'); assert.equal(paleZone({frames}, 3), null);
   const zone = paleZone({frames}, 9)!, xs = zone.map(p => p[0]), ys = zone.map(p => p[1]);
   assert.ok(Math.min(...xs) < 200 + 5 * 4 && Math.max(...xs) > 200 + 9 * 4 + 90, 'the frames before are in it'); assert.ok(Math.min(...ys) < 800 && Math.max(...ys) > 960 && Math.max(...ys) < 1020, 'grown, not far');
+});
+
+test('in the turn the film\'s washed-out card counts as card, each side in its half, never skin, her clothes, the screen or the shoe', async () => {
+  // seat 4 (paow-giv-2-1-p4-04-01): the back washed dull in frame 45 and at seat 7 light; the face blurred into teal in frames 50-52
+  for (const c of [[178, 159, 91], [197, 172, 97], [211, 200, 95], [204, 182, 104]]) assert.equal(on('turnBack', c), true, `matt baksida ${c}`);
+  assert.equal(on('paleBack', [248, 241, 112]), true);
+  for (const c of [[14, 98, 104], [21, 96, 100], [51, 101, 106], [10, 96, 109]]) assert.equal(on('turnFace', c), true, `blågrön framsida ${c}`);
+  // skin in light and shadow, skin blurred into the screen at the hand's edge (seat 4 frames 51-52), the hole card's fingers over the
+  // felt, her cream top, her hair, the jacket, the card's grey edge over it, the screen, mint (a light card blurred into the screen)
+  const others = [[215, 152, 134], [240, 200, 170], [230, 180, 150], [150, 95, 70], [133, 121, 66], [119, 102, 53], [240, 225, 205], [230, 220, 180], [34, 20, 33], [87, 82, 87], [104, 95, 91], [15, 232, 41], [50, 220, 90], [162, 210, 83], [149, 202, 148], [25, 30, 70]];
+  for (const c of others) for (const name of ['turnBack', 'turnFace', 'paleBack'] as const) assert.equal(on(name, c), false, `${name} tar ${c}`);
+  // what lies within 3 px of a hand keeps the film's colour: the hand rule is skin in light and shadow, not the card
+  for (const c of [[215, 152, 134], [150, 95, 70], [200, 130, 100]]) assert.equal(on('hand', c), true, `hand ${c}`);
+  for (const c of [[178, 159, 91], [14, 98, 104], [231, 212, 78], [15, 232, 41], [34, 20, 33]]) assert.equal(on('hand', c), false, `inte hand ${c}`);
+  assert.ok(CLASSIFY_FRAGMENT.includes('!handNear(uv)') && CLASSIFY_FRAGMENT.includes('p.x >= shoeBox.x'), 'not beside a hand, not in the shoe window');
+  assert.ok(CLASSIFY_FRAGMENT.includes('turn && turnFaceOf') && CLASSIFY_FRAGMENT.includes('turn && (paleBackOf'), 'each side by its own rules');
+  // the zone: the whole turn, from the last back to the first face, the back's half first
+  const q = (x: number, y: number) => [[x, y], [x + 60, y], [x + 60, y + 90], [x, y + 90]];
+  const frames = [{frame: 0, side: 'BACK', quad: q(100, 400), edge: null}, {frame: 1, side: 'BACK', quad: q(120, 420), edge: null}, {frame: 2, side: 'EDGE', quad: null, edge: [[160, 470], [170, 520]]},
+    {frame: 3, side: 'EDGE', quad: null, edge: [[180, 480], [185, 530]]}, {frame: 4, side: 'FRONT', quad: null, edge: null}, {frame: 5, side: 'FRONT', quad: q(200, 520), edge: null}, {frame: 6, side: 'FRONT', quad: q(210, 530), edge: null}];
+  const track = {frames, leavesShoe: 0} as never;
+  assert.equal(turnZone(track, 1), null); assert.equal(turnZone(track, 5), null);
+  const z2 = turnZone(track, 2)!, z4 = turnZone(track, 4)!, xs = z2.zone.map(p => p[0]), ys = z2.zone.map(p => p[1]);
+  assert.ok(Math.min(...xs) < 120 && Math.max(...xs) > 260 && Math.min(...ys) < 420 && Math.max(...ys) > 610, 'the last back and the first face are in it');
+  assert.equal(z2.back, true); assert.equal(turnZone(track, 3)!.back, true); assert.equal(z4.back, false); assert.deepEqual(z4.zone, z2.zone);
+  // and the deal draws no card in the turn: the film's own card is recoloured there instead (src/scene3d-deal.ts)
+  const deal = await readFile('src/scene3d-deal.ts', 'utf8');
+  // (only an edge line is still drawn and keyed there: a thin sliver is too thin for the matte's body)
+  assert.ok(deal.includes('now = drawn && (drawn.line || !turning(track, at, extra)) ? drawn : null') && deal.includes('if (inHand || turning(track, at, extra)) drawMatte('), 'no card in the turn but an edge line, the matte there');
+  assert.ok(deal.includes("(extra.carry ?? 'object') === 'film') return false"), 'Bara liggande leaves the film\'s card');
+  // with carry 'matte' the shoe window's card is the film's own as well, recoloured, neither drawn nor keyed
+  assert.ok(deal.includes("const filmSeat = (extra.carry ?? 'object') === 'matte';") && deal.includes('seated: filmSeat ? null :'), 'the window card the film\'s own with kort=matt');
+});
+
+test('the recoloured back keeps the film\'s light on it, stronger, and a lighter edge: flat it read as a hole', () => {
+  assert.ok(MATTE_GLSL.includes(`pow(shadeB, ${MATTE.contrast.toFixed(1)})`) && MATTE_GLSL.includes('float edgeB = (1. - smoothstep('), 'light and edge in the shader');
+  assert.ok(MATTE.contrast > 1 && MATTE.edgeShare > 0 && MATTE.edgeShare < 1 && MATTE.edge[0] < MATTE.edge[1]);
 });

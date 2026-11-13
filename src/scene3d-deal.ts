@@ -15,13 +15,13 @@
 // no card object is drawn while a film shows its card; the passes that make the matte run here, on targets of the film's size.
 // The cards lying since earlier films are drawn as objects either way: a film lays one card, and later films do not show it.
 import * as T from 'three';
-import {poseAt, restOf, restingQuad, sceneOf, cardRecord, cardFace, overridesOf, cardInFront, plausible, skirtSound, firstDrawn, RIM, MARGIN, PLAUSIBLE, EASE, HOLD, type CardTrack, type CardRecord} from './card-overlay.ts';
+import {poseAt, restOf, restingQuad, sceneOf, cardRecord, cardFace, overridesOf, cardInFront, plausible, skirtSound, firstDrawn, turnOf, RIM, MARGIN, PLAUSIBLE, EASE, HOLD, type CardTrack, type CardRecord} from './card-overlay.ts';
 import {centre, clockwise, grown, signedArea, sound, type Pt} from './card-track.ts';
 import {FILM, edgeQuad, heldScale, solveCamera, squareToQuad, type FilmCamera} from './scene3d-geometry.ts';
 import {CARD_GLSL, type CardKey, type MatteKey} from './scene3d-film.ts';
 import {FAN_GLSL} from './scene3d-light.ts';
 import {roomReflection} from './scene3d-table.ts';
-import {CLASSIFY_FRAGMENT, MATTE, MORPH_FRAGMENT, PASS_VERTEX, SHADE_FRAGMENT, SHOE_BOX, matteBox, matteZone, meanLinear, paleZone, printQuad, toPrint, type MatteTrack} from './scene3d-matte.ts';
+import {CLASSIFY_FRAGMENT, MATTE, MORPH_FRAGMENT, PASS_VERTEX, SHADE_FRAGMENT, SHOE_BOX, matteBox, matteZone, meanLinear, paleZone, printQuad, toPrint, turnZone, type MatteTrack} from './scene3d-matte.ts';
 
 // The card material study, for its print, outline and paper. Imported as an instance of its own (the query): the import map in
 // scene3d.html binds that instance's three.js to the scene's, so the page holds one three.js. The canvas method
@@ -144,7 +144,7 @@ function mattePasses(renderer: T.WebGLRenderer, keep: <D extends {dispose(): voi
   const triangle = keep(new T.BufferGeometry()); triangle.setAttribute('position', new T.Float32BufferAttribute([-1, -1, 0, 3, -1, 0, -1, 3, 0], 3));
   const mesh = new T.Mesh(triangle); mesh.frustumCulled = false; scene.add(mesh);
   const pass = (fragmentShader: string, uniforms: Record<string, {value: unknown}>) => keep(new T.ShaderMaterial({vertexShader: PASS_VERTEX, fragmentShader, uniforms: {size: {value: size}, ...uniforms}, depthTest: false, depthWrite: false, blending: T.NoBlending}));
-  const classify = pass(CLASSIFY_FRAGMENT, {map: {value: null}, paleZone: {value: [0, 1, 2, 3].map(() => new T.Vector2())}, paleOn: {value: 0}});
+  const classify = pass(CLASSIFY_FRAGMENT, {map: {value: null}, paleZone: {value: [0, 1, 2, 3].map(() => new T.Vector2())}, shoeBox: {value: new T.Vector4()}, paleOn: {value: 0}});
   const morph = pass(MORPH_FRAGMENT, {map: {value: null}, base: {value: null}, dir: {value: new T.Vector2()}, radius: {value: new T.Vector4()}, grow: {value: new T.Vector4()}, shoe: {value: new T.Vector4()}, shoeRadius: {value: -1}, combine: {value: 0}});
   const shade = pass(SHADE_FRAGMENT, {map: {value: null}, film: {value: null}, dir: {value: new T.Vector2()}, sigma: {value: new T.Vector2(MATTE.sigma.back, MATTE.sigma.face)}, first: {value: 1}});
   let targets: Target[] | null = null;
@@ -155,13 +155,13 @@ function mattePasses(renderer: T.WebGLRenderer, keep: <D extends {dispose(): voi
     u.map.value = from.texture; (u.dir.value as T.Vector2).set(dir ? 0 : 1, dir); (u.radius.value as T.Vector4).fromArray(radius); (u.grow.value as T.Vector4).fromArray(grow);
     u.shoeRadius.value = how.shoe ? MATTE.shoeRim : -1; u.combine.value = how.combine ? 1 : 0; draw(morph, to); };
   return {
-    /** The matte of the film frame in `film`, made inside `box` (film pixels x0, y0, x1, y1); `shoe` the shoe window; `pale` where a washed-out face counts (paleZone). */
-    run(film: T.Texture, box: number[], shoe: number[], pale: number[][] | null = null) {
+    /** The matte of the film frame in `film`, made inside `box` (film pixels x0, y0, x1, y1); `shoe` the shoe window; `pale` where a washed-out face counts (paleZone, mode 1) or the turn's colours (turnZone: mode 3 the back's, 4 the face's). */
+    run(film: T.Texture, box: number[], shoe: number[], pale: {zone: number[][]; mode: number} | null = null) {
       targets ??= Array.from({length: 5}, () => keep(new T.WebGLRenderTarget(FILM.width, FILM.height, {type: T.UnsignedByteType, minFilter: T.LinearFilter, magFilter: T.LinearFilter, depthBuffer: false, generateMipmaps: false})));
       const [A, P, Q, C, D] = targets, before = renderer.getRenderTarget(), clear = renderer.getClearColor(new T.Color()), alpha = renderer.getClearAlpha();
       renderer.setClearColor(0x000000, 0);
       for (const t of targets) { t.scissorTest = false; renderer.setRenderTarget(t); renderer.clear(true, false, false); t.scissor.set(box[0], FILM.height - 1 - box[3], box[2] - box[0] + 1, box[3] - box[1] + 1); t.scissorTest = true; }
-      classify.uniforms.map.value = film; classify.uniforms.paleOn.value = pale ? 1 : 0; if (pale) pale.forEach((p, i) => (classify.uniforms.paleZone.value as T.Vector2[])[i].set(p[0], p[1])); draw(classify, A);
+      classify.uniforms.map.value = film; classify.uniforms.paleOn.value = pale ? pale.mode : 0; (classify.uniforms.shoeBox.value as T.Vector4).set(shoe[0] - MATTE.shoeRoom, shoe[1] - MATTE.shoeRoom, shoe[2] + MATTE.shoeRoom, shoe[3] + MATTE.shoeRoom); if (pale) pale.zone.forEach((p, i) => (classify.uniforms.paleZone.value as T.Vector2[])[i].set(p[0], p[1])); draw(classify, A);
       const {thin, keep: back, near, rim, beside, fringe} = MATTE, reach = thin + back;
       step(A, P, 0, [thin, thin, near, near], [0, 0, 1, 1]); step(P, Q, 1, [thin, thin, near, near], [0, 0, 1, 1]); // the core left after thin things go, and where the card's own colour is near
       step(Q, P, 0, [reach, reach, 0, 0], [1, 1, 1, 1]); u.base.value = A.texture; step(P, Q, 1, [reach, reach, 0, 0], [1, 1, 1, 1], {combine: true}); // the body
@@ -318,22 +318,44 @@ export function createDealLayer(o: Options) {
   const matte = mattePasses(o.renderer, keep), alwaysMatte = o.way === 'matte';
   let backColour: number[] | null = null;
   const backMean = () => backColour ??= (() => { const c = print().image as HTMLCanvasElement; return meanLinear(c.getContext('2d')!.getImageData(0, 0, c.width, c.height).data); })();
+  // A card carried without a drawn one: the black field lifted a third of the way to the print's mean, so the film's light shows on it.
+  const backDark = () => { const a = backBody(), b = backMean(); return a.map((v, i) => v + (b[i] - v) / 3); };
+  // In the turn of a card that is drawn before and after it (black), the film's back takes the back print's own field, not its mean:
+  // the print is a black field with a gold border and mark, and their mean reads as khaki beside the black card. The field: the mean
+  // of the darker half of the print's pixels. A card carried without a drawn one takes the field lifted towards the mean (backDark):
+  // the field alone made it a flat black cut-out (Prov kort-en-linje, third row). The way 'matte' keeps the mean.
+  let bodyColour: number[] | null = null;
+  const backBody = () => bodyColour ??= (() => { const c = print().image as HTMLCanvasElement, d = c.getContext('2d')!.getImageData(0, 0, c.width, c.height).data, lum: number[] = [];
+    for (let i = 0; i + 3 < d.length; i += 16) if (d[i + 3] >= 128) lum.push(0.2126 * d[i] + 0.7152 * d[i + 1] + 0.0722 * d[i + 2]);
+    const cut = lum.sort((a, b) => a - b)[lum.length >> 1] ?? 255, dark: number[] = [];
+    for (let i = 0; i + 3 < d.length; i += 4) if (d[i + 3] >= 128 && 0.2126 * d[i] + 0.7152 * d[i + 1] + 0.0722 * d[i + 2] <= cut) dark.push(d[i], d[i + 1], d[i + 2], 255);
+    return meanLinear(dark); })();
   // While a film shows its card: the film's own card drawn over in place, the back in the back's colour and the face with its print
   // laid by the track's quad, both shaded by the film (src/scene3d-matte.ts). `alone` (the way 'matte'): no card object then, and the
   // seated card in the shoe window is film too, recoloured like the dealt one; otherwise the objects and the key the scene has laid
   // this frame stay (the seated card, keyed out of the film first, so the matte never sees it). `print`: another file's quads for
   // the face (card-track-matt.json), if read. A print quad that is no card lays no print: the face takes the print's border colour.
-  function drawMatte(track: CardTrack | null, at: number, choice: Choice, extra: Extra, alone = true) {
+  function drawMatte(track: CardTrack | null, at: number, choice: Choice, extra: Extra, alone = true, windowOnly = false, black = false) {
     if (alone) { hide(dealt); hide(seated); composite.visible = depth.visible = seatDepth.visible = false; o.film.setCards(null); }
     const film = o.film.shared.map.value; if (!film) { o.film.setMatte(null); return; }
-    const own = track as unknown as MatteTrack, shoe = track?.shoeWindow?.box ?? SHOE_BOX, box = matteBox(own, at, shoe), face = cardFace(cardRecord(extra.cards, extra), false, art(choice));
+    // in the turn the turn's colours count over the whole of it, and the passes run there too (its edge lines may lie anywhere across the card)
+    const own = track as unknown as MatteTrack, shoe = track?.shoeWindow?.box ?? SHOE_BOX, turn = at >= 0 ? turnZone(own, at) : null, near = at >= 0 && !turn ? paleZone(own, at) : null;
+    const box = windowOnly ? matteBox(null, at, shoe) : widened(matteBox(own, at, shoe), turn?.zone ?? null), face = cardFace(cardRecord(extra.cards, extra), false, art(choice));
     // the print is laid by this frame's quad when that is a card, else by the last frame's that is, for at most HOLD frames (as poseAt
     // keeps a pose): one wedge frame then shows the printed face, not the border colour (seat 1, paow-giv-2-1-p1-06-01 frame 81)
     const printed = (i: number) => { const q = i >= 0 ? printQuad(own, i, (track as {print?: Parameters<typeof printQuad>[2]} | null)?.print) : null; return q && plausible(q.map(([x, y]) => ({x, y})), 2.5 * PLAUSIBLE.size) ? q : null; };
     let quad = printed(at); for (let back = 1; !quad && at >= 0 && back <= HOLD; back++) quad = printed(at - back);
-    o.film.setMatte({box, ...matte.run(film, box, shoe, at >= 0 ? paleZone(own, at) : null), print: print(face.art), toPrint: toPrint(quad), back: backMean(), paper: PAPER, lying: [LYING.BACK, LYING.FRONT], zone: at >= 0 ? matteZone(own, at) : null,
+    o.film.setMatte({box, ...matte.run(film, box, shoe, turn ? {zone: turn.zone, mode: turn.back ? 3 : 4} : near ? {zone: near, mode: 1} : null), print: print(face.art), toPrint: toPrint(quad), back: black ? backBody() : alone ? backMean() : backDark(), paper: PAPER, lying: [LYING.BACK, LYING.FRONT], zone: at >= 0 ? matteZone(own, at) : null,
       shoe: [shoe[0] - MATTE.shoeRoom, shoe[1] - MATTE.shoeRoom, shoe[2] + MATTE.shoeRoom, shoe[3] + MATTE.shoeRoom], faceBack: face.back});
   }
+
+  // The turn of a card carried face up (card-overlay.ts turnOf): no card can be laid by the track there, so no card is drawn and
+  // nothing is keyed for it, except an edge line, which is drawn and keyed as before (a thin sliver is gone from the matte's body);
+  // the film's own card is recoloured in place (drawMatte), its blur and all, so what was a yellow and then a blue card in the film
+  // turns from the printed back to the printed face. Not with carry 'film', which leaves the film's card.
+  const turning = (track: CardTrack | null, at: number, extra: Extra) => { if (!track || at < 0 || (extra.carry ?? 'object') === 'film') return false; const t = turnOf(track); return !!t && at >= t.from && at <= t.to; };
+  const widened = (box: number[], zone: number[][] | null) => { if (!zone) return box; const xs = zone.map(p => p[0]), ys = zone.map(p => p[1]);
+    return [Math.max(0, Math.floor(Math.min(box[0], ...xs))), Math.max(0, Math.floor(Math.min(box[1], ...ys))), Math.min(FILM.width - 1, Math.ceil(Math.max(box[2], ...xs))), Math.min(FILM.height - 1, Math.ceil(Math.max(box[3], ...ys)))]; };
 
   // The card being dealt as an object under the film, with the film's own card keyed away (way 'scene').
   function dealCard(track: CardTrack | null, at: number, choice: Choice, extra: Extra) {
@@ -341,12 +363,14 @@ export function createDealLayer(o: Options) {
     // no longer lies over the card still in the shoe, which was drawn over the model like a sticker: the card is drawn from two frames
     // after it has left the shoe (the track's leavesShoe), out of the model's mouth. The seated card stays, the next card in the window.
     const model = shoeModel(), early = model && typeof track?.leavesShoe === 'number' && at < track.leavesShoe + 2;
-    const now = at >= 0 && !early ? drawnAt(track!, at, choice, extra) : null, pose = now?.pose ?? null, f = pose ? track!.frames[pose.frame] : null;
+    const drawn = at >= 0 && !early ? drawnAt(track!, at, choice, extra) : null, now = drawn && (drawn.line || !turning(track, at, extra)) ? drawn : null, pose = now?.pose ?? null, f = pose ? track!.frames[pose.frame] : null;
     // the next card, seated in the shoe window: its back, lit by the film's light on the film's seated card. Only the window
     // shows it: the shoe around it is film and lies over it.
     const first = track?.frames?.[0], seat = first?.quad?.length === 4 && (first.shoeShare ?? 0) >= 0.9 ? first.quad : SEATED;
-    lay(seated, seat, {print: print(), shade: {core: seat, colour: COLOUR.BACK, lying: LYING.BACK}, contact: 0}); seatDepth.visible = true;
-    let key: CardKey = {zone: [], core: null, colour: COLOUR.BACK, sides: 2, tint: 2, trust: 0, rim: RIM, shoe: null, over: null, seated: {zone: grown(clockwise(seat.map(([x, y]) => ({x, y}))), RIM + 3).map(p => [p.x, p.y]), core: seat}};
+    // With carry 'matte' the window's card is the film's own, recoloured in place (drawMatte), and is neither drawn nor keyed.
+    const filmSeat = (extra.carry ?? 'object') === 'matte';
+    if (filmSeat) { hide(seated); seatDepth.visible = false; } else { lay(seated, seat, {print: print(), shade: {core: seat, colour: COLOUR.BACK, lying: LYING.BACK}, contact: 0}); seatDepth.visible = true; }
+    let key: CardKey = {zone: [], core: null, colour: COLOUR.BACK, sides: 2, tint: 2, trust: 0, rim: RIM, shoe: null, over: null, seated: filmSeat ? null : {zone: grown(clockwise(seat.map(([x, y]) => ({x, y}))), RIM + 3).map(p => [p.x, p.y]), core: seat}};
     composite.visible = false;
     if (now && pose && f) {
       const edge = !!now.line, side = pose.side === 'BACK' || pose.side === 'FRONT' ? pose.side : sideNear(track!, pose.frame);
@@ -398,7 +422,11 @@ export function createDealLayer(o: Options) {
         const carry = extra.carry ?? 'object', late = !!track && (carry !== 'object' || track.hand === false), landed = late ? restOf(track!) : null;
         const drawn = late ? {...track!, drawnFrom: landed ? (carry === 'film' ? landed.from : landed.from - EASE) : Infinity} : track;
         dealCard(drawn, at, choice, extra);
-        if (late && carry !== 'film' && at >= 0 && at < firstDrawn(drawn!)) drawMatte(track, at, choice, extra, false); else o.film.setMatte(null);
+        // in the turn of a card drawn before and after it, the film's back takes the drawn back's black field (it lies between two black cards)
+        const inHand = late && carry !== 'film' && at >= 0 && at < firstDrawn(drawn!);
+        if (inHand || turning(track, at, extra)) drawMatte(track, at, choice, extra, false, false, !inHand);
+        else if (carry === 'matte') drawMatte(track, at, choice, extra, false, true); // the window's card, the film's own (dealCard)
+        else o.film.setMatte(null);
       }
       // cards dealt by earlier films of the round, which this film does not show: lying flat where they landed, in the size the dealt
       // card came to rest in (restingQuad at Kortens storlek, as poseAt lays it on its place). The plan's quad itself is about the card

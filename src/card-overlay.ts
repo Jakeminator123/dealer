@@ -208,6 +208,21 @@ export function firstDrawn(track: CardTrack): number {
   if (track.hand !== false) return -Infinity;
   const rest = restOf(track); return rest ? rest.from - EASE : Infinity;
 }
+/**
+ * The turn of a card carried face up: the frames between the last back the track has as a card (plausible) and the first face
+ * after it, or null when the card is not turned in the hand. The film's card is a blur there, its yellow and blue washed into grey,
+ * mint and teal, and the track's edge lines and quads, where it has any, often lie across it (seat 4, paow-giv-2-1-p4-04-01 frames
+ * 45-52: short lines across the fingers, then no quad), so no card can be laid by them: the scene recolours the film's own card
+ * there instead (src/scene3d-deal.ts). A turn on the felt, as the card is laid, counts too; a card at rest never turns.
+ */
+export function turnOf(track: CardTrack): {from: number; to: number} | null {
+  const known = turns.get(track.frames); if (known !== undefined) return known;
+  const rest = restOf(track), end = rest ? rest.from : track.frames.length, card = (i: number, side: Side) => { const f = track.frames[i]; return f?.side === side && f.quad?.length === 4 && plausible(pts(f.quad)); };
+  let back = -1, turn: {from: number; to: number} | null = null;
+  for (let i = Math.max(0, track.leavesShoe ?? 0); i < end; i++) { if (card(i, 'BACK')) back = i; else if (back >= 0 && card(i, 'FRONT')) { turn = i > back + 1 ? {from: back + 1, to: i - 1} : null; break; } }
+  turns.set(track.frames, turn); return turn;
+}
+const turns = new WeakMap<object, {from: number; to: number} | null>();
 /** How much of a move applies in a frame: none while the card sits in the shoe, all of it once it lies; in between it grows smoothly while the card is carried. */
 export function shiftShare(track: CardTrack, frame: number): number {
   const rest = restOf(track), to = rest ? rest.from : track.frames.length - 1, from = Math.min(to, Math.max(0, track.leavesShoe ?? 0, firstDrawn(track)));
