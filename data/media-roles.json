@@ -3765,6 +3765,13 @@
           "note": "Kortagentens prov 2026-11-13 efter Jakobs ord att det ska bli en linje för korten: samma rutor av given till plats 3, 4 och 7 och av dealerns första kort (vid skon, i handen, i vändningen, när det landar och ligger), med filmens eget kort omfärgat i handen och det ritade först när det ligger, mot det ritade kortet hela vägen. En oberoende granskare väljer."
         },
         {
+          "id": "paow-prov-korten-tre-satt",
+          "role": "prov",
+          "name": "Korten: tre sätt",
+          "proof": "korten-tre-satt",
+          "note": "Kortutredningen 2026-11-13 efter Jakobs ord kl. 19.13 (behålla det blå och gula, börja om med överlägg, pålägg och underlägg): samma giv med filmens egna kort, med linjen som gäller nu (filmens eget kort i handen och i skon, ritat när det ligger) och med eftermiddagens ritade kort i handen. Sist ett prov utanför scenen på pålägget, där filmens gula kort färgas mörkt."
+        },
+        {
           "id": "paow-prov-jamnat-ljus",
           "role": "prov",
           "name": "Jämnat ljus mellan filmer, och ren kant runt håret",
