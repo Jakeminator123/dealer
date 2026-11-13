@@ -167,6 +167,8 @@ A film goes into the bank's inbox by the main agent or on its word (`tools/order
 decisions, with `review.inbox: true`; it plays only where its step has nothing else until he judges it in Granska. A still
 goes into Material as a candidate (the studio's "Lägg till bild"), never as gäller: Jakob approves it there. `INFÖRD` is set
 after that.
+A provisional verdict in Jakob's place (`node tools/review-put.ts`) is the main agent's, with an independent reviewer, and
+only where he has handed the judgment over; never yours.
 
 ## 10. Report
 A table, one row per take: order, take, model, task id, status, size and frames, sha256 (12 characters), the after-work

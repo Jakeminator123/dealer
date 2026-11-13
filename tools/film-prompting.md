@@ -1,18 +1,34 @@
 # Handbok: så komponeras en filmbeställning
 
-En av fyra: [dealer-line.md](dealer-line.md) är ingången (stationerna från en bild till en färdig dealer, alla format och namn), [order-clerk.md](order-clerk.md) säger hur en beställning läggs, [film-review.md](film-review.md) hur filmen granskas, och den här hur beställningen sätts ihop (bilder, referensfilm, text, modell, längd, tagningar) och **vad som har hållit och vad som har fallit** (§5). Skriven 2026-11-13 ur tillverkarnas guider, våra liggare (`D:/dealer-scratch/tmp/paow/`), kvittona `assets/orders/*/receipt.json`, protokollet (`node tools/order-ledger.ts`) och Jakobs domar (`review.userReview` i `motions/paow-*.json`). Underlaget i längre form: `D:/dealer-scratch/tmp/huvudagent11/recept/RAPPORT.md`.
+En av fyra: [dealer-line.md](dealer-line.md) är ingången (stationerna från en bild till en färdig dealer, alla format
+och namn), [order-clerk.md](order-clerk.md) säger hur en beställning läggs, [film-review.md](film-review.md) hur filmen
+granskas, och den här hur beställningen sätts ihop (bilder, referensfilm, text, modell, längd, tagningar) och **vad som
+har hållit och vad som har fallit** (§5). Skriven 2026-11-13 ur tillverkarnas guider, våra liggare
+(`D:/dealer-scratch/tmp/paow/`), kvittona `assets/orders/*/receipt.json`, protokollet (`node tools/order-ledger.ts`) och
+Jakobs domar (`review.userReview` i `motions/paow-*.json`). Underlaget i längre form:
+`D:/dealer-scratch/tmp/huvudagent11/recept/RAPPORT.md`.
 
-**Märkning.** (V) = verifierat: läst i källan, i liggaren, i kvittot eller sett i rutor. (S) = skattat: egen slutsats, inte prövad. Källtyp: *Tillverkare* (officiell dokumentation), *Praktiker* (namngiven, utan prov), *Hörsägen* (osignerat). Två tagningar bevisar lite; där belägget är en eller två tagningar står det så. **Jakobs dom avgör**; där granskaren dömde annorlunda står båda.
+**Märkning.** (V) = verifierat: läst i källan, i liggaren, i kvittot eller sett i rutor. (S) = skattat: egen slutsats,
+inte prövad. Källtyp: *Tillverkare* (officiell dokumentation), *Praktiker* (namngiven, utan prov), *Hörsägen*
+(osignerat). Två tagningar bevisar lite; där belägget är en eller två tagningar står det så. **Jakobs dom avgör**; där
+granskaren dömde annorlunda står båda.
 
 ## Slutsats
 
-1. **Bilderna säger vem och var, texten bara rörelsen.** Inget om hennes utseende; platsen sägs i ord utan bildpunkter (mall 5).
+1. **Bilderna säger vem och var, texten bara rörelsen.** Inget om hennes utseende; platsen sägs i ord utan bildpunkter
+   (mall 5).
 2. **En handling per film, ett kort, få led.** Vändningen sägs med en mening, en gång.
 3. **Positivt formulerat, inga förbud.** Ingen lista "Nothing of this happens", inga "not/never/without".
-4. **En rörelse låses med en bild eller en referensfilm, inte med ord.** Det texten inte kan låsa löses med ett ankare eller en film av rörelsen.
-5. **Allt som syns i en bild eller film följer med.** Fel sko, en annan dealers hand, ett föremål: modellen kopierar det.
+4. **En rörelse låses med en bild eller en referensfilm, inte med ord.** Det texten inte kan låsa löses med ett ankare
+   eller en film av rörelsen.
+5. **Allt som syns i en bild eller film följer med.** Fel sko, en annan dealers hand, ett föremål: modellen kopierar
+   det.
 6. **Två tagningar sållar, de avgör inget.** En metod blir regel först efter fler tagningar (§5).
-7. **Jakob dömer kortet, granskaren måtten.** Han har godkänt 11 av 22 givar och 16 av 21 returer (räknat ur `motions/paow-giv-*` 2026-11-13 på morgonen), och underkänt för kortets färg och vändning ("Här ändrar kortet färg ungefär halvvägs", "två vridningsmoment", "ett blått spelkort"), för ett gult kort i slutet och för stelhet ("Hon är väldigt stel"); ett kort som skjuts längs filten har han godkänt (`p1-04`, cirka 790 px) (V). Mönstret är skattat (S).
+7. **Jakob dömer kortet, granskaren måtten.** Han har godkänt 11 av 22 givar och 16 av 21 returer (räknat ur
+   `motions/paow-giv-*` 2026-11-13 på morgonen), och underkänt för kortets färg och vändning ("Här ändrar kortet färg
+   ungefär halvvägs", "två vridningsmoment", "ett blått spelkort"), för ett gult kort i slutet och för stelhet ("Hon är
+   väldigt stel"); ett kort som skjuts längs filten har han godkänt (`p1-04`, cirka 790 px) (V). Mönstret är skattat
+   (S).
 
 ## 1. Reglerna med belägg
 
@@ -25,11 +41,22 @@ En av fyra: [dealer-line.md](dealer-line.md) är ingången (stationerna från en
 | 5 Bilden följer med | Runway I2V: "Visual artifacts, such as blurry hands or faces, may be intensified" (V) | Ankare 2.2: posebilden visade Pamelas sko med öppen front, båda tagningarna ritade den (0/2) (V). Med Pamelas film som referens tappar Paows givande hand tatueringen i snabb rörelse (Prov `paow-plats-4-som-mall`) (V) |
 | 6 Två tagningar sållar | Jakob: två tagningar per klipp, en tredje om båda faller (HANDOFF) | Är två metoder lika bra med 50 % lyckade blir utfallet 2–0 mot 0–2 av slump i ungefär 1 fall av 8 (S) |
 
-**Där källorna säger emot varandra (V):** Klings egna exempel innehåller förbud ("Avoid duplicate limbs …") trots rådet. WAN:s promptomskrivare för första och sista bild säger både "emphasize potential changes … between the two frames" och "reference … clothing, backgrounds" (80–100 ord). Runway Gen-4.5 sägs klara "complex, sequenced instructions", Gen-4 vill ha enkelhet. Google säger för stillbilder "Be Hyper-Specific" och "semantic negative prompts" (beskriv det önskade positivt), så en stillbildstext får vara lång men inte förbjuda. Runways hjälpsida säger att Seedance 2.5 tar nyckelbilder och referenser samtidigt; vårt verktygs schema säger att bara `kling-4` tar första och sista bild tillsammans med referensfilm. Schemat gäller för oss.
+**Där källorna säger emot varandra (V):** Klings egna exempel innehåller förbud ("Avoid duplicate limbs …") trots rådet.
+WAN:s promptomskrivare för första och sista bild säger både "emphasize potential changes … between the two frames" och
+"reference … clothing, backgrounds" (80–100 ord). Runway Gen-4.5 sägs klara "complex, sequenced instructions", Gen-4
+vill ha enkelhet. Google säger för stillbilder "Be Hyper-Specific" och "semantic negative prompts" (beskriv det önskade
+positivt), så en stillbildstext får vara lång men inte förbjuda. Runways hjälpsida säger att Seedance 2.5 tar
+nyckelbilder och referenser samtidigt; vårt verktygs schema säger att bara `kling-4` tar första och sista bild
+tillsammans med referensfilm. Schemat gäller för oss.
 
 ## 2. Formeln
 
-En beställning är en ren funktion av valen i Beställ: samma val ger samma bilder, text, modell och kostnad. Texten skrivs aldrig för hand i en order; ändras den, ändras mallen och versionen räknas upp. De exakta orden står i `SAY` i `src/order-prompts.ts` (mall 5, `TEMPLATE_VERSION`; Utförlig = mall 3; en order återges med sin egen version); reglerna och recepten står här. Kort är förvalet, Minimal är Jakobs prov, Utförlig bara för jämförelse. Skiljer orden sig från reglerna här, rättas orden. Format, filer och priser: [dealer-line.md](dealer-line.md), "Format och namn".
+En beställning är en ren funktion av valen i Beställ: samma val ger samma bilder, text, modell och kostnad. Texten
+skrivs aldrig för hand i en order; ändras den, ändras mallen och versionen räknas upp. De exakta orden står i `SAY` i
+`src/order-prompts.ts` (mall 7, `TEMPLATE_VERSION`; Utförlig = mall 3; en order återges med sin egen version, så mall
+6:s ord gäller bara dess egna ordrar); reglerna och recepten står här. Kort är förvalet, Minimal är Jakobs prov,
+Utförlig bara för jämförelse. Skiljer orden sig från reglerna här, rättas orden. Format, filer och priser:
+[dealer-line.md](dealer-line.md), "Format och namn".
 
 | Del | Kommer från valet | Regel |
 |---|---|---|
@@ -41,9 +68,16 @@ En beställning är en ren funktion av valen i Beställ: samma val ger samma bil
 | Modell, längd | Steget har förval; modellen kan väljas | Tabellen nedan |
 | Tagningar | 1 per metodprov, 2 per klipp när metoden är vald | En tredje bara om båda faller |
 
-**Textens skelett, i denna ordning (film):** 1 `SAY.camera` ("Locked camera, one continuous shot."). 2 Med referensfilm `SAY.reference`. 3 Handlingen i en mening, handen pekad ut genom var den är (`SAY.handAtShoe`; Runway: "clear positional language"; undviker spegelförväxling, S), med platsen i ord (`whereShort`, "towards its place at the far left of the picture, where the last frame shows it"). 4 Vändningen, bara om kortet landar öppet: exakt en av `turnAtPlace`, `turnOnTheWay`, `rollOnTheWay` (§3.3). 5 Vägen tillbaka, bara i tur och retur (`backPinch`, `backDrag`). 6 Andra handen (`otherRests`). 7 Kortet (`oneCardMoves`). 8 Jakobs tillägg, en positiv mening.
+**Textens skelett, i denna ordning (film):** 1 `SAY.camera` ("Locked camera, one continuous shot."). 2 Med referensfilm
+`SAY.reference`. 3 Handlingen i en mening, handen pekad ut genom var den är (`SAY.handAtShoe`; Runway: "clear positional
+language"; undviker spegelförväxling, S), med platsen i ord (`whereShort`, "towards its place at the far left of the
+picture, where the last frame shows it"). 4 Vändningen, bara om kortet landar öppet: exakt en av `turnAtPlace`,
+`turnOnTheWay`, `rollOnTheWay` (§3.3). 5 Vägen tillbaka, bara i tur och retur (`backPinch`, `backDrag`). 6 Andra handen
+(`otherRests`). 7 Kortet (`oneCardMoves`). 8 Jakobs tillägg, en positiv mening.
 
-**Står aldrig i en filmtext:** utseende, kläder, hår; förbud eller "not/no/never/without"; bildpunkter; tidsangivelser (WAN läser dem som scenlista, S); en andra handling; "exactly as in the last frame" mer än en gång. Längd: så kort som skelettet tillåter; mall 4 och 5 gav 79–132 ord (protokollet, V).
+**Står aldrig i en filmtext:** utseende, kläder, hår; förbud eller "not/no/never/without"; bildpunkter; tidsangivelser
+(WAN läser dem som scenlista, S); en andra handling; "exactly as in the last frame" mer än en gång. Längd: så kort som
+skelettet tillåter; mall 4 och 5 gav 79–132 ord (protokollet, V).
 
 | Steg | Modell först | s | Varför |
 |---|---|---|---|
@@ -56,63 +90,141 @@ En beställning är en ren funktion av valen i Beställ: samma val ger samma bil
 | Vila | WAN 3, 1080p | 4–5 | Samma bild först och sist |
 | Stillbild (ankare, landning) | Nano Banana Pro, 4K, 4:3 | – | Redigerar dealerns egen bild med `@anchor` och `@pose` |
 
-Billig sållning: WAN 3 i 480p kostar 5 krediter per s och visar om modellen gör rörelsen (`data/order-policy.json`, V). Kling 3.0 4K beställs inte längre (`MODELS['kling-3-4k'].off`: ingen skärpevinst, 172 krediter mot 80; Jakob: "det är dumt att ta ett klipp i 4K om övriga klipp inte är i 4K"). Seedance 2.5 i 1080p kostar 68 per s plus 34 per s referensfilm (Runway, V): en 7 s giv går över taket 400.
+Billig sållning: WAN 3 i 480p kostar 5 krediter per s och visar om modellen gör rörelsen (`data/order-policy.json`, V).
+Kling 3.0 4K beställs inte längre (`MODELS['kling-3-4k'].off`: ingen skärpevinst, 172 krediter mot 80; Jakob: "det är
+dumt att ta ett klipp i 4K om övriga klipp inte är i 4K"). Seedance 2.5 i 1080p kostar 68 per s plus 34 per s
+referensfilm (Runway, V): en 7 s giv går över taket 400.
 
 ## 3. Recept per steg
 
 Orden står i `SAY`; här står vad som har hållit och varför.
 
 ### 3.1 Ingång: ankare 1 → 2.1 och → 2.2
-- Orden: `SAY.reach['2.1']` eller `['2.2']`, `SAY.eyes`, `SAY.otherRests`. WAN 3, 1080p, 4 s, två tagningar. Blicken är med för att Jakob sade om `paow-ingang-2-1-01`: "En bra variant! Men hon rör inte blicken filket är tråkigt" (V).
-- Har hållit: `paow-ingang-2-1-01` (WAN): granskaren 3,5/5 (HANDOFF), Jakob Variant; `-02` (Kling 3.0 4K, 172 krediter): 3/5, Jakob Godkänd, "bra men tråkig" (V, en tagning var). Kavajomgången: 1 → 2.2 gav en huvudtagning av två (V).
-- Har fallit: båda ingångarna rörde fönstrets ram före kortet (WAN ruta 44–59, 4K ruta 38–55) (V). Troligen geometrin: fingret kommer uppifrån och kortets kant sitter bakom ramen (S). Ordet "rim" är struket; att texten flyttar fingret är oprövat.
+- Orden: `SAY.reach['2.1']` eller `['2.2']`, `SAY.eyes`, `SAY.otherRests`. WAN 3, 1080p, 4 s, två tagningar. Blicken är
+  med för att Jakob sade om `paow-ingang-2-1-01`: "En bra variant! Men hon rör inte blicken filket är tråkigt" (V).
+- Har hållit: `paow-ingang-2-1-01` (WAN): granskaren 3,5/5 (HANDOFF), Jakob Variant; `-02` (Kling 3.0 4K, 172 krediter):
+  3/5, Jakob Godkänd, "bra men tråkig" (V, en tagning var). Kavajomgången: 1 → 2.2 gav en huvudtagning av två (V).
+- Har fallit: båda ingångarna rörde fönstrets ram före kortet (WAN ruta 44–59, 4K ruta 38–55) (V). Troligen geometrin:
+  fingret kommer uppifrån och kortets kant sitter bakom ramen (S). Ordet "rim" är struket; att texten flyttar fingret är
+  oprövat.
 
 ### 3.2 Giv med nyp från ankare 2.1
-- **Med referensfilm (det som har hållit):** Kling 4, 1080p, 7 s, referens = bankens rakt godkända tur och retur **till samma plats**. Höll: b6 P4, b17 P4, b19 D, b20 P1 2 av 2 (V); `paow-giv-2-1-p4-11` given godkänd av Jakob ("Tack!"), granskaren 3/5 (vänd i luften som referensen, lägst hand, lagt utan skjut) (V); `paow-giv-2-1-p1-08` (omgång 5, P1, samma referens, vändning vid platsen i texten): båda tagningarna lades av handen 2–3 px från planen och vändes en gång på långsidan vid platsen (kantrutor 69–70, 22 och 27 px från platsen) (mätt, granskning pågår); Jakob godkände tagning 2 ("Ser jättebra ut. Kortet kan möjligen vara lite litet, men jag är osäker.") och underkände tagning 1 ("Kortet kapas när det läggs ner, vilket är mycket konstigt.") (V). `paow-giv-2-1-p1-05` (omgång 4, samma referens, fri vändning): granskaren 3,5/5, men Jakob underkände: "Här ändrar kortet färg ungefär halvvägs." (V). Referens från en annan startpose (`p2-03`, Pamelas släp ur ankare 2.2): kortet lades framför skon som i referensen och sköts cirka 725 px till P2; Jakob godkände ("det håller helt klart") (V). Föll: referens till annan plats (b19 P1, P7) (V).
-- Risk: referensen är Pamelas, och hennes hand läcker in (tatueringen försvinner i snabb rörelse) (V). Studion stoppar bara hela bilder av en annan dealer; en annan dealers film som referens tillåter Jakob (order-clerk §3; HANDOFF öppen punkt 9 för varianter).
-- **Utan referens:** `paow-giv-2-1-p4-04` (mall 3, rullas kring långsidan, Kling 4): Jakobs Primär, "Kanske den bästa!", fast kortet lyfts till brösthöjd och växer cirka 21 % och skjuts 160 px (mätt, inte granskad, V). `paow-giv-p4` (mall 3, Kling 4): tagning 1 underkänd ("just denna omsvängning av kortet sista tredjedelen av videon som förstör.."), tagning 2 godkänd ("Denna är bra"), granskaren 2/5 och 2,5/5 (V). Till P1 med fri vändning (omgång 4): `p1-06` (WAN 3) Primär, "Mycket bra, kan konkurrera om att bli den primära." (granskaren 3/5); `p1-04` (Kling 4) godkänd fast kortet tappades och sköts cirka 790 px (granskaren 1,5/5) (V).
+- **Med referensfilm (det som har hållit):** Kling 4, 1080p, 7 s, referens = bankens rakt godkända tur och retur **till
+  samma plats**. Höll: b6 P4, b17 P4, b19 D, b20 P1 2 av 2 (V); `paow-giv-2-1-p4-11` given godkänd av Jakob ("Tack!"),
+  granskaren 3/5 (vänd i luften som referensen, lägst hand, lagt utan skjut) (V); `paow-giv-2-1-p1-08` (omgång 5, P1,
+  samma referens, vändning vid platsen i texten): båda tagningarna lades av handen 2–3 px från planen och vändes en gång
+  på långsidan vid platsen (kantrutor 69–70, 22 och 27 px från platsen) (mätt, granskning pågår); Jakob godkände tagning
+  2 ("Ser jättebra ut. Kortet kan möjligen vara lite litet, men jag är osäker.") och underkände tagning 1 ("Kortet kapas
+  när det läggs ner, vilket är mycket konstigt.") (V). `paow-giv-2-1-p1-05` (omgång 4, samma referens, fri vändning):
+  granskaren 3,5/5, men Jakob underkände: "Här ändrar kortet färg ungefär halvvägs." (V). Referens från en annan
+  startpose (`p2-03`, Pamelas släp ur ankare 2.2): kortet lades framför skon som i referensen och sköts cirka 725 px
+  till P2; Jakob godkände ("det håller helt klart") (V). Föll: referens till annan plats (b19 P1, P7) (V).
+- Risk: referensen är Pamelas, och hennes hand läcker in (tatueringen försvinner i snabb rörelse) (V). Studion stoppar
+  bara hela bilder av en annan dealer; en annan dealers film som referens tillåter Jakob (order-clerk §3; HANDOFF öppen
+  punkt 9 för varianter).
+- **Utan referens:** `paow-giv-2-1-p4-04` (mall 3, rullas kring långsidan, Kling 4): Jakobs Primär, "Kanske den bästa!",
+  fast kortet lyfts till brösthöjd och växer cirka 21 % och skjuts 160 px (mätt, inte granskad, V). `paow-giv-p4` (mall
+  3, Kling 4): tagning 1 underkänd ("just denna omsvängning av kortet sista tredjedelen av videon som förstör.."),
+  tagning 2 godkänd ("Denna är bra"), granskaren 2/5 och 2,5/5 (V). Till P1 med fri vändning (omgång 4): `p1-06` (WAN 3)
+  Primär, "Mycket bra, kan konkurrera om att bli den primära." (granskaren 3/5); `p1-04` (Kling 4) godkänd fast kortet
+  tappades och sköts cirka 790 px (granskaren 1,5/5) (V).
 - Bankens givar vänder kortet i luften, inte vid platsen (V). För Jakobs sex steg finns ingen referens i banken: se 3.3.
 
 ### 3.3 Vändningen vid platsen (Jakobs sex steg)
-Nyp, Dra, För fram, Vrid, Vänd upp, Lägg: kortet ligger gult upp mot filten hela vägen och vänds först vid platsen. 22 tagningar har beställts så; fyra vände vid platsen (V): `p4-07` (Jakob: "gör två vridningsmoment … återigen fel färg"), `p1-07` t2 (WAN 3, underkänd), och `p1-08` t1 och t2 (Kling 4 med referens till samma plats: 2 av 2; t2 godkänd). Utan referens, WAN 3 i omgång 5: 1 av 5 (P7 0 av 2; till D.C1 vändes kortet i luften). Metodregistret beställer givar från 2.1 med vändning vid platsen och referens till samma plats (`data/order-methods.json`, status `prov`); planen säger "i luften" på alla 16 kort, så förvalet i Beställ (`defaultFlip`) är fri vändning (V). Två vändningar en vänsterhand kan göra (S, inte prövade som bild):
+Nyp, Dra, För fram, Vrid, Vänd upp, Lägg: kortet ligger gult upp mot filten hela vägen och vänds först vid platsen. 22
+tagningar har beställts så; fyra vände vid platsen (V): `p4-07` (Jakob: "gör två vridningsmoment … återigen fel färg"),
+`p1-07` t2 (WAN 3, underkänd), och `p1-08` t1 och t2 (Kling 4 med referens till samma plats: 2 av 2; t2 godkänd). Utan
+referens, WAN 3 i omgång 5: 1 av 5 (P7 0 av 2; till D.C1 vändes kortet i luften). Metodregistret beställer givar från
+2.1 med vändning vid platsen och referens till samma plats (`data/order-methods.json`, status `prov`); planen säger "i
+luften" på alla 16 kort, så förvalet i Beställ (`defaultFlip`) är fri vändning (V). Två vändningar en vänsterhand kan
+göra (S, inte prövade som bild):
 
-**Vändning A, "tummen lyfter, kortet fälls över" (Jakobs skiss, `SAY.turnAtPlace`).** Kortets långsidor pekar mot spelaren. Vänsterhanden kommer från skon med handflatan ned; tummen ligger vid kortets inre långsida, pek- och långfinger på baksidan. Tummen glider in under den inre långsidan och lyfter den; underarmen roterar utåt (tummen uppåt); den yttre långsidan ligger kvar mot filten som gångjärn. Kortet står på kant med tummen på den blå sidan; tummen fäller kortet över gångjärnet och följer med ned på framsidan. Greppet är inte fast: fingrarna lämnar kortet en stund medan det står på kant.
+**Vändning A, "tummen lyfter, kortet fälls över" (Jakobs skiss, `SAY.turnAtPlace`).** Kortets långsidor pekar mot
+spelaren. Vänsterhanden kommer från skon med handflatan ned; tummen ligger vid kortets inre långsida, pek- och
+långfinger på baksidan. Tummen glider in under den inre långsidan och lyfter den; underarmen roterar utåt (tummen
+uppåt); den yttre långsidan ligger kvar mot filten som gångjärn. Kortet står på kant med tummen på den blå sidan; tummen
+fäller kortet över gångjärnet och följer med ned på framsidan. Greppet är inte fast: fingrarna lämnar kortet en stund
+medan det står på kant.
 
-**Vändning B, "nyckelvridning lågt vid platsen" (närmast bankens).** Tumme och pekfinger håller kortets närmaste kortsida, lyfter det en handsbredd, handleden rullar en gång, och kortet läggs ned med fingertopparna på dess närmaste kant, som Pamelas godkända giv till P4 slutar (V, ruta 76–112).
+**Vändning B, "nyckelvridning lågt vid platsen" (närmast bankens).** Tumme och pekfinger håller kortets närmaste
+kortsida, lyfter det en handsbredd, handleden rullar en gång, och kortet läggs ned med fingertopparna på dess närmaste
+kant, som Pamelas godkända giv till P4 slutar (V, ruta 76–112).
 ```
 At the place she lifts the card a little by its short end between thumb and forefinger, rolls her wrist once so the card turns over about its long side, and lays it down blue side up under her fingertips.
 ```
-**Vad en bild av varje ögonblick visar (A):** *Före:* kortet gult och plant en kortbredd mot hennes mitt från landningsplatsen, handflatan ned, två fingertoppar på baksidan. *På kant:* kortet upprätt på sin yttre långsida, en smal ljus remsa framifrån; tummen på den blå sidan. *Efter:* kortet blått och plant på planens plats; tumtoppen på framsidan, handen på kant. En platt handrygg över kortet är aldrig slutet på en vändning (Jakob 2026-11-13, om landningsrutan ur `paow-giv-p4` tagning 2).
+**Vad en bild av varje ögonblick visar (A):** *Före:* kortet gult och plant en kortbredd mot hennes mitt från
+landningsplatsen, handflatan ned, två fingertoppar på baksidan. *På kant:* kortet upprätt på sin yttre långsida, en smal
+ljus remsa framifrån; tummen på den blå sidan. *Efter:* kortet blått och plant på planens plats; tumtoppen på framsidan,
+handen på kant. En platt handrygg över kortet är aldrig slutet på en vändning (Jakob 2026-11-13, om landningsrutan ur
+`paow-giv-p4` tagning 2).
 
-**Metoder som konkurrerar, i den ordning de prövas:** 0 *Referensfilm till samma plats och vändningen vid platsen i texten* (Kling 4): 2 av 2 i `p1-08`, ledande. 1 *Text i en giv "bara dit"* från ankare 2.1 till landningsbilden, WAN 3 och Kling 4, 7 s. 2 *Vändningen som egen film* mellan stillbilderna Före och Efter, 3 s (kräver en ny nod i banken, huvudagentens). 3 *Referensfilm av Jakobs egen hand* (3.8) med Kling 4, om 1 och 2 ger 0 av 4. 4 *Renderat kort*: rätt hand men fel kort ger målat kort (HANDOFF punkt 11); fel hand hjälper inget kort. En metod går vidare om minst 1 av 4 tagningar vänder kortet en gång vid platsen så som en hand kan, med kortet inom ±10 % (film-review §3–4).
+**Metoder som konkurrerar, i den ordning de prövas:** 0 *Referensfilm till samma plats och vändningen vid platsen i
+texten* (Kling 4): 2 av 2 i `p1-08`, ledande. 1 *Text i en giv "bara dit"* från ankare 2.1 till landningsbilden, WAN 3
+och Kling 4, 7 s. 2 *Vändningen som egen film* mellan stillbilderna Före och Efter, 3 s (kräver en ny nod i banken,
+huvudagentens). 3 *Referensfilm av Jakobs egen hand* (3.8) med Kling 4, om 1 och 2 ger 0 av 4. 4 *Renderat kort*: rätt
+hand men fel kort ger målat kort (HANDOFF punkt 11); fel hand hjälper inget kort. En metod går vidare om minst 1 av 4
+tagningar vänder kortet en gång vid platsen så som en hand kan, med kortet inom ±10 % (film-review §3–4).
 
 ### 3.4 Giv med släp från ankare 2.2 (stängt kort)
-- Orden: `SAY.slideOut`, `SAY.dragBack`, `SAY.stopClosed`, `SAY.backDrag`. WAN 3, 1080p, 6 s, två tagningar. Höll till P1: cirka 7 verkliga släp av 9 tagningar (b9–b17, V). Föll till P4 (0 av 2) och P7 (0 av 2: kortet går först åt vänster) (V). Pröva P1 först.
-- Förutsättning: ett ankare 2.2 som gäller (Paow saknar). Skon i b17 hade öppen front; fönsterskon är oprövad för släp (V).
+- Orden: `SAY.slideOut`, `SAY.dragBack`, `SAY.stopClosed`, `SAY.backDrag`. WAN 3, 1080p, 6 s, två tagningar. Höll till
+  P1: cirka 7 verkliga släp av 9 tagningar (b9–b17, V). Föll till P4 (0 av 2) och P7 (0 av 2: kortet går först åt
+  vänster) (V). Pröva P1 först.
+- Förutsättning: ett ankare 2.2 som gäller (Paow saknar). Skon i b17 hade öppen front; fönsterskon är oprövad för släp
+  (V).
 
 ### 3.5 Retur
-- **I samma film som given (tur och retur):** Jakob har godkänt 16 av 21 returer, två som Primär (`paow-giv-2-1-p4-04`: "förmodligen den bästa"; `paow-giv-2-1-p1-01`: "hon går tilbaka från possitionen med handen vilket hon gör bra"), och underkänt fem: för kortet (`p1-08` t2: "Halvvägs dyker det upp ett gult kort."; `p3-01`, `p4-12`: tryckt kort; `p4-09` utan egna ord) och för gult (`p4-14` t2: "Eftersom det är gult, underkänner jag.") (V). Granskaren gav dem 0,5–4/5, ofta för en knytnäve i brösthöjd (V). Hans dom gäller: returen i tur och retur håller.
-- **Som egen film** (`RETUR-2.1`, `-2.2`, `-1`): från landningsbilden till ankaret, orden `SAY.liftOff` och `SAY.glideTo`. WAN 3, 1080p, 3 s. Oprövad; behövs för en giv "bara dit". En film som startar på en annan films ruta skiftar cirka 5 nivåer i ton (Paows videoprov, V); därför en stillbild som första bild.
+- **I samma film som given (tur och retur):** Jakob har godkänt 16 av 21 returer, två som Primär (`paow-giv-2-1-p4-04`:
+  "förmodligen den bästa"; `paow-giv-2-1-p1-01`: "hon går tilbaka från possitionen med handen vilket hon gör bra"), och
+  underkänt fem: för kortet (`p1-08` t2: "Halvvägs dyker det upp ett gult kort."; `p3-01`, `p4-12`: tryckt kort; `p4-09`
+  utan egna ord) och för gult (`p4-14` t2: "Eftersom det är gult, underkänner jag.") (V). Granskaren gav dem 0,5–4/5,
+  ofta för en knytnäve i brösthöjd (V). Hans dom gäller: returen i tur och retur håller.
+- **Som egen film** (`RETUR-2.1`, `-2.2`, `-1`): från landningsbilden till ankaret, orden `SAY.liftOff` och
+  `SAY.glideTo`. WAN 3, 1080p, 3 s. Oprövad; behövs för en giv "bara dit". En film som startar på en annan films ruta
+  skiftar cirka 5 nivåer i ton (Paows videoprov, V); därför en stillbild som första bild.
 
 ### 3.6 Vila
-- Orden: `SAY.rest` plus en liten handling som Jakobs tillägg: `takes one slow, deep breath`, `smiles briefly`, `nods once`, `straightens her back`, `taps her fingers once on the felt`. WAN 3, 1080p, 4–5 s, första och sista bild = ankare 1.
-- Jakob godkände alla åtta (`paow-vila-01` rakt; 02–08 som Variant: "Jättebra variant!", "Jättebra.. Hon ler!", "Kanon!", "Toppen!") (V). Granskaren gav 1–3/5, mest för munnen: öppen eller tänder i 4 av 6 granskade (V). Nästa text för munnen (oprövad): "her lips stay together as the corners of her mouth lift a little".
+- Orden: `SAY.rest` plus en liten handling som Jakobs tillägg: `takes one slow, deep breath`, `smiles briefly`,
+  `nods once`, `straightens her back`, `taps her fingers once on the felt`. WAN 3, 1080p, 4–5 s, första och sista bild =
+  ankare 1.
+- Jakob godkände alla åtta (`paow-vila-01` rakt; 02–08 som Variant: "Jättebra variant!", "Jättebra.. Hon ler!",
+  "Kanon!", "Toppen!") (V). Granskaren gav 1–3/5, mest för munnen: öppen eller tänder i 4 av 6 granskade (V). Nästa text
+  för munnen (oprövad): "her lips stay together as the corners of her mouth lift a little".
 - Jakob om ordet: "Det är fortfarande oklart vad som ska vara en variant och vad som är godkänt." (`paow-vila-08`, V).
 
 ### 3.7 Stillbilder: ankare 2.1, 2.2, landningsbild
-Nano Banana Pro, 4K, 4:3, `referenceImages` `@anchor` (dealerns egen bild) och `@pose` (bara en utklippt underarm och hand, `tools/order-images.ts`). För stillbilder gäller Googles råd: detaljerat får det vara, men det oönskade sägs positivt ("one card", inte "no second card"). Orden för ankarna: `SAY.still*` och `STANDARD_STILL`.
+Nano Banana Pro, 4K, 4:3, `referenceImages` `@anchor` (dealerns egen bild) och `@pose` (bara en utklippt underarm och
+hand, `tools/order-images.ts`). För stillbilder gäller Googles råd: detaljerat får det vara, men det oönskade sägs
+positivt ("one card", inte "no second card"). Orden för ankarna: `SAY.still*` och `STANDARD_STILL`.
 ```
 This is an edit of the picture @anchor. Keep everything in @anchor exactly as it is: the framing and camera, the flat chroma-green background and table, the black card shoe at the right with the yellow card in its window, and the woman's face, hair, clothes, build and her hand at the left of the picture. Change only her hand nearest the shoe: it rests at the blue card lying flat on the felt in front of her, the tips of her forefinger and middle finger on the card's edge nearest her, the wrist raised above the knuckles and the thumb free beside the card, placed and shaped as the hand in @pose. @pose is a cut-out on plain green that shows only a forearm and hand; take from it only where the hand is and how the fingers touch the card. [STANDARD_STILL] There is one card on the felt and one in the shoe, each the size and shape of the card in the window.
 ```
-- Exemplet är **landningsbilden** (S, oprövad): `@anchor` = ankare 1 med kortet ritat där planen säger; `@pose` = armen ur Pamelas godkända giv till samma plats, rutan där fingertopparna vilar på kortet. Efteråt ritas kortet om ur planen och skon tas från ankare 1 (`tools/python/skolagning-21.py`, order-clerk §5).
-- **Ankare 2.1:** `paow-ankare-2-1` gav 4/5 och 2/5 (dubbla kort); Jakob godkände tagning 1 och underkände tagning 2 (V).
-- **Ankare 2.2:** föll i tre ordrar; varje gång flyttade bildmodellen skon, också när ankare 2.1 var `@anchor` (§5, V). Kvar: en ruta ur en film som börjar på ankare 2.1, eftersom filmen behåller skon där första rutan har den (S, oprövat). Ankare 2.2 är inte på vägen till första hela uppsättningen: varje giv börjar på ankare 2.1.
-- **Före vändningen** (3.3): ingen pose finns i banken; en ruta ur Jakobs egen film (3.8), utklippt till handen, är förslaget (S).
+- Exemplet är **landningsbilden** (S, oprövad): `@anchor` = ankare 1 med kortet ritat där planen säger; `@pose` = armen
+  ur Pamelas godkända giv till samma plats, rutan där fingertopparna vilar på kortet. Efteråt ritas kortet om ur planen
+  och skon tas från ankare 1 (`tools/python/skolagning-21.py`, order-clerk §5).
+- **Ankare 2.1:** `paow-ankare-2-1` gav 4/5 och 2/5 (dubbla kort); Jakob godkände tagning 1 och underkände tagning 2
+  (V).
+- **Ankare 2.2:** föll i tre ordrar; varje gång flyttade bildmodellen skon, också när ankare 2.1 var `@anchor` (§5, V).
+  Kvar: en ruta ur en film som börjar på ankare 2.1, eftersom filmen behåller skon där första rutan har den (S,
+  oprövat). Ankare 2.2 är inte på vägen till första hela uppsättningen: varje giv börjar på ankare 2.1.
+- **Före vändningen** (3.3): ingen pose finns i banken; en ruta ur Jakobs egen film (3.8), utklippt till handen, är
+  förslaget (S).
 
 ### 3.8 Referensfilm, Motion Control och Jakobs egen hand
-**Kling 3.0 Motion Control** (Runways hjälpsida, V): en karaktärsbild och en rörelsefilm, text valfri; 3–30 s; filmen ska visa "clear upper body … including all limbs and head", en person, obruten, inte snabb. Vårt verktyg: **ingen sista bild** (`kling-3-motion-control` står inte bland modellerna som tar `endFrame`). Om ett föremål i handen: "contact points are difficult" (Hörsägen). Vårt prov b1a (2026-11-11, V): 44 av 100; kortet genomskinligt grönt i ruta 30–84, skons fönster tomt från ruta 48, kortet landar 73 px fel, 1760 × 1184. **Svar: Pamelas film driver inte Paows ankare via Motion Control;** den kan driva Paows rörelse som referensfilm i Kling 4 med första och sista bild (3.2). Act-Two (högst 1280 × 720, lägger till "a subtle handheld shake") finns inte i vårt verktyg.
+**Kling 3.0 Motion Control** (Runways hjälpsida, V): en karaktärsbild och en rörelsefilm, text valfri; 3–30 s; filmen
+ska visa "clear upper body … including all limbs and head", en person, obruten, inte snabb. Vårt verktyg: **ingen sista
+bild** (`kling-3-motion-control` står inte bland modellerna som tar `endFrame`). Om ett föremål i handen: "contact
+points are difficult" (Hörsägen). Vårt prov b1a (2026-11-11, V): 44 av 100; kortet genomskinligt grönt i ruta 30–84,
+skons fönster tomt från ruta 48, kortet landar 73 px fel, 1760 × 1184. **Svar: Pamelas film driver inte Paows ankare via
+Motion Control;** den kan driva Paows rörelse som referensfilm i Kling 4 med första och sista bild (3.2). Act-Two (högst
+1280 × 720, lägger till "a subtle handheld shake") finns inte i vårt verktyg.
 
-**Jakobs egen hand med telefonen** är bättre när ingen godkänd bankfilm visar rörelsen (vändningen vid platsen, höger hand, handbyte) och ingen annan dealer ska in i ordern. Så filmas den (S, ur tillverkarnas råd och DRIFT): telefonen på stativ, låst och liggande där bankens kamera står (rakt framför, något över bordet, bordskanten vågrät); en låda som sko till höger; ett kort med gul baksida och blå framsida (tejp duger); matt slät duk, jämnt ljus framifrån, lång svart ärm, inga ringar. Sitt som dealern, andra handen platt. Verkligt tempo: Kling 4 kopierar referensens takt, och ultrarapid som snabbats upp föll (V). Börja och sluta i ankarets pose, en obruten tagning på 4–8 s, kortet till orderns plats, flera tagningar; välj en där kortet syns på kant. Risk: Jakobs hand läcker in som Pamelas (S).
+**Jakobs egen hand med telefonen** är bättre när ingen godkänd bankfilm visar rörelsen (vändningen vid platsen, höger
+hand, handbyte) och ingen annan dealer ska in i ordern. Så filmas den (S, ur tillverkarnas råd och DRIFT): telefonen på
+stativ, låst och liggande där bankens kamera står (rakt framför, något över bordet, bordskanten vågrät); en låda som sko
+till höger; ett kort med gul baksida och blå framsida (tejp duger); matt slät duk, jämnt ljus framifrån, lång svart ärm,
+inga ringar. Sitt som dealern, andra handen platt. Verkligt tempo: Kling 4 kopierar referensens takt, och ultrarapid som
+snabbats upp föll (V). Börja och sluta i ankarets pose, en obruten tagning på 4–8 s, kortet till orderns plats, flera
+tagningar; välj en där kortet syns på kant. Risk: Jakobs hand läcker in som Pamelas (S).
 
 ## 4. Felsökning
 
@@ -141,14 +253,23 @@ This is an edit of the picture @anchor. Keep everything in @anchor exactly as it
 ## 5. Prov och protokoll
 
 - **En ändring per order** mot en namngiven jämförelse; ordens titel säger vad som ändrades. Samma bilder, samma längd.
-- **Antal tagningar:** en per metodprov, två per klipp när metoden är vald. En metod blir regel först efter ytterligare fyra tagningar med minst hälften användbara (S; att skilja 25 % från 75 % kräver 6–8 tagningar).
-- **En ytterplats före alla platser:** omgång 3 och 3b gick till alla platser från plats 4: 12 av 14 föll, 1 960 krediter (V). Pröva P1 och P7 innan en metod beställs till alla.
-- **En ändring per omgång mot ett recept som har hållit:** omgång 4 ändrade två saker mot Jakobs godkända givar till P4 på en gång, platsen och vändsättet (`FREE`, planens förval, mot `AT_PLACE` i de godkända) (V, `motion.flipAxis` i ordrarna). Fyra av fem fel i omgång 4 gällde kortet i luften; det femte skons kort (`p7-03`) (V). Att den andra ändringen orsakade felen är skattat (S).
-- **Granskning:** oberoende granskare enligt [film-review.md](film-review.md); poäng 0–5 per del (giv, retur) och domordet. För en giv alltid: ett kort? vänds det en gång, och var? lämnar kortet filten eller fingrarna före platsen? håller storleken ±10 %? enfärgat hela vägen? går handen tillbaka lågt?
+- **Antal tagningar:** en per metodprov, två per klipp när metoden är vald. En metod blir regel först efter ytterligare
+  fyra tagningar med minst hälften användbara (S; att skilja 25 % från 75 % kräver 6–8 tagningar).
+- **En ytterplats före alla platser:** omgång 3 och 3b gick till alla platser från plats 4: 12 av 14 föll, 1 960
+  krediter (V). Pröva P1 och P7 innan en metod beställs till alla.
+- **En ändring per omgång mot ett recept som har hållit:** omgång 4 ändrade två saker mot Jakobs godkända givar till P4
+  på en gång, platsen och vändsättet (`FREE`, planens förval, mot `AT_PLACE` i de godkända) (V, `motion.flipAxis` i
+  ordrarna). Fyra av fem fel i omgång 4 gällde kortet i luften; det femte skons kort (`p7-03`) (V). Att den andra
+  ändringen orsakade felen är skattat (S).
+- **Granskning:** oberoende granskare enligt [film-review.md](film-review.md); poäng 0–5 per del (giv, retur) och
+  domordet. För en giv alltid: ett kort? vänds det en gång, och var? lämnar kortet filten eller fingrarna före platsen?
+  håller storleken ±10 %? enfärgat hela vägen? går handen tillbaka lågt?
 - **Jakobs dom** skrivs bara av honom i Granska (`motions/<id>.json`, `review`); citera hans ord, skriv inte om dem.
-- **Tabellerna förlängs** av den som provar: en rad per metod, belägget med order och tagning. Ingen dagbok; en ersatt rad skrivs om. Order-id förkortas `p4-11` = `paow-giv-2-1-p4-11`.
+- **Tabellerna förlängs** av den som provar: en rad per metod, belägget med order och tagning. Ingen dagbok; en ersatt
+  rad skrivs om. Order-id förkortas `p4-11` = `paow-giv-2-1-p4-11`.
 
-**Det som håller (2026-11-13).** Metoden som beställs per steg står i `data/order-methods.json`; tabellerna här är belägget.
+**Det som håller (2026-11-13).** Metoden som beställs per steg står i `data/order-methods.json`; tabellerna här är
+belägget.
 
 | Metod | Belägg (V): granskaren · Jakob | Status |
 |---|---|---|
@@ -208,35 +329,76 @@ This is an edit of the picture @anchor. Keep everything in @anchor exactly as it
 | 4K-filmmodell för skärpa | `paow-ingang-2-1-02`: ingen skärpevinst i bankens ruta, 172 mot 80 | faller |
 | Bildmodellen flyttar kameran (sidovy) | fyra försök, 160 krediter (`D:/dealer-scratch/tmp/dealer-bf/LASMIG.md`) | faller |
 
-**Omgång 5, granskad och dömd 2026-11-13 (V, kvittona och `motions/`).** Granskaren (giv/retur): `p1-08` t1 4/3,5 och t2 4/0,5 (ett andra gult kort stoppas in i skon i returen), `p2-03` 3,5/3,5 möjlig variant, `p1-07` t2 2/3 (kortet kakigrönt), `d-01` 1/3 (kortet halveras i längd). Jakob: `p1-08` t1 underkänd ("Kortet kapas när det läggs ner"), t2 godkänd; `p2-03` godkänd; `p1-07` t2 underkänd; `d-01` godkänd ("Den är mycket bra."); `p7-04` godkänd ("gjord med mycket finess"); `p7-03` underkänd (kortet blev blått utan att vändas).
+**Omgång 5, granskad och dömd 2026-11-13 (V, kvittona och `motions/`).** Granskaren (giv/retur): `p1-08` t1 4/3,5 och t2
+4/0,5 (ett andra gult kort stoppas in i skon i returen), `p2-03` 3,5/3,5 möjlig variant, `p1-07` t2 2/3 (kortet
+kakigrönt), `d-01` 1/3 (kortet halveras i längd). Jakob: `p1-08` t1 underkänd ("Kortet kapas när det läggs ner"), t2
+godkänd; `p2-03` godkänd; `p1-07` t2 underkänd; `d-01` godkänd ("Den är mycket bra."); `p7-04` godkänd ("gjord med
+mycket finess"); `p7-03` underkänd (kortet blev blått utan att vändas).
 
-**Jakobs domar per metod, givar (2026-11-13; räknas om med `node tools/verdicts-per-method.ts paow`):** Kling 4 utan referens, öppet: 5 av 8, och med platsen i ord och fri vändning (mall 5) 2 av 2 (P1 och P7). Kling 4 med referens till samma plats: 2 av 4. WAN 3 öppet: 4 av 7. Stängt till en spelarplats: 0 av 5 (spelarnas kort ligger öppna; stängt beställs bara för hålkortet, och titeln säger att det är avsikten). Kling 4 med referens från en annan startpose: 1 av 1 (`p2-03`). Sammanlagt 12 av 25 givar och 19 av 25 returer i samma film.
+**Jakobs domar per metod (2026-11-13 klockan 07:50; räknas om med `node tools/verdicts-per-method.ts paow`).** Givar:
+Kling 4 utan referens, öppet, 6 av 11; med platsen i ord och fri vändning (mall 5–6) 3 av 5 (`p1-04`, `p5-03` som
+Variant, `p7-04`; underkända `p6-03` och `p6-04`). WAN 3 öppet 4 av 7 (med vändning vid platsen 3 av 5). Kling 4 med
+referens till samma plats 2 av 4. Kling 4 med referens från en annan startpose 1 av 1 (`p2-03`). Stängt till en
+spelarplats 0 av 5: `p5-01` först som Variant, sedan "Nej fasen det är ju stängt - gul till gult - kan inte godkänna";
+spelarnas kort ligger öppna, och stängt beställs bara för hålkortet. Sammanlagt 13 av 28 givar och 22 av 28 returer i
+samma film. Metoden väljs efter de här domarna, inte efter granskarens poäng.
 
-**Mall 6 (2026-11-13)** säger kortets två sidor bara med färg och vilken som är uppåt ("yellow side up", "blue side up"), aldrig back, face eller front, eftersom Jakob om en underkänd tagning skrev: "Baksida kan betyda olika saker, som baksidan på ett kort, men det kan också referera till undersidan. Det här kan vara en semantisk felinstruktion." Ordrar från mall 4–5 återges med sina gamla ord (`SAY.v5`).
+**Mall 6 och 7 (2026-11-13).** Mall 6 sade kortets sidor bara med färg och vilken som är uppåt ("yellow side up", "blue
+side up"), efter Jakobs ord: "Baksida kan betyda olika saker, som baksidan på ett kort, men det kan också referera till
+undersidan." Omgång 6 ställde mall 5 mot mall 6 i två par, samma platser och modell: båda tagningarna på mall 6 gick fel
+vid vändningen, båda på mall 5 vände kortet synligt (`72e4f08`). Jakob underkände båda på P6 (`p6-03`: "funskar med
+kortsidan"; `p6-04`: "som förra också - sladdrigt kort och fuskar med kortsidan") och tog `p5-03` som Variant ("Men
+handrörelsen är skitbra!"). Två par bevisar lite, men mall 7 säger åter "its back is yellow and its face is blue"
+(`SAY.colours`); frågan om ordet "back" står öppen. Mall 7 lägger också till (`152fffd`, `72e4f08`): hon rör sig lite
+medan hon delar ut (`SAY.moveOwn`, `SAY.moveBoth`; Jakob: "jag vill i allmänhet att paow rör sin kropp och huvud och SIN
+högerarm aningen mer"); efter ett handbyte går den arm som är ute tillbaka (`SAY.backPass`); en stängd giv från nypet
+läggs plant framför skon och skjuts (`SAY.layAndSlide`, eftersom omgång 6:s stängda tagningar bar kortet lutat så att
+blått syntes och bytte storlek); hålkortets vändning har bara hålkortet på sina bilder (med båda korten lyfte hon båda,
+`paow-halkort-01`).
 
-**Pågår: omgång 6.** P5 och P6 med Kling 4 utan referens och fri vändning, en tagning på mall 5 och en på mall 6 per plats (samma platser, en ändring); hålkortet lagt stängt (Kling 4 och WAN 3) och dess vändning ur vila.
+**Pågår: omgång 7 och 8, mall 7:s första.** Kling 4 utan referens och fri vändning till plats 1–5 och 7 (`p1-09`,
+`p2-04`, `p3-03`, `p4-15`, `p5-05`, `p6-05`, `p7-06`), WAN 3 med vändning vid platsen till plats 6 (`p6-06`),
+hålkortet stängt (`paow-giv-2-1-d-c2-03`), dess vändning (`paow-halkort-02` WAN 3, `-03` Kling 4) och utgången
+(`paow-utgang-01`). Utfallet och granskningen förs in här.
 
-**Oprövat:** retur som egen film från en landningsbild; vändningen som egen film; landningsbild som stillbild; ankare 2.2 som ruta ur en film; referensfilm av Jakobs hand; renderat kort i vändningens rutor.
+**Oprövat:** retur som egen film från en landningsbild; vändningen som egen film; landningsbild som stillbild; ankare
+2.2 som ruta ur en film; referensfilm av Jakobs hand; renderat kort i vändningens rutor.
 
 ## 6. Källor
 
 Lästa 2026-11-13 om inget annat sägs.
-- Runway, Gen-4 Video Prompting Guide: https://help.runwayml.com/hc/en-us/articles/39789879462419-Gen-4-Video-Prompting-Guide (Tillverkare)
-- Runway, Image to Video Prompting Guide: https://help.runwayml.com/hc/en-us/articles/48324313115155-Image-to-Video-Prompting-Guide (Tillverkare)
+- Runway, Gen-4 Video Prompting Guide:
+  https://help.runwayml.com/hc/en-us/articles/39789879462419-Gen-4-Video-Prompting-Guide (Tillverkare)
+- Runway, Image to Video Prompting Guide:
+  https://help.runwayml.com/hc/en-us/articles/48324313115155-Image-to-Video-Prompting-Guide (Tillverkare)
 - Runway Academy, Prompting Guide: https://academy.runwayml.com/prompt-guide (Tillverkare)
-- Runway, Creating with Gen-4.5: https://help.runwayml.com/hc/en-us/articles/46974685288467-Creating-with-Gen-4-5 (Tillverkare)
-- Runway, Creating with Kling 3.0 Motion Control: https://help.runwayml.com/hc/en-us/articles/50280558448147-Creating-with-Kling-3-0-Motion-Control (Tillverkare)
-- Runway, Performance Capture with Act-Two: https://help.runwayml.com/hc/en-us/articles/42311337895827-Performance-Capture-with-Act-Two (Tillverkare)
-- Runway, Creating with Seedance 2.5: https://help.runwayml.com/hc/en-us/articles/53542207042323-Creating-with-Seedance-2-5 (Tillverkare)
+- Runway, Creating with Gen-4.5: https://help.runwayml.com/hc/en-us/articles/46974685288467-Creating-with-Gen-4-5
+  (Tillverkare)
+- Runway, Creating with Kling 3.0 Motion Control:
+  https://help.runwayml.com/hc/en-us/articles/50280558448147-Creating-with-Kling-3-0-Motion-Control (Tillverkare)
+- Runway, Performance Capture with Act-Two:
+  https://help.runwayml.com/hc/en-us/articles/42311337895827-Performance-Capture-with-Act-Two (Tillverkare)
+- Runway, Creating with Seedance 2.5:
+  https://help.runwayml.com/hc/en-us/articles/53542207042323-Creating-with-Seedance-2-5 (Tillverkare)
 - Runway, API-prislista: https://docs.dev.runwayml.com/guides/pricing/ (Tillverkare)
-- Runways verktyg `generate_video` och `generate_image`, schemat i MCP-servern (modelltabell, `endFrame`, `referenceVideos`, `ratio`) (Tillverkare)
+- Runways verktyg `generate_video` och `generate_image`, schemat i MCP-servern (modelltabell, `endFrame`,
+  `referenceVideos`, `ratio`) (Tillverkare)
 - Kling, Kling 4.0 User Guide: https://kling.ai/quickstart/kling-4-model-user-guide (Tillverkare)
 - Kling, multiple keyframes guide: https://kling.ai/blog/kling-4-multiple-keyframes-guide (Tillverkare)
 - Kling, start and end frames: https://kling.ai/quickstart/ai-video-start-end-frames (Tillverkare)
 - Kling, Motion Control User Guide: https://kling.ai/quickstart/motion-control-user-guide (Tillverkare)
-- Alibaba, Wan 3.0 video generation guide: https://www.alibabacloud.com/help/en/model-studio/wan3-video-generation-guide (Tillverkare)
-- Alibaba, Video generation prompt guide: https://www.alibabacloud.com/help/en/model-studio/text-to-video-prompt (Tillverkare)
-- Wan2.1, `prompt_extend.py`: https://raw.githubusercontent.com/Wan-Video/Wan2.1/main/wan/utils/prompt_extend.py (Tillverkare)
+- Alibaba, Wan 3.0 video generation guide: https://www.alibabacloud.com/help/en/model-studio/wan3-video-generation-guide
+  (Tillverkare)
+- Alibaba, Video generation prompt guide: https://www.alibabacloud.com/help/en/model-studio/text-to-video-prompt
+  (Tillverkare)
+- Wan2.1, `prompt_extend.py`: https://raw.githubusercontent.com/Wan-Video/Wan2.1/main/wan/utils/prompt_extend.py
+  (Tillverkare)
 - Google, Gemini image generation, Best Practices: https://aistudio.google.com/docs/image-generation (Tillverkare)
-- Cliprise, Kling 3 Motion Control guide: https://www.cliprise.app/learn/guides/model-guides/kling-3-motion-control-complete-guide (Hörsägen, osignerad, inga prov)
-- Våra: `D:/dealer-scratch/tmp/huvudagent11/recept/RAPPORT.md`; liggare och texter i `D:/dealer-scratch/tmp/paow/` (`order/`, `b17/`, `bestallningar-b*.json`, `matt/film/paow-p4-motion-control.summary.json`); kvitton `assets/orders/*/receipt.json` (MÄTT- och GRANSKAD-noterna); protokollet `node tools/order-ledger.ts`; Prov `paow-plats-4-som-mall`, `paow-kavaj-filmer`, `paow-samma-film`, `hel-runda-i-en-tagning`; Jakobs domar i `motions/paow-*.json`; DRIFT, "Lärdomar som gäller" till och med `f6f68ef` (git).
+- Cliprise, Kling 3 Motion Control guide:
+  https://www.cliprise.app/learn/guides/model-guides/kling-3-motion-control-complete-guide (Hörsägen, osignerad, inga
+  prov)
+- Våra: `D:/dealer-scratch/tmp/huvudagent11/recept/RAPPORT.md`; liggare och texter i `D:/dealer-scratch/tmp/paow/`
+  (`order/`, `b17/`, `bestallningar-b*.json`, `matt/film/paow-p4-motion-control.summary.json`); kvitton
+  `assets/orders/*/receipt.json` (MÄTT- och GRANSKAD-noterna); protokollet `node tools/order-ledger.ts`; Prov
+  `paow-plats-4-som-mall`, `paow-kavaj-filmer`, `paow-samma-film`, `hel-runda-i-en-tagning`; Jakobs domar i
+  `motions/paow-*.json`; DRIFT, "Lärdomar som gäller" till och med `f6f68ef` (git).

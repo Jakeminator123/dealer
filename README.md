@@ -34,15 +34,16 @@ adresser (`/lab.html`, `/game.html` …); bara filerna ligger i mappar.
 | [HANDOFF](HANDOFF.md) | Läget nu: ägare, banken, vad som väntar på Jakob, nästa steg. Läs den först. |
 | [SYSTEM](docs/SYSTEM.md) | Kontrakt: koordinater, register, 3D-scenen, spelet, klippbanken och ordlistan. |
 | [DRIFT](docs/DRIFT.md) | Rutiner och anslutningar: Git och kontroller, labbservern, Runway, publicering, D:-slask. |
-| [Löpande bandet](tools/dealer-line.md) | Från en bild till en färdig dealer: stationer, format, namn och kommandon; länkar till handboken för beställningar, beställningsagentens instruktion och granskningen. |
+| [Löpande bandet](tools/dealer-line.md) | Den enda vägen från en bild av en person till en dealer som spelar en runda: femton rader först, sedan stationer, format, namn och kommandon. |
 
 ## Register
 
 - `motions/<clip-id>.json` är ensam källa för en films klassning och Jakobs beslut.
 - `data/clip-jobs.json` är klippbankens register: ankare, jobb (den gamla API-vägen, används inte), härledda tagningar
   (bland dem allt från Beställ) och API-vägens kredittak. `data/orders/<id>.json` är studions beställningar;
-  `data/dealers.json` och `data/media-roles.json` säger vilka dealers som finns och vilka bilder som gäller.
-- `placements/default.json` är Jakobs kortplan (16 kortplatser) och sparas från labbets Placering.
+  `data/dealers.json` och `data/media-roles.json` säger vilka dealers som finns och vilka bilder som gäller;
+  `data/order-methods.json` är metoden som beställs per steg, och `data/order-policy.json` taken för betald generering.
+- `placements/default.json` är Jakobs kortplan (16 kortplatser) och sparas från studions Placering.
 - `data/manifest.json` registrerar filproveniens och SHA-256 (sökvägarna i den räknas från repots rot); `evidence/`
   innehåller verifieringskvitton.
 - `data/library.json` är V6-tidens filmkatalog (V6, sekvenser, original och diagnostiska prov); beslut hämtas från
