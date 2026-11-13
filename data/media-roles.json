@@ -3350,6 +3350,62 @@
           }
         },
         {
+          "id": "paow-film-ny-giv-p3-oppen",
+          "role": "film",
+          "name": "Giv till plats 3, öppen (WAN 3, kort text, omgång 3b)",
+          "path": "assets/films/paow/ny-giv-p3-oppen/source.mp4",
+          "still": 114,
+          "fps": 30,
+          "state": "kandidat",
+          "note": "Enda platsen i omgång 3b där handen bar kortet till platsen: läggs gult nära platsen, dras tillbaka, vänds en gång i luften och läggs blått, 0,4 px från planen; kortet +13 % på vägen. Inte oberoende granskad.",
+          "source": {
+            "from": "beställningen paow-giv-2-1-p3-02, tagning 1 (studions vy Beställ)",
+            "when": "2026-11-13"
+          }
+        },
+        {
+          "id": "paow-film-ny-giv-p4-stangd",
+          "role": "film",
+          "name": "Giv till plats 4, stängd (WAN 3, kort text, omgång 3)",
+          "path": "assets/films/paow/ny-giv-p4-stangd/source.mp4",
+          "still": 114,
+          "fps": 30,
+          "state": "kandidat",
+          "note": "Kortet stängt hela vägen och skons kort gult hela filmen; läggs vid kroppen och skjuts cirka 170 px till platsen; landar 0,9 px från planen. Inte oberoende granskad.",
+          "source": {
+            "from": "beställningen paow-giv-2-1-p4-14, tagning 2 (studions vy Beställ)",
+            "when": "2026-11-13"
+          }
+        },
+        {
+          "id": "paow-film-ny-giv-p3-stangd",
+          "role": "film",
+          "name": "Giv till plats 3, stängd (WAN 3, kort text, omgång 3)",
+          "path": "assets/films/paow/ny-giv-p3-stangd/source.mp4",
+          "still": 114,
+          "fps": 30,
+          "state": "kandidat",
+          "note": "Renaste läggningen i omgång 3: gult hela vägen och lagt på platsen (5 px), 0,1 px från planen; fel: skons nästa kort är blått ruta 11–193. Inte oberoende granskad.",
+          "source": {
+            "from": "beställningen paow-giv-2-1-p3-01, tagning 1 (studions vy Beställ)",
+            "when": "2026-11-13"
+          }
+        },
+        {
+          "id": "paow-film-ny-giv-p5-stangd",
+          "role": "film",
+          "name": "Giv till plats 5, stängd (WAN 3, kort text, omgång 3)",
+          "path": "assets/films/paow/ny-giv-p5-stangd/source.mp4",
+          "still": 114,
+          "fps": 30,
+          "state": "kandidat",
+          "note": "Framsidan syns ruta 52–84 fast kortet skulle vara stängt; skjuts cirka 25 px; landar 0,2 px från planen; skons kort gult. Inte oberoende granskad.",
+          "source": {
+            "from": "beställningen paow-giv-2-1-p5-01, tagning 1 (studions vy Beställ)",
+            "when": "2026-11-13"
+          }
+        },
+        {
           "id": "paow-prov-ankare-ung",
           "role": "prov",
           "name": "Ankare 1, yngre, kandidater",

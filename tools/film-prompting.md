@@ -50,7 +50,7 @@ En beställning är en ren funktion av valen i Beställ: samma val ger samma bil
 7. Kortet, bara med kort: `Only one card moves; its back is yellow and its face is blue.`
 8. Jakobs tillägg, en positiv mening.
 
-**Står aldrig i en filmtext:** utseende, kläder, hår; förbud eller "not/no/never/without"; bildpunkter eller "far to the left of the picture"; tidsangivelser (WAN läser dem som scenlista, S); en andra handling; "exactly as in the last frame" mer än en gång. Längd: 30–90 ord.
+**Står aldrig i en filmtext:** utseende, kläder, hår; förbud eller "not/no/never/without"; bildpunkter (platsen sägs däremot i ord sedan mall 5, "towards its place at the far left of the picture, where the last frame shows it": utan dem gick handen inte ut till ytterplatserna); tidsangivelser (WAN läser dem som scenlista, S); en andra handling; "exactly as in the last frame" mer än en gång. Längd: 30–90 ord.
 
 | Steg | Modell först | s | Pris (`data/order-policy.json`) | Varför |
 |---|---|---|---|---|
@@ -180,6 +180,7 @@ This is an edit of the picture @anchor. Keep everything in @anchor exactly as it
 
 - **En ändring per order** mot en namngiven jämförelse (en order eller en rad i tabellen nedan); ordens titel säger vad som ändrades. Samma bilder, samma längd.
 - **Antal tagningar:** två per text sållar bort det som aldrig fungerar. En metod blir regel i mallen först efter ytterligare fyra tagningar med minst hälften användbara (S; att skilja 25 % från 75 % kräver 6–8 tagningar).
+- **En ytterplats före alla platser:** en metod som håller på plats 4 säger inget om plats 1 och 7. Omgång 3 och 3b gick till alla platser på två tagningar från plats 4: 12 av 14 föll, cirka 1 700 krediter. Pröva alltid P1 och P7 innan en metod beställs till alla.
 - **Billigt först:** WAN 3 i 480p för att se om rörelsen kommer; full upplösning därefter (DRIFT).
 - **Granskning:** oberoende granskare enligt [film-review.md](film-review.md); poäng 0–5 per del (giv, retur) och domordet. För en giv alltid samma fem frågor: ett kort? vänds det en gång, och var? lämnar kortet filten eller fingrarna före platsen? håller storleken ±10 %? går handen tillbaka lågt och öppen?
 - **Jakobs dom** skrivs bara av honom i Granska (`motions/<id>.json`, `review`); citera hans ord, skriv inte om dem. Granskarens poäng och hans dom står bredvid varandra i tabellen; de kan skilja (retur t1).
@@ -201,6 +202,7 @@ This is an edit of the picture @anchor. Keep everything in @anchor exactly as it
 | Ingång, Kling 3.0 4K | 3/5, Jakob Godkänd ("bra men tråkig"), ingen skärpevinst | håller, ingen vinst |
 | Retur i tur och retur | `paow-giv-p4` 1/5 och 1,5/5 (knytnäve), Jakob godkände t1; `p4-04` knytnäve (mätt) | faller för granskaren, oavgjort för Jakob |
 | Stängd giv (ingen vändning), WAN 3, kort text | `p4-12`: given 3/5, kortet gult, lågt (78 px) och i storlek (−2 %, max +17 %), lagt utan skjut; fel: skons nästa kort blev blått och mönstrat f28–207 | bäst i omgång 2; omgång 3 med meningen "The next card waits plain yellow in the shoe's window" till alla platser |
+| Kort text utan platsen i ord ("to its place", mall 4), WAN 3, alla platser | Omgång 3 (stängt, 8 tagningar): bara P4 t2 höll hela vägen (lagt vid kroppen, skjutet 170 px), P3 lagt på platsen men skons kort blått; framsidan syntes i 5 av 8. Omgång 3b (öppet, 6): bara P3 höll. Ytterplatserna P1, P2, P6, P7: 0 av 8, handen går inte ut, kortet läggs framför henne och slutbildens kort dyker upp av sig självt, ofta som mönstrat spelkort | faller utanför P3–P4; mall 5 säger platsen i ord, prövas i omgång 4 på P1 och P7 |
 | Stängd giv, Kling 4, kort text | `p4-13`: blått f31–46 fast stängt, handen 176 px upp, kortet +30 % | faller |
 | Minimal text (bara färger och mål) | `p4-09` WAN 3 mönstrat kort, `p4-10` Kling 4 snurr | faller (2 filmer, cirka 75 % säkert) |
 | Retur som egen film från landningsbild | – | oprövat; landningsrutor ur omgång 3 |
