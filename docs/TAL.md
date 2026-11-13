@@ -58,6 +58,55 @@ I Scoutgaming kommer texten från OpenClaw genom Director, rösten från ElevenL
 
 Det som skulle behövas för fritt tal här: en källa till texten (en bot med dealerns persona; chatten i spelet är en attrapp), en väg i labbservern som tar texten och svarar med filmen, och en renderer som är varm. Mätt 2026-11-13 med den varma renderern: en ny text på 36 tecken blev färdig film på 41 s, hela vägen (läsning, avlyssning, rendering, inläggning), medan andra arbeten gick på datorn; rendersteget ensamt tog 10–15 s i de tre mätningarna före. Skattat går hela vägen att få till 15–25 s på en dator som i övrigt vilar, om avlyssningen hoppas över och filmen kodas snabbare. Kallt är det 65–110 s. Det är för långsamt för ett samtal men räcker för att hon ska säga något nytt en stund efter att det skrevs. Vägen till sekunder är väg 2 ovan.
 
+## Tal i rörligt spel: går det?
+
+Jakob 2026-11-13: "Kolla annars kevin/kevin-staging hur Emil gjort med lipsynk. Tror de buffrar och köar filmer på ett smart sätt. Samma sak ska vi kanske göra", och högst 30 USD "för att kunna bevisa om det är rimligt att via serverless runpod … få talsynken att funka med lipsynken i rörligt spel".
+
+**Svaret är ja: det går, och det görs redan.** Scoutgamings dealers talar under given med samma renderer på serverless hos RunPod. Det som avgör om det känns levande är om renderern är varm och hur munnen läggs på filmen, inte om det är serverless.
+
+### Så gör Emil och Kevin (läst, inte kört)
+
+Läst 2026-11-13 i Scoutgamings repo med `git show`, utan att hämta eller ändra något: `origin/kevin` (`d96c6eb0e`, 2026-10-29), `origin/kevin-staging` (`50acf984f`, 2026-11-12; fjärren står längre fram på `f5b72f4e4`, som inte är läst) och `main` (`90d6697c4`). Koden ligger i `kevin/croupier-scoutgg/` på Kevins grenar. Hela genomgången: `D:/dealer-scratch/tmp/tal/scout-lasning/RAPPORT.md`.
+
+- **Munnen är ett lager över klippet som ändå spelas** (`server/rorlig-lipsync.mjs`, `900a5ec9c`; `public/lip-layer.js`, `472cdb47b`). Renderern skickar en liten munruta per bildruta, märkt med vilken tagning och ruta den hör till, i bitar om 12 rutor (0,5 s). Sidan ritar munrutan bara när just den tagningen och rutan visas; saknas den syns dealerns egen mun. Given väntar aldrig på talet.
+- **Kön** (`#pump` i samma fil): tidigaste behov först, en replik i taget per renderer, och en replik görs tidigast 3 s innan den behövs, eftersom varje ny plan annars gjorde om den.
+- **När hon talar under given** (`scheduleTalks`): före första kortet börjar rösten 600 ms in i greppet mot skon, efter ett kort när det har landat (62 % in i kortets film), kartan 220 ms före rösten, och repliker överlappar aldrig. Ett chattsvar börjar 1,6 s efter att det är klart, också mitt i given; ändras given under tiden görs munnen om från den nya rutan.
+- **Förrenderade utrop** (`server/lapp-lager.mjs`, `b5ef79d16`, och `server/lapp-forvarm.mjs`, `279030e80`, på kevin-staging): samma utrop över samma film i samma tempo ger alltid samma munrutor, så de görs i förväg för varje plats, språk och tempo och sparas; "no worker, no queue". Emil skriver cirka 1 USD GPU för alla.
+- **Aldrig röst utan mun** (kevin-staging, `public/shared-table.js`): ett svar spelas bara om 0,5 s mun redan är framme och bitarna kommer fortare än de spelas; annars visas bara texten.
+- **Varmt** (kevin-staging, `public/gpu-grind.js`, `e380817b3`): spelet öppnar inte förrän en varm renderer som gör minst 30 rutor per sekund är uppkopplad; den hålls så länge bordet används.
+- **`main`** har Emils renderer och tider men en annan ordning: ett bokfört jobb per uttalande, en sekund mun buffrad före ljudet (`packages/presentation/runtime/moving-speech-player.mjs`), svar över vilan när ingen giv spelas (högst 30 s väntan, annars text), och bara öppningsrepliken över given (`services/game/speech/moving/moving-speech-deal-plan.mjs`).
+
+### Mätt
+
+Ur Scoutgamings egen drift (deras logg och bokföring lästa 2026-11-13 med deras läsande verktyg `tal-logg` och `tal-budget`; samma renderer, serverless hos RunPod):
+
+| | Mätt |
+|---|---|
+| Tal med varm renderer (Maud, 11 november, text redan färdig) | 1,0–1,3 s väntan, tre gånger (en avbröts) |
+| Öppningsreplik sagd under given | två gånger; fem gånger hann den inte (de rader jag läste, morgonen 11 november) |
+| Svar med kall renderer | 34 s och 43 s |
+| Inläsning av modellen | 61, 72 och 77 s; en gång 339 s |
+| Kostnad | Maud 100 försök 8,78 USD, Vera 30 försök 3,45 USD, Blankurius 7 försök 0,46 USD: 0,07–0,12 USD per försök med varmhållningen inräknad |
+
+Här, på datorns RTX 3060: den varma renderern gör cirka 10 rutor per sekund (dess egen mätning vid start: 10,3; en replik på 58 rutor tog 10 s, en på 77 tog 15 s). Det är under de 24 som filmen spelas i och de 30 Emil kräver, så **strömmande tal i takt går inte på den här datorn**; det går däremot att rendera i förväg, och en replik är klar på 10–15 s. Tal över en giv och över ingången är gjort och granskat (3/5), se ovan.
+
+Uppgivet av dem, inte mätt av mig: en 4090 gör 55–63 rutor per sekund och första munbiten kommer efter 0,4–1,3 s; en varm renderer kostar 0,74–1,10 USD i timmen; kallt tar containern 30–55 s och modellen 31–52 s.
+
+Den egna mätningen hos RunPod blev inte körd (0 USD använt, inget startat där). Renderern tar bara emot en talbank genom en signerad adress till ett privat Blob-lager; ett eget lager (`dealer-lab-tal`, i Jakobs eget Vercel-team) skapades, men dess nyckel går inte att läsa med den åtkomst som finns, och banken lades inte i något av Scoutgamings lager. Med nyckeln i `.env.local` är mätningen en kort körning (`D:/dealer-scratch/tmp/tal/runpod/`).
+
+### Vad som skulle byggas här
+
+1. **Ett munlager i scenen** i stället för en hel talfilm per giv: munrutan (lådan ur `over`, cirka 200 × 170 bildpunkter per bildruta, med ljudet) ritas över den film som spelas, när just den filmen och rutan visas. Då är givfilmen, dess kortspår och Jakobs dom orörda, och samma giv kan spelas med eller utan tal. Munrutorna görs i förväg på den här datorn, en gång per film och replik: cirka 2–4 minuter styck i dag (en bank per film, 80–150 s, och en bakning), utan ny uppläsning.
+2. **Emils tider som regel i spelet:** 600 ms in i ingången, 62 % in i ett korts film, aldrig två repliker samtidigt, och ett utrop som blivit för sent sägs inte.
+3. **Chattens väg:** fasta svar direkt (finns); en ny text renderas varmt och sägs vid nästa vila, med `main`:s regel (ingen giv spelas, annars bara text efter 30 s).
+4. **För fritt tal i takt:** en renderer som strömmar, alltså en 4090 hos RunPod med Emils protokoll, hållen varm medan bordet används. Det är den delen som kostar pengar (cirka 1 USD per timme och bord) och flera dagars bygge, och den finns redan i Scoutgaming.
+
+### Rekommendation
+
+1. Bygg munlagret och förrendera de fasta replikerna över ingången och givarna (väg 1 och 2): det ger tal under given utan GPU i spelet och utan nya filmer att döma.
+2. Låt chatten svara med de fasta svaren, och med en nyrenderad text vid nästa vila när den varma renderern går (15–40 s).
+3. Bygg inte strömmande tal här. När Paow ska tala fritt under spel är det Scoutgamings väg som gäller, och där är den byggd: det är ett skäl att flytta henne dit, inte att bygga den en gång till.
+
 ## Kvaliteten
 
 Tre oberoende granskningar i full upplösning natten till 2026-11-13 (30 filmer): ingen talfilm duger som huvudtagning; de flesta får 3/5, några 2/5, en fälldes för fel ord i ljudet. Rent i mätningarna: skarvarna mot vilan, lådans kant, tatueringen på halsen, allt utanför lådan, det gröna. Felen sitter i munnen och är gemensamma för alla filmer, alltså rendererns: läpparna blir tunnare och matta, nedre ansiktet mjukare medan hon talar, munnen stänger 5–7 rutor efter ljudet och står halvöppen i pauser, tänderna är ett jämnt vitt band, och ruta 16 hoppar till i varje film (orsaken inte belagd). Blick och blinkningar är vilans och följer inte talet. Jakob dömer filmerna i Granska.
