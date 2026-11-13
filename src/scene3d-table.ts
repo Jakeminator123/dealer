@@ -5,6 +5,8 @@
 // The players' rail is a padded leather roll with a stitched seam on each shoulder, a brass bead against the felt and a
 // lacquered walnut apron under its overhang. Its sheen comes from a small painted room that only the rail's own materials
 // reflect (an environment map of their own), so the scene's lights, the film and everything in the home view stay as they were.
+// The cup holders set into the roll are src/scene3d-rail.ts; they are built on the roll as it is drawn here (railPoint) and take the
+// roll's leather and the room's light from the table's group (userData.rail).
 import * as T from 'three';
 import {BET, spotToScene, tableToFilm, type FilmCamera, type Spot} from './scene3d-geometry.ts';
 
@@ -290,6 +292,50 @@ export function sweep(sec: Section, rings: number, tile: number, cap: Cap | null
   return geometry;
 }
 
+// ---- the roll's top, for what is set into the rail ---------------------------------------------------------------------------------
+// The cup holders (src/scene3d-rail.ts) are built on the roll as build() sweeps it (ROLL_RINGS rings round the arc), so that the
+// leather they draw down round each cup meets the roll without a step: the same height, the same normal and the same place in the
+// leather's texture.
+const ROLL_RINGS = 128;
+/** The leather roll round the players' arc with its rounded ends past the dealer's edge, as build() draws it for a table of `size`. */
+export const rollGeometry = (size = 1) => sweep(ROLL, ROLL_RINGS, ROLL.length, {length: 0.036, core: CORE, steps: 9}, size);
+// The top half of the roll's section, out from the felt edge, with each point's normal as the mesh has it: computeVertexNormals adds
+// the faces' normals, each as long as its face is large, so a point's normal is the sum of its two segments' normals, each as long
+// as its segment. [out, up].
+const ROLL_TOP = ROLL.points.flatMap((p, j, points) => {
+  if (p[1] <= CORE[1]) return []; let x = 0, y = 0;
+  for (const k of [j - 1, j]) if (k >= 0 && k + 1 < points.length) { x -= points[k + 1][1] - points[k][1]; y += points[k + 1][0] - points[k][0]; }
+  const l = Math.hypot(x, y) || 1; return [{o: p[0], y: p[1], v: ROLL.v[j], n: [x / l, y / l]}];
+});
+// The arc's length at each of the roll's rings for a table's size, summed as sweep sums it.
+const RING_ALONG = new Map<number, Float64Array>();
+function ringAlong(size: number): Float64Array {
+  const {a, b} = sized(size); let along = RING_ALONG.get(a); if (along) return along; along = new Float64Array(ROLL_RINGS + 1);
+  for (let i = 1; i <= ROLL_RINGS; i++) { const t0 = Math.PI * (i - 1) / ROLL_RINGS, t1 = Math.PI * i / ROLL_RINGS; let s = along[i - 1];
+    for (let k = 0; k < 8; k++) { const p = t0 + (t1 - t0) * k / 8, q = t0 + (t1 - t0) * (k + 1) / 8; s += Math.hypot(a * (Math.cos(q) - Math.cos(p)), b * (Math.sin(q) - Math.sin(p))); }
+    along[i] = s; }
+  RING_ALONG.set(a, along); return along;
+}
+/**
+ * Where a point of the table's plan (x across, z toward the players, table metres as the table's group has them) lies on the rail's
+ * roll for a table of `size`: the angle t of the felt edge it stands out from (Newton's method from `near`) and how far out along
+ * that edge's normal (o); the roll's top there, as the mesh draws it: its height above the felt (y), the leather's texture
+ * coordinates (u, v, as sweep gives them) and its normal [x, y, z]. For points over the top half of the roll (o from about 0.01 to
+ * 0.1); beyond it the top's last segment goes on.
+ */
+export function railPoint(x: number, z: number, size = 1, near = Math.PI / 2) {
+  const {a, b} = sized(size); let t = near;
+  for (let i = 0; i < 8; i++) { const c = Math.cos(t), s = Math.sin(t), dx = x - a * c, dz = z - b * s; t -= (dz * b * c - dx * a * s) / (-(a * a * s * s + b * b * c * c) - dx * a * c - dz * b * s); }
+  const normalAt = (q: number) => { const l = Math.hypot(b * Math.cos(q), a * Math.sin(q)); return [b * Math.cos(q) / l, a * Math.sin(q) / l]; };
+  const [nx, nz] = normalAt(t), o = (x - a * Math.cos(t)) * nx + (z - b * Math.sin(t)) * nz;
+  let j = 0; while (j < ROLL_TOP.length - 2 && ROLL_TOP[j + 1].o < o) j++;
+  const p = ROLL_TOP[j], q = ROLL_TOP[j + 1], f = (o - p.o) / (q.o - p.o), out = p.n[0] + (q.n[0] - p.n[0]) * f, up = p.n[1] + (q.n[1] - p.n[1]) * f, l = Math.hypot(out, up);
+  // u between the two rings round the point, each with its own normal's angle (the o * phi of sweep)
+  const along = ringAlong(size), step = Math.PI / ROLL_RINGS, r = Math.min(ROLL_RINGS - 1, Math.max(0, Math.floor(t / step))), g = t / step - r;
+  const uAt = (i: number) => { const [ix, iz] = normalAt(i * step); return (along[i] + o * Math.atan2(iz, ix)) / ROLL.length; };
+  return {t, o, y: p.y + (q.y - p.y) * f, u: uAt(r) + (uAt(r + 1) - uAt(r)) * g, v: p.v + (q.v - p.v) * f, normal: [out / l * nx, up / l, out / l * nz]};
+}
+
 // ---- procedural textures, made once per table ------------------------------------------------------------------------------------------
 const random = (seed: number) => () => (seed = (seed * 16807) % 2147483647) / 2147483647;
 // Value noise with p x p cells that tiles over the unit square.
@@ -398,6 +444,8 @@ export function roomReflection() {
 // camera: the film camera in use, through which V6's cloth is laid flat; marks: the kinds of print drawn (feltMarks; absent = all).
 // size: the table's size (sized); the rail's shadow on the felt follows the felt's edge.
 export type FeltPrint = {spots: Spot[]; logo: string; felt: string; scale: number; marks?: string; cloth?: TableCloth; camera?: FilmCamera; size?: number};
+// What the table offers what is set into its rail (createTable's group.userData.rail).
+export type RailLink = {leather: T.Material; follow(material: T.MeshStandardMaterial, own: number): void};
 export function createTable(lit: <M extends T.Material>(material: M) => M = m => m) {
   const canvas = document.createElement('canvas'); canvas.width = PRINT.pxW; canvas.height = PRINT.pxH;
   const texture = new T.CanvasTexture(canvas); texture.colorSpace = T.SRGBColorSpace; texture.anisotropy = 16;
@@ -562,7 +610,8 @@ export function createTable(lit: <M extends T.Material>(material: M) => M = m =>
     if (surface !== 'painted') { weave(); feltGeometry.computeVertexNormals(); const normal = feltGeometry.getAttribute('normal') as T.BufferAttribute; for (let i = 0; i < normal.count; i++) normal.setXYZ(i, 0, 1, 0); } // the cloth faces up
     group.add(new T.Mesh(feltGeometry, nature ? ((NATURES[surface as Nature] as Finish).duk ? dukFelt : nature.wool) : surface === 'photo' ? cloth : felt));
     // padded rail round the players' arc with rounded ends past the dealer's edge, the brass bead along the felt, then the apron
-    group.add(new T.Mesh(sweep(ROLL, 128, ROLL.length, {length: 0.036, core: CORE, steps: 9}, size), nature ? nature.hide : leather));
+    railLink.leather = nature ? nature.hide : leather;
+    group.add(new T.Mesh(rollGeometry(size), railLink.leather));
     group.add(new T.Mesh(sweep(BEAD, 128, 1, {length: 0.004, core: [0.0035, 0], steps: 3}, size), bead));
     group.add(new T.Mesh(sweep(APRON, 96, 0.6, null, size), base === 'legs' ? skirt : apron));
     const add = (geometry: T.BufferGeometry, material: T.Material, x: number, y: number, z: number) => { const m = new T.Mesh(geometry, material); m.position.set(x, y, z); group.add(m); return m; };
@@ -592,13 +641,18 @@ export function createTable(lit: <M extends T.Material>(material: M) => M = m =>
   // for the room painted for the table. Only the photographed surfaces ask for it. `lights`: the lit materials and how much of
   // the room each takes; the materials of the surfaces "natur" join them when they are made, in the room that is showing then.
   const lights: [T.MeshStandardMaterial, number][] = [[cloth, 0.6], [leather, 3], [bead, 1.1], [apron, 1.5], [skirt, 1.6], [timber, 1.1], [polished, 1.5]];
-  let env: {map: T.Texture | null; turn: number; strength: number} = {map: null, turn: 0, strength: 1};
+  let env: {map: T.Texture | null; turn: number; strength: number; light?: number} = {map: null, turn: 0, strength: 1};
   // `light`: what that room throws on a level table as it is shown (lightFromAbove times its exposure), for the cloth of a surface "duk".
   function setEnvironment(map: T.Texture | null, turn = 0, strength = 1, light?: number) {
-    env = {map, turn, strength}; dukFelt.color.setScalar(map && light !== undefined ? dukLevel(light * strength) : 1);
+    env = {map, turn, strength, light}; dukFelt.color.setScalar(map && light !== undefined ? dukLevel(light * strength) : 1);
     for (const [material, own] of lights) {
       material.envMap = map ?? room; material.envMapRotation.set(0, map ? turn : 0, 0); material.envMapIntensity = map ? own * strength : own; material.needsUpdate = true; }
   }
+  // What is set into the rail (src/scene3d-rail.ts) finds the table by its group's userData.rail: the leather the roll wears as last
+  // built, and follow(), by which a material of its own is lit by the room and reflects it as the table's are (`own` as in `lights`).
+  const railLink: RailLink = {leather, follow(material, own) {
+    if (lights.some(([m]) => m === material)) return; lights.push([material, own]); setEnvironment(env.map, env.turn, env.strength, env.light); }};
+  group.userData.rail = railLink;
   // The lamp's strength, 0 to 1 (LAMP). It hangs in world coordinates where the table puts it (the table's place and scale), and
   // its light where the dealer's hands rest is the reference the rest of the table is measured against.
   function setLamp(strength: number) {
