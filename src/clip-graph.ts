@@ -15,7 +15,9 @@ export type MotionRecord = {
   // deal may cut into it at any frame (a calm take says yes unless it says cut: false: a rest where she turns her head counts as
   // calm in the rotation, but is played out before the deal takes over).
   // takeHand / releaseHand: the hand that takes the card at the shoe and the hand that lays it (LH, RH); on a return, the hand that comes back.
-  motion?: {physicalEndSide?: string; landingFrame?: number; startsOn?: {clip?: string; frame?: number; seamPixelsOverThreshold?: number}; idle?: {weight?: number; calm?: boolean; onRequest?: boolean; label?: string; cut?: boolean}; takeHand?: string; releaseHand?: string};
+  // effect: something the scene does while the film plays (FilmEffect, effectOf below).
+  motion?: {physicalEndSide?: string; landingFrame?: number; startsOn?: {clip?: string; frame?: number; seamPixelsOverThreshold?: number}; idle?: {weight?: number; calm?: boolean; onRequest?: boolean; label?: string; cut?: boolean}; takeHand?: string; releaseHand?: string;
+    effect?: {kind?: unknown; room?: unknown; at?: unknown; seconds?: unknown; mono?: unknown}};
   // inbox: a take that came in from an order (tools/register-order.ts) and that Jakob has not decided on yet. It plays only where its
   // step has nothing else to play; tools/review-store.ts takes the flag away with his decision, or with a provisional one.
   // provisional: a verdict the main agent and a reviewer gave in his place (tools/review-put.ts); it plays as its decision says,
@@ -442,6 +444,22 @@ export const idleRange = (frames: number): {start: number; end: number} => ({sta
 // Leaving the idle to deal: a clip that may be cut is cut at once; a gesture, or a calm take that says cut: false, is played out
 // faster, so that it lands, and then the entry starts.
 export const idleExit = (take: Take): 'CUT' | 'FINISH_FAST' => take.idle && !take.idle.cut ? 'FINISH_FAST' : 'CUT';
+/**
+ * Something the scene does while a film plays, asked for by the film's record (motion.effect). The one kind so far, 'room-flash'
+ * (Jakob 2026-11-13: while she drinks "så blixtrar det till och i bakgrunden och bordet kanske växlar allt om till att bli den där
+ * spelhålemiljön i svartvitt för typ en sekund"): a flash, and for `seconds` from `at` (seconds into the film, in the film's own
+ * time, whatever speed it is played at) the room is `room` (an id of data/scene-rooms.json) and, with mono, the picture is black
+ * and white. The game carries it to the part it plays (src/game-film.ts); the scene does it (the scene's own modules).
+ */
+export type FilmEffect = {kind: 'room-flash'; room: string; at: number; seconds: number; mono: boolean};
+/** The effect a record asks for, or null: only a whole and sensible one is passed on (a room id, a moment, at most five seconds). */
+export function effectOf(motion: MotionRecord | null | undefined): FilmEffect | null {
+  const e = motion?.motion?.effect;
+  if (!e || e.kind !== 'room-flash' || typeof e.room !== 'string' || !/^[a-z0-9-]{1,30}$/.test(e.room)) return null;
+  const at = Number(e.at), seconds = Number(e.seconds);
+  if (typeof e.at !== 'number' || typeof e.seconds !== 'number' || !Number.isFinite(at) || at < 0 || !Number.isFinite(seconds) || seconds <= 0 || seconds > 5) return null;
+  return {kind: 'room-flash', room: e.room, at, seconds, mono: e.mono !== false};
+}
 
 // ── Round ───────────────────────────────────────────────────────────────────
 export type RoundOptions = {seats: string[]; dealer?: boolean; cards?: number; reveal?: boolean; thirdDealerCard?: boolean};

@@ -7,7 +7,7 @@
 //
 // What she says: a talk film (a rest take on request, with sound) is played whole at rest, before a step's chain of cards or after
 // it (speakMoments), or between rounds (say). A line without a film is said at the same moment, in the chat only.
-import {resolveRound, pickIdle, idleRange, idleExit, IDLE_RULE, type Graph, type Take, type Segment} from './clip-graph.ts';
+import {resolveRound, pickIdle, idleRange, idleExit, effectOf, IDLE_RULE, type FilmEffect, type Graph, type Take, type Segment} from './clip-graph.ts';
 import type {CardRecord} from './card-overlay.ts';
 import {slotOf, slotLabel, slotFilm, type Layout, type Pt, type TableCards} from './game-table.ts';
 import {planBeats, STAND_IN_FILM, type Beat, type FilmSignal} from './game-director.ts';
@@ -20,8 +20,11 @@ import {placeLines, type MouthPatch} from './speech-patch.ts';
 // rest: the part is the rest loop's (rest()), which the scene never plays faster; a talk film is no rest in this sense (it has sound).
 // mouth: a line said over this part from a mouth patch (src/scene3d-mouth.ts); begin is called as its sound begins, or with false
 // when it could not be laid (its text then stands in the chat).
+// effect: what the scene does while the part plays, from the film's record (FilmEffect in src/clip-graph.ts): a rest film's only.
 export type Mouth = {patch: MouthPatch; base: string};
-export type FilmPart = {path: string; start?: number; end?: number | null; rate?: number; track?: unknown; cards?: Record<string, unknown>; frame?: unknown; fps?: number; sound?: boolean; model?: string; rest?: boolean; mouth?: Mouth & {begin?: (said: boolean) => void}};
+export type FilmPart = {path: string; start?: number; end?: number | null; rate?: number; track?: unknown; cards?: Record<string, unknown>; frame?: unknown; fps?: number; sound?: boolean; model?: string; rest?: boolean; mouth?: Mouth & {begin?: (said: boolean) => void}; effect?: FilmEffect};
+/** A take's effect as a part carries it; nothing when the record asks for none. */
+export const effectPart = (take: Take | null | undefined): {effect?: FilmEffect} => { const effect = effectOf(take?.motion); return effect ? {effect} : {}; };
 const frameOf = (take: Take | null | undefined) => (take?.motion?.motion as {frame?: unknown} | undefined)?.frame ?? null;
 // A film that is not 30 frames a second says so in the bank (take.fps); its frame numbers are its own.
 const fpsOf = (take: Take | null | undefined) => typeof take?.fps === 'number' && take.fps > 0 && take.fps !== 30 ? {fps: take.fps} : {};
@@ -102,7 +105,7 @@ export function createFilm(players: FilmPlayers, bank: Graph, layout: Layout, re
     const take = pick.take, range = idleRange(take.frames ?? 90);
     resting = take; played.push(take.id); played.splice(0, Math.max(0, played.length - 12));
     void trackOf(take).then(track => { if (mine !== token) return;
-      players.play([{path: take.media.video!, start: range.start, end: range.end, ...fpsOf(take), ...modelOf(take), rest: true, track, cards: cardOptions({own: null, lying}, table, records, layout)}], {onEnd: () => { if (mine === token) rest(); }}); });
+      players.play([{path: take.media.video!, start: range.start, end: range.end, ...fpsOf(take), ...modelOf(take), ...effectPart(take), rest: true, track, cards: cardOptions({own: null, lying}, table, records, layout)}], {onEnd: () => { if (mine === token) rest(); }}); });
   }
 
   // A card whose deal has no film that can be played (none made, or the only take rejected) is laid without a hand.

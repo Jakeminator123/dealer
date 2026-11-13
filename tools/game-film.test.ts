@@ -1,10 +1,10 @@
 // Offline tests for src/game-film.ts: what the film queue is handed for each part. No network, media or ffmpeg.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {buildGraph, type BankData, type BankJob, type MotionRecord} from '../src/clip-graph.ts';
+import {buildGraph, effectOf, type BankData, type BankJob, type MotionRecord} from '../src/clip-graph.ts';
 import {defaultPlan} from '../src/placement-model.ts';
 import {createLayout} from '../src/game-table.ts';
-import {cardsChoice, createFilm, faceFrame, filmModel, type FilmPart} from '../src/game-film.ts';
+import {cardsChoice, createFilm, effectPart, faceFrame, filmModel, type FilmPart} from '../src/game-film.ts';
 
 const sha = 'a'.repeat(64), first = {file: {path: 'assets/anchors/paow-ready-01/anchor.png', sha256: sha}};
 const video = (id: string) => `assets/motions/${id}/source.mp4`;
@@ -78,4 +78,15 @@ test('who decides the drawn cards: the address, then the player\'s own menu (als
   assert.deepEqual(cardsChoice({kort: 'liggande', memory: 'off', preset: true}), {cards: true, carry: 'film'});
   assert.deepEqual(cardsChoice({kort: 'liggande', address: false}), {cards: false, carry: 'film'});
   assert.equal(cardsChoice({kort: 'matt'}).carry, 'matte'); assert.equal(cardsChoice({kort: 'nej'}).carry, 'object');
+});
+
+test('a rest film that asks for an effect hands it to the scene with its part; a broken or missing effect is left out', async () => {
+  const flash = {kind: 'room-flash', room: 'spelhalan-sv', at: 4.2, seconds: 1, mono: true};
+  const withEffect = (effect: unknown) => buildGraph({...bank(), motions: {...bank().motions, vila: record('kling-4', {motion: {idle: {calm: true, weight: 20}, effect}} as never)}}, {dealer: 'paow'});
+  const restPart = async (effect: unknown) => { const q = players(), film = createFilm(q.players, withEffect(effect), createLayout(defaultPlan()), async () => null, () => 0); film.rest(); await new Promise(r => setTimeout(r, 0)); return q.parts.at(-1)![0]; };
+  assert.deepEqual((await restPart(flash)).effect, flash);
+  assert.deepEqual((await restPart({kind: 'room-flash', room: 'spelhalan', at: 0, seconds: 0.5})).effect, {kind: 'room-flash', room: 'spelhalan', at: 0, seconds: 0.5, mono: true}, 'black and white unless the record says no');
+  for (const broken of [undefined, null, {}, {...flash, kind: 'blixt'}, {...flash, room: 'Spelhålan!'}, {...flash, at: -1}, {...flash, at: '4'}, {...flash, seconds: 0}, {...flash, seconds: 9}])
+    assert.equal('effect' in (await restPart(broken)), false, JSON.stringify(broken));
+  assert.equal(effectOf(null), null); assert.deepEqual(effectPart(null), {});
 });
