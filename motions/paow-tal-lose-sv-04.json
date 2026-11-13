@@ -38,10 +38,16 @@
     "soundEndsAtSeconds": 3.175
   },
   "review": {
-    "decision": "PENDING",
+    "decision": "ACCEPTED",
     "basis": "Inte granskad av Jakob. Gjord av tools/speech.ts ur assets/motions/paow-vila-01-01/source.mp4 och inlagd bara kring det som hörs. Inte oberoende granskad; före grinden (lose-sv-03) 2/5: Pausen 35–41: rutorna 38–39 är dubbelbild (vilans läppar med tandrad igenom), sedan öppen mun i tystnad 40–41; ett tydligt ryck.",
     "userAccepted": false,
-    "productionReady": false
+    "productionReady": false,
+    "provisional": {
+      "by": "huvudagenten med talbanans oberoende granskare",
+      "at": "2026-11-13T15:01:10.060Z",
+      "mandate": "Jakob 2026-11-13 kl. 15.50, med en bild av kön i Granska: \"jag vill nu för jag ska iväg att du godkänner allt videomaterial som innehåller de där kriterierna\" och \"Med andra ord vill jag inte se en sån här lista när jag är tillbaka!\"",
+      "note": "Granskaren 3/5, användbar med anmärkningar: Bästa pausen: 36–40 hennes egen stängda mun, 42–44 stängt på B. Läpparna sväller och krymper ändå vid 35 och 41; spöktänder i 7, 35, 73."
+    }
   },
   "postProcessing": "the rendered face laid back into the rest film's own frames (assets/speech/paow/paow-tal-lose-sv-04/receipt.json, laidBack)",
   "generationRef": "assets/motions/paow-tal-lose-sv-04/generation.json",

@@ -38,10 +38,16 @@
     "soundEndsAtSeconds": 2.267
   },
   "review": {
-    "decision": "PENDING",
+    "decision": "ACCEPTED",
     "basis": "Inte granskad av Jakob. Gjord av tools/speech.ts ur assets/motions/paow-vila-01-01/source.mp4 och inlagd bara kring det som hörs. Inte oberoende granskad; före grinden (namn-sv-03) 3/5: Avlyssnat: \"Jag heter Pau och jag är din dealer i kväll\" (namnet). Munnen öppen 4–53, ljud 5–50; pausen 21–24 halvöppen; läpparna sväller 54–56.",
     "userAccepted": false,
-    "productionReady": false
+    "productionReady": false,
+    "provisional": {
+      "by": "huvudagenten med talbanans oberoende granskare",
+      "at": "2026-11-13T15:01:10.070Z",
+      "mandate": "Jakob 2026-11-13 kl. 15.50, med en bild av kön i Granska: \"jag vill nu för jag ska iväg att du godkänner allt videomaterial som innehåller de där kriterierna\" och \"Med andra ord vill jag inte se en sån här lista när jag är tillbaka!\"",
+      "note": "Granskaren 3/5, användbar med anmärkningar: Hört: \"Jag heter Pau och jag är din dealer i kväll\" (wordsMatch false). Läpparna byter form i växlingen r 3 och 53; i pausen r 21–24 står munnen på glänt. Avlyssningen hörde: \"Jag heter Pau och jag är din dealer i kväll\"."
+    }
   },
   "postProcessing": "the rendered face laid back into the rest film's own frames (assets/speech/paow/paow-tal-namn-sv-04/receipt.json, laidBack)",
   "generationRef": "assets/motions/paow-tal-namn-sv-04/generation.json",

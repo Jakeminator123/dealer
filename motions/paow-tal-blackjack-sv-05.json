@@ -38,10 +38,16 @@
     "soundEndsAtSeconds": 2.428
   },
   "review": {
-    "decision": "PENDING",
+    "decision": "ACCEPTED",
     "basis": "Inte granskad av Jakob. Gjord av tools/speech.ts ur assets/motions/paow-vila-01-01/source.mp4 och inlagd bara kring det som hörs. Inte oberoende granskad; före grinden (blackjack-sv-04) 4/5: Bäst i listan: läpparna slutna för B (8–11), pausen 22–24 sluts naturligt, slut +3; men läpparna tunnare och mattare än vilans.",
     "userAccepted": false,
-    "productionReady": false
+    "productionReady": false,
+    "provisional": {
+      "by": "huvudagenten med talbanans oberoende granskare",
+      "at": "2026-11-13T15:01:09.970Z",
+      "mandate": "Jakob 2026-11-13 kl. 15.50, med en bild av kön i Granska: \"jag vill nu för jag ska iväg att du godkänner allt videomaterial som innehåller de där kriterierna\" och \"Med andra ord vill jag inte se en sån här lista när jag är tillbaka!\"",
+      "note": "Granskaren 3/5, användbar med anmärkningar: Mjukaste början: ritad mun stängd på B (8–10), inga spöktänder i ruta 7. Slutet 55 har spöktänder och läpparna byter fyllighet och glans."
+    }
   },
   "postProcessing": "the rendered face laid back into the rest film's own frames (assets/speech/paow/paow-tal-blackjack-sv-05/receipt.json, laidBack)",
   "generationRef": "assets/motions/paow-tal-blackjack-sv-05/generation.json",

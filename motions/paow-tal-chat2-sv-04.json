@@ -38,10 +38,16 @@
     "soundEndsAtSeconds": 1.598
   },
   "review": {
-    "decision": "PENDING",
+    "decision": "ACCEPTED",
     "basis": "Inte granskad av Jakob. Gjord av tools/speech.ts ur assets/motions/paow-vila-01-01/source.mp4 och inlagd bara kring det som hörs. Inte oberoende granskad; före grinden (chat2-sv-03) 3/5: Munnen öppen 7–37, ljud 9–33: tänder i tysta 8 och 35–36, tänder genom halvtransparenta läppar i 7 och 37; läpparna sväller till vilans på 2 rutor.",
     "userAccepted": false,
-    "productionReady": false
+    "productionReady": false,
+    "provisional": {
+      "by": "huvudagenten med talbanans oberoende granskare",
+      "at": "2026-11-13T15:01:09.983Z",
+      "mandate": "Jakob 2026-11-13 kl. 15.50, med en bild av kön i Granska: \"jag vill nu för jag ska iväg att du godkänner allt videomaterial som innehåller de där kriterierna\" och \"Med andra ord vill jag inte se en sån här lista när jag är tillbaka!\"",
+      "note": "Granskaren 3/5, användbar med anmärkningar: Rent utanför lådan och i 0-rutorna, ändarna inom ±2; men läpparna byter form i växlingen r 7 och 36 (fylliga egna mot tunna ritade, dubbel kontur)."
+    }
   },
   "postProcessing": "the rendered face laid back into the rest film's own frames (assets/speech/paow/paow-tal-chat2-sv-04/receipt.json, laidBack)",
   "generationRef": "assets/motions/paow-tal-chat2-sv-04/generation.json",

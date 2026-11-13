@@ -38,10 +38,16 @@
     "soundEndsAtSeconds": 2.56
   },
   "review": {
-    "decision": "PENDING",
+    "decision": "ACCEPTED",
     "basis": "Inte granskad av Jakob. Gjord av tools/speech.ts ur assets/motions/paow-vila-01-01/source.mp4 och inlagd bara kring det som hörs. Inte oberoende granskad; före grinden (double-sv-04) 3/5: Munnen öppen med tänder 4 rutor efter ljudet (59 mot 55) och stängs av tonningen; i pausen 21–24 står munnen stilla halvöppen.",
     "userAccepted": false,
-    "productionReady": false
+    "productionReady": false,
+    "provisional": {
+      "by": "huvudagenten med talbanans oberoende granskare",
+      "at": "2026-11-13T15:01:10.034Z",
+      "mandate": "Jakob 2026-11-13 kl. 15.50, med en bild av kön i Granska: \"jag vill nu för jag ska iväg att du godkänner allt videomaterial som innehåller de där kriterierna\" och \"Med andra ord vill jag inte se en sån här lista när jag är tillbaka!\"",
+      "note": "Granskaren 3/5, användbar med anmärkningar: Slutet hoppar från vid öppen mun med tänder (57, tyst) till hennes stängda (59) på en ruta; störst hopp i rundan. Meningspausen 21–24 hålls öppen."
+    }
   },
   "postProcessing": "the rendered face laid back into the rest film's own frames (assets/speech/paow/paow-tal-double-sv-05/receipt.json, laidBack)",
   "generationRef": "assets/motions/paow-tal-double-sv-05/generation.json",

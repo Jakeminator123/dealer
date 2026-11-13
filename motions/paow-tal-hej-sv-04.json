@@ -38,10 +38,16 @@
     "soundEndsAtSeconds": 1.297
   },
   "review": {
-    "decision": "PENDING",
+    "decision": "ACCEPTED",
     "basis": "Inte granskad av Jakob. Gjord av tools/speech.ts ur assets/motions/paow-vila-01-01/source.mp4 och inlagd bara kring det som hörs. Inte oberoende granskad; före grinden (hej-sv-03) 3/5: Munnen öppen 4–31, ljud 6–26 (svag svans till 29): vidöppen med tänder i tysta 5, tänder i 28–31; slutet stänger mjukare än i de andra, läpparna sväller 32–34.",
     "userAccepted": false,
-    "productionReady": false
+    "productionReady": false,
+    "provisional": {
+      "by": "huvudagenten med talbanans oberoende granskare",
+      "at": "2026-11-13T15:01:10.054Z",
+      "mandate": "Jakob 2026-11-13 kl. 15.50, med en bild av kön i Granska: \"jag vill nu för jag ska iväg att du godkänner allt videomaterial som innehåller de där kriterierna\" och \"Med andra ord vill jag inte se en sån här lista när jag är tillbaka!\"",
+      "note": "Granskaren 3/5, användbar med anmärkningar: Bra slutningar på m och b (r 12–13, 23–24), hakan rör sig över tatueringen utan att mönstret ändras; men läpparna byter form i växlingen r 4 och 29."
+    }
   },
   "postProcessing": "the rendered face laid back into the rest film's own frames (assets/speech/paow/paow-tal-hej-sv-04/receipt.json, laidBack)",
   "generationRef": "assets/motions/paow-tal-hej-sv-04/generation.json",

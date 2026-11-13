@@ -38,10 +38,16 @@
     "soundEndsAtSeconds": 2.933
   },
   "review": {
-    "decision": "PENDING",
+    "decision": "ACCEPTED",
     "basis": "Inte granskad av Jakob. Gjord av tools/speech.ts ur assets/motions/paow-vila-01-01/source.mp4 och inlagd bara kring det som hörs. Inte oberoende granskad; före grinden (goodluck-sv-04) 3/5: Pausen 36–38 mellan meningarna: munnen står stilla halvöppen med tänder; läpparna tunnare och mattare än vilans; ändarna inom +3 rutor.",
     "userAccepted": false,
-    "productionReady": false
+    "productionReady": false,
+    "provisional": {
+      "by": "huvudagenten med talbanans oberoende granskare",
+      "at": "2026-11-13T15:01:10.042Z",
+      "mandate": "Jakob 2026-11-13 kl. 15.50, med en bild av kön i Granska: \"jag vill nu för jag ska iväg att du godkänner allt videomaterial som innehåller de där kriterierna\" och \"Med andra ord vill jag inte se en sån här lista när jag är tillbaka!\"",
+      "note": "Granskaren 3/5, användbar med anmärkningar: Bra artikulation (stängt i mitt bord 50–59). Munnen står öppen med tänder i meningspausen 36–38; växlingen 7 har spöktänder, läpparna byter form vid 7 och 68."
+    }
   },
   "postProcessing": "the rendered face laid back into the rest film's own frames (assets/speech/paow/paow-tal-goodluck-sv-05/receipt.json, laidBack)",
   "generationRef": "assets/motions/paow-tal-goodluck-sv-05/generation.json",

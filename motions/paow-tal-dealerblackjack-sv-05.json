@@ -38,10 +38,16 @@
     "soundEndsAtSeconds": 3.14
   },
   "review": {
-    "decision": "PENDING",
+    "decision": "ACCEPTED",
     "basis": "Inte granskad av Jakob. Gjord av tools/speech.ts ur assets/motions/paow-vila-01-01/source.mp4 och inlagd bara kring det som hörs. Inte oberoende granskad; före grinden (dealerblackjack-sv-04) 3/5: Munnen vidöppen i tystnad 70–71 och stängs av tonningen 72–73 (tänder genom läpparna i 72); sista öppna ruta 72 mot ljudets slut 69.",
     "userAccepted": false,
-    "productionReady": false
+    "productionReady": false,
+    "provisional": {
+      "by": "huvudagenten med talbanans oberoende granskare",
+      "at": "2026-11-13T15:01:10.004Z",
+      "mandate": "Jakob 2026-11-13 kl. 15.50, med en bild av kön i Granska: \"jag vill nu för jag ska iväg att du godkänner allt videomaterial som innehåller de där kriterierna\" och \"Med andra ord vill jag inte se en sån här lista när jag är tillbaka!\"",
+      "note": "Granskaren 3/5, användbar med anmärkningar: Ljud 9–69, mun 8–71, ingen paus. Slutet hoppar från öppen mun med tänder (71) till hennes stängda (73); spöktänder i 7 och 72."
+    }
   },
   "postProcessing": "the rendered face laid back into the rest film's own frames (assets/speech/paow/paow-tal-dealerblackjack-sv-05/receipt.json, laidBack)",
   "generationRef": "assets/motions/paow-tal-dealerblackjack-sv-05/generation.json",
