@@ -11,7 +11,11 @@
 //
 // A return to rest the bank has no film for is played as the return to the shoe and the shoe's exit (READY>IDLE), so the hand never
 // jumps from the card to rest; where the exit has no film either, the cut is from the shoe to rest, between two anchors.
-import {dealersOf, parseEdge, type BankData, type Step} from './clip-graph.ts';
+//
+// A card on the dealer's SEAT_HUB is dealt from that other pose at the shoe (READY-B) when the films for it can be played, and the
+// chain goes through rest around it: IDLE>READY-B, the deal, the return to READY-B and READY-B>IDLE (roundSequence in the clip bank
+// does the same).
+import {dealersOf, dealHub, parseEdge, type BankData, type Step} from './clip-graph.ts';
 import {slotOf, slotFilm, slotLabel, type Slot, type TableCards} from './game-table.ts';
 
 // The signals this file reads; everything else in the engine's list is for the overlay.
@@ -37,6 +41,14 @@ export const REVEAL_NODE = 'REVEAL(D.C2)';
 // Per dealer: Paow's only. Pamela is paused (Jakob 2026-11-12), and her game stays as he saw it: her hole card is laid without a hand.
 export const STAND_IN_FILM: Readonly<Record<string, Readonly<Record<string, string>>>> = {paow: {'D.C2': 'D.C1'}};
 
+// The cards a dealer deals from another pose at the shoe than READY (anchor 2.1, the pinch), by the seat's first card: its second
+// card and every later card that plays the seat's film go the same way. Paow's seat 6 is dealt from READY-B (anchor 2.2: her hand
+// over the card in the shoe's window, drawing it out flat): fifteen takes of it from READY fell, and Jakob said 2026-11-13 that a
+// round should be able to go via anchor 2.2. It applies only where the dealer's bank can play the four films it needs, the entry
+// IDLE>READY-B, the deal from READY-B, the return to READY-B and the exit READY-B>IDLE, each with a verdict (the game's bank, judgedBank
+// below); without them the card is dealt as before, from READY, with its stand-in, or laid without a hand. Pamela has none.
+export const SEAT_HUB: Readonly<Record<string, Readonly<Record<string, string>>>> = {paow: {'P6.C1': 'READY-B'}};
+
 /**
  * The beats of one step of the game.
  * table: the cards on the table after the step (the engine's view). lying: draw numbers that lay there before it.
@@ -46,15 +58,26 @@ export const STAND_IN_FILM: Readonly<Record<string, Readonly<Record<string, stri
  * toRest(film): false for a seat film whose return to rest has no film that can be played; the hand then goes back to the shoe
  * and from there to rest (EXIT, READY>IDLE).
  * standIn: films played for a card whose own has none (STAND_IN_FILM), when the stand-in itself can be played.
+ * hubs: the cards dealt from another pose at the shoe (SEAT_HUB). fromHub(hub, film): true when the four films of a deal from that
+ * pose can be played (entry, deal, return to the pose, exit); only then is the card dealt from it. Such a deal is reached through
+ * rest: the chain before it goes to rest, then ENTRY to the pose, DEAL, RETURN to the pose and EXIT to rest, unless the next card
+ * is dealt from the same pose, which the hand then waits in.
  */
-export function planBeats(table: TableCards, lying: number[], signals: FilmSignal[], filmless: (target: string) => boolean = () => false, toRest: (film: string) => boolean = () => true, standIn: Readonly<Record<string, string>> = {}): Beat[] {
+export function planBeats(table: TableCards, lying: number[], signals: FilmSignal[], filmless: (target: string) => boolean = () => false, toRest: (film: string) => boolean = () => true, standIn: Readonly<Record<string, string>> = {},
+  hubs: Readonly<Record<string, string>> = {}, fromHub: (hub: string, film: string) => boolean = () => false): Beat[] {
   const moves = signals.filter(s => (s.type === 'deal' || s.type === 'reveal') && typeof s.shoeDraw === 'number') as {type: 'deal' | 'reveal'; shoeDraw: number}[];
   const beats: Beat[] = [], rest = [...lying];
   const slots = moves.map(move => { const slot = slotOf(table, move.shoeDraw); if (!slot) throw Error(`Kortet med dragnummer ${move.shoeDraw} finns inte på bordet.`); return slot; });
-  // The film a card is dealt with: its own, or its stand-in when its own has none and the stand-in has.
-  const filmOf = (slot: Slot) => { const own = slotFilm(slot), other = standIn[own]; return filmless(own) && other && !filmless(other) ? other : own; };
-  const filmed = (i: number) => moves[i]?.type === 'deal' && !filmless(filmOf(slots[i])); // a deal the hand really makes
-  let atShoe = false;
+  // The film a card is dealt with and the pose at the shoe it is dealt from: its own film from the pose on the map when that pose's
+  // films can be played; otherwise from READY, with its own film, or its stand-in when its own has none and the stand-in has.
+  const dealOf = (slot: Slot): {film: string; hub: string} => {
+    const own = slotFilm(slot), hub = dealHub(own, hubs);
+    if (hub !== 'READY' && fromHub(hub, own)) return {film: own, hub};
+    const other = standIn[own]; return {film: filmless(own) && other && !filmless(other) ? other : own, hub: 'READY'};
+  };
+  const deals = moves.map((move, i) => move.type === 'deal' ? dealOf(slots[i]) : null);
+  const filmed = (i: number) => { const d = deals[i]; return !!d && (d.hub !== 'READY' || !filmless(d.film)); }; // a deal the hand really makes
+  let at: string | null = null; // the pose at the shoe the hand waits in; null: at rest
   moves.forEach((move, i) => {
     const slot = slots[i];
     const own = {shoeDraw: move.shoeDraw, slot, label: slotLabel(slot)}, others = () => rest.filter(n => n !== move.shoeDraw);
@@ -64,13 +87,16 @@ export function planBeats(table: TableCards, lying: number[], signals: FilmSigna
       return;
     }
     if (!filmed(i)) { beats.push({kind: 'PLACE', step: null, own, lying: others()}); rest.push(move.shoeDraw); return; }
-    const film = filmOf(slot), last = !filmed(i + 1);
-    if (!atShoe) beats.push({kind: 'ENTRY', step: {from: 'IDLE', to: 'READY'}, own: null, lying: [...rest]});
-    beats.push({kind: 'DEAL', step: {from: 'READY', to: film}, own, lying: others()});
-    const viaShoe = last && !toRest(film);
-    beats.push({kind: 'RETURN', step: {from: film, to: last && !viaShoe ? 'IDLE' : 'READY'}, own, lying: others()});
-    rest.push(move.shoeDraw); atShoe = !last;
-    if (viaShoe) beats.push({kind: 'EXIT', step: {from: 'READY', to: 'IDLE'}, own: null, lying: [...rest]});
+    // last: the hand leaves the shoe after this card (the next is not dealt by hand, or from another pose).
+    const {film, hub} = deals[i]!, last = !filmed(i + 1) || deals[i + 1]!.hub !== hub;
+    if (at !== hub) beats.push({kind: 'ENTRY', step: {from: 'IDLE', to: hub}, own: null, lying: [...rest]});
+    beats.push({kind: 'DEAL', step: {from: hub, to: film}, own, lying: others()});
+    // From another pose the hand always goes back to that pose and from there to rest: a return straight to rest (P6.C1>IDLE) is
+    // written without a pose, so it never plays a film made after a deal from that pose.
+    const viaShoe = last && (hub !== 'READY' || !toRest(film));
+    beats.push({kind: 'RETURN', step: {from: film, to: last && !viaShoe ? 'IDLE' : hub}, own, lying: others()});
+    rest.push(move.shoeDraw); at = last ? null : hub;
+    if (viaShoe) beats.push({kind: 'EXIT', step: {from: hub, to: 'IDLE'}, own: null, lying: [...rest]});
   });
   return beats;
 }
@@ -92,7 +118,8 @@ export function cardRecords(table: TableCards, faces: CardFace[]): {shoeDraw: nu
 // on it, with one exception: a rest take played on request only (motion.idle.onRequest, a talk film), which chance never picks and
 // the game plays only when the dealer says its line. Rejected takes stay: the clip bank never plays them, and says so.
 // A stopgap (its record says motion.stopgap: a film made of another, as her entry played backwards for the exit) gives way by
-// itself: it is left out wherever the same dealer has another judged take, not rejected, on the same edge.
+// itself: it is left out wherever the same dealer has another judged take, not rejected, on the same edge. The same edge includes
+// its pose at the shoe: an exit from READY-B is another film than the exit from READY, and never pushes out READY's stopgap.
 const unjudged = (review: {decision?: string; inbox?: boolean} | undefined) => review?.inbox === true || String(review?.decision ?? 'PENDING').toUpperCase() === 'PENDING';
 const onRequest = (motion: {motion?: {idle?: {onRequest?: boolean}}} | undefined) => motion?.motion?.idle?.onRequest === true;
 const stopgap = (record: unknown) => (record as {motion?: {stopgap?: unknown}} | undefined)?.motion?.stopgap === true;
@@ -100,7 +127,7 @@ const stopgap = (record: unknown) => (record as {motion?: {stopgap?: unknown}} |
 export function judgedBank(bank: BankData): BankData {
   const motions = bank.motions ?? {}, keep = (item: {id?: unknown} | null | undefined) => { const m = motions[String(item?.id)]; return !unjudged(m?.review) || onRequest(m); };
   const kept = {jobs: (bank.jobs ?? []).filter(keep), derived: (bank.derived ?? []).filter(keep), edits: (bank.edits ?? []).filter(keep)}, owner = dealersOf(bank);
-  const edgeOf = (t: {id: string; from?: string; to?: string}) => `${owner[t.id]}|${parseEdge(`${t.from}>${t.to}`)?.base ?? `${t.from}>${t.to}`}`;
+  const edgeOf = (t: {id: string; from?: string; to?: string}) => { const ref = parseEdge(`${t.from}>${t.to}`); return `${owner[t.id]}|${ref ? `${ref.base}|${ref.hub ?? ''}` : `${t.from}>${t.to}`}`; };
   const real = new Set([...kept.jobs, ...kept.derived].filter(t => !stopgap(motions[t.id]) && String(motions[t.id]?.review?.decision ?? '').toUpperCase() !== 'REJECTED').map(edgeOf));
   const gives = (t: {id: string; from?: string; to?: string}) => !(stopgap(motions[t.id]) && real.has(edgeOf(t)));
   return {...bank, jobs: kept.jobs.filter(gives), derived: kept.derived.filter(gives), edits: kept.edits};

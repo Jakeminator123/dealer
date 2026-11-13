@@ -5,7 +5,8 @@ import assert from 'node:assert/strict';
 import {createSession, type Snapshot} from '../game/session.ts';
 import {defaultPlan} from '../src/placement-model.ts';
 import {createLayout} from '../src/game-table.ts';
-import {planBeats, cardRecords, lyingAfter} from '../src/game-director.ts';
+import {planBeats, cardRecords, lyingAfter, SEAT_HUB} from '../src/game-director.ts';
+import {formatSequence, roundSequence} from '../src/clip-graph.ts';
 import {cardOptions, placedCards} from '../src/game-film.ts';
 import {tableView, tableCards, cardFaces, shownBy, lineOf, handKey, DEALER_KEY, type PageState} from '../src/game-view.ts';
 import {totalText, chipsFor} from '../src/game-overlay.ts';
@@ -55,6 +56,17 @@ test('opening deal: beats in the engine\'s order, totals only as the cards land,
   assert.deepEqual(tableView(dealt, page({bets: {4: [5]}})).seats[3].chips, [5, 5]);
   assert.deepEqual(after.seats[3].chips, [5, 5], 'without a record of what was laid: the fewest chips');
   assert.match(after.message, /plats 4/);
+});
+
+test('opening deal at seat 6 from anchor 2.2: the engine\'s signals give the clip bank\'s round through rest, beat for beat', () => {
+  const s = session('K♠ 7♦ 6♥ 10♣ 5♦'), dealt = run(s, {op: 'start', bets: [{seat: 6, main: 10}]}), table = tableCards(dealt);
+  const beats = planBeats(table, [], dealt.events, () => false, () => true, {}, SEAT_HUB.paow, () => true), steps = beats.map(b => `${b.step!.from}>${b.step!.to}`);
+  assert.deepEqual(steps, ['IDLE>READY-B', 'READY-B>P6.C1', 'P6.C1>READY-B', 'READY-B>IDLE', 'IDLE>READY', 'READY>D.C1', 'D.C1>IDLE',
+    'IDLE>READY-B', 'READY-B>P6.C2', 'P6.C2>READY-B', 'READY-B>IDLE', 'IDLE>READY', 'READY>D.C2', 'D.C2>IDLE']);
+  assert.equal(formatSequence(roundSequence({seats: ['P6'], hubs: SEAT_HUB.paow})), steps.join(' | '), 'the game and the lab\'s round builder agree');
+  // Without the films of 2.2 the same signals give today's chain.
+  assert.deepEqual(planBeats(table, [], dealt.events, () => false, () => true, {}, SEAT_HUB.paow, () => false), planBeats(table, [], dealt.events));
+  assert.equal(formatSequence(roundSequence({seats: ['P6']})), planBeats(table, [], dealt.events).map(b => `${b.step!.from}>${b.step!.to}`).join(' | '));
 });
 
 test('a hit, the dealer\'s turn and the result', () => {

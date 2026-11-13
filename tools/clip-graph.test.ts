@@ -231,6 +231,62 @@ test('a standard round is IDLE>READY, each deal with its return, and IDLE after 
   assert.equal(graph.wantedSide('D.C2'), 'BACK'); assert.equal(graph.wantedSide('D.C2', false), 'FRONT'); assert.equal(graph.wantedSide('P4.C2'), 'FRONT');
 });
 
+test('a round can deal a seat from READY-B: through rest around it, staying at READY-B between two of its cards', () => {
+  const hubs = {'P6.C1': 'READY-B'}, round = (options: graph.RoundOptions) => graph.formatSequence(graph.roundSequence(options));
+  // In the middle of the round: the deal before it goes to rest, then rest to READY-B and back to rest, and the next deal from READY starts with the plain entry.
+  assert.equal(round({seats: ['P4', 'P6'], hubs}),
+    'IDLE>READY | READY>P4.C1 | P4.C1>IDLE | IDLE>READY-B | READY-B>P6.C1 | P6.C1>READY-B | READY-B>IDLE | IDLE>READY | READY>D.C1 | D.C1>READY | READY>P4.C2 | P4.C2>IDLE'
+    + ' | IDLE>READY-B | READY-B>P6.C2 | P6.C2>READY-B | READY-B>IDLE | IDLE>READY | READY>D.C2 | D.C2>IDLE');
+  // First in the round, and last.
+  assert.equal(round({seats: ['P6', 'P7'], dealer: false, cards: 1, hubs}), 'IDLE>READY-B | READY-B>P6.C1 | P6.C1>READY-B | READY-B>IDLE | IDLE>READY | READY>P7.C1 | P7.C1>IDLE');
+  assert.equal(round({seats: ['P4', 'P6'], dealer: false, cards: 1, hubs}), 'IDLE>READY | READY>P4.C1 | P4.C1>IDLE | IDLE>READY-B | READY-B>P6.C1 | P6.C1>READY-B | READY-B>IDLE');
+  // Two cards of the seat in a row: the hand waits at READY-B between them; the second card plays the first card's film, as from READY.
+  assert.equal(round({seats: ['P6'], dealer: false, hubs}), 'IDLE>READY-B | READY-B>P6.C1 | P6.C1>READY-B | READY-B>P6.C2 | P6.C2>READY-B | READY-B>IDLE');
+  // The hole card's turn and the third dealer card start from rest, after READY-B's exit as after any return to rest.
+  assert.deepEqual(graph.roundSequence({seats: ['P6'], reveal: true, thirdDealerCard: true, hubs}).map(e => e.id).slice(-8),
+    ['READY-B>IDLE', 'IDLE>READY', 'READY>D.C2', 'D.C2>IDLE', 'IDLE>REVEAL(D.C2)', 'IDLE>READY', 'READY>D.C3', 'D.C3>IDLE']);
+  // Every step is an edge of the model, and each starts where the one before it ended (rest with the hole card turned is rest).
+  for (const options of [{seats: graph.SEATS, hubs}, {seats: ['P6'], dealer: false, hubs}, {seats: ['P5', 'P6', 'P7'], reveal: true, thirdDealerCard: true, hubs}]) {
+    const steps = graph.roundSequence(options), pose = (node: string) => node === graph.REVEAL_NODE ? 'IDLE' : node;
+    steps.forEach((s, i) => { assert.ok(s, 'a model edge'); assert.equal(s.from, i ? pose(steps[i - 1].to) : 'IDLE'); });
+  }
+  // A round without that seat, an empty map, and a map that names no READY variant are the round as it always was.
+  for (const options of [{seats: ['P2', 'P1']}, {seats: graph.SEATS.filter(s => s !== 'P6'), reveal: true, thirdDealerCard: true}, {seats: ['P4'], dealer: false, cards: 1}])
+    for (const other of [hubs, {}, {'P4.C1': 'READY'}, {'P4.C1': 'IDLE'}, {'P4.C1': 'READY-'}, {'D.C1': 'nonsense'}] as Record<string, string>[])
+      assert.equal(round({...options, hubs: other}), round(options), JSON.stringify([options, other]));
+  assert.equal(graph.dealHub('P6.C2', hubs), 'READY-B', "the second card follows the seat's first"); assert.equal(graph.dealHub('D.C2', {'D.C1': 'READY-B'}), 'READY', 'the hole card keeps its own film');
+  assert.equal(graph.dealHub('P6.C2', {'P6.C1': 'READY-B', 'P6.C2': 'READY-C'}), 'READY-C'); assert.equal(graph.dealHub('P6.C1', null), 'READY');
+});
+
+test('a round through READY-B resolves with what the graph already knows: takes of that pose only, the deal cut where its return begins', () => {
+  const data = bank(), b = (id: string, from: string, to: string, extra: Partial<BankJob>) => job(id, from, to, {target: null, ...extra});
+  data.jobs!.push(b('pamela-entry-01', 'IDLE', 'READY', {kind: 'ENTRY'}), b('pamela-exit-01', 'READY', 'IDLE', {kind: 'RETURN'}),
+    b('pamela-ready-b-entry-01', 'IDLE', 'READY-B', {kind: 'ENTRY'}), b('pamela-ready-b-exit-01', 'READY-B', 'IDLE', {kind: 'RETURN'}),
+    job('pamela-p6-c1-readyb-deal-01', 'READY-B', 'LAND(P6.C1)', {kind: 'DEAL', target: 'P6.C1'}),
+    job('pamela-p6-c1-readyb-return-01', 'LAND(P6.C1)', 'READY-B', from('pamela-p6-c1-readyb-deal-01', 100)));
+  for (const j of data.jobs!.slice(-6)) { data.motions![j.id] = done('ACCEPTED'); data.media![j.id] = {video: video(j.id)}; data.receipts![j.id] = {status: 'SUCCEEDED'}; }
+  const g = graph.buildGraph(data), hubs = {'P6.C1': 'READY-B'};
+  const ids = (segments: graph.Segment[]) => segments.map(s => [s.id, s.take?.id ?? s.gap]);
+  const segments = graph.resolveRound(g, graph.roundSequence({seats: ['P4', 'P6'], dealer: false, cards: 1, hubs}));
+  assert.deepEqual(ids(segments), [['IDLE>READY', 'pamela-entry-01'], ['READY>P4.C1', 'pamela-p4-c1-plan-deal-02'], ['P4.C1>IDLE', 'pamela-p4-c1-plan-return-idle-01'],
+    ['IDLE>READY-B', 'pamela-ready-b-entry-01'], ['READY-B>P6.C1', 'pamela-p6-c1-readyb-deal-01'], ['P6.C1>READY-B', 'pamela-p6-c1-readyb-return-01'], ['READY-B>IDLE', 'pamela-ready-b-exit-01']]);
+  assert.deepEqual(segments.flatMap(s => s.notes), [], 'no broken chain, no seam');
+  assert.deepEqual([segments[4].end, segments[4].cut, segments[4].edge?.id], [100, 'FRAME', 'READY>P6.C1']);
+  // Two cards of the seat in a row: the second plays the seat's film from READY-B, moved to its own place.
+  const places = {'P6.C1': {x: 100, y: 50}, 'P6.C2': {x: 130, y: 45}};
+  const twice = graph.resolveRound(g, graph.roundSequence({seats: ['P6'], dealer: false, hubs}), {places});
+  assert.deepEqual(ids(twice), [['IDLE>READY-B', 'pamela-ready-b-entry-01'], ['READY-B>P6.C1', 'pamela-p6-c1-readyb-deal-01'], ['P6.C1>READY-B', 'pamela-p6-c1-readyb-return-01'],
+    ['READY-B>P6.C2', 'pamela-p6-c1-readyb-deal-01'], ['P6.C2>READY-B', 'pamela-p6-c1-readyb-return-01'], ['READY-B>IDLE', 'pamela-ready-b-exit-01']]);
+  assert.deepEqual([twice[3].why, twice[3].shift, twice[3].end], ['SHARED', {x: 30, y: -5}, 100]);
+  // The plain steps never play a take of READY-B, and the READY-B steps never a plain one: a round without the map is as it was before those takes came.
+  const plain = graph.roundSequence({seats: ['P4', 'P1'], dealer: false, cards: 1});
+  assert.deepEqual(ids(graph.resolveRound(g, plain)).slice(1), ids(graph.resolveRound(graph.buildGraph(bank()), plain)).slice(1));
+  assert.equal(graph.resolveRound(g, plain)[0].take?.id, 'pamela-entry-01');
+  delete data.media!['pamela-ready-b-exit-01'];
+  data.jobs = data.jobs!.filter(j => j.id !== 'pamela-ready-b-exit-01');
+  assert.equal(graph.resolveRound(graph.buildGraph(data), [{from: 'READY-B', to: 'IDLE'}])[0].gap, 'MISSING', 'the plain exit does not stand in for the exit from READY-B');
+});
+
 test('a round resolves to one take per step, cuts each deal at its landing frame and marks gaps', () => {
   const g = graph.buildGraph(bank());
   const segments = graph.resolveRound(g, graph.roundSequence({seats: ['P1', 'P4'], dealer: false, cards: 1}));

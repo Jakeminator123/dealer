@@ -463,16 +463,28 @@ export function effectOf(motion: MotionRecord | null | undefined): FilmEffect | 
 }
 
 // ── Round ───────────────────────────────────────────────────────────────────
-export type RoundOptions = {seats: string[]; dealer?: boolean; cards?: number; reveal?: boolean; thirdDealerCard?: boolean};
+// hubs: the cards dealt from another pose at the shoe than READY, by card ({'P6.C1': 'READY-B'}). A seat's first card stands for
+// the cards that play its film (filmCard: its second card too); a value that is not a READY variant is ignored.
+export type RoundOptions = {seats: string[]; dealer?: boolean; cards?: number; reveal?: boolean; thirdDealerCard?: boolean; hubs?: Readonly<Record<string, string>>};
+/** The pose at the shoe a card is dealt from: its own or its film card's entry in hubs when that is a READY variant, else READY. */
+export function dealHub(target: string, hubs: Readonly<Record<string, string>> | null | undefined): string {
+  const hub = hubs?.[target] ?? hubs?.[filmCard(target)];
+  return typeof hub === 'string' && HUB_VARIANT.test(hub) ? hub : 'READY';
+}
 // Standard initial deal in table order: one card to each seat and the dealer, then the second.
 // Every deal returns to READY except the last, which returns to IDLE. The hole card is turned and a
 // third dealer card is drawn after the players have acted, so both start again from IDLE.
+// A card dealt from a READY variant (hubs) is reached through rest, as there is no edge between two READY poses: the deal before it
+// returns to rest, the hand goes from rest to that pose, deals, returns to it and goes back to rest, and the next deal from READY
+// begins with the plain entry. Two such cards in a row stay at that pose between them.
 export function roundSequence(options: RoundOptions): EdgeRef[] {
   const seats = SEATS.filter(s => options.seats.includes(s)), dealer = options.dealer !== false, cards = options.cards === 1 ? 1 : 2;
   const deals: string[] = [];
   for (let card = 1; card <= cards; card++) { for (const seat of seats) deals.push(`${seat}.C${card}`); if (dealer) deals.push(`D.C${card}`); }
   if (!deals.length) return [];
-  const ids = ['IDLE>READY', ...deals.flatMap((t, i) => [`READY>${t}`, `${t}>${i === deals.length - 1 ? 'IDLE' : 'READY'}`])];
+  const hub = (i: number) => i >= 0 && i < deals.length ? dealHub(deals[i], options.hubs) : null;
+  const ids = deals.flatMap((t, i) => { const at = hub(i)!, stay = hub(i + 1) === at;
+    return [...(hub(i - 1) === at ? [] : [`IDLE>${at}`]), `${at}>${t}`, ...(stay ? [`${t}>${at}`] : at === 'READY' ? [`${t}>IDLE`] : [`${t}>${at}`, `${at}>IDLE`])]; });
   if (options.reveal && dealer && cards === 2) ids.push(REVEAL_EDGE);
   if (options.thirdDealerCard && dealer) ids.push('IDLE>READY', 'READY>D.C3', 'D.C3>IDLE');
   return ids.map(id => parseEdge(id)!);

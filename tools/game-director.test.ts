@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {parseEdge, formatEdge} from '../src/clip-graph.ts';
 import {defaultPlan} from '../src/placement-model.ts';
 import {slotOf, slotFilm, slotLabel, slotImprovised, createLayout, FAN, FAN_AT, SPLIT, DEALER_THIRD, type TableCards} from '../src/game-table.ts';
-import {planBeats, lyingAfter, cardRecords, judgedBank, unjudgedTakes, speakMoments, talkOn, REVEAL_NODE, STAND_IN_FILM} from '../src/game-director.ts';
+import {planBeats, lyingAfter, cardRecords, judgedBank, unjudgedTakes, speakMoments, talkOn, REVEAL_NODE, SEAT_HUB, STAND_IN_FILM} from '../src/game-director.ts';
 
 // Seats 4 and 7 play. Opening deal as the engine draws it: seat 7, seat 4, dealer up, seat 7, seat 4, hole card.
 // Draw 1 is the burn card.
@@ -142,6 +142,65 @@ test('a return to rest without a film goes back to the shoe and from there to re
   assert.deepEqual(edges(planBeats(table, [2, 3, 4, 5, 6, 7], [deal(8)], () => false, noRest)), ['IDLE>READY', 'READY>P4.C1', 'P4.C1>READY', 'READY>IDLE']);
 });
 
+test('a seat on the dealer\'s SEAT_HUB is dealt from READY-B when its films can be played, through rest around it', () => {
+  assert.deepEqual(SEAT_HUB, {paow: {'P6.C1': 'READY-B'}}, 'Paow\'s seat 6 only');
+  const hubs = SEAT_HUB.paow, asked: string[] = [], fromHub = (hub: string, film: string) => { asked.push(`${hub}>${film}`); return true; };
+  const noP6 = (target: string) => target.startsWith('P6.') || target === 'D.C2', noRest = () => false;
+  // Seat 6 first in the round (the engine's order: seat 6, seat 4, the dealer, then the second cards). Paow has no plain deal to seat 6
+  // and no return to rest from any card; her hole card is dealt with the stand-in.
+  const opening: TableCards = {hands: [{seat: 4, cards: [3, 6]}, {seat: 6, cards: [2, 5]}], dealer: [4, 7]}, signals = [deal(2), deal(3), deal(4), deal(5), deal(6), deal(7)];
+  const beats = planBeats(opening, [], signals, noP6, noRest, STAND_IN_FILM.paow, hubs, fromHub);
+  assert.deepEqual(edges(beats), ['IDLE>READY-B', 'READY-B>P6.C1', 'P6.C1>READY-B', 'READY-B>IDLE', 'IDLE>READY', 'READY>P4.C1', 'P4.C1>READY', 'READY>D.C1', 'D.C1>READY', 'READY>IDLE',
+    'IDLE>READY-B', 'READY-B>P6.C2', 'P6.C2>READY-B', 'READY-B>IDLE', 'IDLE>READY', 'READY>P4.C2', 'P4.C2>READY', 'READY>D.C1', 'D.C1>READY', 'READY>IDLE']);
+  assert.deepEqual(beats.map(b => b.kind), ['ENTRY', 'DEAL', 'RETURN', 'EXIT', 'ENTRY', 'DEAL', 'RETURN', 'DEAL', 'RETURN', 'EXIT', 'ENTRY', 'DEAL', 'RETURN', 'EXIT', 'ENTRY', 'DEAL', 'RETURN', 'DEAL', 'RETURN', 'EXIT']);
+  for (const b of beats) assert.ok(parseEdge(formatEdge(b.step!.from, b.step!.to)), `${b.step!.from}>${b.step!.to} is an edge of the clip bank`);
+  assert.deepEqual(asked, ['READY-B>P6.C1', 'READY-B>P6.C2'], 'asked for each of the seat\'s cards, with its own film');
+  // The second card is the seat's own, laid at P6.C2; the exit from READY-B has the card lying, none in the hand.
+  assert.deepEqual([beats[11].own!.label, beats[11].own!.shoeDraw, beats[11].lying], ['P6.C2', 5, [2, 3, 4]]);
+  assert.deepEqual([beats[3].own, beats[3].lying], [null, [2]]);
+  assert.deepEqual(lyingAfter([], beats), [2, 3, 4, 5, 6, 7]);
+  // Where Paow has a return to rest, the deal before seat 6 goes straight to rest, as any last card of a run does.
+  assert.deepEqual(edges(planBeats(opening, [], signals, noP6, () => true, STAND_IN_FILM.paow, hubs, fromHub)).slice(4, 11), ['IDLE>READY', 'READY>P4.C1', 'P4.C1>READY', 'READY>D.C1', 'D.C1>IDLE', 'IDLE>READY-B', 'READY-B>P6.C2']);
+  // Seat 6 last in the run: the chain ends with READY-B's exit.
+  const last: TableCards = {hands: [{seat: 4, cards: [2, 4]}, {seat: 6, cards: [3, 5]}], dealer: []};
+  assert.deepEqual(edges(planBeats(last, [], [deal(2), deal(3), deal(4), deal(5)], noP6, noRest, {}, hubs, fromHub)),
+    ['IDLE>READY', 'READY>P4.C1', 'P4.C1>READY', 'READY>IDLE', 'IDLE>READY-B', 'READY-B>P6.C1', 'P6.C1>READY-B', 'READY-B>IDLE',
+      'IDLE>READY', 'READY>P4.C2', 'P4.C2>READY', 'READY>IDLE', 'IDLE>READY-B', 'READY-B>P6.C2', 'P6.C2>READY-B', 'READY-B>IDLE']);
+  // A hit to seat 6 is first and last at once.
+  const hit: TableCards = {hands: [{seat: 6, cards: [2, 5, 8]}], dealer: [4, 7]};
+  assert.deepEqual(edges(planBeats(hit, [2, 4, 5, 7], [deal(8)], noP6, noRest, {}, hubs, fromHub)), ['IDLE>READY-B', 'READY-B>P6.C1', 'P6.C1>READY-B', 'READY-B>IDLE']);
+});
+
+test('two cards to the READY-B seat in a row stay at READY-B between them', () => {
+  const hubs = SEAT_HUB.paow, yes = () => true;
+  const alone: TableCards = {hands: [{seat: 6, cards: [2, 3]}], dealer: []};
+  assert.deepEqual(edges(planBeats(alone, [], [deal(2), deal(3)], () => true, () => false, {}, hubs, yes)), ['IDLE>READY-B', 'READY-B>P6.C1', 'P6.C1>READY-B', 'READY-B>P6.C2', 'P6.C2>READY-B', 'READY-B>IDLE']);
+  // After a split each hand gets its second card in one step: both play the seat's first film, the hand waits at READY-B.
+  const split: TableCards = {hands: [{seat: 6, cards: [2, 4]}, {seat: 6, cards: [3, 5]}], dealer: [6, 7]};
+  const beats = planBeats(split, [2, 3, 6, 7], [deal(4), deal(5)], () => true, () => false, {}, hubs, yes);
+  assert.deepEqual(edges(beats), ['IDLE>READY-B', 'READY-B>P6.C1', 'P6.C1>READY-B', 'READY-B>P6.C1', 'P6.C1>READY-B', 'READY-B>IDLE']);
+  assert.deepEqual(beats.filter(b => b.kind === 'DEAL').map(b => b.own!.label), ['P6.H1.C2', 'P6.H2.C2']);
+});
+
+test('without the films for READY-B, or with a map that does not name the seat, the round is the one it was', () => {
+  const hubs = SEAT_HUB.paow, noRest = () => false, signals = [deal(2), deal(3), deal(4), deal(5), deal(6), deal(7)];
+  const six: TableCards = {hands: [{seat: 4, cards: [3, 6]}, {seat: 6, cards: [2, 5]}], dealer: [4, 7]};
+  // The exit from READY-B (or any of its four films) missing or without a verdict: fromHub says no, and seat 6 is laid without a hand as before.
+  for (const filmless of [(t: string) => t.startsWith('P6.'), (t: string) => t === 'D.C2', () => false]) {
+    const before = planBeats(six, [], signals, filmless, noRest, STAND_IN_FILM.paow);
+    assert.deepEqual(planBeats(six, [], signals, filmless, noRest, STAND_IN_FILM.paow, hubs, () => false), before);
+  }
+  assert.ok(edges(planBeats(six, [], signals, t => t.startsWith('P6.'), noRest, STAND_IN_FILM.paow, hubs, () => false)).includes('PLACE(P6.C1)'));
+  // A round without seat 6 is the same chain, beat for beat, whatever the films of READY-B.
+  for (const [table, lying, list] of [[opening, [], signals], [{hands: [{seat: 4, cards: [3, 6, 8]}, {seat: 7, cards: [2, 5]}], dealer: [4, 7]}, [2, 3, 4, 5, 6, 7], [deal(8)]],
+    [{hands: [{seat: 4, cards: [3, 6]}], dealer: [4, 7, 8, 9]}, [3, 4, 6, 7], [{type: 'reveal', shoeDraw: 7}, deal(8), deal(9)]]] as [TableCards, number[], {type: string; shoeDraw: number}[]][])
+    for (const filmless of [() => false, (t: string) => t === 'D.C2'])
+      for (const toRest of [() => true, noRest])
+        assert.deepEqual(planBeats(table, lying, list, filmless, toRest, STAND_IN_FILM.paow, hubs, () => true), planBeats(table, lying, list, filmless, toRest, STAND_IN_FILM.paow));
+  // Pamela has no map: her seat 6 is dealt from READY.
+  assert.deepEqual(edges(planBeats(six, [], signals.slice(0, 1), () => false, () => true, {}, SEAT_HUB.pamela, () => true)), ['IDLE>READY', 'READY>P6.C1', 'P6.C1>IDLE']);
+});
+
 test('the game\'s bank: takes without a verdict are left out, except a talk film on request; a provisional verdict counts', () => {
   const take = (id: string) => ({id, kind: 'DEAL', target: null, from: 'READY', to: 'P4.C1', model: 'x', duration: 4, ratio: '', audio: false, promptText: '', first: {file: {path: 'a.png', sha256: 'a'}}, purpose: ''});
   const bank = {jobs: [take('judged'), take('pending'), take('inbox'), take('rejected'), take('provisional')], derived: [{id: 'tal', from: 'IDLE', to: 'IDLE', clip: 'tal', frames: [0, 40] as [number, number]}, {id: 'vila', from: 'IDLE', to: 'IDLE', clip: 'vila', frames: [0, 40] as [number, number]}],
@@ -159,6 +218,9 @@ test('the game\'s bank: takes without a verdict are left out, except a talk film
   assert.deepEqual(judgedBank(judgedExit).derived!.map(t => t.id), ['baklanges', 'pamela-exit'], 'an unjudged exit does not push the stopgap out');
   judgedExit.motions['paow-exit'] = {review: {decision: 'ACCEPTED'}} as never;
   assert.deepEqual(judgedBank(judgedExit).derived!.map(t => t.id), ['pamela-exit', 'paow-exit'], 'a judged exit of her own does');
+  // An exit from the other pose at the shoe (READY-B>IDLE) is another film: judged, it leaves the stopgap from READY where it is.
+  const other = {...gap, derived: [...gap.derived, {...exit('paow-exit-2-2'), from: 'READY-B'}], motions: {...gap.motions, 'paow-exit-2-2': {review: {decision: 'ACCEPTED'}}}};
+  assert.deepEqual(judgedBank(other).derived!.map(t => t.id), ['baklanges', 'pamela-exit', 'paow-exit-2-2']);
 });
 
 test('what she says in a step: the lines before its first card and after its last', () => {

@@ -129,6 +129,19 @@ Spelet med flera dealers (2026-11-13):
   film ges med filmen i `STAND_IN_FILM` (per dealer, i dag bara Paows; hålkortet med hennes första korts film, kortet
   ritat på sin egen plats med baksidan upp); ersättaren viker när kortets egen film finns. Dealerns tredje och fjärde kort
   läggs utan hand.
+- **Giv från ankare 2.2 (READY-B).** `SEAT_HUB` i `src/game-director.ts` är en karta per dealer över vilka platser som
+  ges från navvarianten READY-B (ankare 2.2: handen över kortet i skons fönster, kortet dras ut plant) i stället för
+  READY (ankare 2.1, nypet). I dag gäller den bara Paows plats 6 (`P6.C1`). Platsens första kort står för hela
+  platsen: andra kortet, och senare kort som spelar platsens film, går samma väg. Kartan gäller bara när dealerns bank
+  har fyra dömda filmer (Jakobs dom eller en som getts åt honom, se `judgedBank`): ingången `IDLE>READY-B`, given
+  `READY-B>P6.C1`, returen `P6.C1>READY-B` och utgången `READY-B>IDLE`. Saknas någon av dem ges platsen som förut:
+  från READY, med ersättare, eller så läggs kortet utan hand. Kedjan går via vila, eftersom det inte finns någon kant
+  mellan READY och READY-B: given före platsen går till vila (eller till skon och ut), sedan kommer `IDLE>READY-B`,
+  given, returen till READY-B och `READY-B>IDLE`, och nästa giv från 2.1 börjar med den vanliga ingången
+  `IDLE>READY`. Två kort i rad till platsen stannar vid READY-B mellan sig. Labbets rundbyggare gör likadant med
+  `roundSequence({..., hubs})`; utan `hubs` blir rundan densamma som förut. Varje kort som ges så tar ungefär 14 s
+  längre än ett kort som läggs utan hand (skattat; hälften med givarna i dubbel fart). Steget för utgången i Beställ
+  heter `UTGANG-2.2`.
 - Efter en giv väljs en retur av samma hand som lade kortet (`motion.releaseHand`); finns ingen retur av rätt hand spelas
   den andra med en anteckning om felet.
 - Dealern säger sina repliker med talfilm och ljud (`src/speech-lines.ts`, hennes egen röst enligt `data/speech.json`): `goodluck` före given,

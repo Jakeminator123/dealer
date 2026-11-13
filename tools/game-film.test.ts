@@ -5,6 +5,7 @@ import {buildGraph, effectOf, type BankData, type BankJob, type MotionRecord} fr
 import {defaultPlan} from '../src/placement-model.ts';
 import {createLayout} from '../src/game-table.ts';
 import {cardsChoice, createFilm, effectPart, faceFrame, filmModel, type FilmPart} from '../src/game-film.ts';
+import {judgedBank} from '../src/game-director.ts';
 
 const sha = 'a'.repeat(64), first = {file: {path: 'assets/anchors/paow-ready-01/anchor.png', sha256: sha}};
 const video = (id: string) => `assets/motions/${id}/source.mp4`;
@@ -53,6 +54,49 @@ test('the film model: the film\'s own record, not the order\'s cut; a talk film 
   const quiet = players(), still = createFilm(quiet.players, silent, createLayout(defaultPlan()), async () => null, () => 0);
   still.rest(); await new Promise(r => setTimeout(r, 0));
   assert.equal('model' in quiet.parts.at(-1)![0], false);
+});
+
+// Paow with seat 6 dealt from anchor 2.2 (READY-B): its entry, a deal and a return cut from one film, and its exit, beside the films
+// of seat 4 from READY. No plain deal to seat 6 exists, as in her bank. pending: takes still without a verdict; missing: takes not made.
+function viaHub(pending: string[] = [], missing: string[] = []): BankData {
+  const data = bank(), hubJobs = [job('in-b', 'IDLE', 'READY-B', 'wan3', {kind: 'ENTRY'}), job('p6-deal-b', 'READY-B', 'P6.C1', 'wan3', {kind: 'DEAL', target: 'P6.C1'}),
+    job('p6-back-b', 'P6.C1', 'READY-B', 'wan3', {kind: 'RETURN', first: {frame: {video: video('p6-deal-b'), videoSha256: sha, index: 100}}}), job('ut-b', 'READY-B', 'IDLE', 'wan3', {kind: 'RETURN'})].filter(j => !missing.includes(j.id));
+  for (const j of hubJobs) { data.jobs!.push(j); data.motions![j.id] = record('wan3', pending.includes(j.id) ? {review: {decision: 'PENDING', inbox: true}} : {}); data.receipts![j.id] = {status: 'SUCCEEDED'}; data.media![j.id] = {video: video(j.id)}; }
+  return judgedBank(data);
+}
+const playRound = async (data: BankData, table: {hands: {seat: number; cards: number[]}[]; dealer: number[]}, draws: number[]) => {
+  const queue = players(), film = createFilm(queue.players, buildGraph(data, {dealer: 'paow'}), createLayout(defaultPlan()), async () => null, () => 0);
+  const records = draws.map(n => ({shoeDraw: n, target: '', r: 'A', s: 'spades'}));
+  const round = film.play(draws.map(n => ({type: 'deal', shoeDraw: n})) as never, {table, records}); await new Promise(r => setTimeout(r, 0)); queue.end();
+  const {gaps, beats} = await round, chain = queue.parts.find(list => list.some(part => !part.rest))!;
+  return {gaps, beats, chain, clips: chain.map(part => part.path.split('/')[2])};
+};
+
+test('a round deals Paow\'s seat 6 from anchor 2.2 when its four films have a verdict, and as before when one has none', async () => {
+  // Seat 6 first, then seat 4: from rest to 2.2, the deal and its return, out to rest, and the plain entry for seat 4.
+  const table = {hands: [{seat: 6, cards: [2]}, {seat: 4, cards: [3]}], dealer: []};
+  const played = await playRound(viaHub(), table, [2, 3]);
+  assert.deepEqual(played.clips, ['in-b', 'p6-deal-b', 'p6-back-b', 'ut-b', 'in', 'p4-deal', 'p4-rest']);
+  assert.deepEqual(played.gaps, []);
+  assert.deepEqual([played.chain[1].start, played.chain[1].end], [0, 100], 'the deal is cut where its return begins');
+  assert.equal((played.chain[1].cards as {target?: string}).target, 'P6.C1', 'the film carries the card of seat 6');
+  // Seat 6 last: seat 4 goes to rest first, and the chain ends with the exit from 2.2.
+  const last = await playRound(viaHub(), {hands: [{seat: 4, cards: [2]}, {seat: 6, cards: [3]}], dealer: []}, [2, 3]);
+  assert.deepEqual(last.clips, ['in', 'p4-deal', 'p4-rest', 'in-b', 'p6-deal-b', 'p6-back-b', 'ut-b']);
+  // Two cards to seat 6 in a row: the hand waits at 2.2 between them.
+  const twice = await playRound(viaHub(), {hands: [{seat: 6, cards: [2, 3]}], dealer: []}, [2, 3]);
+  assert.deepEqual(twice.clips, ['in-b', 'p6-deal-b', 'p6-back-b', 'p6-deal-b', 'p6-back-b', 'ut-b']);
+  assert.equal((twice.chain[3].cards as {target?: string}).target, 'P6.C2');
+  // The exit from 2.2 without a verdict, or not made; the entry or the return without a verdict: seat 6 is laid without a hand, as today.
+  const before = await playRound(viaHub([], ['in-b', 'p6-deal-b', 'p6-back-b', 'ut-b']), table, [2, 3]);
+  assert.deepEqual(before.clips, ['in', 'p4-deal', 'p4-rest']); assert.deepEqual(before.gaps, ['P6.C1: ingen spelbar film, kortet läggs utan hand']);
+  for (const [pending, missing] of [[['ut-b'], []], [[], ['ut-b']], [['in-b'], []], [['p6-back-b'], []]] as [string[], string[]][]) {
+    const fallen = await playRound(viaHub(pending, missing), table, [2, 3]);
+    assert.deepEqual([fallen.clips, fallen.gaps, fallen.beats.map(b => b.kind)], [before.clips, before.gaps, before.beats.map(b => b.kind)], JSON.stringify([pending, missing]));
+  }
+  // A round without seat 6 plays exactly what it played before the films of 2.2 came.
+  const four = {hands: [{seat: 4, cards: [2]}], dealer: []};
+  assert.deepEqual((await playRound(viaHub(), four, [2])).chain, (await playRound(bank(), four, [2])).chain);
 });
 
 test('the hole card\'s turn is shown when its face shows in the film: the first face-up frame after the last face-down one', () => {
