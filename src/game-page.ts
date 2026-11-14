@@ -45,7 +45,7 @@ const table = /^[a-z0-9-]{1,40}$/.test(query.get('table') ?? '') ? `?table=${que
 // so the page without them reads and does exactly what it did before. ?inbaddad=1 (the Casino view shows the game in a
 // frame) hides nothing: the frame shows none of what this page shows, and src/preview-ui.ts keeps a framed page from
 // taking the lab tab by itself.
-const OWN_WORDS = ['table', 'tema', 'bricka', 'chatt', 'robot', 'inbaddad', 'dealer', 'intro'], forval = query.get('forval');
+const OWN_WORDS = ['table', 'tema', 'bricka', 'chatt', 'robot', 'inbaddad', 'dealer', 'intro', 'diagnos'], forval = query.get('forval');
 const lookAsked = [...query.keys()].some(word => !OWN_WORDS.includes(word) && !['kort', 'cardBack', 'cardFace'].includes(word)); // kort, cardBack, cardFace: how the card in her hand is shown (below), not a look
 
 const [contract, placements, bank, first, register, lookCode, presetAnswer] = await Promise.all([read('data/scene-contract.json', 'Scenkontraktet'), read('api/placements', 'Placeringsplanen'), read('api/clip-bank', 'Klippbanken'), read(`api/game${table}`, 'Spelet'), read('data/scene-rooms.json', 'Rumsregistret'),
@@ -124,6 +124,11 @@ if (Object.keys(asked).length) { scene.set({...asked, roomShift: 'cut'}); if (as
 scene.set({cards: cardsNow.cards}); // over the look: see cardsNow
 if (lookNote) { const note = Object.assign(document.createElement('p'), {textContent: lookNote}); note.setAttribute('role', 'status');
   note.style.cssText = 'position:absolute;left:50%;top:12px;transform:translateX(-50%);z-index:30;margin:0;max-width:min(92%,680px);padding:6px 14px;border:1px solid rgba(226,191,109,.32);border-radius:999px;background:rgba(8,7,6,.84);color:#f6eedc;font-size:13px;pointer-events:none'; stage.append(note); }
+// Under a film before the game the room's own film waits (roomLife off until the lead, roomLifeBack): it was read and played for
+// the whole of that film without being seen, the heaviest thing on a phone beside the dealer's film, and begun at the lead the
+// room starts from its beginning, where its people sit as in the film's last picture.
+const lifeAsked = introOn && scene.state.roomLife === true; if (lifeAsked) scene.set({roomLife: false});
+let lifeBack = !lifeAsked; const roomLifeBack = () => { if (lifeBack) return; lifeBack = true; scene.set({roomLife: true}); };
 scene.rebuild(); scene.start();
 new ResizeObserver(frame).observe(stage); frame();
 const film = createFilm(scene.players as unknown as FilmPlayers, graph, layout, path => fetch(path).then(res => res.ok ? res.json() : null));
@@ -161,7 +166,9 @@ const page: PageState = {stage: 'BETTING', busy: false, dealerPlays: false, bets
 // A round found in progress when the page opens (the server keeps the session): its cards are laid out without film.
 if (snapshot.view.round && snapshot.view.round.phase !== 'settled') { page.stage = 'ROUND'; const table = tableCards(snapshot); film.set({table, records: cardRecords(table, cardFaces(snapshot)), lying: [...table.hands.flatMap(h => h.cards), ...table.dealer]}); }
 else if (snapshot.view.round) { page.stage = 'SETTLED'; const table = tableCards(snapshot); film.set({table, records: cardRecords(table, cardFaces(snapshot)), lying: [...table.hands.flatMap(h => h.cards), ...table.dealer]}); }
-else film.rest();
+// Under a film before the game her rest stands on its first picture from the start (hold): that picture is the one the film ends
+// in, and standing, her film is not played under a film that covers it (on a phone three films ran at once, two of them unseen).
+else film.rest(introOn ? {hold: true} : {});
 
 // ── commands to the engine ──
 async function send(command: Record<string, unknown>): Promise<Snapshot | null> {
@@ -402,16 +409,23 @@ render();
 // The film before the game is over: her gestures may come again, and after a beat (INTRO_BEAT_MS, so that she does not begin to speak in
 // the frame the film is gone) she says her opening line; a rest that was held for the film's end and has no line after it runs on.
 const INTRO_BEAT_MS = 400;
-introOver = () => { film.calm = false; setTimeout(() => { introOn = false; render(); film.release(); }, INTRO_BEAT_MS); };
+introOver = () => { film.calm = false; roomLifeBack(); setTimeout(() => { introOn = false; render(); film.release(); }, INTRO_BEAT_MS); };
 // The film ends in her rest pose, held for its last 0.75 s. A little before its end (the module's onLead), while the film still
 // covers the stage, her rest is started over with a cut from its first frame, which is that pose (every rest film begins on the
 // same frame): the cut is not seen, and the fade goes from her to her. Queued instead, the rest that played went on with her head
 // turned and her face showed twice in the fade (measured by the trailer session on the wired page). The rest is held on that
 // frame until she speaks: running, it had lifted her face 13 px by the end of the fade (30 px on a standing phone, where it
-// showed as a double face) and her head hopped 8 px as the talk film, which begins in the same pose, took over.
-introLead = () => { if (introOn && page.stage === 'BETTING' && !page.busy) film.rest({cut: true, hold: true}); };
+// showed as a double face) and her head hopped 8 px as the talk film, which begins in the same pose, took over. A rest that has
+// stood held since the page opened (above) is that picture already, and is left as it is.
+introLead = () => { roomLifeBack(); if (introOn && page.stage === 'BETTING' && !page.busy && !film.held) film.rest({cut: true, hold: true}); };
 if (!introOn) film.calm = false; // it was over before the page was built (skipped at once)
 
 // How the round ended is said by her speech when it has the line (the settle's speak signal); then the status line is not said again.
 function settledSpoken() { return ['blackjack', 'dealerblackjack', 'dealerbust', 'win', 'push', 'lose'].some(key => spoken.has(key)); }
 Object.assign(window, {game: {scene, film, page, state: () => snapshot, dealer: () => dealer, gaps, controls, mouths}}); // for the proof recorder and the console; not an interface
+// ?diagnos=1: what this browser does with the game, as text on the picture (src/game-diagnosis.ts), for a fault that shows on one
+// phone and in no recording. Read only when the address has the word.
+if (query.get('diagnos') === '1') void import('./game-diagnosis.ts').then(m => m.createDiagnosis(stage, canvas, () => { const q = scene.players.diagnosis();
+  return [`film före spelet ${introOn ? 'på' : 'av'} · ${page.stage}${page.busy ? ' upptagen' : ''} · hållen vila ${film.held ? 'ja' : 'nej'} · luckor ${gaps.length}`,
+    `kö: ${q.paused ? 'står' : 'går'} · sträng ${q.strict ? 'JA' : 'nej'} · nekade ${q.stuck} · element ${q.pool}`, `på skärmen: ${q.onScreen ?? 'INGEN FILM'}`, ...(q.awaited ? [`väntad: ${q.awaited}`] : []),
+    ...q.elements, ...q.events.slice(-10)]; })).catch(() => null);

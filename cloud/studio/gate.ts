@@ -124,7 +124,9 @@ export async function gate(request: Request, ctx: GateContext): Promise<Response
   // What this visitor may read: what the cookie gives, or what the copy is open for without one (openOf), whichever is more.
   const open = openOf(ctx.env), reach = scope === 'all' || open === 'all' ? 'all' : scope ?? open;
   // The doors for someone who is only to play: the game's own address, with or without the film before it, behind the same lock.
-  const door = Object.hasOwn(GAME_DOORS, path) ? GAME_DOORS[path] : null;
+  // A door asked for with ?diagnos=1 carries the word on: the game then writes what this browser does with it on the picture
+  // (src/game-diagnosis.ts), and /trailer?diagnos=1 is short enough to type on a phone.
+  const home = Object.hasOwn(GAME_DOORS, path) ? GAME_DOORS[path] : null, door = home && url.searchParams.get('diagnos') === '1' ? `${home}&diagnos=1` : home;
   if (door) {
     if (request.method !== 'GET' && request.method !== 'HEAD') return text('Bara GET.', 405, {Allow: 'GET, HEAD'});
     return reach ? goTo(door) : page(loginPage({next: door}), 401);

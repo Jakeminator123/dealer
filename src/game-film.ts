@@ -235,6 +235,8 @@ export function createFilm(players: FilmPlayers, bank: Graph, layout: Layout, re
   }
   return {
     play, rest, release, swap, say, talkPart,
+    /** Whether a rest asked for with hold still stands (nothing has been played since, and it has not been let go). */
+    get held() { return heldRest !== null && heldRest === token; },
     /** How the carried card is shown from the next step on (Carry). */
     set carry(next: Carry) { carry = next; }, get carry() { return carry; },
     /** The film card's colours recoloured from the next step on (CardWords; {} as filmed). */

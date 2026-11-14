@@ -6,15 +6,22 @@ import assert from 'node:assert/strict';
 
 let readyAtStart = 2; // readyState of a new element: 2 = its first frame is decoded
 let refuse: string | null = null; // the name of the error a film with sound is refused with when it is started, as a browser does
+// A strict browser (a phone that saves power): every start outside a touch is refused, muted too, until the element has been
+// started once in a touch. touch(call) runs call as the visitor's touch.
+let strict = false, touching = false;
+const touch = (call: () => void) => { touching = true; try { call(); } finally { touching = false; } };
 // A video element as far as the queue uses it. An EventTarget, so listeners added with a signal really go when it aborts.
 // BareVideo: a browser without frame requests (three and the queue test for the method itself).
 class BareVideo extends EventTarget {
   muted = false; playsInline = false; preload = ''; currentTime = 0; readyState = readyAtStart; seeking = false; duration = 2; playbackRate = 1; videoWidth = 1764;
-  paused = true; loads = 0; attrs = new Map<string, string>(); requests = new Map<number, (now: number, meta: {mediaTime: number}) => void>(); next = 1;
+  paused = true; ended = false; error: {code: number} | null = null; networkState = 1; opened = false; starts = 0;
+  loads = 0; attrs = new Map<string, string>(); requests = new Map<number, (now: number, meta: {mediaTime: number}) => void>(); next = 1;
   get src() { return this.attrs.get('src') ?? ''; } set src(v: string) { this.attrs.set('src', v); }
   removeAttribute(name: string) { this.attrs.delete(name); }
   load() { this.loads++; }
-  play() { if (refuse && !this.muted) return Promise.reject(Object.assign(Error(refuse), {name: refuse})); this.paused = false; return Promise.resolve(); }
+  play() { this.starts++; if (touching) this.opened = true;
+    if (strict && !this.opened) return Promise.reject(Object.assign(Error('NotAllowedError'), {name: 'NotAllowedError'}));
+    if (refuse && !this.muted) return Promise.reject(Object.assign(Error(refuse), {name: refuse})); this.paused = false; return Promise.resolve(); }
   pause() { this.paused = true; }
   // the browser presents a frame: every waiting request is answered once
   present(mediaTime = this.currentTime) { const calls = [...this.requests.values()]; this.requests.clear(); for (const call of calls) call(0, {mediaTime}); }
@@ -224,4 +231,58 @@ test('where the page draws nothing a part is started by the timer, so a round is
     await wait(80); assert.ok(c.paused, 'the part that was left stands');
     players.dispose(); await wait(80); for (const v of made) assert.ok(emptied(v));
   } finally { delete g.requestAnimationFrame; }
+});
+
+// ---- a browser that refuses a start outside a touch, muted films too (begin, touched, wake in the queue) -------------------
+test('a muted film that the browser refuses is kept and started in the visitor\'s next touch, and the pool is opened in it', async () => {
+  withFrameCalls = true; readyAtStart = 0; strict = true; const {players, seen} = queue();
+  try {
+    players.play([{path: 'vila.mp4', rest: true}], {onEnd: () => {}}); players.preload(['giv.mp4']); await settle();
+    const vila = made.find(v => v.src === 'vila.mp4')!, giv = made.find(v => v.src === 'giv.mp4')!;
+    assert.ok(vila.paused, 'refused: it stands'); assert.equal(seen.shows, 0, 'and nothing is shown yet'); assert.equal(players.diagnosis().stuck, 1); assert.equal(players.diagnosis().strict, true);
+    assert.match(players.diagnosis().events.join(' | '), /nekad vila\.mp4/);
+    players.wake(); await settle(); assert.ok(vila.paused, 'waking outside a touch is refused again'); assert.equal(players.diagnosis().stuck, 1, 'and it is kept for the touch');
+    touch(() => players.touched()); await settle();
+    assert.ok(!vila.paused, 'started in the touch'); assert.equal(players.diagnosis().stuck, 0);
+    assert.ok(giv.opened && giv.paused && giv.currentTime === 0, 'a film waiting in the pool is opened in the same touch, and stands where it was');
+    vila.readyState = 2; vila.present(0.02); assert.equal(seen.shows, 1); assert.equal(players.path, 'vila.mp4');
+    // the opened film starts later without a touch; a film made after the touch is refused and waits for the next one
+    readyAtStart = 2; players.play([{path: 'giv.mp4'}, {path: 'ny.mp4'}], {cut: true}); await wait(80);
+    assert.ok(!giv.paused, 'opened in the touch: it runs'); giv.readyState = 2; giv.present(0.02); assert.equal(players.path, 'giv.mp4');
+    const ny = made.find(v => v.src === 'ny.mp4')!; giv.dispatchEvent(new Event('ended')); await wait(80);
+    assert.equal(players.path, 'ny.mp4', 'its first frame is shown'); assert.ok(ny.paused, 'but its start is refused'); assert.equal(players.diagnosis().stuck, 1);
+    touch(() => players.touched()); await settle(); assert.ok(!ny.paused, 'until the next touch');
+    // a refused film that is no longer the one wanted is not started by a touch
+    players.play([{path: 'a.mp4'}], {cut: true}); await wait(80); const a = made.find(v => v.src === 'a.mp4')!; assert.ok(a.paused);
+    players.play([{path: 'b.mp4'}], {cut: true}); await wait(80); const b = made.find(v => v.src === 'b.mp4')!;
+    touch(() => players.touched()); await settle(); assert.ok(a.paused, 'the part that was left stands'); assert.ok(!b.paused, 'the part on screen runs');
+  } finally { strict = false; readyAtStart = 2; players.dispose(); }
+  // a browser that never refuses: a touch starts and opens nothing
+  const calm = queue(); calm.players.play([{path: 'a.mp4'}]); calm.players.preload(['c.mp4']); await wait(80);
+  const before = made.map(v => v.starts); touch(() => calm.players.touched()); assert.deepEqual(made.map(v => v.starts), before); assert.equal(calm.players.diagnosis().strict, false); calm.players.dispose();
+});
+
+test('wake starts a film the browser stopped; a film that is held, or a chain that is done, is left standing', async () => {
+  withFrameCalls = true; readyAtStart = 2; const {players} = queue();
+  // a rest held on the frame it came in on (the game under a film before it): stopped at once, on that frame, and not woken
+  players.play([{path: 'vila.mp4', rest: true}], {onPart: () => players.toggle(true)}); await wait(80);
+  const vila = made[0]; assert.ok(vila.paused && players.paused, 'held in the frame request that brought it in'); assert.equal(vila.starts, 0, 'and never started');
+  players.wake(); assert.ok(vila.paused, 'a held film is not woken');
+  players.toggle(false); assert.ok(!vila.paused && !players.paused, 'let go: it runs');
+  // the browser stops the film (a phone locked): nothing starts it but wake
+  vila.pause(); players.wake(); assert.ok(!vila.paused, 'woken'); assert.match(players.diagnosis().events.join(' | '), /väckt vila\.mp4/);
+  // a chain that has ended stands on its last frame and is not woken
+  players.play([{path: 'slut.mp4'}], {cut: true}); await wait(80); const slut = made.find(v => v.src === 'slut.mp4')!; slut.dispatchEvent(new Event('ended')); assert.ok(slut.paused);
+  players.wake(); assert.ok(slut.paused, 'the last frame of a chain that is done stays'); players.dispose();
+});
+
+test('the diagnosis says what the queue holds: the film on screen, the one awaited, every element and the last events', async () => {
+  withFrameCalls = true; readyAtStart = 2; const {players} = queue();
+  players.play([{path: 'assets/motions/vila-01/source.mp4', rest: true}]); players.preload(['assets/motions/giv-02/source.mp4']); await wait(80);
+  const d = players.diagnosis();
+  assert.match(d.onScreen ?? '', /^vila-01\/source\.mp4 rs2 ns1 går 0\.\d\d$/, d.onScreen ?? 'nothing on screen'); assert.equal(d.awaited, null); assert.equal(d.pool, 2); assert.equal(d.paused, false);
+  assert.ok(d.elements.some(line => line.startsWith('>vila-01/source.mp4')), 'the element on screen is marked'); assert.ok(d.elements.some(line => / giv-02\/source\.mp4 .* står/.test(line)), d.elements.join(' | '));
+  assert.match(d.events.join(' | '), /\d+\.\d visas vila-01\/source\.mp4/);
+  readyAtStart = 0; players.play([{path: 'sen.mp4'}], {cut: true}); await settle(); assert.match(players.diagnosis().awaited ?? '', /^sen\.mp4 rs0/, 'a part that is started and not yet on screen');
+  readyAtStart = 2; players.dispose();
 });

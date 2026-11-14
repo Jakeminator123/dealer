@@ -300,6 +300,11 @@ Allt går att läsa och spela, inget går att ändra, och inga kostnader visas.
   (`TRAILER_HOME`: `intro=noir-3`, rummet Monaco med rörelse, bordet och Paow; SYSTEM, "En film före spelet"), bakom
   samma lås och med båda sorters lösenord. Trailerproven i Prov går fortfarande inte upp (`blocked.folders` i
   `data/studio-release.json`); bara filmen före spelet gör det, på Jakobs ord 2026-11-13 kl. 21.23.
+- **Ett fel som bara syns på en telefon:** be om en skärmbild av `/trailer?diagnos=1` eller `/casino?diagnos=1`
+  (dörrarna bär ordet vidare till spelet). Sidan skriver då på bilden vilken webbläsare det är, om bildytan har
+  förlorats, sidans senaste fel och vad filmkön håller och senast gjorde (SYSTEM, "Filmkön"). Ingen av oss har en
+  telefon att pröva på, och en inspelning i headless Chrome visar inte vad en telefon gör; för det som en telefon kan
+  tänkas neka finns en attrapp på slaskdisken (`D:/dealer-scratch/tmp/huvudagent11/look/strikt-koll.mjs`).
 - **Öppen utan lösenord** (Jakob 2026-11-14: "Se till att den inte är lösenordsskyddad", "ta bort lösenordet "john" för
   sidan nu"): miljövariabeln `DEALER_OPPEN` i projektet. `allt` gör hela kopian läsbar utan lösenord, `spel` bara spelet
   med dörrarna `/casino` och `/trailer` (studion frågar då fortfarande efter lösenordet), och utan variabeln, eller med

@@ -72,6 +72,19 @@ ritades, och en av delens två första rutor visades aldrig: vid 13 av 35 skarva
 delstarter i en webbläsare, mot 0 av 35 och 1 av 79 efter ändringen (2026-11-13). Priset är att varje del kommer igång
 ungefär en ruta senare (en runda blev 0,67 s längre). En film som inte står färdig när den tas in går däremot från början
 och visas på sin första presenterade ruta; den kan sakna sin första ruta tills spelet beställer nästa film tidigare.
+**En start som webbläsaren nekar** (`NotAllowedError`: en film som hörs innan sidan har rörts, och på en telefon som
+sparar ström eller en sida som visas inne i en app kanske varje film, också tyst) tappas inte: en film som skulle höras
+startas tyst (sidan säger då repliken genom sitt eget ljud, docs/TAL.md), och nekas den tyst också står bilden kvar och
+filmen startas om i besökarens nästa tryck (`touched`, som fönstrets tryck anropar). Efter ett sådant nekande öppnas
+också varje väntande element i samma tryck, för starter som kommer senare. `wake()` startar det som ska gå men står
+när sidan kommer tillbaka på skärmen (en telefon stoppar sidans filmer medan den är låst). Potten håller 8 element, 5
+där pekaren är ett finger. Filmlagren ritas inte förrän en film har gett sin första bild: utan bild ritade nyckeln
+båda lagren svarta över rum och bord. Mätt i en webbläsare som nekar alla starter utanför ett tryck (en attrapp,
+ingen telefon, 2026-11-14): den publicerade koden stod för gott på talfilmens första ruta efter filmen före spelet, och
+ett tryck hjälpte inte; med ändringen går spelet vidare en film per tryck. Vad en riktig telefon gör är inte mätt:
+adressordet `diagnos=1` (`src/game-diagnosis.ts`; kopians dörrar bär det vidare, `/trailer?diagnos=1`) skriver på
+bilden vilken webbläsare det är, om bildytan har förlorats, sidans senaste fel, vad kön håller och vad som senast hände
+i den (`players.diagnosis()`), så att en skärmbild från telefonen bär svaret.
 
 Filmkameran läses ur `data/scene-contract.json` i `src/scene3d-geometry.ts` (ren geometri, test
 `tools/scene3d-geometry.test.ts` utan media). Tre lägen hålls isär: från filmkamerans plats är bilden filmen pixel för
@@ -304,14 +317,20 @@ något annat läses, filmen hämtas först vid trycket och spelas med ljud, och 
 över, i 0,5 s: tonad medan den ännu växte syntes hon dubbelt). Filmen ligger i
 spelets egen skala och mitt, inte som en täckande bild (`introLayout`), eftersom spelet ramar om på andra format än
 16:9. Filmens sista ruta är spelets egen bild i rummet Monaco med rörelse i rummet, så adressen ber också om
-`room=monaco&roomLife=1` och inget annat utseende. Medan filmen är på säger hon inget, chatten är stilla och vilan väljer
-bara lugna vilofilmer. 0,4 s före filmens slut (`onLead`), medan filmen ännu täcker, klipps vilan in från sin första
-ruta, som är den pose filmen slutar i, och **hålls där** (`rest({cut, hold})` i `src/game-film.ts`) tills hon talar:
+`room=monaco&roomLife=1` och inget annat utseende. Medan filmen är på säger hon inget och chatten är stilla. Hennes
+vila är en lugn vilofilm som **står hållen på sin första ruta** från sidans start (`rest({hold})` i
+`src/game-film.ts`): den rutan är den pose filmen slutar i, och stående spelas hennes film inte under en film som
+täcker den. Rummets film är av till 0,4 s före filmens slut (`onLead`; sidan slår på `roomLife` där), så rummet börjar
+från början, där dess folk sitter som i filmens sista bild. Före den ändringen (2026-11-14) spelade sidan tre filmer
+samtidigt under de 47 sekunderna, två av dem osedda och hennes den tyngsta (1764 × 1174, 21 Mbit/s): 78 % av
+avkodningen gick till filmer ingen såg. Har något annat spelats under filmen klipps en ny vila in vid `onLead`
+(`rest({cut, hold})`). Vilan står hållen tills hon talar:
 varje talfilm börjar i samma pose, så repliken börjar i just den bild som syns. Gick vilan i stället, hade den lyft
 hennes ansikte 13 bildpunkter när toningen var klar (30 på en stående telefon) och huvudet hoppade 8 när repliken
-tog över; hållen skiljer filmens sista ruta och spelets bild högst 2 bildpunkter i båda formaten (mätt i varje ruta
-webbläsaren ritade). Öppningsrepliken sägs 0,4 s efter att spelet syns; har hon ingen replik går vilan vidare
-(`release`). Från samma stund ritas spelet under filmen (täckning 0,999), eftersom den första ruta där webbläsaren
+tog över; hållen skiljer filmens sista ruta och spelets bild 0 bildpunkter i datorstorlek och högst 3 på en stående
+telefon, och repliken tar över inom 1 (mätt på ansiktet i de rutor webbläsaren ritade, 2026-11-14). Öppningsrepliken
+sägs 0,4 s efter att spelet syns; har hon ingen replik går vilan vidare
+(`release`). Från `onLead` ritas spelet under filmen (täckning 0,999), eftersom den första ruta där webbläsaren
 lägger ihop de två kostade 0,08 till 0,18 s och syntes som ett stopp när den kom med toningens första ruta. Trycket
 på Spela är också det som låter henne höras. Filmen
 och startrutan ligger i `assets/films/intro/noir-3/` med kvitto; filmen måste spelas in på nytt när spelets vilobild

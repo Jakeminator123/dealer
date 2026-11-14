@@ -139,13 +139,13 @@ test('a rest held on its first frame stands until she speaks or it is let go, an
     hurry() {}, preload() {}, toggle(force?: boolean) { log.push(force ? 'hold' : 'run'); }};
   const film = createFilm(stub, buildGraph(bank(), {dealer: 'paow'}), createLayout(defaultPlan()), async () => null, () => 0.5), tick = () => new Promise(r => setTimeout(r, 0));
   // without hold nothing is stopped, and there is nothing to let go
-  film.rest({cut: true}); await tick(); entered(); film.release(); assert.deepEqual(log, ['rest cut']);
+  film.rest({cut: true}); await tick(); assert.equal(film.held, false); entered(); film.release(); assert.deepEqual(log, ['rest cut']);
   // held: stopped when its first frame is on screen, and let go once
-  log.length = 0; film.rest({cut: true, hold: true}); await tick(); assert.deepEqual(log, ['rest cut'], 'not stopped before its frame is on screen'); entered(); assert.deepEqual(log, ['rest cut', 'hold']);
-  film.release(); film.release(); assert.deepEqual(log, ['rest cut', 'hold', 'run']);
+  log.length = 0; film.rest({cut: true, hold: true}); await tick(); assert.deepEqual(log, ['rest cut'], 'not stopped before its frame is on screen'); assert.equal(film.held, true, 'held from the asking, so the page does not ask twice'); entered(); assert.deepEqual(log, ['rest cut', 'hold']);
+  film.release(); assert.equal(film.held, false); film.release(); assert.deepEqual(log, ['rest cut', 'hold', 'run']);
   // held, and then she speaks: the talk film's own play lets the queue run, so nothing is let go behind it
   log.length = 0; film.rest({cut: true, hold: true}); await tick(); entered();
-  assert.equal(film.say('tal'), true); film.release(); assert.deepEqual(log, ['rest cut', 'hold', 'talk cut']);
+  assert.equal(film.say('tal'), true); assert.equal(film.held, false, 'a film played since: nothing is held'); film.release(); assert.deepEqual(log, ['rest cut', 'hold', 'talk cut']);
   // a held rest whose first frame comes on screen after another film took over is not stopped
   log.length = 0; film.rest({cut: true, hold: true}); await tick(); const late = entered; film.say('tal'); late(); film.release(); assert.deepEqual(log, ['rest cut', 'talk cut']);
   // a queue without a stop (a stub, an older scene) plays the rest as before

@@ -241,6 +241,9 @@ test('a copy the project has opened is read without a password: the game alone o
   const all = context({env: {...gameEnv, DEALER_OPPEN: 'allt'}, ...fetched});
   for (const path of ['/studio/', '/studio/karta/', '/', '/game.html', '/api/clip-bank', '/api/proofs', '/meta.json']) assert.equal(await reads(all, path), 'passes', path);
   assert.equal(await reads(all, '/casino'), `to ${GAME_HOME}`); assert.equal((await gate(ask(film), all)).status, 206);
+  // a door asked for with ?diagnos=1 carries the word to the game, and no other word
+  assert.equal(await reads(all, '/trailer?diagnos=1'), `to ${TRAILER_HOME}&diagnos=1`); assert.equal(await reads(all, '/casino/?diagnos=1'), `to ${GAME_HOME}&diagnos=1`);
+  assert.equal(await reads(all, '/trailer?diagnos=2&next=//x'), `to ${TRAILER_HOME}`);
   // the bot and the inbox write and cost: never without the whole copy's cookie, and nothing else is written either
   for (const ctx of [play, all]) {
     for (const path of ['/api/bot', '/api/utkast', '/api/onskemal']) assert.equal((await gate(ask(path, {method: 'POST'}), ctx)).status, 401, path);

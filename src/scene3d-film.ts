@@ -414,10 +414,12 @@ export function createFilmLayers(filmVP: T.Matrix4, light: Record<string, {value
   // The screen reference is read in a corner that stays empty: top left for the backdrop, bottom left for the table.
   const bodyMat = material(new T.Vector2(0.02, 0.97)), tableMat = material(new T.Vector2(0.02, 0.03));
   const body = new T.Mesh(new T.PlaneGeometry(10, 3), bodyMat), table = new T.Mesh(new T.PlaneGeometry(10, 2).rotateX(-Math.PI / 2), tableMat);
-  body.renderOrder = 5; table.renderOrder = 6;
+  // Neither layer is drawn before a film has given its first picture (setTexture): without one the key has nothing to read and
+  // drew both layers black over the room and the table, for as long as the first film took to come, or for good if it never came.
+  body.renderOrder = 5; table.renderOrder = 6; body.visible = table.visible = false;
   return {
     body, table, shared: {map, grade},
-    setTexture(texture: T.Texture) { map.value = texture; },
+    setTexture(texture: T.Texture) { map.value = texture; body.visible = true; table.visible = placed.fold && framed?.layer !== 'BEHIND_TABLE'; },
     // Calibration of the film against the room: brightness, and warmth as red up and blue down by the same share. 1 and 0 leave the film as it is.
     setGrade(brightness: number, warmth: number) { calibrated = [brightness * (1 + warmth), brightness, brightness * (1 - warmth)]; putGrade(); },
     // The room's light on her (lightOnDealer): the tint goes over the calibration above, the sides across her body. 1, 1, 1 everywhere is the film as it is.
@@ -475,7 +477,7 @@ export function createFilmLayers(filmVP: T.Matrix4, light: Record<string, {value
       const behind = framed?.layer === 'BEHIND_TABLE';
       // Behind the table: the whole frame on one upright plane that reaches from the floor up, a little behind the dealer-side
       // edge and tested against the table's depth, so the 3D table hides her legs until she comes out beside it.
-      table.visible = fold && !behind; table.position.set(0, 0.0015, edgeZ + 1);
+      table.visible = !!map.value && fold && !behind; table.position.set(0, 0.0015, edgeZ + 1);
       body.position.set(0, behind ? 1 : fold ? 1.5 : 0.5, behind ? edgeZ - (framed!.back ?? BEHIND) * scale : edgeZ); body.scale.y = behind ? 2 : fold ? 1 : 5 / 3;
       bodyMat.depthTest = behind || fold || depth; bodyMat.depthFunc = behind || fold ? T.LessEqualDepth : T.AlwaysDepth; bodyMat.depthWrite = tableMat.depthWrite = depth; },
     /**
@@ -549,8 +551,28 @@ export function createPlayers(onShow: (texture: T.Texture, path: string) => void
   const listen = (v: HTMLVideoElement, type: string, call: () => void, once = false) => v.addEventListener(type, call, {once, signal: ending.signal});
   const frameCall = (v: HTMLVideoElement, call: VideoFrameRequestCallback) => { let ids = asked.get(v); if (!ids) asked.set(v, ids = new Set()); const own = ids, id = v.requestVideoFrameCallback((now, frame) => { own.delete(id); call(now, frame); }); own.add(id); };
   const later = (call: () => void, ms: number) => { const id = setTimeout(() => { timers.delete(id); call(); }, ms); timers.add(id); return id; };
+  // A start the browser refuses, and what the queue does then. A browser may want the visitor's touch before a film starts and
+  // answers NotAllowedError without one: for a film that is heard, until the page has been touched; and a phone that saves power,
+  // or a page shown inside an app, can ask it of every film, muted too. A refused film is kept in `stuck` with the test that says
+  // whether it is still the one wanted, and is started again in the visitor's next touch (touched), where a start is allowed;
+  // until then the picture stands where it is, and the round is not lost. After one refusal of a muted film the browser is taken
+  // to be `strict`: each touch then also opens every element that waits in the pool, and a new element is opened when it is made
+  // in a touch (open: a start taken back at once, which leaves the film where it is; by WebKit's rule a start made in a touch
+  // lifts the demand for that element. The rule is read, not measured on a phone). None of it runs in a browser that never refuses.
+  const stuck = new Map<HTMLVideoElement, () => boolean>(), opened = new WeakSet<HTMLVideoElement>(), events: string[] = []; let strict = false;
+  const fileOf = (v: HTMLVideoElement) => String(v.currentSrc || v.src || '').split('/').slice(-2).join('/');
+  // The queue's last events, for a page that shows them (diagnosis): seconds since the page was opened, what, and the film.
+  const note = (what: string, v?: HTMLVideoElement) => { events.push(`${(performance.now() / 1000).toFixed(1)} ${what}${v ? ` ${fileOf(v)}` : ''}`); if (events.length > 24) events.shift(); };
+  // heard: called when a film that was to be heard has been muted to get it started (the page can say the line another way).
+  const begin = (v: HTMLVideoElement, wanted: () => boolean, heard?: () => void) => { stuck.delete(v);
+    v.play().catch((error: unknown) => {
+      if ((error as {name?: string} | null)?.name !== 'NotAllowedError' || gone || !wanted()) return; // a start that a pause interrupted is refused too, and that film is meant to stand
+      if (!v.muted && heard) { v.muted = true; begin(v, wanted); heard(); return; }
+      if (v.muted) strict = true; stuck.set(v, wanted); note('nekad', v); }); };
+  const open = (v: HTMLVideoElement) => { opened.add(v); v.play().catch(() => {}); v.pause(); };
+  const inTouch = () => globalThis.navigator?.userActivation?.isActive === true;
   // An element let go of: stopped, its frame requests cancelled, its source dropped (the browser frees the decoder) and its texture freed.
-  const drop = (video: HTMLVideoElement, texture: T.Texture) => { video.pause(); for (const id of asked.get(video) ?? []) video.cancelVideoFrameCallback(id); asked.delete(video); video.removeAttribute('src'); video.load(); texture.dispose(); };
+  const drop = (video: HTMLVideoElement, texture: T.Texture) => { stuck.delete(video); video.pause(); for (const id of asked.get(video) ?? []) video.cancelVideoFrameCallback(id); asked.delete(video); video.removeAttribute('src'); video.load(); texture.dispose(); };
   const show = (i: number) => { current = i; onShow(players[i].texture, players[i].path); onChange(); };
   // The middle of the part's first frame, also for frame 0: an element that has never been seeked takes about a quarter
   // of a second to get going and drops its first frames; one that waits on a seeked frame starts on the next frame.
@@ -615,8 +637,11 @@ export function createPlayers(onShow: (texture: T.Texture, path: string) => void
   // partStart: a part waits a tenth of a frame into its first frame, which is still a real seek that lands on that frame. Its film
   // starts to run when the frame has been drawn (enter); from the middle of the frame the second frame got half a frame's time
   // less, and at 30 fps on a 60 Hz screen it was then lost at 8 of 36 starts.
-  const POOL = 8, LEAD_MS = 4, partStart = (part: Part) => ((part.start ?? 0) + 0.1) / (part.fps ?? FPS), frameOf = (seconds: number, part: Part) => frameAtTime(seconds, part.fps ?? FPS);
-  let pool: Media[] = [], loaded: Player[] = [], used = 0, chain: Chain | null = null, waiting: Chain | null = null, entering: Chain | null = null, shown: Media | null = null, token = 0, held = false;
+  // POOL: the elements kept, each with its film read and a decoder of its own. Eight on a computer; five where the pointer is a
+  // finger (a phone, a tablet), which has less of both and where what is let go comes back from the browser's own store.
+  const POOL = globalThis.matchMedia?.('(pointer: coarse)').matches ? 5 : 8, LEAD_MS = 4, partStart = (part: Part) => ((part.start ?? 0) + 0.1) / (part.fps ?? FPS), frameOf = (seconds: number, part: Part) => frameAtTime(seconds, part.fps ?? FPS);
+  // awaited: the element of the part that is being brought on screen, until it is there (the one that is meant to run meanwhile)
+  let pool: Media[] = [], loaded: Player[] = [], used = 0, chain: Chain | null = null, waiting: Chain | null = null, entering: Chain | null = null, shown: Media | null = null, token = 0, held = false, awaited: HTMLVideoElement | null = null;
   function discard(m: Media) { pool = pool.filter(p => p !== m); m.hook = m.fail = null; drop(m.video, m.texture); }
   // An element for the path that nothing else is using; a new one if there is none. The pool is trimmed of the longest unused.
   function media(path: string): Media {
@@ -625,13 +650,13 @@ export function createPlayers(onShow: (texture: T.Texture, path: string) => void
     listen(v, 'ended', () => m.hook?.(null)); listen(v, 'error', () => { m.broken = true; m.fail?.(); }); // an error before the part is entered is remembered for then
     if (v.requestVideoFrameCallback) { const watch = (_now: number, frame: {mediaTime: number}) => { if (!pool.includes(m)) return; m.hook?.(frame.mediaTime); frameCall(v, watch); }; frameCall(v, watch); }
     else listen(v, 'timeupdate', () => m.hook?.(v.currentTime));
-    pool.push(m);
+    pool.push(m); if (strict && inTouch()) open(v);
     for (const spare of pool.filter(p => !p.busy).sort((a, b) => a.used - b.used)) { if (pool.length <= POOL) break; discard(spare); }
     return m;
   }
   // Lets go of a chain's elements, except the one on screen.
   function forget(c: Chain | null) { for (const m of c?.media ?? []) if (m && m !== shown) { m.busy = false; m.hook = m.fail = null; m.video.pause(); } }
-  function closeQueue() { token++; for (const m of [...pool]) discard(m); chain = waiting = entering = shown = null; held = false; }
+  function closeQueue() { token++; for (const m of [...pool]) discard(m); chain = waiting = entering = shown = null; held = false; awaited = null; }
   // The part's element, waiting on its first frame. A part that is on screen itself (a loop of one) gets a second element.
   function prime(c: Chain, i: number): Media {
     let m = c.media[i]; if (!m || m === shown) m = c.media[i] = media(c.parts[i].path);
@@ -641,11 +666,11 @@ export function createPlayers(onShow: (texture: T.Texture, path: string) => void
   // until the new frame exists (and stops by itself if it gets to its end first).
   function enter(c: Chain, i: number, ended: boolean) {
     const my = ++token, part = c.parts[i], from = shown, onScreen = players[current], m = prime(c, i), v = m.video;
-    if (entering && entering !== c && entering !== chain) forget(entering); entering = c;
+    if (entering && entering !== c && entering !== chain) forget(entering); entering = c; awaited = v;
     if (from) { if (ended) { from.video.pause(); from.hook = null; } else { const last = onScreen ? (onScreen.end ?? Math.max(1, Math.round(onScreen.video.duration * onScreen.fps))) - 1 : Infinity; from.hook = time => { if (time === null || frameAtTime(time, onScreen?.fps ?? FPS) >= last) from.video.pause(); }; } }
     const swap = () => {
       if (my !== token) return;
-      const old = chain; shown = m; chain = c; entering = null; held = false; c.gaps = 0; if (waiting === c) waiting = null;
+      const old = chain; shown = m; chain = c; entering = null; held = false; c.gaps = 0; if (waiting === c) waiting = null; if (awaited === v) awaited = null;
       if (from) { from.video.pause(); from.hook = null; if (!c.media.includes(from)) from.busy = false; }
       if (old && old !== c) forget(old);
       for (const p of loaded) drop(p.video, p.texture); loaded = [];
@@ -666,11 +691,12 @@ export function createPlayers(onShow: (texture: T.Texture, path: string) => void
         else if (v.playbackRate > 1 && last - at <= 2 * v.playbackRate) v.playbackRate = 1; };
       // what comes next is decoded before it is needed
       if (waiting) prime(waiting, 0); else if (i + 1 < c.parts.length) prime(c, i + 1); else if (c.options.loop) prime(c, 0);
-      c.options.onPart?.(i, part); onShow(m.texture, m.path); onChange();
+      note('visas', v); c.options.onPart?.(i, part); onShow(m.texture, m.path); onChange();
     };
     // A film that cannot be read (taken away, or missing in a store) is a gap, not a stop: the page is told, the element goes, and
     // the queue goes on as if the part had played, to the next part or to the chain's end, so that a round is never left waiting.
     m.fail = () => { if (my !== token) return; c.options.onError?.(Error(`Filmen kunde inte läsas: ${part.path}`));
+      note('fel', v); if (awaited === v) awaited = null;
       c.media[i] = undefined; discard(m); c.gaps = (c.gaps ?? 0) + 1; if (waiting === c) waiting = null; if (entering === c) entering = null; finish(c, i); };
     if (m.broken) { m.fail(); return; }
     // A frame request that has waited long on a paused video is no longer polled by the browser, and the first frame after
@@ -684,9 +710,8 @@ export function createPlayers(onShow: (texture: T.Texture, path: string) => void
     let run = false;
     // A film that may not be heard is still shown: a browser that refuses to start a film with sound (one that wants a touch of
     // its own for every film that is heard) gets it muted instead, so that a round is never left standing on a line's first frame.
-    // Only that refusal: a start that a pause interrupted is refused too, and that film is meant to stand.
-    const start = () => { if (run || my !== token) return; run = true; if (!paused) v.play().catch((error: unknown) => {
-      if ((error as {name?: string} | null)?.name === 'NotAllowedError' && !v.muted && my === token && !paused) { v.muted = true; v.play().catch(() => {}); hooks.refused?.(part, v); } }); };
+    // Refused muted too, it waits for the visitor's next touch (begin).
+    const start = () => { if (run || my !== token) return; run = true; if (!paused) begin(v, () => my === token && !paused, () => hooks.refused?.(part, v)); };
     // Waiting on its first frame already: shown at once, so the join costs no frame, and the film starts to run when that frame has
     // been drawn, not here. Started here, it had run on before the picture was drawn (a join made by the timer above falls between
     // two drawings, and a drawing can come late), and a frame among the part's first two was never seen: at 13 of 35 joins in a
@@ -707,11 +732,32 @@ export function createPlayers(onShow: (texture: T.Texture, path: string) => void
   function play(parts: Part[], options: PlayOptions = {}) {
     if (gone || !parts.length) return; const next: Chain = {parts, media: [], options}; paused = false;
     if (waiting) forget(waiting); waiting = null;
-    if (chain && shown && !held && !options.cut) { waiting = next; prime(next, 0); shown.video.play().catch(() => {}); return; }
+    if (chain && shown && !held && !options.cut) { waiting = next; prime(next, 0); const on = shown.video; begin(on, () => !paused && shown?.video === on); return; }
     enter(next, 0, held);
   }
+  function toggle(force?: boolean) { if (gone) return; paused = force ?? !paused; const v = players[current]?.video; if (v) { if (paused) v.pause(); else begin(v, () => !paused && players[current]?.video === v); } onChange(); }
+  // The film that is meant to be running now: the part being brought on screen, else the part on screen of a chain that has not ended.
+  const live = () => awaited ?? (chain && !held ? players[current]?.video ?? null : null);
+  // The visitor touches the page (see `stuck` above): what was refused is started again, and a strict browser's elements are opened.
+  function touched() { if (gone) return;
+    for (const [v, wanted] of [...stuck]) { stuck.delete(v); if (wanted()) { note('om', v); opened.add(v); begin(v, wanted); } }
+    if (strict) for (const m of pool) if (m.video.paused && !opened.has(m.video)) open(m.video); }
+  // What is meant to run and stands is started again: the page is back on screen (a phone stops a page's films while it is locked
+  // or the browser is away, and nothing else starts them), or the page says that a start may be allowed now (wake).
+  function wake() { if (gone || paused) return;
+    for (const [v, wanted] of [...stuck]) { stuck.delete(v); if (wanted()) begin(v, wanted); }
+    const v = live(); if (v && v.paused && !v.ended) { note('väckt', v); begin(v, () => !paused && live() === v); } }
+  if (typeof globalThis.addEventListener === 'function') {
+    for (const type of ['pointerup', 'touchend', 'mousedown', 'click', 'keydown']) globalThis.addEventListener(type, touched, {capture: true, passive: true, signal: ending.signal});
+    globalThis.addEventListener('pageshow', wake, {signal: ending.signal});
+    globalThis.document?.addEventListener?.('visibilitychange', () => { if (globalThis.document.visibilityState === 'visible') wake(); }, {signal: ending.signal});
+  }
   return {
-    load, seek, play,
+    load, seek, play, touched, wake,
+    // What the queue holds and what last happened in it, for a page that shows it to someone looking for a fault (key diagnos in the game).
+    diagnosis() { const state = (v: HTMLVideoElement) => `${fileOf(v)} rs${v.readyState} ns${v.networkState}${v.paused ? ' står' : ' går'}${v.muted ? '' : ' hörs'}${v.error ? ` FEL${v.error.code}` : ''} ${(v.currentTime || 0).toFixed(2)}`;
+      const on = players[current]?.video ?? null;
+      return {paused, strict, stuck: stuck.size, pool: pool.length, onScreen: on ? state(on) : null, awaited: awaited ? state(awaited) : null, elements: pool.map(m => `${m === shown ? '>' : m.busy ? '+' : ' '}${state(m.video)}`), events: [...events]}; },
     // Speed of the part on screen, from now until it ends: a gesture hurried along because a deal is waiting.
     // Never slower than the part already plays (the tempo).
     hurry(rate: number) { const p = players[current]; if (p && !p.part.mouth && p.part.sound !== true) p.video.playbackRate = Math.max(rate, speedOf(p.part, !!chain)); }, // a spoken line is never hurried: its voice is in the film
@@ -721,7 +767,7 @@ export function createPlayers(onShow: (texture: T.Texture, path: string) => void
     preload(paths: string[]) { if (!gone) for (const path of paths) if (!pool.some(m => m.path === path)) media(path).busy = false; },
     // The part on screen, with what it carries (track, cards).
     get part(): Part | null { return players[current]?.part ?? null; },
-    toggle(force?: boolean) { if (gone) return; paused = force ?? !paused; const v = players[current]?.video; if (v) { if (paused) v.pause(); else v.play().catch(() => {}); } onChange(); },
+    toggle,
     // Takes the queue down for good, for a page that goes away (a React view): every element it made, on screen, waiting or
     // preloaded, is stopped and emptied, its frame requests and listeners go, its texture is freed, and pending timers are
     // cleared. Neither onShow nor onChange is called again; every later call is a no-op and the getters say there is no film.
