@@ -294,11 +294,14 @@ void main(){
   pm.g = min(pm.g, mix(max(pm.r, pm.b), .5 * (pm.r + pm.b), smoothstep(0., .1, s)));
   // Her outline's colour (edgeClean, the upright layer only). The pixels nearest the screen are a mix of her and the screen, and what
   // the key leaves of them is off in colour: a pale yellow-green line where too little green went, a pink one where too much did. Within
-  // about three film pixels of the screen a pixel therefore takes the colour of the film a few pixels further in, away from the screen
-  // (hair for hair, jacket for jacket), and keeps its own brightness.
+  // about five film pixels of the screen a pixel therefore takes the colour of the film a few pixels further in, away from the screen
+  // (hair for hair, jacket for jacket), and keeps its own brightness. The screen is looked for two and four pixels out: the film
+  // stores its colour at half the picture's size, so the green reaches further into her than the screen itself does, and with two
+  // pixels alone a thin olive line stayed just inside the outline of her hair (Jakob 2026-11-14: "lite grönhet i hennes hår").
   if (edgeClean > 0.) {
     vec2 d = texel * 2.; float x1 = screenAt(uv + vec2(d.x, 0.), key, dk), x0 = screenAt(uv - vec2(d.x, 0.), key, dk), y1 = screenAt(uv + vec2(0., d.y), key, dk), y0 = screenAt(uv - vec2(0., d.y), key, dk);
-    vec2 slope = vec2(x1 - x0, y1 - y0); float near = max(max(screen, around), max(max(x1, x0), max(y1, y0)));
+    vec2 w = texel * 4.; float X1 = screenAt(uv + vec2(w.x, 0.), key, dk), X0 = screenAt(uv - vec2(w.x, 0.), key, dk), Y1 = screenAt(uv + vec2(0., w.y), key, dk), Y0 = screenAt(uv - vec2(0., w.y), key, dk);
+    vec2 slope = vec2(x1 - x0, y1 - y0) + vec2(X1 - X0, Y1 - Y0); float near = max(max(max(screen, around), max(max(x1, x0), max(y1, y0))), max(max(X1, X0), max(Y1, Y0)));
     if (near > .02 && dot(slope, slope) > 1e-4) {
       vec2 ui = uv - normalize(slope) * texel * 5.; vec3 ci = texture2D(map, ui).rgb; if ((backOn > .5 || faceOn > .5) && frameOn < .5) ci = filmCard(ci, vec2(ui.x, 1. - ui.y) * FILM_PX, key); // a card's edge takes the colour further in: recoloured too
       float si = clamp(((ci.g - max(ci.r, ci.b)) / dk - lo) / (hi - lo), 0., 1.);

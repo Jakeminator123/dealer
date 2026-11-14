@@ -3800,6 +3800,13 @@
           "note": "Scenbanans prov 2026-11-14 efter Jakobs ord om mer rörelse i bakgrunden och kyparen som står stel: rummets film är en slinga på två minuter där en kvinna reser sig, går bort och kommer tillbaka en minut senare och kyparen serverar och går. Hela varvet som film av spelsidan. Oberoende granskad 3,5/5; kyparens rundor upprepas och allt går lite raskt."
         },
         {
+          "id": "paow-prov-har-utan-gront",
+          "role": "prov",
+          "name": "Håret utan grön kant",
+          "proof": "har-utan-gront",
+          "note": "Scenbanans prov 2026-11-14 efter Jakobs ord om lite grönt i hennes hår: Ren kant letar nu också fyra bildpunkter ut efter skärmens färg, så att den olivgröna linjen innanför hårets kontur tar hårets egen färg. Före och efter i ljust och mörkt rum; 80–94 % färre gröntonade punkter i konturen på tre rutor. En liten fläck vid hårtopparna intill halsen är kvar."
+        },
+        {
           "id": "paow-prov-jamnat-ljus",
           "role": "prov",
           "name": "Jämnat ljus mellan filmer, och ren kant runt håret",
