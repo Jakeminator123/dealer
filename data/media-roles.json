@@ -3779,6 +3779,13 @@
           "note": "Kortbyggarens två första steg i omstarten för korten efter Jakobs ord 2026-11-13 kl. 19.13: filmens eget kort färgat om i filmens egna bildpunkter, det gula till en mörk baksida och det blå till vitt papper, med trycket när kortet ligger. En giv per plats som film i filmad fart, tre rader, och blad på samma rutor som de andra kortproven. Ligger inte i spelet."
         },
         {
+          "id": "paow-prov-underlagg",
+          "role": "prov",
+          "name": "Underlägget: inget gult eller blått bredvid kortet",
+          "proof": "underlagg",
+          "note": "Kortbyggarens tredje steg i omstarten för korten (Jakob 2026-11-13 kl. 19.13): omfärgningen av filmens eget kort som underlägg under det ritade kortet, så att det gula och blå som sticker fram bredvid blir mörkt och papper. En film med varje giv i dag och med underlägget, och blad ur två hela rundor som en oberoende granskare såg blint (3,75 mot 3,5 av 5). Avstängt i spelet tills han sett det."
+        },
+        {
           "id": "paow-prov-jamnat-ljus",
           "role": "prov",
           "name": "Jämnat ljus mellan filmer, och ren kant runt håret",
