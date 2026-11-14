@@ -856,30 +856,37 @@ test('an idle take carries its weight, calm flag, on-request flag and a word for
   assert.deepEqual(graph.resolveRound(g, [{from: 'IDLE', to: 'IDLE'}]).map(s => s.take?.id), ['pamela-idle-loop-01']);
 });
 
-test('the idle picker: weighted, never the same clip twice in a row, three calm clips between gestures, nothing rejected or on request', () => {
+test('the idle picker: weighted, never the same clip twice in a row, two calm clips and then a gesture that was not just seen, nothing rejected or on request', () => {
   const g = graph.buildGraph(idleBank()), takes = g.edge['IDLE>IDLE'].takes, pick = (played: string[], random: number) => graph.pickIdle(takes, played, random)!.take.id;
   const loop = 'pamela-idle-loop-01', breath = 'pamela-idle-breath-b-01', smile = 'pamela-idle-smile-01', glance = 'pamela-idle-glance-01';
   // At the start only calm clips come, by weight: loop 20 and breath 10 of 30.
   assert.equal(pick([], 0), loop); assert.equal(pick([], 0.66), loop); assert.equal(pick([], 0.67), breath); assert.equal(pick([], 0.999), breath);
   // Never the same clip twice in a row.
   for (const r of [0, 0.5, 0.99]) { assert.equal(pick([loop], r), breath); assert.equal(pick([breath], r), loop); }
-  // After three calm clips a gesture may come, by weight among everything but the last clip: breath 10, smile 3, glance 3 of 16.
-  const calm3 = [loop, breath, loop];
-  assert.equal(pick([loop, breath], 0.99), loop, 'two calm clips are not enough');
-  assert.equal(pick(calm3, 0), breath); assert.equal(pick(calm3, 0.7), smile); assert.equal(pick(calm3, 0.9), glance); assert.match(graph.pickIdle(takes, calm3, 0.7)!.why, /^gest · 3 lugna klipp har gått · 19 % chans$/);
-  // Right after a gesture three calm clips must pass again, whatever the dice say.
-  for (const played of [[...calm3, smile], [...calm3, smile, loop], [...calm3, smile, loop, breath]]) for (const r of [0, 0.5, 0.99]) assert.ok([loop, breath].includes(pick(played, r)), played.join(','));
-  assert.ok([smile, glance, breath].includes(pick([...calm3, smile, loop, breath, loop], 0.99)));
+  // After two calm clips a gesture comes, by weight among the gestures: smile 3 and glance 3. One calm clip is not enough.
+  const calm2 = [loop, breath];
+  assert.equal(graph.IDLE_RULE.calmBetweenGestures, 2); assert.equal(pick([loop], 0.99), breath, 'one calm clip is not enough');
+  assert.equal(pick(calm2, 0), smile); assert.equal(pick(calm2, 0.49), smile); assert.equal(pick(calm2, 0.5), glance); assert.equal(pick(calm2, 0.99), glance); assert.match(graph.pickIdle(takes, calm2, 0.7)!.why, /^gest · 2 lugna klipp har gått · 50 % chans$/);
+  // Right after a gesture two calm clips must pass again, whatever the dice say.
+  for (const played of [[...calm2, smile], [...calm2, smile, loop]]) for (const r of [0, 0.5, 0.99]) assert.ok([loop, breath].includes(pick(played, r)), played.join(','));
+  // The next gesture is one that was not just seen, whatever the dice say; when every gesture has been seen lately, any of them but the last clip.
+  for (const r of [0, 0.5, 0.99]) assert.equal(pick([...calm2, smile, loop, breath], r), glance, 'the other gesture');
+  for (const r of [0, 0.5, 0.99]) assert.equal(pick([...calm2, smile, loop, breath, glance, loop, breath], r), smile, 'the one seen longest ago');
+  // A take and its variant with an effect are one film: after the one, the other is not the next gesture while another is left.
+  const twin = {...takes.find(t => t.id === smile)!, id: 'pamela-idle-smile-01-blixt'}, withTwin = [...takes, twin];
+  for (const r of [0, 0.5, 0.99]) assert.equal(graph.pickIdle(withTwin, [...calm2, smile, loop, breath], r)!.take.id, glance, 'not the same film with an effect');
   // The rejected stretch and the coffee on request never come by chance, however long it runs; every clip that may come does come.
   const played: string[] = [], seen = new Set<string>(); let seed = 7;
   for (let i = 0; i < 600; i++) { seed = (seed * 16807) % 2147483647; const next = pick(played, seed / 2147483647); assert.notEqual(next, played.at(-1)); played.push(next); seen.add(next); }
   assert.deepEqual([...seen].sort(), [breath, glance, loop, smile].sort());
-  for (let i = 0; i < played.length; i++) if (![loop, breath].includes(played[i])) { const before = played.slice(Math.max(0, i - 3), i); assert.ok(before.length === 3 && before.every(id => [loop, breath].includes(id)), `gesture at ${i} after ${before.join(',')}`); }
-  assert.ok(played.filter(id => [loop, breath].includes(id)).length > 0.75 * played.length, 'breathing dominates');
+  for (let i = 0; i < played.length; i++) if (![loop, breath].includes(played[i])) { const before = played.slice(Math.max(0, i - 2), i); assert.ok(before.length === 2 && before.every(id => [loop, breath].includes(id)), `gesture at ${i} after ${before.join(',')}`); }
+  // every third clip is a gesture, and the two gestures take turns
+  const shown = played.filter(id => ![loop, breath].includes(id));
+  assert.equal(shown.length, 200); assert.ok(shown.every((id, i) => i === 0 || id !== shown[i - 1]), 'never the same gesture twice running while another is left');
   // With a single calm clip it is that clip that repeats; the spacing between gestures is kept.
   const one = takes.filter(t => t.id !== breath);
   assert.equal(graph.pickIdle(one, [loop], 0.5)!.take.id, loop); assert.match(graph.pickIdle(one, [loop], 0.5)!.why, /enda lugna klippet/);
-  assert.equal(graph.pickIdle(one, [smile, loop, loop], 0.99)!.take.id, loop); assert.ok([smile, glance].includes(graph.pickIdle(one, [smile, loop, loop, loop], 0.99)!.take.id));
+  assert.equal(graph.pickIdle(one, [smile, loop], 0.99)!.take.id, loop); assert.equal(graph.pickIdle(one, [smile, loop, loop], 0.99)!.take.id, glance);
   // Nothing to play: no pick. Only gestures: they play, never the same twice.
   assert.equal(graph.pickIdle([], [], 0.5), null); assert.equal(graph.pickIdle(takes.filter(t => t.id === 'pamela-idle-stretch-01'), [], 0.5), null);
   const only = takes.filter(t => [smile, glance].includes(t.id)); assert.equal(graph.pickIdle(only, [smile], 0.1)!.take.id, glance);

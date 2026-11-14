@@ -421,13 +421,18 @@ export function experimentChains(graph: Graph): Chain[] {
 }
 
 // ── Idle ────────────────────────────────────────────────────────────────────
-// The rules, borrowed as they are: a weighted pick among the takes; never the same clip twice in a row; at least three calm
-// clips between two gestures; rejected takes and takes marked on request are never picked by chance. Unreviewed takes may be picked.
+// The rules: a weighted pick among the takes; never the same clip twice in a row; calm clips between two gestures
+// (calmBetweenGestures); rejected takes and takes marked on request are never picked by chance. Unreviewed takes may be picked.
+// A gesture that is due comes, and not one of the last few (gestureMemory, counted by film, so that a take and its variant with an
+// effect are one). Until 2026-11-14 a gesture that was due only might come: it was drawn among every clip by weight, where the
+// gestures held a third, three calm clips apart. So a gesture came about every sixth clip, mostly a nod, and a rare one (the
+// champagne, the wave) once in four to ten minutes. Jakob, looking at the game: "Flera animationer kommer sedan inte in automatiskt
+// i 'grundloopen'". Now every gesture of Paow's ten is seen within a few minutes, and the weights still say which come oftener.
 // exitRate is how fast a gesture is played out when a deal waits. It was borrowed as 2,5; a film review 2026-11-13 found her head
 // jumping at that speed (a rest looks fast-forwarded above about 1,25) and it became 1,5; the same evening Jakob wrote of the
 // speed-ups that she was "jättesnabb i vissa lägen och ser konstig ut", so it is 1: she finishes what she is doing as it was filmed,
 // and then deals. With Paow's rests that is a wait of just under three seconds on average in a good third of the deals, eight at most.
-export const IDLE_RULE = {calmBetweenGestures: 3, exitRate: 1, skipStart: 3, skipEnd: 3};
+export const IDLE_RULE = {calmBetweenGestures: 2, gestureMemory: 7, exitRate: 1, skipStart: 3, skipEnd: 3};
 export type IdlePick = {take: Take; why: string};
 export function pickIdle(takes: Take[], played: string[], random: number): IdlePick | null {
   // Takes in the inbox only when there is nothing else.
@@ -437,9 +442,15 @@ export function pickIdle(takes: Take[], played: string[], random: number): IdleP
   const calmOf = (id: string) => takes.find(t => t.id === id)?.idle?.calm !== false; // a clip that is no longer known counts as calm
   let since = 0; for (let i = played.length - 1; i >= 0 && calmOf(played[i]); i--) since++;
   const gestureDue = since >= IDLE_RULE.calmBetweenGestures && played.some(id => !calmOf(id)) || (since >= IDLE_RULE.calmBetweenGestures && since === played.length);
-  const fresh = pool.filter(t => t.id !== last), calm = (list: Take[]) => list.filter(t => t.idle!.calm);
+  const fresh = pool.filter(t => t.id !== last), calm = (list: Take[]) => list.filter(t => t.idle!.calm), gestures = fresh.filter(t => !t.idle!.calm);
+  // The gestures that may come when one is due: those not among the last few, while such are left.
+  const filmOf = (id: string) => takes.find(t => t.id === id)?.media.video ?? id;
+  const seen = played.filter(id => !calmOf(id)).map(filmOf); let unseen = gestures;
+  // as long a memory as still leaves one: with few gestures the one seen longest ago comes, never the same twice running
+  for (let k = Math.min(IDLE_RULE.gestureMemory, seen.length); k >= 1; k--) { const lately = new Set(seen.slice(-k)), left = gestures.filter(t => !lately.has(t.media.video ?? t.id)); if (left.length) { unseen = left; break; } }
+  const due = gestureDue ? unseen : [];
   // What may come now, most wanted rule first; each later line gives up one rule only when nothing is left otherwise.
-  const [allowed, note] = gestureDue && fresh.length ? [fresh, ''] : calm(fresh).length ? [calm(fresh), ''] : calm(pool).length ? [calm(pool), 'enda lugna klippet, så det går igen'] : fresh.length ? [fresh, 'inget lugnt klipp finns'] : [pool, 'enda klippet'];
+  const [allowed, note] = due.length ? [due, ''] : calm(fresh).length ? [calm(fresh), ''] : calm(pool).length ? [calm(pool), 'enda lugna klippet, så det går igen'] : fresh.length ? [fresh, 'inget lugnt klipp finns'] : [pool, 'enda klippet'];
   const total = allowed.reduce((sum, t) => sum + t.idle!.weight, 0); let at = Math.min(0.999999, Math.max(0, random)) * total, take = allowed[allowed.length - 1];
   for (const t of allowed) { if (at < t.idle!.weight) { take = t; break; } at -= t.idle!.weight; }
   const share = `${Math.round(100 * take.idle!.weight / total)} % chans`;

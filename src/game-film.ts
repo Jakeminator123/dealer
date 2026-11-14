@@ -124,7 +124,7 @@ export function createFilm(players: FilmPlayers, bank: Graph, layout: Layout, re
     const mine = ++token, pick = pickIdle(still.length ? still : calm.length ? calm : rests, played, random());
     if (!pick?.take.media.video) { resting = null; return; }
     const take = pick.take, range = idleRange(take.frames ?? 90);
-    resting = take; played.push(take.id); played.splice(0, Math.max(0, played.length - 12)); heldRest = how.hold === true ? mine : null;
+    resting = take; played.push(take.id); played.splice(0, Math.max(0, played.length - 24)); /* long enough for the last gestures (IDLE_RULE.gestureMemory) */ heldRest = how.hold === true ? mine : null;
     void trackOf(take).then(track => { if (mine !== token) return;
       players.play([{path: take.media.video!, start: range.start, end: range.end, ...fpsOf(take), ...modelOf(take), ...effectPart(take), rest: true, track, cards: cardOptions({own: null, lying}, table, records, layout, carry, words)}], {onEnd: () => { if (mine === token) rest(); }, ...(how.cut === true ? {cut: true} : {}), ...(how.hold === true ? {onPart: () => { if (mine === token && heldRest === mine) players.toggle?.(true); }} : {})}); });
   }

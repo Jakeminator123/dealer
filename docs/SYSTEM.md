@@ -569,8 +569,14 @@ IDLE>READY | READY>P1.C1 | P1.C1>READY | READY>D.C1 | D.C1>READY | READY>P1.C2 |
 - **Vilan** (panelen Vila i gamla labbet, `lab.html?gamla=1&tab=klippbank&panel=vila`) är korta klipp på `IDLE>IDLE` som
   alla börjar och slutar på samma bild, efter Kevins och Emils vila i Scout (läst 2026-11-11 i `origin/kevin-staging`
   `b4a78b44c`, `kevin/croupier-scoutgg/`, och `origin/main` `5428c0593`). `pickIdle` i `src/clip-graph.ts` väljer nästa
-  klipp med viktad slump: aldrig samma klipp två gånger i rad, minst tre lugna mellan två gester, aldrig underkända
-  klipp eller klipp märkta bara på begäran; ogranskade får komma i labbet. Varje klipp spelas från ruta 3 till tre rutor
+  klipp med viktad slump: aldrig samma klipp två gånger i rad, två lugna och sedan en gest (`calmBetweenGestures`),
+  aldrig underkända klipp eller klipp märkta bara på begäran; ogranskade får komma i labbet. En gest som står i tur
+  kommer, och inte någon av de senaste (`gestureMemory` 7, räknat per film, så att en tagning och dess variant med
+  effekt är en). Fram till 2026-11-14 fick en gest bara komma: den drogs bland alla klipp efter vikt, tre lugna emellan,
+  så en gest kom ungefär var 28:e sekund, mest en nick, och champagnen eller vinkningen en gång på fyra till tio
+  minuter (Jakob: "Flera animationer kommer sedan inte in automatiskt i 'grundloopen'"). Räknat på Paows bank med
+  `node D:/dealer-scratch/tmp/huvudagent11/look/vilans-takt.mjs`: en gest var 14:e sekund, varje gest ungefär varannan
+  minut, alla nio sedda på 2,5 minuter i snitt och 4,5 som längst. Varje klipp spelas från ruta 3 till tre rutor
   före slutet, nästa laddas i ett dolt videoelement och tar över med rakt klipp. "Dela ut nu" klipper ett lugnt klipp
   direkt till ingången och spelar klart en gest först, i den fart den är filmad (`IDLE_RULE.exitRate` är 1 sedan
   2026-11-13 kväll, Jakob om farten: "jättesnabb i vissa lägen och ser konstig ut"; över cirka 1,25 ser en vila
