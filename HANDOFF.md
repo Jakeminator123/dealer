@@ -206,7 +206,8 @@ punkt 0. Det här är det som bara han kan göra eller säga.
    såg två hela rundor utan att veta vilken som var vilken och gav rundan med underlägget 3,75/5 och rundan som i dag
    3,5/5, "lika bra eller bättre vid alla 14 kort". Underlägget är avstängt i spelet tills han har sett det
    (huvudagentens ord till honom i natt). Han ser det på tre ställen: filmen på skrivbordet (punkt 3), Prov
-   `underlagg`, och spelet på kopian med två ord i adressen:
+   `underlagg` i studion på hans dator (kopian bär bara de sex prov han valde 2026-11-12), och spelet på kopian med
+   två ord i adressen:
    `https://dealer-lake.vercel.app/game.html?forval=levande&dx=-0.0624&dy=0.016&table=casino&dealer=paow&cardBack=dark&cardFace=paper`.
    Säger han ja blir det förval (`UNDER`-raden som då läggs i `src/card-overlay.ts`, så att bara det ritade kortets
    underlägg slås på och `kort=liggande` står som det är), och scenbanan gör reglagen i Scen. De äldre jämförelserna
@@ -635,7 +636,7 @@ punkt 0. Det här är det som bara han kan göra eller säga.
   och kopiorna från före ändringen: `D:/dealer-scratch/tmp/paow/labb/`.
 - **Den låsta kopian** (åt Jakobs chef): `https://dealer-lake.vercel.app` (adressen han kände till) och
   `https://dealer-studio-one.vercel.app`, lösenord `john` eller `jon`. Projekt `dealer-studio` och Blob-lagret
-  `dealer-studio-media` i teamet jakeminator; senast publicerad 2026-11-14 kl. 01.01 från `3de51b5` (tre gånger den
+  `dealer-studio-media` i teamet jakeminator; senast publicerad 2026-11-14 kl. 01.36 från `4ecd58f` (fyra gånger den
   natten). Ny publicering: `DEALER_LOSEN_PROV=john DEALER_LOSEN_SPEL_PROV=<spelets ord> node tools/publish-studio.ts
   --kor` (DRIFT, "Den låsta kopian på nätet"). Det tomma projektet `dealer` som v0 skapade togs bort 2026-11-13 på
   hans ja.
