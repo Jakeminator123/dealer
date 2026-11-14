@@ -128,7 +128,7 @@ if (lookNote) { const note = Object.assign(document.createElement('p'), {textCon
 // the whole of that film without being seen, the heaviest thing on a phone beside the dealer's film, and begun at the lead the
 // room starts from its beginning, where its people sit as in the film's last picture.
 const lifeAsked = introOn && scene.state.roomLife === true; if (lifeAsked) scene.set({roomLife: false});
-let lifeBack = !lifeAsked; const roomLifeBack = () => { if (lifeBack) return; lifeBack = true; scene.set({roomLife: true}); };
+let lifeBack = !lifeAsked; const roomLifeBack = () => { if (lifeBack) return; lifeBack = true; scene.set({roomLife: true}); scene.restartRoomLife(); };
 scene.rebuild(); scene.start();
 new ResizeObserver(frame).observe(stage); frame();
 const film = createFilm(scene.players as unknown as FilmPlayers, graph, layout, path => fetch(path).then(res => res.ok ? res.json() : null));

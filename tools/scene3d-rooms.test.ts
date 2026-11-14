@@ -4,7 +4,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import * as T from 'three';
-import {FIRST_PANORAMAS, ROOM_LIFE, firstPanoramas, lifeAspect, lifeFeather, lifePatch, readRegister} from '../src/scene3d-room.ts';
+import {FIRST_PANORAMAS, ROOM_LIFE, firstPanoramas, lifeAspect, lifeFeather, lifePatch, lifeStarter, readRegister} from '../src/scene3d-room.ts';
 
 type Entry = Record<string, unknown> & {id: string; source: Record<string, unknown>};
 const register = JSON.parse(readFileSync(new URL('../data/scene-rooms.json', import.meta.url), 'utf8')) as {rooms: Entry[]};
@@ -139,4 +139,24 @@ test('readRegister leaves out what the scene cannot use and says why', () => {
   for (const [i, word] of ['ett byggt rum', 'två gånger', 'file', 'tint', 'blur', 'turn', 'light'].entries()) assert.ok(read.problems[i].includes(word), read.problems[i]);
   // what the pages do not read is not carried along
   assert.equal('sha256' in read.rooms[0], false);
+});
+
+// ---- a room film's start (lifeStarter): asked for once, and again in the visitor's touch when the browser refused it -----------
+test('a room film is asked to start once, a refusal waits for the visitor\'s touch, and a film that cannot be read is left', async () => {
+  const settle = () => new Promise(resolve => setTimeout(resolve, 0)), named = (name: string) => Object.assign(Error(name), {name});
+  const film = (answers: (string | null)[]) => { const v = {paused: true, calls: 0, play() { v.calls++; const a = answers.shift() ?? null; if (a === null) { v.paused = false; return Promise.resolve(); } return Promise.reject(named(a)); }}; return v; };
+  // a browser that refuses: sixty frames ask once, not sixty times; the touch asks again, and then the film runs
+  { const v = film(['NotAllowedError', null]), s = lifeStarter(v); for (let i = 0; i < 60; i++) { s.want(true); await settle(); }
+    assert.equal(v.calls, 1, 'one start asked for in sixty frames'); assert.equal(s.refused, true);
+    s.touch(); await settle(); assert.equal(v.calls, 2); assert.equal(s.refused, false); assert.equal(v.paused, false);
+    for (let i = 0; i < 10; i++) s.want(true); s.touch(); assert.equal(v.calls, 2, 'a film that runs is not started again'); }
+  // a touch while the film is not wanted starts nothing; wanted again, it waits for the next touch
+  { const v = film(['NotAllowedError', null]), s = lifeStarter(v); s.want(true); await settle(); s.want(false); s.touch(); await settle(); assert.equal(v.calls, 1);
+    s.want(true); await settle(); assert.equal(v.calls, 1, 'still refused: no start without a touch'); s.touch(); await settle(); assert.equal(v.calls, 2); }
+  // several frames before the answer comes: still one start
+  { const v = film([null]), s = lifeStarter(v); const slow = v.play.bind(v); let let_go = () => {}; v.play = () => new Promise<void>(resolve => { let_go = () => { void slow().then(resolve); }; });
+    for (let i = 0; i < 5; i++) s.want(true); let_go(); await settle(); for (let i = 0; i < 5; i++) s.want(true); assert.equal(v.calls, 1); }
+  // a start that a pause interrupted is asked for again; a film that cannot be read is asked for once and left
+  { const v = film(['AbortError', null]), s = lifeStarter(v); s.want(true); await settle(); s.want(true); await settle(); assert.equal(v.calls, 2); assert.equal(v.paused, false); }
+  { const v = film(['NotSupportedError', null]), s = lifeStarter(v); for (let i = 0; i < 5; i++) { s.want(true); await settle(); } s.touch(); await settle(); assert.equal(v.calls, 1); }
 });

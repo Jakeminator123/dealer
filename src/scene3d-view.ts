@@ -476,6 +476,9 @@ export function createScene(canvas: HTMLCanvasElement, host: HTMLElement, data: 
     lit: light.hook, // a prop's materials go through this, or focus and the fan's shade pass them by
     /** A box of the film (film pixels: x0, y0, x1, y1) that is left undrawn, for an object of the scene that stands there instead; null draws all of the film again. */
     hideFilm(box: number[] | null) { film.setHide(box); },
+    // The films over the people of the room on screen (roomLife) from their beginning: the film before the game ends in the room as
+    // its film begins, and the page asks for this as the game takes over (src/game-page.ts).
+    restartRoomLife() { if (!gone) rooms.restartLife([state.room]); },
     addProp(prop: Prop) { if (gone) return () => {}; props.push(prop); fg.add(prop.group); if (built) prop.build(edgeZ, camera.scale); return () => { const i = props.indexOf(prop); if (i >= 0) props.splice(i, 1); fg.remove(prop.group); }; },
     onFrame(call: () => void) { if (gone) return () => {}; frameCalls.add(call); return () => { frameCalls.delete(call); }; },
     // Where a table point is in the picture as last drawn: CSS pixels from the canvas's top left corner, and how many

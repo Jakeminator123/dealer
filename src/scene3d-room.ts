@@ -107,6 +107,26 @@ export function lifeFeather(u: number, v: number, feather: number, aspect: numbe
   const s = (t: number, f: number) => { const x = Math.min(1, Math.max(0, t / f)); return x * x * (3 - 2 * x); };
   return s(u, feather) * s(1 - u, feather) * s(v, feather * aspect) * s(1 - v, feather * aspect);
 }
+/**
+ * A room film's start. It is asked for once and not again while the answer is awaited or the film runs: the scene says in every
+ * drawn frame whether the film is wanted (want), and a browser that wants the visitor's touch before a film starts (a phone that
+ * saves power, a page inside an app) answered every one of those with a refusal, sixty a second. A refusal is remembered, and the
+ * film is started again in the visitor's next touch (touch), where a start is allowed, as the dealer's films are (createPlayers in
+ * scene3d-film.ts). A start that a pause interrupted may be asked for again; a film that cannot be read is left alone.
+ */
+export function lifeStarter(video: {readonly paused: boolean; play(): Promise<void>}) {
+  let asking = false, refused = false, dead = false, wanted = false;
+  const ask = () => { if (asking || dead || !video.paused) return; asking = true; refused = false;
+    video.play().then(() => { asking = false; }, (error: unknown) => { asking = false; const name = (error as {name?: string} | null)?.name; if (name === 'NotAllowedError') refused = true; else if (name !== 'AbortError') dead = true; }); };
+  return {
+    /** In every drawn frame: whether the film is wanted now. */
+    want(on: boolean) { wanted = on; if (on && !refused) ask(); },
+    /** The visitor touched the page. */
+    touch() { if (wanted && refused) ask(); },
+    /** The browser refused the start and no touch has come since. */
+    get refused() { return refused; },
+  };
+}
 /** A box's width over its height in pixels of its 2:1 picture. */
 export const lifeAspect = (box: readonly number[]) => (box[2] - box[0]) * 2 / (box[3] - box[1]);
 // Inside the room's sphere (60): its flat facets (64 × 32) lie up to about 0.15 inside the round sphere, and a film nearer to it
@@ -248,7 +268,11 @@ export function createRooms(scene: T.Scene, urls: {plate: string; panorama: stri
     ...Object.fromEntries(panoramas.map(p => [p.id, {back: p.tint.back, front: p.tint.front, leaves: p.air === 'leaves' ? 1 : 0}]))};
   // The films over a room's people (ROOM_LIFE), made the first time they are wanted, as children of the room's sphere. A film
   // is shown from its first decoded frame on; until then, or if it cannot be read, the room is the still picture.
-  type Life = {video: HTMLVideoElement; mesh: T.Mesh; ready: boolean};
+  type Life = {video: HTMLVideoElement; mesh: T.Mesh; ready: boolean; start: ReturnType<typeof lifeStarter>};
+  // the visitor's touch starts a film the browser refused (lifeStarter); the listeners go with the scene (dispose)
+  const ending = new AbortController();
+  if (typeof globalThis.addEventListener === 'function') for (const type of ['pointerup', 'touchend', 'mousedown', 'click', 'keydown'])
+    globalThis.addEventListener(type, () => { for (const list of lives.values()) for (const l of list) l.start.touch(); }, {capture: true, passive: true, signal: ending.signal});
   const lives = new Map<RoomId, Life[]>();
   function livesOf(id: RoomId): Life[] {
     const had = lives.get(id); if (had) return had;
@@ -262,7 +286,7 @@ export function createRooms(scene: T.Scene, urls: {plate: string; panorama: stri
       const alpha = new T.DataTexture(fade, S, S); alpha.magFilter = alpha.minFilter = T.LinearFilter; alpha.needsUpdate = true;
       const mesh = new T.Mesh(new T.SphereGeometry(LIFE_RADIUS, 24, 12, patch.phiStart, patch.phiLength, patch.thetaStart, patch.thetaLength), new T.MeshBasicMaterial({map, alphaMap: alpha, transparent: true, depthWrite: false, side: T.BackSide, fog: false}));
       mesh.visible = false; sphere.mesh.add(mesh);
-      const life: Life = {video, mesh, ready: false}; video.addEventListener('loadeddata', () => { life.ready = true; }, {once: true});
+      const life: Life = {video, mesh, ready: false, start: lifeStarter(video)}; video.addEventListener('loadeddata', () => { life.ready = true; }, {once: true});
       return life;
     });
     lives.set(id, list); return list;
@@ -309,9 +333,12 @@ export function createRooms(scene: T.Scene, urls: {plate: string; panorama: stri
     // Life in the rooms drawn this frame (`ids`, ROOM_LIFE): their films play and show while `on`; every other film stands still, hidden.
     life(ids: RoomId[], on: boolean) {
       if (on) for (const id of ids) livesOf(id);
-      for (const [id, list] of lives) { const wanted = on && ids.includes(id); for (const l of list) { l.mesh.visible = wanted && l.ready; if (wanted && l.video.paused) l.video.play().catch(() => {}); else if (!wanted && !l.video.paused) l.video.pause(); } }
+      for (const [id, list] of lives) { const wanted = on && ids.includes(id); for (const l of list) { l.mesh.visible = wanted && l.ready; l.start.want(wanted); if (!wanted && !l.video.paused) l.video.pause(); } }
     },
+    // The films of these rooms from their beginning (a room whose films are not made yet begins there anyway). A long film has a
+    // beginning worth meeting: Monaco's has everybody in place for its first 56 s.
+    restartLife(ids: RoomId[]) { for (const id of ids) for (const l of lives.get(id) ?? []) l.video.currentTime = 0; },
     // With the scene: every film stopped and emptied (its mesh and textures go with the scene's own walk of what it holds).
-    dispose() { for (const list of lives.values()) for (const l of list) { l.video.pause(); l.video.removeAttribute('src'); l.video.load(); } lives.clear(); },
+    dispose() { ending.abort(); for (const list of lives.values()) for (const l of list) { l.video.pause(); l.video.removeAttribute('src'); l.video.load(); } lives.clear(); },
   };
 }
