@@ -336,10 +336,14 @@ avkodningen gick till filmer ingen såg. Har något annat spelats under filmen k
 (`rest({cut, hold})`). Vilan står hållen tills hon talar:
 varje talfilm börjar i samma pose, så repliken börjar i just den bild som syns. Gick vilan i stället, hade den lyft
 hennes ansikte 13 bildpunkter när toningen var klar (30 på en stående telefon) och huvudet hoppade 8 när repliken
-tog över; hållen skiljer filmens sista ruta och spelets bild 0 bildpunkter i datorstorlek och högst 3 på en stående
-telefon, och repliken tar över inom 1 (mätt på ansiktet i de rutor webbläsaren ritade, 2026-11-14). Öppningsrepliken
+tog över; hållen, och med svajet på noll, skiljer filmens sista ruta och spelets bild högst 1 bildpunkt i datorstorlek och på
+en telefon, stående och liggande, och repliken tar över inom 1 (mätt på ansiktet i de rutor webbläsaren ritade,
+2026-11-14, med mobilens konsol). Öppningsrepliken
 sägs 0,4 s efter att spelet syns; har hon ingen replik går vilan vidare
-(`release`). Från `onLead` ritas spelet under filmen (täckning 0,999), eftersom den första ruta där webbläsaren
+(`release`). Hennes långsamma svaj (`dealerLife`) är noll under filmen och tonas in under fyra sekunder när spelet
+har tagit över: svajet räknas på scenens klocka, så med det på satt hon 5 bildpunkter åt sidan om filmens sista ruta i
+en mätning och 0 i en annan; filmens slut spelas in utan svaj. På en telefon läggs filmen i bildens ruta, ovanför
+eller bredvid konsolen (`introLayout` får rutans mått). Från `onLead` ritas spelet under filmen (täckning 0,999), eftersom den första ruta där webbläsaren
 lägger ihop de två kostade 0,08 till 0,18 s och syntes som ett stopp när den kom med toningens första ruta. Trycket
 på Spela är också det som låter henne höras. Filmen
 och startrutan ligger i `assets/films/intro/noir-3/` med kvitto; filmen måste spelas in på nytt när spelets vilobild

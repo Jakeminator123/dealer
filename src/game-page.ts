@@ -142,6 +142,13 @@ if (lookNote) { const note = Object.assign(document.createElement('p'), {textCon
 // room starts from its beginning, where its people sit as in the film's last picture.
 const lifeAsked = introOn && scene.state.roomLife === true; if (lifeAsked) scene.set({roomLife: false});
 let lifeBack = !lifeAsked; const roomLifeBack = () => { if (lifeBack) return; lifeBack = true; scene.set({roomLife: true}); scene.restartRoomLife(); };
+// Her own slow sway (dealerLife) is none under a film before the game, and comes in over SWAY_IN_MS once the game has taken over
+// (swayIn, and the frame loop below). The sway is counted on the scene's clock, so with it the game had her where the film had not
+// left her, differently at every visit: 5 px to the side of the film's last picture at computer size in one measured visit and 0
+// in another (her face; 2026-11-14). The film's last picture is the game's picture without the sway.
+const SWAY_IN_MS = 4000, swayAsked = introOn ? scene.state.dealerLife : 0; let swayFrom: number | null = null;
+if (swayAsked > 0) scene.set({dealerLife: 0});
+const swayIn = () => { if (swayAsked > 0 && swayFrom === null && scene.state.dealerLife === 0) swayFrom = performance.now(); };
 scene.rebuild(); scene.start();
 new ResizeObserver(frame).observe(stage); frame();
 const film = createFilm(scene.players as unknown as FilmPlayers, graph, layout, path => fetch(path).then(res => res.ok ? res.json() : null));
@@ -408,6 +415,7 @@ canvas.addEventListener('pointermove', e => { if (!turning) return; const dx = e
 for (const type of ['pointerup', 'pointercancel']) canvas.addEventListener(type, () => { turning = null; });
 canvas.addEventListener('dblclick', () => { byHand = false; });
 scene.onFrame(() => {
+  if (swayFrom !== null) { const t = Math.min(1, (performance.now() - swayFrom) / SWAY_IN_MS); scene.state.dealerLife = swayAsked * t * t * (3 - 2 * t); if (t >= 1) swayFrom = null; }
   chips?.update(seconds());
   const whole = scene.players.part?.frame as {layer?: string; rise?: [number, number]; behindUntil?: number} | null | undefined;
   if (whole?.layer === 'BEHIND_TABLE' && !comeHome) shot = exitView(scene.players.frame(), scene.status().camera, framing(), whole.rise, whole.behindUntil !== undefined);
@@ -422,7 +430,7 @@ render();
 // The film before the game is over: her gestures may come again, and after a beat (INTRO_BEAT_MS, so that she does not begin to speak in
 // the frame the film is gone) she says her opening line; a rest that was held for the film's end and has no line after it runs on.
 const INTRO_BEAT_MS = 400;
-introOver = () => { film.calm = false; roomLifeBack(); setTimeout(() => { introOn = false; render(); film.release(); }, INTRO_BEAT_MS); };
+introOver = () => { film.calm = false; roomLifeBack(); setTimeout(() => { introOn = false; render(); film.release(); swayIn(); }, INTRO_BEAT_MS); };
 // The film ends in her rest pose, held for its last 0.75 s. A little before its end (the module's onLead), while the film still
 // covers the stage, her rest is started over with a cut from its first frame, which is that pose (every rest film begins on the
 // same frame): the cut is not seen, and the fade goes from her to her. Queued instead, the rest that played went on with her head
