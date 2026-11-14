@@ -158,16 +158,24 @@ const domains = (() => { const r = spawnSync('vercel', ['api', `/v9/projects/${l
 if (!domains.length) throw Error('Projektets adresser kunde inte läsas; kontrollera kopian för hand.');
 const built = JSON.parse(readFileSync(path.join(deployDir, 'build.json'), 'utf8')) as {blob: {path: string; type: string}[]};
 const film = built.blob.find(f => f.type === 'video/mp4')!.path, password = process.env.DEALER_LOSEN_PROV ?? '', gameWord = process.env.DEALER_LOSEN_SPEL_PROV ?? '';
+const open = ['allt', 'spel'].find(word => word === (process.env.DEALER_OPPEN_PROV ?? '').trim().toLowerCase()) ?? null;
 let bad = 0;
 const check = (name: string, ok: boolean, detail = '') => { if (!ok) bad++; say(`   ${ok ? 'ok ' : 'FEL'} ${name}${detail ? ` (${detail})` : ''}`); };
 for (const domain of domains) {
   const site = `https://${domain}`;
   say(`\n── ${site}`);
+  // Without a cookie: the login page for everything, unless the copy is open (DEALER_OPPEN in the project; DEALER_OPPEN_PROV here says
+  // what this run is to expect: 'allt', 'spel' or nothing). Open, a page answers, a door leads to the game, and the bot stays shut.
   for (const p of ['/studio/', '/studio/game/', '/api/clip-bank', '/game.html', '/casino', '/trailer', `/${film}`]) {
-    const r = await fetch(site + p, {redirect: 'manual'}).catch(() => null);
-    const text = r ? await r.text() : '';
-    check(`utan kaka ${p}`, r?.status === 401 && text.includes('name="losen"'), String(r?.status ?? 'inget svar'));
+    const r = await fetch(site + p, {redirect: 'manual', headers: p === `/${film}` ? {range: 'bytes=0-1023'} : {}}).catch(() => null);
+    const text = r ? await r.text() : '', studio = p.startsWith('/studio'), door = p === '/casino' || p === '/trailer';
+    const shut = !open || open === 'spel' && studio;
+    if (shut) check(`utan kaka ${p}: lösenordssidan`, r?.status === 401 && text.includes('name="losen"'), String(r?.status ?? 'inget svar'));
+    else if (door) check(`utan kaka ${p}: leder till spelet`, r?.status === 303 && (r.headers.get('location') ?? '').startsWith('/game.html'), String(r?.status ?? 'inget svar'));
+    else check(`utan kaka ${p}: öppen`, (r?.status === 200 || r?.status === 206) && !text.includes('name="losen"'), String(r?.status ?? 'inget svar'));
   }
+  if (open) { const bot = await fetch(`${site}/api/bot`, {method: 'POST', redirect: 'manual', headers: {'content-type': 'application/json'}, body: '{}'}).catch(() => null);
+    check('utan kaka: botten kräver lösenordet', bot?.status === 401, String(bot?.status ?? 'inget svar')); }
   if (!password) { say('   (DEALER_LOSEN_PROV är inte satt: inloggningen prövas inte)'); continue; }
   const login = await fetch(`${site}/api/login`, {method: 'POST', redirect: 'manual', headers: {'content-type': 'application/x-www-form-urlencoded'}, body: new URLSearchParams({losen: password, next: '/studio/'})});
   const cookie = (login.headers.get('set-cookie') ?? '').split(';')[0];
@@ -188,7 +196,8 @@ for (const domain of domains) {
   const table = await fetch(site + home, {headers: {cookie: gameCookie}});
   check('spelsidan med spelets lösenord', table.status === 200 && (await table.text()).includes('game-page'), String(table.status));
   const shut = await fetch(`${site}/studio/`, {headers: {cookie: gameCookie}, redirect: 'manual'});
-  check('studion är stängd med spelets lösenord', shut.status === 303 && (shut.headers.get('location') ?? '').startsWith('/game.html'), String(shut.status));
+  if (open === 'allt') check('studion är öppen också med spelets lösenord', shut.status === 200, String(shut.status));
+  else check('studion är stängd med spelets lösenord', shut.status === 303 && (shut.headers.get('location') ?? '').startsWith('/game.html'), String(shut.status));
   const gameFilm = await fetch(`${site}/${film}`, {headers: {cookie: gameCookie, range: 'bytes=0-1023'}});
   check('film med spelets lösenord', gameFilm.status === 206, String(gameFilm.status));
 }

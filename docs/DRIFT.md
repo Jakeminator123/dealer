@@ -300,6 +300,15 @@ Allt går att läsa och spela, inget går att ändra, och inga kostnader visas.
   (`TRAILER_HOME`: `intro=noir-3`, rummet Monaco med rörelse, bordet och Paow; SYSTEM, "En film före spelet"), bakom
   samma lås och med båda sorters lösenord. Trailerproven i Prov går fortfarande inte upp (`blocked.folders` i
   `data/studio-release.json`); bara filmen före spelet gör det, på Jakobs ord 2026-11-13 kl. 21.23.
+- **Öppen utan lösenord** (Jakob 2026-11-14: "Se till att den inte är lösenordsskyddad", "ta bort lösenordet "john" för
+  sidan nu"): miljövariabeln `DEALER_OPPEN` i projektet. `allt` gör hela kopian läsbar utan lösenord, `spel` bara spelet
+  med dörrarna `/casino` och `/trailer` (studion frågar då fortfarande efter lösenordet), och utan variabeln, eller med
+  något annat ord, är kopian låst som förut (`openOf` i `cloud/studio/gate.ts`). Bara läsning öppnas: boten och
+  önskemålslådan skriver och kostar per fråga, så de kräver alltid hela kopians lösenord, och inloggningen finns kvar
+  för dem. Varje svar bär fortfarande `X-Robots-Tag: noindex, nofollow`. Sedan 2026-11-14 står den på `allt`. Låsa igen:
+  `vercel env rm DEALER_OPPEN production --cwd .runtime/studio-deploy` och en ny deploy; bara spelet: sätt den till
+  `spel` på samma sätt som lösenorden. Publiceringens kontroll får veta vad den ska vänta sig med
+  `DEALER_OPPEN_PROV=allt` (eller `spel`) framför kommandot.
 - **Boten** följer med men har ingen `BOT_BLOB_TOKEN`: den svarar att den saknar lagring och anropar ingen modell, så den
   kostar inget. Att slå på den (egen privat store, nyckel, tak) är Jakobs beslut.
 - **Vad som går upp** avgör `data/studio-release.json` (tagningar per dealer, vad spelet kan spela, prov, förval, spärrade

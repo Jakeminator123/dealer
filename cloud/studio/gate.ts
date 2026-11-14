@@ -21,7 +21,7 @@ import {isAdminCall, isBotPath} from './bot-routes.ts';
 export type MediaEntry = {url: string | null; type: string; bytes: number; sha256: string};
 /** The site's own path ("/assets/motions/<id>/source.mp4") to its object in Blob. Written by tools/build-studio-snapshot.ts. */
 export type MediaMap = Record<string, MediaEntry>;
-export type Env = {DEALER_LOSEN?: string; DEALER_LOSEN_SPEL?: string; DEALER_KAKNYCKEL?: string; DEALER_MEDIA_MODE?: string};
+export type Env = {DEALER_LOSEN?: string; DEALER_LOSEN_SPEL?: string; DEALER_KAKNYCKEL?: string; DEALER_MEDIA_MODE?: string; DEALER_OPPEN?: string};
 export type GateContext = {
   env: Env;
   media: MediaMap;
@@ -52,6 +52,13 @@ const otherPage = (path: string): boolean => path !== '/game.html' && (path === 
 export const gameMay = (path: string): boolean => !otherPage(path) && !isBotPath(path);
 /** Where a login with one of the game's passwords leads: the game address that was asked for, else the game's own. */
 const gameNext = (next: string): string => next.startsWith('/game.html') ? next : GAME_HOME;
+/**
+ * What the copy shows without a password (DEALER_OPPEN in the project; Jakob 2026-11-14: "Se till att den inte är
+ * lösenordsskyddad", "ta bort lösenordet \"john\" för sidan nu"): 'allt' the whole copy, 'spel' the game alone with its two doors;
+ * unset or any other word, nothing, as before. Only reading is opened: the bot and the request inbox write and cost, so they keep
+ * needing the whole copy's password, and a login still gives the cookie for them.
+ */
+export const openOf = (env: Env): 'all' | 'game' | null => { const word = (env.DEALER_OPPEN ?? '').trim().toLowerCase(); return word === 'allt' ? 'all' : word === 'spel' ? 'game' : null; };
 const BODY_LIMIT = 4096;
 
 const page = (body: string, status: number, extra: Record<string, string> = {}) =>
@@ -114,19 +121,22 @@ export async function gate(request: Request, ctx: GateContext): Promise<Response
   // itself compares; with the cookie, every method of the bot's addresses goes on to the function, which allows its own.
   if (isAdminCall(path, request.headers)) return passOn();
   const scope = await cookieScope(s, readCookies(request.headers.get('cookie')).get(COOKIE), Math.floor(now / 1000));
+  // What this visitor may read: what the cookie gives, or what the copy is open for without one (openOf), whichever is more.
+  const open = openOf(ctx.env), reach = scope === 'all' || open === 'all' ? 'all' : scope ?? open;
   // The doors for someone who is only to play: the game's own address, with or without the film before it, behind the same lock.
   const door = Object.hasOwn(GAME_DOORS, path) ? GAME_DOORS[path] : null;
   if (door) {
     if (request.method !== 'GET' && request.method !== 'HEAD') return text('Bara GET.', 405, {Allow: 'GET, HEAD'});
-    return scope ? goTo(door) : page(loginPage({next: door}), 401);
+    return reach ? goTo(door) : page(loginPage({next: door}), 401);
   }
-  if (!scope) {
-    // The login page itself, for every address: a page asked for comes back to it after the login.
-    const next = request.method === 'GET' && request.headers.get('sec-fetch-dest') !== 'video' ? safeNext(path + url.search) : '/studio/';
-    return page(loginPage({next}), 401);
-  }
-  // With one of the game's passwords: the game and what it loads. Another page leads back to the game; the bot is shut.
-  if (scope === 'game' && !gameMay(path)) return isBotPath(path) || request.method !== 'GET' && request.method !== 'HEAD' ? text('Bara spelet är öppet med det här lösenordet.', 403) : goTo(GAME_HOME);
+  // The login page itself, for an address that is not open: a page asked for comes back to it after the login.
+  const asksIn = () => page(loginPage({next: request.method === 'GET' && request.headers.get('sec-fetch-dest') !== 'video' ? safeNext(path + url.search) : '/studio/'}), 401);
+  if (!reach) return asksIn();
+  // The bot and the inbox write and cost: only with the whole copy's cookie, however open the copy is.
+  if (isBotPath(path) && scope !== 'all') return scope === 'game' ? text('Bara spelet är öppet med det här lösenordet.', 403) : text('Botten kräver lösenordet.', 401);
+  // The game alone (one of the game's passwords, or a copy open for the game): the game and what it loads. With the game's cookie
+  // another page leads back to the game; without a cookie it asks for the password, so that the studio can still be logged in to.
+  if (reach === 'game' && !gameMay(path)) return !scope ? asksIn() : request.method !== 'GET' && request.method !== 'HEAD' ? text('Bara spelet är öppet med det här lösenordet.', 403) : goTo(GAME_HOME);
   if (isBotPath(path)) return passOn();
   if (request.method !== 'GET' && request.method !== 'HEAD') return text('Kopian går inte att ändra.', 405, {Allow: 'GET, HEAD'});
   const entry = Object.hasOwn(ctx.media, path) ? ctx.media[path] : null;

@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {secrets, passwordsOf, signCookie, verifyCookie, samePassword, passwordScope, signGameCookie, cookieScope, readCookies, TryLimit, MAX_AGE, COOKIE, TRIES, WINDOW} from '../cloud/studio/lock.ts';
-import {gate, GAME_HOME, TRAILER_HOME, type GateContext, type MediaMap} from '../cloud/studio/gate.ts';
+import {gate, openOf, GAME_HOME, TRAILER_HOME, type GateContext, type MediaMap} from '../cloud/studio/gate.ts';
 import {loginPage, safeNext} from '../cloud/studio/login-page.ts';
 
 // Throwaway values for the tests only; the real ones live in the Vercel project's environment.
@@ -222,4 +222,40 @@ test('with a game password the game and what it loads pass; the studio and every
   const plain = context();
   assert.equal((await gate(login('spela'), plain)).status, 401);
   assert.equal((await gate(ask('/casino'), plain)).status, 401);
+});
+
+// Jakob 2026-11-14: "Se till att den inte är lösenordsskyddad", "ta bort lösenordet "john" för sidan nu".
+test('a copy the project has opened is read without a password: the game alone or all of it; the bot and every write stay locked', async () => {
+  assert.equal(openOf({}), null); assert.equal(openOf({DEALER_OPPEN: 'allt'}), 'all'); assert.equal(openOf({DEALER_OPPEN: ' Spel '}), 'game');
+  for (const word of ['', '1', 'ja', 'true', 'all', 'open']) assert.equal(openOf({DEALER_OPPEN: word}), null, `"${word}" opens nothing`);
+  const reads = async (ctx: GateContext, path: string, init: RequestInit = {}) => { const answer = await gate(ask(path, init), ctx); return answer.headers.get('x-middleware-next') === '1' ? 'passes' : answer.status === 303 ? `to ${answer.headers.get('location')}` : String(answer.status); };
+  const fetched = {fetch: async () => new Response('ab', {status: 206, headers: {'content-range': 'bytes 0-1/10'}})};
+
+  // open for the game: the two doors lead to the game, the game and what it loads pass, a film is fetched; the studio asks for the password
+  const play = context({env: {...gameEnv, DEALER_OPPEN: 'spel'}, ...fetched});
+  assert.equal(await reads(play, '/casino'), `to ${GAME_HOME}`); assert.equal(await reads(play, '/trailer'), `to ${TRAILER_HOME}`);
+  for (const path of ['/game.html', '/game-page.js', '/vendor/three.module.js', '/api/clip-bank', '/data/speech-patches.json', '/game-intro.js']) assert.equal(await reads(play, path), 'passes', path);
+  assert.equal((await gate(ask(film, {headers: {range: 'bytes=0-1'}}), play)).status, 206);
+  for (const path of ['/studio/', '/studio/karta/', '/', '/lab.html']) { const answer = await gate(ask(path), play); assert.equal(answer.status, 401, path); assert.match(await answer.text(), /name="losen"/, path); }
+  // open for all of it: every page passes
+  const all = context({env: {...gameEnv, DEALER_OPPEN: 'allt'}, ...fetched});
+  for (const path of ['/studio/', '/studio/karta/', '/', '/game.html', '/api/clip-bank', '/api/proofs', '/meta.json']) assert.equal(await reads(all, path), 'passes', path);
+  assert.equal(await reads(all, '/casino'), `to ${GAME_HOME}`); assert.equal((await gate(ask(film), all)).status, 206);
+  // the bot and the inbox write and cost: never without the whole copy's cookie, and nothing else is written either
+  for (const ctx of [play, all]) {
+    for (const path of ['/api/bot', '/api/utkast', '/api/onskemal']) assert.equal((await gate(ask(path, {method: 'POST'}), ctx)).status, 401, path);
+    assert.equal((await gate(ask('/api/onskemal'), ctx)).status, 401, 'the inbox is not read either');
+    assert.equal((await gate(ask('/api/clip-bank/review/x', {method: 'POST'}), ctx)).status, ctx === all ? 405 : 405);
+    assert.equal((await gate(ask('/game.html', {method: 'POST'}), ctx)).status, 405);
+  }
+  // a login still works on an open copy and its cookie reaches the bot; the game's cookie does not, but no longer narrows an open copy
+  const whole = `${COOKIE}=${cookieOf(await gate(login('prov-losen'), all))!}`, game = `${COOKIE}=${cookieOf(await gate(login('spela'), all))!}`;
+  assert.equal(await reads(all, '/api/bot', {method: 'POST', headers: {cookie: whole}}), 'passes');
+  assert.equal((await gate(ask('/api/bot', {method: 'POST', headers: {cookie: game}}), all)).status, 403);
+  assert.equal(await reads(all, '/studio/', {headers: {cookie: game}}), 'passes', 'the whole copy is open, with or without the game\'s cookie');
+  assert.equal(await reads(play, '/studio/', {headers: {cookie: game}}), `to ${GAME_HOME}`, 'open for the game only: the game\'s cookie still leads back to the game');
+  assert.equal(await reads(play, '/studio/', {headers: {cookie: whole}}), 'passes');
+  // every answer of an open copy still asks search engines to stay away, and without a password in the project it stays shut
+  assert.equal((await gate(ask('/studio/'), all)).headers.get('x-robots-tag'), 'noindex, nofollow');
+  assert.equal((await gate(ask('/studio/'), context({env: {DEALER_OPPEN: 'allt'}}))).status, 503);
 });
