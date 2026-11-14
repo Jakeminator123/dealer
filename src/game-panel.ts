@@ -2,7 +2,9 @@
 // and Musik (music, the room's sound, the table's sound). Each button shows what is chosen now: the room's picture and name,
 // the dealer's face and name, and the track that plays. Miljö and Dealer open the same panel, on their own tab of it; Musik
 // opens its own. A panel opens above the console, as Scout's console opens Utseende and Musik; an open panel closes when the
-// other opens, on a press outside it, on Escape, and when the page says a round has begun.
+// other opens, on a press outside it, on Escape, and when the page says a round has begun. On a phone (game.css: the stage is
+// tall or side) the three buttons stand behind one small button, as a list that opens over the picture; a press on one of them
+// opens its panel as before. On a larger screen that small button is not shown and the three stand in the console.
 // The page owns what the choices do; this file only shows them and says what was pressed.
 export type RoomChoice = {id: string; label: string; note: string; thumb: string};
 export type DealerChoice = {id: string; label: string; note: string; thumb: string};
@@ -42,6 +44,7 @@ const ICON = {
   speaker: svg('<path d="M4 9.5v5h3.5L12 18V6L7.5 9.5z"/><path d="M15.5 9a4.5 4.5 0 0 1 0 6M18 6.5a8 8 0 0 1 0 11"/>'),
   swap: svg('<path d="M4 8h13l-3.5-3.5M20 16H7l3.5 3.5"/>'),
   chevron: svg('<path d="M7 14.5l5-5 5 5"/>', 14),
+  menu: svg('<path d="M4 7h16M4 12h16M4 17h16"/>', 20),
 };
 const EQ = '<i></i><i></i><i></i><i></i>'; // the four bars that move while music plays
 
@@ -49,10 +52,11 @@ export function mountPanel(bar: HTMLElement, rooms: RoomChoice[], dealers: Deale
   const el = <K extends keyof HTMLElementTagNameMap>(tag: K, className = '', text = ''): HTMLElementTagNameMap[K] => { const n = document.createElement(tag); if (className) n.className = className; if (text) n.textContent = text; return n; };
   const html = <K extends keyof HTMLElementTagNameMap>(tag: K, className: string, inner: string): HTMLElementTagNameMap[K] => { const n = el(tag, className); n.innerHTML = inner; return n; }; // only for the fixed icons above
   const picture = (node: HTMLElement, url: string | undefined) => { node.style.backgroundImage = url ? `url("${url}")` : ''; };
-  const menu = el('div', 'gp-menu'), panels = el('div', 'gp-panels');
+  const menu = el('div', 'gp-menu'), panels = el('div', 'gp-panels'), list = el('div', 'gp-list'), more = html('button', 'gp-more', ICON.menu);
+  more.type = 'button'; more.setAttribute('aria-label', 'Miljö, dealer och musik'); more.setAttribute('aria-expanded', 'false'); menu.append(more, list);
   // A button of the console: a small picture, a caption and what is chosen now.
   const opener = (caption: string, shape: string) => { const b = el('button', 'gp-open'), pic = el('span', `gp-pic ${shape}`), now = el('b'), label = el('span', 'gp-label');
-    b.type = 'button'; b.setAttribute('aria-expanded', 'false'); b.setAttribute('aria-haspopup', 'dialog'); label.append(el('small', '', caption), now); b.append(pic, label, html('span', 'gp-chev', ICON.chevron)); menu.append(b); return {b, pic, now}; };
+    b.type = 'button'; b.setAttribute('aria-expanded', 'false'); b.setAttribute('aria-haspopup', 'dialog'); label.append(el('small', '', caption), now); b.append(pic, label, html('span', 'gp-chev', ICON.chevron)); list.append(b); return {b, pic, now}; };
   const roomBtn = opener('Miljö', 'room'), dealerBtn = opener('Dealer', 'face'), musicBtn = opener('Musik', 'eq'); musicBtn.pic.innerHTML = EQ;
   const tablePanel = el('section', 'gp-panel gp-table'), musicPanel = el('section', 'gp-panel gp-music'); tablePanel.hidden = musicPanel.hidden = true;
   tablePanel.setAttribute('role', 'dialog'); tablePanel.setAttribute('aria-label', 'Miljö och dealer'); musicPanel.setAttribute('role', 'dialog'); musicPanel.setAttribute('aria-label', 'Musik och ljud');
@@ -106,11 +110,14 @@ export function mountPanel(bar: HTMLElement, rooms: RoomChoice[], dealers: Deale
   // ── open and close ──
   type Menu = 'room' | 'dealer' | 'music';
   const openers: Record<Menu, HTMLButtonElement> = {room: roomBtn.b, dealer: dealerBtn.b, music: musicBtn.b};
-  let open: Menu | null = null; const stage = bar.closest<HTMLElement>('#stage');
+  let open: Menu | null = null, listed = false; const stage = bar.closest<HTMLElement>('#stage');
   // The buttons say which menu is open; Miljö and Dealer share a panel, so the open tab decides which of the two is marked.
-  function mark() { const shown: Menu | null = open === null ? null : open === 'music' ? 'music' : roomPage.hidden ? 'dealer' : 'room'; for (const key of Object.keys(openers) as Menu[]) openers[key].setAttribute('aria-expanded', String(key === shown)); }
+  function mark() { const shown: Menu | null = open === null ? null : open === 'music' ? 'music' : roomPage.hidden ? 'dealer' : 'room'; for (const key of Object.keys(openers) as Menu[]) openers[key].setAttribute('aria-expanded', String(key === shown));
+    menu.classList.toggle('listing', listed); more.setAttribute('aria-expanded', String(listed || open !== null)); }
+  // The phone's list: the small button opens it, or closes whatever of the menus is open; choosing from it closes it.
+  function listing(shown: boolean) { listed = shown; stage?.classList.toggle('menu-open', shown || open !== null); mark(); if (shown) on.open?.(); }
   function show(which: Menu | null) {
-    open = which; tablePanel.hidden = which !== 'room' && which !== 'dealer'; musicPanel.hidden = which !== 'music';
+    open = which; listed = false; tablePanel.hidden = which !== 'room' && which !== 'dealer'; musicPanel.hidden = which !== 'music';
     if (which === 'room' || which === 'dealer') tab(which);
     const panel = which === 'music' ? musicPanel : which ? tablePanel : null;
     // The panel stands over its button, is moved in where it would otherwise leave the console, and is no taller than the
@@ -121,8 +128,9 @@ export function mountPanel(bar: HTMLElement, rooms: RoomChoice[], dealers: Deale
     mark(); if (which) on.open?.();
   }
   for (const key of Object.keys(openers) as Menu[]) openers[key].addEventListener('click', () => show(openers[key].getAttribute('aria-expanded') === 'true' ? null : key));
-  document.addEventListener('pointerdown', event => { const at = event.target as Node; if (open && !menu.contains(at) && !panels.contains(at)) show(null); });
-  document.addEventListener('keydown', event => { if (event.key === 'Escape' && open) { const from = openers[open]; show(null); from.focus(); } });
+  more.addEventListener('click', () => { if (listed || open) show(null); else listing(true); });
+  document.addEventListener('pointerdown', event => { const at = event.target as Node; if ((open || listed) && !menu.contains(at) && !panels.contains(at)) show(null); });
+  document.addEventListener('keydown', event => { if (event.key === 'Escape' && (open || listed)) { const from = open && more.offsetParent === null ? openers[open] : more; show(null); from.focus(); } });
 
   function paint() {
     const room = rooms.find(r => r.id === state.room), dealer = dealers.find(d => d.id === state.dealer), locked = !state.canChange || state.changing;

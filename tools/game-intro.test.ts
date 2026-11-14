@@ -52,8 +52,21 @@ test('where the film lies: at the game\'s own scale and middle, covering where i
   const four = introLayout(1440, 1080); // 4:3: the game keeps the frame's width; the film is wider than the stage and not as high
   assert.equal(four.covers, false); near(four.film.width, 1440 * 1920 / 1080 * 1174 / 1764, '4:3 width'); near(four.film.y + four.film.height / 2, 540, '4:3 middle');
   const phone = introLayout(390, 844); // standing: the whole film on black, growing toward the game's far larger picture of her
-  assert.equal(phone.tall, true); near(phone.film.width, 390, 'standing: whole film'); assert.ok(phone.end.width > 2.5 * phone.film.width, 'and the game shows her far larger');
+  assert.equal(phone.tall, true); near(phone.film.width, 390, 'standing: whole film'); assert.ok(phone.end.width > 2 * phone.film.width, 'and the game shows her far larger');
   for (const l of [at, ten, wide, four]) assert.deepEqual(l.film, l.end, 'lying: where the film lies is where the game has her');
+});
+
+test('on a phone the film lies in the picture the console leaves, framed as the stage\'s shape says', () => {
+  const near = (a: number, b: number, what: string) => assert.ok(Math.abs(a - b) < 0.01, `${what}: ${a} against ${b}`);
+  // standing 370 x 660, the console's 150 px under the picture: a 370 x 510 picture, itself narrower than 0.8
+  const standing = introLayout(370, 510, true);
+  assert.deepEqual(standing, introLayout(370, 510)); near(standing.film.width, 370, 'whole film'); near(standing.film.y + standing.film.height / 2, 255, 'in the picture\'s middle');
+  // a stage a little narrower than 0.8 leaves a picture that is not: the game keeps its tall framing there, and the film follows the game
+  assert.equal(introLayout(400, 370).tall, false); assert.equal(introLayout(400, 370, true).tall, true);
+  assert.deepEqual(introLayout(1920, 1080, false), introLayout(1920, 1080), 'lying as before');
+  // lying 660 x 370, the console's 172 px at the right: a 488 x 370 picture, narrower than the film frame, so the game keeps its width
+  const side = introLayout(488, 370);
+  assert.equal(side.tall, false); assert.deepEqual(side.film, side.end); near(side.film.x + side.film.width / 2, 244, 'centred across'); near(side.film.width, 488 * 1920 / 1080 * 1174 / 1764, 'width');
 });
 
 // ── the page, on a stand-in for the DOM ──
@@ -81,9 +94,9 @@ class Doc extends El { made: El[] = []; constructor() { super('#document', null 
 const observers: {observed: number; disconnected: boolean}[] = [];
 (globalThis as Record<string, unknown>).ResizeObserver = class { o = {observed: 0, disconnected: false}; constructor() { observers.push(this.o); } observe() { this.o.observed++; } disconnect() { this.o.disconnected = true; } };
 const tick = (ms = 0) => new Promise(r => setTimeout(r, ms));
-function setup(answer: 'ok' | 'fail' = 'ok', more: Partial<IntroOptions> = {}, size: {width: number; height: number} | null = null) {
+function setup(answer: 'ok' | 'fail' = 'ok', more: Partial<IntroOptions> = {}, size: {width: number; height: number} | null = null, picture: {width: number; height: number; left: number; top: number} | null = null) {
   const doc = new Doc(), stage = doc.createElement('div'), canvas = doc.createElement('canvas'); stage.append(canvas); doc.made.length = 0;
-  if (size) stage.getBoundingClientRect = () => ({...size, left: 0, top: 0});
+  if (size) { stage.getBoundingClientRect = () => ({...size, left: 0, top: 0}); canvas.getBoundingClientRect = () => picture ?? {...size, left: 0, top: 0}; }
   const intro = createIntro(stage as unknown as HTMLElement, canvas as unknown as HTMLCanvasElement, {film: 'film.mp4', poster: 'poster.jpg', fade: {lying: 0.02, tall: 0.02}, ...more});
   const root = stage.children.find(c => c !== canvas)!, video = doc.made.find(e => e instanceof Video) as Video, buttons = doc.made.filter(e => e.tag === 'button');
   video.playAnswer = answer;
@@ -153,6 +166,21 @@ test('the page: the start picture is shown only once it has arrived; the lead co
 
   // a page without a lead hook gets the same early composing
   const bare = setup(); bare.play.fire('click'); bare.video.currentTime = 45.8; bare.video.fire('timeupdate'); assert.equal(bare.root.style.opacity, '0.999'); bare.video.fire('ended'); await end(bare);
+});
+
+test('the page on a phone: the film lies where the game\'s canvas is, standing above the console and lying beside it', async () => {
+  const box = (el: El) => ['left', 'top', 'width', 'height'].map(k => Number(el.style[k].replace('px', '')));
+  const near = (a: number[], b: number[], what: string) => assert.ok(a.every((v, i) => Math.abs(v - b[i]) < 0.01), `${what}: ${a} against ${b}`);
+  const standing = setup('ok', {}, {width: 370, height: 660}, {width: 370, height: 510, left: 0, top: 0}), tall = introLayout(370, 510, true);
+  near(box(standing.video), [tall.film.x, tall.film.y, tall.film.width, tall.film.height], 'standing: the whole film in the picture above the console');
+  standing.play.fire('click'); standing.video.fire('ended');
+  const s = tall.end.width / tall.film.width;
+  assert.equal(standing.video.style.transform, `translate(${tall.end.x - tall.film.x}px,${tall.end.y - tall.film.y}px) scale(${s})`, 'and it grows to where the game has her in that picture');
+  standing.root.fire('transitionend', {propertyName: 'opacity'}); await standing.intro; assertGone(standing);
+  // lying on a phone; the picture moved off the stage's corner shows that the film follows the canvas, not the stage
+  const lying = setup('ok', {}, {width: 660, height: 370}, {width: 488, height: 370, left: 6, top: 0}), side = introLayout(488, 370);
+  near(box(lying.video), [side.film.x + 6, side.film.y, side.film.width, side.film.height], 'lying: where the game has her in the picture beside the console');
+  lying.skip.fire('click'); lying.root.fire('transitionend', {propertyName: 'opacity'}); await lying.intro; assertGone(lying);
 });
 
 test('the page, standing: the film grows first and dissolves into the game only when it has arrived; lying it only fades', async () => {

@@ -25,6 +25,9 @@ const ACTION_LABEL: Record<Action, string> = {hit: 'Kort', stand: 'Stanna', doub
 const RESULT_LABEL: Record<Outcome, string> = {blackjack: 'Blackjack', win: 'Vinst', push: 'Lika', lose: 'Förlust'};
 const money = (n: number) => n.toLocaleString('sv-SE', {maximumFractionDigits: 1});
 const el = <K extends keyof HTMLElementTagNameMap>(tag: K, className = '', text = ''): HTMLElementTagNameMap[K] => { const n = document.createElement(tag); if (className) n.className = className; if (text) n.textContent = text; return n; };
+// The small buttons' signs: on a phone (game.css) the sign stands in place of the word, which stays the button's name.
+const svg = (body: string) => `<svg class="go-ico" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${body}</svg>`;
+const SIGN = {undo: svg('<path d="M9 14L4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/>'), clear: svg('<path d="M6 6l12 12M18 6L6 18"/>'), rebet: svg('<path d="M20 11a8 8 0 0 0-14.3-4.9L4 8"/><path d="M4 3v5h5"/><path d="M4 13a8 8 0 0 0 14.3 4.9L20 16"/><path d="M20 21v-5h-5"/>')};
 const chipFace = (value: number) => { const c = el('span', 'go-chip'); c.dataset.v = String(value); c.append(el('span', '', value >= 1000 ? `${value / 1000}k` : String(value))); return c; };
 /** The fewest chips that make an amount, largest first; what cannot be made with the values is left out. */
 export function chipsFor(amount: number, values: number[]): number[] {
@@ -43,17 +46,21 @@ export function mountOverlay(host: HTMLElement, on: Handlers) {
   const wallet = el('dl', 'go-wallet'), balance = el('dd'), staked = el('dd');
   wallet.append(el('dt', '', 'Saldo'), balance, el('dt', '', 'Insats'), staked);
   const group = (...kids: Node[]) => { const g = el('div', 'go-group'); g.append(...kids); return g; };
-  const button = (text: string, className: string, click: () => void) => { const b = el('button', `go-btn ${className}`, text); b.type = 'button'; b.addEventListener('click', click); return b; };
+  const button = (text: string, className: string, click: () => void, sign = '') => { const b = el('button', `go-btn ${className}`, sign ? '' : text); b.type = 'button'; b.addEventListener('click', click);
+    if (sign) { b.innerHTML = sign; b.append(el('span', 'go-txt', text)); b.setAttribute('aria-label', text); } return b; };
   const rail = group(); rail.classList.add('go-rail');
-  const undo = button('Ångra', 'small', () => on.undo()), clear = button('Rensa', 'small', () => on.clear()), rebet = button('Samma igen', 'small', () => on.rebet()), deal = button('Dela ut', 'primary', () => on.deal());
-  const betting = group(rail, undo, clear, rebet, deal);
+  const undo = button('Ångra', 'small undo', () => on.undo(), SIGN.undo), clear = button('Rensa', 'small clear', () => on.clear(), SIGN.clear), rebet = button('Samma igen', 'small rebet', () => on.rebet(), SIGN.rebet), deal = button('Dela ut', 'primary deal', () => on.deal());
+  // Ångra and Rensa can be used only while chips lie in the rings, Samma igen only while none do: on a phone the three share one place.
+  const tools = el('div', 'go-tools'); tools.append(undo, clear, rebet);
+  const betting = group(rail, tools, deal);
   const acts = Object.fromEntries((['hit', 'stand', 'double', 'split'] as Action[]).map(a => [a, button(ACTION_LABEL[a], a === 'hit' ? 'act primary' : 'act', () => on.act(a))])) as Record<Action, HTMLButtonElement>;
   // The decision: whose turn (the seat's number in a ring) and the hand against the dealer's card, before the actions.
   const decide = el('div', 'go-decide'), seatNo = el('span', 'go-seat'), versus = el('div', 'go-versus'), versusText = el('span');
   versus.append(el('small', '', 'Din hand mot dealern'), versusText); decide.append(seatNo, versus);
   const playing = group(decide, acts.hit, acts.stand, acts.double, acts.split);
   const insuring = group(el('span', 'go-note', 'Försäkring mot blackjack?'), button('Ja', 'act', () => on.insurance(true)), button('Nej', 'act primary', () => on.insurance(false)));
-  const settled = group(button('Ny runda', 'primary', () => on.next()));
+  insuring.classList.add('go-insure');
+  const settled = group(button('Ny runda', 'primary next', () => on.next()));
   const waiting = group(el('span', 'go-note'));
   bar.append(wallet, betting, playing, insuring, settled, waiting);
 

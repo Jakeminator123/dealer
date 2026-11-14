@@ -6,6 +6,8 @@ html,body{height:100%;margin:0;background:#060706;color:var(--go-ink);font:14px/
 #app{position:relative;height:100%;display:grid;place-items:center;overflow:hidden}
 #stage{position:relative;width:100%;height:100%;display:grid;place-items:center;min-width:0;min-height:0}
 #view{display:block;touch-action:none}
+/* the picture box the scene fills (src/game-page.ts): the whole stage, except on a phone, where the console has its own strip (below) */
+#picture{position:absolute;inset:0;display:grid;place-items:center;min-width:0;min-height:0}
 #fail{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);max-width:520px;padding:14px 18px;border:1px solid var(--go-lose);border-radius:12px;background:var(--go-glass);color:var(--go-ink)}
 #fail:empty{display:none}
 
@@ -30,7 +32,6 @@ html,body{height:100%;margin:0;background:#060706;color:var(--go-ink);font:14px/
 .gc-form input{flex:1;min-width:0;padding:.5em .8em;border-radius:999px;border:1px solid var(--go-line);background:rgba(0,0,0,.35);color:var(--go-ink);font:inherit}
 .gc-form input:focus{outline:none;border-color:var(--go-gold)}
 .gc-form button{padding:.5em 1em;border-radius:999px;border:0;background:var(--go-gold);color:var(--go-gold-ink);font-weight:600}
-#stage.tall .gc{bottom:calc(2% + 5.2em);font-size:13px} /* standing: above the bar */
 .go{position:absolute;pointer-events:none;container-type:size;font-size:clamp(11px,1.25cqw,17px);user-select:none;-webkit-user-select:none;font-variant-numeric:tabular-nums}
 .go button{font:inherit;color:inherit;pointer-events:auto;cursor:pointer;border:0;background:none;padding:0;-webkit-tap-highlight-color:transparent}
 .go button:disabled{cursor:default}
@@ -142,6 +143,9 @@ html,body{height:100%;margin:0;background:#060706;color:var(--go-ink);font:14px/
   font:700 16px/1 system-ui,'Segoe UI',sans-serif;letter-spacing:.1em;text-transform:uppercase;box-shadow:0 8px 22px -8px var(--tc-glow),inset 0 1px 0 rgba(255,255,255,.4),inset 0 -1px 0 rgba(0,0,0,.18)}
 .go-btn.primary:hover:not(:disabled){background:var(--tc-accent)}
 .go-btn.primary:disabled{background:var(--tc-accent-soft);color:var(--tc-muted);box-shadow:none;opacity:1}
+/* a small button's sign is for a phone (below); on a larger screen the word, and the three small buttons each keep their own place */
+.go-ico{display:none}
+.go-tools{display:contents}
 /* the decision: the seat's number in a ring, the hand against the dealer's card, then the actions. Each action keeps its place; one that is not allowed leaves it empty. */
 .go-decide{flex:none;display:flex;align-items:center;gap:12px;margin-right:auto}
 .go-seat{display:grid;place-items:center;width:44px;height:44px;border-radius:50%;border:2px solid var(--tc-accent);color:var(--tc-accent);font:700 17px/1 system-ui,'Segoe UI',sans-serif;box-shadow:0 0 0 4px var(--tc-accent-soft)}
@@ -156,17 +160,6 @@ html,body{height:100%;margin:0;background:#060706;color:var(--go-ink);font:14px/
 .go-note + .go-btn{margin-left:0}
 /* the chat's button stands clear of the console */
 .gc{bottom:92px}
-/* standing (a phone): a sheet of rows: wallet and the small buttons, the chips, then the filled control across the width */
-#stage.tall .go{font-size:clamp(13px,2.35cqw,22px)}
-#stage.tall .go-bar{padding:10px 12px calc(10px + env(safe-area-inset-bottom,0px));gap:8px 10px}
-#stage.tall .go-group{flex:1 1 100%;flex-wrap:wrap;justify-content:space-between}
-#stage.tall .go-wallet{flex:1 1 100%}
-#stage.tall .go-rail{flex:1 1 100%;justify-content:space-between;order:-1}
-#stage.tall .go-btn.primary{flex:1 1 100%;margin-left:0}
-#stage.tall .go-btn.act{flex:1;min-width:0}
-#stage.tall .go-btn.act.primary{flex:1}
-#stage.tall .go-decide{flex:1 1 100%}
-#stage.tall .gc{bottom:calc(100% - 7.5em);font-size:13px}
 @media (prefers-reduced-motion:reduce){.go-stack .go-chip,.go-result{animation:none}.go-rail .go-chip,.go-btn{transition:none}}
 @container (max-width:900px){.go-btn.small{padding:0 10px;font-size:12px}.go-rail .go-chip{width:38px;font-size:16px}.go-btn.primary{padding:0 16px;font-size:14px}}
 
@@ -190,6 +183,9 @@ button.gp-open:focus-visible,.gp-panel button:focus-visible,.gp-level input:focu
 button.gp-open[aria-expanded=true] .gp-label b{color:var(--tc-accent)}
 .gp-chev{display:grid;color:var(--tc-muted);transition:transform .2s}
 button.gp-open[aria-expanded=true] .gp-chev{transform:rotate(180deg);color:var(--tc-accent)}
+/* the phone's one button for the three menus and the list it opens (below); on a larger screen the three stand in the console */
+.gp-more{display:none}
+.gp-list{display:contents}
 
 .gp-panels{position:absolute;left:0;right:0;bottom:100%;height:0;pointer-events:none}
 .gp-panel{position:absolute;bottom:14px;width:min(560px,calc(100vw - 24px));max-height:min(80vh,680px);overflow:auto;box-sizing:border-box;padding:14px 16px 16px;border-radius:20px;border:1px solid var(--tc-line-strong);color:var(--tc-text);pointer-events:auto;
@@ -283,15 +279,96 @@ button.gp-toggle[aria-checked=true] i::after{transform:translateX(18px);backgrou
 
 /* an open menu has the corner the chat's button stands in */
 #stage.menu-open .gc{visibility:hidden}
-#stage.tall .gp-menu{flex:1 1 100%;order:-3;border-right:0;padding-right:0}
-#stage.tall button.gp-open{flex:1 1 0;min-width:0;height:46px;gap:8px;padding:0 8px 0 5px}
-#stage.tall .gp-pic{width:34px;height:34px}
-#stage.tall .gp-pic.room{width:42px}
-#stage.tall .gp-chev{display:none}
-#stage.tall .gp-label b{max-width:100%}
-#stage.tall .gp-panel{left:12px !important;right:12px;width:auto}
-#stage.tall .gp-rooms{grid-template-columns:repeat(2,1fr)}
-#stage.tall .gp-steps{flex-direction:column}
 @container (max-width:1180px){.gp-chev{display:none}button.gp-open{padding-right:12px}}
-@container (max-width:1040px){#stage:not(.tall) .gp-label{display:none}#stage:not(.tall) button.gp-open{padding:0 7px}}
+@container (max-width:1040px){#stage:not(.tall):not(.side) .gp-label{display:none}#stage:not(.tall):not(.side) button.gp-open{padding:0 7px}}
 @media (prefers-reduced-motion:reduce){.gp-panel,.gp-page,button.gp-change.busy::after,.gp-pic.eq i{animation:none !important}.gp-thumb,button.gp-toggle i,button.gp-toggle i::after,.gp-chev,.gp-mark{transition:none}}
+
+/* ── on a phone: the console has a strip of its own and covers nothing of the table ──
+   src/game-page.ts marks the stage: tall when it stands (narrower than 0.8 of its height), side when it lies and is lower than
+   540 px. Standing, the console is a strip under the picture: the status line, then the menu button and the chips, then the
+   wallet, the small buttons and the filled control. Lying, it is a column at the picture's right. The picture box (#picture) is
+   what the strip leaves, the scene frames her and the rings in it, and the overlay (.go) lies over the picture only, so the strip
+   hangs from its edge. Each phase keeps the strip's size, so the picture never moves when the round goes on. */
+#stage.tall{--console:calc(150px + env(safe-area-inset-bottom,0px))}
+#stage.side{--console:calc(172px + env(safe-area-inset-right,0px))}
+#stage.tall #picture{bottom:var(--console)}
+#stage.side #picture{right:var(--console)}
+#stage.tall .go{font-size:clamp(13px,2.35cqw,22px)}
+#stage:is(.tall,.side) .go-bar{display:flex;flex-wrap:wrap;align-content:flex-start;align-items:center;gap:8px;min-height:0;box-shadow:inset 0 1px 0 rgba(255,255,255,.06)}
+#stage.tall .go-bar{top:100%;bottom:auto;height:var(--console);padding:42px 10px calc(8px + env(safe-area-inset-bottom,0px))}
+#stage.side .go-bar{left:100%;right:auto;top:0;bottom:0;width:var(--console);padding:10px calc(10px + env(safe-area-inset-right,0px)) 10px 10px;border-top:0;border-left:1px solid var(--tc-line-strong)}
+#stage.side .go-bar::before{left:-1px;right:auto;top:0;bottom:0;width:2px;height:auto;background:linear-gradient(180deg,transparent 6%,var(--tc-accent) 50%,transparent 94%)}
+#stage:is(.tall,.side) .go-group:not(.go-rail):not([hidden]){display:contents}
+#stage:is(.tall,.side) .go-btn{margin-left:0}
+
+/* the status line: standing, the strip's first line; lying, a small plate in the picture's upper left corner, beside her head */
+#stage.tall .go-status{top:100%;left:0;right:0;z-index:1;padding:9px 12px 0;border:0;border-radius:0;background:none;backdrop-filter:none;-webkit-backdrop-filter:none;
+  font-size:11.5px;line-height:1.3;white-space:normal;text-align:center;color:var(--tc-muted);display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;pointer-events:none}
+#stage.side .go-status{left:8px;top:8px;max-width:min(36%,240px);padding:.4em .75em;border-radius:12px;font-size:11px;line-height:1.3;white-space:normal}
+/* the chat's button in a corner of the picture where neither her head nor a ring is, its list opening downward */
+#stage.tall .gc{left:10px;top:10px;bottom:auto;flex-direction:column-reverse;font-size:13px}
+#stage.side .gc{left:auto;right:calc(var(--console) + 8px);top:8px;bottom:auto;flex-direction:column-reverse;align-items:flex-end;font-size:12px}
+#stage:is(.tall,.side) .gc-toggle{min-height:44px}
+/* a ring answers a finger a little beyond its print, at least 44 px across */
+#stage:is(.tall,.side) .go-ring::before{content:'';position:absolute;left:50%;top:50%;width:max(100%,44px);height:max(100%,44px);transform:translate(-50%,-50%);border-radius:50%}
+
+/* the menu button, and the list of the three menus it opens over the picture */
+#stage:is(.tall,.side) .gp-menu{order:0;position:static;flex:none;padding-right:0;border-right:0}
+#stage:is(.tall,.side) .gp-more{display:grid;place-items:center;width:44px;height:44px;border-radius:12px;border:1px solid var(--tc-line-strong);background:linear-gradient(180deg,rgba(255,255,255,.07),rgba(255,255,255,.02));color:var(--tc-text);cursor:pointer;-webkit-tap-highlight-color:transparent}
+#stage:is(.tall,.side) .gp-more[aria-expanded=true]{border-color:var(--tc-accent);color:var(--tc-accent);background:var(--tc-accent-soft)}
+#stage:is(.tall,.side) .gp-more:focus-visible{outline:2px solid var(--tc-accent);outline-offset:2px}
+#stage:is(.tall,.side) .gp-list{display:none;position:absolute;z-index:3;flex-direction:column;gap:6px;width:min(250px,calc(100vw - 20px));padding:8px;border-radius:16px;border:1px solid var(--tc-line-strong);
+  background:var(--tc-texture),linear-gradient(180deg,var(--tc-surface-1),var(--tc-surface-2));box-shadow:0 18px 50px rgba(0,0,0,.6);animation:gp-rise .2s cubic-bezier(.2,.8,.2,1)}
+#stage.tall .gp-list{left:10px;bottom:calc(100% + 8px)}
+#stage.side .gp-list{right:calc(100% + 8px);top:10px}
+#stage:is(.tall,.side) .gp-menu.listing .gp-list{display:flex}
+#stage:is(.tall,.side) button.gp-open{width:100%;height:52px;gap:10px;padding:0 10px 0 7px}
+#stage:is(.tall,.side) .gp-pic{width:38px;height:38px}
+#stage:is(.tall,.side) .gp-pic.room{width:50px}
+#stage:is(.tall,.side) .gp-chev{display:none}
+#stage:is(.tall,.side) .gp-label b{max-width:150px}
+#stage.tall .gp-panel{left:12px !important;right:12px;width:auto}
+#stage.side .gp-panels{left:auto;right:100%;top:0;bottom:0;height:auto}
+#stage.side .gp-panel{left:auto !important;right:8px;top:8px;bottom:auto;width:min(520px,calc(100vw - var(--console) - 16px));max-height:calc(100% - 16px) !important}
+#stage:is(.tall,.side) .gp-rooms{grid-template-columns:repeat(2,1fr)}
+#stage:is(.tall,.side) .gp-steps{flex-direction:column}
+
+/* the chips: each 44 px for the finger, the rack along the row (standing) or three to a row (lying) */
+#stage:is(.tall,.side) .go-rail{gap:2px;padding:2px 6px}
+#stage:is(.tall,.side) .go-rail button{display:grid;place-items:center;width:44px;height:44px}
+#stage:is(.tall,.side) .go-rail .go-chip{width:40px;font-size:17px}
+#stage:is(.tall,.side) .go-rail button[aria-pressed=true] .go-chip{transform:translateY(-3px) scale(1.06)}
+#stage.tall .go-rail{order:1;flex:1 1 calc(100% - 52px);justify-content:space-between}
+#stage.side .go-rail{order:2;flex:1 1 100%;flex-wrap:wrap;justify-content:center;gap:4px;padding:3px;border-radius:16px}
+/* the wallet: two small figures */
+#stage:is(.tall,.side) .go-wallet{order:2;flex:none;column-gap:10px;row-gap:3px}
+#stage.side .go-wallet{order:1;flex:1;column-gap:8px}
+#stage:is(.tall,.side) .go-wallet dt{font-size:8.5px}
+#stage:is(.tall,.side) .go-wallet dd{font-size:14px}
+#stage.side .go-wallet dd{font-size:13px}
+#stage:is(.tall,.side) .go-wallet dt:nth-of-type(n+2),#stage:is(.tall,.side) .go-wallet dd:nth-of-type(n+2){padding-left:10px}
+/* Ångra and Rensa as signs, Samma igen in the same place; a button that cannot be used is not shown, and nothing moves */
+#stage:is(.tall,.side) .go-tools{order:3;flex:none;display:grid;grid-template-columns:44px 44px;column-gap:6px}
+#stage:is(.tall,.side) .go-tools .go-btn{width:100%;height:44px;padding:0;border-radius:12px;grid-row:1}
+#stage:is(.tall,.side) .go-btn.undo{grid-column:1}
+#stage:is(.tall,.side) .go-btn.clear{grid-column:2}
+#stage:is(.tall,.side) .go-tools .go-btn:disabled{visibility:hidden}
+#stage:is(.tall,.side) .go-tools .go-ico{display:block}
+#stage:is(.tall,.side) .go-btn.undo .go-txt,#stage:is(.tall,.side) .go-btn.clear .go-txt{display:none}
+#stage:is(.tall,.side) .go-btn.rebet{grid-column:1/3;gap:5px;font-size:11.5px;padding:0 6px}
+/* the filled control: as wide as the row leaves it */
+#stage:is(.tall,.side) .go-btn.deal{order:4;flex:1 1 auto;min-width:84px;height:44px;padding:0 10px;font-size:14px;letter-spacing:.08em}
+#stage.side .go-btn.deal{flex-basis:100%;height:46px}
+#stage:is(.tall,.side) .go-btn.next{order:4;flex:1 1 100%;height:48px;font-size:15px}
+/* the decision: whose turn and the hand against the dealer's, then the four actions, each in its place */
+#stage:is(.tall,.side) .go-decide{order:1;flex:1 1 40%;min-width:0;gap:8px;margin-right:0}
+#stage.side .go-decide{order:2;flex-basis:100%}
+#stage:is(.tall,.side) .go-seat{width:36px;height:36px;font-size:15px;box-shadow:0 0 0 3px var(--tc-accent-soft)}
+#stage:is(.tall,.side) .go-versus{min-width:0}
+#stage:is(.tall,.side) .go-versus small{font-size:8.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#stage:is(.tall,.side) .go-versus span{font-size:14px;white-space:nowrap}
+#stage:is(.tall,.side) .go-btn.act{order:3;min-width:0;height:48px;padding:0 4px;font-size:14px;border-radius:12px}
+#stage.tall .go-btn.act{flex:1 1 calc(25% - 6.01px)}
+#stage.tall .go-insure .go-btn.act,#stage.side .go-btn.act{flex:1 1 calc(50% - 4.01px);height:44px}
+#stage:is(.tall,.side) .go-note{order:1;flex:1 1 40%;min-width:0;margin-left:0;white-space:normal;font-size:12px;line-height:1.3}
+#stage.side .go-note{order:2;flex-basis:100%}

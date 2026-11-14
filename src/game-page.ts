@@ -25,10 +25,24 @@ import type {Snapshot} from '../game/session.ts';
 import type {MouthPatch, PatchRegister} from './speech-patch.ts';
 
 const THEMES = ['noir', 'scout', 'smaragd', 'bordeaux', 'midnatt']; // the console's themes, Scout's own (game.css)
-const $ = (id: string) => document.getElementById(id)!, stage = $('stage'), canvas = $('view') as HTMLCanvasElement, failBox = $('fail');
+const $ = (id: string) => document.getElementById(id)!, stage = $('stage'), picture = $('picture'), canvas = $('view') as HTMLCanvasElement, failBox = $('fail');
 const fail = (message: string): never => { failBox.textContent = message; throw Error(message); };
 const read = async (url: string, what: string) => { const res = await fetch(url).catch(() => null); if (!res?.ok) fail(`${what} kunde inte läsas (${url}).`); return res!.json(); };
 const query = new URLSearchParams(location.search);
+// Two framings, both by turning and zooming from the film camera's own place (exact for a flat film). Lying: the whole table
+// with all seven rings. Standing (a stage narrower than tallBelow): the film's width is locked to the picture's, the view is
+// zoomed in on seats 2–6, each ring whole inside the picture's width, her head and those rings inside a picture as short as
+// 1.33 times its width, and it turns toward the seat in play. Where the console stands follows the stage's shape (placeConsole
+// marks the stage, game.css lays it out): standing, under the picture; lying on a stage lower than sideBelow (a phone on its
+// side), at the picture's right; else over the picture's lower edge. The film before the game (src/game-intro.ts) ends in these framings; tools/game-intro.test.ts holds
+// the two to each other.
+const FRAMING = {wide: {pitch: -8, zoom: 0.84}, tall: {pitch: -4.4, zoom: 1.55}, tallBelow: 0.8, sideBelow: 540, turnShare: 0.6, turnLimit: 40};
+function placeConsole() {
+  const box = stage.getBoundingClientRect(), standing = box.width / Math.max(1, box.height) < FRAMING.tallBelow;
+  stage.classList.toggle('tall', standing); stage.classList.toggle('side', !standing && box.height < FRAMING.sideBelow); // the picture box follows at once (game.css)
+  return standing;
+}
+placeConsole(); // before the film before the game is laid, so that it is laid in the picture the game will have
 // A film before the game (src/game-intro.ts): ?intro=noir-3 lays the short noir trailer over the stage, with Spela and Hoppa över,
 // and fades into the game when it ends (Jakob 2026-11-13: "så att man övergår till henne i URL:en på vercel. kanske genom en ny
 // knapp"). It is laid before anything is read, so that it covers the first picture, and the game is built under it. The film's last
@@ -88,18 +102,17 @@ const restTakes = () => film.graph.edge['IDLE>IDLE']?.takes ?? [];
 const spokenOf = (keyOrPhase: string): Spoken | null => talking && lines ? lines.spokenFilm(restTakes(), dealer, keyOrPhase, VOICE) : null;
 
 // ── the picture: the 3D scene, seen a little from above so that all seven bet rings and the bar have room ──
-const scene = createScene(canvas, stage, {contract, plan, urls: {plate: 'assets/scene/room.png', panorama: 'assets/scene/panorama-vegas.jpg', la: 'assets/scene/panorama-la.jpg', skog: 'assets/scene/panorama-skog.jpg'}, rooms: sceneRooms, onChange: () => {}, onMissingRoom: () => {}});
-// Two framings, both by turning and zooming from the film camera's own place (exact for a flat film). Lying: the whole table
-// with all seven rings. Standing (a phone): the film's width is locked to the screen's, so the view is zoomed in on seats 3–5
-// and turns toward the seat in play.
-const FRAMING = {wide: {pitch: -8, zoom: 0.84}, tall: {pitch: -10, zoom: 1.9}, tallBelow: 0.8, turnShare: 0.6, turnLimit: 40};
+// The scene fills the picture box (#picture). On a larger screen that is the whole stage and the console lies over its lower edge;
+// on a phone it is the part of the stage the console leaves free (frame, below), so that nothing of the console covers the table.
+const scene = createScene(canvas, picture, {contract, plan, urls: {plate: 'assets/scene/room.png', panorama: 'assets/scene/panorama-vegas.jpg', la: 'assets/scene/panorama-la.jpg', skog: 'assets/scene/panorama-skog.jpg'}, rooms: sceneRooms, onChange: () => {}, onMissingRoom: () => {}});
+// The framings (FRAMING) stand at the top, where the stage is told its shape before the film before the game is laid.
 // A look's pitch and zoom are its lying framing; its yaw, dy and dz are where the view comes to rest (all 0 in the game's own).
 const lying = {pitch: asked.pitch ?? FRAMING.wide.pitch, zoom: asked.zoom ?? FRAMING.wide.zoom}, home = {yaw: asked.yaw ?? 0, dy: asked.dy ?? 0, dz: asked.dz ?? 0};
 const fixed = query.has('pitch') || query.has('zoom');
 let tall = false, aimed = home.yaw; // aimed: the yaw the view is easing toward, degrees
 function frame() {
-  const box = stage.getBoundingClientRect(), now = box.width / Math.max(1, box.height) < FRAMING.tallBelow;
-  if (now !== tall || !framed) { tall = now; framed = true; stage.classList.toggle('tall', tall); if (!fixed) scene.set(tall ? FRAMING.tall : lying); if (!tall) { aimed = home.yaw; scene.set({yaw: home.yaw}); } }
+  const now = placeConsole(); // and the scene follows the picture box (scene.resize, below)
+  if (now !== tall || !framed) { tall = now; framed = true; if (!fixed) scene.set(tall ? FRAMING.tall : lying); if (!tall) { aimed = home.yaw; scene.set({yaw: home.yaw}); } }
   scene.resize();
 }
 let framed = false;

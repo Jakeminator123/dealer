@@ -8,13 +8,15 @@
 // covers the game, and again as the fade begins (onFade).
 //
 // Where the film lies. Its last frame is the game's own picture at 16:9 (the scene at FRAMING.wide in src/game-page.ts, pitch -8,
-// zoom 0.84). The game frames that picture differently on other stages: the scene keeps the film frame's height on a stage wider
-// than the film frame (1764 x 1174) and its width on a narrower one (viewFovDeg in src/scene3d-geometry.ts), always about the
-// stage's middle. So the film is laid at the scale the game will have her at (introLayout), centred: on a stage between 1.50 and
-// 16:9 that covers the stage; on a wider one it leaves black bars at the sides, on a narrower lying one thin bars above and below,
-// and in each case she sits where the game has her. Standing (the game's tall framing, width / height under 0.8, pitch -10,
-// zoom 1.9) the game shows her far larger than any whole film picture could, so the film is shown whole on black and, during a
-// longer fade, grows toward where the game has her before it dissolves into the game.
+// zoom 0.84). The game frames that picture differently on other pictures: the scene keeps the film frame's height on a picture
+// wider than the film frame (1764 x 1174) and its width on a narrower one (viewFovDeg in src/scene3d-geometry.ts), always about the
+// picture's middle. The picture is the game's canvas: the whole stage on a larger screen, the part the console leaves free on a
+// phone (above it standing, beside it lying; game.css). So the film is laid at the scale the game will have her at (introLayout),
+// centred in that picture: on a picture between 1.50 and 16:9 that covers it; on a wider one it leaves black bars at the sides, on
+// a narrower lying one thin bars above and below, and in each case she sits where the game has her. Standing (the game's tall
+// framing, the stage's width / height under 0.8, pitch -4.4, zoom 1.55) the game shows her far larger than any whole film picture
+// could, so the film is shown whole on black and, during a longer fade, grows toward where the game has her before it dissolves
+// into the game.
 //
 // The first part has no page in it (tools/game-intro.test.ts runs it under Node); createIntro is the page.
 
@@ -40,7 +42,7 @@ export function introNext(state: IntroState, signal: IntroSignal): IntroState {
 export const INTRO_FRAME = {width: 1764, height: 1174, focalPx: 886};
 // The film: 1920 x 1080, made at the game's lying framing. The game's framings (FRAMING in src/game-page.ts).
 export const INTRO_FILM = {width: 1920, height: 1080, zoom: 0.84, pitch: -8};
-export const INTRO_FRAMING = {lying: {zoom: 0.84, pitch: -8}, tall: {zoom: 1.9, pitch: -10}, tallBelow: 0.8};
+export const INTRO_FRAMING = {lying: {zoom: 0.84, pitch: -8}, tall: {zoom: 1.55, pitch: -4.4}, tallBelow: 0.8};
 // Two points of her in the film's last frame (film pixels, y down): her face and her hands on the tray. Standing, the film is moved
 // so that these two land where the game shows them.
 export const INTRO_MARKS = {x: 960, face: 150, hands: 630};
@@ -53,9 +55,12 @@ export function focalOf(w: number, h: number, zoom: number): number {
   const f = INTRO_FRAME, half = w / h >= f.width / f.height ? f.height / 2 / f.focalPx : f.width / 2 / f.focalPx / (w / h);
   return h / 2 * zoom / half;
 }
-/** Where the film lies on a stage of w x h (CSS pixels): during the film, and at the end of the fade (where the game has her). */
-export function introLayout(w: number, h: number): IntroLayout {
-  const F = INTRO_FILM, tall = w / Math.max(1, h) < INTRO_FRAMING.tallBelow, filmFocal = focalOf(F.width, F.height, F.zoom);
+/**
+ * Where the film lies in a picture of w x h (CSS pixels, from the picture's top left corner): during the film, and at the end of the
+ * fade (where the game has her). `tall`: the game's tall framing, which the stage's shape decides; without it, the picture's own.
+ */
+export function introLayout(w: number, h: number, tall = w / Math.max(1, h) < INTRO_FRAMING.tallBelow): IntroLayout {
+  const F = INTRO_FILM, filmFocal = focalOf(F.width, F.height, F.zoom);
   const framing = tall ? INTRO_FRAMING.tall : INTRO_FRAMING.lying, gameFocal = focalOf(w, h, framing.zoom), tilt = (F.pitch - framing.pitch) * RAD;
   // a film row as the game's camera shows it: the same place, looking `tilt` further down
   const row = (y: number) => h / 2 + gameFocal * Math.tan(Math.atan((y - F.height / 2) / filmFocal) - tilt);
@@ -96,8 +101,8 @@ const PRIMARY = `${BUTTON};border:0;background:linear-gradient(180deg,var(--tc-a
 const SECONDARY = `${BUTTON};border:1px solid var(--tc-line-strong,rgba(226,191,109,.32));background:var(--tc-plate,rgba(14,12,9,.88));color:var(--tc-text,#f6eedc)`;
 
 /**
- * Lays the intro over the stage and resolves when the game is seen. `canvas` is the game's picture under it (the intro only reads
- * the stage's size; the canvas is named so that the call says what the film fades into). Removes everything it made when it is done.
+ * Lays the intro over the stage and resolves when the game is seen. `canvas` is the game's picture under it: the film is laid where
+ * the canvas is and at the scale the game has her in it. Removes everything it made when it is done.
  */
 export function createIntro(stage: HTMLElement, canvas: HTMLCanvasElement, options: IntroOptions): Promise<{played: boolean}> {
   const fade = {...INTRO_DEFAULTS.fade, ...(options.fade ?? {})}, grow = options.grow ?? INTRO_DEFAULTS.grow;
@@ -119,8 +124,12 @@ export function createIntro(stage: HTMLElement, canvas: HTMLCanvasElement, optio
   let lastTime = -1, still0 = 0, posterGone = false, led = false, resolve: (value: {played: boolean}) => void = () => {};
   const done = new Promise<{played: boolean}>(r => { resolve = r; });
   const place = (el: HTMLElement, box: Box) => { el.style.left = `${box.x}px`; el.style.top = `${box.y}px`; el.style.width = `${box.width}px`; el.style.height = `${box.height}px`; };
-  const lay = () => { const r = stage.getBoundingClientRect(); layout = introLayout(r.width, r.height); if (state.phase !== 'fading') { place(video, layout.film); place(still, layout.film); } };
-  const resized = typeof ResizeObserver === 'function' ? new ResizeObserver(lay) : null; resized?.observe(stage); lay();
+  // The game's picture is the box its canvas fills (the canvas's parent, which the page lays out before the scene has sized the canvas);
+  // standing or lying is the stage's shape, as in the game.
+  const lay = () => { const r = stage.getBoundingClientRect(), p = (canvas.parentElement ?? canvas).getBoundingClientRect(), dx = p.left - r.left, dy = p.top - r.top;
+    const at = introLayout(p.width, p.height, r.width / Math.max(1, r.height) < INTRO_FRAMING.tallBelow), move = (b: Box) => ({...b, x: b.x + dx, y: b.y + dy});
+    layout = {...at, film: move(at.film), end: move(at.end)}; if (state.phase !== 'fading') { place(video, layout.film); place(still, layout.film); } };
+  const resized = typeof ResizeObserver === 'function' ? new ResizeObserver(lay) : null; resized?.observe(stage); resized?.observe(canvas.parentElement ?? canvas); lay();
   const key = (e: KeyboardEvent) => { if (e.key === 'Escape') { e.preventDefault(); send('skip'); } };
   doc.addEventListener('keydown', key, true);
   const clear = () => { if (timer !== null) clearTimeout(timer); if (watch !== null) clearInterval(watch); timer = watch = null; };
