@@ -200,9 +200,18 @@ Spelet med flera dealers (2026-11-13):
     om med att hantera överlägg, pålägg och underlägg med kort"), och en timme den kvällen var linjen filmens eget kort
     i handen och i skons fönster, med ritat kort först när det ligger (bärsättet `film`, `kort=liggande`). En oberoende
     granskare av två hela rundor i filmad fart gav sedan det ritade kortet i handen 3,5/5 och filmens eget 2,5/5 (gula
-    och blå rektanglar i varje giv, som blir spelkort på bordet), så det ritade kortet är det en besökare möter tills
-    omstartens pålägg är byggt och sett av Jakob: filmens eget kort omfärgat i filmens egna bildpunkter. Utredningen
-    och granskningen ligger på slaskdisken (HANDOFF, "Kända brister").
+    och blå rektanglar i varje giv, som blir spelkort på bordet), så det ritade kortet är det en besökare möter.
+    Omstarten byggdes sedan i tre steg (`src/scene3d-matte.ts`, `src/scene3d-deal.ts`): filmens eget kort omfärgat i
+    filmens egna bildpunkter, baksidan från gult till mörkt och framsidan från blått till papper ("pålägg", 3/5 när det
+    är kortet i hennes hand), och samma omfärgning **under det ritade kortet** ("underlägg"): det ritade kortet ligger
+    kvar överst, och bara det som nyckeln och matten lämnar av filmens kort bredvid det färgas om, så att inget gult
+    eller blått sticker fram. En granskare som inte visste vilken som var vilken gav en hel runda med underlägget
+    3,75/5 mot 3,5/5 utan, lika bra eller bättre vid alla 14 kort, och sedan 2026-11-14 är det förvalet under det
+    ritade kortet (`UNDER` i `src/card-overlay.ts`; Jakob samma dag: "Ang spelkorten så ser de inte skitbra ut heller
+    än så länge"). Under det ritade kortet lämnas skons fönster åt matten och hud orörd. Adressorden `cardBack=film`
+    och `cardFace=film` visar filmens färger bredvid det ritade kortet igen, och `cardBack=dark`, `cardFace=paper`
+    slår på omfärgningen också där filmens eget kort är kortet i handen (`cardWords` i `src/game-film.ts`). Utredningen
+    och granskningarna ligger på slaskdisken (HANDOFF, "Kända brister").
     `kort=liggande` finns kvar för hans eget öga. Där rörs filmens kort inte medan hon håller det, kortet i skons
     fönster lämnas som filmen har det i alla filmer, och det ritade kortet tonas fram under filmens när kortet lägger
     sig (`restFade`, `restShare` i `src/card-overlay.ts`): från första rutan där spårets kort ligger inom 2 px från sin
