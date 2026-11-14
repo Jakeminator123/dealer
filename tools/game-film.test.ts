@@ -186,7 +186,8 @@ test('a rest film that asks for an effect hands it to the scene with its part; a
 test('the film card recoloured (cardBack=dark, cardFace=paper) goes with every part only when the address asks for it', () => {
   const q = (s: string) => new URLSearchParams(s);
   assert.deepEqual(cardWords(q('')), {});
-  assert.deepEqual(cardWords(q('cardBack=film&cardFace=blue')), {}, 'only the trial words count');
+  assert.deepEqual(cardWords(q('cardBack=yellow&cardFace=blue')), {}, 'only the words count');
+  assert.deepEqual(cardWords(q('cardBack=film&cardFace=film')), {back: 'film', face: 'film'}, 'the film\'s colours beside the drawn card again');
   assert.deepEqual(cardWords(q('cardBack=dark')), {back: 'dark'});
   assert.deepEqual(cardWords(q('kort=liggande&cardBack=dark&cardFace=paper')), {back: 'dark', face: 'paper'});
   const layout = createLayout(defaultPlan()), table = {hands: [], dealer: []};

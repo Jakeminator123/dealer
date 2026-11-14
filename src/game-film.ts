@@ -66,8 +66,10 @@ export function placedCards(table: TableCards, records: CardRecord[], lying: num
 export type Carry = 'object' | 'film' | 'matte';
 // The film card's own colours recoloured in its pixels (src/scene3d-deal.ts backOf, faceOf: lab trials, "pålägg" and "underlägg"), as a
 // word in the address asks for them: cardBack=dark, cardFace=paper. Without a word the part says nothing and the card layer's line holds.
-export type CardWords = {back?: 'dark'; face?: 'paper'};
-export const cardWords = (q: {get(name: string): string | null}): CardWords => ({...(q.get('cardBack') === 'dark' ? {back: 'dark' as const} : {}), ...(q.get('cardFace') === 'paper' ? {face: 'paper' as const} : {})});
+export type CardWords = {back?: 'dark' | 'film'; face?: 'paper' | 'film'};
+const oneOf = <T extends string>(value: string | null, words: readonly T[]): T | null => words.includes(value as T) ? value as T : null;
+export const cardWords = (q: {get(name: string): string | null}): CardWords => { const back = oneOf(q.get('cardBack'), ['dark', 'film'] as const), face = oneOf(q.get('cardFace'), ['paper', 'film'] as const);
+  return {...(back ? {back} : {}), ...(face ? {face} : {})}; };
 /**
  * Whether the drawn cards are on, and how the card in her hand is shown, from who has a say (Jakob 2026-11-13 through the main
  * agent: a switch that turns itself on again when the frame reloads is what "bara går inte" sounds like). First a word in the

@@ -32,6 +32,12 @@ export const BACK: 'film' | 'dark' = 'film';
 // ... and its face: as filmed, blue ('film'), or plain paper in the film's own pixels ('paper': src/scene3d-matte.ts PAPER_FACE), the
 // restart's second step, a lab trial asked for by its word (scene3d-deal.ts faceOf).
 export const FACE: 'film' | 'paper' = 'film';
+// Beside the drawn card (carry 'object') the film's own card is recoloured where it shows: the back dark, the face paper ("underlägg",
+// the restart's third step). A reviewer who did not know which was which saw two whole rounds and gave this 3.75 of 5 against 3.5 with
+// the film's colours left, as clean or cleaner at all fourteen cards (2026-11-14), and Jakob wrote the same night that the cards still
+// did not look good. So it is what a visitor meets; BACK and FACE above stay the answer where the film's own card is the card in her
+// hand. cardBack=film and cardFace=film in the game's address show the film's colours beside the drawn card again.
+export const UNDER: {back: 'film' | 'dark'; face: 'film' | 'paper'} = {back: 'dark', face: 'paper'};
 export const RIM = 4; // the film's pale rim and its blur outside the tracked colour core, in pixels
 export const SCALE = {min: 1, max: 2.5, fallback: 2};
 export const MARGIN = 1.2; // the rendered card is this much larger than the film's card wherever it follows it

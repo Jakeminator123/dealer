@@ -16,7 +16,7 @@
 // no card object is drawn while a film shows its card; the passes that make the matte run here, on targets of the film's size.
 // The cards lying since earlier films are drawn as objects either way: a film lays one card, and later films do not show it.
 import * as T from 'three';
-import {poseAt, restOf, restFade, restShare, restingQuad, sceneOf, cardRecord, cardFace, overridesOf, cardInFront, plausible, skirtSound, firstDrawn, turnOf, BACK, CARRY, FACE, RIM, MARGIN, PLAUSIBLE, EASE, HOLD, type CardTrack, type CardRecord} from './card-overlay.ts';
+import {poseAt, restOf, restFade, restShare, restingQuad, sceneOf, cardRecord, cardFace, overridesOf, cardInFront, plausible, skirtSound, firstDrawn, turnOf, BACK, CARRY, FACE, UNDER, RIM, MARGIN, PLAUSIBLE, EASE, HOLD, type CardTrack, type CardRecord} from './card-overlay.ts';
 import {centre, clockwise, grown, signedArea, sound, type Pt} from './card-track.ts';
 import {FILM, edgeQuad, heldScale, solveCamera, squareToQuad, type FilmCamera} from './scene3d-geometry.ts';
 import {CARD_GLSL, type BackKey, type CardKey, type MatteKey} from './scene3d-film.ts';
@@ -140,8 +140,9 @@ type Extra = {shift?: Pt | null; land?: Pt[] | null; placed?: Placed[]; cards?: 
 // round as the game does.
 const carryOf = (extra: Extra): Carry => extra.carry ?? CARRY;
 // How the film's own back shows: a part's word (a recording), else the page's (a key), else the line (BACK: as filmed).
-const backOf = (choice: Choice, extra: Extra): 'film' | 'dark' => extra.back ?? choice.back ?? BACK;
-const faceOf = (choice: Choice, extra: Extra): 'film' | 'paper' => extra.face ?? choice.face ?? FACE;
+// the part's word, else the page's, else: under the drawn card the underlay (UNDER), with the film's own card in her hand as filmed
+const backOf = (choice: Choice, extra: Extra, carry: Carry): 'film' | 'dark' => extra.back ?? choice.back ?? (carry === 'object' ? UNDER.back : BACK);
+const faceOf = (choice: Choice, extra: Extra, carry: Carry): 'film' | 'paper' => extra.face ?? choice.face ?? (carry === 'object' ? UNDER.face : FACE);
 type FilmLayers = {shared: {map: {value: T.Texture | null}; grade: {value: T.Vector3}}; setCards(key: CardKey | null): void; setMatte(m: MatteKey | null): void; setBack(b: BackKey | null): void};
 // renderer and view: for the motion samples, drawn into a target of their own before the frame; pixels: screen pixels per film pixel.
 // way: 'scene' (the card an object under the film) or 'matte' (the film's own card drawn over in place).
@@ -482,7 +483,7 @@ export function createDealLayer(o: Options) {
         // only what of the film's card they leave beside the drawn card is recoloured, and the shoe window, fingers and skin are left as the
         // matte and the key have them (under, BackKey). They act only where the film's card can be: the track's zone in this frame and the
         // card seated in the shoe window.
-        const dark = backOf(choice, extra) === 'dark', paper = faceOf(choice, extra) === 'paper';
+        const dark = backOf(choice, extra, carry) === 'dark', paper = faceOf(choice, extra, carry) === 'paper';
         if ((dark || paper) && !shoeModel()) { const first = track?.frames?.[0], seat = first?.quad?.length === 4 && (first.shoeShare ?? 0) >= 0.9 ? first.quad : SEATED;
           o.film.setBack({zone: at >= 0 ? backZone(track as unknown as MatteTrack, at) : null, seat: grown(clockwise(seat.map(([x, y]) => ({x, y}))), 2).map(p => [p.x, p.y]), shoe: track?.shoeWindow?.box ?? SHOE_BOX,
             back: dark ? DARK_BACK.field : null, face: paper ? PAPER_FACE.field : null, lying: [LYING.BACK, LYING.FRONT], under: carry !== 'film'}); }

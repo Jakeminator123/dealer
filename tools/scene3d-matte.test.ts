@@ -5,7 +5,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {BACK_ZONE, CLASS_GLSL, CLASSIFY_FRAGMENT, DARK_BACK, FILM_CARD_GLSL, LIT, MATTE, MATTE_GLSL, MORPH_FRAGMENT, PAPER_FACE, PLANE, PLANE_GLSL, RULES, SHADE_FRAGMENT, SHOE_BOX, backZone, bodyOf, darkBackOf, matteBox, matteZone, meanLinear, paleZone, planeLight, printQuad, toPrint, turnZone, unmix} from '../src/scene3d-matte.ts';
 import {is} from '../src/card-track.ts';
-import {BACK, CARRY, FACE} from '../src/card-overlay.ts';
+import {BACK, CARRY, FACE, UNDER} from '../src/card-overlay.ts';
 import {squareToQuad, onSquare} from '../src/scene3d-geometry.ts';
 import {DEFAULTS} from '../src/scene3d-view.ts';
 import {readFile} from 'node:fs/promises';
@@ -247,7 +247,10 @@ test('the dark back ("pålägg"): the film\'s yellow back goes dark in the film\
   // the film's own colour, so beneath the drawn card only what they leave of the film's card is recoloured
   assert.equal(BACK, 'film');
   const deal = await readFile('src/scene3d-deal.ts', 'utf8'), film = await readFile('src/scene3d-film.ts', 'utf8');
-  assert.ok(deal.includes("const backOf = (choice: Choice, extra: Extra): 'film' | 'dark' => extra.back ?? choice.back ?? BACK;") && deal.includes("if ((dark || paper) && !shoeModel())"), 'asked for, under either carry');
+  assert.ok(deal.includes("const backOf = (choice: Choice, extra: Extra, carry: Carry): 'film' | 'dark' => extra.back ?? choice.back ?? (carry === 'object' ? UNDER.back : BACK);") && deal.includes("if ((dark || paper) && !shoeModel())"), 'the part\'s word, the page\'s, then the carry\'s own answer');
+  // what a visitor meets: under the drawn card the underlay, with the film's own card in her hand the film's colours
+  assert.deepEqual(UNDER, {back: 'dark', face: 'paper'}); assert.equal(CARRY, 'object'); assert.equal(FACE, 'film');
+  assert.ok(deal.includes("const dark = backOf(choice, extra, carry) === 'dark', paper = faceOf(choice, extra, carry) === 'paper';"));
   // beneath the drawn card the shoe window is the matte's and a card blurred with a finger is the key's: neither is recoloured there
   const matteSrc = await readFile('src/scene3d-matte.ts', 'utf8');
   assert.ok(deal.includes("under: carry !== 'film'}); }") && film.includes('back.backUnder.value = b.under ? 1 : 0;') && matteSrc.includes('if (backUnder > .5 && shoe > .5) return c;') && matteSrc.includes('(1. - shoe) * (1. - backUnder)'), 'beneath the drawn card: not the window, not fingers');
@@ -281,5 +284,5 @@ test('the paper face ("pålägg: framsidan"): the blue face of the film goes pap
   assert.ok(FILM_CARD_GLSL.includes('vec3 backSide(') && FILM_CARD_GLSL.includes('vec3 faceSide(') && FILM_CARD_GLSL.includes('return wf > wb ? f : b;'));
   assert.equal(FACE, 'film');
   const deal = await readFile('src/scene3d-deal.ts', 'utf8');
-  assert.ok(deal.includes("const faceOf = (choice: Choice, extra: Extra): 'film' | 'paper' => extra.face ?? choice.face ?? FACE;") && deal.includes('face: paper ? PAPER_FACE.field : null'), 'the face by its own word');
+  assert.ok(deal.includes("const faceOf = (choice: Choice, extra: Extra, carry: Carry): 'film' | 'paper' => extra.face ?? choice.face ?? (carry === 'object' ? UNDER.face : FACE);") && deal.includes('face: paper ? PAPER_FACE.field : null'), 'the face by its own word, else what the carry itself answers');
 });
