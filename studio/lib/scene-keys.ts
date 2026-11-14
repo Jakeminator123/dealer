@@ -104,7 +104,7 @@ export const SCENE_KEYS: readonly KeySpec[] = [
   spec("fan", "rorelser", "D", "Fläktskugga", toggle, "En långsam takfläkt under en lampa kastar svag skugga över dealer och bord."),
   spec("fanStrength", "rorelser", "U", "Fläktens styrka", slider(0, 0.4, 0.01), "Hur mörk fläktens skugga är; håll den svag."),
   spec("fanPeriod", "rorelser", "U", "Sekunder per blad", slider(2, 12, 0.5, " s"), "Fläktens fart: sekunder mellan två blad."),
-  spec("roomLife", "rorelser", "U", "Rörelse i rummet", toggle, "Folk som står stilla i ett 360°-rum rör sig: en film över dem i bilden (prov; finns i Venedig)."),
+  spec("roomLife", "rorelser", "U", "Rörelse i rummet", toggle, "Folk som står stilla i ett 360°-rum rör sig: en film över dem i bilden (prov; Venedig, Monaco, Spelhålan)."),
   spec("smoke", "rorelser", "U", "Rök över bordet", slider(0, 1, 0.05), "En låg rök som ligger över filten och driver långsamt, tätast runt bordets kant. 0 är av (prov)."),
   spec("dealerLife", "rorelser", "U", "Liv i överkroppen", slider(0, 2, 0.05), "Dealerns huvud och överkropp rör sig lite och långsamt. Händer, kort och bord står still. 0 är av; förval 1."),
   spec("filmTempo", "rorelser", "U", "Givarnas tempo", slider(1, 2, 0.05, " ×"), "Hur fort hon delar ut: rundans filmer går så många gånger fortare. Vila och tal går i vanlig fart. 1 är som filmat."),

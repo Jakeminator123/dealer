@@ -88,7 +88,7 @@ test('a room made from a flat still: its film lies over the still, fades in outs
     assert.equal(r.kind, 'generated'); assert.equal(r.game, false); assert.equal(r.mirror, false, `${r.id}: bilden visas rättvänd`);
     assert.ok(hfov > 60 && hfov < 140 && vfov > 0 && vfov < hfov, r.id); assert.match(String(r.source.film), /^assets\/scene\/source\/[a-z0-9-]+\.mp4$/, r.id);
     assert.equal(lines.length, 1, r.id); const [{url, box, feather}] = lines, [u0, v0, u1, v1] = box, w = hfov / 720, h = vfov / 360;
-    assert.equal(url, `assets/scene/rooms/${r.id}-liv.mp4`);
+    assert.match(url, new RegExp(`^assets/scene/rooms/${r.id}-liv(-\\d+)?\\.mp4$`), `${r.id}: filmen heter som rummet, med ett nummer om den har gjorts om`);
     assert.ok(Math.abs((u0 + u1) / 2 - 0.5) < 1e-9 && Math.abs((v0 + v1) / 2 - 0.5) < 1e-9, `${r.id}: rutan har stillbildens mitt`);
     assert.ok(u0 < 0.5 - w && u1 > 0.5 + w && v0 < 0.5 - h && v1 > 0.5 + h, `${r.id}: rutan täcker stillbilden`);
     // the feather lies outside the still at the sides, where the people are cut by its edge: no half-seen ghost of a moving person

@@ -16,7 +16,7 @@ const ITEMS: { what: string; takes: string }[] = [
   },
   {
     what: "Nya rörelser i rummen",
-    takes: "Varje rum har klocka, luft och ljusskifte, och i Venedig rör sig folket (Rörelse i rummet). Folk i ett annat rum är en ny film och en rad i ROOM_LIFE i src/scene3d-room.ts; en ny sorts rörelse är ny kod där och en ny nyckel.",
+    takes: "Varje rum har klocka, luft och ljusskifte, och i Venedig, Monaco och Spelhålan rör sig folket (Rörelse i rummet). Folk i ett annat rum är en ny film och en rad i ROOM_LIFE i src/scene3d-room.ts; en ny sorts rörelse är ny kod där och en ny nyckel.",
   },
   {
     what: "Ljusets riktning på dealern",

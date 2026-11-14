@@ -82,10 +82,17 @@ export function readRegister(json: unknown): {rooms: RegisterRoom[]; problems: s
 // played forward only) laid through the same lens as the still, levelled to it, with the panorama's own pixels where the
 // still does not reach; the night and the grey copy use the same box (the grey film made grey with the grey still's formula).
 // Made by the scene session with a script of its own; each room's entry in data/scene-rooms.json says how.
+// Monaco's film is longer (2026-11-14; Jakob: somebody who gets up from a table and comes back a minute later, and a waiter who
+// does not stand stiff): a loop of 122 s joined from seven takes of ten seconds. For 56 s everybody is in place; they talk, and the
+// waiter serves at the table behind him twice. Then a woman rises and walks to the guests by the far wall and the waiter goes
+// with her; they are there for 47 s, while the waiter serves at her table twice and a man on the other side stands up for a
+// while; then both walk back. Each take starts and ends on a still (the room's, or the last frame of the take that leads away
+// from it), so two takes meet with everybody in the same place, and 15 frames fade over at each join. A film that is made again
+// gets a new name (-2): the published copy lets a browser keep a film for a day, and would show the old one.
 export type RoomLife = {url: string; box: readonly [number, number, number, number]; feather: number};
 export const ROOM_LIFE: Readonly<Partial<Record<string, readonly RoomLife[]>>> = {
   venedig: [{url: 'assets/scene/rooms/venedig-liv.mp4', box: [836 / 4096, 968 / 2048, 1268 / 4096, 1211 / 2048], feather: 0.08}, {url: 'assets/scene/rooms/venedig-liv-2.mp4', box: [3026 / 4096, 935 / 2048, 3634 / 4096, 1277 / 2048], feather: 0.08}],
-  monaco: [{url: 'assets/scene/rooms/monaco-liv.mp4', box: [1350 / 4096, 631 / 2048, 2746 / 4096, 1417 / 2048], feather: 0.05}],
+  monaco: [{url: 'assets/scene/rooms/monaco-liv-2.mp4', box: [1350 / 4096, 631 / 2048, 2746 / 4096, 1417 / 2048], feather: 0.05}],
   'monaco-natt': [{url: 'assets/scene/rooms/monaco-natt-liv.mp4', box: [1350 / 4096, 631 / 2048, 2746 / 4096, 1417 / 2048], feather: 0.05}],
   spelhalan: [{url: 'assets/scene/rooms/spelhalan-liv.mp4', box: [1350 / 4096, 631 / 2048, 2746 / 4096, 1417 / 2048], feather: 0.05}],
   'spelhalan-sv': [{url: 'assets/scene/rooms/spelhalan-sv-liv.mp4', box: [1350 / 4096, 631 / 2048, 2746 / 4096, 1417 / 2048], feather: 0.05}],
