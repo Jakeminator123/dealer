@@ -397,3 +397,16 @@ test('under the line the drawn card takes over at rest by a fade: from the still
   assert.ok(deal3.includes('vec4(col * grade * fanShade(vWorld), shown)') && deal3.includes('u.shown.value = how.shown ?? 1;'), 'the opacity of the drawn card in its shader');
   assert.ok(film.includes('float zone = smoothstep(-2., 2., quadIn(px, zoneQ)) * strength; if (zone <= 0.) return o;') && film.includes('cardHeld, cardStrength);') && film.includes('seatCore, 0., 1.);'), 'the shader scales the key of the dealt card');
 });
+
+test('the hole card\'s deal, as mended 2026-11-14: the whole card slides on under her hand and rests where the film\'s card stops', async t => {
+  // the tracker held only the part of the card left of her fingers from frame 44 (half the card, 36 px to the left in one frame) and had
+  // it at rest from 57, while the film's card slid on under her hand until 79: the drawn card shrank, smeared and lay still beside her
+  // moving hand, with the film's card dark and yellow beside it (granskning 6, 99.6-100.3 s). Skipped while the tracker's own file is in place.
+  const file = 'assets/tracking/paow-giv-2-1-d-c2-03-01/card-track.json'; if (!fs.existsSync(file)) return t.skip('no track');
+  const track: CardTrack = JSON.parse(await readFile(file, 'utf8'));
+  if (!String((track.frames[41] as {note?: string}).note ?? '').startsWith('mended')) return t.skip('the tracker\'s own track: the mended one is not installed');
+  assert.equal(restOf(track)!.from, 80); assert.equal(turnOf(track), null); assert.equal(restFade(track), null);
+  const sizes = Array.from({length: 41}, (_, i) => poseAt(track, scene, 40 + i, 1.2)!.quad!).map(q => Math.sqrt(area(q)));
+  sizes.forEach((s, i) => { assert.ok(plausible(poseAt(track, scene, 40 + i, 1.2)!.quad!, 2.5 * PLAUSIBLE.size), `frame ${40 + i}`); if (i) assert.ok(Math.abs(s - sizes[i - 1]) < 4, `frame ${40 + i}: no jump in size`); });
+  for (let f = 41; f <= 80; f++) assert.ok(dist(centre(poseAt(track, scene, f, 1.2)!.quad!), centre(poseAt(track, scene, f - 1, 1.2)!.quad!)) < 20, `frame ${f}: no jump in place`);
+});

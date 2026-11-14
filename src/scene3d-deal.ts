@@ -373,8 +373,12 @@ export function createDealLayer(o: Options) {
     // keeps a pose): one wedge frame then shows the printed face, not the border colour (seat 1, paow-giv-2-1-p1-06-01 frame 81)
     const printed = (i: number) => { const q = i >= 0 ? printQuad(own, i, (track as {print?: Parameters<typeof printQuad>[2]} | null)?.print) : null; return q && plausible(q.map(([x, y]) => ({x, y})), 2.5 * PLAUSIBLE.size) ? q : null; };
     let quad = printed(at); for (let back = 1; !quad && at >= 0 && back <= HOLD; back++) quad = printed(at - back);
+    // a carried card in the field lifted towards the print (backDark) leaves the card seated in the shoe window in the drawn back's field, as
+    // the window is in every other film: lifted with it, the window lit up by 20 levels at the cut into seat 2's and seat 1's deals (hand false)
+    const first = track?.frames?.[0], seatQuad = first?.quad?.length === 4 && (first.shoeShare ?? 0) >= 0.9 ? first.quad : SEATED;
+    const seat = !alone && !black ? {quad: grown(clockwise(seatQuad.map(([x, y]) => ({x, y}))), RIM).map(p => [p.x, p.y]), back: backBody()} : null;
     o.film.setMatte({box, ...matte.run(film, box, shoe, turn ? {zone: turn.zone, mode: turn.back ? 3 : 4} : near ? {zone: near, mode: 1} : null), print: print(face.art), toPrint: toPrint(quad), back: black ? backBody() : alone ? backMean() : backDark(), paper: PAPER, lying: [LYING.BACK, LYING.FRONT], zone: at >= 0 ? matteZone(own, at) : null,
-      shoe: [shoe[0] - MATTE.shoeRoom, shoe[1] - MATTE.shoeRoom, shoe[2] + MATTE.shoeRoom, shoe[3] + MATTE.shoeRoom], faceBack: face.back});
+      shoe: [shoe[0] - MATTE.shoeRoom, shoe[1] - MATTE.shoeRoom, shoe[2] + MATTE.shoeRoom, shoe[3] + MATTE.shoeRoom], faceBack: face.back, seat});
   }
 
   // The turn of a card carried face up (card-overlay.ts turnOf): no card can be laid by the track there, so no card is drawn and

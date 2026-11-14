@@ -170,7 +170,7 @@ export function planeLight(film: (x: number, y: number) => number[], q: number[]
 // lit colour and the screen's) becomes the card's colour at the coverage the key gave it; and right beside the body, what stays in
 // front (a finger's edge mixed with the card) loses the card's tint, as scene3d-film.ts keyCard does, except in the shoe window,
 // whose gold frame keeps its colour.
-export const MATTE_GLSL = `uniform float matteOn, matteFaceBack, matteZoneOn; uniform vec4 matteBox, matteShoe; uniform vec2 matteLying, matteZone[4]; uniform vec3 matteBack, mattePaper;
+export const MATTE_GLSL = `uniform float matteOn, matteFaceBack, matteZoneOn, matteSeatOn; uniform vec4 matteBox, matteShoe; uniform vec2 matteLying, matteZone[4], matteSeatQ[4]; uniform vec3 matteBack, mattePaper, matteSeat;
 uniform sampler2D matteCover, matteShade, mattePrint; uniform mat3 matteToPrint;
 vec3 matteSrgb(vec3 c){ return mix(c * 12.92, 1.055 * pow(max(c, 0.), vec3(1. / 2.4)) - .055, step(.0031308, c)); }
 // a pixel c as the card's colour k and the screen's t, each in any light (c ≈ a·k + b·t, least squares), and how far it lies off
@@ -190,8 +190,10 @@ vec4 matteCard(vec4 o, vec2 px, vec3 c, vec3 key, vec3 tone){
   // less than the bright yellow it stands for, and flat it reads as a hole), and its edge, where the body's blur falls off, lighter,
   // as a card's paper edge is
   float edgeB = (1. - smoothstep(${MATTE.edge[0].toFixed(2)}, ${MATTE.edge[1].toFixed(2)}, sh.y)) * step(.02, sh.y);
-  vec3 back = mix(matteBack * pow(shadeB, ${MATTE.contrast.toFixed(1)}), vec3(${MATTE.edgeLight.toFixed(3)}), edgeB * ${MATTE.edgeShare.toFixed(2)}) * mattePaper, st = matteToPrint * vec3(pc, 1.);
-  vec3 face = (matteFaceBack > .5 ? matteBack : texture2D(mattePrint, vec2(st.x / st.z, 1. - st.y / st.z)).rgb) * mattePaper * shadeF;
+  // the card seated in the shoe window keeps the window's own colour (matteSeat) while a carried card takes another: the window stays as dark as in every film
+  vec3 field = mix(matteBack, matteSeat, matteSeatOn * smoothstep(-3., 3., quadIn(px, matteSeatQ)));
+  vec3 back = mix(field * pow(shadeB, ${MATTE.contrast.toFixed(1)}), vec3(${MATTE.edgeLight.toFixed(3)}), edgeB * ${MATTE.edgeShare.toFixed(2)}) * mattePaper, st = matteToPrint * vec3(pc, 1.);
+  vec3 face = (matteFaceBack > .5 ? field : texture2D(mattePrint, vec2(st.x / st.z, 1. - st.y / st.z)).rgb) * mattePaper * shadeF;
   float solid = max(cover.x, cover.y);
   vec3 card = matteSrgb((cover.x * back + cover.y * face) / max(cover.x + cover.y, 1e-4)) * tone;
   // blurred card over the felt, near the body or inside the track's zone of the card (not in the shoe window, whose frame and

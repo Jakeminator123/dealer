@@ -376,8 +376,9 @@ export type CardKey = {zone: number[][]; core: number[][] | null; colour: number
 // blurred card colour is unmixed, `shade` the film's shading over the body; `print` the face print and `toPrint` film pixel to print
 // (row-major 3 × 3), `back` the back's colour in linear light, `paper` the light on the paper, `lying` the film card's brightness
 // lying flat (back, face), `zone` the track's card grown (or null), `shoe` the shoe window box, `faceBack` the face shows the back
-// too (a card dealt face down).
-export type MatteKey = {box: number[]; cover: T.Texture; shade: T.Texture; print: T.Texture; toPrint: number[]; back: number[]; paper: number[]; lying: number[]; zone: number[][] | null; shoe: number[]; faceBack: boolean};
+// too (a card dealt face down). `seat`: the card seated in the shoe window (its quad clockwise on screen) and its own back colour, when
+// the carried card's differs; null: one colour.
+export type MatteKey = {box: number[]; cover: T.Texture; shade: T.Texture; print: T.Texture; toPrint: number[]; back: number[]; paper: number[]; lying: number[]; zone: number[][] | null; shoe: number[]; faceBack: boolean; seat?: {quad: number[][]; back: number[]} | null};
 // The film card's colours in its own pixels (src/scene3d-matte.ts DARK_BACK, PAPER_FACE): `zone` where the dealt card can be in this
 // frame and `seat` the card seated in the shoe window (quads clockwise on screen, film pixels; zone null: the seat alone), `shoe` the
 // shoe window box, where a card blurred with a finger is not looked for (its gold frame has that blend's colours); `back` the dark back
@@ -400,7 +401,7 @@ export function createFilmLayers(filmVP: T.Matrix4, light: Record<string, {value
   const putGrade = () => grade.value.set(calibrated[0] * tint[0], calibrated[1] * tint[1], calibrated[2] * tint[2]);
   const even = {evenOn: {value: 0}, even: {value: new T.Matrix3()}, evenGain: {value: new T.Vector3(1, 1, 1)}, evenLift: {value: new T.Vector3()}}, life = {lifeMove: {value: new T.Vector3()}};
   const matte = {matteOn: {value: 0}, matteFaceBack: {value: 0}, matteZoneOn: {value: 0}, matteBox: {value: new T.Vector4(0, 0, -1, -1)}, matteShoe: {value: new T.Vector4(0, 0, -1, -1)}, matteLying: {value: new T.Vector2(1, 1)}, matteZone: {value: quad()},
-    matteBack: {value: new T.Vector3()}, mattePaper: {value: new T.Vector3(1, 1, 1)}, matteToPrint: {value: new T.Matrix3()},
+    matteBack: {value: new T.Vector3()}, mattePaper: {value: new T.Vector3(1, 1, 1)}, matteToPrint: {value: new T.Matrix3()}, matteSeatOn: {value: 0}, matteSeatQ: {value: quad()}, matteSeat: {value: new T.Vector3()},
     matteCover: {value: null as T.Texture | null}, matteShade: {value: null as T.Texture | null}, mattePrint: {value: null as T.Texture | null}};
   const back = {backOn: {value: 0}, faceOn: {value: 0}, backUnder: {value: 0}, backLying: {value: 0.835}, faceLying: {value: 0.44}, backZone: {value: quad()}, backSeat: {value: quad()}, backShoe: {value: new T.Vector4(0, 0, -1, -1)}, backFieldLit: {value: new T.Vector3()}, faceFieldLit: {value: new T.Vector3()}};
   const mouth = mouthUniforms(); // a spoken line's mouth over the film (src/scene3d-mouth.ts)
@@ -443,6 +444,7 @@ export function createFilmLayers(filmVP: T.Matrix4, light: Record<string, {value
       matte.matteCover.value = m.cover; matte.matteShade.value = m.shade; matte.mattePrint.value = m.print; matte.matteFaceBack.value = m.faceBack ? 1 : 0;
       matte.matteBack.value.set(m.back[0], m.back[1], m.back[2]); matte.mattePaper.value.set(m.paper[0], m.paper[1], m.paper[2]); matte.matteLying.value.set(m.lying[0], m.lying[1]);
       matte.matteZoneOn.value = m.zone ? 1 : 0; if (m.zone) m.zone.forEach((p, i) => matte.matteZone.value[i].set(p[0], p[1]));
+      matte.matteSeatOn.value = m.seat ? 1 : 0; if (m.seat) { m.seat.quad.forEach((p, i) => matte.matteSeatQ.value[i].set(p[0], p[1])); matte.matteSeat.value.set(m.seat.back[0], m.seat.back[1], m.seat.back[2]); }
     },
     // The film card's back dark and its face paper (BackKey), or null: the film as it is.
     setBack(b: BackKey | null) {

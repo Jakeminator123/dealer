@@ -286,3 +286,14 @@ test('the paper face ("pålägg: framsidan"): the blue face of the film goes pap
   const deal = await readFile('src/scene3d-deal.ts', 'utf8');
   assert.ok(deal.includes("const faceOf = (choice: Choice, extra: Extra, carry: Carry): 'film' | 'paper' => extra.face ?? choice.face ?? (carry === 'object' ? UNDER.face : FACE);") && deal.includes('face: paper ? PAPER_FACE.field : null'), 'the face by its own word, else what the carry itself answers');
 });
+
+test('a card carried without a drawn one leaves the card seated in the shoe window in the drawn back\'s field: the window as dark as in every film', async () => {
+  // seat 2's and seat 1's deals carry the film's card recoloured (hand false) in the field lifted towards the print (backDark); the
+  // window's card took it too and lit up by about 20 levels at the cut into those deals (granskning 6: 34.90, 41.97, 83.90, 90.97 s)
+  assert.ok(MATTE_GLSL.includes('uniform vec3 matteBack, mattePaper, matteSeat;') && MATTE_GLSL.includes('vec3 field = mix(matteBack, matteSeat, matteSeatOn * smoothstep(-3., 3., quadIn(px, matteSeatQ)));'));
+  assert.ok(MATTE_GLSL.includes('vec3 back = mix(field * pow(shadeB,') && MATTE_GLSL.includes('(matteFaceBack > .5 ? field :'), 'the back and a face shown as back take the window\'s field there');
+  const deal = await readFile('src/scene3d-deal.ts', 'utf8'), film = await readFile('src/scene3d-film.ts', 'utf8');
+  // only where the carried card's colour differs from the window's: not in the way 'matte' (one mean), not where the matte is the black field already
+  assert.ok(deal.includes("const seat = !alone && !black ? {quad: grown(clockwise(seatQuad.map(([x, y]) => ({x, y}))), RIM).map(p => [p.x, p.y]), back: backBody()} : null;") && deal.includes('faceBack: face.back, seat});'));
+  assert.ok(film.includes('seat?: {quad: number[][]; back: number[]} | null};') && film.includes('matte.matteSeatOn.value = m.seat ? 1 : 0;'));
+});
