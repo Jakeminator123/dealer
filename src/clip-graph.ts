@@ -16,7 +16,7 @@ export type MotionRecord = {
   // calm in the rotation, but is played out before the deal takes over).
   // takeHand / releaseHand: the hand that takes the card at the shoe and the hand that lays it (LH, RH); on a return, the hand that comes back.
   // effect: something the scene does while the film plays (FilmEffect, effectOf below).
-  motion?: {physicalEndSide?: string; landingFrame?: number; startsOn?: {clip?: string; frame?: number; seamPixelsOverThreshold?: number}; idle?: {weight?: number; calm?: boolean; onRequest?: boolean; label?: string; cut?: boolean}; takeHand?: string; releaseHand?: string;
+  motion?: {physicalEndSide?: string; landingFrame?: number; startsOn?: {clip?: string; frame?: number; seamPixelsOverThreshold?: number}; endsOn?: {clip?: string; frame?: number}; idle?: {weight?: number; calm?: boolean; onRequest?: boolean; label?: string; cut?: boolean}; takeHand?: string; releaseHand?: string;
     effect?: {kind?: unknown; room?: unknown; at?: unknown; seconds?: unknown; mono?: unknown}};
   // inbox: a take that came in from an order (tools/register-order.ts) and that Jakob has not decided on yet. It plays only where its
   // step has nothing else to play; tools/review-store.ts takes the flag away with his decision, or with a provisional one.
@@ -177,6 +177,8 @@ export type Take = {
   variant: boolean; explicitMain: boolean; endSide: Side | null; fps: number | null; frames: number | null; credits: number;
   startsOn: {clip: string | null; video: string | null; frame: number} | null; anchorStart: string | null; landingFrame: number | null; landingConflict: boolean;
   segment: {clip: string; start: number; end: number} | null; // set on a derived take: the frames of that clip it shows
+  // set on a deal bara dit whose last picture is a cut frame of a round trip in the bank (src/order-model.ts cutFrameOf): that film and frame
+  endsOn?: {clip: string; frame: number} | null;
   revision: string | null; // of its motions record; a review decision must present it to be saved. null: no record yet
   idle: Idle | null;       // set on a take of IDLE>IDLE: its part in the idle
   editOf: string | null;   // set on a corrected copy: the clip it was made from
@@ -244,6 +246,8 @@ export function cutFrom(back: Take, deal: Take): boolean {
   return s.clip === deal.id || s.clip === deal.editOf;
 }
 export function returnFits(back: Take, deal: Take): boolean {
+  // A deal bara dit that ends on a round trip's cut frame is continued by that film's return, which starts on the next frame.
+  if (deal.endsOn && back.segment && back.segment.clip === deal.endsOn.clip && back.segment.start === deal.endsOn.frame + 1) return true;
   // A corrected copy keeps its source's timing and landing, so the returns cut from the source follow the copy too.
   if (!back.anchorStart) return cutFrom(back, deal);
   const end = deal.job.last?.file, start = back.job.first?.file;
@@ -316,6 +320,7 @@ export function buildGraph(data: BankData, options: {mode?: FilmMode; holeCardDo
       variant: motion?.review?.acceptedAs === 'VARIANT', explicitMain: motion?.review?.acceptedAs === 'MAIN', endSide,
       fps: motion?.source?.fps ?? receipt?.output?.fps ?? null, frames: motion?.source?.frames ?? receipt?.output?.frames ?? null,
       credits: receipt?.estimatedCredits ?? job.duration * (CREDITS_PER_SECOND[job.ratio] ?? 0), startsOn, anchorStart, landingFrame: null, landingConflict: false, segment, revision: data.revisions?.[job.id] ?? null,
+      endsOn: e.kind === 'DEAL' && typeof motion?.motion?.endsOn?.clip === 'string' && Number.isInteger(motion.motion.endsOn.frame) ? {clip: motion.motion.endsOn.clip, frame: motion.motion.endsOn.frame!} : null,
       idle: e.id === 'IDLE>IDLE' ? idleOf(job.id, motion) : null, editOf: editOf.get(job.id) ?? null, speed: Number(job.playbackSpeed) >= 0.25 && Number(job.playbackSpeed) <= 4 ? Number(job.playbackSpeed) : 1,
       dealer, inbox: motion?.review?.inbox === true, releaseHand: handWord(motion?.motion?.releaseHand), motion, receipt, media};
     takes[job.id] = take; e.takes.push(take);

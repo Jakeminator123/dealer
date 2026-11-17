@@ -660,6 +660,23 @@ test('films recovered from a longer film chain like any others: a derived return
   }
 });
 
+test('a deal bara dit that ends on a round trip\'s cut frame is continued by that film\'s return (endsOn), and only that return', () => {
+  // As trial 2A of 2026-11-17: the new deal's last picture is frame 126 of paow-giv-2-2-p4-01-01, whose return starts on 127.
+  const film = 'paow-giv-2-2-p4-01-01', long = {fps: 30, frames: 178, sha256: sha}, take = (id: string, f: string, to: string, kind: string, frames: [number, number]) => ({id, kind, from: f, to, clip: film, frames});
+  const deal = `${film}-deal`, back = `${film}-return-ready-b`, oneWay = 'paow-giv-2-2-p4-04-01', other = 'paow-giv-2-2-p4-05-01', plain = 'paow-giv-2-2-p4-06-01';
+  const data: BankData = {jobs: [job(oneWay, 'READY-B', 'P4.C1', {kind: 'DEAL', target: 'P4.C1'}), job(other, 'READY-B', 'P4.C1', {kind: 'DEAL', target: 'P4.C1'}), job(plain, 'READY-B', 'P4.C1', {kind: 'DEAL', target: 'P4.C1'})],
+    derived: [take(deal, 'READY-B', 'P4.C1', 'DEAL', [0, 126]), take(back, 'P4.C1', 'READY-B', 'RETURN', [127, 177])],
+    motions: {[deal]: done('PENDING', {source: long}), [back]: done('ACCEPTED', {source: long, motion: {startsOn: {clip: deal, frame: 127}}}), [oneWay]: done('PENDING', {motion: {endsOn: {clip: film, frame: 126}}}), [other]: done('PENDING', {motion: {endsOn: {clip: film, frame: 120}}}), [plain]: done('PENDING')},
+    media: {[deal]: {video: video(film)}, [back]: {video: video(film)}, [oneWay]: {video: video(oneWay)}, [other]: {video: video(other)}, [plain]: {video: video(plain)}}};
+  const g = graph.buildGraph(data);
+  assert.deepEqual(g.unplaced, []);
+  assert.deepEqual([g.takes[oneWay].endsOn, g.takes[other].endsOn, g.takes[plain].endsOn, g.takes[back].endsOn], [{clip: film, frame: 126}, {clip: film, frame: 120}, null, null]);
+  assert.equal(graph.returnFits(g.takes[back], g.takes[oneWay]), true, 'the return starts on the frame after the cut frame');
+  assert.equal(graph.returnFits(g.takes[back], g.takes[other]), false, 'another frame of the same film');
+  assert.equal(graph.returnFits(g.takes[back], g.takes[plain]), false, 'a deal without endsOn');
+  assert.equal(graph.returnFits(g.takes[back], g.takes[deal]), true, 'the round trip\'s own deal still fits');
+});
+
 // ── Primär ──────────────────────────────────────────────────────────────────
 // Seat 4 as seats 5 and 6 of the real bank stood on 2026-11-12: the deal Jakob accepted is continued only by variants, while the return
 // he accepted outright was cut from an older deal. A READY-B deal and the hole card stand beside them. marks: 'MAIN' (Primär), 'VARIANT' or a decision.

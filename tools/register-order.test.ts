@@ -189,3 +189,15 @@ test('a one-way film is one take with its first and last picture, named after th
   const g = await graphOf(root, 'paow');
   assert.equal(g.edge['IDLE>IDLE'].main?.id, 'paow-vila-prov-01'); assert.equal(g.takes['paow-vila-prov-01'].job.model, 'wan3');
 });
+
+test('a deal bara dit whose last picture is a cut frame of the bank carries endsOn, so that film\'s return follows it', needsFfmpeg, async t => {
+  const {root, film} = await bank(t), id = 'paow-giv-2-2-p4-09';
+  const pictures = [{name: 'first.png', label: 'Första bild', goesAs: 'startFrame', path: `assets/orders/${id}/first.png`, sha256: 'a'.repeat(64), from: null},
+    {name: 'last.png', label: 'Sista bild', goesAs: 'endFrame', path: `assets/orders/${id}/last.png`, sha256: 'b'.repeat(64), from: {cut: {clip: 'paow-giv-2-2-p4-01-01', frame: 126, return: 'paow-giv-2-2-p4-01-01-return-ready-b'}}}];
+  await writeFile(path.join(root, `data/orders/${id}.json`), JSON.stringify(order(id, {step: {key: 'GIV-2.2', label: 'Släp, bara dit', edge: 'READY-B>P4.C1', shape: 'ONE_WAY', cutInto: ['READY-B>P4.C1'], makes: null}, pictures})));
+  await mkdir(path.join(root, `assets/orders/${id}`), {recursive: true}); await writeFile(path.join(root, `assets/orders/${id}/receipt.json`), JSON.stringify(receipt(id)));
+  await collectTake(root, id, 1, {from: film});
+  await register(root, await planRegistration(root, id, 1));
+  const record = await read(root, `motions/${id}-01.json`);
+  assert.deepEqual(record.motion.endsOn, {clip: 'paow-giv-2-2-p4-01-01', frame: 126});
+});

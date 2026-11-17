@@ -127,6 +127,12 @@ test('filmmatt\'s pixel half: frozen frames, the green, a yellow card and the se
   assert.equal(r.card.yellowFrames, 2); assert.equal(r.card.firstYellow, 2);
   assert.equal(cardBlobs(card(frame()), W, H)[0].c, 'Y');
   assert.deepEqual(seam(frame(), frame()), {meanDiff: 0, pixelsOver24: 0, shareOver24: 0});
+  // The card per frame for the automatic check of a deal (src/deal-check.ts): its box in the bank's pixels, the step per frame.
+  const d = m.dealFrames(), scale = BANK.width / W;
+  assert.deepEqual(d.frames.map((f) => [f.f, !!f.dealtYellow, !!f.blue]), [[0, false, false], [1, false, false], [2, true, false], [3, true, false]]);
+  assert.deepEqual(d.frames[2].dealtYellow!.bbox, [40, 2, 49, 7].map((v, i) => Math.round((i < 2 ? v : v) * scale)));
+  assert.equal(d.changePerFrame.length, 4);
+  assert.equal(d.changePerFrame[0], 0);
 });
 
 test('the flags: the cases the scripts had, a typo refused; the rate as the script wrote it; the shape check', () => {

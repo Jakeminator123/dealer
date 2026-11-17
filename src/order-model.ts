@@ -412,6 +412,43 @@ export function landingOf<E extends { role: string; node?: string; state?: strin
 export const landingMissing = (dealerName: string, target: string | null | undefined) =>
   `Ingen landningsbild gäller för ${genitive(dealerName)} ${seatWords(target)}. Godkänn en i Material (roll landning, ${landingNode(target ?? 'P4.C1')}): en stillbild eller en ruta ur en giv där handen just har lagt kortet. Då kan returen och Bara dit beställas.`;
 
+/**
+ * The last picture of a deal bara dit by rule, where no landing picture holds (STANDARD.md of the reference-film trials,
+ * D:/dealer-scratch/tmp/giv-experiment-2/; the main agent's decision 2026-11-17): the last frame of the deal in one of
+ * the dealer's own round-trip films from the same anchor to the seat, cut where the bank split it into deal and return,
+ * whose return Jakob approved straight (his own verdict: ACCEPTED or Primär, not a variant, not one given in his place;
+ * his rule: material for new films is only takes he approved straight). It is not a new picture but the border of a film
+ * he has approved, so it needs no verdict of its own: a new deal that ends there is cut straight into that return
+ * (`endsOn`, and returnFits in src/clip-graph.ts). Same hand as the deal laid with. First the film whose return is his
+ * Primär, then the one whose deal is, then the rest by name. The tools take the frame out of the film and check it as a
+ * picture before it is used (the card plain and on the plan, the shoe's card plain, else the shoe from anchor 1).
+ */
+export type CutFrame = { clip: string; frame: number; deal: string; ret: string; primary: boolean; dealPrimary: boolean; words: string | null; path: string };
+export function cutFrameOf(bank: BankFacts, want: { dealer: string; step: Pick<StepDef, 'from' | 'card' | 'start' | 'kind'>; target: string | null; hand?: 'LH' | 'RH' | null }): CutFrame[] {
+  if (want.step.kind !== 'FILM' || !want.step.card || want.step.start === 'LAND' || !want.target) return [];
+  const node = ANCHOR_NODE[want.step.from], hand = want.hand ?? 'LH', derived = bank.derived ?? [];
+  const owners = dealersOf(bank as never);
+  const out: CutFrame[] = [];
+  for (const r of derived) {
+    if (r.from !== want.target || r.to !== node || (r.dealer ?? owners[r.id]) !== want.dealer) continue;
+    const deal = derived.find((d) => d.clip === r.clip && d.from === node && d.to === want.target && d.frames[1] === r.frames[0] - 1);
+    if (!deal) continue;
+    const back = bank.motions?.[r.id], review = back?.review;
+    const straight = (review?.decision === 'ACCEPTED' || review?.decision === 'MAIN') && review.acceptedAs !== 'VARIANT' && review.userAccepted === true && !review.provisional;
+    const laidWith = back?.motion?.releaseHand ?? bank.motions?.[deal.id]?.motion?.releaseHand ?? 'LH';
+    if (!straight || laidWith !== hand) continue;
+    out.push({ clip: r.clip, frame: deal.frames[1], deal: deal.id, ret: r.id, primary: review.acceptedAs === 'MAIN', dealPrimary: bank.motions?.[deal.id]?.review?.acceptedAs === 'MAIN', words: verdictOf(review).words, path: `assets/motions/${r.clip}/source.mp4` });
+  }
+  return out.sort((a, b) => Number(b.primary) - Number(a.primary) || Number(b.dealPrimary) - Number(a.dealPrimary) || a.clip.localeCompare(b.clip));
+}
+/** Where a deal ends in the bank's own film, when its last picture is a cut frame: the film and the frame, for the return that continues it. */
+export function endsOnOf(pictures: readonly { goesAs: string; from?: { cut?: { clip?: string; frame?: number } | null } | null }[]): { clip: string; frame: number } | null {
+  const cut = pictures.find((p) => p.goesAs === 'endFrame')?.from?.cut;
+  return cut && typeof cut.clip === 'string' && Number.isInteger(cut.frame) ? { clip: cut.clip, frame: cut.frame! } : null;
+}
+/** "ruta 126 ur paow-giv-2-2-p4-01-01, där returen börjar (Jakobs ja: …)". */
+export const cutFrameWords = (c: Pick<CutFrame, 'clip' | 'frame' | 'words'>) => `ruta ${c.frame} ur ${c.clip}, där returen börjar${c.words ? ` (Jakob: ”${c.words}”)` : ''}`;
+
 /** "Paows", "Agnes". */
 export const genitive = (name: string) => (/[sxz]$/i.test(name) ? name : `${name}s`);
 /** "plats 4", "plats 4, andra kortet", "dealerns plats". */
@@ -610,10 +647,23 @@ export const REF_MATCH_LABEL = ['samma steg och plats', 'samma plats, annat grep
 /** The bank as GET /api/clip-bank answers it (src/clip-graph.ts BankData), only what a reference needs. */
 export type BankFacts = {
   jobs?: { id: string; from: string; to: string; duration?: number; dealer?: string }[];
-  derived?: { id: string; from: string; to: string; clip: string; frames: [number, number]; dealer?: string; editOf?: string }[];
+  derived?: { id: string; from: string; to: string; clip: string; frames: [number, number]; dealer?: string; editOf?: string; kind?: string }[];
   edits?: { id: string; source?: { clip?: string }; dealer?: string }[];
-  motions?: Record<string, { source?: { sha256?: string; fps?: number; frames?: number }; review?: { decision?: string; acceptedAs?: string; userAccepted?: boolean; userReview?: string } } | null | undefined>;
+  motions?: Record<string, { source?: { sha256?: string; fps?: number; frames?: number }; review?: { decision?: string; acceptedAs?: string; userAccepted?: boolean; userReview?: string; provisional?: unknown }; motion?: { releaseHand?: string } } | null | undefined>;
   media?: Record<string, { video?: string | null } | null | undefined>;
+  /**
+   * The check of a film as a reference (src/deal-check.ts checkReference), by film: one that fails it (the card on edge
+   * before the turn, a colour change without an edge, larger than a real card) is not offered first.
+   */
+  referenceChecks?: Record<string, { pass: boolean; clean?: boolean; codes?: string[] } | null | undefined>;
+  /**
+   * Rendered reference films (trial 2C2, 2026-11-18): the 3D lane's dummy dealing to a seat as the bank's camera sees it,
+   * its hand read off an approved deal of a real dealer, kept as assets/references/docka/<id>/source.mp4 with its receipt,
+   * listed in a register of its own (data/rendered-references.json: the id, the edge it shows, the seat, the deal it is read
+   * from, its hash, length and reference check). Offered before a take of the bank for the same step and seat: it has no
+   * other dealer's hand in it, and it is made to pass the reference check (one turn, mid-way, a real card's size).
+   */
+  rendered?: { id: string; edge: string; path: string; sha256: string; seconds: number; fromDeal?: string; capture?: string; check?: { pass: boolean; clean?: boolean; codes?: string[] } | null }[];
 };
 /**
  * A take of the bank that can go as a reference film: the take, the film it lies in (assets/motions/<film>/source.mp4;
@@ -622,7 +672,13 @@ export type BankFacts = {
  */
 export type RefCandidate = {
   take: string; film: string; path: string; dealer: string; edge: string; goesTo: string | null;
+  /** RENDERED: the dummy's film for the seat (BankFacts.rendered), read off a real deal; BANK: a take of the bank. */
+  kind?: 'BANK' | 'RENDERED';
+  /** For a rendered film: the deal its hand is read off. */
+  fromDeal?: string | null;
   match: 0 | 1 | 2; verdict: RefVerdict; approvedStraight: boolean; words: string | null;
+  /** The reference check of its film, where one has been run: whether it passes and the codes of what fails or is remarked. */
+  check?: { pass: boolean; clean?: boolean; codes?: string[] } | null;
   seconds: number | null; frames: [number, number] | null; also: string[]; fits: boolean; sha256: string | null;
 };
 /** Jakob's verdict from a take's review: underkänd, godkänd straight or as a variant, else not judged; his words without the date. */
@@ -673,10 +729,22 @@ export function referenceCandidates(bank: BankFacts, want: { dealer: string; ste
       take: t.id, film: t.film, path: `assets/motions/${t.film}/source.mp4`, dealer: owners[t.id] ?? 'pamela', edge: `${t.from}>${t.to}`, goesTo: e.target,
       match, verdict, approvedStraight: straight, words, seconds, frames: whole ? null : t.frames, also: derived.filter((d) => d.clip === t.film && d.id !== t.id).map((d) => d.id),
       fits: !range || (seconds !== null && seconds >= range[0] && seconds <= range[1]), sha256: source?.sha256 ?? null,
+      check: bank.referenceChecks?.[t.film] ?? null,
     });
   }
-  const key = (c: RefCandidate) => [c.match, c.verdict === 'UNDERKÄND' ? 1 : 0, c.dealer === want.dealer ? 0 : 1, VERDICT_RANK[c.verdict]];
-  out.sort((a, b) => { const ka = key(a), kb = key(b); for (let i = 0; i < ka.length; i++) if (ka[i] !== kb[i]) return ka[i] - kb[i]; return a.take.localeCompare(b.take); });
+  // A film whose reference check fails comes after every one that passes or is not checked, within its match.
+  const key = (c: RefCandidate) => [c.match, c.verdict === 'UNDERKÄND' ? 1 : 0, c.check && !c.check.pass ? 1 : 0, c.dealer === want.dealer ? 0 : 1, VERDICT_RANK[c.verdict]];
+  // The dummy's films for the step and seat, first within their match (they need no verdict: nothing of a dealer is in them).
+  for (const r of bank.rendered ?? []) {
+    const e = parseEdge(r.edge);
+    if (!e) continue;
+    const match = e.id === w.id ? 0 : e.base === w.base ? 1 : null;
+    if (match === null) continue;
+    out.push({ take: r.id, film: r.id, path: r.path, dealer: 'docka', edge: r.edge, goesTo: e.target, kind: 'RENDERED', fromDeal: r.fromDeal ?? null, match, verdict: 'EJ_DÖMD', approvedStraight: false, words: null,
+      check: r.check ?? null, seconds: r.seconds, frames: null, also: [], fits: !range || (r.seconds >= range[0] && r.seconds <= range[1]), sha256: r.sha256 });
+  }
+  const rank = (c: RefCandidate) => [c.match, c.kind === 'RENDERED' ? 0 : 1, ...key(c).slice(1)];
+  out.sort((a, b) => { const ka = rank(a), kb = rank(b); for (let i = 0; i < ka.length; i++) if (ka[i] !== kb[i]) return ka[i] - kb[i]; return a.take.localeCompare(b.take); });
   const films = new Set<string>();
   return out.filter((c) => (films.has(c.film) ? false : (films.add(c.film), true)));
 }

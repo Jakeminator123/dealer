@@ -58,8 +58,22 @@ import type { FlipAxis, StepKey, TextStyle } from './order-model.ts';
  * shoe (SAY.dragTowards, SAY.takeOnTheWay, SAY.handoverDrag); a closed drag is as before. The card is said to be plain
  * on both sides, the next card in the window too, in the words of round 14's addition (SAY.colours, SAY.oneCardMoves).
  * The words of templates 4 to 8 that 9 replaced stay in SAY.v8.
+ * 10 (2026-11-17): the deal of the reference-film trials (tools/film-prompting.md §5, "Giv bara dit"; Prov giv-experiment
+ * and giv-forlagefilm-2): with Pamela's approved deal to the same seat as reference film, Kling 4 turned the card through
+ * its edge in 4 of 4 takes with text C of the first trial and laid it on the plan (the reviewer passed 3 of 4), and the
+ * drag from anchor 2.2 to seat 4 held in 2 of 2 with the same words written for the drag. In an open deal of the short
+ * text: the pinch holds the card by its short end with its broad yellow side to the camera (SAY.pinchHold); the drag keeps
+ * its broad yellow side up along the felt (SAY.dragFlat); the turn is one roll of the wrist with hand and card turning
+ * together about the card's long side, like a key, said as the camera sees it (SAY.keyOnTheWay, and SAY.keyAtPlace close
+ * to the place) for both FREE and LONG_EDGE: Jakob's rule is that both turns are valid as long as the wrist turns and the
+ * right side comes up yellow to blue, and template 9's palm-up words never held; a deal bara dit ends with the hand still
+ * turned and its fingertips on the laid card (SAY.layOneWay); and the card is a small blank card that keeps the last
+ * frame's size (SAY.oneCardMovesSized, without the size where the order draws the card at another scale), in Minimal
+ * SAY.blankCard. The words "pale edge" and "edge to edge" are gone (a suspected light rim). A round trip keeps
+ * template 9's lay and way back; closed deals, handbyte and the right hand keep template 9's words, untried with 10.
+ * Template 9's words stay in SAY (still used by the other steps); fromTen chooses.
  */
-export const TEMPLATE_VERSION = 9;
+export const TEMPLATE_VERSION = 10;
 /** The version of the long text (template 3, 2026-11-13); Utförlig writes it unchanged. */
 export const LONG_VERSION = 3;
 export type Dealer = { name: string; look: string };
@@ -166,6 +180,17 @@ export const SAY = {
   rollOnTheWay: (drag: boolean): string =>
     `On the way ${drag ? `${SAY.takeOnTheWay}, her wrist turns thumb side up and the card rolls` : 'her wrist turns thumb side up and the card, held between thumb and fingers, rolls'} over once about its long side, blue side up. ${SAY.layTurned}`,
   layTurned: 'With her hand still turned, she lays the card flat at its place and lets go of it; only then does her empty hand turn palm down.',
+  // Template 10 (the reference-film trials, 2026-11-17): an open deal's words, as text C of the first trial sent them.
+  pinchHold: 'draws the yellow card up out of the window, holding it by its short end between thumb and fingers, its broad yellow side towards the camera,',
+  dragFlat: 'drags it flat along the felt under her fingertips, its broad yellow side up, towards its place',
+  keyOnTheWay: (drag: boolean): string =>
+    `On the way ${drag ? 'her thumb and fingers take the card at its edge, her wrist rolls once and' : 'her wrist rolls once and'} her hand and the card turn over together about the card's long side, like turning a key: the broad yellow side narrows to a thin edge, then the broad blue side opens towards the camera.`,
+  keyAtPlace: (drag: boolean): string =>
+    `Close to its place ${drag ? 'her thumb and fingers take the card at its edge, her wrist rolls once and' : 'her wrist rolls once and'} her hand and the card turn over together about the card's long side, like turning a key: the broad yellow side narrows to a thin edge, then the broad blue side opens towards the camera.`,
+  layOneWay: 'With her hand still turned and the same hold, she lays the card flat at its place, blue side up, and her fingertips come to rest on it, as in the last frame.',
+  oneCardMovesSized: 'Only one card moves: a small card, about half as long as her hand, which keeps the size it has in the last frame all the way from the shoe to its place. It is blank, solid yellow on one side and solid blue on the other, each colour reaching right out to its corners, and the next card in the window is the same blank yellow.',
+  oneCardMovesFree: 'Only one card moves: a small card, about half as long as her hand. It is blank, solid yellow on one side and solid blue on the other, each colour reaching right out to its corners, and the next card in the window is the same blank yellow.',
+  blankCard: 'The card is blank, solid yellow on one side and solid blue on the other, each colour reaching right out to its corners, and the next card in the window is the same blank yellow.',
   layClosed: 'She lays it flat there, yellow side up.',
   stopClosed: 'She stops it there, yellow side up, and lifts her fingertips off it.',
   // A closed card from the pinch (from template 7): laid flat in front of the shoe and slid, never carried tilted.
@@ -367,6 +392,8 @@ const twoHands = (input: PromptInput) => (input.version ?? TEMPLATE_VERSION) >= 
 const moves = (input: PromptInput) => (input.version ?? TEMPLATE_VERSION) === 7;
 /** From template 9 the wrist turns the card on the way and stays turned until it lies, an open drag stays on the felt, and the card is plain. */
 const fromNine = (input: PromptInput) => (input.version ?? TEMPLATE_VERSION) >= 9;
+/** From template 10 an open deal of the short text is the reference-film trials' text (TEMPLATE_VERSION's note): the hold, the flat drag, the key turn, the one-way lay, the card. */
+const fromTen = (input: PromptInput) => (input.version ?? TEMPLATE_VERSION) >= 10;
 /** The card's colours in Minimal, and "Only one card moves" with them in Kort: plain from template 9, before as templates 4 to 8 said them. */
 const cardColours = (input: PromptInput) => (fromNine(input) ? SAY.colours : SAY.v8.colours);
 const cardMoves = (input: PromptInput) => (fromNine(input) ? SAY.oneCardMoves : SAY.v8.oneCardMoves);
@@ -470,7 +497,9 @@ function shortDeal(input: PromptInput): Prompt {
   const drag = m.grip === 'DRAG', open = m.side === 'FRONT';
   // Back up along the felt to the place: a closed card, or one turned at the place; else turned on the way.
   const alongFelt = !open || m.flipAxis === 'AT_PLACE';
-  const out = drag ? SAY.slideOut : SAY.pinchOut, seven = twoHands(input), nine = fromNine(input);
+  // From template 10 an open deal by the hand at the shoe is written as the reference-film trials sent it (fromTen).
+  const ten = fromTen(input) && open && takes === 'LH' && !pass;
+  const out = drag ? SAY.slideOut : ten ? SAY.pinchHold : SAY.pinchOut, seven = twoHands(input), nine = fromNine(input);
   // A closed card from the pinch, by the hand that lays it (from template 7): laid flat in front of the shoe and slid,
   // as the model does well; carried, it tilted and showed its blue face, and changed size when the hand left it.
   const slid = seven && !open && !drag && !pass;
@@ -480,7 +509,7 @@ function shortDeal(input: PromptInput): Prompt {
   // The hand that dragged the card itself takes it between thumb and fingers on the way, before its wrist turns.
   const takesOnTheWay = drag && !pass;
   // The place in words (from template 5): the last frame shows it, and the text says which way the hand goes.
-  const carryTo = slid ? SAY.layAndSlide : alongFelt ? (drag && !pass ? SAY.dragBack : SAY.carryBack) : drag && !pass ? (nine ? SAY.dragTowards : SAY.v8.liftTowards) : SAY.carryTowards;
+  const carryTo = ten ? (drag ? SAY.dragFlat : SAY.carryTowards) : slid ? SAY.layAndSlide : alongFelt ? (drag && !pass ? SAY.dragBack : SAY.carryBack) : drag && !pass ? (nine ? SAY.dragTowards : SAY.v8.liftTowards) : SAY.carryTowards;
   const placed = !!input.place && (input.version ?? TEMPLATE_VERSION) >= 5;
   const carry = placed ? carryTo.replace('its place', 'its place ' + whereShort(input.place!)) : carryTo;
   const and = slid ? ',' : ' and';
@@ -490,16 +519,19 @@ function shortDeal(input: PromptInput): Prompt {
     : `${SAY.handAtShoe} ${out}${and} ${carry}.`;
   // On the way: from template 9 a turn of the wrist that stays turned until the card lies (rolled about the long side, or free).
   const onTheWay = m.flipAxis === 'LONG_EDGE' ? (nine ? SAY.rollOnTheWay(takesOnTheWay) : SAY.v8.rollOnTheWay) : nine ? SAY.turnOnTheWay(takesOnTheWay) : SAY.v8.turnOnTheWay;
-  const turn = slid ? SAY.stopFlat : !open ? (drag && !pass ? SAY.stopClosed : SAY.layClosed) : m.flipAxis === 'AT_PLACE' ? turnAtPlace(input) : onTheWay;
+  // Template 10: the key turn on the way (FREE and LONG_EDGE) or close to the place (AT_PLACE); a round trip then lays it as 9 did.
+  const key = m.flipAxis === 'AT_PLACE' ? SAY.keyAtPlace(drag) : SAY.keyOnTheWay(drag);
+  const turn = ten ? (input.oneWay ? key : `${key} ${SAY.layTurned}`) : slid ? SAY.stopFlat : !open ? (drag && !pass ? SAY.stopClosed : SAY.layClosed) : m.flipAxis === 'AT_PLACE' ? turnAtPlace(input) : onTheWay;
   const own = takes === 'LH' && !pass;
   // The arm out at the card comes back: the hand at the shoe itself, or the hand that laid it (after a handover the
   // hand that gave it goes back to the shoe, from template 7).
-  const back = input.oneWay ? SAY.endAtCard : own ? (drag ? SAY.backDrag : SAY.backPinch) : pass && seven ? SAY.backPass(drag) : SAY.backOther(drag);
+  const back = input.oneWay ? (ten ? SAY.layOneWay : SAY.endAtCard) : own ? (drag ? SAY.backDrag : SAY.backPinch) : pass && seven ? SAY.backPass(drag) : SAY.backOther(drag);
   // Her body as she deals: in template 7 alone she moves a little; before and after, the other hand rests (own hand alone).
   const body = moves(input) ? (own ? SAY.moveOwn : SAY.moveBoth) : own ? SAY.otherRests : '';
   // The card: one two-sided object; in template 6 alone, which colour is up at the end, following the side it lands with.
   const colours = byColour(input);
-  const card = colours ? SAY.v6.oneCardIs(open ? SAY.v6.sides.open : SAY.v6.sides.closed) : cardMoves(input);
+  const sized = !!input.cardScale && input.cardScale !== 1;
+  const card = colours ? SAY.v6.oneCardIs(open ? SAY.v6.sides.open : SAY.v6.sides.closed) : ten ? (sized ? SAY.oneCardMovesFree : SAY.oneCardMovesSized) : cardMoves(input);
   const parts: Part[] = [
     { text: SAY.camera, from: [] },
     referencePart(input),
@@ -522,7 +554,7 @@ function minimalDeal(input: PromptInput): Prompt {
   const parts: Part[] = [
     { text: SAY.cameraMinimal, from: [] },
     referencePart(input),
-    { text: colours ? SAY.v6.cardIs(open ? SAY.v6.sides.open : SAY.v6.sides.closed) : cardColours(input), from: colours ? ['side'] : [] },
+    { text: colours ? SAY.v6.cardIs(open ? SAY.v6.sides.open : SAY.v6.sides.closed) : fromTen(input) ? SAY.blankCard : cardColours(input), from: colours ? ['side'] : [] },
     { text: input.oneWay ? SAY.oneCard : SAY.oneCardBack, from: ['shape'] },
     extraPart(input),
   ];

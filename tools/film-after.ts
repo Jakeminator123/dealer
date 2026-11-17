@@ -32,7 +32,8 @@ import path from 'node:path';
 import sharp from 'sharp';
 import {probe, sha256File, type Probe} from './film-fix.ts';
 import {orderTake, OrderError} from './order-collect.ts';
-import {BANK, TREATMENTS, resizeCubic, smoothGreen, toneLock, levelFrame, NO_TONE, cornerMean, endCheck, edgeCheck, filmMeasure, seam, round, type Tone, type PlanTarget} from '../src/film-after.ts';
+import {BANK, TREATMENTS, resizeCubic, smoothGreen, toneLock, levelFrame, NO_TONE, cornerMean, endCheck, edgeCheck, filmMeasure, seam, round, cardBlobs, type Tone, type PlanTarget} from '../src/film-after.ts';
+import {checkDeal, type DealCheck, type FrameCard} from '../src/deal-check.ts';
 
 const ROOT = process.cwd(), scratch = 'D:/dealer-scratch/tmp', env = existsSync(scratch) ? {...process.env, TEMP: scratch, TMP: scratch} : process.env;
 const ffmpeg = process.env.FFMPEG ?? 'ffmpeg';
@@ -200,10 +201,26 @@ export async function afterWork(id: string, take: number, options: Options = {},
     kantkoll: {firstFrame: f0 ? edgeCheck(f0, W, H) : null, lastFrame: fl ? edgeCheck(fl, W, H) : null},
     filmmatt: {...measure.result(seats, plan), startSeam: f0 ? seam(f0, first.data) : null, endSeam: fl && last ? seam(fl, last.data) : null},
     ...(comparison ? {comparison} : {}),
+    // The automatic check of a deal (src/deal-check.ts): a take that fails it goes to no reviewer; remarks go with it.
+    ...(isDeal(order) ? {dealCheck: dealCheckOf(order, measure.dealFrames(), last, rate)} : {}),
     review: 'Efterarbetet ersätter ingen granskning: varje ruta granskas i full upplösning (tools/order-clerk.md, avsnitt 6–8).'};
   if (record.output.frames !== written) throw Error(`after.mp4 har ${record.output.frames} rutor, ${written} skrevs.`);
   return record;
   }
+}
+
+/** A deal from the pinch or the drag (its step key in the order). */
+const isDeal = (order: {step?: {key?: string}}) => /^GIV-/.test(String(order.step?.key ?? ''));
+/**
+ * The check of a deal: the card per frame from the pass, against the last picture's card (the largest blue outside the
+ * shoe on last.png, by the same colour rule; the plan's rule drew it as a real card at its place). Without last.png there
+ * is nothing to land on, and the check says so.
+ */
+export function dealCheckOf(order: {motion?: unknown}, deal: {frames: FrameCard[]; changePerFrame: number[]}, last: {width: number; height: number; data: Uint8Array} | null, fps: number): DealCheck {
+  const side = (order.motion as {side?: string} | null)?.side === 'BACK' ? 'BACK' : 'FRONT';
+  const card = last ? cardBlobs(last.data, last.width, last.height).filter(b => b.c === (side === 'BACK' ? 'Y' : 'B') && !b.inShoe).sort((a, b) => b.area - a.area)[0] : null;
+  if (!card?.box) return {pass: false, fails: [{code: 'ingen-sista-bild', text: 'Sista bildens kort går inte att mäta: inget att jämföra landningen med.'}], remarks: [], measures: {}};
+  return checkDeal(deal.frames, {fps, side, lastCard: {bbox: card.box, centre: [card.x, card.y], n: card.area}, changePerFrame: deal.changePerFrame});
 }
 
 async function planTargets(root: string): Promise<Record<string, PlanTarget>> {
@@ -245,8 +262,11 @@ if (import.meta.main) {
     console.log(JSON.stringify({film: posix(film), receipt: posix(receipt), model: r.model, frames: r.output.frames, size: [r.output.width, r.output.height], fps: r.output.fps, cutTail: r.treatment.cutTail, lock: r.treatment.lock,
       efterarbete: r.efterarbete, slutkoll: r.slutkoll.after, kantkollLast: r.kantkoll.lastFrame && {dark: r.kantkoll.lastFrame.darkGreenPixelsAboveEdge, bodyEnds: r.kantkoll.lastFrame.bodyEnds},
       filmmatt: {frozenFrames: r.filmmatt.frozenFrames, green: r.filmmatt.green, landing: r.filmmatt.landing, startSeam: r.filmmatt.startSeam, endSeam: r.filmmatt.endSeam},
-      comparison: r.comparison && {identicalFile: r.comparison.identicalFile, frames: r.comparison.frames, identicalFrames: r.comparison.identicalFrames, meanAbs: r.comparison.meanAbs, maxAbs: r.comparison.maxAbs, differingShare: r.comparison.differingShare}}, null, 2));
+      comparison: r.comparison && {identicalFile: r.comparison.identicalFile, frames: r.comparison.frames, identicalFrames: r.comparison.identicalFrames, meanAbs: r.comparison.meanAbs, maxAbs: r.comparison.maxAbs, differingShare: r.comparison.differingShare},
+      dealCheck: r.dealCheck && {pass: r.dealCheck.pass, fails: r.dealCheck.fails, remarks: r.dealCheck.remarks}}, null, 2));
     if (!rest.includes('--out')) console.log(`Nästa: node tools/order-put.ts status ${id} ${takeText} EFTERARBETAD --file ${posix(film)} --note "tools/film-after.ts (${r.model}): ..."`);
+    // A deal that fails the automatic check is not given to a reviewer (src/deal-check.ts): say so and why.
+    if (r.dealCheck && !r.dealCheck.pass) console.log(`Kontrollen fäller tagningen (${r.dealCheck.fails.map((f: {code: string}) => f.code).join(', ')}): ingen granskare. Sedan: node tools/order-put.ts status ${id} ${takeText} MÄTT --note "faller automatiskt: ${r.dealCheck.fails.map((f: {text: string}) => f.text).join(' ')}"`);
   } catch (e) {
     if (e instanceof Refused || e instanceof OrderError) { console.error(e.message); process.exit(2); }
     throw e;

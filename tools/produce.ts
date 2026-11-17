@@ -175,10 +175,11 @@ export function roundFilms(graph: Graph): string[] {
  * The bank's takes a reference film may be: a deal to the same seat (the same step first, then the same seat from the other
  * grip, as referenceCandidates orders them), approved straight by Jakob, of a length the model takes; the dealer's own first.
  */
-export function straightReferences(bank: BankFacts, dealer: string, step: StepKey, target: string | null, model: string | null) {
+export function straightReferences(bank: BankFacts, dealer: string, step: StepKey, target: string | null, model: string | null, rendered = false) {
   const def = stepOf(step), m = model ? MODELS[model] : null;
   if (!def || !m?.videos) return [];
-  return referenceCandidates(bank, { dealer, step: def, target, model: m }).filter((c) => c.match <= 1 && c.approvedStraight && c.verdict === 'GODKÄND' && c.fits);
+  // Under the rule renderad-eller-samma-plats the dummy's film for the seat comes first (referenceCandidates puts it there).
+  return referenceCandidates(bank, { dealer, step: def, target, model: m }).filter((c) => c.match <= 1 && c.fits && ((rendered && c.kind === 'RENDERED') || (c.approvedStraight && c.verdict === 'GODKÄND')));
 }
 
 /** The draft the list would make for a row: from the method, the seat and the reference chosen; one take and a trial's title for a trial. */
@@ -241,9 +242,9 @@ export function productionList(input: ProductionInput): Production {
     // A reference film where the method asks for one: a straight-approved deal to the same seat; without one, the model the
     // method names for that case, or the step waits.
     let reference: string | null = null, withoutReference = false;
-    const wantsRef = !!method && method.status !== 'saknas' && method.reference === 'samma-plats-rakt-godkänd';
+    const wantsRef = !!method && method.status !== 'saknas' && method.reference !== 'ingen';
     if (wantsRef && at) {
-      reference = straightReferences(input.bank, dealer.id, at.step, at.target, method!.model)[0]?.take ?? null;
+      reference = straightReferences(input.bank, dealer.id, at.step, at.target, method!.model, method!.reference === 'renderad-eller-samma-plats')[0]?.take ?? null;
       if (!reference && method!.noReferenceModel) withoutReference = true;
       else if (!reference) needs.push(`rakt godkänd referensfilm till ${cardWords(at.target ?? '')}`);
     }

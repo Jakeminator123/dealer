@@ -12,10 +12,13 @@ export const METHOD_STATUS_LABEL: Record<MethodStatus, string> = { gäller: 'gä
 export const SEAT_CLASSES = ['mitten', 'ytter', 'dealer'] as const;
 export type SeatClass = (typeof SEAT_CLASSES)[number];
 export const SEAT_CLASS_LABEL: Record<SeatClass, string> = { mitten: 'mittplatserna P3–P5', ytter: 'ytterplatserna P1, P2, P6, P7', dealer: 'dealerns kort' };
-/** The reference film rule: none, or a take of the bank to the same seat and step that Jakob approved straight (any dealer's). */
-export const REFERENCE_RULES = ['ingen', 'samma-plats-rakt-godkänd'] as const;
+/**
+ * A reference film rule: none; a take of the bank to the same seat and step that Jakob approved straight (any dealer's); or
+ * (from trial 2C2, 2026-11-18) the dummy's rendered film for the seat, read off a real deal, else such a take of the bank.
+ */
+export const REFERENCE_RULES = ['ingen', 'samma-plats-rakt-godkänd', 'renderad-eller-samma-plats'] as const;
 export type ReferenceRule = (typeof REFERENCE_RULES)[number];
-export const REFERENCE_LABEL: Record<ReferenceRule, string> = { ingen: 'ingen referensfilm', 'samma-plats-rakt-godkänd': 'referensfilm: en rakt godkänd giv till samma plats' };
+export const REFERENCE_LABEL: Record<ReferenceRule, string> = { ingen: 'ingen referensfilm', 'samma-plats-rakt-godkänd': 'referensfilm: en rakt godkänd giv till samma plats', 'renderad-eller-samma-plats': 'förlaga: dockan till platsen, annars en rakt godkänd giv dit' };
 
 export type Method = {
   id: string;
@@ -89,14 +92,14 @@ export function readMethods(value: unknown): { register: MethodRegister | null; 
       if (!model) errors.push(`${at}: modellen ${String(m.model)} finns inte eller kan inte göra ${step.label}.`);
       else {
         if (model.off && whole) errors.push(`${at}: ${model.label} beställs inte längre.`);
-        if (m.reference === 'samma-plats-rakt-godkänd' && whole && !model.videos) errors.push(`${at}: ${model.label} tar ingen referensfilm.`);
+        if (m.reference !== 'ingen' && whole && !model.videos) errors.push(`${at}: ${model.label} tar ingen referensfilm.`);
         if (step.kind === 'FILM' && m.seconds !== null && m.seconds !== undefined && model.durations && !(m.seconds >= model.durations[0] && m.seconds <= model.durations[1])) errors.push(`${at}: ${model.label} tar ${model.durations.join('–')} s.`);
       }
     } else if (whole) errors.push(`${at}: ${m.status} kräver en modell.`);
     if (m.noReferenceModel !== null && m.noReferenceModel !== undefined) {
       const instead = MODELS[String(m.noReferenceModel)] ? modelFor(step, String(m.noReferenceModel)) : null;
       if (!instead || instead.off) errors.push(`${at}: noReferenceModel ${String(m.noReferenceModel)} kan inte göra ${step.label}.`);
-      else if (m.reference !== 'samma-plats-rakt-godkänd') errors.push(`${at}: noReferenceModel gäller bara där metoden vill ha en referensfilm.`);
+      else if (m.reference === 'ingen') errors.push(`${at}: noReferenceModel gäller bara där metoden vill ha en referensfilm.`);
       else if (step.kind === 'FILM' && typeof m.seconds === 'number' && instead.durations && !(m.seconds >= instead.durations[0] && m.seconds <= instead.durations[1])) errors.push(`${at}: ${instead.label} tar ${instead.durations.join('–')} s.`);
     }
     if (m.style !== null && m.style !== undefined && !stylesFor(step.kind, step).includes(m.style)) errors.push(`${at}: stilen ${String(m.style)} finns inte för ${step.label}.`);

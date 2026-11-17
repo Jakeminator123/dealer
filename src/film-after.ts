@@ -409,7 +409,8 @@ export function endCheck(end: Uint8Array, w: number, h: number) {
 // filmmatt.py's pixel half: format, green level, frozen frames, evenness, coloured cards, landing and the seams against the first
 // and last pictures. Its hands and body come from MediaPipe and are not ported (handsFound, bodyFound, --ref).
 export const SHOE_WINDOW = [1215, 720, 1365, 880];
-export type CardBlob = {c: 'Y' | 'B'; x: number; y: number; area: number; inShoe: boolean};
+/** box: left, top, right, bottom in the bank's pixels (for src/deal-check.ts: the card's lowest edge and its edges against the last picture's). */
+export type CardBlob = {c: 'Y' | 'B'; x: number; y: number; area: number; inShoe: boolean; box?: [number, number, number, number]; rgb?: [number, number, number]};
 /** The card colours of the lab's rules (src/card-track.ts), in single precision as the script computes them: yellow back, blue face. */
 export function cardBlobs(bgr: Uint8Array, w: number, h: number, scale = 1): CardBlob[] {
   const n = w * h, yellow = new Uint8Array(n), blue = new Uint8Array(n), k82 = f32(0.82), k6 = f32(0.6), k45 = f32(0.45), k15 = f32(1.5), k115 = f32(1.15);
@@ -419,10 +420,17 @@ export function cardBlobs(bgr: Uint8Array, w: number, h: number, scale = 1): Car
     yellow[p] = y ? 1 : 0; blue[p] = !y && b > 90 && b > f32(k15 * r) && b > f32(k115 * g) ? 1 : 0;
   }
   const out: CardBlob[] = [], [x0, y0, x1, y1] = SHOE_WINDOW;
-  for (const [mask, c] of [[yellow, 'Y'], [blue, 'B']] as const) for (const s of components(mask, w, h).blobs) {
-    const area = s.area * scale * scale; if (area < 50) continue;
-    const cx = s.cx * scale, cy = s.cy * scale;
-    out.push({c, x: round(cx, 1), y: round(cy, 1), area: Math.trunc(area), inShoe: x0 < cx && cx < x1 && y0 < cy && cy < y1});
+  for (const [mask, c] of [[yellow, 'Y'], [blue, 'B']] as const) {
+    const {labels, blobs} = components(mask, w, h), sum = new Float64Array(blobs.length * 3);
+    // The mean colour of each blob (red, green, blue): a card that shows a darker blue before an edge than after has two blue faces.
+    for (let p = 0; p < n; p++) { const k = labels[p]; if (k) { const i = p * 3, j = (k - 1) * 3; sum[j] += bgr[i + 2]; sum[j + 1] += bgr[i + 1]; sum[j + 2] += bgr[i]; } }
+    blobs.forEach((s, k) => {
+      const area = s.area * scale * scale; if (area < 50) return;
+      const cx = s.cx * scale, cy = s.cy * scale;
+      out.push({c, x: round(cx, 1), y: round(cy, 1), area: Math.trunc(area), inShoe: x0 < cx && cx < x1 && y0 < cy && cy < y1,
+        box: [Math.round(s.left * scale), Math.round(s.top * scale), Math.round((s.left + s.width - 1) * scale), Math.round((s.top + s.height - 1) * scale)],
+        rgb: [0, 1, 2].map(j => Math.round(sum[k * 3 + j] / s.area)) as [number, number, number]});
+    });
   }
   return out;
 }
@@ -440,6 +448,16 @@ export function filmMeasure(w: number, h: number, fps: number) {
   let prev: Uint8Array | null = null;
   const mean = (frame: Uint8Array, y0: number) => { const s = [0, 0, 0]; let k = 0; for (let y = y0; y < y0 + c; y++) for (let x = 0; x < c; x++) { const i = (y * w + x) * 3; s[0] += frame[i + 2]; s[1] += frame[i + 1]; s[2] += frame[i]; k++; } return s.map(v => round(v / k, 1)); };
   return {
+    /**
+     * The card per frame for src/deal-check.ts: the largest yellow and the largest blue blob outside the shoe's window, and
+     * the change per frame (the mean step of the quarter-size frames, the first frame's null as 0). No light ring is
+     * measured here (paleRingPct 0): the light rim stays the reviewer's until the pass measures it.
+     */
+    dealFrames() {
+      const largest = (cards: CardBlob[], c: 'Y' | 'B') => cards.filter(b => b.c === c && !b.inShoe).reduce<CardBlob | null>((best, b) => !best || b.area > best.area ? b : best, null);
+      const blob = (b: CardBlob | null) => b && b.box ? {n: b.area, centre: [b.x, b.y] as [number, number], bbox: b.box, long: Math.max(b.box[2] - b.box[0], b.box[3] - b.box[1]) + 1, short: Math.min(b.box[2] - b.box[0], b.box[3] - b.box[1]) + 1, paleRingPct: 0, rgb: b.rgb} : null;
+      return {frames: frames.map(f => ({f: f.i, dealtYellow: blob(largest(f.cards, 'Y')), blue: blob(largest(f.cards, 'B'))})), changePerFrame: frames.map(f => f.step ?? 0)};
+    },
     add(frame: Uint8Array) {
       const small = areaResize(frame, w, h, qw, qh);
       let step: number | null = null;

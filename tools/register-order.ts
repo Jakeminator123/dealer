@@ -20,6 +20,7 @@ import path from 'node:path';
 import {parseEdge, nodeName, buildGraph, type DerivedTake, type ImageRef} from '../src/clip-graph.ts';
 import {probe, sha256File} from './film-fix.ts';
 import {orderTake, OrderError, ORDER_ID, type OrderLike} from './order-collect.ts';
+import {endsOnOf} from '../src/order-model.ts';
 
 const CLIP = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const PROVIDER = 'Runway MCP server (app account credits)';
@@ -96,7 +97,12 @@ export async function planRegistration(root: string, id: string, take: number, o
   if (!(frames > 1)) throw new OrderError(`${posix(root, film)} har ${frames} rutor.`);
   // The takes and where the film is split.
   const takes: Entry[] = [], records: Plan['records'] = {};
-  if (!trip) takes.push(takeOf(target, edges[0], target, [0, frames - 1], order, ref, {...(first ? {first} : {}), ...(last ? {last} : {}), ...(ref.fix ? {editOf: ours[0].id} : {})}));
+  if (!trip) {
+    takes.push(takeOf(target, edges[0], target, [0, frames - 1], order, ref, {...(first ? {first} : {}), ...(last ? {last} : {}), ...(ref.fix ? {editOf: ours[0].id} : {})}));
+    // A deal bara dit whose last picture is the cut frame of a round trip in the bank (cutFrameOf): that film's return follows it.
+    const endsOn = endsOnOf((order as {pictures?: {goesAs: string; from?: {cut?: {clip?: string; frame?: number} | null} | null}[]}).pictures ?? []);
+    if (endsOn) records[target] = {endsOn};
+  }
   else {
     // The original's two takes in film order: the deal, then the return, split where the return begins.
     const [first0, second0] = [...ours].sort((a, b) => a.frames[0] - b.frames[0]), originalDeal = first0?.id, originalBack = second0?.id;
