@@ -1,6 +1,6 @@
 # Dealer — överlämning
 
-Uppdaterad 2026-11-17. Läs denna fil först, inte chatthistoriken. Här står bara det som gäller nu; det som har hänt står
+Uppdaterad 2026-11-18. Läs denna fil först, inte chatthistoriken. Här står bara det som gäller nu; det som har hänt står
 i Git, och en rad som inte längre gäller stryks. Kontrakt står i [docs/SYSTEM.md](docs/SYSTEM.md), rutiner i
 [docs/DRIFT.md](docs/DRIFT.md), den enda vägen för en ny dealer i [tools/dealer-line.md](tools/dealer-line.md), beslut
 per tagning i `motions/<id>.json`, metoden per steg i `data/order-methods.json`, bankens tagningar i
@@ -78,6 +78,12 @@ Vilken hand som delar väljs per order: vänster, höger eller handbyte (`HAND_C
   gren (`git worktree add D:/dealer-scratch/tmp/<bana>/trad -b <gren> main`), skriv först till huvudagenten vilka filer
   du tar, rör inget under `studio/` utan besked (fem underagenter skriver där), starta ingen egen server och lämna
   grenen till huvudagenten, som slår ihop den.
+- **Mått ur en riktig dealers film (`dealer-24`, startad av Jakob natten till 2026-11-18;** hans ord till den: se filmen,
+  ta hennes handrörelser, bordets bilder, kortens storlek "och annat", bygg en modell, och "komplettera framförallt den
+  som äger checkout med mått på saker samt vinklar"**):** mäter en YouTube-film av en riktig dealer och bygger en
+  fristående 3D-modell. Skriver bara i `D:/dealer-scratch/tmp/yt-referens/`, inget i repot; filmen går aldrig in i
+  Git, `assets/` eller ett Prov. Huvudagenten har svarat vilka mått som saknas mest (givens slag i tid, vändningen,
+  slutet, kortet mot handen, blicken, skon, kameran); en sida med talen lämnas först i mappen.
 - **Jakobs egna:** planen `placements/default.json` (Arbetsyta) och hans domar i `motions/` (`review`), som skrivs från
   Granska och aldrig skrivs över av ett verktyg. En dom som getts åt honom (`node tools/review-put.ts`) är aldrig hans,
   väntar inte i hans kö och ger vika för hans.
@@ -115,7 +121,7 @@ skrivs på skrivbordet när allt har ett utfall. Här står bara det som inte ä
 
 ## Nästa steg
 
-**Börja här (läget 2026-11-18 kl. 00.02; huvudagenten bytte chatt kl. 21.45).** Labbet byggs om på Jakobs ord från
+**Börja här (läget 2026-11-18 kl. 00.42; huvudagenten bytte chatt kl. 21.45).** Labbet byggs om på Jakobs ord från
 kl. 21.46 och 21.58 (Jakobs besked, "Ett labb"), av underagenter till huvudagenten:
 
 - **Inne i `main` och sett i headless Chrome:** vyn **Bordet**, första versionen (`82258f3`: `/studio/bordet/` med
@@ -129,7 +135,7 @@ kl. 21.46 och 21.58 (Jakobs besked, "Ett labb"), av underagenter till huvudagent
 - **Bordets andra steg är inne** (`803b68a`, sett i headless Chrome): varje rad i Beställ visar exakt vad som går till
   Runway (första och sista bilden, referensfilmen med vems film det är eller "Ingen referensfilm", texten ord för ord);
   läget Beställ har Filmer och Kön, där Kön är hela förra Beställ med godkännandet; en rad som beställts förut visar
-  tagningarna som kom bredvid det som skickades (Granska filmen); kortens böjning och glans ändras bara i Efterarbete, alla 16 på en gång, och Kortplan har Dator och Mobil; `/bestall/` och `/placering/` leder till Bordet i labbet. Menyn i labbet: Bordet, Karta, Granska,
+  tagningarna som kom bredvid det som skickades (Granska filmen); kortens böjning och glans ändras bara i Efterarbete, alla 16 på en gång; `/bestall/` och `/placering/` leder till Bordet i labbet. Menyn i labbet: Bordet, Karta, Granska,
   Material, Lipsync, Casino. "Alla sju" skickar nu varje plats egen vändning. "Skapa utkast" i Bordet är tryckt en gång
   i headless Chrome kl. 22.53 och gav ett riktigt utkast (borttaget igen); Godkänn i Bordet är inte tryckt. Radens
   förval är ännu metodregistrets gamla recept för en giv (Kling 4, 7 s, tur och retur, ingen referensfilm): kvällens
@@ -173,25 +179,49 @@ kl. 21.46 och 21.58 (Jakobs besked, "Ett labb"), av underagenter till huvudagent
   blåa […] färgerna växlar en gång för mycket […] Pau i båda tagningarna släpper ner fel sida". Han godtar alltså
   dockans tagning, som granskaren fällde för att kortet glider utan finger: i den automatiska kontrollen blir det en
   anmärkning och inget fall, och referensfilmer mäts själva innan de används.
-- **Pågår hos filmbanans underagent: standarden byggs** efter planen `D:/dealer-scratch/tmp/giv-experiment-2/STANDARD.md`,
-  på grenen `film-standard` i `D:/dealer-scratch/tmp/film-standard/trad` (inget betalt): mall 10 (nyckelvridningen
-  för både nyp och släp, på vägen eller vid platsen; mall 9:s ord till `SAY.v9`), sista bilden i en giv bara dit ur
-  bankens egen klippruta (`cutFrameOf`, utan ny dom av honom), metodregistret, och en automatisk kontroll av varje
-  tagning (`src/deal-check.ts`: en vändning genom kantläget, storlek mot ett verkligt kort, landning, slät färg, inget
-  kort som rör sig utan finger) som fäller före en granskare. Det som kräver bankens filmer görs i huvudträdet i ett
-  andra steg, när Bordets underagent är klar där.
-- **Den rättade dockfilmen höll** (prov C2, kl. 00.10, en tagning, 85 krediter, saldo 6 919; `c2-*` i Prov
-  `giv-forlagefilm-2`): samma beställning som C med 3D-banans film ur en verklig hand som enda ändring gav en tagning
-  som den oberoende granskaren ger 4/5, utan något av hans fällande fel: en vändning med handleden inom 0,1 s från
-  dockans, fingrarna kvar tills kortet ligger, kortet stilla sedan. Kvar: fingrarna lyfts kort i slutet (dockan gör
-  det; 3D-banan gör om plats 3, 4 och 5 med handen kvar på kortet) och det gula kortet bärs cirka 20 % för avlångt.
-  Metoden är alltså fri från Pamelas filmer där en dockfilm finns: plats 3, 4 och 5 (plats 6 och 7 går genom skon och
-  plats 1 korsar kroppen; de behöver egna rörelser). Nästa betalda steg, godkänt av huvudagenten när filmerna utan
-  lyft finns: en tagning var på plats 3 och 5.
-- **Pågår hos 3D-banan: dockans hand ur en verklig giv** (hans dom cirka kl. 23.27 om provet med två stolar: rörelsen "ser inte
-  naturlig ut" och är nog "omöjlig med mänsklig anatomi"): leder lästa med MediaPipe ur Pamelas och Paows givar,
-  ledgränser som test, kortet kvar i greppet tills det ligger och aldrig större än ett verkligt kort i handen. Sedan
-  två nya förlagefilmer från bankens kamera, plats 4 och plats 1, som huvudagenten beställer en tagning var av.
+- **Filmstandardens första del är inne** (`553d254`, det som går utan media): **mall 10** skriver en öppen giv med handen
+  vid skon i de ord som höll i proven (nypet om kortets kortsida, släpet plant med gula sidan upp, vändningen som en
+  rullning med handleden "like turning a key": på vägen från nypet, nära platsen från släpet; slutet med vänd hand,
+  kortet lagt blått och fingertopparna till vila på det, som i sista bilden); ordrar med mall 9 behåller sina ord.
+  **Den automatiska kontrollen** (`src/deal-check.ts`, skrivs som `dealCheck` i `after.json`) fäller det han
+  underkänner på synen före en granskare (färgbyte utan kantläge, på kant en andra gång, lagt gult och vänt efteråt,
+  fel sida upp, mer än 25 % över ett verkligt kort, mer än 15 bildpunkter från sista bildens kort) och ger en
+  anmärkning för det granskare mäter men han inte stör sig på; på provens 16 tagningar fäller den B1, B2 och WAN A t3
+  och inget han eller en granskare släppt igenom. **Sista bilden** i en giv bara dit är rutan i bankens egen film där
+  den godkända returen börjar (`cutFrameOf`, `src/cut-frame.ts`). **En renderad referensfilm** (dockan) bärs av
+  ordermodellen och bjuds först. Referenserna är mätta: Pamelas film till plats 1 faller (som han sa), hennes plats 4
+  och dockans filmer till plats 3–5 är rena (`D:/dealer-scratch/tmp/film-standard/referenskontroll.tsv`). B-seriens
+  kort var lika stort som ett verkligt kort (0,99 och 1,02 mätt på ytan); granskarens 15–35 % kom av långsidan, som
+  rörelseoskärpan drar ut. **Kvar, steg två** (grenen `film-standard-register`, `d034595`, och listan i
+  `D:/dealer-scratch/tmp/film-standard/`): metodregistrets nya poster (givarna blir bara dit) tillsammans med att
+  `order-store` och Bordet tar klipprutan som sista bild; `after.json` för de 16 tagningarna; kontrollens tillägg ur
+  bildpasset (blandade rutor, tryckt kort, handmask); registret över mätta referenser; dockans filmer in i
+  `assets/references/docka/`; arket "det som skickades" ska visa referensfilmens sista ruta bredvid sista bilden.
+- **Givens slut, så som det är mätt** (hans fråga natten till 2026-11-18 om arket för prov C, där dockans hand har
+  handflatan uppåt i ruta 80 och sista bilden har handryggen uppåt: "Det måste finnas en logik i allt detta också. DOCK
+  om det är så att det är tänkt att hon ska de sista ca 30 bildrutorna vända handen igen och skjuda in det så är det
+  såkalrt bra. Men vi måste vet vd som sker!", och "När "2.1" används så ska ju rimligen "nyckelvridning" av kortet ske
+  i allmänhet utan att hon ska "lyfta kortet efter det släpats" eller tryckts ut"). Sett ruta för ruta
+  (`D:/dealer-scratch/tmp/huvudagent11/look/hand-slutet/ark-a.png`, `ark-b.png`): 3D-banans första film (prov C, en
+  påhittad rörelse) vänder aldrig tillbaka handen och är pensionerad; filmerna lästa ur Pamelas hand ("avlast", prov
+  C2, och "avlast-2", prov C3) gör som hon och som Paows egen p4-04: kortet läggs med vänd hand vid ruta 80 av 120,
+  handen kommer tillbaka med ryggen uppåt, fingertopparna på kortets bortre kant skjuter det 18 bildpunkter till (ruta
+  80–95) och vilar sedan där, vilket är sista bilden. Regeln för ankare 2.1: nyp, bär i luften, nyckelvridning på
+  vägen, lägg med vänd hand, handen vänder tillbaka och skjuter sista biten, vila. Från ankare 2.2 släpas kortet plant
+  och tas i kanten och vänds först nära platsen. En referensfilm måste sluta som sista bilden, annars hittar Kling på
+  slutet (prov C: kortet låg ensamt och handen kom efteråt).
+- **Dockfilmerna** (prov C2 kl. 00.10: den rättade dockfilmen höll, 4/5, 85 krediter): metoden är fri från Pamelas
+  filmer där en dockfilm finns, plats 3, 4 och 5 (plats 6 och 7 går genom skon och plats 1 korsar kroppen; de behöver
+  egna rörelser). **Tre tagningar till är lagda** (C3 plats 4, D plats 3, E plats 5 med filmerna "-2", där handen
+  ligger kvar på kortet; 255 krediter, saldo 6 664 enligt `D:/dealer-scratch/tmp/giv-experiment-2/ledger.json`):
+  underagenten hämtar, mäter och låter granska dem; utfallet är inte läst av huvudagenten än.
+- **3D-banan** (`dealer3d/`, sammanslaget till och med `b61109f`): dockans hand är läst ur en verklig giv; varje stols
+  öga står bakom stolens eget kort som bankens kamera bakom plats 4:s; huvudet följer kortet och den vilande handen är
+  släppt lite fri (modell, inte avläst; Prov `dealer-3d-stolens-oga-och-blick`); hans riggade Meshy-modell av Paow
+  sitter vid bordet som ett utseendeprov (Prov `dealer-3d-paow-modell-vid-bordet`; riggen saknar fingerben, 3D-banans
+  egen skattning 2/5). Två kort i Beslut väntar på honom om dem. Banan gör nu förlagan "-3" (plats 4 från bankens
+  kamera med blicken och den friare handen), som huvudagenten beställer en tagning av, och sedan en förlaga för släpet
+  från ankare 2.2.
 - **Disken: 80 GB borttaget kl. 23.13** enligt inventeringens kontrollerade listor
   (`D:/dealer-scratch/tmp/stadning/inventering-2026-11-17/`, loggen `borttaget-2026-11-17.txt`): webbläsarprofiler,
   `node_modules` och cachar i slaskmappar, 374 exakta kopior av filer som finns i `assets/` (stickprov 12 av 12 lika på
@@ -215,37 +245,64 @@ kl. 21.46 och 21.58 (Jakobs besked, "Ett labb"), av underagenter till huvudagent
 - **Material säger vad som stämmer med dagens kortplan** (`e635b6d`, sett i headless Chrome): `node tools/media-audit.ts
   --fit --write` mäter varje bild med ett kort på en plats, varje ankare, bankens givar och referenserna mot dagens
   regel (`planCardQuad`, dealerstandarden) och skriver `data/media-fit.json`, som Material visar som en bricka på rutan
-  ("äldre plan", "annan kamera", "avviker"). I dag: 8 av Pamelas 66 bilder med kort stämmer och ingen av hennes mätbara
-  givar; Paows kort ligger alla på rätt plats (0,2–1,4 bildpunkter), 8 givar stämmer i storlek och 14 är 15–37 % för
+  ("äldre plan", "annan kamera", "avviker"). Vid första mätningen stämde 8 av Pamelas 66 bilder med kort och ingen av hennes mätbara givar (mätt om kl. 00.30 efter formregeln, `2a56f08`: sex bilder till, alla på plats 4); Paows kort ligger alla på rätt plats (0,2–1,4 bildpunkter), 8 givar stämmer i storlek och 14 är 15–37 % för
   små vid ytterplatserna; V6 och dess råfilmer är en annan kamera. Filen ska skrivas om när planens regel ändras (hans
   sparade Perspektiv): inte automatiskt än. Material följer menyns dealerväxel (med Paow vald visade den Pamela), dess
   egen växel är borta, och avsnittet Prov är ute ur Material (proven är Granskas del Prov). Tre referensfilmer som
   inget använde är arkiverade.
-- **Reglaget Perspektiv i Kortplan är inne** (`e0dd650`; hans ord om de verkliga korten: "brist på djup i bordet […]
-  väldigt tvådimensionella"): ett reglage för hela bordet, från Verkligt (96 %) ned till 85 %, med ett märke vid Din
-  tidigare plan (87 %); alla sexton kort följer en lins ur samma familj med plats 4 fast (`lensForFocal` i
-  `src/table-lens.ts`, `planLens` i `src/card-plan.ts`), och talet bredvid säger vad dealerns kort blir (75 bildpunkter
-  vid 96 %, 64 vid 91 %, 54 vid 87 %). Värdet sparas i hans plan när han trycker Spara; utan värde gäller den verkliga
-  kameran. V6:s utseende ligger utanför familjen. Inte gjort i en webbläsare: att dra reglaget för hand och Spara.
-  **Görs om** (hans öga på 87 %-bilden, natten till 2026-11-18: "Kortet i skon är större än korten som ligger närmare
-  oss […] DC1 kanske 65% av storleken av kortet i skon […] Är det perspektivet som är fel"): han vill ha djup i kortens
-  form men storlekar som stämmer med skon och med varandra, och det ger ingen lins. Regeln som byggs: storlek och plats
-  alltid ur den verkliga kameran, och Perspektiv ändrar bara formen (hur mycket smalare bortre kanten ritas), ett värde
-  för alla kort, med hans plans 87 % som förval.
-- **Pågår hos Bordets underagent** (hans ord cirka kl. 00.00: "valde från dator till mobil […] vi fick ett gammalt prov
-  av Pamela, även fast jag har ikryssat PAO […] Jag trodde att ingenting skulle göras dubbelt för mobilen. Generellt
-  förstår jag inte varför vi automatiskt kan komma in till Pamela. Om hon används som referens borde hon rimligtvis
-  göras till silhuett", och "V6-läget är jag skeptisk mot i sin helhet mer än att det var en bra referens för att vi
-  fick till en bra version för någon vecka sedan"): Mobil ut ur Kortplan (planen ställs en gång; vad som läser planens
-  andra vy utreds först), ingen bild eller film av Pamela som förval när Paow är vald (V6-bilden ut ur listan under
-  korten), Paow först i dealerväxeln, och en pausad dealer som en adress nämner blir inte ihågkommen som valet. V6 står
-  kvar som referens och kontrolleras varje push (AGENTS); om den ska arkiveras är hans ord, inte frågat än.
+- **Perspektiv ändrar bara kortens form** (`f8c637f`, sett i headless Chrome kl. 00.39; hans öga på den förra
+  versionen: "Kortet i skon är större än korten som ligger närmare oss […] DC1 kanske 65% av storleken av kortet i skon
+  […] Är det perspektivet som är fel"): varje kort har den verkliga kamerans storlek och plats (`src/table-lens.ts`),
+  och reglaget smalnar bara av den bortre kanten kring kortets egen mittlinje, ett värde för alla kort, 80–96 %, med
+  märken vid Din plan (87 %) och Verkligt (96 %). Utan sparat värde ritas hans plans 87 %. Dealerns kort mäter 75
+  bildpunkter vid 96, 91 och 87 %. Bild 6–9 i Prov `kortplanen-verkligt-perspektiv`. Inte gjort av en hand i en
+  webbläsare: att dra reglaget och trycka Spara.
+- **Kortplan har en vy, och Pamela visas inte av sig själv** (`f8c637f`; hans ord cirka kl. 00.00: "Jag trodde att
+  ingenting skulle göras dubbelt för mobilen. Generellt förstår jag inte varför vi automatiskt kan komma in till
+  Pamela", och "V6-läget är jag skeptisk mot i sin helhet"): inget som körs läste planens mobilvy (spelet läser bara
+  `geometry.native`, också på en telefon), så valet Dator | Mobil och adressordet `vy=mobil` är borta; behövs en
+  mobilvy härleds den ur samma kort och lins, aldrig som en andra inställning. Under korten finns bara Siluett och den
+  valda dealerns egna filmer; V6-bilden är ute ur listan; Paow står först i växeln; en pausad dealer som en adress
+  nämner visas men blir inte ihågkommen (bara ett klick på växeln gör det). V6 står kvar som referens och kontrolleras
+  varje push (AGENTS); om den ska arkiveras är hans ord, inte frågat än. `validatePlan` kräver ännu båda vyerna i
+  planfilen, som är orörd.
 - **Kortens storlek** (hans ord kl. 23.14: "`assets\reference\native-0694.png` har ju tex skitbra kortstorlekar […] är så
   osäker på allt. Men finns så många spår!"): bilden är ruta 694 av V6, där korten är ungefär en tredjedel större än ett
   verkligt kort mot hennes hand (skattat, mäts av Bordets underagent). Hans besked kl. 23.22: "Ang kort. Gör allt enkelt bara. kör vi 1.0 så
   kanske det är bra. men bara allt är logiskt. Min ide är ju att vi ska kunna efterarbeta fram en ovelay ändå där vi
   kanske ska kunna justera just som sånt här." Alltså: kortplanen ritar ett verkligt kort (1,00) med linsen, utan eget
   storleksreglage; storleken justeras bara i Efterarbete (de ritade kortens "Kortens storlek"), som är hans överlägg.
+- **Den tatuerade uppsättningen är förstahandsvalet** (hans ord natten till 2026-11-18: "vi också sätter hennes
+  tatuerade keystone/som förstahandsval"): båda keystonebilderna med tatuerade händer gäller (`f8e3f6c`) och ankare 1
+  med samma händer (`b0a03f3`, efter hans Ja i Beslut 2026-11-17); de tidigare är ersatta och ligger kvar på disk.
+  Registret skriver att det var hans besked i chatten, infört av huvudagenten (`setState` tar `where`). Regeln lät
+  förut en bild gälla per roll, så att godkänna den sittande keystonebilden ställde undan de stående: en keystone ger
+  nu bara vika för en i samma ställning (`replacedBy`, `isStanding`). Följden: nya ankare och filmer beställs ur de
+  tatuerade bilderna; varje film i banken har otatuerade, större händer och spelas tills en ny finns, så skarvar mellan
+  gammalt och nytt visar händerna byta. Ankare 2.1 med tatuerade händer finns inte än.
+- **Pågår: nytt ankare 2.2 för Paow** (hans ord: "Ankare 2.2 för paow vill jag ska vara så att hon tittar mot
+  kortet/skon/handen […] Just hennes ankare 2.2 är dåligt i alla fall på grund av att hon inte har en "styvare"
+  handhållning för att "stryka/dra trycka ut kortet ur skon, och att hennes blick inte är just mot skon""). En
+  underagent gör en eller två kandidater (blicken på kortet, platt och styv hand, tatuerade händer 10 % mindre, allt
+  annat bankens bild) i `assets/anchors/paow-ankare-2-2-blick-*/`, oberoende granskade, som Prov
+  `paow-ankare-2-2-blick`; högst 240 krediter, arbetet i `D:/dealer-scratch/tmp/ankare-2-2-blick/`. Han väljer;
+  filmerna som börjar eller slutar på dagens 2.2 blir då äldre.
+- **Pågår: val för hand** (hans ord: "Jag vill också kunna manuellt ändra typ ankare och klipp så jag får välja de som
+  är primära eller radera eller arkivera och så vidare. Men samtidigt om jag väljer ett visst, kanske nytt ankare, så
+  ska då såklart vissa andra klipp som bygger på det ankaret i så fall "gråas" eller mörkas för att de då inte kan
+  härledas ur rätt ankare förslagsvis"). En underagent bygger på grenen `val-for-hand`
+  (`D:/dealer-scratch/tmp/val-for-hand/trad`): vilken bild som helst i en roll kan göras gällande av honom, också en
+  som ställts undan; arkivera och ta tillbaka bilder och klipp (aldrig radera betald media från en knapp); klipp
+  byggda på en bild som inte längre gäller mörkas med en bricka, och bytet säger först hur många klipp det gäller.
+- **Pågår: Prov utan "Inte granskad", och hans egen kommentar** (hans ord: "Står också "inte granskad" på massor av
+  klipp. Varför granskas de inte? Är det jag som ska granska? Då måste jag ju få val att kommentera.."). Brickan kom på
+  varje fil utan omdöme i `proof.json`, också på underlag som ingen ska döma. En underagent bygger på grenen
+  `prov-egna-ord` (`D:/dealer-scratch/tmp/prov-egna-ord/trad`): underlag får ingen bricka, en tagning utan omdöme
+  säger "Väntar på granskare", och han får två knappar och ett kommentarsfält på varje film och bild i Prov, sparat i
+  ett register som huvudagenten läser med `node tools/proof-notes.ts` före ett svar till honom.
+- **Beslut** har två kort som väntar (3D-banans, ovan) och två besvarade som inte är utförda (`kortets-baksida`: gul
+  rygg med SG och blå framsida i efterarbetet; `repliker-som-munlappar`). Fem utförda togs ut kl. 00.38; hans ord
+  ur dem står under Jakobs besked.
 - **Vakten på hans kö** (`vakta-kon.mjs`) går i huvudagentens chatt i halvtimmar och måste startas om; godkänner han en
   beställning startar huvudagenten beställningsagenten (`tools/order-clerk.md`).
 - **Att göra:** körarens kod för munnen ligger bara på D: (`D:/dealer-scratch/tmp/tal/korare/`) och bör in i repot
@@ -254,10 +311,9 @@ kl. 21.46 och 21.58 (Jakobs besked, "Ett labb"), av underagenter till huvudagent
   bildpunkter ger enligt honom 91, 90 och 90 i spelet), vilket hör till Efterarbete. Kartan visade att Paows Primär
   för P1C1 → A2.1 aldrig spelas (fel hand mot given); det är hans val att byta.
 
-Huvudagenten slår ihop grenarna i `main` en i taget (squash), ser på sidorna i det bygge Bordets underagent gör
-(en som bygger i huvudträdet åt gången) och tar bort träden och grenarna. Bryts chatten: `git worktree list`, `git log main..<gren>` och `git status` i huvudträdet säger vad som
+Huvudagenten slår ihop grenarna i `main` en i taget (squash), bygger studion ur commiten (`node tools/studio-from-commit.ts`), ser på sidorna med `node tools/lab-look.ts` och tar bort träden och grenarna. Bryts chatten: `git worktree list`, `git log main..<gren>` och `git status` i huvudträdet säger vad som
 finns; kör testerna och avgör vad som är helt. Kopian på nätet är kvar på `aee87ca` (inget publicerat i kväll: en publicering bär Bordet, bara läsning, i stället för Scen och Placering, och ordlistan och botens kunskap med den nya menyn; fråga
-sedan kopian som en ny besökare). Saldot hos Runway var 7 430 kl. 21.40; taket per beställning är 2 000. `KLAR.txt` är
+sedan kopian som en ny besökare). Saldot hos Runway var 6 664 efter nattens nio provanrop (ledgern i `D:/dealer-scratch/tmp/giv-experiment-2/`); taket per beställning är 2 000. `KLAR.txt` är
 inte skriven. Filmerna (punkt 1) är huvudagentens eget nästa steg när labbets grenar är inne. I den här ordningen:
 
 1. **Filmerna först** (hans ord). Metoden som håller står i handboken (`tools/film-prompting.md` §5, tabellen): giv bara
@@ -290,11 +346,12 @@ inte skriven. Filmerna (punkt 1) är huvudagentens eget nästa steg när labbets
    överlämningen (ovan): munnen strömmad till spelet, och provkvällen på podden (högst 5 USD, besked till honom samma
    dag före start; en podd kan inte bygga en image, så Dockerfilens steg körs där som ett skript, som inte är skrivet).
    Vyn Lipsync visar inte körarens rad och licenserna än (`runs.ownRunner`, `licences` i `data/lipsync.json`).
-5. **Nya händer:** hans svar om det nya ankare 1 (kl. 21.38): "Ja. Mne vi kanske kan göra om en 'A1 till A2.2 och sedan
-   framgent de filmer som görs, tillsi får till hur vi ska göra filmerna, faktist , så kan vi göra med tatueringar. men
-   låt nuvarande vara kvar så kan vi fylla i dem när vi får till resten". Alltså: när filmmetoden sitter görs ankare
-   2.2 med samma händer och ingången A1 → A2.2 därifrån, och nya filmer görs sedan med tatueringarna; dagens ligger
-   kvar. Trailerns film är pausad på hans ord.
+5. **Nya händer:** hans svar om det nya ankare 1 (2026-11-17 kl. 21.38): "Ja. Mne vi kanske kan göra om en 'A1 till
+   A2.2 och sedan framgent de filmer som görs, tillsi får till hur vi ska göra filmerna, faktist , så kan vi göra med
+   tatueringar. men låt nuvarande vara kvar så kan vi fylla i dem när vi får till resten". Natten till 2026-11-18
+   gjorde han den tatuerade uppsättningen till förstahandsvalet: keystonebilderna och ankare 1 gäller, ett nytt ankare
+   2.2 görs (Börja här). Sedan: ankare 2.1 med samma händer, ingången A1 → A2.2, landningsbilder med tatuerade händer
+   för plats 3–5 och givarna dit med dockans filmer; dagens filmer ligger kvar. Trailerns film är pausad på hans ord.
 6. **Frågor till honom som inte är ställda på ett kort:** ska vändningen vid platsen ritas som filmen gör den (lyft och
    vänd i luften vid platsen) eller som ordertexten säger (rullad på filten); vill han ha en siluett i ankare 2.2:s
    pose; skons kort är i filmerna dubbelt så långt i bild som dealerns kort (111 mot 55 bildpunkter), vilket han tyckte
@@ -303,7 +360,7 @@ inte skriven. Filmerna (punkt 1) är huvudagentens eget nästa steg när labbets
 
 **Läget 2026-11-17 och det som pågår.** Kopian publiceras ur `main` efter varje färdig del (senast 2026-11-17;
 `/meta.json` på kopian säger vilken commit); av en repliks filmer bär den bara den spelet säger (DRIFT, "Taket för
-Blob"). Runway är inloggat; saldot var 7 430 krediter kl. 21.40: läs det före en beställning. Gamla beställningstexter, dokument och denna fil städades 2026-11-17 efter granskningen
+Blob"). Runway är inloggat; saldot var 6 664 krediter natten till 2026-11-18: läs det före en beställning. Gamla beställningstexter, dokument och denna fil städades 2026-11-17 efter granskningen
 `D:/dealer-scratch/tmp/stadning/FORSLAG.md`: en ny order kan inte längre skrivas med den långa texten (mall 3:s ord),
 "Ny beställning som den här" skrivs med dagens mall, granskarens instruktion prövar det dagens text ber om, och den
 gamla checklistan matar inte längre boten (verkar på kopian vid nästa publicering). Kvar ur granskningen: sidornas
@@ -353,7 +410,7 @@ planförslagen, markering av avgjorda prov).
   `tatuerade-mindre-hander`). De nuvarande filmerna ligger kvar och en ny uppsättning byggs bredvid; händerna syns i
   varje film, så den tar över först när den är komplett. Att måla tatueringar i färdiga filmer har fallit två gånger
   (2 av 5). Första steget, keystonebilderna med tatuerade händer 10 % mindre och utan skuggan under underarmarna, har
-  hans ja (Beslut 2026-11-17 kl. 20.13) och står som kandidater i Material (han sätter gäller), liksom ett nytt ankare
+  hans ja (Beslut 2026-11-17 kl. 20.13) och gäller sedan natten till 2026-11-18 på hans ord (Börja här), liksom ett nytt ankare
   1 gjort ur dem (`paow-vila-tatuerad`, Prov `paow-ankare-tatuerade-hander`, granskat 4/5; kända fel i överlämningen
   från trailersessionen). Händernas punkter för det nya ankaret är mätta men med avsikt inte införda i
   `data/dealer-standard.json`, som är bankens vilobild för alla dealers. Hans svar om ankaret: Börja här, punkt 5.
