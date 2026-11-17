@@ -121,7 +121,7 @@ skrivs på skrivbordet när allt har ett utfall. Här står bara det som inte ä
 
 ## Nästa steg
 
-**Börja här (läget 2026-11-18 kl. 00.42; huvudagenten bytte chatt kl. 21.45).** Labbet byggs om på Jakobs ord från
+**Börja här (läget 2026-11-18 kl. 00.44; huvudagenten bytte chatt kl. 21.45).** Labbet byggs om på Jakobs ord från
 kl. 21.46 och 21.58 (Jakobs besked, "Ett labb"), av underagenter till huvudagenten:
 
 - **Inne i `main` och sett i headless Chrome:** vyn **Bordet**, första versionen (`82258f3`: `/studio/bordet/` med
@@ -204,10 +204,11 @@ kl. 21.46 och 21.58 (Jakobs besked, "Ett labb"), av underagenter till huvudagent
   i allmänhet utan att hon ska "lyfta kortet efter det släpats" eller tryckts ut"). Sett ruta för ruta
   (`D:/dealer-scratch/tmp/huvudagent11/look/hand-slutet/ark-a.png`, `ark-b.png`): 3D-banans första film (prov C, en
   påhittad rörelse) vänder aldrig tillbaka handen och är pensionerad; filmerna lästa ur Pamelas hand ("avlast", prov
-  C2, och "avlast-2", prov C3) gör som hon och som Paows egen p4-04: kortet läggs med vänd hand vid ruta 80 av 120,
-  handen kommer tillbaka med ryggen uppåt, fingertopparna på kortets bortre kant skjuter det 18 bildpunkter till (ruta
-  80–95) och vilar sedan där, vilket är sista bilden. Regeln för ankare 2.1: nyp, bär i luften, nyckelvridning på
-  vägen, lägg med vänd hand, handen vänder tillbaka och skjuter sista biten, vila. Från ankare 2.2 släpas kortet plant
+  C2, och "avlast-2", prov C3) gör som hon och som Paows egen p4-04: kortet bärs i luften, vänds där mitt på vägen (på kant vid ruta 53–56 av 120,
+  1,8 s), hålls sedan uppifrån i sin bortre kant med handryggen uppåt, läggs vid ruta 80 (2,7 s), skjuts 18 bildpunkter
+  till under fingertopparna (ruta 80–95) och ligger sedan still med fingertopparna kvar, vilket är sista bilden. Handen
+  vänds alltså en gång, i luften, och aldrig i slutet (Prov `giv-forlagefilm-2`, de tre arken `d-slutet-*`). Regeln
+  för ankare 2.1: nyp, bär i luften, nyckelvridning mitt på vägen, lägg, skjut sista biten, vila. Från ankare 2.2 släpas kortet plant
   och tas i kanten och vänds först nära platsen. En referensfilm måste sluta som sista bilden, annars hittar Kling på
   slutet (prov C: kortet låg ensamt och handen kom efteråt).
 - **Dockfilmerna** (prov C2 kl. 00.10: den rättade dockfilmen höll, 4/5, 85 krediter): metoden är fri från Pamelas
