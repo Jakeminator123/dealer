@@ -3872,6 +3872,13 @@
           "note": "Prov 2026-11-17 på Jakobs ord (\"testar vilka av våra instruktioner som fungerar bäst\"): tio givar bara dit, ankare 2.1 till plats 4, med fyra texter på WAN 3 och två på Kling 4 med Pamelas giv som förlagefilm. 820 krediter. Kling 4 med förlagefilm vände kortet i fyra av fyra tagningar."
         },
         {
+          "id": "paow-prov-giv-motion-control",
+          "role": "prov",
+          "name": "Givprovet: Kling Motion Control",
+          "proof": "giv-motion-control",
+          "note": "Två tagningar 2026-11-17 med Runways rörelsemodell (Paows ankare 2.1 som bild, Pamelas giv till plats 4 som rörelse), 136 krediter: kortet vänds inte i någon av dem. Kling 4 med första och sista bild och förlagefilm är fortfarande bäst."
+        },
+        {
           "id": "paow-prov-labbets-grund",
           "role": "prov",
           "name": "Labbets grund: Bordet och Efterarbete",
