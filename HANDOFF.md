@@ -35,7 +35,7 @@ Vilken hand som delar väljs per order: vänster, höger eller handbyte (`HAND_C
 
 ## Vem äger vad (2026-11-17)
 
-- **Huvudagentens adress: `dealer-b8`.** Adressen är det andra sessioner skriver till med SendMessage, och den står bara
+- **Huvudagentens adress: `dealer-32`.** Adressen är det andra sessioner skriver till med SendMessage, och den står bara
   på den här raden; rubriken Jakob ser på chatten betyder inget. Byter rollen session, ändras den här raden och inget
   annat. Alla sessioner fick nya adresser när Jakob bytte konto 2026-11-17; äldre adresser i commitmeddelanden gäller
   inte. Kontrollera med ListAgents före ett meddelande. Huvudagenten äger commits, taggar och push, studion,
@@ -66,8 +66,8 @@ Vilken hand som delar väljs per order: vänster, höger eller handbyte (`HAND_C
   - **Banornas sessioner är stängda** på Jakobs ord 2026-11-17 kväll ("resätts eller arkiveras så att vi kan börja om
     med nya agenter"); adresserna ovan (`dealer-dc`, `dealer-cc`, `dealer-e2`) gäller inte längre. Tal och trailer har
     skrivit var sin överlämning som en ny session börjar från: `D:/dealer-scratch/tmp/tal/LASMIG-OVERLAMNING-2026-11-17.md`
-    och `D:/dealer-scratch/tmp/dealer-1e/LASMIG-OVERLAMNING-2026-11-17.md`. Också huvudagenten byter chatt samma kväll:
-    den nya huvudagenten skriver sin adress på raden ovan.
+    och `D:/dealer-scratch/tmp/dealer-1e/LASMIG-OVERLAMNING-2026-11-17.md`. Också huvudagenten bytte chatt samma kväll;
+    adressen på raden ovan är den nya chattens.
 - **Jakobs egna:** planen `placements/default.json` (Arbetsyta) och hans domar i `motions/` (`review`), som skrivs från
   Granska och aldrig skrivs över av ett verktyg. En dom som getts åt honom (`node tools/review-put.ts`) är aldrig hans,
   väntar inte i hans kö och ger vika för hans.
