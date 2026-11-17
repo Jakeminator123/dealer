@@ -6,7 +6,7 @@
       "id": "lapparna-realtid-mun",
       "kind": "beslut",
       "question": "Läpparna i realtid: är den här munnen värd att bygga vidare på?",
-      "leads": "Vid ja byggs första steget på din RunPod: hon svarar i labbets chatt med levande läppar.",
+      "leads": "Vid ja byggs första steget på din RunPod (hon svarar i labbets chatt med levande läppar); provet med förminskad mun gav samma mun.",
       "proof": "paow-realtid-mun",
       "file": "paow-realtid-mun-2-stillbild.png",
       "chips": [
@@ -27,90 +27,6 @@
       "from": "talbanan",
       "cost": "RunPod cirka 1–3 USD per provkväll, 2–4 dagars bygge; inga Runway-krediter",
       "answer": null
-    },
-    {
-      "id": "rollblad-trailern-3",
-      "kind": "beslut",
-      "question": "Rollblad 3 för trailern: är hon rätt nu?",
-      "leads": "Vid ja görs trappans tagning om ur de här bilderna; hon har då page i trailern och sätter upp håret med en klämma.",
-      "proof": "trailer-noir-3",
-      "file": "rollblad-huvudpersonen-3.png",
-      "chips": [
-        {
-          "value": "ja",
-          "label": "Ja, gör film"
-        },
-        {
-          "value": "andra",
-          "label": "Ändra (skriv vad)"
-        },
-        {
-          "value": "nej",
-          "label": "Nej"
-        }
-      ],
-      "asked": "2026-11-17",
-      "from": "trailersessionen",
-      "cost": "cirka 280–320 krediter för två tagningar med nya start- och slutbilder",
-      "answer": {
-        "value": "andra",
-        "note": "Kvinnan har inte tatueringar på händerna i alla bilder",
-        "at": "2026-11-17T17:40:59.505Z"
-      }
-    },
-    {
-      "id": "keystone-tatuerade-hander",
-      "kind": "beslut",
-      "question": "Keystone med tatuerade händer: är händerna rätt?",
-      "leads": "Vid ja läggs de två bilderna som kandidater i Material, och ett nytt ankare görs ur dem för din blick.",
-      "proof": "paow-keystone-tatuerade-hander",
-      "file": "1-sittande-handerna-fore-efter.jpg",
-      "chips": [
-        {
-          "value": "ja",
-          "label": "Ja"
-        },
-        {
-          "value": "mindre",
-          "label": "Mindre händer"
-        },
-        {
-          "value": "nej",
-          "label": "Nej"
-        }
-      ],
-      "asked": "2026-11-17",
-      "from": "trailersessionen",
-      "cost": "ett försök till med mindre händer: 40–80 krediter",
-      "answer": {
-        "value": "nej",
-        "note": "Aningen mindre händer. Ta gärna om möjligt bort de skuggor som finns under hennes underarbar också då inget bord finns där",
-        "at": "2026-11-17T17:42:36.456Z"
-      }
-    },
-    {
-      "id": "trailer-pa-telefonen",
-      "kind": "gora",
-      "question": "Prova trailern på telefonen. Syns filmen?",
-      "leads": "Är den svart: öppna /trailer?diagnos=1 och skicka en skärmbild, så letar vi felet.",
-      "link": "dealer-lake.vercel.app/trailer",
-      "chips": [
-        {
-          "value": "fungerar",
-          "label": "Fungerar"
-        },
-        {
-          "value": "svart",
-          "label": "Svart"
-        }
-      ],
-      "asked": "2026-11-17",
-      "from": "huvudagenten",
-      "answer": {
-        "value": "fungerar",
-        "note": "",
-        "at": "2026-11-17T17:42:44.104Z"
-      }
     },
     {
       "id": "tatuerade-mindre-hander",
