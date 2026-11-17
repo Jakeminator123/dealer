@@ -115,7 +115,7 @@ skrivs på skrivbordet när allt har ett utfall. Här står bara det som inte ä
 
 ## Nästa steg
 
-**Börja här (läget 2026-11-17 kl. 23.50; huvudagenten bytte chatt kl. 21.45).** Labbet byggs om på Jakobs ord från
+**Börja här (läget 2026-11-17 kl. 23.45; huvudagenten bytte chatt kl. 21.45).** Labbet byggs om på Jakobs ord från
 kl. 21.46 och 21.58 (Jakobs besked, "Ett labb"), av underagenter till huvudagenten:
 
 - **Inne i `main` och sett i headless Chrome:** vyn **Bordet**, första versionen (`82258f3`: `/studio/bordet/` med
@@ -175,7 +175,7 @@ kl. 21.46 och 21.58 (Jakobs besked, "Ett labb"), av underagenter till huvudagent
   tagning (`src/deal-check.ts`: en vändning genom kantläget, storlek mot ett verkligt kort, landning, slät färg, inget
   kort som rör sig utan finger) som fäller före en granskare. Det som kräver bankens filmer görs i huvudträdet i ett
   andra steg, när Bordets underagent är klar där.
-- **Pågår hos 3D-banan: dockans hand ur en verklig giv** (hans dom kl. 23.38 om provet med två stolar: rörelsen "ser inte
+- **Pågår hos 3D-banan: dockans hand ur en verklig giv** (hans dom cirka kl. 23.27 om provet med två stolar: rörelsen "ser inte
   naturlig ut" och är nog "omöjlig med mänsklig anatomi"): leder lästa med MediaPipe ur Pamelas och Paows givar,
   ledgränser som test, kortet kvar i greppet tills det ligger och aldrig större än ett verkligt kort i handen. Sedan
   två nya förlagefilmer från bankens kamera, plats 4 och plats 1, som huvudagenten beställer en tagning var av.
