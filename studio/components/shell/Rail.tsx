@@ -6,7 +6,7 @@
 // In the online copy (lib/mode.ts) there is no old lab, so that link is not drawn; instead the bot is there: the view
 // Önskemål (with the answers from Jakob not yet seen) and "Fråga", which opens and closes the panel (components/bot).
 // In the lab Beslut stands first in the foot, with the number of things waiting for his answer (components/decisions).
-import { ArrowUpRight, Clapperboard, FlaskConical, Images, Inbox, LayoutPanelLeft, ListChecks, MessageCircleQuestion, ScanEye, Send, Spade, Speech, SquareDashedMousePointer, Star, Workflow } from "lucide-react";
+import { ArrowUpRight, Clapperboard, Images, Inbox, LayoutPanelLeft, ListChecks, MessageCircleQuestion, ScanEye, Send, Spade, Speech, SquareDashedMousePointer, Star, Workflow } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useMemo, type ComponentType } from "react";
@@ -26,28 +26,33 @@ import { Glossary } from "./Glossary";
 type View = { href: string; label: string; hint: string; icon: ComponentType<{ className?: string }> };
 
 export const VIEWS: readonly View[] = [
-  // Bordet (2026-11-17): the lab's one view of the table (kortplan, beställ and the live picture in one frame); first, beside
-  // the views it will take over once Jakob has seen it.
-  { href: "/bordet/", label: "Bordet", hint: "Bordet: kortplanen, beställningen och scenen i en vy", icon: LayoutPanelLeft },
+  // Bordet (2026-11-17): the lab's one view of the table. Its modes hold what Placering (Kortplan), Scen (Scen, Råfilm,
+  // Efterarbete) and a new order (Beställ) were, so in the lab those two views are no longer in the rail (COPY_ONLY).
+  { href: "/bordet/", label: "Bordet", hint: "Bordet: kortplan, beställning, scen, råfilm och efterarbete i en vy", icon: LayoutPanelLeft },
   // Scen and the old Spela are one view since 2026-11-12 (Jakob): /scen/ leads to /.
   { href: "/", label: "Scen", hint: "Scenen: spela en runda och ändra allt", icon: Clapperboard },
   { href: "/karta/", label: "Karta", hint: "Nodkartan: ankare, filmer och varianter", icon: Workflow },
   { href: "/primara/", label: "Primära", hint: "Vad som spelas nu, mot bästa godkända", icon: Star },
-  { href: "/granska/", label: "Granska", hint: "Filmer som väntar på ditt beslut", icon: ScanEye },
-  { href: "/prov/", label: "Prov", hint: "Jämförelsefilmer och kontaktark", icon: FlaskConical },
+  // Granska holds the proofs too since 2026-11-17 (its part Prov); /prov/ leads there.
+  { href: "/granska/", label: "Granska", hint: "Filmer som väntar på ditt beslut, och proven", icon: ScanEye },
   { href: "/placering/", label: "Placering", hint: "Var korten och skon ligger: flytta, rikta och spara", icon: SquareDashedMousePointer },
   { href: "/material/", label: "Material", hint: "Per dealer: ingångsbild, keystone, ankare, filmer och referenser", icon: Images },
   { href: "/lipsync/", label: "Lipsync", hint: "Läppsynken: grundbilder, skalor, inställningar och prov", icon: Speech },
-  { href: "/bestall/", label: "Beställ", hint: "Det här skickas: granska en beställning av bild eller film innan du godkänner", icon: Send },
+  { href: "/bestall/", label: "Beställ", hint: "Kön och Det här skickas: granska en beställning av bild eller film innan du godkänner", icon: Send },
   { href: "/game/", label: "Casino", hint: "Spela blackjack som i casinot: spelmotorn, marker och reglage, med valt förval", icon: Spade },
 ];
 
 /**
- * The views the rail shows: the online copy orders nothing, so Beställ is only in the lab, and it carries no lip-sync facts, so
- * neither is Lipsync. Casino plays there too (the game page runs the engine itself).
+ * The views the rail shows. The online copy orders nothing and saves no plan, so Bordet and Beställ are only in the lab, and
+ * it carries no lip-sync facts, so neither is Lipsync; Casino plays there too (the game page runs the engine itself). In the
+ * lab Bordet holds Scen and Placering (Jakob 2026-11-17: they are to be part of the main view), so those two stand in the
+ * rail only in the copy, which has no Bordet; their addresses keep working in the lab (/?runda=…, /placering/?plats=…).
  */
 const LAB_ONLY: readonly string[] = ["/bordet/", "/bestall/", "/lipsync/"];
-const SHOWN: readonly View[] = isSnapshot ? VIEWS.filter((view) => !LAB_ONLY.includes(view.href)) : VIEWS;
+const COPY_ONLY: readonly string[] = ["/", "/placering/"];
+const SHOWN: readonly View[] = VIEWS.filter((view) => !(isSnapshot ? LAB_ONLY : COPY_ONLY).includes(view.href));
+/** Where the mark at the top leads: the first view of the rail. */
+const HOME = isSnapshot ? "/" : "/bordet/";
 
 /** The view of requests to Jakob: only where the bot is (the online copy). */
 export const REQUESTS_VIEW: View = { href: "/onskemal/", label: "Önskemål", hint: "Önskemål till Jakob, med status och hans svar", icon: Inbox };
@@ -80,8 +85,8 @@ function RailItem({ view, href, active, count, tone }: { view: View; href?: stri
         href={href ?? view.href}
         aria-current={active ? "page" : undefined}
         className={cn(
-          // Tighter in a window under 960 px high, so that every view and the foot fit at 1440 × 900 (eleven views since Bordet:
-          // 46 px a view and 2 px between them there, see the list's gap below).
+          // Tighter in a window under 960 px high, so that every view and the foot fit at 1440 × 900 (46 px a view and 2 px
+          // between them there, see the list's gap below).
           "group relative mx-2 flex flex-col items-center gap-1 rounded-lg px-1 pb-1.5 pt-2 transition-colors duration-150 [@media(max-height:960px)]:pb-0.5 [@media(max-height:960px)]:pt-1",
           active ? "bg-raised text-ink" : "text-dim hover:bg-raised/60 hover:text-ink",
           "focus-visible:outline-offset-0",
@@ -152,7 +157,7 @@ export function Rail() {
     // frame taller than the window, which would cut off the foot of every view.
     <nav aria-label="Vyer" className="flex h-full min-h-0 w-[76px] flex-col border-r border-line bg-surface">
       <Tooltip content="Dealer Studio" side="right">
-        <Link href={dealerHref("/", dealer)} aria-label="Dealer Studio, till Scen" className="mx-auto mb-1.5 mt-3 grid size-11 place-items-center rounded-lg text-brass transition-colors hover:bg-raised/60">
+        <Link href={dealerHref(HOME, dealer)} aria-label={isSnapshot ? "Dealer Studio, till Scen" : "Dealer Studio, till Bordet"} className="mx-auto mb-1.5 mt-3 grid size-11 place-items-center rounded-lg text-brass transition-colors hover:bg-raised/60">
           <Mark />
         </Link>
       </Tooltip>
