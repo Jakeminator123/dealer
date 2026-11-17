@@ -115,14 +115,15 @@ skrivs på skrivbordet när allt har ett utfall. Här står bara det som inte ä
 
 ## Nästa steg
 
-**Börja här (läget 2026-11-17 kl. 22.35; huvudagenten bytte chatt kl. 21.45).** Labbet byggs om på Jakobs ord från
+**Börja här (läget 2026-11-17 kl. 22.45; huvudagenten bytte chatt kl. 21.45).** Labbet byggs om på Jakobs ord från
 kl. 21.46 och 21.58 (Jakobs besked, "Ett labb"), av underagenter till huvudagenten:
 
 - **Inne i `main` och sett i headless Chrome:** vyn **Bordet**, första versionen (`82258f3`: `/studio/bordet/` med
   lägena Kortplan, Beställ, Scen, Råfilm och Efterarbete, ny zoom, ett kortformat; "Skapa utkast" är inte tryckt, bara
   bevisad lika med produktionslistans utkast i ett test); **Granska med Prov** (`ab08b8f`); **Karta med Primära**
   (`fcfd2d9`: nodträdet, Primär och högst tre sekundära per steg med hur spelet använder var och en); **Lipsync per
-  dealer** (`ff03b89`); **gamla labbet borta** (`3833575`); **menyn** (`3144e1d`, `fd7e5a7`): Bordet, Karta, Granska,
+  dealer** (`ff03b89`); **gamla labbet borta** (`3833575`); **rundan byggd av noderna** (`6f00d19`: "Bygg en runda" i
+  panelen Runda, i Scen och i Bordets läge Scen); **menyn** (`3144e1d`, `fd7e5a7`): Bordet, Karta, Granska,
   Material, Lipsync, Beställ, Casino, och i foten Beslut, Ordlista, Ljud och Modeller. Scens och Placerings adresser
   fungerar i labbet; kopian på nätet behåller dem i sin meny.
 - **Pågår i huvudträdet, ocommittat:** Bordets andra steg (samma underagent, arbetsmapp `D:/dealer-scratch/tmp/bordet/`):
@@ -130,9 +131,19 @@ kl. 21.46 och 21.58 (Jakobs besked, "Ett labb"), av underagenter till huvudagent
   Det här saknas, Protokoll) och resten av Placering (Material, Mobil) in i Bordet, så att `/bestall/` och `/placering/`
   leder dit i labbet och Beställ går ur menyn; och rättningen av "Alla sju", som i dag skickar första platsens vändning
   till alla platser (`NewOrder.tsx`; funnen av en utomstående granskare, bekräftad i koden).
-- **Pågår i eget arbetsträd:** grenen `runda-noder` i `D:/dealer-scratch/tmp/runda-noder/trad` (rundan byggs av de noder
-  som finns; förvalen blir exempel). 3D-banans gren `dealer-3d` är Jakobs andra session (Vem äger vad).
-- **Det studion som visas är byggd ur det incheckade** (`fd7e5a7`), i det rena trädet
+- **Pågår hos tre underagenter till** (startade kl. 22.38 på hans "Fortsätt standarlisera och förenkla allt i denna
+  riktning […] Hellre en metod som fungerar generiskt är att fixa en dealer som ska kunna funka efter hundratals
+  försök" och "inte ad adsurdum så tiotals GB med gaqmmalt skräp sparas"): (1) **filmmetodens två följdprov**, betalda
+  inom 400 krediter som huvudagenten har godkänt (släp från A2.2 till plats 4 och nyp till en ytterplats, Kling 4 med
+  Pamelas film till samma plats som referensfilm, två tagningar var; arbetsmapp
+  `D:/dealer-scratch/tmp/giv-experiment-2/`, provet `giv-forlagefilm-2`, planen för mall 10, sista bilden ur bankens
+  egen klippruta, metodregistret och en automatisk kontroll av varje tagning i `STANDARD.md` där; den ändrar bara
+  `tools/film-prompting.md` i huvudträdet); (2) **inventering av gammal media och slask**, bara läsning (rapport i
+  `D:/dealer-scratch/tmp/stadning/inventering-2026-11-17/`; inget raderas förrän huvudagenten har läst den); (3)
+  **skills för projektets agenter och rutinverktygen in i repot** (push från rent träd, titt på labbsidor under låset,
+  studion byggd ur det incheckade), på grenen `skills-och-verktyg` i `D:/dealer-scratch/tmp/skills-och-verktyg/trad`.
+  3D-banans gren `dealer-3d` är Jakobs andra session (Vem äger vad).
+- **Den studio som visas är byggd ur det incheckade** (`6f00d19`), i det rena trädet
   `D:/dealer-scratch/tmp/granska-prov/trad` (`git checkout --detach main`, `npm --prefix studio run build`, och `out/`
   kopierad till huvudträdets `studio/out`), så att underagentens halvfärdiga filer inte syns för honom.
 - **Att göra:** det som ännu skriver `/prov/?prov=` eller kallar Prov och Primära egna vyer (`studio/lib/decisions.ts`,
