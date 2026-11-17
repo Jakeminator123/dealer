@@ -1,13 +1,13 @@
 "use client";
 
 // The left rail: whose studio it is at the top (DealerSwitch: Pamela | Paow), the views with the active one marked, counts
-// where they help (the chosen dealer's takes waiting for Jakob beside Granska, edges with a Primär beside Primära), whether
+// where they help (the chosen dealer's takes waiting for Jakob beside Granska, steps with a Primär beside Karta), whether
 // the lab answers, and at the bottom the two pages beside the studio, Ljud and Modeller (same tab). A view's link keeps the
 // chosen dealer in the address. In the online copy (lib/mode.ts) those pages are not there, so their links are not drawn;
 // instead the bot is there: the view
 // Önskemål (with the answers from Jakob not yet seen) and "Fråga", which opens and closes the panel (components/bot).
 // In the lab Beslut stands first in the foot, with the number of things waiting for his answer (components/decisions).
-import { Box, Clapperboard, Images, Inbox, LayoutPanelLeft, ListChecks, MessageCircleQuestion, ScanEye, Send, Spade, Speech, SquareDashedMousePointer, Star, Volume2, Workflow } from "lucide-react";
+import { Box, Clapperboard, Images, Inbox, LayoutPanelLeft, ListChecks, MessageCircleQuestion, ScanEye, Send, Spade, Speech, SquareDashedMousePointer, Volume2, Workflow } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useMemo, type ComponentType } from "react";
@@ -32,13 +32,13 @@ export const VIEWS: readonly View[] = [
   { href: "/bordet/", label: "Bordet", hint: "Bordet: kortplan, beställning, scen, råfilm och efterarbete i en vy", icon: LayoutPanelLeft },
   // Scen and the old Spela are one view since 2026-11-12 (Jakob): /scen/ leads to /.
   { href: "/", label: "Scen", hint: "Scenen: spela en runda och ändra allt", icon: Clapperboard },
-  { href: "/karta/", label: "Karta", hint: "Nodkartan: ankare, filmer och varianter", icon: Workflow },
-  { href: "/primara/", label: "Primära", hint: "Vad som spelas nu, mot bästa godkända", icon: Star },
+  // Karta holds Primära too since 2026-11-17 (each step with its Primär and secondary films); /primara/ leads there.
+  { href: "/karta/", label: "Karta", hint: "Nodträdet: Primär och sekundära filmer per steg, och hur spelet använder dem", icon: Workflow },
   // Granska holds the proofs too since 2026-11-17 (its part Prov); /prov/ leads there.
   { href: "/granska/", label: "Granska", hint: "Filmer som väntar på ditt beslut, och proven", icon: ScanEye },
   { href: "/placering/", label: "Placering", hint: "Var korten och skon ligger: flytta, rikta och spara", icon: SquareDashedMousePointer },
   { href: "/material/", label: "Material", hint: "Per dealer: ingångsbild, keystone, ankare, filmer och referenser", icon: Images },
-  { href: "/lipsync/", label: "Lipsync", hint: "Läppsynken: grundbilder, skalor, inställningar och prov", icon: Speech },
+  { href: "/lipsync/", label: "Lipsync", hint: "Läppsynken per dealer: var munnen görs, vad som är inställt och vad som stämmer", icon: Speech },
   { href: "/bestall/", label: "Beställ", hint: "Kön och Det här skickas: granska en beställning av bild eller film innan du godkänner", icon: Send },
   { href: "/game/", label: "Casino", hint: "Spela blackjack som i casinot: spelmotorn, marker och reglage, med valt förval", icon: Spade },
 ];
@@ -178,7 +178,7 @@ export function Rail() {
               view={view}
               href={dealerHref(view.href, dealer)}
               active={active === view.href}
-              count={view.href === "/granska/" ? (counts && counts.waiting > 0 ? String(counts.waiting) : null) : view.href === "/primara/" ? (counts?.primar ?? null) : null}
+              count={view.href === "/granska/" ? (counts && counts.waiting > 0 ? String(counts.waiting) : null) : view.href === "/karta/" ? (counts?.primar ?? null) : null}
               tone={view.href === "/granska/" ? "brass" : "neutral"}
             />
           </li>
