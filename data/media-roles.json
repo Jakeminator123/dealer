@@ -5448,7 +5448,7 @@
           "id": "paow-film-intro-noir-3",
           "role": "film",
           "name": "Filmen före spelet (noir-trailer 3, 47 s)",
-          "path": "assets/films/intro/noir-3/film.mp4",
+          "path": "assets/films/intro/noir-3/film-2.mp4",
           "still": 12,
           "fps": 24,
           "note": "Utanför banken. Spelas över spelets scen före spelet och tonar över i spelet när den slutar (src/game-intro.ts; adressordet intro=noir-3). Jakob 2026-11-13 kl. 21.23: \"så att man övergår till henne i URL:en på vercel. kanske genom en ny knapp\". Sista rutan är spelets egen bild i rummet Monaco med rörelse i rummet.",

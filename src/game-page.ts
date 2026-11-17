@@ -48,7 +48,7 @@ placeConsole(); // before the film before the game is laid, so that it is laid i
 // knapp"). It is laid before anything is read, so that it covers the first picture, and the game is built under it. The film's last
 // frame is the game's own picture in the room Monaco with life in the room, so the address asks for room=monaco and roomLife=1 too.
 // Until it is over she says nothing and the chat is still (introOn, in render): the press on Spela is also what lets her be heard.
-const INTROS: Record<string, {film: string; poster: string}> = {'noir-3': {film: 'assets/films/intro/noir-3/film.mp4', poster: 'assets/films/intro/noir-3/poster.jpg'}};
+const INTROS: Record<string, {film: string; poster: string}> = {'noir-3': {film: 'assets/films/intro/noir-3/film-2.mp4', poster: 'assets/films/intro/noir-3/poster.jpg'}};
 const introAsked = INTROS[query.get('intro') ?? ''] as {film: string; poster: string} | undefined;
 let introOn = !!introAsked, introOver = () => { introOn = false; }, introLead = () => {};
 if (introAsked) void import('./game-intro.ts').then(m => m.createIntro(stage, canvas, {...introAsked, onLead: () => introLead()})).catch(() => null).then(() => introOver());

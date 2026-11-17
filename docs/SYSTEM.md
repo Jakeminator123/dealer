@@ -346,6 +346,7 @@ en mätning och 0 i en annan; filmens slut spelas in utan svaj. På en telefon l
 eller bredvid konsolen (`introLayout` får rutans mått). Från `onLead` ritas spelet under filmen (täckning 0,999), eftersom den första ruta där webbläsaren
 lägger ihop de två kostade 0,08 till 0,18 s och syntes som ett stopp när den kom med toningens första ruta. Trycket
 på Spela är också det som låter henne höras. Filmen
+(`film-2.mp4`; en omgjord film får nytt namn, eftersom kopian svarar med ett dygns lagringstid)
 och startrutan ligger i `assets/films/intro/noir-3/` med kvitto; filmen måste spelas in på nytt när spelets vilobild
 ändras (trailersessionens `efter3/`, ett kommando, inga krediter).
 **Ljud-labbet** (`sound.html`, länken Ljud ↗; `src/lab-sound.ts`): markernas klirr, kortens ljud, bakgrundsljud per

@@ -202,8 +202,9 @@ konto ("Varit borta ett par dagar och nu bytt konto"). Han läser inte långa sv
    gör. Tre frågor som avgör läsningen: vilken telefon och webbläsare (skärmbilden kl. 15.21 visar en iPhone med Safari
    i strömsparläge); är hela bilden svart, eller syns bordet och knapparna och bara hon är borta; och fungerar spelet
    på samma telefon på `/casino`, utan filmen?
-2. **Runway: logga in igen och fyll på.** Kopplingen till Runway (MCP-servern `runway`) föll med kontobytet och kräver
-   ny inloggning (`/mcp`); saldot gick inte att läsa 2026-11-17 och var cirka 52 krediter 2026-11-14 (516 kvällen före;
+2. **Runway: logga in igen.** Han har fyllt på (sagt till trailersessionen 2026-11-17; saldot är inte läst av någon
+   session sedan dess). Kopplingen till Runway (MCP-servern `runway`) föll med kontobytet och kräver
+   ny inloggning (`/mcp`) i varje session som ska beställa; saldot gick inte att läsa 2026-11-17 och var cirka 52 krediter 2026-11-14 (516 kvällen före;
    dagens anrop: bild 20, trailerns prov 124, rummets slinga 320). Påfyllningen gör bara han (arbetsytan "Jakob", sidan
    för betalning hos Runway). Det som väntar på krediter, i den ordning hans egna ord pekar: tatueringarna på hennes
    rygg i trailerns början (nästa prov cirka 105; hela början 650–950, med marginal 1 150–1 200), tatuerade och mindre
@@ -242,8 +243,10 @@ konto ("Varit borta ett par dagar och nu bytt konto"). Han läser inte långa sv
    samma dag nio av de tio sista (STABILT 17; lyckoönskan över ingången står kvar som den var, eftersom den nya hade
    en dubbel läpplinje i två rutor). **Granskarna är inte överens om giporna**, och det ska han ha rakt: underläppen
    kallar alla klart bättre, men av elva granskare säger sex att giporna är naturliga eller nästan naturliga och fyra
-   att det uppdragna finns kvar i spelets storlek. Hans öga avgör. Ser han fortfarande clown-mungipor finns ett
-   gratis steg till att pröva: att tona ned hennes egna små veck utanför giporna medan hon talar. Prov
+   att det uppdragna finns kvar i spelets storlek. **Hans öga har avgjort samma dag: "hennes mungipor måste som sagt
+   med"**, och läppsynken i trailern på kopian kallar han sämre än i provfilmen. Talbanan gör därför nästa gratis
+   steg (hennes egna små veck utanför giporna tonas ned medan hon talar, som ett blint prov på åtta repliker) och
+   utreder vad som skiljer läppsynken på kopian från provfilmens. Prov
    `paow-mun` och `paow-tal`. Hans egen godkända `paow-tal-blackjack-sv-04` rörs inte och går före i spelet,
    så blackjackrepliken har kvar de gamla giporna tills han själv dömer om den (Granska, Alla, filtret Dömda åt dig:
    `paow-tal-blackjack-sv-13` är den nya).
@@ -285,10 +288,14 @@ commit): öppen utan lösenord, underlägget och kortens fjärde steg, vilans ny
 ändringarna för det svarta spelet, mobilens konsol, de nya läpparna. Av en repliks filmer bär kopian bara den spelet
 säger (DRIFT, "Taket för Blob"). Det som följer är i gång eller står på tur; punkterna under är äldre och gäller där inget
 här säger annat.
-- **Trailersessionen** spelar in slutet på filmen före spelet på nytt (v5: Monacos nya slinga, hennes svaj av; inga
-  krediter). Leveransen i `D:/dealer-scratch/tmp/dealer-1e/intro/media/` läggs av huvudagenten under
-  `assets/films/intro/noir-3/` (film, startbild, kvitto), mäts i tre storlekar
-  (`D:/dealer-scratch/tmp/huvudagent11/look/skjut-intro-toning.mjs`, `hopp-i-rutor.mjs`) och publiceras.
+- **Trailersessionen** har spelat in slutet på filmen före spelet på nytt (Monacos nya slinga, hennes svaj av; inga
+  krediter) och går mot avslut på Jakobs ord. Filmen ligger inne som `assets/films/intro/noir-3/film-2.mp4` (nytt
+  namn, eftersom kopian svarar med ett dygns lagringstid och en telefon annars hade visat det gamla slutet; den förra
+  ligger bredvid som `film-v4.mp4`). Mätt av huvudagenten i den riktiga sidan, på ansiktet i de rutor webbläsaren
+  ritade: 0 bildpunkter mellan filmens sista ruta och spelet i 1920 × 1080 och 844 × 390, 1 i 390 × 844, och rummet
+  bakom henne skiljer 0,7 nivåer av 255 (`D:/dealer-scratch/tmp/huvudagent11/look/skjut-intro-toning.mjs`,
+  `hopp-i-rutor.mjs`). Kvar i dess bana: tatueringarna i trailerns början (provet 2/5; ett andra prov cirka 105
+  krediter, hela början 620–940), och ingen har lyssnat på trailern.
 - **Talbanan:** STABILT 16 och 17 (mungiporna) är inne 2026-11-17: 25 talfilmer, tre munlappar och demofilmen,
   godkända åt honom; spelet säger de nya för alla repliker utom `blackjack` (hans egen `sv-04`). Fem av dem
   (`otur`, `push`, `regler`, `varsagod` och lyckoönskan över given) byttes på huvudagentens beslut fast granskaren
@@ -490,6 +497,16 @@ här säger annat.
     hopp görs. inte farlgigt, men lite." Och om natten: "I övrigt är jobbet bra gjort!"
   - **Svart efter filmen** (kl. 16.24, genom en session som hans bot startade medan han satt vid telefonen): "Den nya
     videon som overgar till spelet blir bara svart nar man ar inne i spelet." Kända brister, "Spelet på hans telefon".
+- **2026-11-17 cirka kl. 17.15, till scenbanan, sedan han tittat på datorn** (Chrome på Windows; hans skärmbild av
+  `/trailer?diagnos=1` visar "kö: går · sträng nej · nekade 0" och hel bildyta): "I trailern:
+  'https://dealer-lake.vercel.app/trailer' så är lipsynk sämre. 'http://127.0.0.1:4319/studio/prov/?prov=monaco-liv-2'
+  tror jag dock har bättre lipsynk och bakgrunden är bättre! 'ttp://127.0.0.1:4319/studio/prov/?prov=har-utan-gront' -
+  ja det gröna är borta. Ang tatueringarna så är det bättre! "underlagg"- kan inte klicka på ngn länk, 'Paows mun när
+  hon talar' hennes mungipor måste som sagt med. Ang vad som blir svart elelr inte ser jag ingen skymt av, mne då
+  testar jag på datorn". Alltså: Monacos bakgrund och håret är bra; **mungiporna är inte lösta i hans ögon** ("måste
+  som sagt med"), så talbanans nästa steg är beställt av honom; läppsynken på kopian kallar han sämre än i provfilmen
+  (inte utrett: kopian fick de nya läpparna kl. 17.05 och 17.08, strax innan han tittade); det svarta spelet syns
+  inte på datorn och är inte prövat på telefonen. Till trailersessionen samma stund: han har fyllt på Runway.
 - **2026-11-17 kl. 16.35:** "Vad är sttus? Varit borta ett par dagar och nu bytt konto". Arbetet hade stått sedan
   2026-11-14 kl. 17.15; sessionerna fick nya adresser (Vem äger vad), och Runways koppling kräver ny inloggning.
 - **Kopian till chefen** (kl. 15.38 till talbanan): "när jag vill kunna komma till en supenekle mockupsida med
