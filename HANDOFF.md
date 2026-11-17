@@ -728,8 +728,16 @@ här säger annat.
   ljusare. Champagnefilmen (`paow-vila-17-02`) är cirka 5 nivåer mörkare i ansiktet än de andra vilorna och ingången
   `2-1-02-01` cirka 5 ljusare; det är vad Jämna filmernas färg är till för, och hur mycket som blir kvar i spelet
   är inte mätt. Det filerna inte förklarar bör sitta i bytet självt: en film som inte står färdig när den tas in och
-  tappar sina första rutor (6 av 16 starter 2026-11-13). Den delen mäts i webbläsaren och är inte gjord. Förslag,
-  inte infört: låta en retur spela till sin sista ruta (i dag tappas tre i var ände, `IDLE_RULE` och `resolveRound` i
+  tappar sina första rutor (6 av 16 starter 2026-11-13). Mätt i webbläsaren av scenbanan 2026-11-17 (tolv körningar):
+  nästa vila beställdes först när filmen före var slut, stod nästan aldrig färdig, och bilden stod på den förra
+  filmens sista ruta 0,05 s mellan två vilor och 0,08–0,18 s efter en replik eller en retur; en första ruta tappades
+  i 19 % av starterna. **Rättat samma kväll för vila efter vila och vila efter replik:** nästa vila beställs medan
+  filmen före ännu spelar (`restFilm` i `src/game-film.ts`, en kvarts sekund in), så att kön har den väntande på sin
+  första ruta. Mätt efter (fyra körningar, dator och telefonstorlek): vila efter vila står färdig i 12 av 12 starter,
+  bilden står 33 ms (en ruta) och ingen ruta tappas; vila efter replik 50–83 ms (förut 84–133). **Kvar:** vila efter
+  en retur (83 ms, inte färdig, en tappad ruta i en av fyra): rundans kedja väntar på sitt eget slut, så vilan kan
+  inte köas bakom den på samma sätt. Mäts om med `skarv-prov.mjs` och `skarv-vila.mjs` bredvid de andra verktygen
+  (`D:/dealer-scratch/tmp/huvudagent11/hopp-efter/`). Förslag, inte infört: låta en retur spela till sin sista ruta (i dag tappas tre i var ände, `IDLE_RULE` och `resolveRound` i
   `src/clip-graph.ts`, med skälet att en genererad film hoppar i sina två sista rutor). Mätt på Paows fyra returer:
   de tre sista rutorna är inte mjukare än de före (88–105 % av filmens egen skärpa), `utgang-baklanges-01` landar då
   på ankaret (ljussteget 5,6 → 0,6 nivåer), de två `utgang-2-2` tappar sina 2–3 bildpunkter, och `utgang-01-01` vinner

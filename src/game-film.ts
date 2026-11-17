@@ -43,6 +43,8 @@ export type FilmPlayers = {
   hurry(rate: number): void; preload?(paths: string[]): void;
   /** Stops the film on screen where it stands (true) or lets it run on (false); the next play() lets it run by itself. */
   toggle?(force?: boolean): void;
+  /** The scene's queue: a chain played without cut waits for the part on screen, is read ahead, and is shown on its first frame when that part ends. */
+  queues?: boolean;
 };
 export type Placed = {quad: Pt[]; back: boolean; target: string; shoeDraw: number};
 /**
@@ -117,16 +119,37 @@ export function createFilm(players: FilmPlayers, bank: Graph, layout: Layout, re
    * film that ends in that pose.
    */
   function rest(how: {cut?: boolean; hold?: boolean} = {}) {
-    // calmOnly (the page's, while a film plays before the game): only rests where she holds still, so that she sits as the film
-    // ends: calm ones that may be cut (a calm rest marked cut: false is one where she turns her head or looks round the table),
-    // else any calm one, else whatever she has.
+    const mine = ++token, take = pickRest();
+    if (!take) { resting = null; return; }
+    resting = take; seen(take); heldRest = how.hold === true ? mine : null;
+    restFilm(mine, take, how);
+  }
+  // calmOnly (the page's, while a film plays before the game): only rests where she holds still, so that she sits as the film
+  // ends: calm ones that may be cut (a calm rest marked cut: false is one where she turns her head or looks round the table),
+  // else any calm one, else whatever she has.
+  const pickRest = (): Take | null => {
     const rests = graph.edge['IDLE>IDLE']?.takes ?? [], calm = calmOnly ? rests.filter(t => t.idle?.calm === true) : [], still = calm.filter(t => t.idle?.cut !== false);
-    const mine = ++token, pick = pickIdle(still.length ? still : calm.length ? calm : rests, played, random());
-    if (!pick?.take.media.video) { resting = null; return; }
-    const take = pick.take, range = idleRange(take.frames ?? 90);
-    resting = take; played.push(take.id); played.splice(0, Math.max(0, played.length - 24)); /* long enough for the last gestures (IDLE_RULE.gestureMemory) */ heldRest = how.hold === true ? mine : null;
+    const take = pickIdle(still.length ? still : calm.length ? calm : rests, played, random())?.take; return take?.media.video ? take : null;
+  };
+  const seen = (take: Take) => { played.push(take.id); played.splice(0, Math.max(0, played.length - 24)); }; // long enough for the last gestures (IDLE_RULE.gestureMemory)
+  /**
+   * Plays a rest film of the loop `mine` and asks for the one after it as soon as it is on screen, while it still plays: the
+   * queue then has the next film waiting on its first frame when this one ends, and shows it at once. Asked for when the film
+   * before had ended (as until 2026-11-17), the next film was not ready and the picture stood on the last frame meanwhile:
+   * 0.05 s between two rests and 0.08 to 0.18 s after a spoken line, in every one of 138 measured joins, with a first frame
+   * lost in one of five (the scene lane's measurement in a browser). ahead: asked for that way; it is the rest on screen,
+   * and counted as seen, only from the moment it is. A held rest asks for nothing until it has been let go and has ended.
+   */
+  // Only a player that queues is asked ahead (players.queues), and AHEAD_MS after the part came on screen: the queue starts a
+  // part's film once its first frame has been drawn, and a chain asked for before that would start it early.
+  const AHEAD_MS = 250, aheadSoon = (ask: () => void) => { if (players.queues === true) setTimeout(ask, AHEAD_MS); };
+  function restFilm(mine: number, take: Take, how: {cut?: boolean; hold?: boolean; ahead?: boolean} = {}) {
+    const range = idleRange(take.frames ?? 90); let asked = false;
+    const next = () => { if (mine !== token || asked) return; const after = pickRest(); if (!after) return; asked = true; restFilm(mine, after, {ahead: true}); };
     void trackOf(take).then(track => { if (mine !== token) return;
-      players.play([{path: take.media.video!, start: range.start, end: range.end, ...fpsOf(take), ...modelOf(take), ...effectPart(take), rest: true, track, cards: cardOptions({own: null, lying}, table, records, layout, carry, words)}], {onEnd: () => { if (mine === token) rest(); }, ...(how.cut === true ? {cut: true} : {}), ...(how.hold === true ? {onPart: () => { if (mine === token && heldRest === mine) players.toggle?.(true); }} : {})}); });
+      players.play([{path: take.media.video!, start: range.start, end: range.end, ...fpsOf(take), ...modelOf(take), ...effectPart(take), rest: true, track, cards: cardOptions({own: null, lying}, table, records, layout, carry, words)}], {...(how.cut === true ? {cut: true} : {}),
+        onPart: () => { if (mine !== token) return; if (how.ahead) { resting = take; seen(take); } if (how.hold === true && heldRest === mine) players.toggle?.(true); else aheadSoon(next); },
+        onEnd: next}); });
   }
   /** Lets a held rest run on (rest({hold: true})); nothing happens when another film has been played since, or none was held. */
   function release() { if (heldRest !== null && heldRest === token) players.toggle?.(false); heldRest = null; }
@@ -230,7 +253,9 @@ export function createFilm(players: FilmPlayers, bank: Graph, layout: Layout, re
     const part = talkPart(clip); if (!part || resting === null) return false;
     const mine = ++token, leaving = resting; resting = null;
     const cut = idleExit(leaving) === 'CUT'; if (!cut) players.hurry(IDLE_RULE.exitRate);
-    players.play([part], {cut, onPart: () => { if (mine === token) begin(); }, onEnd: () => { if (mine === token) rest(); }});
+    // the rest after the line is asked for while the line plays (restFilm), in the line's own turn of the loop
+    let asked = false; const ahead = () => { if (mine !== token || asked) return; const after = pickRest(); if (!after) return; asked = true; restFilm(mine, after, {ahead: true}); };
+    players.play([part], {cut, onPart: () => { if (mine !== token) return; begin(); aheadSoon(ahead); }, onEnd: () => { if (mine === token && !asked) rest(); }});
     return true;
   }
   return {

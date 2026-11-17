@@ -195,3 +195,24 @@ test('the film card recoloured (cardBack=dark, cardFace=paper) goes with every p
   assert.ok(!('back' in plain) && !('face' in plain), 'without a word the part says nothing, so the card layer keeps its line');
   assert.equal(asked.back, 'dark'); assert.equal(asked.face, 'paper'); assert.equal(asked.carry, 'object');
 });
+
+test('with a queue that queues, the next rest is asked for while the film before it plays, and a line gets its rest the same way', async () => {
+  // A stand-in for the scene's queue: a chain played without cut waits behind the part on screen and comes on when that part ends.
+  type Chain = {list: FilmPart[]; options: {cut?: boolean; onPart?(index: number): void; onEnd?(): void}};
+  const asked: string[] = []; let on: Chain | null = null, waiting: Chain | null = null;
+  const enter = (c: Chain) => { on = c; c.options.onPart?.(0); };
+  const queue = {queues: true, hurry() {}, preload() {},
+    play(list: FilmPart[], options: Chain['options'] = {}) { asked.push(list[0].path); const c = {list, options}; if (on && !options.cut) waiting = c; else { waiting = null; enter(c); } },
+    finish() { const done = on; if (waiting) { const next = waiting; waiting = null; enter(next); } else { on = null; done?.options.onEnd?.(); } }};
+  const film = createFilm(queue, buildGraph(bank(), {dealer: 'paow'}), createLayout(defaultPlan()), async () => null, () => 0.5), wait = (ms: number) => new Promise(r => setTimeout(r, ms));
+  film.rest(); await wait(20); assert.equal(asked.length, 1, 'the first rest, and nothing ahead of it at once');
+  await wait(320); assert.equal(asked.length, 2, 'a quarter of a second in, the next rest is asked for'); assert.ok(waiting, 'and waits behind the one on screen');
+  await wait(320); assert.equal(asked.length, 2, 'one ahead, not a row of them');
+  queue.finish(); assert.equal(waiting, null); await wait(320); assert.equal(asked.length, 3, 'the one that came on asks for the next');
+  // a line: its rest is asked for while the line plays, and the line's end asks for nothing more
+  assert.equal(film.say('tal'), true); assert.equal(asked.at(-1), video('tal')); queue.finish(); await wait(320);
+  const afterTalk = asked.length; assert.ok(waiting, 'a rest waits behind the line'); assert.notEqual(asked.at(-1), video('tal'));
+  queue.finish(); await wait(20); assert.equal(asked.length, afterTalk, 'the line ended: the rest that waited came on, none was asked for twice');
+  // a film played since: what the old turn would have asked for ahead is not asked for
+  film.rest({cut: true}); const n = asked.length; film.rest({cut: true}); await wait(320); assert.equal(asked.length, n + 2, 'only the turn that stands asks ahead');
+});

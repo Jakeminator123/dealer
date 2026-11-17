@@ -754,6 +754,8 @@ export function createPlayers(onShow: (texture: T.Texture, path: string) => void
   }
   return {
     load, seek, play, touched, wake,
+    // A chain played without cut waits for the part on screen (waiting, above): the game asks for the next rest film ahead.
+    queues: true,
     // What the queue holds and what last happened in it, for a page that shows it to someone looking for a fault (key diagnos in the game).
     diagnosis() { const state = (v: HTMLVideoElement) => `${fileOf(v)} rs${v.readyState} ns${v.networkState}${v.paused ? ' står' : ' går'}${v.muted ? '' : ' hörs'}${v.error ? ` FEL${v.error.code}` : ''} ${(v.currentTime || 0).toFixed(2)}`;
       const on = players[current]?.video ?? null;
