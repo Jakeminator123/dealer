@@ -5,10 +5,12 @@ import { buildGraph, type BankData } from "../../src/clip-graph.ts";
 import { SEAT_TARGETS } from "../../src/order-model.ts";
 import { NEUTRAL_BACKDROP, SHOE, VIEWS, defaultPlan, editPlace, quad, sequence, toPixels, validatePlan, INTENT_DEFAULTS, type Geometry } from "../../src/placement-model.ts";
 import {
-  GREEN_FILM, HISTORY, PLACES, START_PLACE, afterSave, amend, backdropForView, bankFilms, begin, changedPlaces, commit, decimal, defaultStill, end, filmView, isDirty,
-  isStill, libraryFilms, motionSteps, nudged, openDraft, orderBack, orderHref, parseDecimal, placeCode, placeFromCode, placeName, placementQuery, placingHref, quadSize, readPlacementAddress,
-  shownBackdrop, signature, sizeFromCorner, stillChoice, stillLabel, stillPath, stillsOf, taperFromCorner, toLocal, toSaved, turnHandle, undo, type Film,
+  GREEN_FILM, HISTORY, PLACES, START_PLACE, afterSave, amend, backdropForView, bankFilms, begin, changedPlaces, commit, decimal, defaultStill, editFlip, end, filmGoesTo, filmView, flipOf,
+  gameDealNotes, isDirty, isStill, libraryFilms, motionSteps, nudged, openDraft, orderBack, orderHref, parseDecimal, placeCode, placeFromCode, placeName, placementQuery, placingHref,
+  quadSize, readPlacementAddress, shownBackdrop, signature, sizeFromCorner, stillChoice, stillLabel, stillPath, stillsOf, taperFromCorner, toLocal, toSaved, turnHandle, undo, type Film,
 } from "../lib/placement.ts";
+import { FLIP_AXES, FLIP_LABEL } from "../../src/order-model.ts";
+import { SEAT_HUB } from "../../src/game-director.ts";
 
 test("places in his words: Plats 1–7 and dealern, the shoe, and their short forms", () => {
   assert.equal(PLACES.length, 17);
@@ -134,6 +136,36 @@ test("the card's way in his words: A2.1 or A2.2 by the grip, the code line kept 
   const drag = motionSteps("D.C2", { ...intent, grip: "DRAG", pass: false, turn: false, endSide: "BACK" });
   assert.deepEqual(drag.steps.map((s) => s.label), ["A2.2", "Släp", "Landar", "Släpper", "Tillbaka"]);
   assert.equal(drag.steps.at(-1)!.detail, "A2.2");
+  // the turn's chip says where and how, in FLIP_LABEL's words
+  assert.equal(m.steps[3].detail, "på vägen · handleden");
+  assert.equal(motionSteps("P4.C1", { ...intent, flipAxis: "LONG_EDGE" }).steps[3].detail, "på vägen · långsidan");
+  assert.equal(motionSteps("P4.C1", { ...intent, turnAt: "PLACE", flipAxis: "LONG_EDGE" }).steps[3].detail, "vid platsen");
+});
+
+test("how a card turns, in the order's one word: the plan's turnAt and flipAxis both ways, the axis kept under a turn at the place", () => {
+  const plan = defaultPlan();
+  assert.equal(flipOf(plan.targets["P4.C1"].intent), "FREE", "a plan without a word turns it with the wrist on the way");
+  for (const axis of FLIP_AXES) {
+    const next = editFlip(plan, "P4.C1", axis);
+    assert.equal(flipOf(next.targets["P4.C1"].intent), axis, FLIP_LABEL[axis]);
+    validatePlan(next);
+    assert.deepEqual(next.targets["P4.C2"], plan.targets["P4.C2"], "only that card");
+  }
+  const key = editFlip(plan, "P4.C1", "LONG_EDGE");
+  const there = editFlip(key, "P4.C1", "AT_PLACE");
+  assert.deepEqual([there.targets["P4.C1"].intent.turnAt, there.targets["P4.C1"].intent.flipAxis], ["PLACE", "LONG_EDGE"]);
+  assert.deepEqual([editFlip(there, "P4.C1", "FREE").targets["P4.C1"].intent.turnAt, editFlip(there, "P4.C1", "FREE").targets["P4.C1"].intent.flipAxis], ["AIR", "FREE"]);
+  assert.equal(plan.targets["P4.C1"].intent.flipAxis, "FREE", "the given plan is left alone");
+});
+
+test("where the game deals a card from anchor 2.2 while the plan says nyp, Placering says so at that place", () => {
+  const plan = defaultPlan();
+  assert.equal(SEAT_HUB.paow["P6.C1"], "READY-B", "the game's map as this test knows it");
+  assert.deepEqual(gameDealNotes(plan, "P6.C1"), ["I spelet ger Paow plats 6 från ankare 2.2 (släp); planen säger nyp."]);
+  assert.deepEqual(gameDealNotes(plan, "P6.C2"), ["I spelet ger Paow plats 6, kort 2 från ankare 2.2 (släp); planen säger nyp."], "the second card plays the first card's film");
+  for (const id of ["P4.C1", "P5.C1", "D.C1", SHOE]) assert.deepEqual(gameDealNotes(plan, id), [], id);
+  const dragged = { ...plan, targets: { ...plan.targets, "P6.C1": { ...plan.targets["P6.C1"], intent: { ...plan.targets["P6.C1"].intent, grip: "DRAG" as const } } } };
+  assert.deepEqual(gameDealNotes(dragged, "P6.C1"), [], "a plan that drags there agrees with the game");
 });
 
 test("the address: view, place and a film with its frame or a still; defaults are left out and robot is kept", () => {
@@ -154,7 +186,7 @@ test("the address: view, place and a film with its frame or a still; defaults ar
 });
 
 test("under the cards: Dator opens on the neutral backdrop, Mobil on its V6 picture; a film or a still holds where the view has it", () => {
-  const film = (id: string, width: number, height: number): Film => ({ id, title: id, path: `assets/motions/${id}/source.mp4`, width, height, frames: 90, fps: 30, group: "bank" });
+  const film = (id: string, width: number, height: number): Film => ({ id, title: id, path: `assets/motions/${id}/source.mp4`, width, height, frames: 90, fps: 30, group: "bank", start: 0, target: null });
   const films = [film("pamela-p4-c1-plan-deal-02", 1764, 1174), film("v6-portrait-reference", 1080, 1920)];
   assert.deepEqual(stillsOf("native"), ["neutral", "v6"]);
   assert.deepEqual(stillsOf("portrait"), ["v6"]);
@@ -201,27 +233,44 @@ test("Flytta kortets plats: Placering at the card, with the way back to the orde
   assert.equal(placingHref("P3.C2", "https://example.com/"), "/placering/?plats=p3c2");
 });
 
-test("films to lay the cards over: the bank's current takes, main take first, and the library's older ones", () => {
+test("films to lay the cards over: the bank's current takes, main take first, a take cut from a longer film from its own first frame, and the library's older ones", () => {
   const job = (id: string, from: string, to: string, kind: string) => ({ id, kind, target: null, from, to, model: "wan3", duration: 4, ratio: "auto_1080p", audio: false, promptText: "", first: {}, purpose: "" });
   const bank: BankData = {
     jobs: [job("pamela-p4-c1-plan-deal-01", "READY", "P4.C1", "DEAL"), job("pamela-p4-c1-plan-deal-02", "READY", "P4.C1", "DEAL"), job("pamela-p5-c1-plan-deal-01", "READY", "P5.C1", "DEAL")],
+    // a deal and its return cut from one film, as all of Paow's takes are
+    derived: [
+      { id: "pamela-p6-c1-cut-deal", kind: "DEAL", from: "READY", to: "P6.C1", clip: "pamela-p6-c1-whole-01", frames: [6, 110] },
+      { id: "pamela-p6-c1-cut-return-ready", kind: "RETURN", from: "P6.C1", to: "READY", clip: "pamela-p6-c1-whole-01", frames: [110, 168] },
+    ],
     motions: {
       "pamela-p4-c1-plan-deal-01": { source: { frames: 120, fps: 30, width: 1764, height: 1174 }, review: { decision: "ACCEPTED" } },
       "pamela-p4-c1-plan-deal-02": { source: { frames: 90, fps: 30 }, review: { decision: "ACCEPTED", acceptedAs: "VARIANT" } },
       "pamela-p5-c1-plan-deal-01": { source: { frames: 120, fps: 30 }, review: { decision: "REJECTED" } },
+      "pamela-p6-c1-cut-deal": { source: { frames: 169, fps: 24, width: 1764, height: 1174 }, review: { decision: "ACCEPTED" } },
+      "pamela-p6-c1-cut-return-ready": { source: { frames: 169, fps: 24, width: 1764, height: 1174 }, review: { decision: "ACCEPTED" } },
     },
     media: {
       "pamela-p4-c1-plan-deal-01": { video: "assets/motions/pamela-p4-c1-plan-deal-01/source.mp4" },
       "pamela-p4-c1-plan-deal-02": { video: "assets/motions/pamela-p4-c1-plan-deal-02/source.mp4" },
       "pamela-p5-c1-plan-deal-01": { video: "assets/motions/pamela-p5-c1-plan-deal-01/source.mp4" },
+      "pamela-p6-c1-cut-deal": { video: "assets/motions/pamela-p6-c1-whole-01/source.mp4" },
+      "pamela-p6-c1-cut-return-ready": { video: "assets/motions/pamela-p6-c1-whole-01/source.mp4" },
     },
   } as unknown as BankData;
   const films = bankFilms(buildGraph(bank));
   // the rejected take is left out; on P4 the accepted take is the main take and comes first
-  assert.deepEqual(films.map((f) => f.id), ["pamela-p4-c1-plan-deal-01", "pamela-p4-c1-plan-deal-02"]);
+  assert.deepEqual(films.filter((f) => f.target === "P4.C1" || f.target === "P5.C1").map((f) => f.id), ["pamela-p4-c1-plan-deal-01", "pamela-p4-c1-plan-deal-02"]);
   assert.equal(films[0].title, "A2.1 → P4C1");
   assert.match(films[1].title, /^A2\.1 → P4C1 · /);
   assert.ok(films.every((f) => f.group === "bank" && f.width === 1764 && f.frames > 0));
+  // the cut deal and return are kept: the whole film, from the take's own first frame
+  const deal = films.find((f) => f.id === "pamela-p6-c1-cut-deal")!;
+  const back = films.find((f) => f.id === "pamela-p6-c1-cut-return-ready")!;
+  assert.deepEqual([deal.path, deal.start, deal.frames, deal.fps, deal.target], ["assets/motions/pamela-p6-c1-whole-01/source.mp4", 6, 169, 24, "P6.C1"]);
+  assert.deepEqual([back.start, back.target], [110, "P6.C1"]);
+  assert.equal(films.find((f) => f.id === "pamela-p4-c1-plan-deal-01")!.start, 0, "a whole film starts at its first frame");
+  // the films to the chosen place come first under the cards: a seat's second card takes its first card's films
+  assert.ok(filmGoesTo(deal, "P6.C1") && filmGoesTo(deal, "P6.C2") && !filmGoesTo(deal, "P4.C1") && !filmGoesTo(deal, SHOE));
   const older = libraryFilms([
     { id: "v6-native-reference", kind: "reference", path: "assets/reference/v6.mp4", width: 1762, height: 1174, frameCount: 926, fps: 30 },
     { id: "v6-portrait-reference", kind: "reference", path: "output/v6/x.mp4", width: 1080, height: 1920, frameCount: 926 },

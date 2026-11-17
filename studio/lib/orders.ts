@@ -9,9 +9,10 @@ import { ApiError } from "./api.ts";
 import { labUrl } from "./lab.ts";
 import { isSnapshot } from "./mode.ts";
 import { nodeCode } from "./names.ts";
+import { GRIP_LABEL } from "./placement.ts";
 import {
-  ANCHOR_NODE, ANCHOR_ROLE, FLIP_LABEL, HAND_LABEL, LANDS_LABEL, REF_VERDICT_LABEL, STYLE_LABEL, genitive, MODELS, SEAT_TARGETS, SHOWN_LABEL, STEPS, credits, cutIntoOf, edgeOf, handChoiceOf, requestOf, seatList, seatWords, secondsWords, stepOf, styleOf, summaryOf, waitWords,
-  type FlipAxis, type HandChoice, type Order, type OrderAnswer, type OrdersAnswer, type Owner, type Picture, type PlanAnswer, type Shape, type Shown, type StepDef, type StepKey, type TextStyle,
+  ANCHOR_NODE, ANCHOR_ROLE, FLIP_LABEL, HAND_LABEL, LANDS_LABEL, REF_VERDICT_LABEL, STYLE_LABEL, genitive, MODELS, SEAT_TARGETS, SHOWN_LABEL, STEPS, credits, cutIntoOf, edgeOf, handChoiceOf, plannedDiffers, requestOf, seatList, seatWords, secondsWords, stepOf, styleOf, summaryOf, waitWords,
+  type FlipAxis, type HandChoice, type Order, type OrderAnswer, type OrdersAnswer, type Owner, type Picture, type PlanAnswer, type SeatPlan, type Shape, type Shown, type StepDef, type StepKey, type TextStyle,
 } from "../../src/order-model.ts";
 import { orderPrompt, wordCount, type Choice, type Part } from "../../src/order-prompts.ts";
 
@@ -332,6 +333,27 @@ export function motionWords(order: Pick<Order, "motion"> & { step?: Pick<Order["
   // In a return the card lies where it was laid: nothing turns.
   const back = !!order.step && stepOf(order.step.key)?.start === "LAND";
   return { hand: HAND_LABEL[handChoiceOf(m)], lands: LANDS_LABEL[m.side], turn: m.side === "FRONT" && !back && m.flipAxis ? FLIP_LABEL[m.flipAxis] : null };
+}
+
+// ── Where an order and Placering differ ─────────────────────────────────────
+// Placering's Rörelse is the source of a new order's defaults (hand, side, how the card turns); the grip is the step's own
+// (GIV-2.1 pinches, GIV-2.2 drags). Where the step and the plan disagree the sheet and the draft say so in one line, with the
+// choices' own labels only: what happens is said by the order's text.
+/** "Placering säger A2.1 nyp för plats 6; steget är A2.2 släp.": where a deal's step does not take the card as the plan does. */
+export function gripAgainstPlan(step: Pick<StepDef, "grip" | "card" | "start">, seats: readonly (Pick<SeatPlan, "target" | "grip"> | null | undefined)[]): string | null {
+  if (!step.card || !step.grip || step.start === "LAND") return null;
+  const differ = seats.filter((s): s is Pick<SeatPlan, "target" | "grip"> => !!s && s.grip !== step.grip);
+  return differ.length ? `Placering säger ${GRIP_LABEL[differ[0].grip]} för ${seatList(differ.map((s) => s.target))}; steget är ${GRIP_LABEL[step.grip]}.` : null;
+}
+/** A stored deal against what Placering said for its card when the draft was made (Motion.planned): the grip, then the turn. */
+export function plannedWords(order: Pick<Order, "motion">): string[] {
+  const m = order.motion;
+  if (!m?.planned) return [];
+  const differ = plannedDiffers(m, m.planned), seat = seatWords(m.target);
+  return [
+    ...(differ.includes("grip") ? [`Placering sa ${GRIP_LABEL[m.planned.grip]} för ${seat}; steget är ${GRIP_LABEL[m.grip]}.`] : []),
+    ...(differ.includes("turn") && m.planned.flipAxis && m.flipAxis ? [`Placering sa ”${FLIP_LABEL[m.planned.flipAxis]}” för ${seat}; utkastet säger ”${FLIP_LABEL[m.flipAxis]}”.`] : []),
+  ];
 }
 
 /** "Kort · 108 ord": a stored order's text style (Utförlig when it was written before template 4) and its length. */

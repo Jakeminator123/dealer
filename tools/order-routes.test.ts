@@ -275,6 +275,10 @@ test('a deal: the hand, handbyte and how the card lands, defaulted from the plan
   assert.equal(one.order.prompt.text, sheet.text, 'the sheet shows exactly what is stored');
   // The plan of the checkout says turnAt AIR for every card, so a new deal from 2.1 turns as the hand can; PLACE there gives AT_PLACE.
   assert.equal((await call('POST', '/api/orders', { body: { dealer: 'paow', step: 'GIV-2.1', target: 'P4.C1' } })).json.order.motion.flipAxis, 'FREE', 'the turn follows Placering');
+  // What Placering said is kept with the deal: the plan pinches at P1, the step drags (Beställ says so in a line).
+  assert.deepEqual(m.planned, { grip: 'PINCH', flipAxis: 'FREE' });
+  assert.deepEqual([seats['P4.C1'].grip, seats['P4.C1'].turnAt, seats['P4.C1'].flipAxis], ['PINCH', 'AIR', 'FREE']);
+
 
   // Closed, with handbyte; then changed on the draft.
   const closed = (await call('POST', '/api/orders', { body: { dealer: 'paow', step: 'GIV-2.2', target: 'P2.C1', side: 'BACK', pass: true } })).json;
@@ -315,6 +319,32 @@ test('a deal: the hand, handbyte and how the card lands, defaulted from the plan
   assert.equal((await call('POST', '/api/orders', { body: { dealer: 'paow', step: 'GIV-2.2', seats: [{ target: 'P1.C1' }, { target: 'P1.C1' }] } })).status, 400);
   assert.equal((await call('POST', '/api/orders', { body: { dealer: 'paow', step: 'ANKARE-2.1', seats: [{ target: 'P1.C1' }, { target: 'P2.C1' }] } })).status, 400);
   assert.equal((await call('GET', '/api/orders')).json.orders.length, before, 'nothing left of a group that could not be made');
+});
+
+test("Placering's Rörelse is the order's default: the plan's turn on the way and its grip go with the draft, and a choice of its own stays its own", async (t) => {
+  const { root, call } = await lab(t);
+  // the plan (the test's own copy) turns P5's card like a key, P6's at its place, and drags at P6
+  const file = path.join(root, 'placements/default.json');
+  const plan = JSON.parse(await readFile(file, 'utf8'));
+  Object.assign(plan.targets['P5.C1'].intent, { flipAxis: 'LONG_EDGE' });
+  Object.assign(plan.targets['P6.C1'].intent, { grip: 'DRAG', turnAt: 'PLACE', flipAxis: 'LONG_EDGE' });
+  await writeFile(file, JSON.stringify(plan, null, 2) + '\n');
+  const seats = (await call('GET', '/api/orders')).json.plan.seats;
+  assert.deepEqual([seats['P5.C1'].flipAxis, seats['P6.C1'].grip, seats['P6.C1'].turnAt], ['LONG_EDGE', 'DRAG', 'PLACE']);
+  const made = (await call('POST', '/api/orders', { body: { dealer: 'paow', step: 'GIV-2.1', target: 'P5.C1' } })).json;
+  const key = made.order;
+  assert.deepEqual([key.motion.flipAxis, key.motion.planned], ['LONG_EDGE', { grip: 'PINCH', flipAxis: 'LONG_EDGE' }]);
+  assert.match(key.summary, /vrider det kring långsidan som en nyckel/, 'the order says the turn the plan chose');
+  const place = (await call('POST', '/api/orders', { body: { dealer: 'paow', step: 'GIV-2.1', target: 'P6.C1' } })).json.order;
+  assert.deepEqual([place.motion.grip, place.motion.flipAxis, place.motion.planned], ['PINCH', 'AT_PLACE', { grip: 'DRAG', flipAxis: 'AT_PLACE' }], 'the step pinches; the plan said drag, and that stays said');
+  // a turn chosen in the sheet is the draft's own; the plan's word stays with it
+  const own = (await call('POST', '/api/orders', { body: { dealer: 'paow', step: 'GIV-2.1', target: 'P5.C1', flipAxis: 'FREE' } })).json.order;
+  assert.deepEqual([own.motion.flipAxis, own.motion.planned.flipAxis], ['FREE', 'LONG_EDGE']);
+  // a later change of the plan does not move a draft's turn
+  Object.assign(plan.targets['P5.C1'].intent, { flipAxis: 'FREE' });
+  await writeFile(file, JSON.stringify(plan, null, 2) + '\n');
+  const again = (await call('PUT', `/api/orders/${key.id}`, { body: { hand: 'RH' }, match: made.revision })).json.order;
+  assert.deepEqual([again.motion.hand, again.motion.flipAxis, again.motion.planned.flipAxis], ['RH', 'LONG_EDGE', 'LONG_EDGE']);
 });
 
 test('a film made with another model: the 4K model for the entry, its parameters, title and price; a model the step cannot use is refused', async (t) => {

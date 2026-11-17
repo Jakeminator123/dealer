@@ -31,7 +31,7 @@ import { useBank } from "../../lib/bank.ts";
 import { labUrl } from "../../lib/lab.ts";
 import type { DealerAnswer, EntryAnswer, MediaAnswer } from "../../lib/media.ts";
 import {
-  SECOND_CARD, SECOND_CARD_WORDS, anchorFor, cardOf, createOrder, firstLacking, orderableCard, presetAddress, recipeOf, routeOf, seatKey, stepGroups, withCard,
+  SECOND_CARD, SECOND_CARD_WORDS, anchorFor, cardOf, createOrder, firstLacking, gripAgainstPlan, orderableCard, presetAddress, recipeOf, routeOf, seatKey, stepGroups, withCard,
   type OrderAnswer, type OrdersAnswer, type Preset, type StepKey,
 } from "../../lib/orders.ts";
 import { placingHref } from "../../lib/placement.ts";
@@ -41,7 +41,7 @@ import {
   type BankFacts, type FlipAxis, type HandChoice, type ModelDef, type Owner, type SeatPlan, type Shape, type TextStyle,
 } from "../../../src/order-model.ts";
 import { promptFor, wordCount } from "../../../src/order-prompts.ts";
-import { NEUTRAL_BACKDROP } from "../../../src/placement-model.ts";
+import { CARD_COLOUR, NEUTRAL_BACKDROP } from "../../../src/placement-model.ts";
 import { getMedia } from "../material/client.ts";
 import { Button, SegmentedControl, Sheet, TextArea, cn, useToast } from "../ui";
 import { FlipChoice, HandChoiceRow, LandsChoice, ModelChoice, ReferenceChoice, ScaleChoice, ShapeChoice, TextChoice } from "./Choices";
@@ -51,7 +51,7 @@ import { Stage, type StageBase, type StageCard, type StageLook } from "./Stage";
 
 const W = 1764,
   H = 1174;
-const CARD_FILL = { BACK: "#e6c229", FRONT: "#2f6fd8" } as const;
+const CARD_FILL = CARD_COLOUR;
 
 function Step({ n, title, aside, children }: { n: number; title: string; aside?: ReactNode; children: ReactNode }) {
   return (
@@ -89,7 +89,7 @@ function Thumb({ src, frame, name, owner, dealer, waiting, drawn, cards }: { src
         {cards?.length ? (
           <svg viewBox={`0 0 ${W} ${H}`} className="pointer-events-none absolute inset-0 size-full" aria-hidden>
             {cards.map((c, i) => (
-              <polygon key={i} points={c.quad.map((p) => p.join(",")).join(" ")} fill={c.faint ? "none" : CARD_FILL[c.side]} stroke={c.faint ? "#e8cb85" : "#0b0d0c"} strokeWidth={c.faint ? 3 : 2} strokeDasharray={c.faint ? "10 8" : undefined} opacity={c.faint ? 0.7 : 1} />
+              <polygon key={i} points={c.quad.map((p) => p.join(",")).join(" ")} fill={c.faint ? "none" : CARD_FILL[c.side]} stroke={c.faint ? "#e8cb85" : CARD_FILL[c.side]} strokeWidth={c.faint ? 3 : 4} strokeLinejoin="round" strokeDasharray={c.faint ? "10 8" : undefined} opacity={c.faint ? 0.7 : 1} />
             ))}
           </svg>
         ) : null}
@@ -178,8 +178,12 @@ export function NewOrder({ open, onOpenChange, all, preset, onCreated }: { open:
   const shownSide = side ?? (planSides.length === 1 ? planSides[0] : null);
   const shownHand: HandChoice = hand ?? (planHands.length === 1 ? planHands[0] : "LH");
   const open_ = targets.some((t) => sideAt(t) === "FRONT");
-  const suggestedFlip = defaultFlip(key, seatOf(targets[0] ?? "P4.C1")?.turnAt);
+  // How the card turns: what Placering's Rörelse says for the (first) card, unless chosen here.
+  const flipSeat = seatOf(targets[0] ?? "P4.C1");
+  const suggestedFlip = defaultFlip(key, flipSeat?.turnAt, flipSeat?.flipAxis);
   const flipAxis = flip?.key === key ? flip.axis : suggestedFlip;
+  // The grip is the step's; where Placering plans the card(s) with the other one, the sheet says so.
+  const gripLine = gripAgainstPlan(step, targets.map(seatOf));
   const focus = step.card ? (shownSeat && targets.includes(shownSeat) ? shownSeat : targets[0]) : null;
   const motionAt = (t: string) => ({ grip: step.grip ?? ("PINCH" as const), ...handsAt(t), turn: sideAt(t) === "FRONT", flipAxis, side: sideAt(t), target: t });
 
@@ -281,7 +285,8 @@ export function NewOrder({ open, onOpenChange, all, preset, onCreated }: { open:
   };
   const route = routeOf(step, targets, shape, dealerName);
   const places = step.card && plan ? Object.values(plan.seats).filter((s) => orderableCard(s.target)) : [];
-  const onTable = stageLook === "bord" && places.length > 0;
+  // "Bordet" can be chosen for every step: a step without a card shows the table and the figure without places.
+  const onTable = stageLook === "bord";
   // The picture the film starts from: the anchor; a return's landing picture (or, where none holds, the anchor it ends on);
   // a still's dealer's picture.
   const dealerBase: StageBase =
@@ -305,7 +310,9 @@ export function NewOrder({ open, onOpenChange, all, preset, onCreated }: { open:
   const moved = step.card ? focus : (step.target ?? null);
   const move = moved ? placingHref(moved, presetAddress({ dealer: dealerId, step: key, target: seven ? null : target, all: seven, model: model.id !== step.model ? model.id : null })) : null;
   const caption = onTable
-    ? "Studions bord med en siluett, som i Placering: bara för att se var kortet ligger. Det som skickas är dealerns egen bild."
+    ? places.length || stageCards.length
+      ? "Studions bord med en siluett, som i Placering: bara för att se var kortet ligger. Det som skickas är dealerns egen bild."
+      : "Studions bord med en siluett, som i Placering; siluetten sitter som i ankare 1. Det som skickas är dealerns egen bild."
     : step.kind === "STILL"
       ? `${dealerBase.name}: bilden som ändras.`
       : step.cards?.length
@@ -463,6 +470,11 @@ export function NewOrder({ open, onOpenChange, all, preset, onCreated }: { open:
               ))}
             </div>
             <p className="rounded-sm bg-raised px-2.5 py-1.5 text-sm text-ink">{startWords(step, shape)}</p>
+            {gripLine ? (
+              <p data-plan-differs className="text-sm text-[#f0b07a]">
+                {gripLine}
+              </p>
+            ) : null}
           </Step>
           {step.kind === "FILM" || styles.length > 1 ? (
             <Step n={next()} title="Text" aside={prompt ? `${wordCount(prompt.text)} ord` : undefined}>
@@ -543,7 +555,7 @@ export function NewOrder({ open, onOpenChange, all, preset, onCreated }: { open:
               </Step>
               {open_ && step.start !== "LAND" ? (
                 <Step n={next()} title="Hur kortet vänds">
-                  <FlipChoice value={flipAxis} suggested={suggestedFlip} onChange={(axis) => setFlip({ key, axis })} />
+                  <FlipChoice value={flipAxis} plan={flipSeat ? suggestedFlip : null} onChange={(axis) => setFlip({ key, axis })} />
                 </Step>
               ) : null}
               {scalable ? (

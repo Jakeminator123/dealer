@@ -2,9 +2,11 @@
 // the handles' arithmetic, numbers with a decimal comma, the view's address, what the cards can be laid over (the neutral
 // backdrop, the V6 picture, the films) and the way on to Beställ and back. The plan's own rules (where a card is drawn, how an edit
 // is made) are src/placement-model.ts. Pure: no DOM, no network; tests in studio/tests/placement.test.ts.
-import { isCurrent, playable, takeRole, ROLE_LABEL, type Graph } from "../../src/clip-graph.ts";
-import { SEAT_TARGETS } from "../../src/order-model.ts";
-import { NEUTRAL_BACKDROP, SHOE, TARGETS, VIEWS, editPlace, motionNodes, sequence, toPixels, type Geometry, type Hand, type Intent, type Place, type PlacementPlan, type Side, type View } from "../../src/placement-model.ts";
+import { dealHub, isCurrent, playable, takeRole, ROLE_LABEL, type Graph } from "../../src/clip-graph.ts";
+import { SEAT_HUB } from "../../src/game-director.ts";
+import { ANCHOR_NODE, SEAT_TARGETS, defaultFlip, seatWords, type FlipAxis } from "../../src/order-model.ts";
+import { NEUTRAL_BACKDROP, SHOE, TARGETS, VIEWS, editIntent, editPlace, motionNodes, sequence, toPixels, type Geometry, type Hand, type Intent, type Place, type PlacementPlan, type Side, type View } from "../../src/placement-model.ts";
+import { nameOf } from "./dealer.ts";
 import { nodeCode } from "./names.ts";
 
 // ── Places ──────────────────────────────────────────────────────────────────
@@ -160,8 +162,22 @@ export function nudged(plan: PlacementPlan, id: Place, view: View, key: string, 
 }
 
 // ── The motion, in his words ────────────────────────────────────────────────
-/** The shoe anchor a card is taken from: A2.1 nyp (pinched in the window) or A2.2 hand över (slid out of the mouth). */
+/** The shoe anchor a card is taken from: A2.1 nyp (pinched in the window) or A2.2 släp (slid out of the mouth). */
 export const anchorOf = (intent: Pick<Intent, "grip">) => (intent.grip === "DRAG" ? "A2.2" : "A2.1");
+/** The grip by its label, the same in Placering's "Grepp vid skon" and where Beställ says how a step and the plan differ. */
+export const GRIP_LABEL: Record<Intent["grip"], string> = { PINCH: "A2.1 nyp", DRAG: "A2.2 släp" };
+/**
+ * How a card of the plan is turned, in the order's one word (src/order-model.ts FlipAxis, the same labels FLIP_LABEL in
+ * Placering and Beställ): AT_PLACE where it turns at its place, else its turn on the way (FREE, the wrist; LONG_EDGE, a key).
+ */
+export const flipOf = (intent: Pick<Intent, "turnAt" | "flipAxis">): FlipAxis => defaultFlip("", intent.turnAt, intent.flipAxis);
+/** A card's turn set from the order's word: AT_PLACE turns it at its place (its axis on the way is kept), the others on the way. */
+export function editFlip(plan: PlacementPlan, id: string, axis: FlipAxis): PlacementPlan {
+  if (axis === "AT_PLACE") return editIntent(plan, id, "turnAt", "PLACE");
+  return editIntent(editIntent(plan, id, "turnAt", "AIR"), id, "flipAxis", axis);
+}
+/** The turn on a step chip: FLIP_LABEL's words, short. */
+const TURN_WORD: Record<FlipAxis, string> = { AT_PLACE: "vid platsen", FREE: "på vägen · handleden", LONG_EDGE: "på vägen · långsidan" };
 export type MotionStep = { id: string; label: string; detail: string };
 /** The card's way from the shoe and back (motionNodes), in Swedish; `code` is the model's own line for the exact reading. */
 export function motionSteps(id: string, intent: Intent): { steps: MotionStep[]; code: string } {
@@ -170,12 +186,22 @@ export function motionSteps(id: string, intent: Intent): { steps: MotionStep[]; 
     ready: () => ({ id: "ready", label: anchor, detail: sideWord(intent.startSide) }),
     take: () => ({ id: "take", label: intent.grip === "DRAG" ? "Släp" : "Nyp", detail: handWord(intent.takeHand) }),
     pass: () => ({ id: "pass", label: "Handbyte", detail: `${handWord(intent.takeHand)} → ${handWord(intent.takeHand === "LH" ? "RH" : "LH")}` }),
-    turn: () => ({ id: "turn", label: "Vänd", detail: `${intent.turnAt === "PLACE" ? "vid platsen" : "i luften"}` }),
+    turn: () => ({ id: "turn", label: "Vänd", detail: TURN_WORD[flipOf(intent)] }),
     land: () => ({ id: "land", label: "Landar", detail: `${nodeCode(id)} · ${sideWord(intent.endSide)}` }),
     release: (detail) => ({ id: "release", label: "Släpper", detail: handWord(detail as Hand) }),
     return: () => ({ id: "return", label: "Tillbaka", detail: anchor }),
   };
   return { steps: motionNodes(id, intent).map((n) => words[n.id](n.detail)), code: sequence(id, intent) };
+}
+/**
+ * Where the game deals a card from anchor 2.2 (the drag) while the plan says nyp: the game's own map per dealer (SEAT_HUB in
+ * src/game-director.ts; Paow's seat 6 today, a seat's second card with its first). One line per such dealer, for Placering to
+ * show at the place; the plan is not changed by it.
+ */
+export function gameDealNotes(plan: PlacementPlan, id: Place): string[] {
+  const t = id === SHOE ? null : plan.targets[id];
+  if (!t || t.intent.grip === "DRAG") return [];
+  return Object.entries(SEAT_HUB).flatMap(([dealer, hubs]) => (dealHub(id, hubs) === ANCHOR_NODE["2.2"] ? [`I spelet ger ${nameOf(dealer)} ${seatWords(id)} från ankare 2.2 (släp); planen säger nyp.`] : []));
 }
 
 // ── What lies under the cards ───────────────────────────────────────────────
@@ -277,16 +303,21 @@ export function placementQuery(a: PlacementAddress, keep?: Params): string {
 // ── Films to lay the cards over ─────────────────────────────────────────────
 // The old tab's "Visa grön film" opened the film library on the green P4C2 film; the library holds the clip bank's current
 // takes first and the older proofs and references after (src/lab-ui.ts openLibrary, kbFilms). Here any of them can lie
-// under the cards, in the view whose shape it has.
-export type Film = { id: string; title: string; path: string; width: number; height: number; frames: number; fps: number; group: "bank" | "older" };
+// under the cards, in the view whose shape it has. start: the frame the take begins on in its film (a take cut from a longer
+// film, as all of Paow's deals and returns are, begins inside it); target: the card the take deals or comes back from.
+export type Film = { id: string; title: string; path: string; width: number; height: number; frames: number; fps: number; group: "bank" | "older"; start: number; target: string | null };
 export const GREEN_FILM = "pamela-p4-c2-source-turn";
 export type LibraryItem = { id?: unknown; title?: unknown; path?: unknown; kind?: unknown; width?: unknown; height?: unknown; frameCount?: unknown; fps?: unknown };
 
-/** The clip bank's current playable takes with a film of their own, the main take of each step first (as kbFilms). */
+/**
+ * The clip bank's current playable takes with a film, the main take of each step first (as kbFilms). A take cut from a longer
+ * film (its segment: a deal and its return cut from one film) is its film from the take's first frame, so a real deal can lie
+ * under the cards beside the drawn card path.
+ */
 export function bankFilms(graph: Graph): Film[] {
   return [...graph.edges, ...graph.experiments].flatMap((e) =>
     e.takes
-      .filter((t) => playable(t) && isCurrent(e, t) && !!t.media.video && !t.segment)
+      .filter((t) => playable(t) && isCurrent(e, t) && !!t.media.video)
       .sort((a, b) => Number(b === e.main) - Number(a === e.main))
       .map((t) => ({
         id: t.id,
@@ -297,9 +328,13 @@ export function bankFilms(graph: Graph): Film[] {
         frames: t.frames ?? Math.max(1, Math.round((t.job?.duration ?? 4) * (t.fps ?? 30))),
         fps: t.fps ?? 30,
         group: "bank" as const,
+        start: t.segment?.start ?? 0,
+        target: e.target ?? null,
       })),
   );
 }
+/** A film is a deal to the place, or a take of its seat's film (P4.C2 plays P4.C1's): those come first under the cards. */
+export const filmGoesTo = (film: Pick<Film, "target">, place: Place): boolean => !!film.target && place !== SHOE && film.target.slice(0, 3) === place.slice(0, 3);
 /** The film library's own list (GET /api/library, data/library.json): older proofs and the V6 references. */
 export function libraryFilms(items: readonly LibraryItem[]): Film[] {
   return items.flatMap((i) => {
@@ -308,7 +343,7 @@ export function libraryFilms(items: readonly LibraryItem[]): Film[] {
     const width = n(i.width, 1764);
     const height = n(i.height, 1174);
     const title = i.kind === "reference" ? (width > height ? "V6 · dator" : "V6 · mobil") : typeof i.title === "string" ? i.title : i.id;
-    return [{ id: i.id, title, path: i.path, width, height, frames: Math.round(n(i.frameCount, 1)), fps: n(i.fps, 30), group: "older" as const }];
+    return [{ id: i.id, title, path: i.path, width, height, frames: Math.round(n(i.frameCount, 1)), fps: n(i.fps, 30), group: "older" as const, start: 0, target: null }];
   });
 }
 /** The view a film belongs in: a standing film in Mobil, every other in Dator. */

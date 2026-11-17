@@ -4,7 +4,7 @@
 // two cards, and the shoe. A card's button carries its landing side (yellow: closed, blue: open, as the films colour them),
 // a brass dot when it differs from the saved plan, and a tick when it is checked in the view shown.
 import { Check } from "lucide-react";
-import { SHOE, type PlacementPlan, type Place, type View } from "../../../src/placement-model.ts";
+import { CARD_COLOUR, SHOE, type PlacementPlan, type Place, type View } from "../../../src/placement-model.ts";
 import { SEATS, placeName } from "../../lib/placement.ts";
 import { cn } from "../ui/cn";
 
@@ -28,7 +28,7 @@ export function SlotPicker({ plan, view, selected, changed, onSelect }: { plan: 
         )}
       >
         {text}
-        {t ? <span aria-hidden className={cn("absolute inset-x-0 bottom-0 h-[3px]", t.intent.endSide === "BACK" ? "bg-[#ffff00]" : "bg-[#3b5bff]")} /> : null}
+        {t ? <span aria-hidden className="absolute inset-x-0 bottom-0 h-[3px]" style={{ background: CARD_COLOUR[t.intent.endSide] }} /> : null}
         {changed.has(id) ? <span aria-hidden className={cn("absolute right-1 top-1 size-1.5 rounded-full", on ? "bg-brass-ink" : "bg-brass")} /> : null}
         {checked ? <Check aria-hidden className={cn("absolute left-0.5 top-0.5 size-2.5", on ? "text-brass-ink" : "text-godkand")} /> : null}
       </button>

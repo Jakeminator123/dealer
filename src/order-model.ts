@@ -40,11 +40,12 @@ export const FLIP_ABOUT: Record<FlipAxis, string> = {
   LONG_EDGE: 'Handleden vrider kortet kring långsidan som en nyckel (som Pamela): tummen upp, kortet rullar över en gång, blått upp. Handen är kvar vriden tills kortet ligger.',
 };
 /**
- * The turn a new deal starts with: where the plan turns it (Placering, "Var kortet vänds": at the place, or on the way by a
- * turn of the wrist). Jakob 2026-11-13: the orders are driven from Placering, so the plan's word rules here too; his six
- * steps (the turn at the place) are chosen there per card, not written over the plan by the step.
+ * The turn a new deal starts with: how the plan turns the card (Placering, Rörelse, "Hur kortet vänds"): at its place (the
+ * plan's turnAt PLACE), else on the way as the plan's flipAxis says (FREE, the wrist; LONG_EDGE, like a key). Jakob
+ * 2026-11-13: the orders are driven from Placering, so the plan's word rules here too; his six steps (the turn at the place)
+ * are chosen there per card, not written over the plan by the step. Without the plan's word the hand turns it as it can (FREE).
  */
-export const defaultFlip = (_step: string, turnAt?: 'AIR' | 'PLACE' | null): FlipAxis => (turnAt === 'PLACE' ? 'AT_PLACE' : 'FREE');
+export const defaultFlip = (_step: string, turnAt?: 'AIR' | 'PLACE' | null, axis?: 'FREE' | 'LONG_EDGE' | null): FlipAxis => (turnAt === 'PLACE' ? 'AT_PLACE' : (axis ?? 'FREE'));
 
 /**
  * Which hand deals. The shoe stands at the right of the picture, by her left hand; both anchors 2.1 and 2.2 show that hand
@@ -255,9 +256,20 @@ export type Generation = {
  * which lays it (handbyte; only from left to right). side: how it lands (BACK closed, FRONT open); turn: it is turned on
  * the way (every card leaves the shoe closed). fromPlan: hand, pass and side are what Placering says for the card.
  * Orders made before 2026-11-13 lack pass (read as false). cardScale: the card's size on the last picture as a factor of the
- * plan's (CARD_SCALES), a trial; absent: the plan's size.
+ * plan's (CARD_SCALES), a trial; absent: the plan's size. planned: what Placering said for the card when the draft was made,
+ * its grip and its turn in the order's words (defaultFlip of the plan's turnAt and flipAxis; null where the plan lays it
+ * closed). The grip of an order is its step's (GIV-2.2 drags), so where the plan said otherwise this is where that stays
+ * said, also after the plan changes (PlannedMotion, plannedDiffers). Absent on orders made before 2026-11-17.
  */
-export type Motion = { grip: 'PINCH' | 'DRAG'; hand: 'LH' | 'RH'; pass: boolean; turn: boolean; flipAxis: FlipAxis | null; target: string | null; side: 'FRONT' | 'BACK'; fromPlan: boolean; cardScale?: number };
+export type Motion = { grip: 'PINCH' | 'DRAG'; hand: 'LH' | 'RH'; pass: boolean; turn: boolean; flipAxis: FlipAxis | null; target: string | null; side: 'FRONT' | 'BACK'; fromPlan: boolean; cardScale?: number; planned?: PlannedMotion };
+export type PlannedMotion = { grip: 'PINCH' | 'DRAG'; flipAxis: FlipAxis | null };
+/** What Placering says for a card, as an order stores it (Motion.planned): its grip and how it turns, null where it lands closed. */
+export const plannedOf = (seat: Pick<SeatPlan, 'grip' | 'turnAt' | 'flipAxis' | 'side'>): PlannedMotion => ({ grip: seat.grip, flipAxis: seat.side === 'FRONT' ? defaultFlip('', seat.turnAt, seat.flipAxis) : null });
+/** Where a deal differs from what Placering said for its card: the grip, and the turn of a card that is turned both ways. */
+export function plannedDiffers(m: Pick<Motion, 'grip' | 'turn' | 'flipAxis'>, planned: PlannedMotion | null | undefined): ('grip' | 'turn')[] {
+  if (!planned) return [];
+  return [...(planned.grip !== m.grip ? ['grip' as const] : []), ...(m.turn && planned.flipAxis && m.flipAxis && planned.flipAxis !== m.flipAxis ? ['turn' as const] : [])];
+}
 /**
  * A draft's choices with what does not apply taken out: no turn for a card that is not turned (flipAxis null). Drafts made
  * before 2026-11-13 stored one anyway; the store reads them through this, and writes them clean on their next change.
@@ -481,7 +493,7 @@ export function seatList(targets: readonly string[]): string {
 // ── The plan as an order sees it (GET /api/orders: plan) ────────────────────
 /**
  * One card of the placement plan in film pixels: its centre and outline (drawn as the last picture draws it), what
- * Placering says about it (how it lands, which hand, handbyte, grip, where it turns), and whether the left hand from the
+ * Placering says about it (how it lands, which hand, handbyte, grip, where and how it turns), and whether the left hand from the
  * shoe would cross her body to lay it there (crossesBody).
  */
 export type SeatPlan = {
@@ -494,6 +506,8 @@ export type SeatPlan = {
   pass: boolean;
   grip: 'PINCH' | 'DRAG';
   turnAt: 'AIR' | 'PLACE';
+  /** How it is turned on the way (the plan's flipAxis): FREE, the wrist; LONG_EDGE, like a key. */
+  flipAxis: 'FREE' | 'LONG_EDGE';
   crosses: boolean;
 };
 export type PlanAnswer = { path: string; sha256: string; updatedAt: string | null; midline: number; halfCard: number; seats: Record<string, SeatPlan> };
@@ -841,7 +855,8 @@ export function validateOrder(value: unknown): { order: Order | null; errors: st
   if (o.summary !== undefined && (typeof o.summary !== 'string' || o.summary.length > 320)) errors.push('summary ska vara en rad text.');
   if (o.motion != null) {
     const m = o.motion as Partial<Motion>;
-    if (!isObject(m) || !['LH', 'RH'].includes(String(m.hand)) || !['FRONT', 'BACK'].includes(String(m.side)) || typeof m.turn !== 'boolean' || (m.flipAxis !== null && !FLIP_AXES.includes(m.flipAxis as FlipAxis))) errors.push('motion: hand (LH/RH), side (FRONT/BACK), turn och flipAxis krävs.');
+    if (!isObject(m) || !['PINCH', 'DRAG'].includes(String(m.grip)) || !['LH', 'RH'].includes(String(m.hand)) || !['FRONT', 'BACK'].includes(String(m.side)) || typeof m.turn !== 'boolean' || (m.flipAxis !== null && !FLIP_AXES.includes(m.flipAxis as FlipAxis))) errors.push('motion: hand (LH/RH), side (FRONT/BACK), turn, flipAxis och grip (PINCH/DRAG) krävs.');
+    else if (m.planned !== undefined && (!isObject(m.planned) || Object.keys(m.planned).sort().join() !== 'flipAxis,grip' || !['PINCH', 'DRAG'].includes(String(m.planned.grip)) || (m.planned.flipAxis !== null && !FLIP_AXES.includes(m.planned.flipAxis as FlipAxis)))) errors.push('motion.planned: grip (PINCH/DRAG) och flipAxis (en vändning eller null), det Placering sa för kortet.');
     // A choice that does not apply is not stored (2026-11-13): no turn for a card that is not turned, no card size but on a
     // round trip's drawn last picture. Approved orders made before keep what they were approved with.
     else if (o.status !== 'GODKÄND' && !m.turn && m.flipAxis !== null) errors.push('motion.flipAxis: kortet vänds inte, så ingen vändning lagras (null).');

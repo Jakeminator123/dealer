@@ -635,18 +635,18 @@ test('the idle player: picks play back to back from frame 3, a calm clip is left
  assert.ok(requests.every(request=>request.startsWith('GET ')));
 });
 
-// A plan as it was saved before grip and turnAt existed.
-const legacyPlan=()=>{const plan=model.defaultPlan() as any;for(const t of Object.values(plan.targets) as any[]){delete t.intent.grip;delete t.intent.turnAt;}return plan;};
-test('a plan saved before grip and turnAt opens with their defaults, unchanged; save, import and export carry the keys',async()=>{
+// A plan as it was saved before grip, turnAt and flipAxis existed.
+const legacyPlan=()=>{const plan=model.defaultPlan() as any;for(const t of Object.values(plan.targets) as any[]){delete t.intent.grip;delete t.intent.turnAt;delete t.intent.flipAxis;}return plan;};
+test('a plan saved before grip, turnAt and flipAxis opens with their defaults, unchanged; save, import and export carry the keys',async()=>{
  const {context,element,reply,respond,calls,fire}=await setup();
  const loading=runInContext('load()',context);reply(legacyPlan());await loading;
  assert.equal(runInContext('dirty',context),false);assert.equal(element('save').disabled,true);
  assert.equal(runInContext("plan.targets['P1.C1'].intent.grip+'/'+plan.targets['P1.C1'].intent.turnAt",context),'PINCH/AIR');
- // An edit and a save: the PUT body holds both keys for every card.
+ // An edit and a save: the PUT body holds the three keys for every card.
  runInContext("choose('P1.C1')",context);element('grip').value='DRAG';fire('grip','change');
  fire('save','click');await settle();
  const sent=JSON.parse(calls.at(-1)!.init!.body!);assert.equal(calls.at(-1)!.init!.method,'PUT');
- for(const id of model.TARGETS)assert.deepEqual(Object.keys(sent.targets[id].intent).slice(-2),['grip','turnAt']);
+ for(const id of model.TARGETS)assert.deepEqual(Object.keys(sent.targets[id].intent).slice(-3),['grip','turnAt','flipAxis']);
  assert.equal(sent.targets['P1.C1'].intent.grip,'DRAG');
  respond({ok:true,json:async()=>({plan:sent,revision:'saved'})},'/api/placements');await settle();
  assert.equal(runInContext('dirty',context),false);
@@ -655,7 +655,7 @@ test('a plan saved before grip and turnAt opens with their defaults, unchanged; 
  assert.equal(runInContext("plan.targets['D.C2'].intent.grip+'/'+plan.targets['D.C2'].intent.turnAt",context),'PINCH/AIR');
  // The export writes the plan with the keys.
  const exported:string[]=[];context.Blob=class{constructor(parts:string[]){exported.push(parts.join(''));}};context.URL={createObjectURL:()=>'blob:test',revokeObjectURL(){}};element('a').click=()=>{};
- fire('export','click');assert.equal(exported.length,1);assert.equal(exported[0].match(/"grip": "PINCH"/g)?.length,16);assert.equal(exported[0].match(/"turnAt": "AIR"/g)?.length,16);
+ fire('export','click');assert.equal(exported.length,1);assert.equal(exported[0].match(/"grip": "PINCH"/g)?.length,16);assert.equal(exported[0].match(/"turnAt": "AIR"/g)?.length,16);assert.equal(exported[0].match(/"flipAxis": "FREE"/g)?.length,16);
 });
 
 test('the motion panel: grip and place of the turn go through undo, a technique sets a card in one click, and its motion can go to every player card',async()=>{
@@ -673,12 +673,12 @@ test('the motion panel: grip and place of the turn go through undo, a technique 
  fire('undo','click');assert.equal(intent('P2.C1').turnAt,'AIR');assert.equal(intent('P2.C1').grip,'DRAG');
  // Laid closed, turned later: no turn, so where it is turned cannot be chosen.
  fire('technique-drag-closed','click');
- assert.deepEqual(intent('P2.C1'),{takeHand:'LH',startSide:'BACK',endSide:'BACK',pass:false,turn:false,grip:'DRAG',turnAt:'AIR'});
+ assert.deepEqual(intent('P2.C1'),{takeHand:'LH',startSide:'BACK',endSide:'BACK',pass:false,turn:false,grip:'DRAG',turnAt:'AIR',flipAxis:'FREE'});
  assert.equal(element('turn-at').disabled,true);assert.equal(element('turn').checked,false);assert.equal(element('end-side').value,'BACK');assert.doesNotMatch(element('sequence').textContent,/\bTURN\(/);
  assert.equal(pressed['technique-drag-closed'],'true');assert.equal(pressed['technique-pinch-air'],'false');
  // A technique keeps the hand choices: PASS on top of "Släp och vänd vid platsen".
  element('pass').checked=true;fire('pass','change');fire('technique-drag-place','click');
- assert.deepEqual(intent('P2.C1'),{takeHand:'LH',startSide:'BACK',endSide:'FRONT',pass:true,turn:true,grip:'DRAG',turnAt:'PLACE'});
+ assert.deepEqual(intent('P2.C1'),{takeHand:'LH',startSide:'BACK',endSide:'FRONT',pass:true,turn:true,grip:'DRAG',turnAt:'PLACE',flipAxis:'FREE'});
  assert.match(element('sequence').textContent,/DRAG\(LH,BACK\) > PASS\(LH>RH,BACK\) > TURN\(RH,BACK>FRONT,PLACE\)/);
  // Its motion to the fourteen player cards, in one undo step; the dealer's two cards are left alone.
  const dealer=[intent('D.C1'),intent('D.C2')],geometry=runInContext('JSON.stringify(Object.values(plan.targets).map(t=>[t.geometry,t.material]))',context),steps=runInContext('history.length',context);

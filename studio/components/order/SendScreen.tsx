@@ -15,7 +15,7 @@ import { useState, type ReactNode } from "react";
 import { asApiError } from "../../lib/api.ts";
 import { labUrl } from "../../lib/lab.ts";
 import { swedishMoment } from "../../lib/mode.ts";
-import { approveOrder, changeOrder, costWords, motionWords, paramRows, picturesInOrder, referenceWords, refreshOrder, storedParts, styleWords, type OrderAnswer, type OrdersAnswer } from "../../lib/orders.ts";
+import { approveOrder, changeOrder, costWords, motionWords, paramRows, picturesInOrder, plannedWords, referenceWords, refreshOrder, storedParts, styleWords, type OrderAnswer, type OrdersAnswer } from "../../lib/orders.ts";
 import { MODELS, REF_VERDICT_LABEL, approvalWords, SHAPE_LABEL, TAKES_MAX, credits, defaultFlip, genitive, groupBudget, handChoiceOf, handsOf, requestOf, scaleWords, seatWords, stepOf, takeStates, waitWords } from "../../../src/order-model.ts";
 import { Page } from "../shell";
 import { Badge, Button, Dialog, SegmentedControl, TextArea, cn, useToast } from "../ui";
@@ -69,7 +69,7 @@ function Edit({ answer, all, onSaved }: { answer: OrderAnswer; all: OrdersAnswer
           {m.side === "FRONT" && m.turn && m.flipAxis ? (
             <div className="flex flex-col gap-2">
               <span className="text-sm text-dim">Hur kortet vänds</span>
-              <FlipChoice value={m.flipAxis} suggested={defaultFlip(order.step.key, seat?.turnAt)} disabled={busy} onChange={(axis) => axis !== m.flipAxis && void save({ flipAxis: axis })} />
+              <FlipChoice value={m.flipAxis} plan={seat ? defaultFlip(order.step.key, seat.turnAt, seat.flipAxis) : null} disabled={busy} onChange={(axis) => axis !== m.flipAxis && void save({ flipAxis: axis })} />
             </div>
           ) : null}
         </>
@@ -188,6 +188,11 @@ export function SendScreen({ answer, all, onBack, onOpen, onSaved, onLike }: { a
               </>
             ) : null}
           </p>
+          {plannedWords(order).map((w) => (
+            <p key={w} data-plan-differs className="text-sm text-[#f0b07a]">
+              {w}
+            </p>
+          ))}
         </div>
         {order.status === "AVBRUTEN" && order.setAside ? (
           <p className="rounded-lg border border-line bg-surface px-4 py-2.5 text-sm text-ink">

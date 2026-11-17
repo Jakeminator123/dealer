@@ -7,13 +7,19 @@ export type Geometry = Point & { width: number; height: number; angle: number; t
 // on the card in the shoe's mouth, slid out along the felt (anchor 2, position 2). turnAt: where a turned card is turned, on the
 // way (AIR) or at its place on the felt (PLACE); it only means something when turn is true. A card turned later needs no value
 // of its own: it is turn=false with endSide equal to startSide (closed), as the dealer's second card is.
+// flipAxis: how a card turned on the way is turned (Jakob 2026-11-17: both ways are valid, the right side comes up towards the
+// player, yellow to blue). FREE: the wrist turns over with the card, the palm from down to up; LONG_EDGE: hand and card roll
+// together about the card's long side like a key, as Pamela does. A card turned at its place (turnAt PLACE) rolls over its long
+// edge there whatever flipAxis says. An order says the three in one word (src/order-model.ts FlipAxis: AT_PLACE, FREE, LONG_EDGE).
 export type Grip = 'PINCH' | 'DRAG';
 export type TurnAt = 'AIR' | 'PLACE';
-export type Intent = { takeHand: Hand; startSide: Side; endSide: Side; pass: boolean; turn: boolean; grip: Grip; turnAt: TurnAt };
+export type TurnAxis = 'FREE' | 'LONG_EDGE';
+export type Intent = { takeHand: Hand; startSide: Side; endSide: Side; pass: boolean; turn: boolean; grip: Grip; turnAt: TurnAt; flipAxis: TurnAxis };
 export const GRIPS: readonly Grip[] = ['PINCH','DRAG'];
 export const TURN_PLACES: readonly TurnAt[] = ['AIR','PLACE'];
-// Plans saved before grip and turnAt existed lack them; validatePlan fills these in when a plan is read.
-export const INTENT_DEFAULTS: Readonly<Pick<Intent,'grip'|'turnAt'>> = Object.freeze({grip:'PINCH',turnAt:'AIR'});
+export const TURN_AXES: readonly TurnAxis[] = ['FREE','LONG_EDGE'];
+// Plans saved before grip, turnAt or flipAxis existed lack them; validatePlan fills these in when a plan is read.
+export const INTENT_DEFAULTS: Readonly<Pick<Intent,'grip'|'turnAt'|'flipAxis'>> = Object.freeze({grip:'PINCH',turnAt:'AIR',flipAxis:'FREE'});
 export type Target = { geometry: Record<View, Geometry>; intent: Intent; material: { bend: number; gloss: number } };
 export type TableProjection = { mode:'flat'|'individual'; heading:number };
 export type PlacementPlan = { schemaVersion: 1; id: 'pamela-table'; space: 'image-normalized-bottom-up'; updatedAt: string | null; shoe: Record<View, Point>; targets: Record<string, Target>; tableProjection?:TableProjection };
@@ -33,6 +39,23 @@ export const SHOE_CARD: Readonly<Record<View, readonly {x:number;y:number}[]>> =
  native:[{x:1298,y:757.5},{x:1337,y:780},{x:1285,y:854},{x:1244,y:829}],
  portrait:[{x:922.5,y:763.5},{x:955,y:777.5},{x:904.5,y:849.5},{x:867.5,y:826.5}],
 };
+// The card in the shoe's window as the dealers' anchors and the bank's films show it (the bank's shoe, the same for every
+// dealer): standing in the window with its long side at about 125° in the picture, its face turned towards the dealer so that
+// it shows about 0.55 of its length across (a card seen straight on shows 0.72), and larger than the V6 picture's card
+// (SHOE_CARD), its upper short end higher. Its corners, clockwise from the upper one, are the card track's first frame of
+// paow-giv-2-1-p4-04-01 brought to the view's pixels (1764 → 1762 wide); the yellow pixels of anchors 2.1 (paow-nyp-ung-1) and
+// 2.2 (paow-ankare-2-2-t1), of pamela-p4-c1-plan-deal-02 and of the neutral backdrop give the same card within 5° and 13 px
+// (measured 2026-11-17). The card path starts from it in Dator; Mobil has no film of its own and starts from SHOE_CARD.
+export const WINDOW_CARD: Readonly<Record<View, readonly {x:number;y:number}[]>> = {
+ native:[{x:1296.5,y:740.4},{x:1351.3,y:773.3},{x:1281.9,y:862.8},{x:1239,y:834.1}],
+ portrait:SHOE_CARD.portrait,
+};
+// A card as the films show it, and as the labs where films are planned and ordered draw it (Jakob 2026-11-17: the back yellow,
+// the face blue; the print is the game's afterwork): one yellow and one blue, the film card's own. The blue is the median of
+// the card drawn on an order's last picture (the bank's real card pixels, tools/order-images.ts TEXTURE: 0, 130, 218), the
+// yellow the median of the card in the shoe's window of anchors 1 and 2.1 and the neutral backdrop (239–245, 214–228, 0–3).
+// The game's lit film card (src/scene3d-deal.ts COLOUR: 232, 209, 5 and 0, 121, 227) lies within 13 of both.
+export const CARD_COLOUR: Readonly<Record<Side, string>> = { BACK: '#f1d800', FRONT: '#0082da' };
 export const otherHand = (h: Hand): Hand => h==='LH'?'RH':'LH';
 export const otherSide = (s: Side): Side => s==='BACK'?'FRONT':'BACK';
 export function toPixels(point: Point, view: View) { const p=VIEWS[view]; return { x:point.u*(p.width-1), y:(1-point.v)*(p.height-1) }; }
@@ -84,12 +107,13 @@ export function sequence(id: string, intent: Intent) {
  return [`${id} | ${takeStep(intent)}(${intent.takeHand},${intent.startSide})`,...(intent.pass?[`PASS(${intent.takeHand}>${hand},${intent.startSide})`]:[]),...(intent.turn?[`TURN(${hand},${intent.startSide}>${intent.endSide},${turnPlace(intent)})`]:[]),`LAND(${intent.endSide})`,`RELEASE(${hand})`,`RETURN(SHOE_READY)`].join(' > ');
 }
 // One-click dealing techniques of the lab's Rörelse panel. Each sets how the card is taken and turned and its two sides; which
-// hand takes it and a hand change (PASS) are separate choices and are left as they are, so a technique can be combined with PASS.
+// hand takes it, a hand change (PASS) and the turn's axis are separate choices and are left as they are, so a technique can be
+// combined with PASS and with either turn on the way.
 export const TECHNIQUES = {
  'pinch-air':{grip:'PINCH',startSide:'BACK',endSide:'FRONT',turn:true,turnAt:'AIR'},
  'drag-place':{grip:'DRAG',startSide:'BACK',endSide:'FRONT',turn:true,turnAt:'PLACE'},
  'drag-closed':{grip:'DRAG',startSide:'BACK',endSide:'BACK',turn:false,turnAt:'AIR'},
-} as const satisfies Record<string,Omit<Intent,'takeHand'|'pass'>>;
+} as const satisfies Record<string,Omit<Intent,'takeHand'|'pass'|'flipAxis'>>;
 export type Technique = keyof typeof TECHNIQUES;
 export function applyTechnique(intent: Intent, name: Technique): Intent { return {...intent,...TECHNIQUES[name]}; }
 // The technique an intent follows, if any; where a card is not turned, the place of a turn does not count.
@@ -216,8 +240,8 @@ export function defaultPlan(): PlacementPlan {
 function object(v:unknown): v is Record<string,unknown>{return !!v&&typeof v==='object'&&!Array.isArray(v);}
 function keys(v:unknown,list:string[]): asserts v is Record<string,unknown>{if(!object(v)||Object.keys(v).sort().join('|')!==list.sort().join('|'))throw Error('Felaktiga fält i placeringsfilen.');}
 function number(v:unknown,lo:number,hi:number){if(typeof v!=='number'||!Number.isFinite(v)||v<lo||v>hi)throw Error('Koordinat eller reglage ligger utanför tillåtet intervall.');}
-// Checks a plan strictly and, once all of it has passed, fills in the intent keys an older file lacks (grip, turnAt) with their
-// defaults, in place: every reader gets a complete plan, and a save or export writes the keys.
+// Checks a plan strictly and, once all of it has passed, fills in the intent keys an older file lacks (grip, turnAt, flipAxis)
+// with their defaults, in place: every reader gets a complete plan, and a save or export writes the keys.
 export function validatePlan(value: unknown): asserts value is PlacementPlan {
  keys(value,['schemaVersion','id','space','updatedAt','shoe','targets',...(object(value)&&Object.hasOwn(value,'tableProjection')?['tableProjection']:[])]);
  if(Object.hasOwn(value,'tableProjection')){
@@ -232,6 +256,7 @@ export function validatePlan(value: unknown): asserts value is PlacementPlan {
   const i=target.intent;if(typeof i.takeHand!=='string'||typeof i.startSide!=='string'||typeof i.endSide!=='string'||!['LH','RH'].includes(i.takeHand)||!['BACK','FRONT'].includes(i.startSide)||!['BACK','FRONT'].includes(i.endSide)||typeof i.pass!=='boolean'||typeof i.turn!=='boolean'||i.turn!==(i.startSide!==i.endSide))throw Error('Sidbyte kräver TURN; handbyte och kortvändning är skilda val.');
   if(Object.hasOwn(i,'grip')&&!GRIPS.includes(i.grip as Grip))throw Error('Okänt grepp vid skon: PINCH eller DRAG.');
   if(Object.hasOwn(i,'turnAt')&&!TURN_PLACES.includes(i.turnAt as TurnAt))throw Error('Okänd plats för vändningen: AIR eller PLACE.');
+  if(Object.hasOwn(i,'flipAxis')&&!TURN_AXES.includes(i.flipAxis as TurnAxis))throw Error('Okänd vändning på vägen: FREE eller LONG_EDGE.');
   number(target.material.bend,0,.18);number(target.material.gloss,0,1);
   for(const view of ['native','portrait'] as View[]){const g=target.geometry[view];keys(g,['u','v','width','height','angle','taper','reviewed']);number(g.u,0,1);number(g.v,0,1);number(g.width,.005,.25);number(g.height,.005,.25);number(g.angle,-180,180);number(g.taper,.4,1.6);if(typeof g.reviewed!=='boolean')throw Error('Granskningsstatus saknas.');
    const p=VIEWS[view];if(quad(g as Geometry,view).some(q=>q.x<-.01||q.y<-.01||q.x>p.width-1+.01||q.y>p.height-1+.01))throw Error('Hela kortkonturen måste ligga inom bildytan.');

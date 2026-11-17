@@ -15,11 +15,12 @@ import { labUrl } from "../../lib/lab.ts";
 import { FOR_YOU } from "../../lib/verdict.ts";
 import { PRODUCTION_CHIP, draftProduction, getProduction, productionCount, type Production as List, type ProductionAnchor, type ProductionRow } from "../../lib/orders.ts";
 import type { PlanAnswer } from "../../../src/order-model.ts";
+import { CARD_COLOUR } from "../../../src/placement-model.ts";
 import { Badge, Button, cn, useToast } from "../ui";
 
 const W = 1764,
   H = 1174;
-const CARD_FILL = { BACK: "#e6c229", FRONT: "#2f6fd8" } as const;
+const CARD_FILL = CARD_COLOUR;
 const ANCHOR_TONE = { gäller: "ok", kandidat: "wait", saknas: "bad" } as const;
 
 /** The picture a step starts from, its card drawn where the plan lays it; a hatched field where it waits. */
@@ -48,7 +49,7 @@ function StepPicture({ row, plan }: { row: ProductionRow; plan: PlanAnswer | nul
             return (
               <g key={i}>
                 <circle cx={cx} cy={cy} r={95} fill="none" stroke="#e8cb85" strokeWidth={9} opacity={0.9} />
-                <polygon points={c.quad.map((q) => q.join(",")).join(" ")} fill={CARD_FILL[c.side]} stroke="#0b0d0c" strokeWidth={3} />
+                <polygon points={c.quad.map((q) => q.join(",")).join(" ")} fill={CARD_FILL[c.side]} stroke={CARD_FILL[c.side]} strokeWidth={4} strokeLinejoin="round" />
               </g>
             );
           })}

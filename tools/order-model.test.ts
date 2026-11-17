@@ -5,7 +5,7 @@ import assert from 'node:assert/strict';
 import { readFile, readdir } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 import {
-  ALL_SEVEN, CARD_SCALES, FLIP_ABOUT, FLIP_AXES, MODELS, SEAT_TARGETS, STEPS, TEXT_STYLES, bodyLine, canonical, checkPolicy, costOf, crossesBody, cutIntoOf, dayOf, defaultFlip, defaultStyle, draftProblems, edgeOf, genitive, groupBudget, handChoiceOf, handsOf, hashInput, landingMissing, landingOf, lengthFor, modelFor, modelsFor, paramsOf, priceOf, referenceCandidates, requestOf, scaleQuad, scaleWords, seatList, seatWords, shownOf, spentOn, startWords, stepOf, styleOf, stylesFor, summaryOf, takeStates, tidyMotion, validateOrder, verdictOf, waitWords,
+  ALL_SEVEN, CARD_SCALES, FLIP_ABOUT, FLIP_AXES, MODELS, SEAT_TARGETS, STEPS, TEXT_STYLES, plannedDiffers, plannedOf, bodyLine, canonical, checkPolicy, costOf, crossesBody, cutIntoOf, dayOf, defaultFlip, defaultStyle, draftProblems, edgeOf, genitive, groupBudget, handChoiceOf, handsOf, hashInput, landingMissing, landingOf, lengthFor, modelFor, modelsFor, paramsOf, priceOf, referenceCandidates, requestOf, scaleQuad, scaleWords, seatList, seatWords, shownOf, spentOn, startWords, stepOf, styleOf, stylesFor, summaryOf, takeStates, tidyMotion, validateOrder, verdictOf, waitWords,
   type BankFacts, type Order, type Policy, type Receipt,
 } from '../src/order-model.ts';
 import { orderPrompt } from '../src/order-prompts.ts';
@@ -220,11 +220,29 @@ test('the hand: left, right or handbyte (left to right), stored as the plan stor
   assert.equal(defaultFlip('GIV-2.2'), 'FREE');
   assert.equal(defaultFlip('GIV-2.1', 'PLACE'), 'AT_PLACE', 'where the plan turns the card at its place');
   assert.equal(defaultFlip('GIV-2.2', 'PLACE'), 'AT_PLACE');
+  // the plan's turn on the way (Rörelse, "Hur kortet vänds", 2026-11-17): the wrist or like a key; at the place it is AT_PLACE whatever the axis
+  assert.equal(defaultFlip('GIV-2.1', 'AIR', 'LONG_EDGE'), 'LONG_EDGE');
+  assert.equal(defaultFlip('GIV-2.1', 'AIR', 'FREE'), 'FREE');
+  assert.equal(defaultFlip('GIV-2.2', 'PLACE', 'LONG_EDGE'), 'AT_PLACE');
+  // what Placering said, as an order keeps it, and where a deal differs from it
+  assert.deepEqual(plannedOf({ grip: 'PINCH', turnAt: 'AIR', flipAxis: 'LONG_EDGE', side: 'FRONT' }), { grip: 'PINCH', flipAxis: 'LONG_EDGE' });
+  assert.deepEqual(plannedOf({ grip: 'DRAG', turnAt: 'PLACE', flipAxis: 'FREE', side: 'FRONT' }), { grip: 'DRAG', flipAxis: 'AT_PLACE' });
+  assert.deepEqual(plannedOf({ grip: 'PINCH', turnAt: 'AIR', flipAxis: 'FREE', side: 'BACK' }), { grip: 'PINCH', flipAxis: null }, 'laid closed: no turn');
+  assert.deepEqual(plannedDiffers({ grip: 'DRAG', turn: true, flipAxis: 'FREE' }, { grip: 'PINCH', flipAxis: 'FREE' }), ['grip'], 'GIV-2.2 where the plan says nyp');
+  assert.deepEqual(plannedDiffers({ grip: 'PINCH', turn: true, flipAxis: 'AT_PLACE' }, { grip: 'PINCH', flipAxis: 'LONG_EDGE' }), ['turn']);
+  assert.deepEqual(plannedDiffers({ grip: 'PINCH', turn: false, flipAxis: null }, { grip: 'PINCH', flipAxis: 'FREE' }), [], 'a card laid closed has no turn to differ in');
+  assert.deepEqual(plannedDiffers({ grip: 'PINCH', turn: true, flipAxis: 'FREE' }, undefined), [], 'an order from before 2026-11-17 says nothing');
   const order = { schemaVersion: 1, id: 'x', title: 'x', dealer: 'paow', kind: 'FILM', step: { key: 'GIV-2.1' }, pictures: [], generation: {}, prompt: {}, takes: 1, cost: {}, reference: {}, status: 'UTKAST', approval: null, notes: [] };
   const motion = { grip: 'PINCH', hand: 'RH', pass: true, turn: true, flipAxis: 'AT_PLACE', target: 'P1.C1', side: 'FRONT', fromPlan: false };
   assert.match(validateOrder({ ...order, motion }).errors.join(' '), /handbyte går från vänster hand till höger/);
   assert.doesNotMatch(validateOrder({ ...order, motion: { ...motion, hand: 'LH' } }).errors.join(' '), /motion/);
   assert.match(validateOrder({ ...order, motion: { ...motion, hand: 'LH', side: 'UP' } }).errors.join(' '), /motion: hand/);
+  assert.match(validateOrder({ ...order, motion: { ...motion, hand: 'LH', grip: 'SLIDE' } }).errors.join(' '), /grip \(PINCH\/DRAG\)/, 'the grip is checked too');
+  // what Placering said for the card: its grip and its turn (or null), nothing else
+  assert.doesNotMatch(validateOrder({ ...order, motion: { ...motion, hand: 'LH', planned: { grip: 'DRAG', flipAxis: 'LONG_EDGE' } } }).errors.join(' '), /motion/);
+  assert.doesNotMatch(validateOrder({ ...order, motion: { ...motion, hand: 'LH', planned: { grip: 'PINCH', flipAxis: null } } }).errors.join(' '), /motion/);
+  for (const planned of [{ grip: 'SLIDE', flipAxis: null }, { grip: 'PINCH', flipAxis: 'SHORT_EDGE' }, { grip: 'PINCH' }, { grip: 'PINCH', flipAxis: null, hand: 'LH' }, 'PINCH', null])
+    assert.match(validateOrder({ ...order, motion: { ...motion, hand: 'LH', planned } }).errors.join(' '), /motion\.planned/, JSON.stringify(planned));
 });
 
 test('the seats where the left hand would cross her body, from the plan alone', async () => {

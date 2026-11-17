@@ -6,8 +6,8 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFile, readdir } from "node:fs/promises";
 import {
-  HANDOVER, PRESET_PARAMS, SHOWN_CHIP, anchorFor, cardOf, costWords, firstLacking, goesWords, markOf, motionWords, offsetWords, orderableCard, ownerWords, paramRows, picturesInOrder, presetAddress, presetOf, recipeOf, referenceWords, routeOf,
-  seatKey, sections, shownWords, storedParts, styleWords, withCard, type Order, type OrderAnswer,
+  HANDOVER, PRESET_PARAMS, SHOWN_CHIP, anchorFor, cardOf, costWords, firstLacking, goesWords, gripAgainstPlan, markOf, motionWords, offsetWords, orderableCard, ownerWords, paramRows, picturesInOrder, plannedWords, presetAddress, presetOf, recipeOf,
+  referenceWords, routeOf, seatKey, sections, shownWords, storedParts, styleWords, withCard, type Order, type OrderAnswer,
 } from "../lib/orders.ts";
 import { parseJakob } from "../lib/names.ts";
 import { ALL_SEVEN, MODELS, SHOWN_LABEL, STEPS, cutIntoOf, stepOf, type StepKey } from "../../src/order-model.ts";
@@ -165,6 +165,26 @@ test("what is ordered, in his notation and one sentence: the edges the film is f
     assert.ok(r.line && r.sentence.endsWith("."), s.key);
     if (s.kind === "FILM") assert.deepEqual(parseJakob(r.line).errors, [], `${s.key}: ${r.line}`);
   }
+});
+
+test("where a step and Placering differ, one line with the choices' own labels: the sheet before, the draft after", () => {
+  const seat = (target: string, grip: "PINCH" | "DRAG") => ({ target, grip });
+  const drag = stepOf("GIV-2.2")!;
+  const pinch = stepOf("GIV-2.1")!;
+  assert.equal(gripAgainstPlan(drag, [seat("P6.C1", "PINCH")]), "Placering säger A2.1 nyp för plats 6; steget är A2.2 släp.");
+  assert.equal(gripAgainstPlan(pinch, [seat("P6.C1", "DRAG")]), "Placering säger A2.2 släp för plats 6; steget är A2.1 nyp.");
+  assert.equal(gripAgainstPlan(pinch, [seat("P6.C1", "PINCH")]), null, "they agree");
+  assert.equal(gripAgainstPlan(drag, ["P1.C1", "P2.C1", "P3.C1", "P5.C1"].map((t) => seat(t, "PINCH")).concat(seat("P4.C1", "DRAG"))), "Placering säger A2.1 nyp för plats 1, 2, 3 och 5; steget är A2.2 släp.", "Alla sju: the seats that differ");
+  for (const key of ["RETUR-2.2", "ANKARE-2.2", "VILA"] as StepKey[]) assert.equal(gripAgainstPlan(stepOf(key)!, [seat("P6.C1", "PINCH")]), null, key);
+  // a stored deal: what Placering said when it was made, against the draft
+  const motion = { grip: "DRAG" as const, hand: "LH" as const, pass: false, turn: true, flipAxis: "LONG_EDGE" as const, target: "P6.C1", side: "FRONT" as const, fromPlan: true };
+  assert.deepEqual(plannedWords({ motion: { ...motion, planned: { grip: "PINCH", flipAxis: "FREE" } } }), [
+    "Placering sa A2.1 nyp för plats 6; steget är A2.2 släp.",
+    "Placering sa ”Handleden vänder kortet på vägen” för plats 6; utkastet säger ”Rullas kring långsidan på vägen”.",
+  ]);
+  assert.deepEqual(plannedWords({ motion: { ...motion, planned: { grip: "DRAG", flipAxis: "LONG_EDGE" } } }), []);
+  assert.deepEqual(plannedWords({ motion }), [], "an order from before 2026-11-17 says nothing");
+  assert.deepEqual(plannedWords({ motion: null }), []);
 });
 
 test("a new order like an old one: every choice of it, never its pictures", async () => {

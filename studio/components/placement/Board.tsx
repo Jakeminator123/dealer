@@ -2,26 +2,32 @@
 
 // The picture, as large as the area allows, with the cards on it and the handles on the chosen one. Under the cards lies a
 // still in the view's own pixels (the neutral backdrop, or the V6 picture) or a film at a frame. The cards are drawn three
-// ways: "Kort" lays the playback's own rendered cards (cardLayer.ts); "Färg" and "Kontur" draw the old tab's yellow (closed)
-// and blue (open) outlines, filled or not, over the same quads (placement-model planQuad). Over that lies one SVG in the
+// ways: "Färg" (the default) and "Kontur" draw a card as the films show it, a plain yellow back (closed) and a plain blue
+// face (open), filled or as an outline, over the quads (placement-model planQuad, CARD_COLOUR); "Efterarbete: spelets kort"
+// lays the playback's own rendered cards with their print (cardLayer.ts), what the game draws afterwards. Over that lies one SVG in the
 // view's own pixels with the handles:
 //   drag a card or the shoe: move it · the round handle beyond the far edge: riktning (Shift: 15°) · a near corner: size
 //   (Shift: same shape) · a far corner: perspektiv. Arrow keys: a pixel (Shift ten); on the round handle a degree (Shift 15).
 // On a flat table (Plant bord) only moving is possible, as in the old tab: size, riktning and perspektiv follow P4C1.
 // Ctrl + wheel zooms. Every gesture is one step for Ångra; nothing is saved from here.
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type KeyboardEvent, type PointerEvent as ReactPointerEvent, type RefObject } from "react";
-import { SHOE, SHOE_CARD, TARGETS, VIEWS, angleToward, editPlace, fromPixels, planQuad, toPixels, type Intent, type Place, type PlacementPlan, type View } from "../../../src/placement-model.ts";
+import { CARD_COLOUR, SHOE, SHOE_CARD, TARGETS, VIEWS, WINDOW_CARD, angleToward, defaultPlan, editPlace, fromPixels, planQuad, toPixels, type Intent, type Place, type PlacementPlan, type View } from "../../../src/placement-model.ts";
 import { nudged, placeCode, sideWord, sizeFromCorner, taperFromCorner, turnHandle, type Pt } from "../../lib/placement.ts";
-import { PATH_MS, pathFrame } from "../../lib/placement-path.ts";
+import { PATH_SECONDS, pathFrame, type PathPhase } from "../../lib/placement-path.ts";
 import { cn } from "../ui/cn";
 import { createCardLayer, stillSource, type CardLayer, type Face, type Source } from "./cardLayer.ts";
 import { draftActions } from "./useDraft.ts";
 
 export type Look = "kort" | "farg" | "kontur";
 export type Backdrop = { kind: "still"; src: string } | { kind: "film"; src: string; fps: number; frame: number };
-export type PathRun = { id: string; key: number };
+/** The card path playing: for which card, at which speed (1, or 0.5 half speed), and the step name shown by the picture. */
+export type PathRun = { id: string; key: number; speed: number; step: string | null };
 
-const COLOUR = { BACK: "#ffff00", FRONT: "#0000ff" } as const;
+const COLOUR = CARD_COLOUR;
+/** The chosen card's (or the shoe's) marking: a colour no card has, so it is not read as a card's rim. */
+const SELECTED = "#ff4fd8";
+/** A card as the films show it: one plain colour with slightly rounded corners (its own colour round it), no rim. */
+const plain = (colour: string) => ({ fill: colour, stroke: colour, strokeWidth: 4, strokeLinejoin: "round" as const, vectorEffect: "non-scaling-stroke" as const });
 const pts = (q: readonly Pt[]) => q.map((p) => `${p.x},${p.y}`).join(" ");
 type Grip = "move" | "turn" | "size" | "taper";
 
@@ -59,7 +65,7 @@ export function Board({
   zoom,
   onZoom,
   path,
-  onPathEnd,
+  onPhase,
   onCardsFailed,
   videoRef,
   label,
@@ -77,15 +83,18 @@ export function Board({
   grid: boolean;
   changed: ReadonlySet<Place>;
   backdrop: Backdrop;
-  /** Paint the card in the shoe's window yellow (Färg, Kontur): the V6 picture shows the game's own back there; the neutral backdrop's shoe and the films already show it yellow. */
-  shoeCard: boolean;
+  /**
+   * Paint the card in the shoe's window plain yellow (Färg, Kontur): on the V6 picture over the game's own back there, on the
+   * neutral picture over its film card and the window's pale edge; null under a film, whose own card is lifted out.
+   */
+  shoeCard: "v6" | "neutral" | null;
   /** The still could not be read (not on this machine): the view shows another. */
   onBackdropMissing?: () => void;
   face: Face;
   zoom: number;
   onZoom: (zoom: number) => void;
   path: PathRun | null;
-  onPathEnd: () => void;
+  onPhase: (phase: PathPhase) => void;
   onCardsFailed: () => void;
   videoRef: RefObject<HTMLVideoElement | null>;
   /** A short name of what lies under the cards, shown in the picture's corner. */
@@ -319,14 +328,12 @@ export function Board({
             <pattern id="placering-grid" width="88.1" height="58.7" patternUnits="userSpaceOnUse">
               <path d="M 88.1 0 L 0 0 0 58.7" fill="none" stroke="white" strokeOpacity=".13" strokeWidth="1" />
             </pattern>
-            <filter id="placering-lift" x="-20%" y="-20%" width="140%" height="140%">
-              <feDropShadow dx="0" dy="1" stdDeviation="1.5" floodColor="#000" floodOpacity="0.8" />
-            </filter>
           </defs>
           {grid ? <rect width="100%" height="100%" fill="url(#placering-grid)" pointerEvents="none" /> : null}
           {look !== "kort" && shoeCard ? (
-            // the card standing in the shoe's window: yellow, as a closed card is in the films (the V6 picture shows the game's own back)
-            <polygon points={pts(SHOE_CARD[view])} fill="#ffff00" stroke="#8a7400" strokeWidth={1.5} strokeLinejoin="round" vectorEffect="non-scaling-stroke" pointerEvents="none">
+            // the card standing in the shoe's window, plain yellow as in the films with no pale rim round it: the V6 picture's own
+            // card (SHOE_CARD) there, the films' card (WINDOW_CARD) on the neutral picture, where it hides the picture's pale window edge
+            <polygon points={pts(shoeCard === "v6" ? SHOE_CARD[view] : windowCard(plan, view))} {...plain(COLOUR.BACK)} pointerEvents="none">
               <title>Kortet i skon · stängt</title>
             </polygon>
           ) : null}
@@ -355,11 +362,12 @@ export function Board({
                   points={pts(quad)}
                   fill={fill}
                   fillOpacity={look === "kontur" ? 0.1 : 1}
-                  stroke={on ? "#fff" : look === "farg" ? "#ffffffa0" : look === "kontur" ? colour : "transparent"}
-                  strokeWidth={on ? 2.5 : 2}
+                  // a card is a plain shape with rounded corners (its own colour round it); only the chosen one is marked, in pink
+                  stroke={on ? SELECTED : look === "farg" ? colour : look === "kontur" ? colour : "transparent"}
+                  strokeWidth={on ? 2.5 : look === "farg" ? 4 : 2}
+                  strokeLinejoin="round"
                   strokeDasharray={!on && look === "kontur" ? "5 3" : undefined}
                   vectorEffect="non-scaling-stroke"
-                  filter={on ? "url(#placering-lift)" : undefined}
                   className={cn("outline-none", editable ? "cursor-grab active:cursor-grabbing" : "cursor-pointer", look === "kort" && !on && "hover:stroke-white/40")}
                 >
                   <title>{`${placeCode(id)} · ${sideWord(t.intent.endSide)}`}</title>
@@ -387,22 +395,30 @@ export function Board({
               role="button"
               aria-label="Skon: startpunkten"
               points={`${shoe.x},${shoe.y - r} ${shoe.x + r},${shoe.y} ${shoe.x},${shoe.y + r} ${shoe.x - r},${shoe.y}`}
-              fill="#dfb9ed"
-              stroke={selected === SHOE ? "#fff" : "#ffffffa0"}
+              // hollow, so that the card in the window stays plain yellow under it
+              fill="transparent"
+              stroke={selected === SHOE ? SELECTED : "#2b2338"}
               strokeWidth={selected === SHOE ? 2.5 : 2}
               vectorEffect="non-scaling-stroke"
-              filter={selected === SHOE ? "url(#placering-lift)" : undefined}
               className={cn("outline-none", editable ? "cursor-grab active:cursor-grabbing" : "cursor-pointer")}
             >
               <title>Skon: där korten tas</title>
             </polygon>
-            <text x={shoe.x} y={shoe.y - r - 6 * unit} textAnchor="middle" pointerEvents="none" style={{ fontSize: 10 * unit, fontWeight: 600, fill: "white", paintOrder: "stroke", stroke: "#111827", strokeWidth: 4 * unit }}>
+            <text x={shoe.x + 34 * unit} y={shoe.y - 44 * unit} textAnchor="start" pointerEvents="none" style={{ fontSize: 10 * unit, fontWeight: 600, fill: "white", paintOrder: "stroke", stroke: "#111827", strokeWidth: 4 * unit }}>
               SKO
             </text>
           </g>
-          {path && plan.targets[path.id] ? <PathLayer key={path.key} plan={plan} id={path.id} view={view} onEnd={onPathEnd} /> : null}
+          {path && plan.targets[path.id] ? <PathLayer key={path.key} plan={plan} id={path.id} view={view} speed={path.speed} onPhase={onPhase} /> : null}
         </svg>
         <span className="pointer-events-none absolute left-2.5 top-2.5 rounded-sm border border-white/25 bg-[#121815]/75 px-2 py-1 text-2xs font-medium text-white">{label}</span>
+        {path?.step ? (
+          <span className="pointer-events-none absolute bottom-2.5 left-2.5 flex flex-col rounded-sm border border-[#d3b4ff]/50 bg-[#1b1426]/85 px-2 py-1">
+            <span data-path-step className="text-xs font-medium text-[#f3eaff]">
+              {placeCode(path.id)} · {path.step}
+            </span>
+            <span className="text-2xs text-[#cdbfe0]">En skiss av rörelsen, inte en film</span>
+          </span>
+        ) : null}
       </div>
     </div>
   );
@@ -414,7 +430,7 @@ function Handles({ quad, id, unit, flat, editable }: { quad: Pt[]; id: string; u
     return (
       <g pointerEvents="none">
         {quad.map((p, i) => (
-          <circle key={i} cx={p.x} cy={p.y} r={2.8 * unit} fill="#fff" stroke="#142337" strokeWidth={1} vectorEffect="non-scaling-stroke" />
+          <circle key={i} cx={p.x} cy={p.y} r={2.8 * unit} fill={SELECTED} stroke="#142337" strokeWidth={1} vectorEffect="non-scaling-stroke" />
         ))}
       </g>
     );
@@ -422,52 +438,77 @@ function Handles({ quad, id, unit, flat, editable }: { quad: Pt[]; id: string; u
   const s = 4.5 * unit;
   return (
     <g>
-      <line x1={turn.from.x} y1={turn.from.y} x2={turn.at.x} y2={turn.at.y} stroke="#fff" strokeWidth={2} vectorEffect="non-scaling-stroke" pointerEvents="none" />
+      <line x1={turn.from.x} y1={turn.from.y} x2={turn.at.x} y2={turn.at.y} stroke={SELECTED} strokeWidth={2} vectorEffect="non-scaling-stroke" pointerEvents="none" />
       {[0, 1].map((i) => (
-        <circle key={`t${i}`} data-place={id} data-grip="taper" cx={quad[i].x} cy={quad[i].y} r={s} fill="#121815" stroke="#fff" strokeWidth={2} vectorEffect="non-scaling-stroke" className="cursor-ew-resize">
+        <circle key={`t${i}`} data-place={id} data-grip="taper" cx={quad[i].x} cy={quad[i].y} r={s} fill="#121815" stroke={SELECTED} strokeWidth={2} vectorEffect="non-scaling-stroke" className="cursor-ew-resize">
           <title>Dra: perspektiv</title>
         </circle>
       ))}
       {[2, 3].map((i) => (
-        <rect key={`s${i}`} data-place={id} data-grip="size" x={quad[i].x - s} y={quad[i].y - s} width={2 * s} height={2 * s} rx={unit} fill="#fff" stroke="#142337" strokeWidth={1} vectorEffect="non-scaling-stroke" className={i === 2 ? "cursor-nwse-resize" : "cursor-nesw-resize"}>
+        <rect key={`s${i}`} data-place={id} data-grip="size" x={quad[i].x - s} y={quad[i].y - s} width={2 * s} height={2 * s} rx={unit} fill={SELECTED} stroke="#142337" strokeWidth={1} vectorEffect="non-scaling-stroke" className={i === 2 ? "cursor-nwse-resize" : "cursor-nesw-resize"}>
           <title>Dra: storlek (Shift: samma form)</title>
         </rect>
       ))}
-      <circle data-place={id} data-grip="turn" tabIndex={0} role="button" aria-label={`Riktning ${placeCode(id)}`} cx={turn.at.x} cy={turn.at.y} r={7 * unit} fill="#fff" stroke="#d9b96a" strokeWidth={3} vectorEffect="non-scaling-stroke" className="cursor-crosshair outline-none">
+      <circle data-place={id} data-grip="turn" tabIndex={0} role="button" aria-label={`Riktning ${placeCode(id)}`} cx={turn.at.x} cy={turn.at.y} r={7 * unit} fill={SELECTED} stroke="#d9b96a" strokeWidth={3} vectorEffect="non-scaling-stroke" className="cursor-crosshair outline-none">
         <title>Dra: riktning (Shift: 15°) · pilar: 1° (Shift: 15°)</title>
       </circle>
     </g>
   );
 }
 
-/** "Spela kortbanan": the schematic run from the shoe to the card and the hand back (lib/placement-path.ts), once. */
-function PathLayer({ plan, id, view, onEnd }: { plan: PlacementPlan; id: string; view: View; onEnd: () => void }) {
+/** The window card as the films show it, where the plan's shoe point stands: moved as far as that point is from the start proposal's. */
+function windowCard(plan: PlacementPlan, view: View): Pt[] {
+  const at = toPixels(plan.shoe[view], view);
+  const was = toPixels(defaultPlan().shoe[view], view);
+  return WINDOW_CARD[view].map((p) => ({ x: p.x + at.x - was.x, y: p.y + at.y - was.y }));
+}
+
+/**
+ * "Spela kortbanan": the schematic run from the shoe's window to the card and the hand back (lib/placement-path.ts), again
+ * and again until it is stopped; `speed` 0.5 is half speed. The step shown is handed up as it changes, for the step chips.
+ */
+function PathLayer({ plan, id, view, speed, onPhase }: { plan: PlacementPlan; id: string; view: View; speed: number; onPhase: (phase: PathPhase) => void }) {
   const [t, setT] = useState(0);
-  const done = useRef(onEnd);
-  done.current = onEnd;
+  const rate = useRef(speed);
+  const told = useRef(onPhase);
   useEffect(() => {
-    const start = performance.now();
+    rate.current = speed;
+    told.current = onPhase;
+  });
+  useEffect(() => {
+    let last = performance.now();
+    let at = 0;
     let frame = 0;
     const tick = (now: number) => {
-      const time = Math.min(1, (now - start) / PATH_MS);
-      setT(time);
-      if (time < 1) frame = requestAnimationFrame(tick);
-      else done.current();
+      at = (at + ((now - last) / 1000) * (rate.current / PATH_SECONDS)) % 1;
+      last = now;
+      setT(at);
+      frame = requestAnimationFrame(tick);
     };
     frame = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(frame);
   }, []);
   const intent: Intent = plan.targets[id].intent;
-  const quad = planQuad(plan, id, view);
-  const f = pathFrame(t, toPixels(plan.shoe[view], view), toPixels(plan.targets[id].geometry[view], view), quad, intent);
+  const f = pathFrame(t, windowCard(plan, view), planQuad(plan, id, view), intent);
+  useEffect(() => {
+    told.current(f.phase);
+  }, [f.phase]);
+  const h = f.hand;
+  const ink = h.palm ? "#5b4680" : "#f3eaff";
   return (
-    <g pointerEvents="none" data-phase={f.phase}>
-      <path d={f.arc} fill="none" stroke="#d3b4ff" strokeWidth={3} strokeDasharray="9 8" vectorEffect="non-scaling-stroke" />
-      <polygon points={pts(f.points)} fill={COLOUR[f.side]} stroke="#fff" strokeWidth={2} vectorEffect="non-scaling-stroke" />
-      <circle cx={f.hand.x} cy={f.hand.y - 30} r={20} fill="#221330" stroke="#d3b4ff" strokeWidth={3} />
-      <text x={f.hand.x} y={f.hand.y - 24} textAnchor="middle" fontSize={17} fill="white">
-        {f.handName === "LH" ? "V" : "H"}
-      </text>
+    <g pointerEvents="none" data-phase={f.phase} data-seconds={f.seconds.toFixed(2)}>
+      <path d={f.arc} fill="none" stroke="#d3b4ff" strokeWidth={2.5} strokeDasharray="9 8" vectorEffect="non-scaling-stroke" />
+      <polygon points={pts(f.points)} {...plain(COLOUR[f.side])} />
+      {/* the hand: a plain shape, its back dark and its palm light, so that the wrist's turn reads */}
+      <g opacity={intent.grip === "DRAG" ? 0.82 : 0.95}>
+        <polygon points={pts(h.wrist)} fill="#2b2338" stroke="#f3eaff" strokeWidth={1.5} strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
+        <polygon points={pts(h.outline)} fill={h.palm ? "#efe3ff" : "#6b5590"} stroke={ink} strokeWidth={2} strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
+        <polygon points={pts(h.thumb)} fill={h.palm ? "#e2d1f7" : "#7d67a3"} stroke={ink} strokeWidth={2} strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
+        {h.crease ? <polyline points={pts(h.crease)} fill="none" stroke="#5b4680" strokeWidth={2} strokeLinecap="round" vectorEffect="non-scaling-stroke" /> : null}
+        <text x={h.label.x} y={h.label.y + h.size * 0.14} textAnchor="middle" fontSize={Math.max(12, h.size * 0.38)} fontWeight={700} fill={ink}>
+          {f.handName === "LH" ? "V" : "H"}
+        </text>
+      </g>
     </g>
   );
 }

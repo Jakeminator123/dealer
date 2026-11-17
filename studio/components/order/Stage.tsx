@@ -6,18 +6,21 @@
 // ordered card where the plan lays it (yellow closed, blue open, at the order's size), ringed and named. A press on a place
 // chooses that card, as the seat field does (Enter or Space on a focused place too). "Flytta kortets plats" opens Placering
 // at that card, with the way back to this order. "Bordet" lays the same places over Placering's neutral picture (the
-// studio's table with a figure) to see where the card lies on the table; what is sent is always the dealer's own picture.
+// studio's table with a figure) to see where the card lies on the table, for every step (one without a card shows the table
+// and the figure alone); what is sent is always the dealer's own picture.
 import { Clock, Move } from "lucide-react";
 import Link from "next/link";
 import { Fragment, type ReactNode } from "react";
 import { nodeCode } from "../../lib/names.ts";
 import type { Route } from "../../lib/orders.ts";
 import { placeName } from "../../lib/placement.ts";
+import { CARD_COLOUR } from "../../../src/placement-model.ts";
 import { SegmentedControl, buttonClasses, cn } from "../ui";
 
 const W = 1764,
   H = 1174;
-const CARD_FILL = { BACK: "#e6c229", FRONT: "#2f6fd8" } as const;
+// a card as the films show it, the same yellow and blue as Placering (CARD_COLOUR)
+const CARD_FILL = CARD_COLOUR;
 
 /** What lies under the places: a still, one frame of a film, or a field that says what it waits for. */
 export type StageBase = { src: string | null; frame?: { video: string; time: number } | null; name: string; waiting?: string | null; dim?: boolean };
@@ -63,7 +66,7 @@ export function Stage({
   onPick: (target: string) => void;
   /** Placering at the ordered card, or null where the step has no card. */
   move: string | null;
-  /** "Bordet" is offered where there are places to press. */
+  /** "Ankaret" or "Bordet", offered for every step: a step without a card shows the table and the figure without places. */
   look: StageLook;
   onLook: (look: StageLook) => void;
   caption: ReactNode;
@@ -112,7 +115,8 @@ export function Stage({
                     onPick(p.target);
                   }
                 }}
-                className="cursor-pointer fill-white/12 stroke-[#f4efe2]/80 outline-none transition-[fill] duration-150 hover:fill-brass/55 focus-visible:fill-brass/55"
+                // a place to press, not a card: a dashed lilac outline, no pale rim that reads as a card's
+                className="cursor-pointer fill-[#d3b4ff]/10 stroke-[#d3b4ff]/80 outline-none transition-[fill] duration-150 hover:fill-brass/55 focus-visible:fill-brass/55"
                 strokeWidth={1.5}
                 strokeDasharray="5 4"
                 vectorEffect="non-scaling-stroke"
@@ -129,8 +133,10 @@ export function Stage({
                 <polygon
                   points={points(c.quad)}
                   fill={c.filled ? CARD_FILL[c.side] : "none"}
-                  stroke={c.filled ? "#0b0d0c" : "#e8cb85"}
-                  strokeWidth={c.filled ? 1.5 : 2.5}
+                  // a drawn card is one plain colour with slightly rounded corners, no rim
+                  stroke={c.filled ? CARD_FILL[c.side] : "#e8cb85"}
+                  strokeWidth={c.filled ? 4 : 2.5}
+                  strokeLinejoin="round"
                   strokeDasharray={c.filled ? undefined : "6 4"}
                   vectorEffect="non-scaling-stroke"
                 />
@@ -158,18 +164,16 @@ export function Stage({
           {caption}
           {places.length ? " Tryck på en plats för att välja kortet." : ""}
         </p>
-        {places.length ? (
-          <SegmentedControl
-            label="Bilden"
-            size="sm"
-            value={look}
-            onChange={onLook}
-            options={[
-              { value: "ankare", label: "Ankaret", title: "Dealerns egen bild, den som skickas" },
-              { value: "bord", label: "Bordet", title: "Studions bord med en siluett, som i Placering; bara för att se var kortet ligger" },
-            ]}
-          />
-        ) : null}
+        <SegmentedControl
+          label="Bilden"
+          size="sm"
+          value={look}
+          onChange={onLook}
+          options={[
+            { value: "ankare", label: "Ankaret", title: "Dealerns egen bild, den som skickas" },
+            { value: "bord", label: "Bordet", title: "Studions bord med en siluett, som i Placering" },
+          ]}
+        />
       </div>
     </section>
   );

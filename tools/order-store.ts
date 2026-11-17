@@ -35,7 +35,7 @@ import { StoreError } from './placement-store.ts';
 import { mediaRoles } from './media-roles.ts';
 import {
   ANCHOR_NODE, ANCHOR_ROLE, CARD_SCALES, EXTRA_LIMIT, MODELS, FILE_NAME, FLIP_AXES, ORDER_ID, SEAT_TARGETS, TAKES_MAX, scaleWords,
-  bodyLine, checkPolicy, costOf, crossesBody, cutIntoOf, tidyMotion, dayOf, defaultFlip, defaultStyle, draftProblems, edgeOf, genitive, hashInput, landingMissing, landingOf, modelFor, modelsFor, paramsOf, referenceCandidates, seatList, seatWords, secondsWords, shownOf, spentOn, stepOf, stylesFor, summaryOf, validateOrder, waitingOf,
+  bodyLine, checkPolicy, costOf, crossesBody, cutIntoOf, tidyMotion, dayOf, defaultFlip, defaultStyle, draftProblems, edgeOf, genitive, hashInput, landingMissing, landingOf, modelFor, modelsFor, paramsOf, plannedOf, referenceCandidates, seatList, seatWords, secondsWords, shownOf, spentOn, stepOf, stylesFor, summaryOf, validateOrder, waitingOf,
   type BankFacts, type Drawn, type FlipAxis, type Motion, type Order, type OrderAnswer, type OrdersAnswer, type Owner, type Picture, type PlanAnswer, type Policy, type PoseAnswer, type Receipt, type Reference, type SeatPlan, type Shape, type StepDef, type StepKey, type TextStyle, type Waits,
 } from '../src/order-model.ts';
 import { orderPrompt } from '../src/order-prompts.ts';
@@ -145,7 +145,7 @@ export function planAnswerOf(plan: PlacementPlan, file: { path: string; sha256: 
   const line = bodyLine(centres, quads), seats: Record<string, SeatPlan> = {};
   for (const [target, t] of Object.entries(plan.targets)) {
     const i = t.intent;
-    seats[target] = { target, centre: centres[target], quad: quads[target], side: i.endSide, startSide: i.startSide, hand: i.takeHand, pass: i.pass, grip: i.grip ?? 'PINCH', turnAt: i.turnAt ?? 'AIR', crosses: crossesBody(centres[target][0], line) };
+    seats[target] = { target, centre: centres[target], quad: quads[target], side: i.endSide, startSide: i.startSide, hand: i.takeHand, pass: i.pass, grip: i.grip ?? 'PINCH', turnAt: i.turnAt ?? 'AIR', flipAxis: i.flipAxis ?? 'FREE', crosses: crossesBody(centres[target][0], line) };
   }
   return { path: file.path, sha256: file.sha256, updatedAt: plan.updatedAt, ...line, seats };
 }
@@ -477,7 +477,7 @@ export function orderStore(root: string, options: StoreOptions = {}) {
     const extra = input.extra?.trim() || null;
     if (extra && extra.length > EXTRA_LIMIT) throw new StoreError(400, `Tillägget får vara högst ${EXTRA_LIMIT} tecken (det här har ${extra.length}).`);
     const intent = target ? plan.targets[target].intent : null;
-    const flipAxis = input.flipAxis ?? defaultFlip(step.key, intent?.turnAt);
+    const flipAxis = input.flipAxis ?? defaultFlip(step.key, intent?.turnAt, intent?.flipAxis);
     if (!FLIP_AXES.includes(flipAxis)) throw new StoreError(400, 'Okänd vändning.');
     if (input.hand !== undefined && input.hand !== 'LH' && input.hand !== 'RH') throw new StoreError(400, 'Handen ska vara LH eller RH.');
     if (input.pass !== undefined && typeof input.pass !== 'boolean') throw new StoreError(400, 'Handbyte ska vara sant eller falskt.');
@@ -551,6 +551,8 @@ export function orderStore(root: string, options: StoreOptions = {}) {
           const turn = step.start === 'LAND' ? false : side !== intent.startSide;
           motion = { grip: step.grip ?? 'PINCH', hand, pass, turn, flipAxis: turn ? flipAxis : null, target, side, fromPlan: false, ...(cardScale !== 1 ? { cardScale } : {}) };
           motion.fromPlan = fromPlanOf(plan, motion);
+          // What Placering said for the card's grip and turn, kept with a deal so that where it differs stays said.
+          if (step.start !== 'LAND') motion.planned = plannedOf({ grip: intent.grip, turnAt: intent.turnAt, flipAxis: intent.flipAxis, side: intent.endSide });
           if (step.start === 'LAND') pictures.push((await anchorPicture('last.png', (w) => `Sista bild · ${w}`, 'endFrame', step.to ?? step.from)).picture);
           else if (shape === 'ONE_WAY') pictures.push(await landingPicture('last.png', `Sista bild · ${landingWords}`, 'endFrame'));
           else {
@@ -711,7 +713,7 @@ export function orderStore(root: string, options: StoreOptions = {}) {
         // In a return the card lies where it was laid and is not turned.
         const turn = stepOf(next.step.key)?.start === 'LAND' ? false : side !== 'BACK';
         const intent = next.motion.target ? (await readPlan(root)).plan.targets[next.motion.target]?.intent : null;
-        Object.assign(next.motion, { hand, pass, side, turn, flipAxis: turn ? (next.motion.flipAxis ?? defaultFlip(next.step.key, intent?.turnAt)) : null });
+        Object.assign(next.motion, { hand, pass, side, turn, flipAxis: turn ? (next.motion.flipAxis ?? defaultFlip(next.step.key, intent?.turnAt, intent?.flipAxis)) : null });
         const { plan } = await readPlan(root);
         next.motion.fromPlan = fromPlanOf(plan, next.motion);
         await labelLast(next);

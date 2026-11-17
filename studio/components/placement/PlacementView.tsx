@@ -10,8 +10,12 @@
 // "Beställ film hit" takes a place that has a film of its own on to Beställ. Opened from "Ny beställning" ("Flytta kortets
 // plats", tillbaka= in the address), "Tillbaka till beställningen" leads back to that order with its values; what is not
 // saved here is not what the order draws, so it says so. In the online copy the view only shows.
+// "Spela kortbanan" over the picture plays the chosen card's way from the shoe's window to its place and the hand back, drawn
+// after the films (lib/placement-path.ts; with the shoe chosen, P4C1's), again and again until it is stopped, at full or half
+// speed; the step it shows is lit on the step chips in Rörelse and named by the picture. A real deal of the bank can lie under
+// the cards (the films to the chosen place first), from the take's own first frame.
 // Must be inside <Suspense> (useSearchParams).
-import { ArrowLeft, Minus, Plus, RotateCcw, Save, Send, Undo2 } from "lucide-react";
+import { ArrowLeft, Minus, Play, Plus, RotateCcw, Save, Send, Square, Undo2 } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -21,9 +25,10 @@ import { useViewContext } from "../../lib/context.ts";
 import { labUrl } from "../../lib/lab.ts";
 import { isSnapshot, swedishMoment } from "../../lib/mode.ts";
 import {
-  GREEN_FILM, VIEW_WORD, backdropForView, bankFilms, changedPlaces, defaultStill, filmView, libraryFilms, nudged, orderBack, orderHref, placeCode, placeName, placementQuery,
-  readPlacementAddress, shownBackdrop, stillChoice, stillLabel, stillsOf, type Film,
+  GREEN_FILM, VIEW_WORD, backdropForView, bankFilms, changedPlaces, defaultStill, filmGoesTo, filmView, gameDealNotes, libraryFilms, motionSteps, nudged, orderBack, orderHref, placeCode, placeName,
+  placementQuery, readPlacementAddress, shownBackdrop, stillChoice, stillLabel, stillsOf, type Film,
 } from "../../lib/placement.ts";
+import type { PathPhase } from "../../lib/placement-path.ts";
 import { readLibrary } from "../../lib/placement-api.ts";
 import { DRAFT_FILE, draftText } from "../../lib/placement-files.ts";
 import { Page } from "../shell";
@@ -39,6 +44,8 @@ import { draftActions, useDraft } from "./useDraft.ts";
 
 type Tab = "plats" | "rorelse" | "material" | "bordet";
 const filmLabel = (film: Film) => (film.id === GREEN_FILM ? "Grön film · P4C2" : film.title);
+/** The card whose path plays: the chosen card, or P4C1's with the shoe chosen. */
+const pathCard = (place: Place) => (place === SHOE ? "P4.C1" : place);
 
 export function PlacementView() {
   const params = useSearchParams();
@@ -51,14 +58,18 @@ export function PlacementView() {
   const [backdrop, setBackdrop] = useState<string | null>(first.backdrop);
   const [neutralMissing, setNeutralMissing] = useState(false);
   const [frame, setFrame] = useState(first.frame);
-  const [look, setLook] = useState<Look>("kort");
+  // A card as the films show it, plain yellow and blue (Jakob 2026-11-17); the game's printed card is a choice for afterwork.
+  const [look, setLook] = useState<Look>("farg");
   const [cardsFailed, setCardsFailed] = useState(false);
   const [allCards, setAllCards] = useState(true);
   const [grid, setGrid] = useState(false);
   const [zoom, setZoomState] = useState(1);
   const [tab, setTab] = useState<Tab>("plats");
   const [face, setFace] = useState<Face>({ rank: "A", suit: "spades" });
-  const [path, setPath] = useState<PathRun | null>(null);
+  // The card path: which card plays (null: stopped), at full or half speed, and the step it shows now.
+  const [playing, setPlaying] = useState<{ id: string; key: number } | null>(null);
+  const [halfSpeed, setHalfSpeed] = useState(false);
+  const [phase, setPhase] = useState<PathPhase | null>(null);
   const [library, setLibrary] = useState<Film[]>([]);
   const [replacing, setReplacing] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -91,17 +102,18 @@ export function PlacementView() {
   const changed = useMemo(() => new Set<Place>(changes.places), [changes]);
   const shoeTab = place === SHOE && (tab === "rorelse" || tab === "material") ? "plats" : tab;
 
-  const choose = useCallback(
-    (id: Place) => {
-      if (id !== place) setPath(null);
-      setPlace(id);
-    },
-    [place],
-  );
+  // Another card chosen while the path plays: it plays that card's path from the start.
+  const choose = useCallback((id: Place) => {
+    setPlace(id);
+    setPlaying((was) => (was && was.id !== pathCard(id) ? { id: pathCard(id), key: Date.now() } : was));
+  }, []);
+  const play = () => {
+    setPhase(null);
+    setPlaying((was) => (was ? null : { id: pathCard(place), key: Date.now() }));
+  };
   const setZoom = useCallback((z: number) => setZoomState(Math.round(Math.max(0.5, Math.min(3, z)) * 100) / 100), []);
   const setViewTo = (v: View) => {
     setView(v);
-    setPath(null);
     setBackdrop((was) => backdropForView(v, was, films));
   };
 
@@ -121,7 +133,7 @@ export function PlacementView() {
         draftActions.show(draft.showing === "saved" ? "draft" : "saved");
         return;
       }
-      if (e.key === "Escape") setPath(null);
+      if (e.key === "Escape") setPlaying(null);
       if (!e.key.startsWith("Arrow") || !editable) return;
       const free = el === document.body || !!board.current?.contains(el) || !!el.closest?.("[data-nudge]");
       if (!free) return;
@@ -159,13 +171,21 @@ export function PlacementView() {
   const when = d.saved.updatedAt ? swedishMoment(d.saved.updatedAt) : null;
   const target = place === SHOE ? null : plan.targets[place];
   const lookShown: Look = look === "kort" && cardsFailed ? "farg" : look;
+  // The films of the view, the green P4C2 film first, then the bank's takes to the chosen place (a real deal to lay beside the path).
+  const runCard = pathCard(place);
   const backdropOptions = [
     ...stillsOf(view).map((s) => ({ value: s as string, label: stillChoice(s, view), hint: s === "neutral" ? "förval" : undefined })),
     ...films
       .filter((f) => filmView(f) === view)
-      .sort((a, b) => Number(b.id === GREEN_FILM) - Number(a.id === GREEN_FILM))
-      .map((f) => ({ value: f.id, label: filmLabel(f), hint: f.id === GREEN_FILM ? undefined : f.group === "bank" ? "klippbanken" : "äldre" })),
+      .sort((a, b) => Number(b.id === GREEN_FILM) - Number(a.id === GREEN_FILM) || Number(filmGoesTo(b, runCard)) - Number(filmGoesTo(a, runCard)))
+      .map((f) => ({ value: f.id, label: filmLabel(f), hint: f.id === GREEN_FILM ? undefined : f.group === "bank" ? (filmGoesTo(f, runCard) ? "hit" : "klippbanken") : "äldre" })),
   ];
+  // The card path: its card, the step it shows now (lit in Rörelse, named by the picture), its speed.
+  const run = playing && plan.targets[playing.id] ? playing : null;
+  const lit = run ? phase : null;
+  const step = run && lit ? motionSteps(run.id, plan.targets[run.id].intent).steps.find((s) => s.id === lit) : null;
+  const path: PathRun | null = run ? { ...run, speed: halfSpeed ? 0.5 : 1, step: step ? `${step.label} · ${step.detail}` : null } : null;
+  const notes = gameDealNotes(plan, place);
 
   return (
     <Page
@@ -214,6 +234,19 @@ export function PlacementView() {
       <div className="flex h-full min-h-0">
         <section ref={board} className="flex min-w-0 flex-1 flex-col">
           <div className="flex h-11 shrink-0 items-center gap-3 overflow-x-auto border-b border-line px-3">
+            <div className="flex shrink-0 items-center gap-1.5">
+              <Button
+                size="sm"
+                variant={run ? "secondary" : "primary"}
+                aria-pressed={!!run}
+                icon={run ? <Square /> : <Play />}
+                onClick={play}
+                title={`En skiss av rörelsen, inte en film: kortets väg från skon till ${placeCode(runCard)} och handen tillbaka, om och om igen (Esc stoppar)`}
+              >
+                {run ? "Stoppa" : "Spela kortbanan"}
+              </Button>
+              <Switch size="sm" checked={halfSpeed} onChange={setHalfSpeed} label="Halv fart" />
+            </div>
             <SegmentedControl size="sm" label="Vy" value={view} onChange={setViewTo} options={[{ value: "native", label: "Dator" }, { value: "portrait", label: "Mobil" }]} />
             <Select
               size="sm"
@@ -222,10 +255,11 @@ export function PlacementView() {
               onChange={(v) => {
                 setBackdrop(v === defaultStill(view) ? null : v);
                 if (v === "neutral") setNeutralMissing(false);
-                setFrame(0);
+                // a take cut from a longer film starts at its own first frame
+                setFrame(films.find((f) => f.id === v)?.start ?? 0);
               }}
               options={backdropOptions}
-              className="w-56"
+              className="w-52"
             />
             <SegmentedControl
               size="sm"
@@ -236,9 +270,9 @@ export function PlacementView() {
                 if (v === "kort") setCardsFailed(false);
               }}
               options={[
-                { value: "kort", label: "Kort", title: "Som de spelas: renderade kort" },
-                { value: "farg", label: "Färg", title: "Gult stängt, blått öppet, fyllda" },
+                { value: "farg", label: "Färg", title: "Som i filmerna: gul baksida, blå framsida" },
                 { value: "kontur", label: "Kontur", title: "Bara konturer" },
+                { value: "kort", label: "Efterarbete: spelets kort", title: "Kortet med tryck, som spelet ritar det efteråt" },
               ]}
             />
             <Switch size="sm" checked={allCards} onChange={setAllCards} label="Alla kort" />
@@ -280,13 +314,13 @@ export function PlacementView() {
             grid={grid}
             changed={changed}
             backdrop={under}
-            shoeCard={shown.kind === "still" && shown.still === "v6"}
+            shoeCard={shown.kind === "still" ? shown.still : null}
             onBackdropMissing={shown.kind === "still" && shown.still === "neutral" ? () => setNeutralMissing(true) : undefined}
             face={face}
             zoom={zoom}
             onZoom={setZoom}
             path={path}
-            onPathEnd={() => setPath(null)}
+            onPhase={setPhase}
             onCardsFailed={() => setCardsFailed(true)}
             videoRef={videoRef}
             label={film ? filmLabel(film) : shown.kind === "still" ? stillLabel(shown.still) : ""}
@@ -334,6 +368,11 @@ export function PlacementView() {
               </div>
             ) : null}
             {back && draft.dirty ? <p className="text-xs text-brass-hi">Spara först: beställningen ritar kortet där den sparade planen lägger det.</p> : null}
+            {notes.map((n) => (
+              <p key={n} data-game-note className="text-xs text-[#f0b07a]">
+                {n}
+              </p>
+            ))}
           </div>
           <Tabs
             label="Inställningar"
@@ -351,13 +390,7 @@ export function PlacementView() {
           <div className={cn("min-h-0 flex-1 overflow-y-auto [scrollbar-gutter:stable]")}>
             {shoeTab === "plats" ? <PlacePanel plan={plan} view={view} id={place} editable={editable} onTable={() => setTab("bordet")} /> : null}
             {shoeTab === "rorelse" ? (
-              <MotionPanel
-                plan={plan}
-                id={place}
-                editable={editable}
-                playing={!!path}
-                onPlay={() => setPath((was) => (was ? null : { id: place === SHOE ? "P7.C1" : place, key: Date.now() }))}
-              />
+              <MotionPanel plan={plan} id={place} editable={editable} lit={run?.id === place ? lit : null} />
             ) : null}
             {shoeTab === "material" ? <MaterialPanel plan={plan} id={place} editable={editable} face={face} onFace={setFace} /> : null}
             {shoeTab === "bordet" ? <TablePanel plan={plan} view={view} id={place} editable={editable} /> : null}

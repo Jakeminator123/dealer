@@ -3,14 +3,15 @@
 // The inspector's panels for the chosen place: Plats (where it lies and the card's three measures: riktning, lutning,
 // perspektiv), Rörelse (how the dealer takes, turns and lays it) and Bordet (what holds for every card: the flat table, one
 // size for all, the files). Every change goes to the draft as one step (a slider's drag is one step); nothing is saved here.
-import { Crosshair, Download, Grid2x2, Play, RotateCcw, Square, Upload, Users } from "lucide-react";
+import { Crosshair, Download, Grid2x2, RotateCcw, Square, Upload, Users } from "lucide-react";
 import { useRef, useState, type ReactNode } from "react";
+import { FLIP_AXES, FLIP_LABEL } from "../../../src/order-model.ts";
 import {
-  CARD_SCALE, PLANE_HEADINGS, PLAYER_TARGETS, SHOE, TARGETS, TECHNIQUES, applyTechnique, copyChoices, dealerAngle, editIntent, editPlace, otherHand,
+  CARD_COLOUR, CARD_SCALE, PLANE_HEADINGS, PLAYER_TARGETS, SHOE, TARGETS, TECHNIQUES, applyTechnique, copyChoices, dealerAngle, editIntent, editPlace, otherHand,
   planQuad, resetPlace, scaleCards, setTableProjection, snapPlace, straightenPlayers, techniqueOf, toPixels,
   type Intent, type Place, type PlacementPlan, type Technique, type View,
 } from "../../../src/placement-model.ts";
-import { VIEW_WORD, decimal, handWord, motionSteps, placeCode, quadSize } from "../../lib/placement.ts";
+import { GRIP_LABEL, VIEW_WORD, decimal, editFlip, flipOf, handWord, motionSteps, placeCode, quadSize } from "../../lib/placement.ts";
 import { DRAFT_FILE, draftText, planeComparison, planeFile, readDraftText } from "../../lib/placement-files.ts";
 import { Button, SegmentedControl, Select, Slider, Switch, useToast } from "../ui";
 import { cn } from "../ui/cn";
@@ -92,8 +93,8 @@ export function PlacePanel({ plan, view, id, editable, onTable }: { plan: Placem
           disabled={off}
           onChange={(side) => edit((p) => editIntent(p, id, "endSide", side))}
           options={[
-            { value: "BACK", label: "Stängt", icon: swatch("#ffff00") },
-            { value: "FRONT", label: "Öppet", icon: swatch("#0000ff") },
+            { value: "BACK", label: "Stängt", icon: swatch(CARD_COLOUR.BACK) },
+            { value: "FRONT", label: "Öppet", icon: swatch(CARD_COLOUR.FRONT) },
           ]}
           className="self-start"
         />
@@ -162,7 +163,8 @@ const TECHNIQUE_WORDS: Record<Technique, string> = {
   "drag-place": "Släp och vänd vid platsen",
   "drag-closed": "Släp och lägg stängt",
 };
-export function MotionPanel({ plan, id, editable, playing, onPlay }: { plan: PlacementPlan; id: Place; editable: boolean; playing: boolean; onPlay: () => void }) {
+/** `lit`: the step the card path shows now, while it plays this card ("Spela kortbanan" over the picture); null otherwise. */
+export function MotionPanel({ plan, id, editable, lit }: { plan: PlacementPlan; id: Place; editable: boolean; lit: string | null }) {
   const toast = useToast();
   if (id === SHOE) return <p className="px-4 py-6 text-sm text-faint">Välj ett kort.</p>;
   const off = !editable;
@@ -170,9 +172,10 @@ export function MotionPanel({ plan, id, editable, playing, onPlay }: { plan: Pla
   const technique = techniqueOf(i);
   const set = <K extends keyof Intent>(key: K, value: Intent[K]) => draftActions.edit((p) => editIntent(p, id, key, value));
   const way = motionSteps(id, i);
+  const flip = flipOf(i);
   const sides = [
-    { value: "BACK" as const, label: "Stängt", icon: swatch("#ffff00") },
-    { value: "FRONT" as const, label: "Öppet", icon: swatch("#0000ff") },
+    { value: "BACK" as const, label: "Stängt", icon: swatch(CARD_COLOUR.BACK) },
+    { value: "FRONT" as const, label: "Öppet", icon: swatch(CARD_COLOUR.FRONT) },
   ];
   return (
     <>
@@ -190,7 +193,7 @@ export function MotionPanel({ plan, id, editable, playing, onPlay }: { plan: Pla
           <SegmentedControl size="sm" label="Hand som tar kortet" value={i.takeHand} disabled={off} onChange={(h) => set("takeHand", h)} options={[{ value: "LH", label: "Vänster" }, { value: "RH", label: "Höger" }]} />
         </Row>
         <Row label="Grepp vid skon">
-          <SegmentedControl size="sm" label="Grepp vid skon" value={i.grip} disabled={off} onChange={(grip) => set("grip", grip)} options={[{ value: "PINCH", label: "A2.1 nyp" }, { value: "DRAG", label: "A2.2 hand över" }]} />
+          <SegmentedControl size="sm" label="Grepp vid skon" value={i.grip} disabled={off} onChange={(grip) => set("grip", grip)} options={[{ value: "PINCH", label: GRIP_LABEL.PINCH }, { value: "DRAG", label: GRIP_LABEL.DRAG }]} />
         </Row>
         <Row label="Vid upptag">
           <SegmentedControl size="sm" label="Sida vid upptag" value={i.startSide} disabled={off} onChange={(s) => set("startSide", s)} options={sides} />
@@ -200,26 +203,26 @@ export function MotionPanel({ plan, id, editable, playing, onPlay }: { plan: Pla
         </Row>
         <Switch checked={i.pass} disabled={off} onChange={(v) => set("pass", v)} label="Handbyte" />
         <Switch checked={i.turn} disabled={off} onChange={(v) => set("turn", v)} label="Vänd kortet" />
-        <Row label="Vänds">
-          <SegmentedControl size="sm" label="Var kortet vänds" value={i.turnAt} disabled={off || !i.turn} onChange={(v) => set("turnAt", v)} options={[{ value: "AIR", label: "I luften" }, { value: "PLACE", label: "Vid platsen" }]} />
-        </Row>
+        {/* the same three as Beställ's "Hur kortet vänds" (FLIP_LABEL); the plan's choice is the order's default there */}
+        <div aria-label="Hur kortet vänds" className="flex flex-col gap-1.5">
+          <span className="text-sm text-dim">Hur kortet vänds</span>
+          {FLIP_AXES.map((axis) => (
+            <Button key={axis} size="sm" aria-pressed={i.turn && flip === axis} disabled={off || !i.turn} onClick={() => draftActions.edit((p) => editFlip(p, id, axis))} className="justify-start">
+              {FLIP_LABEL[axis]}
+            </Button>
+          ))}
+        </div>
         <Row label="Hand vid släpp">
           <span className="text-sm text-ink">{handWord(i.pass ? otherHand(i.takeHand) : i.takeHand).replace(/^./, (c) => c.toUpperCase())}</span>
         </Row>
       </Section>
-      <Section
-        title="Kortbanan"
-        aside={
-          <Button size="sm" variant={playing ? "secondary" : "quiet"} aria-pressed={playing} icon={<Play />} onClick={onPlay}>
-            {playing ? "Stoppa" : "Spela"}
-          </Button>
-        }
-      >
+      {/* The steps of the card's way; "Spela kortbanan" over the picture plays them and lights the one it shows. */}
+      <Section title="Kortbanan" aside={lit ? <span className="text-2xs text-[#d3b4ff]">spelar</span> : null}>
         <ol className="flex flex-wrap items-center gap-1" title={way.code} aria-label="Kortets väg">
           {way.steps.map((s, n) => (
             <li key={s.id} className="flex items-center gap-1">
               {n ? <span aria-hidden className="text-faint">→</span> : null}
-              <span className="flex flex-col rounded-md border border-line-strong bg-raised px-2 py-1 leading-tight">
+              <span data-step={s.id} aria-current={lit === s.id ? "step" : undefined} className={cn("flex flex-col rounded-md border px-2 py-1 leading-tight", lit === s.id ? "border-[#d3b4ff] bg-[#d3b4ff]/18 ring-1 ring-[#d3b4ff]/60" : "border-line-strong bg-raised")}>
                 <b className="text-xs font-semibold text-brass-hi">{s.label}</b>
                 <span className="text-2xs text-dim">{s.detail}</span>
               </span>

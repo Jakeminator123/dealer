@@ -11,6 +11,7 @@ import { labUrl } from "../../lib/lab.ts";
 import { swedishMoment } from "../../lib/mode.ts";
 import { SHOWN_CHIP, goesWords, offsetWords, ownerWords, shownWords, type OrderAnswer, type Owner, type Picture } from "../../lib/orders.ts";
 import type { Drawn } from "../../../src/order-model.ts";
+import { CARD_COLOUR } from "../../../src/placement-model.ts";
 import { Badge, IconButton, cn } from "../ui";
 
 const W = 1764,
@@ -122,7 +123,7 @@ export function PictureCard({ picture, owner, dealer, planned, className }: { pi
             </span>
             {planned ? (
               <svg viewBox={`0 0 ${W} ${H}`} className="pointer-events-none absolute inset-0 size-full" aria-label="Där kortet ritas">
-                <polygon points={planned.quad.map((p) => p.join(",")).join(" ")} fill={planned.side === "BACK" ? "#e6c229" : "#2f6fd8"} stroke="#0b0d0c" strokeWidth={2} />
+                <polygon points={planned.quad.map((p) => p.join(",")).join(" ")} fill={CARD_COLOUR[planned.side]} stroke={CARD_COLOUR[planned.side]} strokeWidth={4} strokeLinejoin="round" />
               </svg>
             ) : null}
           </div>

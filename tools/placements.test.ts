@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {mkdtemp,mkdir,readFile,rm,writeFile} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
 import path from 'node:path';
-import {defaultPlan,validatePlan,toPixels,fromPixels,quad,flatQuad,snapPoint,motionNodes,constrain,sequence,TARGETS,PLAYER_TARGETS,INTENT_DEFAULTS,TECHNIQUES,angleToward,applyTechnique,techniqueOf,copyChoices,scaleCards,SHOE_CARD,VIEWS,type Intent,type Technique} from '../src/placement-model.ts';
+import {defaultPlan,validatePlan,toPixels,fromPixels,quad,flatQuad,snapPoint,motionNodes,constrain,sequence,TARGETS,PLAYER_TARGETS,INTENT_DEFAULTS,TECHNIQUES,angleToward,applyTechnique,techniqueOf,copyChoices,scaleCards,SHOE_CARD,WINDOW_CARD,VIEWS,type Intent,type Technique} from '../src/placement-model.ts';
 import {placementStore,StoreError} from './placement-store.ts';
 
 test('pixel-centre transforms are invertible at both image edges and interior',()=>{
@@ -81,22 +81,26 @@ test('concurrent stale saves cannot overwrite another tab, and previous data is 
  }finally{assert.ok(path.resolve(dir).startsWith(base+path.sep+'dealer-placement-test-'));await rm(dir,{recursive:true,force:true});}
 });
 
-// A plan as it was saved before grip and turnAt existed.
-const legacyPlan=()=>{const plan=defaultPlan() as any;for(const t of Object.values(plan.targets) as any[]){delete t.intent.grip;delete t.intent.turnAt;}return plan;};
-const INTENT_KEYS=['takeHand','startSide','endSide','pass','turn','grip','turnAt'];
-test('plans saved before grip and turnAt load with their defaults, and the two keys validate strictly',()=>{
+// A plan as it was saved before grip, turnAt and flipAxis existed.
+const legacyPlan=()=>{const plan=defaultPlan() as any;for(const t of Object.values(plan.targets) as any[]){delete t.intent.grip;delete t.intent.turnAt;delete t.intent.flipAxis;}return plan;};
+const INTENT_KEYS=['takeHand','startSide','endSide','pass','turn','grip','turnAt','flipAxis'];
+test('plans saved before grip, turnAt and flipAxis load with their defaults, and the three keys validate strictly',()=>{
  const legacy=legacyPlan();validatePlan(legacy);
- for(const id of TARGETS){assert.deepEqual(Object.keys(legacy.targets[id].intent),INTENT_KEYS);assert.equal(legacy.targets[id].intent.grip,'PINCH');assert.equal(legacy.targets[id].intent.turnAt,'AIR');}
- // One key present keeps its value; only the missing one is filled.
+ for(const id of TARGETS){assert.deepEqual(Object.keys(legacy.targets[id].intent),INTENT_KEYS);assert.equal(legacy.targets[id].intent.grip,'PINCH');assert.equal(legacy.targets[id].intent.turnAt,'AIR');assert.equal(legacy.targets[id].intent.flipAxis,'FREE');}
+ // One key present keeps its value; only the missing ones are filled.
  const partial=legacyPlan();partial.targets['P2.C1'].intent.grip='DRAG';validatePlan(partial);assert.equal(partial.targets['P2.C1'].intent.grip,'DRAG');assert.equal(partial.targets['P2.C1'].intent.turnAt,'AIR');
- for(const mutate of [(i:any)=>i.grip='SLIDE',(i:any)=>i.grip=null,(i:any)=>i.grip=['DRAG'],(i:any)=>i.turnAt='FLOOR',(i:any)=>i.turnAt=true,(i:any)=>i.speed=1]){const p=defaultPlan();mutate(p.targets['P3.C2'].intent);assert.throws(()=>validatePlan(p));}
+ // A plan saved with grip and turnAt but before flipAxis (placements/default.json today) gets only the axis, after the others.
+ const before=defaultPlan() as any;for(const t of Object.values(before.targets) as any[])delete t.intent.flipAxis;before.targets['P4.C1'].intent.turnAt='PLACE';validatePlan(before);
+ assert.deepEqual(Object.keys(before.targets['P4.C1'].intent),INTENT_KEYS);assert.deepEqual([before.targets['P4.C1'].intent.turnAt,before.targets['P4.C1'].intent.flipAxis],['PLACE','FREE']);
+ const key=defaultPlan();key.targets['P5.C1'].intent.flipAxis='LONG_EDGE';validatePlan(key);assert.equal(key.targets['P5.C1'].intent.flipAxis,'LONG_EDGE');
+ for(const mutate of [(i:any)=>i.grip='SLIDE',(i:any)=>i.grip=null,(i:any)=>i.grip=['DRAG'],(i:any)=>i.turnAt='FLOOR',(i:any)=>i.turnAt=true,(i:any)=>i.flipAxis='AT_PLACE',(i:any)=>i.flipAxis='SHORT_EDGE',(i:any)=>i.flipAxis=null,(i:any)=>i.speed=1]){const p=defaultPlan();mutate(p.targets['P3.C2'].intent);assert.throws(()=>validatePlan(p));}
  // A plan that fails is not half filled in.
  const broken=legacyPlan();broken.targets['D.C2'].geometry.native.u=NaN;assert.throws(()=>validatePlan(broken));assert.equal(Object.hasOwn(broken.targets['P1.C1'].intent,'grip'),false);
 });
 test('the tracked plan files load with the new keys filled in: the saved draft, the proposals and a frozen reference',async()=>{
  for(const file of ['placements/default.json','placements/proposals/forslag.json','placements/proposals/forslag-slump.json','placements/references/p7-direct-pilot-01.json']){
   const plan=JSON.parse(await readFile(file,'utf8'));validatePlan(plan);
-  for(const id of TARGETS)assert.deepEqual(Object.keys(plan.targets[id].intent).slice(-2),['grip','turnAt'],`${file} ${id}`);
+  for(const id of TARGETS)assert.deepEqual(Object.keys(plan.targets[id].intent).slice(-3),['grip','turnAt','flipAxis'],`${file} ${id}`);
  }
 });
 test('the store reads an older file with the defaults and writes the two keys when it saves',async()=>{
@@ -106,7 +110,7 @@ test('the store reads an older file with the defaults and writes the two keys wh
   const store=placementStore(dir),read=await store.load();assert.equal(read.plan.targets['P5.C1'].intent.grip,'PINCH');assert.equal(read.plan.targets['P5.C1'].intent.turnAt,'AIR');
   // A client that still sends the older shape gets the keys written too.
   await store.save(legacyPlan(),read.revision);const text=await readFile(path.join(dir,'placements/default.json'),'utf8');
-  assert.equal(text.match(/"grip": "PINCH"/g)?.length,16);assert.equal(text.match(/"turnAt": "AIR"/g)?.length,16);
+  assert.equal(text.match(/"grip": "PINCH"/g)?.length,16);assert.equal(text.match(/"turnAt": "AIR"/g)?.length,16);assert.equal(text.match(/"flipAxis": "FREE"/g)?.length,16);
  }finally{assert.ok(path.resolve(dir).startsWith(base+path.sep+'dealer-placement-test-'));await rm(dir,{recursive:true,force:true});}
 });
 test('the sequence and the node map show a dragged card and where the turn happens',()=>{
@@ -168,16 +172,20 @@ test('all cards scale by one factor in one view, keep centre and angle, and stop
  for(const factor of [.45,2.55,Number.NaN])assert.throws(()=>scaleCards(plan,'native',factor));
 });
 
-test('the yellow card the lab paints in the shoe window lies in the picture, around the shoe point of the plan',()=>{
+test('the yellow card the lab paints in the shoe window, and the window card of the films, lie in the picture around the shoe point of the plan',()=>{
  const plan=defaultPlan();
- for(const view of ['native','portrait'] as const){
-  const q=SHOE_CARD[view],p=VIEWS[view],s=toPixels(plan.shoe[view],view);assert.equal(q.length,4);
+ for(const [view,q] of [['native',SHOE_CARD.native],['portrait',SHOE_CARD.portrait],['native',WINDOW_CARD.native],['portrait',WINDOW_CARD.portrait]] as const){
+  const p=VIEWS[view],s=toPixels(plan.shoe[view],view);assert.equal(q.length,4);
   for(const c of q)assert.ok(c.x>0&&c.y>0&&c.x<p.width-1&&c.y<p.height-1);
   // clockwise in picture coordinates (y down), and the shoe point on the inner side of every edge
   for(let i=0;i<4;i++){const a=q[i],b=q[(i+1)%4];assert.ok((b.x-a.x)*(s.y-a.y)-(b.y-a.y)*(s.x-a.x)>0,`${view} edge ${i}`);}
   // a standing card: about twice as long as it is wide in the picture
   const side=(i:number)=>Math.hypot(q[(i+1)%4].x-q[i].x,q[(i+1)%4].y-q[i].y);assert.ok(side(1)/side(0)>1.6&&side(1)/side(0)<2.6);
  }
+ // the films' card stands at the V6 card's angle (within 3°) and is larger: 109 against 90 px long (2026-11-17)
+ const axis=(q:readonly {x:number;y:number}[])=>{const a={x:(q[0].x+q[1].x)/2,y:(q[0].y+q[1].y)/2},b={x:(q[2].x+q[3].x)/2,y:(q[2].y+q[3].y)/2};return {angle:Math.atan2(a.y-b.y,a.x-b.x)*180/Math.PI,length:Math.hypot(a.x-b.x,a.y-b.y)};};
+ const film=axis(WINDOW_CARD.native),v6=axis(SHOE_CARD.native);
+ assert.ok(Math.abs(film.angle-v6.angle)<3&&film.length>v6.length*1.15,`${film.angle.toFixed(1)}° ${film.length.toFixed(0)} px against ${v6.angle.toFixed(1)}° ${v6.length.toFixed(0)} px`);
 });
 
 // ── The plan's edits shared by the studio's Placering view (planQuad, editPlace, editIntent, …) ──
