@@ -6,7 +6,7 @@
 // In the online copy (lib/mode.ts) there is no old lab, so that link is not drawn; instead the bot is there: the view
 // Önskemål (with the answers from Jakob not yet seen) and "Fråga", which opens and closes the panel (components/bot).
 // In the lab Beslut stands first in the foot, with the number of things waiting for his answer (components/decisions).
-import { ArrowUpRight, Clapperboard, FlaskConical, Images, Inbox, ListChecks, MessageCircleQuestion, ScanEye, Send, Spade, SquareDashedMousePointer, Star, Workflow } from "lucide-react";
+import { ArrowUpRight, Clapperboard, FlaskConical, Images, Inbox, ListChecks, MessageCircleQuestion, ScanEye, Send, Spade, Speech, SquareDashedMousePointer, Star, Workflow } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useMemo, type ComponentType } from "react";
@@ -34,12 +34,16 @@ export const VIEWS: readonly View[] = [
   { href: "/prov/", label: "Prov", hint: "Jämförelsefilmer och kontaktark", icon: FlaskConical },
   { href: "/placering/", label: "Placering", hint: "Var korten och skon ligger: flytta, rikta och spara", icon: SquareDashedMousePointer },
   { href: "/material/", label: "Material", hint: "Per dealer: ingångsbild, keystone, ankare, filmer och referenser", icon: Images },
+  { href: "/lipsync/", label: "Lipsync", hint: "Läppsynken: grundbilder, skalor, inställningar och prov", icon: Speech },
   { href: "/bestall/", label: "Beställ", hint: "Det här skickas: granska en beställning av bild eller film innan du godkänner", icon: Send },
   { href: "/game/", label: "Casino", hint: "Spela blackjack som i casinot: spelmotorn, marker och reglage, med valt förval", icon: Spade },
 ];
 
-/** The views the rail shows: the online copy orders nothing, so Beställ is only in the lab. Casino plays there too (the game page runs the engine itself). */
-const LAB_ONLY: readonly string[] = ["/bestall/"];
+/**
+ * The views the rail shows: the online copy orders nothing, so Beställ is only in the lab, and it carries no lip-sync facts, so
+ * neither is Lipsync. Casino plays there too (the game page runs the engine itself).
+ */
+const LAB_ONLY: readonly string[] = ["/bestall/", "/lipsync/"];
 const SHOWN: readonly View[] = isSnapshot ? VIEWS.filter((view) => !LAB_ONLY.includes(view.href)) : VIEWS;
 
 /** The view of requests to Jakob: only where the bot is (the online copy). */
@@ -73,8 +77,9 @@ function RailItem({ view, href, active, count, tone }: { view: View; href?: stri
         href={href ?? view.href}
         aria-current={active ? "page" : undefined}
         className={cn(
-          // A little tighter in a window under 960 px high, so that every view and the foot fit at 1440 × 900.
-          "group relative mx-2 flex flex-col items-center gap-1 rounded-lg px-1 pb-1.5 pt-2 transition-colors duration-150 [@media(max-height:960px)]:pb-1 [@media(max-height:960px)]:pt-1.5",
+          // Tighter in a window under 960 px high, so that every view and the foot fit at 1440 × 900 (ten views since Lipsync:
+          // 46 px a view and 2 px between them there, see the list's gap below).
+          "group relative mx-2 flex flex-col items-center gap-1 rounded-lg px-1 pb-1.5 pt-2 transition-colors duration-150 [@media(max-height:960px)]:pb-0.5 [@media(max-height:960px)]:pt-1",
           active ? "bg-raised text-ink" : "text-dim hover:bg-raised/60 hover:text-ink",
           "focus-visible:outline-offset-0",
         )}
@@ -150,7 +155,7 @@ export function Rail() {
       </Tooltip>
       <DealerSwitch />
       <div className="mx-4 mb-2 mt-2.5 h-px bg-line" />
-      <ul className="flex min-h-0 flex-col gap-1 overflow-y-auto [scrollbar-width:none]">
+      <ul className="flex min-h-0 flex-col gap-1 overflow-y-auto [scrollbar-width:none] [@media(max-height:960px)]:gap-0.5">
         {SHOWN.map((view) => (
           <li key={view.href}>
             <RailItem

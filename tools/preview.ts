@@ -8,6 +8,7 @@ import path from 'node:path';
 import {placementStore,StoreError} from './placement-store.ts';
 import {reviewStore} from './review-store.ts';
 import {decisionStore,ANSWER_BYTES} from './decision-store.ts';
+import {lipsyncAnswer} from './lipsync-store.ts';
 import {scenePresetStore} from './scene-preset-store.ts';
 import {PRESET_BYTES} from '../studio/lib/scene-presets.ts';
 import {createSession,SessionError,type Session,type SessionOptions} from '../game/session.ts';
@@ -270,6 +271,13 @@ if(has('--restart')){
      let body:unknown;try{body=JSON.parse(Buffer.concat(chunks).toString('utf8'));}catch{throw new StoreError(400,'Svaret är inte giltig JSON.');}
      res.end(JSON.stringify(await decisions.save(id,body,typeof req.headers['if-match']==='string'?req.headers['if-match']:undefined)));
     }catch(error){res.writeHead(error instanceof StoreError?error.status:400).end(JSON.stringify({error:(error as Error).message}));}return;
+   }
+   // The lip-sync facts (data/lipsync.json, tools/lipsync-store.ts) for the studio's view Lipsync, with a still per proof.
+   // Read-only: GET only; the speech lane writes the register, nothing on a page does.
+   if(url.pathname==='/api/lipsync'){
+    res.setHeader('Content-Type','application/json; charset=utf-8');
+    if(req.method!=='GET'){res.writeHead(405).end();return;}
+    try{res.end(JSON.stringify(await lipsyncAnswer(process.cwd())));}catch(error){res.writeHead(error instanceof StoreError?error.status:500).end(JSON.stringify({error:(error as Error).message}));}return;
    }
    // What is what per dealer, for the studio's view Material (data/media-roles.json, tools/media-roles.ts). Any page reads
    // it. A picture is added from this lab only: the PNG or JPEG itself as the body (at most UPLOAD_LIMIT, 40 MB), dealer,
