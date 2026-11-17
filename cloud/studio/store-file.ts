@@ -17,6 +17,19 @@ export function fileStore(root: string): Store {
     locks.set(key, run.catch(() => {}));
     return run;
   };
+  // On Windows a rename over a file fails with EPERM (EBUSY, EACCES) for as long as another handle has that file open, and
+  // get() reads outside the lock: a writer whose rename meets a reader waits a moment and tries again.
+  const replace = async (from: string, to: string) => {
+    for (let tries = 0; ; tries++) {
+      try {
+        return await rename(from, to);
+      } catch (e) {
+        const code = (e as NodeJS.ErrnoException).code;
+        if (tries >= 20 || !(code === 'EPERM' || code === 'EBUSY' || code === 'EACCES')) throw e;
+        await new Promise(resolve => setTimeout(resolve, 5 * (tries + 1)));
+      }
+    }
+  };
   const read = async (key: string) => {
     const bytes = await readFile(fileOf(key)).catch((e: NodeJS.ErrnoException) => { if (e.code === 'ENOENT') return null; throw e; });
     return bytes ? new Uint8Array(bytes) : null;
@@ -34,7 +47,7 @@ export function fileStore(root: string): Store {
         const bytes = bytesOf(body), file = fileOf(key), temporary = `${file}.${randomUUID()}.tmp`;
         await mkdir(path.dirname(file), {recursive: true});
         await writeFile(temporary, bytes);
-        await rename(temporary, file);
+        await replace(temporary, file);
         return {ok: true as const, etag: etagOf(bytes)};
       });
     },
