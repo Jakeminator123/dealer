@@ -3,10 +3,10 @@
   "schemaVersion": 1,
   "enabled": true,
   "dailyCapCredits": 1000000,
-  "maxPerOrder": 400,
+  "maxPerOrder": 2000,
   "minBalance": 0,
   "timeZone": "Europe/Stockholm",
-  "balance": { "credits": 5192, "at": "2026-11-13", "source": "beställningsagentens avläsning efter paow-giv-2-1-p6-09 och -10, omgång 11" },
+  "balance": { "credits": 7606, "at": "2026-11-17", "source": "trailersessionens avläsning efter kvällens sista anrop (givprovet 820, trappans tre tagningar 342)" },
   "prices": [
     { "model": "kling-4", "resolution": "1080p", "perSecond": 21.3, "listedPerSecond": 23.5, "source": "Liggarna b19 och b20: 7 s i 1080p = 149 krediter; listpris 23,5 per s i verktyget generate_video 2026-11-12." },
     { "model": "kling-4", "resolution": "720p", "perSecond": 15.7, "listedPerSecond": 15.7, "source": "Listpris i verktyget generate_video 2026-11-12; inte mätt i någon liggare." },
