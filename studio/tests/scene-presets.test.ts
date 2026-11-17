@@ -14,7 +14,7 @@ import {
   effective,
   isShipped,
   matchPreset,
-  oldLabAddress,
+  scenePageAddress,
   patchOf,
   readAddress,
   slotLabel,
@@ -115,17 +115,17 @@ test("the address: the preset and the keys that differ from it, and back", () =>
   assert.deepEqual(odd.ignored, ["dust", "glitter"]);
 });
 
-test("the old lab's address starts from the scene's defaults", () => {
-  const url = oldLabAddress(levande, DEFAULTS, { shoe: true });
+test("the 3D page's address starts from the scene's defaults", () => {
+  const url = scenePageAddress(levande, DEFAULTS, { shoe: true });
   assert.ok(url.startsWith("/scene3d.html?"));
   const params = new URLSearchParams(url.split("?")[1]);
   assert.equal(params.get("room"), "panorama");
   assert.equal(params.get("mode"), "lean");
-  assert.equal(params.get("sway"), null, "levande does not sway: the old page's own default");
+  assert.equal(params.get("sway"), null, "levande does not sway: the 3D page's own default");
   assert.equal(params.get("pitch"), "-8");
   assert.equal(params.get("sko"), "3d");
-  assert.equal(oldLabAddress(DEFAULTS, DEFAULTS), "/scene3d.html");
-  // the old page reads the address as src/scene3d-ui.ts line 40 does: every key of DEFAULTS, numbers, 1 for true, words
+  assert.equal(scenePageAddress(DEFAULTS, DEFAULTS), "/scene3d.html");
+  // the 3D page reads the address as src/scene3d-ui.ts line 40 does: every key of DEFAULTS, numbers, 1 for true, words
   const state: Record<string, unknown> = { ...DEFAULTS };
   for (const [key, value] of params) if (key in DEFAULTS) { const b = DEFAULTS[key as keyof SceneState]; state[key] = typeof b === "number" ? Number(value) : typeof b === "boolean" ? value === "1" : value; }
   assert.deepEqual(state, levande);

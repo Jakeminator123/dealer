@@ -199,7 +199,7 @@ test('planQuad draws a card as the game lays it: flat from P4.C1 on a flat table
  }
  assert.throws(()=>m.planQuad(plan,'P9.C1','native'),/Okänd kortplats/);
 });
-test('editPlace moves, turns and sizes a place by the old lab\'s rules and leaves the given plan alone',async()=>{
+test('editPlace moves, turns and sizes a place by the plan\'s rules and leaves the given plan alone',async()=>{
  const m=await import('../src/placement-model.ts'),plan=defaultPlan();plan.targets['P4.C1'].geometry.native.reviewed=true;const before=structuredClone(plan);
  // a move unchecks the card in that view only; the other view and the given plan are untouched
  const moved=m.editPlace(plan,'P4.C1','native',{u:.4,v:.3});assert.deepEqual(plan,before);validatePlan(moved);
@@ -224,7 +224,7 @@ test('editIntent keeps TURN and the two sides in agreement, and editMaterial hol
  const material=m.editMaterial(plan,'D.C2',{bend:.5,gloss:-1});assert.deepEqual(material.targets['D.C2'].material,{bend:.18,gloss:0});validatePlan(material);
  assert.deepEqual(m.editMaterial(plan,'D.C2',{gloss:.6}).targets['D.C2'].material,{bend:.07,gloss:.6});
 });
-test('the table projection, straightening, snapping, a reset and the turn toward the dealer each follow the old lab',async()=>{
+test('the table projection, straightening, snapping, a reset and the turn toward the dealer each follow the plan\'s rules',async()=>{
  const m=await import('../src/placement-model.ts'),plan=defaultPlan();for(const t of Object.values(plan.targets)){t.geometry.native.reviewed=true;t.geometry.portrait.reviewed=true;}
  // a new projection unchecks every place in both views
  const own=m.setTableProjection(plan,{mode:'individual',heading:0});assert.deepEqual(own.tableProjection,{mode:'individual',heading:0});validatePlan(own);

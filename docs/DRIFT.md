@@ -57,8 +57,8 @@ inte med av misstag. Git-push är separat från webbdeploy, mediauppladdning och
   begränsning kort i HANDOFF före push/PR. Varningarna visas i agentens terminal och som CI-annoteringar. Granska även
   hook/testens relevans och falsklarm; vid verkligt kontrollfel, rätta med ett avgränsat regressionstest. Hoppa inte
   över kontrollen för att få grönt.
-- Känd Node-varning: `stripTypeScriptTypes` i `tools/lab-ui.test.ts` använder ett experimentellt Node-API, även använt
-  av preview/public-build. Varningen är spårad till detta API och testerna passerar. Den bevaras synlig; utred
+- Känd Node-varning: `stripTypeScriptTypes` (`forBrowser` i `tools/lab-routes.ts`, som labbservern, kopians bygge och
+  `tools/lab-modules.test.ts` använder) är ett experimentellt Node-API. Varningen är spårad till detta API och testerna passerar. Den bevaras synlig; utred
   kompatibiliteten vid ändrat API/Node, utan att stänga av varningar generellt.
 - **Grenar.** `main` är den enda långlivade grenen. En kortlivad gren (till exempel en worktree för ett avgränsat
   arbete) slås ihop i `main` av huvudagenten och tas sedan bort, lokalt och på GitHub.
@@ -71,7 +71,7 @@ inte med av misstag. Git-push är separat från webbdeploy, mediauppladdning och
   och `claude/deal-clips` bar samma historia och är borttagna på GitHub 2026-11-13): `a5821f1` (`jakob/test`, före
   klippbanken) och `26e41f6` (lokala taggen `scene3d-v1`, 3D-scenen v1) utan tagg på GitHub; `jakob-3` (`d1e5c65`)
   3D-scenen i labbet med fokus, fläktskugga och ingångsklippet; `jakob-4` (`8c01aaa`) en film per plats, rundan vila
-  till vila och renderade kort i 3D-scenen; `jakob-5` (`9a6ca01`) klippen ur gamla labbet, Jakobs första domar och
+  till vila och renderade kort i 3D-scenen; `jakob-5` (`9a6ca01`) klippen ur arkivet, Jakobs första domar och
   spårning för alla filmer; `jakob-6` (`784f231`) grundfilmerna, vilan med väljare och variant B; `jakob-7` (`f4b3ee3`)
   spelet i 3D-scenen med Scouts kärna i `game/` och vändningen av hålkortet; Jakob: "skitsnyggt".
 - **Återställningsbara versioner** (Jakob 2026-11-13: "Spara dock nuläget efter push som typ "Återställningsbart
@@ -94,8 +94,9 @@ inte med av misstag. Git-push är separat från webbdeploy, mediauppladdning och
   fönsterlöst processträd (TEMP och TMP på `D:/dealer-scratch/tmp`) och visar labbets första sida. `STATUS.cmd` och
   `STOPP.cmd` frågar och stoppar via kontrollkanalen och svarar "inte igång" i stället för att fela. `--restart` byter
   server utan att fliken stängs.
-- Gamla labbets sidor ligger i `old-lab/` och spelets sida i `game/page/`; servern lämnar ut dem på samma adresser som
-  förut (`/lab.html`, `/game.html` …) via kartan `PAGES` i `tools/lab-routes.ts`.
+- 3D-sidan, Ljud och Modeller ligger i `pages/` och spelets sida i `game/page/`; servern lämnar ut dem på sina
+  rotadresser (`/scene3d.html`, `/sound.html`, `/props.html`, `/game.html`) via kartan `PAGES` i `tools/lab-routes.ts`.
+  `/` och `/lab.html` (också med `?gamla=1`) leder till studion, så att gamla länkar fungerar.
 - **Servern lämnar ut arbetsträdet, och bara modulerna i sin lista** (`SCRIPTS` i `tools/lab-routes.ts`, läst när
   servern startar). En halvfärdig ändring i en sessions fil syns alltså direkt för alla, Jakobs flik också. En ny
   modul under `src/` görs i den här ordningen: filen på plats utan att något importerar den, raden i listan,
@@ -114,7 +115,7 @@ inte med av misstag. Git-push är separat från webbdeploy, mediauppladdning och
   flikar, och ingen agent kan stänga en flik i hans webbläsare.
 - Servern står kvar tills den stoppas med `STOPP.cmd` eller `--stop` (sedan 2026-11-12; förut slutade den 60 s efter
   sista fliken, och då nekades varje länk Jakob fick). Före en länk till Jakob: `node tools/preview.ts --ensure` startar
-  servern om den inte går, utan att öppna eller flytta någon flik. Stäng inte gamla labbets eller andra projekts
+  servern om den inte går, utan att öppna eller flytta någon flik. Stäng inte arkivets eller andra projekts
   servrar, och stoppa aldrig via processnamn eller port.
 - Andra portar på datorn hör till syskonsessioner: 4320 Pamela-filmens sida
   (`D:/dealer-scratch/tmp/reel/page/serve.mjs`, lånar 4319), 4331 den frysta 3D-scenen v1
@@ -151,7 +152,7 @@ bilder och filmer som används eller kan användas ligger i `assets/` (AGENTS). 
 | GitHub connector + CLI | Båda autentiserade som `Jakeminator123`; repo skapat privat, därefter ändrat till publikt av Jakob och bekräftat 2026-11-10. |
 | Runway connector | Autentiserad workspace `Jakob`, ID `67037521`. |
 | Runway MCP-server | `runway` (`https://mcp.runwayml.com/mcp`), inloggad med `claude mcp login runway`; drar appkontots krediter (workspace `Jakob`). Verktygen finns bara i en session som startats efter att servern lagts till. `https://dev.runwayml.com/mcp/claude` är en annan server (utvecklarportalen), inte för generering. |
-| Direkt API | Gamla labbets `RUNWAY_API_KEY` gav HTTP 200 för `GET https://api.dev.runwayml.com/v1/organization`, API-version `2024-11-06`. Nyckeln drar developer-projektets krediter, en annan pott än appkontots. |
+| Direkt API | Arkivets `RUNWAY_API_KEY` gav HTTP 200 för `GET https://api.dev.runwayml.com/v1/organization`, API-version `2024-11-06`. Nyckeln drar developer-projektets krediter, en annan pott än appkontots. |
 | Lokal nyckel | Endast `RUNWAY_API_KEY` kopierad till Git-ignorerade dealer/.env.local efter uttryckligt godkännande. Sanitiserat kvitto: `.runtime/connection-check.json`. |
 | Identitetsgräns | API-svaret ger inte projekt/workspace-ID. Samma nyckelkälla bevisar inte att developer-API och connector har samma workspace eller saldo. |
 
@@ -239,14 +240,10 @@ beställningsagentens instruktion; här står det som rör banken, uppspelningen
   objekt, ladda inte upp en ny kopia på chans.
 - Blob-nyckeln ligger enbart i Git-ignorerade `.runtime/blob-sync/.env.local`, skild från Runway-nyckeln. Ingen nyckel
   ska ligga i public-deploy eller byggpaketet. Den statiska sajten kräver ingen skrivnyckel.
-- `node tools/build-public.ts` bygger ett litet statiskt paket i `.runtime/public-deploy/.vercel/output`. MP4-filer
-  ersätts med verifierade Blob-länkar. Bygget fryser den aktuella sparade `placements/default.json` och avbryter om den
-  ändras under bygget. Webbläsarens osparade utkast är inte publiceringsunderlag.
-- Publik sparning använder den egna webbläsaren och säkra samtidighetskontroller. Den skriver inte till datorns
-  placeringsfil eller en gemensam server. Export/import krävs för att flytta ändringar mellan publik och lokal vy.
-- Vid ett större nytt granskningssteg uppdateras både GitHub och Vercel enligt Jakobs uppdrag. Testa och pusha den
-  granskade koden, bygg från den committade versionen, publicera och verifiera anonym åtkomst samt faktisk uppspelning.
-  Ge Jakob commit och direktlänk till det aktuella klippet. En spelbar underkänd film behåller sitt underkända beslut.
+- Sidan är gamla labbet som det var vid den senaste publiceringen och byggs inte längre härifrån: byggverktyget
+  (`tools/build-public.ts`) gick med gamla labbet 2026-11-17 och finns kvar i Git-historiken. Den sparar kortplanen i
+  besökarens webbläsare, aldrig på datorn; export/import flyttar en plan till Placering. Att ta ned sidan är en
+  deploy-åtgärd och Jakobs beslut. Studions publicerade kopia är [den låsta kopian](#den-låsta-kopian-på-nätet).
 - Aliaset `dealer-scoutgaming.vercel.app` är skyddat och ska inte delas som publik länk. Senaste deployment och den
   gamla sidans avveckling står i [slutkvittot](../evidence/public-release.json).
 - Gamla `scoutgaming/scout-dealerlab` (`prj_mQwHzspK3GrrJA04eFOorFxth0d5`) är borttaget efter verifierad ersättning och
@@ -406,7 +403,7 @@ miljövariabeln ensam flyttar inget. Original och pågående review bevaras.
 slask medan katalogen refererar dit. Katalogen innehåller bara sökvägar/hashar, inga uppladdade filmer; diagnostiska
 beslut hämtas från motions-registret.
 
-Gamla labbet är fullständigt arkiverat på `D:/dealer-archive/snyggare-dealer`, och C:-originalet är borttaget utan fel
+Det tidigare projektet (snyggare-dealer, arkivet) är fullständigt arkiverat på `D:/dealer-archive/snyggare-dealer`, och C:-originalet är borttaget utan fel
 enligt [arkivkvittot](../evidence/archive-move.json). Efter kontrollerad serverstopp omfattade det 194 531 filer och 163
 182 601 679 logiska byte. Varje vanlig fil SHA-256-jämfördes på båda sidor; katalogstruktur, Git-historik/index, 34
 ändrade tracked filer och 410 individuella untracked filer bevarades. Den tidigare inventeringens uppgift om noll

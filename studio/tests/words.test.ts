@@ -106,7 +106,7 @@ test("Jakob's own words find their entry, ahead of the names in code and the mea
     ["realtidstala", "Realtidslipsynk"],
     ["lipsynk", "Lipsync"],
     ["nya labbet", "Labbet"],
-    ["gamla labbet", "Gamla labbet"],
+    ["3D-labbet", "3D-sidan"],
     ["sajten", "Kopian"],
     ["profilval", "Förval"],
     ["boten", "Boten"],

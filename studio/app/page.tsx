@@ -175,10 +175,11 @@ function Scen() {
             </Link>
           </Tooltip>
           <IconButton label="Kopiera länken: samma runda och look" icon={<Copy />} variant="quiet" onClick={copyLink} />
-          {!isSnapshot && editor.oldLab ? (
-            <Tooltip content="Samma look på gamla labbets 3D-sida">
-              <a href={editor.oldLab} aria-label="Öppna i gamla 3D-labbet" className={buttonClasses({ variant: "quiet", size: "sm", className: "px-2" })}>
+          {!isSnapshot && editor.scenePage ? (
+            <Tooltip content="Samma look på 3D-sidan, med alla reglage">
+              <a href={editor.scenePage} className={buttonClasses({ variant: "quiet", size: "sm" })}>
                 <ExternalLink />
+                3D-sidan
               </a>
             </Tooltip>
           ) : null}

@@ -114,9 +114,10 @@ byggs inte in: den läses i körtid från servern (`labModule` i `studio/lib/lab
 `scene3d.html`, så att sidan har en enda three.js och visar exakt spelets scen, och `<base href="/">` låter scenens
 relativa adresser peka som på labbets sidor. `npm --prefix studio run types` kontrollerar studions egna filer; `src/`
 har 29 typanmärkningar som räknas men inte fäller. Next 16 skiljer sig från äldre versioner: läs
-`studio/node_modules/next/dist/docs/` före ändringar (`studio/AGENTS.md`, som Next själv skriver). Studion är skalet
-sedan 2026-11-13: `/` och `lab.html` leder dit (`studioAddress` i `tools/lab-routes.ts`); gamla labbet nås med
-`?gamla=1` tills Modeller och Ljud har flyttats. Studion visar en dealer i taget: växeln överst i listen (Pamela | Paow,
+`studio/node_modules/next/dist/docs/` före ändringar (`studio/AGENTS.md`, som Next själv skriver). Studion är labbet:
+`/` och den gamla adressen `lab.html` (också med `?gamla=1`) leder dit (`studioAddress` i `tools/lab-routes.ts`).
+Bredvid studion står tre sidor i `pages/`: 3D-sidan (`scene3d.html`, Scens knapp 3D-sidan), Ljud (`sound.html`) och
+Modeller (`props.html`); de två senare länkas längst ned i menyn tills de blir delar av en vy. Studion visar en dealer i taget: växeln överst i listen (Pamela | Paow,
 med antalet tagningar som väntar på Jakob, den pausade dämpad; namn och paus ur `data/dealers.json`) väljer vems
 tagningar varje vy läser (`studio/lib/bank.ts` bygger `buildGraph(bank, {dealer})` per dealer); valet står i adressen
 som `?dealer=`, samma ord som vyn Material, och minns i webbläsaren; adressen går först, sedan en tagning som adressen
@@ -352,11 +353,11 @@ på Spela är också det som låter henne höras. Filmen
 (`film-2.mp4`; en omgjord film får nytt namn, eftersom kopian svarar med ett dygns lagringstid)
 och startrutan ligger i `assets/films/intro/noir-3/` med kvitto; filmen måste spelas in på nytt när spelets vilobild
 ändras (trailersessionens `efter3/`, ett kommando, inga krediter).
-**Ljud-labbet** (`sound.html`, länken Ljud ↗; `src/lab-sound.ts`): markernas klirr, kortens ljud, bakgrundsljud per
+**Ljud** (`pages/sound.html`, länken Ljud längst ned i menyn; `src/sound.ts`): markernas klirr, kortens ljud, bakgrundsljud per
 miljö och musik (fyra spår som skrivs medan de spelas: `MUSIC`, `music(track)`, `set({music})`; `LEVEL.musicDbA` −38, 5
 dB över rummen), syntetiserade i webbläsaren utan ljudfiler (`createSound()`). Spelets meny Musik läser samma modul;
-sidans egen halva startar bara där `body` har `data-page="ljud-labb"`. **Modell-labbet** (`props.html`, länken Modeller
-↗; `src/props-lab.ts`) är ett sidospår som inte rör spelet: de tre omgjorda modellerna (sko, bricka, bord) i en egen vy
+sidans egen halva startar bara där `body` har `data-page="ljud-labb"`. **Modeller** (`pages/props.html`, länken
+Modeller längst ned i menyn; `src/props-lab.ts`) är ett sidospår som inte rör spelet: de tre omgjorda modellerna (sko, bricka, bord) i en egen vy
 med utseendena som den kom, elfenben, guld, elfenben och guld samt svart lack och guld, räknade i webbläsaren ur
 modellens egen färgbild (`accentScore`: det som är guld, mässing eller starkt färgat i originalet blir guld; reglage för
 hur mycket), med fyra rörelser och tre ljus. Valet Scen "Med dealer och rum" (`src/props-stage.ts`; finns för en modell
@@ -411,7 +412,7 @@ uppmätt fysisk kamera. Riktning i bordplanet är skild från kamerans lutning o
 platsen på filten) och gäller bara när `turn` är sant. Vänds senare är inget eget värde: `turn=false` och landning på
 startsidan. Äldre filer utan nycklarna läses överallt: `validatePlan` fyller i standardvärdena när planen godkänts, så
 sparning och export skriver dem. Sekvensen skriver `DRAG(LH,BACK)` och `TURN(LH,BACK>FRONT,PLACE)`; ritningen och
-kortbaneanimeringen är oförändrade. I fliken: listan Kortplatser väljer kortet som panelen till höger ändrar; Rörelse
+kortbaneanimeringen är oförändrade. I Placering: listan Kortplatser väljer kortet som panelen till höger ändrar; Rörelse
 har Grepp vid skon, Var kortet vänds, tre tekniker med ett klick (`TECHNIQUES`; hand och handbyte står kvar) och Använd
 rörelsen på alla spelarkort (de 14); Placering har Kortstorlek, alla kort (`scaleCards`: en faktor 0,50–2,50 kring varje
 korts mitt, stopp vid bildkanten och storleksgränserna; med Plant bord ritas alla kort i P4.C1:s storlek); Material har
@@ -451,7 +452,7 @@ sak.
 | Ingångsbild, keystone, ankare | Jakobs ord 2026-11-12. Ingångsbild: vilken bild som helst av personen. Keystone: förlagor i hög upplösning på vitt, stående och sittande; en förlaga spelas aldrig. Hans ord är att ankaret tas ur en video av keystonen (så står det i studions ordlista); Paows ankare är redigerade stillbilder (löpande bandet, station 4–5b), och vilken väg som gäller har han inte avgjort. Ankare: rutan i bankens format (1764×1174, grönt, bankens sko) som filmer börjar och slutar på. |
 | Ankare 1, 2.1, 2.2 | Vila (`IDLE`); nyp i skons fönster (`READY`, `grip: PINCH`); handen över kortet i skons öppning, släp (`READY-B`, `grip: DRAG`). I löpande text heter de ankare 1, ankare 2.1 (nyp) och ankare 2.2 (släp). Äldre namn på samma ankare: Keystone 1/2, variant A/B, VILA/REDO, REDO B. |
 | Ingång, utgång, hon kommer, hon går | Ingång: filmen från ankare 1 till ankare 2.1 eller 2.2 (`IDLE>READY`, `IDLE>READY-B`). Utgång: filmen från ankare 2.1 eller 2.2 tillbaka till ankare 1 (`READY>IDLE`, `READY-B>IDLE`; stegen `UTGANG` och `UTGANG-2.2`). När hon reser sig och lämnar bordet heter det att hon går (`IDLE>AWAY`), och när hon kommer in och sätter sig att hon kommer (`AWAY>IDLE`). |
-| Riktning, lutning, perspektiv | Kortets tre mått: vart kortsidan pekar på bordet; hur mycket kortet reser sig från bordet (0° = plant); hur mycket smalare den bortre kanten är (Jakob 2026-11-12: "perspektiv är bättre"). Gamla labbets etiketter är bytta; lutning saknar reglage. |
+| Riktning, lutning, perspektiv | Kortets tre mått: vart kortsidan pekar på bordet; hur mycket kortet reser sig från bordet (0° = plant); hur mycket smalare den bortre kanten är (Jakob 2026-11-12: "perspektiv är bättre"). Lutning saknar reglage. |
 | `IDLE`, `READY` | Vila respektive redo. Äldre VILA/REDO är alias, inte nya tillstånd. |
 | `LH`, `RH` | Dealerns anatomiska vänster/höger, oberoende av bildspegling. |
 | `BACK`, `EDGE`, `FRONT` | Observerad fysisk kortsida mot kameran. |
@@ -489,7 +490,8 @@ källbevis: den nyare P4.C2-källan stöder BACK→EDGE→FRONT, medan dess loka
 
 - `motions/<clip-id>.json` är ensam källa för rörelsens klassning/beslut. Hand, pose, fysisk sida, spelstatus, mål och
   variant hålls separata.
-- `data/library.json` är visningskatalogen utan mediekopior. Original, historiska sekvenser och diagnostiska överlägg
+- `data/library.json` är visningskatalogen utan mediekopior (Prov-mappen Filmbiblioteket, bilden under korten i Placering,
+  Referens i Scen). Original, historiska sekvenser och diagnostiska överlägg
   hålls isär; beslut hämtas från `motionRef`. P4-gulprovet och de återställda native-sekvenserna är 1764×1174 i
   källrymd, inte V6:s native-vy 1762×1174.
 - `data/public-media.json` binder publicerade katalogfilmer till Blob-URL:er med samma SHA-256. Nya lokala poster kan
@@ -575,8 +577,7 @@ format och namn: `tools/dealer-line.md`.
 
 ## Klippbank och nodnotation
 
-Studions vy **Karta** (`/studio/karta/`) visar kanterna och tagningarna; gamla labbets flik Klippbank (nodträdet) nås
-med `lab.html?gamla=1&tab=klippbank`. Noderna är ankarposer: `IDLE`, `READY` och ett landningsankare per kort (`P4.C1`,
+Studions vy **Karta** (`/studio/karta/`) visar kanterna och tagningarna. Noderna är ankarposer: `IDLE`, `READY` och ett landningsankare per kort (`P4.C1`,
 `D.C2`). Varje klipp är en kant `A>B` med en enda handling; en runda är kanter i följd:
 
 ```text
@@ -610,7 +611,7 @@ IDLE>READY | READY>P1.C1 | P1.C1>READY | READY>D.C1 | D.C1>READY | READY>P1.C2 |
   kanter som luckor. Scout äger fortsatt ordning, regler och kortvärden.
 - En härledd tagning är inget nytt klipp utan rutorna A–B ur ett befintligt:
   `"derived": [{id, kind, from, to, clip, frames: [A, B]}]` i jobbfilen.
-- **En film per plats** är förvalt läge (Jakobs beslut 2026-11-11; i gamla labbet ger `lab.html?gamla=1&…&filmer=kort`
+- **En film per plats** är förvalt läge (Jakobs beslut 2026-11-11; Karta med `?filmer=kort` visar
   en film per kort). Platsens andra kort har då ingen egen film: `READY>P4.C2` spelar platsens giv `READY>P4.C1` och
   `P4.C2>READY`/`P4.C2>IDLE` platsens returer, med det renderade kortet flyttat planens avstånd C1→C2 (visas per plats,
   varning över 50 px). Regeln är sidan, inte namnet (`filmCard`): kort 2 delar bara film när det slutar på samma sida
@@ -621,7 +622,7 @@ IDLE>READY | READY>P1.C1 | P1.C1>READY | READY>D.C1 | D.C1>READY | READY>P1.C2 |
   `edge.shares` och `summary.films`, `resolveRound(…, {places})` ger steget `film` och `shift`. En egen film för kort 2
   ligger kvar som "egen film för kort 2" och spelas bara när rundan namnger den. I rundan ligger tidigare utdelade kort
   kvar renderade där deras senaste film lämnade dem.
-- **Vilan** (panelen Vila i gamla labbet, `lab.html?gamla=1&tab=klippbank&panel=vila`) är korta klipp på `IDLE>IDLE` som
+- **Vilan** är korta klipp på `IDLE>IDLE` som
   alla börjar och slutar på samma bild, efter Kevins och Emils vila i Scout (läst 2026-11-11 i `origin/kevin-staging`
   `b4a78b44c`, `kevin/croupier-scoutgg/`, och `origin/main` `5428c0593`). `pickIdle` i `src/clip-graph.ts` väljer nästa
   klipp med viktad slump: aldrig samma klipp två gånger i rad, två lugna och sedan en gest (`calmBetweenGestures`),
@@ -703,12 +704,10 @@ IDLE>READY | READY>P1.C1 | P1.C1>READY | READY>D.C1 | D.C1>READY | READY>P1.C2 |
   (`line`, `language`, `text`, `voice`, `soundStartsAtSeconds`, `soundEndsAtSeconds`: repliken, orden som rösten läser
   dem, rösten och var ljudet ligger i filmen); `src/speech-lines.ts` väljer talfilmen för en replik
   eller ett chattsvar, och labbservern släpper igenom blocket till webbläsaren (`f181e13`).
-- Jobbutkast för saknade kanter kopieras ur fliken, som aldrig skriver i jobbfilen eller beställer något.
-  Preview-servern lämnar utöver det bara ut läsvägarna `/api/clip-bank` och `/api/proofs`, `source.mp4`,
+- Preview-servern lämnar utöver det bara ut läsvägarna `/api/clip-bank` och `/api/proofs`, `source.mp4`,
   `source-reversed.mp4`, `first.png` och `last.png` för klipp i jobbfilen, deras spårfiler under
-  `assets/tracking/<klipp>/` samt mp4, png och json under `assets/proofs/`. För 3D-scenen (`scene3d.html`, länk i labbet
-  när sidan finns) lämnas three.js ut som `/vendor/three.module.js` och `/vendor/three.core.js` ur det låsta beroendet
-  `three`, inget annat ur `node_modules`. Fliken Prov (`?tab=prov&proof=<mapp>`) är granskningsrummet för provmapparna:
+  `assets/tracking/<klipp>/` samt mp4, png och json under `assets/proofs/`. För 3D-scenen (`scene3d.html`) lämnas three.js ut som `/vendor/three.module.js` och `/vendor/three.core.js` ur det låsta beroendet
+  `three`, inget annat ur `node_modules`. Vyn Prov (`/studio/prov/?prov=<mapp>`) är granskningsrummet för provmapparna:
   senast ändrade mapp först och sökbar lista, filmen stor med spellista, bilderna i ett galleri med visare. `proof.json`
   får bära `title`, `description`, `labels`, `chapters` och `verdicts` (per fil: `ok`, `remarks`, `failed` eller
   `unreviewed`). En etikett skrivs som ett kort namn följt av allt annat (delas vid första parentes, punkt eller kolon):
@@ -745,13 +744,13 @@ Jakobs fristående blackjack-studio (`local-studio/blackjack-studio`, "Göran", 
 framställd ur ett uppladdat foto utan noterat tillstånd, så hans projekt, klipp, kortlägen och ankare används inte, och
 inte heller trä-casinobilden `c7ef9e9c` (Jakobs besked 2026-11-11: Pamela är dealern). Fritt att återbruka: `blackjack/`
 (regelmotor), `money/`, `players/`, `scene/furniture.ts`, `panorama-room.ts`, `atmosphere.ts`, miljöerna Las Vegas och
-Los Angeles och Poly Havens texturer (CC0, `material-sources.json`). Gamla labbets 3D-utkast med Pamela som platt
+Los Angeles och Poly Havens texturer (CC0, `material-sources.json`). Arkivets 3D-utkast med Pamela som platt
 stillbild (`runs/20261109-pamela-stage/`, `runs/20261110-pamela-studio-integration/take-02/`) visas i Prov
 `pamela-3d-utkast`.
 
 `materials/source/references/card-materials/new-front2/` innehåller medföljande 3D-materialreferenser; `new-front2` är
 en läsbar syskonreferens, inte ett runtime-beroende. Namnen Pamela/Göran i äldre material måste kopplas till verifierad
-filhash/proveniens innan identitet antas. Nya läsningar från gamla labbet registreras; inga gamla node_modules eller
+filhash/proveniens innan identitet antas. Nya läsningar från arkivet registreras; inga gamla node_modules eller
 junctions importeras.
 
 Underlag: `Dealer_sekvensguide_2026-11-10.md` och `Dealer_studio_skiss_2026-11-10.html` i Jakobs Downloads samt bifogad

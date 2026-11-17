@@ -196,7 +196,7 @@ test("the strip: a return's still a third in, a deal's at its landing; stills on
   assert.ok(!sameSet(new Set([1, 2]), new Set([1, 3])));
 });
 
-test("card places from the plan, as the old lab hands them to the bank", () => {
+test("card places from the plan, as resolveRound takes them", () => {
   assert.equal(placesOf(null), null);
   const places = placesOf(defaultPlan())!;
   assert.equal(Object.keys(places).length, 16);

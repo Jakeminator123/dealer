@@ -1,11 +1,11 @@
 // Page code of sound.html: the sound lab ("Ljud-labb"). The sounds of the table (chips and cards) and the rooms'
 // backgrounds, all made in the browser with the Web Audio API: no audio files, nothing downloaded, every sound tunable here.
-// A lab on a side track: the game does not use it yet. createSound() is the interface the game will use later.
+// The game plays it too (src/game-page.ts loadSound, through createSound()); this page is where its sounds are tuned.
 //
 // The first half has no page and no audio context in it: seeded randomness, what each sound is made of (its plan, drawn
 // from a seed so that no two clicks are alike and a test can repeat them), the sounds themselves as samples, the rooms'
 // recipes and the planner that says what happens in a room when, and the measuring used by the tests and the proof.
-// tools/lab-sound.test.ts runs it under Node. The second half puts it on a Web Audio graph (createSound) and is the page,
+// tools/sound.test.ts runs it under Node. The second half puts it on a Web Audio graph (createSound) and is the page,
 // started only where there is a document. Importing the module never touches AudioContext.
 
 // ── names, defaults and levels ──────────────────────────────────────────────

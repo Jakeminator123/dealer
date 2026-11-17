@@ -3,7 +3,7 @@
 //
 // The table as a player sees it (tableLayout in src/clip-graph.ts): the seats in an arc, P1 left to P7 right, the
 // dealer's cards above them, A1 (vila) at the upper left, A2.1 (nyp) and A2.2 (hand över) by the shoe at the upper right,
-// Borta above A1 and "DC2 upp" beside the dealer. As in the old lab's tree, each anchor has a rail: A2.1's runs down the
+// Borta above A1 and "DC2 upp" beside the dealer. Each anchor has a rail: A2.1's runs down the
 // right and across between the dealer and the seats, A1's down the left, under the seats and over the dealer. A film is
 // a short line of its own between a card and a rail, so no two films lie on top of each other, and its label sits on it.
 // A card's deal and return to A2.1 stand side by side with their labels on two rows; its return to A1 leaves from the
@@ -235,7 +235,7 @@ export function segments(path: string): Box[] {
   return out;
 }
 
-/** How far the second card of a seat lies from its first in the plan (film pixels), as the old lab's kbReach. */
+/** How far the second card of a seat lies from its first in the plan (film pixels). */
 export function seatReach(points: PlanPoints, seat: string): number | null {
   const a = points?.[`${seat}.C1`];
   const b = points?.[`${seat}.C2`];

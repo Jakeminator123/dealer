@@ -62,7 +62,7 @@ function bank(): BankData {
   return { jobs, motions, media, revisions: Object.fromEntries(jobs.map((j) => [j.id, `"${j.id}"`])) };
 }
 
-test("dealing order and groups follow the old lab", () => {
+test("dealing order and groups by seat", () => {
   const graph = buildGraph(bank());
   const e = (id: string) => graph.edge[id];
   assert.equal(reviewKey(e("IDLE>READY")), 0);

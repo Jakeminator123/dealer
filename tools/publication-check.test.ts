@@ -42,7 +42,7 @@ test('the canonical documents, whose absence stops a push, are all in the reposi
 
 test('user placement drafts are not test inputs',()=>{
   assert.deepEqual(dirtyTestInputs(['placements/default.json','HANDOFF.md']),[]);
-  assert.deepEqual(dirtyTestInputs(['src/lab-ui.ts','package-lock.json','placements/default.json']),['src/lab-ui.ts','package-lock.json']);
+  assert.deepEqual(dirtyTestInputs(['src/sound.ts','package-lock.json','placements/default.json']),['src/sound.ts','package-lock.json']);
   assert.deepEqual(dirtyTestInputs(['studio/app/page.tsx','studio/package.json','studio/lib/api.ts','src/studio/x.ts']),['src/studio/x.ts']);
 });
 

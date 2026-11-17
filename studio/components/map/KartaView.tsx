@@ -36,7 +36,7 @@ function useParams() {
   return { params, set };
 }
 
-/** Each card's centre in the plan, in film pixels (the plan's own view, as the old lab reads it). */
+/** Each card's centre in the plan, in film pixels (the plan's own view). */
 function usePlanPoints(): PlanPoints {
   const [points, setPoints] = useState<PlanPoints>(null);
   useEffect(() => {

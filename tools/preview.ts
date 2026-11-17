@@ -60,8 +60,8 @@ if(has('--restart')){
  if(alive&&(alive.name!=='dealer'||!sameRoot(alive.root,process.cwd())))throw Error('Preview identity differs');
  if(!alive)await startServer();console.log(alive?`Labbservern går: ${origin}`:`Labbservern är startad: ${origin}`);
 }else if(has('--open')){
- // The one way to put a lab page in front of Jakob: node tools/preview.ts --open "lab.html?tab=prov" (START.cmd does this
- // with the lab's first page). The server is started if it is not running, the page is shown in the lab tab that is
+ // The one way to put a lab page in front of Jakob: node tools/preview.ts --open "/studio/prov/?prov=<id>" (START.cmd does
+ // this with the studio). The server is started if it is not running, the page is shown in the lab tab that is
  // already open, and only when there is none is a tab opened. Opening the address itself adds a tab every time.
  const wanted=args[args.indexOf('--open')+1],target=localPath(wanted&&!wanted.startsWith('--')?wanted:'/studio/',origin);
  if(!target)throw Error('Ange en sida i studion, till exempel /studio/prov/?prov=<id>');
@@ -78,8 +78,8 @@ if(has('--restart')){
  }
 }else{
  const manifest=JSON.parse(await readFile('data/manifest.json','utf8'));
- // The pages themselves (old-lab/, game/page/) are served at their root addresses through PAGES (tools/lab-routes.ts), below.
- const allowed=new Set(['data/props.json','data/dealers.json','data/p4-generation-review.json','data/scene-contract.json','data/scene-rooms.json','data/speech-patches.json','assets/lab/native.jpg','assets/lab/portrait.jpg','assets/lab/placement-backdrop/native.jpg','assets/scene/room.png','assets/scene/panorama-vegas.jpg','assets/scene/panorama-la.jpg','assets/scene/panorama-skog.jpg',...['room-panorama','room-la','room-skog','room-hall','room-salong','dealer-pamela'].map(name=>`assets/scene/thumbs/${name}.jpg`),...['wood_table-diffuse','wood_table-nor_gl','wood_table-rough','brown_leather-nor_gl','brown_leather-rough','denim_fabric-nor_gl','denim_fabric-rough','runway_felt-diffuse','runway_leather-diffuse'].map(name=>`assets/scene/materials/${name}.webp`),'materials/kortmaterial.html','materials/markermaterial.html',...manifest.files.map((f:{path:string})=>f.path).filter((p:string)=>p.startsWith('assets/')||p.startsWith('materials/')||p.startsWith('output/v6/'))]);
+ // The pages themselves (pages/, game/page/) are served at their root addresses through PAGES (tools/lab-routes.ts), below.
+ const allowed=new Set(['data/props.json','data/dealers.json','data/scene-contract.json','data/scene-rooms.json','data/speech-patches.json','assets/lab/native.jpg','assets/lab/portrait.jpg','assets/lab/placement-backdrop/native.jpg','assets/scene/room.png','assets/scene/panorama-vegas.jpg','assets/scene/panorama-la.jpg','assets/scene/panorama-skog.jpg',...['room-panorama','room-la','room-skog','room-hall','room-salong','dealer-pamela'].map(name=>`assets/scene/thumbs/${name}.jpg`),...['wood_table-diffuse','wood_table-nor_gl','wood_table-rough','brown_leather-nor_gl','brown_leather-rough','denim_fabric-nor_gl','denim_fabric-rough','runway_felt-diffuse','runway_leather-diffuse'].map(name=>`assets/scene/materials/${name}.webp`),'materials/kortmaterial.html','materials/markermaterial.html',...manifest.files.map((f:{path:string})=>f.path).filter((p:string)=>p.startsWith('assets/')||p.startsWith('materials/')||p.startsWith('output/v6/'))]);
  // The modules and vendor files the pages ask for, and how a module is made ready for the browser: tools/lab-routes.ts, which the
  // build of the online copy reads too (tools/build-studio-snapshot.ts), so that the copy serves exactly what this server serves.
  // Table props made by tools/prop-glb.ts: assets/props/<id>.glb, and only where the file really lies in that folder.
@@ -310,16 +310,15 @@ if(has('--restart')){
    const studio=url.pathname==='/studio'||url.pathname.startsWith('/studio/')?await resolveStudio(url.pathname):null;
    if(studio){
     if(studio.kind==='redirect'){res.writeHead(301,{Location:studio.to+url.search}).end();return;}
-    if(studio.kind==='unbuilt'){res.writeHead(503,{'Content-Type':'text/html; charset=utf-8'}).end('<!doctype html><html lang="sv"><meta charset="utf-8"><title>Dealer · Studio</title><body style="margin:0;height:100vh;display:grid;place-items:center;background:#0d0f0e;color:#e8ece9;font:15px system-ui,sans-serif"><p>Studion är inte byggd på den här datorn. Kör <code>npm --prefix studio ci</code> och <code>npm --prefix studio run build</code>, och ladda om. <a style="color:#d9b96a" href="/lab.html">Till labbet</a></p></body></html>');return;}
+    if(studio.kind==='unbuilt'){res.writeHead(503,{'Content-Type':'text/html; charset=utf-8'}).end('<!doctype html><html lang="sv"><meta charset="utf-8"><title>Dealer · Studio</title><body style="margin:0;height:100vh;display:grid;place-items:center;background:#0d0f0e;color:#e8ece9;font:15px system-ui,sans-serif"><p>Studion är inte byggd på den här datorn. Kör <code>npm --prefix studio ci</code> och <code>npm --prefix studio run build</code>, och ladda om. <a style="color:#d9b96a" href="/scene3d.html">Till 3D-sidan</a></p></body></html>');return;}
     if(studio.kind==='none'){res.writeHead(404).end();return;}
     file=studio.file;type=studio.type;
    }else{
-    // The studio is the shell: "/" and the old lab's first page lead to the studio view that replaced the tab (studioAddress);
-    // the old lab itself is served only with ?gamla=1.
+    // The studio is the lab: "/" and /lab.html, the first lab page's old address, lead to the studio view (studioAddress).
     const moved=studioAddress(url.pathname,url.searchParams);
     if(moved&&(req.method==='GET'||req.method==='HEAD')){res.writeHead(302,{Location:moved,'Cache-Control':'no-store'}).end();return;}
-    // A page of the old lab or the game: its root address maps to its file in old-lab/ or game/page/.
-    const name=url.pathname==='/'?'lab.html':decodeURIComponent(url.pathname.slice(1)),page=pages[`/${name}`];
+    // A page (the 3D page, Modeller, Ljud) or the game: its root address maps to its file in pages/ or game/page/.
+    const name=decodeURIComponent(url.pathname.slice(1)),page=pages[`/${name}`];
     file=page??name;
     // media.servable: a picture or film data/media-roles.json names (keystones, anchors and frames of the view Material), inside the repo and no link out of it.
     if(!page&&!allowed.has(file)&&!await clipFile(file)&&!await trackFile(file)&&!await proofPath(file)&&!await patchFile(file)&&!await sceneFile(file)&&!await propFile(file)&&!await media.servable(file)&&!(await library()).items.some((item:{path:string})=>item.path===file)){res.writeHead(404).end();return;}

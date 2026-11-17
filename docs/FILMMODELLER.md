@@ -234,7 +234,7 @@ gränserna utom där det står; resten är granskningens och den här sidans.
 |---|---|---|---|
 | Ordern `data/orders/<id>.json` | `generation.model` | Beställ | `tools/film-after.ts` (väljer efterarbetet), `tools/register-order.ts`, Protokoll, `tools/verdicts-per-method.ts` |
 | Posten `motions/<klipp>.json` | `source.model` | `tools/register-order.ts` ur ordern; äldre poster för hand eller av borttagna verktyg | Spelet: `filmModel` i `src/game-film.ts` skickar det med varje filmdel till 3D-scenen; en talfilm får sin vilas |
-| Kvittot `assets/motions/<klipp>/generation.json` | `model`, `orderedAs` | `tools/register-order.ts`; äldre av gamla labbet | Labbservern läser läget, krediterna och filmens mått (`clipBank` i `tools/preview.ts`), inte modellen; läs `orderedAs` för Pamelas MCP-filmer |
+| Kvittot `assets/motions/<klipp>/generation.json` | `model`, `orderedAs` | `tools/register-order.ts`; äldre av arkivet | Labbservern läser läget, krediterna och filmens mått (`clipBank` i `tools/preview.ts`), inte modellen; läs `orderedAs` för Pamelas MCP-filmer |
 | Jobbfilen `data/clip-jobs.json` | `model` på jobb och utsnitt | `tools/register-order.ts`, `tools/speech.ts` | `buildGraph` bär det i tagningens `job.model`; ett utsnitt utan modell heter `utsnitt` |
 
 Kända fel (M): `pamela-table-arrive-wide-kling-01` och `pamela-table-leave-wide-kling-01` är Kling 4-filmer (24 rutor i

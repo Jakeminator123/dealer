@@ -19,7 +19,7 @@ else{
  // What is left of a page that could not close its tab: a new, empty document, so that nothing of the old page keeps running.
  const blank=(reason:string)=>{
   const text=reason==='stop'?'Labbservern är stoppad. Starta den med START.cmd.':'Labbet är öppet i en annan flik. Den här fliken gör inget längre och kan stängas.';
-  const again=reason==='stop'?'':` <a style="color:#d9b96a" href="${location.origin}/lab.html">Använd den här fliken i stället</a>`;
+  const again=reason==='stop'?'':` <a style="color:#d9b96a" href="${location.origin}/studio/">Använd den här fliken i stället</a>`;
   const page=`<!doctype html><html lang="sv"><meta charset="utf-8"><title>Dealer · stängd flik</title><body style="margin:0;height:100vh;display:grid;place-items:center;background:#0d0f0e;color:#93a098;font:15px system-ui,'Segoe UI',sans-serif"><p>${text}${again}</p></body></html>`;
   location.replace(URL.createObjectURL(new Blob([page],{type:'text/html'})));
  };

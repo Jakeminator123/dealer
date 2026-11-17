@@ -324,15 +324,9 @@ export function Measures({ measures }: { measures: readonly Measure[] }) {
               <span className="font-mono text-xs text-faint">{m.file}</span>
             </span>
             {m.link ? (
-              m.link.startsWith("/lab.html") ? (
-                <a href={m.link} className="inline-flex items-center gap-1 text-xs text-brass-hi hover:underline">
-                  Gamla labbet <ArrowUpRight className="size-3" />
-                </a>
-              ) : (
-                <Link href={m.link} className="inline-flex items-center gap-1 text-xs text-brass-hi hover:underline">
-                  Öppna <ArrowRight className="size-3" />
-                </Link>
-              )
+              <Link href={m.link} className="inline-flex items-center gap-1 text-xs text-brass-hi hover:underline">
+                Öppna <ArrowRight className="size-3" />
+              </Link>
             ) : (
               <span className="text-xs text-faint">inte i repot</span>
             )}

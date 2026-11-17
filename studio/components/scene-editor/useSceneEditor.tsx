@@ -20,7 +20,7 @@ import { casinoAddress } from "../../lib/casino.ts";
 import { isSnapshot } from "../../lib/mode.ts";
 import { placesOf } from "../../lib/rounds.ts";
 import { BUILT_BLUR, sameValue, type GroupId, type SceneKey } from "../../lib/scene-keys.ts";
-import { BASE, SHIPPED, differences, effective, isShipped, matchPreset, oldLabAddress, patchOf, slotLabel, slotOf } from "../../lib/scene-presets.ts";
+import { BASE, SHIPPED, differences, effective, isShipped, matchPreset, patchOf, scenePageAddress, slotLabel, slotOf } from "../../lib/scene-presets.ts";
 import type { Scene } from "../stage";
 import { SegmentedControl, Skeleton, Switch, useToast } from "../ui";
 import { askedPart, lookPart, type LookAsk } from "./address.ts";
@@ -410,8 +410,8 @@ export function useSceneEditor(firstLook: () => LookAsk) {
     lookText: settled ? lookPart(forval, current!, originState!) : askedPart(asked),
     /** The Casino view with this look. */
     casino: casinoAddress(forval, keys),
-    /** The same look on the old lab's 3D page. */
-    oldLab: current && defaults ? oldLabAddress(current, defaults, { shoe: want.shoe }) : null,
+    /** The same look on the 3D page (scene3d.html). */
+    scenePage: current && defaults ? scenePageAddress(current, defaults, { shoe: want.shoe }) : null,
     /** Card places from Jakob's plan for the round; read: the plan has been read, or could not be. */
     places,
     placesRead: card.read,

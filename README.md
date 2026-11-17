@@ -11,7 +11,7 @@ Mapparna:
 START.cmd STOPP.cmd STATUS.cmd   starta, stoppa och fråga labbservern på 127.0.0.1:4319
 README.md AGENTS.md HANDOFF.md   läs först
 studio/       studion: Jakobs arbetsyta i webbläsaren (Next.js)
-old-lab/      gamla labbets sidor (labbet, 3D-scen, Modeller, Ljud, Runway-underlaget), tills studion ersatt dem
+pages/        sidorna bredvid studion: 3D-sidan (scene3d.html), Ljud (sound.html) och Modeller (props.html)
 game/         spelet: den fristående spelmotorn med Scouts regler oförändrade i sak; spelsidan i game/page/
 src/          den delade motorn och sidornas kod: 3D-scen, klippgraf, kort, placering, beställningar
 tools/        kommandon, labbservern (preview.ts), instruktionerna (*.md) och testerna (*.test.ts)
@@ -25,8 +25,8 @@ docs/         SYSTEM, DRIFT, TAL och FILMMODELLER
 assets/ output/ .runtime/        lokal media och lokala byggen, inte i Git
 ```
 
-"Gamla labbet" betyder `old-lab/`. Det tidigare projektet på D: heter snyggare-dealer (arkivet). Sidorna har kvar sina
-adresser (`/lab.html`, `/game.html` …); bara filerna ligger i mappar.
+Arkivet är det tidigare projektet på D: (snyggare-dealer). Sidorna har kvar sina adresser (`/scene3d.html`,
+`/game.html` …); bara filerna ligger i mappar.
 
 | Läsning | Innehåll |
 | --- | --- |
@@ -55,7 +55,7 @@ adresser (`/lab.html`, `/game.html` …); bara filerna ligger i mappar.
 - `data/manifest.json` registrerar filproveniens och SHA-256 (sökvägarna i den räknas från repots rot); `evidence/`
   innehåller verifieringskvitton.
 - `data/library.json` är V6-tidens filmkatalog (V6, sekvenser, original och diagnostiska prov); beslut hämtas från
-  `motions/`.
+  `motions/`. Filmerna visas i Prov under **Filmbiblioteket** och kan läggas under korten i Placering.
 
 Dokumenten länkar till dessa i stället för att föra egna statusregister. Media (`assets/`, `output/`), `.runtime/`,
 `.env*` och `private/` är lokala och Git-ignorerade.
@@ -78,8 +78,9 @@ Dokumenten länkar till dessa i stället för att föra egna statusregister. Med
   som gäller), **Lipsync** (vad läppsynken använder och i vilka skalor, skrivskyddad), **Beställ** (bild- och
   filmbeställningar) och **Casino**, och i foten **Beslut** (det som väntar på Jakobs svar). Lipsync, Beställ och Beslut finns bara i labbet; kopian på nätet har
   i stället **Önskemål** och boten (Fråga). **Protokoll** (en rad per tagning och metod) nås från Beställ, och
-  **Jämför** (två tagningar av samma steg sida vid sida) från en tagning i Granska, Karta och Primära. Gamla labbet nås
-  längst ned i menyn eller med `lab.html?gamla=1` tills Modeller och Ljud har flyttats ([SYSTEM](docs/SYSTEM.md)).
+  **Jämför** (två tagningar av samma steg sida vid sida) från en tagning i Granska, Karta och Primära. Längst ned i
+  menyn finns också sidorna **Ljud** och **Modeller**, och Scens knapp **3D-sidan** öppnar utvecklarens 3D-sida med samma
+  look ([SYSTEM](docs/SYSTEM.md)).
 - Filmgranskningen har steg ±1 bildruta, kapitel och hastighet 0,25×/0,5×/1×. URL-parametrarna `clip` och `frame` pekar
   ut klipp och granskningsruta.
 - `npm test` kör offlinetesterna (placeringar, klippbank, kortspår, scen, spelmotor, labbserver och publiceringsskydd).
@@ -105,9 +106,10 @@ kortmaterialets TS-källa direkt; det ändrar inte V6-filmen eller de historiska
 Publikt källrepo: [Jakeminator123/dealer](https://github.com/Jakeminator123/dealer). GitHub innehåller inte media eller
 hemligheter. Scout-integration, deploy och betald generering är separata uppdrag.
 
-[Det publika labbet](https://dealer-delta-eosin.vercel.app/) visar ett äldre läge (release i
-[evidence/public-release.json](evidence/public-release.json)). Den publika sidan sparar kortplanen i den egna
-webbläsaren, lokal preview i placeringsfilen på datorn; export/import flyttar en plan mellan dem. Publicerade granskningsfilmer
+[Det publika labbet](https://dealer-delta-eosin.vercel.app/) visar gamla labbet som det var vid den senaste
+publiceringen (release i [evidence/public-release.json](evidence/public-release.json)) och byggs inte längre härifrån;
+att ta ned det är Jakobs beslut. Sidan sparar kortplanen i besökarens webbläsare; export/import flyttar en plan till
+Placering. Publicerade granskningsfilmer
 ligger i separat Vercel Blob, inte i Git eller webbpaketet.
 
 Behåll JSON-register, manifest och planerna som sparas i webbläsaren. [Lagringsbedömningen](evidence/storage-choice-review.json)
@@ -120,8 +122,9 @@ rekommenderar ingen SQLite- eller annan ny databas nu; framtida Scout-import är
   [produktionskvitto](evidence/sequence-review-production.json), SYSTEM "Återbruk och införande".
 - P4.C2:s nyare original visar BACK→EDGE→FRONT; den gula `review-v04` bevisar inte CLOSED→CLOSED: [färggranskningens
   p4Followup](evidence/anchor-color-audit.json).
-- Promptar, start- och slutbilder och resultat för kontrollproven 10 november:
-  [Runway-underlaget](old-lab/generation.html). P4.C1-kontrollproven (`pamela-p4-c1-color-control-01` med WAN 3,
+- Promptar, start- och slutbilder och resultat för kontrollproven 10 november: Prov-mappen **Runway-underlaget 10
+  november** (`/studio/prov/?prov=runway-underlaget-10-nov`); alla parametrar i
+  [data/p4-generation-review.json](data/p4-generation-review.json). P4.C1-kontrollproven (`pamela-p4-c1-color-control-01` med WAN 3,
   `pamela-p4-c1-kling-control-01` med Kling 3.0 Pro) är underkända för fysisk vändning; besluten står i `motions/`.
 - Placeringslabbets grundkontroller: [evidence/placement-lab.json](evidence/placement-lab.json); vy- och nodkontroller:
   [evidence/plane-and-nodemap.json](evidence/plane-and-nodemap.json). V6:s små skuggor och fingermasker, och den senare

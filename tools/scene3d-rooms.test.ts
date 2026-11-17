@@ -9,7 +9,7 @@ import {FIRST_PANORAMAS, ROOM_LIFE, firstPanoramas, lifeAspect, lifeFeather, lif
 type Entry = Record<string, unknown> & {id: string; source: Record<string, unknown>};
 const register = JSON.parse(readFileSync(new URL('../data/scene-rooms.json', import.meta.url), 'utf8')) as {rooms: Entry[]};
 const {rooms, problems} = readRegister(register);
-const ROOM_SOUNDS = ['salong', 'panorama', 'la', 'skog', 'hall']; // RoomSound of src/lab-sound.ts
+const ROOM_SOUNDS = ['salong', 'panorama', 'la', 'skog', 'hall']; // RoomSound of src/sound.ts
 const URLS = {panorama: 'assets/scene/panorama-vegas.jpg', la: 'assets/scene/panorama-la.jpg', skog: 'assets/scene/panorama-skog.jpg'};
 const pick = (o: object, keys: string[]) => Object.fromEntries(keys.map(k => [k, (o as Record<string, unknown>)[k]]));
 const LOOK = ['id', 'blur', 'exposure', 'turn', 'mirror', 'air', 'tint', 'light'];

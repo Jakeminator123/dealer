@@ -292,12 +292,12 @@ const overlay = mountOverlay(stage, controls);
 const order: number[] = []; // the seats the chips were laid on, in order, for Ångra
 
 // ── the console's menus (src/game-panel.ts): the room and the dealer, music and sound ──
-// Sound is the sound lab's (src/lab-sound.ts), read the first time a menu is opened; everything is silent until the player
+// Sound is src/sound.ts's (the page Ljud tunes it), read the first time a menu is opened; everything is silent until the player
 // switches something on. panOf: where a seat is heard, left to right.
 type Sound = {unlock(): void; chip(kind: string, options?: object): void; card(kind: string, options?: object): void; ambience(room: string | null): void; music?(track: string | null): void; set(patch: object): void};
 let sound: Sound | null = null, soundAsked: Promise<void> | null = null;
 const heard = {table: false, ambience: false, track: null as string | null, music: 0.6}, panOf = (seat: number) => (seat - 4) / 3 * 0.8;
-const loadSound = () => soundAsked ??= import('./lab-sound.ts').then((m: {createSound(): Sound; MUSIC?: {id: string; label: string; note: string}[]}) => { sound = m.createSound(); sound.set({music: heard.music}); panel.set({tracks: m.MUSIC ?? []}); }).catch(() => {});
+const loadSound = () => soundAsked ??= import('./sound.ts').then((m: {createSound(): Sound; MUSIC?: {id: string; label: string; note: string}[]}) => { sound = m.createSound(); sound.set({music: heard.music}); panel.set({tracks: m.MUSIC ?? []}); }).catch(() => {});
 const withSound = (act: (s: Sound) => void) => void loadSound().then(() => { if (sound) { sound.unlock(); act(sound); } });
 const panel = mountPanel(overlay.root.querySelector<HTMLElement>('.go-bar')!, ROOMS, DEALERS, {
   open() { void loadSound(); },

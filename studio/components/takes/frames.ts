@@ -42,7 +42,7 @@ function once(video: HTMLVideoElement, name: string, ms: number): Promise<void> 
   });
 }
 
-/** The time to seek to for a frame, as the lab does it (src/lab-ui.ts frameTime): just past the frame's start. */
+/** The time to seek to for a frame: just past the frame's start. */
 export const frameTime = (frame: number, fps: number) => (frame + 0.001) / fps;
 
 /** Widths stills are made in, so thumbnails of nearly the same size share one. */

@@ -1,7 +1,7 @@
 "use client";
 
 // The clip bank for every view, as one dealer's: one provider in the shell reads /api/clip-bank on start and again every 4 s
-// while the tab is visible (as the old lab does), and builds each dealer's graph with the lab's own buildGraph only when the
+// while the tab is visible, and builds each dealer's graph with the lab's own buildGraph only when the
 // answer changed. When nothing changed, the same objects are kept, so a view that reads useBank() does not render again every 4 s.
 // graph is the chosen dealer's (lib/dealer.ts: the address's ?dealer=, a take the address names, the remembered choice, else
 // the first dealer), so every view that reads it shows that dealer's takes; the rail's switch (setDealer) changes it for all of them.

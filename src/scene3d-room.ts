@@ -33,7 +33,7 @@ const FLOOR = -0.92, CEILING = 3.15; // dealer metres relative to the felt
 // while the hall dims a little (Las Vegas), or a cloud that dims the whole room.
 export type Panorama = {id: string; file: string; blur: number; exposure: number; turn: number; mirror: boolean; air: 'dust' | 'leaves'; tint: {back: number[]; front: number[]}; light: 'neon' | 'cloud'};
 // The rest of an entry is for the pages: a Swedish label and note, the room sound it is heard with (a RoomSound of
-// src/lab-sound.ts), whether the game offers it (a new room is tried in the lab until Jakob lets it into the game), and
+// src/sound.ts), whether the game offers it (a new room is tried in the lab until Jakob lets it into the game), and
 // whether it is a photograph or a generated picture. Its provenance (size, bytes, sha256, source, author, licence) is for people and the test.
 export type RegisterRoom = Panorama & {label: string; note: string; sound: string; game: boolean; kind: 'photo' | 'generated'; author: string; licence: string; page: string | null};
 // The first three panoramas as the scene had them before the register, for a page that gives none (the register's entries

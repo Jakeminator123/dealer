@@ -150,9 +150,8 @@ export function scaleCards(plan: PlacementPlan, view: View, factor: number): { p
  }
  return {plan:next,limited};
 }
-// ── Edits of a plan, shared by every page that changes one (the studio's Placering view; the old lab has its own copy inline) ──
-// Each returns a new plan and leaves the given one alone. The rules are the old lab's (src/lab-ui.ts): a place that is moved,
-// turned or resized is marked unchecked in that view, its outline is kept inside the picture, and a card's sides and TURN agree.
+// ── Edits of a plan, shared by every page that changes one (the studio's Placering view) ──
+// Each returns a new plan and leaves the given one alone. The rules: a place that is moved, turned or resized is marked unchecked in that view, its outline is kept inside the picture, and a card's sides and TURN agree.
 /** A card place (P1.C1 … D.C2) or the shoe's take-off point. */
 export type Place = string;
 export const SHOE = 'shoe';

@@ -2,7 +2,7 @@
 
 // <AllTakes graph={graph} onOpen={(id) => …} />: every take, for looking something up: filters by verdict (several at
 // once), "Dömda åt dig" (the takes the main agent and a reviewer judged for him, which are not in his queue) and seat,
-// then the takes in dealing order under the old lab's headings. A card opens the take large for a
+// then the takes in dealing order under their seat's heading (Ingång, P1 … P7, Dealern, Utgång och vila). A card opens the take large for a
 // decision; its ⤢ button opens the film over the whole window (FilmViewer, ‹ › through the list as filtered).
 import { useMemo, useState } from "react";
 import type { Graph } from "../../../src/clip-graph.ts";

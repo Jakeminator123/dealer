@@ -125,7 +125,7 @@ function SheetBody({
       {edge.takes.length ? <DecisionHelp edge={edge.id} className="-mt-2 px-0.5" /> : null}
       {edge.takes.length === 0 ? (
         <EmptyState compact title="Ingen tagning ännu">
-          {edge.shares ? "Kortet delar platsens film och behöver ingen egen." : "Det finns ingen tagning av det här steget. Ett jobbutkast finns i gamla labbet."}
+          {edge.shares ? "Kortet delar platsens film och behöver ingen egen." : "Det finns ingen tagning av det här steget. Den beställs i Beställ."}
         </EmptyState>
       ) : null}
       {sections.map(({ key, title, takes }) =>

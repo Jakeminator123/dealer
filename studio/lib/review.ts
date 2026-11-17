@@ -1,5 +1,4 @@
-// What Granska and Jämför need from the bank: the takes waiting for Jakob in dealing order and grouped as the old lab
-// groups them (src/lab-ui.ts rvKey, rvGroup), the take after a decision, the edges where there is a choice to make, the
+// What Granska and Jämför need from the bank: the takes waiting for Jakob in dealing order and grouped by seat, the take after a decision, the edges where there is a choice to make, the
 // pair a comparison starts from and the facts that differ, and the filters of the list of every take.
 // Pure: no DOM, no network; tests in studio/tests/review.test.ts.
 import { hubOf, playable, type Edge, type Graph, type Take } from "../../src/clip-graph.ts";
@@ -16,7 +15,7 @@ type EdgeLike = Pick<Edge, "id" | "kind" | "target" | "to" | "experiment">;
 export type GranskaPart = "filmer" | "prov";
 export const partOf = (params: { get(name: string): string | null }): GranskaPart => (params.get("vy") === "prov" || params.get("prov") ? "prov" : "filmer");
 
-// ── Dealing order and groups (as the old lab) ──────────────────────────────
+// ── Dealing order and groups ──────────────────────────────────────────────
 /** The card an edge is about; an experiment is filed with the card it deals or leaves. */
 export const cardOf = (edge: Pick<Edge, "id" | "target">): string | null => edge.target ?? /(?:P[1-7]|D)\.C[1-3]/.exec(edge.id)?.[0] ?? null;
 

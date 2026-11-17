@@ -2,15 +2,15 @@
 
 // The online copy (lib/mode.ts) says what it is. <CopyStrip /> is a slim line at the top of the view's column (the shell
 // puts it there, above #innehall, so it takes its own room and never lies over a view's header): "Kopia från 12 nov
-// 21:40 · inget här går att ändra". <SnapshotBanner /> (in app/layout.tsx) hides every link to the old lab, which the copy
-// does not have (the rail's "Gamla labbet", the stand-ins' buttons): those pages write. In the lab both render nothing.
+// 21:40 · inget här går att ändra". <SnapshotBanner /> (in app/layout.tsx) hides every link to the pages beside the studio
+// (the 3D page, Ljud, Modeller), which the copy does not have. In the lab both render nothing.
 import { Lock } from "lucide-react";
 import { useEffect, useState } from "react";
 import { isSnapshot, readMeta, swedishMoment } from "../../lib/mode.ts";
 
 export function SnapshotBanner() {
   if (!isSnapshot) return null;
-  return <style>{'a[href="/lab.html"],a[href^="/lab.html?"]{display:none!important}'}</style>;
+  return <style>{'a[href^="/scene3d.html"],a[href^="/props.html"],a[href^="/sound.html"]{display:none!important}'}</style>;
 }
 
 export function CopyStrip() {

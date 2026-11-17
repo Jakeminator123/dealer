@@ -7,7 +7,7 @@ import {
   MUSIC, MUSIC_IDS, MUSIC_RECIPES, TRACKS, SCALES, chordOf, chordTones, chordColours, voicingTones, voiceLead, bassRoots, approachNote, walkLine, phraseSlots, swungBeat,
   createComposer, renderMusicNote, renderPad, musicRate, midiToHz, pcOf, powerSpectrum,
   type ChipHit, type ChipVoice, type OneShot, type AmbienceEvent, type MusicNote, type MusicPart,
-} from '../src/lab-sound.ts';
+} from '../src/sound.ts';
 
 const RATE = 48000;
 const median = (values: number[]) => { const a = [...values].sort((x, y) => x - y); return a[Math.floor(a.length / 2)]; };

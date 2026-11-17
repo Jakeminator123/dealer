@@ -16,7 +16,8 @@
 //   colours, text-2xs…2xl, rounded-sm/md/lg/xl). Brass is the one accent: the main action, the active view, focus, Primär.
 //   Media first and large; chrome quiet. All text Swedish and short. cn() merges classes; className overrides defaults.
 // - Links: next/link with absolute app paths ("/karta/"), never a relative or "#…" href (the page has <base href="/">);
-//   a link that looks like a button: className={buttonClasses({variant, size})}. The old lab: a plain <a href="/lab.html">.
+//   a link that looks like a button: className={buttonClasses({variant, size})}. A page outside the app (the 3D page,
+//   Ljud, Modeller): a plain <a href="/scene3d.html">.
 export { cn } from "./cn";
 export { Button, buttonClasses, type ButtonProps, type ButtonVariant, type ButtonSize } from "./Button";
 export { IconButton } from "./IconButton";

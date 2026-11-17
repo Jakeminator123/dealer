@@ -1,7 +1,7 @@
 "use client";
 
 // <QueueList items={queue} current={id} onOpen={(id) => …} />: the narrow list beside the take under review: every take
-// that waits for Jakob, grouped as the old lab groups them, each with a still and its chip; the ones he decided in this
+// that waits for Jakob, grouped by seat, each with a still and its chip; the ones he decided in this
 // sitting stay, ticked. The open one is marked in brass.
 import { Check } from "lucide-react";
 import { useEffect, useRef } from "react";

@@ -18,9 +18,9 @@
         {
           "id": "pamela-keystone-v5-kropp",
           "role": "keystone",
-          "name": "Kropp v5 (gamla labbet)",
+          "name": "Kropp v5 (arkivet)",
           "path": "assets/keystones/pamela-v5-kropp/keystone.png",
-          "note": "Närmast en keystone, men bara 1536 × 1024. Gamla labbet kallar den keystone-candidate.",
+          "note": "Närmast en keystone, men bara 1536 × 1024. Arkivet kallar den keystone-candidate.",
           "source": {
             "from": "gamla labbet, bildgenererad; kopia ur arkivet på D:, se receipt.json",
             "when": "2026-11-08"
@@ -29,9 +29,9 @@
         {
           "id": "pamela-keystone-v4-vila",
           "role": "keystone",
-          "name": "Vila v4 (gamla labbet)",
+          "name": "Vila v4 (arkivet)",
           "path": "assets/keystones/pamela-v4-vila/keystone.png",
-          "note": "Förlagan till gamla labbets vilobild, 1536 × 1024. Ur den och kropp v5 gjordes vila- och redo-station och V6:s råfilmer.",
+          "note": "Förlagan till arkivets vilobild, 1536 × 1024. Ur den och kropp v5 gjordes vila- och redo-station och V6:s råfilmer.",
           "source": {
             "from": "gamla labbet, bildgenererad; kopia ur arkivet på D:, se receipt.json",
             "when": "2026-11-08"
@@ -266,11 +266,11 @@
         {
           "id": "pamela-gamla-vila-kort-p4",
           "role": "ankare-1",
-          "name": "Vila, kort P4 (gamla labbet)",
+          "name": "Vila, kort P4 (arkivet)",
           "path": "assets/motions/pamela-p4-c1-return-idle-calm-01/last.png",
           "card": "P4.C1",
           "node": "IDLE",
-          "note": "Gamla labbets vilobild med kortet på P4; samma fil som sista bilden i pamela-p4-c1-return-idle-calm-01. Grunden för alla bilder vila med kort ovan.",
+          "note": "Arkivets vilobild med kortet på P4; samma fil som sista bilden i pamela-p4-c1-return-idle-calm-01. Grunden för alla bilder vila med kort ovan.",
           "source": {
             "from": "gamla labbet",
             "when": "2026-11-10"
@@ -279,7 +279,7 @@
         {
           "id": "pamela-gamla-vila-station",
           "role": "ankare-1",
-          "name": "Vila-station (gamla labbet)",
+          "name": "Vila-station (arkivet)",
           "path": "assets/sources/pamela-vila-station/station.png",
           "node": "IDLE",
           "state": "ersatt",
@@ -435,11 +435,11 @@
         {
           "id": "pamela-gamla-nyp-kort-p4",
           "role": "ankare-2.1",
-          "name": "Nyp, kort P4 (gamla labbet)",
+          "name": "Nyp, kort P4 (arkivet)",
           "path": "assets/motions/pamela-p4-c1-return-ready-calm-01/last.png",
           "card": "P4.C1",
           "node": "READY",
-          "note": "Gamla labbets redo-bild med kortet på P4; samma fil som sista bilden i pamela-p4-c1-return-ready-calm-01.",
+          "note": "Arkivets redo-bild med kortet på P4; samma fil som sista bilden i pamela-p4-c1-return-ready-calm-01.",
           "source": {
             "from": "gamla labbet",
             "when": "2026-11-10"
@@ -448,7 +448,7 @@
         {
           "id": "pamela-gamla-redo-station",
           "role": "ankare-2.1",
-          "name": "Redo-station (gamla labbet)",
+          "name": "Redo-station (arkivet)",
           "path": "assets/sources/pamela-redo-station/station.png",
           "node": "READY",
           "state": "ersatt",
@@ -2390,11 +2390,11 @@
         {
           "id": "pamela-p1-giv-keyframes-02-kalla",
           "role": "arbetsmaterial",
-          "name": "P1-giv (gamla labbet), grund för landningsankare",
+          "name": "P1-giv (arkivet), grund för landningsankare",
           "path": "assets/sources/pamela-p1-giv-keyframes-02/original.mp4",
           "still": 92,
           "fps": 30,
-          "note": "Gamla labbets P1-giv. Landningsankarna för P1 (pamela-p1-c1-plan-land-02, -03) byggdes ur en ruta här (data/clip-jobs.json, base).",
+          "note": "Arkivets P1-giv. Landningsankarna för P1 (pamela-p1-c1-plan-land-02, -03) byggdes ur en ruta här (data/clip-jobs.json, base).",
           "source": {
             "from": "gamla labbet; kopia ur arkivet på D:, se receipt.json",
             "when": "2026-11-10"
@@ -2403,11 +2403,11 @@
         {
           "id": "pamela-p2-mid-arc-02-kalla",
           "role": "arbetsmaterial",
-          "name": "P2-giv (gamla labbet), grund för landningsankare",
+          "name": "P2-giv (arkivet), grund för landningsankare",
           "path": "assets/sources/pamela-p2-mid-arc-02/original.mp4",
           "still": 104,
           "fps": 30,
-          "note": "Gamla labbets P2-giv. Landningsankaret för P2 byggdes ur en ruta här (data/clip-jobs.json, base).",
+          "note": "Arkivets P2-giv. Landningsankaret för P2 byggdes ur en ruta här (data/clip-jobs.json, base).",
           "source": {
             "from": "gamla labbet; kopia ur arkivet på D:, se receipt.json",
             "when": "2026-11-10"
@@ -2416,11 +2416,11 @@
         {
           "id": "pamela-p3-c2-mid-01-kalla",
           "role": "arbetsmaterial",
-          "name": "P3-giv (gamla labbet), grund för landningsankare",
+          "name": "P3-giv (arkivet), grund för landningsankare",
           "path": "assets/sources/pamela-p3-c2-mid-01/original.mp4",
           "still": 117,
           "fps": 30,
-          "note": "Gamla labbets P3-giv. Landningsankaret för P3 byggdes ur en ruta här (data/clip-jobs.json, base).",
+          "note": "Arkivets P3-giv. Landningsankaret för P3 byggdes ur en ruta här (data/clip-jobs.json, base).",
           "source": {
             "from": "gamla labbet; kopia ur arkivet på D:, se receipt.json",
             "when": "2026-11-10"
@@ -2429,11 +2429,11 @@
         {
           "id": "pamela-p6-c2-mid-01-kalla",
           "role": "arbetsmaterial",
-          "name": "P6-giv (gamla labbet), grund för landningsankare",
+          "name": "P6-giv (arkivet), grund för landningsankare",
           "path": "assets/sources/pamela-p6-c2-mid-01/original.mp4",
           "still": 84,
           "fps": 30,
-          "note": "Gamla labbets P6-giv. Landningsankaret för P6 byggdes ur en ruta här (data/clip-jobs.json, base).",
+          "note": "Arkivets P6-giv. Landningsankaret för P6 byggdes ur en ruta här (data/clip-jobs.json, base).",
           "source": {
             "from": "gamla labbet; kopia ur arkivet på D:, se receipt.json",
             "when": "2026-11-10"
@@ -6477,9 +6477,9 @@
     {
       "id": "plan",
       "name": "Jakobs kortplan",
-      "decides": "Var korten ligger på bordet, plats för plats. Hans egen, sparas i gamla labbets Placering.",
+      "decides": "Var korten ligger på bordet, plats för plats. Hans egen, sparas i Placering.",
       "file": "placements/default.json",
-      "link": "/lab.html"
+      "link": "/placering/"
     },
     {
       "id": "standard",

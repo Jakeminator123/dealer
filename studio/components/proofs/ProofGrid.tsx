@@ -2,8 +2,8 @@
 
 // <ProofGrid proofs={list} named={named} />: the proof folders newest first as cards (a still, the title, how many films
 // and pictures, the files' verdicts counted, how many takes it names wait for Jakob), a search field, and a last line to
-// the old lab's film library.
-import { ArrowUpRight, Film, Search } from "lucide-react";
+// the proof Filmbiblioteket (V6 and the older films) when it is there.
+import { ArrowRight, Film, Search } from "lucide-react";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import type { Proof } from "../../lib/api.ts";
@@ -12,6 +12,9 @@ import { PROOF_VERDICT_LABEL, splitLabel, type ProofVerdict } from "../../lib/ve
 import { EmptyState, TextField, cn } from "../ui";
 import { ProofStill } from "./ProofStill";
 import { waitingIn, type NamedTakes } from "./ProofTakes";
+
+// The proof folder that holds V6 and the older films (assets/proofs/filmbiblioteket/, made from data/library.json).
+const LIBRARY = "filmbiblioteket";
 
 const TALLY: { verdict: ProofVerdict; sign: string; tone: string }[] = [
   { verdict: "ok", sign: "✓", tone: "text-[#6cc595]" },
@@ -93,9 +96,11 @@ export function ProofGrid({ proofs, named }: { proofs: readonly Proof[]; named: 
           Prova ett annat ord.
         </EmptyState>
       )}
-      <a href="/lab.html" className="inline-flex w-fit items-center gap-1.5 text-sm text-dim transition-colors hover:text-ink">
-        Äldre filmer finns i gamla labbets filmbibliotek <ArrowUpRight className="size-4" />
-      </a>
+      {proofs.some((p) => p.id === LIBRARY) ? (
+        <Link href={proofHref(LIBRARY)} className="inline-flex w-fit items-center gap-1.5 text-sm text-dim transition-colors hover:text-ink">
+          V6 och de äldre filmerna finns i Filmbiblioteket <ArrowRight className="size-4" />
+        </Link>
+      ) : null}
     </div>
   );
 }

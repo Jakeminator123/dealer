@@ -209,7 +209,7 @@ export const no3d = (round: Round | null): string | null => (isReference(round) 
 
 // ── A take in its context ───────────────────────────────────────────────────
 /**
- * The steps that play one take where it belongs, the old lab's rule (src/lab-ui.ts kbPlayPair): a deal with the return
+ * The steps that play one take where it belongs: a deal with the return
  * that continues it (back to A2.1 when one fits there, else to A1; the bank's own rule picks which), a return after the deal
  * it continues (the main deal when that one fits, else the newest that does), anything else on its own. The take is locked.
  */
@@ -267,8 +267,7 @@ export function addressOf(round: Round | null, view: View): string {
 
 // ── Places and words ────────────────────────────────────────────────────────
 /**
- * Each card's centre in film pixels from Jakob's placement plan, as the old lab hands it to resolveRound (src/lab-ui.ts
- * kbPlaces): a seat's second card then gets its shift from the first card's film. null without a plan.
+ * Each card's centre in film pixels from Jakob's placement plan, as resolveRound takes it: a seat's second card then gets its shift from the first card's film. null without a plan.
  */
 export function placesOf(plan: Pick<PlacementPlan, "targets"> | null | undefined): Record<string, { x: number; y: number }> | null {
   if (!plan?.targets) return null;

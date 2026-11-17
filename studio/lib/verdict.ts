@@ -143,7 +143,7 @@ export function primarCount(graph: Graph): { set: number; total: number } {
 
 // ── Proofs ──────────────────────────────────────────────────────────────────
 // A proof file's verdict (assets/proofs/<id>/proof.json: verdicts[file] = ok | remarks | failed | unreviewed), or, when
-// the proof does not state one, read from the words of its label, as the old lab did (src/lab-ui.ts pfVerdict).
+// the proof does not state one, read from the words of its label.
 export type ProofVerdict = "ok" | "remarks" | "failed" | "unreviewed";
 export const PROOF_VERDICT_LABEL: Record<ProofVerdict, string> = { ok: "Användbar", remarks: "Med anmärkningar", failed: "Underkänd", unreviewed: "Inte granskad" };
 

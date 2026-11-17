@@ -149,8 +149,8 @@ export default function Kit() {
       title="Komponenter"
       status={<BankStatus />}
       actions={
-        <a href="/lab.html" className={buttonClasses({ variant: "quiet", size: "sm" })}>
-          Gamla labbet <ArrowUpRight />
+        <a href="/scene3d.html" className={buttonClasses({ variant: "quiet", size: "sm" })}>
+          3D-sidan <ArrowUpRight />
         </a>
       }
     >
