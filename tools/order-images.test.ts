@@ -133,7 +133,12 @@ test('a card size for one order: the last picture draws the card 150 % about its
   assert.deepEqual(big.centre, plain.centre, 'about its own centre');
   const ratio = big.measured!.box[0] / plain.measured!.box[0];
   assert.ok(Math.abs(ratio - 1.5) < 0.06, `drawn ${ratio.toFixed(3)} × as wide`);
-  assert.ok(big.measuredOffsetPx! < 2);
+  // drawn where its outline is: the drawn pixels' middle against the outline's area middle (with the plan's shape, 87 % since
+  // 2026-11-18, the far edge is narrower, so the area's middle lies nearer the near edge than the corners' mean: 2 px here)
+  const q = big.quad, cross = q.map((p, i) => p[0] * q[(i + 1) % 4][1] - q[(i + 1) % 4][0] * p[1]), area = cross.reduce((s, c) => s + c, 0) / 2;
+  const middle = [0, 1].map((k) => q.reduce((s, p, i) => s + (p[k] + q[(i + 1) % 4][k]) * cross[i], 0) / (6 * area));
+  const off = Math.hypot(big.measured!.centre[0] - middle[0], big.measured!.centre[1] - middle[1]);
+  assert.ok(off < 1.5, `the drawn card's middle is ${off.toFixed(2)} px from its outline's`);
   assert.equal(JSON.stringify(plan), before);
 });
 

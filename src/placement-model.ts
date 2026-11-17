@@ -21,18 +21,14 @@ export const TURN_AXES: readonly TurnAxis[] = ['FREE','LONG_EDGE'];
 // Plans saved before grip, turnAt or flipAxis existed lack them; validatePlan fills these in when a plan is read.
 export const INTENT_DEFAULTS: Readonly<Pick<Intent,'grip'|'turnAt'|'flipAxis'>> = Object.freeze({grip:'PINCH',turnAt:'AIR',flipAxis:'FREE'});
 export type Target = { geometry: Record<View, Geometry>; intent: Intent; material: { bend: number; gloss: number } };
-// perspective: on "Plant bord" the cards are real cards seen through one lens of the table's family (src/table-lens.ts), and
-// perspective is how much a card at seat 4 narrows toward its far edge under it (far over near, 0.85 to 0.96); absent, the
-// real camera's (0.956). One number for the whole plan (Jakob 2026-11-17: "Om alla kort är exakt lika stora, blir de väldigt
-// tvådimensionella"); the game does not read it yet.
+// perspective: on "Plant bord" every card is a real card at its place through the real camera (size and place), and
+// perspective is only its shape: how much narrower its far edge is drawn, as the share at seat 4 (far over near, 0.80 to
+// 0.96; src/card-plan.ts). Absent, seat 4's own stored taper (P4.C1's, 0.87 in his plan of 11 Nov). One number for the whole
+// plan (Jakob 2026-11-17/18: depth in the shape, "brist på djup i bordet", but sizes that agree with the shoe's card); the
+// game does not read it yet.
 export type TableProjection = { mode:'flat'|'individual'; heading:number; perspective?:number };
-/**
- * The table's perspective on "Plant bord": its limits and step. 0.96 is the real camera (0.956); his earlier plan's plane
- * narrowed every card to 0.87; below 0.85 the lens holding seat 4's card comes so close to the felt that the dealer's cards
- * shrink to half and less (V6's 0.74 draws them a quarter as wide, and V6's look is larger cards from another camera, which
- * Efterarbete sets).
- */
-export const TABLE_PERSPECTIVE = { min: .85, max: .96, step: .01 } as const;
+/** The table's perspective on "Plant bord": its limits and step. 0.96 is a real card's own shape (the real camera's 0.956). */
+export const TABLE_PERSPECTIVE = { min: .80, max: .96, step: .01 } as const;
 export type PlacementPlan = { schemaVersion: 1; id: 'pamela-table'; space: 'image-normalized-bottom-up'; updatedAt: string | null; shoe: Record<View, Point>; targets: Record<string, Target>; tableProjection?:TableProjection };
 export const PLANE_HEADINGS=[-90,-45,-15,0,15,45,90] as const;
 export const VIEWS = { native: { width: 1762, height: 1174, label: 'Dator', profileId: 'v6-native', background: 'assets/lab/native.jpg' }, portrait: { width: 1080, height: 1920, label: 'Mobil', profileId: 'v6-portrait', background: 'assets/lab/portrait.jpg' } } as const;

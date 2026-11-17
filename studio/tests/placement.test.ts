@@ -4,9 +4,9 @@ import assert from "node:assert/strict";
 import { buildGraph, type BankData } from "../../src/clip-graph.ts";
 import { NEUTRAL_BACKDROP, SHOE, VIEWS, defaultPlan, editPlace, quad, sequence, toPixels, validatePlan, INTENT_DEFAULTS, type Geometry } from "../../src/placement-model.ts";
 import {
-  GREEN_FILM, HISTORY, PLACES, START_PLACE, afterSave, amend, backdropForView, bankFilms, begin, changedPlaces, commit, decimal, defaultStill, editFlip, end, filmGoesTo, filmView, flipOf,
-  gameDealNotes, isDirty, isStill, libraryFilms, motionSteps, nudged, openDraft, parseDecimal, placeCode, placeFromCode, placeName,
-  quadSize, readPlacementAddress, shownBackdrop, signature, sizeFromCorner, stillPath, stillWord, stillsOf, taperFromCorner, toLocal, toSaved, turnHandle, undo, type Film,
+  GREEN_FILM, HISTORY, PLACES, PLAN_VIEW, START_PLACE, STILL, STILL_WORD, afterSave, amend, bankFilms, begin, changedPlaces, commit, decimal, editFlip, end, filmGoesTo, flipOf,
+  gameDealNotes, isDirty, isStill, libraryFilms, lying, motionSteps, nudged, openDraft, parseDecimal, placeCode, placeFromCode, placeName,
+  quadSize, readPlacementAddress, shownBackdrop, signature, sizeFromCorner, taperFromCorner, toLocal, toSaved, turnHandle, underFilms, undo, type Film,
 } from "../lib/placement.ts";
 import { FLIP_AXES, FLIP_LABEL } from "../../src/order-model.ts";
 import { SEAT_HUB } from "../../src/game-director.ts";
@@ -167,39 +167,40 @@ test("where the game deals a card from anchor 2.2 while the plan says nyp, Place
   assert.deepEqual(gameDealNotes(dragged, "P6.C1"), [], "a plan that drags there agrees with the game");
 });
 
-test("Placering's old address: view, place and a film with its frame or a still (it leads to Bordet's Kortplan)", () => {
+test("Placering's old address: place and a film with its frame or Siluett (it leads to Bordet's Kortplan); an old vy=mobil is not read", () => {
   const none = { get: () => null };
-  assert.deepEqual(readPlacementAddress(none), { view: "native", place: START_PLACE, backdrop: null, frame: 0 });
+  assert.deepEqual(readPlacementAddress(none), { place: START_PLACE, backdrop: null, frame: 0 });
   const p = new URLSearchParams("vy=mobil&plats=dc1&bakgrund=pamela-p4-c2-source-turn&ruta=40&robot=1");
   const a = readPlacementAddress(p);
-  assert.deepEqual(a, { view: "portrait", place: "D.C1", backdrop: GREEN_FILM, frame: 40 });
+  assert.deepEqual(a, { place: "D.C1", backdrop: GREEN_FILM, frame: 40 });
   assert.equal(readPlacementAddress(new URLSearchParams("bakgrund=../x&ruta=-3")).backdrop, null);
   assert.equal(readPlacementAddress(new URLSearchParams("plats=zz")).place, START_PLACE);
   assert.equal(readPlacementAddress(new URLSearchParams("bakgrund=v6")).backdrop, "v6");
 });
 
-test("under the cards: Dator opens on the neutral backdrop, Mobil on its V6 picture; a film or a still holds where the view has it", () => {
-  const film = (id: string, width: number, height: number): Film => ({ id, title: id, path: `assets/motions/${id}/source.mp4`, width, height, frames: 90, fps: 30, group: "bank", start: 0, target: null });
-  const films = [film("pamela-p4-c1-plan-deal-02", 1764, 1174), film("v6-portrait-reference", 1080, 1920)];
-  assert.deepEqual(stillsOf("native"), ["neutral", "v6"]);
-  assert.deepEqual(stillsOf("portrait"), ["v6"]);
-  assert.deepEqual(shownBackdrop("native", null, films), { kind: "still", still: "neutral", path: NEUTRAL_BACKDROP.native });
-  assert.deepEqual(shownBackdrop("portrait", null, films), { kind: "still", still: "v6", path: VIEWS.portrait.background });
-  assert.deepEqual(shownBackdrop("native", "v6", films), { kind: "still", still: "v6", path: VIEWS.native.background });
-  assert.deepEqual(shownBackdrop("portrait", "neutral", films), { kind: "still", still: "v6", path: VIEWS.portrait.background });
-  assert.deepEqual(shownBackdrop("native", null, films, true), { kind: "still", still: "v6", path: VIEWS.native.background }, "the neutral picture is missing here");
-  assert.equal(shownBackdrop("native", "pamela-p4-c1-plan-deal-02", films).kind, "film");
-  assert.equal(shownBackdrop("native", "v6-portrait-reference", films).kind, "still", "a standing film is no film for Dator");
-  assert.equal(shownBackdrop("native", "pamela-p4-c1-plan-deal-02", []).kind, "still", "before the films are read: the default");
-  // changing the view
-  assert.equal(backdropForView("portrait", "neutral", films), null);
-  assert.equal(backdropForView("portrait", "v6", films), "v6");
-  assert.equal(backdropForView("portrait", "pamela-p4-c1-plan-deal-02", films), null);
-  assert.equal(backdropForView("native", "pamela-p4-c1-plan-deal-02", films), "pamela-p4-c1-plan-deal-02");
-  assert.equal(defaultStill("native"), "neutral");
-  assert.deepEqual([stillWord("neutral"), stillWord("v6")], ["Siluett", "V6-bild"]);
-  assert.ok(isStill("v6") && isStill("neutral") && !isStill(GREEN_FILM));
-  assert.equal(stillPath("neutral", "portrait"), VIEWS.portrait.background);
+test("under the cards: Siluett, or a film of the chosen dealer's; never the V6 picture, another dealer's film or a standing film (Jakob 2026-11-18)", () => {
+  const film = (id: string, width: number, height: number, group: Film["group"] = "bank"): Film => ({ id, title: id, path: `assets/motions/${id}/source.mp4`, width, height, frames: 90, fps: 30, group, start: 0, target: null });
+  const paow = [film("paow-p4-c1-deal-01", 1764, 1174)];
+  const pamela = [film("pamela-p4-c1-plan-deal-02", 1764, 1174)];
+  const library = [film(GREEN_FILM, 1764, 1174, "older"), film("v6-native-reference", 1762, 1174, "older"), film("v6-portrait-reference", 1080, 1920, "older")];
+  const siluett = { kind: "still", still: STILL, path: NEUTRAL_BACKDROP.native };
+  assert.equal(PLAN_VIEW, "native", "the plan is edited once, in the bank's picture");
+  // Paow chosen: her own films, and none of the library's (all of them Pamela's)
+  const forPaow = underFilms("paow", paow, library);
+  assert.deepEqual(forPaow.map((f) => f.id), ["paow-p4-c1-deal-01"]);
+  assert.deepEqual(shownBackdrop(null, forPaow), siluett, "nothing chosen: Siluett");
+  for (const asked of ["v6", GREEN_FILM, "v6-native-reference", "pamela-p4-c1-plan-deal-02"]) assert.deepEqual(shownBackdrop(asked, forPaow), siluett, `${asked} is not Paow's`);
+  assert.equal(shownBackdrop("paow-p4-c1-deal-01", forPaow).kind, "film");
+  // Pamela chosen: her takes and the library's lying films; a standing film never
+  const forPamela = underFilms("pamela", pamela, library);
+  assert.deepEqual(forPamela.map((f) => f.id), ["pamela-p4-c1-plan-deal-02", GREEN_FILM, "v6-native-reference"]);
+  assert.deepEqual(shownBackdrop(null, forPamela), siluett, "Pamela too opens on Siluett");
+  assert.equal(shownBackdrop(GREEN_FILM, forPamela).kind, "film");
+  assert.deepEqual(shownBackdrop("v6-portrait-reference", forPamela), siluett);
+  assert.equal(shownBackdrop("pamela-p4-c1-plan-deal-02", []).kind, "still", "before the films are read: Siluett");
+  assert.equal(STILL_WORD, "Siluett");
+  assert.ok(isStill("neutral") && !isStill("v6") && !isStill(GREEN_FILM));
+  assert.deepEqual([film("a", 1764, 1174), film("b", 1080, 1920)].map(lying), [true, false]);
 });
 
 
@@ -249,7 +250,7 @@ test("films to lay the cards over: the bank's current takes, main take first, a 
     { path: "assets/y.mp4" },
   ]);
   assert.deepEqual(older.map((f) => f.title), ["V6 · dator", "V6 · mobil", "P4 C2 grön"]);
-  assert.deepEqual(older.map(filmView), ["native", "portrait", "native"]);
+  assert.deepEqual(older.map(lying), [true, false, true]);
   assert.equal(older[1].fps, 30);
 });
 

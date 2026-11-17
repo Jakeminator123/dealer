@@ -4,7 +4,7 @@
 // samma typ av vy, och på högersidan ska man kunna ändra och laborera med detta. Detta ska också vara underlaget för
 // beställning av nya filmer."). One frame for everything: the toolbar on top with the view's menu at its left, the stage as
 // large as the window allows, one column on the right where things are changed. The menu's five parts:
-//   Kortplan     the plan on the picture (the silhouette, a still or a film under the cards), with 1 Var kortet landar and
+//   Kortplan     the plan on the picture (Siluett or a film of the chosen dealer's under the cards), with 1 Var kortet landar and
 //                2 Hur det kommer dit (Placering's Plats, Bordet and Rörelse panels) and 3 Beställ for the chosen card
 //   Beställ      the same picture, with step 3 in the column: the films to order for the chosen card and without a card,
 //                and for the chosen film exactly what goes to Runway (Sends.tsx: the two pictures, the reference film or none,
@@ -25,7 +25,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } fro
 import methodsFile from "../../../data/order-methods.json";
 import { FLIP_LABEL, LANDS_LABEL, type BankFacts, type OrdersAnswer } from "../../../src/order-model.ts";
 import type { MethodRegister } from "../../../src/order-methods.ts";
-import { SHOE, VIEWS, type Place, type View } from "../../../src/placement-model.ts";
+import { SHOE, VIEWS, type Place } from "../../../src/placement-model.ts";
 import { asApiError } from "../../lib/api.ts";
 import type { Ledger } from "../../lib/ledger.ts";
 import type { MediaAnswer } from "../../lib/media.ts";
@@ -34,7 +34,7 @@ import { cardWishes, filmRow, lastOrder, otherWishes, sceneWords, sendsOf, sumWo
 import { useViewContext } from "../../lib/context.ts";
 import { isSnapshot, swedishMoment } from "../../lib/mode.ts";
 import { createOrder, getOrders } from "../../lib/orders.ts";
-import { GRIP_LABEL, changedPlaces, flipOf, gameDealNotes, placeCode, placeFromCode, placeName } from "../../lib/placement.ts";
+import { GRIP_LABEL, PLAN_VIEW, changedPlaces, flipOf, gameDealNotes, placeCode, placeFromCode, placeName } from "../../lib/placement.ts";
 import { getMedia } from "../material/client.ts";
 import { getLedger } from "../ledger/LedgerView";
 import { OrderView } from "../order/OrderView";
@@ -86,8 +86,8 @@ function writeAddress(mode: Mode, place: Place, queue: boolean) {
     window.history.replaceState(null, "", `${window.location.pathname}?${p.toString()}`);
     return;
   }
-  // Scen's words (the round, the look) belong to the live picture; Kortplan's Mobil keeps vy=mobil.
-  if (!isScene(mode)) for (const key of [...p.keys()]) if (sceneWords.has(key) && key !== "robot" && !(key === "vy" && p.get("vy") === "mobil")) p.delete(key);
+  // Scen's words (the round, the look) belong to the live picture.
+  if (!isScene(mode)) for (const key of [...p.keys()]) if (sceneWords.has(key) && key !== "robot") p.delete(key);
   if (mode === "kortplan") p.delete("lage");
   else p.set("lage", mode);
   if (place === START_PLACE) p.delete("plats");
@@ -333,21 +333,13 @@ function TableBody({
   const showSaved = draft.showing === "saved" && draft.dirty;
   const plan = showSaved ? d.saved : d.plan;
   const editable = !isSnapshot && !draft.saving && !showSaved;
-  // Dator or Mobil in Kortplan; an order uses only Dator, so Beställ shows Dator.
-  const [asked, setAsked] = useState<View>(() => (typeof window !== "undefined" && new URLSearchParams(window.location.search).get("vy") === "mobil" ? "portrait" : "native"));
-  const view: View = mode === "bestall" ? "native" : asked;
-  useEffect(() => {
-    const p = new URLSearchParams(window.location.search);
-    if (view === "portrait") p.set("vy", "mobil");
-    else p.delete("vy");
-    const q = p.toString();
-    window.history.replaceState(null, "", `${window.location.pathname}${q ? `?${q}` : ""}`);
-  }, [view]);
+  // One view: the card plan is edited once, in the bank's picture (PLAN_VIEW; Jakob 2026-11-18: "ingenting skulle göras dubbelt för mobilen").
+  const view = PLAN_VIEW;
   const [allCards, setAllCards] = useState(true);
   const [grid, setGrid] = useState(false);
   const [open, setOpen] = useState<1 | 2 | 3 | 0>(mode === "bestall" ? 3 : 1);
   const [allTable, setAllTable] = useState(false);
-  const under = useUnder(view, place, { backdrop: null, frame: 0 });
+  const under = useUnder(place, { backdrop: null, frame: 0 });
   const paths = usePathPlay(plan);
   const changes = useMemo(() => changedPlaces(d.saved, d.plan), [d]);
   const changed = useMemo(() => new Set<Place>(changes.places), [changes]);
@@ -360,7 +352,7 @@ function TableBody({
     [follow, setPlace],
   );
   const stageArea = useRef<HTMLDivElement>(null);
-  usePlanKeys({ place, view, editable, dirty: draft.dirty, showing: draft.showing, area: stageArea, onEscape: paths.stop });
+  usePlanKeys({ place, editable, dirty: draft.dirty, showing: draft.showing, area: stageArea, onEscape: paths.stop });
 
   // The stage takes the picture's own shape when the column is taller than that (no bands above and below); the list of
   // films takes the height that is left under it.
@@ -412,18 +404,6 @@ function TableBody({
             {paths.run ? "Stoppa" : "Spela kortbanan"}
           </Button>
           <Switch size="sm" checked={paths.halfSpeed} onChange={paths.setHalfSpeed} label="Halv fart" />
-          {mode === "kortplan" ? (
-            <SegmentedControl
-              size="sm"
-              label="Vy"
-              value={view}
-              onChange={(v) => {
-                setAsked(v);
-                under.toView(v);
-              }}
-              options={[{ value: "native", label: "Dator" }, { value: "portrait", label: "Mobil" }]}
-            />
-          ) : null}
           <Select size="sm" aria-label="Under korten" value={under.value} onChange={under.choose} options={under.options} className="w-48 shrink-0" />
           <Switch size="sm" checked={allCards} onChange={setAllCards} label="Alla kort" />
           <Switch size="sm" checked={grid} onChange={setGrid} label="Rutnät" />
@@ -434,7 +414,6 @@ function TableBody({
             <Board
               plan={plan}
               other={showSaved ? d.plan : d.saved}
-              view={view}
               selected={place}
               onSelect={choose}
               editable={editable}
@@ -443,7 +422,6 @@ function TableBody({
               changed={changed}
               backdrop={under.under}
               shoeCard={under.shoeCard}
-              onBackdropMissing={under.onMissing}
               path={paths.path}
               onPhase={paths.setPhase}
               videoRef={under.videoRef}
@@ -462,7 +440,7 @@ function TableBody({
             <h2 className="truncate text-base font-semibold text-ink">{placeName(place)}</h2>
             {changed.has(place) ? <Badge tone="brass">ändrad</Badge> : null}
           </div>
-          <SlotPicker plan={plan} view={view} selected={place} changed={showSaved ? new Set() : changed} onSelect={choose} />
+          <SlotPicker plan={plan} selected={place} changed={showSaved ? new Set() : changed} onSelect={choose} />
           {/* where the game deals the card from anchor 2.2 while the plan says nyp (SEAT_HUB in src/game-director.ts) */}
           {gameDealNotes(plan, place).map((n) => (
             <p key={n} data-game-note className="text-xs text-[#f0b07a]">
@@ -478,11 +456,11 @@ function TableBody({
           ) : (
             <>
               <Step n={1} title="Var kortet landar" summary={where} open={open === 1} onToggle={() => setOpen(open === 1 ? 0 : 1)}>
-                <PlacePanel plan={plan} view={view} id={place} editable={editable} onTable={() => setAllTable(true)} />
+                <PlacePanel plan={plan} id={place} editable={editable} onTable={() => setAllTable(true)} />
                 <button type="button" onClick={() => setAllTable(!allTable)} aria-expanded={allTable} className="w-full border-t border-line px-4 py-2.5 text-left text-2xs font-semibold uppercase tracking-[0.08em] text-faint hover:text-ink">
                   {allTable ? "▾" : "▸"} Alla kort
                 </button>
-                {allTable ? <TablePanel plan={plan} view={view} id={place} editable={editable} /> : null}
+                {allTable ? <TablePanel plan={plan} id={place} editable={editable} /> : null}
               </Step>
               <Step n={2} title="Hur det kommer dit" summary={motion} open={open === 2} onToggle={() => setOpen(open === 2 ? 0 : 2)}>
                 <MotionPanel plan={plan} id={place} editable={editable} lit={paths.run?.id === place ? paths.lit : null} />

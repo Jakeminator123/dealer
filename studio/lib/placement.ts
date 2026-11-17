@@ -2,7 +2,7 @@
 // the handles' arithmetic, numbers with a decimal comma, the view's address, what the cards can be laid over (the neutral
 // backdrop, the V6 picture, the films). The plan's own rules (where a card is drawn, how an edit
 // is made) are src/placement-model.ts. Pure: no DOM, no network; tests in studio/tests/placement.test.ts.
-import { dealHub, isCurrent, playable, takeRole, ROLE_LABEL, type Graph } from "../../src/clip-graph.ts";
+import { DEALER, dealHub, isCurrent, playable, takeRole, ROLE_LABEL, type Graph } from "../../src/clip-graph.ts";
 import { SEAT_HUB } from "../../src/game-director.ts";
 import { ANCHOR_NODE, defaultFlip, seatWords, type FlipAxis } from "../../src/order-model.ts";
 import { NEUTRAL_BACKDROP, SHOE, TARGETS, VIEWS, editIntent, editPlace, motionNodes, sequence, toPixels, type Geometry, type Hand, type Intent, type Place, type PlacementPlan, type Side, type View } from "../../src/placement-model.ts";
@@ -31,7 +31,12 @@ export function placeFromCode(code: string | null | undefined): Place | null {
   return m ? `${m[1]}.C${m[2]}` : null;
 }
 
-export const VIEW_WORD: Record<View, string> = { native: "Dator", portrait: "Mobil" };
+/**
+ * The one view the card plan is edited in: the bank's picture, Dator (Jakob 2026-11-18: "Jag trodde att ingenting skulle göras
+ * dubbelt för mobilen"). The plan file still holds a second view, portrait, that nothing in the lab, the game or an order
+ * reads; validatePlan keeps accepting it and the lab leaves it as it stands.
+ */
+export const PLAN_VIEW: View = "native";
 export const handWord = (h: Hand) => (h === "LH" ? "vänster" : "höger");
 export const sideWord = (s: Side) => (s === "BACK" ? "stängt" : "öppet");
 
@@ -205,46 +210,28 @@ export function gameDealNotes(plan: PlacementPlan, id: Place): string[] {
 }
 
 // ── What lies under the cards ───────────────────────────────────────────────
-// A still of the view or a film. Dator opens on the neutral backdrop (Jakob 2026-11-13: "a neutral picture and not a picture
-// of this woman", on the table the studio uses): the 3D scene's table at its home view with a neutral figure and the bank's
-// shoe, built by tools/placement-backdrop.ts (NEUTRAL_BACKDROP). The V6 picture stays a choice. Mobil has no neutral
-// backdrop (the scene has no home view in the Mobil view's pixels), so it opens on its V6 picture as before.
-export type Still = "neutral" | "v6";
-export const isStill = (value: unknown): value is Still => value === "neutral" || value === "v6";
-const NEUTRAL: Partial<Record<View, string>> = NEUTRAL_BACKDROP;
-/** The stills a view has, its default first. */
-export const stillsOf = (view: View): Still[] => (NEUTRAL[view] ? ["neutral", "v6"] : ["v6"]);
-export const defaultStill = (view: View): Still => stillsOf(view)[0];
-/** The picture of a still in a view (a path from the lab server's root). */
-export const stillPath = (still: Still, view: View): string => (still === "neutral" && NEUTRAL[view]) || VIEWS[view].background;
-/** A still by his word (Ordlista): Siluett (the neutral backdrop), V6-bild. */
-export const stillWord = (still: Still): string => (still === "neutral" ? "Siluett" : "V6-bild");
+// Siluett, the neutral backdrop (Jakob 2026-11-13: "a neutral picture and not a picture of this woman"): the 3D scene's
+// table at its home view with a neutral figure and the bank's shoe, built by tools/placement-backdrop.ts (NEUTRAL_BACKDROP);
+// or a film of the chosen dealer's. Nothing else since 2026-11-18 (Jakob: "Om hon används som referens borde hon rimligtvis
+// göras till silhuett", and "V6-läget är jag skeptisk mot i sin helhet"): the V6 picture left the list, and so did every
+// film of a dealer he has not chosen. Where the silhouette's file is missing the picture stays dark rather than show her.
+export type Still = "neutral";
+export const STILL: Still = "neutral";
+export const isStill = (value: unknown): value is Still => value === STILL;
+/** The still by his word (Ordlista). */
+export const STILL_WORD = "Siluett";
 export type Shown = { kind: "still"; still: Still; path: string } | { kind: "film"; film: Film };
-/**
- * What lies under the cards in a view: the film the address names when it is known and has the view's shape, the still it
- * names when the view has it, else the view's default still. `neutralMissing`: the neutral picture is not on this machine
- * (the lab answered 404), so the V6 picture stands in.
- */
-export function shownBackdrop(view: View, backdrop: string | null, films: readonly Film[], neutralMissing = false): Shown {
+/** What lies under the cards: the film the address names when it is one of `films` (the chosen dealer's), else Siluett. */
+export function shownBackdrop(backdrop: string | null, films: readonly Film[]): Shown {
   const film = backdrop && !isStill(backdrop) ? films.find((f) => f.id === backdrop) : undefined;
-  if (film && filmView(film) === view) return { kind: "film", film };
-  let still: Still = isStill(backdrop) && stillsOf(view).includes(backdrop) ? backdrop : defaultStill(view);
-  if (still === "neutral" && neutralMissing) still = "v6";
-  return { kind: "still", still, path: stillPath(still, view) };
-}
-/** The backdrop a chosen view keeps: a film of the other shape, or a still the view lacks, gives way to its default. */
-export function backdropForView(view: View, backdrop: string | null, films: readonly Film[]): string | null {
-  if (!backdrop) return null;
-  if (isStill(backdrop)) return stillsOf(view).includes(backdrop) ? backdrop : null;
-  const film = films.find((f) => f.id === backdrop);
-  return film && filmView(film) !== view ? null : backdrop;
+  return film ? { kind: "film", film } : { kind: "still", still: STILL, path: NEUTRAL_BACKDROP.native };
 }
 
 // ── The address ─────────────────────────────────────────────────────────────
-// /placering/?vy=mobil&plats=p4c2&bakgrund=<film id | v6 | neutral>&ruta=40: the view, the chosen place, and what to lay the
-// cards over (a film with its frame, or a still). Nothing chosen is the default: Dator, P4C2 (the first place), the
-// view's default still. "robot" belongs to every lab page (src/preview-ui.ts) and is kept as it stands.
-export type PlacementAddress = { view: View; place: Place; backdrop: string | null; frame: number };
+// /placering/?plats=p4c2&bakgrund=<film id | neutral>&ruta=40: the chosen place, and what to lay the cards over (a film with
+// its frame, or Siluett). Nothing chosen is the default: P4C2 (the first place), Siluett. An old link's vy=mobil is not read:
+// the plan has one view. "robot" belongs to every lab page (src/preview-ui.ts) and is kept as it stands.
+export type PlacementAddress = { place: Place; backdrop: string | null; frame: number };
 type Params = { get(name: string): string | null };
 export const START_PLACE: Place = "P4.C2";
 
@@ -252,7 +239,6 @@ export function readPlacementAddress(params: Params): PlacementAddress {
   const backdrop = params.get("bakgrund")?.trim() || null;
   const frame = Number(params.get("ruta"));
   return {
-    view: params.get("vy") === "mobil" ? "portrait" : "native",
     place: placeFromCode(params.get("plats")) ?? START_PLACE,
     backdrop: backdrop && /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(backdrop) ? backdrop : null,
     frame: Number.isSafeInteger(frame) && frame > 0 ? frame : 0,
@@ -261,8 +247,8 @@ export function readPlacementAddress(params: Params): PlacementAddress {
 
 // ── Films to lay the cards over ─────────────────────────────────────────────
 // The films that can lie under the cards: the clip bank's current takes first and the older proofs and references after
-// (the film library, data/library.json), the green P4C2 film among them. Here any of them can lie
-// under the cards, in the view whose shape it has. start: the frame the take begins on in its film (a take cut from a longer
+// (the film library, data/library.json), the green P4C2 film among them. Only the chosen dealer's lie under the cards
+// (underFilms), and only lying ones: the plan's view is the bank's picture. start: the frame the take begins on in its film (a take cut from a longer
 // film, as all of Paow's deals and returns are, begins inside it); target: the card the take deals or comes back from.
 export type Film = { id: string; title: string; path: string; width: number; height: number; frames: number; fps: number; group: "bank" | "older"; start: number; target: string | null };
 export const GREEN_FILM = "pamela-p4-c2-source-turn";
@@ -305,5 +291,13 @@ export function libraryFilms(items: readonly LibraryItem[]): Film[] {
     return [{ id: i.id, title, path: i.path, width, height, frames: Math.round(n(i.frameCount, 1)), fps: n(i.fps, 30), group: "older" as const, start: 0, target: null }];
   });
 }
-/** The view a film belongs in: a standing film in Mobil, every other in Dator. */
-export const filmView = (film: Pick<Film, "width" | "height">): View => (film.height > film.width ? "portrait" : "native");
+/** A film shaped as the bank's picture (not a standing phone film). */
+export const lying = (film: Pick<Film, "width" | "height">): boolean => film.width >= film.height;
+/**
+ * The films that may lie under the cards for the chosen dealer: her own takes from the bank (the graph is hers), and the
+ * library's older films only for Pamela, whose they all are (data/library.json: her proofs and V6, her look of 10 Nov).
+ * Standing films are left out; the green P4C2 film (hers) comes first among her films.
+ */
+export function underFilms(dealer: string, bank: readonly Film[], library: readonly Film[]): Film[] {
+  return [...bank, ...(dealer === DEALER ? library : [])].filter(lying);
+}

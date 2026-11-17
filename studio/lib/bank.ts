@@ -18,6 +18,7 @@ import {
   dealerEntries,
   dealerGraphs,
   dealerId,
+  keepsChoice,
   readDealerAddress,
   readDealerRegister,
   withDealer,
@@ -166,18 +167,19 @@ export function BankProvider({ children, every = 4000 }: { children: ReactNode; 
   const known = useMemo(() => (loaded ? [...new Set([...ids, ...Object.keys(register ?? {})])] : null), [loaded, ids, register]);
   const chosen = chooseDealer({ address, remembered: seen?.memory ?? null, known, owners: data.owners });
   const dealer = chosen.id;
-  const given = chosen.from === "default";
   // A dealer the register knows and the bank has no take of yet still has a graph: every film missing.
   const graph = useMemo(() => (settled && data.bank ? (data.graphs[dealer] ?? build(data.bank, dealer)) : null), [settled, data.bank, data.graphs, dealer]);
   const shown = useMemo(() => (ids.includes(dealer) ? ids : [...ids, dealer]), [ids, dealer]);
   const dealers = useMemo(() => dealerEntries(shown, graph && !data.graphs[dealer] ? { ...data.graphs, [dealer]: graph } : data.graphs, register), [shown, data.graphs, graph, dealer, register]);
 
-  // The choice is remembered once it is known for certain (the bank read, so that an unknown word is not kept). A dealer the
-  // visitor was only given (no word, no take, nothing remembered) is no choice and is not kept: the first dealer can then
-  // change for everyone who has not chosen.
+  // The address's choice is remembered once it is known for certain (the bank read, so that an unknown word is not kept), and
+  // only for a dealer who is not paused (keepsChoice; a click on the switch keeps any, setDealer). A dealer the visitor was
+  // only given (no word, no take, nothing remembered) is no choice and is not kept: the first dealer can then change for
+  // everyone who has not chosen.
+  const keep = keepsChoice(chosen, register);
   useEffect(() => {
-    if (settled && loaded && !given) remember(dealer);
-  }, [settled, loaded, dealer, given]);
+    if (settled && loaded && keep) remember(dealer);
+  }, [settled, loaded, dealer, keep]);
 
   // The address says whose studio it is: a view reached without the word (a link inside a view, a typed address) gets it.
   // A view that keeps writing its whole address without it is left alone after twice (the memory still holds the choice).

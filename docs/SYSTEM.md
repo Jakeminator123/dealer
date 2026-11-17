@@ -406,10 +406,11 @@ inte en kalibrerad 3D-projektion.
 (`-90,-45,-15,0,15,45,90`). Plant bord med 0° är standard. Äldre schema-v1-filer utan fältet accepteras; editorn
 erbjuder att spara standardinställningen utan att flytta koordinater. Planändringen går att ångra. Läget/riktningen
 följer med i export/import och publicerade webbläsarutkast. Plant bord beräknas från P4.C1 och är fortfarande inte en
-uppmätt fysisk kamera. Valfria `perspective` (0,85–0,96, sedan 2026-11-17) är Kortplans reglage Perspektiv: hur smal den
-bortre kanten är på ett kort vid plats 4 genom bordets lins, vald ur linsfamiljen i `src/table-lens.ts` (`lensForTaper`)
-så att plats 4:s kort behåller storlek och plats; utan fältet gäller den verkliga kameran (`TABLE_LENS`, 0,956). Regeln
-`src/card-plan.ts` läser det för labbet och beställningarnas bilder; spelet läser det inte. Riktning i bordplanet är skild från kamerans lutning och kortets böjning. Utdelningsteknik i
+uppmätt fysisk kamera. Valfria `perspective` (0,80–0,96, sedan 2026-11-18) är Kortplans reglage Perspektiv och bara kortens
+form: varje kort har den verkliga kamerans storlek och plats (`TABLE_LENS`), och dess bortre kant ritas smalare som en
+trapets kring kortets egen mittlinje uppåt i bilden, så att den vid plats 4 är den valda andelen av den närmre (96 % är ett
+verkligt korts egen form, 0,956). Utan fältet gäller plats 4:s sparade `taper` (P4.C1, 0,87 sedan 11 november). Regeln
+`src/card-plan.ts` (`planShape`, `keystone`) läser det för labbet och beställningarnas bilder; spelet läser det inte. Riktning i bordplanet är skild från kamerans lutning och kortets böjning. Utdelningsteknik i
 `intent` (2026-11-11): `grip` är `PINCH` (nyp i skons fönster och lyft, ankare 2 läge 1; standard) eller `DRAG`
 (fingertopparna på kortet i skons öppning, släp längs filten, läge 2); `turnAt` är `AIR` (standard) eller `PLACE` (vid
 platsen på filten) och gäller bara när `turn` är sant. Vänds senare är inget eget värde: `turn=false` och landning på
@@ -432,9 +433,12 @@ dealers bild, och studions eget bord): 3D-scenens bord i hemvyn med filmen dold,
 rektangel utan skevning, så bilden ligger i filmpixlar (1764 → 1762 ger planens). `node tools/placement-backdrop.ts`
 bygger `assets/lab/placement-backdrop/native.jpg` med `receipt.json` (källor med SHA-256, figurens mått och passningen:
 filmens kort i scenen mot samma ruta ur filmen 0,2–0,3 px, bordet under filmen lika pixel för pixel); bilden byggs om
-när bordet, skon eller grundstandarden ändras. V6-bilden (`bakgrund=v6`) och filmerna är kvar i listan; Mobil har ingen
-hemvy i sina pixlar och behåller V6-bilden. Placering är Bordets Kortplan (`/placering/` leder dit) och en film till
-platsen beställs i Bordets Beställ.
+när bordet, skon eller grundstandarden ändras. Sedan 2026-11-18 (Jakob: ingen dealer han inte valt, och inget görs
+dubbelt för mobilen) finns under korten bara Siluett och den valda dealerns egna filmer: V6-bilden och en annan dealers
+filmer är ute ur listan (biblioteket `data/library.json` är Pamelas och visas bara när hon är vald), och Kortplan har en
+vy, bankens bild (Dator). Planens andra vy, `portrait`, ligger kvar i filen och godtas av `validatePlan`, men inget i
+labbet, spelet eller en beställning läser den; spelet på en telefon ritar korten ur `native` i filmens bild. Placering är
+Bordets Kortplan (`/placering/` leder dit) och en film till platsen beställs i Bordets Beställ.
 
 En analys av de nuvarande separata native-/mobilprojektionerna finns i
 [table-projection-review](../evidence/table-projection-review.md). Den flyttar inga sparade punkter och ändrar inte V6.

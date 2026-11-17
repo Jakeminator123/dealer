@@ -18,6 +18,8 @@ import {
   bankDealers,
   chooseDealer,
   dealerEntries,
+  keepsChoice,
+  DEALER_MEMORY,
   dealerGraphs,
   dealerHref,
   filmsLine,
@@ -89,14 +91,39 @@ test("names and the pause come from data/dealers.json; without it a dealer is he
   assert.ok(own.paow?.name);
   const graphs = dealerGraphs(bank(), ["pamela", "paow", "nyn"]);
   const entries = dealerEntries(["pamela", "paow", "nyn"], graphs, register);
+  // In the switch the dealers who are not paused come first, in the bank's order; a paused dealer after them (Jakob 2026-11-18).
   assert.deepEqual(
     entries.map((e) => [e.id, e.name, !!e.paused, e.takes, e.waiting]),
     [
-      ["pamela", "Pamela", true, 4, 0],
       ["paow", "Paow", false, 3, 3],
       ["nyn", "Nyn", false, 0, 0],
+      ["pamela", "Pamela", true, 4, 0],
     ],
   );
+  assert.deepEqual(dealerEntries(["pamela", "paow"], graphs, null).map((e) => e.id), ["pamela", "paow"], "without the register: the bank's order");
+});
+
+test("a paused dealer named by the address is shown but not remembered; only a click on the switch remembers her (Jakob 2026-11-18)", () => {
+  const register = readDealerRegister({ dealers: [{ id: "pamela", name: "Pamela", paused: "Jakob 2026-11-12: inget nytt." }, { id: "paow", name: "Paow", paused: null }] });
+  const owners = dealersOf(bank());
+  const known = ["pamela", "paow"];
+  const at = (query: string) => readDealerAddress(new URLSearchParams(query));
+  // /material/?dealer=pamela once: Pamela is shown there, and nothing is kept, so the next address without a word opens on Paow
+  const link = chooseDealer({ address: at("dealer=pamela"), remembered: null, known, owners });
+  assert.deepEqual(link, { id: "pamela", from: "address" });
+  assert.equal(keepsChoice(link, register), false);
+  assert.deepEqual(chooseDealer({ address: at(""), remembered: null, known, owners }), { id: "paow", from: "default" });
+  // an old link to one of her takes: the same
+  assert.equal(keepsChoice(chooseDealer({ address: at("tagning=pamela-p4-deal-01"), remembered: null, known, owners }), register), false);
+  // a dealer who is not paused, named by the address, is kept as before; a given or remembered dealer is nothing new to keep
+  assert.equal(keepsChoice({ id: "paow", from: "address" }, register), true);
+  assert.equal(keepsChoice({ id: "paow", from: "take" }, register), true);
+  assert.equal(keepsChoice({ id: "paow", from: "default" }, register), false);
+  assert.equal(keepsChoice({ id: "pamela", from: "memory" }, register), false);
+  // while the pause is not known (the register unread, or the online copy, which has none) nothing is kept from an address
+  assert.equal(keepsChoice({ id: "paow", from: "address" }, null), false);
+  // what a browser kept before, an old link's Pamela among it, is not read: a new key
+  assert.equal(DEALER_MEMORY, "studio.dealer.3");
 });
 
 test("the address wins, then a take it names, then the memory, then the first dealer (Paow: Pamela is paused); only dealers there are", () => {

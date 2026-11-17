@@ -1,7 +1,8 @@
 "use client";
 
 // Bordet's picture (Kortplan, Beställ), as large as the area allows, with the cards on it and the handles on the chosen one.
-// Under the cards lies a still in the view's own pixels (the neutral backdrop, or the V6 picture) or a film at a frame. A card
+// Under the cards lies Siluett (the neutral backdrop) or a film of the chosen dealer's at a frame, in the bank's picture's
+// pixels (the plan's one view, PLAN_VIEW). A card
 // is drawn as the films show it, a plain yellow back (closed) or a plain blue face (open), over the quads (placement-model
 // src/card-plan.ts planCardQuad: real cards through the table's lens on "Verkligt perspektiv", CARD_COLOUR); how the game
 // prints it is afterwork. Over that lies one SVG in the view's own pixels with the handles:
@@ -15,10 +16,10 @@
 // step for Ångra; nothing is saved from here.
 import { Focus, Maximize, Minus, Plus } from "lucide-react";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type KeyboardEvent, type PointerEvent as ReactPointerEvent, type RefObject, type SVGProps } from "react";
-import { CARD_COLOUR, SHOE, SHOE_CARD, TARGETS, VIEWS, WINDOW_CARD, angleToward, defaultPlan, editPlace, fromPixels, toPixels, type Intent, type Place, type PlacementPlan, type Side, type View } from "../../../src/placement-model.ts";
+import { CARD_COLOUR, SHOE, TARGETS, VIEWS, WINDOW_CARD, angleToward, defaultPlan, editPlace, fromPixels, toPixels, type Intent, type Place, type PlacementPlan, type Side, type View } from "../../../src/placement-model.ts";
 import { planCardQuad } from "../../../src/card-plan.ts";
 import { actualCamera, cardPath, clampCamera, closeUp, fitCamera, panBy, pictureOrigin, scaleWords, zoomAt, type Camera } from "../../lib/bordet.ts";
-import { centreOf, nudged, placeCode, sideWord, sizeFromCorner, taperFromCorner, turnHandle, type Pt } from "../../lib/placement.ts";
+import { PLAN_VIEW, centreOf, nudged, placeCode, sideWord, sizeFromCorner, taperFromCorner, turnHandle, type Pt } from "../../lib/placement.ts";
 import { PATH_SECONDS, pathFrame, type PathPhase } from "../../lib/placement-path.ts";
 import { IconButton } from "../ui";
 import { cn } from "../ui/cn";
@@ -65,7 +66,6 @@ export { useKeyRun };
 export function Board({
   plan,
   other,
-  view,
   selected,
   onSelect,
   editable,
@@ -74,7 +74,6 @@ export function Board({
   changed,
   backdrop,
   shoeCard,
-  onBackdropMissing,
   path,
   onPhase,
   videoRef,
@@ -85,7 +84,6 @@ export function Board({
   plan: PlacementPlan;
   /** The other plan, for the dashed outlines of where the changed cards lie there (the saved plan, or the draft while the saved one is shown); null to draw none. */
   other: PlacementPlan | null;
-  view: View;
   selected: Place;
   onSelect: (id: Place) => void;
   editable: boolean;
@@ -93,13 +91,8 @@ export function Board({
   grid: boolean;
   changed: ReadonlySet<Place>;
   backdrop: Backdrop;
-  /**
-   * Paint the card in the shoe's window plain yellow: on the V6 picture over the game's own back there, on the neutral
-   * picture over its film card and the window's pale edge; null under a film, which shows its own card.
-   */
-  shoeCard: "v6" | "neutral" | null;
-  /** The still could not be read (not on this machine): the view shows another. */
-  onBackdropMissing?: () => void;
+  /** Paint the card in the shoe's window plain yellow over Siluett's film card and the window's pale edge; false under a film, which shows its own card. */
+  shoeCard: boolean;
   path: PathRun | null;
   onPhase: (phase: PathPhase) => void;
   videoRef: RefObject<HTMLVideoElement | null>;
@@ -109,6 +102,7 @@ export function Board({
   marked?: ReadonlySet<Place>;
   className?: string;
 }) {
+  const view = PLAN_VIEW;
   const W = VIEWS[view].width;
   const H = VIEWS[view].height;
   const flat = plan.tableProjection?.mode === "flat";
@@ -281,7 +275,6 @@ export function Board({
             src={backdrop.src}
             alt=""
             draggable={false}
-            onError={onBackdropMissing}
             className="absolute inset-0 size-full select-none object-fill"
           />
         ) : (
@@ -306,9 +299,9 @@ export function Board({
           </defs>
           {grid ? <rect width="100%" height="100%" fill="url(#placering-grid)" pointerEvents="none" /> : null}
           {shoeCard ? (
-            // the card standing in the shoe's window, plain yellow as in the films with no pale rim round it: the V6 picture's own
-            // card (SHOE_CARD) there, the films' card (WINDOW_CARD) on the neutral picture, where it hides the picture's pale window edge
-            <CardShape quad={shoeCard === "v6" ? SHOE_CARD[view] : windowCard(plan, view)} side="BACK" grow={2} pointerEvents="none">
+            // the card standing in the shoe's window, plain yellow as in the films with no pale rim round it: the films' card
+            // (WINDOW_CARD), where it hides Siluett's pale window edge
+            <CardShape quad={windowCard(plan, view)} side="BACK" grow={2} pointerEvents="none">
               <title>Kortet i skon · stängt</title>
             </CardShape>
           ) : null}

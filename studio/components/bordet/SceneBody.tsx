@@ -103,7 +103,7 @@ export function SceneBody({ kind, toolbar, roundText: cardRound }: { kind: Scene
   useEffect(() => {
     const timer = window.setTimeout(() => {
       const p = new URLSearchParams(window.location.search);
-      for (const key of [...p.keys()]) if (sceneWords.has(key) && key !== "robot" && !(key === "vy" && p.get("vy") === "mobil")) p.delete(key);
+      for (const key of [...p.keys()]) if (sceneWords.has(key) && key !== "robot") p.delete(key);
       new URLSearchParams(want).forEach((value, key) => {
         if (key !== "robot" && key !== "vy") p.set(key, value);
       });

@@ -4,13 +4,13 @@
 // cards (a still or a film, and the list to choose from), the card path's playing state ("Spela kortbanan"), and the keys
 // (Ctrl+Z ångra, X Ändrat | Sparat, the arrows nudge the chosen place, Esc stops the path).
 import { useCallback, useEffect, useMemo, useRef, useState, type RefObject } from "react";
-import { SHOE, VIEWS, type Place, type PlacementPlan, type View } from "../../../src/placement-model.ts";
+import { SHOE, type Place, type PlacementPlan } from "../../../src/placement-model.ts";
 import { useBank } from "../../lib/bank.ts";
 import { labUrl } from "../../lib/lab.ts";
 import { readLibrary } from "../../lib/placement-api.ts";
 import type { PathPhase } from "../../lib/placement-path.ts";
 import {
-  GREEN_FILM, backdropForView, bankFilms, defaultStill, filmGoesTo, filmView, libraryFilms, motionSteps, nudged, shownBackdrop, stillWord, stillsOf, type Film,
+  GREEN_FILM, PLAN_VIEW, STILL, STILL_WORD, bankFilms, filmGoesTo, libraryFilms, motionSteps, nudged, shownBackdrop, underFilms, type Film,
 } from "../../lib/placement.ts";
 import type { Backdrop, PathRun } from "./Board";
 import { useKeyRun } from "./Board";
@@ -21,29 +21,27 @@ export const filmLabel = (film: Film) => (film.id === GREEN_FILM ? "Grön film �
 export const pathCard = (place: Place) => (place === SHOE ? "P4.C1" : place);
 
 /**
- * What lies under the cards in a view: the address's choice to start with, the films (the bank's takes, then the library's),
- * what is shown, and the list to choose from (the stills by his words, then the films of the view's shape, the films to
- * `place` first).
+ * What lies under the cards: the address's choice to start with, the chosen dealer's films (her takes in the bank, and for
+ * Pamela the library's older ones: underFilms), what is shown, and the list to choose from (Siluett, then her films, the
+ * films to `place` first). No other dealer's picture or film is ever in it (Jakob 2026-11-18).
  */
-export function useUnder(view: View, place: Place, first: { backdrop: string | null; frame: number }) {
+export function useUnder(place: Place, first: { backdrop: string | null; frame: number }) {
   const [backdrop, setBackdrop] = useState<string | null>(first.backdrop);
-  const [neutralMissing, setNeutralMissing] = useState(false);
   const [frame, setFrame] = useState(first.frame);
   const [library, setLibrary] = useState<Film[]>([]);
   const videoRef = useRef<HTMLVideoElement>(null);
-  const { graph } = useBank();
+  const { graph, dealer } = useBank();
   useEffect(() => {
     void readLibrary().then((items) => setLibrary(libraryFilms(items)));
   }, []);
-  const films = useMemo(() => [...(graph ? bankFilms(graph) : []), ...library], [graph, library]);
-  const shown = shownBackdrop(view, backdrop, films, neutralMissing);
+  const films = useMemo(() => underFilms(dealer, graph ? bankFilms(graph) : [], library), [dealer, graph, library]);
+  const shown = shownBackdrop(backdrop, films);
   const film = shown.kind === "film" ? shown.film : null;
-  const under: Backdrop = film ? { kind: "film", src: labUrl(film.path), fps: film.fps, frame } : { kind: "still", src: labUrl(shown.kind === "still" ? shown.path : VIEWS[view].background) };
+  const under: Backdrop = shown.kind === "film" ? { kind: "film", src: labUrl(shown.film.path), fps: shown.film.fps, frame } : { kind: "still", src: labUrl(shown.path) };
   const runCard = pathCard(place);
   const options = [
-    ...stillsOf(view).map((s) => ({ value: s as string, label: stillWord(s), hint: s === "neutral" ? "förval" : undefined })),
+    { value: STILL as string, label: STILL_WORD, hint: "förval" as string | undefined },
     ...films
-      .filter((f) => filmView(f) === view)
       .sort((a, b) => Number(b.id === GREEN_FILM) - Number(a.id === GREEN_FILM) || Number(filmGoesTo(b, runCard)) - Number(filmGoesTo(a, runCard)))
       .map((f) => ({ value: f.id, label: filmLabel(f), hint: f.id === GREEN_FILM ? undefined : f.group === "bank" ? (filmGoesTo(f, runCard) ? "hit" : "klippbanken") : "äldre" })),
   ];
@@ -56,20 +54,15 @@ export function useUnder(view: View, place: Place, first: { backdrop: string | n
     film,
     under,
     options,
-    value: film ? film.id : shown.kind === "still" ? shown.still : defaultStill(view),
-    /** A choice in the list: a still, or a film from the take's own first frame. */
+    value: film ? film.id : STILL,
+    /** A choice in the list: Siluett, or a film from the take's own first frame. */
     choose: (v: string) => {
-      setBackdrop(v === defaultStill(view) ? null : v);
-      if (v === "neutral") setNeutralMissing(false);
+      setBackdrop(v === STILL ? null : v);
       setFrame(films.find((f) => f.id === v)?.start ?? 0);
     },
-    /** Another view: a film of the other shape, or a still the view lacks, gives way to its default. */
-    toView: (v: View) => setBackdrop((was) => backdropForView(v, was, films)),
-    label: film ? filmLabel(film) : shown.kind === "still" ? stillWord(shown.still) : "",
-    shoeCard: shown.kind === "still" ? shown.still : null,
-    onMissing: shown.kind === "still" && shown.still === "neutral" ? () => setNeutralMissing(true) : undefined,
-    /** The neutral picture was asked for (or is the default) and is not on this machine. */
-    neutralMissing: neutralMissing && !film && (backdrop === null || backdrop === "neutral") && view === "native",
+    label: film ? filmLabel(film) : STILL_WORD,
+    /** Paint the card in the shoe's window: on Siluett, not under a film (it shows its own card). */
+    shoeCard: !film,
     videoRef: videoRef as RefObject<HTMLVideoElement | null>,
   };
 }
@@ -110,7 +103,7 @@ export function usePathPlay(plan: PlacementPlan | null) {
  * The keys of a view with the plan's draft: Ctrl+Z ångra, X between Ändrat and Sparat while there are changes, Esc (onEscape),
  * the arrows nudge the chosen place (on the picture, on the places, or with nothing in focus).
  */
-export function usePlanKeys({ place, view, editable, dirty, showing, area, onEscape }: { place: Place; view: View; editable: boolean; dirty: boolean; showing: "draft" | "saved"; area: RefObject<HTMLElement | null>; onEscape: () => void }) {
+export function usePlanKeys({ place, editable, dirty, showing, area, onEscape }: { place: Place; editable: boolean; dirty: boolean; showing: "draft" | "saved"; area: RefObject<HTMLElement | null>; onEscape: () => void }) {
   const keyRun = useKeyRun();
   const escape = useRef(onEscape);
   useEffect(() => {
@@ -135,9 +128,9 @@ export function usePlanKeys({ place, view, editable, dirty, showing, area, onEsc
       const free = el === document.body || !!area.current?.contains(el) || !!el.closest?.("[data-nudge]");
       if (!free) return;
       e.preventDefault();
-      keyRun((p) => nudged(p, place, view, e.key, e.shiftKey, false) ?? p);
+      keyRun((p) => nudged(p, place, PLAN_VIEW, e.key, e.shiftKey, false) ?? p);
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [dirty, showing, editable, keyRun, place, view, area]);
+  }, [dirty, showing, editable, keyRun, place, area]);
 }

@@ -151,10 +151,10 @@ export function shoeCardQuad(centre: Pixel | null = null, grow = 1, lens: Lens =
 // ---- the family of lenses ---------------------------------------------------------------------------------------
 // The card lying at seat 4 has its film size and shape under a whole family of lenses, from a wide one close by to a long
 // one far away; the focal length alone decides how much a card narrows toward its far edge and how fast the cards shrink
-// away from the camera. TABLE_LENS is the member that draws the dealer at her real size (a card narrows to 0.956);
-// Kortplan lets Jakob choose another by the taper at seat 4 (Jakob 2026-11-17: "Om alla kort är exakt lika stora, blir de
-// väldigt tvådimensionella"), seat 4's card unchanged. drawnCard and lensForFocal are lifted word for word from
-// dealer3d/src/camera.ts (with the type of their card named here); the card is world.ts MEASURED.restingCard.
+// away from the camera. TABLE_LENS is the member that draws the dealer at her real size (a card narrows to 0.956), and the
+// one the card plan draws through (src/card-plan.ts: Kortplan's "Perspektiv" changes only a card's shape, not the lens).
+// drawnCard and lensForFocal are lifted word for word from dealer3d/src/camera.ts (with the type of their card named here);
+// the card is world.ts MEASURED.restingCard.
 
 /** The card lying at seat 4 in paow-giv-2-1-p4-11-01, frame 120: its centre pixel, near edge and depth (dealer3d/src/world.ts, MEASURED.restingCard). */
 export type FilmCard = {centre: Pixel; nearPx: number; depthPx: number};
@@ -178,20 +178,4 @@ export function lensForFocal(card: FilmCard, focalPx: number): Lens {
   let lo = -Math.atan((card.centre.y - cy) / focalPx) + 0.02, hi = 1.4; // from just under the card's own line of sight to steeply down
   for (let i = 0; i < 60; i++) { const pitch = (lo + hi) / 2, m = drawnCard(sized(pitch), card.centre); if (!m || m.depth / m.near < want) lo = pitch; else hi = pitch; }
   return sized((lo + hi) / 2);
-}
-/** How much a card at seat 4 narrows toward its far edge under a lens (far over near; 0.956 under TABLE_LENS). */
-export const seatFourTaper = (lens: Lens = TABLE_LENS): number => drawnCard(lens, SEAT_FOUR_CARD.centre)!.taper;
-const byTaper = new Map<number, Lens>();
-/**
- * The lens of the family under which the seat-4 card narrows to `taper` (far over near; the plan's range is 0.85 to 0.96): its focal
- * length by bisection (a longer lens narrows less), seat 4's card keeping its film size and shape.
- */
-export function lensForTaper(taper: number, card: FilmCard = SEAT_FOUR_CARD): Lens {
-  const key = Math.round(taper * 10000) / 10000, known = card === SEAT_FOUR_CARD ? byTaper.get(key) : undefined;
-  if (known) return known;
-  let lo = 150, hi = 20000;
-  for (let i = 0; i < 24; i++) { const f = Math.sqrt(lo * hi), m = drawnCard(lensForFocal(card, f), card.centre); if (!m || m.taper < key) lo = f; else hi = f; }
-  const lens = lensForFocal(card, Math.sqrt(lo * hi));
-  if (card === SEAT_FOUR_CARD) byTaper.set(key, lens);
-  return lens;
 }

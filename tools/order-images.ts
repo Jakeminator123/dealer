@@ -21,7 +21,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import sharp from 'sharp';
 import { validatePlan, type PlacementPlan } from '../src/placement-model.ts';
-import { planCardQuad, throughLens } from '../src/card-plan.ts';
+import { planCardQuad, planTaper, throughLens } from '../src/card-plan.ts';
 import { scaleQuad, type Drawn } from '../src/order-model.ts';
 
 export const W = 1764, H = 1174, N = W * H;
@@ -174,14 +174,13 @@ export function drawCard(base: Rgb, texture: Texture, plan: PlacementPlan, planF
   const measured = measureChange(base, rgb);
   const r = (v: number) => Math.round(v * 10) / 10;
   const centre: Pt = [to.reduce((s, p) => s + p[0], 0) / 4, to.reduce((s, p) => s + p[1], 0) / 4];
-  const lens = throughLens(plan, 'native'), depth = plan.tableProjection?.perspective;
+  const lens = throughLens(plan, 'native');
   return {
     rgb,
     drawn: {
       target,
       side,
-      as: !lens ? 'kortets egen fyrhörning (quad)' : depth === undefined ? 'verkligt perspektiv: ett verkligt kort genom bordets lins (src/card-plan.ts)'
-        : `verkligt perspektiv: ett verkligt kort genom bordets lins, perspektiv ${Math.round(depth * 100)} % (src/card-plan.ts)`,
+      as: lens ? `verkligt perspektiv: ett verkligt kort genom bordets lins, formen ${Math.round(planTaper(plan) * 100)} % (src/card-plan.ts)` : 'kortets egen fyrhörning (quad)',
       plan: { ...planFile, updatedAt: plan.updatedAt },
       texture: texture.source,
       quad: to.map(([x, y]) => [r(x), r(y)] as [number, number]),

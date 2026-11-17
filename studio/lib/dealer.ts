@@ -1,6 +1,7 @@
 // Whose studio it is: the bank holds the takes of several dealers (src/clip-graph.ts dealersOf) and every view shows one
 // dealer's, the one chosen in the rail (Jakob 2026-11-13: "but where can I review everything?"). The choice is in the address
-// (?dealer=paow, the word the view Material uses) and remembered in this browser; the address wins when it names a dealer,
+// (?dealer=paow, the word the view Material uses) and remembered in this browser (a paused dealer only from a click on the
+// switch: keepsChoice); the address wins when it names a dealer,
 // then a take the address names (an old link to one of Pamela's takes opens her studio), then the remembered choice, then
 // the first dealer (Paow since 2026-11-13: Pamela is paused, and a visitor who has chosen nothing should not meet the paused
 // dealer). The first dealer's addresses carry no word; every other dealer's do. Names and the pause are
@@ -17,10 +18,11 @@ export const DEALER_PARAM = "dealer";
 /** The address's words that name a take: Granska's, Karta's and Scen's tagning, Jämför's a and b. */
 export const TAKE_PARAMS = ["tagning", "a", "b"] as const;
 /**
- * Where the browser remembers the choice (localStorage). The key before 2026-11-13, "studio.dealer", also kept a dealer the
- * visitor had only been given (Pamela then), so it is left unread: no browser stays on her without having chosen her.
+ * Where the browser remembers the choice (localStorage). The keys before, "studio.dealer" (to 2026-11-13: it kept a dealer the
+ * visitor had only been given) and "studio.dealer.2" (to 2026-11-18: it kept a paused dealer an old link had named), are left
+ * unread: no browser stays on Pamela without a click on her.
  */
-export const DEALER_MEMORY = "studio.dealer.2";
+export const DEALER_MEMORY = "studio.dealer.3";
 
 const ID = /^[a-z0-9]+$/;
 /** A dealer's id as the bank writes it (a–z, 0–9), or null. */
@@ -61,8 +63,10 @@ export function dealerGraphs(bank: BankData, ids: readonly string[], build: (ban
 /** One dealer in the switch: name, pause, how many takes the bank holds and how many of them wait for Jakob's word. */
 export type DealerEntry = { id: string; name: string; paused: string | null; takes: number; waiting: number };
 
+/** The switch's dealers in the bank's order, a paused dealer after the others (Jakob 2026-11-18: Paow first, Pamela after). */
 export function dealerEntries(ids: readonly string[], graphs: Readonly<Record<string, Graph>>, register: DealerRegister | null): DealerEntry[] {
-  return ids.map((id) => {
+  const order = [...ids].sort((a, b) => Number(!!register?.[a]?.paused) - Number(!!register?.[b]?.paused));
+  return order.map((id) => {
     const graph = graphs[id];
     const note = register?.[id];
     return { id, name: note?.name ?? nameOf(id), paused: note?.paused ?? null, takes: graph ? Object.keys(graph.takes).length : 0, waiting: graph ? awaitingJakob(graph).length : 0 };
@@ -94,6 +98,18 @@ export function chooseDealer(input: { address: DealerAddress | null; remembered:
   if (owner) return { id: owner, from: "take" };
   if (ok(input.remembered)) return { id: input.remembered, from: "memory" };
   return { id: !input.known || input.known.includes(DEFAULT_DEALER) ? DEFAULT_DEALER : BANK_DEALER, from: "default" };
+}
+
+/**
+ * Whether a choice is remembered without a click: one the address made (its word, or a take it names) for a dealer who is not
+ * paused. A paused dealer the address names is shown and not kept, so one old link (/material/?dealer=pamela) does not make
+ * every later address open on her (Jakob 2026-11-18: "Generellt förstår jag inte varför vi automatiskt kan komma in till
+ * Pamela"); only a click on the switch keeps her (bank.ts setDealer). Nothing is kept while the pause is unknown (the register
+ * not yet read; the online copy has none).
+ */
+export function keepsChoice(chosen: Chosen, register: DealerRegister | null): boolean {
+  if (chosen.from !== "address" && chosen.from !== "take") return false;
+  return !!register && !register[chosen.id]?.paused;
 }
 
 /**

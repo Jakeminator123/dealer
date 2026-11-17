@@ -1,7 +1,8 @@
 "use client";
 
 // <DealerSwitch />: whose studio this is, at the top of the rail under the mark: one button per dealer the bank holds takes
-// of (Pamela | Paow), the chosen one marked, and beside a name the number of takes waiting for Jakob's word when there are
+// of (Paow | Pamela: a paused dealer after the others, lib/dealer.ts dealerEntries), the chosen one marked, and beside a
+// name the number of takes waiting for Jakob's word when there are
 // any. A paused dealer (data/dealers.json) says so quietly: a small pause sign, the words in the tooltip. A click chooses
 // the dealer for every view (lib/bank.ts setDealer: the address and the memory follow).
 import { useBank } from "../../lib/bank.ts";

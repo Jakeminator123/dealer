@@ -351,12 +351,11 @@ export function bordetOrderAddress(params: { forEach(fn: (value: string, key: st
 }
 
 /** Bordet's Kortplan at a card ("/bordet/?plats=p3c2"), for "Flytta kortets plats" in Ny beställning and Placering's old address. */
-export function kortplanHref(place: string, view: "native" | "portrait" = "native"): string {
+export function kortplanHref(place: string): string {
   const p = new URLSearchParams();
   const code = /^(P[1-7]|D)\.C([12])$/.exec(place);
   if (code) p.set("plats", `${code[1]}c${code[2]}`.toLowerCase());
   else if (place === "shoe") p.set("plats", "sko");
-  if (view === "portrait") p.set("vy", "mobil");
   const q = p.toString();
   return `/bordet/${q ? `?${q}` : ""}`;
 }

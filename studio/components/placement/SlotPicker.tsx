@@ -2,17 +2,17 @@
 
 // The places to choose from, laid out as the table is seen: Plats 1–7 from the camera's left, then the dealer, each with its
 // two cards, and the shoe. A card's button carries its landing side (yellow: closed, blue: open, as the films colour them),
-// a brass dot when it differs from the saved plan, and a tick when it is checked in the view shown.
+// a brass dot when it differs from the saved plan, and a tick when it is checked (in the plan's one view, the bank's picture).
 import { Check } from "lucide-react";
-import { CARD_COLOUR, SHOE, type PlacementPlan, type Place, type View } from "../../../src/placement-model.ts";
-import { SEATS, placeName } from "../../lib/placement.ts";
+import { CARD_COLOUR, SHOE, type PlacementPlan, type Place } from "../../../src/placement-model.ts";
+import { PLAN_VIEW, SEATS, placeName } from "../../lib/placement.ts";
 import { cn } from "../ui/cn";
 
-export function SlotPicker({ plan, view, selected, changed, onSelect }: { plan: PlacementPlan; view: View; selected: Place; changed: ReadonlySet<Place>; onSelect: (id: Place) => void }) {
+export function SlotPicker({ plan, selected, changed, onSelect }: { plan: PlacementPlan; selected: Place; changed: ReadonlySet<Place>; onSelect: (id: Place) => void }) {
   const button = (id: Place, text: string, wide = false) => {
     const on = id === selected;
     const t = id === SHOE ? null : plan.targets[id];
-    const checked = !!t?.geometry[view].reviewed;
+    const checked = !!t?.geometry[PLAN_VIEW].reviewed;
     return (
       <button
         key={id}
