@@ -47,11 +47,13 @@ inte vändning. Framsidan måste vara en ren, nyckelbar yta eftersom Scout best�
   Jakob vill kunna ställa in alla tre och ha ett normalläge ("men också ha en normal"); förslaget från `dealer-82` är
   riktning 0°, lutning 0°, perspektiv 87 %. Lutning finns ännu inte som reglage.
 
-## Vem äger vad (2026-11-13)
+## Vem äger vad (2026-11-17)
 
-- **Huvudagentens adress: `dealer-94`.** Adressen är det andra sessioner skriver till med SendMessage, och den står bara
+- **Huvudagentens adress: `dealer-b8`.** Adressen är det andra sessioner skriver till med SendMessage, och den står bara
   på den här raden; rubriken Jakob ser på chatten betyder inget. Byter rollen session, ändras den här raden och inget
-  annat. Kontrollera med ListAgents före ett meddelande. Huvudagenten äger commits, taggar och push, studion,
+  annat. Alla fyra sessionerna fick nya adresser när Jakob bytte konto 2026-11-17 (samma chattar, samma banor); i
+  commitmeddelanden och äldre text heter de `dealer-94` (huvudagenten), `dealer-f6` (scen), `dealer-0b` (tal) och
+  `dealer-1e` (trailer). Kontrollera med ListAgents före ett meddelande. Huvudagenten äger commits, taggar och push, studion,
   labbservern, spelet och 3D-scenens filmlager, `src/clip-graph.ts` och styrdokumenten.
 - **Huvudagenten håller ihop sessionerna** (Jakob 2026-11-13 kl. 15.50, på väg ut: "Kör på och du delegerar och
   kanske nu tom ska komma vad de tre andra agenterna gör och se till att du har kontroll över vad alla gör"). Varje
@@ -72,13 +74,13 @@ inte vändning. Framsidan måste vara en ren, nyckelbar yta eftersom Scout best�
     måtten per plats) och `D:/dealer-scratch/tmp/huvudagent11/kort/` (nattens spår, bilder och jämförelser). Omstarten
     (pålägget) byggs av en underagent, kortbyggaren, i `D:/dealer-scratch/tmp/kortbyggare/` och lämnas som mappar per
     steg (Kända brister, Korten).
-  - **Scen (`dealer-f6`):** bordet, rummet och ljuset i 3D-scenen (`src/scene3d-table.ts`, `src/scene3d-room.ts`,
+  - **Scen (`dealer-dc`, förut `dealer-f6`):** bordet, rummet och ljuset i 3D-scenen (`src/scene3d-table.ts`, `src/scene3d-room.ts`,
     `src/scene3d-ui.ts`, `src/scene3d-view.ts`, `data/scene-materials.json`, `data/scene-rooms.json`,
     `data/scene-presets/`), och sidovinkeln av Paow som egna Prov.
-  - **Tal (`dealer-0b`, sidan [docs/TAL.md](docs/TAL.md)):** talfilmer med röst och läppsynk (`tools/speech.ts`, `src/speech-plan.ts`,
+  - **Tal (`dealer-cc`, förut `dealer-0b`, sidan [docs/TAL.md](docs/TAL.md)):** talfilmer med röst och läppsynk (`tools/speech.ts`, `src/speech-plan.ts`,
     `src/speech-lines.ts`, `data/speech.json`), munlagret och hennes röst genom sidans eget ljud (`src/scene3d-mouth.ts`,
     `src/page-audio.ts`, `src/scene3d-voice.ts`), media under `assets/speech/paow/`, levererat som patch.
-- Utan bana: `dealer-1e` (startad av Jakob 2026-11-13 för ett nytt slut på noir-trailer 3, bilder till ett rum i
+- Utan bana: `dealer-e2` (förut `dealer-1e`; startad av Jakob 2026-11-13 för ett nytt slut på noir-trailer 3, bilder till ett rum i
   Monaco-stil och spelhålan, på hans ord champagnefilmen `paow-vila-17` med blixtens utseende, och filmen före spelet:
   modulen `src/game-intro.ts` och filmen i `assets/films/intro/noir-3/` är dess, lämnade som patch; arbetet i
   `D:/dealer-scratch/tmp/trailer-3b/` och `D:/dealer-scratch/tmp/dealer-1e/intro/`, beloppen rapporterade till
@@ -188,84 +190,110 @@ skript i `skript/`, liggare i `bestallningar-*.json`. Den sessionens filmer och 
 
 ## Öppet hos Jakob
 
-Skrivet natten mot 2026-11-14, kl. 01.30. Under dagen svarade han på listorna som stod här ("Jag håller med om allt
-annat du nämnde, så jag kan acceptera det rakt av", om korten "Jag vill bara att det ska bli en linje"), och på kvällen skrev
-han om farten och korten på kopian (19.13), om läpparna (20.10), om en länk för den som bara ska spela (20.45) och om
-trailern som ska gå över i spelet (21.23); det som följde står i "Jakobs besked som gäller" och i "Nästa steg",
-punkt 0. Det här är det som bara han kan göra eller säga.
+Skrivet 2026-11-17. Lördagen 2026-11-14 skrev han nio korta meddelanden från telefonen (ordagrant i "Jakobs besked som
+gäller"); arbetet stannade samma dag kl. 17.15, när kontot tog slut, och togs upp igen 2026-11-17 kl. 16.35 på ett nytt
+konto ("Varit borta ett par dagar och nu bytt konto"). Han läser inte långa svar, så svaren till honom är korta och
+`KLAR.txt` skrivs på skrivbordet när allt har ett utfall. Det här är det som bara han kan göra eller säga.
 
-1. **Fylla på Runway.** Saldot är 516 krediter (läst kl. 21.03). Hans "inga tak idag" tar bort taken, inte saldots
-   botten, och påfyllningen gör bara han (arbetsytan "Jakob", sidan för betalning hos Runway). Det som väntar på
-   krediter: ett prov med en annan läppsynkmodell på en replik (verklig kostnad 180, men Runway reserverar cirka 960 i
-   förväg, så saldot måste vara minst det; talbanan har allt förberett och kör samma anrop en gång), nio returer till
-   vila för Paow (luckorna på Kartan utöver hålkortets retur; skattat 1 800), nya försök på fingrarna och vinkningen
-   (båda föll i omgång 14 på ett ritat grått bord), och en giv till plats 6 utan omvägen framför henne.
-2. **Korten: ja eller nej till underlägget.** Spelet ritar kortet hela vägen, också i hennes hand, och det han klagade
-   på är filmens gula och blå som sticker fram bredvid det ritade kortet. Omstarten han bad om kl. 19.13 är gjord i
-   tre steg (Kända brister, Korten), och det tredje, underlägget, tar bort det mesta av det: en oberoende granskare
-   såg två hela rundor utan att veta vilken som var vilken och gav rundan med underlägget 3,75/5 och rundan som i dag
-   3,5/5, "lika bra eller bättre vid alla 14 kort". Underlägget är avstängt i spelet tills han har sett det
-   (huvudagentens ord till honom i natt). Han ser det på tre ställen: filmen på skrivbordet (punkt 3), Prov
-   `underlagg` i studion på hans dator (kopian bär bara de sex prov han valde 2026-11-12), och spelet på kopian med
-   två ord i adressen:
-   `https://dealer-lake.vercel.app/game.html?forval=levande&dx=-0.0624&dy=0.016&table=casino&dealer=paow&cardBack=dark&cardFace=paper`.
-   Säger han ja blir det förval (`UNDER`-raden som då läggs i `src/card-overlay.ts`, så att bara det ritade kortets
-   underlägg slås på och `kort=liggande` står som det är), och scenbanan gör reglagen i Scen. De äldre jämförelserna
-   ligger kvar: Prov `korten-tre-satt` (ritat 3,5/5 mot filmens eget kort i handen 2,5/5; adressordet
-   `kort=liggande`) och Prov `palagg-baksidan` (pålägget, 3/5).
-3. **Filmen till hans chef: `paow-runda-6-till-chefen-spelet.mp4` på skrivbordet** (samma runda sedd från scenen:
-   `-scenen.mp4`). En hel runda i filmad fart, 124 s, med nattens läppar och med underlägget under korten. Den
-   oberoende granskaren, blint: 3,75/5, "kan skickas till chefen som den är"; det som håller den under 4 är att takten
-   är lugn (cirka 7 s per kort) och några små färgrester vid fingrarna
-   (`D:/dealer-scratch/tmp/huvudagent11/chefsfilm/granskning-6/DOM.md`). Ingen granskare har hört ljudet: han bör
-   lyssna innan han skickar. Äldre filmer på skrivbordet som inte ska skickas: `paow-runda-2-` och `paow-runda-3-`
-   (dubbel fart), `paow-runda-4-` (läpparna han kallade sämre) och `paow-runda-5-` (kvällens första läppar, utan
-   underlägg, 3,5/5). Trailern ligger där som `noir-trailer-3-kort.mp4` (47 s, den som går före spelet på kopian) och
-   `noir-trailer-3-nytt-slut.mp4`.
-4. **Läpparna.** Hans ord kl. 20.10 ("bara underläppen som pratar") är åtgärdade i tre steg samma kväll och natt, alla
-   sedda av oberoende granskare i blinda par: först lyftes hennes egen överläpp med munnens öppning (4/5 i 18 filmer
-   av 30, mot 2/5 för dem han såg), sedan fick lyftet följa munnen som visas (4/5 i 29 av 30), och sist vilar läppen
-   när munnen är sluten (elva repliker byttes, bara där granskaren kallade den nya bättre). Replikerna och de fyra
-   munlapparna är utbytta och godkända åt honom. Prov `paow-mun` visar det han såg till vänster och det som går nu
-   till höger, och `paow-tal` alla replikerna. Säger han nej går de tillbaka med ett kommando (docs/TAL.md,
-   talbanans LASMIG). Hans egen godkända `paow-tal-blackjack-sv-04` rörs inte och går före i spelet; den är lagd på
-   det äldre sättet, där hela munnen ritas. En nyare blackjacktagning (`sv-12`) spelas alltså inte förrän han själv
-   dömer om `sv-04` (Granska, Alla, filtret Dömda åt dig).
-5. **Farten.** Inget skyndas längre från början (hans ord 19.13). Förslag som väntar på hans öga, från scenbanan:
-   fart bara på givar och returer, och hellre 1,3–1,5 än 2. Reglaget Givarnas tempo finns kvar i Scen.
-6. **Champagnefilmen: hylla eller ny tagning.** Armen och glaset slutar i luften ovanför bordskanten, eftersom filmens
-   generator tänkte sig ett bord där. Två sätt: en hylla vid hennes högra sida som står där hela tiden (Prov
-   `hyllan-vid-dealern`, valet Hylla vid dealern, av; i dag en enkel skiva som behöver en kant och en kylare), eller
-   en ny tagning där glaset lyfts helt i bild (krediter).
-7. **Det han bör se själv i normal fart, allt i Prov:** liv i överkroppen (på från början sedan i dag;
-   `liv-i-overkroppen`), blixten med spelhålan i svartvitt (`blixten`; varianten spelas i spelets vila), de fyra nya
-   rummen (`monaco-och-spelhalan`; i Scen, inte i spelet: ska något av dem in i spelet?), röken över bordet
-   (`rok-over-bordet`, av), guldkopparna utan svarta fyrkanter (`koppar-i-relingen`), korten på tre sätt
-   (`korten-tre-satt`), pålägget (`palagg-baksidan`), underlägget (`underlagg`) och trailerns nya slut
-   (`trailer-noir-3`: tre ställen att lyssna på, se `dealer-1e`:s besked). Och på kopian, helst på telefonen: filmen före spelet (`/trailer`; Arbetsyta). Är det
-   så han menade, och låter filmen rätt? På en iPhone dessutom (Kända brister, "Hennes röst på en iPhone"): hörs hon
-   när hon säger sin första replik och under en runda, med ringsignalen på och av? Kommer rösten in sent första
-   gången en replik sägs och i takt andra gången? Hörs repliken över ingången ("Lycka till")? Vilken iOS-version?
-8. **Ett tredje och fjärde dealerkort** (hans ord 2026-11-13: "Skapa då ett tredje och fjärde till dealer"): planen
-   har sexton platser, två per spelare och dealerns två (`TARGETS` i `src/placement-model.ts`), och ordermodellen tar
-   bara de platserna, så en film dit går inte att beställa och korten läggs utan hand. Förslag, inte byggt: planen får
-   `D.C3` och `D.C4` i rad efter `D.C2`; sedan flyttar han dem i Placering och filmerna beställs som hennes första
-   kort. Vill han ha det så?
-9. **Mindre saker som väntar på ett ord:**
-   - `placements/proposals/` (två förslag till plan från 2026-11-11 som bara gamla scensidan visar): tas bort?
-   - De tre långa biblioteksfilerna under `materials/` (three.js och två färdigbyggda sidor): byggas ur vår egen
-     källa när gamla publika sajten stängs?
-   - Fyra av Pamelas filmer från 2026-11-11 ligger kvar på disk utan post; en tidigare agent tog dem ur banken.
-   - En andra spelarfigur, "Astrid", som kommer in från sidan och satsar: inte påbörjad.
-   - Ska bordets tryck följa bordets storlek (`tableSize`)? Scenbanans fråga.
-   - Hans första röst-id är inte färdigtränat hos ElevenLabs (bara kontots ägare kan göra klart det). Paows talbank
-     ligger kvar i hans privata Blob-lager `dealer-lab-tal` efter mätningen hos RunPod (0,05 USD): ska den bort?
-   - Profilval 1 kapar toppen av hennes huvud i 93 % av rutorna: flytta kameran en aning, eller låta stå?
-10. **Äldre frågor om Pamela** (pausad): primära på hennes kanter, hålkortets giv, skokortets lutning, ett kortformat på
-   tvären, Meshy-bordet, obedömda prov och den publika sajten står kvar i Git-historiken för HANDOFF före 2026-11-13 och
-   tas upp när pausen hävs.
+1. **Det svarta spelet efter filmen (hans ord 2026-11-14 kl. 16.24): pröva igen, och skicka en skärmbild om det är
+   svart.** Ingen av oss har en telefon, och i en headless Chrome är spelet inte svart. Det som i sidan kunde lämna
+   bilden svart är ändrat och publicerat (Kända brister, "Spelet på hans telefon"). Blir det svart igen: öppna
+   `dealer-lake.vercel.app/trailer?diagnos=1` och skicka en skärmbild; sidan skriver då på bilden vad hans webbläsare
+   gör. Tre frågor som avgör läsningen: vilken telefon och webbläsare (skärmbilden kl. 15.21 visar en iPhone med Safari
+   i strömsparläge); är hela bilden svart, eller syns bordet och knapparna och bara hon är borta; och fungerar spelet
+   på samma telefon på `/casino`, utan filmen?
+2. **Runway: logga in igen och fyll på.** Kopplingen till Runway (MCP-servern `runway`) föll med kontobytet och kräver
+   ny inloggning (`/mcp`); saldot gick inte att läsa 2026-11-17 och var cirka 52 krediter 2026-11-14 (516 kvällen före;
+   dagens anrop: bild 20, trailerns prov 124, rummets slinga 320). Påfyllningen gör bara han (arbetsytan "Jakob", sidan
+   för betalning hos Runway). Det som väntar på krediter, i den ordning hans egna ord pekar: tatueringarna på hennes
+   rygg i trailerns början (nästa prov cirka 105; hela början 650–950, med marginal 1 150–1 200), tatuerade och mindre
+   händer på dealern (nya ankare och alla hennes filmer om: skattat 7 000, huvudagentens skattning), ett varv till på
+   Monacos bakgrund (150–200), nya returer till vila (de tre som finns slutar 2–3 bildpunkter från vilans bild, och
+   nio saknas: skattat 1 800), nya försök på fingrarna och vinkningen, och en giv till plats 6 utan omvägen framför
+   henne. Den andra läppsynkmodellen behövs inte längre för mungiporna (talbanan).
+3. **GitHub: kontot är låst av en betalningsfråga.** Efter pushen 2026-11-17 kl. 16.48 startade GitHubs egen kontroll
+   inte: "The job was not started because your account is locked due to a billing issue." Koden är pushad och samma
+   kontroll går grön på datorn (hela testsviten och publiceringskontrollen i ett rent arbetsträd), så inget är
+   stoppat, men GitHubs bock är röd tills han har rett ut betalningen under sitt GitHub-konto (Settings, Billing).
+4. **Får hans foto skickas till bildmodellen?** Fotot av kvinnan med tatueringarna (`private/referenser/`) är ett foto
+   av en verklig person och har inte lämnat datorn; tatueringarna beskrivs i ord. Med fotot som förlaga blir de
+   troligen mer lika. Frågan ställdes 2026-11-14 kl. 15.40 och igen 2026-11-17; utan ett ja skickas det inte.
+5. **Mobilens nya konsol: titta på telefonen, stående och liggande** (publicerad 2026-11-17 kl. 16.40). Konsolen täcker
+   inte längre bordet (SYSTEM, "Konsolen"). Det han bör säga något om: Miljö, Dealer och Musik ligger bakom en knapp
+   (≡), stående visas plats 2–6 och hon är cirka en femtedel mindre än förut.
+6. **Korten.** Underlägget är på från början sedan 2026-11-14 kl. 15.27 (hans ord kl. 15.14: "Ang spelkorten så ser de
+   inte skitbra ut heller än så länge"), och kortbyggarens fjärde steg är publicerat samma dag kl. 17.11: hålkortet
+   följer filmens kort under hennes hand och skons fönster står mörkt. En oberoende granskare såg två hela rundor utan
+   att veta vilken som var vilken och valde rundan med steg 4 (hålkortet 3,5/5 mot 3/5, skons fönster 5/5 mot 3/5).
+   Det som är kvar står i Kända brister, Korten. `kort=liggande` finns kvar för hans eget öga.
+7. **Filmen till hans chef.** På skrivbordet ligger `paow-runda-6-till-chefen-spelet.mp4` (och `-scenen.mp4`), en hel
+   runda i filmad fart, 124 s, blint granskad 3,75/5. Den är inspelad före lördagens ändringar (kortens fjärde steg,
+   håret, rummets slinga) och före mungiporna; en ny tagning görs när talbanans läppar är inne (Nästa steg). Ingen
+   granskare har hört ljudet: han bör lyssna innan han skickar. Äldre filmer på skrivbordet som inte ska skickas:
+   `paow-runda-2-` till `paow-runda-5-`. Trailern ligger där som `noir-trailer-3-kort.mp4` och
+   `noir-trailer-3-nytt-slut.mp4`, och förslaget med tatuerade händer som `paow-fler-tatueringar-forslag.jpg`.
+8. **Läpparna: mungiporna är omgjorda** (hans ord 2026-11-14 kl. 15.14: "Hon får lixom lite som typ
+   clown-mungipor"). Talbanans tre rader till honom, ordagrant: "Clown-mungiporna kom av två saker: giporna stod helt
+   stilla medan munnen öppnades, och underläppen var ritad av modellen. Nu är båda läpparna hennes egna, giporna
+   följer med när hon öppnar munnen, och modellen ritar bara tänderna och munhålan." "Oberoende granskare jämförde
+   alla 30 filmer med dem i spelet: den nya var bättre i alla 30 (mest 4/5 mot 3/5). 20 byts nu; de 10 andra är
+   omlagda i dag med två små rättningar och kommer när de är dömda." "Inget kostade pengar, och den andra
+   läppsynkmodellen behövdes inte för det här." De 20 är inne och godkända åt honom (STABILT 16, 2026-11-17); Prov
+   `paow-mun` och `paow-tal`. Hans egen godkända `paow-tal-blackjack-sv-04` rörs inte och går före i spelet,
+   så blackjackrepliken har kvar de gamla giporna tills han själv dömer om den (Granska, Alla, filtret Dömda åt dig:
+   `paow-tal-blackjack-sv-13` är den nya).
+9. **Det han bör se själv, allt i Prov** (studion på hans dator; kopian bär bara de sex prov han valde 2026-11-12):
+   Monacos nya bakgrund (`monaco-liv-2`, 3,5/5: kyparens rundor upprepas och allt går lite raskt), håret utan grön
+   kant (`har-utan-gront`), förslaget med tatuerade händer (`paow-fler-tatueringar`: sagt "Jättebra med händerna",
+   helst mindre händer), underlägget (`underlagg`), liv i överkroppen (`liv-i-overkroppen`), blixten (`blixten`), de
+   fyra nya rummen (`monaco-och-spelhalan`; ska något av dem in i spelets meny?), röken (`rok-over-bordet`, av),
+   kopparna (`koppar-i-relingen`) och trailerns nya slut (`trailer-noir-3`). På en iPhone dessutom (Kända brister,
+   "Hennes röst på en iPhone"): hörs hon när hon säger sin första replik och under en runda, med ringsignalen på och
+   av? Kommer rösten in sent första gången en replik sägs? Hörs "Lycka till" över ingången?
+10. **Farten.** Inget skyndas längre från början (hans ord 2026-11-13 kl. 19.13). Förslag som väntar på hans öga, från
+   scenbanan: fart bara på givar och returer, och hellre 1,3–1,5 än 2. Reglaget Givarnas tempo finns kvar i Scen.
+11. **Ett tredje och fjärde dealerkort** (hans ord 2026-11-13: "Skapa då ett tredje och fjärde till dealer"): planen
+    har sexton platser, två per spelare och dealerns två (`TARGETS` i `src/placement-model.ts`), och ordermodellen tar
+    bara de platserna, så en film dit går inte att beställa och korten läggs utan hand. Förslag, inte byggt: planen får
+    `D.C3` och `D.C4` i rad efter `D.C2`; sedan flyttar han dem i Placering och filmerna beställs som hennes första
+    kort. Vill han ha det så?
+12. **Mindre saker som väntar på ett ord:**
+    - Boten på kopian kräver fortfarande lösenordet (den kostar per fråga); resten av kopian är öppen sedan
+      2026-11-14 kl. 15.27. Ska boten också vara öppen?
+    - `placements/proposals/` (två förslag till plan från 2026-11-11 som bara gamla scensidan visar): tas bort?
+    - De tre långa biblioteksfilerna under `materials/` (three.js och två färdigbyggda sidor): byggas ur vår egen
+      källa när gamla publika sajten stängs?
+    - Fyra av Pamelas filmer från 2026-11-11 ligger kvar på disk utan post; en tidigare agent tog dem ur banken.
+    - En andra spelarfigur, "Astrid", som kommer in från sidan och satsar: inte påbörjad.
+    - Ska bordets tryck följa bordets storlek (`tableSize`)? Scenbanans fråga.
+    - Hans första röst-id är inte färdigtränat hos ElevenLabs (bara kontots ägare kan göra klart det). Paows talbank
+      ligger kvar i hans privata Blob-lager `dealer-lab-tal` efter mätningen hos RunPod (0,05 USD): ska den bort?
+    - Profilval 1 kapar toppen av hennes huvud i 93 % av rutorna: flytta kameran en aning, eller låta stå?
+13. **Äldre frågor om Pamela** (pausad): primära på hennes kanter, hålkortets giv, skokortets lutning, ett kortformat på
+    tvären, Meshy-bordet, obedömda prov och den publika sajten står kvar i Git-historiken för HANDOFF före 2026-11-13 och
+    tas upp när pausen hävs.
 
 ## Nästa steg
+
+**Läget 2026-11-17 och det som pågår.** Kopian är publicerad ur `736bae1` (2026-11-17 kl. 16.40): öppen utan
+lösenord, underlägget och kortens fjärde steg, vilans nya regel, Monacos slinga, håret, ändringarna för det svarta
+spelet, mobilens konsol. Det som följer är i gång eller står på tur; punkterna under är äldre och gäller där inget
+här säger annat.
+- **Trailersessionen** spelar in slutet på filmen före spelet på nytt (v5: Monacos nya slinga, hennes svaj av; inga
+  krediter). Leveransen i `D:/dealer-scratch/tmp/dealer-1e/intro/media/` läggs av huvudagenten under
+  `assets/films/intro/noir-3/` (film, startbild, kvitto), mäts i tre storlekar
+  (`D:/dealer-scratch/tmp/huvudagent11/look/skjut-intro-toning.mjs`, `hopp-i-rutor.mjs`) och publiceras.
+- **Talbanan:** STABILT 16 (mungiporna) är inne 2026-11-17: 17 talfilmer, två munlappar och demofilmen, godkända åt
+  honom. STABILT 17 (de tio repliker som lades om med två små rättningar: `dealerplays`, `detsamma`, `double`,
+  `grattis`, `otur`, `push`, `regler`, `varsagod` och lyckoönskan över given och över ingången) kommer när tre
+  granskare har dömt dem, och läggs in på samma sätt (`D:/dealer-scratch/tmp/huvudagent11/look/in-talet.mjs`,
+  `doma-talfilmer.mjs`; lapparna enligt talbanans LASMIG), sedan publicering.
+- **Scenbanan** kodar om Monacos film utan stegen i nyckelrutorna (`monaco-liv-3.mp4`) och mäter hoppen i
+  webbläsaren (Kända brister, "Hopp mellan filmer").
+- **Huvudagenten:** en ny runda till chefen när läpparna är inne (`alla.mjs`, ny tagning, blind granskning mot
+  `chef-jakob-1-1x-v10`), kopian sedd som en ny besökare i telefonstorlek efter varje publicering, och `KLAR.txt`
+  på skrivbordet när allt har ett utfall.
+- **Väntar på Jakob:** Öppet hos Jakob, punkt 1–4 (telefonen, Runway, GitHub, fotot).
 
 0. **Paow, läget 2026-11-13 vid midnatt** (`node tools/produce.ts paow`: 24 av 33 steg klara, 20 av de 21 en runda
    kräver; det som saknas för en runda är hålkortets retur till vila, som inte har någon metod). En runda spelas i
@@ -418,6 +446,40 @@ punkt 0. Det här är det som bara han kan göra eller säga.
   `/trailer` på kopian (SYSTEM, "En film före spelet"). Hans beslut från 2026-11-12 att trailrar hålls utanför kopian
   gäller i övrigt: bara den här filmen går upp, som spelets egen film, och trailerproven i Prov är fortfarande
   spärrade (`data/studio-release.json`). Huvudagentens läsning, som han kan rätta.
+- **Hans ord 2026-11-14 kl. 15.10–15.35**, från telefonen, sedan han sett kopian (alla till huvudagenten; han läser
+  inte långa svar just nu och vill ha `KLAR.txt` när allt är gjort):
+  - **Inget lösenord:** "Se till att den inte är lösenordsskyddad." och "sätt en agent som tar bort lösenordet "john"
+    för sidan nu". Kopian är öppen sedan kl. 15.27 (`DEALER_OPPEN=allt`; DRIFT); boten kräver fortfarande lösenordet,
+    eftersom den kostar per fråga (huvudagentens val, som han kan ändra).
+  - **Läpparna:** "Säg till berörd agent att se till att lipsynken görs så det blir bättre. Hon får lixom lite som typ
+    clown-mungipor. kanske är formatet av bilden större än det som används. kanmna komprimpera videos som används
+    enbart för att skapa områden som kanske är mindre högupplösta då jag vet att detta är kanska krävande. […] Eller
+    att området blir större där lipsynket är. Jag kan för lite för att ha en åsikt." Gick till talbanan samma minut.
+  - **Fler tatueringar**, med ett foto: "Kvinnan på och i videon har också mer tatuelringar. kan man göra så det blir
+    mer eller se som denna kvinna har på videon skulle det varar bättre." Fotot ligger i `private/referenser/` och är
+    inte skickat någonstans; förslaget står i Prov `paow-fler-tatueringar`. Kl. 15.45, om förslaget: "Jättebra med
+    händerna. kanske svårt, men hon har väl mindre händer? Aja, tänkte framförallt på videon i början när man ser
+    hennes rygg". Alltså: ja till tatuerade händer (och helst mindre händer) när hennes ankare görs om, men först
+    trailerns början, där hon syns bakifrån; den gick till trailersessionen samma minut.
+  - **Korten:** "Ang spelkorten så ser de inte skitbra ut heller än så länge." Underlägget är därför på från början
+    sedan samma timme (`662b271`), och en kortbyggare arbetar med felen som är kvar.
+  - **Rummet bakom henne:** "Bakgrunden som vals och väljs i filmen skulle jag vilja få lite mer rörelse i elelr så.
+    kanske att man se någon som reser sig från borden i bakgrunden och kommer tillbaka en minut sere. Det finns en
+    man/kypare. han står helt stelt i bakgrunden hela tiden tex.. ja du fattar. Du har fria privilegier och kör på.
+    men se till att dokumentera coh städa och så vidare." Gick till scenbanan.
+  - **Spelets knappar på telefon:** "markeröverlägget på mobil coh framförallt på lite skärm och det måste göras
+    smartare och mindre så det inte täckeer bla vart marker ska in osv", "..men liggande också ser jag." Hans
+    skärmbild: en sida på cirka 370 × 660 bildpunkter där inte en enda insatsring syns; de ligger under knapparna.
+  - **Vilans slinga:** "Flera animationer kommer sedan inte in automatiskt i "grundloopen" idle eller vad vi nu kallar
+    det." och "Den där hon dricker från undersidan av bortet är bra, och säkert andrasakeer som ska in i
+    grundloopen". Regeln är ändrad (`d4137cb`; SYSTEM, Vilan). Champagnefilmen är alltså bra som den är; frågan om
+    hylla eller ny tagning är struken.
+  - **Smått:** "Ser lite grönhet i hennes hår i blackjagcken efter också.. marginellt, men lite och att vissa olika
+    hopp görs. inte farlgigt, men lite." Och om natten: "I övrigt är jobbet bra gjort!"
+  - **Svart efter filmen** (kl. 16.24, genom en session som hans bot startade medan han satt vid telefonen): "Den nya
+    videon som overgar till spelet blir bara svart nar man ar inne i spelet." Kända brister, "Spelet på hans telefon".
+- **2026-11-17 kl. 16.35:** "Vad är sttus? Varit borta ett par dagar och nu bytt konto". Arbetet hade stått sedan
+  2026-11-14 kl. 17.15; sessionerna fick nya adresser (Vem äger vad), och Runways koppling kräver ny inloggning.
 - **Kopian till chefen** (kl. 15.38 till talbanan): "när jag vill kunna komma till en supenekle mockupsida med
   lösenordet "john". Sedan valet att spela i casinot eller komma till studio/labbet … Eller bara samma radda av
   alternativ som finns på vänsterspalten". Och kl. 16.30 till scenbanan: "Se nu till att inga luckor i nodträdet
@@ -515,21 +577,32 @@ punkt 0. Det här är det som bara han kan göra eller säga.
   fingrarna på papperet och i gula hörn där zonen missar hålkortet (`granskning-palagg/DOM.md`).
   **Underlägget** (steg 3, natten mot 2026-11-14) använder samma omfärgning under det ritade kortet i stället för
   i dess ställe: det ritade kortet ligger kvar överst som i dag, och bara det som sticker ut av filmens kort bredvid
-  blir mörkt eller papper. Det ligger i trädet, avstängt: adressorden `cardBack=dark&cardFace=paper` på spelsidan
-  (`cardWords` i `src/game-film.ts`; `back` och `face` per del i scenen), och utan dem är spelet som förut
-  (byggarens mätning: skillnaden mot arbetskopiorna är mindre än mellan två körningar av samma sida). Mätt av
+  blir mörkt eller papper. Det byggdes avstängt, bakom adressorden `cardBack=dark&cardFace=paper` på spelsidan
+  (`cardWords` i `src/game-film.ts`; `back` och `face` per del i scenen), och är förvalet under det ritade kortet
+  sedan 2026-11-14 (`662b271`, `UNDER` i `src/card-overlay.ts`; `cardBack=film&cardFace=film` visar filmens
+  färger igen). Mätt av
   byggaren på varje ruta i tagningarna, i dag mot underlägg: dealerns gula spets 5 rutor → 0, den gula blixten vid
   plats 1 2 → 0, den blå kanten när hålkortet vänds 1 → 0, hålkortets gula remsa 14 → 3 (kvar som en mörk skugga
   under fingrarna). Oförändrat: den tunna linjen på kant och den taggiga vita fingerkanten, som hör till det ritade
   kortet och nyckeln. Inte mätt: vad shadern kostar i det levande spelet (sexton fler texturläsningar per bildpunkt
   nära hud). Bladen och filmen: `D:/dealer-scratch/tmp/kortbyggare/steg-3/` (`blad/`, `film/underlagg-givar.mp4`,
-  `LASMIG.md`). Reglage i Scen (`cardBack`, `cardFace`) finns inte än; de är scenbanans när Jakob har sett provet.
+  `LASMIG.md`). Reglage i Scen (`cardBack`, `cardFace`) finns inte än.
   En oberoende granskare såg sedan två hela rundor ur spelet utan att veta vilken som var vilken (tagningarna
   `chef-jakob-1-1x-v9-underlagg` och `-v8`): 3,75/5 med underlägget mot 3,5/5 som i dag, lika bra eller bättre vid
   alla 14 kort. Den gula remsan vid hålkortet går från 17 rutor till en liten fläck i 4; dealerns gula spets, den
   gula blixten vid plats 1 och fläckarna vid 29 och 78 s är borta; och ljusa kanter längs kortet på fem ställen som
   ingen hade listat försvinner också (`D:/dealer-scratch/tmp/huvudagent11/chefsfilm/granskning-6/DOM.md`). Prov
   `underlagg` visar det för Jakob.
+  **Steg 4** (`33b164a`, publicerat 2026-11-14 kl. 17.11): hålkortets ritade kort följer filmens kort under hennes
+  hand (spåret för `paow-giv-2-1-d-c2-03-01` är lagat och vilar från ruta 80 i stället för 57; det gamla ligger i
+  `D:/dealer-scratch/tmp/huvudagent11/kort-forval/spar-fore-steg-4/`), och skons fönster står mörkt. En oberoende
+  granskare såg två hela rundor ruta mot ruta utan att veta vilken som var vilken (`chef-jakob-1-1x-v10` mot
+  `-v9-underlagg`; bladen i `D:/dealer-scratch/tmp/huvudagent11/chefsfilm/blind-steg4/granskning/`) och valde
+  rundan med steg 4, 75 % säker: hålkortet 3,5/5 mot 3/5 (den gula fläcken under ring- och lillfingret och den vid
+  pekfingret är borta) och skons fönster 5/5 mot 3/5 (utan steg 4 slog fönstret om till grått och tillbaka i en enda
+  ruta vid fyra givar). Kvar med steg 4: hålkortet ligger dolt under hennes fingertoppar i cirka 0,6 s innan det
+  glider på plats, och en svag gulaktig kant i kortets högra ände i fem rutor. Spelarnas kort och vändningen är lika
+  i båda rundorna.
   - Syns i dag med ritat kort i handen (granskarens tider i `chef-jakob-1-1x-v6`): vid hålkortets giv (99,2–99,7 s)
     täcker det ritade kortets baksida bara en del av filmens gula kort, så en gul remsa syns under fingrarna; filmens
     färg sticker fram bredvid det ritade i sex ögonblick (en gul spets på dealerns kort vid 50,0 s, en brun och blå kant
@@ -562,7 +635,11 @@ punkt 0. Det här är det som bara han kan göra eller säga.
 - **Rösten:** spelet väljer talfilmerna med rösten Paow (`src/game-page.ts`, `data/speech.json`); nattens 25 med rösten
   Jessica ligger kvar i banken och spelas inte. Rösten ligger i Kevins ElevenLabs-konto, och nyckelradens namn står i
   registret, aldrig nyckeln (docs/TAL.md, "Rösten").
-- **Läpparna** är omlagda tre gånger efter hans ord (STABILT 12, 13 och 14; docs/TAL.md, "Kvaliteten"). Granskarna
+- **Läpparna** är omlagda fyra gånger efter hans ord (STABILT 12, 13 och 14 om överläppen; STABILT 16, 2026-11-17, om
+  mungiporna: hennes egen underläpp flyttas nedåt, giporna följer käken och det ritade ligger bara mellan hennes
+  läppar; docs/TAL.md, "Kvaliteten"). Banken har repliker lagda med flera recept: de 20 i STABILT 16 är lagda utan de
+  två mått koden fick samma dag (tak på gipornas väg, smalare toning vid läppkanterna), så en ny tagning av en av dem
+  skiljer i de rutorna och går in först efter granskning. Det som följer är skrivet före STABILT 16. Granskarna
   gav den andra omläggningen 4/5 i 29 filmer av 30; den tredje bytte bara de elva repliker där en granskare kallade
   den nya bättre (en sluten mun är sluten: läppen vilar i tysta rutor), och arton står kvar. Banken har alltså
   repliker lagda med två recept, och en ny tagning av en replik som inte byttes går in först efter granskning. Kvar i
@@ -587,6 +664,46 @@ punkt 0. Det här är det som bara han kan göra eller säga.
   ljudets skull, så rösten kommer in en bit in i repliken; en liten ljudfil bredvid varje talfilm tar bort det och
   görs när en telefon har visat att grunden håller. Frågorna till Jakob står i "Öppet hos Jakob". Filmen före spelet
   startas i själva trycket på Spela och berörs inte.
+- **Spelet på hans telefon blev svart efter filmen före spelet** (hans ord 2026-11-14 kl. 16.24). Inte återskapat, och
+  inte bekräftat rättat: ingen av oss har en telefon.
+  - Känt om telefonen: skärmbilden kl. 15.21 visar en iPhone med Safari i strömsparläge på `dealer-lake.vercel.app`,
+    och där syns spelet som det ska. Kl. 15.29 skrev han om håret "i blackjacken efter", så vägen genom filmen
+    fungerade då, och inget publicerades mellan 15.32 och hans ord 16.24. Telefonens eget läge kan alltså spela in.
+  - I en headless Chrome (390 × 844 och 1920 × 1080, riktigt tryck) är spelet efter filmen inte svart, varken med
+    den kod han såg eller med dagens.
+  - Ändrat och publicerat (`b8f6565`, `2d66606`, `736bae1`; SYSTEM, "Filmkön" och "En film före spelet"): en
+    filmstart som webbläsaren nekar görs om i besökarens nästa tryck (förut tappades den); filmlagren ritas inte förrän
+    en film har gett sin första bild (förut ritades båda svarta över rum och bord); under filmen före spelet står
+    hennes vila hållen och rummets film är av, så en film avkodas i stället för tre; potten håller fem filmelement på
+    en pekskärm i stället för åtta; rummets film begär sin start en gång i stället för sextio gånger i sekunden.
+  - Mätt i en attrapp (en webbläsare som nekar varje filmstart utanför ett tryck;
+    `D:/dealer-scratch/tmp/huvudagent11/look/strikt-koll.mjs`): den kod han såg stod för gott på talfilmens första
+    ruta efter filmen, och ett tryck hjälpte inte; dagens går vidare en film per tryck. Bilden var aldrig svart i
+    attrappen, i någon av dem. Är hans telefon så sträng hackar spelet alltså fortfarande: varje film som görs efter
+    ett tryck väntar på nästa tryck.
+  - Skärmbilden av `/trailer?diagnos=1` skiljer tre läsningar. "sträng JA" och rader med "nekad": webbläsaren nekar
+    starter, och nästa steg är en fast uppsättning filmelement som öppnas i ett tryck och återanvänds för nya filmer
+    (inte byggt). "bildyta: FÖRLORAD": telefonen tog bildytan (minne), och nästa steg är mindre filmer för telefon
+    (vilofilmerna är 1764 × 1174 i 21 Mbit/s; scenbanan skattar att en halverad kopia skär nedladdningen med fyra
+    femtedelar). "på skärmen: … står 0.00" med "hållen vila ja" och svart där hon ska vara: en film som aldrig har
+    spelat ger ingen bild på telefonen, och nästa steg är att den hållna vilan spelar till sin första visade ruta,
+    stannar och spolas tillbaka (prövat utan tillbakaspolning och struket: filmen hann till ruta 21 medan sidan
+    startade).
+- **Hopp mellan filmer** (hans ord 2026-11-14: "och att vissa olika hopp görs. inte farlgigt, men lite"). Scenbanans
+  mätning i filerna 2026-11-17: av 3 474 möjliga byten flyttar sig ansikte och händer 0 bildpunkter i 98 %. Hoppen
+  sitter i returen efter en runda: de tre returerna slutar 2–3 bildpunkter från vilans första ruta och 4–9 nivåer
+  ljusare. Champagnefilmen (`paow-vila-17-02`) är cirka 5 nivåer mörkare i ansiktet än de andra vilorna och ingången
+  `2-1-02-01` cirka 5 ljusare; det är vad Jämna filmernas färg är till för, och hur mycket som blir kvar i spelet
+  är inte mätt. Det filerna inte förklarar bör sitta i bytet självt: en film som inte står färdig när den tas in och
+  tappar sina första rutor (6 av 16 starter 2026-11-13). Den delen mäts i webbläsaren och är inte gjord. Förslag,
+  inte infört: låta en retur spela till sin sista ruta (i dag tappas tre i var ände, `IDLE_RULE` och `resolveRound` i
+  `src/clip-graph.ts`, med skälet att en genererad film hoppar i sina två sista rutor). Mätt på Paows fyra returer:
+  de tre sista rutorna är inte mjukare än de före (88–105 % av filmens egen skärpa), `utgang-baklanges-01` landar då
+  på ankaret (ljussteget 5,6 → 0,6 nivåer), de två `utgang-2-2` tappar sina 2–3 bildpunkter, och `utgang-01-01` vinner
+  inget; ljussteget i de tre WAN-returerna (4 och 8 nivåer) är tagningens egen nivå och ändras inte av slutrutan
+  (`retur-slut.mjs` bredvid de andra verktygen). Alla byten
+  ligger i `D:/dealer-scratch/tmp/levande-objekt/ljus/hopp/skarvar.json`; verktygen bredvid (`hopp-lista.mjs`,
+  `hopp-matt.mjs`, `hopp-topp.mjs`).
 - **Filmen före spelet** (`/trailer`): när trycket på Spela kommer står startbilden still medan filmen hämtas och
   tonar upp under den (median 0,72 s på dator, 0,83 s på telefon i labbet; längre på ett långsamt nät) och ger sedan
   vika på filmens ruta 12–14, ett steg på cirka 1 bildpunkt. Strax efter trycket slutar sidan dock rita i 0,35–0,57
@@ -598,7 +715,9 @@ punkt 0. Det här är det som bara han kan göra eller säga.
   genom spelets knapprad i cirka 0,2 s medan den tonar ut. Hon sitter stilla cirka 1,25 s på dator och 2 s på telefon
   från filmens slut tills hon talar; granskaren kallar det en naturlig paus men gränsen (`INTRO_BEAT_MS` och
   `INTRO_DEFAULTS.fade` är måtten). Filmen är inspelad ur spelets egen vilobild och måste spelas in på nytt när den
-  bilden ändras (SYSTEM, "En film före spelet").
+  bilden ändras (SYSTEM, "En film före spelet"); det görs 2026-11-17 (Nästa steg). Med filmen som ligger ute skiljer
+  hennes ansikte högst 1 bildpunkt mellan filmens sista ruta och spelet i 1920 × 1080, 390 × 844 och 844 × 390, sedan
+  hennes svaj hålls på noll under filmen (`736bae1`); rummet bakom henne är däremot den gamla korta slingans.
 - **Testerna utan FFmpeg:** elva tester hoppas över där FFmpeg saknas (`tools/film-after.test.ts`,
   `tools/film-fix.test.ts`, `tools/order-bring.test.ts`, `tools/register-order.test.ts`, `tools/speech-plan.test.ts`),
   tre i `tools/order-images.test.ts` kräver bankens filmer och ett i `tools/card-overlay.test.ts` kortspåren; GitHubs
