@@ -238,7 +238,12 @@ konto ("Varit borta ett par dagar och nu bytt konto"). Han läser inte långa sv
    följer med när hon öppnar munnen, och modellen ritar bara tänderna och munhålan." "Oberoende granskare jämförde
    alla 30 filmer med dem i spelet: den nya var bättre i alla 30 (mest 4/5 mot 3/5). 20 byts nu; de 10 andra är
    omlagda i dag med två små rättningar och kommer när de är dömda." "Inget kostade pengar, och den andra
-   läppsynkmodellen behövdes inte för det här." De 20 är inne och godkända åt honom (STABILT 16, 2026-11-17); Prov
+   läppsynkmodellen behövdes inte för det här." De 20 är inne och godkända åt honom (STABILT 16, 2026-11-17), och
+   samma dag nio av de tio sista (STABILT 17; lyckoönskan över ingången står kvar som den var, eftersom den nya hade
+   en dubbel läpplinje i två rutor). **Granskarna är inte överens om giporna**, och det ska han ha rakt: underläppen
+   kallar alla klart bättre, men av elva granskare säger sex att giporna är naturliga eller nästan naturliga och fyra
+   att det uppdragna finns kvar i spelets storlek. Hans öga avgör. Ser han fortfarande clown-mungipor finns ett
+   gratis steg till att pröva: att tona ned hennes egna små veck utanför giporna medan hon talar. Prov
    `paow-mun` och `paow-tal`. Hans egen godkända `paow-tal-blackjack-sv-04` rörs inte och går före i spelet,
    så blackjackrepliken har kvar de gamla giporna tills han själv dömer om den (Granska, Alla, filtret Dömda åt dig:
    `paow-tal-blackjack-sv-13` är den nya).
@@ -275,19 +280,22 @@ konto ("Varit borta ett par dagar och nu bytt konto"). Han läser inte långa sv
 
 ## Nästa steg
 
-**Läget 2026-11-17 och det som pågår.** Kopian är publicerad ur `736bae1` (2026-11-17 kl. 16.40): öppen utan
-lösenord, underlägget och kortens fjärde steg, vilans nya regel, Monacos slinga, håret, ändringarna för det svarta
-spelet, mobilens konsol. Det som följer är i gång eller står på tur; punkterna under är äldre och gäller där inget
+**Läget 2026-11-17 och det som pågår.** Kopian publiceras ur `main` efter varje färdig del (senast 2026-11-17; `/meta.json` på kopian säger vilken
+commit): öppen utan lösenord, underlägget och kortens fjärde steg, vilans nya regel, Monacos slinga, håret,
+ändringarna för det svarta spelet, mobilens konsol, de nya läpparna. Av en repliks filmer bär kopian bara den spelet
+säger (DRIFT, "Taket för Blob"). Det som följer är i gång eller står på tur; punkterna under är äldre och gäller där inget
 här säger annat.
 - **Trailersessionen** spelar in slutet på filmen före spelet på nytt (v5: Monacos nya slinga, hennes svaj av; inga
   krediter). Leveransen i `D:/dealer-scratch/tmp/dealer-1e/intro/media/` läggs av huvudagenten under
   `assets/films/intro/noir-3/` (film, startbild, kvitto), mäts i tre storlekar
   (`D:/dealer-scratch/tmp/huvudagent11/look/skjut-intro-toning.mjs`, `hopp-i-rutor.mjs`) och publiceras.
-- **Talbanan:** STABILT 16 (mungiporna) är inne 2026-11-17: 17 talfilmer, två munlappar och demofilmen, godkända åt
-  honom. STABILT 17 (de tio repliker som lades om med två små rättningar: `dealerplays`, `detsamma`, `double`,
-  `grattis`, `otur`, `push`, `regler`, `varsagod` och lyckoönskan över given och över ingången) kommer när tre
-  granskare har dömt dem, och läggs in på samma sätt (`D:/dealer-scratch/tmp/huvudagent11/look/in-talet.mjs`,
-  `doma-talfilmer.mjs`; lapparna enligt talbanans LASMIG), sedan publicering.
+- **Talbanan:** STABILT 16 och 17 (mungiporna) är inne 2026-11-17: 25 talfilmer, tre munlappar och demofilmen,
+  godkända åt honom; spelet säger de nya för alla repliker utom `blackjack` (hans egen `sv-04`). Fem av dem
+  (`otur`, `push`, `regler`, `varsagod` och lyckoönskan över given) byttes på huvudagentens beslut fast granskaren
+  kallade giporna likvärdiga: var och en är bättre att visa utan något sämre, och annars talar hon med två sorters
+  underläpp. Talbanan bygger om proven `paow-tal` och `paow-mun`. Nästa steg där är hans: se "Öppet hos Jakob".
+  En överlämning läggs in med `D:/dealer-scratch/tmp/huvudagent11/look/in-talet.mjs` och `doma-talfilmer.mjs`;
+  lapparna enligt talbanans LASMIG.
 - **Scenbanan** mäter hoppen i webbläsaren (Kända brister, "Hopp mellan filmer"): sex korta körningar, tre i
   1920 × 1080 och tre i 390 × 844. Rummets film `monaco-liv-2.mp4` står kvar som den är: den har ett litet steg in i
   varje nyckelruta (var 8,3 s, 0,57 nivåer av 255 i en suddig bakgrund; 0,87 i slingans skarv), och ingen av 17

@@ -6186,6 +6186,118 @@
           }
         },
         {
+          "id": "paow-tal-dealerplays-sv-13",
+          "role": "film",
+          "name": "Tal: Dealern spelar.",
+          "path": "assets/motions/paow-tal-dealerplays-sv-13/source.mp4",
+          "still": 21,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Vilan paow-vila-01-01 med munnen ritad efter ljudet, inlagd bara kring det som hörs och under hennes egen överläpp, som lyfts när munnen öppnar (tools/speech.ts), rösten Paow (ElevenLabs), 41 rutor i 24 per sekund med ljud. Granskaren 3.5/5: Giporna uppdragna i öppna rutor (läppen lyfts, giporna står), men ett V och egen blank underläpp gör dem mjukare. Mot den andra: egen underläpp även i pau",
+          "source": {
+            "from": "tools/speech.ts say --dealer paow --line dealerplays (Paow)",
+            "when": "2026-11-17"
+          }
+        },
+        {
+          "id": "paow-tal-detsamma-sv-11",
+          "role": "film",
+          "name": "Tal: Tack detsamma!",
+          "path": "assets/motions/paow-tal-detsamma-sv-11/source.mp4",
+          "still": 20,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Vilan paow-vila-01-01 med munnen ritad efter ljudet, inlagd bara kring det som hörs och under hennes egen överläpp, som lyfts när munnen öppnar (tools/speech.ts), rösten Paow (ElevenLabs), 40 rutor i 24 per sekund med ljud. Granskaren 3.5/5: Giporna uppdragna i öppna rutor (läppen lyfts, giporna står), men ett V och egen blank underläpp gör dem mjukare. Mot den andra: egen underläpp även i pau",
+          "source": {
+            "from": "tools/speech.ts say --dealer paow --line detsamma (Paow)",
+            "when": "2026-11-17"
+          }
+        },
+        {
+          "id": "paow-tal-double-sv-14",
+          "role": "film",
+          "name": "Tal: Du dubblar. Ett kort, nu gör vi det bästa av det.",
+          "path": "assets/motions/paow-tal-double-sv-14/source.mp4",
+          "still": 37,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Vilan paow-vila-01-01 med munnen ritad efter ljudet, inlagd bara kring det som hörs och under hennes egen överläpp, som lyfts när munnen öppnar (tools/speech.ts), rösten Paow (ElevenLabs), 74 rutor i 24 per sekund med ljud. Granskaren 3.5/5: Giporna uppdragna i öppna rutor (läppen lyfts, giporna står), men ett V och egen blank underläpp gör dem mjukare. Mot den andra: egen underläpp även i pau",
+          "source": {
+            "from": "tools/speech.ts say --dealer paow --line double (Paow)",
+            "when": "2026-11-17"
+          }
+        },
+        {
+          "id": "paow-tal-grattis-sv-11",
+          "role": "film",
+          "name": "Tal: Grattis! Det där var snyggt spelat.",
+          "path": "assets/motions/paow-tal-grattis-sv-11/source.mp4",
+          "still": 36,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Vilan paow-vila-01-01 med munnen ritad efter ljudet, inlagd bara kring det som hörs och under hennes egen överläpp, som lyfts när munnen öppnar (tools/speech.ts), rösten Paow (ElevenLabs), 71 rutor i 24 per sekund med ljud. Granskaren 3.5/5: Giporna uppdragna i öppna rutor (läppen lyfts, giporna står), men ett V och egen blank underläpp gör dem mjukare. Mot den andra: egen underläpp även i pau",
+          "source": {
+            "from": "tools/speech.ts say --dealer paow --line grattis (Paow)",
+            "when": "2026-11-17"
+          }
+        },
+        {
+          "id": "paow-tal-otur-sv-11",
+          "role": "film",
+          "name": "Tal: Det vänder snart, det brukar det göra.",
+          "path": "assets/motions/paow-tal-otur-sv-11/source.mp4",
+          "still": 34,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Vilan paow-vila-01-01 med munnen ritad efter ljudet, inlagd bara kring det som hörs och under hennes egen överläpp, som lyfts när munnen öppnar (tools/speech.ts), rösten Paow (ElevenLabs), 67 rutor i 24 per sekund med ljud. Granskaren 3/5: Gipor: uppdragna, spetsig V-krok där lyft överläpp möter fast gipa, lika i båda. Egen underläpp med glans; i r30–31 (b) sluten som vilan; ingen svullen unde",
+          "source": {
+            "from": "tools/speech.ts say --dealer paow --line otur (Paow)",
+            "when": "2026-11-17"
+          }
+        },
+        {
+          "id": "paow-tal-push-sv-14",
+          "role": "film",
+          "name": "Tal: Det är lika. Din insats betalas tillbaka.",
+          "path": "assets/motions/paow-tal-push-sv-14/source.mp4",
+          "still": 38,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Vilan paow-vila-01-01 med munnen ritad efter ljudet, inlagd bara kring det som hörs och under hennes egen överläpp, som lyfts när munnen öppnar (tools/speech.ts), rösten Paow (ElevenLabs), 76 rutor i 24 per sekund med ljud. Granskaren 3/5: Gipor: uppdragna V-krokar i öppna rutor, lika i båda. Egen underläpp; b i 'betalas' r39–41 sluten och lik vilan; växlingsruta r22 nästan ren.",
+          "source": {
+            "from": "tools/speech.ts say --dealer paow --line push (Paow)",
+            "when": "2026-11-17"
+          }
+        },
+        {
+          "id": "paow-tal-regler-sv-11",
+          "role": "film",
+          "name": "Tal: Närmast tjugoett vinner, men gå inte över.",
+          "path": "assets/motions/paow-tal-regler-sv-11/source.mp4",
+          "still": 34,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Vilan paow-vila-01-01 med munnen ritad efter ljudet, inlagd bara kring det som hörs och under hennes egen överläpp, som lyfts när munnen öppnar (tools/speech.ts), rösten Paow (ElevenLabs), 67 rutor i 24 per sekund med ljud. Granskaren 3/5: Gipor: uppdragna V-krokar, lika i båda. Egen underläpp med glans; m i 'men' r30–31 och r10–11 sluten som vilan; underläppen rör sig jämnt (största hopp 4,1 ",
+          "source": {
+            "from": "tools/speech.ts say --dealer paow --line regler (Paow)",
+            "when": "2026-11-17"
+          }
+        },
+        {
+          "id": "paow-tal-varsagod-sv-11",
+          "role": "film",
+          "name": "Tal: Varsågod, det är bara roligt.",
+          "path": "assets/motions/paow-tal-varsagod-sv-11/source.mp4",
+          "still": 26,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Vilan paow-vila-01-01 med munnen ritad efter ljudet, inlagd bara kring det som hörs och under hennes egen överläpp, som lyfts när munnen öppnar (tools/speech.ts), rösten Paow (ElevenLabs), 52 rutor i 24 per sekund med ljud. Granskaren 3/5: Gipor: uppdragna V-krokar, lika i båda. Egen underläpp; b i 'bara' r24–25 sluten och lik vilan. Lyftet börjar en ruta senare än i -09 (r8), inom synkgränsen",
+          "source": {
+            "from": "tools/speech.ts say --dealer paow --line varsagod (Paow)",
+            "when": "2026-11-17"
+          }
+        },
+        {
           "id": "paow-film-intro-noir-3-startruta",
           "role": "arbetsmaterial",
           "name": "Startrutan till filmen före spelet",
