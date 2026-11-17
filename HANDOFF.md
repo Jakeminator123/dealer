@@ -325,6 +325,37 @@ här säger annat.
   kanske med en ny agent, och prövar själv Beställ. Händerna syns i varje film, så nya givar kan inte blandas med
   gamla vilor: det blir en hel uppsättning som tar över när den är komplett. Att måla tatueringar i färdiga filmer
   har fallit två gånger hos granskaren (2 av 5, ryggen i trailern). Första steget är en stillbild för hans ja.
+- **Givarna: vad som var fel i beställningen, och vad som prövas** (2026-11-17 kväll). Jakob beställde själv en giv i
+  Beställ (`paow-giv-2-2-p4-02`, släp från 2.2 till plats 4, WAN 3) och båda tagningarna föll (granskaren 3/5 och
+  2/5). Hans ord: "Oavsett om hon nyper eller släpar ut kortet, alltså om hon kommer från ankaret 2.1 eller 2.2, måste
+  hon vrida över handleden. Jag har pratat med dig i flera timmar om det här, men det verkar inte fungera. Det måste
+  bero på något konstigt i den prompt som skickas." Han hade rätt: mall 8 sade aldrig handleden i förvalets vändning,
+  bad själv om ett lyft i ett släp, och sade aldrig att kortet är slätt. **Mall 9** (`6421f0e`,
+  `src/order-prompts.ts`; handboken §5) rättar de tre; samma giv lagd om med den (`paow-giv-2-2-p4-03`) gav i
+  tagning 2 en vändning med handleden där handen förblir vänd, men kortet fick ett tryck och lyftes ändå ur skon
+  (Prov `bestallning-slap-p4` och `bestallning-slap-p4-mall9`; ingen oberoende granskare har sett de två senare).
+  Två utredningar samma kväll, båda på slaskdisken: `D:/dealer-scratch/tmp/giv-utredning/RAPPORT.md` (tillverkarnas
+  manualer: Kling 4 tar mellanbilder via API och är ensam om referensfilm med första och sista bild; WAN 3 tar bara
+  ord; blått och gult behålls; tre provbeställningar föreslagna) och `D:/dealer-scratch/tmp/pamela-formel/RAPPORT.md`
+  (Prov `pamela-formel`: Pamelas "hela bordet" är cirka 25 korta filmer; i nio av nio bra vändningar hålls kortet i
+  kortändan och hand och kort vrids ihop som en nyckel kring långsidan, handen förblir vänd och handflatan är aldrig
+  uppåt; WAN 3, 4 s, bara dit, returen egen film; kortet syns slätt i startbilden; texten sade vad kameran ser).
+  **Öppet hos honom (kort i Beslut):** vilken vändning han menar, Pamelas eller tagning 2 med handflatan upp; mall 9
+  säger i dag handflatan upp och ska rättas efter hans svar. Därefter en provgiv på Pamelas sätt (kort film, bara dit,
+  kortet synligt och slätt i startbilden, meningen om kanten; Kling 4 med `pamela-p4-c1-plan-deal-02` som referens,
+  cirka 300 krediter). Beställ borde visa hur den valda kombinationen har gått förut och förvälja den som hållit
+  (föreslaget till honom, inte byggt).
+- **Läpparna: realtid med MuseTalk på hans RunPod är målet** (hans ord, se Jakobs besked). Runway-modellen (Seedance)
+  är avförd av honom. Kvällens prov (`paow-realtid-mun` till `-4`): hela modellens mun med gipor, förstorad; hans
+  dom: "Runt munnen ser det inte jättebra ut, men det är godkänt för nu. Hennes överläpp borde bli något större".
+  Hans idé att förminska munnen i det modellen ser gav samma mun; grundbilden är kontrollerad och rätt (banken är
+  vilofilmen själv). Scouts renderer har ett avsiktligt lås mot ändrade filer, som vi inte går förbi; talbanan bygger
+  i stället en egen körare av MuseTalk ur öppen källkod (`D:/dealer-scratch/tmp/tal/korare/`, licenserna läses
+  först), där `bbox_shift` kan prövas, och en provkväll på hans pod är godkänd till högst 5 USD när köraren går här.
+  Planen: `D:/dealer-scratch/tmp/tal/realtid/PLAN.md`. Vyn **Lipsync** i studion (hans förslag) byggs av en
+  underagent ur faktafilen `data/lipsync.json`. Kort i Beslut: vilken storlek (B, C, E, F).
+- **Trailern och de nya händerna:** rollblad 4 (tatuerade händer i alla bilder) och nya keystonekandidater (händerna
+  något mindre, skuggorna under underarmarna borta) görs av trailersessionen; ingen film före hans ja till bladet.
 - **Gjort samma kväll, utöver det ovan:** hoppen mellan vilofilmer (`845afa3`), trailern i mitten på en liggande
   telefon (`052ec81`), vyn Beslut (`aee87ca`). Talbanan har lämnat över och kan stängas; scenbanan likaså;
   trailersessionen arbetar med rollbladet och omtagningen.
@@ -512,6 +543,16 @@ här säger annat.
     hopp görs. inte farlgigt, men lite." Och om natten: "I övrigt är jobbet bra gjort!"
   - **Svart efter filmen** (kl. 16.24, genom en session som hans bot startade medan han satt vid telefonen): "Den nya
     videon som overgar till spelet blir bara svart nar man ar inne i spelet." Kända brister, "Spelet på hans telefon".
+- **2026-11-17 cirka kl. 19.00–20.30, till huvudagenten:** om projektet: "jag vill förstå varför detta är så jävvla
+  svårt. […] Bör jag starta om hela detta projekt i och med att det verkar svårnavigerat, är det det?" (svaret: nej;
+  det svåra följer med, och det som är fel är navigeringen: samma ord betyder flera saker på sidorna och kunskapen
+  står i handboken i stället för i formuläret). Om Pamela: "Kortvändningarna har alltid fungerat ganska bra, särskilt
+  när hon delar ut till hela bordet. […] Kanske kan du granska vad som görs bra där och försöka hitta en formel."
+  Om Scouts lås: "Jag har ju min egna runpod och så vidare på ett eget konto ju! DU kan absolut skapa en egen grejj
+  lokalt vi kanske sedan kan lägga upp på min pod om du vill?" Om en egen flik: "Förslagsvis kan vi ha en egen flik i
+  vänsterspalten som heter Lipsync, där vi kan samla allt som rör detta". I Beslut samma kväll: trailern på telefonen
+  "Fungerar"; boten "Ja" med frågan "Vilkne är botten?" (förklarat; öppnas först när han säger det igen); repliker
+  som munlappar "Pröva" (väntar tills läpparnas väg är avgjord); Monacos bakgrund bra som den är.
 - **2026-11-17 cirka kl. 18.20–18.50, till huvudagenten, om läpparna och beställningar:**
   - **Huvudmålet för läpparna:** "Jag vill ju kunna använda mig av min runpod framgent för att skapa realtidslipsynk.
     Det är det som är huvudmålet. hennes talade replikklipp är av mindre relevans, även fast dessa också ska sitta
