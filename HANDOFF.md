@@ -512,6 +512,28 @@ här säger annat.
     hopp görs. inte farlgigt, men lite." Och om natten: "I övrigt är jobbet bra gjort!"
   - **Svart efter filmen** (kl. 16.24, genom en session som hans bot startade medan han satt vid telefonen): "Den nya
     videon som overgar till spelet blir bara svart nar man ar inne i spelet." Kända brister, "Spelet på hans telefon".
+- **2026-11-17 cirka kl. 18.20–18.50, till huvudagenten, om läpparna och beställningar:**
+  - **Huvudmålet för läpparna:** "Jag vill ju kunna använda mig av min runpod framgent för att skapa realtidslipsynk.
+    Det är det som är huvudmålet. hennes talade replikklipp är av mindre relevans, även fast dessa också ska sitta
+    såklart." Läget när han sade det: modellen som går i realtid (MuseTalk, Scouts renderare) är den vars mun han inte
+    tycker om; provet med en annan modell hos Runway (Seedance, Prov `paow-annan-modell`, 180 krediter) kallade han
+    "skitbra", men den går inte i realtid och inte på RunPod. Talbanan skriver en plan för realtid
+    (`D:/dealer-scratch/tmp/tal/realtid/PLAN.md`), med en uppslagen lista över modeller som går i realtid på egen GPU.
+  - Om provet med bredare mun: "Nej. Hennes mungipor är helt stela vid sidan" (i Beslut) och "för hennes mungipor
+    hänger inte med. Det måste vara runpod-lipsynk-ytan som är fel?" Mätt av talbanan: ytan räcker; det är vår
+    inläggning som väljer bort modellens gipor sedan 2026-11-13, eftersom modellens mun är mindre än hennes.
+  - **Hans egen beställning i Beställ** kl. 18.14: `paow-giv-2-2-p4-02` (släp från ankare 2.2 till plats 4 och
+    tillbaka, WAN 3, två tagningar, 240 krediter). Han frågade varför den kostar 240, om texten är bra och hur lång
+    tid given tar, och tänkte högt: beställa rörelsen långsamt och spela den snabbare i spelet, och granska i halv
+    fart ("detta är bara vad jag tänker"). Protokollet säger att släp från 2.2 med WAN 3 har fallit till plats 4
+    (0 av 2) och hållit till plats 1; en ordinarie beställningsagent lägger hans order.
+  - **En yta för allt:** "Vart är min 'labb'-yta där jag kan se en typ avatar/siluett och sedan kort och bord, jag
+    kan ställa in allt som jag vill, sedan ska jag kunna lägga en beställning för en film. Tex 'A2.2 till P3C2 och
+    tillbaka till A2.2'?" En underagent bygger om Ny beställning med bilden först (inte en ny sida).
+  - Trailerns nya rollblad: "är mellersta bilden fel i och med att huvud/framsida kropp är helt fel som sagt. Hon ser
+    inte riktgit ut som hennes keystonebild heller"; görs om med keystonen som förlaga.
+  - **Filmer i Prov visas utfrätta i hans flik** (vitt ansikte) medan stillbilder och spelet ser rätt ut: hans skärm
+    eller webbläsare (troligen HDR), inte filerna. Lägg alltid en stillbild bredvid en film han ska döma.
 - **2026-11-17 cirka kl. 17.30–17.45, till huvudagenten** ("kan jag kanske tala med dig hela tiden så får du delegera"):
   han talar med huvudagenten och huvudagenten delegerar. Om läpparna, med två utsnitt av hennes mun: "Dock är antingen
   hennes läppar för stora i grunden eller så är läpparna för små när hon väl talar. Kanske är det så lätt? […] de
