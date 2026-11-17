@@ -7,25 +7,23 @@
 // backdrop (the studio's own table with a neutral figure; no dealer's picture), or the V6 picture or a film when chosen; in
 // Mobil the V6 picture. A brass mark says what is not saved; Ångra goes a step back, "Till sparat" all the way, and Ändrat |
 // Sparat (key X) flips the picture between the two. Nothing is written to placements/default.json until Jakob presses Spara.
-// "Beställ film hit" takes a place that has a film of its own on to Beställ. Opened from "Ny beställning" ("Flytta kortets
-// plats", tillbaka= in the address), "Tillbaka till beställningen" leads back to that order with its values; what is not
-// saved here is not what the order draws, so it says so. In the online copy the view only shows.
+// In the lab /placering/ leads to Bordet's Kortplan (app/placering/page.tsx); this view is the online copy's, where it only
+// shows.
 // "Spela kortbanan" over the picture plays the chosen card's way from the shoe's window to its place and the hand back, drawn
 // after the films (lib/placement-path.ts; with the shoe chosen, P4C1's), again and again until it is stopped, at full or half
 // speed; the step it shows is lit on the step chips in Rörelse and named by the picture. A real deal of the bank can lie under
 // the cards (the films to the chosen place first), from the take's own first frame.
 // Must be inside <Suspense> (useSearchParams).
-import { ArrowLeft, Play, RotateCcw, Save, Send, Square, Undo2 } from "lucide-react";
-import Link from "next/link";
+import { Play, RotateCcw, Save, Square, Undo2 } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { SHOE, TARGETS, VIEWS, type Place, type View } from "../../../src/placement-model.ts";
 import { useViewContext } from "../../lib/context.ts";
 import { isSnapshot, swedishMoment } from "../../lib/mode.ts";
-import { VIEW_WORD, changedPlaces, gameDealNotes, orderBack, orderHref, placeCode, placeName, placementQuery, readPlacementAddress } from "../../lib/placement.ts";
+import { VIEW_WORD, changedPlaces, gameDealNotes, placeCode, placeName, placementQuery, readPlacementAddress } from "../../lib/placement.ts";
 import { DRAFT_FILE, draftText } from "../../lib/placement-files.ts";
 import { Page } from "../shell";
-import { Badge, Button, Dialog, ErrorState, IconButton, Kbd, SegmentedControl, Select, Skeleton, Switch, Tabs, buttonClasses, useToast } from "../ui";
+import { Badge, Button, Dialog, ErrorState, IconButton, Kbd, SegmentedControl, Select, Skeleton, Switch, Tabs, useToast } from "../ui";
 import { cn } from "../ui/cn";
 import { Board, type Look } from "./Board";
 import type { Face } from "./cardLayer.ts";
@@ -41,8 +39,6 @@ type Tab = "plats" | "rorelse" | "material" | "bordet";
 export function PlacementView() {
   const params = useSearchParams();
   const [first] = useState(() => readPlacementAddress(params));
-  // The order Jakob came from ("Flytta kortets plats" in Ny beställning), kept in the address by placementQuery.
-  const [back] = useState(() => (isSnapshot ? null : orderBack(params.get("tillbaka"))));
   const [view, setView] = useState<View>(first.view);
   const [place, setPlace] = useState<Place>(first.place);
   // A card as the films show it, plain yellow and blue (Jakob 2026-11-17); the game's printed card is a choice for afterwork.
@@ -66,7 +62,6 @@ export function PlacementView() {
     window.history.replaceState(null, "", `${window.location.pathname}${placementQuery({ view, place, backdrop, frame }, keep)}`);
   }, [view, place, backdrop, frame]);
   useViewContext({ vy: "placering", val: { plats: placeCode(place), vy: VIEW_WORD[view] } });
-  const order = isSnapshot ? null : orderHref(place);
 
   const d = draft.draft;
   const showSaved = draft.showing === "saved" && draft.dirty;
@@ -276,23 +271,6 @@ export function PlacementView() {
               ) : null}
             </div>
             <SlotPicker plan={plan} view={view} selected={place} changed={showSaved ? new Set() : changed} onSelect={choose} />
-            {order || back ? (
-              <div className="-ml-2.5 flex flex-wrap items-center gap-x-1">
-                {back ? (
-                  <Link href={back} className={buttonClasses({ variant: "quiet", size: "sm" })} title="Till Ny beställning i Beställ, med valen du gjorde där">
-                    <ArrowLeft aria-hidden />
-                    Tillbaka till beställningen
-                  </Link>
-                ) : null}
-                {order ? (
-                  <Link href={order} className={buttonClasses({ variant: "quiet", size: "sm" })} title={`En ny beställning i Beställ, med filmen till ${placeCode(place)}`}>
-                    <Send aria-hidden />
-                    Beställ film hit
-                  </Link>
-                ) : null}
-              </div>
-            ) : null}
-            {back && draft.dirty ? <p className="text-xs text-brass-hi">Spara först: beställningen ritar kortet där den sparade planen lägger det.</p> : null}
             {notes.map((n) => (
               <p key={n} data-game-note className="text-xs text-[#f0b07a]">
                 {n}

@@ -45,7 +45,8 @@ Arkivet är det tidigare projektet på D: (snyggare-dealer). Sidorna har kvar si
   (bland dem allt från Beställ) och API-vägens kredittak. `data/orders/<id>.json` är studions beställningar;
   `data/dealers.json` och `data/media-roles.json` säger vilka dealers som finns och vilka bilder som gäller;
   `data/order-methods.json` är metoden som beställs per steg, och `data/order-policy.json` taken för betald generering.
-- `placements/default.json` är Jakobs kortplan (16 kortplatser) och sparas från studions Placering.
+- `placements/default.json` är Jakobs kortplan (16 kortplatser) och sparas från studions Bordet, del Kortplan (på kopian
+  Placering).
 - `data/decisions.json` är det som väntar på Jakobs svar, ett kort per sak i studions Beslut. Agenter lägger till och tar
   bort poster; bara sidan skriver hans svar (`tools/decision-store.ts`, läsaren och reglerna i
   `tools/decision-register.ts`).
@@ -56,7 +57,7 @@ Arkivet är det tidigare projektet på D: (snyggare-dealer). Sidorna har kvar si
 - `data/manifest.json` registrerar filproveniens och SHA-256 (sökvägarna i den räknas från repots rot); `evidence/`
   innehåller verifieringskvitton.
 - `data/library.json` är V6-tidens filmkatalog (V6, sekvenser, original och diagnostiska prov); beslut hämtas från
-  `motions/`. Filmerna visas i Prov under **Filmbiblioteket** och kan läggas under korten i Placering.
+  `motions/`. Filmerna visas i Prov under **Filmbiblioteket** och kan läggas under korten i Bordets Kortplan.
 
 Dokumenten länkar till dessa i stället för att föra egna statusregister. Media (`assets/`, `output/`), `.runtime/`,
 `.env*` och `private/` är lokala och Git-ignorerade.
@@ -72,14 +73,15 @@ Dokumenten länkar till dessa i stället för att föra egna statusregister. Med
   [DRIFT](docs/DRIFT.md#labbservern-och-fliken). Servern står kvar tills `STOPP.cmd` körs.
 - [Studion](http://127.0.0.1:4319/studio/) är skalet (`/` och `lab.html` leder dit): en Next.js-app i `studio/` som
   byggs med `npm --prefix studio run build` och lämnas ut av samma server. Menyn (`studio/components/shell/Rail.tsx`)
-  har vyerna **Scen**, **Karta** (nodträdet: varje stegs Primär och dess sekundära filmer, med hur spelet använder var
+  har vyerna **Bordet** (delarna Kortplan, Beställ, Scen, Råfilm och Efterarbete i en ram; `/studio/placering/` och
+  `/studio/bestall/` leder dit i labbet), **Scen**, **Karta** (nodträdet: varje stegs Primär och dess sekundära filmer, med hur spelet använder var
   och en; `/studio/primara/` leder hit), **Granska** (två delar i sidans huvud: Filmer, med
   Jakobs domar som skrivs i `motions/`, och Prov, provmapparna under `assets/proofs/` på `/studio/granska/?prov=<mapp>`;
-  den gamla adressen `/studio/prov/?prov=<mapp>` leder dit), **Placering** (kortplanen: 16
-  kortplatser och sko; sparning skriver bara `placements/default.json` och beställer inget), **Material** (vilka bilder
-  som gäller), **Lipsync** (för vald dealer: var munnen görs, på hans dator eller hans RunPod, vad som är inställt och vad som stämmer; skrivskyddad), **Beställ** (bild- och
-  filmbeställningar) och **Casino**, och i foten **Beslut** (det som väntar på Jakobs svar). Lipsync, Beställ och Beslut finns bara i labbet; kopian på nätet har
-  i stället **Önskemål** och boten (Fråga). **Protokoll** (en rad per tagning och metod) nås från Beställ, och
+  den gamla adressen `/studio/prov/?prov=<mapp>` leder dit), **Placering** (bara på kopian: kortplanen, 16
+  kortplatser och sko), **Material** (vilka bilder
+  som gäller), **Lipsync** (för vald dealer: var munnen görs, på hans dator eller hans RunPod, vad som är inställt och vad som stämmer; skrivskyddad), och **Casino**, och i foten **Beslut** (det som väntar på Jakobs svar). Bordet (där bild- och filmbeställningarna
+  görs, med det som skickas till Runway för varje film), Lipsync och Beslut finns bara i labbet; kopian på nätet har
+  i stället **Önskemål** och boten (Fråga). **Protokoll** (en rad per tagning och metod) nås från Bordets Beställ, Kön, och
   **Jämför** (två tagningar av samma steg sida vid sida) från en tagning i Granska och Karta. Längst ned i
   menyn finns också sidorna **Ljud** och **Modeller**, och Scens knapp **3D-sidan** öppnar utvecklarens 3D-sida med samma
   look ([SYSTEM](docs/SYSTEM.md)).

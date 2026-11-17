@@ -2,11 +2,10 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { buildGraph, type BankData } from "../../src/clip-graph.ts";
-import { SEAT_TARGETS } from "../../src/order-model.ts";
 import { NEUTRAL_BACKDROP, SHOE, VIEWS, defaultPlan, editPlace, quad, sequence, toPixels, validatePlan, INTENT_DEFAULTS, type Geometry } from "../../src/placement-model.ts";
 import {
   GREEN_FILM, HISTORY, PLACES, START_PLACE, afterSave, amend, backdropForView, bankFilms, begin, changedPlaces, commit, decimal, defaultStill, editFlip, end, filmGoesTo, filmView, flipOf,
-  gameDealNotes, isDirty, isStill, libraryFilms, motionSteps, nudged, openDraft, orderBack, orderHref, parseDecimal, placeCode, placeFromCode, placeName, placementQuery, placingHref,
+  gameDealNotes, isDirty, isStill, libraryFilms, motionSteps, nudged, openDraft, parseDecimal, placeCode, placeFromCode, placeName, placementQuery,
   quadSize, readPlacementAddress, shownBackdrop, signature, sizeFromCorner, stillChoice, stillLabel, stillPath, stillsOf, taperFromCorner, toLocal, toSaved, turnHandle, undo, type Film,
 } from "../lib/placement.ts";
 import { FLIP_AXES, FLIP_LABEL } from "../../src/order-model.ts";
@@ -209,29 +208,6 @@ test("under the cards: Dator opens on the neutral backdrop, Mobil on its V6 pict
   assert.equal(stillPath("neutral", "portrait"), VIEWS.portrait.background);
 });
 
-test("Beställ film hit: a place with a film of its own goes to a new order with the place as the order model writes it", () => {
-  assert.equal(orderHref("P4.C1"), "/bestall/?ny=1&plats=P4.C1");
-  assert.equal(orderHref("D.C1"), "/bestall/?ny=1&plats=D.C1");
-  // The hole card's deal is a film of its own (it lands closed, so it shares no film with D.C1): a new order to D.C2.
-  assert.equal(orderHref("D.C2"), "/bestall/?ny=1&plats=D.C2");
-  for (const id of ["P4.C2", SHOE]) assert.equal(orderHref(id), null);
-  assert.deepEqual(PLACES.filter((id) => orderHref(id)), [...SEAT_TARGETS].sort((a, b) => PLACES.indexOf(a) - PLACES.indexOf(b)));
-});
-
-test("Flytta kortets plats: Placering at the card, with the way back to the order kept in the address", () => {
-  const back = "/bestall/?ny=1&dealer=paow&steg=GIV-2.2&plats=P3.C2";
-  const href = placingHref("P3.C2", back);
-  assert.equal(href, `/placering/?plats=p3c2&tillbaka=${encodeURIComponent(back)}`);
-  const p = new URLSearchParams(href.split("?")[1]);
-  assert.equal(readPlacementAddress(p).place, "P3.C2");
-  assert.equal(orderBack(p.get("tillbaka")), back);
-  // Kept while Jakob moves about in Placering, as robot is.
-  assert.equal(placementQuery({ ...readPlacementAddress(p), place: "P5.C1" }, p), `?plats=p5c1&tillbaka=${encodeURIComponent(back)}`);
-  assert.equal(placingHref("P4.C2", null), "/placering/", "the start place and no order: the bare view");
-  // Only an address of Beställ with plain words leads back.
-  for (const no of ["https://example.com/bestall/?ny=1", "//example.com/bestall/?ny=1", "/karta/?x=1", "/bestall/?ny=1&a=<b>", "javascript:alert(1)", "", null]) assert.equal(orderBack(no), null, String(no));
-  assert.equal(placingHref("P3.C2", "https://example.com/"), "/placering/?plats=p3c2");
-});
 
 test("films to lay the cards over: the bank's current takes, main take first, a take cut from a longer film from its own first frame, and the library's older ones", () => {
   const job = (id: string, from: string, to: string, kind: string) => ({ id, kind, target: null, from, to, model: "wan3", duration: 4, ratio: "auto_1080p", audio: false, promptText: "", first: {}, purpose: "" });

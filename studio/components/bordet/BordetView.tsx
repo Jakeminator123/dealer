@@ -6,7 +6,11 @@
 // large as the window allows, one column on the right where things are changed. The menu's five parts:
 //   Kortplan     the plan on the picture (the silhouette, a still or a film under the cards), with 1 Var kortet landar and
 //                2 Hur det kommer dit (Placering's Plats, Bordet and Rörelse panels) and 3 Beställ for the chosen card
-//   Beställ      the same picture, with step 3 in the column: the films to order for the chosen card and without a card
+//   Beställ      the same picture, with step 3 in the column: the films to order for the chosen card and without a card,
+//                and for the chosen film exactly what goes to Runway (Sends.tsx: the two pictures, the reference film or none,
+//                the text word for word, model, length, takes) with Ny beställning's choices; and, behind "Kön", the whole of
+//                Beställ as it was (OrderView: the queue, "Det här saknas för en runda", Ny beställning, an order open with
+//                "Det här skickas" and its approval, the way to Protokoll); /bestall/ with its words leads there
 //   Scen, Råfilm, Efterarbete   the live picture (SceneBody: the 3D scene, the films on their green, what is laid over)
 // The list of films lies under the picture in Kortplan and Beställ (FilmList.tsx), its cards ringed on the stage; a row
 // chosen plays its card's path. The plan is the draft Placering keeps (useDraft): what is changed here is changed there,
@@ -17,16 +21,21 @@ import dynamic from "next/dynamic";
 import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import methodsFile from "../../../data/order-methods.json";
-import { FLIP_LABEL, LANDS_LABEL, type OrdersAnswer } from "../../../src/order-model.ts";
+import { FLIP_LABEL, LANDS_LABEL, type BankFacts, type OrdersAnswer } from "../../../src/order-model.ts";
 import type { MethodRegister } from "../../../src/order-methods.ts";
-import { SHOE, type Place } from "../../../src/placement-model.ts";
+import { SHOE, VIEWS, type Place, type View } from "../../../src/placement-model.ts";
 import { asApiError } from "../../lib/api.ts";
+import type { Ledger } from "../../lib/ledger.ts";
+import type { MediaAnswer } from "../../lib/media.ts";
 import { useBank } from "../../lib/bank.ts";
-import { cardWishes, filmRow, otherWishes, sumWords, wishKey, type FilmRow, type FilmWish } from "../../lib/bordet.ts";
+import { cardWishes, filmRow, lastOrder, otherWishes, sendsOf, sumWords, wishKey, type FilmRow, type FilmWish, type RowChoice } from "../../lib/bordet.ts";
 import { useViewContext } from "../../lib/context.ts";
 import { swedishMoment } from "../../lib/mode.ts";
 import { createOrder, getOrders } from "../../lib/orders.ts";
 import { GRIP_LABEL, changedPlaces, flipOf, placeCode, placeFromCode, placeName, type Still } from "../../lib/placement.ts";
+import { getMedia } from "../material/client.ts";
+import { getLedger } from "../ledger/LedgerView";
+import { OrderView } from "../order/OrderView";
 import { Board } from "../placement/Board";
 import { FilmBar } from "../placement/FilmBar";
 import { MotionPanel, PlacePanel, TablePanel } from "../placement/Panels";
@@ -37,6 +46,7 @@ import { Page } from "../shell";
 import { Badge, Button, ErrorState, IconButton, SegmentedControl, Select, Skeleton, Switch, cn, useToast } from "../ui";
 import { AddFilms, FilmStrip, type Made } from "./FilmList";
 import type { SceneKind } from "./SceneBody";
+import { RowSends } from "./Sends";
 
 // The live picture is loaded only when it is chosen, so that Kortplan stays light.
 const SceneBody = dynamic(() => import("./SceneBody").then((m) => m.SceneBody), { ssr: false, loading: () => <Skeleton className="m-4 h-[60vh] rounded-md" /> });
@@ -56,9 +66,23 @@ const METHODS = methodsFile as unknown as MethodRegister;
 /** The stills by Jakob's words (Ordlista): Siluett, V6-bild. */
 const STILL_WORDS = { choice: (s: Still) => (s === "neutral" ? "Siluett" : "V6-bild"), label: (s: Still) => (s === "neutral" ? "Siluett" : "V6-bild") };
 
-/** The view's address: the menu's part and the card ("?lage=bestall&plats=p4c1"); the rail's dealer and robot are kept. */
-function writeAddress(mode: Mode, place: Place) {
+/** Beställ's own words in the address (OrderView: an order open, a new order asked for), which open Beställ's queue here. */
+const QUEUE_WORDS = ["ko", "order", "ny", "som", "dealer", "steg", "plats", "modell"] as const;
+const asksQueue = (p: { get(name: string): string | null }) => p.get("ko") === "1" || !!p.get("order") || p.get("ny") === "1";
+
+/**
+ * The view's address: the menu's part, the card and, in Beställ, whether the queue is shown ("?lage=bestall&plats=p4c1&ko=1");
+ * the rail's dealer and robot, and Beställ's own words while the queue is shown, are kept.
+ */
+function writeAddress(mode: Mode, place: Place, queue: boolean) {
   const p = new URLSearchParams(window.location.search);
+  const inQueue = mode === "bestall" && queue;
+  if (inQueue) p.set("ko", "1");
+  else for (const w of QUEUE_WORDS) if (w !== "dealer" && w !== "plats") p.delete(w);
+  if (inQueue) {
+    window.history.replaceState(null, "", `${window.location.pathname}?${p.toString()}`);
+    return;
+  }
   if (mode === "kortplan") p.delete("lage");
   else p.set("lage", mode);
   if (place === START_PLACE) p.delete("plats");
@@ -69,7 +93,21 @@ function writeAddress(mode: Mode, place: Place) {
 
 export function BordetView() {
   const params = useSearchParams();
-  const [mode, setMode] = useState<Mode>(() => (isMode(params.get("lage")) ? (params.get("lage") as Mode) : "kortplan"));
+  const [mode, setMode] = useState<Mode>(() => (asksQueue(params) ? "bestall" : isMode(params.get("lage")) ? (params.get("lage") as Mode) : "kortplan"));
+  // Beställ's queue (OrderView) instead of the picture: asked for by the address (?ko=1, ?order=, ?ny=1), or by "Kön".
+  const [queue, setQueue] = useState(() => asksQueue(params));
+  const askedQueue = asksQueue(params);
+  const [seenAsk, setSeenAsk] = useState(askedQueue);
+  if (askedQueue !== seenAsk) {
+    setSeenAsk(askedQueue);
+    if (askedQueue) {
+      setQueue(true);
+      setMode("bestall");
+    }
+  }
+  const [media, setMedia] = useState<MediaAnswer | null>(null);
+  const [ledger, setLedger] = useState<Ledger | null>(null);
+  const [choices, setChoices] = useState<Record<string, RowChoice>>({});
   const [place, setPlace] = useState<Place>(() => placeFromCode(params.get("plats")) ?? START_PLACE);
   const [wishes, setWishes] = useState<FilmWish[]>([]);
   const [made, setMade] = useState<Made>({});
@@ -78,16 +116,18 @@ export function BordetView() {
   const [busy, setBusy] = useState(false);
   const draft = useDraft();
   const toast = useToast();
-  const { dealer, dealers } = useBank();
-  useEffect(() => writeAddress(mode, place), [mode, place]);
+  const { dealer, dealers, bank } = useBank();
+  useEffect(() => writeAddress(mode, place, queue), [mode, place, queue]);
   useEffect(() => {
     void getOrders().then(setOrders, () => setOrders(null));
+    void getMedia().then(setMedia, () => setMedia(null));
+    void getLedger().then(setLedger, () => setLedger(null));
   }, []);
   useViewContext({ vy: "bordet", val: { läge: MODES.find((m) => m.value === mode)?.label, plats: placeCode(place), filmer: String(wishes.length) } });
 
   const d = draft.draft;
   const plan = d?.plan ?? null;
-  const rowOf = useCallback((w: FilmWish) => filmRow(dealer, w, METHODS, orders?.policy ?? null), [dealer, orders]);
+  const rowOf = useCallback((w: FilmWish) => filmRow(dealer, w, METHODS, orders?.policy ?? null, { bank: (bank as BankFacts | null) ?? null, choice: choices[wishKey(w)] }), [dealer, orders, bank, choices]);
   const rows = useMemo(() => wishes.map(rowOf), [wishes, rowOf]);
   const listed = useMemo(() => new Set(wishes.map(wishKey)), [wishes]);
   const marked = useMemo(() => new Set(wishes.flatMap((w) => (w.target ? [w.target] : []))), [wishes]);
@@ -115,6 +155,8 @@ export function BordetView() {
     } finally {
       setMade((was) => ({ ...was, ...done }));
       setBusy(false);
+      // the drafts as the store answers them, for their "Det här skickas"
+      void getOrders().then(setOrders, () => {});
     }
   };
 
@@ -125,6 +167,35 @@ export function BordetView() {
   };
 
   const menu = <SegmentedControl size="sm" label="Bordets delar" value={mode} onChange={setMode} options={MODES.map((m) => ({ value: m.value, label: m.label }))} />;
+  const sub =
+    mode === "bestall" ? (
+      <SegmentedControl size="sm" label="Filmerna eller kön" value={queue ? "ko" : "filmer"} onChange={(v) => setQueue(v === "ko")} options={[{ value: "filmer", label: "Filmer" }, { value: "ko", label: "Kön" }]} />
+    ) : null;
+  // What goes to Runway for the chosen film of the list, before and after its draft is made.
+  const names = Object.fromEntries((orders?.dealers ?? []).map((x) => [x.id, x.name]));
+  const look = orders?.dealers?.find((x) => x.id === dealer) ?? null;
+  const entries = media?.dealers.find((x) => x.id === dealer)?.entries ?? [];
+  const chosen = rows.find((r) => r.key === chosenRow) ?? null;
+  const madeAnswer = chosen && made[chosen.key] ? (orders?.orders.find((a) => a.order.id === made[chosen.key]) ?? null) : null;
+  // Granska filmen: the film's last order (the same dealer, step and card, not set aside), with the takes that came of it.
+  const lastAnswer = chosen ? lastOrder(orders?.orders ?? [], dealer, chosen.wish, (id) => !!ledger?.rows.some((r) => r.order === id && r.see.film)) : null;
+  const last = lastAnswer ? { answer: lastAnswer, takes: (ledger?.rows ?? []).filter((r) => r.order === lastAnswer.order.id) } : null;
+  const sends = chosen?.body ? sendsOf({ dealer: { id: dealer, name: look?.name ?? dealer, look: look?.look ?? null }, body: chosen.body, entries, plan: orders?.plan ?? null }) : null;
+  const sendsPanel = chosen ? (
+    <RowSends
+      row={chosen}
+      sends={sends}
+      names={names}
+      plan={orders?.plan ?? null}
+      bank={(bank as BankFacts | null) ?? null}
+      dealer={dealer}
+      choice={choices[chosen.key] ?? {}}
+      onChoice={(patch) => setChoices((was) => ({ ...was, [chosen.key]: patch ? { ...(was[chosen.key] ?? {}), ...patch } : {} }))}
+      made={madeAnswer}
+      all={orders}
+      last={last}
+    />
+  ) : null;
   const table = mode === "kortplan" || mode === "bestall";
   const changes = d ? changedPlaces(d.saved, d.plan) : { places: [], table: false };
   const count = changes.places.length + (changes.table ? 1 : 0);
@@ -149,7 +220,7 @@ export function BordetView() {
         </>
       }
       actions={
-        table && d ? (
+        d && ((table && !(mode === "bestall" && queue)) || mode === "efterarbete") ? (
           <>
             <IconButton label="Ångra" kbd="Ctrl+Z" icon={<Undo2 />} disabled={!d.past.length || draft.saving} onClick={draftActions.undo} />
             <Button variant="quiet" icon={<RotateCcw />} disabled={!draft.dirty || draft.saving} onClick={draftActions.toSaved}>
@@ -162,7 +233,18 @@ export function BordetView() {
         ) : null
       }
     >
-      {table ? (
+      {mode === "bestall" && queue ? (
+        <div className="flex h-full min-h-0 flex-col">
+          <div className="flex h-11 shrink-0 items-center gap-3 border-b border-line px-3">
+            {menu}
+            <span aria-hidden className="h-5 w-px shrink-0 bg-line" />
+            {sub}
+          </div>
+          <div data-queue className="min-h-0 flex-1">
+            <OrderView />
+          </div>
+        </div>
+      ) : table ? (
         draft.status === "error" ? (
           <ErrorState title="Kortplanen kunde inte läsas" error={draft.error ?? "Okänt fel"} onRetry={() => void draftActions.load()} />
         ) : !d || !plan ? (
@@ -174,6 +256,8 @@ export function BordetView() {
           <TableBody
             mode={mode as "kortplan" | "bestall"}
             menu={menu}
+            sub={sub}
+            sends={sendsPanel}
             place={place}
             setPlace={setPlace}
             rows={rows}
@@ -196,7 +280,7 @@ export function BordetView() {
           />
         )
       ) : (
-        <SceneBody kind={mode as SceneKind} toolbar={menu} roundText={roundFor(place, intent?.grip ?? "PINCH")} />
+        <SceneBody kind={mode as SceneKind} toolbar={menu} roundText={roundFor(place, intent?.grip ?? "PINCH")} place={place} />
       )}
     </Page>
   );
@@ -210,10 +294,13 @@ export function roundFor(place: Place, grip: "PINCH" | "DRAG"): string {
 }
 
 function TableBody({
-  mode, menu, place, setPlace, rows, rowOf, listed, marked, chosenRow, setChosenRow, made, busy, blocked, dealer, onAdd, onRemove, onClear, onCreate,
+  mode, menu, sub, sends, place, setPlace, rows, rowOf, listed, marked, chosenRow, setChosenRow, made, busy, blocked, dealer, onAdd, onRemove, onClear, onCreate,
 }: {
   mode: "kortplan" | "bestall";
   menu: ReactNode;
+  sub: ReactNode;
+  /** What goes to Runway for the chosen film of the list (Sends.tsx), or null. */
+  sends: ReactNode;
   place: Place;
   setPlace: (p: Place) => void;
   rows: FilmRow[];
@@ -236,7 +323,16 @@ function TableBody({
   const showSaved = draft.showing === "saved" && draft.dirty;
   const plan = showSaved ? d.saved : d.plan;
   const editable = !draft.saving && !showSaved;
-  const view = "native" as const;
+  // Dator or Mobil in Kortplan; an order uses only Dator, so Beställ shows Dator.
+  const [asked, setAsked] = useState<View>(() => (typeof window !== "undefined" && new URLSearchParams(window.location.search).get("vy") === "mobil" ? "portrait" : "native"));
+  const view: View = mode === "bestall" ? "native" : asked;
+  useEffect(() => {
+    const p = new URLSearchParams(window.location.search);
+    if (view === "portrait") p.set("vy", "mobil");
+    else p.delete("vy");
+    const q = p.toString();
+    window.history.replaceState(null, "", `${window.location.pathname}${q ? `?${q}` : ""}`);
+  }, [view]);
   const [allCards, setAllCards] = useState(true);
   const [grid, setGrid] = useState(false);
   const [open, setOpen] = useState<1 | 2 | 3 | 0>(mode === "bestall" ? 3 : 1);
@@ -270,7 +366,7 @@ function TableBody({
   }, []);
   const film = under.film;
   const bars = 44 + (film ? 44 : 0);
-  const stageHeight = size.w ? Math.max(240, Math.min(size.h - bars - 120, size.w / (1762 / 1174))) : 0;
+  const stageHeight = size.w ? Math.max(240, Math.min(size.h - bars - 120, size.w / (VIEWS[view].width / VIEWS[view].height))) : 0;
 
   const intent = place !== SHOE ? plan.targets[place]?.intent : null;
   const target = place !== SHOE ? plan.targets[place] : null;
@@ -290,19 +386,33 @@ function TableBody({
       <AddFilms title={placeName(place)} wishes={wishesHere} rows={rowOf} listed={listed} onAdd={onAdd} />
       {mode === "bestall" ? <AddFilms title="Utan kort" wishes={otherWishes()} rows={rowOf} listed={listed} onAdd={onAdd} /> : null}
       <p className="text-sm tabular-nums text-dim">{sumWords(rows.filter((r) => !made[r.key]))}</p>
+      {sends ? <div className="border-t border-line pt-4">{sends}</div> : rows.length ? <p className="text-xs text-faint">Välj en film i listan: där står allt som skickas.</p> : null}
     </div>
   );
 
   return (
-    <div className="grid h-full grid-cols-[minmax(0,1fr)_380px]">
+    <div className={cn("grid h-full", mode === "bestall" ? "grid-cols-[minmax(0,1fr)_460px]" : "grid-cols-[minmax(0,1fr)_380px]")}>
       <section ref={column} className="flex min-h-0 min-w-0 flex-col">
         <div className="flex h-11 shrink-0 items-center gap-3 overflow-x-auto border-b border-line px-3">
           {menu}
+          {sub}
           <span aria-hidden className="h-5 w-px shrink-0 bg-line" />
           <Button size="sm" variant={paths.run ? "secondary" : "primary"} aria-pressed={!!paths.run} icon={paths.run ? <Square /> : <Play />} onClick={() => paths.toggle(place)} className="shrink-0">
             {paths.run ? "Stoppa" : "Spela kortbanan"}
           </Button>
           <Switch size="sm" checked={paths.halfSpeed} onChange={paths.setHalfSpeed} label="Halv fart" />
+          {mode === "kortplan" ? (
+            <SegmentedControl
+              size="sm"
+              label="Vy"
+              value={view}
+              onChange={(v) => {
+                setAsked(v);
+                under.toView(v);
+              }}
+              options={[{ value: "native", label: "Dator" }, { value: "portrait", label: "Mobil" }]}
+            />
+          ) : null}
           <Select size="sm" aria-label="Under korten" value={under.value} onChange={under.choose} options={under.options} className="w-48 shrink-0" />
           <Switch size="sm" checked={allCards} onChange={setAllCards} label="Alla kort" />
           <Switch size="sm" checked={grid} onChange={setGrid} label="Rutnät" />

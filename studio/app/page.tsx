@@ -42,7 +42,7 @@ export default function ScenPage() {
 
 const VIEWS = [
   { value: "3d" as const, label: "3D", icon: <Box />, title: "Filmen i 3D-scenen" },
-  { value: "platt" as const, label: "Inte 3D", icon: <Film />, title: "Filmen som den är, på sin gröna" },
+  { value: "platt" as const, label: "Råfilm", icon: <Film />, title: "Filmen som den är, på sin gröna" },
 ];
 type Tab = "runda" | "scen";
 
@@ -121,7 +121,7 @@ function Scen() {
 
   useViewContext({
     vy: "scen",
-    val: { runda: notation, forval: editor.label, andrat: String(editor.count), visning: flat ? "Inte 3D" : "3D" },
+    val: { runda: notation, forval: editor.label, andrat: String(editor.count), visning: flat ? "Råfilm" : "3D" },
     live: () => stepFacts(clock.get().pos, segments),
   });
 
@@ -156,7 +156,7 @@ function Scen() {
           <DecisionsEntry />
           {blocked3d ? (
             <span className="text-xs text-faint" title={blocked3d}>
-              Färdig film: bara Inte 3D
+              Färdig film: bara Råfilm
             </span>
           ) : null}
           <SegmentedControl

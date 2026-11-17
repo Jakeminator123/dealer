@@ -1,10 +1,13 @@
-// Beställ (/bestall/?order=<id>): prepare an order for a picture or a film from Runway, see exactly what is sent, and
-// approve it; an ordering agent places approved orders when Jakob says "lägg kön" (tools/order-clerk.md). Only in the
-// local lab: the online copy shows a word instead.
-import { Suspense } from "react";
-import { OrderView } from "@/components/order";
+"use client";
+
+// /bestall/: Beställ's old address. Its queue, "Det här skickas" and Ny beställning are Bordet's Beställ since 2026-11-17, so
+// in the lab the address leads there with the same words (?order=<id>, ?ny=1&dealer=…&steg=…&plats=…, ?ny=1&som=<id>):
+// /bestall/?order=x opens /bordet/?lage=bestall&ko=1&order=x. The online copy orders nothing and says so.
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useEffect } from "react";
 import { Page } from "@/components/shell";
 import { EmptyState } from "@/components/ui";
+import { bordetOrderAddress } from "@/lib/bordet";
 import { isSnapshot } from "@/lib/mode";
 
 export default function Bestall() {
@@ -15,8 +18,18 @@ export default function Bestall() {
       </Page>
     );
   return (
-    <Suspense fallback={<Page title="Beställ" />}>
-      <OrderView />
+    <Suspense fallback={<Page title="Beställ" full />}>
+      <ToBordet />
     </Suspense>
   );
+}
+
+function ToBordet() {
+  const params = useSearchParams();
+  const router = useRouter();
+  const to = bordetOrderAddress(params);
+  useEffect(() => {
+    router.replace(to);
+  }, [router, to]);
+  return <Page title="Beställ" full />;
 }

@@ -14,7 +14,8 @@ import { EmptyState, ErrorState, SegmentedControl, Skeleton, Switch } from "../u
 import { LedgerCard } from "./LedgerCard";
 import { LedgerSummary } from "./LedgerSummary";
 
-async function getLedger(): Promise<Ledger> {
+/** The protocol (GET /api/orders/ledger): one row per order and take, with the film and the verdicts. Bordet reads it too. */
+export async function getLedger(): Promise<Ledger> {
   let response: Response;
   try {
     response = await fetch(labUrl("api/orders/ledger"), { cache: "no-store" });

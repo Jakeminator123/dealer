@@ -9,7 +9,7 @@ import { methodFor, readMethods, type Method } from "../../src/order-methods.ts"
 import { INTENT_DEFAULTS, SHOE, defaultPlan, planQuad } from "../../src/placement-model.ts";
 import { draftOf } from "../../tools/produce.ts";
 import {
-  OTHER_STEPS, ZOOM_MAX, actualCamera, cardPath, cardWishes, clampCamera, closeUp, filmRow, fitCamera, orderBody, otherWishes, panBy, pictureOrigin, sumWords, wishKey, zoomAt,
+  OTHER_STEPS, ZOOM_MAX, actualCamera, bordetOrderAddress, cardPath, cardWishes, clampCamera, closeUp, filmRow, fitCamera, lastOrder, orderBody, otherWishes, panBy, pictureOrigin, referenceName, sendsOf, straightReference, sumWords, wishKey, withChoice, zoomAt,
 } from "../lib/bordet.ts";
 
 const picture = { w: 1762, h: 1174 };
@@ -103,7 +103,7 @@ test("the body sent for a film is the production list's own draft, without what 
     }
     // a method still being tried is ordered as the list's trial: one take (its title is the store's here)
     const draft = draftOf({ dealer: { id: "paow", name: "Paow" } }, { label: "x", edge: "x" }, { step: w.step, target: w.target }, method as Method, null, method.status === "prov");
-    const { notes: _n, createdBy: _c, title: _t, ...same } = draft as typeof draft & { notes?: unknown; createdBy?: unknown; title?: unknown };
+    const same = Object.fromEntries(Object.entries(draft).filter(([k]) => !["notes", "createdBy", "title"].includes(k)));
     assert.deepEqual(body, same, wishKey(w));
     compared++;
   }
@@ -124,4 +124,74 @@ test("a film's price is the method's model, seconds and takes at the policy's pr
   assert.equal(sumWords([]), "Inga filmer");
   assert.equal(stepOf("GIV-2.1")!.card, true);
   void INTENT_DEFAULTS;
+});
+
+// ── Step 3's choices, its reference film and what is sent ──
+test("his choices on a row go under the keys Ny beställning sends, and only those the routes take", () => {
+  assert.ok(register);
+  const routes = readFileSync(new URL("../../tools/order-routes.ts", import.meta.url), "utf8");
+  const allowed = JSON.parse(/const NEW_KEYS = (\[[^\]]+\])/.exec(routes)![1].replace(/'/g, '"')) as string[];
+  const wish = { step: "GIV-2.1" as const, target: "P4.C1" };
+  const base = orderBody("paow", wish, methodFor(register, wish.step, wish.target));
+  const chosen = withChoice("paow", wish, base, { model: "wan3", duration: 6, takes: 2, style: "MINIMAL", shape: "ONE_WAY", hand: "PASS", side: "BACK", flipAxis: "LONG_EDGE", cardScale: 1.25, extra: " Slowly. " });
+  assert.ok(chosen);
+  for (const key of Object.keys(chosen!)) assert.ok(allowed.includes(key), `${key} tas inte av POST /api/orders`);
+  assert.equal(chosen!.model, "wan3");
+  assert.deepEqual([chosen!.hand, chosen!.pass, chosen!.side, chosen!.flipAxis, chosen!.extra], ["LH", true, "BACK", "LONG_EDGE", "Slowly."]);
+  // the step's own model is not named; nothing chosen is the method's body unchanged
+  assert.equal("model" in withChoice("paow", wish, base, { model: "kling-4" })!, false);
+  assert.deepEqual(withChoice("paow", wish, base, {}), base);
+  // no method and nothing chosen: nothing can be sent; a choice gives Ny beställning's defaults with it
+  const none = { step: "RETUR-1" as const, target: "P4.C1" };
+  assert.equal(withChoice("paow", none, orderBody("paow", none, methodFor(register, none.step, none.target)), {}), null);
+  assert.deepEqual(withChoice("paow", none, null, { takes: 1 }), { dealer: "paow", step: "RETUR-1", target: "P4.C1", duration: 3, takes: 1, style: "KORT", extra: null });
+});
+
+test("a method that wants a reference film takes the production list's: a straight-approved deal to the same seat", async () => {
+  const { readBank, straightReferences } = await import("../../tools/produce.ts");
+  const bank = await readBank(new URL("../../", import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, "$1"));
+  for (const target of ["P1.C1", "P4.C1", "P6.C1", "D.C1"])
+    for (const dealer of ["paow", "pamela"]) assert.equal(straightReference(bank as never, dealer, "GIV-2.1", target, "kling-4")?.take ?? null, straightReferences(bank as never, dealer, "GIV-2.1", target, "kling-4")[0]?.take ?? null, `${dealer} ${target}`);
+  // the body carries it, and without one the method's model for that case (or nothing)
+  const method = { ...methodFor(register, "GIV-2.1", "P4.C1")!, reference: "samma-plats-rakt-godkänd" as const, noReferenceModel: "wan3" };
+  assert.equal(orderBody("paow", { step: "GIV-2.1", target: "P4.C1" }, method, "pamela-p4-c1-plan-deal-02")!.reference, "pamela-p4-c1-plan-deal-02");
+  assert.equal(orderBody("paow", { step: "GIV-2.1", target: "P4.C1" }, method, null)!.model, "wan3");
+  assert.equal(orderBody("paow", { step: "GIV-2.1", target: "P4.C1" }, { ...method, noReferenceModel: null }, null), null);
+  assert.equal(referenceName({ dealer: "pamela", edge: "READY>P4.C1", goesTo: "P4.C1" }, { pamela: "Pamela" }), "Pamelas giv till plats 4");
+  assert.equal(referenceName({ dealer: "paow", edge: "P2.C1>READY", goesTo: "P2.C1" }, { paow: "Paow" }), "Paows retur från plats 2");
+});
+
+test("what is sent for a row: the anchor first, the anchor with the plan's card last, the text, model, length, takes", () => {
+  const anchor = { id: "a21", role: "ankare-2.1", node: "READY", state: "gäller", served: "assets/anchors/a21/anchor.png", name: "Nyp" };
+  const quad: [number, number][] = [[800, 1060], [900, 1060], [905, 1130], [795, 1130]];
+  const seat = { target: "P4.C1", centre: [850, 1095] as [number, number], quad, side: "FRONT" as const, startSide: "BACK" as const, hand: "LH" as const, pass: false, grip: "PINCH" as const, turnAt: "AIR" as const, flipAxis: "FREE" as const, crosses: false };
+  const body = { dealer: "paow", step: "GIV-2.1" as const, target: "P4.C1", takes: 1, style: "KORT" as const, duration: 7, shape: "ROUND_TRIP" as const, extra: null };
+  const s = sendsOf({ dealer: { id: "paow", name: "Paow", look: "a young woman" }, body, entries: [anchor], plan: { seats: { "P4.C1": seat } } })!;
+  assert.equal(s.first.entry?.id, "a21");
+  assert.equal(s.last.entry?.id, "a21");
+  assert.equal(s.drawn, true);
+  assert.deepEqual(s.last.cards, [{ quad, side: "FRONT" }]);
+  assert.equal(s.model, "Kling 4");
+  assert.equal(s.seconds, 7);
+  assert.equal(s.takes, 1);
+  assert.ok(s.prompt && s.prompt.text.length > 100);
+  // bara dit: the last picture is the landing picture, nothing drawn
+  const oneWay = sendsOf({ dealer: { id: "paow", name: "Paow", look: "x" }, body: { ...body, shape: "ONE_WAY" }, entries: [anchor], plan: { seats: { "P4.C1": seat } } })!;
+  assert.equal(oneWay.drawn, false);
+  assert.equal(oneWay.last.waiting, "landningsbilden");
+});
+
+test("Beställ's old address leads to Bordet's Beställ with its words", () => {
+  assert.equal(bordetOrderAddress(new URLSearchParams("order=paow-giv-2-1-p4-05")), "/bordet/?lage=bestall&ko=1&order=paow-giv-2-1-p4-05");
+  assert.equal(bordetOrderAddress(new URLSearchParams("ny=1&dealer=paow&steg=GIV-2.2&plats=P4.C1")), "/bordet/?lage=bestall&ko=1&ny=1&dealer=paow&steg=GIV-2.2&plats=P4.C1");
+});
+
+test("Granska filmen: a film's last order is the newest of the same dealer, step and card that is not set aside", () => {
+  const a = (id: string, created: string, step: string, target: string | null, status = "UTKAST", dealer = "paow") => ({ order: { id, dealer, status, created, step: { key: step }, motion: target ? { target } : null } });
+  const list = [a("x1", "2026-11-17T10:00Z", "GIV-2.1", "P4.C1"), a("x2", "2026-11-17T12:00Z", "GIV-2.1", "P4.C1"), a("x3", "2026-11-17T13:00Z", "GIV-2.1", "P4.C1", "AVBRUTEN"), a("x4", "2026-11-17T14:00Z", "GIV-2.1", "P5.C1"), a("x5", "2026-11-17T15:00Z", "GIV-2.1", "P4.C1", "UTKAST", "pamela"), a("x6", "2026-11-17T09:00Z", "VILA", null)];
+  assert.equal(lastOrder(list, "paow", { step: "GIV-2.1", target: "P4.C1" })?.order.id, "x2");
+  assert.equal(lastOrder(list, "paow", { step: "VILA", target: null })?.order.id, "x6");
+  assert.equal(lastOrder(list, "paow", { step: "RETUR-1", target: "P4.C1" }), null);
+  // the newest that brought a film comes before a newer one still on its way
+  assert.equal(lastOrder(list, "paow", { step: "GIV-2.1", target: "P4.C1" }, (id) => id === "x1")?.order.id, "x1");
 });

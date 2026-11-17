@@ -11,7 +11,7 @@ import { isSnapshot } from "./mode.ts";
 import { nodeCode } from "./names.ts";
 import { GRIP_LABEL } from "./placement.ts";
 import {
-  ANCHOR_NODE, ANCHOR_ROLE, FLIP_LABEL, HAND_LABEL, LANDS_LABEL, REF_VERDICT_LABEL, STYLE_LABEL, genitive, MODELS, SEAT_TARGETS, SHOWN_LABEL, STEPS, credits, cutIntoOf, edgeOf, handChoiceOf, plannedDiffers, requestOf, seatList, seatWords, secondsWords, stepOf, styleOf, summaryOf, waitWords,
+  ANCHOR_NODE, ANCHOR_ROLE, FLIP_LABEL, defaultFlip, HAND_LABEL, LANDS_LABEL, REF_VERDICT_LABEL, STYLE_LABEL, genitive, MODELS, SEAT_TARGETS, SHOWN_LABEL, STEPS, credits, cutIntoOf, edgeOf, handChoiceOf, plannedDiffers, requestOf, seatList, seatWords, secondsWords, stepOf, styleOf, summaryOf, waitWords,
   type FlipAxis, type HandChoice, type Order, type OrderAnswer, type OrdersAnswer, type Owner, type Picture, type PlanAnswer, type SeatPlan, type Shape, type Shown, type StepDef, type StepKey, type TextStyle,
 } from "../../src/order-model.ts";
 import { orderPrompt, wordCount, type Choice, type Part } from "../../src/order-prompts.ts";
@@ -255,6 +255,20 @@ export function routeOf(step: StepDef, targets: readonly string[], shape: Shape 
   if (step.start === "LAND") return { nodes, line, sentence: `Tillbaka ${back}, från kortet på ${seat}.` };
   const grip = step.grip === "DRAG" ? "Släp" : "Nyp";
   return { nodes, line, sentence: shape === "ONE_WAY" ? `${grip}: ett kort till ${seat}, bara dit.` : `${grip}: ett kort till ${seat}, och tillbaka ${back}.` };
+}
+
+// ── A seat's turn, and the card's part of a new order ───────────────────────
+/**
+ * A seat's turn in a new order: the one Jakob chose for the whole order, else what the plan says for that seat, which is what
+ * the store takes when the order names none (tools/order-store.ts create: input.flipAxis ?? defaultFlip(…)).
+ */
+export const seatFlip = (step: string, seat: Pick<SeatPlan, "turnAt" | "flipAxis"> | null | undefined, chosen: FlipAxis | null): FlipAxis => chosen ?? defaultFlip(step, seat?.turnAt, seat?.flipAxis);
+/**
+ * The card's part of a new order's body (Ny beställning): the turn only when Jakob chose one, so that with several seats
+ * ("Alla sju") each seat keeps its own from the plan; tur och retur or bara dit for a deal; the trial card scale when not 1.
+ */
+export function cardBody(v: { chosenFlip: FlipAxis | null; shape: Shape | null; deal: boolean; cardScale: number }): Pick<NewOrderInput, "flipAxis" | "shape" | "cardScale"> {
+  return { ...(v.chosenFlip ? { flipAxis: v.chosenFlip } : {}), ...(v.deal && v.shape ? { shape: v.shape } : {}), ...(v.cardScale !== 1 ? { cardScale: v.cardScale } : {}) };
 }
 
 // ── A new order from the address ────────────────────────────────────────────

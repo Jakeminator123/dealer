@@ -22,10 +22,10 @@ Skriven ur kod, register och kvitton. (V) = läst i kod, data eller kvitto; (S) 
 3. Keystone stående och sittande: Nano Banana Pro 4K med ingångsbilden; Material, roll `keystone`; Jakob sätter `gäller`.
 4. Ankare 1: redigering med mallen `tools/texts/ankare-1.txt` (utseende och händer fylls i), efterarbete enligt `tools/order-clerk.md` §5; Jakob `gäller`.
 5. Ankare 2.1 och 2.2: Beställ, steg `ANKARE-2.1` och `ANKARE-2.2`, samma efterarbete; Material, Jakob sätter `gäller`.
-6. Se vad som saknas för en runda: `node tools/produce.ts <dealer>`, eller blocket "Det här saknas för en runda" i Beställ.
+6. Se vad som saknas för en runda: `node tools/produce.ts <dealer>`, eller blocket "Det här saknas för en runda" i Bordet, Beställ, Kön.
 7. Välj metoden efter Jakobs egna domar: `node tools/verdicts-per-method.ts <dealer>`; skriv den i `data/order-methods.json`.
-8. Gör utkasten: `node tools/produce.ts <dealer> --draft` (ett prov: `--draft --trial <steg|plats>`), eller i Beställ.
-9. Godkänn: Jakobs klick i Beställ, eller `node tools/order-approve.ts <id> --mandate "…"` inom `data/order-policy.json`.
+8. Gör utkasten: `node tools/produce.ts <dealer> --draft` (ett prov: `--draft --trial <steg|plats>`), eller i Bordet, Beställ.
+9. Godkänn: Jakobs klick i Bordet, Beställ (Det här skickas), eller `node tools/order-approve.ts <id> --mandate "…"` inom `data/order-policy.json`.
 10. Lägg och hämta: en beställningsagent enligt `tools/order-clerk.md` (`tools/order-put.ts`, `tools/order-collect.ts`).
 11. Efterarbeta: `node tools/film-after.ts <id> <n>`; en stillbild med `tools/still-after.ts` och `tools/python/`.
 12. Granska: en oberoende granskare enligt `tools/film-review.md`; domen in med `node tools/order-put.ts review`.
@@ -99,7 +99,7 @@ kort) står i `data/order-methods.json` med status `gäller`, `prov` eller `sakn
 metod efter Jakobs domar: `node tools/verdicts-per-method.ts <dealer>` räknar dem per modell, vändning, referensfilm och
 mall (V).
 
-**8. Komponera i Beställ** (`/studio/bestall/`). Stegen som kan beställas, med förvald modell, längd och de stilar
+**8. Komponera i Bordet, Beställ** (`/studio/bordet/?lage=bestall`; `/studio/bestall/` leder dit). Stegen som kan beställas, med förvald modell, längd och de stilar
 texten kan skrivas i, står i `STEPS` i `src/order-model.ts`, och de kort en giv kan gå till i `SEAT_TARGETS`; en giv
 är tur och retur eller bara dit, och `GIV-2.1` går också till hålkortet `D.C2`, som landar stängt (V). Hålkortets
 vändning (`HALKORT`, `IDLE>REVEAL(D.C2)`) har bara hålkortet ritat på sina bilder (V).
@@ -186,7 +186,7 @@ långt en dealer har kommit, och vad som är kvar för en runda, räknar `node t
 
 - **Ett tredje eller fjärde kort.** Planen har sexton platser, så ordermodellen vägrar `D.C3` och en plats tredje kort
   (`tools/order-store.ts`: platsen måste finnas i `placements/default.json`) (V). Jakob bad 2026-11-13 om ett tredje och
-  fjärde dealerkort; platsen lägger han själv i Placering när modellen har den.
+  fjärde dealerkort; platsen lägger han själv i Bordets Kortplan när modellen har den.
 - **Hur hon rör sig** utan att det kostar kortet är en öppen fråga (handboken §5).
 - **Helfiguren** (hon kommer in och sätter sig, `AWAY>IDLE`; hon reser sig och går, `IDLE>AWAY`) har inget steg i
   Beställ; receptet finns i handboken 3.9, och Paows par är gjort så (`paow-table-arrive-wide-01`,

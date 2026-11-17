@@ -6,7 +6,8 @@
 //   Scen         the 3D scene (room, table, light) playing a round, every key of the scene in the column, the round to play
 //   Råfilm       the same round as the films are, on their green screen (Scen's "Inte 3D")
 //   Efterarbete  the 3D scene, and in the column only what is laid over the film: the cards' and chips' look ("Kort och
-//                marker", the cards' bend and gloss)
+//                marker", the cards' bend and gloss) and, under it, the chosen card's material in the plan (Placering's
+//                Material: its bend and gloss, the study's 3D card, "Alla 16 kort"; saved with "Spara i kortplanen")
 // It opens on the chosen card's deal and back, from the anchor the plan's grip says ("A2.1 - P4C1 - A2.1"), so the card
 // chosen in Kortplan is the one that plays; the dealer is the rail's. The look it opens on is Basgrund, what the game shows
 // (Jakob 2026-11-17: "Spela i casino bör rimligtvis vara samma som i casino, alltså som det är i runtime"), so that "Spela i
@@ -22,12 +23,19 @@ import { isReference, readyRounds, roundFacts, roundFromText, roundParts, viewFo
 import { BASE } from "../../lib/scene-presets.ts";
 import { RoundPicker, RoundStrip } from "../round";
 import { readLook, useSceneEditor } from "../scene-editor";
+import { SHOE, type Place } from "../../../src/placement-model.ts";
+import { placeName } from "../../lib/placement.ts";
+import type { Face } from "../placement/cardLayer.ts";
+import { MaterialPanel } from "../placement/MaterialPanel";
+import { useDraft } from "../placement/useDraft.ts";
 import { Stage, createClock, type StageHandle } from "../stage";
 import { ErrorState, Skeleton, buttonClasses, cn } from "../ui";
 
 export type SceneKind = "scen" | "rafilm" | "efterarbete";
 
-export function SceneBody({ kind, toolbar, roundText }: { kind: SceneKind; toolbar: ReactNode; roundText: string }) {
+export function SceneBody({ kind, toolbar, roundText, place }: { kind: SceneKind; toolbar: ReactNode; roundText: string; place: Place }) {
+  const draft = useDraft();
+  const [face, setFace] = useState<Face>({ rank: "A", suit: "spades" });
   const { graph, status, error, reload, owners } = useBank();
   const rounds = useMemo(() => readyRounds(), []);
   const [chosen, setChosen] = useState<Round | null>(null);
@@ -84,8 +92,16 @@ export function SceneBody({ kind, toolbar, roundText }: { kind: SceneKind; toolb
       </div>
       <aside className="flex min-h-0 flex-col border-l border-line bg-surface">
         {kind === "efterarbete" ? (
-          // only what is laid over the film: the cards' and chips' look
-          (editor.afterwork ?? <Skeleton className="m-4 h-10 rounded-md" />)
+          // only what is laid over the film: the cards' and chips' look, then the chosen card's material in the plan
+          <div className="min-h-0 flex-1 overflow-y-auto">
+            {editor.afterwork ?? <Skeleton className="m-4 h-10 rounded-md" />}
+            {draft.draft && place !== SHOE ? (
+              <div className="border-t border-line">
+                <p className="px-4 pt-4 text-2xs font-semibold uppercase tracking-[0.08em] text-faint">{placeName(place)} i kortplanen</p>
+                <MaterialPanel plan={draft.draft.plan} id={place} editable={!draft.saving} face={face} onFace={setFace} />
+              </div>
+            ) : null}
+          </div>
         ) : kind === "scen" ? (
           <div className="flex min-h-0 flex-1 flex-col">
             <div className={cn("max-h-[45%] shrink-0 overflow-y-auto border-b border-line px-4 py-3")}>

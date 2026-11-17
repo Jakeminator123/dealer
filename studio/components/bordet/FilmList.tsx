@@ -5,6 +5,7 @@
 // list itself, under the picture: one row per film in his notation, with the method of record's recipe and price, its card
 // ringed on the stage, and the sum. "Skapa utkast" makes each film a draft through the order path every draft takes
 // (POST /api/orders, the body the production list would send); approval and sending stay in Beställ's "Det här skickas".
+// One line over the list says what never goes to Runway: the card path drawn in the lab is a sketch.
 // "Beställ" on a row opens Ny beställning with the film chosen instead, to change it there.
 import { ExternalLink, Plus, X } from "lucide-react";
 import Link from "next/link";
@@ -70,10 +71,10 @@ export function FilmStrip({
     <section aria-label="Beställningen" className="flex min-h-0 flex-1 flex-col border-t border-line bg-surface/60">
       <header className="flex h-10 shrink-0 items-center gap-3 px-3">
         <h2 className="text-2xs font-semibold uppercase tracking-[0.08em] text-faint">Beställningen</h2>
-        <span data-sum className="text-sm tabular-nums text-ink">
+        <span data-sum className="shrink-0 whitespace-nowrap text-sm tabular-nums text-ink">
           {sumWords(open)}
         </span>
-        {blocked && open.length ? <span className="truncate text-xs text-[#f0b07a]">{blocked}</span> : null}
+        {blocked && open.length ? <span className="truncate text-xs text-[#f0b07a]">{blocked}</span> : <span data-never className="truncate text-xs text-dim">Till Runway går bilderna, texten och ibland en referensfilm. Kortbanan är en skiss och skickas aldrig.</span>}
         <div className="ml-auto flex items-center gap-2">
           {rows.length ? (
             <Button size="sm" variant="quiet" onClick={onClear}>
@@ -119,6 +120,8 @@ function Row({ row, dealer, on, made, onChoose, onRemove }: { row: FilmRow; deal
           </Badge>
         ) : null}
         {row.method?.status === "saknas" ? null : row.recipe}
+        {row.reference ? <span className="ml-1.5 text-[#9ec5ff]">· referensfilm</span> : row.wanted ? <span className="ml-1.5 text-[#f0b07a]">· vill ha referensfilm</span> : null}
+        {row.chosen ? <span className="ml-1.5 text-brass-hi">· ändrad</span> : null}
       </span>
       <span className="w-28 text-right text-sm tabular-nums text-ink">{row.cost !== null ? `${credits(row.cost)} krediter` : "–"}</span>
       <span className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>

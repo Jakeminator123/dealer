@@ -429,8 +429,8 @@ rektangel utan skevning, så bilden ligger i filmpixlar (1764 → 1762 ger plane
 bygger `assets/lab/placement-backdrop/native.jpg` med `receipt.json` (källor med SHA-256, figurens mått och passningen:
 filmens kort i scenen mot samma ruta ur filmen 0,2–0,3 px, bordet under filmen lika pixel för pixel); bilden byggs om
 när bordet, skon eller grundstandarden ändras. V6-bilden (`bakgrund=v6`) och filmerna är kvar i listan; Mobil har ingen
-hemvy i sina pixlar och behåller V6-bilden. Beställ film hit (C1-platserna och D.C1) leder till
-`/bestall/?ny=1&plats=P4.C1`.
+hemvy i sina pixlar och behåller V6-bilden. I labbet är Placering Bordets Kortplan (`/placering/` leder dit) och en film
+till platsen beställs i Bordets Beställ.
 
 En analys av de nuvarande separata native-/mobilprojektionerna finns i
 [table-projection-review](../evidence/table-projection-review.md). Den flyttar inga sparade punkter och ändrar inte V6.

@@ -7,7 +7,7 @@
 // instead the bot is there: the view
 // Önskemål (with the answers from Jakob not yet seen) and "Fråga", which opens and closes the panel (components/bot).
 // In the lab Beslut stands first in the foot, with the number of things waiting for his answer (components/decisions).
-import { Box, Clapperboard, Images, Inbox, LayoutPanelLeft, ListChecks, MessageCircleQuestion, ScanEye, Send, Spade, Speech, SquareDashedMousePointer, Volume2, Workflow } from "lucide-react";
+import { Box, Clapperboard, Images, Inbox, LayoutPanelLeft, ListChecks, MessageCircleQuestion, ScanEye, Spade, Speech, SquareDashedMousePointer, Volume2, Workflow } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useMemo, type ComponentType } from "react";
@@ -39,7 +39,6 @@ export const VIEWS: readonly View[] = [
   { href: "/placering/", label: "Placering", hint: "Var korten och skon ligger: flytta, rikta och spara", icon: SquareDashedMousePointer },
   { href: "/material/", label: "Material", hint: "Per dealer: ingångsbild, keystone, ankare, filmer och referenser", icon: Images },
   { href: "/lipsync/", label: "Lipsync", hint: "Läppsynken per dealer: var munnen görs, vad som är inställt och vad som stämmer", icon: Speech },
-  { href: "/bestall/", label: "Beställ", hint: "Kön och Det här skickas: granska en beställning av bild eller film innan du godkänner", icon: Send },
   { href: "/game/", label: "Casino", hint: "Spela blackjack som i casinot: spelmotorn, marker och reglage, med valt förval", icon: Spade },
 ];
 
@@ -49,7 +48,7 @@ export const VIEWS: readonly View[] = [
  * lab Bordet holds Scen and Placering (Jakob 2026-11-17: they are to be part of the main view), so those two stand in the
  * rail only in the copy, which has no Bordet; their addresses keep working in the lab (/?runda=…, /placering/?plats=…).
  */
-const LAB_ONLY: readonly string[] = ["/bordet/", "/bestall/", "/lipsync/"];
+const LAB_ONLY: readonly string[] = ["/bordet/", "/lipsync/"];
 const COPY_ONLY: readonly string[] = ["/", "/placering/"];
 const SHOWN: readonly View[] = VIEWS.filter((view) => !(isSnapshot ? LAB_ONLY : COPY_ONLY).includes(view.href));
 /** Where the mark at the top leads: the first view of the rail. */

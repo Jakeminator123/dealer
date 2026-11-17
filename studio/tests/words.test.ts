@@ -65,7 +65,7 @@ test("a search finds the studio's word from an older name, the word itself first
   assert.equal(findWords("READY-B")[0].ord, "A2.2 släp");
   assert.equal(findWords("REDO B")[0].ord, "A2.2 släp");
   assert.equal(findWords("vilan")[0].ord, "Vilan");
-  assert.equal(findWords("platt")[0].ord, "Inte 3D", "marks do not matter: plätt and platt are one");
+  assert.equal(findWords("platt")[0].ord, "Råfilm", "marks do not matter: plätt and platt are one");
   assert.equal(findWords("xyzzy").length, 0);
   assert.equal(findWords("  ").length, WORDS.length);
   // An exact name goes before a word that only contains it: "lipsynk" is Lipsync, then Realtidslipsynk.
@@ -97,7 +97,7 @@ test("Jakob's own words find their entry, ahead of the names in code and the mea
     ["overlay", "Ritat kort"],
     ["post", "Efterbehandling"],
     ["efterlaborering", "Efterbehandling"],
-    ["råfilm", "Råmaterial"],
+    ["råfilm", "Råfilm"],
     ["färdigt material", "Färdigt material"],
     ["keystonebild", "Keystone"],
     ["baslinje", "Grundbild"],

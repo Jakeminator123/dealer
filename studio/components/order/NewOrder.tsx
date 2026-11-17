@@ -3,7 +3,7 @@
 // A new order, all on one sheet with defaults for everything. It opens on the picture (Stage, Jakob 2026-11-17): his
 // notation for what is ordered ("A2.2 → P3C2 → A2.2") and one plain sentence, over the picture the film starts from with
 // every card place of the plan on it and the ordered card drawn where the plan lays it; a press on a place chooses that
-// card (a seat's second card too), "Flytta kortets plats" opens Placering at it with the way back here, and "Bordet" shows
+// card (a seat's second card too), "Flytta kortets plats" opens Bordet's Kortplan at it, and "Bordet" shows
 // the places on Placering's neutral table instead. Under the picture, what the choices turn into, changing as he sets
 // them: the order's line in Swedish, the pictures that are sent (first, last with the card drawn where the plan says, or
 // the dealer's picture and the pose) each with whose it is, the cost of all of it against the limits, and the exact text
@@ -24,34 +24,29 @@
 // a deal, and a return as its own film, where the seat's landing picture holds (else what is missing and how to get one); a
 // reference film from the bank for a model that takes one; the card's size in this order (a trial). Only the dealers of
 // data/dealers.json are offered (the register may hold others).
-import { Clock } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 import { asApiError } from "../../lib/api.ts";
 import { useBank } from "../../lib/bank.ts";
 import { labUrl } from "../../lib/lab.ts";
 import type { DealerAnswer, EntryAnswer, MediaAnswer } from "../../lib/media.ts";
 import {
-  SECOND_CARD, SECOND_CARD_WORDS, anchorFor, cardOf, createOrder, firstLacking, gripAgainstPlan, orderableCard, presetAddress, recipeOf, routeOf, seatKey, stepGroups, withCard,
+  SECOND_CARD, SECOND_CARD_WORDS, anchorFor, cardBody, cardOf, createOrder, seatFlip, firstLacking, gripAgainstPlan, orderableCard, recipeOf, routeOf, seatKey, stepGroups, withCard,
   type OrderAnswer, type OrdersAnswer, type Preset, type StepKey,
 } from "../../lib/orders.ts";
-import { placingHref } from "../../lib/placement.ts";
+import { kortplanHref } from "../../lib/bordet.ts";
 import {
   ALL_SEVEN, CROSSING_WHY, FLIP_LABEL, HAND_LABEL, LANDS_LABEL, SEAT_TARGETS, SHAPE_LABEL, STEPS, STYLE_LABEL, TAKES_MAX,
-  costOf, credits, defaultFlip, genitive, groupBudget, handChoiceOf, handsOf, landingMissing, landingOf, lengthFor, modelFor, modelsFor, paramsOf, referenceCandidates, scaleQuad, scaleWords, seatList, seatWords, startWords, stepOf, stylesFor, summaryOf,
+  costOf, credits, genitive, groupBudget, handChoiceOf, handsOf, landingMissing, landingOf, lengthFor, modelFor, modelsFor, paramsOf, referenceCandidates, scaleQuad, scaleWords, seatList, seatWords, startWords, stepOf, stylesFor, summaryOf,
   type BankFacts, type FlipAxis, type HandChoice, type ModelDef, type Owner, type SeatPlan, type Shape, type TextStyle,
 } from "../../../src/order-model.ts";
 import { promptFor, wordCount } from "../../../src/order-prompts.ts";
-import { CARD_COLOUR, NEUTRAL_BACKDROP } from "../../../src/placement-model.ts";
+import { NEUTRAL_BACKDROP } from "../../../src/placement-model.ts";
 import { getMedia } from "../material/client.ts";
 import { Button, SegmentedControl, Sheet, TextArea, cn, useToast } from "../ui";
 import { FlipChoice, HandChoiceRow, LandsChoice, ModelChoice, ReferenceChoice, ScaleChoice, ShapeChoice, TextChoice } from "./Choices";
-import { OwnerChip } from "./Pictures";
+import { PreviewPicture } from "./Pictures";
 import { PromptText } from "./PromptText";
 import { Stage, type StageBase, type StageCard, type StageLook } from "./Stage";
-
-const W = 1764,
-  H = 1174;
-const CARD_FILL = CARD_COLOUR;
 
 function Step({ n, title, aside, children }: { n: number; title: string; aside?: ReactNode; children: ReactNode }) {
   return (
@@ -65,40 +60,6 @@ function Step({ n, title, aside, children }: { n: number; title: string; aside?:
         {children}
       </div>
     </section>
-  );
-}
-
-/** A picture as it will go out: a thumbnail, its short name, whose it is; the card drawn over it where the plan says. */
-function Thumb({ src, frame, name, owner, dealer, waiting, drawn, cards }: { src: string | null; frame?: { video: string; time: number } | null; name: string; owner: Owner | null; dealer: string; waiting?: string | null; drawn?: boolean; cards?: { quad: [number, number][]; side: "FRONT" | "BACK"; faint?: boolean }[] }) {
-  return (
-    <figure className="flex min-w-0 flex-col gap-1.5">
-      <div className="relative aspect-[1764/1174] overflow-hidden rounded-md border border-line bg-well">
-        {frame ? (
-          // One frame of a film (a landing picture taken from a take): the film paused at that frame.
-          <video src={`${frame.video}#t=${frame.time.toFixed(3)}`} muted playsInline preload="auto" className="size-full object-cover" aria-label={name} />
-        ) : src ? (
-          // eslint-disable-next-line @next/next/no-img-element -- a lab file
-          <img src={src} alt={name} className="size-full object-cover" />
-        ) : (
-          <div className="absolute inset-0 flex flex-col items-center justify-center gap-1 bg-[repeating-linear-gradient(135deg,#0c110f_0_10px,#0a0e0c_10px_20px)] text-center">
-            <Clock className="size-5 text-vantar" />
-            <span className="text-sm text-ink">Väntar på {waiting ?? "bilden"}</span>
-            <span className="text-2xs text-dim">{drawn ? "kortet ritas på den när den är godkänd i Material" : "hämtas hit när den är godkänd i Material"}</span>
-          </div>
-        )}
-        {cards?.length ? (
-          <svg viewBox={`0 0 ${W} ${H}`} className="pointer-events-none absolute inset-0 size-full" aria-hidden>
-            {cards.map((c, i) => (
-              <polygon key={i} points={c.quad.map((p) => p.join(",")).join(" ")} fill={c.faint ? "none" : CARD_FILL[c.side]} stroke={c.faint ? "#e8cb85" : CARD_FILL[c.side]} strokeWidth={c.faint ? 3 : 4} strokeLinejoin="round" strokeDasharray={c.faint ? "10 8" : undefined} opacity={c.faint ? 0.7 : 1} />
-            ))}
-          </svg>
-        ) : null}
-      </div>
-      <figcaption className="flex min-w-0 flex-wrap items-center gap-1.5 text-xs">
-        <span className="truncate text-ink">{name}</span>
-        <OwnerChip owner={owner} dealer={dealer} />
-      </figcaption>
-    </figure>
   );
 }
 
@@ -179,13 +140,15 @@ export function NewOrder({ open, onOpenChange, all, preset, onCreated }: { open:
   const shownHand: HandChoice = hand ?? (planHands.length === 1 ? planHands[0] : "LH");
   const open_ = targets.some((t) => sideAt(t) === "FRONT");
   // How the card turns: what Placering's Rörelse says for the (first) card, unless chosen here.
-  const flipSeat = seatOf(targets[0] ?? "P4.C1");
-  const suggestedFlip = defaultFlip(key, flipSeat?.turnAt, flipSeat?.flipAxis);
-  const flipAxis = flip?.key === key ? flip.axis : suggestedFlip;
+  // Each seat turns as the plan says for it unless one turn is chosen for the whole order; only a chosen one is sent, so that
+  // with "Alla sju" every seat keeps its own (the store takes each seat's from the plan when the order names none).
+  const chosenFlip = flip?.key === key ? flip.axis : null;
+  const flipAt = (t: string) => seatFlip(key, seatOf(t), chosenFlip);
+  const planFlips = [...new Set(targets.map((t) => seatFlip(key, seatOf(t), null)))];
   // The grip is the step's; where Placering plans the card(s) with the other one, the sheet says so.
   const gripLine = gripAgainstPlan(step, targets.map(seatOf));
   const focus = step.card ? (shownSeat && targets.includes(shownSeat) ? shownSeat : targets[0]) : null;
-  const motionAt = (t: string) => ({ grip: step.grip ?? ("PINCH" as const), ...handsAt(t), turn: sideAt(t) === "FRONT", flipAxis, side: sideAt(t), target: t });
+  const motionAt = (t: string) => ({ grip: step.grip ?? ("PINCH" as const), ...handsAt(t), turn: sideAt(t) === "FRONT", flipAxis: flipAt(t), side: sideAt(t), target: t });
 
   // ── The text's style, tur och retur or bara dit, the landing picture, the card's size, a reference film ──
   const styles = stylesFor(step.kind, step);
@@ -232,14 +195,14 @@ export function NewOrder({ open, onOpenChange, all, preset, onCreated }: { open:
   const pictures: ReactNode =
     step.kind === "STILL" ? (
       <>
-        <Thumb src={served(startEntry)} name={`Dealerns bild · ${entryName(startEntry, dealerName, step.from)}`} owner={me} dealer={dealerId} waiting={startEntry ? null : `ankare ${step.from}`} />
-        <Thumb src={pose ? labUrl(`${pose.served}${startEntry ? `?anchor=${encodeURIComponent(startEntry.id)}` : ""}`) : null} name="Pose · bara armen, handen och skon" owner={pose?.owner ?? null} dealer={dealerId} waiting="posebilden" />
+        <PreviewPicture src={served(startEntry)} name={`Dealerns bild · ${entryName(startEntry, dealerName, step.from)}`} owner={me} dealer={dealerId} waiting={startEntry ? null : `ankare ${step.from}`} />
+        <PreviewPicture src={pose ? labUrl(`${pose.served}${startEntry ? `?anchor=${encodeURIComponent(startEntry.id)}` : ""}`) : null} name="Pose · bara armen, handen och skon" owner={pose?.owner ?? null} dealer={dealerId} waiting="posebilden" />
       </>
     ) : step.cards?.length ? (
       // The hole card's turn: her anchor 1 with the dealer's cards where the plan lays them, before and after.
       <>
         {(["before", "after"] as const).map((when) => (
-          <Thumb
+          <PreviewPicture
             key={when}
             src={served(start.holds)}
             name={`${when === "before" ? "Första bild" : "Sista bild"} · ${entryName(start.holds, dealerName, step.from)} + korten, hålkortet ${step.cards!.at(-1)![when] === "FRONT" ? "öppet" : "stängt"}`}
@@ -253,16 +216,16 @@ export function NewOrder({ open, onOpenChange, all, preset, onCreated }: { open:
       </>
     ) : step.start === "LAND" ? (
       <>
-        <Thumb src={served(landing)} frame={frameOf(landing)} name={`Första bild · ${genitive(dealerName)} landning på ${seatWords(focus)}`} owner={me} dealer={dealerId} waiting={landing ? null : "landningsbilden"} />
-        <Thumb src={served(end)} name={`Sista bild · ${entryName(end, dealerName, step.to ?? step.from)}`} owner={me} dealer={dealerId} waiting={end ? null : `ankare ${step.to}`} />
+        <PreviewPicture src={served(landing)} frame={frameOf(landing)} name={`Första bild · ${genitive(dealerName)} landning på ${seatWords(focus)}`} owner={me} dealer={dealerId} waiting={landing ? null : "landningsbilden"} />
+        <PreviewPicture src={served(end)} name={`Sista bild · ${entryName(end, dealerName, step.to ?? step.from)}`} owner={me} dealer={dealerId} waiting={end ? null : `ankare ${step.to}`} />
       </>
     ) : (
       <>
-        <Thumb src={served(start.holds)} name={`Första bild · ${entryName(start.holds, dealerName, step.from)}`} owner={me} dealer={dealerId} waiting={start.holds ? null : `ankare ${step.from}`} />
+        <PreviewPicture src={served(start.holds)} name={`Första bild · ${entryName(start.holds, dealerName, step.from)}`} owner={me} dealer={dealerId} waiting={start.holds ? null : `ankare ${step.from}`} />
         {oneWay ? (
-          <Thumb src={served(landing)} frame={frameOf(landing)} name={`Sista bild · ${genitive(dealerName)} landning på ${seatWords(focus)}`} owner={me} dealer={dealerId} waiting={landing ? null : "landningsbilden"} />
+          <PreviewPicture src={served(landing)} frame={frameOf(landing)} name={`Sista bild · ${genitive(dealerName)} landning på ${seatWords(focus)}`} owner={me} dealer={dealerId} waiting={landing ? null : "landningsbilden"} />
         ) : step.card && focus && focusSeat ? (
-          <Thumb
+          <PreviewPicture
             src={served(start.holds)}
             name={`Sista bild · samma + kortet ${sideAt(focus) === "BACK" ? "stängt" : "öppet"} på ${seatWords(focus)}${cardScale !== 1 ? ` · ${scaleWords(cardScale)}` : ""}`}
             owner={me}
@@ -272,7 +235,7 @@ export function NewOrder({ open, onOpenChange, all, preset, onCreated }: { open:
             cards={[...targets.filter((t) => t !== focus).map((t) => ({ quad: scaleQuad(seatOf(t)!.quad, cardScale).quad, side: sideAt(t), faint: true })), { quad: scaleQuad(focusSeat.quad, cardScale).quad, side: sideAt(focus) }]}
           />
         ) : (
-          <Thumb src={served(end)} name={`Sista bild · ${entryName(end, dealerName, step.to ?? step.from)}`} owner={me} dealer={dealerId} waiting={end ? null : `ankare ${step.to}`} />
+          <PreviewPicture src={served(end)} name={`Sista bild · ${entryName(end, dealerName, step.to ?? step.from)}`} owner={me} dealer={dealerId} waiting={end ? null : `ankare ${step.to}`} />
         )}
       </>
     );
@@ -308,7 +271,7 @@ export function NewOrder({ open, onOpenChange, all, preset, onCreated }: { open:
         })
       : [];
   const moved = step.card ? focus : (step.target ?? null);
-  const move = moved ? placingHref(moved, presetAddress({ dealer: dealerId, step: key, target: seven ? null : target, all: seven, model: model.id !== step.model ? model.id : null })) : null;
+  const move = moved ? kortplanHref(moved) : null;
   const caption = onTable
     ? places.length || stageCards.length
       ? "Studions bord med en siluett, som i Placering: bara för att se var kortet ligger. Det som skickas är dealerns egen bild."
@@ -331,7 +294,7 @@ export function NewOrder({ open, onOpenChange, all, preset, onCreated }: { open:
     setBusy(true);
     try {
       const common = { dealer: dealerId, step: key, takes, extra: extra.trim() || null, style, ...(model.id !== step.model ? { model: model.id } : {}), ...(step.kind === "FILM" ? { duration: seconds } : {}), ...(reference ? { reference } : {}) };
-      const card = step.card ? { flipAxis, ...(deal && shape ? { shape } : {}), ...(cardScale !== 1 ? { cardScale } : {}) } : {};
+      const card = step.card ? cardBody({ chosenFlip, shape, deal: !!deal, cardScale }) : {};
       const made = !step.card
         ? await createOrder({ ...common, ...(step.kind === "STILL" && !start.holds && startEntry ? { base: startEntry.id } : {}) })
         : seven
@@ -392,7 +355,7 @@ export function NewOrder({ open, onOpenChange, all, preset, onCreated }: { open:
             {step.card && motion ? (
               <p className="-mt-3.5 text-sm text-dim">
                 {HAND_LABEL[handChoiceOf(motion)]} · {LANDS_LABEL[motion.side]}
-                {motion.side === "FRONT" && step.start !== "LAND" ? ` · ${FLIP_LABEL[flipAxis]}` : ""}
+                {motion.side === "FRONT" && step.start !== "LAND" ? ` · ${FLIP_LABEL[motion.flipAxis]}` : ""}
                 {shape && deal ? ` · ${SHAPE_LABEL[shape]}` : ""}
                 {cardScale !== 1 ? ` · prov: kortet ${scaleWords(cardScale)} av planens` : ""}
                 {seven ? ` · visar ${seatWords(focus)} av sju` : ""}
@@ -555,7 +518,12 @@ export function NewOrder({ open, onOpenChange, all, preset, onCreated }: { open:
               </Step>
               {open_ && step.start !== "LAND" ? (
                 <Step n={next()} title="Hur kortet vänds">
-                  <FlipChoice value={flipAxis} plan={flipSeat ? suggestedFlip : null} onChange={(axis) => setFlip({ key, axis })} />
+                  <FlipChoice value={chosenFlip ?? flipAt(focus ?? targets[0] ?? "P4.C1")} plan={planFlips.length === 1 ? planFlips[0] : null} onChange={(axis) => setFlip({ key, axis })} />
+                  {!chosenFlip && planFlips.length > 1 ? (
+                    <p data-seat-flips className="text-xs text-dim">
+                      Placering säger olika per plats; utan val vänds varje plats som planen säger: {targets.map((t) => `${t.replace(".C1", "")} ${FLIP_LABEL[flipAt(t)].toLowerCase()}`).join(" · ")}.
+                    </p>
+                  ) : null}
                 </Step>
               ) : null}
               {scalable ? (
