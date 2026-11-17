@@ -167,7 +167,12 @@ kl. 21.46 och 21.58 (Jakobs besked, "Ett labb"), av underagenter till huvudagent
   dess bana och takt och vändningen var kvällens renaste), men tagningen kopierar också dockans fel (kortet glider utan
   finger; 2/5). Regeln, belagd i nio tagningar: bana, takt, kortets storlek i handen och ögonblicket på kant kommer ur
   referensfilmen; vem hon är, skon och var kortet ligger kommer ur bilderna. En referens väljs därför efter vad den
-  visar, inte bara efter hans dom.
+  visar, inte bara efter hans dom. **Hans eget öga på provet** (cirka kl. 23.47): "Alla A-filmer ser bra ut.. C nyp ser
+  bra ut!", och om B: "hela B:serien som är fel.. Det kan finnas fel eftersom Pamelas grundfilm är otydlig; det är
+  oklart om hon växlar över till rätt sida innan hon trycker ner kortet, som dessutom är för litet och har vitt runt det
+  blåa […] färgerna växlar en gång för mycket […] Pau i båda tagningarna släpper ner fel sida". Han godtar alltså
+  dockans tagning, som granskaren fällde för att kortet glider utan finger: i den automatiska kontrollen blir det en
+  anmärkning och inget fall, och referensfilmer mäts själva innan de används.
 - **Pågår hos filmbanans underagent: standarden byggs** efter planen `D:/dealer-scratch/tmp/giv-experiment-2/STANDARD.md`,
   på grenen `film-standard` i `D:/dealer-scratch/tmp/film-standard/trad` (inget betalt): mall 10 (nyckelvridningen
   för både nyp och släp, på vägen eller vid platsen; mall 9:s ord till `SAY.v9`), sista bilden i en giv bara dit ur
@@ -205,7 +210,10 @@ kl. 21.46 och 21.58 (Jakobs besked, "Ett labb"), av underagenter till huvudagent
   varje landningsbild, ankare, bankfilm och referens mot dagens regel (`planCardQuad`, dealerstandarden), visad som en
   bricka i Material ("äldre plan", "annan kamera"); avsnittet Prov ut ur Material (proven är Granskas del Prov), och
   Referenser och Övrigt märkta med vad de är till för och om något använder dem; en andra arkivplan. Gren
-  `material-revision`. Källorna till mått längst ned i Material är redan rättade (`f934258`: linsen först).
+  `material-revision`. I samma gren: Material ska följa menyns dealerväxel (hans skärmbild cirka kl. 23.47: med Paow
+  vald visade Material Pamela, eftersom vyn bara läser adressens ord och annars registrets första dealer; till dess
+  visar `/studio/material/?dealer=paow` Paow). Hans fråga om Pamela är "grundmodellen": nej, Paow är dealern och har
+  egna ankare och filmer; av Pamela används bara bankens filmer som rörelseförlagor. Källorna till mått längst ned i Material är redan rättade (`f934258`: linsen först).
 - **Pågår hos Bordets underagent: ett reglage Perspektiv för hela kortplanen** (hans ord kl. 23.36 om provet: "Jag tror
   inte att korten ska vara helt fyrkantiga som du har placerat dem. […] brist på djup i bordet. Om alla kort är exakt
   lika stora, blir de väldigt tvådimensionella"): den verkliga kameran är lång (bortre kanten 96 % av den nära), V6
