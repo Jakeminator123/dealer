@@ -3,121 +3,58 @@
   "about": "What waits for Jakob: one entry per question (kind beslut) or per thing only he can do (kind gora), shown as one card each in the studio's view Beslut (/studio/beslut/, lab only). The list's order is the order of urgency, the most urgent first. An entry: id, kind, question (at most 14 words), leads (one sentence: what his answer leads to), optionally proof (a folder under assets/proofs/) with file, page (an address in the lab, e.g. game.html?table=casino), link (an address outside, shown as text to open on his phone) and cost (free text), chips (two to four {value, label} for beslut, one to four for gora), asked (date), from (the lane that asks) and answer. An agent adds an entry with answer null, changes only its own entries, reads the file right before editing it and keeps the form JSON.stringify gives with two spaces; it closes an entry by taking it out once his answer is carried out, and the commit says what he answered. Only the page writes answer ({value, note, at}, tools/decision-store.ts); no agent sets, changes or clears an answer he has given. The strict reader is tools/decision-register.ts. The repo is public: no secret, personal detail or path of this machine.",
   "decisions": [
     {
-      "id": "realtid-mun-mindre-oppning",
+      "id": "dealer-3d-blick-och-vilande-hand",
       "kind": "beslut",
-      "question": "Munnen i realtid: mindre gap i vanligt tal, taket kvar. Rätt nu?",
-      "leads": "Vid ja blir det här sättet för munnen i realtid, med näsan orörd och hakan som följer mjukt.",
-      "proof": "paow-realtid-mun-6",
-      "file": "paow-realtid-mun-6-5-nara-vanlig.png",
+      "question": "3D-dockan: följer hon kortet, och är den vilande handen lagom fri?",
+      "leads": "Vid ja görs en förlagefilm till plats 4 med blicken och den friare handen, och en tagning prövas i Kling 4 (85 krediter).",
+      "proof": "dealer-3d-stolens-oga-och-blick",
+      "file": "5-plats-4-kortet-vands.png",
       "chips": [
         {
           "value": "ja",
           "label": "Ja"
         },
         {
-          "value": "andra",
-          "label": "Ändra (skriv vad)"
+          "value": "mer",
+          "label": "Mer rörelse"
         },
         {
-          "value": "nej",
-          "label": "Nej"
+          "value": "mindre",
+          "label": "Mindre rörelse"
+        },
+        {
+          "value": "andra",
+          "label": "Ändra (skriv vad)"
         }
       ],
-      "asked": "2026-11-17",
-      "from": "talsessionen",
-      "answer": {
-        "value": "ja",
-        "note": "",
-        "at": "2026-11-17T20:38:24.205Z"
-      }
+      "asked": "2026-11-18",
+      "from": "3D-banan",
+      "answer": null
     },
     {
-      "id": "ankare-1-tatuerade-hander",
+      "id": "dealer-3d-paow-modell",
       "kind": "beslut",
-      "question": "Nytt ankare 1: tatuerade händer, 10 % mindre. Ska nya filmer göras från det?",
-      "leads": "Vid ja görs ankare 2.1 och 2.2 likadant, och de nya filmerna beställs från dem; dagens filmer ligger kvar tills uppsättningen är hel.",
-      "proof": "paow-ankare-tatuerade-hander",
-      "file": "1-hela-bilden-i-dag-och-ny.jpg",
+      "question": "Paow som 3D-modell vid bordet: värd att bygga vidare på?",
+      "leads": "Vid ja får modellen fingerben så att händerna kan hålla kortet; i dag är händerna stela och kortet svävar bredvid handen (3D-banans skattning 2/5).",
+      "proof": "dealer-3d-paow-modell-vid-bordet",
+      "file": "5-kortet-laggs.png",
       "chips": [
         {
           "value": "ja",
-          "label": "Ja"
+          "label": "Ja, bygg vidare"
+        },
+        {
+          "value": "nej",
+          "label": "Nej, vita dockan räcker"
         },
         {
           "value": "andra",
           "label": "Ändra (skriv vad)"
-        },
-        {
-          "value": "nej",
-          "label": "Nej"
         }
       ],
-      "asked": "2026-11-17",
-      "from": "trailersessionen",
-      "answer": {
-        "value": "andra",
-        "note": "Ja. Mne vi kanske kan göra om en \"A1 till A2.2 och sedan framgent de filmer som görs, tillsi får till hur vi ska göra filmerna, faktist , så kan vi göra med tatueringar. men låt nuvarande vara kvar så kan vi fylla i dem när vi får till resten",
-        "at": "2026-11-17T20:38:04.949Z"
-      }
-    },
-    {
-      "id": "givprovet-forlagefilm",
-      "kind": "beslut",
-      "question": "Givprovet: Kling 4 med Pamelas film som förlaga vände kortet. Nytt sätt?",
-      "leads": "Vid ja blir förlagefilm och den nya texten förvalet för en giv i Beställ, och nästa givar beställs så.",
-      "proof": "giv-experiment",
-      "file": "1-vandningen-kling-4-forlagefilm.png",
-      "chips": [
-        {
-          "value": "ja",
-          "label": "Ja"
-        },
-        {
-          "value": "andra",
-          "label": "Ändra (skriv vad)"
-        },
-        {
-          "value": "nej",
-          "label": "Nej"
-        }
-      ],
-      "asked": "2026-11-17",
-      "from": "huvudagenten",
-      "cost": "provet kostade 820 krediter; en giv så här kostar 85",
-      "answer": {
-        "value": "andra",
-        "note": "Ja, absolut. Det här skulle kunna vara en vridning, givet att dealern nu nyper upp kortet för att sedan vrida över det med en rörelse. Å andra sidan krävs det också en sådan här för när hon släpar ut ett kort, antar jag. Alltså, det här är förankare 2.1, till P4C1 men det behövs ju också för och från A2.2 till P4C1.. och kanske för alla andra spelare och kanske kort också? Eller kanske man kan laborera med detta.. I och med jag hoppas nya labbet ska fixa så dett görs smidigare kanske det itne behövs",
-        "at": "2026-11-17T19:29:19.786Z"
-      }
-    },
-    {
-      "id": "labbets-grund",
-      "kind": "beslut",
-      "question": "Nya labbet: en vy Bordet med fyra steg, och Efterarbete för sig. Bygga så?",
-      "leads": "Vid ja byggs Bordet först, för att beställa och granska filmer, sedan Efterarbete, och gamla labbet tas bort sist.",
-      "proof": "labbets-grund",
-      "file": "1-bordet.png",
-      "chips": [
-        {
-          "value": "ja",
-          "label": "Ja, bygg"
-        },
-        {
-          "value": "andra",
-          "label": "Ändra (skriv vad)"
-        },
-        {
-          "value": "nej",
-          "label": "Nej"
-        }
-      ],
-      "asked": "2026-11-17",
-      "from": "huvudagenten",
-      "answer": {
-        "value": "ja",
-        "note": "Ja bygg men med anmärkning: Ja visst. men angående det som är till för att beskriva det som ska gå till runway, så ska bara instruktioner som faktist ska komma med till runway - finnas som är tänmkt att beskriva just detta, så att inte olika beskrivningar i nya labbet skapas som finns bara för att beskriva för användaren saker som ändå inte kommer komma med till runway. Angående hur skons kort är som standard och i den bild du visar här, så stämmer den inte med hur skons kort faktist visas. Den gulaktiga kortsiluetten är cirka 50 grader för tiltat nedåt från ovansidan och ska vändas innot (så man ser mindre) av vridningen (den är altså mer vriden som startpossition mot dealer än mot spelaren ca 50 grader cokså.. Jämför bara mot kortet i en bild från en video eller bild",
-        "at": "2026-11-17T19:22:14.885Z"
-      }
+      "asked": "2026-11-18",
+      "from": "3D-banan",
+      "answer": null
     },
     {
       "id": "kortets-baksida",
@@ -165,30 +102,6 @@
         "value": "prova",
         "note": "",
         "at": "2026-11-17T16:58:48.987Z"
-      }
-    },
-    {
-      "id": "boten-utan-losenord",
-      "kind": "beslut",
-      "question": "Ska boten på sajten vara öppen även utan lösenord?",
-      "leads": "Ja låter vem som helst på sajten ställa frågor till boten.",
-      "chips": [
-        {
-          "value": "ja",
-          "label": "Ja"
-        },
-        {
-          "value": "nej",
-          "label": "Nej"
-        }
-      ],
-      "asked": "2026-11-17",
-      "from": "huvudagenten",
-      "cost": "kostar per fråga",
-      "answer": {
-        "value": "ja",
-        "note": "Vilkne är botten?",
-        "at": "2026-11-17T16:59:08.610Z"
       }
     }
   ]

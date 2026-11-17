@@ -1485,13 +1485,13 @@
           "name": "Vila, yngre, kandidat 2",
           "path": "assets/anchors/paow-vila-ung-2/anchor.png",
           "node": "IDLE",
-          "state": "gäller",
+          "state": "ersatt",
           "note": "Bäst mätt: händer 2,4 och 4,4 px, ögon 7,7 px, kroppen slutar rad 830–831, inga skuggor ovanför kanten. Inte godkänd, inte oberoende granskad.",
           "source": {
             "from": "redigering av kavajankaret, Nano Banana Pro 4K, omgång b24 (D:/dealer-scratch/tmp/paow/ankare/kandidat-paow-vila-ung-2.png)",
             "when": "2026-11-12"
           },
-          "stateBy": "Jakob 2026-11-13 00:51: kandidat → gäller (Material)"
+          "stateBy": "Jakob 2026-11-18 00:37: gäller → ersatt (Vila, tatuerade händer godkändes, hans svar Ja i Beslut 2026-11-17 på kortet \"Nytt ankare 1: tatuerade händer, 10 % mindre. Ska nya filmer göras från det?\" och hans besked natten till 2026-11-18 att den tatuerade uppsättningen är förstahandsvalet; infört av huvudagenten)"
         },
         {
           "id": "paow-vila-tatuerad",
@@ -1499,12 +1499,13 @@
           "name": "Vila, tatuerade händer",
           "path": "assets/anchors/paow-vila-tatuerad/anchor.png",
           "node": "IDLE",
-          "state": "kandidat",
+          "state": "gäller",
           "note": "Vila, yngre, kandidat 2 med tatuerade händer, 10 % mindre (som keystonebilderna Jakob sa ja till 2026-11-17). Utanför händerna samma bildpunkter. Oberoende granskad i full storlek: 4/5.",
           "source": {
             "from": "paow-vila-ung-2 med händerna ändrade (Nano Banana Pro 2K för bläcket, storleken lokalt; kvittot ligger bredvid bilden)",
             "when": "2026-11-17"
-          }
+          },
+          "stateBy": "Jakob 2026-11-18 00:37: kandidat → gäller (hans svar Ja i Beslut 2026-11-17 på kortet \"Nytt ankare 1: tatuerade händer, 10 % mindre. Ska nya filmer göras från det?\" och hans besked natten till 2026-11-18 att den tatuerade uppsättningen är förstahandsvalet; infört av huvudagenten)"
         },
         {
           "id": "paow-vila-linne",
