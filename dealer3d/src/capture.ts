@@ -180,6 +180,10 @@ export function perform(lens: Lens, marks: Landmarks, track: Track, options: {aw
     const floor = CARD.thickness / 2 + CARD.height / 2 * Math.abs(card.long[1]) + CARD.width / 2 * Math.abs(card.across[1]); if (card.centre[1] < floor) card.centre = [card.centre[0], floor, card.centre[2]];
     moments.push({card, L: arm(lens, shoulderL[i], L[0], {x: elbowL[i][0], y: elbowL[i][1]}, L), R: arm(lens, shoulderR[i], R[0], {x: elbowR[i][0], y: elbowR[i][1]}, R), head: heads[i], hip});
   }
+  // The dealing hand stays on the card from the frame where it lies to the end, as it is in that frame: a film ordered
+  // "there only" ends on a picture with her hand at the card, and a reference whose hand lifts in its last frames (the
+  // film's own does, from about frame 110) makes the ordered film twitch there (the Kling 4 trial of 2026-11-18).
+  for (let i = rests + 1; i < n; i++) moments[i] = {...moments[i], L: moments[rests].L};
   return {film: marks.film, fps: marks.fps, frameCount: n, leavesShoe: leaves, edge, folds, rests, handSize: {L: size, R: size}, palm, moments};
 }
 
