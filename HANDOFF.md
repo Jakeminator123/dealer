@@ -115,7 +115,7 @@ skrivs på skrivbordet när allt har ett utfall. Här står bara det som inte ä
 
 ## Nästa steg
 
-**Börja här (läget 2026-11-17 kl. 23.30; huvudagenten bytte chatt kl. 21.45).** Labbet byggs om på Jakobs ord från
+**Börja här (läget 2026-11-17 kl. 23.15; huvudagenten bytte chatt kl. 21.45).** Labbet byggs om på Jakobs ord från
 kl. 21.46 och 21.58 (Jakobs besked, "Ett labb"), av underagenter till huvudagenten:
 
 - **Inne i `main` och sett i headless Chrome:** vyn **Bordet**, första versionen (`82258f3`: `/studio/bordet/` med
@@ -156,7 +156,7 @@ kl. 21.46 och 21.58 (Jakobs besked, "Ett labb"), av underagenter till huvudagent
   sista bilden ur bankens egen klippruta, metodregistret och en automatisk kontroll av varje tagning i `STANDARD.md`
   där; den ändrar bara `tools/film-prompting.md` i huvudträdet). 3D-banan (Vem äger vad) ritar en vit dockas giv från
   bankens kamera, som sedan prövas som referensfilm i stället för Pamelas (ett betalt prov till, på huvudagentens ord).
-- **Disken: 80 GB borttaget kl. 23.20** enligt inventeringens kontrollerade listor
+- **Disken: 80 GB borttaget kl. 23.13** enligt inventeringens kontrollerade listor
   (`D:/dealer-scratch/tmp/stadning/inventering-2026-11-17/`, loggen `borttaget-2026-11-17.txt`): webbläsarprofiler,
   `node_modules` och cachar i slaskmappar, 374 exakta kopior av filer som finns i `assets/` (stickprov 12 av 12 lika på
   SHA-256), råa bildrutor från inspelningar vars filmer finns kvar (65 mappar, film bredvid var och en) och djupdata för
@@ -166,7 +166,7 @@ kl. 21.46 och 21.58 (Jakobs besked, "Ett labb"), av underagenter till huvudagent
   (`*\OpenAI\Codex\bin\*\rg.exe`) läses som en sökväg till varje sessionsmapp; 23 talfilmers `motions/` pekar på
   kvitton som flyttats till `D:/dealer-scratch/tmp/tal/overtaliga/`; flera av Paows källor i `data/media-roles.json`
   ligger på D: i stället för i `assets/`.
-- **Pågår hos en underagent: vad i `assets/` och `output/` som används** (hans ord kl. 23.20 om en obedömd film utanför
+- **Pågår hos en underagent: vad i `assets/` och `output/` som används** (hans ord kl. 23.11 om en obedömd film utanför
   banken: "Varför finns det här om det inte används överhuvudtaget?", "saker vi kanske ska arkivera eller radera"): ett
   verktyg `tools/media-audit.ts` som för varje mapp säger vad den är och vad som använder den (spelas, visas, referens,
   bara registrerad, okänd), och en arkivplan med skript för det som bara är registrerat eller okänt (till
@@ -174,7 +174,7 @@ kl. 21.46 och 21.58 (Jakobs besked, "Ett labb"), av underagenter till huvudagent
   förrän huvudagenten har läst planen. `output/` är bara den återskapade V6 (130 MB), som är hans referens och läses av
   `tools/render.ts`, `tools/verify.ts` och labbet. Om kopian på nätet: "Allt på nätet är sekundärt"; inget arbete läggs
   där, och `cloud/` står orörd tills han säger att den ska bort.
-- **Kortens storlek** (hans ord kl. 23.25: "`assets\reference\native-0694.png` har ju tex skitbra kortstorlekar […] är så
+- **Kortens storlek** (hans ord kl. 23.14: "`assets\reference\native-0694.png` har ju tex skitbra kortstorlekar […] är så
   osäker på allt. Men finns så många spår!"): bilden är ruta 694 av V6, där korten är ungefär en tredjedel större än ett
   verkligt kort mot hennes hand (skattat, mäts av Bordets underagent). Med linsen följer varje korts storlek av platsen,
   så planen får ett enda tal för storleken mot ett verkligt kort (1,00 verkligt, V6:s värde utmärkt), som han väljer.
