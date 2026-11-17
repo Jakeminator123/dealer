@@ -49,10 +49,14 @@ inte med av misstag. Git-push är separat från webbdeploy, mediauppladdning och
   serversidigt pushförbud eller aktiverat mergekrav.
 - **Push medan andra skriver** (2026-11-13). I huvudträdet stoppar kontrollen så länge någon sessions testindata
   skiljer sig från HEAD eller en ospårad `.ts`-fil ligger där, och det gör den nästan alltid en dag med flera
-  sessioner. Huvudagenten pushar då från ett eget rent arbetsträd på slaskdisken: `git worktree add --detach
-  <mapp på D:> main`, `npm ci` (om paketlistan har ändrats), `npm test`, `npm run check`, `git push origin HEAD:main`,
-  och sedan fjärrens SHA och GitHub-kontrollen. Det som pushas är incheckade commits, aldrig någons öppna filer.
-  Arbetsträdet tas bort med `git worktree remove` när dagen är slut.
+  sessioner. Huvudagenten pushar då från ett eget rent arbetsträd på slaskdisken med `node tools/push-clean.ts
+  [<commit>] [--trad <mapp>] [--dry-run]`: trädet ställs detached på commiten (förval `main`) och måste vara rent, `npm
+  ci` körs om paketlistan har ändrats eller `node_modules` saknas, sedan `npm test`, `npm run check` och `git push
+  origin HEAD:main`, och sist lokal och fjärrens SHA. Verktyget stannar vid första steg som faller med en rad som börjar
+  STOPP och lägger varje stegs logg i `push-logg` bredvid trädet; `--dry-run` gör allt utom `git push`. Trädet görs en
+  gång med `git worktree add --detach <mapp på D:> main` (förvalet är `D:/dealer-scratch/tmp/huvudagent11/push-trad`)
+  och står kvar mellan pusharna; verktyget vägrar huvudträdet och ett träd ur ett annat repo. GitHub-kontrollen läses
+  efteråt. Det som pushas är incheckade commits, aldrig någons öppna filer.
 - **Rött:** stoppa, undersök orsak och rätta innan nytt försök. **Gult:** granska och åtgärda eller förklara kvarvarande
   begränsning kort i HANDOFF före push/PR. Varningarna visas i agentens terminal och som CI-annoteringar. Granska även
   hook/testens relevans och falsklarm; vid verkligt kontrollfel, rätta med ett avgränsat regressionstest. Hoppa inte
@@ -117,6 +121,22 @@ inte med av misstag. Git-push är separat från webbdeploy, mediauppladdning och
   sista fliken, och då nekades varje länk Jakob fick). Före en länk till Jakob: `node tools/preview.ts --ensure` startar
   servern om den inte går, utan att öppna eller flytta någon flik. Stäng inte arkivets eller andra projekts
   servrar, och stoppa aldrig via processnamn eller port.
+- **Studion byggd ur det incheckade** (2026-11-17). Servern lämnar ut huvudträdets `studio/out`, och ett bygge där bär
+  med sig varje sessions halvfärdiga studiofiler till Jakobs flik. `node tools/studio-from-commit.ts [<commit>] [--trad
+  <mapp>] [--ut <mapp>]` bygger commiten (förval `main`) i ett rent arbetsträd på slaskdisken (detached, `npm ci` där en
+  paketlista har ändrats eller `node_modules` saknas, `npm --prefix studio run build`) och byter in resultatet i
+  huvudträdets `studio/out` först när bygget har lyckats: kopian läggs bredvid som `out.ny`, den gamla mappen flyttas
+  undan och den nya in. Ett bygge eller en flytt som faller lämnar det som visas orört, och `studio/out/bygge.json`
+  säger vilken commit som visas. Trädet görs en gång med `git worktree add --detach <mapp på D:> main` (förvalet är
+  `D:/dealer-scratch/tmp/huvudagent11/studio-trad`); loggarna ligger i `studio-logg` bredvid. Servern startas inte om.
+- **En titt på labbsidor** (2026-11-17): `node tools/lab-look.ts <lista.json> <utmapp> [--vad "<vad>"] [--vem <namn>]`
+  tar en skärmbild per sida i listan (`[{name, url, wait, width, height, clicks, facts}]`, adresserna efter
+  `http://127.0.0.1:4319`) i en egen headless Chrome (egen profil, port 9591), aldrig i Jakobs flik: varje adress får
+  `robot=1`, så sidan tar aldrig labbflikens plats. Den körs under det delade låset för grafikkortet och headless
+  Chrome (`D:/dealer-scratch/tmp/gpu-och-headless.lock`; regeln i [TAL](TAL.md), "Så skickas ett jobb"): väntar medan
+  låset är yngre än 20 minuter, högst 20 minuter, och stannar då med vems det är. Chrome stängs och kontrolleras efteråt,
+  profilen tas bort och låset släpps bara om det fortfarande är körningens. Listan får bara trycka på det som ställer vyn,
+  aldrig det som sparar; labbservern startas inte härifrån.
 - Andra portar på datorn hör till syskonsessioner: 4320 Pamela-filmens sida
   (`D:/dealer-scratch/tmp/reel/page/serve.mjs`, lånar 4319), 4331 den frysta 3D-scenen v1
   (`D:/dealer-scratch/tmp/bakgrund-3d/START-BAKGRUND-3D.cmd`), 9391 Jakobs inloggade Meshy-Chrome.

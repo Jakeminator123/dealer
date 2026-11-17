@@ -11,6 +11,9 @@ Jakob äger projektet; han är inte programmerare, så förklara val i vanliga o
 3. Det ämne du arbetar med: `docs/SYSTEM.md` (kontrakt: koordinater, register, notation, ordlista), `docs/DRIFT.md`
    (rutiner: Git, kontrollen, labbservern, Runway, publicering, slaskdisken) och arbetsinstruktionerna i `tools/*.md`
    (`tools/dealer-line.md` är ingången för en ny dealer eller en filmbeställning).
+4. Ett arbetsmoment som återkommer (beställa eller granska en film, visa Jakob något, avsluta och pusha, arbeta bredvid
+   andra sessioner, en ny dealer, publicera kopian) har en skill i `.claude/skills/<namn>/SKILL.md`: läs den som gäller
+   innan du börjar. Den säger vilka regler som oftast bryts och pekar på dokumentet med rutinen, som den aldrig skriver om.
 
 ## Var kunskap står
 
