@@ -3828,6 +3828,27 @@
           "note": "Samma rutor ur en giv till plats 4 med bara kortets material ändrat (böjning 0, i dag, max; glans 0, i dag, max) och filmens eget kort bredvid. Gjort 2026-11-17 på Jakobs fråga om böjningen är felet: kanten flyttar sig inte, och skillnaden syns knappt. Det som syns är hur det ritade kortet sitter i handen på baksidan."
         },
         {
+          "id": "paow-prov-giv-experiment",
+          "role": "prov",
+          "name": "Givprovet: vilken text och modell vänder kortet",
+          "proof": "giv-experiment",
+          "note": "Prov 2026-11-17 på Jakobs ord (\"testar vilka av våra instruktioner som fungerar bäst\"): tio givar bara dit, ankare 2.1 till plats 4, med fyra texter på WAN 3 och två på Kling 4 med Pamelas giv som förlagefilm. 820 krediter. Kling 4 med förlagefilm vände kortet i fyra av fyra tagningar."
+        },
+        {
+          "id": "paow-prov-labbets-grund",
+          "role": "prov",
+          "name": "Labbets grund: Bordet och Efterarbete",
+          "proof": "labbets-grund",
+          "note": "Två skisser 2026-11-17 till ett enda labb på Jakobs ord: Bordet (placering, rörelse, beställning och granskning i en vy) och Efterarbete (kortens utseende, logga och läppsynk där Scen ligger i dag). För hans ja eller nej före bygget."
+        },
+        {
+          "id": "paow-prov-kortets-baksida",
+          "role": "prov",
+          "name": "Kortets baksida i labbet och i spelet",
+          "proof": "kortets-baksida",
+          "note": "Jakob 2026-11-17 såg SG-baksidan på det stängda kortet i Placering och kallade den det tidigare kortets baksida. Det är spelets baksida i dag; labbet visar den ljusare. Väntar på hans ord om vilken baksida som gäller."
+        },
+        {
           "id": "pamela-prov-vandningens-formel",
           "role": "prov",
           "name": "Pamelas vändning: formeln",
