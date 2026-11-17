@@ -154,8 +154,11 @@ kl. 21.46 och 21.58 (Jakobs besked, "Ett labb"), av underagenter till huvudagent
   från A2.2 till plats 4 och nyp till en ytterplats, Kling 4 med Pamelas film till samma plats som referensfilm, två
   tagningar var; arbetsmapp `D:/dealer-scratch/tmp/giv-experiment-2/`, provet `giv-forlagefilm-2`, planen för mall 10,
   sista bilden ur bankens egen klippruta, metodregistret och en automatisk kontroll av varje tagning i `STANDARD.md`
-  där; den ändrar bara `tools/film-prompting.md` i huvudträdet). 3D-banan (Vem äger vad) ritar en vit dockas giv från
-  bankens kamera, som sedan prövas som referensfilm i stället för Pamelas (ett betalt prov till, på huvudagentens ord).
+  där; den ändrar bara `tools/film-prompting.md` i huvudträdet). 3D-banan (Vem äger vad) har ritat en vit dockas giv till plats 4
+  från bankens kamera (`D:/dealer-scratch/tmp/dealer-3d/ut/docka-giv-p4-bankens-kamera.mp4`, 4,04 s; provet
+  `dealer-3d-giv-fran-tva-stolar`), och filmbanan prövar den som referensfilm i stället för Pamelas: ett tredje betalt
+  prov, två tagningar, godkänt av huvudagenten kl. 23.20 (taket för filmbanan i kväll är därmed 570 krediter). Håller
+  det är metoden fri från Pamelas filmer och gäller vilken plats och rörelse som helst.
 - **Disken: 80 GB borttaget kl. 23.13** enligt inventeringens kontrollerade listor
   (`D:/dealer-scratch/tmp/stadning/inventering-2026-11-17/`, loggen `borttaget-2026-11-17.txt`): webbläsarprofiler,
   `node_modules` och cachar i slaskmappar, 374 exakta kopior av filer som finns i `assets/` (stickprov 12 av 12 lika på
@@ -548,8 +551,10 @@ Ett besked per ämne, med det nyaste ordet och dess datum. Ett besked han har er
   hon vore dubbelt så stor som en människa; linsen som ger henne verklig storlek har brännvidd cirka 2 334 (bildvinkel
   28°), och under den smalnar ett verkligt kort bara till 0,956. Mot ett verkligt kort är planens kort 0,97 vid P4,
   1,04 vid P3 och P5, 1,11 vid P2 och P6, 1,19 vid P1 och P7 och **1,34 gånger för små vid dealern**. Kortet som står i
-  skons fönster är rätt stort (51 × 92 bildpunkter på ruta 120 mot 48 × 96 för ett verkligt kort, 0,96); bara i nypet
-  (ankare 2.1) är det 8–15 % för långt. Det Jakob ser som att skons kort är dubbelt så stort kommer alltså ur planens
+  skons fönster är i stort sett rätt (51 × 92 bildpunkter på ruta 120 mot 49 × 98 för ett verkligt kort på samma ställe,
+  0,94); bara i nypet (ankare 2.1) är det 8–13 % för långt. Linsen står som en fristående funktion med test på grenen
+  `dealer-3d` (`9ef55c9`, `dealer3d/src/table-lens.ts`: `realCardQuad`, `shoeCardQuad`, `TABLE_LENS`) och lyfts ordagrant
+  in som `src/table-lens.ts`. Det Jakob ser som att skons kort är dubbelt så stort kommer alltså ur planens
   krympning nära dealern, inte ur skon. Spelets liggande kort läser aldrig planens storlek: det är
   kontraktets kort gånger `cardScale` 1,2, och planen ger bara platsen (`restingQuad` i `src/card-overlay.ts`), så
   planens bredd och höjd ändrar inget i spelet (en utomstående granskares fynd, bekräftat i koden). Tre mått för samma
