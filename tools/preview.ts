@@ -7,6 +7,7 @@ import {stripTypeScriptTypes} from 'node:module';
 import path from 'node:path';
 import {placementStore,StoreError} from './placement-store.ts';
 import {reviewStore} from './review-store.ts';
+import {decisionStore,ANSWER_BYTES} from './decision-store.ts';
 import {scenePresetStore} from './scene-preset-store.ts';
 import {PRESET_BYTES} from '../studio/lib/scene-presets.ts';
 import {createSession,SessionError,type Session,type SessionOptions} from '../game/session.ts';
@@ -82,7 +83,7 @@ if(has('--restart')){
  // build of the online copy reads too (tools/build-studio-snapshot.ts), so that the copy serves exactly what this server serves.
  // Table props made by tools/prop-glb.ts: assets/props/<id>.glb, and only where the file really lies in that folder.
  const propFile=async(file:string)=>{const m=/^assets\/props\/([a-z0-9]+(?:-[a-z0-9]+)*\.glb)$/.exec(file);if(!m)return false;try{return await realpath(file)===path.join(await realpath('assets/props'),m[1]);}catch{return false;}};
- const placements=placementStore(process.cwd()),reviews=reviewStore(process.cwd()),presets=scenePresetStore(process.cwd()),media=mediaRoles(process.cwd());
+ const placements=placementStore(process.cwd()),reviews=reviewStore(process.cwd()),presets=scenePresetStore(process.cwd()),media=mediaRoles(process.cwd()),decisions=decisionStore(process.cwd());
  const library=async()=>{try{const data=JSON.parse(await readFile('data/library.json','utf8'));data.items=await Promise.all(data.items.filter((item:{path:string})=>typeof item.path==='string'&&/^(assets\/|output\/v6\/)/.test(item.path)&&path.posix.normalize(item.path)===item.path&&!item.path.includes('\\')&&item.path.endsWith('.mp4')).map(async(item:{motionRef?:string})=>{if(item.motionRef&&/^motions\/[a-z0-9-]+\.json$/.test(item.motionRef)){try{const motion=JSON.parse(await readFile(item.motionRef,'utf8'));return {...item,reviewDecision:motion.review?.decision??'PENDING'};}catch{return {...item,reviewDecision:'UNKNOWN'};}}return item;}));return data;}catch{return {schemaVersion:1,items:[]};}};
  // Read-only clip bank for the lab: the tracked jobs and review decisions plus a fixed, non-secret
  // projection of each local receipt. Task ids, balances and credentials never leave this process.
@@ -102,12 +103,12 @@ if(has('--restart')){
  const tracked=async(id:string,name:string)=>{try{return await realpath(`assets/tracking/${id}/${name}`)===path.join(await realpath('assets/tracking'),id,name);}catch{return false;}};
  const trackFile=async(file:string)=>{const m=trackMedia.exec(file);if(!m)return false;const {clips,derived}=await clipJobs();return (clips.some(job=>job.id===m[1])||derived.some(d=>d.clip===m[1]))&&await tracked(m[1],m[2]);};
  const tracking=async(id:string)=>({track:await tracked(id,'card-track.json')?`assets/tracking/${id}/card-track.json`:null,overrides:await tracked(id,'overrides.json')?`assets/tracking/${id}/overrides.json`:null});
- // Proofs: finished comparison films and contact sheets under assets/proofs/<id>/. Read-only, and only mp4, png and json.
+ // Proofs: finished comparison films and contact sheets under assets/proofs/<id>/. Read-only, and only mp4, png, jpg and json.
  // Rooms for the 3D scene: panoramas under assets/scene/rooms/ and the menu's pictures under assets/scene/thumbs/ (local media, listed in data/scene-rooms.json). Read-only, jpg only.
  // Rooms and thumbs by name, and the table's generated material maps (tools/scene-material.ts, one per version) by pattern.
  const sceneMedia=/^assets\/scene\/(rooms|thumbs|materials)\/([a-z0-9][a-z0-9_-]*\.(?:jpg|mp4)|runway_[a-z0-9_-]+-diffuse\.webp)$/;
  const sceneFile=async(file:string)=>{const m=sceneMedia.exec(file);if(!m)return false;try{return await realpath(file)===path.join(await realpath('assets/scene'),m[1],m[2]);}catch{return false;}};
- const proofFile=/^assets\/proofs\/((?:[a-z0-9][a-z0-9._-]*\/)+[a-z0-9][a-z0-9._-]*\.(?:mp4|png|json))$/;
+ const proofFile=/^assets\/proofs\/((?:[a-z0-9][a-z0-9._-]*\/)+[a-z0-9][a-z0-9._-]*\.(?:mp4|png|jpg|json))$/;
  const proofPath=async(file:string)=>{const m=proofFile.exec(file);if(!m)return false;try{return await realpath(file)===path.join(await realpath('assets/proofs'),...m[1].split('/'));}catch{return false;}};
  // Mouth patches (src/speech-patch.ts): assets/speech/<dealer>/patches/<id>/ with patch.json, mouth.webp or mouth.png and line.wav, and only where the file really lies there.
  const patchMedia=/^assets\/speech\/([a-z0-9]+(?:-[a-z0-9]+)*)\/patches\/([a-z0-9]+(?:-[a-z0-9]+)*)\/(patch\.json|mouth\.webp|mouth\.png|line\.wav)$/;
@@ -117,7 +118,7 @@ if(has('--restart')){
   for(const dir of await readdir('assets/proofs',{withFileTypes:true}).catch(()=>[])){
    if(!dir.isDirectory()||!clipId.test(dir.name))continue;
    const base=`assets/proofs/${dir.name}`,info=await readJson(`${base}/proof.json`),files:unknown[]=[];let changed=0;
-   for(const entry of await readdir(base,{withFileTypes:true}).catch(()=>[])){const file=`${base}/${entry.name}`;if(entry.isFile()&&/\.(?:mp4|png)$/.test(entry.name)&&await proofPath(file)){const s=await stat(file);changed=Math.max(changed,s.mtimeMs);files.push({name:entry.name,path:file,kind:entry.name.endsWith('.mp4')?'video':'image',bytes:s.size});}}
+   for(const entry of await readdir(base,{withFileTypes:true}).catch(()=>[])){const file=`${base}/${entry.name}`;if(entry.isFile()&&/\.(?:mp4|png|jpg)$/.test(entry.name)&&await proofPath(file)){const s=await stat(file);changed=Math.max(changed,s.mtimeMs);files.push({name:entry.name,path:file,kind:entry.name.endsWith('.mp4')?'video':'image',bytes:s.size});}}
    list.push({id:dir.name,title:typeof info?.title==='string'?info.title:null,description:typeof info?.description==='string'?info.description:null,labels:info?.labels&&typeof info.labels==='object'?info.labels:null,verdicts:info?.verdicts&&typeof info.verdicts==='object'?info.verdicts:null,updatedAt:Math.round(changed)||null,chapters:Array.isArray(info?.chapters)?info.chapters:null,fps:Number(info?.film?.fps)||30,files});
   }
   return {schemaVersion:1,proofs:list};
@@ -254,6 +255,22 @@ if(has('--restart')){
     return;
    }
    if(url.pathname==='/api/proofs'&&req.method==='GET'){res.setHeader('Content-Type','application/json; charset=utf-8');res.end(JSON.stringify(await proofs()));return;}
+   // What waits for Jakob (data/decisions.json, tools/decision-store.ts) for the studio's view Beslut. Any page of the lab
+   // reads it; his answer is written from this lab only, to the answer block of one entry, against that entry's revision.
+   if(url.pathname==='/api/decisions'||url.pathname.startsWith('/api/decisions/')){
+    res.setHeader('Content-Type','application/json; charset=utf-8');
+    try{
+     if(url.pathname==='/api/decisions'){if(req.method!=='GET'){res.writeHead(405).end();return;}res.end(JSON.stringify(await decisions.answer()));return;}
+     if(req.method!=='PUT'){res.writeHead(405).end();return;}
+     if(req.headers.origin!==origin){res.writeHead(403).end(JSON.stringify({error:'Svara från det lokala labbet.'}));return;}
+     if(!req.headers['content-type']?.startsWith('application/json')){res.writeHead(415).end(JSON.stringify({error:'JSON krävs.'}));return;}
+     if(Number(req.headers['content-length']??0)>ANSWER_BYTES){res.writeHead(413).end(JSON.stringify({error:'Svaret är för stort.'}));return;}
+     const id=decodeURIComponent(url.pathname.slice('/api/decisions/'.length));
+     let size=0;const chunks:Buffer[]=[];for await(const chunk of req){size+=chunk.length;if(size>ANSWER_BYTES)throw new StoreError(413,'Svaret är för stort.');chunks.push(chunk);}
+     let body:unknown;try{body=JSON.parse(Buffer.concat(chunks).toString('utf8'));}catch{throw new StoreError(400,'Svaret är inte giltig JSON.');}
+     res.end(JSON.stringify(await decisions.save(id,body,typeof req.headers['if-match']==='string'?req.headers['if-match']:undefined)));
+    }catch(error){res.writeHead(error instanceof StoreError?error.status:400).end(JSON.stringify({error:(error as Error).message}));}return;
+   }
    // What is what per dealer, for the studio's view Material (data/media-roles.json, tools/media-roles.ts). Any page reads
    // it. A picture is added from this lab only: the PNG or JPEG itself as the body (at most UPLOAD_LIMIT, 40 MB), dealer,
    // role and names in headers; it gets its own new folder with a receipt and a role in the register, never over another.

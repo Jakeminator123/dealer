@@ -46,6 +46,9 @@ adresser (`/lab.html`, `/game.html` …); bara filerna ligger i mappar.
   `data/dealers.json` och `data/media-roles.json` säger vilka dealers som finns och vilka bilder som gäller;
   `data/order-methods.json` är metoden som beställs per steg, och `data/order-policy.json` taken för betald generering.
 - `placements/default.json` är Jakobs kortplan (16 kortplatser) och sparas från studions Placering.
+- `data/decisions.json` är det som väntar på Jakobs svar, ett kort per sak i studions Beslut. Agenter lägger till och tar
+  bort poster; bara sidan skriver hans svar (`tools/decision-store.ts`, läsaren och reglerna i
+  `tools/decision-register.ts`).
 - `data/manifest.json` registrerar filproveniens och SHA-256 (sökvägarna i den räknas från repots rot); `evidence/`
   innehåller verifieringskvitton.
 - `data/library.json` är V6-tidens filmkatalog (V6, sekvenser, original och diagnostiska prov); beslut hämtas från
@@ -67,8 +70,8 @@ Dokumenten länkar till dessa i stället för att föra egna statusregister. Med
   byggs med `npm --prefix studio run build` och lämnas ut av samma server. Vyerna: **Scen**, **Karta** (kanter och
   tagningar), **Primära**, **Granska** (Jakobs domar, som skrivs i `motions/`), **Prov** (provmappar under
   `assets/proofs/`, `/studio/prov/?prov=<mapp>`), **Placering** (kortplanen: 16 kortplatser och sko; sparning ändrar
-  bara placeringsutkastet), **Material** (vilka bilder som gäller), **Beställ** (filmbeställningar), **Casino** och
-  **Protokoll**. Gamla labbet nås med `lab.html?gamla=1` tills Modeller och Ljud har flyttats
+  bara placeringsutkastet), **Material** (vilka bilder som gäller), **Beställ** (filmbeställningar), **Casino**,
+  **Protokoll** och **Beslut** (det som väntar på Jakobs svar, bara i labbet). Gamla labbet nås med `lab.html?gamla=1` tills Modeller och Ljud har flyttats
   ([SYSTEM](docs/SYSTEM.md)).
 - Filmgranskningen har steg ±1 bildruta, kapitel och hastighet 0,25×/0,5×/1×. URL-parametrarna `clip` och `frame` pekar
   ut klipp och granskningsruta.

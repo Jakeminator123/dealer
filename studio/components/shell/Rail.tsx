@@ -5,15 +5,18 @@
 // the lab answers, and "Gamla labbet ↗" at the bottom (same tab). A view's link keeps the chosen dealer in the address.
 // In the online copy (lib/mode.ts) there is no old lab, so that link is not drawn; instead the bot is there: the view
 // Önskemål (with the answers from Jakob not yet seen) and "Fråga", which opens and closes the panel (components/bot).
-import { ArrowUpRight, Clapperboard, FlaskConical, Images, Inbox, MessageCircleQuestion, ScanEye, Send, Spade, SquareDashedMousePointer, Star, Workflow } from "lucide-react";
+// In the lab Beslut stands first in the foot, with the number of things waiting for his answer (components/decisions).
+import { ArrowUpRight, Clapperboard, FlaskConical, Images, Inbox, ListChecks, MessageCircleQuestion, ScanEye, Send, Spade, SquareDashedMousePointer, Star, Workflow } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useMemo, type ComponentType } from "react";
 import { useBank } from "../../lib/bank.ts";
 import { dealerHref } from "../../lib/dealer.ts";
 import { isSnapshot } from "../../lib/mode.ts";
+import { waitingCount } from "../../lib/decisions.ts";
 import { awaitingJakob, primarCount } from "../../lib/verdict.ts";
 import { useBot } from "../bot/BotProvider";
+import { useDecisions } from "../decisions/useDecisions";
 import { useRequests } from "../requests/RequestsProvider";
 import { cn } from "../ui/cn";
 import { Tooltip } from "../ui/Tooltip";
@@ -42,6 +45,9 @@ const SHOWN: readonly View[] = isSnapshot ? VIEWS.filter((view) => !LAB_ONLY.inc
 /** The view of requests to Jakob: only where the bot is (the online copy). */
 export const REQUESTS_VIEW: View = { href: "/onskemal/", label: "Önskemål", hint: "Önskemål till Jakob, med status och hans svar", icon: Inbox };
 
+/** What waits for Jakob's answer: only in the lab (the online copy has no Beslut). */
+export const DECISIONS_VIEW: View = { href: "/beslut/", label: "Beslut", hint: "Det som väntar på ditt svar: ett kort per sak", icon: ListChecks };
+
 const trim = (path: string) => (path.length > 1 ? path.replace(/\/+$/, "") : path);
 
 /** The view a path belongs to ("/jamfor/" belongs to none). */
@@ -67,7 +73,8 @@ function RailItem({ view, href, active, count, tone }: { view: View; href?: stri
         href={href ?? view.href}
         aria-current={active ? "page" : undefined}
         className={cn(
-          "group relative mx-2 flex flex-col items-center gap-1 rounded-lg px-1 pb-1.5 pt-2 transition-colors duration-150",
+          // A little tighter in a window under 960 px high, so that every view and the foot fit at 1440 × 900.
+          "group relative mx-2 flex flex-col items-center gap-1 rounded-lg px-1 pb-1.5 pt-2 transition-colors duration-150 [@media(max-height:960px)]:pb-1 [@media(max-height:960px)]:pt-1.5",
           active ? "bg-raised text-ink" : "text-dim hover:bg-raised/60 hover:text-ink",
           "focus-visible:outline-offset-0",
         )}
@@ -121,6 +128,9 @@ export function Rail() {
   const bot = useBot();
   const requests = useRequests();
   const onRequests = trim(pathname ?? "/") === trim(REQUESTS_VIEW.href);
+  const onDecisions = trim(pathname ?? "/") === trim(DECISIONS_VIEW.href);
+  const decisions = useDecisions();
+  const waitingDecisions = decisions.answer ? waitingCount(decisions.answer.decisions) : 0;
   const { graph, status, error, dealer } = useBank();
   const counts = useMemo(() => {
     if (!graph) return null;
@@ -130,7 +140,9 @@ export function Rail() {
   const offline = !!error;
 
   return (
-    <nav aria-label="Vyer" className="flex h-full w-[76px] flex-col border-r border-line bg-surface">
+    // min-h-0, and the list scrolls: in a window too low for the rail (a phone) the list scrolls instead of making the whole
+    // frame taller than the window, which would cut off the foot of every view.
+    <nav aria-label="Vyer" className="flex h-full min-h-0 w-[76px] flex-col border-r border-line bg-surface">
       <Tooltip content="Dealer Studio" side="right">
         <Link href={dealerHref("/", dealer)} aria-label="Dealer Studio, till Scen" className="mx-auto mb-1.5 mt-3 grid size-11 place-items-center rounded-lg text-brass transition-colors hover:bg-raised/60">
           <Mark />
@@ -138,7 +150,7 @@ export function Rail() {
       </Tooltip>
       <DealerSwitch />
       <div className="mx-4 mb-2 mt-2.5 h-px bg-line" />
-      <ul className="flex flex-col gap-1">
+      <ul className="flex min-h-0 flex-col gap-1 overflow-y-auto [scrollbar-width:none]">
         {SHOWN.map((view) => (
           <li key={view.href}>
             <RailItem
@@ -160,6 +172,15 @@ export function Rail() {
         ) : null}
       </ul>
       <div className="mt-auto flex flex-col items-center gap-2 pb-3">
+        {/* Beslut in the foot, which never scrolls: its count stays in sight in any window, and no view moves. */}
+        {isSnapshot ? null : (
+          <>
+            <div aria-hidden className="mx-2 mt-1 h-px w-[calc(100%-32px)] bg-line" />
+            <div className="w-full">
+              <RailItem view={DECISIONS_VIEW} href={dealerHref(DECISIONS_VIEW.href, dealer)} active={onDecisions} count={waitingDecisions > 0 ? String(waitingDecisions) : null} tone="brass" />
+            </div>
+          </>
+        )}
         <Glossary />
         <AskButton />
         <Tooltip

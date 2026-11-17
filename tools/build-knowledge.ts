@@ -143,7 +143,7 @@ export async function localProofs(root: string): Promise<Proof[]> {
     if (!dir.isDirectory() || !CLIP.test(dir.name)) continue;
     const info = await readJson(path.join(base, dir.name, 'proof.json')), files: Proof['files'] = [];
     for (const entry of await readdir(path.join(base, dir.name), {withFileTypes: true}).catch(() => [])) {
-      if (entry.isFile() && /\.(?:mp4|png)$/.test(entry.name)) files.push({name: entry.name, path: `assets/proofs/${dir.name}/${entry.name}`, kind: entry.name.endsWith('.mp4') ? 'video' : 'image', bytes: (await stat(path.join(base, dir.name, entry.name))).size});
+      if (entry.isFile() && /\.(?:mp4|png|jpg)$/.test(entry.name)) files.push({name: entry.name, path: `assets/proofs/${dir.name}/${entry.name}`, kind: entry.name.endsWith('.mp4') ? 'video' : 'image', bytes: (await stat(path.join(base, dir.name, entry.name))).size});
     }
     list.push({id: dir.name, title: typeof info?.title === 'string' ? info.title : null, description: typeof info?.description === 'string' ? info.description : null,
       labels: info?.labels && typeof info.labels === 'object' ? info.labels : null, verdicts: info?.verdicts && typeof info.verdicts === 'object' ? info.verdicts : null, updatedAt: null, chapters: null, fps: 30, files});

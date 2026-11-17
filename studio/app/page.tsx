@@ -6,7 +6,8 @@
 // steps; over it the presets (Basgrund, Levande, Rumsstudien, his own); beside it one panel with two tabs: Runda (the
 // rounds to play) and Scen (every key of the scene, grouped, searchable, each with its reset). One scene: the stage builds
 // it and the editor (components/scene-editor) drives that same object. "Spela i Casino" opens the game with this look.
-// The header says the round in Jakob's notation ("A1 - A2.1 - P4C1 - A1 · 3 steg · 8,5 s"), never file names.
+// The header says the round in Jakob's notation ("A1 - A2.1 - P4C1 - A1 · 3 steg · 8,5 s"), never file names, and first
+// among its buttons, while anything waits for his answer, the way to Beslut with the number ("5 beslut väntar").
 // The address is the round and the look (components/scene-editor/address.ts): /?runda=<his notation>&vy=platt&forval=
 // levande&dust=0.8; /?kant=<edge>&tagning=<take> plays that take where it belongs. A look that names no preset is
 // Levande; the old /scen/ addresses lead here (app/scen/page.tsx). The round plays the chosen dealer's films (lib/bank.ts): a
@@ -18,6 +19,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { resolveRound } from "../../src/clip-graph.ts";
+import { DecisionsEntry } from "@/components/decisions";
 import { RoundPicker, RoundStrip } from "@/components/round";
 import { joinParts, readLook, roundPart, useSceneEditor } from "@/components/scene-editor";
 import { BankStatus, Page } from "@/components/shell";
@@ -151,6 +153,7 @@ function Scen() {
       }
       actions={
         <>
+          <DecisionsEntry />
           {blocked3d ? (
             <span className="text-xs text-faint" title={blocked3d}>
               Färdig film: bara Inte 3D
