@@ -121,7 +121,7 @@ skrivs på skrivbordet när allt har ett utfall. Här står bara det som inte ä
 
 ## Nästa steg
 
-**Börja här (läget 2026-11-18 kl. 00.44; huvudagenten bytte chatt kl. 21.45).** Labbet byggs om på Jakobs ord från
+**Börja här (läget 2026-11-18 kl. 00.47; huvudagenten bytte chatt kl. 21.45).** Labbet byggs om på Jakobs ord från
 kl. 21.46 och 21.58 (Jakobs besked, "Ett labb"), av underagenter till huvudagenten:
 
 - **Inne i `main` och sett i headless Chrome:** vyn **Bordet**, första versionen (`82258f3`: `/studio/bordet/` med
@@ -207,15 +207,20 @@ kl. 21.46 och 21.58 (Jakobs besked, "Ett labb"), av underagenter till huvudagent
   C2, och "avlast-2", prov C3) gör som hon och som Paows egen p4-04: kortet bärs i luften, vänds där mitt på vägen (på kant vid ruta 53–56 av 120,
   1,8 s), hålls sedan uppifrån i sin bortre kant med handryggen uppåt, läggs vid ruta 80 (2,7 s), skjuts 18 bildpunkter
   till under fingertopparna (ruta 80–95) och ligger sedan still med fingertopparna kvar, vilket är sista bilden. Handen
-  vänds alltså en gång, i luften, och aldrig i slutet (Prov `giv-forlagefilm-2`, de tre arken `d-slutet-*`). Regeln
+  vänds alltså en gång, i luften, och aldrig i slutet (Prov `giv-forlagefilm-2`, de tre arken `z-givens-slut-*` sist i provet). Regeln
   för ankare 2.1: nyp, bär i luften, nyckelvridning mitt på vägen, lägg, skjut sista biten, vila. Från ankare 2.2 släpas kortet plant
   och tas i kanten och vänds först nära platsen. En referensfilm måste sluta som sista bilden, annars hittar Kling på
   slutet (prov C: kortet låg ensamt och handen kom efteråt).
 - **Dockfilmerna** (prov C2 kl. 00.10: den rättade dockfilmen höll, 4/5, 85 krediter): metoden är fri från Pamelas
   filmer där en dockfilm finns, plats 3, 4 och 5 (plats 6 och 7 går genom skon och plats 1 korsar kroppen; de behöver
-  egna rörelser). **Tre tagningar till är lagda** (C3 plats 4, D plats 3, E plats 5 med filmerna "-2", där handen
-  ligger kvar på kortet; 255 krediter, saldo 6 664 enligt `D:/dealer-scratch/tmp/giv-experiment-2/ledger.json`):
-  underagenten hämtar, mäter och låter granska dem; utfallet är inte läst av huvudagenten än.
+  egna rörelser). **Tre tagningar till** med filmerna "-2", där handen ligger kvar på kortet (255 krediter, saldo 6 664 enligt
+  `D:/dealer-scratch/tmp/giv-experiment-2/ledger.json`; `c3-*`, `d-*` och `e-*` i Prov `giv-forlagefilm-2`,
+  oberoende granskade, inget dömt av honom, handboken §5): **plats 4 håller** (C3, 4/5: en vändning, inget lyft av
+  fingrarna i slutet, lagt 0–2 bildpunkter från sista bilden; det gula kortet bärs cirka 16 % för långt), **plats 5 är
+  oavgjord** (E, 3/5: storlek och vändning rätt, men handen lyfts från kortet i 0,7 s och läggs om, troligen för att
+  sista bildens platta, utspärrade hand inte är dockans slut) och **plats 3 föll** (D, 1/5: kortet bärs som en remsa
+  och bleknar nästan till vitt). Nästa steg för plats 3 och 5: en sista bild vars hand slutar som dockans (görs ändå
+  om med tatuerade händer), och en tagning till på plats 3 innan metoden döms där.
 - **3D-banan** (`dealer3d/`, sammanslaget till och med `b61109f`): dockans hand är läst ur en verklig giv; varje stols
   öga står bakom stolens eget kort som bankens kamera bakom plats 4:s; huvudet följer kortet och den vilande handen är
   släppt lite fri (modell, inte avläst; Prov `dealer-3d-stolens-oga-och-blick`); hans riggade Meshy-modell av Paow
