@@ -57,6 +57,31 @@
       "answer": null
     },
     {
+      "id": "dealer-fran-stol-1",
+      "kind": "beslut",
+      "question": "Dealern sedd från stol 1: pröva två bilder och en tagning?",
+      "leads": "Vid ja görs två riktiga bilder ur modellens rutor och en tagning med dockans film från stol 1 (cirka 170 krediter); ett äldre prov från sidan finns i Prov paow-fran-sidan.",
+      "proof": "dealer-3d-vinkel-stol-1",
+      "file": "2-dockan-kortet-vands.png",
+      "chips": [
+        {
+          "value": "ja",
+          "label": "Ja, pröva"
+        },
+        {
+          "value": "nej",
+          "label": "Nej, inte nu"
+        },
+        {
+          "value": "andra",
+          "label": "Ändra (skriv vad)"
+        }
+      ],
+      "asked": "2026-11-18",
+      "from": "3D-banan",
+      "answer": null
+    },
+    {
       "id": "kortets-baksida",
       "kind": "beslut",
       "question": "Kortets baksida: svart med gult SG är spelets i dag. Ska den vara kvar?",
