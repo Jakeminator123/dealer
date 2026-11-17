@@ -361,11 +361,10 @@ export function knowledgeLeaks(knowledge: Knowledge, release: Blocked, textLeaks
 
 /** The sources' rules: which headings never go in, and which sections are core (lower is earlier). */
 export const DEALER_DOCS = {
-  HANDOFF: {drop: /^(?:Före avslut av en session)$/, core: ['Målet', 'Ankarmodellen', 'Läget i banken', 'Öppet hos Jakob', 'Nästa steg', 'Jakobs besked som gäller', 'Andra dealern (Paow)', 'Referenser: V6, plats 4 och Pamela-filmen', 'Kända brister', 'Vem äger vad']},
+  HANDOFF: {drop: /^(?:Före avslut av en session)$/, core: ['Målet', 'Öppet hos Jakob', 'Nästa steg', 'Jakobs besked som gäller', 'Kända brister', 'Vem äger vad']},
   README: {drop: /^(?:Kör lokalt)$/, core: ['Inledning']},
   SYSTEM: {drop: null as RegExp | null, core: ['Ordlista och gräns mot Scout', 'Klippbank och nodnotation', 'Återbruk och införande']},
   DRIFT: {drop: /^(?:Identitet och ansvar|Anslutningar och miljö|Publik granskningssida och Blob|Molnmiljö|D: och städning|Headless Chrome och verktyg på D:)$/, core: [] as string[]},
-  CHECKLISTA: {drop: null as RegExp | null, core: ['*']},
 };
 export const SCOUT_DROP = /drift|infrastruktur|miljö|environment|incident|getting started|repository map|deploy|hemlig|secret|^struktur$|^underhåll$|regel- och undantagsfiler|^fynd$|^kretslopp$|^mergat|^öppna pr|studio-workern/i;
 export const SCOUT_CORE: Record<string, string[]> = {

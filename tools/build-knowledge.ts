@@ -32,11 +32,12 @@ export const SCOUT_FILES: {kalla: string; file: string}[] = [
 ];
 const DEALER_FILES: {kalla: keyof typeof DEALER_DOCS; file: string; optional?: boolean}[] = [
   {kalla: 'HANDOFF', file: 'HANDOFF.md'}, {kalla: 'README', file: 'README.md'}, {kalla: 'SYSTEM', file: 'docs/SYSTEM.md'},
-  {kalla: 'DRIFT', file: 'docs/DRIFT.md'}, {kalla: 'CHECKLISTA', file: 'CHECKLISTA.md', optional: true},
+  {kalla: 'DRIFT', file: 'docs/DRIFT.md'},
 ];
-// Core order: HANDOFF first, then the bank now, the views, Jakob's checklist, the bank's table, the proofs, README, the
-// commits, Scoutgaming, SYSTEM. What does not fit in the core's budget is still searched.
-const BASE: Record<string, number> = {HANDOFF: 0, CHECKLISTA: 3, README: 6, SYSTEM: 16, DRIFT: 20};
+// Core order: HANDOFF first, then the bank now, the views, the bank's table, the proofs, README, the commits,
+// Scoutgaming, SYSTEM. What does not fit in the core's budget is still searched. (The old checklist, CHECKLISTA.md, is no
+// source since 2026-11-17: nobody wrote it after 2026-11-13, and the bot answered from it.)
+const BASE: Record<string, number> = {HANDOFF: 0, README: 6, SYSTEM: 16, DRIFT: 20};
 
 /** Scoutgaming's checkout: beside this project's parent folder, or DEALER_SCOUT_ROOT. */
 export const scoutRoot = (root: string) => process.env.DEALER_SCOUT_ROOT || path.resolve(root, '..', '..', 'scoutgaming');

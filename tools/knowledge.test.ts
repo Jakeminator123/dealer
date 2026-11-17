@@ -88,8 +88,8 @@ test('every form of a path of this machine becomes the token, and the words arou
   const plain = 'Se /studio/karta/ och A/B, kl. 21:40, 1/2 och https://www.scoutgaming.tech/x i Spela.';
   assert.equal(cleanLine(plain, release, false, {}), plain);
   // A heading that names a path keeps its section, with the token in its title.
-  const {sections} = cleanDoc({kalla: 'CHECKLISTA', id: 'checklista', text: '# C\n\n## Kopian på D:/dealer-archive/V2-backup-studio/\n\nSäkerhetskopian görs före varje flytt av gamla labbets flikar.', scout: false}, release);
-  assert.equal(sections.at(-1)!.titel, `CHECKLISTA › Kopian på ${LOCAL}`);
+  const {sections} = cleanDoc({kalla: 'DRIFT', id: 'drift', text: '# D\n\n## Kopian på D:/dealer-archive/V2-backup-studio/\n\nSäkerhetskopian görs före varje flytt av gamla labbets flikar.', scout: false}, release);
+  assert.equal(sections.at(-1)!.titel, `DRIFT › Kopian på ${LOCAL}`);
   for (const leak of ['/c/Users/x/y', 'C:\\Users\\x', '\\\\?\\c:\\x', '~/.claude/x', '`D:/dealer-archive/V2-backup-studio/`']) assert.ok(hasLocalPath(leak), leak);
 });
 
