@@ -1,24 +1,32 @@
 // The studio's words, gathered in one table (Jakob 2026-11-12: "gather all the systems' words and different names into one
-// common one"): each with the one Swedish word a person sees, one line of what it means, and the other names the same thing
-// has in code, files and documents. What is settled comes from docs/SYSTEM.md "Ordlista och gräns mot Scout" and HANDOFF.md
-// "Ankarmodellen"; lib/names.ts takes the anchors' codes and names from here, so the two never disagree. The rail's
-// "Ordlista" shows it (components/shell/Glossary.tsx) and the bot reads it through lib/guide.ts. Data and one search, no DOM.
-// Plain words for people: a step ("steg") is one move between two anchors, a film or a take ("tagning") is what plays there.
+// common one"; 2026-11-17: the glossary must follow how he uses the words). Each entry is one thing: the one Swedish word the
+// studio uses for it (his most settled word where he has one), one line of what it is and where he sees it, the other words
+// he himself uses for the same thing (sager, shown as "Säger också"), and the names it has in code, files and documents
+// (aven, "Kallas också"). Every name leads to one entry only (studio/tests/words.test.ts). The anchors' settled words come
+// from HANDOFF "Ankarmodellen" and docs/SYSTEM.md "Ordlista och gräns mot Scout"; the rest is checked against the code and
+// registers it names. The rail's "Ordlista" shows the table (components/shell/Glossary.tsx) and the bot reads it through
+// lib/guide.ts, so no text here may carry a machine path, a lab address or a name the copy blocks. Data and one search, no DOM.
 
-export type WordGroup = "Ankare och platser" | "Steg och filmer" | "Omdömen" | "Bilder och mått" | "Spela och scen";
-export const WORD_GROUPS: readonly WordGroup[] = ["Ankare och platser", "Steg och filmer", "Omdömen", "Bilder och mått", "Spela och scen"];
+export type WordGroup = "Ankare och platser" | "Steg och filmer" | "Kortet" | "Bilder" | "Efter filmen" | "Tal och läppar" | "Omdömen" | "Labbet och vyerna";
+export const WORD_GROUPS: readonly WordGroup[] = ["Ankare och platser", "Steg och filmer", "Kortet", "Bilder", "Efter filmen", "Tal och läppar", "Omdömen", "Labbet och vyerna"];
 
 export type Word = {
   /** The one word a person sees in the studio. */
   ord: string;
-  /** What it means, in one line. */
+  /** What it is, and where he sees it, in one line. */
   betyder: string;
-  /** Other names for the same thing in code, files, documents and earlier talk. */
+  /** Jakob's own other words for the same thing ("Säger också"), so that he finds it whichever word he looks for. */
+  sager: readonly string[];
+  /** Other names for the same thing in code, files, documents and earlier talk ("Kallas också"). */
   aven: readonly string[];
   grupp: WordGroup;
 };
 
-/** The anchors as the studio writes them: the code inside a step ("A2.1 → P4C1") and the name on its own. */
+/**
+ * The anchors as the studio's views write them today: the code inside a step ("A2.1 → P4C1") and the name on its own
+ * (lib/names.ts takes both from here). Anchor 2.2's entry below leads with his word "släp" and lists this name, "A2.2
+ * hand över", among its other names; the views and names.ts's reader are renamed together, not here alone.
+ */
 export const ANCHOR_WORDS = {
   IDLE: { code: "A1", name: "A1 vila" },
   READY: { code: "A2.1", name: "A2.1 nyp" },
@@ -29,56 +37,121 @@ export const ANCHOR_WORDS = {
 
 export const WORDS: readonly Word[] = [
   // ── Anchors and places ──
-  { grupp: "Ankare och platser", ord: "A1 vila", betyder: "Ankare 1: dealerns händer i vila. Varje runda börjar och slutar här.", aven: ["IDLE", "VILA", "ankare 1", "Keystone 1", "grundloopen", "IDLE-B (vila med den öppna skon)"] },
-  { grupp: "Ankare och platser", ord: "A2.1 nyp", betyder: "Ankare 2.1: handen nyper kortet i skons fönster, redo att dela ut.", aven: ["READY", "REDO", "ankare 2.1", "Keystone 2", "variant A", "PINCH"] },
-  { grupp: "Ankare och platser", ord: "A2.2 hand över", betyder: "Ankare 2.2: handen ligger över kortet i skons öppning och drar ut det.", aven: ["READY-B", "REDO B", "ankare 2.2", "variant B", "släp", "DRAG"] },
-  { grupp: "Ankare och platser", ord: "Borta", betyder: "Bordet utan dealern: hon har inte kommit, eller har gått.", aven: ["AWAY", "tomt bord"] },
-  { grupp: "Ankare och platser", ord: "DC2 upp", betyder: "Dealerns andra kort, hålkortet, vänt med framsidan upp.", aven: ["REVEAL(D.C2)", "hålkortet vänt", "vändning"] },
-  { grupp: "Ankare och platser", ord: "Plats och kort", betyder: "P1–P7 är spelarnas platser från kamerans vänster, C1 och C2 deras två kort: P4C1 är plats 4, första kortet.", aven: ["P4.C1", "box 3 i Scout (box = plats − 1)", "kortplats", "placeringsnyckel"] },
-  { grupp: "Ankare och platser", ord: "Dealerns kort", betyder: "DC1, DC2 (hålkortet, med baksidan upp tills det vänds) och ibland DC3.", aven: ["D.C1", "D.C2", "D.C3", "hålkort"] },
+  { grupp: "Ankare och platser", ord: "A1 vila", betyder: "Ankare 1: hon sitter med båda händerna på filten. Varje runda börjar och slutar här.", sager: ["ankare 1"], aven: ["IDLE", "VILA", "Keystone 1 (gammalt namn)", "IDLE-B (vila med den öppna skon)"] },
+  { grupp: "Ankare och platser", ord: "A2.1 nyp", betyder: "Ankare 2.1: hennes vänstra hand nyper det gula kortet i skons fönster mellan tumme och pekfinger, på kortet och inte på skons kant.", sager: ["ankare 2.1", "nyper", "nypet"], aven: ["READY", "REDO", "Keystone 2 (gammalt namn)", "variant A", "PINCH"] },
+  { grupp: "Ankare och platser", ord: "A2.2 släp", betyder: "Ankare 2.2: hennes vänstra hand ligger platt över det gula kortet i skon, redo att släpa ut det längs filten.", sager: ["ankare 2.2", "släpar", "släpet"], aven: ["A2.2 hand över", "READY-B", "REDO B", "variant B", "DRAG"] },
+  { grupp: "Ankare och platser", ord: "Borta", betyder: "Bordet utan dealern: innan hon har kommit och sedan hon har gått.", sager: [], aven: ["AWAY", "tomt bord"] },
+  { grupp: "Ankare och platser", ord: "DC2 upp", betyder: "Dealerns hålkort (DC2) vänt med framsidan upp medan hon vilar; rundan går vidare som från A1.", sager: [], aven: ["REVEAL(D.C2)", "hålkortet vänt"] },
+  { grupp: "Ankare och platser", ord: "Plats och kort", betyder: "P1–P7 är spelarnas platser från kamerans vänster, C1 och C2 deras två kort: P4C1 är plats 4, första kortet.", sager: [], aven: ["P4.C1", "box 3 i Scout (box = plats − 1)", "kortplats", "placeringsnyckel"] },
+  { grupp: "Ankare och platser", ord: "Dealerns kort", betyder: "DC1 (öppet), DC2 (hålkortet, stängt tills det vänds) och DC3, ett tredje kort som en runda kan ha.", sager: ["hålkortet"], aven: ["D.C1", "D.C2", "D.C3"] },
+  { grupp: "Ankare och platser", ord: "Skon", betyder: "Den svarta lådan med korten, till höger i bilden; kortet syns i ett fönster snett framtill. En sko per dealer, samma i alla ankare.", sager: [], aven: ["SHOE", "skobild"] },
   // ── Steps and films ──
-  { grupp: "Steg och filmer", ord: "Steg", betyder: "En rörelse mellan två lägen, till exempel steget A2.1 → P4C1. En linje på kartan.", aven: ["kant", "edge", "klipp mellan två ankare", "READY>P4.C1"] },
-  { grupp: "Steg och filmer", ord: "Tagning", betyder: "En filmad version av ett steg. Ett steg kan ha många tagningar; en av dem spelas.", aven: ["take", "klipp", "jobb", "job"] },
-  { grupp: "Steg och filmer", ord: "Film", betyder: "Det som spelas: en tagnings video.", aven: ["video", "klipp", "source.mp4"] },
-  { grupp: "Steg och filmer", ord: "Giv", betyder: "Steget från skon (A2.1 eller A2.2) till ett kort på bordet.", aven: ["deal", "DEAL", "utdelning"] },
-  { grupp: "Steg och filmer", ord: "Retur", betyder: "Steget tillbaka från kortet till skon (A2.1) eller till vilan (A1).", aven: ["return", "RETURN"] },
-  { grupp: "Steg och filmer", ord: "Ingång", betyder: "Steget från vilan till skon, A1 → A2.1.", aven: ["entry", "ENTRY"] },
-  { grupp: "Steg och filmer", ord: "Utgång", betyder: "Steget från skon tillbaka till vilan utan kort, A2.1 → A1.", aven: ["exit", "RETURN till IDLE"] },
-  { grupp: "Steg och filmer", ord: "Vilan", betyder: "Steget A1 → A1: den lugna loopen är grunden, och gesterna (hosta, sträcka på sig, le …) slumpas in mellan.", aven: ["IDLE>IDLE", "idle-loopen", "grundloopen", "gester"] },
-  { grupp: "Steg och filmer", ord: "Runda", betyder: "En väg genom stegen, skriven som Jakob skriver den: A1 - A2.1 - P4C1 - A2.1 - A1.", aven: ["round", "sekvens", "kedja"] },
-  { grupp: "Steg och filmer", ord: "Huvudtagning", betyder: "Den tagning som spelas i ett steg just nu: Primär om en finns, annars den bäst godkända.", aven: ["main", "edge.main", "spelas nu"] },
-  { grupp: "Steg och filmer", ord: "Utsnitt", betyder: "En tagning som är rutor A–B ur en längre film, inte en egen beställning.", aven: ["derived", "segment", "härledd tagning"] },
-  { grupp: "Steg och filmer", ord: "Rättad kopia", betyder: "En tagning som är en befintlig film rättad med en video-till-video-modell.", aven: ["edit", "editOf", "Aleph"] },
-  { grupp: "Steg och filmer", ord: "Experiment", betyder: "Steg utanför modellens 54, till exempel via kortet utdraget plant (DRAWN). Ligger i kartans experimentlåda.", aven: ["experimentkant", "DRAWN", "IDLE-B", "utanför modellen"] },
+  { grupp: "Steg och filmer", ord: "Steg", betyder: "En rörelse mellan två lägen, och filmen som gör den: steget A2.1 → P4C1. En linje på Kartan.", sager: [], aven: ["kant", "edge", "READY>P4.C1"] },
+  { grupp: "Steg och filmer", ord: "Tagning", betyder: "En filmad version av ett steg. Ett steg kan ha många tagningar; en av dem spelas.", sager: [], aven: ["take", "jobb", "job"] },
+  { grupp: "Steg och filmer", ord: "Film", betyder: "En videofil. Oftast en tagning, men ur en film kan flera tagningar klippas (given och returen ur samma film).", sager: ["klipp", "video"], aven: [] },
+  { grupp: "Steg och filmer", ord: "Banken", betyder: "Alla tagningar en dealer har, ordnade per steg: det en runda väljer bland. Kartan visar den.", sager: [], aven: ["klippbank", "clip-jobs.json"] },
+  { grupp: "Steg och filmer", ord: "54 och 33", betyder: "Modellen har 54 steg: giv, retur till A2.1 och retur till A1 för vart och ett av 16 kort, och sex till (ingång, utgång, vilan, hon kommer, hon går, hålkortets vändning). En dealer behöver 33 filmer: en plats andra kort spelar första kortets, utom hålkortet.", sager: [], aven: ["modellens 54", "en film per plats"] },
+  { grupp: "Steg och filmer", ord: "Ingång", betyder: "Filmen från vilan till skon: A1 → A2.1 eller A1 → A2.2.", sager: [], aven: ["ENTRY", "IDLE>READY", "INGANG-2.1"] },
+  { grupp: "Steg och filmer", ord: "Giv", betyder: "Filmen där kortet går från skon ut till sin plats: A2.1 → P4C1 med nyp, A2.2 → P4C1 med släp. Beställs tur och retur eller bara dit.", sager: ["utgiven", "dela ut"], aven: ["DEAL", "utdelning", "GIV-2.1"] },
+  { grupp: "Steg och filmer", ord: "Tur och retur", betyder: "En giv där handen kommer tillbaka i samma film, skriven A2.2 → P3C2 → A2.2. I banken blir filmen två tagningar: given och returen.", sager: [], aven: ["ROUND_TRIP"] },
+  { grupp: "Steg och filmer", ord: "Bara dit", betyder: "En giv som slutar när kortet ligger, på platsens landningsbild. Returen beställs som en egen film.", sager: [], aven: ["ONE_WAY"] },
+  { grupp: "Steg och filmer", ord: "Retur", betyder: "Filmen där handen går tillbaka från kortet på bordet: till nypet (A2.1), över skon (A2.2) eller till vila (A1).", sager: ["tillbakagången", "retreat"], aven: ["RETURN", "P4.C1>READY", "RETUR-2.1"] },
+  { grupp: "Steg och filmer", ord: "Utgång", betyder: "Filmen från skon tillbaka till vilan, utan kort: A2.1 → A1 eller A2.2 → A1.", sager: [], aven: ["exit", "READY>IDLE", "UTGANG-2.2"] },
+  { grupp: "Steg och filmer", ord: "Vilan", betyder: "Filmerna A1 → A1 där hon vilar: lugna klipp är grunden, och gesterna (hosta, sträcka på sig, le, dricka …) slumpas in emellan.", sager: ["grundloopen"], aven: ["IDLE>IDLE", "idle-loopen", "gester"] },
+  { grupp: "Steg och filmer", ord: "Hålkortets vändning", betyder: "Filmen där hon vänder upp hålkortet från vila och handen går tillbaka till vila: A1 → DC2 upp.", sager: [], aven: ["HALKORT", "IDLE>REVEAL(D.C2)"] },
+  { grupp: "Steg och filmer", ord: "Hon kommer", betyder: "Filmen där hon kommer in och sätter sig: Borta → A1.", sager: [], aven: ["AWAY>IDLE", "ARRIVE"] },
+  { grupp: "Steg och filmer", ord: "Hon går", betyder: "Filmen där hon reser sig och går från bordet: A1 → Borta.", sager: [], aven: ["IDLE>AWAY", "LEAVE"] },
+  { grupp: "Steg och filmer", ord: "Runda", betyder: "En väg genom stegen, skriven med streck: A1 - A2.1 - P4C1 - A2.1 - A1. I Scen väljer eller skriver man en under fliken Runda.", sager: [], aven: ["round", "sekvens", "kedja"] },
+  { grupp: "Steg och filmer", ord: "Huvudtagning", betyder: "Tagningen som spelas i ett steg: Primär om en finns, annars en rakt godkänd, annars en ogranskad.", sager: [], aven: ["edge.main", "Spelas nu"] },
+  { grupp: "Steg och filmer", ord: "Utsnitt", betyder: "En tagning som är rutor ur en längre film, till exempel given och returen ur samma tur och retur-film.", sager: [], aven: ["derived", "segment", "härledd tagning"] },
+  { grupp: "Steg och filmer", ord: "Rättad kopia", betyder: "En tagning som är en befintlig film rättad med en video-till-video-modell.", sager: [], aven: ["edit", "editOf", "Aleph"] },
+  { grupp: "Steg och filmer", ord: "Experiment", betyder: "Steg utanför modellens 54, till exempel via kortet utdraget plant (DRAWN). Ligger i Kartans experimentlåda.", sager: [], aven: ["experimentkant", "DRAWN", "utanför modellen"] },
+  // ── The card ──
+  { grupp: "Kortet", ord: "Gult och blått kort", betyder: "Filmens eget kort: slätt, gul baksida (stängt) och blå framsida (öppet), utan valör. Spelet ritar det riktiga kortet ovanpå.", sager: ["gult till blått"], aven: ["BACK", "FRONT", "stängt", "öppet", "slätt kort"] },
+  { grupp: "Kortet", ord: "Vändning", betyder: "Kortet vänds en gång, från gult till blått, så att rätt sida kommer upp mot spelaren. Tre sätt i Beställ; båda sätten på vägen gäller.", sager: ["vända kortet"], aven: ["TURN", "flipAxis", "Var kortet vänds"] },
+  { grupp: "Kortet", ord: "Handleden vänder kortet", betyder: "Vändning på vägen, förvalet: handleden vrids över en gång och kortet följer med, blått upp. Handen är kvar vriden tills kortet ligger.", sager: ["vrida över handleden"], aven: ["FREE", "I luften"] },
+  { grupp: "Kortet", ord: "Som en nyckel", betyder: "Vändning på vägen, som Pamela gör: hand och kort vrids ihop kring kortets långsida. Handen är kvar vriden tills kortet ligger.", sager: ["vrida som en nyckel"], aven: ["LONG_EDGE", "Rullas kring långsidan på vägen"] },
+  { grupp: "Kortet", ord: "Vänd vid platsen", betyder: "Kortet förs fram stängt, lågt längs filten, och vänds först vid platsen: nyp, dra, för fram, vrid, vänd upp, lägg.", sager: [], aven: ["AT_PLACE", "PLACE", "givens sex steg"] },
+  { grupp: "Kortet", ord: "Handbyte", betyder: "Vänster hand tar kortet ur skon och ger det till höger lågt framför kroppen; höger lägger det.", sager: [], aven: ["PASS"] },
+  { grupp: "Kortet", ord: "Riktning, lutning, perspektiv", betyder: "Kortets tre mått på bordet: vart kortsidan pekar, hur mycket kortet reser sig (0° = plant) och hur mycket smalare den bortre kanten är. Placering, fliken Plats.", sager: ["vinkel"], aven: ["angle", "taper", "Bortre kant"] },
+  { grupp: "Kortet", ord: "Kortbana", betyder: "Placeringens skiss av kortets väg: från skon till platsen och handen tillbaka, med Spela under Rörelse. En skiss, inte filmen.", sager: [], aven: ["Kortbanan"] },
+  { grupp: "Kortet", ord: "Rörelse", betyder: "Fliken i Placering för hur kortet tas, vänds och läggs: teknik, hand, grepp vid skon, sidor, handbyte, var det vänds och kortbanan. Beställ utgår från den.", sager: [], aven: ["intent", "Teknik"] },
+  { grupp: "Kortet", ord: "Landningsbild", betyder: "Stillbilden med handen vid kortet på sin plats. En giv bara dit slutar på den och en retur som egen film börjar på den. Rollen Landningar i Material.", sager: ["A3", "ankare 3"], aven: ["LAND(P4.C1)", "landningsankare", "3.1–3.7 (en per plats)"] },
+  { grupp: "Kortet", ord: "Landningsruta", betyder: "Rutan i en giv där kortet just har landat och returen tar vid. Märkt Landning under filmen i Granska och Jämför.", sager: [], aven: ["landingFrame", "startsOn"] },
+  { grupp: "Kortet", ord: "Släpp", betyder: "När handen släpper kortet på platsen. Placering visar vilken hand som släpper (Hand vid släpp).", sager: [], aven: ["RELEASE"] },
+  // ── Pictures ──
+  { grupp: "Bilder", ord: "Ingångsbild", betyder: "Bilden en ny dealer börjar från: vilken bild som helst av personen. Rollen Ingångsbild i Material.", sager: [], aven: ["startbild", "referensbild"] },
+  { grupp: "Bilder", ord: "Keystone", betyder: "Förlagan i hög upplösning på vitt, stående och sittande. Spelas aldrig. Ankaret görs ur den, ur en video eller som redigerad stillbild; vilken väg som gäller är inte avgjort.", sager: ["keystonebild"], aven: ["stående keystone", "sittande keystone"] },
+  { grupp: "Bilder", ord: "Ankare", betyder: "Rutan i bankens format (1764 × 1174, grönt, bankens sko) som filmer börjar och slutar på: A1, A2.1 och A2.2.", sager: [], aven: ["anchor", "anchor.png", "ankarbild"] },
+  { grupp: "Bilder", ord: "Rollblad", betyder: "Bilden av dealern i fem vyer (två bakifrån, profil, trekvart, framifrån) som trailerns tagningar görs ur. Ligger i Prov.", sager: ["5-faldiga bilder"], aven: ["character sheet"] },
+  { grupp: "Bilder", ord: "Siluett", betyder: "Den grå figuren på studions bord: visar var händerna ligger, utan någon riktig dealer. Bakgrunden Neutral i Placering och Bordet i Ny beställning; det som skickas är dealerns egen bild.", sager: ["avatar"], aven: ["Neutral · studions bord", "neutral bakgrund"] },
+  { grupp: "Bilder", ord: "V6", betyder: "Jakobs visuella referens: den äldre hela rundan, som återskapas byte för byte. Kan väljas som bild i Placering.", sager: [], aven: ["V6-bild", "visuell referens"] },
+  { grupp: "Bilder", ord: "Referensfilm", betyder: "En film ur banken som skickas med en beställning som förlaga för rörelsen: en rakt godkänd giv till samma plats.", sager: [], aven: ["reference"] },
+  // ── After the film ──
+  { grupp: "Efter filmen", ord: "Råmaterial", betyder: "Filmerna som de är filmade: grönt bakom henne, gult och blått kort, ingen valör och ingen ritad mun. Det som beställs och döms.", sager: ["råfilm"], aven: ["source.mp4"] },
+  { grupp: "Efter filmen", ord: "Efterarbetad", betyder: "Tagningens läge i Beställ när den levererade filmen är förd till bankens format: rätt storlek, de mörka sista rutorna bort, det gröna jämnat, inget ljud.", sager: [], aven: ["after.mp4", "film-after"] },
+  { grupp: "Efter filmen", ord: "Efterbehandling", betyder: "Det spelet lägger på en film medan den spelas: det ritade kortet med tryck, glans och böjning, munnen och senare en logga. Hålls för sig, efter filmerna.", sager: ["post", "efterarbete", "efterlaborering", "efter konstruktion"], aven: [] },
+  { grupp: "Efter filmen", ord: "Färdigt material", betyder: "Det spelaren ser: råmaterialet i 3D-scenen med efterbehandlingen ovanpå.", sager: [], aven: [] },
+  { grupp: "Efter filmen", ord: "Ritat kort", betyder: "Spelkortet som spelet ritar över filmens gula och blå kort, hela vägen och också i hennes hand. Brytaren Ritade kort i spelets Miljö.", sager: ["överlägg", "overlay"], aven: ["Renderade kort", "kort=hand"] },
+  { grupp: "Efter filmen", ord: "Underlägg", betyder: "Filmens eget kort färgas om bredvid det ritade kortet (baksidan mörk, framsidan papper), så att inget gult eller blått syns. På från början.", sager: [], aven: ["UNDER"] },
+  { grupp: "Efter filmen", ord: "Pålägg", betyder: "Filmens eget kort färgat om i filmens bildpunkter, utan ritat kort: gult blir mörk baksida, blått blir papper. Ett prov i labbet, inte i spelet.", sager: [], aven: ["cardBack=dark", "cardFace=paper"] },
+  { grupp: "Efter filmen", ord: "Kortets utseende", betyder: "Det ritade kortets tryck (valör och färg), böjning och glans: i Placering under fliken Material och i Scen under Kort och marker.", sager: ["tryck"], aven: ["kortmaterial", "böjning", "glans"] },
+  // ── Speech and lips ──
+  { grupp: "Tal och läppar", ord: "Lipsync", betyder: "Munnen ritad efter rösten. Vyn Lipsync samlar grundbilderna, kedjan med format och skalor, inställningarna, var det körs och proven.", sager: ["lipsynk", "läppsynk"], aven: ["MuseTalk"] },
+  { grupp: "Tal och läppar", ord: "Grundbild", betyder: "Det läppsynkmodellen utgår från för hennes mun: vilofilmens rutor, eller den film en munlapp läggs på. Under Grundbilder i Lipsync.", sager: ["baslinje", "baseline"], aven: ["baseImages"] },
+  { grupp: "Tal och läppar", ord: "Replik", betyder: "En fast mening hon säger, i ett språk och en röst: de tio en runda behöver och chattens femton svar.", sager: [], aven: ["line", "SpeakLine"] },
+  { grupp: "Tal och läppar", ord: "Talfilm", betyder: "En vilofilm med ljud där munnen är ritad efter rösten; spelas när repliken sägs.", sager: ["replikklipp"], aven: ["onRequest"] },
+  { grupp: "Tal och läppar", ord: "Munlapp", betyder: "Munnen för en replik, gjord i förväg över exakt den film den sägs i och lagd på filmen när den spelas, så att hon kan tala under en giv.", sager: [], aven: ["munlagret", "patch"] },
+  { grupp: "Tal och läppar", ord: "Realtidslipsynk", betyder: "Målet för läpparna: munnen ritad direkt efter vilket ljud som helst medan spelet går, på Jakobs egen RunPod.", sager: ["realtidstala"], aven: ["strömmande läppsynk"] },
   // ── Verdicts ──
-  { grupp: "Omdömen", ord: "Primär ★", betyder: "Tagningen som spelas först i sitt steg. Bara Jakob väljer den.", aven: ["MAIN", "acceptedAs MAIN", "explicitMain"] },
-  { grupp: "Omdömen", ord: "Godkänd ✓", betyder: "Godkänd rakt av: kan bli tagningen som spelas.", aven: ["ACCEPTED", "approved", "userAccepted"] },
-  { grupp: "Omdömen", ord: "Variant ◆", betyder: "Godkänd som omväxling: spelas bara ibland eller när den väljs.", aven: ["VARIANT", "acceptedAs VARIANT"] },
-  { grupp: "Omdömen", ord: "Väntar ○", betyder: "Ingen har sagt något om tagningen ännu.", aven: ["PENDING", "ogranskad"] },
-  { grupp: "Omdömen", ord: "Underkänd ✕", betyder: "Tagningen spelas aldrig.", aven: ["REJECTED", "avvisad"] },
-  { grupp: "Omdömen", ord: "Sekundär", betyder: "Ett alternativ som sparas men inte spelas.", aven: ["SECONDARY"] },
-  { grupp: "Omdömen", ord: "Granskare", betyder: "Ett omdöme som en agent har satt, inte Jakob (streckad markering).", aven: ["review.decision utan userAccepted"] },
-  // ── Pictures and measures ──
-  { grupp: "Bilder och mått", ord: "Ingångsbild", betyder: "Bilden en ny dealer börjar från, vilken bild som helst.", aven: ["startbild", "referensbild"] },
-  { grupp: "Bilder och mått", ord: "Keystone", betyder: "Förlagan i hög upplösning av en pose. Spelas aldrig; ankaret tas ur en video av den.", aven: ["keystone 1 (stående)", "keystone (sittande)"] },
-  { grupp: "Bilder och mått", ord: "Ankare", betyder: "Rutan i bankens format (grönt, bankens sko) som filmer börjar och slutar på.", aven: ["anchor", "anchor.png", "ankarbild"] },
-  { grupp: "Bilder och mått", ord: "Landning", betyder: "Rutan där kortet når bordet i en giv.", aven: ["LAND", "landingFrame"] },
-  { grupp: "Bilder och mått", ord: "Släpp", betyder: "Rutan där fingrarna lämnar kortet; returen börjar där.", aven: ["RELEASE", "startsOn"] },
-  { grupp: "Bilder och mått", ord: "Riktning, lutning, perspektiv", betyder: "Kortets tre mått: vart kortsidan pekar, hur mycket kortet reser sig från bordet, hur mycket smalare den bortre kanten är.", aven: ["vinkel"] },
-  // ── Playing and the scene ──
-  { grupp: "Spela och scen", ord: "3D", betyder: "Filmen spelad i 3D-scenen vid ett bord, med rum, ljus och kamera.", aven: ["scenen", "scene3d"] },
-  { grupp: "Spela och scen", ord: "Inte 3D", betyder: "Filmen som den är, på sin gröna bakgrund.", aven: ["platt", "flat", "film"] },
-  { grupp: "Spela och scen", ord: "Basgrund", betyder: "Scenens grundinställning, det tidigare agenter bedömt bäst, att utgå från.", aven: ["baseline", "grundinställning"] },
-  { grupp: "Spela och scen", ord: "Prov", betyder: "En jämförelse från arbetet: filmer och bilder med ett omdöme per fil.", aven: ["proof", "kontaktark"] },
-  { grupp: "Spela och scen", ord: "Kopian", betyder: "Den låsta studion på nätet: samma vyer, men inget går att ändra.", aven: ["snapshot", "den låsta kopian"] },
+  { grupp: "Omdömen", ord: "Primär ★", betyder: "Tagningen som spelas först i sitt steg. Bara Jakob väljer den.", sager: ["primär tagning"], aven: ["MAIN", "acceptedAs MAIN", "explicitMain"] },
+  { grupp: "Omdömen", ord: "Godkänd ✓", betyder: "Godkänd rakt av: kan spelas, och bara sådana tagningar blir underlag till nya filmer.", sager: [], aven: ["ACCEPTED", "rakt godkänd", "userAccepted"] },
+  { grupp: "Omdömen", ord: "Variant ◆", betyder: "Godkänd som omväxling: visas bredvid och spelas när en runda väljer den eller inget annat finns. Inte underlag till nya filmer.", sager: [], aven: ["VARIANT", "acceptedAs VARIANT"] },
+  { grupp: "Omdömen", ord: "Väntar ○", betyder: "Ingen dom än: tagningen är ogranskad eller inte klar.", sager: [], aven: ["PENDING", "ogranskad", "ej dömd"] },
+  { grupp: "Omdömen", ord: "Underkänd ✕", betyder: "Tagningen spelas aldrig.", sager: [], aven: ["REJECTED", "avvisad"] },
+  { grupp: "Omdömen", ord: "Sekundär", betyder: "Ett sämre alternativ: spelas bara när inget bättre finns. Chippet visar Underkänd med ordet sekundär.", sager: [], aven: ["SECONDARY", "sekundärt alternativ"] },
+  { grupp: "Omdömen", ord: "Granskare", betyder: "En dom som en agent har satt, inte Jakob: chippet är streckat.", sager: [], aven: ["av granskare", "review.decision utan userAccepted"] },
+  { grupp: "Omdömen", ord: "Dömd åt dig", betyder: "En dom som huvudagenten och en granskare satt åt Jakob på hans uppdrag: streckad, med åt dig. Väntar inte på honom; hans beslut ersätter den.", sager: [], aven: ["provisional", "review-put", "Dömda åt dig"] },
+  // ── The lab and its views ──
+  { grupp: "Labbet och vyerna", ord: "Labbet", betyder: "Studion på Jakobs dator, med alla vyer i menyn till vänster. Startas med START.cmd.", sager: ["nya labbet", "studion"], aven: ["Dealer Studio", "labbservern"] },
+  { grupp: "Labbet och vyerna", ord: "Gamla labbet", betyder: "De gamla labbsidorna, länken Gamla labbet längst ner i menyn. Tas bort när det som bara finns där är flyttat hit.", sager: [], aven: ["lab.html", "old-lab", "3D-labbet"] },
+  { grupp: "Labbet och vyerna", ord: "Kopian", betyder: "Den låsta studion på nätet: samma vyer och spelet, men inget går att ändra, och Beställ, Lipsync och Beslut finns inte där.", sager: ["sajten"], aven: ["snapshot", "den låsta kopian", "Vercel"] },
+  { grupp: "Labbet och vyerna", ord: "Boten", betyder: "Den som svarar i Fråga på kopian: svarar om dealerprojektet med källa, och kan göra ett svar till ett önskemål till Jakob.", sager: [], aven: ["Fråga"] },
+  { grupp: "Labbet och vyerna", ord: "Önskemål", betyder: "På kopian: önskemål, frågor och felrapporter till Jakob, med status och hans svar.", sager: [], aven: [] },
+  { grupp: "Labbet och vyerna", ord: "Scen", betyder: "Vyn där en runda spelas i 3D-scenen och scenen ändras. Panelen har flikarna Runda (välj eller skriv en runda) och Scen (rum, ljus, kort, kamera …).", sager: [], aven: [] },
+  { grupp: "Labbet och vyerna", ord: "Förval", betyder: "En sparad look för 3D-scenen: Basgrund, Levande, Rumsstudien och egna, i raden Förval överst i Scen. I Beställ betyder förval det som är valt från början.", sager: ["profilval"], aven: ["preset", "forval="] },
+  { grupp: "Labbet och vyerna", ord: "Basgrund", betyder: "Förvalet med det spelet visar i dag: Las Vegas, hela bordet, ritade kort. Scen märker det som skiljer sig från det.", sager: [], aven: [] },
+  { grupp: "Labbet och vyerna", ord: "Levande", betyder: "Förvalet Scen öppnar på: Basgrund med kameran som lutar, skärpan som följer kortet, damm och klocka.", sager: [], aven: [] },
+  { grupp: "Labbet och vyerna", ord: "3D", betyder: "Filmen spelad i 3D-scenen: keyad och lagd vid ett bord i ett rum, med ljus och kamera. Valet Visning i Scen.", sager: [], aven: ["scene3d", "3D-scenen"] },
+  { grupp: "Labbet och vyerna", ord: "Inte 3D", betyder: "Filmen som den är, på sin gröna bakgrund, utan rum. Valet Visning i Scen.", sager: [], aven: ["platt", "flat"] },
+  { grupp: "Labbet och vyerna", ord: "Karta", betyder: "Nodkartan: ankarna vid skon, platserna i en båge och dealern överst. Varje linje är ett steg och visar tagningen som spelas.", sager: [], aven: ["nodkartan", "nodträdet"] },
+  { grupp: "Labbet och vyerna", ord: "Primära", betyder: "För varje steg i en hel runda: tagningen som spelas nu bredvid den bästa rakt godkända, och skarven mellan giv och retur.", sager: [], aven: [] },
+  { grupp: "Labbet och vyerna", ord: "Granska", betyder: "Där tagningarna får Jakobs dom, en i taget och stort. Alla listar varje tagning, också de som är dömda åt honom.", sager: [], aven: [] },
+  { grupp: "Labbet och vyerna", ord: "Jämför", betyder: "Två tagningar av samma steg sida vid sida, oftast en kandidat mot primären. Öppnas från en tagning.", sager: [], aven: [] },
+  { grupp: "Labbet och vyerna", ord: "Prov", betyder: "Provrummet: provmappar med filmer och bilder från arbetet, nyast först, varje fil med sitt omdöme: Användbar, Med anmärkningar, Underkänd, Inte granskad.", sager: [], aven: ["proof", "kontaktark", "provmapp"] },
+  { grupp: "Labbet och vyerna", ord: "Placering", betyder: "Var korten och skon ligger på bordet, och hur kortet tas, vänds och läggs. Sparas i placeringsplanen, som Beställ läser.", sager: [], aven: ["placeringsplanen", "placements/default.json"] },
+  { grupp: "Labbet och vyerna", ord: "Material", betyder: "Per dealer: varje bild och film med sin roll (ingångsbild, keystone, ankare, landningar, filmer, referenser …) och om den gäller.", sager: [], aven: ["media-roles.json", "roll"] },
+  { grupp: "Labbet och vyerna", ord: "Gäller", betyder: "En bild i Material som gäller för sin roll: den nya beställningar använder. Kandidat: föreslagen. Ersatt: gällde förut.", sager: [], aven: ["kandidat", "ersatt"] },
+  { grupp: "Labbet och vyerna", ord: "Beställ", betyder: "Vyn där en film eller bild beställs: Ny beställning, Det här skickas och kön till Runway. Bara i labbet.", sager: [], aven: [] },
+  { grupp: "Labbet och vyerna", ord: "Beställning", betyder: "En order på en film eller bild: steg, bilder, text, modell och antal tagningar. När den är godkänd ändras den aldrig.", sager: ["order"], aven: ["utkast"] },
+  { grupp: "Labbet och vyerna", ord: "Metod", betyder: "Hur ett steg beställs (modell, text, längd, tagningar) och om sättet gäller, prövas eller saknas, per steg och slags plats.", sager: ["beställningsmetod"], aven: ["order-methods.json"] },
+  { grupp: "Labbet och vyerna", ord: "Protokoll", betyder: "Varje tagning ur varje beställning: vad som skickades, hur det gick, granskarens poäng och Jakobs dom. Länken finns i Beställ.", sager: [], aven: ["ledger"] },
+  { grupp: "Labbet och vyerna", ord: "Casino", betyder: "Spelet: blackjack med spelmotorn, marker och reglage, i valt förval.", sager: ["spelet", "blackjacken"], aven: ["game.html"] },
+  { grupp: "Labbet och vyerna", ord: "Beslut", betyder: "Det som väntar på Jakobs svar: ett kort per sak med en bild; han svarar med en knapp och en anteckning. Bara i labbet.", sager: [], aven: ["decisions.json"] },
 ];
 
 const fold = (text: string) => text.normalize("NFD").replace(/\p{M}/gu, "").toLowerCase();
 
-/** The words a search finds (in the word, its meaning or another name), the word itself first; all for an empty search. */
+/**
+ * The words a search finds, best first: the entry one of whose names is exactly what was typed ("lipsynk" is Lipsync, not
+ * Realtidslipsynk), then the word itself, then one of Jakob's own other words, then a name in code and documents, then the
+ * meaning; all for an empty search. Marks and case do not count ("platt" finds "plätt").
+ */
 export function findWords(query: string, words: readonly Word[] = WORDS): Word[] {
   const q = fold(query.trim());
   if (!q) return [...words];
-  const score = (w: Word) => (fold(w.ord).includes(q) ? 0 : w.aven.some((a) => fold(a).includes(q)) ? 1 : fold(w.betyder).includes(q) ? 2 : 3);
-  return words.filter((w) => score(w) < 3).sort((a, b) => score(a) - score(b));
+  const has = (names: readonly string[]) => names.some((a) => fold(a).includes(q));
+  const exact = (w: Word) => [w.ord, ...w.sager, ...w.aven].some((a) => fold(a) === q);
+  const score = (w: Word) => (exact(w) ? 0 : fold(w.ord).includes(q) ? 1 : has(w.sager) ? 2 : has(w.aven) ? 3 : fold(w.betyder).includes(q) ? 4 : 5);
+  return words.filter((w) => score(w) < 5).sort((a, b) => score(a) - score(b));
 }

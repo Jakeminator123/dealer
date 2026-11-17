@@ -294,13 +294,28 @@ export const OWN_VIEWS: {namn: string; adress: string; text: string}[] = [
   {namn: 'Prov', adress: '/studio/prov/', text: 'Prov från arbetet, nyast först: filmer och bilder med en dom per fil.'},
 ];
 export type ViewText = {namn: string; adress: string; text: string};
-export function viewSection(views: readonly ViewText[], words: readonly {ord: string; betyder: string}[], release: Blocked, removed: Removed): Built {
+export function viewSection(views: readonly ViewText[], release: Blocked, removed: Removed): Built {
   const text = cleanPlain([
     'Studion har en vy per uppgift; kopian är skrivskyddad, så inget beslut sparas där.',
     ...views.map(v => `- ${v.namn}${v.adress ? ` (${v.adress})` : ''}: ${v.text}`),
-    ...(words.length ? ['Orden i studion:', ...words.map(w => `- ${w.ord}: ${w.betyder}`)] : []),
   ].join('\n'), release, removed);
   return {id: 'studion/vyer', titel: 'Studion › Vyerna', text, prio: 2, tokens: roughTokens(text)};
+}
+
+/** How many words of the studio's glossary one searchable part holds. */
+export const WORDS_PER_PART = 16;
+/**
+ * The studio's glossary (studio/lib/words.ts through the guide), as searchable parts and not in the core: with 94 words it
+ * took a third of the core and pushed eleven sections of the documents out of it (measured 2026-11-17). A question that
+ * names a word finds its part.
+ */
+export function wordSections(words: readonly {ord: string; betyder: string}[], release: Blocked, removed: Removed): Built[] {
+  const parts: Built[] = [];
+  for (let i = 0; i < words.length; i += WORDS_PER_PART) {
+    const text = cleanPlain(['Orden i studion:', ...words.slice(i, i + WORDS_PER_PART).map(w => `- ${w.ord}: ${w.betyder}`)].join('\n'), release, removed), n = i / WORDS_PER_PART + 1;
+    parts.push({id: `studion/ord-${n}`, titel: `Studion › Ordlistan (del ${n})`, text, prio: null, tokens: roughTokens(text)});
+  }
+  return parts;
 }
 
 /** The last commit subjects, as what changed most recently. */

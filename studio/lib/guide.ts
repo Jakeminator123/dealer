@@ -117,7 +117,7 @@ export const WELCOME = {
  */
 export const WORDS: readonly { ord: string; betyder: string }[] = [
   { ord: "A2.1 - P4C1 - A2.1", betyder: "En giv som Jakob skriver den: från nypet till plats 4:s första kort och tillbaka." },
-  ...STUDIO_WORDS.map((w) => ({ ord: w.ord, betyder: w.aven.length ? `${w.betyder} Kallas också: ${w.aven.join(", ")}.` : w.betyder })),
+  ...STUDIO_WORDS.map((w) => { const also = [...w.sager, ...w.aven]; return { ord: w.ord, betyder: also.length ? `${w.betyder} Kallas också: ${also.join(", ")}.` : w.betyder }; }),
 ];
 
 /** The guide text of one view, or null. */

@@ -3,7 +3,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {buildGraph, type BankData, type BankJob, type MotionRecord} from '../src/clip-graph.ts';
-import {LOCAL, assemble, bankSections, breaks, cleanDoc, cleanLine, cut, hasLocalPath, knowledgeLeaks, placeWords, prioFrom, proofSections, scanLeaks, unwrap, PART_CHARS, type Built, type Removed} from './knowledge.ts';
+import {LOCAL, assemble, bankSections, breaks, cleanDoc, cleanLine, cut, hasLocalPath, knowledgeLeaks, placeWords, prioFrom, proofSections, scanLeaks, unwrap, viewSection, wordSections, PART_CHARS, WORDS_PER_PART, type Built, type Removed} from './knowledge.ts';
 import {Index, coreText, expandQuery, stem, tokenize, type Knowledge} from '../cloud/studio/bot-search.ts';
 import {findTextLeaks, type Proof} from './studio-freeze.ts';
 
@@ -207,4 +207,16 @@ test('the search: Swedish stems, the bank\'s short names for the words people us
   assert.deepEqual(index.search(''), []);
   assert.ok(index.search('plats', 2).length <= 2);
   assert.match(coreText({schemaVersion: 1, byggd: '', kallor: [], karna: sections.slice(0, 2), avsnitt: []}), /^### \[Banken › A2.1 → P6C1\]\n/);
+});
+
+test('the views are one core section, and the glossary is searchable parts outside the core', () => {
+  const removed: Removed = {}, views = [{namn: 'Scen', adress: '/studio/', text: 'Spelar en runda.'}];
+  const view = viewSection(views, release, removed);
+  assert.equal(view.id, 'studion/vyer'); assert.equal(view.prio, 2); assert.ok(!view.text.includes('Orden i studion'), 'no words in the core section');
+  const words = Array.from({length: WORDS_PER_PART * 2 + 3}, (_, i) => ({ord: 'Ord ' + i, betyder: 'Betyder ' + i + '.'}));
+  const parts = wordSections(words, release, removed);
+  assert.equal(parts.length, 3); assert.deepEqual(parts.map(p => p.id), ['studion/ord-1', 'studion/ord-2', 'studion/ord-3']);
+  assert.ok(parts.every(p => p.prio === null), 'searchable, never in the core');
+  assert.equal(parts.flatMap(p => p.text.split('\n').filter(l => l.startsWith('- '))).length, words.length, 'every word in one part');
+  assert.match(parts[2].text, /- Ord 34: Betyder 34\./); assert.deepEqual(wordSections([], release, removed), []);
 });

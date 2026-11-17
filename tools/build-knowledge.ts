@@ -15,7 +15,7 @@ import path from 'node:path';
 import {fileURLToPath, pathToFileURL} from 'node:url';
 import {buildGraph, type BankData, type Graph} from '../src/clip-graph.ts';
 import {readRelease, type Proof, type Release} from './studio-freeze.ts';
-import {DEALER_DOCS, OWN_VIEWS, SCOUT_CORE, SCOUT_DROP, assemble, bankSections, cleanDoc, commitSection, prioFrom, proofSections, scanLeaks, slug, viewSection, type Built, type Doc, type Removed, type ViewText} from './knowledge.ts';
+import {DEALER_DOCS, OWN_VIEWS, SCOUT_CORE, SCOUT_DROP, assemble, bankSections, cleanDoc, commitSection, prioFrom, proofSections, scanLeaks, slug, viewSection, wordSections, type Built, type Doc, type Removed, type ViewText} from './knowledge.ts';
 import {Index, type Knowledge} from '../cloud/studio/bot-search.ts';
 
 const here = path.resolve(fileURLToPath(new URL('../', import.meta.url)));
@@ -89,7 +89,7 @@ export async function buildKnowledge(input: {root: string; release: Release; gra
   const bank = bankSections(input.graph, release, removed);
   sections.push(...bank);
   const guide = await guideViews(root);
-  sections.push(viewSection(guide?.views ?? OWN_VIEWS, guide?.words ?? [], release, removed));
+  sections.push(viewSection(guide?.views ?? OWN_VIEWS, release, removed), ...wordSections(guide?.words ?? [], release, removed));
   sections.push(...proofSections(input.proofs, input.onSite, release, removed));
   const subjects = execFileSync('git', ['log', '-30', '--format=%s'], {cwd: root, encoding: 'utf8'}).split('\n').map(s => s.trim()).filter(Boolean);
   sections.push(commitSection(subjects, release, removed));

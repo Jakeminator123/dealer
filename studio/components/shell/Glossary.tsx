@@ -1,8 +1,9 @@
 "use client";
 
 // <Glossary />: the rail's "Ordlista": the studio's one table of words (lib/words.ts) in a dialog, searchable. Each word with
-// what it means and, quieter, the other names it has in code and documents (IDLE, Keystone 1, kant …), so that an older
-// name read somewhere leads to the word the studio uses.
+// what it means, the other words Jakob himself uses for it ("Säger också": släpar, A3, tillbakagången …) and, quieter, the
+// names it has in code and documents ("Kallas också": IDLE, Keystone 1, kant …), so that whichever word he looks for, or
+// an older name read somewhere, leads to the word the studio uses. The search reads all three, the word itself first.
 import { BookOpen, Search } from "lucide-react";
 import { useMemo, useState } from "react";
 import { WORD_GROUPS, findWords } from "../../lib/words.ts";
@@ -37,7 +38,7 @@ export function Glossary() {
               value={query}
               autoFocus
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Sök ett ord eller ett annat namn: IDLE, kant, keystone …"
+              placeholder="Sök ett ord eller ett annat namn: släpar, A3, tillbakagången, IDLE …"
               aria-label="Sök i ordlistan"
               className="min-w-0 flex-1 bg-transparent text-sm text-ink outline-none placeholder:text-faint"
             />
@@ -55,6 +56,7 @@ export function Glossary() {
                         <dt className="text-sm font-semibold text-ink">{w.ord}</dt>
                         <dd className="flex flex-col gap-0.5">
                           <span className="text-sm leading-5 text-[#d7ddd9]">{w.betyder}</span>
+                          {w.sager.length ? <span className="text-xs leading-4 text-dim">Säger också: {w.sager.join(" · ")}</span> : null}
                           {w.aven.length ? <span className="text-xs leading-4 text-faint">Kallas också: {w.aven.join(" · ")}</span> : null}
                         </dd>
                       </div>
