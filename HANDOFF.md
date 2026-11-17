@@ -105,10 +105,17 @@ skrivs på skrivbordet när allt har ett utfall. Här står bara det som inte ä
 
 ## Nästa steg
 
-**Börja här (överlämning 2026-11-17 kl. 21.45).** Inga underagenter och inga andra sessioner arbetar; inget är
-ocommittat. Kopian på nätet är kvar på `aee87ca` (inget publicerat i kväll: en publicering bär ordlistan, Placering
-och Beställ som de är nu och botens kunskap utan den gamla checklistan; fråga sedan kopian som en ny besökare).
-Saldot hos Runway var 7 430 kl. 21.40; taket per beställning är 2 000. `KLAR.txt` är inte skriven. I den här ordningen:
+**Börja här (läget 2026-11-17 kl. 22.10; huvudagenten bytte chatt kl. 21.45).** Två underagenter till huvudagenten
+arbetar på Jakobs ord från kl. 21.46 (Jakobs besked, "Ett labb"), och deras arbete är inte incheckat förrän de har
+rapporterat: (a) **vyn Bordet, första versionen**, byggs i huvudträdet (ny adress `/studio/bordet/` bredvid Placering,
+Beställ och Scen, som står kvar tills han har sett den; arbetsmapp `D:/dealer-scratch/tmp/bordet/`); (b) **gamla labbet
+tas bort** på grenen `gamla-labbet-bort` i arbetsträdet `D:/dealer-scratch/tmp/gamla-labbet-bort/trad`, som
+huvudagenten slår ihop i `main` när (a) har lämnat ett helt steg (sedan tas trädet och grenen bort). Bryts chatten:
+läs `git status` i huvudträdet och `git log main..gamla-labbet-bort`, kör testerna och avgör vad som är helt. Kopian på
+nätet är kvar på `aee87ca` (inget publicerat i kväll: en publicering bär ordlistan, Placering och Beställ som de är nu
+och botens kunskap utan den gamla checklistan; fråga sedan kopian som en ny besökare). Saldot hos Runway var 7 430
+kl. 21.40; taket per beställning är 2 000. `KLAR.txt` är inte skriven. Filmerna (punkt 1) är huvudagentens eget nästa
+steg medan labbet byggs. I den här ordningen:
 
 1. **Filmerna först** (hans ord). Metoden som håller står i handboken (`tools/film-prompting.md` §5, tabellen): giv bara
    dit på Kling 4 med första och sista bild och Pamelas giv till samma plats som referensfilm. Gör den till nästa mall
@@ -119,15 +126,17 @@ Saldot hos Runway var 7 430 kl. 21.40; taket per beställning är 2 000. `KLAR.t
    kortets tjocklek. Sedan de två prov han bad om i Beslut ("det behövs ju också för och från A2.2 till P4C1.. och
    kanske för alla andra spelare"): släp från ankare 2.2 med Pamelas släp som referensfilm, och en annan plats med
    Pamelas film dit. Kling 3.0 Motion Control är prövad samma kväll och faller (Prov `giv-motion-control`).
-2. **Labbets grund** (hans ja med anmärkning, Jakobs besked "Ett labb"). Första steget är gjort (`ccd9c52`: kortbanan
-   efter filmerna, planens vändning som orderns förval, släta gula och blå kort; Prov `kortbanan-efter-filmerna`).
-   Nästa: vyn Bordet enligt byggordningen i `D:/dealer-scratch/tmp/labbgrund/grund/RAPPORT.md` (Placering och Beställ i
-   en vy med stegen Var kortet landar, Hur det kommer dit, Beställ filmen, Granska filmen), och på hans anmärkning bort
-   med beskrivningarna av rörelsen som inte skickas till Runway (`FLIP_ABOUT`, `HAND_ABOUT`, `SHAPE_ABOUT`,
-   `LANDS_ABOUT`, `startWords` och sammanfattningsraden `dealWords` i `src/order-model.ts`, visade i `Choices.tsx`,
-   `NewOrder.tsx`, `SendScreen.tsx`, `OrderList.tsx` och `Stage.tsx`). Efterarbete (där Scen ligger; kortets förarbete
-   per film, ruta för ruta) kommer efter filmerna, och gamla labbet tas bort sist (vad som måste flyttas först står i
-   rapporten: bland annat `src/lab-sound.ts`, som spelet importerar, och `scene3d.html`).
+2. **Labbets grund** (hans ja med anmärkning, och hans ord kl. 21.46: Jakobs besked "Ett labb"). Första steget är gjort
+   (`ccd9c52`: kortbanan efter filmerna, planens vändning som orderns förval, släta gula och blå kort; Prov
+   `kortbanan-efter-filmerna`). Pågår (ovan): vyn Bordet med samma ram för kortplanen och den levande scenen, stegen
+   Var kortet landar, Hur det kommer dit och Beställ som en lista av filmer, bättre zoom och ett kortformat; skons
+   kort mäts mot planens perspektiv. Sedan: steget Granska filmen (byggordningen i
+   `D:/dealer-scratch/tmp/labbgrund/grund/RAPPORT.md`), hans ja till Bordet innan Placering, Beställ och Scen leder dit,
+   och på hans anmärkning bort med beskrivningarna av rörelsen som inte skickas till Runway (`FLIP_ABOUT`, `HAND_ABOUT`,
+   `SHAPE_ABOUT`, `LANDS_ABOUT`, `startWords` och sammanfattningsraden `dealWords` i `src/order-model.ts`, visade i
+   `Choices.tsx`, `NewOrder.tsx`, `SendScreen.tsx`, `OrderList.tsx` och `Stage.tsx`). Efterarbete (där Scen ligger;
+   kortets förarbete per film, ruta för ruta) kommer efter filmerna. Gamla labbet tas bort nu på hans ord (ovan), inte
+   sist: Ljud, Modeller och 3D-sidan blir kvar som sidor, filmbiblioteket och Runway-underlaget flyttar till Prov.
 3. **Sidornas ord:** 72 ställen säger annat än ordlistan (`D:/dealer-scratch/tmp/stadning/ord/ORD.md`, del c, med fil,
    rad och förslag); kontrollera radnumren, filerna har ändrats sedan dess.
 4. **Läpparna:** hans ja till provet `paow-realtid-mun-6` (kl. 21.38) gör sättet för munnen i realtid till: storlek F,
@@ -286,7 +295,19 @@ Ett besked per ämne, med det nyaste ordet och dess datum. Ett besked han har er
   kortsiluetten är cirka 50 grader för tiltat nedåt från ovansidan och ska vändas innot (så man ser mindre) […] Jämför
   bara mot kortet i en bild från en video eller bild". Kortets efterarbete görs i förväg per film, inte av spelet medan
   filmen spelas: "Det är bättre att vi gör detta i en post- eller efterkonstruktion. […] om det behövs, ta ruta för
-  ruta och måla ut ett kort som ser riktigt bra ut", med det ritade kortet "något procent större än kortet".
+  ruta och måla ut ett kort som ser riktigt bra ut", med det ritade kortet "något procent större än kortet". Kl. 21.46,
+  med en bild av Placering: "Jag vill att vi ska ordna en bättre vy för det nya labbet. Vi ska radera det gamla labbet
+  men se till att behålla det som är bra från det. […] Eftersom vi har en stillbild under placering, och att placering
+  ska bli det nya labbet helt och hållet, borde det inkludera andra element, som scenen med nyvalet till vänster. Scen
+  och placering bör ha samma typ av vy, och på högersidan ska man kunna ändra och laborera med detta. Detta ska också
+  vara underlaget för beställning av nya filmer. Man ska kunna se vilket av filmerna man beställer, eller om man kan
+  kombinera och beställa flera filmer. En specifik sak jag vill lösa är vyn för zoomning. Eftersom detta är en
+  stillbild blir korten stela och har olika format, och framförallt är skons kort alldeles för stort." och "Se till att
+  gammalt skit tar bort också och att strukturen blir tydlig i projektet!" Huvudagentens läsning, som han inte har
+  bekräftat: en vy (Bordet) med en ram, där bilden är antingen kortplanen eller den levande 3D-scenen och allt ändras
+  i högerspalten; beställningen är en lista av filmer i samma vy; gamla labbet tas bort nu. Skattat, mäts av bygget:
+  skons kort är för stort redan i ankarna (cirka 111 bildpunkter långt, mot 55 för dealerns kort på ungefär samma
+  djup), och rättas då först med nya ankare, i samma omgång som de tatuerade händerna.
 - **Kortbanan ska stämma med filmerna** (2026-11-17, "VIKTIGT"): det som används som instruktion eller material för
   kortets vändning ("kortbana" i Rörelse) "måste stämma med hur rörelserna är i antingen filmen om det görs postumt
   eller som det är tänkt att vara utifrån om dealern släpar eller nyper kortet och sedan öppnar upp det till själva
