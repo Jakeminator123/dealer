@@ -115,7 +115,7 @@ skrivs på skrivbordet när allt har ett utfall. Här står bara det som inte ä
 
 ## Nästa steg
 
-**Börja här (läget 2026-11-17 kl. 23.40; huvudagenten bytte chatt kl. 21.45).** Labbet byggs om på Jakobs ord från
+**Börja här (läget 2026-11-17 kl. 23.50; huvudagenten bytte chatt kl. 21.45).** Labbet byggs om på Jakobs ord från
 kl. 21.46 och 21.58 (Jakobs besked, "Ett labb"), av underagenter till huvudagenten:
 
 - **Inne i `main` och sett i headless Chrome:** vyn **Bordet**, första versionen (`82258f3`: `/studio/bordet/` med
@@ -158,15 +158,27 @@ kl. 21.46 och 21.58 (Jakobs besked, "Ett labb"), av underagenter till huvudagent
   underagents halvfärdiga filer inte är det han ser).
 - **Skons kort i labbet är rättat** (`f469450`): `WINDOW_CARD` var nypets uppdragna kort (111 × 57) och ritades utanför
   skons mynning; nu är det kortet som står i fönstret (92 × 45), mätt i bakgrundsbilden.
-- **Pågår hos en underagent:** filmmetodens två följdprov, betalda inom 400 krediter som huvudagenten har godkänt (släp
-  från A2.2 till plats 4 och nyp till en ytterplats, Kling 4 med Pamelas film till samma plats som referensfilm, två
-  tagningar var; arbetsmapp `D:/dealer-scratch/tmp/giv-experiment-2/`, provet `giv-forlagefilm-2`, planen för mall 10,
-  sista bilden ur bankens egen klippruta, metodregistret och en automatisk kontroll av varje tagning i `STANDARD.md`
-  där; den ändrar bara `tools/film-prompting.md` i huvudträdet). 3D-banan (Vem äger vad) har ritat en vit dockas giv till plats 4
-  från bankens kamera (`D:/dealer-scratch/tmp/dealer-3d/ut/docka-giv-p4-bankens-kamera.mp4`, 4,04 s; provet
-  `dealer-3d-giv-fran-tva-stolar`), och filmbanan prövar den som referensfilm i stället för Pamelas: ett tredje betalt
-  prov, två tagningar, godkänt av huvudagenten kl. 23.20 (taket för filmbanan i kväll är därmed 570 krediter). Håller
-  det är metoden fri från Pamelas filmer och gäller vilken plats och rörelse som helst.
+- **Filmmetodens tre följdprov är gjorda** (426 krediter, saldo 7 004 kl. 23.40; Prov `giv-forlagefilm-2`, handboken §5,
+  `07c8ddc`; oberoende granskade, inget dömt av honom och inget infört i banken): **släpet från ankare 2.2 till plats 4
+  håller** med Pamelas släp som referensfilm (2 av 2 användbara, 4/5 och 3/5: kortet släpas plant och vänds vid
+  platsen); **nypet till plats 1 föll** med hennes giv dit (1/5 två gånger: hennes film visar kortet på kant när det
+  svänger ur fönstret, och Kling lade vändningen där och kortet blev för stort); **en renderad vit docka kan styra
+  rörelsen** (Kling tog 3D-banans film ihop med första och sista bild, inget av dockans utseende kom med, kortet följde
+  dess bana och takt och vändningen var kvällens renaste), men tagningen kopierar också dockans fel (kortet glider utan
+  finger; 2/5). Regeln, belagd i nio tagningar: bana, takt, kortets storlek i handen och ögonblicket på kant kommer ur
+  referensfilmen; vem hon är, skon och var kortet ligger kommer ur bilderna. En referens väljs därför efter vad den
+  visar, inte bara efter hans dom.
+- **Pågår hos filmbanans underagent: standarden byggs** efter planen `D:/dealer-scratch/tmp/giv-experiment-2/STANDARD.md`,
+  på grenen `film-standard` i `D:/dealer-scratch/tmp/film-standard/trad` (inget betalt): mall 10 (nyckelvridningen
+  för både nyp och släp, på vägen eller vid platsen; mall 9:s ord till `SAY.v9`), sista bilden i en giv bara dit ur
+  bankens egen klippruta (`cutFrameOf`, utan ny dom av honom), metodregistret, och en automatisk kontroll av varje
+  tagning (`src/deal-check.ts`: en vändning genom kantläget, storlek mot ett verkligt kort, landning, slät färg, inget
+  kort som rör sig utan finger) som fäller före en granskare. Det som kräver bankens filmer görs i huvudträdet i ett
+  andra steg, när Bordets underagent är klar där.
+- **Pågår hos 3D-banan: dockans hand ur en verklig giv** (hans dom kl. 23.38 om provet med två stolar: rörelsen "ser inte
+  naturlig ut" och är nog "omöjlig med mänsklig anatomi"): leder lästa med MediaPipe ur Pamelas och Paows givar,
+  ledgränser som test, kortet kvar i greppet tills det ligger och aldrig större än ett verkligt kort i handen. Sedan
+  två nya förlagefilmer från bankens kamera, plats 4 och plats 1, som huvudagenten beställer en tagning var av.
 - **Disken: 80 GB borttaget kl. 23.13** enligt inventeringens kontrollerade listor
   (`D:/dealer-scratch/tmp/stadning/inventering-2026-11-17/`, loggen `borttaget-2026-11-17.txt`): webbläsarprofiler,
   `node_modules` och cachar i slaskmappar, 374 exakta kopior av filer som finns i `assets/` (stickprov 12 av 12 lika på
