@@ -273,11 +273,11 @@ beställningsagentens instruktion; här står det som rör banken, uppspelningen
 
 ## Den låsta kopian på nätet
 
-Studion som låst kopia för Jakobs chef (Jakob 2026-11-12 och 2026-11-13: lösenordet "john", Scen och Casino med Paow).
+Studion som låst kopia för Jakobs chef (Jakob 2026-11-12 och 2026-11-13: lösenordet (ordet skrivs inte ut här), Scen och Casino med Paow).
 Allt går att läsa och spela, inget går att ändra, och inga kostnader visas.
 
 - **Adresser:** `https://dealer-lake.vercel.app` (den Jakob känner) och `https://dealer-studio-one.vercel.app` (projektets
-  egen), båda produktionsadresser för `dealer-studio`. Lösenordet är `john` (även `jon`, som Jakob skrev 2026-11-13). Efter
+  egen), båda produktionsadresser för `dealer-studio`. Lösenordet skrivs inte ut här (två stavningar av samma ord gäller, den andra som Jakob skrev 2026-11-13). Efter
   lösenordet kommer studion med vänsterspalten: Bordet (Kortplan, Scen, Råfilm och Efterarbete; inget sparas och inget
   beställs), Karta, Granska (med Prov), Material, Casino och Önskemål. Det gäller från nästa publicering; den publicerade
   kopian (`aee87ca`) visar ännu den äldre menyn med Scen, Primära, Prov och Placering. Publicerad 2026-11-13: `e7c006d` kl.
@@ -296,7 +296,7 @@ Allt går att läsa och spela, inget går att ändra, och inga kostnader visas.
   aldrig Blob-adressen och ingen CDN behåller filmen. En omskrivning till Blob (`DEALER_MEDIA_MODE=rewrite`) används inte: mätt 2026-11-13 behöll Vercels CDN då den
   första delen av en film för dess adress och lämnade samma 1 000 byte till varje senare fråga, så filmerna spelade inte.
   Projektet har `DEALER_MEDIA_MODE=proxy`, och från `cloud/studio/gate.ts` efter 2026-11-13 är det förvalet.
-- **Låset:** miljövariablerna `DEALER_LOSEN` (`john,jon`; flera lösenord skiljs med komma) och `DEALER_KAKNYCKEL` (48
+- **Låset:** miljövariablerna `DEALER_LOSEN` (flera lösenord skiljs med komma; orden skrivs inte ut här) och `DEALER_KAKNYCKEL` (48
   slumptecken, gjorda i röret till `vercel env add` och aldrig nedskrivna), Production, känsliga (går inte att läsa
   tillbaka). Nytt lösenord: `vercel env rm DEALER_LOSEN production` och `printf '<ord>' | vercel env add DEALER_LOSEN
   production`, båda med `--cwd .runtime/studio-deploy`, sedan en ny deploy; alla gamla inloggningar slutar då gälla.
@@ -317,7 +317,7 @@ Allt går att läsa och spela, inget går att ändra, och inga kostnader visas.
   förlorats, sidans senaste fel och vad filmkön håller och senast gjorde (SYSTEM, "Filmkön"). Ingen av oss har en
   telefon att pröva på, och en inspelning i headless Chrome visar inte vad en telefon gör; för det som en telefon kan
   tänkas neka finns en attrapp på slaskdisken (`D:/dealer-scratch/tmp/huvudagent11/look/strikt-koll.mjs`).
-- **Öppen utan lösenord** (Jakob 2026-11-14: "Se till att den inte är lösenordsskyddad", "ta bort lösenordet "john" för
+- **Öppen utan lösenord** (Jakob 2026-11-14: "Se till att den inte är lösenordsskyddad", "ta bort lösenordet "[ordet]" för
   sidan nu"): miljövariabeln `DEALER_OPPEN` i projektet. `allt` gör hela kopian läsbar utan lösenord, `spel` bara spelet
   med dörrarna `/casino` och `/trailer` (studion frågar då fortfarande efter lösenordet), och utan variabeln, eller med
   något annat ord, är kopian låst som förut (`openOf` i `cloud/studio/gate.ts`). Bara läsning öppnas: boten och
@@ -346,7 +346,7 @@ Allt går att läsa och spela, inget går att ändra, och inga kostnader visas.
 
 ```
 node tools/publish-studio.ts                         planen: commit, arbetskopia, stegen; inget körs
-DEALER_LOSEN_PROV=john node tools/publish-studio.ts --kor
+DEALER_LOSEN_PROV=<ordet> node tools/publish-studio.ts --kor
 ```
 
 `--kor` bygger `origin/main` (eller `--commit <ref>`) i en egen ren arbetskopia,
@@ -374,7 +374,7 @@ för studions npm-paket, och skickade en ny film.
   på om en mediefil lämnas ut; utan den lämnas sådana filer, till exempel Paows bild i spelets dealermeny, utanför),
   porten 4341 ledig och Scoutgaming utcheckat bredvid (`C:/Users/jakem/dev/scoutgaming`, botens kunskap; annars
   `DEALER_SCOUT_ROOT`).
-- `DEALER_LOSEN_PROV=john` framför kommandot för kontrollen med lösenordet; utan den prövas bara att allt är låst.
+- `DEALER_LOSEN_PROV=<ordet>` framför kommandot för kontrollen med lösenordet; utan den prövas bara att allt är låst.
 
 **När ett steg stannar halvvägs** står kopian på nätet kvar som den var, utom om det är kontrollen efter deployen:
 

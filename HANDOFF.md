@@ -98,6 +98,11 @@ skrivs på skrivbordet när allt har ett utfall. Här står bara det som inte ä
 1. **GitHub är låst av en betalningsfråga** sedan 2026-11-17 kl. 16.48 ("The job was not started because your account is
    locked due to a billing issue"). Kontrollen går grön på datorn, så inget är stoppat, men GitHubs bock är röd tills
    han har rett ut betalningen (Settings, Billing).
+   **Kopians lösenord har stått i det publika repot** (utskrivet i HANDOFF och `docs/DRIFT.md` till och med
+   `dfe29c4`; funnet av 3D-banans granskning 2026-11-18). Ordet är borta ur dokumenten men står kvar i historiken och i testernas exempel (`tools/studio-lock.test.ts`,
+   `tools/knowledge.test.ts`, två kommentarer i `cloud/studio/`), så det
+   bör bytas: nytt `DEALER_LOSEN` i Vercel-projektet och en ny publicering, vilket kräver hans ord. Boten och
+   önskemålslådan är det som ordet skyddar; boten kostar per fråga.
 2. **Filmen till hans chef:** `paow-runda-6-till-chefen-spelet.mp4` (och `-scenen.mp4`) på skrivbordet, 124 s, blint
    granskad 3,75/5, inspelad före kortens fjärde steg, håret, rummets slinga och mungiporna; en ny tagning görs när
    läpparna är inne. Ingen granskare har hört ljudet: han bör lyssna innan han skickar. `paow-runda-2-` till `-5-` ska
@@ -759,9 +764,9 @@ Ett besked per ämne, med det nyaste ordet och dess datum. Ett besked han har er
   På hans ord 2026-11-11: alla kort ×1,20 (P4 86,6 × 71,8 px), perspektiv 87 %, vridning 0°, platserna speglade kring
   bildens mitt, dealerns två kort centrerade.
 - **Den låsta kopian** (åt hans chef): `https://dealer-lake.vercel.app` och `https://dealer-studio-one.vercel.app`, öppen
-  för läsning sedan 2026-11-14 (`DEALER_OPPEN=allt`); boten och önskemålslådan kräver lösenordet `john` eller `jon`.
+  för läsning sedan 2026-11-14 (`DEALER_OPPEN=allt`); boten och önskemålslådan kräver lösenordet (ordet skrivs inte ut här: det är `DEALER_LOSEN` i Vercel-projektet).
   `/casino` leder till spelet ensamt (eget lösenord, ordet står inte i repot), `/trailer` till spelet med filmen före.
-  Publicera: `DEALER_OPPEN_PROV=allt DEALER_LOSEN_PROV=john DEALER_LOSEN_SPEL_PROV=<spelets ord> node
+  Publicera: `DEALER_OPPEN_PROV=allt DEALER_LOSEN_PROV=<ordet> DEALER_LOSEN_SPEL_PROV=<spelets ord> node
   tools/publish-studio.ts --kor` (utan `DEALER_OPPEN_PROV=allt` väntar kontrollen sig lösenordssidan och går röd; DRIFT,
   "Den låsta kopian på nätet"). Sedan frågas kopian som en ny besökare med `kopian-forval.mjs`,
   `kopian-forsta-dealer.mjs`, `kopian-casino.mjs` och `spar-pa-kopian.mjs` i `D:/dealer-scratch/tmp/huvudagent11/look/`.
