@@ -3,6 +3,31 @@
   "about": "What waits for Jakob: one entry per question (kind beslut) or per thing only he can do (kind gora), shown as one card each in the studio's view Beslut (/studio/beslut/, lab only). The list's order is the order of urgency, the most urgent first. An entry: id, kind, question (at most 14 words), leads (one sentence: what his answer leads to), optionally proof (a folder under assets/proofs/) with file, page (an address in the lab, e.g. game.html?table=casino), link (an address outside, shown as text to open on his phone) and cost (free text), chips (two to four {value, label} for beslut, one to four for gora), asked (date), from (the lane that asks) and answer. An agent adds an entry with answer null, changes only its own entries, reads the file right before editing it and keeps the form JSON.stringify gives with two spaces; it closes an entry by taking it out once his answer is carried out, and the commit says what he answered. Only the page writes answer ({value, note, at}, tools/decision-store.ts); no agent sets, changes or clears an answer he has given. The strict reader is tools/decision-register.ts. The repo is public: no secret, personal detail or path of this machine.",
   "decisions": [
     {
+      "id": "lapparna-annan-modell",
+      "kind": "beslut",
+      "question": "Läpparna: är den andra modellen (till höger) rätt väg?",
+      "leads": "Vid ja görs en replik i full storlek som går att lägga in i spelet, och du ser den där innan fler beställs.",
+      "proof": "paow-annan-modell",
+      "chips": [
+        {
+          "value": "ja",
+          "label": "Ja, den vägen"
+        },
+        {
+          "value": "nej",
+          "label": "Nej"
+        },
+        {
+          "value": "senare",
+          "label": "Senare"
+        }
+      ],
+      "asked": "2026-11-17",
+      "from": "talbanan",
+      "cost": "provet kostade 180 krediter; alla 25 repliker cirka 3 500 (720p) till 8 000 (1080p)",
+      "answer": null
+    },
+    {
       "id": "rollblad-trailern-2",
       "kind": "beslut",
       "question": "Nytt rollblad för trailern: är hon rätt nu?",
@@ -76,59 +101,6 @@
         "value": "ja",
         "note": "Vi skulle kunna ha kvar nuvarande filmer, men sedan starta upp nya filmer från \"ankare 2.2 där hon har aningen indre händer och även taueringarna. Då på samma sätt kanske vi kan få till att hon deaar snabbare, men också får till rätt beställningsmetod för hur vis ska kunna beställa klipp från runway.. För detta krävs att vi talar om hur vi faktist beställer av \"runway\" och om detta görs via \"\"Beställ\" eller om det är du som skickar",
         "at": "2026-11-17T16:56:36.292Z"
-      }
-    },
-    {
-      "id": "lapparna-nasta-steg",
-      "kind": "beslut",
-      "question": "Läpparna: räcker den bredare munnen i filmen till höger?",
-      "leads": "Vid ja görs två repliker till på samma sätt innan något byts i spelet; vid nej prövas din leendefilm-idé.",
-      "proof": "paow-baslinje",
-      "chips": [
-        {
-          "value": "ja",
-          "label": "Ja, den högra"
-        },
-        {
-          "value": "mer",
-          "label": "Mer av munnen"
-        },
-        {
-          "value": "nej",
-          "label": "Nej"
-        }
-      ],
-      "asked": "2026-11-17",
-      "from": "huvudagenten",
-      "answer": {
-        "value": "mer",
-        "note": "Nej. Hennes mungipor är helt stela vid sidan",
-        "at": "2026-11-17T17:03:41.785Z"
-      }
-    },
-    {
-      "id": "monaco-ett-varv-till",
-      "kind": "beslut",
-      "question": "Monacos bakgrund: bra som den är, eller ett varv till?",
-      "leads": "Ett varv till ger en långsammare gång, och kyparen står kvar till vänster.",
-      "proof": "monaco-liv-2",
-      "chips": [
-        {
-          "value": "bra",
-          "label": "Bra som den är"
-        },
-        {
-          "value": "ett-varv-till",
-          "label": "Ett varv till"
-        }
-      ],
-      "asked": "2026-11-17",
-      "from": "huvudagenten",
-      "cost": "150–200 krediter för ett varv till",
-      "answer": {
-        "value": "bra",
-        "note": "",
-        "at": "2026-11-17T16:58:35.109Z"
       }
     },
     {
