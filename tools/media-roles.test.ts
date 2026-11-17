@@ -56,9 +56,10 @@ test('the checkout: the register holds, and every first and last picture of the 
  assert.equal(pamela.entries.filter((e: {role: string}) => e.role === 'ingangsbild').length, 0);
  for (const role of ['ankare-1', 'ankare-2.1', 'ankare-2.2']) assert.equal(pamela.entries.filter((e: {role: string; state?: string}) => e.role === role && e.state === 'gäller').length, 1, role);
  assert.equal(pamela.entries.find((e: {id: string}) => e.id === 'pamela-vila').frame, 0);
- // Paow's two keystones are the copied ones, and her films lie outside the bank, counted per ledger.
+ // Paow's two keystones are the ones with tattooed hands (his word 2026-11-18), one sitting and one standing, and her
+ // films lie outside the bank, counted per ledger.
  const paow = register.dealers.paow;
- assert.deepEqual(paow.entries.filter((e: {role: string; state?: string}) => e.role === 'keystone' && e.state === 'gäller').map((e: {path: string}) => e.path), ['assets/keystones/paow-staende/keystone.png', 'assets/keystones/paow-sittande/keystone.png']);
+ assert.deepEqual(paow.entries.filter((e: {role: string; state?: string}) => e.role === 'keystone' && e.state === 'gäller').map((e: {path: string}) => e.path), ['assets/keystones/paow-sittande-tatuerad/keystone.png', 'assets/keystones/paow-staende-tatuerad/keystone.png']);
  assert.ok(paow.outside.ledgers.length >= 1 && paow.outside.ledgers.every((l: {file: string; films: number; usable: number}) => /^bestallningar-[a-z0-9]+\.json$/.test(l.file) && l.usable <= l.films));
  for (const d of Object.values(register.dealers) as {entries: {role: string}[]}[]) for (const e of d.entries) assert.ok(ROLES.includes(e.role as never));
 });

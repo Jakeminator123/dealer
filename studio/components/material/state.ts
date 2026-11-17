@@ -2,7 +2,7 @@
 // position and card become ersatt) or Underkänn (kandidat → ersatt); a picture that holds can also be set aside
 // (gäller → ersatt). Pure, shared by the page (which names what will be replaced before anything is written) and the lab
 // server (tools/media-roles.ts setState, PUT /api/media/<id>/state in tools/order-routes.ts). Tests: tools/order-routes.test.ts.
-import { kindOfPath, type Entry, type State } from "../../lib/media.ts";
+import { isStanding, kindOfPath, type Entry, type State } from "../../lib/media.ts";
 
 export const CHANGES: Readonly<Record<State, readonly State[]>> = { kandidat: ["gäller", "ersatt"], "gäller": ["ersatt"], ersatt: [] };
 export const allowed = (from: State | undefined, to: State): boolean => !!from && CHANGES[from].includes(to);
@@ -14,10 +14,13 @@ export const isDecidable = (e: Pick<Entry, "role" | "path" | "frame">): boolean 
 /**
  * The pictures that become ersatt when `entry` is approved: same role, same node, same card, and either still a candidate
  * or the one that held until now. Only one picture holds per role, node and card: an order finds its anchor that way, and a
- * repaired copy approved after its original must take the original's place (2026-11-13).
+ * repaired copy approved after its original must take the original's place (2026-11-13). A keystone is also kept apart by
+ * its posture: a dealer has a standing and a sitting one, and approving the one leaves the other alone (2026-11-18, when
+ * approving Paow's sitting keystone set her standing ones aside).
  */
-export function replacedBy<T extends Pick<Entry, "id" | "role" | "node" | "card" | "state">>(entries: readonly T[], entry: T): T[] {
-  return entries.filter((e) => e.id !== entry.id && e.role === entry.role && e.node === entry.node && e.card === entry.card && (e.state === "kandidat" || e.state === "gäller"));
+export function replacedBy<T extends Pick<Entry, "id" | "role" | "node" | "card" | "state"> & { name?: string }>(entries: readonly T[], entry: T): T[] {
+  const samePosture = (e: T) => entry.role !== "keystone" || isStanding(e) === isStanding(entry);
+  return entries.filter((e) => e.id !== entry.id && e.role === entry.role && e.node === entry.node && e.card === entry.card && samePosture(e) && (e.state === "kandidat" || e.state === "gäller"));
 }
 
 /** "Jakob 2026-11-12 22:40: kandidat → gäller (Material)". */

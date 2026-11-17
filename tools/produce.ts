@@ -29,7 +29,7 @@ import { methodFor, readMethods, recipeWords, type Method, type MethodRegister }
 import { bankSummary, hubAnchor, playing, type Hubs, type Summary } from '../studio/lib/edge-stats.ts';
 import { hubDeals } from '../src/game-director.ts';
 import { VERDICT_LABEL, verdictOf, verdictPhrase, type Verdict } from '../studio/lib/verdict.ts';
-import type { Entry } from '../studio/lib/media.ts';
+import { isStanding, type Entry } from '../studio/lib/media.ts';
 import { mediaRoles } from './media-roles.ts';
 import { orderStore, type NewOrder } from './order-store.ts';
 import { StoreError } from './placement-store.ts';
@@ -235,7 +235,7 @@ export function productionList(input: ProductionInput): Production {
       if (def.start === 'LAND' && !landingHolding(entries, at!.target)) needs.push(`landningsbild på ${cardWords(at!.target!)}`);
     } else if (edge.kind === 'ARRIVE' || edge.kind === 'LEAVE') {
       needs.push('en bild av bordet utan henne (ingen roll i Material än)');
-      const standing = entries.some((e) => e.role === 'keystone' && e.state === 'gäller' && /st[aå]ende/i.test(`${e.id} ${e.name}`));
+      const standing = entries.some((e) => e.role === 'keystone' && e.state === 'gäller' && isStanding(e));
       if (!standing) needs.push('en stående bild av henne');
     }
     // A reference film where the method asks for one: a straight-approved deal to the same seat; without one, the model the

@@ -303,11 +303,12 @@ export function mediaRoles(root: string) {
  /**
   * Jakob's verdict on a picture from the view Material (PUT /api/media/<id>/state, tools/order-routes.ts): only
   * kandidat → gäller, kandidat → ersatt and gäller → ersatt, against the register's revision as read. Approving a
-  * candidate sets the other candidates of the same role, node and card to ersatt. Each changed entry gets a line of who and
-  * when (stateBy). The register is rewritten like add() does it.
+  * candidate sets the other candidates of the same role, node and card to ersatt (a keystone also of the same posture). Each
+  * changed entry gets a line of who and when (stateBy), and where: Material, or what the caller names when his word came
+  * another way (`where`, for example "hans besked i chatten"). The register is rewritten like add() does it.
   */
- async function setState(input: {id: string; state: unknown; expected: string | undefined; who?: string; now?: Date}) {
-  const {id, expected} = input, to = input.state, now = input.now ?? new Date(), who = input.who ?? 'Jakob';
+ async function setState(input: {id: string; state: unknown; expected: string | undefined; who?: string; where?: string; now?: Date}) {
+  const {id, expected} = input, to = input.state, now = input.now ?? new Date(), who = input.who ?? 'Jakob', where = input.where ?? 'Material';
   if (to !== 'gäller' && to !== 'ersatt') throw new StoreError(400, 'Tillståndet ska vara gäller eller ersatt.');
   const task = queue.then(async () => {
    const {text, register, errors} = await readRegister();
@@ -320,8 +321,8 @@ export function mediaRoles(root: string) {
    if (!isDecidable(entry)) throw new StoreError(400, 'Bara en bild (inte en hel film) kan godkännas här.');
    if (!allowed(entry.state, to)) throw new StoreError(409, `${entry.name} är ${entry.state ?? 'utan tillstånd'}: bara kandidat → gäller, kandidat → ersatt och gäller → ersatt.`);
    const replaced = to === 'gäller' ? replacedBy(dealer.entries, entry) : [];
-   for (const other of replaced) Object.assign(other, {state: 'ersatt', stateBy: stateLine(who, now, other.state ?? 'kandidat', 'ersatt', `${entry.name} godkändes i Material`)});
-   Object.assign(entry, {state: to, stateBy: stateLine(who, now, entry.state!, to)});
+   for (const other of replaced) Object.assign(other, {state: 'ersatt', stateBy: stateLine(who, now, other.state ?? 'kandidat', 'ersatt', `${entry.name} godkändes${where === 'Material' ? ' i Material' : `, ${where}`}`)});
+   Object.assign(entry, {state: to, stateBy: stateLine(who, now, entry.state!, to, where)});
    const out = JSON.stringify(next, null, 2) + '\n';
    if (validateRegister(JSON.parse(out)).errors.length) throw new StoreError(400, 'Ändringen gick inte att föra in i registret.');
    await mkdir(path.join(root, '.runtime'), {recursive: true});

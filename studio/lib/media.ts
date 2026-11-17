@@ -70,6 +70,9 @@ export type Entry = {
   link?: string;
 };
 
+/** A dealer has two keystones, one standing and one sitting: which of them an entry is stands in its id or its name. */
+export const isStanding = (e: { id: string; name?: string }): boolean => /st[aå]ende/i.test(`${e.id} ${e.name ?? ""}`);
+
 /** One ledger of a dealer's work folder: how many films it made and how many were judged usable. */
 export type Ledger = { file: string; films: number; usable: number; note: string };
 /** Films that lie outside the bank, in a work folder: counted per ledger. */

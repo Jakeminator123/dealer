@@ -205,6 +205,9 @@ test('Material: Godkänn replaces the other candidates of the same role, Underk�
   assert.equal(allowed('gäller', 'ersatt') && !allowed('ersatt', 'gäller') && !allowed(undefined, 'gäller'), true);
   assert.equal(isDecidable({ role: 'ankare-1', path: 'assets/x/source.mp4', frame: 3 }), true);
   assert.equal(replacedBy([{ id: 'a', role: 'ankare-1', state: 'kandidat' }, { id: 'b', role: 'ankare-1', state: 'kandidat' }, { id: 'c', role: 'ankare-1', state: 'gäller' }], { id: 'a', role: 'ankare-1', state: 'kandidat' }).map((e) => e.id).join(), 'b,c', 'the one that held gives way too: one picture holds per role');
+  const keystones = [{ id: 'paow-staende', role: 'keystone', name: 'Stående A', state: 'gäller' }, { id: 'paow-sittande', role: 'keystone', name: 'Sittande A', state: 'gäller' }, { id: 'paow-staende-tatuerad', role: 'keystone', name: 'Stående, tatuerade händer', state: 'kandidat' }, { id: 'paow-sittande-tatuerad', role: 'keystone', name: 'Sittande, tatuerade händer', state: 'kandidat' }] as const;
+  assert.equal(replacedBy(keystones, keystones[3]).map((e) => e.id).join(), 'paow-sittande', 'a keystone gives way only to one of its own posture: the standing ones are left alone');
+  assert.equal(replacedBy(keystones, keystones[2]).map((e) => e.id).join(), 'paow-staende');
 });
 
 test('a draft that waits fetches its picture once the anchor holds: with refresh, or at once on Godkänn in Material', async (t) => {

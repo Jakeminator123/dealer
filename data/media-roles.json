@@ -1410,48 +1410,52 @@
           "role": "keystone",
           "name": "Stående A",
           "path": "assets/keystones/paow-staende/keystone.png",
-          "state": "gäller",
+          "state": "ersatt",
           "note": "Jakobs val 2026-11-12: de yngre och nättare bilderna. 4K på vitt. Inte granskad i full storlek.",
           "source": {
             "from": "Nano Banana Pro 4K, omgång b18 (D:/dealer-scratch/tmp/paow/filmer/b18/bas-helkropp-1.png)",
             "when": "2026-11-12"
-          }
+          },
+          "stateBy": "Jakob 2026-11-18 00:24: gäller → ersatt (Stående, tatuerade händer godkändes, hans besked till huvudagenten i chatten natten till 2026-11-18, \"vi också sätter hennes tatuerade keystone/som förstahandsval\"; infört av huvudagenten)"
         },
         {
           "id": "paow-sittande",
           "role": "keystone",
           "name": "Sittande A",
           "path": "assets/keystones/paow-sittande/keystone.png",
-          "state": "gäller",
+          "state": "ersatt",
           "note": "Samma inramning som ankare 1. Förlagan för nya ankare när grundstandarden är satt. Inte granskad i full storlek.",
           "source": {
             "from": "Nano Banana Pro 4K, omgång b18 (D:/dealer-scratch/tmp/paow/filmer/b18/bas-sittande-2.png)",
             "when": "2026-11-12"
-          }
+          },
+          "stateBy": "Jakob 2026-11-18 00:24: gäller → ersatt (Sittande, tatuerade händer godkändes, hans besked till huvudagenten i chatten natten till 2026-11-18, \"vi också sätter hennes tatuerade keystone/som förstahandsval\"; infört av huvudagenten)"
         },
         {
           "id": "paow-sittande-tatuerad",
           "role": "keystone",
           "name": "Sittande, tatuerade händer",
           "path": "assets/keystones/paow-sittande-tatuerad/keystone.png",
-          "state": "kandidat",
+          "state": "gäller",
           "note": "Sittande A med tatuerade händer, 10 % mindre, och utan underarmarnas skuggor på det vita. Jakob 2026-11-17 i Beslut: ja. Oberoende granskad i full storlek: 4/5. Utanför händerna och bordet nära henne är den Sittande A bildpunkt för bildpunkt.",
           "source": {
             "from": "paow-sittande med tatuerade och 10 % mindre händer (Nano Banana Pro 4K för bläcket, storleken och skuggorna lokalt; kvittot ligger bredvid bilden)",
             "when": "2026-11-17"
-          }
+          },
+          "stateBy": "Jakob 2026-11-18 00:24: kandidat → gäller (hans besked till huvudagenten i chatten natten till 2026-11-18, \"vi också sätter hennes tatuerade keystone/som förstahandsval\"; infört av huvudagenten)"
         },
         {
           "id": "paow-staende-tatuerad",
           "role": "keystone",
           "name": "Stående, tatuerade händer",
           "path": "assets/keystones/paow-staende-tatuerad/keystone.png",
-          "state": "kandidat",
+          "state": "gäller",
           "note": "Stående A med tatuerade händer, 10 % mindre. Jakob 2026-11-17 i Beslut: ja. Oberoende granskad i full storlek: 4,5/5. Utanför händerna är den Stående A bildpunkt för bildpunkt.",
           "source": {
             "from": "paow-staende med tatuerade och 10 % mindre händer (Nano Banana Pro 4K för bläcket, storleken och skuggorna lokalt; kvittot ligger bredvid bilden)",
             "when": "2026-11-17"
-          }
+          },
+          "stateBy": "Jakob 2026-11-18 00:24: kandidat → gäller (hans besked till huvudagenten i chatten natten till 2026-11-18, \"vi också sätter hennes tatuerade keystone/som förstahandsval\"; infört av huvudagenten)"
         },
         {
           "id": "paow-staende-b",
