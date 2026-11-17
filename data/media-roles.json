@@ -3807,6 +3807,13 @@
           "note": "Scenbanans prov 2026-11-14 efter Jakobs ord om lite grönt i hennes hår: Ren kant letar nu också fyra bildpunkter ut efter skärmens färg, så att den olivgröna linjen innanför hårets kontur tar hårets egen färg. Före och efter i ljust och mörkt rum; 80–94 % färre gröntonade punkter i konturen på tre rutor. En liten fläck vid hårtopparna intill halsen är kvar."
         },
         {
+          "id": "paow-prov-bestallning-slap-p4",
+          "role": "prov",
+          "name": "Jakobs beställning: släp till plats 4",
+          "proof": "bestallning-slap-p4",
+          "note": "Jakobs egen beställning i Beställ 2026-11-17 (paow-giv-2-2-p4-02, WAN 3, två tagningar, 240 krediter): släp från ankare 2.2 till plats 4 och tillbaka. Ingen av tagningarna gör vändningen rätt: den ena vänder men visar ett tryckt kort, den andra byter färg utan att vändas. Filmerna och ett bildark per tagning."
+        },
+        {
           "id": "paow-prov-jamnat-ljus",
           "role": "prov",
           "name": "Jämnat ljus mellan filmer, och ren kant runt håret",
