@@ -68,6 +68,12 @@ Vilken hand som delar väljs per order: vänster, höger eller handbyte (`HAND_C
     skrivit var sin överlämning som en ny session börjar från: `D:/dealer-scratch/tmp/tal/LASMIG-OVERLAMNING-2026-11-17.md`
     och `D:/dealer-scratch/tmp/dealer-1e/LASMIG-OVERLAMNING-2026-11-17.md`. Också huvudagenten bytte chatt samma kväll;
     adressen på raden ovan är den nya chattens.
+- **En ny session för 3D-visualiseringen** startas av Jakob 2026-11-17 kväll ("en till agent som arbetar parallellt med
+  dig och som ska förbättra 3D-visualiseringen av det som idag är 2D"); den skriver sin adress och sina filer här genom
+  huvudagenten. Medan labbet byggs om (Börja här) gäller för varje ny session: arbeta i ett eget arbetsträd på en kort
+  gren (`git worktree add D:/dealer-scratch/tmp/<bana>/trad -b <gren> main`), skriv först till huvudagenten vilka filer
+  du tar, rör inget under `studio/` utan besked (fem underagenter skriver där), starta ingen egen server och lämna
+  grenen till huvudagenten, som slår ihop den.
 - **Jakobs egna:** planen `placements/default.json` (Arbetsyta) och hans domar i `motions/` (`review`), som skrivs från
   Granska och aldrig skrivs över av ett verktyg. En dom som getts åt honom (`node tools/review-put.ts`) är aldrig hans,
   väntar inte i hans kö och ger vika för hans.
@@ -105,17 +111,23 @@ skrivs på skrivbordet när allt har ett utfall. Här står bara det som inte ä
 
 ## Nästa steg
 
-**Börja här (läget 2026-11-17 kl. 22.10; huvudagenten bytte chatt kl. 21.45).** Två underagenter till huvudagenten
-arbetar på Jakobs ord från kl. 21.46 (Jakobs besked, "Ett labb"), och deras arbete är inte incheckat förrän de har
-rapporterat: (a) **vyn Bordet, första versionen**, byggs i huvudträdet (ny adress `/studio/bordet/` bredvid Placering,
-Beställ och Scen, som står kvar tills han har sett den; arbetsmapp `D:/dealer-scratch/tmp/bordet/`); (b) **gamla labbet
-tas bort** på grenen `gamla-labbet-bort` i arbetsträdet `D:/dealer-scratch/tmp/gamla-labbet-bort/trad`, som
-huvudagenten slår ihop i `main` när (a) har lämnat ett helt steg (sedan tas trädet och grenen bort). Bryts chatten:
-läs `git status` i huvudträdet och `git log main..gamla-labbet-bort`, kör testerna och avgör vad som är helt. Kopian på
-nätet är kvar på `aee87ca` (inget publicerat i kväll: en publicering bär ordlistan, Placering och Beställ som de är nu
-och botens kunskap utan den gamla checklistan; fråga sedan kopian som en ny besökare). Saldot hos Runway var 7 430
-kl. 21.40; taket per beställning är 2 000. `KLAR.txt` är inte skriven. Filmerna (punkt 1) är huvudagentens eget nästa
-steg medan labbet byggs. I den här ordningen:
+**Börja här (läget 2026-11-17 kl. 22.40; huvudagenten bytte chatt kl. 21.45).** Fem underagenter till huvudagenten
+bygger om labbet på Jakobs ord från kl. 21.46 och 22.20 (Jakobs besked, "Ett labb"). Inget av det är incheckat i
+`main` förrän de har rapporterat och huvudagenten har sett det:
+
+- (a) **vyn Bordet, första versionen**, byggs i huvudträdet (ny adress `/studio/bordet/` bredvid Placering, Beställ och
+  Scen, som står kvar tills han har sett den; arbetsmapp `D:/dealer-scratch/tmp/bordet/`);
+- fyra i egna arbetsträd på korta grenar, `D:/dealer-scratch/tmp/<gren>/trad`: (b) `gamla-labbet-bort` (gamla labbet tas
+  bort), (c) `karta-primara` (Karta och Primära blir en sida), (d) `granska-prov` (Granska och Prov blir en sida) och
+  (e) `lipsync-vy` (Lipsync-vyn och `docs/TAL.md`: var munnen görs och vad som gäller per dealer).
+
+Huvudagenten slår ihop grenarna i `main` en i taget, bygger studion, ser på sidorna, ändrar menyn
+(`studio/components/shell/Rail.tsx`, som ingen av grenarna rör utom (b):s länk till gamla labbet) och tar bort träden
+och grenarna. Bryts chatten: `git worktree list`, `git log main..<gren>` och `git status` i huvudträdet säger vad som
+finns; kör testerna och avgör vad som är helt. Kopian på nätet är kvar på `aee87ca` (inget publicerat i kväll: en
+publicering bär ordlistan, Placering och Beställ som de är nu och botens kunskap utan den gamla checklistan; fråga
+sedan kopian som en ny besökare). Saldot hos Runway var 7 430 kl. 21.40; taket per beställning är 2 000. `KLAR.txt` är
+inte skriven. Filmerna (punkt 1) är huvudagentens eget nästa steg när labbets grenar är inne. I den här ordningen:
 
 1. **Filmerna först** (hans ord). Metoden som håller står i handboken (`tools/film-prompting.md` §5, tabellen): giv bara
    dit på Kling 4 med första och sista bild och Pamelas giv till samma plats som referensfilm. Gör den till nästa mall
@@ -307,7 +319,22 @@ Ett besked per ämne, med det nyaste ordet och dess datum. Ett besked han har er
   bekräftat: en vy (Bordet) med en ram, där bilden är antingen kortplanen eller den levande 3D-scenen och allt ändras
   i högerspalten; beställningen är en lista av filmer i samma vy; gamla labbet tas bort nu. Skattat, mäts av bygget:
   skons kort är för stort redan i ankarna (cirka 111 bildpunkter långt, mot 55 för dealerns kort på ungefär samma
-  djup), och rättas då först med nya ankare, i samma omgång som de tatuerade händerna.
+  djup), och rättas då först med nya ankare, i samma omgång som de tatuerade händerna. Kl. 22.20, om menyn: "Inte 3D
+  leder bara till greenscreenen, så den borde heta något annat"; "Spela i `casino` bör rimligtvis vara samma som i
+  `casino`, alltså som det är i `runtime`"; "Den vänstra knappen där det står beställ ska också ingå i den
+  huvudsakliga menyn som nu till stor del handlar om knappen scen. Detsamma gäller knappen placering."; "Karta och
+  primära ska bli en och samma typ av sida, så att man kan följa nodträdet och se vilka som är primära och sekundära
+  klipp och hur de sekundära klippen används […] vi ska högst ha några stycken videor för respektive"; "prov och
+  granska […] slås ihop till en knapp"; den stora scenen "ska ha en annan knapp på sin sida där det står 3D, inte 3D,
+  spela i `casino` och så vidare. Den knappen ska heta efterarbete, där till exempel kort eller marker kan ligga. Här
+  kan man efterarbeta utifrån videon och efter att man lagt på bakgrund och bord kan man lägga på overlay av hur
+  korten och markerna ska se ut."; om läppsynken att det nya sättet (på hans dator eller på hans RunPod) "ska
+  dokumenteras så att vi vid beställning av nya videor eller arbete med `lipsync` förstår och kan ställa in vad som
+  stämmer och inte stämmer för just den dealern", under Lipsync i menyn; om rundan: "Varför finns "Runda" ens som
+  förval med 3 alternativ, varför ska mkan tex inte få lägga in egna vägar utifrån vilka noder som finns"; och "var
+  aggressiv med att rensa upp och fixa i ordning nu". **Menyn som byggs** (huvudagentens läsning): Bordet (lägena
+  Kortplan, Beställ, Scen, Råfilm och Efterarbete; Spela i Casino öppnar det Casino öppnar) · Karta (med Primära) ·
+  Granska (med Prov) · Material · Lipsync · Casino, med Beslut och Ordlista i foten; rundan byggs av de noder som finns.
 - **Kortbanan ska stämma med filmerna** (2026-11-17, "VIKTIGT"): det som används som instruktion eller material för
   kortets vändning ("kortbana" i Rörelse) "måste stämma med hur rörelserna är i antingen filmen om det görs postumt
   eller som det är tänkt att vara utifrån om dealern släpar eller nyper kortet och sedan öppnar upp det till själva
