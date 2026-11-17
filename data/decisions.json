@@ -25,7 +25,11 @@
       ],
       "asked": "2026-11-17",
       "from": "talsessionen",
-      "answer": null
+      "answer": {
+        "value": "ja",
+        "note": "",
+        "at": "2026-11-17T20:38:24.205Z"
+      }
     },
     {
       "id": "ankare-1-tatuerade-hander",
@@ -50,7 +54,11 @@
       ],
       "asked": "2026-11-17",
       "from": "trailersessionen",
-      "answer": null
+      "answer": {
+        "value": "andra",
+        "note": "Ja. Mne vi kanske kan göra om en \"A1 till A2.2 och sedan framgent de filmer som görs, tillsi får till hur vi ska göra filmerna, faktist , så kan vi göra med tatueringar. men låt nuvarande vara kvar så kan vi fylla i dem när vi får till resten",
+        "at": "2026-11-17T20:38:04.949Z"
+      }
     },
     {
       "id": "givprovet-forlagefilm",
