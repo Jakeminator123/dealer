@@ -25,13 +25,17 @@ export type Setting = {group: string; name: string; value: string; owner: string
 export type Runs = {
   today: {where: string; gpu: string; speed: string; realtime: boolean; source: string};
   runpod: {measured: string; pricePerHour: string; notBuilt: string[]; source: string};
+  /** The runner built from MuseTalk's open source, where there is one: what it is, what was measured, what is not built. */
+  ownRunner?: {what: string; measured: string; notBuilt: string[]; source: string};
 };
+/** One part the runner is built from, and whether its licence allows commercial use, in the speech lane's words. */
+export type Licence = {what: string; licence: string; commercial: string; where: string};
 export type ProofFact = {id: string; date: string; what: string; ownerSaid: string; outcome: string};
 export type OpenPoint = {what: string; blocks: string};
 export type Lipsync = {
   schemaVersion: 1; about: string; updated: string;
   baseImages: BaseImage[]; notUsedAsBase: NotUsed[]; lipsMeasured: LipsMeasured; steps: Step[];
-  settings: Setting[]; lockNote: string; runs: Runs; proofs: ProofFact[]; open: OpenPoint[];
+  settings: Setting[]; lockNote: string; runs: Runs; proofs: ProofFact[]; open: OpenPoint[]; licences?: Licence[];
 };
 
 /** A facts file that cannot be used: every problem, and the first few in the message. */
@@ -94,7 +98,7 @@ export function readLipsync(json: unknown): Lipsync {
   const problems: string[] = [];
   if (!object(json)) throw new LipsyncError(['filen ska vara ett objekt']);
   const {text, shape, list, day, flag, measure} = reader(problems);
-  shape('filen', json, TOP);
+  shape('filen', json, TOP, ['licences']);
   if (json.schemaVersion !== 1) problems.push('schemaVersion ska vara 1');
 
   const baseImages = list('baseImages', json.baseImages, (at, v): BaseImage | null => {
@@ -145,7 +149,7 @@ export function readLipsync(json: unknown): Lipsync {
   const lockNote = text('lockNote', json.lockNote);
 
   let runs: Runs = {today: {where: '', gpu: '', speed: '', realtime: false, source: ''}, runpod: {measured: '', pricePerHour: '', notBuilt: [], source: ''}};
-  if (shape('runs', json.runs, ['today', 'runpod'])) {
+  if (shape('runs', json.runs, ['today', 'runpod'], ['ownRunner'])) {
     const r = json.runs as Record<string, unknown>;
     if (shape('runs.today', r.today, ['where', 'gpu', 'speed', 'realtime', 'source'])) {
       const t = r.today as Record<string, unknown>;
@@ -156,6 +160,11 @@ export function readLipsync(json: unknown): Lipsync {
       const p = r.runpod as Record<string, unknown>;
       runs.runpod = {measured: text('runs.runpod.measured', p.measured), pricePerHour: text('runs.runpod.pricePerHour', p.pricePerHour),
         notBuilt: list('runs.runpod.notBuilt', p.notBuilt, (at, v) => text(at, v), 0), source: text('runs.runpod.source', p.source)};
+    }
+    if ('ownRunner' in r && shape('runs.ownRunner', r.ownRunner, ['what', 'measured', 'notBuilt', 'source'])) {
+      const o = r.ownRunner as Record<string, unknown>;
+      runs.ownRunner = {what: text('runs.ownRunner.what', o.what, LIMIT.about), measured: text('runs.ownRunner.measured', o.measured, LIMIT.about),
+        notBuilt: list('runs.ownRunner.notBuilt', o.notBuilt, (at, v) => text(at, v), 0), source: text('runs.ownRunner.source', o.source)};
     }
   }
 
@@ -169,9 +178,13 @@ export function readLipsync(json: unknown): Lipsync {
   const open = list('open', json.open, (at, v): OpenPoint | null =>
     shape(at, v, ['what', 'blocks']) ? {what: text(`${at}.what`, v.what), blocks: text(`${at}.blocks`, v.blocks)} : null, 0);
 
+  const licences = 'licences' in json ? list('licences', json.licences, (at, v): Licence | null =>
+    shape(at, v, ['what', 'licence', 'commercial', 'where']) ? {what: text(`${at}.what`, v.what), licence: text(`${at}.licence`, v.licence, LIMIT.short),
+      commercial: text(`${at}.commercial`, v.commercial), where: text(`${at}.where`, v.where)} : null, 0) : null;
+
   const about = text('about', json.about, LIMIT.about), updated = day('updated', json.updated);
   if (problems.length) throw new LipsyncError(problems);
-  return {schemaVersion: 1, about, updated, baseImages, notUsedAsBase, lipsMeasured, steps, settings, lockNote, runs, proofs, open};
+  return {schemaVersion: 1, about, updated, baseImages, notUsedAsBase, lipsMeasured, steps, settings, lockNote, runs, proofs, open, ...(licences ? {licences} : {})};
 }
 
 /**

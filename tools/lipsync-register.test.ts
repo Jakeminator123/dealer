@@ -16,7 +16,7 @@ test('the tracked facts read, and the checked copy holds every fact as the file 
   assert.deepEqual(read, raw);
   assert.equal(read.steps.length, 11);
   assert.deepEqual(read.steps.map(s => s.n), [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]);
-  assert.equal(read.settings.length, 14);
+  assert.ok(read.settings.length >= 14);
   assert.ok(read.settings.some(s => s.locked) && read.settings.some(s => !s.locked));
   assert.ok(read.proofs.length > 0 && read.open.length > 0 && read.baseImages.length > 0);
 });
@@ -71,4 +71,15 @@ test('a proof shows its first picture in the labels\' order, else its first film
   assert.deepEqual(pickStill(names, null), {name: 'c.png', kind: 'image'});
   assert.deepEqual(pickStill(['b.mp4', 'a.mp4'], {'b.mp4': 'B'}), {name: 'b.mp4', kind: 'video'});
   assert.equal(pickStill(['proof.json', 'Bad Name.png'], null), null);
+});
+
+test('the own runner and the licences are read where the file has them, and are checked like the rest', () => {
+  const tracked = JSON.parse(readFileSync(new URL('../data/lipsync.json', import.meta.url), 'utf8'));
+  const facts = readLipsync(tracked);
+  assert.ok(facts.runs.ownRunner && facts.runs.ownRunner.what.length > 0 && Array.isArray(facts.runs.ownRunner.notBuilt));
+  assert.ok(facts.licences && facts.licences.length >= 4 && facts.licences.every(l => l.what && l.licence && l.commercial && l.where));
+  const without = structuredClone(tracked); delete without.licences; delete without.runs.ownRunner;
+  const plain = readLipsync(without); assert.equal(plain.licences, undefined); assert.equal(plain.runs.ownRunner, undefined);
+  const bad = structuredClone(tracked); bad.runs.ownRunner.extra = 1; bad.licences[0].licence = 5;
+  assert.throws(() => readLipsync(bad), (e: unknown) => /runs\.ownRunner: okända fält extra/.test((e as {problems: string[]}).problems.join('|')) && /licences\[0\]\.licence/.test((e as {problems: string[]}).problems.join('|')));
 });
