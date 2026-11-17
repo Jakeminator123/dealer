@@ -115,7 +115,7 @@ skrivs på skrivbordet när allt har ett utfall. Här står bara det som inte ä
 
 ## Nästa steg
 
-**Börja här (läget 2026-11-17 kl. 23.30; huvudagenten bytte chatt kl. 21.45).** Labbet byggs om på Jakobs ord från
+**Börja här (läget 2026-11-17 kl. 23.40; huvudagenten bytte chatt kl. 21.45).** Labbet byggs om på Jakobs ord från
 kl. 21.46 och 21.58 (Jakobs besked, "Ett labb"), av underagenter till huvudagenten:
 
 - **Inne i `main` och sett i headless Chrome:** vyn **Bordet**, första versionen (`82258f3`: `/studio/bordet/` med
@@ -177,14 +177,29 @@ kl. 21.46 och 21.58 (Jakobs besked, "Ett labb"), av underagenter till huvudagent
   (`*\OpenAI\Codex\bin\*\rg.exe`) läses som en sökväg till varje sessionsmapp; 23 talfilmers `motions/` pekar på
   kvitton som flyttats till `D:/dealer-scratch/tmp/tal/overtaliga/`; flera av Paows källor i `data/media-roles.json`
   ligger på D: i stället för i `assets/`.
-- **Pågår hos en underagent: vad i `assets/` och `output/` som används** (hans ord kl. 23.11 om en obedömd film utanför
-  banken: "Varför finns det här om det inte används överhuvudtaget?", "saker vi kanske ska arkivera eller radera"): ett
-  verktyg `tools/media-audit.ts` som för varje mapp säger vad den är och vad som använder den (spelas, visas, referens,
-  bara registrerad, okänd), och en arkivplan med skript för det som bara är registrerat eller okänt (till
-  `D:/dealer-archive/dealer-ej-anvant-2026-11-17/`, med registrens poster på grenen `media-revision`). Inget flyttas
-  förrän huvudagenten har läst planen. `output/` är bara den återskapade V6 (130 MB), som är hans referens och läses av
-  `tools/render.ts`, `tools/verify.ts` och labbet. Om kopian på nätet: "Allt på nätet är sekundärt"; inget arbete läggs
-  där, och `cloud/` står orörd tills han säger att den ska bort.
+- **Det oanvända i `assets/` är arkiverat** (`53dc116`, kl. 23.34): `node tools/media-audit.ts` säger för varje mapp i
+  `assets/` och `output/` vad den är och vad som använder den (spelas, visas, referens, bara registrerad, okänd; ett
+  exakt id i ett dokument, en instruktion eller Beslut räknas som visas). Efter dess lista flyttades 367 enheter (1 073
+  filer, 3,96 GB) till `D:/dealer-archive/dealer-ej-anvant-2026-11-17/` med samma sökvägar, varje fil kontrollerad på
+  SHA-256: 124 filmer utanför banken, 126 talmappar, 35 avgjorda prov, 73 betalda bankfilmer utan post, 9 ersatta ankare.
+  Kvittona ligger kvar, 183 poster är uttagna ur Material, och inget han har dömt, inget banken spelar och ingen
+  referens är flyttad. Planen, loggen och skriptet som tar tillbaka allt (`aterstall.mjs`) ligger i
+  `D:/dealer-scratch/tmp/stadning/inventering-2026-11-17/`. `output/` är bara den återskapade V6 och ligger kvar. Om
+  kopian på nätet: "Allt på nätet är sekundärt"; inget arbete läggs där, och `cloud/` står orörd tills han säger att
+  den ska bort.
+- **Pågår hos samma underagent: hänger Material ihop med dagens geometri** (hans ord kl. 23.34: "mycke tav materialet är
+  jag osäker på om det vekligen hänger ihop […] om bordet vinkel är X så kanske inte referens A är bra elelr om
+  Possition Y är så kanske inte landningen för en referens i B är gilltig"): en kontroll i `tools/media-audit.ts` av
+  varje landningsbild, ankare, bankfilm och referens mot dagens regel (`planCardQuad`, dealerstandarden), visad som en
+  bricka i Material ("äldre plan", "annan kamera"); avsnittet Prov ut ur Material (proven är Granskas del Prov), och
+  Referenser och Övrigt märkta med vad de är till för och om något använder dem; en andra arkivplan. Gren
+  `material-revision`. Källorna till mått längst ned i Material är redan rättade (`f934258`: linsen först).
+- **Pågår hos Bordets underagent: ett reglage Perspektiv för hela kortplanen** (hans ord kl. 23.36 om provet: "Jag tror
+  inte att korten ska vara helt fyrkantiga som du har placerat dem. […] brist på djup i bordet. Om alla kort är exakt
+  lika stora, blir de väldigt tvådimensionella"): den verkliga kameran är lång (bortre kanten 96 % av den nära), V6
+  var filmad vidare (cirka 74 %) och hans tidigare plan sade 87 %. Reglaget väljer en lins ur samma familj med plats 4
+  fast, så att alla kort förblir ett format; mer perspektiv ger mer avsmalning och mindre kort nära dealern. Förvalet
+  är den verkliga kameran tills han har valt; värdet sparas i hans plan när han trycker Spara.
 - **Kortens storlek** (hans ord kl. 23.14: "`assets\reference\native-0694.png` har ju tex skitbra kortstorlekar […] är så
   osäker på allt. Men finns så många spår!"): bilden är ruta 694 av V6, där korten är ungefär en tredjedel större än ett
   verkligt kort mot hennes hand (skattat, mäts av Bordets underagent). Hans besked kl. 23.22: "Ang kort. Gör allt enkelt bara. kör vi 1.0 så
