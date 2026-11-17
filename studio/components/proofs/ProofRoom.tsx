@@ -1,8 +1,9 @@
 "use client";
 
-// <ProofRoom proof={proof} file={name} onFile={(name) => …} />: one proof open. The film large with its playlist beside it
-// (chapters as marks on the scrub bar, the chapter's name beside the frame count), the pictures in a gallery that opens
-// the viewer, every file by its short name with its verdict chip; the rest of a label and the proof's description on demand.
+// <ProofRoom proof={proof} file={name} named={named} onFile={(name) => …} />: one proof open. The film large with its
+// playlist beside it (chapters as marks on the scrub bar, the chapter's name beside the frame count), the pictures in a
+// gallery that opens the viewer, every file by its short name with its verdict chip, the takes the proof names (ProofTakes,
+// one press to Filmer); the rest of a label and the proof's description on demand.
 import { ChevronDown, Film, Image as ImageIcon } from "lucide-react";
 import { useMemo, useState } from "react";
 import type { Proof } from "../../lib/api.ts";
@@ -14,6 +15,7 @@ import { ProofChip } from "../takes";
 import { cn } from "../ui/cn";
 import { ImageViewer } from "./ImageViewer";
 import { ProofStill } from "./ProofStill";
+import { ProofTakes, WaitingLink, type NamedTakes } from "./ProofTakes";
 
 function FileName({ entry, size = "sm" }: { entry: ProofEntry; size?: "sm" | "md" }) {
   return (
@@ -46,7 +48,7 @@ function More({ entry }: { entry: ProofEntry }) {
   );
 }
 
-export function ProofRoom({ proof, file, onFile }: { proof: Proof; file: string | null; onFile: (name: string | null) => void }) {
+export function ProofRoom({ proof, file, named, onFile }: { proof: Proof; file: string | null; named: NamedTakes; onFile: (name: string | null) => void }) {
   const files = useMemo(() => proofFiles(proof), [proof]);
   const { films, pictures } = files;
   const { film, index: viewing } = pickFile(files, file);
@@ -71,6 +73,7 @@ export function ProofRoom({ proof, file, onFile }: { proof: Proof; file: string 
             {proof.description}
           </Fold>
         ) : null}
+        <WaitingLink proof={proof} named={named} />
       </div>
 
       {film ? (
@@ -157,6 +160,8 @@ export function ProofRoom({ proof, file, onFile }: { proof: Proof; file: string 
       ) : null}
 
       {!films.length && !pictures.length ? <p className="text-sm text-faint">Provet har inga filmer eller bilder.</p> : null}
+
+      <ProofTakes proof={proof} named={named} />
 
       <ImageViewer pictures={pictures} index={viewing} onIndex={(i) => onFile(i === null ? (film?.file.name ?? null) : pictures[i].file.name)} />
     </div>

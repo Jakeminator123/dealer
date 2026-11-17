@@ -1,9 +1,44 @@
-// The proof room (Prov): proof folders newest first and searchable, each file by its short name with its verdict, films
-// in the order the proof names them, the picture a card shows, and the chapters on a film. Pure: no DOM, no network;
+// The proofs, Granska's part Prov: proof folders newest first and searchable, each file by its short name with its
+// verdict, films in the order the proof names them, the picture a card shows, the chapters on a film, the takes a proof
+// names, and the addresses (a proof is /granska/?prov=<folder>; the old /prov/ leads there). Pure: no DOM, no network;
 // tests in studio/tests/proofs.test.ts. A file's verdict and the split of its label are lib/verdict.ts's.
 import type { Proof, ProofFile } from "./api.ts";
 import { formatDay } from "./names.ts";
 import { proofLabel, proofVerdict, splitLabel, type ProofVerdict } from "./verdict.ts";
+
+// ── Addresses ───────────────────────────────────────────────────────────────
+/** Granska's part Prov with no proof open: the folders. */
+export const PROOFS_HREF = "/granska/?vy=prov";
+
+/** One proof open in Granska's part Prov, on a file when one is named. */
+export const proofHref = (id: string, file?: string | null): string => `/granska/?${new URLSearchParams(file ? { prov: id, fil: file } : { prov: id }).toString()}`;
+
+/**
+ * Where an address of the old view Prov leads (cards in Beslut, HANDOFF and the documents link there): the same question
+ * on /granska/, with vy=prov when it names no proof. "?prov=x&fil=a.mp4" → "/granska/?prov=x&fil=a.mp4"; "" → PROOFS_HREF.
+ * Every other word (the dealer's) is kept as written.
+ */
+export function fromProvAddress(search: string): string {
+  const pairs = search
+    .replace(/^\?/, "")
+    .split("&")
+    .filter((pair) => pair && pair.split("=")[0] !== "vy");
+  const named = pairs.some((pair) => pair.split("=")[0] === "prov" && pair.length > "prov=".length);
+  return `/granska/?${(named ? pairs : ["vy=prov", ...pairs]).join("&")}`;
+}
+
+// ── Takes a proof names ─────────────────────────────────────────────────────
+/**
+ * The takes a proof names by id (in its title, description, labels or file names), in the order they first appear;
+ * known says which words are take ids (the bank's). A word is a whole id: "paow-vila-01-01" is not found in
+ * "paow-vila-01-01-b".
+ */
+export function takesNamed(proof: Pick<Proof, "title" | "description" | "labels" | "files">, known: (id: string) => boolean): string[] {
+  const text = [proof.title ?? "", proof.description ?? "", ...Object.entries(proof.labels ?? {}).flat(), ...proof.files.map((f) => f.name)].join(" ").toLowerCase();
+  const found = new Set<string>();
+  for (const [word] of text.matchAll(/[a-z0-9][a-z0-9-]*[a-z0-9]/g)) if (!found.has(word) && known(word)) found.add(word);
+  return [...found];
+}
 
 /** A proof's title as it is shown: its own, else its folder name. */
 export const proofTitle = (proof: Pick<Proof, "id" | "title">): string => (proof.title ?? "").trim() || proof.id;

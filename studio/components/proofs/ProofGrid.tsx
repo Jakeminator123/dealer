@@ -1,15 +1,17 @@
 "use client";
 
-// <ProofGrid proofs={list} />: the proof folders newest first as cards (a still, the title, how many films and pictures,
-// the verdicts counted), a search field, and a last line to the old lab's film library.
+// <ProofGrid proofs={list} named={named} />: the proof folders newest first as cards (a still, the title, how many films
+// and pictures, the files' verdicts counted, how many takes it names wait for Jakob), a search field, and a last line to
+// the old lab's film library.
 import { ArrowUpRight, Film, Search } from "lucide-react";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import type { Proof } from "../../lib/api.ts";
-import { countLine, coverOf, matchProof, proofDay, proofTitle, sortProofs, verdictTally } from "../../lib/proofs.ts";
+import { countLine, coverOf, matchProof, proofDay, proofHref, proofTitle, sortProofs, verdictTally } from "../../lib/proofs.ts";
 import { PROOF_VERDICT_LABEL, splitLabel, type ProofVerdict } from "../../lib/verdict.ts";
 import { EmptyState, TextField, cn } from "../ui";
 import { ProofStill } from "./ProofStill";
+import { waitingIn, type NamedTakes } from "./ProofTakes";
 
 const TALLY: { verdict: ProofVerdict; sign: string; tone: string }[] = [
   { verdict: "ok", sign: "✓", tone: "text-[#6cc595]" },
@@ -18,9 +20,7 @@ const TALLY: { verdict: ProofVerdict; sign: string; tone: string }[] = [
   { verdict: "unreviewed", sign: "○", tone: "text-vantar" },
 ];
 
-export const proofHref = (id: string, file?: string | null) => `/prov/?${new URLSearchParams(file ? { prov: id, fil: file } : { prov: id }).toString()}`;
-
-function ProofCard({ proof }: { proof: Proof }) {
+function ProofCard({ proof, waiting }: { proof: Proof; waiting: number }) {
   const cover = coverOf(proof);
   const films = proof.files.filter((f) => f.kind === "video").length;
   const tally = verdictTally(proof);
@@ -33,6 +33,11 @@ function ProofCard({ proof }: { proof: Proof }) {
     >
       <div className="relative">
         <ProofStill cover={cover} fps={proof.fps} className="aspect-[16/10] transition-[filter] duration-200 group-hover:brightness-110" />
+        {waiting ? (
+          <span className="pointer-events-none absolute left-2 top-2 rounded-xs bg-black/70 px-1.5 py-0.5 text-2xs font-medium text-brass-hi backdrop-blur-sm">
+            {waiting === 1 ? "1 tagning väntar" : `${waiting} tagningar väntar`}
+          </span>
+        ) : null}
         {films ? (
           <span className="pointer-events-none absolute bottom-2 left-2 inline-flex items-center gap-1 rounded-xs bg-black/65 px-1.5 py-0.5 text-2xs font-medium text-ink backdrop-blur-sm">
             <Film className="size-3" /> {films}
@@ -58,7 +63,7 @@ function ProofCard({ proof }: { proof: Proof }) {
   );
 }
 
-export function ProofGrid({ proofs }: { proofs: readonly Proof[] }) {
+export function ProofGrid({ proofs, named }: { proofs: readonly Proof[]; named: NamedTakes }) {
   const [query, setQuery] = useState("");
   const sorted = useMemo(() => sortProofs(proofs), [proofs]);
   const shown = useMemo(() => sorted.filter((p) => matchProof(p, query)), [sorted, query]);
@@ -79,7 +84,7 @@ export function ProofGrid({ proofs }: { proofs: readonly Proof[] }) {
         <ul className="grid grid-cols-[repeat(auto-fill,minmax(260px,1fr))] gap-4">
           {shown.map((p) => (
             <li key={p.id}>
-              <ProofCard proof={p} />
+              <ProofCard proof={p} waiting={waitingIn(p, named)} />
             </li>
           ))}
         </ul>

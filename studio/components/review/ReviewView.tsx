@@ -1,7 +1,7 @@
 "use client";
 
-// Granska (/granska/?tagning=<id>, /granska/?vy=alla): the takes that wait for Jakob's word, one at a time and large, with
-// the queue beside it. After a decision the next waiting take opens by itself, and "Ångra" goes back to the last one and
+// Granska's part Filmer (/granska/?tagning=<id>, /granska/?vy=alla): the takes that wait for Jakob's word, one at a time
+// and large, with the queue beside it. After a decision the next waiting take opens by itself, and "Ångra" goes back to the last one and
 // takes that decision back (the decision bar's own Återställ write, on his click on "Ångra").
 // The count is awaitingJakob, the same as the rail's. "Alla" lists every take with filters, for looking something up;
 // a take judged for him (a provisional verdict, "åt dig") is not in the queue but there, under the filter "Dömda åt
@@ -19,11 +19,11 @@ import { useBank } from "../../lib/bank.ts";
 import { isSnapshot } from "../../lib/mode.ts";
 import { takeNames } from "../../lib/names.ts";
 import { nextWaiting, previousWaiting, reviewQueue } from "../../lib/review.ts";
-import { Page } from "../shell";
 import type { DecisionBarHandle } from "../takes/DecisionBar";
 import { Button, EmptyState, ErrorState, SegmentedControl, Skeleton } from "../ui";
 import { AllTakes } from "./AllTakes";
 import { tabOf, vyFor } from "./copy";
+import { GranskaFrame, replaceParams } from "./GranskaFrame";
 import { QueueList } from "./QueueList";
 import { TakeReview, type LastDecision } from "./TakeReview";
 import { WaitingInCopy } from "./WaitingInCopy";
@@ -46,19 +46,6 @@ function writeSitting(map: ReadonlyMap<string, string>) {
   } catch {
     /* private window: the list forgets on reload */
   }
-}
-
-function replaceParams(next: Record<string, string | null>) {
-  const p = new URLSearchParams(window.location.search);
-  for (const [key, value] of Object.entries(next)) {
-    if (value) p.set(key, value);
-    else p.delete(key);
-  }
-  const query = p.toString();
-  // null, not history.state: Next's patched replaceState leaves useSearchParams as it was when it is handed its own state
-  // (__NA), so the view would not follow its own address (a take opened from "Alla" stayed on "Alla"). With null Next
-  // copies its state over and updates useSearchParams (next/dist/client/components/app-router.js).
-  window.history.replaceState(null, "", `${window.location.pathname}${query ? `?${query}` : ""}`);
 }
 
 export function ReviewView() {
@@ -168,7 +155,7 @@ export function ReviewView() {
 
   if (status === "loading")
     return (
-      <Page title="Granska" full>
+      <GranskaFrame part="filmer" full>
         <div className="grid h-full grid-cols-[minmax(0,1fr)_320px] gap-0">
           <div className="flex flex-col gap-3 p-5">
             <Skeleton className="h-10 w-80" />
@@ -179,18 +166,18 @@ export function ReviewView() {
             <Skeleton className="h-full" />
           </div>
         </div>
-      </Page>
+      </GranskaFrame>
     );
   if (!graph || !queue)
     return (
-      <Page title="Granska">
+      <GranskaFrame part="filmer">
         <ErrorState error={error} onRetry={() => void reload()} />
-      </Page>
+      </GranskaFrame>
     );
 
   if (view === "alla")
     return (
-      <Page title="Granska" status={status_} actions={tabs}>
+      <GranskaFrame part="filmer" status={status_} actions={tabs}>
         <AllTakes
           graph={graph}
           onOpen={(id) => {
@@ -198,18 +185,18 @@ export function ReviewView() {
             replaceParams({ vy: vyFor("ko", isSnapshot), tagning: id });
           }}
         />
-      </Page>
+      </GranskaFrame>
     );
 
   if (isSnapshot && !chosen)
     return (
-      <Page title="Granska" status={status_} actions={tabs} full>
+      <GranskaFrame part="filmer" status={status_} actions={tabs} full>
         <WaitingInCopy items={queue.items} onOpen={(id) => open(id)} onAll={() => replaceParams({ vy: vyFor("alla", isSnapshot), tagning: null })} />
-      </Page>
+      </GranskaFrame>
     );
 
   return (
-    <Page title="Granska" status={status_} actions={tabs} full>
+    <GranskaFrame part="filmer" status={status_} actions={tabs} full>
       {/* The queue narrows, then steps aside, when the view is narrow (the bot's panel docked at 1280 px leaves about 800):
           the take keeps its room, and ‹ › in its header still steps through what waits. */}
       <div className="@container/granska h-full">
@@ -276,6 +263,6 @@ export function ReviewView() {
         </aside>
       </div>
       </div>
-    </Page>
+    </GranskaFrame>
   );
 }

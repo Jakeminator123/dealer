@@ -71,8 +71,9 @@ Dokumenten länkar till dessa i stället för att föra egna statusregister. Med
   [DRIFT](docs/DRIFT.md#labbservern-och-fliken). Servern står kvar tills `STOPP.cmd` körs.
 - [Studion](http://127.0.0.1:4319/studio/) är skalet (`/` och `lab.html` leder dit): en Next.js-app i `studio/` som
   byggs med `npm --prefix studio run build` och lämnas ut av samma server. Menyn (`studio/components/shell/Rail.tsx`)
-  har vyerna **Scen**, **Karta** (kanter och tagningar), **Primära**, **Granska** (Jakobs domar, som skrivs i
-  `motions/`), **Prov** (provmappar under `assets/proofs/`, `/studio/prov/?prov=<mapp>`), **Placering** (kortplanen: 16
+  har vyerna **Scen**, **Karta** (kanter och tagningar), **Primära**, **Granska** (två delar i sidans huvud: Filmer, med
+  Jakobs domar som skrivs i `motions/`, och Prov, provmapparna under `assets/proofs/` på `/studio/granska/?prov=<mapp>`;
+  den gamla adressen `/studio/prov/?prov=<mapp>` leder dit), **Placering** (kortplanen: 16
   kortplatser och sko; sparning skriver bara `placements/default.json` och beställer inget), **Material** (vilka bilder
   som gäller), **Lipsync** (vad läppsynken använder och i vilka skalor, skrivskyddad), **Beställ** (bild- och
   filmbeställningar) och **Casino**, och i foten **Beslut** (det som väntar på Jakobs svar). Lipsync, Beställ och Beslut finns bara i labbet; kopian på nätet har

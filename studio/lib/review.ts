@@ -8,6 +8,14 @@ import { awaitingJakob, verdictOf, VERDICTS, type Verdict } from "./verdict.ts";
 
 type EdgeLike = Pick<Edge, "id" | "kind" | "target" | "to" | "experiment">;
 
+// ── The page's two parts ────────────────────────────────────────────────────
+/**
+ * Granska is one page with two parts: Filmer (the takes: ?vy=ko the queue, ?vy=alla every take, ?tagning=<id>) and
+ * Prov (the proof folders: ?vy=prov, ?prov=<folder>&fil=<file>). A proof named in the address opens Prov.
+ */
+export type GranskaPart = "filmer" | "prov";
+export const partOf = (params: { get(name: string): string | null }): GranskaPart => (params.get("vy") === "prov" || params.get("prov") ? "prov" : "filmer");
+
 // ── Dealing order and groups (as the old lab) ──────────────────────────────
 /** The card an edge is about; an experiment is filed with the card it deals or leaves. */
 export const cardOf = (edge: Pick<Edge, "id" | "target">): string | null => edge.target ?? /(?:P[1-7]|D)\.C[1-3]/.exec(edge.id)?.[0] ?? null;
