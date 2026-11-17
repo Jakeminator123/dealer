@@ -190,6 +190,12 @@ skript i `skript/`, liggare i `bestallningar-*.json`. Den sessionens filmer och 
 
 ## Öppet hos Jakob
 
+**Sedan 2026-11-17 kväll står det som väntar på hans svar i studions vy Beslut** (`/studio/beslut/`, registret
+`data/decisions.json`; README): ett kort per fråga, med filmen eller bilden på kortet. Han svarar där eller i
+huvudagentens chatt, och han talar bara med huvudagenten ("kan jag kanske tala med dig hela tiden så får du
+delegera"). En agent lägger till ett kort när något väntar på honom och tar bort det när svaret är utfört; listan
+nedan är bakgrunden och det som inte ryms på ett kort.
+
 Skrivet 2026-11-17. Lördagen 2026-11-14 skrev han nio korta meddelanden från telefonen (ordagrant i "Jakobs besked som
 gäller"); arbetet stannade samma dag kl. 17.15, när kontot tog slut, och togs upp igen 2026-11-17 kl. 16.35 på ett nytt
 konto ("Varit borta ett par dagar och nu bytt konto"). Han läser inte långa svar, så svaren till honom är korta och
@@ -307,7 +313,21 @@ här säger annat.
 - **Huvudagenten:** en ny runda till chefen när läpparna är inne (`alla.mjs`, ny tagning, blind granskning mot
   `chef-jakob-1-1x-v10`), kopian sedd som en ny besökare i telefonstorlek efter varje publicering, och `KLAR.txt`
   på skrivbordet när allt har ett utfall.
-- **Väntar på Jakob:** Öppet hos Jakob, punkt 1–4 (telefonen, Runway, GitHub, fotot).
+- **Väntar på Jakob** (korten i Beslut): det nya rollbladet för trailern (tatueringen från hans foto, större byst,
+  smalare; ja ger en ny film av trappans tagning med dagens film som förlaga, 120–140 krediter per tagning, ram 400
+  för provet); läpparna, provet `paow-baslinje` (munnen en fjärdedel bredare och ut till hennes gipor; i hans flik
+  såg filmen utfrätt ut fast filen är riktig, så han har inte dömt den än: be honom se den i vanliga Chrome); om
+  trailern syns på telefonen; Monacos bakgrund; repliker som munlappar; boten.
+- **Nya händer på dealern** (hans ja i Beslut 2026-11-17, med anteckningen): de nuvarande filmerna ligger kvar, och
+  en ny uppsättning byggs bredvid från ett ankare där hon har "aningen mindre händer och även tatueringarna", gärna
+  med snabbare givar, och med beställningsvägen genomgången först ("hur vi faktiskt beställer av runway och om detta
+  görs via Beställ eller om det är du som skickar"). Han vill gå igenom allt om givarna inför nya beställningar,
+  kanske med en ny agent, och prövar själv Beställ. Händerna syns i varje film, så nya givar kan inte blandas med
+  gamla vilor: det blir en hel uppsättning som tar över när den är komplett. Att måla tatueringar i färdiga filmer
+  har fallit två gånger hos granskaren (2 av 5, ryggen i trailern). Första steget är en stillbild för hans ja.
+- **Gjort samma kväll, utöver det ovan:** hoppen mellan vilofilmer (`845afa3`), trailern i mitten på en liggande
+  telefon (`052ec81`), vyn Beslut (`aee87ca`). Talbanan har lämnat över och kan stängas; scenbanan likaså;
+  trailersessionen arbetar med rollbladet och omtagningen.
 
 0. **Paow, läget 2026-11-13 vid midnatt** (`node tools/produce.ts paow`: 24 av 33 steg klara, 20 av de 21 en runda
    kräver; det som saknas för en runda är hålkortets retur till vila, som inte har någon metod). En runda spelas i
