@@ -3,6 +3,32 @@
   "about": "What waits for Jakob: one entry per question (kind beslut) or per thing only he can do (kind gora), shown as one card each in the studio's view Beslut (/studio/beslut/, lab only). The list's order is the order of urgency, the most urgent first. An entry: id, kind, question (at most 14 words), leads (one sentence: what his answer leads to), optionally proof (a folder under assets/proofs/) with file, page (an address in the lab, e.g. game.html?table=casino), link (an address outside, shown as text to open on his phone) and cost (free text), chips (two to four {value, label} for beslut, one to four for gora), asked (date), from (the lane that asks) and answer. An agent adds an entry with answer null, changes only its own entries, reads the file right before editing it and keeps the form JSON.stringify gives with two spaces; it closes an entry by taking it out once his answer is carried out, and the commit says what he answered. Only the page writes answer ({value, note, at}, tools/decision-store.ts); no agent sets, changes or clears an answer he has given. The strict reader is tools/decision-register.ts. The repo is public: no secret, personal detail or path of this machine.",
   "decisions": [
     {
+      "id": "lapparna-realtid-mun",
+      "kind": "beslut",
+      "question": "Läpparna i realtid: är den här munnen värd att bygga vidare på?",
+      "leads": "Vid ja byggs första steget på din RunPod: hon svarar i labbets chatt med levande läppar.",
+      "proof": "paow-realtid-mun",
+      "file": "paow-realtid-mun-2-stillbild.png",
+      "chips": [
+        {
+          "value": "ja",
+          "label": "Ja, bygg vidare"
+        },
+        {
+          "value": "nej",
+          "label": "Nej"
+        },
+        {
+          "value": "senare",
+          "label": "Senare"
+        }
+      ],
+      "asked": "2026-11-17",
+      "from": "talbanan",
+      "cost": "RunPod cirka 1–3 USD per provkväll, 2–4 dagars bygge; inga Runway-krediter",
+      "answer": null
+    },
+    {
       "id": "rollblad-trailern-3",
       "kind": "beslut",
       "question": "Rollblad 3 för trailern: är hon rätt nu?",
@@ -26,7 +52,11 @@
       "asked": "2026-11-17",
       "from": "trailersessionen",
       "cost": "cirka 280–320 krediter för två tagningar med nya start- och slutbilder",
-      "answer": null
+      "answer": {
+        "value": "andra",
+        "note": "Kvinnan har inte tatueringar på händerna i alla bilder",
+        "at": "2026-11-17T17:40:59.505Z"
+      }
     },
     {
       "id": "keystone-tatuerade-hander",
@@ -52,7 +82,11 @@
       "asked": "2026-11-17",
       "from": "trailersessionen",
       "cost": "ett försök till med mindre händer: 40–80 krediter",
-      "answer": null
+      "answer": {
+        "value": "nej",
+        "note": "Aningen mindre händer. Ta gärna om möjligt bort de skuggor som finns under hennes underarbar också då inget bord finns där",
+        "at": "2026-11-17T17:42:36.456Z"
+      }
     },
     {
       "id": "trailer-pa-telefonen",
@@ -72,7 +106,11 @@
       ],
       "asked": "2026-11-17",
       "from": "huvudagenten",
-      "answer": null
+      "answer": {
+        "value": "fungerar",
+        "note": "",
+        "at": "2026-11-17T17:42:44.104Z"
+      }
     },
     {
       "id": "tatuerade-mindre-hander",
