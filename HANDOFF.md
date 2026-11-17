@@ -179,8 +179,10 @@ kl. 21.46 och 21.58 (Jakobs besked, "Ett labb"), av underagenter till huvudagent
   där, och `cloud/` står orörd tills han säger att den ska bort.
 - **Kortens storlek** (hans ord kl. 23.14: "`assets\reference\native-0694.png` har ju tex skitbra kortstorlekar […] är så
   osäker på allt. Men finns så många spår!"): bilden är ruta 694 av V6, där korten är ungefär en tredjedel större än ett
-  verkligt kort mot hennes hand (skattat, mäts av Bordets underagent). Med linsen följer varje korts storlek av platsen,
-  så planen får ett enda tal för storleken mot ett verkligt kort (1,00 verkligt, V6:s värde utmärkt), som han väljer.
+  verkligt kort mot hennes hand (skattat, mäts av Bordets underagent). Hans besked kl. 23.22: "Ang kort. Gör allt enkelt bara. kör vi 1.0 så
+  kanske det är bra. men bara allt är logiskt. Min ide är ju att vi ska kunna efterarbeta fram en ovelay ändå där vi
+  kanske ska kunna justera just som sånt här." Alltså: kortplanen ritar ett verkligt kort (1,00) med linsen, utan eget
+  storleksreglage; storleken justeras bara i Efterarbete (de ritade kortens "Kortens storlek"), som är hans överlägg.
 - **Vakten på hans kö** (`vakta-kon.mjs`) går i huvudagentens chatt i halvtimmar och måste startas om; godkänner han en
   beställning startar huvudagenten beställningsagenten (`tools/order-clerk.md`). `node tools/preview.ts --open` klarar
   inte en adress med `&` (resten av raden körs som ett eget kommando): att rätta.
