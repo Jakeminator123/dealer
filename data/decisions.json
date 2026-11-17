@@ -35,22 +35,26 @@
     {
       "id": "giv-vandning-mall-9",
       "kind": "beslut",
-      "question": "Given med ny text: är vändningen i tagning 2 den du menar?",
-      "leads": "Vid ja blir den vändningen regeln i alla givbeställningar, och nästa prov rättar släpet och det tryckta kortet.",
-      "proof": "bestallning-slap-p4-mall9",
-      "file": "1-tagning-2-vandningen-ruta-for-ruta.png",
+      "question": "Vilken vändning menar du: Pamelas eller dagens tagning 2?",
+      "leads": "Den du väljer skrivs in som regeln i varje givbeställning, och nästa provgiv beställs så.",
+      "proof": "pamela-formel",
+      "file": "1-pamelas-vandning-mot-dagens.png",
       "chips": [
         {
-          "value": "ja",
-          "label": "Ja, så ska hon vända"
+          "value": "pamela",
+          "label": "Pamelas (som en nyckel)"
         },
         {
-          "value": "nastan",
-          "label": "Nästan (skriv vad)"
+          "value": "tagning2",
+          "label": "Tagning 2 (handflatan upp)"
         },
         {
-          "value": "nej",
-          "label": "Nej"
+          "value": "bada",
+          "label": "Båda duger"
+        },
+        {
+          "value": "ingen",
+          "label": "Ingen av dem"
         }
       ],
       "asked": "2026-11-17",

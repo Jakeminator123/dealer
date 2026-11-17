@@ -3821,6 +3821,13 @@
           "note": "Jakobs giv till plats 4 lagd om 2026-11-17 med mall 9 (paow-giv-2-2-p4-03, WAN 3, två tagningar): i tagning 2 vänder handleden kortet och handen förblir vänd tills det ligger, som han har bett om; kortet får dock en tryckt symbol och lyfts ur skon. Tagning 1 vänder utan handleden. Filmer och bildark."
         },
         {
+          "id": "pamela-prov-vandningens-formel",
+          "role": "prov",
+          "name": "Pamelas vändning: formeln",
+          "proof": "pamela-formel",
+          "note": "Genomgång 2026-11-17 av hur kortet vänds i Pamelas filmer, på Jakobs ord: kortändan mellan tumme och fingrar, hand och kort vrids ihop som en nyckel kring långsidan, handen förblir vänd. Hela-bordet-filmen är cirka 25 korta filmer. Bildark, med dagens tagning av Paow under."
+        },
+        {
           "id": "paow-prov-keystone-tatuerade-hander",
           "role": "prov",
           "name": "Paows keystone med tatuerade händer",
