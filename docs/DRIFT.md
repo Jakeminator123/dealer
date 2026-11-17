@@ -384,6 +384,10 @@ för studions npm-paket, och skickade en ny film.
 - **Taket för Blob** är `limits.blobBytes` i `data/studio-release.json`, 2,2 GB sedan 2026-11-13 (Paows andra omgång
   talfilmer gjorde delen 1,72 GB). Går delen över taket stannar bygget innan planen skrivs: inget laddas upp och inget läggs
   ut, och kopian på nätet står kvar som den var. Höj taket i registret först när tabellen visar vad som har vuxit.
+  2026-11-17 stannade bygget på 2 250 MB: det som hade vuxit var talfilmer som spelet inte längre säger (varje
+  omläggning av replikerna lade till lika många filmer som hon har repliker). Taket står kvar; av en repliks filmer går
+  nu bara den upp som spelet säger (`gameTakes` i `tools/studio-freeze.ts`, samma fråga som spelsidan ställer:
+  `spokenFilms` med spelets röst) och de han själv har godkänt. En ersatt tagning står kvar i kopians klippbank utan film.
 - **Storen rymmer** (2026-11-13 kl. 17.12) 234 objekt, 1 736 MB: Paows filmer för spelet och rundan med 51 talfilmer,
   Pamelas runda, godkända och varianter, sex prov och tre filmer för scenen. Objekt som en senare kopia inte längre visar
   ligger kvar i storen (de skrivs aldrig över och tas inte bort av verktyget); kvittot listar dem.

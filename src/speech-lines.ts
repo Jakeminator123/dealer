@@ -74,6 +74,11 @@ function read(take: SpeechTake): (Spoken & {dealer: string; place: number}) | nu
     soundStart: numberOf(said.soundStartsAtSeconds) ?? LEAD, soundEnd: numberOf(said.soundEndsAtSeconds), judged: take.inbox !== true,
     dealer: typeof take.dealer === 'string' ? take.dealer : typeof record?.dealer === 'string' ? record.dealer : '', place: place(take)};
 }
+/** The voice the game speaks with (data/speech.json; Jakob 2026-11-13). The page asks for her lines with it (VOICE in src/game-page.ts),
+ * and the online copy carries the films that question gives (gameTakes in tools/studio-freeze.ts). */
+export const GAME_VOICE = 'Paow';
+/** The line a take says, or null when it is not a spoken film: a take with a line is played only as the film of that line. */
+export const spokenLine = (take: SpeechTake): string | null => { const said = ((take.motion ?? null) as Record_ | null)?.speech; return said && typeof said.line === 'string' ? said.line : null; };
 /** Every spoken film a dealer has, the one to play per key: a take he has accepted before one accepted in his place, that before
  * one nobody has judged, that before one set aside, that before one still in the inbox; among equals the newest. */
 export function spokenFilms(takes: readonly SpeechTake[], dealer: string, options: SpokenOptions = {}): Record<string, Spoken> {

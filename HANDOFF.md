@@ -288,8 +288,12 @@ här säger annat.
   `grattis`, `otur`, `push`, `regler`, `varsagod` och lyckoönskan över given och över ingången) kommer när tre
   granskare har dömt dem, och läggs in på samma sätt (`D:/dealer-scratch/tmp/huvudagent11/look/in-talet.mjs`,
   `doma-talfilmer.mjs`; lapparna enligt talbanans LASMIG), sedan publicering.
-- **Scenbanan** kodar om Monacos film utan stegen i nyckelrutorna (`monaco-liv-3.mp4`) och mäter hoppen i
-  webbläsaren (Kända brister, "Hopp mellan filmer").
+- **Scenbanan** mäter hoppen i webbläsaren (Kända brister, "Hopp mellan filmer"): sex korta körningar, tre i
+  1920 × 1080 och tre i 390 × 844. Rummets film `monaco-liv-2.mp4` står kvar som den är: den har ett litet steg in i
+  varje nyckelruta (var 8,3 s, 0,57 nivåer av 255 i en suddig bakgrund; 0,87 i slingans skarv), och ingen av 17
+  prövade kodningar tar bort det utom en enda bildgrupp utan nyckelrutor, som en telefon som tappat sin avkodare
+  skulle behöva avkoda från slingans början. Skattat, inte prövat med ögat: det syns inte. Syns en puls i rummet
+  ligger den kodningen som ett kommando i `D:/dealer-scratch/tmp/levande-objekt/rumsliv/kod-prov-2.sh`.
 - **Huvudagenten:** en ny runda till chefen när läpparna är inne (`alla.mjs`, ny tagning, blind granskning mot
   `chef-jakob-1-1x-v10`), kopian sedd som en ny besökare i telefonstorlek efter varje publicering, och `KLAR.txt`
   på skrivbordet när allt har ett utfall.

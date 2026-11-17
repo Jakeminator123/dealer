@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {readFileSync, readdirSync} from 'node:fs';
 import {createHash} from 'node:crypto';
 import {buildGraph, resolveRound, type BankData} from '../src/clip-graph.ts';
+import {GAME_VOICE} from '../src/speech-lines.ts';
 import {readRelease, releaseDealers, gameTakes, namedAssets, engineSource, forEngine, copyGamePage, ENGINE_ENTRY, ENGINE_CRYPTO, blockedName, blockedPath, redactText, scrub, findLeaks, findTextLeaks, pickTakes, pickProofs, freezeBank, graphShape, roundShape, safeRelative, prefetchAlias, objectName, type Proof, type Release} from './studio-freeze.ts';
 
 const release: Release = readRelease(JSON.parse(readFileSync(new URL('../data/studio-release.json', import.meta.url), 'utf8')));
@@ -200,6 +201,27 @@ test("the game's takes are those it can play: a verdict, Jakob's or a provisiona
   const without = pickTakes(graph, [], rule);
   assert.deepEqual(without.picked.map(p => p.id), ['pamela-p4-c1-deal-01']);
   assert.ok(without.left.some(l => l.id === 'pamela-vila-vantar-01' && l.why === 'väntar på Jakob'));
+});
+
+test('of a spoken line the copy carries the film the game says: a newer take replaces an older, his own accepted take goes first', () => {
+  const bank = fixture();
+  const says = (id: string, line: string, voice: string, review: Record<string, unknown>) => {
+    bank.jobs!.push({...bank.jobs![0], id, kind: 'IDLE', target: undefined, from: 'IDLE', to: 'IDLE', first: {file: {path: 'assets/anchors/idle.png'}}, last: {file: {path: 'assets/anchors/idle.png'}}} as never);
+    bank.motions![id] = {source: {fps: 24, frames: 60}, motion: {idle: {onRequest: true, calm: true}}, speech: {line, language: 'sv', text: 'Hej!', voice}, review} as never;
+    bank.media![id] = {video: `assets/motions/${id}/source.mp4`, first: null, last: null, track: null, overrides: null};
+  };
+  const forHim = {decision: 'ACCEPTED', provisional: {by: 'huvudagenten'}}, his = {decision: 'ACCEPTED', userAccepted: true};
+  says('pamela-tal-hej-sv-09', 'hej', GAME_VOICE, forHim); says('pamela-tal-hej-sv-10', 'hej', GAME_VOICE, forHim); // re-laid: 10 replaces 09
+  says('pamela-tal-win-sv-04', 'win', GAME_VOICE, his); says('pamela-tal-win-sv-13', 'win', GAME_VOICE, forHim); // his own goes first, whatever the numbers
+  says('pamela-tal-lose-sv-02', 'lose', 'Jessica', forHim); // another voice: the game does not say it
+  const game = gameTakes(bank, 'pamela');
+  assert.deepEqual([...game].filter(id => id.includes('-tal-')).sort(), ['pamela-tal-hej-sv-10', 'pamela-tal-win-sv-04']);
+  const graph = buildGraph(bank), rule = {...release, ...rules, takes: {...release.takes, round: false}}, {picked, left} = pickTakes(graph, [], rule, game);
+  const groups = Object.fromEntries(picked.map(p => [p.id, p.group]));
+  assert.equal(groups['pamela-tal-hej-sv-10'], 'spel'); assert.equal(groups['pamela-tal-win-sv-04'], 'godkänd', 'a take he accepted himself goes up by that rule');
+  for (const id of ['pamela-tal-hej-sv-09', 'pamela-tal-win-sv-13', 'pamela-tal-lose-sv-02']) { assert.equal(groups[id], undefined, id); assert.ok(left.some(l => l.id === id), `${id} is named among those left`); }
+  // the page asks with the same voice
+  assert.match(readFileSync(new URL('../src/game-page.ts', import.meta.url), 'utf8'), new RegExp(`VOICE = \\{voice: '${GAME_VOICE}'\\}`));
 });
 
 test('the files a module names by a plain path are found; a path built at run time or leaving the folder is not', () => {

@@ -4,6 +4,7 @@
 // snapshot.ts reads and writes, these decide. Tested in tools/studio-freeze.test.ts.
 import {buildGraph, type BankData, type Graph, type Segment, type Take} from '../src/clip-graph.ts';
 import {judgedBank} from '../src/game-director.ts';
+import {GAME_VOICE, spokenFilms, spokenLine, type SpeechTake} from '../src/speech-lines.ts';
 import {posix} from 'node:path';
 
 // ── The register ────────────────────────────────────────────────────────────
@@ -151,10 +152,15 @@ export const acceptedOutright = (t: Take) => t.stage === 'DONE' && t.decision ==
  * Every take the game can play for a dealer, as the game reads the bank (judgedBank in src/game-director.ts): a take with a
  * verdict, Jakob's or a provisional one given in his place, and the talk films she plays on request; done, not rejected, with
  * a film. The game's own bank decides, so a take it would never play (one that waits for Jakob) is not among them.
+ * A spoken line has one film in the game: the one the page's own question gives (spokenFilms over her rest takes, with the game's
+ * voice). The takes that film has replaced are never played, and every delivery of re-laid lines adds as many films as she has
+ * lines: on 2026-11-17 the copy's films for Blob had grown past their limit that way (2 250 MB against 2 200), with about a
+ * hundred talk films in them that no page plays. A replaced take stays listed in the frozen clip bank, without its film.
  */
 export function gameTakes(bank: BankData, dealer: string): Set<string> {
-  const graph = buildGraph(judgedBank(bank), {dealer});
-  return new Set(Object.values(graph.takes).filter(t => t.stage === 'DONE' && t.decision !== 'REJECTED' && !!t.media.video).map(t => t.id));
+  const graph = buildGraph(judgedBank(bank), {dealer}), rests = (graph.edge['IDLE>IDLE']?.takes ?? []) as unknown as SpeechTake[];
+  const said = new Set(Object.values(spokenFilms(rests, dealer, {voice: GAME_VOICE})).map(s => s.clip));
+  return new Set(Object.values(graph.takes).filter(t => t.stage === 'DONE' && t.decision !== 'REJECTED' && !!t.media.video && (spokenLine(t as unknown as SpeechTake) === null || said.has(t.id))).map(t => t.id));
 }
 
 /**
