@@ -2657,6 +2657,30 @@
           }
         },
         {
+          "id": "paow-sittande-tatuerad",
+          "role": "keystone",
+          "name": "Sittande, tatuerade händer",
+          "path": "assets/keystones/paow-sittande-tatuerad/keystone.png",
+          "state": "kandidat",
+          "note": "Sittande A med tatuerade händer, 10 % mindre, och utan underarmarnas skuggor på det vita. Jakob 2026-11-17 i Beslut: ja. Oberoende granskad i full storlek: 4/5. Utanför händerna och bordet nära henne är den Sittande A bildpunkt för bildpunkt.",
+          "source": {
+            "from": "paow-sittande med tatuerade och 10 % mindre händer (Nano Banana Pro 4K för bläcket, storleken och skuggorna lokalt; kvittot ligger bredvid bilden)",
+            "when": "2026-11-17"
+          }
+        },
+        {
+          "id": "paow-staende-tatuerad",
+          "role": "keystone",
+          "name": "Stående, tatuerade händer",
+          "path": "assets/keystones/paow-staende-tatuerad/keystone.png",
+          "state": "kandidat",
+          "note": "Stående A med tatuerade händer, 10 % mindre. Jakob 2026-11-17 i Beslut: ja. Oberoende granskad i full storlek: 4,5/5. Utanför händerna är den Stående A bildpunkt för bildpunkt.",
+          "source": {
+            "from": "paow-staende med tatuerade och 10 % mindre händer (Nano Banana Pro 4K för bläcket, storleken och skuggorna lokalt; kvittot ligger bredvid bilden)",
+            "when": "2026-11-17"
+          }
+        },
+        {
           "id": "paow-staende-b",
           "role": "keystone",
           "name": "Stående B (reserv)",
@@ -2703,6 +2727,19 @@
             "when": "2026-11-12"
           },
           "stateBy": "Jakob 2026-11-13 00:51: kandidat → gäller (Material)"
+        },
+        {
+          "id": "paow-vila-tatuerad",
+          "role": "ankare-1",
+          "name": "Vila, tatuerade händer",
+          "path": "assets/anchors/paow-vila-tatuerad/anchor.png",
+          "node": "IDLE",
+          "state": "kandidat",
+          "note": "Vila, yngre, kandidat 2 med tatuerade händer, 10 % mindre (som keystonebilderna Jakob sa ja till 2026-11-17). Utanför händerna samma bildpunkter. Oberoende granskad i full storlek: 4/5.",
+          "source": {
+            "from": "paow-vila-ung-2 med händerna ändrade (Nano Banana Pro 2K för bläcket, storleken lokalt; kvittot ligger bredvid bilden)",
+            "when": "2026-11-17"
+          }
         },
         {
           "id": "paow-vila-ung-1",
@@ -3847,6 +3884,13 @@
           "name": "Kortets baksida i labbet och i spelet",
           "proof": "kortets-baksida",
           "note": "Jakob 2026-11-17 såg SG-baksidan på det stängda kortet i Placering och kallade den det tidigare kortets baksida. Det är spelets baksida i dag; labbet visar den ljusare. Väntar på hans ord om vilken baksida som gäller."
+        },
+        {
+          "id": "paow-prov-ankare-tatuerade-hander",
+          "role": "prov",
+          "name": "Paows ankare 1 med tatuerade händer",
+          "proof": "paow-ankare-tatuerade-hander",
+          "note": "Nytt ankare 1 ur keystonebilderna Jakob sa ja till 2026-11-17: tatuerade händer, 10 % mindre, allt annat som dagens ankare. Oberoende granskat 4/5. Gäller först när filmerna görs om från det; dagens filmer har bara, större händer."
         },
         {
           "id": "pamela-prov-vandningens-formel",
