@@ -115,7 +115,7 @@ skrivs på skrivbordet när allt har ett utfall. Här står bara det som inte ä
 
 ## Nästa steg
 
-**Börja här (läget 2026-11-17 kl. 23.45; huvudagenten bytte chatt kl. 21.45).** Labbet byggs om på Jakobs ord från
+**Börja här (läget 2026-11-18 kl. 00.02; huvudagenten bytte chatt kl. 21.45).** Labbet byggs om på Jakobs ord från
 kl. 21.46 och 21.58 (Jakobs besked, "Ett labb"), av underagenter till huvudagenten:
 
 - **Inne i `main` och sett i headless Chrome:** vyn **Bordet**, första versionen (`82258f3`: `/studio/bordet/` med
@@ -204,22 +204,29 @@ kl. 21.46 och 21.58 (Jakobs besked, "Ett labb"), av underagenter till huvudagent
   `D:/dealer-scratch/tmp/stadning/inventering-2026-11-17/`. `output/` är bara den återskapade V6 och ligger kvar. Om
   kopian på nätet: "Allt på nätet är sekundärt"; inget arbete läggs där, och `cloud/` står orörd tills han säger att
   den ska bort.
-- **Pågår hos samma underagent: hänger Material ihop med dagens geometri** (hans ord kl. 23.34: "mycke tav materialet är
-  jag osäker på om det vekligen hänger ihop […] om bordet vinkel är X så kanske inte referens A är bra elelr om
-  Possition Y är så kanske inte landningen för en referens i B är gilltig"): en kontroll i `tools/media-audit.ts` av
-  varje landningsbild, ankare, bankfilm och referens mot dagens regel (`planCardQuad`, dealerstandarden), visad som en
-  bricka i Material ("äldre plan", "annan kamera"); avsnittet Prov ut ur Material (proven är Granskas del Prov), och
-  Referenser och Övrigt märkta med vad de är till för och om något använder dem; en andra arkivplan. Gren
-  `material-revision`. I samma gren: Material ska följa menyns dealerväxel (hans skärmbild cirka kl. 23.47: med Paow
-  vald visade Material Pamela, eftersom vyn bara läser adressens ord och annars registrets första dealer; till dess
-  visar `/studio/material/?dealer=paow` Paow). Hans fråga om Pamela är "grundmodellen": nej, Paow är dealern och har
-  egna ankare och filmer; av Pamela används bara bankens filmer som rörelseförlagor. Källorna till mått längst ned i Material är redan rättade (`f934258`: linsen först).
-- **Pågår hos Bordets underagent: ett reglage Perspektiv för hela kortplanen** (hans ord kl. 23.36 om provet: "Jag tror
-  inte att korten ska vara helt fyrkantiga som du har placerat dem. […] brist på djup i bordet. Om alla kort är exakt
-  lika stora, blir de väldigt tvådimensionella"): den verkliga kameran är lång (bortre kanten 96 % av den nära), V6
-  var filmad vidare (cirka 74 %) och hans tidigare plan sade 87 %. Reglaget väljer en lins ur samma familj med plats 4
-  fast, så att alla kort förblir ett format; mer perspektiv ger mer avsmalning och mindre kort nära dealern. Förvalet
-  är den verkliga kameran tills han har valt; värdet sparas i hans plan när han trycker Spara.
+- **Material säger vad som stämmer med dagens kortplan** (`e635b6d`, sett i headless Chrome): `node tools/media-audit.ts
+  --fit --write` mäter varje bild med ett kort på en plats, varje ankare, bankens givar och referenserna mot dagens
+  regel (`planCardQuad`, dealerstandarden) och skriver `data/media-fit.json`, som Material visar som en bricka på rutan
+  ("äldre plan", "annan kamera", "avviker"). I dag: 8 av Pamelas 66 bilder med kort stämmer och ingen av hennes mätbara
+  givar; Paows kort ligger alla på rätt plats (0,2–1,4 bildpunkter), 8 givar stämmer i storlek och 14 är 15–37 % för
+  små vid ytterplatserna; V6 och dess råfilmer är en annan kamera. Filen ska skrivas om när planens regel ändras (hans
+  sparade Perspektiv): inte automatiskt än. Material följer menyns dealerväxel (med Paow vald visade den Pamela), dess
+  egen växel är borta, och avsnittet Prov är ute ur Material (proven är Granskas del Prov). Tre referensfilmer som
+  inget använde är arkiverade.
+- **Reglaget Perspektiv i Kortplan är inne** (`e0dd650`; hans ord om de verkliga korten: "brist på djup i bordet […]
+  väldigt tvådimensionella"): ett reglage för hela bordet, från Verkligt (96 %) ned till 85 %, med ett märke vid Din
+  tidigare plan (87 %); alla sexton kort följer en lins ur samma familj med plats 4 fast (`lensForFocal` i
+  `src/table-lens.ts`, `planLens` i `src/card-plan.ts`), och talet bredvid säger vad dealerns kort blir (75 bildpunkter
+  vid 96 %, 64 vid 91 %, 54 vid 87 %). Värdet sparas i hans plan när han trycker Spara; utan värde gäller den verkliga
+  kameran. V6:s utseende ligger utanför familjen. Inte gjort i en webbläsare: att dra reglaget för hand och Spara.
+- **Pågår hos Bordets underagent** (hans ord cirka kl. 00.00: "valde från dator till mobil […] vi fick ett gammalt prov
+  av Pamela, även fast jag har ikryssat PAO […] Jag trodde att ingenting skulle göras dubbelt för mobilen. Generellt
+  förstår jag inte varför vi automatiskt kan komma in till Pamela. Om hon används som referens borde hon rimligtvis
+  göras till silhuett", och "V6-läget är jag skeptisk mot i sin helhet mer än att det var en bra referens för att vi
+  fick till en bra version för någon vecka sedan"): Mobil ut ur Kortplan (planen ställs en gång; vad som läser planens
+  andra vy utreds först), ingen bild eller film av Pamela som förval när Paow är vald (V6-bilden ut ur listan under
+  korten), Paow först i dealerväxeln, och en pausad dealer som en adress nämner blir inte ihågkommen som valet. V6 står
+  kvar som referens och kontrolleras varje push (AGENTS); om den ska arkiveras är hans ord, inte frågat än.
 - **Kortens storlek** (hans ord kl. 23.14: "`assets\reference\native-0694.png` har ju tex skitbra kortstorlekar […] är så
   osäker på allt. Men finns så många spår!"): bilden är ruta 694 av V6, där korten är ungefär en tredjedel större än ett
   verkligt kort mot hennes hand (skattat, mäts av Bordets underagent). Hans besked kl. 23.22: "Ang kort. Gör allt enkelt bara. kör vi 1.0 så
