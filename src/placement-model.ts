@@ -39,15 +39,16 @@ export const SHOE_CARD: Readonly<Record<View, readonly {x:number;y:number}[]>> =
  native:[{x:1298,y:757.5},{x:1337,y:780},{x:1285,y:854},{x:1244,y:829}],
  portrait:[{x:922.5,y:763.5},{x:955,y:777.5},{x:904.5,y:849.5},{x:867.5,y:826.5}],
 };
-// The card in the shoe's window as the dealers' anchors and the bank's films show it (the bank's shoe, the same for every
-// dealer): standing in the window with its long side at about 125° in the picture, its face turned towards the dealer so that
-// it shows about 0.55 of its length across (a card seen straight on shows 0.72), and larger than the V6 picture's card
-// (SHOE_CARD), its upper short end higher. Its corners, clockwise from the upper one, are the card track's first frame of
-// paow-giv-2-1-p4-04-01 brought to the view's pixels (1764 → 1762 wide); the yellow pixels of anchors 2.1 (paow-nyp-ung-1) and
-// 2.2 (paow-ankare-2-2-t1), of pamela-p4-c1-plan-deal-02 and of the neutral backdrop give the same card within 5° and 13 px
-// (measured 2026-11-17). The card path starts from it in Dator; Mobil has no film of its own and starts from SHOE_CARD.
+// The card standing in the shoe's window as the neutral backdrop, the dealers' anchors and the bank's films show it (the bank's
+// shoe, the same for every dealer): inside the window's mouth, its long side at about 125° in the picture, about 92 × 45 px.
+// Its corners, clockwise from the upper one, are the yellow card's own in assets/lab/placement-backdrop/native.jpg (the
+// largest yellow blob in the window, its hull brought to four points); anchor 1 (paow-vila-ung-2) gives the same card within
+// 2 px, and it is the V6 picture's card (SHOE_CARD) within 5 px. Until 2026-11-17 late these were the card track's first
+// frame of a pinch (111 × 57 px): the card already drawn up out of the window with a strip of the next card, which the lab
+// then drew larger than the shoe's mouth (Jakob: "Kortet vid skon ska ju inte vara större än "mynningen" av skon heller").
+// The card path starts from it in Dator; Mobil has no film of its own and starts from SHOE_CARD.
 export const WINDOW_CARD: Readonly<Record<View, readonly {x:number;y:number}[]>> = {
- native:[{x:1296.5,y:740.4},{x:1351.3,y:773.3},{x:1281.9,y:862.8},{x:1239,y:834.1}],
+ native:[{x:1298,y:760},{x:1337,y:781},{x:1280,y:855},{x:1240,y:831}],
  portrait:SHOE_CARD.portrait,
 };
 // A card as the films show it, and as the labs where films are planned and ordered draw it (Jakob 2026-11-17: the back yellow,

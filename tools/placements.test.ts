@@ -182,10 +182,14 @@ test('the yellow card the lab paints in the shoe window, and the window card of 
   // a standing card: about twice as long as it is wide in the picture
   const side=(i:number)=>Math.hypot(q[(i+1)%4].x-q[i].x,q[(i+1)%4].y-q[i].y);assert.ok(side(1)/side(0)>1.6&&side(1)/side(0)<2.6);
  }
- // the films' card stands at the V6 card's angle (within 3°) and is larger: 109 against 90 px long (2026-11-17)
+ // the films' window card is the V6 picture's card: the same angle (within 3°), the same length (within 5 %) and every corner
+ // within 6 px. It is the card standing in the window, never the pinched card drawn up out of it (111 px long), which would
+ // lie outside the shoe's mouth.
  const axis=(q:readonly {x:number;y:number}[])=>{const a={x:(q[0].x+q[1].x)/2,y:(q[0].y+q[1].y)/2},b={x:(q[2].x+q[3].x)/2,y:(q[2].y+q[3].y)/2};return {angle:Math.atan2(a.y-b.y,a.x-b.x)*180/Math.PI,length:Math.hypot(a.x-b.x,a.y-b.y)};};
  const film=axis(WINDOW_CARD.native),v6=axis(SHOE_CARD.native);
- assert.ok(Math.abs(film.angle-v6.angle)<3&&film.length>v6.length*1.15,`${film.angle.toFixed(1)}° ${film.length.toFixed(0)} px against ${v6.angle.toFixed(1)}° ${v6.length.toFixed(0)} px`);
+ assert.ok(Math.abs(film.angle-v6.angle)<3&&Math.abs(film.length/v6.length-1)<.05,`${film.angle.toFixed(1)}° ${film.length.toFixed(0)} px against ${v6.angle.toFixed(1)}° ${v6.length.toFixed(0)} px`);
+ WINDOW_CARD.native.forEach((c,i)=>assert.ok(Math.hypot(c.x-SHOE_CARD.native[i].x,c.y-SHOE_CARD.native[i].y)<6,`corner ${i}`));
+ assert.ok(film.length<100,'the card in the window, not the pinched card');
 });
 
 // ── The plan's edits shared by the studio's Placering view (planQuad, editPlace, editIntent, …) ──
