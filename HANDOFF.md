@@ -92,7 +92,7 @@ skrivs på skrivbordet när allt har ett utfall. Här står bara det som inte ä
    granskad 3,75/5, inspelad före kortens fjärde steg, håret, rummets slinga och mungiporna; en ny tagning görs när
    läpparna är inne. Ingen granskare har hört ljudet: han bör lyssna innan han skickar. `paow-runda-2-` till `-5-` ska
    inte skickas.
-3. **Det han bör se i Prov:** underlägget (`underlagg`; han kunde inte klicka på länken), `liv-i-overkroppen`,
+3. **Det han bör se i Granska, delen Prov:** underlägget (`underlagg`; han kunde inte klicka på länken), `liv-i-overkroppen`,
    `blixten`, de fyra nya rummen (`monaco-och-spelhalan`: ska något av dem in i spelets meny?), röken
    (`rok-over-bordet`, av), `koppar-i-relingen` och trailerns nya slut (`trailer-noir-3`). På en iPhone (Kända brister):
    hörs hon i första repliken och under en runda, med ringsignalen på och av, och kommer rösten in sent första gången?
@@ -111,15 +111,21 @@ skrivs på skrivbordet när allt har ett utfall. Här står bara det som inte ä
 
 ## Nästa steg
 
-**Börja här (läget 2026-11-17 kl. 22.10; huvudagenten bytte chatt kl. 21.45).** Fem underagenter till huvudagenten
+**Börja här (läget 2026-11-17 kl. 22.20; huvudagenten bytte chatt kl. 21.45).** Fem underagenter till huvudagenten
 bygger om labbet på Jakobs ord från kl. 21.46 och 21.58 (Jakobs besked, "Ett labb"). Inget av det är incheckat i
 `main` förrän de har rapporterat och huvudagenten har sett det:
 
 - (a) **vyn Bordet, första versionen**, byggs i huvudträdet (ny adress `/studio/bordet/` bredvid Placering, Beställ och
   Scen, som står kvar tills han har sett den; arbetsmapp `D:/dealer-scratch/tmp/bordet/`);
-- fyra i egna arbetsträd på korta grenar, `D:/dealer-scratch/tmp/<gren>/trad`: (b) `gamla-labbet-bort` (gamla labbet tas
-  bort), (c) `karta-primara` (Karta och Primära blir en sida), (d) `granska-prov` (Granska och Prov blir en sida) och
-  (e) `lipsync-vy` (Lipsync-vyn och `docs/TAL.md`: var munnen görs och vad som gäller per dealer).
+- tre i egna arbetsträd på korta grenar, `D:/dealer-scratch/tmp/<gren>/trad`: (b) `gamla-labbet-bort` (gamla labbet tas
+  bort), (c) `karta-primara` (Karta och Primära blir en sida) och (e) `lipsync-vy` (Lipsync-vyn och `docs/TAL.md`: var
+  munnen görs och vad som gäller per dealer);
+- (d) `granska-prov` är inne (`ab08b8f`): Granska har delarna Filmer och Prov i sidans huvud, och
+  `/studio/prov/?prov=<mapp>` leder till samma prov. Inte sedd i en webbläsare än; trädet och grenen står kvar tills
+  det är gjort. Att göra efter grenarna: ta bort Prov ur menyn, och låta det som ännu skriver `/prov/?prov=` eller
+  kallar Prov en egen vy peka rätt (`studio/lib/decisions.ts`, `studio/lib/lipsync.ts`, `material/Rows.tsx`,
+  `bot/Welcome.tsx`, `studio/lib/guide.ts`, `tools/knowledge.ts`, `cloud/studio/bot-prompt.ts`, `docs/DRIFT.md` om
+  kopians meny, `docs/SYSTEM.md` om provmapparna).
 
 Huvudagenten slår ihop grenarna i `main` en i taget, bygger studion, ser på sidorna, ändrar menyn
 (`studio/components/shell/Rail.tsx`, som ingen av grenarna rör utom (b):s länk till gamla labbet) och tar bort träden
