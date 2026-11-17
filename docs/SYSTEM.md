@@ -615,8 +615,17 @@ IDLE>READY | READY>P1.C1 | P1.C1>READY | READY>D.C1 | D.C1>READY | READY>P1.C2 |
   tagningen, som klipps vid den rutan (`first.frame.index`; `motion.landingFrame` går före om det anges). Hela klipp
   efter varandra ger annars ett hack: handen lyfter och hoppar tillbaka ner på kortet. Huvudtagningen för en retur är,
   efter en Primär, den som skarvar mot givens huvudtagning, också när en rakt godkänd retur finns som inte gör det.
-  `resolveRound` räknar ut intervallen; rundbyggaren spelar kedjan, stegar ruta för ruta över klippen och visar saknade
+  `resolveRound` räknar ut intervallen; rundan spelar kedjan, stegar ruta för ruta över klippen och visar saknade
   kanter som luckor. Scout äger fortsatt ordning, regler och kortvärden.
+- **Bygg en runda** (Scen, fliken Runda, `studio/components/round/RoundPicker.tsx`; Jakob 2026-11-17: "varför
+  ska man inte få lägga in egna vägar utifrån vilka noder som finns"): vägen som brickor i hans notation och samma väg i
+  ett textfält, i takt åt båda hållen, och under "Nästa steg" en knapp per nod som kan följa den sista, med Ångra, Rensa
+  och Spela. Vilka noder som kan följa ger modellen (`parseEdge`); om steget spelas avgör `resolveRound` för steget
+  ensamt (`nextSteps` i `studio/lib/rounds.ts`): en egen tagning, platsens film för kort 2 eller en tagning gjord från
+  A2.2. Ett steg utan film är streckat med "ingen film" och läggs inte till (ett klick säger varför); en skriven väg med
+  ett sådant steg spelas med en lucka, och raden under fältet säger vilket steg. Spelets egna nödlösningar (Paows
+  hålkort med DC1:s film, ett kort utan hand, `src/game-director.ts`) har rundan inte. De färdiga rundorna är exempel
+  som laddar sin väg, och referensfilmerna (V6-filmen, de hela givarna) ligger hopfällda längst ned.
 - En härledd tagning är inget nytt klipp utan rutorna A–B ur ett befintligt:
   `"derived": [{id, kind, from, to, clip, frames: [A, B]}]` i jobbfilen.
 - **En film per plats** är förvalt läge (Jakobs beslut 2026-11-11; Karta med `?filmer=kort` visar

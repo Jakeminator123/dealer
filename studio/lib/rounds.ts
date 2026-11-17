@@ -1,6 +1,7 @@
-// Rounds for the Scen view (the studio's start): the ready-made ones as chips, the one his notation or the address asks for, a take played in
-// its context, and the card places the bank needs to say how far a seat's second card is moved. Pure: no DOM, no network;
-// tests in studio/tests/rounds.test.ts.
+// Rounds for the Scen view (the studio's start): a round built as a path through the nodes (what can follow a node, and
+// whether the bank has a film for that step), the ready-made ones as examples, the one his notation or the address asks
+// for, a take played in its context, and the card places the bank needs to say how far a seat's second card is moved.
+// Pure: no DOM, no network; tests in studio/tests/rounds.test.ts.
 //
 // A reference (film) is not a round of the bank: one finished, composited film (room, table, rendered cards) played as it
 // is, in "Inte 3D" only (in the 3D scene it would be keyed and projected, which is wrong for a finished picture).
@@ -8,10 +9,30 @@
 // "Referens", so that it is never mistaken for the bank's films played in the order of V6's deal ("Plats 4 · två kort").
 // The old public page's whole deals to all seven are others (16 and 17 cards, the older 14), kept here before that page
 // closes; where the registry has a timeline they are cut into chapters per card, so that one can jump to "P3C1".
-import { SEATS, formatSequence, parseEdge, playable, returnFits, roundSequence, type Graph, type Segment, type Step, type Take } from "../../src/clip-graph.ts";
+import {
+  AWAY,
+  OPTIONAL_TARGETS,
+  REVEAL_NODE,
+  SEATS,
+  TARGETS as CARDS,
+  formatSequence,
+  parseEdge,
+  parseNode,
+  playable,
+  resolveRound,
+  returnFits,
+  roundSequence,
+  type EdgeKind,
+  type Gap,
+  type Graph,
+  type Segment,
+  type Step,
+  type Take,
+  type Why,
+} from "../../src/clip-graph.ts";
 import { TARGETS, toPixels, type PlacementPlan } from "../../src/placement-model.ts";
 import { labUrl } from "./lab.ts";
-import { edgeName, formatJakob, formatSeconds, parseJakob, takeName } from "./names.ts";
+import { edgeName, formatJakob, formatSeconds, nodeCode, nodeName, parseJakob, takeName } from "./names.ts";
 import { partsOf, roundSeconds, type PlayPart } from "./parts.ts";
 
 /**
@@ -181,6 +202,156 @@ export function roundFromText(text: string, rounds: readonly Round[] = readyRoun
   const ready = !own.errors.length ? matchReady(own.steps, rounds) : null;
   return ready ?? own;
 }
+
+// ── The builder: a round as a path through the nodes ────────────────────────
+// Jakob 2026-11-17, of the three presets: "varför ska man inte få lägga in egna vägar utifrån vilka noder som finns". A
+// round is built one node at a time. What can follow a node is every node the model has a step to (parseEdge); whether
+// that step plays is what the round player does with it (resolveRound on the step alone): a take of its own, a seat's
+// second card on the seat's first-card film (seat mode, "platsens film"), a step from A2.2 on the takes made from that pose.
+// Nothing else stands in: the game's own stand-ins (src/game-director.ts: Paow's hole card dealt with DC1's film, a card
+// laid without a hand) are the game's, not the round player's, and a step without a film plays as a gap card.
+
+/** A path being built: the node it starts on (head, also before its first step) and its steps. */
+export type Path = { head: string | null; steps: Step[] };
+export const EMPTY_PATH: Path = { head: null, steps: [] };
+
+/** The node a path ends on: its last step's end, else the node it starts on; null for an empty path. */
+export const lastNode = (path: Path): string | null => path.steps.at(-1)?.to ?? path.head;
+
+/** The path a round's steps make (empty for a reference film or a round without steps). */
+export const pathOf = (round: Round | null): Path => (isReference(round) || !round?.steps.length ? EMPTY_PATH : { head: round.steps[0].from, steps: round.steps });
+
+/** The path with one node more: a step from its last node to `node`, or `node` as the start of an empty path. */
+export function addNode(path: Path, node: string): Path {
+  const last = lastNode(path);
+  return last ? { head: path.head ?? last, steps: [...path.steps, { from: last, to: node }] } : { head: node, steps: [] };
+}
+
+/** The path without its last step; a path of only its start becomes empty. */
+export const undoStep = (path: Path): Path => (path.steps.length ? { head: path.head, steps: path.steps.slice(0, -1) } : EMPTY_PATH);
+
+export const samePath = (a: Path, b: Path): boolean => a.head === b.head && stepKey(a.steps) === stepKey(b.steps);
+
+/** A path's nodes for its chips: each with the step that ends on it (null where a chain starts) and whether a new chain starts there ("|"). */
+export type PathNode = { node: string; step: number | null; broken: boolean };
+export function pathNodes(path: Path): PathNode[] {
+  if (!path.steps.length) return path.head ? [{ node: path.head, step: null, broken: false }] : [];
+  const out: PathNode[] = [];
+  path.steps.forEach((s, step) => {
+    if (s.from !== out.at(-1)?.node) out.push({ node: s.from, step: null, broken: out.length > 0 });
+    out.push({ node: s.to, step, broken: false });
+  });
+  return out;
+}
+
+/** A path in his notation, as the field shows it: "A1 - A2.1 - P4C1"; "A1" for a path that has only its start. */
+export const pathText = (path: Path): string => (path.steps.length ? formatJakob(path.steps) : path.head ? nodeCode(path.head) : "");
+
+/** Anchor 2.2 (READY-B, the hand flat over the card in the shoe): his anchor, offered whether or not the bank has a film from it yet. */
+const ANCHOR_22 = "READY-B";
+
+/** The poses at the shoe: A2.1, A2.2 and any other the bank has films from. */
+const shoePoses = (graph: Pick<Graph, "edges"> | null): string[] => ["READY", ...new Set([ANCHOR_22, ...(graph?.edges ?? []).flatMap((e) => e.hubVariants)].sort())];
+
+/** The anchors in the order "Nästa steg" shows them: the poses at the shoe first (where a step from rest goes), then A1, DC2 upp, Borta. */
+export const roundAnchors = (graph: Pick<Graph, "edges"> | null): string[] => [...shoePoses(graph), "IDLE", REVEAL_NODE, AWAY];
+
+/** Every node a round can pass: the anchors, then the 16 card places and the dealer's third card. The experiments' own poses are not his notation. */
+export const roundNodes = (graph: Pick<Graph, "edges"> | null): string[] => [...roundAnchors(graph), ...CARDS, ...OPTIONAL_TARGETS];
+
+/** Where a round can start: at rest, at the shoe or away (DC2 upp is rest after the turn, reached from A1). */
+export const startNodes = (graph: Pick<Graph, "edges"> | null): string[] => ["IDLE", ...shoePoses(graph), AWAY];
+
+/** The nodes the model has a step to from `from`, films or not. The hole card is turned once: after DC2 upp comes what follows rest. */
+export const followers = (graph: Pick<Graph, "edges"> | null, from: string): string[] =>
+  roundNodes(graph).filter((to) => !(from === REVEAL_NODE && to === REVEAL_NODE) && !!parseEdge(`${from}>${to}`));
+
+/**
+ * A node that can follow: the step to it and whether it plays. plays: the round player has a film for it, and take and why
+ * (WHY_LABEL) say which and why; otherwise gap says why not (NO_FILM).
+ */
+export type NextStep = { node: string; step: Step; plays: boolean; gap: Gap | null; take: Take | null; why: Why };
+
+export function nextSteps(graph: Graph, from: string): NextStep[] {
+  return followers(graph, from).map((to) => {
+    const step = { from, to };
+    const [seg] = resolveRound(graph, [step], { holeCardDown: true });
+    const plays = !!seg.take && !seg.gap;
+    return { node: to, step, plays, gap: plays ? null : (seg.gap ?? "MISSING"), take: plays ? seg.take : null, why: seg.why };
+  });
+}
+
+/** Why a step has no film, in a few words. */
+export const NO_FILM: Record<Gap, string> = {
+  INVALID: "inget steg i banken",
+  MISSING: "ingen film",
+  WAITING: "ingen film än, den är inte klar",
+  REJECTED: "ingen film, bara underkända",
+  LOCAL_ONLY: "filmen finns bara lokalt",
+};
+
+/** Per step of a path, why the round player has no film for it (null where it has one), as the stage would play the path. */
+export function stepGaps(graph: Graph, steps: readonly Step[]): (Gap | null)[] {
+  return resolveRound(graph, [...steps], { holeCardDown: true }).map((s) => (s.take && !s.gap ? null : (s.gap ?? "MISSING")));
+}
+
+/** The steps without a film, one line each: "Steg 4, P4C1 → A1: ingen film". */
+export const pathProblems = (steps: readonly Step[], gaps: readonly (Gap | null)[]): string[] =>
+  steps.flatMap((s, i) => (gaps[i] ? [`Steg ${i + 1}, ${edgeName(s)}: ${NO_FILM[gaps[i]!]}`] : []));
+
+/** A card place (P4.C1, D.C3) rather than an anchor. */
+export const isCard = (node: string): boolean => /^(?:P[1-7]|D)\.C[1-3]$/.test(node);
+
+const STEP_WORD: Record<EdgeKind, string> = { DEAL: "giv", RETURN: "retur", ENTRY: "ingång", IDLE: "vila", REVEAL: "vändning", ARRIVE: "hon kommer", LEAVE: "hon går" };
+/** What a step's film does, in one word of the studio's glossary: ingång, giv, retur, utgång, vila, vändning, hon kommer, hon går. */
+export function stepWord(step: Step): string {
+  const ref = parseEdge(`${step.from}>${step.to}`);
+  if (!ref) return "";
+  return ref.kind === "RETURN" && !ref.target ? "utgång" : STEP_WORD[ref.kind];
+}
+
+const fold = (text: string) => text.trim().toLowerCase().replace(/\s+/g, " ");
+/** The node a word names in his notation ("A1", "a2.1 nyp", "P4C1", "DC2 upp", "Borta") or the lab's ("IDLE", "P4.C1", "VILA"), or null. */
+export function nodeOf(word: string, graph: Pick<Graph, "edges"> | null = null): string | null {
+  const nodes = roundNodes(graph);
+  const want = fold(word);
+  const named = nodes.find((n) => fold(nodeCode(n)) === want || fold(nodeName(n)) === want);
+  if (named) return named;
+  const parsed = parseNode(word);
+  return parsed && nodes.includes(parsed) ? parsed : null;
+}
+
+const orList = (words: readonly string[]) => (words.length < 2 ? words.join("") : `${words.slice(0, -1).join(", ")} eller ${words.at(-1)}`);
+
+/** What can follow a node, in a few words: "A2.1, A2.2, A1, DC2 upp eller Borta"; the cards as one ("ett kort eller A1"). */
+export function followWords(graph: Pick<Graph, "edges"> | null, from: string): string {
+  const next = followers(graph, from);
+  const cards = new Set<string>([...CARDS, ...OPTIONAL_TARGETS]);
+  const anchors = next.filter((n) => !cards.has(n)).map(nodeCode);
+  return orList(next.some((n) => cards.has(n)) ? ["ett kort", ...anchors] : anchors);
+}
+
+/**
+ * What he typed, as a path: the steps of his notation, one node alone as the start, or the first thing that could not be
+ * read, in one line. Two neighbours with no step between them also say what can follow the first:
+ * "A1 → P4C1 går inte: efter A1 kommer A2.1, A2.2, A1, DC2 upp eller Borta."
+ */
+export function readPath(text: string, graph: Pick<Graph, "edges"> | null = null): { path: Path | null; error: string | null } {
+  const source = text.trim();
+  if (!source) return { path: EMPTY_PATH, error: null };
+  const lone = nodeOf(source, graph);
+  if (lone) return { path: { head: lone, steps: [] }, error: null };
+  const { steps, errors } = parseJakob(source);
+  if (!errors.length && steps.length) return { path: { head: steps[0].from, steps }, error: null };
+  const first = errors[0] ?? "Kunde inte läsa rundan.";
+  const pair = /^(.+) → (.+) är ingen film\.$/.exec(first);
+  const from = pair ? nodeOf(pair[1], graph) : null;
+  if (!pair || !from) return { path: null, error: first };
+  return { path: null, error: `${pair[1]} → ${pair[2]} går inte: efter ${pair[1]} kommer ${followWords(graph, from)}.` };
+}
+
+/** The round a built path plays: a ready-made one when the steps are its steps, else his own ("Egen runda"). */
+export const ownRound = (steps: readonly Step[], rounds: readonly Round[] = readyRounds()): Round => matchReady(steps, rounds) ?? fromSteps("egen", "Egen runda", [...steps]);
 
 // ── What the stage plays ────────────────────────────────────────────────────
 /** A reference film as the stage's one part: the whole film, at its own speed, without a card track. */

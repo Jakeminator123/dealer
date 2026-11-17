@@ -3,10 +3,53 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { buildGraph, resolveRound, type BankData, type BankJob } from "../../src/clip-graph.ts";
 import { defaultPlan } from "../../src/placement-model.ts";
-import { formatJakob } from "../lib/names.ts";
+import { formatJakob, nodeCode } from "../lib/names.ts";
 import { partsOf } from "../lib/parts.ts";
 import { readFileSync } from "node:fs";
-import { OLDER14_FILM, REFERENCE_FILMS, SEAT_FOUR, SEQ16_FILM, SEQ17_FILM, V6_FILM, addressOf, chaptersOf, referenceParts, type SequenceSegment,contextRound, contextSteps, isReference, matchReady, no3d, placesOf, readAddress, readyRounds, referencePart, roundFacts, roundFromText, roundParts, viewFor } from "../lib/rounds.ts";
+import {
+  EMPTY_PATH,
+  OLDER14_FILM,
+  REFERENCE_FILMS,
+  SEAT_FOUR,
+  SEQ16_FILM,
+  SEQ17_FILM,
+  V6_DEAL,
+  V6_FILM,
+  addNode,
+  addressOf,
+  chaptersOf,
+  contextRound,
+  contextSteps,
+  followers,
+  isCard,
+  isReference,
+  lastNode,
+  matchReady,
+  nextSteps,
+  no3d,
+  nodeOf,
+  ownRound,
+  pathNodes,
+  pathOf,
+  pathProblems,
+  pathText,
+  placesOf,
+  readAddress,
+  readPath,
+  readyRounds,
+  referencePart,
+  referenceParts,
+  roundFacts,
+  roundFromText,
+  roundParts,
+  samePath,
+  startNodes,
+  stepGaps,
+  stepWord,
+  undoStep,
+  viewFor,
+  type SequenceSegment,
+} from "../lib/rounds.ts";
 import { nearSteps, sameSet, stillOf } from "../components/round/strip.ts";
 
 test("the ready-made rounds, in his notation", () => {
@@ -210,4 +253,101 @@ test("card places from the plan, as resolveRound takes them", () => {
 test("the round in a few words", () => {
   const parts = partsOf(resolveRound(graph, [{ from: "READY", to: "P4.C1", take: ids[1] }, { from: "P4.C1", to: "IDLE" }, { from: "IDLE", to: "REVEAL(D.C2)" }]));
   assert.equal(roundFacts(parts), "3 steg · 1 lucka · 7,5 s");
+});
+
+// ── The builder ─────────────────────────────────────────────────────────────
+const codes = (nodes: readonly string[]) => nodes.map(nodeCode);
+
+test("the builder: a path grows a node at a time, goes back a step, and reads as his notation", () => {
+  let path = addNode(EMPTY_PATH, "IDLE");
+  assert.deepEqual(path, { head: "IDLE", steps: [] });
+  assert.equal(pathText(path), "A1");
+  assert.equal(lastNode(path), "IDLE");
+  for (const node of ["READY", "P4.C1", "READY"]) path = addNode(path, node);
+  assert.equal(pathText(path), "A1 - A2.1 - P4C1 - A2.1");
+  assert.deepEqual(codes(pathNodes(path).map((n) => n.node)), ["A1", "A2.1", "P4C1", "A2.1"]);
+  assert.deepEqual(pathNodes(path).map((n) => n.step), [null, 0, 1, 2]);
+  assert.equal(pathText(undoStep(path)), "A1 - A2.1 - P4C1");
+  assert.deepEqual(undoStep(addNode(EMPTY_PATH, "IDLE")), EMPTY_PATH);
+  assert.deepEqual(undoStep(EMPTY_PATH), EMPTY_PATH);
+  assert.equal(lastNode(EMPTY_PATH), null);
+  // a typed "|" starts a new chain: its first node is a chip of its own, marked
+  const broken = readPath("A2.1 - P4C1 | A1 - A2.1").path!;
+  assert.deepEqual(pathNodes(broken).map((n) => [nodeCode(n.node), n.broken]), [["A2.1", false], ["P4C1", false], ["A1", true], ["A2.1", false]]);
+  // a ready-made round is its path, a reference film none
+  const ready = readyRounds();
+  assert.equal(pathText(pathOf(ready[1])), V6_DEAL);
+  assert.deepEqual(pathOf(ready.find(isReference)!), EMPTY_PATH);
+  assert.deepEqual(pathOf(null), EMPTY_PATH);
+  assert.ok(samePath(pathOf(ready[0]), pathOf(ready[0])));
+  assert.ok(!samePath(pathOf(ready[0]), readPath("A1 - A2.1 - P4C1 - A1").path!)); // the favourite's takes are locked
+});
+
+test("the builder: what can follow a node is the model's steps, and the bank says which play", () => {
+  // from rest: the entries to the shoe, the idle, the turn of the hole card and her leaving; never a card
+  assert.deepEqual(codes(followers(graph, "IDLE")), ["A2.1", "A2.2", "A1", "DC2 upp", "Borta"]);
+  assert.deepEqual(codes(startNodes(graph)), ["A1", "A2.1", "A2.2", "Borta"]);
+  // from the shoe: every card and the exit; from a card: back to the shoe or to rest; once away, only back to rest
+  const fromShoe = followers(graph, "READY");
+  assert.equal(fromShoe.length, 18);
+  assert.deepEqual(codes(fromShoe.filter((n) => !isCard(n))), ["A1"]);
+  assert.deepEqual(codes(followers(graph, "P4.C1")), ["A2.1", "A2.2", "A1"]);
+  assert.deepEqual(codes(followers(graph, "AWAY")), ["A1"]);
+  // the hole card is turned once: after DC2 upp comes what follows rest, without a second turn
+  assert.deepEqual(codes(followers(graph, "REVEAL(D.C2)")), ["A2.1", "A2.2", "A1", "Borta"]);
+
+  const shoe = new Map(nextSteps(graph, "READY").map((n) => [n.node, n]));
+  assert.ok(shoe.get("P4.C1")!.plays);
+  assert.equal(shoe.get("P4.C1")!.take?.id, graph.edge["READY>P4.C1"].main!.id);
+  // seat mode: the second card plays the seat's film, and says so
+  assert.ok(shoe.get("P4.C2")!.plays);
+  assert.equal(shoe.get("P4.C2")!.why, "SHARED");
+  // no film: dimmed, with the reason, and no take
+  assert.deepEqual({ plays: shoe.get("P5.C1")!.plays, gap: shoe.get("P5.C1")!.gap, take: shoe.get("P5.C1")!.take }, { plays: false, gap: "MISSING", take: null });
+  assert.equal(shoe.get("IDLE")!.plays, false);
+  const card = new Map(nextSteps(graph, "P4.C1").map((n) => [n.node, n]));
+  assert.deepEqual([card.get("READY")!.plays, card.get("IDLE")!.plays, card.get("READY-B")!.plays], [true, true, false]); // no take from A2.2's pose
+  assert.deepEqual(nextSteps(graph, "IDLE").filter((n) => n.plays).map((n) => n.node), ["READY"]);
+  // what each film does, in the glossary's words
+  assert.deepEqual(
+    [["IDLE", "READY"], ["READY", "P4.C1"], ["P4.C1", "READY"], ["READY", "IDLE"], ["IDLE", "IDLE"], ["IDLE", "REVEAL(D.C2)"], ["AWAY", "IDLE"], ["IDLE", "AWAY"]].map(([from, to]) => stepWord({ from, to })),
+    ["ingång", "giv", "retur", "utgång", "vila", "vändning", "hon kommer", "hon går"],
+  );
+});
+
+test("the builder: a path with a step without a film names the step; one that cannot be read says what can follow", () => {
+  const path = readPath("A1 - A2.1 - P4C1 - A2.1 - A1", graph).path!;
+  const gaps = stepGaps(graph, path.steps);
+  assert.deepEqual(gaps, [null, null, null, "MISSING"]);
+  assert.deepEqual(pathProblems(path.steps, gaps), ["Steg 4, A2.1 → A1: ingen film"]);
+  assert.deepEqual(pathProblems(path.steps.slice(0, 3), gaps), []);
+  // two neighbours without a step between them
+  assert.equal(readPath("A1 - P4C1", graph).error, "A1 → P4C1 går inte: efter A1 kommer A2.1, A2.2, A1, DC2 upp eller Borta.");
+  assert.equal(readPath("A2.1 - A2.2").error, "A2.1 → A2.2 går inte: efter A2.1 kommer ett kort eller A1.");
+  assert.equal(readPath("P4C1 - P5C1").error, "P4C1 → P5C1 går inte: efter P4C1 kommer A2.1, A2.2 eller A1.");
+  assert.equal(readPath("A2 - P4C1").error, "”A2” kan vara A2.1 (nyp) eller A2.2 (hand över): skriv vilken.");
+  assert.equal(readPath("A1 - X9").error, "Kunde inte läsa ”X9”.");
+  // one node alone is a start, the empty field an empty path
+  for (const word of ["A1", " a1 ", "A1 vila", "VILA", "IDLE"]) assert.deepEqual(readPath(word).path, { head: "IDLE", steps: [] }, word);
+  assert.deepEqual(readPath("DC2 upp").path, { head: "REVEAL(D.C2)", steps: [] });
+  assert.deepEqual(readPath("p4.c1").path, { head: "P4.C1", steps: [] });
+  assert.equal(nodeOf("A2.2"), "READY-B");
+  assert.equal(nodeOf("Borta"), "AWAY");
+  assert.equal(nodeOf("A2"), null);
+  assert.deepEqual(readPath("  "), { path: EMPTY_PATH, error: null });
+});
+
+test("the builder: what Spela plays is a ready-made round when the steps are its own, else his", () => {
+  const rounds = readyRounds();
+  assert.equal(ownRound(readPath(V6_DEAL).path!.steps, rounds).key, "plats-4-tva");
+  assert.equal(ownRound(pathOf(rounds[0]).steps, rounds).key, "plats-4"); // the favourite's locked takes kept
+  const own = ownRound(readPath("A1 - A2.1 - P4C1 - A2.1 - A1").path!.steps, rounds);
+  assert.deepEqual({ key: own.key, name: own.name, text: own.text, errors: own.errors }, { key: "egen", name: "Egen runda", text: "A1 - A2.1 - P4C1 - A2.1 - A1", errors: [] });
+  // its text is the address's and reads back to the same steps
+  assert.deepEqual(roundFromText(own.text, rounds).steps, own.steps);
+  // a path grown from the favourite keeps its locked takes and is written in the lab's notation for the address
+  const grown = ownRound(addNode(pathOf(rounds[0]), "READY").steps, rounds);
+  assert.equal(grown.key, "egen");
+  assert.equal(grown.text, `${SEAT_FOUR} | IDLE>READY`);
+  assert.deepEqual(roundFromText(grown.text, rounds).steps, grown.steps);
 });
