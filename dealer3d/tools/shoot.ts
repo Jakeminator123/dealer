@@ -66,12 +66,13 @@ try {
   if (!ready) throw Error('The page did not come up. ' + errors.join(' | '));
   const facts = await run('JSON.stringify({dealVersion: dealer3d.dealVersion, duration: dealer3d.duration, moments: dealer3d.moments, lens: dealer3d.lens, landed: dealer3d.landed, model: dealer3d.model, gl: (() => { const c = document.createElement("canvas").getContext("webgl2"); const e = c && c.getExtension("WEBGL_debug_renderer_info"); return e ? c.getParameter(e.UNMASKED_RENDERER_WEBGL) : "?"; })()})');
   console.log('page', facts);
+  const figure: unknown[] = []; // with a model: its arms' joints at every moment shot (figure-model.ts, measure)
   for (let i = 0; i < times.length; i++) {
-    await run(`dealer3d.setTime(${times[i]})`);
+    await run(`dealer3d.setTime(${times[i]})`); if (MODEL) figure.push(JSON.parse(await run('JSON.stringify(dealer3d.figureNow())')));
     const shot = await send('Page.captureScreenshot', {format: 'png'}), name = film ? `${prefix}-${String(i + 1).padStart(4, '0')}.png` : `${prefix}-${times[i].toFixed(2)}.png`;
     await writeFile(path.join(out, name), Buffer.from(shot.data, 'base64'));
   }
-  await writeFile(path.join(out, `${prefix}.json`), JSON.stringify({page: JSON.parse(facts), query: Object.fromEntries(query), size: [W, H], times, film}, null, 1) + '\n');
+  await writeFile(path.join(out, `${prefix}.json`), JSON.stringify({page: JSON.parse(facts), query: Object.fromEntries(query), size: [W, H], times, film, ...(MODEL ? {figure} : {})}, null, 1) + '\n');
   console.log(`${times.length} pictures in ${out}`, errors.length ? 'FEL: ' + errors.join(' | ') : 'no page errors');
   if (errors.length) code = 2;
   ws.close();

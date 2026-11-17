@@ -62,6 +62,27 @@ använder repots låsta `three` och `sharp`.
   "-2" är gjorda UTAN detta; en förlaga med fri hand görs först när Jakob har sett den.
 - **Blicken** (`stage.ts`): huvudet ser på kortet från skon, genom vändningen och tills det ligger, och lyfts sedan
   under 0,65 s. Också en modell: huvudets plats är avläst (det går 24 mm i filmen), vart det ser är det inte.
+- **Givens slag från ankare 2.1 (nyp), i den avlästa givens rutor** (30 per sekund, 120 rutor; mätt i
+  `data/giv-pamela-p4.json`, kortets mitt i bankens bildpunkter). Regeln som huvudagenten skrev till Jakob 2026-11-18
+  är samma slag: nyp, bär i luften, nyckelvridning på vägen, lägg, skjut sista biten, vila.
+  1. *Nyp*, ruta 0–23: tumme och pekfinger om kortet som står i skon, handflatan nedåt, handleden 126–149 mm över
+     filten. Kortet lämnar skon ruta 23.
+  2. *Bär i luften*, ruta 23–50: baksidan mot kameran, handleden högst 157 mm (ruta 30), kortet från (1273, 790) till
+     (917, 841).
+  3. *Nyckelvridning*, ruta 50–56: handen vrids från handflatan nedåt till handflatan åt sidan (tummen upp); kortet
+     står på kant mot kameran ruta 53–55, lågt: handleden 60–69 mm och lägsta fingertopp 20 mm över filten, 215
+     bildpunkter före sin plats. Kortet lyfts aldrig igen efter vridningen.
+  4. *Lägg*, ruta 60–80: framsidan uppåt från ruta 60, fingertopparna vid filten (7–8 mm), kortet bärs och glider lågt
+     från y 961 till y 1081 medan handflatan vrids tillbaka nedåt.
+  5. *Skjut sista biten*, ruta 80–95: fingertopparna skjuter kortet de sista 20 bildpunkterna (y 1081 till 1101); kortet
+     ligger plant och still från ruta 96.
+  6. *Vila*, ruta 96–119: handen ligger kvar på kortet som i ruta 96 (förlagorna "-2" och "-3"); det är sista bilden.
+  I de avlästa talen ser handflatan aldrig uppåt: den går från nedåt (−0,88) till åt sidan (−0,05, ruta 51) och tillbaka
+  till nedåt (−0,84). Det stämmer med huvudagentens läsning av filmen ruta för ruta: handen vänds en gång, i luften, och
+  aldrig i slutet; efter vridningen hålls kortet uppifrån i sin bortre kant med handryggen uppåt. Handflatans håll kommer
+  ur tre av MediaPipes punkter och är osäkert när handen ses från kanten, så filmens egna rutor avgör om ord och tal
+  skulle skilja sig. Den första, handritade given (`deal.ts`) slutade med handflatan
+  uppåt och handen borta från kortet och är pensionerad som förlaga.
 - **Inte gjort:** Paows egen giv (`paow-giv-2-1-p4-11-01`, 169 rutor med återgång till skon) är avläst men inte lagd i
   rummet: handens djup på vägen tillbaka har ingen fästpunkt än.
 
@@ -117,7 +138,12 @@ stänger sin Chrome och sin filserver själv. En hel omgång (stillbilder, två 
   utanför repot) sitter på dockans plats och ställs ur samma leder: bålen som en bit från höft till axlar, armarna med
   modellens egna benlängder mot dockans handleder, huvudet två tredjedelar av vägen dit dockan ser (högst 40°, annars
   döljer håret ansiktet). Hon är förstorad till 1,10 för att armen ska vara lika lång som den avlästa (0,55 m). Laddar
-  på 0,5–0,7 s, första bilden efter 1,5–1,9 s. Det som inte håller: händerna är stela, så kortet svävar bredvid en
+  på 0,5–0,7 s, första bilden efter 1,5–1,9 s. Jakob såg armen "ur led" i bilden där kortet läggs: överarmen var
+  siktad kortaste vägen och blev rullad 33–48° fel kring sin egen längd, så underarmen böjde sig snett ut ur armbågen,
+  och armbågens sida togs från hennes egen (bredare) axel i stället för dockans. Nu rullas överarmen tills det gångjärn
+  hon modellerades med står vinkelrätt mot böjens plan, armbågens sida är dockans, och handen hålls högst 50° från
+  underarmens linje; `shoot.ts --model` skriver armarnas leder per bild (`ruta.json`, `figure`): armbåge 76–132°,
+  handled 13–33° genom given. Det som inte håller: händerna är stela, så kortet svävar bredvid en
   platt hand; benen under bordet är inte sedda från någon vy; hon ser ut som en spelfigur. Händerna behöver fingerben
   (Meshys rigg ger inga; en egen rigg eller en modell med fingrar) innan hon kan hålla ett kort. Ett utseendeprov,
   ingen förlaga.
@@ -132,4 +158,16 @@ stänger sin Chrome och sin filserver själv. En hel omgång (stillbilder, två 
   skon (plats 7 i 25 rutor, plats 6 i en), eftersom skon står mellan henne och de platserna och den avlästa handen går
   lågt över filten. `lift.ts` säger det (`throughShoe` i `capture.ts`), och testet kräver att en sparad giv går fri.
   De platserna behöver en egen avläst film (en giv som går över eller framför skon).
+- **En annan vinkel** (2026-11-18, prov `dealer-3d-vinkel-stol-1`, inget betalt). Paows registrerade keystonebilder
+  och ankare är alla tagna framifrån (bankens kamera). Ett prov från sidan finns sedan 2026-11-13
+  (`assets/proofs/paow-fran-sidan/`, ett öga 40° åt vänster): nyckelbilden gjordes ur frontankaret, omprojicerat med
+  djup och återställt av en bildmodell, och filmen med Runways kameraflytt; receptet och vad som föll står i den banans
+  mapp på slaskdisken (`levande-objekt/kamera2-paow/`). Det provet är före de tatuerade händerna och har ingen dom av
+  Jakob. 3D-banan ger samma recept en renare råbild: figuren, bordet och kortet ritade från exakt stolens öga i stället
+  för omprojicerade. Vägen till en film från en annan stol:
+  dockans giv filmad från stolens öga (`shoot.ts --eyes 1 --look plain`) styr rörelsen, och Meshy-modellen från samma öga
+  i första och sista rutan (`--model`, `--times 0,3.9667`) är underlag åt en bildmodell som gör de två riktiga bilderna
+  filmen börjar och slutar på. Oprövat: om bildmodellen håller hennes utseende från sidan, och om rummet bakom henne
+  ska komma ur 3D-scenen. Tre ögon (vänster, mitten, höger) räcker troligen för sju stolar; sju egna banker gör det
+  inte rimligt.
 - Två datorer som delar en giv (händelse, kortplats, `DEAL_VERSION`, starttid) är inte byggt.

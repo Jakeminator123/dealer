@@ -33,4 +33,4 @@ await setTime(Number(q.get('t') ?? 0)); const drawnMs = Math.round(performance.n
 if (q.get('play') === '1') { const began = performance.now(); const tick = () => { stage.setTime(((performance.now() - began) / 1000) % (stage.duration + 0.6)); draw(); requestAnimationFrame(tick); }; requestAnimationFrame(tick); }
 addEventListener('resize', () => location.reload());
 (window as unknown as {dealer3d: unknown}).dealer3d = {ready: true, dealVersion: DEAL_VERSION, duration: stage.duration, moments: stage.moments, setTime, lens: stage.lens, landed: stage.landed(),
-  model: figure ? {scale: figure.scale, triangles: figure.triangles, loadMs, drawnMs, about: figure.about} : null};
+  model: figure ? {scale: figure.scale, triangles: figure.triangles, loadMs, drawnMs, about: figure.about} : null, figureNow: () => figure ? figure.measure() : null};

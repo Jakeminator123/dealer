@@ -11,7 +11,9 @@ import {BODY} from './body.ts';
 
 /** What the model is posed from, in the scene's metres: her right then her left for shoulders, arms and hands; `looks` is the way her head faces. */
 export type FigurePose = {hip: Vec3; shoulders: [Vec3, Vec3]; arms: {shoulder: Vec3; elbow: Vec3; wrist: Vec3}[]; hands: ({forward: Vec3; palm: Vec3} | null)[]; looks: Vec3};
-export type Figure = {root: T.Group; scale: number; triangles: number; about: Record<string, unknown>; pose(p: FigurePose): void};
+/** `measure`: the arms as last posed, degrees, her right then her left: how far the upper arm was rolled to set the elbow's hinge, how far the elbow is bent, how far the hand stands off the forearm's line, and how far the figure's hand asked it to. */
+export type Figure = {root: T.Group; scale: number; triangles: number; about: Record<string, unknown>; pose(p: FigurePose): void; measure(): {roll: number[]; elbow: number[]; wrist: number[]; wristAsked: number[]}};
+const WRIST = 50 * Math.PI / 180;
 const SIDES = ['Right', 'Left'] as const, v = (p: Vec3) => new T.Vector3(p[0], p[1], p[2]), round = (p: T.Vector3) => [p.x, p.y, p.z].map(n => Math.round(n * 1000) / 1000);
 
 /** The three axes of a cloud of points, longest first (the eigenvectors of its covariance, by Jacobi turns). */
@@ -55,6 +57,10 @@ export async function loadFigure(url: string): Promise<Figure> {
     const thumb = across.clone().multiplyScalar(Math.sign(skew) || 1); palm.copy(side ? new T.Vector3().crossVectors(forward, thumb) : new T.Vector3().crossVectors(thumb, forward)).normalize();
     about[`${SIDES[side]}Hand`] = {vertices: cloud.length, long: Math.round(far * 1000) / 1000, forward: round(forward), thumb: round(thumb), palm: round(palm)};
     return {forward: forward.applyQuaternion(toLocal), palm: palm.applyQuaternion(toLocal), long: far}; });
+  // Her elbow's hinge, as she was modelled: an arm held out bends forward, so the hinge is square to the arm and to the
+  // way she faces. Kept in the upper arm's own frame, so that it can be asked for in any pose.
+  const facing = at(front).sub(at(head)).normalize(), hinges = arms.map(a => new T.Vector3().crossVectors(at(a.fore).sub(at(a.upper)), facing).normalize().applyQuaternion(a.upper.getWorldQuaternion(new T.Quaternion()).invert()));
+  const last = {roll: [0, 0], elbow: [0, 0], wrist: [0, 0], wristAsked: [0, 0]}, degrees = (n: number) => Math.round(n * 1800 / Math.PI) / 10;
   root.scale.setScalar(scale); about.arm = lengths.map(l => l.map(n => Math.round(n * 1000) / 1000)); about.shouldersApart = Math.round(at(arms[0].upper).distanceTo(at(arms[1].upper)) * 1000) / 1000;
 
   const worldQ = new T.Quaternion(), parentQ = new T.Quaternion(), turn = new T.Quaternion();
@@ -74,18 +80,33 @@ export async function loadFigure(url: string): Promise<Figure> {
       swing(a.thigh, at(a.shin).sub(at(a.thigh)), new T.Vector3(i ? 0.12 : -0.12, -0.08, 1)); swing(a.shin, at(a.foot).sub(at(a.shin)), new T.Vector3(0, -1, 0.08));
       // Her arm: from her own shoulder to the figure's wrist, her own bone lengths, the elbow out the way the figure's elbow is.
       const s = at(a.upper), w = v(p.arms[i].wrist), l1 = lengths[i][0] * scale, l2 = lengths[i][1] * scale, far = Math.min(l1 + l2 - 0.002, Math.max(Math.abs(l1 - l2) + 0.002, s.distanceTo(w)));
-      const dir = w.clone().sub(s).normalize(), along = (l1 * l1 - l2 * l2 + far * far) / (2 * far), out = flatten(v(p.arms[i].elbow).sub(s), dir), elbow = s.clone().addScaledVector(dir, along).addScaledVector(out, Math.sqrt(Math.max(0, l1 * l1 - along * along)));
-      aimAt(a.upper, a.fore, elbow); aimAt(a.fore, a.hand, w);
+      // The side her elbow is on is the figure's own: the figure's elbow off the figure's own line from shoulder to wrist.
+      // (Taken from her shoulder, as it was first, a nearly straight arm got its elbow from the few centimetres her
+      // shoulders are broader than the figure's, and the arm bent to a side no arm bends to.)
+      const own = v(p.arms[i].wrist).sub(v(p.arms[i].shoulder)).normalize(), side = flatten(v(p.arms[i].elbow).sub(v(p.arms[i].shoulder)), own);
+      const dir = w.clone().sub(s).normalize(), along = (l1 * l1 - l2 * l2 + far * far) / (2 * far), out = flatten(side, dir), elbow = s.clone().addScaledVector(dir, along).addScaledVector(out, Math.sqrt(Math.max(0, l1 * l1 - along * along)));
+      aimAt(a.upper, a.fore, elbow);
+      // An elbow is a hinge. Aiming the upper arm the shortest way leaves it rolled about its own length any which way, and
+      // the forearm then bends sideways out of the elbow (Jakob, 2026-11-18: "ur led"). So the upper arm is rolled until
+      // the hinge she was modelled with stands square to the plane this arm bends in.
+      const upper = elbow.clone().sub(s).normalize(), fore = w.clone().sub(elbow).normalize(), bend = new T.Vector3().crossVectors(upper, fore); last.roll[i] = 0;
+      if (bend.length() > 0.02) { const has = flatten(hinges[i].clone().applyQuaternion(a.upper.getWorldQuaternion(new T.Quaternion())), upper), want = flatten(bend, upper), roll = Math.atan2(new T.Vector3().crossVectors(has, want).dot(upper), has.dot(want));
+        turned(a.upper, turn.setFromAxisAngle(upper, roll)); last.roll[i] = degrees(roll); }
+      aimAt(a.fore, a.hand, w); last.elbow[i] = degrees(upper.angleTo(fore));
       const hand = p.hands[i]; if (!hand) return;
       // Her hand: along the figure's hand, then turned about its own length until its palm looks where the figure's palm
       // looks. Half of that turn is given to the forearm, as a forearm turns with its hand, and the hand is laid again.
       // Her fingers are stiff, so a hand aimed down at the table would go through it: its tips stay a finger's thickness over the felt (y = 0).
-      const forward = v(hand.forward).normalize(), reach = handAxes[i].long * scale, clear = 0.012;
+      const forward = v(hand.forward).normalize(), reach = handAxes[i].long * scale, clear = 0.012, asked = fore.angleTo(forward); last.wristAsked[i] = degrees(asked);
+      // Her forearm is not the figure's (her shoulders are broader and her bones her own), so the figure's hand can stand
+      // farther off her forearm's line than a wrist bends: it is brought back to 50 degrees off it.
+      if (asked > WRIST) { const part = new T.Quaternion().slerp(new T.Quaternion().setFromUnitVectors(fore, forward), WRIST / asked); forward.copy(fore).applyQuaternion(part).normalize(); }
       if (w.y > clear && w.y + forward.y * reach < clear) { forward.y = (clear - w.y) / reach; const k = Math.sqrt(Math.max(0, 1 - forward.y * forward.y)) / (Math.hypot(forward.x, forward.z) || 1); forward.x *= k; forward.z *= k; }
       const want = flatten(v(hand.palm), forward), lay = () => { swing(a.hand, handAxes[i].forward.clone().applyQuaternion(a.hand.getWorldQuaternion(new T.Quaternion())), forward);
         return flatten(handAxes[i].palm.clone().applyQuaternion(a.hand.getWorldQuaternion(new T.Quaternion())), forward); };
       const now = lay(), angle = Math.atan2(new T.Vector3().crossVectors(now, want).dot(forward), now.dot(want)), axis = at(a.hand).sub(at(a.fore)).normalize();
       turned(a.fore, turn.setFromAxisAngle(axis, angle * 0.5 * Math.max(0, axis.dot(forward)))); swing(a.hand, lay(), want);
+      last.wrist[i] = degrees(at(a.hand).sub(at(a.fore)).angleTo(handAxes[i].forward.clone().applyQuaternion(a.hand.getWorldQuaternion(new T.Quaternion()))));
     });
     // Her head goes two thirds of the way toward where the figure's head faces, at most 40 degrees (the eyes do the rest, and
     // a head bowed farther hides her face under her hair); her neck takes the first part of it.
@@ -93,5 +114,5 @@ export async function loadFigure(url: string): Promise<Figure> {
     const part = (k: number) => ahead.clone().applyQuaternion(new T.Quaternion().slerp(whole, k));
     swing(neck, ahead, part(share * 0.4)); swing(head, at(front).sub(at(head)), part(share));
   }
-  return {root, scale, triangles: Math.round(triangles), about, pose};
+  return {root, scale, triangles: Math.round(triangles), about, pose, measure: () => JSON.parse(JSON.stringify(last))};
 }
