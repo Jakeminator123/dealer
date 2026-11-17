@@ -95,6 +95,12 @@ export type IntroOptions = {
 export const INTRO_DEFAULTS = {fade: {lying: 0.4, tall: 1.2}, grow: true, posterUntil: 12.5 / 24, stall: 10, lead: 0.4};
 /** Standing: the share of the fade in which the film grows; it dissolves into the game in the rest, standing where the game has her. */
 export const INTRO_GROW_SHARE = 0.6;
+/**
+ * Lying beside the console (a phone on its side): the film plays in the middle of the screen, and moves to where the game has her
+ * for this long, seconds, before it dissolves. Jakob 2026-11-17, of the film lying at the left with all the black at the right:
+ * "sätt den åtminstonde i mitten så det svarta fördelas 10% - 10%".
+ */
+export const INTRO_SIDE_SLIDE = 0.5;
 
 const BUTTON = 'box-sizing:border-box;min-width:168px;min-height:56px;padding:0 28px;border-radius:14px;font:700 17px/1 system-ui,"Segoe UI",sans-serif;letter-spacing:.06em;cursor:pointer;touch-action:manipulation';
 const PRIMARY = `${BUTTON};border:0;background:linear-gradient(180deg,var(--tc-accent,#e9c873),var(--tc-accent-2,#b98f3e));color:var(--tc-ink,#1b1305);text-transform:uppercase;box-shadow:0 8px 22px -8px var(--tc-glow,rgba(233,200,115,.3)),inset 0 1px 0 rgba(255,255,255,.4)`;
@@ -128,7 +134,10 @@ export function createIntro(stage: HTMLElement, canvas: HTMLCanvasElement, optio
   // standing or lying is the stage's shape, as in the game.
   const lay = () => { const r = stage.getBoundingClientRect(), p = (canvas.parentElement ?? canvas).getBoundingClientRect(), dx = p.left - r.left, dy = p.top - r.top;
     const at = introLayout(p.width, p.height, r.width / Math.max(1, r.height) < INTRO_FRAMING.tallBelow), move = (b: Box) => ({...b, x: b.x + dx, y: b.y + dy});
-    layout = {...at, film: move(at.film), end: move(at.end)}; if (state.phase !== 'fading') { place(video, layout.film); place(still, layout.film); } };
+    // Lying beside the console the picture is the left part of the stage; while the film plays it lies in the stage's middle instead
+    // (the same size and height), and is moved to the picture as the fade begins (fadeOut).
+    const end = move(at.end), film = at.tall || Math.abs(p.width - r.width) < 1 ? move(at.film) : {...end, x: (r.width - end.width) / 2};
+    layout = {...at, film, end}; if (state.phase !== 'fading') { place(video, layout.film); place(still, layout.film); } };
   const resized = typeof ResizeObserver === 'function' ? new ResizeObserver(lay) : null; resized?.observe(stage); resized?.observe(canvas.parentElement ?? canvas); lay();
   const key = (e: KeyboardEvent) => { if (e.key === 'Escape') { e.preventDefault(); send('skip'); } };
   doc.addEventListener('keydown', key, true);
@@ -169,17 +178,23 @@ export function createIntro(stage: HTMLElement, canvas: HTMLCanvasElement, optio
     clear(); bar.style.display = 'none';
     if (state.played) leadNow(); // a film whose time was never read near its end: the lead comes late, but before the fade
     try { options.onFade?.(state.played); } catch { /* the page's own business never holds the game back */ }
-    const seconds = layout.tall ? fade.tall : fade.lying;
+    // moved: the film lies elsewhere than the game has her (standing: whole on black; lying beside the console: in the middle)
+    const moved = Math.abs(layout.film.x - layout.end.x) > 0.5 || Math.abs(layout.film.y - layout.end.y) > 0.5 || Math.abs(layout.film.width - layout.end.width) > 0.5;
+    const seconds = layout.tall ? fade.tall : moved && grow && state.played ? fade.lying + INTRO_SIDE_SLIDE : fade.lying;
     if (!state.played) video.pause();
     // Standing, the film first grows on black toward where the game has her (a transform, so that the browser moves it smoothly)
     // and dissolves into the game only when it has arrived: dissolving while it still grew showed her twice, 20 to 30 px apart.
-    const growing = layout.tall && grow && state.played, growFor = seconds * INTRO_GROW_SHARE;
+    // Lying beside the console it is moved the same way, sideways, and then dissolves.
+    const growing = moved && grow && state.played, growFor = layout.tall ? seconds * INTRO_GROW_SHARE : INTRO_SIDE_SLIDE;
     if (growing) {
       const from = layout.film, to = layout.end, s = to.width / from.width;
       video.style.transformOrigin = '0 0'; video.style.transition = `transform ${growFor}s cubic-bezier(.4,0,.2,1)`;
       void video.offsetWidth; video.style.transform = `translate(${to.x - from.x}px,${to.y - from.y}px) scale(${s})`;
+      // Moved sideways only (lying beside the console), it is laid in its place without the transform once it has arrived: a moved layer
+      // is drawn a fraction of a pixel differently, and the film's last picture is to be the game's, pixel for pixel.
+      if (!layout.tall) video.addEventListener('transitionend', () => { if (state.phase !== 'fading') return; video.style.transition = 'none'; video.style.transform = ''; place(video, layout.end); }, {once: true});
     }
-    root.style.transition = growing ? `opacity ${seconds - growFor}s ease ${growFor}s` : `opacity ${seconds}s ease`; void root.offsetWidth; root.style.opacity = '0';
+    root.style.transition = growing ? `opacity ${layout.tall ? seconds - growFor : fade.lying}s ease ${growFor}s` : `opacity ${seconds}s ease`; void root.offsetWidth; root.style.opacity = '0';
     root.addEventListener('transitionend', onFaded);
     timer = setTimeout(() => send('faded'), seconds * 1000 + 250); // a fade the browser never reports ends all the same
   }

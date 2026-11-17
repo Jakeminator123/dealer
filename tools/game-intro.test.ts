@@ -5,7 +5,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {FILM} from '../src/scene3d-geometry.ts';
-import {INTRO_FRAME, INTRO_FRAMING, INTRO_FILM, INTRO_GROW_SHARE, INTRO_START, createIntro, introLayout, introNext, type IntroOptions, type IntroSignal, type IntroState} from '../src/game-intro.ts';
+import {INTRO_FRAME, INTRO_FRAMING, INTRO_FILM, INTRO_GROW_SHARE, INTRO_SIDE_SLIDE, INTRO_START, createIntro, introLayout, introNext, type IntroOptions, type IntroSignal, type IntroState} from '../src/game-intro.ts';
 
 const run = (signals: IntroSignal[], from: IntroState = INTRO_START) => signals.reduce(introNext, from);
 
@@ -179,8 +179,14 @@ test('the page on a phone: the film lies where the game\'s canvas is, standing a
   standing.root.fire('transitionend', {propertyName: 'opacity'}); await standing.intro; assertGone(standing);
   // lying on a phone; the picture moved off the stage's corner shows that the film follows the canvas, not the stage
   const lying = setup('ok', {}, {width: 660, height: 370}, {width: 488, height: 370, left: 6, top: 0}), side = introLayout(488, 370);
-  near(box(lying.video), [side.film.x + 6, side.film.y, side.film.width, side.film.height], 'lying: where the game has her in the picture beside the console');
-  lying.skip.fire('click'); lying.root.fire('transitionend', {propertyName: 'opacity'}); await lying.intro; assertGone(lying);
+  near(box(lying.video), [(660 - side.end.width) / 2, side.end.y, side.end.width, side.end.height], 'lying: in the middle of the screen while it plays, at the size the game has her');
+  lying.play.fire('click'); lying.video.fire('ended');
+  assert.equal(lying.video.style.transform, `translate(${side.end.x + 6 - (660 - side.end.width) / 2}px,0px) scale(1)`, 'and it is moved to where the game has her in the picture beside the console');
+  assert.match(lying.video.style.transition, new RegExp(`^transform ${INTRO_SIDE_SLIDE}s`)); assert.match(lying.root.style.transition, new RegExp(`^opacity [0-9.]+s ease ${INTRO_SIDE_SLIDE}s$`), 'it dissolves when it has arrived');
+  lying.root.fire('transitionend', {propertyName: 'opacity'}); await lying.intro; assertGone(lying);
+  // skipped, it only fades from where it lies; and a picture that is the whole stage (a computer) is not moved at all
+  const skipped = setup('ok', {}, {width: 660, height: 370}, {width: 488, height: 370, left: 0, top: 0});
+  skipped.skip.fire('click'); assert.equal(skipped.video.style.transform ?? '', ''); skipped.root.fire('transitionend', {propertyName: 'opacity'}); await skipped.intro; assertGone(skipped);
 });
 
 test('the page, standing: the film grows first and dissolves into the game only when it has arrived; lying it only fades', async () => {
