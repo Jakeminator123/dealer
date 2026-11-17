@@ -20,13 +20,13 @@ const filmAt = process.argv.indexOf('--film'), film = filmAt > 0 ? {fps: Number(
 const times = film ? Array.from({length: Math.round((film.to - film.from) * film.fps) + 1}, (_, i) => film.from + i / film.fps) : (arg('--times', '0')!).split(',').map(Number);
 const sleep = (ms: number) => new Promise(r => setTimeout(r, ms));
 
-// The file server: this folder's page and modules (TypeScript stripped of its types on the way out), three.js out of the
+// The file server: this folder's page, modules and data and the table's lens in src/ (TypeScript stripped of its types on the way out), three.js out of the
 // locked dependency, and Jakob's plan for reading. Nothing else, and only GET.
 const VENDOR: Record<string, string> = {'/vendor/three.module.js': 'node_modules/three/build/three.module.js', '/vendor/three.core.js': 'node_modules/three/build/three.core.js'};
 const TYPES: Record<string, string> = {'.html': 'text/html; charset=utf-8', '.ts': 'text/javascript; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.json': 'application/json; charset=utf-8'};
 const server = createServer(async (req, res) => {
   try {
-    const url = new URL(req.url ?? '/', 'http://x').pathname, file = VENDOR[url] ?? (url === '/placements/default.json' || /^\/dealer3d\/(page|src)\/[\w.-]+\.(html|ts)$/.test(url) ? url.slice(1) : null);
+    const url = new URL(req.url ?? '/', 'http://x').pathname, file = VENDOR[url] ?? (url === '/placements/default.json' || url === '/src/table-lens.ts' || /^\/dealer3d\/(page|src|data)\/[\w.-]+\.(html|ts|json)$/.test(url) ? url.slice(1) : null);
     if (url === '/favicon.ico') { res.writeHead(204).end(); return; }
     if (req.method !== 'GET' || !file) { res.writeHead(404).end('not served'); return; }
     const ext = path.extname(file), body = await readFile(path.join(root, file), 'utf8');

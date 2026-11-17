@@ -1,8 +1,8 @@
 // The fitting side of the table's lens: the family of lenses under which the card lying at seat 4 has its film size and
 // shape, and what a lens makes of a length in the picture. The camera itself (frame, projection, the chosen lens as
-// numbers) is table-lens.ts, and everything of it is handed on from here. Pure: no I/O and no three.js.
-export * from './table-lens.ts';
-import {FILM, cardCorners, filmEye, length, onPlane, quadMeasure, see, sub, type Lens, type Pixel} from './table-lens.ts';
+// numbers) is src/table-lens.ts, and everything of it is handed on from here. Pure: no I/O and no three.js.
+export * from '../../src/table-lens.ts';
+import {FILM, cardCorners, filmEye, length, onPlane, quadMeasure, see, sub, type Lens, type Pixel} from '../../src/table-lens.ts';
 
 /**
  * What the film shows of real things of known size: a card lying flat with its short side across the picture (its centre

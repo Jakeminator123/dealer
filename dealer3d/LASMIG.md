@@ -11,8 +11,8 @@ använder repots låsta `three` och `sharp`.
 
 | Fil | Vad |
 | --- | --- |
-| `src/table-lens.ts` | **Bordets lins, fristående (inga importer):** en fysisk kamera för bankens bild (1764 × 1174) i verkliga meter, linsen som tal (`TABLE_LENS`), `realCardQuad` (plats i bankens bildpunkter och riktning in, ett verkligt korts fyra hörn ut) och `shoeCardQuad` (kortet som står i skons fönster). Det är den här filen huvudagenten lyfter in som `src/table-lens.ts`; då importeras den därifrån. Ren räkning. |
-| `src/camera.ts` | Passningen: linsfamiljen `lensForFocal` (alla linser som ger kortet vid plats 4 dess storlek och form i filmen) och vad en lins gör av en sträcka i bilden. Lämnar vidare allt ur `table-lens.ts`. Ren räkning. |
+| `../src/table-lens.ts` (repots `src/`) | **Bordets lins**, skriven här och lyft till `src/` 2026-11-17: en fysisk kamera för bankens bild (1764 × 1174) i verkliga meter, linsen som tal (`TABLE_LENS`), `realCardQuad` (plats i bankens bildpunkter och riktning in, ett verkligt korts fyra hörn ut) och `shoeCardQuad` (kortet som står i skons fönster). Kortplanen ritas med den (`src/card-plan.ts`); testet är `tools/table-lens.test.ts`. |
+| `src/camera.ts` | Passningen: linsfamiljen `lensForFocal` (alla linser som ger kortet vid plats 4 dess storlek och form i filmen) och vad en lins gör av en sträcka i bilden. Lämnar vidare allt ur `src/table-lens.ts`. Ren räkning. |
 | `src/world.ts` | Det filmen visar (`MEASURED`) och det som antas (`ASSUMED`); `filmLens()`, passningen som väljer den lins som ritar dealerns kropp i verklig storlek (ett test håller den lika med `TABLE_LENS`); planens kortplatser på filten; stolarnas ögon. Ren räkning. |
 | `src/deal.ts` | En giv som tidslinje: kortets läge och vridning och handens grepp för varje tidpunkt, till vilken kortplats som helst. Bana och tempo ur Paows giv till plats 4. Ren räkning. |
 | `src/body.ts` | Provdockans skelett, löst ur var händerna ska vara: hon böjer sig från höften och vrider fram axeln så långt armen behöver. Ren räkning. |
@@ -21,7 +21,6 @@ använder repots låsta `three` och `sharp`.
 | `tools/measure.ts` | Kalibreringen som tal: linsfamiljen, den valda linsen, ett verkligt kort på planens platser mot planens kontur, kortet i skon, stolarnas ögon. |
 | `tools/camera-proof.ts` | Bilderna till provet `dealer-3d-kamera`: planens kort och verkliga kort på en filmruta, och skons kort förstorat. |
 | `tools/shoot.ts` | Spelar in sidan utan labbserver: en egen filserver på 127.0.0.1 under körningen, headless Chrome med egen profil och port, en PNG per tidpunkt. Körs under det delade låset. |
-| `tests/table-lens.test.ts` | Sju tester av linsfilen mot de mätta talen från 2026-11-17, utan media och utan planfil (följer med filen till `src/`). |
 | `tests/world.test.ts` | Elva tester av passningen, världen och given, utan media och utan webbläsare; läser bara `placements/default.json`. |
 
 ## Det som är mätt och det som är antaget
@@ -44,8 +43,8 @@ använder repots låsta `three` och `sharp`.
   plats 2 och 6 × 1,11, plats 1 och 7 × 1,19, dealerns kort × 1,34. Kortet i nypet (ankare 2.1) är 8–13 % för långt
   (spårets kontur 1,13; det synliga kortet läst för ögat cirka 1,08).
 - **Jakob sade ja 2026-11-17 kl. 23.02** till att kortplanen ritas med verkligt perspektiv (Beslut,
-  `kortplanen-verkligt-perspektiv`). Huvudagenten ritar med `realCardQuad` och `grow` 1,025, så att plats 4 behåller
-  planens 86,6 bildpunkter i nära kant.
+  `kortplanen-verkligt-perspektiv`). Kortplanen ritas sedan samma kväll med `realCardQuad` (`planCardQuad` i
+  `src/card-plan.ts`), `grow` 1,00 på hans ord, alltså kortet i verklig storlek: 84,5 bildpunkter i nära kant vid plats 4.
 - **Från bankens kamera ligger 3D-kortet där filmens kort ligger** i de nycklade rutorna, och kameran ser baksidan
   till ruta 44, kanten kring ruta 45 och framsidan från ruta 48, som spåret säger (test).
 - Vägarna till en verklig 3D-dealer och deras licenser: forskningsrapporten ligger på slaskdisken,
@@ -54,7 +53,7 @@ använder repots låsta `three` och `sharp`.
 ## Köra
 
 ```
-node --test dealer3d/tests/table-lens.test.ts dealer3d/tests/world.test.ts
+node --test dealer3d/tests/world.test.ts tools/table-lens.test.ts
 node dealer3d/tools/measure.ts
 node dealer3d/tools/camera-proof.ts --frame <ruta 120, png> --pinch <ruta 0, png> --out <mapp>
 node dealer3d/tools/shoot.ts --out <mapp> --eyes 1,4 --times 1.25,1.9,3.5 --size 1920x640

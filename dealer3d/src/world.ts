@@ -1,8 +1,8 @@
 // The table as a real place in metres, built from the film: what is measured and what is assumed, the fit that chooses
-// the lens (its numbers stand frozen in table-lens.ts, and a test holds the two together), the card places of Jakob's
+// the lens (its numbers stand frozen in src/table-lens.ts, and a test holds the two together), the card places of Jakob's
 // plan laid on the felt, and an eye for every seat. Pure: no I/O and no three.js.
 import {FILM, SHOE_FOOT, SHOE_WINDOW_CARD, filmEye, lensForFocal, onPlane, onUpright, orbit, planPixel, readSpan, see, cardCorners, quadMeasure, type Anchors, type Eye, type Lens, type Pixel, type Vec3} from './camera.ts';
-export {SHOE, cardInSpace, realCardQuad, realCardQuadAt, shoeCard, shoeCardQuad, shoePose, sides, type ShoePose} from './table-lens.ts';
+export {SHOE, cardInSpace, realCardQuad, realCardQuadAt, shoeCard, shoeCardQuad, shoePose, sides, type ShoePose} from '../../src/table-lens.ts';
 
 // What the film shows, read on frames of paow-giv-2-1-p4-11-01 (1764 x 1174) and in data/dealer-standard.json.
 export const MEASURED = {
@@ -13,11 +13,11 @@ export const MEASURED = {
   // The yellow card in the pinch (anchor 2.1), frame 0 of the same film's track: top left, top right, bottom right, bottom
   // left. The card is drawn a little out of the shoe here, and the track's outline takes in a strip of the card behind it.
   shoeCard: [{x: 1299, y: 739.2}, {x: 1351.7, y: 774.3}, {x: 1282.7, y: 862.6}, {x: 1240.2, y: 833}] as Pixel[],
-  shoeWindowCard: SHOE_WINDOW_CARD, // the card standing in the shoe's window, frame 120 (table-lens.ts)
+  shoeWindowCard: SHOE_WINDOW_CARD, // the card standing in the shoe's window, frame 120 (src/table-lens.ts)
   dealerEdgeRow: 831.5, // data/scene-contract.json, keyFigures.dealerEdgeImageRow
   // Paow's anchor paow-nyp-ung-1, read by eye, +-10 px: the jacket's shoulder points, the pupils, the chin and the top of the hair.
   shoulders: {a: {x: 655, y: 405}, b: {x: 1075, y: 405}}, pupils: {a: {x: 836, y: 211}, b: {x: 909, y: 211}}, chinRow: 337, crownRow: 58,
-  shoeFoot: SHOE_FOOT, // the shoe's near bottom edge, read by eye on frame 36; +-10 px (table-lens.ts)
+  shoeFoot: SHOE_FOOT, // the shoe's near bottom edge, read by eye on frame 36; +-10 px (src/table-lens.ts)
 };
 // What is assumed, each in one place: the real sizes of what the film shows of her (a woman's knuckle breadth, index to
 // little finger, is 70 to 80 mm; a jacket's shoulders about 400 mm; pupils 62 mm apart), that her knuckles lie 20 mm over
@@ -41,7 +41,7 @@ export function bodyError(l: Lens): number {
 }
 let found: Lens | null = null;
 /**
- * The lens, fitted anew from what is measured and assumed above; TABLE_LENS in table-lens.ts is this result written down.
+ * The lens, fitted anew from what is measured and assumed above; TABLE_LENS in src/table-lens.ts is this result written down.
  * The card lying at seat 4 has its film size and shape under a whole family of lenses
  * (lensForFocal); of these it is the one that draws the dealer herself nearest her real size. The plan's own perspective
  * (a card narrowing to 0.87) belongs to a much wider lens, under which she would be twice as large as a person.

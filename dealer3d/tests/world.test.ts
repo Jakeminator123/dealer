@@ -12,7 +12,7 @@ const plan = JSON.parse(await readFile(new URL('../../placements/default.json', 
 const near = (a: number, b: number, tolerance: number, what: string) => assert.ok(Math.abs(a - b) <= tolerance, `${what}: ${a} is not within ${tolerance} of ${b}`);
 const dealTo = (target: string) => { const all = spots(plan, lens), place = all.find(s => s.id === target)!.at, four = all.find(s => s.id === 'P4.C1')!.at; return planDeal({lens, target, place, placeOfSeat4: four, shoe: shoeCard(shoePose(lens))}); };
 
-test('the fit from what is measured and assumed gives the lens that stands written in table-lens.ts', () => {
+test('the fit from what is measured and assumed gives the lens that stands written in src/table-lens.ts', () => {
   near(lens.focalPx, TABLE_LENS.focalPx, 1e-9, 'focal length'); near(lens.pitch, TABLE_LENS.pitch, 1e-12, 'pitch'); near(lens.height, TABLE_LENS.height, 1e-12, 'height');
 });
 
