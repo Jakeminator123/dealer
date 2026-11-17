@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "id": "paow-tal-placebets-sv-14",
+  "dealer": "paow",
+  "source": {
+    "path": "assets/motions/paow-tal-placebets-sv-14/source.mp4",
+    "sha256": "30d5694922514c9c6f7877841aa4f179fc38b68c3309a99ffc952ab63a38e416",
+    "bytes": 4571857,
+    "width": 1764,
+    "height": 1174,
+    "fps": 24,
+    "frames": 48,
+    "audio": true,
+    "provider": "tools/speech.ts: Scoutgaming's lip-sync renderer on this machine, voice from ElevenLabs",
+    "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Paow"
+  },
+  "motion": {
+    "kind": "IDLE",
+    "from": "IDLE",
+    "to": "IDLE",
+    "pass": false,
+    "basis": "SOURCE_FRAME_REVIEW",
+    "idle": {
+      "onRequest": true,
+      "calm": true,
+      "weight": 0,
+      "label": "säger: Lägg era insatser, tack."
+    }
+  },
+  "speech": {
+    "line": "placebets",
+    "language": "sv",
+    "text": "Lägg era insatser, tack.",
+    "voice": "Paow",
+    "heard": "Lägg era insatser, tack",
+    "restFilm": "paow-vila-01-01",
+    "soundStartsAtSeconds": 0.22,
+    "soundEndsAtSeconds": 1.497
+  },
+  "review": {
+    "decision": "ACCEPTED",
+    "basis": "Inte granskad av Jakob. Gjord av tools/speech.ts ur assets/motions/paow-vila-01-01/source.mp4, inlagd bara kring det som hörs och under hennes egen överläpp, som lyfts när munnen öppnar. Granskaren 4/5: Giporna sänks 2–3 px med öppningen, tunna uppåtsvansar kvar. Hennes egen blanka underläpp, smalare öppning mot giporna; -13 har matt målad underläpp.",
+    "userAccepted": false,
+    "productionReady": false,
+    "provisional": {
+      "by": "huvudagenten med talbanans oberoende granskare",
+      "at": "2026-11-17T15:45:19.704Z",
+      "mandate": "Jakob 2026-11-13 kl. 15.50, med en bild av kön i Granska: \"jag vill nu för jag ska iväg att du godkänner allt videomaterial som innehåller de där kriterierna\" och \"Med andra ord vill jag inte se en sån här lista när jag är tillbaka!\"",
+      "note": "Granskaren 4/5, användbar med anmärkningar: Giporna sänks 2–3 px med öppningen, tunna uppåtsvansar kvar. Hennes egen blanka underläpp, smalare öppning mot giporna; -13 har matt målad underläpp."
+    }
+  },
+  "postProcessing": "the rendered face laid back into the rest film's own frames (assets/speech/paow/paow-tal-placebets-sv-14/receipt.json, laidBack)",
+  "generationRef": "assets/motions/paow-tal-placebets-sv-14/generation.json",
+  "scoutIntegrated": false,
+  "published": false
+}

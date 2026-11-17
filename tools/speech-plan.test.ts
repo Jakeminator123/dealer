@@ -225,6 +225,38 @@ test('only the mouth is laid in, around her own lips, larger and in her lips\' c
   const lifted = Uint8Array.from(lined); layMouth(lifted, opened, win, middle, {y: 0, u: 0, v: 0}, {...plain, under: 1}, b, 0, 4);
   assert.ok(lifted[132 * W + 200] < 100 && lined[132 * W + 200] === 150, `her lip line has moved up in the middle: ${lifted[132 * W + 200]}`); assert.equal(lifted[110 * W + 200], lined[110 * W + 200], 'untouched above the lift');
   assert.ok(lifted[132 * W + 226] > 120, `less toward her corner, where the line has not come up to this row: ${lifted[132 * W + 226]}`); assert.equal(lifted[138 * W + 200], 235, 'the drawn mouth, here its teeth, shows from the lifted edge down');
+  // Her own lower lip follows as well (`sink`): what is left of the drawn mouth's gap when her upper lip has taken its share is
+  // her lower lip's way down, at most the recipe's. Without the recipe's sink there is no such way.
+  const both = mouthMoves([{gap: 0, rise: 0}, {gap: 10, rise: 0}, {gap: 10, rise: 0}, {gap: 10, rise: 0}, {gap: 20, rise: 0}, {gap: 20, rise: 0}, {gap: 20, rise: 0}], {...share, sink: 8});
+  assert.deepEqual(both.lifts, [0, 4.5, 4.5, 4.5, 6, 6, 6]); assert.deepEqual(both.sinks, [0, 5.5, 5.5, 5.5, 8, 8, 8]); assert.equal(mouthMoves(tail, share).sinks, undefined, 'only with the recipe\'s sink');
+  // Laid with a sink of six: a mark in her own lower lip (two rows, from six and a half under her line) lies six rows lower in
+  // the middle and one row lower near her corner, a mark halfway down the chin has moved half as far (the skin is drawn
+  // together), and the chin's end is where it was. The drawn mouth, bright far down here, shows between her two lips and not
+  // under her lower lip, where it showed when the lower lip was the drawn one.
+  const marked = Uint8Array.from(lined); for (const y of [143, 144, 175, 176]) for (let x = 170; x <= 230; x++) marked[y * W + x] = 90;
+  const own2: Lips = {...plain, under: 1, sink: 8, lens: [0, 1, 2]}, sunken = Uint8Array.from(marked), drawnLip = Uint8Array.from(marked);
+  layMouth(sunken, low, win, middle, {y: 0, u: 0, v: 0}, own2, b, 0, 4, 6); layMouth(drawnLip, low, win, middle, {y: 0, u: 0, v: 0}, {...plain, under: 1}, b, 0, 4);
+  assert.ok(sunken[149 * W + 200] < 100 && sunken[150 * W + 200] < 100 && marked[149 * W + 200] === 150, `her lower lip has moved down in the middle: ${sunken[149 * W + 200]}, ${sunken[150 * W + 200]}`);
+  assert.ok(sunken[145 * W + 230] < 100 && sunken[149 * W + 230] === 150, `less toward her corner: ${sunken[145 * W + 230]}, ${sunken[149 * W + 230]}`);
+  assert.ok(sunken[179 * W + 200] < 110 && sunken[176 * W + 200] > 130, `the chin's skin is drawn together: ${sunken[179 * W + 200]}, ${sunken[176 * W + 200]}`);
+  for (let y = 198; y < 208; y++) assert.equal(sunken[y * W + 200], marked[y * W + 200], `the chin's end untouched at row ${y}`);
+  assert.equal(sunken[139 * W + 200], 235, 'the drawn mouth shows between her lips'); assert.equal(sunken[154 * W + 200], 150, 'and her own lip under it'); assert.equal(drawnLip[154 * W + 200], 235, 'where the drawn lower lip lay without the sink');
+  // Where the drawn mouth is closed (no lift, no way down) the frame is the film's own, whole.
+  const shutMouth = Uint8Array.from(marked); layMouth(shutMouth, low, win, middle, {y: 0, u: 0, v: 0}, {...own2, corner: 0.5}, b, 0, 0, 0); assert.deepEqual(shutMouth, marked);
+  // Her corners follow the jaw (`corner`): the end of her lip line, 32 pixels out, lies lower by that share of the way down.
+  const followed = Uint8Array.from(marked); layMouth(followed, low, win, middle, {y: 0, u: 0, v: 0}, {...own2, corner: 0.5}, b, 0, 4, 6);
+  assert.ok(followed[140 * W + 232] < 120 && sunken[140 * W + 232] > 140, `the end of her lip line has come down: ${followed[140 * W + 232]} against ${sunken[140 * W + 232]}`);
+  assert.equal(followed[149 * W + 200], sunken[149 * W + 200], 'and the middle of the mouth is as without it');
+  // At most so far (`cornerMost`): with a cap of one pixel the end of her lip line lies one row lower, not three.
+  const capped = Uint8Array.from(marked); layMouth(capped, low, win, middle, {y: 0, u: 0, v: 0}, {...own2, corner: 0.5, cornerMost: 1}, b, 0, 4, 6);
+  assert.ok(capped[138 * W + 232] < 120 && capped[140 * W + 232] > 140, `the corner stops at its cap: ${capped[138 * W + 232]}, ${capped[140 * W + 232]}`);
+  // A small opening shows (`edge`): between her two lips two rows apart, a drawn mouth that is bright there is laid in whole
+  // (nearly: the lens is not centred on a row) where it comes in over two pixels at each lip's edge, and at about a quarter
+  // where it comes in over four.
+  const brightThere = Uint8Array.from(clip); for (let y = 128; y < 150; y++) for (let x = 166; x <= 234; x++) brightThere[y * W + x] = 235;
+  const slit = cutPlanes(brightThere, W, H, win.x, win.y, win.w, win.h), narrow = Uint8Array.from(marked), broad = Uint8Array.from(marked);
+  layMouth(narrow, slit, win, middle, {y: 0, u: 0, v: 0}, {...own2, edge: 2}, b, 0, 1.5, 0.5); layMouth(broad, slit, win, middle, {y: 0, u: 0, v: 0}, own2, b, 0, 1.5, 0.5);
+  assert.ok(narrow[136 * W + 200] > 190 && broad[136 * W + 200] < 140, `a small opening shows with the narrow edge: ${narrow[136 * W + 200]} against ${broad[136 * W + 200]}`);
   // Not moved down where she is not heard, and evened over the frames to either side: the mouth does not shut in one frame.
   assert.deepEqual(mouthDrop([8, 8, 8, 8, 8, 8], {...plain, drop: 4, heard: true}, [true, true, false, false, true, true]), [4, 4, 0, 0, 4, 4]);
   assert.deepEqual(mouthDrop([8, 8, 8, 8, 8, 8], {...plain, drop: 4, heard: true, ease: 1}, [true, true, false, false, true, true]), [4, 3, 1, 1, 3, 4]);

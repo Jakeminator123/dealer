@@ -222,7 +222,9 @@ export function mixFrame(laid: Uint8Array, own: Uint8Array, weight: number): voi
 // mindre … det måste vara byggt på den befintliga munnen som hon har", 2026-11-13). So when the drawn mouth is laid back:
 //   1. only the mouth is laid in, through a soft ellipse around her own lips in that frame; chin and cheeks stay the film's own,
 //      and so do her own upper lip (under) and the corners of her mouth (corners, arc). Her own upper lip does not stand still:
-//      it is lifted, whole, as far as the drawn mouth opens above her lip line (lift)
+//      it is lifted, whole, as far as the drawn mouth opens above her lip line (lift). Her own lower lip is kept as well and
+//      moved down, whole, by the rest of the opening (sink), and her corners follow the jaw a little (corner): what is laid in
+//      of the drawn mouth is then only what shows between her two lips, its teeth and the dark of the mouth
 //   2. the drawn mouth is made larger around the middle of her lips, in height (tall); it can also be moved down at her lip line
 //      while it is open, so that it opens under her own upper lip and not behind it (drop, closed), which a fourth trial did and
 //      the recipe does not
@@ -298,8 +300,27 @@ export function mixFrame(laid: Uint8Array, own: Uint8Array, weight: number): voi
 //               than chance: it hid small real openings in loud frames (three films reviewed worse for it).
 //   closed      how far it is moved while its lips meet (negative: up). The model's closed lip line lies a couple of pixels
 //               under hers (seen in three films); lifted onto hers it is covered by her own line, and one line shows.
-export type Lips = {wide: number; tall: number; colour: number; sharpen: number; reach: [number, number]; grow: [number, number]; under: number | null; corners: number | null; drop: number; fall: number; open: [number, number]; closed: number; taper?: number; arc?: number; lift?: number; share?: number; base?: number; round?: number; whole?: boolean; quiet?: number; sunk?: number; jaw?: number; ease?: number; heard?: boolean};
-export const LIPS: Lips = {wide: 1, tall: 1.25, colour: 1, sharpen: 0.5, reach: [60, 42], grow: [44, 30], under: 1, corners: 0, drop: 0, fall: 60, open: [2, 5], closed: 0, lift: 6, share: 0.3, base: 1.5, round: 2.5, jaw: 2.5, whole: true, quiet: 7.5, sunk: 5, taper: 0.5, arc: 44, ease: 1, heard: false};
+//   sink        with share, where it is given: her own lower lip is moved too, down, whole, by what is left of the drawn
+//               mouth's gap when her upper lip has taken its share, at most this many pixels, and the skin of the chin under
+//               it is drawn together by as much. The drawn mouth is then laid only between her two lips: its teeth and the
+//               dark of the mouth, nothing of its lips, and nothing at all where her lips meet. Both lips and both corners
+//               are then the film's own. Without it the drawn lower lip lay under her own upper lip: larger and duller than
+//               hers, and its outline met her own corners at another angle (Jakob 2026-11-14: "clown-mungipor"; reviewers:
+//               "svansar", "en dubbel gipa", "som ett Y").
+//   lens        with sink: how far out toward the corners her lower lip is moved, as two shares of the half width of her
+//               lips: whole within the first, nothing from the second. A third number makes the way between them a power
+//               curve (2: a parabola), so that the opening is an almond from corner to corner and not a bell in the middle.
+//   corner      with sink: her own corners follow the jaw. The ends of her lip line, the creases outside them and the skin
+//               beside are moved down, softly, by this share of her lower lip's way. Without it the corners stood exactly
+//               still while the mouth opened between them (every reviewer of rounds 22 and 23: "giporna står stilla").
+//   edge        with sink: over how many pixels the drawn mouth comes in at each of her two lips' edges (four without it). Two
+//               edges of four pixels each left an opening of two or three pixels at a quarter to a half of its strength, and
+//               the mouth read as closed through a word said with a small opening (a reviewer of round 25, of "mitt").
+//   cornerMost  with corner: the most her corners are moved, in pixels. Following the whole way at the largest openings they
+//               sank about three pixels and the mouth read as turned down (a reviewer of round 25: "en nedåtböjd, sur form",
+//               seen at twice the game's size).
+export type Lips = {wide: number; tall: number; colour: number; sharpen: number; reach: [number, number]; grow: [number, number]; under: number | null; corners: number | null; drop: number; fall: number; open: [number, number]; closed: number; taper?: number; arc?: number; lift?: number; share?: number; base?: number; round?: number; whole?: boolean; quiet?: number; sunk?: number; jaw?: number; ease?: number; heard?: boolean; sink?: number; lens?: [number, number] | [number, number, number]; corner?: number; cornerMost?: number; edge?: number};
+export const LIPS: Lips = {wide: 1, tall: 1.25, colour: 1, sharpen: 0.5, reach: [60, 42], grow: [44, 30], under: 1, corners: 0, drop: 0, fall: 60, open: [2, 5], closed: 0, lift: 6, share: 0.3, base: 1.5, round: 2.5, jaw: 2.5, whole: true, quiet: 7.5, sunk: 5, taper: 0.5, arc: 44, ease: 1, heard: false, sink: 8, lens: [0, 1, 2], corner: 0.4, cornerMost: 2.2, edge: 2};
 /** How the drawn mouth is open in a window. gap: the height in pixels of what is not lip between its upper and its lower lip
  * (teeth, the dark of the mouth), the median over the columns at the lips' middle; 0 when its lips meet. rise: how many pixels
  * above her own lip line that gap begins (the lower edge of the drawn upper lip; negative: under her line), the median over the
@@ -337,7 +358,7 @@ const evened = (values: number[], reach: number): number[] => reach > 0 ? values
  * moved down (negative: up): open, for its opening to begin at her lifted edge; closed, up by `low`, for its lip line to lie
  * on hers; at most the lift either way. All from the median of three frames, nothing where she is not heard (the recipe's
  * `heard`), evened over the frames (`ease`). */
-export function mouthMoves(opens: {gap: number; rise: number; low?: number; dark?: number; darkRise?: number; deep?: number}[], lips: Lips = LIPS, heard?: boolean[], whole?: boolean[]): {lifts: number[]; drops: number[]} {
+export function mouthMoves(opens: {gap: number; rise: number; low?: number; dark?: number; darkRise?: number; deep?: number}[], lips: Lips = LIPS, heard?: boolean[], whole?: boolean[]): {lifts: number[]; drops: number[]; sinks?: number[]} {
   const cap = lips.lift ?? 0, share = lips.share ?? 0, mid = (a: number[]) => a.map((_, k) => [a[Math.max(0, k - 1)], a[k], a[Math.min(a.length - 1, k + 1)]].sort((p, q) => p - q)[1]);
   // The opening of a frame: what is not lip between the drawn lips, or, where the recipe counts it (`round`), the dark of a mouth
   // whose lips are red all the way round.
@@ -355,7 +376,9 @@ export function mouthMoves(opens: {gap: number; rise: number; low?: number; dark
   const said = (k: number) => (!(lips.heard && heard) || heard[k]) && (!(lips.whole && whole) || whole[k]);
   const lifts = gaps.map((g, k) => g > 0 && said(k) ? Math.min(cap, (lips.base ?? 0) + share * g) : 0);
   const drops = gaps.map((g, k) => !said(k) ? 0 : g > 0 ? Math.max(-cap, Math.min(cap, rises[k] - lifts[k])) : -Math.max(0, Math.min(cap, lows[k])));
-  return {lifts: evened(lifts, lips.ease ?? 0).map(m => Number(m.toFixed(2))), drops: evened(drops, lips.ease ?? 0).map(m => Number(m.toFixed(2)))};
+  // With `sink`: what is left of the opening under her lifted lip is her own lower lip's way down.
+  const sinks = lips.sink === undefined ? null : gaps.map((g, k) => g > 0 && said(k) ? Math.min(lips.sink!, Math.max(0, g - lifts[k])) : 0);
+  return {lifts: evened(lifts, lips.ease ?? 0).map(m => Number(m.toFixed(2))), drops: evened(drops, lips.ease ?? 0).map(m => Number(m.toFixed(2))), ...(sinks ? {sinks: evened(sinks, lips.ease ?? 0).map(m => Number(m.toFixed(2)))} : {})};
 }
 /** How far her own upper lip is lifted in each frame: as far as the drawn mouth opens above her lip line in it (rises, in the
  * film's pixels as the mouth is laid), at most the recipe's lift, the median of three frames; nothing where she is not heard
@@ -433,10 +456,18 @@ const eased = (r: number, whole: number) => r <= whole ? 1 : r >= 1 ? 0 : 0.5 + 
  * nothing is said; mouthDrop gives it per frame) and made larger around the lips' middle when the recipe says so, its lips' colour moved by `shift`, sharpened, and laid in through the ellipse around the middle. win is the window in the film's pixels, middle
  * her lips' middle in the window, drawn the same window cut out of the renderer's frame. Outside the ellipse the frame is not touched.
  */
-export function layMouth(film: Uint8Array, drawn: Planes, win: Box, middle: {x: number; y: number}, shift: {y: number; u: number; v: number}, lips: Lips = LIPS, b: Bridge = BRIDGE, drop: number = lips.drop, lift = 0): void {
+export function layMouth(film: Uint8Array, drawn: Planes, win: Box, middle: {x: number; y: number}, shift: {y: number; u: number; v: number}, lips: Lips = LIPS, b: Bridge = BRIDGE, drop: number = lips.drop, lift = 0, sink = 0): void {
   const W = b.film.width, H = b.film.height, {w, h} = win, hw = w / 2, hh = h / 2, [gx, gy] = lips.grow, [rx, ry] = lips.reach;
-  const line = lips.under === null ? null : lipLine(film, win, middle, b), lineAt = (x: number) => line ? line[Math.min(w - 1, Math.max(0, Math.round(x)))] : middle.y;
-  const half = lips.corners === null && lips.taper === undefined && !(lift > 0) ? null : lipsHalf(lipMap(cutPlanes(film, W, H, win.x, win.y, w, h).V), w, middle), edge = half === null || lips.corners === null ? null : half + lips.corners;
+  const first = lips.under === null ? null : lipLine(film, win, middle, b);
+  const half = lips.corners === null && lips.taper === undefined && !(lift > 0) && lips.sink === undefined ? null : lipsHalf(lipMap(cutPlanes(film, W, H, win.x, win.y, w, h).V), w, middle), edge = half === null || lips.corners === null ? null : half + lips.corners;
+  // The corners follow the jaw (the recipe's `corner`): a soft move down of the film's own pixels, whole from her lips' ends out over the creases,
+  // nothing toward the middle of the mouth, far out in the cheek, or far above and below her lip line. Her lip line is then read again.
+  const follow = lips.sink !== undefined && sink > 0 && first !== null && half !== null ? Math.min(lips.cornerMost ?? Infinity, sink * (lips.corner ?? 0)) : 0;
+  if (follow > 0.05) { const own = cutPlanes(film, W, H, win.x, win.y, w, h), cw = W / 2, u0 = W * H, v0 = u0 + cw * (H / 2), put = (v: number) => v < 0 ? 0 : v > 255 ? 255 : Math.round(v), soft = (t: number) => t <= 0 ? 0 : t >= 1 ? 1 : t * t * (3 - 2 * t);
+    const moved = (x: number, y: number) => { const d = Math.abs(x - middle.x) / half!; if (d <= 0.5 || d >= 1.9) return 0; const v = Math.abs(y - first![Math.min(w - 1, Math.max(0, Math.round(x)))]) / 30; return v >= 1 ? 0 : follow * (d <= 0.9 ? soft((d - 0.5) / 0.4) : d <= 1.3 ? 1 : soft((1.9 - d) / 0.6)) * (0.5 + 0.5 * Math.cos(Math.PI * v)); };
+    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) { const m = moved(x, y); if (m > 0.02) film[(win.y + y) * W + win.x + x] = put(bilinear(own.Y, w, h, x, y - m)); }
+    for (let y = 0; y < hh; y++) for (let x = 0; x < hw; x++) { const m = moved(2 * x + 0.5, 2 * y + 0.5); if (m > 0.02) { const i = (win.y / 2 + y) * cw + win.x / 2 + x; film[u0 + i] = put(bilinear(own.U, hw, hh, x, y - m / 2)); film[v0 + i] = put(bilinear(own.V, hw, hh, x, y - m / 2)); } } }
+  const line = follow > 0.05 ? lipLine(film, win, middle, b) : first, lineAt = (x: number) => line ? line[Math.min(w - 1, Math.max(0, Math.round(x)))] : middle.y;
   const span = (x: number, whole: number) => { const d = Math.abs(x - middle.x) / half!; return d <= whole ? 1 : d >= 1 ? 0 : 0.5 + 0.5 * Math.cos(Math.PI * (d - whole) / (1 - whole)); };
   const side = (x: number) => lips.taper === undefined || half === null ? 1 : span(x, lips.taper);
   // Her own upper lip follows the drawn mouth's opening: how far its lower edge is lifted at a column. The lip itself (LIP
@@ -445,8 +476,16 @@ export function layMouth(film: Uint8Array, drawn: Planes, win: Box, middle: {x: 
   // row, which the drawn mouth is then laid over. LIP and UP are Paow's measures in the bank's films: an upper lip of 12 pixels,
   // the nose 27 above the line.
   const rise = (x: number) => lift > 0 && line && half !== null ? lift * span(x, lips.taper ?? 0.5) : 0, UP = 26, LIP = 13;
-  if (lift > 0 && line && half !== null) { const own = cutPlanes(film, W, H, win.x, win.y, w, h), cw = W / 2, u0 = W * H, v0 = u0 + cw * (H / 2), put = (v: number) => v < 0 ? 0 : v > 255 ? 255 : Math.round(v);
-    const source = (x: number, y: number): number | null => { const up = rise(x); if (up < 0.05) return null; const at = lineAt(x), top = at - UP; if (y < top || y > at) return null; if (y > at - up) return at; if (y >= at - up - LIP) return y + up;
+  // With the recipe's `sink` her own lower lip follows as well: how far its upper edge is moved down at a column. The lip (LOW
+  // pixels under her lip line) is moved whole, and the skin of the chin under it (down to DOWN under the line) is drawn
+  // together by as much, so that nothing at the chin's edge moves. LOW and DOWN are Paow's measures in the bank's films.
+  const lens = lips.sink !== undefined && line !== null && half !== null, [whole, none, power]: [number, number, number?] = lips.lens ?? [0.25, 0.8], DOWN = 60, LOW = 20;
+  const sunk = (x: number) => { if (!lens || !(sink > 0)) return 0; const d = Math.abs(x - middle.x) / half!; return sink * (d <= whole ? 1 : d >= none ? 0 : power !== undefined ? 1 - ((d - whole) / (none - whole)) ** power : 0.5 + 0.5 * Math.cos(Math.PI * (d - whole) / (none - whole))); };
+  if ((lift > 0 || (lens && sink > 0)) && line && half !== null) { const own = cutPlanes(film, W, H, win.x, win.y, w, h), cw = W / 2, u0 = W * H, v0 = u0 + cw * (H / 2), put = (v: number) => v < 0 ? 0 : v > 255 ? 255 : Math.round(v);
+    const source = (x: number, y: number): number | null => { const at = lineAt(x);
+      if (y > at) { const down = sunk(x), bottom = Math.min(at + DOWN, h - 2), room = bottom - at - LOW; if (down < 0.05 || y > bottom || room < 2 * down) return null; if (y < at + down) return at; if (y <= at + down + LOW) return y - down;
+        let s = y - down * (bottom - y) / (room - down); for (let i = 0; i < 8; i++) { const t = Math.min(1, Math.max(0, (bottom - s) / room)); s = y - down * t * t * (3 - 2 * t); } return s; }
+      const up = rise(x); if (up < 0.05) return null; const top = at - UP; if (y < top) return null; if (y > at - up) return at; if (y >= at - up - LIP) return y + up;
       let s = y + up * (y - top) / (UP - LIP - up); for (let i = 0; i < 8; i++) { const t = Math.min(1, Math.max(0, (s - top) / (UP - LIP))); s = y + up * t * t * (3 - 2 * t); } return s; };
     for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) { const s = source(x, y); if (s !== null) film[(win.y + y) * W + win.x + x] = put(bilinear(own.Y, w, h, x, s)); }
     for (let y = 0; y < hh; y++) for (let x = 0; x < hw; x++) { const s = source(2 * x + 0.5, 2 * y + 0.5); if (s !== null) { const i = (win.y / 2 + y) * cw + win.x / 2 + x; film[u0 + i] = put(bilinear(own.U, hw, hh, x, (s - 0.5) / 2)); film[v0 + i] = put(bilinear(own.V, hw, hh, x, (s - 0.5) / 2)); } } }
@@ -459,10 +498,13 @@ export function layMouth(film: Uint8Array, drawn: Planes, win: Box, middle: {x: 
     for (let i = 0; i < lip.length; i++) { U[i] += lips.colour * shift.u * lip[i]; V[i] += lips.colour * shift.v * lip[i]; }
     for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) Y[y * w + x] += lips.colour * shift.y * lip[(y >> 1) * hw + (x >> 1)]; }
   if (lips.sharpen > 0) { const src = Float32Array.from(Y); for (let y = 1; y < h - 1; y++) for (let x = 1; x < w - 1; x++) { const i = y * w + x, blur = (4 * src[i] + 2 * (src[i - 1] + src[i + 1] + src[i - w] + src[i + w]) + src[i - w - 1] + src[i - w + 1] + src[i + w - 1] + src[i + w + 1]) / 16; Y[i] = src[i] + lips.sharpen * (src[i] - blur); } }
-  const below = (x: number, y: number) => { if (!line) return 1; const t = Math.min(1, Math.max(0, (y - (lineAt(x) - rise(x) - lips.under!)) / 4)); return t * t * (3 - 2 * t); };
+  const ramp = lens ? lips.edge ?? 4 : 4;
+  const below = (x: number, y: number) => { if (!line) return 1; const t = Math.min(1, Math.max(0, (y - (lineAt(x) - rise(x) - lips.under!)) / ramp)); return t * t * (3 - 2 * t); };
   const inside = (x: number, y: number) => { if (edge === null) return 1; if (lips.arc !== undefined) return eased(Math.hypot((x - middle.x) / edge, (y - lineAt(x)) / lips.arc), 0.7);
     const d = Math.abs(x - middle.x); return d <= edge - 10 ? 1 : d >= edge ? 0 : 0.5 + 0.5 * Math.cos(Math.PI * (d - (edge - 10)) / 10); };
-  const mask = (x: number, y: number) => eased(Math.hypot((x - middle.x) / rx, (y - middle.y - 4) / ry), 0.7) * below(x, y) * inside(x, y), byte = (v: number) => v < 0 ? 0 : v > 255 ? 255 : Math.round(v), cw = W / 2, u0 = W * H, v0 = u0 + cw * (H / 2);
+  // With `sink` the drawn mouth shows only between her two lips, and not at all where they meet.
+  const above = (x: number, y: number) => { if (!lens) return 1; const down = sunk(x); if (rise(x) + down < 0.05) return 0; const t = Math.min(1, Math.max(0, (lineAt(x) + down + lips.under! - y) / ramp)); return t * t * (3 - 2 * t); };
+  const mask = (x: number, y: number) => eased(Math.hypot((x - middle.x) / rx, (y - middle.y - 4) / ry), 0.7) * below(x, y) * above(x, y) * inside(x, y), byte = (v: number) => v < 0 ? 0 : v > 255 ? 255 : Math.round(v), cw = W / 2, u0 = W * H, v0 = u0 + cw * (H / 2);
   for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) { const m = mask(x, y); if (m > 0) { const i = (win.y + y) * W + win.x + x; film[i] = byte(film[i] + (Y[y * w + x] - film[i]) * m); } }
   for (let y = 0; y < hh; y++) for (let x = 0; x < hw; x++) { const m = mask(2 * x + 0.5, 2 * y + 0.5); if (m > 0) { const i = (win.y / 2 + y) * cw + win.x / 2 + x; film[u0 + i] = byte(film[u0 + i] + (U[y * hw + x] - film[u0 + i]) * m); film[v0 + i] = byte(film[v0 + i] + (V[y * hw + x] - film[v0 + i]) * m); } }
 }

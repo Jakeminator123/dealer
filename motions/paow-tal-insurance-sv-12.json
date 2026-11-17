@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "id": "paow-tal-insurance-sv-12",
+  "dealer": "paow",
+  "source": {
+    "path": "assets/motions/paow-tal-insurance-sv-12/source.mp4",
+    "sha256": "e89930f8d23480f51a7de311df6d69aa2c3b9e8ba821dcd4e24db0a6adb524b0",
+    "bytes": 7711829,
+    "width": 1764,
+    "height": 1174,
+    "fps": 24,
+    "frames": 79,
+    "audio": true,
+    "provider": "tools/speech.ts: Scoutgaming's lip-sync renderer on this machine, voice from ElevenLabs",
+    "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Paow"
+  },
+  "motion": {
+    "kind": "IDLE",
+    "from": "IDLE",
+    "to": "IDLE",
+    "pass": false,
+    "basis": "SOURCE_FRAME_REVIEW",
+    "idle": {
+      "onRequest": true,
+      "calm": true,
+      "weight": 0,
+      "label": "säger: Försäkringen är öppen. Vill du försäkra din hand?"
+    }
+  },
+  "speech": {
+    "line": "insurance",
+    "language": "sv",
+    "text": "Försäkringen är öppen. Vill du försäkra din hand?",
+    "voice": "Paow",
+    "heard": "Försäkringen är öppen. Vill du försäkra din hand?",
+    "restFilm": "paow-vila-01-01",
+    "soundStartsAtSeconds": 0.22,
+    "soundEndsAtSeconds": 2.765
+  },
+  "review": {
+    "decision": "ACCEPTED",
+    "basis": "Inte granskad av Jakob. Gjord av tools/speech.ts ur assets/motions/paow-vila-01-01/source.mp4, inlagd bara kring det som hörs och under hennes egen överläpp, som lyfts när munnen öppnar. Granskaren 4/5: Giporna följer munnen ned 2–3 px, öppningen når ut i dem (lite bred i förstoring). Egen blank underläpp mot -11:s bleka svullna; ren växling i 33 och 38–39.",
+    "userAccepted": false,
+    "productionReady": false,
+    "provisional": {
+      "by": "huvudagenten med talbanans oberoende granskare",
+      "at": "2026-11-17T15:45:19.677Z",
+      "mandate": "Jakob 2026-11-13 kl. 15.50, med en bild av kön i Granska: \"jag vill nu för jag ska iväg att du godkänner allt videomaterial som innehåller de där kriterierna\" och \"Med andra ord vill jag inte se en sån här lista när jag är tillbaka!\"",
+      "note": "Granskaren 4/5, användbar med anmärkningar: Giporna följer munnen ned 2–3 px, öppningen når ut i dem (lite bred i förstoring). Egen blank underläpp mot -11:s bleka svullna; ren växling i 33 och 38–39."
+    }
+  },
+  "postProcessing": "the rendered face laid back into the rest film's own frames (assets/speech/paow/paow-tal-insurance-sv-12/receipt.json, laidBack)",
+  "generationRef": "assets/motions/paow-tal-insurance-sv-12/generation.json",
+  "scoutIntegrated": false,
+  "published": false
+}

@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "id": "paow-tal-vetej-sv-11",
+  "dealer": "paow",
+  "source": {
+    "path": "assets/motions/paow-tal-vetej-sv-11/source.mp4",
+    "sha256": "e25a587108efdf84398e183ac2b14aca125b3d87efccbb40f9e804187ab50b93",
+    "bytes": 8332983,
+    "width": 1764,
+    "height": 1174,
+    "fps": 24,
+    "frames": 85,
+    "audio": true,
+    "provider": "tools/speech.ts: Scoutgaming's lip-sync renderer on this machine, voice from ElevenLabs",
+    "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Paow"
+  },
+  "motion": {
+    "kind": "IDLE",
+    "from": "IDLE",
+    "to": "IDLE",
+    "pass": false,
+    "basis": "SOURCE_FRAME_REVIEW",
+    "idle": {
+      "onRequest": true,
+      "calm": true,
+      "weight": 0,
+      "label": "säger: Det kan jag tyvärr inte svara på, men korten ljuger aldrig."
+    }
+  },
+  "speech": {
+    "line": "vetej",
+    "language": "sv",
+    "text": "Det kan jag tyvärr inte svara på, men korten ljuger aldrig.",
+    "voice": "Paow",
+    "heard": "Det kan jag tyvärr inte svara på, men korten ljuger aldrig.",
+    "restFilm": "paow-vila-01-01",
+    "soundStartsAtSeconds": 0.22,
+    "soundEndsAtSeconds": 3.022
+  },
+  "review": {
+    "decision": "ACCEPTED",
+    "basis": "Inte granskad av Jakob. Gjord av tools/speech.ts ur assets/motions/paow-vila-01-01/source.mp4, inlagd bara kring det som hörs och under hennes egen överläpp, som lyfts när munnen öppnar. Granskaren 3.5/5: Gipor följer med ~2 px ned, naturligare än -10:s stilla uppdragna spetsar; egen glansig underläpp, ren sluten mun 32–34. Liten V-krok vid gipan bara i förstoring.",
+    "userAccepted": false,
+    "productionReady": false,
+    "provisional": {
+      "by": "huvudagenten med talbanans oberoende granskare",
+      "at": "2026-11-17T15:45:19.712Z",
+      "mandate": "Jakob 2026-11-13 kl. 15.50, med en bild av kön i Granska: \"jag vill nu för jag ska iväg att du godkänner allt videomaterial som innehåller de där kriterierna\" och \"Med andra ord vill jag inte se en sån här lista när jag är tillbaka!\"",
+      "note": "Granskaren 3.5/5, användbar med anmärkningar: Gipor följer med ~2 px ned, naturligare än -10:s stilla uppdragna spetsar; egen glansig underläpp, ren sluten mun 32–34. Liten V-krok vid gipan bara i förstoring."
+    }
+  },
+  "postProcessing": "the rendered face laid back into the rest film's own frames (assets/speech/paow/paow-tal-vetej-sv-11/receipt.json, laidBack)",
+  "generationRef": "assets/motions/paow-tal-vetej-sv-11/generation.json",
+  "scoutIntegrated": false,
+  "published": false
+}

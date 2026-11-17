@@ -56,8 +56,12 @@ const LEVEL = 6, MARGIN = 40, FEATHER = 24;
 // The lips are Jakob's choice (2026-11-13): no to a first trial that only made the drawn mouth larger ("Känns inte riktigt där"),
 // yes to the second, with her own upper lip kept ("läpprover var skitbra"), and her own corners after his word on that one
 // ("lite 'clownläppar' i mungiporna"). Seen in motion he found it worse than before: "bara underläppen som pratar" (her upper
-// lip stood still). So her own upper lip is lifted with the drawn mouth's opening; that is LIPS in src/speech-plan.ts. Moving the
-// drawn mouth down instead (drop) was tried twice and is left at nothing in the recipe.
+// lip stood still). So her own upper lip is lifted with the drawn mouth's opening. Of those films he said (2026-11-14): "Hon får
+// lixom lite som typ clown-mungipor." Every reviewer measured the same: her corners stood exactly still while the mouth opened
+// between them, and the drawn lower lip, larger and duller than hers, met her corners at another angle. So her own lower lip is
+// kept too and moved down, her corners follow the jaw, and the drawn mouth is only teeth and the dark between her two lips; that
+// is LIPS in src/speech-plan.ts. Moving the drawn mouth down instead (drop) was tried twice and is left at nothing in the recipe;
+// the model's own corners laid in, and a drawn mouth made wider, were tried and reviewed worse (docs/TAL.md, Kvaliteten).
 // Every line is heard at the same strength. ElevenLabs gives each reading its own: Paow's 25 lines measured 2026-11-13 lay between
 // −10.9 and −20.7 LUFS (each near full scale in its highest peak, so it is the peaks that differ), and in a film of a round the line
 // over the entrance was heard 6.5 dB under the three after it. Where a line's sound is written into a film or a mouth patch it is
@@ -425,7 +429,7 @@ async function openRaw(film: string, work: string): Promise<Raw> {
 // is). cells takes the box and the weights and gives back where each frame that gets the drawn mouth is put as it was laid, for a
 // mouth patch (tools/speech-patch.ts). weights is what each frame got, drops how far the drawn mouth was moved down in it (only
 // while it is open), shift how far the drawn lips' colour was moved.
-export type LaidBack = {box: Box; changed: Box; frames: number; weights: number[]; drops: number[]; lifts: number[]; lips: Lips | null; shift: {y: number; u: number; v: number} | null};
+export type LaidBack = {box: Box; changed: Box; frames: number; weights: number[]; drops: number[]; lifts: number[]; sinks?: number[]; lips: Lips | null; shift: {y: number; u: number; v: number} | null};
 type Cells = {put(filmFrame: number, frame: Uint8Array, width: number, height: number, x0: number, y0: number): void};
 export async function layBack(film: string, worker: string, frames: number[], out: string, work: string, options: {b?: Bridge; extra?: number; pcm?: Buffer; heard?: Uint8Array; lips?: Lips | null; cells?: (box: Box, weights: number[]) => Cells | null} = {}): Promise<LaidBack> {
   const b = options.b ?? BRIDGE, extra = options.extra ?? 0, lips = options.lips === undefined ? RECIPE.lips : options.lips, {width: W, height: H} = b.film, RW = RENDER.width, RH = RENDER.height, clipBytes = CLIP_BYTES, opened = await openRaw(film, work), read = opened.read, handle = {close: opened.close};
@@ -452,7 +456,7 @@ export async function layBack(film: string, worker: string, frames: number[], ou
     // How far the drawn mouth is moved in each frame (nothing with the recipe as it stands).
     const heardIn = options.heard ? heardFrames(options.heard, frames.length) : null, weights = heardIn ? speechGate(heardIn, RECIPE.gate, apart) : new Array<number>(frames.length).fill(1);
     const shared = lips && lips.share !== undefined ? mouthMoves(laid, lips, heardIn ?? undefined, weights.map(weight => weight === 1)) : null;
-    const drops = shared ? shared.drops : lips ? mouthDrop(gaps, lips, heardIn ?? undefined) : [], lifts = shared ? shared.lifts : lips ? mouthLift(rises, lips, heardIn ?? undefined) : [];
+    const drops = shared ? shared.drops : lips ? mouthDrop(gaps, lips, heardIn ?? undefined) : [], lifts = shared ? shared.lifts : lips ? mouthLift(rises, lips, heardIn ?? undefined) : [], sinks = shared?.sinks;
     // The drawn lips' colour is moved by the mean difference to her own lips, over the frames that get the drawn mouth.
     const sums = {own: {y: 0, u: 0, v: 0, n: 0}, drawn: {y: 0, u: 0, v: 0, n: 0}}; tones.forEach((t, i) => { if (weights[i] > 0) for (const side of ['own', 'drawn'] as const) for (const key of ['y', 'u', 'v', 'n'] as const) sums[side][key] += t[side][key]; });
     const shift = lips && sums.own.n && sums.drawn.n ? {y: sums.own.y / sums.own.n - sums.drawn.y / sums.drawn.n, u: sums.own.u / sums.own.n - sums.drawn.u / sums.drawn.n, v: sums.own.v / sums.own.n - sums.drawn.v / sums.drawn.n} : lips ? {y: 0, u: 0, v: 0} : null;
@@ -464,12 +468,12 @@ export async function layBack(film: string, worker: string, frames: number[], ou
       let n = 0, last = {x: win.w / 2, y: win.h * 0.45};
       for await (const clip of clips) { if (n >= frames.length) { n++; continue; } const at = filmFrameOf(frames[n], b), frame = await read(at);
         if (weights[n] > 0) { const own = weights[n] < 1 ? Uint8Array.from(frame) : null;
-          if (lips) { last = middles[n] ?? last; layMouth(frame, cutPlanes(clip, RW, RH, win.x - b.cropX, win.y + b.padY, win.w, win.h), win, last, shift!, lips, b, drops[n], lifts[n]); } else blendFrame(frame, clip, box, mask, b);
+          if (lips) { last = middles[n] ?? last; layMouth(frame, cutPlanes(clip, RW, RH, win.x - b.cropX, win.y + b.padY, win.w, win.h), win, last, shift!, lips, b, drops[n], lifts[n], sinks?.[n] ?? 0); } else blendFrame(frame, clip, box, mask, b);
           if (own) mixFrame(frame, own, weights[n]);
           cells?.put(at, frame, W, H, box.x, box.y); }
         n++; if (!stdin.write(frame)) await new Promise(resolve => stdin.once('drain', resolve)); }
     });
-    return {box, changed, frames: frames.length, weights, drops, lifts, opens: laid, lips, shift: shift && {y: Number(shift.y.toFixed(2)), u: Number(shift.u.toFixed(2)), v: Number(shift.v.toFixed(2))}};
+    return {box, changed, frames: frames.length, weights, drops, lifts, ...(sinks ? {sinks} : {}), opens: laid, lips, shift: shift && {y: Number(shift.y.toFixed(2)), u: Number(shift.u.toFixed(2)), v: Number(shift.v.toFixed(2))}};
   } finally { await handle.close(); }
 }
 
@@ -598,7 +602,7 @@ export async function say(register: Register, root: string, options: SayOptions)
       plan: {restFilm: filmRel, restFilmSha256: await sha256File(path.join(root, filmRel)), clipFrames: [frames[0], Math.max(...frames), frames[frames.length - 1]], filmFrames: [filmFrameOf(frames[0]), filmFrameOf(Math.max(...frames)), filmFrameOf(frames[frames.length - 1])], rows},
       bank: bank.id, renderer: rendered,
       worker: {path: 'worker.mp4', sha256: sha256(data), bytes: data.length, width: RENDER.width, height: RENDER.height},
-      laidBack: {bridge: BRIDGE, changed: laid.changed, box: laid.box, level: LEVEL, margin: MARGIN, feather: FEATHER, gate: RECIPE.gate, recipe: RECIPE, shift: laid.shift, weights: laid.weights, drops: laid.drops, lifts: laid.lifts},
+      laidBack: {bridge: BRIDGE, changed: laid.changed, box: laid.box, level: LEVEL, margin: MARGIN, feather: FEATHER, gate: RECIPE.gate, recipe: RECIPE, shift: laid.shift, weights: laid.weights, drops: laid.drops, lifts: laid.lifts, ...(laid.sinks ? {sinks: laid.sinks} : {})},
       output: {path: 'source.mp4', sha256: await sha256File(out), width: made.width, height: made.height, fps: RENDER.fps, frames: made.frames, audio: true, encoding: ENCODING},
       note: 'Outside the box every pixel is the rest film\'s own frame (encoded once more), and so is everything but the mouth, and the mouth too where she is not heard (laidBack.weights, one per frame). Not reviewed: tools/film-review.md before Jakob judges it.'}));
     log(`${id}: klart → ${path.relative(root, out).replaceAll('\\', '/')} (${total} rutor, munnen lagd i ${laid.box.w} × ${laid.box.h} vid ${laid.box.x},${laid.box.y})`);
@@ -723,7 +727,7 @@ export async function over(register: Register, root: string, options: OverOption
       sound: {from: `${take.id}/tts.mp3`, seconds: Number((said.length / 2 / RENDER.pcmRate).toFixed(3)), heard: take.receipt.sound.heard ?? null, startsAtSeconds: at, endsAtSeconds: Number((at + said.length / 2 / RENDER.pcmRate).toFixed(3)), level: loud.level},
       plan: {rows, note: 'the film\'s frames in order and its first frame once more for the renderer; that last frame is not in the film'}, bank: bank.id,
       renderer: {image: register.renderer.image, releaseSha256: made.release, gpu: made.gpu, jobId: made.jobId, requestId: made.job.binding.requestId, seconds: made.seconds},
-      worker: {path: 'worker.mp4', sha256: sha256(made.data), bytes: made.data.length}, laidBack: {bridge: WHOLE, changed: laid.changed, box: laid.box, level: LEVEL, margin: MARGIN, feather: FEATHER, gate: RECIPE.gate, recipe, shift: laid.shift, weights: laid.weights, drops: laid.drops, lifts: laid.lifts}, patch,
+      worker: {path: 'worker.mp4', sha256: sha256(made.data), bytes: made.data.length}, laidBack: {bridge: WHOLE, changed: laid.changed, box: laid.box, level: LEVEL, margin: MARGIN, feather: FEATHER, gate: RECIPE.gate, recipe, shift: laid.shift, weights: laid.weights, drops: laid.drops, lifts: laid.lifts, ...(laid.sinks ? {sinks: laid.sinks} : {})}, patch,
       output: {path: 'source.mp4', sha256: outSha, width: film.width, height: film.height, fps: RENDER.fps, frames: film.frames, audio: true, encoding: ENCODING},
       note: 'A proof of speech over a deal. Outside the mouth every pixel is the film\'s own frame (encoded once more). Not a take of the bank: it has no card track and no verdict.'}));
     log(`${id}: klart → ${path.relative(root, out).replaceAll('\\', '/')} (${film.frames} rutor, munnen lagd i ${laid.box.w} × ${laid.box.h} vid ${laid.box.x},${laid.box.y})`);
