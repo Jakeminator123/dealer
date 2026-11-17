@@ -202,9 +202,8 @@ konto ("Varit borta ett par dagar och nu bytt konto"). Han läser inte långa sv
    gör. Tre frågor som avgör läsningen: vilken telefon och webbläsare (skärmbilden kl. 15.21 visar en iPhone med Safari
    i strömsparläge); är hela bilden svart, eller syns bordet och knapparna och bara hon är borta; och fungerar spelet
    på samma telefon på `/casino`, utan filmen?
-2. **Runway: logga in igen.** Han har fyllt på (sagt till trailersessionen 2026-11-17; saldot är inte läst av någon
-   session sedan dess). Kopplingen till Runway (MCP-servern `runway`) föll med kontobytet och kräver
-   ny inloggning (`/mcp`) i varje session som ska beställa; saldot gick inte att läsa 2026-11-17 och var cirka 52 krediter 2026-11-14 (516 kvällen före;
+2. **Runway är inloggat och påfyllt** (saldot 10 052 krediter, läst 2026-11-17 kl. 17.45). En session vars koppling
+   fortfarande är nere efter kontobytet behöver `/mcp`. Äldre text som följer: saldot gick inte att läsa 2026-11-17 och var cirka 52 krediter 2026-11-14 (516 kvällen före;
    dagens anrop: bild 20, trailerns prov 124, rummets slinga 320). Påfyllningen gör bara han (arbetsytan "Jakob", sidan
    för betalning hos Runway). Det som väntar på krediter, i den ordning hans egna ord pekar: tatueringarna på hennes
    rygg i trailerns början (nästa prov cirka 105; hela början 650–950, med marginal 1 150–1 200), tatuerade och mindre
@@ -216,9 +215,10 @@ konto ("Varit borta ett par dagar och nu bytt konto"). Han läser inte långa sv
    inte: "The job was not started because your account is locked due to a billing issue." Koden är pushad och samma
    kontroll går grön på datorn (hela testsviten och publiceringskontrollen i ett rent arbetsträd), så inget är
    stoppat, men GitHubs bock är röd tills han har rett ut betalningen under sitt GitHub-konto (Settings, Billing).
-4. **Får hans foto skickas till bildmodellen?** Fotot av kvinnan med tatueringarna (`private/referenser/`) är ett foto
-   av en verklig person och har inte lämnat datorn; tatueringarna beskrivs i ord. Med fotot som förlaga blir de
-   troligen mer lika. Frågan ställdes 2026-11-14 kl. 15.40 och igen 2026-11-17; utan ett ja skickas det inte.
+4. **Fotot får skickas till bildmodellen** (hans ja 2026-11-17: "ja, foton får skickas"): fotot av kvinnan med
+   tatueringarna (`private/referenser/`) får användas som förlaga för tatueringarna hos bildmodellen. Det läggs
+   aldrig i Git, i ett prov eller på sajten. Det andra provet på ryggtatueringarna i trailern är beställt av honom
+   (cirka 105 krediter) och görs av trailersessionen; han får se det i Prov innan något byts.
 5. **Mobilens nya konsol: titta på telefonen, stående och liggande** (publicerad 2026-11-17 kl. 16.40). Konsolen täcker
    inte längre bordet (SYSTEM, "Konsolen"). Det han bör säga något om: Miljö, Dealer och Musik ligger bakom en knapp
    (≡), stående visas plats 2–6 och hon är cirka en femtedel mindre än förut.
@@ -492,6 +492,16 @@ här säger annat.
     hopp görs. inte farlgigt, men lite." Och om natten: "I övrigt är jobbet bra gjort!"
   - **Svart efter filmen** (kl. 16.24, genom en session som hans bot startade medan han satt vid telefonen): "Den nya
     videon som overgar till spelet blir bara svart nar man ar inne i spelet." Kända brister, "Spelet på hans telefon".
+- **2026-11-17 cirka kl. 17.30–17.45, till huvudagenten** ("kan jag kanske tala med dig hela tiden så får du delegera"):
+  han talar med huvudagenten och huvudagenten delegerar. Om läpparna, med två utsnitt av hennes mun: "Dock är antingen
+  hennes läppar för stora i grunden eller så är läpparna för små när hon väl talar. Kanske är det så lätt? […] de
+  kanske utgår från en annorluda baseline av hennes mun"; provet på det ligger i Prov `paow-baslinje` och väntar på
+  hans ja eller nej. Svar på frågorna: "Punkt tre, ja, foton får skickas." (hans foto av den tatuerade kvinnan får
+  skickas till bildmodellen som förlaga); "Punkt fem, ja, du får göra det för 105 krediter." (andra provet på
+  ryggtatueringarna i trailern; gått till trailersessionen); om Pamelas filmer på sajten: "Jag vill ha kvar dem.";
+  om tatuerade händer för skattade 7 000 krediter: "jag förstår inte varför. Förklara." (inget ja än); "vi är
+  inloggade på `runway`" (saldot läst kl. 17.45: 10 052 krediter). Han bad också om en bättre yta för prov och
+  granskning, "så att jag kan enklare typ veta vad jag ska ta ställning till": sidan Beslut i studion byggs.
 - **2026-11-17 cirka kl. 17.15, till scenbanan, sedan han tittat på datorn** (Chrome på Windows; hans skärmbild av
   `/trailer?diagnos=1` visar "kö: går · sträng nej · nekade 0" och hel bildyta): "I trailern:
   'https://dealer-lake.vercel.app/trailer' så är lipsynk sämre. 'http://127.0.0.1:4319/studio/prov/?prov=monaco-liv-2'
