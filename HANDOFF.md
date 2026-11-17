@@ -68,9 +68,13 @@ Vilken hand som delar väljs per order: vänster, höger eller handbyte (`HAND_C
     skrivit var sin överlämning som en ny session börjar från: `D:/dealer-scratch/tmp/tal/LASMIG-OVERLAMNING-2026-11-17.md`
     och `D:/dealer-scratch/tmp/dealer-1e/LASMIG-OVERLAMNING-2026-11-17.md`. Också huvudagenten bytte chatt samma kväll;
     adressen på raden ovan är den nya chattens.
-- **En ny session för 3D-visualiseringen** startas av Jakob 2026-11-17 kväll ("en till agent som arbetar parallellt med
-  dig och som ska förbättra 3D-visualiseringen av det som idag är 2D"); den skriver sin adress och sina filer här genom
-  huvudagenten. Medan labbet byggs om (Börja här) gäller för varje ny session: arbeta i ett eget arbetsträd på en kort
+- **3D (`dealer-6e`, startad av Jakob 2026-11-17 kväll;** hans ord: "en till agent som arbetar parallellt med dig och
+  som ska förbättra 3D-visualiseringen av det som idag är 2D"**):** utreder och prövar en dealer i riktig 3D (samma giv sedd från
+  olika stolar, kortet ett verkligt 3D-kort), avskilt i mappen `dealer3d/` på grenen `dealer-3d` i arbetsträdet
+  `D:/dealer-scratch/tmp/dealer-3d/trad`. Den skriver bara där, läser `src/scene3d-*.ts`, `src/placement-model.ts` och
+  planen, lämnar det Jakob ska se som Prov (`assets/proofs/dealer-3d-<namn>/`) och grenen till huvudagenten. Betalt
+  (Meshy, på Jakobs eget ja) rapporteras till huvudagenten med belopp. Medan labbet byggs om (Börja här) gäller för
+  varje ny session: arbeta i ett eget arbetsträd på en kort
   gren (`git worktree add D:/dealer-scratch/tmp/<bana>/trad -b <gren> main`), skriv först till huvudagenten vilka filer
   du tar, rör inget under `studio/` utan besked (fem underagenter skriver där), starta ingen egen server och lämna
   grenen till huvudagenten, som slår ihop den.
@@ -124,10 +128,10 @@ kl. 21.46 och 21.58 (Jakobs besked, "Ett labb"), av underagenter till huvudagent
   Det här saknas, Protokoll) och resten av Placering (Material, Mobil) in i Bordet, så att `/bestall/` och `/placering/`
   leder dit i labbet och Beställ går ur menyn; och rättningen av "Alla sju", som i dag skickar första platsens vändning
   till alla platser (`NewOrder.tsx`; funnen av en utomstående granskare, bekräftad i koden).
-- **Pågår i egna arbetsträd på korta grenar**, `D:/dealer-scratch/tmp/<gren>/trad`: `gamla-labbet-bort` (gamla labbet
-  tas bort), `karta-primara` (Karta och Primära blir en sida), `lipsync-vy` (Lipsync-vyn och `docs/TAL.md`: var munnen
-  görs och vad som gäller per dealer) och `runda-noder` (rundan byggs av de noder som finns; förvalen blir exempel).
-  Grenen `granska-prov` och dess träd står kvar tills allt är inne och kan då tas bort.
+- **Pågår i egna arbetsträd på korta grenar**, `D:/dealer-scratch/tmp/<gren>/trad`: `karta-primara` (Karta och Primära
+  blir en sida), `lipsync-vy` (Lipsync-vyn och `docs/TAL.md`: var munnen görs och vad som gäller per dealer) och
+  `runda-noder` (rundan byggs av de noder som finns; förvalen blir exempel). Grenarna `granska-prov` och
+  `gamla-labbet-bort` är inne; deras träd och grenar står kvar tills allt är inne och kan då tas bort.
 - **Att göra när grenarna är inne:** Primära ur menyn; det som ännu skriver `/prov/?prov=` eller kallar Prov en egen vy
   (`studio/lib/decisions.ts`, `studio/lib/lipsync.ts`, `material/Rows.tsx`, `bot/Welcome.tsx`, `studio/lib/guide.ts`,
   `tools/knowledge.ts`, `cloud/studio/bot-prompt.ts`, `docs/DRIFT.md` om kopians meny, `docs/SYSTEM.md` om
@@ -159,8 +163,11 @@ inte skriven. Filmerna (punkt 1) är huvudagentens eget nästa steg när labbets
    och på hans anmärkning bort med beskrivningarna av rörelsen som inte skickas till Runway (`FLIP_ABOUT`, `HAND_ABOUT`,
    `SHAPE_ABOUT`, `LANDS_ABOUT`, `startWords` och sammanfattningsraden `dealWords` i `src/order-model.ts`, visade i
    `Choices.tsx`, `NewOrder.tsx`, `SendScreen.tsx`, `OrderList.tsx` och `Stage.tsx`). Efterarbete (där Scen ligger;
-   kortets förarbete per film, ruta för ruta) kommer efter filmerna. Gamla labbet tas bort nu på hans ord (ovan), inte
-   sist: Ljud, Modeller och 3D-sidan blir kvar som sidor, filmbiblioteket och Runway-underlaget flyttar till Prov.
+   kortets förarbete per film, ruta för ruta) kommer efter filmerna. Gamla labbet är borttaget (`3833575`):
+   3D-sidan, Ljud och Modeller är sidor i `pages/` (Ljud och Modeller längst ned i menyn, 3D-sidan bakom Scens knapp),
+   Filmbiblioteket och Runway-underlaget är Prov-mapparna `filmbiblioteket` och `runway-underlaget-10-nov`, och
+   `/lab.html` leder till studion. Borta med det tills nya labbet har dem: "Rå | renderad" på en tagning (hör till
+   Efterarbete), rundbyggarens steglista (grenen `runda-noder`) och panelen Vila.
 3. **Sidornas ord:** 72 ställen säger annat än ordlistan (`D:/dealer-scratch/tmp/stadning/ord/ORD.md`, del c, med fil,
    rad och förslag); kontrollera radnumren, filerna har ändrats sedan dess.
 4. **Läpparna:** hans ja till provet `paow-realtid-mun-6` (kl. 21.38) gör sättet för munnen i realtid till: storlek F,
@@ -195,7 +202,7 @@ planförslagen, markering av avgjorda prov).
   `grund/RAPPORT.md` (vad gamla labbet har som det nya saknar, vad vyerna överlappar, förslaget till en meny och
   skisser). Ordningen han har satt: först beställa och granska filmer med gult och blått kort i den hopslagna vyn, med
   gamla labbets sätt att beskriva vändningen; sedan efterarbetet (kortens utseende, logga, prov av läppsynk) där Scen
-  ligger i dag; gamla labbet tas bort sist. Skisserna har hans ja, och första steget är byggt (Börja här, punkt 2).
+  ligger i dag; gamla labbet är borttaget (Börja här, punkt 2). Skisserna har hans ja, och första steget är byggt (Börja här, punkt 2).
 
 - **Givarna.** Jakobs egen order (`paow-giv-2-2-p4-02`, släp från 2.2 till plats 4, WAN 3) föll i båda tagningarna
   (3/5 och 2/5). Hans ord: "Oavsett om hon nyper eller släpar ut kortet, alltså om hon kommer från ankaret 2.1 eller 2.2,
@@ -329,7 +336,7 @@ Ett besked per ämne, med det nyaste ordet och dess datum. Ett besked han har er
   stillbild blir korten stela och har olika format, och framförallt är skons kort alldeles för stort." och "Se till att
   gammalt skit tar bort också och att strukturen blir tydlig i projektet!" Huvudagentens läsning, som han inte har
   bekräftat: en vy (Bordet) med en ram, där bilden är antingen kortplanen eller den levande 3D-scenen och allt ändras
-  i högerspalten; beställningen är en lista av filmer i samma vy; gamla labbet tas bort nu. Skattat, mäts av bygget:
+  i högerspalten; beställningen är en lista av filmer i samma vy; gamla labbet tas bort nu. Mätt av bygget samma kväll:
   skons kort är för stort redan i ankarna (cirka 111 bildpunkter långt, mot 55 för dealerns kort på ungefär samma
   djup), och rättas då först med nya ankare, i samma omgång som de tatuerade händerna. Kl. 21.58, om menyn: "Inte 3D
   leder bara till greenscreenen, så den borde heta något annat"; "Spela i `casino` bör rimligtvis vara samma som i
@@ -551,7 +558,8 @@ Ett besked per ämne, med det nyaste ordet och dess datum. Ett besked han har er
 ## Arbetsyta
 
 - **`main` är den enda grenen.** Etapper `jakob-N`: DRIFT, "Git och kontroller".
-- **Studion:** `http://127.0.0.1:4319/studio/` (gamla labbet `lab.html?gamla=1` tills Modeller och Ljud har flyttats).
+- **Studion:** `http://127.0.0.1:4319/studio/` (`/` och `/lab.html` leder dit); bredvid den sidorna `/scene3d.html`,
+  `/sound.html` och `/props.html` i `pages/`.
   Visa en sida med `node tools/preview.ts --open "<sida>"` (DRIFT); lösa sidor under `D:/dealer-scratch` visas inte för
   Jakob.
 - **`placements/default.json` är Jakobs plan** (incheckad på hans ja 2026-11-12, `7a158d6`); bara Placering skriver den.
