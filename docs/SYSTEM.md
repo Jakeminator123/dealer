@@ -577,7 +577,15 @@ format och namn: `tools/dealer-line.md`.
 
 ## Klippbank och nodnotation
 
-Studions vy **Karta** (`/studio/karta/`) visar kanterna och tagningarna. Noderna är ankarposer: `IDLE`, `READY` och ett landningsankare per kort (`P4.C1`,
+Studions vy **Karta** (`/studio/karta/`; `/studio/primara/` leder hit med samma val) visar nodträdet och för varje steg
+vad spelet spelar där, Primär och de sekundära filmerna: tagningar som är godkända eller varianter och inte Primär, tre i
+taget och resten bakom "Visa fler". Varje film säger hur spelet använder den, läst ur spelets egna regler och aldrig
+gissat (`usesOf` i `studio/lib/primaries.ts`): banken som spelet läser den (`judgedBank`), kedjorna som en runda spelar
+steget i (given före returen till A2.1 och före den till A1, returen efter given), vilans lugna filmer och gester efter
+vikt, det som bara spelas när det väljs och platserna som ges från ankare 2.2 (`SEAT_HUB`). Utan Primär föreslås den bästa
+tagning Jakob godkänt rakt av, med vad den skulle göra med skarven, och Primär sätts bara med hans klick (Gör primär).
+Underkända, ogranskade och ersatta tagningar finns i Granska. Noderna är ankarposer: `IDLE`, `READY` och ett
+landningsankare per kort (`P4.C1`,
 `D.C2`). Varje klipp är en kant `A>B` med en enda handling; en runda är kanter i följd:
 
 ```text

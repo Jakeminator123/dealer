@@ -7,7 +7,7 @@ import "@xyflow/react/dist/style.css";
 import { Background, BackgroundVariant, ReactFlow, useReactFlow, useStore, type Edge, type Node } from "@xyflow/react";
 import { useCallback, useEffect, useMemo, useRef } from "react";
 import type { Graph } from "../../../src/clip-graph.ts";
-import { edgeInfo, type EdgeInfo } from "@/lib/edge-stats";
+import type { EdgeInfo } from "@/lib/edge-stats";
 import { seatReach, type MapLayout, type PlanPoints } from "@/lib/map-layout";
 import { nodeCode } from "@/lib/names";
 import { SHEET_W } from "./EdgeSheet";
@@ -21,6 +21,7 @@ const PAD = { top: 16, side: 20, bottom: 56 }; // the legend sits under the map
 export type MapView = {
   graph: Graph;
   layout: MapLayout;
+  /** What each line, the rest and each experiment says (KartaView: what the game plays, the secondary films' count). */
   infos: Map<string, EdgeInfo>;
   mode: "SEAT" | "CARD";
   points: PlanPoints;
@@ -197,7 +198,7 @@ export function MapCanvas(view: MapView) {
       .sort((a, b) => Number(a.id === lit) - Number(b.id === lit));
     // Experiment steps between anchors the map shows (A1 ↔ A2.2), dashed; the other experiments stay in the tray.
     const trials: ExperimentEdgeType[] = experimentLines(layout, graph.experiments).flatMap((line): ExperimentEdgeType[] => {
-      const info = edgeInfo(graph, line.id);
+      const info = infos.get(line.id);
       if (!info) return [];
       const shown = inFocus(line.id, line.nodes);
       return [{ id: line.id, source: line.nodes[0], target: line.nodes[1], type: "experiment", selectable: false, focusable: false, deletable: false,

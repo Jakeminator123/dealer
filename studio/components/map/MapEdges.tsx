@@ -5,7 +5,7 @@
 // anchor is drawn too. A rail: an anchor's line that the films hang on (A2.1's, A1's), with its name. An experiment: a
 // step outside the model between two anchors the map shows (A1 ↔ A2.2), dashed, with a small label.
 import { BaseEdge, EdgeLabelRenderer, type Edge, type EdgeProps } from "@xyflow/react";
-import type { EdgeInfo } from "@/lib/edge-stats";
+import { primaryOf, type EdgeInfo } from "@/lib/edge-stats";
 import type { Dir, MapEdge, Rail } from "@/lib/map-layout";
 import { cn } from "@/components/ui";
 import { CountSigns, EdgeChip, lineOf } from "./EdgeChip";
@@ -30,6 +30,9 @@ export type RailData = { rail: Rail };
 export type RailEdgeType = Edge<RailData, "rail">;
 
 const ARROW: Record<Dir, number> = { down: 90, up: -90, right: 0, left: 180 };
+
+/** A Primär is chosen on the step, but what the game plays there is another film (the chip's small ☆). */
+export const primaryAside = (info: EdgeInfo): boolean => !!primaryOf(info.edge) && !(info.tag.kind === "take" && info.tag.verdict === "primar");
 const ARROW_PATH = "M0,0 L-8,-4.5 L-8,4.5 Z"; // points right; turned to the line's direction
 
 export function FilmEdge({ id, data }: EdgeProps<FilmEdgeType>) {
@@ -58,7 +61,7 @@ export function FilmEdge({ id, data }: EdgeProps<FilmEdgeType>) {
             onPointerEnter={() => onHover(id)}
             onPointerLeave={() => onHover(null)}
           >
-            <EdgeChip tag={info.tag} counts={info.counts} active={active} dim={dim} compact={compact} title={info.title} aria-label={info.title} aria-pressed={active} onClick={() => onPick(id)} />
+            <EdgeChip tag={info.tag} counts={info.counts} active={active} dim={dim} compact={compact} aside={primaryAside(info)} title={info.title} aria-label={info.title} aria-pressed={active} onClick={() => onPick(id)} />
           </div>
         </EdgeLabelRenderer>
       ) : null}

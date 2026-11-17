@@ -149,6 +149,8 @@ export function DealerNode({ data }: NodeProps<DealerNodeType>) {
 
 export function HubNode({ data }: NodeProps<HubNodeType>) {
   const loop = data.loop;
+  // The rest's films on this page: its Primär and its secondary films (the count on its chip).
+  const films = loop ? loop.counts.total + (loop.edge.takes.some((t) => t.explicitMain) ? 1 : 0) : 0;
   return (
     <Frame data={data} className={data.node === "READY" || data.node === "IDLE" ? "bg-[#151c18]" : undefined}>
       <Pick data={data} />
@@ -158,13 +160,13 @@ export function HubNode({ data }: NodeProps<HubNodeType>) {
       </div>
       {data.note ? <span className="pointer-events-none absolute bottom-1.5 left-2.5 text-[10.5px] text-faint">{data.note}</span> : null}
       {loop ? (
-        // The rest step lives inside A1: its twenty films (the calm loop and the gestures) behind one button that says so.
+        // The rest step lives inside A1: its films (the calm loop and the gestures) behind one button that says so.
         <button
           type="button"
           onClick={loop.onPick}
           aria-pressed={loop.active}
-          aria-label={`${restLine(loop.counts.total)}: ${loop.title}. Öppna vilans filmer.`}
-          title={`${restLine(loop.counts.total)}: den lugna loopen och gesterna som slumpas in. Klicka för filmerna.`}
+          aria-label={`${restLine(films)}: ${loop.title}. Öppna vilans filmer.`}
+          title={`${restLine(films)}: den lugna loopen och gesterna som slumpas in. Klicka för filmerna.`}
           className={cn(
             // Two short rows under A1's name: what it is, then the counts (one row is too narrow for both).
             "nodrag nopan absolute inset-x-1.5 bottom-1.5 top-[27px] flex flex-col justify-center gap-[3px] overflow-hidden whitespace-nowrap rounded-md border bg-raised px-2 text-left text-[10.5px] font-medium leading-none text-ink transition-[border-color,opacity] duration-150 hover:border-[#4a5a51]",
@@ -174,7 +176,7 @@ export function HubNode({ data }: NodeProps<HubNodeType>) {
         >
           <span className="flex items-center gap-1">
             <RefreshCw aria-hidden className="size-3 shrink-0 text-faint" />
-            {restLine(loop.counts.total)}
+            {restLine(films)}
           </span>
           <CountSigns counts={loop.counts} className="pl-4 text-[10px]" />
         </button>

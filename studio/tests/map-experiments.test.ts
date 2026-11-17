@@ -1,11 +1,12 @@
-// The map's experiment lines (studio/components/map/experiment-lines.ts) and the rest step's groups (rest.ts).
+// The map's experiment lines (studio/components/map/experiment-lines.ts) and the rest step's films (rest.ts, lib/primaries.ts).
 // Run from the repo root: node --test "studio/tests/map-experiments.test.ts"
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { buildGraph, type BankData, type BankJob, type MotionRecord } from "../../src/clip-graph.ts";
 import { mapLayout, segments, overlaps } from "../lib/map-layout.ts";
 import { experimentLines } from "../components/map/experiment-lines.ts";
-import { REST_EDGE, restGroups, restLine, restWord } from "../components/map/rest.ts";
+import { REST_EDGE, restLine, restWord } from "../components/map/rest.ts";
+import { gameGraph, stepFilms } from "../lib/primaries.ts";
 
 const exp = (id: string, from: string, to: string) => ({ id, from, to });
 
@@ -59,10 +60,11 @@ test("the rest step: calm films are the base, gestures are picked at random betw
     media: Object.fromEntries(ids.map((id) => [id, { video: `assets/motions/${id}/source.mp4` }])),
   };
   const graph = buildGraph(bank);
-  const groups = restGroups(graph.edge[REST_EDGE]);
-  assert.deepEqual(groups.lugna.map((t) => t.id), ["pamela-idle-breath-b-01", "pamela-idle-loop-01"], "calm, by their share of the rest");
-  assert.deepEqual(groups.gester.map((t) => t.id), ["pamela-idle-smile-01", "pamela-idle-stretch-01", "pamela-idle-cough-01"], "gestures by share, the one only on request last");
-  assert.deepEqual(groups.underkanda.map((t) => t.id), ["pamela-idle-coffee-01"]);
+  // On Karta the rest's films come calm first, by their share of the rest, then the gestures by share, the one only on request last.
+  const rest = stepFilms(bank, graph, gameGraph(bank, "pamela"), REST_EDGE)!;
+  assert.deepEqual(rest.secondaries.map((f) => f.take.id), ["pamela-idle-breath-b-01", "pamela-idle-loop-01", "pamela-idle-smile-01", "pamela-idle-stretch-01", "pamela-idle-cough-01"]);
+  assert.deepEqual(rest.secondaries.map((f) => f.use.word), ["Vilan · lugn · 67 %", "Vilan · lugn · 33 %", "Vilan · gest · 67 %", "Vilan · gest · 33 %", "Bara när den väljs"]);
+  assert.equal(rest.elsewhere, 1, "the rejected one is in Granska");
   assert.equal(restWord(graph.takes["pamela-idle-breath-b-01"]), "Andning");
   assert.equal(restWord({ id: "pamela-idle-smile-02", idle: null }), "Smile 02", "without a word in the record: the id");
   assert.equal(restLine(20), "Vilan · 20 filmer");

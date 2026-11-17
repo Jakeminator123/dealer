@@ -1,6 +1,6 @@
 // What the node map and its side panel say about one edge (a film between two anchors): what plays there now and why,
-// the takes sorted into Jakob's five groups and counted, and the bank in numbers. Pure: no DOM, no network; tests in
-// studio/tests/edge-stats.test.ts.
+// the takes sorted into Jakob's groups and counted, the step's secondary films, and the bank in numbers. Pure: no DOM, no
+// network; tests in studio/tests/edge-stats.test.ts.
 import { GAP_LABEL, playable, resolveRound, type Edge, type Gap, type Graph, type Step, type Take, type Why } from "../../src/clip-graph.ts";
 import type { HubDeal } from "../../src/game-director.ts";
 import { edgeName, nodeCode, takeName } from "./names.ts";
@@ -41,19 +41,25 @@ export function countsText(counts: Counts): string {
   return parts.length ? parts.join(", ") : "inga tagningar";
 }
 
-/** The five groups of the side panel, newest first in each; the take that plays (first) leads its group. */
-export type TakeGroups = { primar: Take[]; godkanda: Take[]; varianter: Take[]; vantar: Take[]; underkanda: Take[] };
-export function groupTakes(edge: Pick<Edge, "takes">, first: Take | null = null): TakeGroups {
-  const sorted = [...edge.takes].sort((a, b) => Number(b === first) - Number(a === first) || b.order - a.order);
-  const groups: TakeGroups = { primar: [], godkanda: [], varianter: [], vantar: [], underkanda: [] };
-  for (const take of sorted) {
-    const bucket = bucketOf(take);
-    if (bucket === "accepted") (take.explicitMain ? groups.primar : groups.godkanda).push(take);
-    else if (bucket === "variants") groups.varianter.push(take);
-    else if (bucket === "waiting") groups.vantar.push(take);
-    else groups.underkanda.push(take);
+/**
+ * A secondary film of a step (Karta): approved (Godkänd or Variant, his own or given for him) and not Primär, finished, and
+ * in the game's bank when that graph is given (a stopgap the game has replaced is not). Rejected, unjudged and replaced
+ * takes are not on the map's pages: they are in Granska.
+ */
+export function isSecondary(take: Take, game?: Pick<Graph, "takes"> | null): boolean {
+  const verdict = verdictOf(take).verdict;
+  return playable(take) && !take.explicitMain && (verdict === "godkand" || verdict === "variant") && (!game || !!game.takes[take.id]);
+}
+
+/** The map's count on a step: its secondary films, as ✓ godkända and ◆ varianter (a take from A2.2 counts as a variant). */
+export function secondaryCounts(edge: Pick<Edge, "takes">, game?: Pick<Graph, "takes"> | null): Counts {
+  const counts: Counts = { accepted: 0, variants: 0, waiting: 0, rejected: 0, total: 0 };
+  for (const take of edge.takes) {
+    if (!isSecondary(take, game)) continue;
+    counts[bucketOf(take) === "variants" ? "variants" : "accepted"]++;
+    counts.total++;
   }
-  return groups;
+  return counts;
 }
 
 /** Accepted outright by Jakob himself: his ✓, not as a variant, not from another READY pose, finished, with a film. */
@@ -121,16 +127,18 @@ export type EdgeInfo = { edge: Edge; now: Playing; tag: Tag; counts: Counts; tit
 export const hubAnchor = (hub: string): string => `ankare ${nodeCode(hub).replace(/^A/, "")}`;
 /** "I rundan ges platsen från A2.2 (ankare 2.2), via vila": the line for an edge the round plays from another pose at the shoe. */
 export const hubLine = (hub: string): string => `I rundan ges platsen från ${nodeCode(hub)} (${hubAnchor(hub)}), via vila`;
-export function edgeInfo(graph: Graph, edgeId: string, hubs: Hubs = {}): EdgeInfo | null {
+/** secondary: count the step's secondary films (Karta's chips), not every take. */
+export function edgeInfo(graph: Graph, edgeId: string, hubs: Hubs = {}, secondary = false): EdgeInfo | null {
   const edge = graph.edge[edgeId];
   if (!edge) return null;
   const now = playing(graph, edgeId, hubs);
   const tag = edgeTag(now);
-  const counts = edgeCounts(edge);
+  const counts = secondary ? secondaryCounts(edge) : edgeCounts(edge);
   const plays = now.take
     ? `spelar ${takeName(now.take, graph.edge[now.take.edge]?.takes)} (${verdictPhrase(verdictOf(now.take))})`
     : tag.kind === "gap" ? tag.word : "";
-  return { edge, now, tag, counts, title: `${edgeName(edge)} · ${plays}${now.hub ? ` · via ${hubAnchor(now.hub)}` : ""} · ${countsText(counts)}` };
+  const tail = !secondary ? countsText(counts) : counts.total ? `sekundära: ${countsText(counts)}` : "inga sekundära";
+  return { edge, now, tag, counts, title: `${edgeName(edge)} · ${plays}${now.hub ? ` · via ${hubAnchor(now.hub)}` : ""} · ${tail}` };
 }
 
 // ── The bank in numbers ─────────────────────────────────────────────────────

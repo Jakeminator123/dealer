@@ -1,22 +1,26 @@
-// Primära: proposals for the primary take per edge (studio/lib/primaries.ts). Run: node --test "studio/tests/primaries.test.ts"
+// Karta's films per step (studio/lib/primaries.ts): Primär and its secondary films, how the game uses each, the proposal
+// and its seam, the tree's order, and the one write. Run: node --test "studio/tests/primaries.test.ts"
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { buildGraph, type BankData, type BankJob, type ImageRef, type MotionRecord } from "../../src/clip-graph.ts";
+import { hubDeals } from "../../src/game-director.ts";
 import type { Decision } from "../lib/api.ts";
-import { PRAISED, makePrimary, primaries, withPrimary, type Row } from "../lib/primaries.ts";
+import { PRAISED, SHOWN, gameGraph, makePrimary, roleOf, stepFilms, treeOrder, usesOf, withPrimary } from "../lib/primaries.ts";
 
 // ── A small bank: no media files, only the records the graph reads ──
 type Review = NonNullable<MotionRecord["review"]>;
+type Motion = NonNullable<MotionRecord["motion"]>;
 const file = (path: string): ImageRef => ({ file: { path, sha256: path } });
 const jakob = (extra: Review = {}): Review => ({ decision: "ACCEPTED", userAccepted: true, userReview: "Jakob 2026-11-12: bra.", ...extra });
-function bank(rows: [id: string, from: string, to: string, kind: string, review: Review | null, first?: ImageRef, last?: ImageRef][]): BankData {
+type Row = [id: string, from: string, to: string, kind: string, review: Review | null, first?: ImageRef, last?: ImageRef, motion?: Motion & { stopgap?: boolean }];
+function bank(rows: Row[], dealer?: string): BankData {
   const jobs: BankJob[] = [];
   const motions: Record<string, MotionRecord> = {};
   const media: BankData["media"] = {};
   const revisions: Record<string, string> = {};
-  for (const [id, from, to, kind, review, first = {}, last] of rows) {
-    jobs.push({ id, kind, target: null, from, to, model: "wan3", duration: 4, ratio: "auto_1080p", audio: false, promptText: "", first, ...(last ? { last } : {}), purpose: "" });
-    motions[id] = { source: { frames: 120, fps: 30 }, ...(review ? { review } : {}) };
+  for (const [id, from, to, kind, review, first = {}, last, motion] of rows) {
+    jobs.push({ id, kind, target: null, from, to, model: "wan3", duration: 4, ratio: "auto_1080p", audio: false, promptText: "", first, ...(last ? { last } : {}), purpose: "", ...(dealer ? { dealer } : {}) });
+    motions[id] = { source: { frames: 120, fps: 30 }, ...(review ? { review } : {}), ...(motion ? { motion } : {}) };
     media[id] = { video: `assets/motions/${id}/source.mp4` };
     revisions[id] = `"${id}"`;
   }
@@ -26,14 +30,21 @@ function bank(rows: [id: string, from: string, to: string, kind: string, review:
 const data = bank([
   // Ingång: his own ✓, and one of the three he praised.
   ["pamela-idle-ready-entry-01", "IDLE", "READY", "ENTRY", jakob()],
-  // P1: a Primär is set.
+  // P1: a Primär is set; another take he accepted, one rejected and one waiting.
   ["pamela-p1-c1-plan-deal-01", "READY", "P1.C1", "DEAL", jakob({ acceptedAs: "MAIN" }), {}, file("L1")],
   ["pamela-p1-c1-plan-deal-02", "READY", "P1.C1", "DEAL", jakob(), {}, file("L1b")],
-  // P2: only a reviewer's ✓.
-  ["pamela-p2-c1-plan-deal-01", "READY", "P2.C1", "DEAL", { decision: "ACCEPTED" }, {}, file("L2")],
-  // P3: only rejected takes: a gap.
-  ["pamela-p3-c1-plan-deal-01", "READY", "P3.C1", "DEAL", { decision: "REJECTED" }, {}, file("L3")],
-  // P4: two deals he accepted; the praised one is the older, it still leads. Its returns start from its landing anchor.
+  ["pamela-p1-c1-plan-deal-03", "READY", "P1.C1", "DEAL", { decision: "REJECTED", userReview: "Jakob 2026-11-12: nej." }, {}, file("L1c")],
+  ["pamela-p1-c1-plan-deal-04", "READY", "P1.C1", "DEAL", { decision: "PENDING" }, {}, file("L1d")],
+  // P2: the deal that plays is his ✓; a variant deal is the one a Primär return to A1 continues.
+  ["pamela-p2-c1-plan-deal-01", "READY", "P2.C1", "DEAL", jakob(), {}, file("L2a")],
+  ["pamela-p2-c1-plan-deal-02", "READY", "P2.C1", "DEAL", jakob({ acceptedAs: "VARIANT" }), {}, file("L2b")],
+  ["pamela-p2-c1-plan-return-ready-01", "P2.C1", "READY", "RETURN", jakob(), file("L2a")],
+  ["pamela-p2-c1-plan-return-idle-01", "P2.C1", "IDLE", "RETURN", jakob({ acceptedAs: "MAIN" }), file("L2b")],
+  // P3: the Primär return comes back with the other hand than the deal laid the card with: the game plays another.
+  ["pamela-p3-c1-plan-deal-01", "READY", "P3.C1", "DEAL", jakob(), {}, file("L3"), { releaseHand: "LH" }],
+  ["pamela-p3-c1-plan-return-ready-01", "P3.C1", "READY", "RETURN", jakob({ acceptedAs: "MAIN" }), file("L3x"), undefined, { releaseHand: "RH" }],
+  ["pamela-p3-c1-plan-return-ready-02", "P3.C1", "READY", "RETURN", jakob(), file("L3"), undefined, { releaseHand: "LH" }],
+  // P4: two deals he accepted; the praised one is the older, it is still proposed first. Its returns start from its landing anchor.
   ["pamela-p4-c1-plan-deal-02", "READY", "P4.C1", "DEAL", jakob(), {}, file("L4")],
   ["pamela-p4-c1-plan-deal-05", "READY", "P4.C1", "DEAL", jakob(), {}, file("L4n")],
   ["pamela-p4-c1-plan-return-ready-01", "P4.C1", "READY", "RETURN", jakob(), file("L4")],
@@ -48,82 +59,124 @@ const data = bank([
   ["pamela-p6-c1-arkiv-deal-01", "READY", "P6.C1", "DEAL", jakob({ acceptedAs: "VARIANT" }), {}, file("L6a")],
   ["pamela-p6-c1-arkiv-return-ready-01", "P6.C1", "READY", "RETURN", jakob({ acceptedAs: "VARIANT" }), file("L6a")],
   ["pamela-p6-c1-plan-return-ready-01", "P6.C1", "READY", "RETURN", jakob(), file("L6x")],
-  // P7: two returns to A1 he accepted; the older continues the deal, the newer starts from an anchor nothing ends on.
-  ["pamela-p7-c1-plan-deal-01", "READY", "P7.C1", "DEAL", jakob(), {}, file("L7")],
-  ["pamela-p7-c1-plan-return-idle-01", "P7.C1", "IDLE", "RETURN", jakob(), file("L7")],
-  ["pamela-p7-c1-plan-return-idle-02", "P7.C1", "IDLE", "RETURN", jakob(), file("L7x")],
+  // P7: an exit played backwards (a stopgap) beside a judged exit: the game leaves the stopgap out, and so does the page.
+  ["pamela-ready-idle-exit-01", "READY", "IDLE", "RETURN", jakob()],
+  ["pamela-ready-idle-exit-reversed-01", "READY", "IDLE", "RETURN", jakob(), {}, undefined, { stopgap: true }],
+  // The rest: two calm films (one Primär), two gestures by weight, a talk film played on request, one weighed out.
+  ["pamela-idle-loop-01", "IDLE", "IDLE", "IDLE", jakob()],
+  ["pamela-idle-loop-02", "IDLE", "IDLE", "IDLE", jakob({ acceptedAs: "MAIN" })],
+  ["pamela-idle-smile-01", "IDLE", "IDLE", "IDLE", jakob(), {}, undefined, { idle: { weight: 3 } }],
+  ["pamela-idle-wave-01", "IDLE", "IDLE", "IDLE", jakob({ acceptedAs: "VARIANT" }), {}, undefined, { idle: { weight: 1 } }],
+  ["pamela-idle-talk-01", "IDLE", "IDLE", "IDLE", jakob(), {}, undefined, { idle: { onRequest: true, label: "hej" } }],
+  ["pamela-idle-nod-01", "IDLE", "IDLE", "IDLE", jakob(), {}, undefined, { idle: { weight: 0 } }],
 ]);
 const graph = buildGraph(data);
-const page = primaries(data, graph);
-const row = (edge: string): Row => page.rows.find((r) => r.edge.id === edge)!;
+const game = gameGraph(data, "pamela");
+const step = (edge: string) => stepFilms(data, graph, game, edge)!;
+const ids = (films: { take: { id: string } }[]) => films.map((f) => f.take.id);
+const words = (edge: string) => Object.fromEntries([...usesOf(game, edge)].map(([id, use]) => [id, use.word]));
 
-test("one row per film of a whole round, grouped seat by seat", () => {
-  assert.equal(page.rows.length, graph.summary.films.required.length);
-  assert.deepEqual(page.groups.map((g) => g.id), ["P1", "P2", "P3", "P4", "P5", "P6", "P7", "D", "hub"]);
-  assert.deepEqual(page.groups[3].rows.map((r) => r.role), ["deal", "ready", "idle"]);
-  assert.deepEqual(page.groups.at(-1)!.rows.map((r) => r.role), ["entry", "exit", "rest", "arrive", "leave"]);
-  assert.deepEqual(page.groups[7].rows.map((r) => r.edge.id), ["READY>D.C1", "D.C1>READY", "D.C1>IDLE", "READY>D.C2", "D.C2>READY", "D.C2>IDLE", "IDLE>REVEAL(D.C2)"]);
+test("the node tree's order: seat by seat (deal, return to A2.1, return to A1), the dealer, then the anchors' own films", () => {
+  const order = treeOrder(graph);
+  assert.equal(order.length, graph.summary.films.required.length);
+  assert.deepEqual(order.slice(0, 3), ["READY>P1.C1", "P1.C1>READY", "P1.C1>IDLE"]);
+  assert.deepEqual(order.slice(21, 28), ["READY>D.C1", "D.C1>READY", "D.C1>IDLE", "READY>D.C2", "D.C2>READY", "D.C2>IDLE", "IDLE>REVEAL(D.C2)"]);
+  assert.deepEqual(order.slice(28).map((id) => roleOf(graph.edge[id])), ["entry", "exit", "rest", "arrive", "leave"]);
 });
 
-test("the five states of a row", () => {
-  assert.equal(row("READY>P1.C1").status, "primary");
-  assert.equal(row("READY>P1.C1").proposal?.id, "pamela-p1-c1-plan-deal-01", "the Primär is shown, not replaced");
-  assert.equal(row("READY>P2.C1").status, "none", "a reviewer's ✓ is not his");
-  assert.equal(row("READY>P2.C1").proposal, null);
-  assert.equal(row("READY>P3.C1").status, "gap");
-  assert.equal(row("IDLE>READY").status, "same");
-  assert.equal(row("P5.C1>READY").status, "different");
-  const sum = Object.values(page.counts).reduce((a, b) => a + b, 0);
-  assert.equal(sum, page.rows.length);
+test("Primär and beside it the secondary films: approved and not Primär; rejected and waiting takes are in Granska", () => {
+  const p1 = step("READY>P1.C1");
+  assert.equal(p1.primary?.take.id, "pamela-p1-c1-plan-deal-01");
+  assert.deepEqual(ids(p1.secondaries), ["pamela-p1-c1-plan-deal-02"]);
+  assert.equal(p1.elsewhere, 2, "the rejected and the waiting take");
+  assert.equal(p1.proposal, null, "with a Primär nothing is proposed");
+  assert.deepEqual([p1.primary?.use.kind, p1.primary?.use.word], ["always", "Spelas"]);
+  assert.deepEqual([p1.secondaries[0].use.kind, p1.secondaries[0].use.word], ["never", "Spelas inte"]);
+  assert.match(p1.secondaries[0].use.detail, /Spelet spelar Giv 01 här/);
+  // A stopgap the game has replaced is not among them.
+  assert.deepEqual(ids(step("READY>IDLE").secondaries), ["pamela-ready-idle-exit-01"]);
+  assert.equal(step("READY>IDLE").elsewhere, 1);
 });
 
-test("the three films he called very good lead the page, also when a newer take would be proposed", () => {
-  assert.deepEqual(page.praised.map((r) => r.proposal?.id), [...PRAISED]);
-  assert.ok(page.praised.every((r) => r.praised));
-  const deal = row("READY>P4.C1");
-  assert.equal(deal.proposal?.id, "pamela-p4-c1-plan-deal-02");
-  assert.deepEqual(deal.others.map((t) => t.id), ["pamela-p4-c1-plan-deal-05"]);
+test("no Primär: the best take he accepted outright is proposed first, the take that plays stands in for Primär", () => {
+  const deal = step("READY>P4.C1");
+  assert.equal(deal.primary, null);
+  assert.equal(deal.proposal?.id, "pamela-p4-c1-plan-deal-02", "the praised one, though a newer take plays");
+  assert.deepEqual(ids(deal.secondaries), ["pamela-p4-c1-plan-deal-02", "pamela-p4-c1-plan-deal-05"]);
+  assert.ok(deal.secondaries[0].proposal && deal.secondaries[0].praised);
+  assert.deepEqual(deal.secondaries.map((f) => f.use.word), ["Spelas inte", "Står in för Primär"]);
+  assert.equal(deal.now.take?.id, "pamela-p4-c1-plan-deal-05");
+  // The proposal carries what making it Primär does to the seam; the others carry none.
+  assert.equal(deal.secondaries[0].seam?.tone, "ok");
+  assert.match(deal.secondaries[0].seam!.text, /Returen till A1 blir Retur 01/);
+  assert.equal(deal.secondaries[1].seam, null);
+  // The praised return to A1 continues deal 02, while the newer deal 05 plays: making it Primär brings deal 02 back.
+  const back = step("P4.C1>IDLE");
+  assert.equal(back.proposal?.id, "pamela-p4-c1-plan-return-idle-01");
+  assert.deepEqual(back.secondaries[0].seam, { tone: "ok", text: "Då spelas Giv 02 (godkänd) före, eftersom returen fortsätter den." });
+  assert.equal(back.secondaries.find((f) => f.take.id === "pamela-p4-c1-return-idle-calm-01")?.use.word, "Står in för Primär");
 });
 
-test("a return is proposed that continues the deal before it, before a newer one", () => {
-  const back = row("P7.C1>IDLE");
-  assert.equal(back.proposal?.id, "pamela-p7-c1-plan-return-idle-01");
-  assert.deepEqual(back.others.map((t) => t.id), ["pamela-p7-c1-plan-return-idle-02"]);
-  assert.equal(back.status, "same");
-  assert.deepEqual(back.seam, { tone: "ok", text: "Fortsätter given som spelas nu." });
-  // The praised return on P4 continues deal 02, while the newer deal 05 plays: making it Primär brings deal 02 back.
-  const praised = row("P4.C1>IDLE");
-  assert.equal(praised.now?.id, "pamela-p4-c1-return-idle-calm-01");
-  assert.equal(praised.status, "different");
-  assert.deepEqual(praised.seam, { tone: "ok", text: "Då spelas Giv 02 (godkänd) före, eftersom returen fortsätter den." });
+test("a deal the game plays only before one of its returns says which", () => {
+  // Deal 01 is the step's main take; before the Primär return to A1 the game plays the variant deal it continues.
+  assert.deepEqual(words("READY>P2.C1"), { "pamela-p2-c1-plan-deal-01": "Före retur till A2.1", "pamela-p2-c1-plan-deal-02": "Före retur till A1" });
+  assert.equal(usesOf(game, "READY>P2.C1").get("pamela-p2-c1-plan-deal-02")?.kind, "some");
+  assert.deepEqual(words("P2.C1>IDLE"), { "pamela-p2-c1-plan-return-idle-01": "Spelas" });
 });
 
-test("a deal: whether the returns after it continue it", () => {
-  const deal = row("READY>P7.C1");
-  assert.equal(deal.status, "same");
-  assert.deepEqual(deal.seam, { tone: "ok", text: "Returerna som spelas fortsätter den." });
-  // The praised deal 02 on P4: both its returns start from its anchor; the calm return to A1 gives way.
-  const p4 = row("READY>P4.C1");
-  assert.equal(p4.seam?.tone, "ok");
-  assert.match(p4.seam!.text, /Returen till A1 blir Retur 01/);
+test("a Primär the game does not play says so, and the film it plays instead says it", () => {
+  const back = step("P3.C1>READY");
+  assert.deepEqual([back.primary?.take.id, back.primary?.use.word], ["pamela-p3-c1-plan-return-ready-01", "Spelas inte"]);
+  assert.match(back.primary!.use.detail, /Spelet spelar Retur 02 här \(passar given före\)/);
+  assert.deepEqual([back.secondaries[0].take.id, back.secondaries[0].use.word], ["pamela-p3-c1-plan-return-ready-02", "Spelas i stället för Primär"]);
+  assert.equal(back.secondaries[0].use.kind, "always");
 });
 
-test("seat 5: a Primär return pulls in the variant deal it continues", () => {
-  const back = row("P5.C1>READY");
-  assert.equal(back.now?.id, "pamela-p5-c1-arkiv-return-ready-01");
-  assert.equal(back.proposal?.id, "pamela-p5-c1-plan-return-ready-01");
-  assert.equal(back.seam?.tone, "warn");
-  assert.match(back.seam!.text, /^Då spelas Giv 01 \(variant\) före, eftersom returen fortsätter den\.$/);
+test("the seam a proposal would give: a variant deal pulled in, or a visible jump", () => {
+  const p5 = step("P5.C1>READY");
+  assert.equal(p5.now.take?.id, "pamela-p5-c1-arkiv-return-ready-01");
+  assert.equal(p5.proposal?.id, "pamela-p5-c1-plan-return-ready-01");
+  assert.equal(p5.secondaries[0].seam?.tone, "warn");
+  assert.match(p5.secondaries[0].seam!.text, /^Då spelas Giv 01 \(variant\) före, eftersom returen fortsätter den\.$/);
+  assert.equal(p5.secondaries.find((f) => f.take.id === "pamela-p5-c1-arkiv-return-ready-01")?.use.word, "Står in för Primär", "a variant can stand in");
+  const p6 = step("P6.C1>READY");
+  assert.equal(p6.secondaries[0].seam?.tone, "bad");
+  assert.match(p6.secondaries[0].seam!.text, /synligt hopp/);
 });
 
-test("seat 6: no playable deal ends where the return starts: a visible jump", () => {
-  const back = row("P6.C1>READY");
-  assert.equal(back.status, "different");
-  assert.equal(back.seam?.tone, "bad");
-  assert.match(back.seam!.text, /synligt hopp/);
-  // The seat's line: the deal that plays and the proposed return do not meet.
-  const group = page.groups.find((g) => g.id === "P6")!;
-  assert.ok(group.pairs.some((p) => p.tone === "bad" && /A2\.1/.test(p.text)));
+test("the rest: calm films are the base by weight, gestures come in by weight, a talk film only when chosen", () => {
+  const rest = step("IDLE>IDLE");
+  assert.equal(rest.primary?.use.word, "Vilan · lugn · 50 %", "the Primär is one of the calm films the loop picks from");
+  assert.deepEqual(words("IDLE>IDLE"), {
+    "pamela-idle-loop-01": "Vilan · lugn · 50 %",
+    "pamela-idle-loop-02": "Vilan · lugn · 50 %",
+    "pamela-idle-smile-01": "Vilan · gest · 75 %",
+    "pamela-idle-wave-01": "Vilan · gest · 25 %",
+    "pamela-idle-talk-01": "Bara när den väljs",
+    "pamela-idle-nod-01": "Spelas inte",
+  });
+  // Calm first, then the gestures by weight, then what chance never picks.
+  assert.deepEqual(ids(rest.secondaries), ["pamela-idle-loop-01", "pamela-idle-smile-01", "pamela-idle-wave-01", "pamela-idle-talk-01", "pamela-idle-nod-01"]);
+  assert.ok(rest.secondaries.length > SHOWN, "the page shows three and folds the rest");
+});
+
+test("a seat the game deals from A2.2: the films from there are used, the seat's plain films are not", () => {
+  const rows: Row[] = [
+    ["paow-in-b", "IDLE", "READY-B", "ENTRY", jakob()],
+    ["paow-p6-deal-b", "READY-B", "P6.C1", "DEAL", jakob(), {}, file("L6b")],
+    ["paow-p6-back-b", "P6.C1", "READY-B", "RETURN", jakob(), { frame: { video: "assets/motions/paow-p6-deal-b/source.mp4", videoSha256: "x", index: 100 } }],
+    ["paow-out-b", "READY-B", "IDLE", "RETURN", jakob()],
+    ["paow-p6-deal", "READY", "P6.C1", "DEAL", jakob(), {}, file("L6")],
+    ["paow-in", "IDLE", "READY", "ENTRY", jakob()],
+  ];
+  const b = bank(rows, "paow"), g = buildGraph(b, { dealer: "paow" }), gg = gameGraph(b, "paow"), hubs = hubDeals(b, "paow");
+  const hers = (edge: string) => Object.fromEntries([...usesOf(gg, edge)].map(([id, u]) => [id, u.word]));
+  assert.deepEqual(hers("READY>P6.C1"), { "paow-p6-deal-b": "Från A2.2", "paow-p6-deal": "Spelas inte" });
+  assert.match(usesOf(gg, "READY>P6.C1").get("paow-p6-deal")!.detail, /A2\.2/);
+  assert.deepEqual(hers("IDLE>READY"), { "paow-in-b": "Från A2.2", "paow-in": "Står in för Primär" });
+  const deal = stepFilms(b, g, gg, "READY>P6.C1", hubs)!;
+  assert.equal(deal.now.take?.id, "paow-p6-deal-b");
+  assert.deepEqual(ids(deal.secondaries), ["paow-p6-deal", "paow-p6-deal-b"], "his own ✓ proposed first, then the film from A2.2");
 });
 
 test("what a Primär would be: the bank changed in memory only", () => {
@@ -133,6 +186,7 @@ test("what a Primär would be: the bank changed in memory only", () => {
   assert.equal(changed.motions!["pamela-p1-c1-plan-deal-01"].review?.acceptedAs, undefined, "the earlier Primär is lowered");
   assert.equal(changed.motions!["pamela-p1-c1-plan-deal-01"].review?.decision, "ACCEPTED");
   assert.equal(data.motions!["pamela-p1-c1-plan-deal-01"].review?.acceptedAs, "MAIN", "the bank itself is untouched");
+  assert.ok(PRAISED.includes("pamela-p4-c1-plan-deal-02"));
 });
 
 test("Gör primär: one write for the take, then an earlier Primär on the edge is lowered with its note kept", async () => {
@@ -161,8 +215,11 @@ test("Gör primär: one write for the take, then an earlier Primär on the edge 
   assert.deepEqual(once, ["pamela-p5-c1-plan-return-ready-01"]);
 });
 
-test("an empty bank gives rows that all say gap", () => {
-  const empty = primaries({}, buildGraph({}));
-  assert.ok(empty.rows.every((r) => r.status === "gap"));
-  assert.equal(empty.praised.length, 0);
+test("an empty bank: every step has no Primär and no film", () => {
+  const empty = buildGraph({});
+  for (const id of treeOrder(empty)) {
+    const s = stepFilms({}, empty, gameGraph({}, "pamela"), id)!;
+    assert.deepEqual([s.primary, s.secondaries.length, s.proposal, s.now.take], [null, 0, null, null], id);
+  }
+  assert.equal(stepFilms({}, empty, empty, "NO>SUCH"), null);
 });

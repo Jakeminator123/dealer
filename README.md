@@ -71,14 +71,15 @@ Dokumenten länkar till dessa i stället för att föra egna statusregister. Med
   [DRIFT](docs/DRIFT.md#labbservern-och-fliken). Servern står kvar tills `STOPP.cmd` körs.
 - [Studion](http://127.0.0.1:4319/studio/) är skalet (`/` och `lab.html` leder dit): en Next.js-app i `studio/` som
   byggs med `npm --prefix studio run build` och lämnas ut av samma server. Menyn (`studio/components/shell/Rail.tsx`)
-  har vyerna **Scen**, **Karta** (kanter och tagningar), **Primära**, **Granska** (två delar i sidans huvud: Filmer, med
+  har vyerna **Scen**, **Karta** (nodträdet: varje stegs Primär och dess sekundära filmer, med hur spelet använder var
+  och en; `/studio/primara/` leder hit), **Granska** (två delar i sidans huvud: Filmer, med
   Jakobs domar som skrivs i `motions/`, och Prov, provmapparna under `assets/proofs/` på `/studio/granska/?prov=<mapp>`;
   den gamla adressen `/studio/prov/?prov=<mapp>` leder dit), **Placering** (kortplanen: 16
   kortplatser och sko; sparning skriver bara `placements/default.json` och beställer inget), **Material** (vilka bilder
   som gäller), **Lipsync** (vad läppsynken använder och i vilka skalor, skrivskyddad), **Beställ** (bild- och
   filmbeställningar) och **Casino**, och i foten **Beslut** (det som väntar på Jakobs svar). Lipsync, Beställ och Beslut finns bara i labbet; kopian på nätet har
   i stället **Önskemål** och boten (Fråga). **Protokoll** (en rad per tagning och metod) nås från Beställ, och
-  **Jämför** (två tagningar av samma steg sida vid sida) från en tagning i Granska, Karta och Primära. Längst ned i
+  **Jämför** (två tagningar av samma steg sida vid sida) från en tagning i Granska och Karta. Längst ned i
   menyn finns också sidorna **Ljud** och **Modeller**, och Scens knapp **3D-sidan** öppnar utvecklarens 3D-sida med samma
   look ([SYSTEM](docs/SYSTEM.md)).
 - Filmgranskningen har steg ±1 bildruta, kapitel och hastighet 0,25×/0,5×/1×. URL-parametrarna `clip` och `frame` pekar

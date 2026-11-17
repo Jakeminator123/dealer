@@ -1,6 +1,6 @@
 // Jakob's decision as it is written (studio/lib/decide.ts), through the studio's real writer (putDecision in lib/api.ts)
 // against a fake fetch: no lab server, nothing written anywhere. DecisionBar's buttons, its reset() for "Ångra" in Granska,
-// and "Gör primär" on Primära all go through decide(). Run: node --test "studio/tests/decide.test.ts"
+// and "Gör primär" on Karta all go through decide(). Run: node --test "studio/tests/decide.test.ts"
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { buildGraph, type BankData, type BankJob, type MotionRecord } from "../../src/clip-graph.ts";
@@ -66,7 +66,7 @@ test("Primär: one PUT for the take with its note, then the earlier Primär on t
   }
 });
 
-test("the Primära page's makePrimary is the same rule: his stored note kept, the same two writes", async () => {
+test("Karta's makePrimary is the same rule: his stored note kept, the same two writes", async () => {
   assert.equal(fromPrimaries, makePrimary, "lib/primaries.ts hands on lib/decide.ts, it has no copy of its own");
   const f = fakeFetch();
   try {

@@ -1,7 +1,7 @@
 "use client";
 
-// "Gör primär" on the Primära page: one click makes the take Primär and lowers an earlier Primär on its edge (the same two
-// steps as DecisionBar, in lib/primaries.ts makePrimary), then reads the bank again so the row shows the new state.
+// "Gör primär" in a step's panel on Karta: one click makes the take Primär and lowers an earlier Primär on its edge (the same
+// two steps as DecisionBar, in lib/primaries.ts makePrimary), then reads the bank again so the panel shows the new state.
 // A 409 (the record changed while he looked) is said in plain Swedish and the bank is read again.
 import { useCallback, useState } from "react";
 import type { Take } from "../../../src/clip-graph.ts";
@@ -31,12 +31,12 @@ export function useMakePrimary() {
       });
       try {
         const { lowered, failed } = await makePrimary(take, graph, putDecision);
-        if (failed.length) toast({ tone: "bad", title: `${name} är Primär, men ${failed.join(", ")} är också kvar som Primär`, detail: "Läs om och sätt den andra till Godkänn på kartan." });
+        if (failed.length) toast({ tone: "bad", title: `${name} är Primär, men ${failed.join(", ")} är också kvar som Primär`, detail: "Sätt den andra till Godkänn i Granska." });
         else toast({ tone: "ok", title: `${name} är Primär · sparat`, detail: lowered.length ? `${lowered.join(", ")} är nu godkänd i stället för Primär.` : `Spelas först i steget ${edgeName(take.edge)}.` });
         await reload();
       } catch (error) {
         if (error instanceof ApiError && error.kind === "conflict") {
-          setLines((l) => ({ ...l, [take.edge]: { tone: "bad", text: "Inte sparat: tagningen ändrades medan du tittade. Banken är läst på nytt, titta på raden och välj igen." } }));
+          setLines((l) => ({ ...l, [take.edge]: { tone: "bad", text: "Inte sparat: tagningen ändrades medan du tittade. Banken är läst på nytt, titta igen och välj." } }));
           await reload();
         } else {
           const message = error instanceof Error ? error.message : String(error);

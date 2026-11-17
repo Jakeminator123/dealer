@@ -1,9 +1,9 @@
 "use client";
 
-// <RowStill take={take} onOpen={() => …} />: a take's still in a Primära row (Jakob 2026-11-12: "shouldn't I get an overlay
-// with these videos that I can play"). A click on the still opens the film over the whole window (the shared FilmViewer,
-// with ‹ › to the row's other film); the small ▶ plays it here, in the still's place, round and round, until × or another
-// film starts (one film at a time: components/takes/play-slot.ts). A take without a film is only its still.
+// <RowStill take={take} onOpen={() => …} />: a secondary film's still in a step's panel (Jakob 2026-11-12: "shouldn't I get
+// an overlay with these videos that I can play"). A click on the still opens the film over the whole window (the shared
+// FilmViewer, with ‹ › to the step's other films); the small ▶ plays it here, in the still's place, round and round, until ×
+// or another film starts (one film at a time: components/takes/play-slot.ts). A take without a film is only its still.
 import { Maximize2, Play, X } from "lucide-react";
 import { useRef, useState } from "react";
 import type { Take } from "../../../src/clip-graph.ts";

@@ -1,25 +1,30 @@
 "use client";
 
-// Karta: the node map of the clip bank. Anchors and seats laid out like the table, films as lines with what plays on
-// them, a side panel per film with every take. What is chosen lives in the address (?kant=…&tagning=…&plats=…&filmer=kort),
-// so a link can open the map on a film or a take.
+// Karta: the node tree of the clip bank, and for every step its Primär and its secondary films. Anchors and seats laid out
+// like the table, steps as lines with what the game plays on them and how many secondary films they have; a side panel per
+// step with the Primär, the secondary films and how the game uses each (lib/primaries.ts), "Gör primär" on his click, and
+// ‹ › to follow the tree. What the game plays is read from the bank as the game reads it (judgedBank). What is chosen lives
+// in the address (?kant=…&tagning=…&plats=…&filmer=kort), so a link can open the map on a step or a take; /primara/ leads here.
 import { ReactFlowProvider, useReactFlow } from "@xyflow/react";
-import { Scan, ZoomIn, ZoomOut } from "lucide-react";
+import { ChevronRight, Scan, ZoomIn, ZoomOut } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { TARGETS, buildGraph, type FilmMode } from "../../../src/clip-graph.ts";
-import { hubDeals } from "../../../src/game-director.ts";
+import { hubDeals, judgedBank } from "../../../src/game-director.ts";
 import { toPixels, type PlacementPlan } from "../../../src/placement-model.ts";
 import { BankStatus, Page } from "@/components/shell";
 import { Button, ErrorState, IconButton, Skeleton, Switch } from "@/components/ui";
 import { getPlacements } from "@/lib/api";
 import { useBank } from "@/lib/bank";
-import { bankSummary, edgeInfo, type EdgeInfo, type Summary } from "@/lib/edge-stats";
+import { bankSummary, edgeInfo, isSecondary, type EdgeInfo, type Summary } from "@/lib/edge-stats";
 import { mapLayout, type PlanPoints } from "@/lib/map-layout";
+import { stepFilms, treeOrder } from "@/lib/primaries";
+import { primarCount } from "@/lib/verdict";
 import { EdgeSheet } from "./EdgeSheet";
 import { ExperimentTray } from "./ExperimentTray";
 import { Legend } from "./Legend";
 import { MapCanvas, useFitMap } from "./MapCanvas";
+import { REST_EDGE } from "./rest.ts";
 
 /** Changes the address's question without a new page: the map keeps its zoom, and a copied link opens the same view. */
 function useParams() {
@@ -65,22 +70,20 @@ function Stat({ sign, tone, children, title }: { sign?: string; tone: string; ch
   );
 }
 
-function SummaryLine({ s }: { s: Summary }) {
+/** The header: steps with a Primär of the steps a round needs (the menu's count), and the steps the game has no film for. */
+function SummaryLine({ primar, s }: { primar: { set: number; total: number }; s: Summary }) {
   return (
     <span className="flex items-center gap-3 text-sm text-dim">
-      <span className="font-medium text-ink">{s.films} filmer</span>
-      <Stat sign="✓" tone="text-[#6cc595]" title="Filmer där du själv har godkänt en tagning">
-        {s.outright} med din godkända
+      <Stat sign="★" tone="text-brass" title="Steg där du har valt en Primär, av stegen en runda behöver">
+        <span className="font-medium text-ink tabular-nums">
+          Primär {primar.set}/{primar.total}
+        </span>
       </Stat>
-      <Stat sign="◆" tone="text-[#9db3f8]" title="Filmer där en variant spelas nu">
-        {s.variant} spelar variant
-      </Stat>
-      <Stat tone="" title="Filmer där ingenting kan spelas">
-        <span className={s.missing ? "rounded-full border border-dashed border-underkand/70 px-1.5 text-xs leading-[18px] text-[#ef8b8b]" : ""}>{s.missing} saknas</span>
-      </Stat>
-      <Stat sign="★" tone="text-brass" title="Filmer där du har valt en primär">
-        {s.primary} primär
-      </Stat>
+      {s.missing ? (
+        <Stat tone="" title="Steg där spelet inte har någon film att spela">
+          <span className="rounded-full border border-dashed border-underkand/70 px-1.5 text-xs leading-[18px] text-[#ef8b8b]">{s.missing} saknas</span>
+        </Stat>
+      ) : null}
     </span>
   );
 }
@@ -107,21 +110,36 @@ function Karta() {
   // One film per card is the chosen dealer's too (seatGraph is null until the dealer is known).
   const graph = useMemo(() => (mode === "SEAT" ? seatGraph : bank && seatGraph ? buildGraph(bank, { mode: "CARD", dealer }) : null), [mode, seatGraph, bank, dealer]);
   const layout = useMemo(() => mapLayout({ mode, points }), [mode, points]);
+  // The game's own graphs (the bank as the game reads it: judged takes only): one film per seat for how each film is used,
+  // and in the map's mode for what plays on a line.
+  const judged = useMemo(() => (bank ? judgedBank(bank) : null), [bank]);
+  const game = useMemo(() => (judged ? buildGraph(judged, { dealer }) : null), [judged, dealer]);
+  const played = useMemo(() => (mode === "SEAT" ? game : judged ? buildGraph(judged, { mode: "CARD", dealer }) : null), [mode, game, judged, dealer]);
   // A seat the round deals from another pose at the shoe (anchor 2.2) counts as played, by the game's own rule.
   const hubs = useMemo(() => (bank ? hubDeals(bank, dealer) : {}), [bank, dealer]);
+  // What every line, the rest and each experiment says: what the game plays there, and its secondary films as the count.
   const infos = useMemo(() => {
     const out = new Map<string, EdgeInfo>();
-    if (!graph) return out;
-    for (const e of layout.edges) {
-      const info = edgeInfo(graph, e.id, hubs);
-      if (info) out.set(e.id, info);
+    if (!graph || !played) return out;
+    for (const id of [...layout.edges.map((e) => e.id), REST_EDGE, ...graph.experiments.map((e) => e.id)]) {
+      const info = edgeInfo(played.edge[id] ? played : graph, id, hubs, true);
+      if (info) out.set(id, info);
     }
     return out;
-  }, [graph, layout, hubs]);
-  const summary = useMemo(() => (graph ? bankSummary(graph, hubs) : null), [graph, hubs]);
+  }, [graph, played, layout, hubs]);
+  const summary = useMemo(() => (played ? bankSummary(played, hubs) : null), [played, hubs]);
+  const primar = useMemo(() => (seatGraph ? primarCount(seatGraph) : null), [seatGraph]);
+  const order = useMemo(() => (graph ? treeOrder(graph) : []), [graph]);
 
   const edge = graph && edgeId ? (graph.edge[edgeId] ?? null) : null;
-  const sheetOpen = !!edge;
+  const step = useMemo(() => (bank && graph && game && edgeId ? stepFilms(bank, graph, game, edgeId, hubs) : null), [bank, graph, game, edgeId, hubs]);
+  const info = edgeId ? (infos.get(edgeId) ?? (graph && played ? edgeInfo(played.edge[edgeId] ? played : graph, edgeId, hubs, true) : null)) : null;
+  const at = edgeId ? order.indexOf(edgeId) : -1;
+  // The steps still without a Primär that have a film of his to choose from, in the tree's order: "Nästa utan Primär" walks them.
+  const open = useMemo(() => (graph && game ? order.filter((id) => !graph.edge[id].takes.some((t) => t.explicitMain) && graph.edge[id].takes.some((t) => isSecondary(t, game))) : []), [order, graph, game]);
+  const unchosen = open.find((id) => order.indexOf(id) > at) ?? open[0] ?? null;
+  const around = { prev: at > 0 ? order[at - 1] : null, next: at >= 0 && at < order.length - 1 ? order[at + 1] : null, unchosen: unchosen !== edgeId ? unchosen : null };
+  const sheetOpen = !!step;
   // On the map, a seat's second card is drawn as the film it plays.
   const active = edge ? (edge.shares ?? edge.id) : null;
   // An experiment's panel keeps the tray it was chosen from open.
@@ -140,6 +158,11 @@ function Karta() {
 
   const actions = (
     <>
+      {around.unchosen ? (
+        <Button variant="secondary" size="sm" iconAfter={<ChevronRight />} onClick={() => pick(around.unchosen!)} className="mr-2" title="Öppna nästa steg i trädet som inte har någon Primär">
+          Nästa utan Primär
+        </Button>
+      ) : null}
       <Switch
         size="sm"
         checked={mode === "CARD"}
@@ -156,7 +179,7 @@ function Karta() {
   );
 
   return (
-    <Page title="Karta" full status={summary ? <SummaryLine s={summary} /> : <BankStatus />} actions={status === "ready" ? actions : undefined}>
+    <Page title="Karta" full status={summary && primar ? <SummaryLine primar={primar} s={summary} /> : <BankStatus />} actions={status === "ready" ? actions : undefined}>
       {status === "loading" ? (
         <div className="grid h-full place-items-center p-10">
           <Skeleton className="h-[60%] w-[80%]" />
@@ -183,17 +206,18 @@ function Karta() {
           </div>
           {/* Room left for the experiments' button at the right: a narrow map (the bot's panel docked) cuts the legend's tail. */}
           <Legend className="absolute bottom-3 left-3 z-10 max-w-[calc(100%-200px)] overflow-hidden" />
-          <ExperimentTray graph={graph} open={trayOpen} onOpenChange={setTray} onPick={pick} active={edgeId} />
+          <ExperimentTray graph={graph} infos={infos} open={trayOpen} onOpenChange={setTray} onPick={pick} active={edgeId} />
         </>
       )}
       <EdgeSheet
         graph={graph}
-        edgeId={edgeId}
+        step={step}
+        info={info}
         takeId={takeId}
+        around={around}
         onClose={() => set({ kant: null, tagning: null })}
         onPickTake={(id) => set({ tagning: id })}
         onPickEdge={pick}
-        hubs={hubs}
       />
     </Page>
   );

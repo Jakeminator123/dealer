@@ -1,7 +1,7 @@
-// The map's legend in one line: what a line and its chip say.
+// The map's legend in one line: what a line and its chip say (what the game plays there, and the step's secondary films).
 import { cn } from "@/components/ui";
 import { VERDICTS, VERDICT_LABEL } from "@/lib/verdict";
-import { CountSigns, PlayDot } from "./EdgeChip";
+import { AsideStar, CountSigns, PlayDot } from "./EdgeChip";
 
 export function Legend({ className }: { className?: string }) {
   return (
@@ -19,9 +19,12 @@ export function Legend({ className }: { className?: string }) {
       <span className="inline-flex items-center gap-1">
         <PlayDot tag={{ kind: "take", verdict: "godkand", byJakob: false }} /> streckad = granskarens
       </span>
+      <span className="inline-flex items-center gap-1">
+        <AsideStar /> Primär spelas inte
+      </span>
       <span aria-hidden className="h-3 w-px bg-line-strong" />
       <span className="inline-flex items-center gap-1.5">
-        <CountSigns counts={{ accepted: 2, variants: 1, waiting: 0, rejected: 1, total: 4 }} /> = tagningar
+        <CountSigns counts={{ accepted: 2, variants: 1, waiting: 0, rejected: 0, total: 3 }} /> = sekundära
       </span>
     </div>
   );

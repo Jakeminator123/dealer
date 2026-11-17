@@ -1,100 +1,104 @@
 "use client";
 
-// The side panel of one step (an edge of the graph) on the node map: the step in Jakob's words ("A2.1 → P4C1"), what plays
-// there now and why, one line on what each decision does, and every take grouped Primär · Godkända · Varianter · Väntar ·
-// Underkända (folded); the rest step (A1 → A1) instead as Lugna (grunden) · Gester (slumpas in) with each film's own word
-// (rest.ts). Each take: its still with a play button (the film plays in place) and a button that opens it over the whole
-// window (FilmViewer, ‹ › through the step's films), its decision bar, "Ursprung", and two links: "Spela i scenen" and
-// "Jämför mot primär". Only DecisionBar writes, and only on his click.
-import { ChevronDown, Columns2, Play } from "lucide-react";
+// The side panel of one step (an edge of the graph) on Karta: the step in Jakob's words ("A2.1 → P4C1"), ‹ › to the step
+// before and after it in the node tree, what plays there now and why, the Primär large, and beside it the secondary films
+// (lib/primaries.ts stepFilms): at most three, the rest behind "Visa fler", each with how the game uses it. Rejected,
+// waiting and replaced takes are not here: one link says how many there are and leads to Granska. A take the address names
+// that is not on this page says so and links there. Every still plays (in place, or over the whole window: FilmViewer, ‹ ›
+// through the panel's films). The one write is "Gör primär" (useMakePrimary), on his click only.
+import { ArrowUpRight, ChevronDown, ChevronLeft, ChevronRight, Lock } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useEffect, useState } from "react";
 import { WHY_LABEL, describeEdge, type Edge, type Graph, type Take } from "../../../src/clip-graph.ts";
-import { DecisionBar, TakeCard, TakeChip } from "@/components/takes";
-import { DecisionHelp } from "@/components/takes/DecisionBar";
+import { TakeChip } from "@/components/takes";
 import { FilmViewer } from "@/components/takes/FilmViewer";
-import { Origin } from "@/components/takes/Origin";
-import { REST_EDGE, restGroups, restWord } from "./rest.ts";
+import { REST_EDGE, restWord } from "./rest.ts";
 import { Button, EmptyState, Sheet, buttonClasses, cn } from "@/components/ui";
-import { edgeInfo, groupTakes, hubLine, primaryOf, type Hubs, type TakeGroups } from "@/lib/edge-stats";
+import { hubLine, type EdgeInfo } from "@/lib/edge-stats";
+import { isSnapshot } from "@/lib/mode";
 import { edgeName, nodeCode, takeName } from "@/lib/names";
+import { SHOWN, type Film, type StepFilms } from "@/lib/primaries";
+import { verdictPhrase, verdictOf } from "@/lib/verdict";
+import { PrimaryFilm, SecondaryFilm } from "./StepFilm";
+import { useMakePrimary } from "./useMakePrimary";
 
-// Wide enough for DecisionBar's four buttons on one row.
+/** The steps before and after this one in the node tree, and the next one without a Primär (KartaView). */
+export type Around = { prev: string | null; next: string | null; unchosen: string | null };
+
+// Wide enough for a secondary film's still and its three buttons on one row.
 export const SHEET_W = 540;
-
-const GROUPS: { key: keyof TakeGroups; title: string }[] = [
-  { key: "primar", title: "Primär" },
-  { key: "godkanda", title: "Godkända" },
-  { key: "varianter", title: "Varianter" },
-  { key: "vantar", title: "Väntar" },
-];
 
 /** Where the round's words for a step come from: "huvudtagning", "passar given före", … */
 const whyWords = (why: keyof typeof WHY_LABEL) => WHY_LABEL[why];
 
 export function EdgeSheet({
   graph,
-  edgeId,
+  step,
+  info,
   takeId,
+  around,
   onClose,
   onPickTake,
   onPickEdge,
-  hubs,
 }: {
   graph: Graph | null;
-  edgeId: string | null;
+  /** The chosen step's films (KartaView: stepFilms), null when none is chosen. */
+  step: StepFilms | null;
+  /** What plays on it now (KartaView: edgeInfo on the game's graph). */
+  info: EdgeInfo | null;
   takeId: string | null;
+  /** The steps before and after it in the node tree (lib/primaries.ts treeOrder). */
+  around: Around;
   onClose: () => void;
   onPickTake: (id: string | null) => void;
   onPickEdge: (id: string) => void;
-  /** What the round deals from another pose at the shoe (KartaView: hubDeals). */
-  hubs?: Hubs;
 }) {
-  const info = graph && edgeId ? edgeInfo(graph, edgeId, hubs) : null;
-  const edge = info?.edge ?? null;
-  const subtitle = edge
-    ? `${edge.experiment ? "Experiment utanför kartan" : describeEdge(edge)} · ${edge.takes.length} ${edge.takes.length === 1 ? "tagning" : "tagningar"}`
-    : "";
+  const edge = step?.edge ?? null;
+  const subtitle = edge ? (edge.experiment ? "Experiment utanför kartan" : describeEdge(edge)) : "";
   return (
-    <Sheet open={!!info} onOpenChange={(open) => !open && onClose()} title={edge ? edgeName(edge) : ""} subtitle={subtitle} width={SHEET_W}>
-      {info && graph ? <SheetBody graph={graph} edge={info.edge} info={info} takeId={takeId} onPickTake={onPickTake} onPickEdge={onPickEdge} /> : null}
+    <Sheet open={!!step} onOpenChange={(open) => !open && onClose()} title={edge ? edgeName(edge) : ""} subtitle={subtitle} width={SHEET_W}>
+      {step && info && graph ? <SheetBody key={step.edge.id} graph={graph} step={step} info={info} takeId={takeId} around={around} onPickTake={onPickTake} onPickEdge={onPickEdge} /> : null}
     </Sheet>
   );
 }
 
 function SheetBody({
   graph,
-  edge,
+  step,
   info,
   takeId,
+  around,
   onPickTake,
   onPickEdge,
 }: {
   graph: Graph;
-  edge: Edge;
-  info: NonNullable<ReturnType<typeof edgeInfo>>;
+  step: StepFilms;
+  info: EdgeInfo;
   takeId: string | null;
+  around: Around;
   onPickTake: (id: string | null) => void;
   onPickEdge: (id: string) => void;
 }) {
-  const now = info.now;
-  const playsHere = now.take && now.take.edge === edge.id ? now.take : null;
-  const groups = useMemo(() => groupTakes(edge, playsHere), [edge, playsHere]);
-  // The rest step (A1 → A1): the calm films are the base, the gestures are picked at random between them (rest.ts).
-  const rest = edge.id === REST_EDGE ? restGroups(edge) : null;
-  const sections: { key: string; title: string; takes: Take[] }[] = rest
-    ? [
-        { key: "lugna", title: "Lugna (grunden)", takes: rest.lugna },
-        { key: "gester", title: "Gester (slumpas in)", takes: rest.gester },
-      ]
-    : GROUPS.map(({ key, title }) => ({ key, title, takes: groups[key] }));
-  const rejected = rest ? rest.underkanda : groups.underkanda;
-  const [showRejected, setShowRejected] = useState(false);
-  const rejectedOpen = showRejected || rejected.some((t) => t.id === takeId);
-  const base = primaryOf(edge) ?? edge.main;
+  const { edge, primary, secondaries } = step;
+  const { make, saving, lines } = useMakePrimary();
+  const rest = edge.id === REST_EDGE;
+  const name = (t: Take) => (rest ? restWord(t) : undefined);
+  const named = takeId ? secondaries.findIndex((f) => f.take.id === takeId) : -1;
+  const [more, setMore] = useState(false);
+  const open = more || named >= SHOWN;
+  const shownSecondaries = open ? secondaries : secondaries.slice(0, SHOWN);
+  // What "Jämför" sets a secondary film beside: the Primär, else what plays now.
+  const against = primary?.take ?? info.now.take ?? null;
   // The films over the whole window, in the order the panel shows them (FilmViewer).
-  const shown = [...sections.flatMap((s) => s.takes), ...(rejectedOpen ? rejected : [])].filter((t) => t.media.video);
+  const films = [...(primary ? [primary] : []), ...shownSecondaries].map((f) => f.take).filter((t) => t.media.video);
   const [viewing, setViewing] = useState<number | null>(null);
+  const view = (t: Take) => {
+    const at = films.indexOf(t);
+    if (at >= 0) setViewing(at);
+  };
+  const pick = (t: Take) => onPickTake(t.id === takeId ? null : t.id);
+  // A take the address names that is not on this page (rejected, waiting, replaced): said, with the way to Granska.
+  const away = takeId && primary?.take.id !== takeId && named < 0 ? (graph.takes[takeId] ?? null) : null;
 
   // A take named in the address is brought into view.
   useEffect(() => {
@@ -103,67 +107,135 @@ function SheetBody({
     return () => window.clearTimeout(timer);
   }, [takeId, edge.id]);
 
-  const card = (t: Take) => (
-    <TakeBlock
-      key={t.id}
-      take={t}
+  const line = lines[edge.id] ?? null;
+  const secondary = (f: Film) => (
+    <SecondaryFilm
+      key={f.take.id}
+      film={f}
       edge={edge}
-      graph={graph}
-      name={rest ? restWord(t) : undefined}
-      plays={t === playsHere}
-      why={t === playsHere ? whyWords(now.why) : null}
-      base={base}
-      selected={t.id === takeId}
-      onPick={() => onPickTake(t.id === takeId ? null : t.id)}
-      onExpand={t.media.video ? () => setViewing(shown.indexOf(t)) : undefined}
+      name={name(f.take)}
+      against={against}
+      selected={f.take.id === takeId}
+      saving={saving === f.take.id}
+      busy={!!saving}
+      onMake={() => void make(f.take)}
+      onPick={() => pick(f.take)}
+      onOpen={() => view(f.take)}
     />
   );
 
   return (
     <div className="flex flex-col gap-5">
+      <AroundNav around={around} onPickEdge={onPickEdge} />
       <NowBlock graph={graph} edge={edge} info={info} onPickEdge={onPickEdge} />
-      {edge.takes.length ? <DecisionHelp edge={edge.id} className="-mt-2 px-0.5" /> : null}
+      {away ? (
+        <p className="-mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-dim">
+          <span>
+            {takeName(away, graph.edge[away.edge]?.takes)} är {verdictPhrase(verdictOf(away))} och visas inte här.
+          </span>
+          <Link href={{ pathname: "/granska/", query: { tagning: away.id } }} className="inline-flex items-center gap-0.5 text-brass-hi hover:underline">
+            Öppna i Granska
+            <ArrowUpRight className="size-3" />
+          </Link>
+        </p>
+      ) : null}
+
+      {edge.takes.length ? (
+        <section className="flex flex-col gap-2.5" aria-label="Primär">
+          <GroupTitle title="Primär" />
+          {primary ? (
+            <PrimaryFilm film={primary} edge={edge} name={name(primary.take)} selected={primary.take.id === takeId} onPick={() => pick(primary.take)} onExpand={primary.take.media.video ? () => view(primary.take) : undefined} />
+          ) : (
+            <div className="flex items-center gap-2 rounded-lg border border-dashed border-line-strong px-3.5 py-3 text-sm text-dim">
+              Ingen Primär vald.
+              {secondaries.length && !isSnapshot ? <span className="text-faint">Välj bland de sekundära.</span> : null}
+            </div>
+          )}
+        </section>
+      ) : null}
+
+      {secondaries.length ? (
+        <section className="flex flex-col gap-2.5" aria-label="Sekundära">
+          <GroupTitle title="Sekundära" count={secondaries.length} />
+          {isSnapshot ? (
+            <span className="inline-flex items-start gap-1.5 text-xs text-dim">
+              <Lock aria-hidden className="mt-px size-3.5 shrink-0 text-brass" />
+              Primär väljs bara i Jakobs labb.
+            </span>
+          ) : null}
+          {shownSecondaries.map(secondary)}
+          {secondaries.length > SHOWN ? (
+            <button
+              type="button"
+              aria-expanded={open}
+              onClick={() => setMore(!open)}
+              className="flex items-center gap-1.5 self-start rounded-md py-1 text-xs font-medium text-faint hover:text-ink"
+            >
+              <ChevronDown className={cn("size-3.5 transition-transform", open ? "rotate-180" : "")} />
+              {open ? "Visa färre" : `Visa fler · ${secondaries.length - SHOWN}`}
+            </button>
+          ) : null}
+          {line ? (
+            <p role="alert" className={cn("text-xs", line.tone === "bad" ? "text-[#ef8b8b]" : "text-[#6cc595]")}>
+              {line.text}
+            </p>
+          ) : null}
+        </section>
+      ) : null}
+
+      {step.elsewhere ? (
+        <Link
+          href={{ pathname: "/granska/", query: { vy: "alla" } }}
+          title="Underkända, ogranskade och ersatta tagningar av steget"
+          className="inline-flex items-center gap-1 self-start text-xs text-faint hover:text-ink"
+        >
+          {step.elsewhere} {step.elsewhere === 1 ? "tagning till" : "tagningar till"} i Granska
+          <ArrowUpRight className="size-3" />
+        </Link>
+      ) : null}
       {edge.takes.length === 0 ? (
         <EmptyState compact title="Ingen tagning ännu">
           {edge.shares ? "Kortet delar platsens film och behöver ingen egen." : "Det finns ingen tagning av det här steget. Den beställs i Beställ."}
         </EmptyState>
       ) : null}
-      {sections.map(({ key, title, takes }) =>
-        takes.length ? (
-          <section key={key} className="flex flex-col gap-2.5">
-            <GroupTitle title={title} count={takes.length} />
-            {takes.map(card)}
-          </section>
-        ) : null,
-      )}
-      {rejected.length ? (
-        <section className="flex flex-col gap-2.5">
-          <button
-            type="button"
-            aria-expanded={rejectedOpen}
-            onClick={() => setShowRejected(!rejectedOpen)}
-            className="flex items-center gap-2 rounded-md py-1 text-left text-xs font-semibold uppercase tracking-[0.08em] text-faint hover:text-ink"
-          >
-            <ChevronDown className={cn("size-3.5 transition-transform", rejectedOpen ? "" : "-rotate-90")} />
-            Underkända · {rejected.length}
-          </button>
-          {rejectedOpen ? rejected.map(card) : null}
-        </section>
-      ) : null}
-      <FilmViewer takes={shown} index={viewing} onIndex={setViewing} />
+      <FilmViewer takes={films} index={viewing} onIndex={setViewing} />
     </div>
   );
 }
 
-function GroupTitle({ title, count }: { title: string; count: number }) {
+function GroupTitle({ title, count }: { title: string; count?: number }) {
   return (
     <h3 className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.08em] text-faint">
-      {title} <span className="tabular-nums text-dim">· {count}</span>
+      {title} {count !== undefined ? <span className="tabular-nums text-dim">· {count}</span> : null}
     </h3>
   );
 }
 
-function NowBlock({ graph, edge, info, onPickEdge }: { graph: Graph; edge: Edge; info: NonNullable<ReturnType<typeof edgeInfo>>; onPickEdge: (id: string) => void }) {
+/** ‹ the step before · the next without a Primär · the step after ›, in the order the node tree is followed. */
+function AroundNav({ around, onPickEdge }: { around: Around; onPickEdge: (id: string) => void }) {
+  if (!around.prev && !around.next && !around.unchosen) return null;
+  const go = (id: string | null, dir: "prev" | "next") =>
+    id ? (
+      <button type="button" onClick={() => onPickEdge(id)} className={cn(buttonClasses({ variant: "quiet", size: "sm" }), "tabular-nums", dir === "next" && "ml-auto")} title={dir === "prev" ? "Steget före i trädet" : "Nästa steg i trädet"}>
+        {dir === "prev" ? <ChevronLeft /> : null}
+        {edgeName(id)}
+        {dir === "next" ? <ChevronRight /> : null}
+      </button>
+    ) : null;
+  return (
+    <nav aria-label="Steg i trädet" className="-mt-2 flex items-center gap-2">
+      {go(around.prev, "prev")}
+      {around.unchosen ? (
+        <button type="button" onClick={() => onPickEdge(around.unchosen!)} className={cn(buttonClasses({ variant: "quiet", size: "sm" }), "mx-auto text-brass-hi")} title="Nästa steg i trädet utan Primär">
+          Nästa utan Primär
+        </button>
+      ) : null}
+      {go(around.next, "next")}
+    </nav>
+  );
+}
+
+function NowBlock({ graph, edge, info, onPickEdge }: { graph: Graph; edge: Edge; info: EdgeInfo; onPickEdge: (id: string) => void }) {
   const now = info.now;
   const shared = now.film && now.film.id !== edge.id ? now.film : null;
   return (
@@ -199,73 +271,6 @@ function NowBlock({ graph, edge, info, onPickEdge }: { graph: Graph; edge: Edge;
           ))}
         </ul>
       ) : null}
-    </div>
-  );
-}
-
-function TakeBlock({
-  take,
-  edge,
-  graph,
-  name,
-  plays,
-  why,
-  base,
-  selected,
-  onPick,
-  onExpand,
-}: {
-  take: Take;
-  edge: Edge;
-  graph: Graph;
-  /** The rest's own word for the film ("Andning"); else the take's short name. */
-  name?: string;
-  plays: boolean;
-  why: string | null;
-  base: Take | null;
-  selected: boolean;
-  onPick: () => void;
-  onExpand?: () => void;
-}) {
-  const extra: ReactNode[] = [];
-  if (plays) extra.push(<span key="p" className="font-medium text-ink">Spelas nu · {why}</span>);
-  if (take.idle?.onRequest) extra.push(<span key="r">bara när den väljs</span>);
-  if (take.hub) extra.push(<span key="h">startar från {nodeCode(take.hub)}</span>);
-  if (take.editOf) extra.push(<span key="e">rättad kopia av {takeName(graph.takes[take.editOf] ?? { id: take.editOf, edge: edge.id, kind: edge.kind }, edge.takes)}</span>);
-  if (take.segment) extra.push(<span key="s">utsnitt, rutor {take.segment.start}–{take.segment.end}</span>);
-  if (take.speed !== 1) extra.push(<span key="v">spelas i {String(take.speed).replace(".", ",")}× fart</span>);
-  const compare = base && base.id !== take.id ? base : null;
-  const isPrimary = !!compare?.explicitMain;
-  return (
-    <div id={`tagning-${take.id}`} className="scroll-mt-4">
-      <TakeCard
-        take={take}
-        name={name}
-        still="film"
-        selected={selected}
-        onSelect={onPick}
-        play
-        onExpand={onExpand}
-        extra={extra.length ? <span className="flex flex-wrap gap-x-1.5">{extra.map((x, i) => (i ? [<span key={`d${i}`} aria-hidden>·</span>, x] : x))}</span> : undefined}
-        actions={
-          <div className="flex w-full flex-col gap-2.5 py-1">
-            <DecisionBar take={take} compact help={false} />
-            <Origin take={take} graph={graph} />
-            <div className="flex flex-wrap items-center gap-1.5">
-              <Link href={{ pathname: "/", query: { kant: edge.id, tagning: take.id } }} className={buttonClasses({ variant: "secondary", size: "sm" })}>
-                <Play />
-                Spela i scenen
-              </Link>
-              {compare ? (
-                <Link href={{ pathname: "/jamfor/", query: { kant: edge.id, a: take.id, b: compare.id } }} className={buttonClasses({ variant: "quiet", size: "sm" })}>
-                  <Columns2 />
-                  {isPrimary ? "Jämför mot primär" : "Jämför mot huvudtagning"}
-                </Link>
-              ) : null}
-            </div>
-          </div>
-        }
-      />
     </div>
   );
 }

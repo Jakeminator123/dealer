@@ -1,6 +1,6 @@
 // Jakob's decision on one take, as it is written: the one place for the rule "Primär lowers an earlier Primär on the same
 // edge". Pure: no DOM, no React; the writer comes in as an argument (putDecision in the studio, a fake in the tests).
-// DecisionBar (components/takes) and "Gör primär" (components/primary, through makePrimary) both call it, and only from
+// DecisionBar (components/takes) and "Gör primär" (components/map, through makePrimary) both call it, and only from
 // his own click. In the online copy putDecision refuses every write (lib/api.ts), so nothing can be written there either.
 import type { Graph, Take } from "../../src/clip-graph.ts";
 import type { Decision, DecisionResult } from "./api.ts";

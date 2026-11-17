@@ -1,9 +1,10 @@
 "use client";
 
-// <EdgeChip tag={tag} counts={counts} /> the label a film carries on the node map: a dot with the sign of what plays
-// there (★ Primär, ✓ Godkänd, ◆ Variant, ○ Väntar, ✕ Underkänd; dashed when a reviewer decided, not Jakob), or the word
-// "saknas" when nothing plays; then how many takes the edge has of each kind (✓ godkända · ◆ varianter · ○ väntar ·
-// ✕ underkända), zeros left out. Sign and colour together, never colour alone.
+// <EdgeChip tag={tag} counts={counts} /> the label a step carries on the node map: a dot with the sign of what the game
+// plays there (★ Primär, ✓ Godkänd, ◆ Variant, ○ Väntar, ✕ Underkänd; dashed when a reviewer decided, not Jakob), or the
+// word "saknas" when nothing plays; then the counts it is given (on Karta its secondary films: ✓ godkända · ◆ varianter),
+// zeros left out. aside: a Primär is chosen on the step but the game plays another film there, drawn as a small hollow ☆
+// after the dot. Sign and colour together, never colour alone.
 import { forwardRef, type ButtonHTMLAttributes } from "react";
 import { cn } from "@/components/ui";
 import { BUCKETS, BUCKET_SIGN, type Bucket, type Counts, type Tag } from "@/lib/edge-stats";
@@ -69,9 +70,20 @@ export type EdgeChipProps = ButtonHTMLAttributes<HTMLButtonElement> & {
   dim?: boolean;
   /** Only the dot (the map is zoomed far out). */
   compact?: boolean;
+  /** A Primär is chosen here, but the game plays another film. */
+  aside?: boolean;
 };
 
-export const EdgeChip = forwardRef<HTMLButtonElement, EdgeChipProps>(function EdgeChip({ tag, counts, active = false, dim = false, compact = false, className, ...rest }, ref) {
+/** The small hollow star of a Primär the game does not play. */
+export function AsideStar({ className }: { className?: string }) {
+  return (
+    <span aria-hidden className={cn("text-[11px] leading-none text-brass", className)}>
+      ☆
+    </span>
+  );
+}
+
+export const EdgeChip = forwardRef<HTMLButtonElement, EdgeChipProps>(function EdgeChip({ tag, counts, active = false, dim = false, compact = false, aside = false, className, ...rest }, ref) {
   const gap = tag.kind === "gap";
   return (
     <button
@@ -89,6 +101,7 @@ export const EdgeChip = forwardRef<HTMLButtonElement, EdgeChipProps>(function Ed
       {...rest}
     >
       {gap ? <span>{tag.word}</span> : <PlayDot tag={tag} />}
+      {aside ? <AsideStar /> : null}
       {compact ? null : <CountSigns counts={counts} />}
     </button>
   );

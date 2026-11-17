@@ -3,7 +3,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { buildGraph, type BankData, type BankJob, type ImageRef, type MotionRecord } from "../../src/clip-graph.ts";
 import { hubDeals } from "../../src/game-director.ts";
-import { bankSummary, bucketOf, chainFor, countsText, edgeCounts, edgeInfo, edgeTag, groupTakes, hubLine, isOutright, playing, primaryOf } from "../lib/edge-stats.ts";
+import { bankSummary, bucketOf, chainFor, countsText, edgeCounts, edgeInfo, edgeTag, hubLine, isOutright, isSecondary, playing, primaryOf, secondaryCounts } from "../lib/edge-stats.ts";
 
 // ── A small bank: no media files, only the records the graph reads ──
 type Review = NonNullable<MotionRecord["review"]>;
@@ -53,15 +53,15 @@ test("every take falls in one of four counts", () => {
   assert.equal(countsText(edgeCounts({ takes: [] })), "inga tagningar");
 });
 
-test("the side panel's groups, the take that plays first", () => {
+test("a step's secondary films: approved and not Primär, nothing rejected, waiting or replaced", () => {
   const edge = graph.edge["READY>P4.C1"];
-  const g = groupTakes(edge, take("pamela-p4-c1-plan-deal-02"));
-  assert.deepEqual(g.godkanda.map((t) => t.id), ["pamela-p4-c1-plan-deal-02"]);
-  assert.deepEqual(g.varianter.map((t) => t.id), ["pamela-p4-c1-readyb-deal-01", "pamela-p4-c1-plan-deal-01"], "newest first");
-  assert.deepEqual(g.underkanda.map((t) => t.id), ["pamela-p4-c1-plan-deal-03"]);
-  assert.deepEqual(g.vantar.map((t) => t.id), ["pamela-p4-c1-plan-deal-04"]);
-  assert.equal(g.primar.length, 0);
-  assert.deepEqual(groupTakes(graph.edge["AWAY>IDLE"]).primar.map((t) => t.id), ["pamela-table-arrive-01"]);
+  assert.deepEqual(edge.takes.filter((t) => isSecondary(t)).map((t) => t.id), ["pamela-p4-c1-plan-deal-01", "pamela-p4-c1-plan-deal-02", "pamela-p4-c1-readyb-deal-01"]);
+  assert.deepEqual(secondaryCounts(edge), { accepted: 1, variants: 2, waiting: 0, rejected: 0, total: 3 }, "a take from A2.2 counts as a variant");
+  assert.ok(!isSecondary(take("pamela-table-arrive-01")), "the Primär is not one of them");
+  assert.ok(isSecondary(take("pamela-idle-ready-entry-01")), "a reviewer's ✓ is approved too; its chip says whose");
+  // A take the game's bank does not hold (a stopgap it has replaced) is not one either.
+  assert.ok(!isSecondary(take("pamela-p4-c1-plan-deal-02"), { takes: {} }));
+  assert.equal(secondaryCounts(graph.edge["READY>D.C2"]).total, 0);
 });
 
 test("outright: his own ✓, not a variant, not from A2.2, with a film", () => {

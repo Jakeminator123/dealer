@@ -1,12 +1,12 @@
 "use client";
 
 // The experiments, folded away below the map: films whose start or end is outside the 54 (READY-B > DRAWN > P4.C1, …),
-// read as chains from one rest pose to the next (experimentChains), and every experiment film on its own. A chip opens
-// the film's panel like on the map.
+// read as chains from one rest pose to the next (experimentChains), and every experiment film on its own. A chip says what
+// plays and the step's secondary films, as on the map (infos), and opens the step's panel.
 import { ChevronDown, FlaskConical } from "lucide-react";
 import { experimentChains, parseEdge, type Graph } from "../../../src/clip-graph.ts";
 import { Button, IconButton, cn } from "@/components/ui";
-import { edgeInfo } from "@/lib/edge-stats";
+import { edgeInfo, type EdgeInfo } from "@/lib/edge-stats";
 import { edgeName, nodeCode } from "@/lib/names";
 import { EdgeChip } from "./EdgeChip";
 
@@ -16,12 +16,26 @@ const edgeOfStep = (graph: Graph, from: string, to: string) => {
   return graph.edge[id] ? id : (parseEdge(id)?.base ?? null);
 };
 
-export function ExperimentTray({ graph, open, onOpenChange, onPick, active }: { graph: Graph; open: boolean; onOpenChange: (open: boolean) => void; onPick: (id: string) => void; active: string | null }) {
+export function ExperimentTray({
+  graph,
+  infos,
+  open,
+  onOpenChange,
+  onPick,
+  active,
+}: {
+  graph: Graph;
+  infos: ReadonlyMap<string, EdgeInfo>;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onPick: (id: string) => void;
+  active: string | null;
+}) {
   const chains = experimentChains(graph);
   const count = graph.experiments.length;
   if (!count && !chains.length) return null;
   const chip = (id: string | null, key: string) => {
-    const info = id ? edgeInfo(graph, id) : null;
+    const info = id ? (infos.get(id) ?? edgeInfo(graph, id, {}, true)) : null;
     if (!info || !id) return null;
     return <EdgeChip key={key} tag={info.tag} counts={info.counts} active={active === id} title={info.title} aria-label={info.title} onClick={() => onPick(id)} />;
   };

@@ -1,5 +1,5 @@
 // Whose studio it is (studio/lib/dealer.ts) and that every reader of the graph keeps to one dealer's takes: Granska's queue,
-// Primära's seam, the Primär rule, Scen's round. A small bank made here with Pamela's films and a second dealer's few, cut
+// Karta's seam and uses, the Primär rule, Scen's round. A small bank made here with Pamela's films and a second dealer's few, cut
 // as the order register cuts them (a deal and its return out of one film). Decisions are written to a temporary folder.
 // Run from the repo root: node --test "studio/tests/dealer.test.ts"
 import { test } from "node:test";
@@ -29,7 +29,7 @@ import {
   withoutDealer,
 } from "../lib/dealer.ts";
 import { takeName, takeNames } from "../lib/names.ts";
-import { primaries, seamWith } from "../lib/primaries.ts";
+import { gameGraph, seamWith, stepFilms, treeOrder } from "../lib/primaries.ts";
 import { reviewQueue } from "../lib/review.ts";
 import { readyRounds } from "../lib/rounds.ts";
 import { awaitingJakob, primarCount } from "../lib/verdict.ts";
@@ -198,15 +198,20 @@ test("Primär lowers only the take's own dealer's Primär, never another dealer'
   assert.deepEqual(calls, [["paow-p4-01-deal", "MAIN"]]);
 });
 
-test("Primära: the seam a Primär would give is reckoned in the dealer's own graph", () => {
+test("Karta's Primär and secondary films: the seam and the uses are reckoned in the dealer's own graph", () => {
   const data = bank();
   const paow = buildGraph(data, { dealer: "paow" });
   const seam = seamWith(data, paow, paow.takes["paow-p4-01-return-ready"]);
   assert.deepEqual(seam, { tone: "ok", text: "Fortsätter given som spelas nu." }, "her own deal, never Pamela's");
-  const page = primaries(data, paow);
-  assert.equal(page.rows.length, 33);
-  assert.equal(page.counts.gap, 30);
-  assert.deepEqual(page.praised, []);
+  const game = gameGraph(data, "paow");
+  const steps = treeOrder(paow).map((id) => stepFilms(data, paow, game, id)!);
+  assert.equal(steps.length, 33);
+  // Her three films wait in the inbox: the game plays none of them, and none is approved, so the page shows no film of hers.
+  assert.equal(steps.filter((s) => !s.now.take).length, 33);
+  assert.equal(steps.reduce((n, s) => n + s.secondaries.length, 0), 0);
+  assert.equal(steps.reduce((n, s) => n + s.elsewhere, 0), 3, "they are in Granska");
+  assert.ok(steps.every((s) => [s.primary, ...s.secondaries].every((f) => !f || f.take.dealer === "paow")), "her takes only");
+  assert.ok(steps.every((s) => [s.primary, ...s.secondaries].every((f) => !f?.praised)), "the films he praised are Pamela's");
 });
 
 test("Scen: a dealer with few films plays the ready round she has films for, and a step locked to Pamela's take plays hers", () => {
