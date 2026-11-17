@@ -6,7 +6,7 @@
 // In the online copy (lib/mode.ts) there is no old lab, so that link is not drawn; instead the bot is there: the view
 // Önskemål (with the answers from Jakob not yet seen) and "Fråga", which opens and closes the panel (components/bot).
 // In the lab Beslut stands first in the foot, with the number of things waiting for his answer (components/decisions).
-import { ArrowUpRight, Clapperboard, FlaskConical, Images, Inbox, ListChecks, MessageCircleQuestion, ScanEye, Send, Spade, Speech, SquareDashedMousePointer, Star, Workflow } from "lucide-react";
+import { ArrowUpRight, Clapperboard, FlaskConical, Images, Inbox, LayoutPanelLeft, ListChecks, MessageCircleQuestion, ScanEye, Send, Spade, Speech, SquareDashedMousePointer, Star, Workflow } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useMemo, type ComponentType } from "react";
@@ -26,6 +26,9 @@ import { Glossary } from "./Glossary";
 type View = { href: string; label: string; hint: string; icon: ComponentType<{ className?: string }> };
 
 export const VIEWS: readonly View[] = [
+  // Bordet (2026-11-17): the lab's one view of the table (kortplan, beställ and the live picture in one frame); first, beside
+  // the views it will take over once Jakob has seen it.
+  { href: "/bordet/", label: "Bordet", hint: "Bordet: kortplanen, beställningen och scenen i en vy", icon: LayoutPanelLeft },
   // Scen and the old Spela are one view since 2026-11-12 (Jakob): /scen/ leads to /.
   { href: "/", label: "Scen", hint: "Scenen: spela en runda och ändra allt", icon: Clapperboard },
   { href: "/karta/", label: "Karta", hint: "Nodkartan: ankare, filmer och varianter", icon: Workflow },
@@ -43,7 +46,7 @@ export const VIEWS: readonly View[] = [
  * The views the rail shows: the online copy orders nothing, so Beställ is only in the lab, and it carries no lip-sync facts, so
  * neither is Lipsync. Casino plays there too (the game page runs the engine itself).
  */
-const LAB_ONLY: readonly string[] = ["/bestall/", "/lipsync/"];
+const LAB_ONLY: readonly string[] = ["/bordet/", "/bestall/", "/lipsync/"];
 const SHOWN: readonly View[] = isSnapshot ? VIEWS.filter((view) => !LAB_ONLY.includes(view.href)) : VIEWS;
 
 /** The view of requests to Jakob: only where the bot is (the online copy). */
@@ -77,7 +80,7 @@ function RailItem({ view, href, active, count, tone }: { view: View; href?: stri
         href={href ?? view.href}
         aria-current={active ? "page" : undefined}
         className={cn(
-          // Tighter in a window under 960 px high, so that every view and the foot fit at 1440 × 900 (ten views since Lipsync:
+          // Tighter in a window under 960 px high, so that every view and the foot fit at 1440 × 900 (eleven views since Bordet:
           // 46 px a view and 2 px between them there, see the list's gap below).
           "group relative mx-2 flex flex-col items-center gap-1 rounded-lg px-1 pb-1.5 pt-2 transition-colors duration-150 [@media(max-height:960px)]:pb-0.5 [@media(max-height:960px)]:pt-1",
           active ? "bg-raised text-ink" : "text-dim hover:bg-raised/60 hover:text-ink",

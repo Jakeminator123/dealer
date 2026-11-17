@@ -349,6 +349,11 @@ export function useSceneEditor(firstLook: () => LookAsk) {
       onResetAll={() => pick(BASE)}
     />
   );
+  // The panel with only what is laid over the film (Bordet's Efterarbete): the cards' and chips' group.
+  const afterwork =
+    current && baseline ? (
+      <ControlPanel current={current} baseline={baseline} differ={differ} rooms={rooms} extras={extraRows} onChange={change} onReset={(k) => change(k, baseline[k])} only={["kort"]} />
+    ) : null;
   const panel =
     current && baseline ? (
       <ControlPanel
@@ -412,5 +417,6 @@ export function useSceneEditor(firstLook: () => LookAsk) {
     placesRead: card.read,
     bar,
     panel,
+    afterwork,
   };
 }

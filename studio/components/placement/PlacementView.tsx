@@ -15,37 +15,28 @@
 // speed; the step it shows is lit on the step chips in Rörelse and named by the picture. A real deal of the bank can lie under
 // the cards (the films to the chosen place first), from the take's own first frame.
 // Must be inside <Suspense> (useSearchParams).
-import { ArrowLeft, Minus, Play, Plus, RotateCcw, Save, Send, Square, Undo2 } from "lucide-react";
+import { ArrowLeft, Play, RotateCcw, Save, Send, Square, Undo2 } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { SHOE, TARGETS, VIEWS, type Place, type View } from "../../../src/placement-model.ts";
-import { useBank } from "../../lib/bank.ts";
 import { useViewContext } from "../../lib/context.ts";
-import { labUrl } from "../../lib/lab.ts";
 import { isSnapshot, swedishMoment } from "../../lib/mode.ts";
-import {
-  GREEN_FILM, VIEW_WORD, backdropForView, bankFilms, changedPlaces, defaultStill, filmGoesTo, filmView, gameDealNotes, libraryFilms, motionSteps, nudged, orderBack, orderHref, placeCode, placeName,
-  placementQuery, readPlacementAddress, shownBackdrop, stillChoice, stillLabel, stillsOf, type Film,
-} from "../../lib/placement.ts";
-import type { PathPhase } from "../../lib/placement-path.ts";
-import { readLibrary } from "../../lib/placement-api.ts";
+import { VIEW_WORD, changedPlaces, gameDealNotes, orderBack, orderHref, placeCode, placeName, placementQuery, readPlacementAddress } from "../../lib/placement.ts";
 import { DRAFT_FILE, draftText } from "../../lib/placement-files.ts";
 import { Page } from "../shell";
 import { Badge, Button, Dialog, ErrorState, IconButton, Kbd, SegmentedControl, Select, Skeleton, Switch, Tabs, buttonClasses, useToast } from "../ui";
 import { cn } from "../ui/cn";
-import { Board, useKeyRun, type Look, type PathRun } from "./Board";
+import { Board, type Look } from "./Board";
 import type { Face } from "./cardLayer.ts";
 import { FilmBar } from "./FilmBar";
 import { MaterialPanel } from "./MaterialPanel";
 import { MotionPanel, PlacePanel, TablePanel } from "./Panels";
 import { SlotPicker } from "./SlotPicker";
+import { pathCard, usePathPlay, usePlanKeys, useUnder } from "./useBoard.ts";
 import { draftActions, useDraft } from "./useDraft.ts";
 
 type Tab = "plats" | "rorelse" | "material" | "bordet";
-const filmLabel = (film: Film) => (film.id === GREEN_FILM ? "Grön film · P4C2" : film.title);
-/** The card whose path plays: the chosen card, or P4C1's with the shoe chosen. */
-const pathCard = (place: Place) => (place === SHOE ? "P4.C1" : place);
 
 export function PlacementView() {
   const params = useSearchParams();
@@ -54,44 +45,27 @@ export function PlacementView() {
   const [back] = useState(() => (isSnapshot ? null : orderBack(params.get("tillbaka"))));
   const [view, setView] = useState<View>(first.view);
   const [place, setPlace] = useState<Place>(first.place);
-  // a film id, "v6" or "neutral"; null is the view's own default (Dator: neutral, Mobil: V6)
-  const [backdrop, setBackdrop] = useState<string | null>(first.backdrop);
-  const [neutralMissing, setNeutralMissing] = useState(false);
-  const [frame, setFrame] = useState(first.frame);
   // A card as the films show it, plain yellow and blue (Jakob 2026-11-17); the game's printed card is a choice for afterwork.
   const [look, setLook] = useState<Look>("farg");
   const [cardsFailed, setCardsFailed] = useState(false);
   const [allCards, setAllCards] = useState(true);
   const [grid, setGrid] = useState(false);
-  const [zoom, setZoomState] = useState(1);
   const [tab, setTab] = useState<Tab>("plats");
   const [face, setFace] = useState<Face>({ rank: "A", suit: "spades" });
-  // The card path: which card plays (null: stopped), at full or half speed, and the step it shows now.
-  const [playing, setPlaying] = useState<{ id: string; key: number } | null>(null);
-  const [halfSpeed, setHalfSpeed] = useState(false);
-  const [phase, setPhase] = useState<PathPhase | null>(null);
-  const [library, setLibrary] = useState<Film[]>([]);
   const [replacing, setReplacing] = useState(false);
-  const videoRef = useRef<HTMLVideoElement>(null);
   const draft = useDraft();
-  const { graph } = useBank();
   const toast = useToast();
-  const keyRun = useKeyRun();
+  // What lies under the cards: a still of the view (the neutral picture in Dator), or a film at a frame.
+  const under = useUnder(view, place, first);
+  const { backdrop, frame } = under;
+  const film = under.film;
 
-  useEffect(() => {
-    void readLibrary().then((items) => setLibrary(libraryFilms(items)));
-  }, []);
   // The address follows what is chosen, so that a link brings back the same view, place and film frame.
   useEffect(() => {
     const keep = new URLSearchParams(window.location.search);
     window.history.replaceState(null, "", `${window.location.pathname}${placementQuery({ view, place, backdrop, frame }, keep)}`);
   }, [view, place, backdrop, frame]);
   useViewContext({ vy: "placering", val: { plats: placeCode(place), vy: VIEW_WORD[view] } });
-
-  const films = useMemo(() => [...(graph ? bankFilms(graph) : []), ...library], [graph, library]);
-  const shown = shownBackdrop(view, backdrop, films, neutralMissing);
-  const film = shown.kind === "film" ? shown.film : null;
-  const under = film ? { kind: "film" as const, src: labUrl(film.path), fps: film.fps, frame } : { kind: "still" as const, src: labUrl(shown.kind === "still" ? shown.path : VIEWS[view].background) };
   const order = isSnapshot ? null : orderHref(place);
 
   const d = draft.draft;
@@ -101,48 +75,25 @@ export function PlacementView() {
   const changes = useMemo(() => (d ? changedPlaces(d.saved, d.plan) : { places: [], table: false }), [d]);
   const changed = useMemo(() => new Set<Place>(changes.places), [changes]);
   const shoeTab = place === SHOE && (tab === "rorelse" || tab === "material") ? "plats" : tab;
-
-  // Another card chosen while the path plays: it plays that card's path from the start.
-  const choose = useCallback((id: Place) => {
-    setPlace(id);
-    setPlaying((was) => (was && was.id !== pathCard(id) ? { id: pathCard(id), key: Date.now() } : was));
-  }, []);
-  const play = () => {
-    setPhase(null);
-    setPlaying((was) => (was ? null : { id: pathCard(place), key: Date.now() }));
-  };
-  const setZoom = useCallback((z: number) => setZoomState(Math.round(Math.max(0.5, Math.min(3, z)) * 100) / 100), []);
+  // The card path: its card, the step it shows now (lit in Rörelse, named by the picture), its speed.
+  const paths = usePathPlay(plan);
+  const { run, lit, path, halfSpeed, setHalfSpeed, setPhase } = paths;
+  const { follow } = paths;
+  const choose = useCallback(
+    (id: Place) => {
+      setPlace(id);
+      follow(id);
+    },
+    [follow],
+  );
   const setViewTo = (v: View) => {
     setView(v);
-    setBackdrop((was) => backdropForView(v, was, films));
+    under.toView(v);
   };
 
   // Keys: Ctrl+Z ångra, X Ändrat | Sparat, arrows nudge the chosen place (on the picture, on the places, or with nothing in focus).
   const board = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      const el = e.target as HTMLElement;
-      const writing = !!el.closest?.("input, textarea, select, [contenteditable='true']");
-      if ((e.ctrlKey || e.metaKey) && !e.shiftKey && !e.altKey && e.key.toLowerCase() === "z" && !writing) {
-        e.preventDefault();
-        draftActions.undo();
-        return;
-      }
-      if (writing || e.ctrlKey || e.metaKey || e.altKey) return;
-      if ((e.key === "x" || e.key === "X") && draft.dirty) {
-        draftActions.show(draft.showing === "saved" ? "draft" : "saved");
-        return;
-      }
-      if (e.key === "Escape") setPlaying(null);
-      if (!e.key.startsWith("Arrow") || !editable) return;
-      const free = el === document.body || !!board.current?.contains(el) || !!el.closest?.("[data-nudge]");
-      if (!free) return;
-      e.preventDefault();
-      keyRun((p) => nudged(p, place, view, e.key, e.shiftKey, false) ?? p);
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [draft.dirty, draft.showing, editable, keyRun, place, view]);
+  usePlanKeys({ place, view, editable, dirty: draft.dirty, showing: draft.showing, area: board, onEscape: paths.stop });
 
   const save = async () => {
     const result = await draftActions.save();
@@ -171,20 +122,7 @@ export function PlacementView() {
   const when = d.saved.updatedAt ? swedishMoment(d.saved.updatedAt) : null;
   const target = place === SHOE ? null : plan.targets[place];
   const lookShown: Look = look === "kort" && cardsFailed ? "farg" : look;
-  // The films of the view, the green P4C2 film first, then the bank's takes to the chosen place (a real deal to lay beside the path).
   const runCard = pathCard(place);
-  const backdropOptions = [
-    ...stillsOf(view).map((s) => ({ value: s as string, label: stillChoice(s, view), hint: s === "neutral" ? "förval" : undefined })),
-    ...films
-      .filter((f) => filmView(f) === view)
-      .sort((a, b) => Number(b.id === GREEN_FILM) - Number(a.id === GREEN_FILM) || Number(filmGoesTo(b, runCard)) - Number(filmGoesTo(a, runCard)))
-      .map((f) => ({ value: f.id, label: filmLabel(f), hint: f.id === GREEN_FILM ? undefined : f.group === "bank" ? (filmGoesTo(f, runCard) ? "hit" : "klippbanken") : "äldre" })),
-  ];
-  // The card path: its card, the step it shows now (lit in Rörelse, named by the picture), its speed.
-  const run = playing && plan.targets[playing.id] ? playing : null;
-  const lit = run ? phase : null;
-  const step = run && lit ? motionSteps(run.id, plan.targets[run.id].intent).steps.find((s) => s.id === lit) : null;
-  const path: PathRun | null = run ? { ...run, speed: halfSpeed ? 0.5 : 1, step: step ? `${step.label} · ${step.detail}` : null } : null;
   const notes = gameDealNotes(plan, place);
 
   return (
@@ -240,7 +178,7 @@ export function PlacementView() {
                 variant={run ? "secondary" : "primary"}
                 aria-pressed={!!run}
                 icon={run ? <Square /> : <Play />}
-                onClick={play}
+                onClick={() => paths.toggle(place)}
                 title={`En skiss av rörelsen, inte en film: kortets väg från skon till ${placeCode(runCard)} och handen tillbaka, om och om igen (Esc stoppar)`}
               >
                 {run ? "Stoppa" : "Spela kortbanan"}
@@ -251,14 +189,10 @@ export function PlacementView() {
             <Select
               size="sm"
               aria-label="Under korten"
-              value={film ? film.id : shown.kind === "still" ? shown.still : defaultStill(view)}
-              onChange={(v) => {
-                setBackdrop(v === defaultStill(view) ? null : v);
-                if (v === "neutral") setNeutralMissing(false);
-                // a take cut from a longer film starts at its own first frame
-                setFrame(films.find((f) => f.id === v)?.start ?? 0);
-              }}
-              options={backdropOptions}
+              value={under.value}
+              // a take cut from a longer film starts at its own first frame
+              onChange={under.choose}
+              options={under.options}
               className="w-52"
             />
             <SegmentedControl
@@ -277,13 +211,6 @@ export function PlacementView() {
             />
             <Switch size="sm" checked={allCards} onChange={setAllCards} label="Alla kort" />
             <Switch size="sm" checked={grid} onChange={setGrid} label="Rutnät" />
-            <div className="ml-auto flex items-center gap-0.5">
-              <IconButton label="Zooma ut" size="sm" icon={<Minus />} onClick={() => setZoom(zoom - 0.25)} disabled={zoom <= 0.5} />
-              <button type="button" onClick={() => setZoom(1)} title="Anpassa till ytan" className="h-7 min-w-14 rounded-sm px-1.5 text-xs tabular-nums text-dim hover:bg-raised hover:text-ink">
-                {Math.round(zoom * 100)} %
-              </button>
-              <IconButton label="Zooma in" size="sm" icon={<Plus />} onClick={() => setZoom(zoom + 0.25)} disabled={zoom >= 3} />
-            </div>
           </div>
           {isSnapshot ? <p className="shrink-0 border-b border-line bg-raised px-4 py-1.5 text-xs text-dim">Kopian visar planen. Ändringar görs i labbet.</p> : null}
           {draft.conflict ? (
@@ -299,7 +226,7 @@ export function PlacementView() {
           ) : null}
           {showSaved ? <p className="shrink-0 border-b border-brass/30 bg-brass/10 px-4 py-1.5 text-xs text-brass-hi">Visar sparat. Streckat: dina ändringar. X växlar.</p> : null}
           {cardsFailed && look === "kort" ? <p className="shrink-0 border-b border-line px-4 py-1.5 text-xs text-[#f0b07a]">Korten kunde inte ritas här; visar färg.</p> : null}
-          {neutralMissing && !film && (backdrop === null || backdrop === "neutral") && view === "native" ? (
+          {under.neutralMissing ? (
             <p className="shrink-0 border-b border-line px-4 py-1.5 text-xs text-[#f0b07a]">Den neutrala bilden finns inte på den här datorn än; visar V6-bilden.</p>
           ) : null}
           <Board
@@ -313,20 +240,18 @@ export function PlacementView() {
             allCards={allCards}
             grid={grid}
             changed={changed}
-            backdrop={under}
-            shoeCard={shown.kind === "still" ? shown.still : null}
-            onBackdropMissing={shown.kind === "still" && shown.still === "neutral" ? () => setNeutralMissing(true) : undefined}
+            backdrop={under.under}
+            shoeCard={under.shoeCard}
+            onBackdropMissing={under.onMissing}
             face={face}
-            zoom={zoom}
-            onZoom={setZoom}
             path={path}
             onPhase={setPhase}
             onCardsFailed={() => setCardsFailed(true)}
-            videoRef={videoRef}
-            label={film ? filmLabel(film) : shown.kind === "still" ? stillLabel(shown.still) : ""}
+            videoRef={under.videoRef}
+            label={under.label}
             className="flex-1"
           />
-          {film ? <FilmBar key={film.id} videoRef={videoRef} fps={film.fps} frames={film.frames} onFrame={setFrame} /> : null}
+          {film ? <FilmBar key={film.id} videoRef={under.videoRef} fps={film.fps} frames={film.frames} onFrame={under.setFrame} /> : null}
           <div className="flex h-8 shrink-0 items-center gap-3 border-t border-line px-3 text-2xs text-faint">
             <span className="font-mono text-dim">{placeCode(place)}</span>
             <span className="tabular-nums">

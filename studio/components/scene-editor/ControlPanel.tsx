@@ -25,6 +25,7 @@ export function ControlPanel({
   onChange,
   onReset,
   footer,
+  only,
 }: {
   current: SceneState;
   baseline: SceneState;
@@ -34,9 +35,11 @@ export function ControlPanel({
   onChange: (key: SceneKey, value: unknown) => void;
   onReset: (key: SceneKey) => void;
   footer?: ReactNode;
+  /** Only these groups, open (Bordet's Efterarbete: Kort och marker); every group when absent. */
+  only?: readonly GroupId[];
 }) {
   const [query, setQuery] = useState("");
-  const [open, setOpen] = useState<ReadonlySet<GroupId>>(() => new Set(GROUPS.filter((g) => !g.folded).map((g) => g.id)));
+  const [open, setOpen] = useState<ReadonlySet<GroupId>>(() => new Set(only ?? GROUPS.filter((g) => !g.folded).map((g) => g.id)));
   const matched = useMemo(() => searchKeys(query), [query]);
   const searching = query.trim().length > 0;
   const extraHit = (e: Extra) => {
@@ -57,7 +60,7 @@ export function ControlPanel({
   // a search); one whose need lies in another group stays, dimmed.
   const near = (s: KeySpec) => !!s.needs && keySpec(s.needs.key)!.group === s.group;
   const shown = (s: KeySpec) => searching || inUse(s, current) || !near(s) || differ.has(s.key);
-  const groups = GROUPS.map((g) => {
+  const groups = GROUPS.filter((g) => !only || only.includes(g.id)).map((g) => {
     const list = matched.filter((s) => s.group === g.id && shown(s));
     const more = (extras[g.id] ?? []).filter((e) => !searching || extraHit(e));
     return { ...g, list, more, changed: [...differ].filter((k) => keySpec(k)!.group === g.id).length };

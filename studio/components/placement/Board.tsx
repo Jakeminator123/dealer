@@ -9,11 +9,18 @@
 //   drag a card or the shoe: move it · the round handle beyond the far edge: riktning (Shift: 15°) · a near corner: size
 //   (Shift: same shape) · a far corner: perspektiv. Arrow keys: a pixel (Shift ten); on the round handle a degree (Shift 15).
 // On a flat table (Plant bord) only moving is possible, as in the old tab: size, riktning and perspektiv follow P4C1.
-// Ctrl + wheel zooms. Every gesture is one step for Ångra; nothing is saved from here.
-import { useCallback, useEffect, useLayoutEffect, useRef, useState, type KeyboardEvent, type PointerEvent as ReactPointerEvent, type RefObject } from "react";
-import { CARD_COLOUR, SHOE, SHOE_CARD, TARGETS, VIEWS, WINDOW_CARD, angleToward, defaultPlan, editPlace, fromPixels, planQuad, toPixels, type Intent, type Place, type PlacementPlan, type View } from "../../../src/placement-model.ts";
-import { nudged, placeCode, sideWord, sizeFromCorner, taperFromCorner, turnHandle, type Pt } from "../../lib/placement.ts";
+// The stage (lib/bordet.ts camera): it opens with the whole picture laid in it ("Anpassa"); the wheel zooms towards the
+// pointer, a drag where there is no card pans, and the control in the corner has Anpassa, 100 % and Närbild (the chosen card
+// in the middle). The cards are one shape (CardShape: rounded corners a share of the card's own side) in the picture's
+// pixels, and the handles keep their size on screen, so both stay crisp and look the same at every zoom. Every gesture is one
+// step for Ångra; nothing is saved from here.
+import { Focus, Maximize, Minus, Plus } from "lucide-react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState, type KeyboardEvent, type PointerEvent as ReactPointerEvent, type RefObject, type SVGProps } from "react";
+import { CARD_COLOUR, SHOE, SHOE_CARD, TARGETS, VIEWS, WINDOW_CARD, angleToward, defaultPlan, editPlace, fromPixels, planQuad, toPixels, type Intent, type Place, type PlacementPlan, type Side, type View } from "../../../src/placement-model.ts";
+import { actualCamera, cardPath, clampCamera, closeUp, fitCamera, panBy, pictureOrigin, scaleWords, zoomAt, type Camera } from "../../lib/bordet.ts";
+import { centreOf, nudged, placeCode, sideWord, sizeFromCorner, taperFromCorner, turnHandle, type Pt } from "../../lib/placement.ts";
 import { PATH_SECONDS, pathFrame, type PathPhase } from "../../lib/placement-path.ts";
+import { IconButton } from "../ui";
 import { cn } from "../ui/cn";
 import { createCardLayer, stillSource, type CardLayer, type Face, type Source } from "./cardLayer.ts";
 import { draftActions } from "./useDraft.ts";
@@ -26,10 +33,32 @@ export type PathRun = { id: string; key: number; speed: number; step: string | n
 const COLOUR = CARD_COLOUR;
 /** The chosen card's (or the shoe's) marking: a colour no card has, so it is not read as a card's rim. */
 const SELECTED = "#ff4fd8";
-/** A card as the films show it: one plain colour with slightly rounded corners (its own colour round it), no rim. */
-const plain = (colour: string) => ({ fill: colour, stroke: colour, strokeWidth: 4, strokeLinejoin: "round" as const, vectorEffect: "non-scaling-stroke" as const });
+/** A card on the order list (Bordet's step 3): a brass ring round it. */
+const MARKED = "#e8cb85";
 const pts = (q: readonly Pt[]) => q.map((p) => `${p.x},${p.y}`).join(" ");
 type Grip = "move" | "turn" | "size" | "taper";
+
+/**
+ * Every card on the stage, one shape: plain yellow (closed) or plain blue (open), the films' own colours (CARD_COLOUR), with
+ * rounded corners and no rim (Jakob 2026-11-17). `grow` widens it by that many picture pixels all round (the shoe's card,
+ * to cover the backdrop's pale window edge); `outline` draws it as a dashed outline over a faint fill (Placering's Kontur).
+ */
+export function CardShape({ quad, side, grow = 0, outline = false, hidden = false, ...rest }: { quad: readonly Pt[]; side: Side; grow?: number; outline?: boolean; hidden?: boolean } & Omit<SVGProps<SVGPathElement>, "d" | "fill" | "stroke">) {
+  const colour = COLOUR[side];
+  return (
+    <path
+      d={cardPath(quad)}
+      fill={hidden ? "transparent" : colour}
+      fillOpacity={outline ? 0.1 : 1}
+      stroke={hidden ? "transparent" : outline || grow ? colour : "none"}
+      strokeWidth={outline ? 2 : grow * 2}
+      strokeLinejoin="round"
+      strokeDasharray={outline ? "5 3" : undefined}
+      vectorEffect={outline ? "non-scaling-stroke" : undefined}
+      {...rest}
+    />
+  );
+}
 
 /** Arrow keys over a run of presses are one step: the run ends after a short pause. */
 function useKeyRun() {
@@ -62,13 +91,12 @@ export function Board({
   shoeCard,
   onBackdropMissing,
   face,
-  zoom,
-  onZoom,
   path,
   onPhase,
   onCardsFailed,
   videoRef,
   label,
+  marked,
   className,
 }: {
   plan: PlacementPlan;
@@ -91,14 +119,14 @@ export function Board({
   /** The still could not be read (not on this machine): the view shows another. */
   onBackdropMissing?: () => void;
   face: Face;
-  zoom: number;
-  onZoom: (zoom: number) => void;
   path: PathRun | null;
   onPhase: (phase: PathPhase) => void;
   onCardsFailed: () => void;
   videoRef: RefObject<HTMLVideoElement | null>;
   /** A short name of what lies under the cards, shown in the picture's corner. */
   label: string;
+  /** Cards with a ring round them (Bordet: the cards on the order list). */
+  marked?: ReadonlySet<Place>;
   className?: string;
 }) {
   const W = VIEWS[view].width;
@@ -111,7 +139,7 @@ export function Board({
   const source = useRef<Source | null>(null);
   const [area, setArea] = useState({ w: 0, h: 0 });
 
-  // ── size: the picture fits the area, times the zoom; larger than the area it scrolls ──
+  // ── the stage's camera: null is "Anpassa" (the whole picture, following the stage's size); else zoomed and panned ──
   useLayoutEffect(() => {
     const el = wrap.current!;
     const read = () => setArea({ w: el.clientWidth, h: el.clientHeight });
@@ -120,22 +148,46 @@ export function Board({
     ro.observe(el);
     return () => ro.disconnect();
   }, []);
+  const picture = { w: W, h: H };
+  const [held, setHeld] = useState<Camera | null>(null);
+  const [heldView, setHeldView] = useState(view);
+  if (heldView !== view) {
+    setHeldView(view);
+    setHeld(null);
+  }
+  const camera = held ? clampCamera(held, area, picture) : fitCamera(area, picture);
+  const cam = useRef({ camera, area, picture });
+  useLayoutEffect(() => {
+    cam.current = { camera, area, picture };
+  });
   useEffect(() => {
     const el = wrap.current!;
     const wheel = (e: WheelEvent) => {
-      if (!e.ctrlKey) return;
       e.preventDefault();
-      onZoom(zoom + (e.deltaY < 0 ? 0.1 : -0.1));
+      const r = el.getBoundingClientRect();
+      const { camera: c, area: a, picture: p } = cam.current;
+      setHeld(zoomAt(c, Math.exp(-e.deltaY * (e.deltaMode === 1 ? 0.05 : 0.0015)), { x: e.clientX - r.left, y: e.clientY - r.top }, a, p));
     };
     el.addEventListener("wheel", wheel, { passive: false });
     return () => el.removeEventListener("wheel", wheel);
-  }, [zoom, onZoom]);
-  const ratio = W / H;
-  const pad = 20;
-  const fit = Math.max(160, Math.min(area.w - pad * 2, (area.h - pad * 2) * ratio));
-  const boxW = fit * zoom;
-  const boxH = boxW / ratio;
-  const unit = W / Math.max(1, boxW); // the view's pixels per screen pixel: handles keep their size on screen
+  }, []);
+  // A drag where there is no card (or with the middle button) pans the picture.
+  const pan = useRef<{ x: number; y: number; from: Camera } | null>(null);
+  const panDown = (e: ReactPointerEvent<HTMLDivElement>) => {
+    if (e.button !== 0 && e.button !== 1) return;
+    e.preventDefault();
+    pan.current = { x: e.clientX, y: e.clientY, from: camera };
+    e.currentTarget.setPointerCapture(e.pointerId);
+  };
+  const panMove = (e: ReactPointerEvent<HTMLDivElement>) => {
+    const p = pan.current;
+    if (p) setHeld(panBy(p.from, e.clientX - p.x, e.clientY - p.y, area, picture));
+  };
+  const panUp = () => void (pan.current = null);
+  const origin = pictureOrigin(camera, area);
+  const boxW = W * camera.scale;
+  const boxH = H * camera.scale;
+  const unit = 1 / Math.max(1e-6, camera.scale); // the view's pixels per screen pixel: handles keep their size on screen
 
   // ── the playback's cards ──
   const ids = allCards ? TARGETS : TARGETS.filter((id) => id === selected);
@@ -225,7 +277,9 @@ export function Board({
   const down = (e: ReactPointerEvent<SVGSVGElement>) => {
     if (e.button !== 0) return;
     const el = (e.target as Element).closest<SVGElement>("[data-place]");
+    // no card under the pointer: the stage pans (the event goes on to it)
     if (!el) return;
+    e.stopPropagation();
     const id = el.dataset.place!;
     const grip = (el.dataset.grip as Grip | undefined) ?? "move";
     e.preventDefault();
@@ -291,9 +345,21 @@ export function Board({
   const shoe = toPixels(plan.shoe[view], view);
   const r = 6 * unit;
   const handles = editable && q && target;
+  const chosenQuad = q ?? (selected === SHOE ? windowCard(plan, view) : null);
   return (
-    <div ref={wrap} className={cn("relative flex min-h-0 min-w-0 overflow-auto bg-well [scrollbar-gutter:stable]", className)}>
-      <div data-picture className="relative m-auto shrink-0 overflow-hidden rounded-md shadow-[0_0_0_1px_rgb(255_255_255/0.06),0_18px_50px_rgb(0_0_0/0.45)]" style={{ width: boxW, height: boxH }}>
+    <div
+      ref={wrap}
+      data-stage
+      className={cn("relative min-h-0 min-w-0 cursor-grab touch-none overflow-hidden bg-well active:cursor-grabbing", className)}
+      onPointerDown={panDown}
+      onPointerMove={panMove}
+      onPointerUp={panUp}
+      onPointerCancel={panUp}
+      onDoubleClick={(e) => {
+        if (!(e.target as Element).closest("[data-place], [data-zoom]")) setHeld(null);
+      }}
+    >
+      <div data-picture className="absolute overflow-hidden shadow-[0_0_0_1px_rgb(255_255_255/0.06),0_18px_50px_rgb(0_0_0/0.45)]" style={{ left: origin.left, top: origin.top, width: boxW, height: boxH }}>
         {backdrop.kind === "still" ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
@@ -333,45 +399,50 @@ export function Board({
           {look !== "kort" && shoeCard ? (
             // the card standing in the shoe's window, plain yellow as in the films with no pale rim round it: the V6 picture's own
             // card (SHOE_CARD) there, the films' card (WINDOW_CARD) on the neutral picture, where it hides the picture's pale window edge
-            <polygon points={pts(shoeCard === "v6" ? SHOE_CARD[view] : windowCard(plan, view))} {...plain(COLOUR.BACK)} pointerEvents="none">
+            <CardShape quad={shoeCard === "v6" ? SHOE_CARD[view] : windowCard(plan, view)} side="BACK" grow={2} pointerEvents="none">
               <title>Kortet i skon · stängt</title>
-            </polygon>
+            </CardShape>
           ) : null}
           {other && changed.size
             ? shown
                 .filter((id) => changed.has(id) && other.targets[id])
                 .map((id) => (
-                  <polygon key={`was-${id}`} points={pts(planQuad(other, id, view))} fill="none" stroke="#d9b96a" strokeOpacity={0.75} strokeWidth={1.25} strokeDasharray="4 3" vectorEffect="non-scaling-stroke" pointerEvents="none" />
+                  <path key={`was-${id}`} d={cardPath(planQuad(other, id, view))} fill="none" stroke="#d9b96a" strokeOpacity={0.75} strokeWidth={1.25} strokeDasharray="4 3" vectorEffect="non-scaling-stroke" pointerEvents="none" />
                 ))
+            : null}
+          {marked?.size
+            ? [...marked]
+                .filter((id) => id !== SHOE && plan.targets[id])
+                .map((id) => {
+                  const quad = planQuad(plan, id, view);
+                  const c = centreOf(quad);
+                  const reach = Math.max(...quad.map((p) => Math.hypot(p.x - c.x, p.y - c.y)));
+                  return <circle key={`mark-${id}`} data-marked={id} cx={c.x} cy={c.y} r={reach * 1.6} fill="none" stroke={MARKED} strokeWidth={2} strokeDasharray="6 4" vectorEffect="non-scaling-stroke" pointerEvents="none" />;
+                })
             : null}
           {shown.map((id) => {
             const t = plan.targets[id];
             const quad = planQuad(plan, id, view);
             const c = toPixels(t.geometry[view], view);
             const on = id === selected;
-            const colour = COLOUR[t.intent.endSide];
-            const fill = look === "farg" ? colour : look === "kontur" ? colour : "transparent";
             return (
               <g key={id}>
-                <polygon
+                {/* a card is a plain shape with rounded corners; only the chosen one is marked, in pink, round it */}
+                <CardShape
+                  quad={quad}
+                  side={t.intent.endSide}
+                  outline={look === "kontur" && !on}
+                  hidden={look === "kort"}
                   data-place={id}
                   data-grip="move"
                   tabIndex={0}
                   role="button"
                   aria-label={`${placeCode(id)}, ${sideWord(t.intent.endSide)}`}
-                  points={pts(quad)}
-                  fill={fill}
-                  fillOpacity={look === "kontur" ? 0.1 : 1}
-                  // a card is a plain shape with rounded corners (its own colour round it); only the chosen one is marked, in pink
-                  stroke={on ? SELECTED : look === "farg" ? colour : look === "kontur" ? colour : "transparent"}
-                  strokeWidth={on ? 2.5 : look === "farg" ? 4 : 2}
-                  strokeLinejoin="round"
-                  strokeDasharray={!on && look === "kontur" ? "5 3" : undefined}
-                  vectorEffect="non-scaling-stroke"
-                  className={cn("outline-none", editable ? "cursor-grab active:cursor-grabbing" : "cursor-pointer", look === "kort" && !on && "hover:stroke-white/40")}
+                  className={cn("outline-none", editable ? "cursor-grab active:cursor-grabbing" : "cursor-pointer")}
                 >
                   <title>{`${placeCode(id)} · ${sideWord(t.intent.endSide)}`}</title>
-                </polygon>
+                </CardShape>
+                {on ? <path d={cardPath(quad)} fill="none" stroke={SELECTED} strokeWidth={2.5} strokeLinejoin="round" vectorEffect="non-scaling-stroke" pointerEvents="none" /> : null}
                 {on || id.endsWith("1") ? (
                   <text
                     x={c.x}
@@ -410,16 +481,52 @@ export function Board({
           </g>
           {path && plan.targets[path.id] ? <PathLayer key={path.key} plan={plan} id={path.id} view={view} speed={path.speed} onPhase={onPhase} /> : null}
         </svg>
-        <span className="pointer-events-none absolute left-2.5 top-2.5 rounded-sm border border-white/25 bg-[#121815]/75 px-2 py-1 text-2xs font-medium text-white">{label}</span>
-        {path?.step ? (
-          <span className="pointer-events-none absolute bottom-2.5 left-2.5 flex flex-col rounded-sm border border-[#d3b4ff]/50 bg-[#1b1426]/85 px-2 py-1">
-            <span data-path-step className="text-xs font-medium text-[#f3eaff]">
-              {placeCode(path.id)} · {path.step}
-            </span>
-            <span className="text-2xs text-[#cdbfe0]">En skiss av rörelsen, inte en film</span>
-          </span>
-        ) : null}
       </div>
+      {/* what lies under the cards, and the step the card path shows: on the stage's corners, in sight at every zoom */}
+      {label ? <span className="pointer-events-none absolute left-2.5 top-2.5 rounded-sm border border-white/25 bg-[#121815]/75 px-2 py-1 text-2xs font-medium text-white">{label}</span> : null}
+      {path?.step ? (
+        <span className="pointer-events-none absolute bottom-2.5 left-2.5 flex flex-col rounded-sm border border-[#d3b4ff]/50 bg-[#1b1426]/85 px-2 py-1">
+          <span data-path-step className="text-xs font-medium text-[#f3eaff]">
+            {placeCode(path.id)} · {path.step}
+          </span>
+          <span className="text-2xs text-[#cdbfe0]">En skiss av rörelsen, inte en film</span>
+        </span>
+      ) : null}
+      <ZoomControl
+        camera={camera}
+        fitted={!held}
+        onOut={() => setHeld(zoomAt(camera, 1 / 1.25, { x: area.w / 2, y: area.h / 2 }, area, picture))}
+        onIn={() => setHeld(zoomAt(camera, 1.25, { x: area.w / 2, y: area.h / 2 }, area, picture))}
+        onFit={() => setHeld(null)}
+        onActual={() => setHeld(actualCamera(camera, area, picture))}
+        onClose={chosenQuad ? () => setHeld(closeUp(chosenQuad, area, picture)) : null}
+      />
+    </div>
+  );
+}
+
+/** The stage's zoom, in its upper right corner (over the room, not the table): −, the scale, +, Anpassa, 100 % and Närbild (the chosen card). */
+function ZoomControl({ camera, fitted, onOut, onIn, onFit, onActual, onClose }: { camera: Camera; fitted: boolean; onOut: () => void; onIn: () => void; onFit: () => void; onActual: () => void; onClose: (() => void) | null }) {
+  const word = "h-7 rounded-sm px-2 text-xs text-dim hover:bg-raised hover:text-ink aria-pressed:bg-brass/12 aria-pressed:text-brass-hi";
+  return (
+    <div data-zoom onPointerDown={(e) => e.stopPropagation()} onDoubleClick={(e) => e.stopPropagation()} className="absolute right-2.5 top-2.5 flex cursor-default items-center gap-0.5 rounded-md border border-line bg-surface/90 p-0.5 shadow-pop backdrop-blur-sm">
+      <IconButton label="Zooma ut" size="sm" icon={<Minus />} onClick={onOut} />
+      <span data-zoom-scale className="min-w-12 text-center text-xs tabular-nums text-ink">
+        {scaleWords(camera)}
+      </span>
+      <IconButton label="Zooma in" size="sm" icon={<Plus />} onClick={onIn} />
+      <span aria-hidden className="mx-0.5 h-4 w-px bg-line" />
+      <button type="button" aria-pressed={fitted} onClick={onFit} title="Hela bilden på ytan (dubbelklick)" className={cn(word, "flex items-center gap-1")}>
+        <Maximize className="size-3.5" />
+        Anpassa
+      </button>
+      <button type="button" aria-pressed={Math.abs(camera.scale - 1) < 0.005} onClick={onActual} title="En bildpunkt per skärmpunkt" className={word}>
+        100 %
+      </button>
+      <button type="button" disabled={!onClose} onClick={onClose ?? undefined} title="Det valda kortet nära" className={cn(word, "flex items-center gap-1 disabled:opacity-40")}>
+        <Focus className="size-3.5" />
+        Närbild
+      </button>
     </div>
   );
 }
@@ -498,7 +605,7 @@ function PathLayer({ plan, id, view, speed, onPhase }: { plan: PlacementPlan; id
   return (
     <g pointerEvents="none" data-phase={f.phase} data-seconds={f.seconds.toFixed(2)}>
       <path d={f.arc} fill="none" stroke="#d3b4ff" strokeWidth={2.5} strokeDasharray="9 8" vectorEffect="non-scaling-stroke" />
-      <polygon points={pts(f.points)} {...plain(COLOUR[f.side])} />
+      <CardShape quad={f.points} side={f.side} />
       {/* the hand: a plain shape, its back dark and its palm light, so that the wrist's turn reads */}
       <g opacity={intent.grip === "DRAG" ? 0.82 : 0.95}>
         <polygon points={pts(h.wrist)} fill="#2b2338" stroke="#f3eaff" strokeWidth={1.5} strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
