@@ -2,8 +2,9 @@
 //   KORT     only the movement, in the order it happens, in positive statements: nothing of her look (the first frame
 //            shows her), no list of bans, one action, the turn said once (SAY.turnAtPlace). The default for a film.
 //   MINIMAL  Jakob's trial: the card's colours and that one card goes from the shoe to where the last frame shows it.
-//   UTFÖRLIG the text of template 3 exactly as it was (scene(dealer) + action(step, motion) + bans), so that a comparison
-//            can be made again and an order made before template 4 keeps reproducing its text.
+//   UTFÖRLIG the text of template 3 exactly as it was (scene(dealer) + action(step, motion) + bans), so that an order
+//            made before template 4 keeps reproducing its text. No new order is written with it (stylesFor in
+//            src/order-model.ts): its words go against today's rules. A return never had a long text.
 // Every sentence of the short and minimal texts lies in SAY, once, so that a wording can be changed in one edit (the
 // rules are the handbook's, tools/film-prompting.md; this file holds the exact words). Pure; the dealer's look comes from
 // data/dealers.json, the card's place from the plan (where the last picture draws the card). A text is built as parts,
@@ -30,7 +31,7 @@
 import type { FlipAxis, StepKey, TextStyle } from './order-model.ts';
 
 /**
- * The formula's version. 4: the short and minimal texts (Utförlig keeps @3 where its text is template 3's own).
+ * The formula's version. 4: the short and minimal texts (Utförlig is always named @3, the long text's own version).
  * 5 (2026-11-13): the short deal says where the card's place is, after rounds 3 and 3b laid the card in front of her.
  * 6 (2026-11-13): the card's two sides said only by colour and by which one is up (SAY.v6), never back or face: Jakob
  * of a rejected take, "Baksida kan betyda olika saker, som baksidan på ett kort, men det kan också referera till undersidan".
@@ -75,7 +76,7 @@ export type PromptInput = {
   place?: { x: number; y: number } | null;
   /** Jakob's own addition, put before the bans. */
   extra?: string | null;
-  /** The text's style; absent: Kort (a new order). Utförlig is the text of template 3. */
+  /** The text's style; absent: Kort (a new order). Utförlig is the text of template 3, which only a stored order has. */
   style?: TextStyle;
   /** A deal that ends on the landing picture (bara dit) instead of going back to the shoe. */
   oneWay?: boolean;
@@ -345,11 +346,15 @@ function stillText(input: PromptInput): Prompt {
     { text: input.extra?.trim() || '', from: ['extra'] },
     { text: BANS_STILL, from: ['bans'] },
   ];
-  return { template: `bild-ankare@${LONG_VERSION}`, style: 'UTFÖRLIG', text: joined(parts), parts };
+  return { template: templateOf('bild-ankare', 'UTFÖRLIG'), style: 'UTFÖRLIG', text: joined(parts), parts };
 }
 
-/** The template a text is written with: "film-giv-kort@4"; Utförlig "film-giv@3" where its text is template 3's own, else @4. */
-const templateOf = (kind: string, style: TextStyle, long = true) => (style === 'UTFÖRLIG' ? `${kind}@${long ? LONG_VERSION : TEMPLATE_VERSION}` : `${kind}-${style === 'KORT' ? 'kort' : 'minimal'}@${TEMPLATE_VERSION}`);
+/**
+ * The template a text is written with: "film-giv-kort@9"; Utförlig always "film-giv@3", the long text of template 3, as
+ * every order stored with it is named (before, Utförlig with a reference film, bara dit or another card size was named
+ * after today's template, though its words were template 3's).
+ */
+const templateOf = (kind: string, style: TextStyle) => (style === 'UTFÖRLIG' ? `${kind}@${LONG_VERSION}` : `${kind}-${style === 'KORT' ? 'kort' : 'minimal'}@${TEMPLATE_VERSION}`);
 const referencePart = (input: PromptInput): Part => ({ text: input.reference ? SAY.reference : '', from: ['reference'] });
 const extraPart = (input: PromptInput): Part => ({ text: input.extra?.trim() || '', from: ['extra'] });
 const DEFAULT_MOTION: DealMotion = { grip: 'PINCH', hand: 'LH', pass: false, turn: true, flipAxis: 'FREE', side: 'FRONT' };
@@ -452,7 +457,7 @@ function dealText(input: PromptInput): Prompt {
     extraPart(input),
     { text: bansFor(m, !sized), from: ['bans'] },
   ];
-  return { template: templateOf('film-giv', 'UTFÖRLIG', !oneWay && !input.reference && !sized), style: 'UTFÖRLIG', text: joined(parts), parts };
+  return { template: templateOf('film-giv', 'UTFÖRLIG'), style: 'UTFÖRLIG', text: joined(parts), parts };
 }
 
 /**
@@ -527,6 +532,7 @@ function minimalDeal(input: PromptInput): Prompt {
 /**
  * A return, from the seat's landing picture back to an anchor (2.1 the pinch, 2.2 the hand over the shoe, 1 rest): the
  * hand at the card lifts off it and glides back low and open. The hand that laid the card is the one that returns.
+ * Written Kort or Minimal only: there was no return in template 3, and asked for the long text it is written Kort.
  */
 function returnText(input: PromptInput, to: '1' | '2.1' | '2.2', style: TextStyle): Prompt {
   const m: DealMotion = input.motion ?? DEFAULT_MOTION;
@@ -538,37 +544,19 @@ function returnText(input: PromptInput, to: '1' | '2.1' | '2.2', style: TextStyl
     const parts: Part[] = [{ text: SAY.cameraMinimal, from: [] }, referencePart(input), { text: card, from: colours ? ['side'] : [] }, { text: SAY.leaveCard, from: [] }, extraPart(input)];
     return { template: templateOf('film-retur', 'MINIMAL'), style, text: joined(parts), parts };
   }
-  if (style === 'KORT') {
-    const glide = lays === 'LH' || to === '1' ? SAY.glideTo[to] : SAY.glideOther(to);
-    // The other hand: resting when the left laid the card; to rest after the right laid it, it comes from the shoe (from
-    // template 7; before, it was said to rest already).
-    const other = lays === 'LH' ? SAY.otherRests : to !== '1' ? '' : twoHands(input) ? SAY.otherFromShoe : SAY.otherRests;
-    const parts: Part[] = [
-      { text: SAY.camera, from: [] },
-      referencePart(input),
-      { text: SAY.liftOff(colour), from: ['side'] },
-      { text: glide, from: ['hand'] },
-      { text: other, from: ['hand'] },
-      extraPart(input),
-    ];
-    return { template: templateOf('film-retur', 'KORT'), style, text: joined(parts), parts };
-  }
-  // Utförlig: the long text's manner (her look, the hands by left and right, the bans); there was no return in template 3.
-  const hand = `her ${handWord(lays)} hand, at the ${lays === 'LH' ? 'right' : 'left'} of the picture`;
-  const goes =
-    to === '1' ? 'goes back low over the felt, open and palm down, and comes to rest flat on the felt, settling exactly into the pose of the last image.'
-    : lays === 'LH' ? `goes back low over the felt, open and palm down, to the shoe and ${to === '2.1' ? 'pinches the next yellow card between thumb and forefinger at its upper edge' : "comes to rest over the next yellow card in the shoe's window, fingertips on the card"}, settling exactly into the pose of the last image.`
-    : `goes back low over the felt, open and palm down, to where it rests in the last image, while her left hand, at the shoe, ${to === '2.1' ? 'pinches the next yellow card between thumb and forefinger at its upper edge' : "comes to rest over the next yellow card in the shoe's window"}.`;
+  const glide = lays === 'LH' || to === '1' ? SAY.glideTo[to] : SAY.glideOther(to);
+  // The other hand: resting when the left laid the card; to rest after the right laid it, it comes from the shoe (from
+  // template 7; before, it was said to rest already).
+  const other = lays === 'LH' ? SAY.otherRests : to !== '1' ? '' : twoHands(input) ? SAY.otherFromShoe : SAY.otherRests;
   const parts: Part[] = [
-    { text: `Locked camera. ${cap(input.dealer.look)} sits at a green table with a black card shoe fixed at the right of the picture. One continuous, calm and natural movement from the exact first pose.`, from: [] },
+    { text: SAY.camera, from: [] },
     referencePart(input),
-    { text: `${cap(hand)}, lifts off the ${colour} card, which stays exactly where it lies.`, from: ['hand', 'side'] },
-    { text: `The same hand ${goes}`, from: ['hand'] },
-    { text: lays === 'LH' ? 'Her right hand, at the left of the picture, rests on the table the whole time.' : to === '1' ? 'Her left hand, at the right of the picture, rests on the table the whole time.' : '', from: ['hand'] },
+    { text: SAY.liftOff(colour), from: ['side'] },
+    { text: glide, from: ['hand'] },
+    { text: other, from: ['hand'] },
     extraPart(input),
-    { text: BANS_FILM, from: ['bans'] },
   ];
-  return { template: templateOf('film-retur', 'UTFÖRLIG', false), style, text: joined(parts), parts };
+  return { template: templateOf('film-retur', 'KORT'), style: 'KORT', text: joined(parts), parts };
 }
 
 function entryText(input: PromptInput, to: '2.1' | '2.2', style: TextStyle = 'UTFÖRLIG'): Prompt {
@@ -592,7 +580,7 @@ function entryText(input: PromptInput, to: '2.1' | '2.2', style: TextStyle = 'UT
     extraPart(input),
     { text: BANS_FILM, from: ['bans'] },
   ];
-  return { template: templateOf('film-ingang', 'UTFÖRLIG', !input.reference), style: 'UTFÖRLIG', text: joined(parts), parts };
+  return { template: templateOf('film-ingang', 'UTFÖRLIG'), style: 'UTFÖRLIG', text: joined(parts), parts };
 }
 
 /**
@@ -649,7 +637,7 @@ function restText(input: PromptInput, style: TextStyle = 'UTFÖRLIG'): Prompt {
     extraPart(input),
     { text: BANS_FILM, from: ['bans'] },
   ];
-  return { template: templateOf('film-vila', 'UTFÖRLIG', !input.reference), style: 'UTFÖRLIG', text: joined(parts), parts };
+  return { template: templateOf('film-vila', 'UTFÖRLIG'), style: 'UTFÖRLIG', text: joined(parts), parts };
 }
 
 /**

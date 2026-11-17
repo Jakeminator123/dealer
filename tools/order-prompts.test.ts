@@ -21,17 +21,20 @@ const sentences = (text: string) => text.split(/(?<=\.) (?=[A-Z])/);
 
 test('every Utförlig text ends with what must not happen, a short or minimal one has no ban and no look; the parts make the text', () => {
   for (const step of STEPS) for (const style of TEXT_STYLES) {
-    if (step.styles && !step.styles.includes(style)) continue; // a step made after template 3 has no long text
+    // A step made after template 3 has no long text; nor has a return, which template 3 did not have.
+    const longText = !step.styles && step.start !== 'LAND';
+    if (style === 'UTFÖRLIG' && !longText) continue;
+    if (step.styles && !step.styles.includes(style)) continue;
     const motion = step.card ? { grip: step.grip ?? 'PINCH', hand: 'LH' as const, pass: false, turn: true, flipAxis: 'FREE' as const, side: 'FRONT' as const } : null;
     const { text, template, parts, style: written } = promptFor({ dealer: paow, step: step.key as StepKey, model: step.model, place: { x: 852, y: 1101 }, motion, style });
     const at = `${step.key} ${style} (${template})`;
     assert.equal(parts.filter((p) => p.text).map((p) => p.text).join(' '), text, `${at}: the parts are the text`);
     if (style === 'UTFÖRLIG') {
       assert.equal(written, 'UTFÖRLIG', at);
-      const bans = step.kind === 'STILL' ? BANS_STILL : step.card && step.start !== 'LAND' ? bansFor(motion) : BANS_FILM;
+      const bans = step.kind === 'STILL' ? BANS_STILL : step.card ? bansFor(motion) : BANS_FILM;
       assert.ok(text.endsWith(bans), at);
       assert.deepEqual(parts.filter((p) => p.text).at(-1)!.from, ['bans']);
-      assert.match(template, step.start === 'LAND' ? new RegExp(`^film-retur@${TEMPLATE_VERSION}$`) : new RegExp(`@${LONG_VERSION}$`), `${at}: template 3's own text where there is one`);
+      assert.match(template, new RegExp(`@${LONG_VERSION}$`), `${at}: the long text is always named template 3`);
     } else {
       const expected = step.kind === 'STILL' ? 'KORT' : style; // a still has no minimal text
       assert.equal(written, expected, at);
@@ -238,7 +241,9 @@ test('the minimal text, the returns, the entry and the rest in the new styles', 
   assert.match(back('RETUR-2.2', 'KORT').text, /comes to rest over the next yellow card, fingertips flat on it/);
   assert.match(back('RETUR-1', 'KORT', { ...m, side: 'BACK' }).text, /lift off the yellow card.*comes to rest flat on the felt/);
   assert.match(back('RETUR-2.1', 'KORT', { ...m, hand: 'RH' }).text, /her other hand, at the shoe, takes the top edge of the next yellow card/);
-  assert.match(back('RETUR-2.1', 'UTFÖRLIG').text, /^Locked camera\. A young, slim woman.*Her left hand, at the right of the picture, lifts off the blue card.*Nothing of this happens/);
+  // A return never had a long text (template 3 had no return): asked for one, it is written Kort, under Kort's name.
+  assert.deepEqual(back('RETUR-2.1', 'UTFÖRLIG'), back('RETUR-2.1', 'KORT'));
+  assert.equal(back('RETUR-2.1', 'UTFÖRLIG').template, `film-retur-kort@${TEMPLATE_VERSION}`);
   assert.equal(back('RETUR-2.1', 'MINIMAL').text, `${SAY.cameraMinimal} ${SAY.colours} ${SAY.leaveCard}`);
   // The entry: the forefinger touches only the card's upper edge.
   const entry = promptFor({ dealer: paow, step: 'INGANG-2.1', model: 'wan3', style: 'KORT' }).text;
@@ -278,7 +283,7 @@ test('a card drawn larger than the plan: no sentence says it keeps its size; the
     const long = promptFor({ dealer: paow, step: grip === 'PINCH' ? 'GIV-2.1' : 'GIV-2.2', model: 'kling-4', motion: { ...m, grip, flipAxis }, style: 'UTFÖRLIG', cardScale: 1.5 });
     assert.doesNotMatch(long.text, /same size and shape|as it does in the shoe|keeping its size|grows or shrinks/, `${grip} ${flipAxis}`);
     assert.match(long.text, /lands at the size shown in the last frame/);
-    assert.equal(long.template, `film-giv@${TEMPLATE_VERSION}`, 'not template 3\'s own text');
+    assert.equal(long.template, `film-giv@${LONG_VERSION}`, 'the long text is named template 3, never today\'s template');
     assert.ok(long.text.endsWith(bansFor({ ...m, grip, flipAxis }, false)));
   }
   const plain = promptFor({ dealer: paow, step: 'GIV-2.1', model: 'kling-4', motion: m, style: 'UTFÖRLIG', cardScale: 1 });

@@ -146,9 +146,15 @@ test('drafts, changes and approval go through the routes with their guards', asy
   assert.equal(film.order.step.edge, 'READY>P4.C1');
   assert.equal(film.order.pictures[1].path, null, 'the last picture waits; no other dealer stands in');
   assert.deepEqual([film.order.prompt.style, film.order.prompt.template], ['KORT', 'film-giv-kort@9'], 'a new film is written in the short text');
-  const long = (await call('POST', '/api/orders', { body: { dealer: 'paow', step: 'GIV-2.1', target: 'P4.C1', duration: 4, style: 'UTFÖRLIG' } })).json;
-  assert.match(long.order.prompt.text, /exactly where the blue card lies in the last frame, in the middle of the picture/, 'the place from the plan before the last picture exists');
-  assert.deepEqual([long.order.prompt.style, long.order.prompt.template], ['UTFÖRLIG', 'film-giv@3']);
+  assert.match(film.order.prompt.text, /towards its place in the middle of the picture, where the last frame shows it/, 'the place from the plan before the last picture exists');
+  // The long text (template 3) is never written for a new order: its words go against today's rules (Jakob 2026-11-17).
+  const before = (await call('GET', '/api/orders')).json.orders.length;
+  for (const step of ['GIV-2.1', 'VILA', 'INGANG-2.1', 'RETUR-2.1', 'ANKARE-2.1']) {
+    const long = await call('POST', '/api/orders', { body: { dealer: 'paow', step, target: 'P4.C1', style: 'UTFÖRLIG' } });
+    assert.equal(long.status, 400, `${step}: no new order in the long text`);
+    assert.match(long.json.error, step === 'ANKARE-2.1' ? /^En bild skrivs KORT\.$/ : /KORT eller MINIMAL; den långa texten \(UTFÖRLIG\) skrivs inte längre/);
+  }
+  assert.equal((await call('GET', '/api/orders')).json.orders.length, before, 'nothing was written');
   const waiting = await call('POST', `/api/orders/${film.order.id}/approve`, { match: film.revision });
   assert.equal(waiting.status, 409);
   assert.match(waiting.json.error, /Väntar på ankare 2\.1/);
@@ -156,7 +162,7 @@ test('drafts, changes and approval go through the routes with their guards', asy
   assert.equal(noLanding.status, 400, 'a return needs a landing picture that holds');
   assert.match(noLanding.json.error, /Ingen landningsbild gäller för Paows plats 4\. Godkänn en i Material/);
   assert.match((await call('POST', '/api/orders', { body: { dealer: 'paow', step: 'GIV-2.1', target: 'P4.C1', shape: 'ONE_WAY' } })).json.error, /Ingen landningsbild gäller/, 'and so does a deal bara dit');
-  assert.match((await call('POST', '/api/orders', { body: { dealer: 'paow', step: 'ANKARE-2.1', style: 'MINIMAL' } })).json.error, /En bild skrivs KORT eller UTFÖRLIG/);
+  assert.match((await call('POST', '/api/orders', { body: { dealer: 'paow', step: 'ANKARE-2.1', style: 'MINIMAL' } })).json.error, /^En bild skrivs KORT\.$/);
   // The free addition: up to the limit it is kept whole; beyond it a new draft is refused as a change is, never cut.
   const words = (n: number) => 'She smiles. '.repeat(60).slice(0, n - 1).trimEnd().padEnd(n - 1, 'x') + '.';
   const full = await call('POST', '/api/orders', { body: { dealer: 'paow', step: 'VILA', extra: words(600) } });
@@ -271,23 +277,23 @@ test('a deal: the hand, handbyte and how the card lands, defaulted from the plan
   assert.equal((await call('POST', '/api/orders', { body: { dealer: 'paow', step: 'GIV-2.1', target: 'P4.C1' } })).json.order.motion.flipAxis, 'FREE', 'the turn follows Placering');
 
   // Closed, with handbyte; then changed on the draft.
-  const closed = (await call('POST', '/api/orders', { body: { dealer: 'paow', step: 'GIV-2.2', target: 'P2.C1', side: 'BACK', pass: true, style: 'UTFÖRLIG' } })).json;
+  const closed = (await call('POST', '/api/orders', { body: { dealer: 'paow', step: 'GIV-2.2', target: 'P2.C1', side: 'BACK', pass: true } })).json;
   const c = closed.order.motion;
   assert.deepEqual([c.hand, c.pass, c.side, c.turn, c.fromPlan, c.flipAxis], ['LH', true, 'BACK', false, false, null], 'a card that is not turned stores no turn');
   assert.equal(closed.order.pictures[1].label, 'Sista bild · samma + kortet stängt på plats 2');
-  assert.match(closed.order.prompt.text, /takes the same card by its edges/);
+  assert.match(closed.order.prompt.text, /where her other hand takes it by its edges/);
   assert.match(closed.order.summary, /ger det till höger lågt framför kroppen; höger lägger det stängt/);
   const changed = (await call('PUT', `/api/orders/${closed.order.id}`, { body: { hand: 'RH', side: 'FRONT' }, match: closed.revision })).json;
   const d = changed.order.motion;
   assert.deepEqual([d.hand, d.pass, d.side, d.turn, d.flipAxis], ['RH', false, 'FRONT', true, 'FREE'], 'opened again: the turn the plan suggests');
-  assert.match(changed.order.prompt.text, /Her left hand waits by the shoe/);
+  assert.match(changed.order.prompt.text, /Her hand at the shoe lets go of the card and waits beside the shoe, and her other hand reaches across/);
   assert.equal(changed.order.pictures[1].label, 'Sista bild · samma + kortet öppet på plats 2');
   assert.equal((await call('PUT', `/api/orders/${closed.order.id}`, { body: { pass: true, hand: 'RH' }, match: changed.revision })).status, 400, 'handbyte goes from left to right');
   assert.equal((await call('POST', '/api/orders', { body: { dealer: 'paow', step: 'GIV-2.2', target: 'P2.C1', hand: 'RH', pass: true } })).status, 400);
 
   // Alla sju: one draft per seat, a group, handbyte only where the left hand would cross her body.
   const all = ['P1.C1', 'P2.C1', 'P3.C1', 'P4.C1', 'P5.C1', 'P6.C1', 'P7.C1'].map((target) => ({ target, hand: 'LH', pass: seats[target].crosses }));
-  const group = await call('POST', '/api/orders', { body: { dealer: 'paow', step: 'GIV-2.2', seats: all, takes: 2, style: 'UTFÖRLIG' } });
+  const group = await call('POST', '/api/orders', { body: { dealer: 'paow', step: 'GIV-2.2', seats: all, takes: 2 } });
   assert.equal(group.status, 201);
   assert.equal(group.json.made.length, 7);
   type A = { order: { group: { id: string; label: string } | null; motion: { target: string; pass: boolean }; prompt: { text: string }; cost: { total: number } } };
@@ -298,10 +304,10 @@ test('a deal: the hand, handbyte and how the card lands, defaulted from the plan
   assert.deepEqual(orders.map((a) => [a.order.motion.target, a.order.motion.pass]), all.map((s) => [s.target, s.pass]));
   for (const a of orders) {
     const s = seats[a.order.motion.target];
-    assert.equal(a.order.prompt.text, promptFor({ dealer: list.dealers[1], step: 'GIV-2.2', model: 'wan3', motion: a.order.motion as never, place: { x: s.centre[0], y: s.centre[1] }, style: 'UTFÖRLIG' }).text, `${a.order.motion.target}: its own text`);
+    assert.equal(a.order.prompt.text, promptFor({ dealer: list.dealers[1], step: 'GIV-2.2', model: 'wan3', motion: a.order.motion as never, place: { x: s.centre[0], y: s.centre[1] }, style: 'KORT' }).text, `${a.order.motion.target}: its own text`);
   }
-  assert.match(orders[0].order.prompt.text, /far to the left of the picture/);
-  assert.match(orders[6].order.prompt.text, /far to the right of the picture/);
+  assert.match(orders[0].order.prompt.text, /at the far left of the picture/);
+  assert.match(orders[6].order.prompt.text, /at the far right of the picture/);
   assert.equal(orders.reduce((sum, a) => sum + a.order.cost.total, 0), 1680);
   // All or nothing.
   const before = (await call('GET', '/api/orders')).json.orders.length;

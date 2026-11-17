@@ -4,7 +4,7 @@
 // "Ändra utkastet": how the card lands (stängt → stängt, stängt → öppet), which hand deals (vänster hela vägen, höger hela
 // vägen, handbyte) and how the card turns. "enligt Placering" marks the choice the plan makes for the card. The sheet's
 // model choice too: the models that can make the step, the step's own marked "förval"; the text's style (Kort förval,
-// Minimal, Utförlig), tur och retur or bara dit, the card's size in one order, and a reference film from the bank.
+// Minimal; the old long text is no choice), tur och retur or bara dit, the card's size in one order, and a reference film from the bank.
 import { useState, type ReactNode } from "react";
 import {
   CARD_SCALES, FLIP_ABOUT, FLIP_AXES, FLIP_LABEL, HAND_ABOUT, HAND_LABEL, LANDS_ABOUT, LANDS_LABEL, REF_MATCH_LABEL, REF_VERDICT_LABEL, SHAPE_ABOUT, SHAPE_LABEL, STYLE_ABOUT, STYLE_LABEL, genitive, scaleWords, secondsWords,
@@ -122,7 +122,7 @@ const Forval = () => (
   </Badge>
 );
 
-/** The text: Kort (förval), Minimal, Utförlig; a still offers Kort and Utförlig. */
+/** The text: Kort (förval) and Minimal, the styles a new order can have (stylesFor); a still has only Kort and no choice. */
 export function TextChoice({ value, styles, onChange, disabled }: { value: TextStyle; styles: readonly TextStyle[]; onChange: (style: TextStyle) => void; disabled?: boolean }) {
   return (
     <div role="radiogroup" aria-label="Text" className="flex gap-2">

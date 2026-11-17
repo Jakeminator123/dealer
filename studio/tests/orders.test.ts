@@ -13,6 +13,7 @@ import { parseJakob } from "../lib/names.ts";
 import { ALL_SEVEN, MODELS, SHOWN_LABEL, STEPS, cutIntoOf, stepOf, type StepKey } from "../../src/order-model.ts";
 import { planAnswerOf } from "../../tools/order-store.ts";
 import { readPlan } from "../../tools/order-images.ts";
+import { orderPrompt } from "../../src/order-prompts.ts";
 
 async function drafts(): Promise<Order[]> {
   const names = (await readdir("data/orders")).filter((f) => f.endsWith(".json")).sort();
@@ -169,13 +170,22 @@ test("what is ordered, in his notation and one sentence: the edges the film is f
 test("a new order like an old one: every choice of it, never its pictures", async () => {
   const all = await drafts();
   const film = all.find((o) => o.id === "paow-giv-p4")!;
-  assert.deepEqual(recipeOf(film), { dealer: "paow", step: "GIV-2.1", target: "P4.C1", hand: "LH", side: "FRONT", flipAxis: "AT_PLACE", style: "UTFÖRLIG", model: "kling-4", duration: 7, takes: 2, extra: "", reference: null, shape: "ROUND_TRIP", cardScale: 1 });
+  // An order written before template 4 (no style: the long text) gives Kort: no new order is written Utförlig. The turn
+  // and every other choice follow the old order.
+  assert.equal(film.prompt.style, undefined);
+  assert.deepEqual(recipeOf(film), { dealer: "paow", step: "GIV-2.1", target: "P4.C1", hand: "LH", side: "FRONT", flipAxis: "AT_PLACE", style: "KORT", longText: true, model: "kling-4", duration: 7, takes: 2, extra: "", reference: null, shape: "ROUND_TRIP", cardScale: 1 });
   const rest = all.find((o) => o.id === "paow-vila-03")!;
   const r = recipeOf(rest);
-  assert.deepEqual([r.step, r.target, r.hand, r.style, r.model, r.duration, r.takes], ["VILA", null, null, "UTFÖRLIG", "wan3", 4, 1]);
+  assert.deepEqual([r.step, r.target, r.hand, r.style, r.longText, r.model, r.duration, r.takes], ["VILA", null, null, "KORT", true, "wan3", 4, 1]);
   assert.match(r.extra, /warm, friendly smile/);
+  // One stored with the style UTFÖRLIG (an aborted one of the first series) gives Kort too, its turn kept.
+  const aborted = all.find((o) => o.id === "paow-giv-2-1-p4-01")!;
+  assert.equal(aborted.prompt.style, "UTFÖRLIG");
+  assert.deepEqual([recipeOf(aborted).style, recipeOf(aborted).longText, recipeOf(aborted).flipAxis], ["KORT", true, aborted.motion!.flipAxis]);
+  for (const o of all) assert.notEqual(recipeOf(o).style, "UTFÖRLIG", `${o.id}: a new order like it is not written in the long text`);
   const trial = { ...film, prompt: { ...film.prompt, style: "KORT" as const }, motion: { ...film.motion!, hand: "LH" as const, pass: true, cardScale: 1.5 }, reference: { status: "FINNS" as const, clips: ["pamela-p4-c1-plan-deal-02"], path: "assets/orders/x/reference.mp4", sha256: "a".repeat(64), seconds: 4, goesTo: "P4.C1", approvedStraight: true, dealer: "pamela" } };
-  assert.deepEqual([recipeOf(trial).hand, recipeOf(trial).style, recipeOf(trial).reference, recipeOf(trial).cardScale], ["PASS", "KORT", "pamela-p4-c1-plan-deal-02", 1.5]);
+  assert.deepEqual([recipeOf(trial).hand, recipeOf(trial).style, recipeOf(trial).longText, recipeOf(trial).reference, recipeOf(trial).cardScale], ["PASS", "KORT", false, "pamela-p4-c1-plan-deal-02", 1.5]);
+  assert.deepEqual([recipeOf({ ...trial, prompt: { ...trial.prompt, style: "MINIMAL" as const } }).style, recipeOf({ ...trial, prompt: { ...trial.prompt, style: "MINIMAL" as const } }).longText], ["MINIMAL", false]);
   assert.equal(referenceWords(trial.reference, "paow", { pamela: "Pamela" }), "pamela-p4-c1-plan-deal-02 · Pamelas film · 4 s", "another dealer's film is named");
   assert.equal(referenceWords(film.reference, "paow"), null);
   assert.equal(styleWords(film), "Utförlig · 414 ord", "the long text of tonight's deal");
@@ -206,6 +216,25 @@ test("a stored deal: its choices in words, and the text marked by the function i
   assert.deepEqual([...new Set(parts.filter((x) => x.text).map(markOf).filter(Boolean))], ["hand", "turn", "side", "bans"]);
   assert.equal(storedParts({ ...film, prompt: { ...film.prompt, text: film.prompt.text + " " } }, look, planAnswerOf(plan, file), "Paow"), null, "a text the function does not give is shown unmarked");
   assert.equal(storedParts(film, null, null, "Paow"), null);
+});
+
+test("an order stored in the long text (Utförlig) still shows its own text and the template it was stored with", async () => {
+  const all = await drafts();
+  const { plan, file } = await readPlan(process.cwd());
+  const { dealers } = JSON.parse(await readFile("data/dealers.json", "utf8"));
+  const look = dealers.find((d: { id: string }) => d.id === "paow").look;
+  // An approved still keeps a frozen text from an older wording (order-prompts.test.ts); every other long one reproduces.
+  const long = all.filter((o) => (o.prompt.style ?? "UTFÖRLIG") === "UTFÖRLIG" && !(o.kind === "STILL" && o.approval));
+  assert.ok(long.length >= 15, `${long.length} stored in the long text`);
+  for (const order of long) {
+    const parts = storedParts(order, look, planAnswerOf(plan, file), "Paow");
+    assert.ok(parts, `${order.id}: the screen reproduces the stored text`);
+    assert.equal(parts!.filter((x) => x.text).map((x) => x.text).join(" "), order.prompt.text, order.id);
+    const again = orderPrompt(order, { name: "Paow", look }, null, { asStored: true });
+    assert.deepEqual([again.style, again.template], ["UTFÖRLIG", order.prompt.template], `${order.id}: its own template name`);
+    assert.match(order.prompt.template, /@3$/, `${order.id}: the long text is template 3's`);
+    assert.equal(styleWords(order).split(" · ")[0], "Utförlig");
+  }
 });
 
 test("the production list's states each have a chip with a sign and a word, and the count says how far a round is", async () => {

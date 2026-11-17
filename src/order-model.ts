@@ -20,8 +20,12 @@ export type Kind = 'STILL' | 'FILM';
  * How the card turns: at its place after the carry, in Jakob's six steps of 2026-11-13 (nyp, dra, för fram, vrid, vänd
  * upp, lägg: brought forward back up and low along the felt, then rolled up onto its long edge and over at the place);
  * on the way by a turn of the wrist, the hand turned until the card lies (FREE; from template 9, Jakob 2026-11-17: "måste
- * hon vrida över handleden"; before, any turn a human hand can make, no fixed edge, Jakob 2026-11-12); or rolled about the
- * long side on the way as the bank's films do. Folding it over the short edge was an idea Jakob has dropped.
+ * hon vrida över handleden"; before, any turn a human hand can make, no fixed edge, Jakob 2026-11-12); or turned about the
+ * long side on the way like a key, as Pamela's films do, the hand turned until the card lies too (LONG_EDGE). Both turns on
+ * the way are valid (Jakob 2026-11-17: "Båda dessa två sätt är giltiga … både vrida som en nyckel samt den andra.
+ * Huvudsaken är att rätt sida kommer upp mot spelaren och att korten har symetriskt samma storlek som de rimligen borde
+ * ha, och/eller som väljs i labbet och att det är gult till blått som görs."). Folding it over the short edge was an idea
+ * Jakob has dropped.
  */
 export type FlipAxis = 'AT_PLACE' | 'FREE' | 'LONG_EDGE';
 export const FLIP_AXES: readonly FlipAxis[] = ['AT_PLACE', 'FREE', 'LONG_EDGE'];
@@ -33,12 +37,12 @@ export const FLIP_LABEL: Record<FlipAxis, string> = {
 export const FLIP_ABOUT: Record<FlipAxis, string> = {
   AT_PLACE: 'Nyp, dra, för fram, vrid, vänd upp, lägg: kortet förs fram med baksidan upp längs filten och vänds först vid platsen.',
   FREE: 'Handleden vrids över en gång med kortet: handflatan går från nedåt till uppåt och kortet följer med, blått upp. Handen är kvar vriden tills kortet ligger.',
-  LONG_EDGE: 'Som bankens filmer gör i dag.',
+  LONG_EDGE: 'Handleden vrider kortet kring långsidan som en nyckel (som Pamela): tummen upp, kortet rullar över en gång, blått upp. Handen är kvar vriden tills kortet ligger.',
 };
 /**
- * The turn a new deal starts with: where the plan turns it (Placering, "Var kortet vänds": at the place, or in the air as a
- * hand can). Jakob 2026-11-13: the orders are driven from Placering, so the plan's word rules here too; his six steps (the
- * turn at the place) are chosen there per card, not written over the plan by the step.
+ * The turn a new deal starts with: where the plan turns it (Placering, "Var kortet vänds": at the place, or on the way by a
+ * turn of the wrist). Jakob 2026-11-13: the orders are driven from Placering, so the plan's word rules here too; his six
+ * steps (the turn at the place) are chosen there per card, not written over the plan by the step.
  */
 export const defaultFlip = (_step: string, turnAt?: 'AIR' | 'PLACE' | null): FlipAxis => (turnAt === 'PLACE' ? 'AT_PLACE' : 'FREE');
 
@@ -62,19 +66,26 @@ export const handsOf = (choice: HandChoice): { hand: 'LH' | 'RH'; pass: boolean 
 /**
  * The text's style (template 4, 2026-11-13). KORT: only the movement in the order it happens, positive, nothing of her
  * look and no list of bans, the turn said once (the default for a film). MINIMAL: Jakob's trial: the card's colours and
- * that one card goes from the shoe to where the last picture shows it, nothing about how. UTFÖRLIG: the text of template 3
- * as it was, kept so that a comparison can be made again; every order made before template 4 is Utförlig. A still is
- * written Kort (what is there, said positively, no list of bans) or Utförlig; Minimal says nothing a still can use.
+ * that one card goes from the shoe to where the last picture shows it, nothing about how. UTFÖRLIG: the long text of
+ * template 3 (her look, every joint, the list of bans); every order made before template 4 is Utförlig. Its words go
+ * against today's rules (a drag becomes a lift, the turn is said without the wrist), so no new order is written with it
+ * (Jakob 2026-11-17: "Rensa gammalt otydligt skit i projektet"); it stays a style so that the orders stored with it are
+ * read and show their own text. A still is written Kort (what is there, said positively, no list of bans); Minimal says
+ * nothing a still can use.
  */
 export type TextStyle = 'KORT' | 'MINIMAL' | 'UTFÖRLIG';
+/** Every style a stored order can have. A new order takes one of stylesFor. */
 export const TEXT_STYLES: readonly TextStyle[] = ['KORT', 'MINIMAL', 'UTFÖRLIG'];
 export const STYLE_LABEL: Record<TextStyle, string> = { KORT: 'Kort', MINIMAL: 'Minimal', UTFÖRLIG: 'Utförlig' };
 export const STYLE_ABOUT: Record<TextStyle, string> = {
   KORT: 'Bara rörelsen, i den ordning den sker. Inget om hennes utseende, inga förbud; vändningen i en mening.',
   MINIMAL: 'Jakobs prov: kortets färger och att ett kort går från skon dit sista bilden visar. Inget om hur. Inte för en bild.',
-  UTFÖRLIG: 'Mall 3, som den var: hennes utseende, varje led och listan över det som inte får hända. För jämförelse.',
+  UTFÖRLIG: 'Den långa texten från de första beställningarna: hennes utseende, varje led och listan över det som inte får hända. Skrivs inte längre för en ny beställning.',
 };
-export const stylesFor = (kind: Kind, step?: { styles?: readonly TextStyle[] } | null): readonly TextStyle[] => step?.styles ?? (kind === 'STILL' ? ['KORT', 'UTFÖRLIG'] : TEXT_STYLES);
+const NEW_FILM_STYLES: readonly TextStyle[] = ['KORT', 'MINIMAL'];
+const NEW_STILL_STYLES: readonly TextStyle[] = ['KORT'];
+/** The styles a new order can be written in: the step's own, else Kort and Minimal (a still Kort only). Never Utförlig. */
+export const stylesFor = (kind: Kind, step?: { styles?: readonly TextStyle[] } | null): readonly TextStyle[] => step?.styles ?? (kind === 'STILL' ? NEW_STILL_STYLES : NEW_FILM_STYLES);
 /** A new order is written Kort, a still too; only an order made before template 4 reads as Utförlig (styleOf). */
 export const defaultStyle = (_kind?: Kind): TextStyle => 'KORT';
 /** A stored order's style: its own, else Utförlig (every order before template 4 was written with the long text). */
@@ -415,7 +426,7 @@ function dealWords(from: '2.1' | '2.2', dealerName: string, motion: SummaryMotio
     ? `${who} lägger det stängt, baksidan upp, på ${seat}`
     : flip === 'AT_PLACE'
       ? `${who} för fram det med baksidan upp, vänder upp det vid ${seat} och lägger det öppet`
-      : `${who} ${flip === 'LONG_EDGE' ? 'rullar det kring långsidan' : 'vänder det som en hand kan'} på vägen och lägger det öppet på ${seat}`;
+      : `${who} ${flip === 'LONG_EDGE' ? 'vrider det kring långsidan som en nyckel (som Pamela) på vägen' : 'vrider handleden och vänder kortet på vägen'} och lägger det öppet på ${seat}`;
   const back = oneWay ? 'filmen slutar med handen vid kortet (bara dit)' : pass || hand === 'RH' ? 'händerna går tillbaka till ankaret' : `handen går tillbaka ${from === '2.1' ? 'till nypet' : 'över skon'}`;
   return `Gör en film av ${dealerName}: ${take}${by}; ${lay}; ${back}.`;
 }

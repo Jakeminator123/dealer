@@ -1,5 +1,5 @@
 {
-  "about": "The dealers the studio orders pictures and films for. look is the one-paragraph description the order texts use (src/order-prompts.ts); anchors are found in data/media-roles.json by role (the entry that holds, gäller, without a card); the standard every anchor follows is data/dealer-standard.json. Pamela is paused (Jakob 2026-11-12: \"Vi pausar Pamela ... Sedan går vi vidare med Paow.\").",
+  "about": "The dealers the studio orders pictures and films for. look is the one-paragraph description of her that only the old long text (Utförlig, template 3) says, so only the orders stored in that style use it (src/order-prompts.ts); no new order is written Utförlig, and the short and minimal texts never describe her (the first picture shows her); anchors are found in data/media-roles.json by role (the entry that holds, gäller, without a card); the standard every anchor follows is data/dealer-standard.json. Pamela is paused (Jakob 2026-11-12: \"Vi pausar Pamela ... Sedan går vi vidare med Paow.\").",
   "schemaVersion": 1,
   "dealers": [
     {

@@ -17,10 +17,11 @@
 // "Skapa utkast" (beside the cost at the foot) makes the draft(s) (POST /api/orders) and opens "Det här skickas"; nothing
 // is approved here. Opened with values from the address (presetOf); the view mounts it anew per address, so the choices
 // start from what the address asks. With som=<id> every choice of that order is chosen (recipeOf), the pictures fetched
-// fresh from what holds now.
+// fresh from what holds now, the text written with today's template (Kort where the old order had the long text), and a
+// line says so.
 //
-// Template 4: the text (Kort förval, Minimal, Utförlig) with its length in words; tur och retur or bara dit for a deal, and
-// a return as its own film, where the seat's landing picture holds (else what is missing and how to get one); a
+// Template 4: the text (Kort förval, Minimal; a still Kort only) with its length in words; tur och retur or bara dit for
+// a deal, and a return as its own film, where the seat's landing picture holds (else what is missing and how to get one); a
 // reference film from the bank for a model that takes one; the card's size in this order (a trial). Only the dealers of
 // data/dealers.json are offered (the register may hold others).
 import { Clock } from "lucide-react";
@@ -435,6 +436,10 @@ export function NewOrder({ open, onOpenChange, all, preset, onCreated }: { open:
           <Step n={next()} title="Dealer">
             <SegmentedControl label="Dealer" value={dealerId} onChange={setDealerId} options={(orderable.length ? orderable : (all.dealers ?? [{ id: "paow", name: "Paow" }])).map((d) => ({ value: d.id, label: d.id === "pamela" ? `${d.name} (pausad)` : d.name }))} />
             {like ? <p className="text-xs text-brass-hi">Som {like.title}: alla val därifrån; bilderna hämtas som de gäller nu.</p> : null}
+            {/* The text is written with today's template; its name stands over the text ("mall …"). */}
+            {like && (r?.longText || (prompt && prompt.template !== like.prompt.template)) ? (
+              <p className="text-xs text-dim">Texten skrivs med dagens mall{r?.longText ? " och som Kort; den gamla långa texten skrivs inte längre" : ""}.</p>
+            ) : null}
           </Step>
           <Step n={next()} title="Vad">
             <div className="grid grid-cols-2 gap-x-4 gap-y-3">

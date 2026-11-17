@@ -1,5 +1,5 @@
 {
-  "about": "What every dealer's anchors agree on, and the order in which a new dealer's pictures are made. Cleaned from the Paow session's proposal (D:/dealer-scratch/tmp/paow/stabilt/dealer-standard-forslag.json, 2026-11-12). The table edge and the frame are the scene's and stand in data/scene-contract.json; this file points there. Measured values come from the bank's rest frame (frame 0 of pamela-idle-ready-entry-01); a value with \"estimate\" is not measured. The order texts of the view Beställ say the same in words (src/order-prompts.ts, STANDARD_STILL).",
+  "about": "What every dealer's anchors agree on, and the order in which a new dealer's pictures are made. Cleaned from the Paow session's proposal (D:/dealer-scratch/tmp/paow/stabilt/dealer-standard-forslag.json, 2026-11-12). The table edge and the frame are the scene's and stand in data/scene-contract.json; this file points there. Measured values come from the bank's rest frame (frame 0 of pamela-idle-ready-entry-01); a value with \"estimate\" is not measured. The still texts of the view Beställ say part of it in words (src/order-prompts.ts SAY.stillStandard: the elbows hanging free, the body ending on the straight line, one even green, soft frontal light); the film texts say nothing of it. STANDARD_STILL is the old long text's wording (Utförlig), read only by the orders stored in that style.",
   "schemaVersion": 1,
   "scene": {
     "contract": "data/scene-contract.json",
@@ -14,7 +14,7 @@
   },
   "aboveTheEdge": {
     "rule": "Nothing 10 levels or more darker than the green above the edge, further than 2 px from her, also at the shoe.",
-    "check": "kantkoll.py in D:/dealer-scratch/tmp/paow/skript/ (0 dark points and the body ending on rows 825–831) until it is ported to the repo"
+    "check": "edgeCheck in src/film-after.ts (ported from kantkoll.py; EDGE: above row 832, 10 levels darker, the body ending on rows 825–831): 0 dark points and the body ending on those rows"
   },
   "hands": {
     "about": "Rest pose, bank pixels (x, y).",

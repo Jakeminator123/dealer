@@ -5,7 +5,7 @@ import assert from 'node:assert/strict';
 import { readFile, readdir } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 import {
-  ALL_SEVEN, CARD_SCALES, MODELS, SEAT_TARGETS, STEPS, bodyLine, canonical, checkPolicy, costOf, crossesBody, cutIntoOf, dayOf, defaultFlip, defaultStyle, draftProblems, edgeOf, genitive, groupBudget, handChoiceOf, handsOf, hashInput, landingMissing, landingOf, lengthFor, modelFor, modelsFor, paramsOf, priceOf, referenceCandidates, requestOf, scaleQuad, scaleWords, seatList, seatWords, shownOf, spentOn, startWords, stepOf, styleOf, stylesFor, summaryOf, takeStates, tidyMotion, validateOrder, verdictOf, waitWords,
+  ALL_SEVEN, CARD_SCALES, FLIP_ABOUT, FLIP_AXES, MODELS, SEAT_TARGETS, STEPS, TEXT_STYLES, bodyLine, canonical, checkPolicy, costOf, crossesBody, cutIntoOf, dayOf, defaultFlip, defaultStyle, draftProblems, edgeOf, genitive, groupBudget, handChoiceOf, handsOf, hashInput, landingMissing, landingOf, lengthFor, modelFor, modelsFor, paramsOf, priceOf, referenceCandidates, requestOf, scaleQuad, scaleWords, seatList, seatWords, shownOf, spentOn, startWords, stepOf, styleOf, stylesFor, summaryOf, takeStates, tidyMotion, validateOrder, verdictOf, waitWords,
   type BankFacts, type Order, type Policy, type Receipt,
 } from '../src/order-model.ts';
 import { orderPrompt } from '../src/order-prompts.ts';
@@ -194,9 +194,13 @@ test('the steps: defaults from the plan, edges in the graph notation, and an ord
 
 test('one line on what an order makes, in Jakob\'s words', () => {
   assert.equal(summaryOf(stepOf('ANKARE-2.2')!, 'Paow', null), 'Gör Paows ankare 2.2: hennes ankare 1 där bara vänsterarmen flyttas, så att handen ligger över kortet vid skons öppning.');
-  assert.equal(summaryOf(stepOf('GIV-2.1')!, 'Paow', { turn: true, target: 'P4.C1' }), 'Gör en film av Paow: från ankare 2.1 (nyp) tar hon ett kort ur skon med vänster hand; hon vänder det som en hand kan på vägen och lägger det öppet på plats 4; handen går tillbaka till nypet.');
+  assert.equal(summaryOf(stepOf('GIV-2.1')!, 'Paow', { turn: true, target: 'P4.C1' }), 'Gör en film av Paow: från ankare 2.1 (nyp) tar hon ett kort ur skon med vänster hand; hon vrider handleden och vänder kortet på vägen och lägger det öppet på plats 4; handen går tillbaka till nypet.');
+  // The long side: like a key, Pamela's way (Jakob 2026-11-17: both turns on the way are valid).
+  assert.equal(summaryOf(stepOf('GIV-2.1')!, 'Paow', { turn: true, target: 'P4.C1', hand: 'LH', pass: false, side: 'FRONT', flipAxis: 'LONG_EDGE' }), 'Gör en film av Paow: från ankare 2.1 (nyp) tar hon ett kort ur skon med vänster hand; hon vrider det kring långsidan som en nyckel (som Pamela) på vägen och lägger det öppet på plats 4; handen går tillbaka till nypet.');
+  for (const flipAxis of FLIP_AXES) assert.doesNotMatch(summaryOf(stepOf('GIV-2.2')!, 'Paow', { turn: true, target: 'P4.C1', flipAxis }) + FLIP_ABOUT[flipAxis], /som en hand kan|bankens filmer/, `${flipAxis}: the words of 2026-11-12 are gone`);
+  assert.match(FLIP_ABOUT.LONG_EDGE, /som en nyckel \(som Pamela\).*kvar vriden tills kortet ligger/);
   assert.equal(summaryOf(stepOf('GIV-2.1')!, 'Paow', { turn: true, target: 'P4.C1', hand: 'LH', pass: false, side: 'FRONT', flipAxis: 'AT_PLACE' }), 'Gör en film av Paow: från ankare 2.1 (nyp) tar hon ett kort ur skon med vänster hand; hon för fram det med baksidan upp, vänder upp det vid plats 4 och lägger det öppet; handen går tillbaka till nypet.');
-  assert.equal(summaryOf(stepOf('GIV-2.2')!, 'Paow', { turn: true, target: 'P1.C1', hand: 'LH', pass: true, side: 'FRONT', flipAxis: 'FREE' }), 'Gör en film av Paow: från ankare 2.2 (släp) släpar hon ett kort ur skon med vänster hand och ger det till höger lågt framför kroppen; höger vänder det som en hand kan på vägen och lägger det öppet på plats 1; händerna går tillbaka till ankaret.');
+  assert.equal(summaryOf(stepOf('GIV-2.2')!, 'Paow', { turn: true, target: 'P1.C1', hand: 'LH', pass: true, side: 'FRONT', flipAxis: 'FREE' }), 'Gör en film av Paow: från ankare 2.2 (släp) släpar hon ett kort ur skon med vänster hand och ger det till höger lågt framför kroppen; höger vrider handleden och vänder kortet på vägen och lägger det öppet på plats 1; händerna går tillbaka till ankaret.');
   assert.equal(summaryOf(stepOf('GIV-2.2')!, 'Paow', { turn: false, target: 'P6.C1', hand: 'RH', pass: false, side: 'BACK' }), 'Gör en film av Paow: från ankare 2.2 (släp) släpar hon ett kort ur skon med höger hand; hon lägger det stängt, baksidan upp, på plats 6; händerna går tillbaka till ankaret.');
   assert.equal(startWords(stepOf('GIV-2.2')!), 'Börjar och slutar på ankare 2.2 (släp): handen över kortet i skons öppning.');
   assert.equal(startWords(stepOf('INGANG-2.1')!), 'Börjar på ankare 1 och slutar på ankare 2.1 (nyp): tummen och pekfingret på kortet i skons fönster.');
@@ -254,9 +258,13 @@ test('a group of drafts against the limits: what all cost and how many fit today
   assert.match(groupBudget(cost, 7, { ...p, enabled: false }, 0, 17884).words[0], /avstängda/);
 });
 
-test('the text style: Kort for every new order, no minimal still, Utförlig for an order made before template 4', () => {
+test('the text style: Kort for every new order, no minimal still, never Utförlig; Utförlig only read for an order made before template 4', () => {
   assert.deepEqual([defaultStyle('FILM'), defaultStyle('STILL')], ['KORT', 'KORT']);
-  assert.deepEqual(stylesFor('STILL'), ['KORT', 'UTFÖRLIG']);
+  assert.deepEqual(stylesFor('STILL'), ['KORT']);
+  assert.deepEqual(stylesFor('FILM'), ['KORT', 'MINIMAL']);
+  // A new order cannot be written in the long text: no step offers it (Jakob 2026-11-17, its words go against today's rules).
+  for (const s of STEPS) assert.ok(!stylesFor(s.kind, s).includes('UTFÖRLIG'), `${s.key}: no long text for a new order`);
+  assert.ok(TEXT_STYLES.includes('UTFÖRLIG'), 'a stored order in the long text still reads');
   assert.equal(styleOf({}), 'UTFÖRLIG', 'no style: the long text of template 3');
   assert.equal(styleOf({ style: 'MINIMAL' }), 'MINIMAL');
   const order = { schemaVersion: 1, id: 'x', title: 'x', dealer: 'paow', kind: 'FILM', step: { key: 'GIV-2.1', shape: 'ONE_WAY' }, pictures: [], generation: {}, prompt: { text: '', sha256: '', extra: null, style: 'LÅNG' }, takes: 1, cost: {}, reference: {}, status: 'UTKAST', approval: null, notes: [] };
@@ -377,10 +385,10 @@ test('the steps a round needs: the hole card as a deal\'s target, its turn from 
   assert.deepEqual(cutIntoOf(outDrag, null, 'ONE_WAY'), [], 'one edge');
   assert.match(startWords(outDrag), /^Börjar på ankare 2\.2 och slutar på ankare 1 \(vila\)/);
   assert.match(summaryOf(outDrag, 'Paow', null), /från handen över kortet vid skons öppning \(ankare 2\.2\) lyfter hon fingertopparna från kortet, och handen går tillbaka till vila/);
-  // Short or minimal only; the steps before keep every style of their kind.
+  // Short or minimal only, as every new film; a still Kort only.
   for (const s of [turn, out, outDrag]) assert.deepEqual(stylesFor(s.kind, s), ['KORT', 'MINIMAL']);
-  assert.deepEqual(stylesFor('FILM', stepOf('VILA')), ['KORT', 'MINIMAL', 'UTFÖRLIG']);
-  assert.deepEqual(stylesFor('STILL'), ['KORT', 'UTFÖRLIG']);
+  assert.deepEqual(stylesFor('FILM', stepOf('VILA')), ['KORT', 'MINIMAL']);
+  assert.deepEqual(stylesFor('STILL'), ['KORT']);
   // Every model that can make them takes their length; a reference film is chosen from the bank's takes of that edge.
   for (const s of [turn, out]) assert.ok(modelsFor(s).every((m) => !m.durations || (s.duration! >= m.durations[0] && s.duration! <= m.durations[1])), s.key);
   const bank: BankFacts = { jobs: [{ id: 'pamela-reveal-01', from: 'IDLE', to: 'REVEAL(D.C2)', duration: 4 }], motions: { 'pamela-reveal-01': { source: { frames: 120, fps: 30 }, review: { decision: 'ACCEPTED', userAccepted: true } } } };

@@ -483,7 +483,7 @@ export function orderStore(root: string, options: StoreOptions = {}) {
     if (input.pass !== undefined && typeof input.pass !== 'boolean') throw new StoreError(400, 'Handbyte ska vara sant eller falskt.');
     if (input.side !== undefined && input.side !== 'FRONT' && input.side !== 'BACK') throw new StoreError(400, 'Kortet landar FRONT (öppet) eller BACK (stängt).');
     const style = input.style ?? defaultStyle(step.kind);
-    if (!stylesFor(step.kind, step).includes(style)) throw new StoreError(400, step.styles ? `${step.label} skrivs ${step.styles.join(' eller ')}.` : step.kind === 'STILL' ? 'En bild skrivs KORT eller UTFÖRLIG.' : 'Texten är KORT, MINIMAL eller UTFÖRLIG.');
+    if (!stylesFor(step.kind, step).includes(style)) throw new StoreError(400, step.styles ? `${step.label} skrivs ${step.styles.join(' eller ')}.` : step.kind === 'STILL' ? 'En bild skrivs KORT.' : 'Texten är KORT eller MINIMAL; den långa texten (UTFÖRLIG) skrivs inte längre för en ny beställning.');
     const deal = step.card && step.start !== 'LAND';
     if (input.shape !== undefined && input.shape !== 'ROUND_TRIP' && input.shape !== 'ONE_WAY') throw new StoreError(400, 'En giv är ROUND_TRIP (tur och retur) eller ONE_WAY (bara dit).');
     if (input.shape !== undefined && !deal && input.shape !== 'ONE_WAY') throw new StoreError(400, 'Bara en giv kan gå tur och retur.');

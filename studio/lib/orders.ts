@@ -294,20 +294,22 @@ export function presetAddress(v: { dealer: string; step: StepKey; target: string
 
 /**
  * Every choice of an order, so that "Ny beställning som den här" opens the sheet with them chosen and one change gives a
- * clean comparison: dealer, step, seat, hand and handbyte, closed or open, the turn, the text's style (Utförlig for an
- * order before template 4), model, seconds, takes, Jakob's addition, the reference film, tur och retur or bara dit, the
- * card's size. The pictures are never taken from it: a new draft fetches what holds now.
+ * clean comparison: dealer, step, seat, hand and handbyte, closed or open, the turn, the text's style, model, seconds,
+ * takes, Jakob's addition, the reference film, tur och retur or bara dit, the card's size. An order written in the long
+ * text (Utförlig, every order before template 4) gives Kort, since no new order is written Utförlig (longText says so, for
+ * the sheet's line). The text is always written with today's template. The pictures are never taken from it: a new draft
+ * fetches what holds now.
  */
 export type Recipe = {
   dealer: string; step: StepKey; target: string | null; hand: HandChoice | null; side: "FRONT" | "BACK" | null; flipAxis: FlipAxis | null;
-  style: TextStyle; model: string; duration: number | null; takes: number; extra: string; reference: string | null; shape: Shape | null; cardScale: number;
+  style: TextStyle; longText: boolean; model: string; duration: number | null; takes: number; extra: string; reference: string | null; shape: Shape | null; cardScale: number;
 };
 export function recipeOf(order: Order): Recipe {
-  const m = order.motion, d = order.generation.params.duration;
+  const m = order.motion, d = order.generation.params.duration, style = styleOf(order.prompt);
   return {
     dealer: order.dealer, step: order.step.key, target: m?.target ?? null,
     hand: m ? handChoiceOf(m) : null, side: m?.side ?? null, flipAxis: m?.flipAxis ?? null,
-    style: styleOf(order.prompt), model: order.generation.model, duration: typeof d === "number" ? d : null, takes: order.takes,
+    style: style === "UTFÖRLIG" ? "KORT" : style, longText: style === "UTFÖRLIG", model: order.generation.model, duration: typeof d === "number" ? d : null, takes: order.takes,
     extra: order.prompt.extra ?? "", reference: order.reference.status === "FINNS" ? (order.reference.clips[0] ?? null) : null,
     shape: order.step.shape, cardScale: m?.cardScale ?? 1,
   };

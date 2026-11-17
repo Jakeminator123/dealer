@@ -131,7 +131,7 @@ export function methodFor(register: Pick<MethodRegister, 'methods'> | null, step
  */
 export function recipeWords(m: Method | null, withoutReference = false): string {
   if (!m || m.status === 'saknas' || !m.model) return 'ingen metod än';
-  const style = m.style === 'KORT' ? 'kort text' : m.style === 'MINIMAL' ? 'minimal text' : m.style === 'UTFÖRLIG' ? 'lång text' : null;
+  const style = m.style === 'KORT' ? 'kort text' : m.style === 'MINIMAL' ? 'minimal text' : null;
   const model = withoutReference && m.noReferenceModel ? m.noReferenceModel : m.model;
   const turn = m.turn && m.turn !== 'plan' ? FLIP_LABEL[m.turn].toLowerCase() : null;
   const reference = m.reference === 'ingen' ? null : withoutReference ? 'utan referensfilm (ingen finns till platsen)' : REFERENCE_LABEL[m.reference];

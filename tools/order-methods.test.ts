@@ -49,6 +49,10 @@ test('the live register holds, names only what exists, and covers every step of 
     }
   }
   for (const step of STEPS) assert.ok(methodFor(read, step.key, step.card ? 'P4.C1' : null), `${step.key} has a method`);
+  // No template number: an order's own template name says which text it was written with, and a number here goes stale.
+  assert.doesNotMatch(JSON.stringify(read), /\b[Mm]all \d/, 'no template number in the register');
+  // No method is the long text: a new order is never written Utförlig.
+  assert.ok(read!.methods.every((m) => m.style !== 'UTFÖRLIG'));
 });
 
 test('the method for a step and a seat: its class of seat first, else the one for every seat; the recipe in words', () => {
