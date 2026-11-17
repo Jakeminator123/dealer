@@ -4197,24 +4197,31 @@
   },
   "measures": [
     {
-      "id": "scen",
-      "name": "Scenkontraktet",
-      "decides": "Kameran och bordet: bordskanten på rad 831,5, homografin, kortets storlek per plats och ett riktigt kort på 63 × 88 mm. Uppmätt.",
-      "file": "data/scene-contract.json",
-      "link": "/scen/"
+      "id": "lins",
+      "name": "Bordets lins",
+      "decides": "Kameran som korten ritas med i kortplanen och i en beställnings sista bild: mätt på dealerns egen film, ett riktigt kort på 63 × 88 mm får sin storlek och form av var det ligger. Uppmätt 2026-11-17.",
+      "file": "src/table-lens.ts",
+      "link": "/bordet/"
     },
     {
       "id": "plan",
       "name": "Jakobs kortplan",
-      "decides": "Var korten ligger på bordet, plats för plats. Hans egen, sparas i Placering.",
+      "decides": "Var korten ligger på bordet och åt vilket håll, plats för plats. Storleken följer av linsen. Hans egen, sparas i Bordets Kortplan.",
       "file": "placements/default.json",
-      "link": "/placering/"
+      "link": "/bordet/"
+    },
+    {
+      "id": "scen",
+      "name": "Scenkontraktet",
+      "decides": "3D-scenens kamera och bord: bordskanten på rad 831,5 och homografin som spelets ritade kort ännu ställs med. En annan kamera än linsen; de ska bli en.",
+      "file": "data/scene-contract.json",
+      "link": "/bordet/?lage=scen"
     },
     {
       "id": "standard",
       "name": "Dealerstandarden",
-      "decides": "Hur en dealer sitter: händerna, knogbredden, grönt, ingen skugga ovanför kanten, skon per läge. Ett förslag, inte i repot än.",
-      "file": "D:/dealer-scratch/tmp/paow/stabilt/dealer-standard-forslag.json",
+      "decides": "Hur en dealer sitter i bankens bild: händerna, knogbredden, grönt, ingen skugga ovanför kanten, skon per läge. Gäller alla dealers.",
+      "file": "data/dealer-standard.json",
       "link": null
     }
   ]
