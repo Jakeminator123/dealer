@@ -1,6 +1,6 @@
 // The Placering view's thin helpers: places in Jakob's words, the draft with its undo and what differs from the saved plan,
 // the handles' arithmetic, numbers with a decimal comma, the view's address, what the cards can be laid over (the neutral
-// backdrop, the V6 picture, the films) and the way on to Beställ. The plan's own rules (where a card is drawn, how an edit
+// backdrop, the V6 picture, the films) and the way on to Beställ and back. The plan's own rules (where a card is drawn, how an edit
 // is made) are src/placement-model.ts. Pure: no DOM, no network; tests in studio/tests/placement.test.ts.
 import { isCurrent, playable, takeRole, ROLE_LABEL, type Graph } from "../../src/clip-graph.ts";
 import { SEAT_TARGETS } from "../../src/order-model.ts";
@@ -224,11 +224,25 @@ export function backdropForView(view: View, backdrop: string | null, films: read
 export function orderHref(place: Place): string | null {
   return SEAT_TARGETS.includes(place) ? `/bestall/?${new URLSearchParams({ ny: "1", plats: place }).toString()}` : null;
 }
+/**
+ * The way back to an order being made: Beställ's address with its values (lib/orders.ts presetAddress), which "Flytta
+ * kortets plats" hands to Placering as tillbaka=. Only an address of Beställ with plain words is taken; null otherwise.
+ */
+export function orderBack(value: string | null | undefined): string | null {
+  return value && /^\/bestall\/\?[A-Za-z0-9=&._%-]+$/.test(value) ? value : null;
+}
+/** Placering at one card (Dator, its default picture), from "Ny beställning": its "Tillbaka till beställningen" leads to `back`. */
+export function placingHref(place: Place, back: string | null): string {
+  const keep = new URLSearchParams();
+  if (orderBack(back)) keep.set("tillbaka", back!);
+  return `/placering/${placementQuery({ view: "native", place, backdrop: null, frame: 0 }, keep)}`;
+}
 
 // ── The address ─────────────────────────────────────────────────────────────
 // /placering/?vy=mobil&plats=p4c2&bakgrund=<film id | v6 | neutral>&ruta=40: the view, the chosen place, and what to lay the
 // cards over (a film with its frame, or a still). Nothing chosen is the default: Dator, P4C2 (the old lab's first place), the
-// view's default still. "robot" belongs to every lab page (src/preview-ui.ts) and is kept as it stands.
+// view's default still. "robot" belongs to every lab page (src/preview-ui.ts) and is kept as it stands, and so is tillbaka=
+// (orderBack), the order Jakob came from.
 export type PlacementAddress = { view: View; place: Place; backdrop: string | null; frame: number };
 type Params = { get(name: string): string | null };
 export const START_PLACE: Place = "P4.C2";
@@ -243,7 +257,7 @@ export function readPlacementAddress(params: Params): PlacementAddress {
     frame: Number.isSafeInteger(frame) && frame > 0 ? frame : 0,
   };
 }
-/** The address's question for a state, the lab's own words (robot) kept from `keep`. */
+/** The address's question for a state, the lab's own words (robot) and the way back to an order (tillbaka) kept from `keep`. */
 export function placementQuery(a: PlacementAddress, keep?: Params): string {
   const p = new URLSearchParams();
   if (a.view === "portrait") p.set("vy", "mobil");
@@ -252,6 +266,8 @@ export function placementQuery(a: PlacementAddress, keep?: Params): string {
     p.set("bakgrund", a.backdrop);
     if (!isStill(a.backdrop) && a.frame > 0) p.set("ruta", String(a.frame));
   }
+  const back = orderBack(keep?.get("tillbaka"));
+  if (back) p.set("tillbaka", back);
   const robot = keep?.get("robot");
   if (robot !== null && robot !== undefined) p.set("robot", robot);
   const text = p.toString();

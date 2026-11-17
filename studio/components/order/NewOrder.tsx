@@ -1,17 +1,23 @@
 "use client";
 
-// A new order, all on one sheet with defaults for everything. Left, the choices in Jakob's words: dealer → what (the step,
-// with the anchor it starts from said in a line) → place on the table (one seat, or "Alla sju": one draft per seat in a
-// group) → how the card lands (stängt → stängt, stängt → öppet; the plan's choice marked "enligt Placering") → which hand
-// (vänster hela vägen, höger hela vägen, handbyte as a tick; handbyte suggested where the left hand would cross her body)
-// → how the card turns → model (every model that can make the step, its own marked "förval"; resolution, lengths, cost and
-// text follow it), length, takes and his own addition. Right, what the choices turn into, changing as he
-// sets them: one line in Swedish, the pictures (first, last with the card drawn where the plan says, or the dealer's
-// picture and the pose) each with whose it is, the exact text with the parts a choice made marked (from promptFor, the
-// function the store writes the draft's text with), and the cost of all of it against the limits. "Skapa utkast" makes
-// the draft(s) (POST /api/orders) and opens "Det här skickas"; nothing is approved here. Opened with values from the
-// address (presetOf); the view mounts it anew per address, so the choices start from what the address asks. With som=<id>
-// every choice of that order is chosen (recipeOf), the pictures fetched fresh from what holds now.
+// A new order, all on one sheet with defaults for everything. It opens on the picture (Stage, Jakob 2026-11-17): his
+// notation for what is ordered ("A2.2 → P3C2 → A2.2") and one plain sentence, over the picture the film starts from with
+// every card place of the plan on it and the ordered card drawn where the plan lays it; a press on a place chooses that
+// card (a seat's second card too), "Flytta kortets plats" opens Placering at it with the way back here, and "Bordet" shows
+// the places on Placering's neutral table instead. Under the picture, what the choices turn into, changing as he sets
+// them: the order's line in Swedish, the pictures that are sent (first, last with the card drawn where the plan says, or
+// the dealer's picture and the pose) each with whose it is, the cost of all of it against the limits, and the exact text
+// with the parts a choice made marked (from promptFor, the function the store writes the draft's text with). Beside it
+// (under it on a phone), the choices in Jakob's words: dealer → what (the step, with the anchor it starts from said in a
+// line) → place on the table (one seat and its card 1 or 2, or "Alla sju": the first card to every player, one draft per
+// seat in a group) → how the card lands (stängt → stängt, stängt → öppet; the plan's choice marked "enligt Placering") →
+// which hand (vänster hela vägen, höger hela vägen, handbyte as a tick; handbyte suggested where the left hand would cross
+// her body) → how the card turns → model (every model that can make the step, its own marked "förval"; resolution,
+// lengths, cost and text follow it), length, takes and his own addition. The picture and the seat field stay in step.
+// "Skapa utkast" (beside the cost at the foot) makes the draft(s) (POST /api/orders) and opens "Det här skickas"; nothing
+// is approved here. Opened with values from the address (presetOf); the view mounts it anew per address, so the choices
+// start from what the address asks. With som=<id> every choice of that order is chosen (recipeOf), the pictures fetched
+// fresh from what holds now.
 //
 // Template 4: the text (Kort förval, Minimal, Utförlig) with its length in words; tur och retur or bara dit for a deal, and
 // a return as its own film, where the seat's landing picture holds (else what is missing and how to get one); a
@@ -23,18 +29,24 @@ import { asApiError } from "../../lib/api.ts";
 import { useBank } from "../../lib/bank.ts";
 import { labUrl } from "../../lib/lab.ts";
 import type { DealerAnswer, EntryAnswer, MediaAnswer } from "../../lib/media.ts";
-import { anchorFor, createOrder, firstLacking, recipeOf, stepGroups, type OrderAnswer, type OrdersAnswer, type Preset, type StepKey } from "../../lib/orders.ts";
+import {
+  SECOND_CARD, SECOND_CARD_WORDS, anchorFor, cardOf, createOrder, firstLacking, orderableCard, presetAddress, recipeOf, routeOf, seatKey, stepGroups, withCard,
+  type OrderAnswer, type OrdersAnswer, type Preset, type StepKey,
+} from "../../lib/orders.ts";
+import { placingHref } from "../../lib/placement.ts";
 import {
   ALL_SEVEN, CROSSING_WHY, FLIP_LABEL, HAND_LABEL, LANDS_LABEL, SEAT_TARGETS, SHAPE_LABEL, STEPS, STYLE_LABEL, TAKES_MAX,
   costOf, credits, defaultFlip, genitive, groupBudget, handChoiceOf, handsOf, landingMissing, landingOf, lengthFor, modelFor, modelsFor, paramsOf, referenceCandidates, scaleQuad, scaleWords, seatList, seatWords, startWords, stepOf, stylesFor, summaryOf,
   type BankFacts, type FlipAxis, type HandChoice, type ModelDef, type Owner, type SeatPlan, type Shape, type TextStyle,
 } from "../../../src/order-model.ts";
 import { promptFor, wordCount } from "../../../src/order-prompts.ts";
+import { NEUTRAL_BACKDROP } from "../../../src/placement-model.ts";
 import { getMedia } from "../material/client.ts";
 import { Button, SegmentedControl, Sheet, TextArea, cn, useToast } from "../ui";
 import { FlipChoice, HandChoiceRow, LandsChoice, ModelChoice, ReferenceChoice, ScaleChoice, ShapeChoice, TextChoice } from "./Choices";
 import { OwnerChip } from "./Pictures";
 import { PromptText } from "./PromptText";
+import { Stage, type StageBase, type StageCard, type StageLook } from "./Stage";
 
 const W = 1764,
   H = 1174;
@@ -121,6 +133,8 @@ export function NewOrder({ open, onOpenChange, all, preset, onCreated }: { open:
   const [refChoice, setRef] = useState<string | null>(r?.reference ?? null);
   const [scaleChoice, setScale] = useState(r?.cardScale ?? 1);
   const [shownSeat, setShownSeat] = useState<string | null>(null);
+  // The picture under the places: the dealer's own (what is sent) or Placering's neutral table.
+  const [stageLook, setStageLook] = useState<StageLook>("ankare");
   const [busy, setBusy] = useState(false);
   const toast = useToast();
   const { bank } = useBank();
@@ -258,6 +272,53 @@ export function NewOrder({ open, onOpenChange, all, preset, onCreated }: { open:
       </>
     );
 
+  // ── The picture it opens on ──
+  // A press on a place, like the seat field: that card alone ("Alla sju" ends).
+  const pick = (t: string) => {
+    setTarget(t);
+    setAllSeven(false);
+  };
+  const route = routeOf(step, targets, shape, dealerName);
+  const places = step.card && plan ? Object.values(plan.seats).filter((s) => orderableCard(s.target)) : [];
+  const onTable = stageLook === "bord" && places.length > 0;
+  // The picture the film starts from: the anchor; a return's landing picture (or, where none holds, the anchor it ends on);
+  // a still's dealer's picture.
+  const dealerBase: StageBase =
+    step.kind === "STILL"
+      ? { src: served(startEntry), name: `Dealerns bild · ${entryName(startEntry, dealerName, step.from)}`, waiting: startEntry ? null : `ankare ${step.from}` }
+      : step.start === "LAND"
+        ? landing
+          ? { src: served(landing), frame: frameOf(landing), name: `${genitive(dealerName)} landning på ${seatWords(focus)}` }
+          : { src: served(end), name: entryName(end, dealerName, step.to ?? step.from), waiting: end ? null : `ankare ${step.to}`, dim: true }
+        : { src: served(start.holds), name: entryName(start.holds, dealerName, step.from), waiting: start.holds ? null : `ankare ${step.from}` };
+  const stageBase: StageBase = onTable ? { src: labUrl(NEUTRAL_BACKDROP.native), name: "Studions bord med siluett" } : dealerBase;
+  // The ordered card(s) where the plan lays them, at the order's size; in a return the landing picture holds the card already.
+  const stageCards: StageCard[] = step.cards?.length
+    ? step.cards.flatMap((c) => (seatOf(c.target) ? [{ target: c.target, quad: seatOf(c.target)!.quad, side: c.before, filled: true, ring: true }] : []))
+    : step.card
+      ? targets.flatMap((t) => {
+          const s = seatOf(t);
+          return s ? [{ target: t, quad: step.start === "LAND" ? s.quad : scaleQuad(s.quad, cardScale).quad, side: sideAt(t), filled: onTable || !(step.start === "LAND" && landing), ring: t === focus }] : [];
+        })
+      : [];
+  const moved = step.card ? focus : (step.target ?? null);
+  const move = moved ? placingHref(moved, presetAddress({ dealer: dealerId, step: key, target: seven ? null : target, all: seven, model: model.id !== step.model ? model.id : null })) : null;
+  const caption = onTable
+    ? "Studions bord med en siluett, som i Placering: bara för att se var kortet ligger. Det som skickas är dealerns egen bild."
+    : step.kind === "STILL"
+      ? `${dealerBase.name}: bilden som ändras.`
+      : step.cards?.length
+        ? `${dealerBase.name} med hålkortet stängt: första bilden.`
+        : step.start === "LAND"
+          ? landing
+            ? `${dealerBase.name}: första bilden.`
+            : `Ingen landningsbild för ${seatWords(focus)} än; bilden är ${dealerBase.name}.`
+          : step.card
+            ? oneWay
+              ? `${dealerBase.name}: första bilden. Kortet visar var det landar; sista bilden är landningsbilden.`
+              : `${dealerBase.name} med ${seven ? "korten där planen lägger dem" : "kortet där planen lägger det"}: så ser sista bilden ut.`
+            : `${dealerBase.name}: första bilden.`;
+
   const create = async () => {
     setBusy(true);
     try {
@@ -290,8 +351,10 @@ export function NewOrder({ open, onOpenChange, all, preset, onCreated }: { open:
       open={open}
       onOpenChange={onOpenChange}
       title="Ny beställning"
-      subtitle="Allt har förval. Till höger ser du vad valen blir; utkastet godkänns sedan i Det här skickas."
+      subtitle="Allt har förval. Välj kortets plats på bilden; utkastet godkänns sedan i Det här skickas."
       width={1280}
+      // On a phone the sheet takes the whole width (the default leaves 96 px of the page beside it).
+      className="max-sm:w-screen!"
       modal
       footer={
         <>
@@ -308,9 +371,67 @@ export function NewOrder({ open, onOpenChange, all, preset, onCreated }: { open:
         </>
       }
     >
-      <div className="-my-4 grid h-[calc(100%+2rem)] grid-cols-[minmax(0,440px)_minmax(0,1fr)] gap-6">
+      {/* Wide: the picture and what it turns into on the left, the choices on the right, each scrolling on its own. On a
+          phone one column: the picture, the choices, then what it turns into (the left column's box gives way, "contents"). */}
+      <div className="flex flex-col gap-6 lg:-my-4 lg:grid lg:h-[calc(100%+2rem)] lg:grid-cols-[minmax(0,1fr)_minmax(0,420px)]">
+        <div className="contents lg:flex lg:min-h-0 lg:flex-col lg:gap-5 lg:overflow-y-auto lg:py-4 lg:pr-2">
+          <div className="order-1">
+            <Stage route={route} base={stageBase} places={places} cards={stageCards} chosen={step.card && !seven ? target : null} onPick={pick} move={move} look={stageLook} onLook={setStageLook} caption={caption} />
+          </div>
+          {/* What it turns into */}
+          <div className="order-3 flex flex-col gap-5">
+            {step.card || step.kind === "STILL" ? <p className="text-sm leading-[21px] text-ink">{summary}</p> : null}
+            {step.card && motion ? (
+              <p className="-mt-3.5 text-sm text-dim">
+                {HAND_LABEL[handChoiceOf(motion)]} · {LANDS_LABEL[motion.side]}
+                {motion.side === "FRONT" && step.start !== "LAND" ? ` · ${FLIP_LABEL[flipAxis]}` : ""}
+                {shape && deal ? ` · ${SHAPE_LABEL[shape]}` : ""}
+                {cardScale !== 1 ? ` · prov: kortet ${scaleWords(cardScale)} av planens` : ""}
+                {seven ? ` · visar ${seatWords(focus)} av sju` : ""}
+              </p>
+            ) : null}
+            <section className="flex flex-col gap-2">
+              <h4 className="text-xs font-medium uppercase tracking-[0.08em] text-faint">Bilderna som skickas</h4>
+              <div className="grid grid-cols-2 gap-3">{pictures}</div>
+              {step.kind === "STILL" ? <p className="text-xs text-dim">Posebilden är bara armen, handen och skon: {pose?.label ?? "ur den andra dealerns bild"}; resten av henne är bortklippt, och det gröna görs som ankarets.</p> : null}
+            </section>
+            <section className="flex flex-col gap-1.5">
+              <h4 className="text-xs font-medium uppercase tracking-[0.08em] text-faint">Kostnad</h4>
+              {cost && budget ? (
+                <>
+                  <p className="text-md tabular-nums text-ink">
+                    {count > 1 ? `${count} utkast × ` : ""}
+                    {takes} tagningar × {credits(cost.perTake)} = {credits(budget.total)} krediter
+                    {budget.worstTotal > budget.total ? <span className="text-dim"> (högst {credits(budget.worstTotal)})</span> : null}
+                  </p>
+                  {budget.words.map((w) => (
+                    <p key={w} className={cn("text-sm", /räcker till|inget|avstängda/.test(w) ? "text-[#f0b07a]" : "text-dim")}>
+                      {w}
+                    </p>
+                  ))}
+                  <p className="text-xs text-faint">
+                    Taken: {credits(all.policy?.maxPerOrder ?? 0)} per beställning, {credits(all.day.cap)} per dag, golv {credits(all.policy?.minBalance ?? 0)}. {cost.basis}
+                  </p>
+                </>
+              ) : (
+                <p className="text-sm text-[#ef8b8b]">Inget pris för de här värdena i data/order-policy.json.</p>
+              )}
+            </section>
+            <section className="flex flex-col gap-2">
+              <h4 className="flex flex-wrap items-center gap-x-3 text-xs font-medium uppercase tracking-[0.08em] text-faint">
+                Texten som skickas
+                {prompt ? <span className="font-normal normal-case tracking-normal text-dim">{STYLE_LABEL[prompt.style]} · {wordCount(prompt.text)} ord · {prompt.text.length.toLocaleString("sv-SE")} tecken · mall {prompt.template}</span> : null}
+              </h4>
+              {seven && step.card ? (
+                <SegmentedControl label="Visa texten för" size="sm" value={focus ?? ""} onChange={setShownSeat} options={targets.map((t) => ({ value: t, label: `${t.replace(".C1", "")}${handsAt(t).pass ? " · byte" : ""}` }))} />
+              ) : null}
+              {prompt ? <PromptText text={prompt.text} parts={prompt.parts} /> : <p className="text-sm text-[#f0b07a]">Labbservern behöver startas om för att visa texten här (den saknar dealerns utseende och planen).</p>}
+            </section>
+          </div>
+        </div>
+
         {/* The choices */}
-        <div className="min-h-0 overflow-y-auto py-4 pr-2">
+        <div className="order-2 min-w-0 lg:min-h-0 lg:overflow-y-auto lg:border-l lg:border-line lg:py-4 lg:pl-6">
           <Step n={next()} title="Dealer">
             <SegmentedControl label="Dealer" value={dealerId} onChange={setDealerId} options={(orderable.length ? orderable : (all.dealers ?? [{ id: "paow", name: "Paow" }])).map((d) => ({ value: d.id, label: d.id === "pamela" ? `${d.name} (pausad)` : d.name }))} />
             {like ? <p className="text-xs text-brass-hi">Som {like.title}: alla val därifrån; bilderna hämtas som de gäller nu.</p> : null}
@@ -347,14 +468,13 @@ export function NewOrder({ open, onOpenChange, all, preset, onCreated }: { open:
             <>
               <Step n={next()} title="Plats på bordet">
                 <div className="flex flex-wrap items-center gap-2">
+                  {/* A player's seat keeps the card number chosen (P3 kort 2 → P5 kort 2); the dealer's two cards are seats. */}
                   <SegmentedControl
                     label="Plats"
                     size="sm"
-                    value={seven ? "" : target}
-                    onChange={(t) => {
-                      setTarget(t);
-                      setAllSeven(false);
-                    }}
+                    className="max-w-full flex-wrap"
+                    value={seven ? "" : seatKey(target)}
+                    onChange={(t) => pick(withCard(t, cardOf(target)))}
                     options={SEAT_TARGETS.map((t) => ({ value: t, label: t === "D.C1" ? "Dealer" : t === "D.C2" ? "Hålkort" : t.replace(".C1", ""), title: seatOf(t)?.crosses ? `${seatWords(t)}: vänsterhanden korsar kroppen` : seatWords(t) }))}
                   />
                   {step.start !== "LAND" ? (
@@ -363,7 +483,25 @@ export function NewOrder({ open, onOpenChange, all, preset, onCreated }: { open:
                     </button>
                   ) : null}
                 </div>
-                <p className="text-xs text-dim">{seven ? "Första kortet till varje spelare: ett utkast per plats, i en grupp, var och ett med sin text och sin sista bild." : `Ett kort till ${seatWords(target)}.`}</p>
+                {!seven && /^P/.test(target) ? (
+                  <div className="flex items-center gap-2 text-sm">
+                    <span className="text-dim">Kort</span>
+                    <SegmentedControl
+                      label="Kort"
+                      size="sm"
+                      value={cardOf(target)}
+                      onChange={(n) => pick(withCard(target, n))}
+                      options={[
+                        { value: 1 as const, label: "1", title: `Första kortet på ${seatWords(withCard(target, 1))}` },
+                        { value: 2 as const, label: "2", title: `Andra kortet på ${seatWords(withCard(target, 1))}` },
+                      ]}
+                    />
+                  </div>
+                ) : null}
+                <p className="text-xs text-dim">
+                  {seven ? "Första kortet till varje spelare: ett utkast per plats, i en grupp, var och ett med sin text och sin sista bild." : `Ett kort till ${seatWords(target)}.`}
+                  {!seven && SECOND_CARD.test(target) ? ` ${SECOND_CARD_WORDS}` : ""}
+                </p>
               </Step>
               {deal ? (
                 <Step n={next()} title="Tur och retur eller bara dit">
@@ -424,7 +562,7 @@ export function NewOrder({ open, onOpenChange, all, preset, onCreated }: { open:
             ) : null}
             <div className="flex flex-wrap items-center gap-3 text-sm">
               {models.length > 1 ? <span className="text-dim">Längd</span> : <span className="text-ink">{model.label}</span>}
-              {durations.length ? <SegmentedControl label="Längd" size="sm" value={seconds} onChange={(s) => setDuration({ key, seconds: s })} options={durations.map((d) => ({ value: d, label: `${d} s` }))} /> : <span className="text-dim">{step.imageSize} · {step.ratio}</span>}
+              {durations.length ? <SegmentedControl label="Längd" size="sm" className="max-w-full flex-wrap" value={seconds} onChange={(s) => setDuration({ key, seconds: s })} options={durations.map((d) => ({ value: d, label: `${d} s` }))} /> : <span className="text-dim">{step.imageSize} · {step.ratio}</span>}
               {durations.length ? <span className="text-dim">{resolutionWords(params)}</span> : null}
             </div>
             {model.videos ? (
@@ -441,59 +579,6 @@ export function NewOrder({ open, onOpenChange, all, preset, onCreated }: { open:
             </div>
             <TextArea label="Eget tillägg (valfritt, engelska)" value={extra} onChange={(e) => setExtra(e.target.value)} maxLength={600} rows={2} />
           </Step>
-        </div>
-
-        {/* What it turns into */}
-        <div className="min-h-0 overflow-y-auto border-l border-line py-4 pl-6">
-          <div className="flex flex-col gap-5">
-            <p className="font-display text-lg font-semibold leading-7 text-ink">{summary}</p>
-            {step.card && motion ? (
-              <p className="-mt-3 text-sm text-dim">
-                {HAND_LABEL[handChoiceOf(motion)]} · {LANDS_LABEL[motion.side]}
-                {motion.side === "FRONT" && step.start !== "LAND" ? ` · ${FLIP_LABEL[flipAxis]}` : ""}
-                {shape && deal ? ` · ${SHAPE_LABEL[shape]}` : ""}
-                {cardScale !== 1 ? ` · prov: kortet ${scaleWords(cardScale)} av planens` : ""}
-                {seven ? ` · visar ${seatWords(focus)} av sju` : ""}
-              </p>
-            ) : null}
-            <section className="flex flex-col gap-2">
-              <h4 className="text-xs font-medium uppercase tracking-[0.08em] text-faint">Bilderna som skickas</h4>
-              <div className="grid grid-cols-2 gap-3">{pictures}</div>
-              {step.kind === "STILL" ? <p className="text-xs text-dim">Posebilden är bara armen, handen och skon: {pose?.label ?? "ur den andra dealerns bild"}; resten av henne är bortklippt, och det gröna görs som ankarets.</p> : null}
-            </section>
-            <section className="flex flex-col gap-1.5">
-              <h4 className="text-xs font-medium uppercase tracking-[0.08em] text-faint">Kostnad</h4>
-              {cost && budget ? (
-                <>
-                  <p className="text-md tabular-nums text-ink">
-                    {count > 1 ? `${count} utkast × ` : ""}
-                    {takes} tagningar × {credits(cost.perTake)} = {credits(budget.total)} krediter
-                    {budget.worstTotal > budget.total ? <span className="text-dim"> (högst {credits(budget.worstTotal)})</span> : null}
-                  </p>
-                  {budget.words.map((w) => (
-                    <p key={w} className={cn("text-sm", /räcker till|inget|avstängda/.test(w) ? "text-[#f0b07a]" : "text-dim")}>
-                      {w}
-                    </p>
-                  ))}
-                  <p className="text-xs text-faint">
-                    Taken: {credits(all.policy?.maxPerOrder ?? 0)} per beställning, {credits(all.day.cap)} per dag, golv {credits(all.policy?.minBalance ?? 0)}. {cost.basis}
-                  </p>
-                </>
-              ) : (
-                <p className="text-sm text-[#ef8b8b]">Inget pris för de här värdena i data/order-policy.json.</p>
-              )}
-            </section>
-            <section className="flex flex-col gap-2">
-              <h4 className="flex items-center gap-3 text-xs font-medium uppercase tracking-[0.08em] text-faint">
-                Texten som skickas
-                {prompt ? <span className="font-normal normal-case tracking-normal text-dim">{STYLE_LABEL[prompt.style]} · {wordCount(prompt.text)} ord · {prompt.text.length.toLocaleString("sv-SE")} tecken · mall {prompt.template}</span> : null}
-              </h4>
-              {seven && step.card ? (
-                <SegmentedControl label="Visa texten för" size="sm" value={focus ?? ""} onChange={setShownSeat} options={targets.map((t) => ({ value: t, label: `${t.replace(".C1", "")}${handsAt(t).pass ? " · byte" : ""}` }))} />
-              ) : null}
-              {prompt ? <PromptText text={prompt.text} parts={prompt.parts} /> : <p className="text-sm text-[#f0b07a]">Labbservern behöver startas om för att visa texten här (den saknar dealerns utseende och planen).</p>}
-            </section>
-          </div>
         </div>
       </div>
     </Sheet>

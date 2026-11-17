@@ -7,9 +7,11 @@
 // backdrop (the studio's own table with a neutral figure; no dealer's picture), or the V6 picture or a film when chosen; in
 // Mobil the V6 picture. A brass mark says what is not saved; Ångra goes a step back, "Till sparat" all the way, and Ändrat |
 // Sparat (key X) flips the picture between the two. Nothing is written to placements/default.json until Jakob presses Spara.
-// "Beställ film hit" takes a place that has a film of its own on to Beställ. In the online copy the view only shows.
+// "Beställ film hit" takes a place that has a film of its own on to Beställ. Opened from "Ny beställning" ("Flytta kortets
+// plats", tillbaka= in the address), "Tillbaka till beställningen" leads back to that order with its values; what is not
+// saved here is not what the order draws, so it says so. In the online copy the view only shows.
 // Must be inside <Suspense> (useSearchParams).
-import { Minus, Plus, RotateCcw, Save, Send, Undo2 } from "lucide-react";
+import { ArrowLeft, Minus, Plus, RotateCcw, Save, Send, Undo2 } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -19,7 +21,7 @@ import { useViewContext } from "../../lib/context.ts";
 import { labUrl } from "../../lib/lab.ts";
 import { isSnapshot, swedishMoment } from "../../lib/mode.ts";
 import {
-  GREEN_FILM, VIEW_WORD, backdropForView, bankFilms, changedPlaces, defaultStill, filmView, libraryFilms, nudged, orderHref, placeCode, placeName, placementQuery,
+  GREEN_FILM, VIEW_WORD, backdropForView, bankFilms, changedPlaces, defaultStill, filmView, libraryFilms, nudged, orderBack, orderHref, placeCode, placeName, placementQuery,
   readPlacementAddress, shownBackdrop, stillChoice, stillLabel, stillsOf, type Film,
 } from "../../lib/placement.ts";
 import { readLibrary } from "../../lib/placement-api.ts";
@@ -41,6 +43,8 @@ const filmLabel = (film: Film) => (film.id === GREEN_FILM ? "Grön film · P4C2"
 export function PlacementView() {
   const params = useSearchParams();
   const [first] = useState(() => readPlacementAddress(params));
+  // The order Jakob came from ("Flytta kortets plats" in Ny beställning), kept in the address by placementQuery.
+  const [back] = useState(() => (isSnapshot ? null : orderBack(params.get("tillbaka"))));
   const [view, setView] = useState<View>(first.view);
   const [place, setPlace] = useState<Place>(first.place);
   // a film id, "v6" or "neutral"; null is the view's own default (Dator: neutral, Mobil: V6)
@@ -313,12 +317,23 @@ export function PlacementView() {
               ) : null}
             </div>
             <SlotPicker plan={plan} view={view} selected={place} changed={showSaved ? new Set() : changed} onSelect={choose} />
-            {order ? (
-              <Link href={order} className={buttonClasses({ variant: "quiet", size: "sm", className: "-ml-2.5 self-start" })} title={`En ny beställning i Beställ, med filmen till ${placeCode(place)}`}>
-                <Send aria-hidden />
-                Beställ film hit
-              </Link>
+            {order || back ? (
+              <div className="-ml-2.5 flex flex-wrap items-center gap-x-1">
+                {back ? (
+                  <Link href={back} className={buttonClasses({ variant: "quiet", size: "sm" })} title="Till Ny beställning i Beställ, med valen du gjorde där">
+                    <ArrowLeft aria-hidden />
+                    Tillbaka till beställningen
+                  </Link>
+                ) : null}
+                {order ? (
+                  <Link href={order} className={buttonClasses({ variant: "quiet", size: "sm" })} title={`En ny beställning i Beställ, med filmen till ${placeCode(place)}`}>
+                    <Send aria-hidden />
+                    Beställ film hit
+                  </Link>
+                ) : null}
+              </div>
             ) : null}
+            {back && draft.dirty ? <p className="text-xs text-brass-hi">Spara först: beställningen ritar kortet där den sparade planen lägger det.</p> : null}
           </div>
           <Tabs
             label="Inställningar"

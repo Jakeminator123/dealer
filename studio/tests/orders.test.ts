@@ -5,8 +5,12 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFile, readdir } from "node:fs/promises";
-import { HANDOVER, PRESET_PARAMS, SHOWN_CHIP, anchorFor, costWords, firstLacking, goesWords, markOf, motionWords, offsetWords, ownerWords, paramRows, picturesInOrder, presetOf, recipeOf, referenceWords, sections, shownWords, storedParts, styleWords, type Order, type OrderAnswer } from "../lib/orders.ts";
-import { MODELS, SHOWN_LABEL } from "../../src/order-model.ts";
+import {
+  HANDOVER, PRESET_PARAMS, SHOWN_CHIP, anchorFor, cardOf, costWords, firstLacking, goesWords, markOf, motionWords, offsetWords, orderableCard, ownerWords, paramRows, picturesInOrder, presetAddress, presetOf, recipeOf, referenceWords, routeOf,
+  seatKey, sections, shownWords, storedParts, styleWords, withCard, type Order, type OrderAnswer,
+} from "../lib/orders.ts";
+import { parseJakob } from "../lib/names.ts";
+import { ALL_SEVEN, MODELS, SHOWN_LABEL, STEPS, cutIntoOf, stepOf, type StepKey } from "../../src/order-model.ts";
 import { planAnswerOf } from "../../tools/order-store.ts";
 import { readPlan } from "../../tools/order-images.ts";
 
@@ -112,6 +116,54 @@ test("a new order asked for by address: dealer, step and seat, or the seat's pla
   assert.deepEqual(q("ny=1&som=paow-giv-p4"), { dealer: null, step: null, target: null, all: false, model: null, like: "paow-giv-p4" }, "a new order like an old one");
   assert.equal(q("ny=1&som=../x")?.like, undefined, "only an order's id");
   assert.ok(PRESET_PARAMS.includes("som"));
+  // A seat's second card, as the picture chooses it (Jakob 2026-11-17: "A2.2 till P3C2 och tillbaka till A2.2").
+  assert.deepEqual(q("ny=1&dealer=paow&steg=GIV-2.2&plats=P3.C2"), { dealer: "paow", step: "GIV-2.2", target: "P3.C2", all: false, model: null });
+  assert.equal(q("ny=1&plats=p3.c2")?.target, "P3.C2");
+  for (const no of ["P3.C3", "P8.C2", "D.C3", "SKO"]) assert.equal(q(`ny=1&plats=${no}`)?.target, null, no);
+  // The address "Flytta kortets plats" hands to Placering reads back as the same values.
+  const back = presetAddress({ dealer: "paow", step: "GIV-2.2", target: "P3.C2", model: null });
+  assert.equal(back, "/bestall/?ny=1&dealer=paow&steg=GIV-2.2&plats=P3.C2");
+  assert.deepEqual(q(back.split("?")[1]), { dealer: "paow", step: "GIV-2.2", target: "P3.C2", all: false, model: null });
+  assert.deepEqual(q(presetAddress({ dealer: "paow", step: "GIV-2.1", target: "P4.C1", all: true, model: "kling-4" }).split("?")[1]), { dealer: "paow", step: "GIV-2.1", target: null, all: true, model: "kling-4" });
+});
+
+test("the card an order goes to: every card of the plan, a seat's second card too; the seat field and the card number stay in step", async () => {
+  const { plan, file } = await readPlan(process.cwd());
+  const p = planAnswerOf(plan, file);
+  assert.deepEqual(Object.keys(p.seats).filter((t) => !orderableCard(t)), [], "every card of the plan can be pressed");
+  for (const no of ["P3.C3", "P8.C1", "D.C3", "SHOE", "", null]) assert.equal(orderableCard(no), false, String(no));
+  assert.deepEqual(["P3.C2", "P3.C1", "D.C1", "D.C2"].map(seatKey), ["P3.C1", "P3.C1", "D.C1", "D.C2"]);
+  assert.deepEqual(["P3.C2", "P3.C1", "D.C2"].map(cardOf), [2, 1, 1]);
+  assert.deepEqual([withCard("P5.C1", 2), withCard("P3.C2", 1), withCard("D.C1", 2), withCard("D.C2", 1)], ["P5.C2", "P3.C1", "D.C1", "D.C2"]);
+  // Choosing seat 5 in the field while P3 kort 2 is chosen: P5 kort 2, as the picture would show it.
+  assert.equal(withCard(seatKey("P5.C1"), cardOf("P3.C2")), "P5.C2");
+});
+
+test("what is ordered, in his notation and one sentence: the edges the film is filed under, read back by his own parser", () => {
+  const route = (key: StepKey, targets: string[], shape: "ROUND_TRIP" | "ONE_WAY" | null = null) => routeOf(stepOf(key)!, targets, shape, "Paow");
+  const example = route("GIV-2.2", ["P3.C2"], "ROUND_TRIP");
+  assert.deepEqual([example.line, example.sentence], ["A2.2 → P3C2 → A2.2", "Släp: ett kort till plats 3, kort 2, och tillbaka över skon."]);
+  assert.deepEqual(parseJakob(example.line), { steps: [{ from: "READY-B", to: "P3.C2" }, { from: "P3.C2", to: "READY-B" }], errors: [] }, "the line is his notation");
+  assert.deepEqual(example.nodes, ["READY-B", "P3.C2", "READY-B"]);
+  assert.deepEqual(cutIntoOf(stepOf("GIV-2.2")!, "P3.C2", "ROUND_TRIP"), ["READY-B>P3.C2", "P3.C2>READY-B"], "the same edges the store files the film under");
+  const said = (key: StepKey, targets: string[], shape: "ROUND_TRIP" | "ONE_WAY" | null = null) => { const r = route(key, targets, shape); return [r.line, r.sentence]; };
+  assert.deepEqual(said("GIV-2.1", ["P4.C1"], "ROUND_TRIP"), ["A2.1 → P4C1 → A2.1", "Nyp: ett kort till plats 4, och tillbaka till nypet."]);
+  assert.deepEqual(said("GIV-2.1", ["P4.C1"], "ONE_WAY"), ["A2.1 → P4C1", "Nyp: ett kort till plats 4, bara dit."]);
+  assert.deepEqual(said("GIV-2.2", [...ALL_SEVEN], "ROUND_TRIP"), ["A2.2 → P1C1–P7C1 → A2.2", "Släp: ett kort till var och en av plats 1–7, och tillbaka över skon."]);
+  assert.deepEqual(said("GIV-2.1", ["D.C2"], "ROUND_TRIP"), ["A2.1 → DC2 → A2.1", "Nyp: ett kort till dealerns hålkort, och tillbaka till nypet."]);
+  assert.deepEqual(said("RETUR-2.2", ["P3.C2"], "ONE_WAY"), ["P3C2 → A2.2", "Tillbaka över skon, från kortet på plats 3, kort 2."]);
+  assert.deepEqual(said("RETUR-1", ["P4.C1"], "ONE_WAY"), ["P4C1 → A1", "Tillbaka till vila, från kortet på plats 4."]);
+  assert.deepEqual(said("INGANG-2.1", [], "ONE_WAY"), ["A1 → A2.1", "Från vila (ankare 1) flyttar hon vänsterhanden till nypet vid skon (ankare 2.1)."]);
+  assert.deepEqual(said("VILA", [], "ONE_WAY")[0], "A1 → A1");
+  assert.match(said("VILA", [], "ONE_WAY")[1], /^Hon sitter still/);
+  assert.deepEqual(said("HALKORT", [], "ONE_WAY")[0], "A1 → DC2 upp");
+  assert.deepEqual(said("ANKARE-2.2", []), ["A1 → bild A2.2", "Bild: ankare 2.2 görs ur ankare 1."]);
+  // Every step has a line and a sentence, and every film's line reads back without an error.
+  for (const s of STEPS) {
+    const r = routeOf(s, s.card ? ["P4.C1"] : [], s.kind === "FILM" ? (s.card && s.start !== "LAND" ? "ROUND_TRIP" : "ONE_WAY") : null, "Paow");
+    assert.ok(r.line && r.sentence.endsWith("."), s.key);
+    if (s.kind === "FILM") assert.deepEqual(parseJakob(r.line).errors, [], `${s.key}: ${r.line}`);
+  }
 });
 
 test("a new order like an old one: every choice of it, never its pictures", async () => {

@@ -2,14 +2,16 @@
 // The order's shape, the exact call per take and the cost come from ../../src/order-model.ts (built in, never copied):
 // "Det här skickas" lists the arguments requestOf() gives, so the screen shows what the ordering agent will send. The
 // text and its marks come from ../../src/order-prompts.ts, the same function the store writes a draft's text with. A new
-// order can be asked for by address (presetOf); whose each picture is is said in words (ownerWords).
+// order can be asked for by address (presetOf, and back again with presetAddress); whose each picture is is said in words
+// (ownerWords); what an order makes in Jakob's notation, "A2.2 → P3C2 → A2.2", with one plain sentence (routeOf).
 // In the online copy nothing is asked for or written. Tests: studio/tests/orders.test.ts.
 import { ApiError } from "./api.ts";
 import { labUrl } from "./lab.ts";
 import { isSnapshot } from "./mode.ts";
+import { nodeCode } from "./names.ts";
 import {
-  ANCHOR_NODE, ANCHOR_ROLE, FLIP_LABEL, HAND_LABEL, LANDS_LABEL, REF_VERDICT_LABEL, STYLE_LABEL, genitive, MODELS, SEAT_TARGETS, SHOWN_LABEL, STEPS, credits, handChoiceOf, requestOf, secondsWords, stepOf, styleOf, waitWords,
-  type FlipAxis, type HandChoice, type Order, type OrderAnswer, type OrdersAnswer, type Owner, type Picture, type PlanAnswer, type Shape, type Shown, type StepKey, type TextStyle,
+  ANCHOR_NODE, ANCHOR_ROLE, FLIP_LABEL, HAND_LABEL, LANDS_LABEL, REF_VERDICT_LABEL, STYLE_LABEL, genitive, MODELS, SEAT_TARGETS, SHOWN_LABEL, STEPS, credits, cutIntoOf, edgeOf, handChoiceOf, requestOf, seatList, seatWords, secondsWords, stepOf, styleOf, summaryOf, waitWords,
+  type FlipAxis, type HandChoice, type Order, type OrderAnswer, type OrdersAnswer, type Owner, type Picture, type PlanAnswer, type Shape, type Shown, type StepDef, type StepKey, type TextStyle,
 } from "../../src/order-model.ts";
 import { orderPrompt, wordCount, type Choice, type Part } from "../../src/order-prompts.ts";
 
@@ -204,11 +206,61 @@ export function firstLacking(entries: Parameters<typeof anchorFor>[0]): StepKey 
 /** The line under the queue: how the approved orders get placed. */
 export const HANDOVER = "Säg 'lägg kön' till filmagenten eller huvudagenten, så läggs godkända beställningar.";
 
+// ── The card an order goes to ───────────────────────────────────────────────
+/**
+ * The cards one order can go to: every card of the plan, a seat's second card too (P3.C2; the store takes any card of
+ * the plan). In a round a second card plays the first card's film (src/clip-graph.ts filmCard), so a film of its own is a
+ * take of its own edge, played where a round names it. "Alla sju" stays the first cards (ALL_SEVEN).
+ */
+export const SECOND_CARD = /^P[1-7]\.C2$/;
+export const orderableCard = (target: string | null | undefined): boolean => !!target && (SEAT_TARGETS.includes(target) || SECOND_CARD.test(target));
+/** The seat of a card as the sheet's seat field names it: P3.C2 → P3.C1; the dealer's two cards are seats of their own. */
+export const seatKey = (target: string): string => target.replace(/^(P[1-7])\.C2$/, "$1.C1");
+/** A player's card: 1 or 2; the dealer's cards count as 1 here (Dealer and Hålkort are chosen as seats). */
+export const cardOf = (target: string): 1 | 2 => (SECOND_CARD.test(target) ? 2 : 1);
+/** A player's seat with its first or second card; the dealer's cards are kept as they are. */
+export const withCard = (target: string, card: 1 | 2): string => (/^P[1-7]\.C[12]$/.test(target) ? `${target.slice(0, 3)}C${card}` : target);
+/** "Kort 2 spelar i dag kort 1:s film …": why a second card is a film of its own, said where it is chosen. */
+export const SECOND_CARD_WORDS = "I rundan spelar kort 2 i dag kort 1:s film. En egen film för kort 2 läggs i banken och spelas där en runda väljer den.";
+
+// ── What is ordered, in his notation ────────────────────────────────────────
+/** Where the hand goes back to, in the model's words (the returns' labels "Tillbaka till nypet (2.1)", "… över skon (2.2)"). */
+const BACK_TO: Record<"1" | "2.1" | "2.2", string> = { "1": "till vila", "2.1": "till nypet", "2.2": "över skon" };
+const split = (edge: string): [string, string] => [edge.slice(0, edge.indexOf(">")), edge.slice(edge.indexOf(">") + 1)];
+export type Route = { nodes: string[]; line: string; sentence: string };
+/**
+ * What an order makes, in Jakob's notation and one plain sentence: "A2.2 → P3C2 → A2.2" and "Släp: ett kort till plats 3,
+ * kort 2, och tillbaka över skon." The nodes are the edges the film is filed under (the model's cutIntoOf and edgeOf), each
+ * written as the studio writes a node (names.ts nodeCode), so parseJakob reads the line back; several seats ("Alla sju")
+ * as the first and last card. A still: the anchor it is made from and the picture it makes. Any other film says the
+ * order's own line (summaryOf) without "Gör en film av Paow:".
+ */
+export function routeOf(step: StepDef, targets: readonly string[], shape: Shape | null, dealerName: string): Route {
+  if (step.kind === "STILL") {
+    const from = ANCHOR_NODE[step.from], made = step.makes?.node ?? from;
+    return { nodes: [from, made], line: `${nodeCode(from)} → bild ${nodeCode(made)}`, sentence: `Bild: ${step.makes?.label ?? "ankaret"} görs ur ankare ${step.from}.` };
+  }
+  const target = step.card ? (targets[0] ?? null) : null;
+  const edges = step.card && target ? cutIntoOf(step, target, shape) : [edgeOf(step, null)].filter((e): e is string => !!e);
+  const nodes = edges.length ? [split(edges[0])[0], ...edges.map((e) => split(e)[1])] : [];
+  const many = targets.length > 1 ? `${nodeCode(targets[0])}–${nodeCode(targets[targets.length - 1])}` : null;
+  const line = nodes.map((n) => (many && n === target ? many : nodeCode(n))).join(" → ");
+  if (!step.card || !target) {
+    const said = summaryOf(step, dealerName, null).replace(/^Gör [^:]*:\s*/, "");
+    return { nodes, line, sentence: said.charAt(0).toUpperCase() + said.slice(1) };
+  }
+  const seat = many ? `var och en av ${seatList(targets)}` : seatWords(target);
+  const back = BACK_TO[step.to ?? step.from];
+  if (step.start === "LAND") return { nodes, line, sentence: `Tillbaka ${back}, från kortet på ${seat}.` };
+  const grip = step.grip === "DRAG" ? "Släp" : "Nyp";
+  return { nodes, line, sentence: shape === "ONE_WAY" ? `${grip}: ett kort till ${seat}, bara dit.` : `${grip}: ett kort till ${seat}, och tillbaka ${back}.` };
+}
+
 // ── A new order from the address ────────────────────────────────────────────
 /**
  * What /bestall/?ny=1&dealer=paow&steg=GIV-2.2&plats=P4.C1 asks for (plats=alla: the first card to every player;
- * modell=kling-3-4k: that model, when it can make the step). A seat without a step gets the deal its card is planned with
- * in Placering (nyp → GIV-2.1, släp → GIV-2.2). Null without ny=1.
+ * plats=P3.C2: a seat's second card; modell=kling-3-4k: that model, when it can make the step). A seat without a step gets
+ * the deal its card is planned with in Placering (nyp → GIV-2.1, släp → GIV-2.2). Null without ny=1.
  */
 export type Preset = { dealer: string | null; step: StepKey | null; target: string | null; all: boolean; model: string | null; like?: string | null };
 export function presetOf(params: { get(name: string): string | null }, plan: Pick<PlanAnswer, "seats"> | null | undefined): Preset | null {
@@ -221,13 +273,24 @@ export function presetOf(params: { get(name: string): string | null }, plan: Pic
   const plats = params.get("plats")?.toUpperCase() ?? null;
   const modell = params.get("modell")?.toLowerCase() ?? null;
   const all = plats === "ALLA";
-  const target = plats && SEAT_TARGETS.includes(plats) ? plats : null;
+  const target = plats && orderableCard(plats) ? plats : null;
   let step = asked && stepOf(asked) && !stepOf(asked)!.off ? (asked as StepKey) : null;
   if (!step && (target || all)) step = plan?.seats[target ?? "P1.C1"]?.grip === "DRAG" ? "GIV-2.2" : "GIV-2.1";
   return { dealer, step, target, all, model: modell && Object.hasOwn(MODELS, modell) ? modell : null };
 }
 /** The address params a new order is asked with, removed when the sheet closes. */
 export const PRESET_PARAMS = ["ny", "dealer", "steg", "plats", "modell", "som"] as const;
+/**
+ * Beställ's address that opens "Ny beställning" with these values again (presetOf reads it): "Flytta kortets plats" hands
+ * it to Placering, whose "Tillbaka till beställningen" leads back here. The model only when it is not the step's own.
+ */
+export function presetAddress(v: { dealer: string; step: StepKey; target: string | null; all?: boolean; model?: string | null }): string {
+  const p = new URLSearchParams({ ny: "1", dealer: v.dealer, steg: v.step });
+  if (v.all) p.set("plats", "alla");
+  else if (v.target) p.set("plats", v.target);
+  if (v.model) p.set("modell", v.model);
+  return `/bestall/?${p.toString()}`;
+}
 
 /**
  * Every choice of an order, so that "Ny beställning som den här" opens the sheet with them chosen and one change gives a
