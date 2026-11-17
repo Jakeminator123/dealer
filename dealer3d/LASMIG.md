@@ -15,7 +15,7 @@ använder repots låsta `three` och `sharp`.
 | `src/camera.ts` | Passningen: linsfamiljen `lensForFocal` (alla linser som ger kortet vid plats 4 dess storlek och form i filmen) och vad en lins gör av en sträcka i bilden. Lämnar vidare allt ur `src/table-lens.ts`. Ren räkning. |
 | `src/world.ts` | Det filmen visar (`MEASURED`) och det som antas (`ASSUMED`); `filmLens()`, passningen som väljer den lins som ritar dealerns kropp i verklig storlek (ett test håller den lika med `TABLE_LENS`); planens kortplatser på filten; stolarnas ögon. Ren räkning. |
 | `src/capture.ts` | **En verklig giv lagd i rummet:** händernas 21 punkter och kroppens leder, avlästa ur en film, sätts under linsen punkt för punkt (varje punkt på siktlinjen genom sin egen bildpunkt), kortet följer filmens eget kortspår med sin hållna ände vid fingrarna, och `joints` och `LIMITS` säger vad en arm och en hand kan göra. Ren räkning. |
-| `data/giv-pamela-p4.json`, `data/giv-pamela-p1.json` | Given lagd i rummet som tal: `pamela-p4-c1-plan-deal-02`, 120 rutor, per ruta kortet, båda armarna och händernas punkter i meter; och samma giv flyttad till plats 1 (`--to P1.C1`). Skrivna av `tools/lift.ts`; sidan och testerna läser dem. |
+| `data/giv-pamela-p4.json`, `-p1`, `-p3`, `-p5` | Given lagd i rummet som tal: `pamela-p4-c1-plan-deal-02`, 120 rutor, per ruta kortet, båda armarna och händernas punkter i meter; och samma giv flyttad till plats 1, 3 och 5 (`--to P3.C1`). Skrivna av `tools/lift.ts`; sidan och testerna läser dem. Plats 6 och 7 finns inte: där går handen genom skon. |
 | `src/deal.ts` | Den första given, ritad för hand, som tidslinje: kortets läge och vridning och handens grepp för varje tidpunkt, till vilken kortplats som helst. Bana och tempo ur Paows giv till plats 4. Jakob dömde ut handens rörelse (2026-11-17); den avlästa given ersätter den i proven, och den här står kvar för jämförelse och för platser som ingen film går till. Ren räkning. |
 | `src/body.ts` | Den handritade givens skelett, löst ur var händerna ska vara: hon böjer sig från höften och vrider fram axeln så långt armen behöver. Ren räkning. |
 | `src/stage.ts` | Ritningen i three.js: bord, sko, ett kort med två sidor och provdockan, sedda genom flera ögon samtidigt. Två utseenden: `room` (filtbord) och `plain` (vit docka på grått, för en förlagefilm). Två källor för rörelsen: en avläst giv (handen ritas av sina 21 punkter) eller den handritade. |
@@ -107,6 +107,11 @@ stänger sin Chrome och sin filserver själv. En hel omgång (stillbilder, två 
   utseende följer med (filmbanans prov 2026-11-17, `assets/proofs/giv-forlagefilm-2/`). Den kopierar dockans fel lika
   troget, så en förlagefilm måste hålla kortet i handen tills det ligger, ha ett verkligt korts storlek i varje ruta
   och stå på kant en gång, mitt på vägen.
-- Bara given till plats 4 finns avläst; plats 1 är den givens hand och kort flyttade, med arm och kropp som modell.
-  Övriga platser görs på samma sätt (`lift.ts --to <plats>`), men är inte gjorda eller sedda.
+- Bara given till plats 4 finns avläst; plats 1, 3 och 5 är den givens hand och kort flyttade, med arm och kropp som
+  modell. Plats 3 och 5 håller på lederna och går fria från skon. Plats 1 håller på lederna, men vänsterarmen korsar
+  kroppen över den vilande handen; huvudagenten beställer ingen film på den, och plats 1 och 2 hör enligt planen till
+  ett handbyte (vänster tar, höger lägger), som inte är byggt. **Plats 6 och 7 faller:** flyttad dit går handen genom
+  skon (plats 7 i 25 rutor, plats 6 i en), eftersom skon står mellan henne och de platserna och den avlästa handen går
+  lågt över filten. `lift.ts` säger det (`throughShoe` i `capture.ts`), och testet kräver att en sparad giv går fri.
+  De platserna behöver en egen avläst film (en giv som går över eller framför skon).
 - Två datorer som delar en giv (händelse, kortplats, `DEAL_VERSION`, starttid) är inte byggt.

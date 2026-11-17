@@ -11,19 +11,21 @@ import {LIMITS, TIPS, joints, placeHand, type ArmPose, type HandMarks} from '../
 import {sideSeen, type CardPose} from '../src/deal.ts';
 
 type Limb = {s: Vec3; e: Vec3; w: Vec3; k: number; p: Vec3[]};
-type Deal = {film: string; to: string | null; fps: number; frameCount: number; leavesShoe: number; edge: number[]; rests: number; palm: number; frames: {card: {c: Vec3; l: Vec3; n: Vec3}; L: Limb; R: Limb; h: Vec3}[]};
+type Deal = {film: string; to: string | null; throughShoe: number; fps: number; frameCount: number; leavesShoe: number; edge: number[]; rests: number; palm: number; frames: {card: {c: Vec3; l: Vec3; n: Vec3}; L: Limb; R: Limb; h: Vec3}[]};
 const load = async (name: string) => JSON.parse(await readFile(new URL(`../data/${name}.json`, import.meta.url), 'utf8')) as Deal;
-// Where the card must lie at the end, in the bank's pixels: the film's own resting card, and the plan's P1.C1 of 2026-11-17.
-const DEALS = [{name: 'giv-pamela-p4', data: await load('giv-pamela-p4'), lies: {x: 853.3, y: 1101.5}}, {name: 'giv-pamela-p1', data: await load('giv-pamela-p1'), lies: {x: 236.7, y: 980.1}}];
+// Where the card must lie at the end, in the bank's pixels: the film's own resting card for the deal as read, and for each
+// moved deal the first card's place of that seat in the plan of 2026-11-17. Seats 6 and 7 are not here: moved there, the
+// hand goes through the shoe (lift.ts says so), and such a deal is not kept.
+const PLACES: [string, string | null, number, number][] = [['giv-pamela-p4', null, 853.3, 1101.5], ['giv-pamela-p1', 'P1.C1', 236.7, 980.1], ['giv-pamela-p3', 'P3.C1', 643.5, 1056.9], ['giv-pamela-p5', 'P5.C1', 1074.0, 1056.9]];
+const DEALS = await Promise.all(PLACES.map(async ([name, to, x, y]) => ({name, to, data: await load(name), lies: {x, y}})));
 const eye = filmEye(TABLE_LENS), arm = (a: Limb): ArmPose => ({shoulder: a.s, elbow: a.e, wrist: a.w, stretch: a.k, points: a.p});
 const cross = (a: Vec3, b: Vec3): Vec3 => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
 const card = (f: Deal['frames'][number]): CardPose => ({centre: f.card.c, long: f.card.l, normal: f.card.n, across: cross(f.card.n, f.card.l)});
 const unwrap = (v: number[]) => { const o = [v[0]]; for (let i = 1; i < v.length; i++) { let d = v[i] - v[i - 1]; while (d > 180) d -= 360; while (d < -180) d += 360; o.push(o[i - 1] + d); } return o; };
 const turning = (data: Deal, side: 'L' | 'R', sign: number) => { const t = unwrap(data.frames.map(f => joints(arm(f[side]), sign).twist).filter(v => v !== null) as number[]); return Math.max(...t) - Math.min(...t); };
 
-test('the film read is the approved deal to seat 4, whole, and the second deal is the same film moved to seat 1', () => {
-  for (const {data} of DEALS) { assert.equal(data.film, 'pamela-p4-c1-plan-deal-02'); assert.equal(data.frameCount, 120); assert.equal(data.frames.length, 120); assert.equal(data.fps, 30); }
-  assert.equal(DEALS[0].data.to, null); assert.equal(DEALS[1].data.to, 'P1.C1');
+test('the film read is the approved deal to seat 4, whole, and every other deal is that film moved to its seat', () => {
+  for (const {data, to} of DEALS) { assert.equal(data.film, 'pamela-p4-c1-plan-deal-02'); assert.equal(data.frameCount, 120); assert.equal(data.frames.length, 120); assert.equal(data.fps, 30); assert.equal(data.to, to); assert.equal(data.throughShoe, 0, 'the hand goes clear of the shoe'); }
 });
 
 for (const {name, data, lies} of DEALS) {

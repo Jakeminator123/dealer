@@ -6,7 +6,7 @@
 // her fingers agrees with the film's own card.
 import {readFile, writeFile} from 'node:fs/promises';
 import {TABLE_LENS, filmEye, length, see, sub} from '../../src/table-lens.ts';
-import {LIMITS, joints, moved, perform, type Landmarks, type Track} from '../src/capture.ts';
+import {LIMITS, joints, moved, perform, throughShoe, type Landmarks, type Track} from '../src/capture.ts';
 import {spots, type Plan} from '../src/world.ts';
 import {sideSeen} from '../src/deal.ts';
 
@@ -38,11 +38,13 @@ if (!to) { const miss: number[] = []; let agree = 0, counted = 0;
 // How far the card's held short end is from her fingers (the middle of thumb tip and forefinger tip), while she has it and until it lies.
 const hold = p.moments.slice(p.leavesShoe + 5, p.rests + 1).map(m => { const end = [0, 1, 2].map(k => m.card.centre[k] + m.card.long[k] * (0.088 / 2 - 0.012)), grip = [0, 1, 2].map(k => (m.L.points[4][k] + m.L.points[8][k]) / 2); return Math.hypot(end[0] - grip[0], end[1] - grip[1], end[2] - grip[2]) * 1000; }).sort((a, b) => a - b);
 lines.push(`Kortets hållna ände mot hennes grepp (tumme och pekfinger), från att kortet är ute ur skon tills det ligger: ${f1(hold[hold.length >> 1])} mm i mitten, högst ${f1(hold[hold.length - 1])} mm.`);
+const shoeFrames = throughShoe(lens, p);
+lines.push(shoeFrames.length ? `HANDEN ELLER KORTET GÅR GENOM SKON i ${shoeFrames.length} rutor (ruta ${shoeFrames[0]}–${shoeFrames[shoeFrames.length - 1]}): den här given håller inte.` : 'Handen och kortet går fria från skon efter att kortet är taget.');
 lines.push(`Sidan kameran ser, ruta för ruta (B baksida, E kant, F framsida): ${sides.join('')}`);
 if (!to) lines.push(`Spårets sidor:                                                        ${track.frames.map(f => f.side === 'FRONT' ? 'F' : f.side === 'BACK' ? 'B' : f.side === 'EDGE' ? 'E' : '-').join('')}`);
 console.log(lines.join('\n'));
 
 const r = (v: number[]) => v.map(x => Math.round(x * 10000) / 10000), armOut = (a: (typeof p.moments)[number]['L']) => ({s: r(a.shoulder), e: r(a.elbow), w: r(a.wrist), k: Math.round(a.stretch * 1000) / 1000, p: a.points.map(r)});
 await writeFile(out, JSON.stringify({about: 'One deal laid into the room by dealer3d/tools/lift.ts from MediaPipe landmarks and the card track of the film named' + (to ? `, and moved to the card place ${to} of the plan (hand and card as read, arm and body a model)` : '') + '. Metres in the table lens\'s world (x toward image right, y up from the felt, z toward the camera). Per frame: card (c centre, l long side toward the held end, n the way its face looks), L her left arm and hand (the dealing one), R her right: s shoulder, e elbow, w wrist, k how many times the arm is stretched, p the 21 points of the hand in MediaPipe\'s order; h head, and hip once.',
-  film: p.film, to: to ?? null, fps: p.fps, frameCount: p.frameCount, leavesShoe: p.leavesShoe, edge: p.edge, folds: p.folds, rests: p.rests, handSize: p.handSize, palm: p.palm, hip: r(p.moments[0].hip),
+  film: p.film, to: to ?? null, fps: p.fps, frameCount: p.frameCount, leavesShoe: p.leavesShoe, edge: p.edge, folds: p.folds, rests: p.rests, handSize: p.handSize, palm: p.palm, throughShoe: shoeFrames.length, hip: r(p.moments[0].hip),
   frames: p.moments.map(m => ({card: {c: r(m.card.centre), l: r(m.card.long), n: r(m.card.normal)}, L: armOut(m.L), R: armOut(m.R), h: r(m.head)}))}) + '\n');

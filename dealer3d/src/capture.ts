@@ -15,7 +15,7 @@
 // that hide each other is its own guess; it was tried and found too unsteady to say which face of the card the thumb is
 // on, which is why the card's turning is the track's and not the hand's.
 import {CARD, FILM, add, cross, dot, filmEye, length, mul, onPlane, onUpright, see, sub, unit, type Lens, type Pixel, type Vec3} from './camera.ts';
-import {ASSUMED, dealerEdge, shoeCard, shoePose} from './world.ts';
+import {ASSUMED, SHOE, dealerEdge, shoeCard, shoePose} from './world.ts';
 import {BODY, solveBody, standing, turned} from './body.ts';
 import {HAND, type CardPose} from './deal.ts';
 
@@ -213,6 +213,19 @@ export function moved(lens: Lens, p: Performance, to: Vec3, swingDeg?: number): 
   let swing = (swingDeg ?? 0) * Math.PI / 180;
   if (swingDeg === undefined) { let least = Infinity; for (let d = -120; d <= 120; d += 5) { const cost = asks(build(d * Math.PI / 180)); if (cost < least) { least = cost; swing = d * Math.PI / 180; } } }
   return {...p, moments: build(swing), swing: swing * 180 / Math.PI};
+}
+
+/**
+ * The frames in which a point of the dealing hand, or the card's middle, is inside the shoe. The shoe is the model wedge
+ * standing where the film has it (shoePose, SHOE). The frames while the card is taken, up to `after` frames past the one
+ * where it leaves the shoe, are not looked at: the fingers are in the shoe's window then. A deal moved to a seat on the
+ * shoe's side can carry the hand straight through it, which no joint limit notices.
+ */
+export function throughShoe(lens: Lens, p: Performance, after = 8): number[] {
+  const pose = shoePose(lens), run = SHOE.frontHeight / Math.tan(SHOE.plateLean);
+  const inside = (q: Vec3) => { const d = sub(q, pose.front), s = dot(d, pose.back), f = dot(d, pose.far);
+    return s > 0.005 && s < SHOE.length && f > 0.005 && f < SHOE.width - 0.005 && q[1] < (s < run ? s * Math.tan(SHOE.plateLean) : SHOE.frontHeight + (SHOE.backHeight - SHOE.frontHeight) * (s - run) / (SHOE.length - run)) - 0.005; };
+  return p.moments.map((m, i) => i > p.leavesShoe + after && (inside(m.card.centre) || m.L.points.some(inside)) ? i : -1).filter(i => i >= 0);
 }
 
 // ---- what a body can do ---------------------------------------------------------------------------------------
