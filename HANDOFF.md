@@ -117,9 +117,10 @@ bygger om labbet på Jakobs ord från kl. 21.46 och 21.58 (Jakobs besked, "Ett l
 
 - (a) **vyn Bordet, första versionen**, byggs i huvudträdet (ny adress `/studio/bordet/` bredvid Placering, Beställ och
   Scen, som står kvar tills han har sett den; arbetsmapp `D:/dealer-scratch/tmp/bordet/`);
-- tre i egna arbetsträd på korta grenar, `D:/dealer-scratch/tmp/<gren>/trad`: (b) `gamla-labbet-bort` (gamla labbet tas
-  bort), (c) `karta-primara` (Karta och Primära blir en sida) och (e) `lipsync-vy` (Lipsync-vyn och `docs/TAL.md`: var
-  munnen görs och vad som gäller per dealer);
+- fyra i egna arbetsträd på korta grenar, `D:/dealer-scratch/tmp/<gren>/trad`: (b) `gamla-labbet-bort` (gamla labbet tas
+  bort), (c) `karta-primara` (Karta och Primära blir en sida), (e) `lipsync-vy` (Lipsync-vyn och `docs/TAL.md`: var
+  munnen görs och vad som gäller per dealer) och (f) `runda-noder` (rundan byggs av de noder som finns; förvalen blir
+  exempel);
 - (d) `granska-prov` är inne (`ab08b8f`): Granska har delarna Filmer och Prov i sidans huvud, och
   `/studio/prov/?prov=<mapp>` leder till samma prov. Inte sedd i en webbläsare än; trädet och grenen står kvar tills
   det är gjort. Att göra efter grenarna: ta bort Prov ur menyn, och låta det som ännu skriver `/prov/?prov=` eller
