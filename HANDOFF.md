@@ -115,7 +115,7 @@ skrivs på skrivbordet när allt har ett utfall. Här står bara det som inte ä
 
 ## Nästa steg
 
-**Börja här (läget 2026-11-17 kl. 23.00; huvudagenten bytte chatt kl. 21.45).** Labbet byggs om på Jakobs ord från
+**Börja här (läget 2026-11-17 kl. 23.05; huvudagenten bytte chatt kl. 21.45).** Labbet byggs om på Jakobs ord från
 kl. 21.46 och 21.58 (Jakobs besked, "Ett labb"), av underagenter till huvudagenten:
 
 - **Inne i `main` och sett i headless Chrome:** vyn **Bordet**, första versionen (`82258f3`: `/studio/bordet/` med
@@ -140,21 +140,30 @@ kl. 21.46 och 21.58 (Jakobs besked, "Ett labb"), av underagenter till huvudagent
   Placering, Beställ och Scen tas bort; och alla texter som beskriver den gamla menyn rättas (botens kunskap i
   `tools/knowledge.ts` och `cloud/studio/bot-prompt.ts`, `studio/lib/guide.ts`, README, SYSTEM, DRIFT, ordlistan).
   Underagenten ger huvudagenten de meningar i den här filen och i AGENTS som inte längre stämmer.
-- **Pågår hos tre underagenter till** (startade kl. 22.38 på hans "Fortsätt standarlisera och förenkla allt i denna
-  riktning […] Hellre en metod som fungerar generiskt är att fixa en dealer som ska kunna funka efter hundratals
-  försök" och "inte ad adsurdum så tiotals GB med gaqmmalt skräp sparas"): (1) **filmmetodens två följdprov**, betalda
-  inom 400 krediter som huvudagenten har godkänt (släp från A2.2 till plats 4 och nyp till en ytterplats, Kling 4 med
-  Pamelas film till samma plats som referensfilm, två tagningar var; arbetsmapp
-  `D:/dealer-scratch/tmp/giv-experiment-2/`, provet `giv-forlagefilm-2`, planen för mall 10, sista bilden ur bankens
-  egen klippruta, metodregistret och en automatisk kontroll av varje tagning i `STANDARD.md` där; den ändrar bara
-  `tools/film-prompting.md` i huvudträdet); (2) **inventering av gammal media och slask**, bara läsning (rapport i
-  `D:/dealer-scratch/tmp/stadning/inventering-2026-11-17/`; inget raderas förrän huvudagenten har läst den); (3)
-  **skills för projektets agenter och rutinverktygen in i repot** (push från rent träd, titt på labbsidor under låset,
-  studion byggd ur det incheckade), på grenen `skills-och-verktyg` i `D:/dealer-scratch/tmp/skills-och-verktyg/trad`.
-  3D-banans gren `dealer-3d` är Jakobs andra session (Vem äger vad).
-- **Den studio som visas är byggd ur det incheckade** (`6f00d19`), i det rena trädet
-  `D:/dealer-scratch/tmp/granska-prov/trad` (`git checkout --detach main`, `npm --prefix studio run build`, och `out/`
-  kopierad till huvudträdets `studio/out`), så att underagentens halvfärdiga filer inte syns för honom.
+- **Skills och rutinverktyg är inne** (`c9a8509`): sju skills i `.claude/skills/` (AGENTS, "Läs först", punkt 4), och
+  tre verktyg med tester: `node tools/push-clean.ts` (pushen från ett rent träd), `node tools/lab-look.ts` (skärmbilder av
+  labbsidor under låset) och `node tools/studio-from-commit.ts` (studion byggd ur en commit i ett rent träd och inbytt
+  i `studio/out`; i kväll med `--trad D:/dealer-scratch/tmp/granska-prov/trad`, senast ur `c9a8509`, så att en
+  underagents halvfärdiga filer inte är det han ser).
+- **Skons kort i labbet är rättat** (`f469450`): `WINDOW_CARD` var nypets uppdragna kort (111 × 57) och ritades utanför
+  skons mynning; nu är det kortet som står i fönstret (92 × 45), mätt i bakgrundsbilden.
+- **Pågår hos en underagent:** filmmetodens två följdprov, betalda inom 400 krediter som huvudagenten har godkänt (släp
+  från A2.2 till plats 4 och nyp till en ytterplats, Kling 4 med Pamelas film till samma plats som referensfilm, två
+  tagningar var; arbetsmapp `D:/dealer-scratch/tmp/giv-experiment-2/`, provet `giv-forlagefilm-2`, planen för mall 10,
+  sista bilden ur bankens egen klippruta, metodregistret och en automatisk kontroll av varje tagning i `STANDARD.md`
+  där; den ändrar bara `tools/film-prompting.md` i huvudträdet). 3D-banan (Vem äger vad) ritar en vit dockas giv från
+  bankens kamera, som sedan prövas som referensfilm i stället för Pamelas (ett betalt prov till, på huvudagentens ord).
+- **Inventeringen av disken är klar, inget är raderat** (`D:/dealer-scratch/tmp/stadning/inventering-2026-11-17/`, med
+  listorna `ta-bort-*.ps1.txt`): 168 GB, varav 8 GB går att återskapa eller är exakta kopior (R), 65,5 GB är råa
+  bildrutor bredvid filmer som finns kvar (O1), 12,7 GB djupdata för kamera 2 (O2) och 12,5 GB avgjorda prov (O3, ses
+  per mapp). Huvudagenten tar bort R, O1 och O2 efter kontroll av listorna, på hans ord "inte ad adsurdum så tiotals GB
+  med gaqmmalt skräp sparas". Funnet på vägen: `npm run stada` kan aldrig fälla en avslutad session, eftersom en
+  jokerrad i `docs/DRIFT.md` (`*OpenAICodexin*g.exe`) läses som en sökväg till varje sessionsmapp; 23
+  talfilmers `motions/` pekar på kvitton som flyttats till `D:/dealer-scratch/tmp/tal/overtaliga/`; flera av Paows
+  källor i `data/media-roles.json` ligger på D: i stället för i `assets/`.
+- **Vakten på hans kö** (`vakta-kon.mjs`) går i huvudagentens chatt i halvtimmar och måste startas om; godkänner han en
+  beställning startar huvudagenten beställningsagenten (`tools/order-clerk.md`). `node tools/preview.ts --open` klarar
+  inte en adress med `&` (resten av raden körs som ett eget kommando): att rätta.
 - **Att göra:** körarens kod för munnen ligger bara på D: (`D:/dealer-scratch/tmp/tal/korare/`) och bör in i repot
   efter städning av två skript; `data/lipsync.json` hålls av huvudagenten tills en ny talsession finns; granskarens
   andra fynd, som inte är kontrollerat här: spelets ritade kort följer inte planens kortstorlek (planen 43, 87 och 130
@@ -626,7 +635,8 @@ Ett besked per ämne, med det nyaste ordet och dess datum. Ett besked han har er
 ## Före avslut av en session
 
 1. Vänta in eller stoppa egna underagenter. Inget ocommittat får ligga kvar utom `placements/default.json`.
-2. `npm test`, uttrycklig staging av egna filer, commit, `npm run check`, push, och läs GitHub-kontrollens resultat.
+2. `npm test`, uttrycklig staging av egna filer, commit, `npm run check`, push (medan andra skriver i trädet:
+   `node tools/push-clean.ts`, DRIFT), och läs GitHub-kontrollens resultat.
 3. Sätt etapptagg `jakob-N` om Jakob har sett läget, och pusha taggen (DRIFT).
 4. Uppdatera denna fil på plats (läget per dealer: `node tools/produce.ts paow`); det som väntar på Jakob blir ett kort i
    Beslut. Ingen dagbok; ersatt läge stryks.
