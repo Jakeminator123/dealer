@@ -26,7 +26,11 @@
       "asked": "2026-11-17",
       "from": "huvudagenten",
       "cost": "provet kostade 820 krediter; en giv så här kostar 85",
-      "answer": null
+      "answer": {
+        "value": "andra",
+        "note": "Ja, absolut. Det här skulle kunna vara en vridning, givet att dealern nu nyper upp kortet för att sedan vrida över det med en rörelse. Å andra sidan krävs det också en sådan här för när hon släpar ut ett kort, antar jag. Alltså, det här är förankare 2.1, till P4C1 men det behövs ju också för och från A2.2 till P4C1.. och kanske för alla andra spelare och kanske kort också? Eller kanske man kan laborera med detta.. I och med jag hoppas nya labbet ska fixa så dett görs smidigare kanske det itne behövs",
+        "at": "2026-11-17T19:29:19.786Z"
+      }
     },
     {
       "id": "labbets-grund",
@@ -51,7 +55,11 @@
       ],
       "asked": "2026-11-17",
       "from": "huvudagenten",
-      "answer": null
+      "answer": {
+        "value": "ja",
+        "note": "Ja bygg men med anmärkning: Ja visst. men angående det som är till för att beskriva det som ska gå till runway, så ska bara instruktioner som faktist ska komma med till runway - finnas som är tänmkt att beskriva just detta, så att inte olika beskrivningar i nya labbet skapas som finns bara för att beskriva för användaren saker som ändå inte kommer komma med till runway. Angående hur skons kort är som standard och i den bild du visar här, så stämmer den inte med hur skons kort faktist visas. Den gulaktiga kortsiluetten är cirka 50 grader för tiltat nedåt från ovansidan och ska vändas innot (så man ser mindre) av vridningen (den är altså mer vriden som startpossition mot dealer än mot spelaren ca 50 grader cokså.. Jämför bara mot kortet i en bild från en video eller bild",
+        "at": "2026-11-17T19:22:14.885Z"
+      }
     },
     {
       "id": "kortets-baksida",
@@ -97,7 +105,11 @@
       ],
       "asked": "2026-11-17",
       "from": "talsessionen",
-      "answer": null
+      "answer": {
+        "value": "andra",
+        "note": "Just när hon säger detta lägger jag insatser, tack, så ska hon förmodligen ha en lite mindre öppen mun. Men om hon säger något som kräver att hon har större öppen mun ska hon kunna gå till det här läget. Utifrån hur hennes mun ser ut när den är stängd ska den max kunna gå upp så här, men den ska kunna gå upp lite mindre och hon ska visa mindre tänder. För nu visar hon väldigt mycket av sin mun när hon säger det, men hon ska kunna säga så här mycket eller komma till det här läget. Nu ser det nästan lite överdrivet ut.",
+        "at": "2026-11-17T19:13:13.397Z"
+      }
     },
     {
       "id": "keystone-tatuerade-hander-2",
@@ -122,7 +134,11 @@
       ],
       "asked": "2026-11-17",
       "from": "trailersessionen",
-      "answer": null
+      "answer": {
+        "value": "ja",
+        "note": "",
+        "at": "2026-11-17T19:13:15.841Z"
+      }
     },
     {
       "id": "tatuerade-mindre-hander",
