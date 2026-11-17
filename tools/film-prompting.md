@@ -53,7 +53,7 @@ tillsammans med referensfilm. Schemat gäller för oss.
 
 En beställning är en ren funktion av valen i Beställ: samma val ger samma bilder, text, modell och kostnad. Texten
 skrivs aldrig för hand i en order; ändras den, ändras mallen och versionen räknas upp. De exakta orden står i `SAY` i
-`src/order-prompts.ts` (mall 8, `TEMPLATE_VERSION`; Utförlig = mall 3; en order återges med sin egen version, så mall
+`src/order-prompts.ts` (mall 9, `TEMPLATE_VERSION`; Utförlig = mall 3; en order återges med sin egen version, så mall
 6:s ord gäller bara dess egna ordrar); reglerna och recepten står här. Kort är förvalet, Minimal är Jakobs prov,
 Utförlig bara för jämförelse. Skiljer orden sig från reglerna här, rättas orden. Format, filer och priser:
 [dealer-line.md](dealer-line.md), "Format och namn".
@@ -463,6 +463,29 @@ granskare gav på Jakobs mandat står som dömda åt honom; hans egna står med 
   mjukare än ankaret vid skarven (skillnad 10–11 mot 8 i 2.1-ingången). Utgången tagning 1: handen går högt och doppar
   fram förbi bordskanten (ruta 50–80); tagning 2: den vilande handen glider fram mot kameran (ruta 50–100) och tillbaka.
   Granskning pågår.
+
+**Mall 9 (2026-11-17), inte prövad i någon order: utfallet är okänt.** Jakobs egen beställning `paow-giv-2-2-p4-02`
+(släp från ankare 2.2 till P4, öppet, vänt på vägen, WAN 3, 6 s, mall 8) föll i båda tagningarna: tryckt kort, i den ena
+bytte kortet färg utan att vändas, i den andra vände handen kortet och vände sedan tillbaka innan det lades, och i båda
+lyftes kortet ur skon (V, rutorna i `assets/proofs/bestallning-slap-p4/`). Jakob: "Som på bilden här, kort nummer 7 till
+8, vrider hon handen korrekt fram till bild nummer 7, men i bild 8 vrider hon tillbaka handen. Oavsett om hon nyper eller
+släpar ut kortet, alltså om hon kommer från ankaret 2.1 eller 2.2, måste hon vrida över handleden. Jag har pratat med dig
+i flera timmar om det här, men det verkar inte fungera. Det måste bero på något konstigt i den prompt som skickas." och
+"Varför släpar hon tex inte kortet som hon borde?". Mall 8:s ord för fri vändning nämnde inte handleden ("her hand turns
+the card over once"), ingen mening sade att handen ska vara kvar vriden tills kortet ligger, och ett öppet släp bad henne
+lyfta kortet ("lifts it off the felt"). Mall 9 ändrar tre saker:
+1. Vändningen på vägen är en vridning av handleden i varje öppen giv, från nypet och från släpet: kortet hålls i kanten
+   mellan tumme och fingrar, handleden vrids över en gång så att handflatan går från nedåt till uppåt och kortet följer
+   med, blått upp; med handen kvar vriden läggs kortet och släpps, och först då vänds den tomma handen nedåt
+   (`SAY.turnOnTheWay`, `SAY.layTurned`). Fri vändning (`FREE`) är nu den vridningen, i Beställ "Handleden vänder kortet
+   på vägen"; `LONG_EDGE` behåller sina ord om långsidan och får samma slut; vändningen vid platsen är oförändrad.
+2. Ett släp är ett släp: ett öppet kort från ankare 2.2 dras ut ur fönstret och längs filten under fingertopparna, och
+   tummen och fingrarna tar det i kanten på vägen (`SAY.dragTowards`, `SAY.takeOnTheWay`); vid handbyte dras det till
+   mitten (`SAY.handoverDrag`). Ett stängt släp är som förut.
+3. Kortet är enfärgat: omgång 14:s tillägg (ovan, enfärgat i `2-2-p6-02`) är mallens mening om kortet, en gång
+   (`SAY.colours`, `SAY.oneCardMoves`), positivt formulerat.
+En öppen giv som vänds på vägen blir cirka 70 ord längre (Jakobs släp till P4: 115 ord i mall 8, 184 i mall 9), en
+stängd 33. Mall 4–8:s ord står kvar i `SAY.v8`, så att deras ordrar återges ord för ord.
 
 **Oprövat:** referensfilm eller handbyte till plats 6; retur som egen film från en landningsbild; vändningen som egen
 film; landningsbild som stillbild; ankare 2.2 som ruta ur en film; referensfilm av Jakobs hand; renderat kort i

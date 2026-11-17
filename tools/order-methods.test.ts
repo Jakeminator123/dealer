@@ -65,7 +65,7 @@ test('the method for a step and a seat: its class of seat first, else the one fo
   const ref = methodFor(FIXTURE, 'GIV-2.1', 'P1.C1')!;
   assert.equal(recipeWords(ref), 'Kling 4 · kort text · 7 s · vänd vid platsen · prov: 1 tagning · referensfilm: en rakt godkänd giv till samma plats');
   assert.equal(recipeWords(ref, true), 'WAN 3 · kort text · 7 s · vänd vid platsen · prov: 1 tagning · utan referensfilm (ingen finns till platsen)');
-  assert.equal(recipeWords(methodFor(FIXTURE, 'GIV-2.1', 'D.C2')), 'Kling 4 · kort text · 7 s · naturlig vändning på vägen · prov: 1 tagning');
+  assert.equal(recipeWords(methodFor(FIXTURE, 'GIV-2.1', 'D.C2')), 'Kling 4 · kort text · 7 s · handleden vänder kortet på vägen · prov: 1 tagning');
   assert.equal(recipeWords(methodFor(FIXTURE, 'GIV-2.1', 'D.C2'), true), recipeWords(methodFor(FIXTURE, 'GIV-2.1', 'D.C2')), 'no reference rule: nothing changes');
   assert.equal(recipeWords({ ...ref, turn: 'plan' }), 'Kling 4 · kort text · 7 s · prov: 1 tagning · referensfilm: en rakt godkänd giv till samma plats', 'the plan\'s turn is not named');
   assert.equal(recipeWords(methodFor(FIXTURE, 'UTGANG')), 'ingen metod än');

@@ -169,7 +169,7 @@ export function paramRows(order: Order): ParamRow[] {
   return rows;
 }
 
-/** "Naturlig vändning", or nothing for a step without a turn. */
+/** "Handleden vänder kortet på vägen", or nothing for a step without a turn. */
 export const turnWords = (order: Pick<Order, "motion">): string | null => (order.motion?.turn && order.motion.flipAxis ? FLIP_LABEL[order.motion.flipAxis] : null);
 
 /** "1,1 px från planen". */

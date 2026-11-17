@@ -19,19 +19,20 @@ export type Kind = 'STILL' | 'FILM';
 /**
  * How the card turns: at its place after the carry, in Jakob's six steps of 2026-11-13 (nyp, dra, för fram, vrid, vänd
  * upp, lägg: brought forward back up and low along the felt, then rolled up onto its long edge and over at the place);
- * free on the way (the hand turns it as a human hand can, no fixed edge; Jakob 2026-11-12); or rolled about the long side
- * on the way as the bank's films do. Folding it over the short edge was an idea Jakob has dropped.
+ * on the way by a turn of the wrist, the hand turned until the card lies (FREE; from template 9, Jakob 2026-11-17: "måste
+ * hon vrida över handleden"; before, any turn a human hand can make, no fixed edge, Jakob 2026-11-12); or rolled about the
+ * long side on the way as the bank's films do. Folding it over the short edge was an idea Jakob has dropped.
  */
 export type FlipAxis = 'AT_PLACE' | 'FREE' | 'LONG_EDGE';
 export const FLIP_AXES: readonly FlipAxis[] = ['AT_PLACE', 'FREE', 'LONG_EDGE'];
 export const FLIP_LABEL: Record<FlipAxis, string> = {
   AT_PLACE: 'Vänd vid platsen',
-  FREE: 'Naturlig vändning på vägen',
+  FREE: 'Handleden vänder kortet på vägen',
   LONG_EDGE: 'Rullas kring långsidan på vägen',
 };
 export const FLIP_ABOUT: Record<FlipAxis, string> = {
   AT_PLACE: 'Nyp, dra, för fram, vrid, vänd upp, lägg: kortet förs fram med baksidan upp längs filten och vänds först vid platsen.',
-  FREE: 'Ingen bestämd kant: handen vänder kortet i luften som en människa kan, och kortet behåller sin storlek.',
+  FREE: 'Handleden vrids över en gång med kortet: handflatan går från nedåt till uppåt och kortet följer med, blått upp. Handen är kvar vriden tills kortet ligger.',
   LONG_EDGE: 'Som bankens filmer gör i dag.',
 };
 /**
