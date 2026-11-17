@@ -115,7 +115,7 @@ skrivs på skrivbordet när allt har ett utfall. Här står bara det som inte ä
 
 ## Nästa steg
 
-**Börja här (läget 2026-11-17 kl. 23.35; huvudagenten bytte chatt kl. 21.45).** Labbet byggs om på Jakobs ord från
+**Börja här (läget 2026-11-17 kl. 23.30; huvudagenten bytte chatt kl. 21.45).** Labbet byggs om på Jakobs ord från
 kl. 21.46 och 21.58 (Jakobs besked, "Ett labb"), av underagenter till huvudagenten:
 
 - **Inne i `main` och sett i headless Chrome:** vyn **Bordet**, första versionen (`82258f3`: `/studio/bordet/` med
