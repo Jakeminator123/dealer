@@ -115,7 +115,7 @@ skrivs på skrivbordet när allt har ett utfall. Här står bara det som inte ä
 
 ## Nästa steg
 
-**Börja här (läget 2026-11-17 kl. 22.45; huvudagenten bytte chatt kl. 21.45).** Labbet byggs om på Jakobs ord från
+**Börja här (läget 2026-11-17 kl. 22.50; huvudagenten bytte chatt kl. 21.45).** Labbet byggs om på Jakobs ord från
 kl. 21.46 och 21.58 (Jakobs besked, "Ett labb"), av underagenter till huvudagenten:
 
 - **Inne i `main` och sett i headless Chrome:** vyn **Bordet**, första versionen (`82258f3`: `/studio/bordet/` med
@@ -126,11 +126,18 @@ kl. 21.46 och 21.58 (Jakobs besked, "Ett labb"), av underagenter till huvudagent
   panelen Runda, i Scen och i Bordets läge Scen); **menyn** (`3144e1d`, `fd7e5a7`): Bordet, Karta, Granska,
   Material, Lipsync, Beställ, Casino, och i foten Beslut, Ordlista, Ljud och Modeller. Scens och Placerings adresser
   fungerar i labbet; kopian på nätet behåller dem i sin meny.
-- **Pågår i huvudträdet, ocommittat:** Bordets andra steg (samma underagent, arbetsmapp `D:/dealer-scratch/tmp/bordet/`):
-  "Det här skickas" på varje rad (bilder, referensfilm med vems film det är, texten), hela Beställ (kön, godkännandet,
-  Det här saknas, Protokoll) och resten av Placering (Material, Mobil) in i Bordet, så att `/bestall/` och `/placering/`
-  leder dit i labbet och Beställ går ur menyn; och rättningen av "Alla sju", som i dag skickar första platsens vändning
-  till alla platser (`NewOrder.tsx`; funnen av en utomstående granskare, bekräftad i koden).
+- **Bordets andra steg är inne** (`803b68a`, sett i headless Chrome): varje rad i Beställ visar exakt vad som går till
+  Runway (första och sista bilden, referensfilmen med vems film det är eller "Ingen referensfilm", texten ord för ord);
+  läget Beställ har Filmer och Kön, där Kön är hela förra Beställ med godkännandet; en rad som beställts förut visar
+  tagningarna som kom bredvid det som skickades (Granska filmen); Placerings Material ligger i Efterarbete och Kortplan
+  har Dator och Mobil; `/bestall/` och `/placering/` leder till Bordet i labbet. Menyn i labbet: Bordet, Karta, Granska,
+  Material, Lipsync, Casino. "Alla sju" skickar nu varje plats egen vändning. Inte tryckt i en webbläsare: Skapa utkast
+  och Godkänn i Bordet (bevisade i tester).
+- **Pågår i huvudträdet, ocommittat:** Bordets tredje steg (samma underagent): Scens adresser leder till Bordets läge
+  Scen och studion öppnar på Bordet; Bordet i kopian på nätet, bara läsning, så att kopian får samma meny; skalen för
+  Placering, Beställ och Scen tas bort; och alla texter som beskriver den gamla menyn rättas (botens kunskap i
+  `tools/knowledge.ts` och `cloud/studio/bot-prompt.ts`, `studio/lib/guide.ts`, README, SYSTEM, DRIFT, ordlistan).
+  Underagenten ger huvudagenten de meningar i den här filen och i AGENTS som inte längre stämmer.
 - **Pågår hos tre underagenter till** (startade kl. 22.38 på hans "Fortsätt standarlisera och förenkla allt i denna
   riktning […] Hellre en metod som fungerar generiskt är att fixa en dealer som ska kunna funka efter hundratals
   försök" och "inte ad adsurdum så tiotals GB med gaqmmalt skräp sparas"): (1) **filmmetodens två följdprov**, betalda
@@ -146,11 +153,7 @@ kl. 21.46 och 21.58 (Jakobs besked, "Ett labb"), av underagenter till huvudagent
 - **Den studio som visas är byggd ur det incheckade** (`6f00d19`), i det rena trädet
   `D:/dealer-scratch/tmp/granska-prov/trad` (`git checkout --detach main`, `npm --prefix studio run build`, och `out/`
   kopierad till huvudträdets `studio/out`), så att underagentens halvfärdiga filer inte syns för honom.
-- **Att göra:** det som ännu skriver `/prov/?prov=` eller kallar Prov och Primära egna vyer (`studio/lib/decisions.ts`,
-  `studio/lib/lipsync.ts`, `material/Rows.tsx`, `bot/Welcome.tsx`, `studio/lib/guide.ts`, `studio/lib/bot-client.ts`,
-  `studio/lib/context.ts`, `tools/knowledge.ts`, `cloud/studio/bot-prompt.ts`, `app/ui/page.tsx`, `docs/DRIFT.md` om
-  kopians meny); kommentarer som ännu säger gamla labbet i `studio/lib/placement.ts`, `placement/*` och
-  `scene-editor/*`; körarens kod för munnen ligger bara på D: (`D:/dealer-scratch/tmp/tal/korare/`) och bör in i repot
+- **Att göra:** körarens kod för munnen ligger bara på D: (`D:/dealer-scratch/tmp/tal/korare/`) och bör in i repot
   efter städning av två skript; `data/lipsync.json` hålls av huvudagenten tills en ny talsession finns; granskarens
   andra fynd, som inte är kontrollerat här: spelets ritade kort följer inte planens kortstorlek (planen 43, 87 och 130
   bildpunkter ger enligt honom 91, 90 och 90 i spelet), vilket hör till Efterarbete. Kartan visade att Paows Primär
