@@ -3,6 +3,31 @@
   "about": "What waits for Jakob: one entry per question (kind beslut) or per thing only he can do (kind gora), shown as one card each in the studio's view Beslut (/studio/beslut/, lab only). The list's order is the order of urgency, the most urgent first. An entry: id, kind, question (at most 14 words), leads (one sentence: what his answer leads to), optionally proof (a folder under assets/proofs/) with file, page (an address in the lab, e.g. game.html?table=casino), link (an address outside, shown as text to open on his phone) and cost (free text), chips (two to four {value, label} for beslut, one to four for gora), asked (date), from (the lane that asks) and answer. An agent adds an entry with answer null, changes only its own entries, reads the file right before editing it and keeps the form JSON.stringify gives with two spaces; it closes an entry by taking it out once his answer is carried out, and the commit says what he answered. Only the page writes answer ({value, note, at}, tools/decision-store.ts); no agent sets, changes or clears an answer he has given. The strict reader is tools/decision-register.ts. The repo is public: no secret, personal detail or path of this machine.",
   "decisions": [
     {
+      "id": "realtid-mun-mindre-oppning",
+      "kind": "beslut",
+      "question": "Munnen i realtid: mindre gap i vanligt tal, taket kvar. Rätt nu?",
+      "leads": "Vid ja blir det här sättet för munnen i realtid, med näsan orörd och hakan som följer mjukt.",
+      "proof": "paow-realtid-mun-6",
+      "file": "paow-realtid-mun-6-5-nara-vanlig.png",
+      "chips": [
+        {
+          "value": "ja",
+          "label": "Ja"
+        },
+        {
+          "value": "andra",
+          "label": "Ändra (skriv vad)"
+        },
+        {
+          "value": "nej",
+          "label": "Nej"
+        }
+      ],
+      "asked": "2026-11-17",
+      "from": "talsessionen",
+      "answer": null
+    },
+    {
       "id": "ankare-1-tatuerade-hander",
       "kind": "beslut",
       "question": "Nytt ankare 1: tatuerade händer, 10 % mindre. Ska nya filmer göras från det?",
@@ -109,35 +134,6 @@
         "value": "ny",
         "note": "Kortryggen, den del av kortet som inte visas, ska vara gul, medan den sida där kortet visas ska vara blå. Detta kommer att ske via en overlay eller något annat som vi kommer överens om, vilket hör till efterarbetet. Dessutom ser korten nära dealen små ut. Om du jämför kortet i skon ser det ut att vara dubbelt så stort från denna vinkel, vilket ser konstigt ut. Du får ta det sista beslutet om vilken variant som ska visas, men jag antar att det ska vara blått och gult. Dealens valör ska vara blå, medan kortryggen ska vara gul, med SG i svart och gult... Allt ska ju gjöras sen gällande fram och baksida",
         "at": "2026-11-17T19:32:34.602Z"
-      }
-    },
-    {
-      "id": "realtid-mun-bara-lapparna",
-      "kind": "beslut",
-      "question": "Munnen i realtid: nu rör sig bara läpparna. Bättre runt munnen?",
-      "leads": "Vid ja blir det här sättet för munnen i realtid, med storlek F kvar på läpparna.",
-      "proof": "paow-realtid-mun-5",
-      "file": "paow-realtid-mun-5-4-nara-stillbild.png",
-      "chips": [
-        {
-          "value": "ja",
-          "label": "Ja"
-        },
-        {
-          "value": "andra",
-          "label": "Ändra (skriv vad)"
-        },
-        {
-          "value": "nej",
-          "label": "Nej"
-        }
-      ],
-      "asked": "2026-11-17",
-      "from": "talsessionen",
-      "answer": {
-        "value": "andra",
-        "note": "Just när hon säger detta lägger jag insatser, tack, så ska hon förmodligen ha en lite mindre öppen mun. Men om hon säger något som kräver att hon har större öppen mun ska hon kunna gå till det här läget. Utifrån hur hennes mun ser ut när den är stängd ska den max kunna gå upp så här, men den ska kunna gå upp lite mindre och hon ska visa mindre tänder. För nu visar hon väldigt mycket av sin mun när hon säger det, men hon ska kunna säga så här mycket eller komma till det här läget. Nu ser det nästan lite överdrivet ut.",
-        "at": "2026-11-17T19:13:13.397Z"
       }
     },
     {
