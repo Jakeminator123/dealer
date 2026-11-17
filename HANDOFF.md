@@ -201,8 +201,8 @@ gäller"); arbetet stannade samma dag kl. 17.15, när kontot tog slut, och togs 
 konto ("Varit borta ett par dagar och nu bytt konto"). Han läser inte långa svar, så svaren till honom är korta och
 `KLAR.txt` skrivs på skrivbordet när allt har ett utfall. Det här är det som bara han kan göra eller säga.
 
-1. **Det svarta spelet efter filmen (hans ord 2026-11-14 kl. 16.24): pröva igen, och skicka en skärmbild om det är
-   svart.** Ingen av oss har en telefon, och i en headless Chrome är spelet inte svart. Det som i sidan kunde lämna
+1. **Det svarta spelet efter filmen: löst enligt honom** (Beslut 2026-11-17 kl. 18.43: "Fungerar"). Äldre text:
+   **pröva igen, och skicka en skärmbild om det är svart.** Ingen av oss har en telefon, och i en headless Chrome är spelet inte svart. Det som i sidan kunde lämna
    bilden svart är ändrat och publicerat (Kända brister, "Spelet på hans telefon"). Blir det svart igen: öppna
    `dealer-lake.vercel.app/trailer?diagnos=1` och skicka en skärmbild; sidan skriver då på bilden vad hans webbläsare
    gör. Tre frågor som avgör läsningen: vilken telefon och webbläsare (skärmbilden kl. 15.21 visar en iPhone med Safari
@@ -739,8 +739,10 @@ här säger annat.
   ljudets skull, så rösten kommer in en bit in i repliken; en liten ljudfil bredvid varje talfilm tar bort det och
   görs när en telefon har visat att grunden håller. Frågorna till Jakob står i "Öppet hos Jakob". Filmen före spelet
   startas i själva trycket på Spela och berörs inte.
-- **Spelet på hans telefon blev svart efter filmen före spelet** (hans ord 2026-11-14 kl. 16.24). Inte återskapat, och
-  inte bekräftat rättat: ingen av oss har en telefon.
+- **Spelet på hans telefon blev svart efter filmen före spelet** (hans ord 2026-11-14 kl. 16.24). **Hans svar i Beslut
+  2026-11-17 kl. 18.43 på "Prova trailern på telefonen. Syns filmen?": "Fungerar".** Felet är alltså borta på hans
+  telefon med koden från `b8f6565` och framåt; vilken av ändringarna nedan som tog det vet vi inte, och det återskapades
+  aldrig hos oss. Det som följer står kvar som bakgrund om det kommer tillbaka.
   - Känt om telefonen: skärmbilden kl. 15.21 visar en iPhone med Safari i strömsparläge på `dealer-lake.vercel.app`,
     och där syns spelet som det ska. Kl. 15.29 skrev han om håret "i blackjacken efter", så vägen genom filmen
     fungerade då, och inget publicerades mellan 15.32 och hans ord 16.24. Telefonens eget läge kan alltså spela in.
