@@ -1,15 +1,15 @@
 # Reads a film of the dealer frame by frame with MediaPipe and writes what it finds of her hands and her body: for each
 # hand its 21 points in the bank's pixels and as a hand of real size in metres, for the body its 33 points likewise.
-#   python -I dealer3d/tools/landmarks.py <film.mp4> <out.json>
-# Run with the environment of tools/python (tools/python/README.md); the model files lie in tools/python/models, or
-# where DEALER_MODELS points. Reads the film only. The numbers are MediaPipe's own, unsmoothed; laying them into the
-# room under the table's lens is dealer3d/src/capture.ts.
+#   python -I tools/python/landmarks.py <film.mp4> <out.json>
+# The model files are not in Git (tools/python/README.md says where they come from); DEALER_MODELS points elsewhere.
+# Reads the film only. The numbers are MediaPipe's own, unsmoothed; laying them into the room under the table's lens is
+# dealer3d/src/capture.ts, through dealer3d/tools/lift.ts.
 import sys, json, os
 import numpy as np, cv2
 import mediapipe as mp
 from mediapipe.tasks.python import vision, BaseOptions
 
-MODELS = os.environ.get('DEALER_MODELS') or os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), 'tools', 'python', 'models')
+MODELS = os.environ.get('DEALER_MODELS') or os.path.join(os.path.dirname(os.path.abspath(__file__)), 'models')
 BANK_W = 1764
 
 

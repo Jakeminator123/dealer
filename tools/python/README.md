@@ -3,7 +3,8 @@
 Fem skript som det löpande bandet ([dealer-line.md](../dealer-line.md), [order-clerk.md](../order-clerk.md) §5–6,
 [handboken](../film-prompting.md)) fortfarande kör i Python. Fyra hittar händer, ögon, axlar eller ansikten med
 MediaPipe eller OpenCV:s ansiktsmodeller, som repots TypeScript inte har; det femte (`forlang-plagg.py`) är inte
-porterat. Resten av efterarbetet är porterat till `tools/film-after.ts` och `tools/still-after.ts`.
+porterat. Resten av efterarbetet är porterat till `tools/film-after.ts` och `tools/still-after.ts`. Ett sjätte,
+`landmarks.py`, hör till 3D-banan och ligger här för att det kör i samma MediaPipe-miljö.
 
 Skripten flyttades hit 2026-11-13 från D:-slasket (`D:/dealer-scratch/tmp/bestall/paow-ankare-2-1/` och
 `D:/dealer-scratch/tmp/paow/skript/`). Bara sökvägarna till modellerna och repot är ändrade (`forlang-plagg.py` är
@@ -17,6 +18,7 @@ oförändrat); allt annat är byte för byte som de skript som gjorde Paows anka
 | `filmmatt.py` | Mäter en film ruta för ruta: format, grönt, frysta rutor, händer och kropp, färgade kort, landning mot planen (`--seats`, läser `placements/default.json` i repot) och första och sista ruta mot beställningens bilder (`--start`, `--end`). Skriver `<namn>.film.json`. | Händer och kropp per ruta (order-clerk §5–6, film-review.md) |
 | `forlang-plagg.py` | Förlänger ett ljust plagg nedåt i en passad stillbild så att kroppen slutar vid bordets bakkant, bakom armar och händer. Behöver ingen modell. | Kroppen kapad i en stillbild med ljust plagg (handboken, felistan) |
 | `identitet.py` | Ansiktslikhet per ruta mot stillbilder av den nya och den gamla dealern, och hur mycket tatueringsbläck handryggarna bär. Kräver `filmmatt.py`:s mått för samma film. | Likhet för en ny dealer (dealer-line.md, station 3) |
+| `landmarks.py` | Läser en film ruta för ruta och skriver allt MediaPipe ser av händerna (21 punkter var, i bankens bildpunkter och som en hand i meter) och kroppen (33 punkter) till en JSON-fil. Talen är MediaPipes egna, ojämnade. Tillkom 2026-11-17 (3D-banan), inte flyttad från slasket. | En verklig giv lagd i rummet (`dealer3d/tools/lift.ts`, `dealer3d/LASMIG.md`) |
 
 Användning står överst i varje skript. Kör alltid med `-I` (isolerat läge), från repots rot:
 

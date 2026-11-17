@@ -95,6 +95,9 @@ export function createStage(canvas: HTMLCanvasElement, plan: Plan, options: {loo
     for (const s of all) { const w = CARD.width / 2 + 0.003, h = CARD.height / 2 + 0.003, pts = [[-w, -h], [w, -h], [w, h], [-w, h]].map(([x, z]) => new T.Vector3(s.at[0] + x, 0.0006, s.at[2] + z));
       scene.add(new T.LineLoop(new T.BufferGeometry().setFromPoints(pts), new T.LineBasicMaterial({color: C.mark, transparent: true, opacity: s.id === target ? 0.95 : 0.4}))); } }
   const floor = new T.Mesh(new T.PlaneGeometry(40, 40).rotateX(-Math.PI / 2), matte(C.ground, 1)); floor.position.y = -0.9; scene.add(floor);
+  // The room's floor in half-metre squares. Every seat's eye is as high over the felt and looks as steeply down as the
+  // bank's camera; without a floor to read that from, a view along the dealer's edge looks raised and one across it level.
+  if (look === 'room') { const tiles = new T.GridHelper(40, 80, 0x4a525a, 0x343a40); tiles.position.set(edge[0], -0.898, edge[2]); scene.add(tiles); }
 
   // The shoe: a wedge on the felt, its front plate leaning back; the next card shows on the plate.
   const profile = new T.Shape(), set = SHOE.frontHeight / Math.tan(SHOE.plateLean); profile.moveTo(0, 0); profile.lineTo(SHOE.length, 0); profile.lineTo(SHOE.length, SHOE.backHeight); profile.lineTo(set, SHOE.frontHeight); profile.lineTo(0, 0);

@@ -15,18 +15,18 @@ använder repots låsta `three` och `sharp`.
 | `src/camera.ts` | Passningen: linsfamiljen `lensForFocal` (alla linser som ger kortet vid plats 4 dess storlek och form i filmen) och vad en lins gör av en sträcka i bilden. Lämnar vidare allt ur `src/table-lens.ts`. Ren räkning. |
 | `src/world.ts` | Det filmen visar (`MEASURED`) och det som antas (`ASSUMED`); `filmLens()`, passningen som väljer den lins som ritar dealerns kropp i verklig storlek (ett test håller den lika med `TABLE_LENS`); planens kortplatser på filten; stolarnas ögon. Ren räkning. |
 | `src/capture.ts` | **En verklig giv lagd i rummet:** händernas 21 punkter och kroppens leder, avlästa ur en film, sätts under linsen punkt för punkt (varje punkt på siktlinjen genom sin egen bildpunkt), kortet följer filmens eget kortspår med sin hållna ände vid fingrarna, och `joints` och `LIMITS` säger vad en arm och en hand kan göra. Ren räkning. |
-| `data/giv-pamela-p4.json` | Den givna lagd i rummet som tal: `pamela-p4-c1-plan-deal-02`, 120 rutor, per ruta kortet, båda armarna och händernas punkter i meter. Skriven av `tools/lift.ts`; sidan och testerna läser den. |
+| `data/giv-pamela-p4.json`, `data/giv-pamela-p1.json` | Given lagd i rummet som tal: `pamela-p4-c1-plan-deal-02`, 120 rutor, per ruta kortet, båda armarna och händernas punkter i meter; och samma giv flyttad till plats 1 (`--to P1.C1`). Skrivna av `tools/lift.ts`; sidan och testerna läser dem. |
 | `src/deal.ts` | Den första given, ritad för hand, som tidslinje: kortets läge och vridning och handens grepp för varje tidpunkt, till vilken kortplats som helst. Bana och tempo ur Paows giv till plats 4. Jakob dömde ut handens rörelse (2026-11-17); den avlästa given ersätter den i proven, och den här står kvar för jämförelse och för platser som ingen film går till. Ren räkning. |
 | `src/body.ts` | Den handritade givens skelett, löst ur var händerna ska vara: hon böjer sig från höften och vrider fram axeln så långt armen behöver. Ren räkning. |
 | `src/stage.ts` | Ritningen i three.js: bord, sko, ett kort med två sidor och provdockan, sedda genom flera ögon samtidigt. Två utseenden: `room` (filtbord) och `plain` (vit docka på grått, för en förlagefilm). Två källor för rörelsen: en avläst giv (handen ritas av sina 21 punkter) eller den handritade. |
 | `page/` | Sidan. `?motion=giv-pamela-p4` väljer en avläst giv; `?eyes=1,4` ögon (en stol 1–7 eller `film` för bankens kamera), `?to=P4.C1` kortplatsen för den handritade given, `?look=plain`, `?tags=0`, `?t=1.9`, `?play=1`. |
-| `tools/landmarks.py` | Läser en film ruta för ruta med MediaPipe (miljön i `tools/python/`) och skriver händernas och kroppens punkter som JSON. Enda Python-filen; resultatet är mellanlager utanför Git. |
+| `../tools/python/landmarks.py` (repots Python-mapp) | Läser en film ruta för ruta med MediaPipe och skriver händernas och kroppens punkter som JSON. Resultatet är mellanlager utanför Git. |
 | `tools/lift.ts` | Lägger en films punkter i rummet (`capture.ts`) med filmens kortspår, skriver `data/<namn>.json` och skriver ut vad som mättes: handens storlek, varje leds omfång, och hur kortet stämmer med filmens. |
 | `tools/measure.ts` | Kalibreringen som tal: linsfamiljen, den valda linsen, ett verkligt kort på planens platser mot planens kontur, kortet i skon, stolarnas ögon. |
 | `tools/camera-proof.ts` | Bilderna till provet `dealer-3d-kamera`: planens kort och verkliga kort på en filmruta, och skons kort förstorat. |
 | `tools/shoot.ts` | Spelar in sidan utan labbserver: en egen filserver på 127.0.0.1 under körningen, headless Chrome med egen profil och port, en PNG per tidpunkt. Körs under det delade låset. |
 | `tests/world.test.ts` | Elva tester av passningen, världen och den handritade given, utan media och utan webbläsare; läser bara `placements/default.json`. |
-| `tests/capture.test.ts` | Åtta tester av den avlästa given: varje led inom mänskliga gränser i varje ruta, kortet i fingrarna tills det ligger, på kant en gång och inte vid skon. Läser `data/giv-pamela-p4.json`. |
+| `tests/capture.test.ts` | Fjorton tester av den avlästa given och av den flyttade: varje led inom mänskliga gränser i varje ruta, kortet i fingrarna tills det ligger, på kant en gång och inte vid skon, kortet på sin plats. Läser de två datafilerna. |
 
 ## Den avlästa given: mätt och modell
 
@@ -44,9 +44,16 @@ använder repots låsta `three` och `sharp`.
   −31 till 90°, armen aldrig sträckt; kortets mitt 0,9 bildpunkter från filmens kort (i mitten; högst 44 där kortet
   lämnar skon), samma sida mot kameran som spåret i 120 av 120 rutor, kortets hållna ände 29 mm från tumme och
   pekfinger (högst 38).
+- **Flyttad till en annan plats** (`moved` i `capture.ts`, `lift.ts --to P1.C1`): handen och kortet är de avlästa,
+  burna i sidled (inget vid skon, hela vägen när kortet är över sin plats). Fingrarnas böjning och kortets vändning
+  är som de lästes, så kameran ser baksida, kant och framsida i samma rutor och kortet ligger rakt på planens plats.
+  Handen svängs dessutom kring en lodlinje genom sitt grepp, med den vinkel som kräver minst av handled och underarm
+  (−90° till plats 1; buren rakt över blev handleden 105° och underarmens vridning 222°, vilket testet fäller). Arm
+  och kropp är där en modell: hon böjer sig från höften och vrider fram axeln (`solveBody`), armbågen hänger åt sin
+  sida. Utfall för plats 1: armbåge 27–131°, handled 24–59°, underarmens vridning 68°, armen aldrig sträckt, kortet
+  på planens P1.C1 inom 0,1 bildpunkt. Hennes vänsterarm går då över den vilande högerhanden.
 - **Inte gjort:** Paows egen giv (`paow-giv-2-1-p4-11-01`, 169 rutor med återgång till skon) är avläst men inte lagd i
-  rummet: handens djup på vägen tillbaka har ingen fästpunkt än. Given till en annan plats än filmens kräver att den
-  avlästa rörelsen flyttas om (inte byggt).
+  rummet: handens djup på vägen tillbaka har ingen fästpunkt än.
 
 ## Det som är mätt och det som är antaget
 
@@ -79,7 +86,7 @@ använder repots låsta `three` och `sharp`.
 
 ```
 node --test dealer3d/tests/capture.test.ts dealer3d/tests/world.test.ts tools/table-lens.test.ts
-tools/python/.venv/Scripts/python.exe -I dealer3d/tools/landmarks.py <film.mp4> <punkter.json>
+tools/python/.venv/Scripts/python.exe -I tools/python/landmarks.py <film.mp4> <punkter.json>
 node dealer3d/tools/lift.ts --marks <punkter.json> --track assets/tracking/<klipp>/card-track.json --out dealer3d/data/<namn>.json
 node dealer3d/tools/shoot.ts --out <mapp> --motion giv-pamela-p4 --eyes 1,4 --film 30 0 3.9667 --size 1920x640
 node dealer3d/tools/measure.ts
@@ -100,6 +107,6 @@ stänger sin Chrome och sin filserver själv. En hel omgång (stillbilder, två 
   utseende följer med (filmbanans prov 2026-11-17, `assets/proofs/giv-forlagefilm-2/`). Den kopierar dockans fel lika
   troget, så en förlagefilm måste hålla kortet i handen tills det ligger, ha ett verkligt korts storlek i varje ruta
   och stå på kant en gång, mitt på vägen.
-- Bara given till plats 4 finns avläst. En giv till plats 1, där ingen bra film finns, kräver att den avlästa
-  rörelsen flyttas om till en annan plats.
+- Bara given till plats 4 finns avläst; plats 1 är den givens hand och kort flyttade, med arm och kropp som modell.
+  Övriga platser görs på samma sätt (`lift.ts --to <plats>`), men är inte gjorda eller sedda.
 - Två datorer som delar en giv (händelse, kortplats, `DEAL_VERSION`, starttid) är inte byggt.

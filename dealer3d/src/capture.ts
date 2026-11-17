@@ -1,4 +1,4 @@
-// A real deal laid into the room: the hands and the body MediaPipe read off a film (dealer3d/tools/landmarks.py), put
+// A real deal laid into the room: the hands and the body MediaPipe read off a film (tools/python/landmarks.py), put
 // under the table's lens point by point, and the film's own card with its held end at her fingers. Pure: no I/O and no
 // three.js. Every joint is then a person's own, and the same deal can be looked at from any seat.
 //
@@ -16,7 +16,7 @@
 // on, which is why the card's turning is the track's and not the hand's.
 import {CARD, FILM, add, cross, dot, filmEye, length, mul, onPlane, onUpright, see, sub, unit, type Lens, type Pixel, type Vec3} from './camera.ts';
 import {ASSUMED, dealerEdge, shoeCard, shoePose} from './world.ts';
-import {BODY, turned} from './body.ts';
+import {BODY, solveBody, standing, turned} from './body.ts';
 import {HAND, type CardPose} from './deal.ts';
 
 export type HandMarks = {image: number[][]; world: number[][]; score: number};
@@ -181,6 +181,38 @@ export function perform(lens: Lens, marks: Landmarks, track: Track, options: {aw
     moments.push({card, L: arm(lens, shoulderL[i], L[0], {x: elbowL[i][0], y: elbowL[i][1]}, L), R: arm(lens, shoulderR[i], R[0], {x: elbowR[i][0], y: elbowR[i][1]}, R), head: heads[i], hip});
   }
   return {film: marks.film, fps: marks.fps, frameCount: n, leavesShoe: leaves, edge, folds, rests, handSize: {L: size, R: size}, palm, moments};
+}
+
+/**
+ * The same deal to another place. The dealing hand and the card are the read ones, carried sideways: nothing at the shoe,
+ * the whole way from the film's place to `to` by the time the card is over its place. How the fingers are bent and how
+ * the card is turned stay as they were read, so the bank's camera sees the card's back, edge and face at the same
+ * moments, and the card lies straight on the plan's place. A hand that reaches another way comes in from another side,
+ * though: carried straight across, the wrist would be bent and the forearm turned beyond what an arm can do. So the hand
+ * is swung about a plumb line through its grip, the card staying as it is between thumb and fingers, by the angle that
+ * asks least of wrist and forearm (`swing`, found by trying). Swinging the card with the hand was tried: toward seat 1
+ * the camera then sees the card on edge for twenty frames, which no reference film may show. The body is no longer the
+ * film's: she bends from the hip and turns her dealing shoulder forward as far as the arm needs (solveBody), and each
+ * elbow hangs to its own side. So here the fingers and the card are read and moved, and the swing, the arm and the body
+ * are a model.
+ */
+export function moved(lens: Lens, p: Performance, to: Vec3, swingDeg?: number): Performance & {swing: number} {
+  const frame = standing(lens), last = p.moments[p.frameCount - 1].card.centre, shift: Vec3 = [to[0] - last[0], 0, to[2] - last[2]], arrive = Math.round(p.edge[1] + (p.rests - p.edge[1]) * 0.5);
+  const byPole = (shoulder: Vec3, wrist: Vec3, pole: Vec3, points: Vec3[]): ArmPose => { // two bones bent toward `pole`, stretched together only if the wrist is out of reach
+    const far = length(sub(wrist, shoulder)), stretch = Math.max(1, far / ((BODY.upperArm + BODY.forearm) * 0.985)), a = BODY.upperArm * stretch, b = BODY.forearm * stretch, dir = unit(sub(wrist, shoulder));
+    const along = (a * a - b * b + far * far) / (2 * far), out = Math.sqrt(Math.max(0, a * a - along * along)), side = unit(sub(pole, mul(dir, dot(pole, dir))));
+    return {shoulder, elbow: add(add(shoulder, mul(dir, along)), mul(side, out)), wrist, stretch, points}; };
+  const round = (v: Vec3, angle: number): Vec3 => { const c = Math.cos(angle), s = Math.sin(angle); return [v[0] * c + v[2] * s, v[1], -v[0] * s + v[2] * c]; };
+  const build = (swing: number): Moment[] => p.moments.map((m, i) => {
+    const w = smooth((i - p.leavesShoe) / (arrive - p.leavesShoe)), by = mul(shift, w), grip = lerp(m.L.points[4], m.L.points[8], 0.5);
+    const L = m.L.points.map(q => add(add(grip, by), round(sub(q, grip), swing * w))), body = solveBody(frame, L[0], m.R.wrist);
+    return {card: {...m.card, centre: add(m.card.centre, by)}, L: byPole(body.shoulders[1], L[0], [0.7, -0.6, -0.4], L), R: byPole(body.shoulders[0], m.R.wrist, [-0.7, -0.6, -0.4], m.R.points), head: body.head, hip: body.hip}; });
+  // What a swing asks of the dealing arm: how far the wrist is bent at its worst, and how far the forearm turns from end to end.
+  const asks = (moments: Moment[]) => { const j = moments.map(m => joints(m.L, p.palm)), twist: number[] = []; for (const x of j) if (x.twist !== null) { let t = x.twist; if (twist.length) { while (t - twist[twist.length - 1] > 180) t -= 360; while (t - twist[twist.length - 1] < -180) t += 360; } twist.push(t); }
+    return Math.max(...j.map(x => x.wrist)) + 0.5 * (Math.max(...twist) - Math.min(...twist)) + 200 * (Math.max(...j.map(x => x.stretch)) - 1); };
+  let swing = (swingDeg ?? 0) * Math.PI / 180;
+  if (swingDeg === undefined) { let least = Infinity; for (let d = -120; d <= 120; d += 5) { const cost = asks(build(d * Math.PI / 180)); if (cost < least) { least = cost; swing = d * Math.PI / 180; } } }
+  return {...p, moments: build(swing), swing: swing * 180 / Math.PI};
 }
 
 // ---- what a body can do ---------------------------------------------------------------------------------------

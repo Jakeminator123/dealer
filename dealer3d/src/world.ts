@@ -1,13 +1,14 @@
 // The table as a real place in metres, built from the film: what is measured and what is assumed, the fit that chooses
 // the lens (its numbers stand frozen in src/table-lens.ts, and a test holds the two together), the card places of Jakob's
 // plan laid on the felt, and an eye for every seat. Pure: no I/O and no three.js.
-import {FILM, SHOE_FOOT, SHOE_WINDOW_CARD, filmEye, lensForFocal, onPlane, onUpright, orbit, planPixel, readSpan, see, cardCorners, quadMeasure, type Anchors, type Eye, type Lens, type Pixel, type Vec3} from './camera.ts';
+import {FILM, SEAT_FOUR_CARD, SHOE_FOOT, SHOE_WINDOW_CARD, filmEye, lensForFocal, onPlane, onUpright, orbit, planPixel, readSpan, see, cardCorners, quadMeasure, type Anchors, type Eye, type Lens, type Pixel, type Vec3} from './camera.ts';
 export {SHOE, cardInSpace, realCardQuad, realCardQuadAt, shoeCard, shoeCardQuad, shoePose, sides, type ShoePose} from '../../src/table-lens.ts';
 
 // What the film shows, read on frames of paow-giv-2-1-p4-11-01 (1764 x 1174) and in data/dealer-standard.json.
 export const MEASURED = {
-  // The blue card lying at seat 4, frame 120, read on a four times enlargement: near edge 84.5 px, far edge 77.5 px, 72 px deep.
-  restingCard: {centre: {x: 857, y: 1102}, nearPx: 84.5, farPx: 77.5, depthPx: 72},
+  // The blue card lying at seat 4, frame 120, read on a four times enlargement: near edge 84.5 px and 72 px deep
+  // (SEAT_FOUR_CARD in src/table-lens.ts), and its far edge, 77.5 px.
+  restingCard: {...SEAT_FOUR_CARD, farPx: 77.5},
   // The resting hand's knuckles, index to little finger (data/dealer-standard.json, hands.leftInPicture): 73.4 px apart.
   knuckles: {a: {x: 775.4, y: 802}, b: {x: 706.3, y: 826.8}},
   // The yellow card in the pinch (anchor 2.1), frame 0 of the same film's track: top left, top right, bottom right, bottom
@@ -25,7 +26,7 @@ export const MEASURED = {
 export const ASSUMED = {knuckleBreadth: 0.076, knuckleLift: 0.02, shoulderBreadth: 0.4, pupilDistance: 0.062, shouldersBehindEdge: 0.18};
 
 export const anchors = (): Anchors => ({
-  card: {centre: MEASURED.restingCard.centre, nearPx: MEASURED.restingCard.nearPx, depthPx: MEASURED.restingCard.depthPx},
+  card: SEAT_FOUR_CARD,
   span: {...MEASURED.knuckles, metres: ASSUMED.knuckleBreadth, lift: ASSUMED.knuckleLift},
 });
 /** What a lens makes of the dealer's own body, in metres: her knuckles on the felt, her shoulders and her pupils behind the table edge. */
