@@ -222,9 +222,10 @@ export function mixFrame(laid: Uint8Array, own: Uint8Array, weight: number): voi
 // mindre … det måste vara byggt på den befintliga munnen som hon har", 2026-11-13). So when the drawn mouth is laid back:
 //   1. only the mouth is laid in, through a soft ellipse around her own lips in that frame; chin and cheeks stay the film's own,
 //      and so do her own upper lip (under) and the corners of her mouth (corners, arc). Her own upper lip does not stand still:
-//      it is lifted, whole, as far as the drawn mouth opens above her lip line (lift). Her own lower lip is kept as well and
-//      moved down, whole, by the rest of the opening (sink), and her corners follow the jaw a little (corner): what is laid in
-//      of the drawn mouth is then only what shows between her two lips, its teeth and the dark of the mouth
+//      it is lifted, whole, as far as the drawn mouth opens above her lip line (lift). Her own lower lip can be kept as well
+//      and moved down by the rest of the opening (sink), with her corners following the jaw (corner), so that only the drawn
+//      teeth and the dark of the mouth are laid in. Reviewers preferred that; Jakob saw the films and found them worse than
+//      before (2026-11-17), so the recipe does not have it
 //   2. the drawn mouth is made larger around the middle of her lips, in height (tall); it can also be moved down at her lip line
 //      while it is open, so that it opens under her own upper lip and not behind it (drop, closed), which a fourth trial did and
 //      the recipe does not
@@ -320,7 +321,7 @@ export function mixFrame(laid: Uint8Array, own: Uint8Array, weight: number): voi
 //               sank about three pixels and the mouth read as turned down (a reviewer of round 25: "en nedåtböjd, sur form",
 //               seen at twice the game's size).
 export type Lips = {wide: number; tall: number; colour: number; sharpen: number; reach: [number, number]; grow: [number, number]; under: number | null; corners: number | null; drop: number; fall: number; open: [number, number]; closed: number; taper?: number; arc?: number; lift?: number; share?: number; base?: number; round?: number; whole?: boolean; quiet?: number; sunk?: number; jaw?: number; ease?: number; heard?: boolean; sink?: number; lens?: [number, number] | [number, number, number]; corner?: number; cornerMost?: number; edge?: number};
-export const LIPS: Lips = {wide: 1, tall: 1.25, colour: 1, sharpen: 0.5, reach: [60, 42], grow: [44, 30], under: 1, corners: 0, drop: 0, fall: 60, open: [2, 5], closed: 0, lift: 6, share: 0.3, base: 1.5, round: 2.5, jaw: 2.5, whole: true, quiet: 7.5, sunk: 5, taper: 0.5, arc: 44, ease: 1, heard: false, sink: 8, lens: [0, 1, 2], corner: 0.4, cornerMost: 2.2, edge: 2};
+export const LIPS: Lips = {wide: 1, tall: 1.25, colour: 1, sharpen: 0.5, reach: [60, 42], grow: [44, 30], under: 1, corners: 0, drop: 0, fall: 60, open: [2, 5], closed: 0, lift: 6, share: 0.3, base: 1.5, round: 2.5, jaw: 2.5, whole: true, quiet: 7.5, sunk: 5, taper: 0.5, arc: 44, ease: 1, heard: false};
 /** How the drawn mouth is open in a window. gap: the height in pixels of what is not lip between its upper and its lower lip
  * (teeth, the dark of the mouth), the median over the columns at the lips' middle; 0 when its lips meet. rise: how many pixels
  * above her own lip line that gap begins (the lower edge of the drawn upper lip; negative: under her line), the median over the

@@ -233,23 +233,18 @@ konto ("Varit borta ett par dagar och nu bytt konto"). Han läser inte långa sv
    granskare har hört ljudet: han bör lyssna innan han skickar. Äldre filmer på skrivbordet som inte ska skickas:
    `paow-runda-2-` till `paow-runda-5-`. Trailern ligger där som `noir-trailer-3-kort.mp4` och
    `noir-trailer-3-nytt-slut.mp4`, och förslaget med tatuerade händer som `paow-fler-tatueringar-forslag.jpg`.
-8. **Läpparna: mungiporna är omgjorda** (hans ord 2026-11-14 kl. 15.14: "Hon får lixom lite som typ
-   clown-mungipor"). Talbanans tre rader till honom, ordagrant: "Clown-mungiporna kom av två saker: giporna stod helt
-   stilla medan munnen öppnades, och underläppen var ritad av modellen. Nu är båda läpparna hennes egna, giporna
-   följer med när hon öppnar munnen, och modellen ritar bara tänderna och munhålan." "Oberoende granskare jämförde
-   alla 30 filmer med dem i spelet: den nya var bättre i alla 30 (mest 4/5 mot 3/5). 20 byts nu; de 10 andra är
-   omlagda i dag med två små rättningar och kommer när de är dömda." "Inget kostade pengar, och den andra
-   läppsynkmodellen behövdes inte för det här." De 20 är inne och godkända åt honom (STABILT 16, 2026-11-17), och
-   samma dag nio av de tio sista (STABILT 17; lyckoönskan över ingången står kvar som den var, eftersom den nya hade
-   en dubbel läpplinje i två rutor). **Granskarna är inte överens om giporna**, och det ska han ha rakt: underläppen
-   kallar alla klart bättre, men av elva granskare säger sex att giporna är naturliga eller nästan naturliga och fyra
-   att det uppdragna finns kvar i spelets storlek. **Hans öga har avgjort samma dag: "hennes mungipor måste som sagt
-   med"**, och läppsynken i trailern på kopian kallar han sämre än i provfilmen. Talbanan gör därför nästa gratis
-   steg (hennes egna små veck utanför giporna tonas ned medan hon talar, som ett blint prov på åtta repliker) och
-   utreder vad som skiljer läppsynken på kopian från provfilmens. Prov
-   `paow-mun` och `paow-tal`. Hans egen godkända `paow-tal-blackjack-sv-04` rörs inte och går före i spelet,
-   så blackjackrepliken har kvar de gamla giporna tills han själv dömer om den (Granska, Alla, filtret Dömda åt dig:
-   `paow-tal-blackjack-sv-13` är den nya).
+8. **Läpparna: dagens omläggning är underkänd av honom och uttagen igen.** Hans ord 2026-11-14: "Hon får lixom lite som
+   typ clown-mungipor." Talbanan lade om alla repliker med hennes egen underläpp och gipor som följer käken; elva
+   oberoende granskare kallade de nya bättre i 30 av 30, och 25 talfilmer och tre munlappar gick in och ut på kopian
+   2026-11-17 kl. 17.05–17.08 (STABILT 16 och 17). Kl. 17.15 såg han dem: "[proven paow-mun och paow-tal] är värre än
+   förut. […] Detta ser på dessa videos sämre ut i alla fall som agt", och om trailern på kopian "så är lipsynk sämre".
+   Samma kväll är de 25 underkända åt honom med hans ord som grund (inte som hans egen dom i Granska), de tre lapparna
+   är de förra igen, och spelet säger de repliker det sade i lördags. **Vad granskningen missade:** granskarna såg
+   stillbilder och förstoringar i filmens storlek; han ser rörelsen i spelets storlek. Före nästa byte av läppar:
+   en jämförelse i spelets storlek och i rörelse, och hans eget ja. Hans egen idé (kl. 17.20, till talbanan) står som
+   nästa steg, obyggd: leendefilmen `paow-vila-03-01` som underlag, så att munnen hämtas ur hennes egen film och
+   modellen bara bestämmer när och hur mycket. Den andra läppsynkmodellen är det betalda alternativet. Hans egen
+   godkända `paow-tal-blackjack-sv-04` är orörd.
 9. **Det han bör se själv, allt i Prov** (studion på hans dator; kopian bär bara de sex prov han valde 2026-11-12):
    Monacos nya bakgrund (`monaco-liv-2`, 3,5/5: kyparens rundor upprepas och allt går lite raskt), håret utan grön
    kant (`har-utan-gront`), förslaget med tatuerade händer (`paow-fler-tatueringar`: sagt "Jättebra med händerna",
@@ -296,13 +291,13 @@ här säger annat.
   bakom henne skiljer 0,7 nivåer av 255 (`D:/dealer-scratch/tmp/huvudagent11/look/skjut-intro-toning.mjs`,
   `hopp-i-rutor.mjs`). Kvar i dess bana: tatueringarna i trailerns början (provet 2/5; ett andra prov cirka 105
   krediter, hela början 620–940), och ingen har lyssnat på trailern.
-- **Talbanan:** STABILT 16 och 17 (mungiporna) är inne 2026-11-17: 25 talfilmer, tre munlappar och demofilmen,
-  godkända åt honom; spelet säger de nya för alla repliker utom `blackjack` (hans egen `sv-04`). Fem av dem
-  (`otur`, `push`, `regler`, `varsagod` och lyckoönskan över given) byttes på huvudagentens beslut fast granskaren
-  kallade giporna likvärdiga: var och en är bättre att visa utan något sämre, och annars talar hon med två sorters
-  underläpp. Talbanan bygger om proven `paow-tal` och `paow-mun`. Nästa steg där är hans: se "Öppet hos Jakob".
-  En överlämning läggs in med `D:/dealer-scratch/tmp/huvudagent11/look/in-talet.mjs` och `doma-talfilmer.mjs`;
-  lapparna enligt talbanans LASMIG.
+- **Talbanan:** dagens läppar (STABILT 16 och 17) är uttagna ur spelet på Jakobs dom samma kväll (Öppet hos Jakob,
+  "Läpparna"). Receptet i `src/speech-plan.ts` är åter lyftet med ritad underläpp; måtten för hennes egen underläpp
+  och giporna (`sink`, `lens`, `corner`, `cornerMost`, `edge`) finns kvar som val med sina tester, oanvända. Vägen
+  som gicks: `D:/dealer-scratch/tmp/tal/stabilt/tillbaka-17.json`; de underkända lapparna i
+  `D:/dealer-scratch/tmp/huvudagent11/look/lappar-underkanda-1117/`. Talbanan skriver en överlämning av hela banan i
+  `D:/dealer-scratch/tmp/tal/stabilt/LASMIG.md` (hans ord: "Lämna över så vi kanske kan avsluta eller att ni gör
+  olika saker"); ingen annan session lägger läppar.
 - **Scenbanan** mäter hoppen i webbläsaren (Kända brister, "Hopp mellan filmer"): sex korta körningar, tre i
   1920 × 1080 och tre i 390 × 844. Rummets film `monaco-liv-2.mp4` står kvar som den är: den har ett litet steg in i
   varje nyckelruta (var 8,3 s, 0,57 nivåer av 255 i en suddig bakgrund; 0,87 i slingans skarv), och ingen av 17
@@ -504,8 +499,9 @@ här säger annat.
   ja det gröna är borta. Ang tatueringarna så är det bättre! "underlagg"- kan inte klicka på ngn länk, 'Paows mun när
   hon talar' hennes mungipor måste som sagt med. Ang vad som blir svart elelr inte ser jag ingen skymt av, mne då
   testar jag på datorn". Alltså: Monacos bakgrund och håret är bra; **mungiporna är inte lösta i hans ögon** ("måste
-  som sagt med"), så talbanans nästa steg är beställt av honom; läppsynken på kopian kallar han sämre än i provfilmen
-  (inte utrett: kopian fick de nya läpparna kl. 17.05 och 17.08, strax innan han tittade); det svarta spelet syns
+  som sagt med"); läppsynken på kopian kallar han sämre än i provfilmen (kopian hade fått de nya läpparna kl. 17.05
+  och 17.08, strax innan han tittade; till talbanan samma minut kallade han dem "värre än förut", och de togs ur
+  spelet igen); det svarta spelet syns
   inte på datorn och är inte prövat på telefonen. Till trailersessionen samma stund: han har fyllt på Runway.
 - **2026-11-17 kl. 16.35:** "Vad är sttus? Varit borta ett par dagar och nu bytt konto". Arbetet hade stått sedan
   2026-11-14 kl. 17.15; sessionerna fick nya adresser (Vem äger vad), och Runways koppling kräver ny inloggning.
@@ -664,11 +660,9 @@ här säger annat.
 - **Rösten:** spelet väljer talfilmerna med rösten Paow (`src/game-page.ts`, `data/speech.json`); nattens 25 med rösten
   Jessica ligger kvar i banken och spelas inte. Rösten ligger i Kevins ElevenLabs-konto, och nyckelradens namn står i
   registret, aldrig nyckeln (docs/TAL.md, "Rösten").
-- **Läpparna** är omlagda fyra gånger efter hans ord (STABILT 12, 13 och 14 om överläppen; STABILT 16, 2026-11-17, om
-  mungiporna: hennes egen underläpp flyttas nedåt, giporna följer käken och det ritade ligger bara mellan hennes
-  läppar; docs/TAL.md, "Kvaliteten"). Banken har repliker lagda med flera recept: de 20 i STABILT 16 är lagda utan de
-  två mått koden fick samma dag (tak på gipornas väg, smalare toning vid läppkanterna), så en ny tagning av en av dem
-  skiljer i de rutorna och går in först efter granskning. Det som följer är skrivet före STABILT 16. Granskarna
+- **Läpparna** är omlagda tre gånger efter hans ord om överläppen (STABILT 12, 13 och 14; docs/TAL.md, "Kvaliteten");
+  en fjärde omläggning om mungiporna (STABILT 16 och 17, 2026-11-17) underkände han samma dag och den är uttagen
+  (Öppet hos Jakob, "Läpparna"). Mungiporna är alltså som han såg dem 2026-11-14. Granskarna
   gav den andra omläggningen 4/5 i 29 filmer av 30; den tredje bytte bara de elva repliker där en granskare kallade
   den nya bättre (en sluten mun är sluten: läppen vilar i tysta rutor), och arton står kvar. Banken har alltså
   repliker lagda med två recept, och en ny tagning av en replik som inte byttes går in först efter granskning. Kvar i

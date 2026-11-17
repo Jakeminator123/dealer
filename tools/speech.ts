@@ -58,10 +58,11 @@ const LEVEL = 6, MARGIN = 40, FEATHER = 24;
 // ("lite 'clownläppar' i mungiporna"). Seen in motion he found it worse than before: "bara underläppen som pratar" (her upper
 // lip stood still). So her own upper lip is lifted with the drawn mouth's opening. Of those films he said (2026-11-14): "Hon får
 // lixom lite som typ clown-mungipor." Every reviewer measured the same: her corners stood exactly still while the mouth opened
-// between them, and the drawn lower lip, larger and duller than hers, met her corners at another angle. So her own lower lip is
-// kept too and moved down, her corners follow the jaw, and the drawn mouth is only teeth and the dark between her two lips; that
-// is LIPS in src/speech-plan.ts. Moving the drawn mouth down instead (drop) was tried twice and is left at nothing in the recipe;
-// the model's own corners laid in, and a drawn mouth made wider, were tried and reviewed worse (docs/TAL.md, Kvaliteten).
+// between them, and the drawn lower lip, larger and duller than hers, met her corners at another angle. Her own lower lip kept
+// too and moved down, with her corners following the jaw, was built for that and preferred by the reviewers, and he found those
+// films worse than before (2026-11-17: "är värre än förut"). So LIPS in src/speech-plan.ts is the recipe with the lift and the
+// drawn lower lip, as it was; the measures for the other way are still there, unused (sink, lens, corner, cornerMost, edge).
+// Moving the drawn mouth down (drop), the model's own corners, and a wider drawn mouth were tried and reviewed worse (docs/TAL.md).
 // Every line is heard at the same strength. ElevenLabs gives each reading its own: Paow's 25 lines measured 2026-11-13 lay between
 // −10.9 and −20.7 LUFS (each near full scale in its highest peak, so it is the peaks that differ), and in a film of a round the line
 // over the entrance was heard 6.5 dB under the three after it. Where a line's sound is written into a film or a mouth patch it is

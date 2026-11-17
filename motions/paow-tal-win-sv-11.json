@@ -38,15 +38,15 @@
     "soundEndsAtSeconds": 1.988
   },
   "review": {
-    "decision": "ACCEPTED",
+    "decision": "REJECTED",
     "basis": "Inte granskad av Jakob. Gjord av tools/speech.ts ur assets/motions/paow-vila-01-01/source.mp4, inlagd bara kring det som hörs och under hennes egen överläpp, som lyfts när munnen öppnar. Granskaren 4/5: Giporna följer med (2–3 px), svansar kvar. Egen blank underläpp även i slutna 14–15, 36–37; -10 har blek matt underläpp där. Öppen i pausen 24–26 som -10.",
     "userAccepted": false,
     "productionReady": false,
     "provisional": {
-      "by": "huvudagenten med talbanans oberoende granskare",
-      "at": "2026-11-17T15:45:19.720Z",
-      "mandate": "Jakob 2026-11-13 kl. 15.50, med en bild av kön i Granska: \"jag vill nu för jag ska iväg att du godkänner allt videomaterial som innehåller de där kriterierna\" och \"Med andra ord vill jag inte se en sån här lista när jag är tillbaka!\"",
-      "note": "Granskaren 4/5, användbar med anmärkningar: Giporna följer med (2–3 px), svansar kvar. Egen blank underläpp även i slutna 14–15, 36–37; -10 har blek matt underläpp där. Öppen i pausen 24–26 som -10."
+      "by": "huvudagenten på Jakobs ord",
+      "at": "2026-11-17T16:18:14.597Z",
+      "mandate": "Jakob 2026-11-17 kl. 17.15 till talbanan, om proven paow-mun och paow-tal: \"är värre än förut\", \"Detta ser på dessa videos sämre ut\"",
+      "note": "Lagd 2026-11-17 med hennes egen underläpp och gipor som följer käken (STABILT 16); elva granskare kallade den bättre i filmens storlek, Jakob kallar den sämre. Spelet säger åter paow-tal-win-sv-10."
     }
   },
   "postProcessing": "the rendered face laid back into the rest film's own frames (assets/speech/paow/paow-tal-win-sv-11/receipt.json, laidBack)",
