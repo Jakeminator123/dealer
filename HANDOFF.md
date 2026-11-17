@@ -180,6 +180,14 @@ kl. 21.46 och 21.58 (Jakobs besked, "Ett labb"), av underagenter till huvudagent
   tagning (`src/deal-check.ts`: en vändning genom kantläget, storlek mot ett verkligt kort, landning, slät färg, inget
   kort som rör sig utan finger) som fäller före en granskare. Det som kräver bankens filmer görs i huvudträdet i ett
   andra steg, när Bordets underagent är klar där.
+- **Den rättade dockfilmen höll** (prov C2, kl. 00.10, en tagning, 85 krediter, saldo 6 919; `c2-*` i Prov
+  `giv-forlagefilm-2`): samma beställning som C med 3D-banans film ur en verklig hand som enda ändring gav en tagning
+  som den oberoende granskaren ger 4/5, utan något av hans fällande fel: en vändning med handleden inom 0,1 s från
+  dockans, fingrarna kvar tills kortet ligger, kortet stilla sedan. Kvar: fingrarna lyfts kort i slutet (dockan gör
+  det; 3D-banan gör om plats 3, 4 och 5 med handen kvar på kortet) och det gula kortet bärs cirka 20 % för avlångt.
+  Metoden är alltså fri från Pamelas filmer där en dockfilm finns: plats 3, 4 och 5 (plats 6 och 7 går genom skon och
+  plats 1 korsar kroppen; de behöver egna rörelser). Nästa betalda steg, godkänt av huvudagenten när filmerna utan
+  lyft finns: en tagning var på plats 3 och 5.
 - **Pågår hos 3D-banan: dockans hand ur en verklig giv** (hans dom cirka kl. 23.27 om provet med två stolar: rörelsen "ser inte
   naturlig ut" och är nog "omöjlig med mänsklig anatomi"): leder lästa med MediaPipe ur Pamelas och Paows givar,
   ledgränser som test, kortet kvar i greppet tills det ligger och aldrig större än ett verkligt kort i handen. Sedan
