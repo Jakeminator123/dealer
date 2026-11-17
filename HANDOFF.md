@@ -31,7 +31,7 @@ Vilken hand som delar väljs per order: vänster, höger eller handbyte (`HAND_C
   "Klippbank och nodnotation").
 - **Kortets tre mått:** riktning, lutning (0° = plant) och perspektiv (hur mycket smalare den bortre kanten är). Jakob:
   "perspektiv är bättre", och han vill kunna ställa in alla tre "men också ha en normal" (förslaget: 0°, 0°, 87 %).
-  Placering visar lutningen som "plant" och har inget reglage för den.
+  Bordets Kortplan visar lutningen som "plant" och har inget reglage för den.
 
 ## Vem äger vad (2026-11-17)
 
@@ -103,7 +103,7 @@ skrivs på skrivbordet när allt har ett utfall. Här står bara det som inte ä
 4. **Farten:** scenbanans förslag väntar på hans öga: fart bara på givar och returer, hellre 1,3–1,5 än 2.
 5. **Ett tredje och fjärde dealerkort** ("Skapa då ett tredje och fjärde till dealer", 2026-11-13): planen har sexton
    platser (`TARGETS` i `src/placement-model.ts`), så en film dit går inte att beställa och korten läggs utan hand.
-   Förslag, inte byggt: `D.C3` och `D.C4` efter `D.C2`, han flyttar dem i Placering, filmerna beställs som hennes första
+   Förslag, inte byggt: `D.C3` och `D.C4` efter `D.C2`, han flyttar dem i Bordets Kortplan, filmerna beställs som hennes första
    kort. Vill han ha det så?
 6. **Mindre saker:** keystone ur video eller redigerad stillbild (Målet); ska `placements/proposals/` (två planförslag
    från 2026-11-11) tas bort; ska gamla publika sajten stängas, och biblioteksfilerna under `materials/` byggas ur vår
@@ -115,7 +115,7 @@ skrivs på skrivbordet när allt har ett utfall. Här står bara det som inte ä
 
 ## Nästa steg
 
-**Börja här (läget 2026-11-17 kl. 23.05; huvudagenten bytte chatt kl. 21.45).** Labbet byggs om på Jakobs ord från
+**Börja här (läget 2026-11-17 kl. 23.15; huvudagenten bytte chatt kl. 21.45).** Labbet byggs om på Jakobs ord från
 kl. 21.46 och 21.58 (Jakobs besked, "Ett labb"), av underagenter till huvudagenten:
 
 - **Inne i `main` och sett i headless Chrome:** vyn **Bordet**, första versionen (`82258f3`: `/studio/bordet/` med
@@ -129,17 +129,20 @@ kl. 21.46 och 21.58 (Jakobs besked, "Ett labb"), av underagenter till huvudagent
 - **Bordets andra steg är inne** (`803b68a`, sett i headless Chrome): varje rad i Beställ visar exakt vad som går till
   Runway (första och sista bilden, referensfilmen med vems film det är eller "Ingen referensfilm", texten ord för ord);
   läget Beställ har Filmer och Kön, där Kön är hela förra Beställ med godkännandet; en rad som beställts förut visar
-  tagningarna som kom bredvid det som skickades (Granska filmen); Placerings Material ligger i Efterarbete och Kortplan
-  har Dator och Mobil; `/bestall/` och `/placering/` leder till Bordet i labbet. Menyn i labbet: Bordet, Karta, Granska,
+  tagningarna som kom bredvid det som skickades (Granska filmen); kortens böjning och glans ändras bara i Efterarbete, alla 16 på en gång, och Kortplan har Dator och Mobil; `/bestall/` och `/placering/` leder till Bordet i labbet. Menyn i labbet: Bordet, Karta, Granska,
   Material, Lipsync, Casino. "Alla sju" skickar nu varje plats egen vändning. "Skapa utkast" i Bordet är tryckt en gång
   i headless Chrome kl. 22.53 och gav ett riktigt utkast (borttaget igen); Godkänn i Bordet är inte tryckt. Radens
   förval är ännu metodregistrets gamla recept för en giv (Kling 4, 7 s, tur och retur, ingen referensfilm): kvällens
   recept blir förvalet först med mall 10 (filmmetodens plan, nedan).
-- **Pågår i huvudträdet, ocommittat:** Bordets tredje steg (samma underagent): Scens adresser leder till Bordets läge
-  Scen och studion öppnar på Bordet; Bordet i kopian på nätet, bara läsning, så att kopian får samma meny; skalen för
-  Placering, Beställ och Scen tas bort; och alla texter som beskriver den gamla menyn rättas (botens kunskap i
-  `tools/knowledge.ts` och `cloud/studio/bot-prompt.ts`, `studio/lib/guide.ts`, README, SYSTEM, DRIFT, ordlistan).
-  Underagenten ger huvudagenten de meningar i den här filen och i AGENTS som inte längre stämmer.
+- **Bordets tredje steg är inne** (`c9a1873`): studion öppnar på Bordet; Scen, Placering och Beställ är delar av Bordet i
+  labbet och i kopian (bara läsning där: inget Beställ, inget sparas), och `/`, `/scen/`, `/placering/` och `/bestall/`
+  leder dit med adressens alla ord; skalen är borta (1 403 rader mindre); botens kunskap, README, SYSTEM, DRIFT och
+  ordlistan beskriver den nya menyn; raderna i Beställ visar bevisat samma text som utkastet får. Inte sett: kopian i
+  en webbläsare (bara byggd). Ny beställning ritar ännu sin egen bild (`order/Stage.tsx`).
+- **Hans ja kl. 23.02 på kortet i Beslut** (`kortplanen-verkligt-perspektiv`): kortplanen ska ritas i verkligt perspektiv
+  (plats 4 som i dag, korten närmare dealern större). Inte utfört än: linsen (3D-banans mätning, Kända brister) ska in
+  som en ren funktion i `src/`, planens kort i Bordets Kortplan och sista bilden i en beställning ritas med den, och
+  spelets liggande kort följer sedan samma lins (först visat för honom i labbet). Kortet tas ut när det är gjort.
 - **Skills och rutinverktyg är inne** (`c9a8509`): sju skills i `.claude/skills/` (AGENTS, "Läs först", punkt 4), och
   tre verktyg med tester: `node tools/push-clean.ts` (pushen från ett rent träd), `node tools/lab-look.ts` (skärmbilder av
   labbsidor under låset) och `node tools/studio-from-commit.ts` (studion byggd ur en commit i ett rent träd och inbytt
@@ -172,8 +175,7 @@ kl. 21.46 och 21.58 (Jakobs besked, "Ett labb"), av underagenter till huvudagent
 
 Huvudagenten slår ihop grenarna i `main` en i taget (squash), ser på sidorna i det bygge Bordets underagent gör
 (en som bygger i huvudträdet åt gången) och tar bort träden och grenarna. Bryts chatten: `git worktree list`, `git log main..<gren>` och `git status` i huvudträdet säger vad som
-finns; kör testerna och avgör vad som är helt. Kopian på nätet är kvar på `aee87ca` (inget publicerat i kväll: en
-publicering bär ordlistan, Placering och Beställ som de är nu och botens kunskap utan den gamla checklistan; fråga
+finns; kör testerna och avgör vad som är helt. Kopian på nätet är kvar på `aee87ca` (inget publicerat i kväll: en publicering bär Bordet, bara läsning, i stället för Scen och Placering, och ordlistan och botens kunskap med den nya menyn; fråga
 sedan kopian som en ny besökare). Saldot hos Runway var 7 430 kl. 21.40; taket per beställning är 2 000. `KLAR.txt` är
 inte skriven. Filmerna (punkt 1) är huvudagentens eget nästa steg när labbets grenar är inne. I den här ordningen:
 
@@ -469,8 +471,7 @@ Ett besked per ämne, med det nyaste ordet och dess datum. Ett besked han har er
 - **Kortets sidor i labbet** (Beslut 2026-11-17): "Kortryggen, den del av kortet som inte visas, ska vara gul, medan den
   sida där kortet visas ska vara blå. Detta kommer att ske via en overlay eller något annat som vi kommer överens om,
   vilket hör till efterarbetet. […] Allt ska ju gjöras sen gällande fram och baksida", och samma kväll att korten ska
-  vara utan vit kant, "bara … blåa, med rundade kanter". Placering och Beställs bild visar därför släta gula och blå
-  kort (filmernas egna färger, `CARD_COLOUR` i `src/placement-model.ts`); det tryckta kortet med SG är ett val märkt som
+  vara utan vit kant, "bara … blåa, med rundade kanter". Bordet och Ny beställnings bild visar därför släta gula och blå kort (filmernas egna färger, `CARD_COLOUR` i `src/placement-model.ts`); det tryckta kortet med SG är ett val märkt som
   efterarbete. Vilken variant som visas avgör huvudagenten ("Du får ta det sista beslutet").
 - **Kortets vändning** (2026-11-17, cirka kl. 21): "Båda dessa två sätt är giltiga som du ger exempl på är rimliga och
   gilltiga. Altså både vrida som en nyckel samt den andra. Huvudsaken är att rätt sida kommer upp mot spelaren och att
@@ -481,7 +482,7 @@ Ett besked per ämne, med det nyaste ordet och dess datum. Ett besked han har er
   instruktioner kommer med?"
 - **Givens sex steg från ankare 2.1** (2026-11-13, hans skiss, inte underlag i repot): Nyp, Dra (ned på filten,
   baksidan upp), För fram (lågt längs filten, inte vänt i luften), Vrid (kortet reser sig på långsidan), Vänd upp, Lägg.
-  Det är valet Vänd vid platsen (`AT_PLACE`), som planen väljer per kort i Placering; förvalet för en ny giv är
+  Det är valet Vänd vid platsen (`AT_PLACE`), som planen väljer per kort i Bordets Kortplan; förvalet för en ny giv är
   handleden på vägen (`defaultFlip` i `src/order-model.ts`).
 - **Nypet** (2026-11-13): i ankare 2.1 håller tumme och pekfinger i själva det gula kortet, inte i skons kant ("hon
   nyper tag i skons kant mer"); kortet får gärna vikas lite. Det står i texten, syns i posebilden och prövas i
@@ -525,7 +526,7 @@ Ett besked per ämne, med det nyaste ordet och dess datum. Ett besked han har er
   kortens fjärde steg (`33b164a`: hålkortet följer filmens kort under handen, skons fönster står mörkt), blint granskat
   3,75/5. Kvar: hålkortet dolt under hennes fingertoppar cirka 0,6 s innan det glider på plats, en svag gulaktig kant i
   kortets högra ände, en tunn linje medan kortet står på kant och en taggig fingerkant. Pålägget fick 3/5 och är inte i
-  spelet; `kort=liggande` finns kvar för hans öga; reglage för `cardBack` och `cardFace` i Scen finns inte. Stegen:
+  spelet; `kort=liggande` finns kvar för hans öga; reglage för `cardBack` och `cardFace` i Bordets Scen finns inte. Stegen:
   `D:/dealer-scratch/tmp/kortbyggare/`, utredningen `D:/dealer-scratch/tmp/kortutredning/RAPPORT.md`.
 - **Kortens storlek och perspektiv** (3D-banans mätning 2026-11-17, ren räkning på Paows film och ankare;
   `D:/dealer-scratch/tmp/dealer-3d/kalibrering.txt`, talen i grenen `dealer-3d`, `dealer3d/src/world.ts`). Planens kort
@@ -598,17 +599,17 @@ Ett besked per ämne, med det nyaste ordet och dess datum. Ett besked han har er
   insatsbrickorna när alla sju platser spelar; dubbling och försäkring är inte sedda (SYSTEM, "Spelet").
 - **3D-scenens hemvy** stämmer inte med `assets/proofs/bakgrund-3d-referens/` (medel 0,96, max 168), eftersom filtens
   tryck har flyttat med planen. Referensen tas om med Jakobs ögon och ändras inte för att dölja avvikelsen.
-- **Placering:** på V6-bilden och på filmer utan grön filt ritas korten hela. Inte prövat: byte av vy med osparade
+- **Kortplan:** korten ritas släta gula och blå, utan tryckt kort. Inte prövat: byte av vy med osparade
   ändringar och knappen för att läsa in en fil.
 
 ## Arbetsyta
 
 - **`main` är den enda grenen.** Etapper `jakob-N`: DRIFT, "Git och kontroller".
-- **Studion:** `http://127.0.0.1:4319/studio/` (`/` och `/lab.html` leder dit); bredvid den sidorna `/scene3d.html`,
+- **Studion:** `http://127.0.0.1:4319/studio/` (`/` och `/lab.html` leder dit, och den öppnar på Bordet); bredvid den sidorna `/scene3d.html`,
   `/sound.html` och `/props.html` i `pages/`.
   Visa en sida med `node tools/preview.ts --open "<sida>"` (DRIFT); lösa sidor under `D:/dealer-scratch` visas inte för
   Jakob.
-- **`placements/default.json` är Jakobs plan** (incheckad på hans ja 2026-11-12, `7a158d6`); bara Placering skriver den.
+- **`placements/default.json` är Jakobs plan** (incheckad på hans ja 2026-11-12, `7a158d6`); bara Bordet skriver den: Kortplan med Spara i kortplanen, och Efterarbete med kortens böjning och glans (Spara till planen).
   På hans ord 2026-11-11: alla kort ×1,20 (P4 86,6 × 71,8 px), perspektiv 87 %, vridning 0°, platserna speglade kring
   bildens mitt, dealerns två kort centrerade.
 - **Den låsta kopian** (åt hans chef): `https://dealer-lake.vercel.app` och `https://dealer-studio-one.vercel.app`, öppen
