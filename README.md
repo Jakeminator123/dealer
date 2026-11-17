@@ -13,6 +13,7 @@ README.md AGENTS.md HANDOFF.md   läs först
 studio/       studion: Jakobs arbetsyta i webbläsaren (Next.js)
 pages/        sidorna bredvid studion: 3D-sidan (scene3d.html), Ljud (sound.html) och Modeller (props.html)
 .claude/skills/  agenternas skills: ett arbetsmoment per mapp, med reglerna som oftast bryts och pekaren till rutinen
+dealer3d/     3D-banans arbetsmapp: bordets lins, en giv som geometri och sidan som visar den från valfri stol
 game/         spelet: den fristående spelmotorn med Scouts regler oförändrade i sak; spelsidan i game/page/
 src/          den delade motorn och sidornas kod: 3D-scen, klippgraf, kort, placering, beställningar
 tools/        kommandon, labbservern (preview.ts), instruktionerna (*.md) och testerna (*.test.ts)

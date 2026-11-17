@@ -1,0 +1,127 @@
+// The deal drawn with three.js: a table, a shoe, a real card with two sides, and the test figure, seen through any number
+// of eyes at once. Everything shown comes from the pure modules beside this file (world, deal, body); this file only gives
+// it shape and light. Two looks: 'room' (a felt table, for looking at the geometry from the seats) and 'plain' (a white
+// figure and a grey table on a flat ground, for a reference film a video model can follow).
+import * as T from 'three';
+import {CARD, FILM, filmEye, fovYDeg, type Eye, type Vec3} from './camera.ts';
+import {SHOE, dealerEdge, filmLens, realCardAt, seatEye, shoeCard, shoePose, spots, type Plan} from './world.ts';
+import {HAND, MOMENTS, planDeal, type CardPose, type HandPose} from './deal.ts';
+import {restingHand, solveBody, standing, type Body} from './body.ts';
+
+export type Look = 'room' | 'plain';
+export type View = 'film' | number; // the bank's camera, or a seat 1-7 (seat 4 is the bank's camera)
+const COLOUR = {
+  room: {ground: 0x101214, felt: 0x1f7045, rail: 0x3a2417, wood: 0x2a1a10, figure: 0xe6e1d8, shoe: 0x1b1c1f, mark: 0xd8c27a, fog: 0x101214},
+  plain: {ground: 0x767d84, felt: 0xb4b9bd, rail: 0xb4b9bd, wood: 0x9aa0a5, figure: 0xf3f1ec, shoe: 0x2a2c30, mark: 0xb4b9bd, fog: 0x767d84},
+  back: 0xf4d21c, face: 0x1e8be0, edge: 0xf2efe6,
+};
+const v3 = (p: Vec3) => new T.Vector3(p[0], p[1], p[2]), UP = new T.Vector3(0, 1, 0);
+
+/** A card: a thin body with rounded corners, the back on one side and the face on the other. Local x across, y out of the face, z along the long side. */
+function cardMesh(): T.Group {
+  const w = CARD.width / 2, h = CARD.height / 2, r = CARD.corner, shape = new T.Shape();
+  shape.moveTo(-w + r, -h); shape.lineTo(w - r, -h); shape.absarc(w - r, -h + r, r, -Math.PI / 2, 0, false); shape.lineTo(w, h - r); shape.absarc(w - r, h - r, r, 0, Math.PI / 2, false);
+  shape.lineTo(-w + r, h); shape.absarc(-w + r, h - r, r, Math.PI / 2, Math.PI, false); shape.lineTo(-w, -h + r); shape.absarc(-w + r, -h + r, r, Math.PI, Math.PI * 1.5, false);
+  const flat = new T.ShapeGeometry(shape, 6), body = new T.ExtrudeGeometry(shape, {depth: CARD.thickness, bevelEnabled: false, curveSegments: 6}).translate(0, 0, -CARD.thickness / 2);
+  // The sides glow a little of their own colour, so that yellow and blue read as the film has them whichever way the card faces the light.
+  const side = (colour: number) => new T.MeshStandardMaterial({color: colour, roughness: 0.62, metalness: 0, emissive: colour, emissiveIntensity: 0.3}), g = new T.Group();
+  // The shape lies in x-y; a quarter turn about x lays it down, its y along the card's long side (z). A turn, not a mirror:
+  // a mirrored surface is lit on its wrong side. Each surface is double-sided, so it is lit from whichever side it is seen.
+  const add = (geometry: T.BufferGeometry, material: T.MeshStandardMaterial, lift: number) => { geometry.rotateX(Math.PI / 2); geometry.translate(0, lift, 0); material.side = T.DoubleSide; const m = new T.Mesh(geometry, material); m.castShadow = true; m.receiveShadow = true; g.add(m); };
+  add(body, side(COLOUR.edge), 0); add(flat.clone(), side(COLOUR.face), CARD.thickness / 2 + 0.00004); add(flat.clone(), side(COLOUR.back), -CARD.thickness / 2 - 0.00004);
+  g.matrixAutoUpdate = false; return g;
+}
+const place = (o: T.Object3D, x: Vec3, y: Vec3, z: Vec3, at: Vec3) => { o.matrix.makeBasis(v3(x), v3(y), v3(z)).setPosition(v3(at)); o.matrixWorldNeedsUpdate = true; };
+const placeCard = (o: T.Object3D, c: {centre: Vec3; long: Vec3; normal: Vec3; across: Vec3}) => place(o, c.across, c.normal, c.long, c.centre);
+
+/** A limb between two points: a unit-height cone frustum scaled along its length. */
+function limb(material: T.Material, from: number, to: number) {
+  const m = new T.Mesh(new T.CylinderGeometry(to, from, 1, 20), material); m.castShadow = true; m.receiveShadow = true;
+  return {mesh: m, set(a: Vec3, b: Vec3) { const p = v3(a), q = v3(b), d = q.clone().sub(p), l = d.length() || 1e-6; m.position.copy(p).addScaledVector(d, 0.5); m.quaternion.setFromUnitVectors(UP, d.multiplyScalar(1 / l)); m.scale.set(1, l, 1); }};
+}
+const ball = (material: T.Material, radius: number) => { const m = new T.Mesh(new T.SphereGeometry(radius, 24, 16), material); m.castShadow = true; m.receiveShadow = true; return m; };
+
+/** A hand in its own frame: origin at the wrist, z toward the fingers, y out of the palm, x to the thumb's side (`thumb` +1 or -1). */
+function handMesh(material: T.Material, thumb: 1 | -1): T.Group {
+  const g = new T.Group(), part = (geometry: T.BufferGeometry) => { const m = new T.Mesh(geometry, material); m.castShadow = true; m.receiveShadow = true; g.add(m); return m; };
+  const palm = part(new T.BoxGeometry(0.074, 0.02, 0.082)); palm.position.set(0, -0.004, 0.047);
+  const finger = (x: number, length: number) => { const a = new T.Vector3(x, -0.002, 0.086), b = new T.Vector3(x * 0.96, 0.003, 0.086 + length * 0.55), c = new T.Vector3(x * 0.92, 0.006, 0.086 + length);
+    for (const [p, q] of [[a, b], [b, c]] as const) { const m = part(new T.CylinderGeometry(0.0072, 0.0078, 1, 12)), d = q.clone().sub(p), l = d.length(); m.position.copy(p).addScaledVector(d, 0.5); m.quaternion.setFromUnitVectors(UP, d.multiplyScalar(1 / l)); m.scale.set(1, l, 1); }
+    for (const p of [a, b, c]) part(new T.SphereGeometry(0.0078, 12, 8)).position.copy(p); };
+  finger(-0.027 * thumb, 0.062); finger(-0.009 * thumb, 0.078); finger(0.009 * thumb, 0.084); finger(0.027 * thumb, 0.076); // little finger to forefinger
+  // The thumb comes round the card's edge and presses on its other side, opposite the finger pads at the grip.
+  const t = [new T.Vector3(0.036 * thumb, 0.002, 0.03), new T.Vector3(0.04 * thumb, 0.024, 0.07), new T.Vector3(0.014 * thumb, HAND.pad + 0.011, HAND.reach - 0.004)];
+  for (let i = 0; i < 2; i++) { const m = part(new T.CylinderGeometry(0.0085, 0.0095, 1, 12)), d = t[i + 1].clone().sub(t[i]), l = d.length(); m.position.copy(t[i]).addScaledVector(d, 0.5); m.quaternion.setFromUnitVectors(UP, d.multiplyScalar(1 / l)); m.scale.set(1, l, 1); }
+  for (const p of t) part(new T.SphereGeometry(0.0095, 12, 8)).position.copy(p);
+  g.matrixAutoUpdate = false; return g;
+}
+
+export function createStage(canvas: HTMLCanvasElement, plan: Plan, options: {look?: Look; target?: string} = {}) {
+  const look = options.look ?? 'room', target = options.target ?? 'P4.C1', C = COLOUR[look], lens = filmLens(), edge = dealerEdge(lens), all = spots(plan, lens);
+  const four = all.find(s => s.id === 'P4.C1')!, to = all.find(s => s.id === target); if (!to) throw Error(`The plan has no place ${target}.`);
+  const pose = shoePose(lens), inShoe = shoeCard(pose), deal = planDeal({lens, target, place: to.at, placeOfSeat4: four.at, shoe: inShoe}), frame = standing(lens), rest = restingHand(lens);
+
+  const renderer = new T.WebGLRenderer({canvas, antialias: true, preserveDrawingBuffer: true}); renderer.outputColorSpace = T.SRGBColorSpace; renderer.shadowMap.enabled = true; renderer.shadowMap.type = T.PCFSoftShadowMap; renderer.setScissorTest(true);
+  const scene = new T.Scene(); scene.background = new T.Color(C.ground);
+  scene.add(new T.HemisphereLight(0xffffff, look === 'room' ? 0x3a3f44 : 0x8a9096, look === 'room' ? 1.25 : 1.6));
+  const sun = new T.DirectionalLight(0xfff4e6, look === 'room' ? 2.4 : 1.9); sun.position.set(edge[0] - 0.9, 2.6, edge[2] + 1.9); sun.target.position.set(edge[0], 0, edge[2] + 0.2); sun.castShadow = true;
+  sun.shadow.mapSize.set(2048, 2048); sun.shadow.bias = -0.0004; sun.shadow.normalBias = 0.002; sun.shadow.radius = 5; Object.assign(sun.shadow.camera, {left: -1.5, right: 1.5, top: 1.5, bottom: -1.5, near: 0.5, far: 6}); scene.add(sun, sun.target);
+  const matte = (colour: number, roughness = 0.9) => new T.MeshStandardMaterial({color: colour, roughness, metalness: 0});
+
+  // The table: a straight dealer's edge and a half circle toward the players, the felt at y = 0; a rail round the players' side.
+  const radius = 1.02, rail = 0.12, half = (r: number) => { const s = new T.Shape(); s.moveTo(-r, 0); s.absarc(0, 0, r, Math.PI, 0, true); s.lineTo(-r, 0); return s; };
+  const lay = (g: T.BufferGeometry) => g.rotateX(Math.PI / 2).translate(edge[0], 0, edge[2]); // the shape lies in x-y with its arc toward +y; turned so that +y is world +z, toward the players, and its depth goes down
+  const felt = new T.Mesh(lay(new T.ShapeGeometry(half(radius), 64)), new T.MeshStandardMaterial({color: C.felt, roughness: 0.95, side: T.DoubleSide})); felt.receiveShadow = true; scene.add(felt);
+  const slab = new T.Mesh(lay(new T.ExtrudeGeometry(half(radius + rail), {depth: 0.06, bevelEnabled: false, curveSegments: 64})), new T.MeshStandardMaterial({color: C.wood, roughness: 0.8, side: T.DoubleSide})); slab.position.y = -0.0005; slab.receiveShadow = true; scene.add(slab);
+  if (look === 'room') { const ring = half(radius + rail); ring.holes.push(new T.Path(half(radius).getPoints(64)));
+    const r = new T.Mesh(lay(new T.ExtrudeGeometry(ring, {depth: 0.03, bevelEnabled: false, curveSegments: 64})).translate(0, 0.03, 0), new T.MeshStandardMaterial({color: C.rail, roughness: 0.55, side: T.DoubleSide})); r.castShadow = true; r.receiveShadow = true; scene.add(r);
+    // The plan's places as thin outlines of a real card, so that one sees where each card is to lie.
+    for (const s of all) { const w = CARD.width / 2 + 0.003, h = CARD.height / 2 + 0.003, pts = [[-w, -h], [w, -h], [w, h], [-w, h]].map(([x, z]) => new T.Vector3(s.at[0] + x, 0.0006, s.at[2] + z));
+      scene.add(new T.LineLoop(new T.BufferGeometry().setFromPoints(pts), new T.LineBasicMaterial({color: C.mark, transparent: true, opacity: s.id === target ? 0.95 : 0.4}))); } }
+  const floor = new T.Mesh(new T.PlaneGeometry(40, 40).rotateX(-Math.PI / 2), matte(C.ground, 1)); floor.position.y = -0.9; scene.add(floor);
+
+  // The shoe: a wedge on the felt, its front plate leaning back; the next card shows on the plate.
+  const profile = new T.Shape(), set = SHOE.frontHeight / Math.tan(SHOE.plateLean); profile.moveTo(0, 0); profile.lineTo(SHOE.length, 0); profile.lineTo(SHOE.length, SHOE.backHeight); profile.lineTo(set, SHOE.frontHeight); profile.lineTo(0, 0);
+  const shoe = new T.Mesh(new T.ExtrudeGeometry(profile, {depth: SHOE.width, bevelEnabled: false}), new T.MeshStandardMaterial({color: C.shoe, roughness: 0.5, side: T.DoubleSide})); shoe.castShadow = true; shoe.receiveShadow = true; shoe.matrixAutoUpdate = false;
+  const sideways: Vec3 = [-pose.back[2], 0, pose.back[0]], sameWay = sideways[0] * pose.far[0] + sideways[2] * pose.far[2] > 0; // back x up is one of the two ways across; the wedge is extruded along it
+  place(shoe, pose.back, [0, 1, 0], sideways, sameWay ? pose.front : [pose.front[0] + pose.far[0] * SHOE.width, 0, pose.front[2] + pose.far[2] * SHOE.width]); scene.add(shoe);
+  const next = cardMesh(), start = deal.card(0); placeCard(next, {...start, centre: [start.centre[0] - start.normal[0] * 0.0006, start.centre[1] - start.normal[1] * 0.0006, start.centre[2] - start.normal[2] * 0.0006]}); scene.add(next);
+  const card = cardMesh(); scene.add(card);
+
+  // The figure.
+  const skin = matte(C.figure, 0.85), torso = ball(skin, 1), yoke = limb(skin, 0.052, 0.052), neck = limb(skin, 0.04, 0.036), head = new T.Group();
+  const skull = ball(skin, 1); skull.scale.set(0.74, 1, 0.86); head.add(skull); const nose = ball(skin, 0.16); nose.position.set(0, -0.12, 0.84); nose.scale.set(0.7, 1, 1); head.add(nose); head.scale.setScalar(frame.headRadius * 0.92);
+  torso.matrixAutoUpdate = false; scene.add(torso, yoke.mesh, neck.mesh, head);
+  const arms = [0, 1].map(() => ({upper: limb(skin, 0.047, 0.04), fore: limb(skin, 0.038, 0.03), shoulder: ball(skin, 0.055), elbow: ball(skin, 0.04), wrist: ball(skin, 0.031)}));
+  for (const a of arms) scene.add(a.upper.mesh, a.fore.mesh, a.shoulder, a.elbow, a.wrist);
+  const hands = [handMesh(skin, -1), handMesh(skin, 1)]; scene.add(...hands); // her right hand (thumb at -x of its frame), her left
+  const cross = (a: Vec3, b: Vec3): Vec3 => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
+  place(hands[0], cross([0, -1, 0], rest.forward), [0, -1, 0], rest.forward, rest.wrist); // palm down on the felt
+
+  let now = 0, shown: {card: CardPose; hand: HandPose; body: Body} | null = null;
+  function setTime(t: number) {
+    now = Math.max(0, Math.min(deal.duration, t)); const c = deal.card(now), h = deal.hand(now), body = solveBody(frame, h.wrist, rest.wrist); shown = {card: c, hand: h, body};
+    placeCard(card, c); place(hands[1], cross(h.palm, h.forward), h.palm, h.forward, body.arms[1].wrist);
+    body.arms.forEach((a, i) => { arms[i].upper.set(a.shoulder, a.elbow); arms[i].fore.set(a.elbow, a.wrist); arms[i].shoulder.position.copy(v3(a.shoulder)); arms[i].elbow.position.copy(v3(a.elbow)); arms[i].wrist.position.copy(v3(a.wrist)); });
+    yoke.set(body.shoulders[0], body.shoulders[1]); neck.set(body.neck, [body.head[0], body.head[1] - frame.headRadius * 0.6, body.head[2]]);
+    // The trunk: an egg from the hip to the shoulders, as wide as they are, leaning and turning with them.
+    const mid: Vec3 = [(body.shoulders[0][0] + body.shoulders[1][0]) / 2, (body.shoulders[0][1] + body.shoulders[1][1]) / 2, (body.shoulders[0][2] + body.shoulders[1][2]) / 2];
+    const x = v3(body.shoulders[1]).sub(v3(body.shoulders[0])), wide = x.length(); x.normalize(); const y = v3(mid).sub(v3(body.hip)), tall = y.length(); y.normalize(); const z = new T.Vector3().crossVectors(x, y).normalize(); y.crossVectors(z, x);
+    torso.matrix.makeBasis(x.multiplyScalar(wide * 0.47), y.multiplyScalar(tall * 0.56), z.multiplyScalar(0.095)).setPosition(v3(body.hip).lerp(v3(mid), 0.52)); torso.matrixWorldNeedsUpdate = true;
+    head.position.copy(v3(body.head)); const gaze = v3(c.centre).lerp(new T.Vector3(body.head[0], body.head[1] - 0.25, body.head[2] + 1.2), now < MOMENTS.lets ? 0.45 : 0.8); head.lookAt(gaze);
+  }
+  const cameraOf = (eye: Eye) => { const cam = new T.PerspectiveCamera(fovYDeg(eye.focalPx), FILM.width / FILM.height, 0.2, 30); cam.position.copy(v3(eye.position)); cam.lookAt(v3(eye.position).add(v3(eye.forward))); cam.updateMatrixWorld(); return cam; };
+  const eyeOf = (view: View): Eye => view === 'film' ? filmEye(lens) : seatEye(view, plan, lens);
+  /** Draws the present moment once per view, side by side from the left; each view keeps the bank's shape (1764 : 1174) inside its share of the canvas. */
+  function render(views: View[]): {left: number; top: number; width: number; height: number}[] {
+    const W = canvas.width, H = canvas.height, share = W / views.length, boxes: {left: number; top: number; width: number; height: number}[] = [];
+    renderer.setViewport(0, 0, W, H); renderer.setScissor(0, 0, W, H); renderer.setClearColor(0x0b0d0f); renderer.clear();
+    views.forEach((view, i) => { const width = Math.min(share, H * FILM.width / FILM.height), height = width * FILM.height / FILM.width, left = i * share + (share - width) / 2, top = (H - height) / 2;
+      renderer.setViewport(left, H - top - height, width, height); renderer.setScissor(left, H - top - height, width, height); renderer.render(scene, cameraOf(eyeOf(view))); boxes.push({left, top, width, height}); });
+    return boxes;
+  }
+  setTime(0);
+  return {duration: deal.duration, moments: MOMENTS, lens, setTime, render, eyeOf, state: () => shown, time: () => now,
+    /** What the bank's camera would measure of the card that lies at the target: near edge, far edge, depth, taper, in pixels. */
+    landed: () => realCardAt(lens, to.pixel)};
+}
