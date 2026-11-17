@@ -8,6 +8,7 @@ import {SHOE, dealerEdge, filmLens, realCardAt, seatEye, shoeCard, shoePose, spo
 import {HAND, MOMENTS, planDeal, type CardPose} from './deal.ts';
 import {restingHand, solveBody, standing, type Body} from './body.ts';
 import {FINGERS} from './capture.ts';
+import type {Figure} from './figure-model.ts';
 
 export type Look = 'room' | 'plain';
 type Limb = {s: number[]; e: number[]; w: number[]; k: number; p: number[][]};
@@ -72,7 +73,7 @@ function pointHand(material: T.Material) {
     [0, 5, 9, 13, 17, 1].forEach((k, i) => palmAt.setXYZ(i, p[k][0], p[k][1], p[k][2])); palmAt.needsUpdate = true; palm.computeVertexNormals(); }};
 }
 
-export function createStage(canvas: HTMLCanvasElement, plan: Plan, options: {look?: Look; target?: string; read?: Read | null} = {}) {
+export function createStage(canvas: HTMLCanvasElement, plan: Plan, options: {look?: Look; target?: string; read?: Read | null; figure?: Figure | null} = {}) {
   const look = options.look ?? 'room', target = options.target ?? 'P4.C1', C = COLOUR[look], lens = filmLens(), edge = dealerEdge(lens), all = spots(plan, lens);
   const four = all.find(s => s.id === 'P4.C1')!, to = all.find(s => s.id === target); if (!to) throw Error(`The plan has no place ${target}.`);
   const pose = shoePose(lens), inShoe = shoeCard(pose), deal = planDeal({lens, target, place: to.at, placeOfSeat4: four.at, shoe: inShoe}), frame = standing(lens), rest = restingHand(lens);
@@ -119,6 +120,8 @@ export function createStage(canvas: HTMLCanvasElement, plan: Plan, options: {loo
   const moments = read ? {leavesShoe: read.leavesShoe / read.fps, edgeOn: (read.edge[0] + read.edge[1]) / 2 / read.fps, lands: read.rests / read.fps, end: duration} : MOMENTS;
   const stiff = read ? [] : [handMesh(skin, -1), handMesh(skin, 1)], jointed = read ? [pointHand(skin), pointHand(skin)] : []; // her right hand, her left
   scene.add(...stiff, ...jointed.map(h => h.group)); if (!read) place(stiff[0], cross([0, -1, 0], rest.forward), [0, -1, 0], rest.forward, rest.wrist); // palm down on the felt
+  // A rigged model in the figure's place (options.figure): the white figure is made as always and not drawn, and the model is posed from its joints.
+  const figure = options.figure ?? null; if (figure) { scene.add(figure.root); for (const o of [torso, yoke.mesh, neck.mesh, head, ...arms.flatMap(a => [a.upper.mesh, a.fore.mesh, a.shoulder, a.elbow, a.wrist]), ...stiff, ...jointed.map(h => h.group)]) o.visible = false; }
   const mix = (a: number[], b: number[], t: number): Vec3 => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t], norm = (v: Vec3): Vec3 => { const l = Math.hypot(v[0], v[1], v[2]) || 1; return [v[0] / l, v[1] / l, v[2] / l]; };
 
   let now = 0, shown: {card: CardPose} | null = null;
@@ -142,6 +145,17 @@ export function createStage(canvas: HTMLCanvasElement, plan: Plan, options: {loo
     // oftast, och alltid när det vänds över"); when it lies she looks up toward the players, over two thirds of a second.
     const lies = read ? moments.lands : MOMENTS.lands, up = Math.max(0, Math.min(1, (now - lies) / 0.65)), eased = up * up * (3 - 2 * up);
     head.position.copy(v3(body.head)); const gaze = v3(c.centre).lerp(new T.Vector3(body.head[0], body.head[1] - 0.25, body.head[2] + 1.2), 0.75 * eased); head.lookAt(gaze);
+    if (figure) {
+      // Each hand as a whole, since the model has no fingers to move: from the wrist toward the middle of the middle finger
+      // (half way between its knuckle and its tip, so that a stiff hand points between the palm and the bent fingers), the
+      // palm's way from the wrist and the two outer knuckles.
+      const sub = (p: number[], q: number[]): Vec3 => [p[0] - q[0], p[1] - q[1], p[2] - q[2]], whole = (p: number[][], side: 1 | -1) => { const n = cross(sub(p[5], p[0]), sub(p[17], p[0])); return {forward: sub(mix(p[9], p[12], 0.5), p[0]), palm: [n[0] * side, n[1] * side, n[2] * side] as Vec3}; };
+      let hands: {forward: Vec3; palm: Vec3}[];
+      if (read) { const at = Math.min(read.frameCount - 1, now * read.fps), i = Math.min(read.frameCount - 2, Math.floor(at)), k = at - i, a = read.frames[i], b = read.frames[i + 1], points = (s: 'L' | 'R') => a[s].p.map((p, j) => mix(p, b[s].p[j], k)); hands = [whole(points('R'), 1), whole(points('L'), -1)]; }
+      else { const h = deal.hand(now); hands = [{forward: rest.forward, palm: [0, -1, 0]}, {forward: h.forward, palm: h.palm}]; }
+      const looks = new T.Vector3(0, 0, 1).applyQuaternion(head.quaternion);
+      figure.pose({hip: body.hip, shoulders: body.shoulders, arms: body.arms, hands, looks: [looks.x, looks.y, looks.z]});
+    }
   }
   const cameraOf = (eye: Eye) => { const cam = new T.PerspectiveCamera(fovYDeg(eye.focalPx), FILM.width / FILM.height, 0.2, 30); cam.position.copy(v3(eye.position)); cam.lookAt(v3(eye.position).add(v3(eye.forward))); cam.updateMatrixWorld(); return cam; };
   const eyeOf = (view: View): Eye => view === 'film' ? filmEye(lens) : seatEye(view, plan, lens);

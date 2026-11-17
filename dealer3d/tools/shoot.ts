@@ -4,6 +4,7 @@
 //        --times 0,0.92,1.9      stills at those seconds, named <prefix>-<seconds>.png
 //        --film 24 0 4           every frame at 24 a second from 0 to 4 s, named <prefix>-0001.png ... (ffmpeg makes the film)
 //        [--motion giv-pamela-p4]   a deal read off a film (dealer3d/data/<name>.json) instead of the one drawn by hand
+//        [--model <file.glb>]       a rigged model in the white figure's place (dealer3d/src/figure-model.ts); the file stays where it is
 //        [--prefix ruta] [--profile <folder>] [--port 9601] [--serve 9611]
 // Run it under the shared lock for the graphics card and headless Chrome (docs/DRIFT.md): one run at a time, short.
 import {createServer} from 'node:http';
@@ -23,12 +24,16 @@ const sleep = (ms: number) => new Promise(r => setTimeout(r, ms));
 
 // The file server: this folder's page, modules and data and the table's lens in src/ (TypeScript stripped of its types on the way out), three.js out of the
 // locked dependency, and Jakob's plan for reading. Nothing else, and only GET.
-const VENDOR: Record<string, string> = {'/vendor/three.module.js': 'node_modules/three/build/three.module.js', '/vendor/three.core.js': 'node_modules/three/build/three.core.js'};
+const VENDOR: Record<string, string> = {'/vendor/three.module.js': 'node_modules/three/build/three.module.js', '/vendor/three.core.js': 'node_modules/three/build/three.core.js',
+  '/vendor/addons/loaders/GLTFLoader.js': 'node_modules/three/examples/jsm/loaders/GLTFLoader.js', '/vendor/addons/utils/BufferGeometryUtils.js': 'node_modules/three/examples/jsm/utils/BufferGeometryUtils.js'};
+// --model: one rigged model from outside the repo, served as /model.glb for the length of the run (that file and nothing beside it).
+const MODEL = arg('--model') ? path.resolve(arg('--model')!) : null; if (MODEL && !/\.glb$/i.test(MODEL)) throw Error('--model takes the path of one .glb file');
 const TYPES: Record<string, string> = {'.html': 'text/html; charset=utf-8', '.ts': 'text/javascript; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.json': 'application/json; charset=utf-8'};
 const server = createServer(async (req, res) => {
   try {
     const url = new URL(req.url ?? '/', 'http://x').pathname, file = VENDOR[url] ?? (url === '/placements/default.json' || url === '/src/table-lens.ts' || /^\/dealer3d\/(page|src|data)\/[\w.-]+\.(html|ts|json)$/.test(url) ? url.slice(1) : null);
     if (url === '/favicon.ico') { res.writeHead(204).end(); return; }
+    if (req.method === 'GET' && url === '/model.glb' && MODEL) { const bytes = await readFile(MODEL); res.writeHead(200, {'content-type': 'model/gltf-binary', 'content-length': bytes.length, 'cache-control': 'no-store'}).end(bytes); return; }
     if (req.method !== 'GET' || !file) { res.writeHead(404).end('not served'); return; }
     const ext = path.extname(file), body = await readFile(path.join(root, file), 'utf8');
     res.writeHead(200, {'content-type': TYPES[ext] ?? 'application/octet-stream', 'cache-control': 'no-store'}).end(ext === '.ts' ? stripTypeScriptTypes(body) : body);
@@ -54,11 +59,12 @@ try {
   const run = async (expression: string) => { const r = await send('Runtime.evaluate', {expression, awaitPromise: true, returnByValue: true}); if (r.exceptionDetails) throw Error(JSON.stringify(r.exceptionDetails).slice(0, 700)); return r.result.value; };
   await send('Runtime.enable'); await send('Page.enable'); await send('Network.enable');
   await send('Emulation.setDeviceMetricsOverride', {width: W, height: H, deviceScaleFactor: 1, mobile: false});
-  const query = new URLSearchParams({eyes: arg('--eyes', '1,4')!, to: arg('--to', 'P4.C1')!, look: arg('--look', 'room')!, tags: arg('--tags', '1')!, ...(arg('--motion') ? {motion: arg('--motion')!} : {})});
+  const query = new URLSearchParams({eyes: arg('--eyes', '1,4')!, to: arg('--to', 'P4.C1')!, look: arg('--look', 'room')!, tags: arg('--tags', '1')!, ...(arg('--motion') ? {motion: arg('--motion')!} : {}), ...(MODEL ? {model: '1'} : {})});
   await send('Page.navigate', {url: `http://127.0.0.1:${SERVE}/dealer3d/page/index.html?${query}`});
-  let ready = false; for (let i = 0; i < 80 && !ready; i++) { await sleep(250); ready = await run('!!(window.dealer3d && window.dealer3d.ready)').catch(() => false); if (errors.length) break; }
+  // A model is tens of megabytes to fetch, read and send to the graphics card: the page gets two minutes instead of twenty seconds.
+  let ready = false; for (let i = 0; i < (MODEL ? 480 : 80) && !ready; i++) { await sleep(250); ready = await run('!!(window.dealer3d && window.dealer3d.ready)').catch(() => false); if (errors.length) break; }
   if (!ready) throw Error('The page did not come up. ' + errors.join(' | '));
-  const facts = await run('JSON.stringify({dealVersion: dealer3d.dealVersion, duration: dealer3d.duration, moments: dealer3d.moments, lens: dealer3d.lens, landed: dealer3d.landed, gl: (() => { const c = document.createElement("canvas").getContext("webgl2"); const e = c && c.getExtension("WEBGL_debug_renderer_info"); return e ? c.getParameter(e.UNMASKED_RENDERER_WEBGL) : "?"; })()})');
+  const facts = await run('JSON.stringify({dealVersion: dealer3d.dealVersion, duration: dealer3d.duration, moments: dealer3d.moments, lens: dealer3d.lens, landed: dealer3d.landed, model: dealer3d.model, gl: (() => { const c = document.createElement("canvas").getContext("webgl2"); const e = c && c.getExtension("WEBGL_debug_renderer_info"); return e ? c.getParameter(e.UNMASKED_RENDERER_WEBGL) : "?"; })()})');
   console.log('page', facts);
   for (let i = 0; i < times.length; i++) {
     await run(`dealer3d.setTime(${times[i]})`);

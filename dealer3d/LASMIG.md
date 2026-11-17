@@ -19,7 +19,8 @@ använder repots låsta `three` och `sharp`.
 | `src/deal.ts` | Den första given, ritad för hand, som tidslinje: kortets läge och vridning och handens grepp för varje tidpunkt, till vilken kortplats som helst. Bana och tempo ur Paows giv till plats 4. Jakob dömde ut handens rörelse (2026-11-17); den avlästa given ersätter den i proven, och den här står kvar för jämförelse och för platser som ingen film går till. Ren räkning. |
 | `src/body.ts` | Den handritade givens skelett, löst ur var händerna ska vara: hon böjer sig från höften och vrider fram axeln så långt armen behöver. Ren räkning. |
 | `src/stage.ts` | Ritningen i three.js: bord, sko, ett kort med två sidor och provdockan, sedda genom flera ögon samtidigt. Två utseenden: `room` (filtbord) och `plain` (vit docka på grått, för en förlagefilm). Två källor för rörelsen: en avläst giv (handen ritas av sina 21 punkter) eller den handritade. |
-| `page/` | Sidan. `?motion=giv-pamela-p4` väljer en avläst giv; `?eyes=1,4` ögon (en stol 1–7 eller `film` för bankens kamera), `?to=P4.C1` kortplatsen för den handritade given, `?look=plain`, `?tags=0`, `?t=1.9`, `?play=1`. |
+| `src/figure-model.ts` | En riggad modell (GLB med skelett, som Meshy riggar) på dockans plats, ställd ur samma leder; hämtas bara när sidan ber om den. Se "Kvar". |
+| `page/` | Sidan. `?motion=giv-pamela-p4` väljer en avläst giv; `?model=1` sätter den riggade modellen (`/model.glb`, som inspelaren serverar med `--model`) på dockans plats; `?eyes=1,4` ögon (en stol 1–7 eller `film` för bankens kamera), `?to=P4.C1` kortplatsen för den handritade given, `?look=plain`, `?tags=0`, `?t=1.9`, `?play=1`. |
 | `../tools/python/landmarks.py` (repots Python-mapp) | Läser en film ruta för ruta med MediaPipe och skriver händernas och kroppens punkter som JSON. Resultatet är mellanlager utanför Git. |
 | `tools/lift.ts` | Lägger en films punkter i rummet (`capture.ts`) med filmens kortspår, skriver `data/<namn>.json` och skriver ut vad som mättes: handens storlek, varje leds omfång, och hur kortet stämmer med filmens. |
 | `tools/measure.ts` | Kalibreringen som tal: linsfamiljen, den valda linsen, ett verkligt kort på planens platser mot planens kontur, kortet i skon, stolarnas ögon. |
@@ -110,8 +111,16 @@ stänger sin Chrome och sin filserver själv. En hel omgång (stillbilder, två 
 ## Kvar
 
 - Dockan är en provdocka av klot och rör. Den vita dockan står kvar som egen väg för förlagefilmer (en modell som
-  liknar Paow kan läcka sitt utseende in i filmen); Jakobs Meshy-modell av Paow (riggad, med fingerben) blir ett eget
-  utseende för stolsvyerna och för nyckelbilder från sidan.
+  liknar Paow kan läcka sitt utseende in i filmen).
+- **Jakobs Meshy-modell vid bordet** (2026-11-18, `src/figure-model.ts`, sidan `?model=1`, `shoot.ts --model <fil.glb>`;
+  prov `dealer-3d-paow-modell-vid-bordet`). Hans riggade modell (154 148 trianglar, 24 ben, inga fingerben, ligger
+  utanför repot) sitter på dockans plats och ställs ur samma leder: bålen som en bit från höft till axlar, armarna med
+  modellens egna benlängder mot dockans handleder, huvudet två tredjedelar av vägen dit dockan ser (högst 40°, annars
+  döljer håret ansiktet). Hon är förstorad till 1,10 för att armen ska vara lika lång som den avlästa (0,55 m). Laddar
+  på 0,5–0,7 s, första bilden efter 1,5–1,9 s. Det som inte håller: händerna är stela, så kortet svävar bredvid en
+  platt hand; benen under bordet är inte sedda från någon vy; hon ser ut som en spelfigur. Händerna behöver fingerben
+  (Meshys rigg ger inga; en egen rigg eller en modell med fingrar) innan hon kan hålla ett kort. Ett utseendeprov,
+  ingen förlaga.
 - Kling 4 genom Runway tar dockans film som referensfilm tillsammans med första och sista bild, och inget av dockans
   utseende följer med (filmbanans prov 2026-11-17, `assets/proofs/giv-forlagefilm-2/`). Den kopierar dockans fel lika
   troget, så en förlagefilm måste hålla kortet i handen tills det ligger, ha ett verkligt korts storlek i varje ruta
