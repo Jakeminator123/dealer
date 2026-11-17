@@ -83,6 +83,7 @@ skelettet tillåter; mall 4 och 5 gav 79–132 ord (protokollet, V).
 |---|---|---|---|
 | Ingång 1 → 2.1, 1 → 2.2 | WAN 3, 1080p | 4 | Ger bankens ruta direkt; 4K gav ingen skärpa (V) |
 | Giv nyp från 2.1, med referens | Kling 4, 1080p | 7 | Det giv-recept som har hållit flest gånger (V) |
+| Giv bara dit med referens (nyp 2.1 eller släp 2.2) | Kling 4, 1080p | 4 | Referensens längd; till P4 3 av 4 och 2 av 2, till P1 0 av 2 (§5, givprov 1 och 2) (V) |
 | Giv nyp från 2.1, utan referens | Prov: Kling 4 mot WAN 3 | 7 | Oavgjort (§5) |
 | Släp från 2.2, stängt | WAN 3, 1080p | 6 | Höll till P1 (V) |
 | Vändningen som egen film | Prov: WAN 3 och Kling 4 | 3 | Oprövat |
@@ -119,6 +120,15 @@ Orden står i `SAY`; här står vad som har hållit och varför.
   granskaren 3,5/5, men Jakob underkände: "Här ändrar kortet färg ungefär halvvägs." (V). Referens från en annan
   startpose (`p2-03`, Pamelas släp ur ankare 2.2): kortet lades framför skon som i referensen och sköts cirka 725 px
   till P2; Jakob godkände ("det håller helt klart") (V). Föll: referens till annan plats (b19 P1, P7) (V).
+- **Bara dit med referens (givprov 1 och 2, 2026-11-17):** Kling 4, 4 s, första bild ankare 2.1, sista bild rutan där
+  banken delar en godkänd tur och retur till platsen (given slutar, returen börjar på nästa ruta), referensen en rakt
+  godkänd giv till samma plats. Till P4 med `pamela-p4-c1-plan-deal-02`: vänt genom kantläget 4 av 4, granskaren 3 av 4
+  (V). Till P1 med `pamela-p1-c1-plan-deal-01`: 0 av 2 (V): modellen vände kortet där referensen visar kortet på kant,
+  i svingen upp ur fönstret, och bar det 15–30 % större än ett verkligt kort i bilden. Alltså väljs referensen också
+  efter vad den visar: kortet på kant bara i vändningen, och i verklig storlek (S, ur två platser). Modellen kopierar
+  referensens väg, takt, kortets skenbara storlek och var kortet är på kant; utseende, sko och var kortet ligger tar den
+  ur bilderna (V, nio tagningar med referens). Handen lyfts eller släpper och läggs om i slutet i alla, eftersom sista
+  bildens hand är bankens platta hand och referensens slutar med fingertoppen på kortet (V).
 - Risk: referensen är Pamelas, och hennes hand läcker in (tatueringen försvinner i snabb rörelse) (V). Studion stoppar
   bara hela bilder av en annan dealer; en annan dealers film som referens tillåter Jakob (order-clerk §3; HANDOFF öppen
   punkt 9 för varianter).
@@ -184,6 +194,14 @@ tagningar vänder kortet en gång vid platsen så som en hand kan, med kortet in
 - Orden: `SAY.slideOut`, `SAY.dragBack`, `SAY.stopClosed`, `SAY.backDrag`. WAN 3, 1080p, 6 s, två tagningar. Höll till
   P1: cirka 7 verkliga släp av 9 tagningar (b9–b17, V). Föll till P4 (0 av 2) och P7 (0 av 2: kortet går först åt
   vänster) (V). Pröva P1 först.
+- **Öppet, bara dit med referens (givprov 2A, 2026-11-17; V):** Kling 4, 4 s, första bild ankare 2.2, sista bild ruta
+  126 ur `paow-giv-2-2-p4-01-01` (där returen, som Jakob godkände, börjar; skons tryckta kort ersatt med ankare 1:s),
+  referensen Pamelas släp `pamela-p4-c1-drawn-deal-01` ("Svinbra", från ankaret DRAWN). 2 av 2 användbara med
+  anmärkningar (granskaren 4/5 och 3/5): kortet släps plant längs filten, reses på kant nära platsen och vänds genom
+  kantläget som i referensen (gångjärn mot filten, tumme och pekfinger; texten sade nyckel), läggs 0–1 px från sista
+  bilden. Fel: turkos i 3–5 rutor kring kanten, en ljus kant upp till 34 % runt kortet i tagning 2 (ruta 72), kortet
+  växer cirka 24 % på släpet i tagning 2 (referensens släpta kort är självt för stort). Bara P4 är prövat; Paow har
+  ingen snittruta från 2.2 till någon annan plats.
 - Förutsättning: ett ankare 2.2 som gäller; Paows gäller sedan 2026-11-13 (`paow-ankare-2-2-t1`, 3.7). Skon i b17 hade
   öppen front (V). Med fönsterskon, kortet öppet och vänt vid platsen: P1 0 av 1, P4 och P6 Variant för Jakob men med
   tryckt kort, och P6 med enfärgat kort när tillägget om enfärgat kort står i ordern (§5, omgång 12–15).
@@ -364,7 +382,8 @@ belägget.
 | Hela rundan i en tagning | 7 filmer, 0 användbara, cirka 3 500 krediter | faller |
 | Mellanbild i Kling 4 | b1b, b4: läses som start, slut eller följd | faller |
 | Kling 3.0 Motion Control, Pamelas film | b1a 44/100, kortet genomskinligt; 2026-11-17 två tagningar till (Paows ankare 2.1 som karaktärsbild, Pamelas giv till plats 4 som rörelsefilm, 136 krediter, Prov `giv-motion-control`): kortet vänds inte i någon, 0,5/5 och 1/5; modellen följer arm, väg och takt men ritar kortet själv, och utan sista bild finns inget som låser kortets storlek, plats eller sida | faller (3 filmer) |
-| **Giv bara dit, Kling 4 (1080p, 4 s) med första och sista bild och Pamelas giv till samma plats som referensfilm** | Givprovet 2026-11-17 (Prov `giv-experiment`, 820 krediter): kortet vänds genom kantläget i 4 av 4, lagt 0–2 bildpunkter från planen, storlek +1 till +5 %; oberoende granskat: 3 av 4 håller (4/5), 1 faller (kortet vrider sig på bordet utan fingrar); texten på Pamelas sätt (A) och blandningen (C) ger samma sak. Samma kväll, WAN 3 med samma texter utan referensfilm: 0 av 6 håller (kortet 19–41 % för långt i handen i fyra) | **håller för nyp från 2.1 till plats 4**; inte prövat: släp från 2.2, andra platser, retur från sista rutan |
+| **Giv bara dit, Kling 4 (1080p, 4 s) med första och sista bild och Pamelas giv till samma plats som referensfilm** | Givprovet 2026-11-17 (Prov `giv-experiment`, 820 krediter): kortet vänds genom kantläget i 4 av 4, lagt 0–2 bildpunkter från planen, storlek +1 till +5 %; oberoende granskat: 3 av 4 håller (4/5), 1 faller (kortet vrider sig på bordet utan fingrar); texten på Pamelas sätt (A) och blandningen (C) ger samma sak. Samma kväll, WAN 3 med samma texter utan referensfilm: 0 av 6 håller (kortet 19–41 % för långt i handen i fyra). Givprov 2 samma kväll (Prov `giv-forlagefilm-2`, 85 krediter per tagning; V): **släp från 2.2 till P4** med `pamela-p4-c1-drawn-deal-01` ("Svinbra") och sista bilden ruta 126 ur `2-2-p4-01` (skon ur ankare 1): 2 av 2 användbara med anmärkningar (granskaren 4/5 och 3/5), släpt plant, vänt vid platsen genom kantläget som referensen (kant 2,42–2,54 s mot referensens 2,33–2,40 s), lagt 0–1 px från sista bilden; tagning 2:s kort växer cirka 24 % på släpet, turkos i 3–5 rutor kring kanten i båda. **Nyp från 2.1 till P1** med `pamela-p1-c1-plan-deal-01` och sista bilden ruta 112 ur `p1-06`: 0 av 2 (1/5 och 1/5): referensen visar kortet på kant när det svingas ur fönstret (ruta 29–33), och där vände modellen kortet, högt vid skon; kortet bars 15–30 % större än ett verkligt kort i bilden och gick på kant en gång till vid platsen | **håller för nyp från 2.1 och släp från 2.2 till plats 4**; faller till P1 med Pamelas referens; inte prövat: andra platser, retur från sista rutan |
+| Giv bara dit, Kling 4, renderad vit docka (3D-banan) som referensfilm, nyp 2.1 → P4 | Givprov 2C (en tagning, 86 krediter; V): anropet med första och sista bild och dockans film gick igenom, och inget av dockans utseende syns i någon ruta (ingen vit arm, inget grått, ingen främmande sko); kortet följer dockans väg och tid inom 1–2 rutor och cirka 20 px, och vändningen är kvällens bästa (en nyckel med handleden, kant ruta 45–46). Men tagningen kopierar också dockans fel: 0,9 s stilla i början, handen släpper kortet ovanför platsen och kortet glider själv cirka 23 px (ruta 62–77), kortet 25–35 % för stort i handen. Granskaren 2/5, inte användbar. Jakob om dockans rörelse: handen "inte ser naturlig ut", troligen "omöjlig med mänsklig anatomi" | faller som tagning; som metod tekniskt möjlig (1 tagning): en renderad film styr väg, tid och vändning, och styr dess fel lika exakt; görs om ur en verklig hand |
 | Aleph, aleph2, Kling 4 edit, WAN video-till-video, `edit_video` med egen nyckelruta | `paow-samma-film`: Pamelas ansikte tillbaka, fönstret töms; DRIFT till `f6f68ef` | faller |
 | Ultrarapid som snabbas upp; uttaget baklänges; Seedance 2.5 via MCP (bara en förhandsfil) | DRIFT till `f6f68ef`; för Seedance kom den fulla filen ur listan över senaste generationer, rapporterat av trailersessionens producent 2026-11-13, inte mätt av oss (§4) | faller; för Seedance var felet kanske hämtningen (S) |
 | Hopklippta ankare, platt målad kortyta | Pamela: för litet kort, fingertopp bredvid, påhittad tryckt framsida (DRIFT till `f6f68ef`) | faller |
