@@ -3,6 +3,32 @@
   "about": "What waits for Jakob: one entry per question (kind beslut) or per thing only he can do (kind gora), shown as one card each in the studio's view Beslut (/studio/beslut/, lab only). The list's order is the order of urgency, the most urgent first. An entry: id, kind, question (at most 14 words), leads (one sentence: what his answer leads to), optionally proof (a folder under assets/proofs/) with file, page (an address in the lab, e.g. game.html?table=casino), link (an address outside, shown as text to open on his phone) and cost (free text), chips (two to four {value, label} for beslut, one to four for gora), asked (date), from (the lane that asks) and answer. An agent adds an entry with answer null, changes only its own entries, reads the file right before editing it and keeps the form JSON.stringify gives with two spaces; it closes an entry by taking it out once his answer is carried out, and the commit says what he answered. Only the page writes answer ({value, note, at}, tools/decision-store.ts); no agent sets, changes or clears an answer he has given. The strict reader is tools/decision-register.ts. The repo is public: no secret, personal detail or path of this machine.",
   "decisions": [
     {
+      "id": "rollblad-trailern-2",
+      "kind": "beslut",
+      "question": "Nytt rollblad för trailern: är hon rätt nu?",
+      "leads": "Vid ja görs trappans tagning om som ny film ur de här bilderna, med dagens film som förlaga för rörelsen.",
+      "proof": "trailer-noir-3",
+      "file": "rollblad-huvudpersonen-2.png",
+      "chips": [
+        {
+          "value": "ja",
+          "label": "Ja, gör film"
+        },
+        {
+          "value": "andra",
+          "label": "Ändra (skriv vad)"
+        },
+        {
+          "value": "nej",
+          "label": "Nej"
+        }
+      ],
+      "asked": "2026-11-17",
+      "from": "trailersessionen",
+      "cost": "cirka 120–140 krediter per tagning",
+      "answer": null
+    },
+    {
       "id": "trailer-pa-telefonen",
       "kind": "gora",
       "question": "Prova trailern på telefonen. Syns filmen?",
@@ -21,36 +47,6 @@
       "asked": "2026-11-17",
       "from": "huvudagenten",
       "answer": null
-    },
-    {
-      "id": "rygg-tatueringar-prov-2",
-      "kind": "beslut",
-      "question": "Tatueringar på ryggen i trailerns början: ett andra prov?",
-      "leads": "Ja beställer ett nytt prov av tatueringarna; Nej låter början vara som den är.",
-      "proof": "trailer-noir-3",
-      "file": "prov-tatuering-fore-efter.mp4",
-      "chips": [
-        {
-          "value": "ja",
-          "label": "Ja"
-        },
-        {
-          "value": "nej",
-          "label": "Nej"
-        },
-        {
-          "value": "senare",
-          "label": "Senare"
-        }
-      ],
-      "asked": "2026-11-17",
-      "from": "huvudagenten",
-      "cost": "cirka 105 krediter",
-      "answer": {
-        "value": "ja",
-        "note": "Kan inte bara hela denna videos början göras i en enda ny video som inte kostar 7k nya krediter utan kanske bara några hundra genom attman använder denna video soem referens och så säger man att allt ska vara lika, mne med just de där tatueringarna jag visade tidigare?",
-        "at": "2026-11-17T16:54:57.012Z"
-      }
     },
     {
       "id": "tatuerade-mindre-hander",
@@ -104,7 +100,11 @@
       ],
       "asked": "2026-11-17",
       "from": "huvudagenten",
-      "answer": null
+      "answer": {
+        "value": "mer",
+        "note": "Nej. Hennes mungipor är helt stela vid sidan",
+        "at": "2026-11-17T17:03:41.785Z"
+      }
     },
     {
       "id": "monaco-ett-varv-till",
