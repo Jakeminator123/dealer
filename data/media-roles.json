@@ -3886,6 +3886,13 @@
           "note": "Två skisser 2026-11-17 till ett enda labb på Jakobs ord: Bordet (placering, rörelse, beställning och granskning i en vy) och Efterarbete (kortens utseende, logga och läppsynk där Scen ligger i dag). För hans ja eller nej före bygget."
         },
         {
+          "id": "paow-prov-kortbanan-efter-filmerna",
+          "role": "prov",
+          "name": "Kortbanan efter filmerna",
+          "proof": "kortbanan-efter-filmerna",
+          "note": "Kortbanan i Placering före och efter 2026-11-17, bredvid filmens rutor vid samma ögonblick: start stående i skon, buren i kortänden, på kant, vänd, landar. Och korten och skon som vyn öppnar nu: slätt gult och blått utan vit kant."
+        },
+        {
           "id": "paow-prov-kortets-baksida",
           "role": "prov",
           "name": "Kortets baksida i labbet och i spelet",
