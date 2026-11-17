@@ -6144,20 +6144,6 @@
           }
         },
         {
-          "id": "paow-tal-reel-demo12",
-          "role": "film",
-          "name": "Tal, demo: 4 repliker i följd",
-          "path": "assets/speech/paow/paow-tal-reel-demo12/source.mp4",
-          "still": 136,
-          "fps": 24,
-          "state": "kandidat",
-          "note": "Repliker i följd med vila emellan, 34.21 s med ljud, rösten Paow. En film att visa, inte en tagning i banken (tools/speech.ts reel). Granskaren 4/5: Giporna följer med ned cirka 3 px och ser naturliga ut; hennes egen underläpp. Mot demo9: inga spöken i växlingsrutorna, skarpa slutna läppar. Vilor och skarvar lika.",
-          "source": {
-            "from": "tools/speech.ts reel --dealer paow",
-            "when": "2026-11-17"
-          }
-        },
-        {
           "id": "paow-tal-vetej-sv-11",
           "role": "film",
           "name": "Tal: Det kan jag tyvärr inte svara på, men korten ljuger aldrig.",
