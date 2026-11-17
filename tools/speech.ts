@@ -735,12 +735,14 @@ export async function over(register: Register, root: string, options: OverOption
   } finally { await rm(work, {recursive: true, force: true}); }
 }
 
+/** Take and film names in the order they were made: by the numbers in them, not letter by letter ("demo9" before "demo12"). */
+export const byNumber = (a: string, b: string) => a.localeCompare(b, 'en', {numeric: true});
 /** The newest finished take of every line in the dealer's own voice, gathered for the studio's view Prov. Films in another voice (an
  * earlier choice, a trial) stay where they were made and are not shown. */
 export async function proof(register: Register, root: string, dealer: string, log = console.log): Promise<string> {
   const base = path.join(root, 'assets/speech', dealer), dir = path.join(root, 'assets/proofs', `${dealer}-tal`), newest = new Map<string, {id: string; receipt: Record<string, any>}>(), shown = new Map<string, {id: string; receipt: Record<string, any>}>();
   const d = register.dealers[dealer], own = register.voices[d?.voice ?? '']?.name;
-  for (const id of existsSync(base) ? (await readdir(base)).sort() : []) { const file = path.join(base, id, 'receipt.json'); if (id === 'bank' || !existsSync(file) || !existsSync(path.join(base, id, 'source.mp4'))) continue;
+  for (const id of existsSync(base) ? (await readdir(base)).sort(byNumber) : []) { const file = path.join(base, id, 'receipt.json'); if (id === 'bank' || !existsSync(file) || !existsSync(path.join(base, id, 'source.mp4'))) continue;
     const receipt = JSON.parse(await readFile(file, 'utf8')); if ((typeof receipt.voice === 'string' ? receipt.voice : receipt.voice?.name) !== own) continue;
     // The newest reel of the same lines, the newest film of a line over a film, the newest take of a line.
     if (receipt.kind) shown.set(receipt.kind === 'reel' ? `reel-${(receipt.segments as {text?: string}[]).map(s => s.text ?? '').join('|')}` : `${receipt.line}-${receipt.film.id}`, {id, receipt}); else newest.set(`${receipt.line}-${receipt.language}`, {id, receipt}); }

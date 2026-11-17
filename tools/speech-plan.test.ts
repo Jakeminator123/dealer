@@ -10,7 +10,7 @@ import os from 'node:os';
 import path from 'node:path';
 import {BRIDGE, RENDER, bridgeProblems, clipLength, filmFrameOf, bridgeFilter, lineFrames, longestSound, restPath, planRows, canonical, videoIdOf, sourcesOf, bakeJob, answerVideo, sameWords,
   changedBox, unionBox, grownBox, featherMask, blendFrame, heardFrames, speechGate, mixFrame, GATE, LIPS, mouthWindow, cutPlanes, lipMap, lipsMiddle, lipsHalf, lipLine, mouthGap, mouthOpens, mouthDrop, mouthLift, mouthMoves, layMouth, type Bridge, type Lips} from '../src/speech-plan.ts';
-import {bridgeFilm, rawFrames, attestationOf, sameValue, voiceIn, readRegister, levelled, LOUDNESS, type Voice} from './speech.ts';
+import {bridgeFilm, rawFrames, attestationOf, sameValue, voiceIn, readRegister, levelled, byNumber, LOUDNESS, type Voice} from './speech.ts';
 
 const sha = (text: string | Uint8Array) => createHash('sha256').update(text).digest('hex');
 const SHA = 'ab'.repeat(32), VID = 'abababab-abab-abab-abab-abababababab', TAKE = 'clip-' + VID;
@@ -351,4 +351,10 @@ test('a quiet reading and a loud one are heard at the same strength, as long as 
   assert.ok(quiet.level.gainDb > 10 && loud.level.gainDb < -5);
   // Silence cannot be measured and is handed back as it is.
   const none = await levelled(Buffer.alloc(48000), dir); assert.equal(none.level.gainDb, 0); assert.equal(none.pcm.length, 48000);
+});
+
+test('the newest film is the one with the highest number in its name', () => {
+  // Letter by letter "demo12" comes before "demo9", and the proof showed the older demo film.
+  assert.deepEqual(['paow-tal-reel-demo9', 'paow-tal-reel-demo12', 'paow-tal-reel-demo2'].sort(byNumber).at(-1), 'paow-tal-reel-demo12');
+  assert.deepEqual(['paow-tal-hej-sv-10', 'paow-tal-hej-sv-09', 'paow-tal-hej-sv-11'].sort(byNumber), ['paow-tal-hej-sv-09', 'paow-tal-hej-sv-10', 'paow-tal-hej-sv-11']);
 });
