@@ -3,6 +3,7 @@
 //   node dealer3d/tools/shoot.ts --out <folder> [--eyes 1,4] [--to P4.C1] [--look room|plain] [--size 1920x640] [--tags 0]
 //        --times 0,0.92,1.9      stills at those seconds, named <prefix>-<seconds>.png
 //        --film 24 0 4           every frame at 24 a second from 0 to 4 s, named <prefix>-0001.png ... (ffmpeg makes the film)
+//        [--motion giv-pamela-p4]   a deal read off a film (dealer3d/data/<name>.json) instead of the one drawn by hand
 //        [--prefix ruta] [--profile <folder>] [--port 9601] [--serve 9611]
 // Run it under the shared lock for the graphics card and headless Chrome (docs/DRIFT.md): one run at a time, short.
 import {createServer} from 'node:http';
@@ -53,7 +54,7 @@ try {
   const run = async (expression: string) => { const r = await send('Runtime.evaluate', {expression, awaitPromise: true, returnByValue: true}); if (r.exceptionDetails) throw Error(JSON.stringify(r.exceptionDetails).slice(0, 700)); return r.result.value; };
   await send('Runtime.enable'); await send('Page.enable'); await send('Network.enable');
   await send('Emulation.setDeviceMetricsOverride', {width: W, height: H, deviceScaleFactor: 1, mobile: false});
-  const query = new URLSearchParams({eyes: arg('--eyes', '1,4')!, to: arg('--to', 'P4.C1')!, look: arg('--look', 'room')!, tags: arg('--tags', '1')!});
+  const query = new URLSearchParams({eyes: arg('--eyes', '1,4')!, to: arg('--to', 'P4.C1')!, look: arg('--look', 'room')!, tags: arg('--tags', '1')!, ...(arg('--motion') ? {motion: arg('--motion')!} : {})});
   await send('Page.navigate', {url: `http://127.0.0.1:${SERVE}/dealer3d/page/index.html?${query}`});
   let ready = false; for (let i = 0; i < 80 && !ready; i++) { await sleep(250); ready = await run('!!(window.dealer3d && window.dealer3d.ready)').catch(() => false); if (errors.length) break; }
   if (!ready) throw Error('The page did not come up. ' + errors.join(' | '));

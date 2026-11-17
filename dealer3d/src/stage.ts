@@ -5,10 +5,14 @@
 import * as T from 'three';
 import {CARD, FILM, filmEye, fovYDeg, type Eye, type Vec3} from './camera.ts';
 import {SHOE, dealerEdge, filmLens, realCardAt, seatEye, shoeCard, shoePose, spots, type Plan} from './world.ts';
-import {HAND, MOMENTS, planDeal, type CardPose, type HandPose} from './deal.ts';
+import {HAND, MOMENTS, planDeal, type CardPose} from './deal.ts';
 import {restingHand, solveBody, standing, type Body} from './body.ts';
+import {FINGERS} from './capture.ts';
 
 export type Look = 'room' | 'plain';
+type Limb = {s: number[]; e: number[]; w: number[]; k: number; p: number[][]};
+/** A deal read off a film and laid into the room by dealer3d/tools/lift.ts (dealer3d/data/*.json). */
+export type Read = {film: string; fps: number; frameCount: number; leavesShoe: number; edge: number[]; folds: number; rests: number; hip: number[]; frames: {card: {c: number[]; l: number[]; n: number[]}; L: Limb; R: Limb; h: number[]}[]};
 export type View = 'film' | number; // the bank's camera, or a seat 1-7 (seat 4 is the bank's camera)
 const COLOUR = {
   room: {ground: 0x101214, felt: 0x1f7045, rail: 0x3a2417, wood: 0x2a1a10, figure: 0xe6e1d8, shoe: 0x1b1c1f, mark: 0xd8c27a, fog: 0x101214},
@@ -56,7 +60,19 @@ function handMesh(material: T.Material, thumb: 1 | -1): T.Group {
   g.matrixAutoUpdate = false; return g;
 }
 
-export function createStage(canvas: HTMLCanvasElement, plan: Plan, options: {look?: Look; target?: string} = {}) {
+/** A hand drawn from its 21 points: a bone between each two that a hand joins, a ball at each joint, and the palm filled in. */
+function pointHand(material: T.Material) {
+  const g = new T.Group(), pairs: [number, number, number][] = []; // from, to, thickness
+  for (const c of FINGERS) for (let k = 0; k < 3; k++) pairs.push([c[k], c[k + 1], c[0] === 1 ? 0.0088 - k * 0.0006 : 0.0078 - k * 0.0007]);
+  for (const k of [1, 5, 9, 13, 17]) pairs.push([0, k, 0.0105]); for (const [a, b] of [[5, 9], [9, 13], [13, 17]]) pairs.push([a, b, 0.0098]);
+  const bones = pairs.map(([, , r]) => { const l = limb(material, r, r); g.add(l.mesh); return l; }), balls = Array.from({length: 21}, (_, i) => { const b = ball(material, i === 0 ? 0.0125 : [1, 5, 9, 13, 17].includes(i) ? 0.0105 : 0.0082); g.add(b); return b; });
+  const palmAt = new T.BufferAttribute(new Float32Array(6 * 3), 3), palm = new T.BufferGeometry(); palm.setAttribute('position', palmAt); palm.setIndex([0, 1, 2, 0, 2, 3, 0, 3, 4, 0, 5, 1]);
+  const flat = new T.Mesh(palm, material.clone()); (flat.material as T.MeshStandardMaterial).side = T.DoubleSide; flat.castShadow = true; flat.receiveShadow = true; flat.frustumCulled = false; g.add(flat);
+  return {group: g, set(p: Vec3[]) { pairs.forEach(([a, b], i) => bones[i].set(p[a], p[b])); balls.forEach((b, i) => b.position.set(p[i][0], p[i][1], p[i][2]));
+    [0, 5, 9, 13, 17, 1].forEach((k, i) => palmAt.setXYZ(i, p[k][0], p[k][1], p[k][2])); palmAt.needsUpdate = true; palm.computeVertexNormals(); }};
+}
+
+export function createStage(canvas: HTMLCanvasElement, plan: Plan, options: {look?: Look; target?: string; read?: Read | null} = {}) {
   const look = options.look ?? 'room', target = options.target ?? 'P4.C1', C = COLOUR[look], lens = filmLens(), edge = dealerEdge(lens), all = spots(plan, lens);
   const four = all.find(s => s.id === 'P4.C1')!, to = all.find(s => s.id === target); if (!to) throw Error(`The plan has no place ${target}.`);
   const pose = shoePose(lens), inShoe = shoeCard(pose), deal = planDeal({lens, target, place: to.at, placeOfSeat4: four.at, shoe: inShoe}), frame = standing(lens), rest = restingHand(lens);
@@ -94,21 +110,32 @@ export function createStage(canvas: HTMLCanvasElement, plan: Plan, options: {loo
   torso.matrixAutoUpdate = false; scene.add(torso, yoke.mesh, neck.mesh, head);
   const arms = [0, 1].map(() => ({upper: limb(skin, 0.047, 0.04), fore: limb(skin, 0.038, 0.03), shoulder: ball(skin, 0.055), elbow: ball(skin, 0.04), wrist: ball(skin, 0.031)}));
   for (const a of arms) scene.add(a.upper.mesh, a.fore.mesh, a.shoulder, a.elbow, a.wrist);
-  const hands = [handMesh(skin, -1), handMesh(skin, 1)]; scene.add(...hands); // her right hand (thumb at -x of its frame), her left
   const cross = (a: Vec3, b: Vec3): Vec3 => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
-  place(hands[0], cross([0, -1, 0], rest.forward), [0, -1, 0], rest.forward, rest.wrist); // palm down on the felt
+  // Two sources of motion. Drawn by hand (deal.ts, body.ts): two stiff hands. Read off a film (options.read): each hand its 21 points.
+  const read = options.read ?? null, duration = read ? (read.frameCount - 1) / read.fps : deal.duration;
+  const moments = read ? {leavesShoe: read.leavesShoe / read.fps, edgeOn: (read.edge[0] + read.edge[1]) / 2 / read.fps, lands: read.rests / read.fps, end: duration} : MOMENTS;
+  const stiff = read ? [] : [handMesh(skin, -1), handMesh(skin, 1)], jointed = read ? [pointHand(skin), pointHand(skin)] : []; // her right hand, her left
+  scene.add(...stiff, ...jointed.map(h => h.group)); if (!read) place(stiff[0], cross([0, -1, 0], rest.forward), [0, -1, 0], rest.forward, rest.wrist); // palm down on the felt
+  const mix = (a: number[], b: number[], t: number): Vec3 => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t], norm = (v: Vec3): Vec3 => { const l = Math.hypot(v[0], v[1], v[2]) || 1; return [v[0] / l, v[1] / l, v[2] / l]; };
 
-  let now = 0, shown: {card: CardPose; hand: HandPose; body: Body} | null = null;
+  let now = 0, shown: {card: CardPose} | null = null;
   function setTime(t: number) {
-    now = Math.max(0, Math.min(deal.duration, t)); const c = deal.card(now), h = deal.hand(now), body = solveBody(frame, h.wrist, rest.wrist); shown = {card: c, hand: h, body};
-    placeCard(card, c); place(hands[1], cross(h.palm, h.forward), h.palm, h.forward, body.arms[1].wrist);
+    now = Math.max(0, Math.min(duration, t)); let c: CardPose, body: Pick<Body, 'hip' | 'shoulders' | 'neck' | 'head'> & {arms: {shoulder: Vec3; elbow: Vec3; wrist: Vec3}[]};
+    if (read) { const at = Math.min(read.frameCount - 1, now * read.fps), i = Math.min(read.frameCount - 2, Math.floor(at)), k = at - i, a = read.frames[i], b = read.frames[i + 1];
+      const long = norm(mix(a.card.l, b.card.l, k)), toward = mix(a.card.n, b.card.n, k), d = toward[0] * long[0] + toward[1] * long[1] + toward[2] * long[2], normal = norm([toward[0] - long[0] * d, toward[1] - long[1] * d, toward[2] - long[2] * d]);
+      c = {centre: mix(a.card.c, b.card.c, k), long, normal, across: cross(normal, long)};
+      const limbOf = (side: 'L' | 'R') => ({shoulder: mix(a[side].s, b[side].s, k), elbow: mix(a[side].e, b[side].e, k), wrist: mix(a[side].w, b[side].w, k)}), R = limbOf('R'), L = limbOf('L');
+      jointed[0].set(a.R.p.map((p, j) => mix(p, b.R.p[j], k))); jointed[1].set(a.L.p.map((p, j) => mix(p, b.L.p[j], k)));
+      body = {hip: read.hip as Vec3, shoulders: [R.shoulder, L.shoulder], neck: [(R.shoulder[0] + L.shoulder[0]) / 2, (R.shoulder[1] + L.shoulder[1]) / 2 + 0.03, (R.shoulder[2] + L.shoulder[2]) / 2], head: mix(a.h, b.h, k), arms: [R, L]};
+    } else { const h = deal.hand(now), solved = solveBody(frame, h.wrist, rest.wrist); c = deal.card(now); body = solved; place(stiff[1], cross(h.palm, h.forward), h.palm, h.forward, solved.arms[1].wrist); }
+    shown = {card: c}; placeCard(card, c);
     body.arms.forEach((a, i) => { arms[i].upper.set(a.shoulder, a.elbow); arms[i].fore.set(a.elbow, a.wrist); arms[i].shoulder.position.copy(v3(a.shoulder)); arms[i].elbow.position.copy(v3(a.elbow)); arms[i].wrist.position.copy(v3(a.wrist)); });
     yoke.set(body.shoulders[0], body.shoulders[1]); neck.set(body.neck, [body.head[0], body.head[1] - frame.headRadius * 0.6, body.head[2]]);
     // The trunk: an egg from the hip to the shoulders, as wide as they are, leaning and turning with them.
     const mid: Vec3 = [(body.shoulders[0][0] + body.shoulders[1][0]) / 2, (body.shoulders[0][1] + body.shoulders[1][1]) / 2, (body.shoulders[0][2] + body.shoulders[1][2]) / 2];
     const x = v3(body.shoulders[1]).sub(v3(body.shoulders[0])), wide = x.length(); x.normalize(); const y = v3(mid).sub(v3(body.hip)), tall = y.length(); y.normalize(); const z = new T.Vector3().crossVectors(x, y).normalize(); y.crossVectors(z, x);
     torso.matrix.makeBasis(x.multiplyScalar(wide * 0.47), y.multiplyScalar(tall * 0.56), z.multiplyScalar(0.095)).setPosition(v3(body.hip).lerp(v3(mid), 0.52)); torso.matrixWorldNeedsUpdate = true;
-    head.position.copy(v3(body.head)); const gaze = v3(c.centre).lerp(new T.Vector3(body.head[0], body.head[1] - 0.25, body.head[2] + 1.2), now < MOMENTS.lets ? 0.45 : 0.8); head.lookAt(gaze);
+    head.position.copy(v3(body.head)); const gaze = v3(c.centre).lerp(new T.Vector3(body.head[0], body.head[1] - 0.25, body.head[2] + 1.2), now < (read ? moments.lands : MOMENTS.lets) ? 0.45 : 0.8); head.lookAt(gaze);
   }
   const cameraOf = (eye: Eye) => { const cam = new T.PerspectiveCamera(fovYDeg(eye.focalPx), FILM.width / FILM.height, 0.2, 30); cam.position.copy(v3(eye.position)); cam.lookAt(v3(eye.position).add(v3(eye.forward))); cam.updateMatrixWorld(); return cam; };
   const eyeOf = (view: View): Eye => view === 'film' ? filmEye(lens) : seatEye(view, plan, lens);
@@ -121,7 +148,7 @@ export function createStage(canvas: HTMLCanvasElement, plan: Plan, options: {loo
     return boxes;
   }
   setTime(0);
-  return {duration: deal.duration, moments: MOMENTS, lens, setTime, render, eyeOf, state: () => shown, time: () => now,
+  return {duration, moments, lens, setTime, render, eyeOf, state: () => shown, time: () => now, film: read?.film ?? null,
     /** What the bank's camera would measure of the card that lies at the target: near edge, far edge, depth, taper, in pixels. */
     landed: () => realCardAt(lens, to.pixel)};
 }

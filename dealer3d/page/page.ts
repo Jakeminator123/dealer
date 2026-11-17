@@ -1,6 +1,7 @@
 // The page: one deal, seen through the eyes named in the address.
 //   ?eyes=1,4      which views, from the left: a seat 1-7, or "film" for the bank's camera (seat 4 is the same eye)
 //   ?to=P4.C1      the card place dealt to
+//   ?motion=giv-pamela-p4   a deal read off a film (dealer3d/data/<name>.json) instead of the one drawn by hand; ?to= is then the film's own place
 //   ?look=room     room (felt table) or plain (white figure on grey, for a reference film)
 //   ?tags=0        no names on the views and no clock
 //   ?t=1.9         the moment shown, seconds; ?play=1 runs the deal in a loop
@@ -12,7 +13,8 @@ const q = new URLSearchParams(location.search), canvas = document.getElementById
 const views: View[] = (q.get('eyes') ?? '1,4').split(',').map(s => s.trim() === 'film' ? 'film' : Number(s)).filter(v => v === 'film' || (Number.isInteger(v) && v >= 1 && v <= 7));
 const tags = q.get('tags') !== '0', plan = await (await fetch('/placements/default.json')).json();
 canvas.width = innerWidth; canvas.height = innerHeight;
-const stage = createStage(canvas, plan, {look: (q.get('look') === 'plain' ? 'plain' : 'room') as Look, target: q.get('to') ?? 'P4.C1'});
+const motion = /^[\w-]+$/.test(q.get('motion') ?? '') ? q.get('motion') : null, read = motion ? await (await fetch(`/dealer3d/data/${motion}.json`)).json() : null;
+const stage = createStage(canvas, plan, {look: (q.get('look') === 'plain' ? 'plain' : 'room') as Look, target: q.get('to') ?? 'P4.C1', read});
 const names = {FRONT: 'ser framsidan', BACK: 'ser baksidan', EDGE: 'ser kortet på kant'}, host = document.getElementById('tags')!, clock = document.getElementById('clock')!;
 function draw() {
   const boxes = stage.render(views), shown = stage.state();

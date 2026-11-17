@@ -14,14 +14,39 @@ använder repots låsta `three` och `sharp`.
 | `../src/table-lens.ts` (repots `src/`) | **Bordets lins**, skriven här och lyft till `src/` 2026-11-17: en fysisk kamera för bankens bild (1764 × 1174) i verkliga meter, linsen som tal (`TABLE_LENS`), `realCardQuad` (plats i bankens bildpunkter och riktning in, ett verkligt korts fyra hörn ut) och `shoeCardQuad` (kortet som står i skons fönster). Kortplanen ritas med den (`src/card-plan.ts`); testet är `tools/table-lens.test.ts`. |
 | `src/camera.ts` | Passningen: linsfamiljen `lensForFocal` (alla linser som ger kortet vid plats 4 dess storlek och form i filmen) och vad en lins gör av en sträcka i bilden. Lämnar vidare allt ur `src/table-lens.ts`. Ren räkning. |
 | `src/world.ts` | Det filmen visar (`MEASURED`) och det som antas (`ASSUMED`); `filmLens()`, passningen som väljer den lins som ritar dealerns kropp i verklig storlek (ett test håller den lika med `TABLE_LENS`); planens kortplatser på filten; stolarnas ögon. Ren räkning. |
-| `src/deal.ts` | En giv som tidslinje: kortets läge och vridning och handens grepp för varje tidpunkt, till vilken kortplats som helst. Bana och tempo ur Paows giv till plats 4. Ren räkning. |
-| `src/body.ts` | Provdockans skelett, löst ur var händerna ska vara: hon böjer sig från höften och vrider fram axeln så långt armen behöver. Ren räkning. |
-| `src/stage.ts` | Ritningen i three.js: bord, sko, ett kort med två sidor och provdockan, sedda genom flera ögon samtidigt. Två utseenden: `room` (filtbord) och `plain` (vit docka på grått, för en förlagefilm). |
-| `page/` | Sidan. `?eyes=1,4` väljer ögon (en stol 1–7 eller `film` för bankens kamera), `?to=P4.C1` kortplatsen, `?look=plain`, `?tags=0`, `?t=1.9`, `?play=1`. |
+| `src/capture.ts` | **En verklig giv lagd i rummet:** händernas 21 punkter och kroppens leder, avlästa ur en film, sätts under linsen punkt för punkt (varje punkt på siktlinjen genom sin egen bildpunkt), kortet följer filmens eget kortspår med sin hållna ände vid fingrarna, och `joints` och `LIMITS` säger vad en arm och en hand kan göra. Ren räkning. |
+| `data/giv-pamela-p4.json` | Den givna lagd i rummet som tal: `pamela-p4-c1-plan-deal-02`, 120 rutor, per ruta kortet, båda armarna och händernas punkter i meter. Skriven av `tools/lift.ts`; sidan och testerna läser den. |
+| `src/deal.ts` | Den första given, ritad för hand, som tidslinje: kortets läge och vridning och handens grepp för varje tidpunkt, till vilken kortplats som helst. Bana och tempo ur Paows giv till plats 4. Jakob dömde ut handens rörelse (2026-11-17); den avlästa given ersätter den i proven, och den här står kvar för jämförelse och för platser som ingen film går till. Ren räkning. |
+| `src/body.ts` | Den handritade givens skelett, löst ur var händerna ska vara: hon böjer sig från höften och vrider fram axeln så långt armen behöver. Ren räkning. |
+| `src/stage.ts` | Ritningen i three.js: bord, sko, ett kort med två sidor och provdockan, sedda genom flera ögon samtidigt. Två utseenden: `room` (filtbord) och `plain` (vit docka på grått, för en förlagefilm). Två källor för rörelsen: en avläst giv (handen ritas av sina 21 punkter) eller den handritade. |
+| `page/` | Sidan. `?motion=giv-pamela-p4` väljer en avläst giv; `?eyes=1,4` ögon (en stol 1–7 eller `film` för bankens kamera), `?to=P4.C1` kortplatsen för den handritade given, `?look=plain`, `?tags=0`, `?t=1.9`, `?play=1`. |
+| `tools/landmarks.py` | Läser en film ruta för ruta med MediaPipe (miljön i `tools/python/`) och skriver händernas och kroppens punkter som JSON. Enda Python-filen; resultatet är mellanlager utanför Git. |
+| `tools/lift.ts` | Lägger en films punkter i rummet (`capture.ts`) med filmens kortspår, skriver `data/<namn>.json` och skriver ut vad som mättes: handens storlek, varje leds omfång, och hur kortet stämmer med filmens. |
 | `tools/measure.ts` | Kalibreringen som tal: linsfamiljen, den valda linsen, ett verkligt kort på planens platser mot planens kontur, kortet i skon, stolarnas ögon. |
 | `tools/camera-proof.ts` | Bilderna till provet `dealer-3d-kamera`: planens kort och verkliga kort på en filmruta, och skons kort förstorat. |
 | `tools/shoot.ts` | Spelar in sidan utan labbserver: en egen filserver på 127.0.0.1 under körningen, headless Chrome med egen profil och port, en PNG per tidpunkt. Körs under det delade låset. |
-| `tests/world.test.ts` | Elva tester av passningen, världen och given, utan media och utan webbläsare; läser bara `placements/default.json`. |
+| `tests/world.test.ts` | Elva tester av passningen, världen och den handritade given, utan media och utan webbläsare; läser bara `placements/default.json`. |
+| `tests/capture.test.ts` | Åtta tester av den avlästa given: varje led inom mänskliga gränser i varje ruta, kortet i fingrarna tills det ligger, på kant en gång och inte vid skon. Läser `data/giv-pamela-p4.json`. |
+
+## Den avlästa given: mätt och modell
+
+- **Mätt ur filmen, i 120 av 120 rutor:** var vänsterhandens och högerhandens 21 punkter ligger i bilden (dockans hand
+  ligger därför på filmens hand sedd från bankens kamera), hur handen är vriden och fingrarna böjda (MediaPipes hand i
+  meter ger varje punkts djup mot handleden), var axlar, armbågar och öron ligger i bilden, och kortets fyra hörn
+  (kortspåret) med vilken sida kameran ser.
+- **Modell:** hur långt bort den delande handleden är. Den är fäst i båda ändar av det handen rör vid (kortet i skon
+  i början, filten under fingertopparna när kortet läggs) och bärs jämnt däremellan. Handens storlek kommer ur
+  högerhanden, som ligger platt på filten i full syn (1,37 gånger MediaPipes hand). Axlarna går på ett klot kring
+  höften, armens två ben har fasta längder, och armbågen söks under axeln och inte närmare kameran än handleden.
+  Kortets lutning i djup följer av hur mycket kortare en sida ritas än den är, med regeln att det som ligger högre i
+  bilden är längre bort; genom rutorna där kortet är ett streck rullas det vidare kring sin långsida.
+- **Utfall** (`tools/lift.ts`): armbåge 76–129°, handled 22–49°, underarmens vridning 82° genom given, fingerleder
+  −31 till 90°, armen aldrig sträckt; kortets mitt 0,9 bildpunkter från filmens kort (i mitten; högst 44 där kortet
+  lämnar skon), samma sida mot kameran som spåret i 120 av 120 rutor, kortets hållna ände 29 mm från tumme och
+  pekfinger (högst 38).
+- **Inte gjort:** Paows egen giv (`paow-giv-2-1-p4-11-01`, 169 rutor med återgång till skon) är avläst men inte lagd i
+  rummet: handens djup på vägen tillbaka har ingen fästpunkt än. Given till en annan plats än filmens kräver att den
+  avlästa rörelsen flyttas om (inte byggt).
 
 ## Det som är mätt och det som är antaget
 
@@ -53,7 +78,10 @@ använder repots låsta `three` och `sharp`.
 ## Köra
 
 ```
-node --test dealer3d/tests/world.test.ts tools/table-lens.test.ts
+node --test dealer3d/tests/capture.test.ts dealer3d/tests/world.test.ts tools/table-lens.test.ts
+tools/python/.venv/Scripts/python.exe -I dealer3d/tools/landmarks.py <film.mp4> <punkter.json>
+node dealer3d/tools/lift.ts --marks <punkter.json> --track assets/tracking/<klipp>/card-track.json --out dealer3d/data/<namn>.json
+node dealer3d/tools/shoot.ts --out <mapp> --motion giv-pamela-p4 --eyes 1,4 --film 30 0 3.9667 --size 1920x640
 node dealer3d/tools/measure.ts
 node dealer3d/tools/camera-proof.ts --frame <ruta 120, png> --pinch <ruta 0, png> --out <mapp>
 node dealer3d/tools/shoot.ts --out <mapp> --eyes 1,4 --times 1.25,1.9,3.5 --size 1920x640
@@ -65,7 +93,13 @@ stänger sin Chrome och sin filserver själv. En hel omgång (stillbilder, två 
 
 ## Kvar
 
-- Dockan är en provdocka av klot och rör. Jakob gör en Meshy-modell av Paow (riggad, med fingerben); den ska ta
-  dockans plats, styrd av samma `deal.ts` och `body.ts`.
-- Bara given till plats 4 är jämförd med en film. Banan till andra platser är samma bana böjd mot platsen.
+- Dockan är en provdocka av klot och rör. Den vita dockan står kvar som egen väg för förlagefilmer (en modell som
+  liknar Paow kan läcka sitt utseende in i filmen); Jakobs Meshy-modell av Paow (riggad, med fingerben) blir ett eget
+  utseende för stolsvyerna och för nyckelbilder från sidan.
+- Kling 4 genom Runway tar dockans film som referensfilm tillsammans med första och sista bild, och inget av dockans
+  utseende följer med (filmbanans prov 2026-11-17, `assets/proofs/giv-forlagefilm-2/`). Den kopierar dockans fel lika
+  troget, så en förlagefilm måste hålla kortet i handen tills det ligger, ha ett verkligt korts storlek i varje ruta
+  och stå på kant en gång, mitt på vägen.
+- Bara given till plats 4 finns avläst. En giv till plats 1, där ingen bra film finns, kräver att den avlästa
+  rörelsen flyttas om till en annan plats.
 - Två datorer som delar en giv (händelse, kortplats, `DEAL_VERSION`, starttid) är inte byggt.
