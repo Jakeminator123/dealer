@@ -1437,6 +1437,9 @@
           "name": "Sittande, tatuerade händer",
           "path": "assets/keystones/paow-sittande-tatuerad/keystone.png",
           "state": "gäller",
+          "builtOn": [
+            "paow-sittande"
+          ],
           "note": "Sittande A med tatuerade händer, 10 % mindre, och utan underarmarnas skuggor på det vita. Jakob 2026-11-17 i Beslut: ja. Oberoende granskad i full storlek: 4/5. Utanför händerna och bordet nära henne är den Sittande A bildpunkt för bildpunkt.",
           "source": {
             "from": "paow-sittande med tatuerade och 10 % mindre händer (Nano Banana Pro 4K för bläcket, storleken och skuggorna lokalt; kvittot ligger bredvid bilden)",
@@ -1450,6 +1453,9 @@
           "name": "Stående, tatuerade händer",
           "path": "assets/keystones/paow-staende-tatuerad/keystone.png",
           "state": "gäller",
+          "builtOn": [
+            "paow-staende"
+          ],
           "note": "Stående A med tatuerade händer, 10 % mindre. Jakob 2026-11-17 i Beslut: ja. Oberoende granskad i full storlek: 4,5/5. Utanför händerna är den Stående A bildpunkt för bildpunkt.",
           "source": {
             "from": "paow-staende med tatuerade och 10 % mindre händer (Nano Banana Pro 4K för bläcket, storleken och skuggorna lokalt; kvittot ligger bredvid bilden)",
@@ -1500,6 +1506,9 @@
           "path": "assets/anchors/paow-vila-tatuerad/anchor.png",
           "node": "IDLE",
           "state": "gäller",
+          "builtOn": [
+            "paow-vila-ung-2"
+          ],
           "note": "Vila, yngre, kandidat 2 med tatuerade händer, 10 % mindre (som keystonebilderna Jakob sa ja till 2026-11-17). Utanför händerna samma bildpunkter. Oberoende granskad i full storlek: 4/5.",
           "source": {
             "from": "paow-vila-ung-2 med händerna ändrade (Nano Banana Pro 2K för bläcket, storleken lokalt; kvittot ligger bredvid bilden)",
@@ -1696,6 +1705,9 @@
           "card": "P4.C1",
           "node": "LAND(P4.C1)",
           "state": "gäller",
+          "builtOn": [
+            "paow-film-ny-giv-p4-t2"
+          ],
           "note": "Ruta 104 ur given till plats 4, tagning 2: kortet ligger öppet och handen ligger platt på det. Jakob 2026-11-13: bilden visar handryggen, alltså en hand som inte har vridit handleden för att vända kortet; den duger inte som landningsbild för en vändning. En riktig landningsbild görs som stillbild.",
           "source": {
             "from": "beställningen paow-giv-p4, tagning 2, ruta 104",

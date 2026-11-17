@@ -180,12 +180,13 @@ test('drafts, changes and approval go through the routes with their guards', asy
   assert.equal(unknown.json.error, 'petra finns inte i data/dealers.json, så inget kan beställas för henne här.');
 });
 
-test('Material: Godkänn replaces the other candidates of the same role, Underkänn sets one aside, against the revision', async (t) => {
+test('Material: a picture made to hold replaces the others of its place; any can be set aside, archived and taken back, against the revision', async (t) => {
   const { root, call } = await lab(t);
   const revision = async () => (await mediaRoles(root).answer()).revision!;
   assert.equal((await call('PUT', '/api/media/paow-vila-ung-2/state', { body: { state: 'gäller' } })).status, 428);
   assert.equal((await call('PUT', '/api/media/paow-vila-ung-2/state', { body: { state: 'gäller' }, match: await revision(), from: 'http://evil.example' })).status, 403);
-  assert.equal((await call('PUT', '/api/media/paow-vila-ung-2/state', { body: { state: 'kandidat' }, match: await revision() })).status, 400);
+  assert.equal((await call('PUT', '/api/media/paow-vila-ung-2/state', { body: { state: 'okänd' }, match: await revision() })).status, 400);
+  assert.equal((await call('PUT', '/api/media/paow-vila-ung-2/state', { body: { state: 'kandidat' }, match: await revision() })).status, 409, 'a candidate is one already');
   assert.equal((await call('PUT', '/api/media/paow-film/state', { body: { state: 'gäller' }, match: await revision() })).status, 400, 'a film is not decided here');
   const ok = await call('PUT', '/api/media/paow-vila-ung-2/state', { body: { state: 'gäller' }, match: await revision() });
   assert.equal(ok.status, 200);
@@ -197,12 +198,21 @@ test('Material: Godkänn replaces the other candidates of the same role, Underk�
   assert.equal(by('paow-vila-ung-1').state, 'ersatt');
   assert.match(by('paow-vila-ung-1').stateBy, /Vila, kandidat 2 godkändes/);
   assert.equal(by('paow-vila-kort').state, 'kandidat');
-  assert.equal((await call('PUT', '/api/media/paow-vila-ung-1/state', { body: { state: 'gäller' }, match: await revision() })).status, 409, 'ersatt never comes back here');
   assert.equal((await call('PUT', '/api/media/paow-vila-ung-2/state', { body: { state: 'gäller' }, match: ok.json.revision })).status, 409);
   assert.equal((await call('PUT', '/api/media/paow-vila-kort/state', { body: { state: 'ersatt' }, match: '"old"' })).status, 409);
   assert.equal((await call('PUT', '/api/media/paow-vila-kort/state', { body: { state: 'ersatt' }, match: ok.json.revision })).status, 200);
   assert.equal((await call('PUT', '/api/media/nobody/state', { body: { state: 'ersatt' }, match: await revision() })).status, 404);
-  assert.equal(allowed('gäller', 'ersatt') && !allowed('ersatt', 'gäller') && !allowed(undefined, 'gäller'), true);
+  // By hand (2026-11-18): one set aside before can hold again; archived pictures leave the lists and come back as candidates.
+  const back = await call('PUT', '/api/media/paow-vila-ung-1/state', { body: { state: 'gäller' }, match: await revision() });
+  assert.equal(back.status, 200, 'ersatt can hold again');
+  assert.deepEqual(back.json.replaced, [{ id: 'paow-vila-ung-2', name: 'Vila, kandidat 2' }]);
+  assert.equal((await call('PUT', '/api/media/paow-vila-ung-2/state', { body: { state: 'arkiverad' }, match: back.json.revision })).status, 200);
+  assert.equal((await call('PUT', '/api/media/paow-vila-ung-2/state', { body: { state: 'gäller' }, match: await revision() })).status, 409, 'an archived picture comes back first');
+  assert.equal((await call('PUT', '/api/media/paow-vila-ung-2/state', { body: { state: 'kandidat' }, match: await revision() })).status, 200);
+  const end = JSON.parse(await readFile(path.join(root, 'data/media-roles.json'), 'utf8')).dealers.paow.entries.find((e: { id: string }) => e.id === 'paow-vila-ung-2');
+  assert.equal(end.state, 'kandidat');
+  assert.match(end.stateBy, /^Jakob \d{4}-\d\d-\d\d \d\d:\d\d: arkiverad → kandidat \(Material\)$/);
+  assert.equal(allowed('gäller', 'ersatt') && allowed('ersatt', 'gäller') && allowed(undefined, 'gäller') && !allowed('arkiverad', 'gäller'), true);
   assert.equal(isDecidable({ role: 'ankare-1', path: 'assets/x/source.mp4', frame: 3 }), true);
   assert.equal(replacedBy([{ id: 'a', role: 'ankare-1', state: 'kandidat' }, { id: 'b', role: 'ankare-1', state: 'kandidat' }, { id: 'c', role: 'ankare-1', state: 'gäller' }], { id: 'a', role: 'ankare-1', state: 'kandidat' }).map((e) => e.id).join(), 'b,c', 'the one that held gives way too: one picture holds per role');
   const keystones = [{ id: 'paow-staende', role: 'keystone', name: 'Stående A', state: 'gäller' }, { id: 'paow-sittande', role: 'keystone', name: 'Sittande A', state: 'gäller' }, { id: 'paow-staende-tatuerad', role: 'keystone', name: 'Stående, tatuerade händer', state: 'kandidat' }, { id: 'paow-sittande-tatuerad', role: 'keystone', name: 'Sittande, tatuerade händer', state: 'kandidat' }] as const;

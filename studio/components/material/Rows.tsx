@@ -1,8 +1,9 @@
 "use client";
 
 // The rows of the view Material: the chain at a glance (ChainStrip), one row per role with its pictures (RoleRow), the
-// films as counts per seat (FilmsRow), and the sources of measures as the register lists them (Measures). Proofs are not
-// listed here: a proof is registered by its own proof.json and shown in Granska's Prov.
+// films as counts per seat (FilmsRow, a film built on a picture that no longer holds dimmed with its chip), the archived
+// pictures folded at the foot (ArchivedRow), and the sources of measures as the register lists them (Measures). Proofs are
+// not listed here: a proof is registered by its own proof.json and shown in Granska's Prov.
 import { ArrowRight, ChevronRight, CircleAlert, FolderOpen } from "lucide-react";
 import Link from "next/link";
 import { useState, type ReactNode } from "react";
@@ -12,7 +13,8 @@ import { CHAIN, ROLE_ABOUT, ROLE_LABEL, roleStatus, sizeWords, type DealerAnswer
 import { ProofStill } from "../proofs";
 import { buttonClasses, cn } from "../ui";
 import { seatGroups, takeCount } from "./films.ts";
-import { StateChip, Tile, coverOfEntry, filmLine } from "./Tile";
+import { StateChip, Tile, coverOfEntry, filmLine, type TileMark } from "./Tile";
+import { fromOlderChip, olderOf, type Lineage } from "../../lib/lineage.ts";
 
 const rowId = (role: Role) => `roll-${role.replace(".", "-")}`;
 const scrollTo = (role: Role) => document.getElementById(rowId(role))?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -146,7 +148,24 @@ function lineOf(role: Role, e: EntryAnswer, bank: boolean): string | undefined {
   return undefined;
 }
 
-export function RoleRow({ dealer, role, step, last, open, onOpen }: { dealer: DealerAnswer; role: Role; step: number | null; last?: boolean; open: string | null; onOpen: (entry: EntryAnswer) => void }) {
+export function RoleRow({
+  dealer,
+  all = dealer.entries,
+  role,
+  step,
+  last,
+  open,
+  onOpen,
+}: {
+  dealer: DealerAnswer;
+  /** Every picture of the dealer, archived ones too: what an anchor was made from may be among them. */
+  all?: readonly EntryAnswer[];
+  role: Role;
+  step: number | null;
+  last?: boolean;
+  open: string | null;
+  onOpen: (entry: EntryAnswer) => void;
+}) {
   const list = dealer.entries.filter((e) => e.role === role);
   const status = step !== null ? roleStatus(dealer, role) : null;
   const missing = dealer.missing?.[role];
@@ -158,7 +177,7 @@ export function RoleRow({ dealer, role, step, last, open, onOpen }: { dealer: De
       {list.length ? (
         <Strip>
           {list.map((e) => (
-            <Tile key={e.id} entry={e} onOpen={onOpen} selected={open === e.id} line={lineOf(role, e, !!dealer.films?.from)} />
+            <Tile key={e.id} entry={e} onOpen={onOpen} selected={open === e.id} line={lineOf(role, e, !!dealer.films?.from)} quiet={fromOlderChip(e, all)} />
           ))}
         </Strip>
       ) : (
@@ -172,7 +191,7 @@ export function RoleRow({ dealer, role, step, last, open, onOpen }: { dealer: De
  * The films: the bank in numbers per seat, the map one click away; for a dealer without films in the bank, what lies
  * outside it. Under that, the films of the register (role film) that lie in the repo folder but not in the bank.
  */
-export function FilmsRow({ dealer, graph, step, open, onOpen }: { dealer: DealerAnswer; graph: Graph | null; step: number; open: string | null; onOpen: (entry: EntryAnswer) => void }) {
+export function FilmsRow({ dealer, graph, step, open, onOpen, lineage = {} }: { dealer: DealerAnswer; graph: Graph | null; step: number; open: string | null; onOpen: (entry: EntryAnswer) => void; lineage?: Lineage }) {
   const [shown, setShown] = useState(false);
   const inBank = dealer.films?.from && graph ? takeCount(graph) : 0;
   const status: RoleStatus = inBank ? "finns" : "saknas";
@@ -267,14 +286,51 @@ export function FilmsRow({ dealer, graph, step, open, onOpen }: { dealer: Dealer
               <span className="font-semibold tabular-nums text-ink">{loose.length} {loose.length === 1 ? "film" : "filmer"}</span> utanför banken, i repomappen
             </span>
             <Strip>
-              {loose.map((e) => (
-                <Tile key={e.id} entry={e} onOpen={onOpen} selected={open === e.id} line={filmLine(e) ?? ""} />
-              ))}
+              {loose.map((e) => {
+                const marks = marksOfFilm(e, dealer.entries, lineage, onOpen);
+                return <Tile key={e.id} entry={e} onOpen={onOpen} selected={open === e.id} line={filmLine(e) ?? ""} marks={marks} dim={marks.length > 0} />;
+              })}
             </Strip>
           </div>
         ) : null}
       </div>
     </RowFrame>
+  );
+}
+
+/**
+ * A film of the register (role film, assets/motions/<clip>/source.mp4) built on a picture that no longer holds: one chip per
+ * mark ("äldre ankare 1", studio/lib/lineage.ts olderOf), a click opening the picture it was built on.
+ */
+export function marksOfFilm(entry: EntryAnswer, entries: readonly EntryAnswer[], lineage: Lineage, onOpen: (entry: EntryAnswer) => void): TileMark[] {
+  const clip = /^assets\/motions\/([^/]+)\//.exec(entry.path ?? "")?.[1];
+  if (!clip) return [];
+  const byId = new Map(entries.map((e) => [e.id, e]));
+  return olderOf(lineage[clip], entries).map((o) => {
+    const built = byId.get(o.built), holds = byId.get(o.holds);
+    return { chip: o.chip, title: `Byggd på ${built?.name ?? o.built}; ${holds?.name ?? o.holds} gäller nu. Klicka för bilden den byggdes på.`, onClick: built ? () => onOpen(built) : undefined };
+  });
+}
+
+/** The archived pictures of the dealer, folded at the foot: out of the lists, never deleted; the viewer offers Ta tillbaka. */
+export function ArchivedRow({ dealer, open, onOpen }: { dealer: DealerAnswer; open: string | null; onOpen: (entry: EntryAnswer) => void }) {
+  const list = dealer.entries.filter((e) => e.state === "arkiverad");
+  if (!list.length) return null;
+  return (
+    <details className="group mt-6 rounded-lg border border-line bg-surface px-5 py-3" open={list.some((e) => e.id === open) || undefined}>
+      <summary className="flex cursor-pointer list-none items-center gap-2 text-sm text-dim [&::-webkit-details-marker]:hidden">
+        <ChevronRight aria-hidden className="size-4 transition-transform duration-150 group-open:rotate-90" />
+        <span className="font-semibold text-ink">Arkiverat ({list.length})</span>
+        <span className="text-xs text-faint">Ur listorna, inte raderat. Öppna en bild och välj Ta tillbaka.</span>
+      </summary>
+      <div className="mt-3">
+        <Strip>
+          {list.map((e) => (
+            <Tile key={e.id} entry={e} onOpen={onOpen} selected={open === e.id} line={ROLE_LABEL[e.role]} />
+          ))}
+        </Strip>
+      </div>
+    </details>
   );
 }
 

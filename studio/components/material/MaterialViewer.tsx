@@ -18,6 +18,7 @@ import { formatBytes } from "../../lib/proofs.ts";
 import { TakeChip, frameTime } from "../takes";
 import { Button, IconButton, Kbd, cn } from "../ui";
 import { StateDecision } from "./StateDecision";
+import type { Lineage } from "../../lib/lineage.ts";
 import { StateChip } from "./Tile";
 
 const PAD = 24;
@@ -192,11 +193,16 @@ export function MaterialViewer({
   onIndex,
   revision = null,
   onDecided,
+  dealerEntries = entries,
+  lineage = {},
 }: {
   entries: readonly EntryAnswer[];
+  /** Every picture of the shown dealer (what a choice sets aside), and what each take was built on (studio/lib/lineage.ts). */
+  dealerEntries?: readonly EntryAnswer[];
+  lineage?: Lineage;
   index: number | null;
   onIndex: (index: number | null) => void;
-  /** The register's revision as read: with it, a candidate gets Godkänn and Underkänn (StateDecision). */
+  /** The register's revision as read: with it, a picture gets his choices by hand (StateDecision). */
   revision?: string | null;
   onDecided?: () => void;
 }) {
@@ -244,7 +250,7 @@ export function MaterialViewer({
                 {entry.state ? <StateChip state={entry.state} size="md" /> : null}
                 {onDecided ? (
                   <div className="ml-2 flex items-center gap-1.5">
-                    <StateDecision entry={entry} row={entries} revision={revision} onDecided={onDecided} />
+                    <StateDecision entry={entry} dealerEntries={dealerEntries} lineage={lineage} revision={revision} onDecided={onDecided} />
                   </div>
                 ) : null}
                 <div className="ml-auto flex items-center gap-1.5">

@@ -21,6 +21,7 @@ import { SHOWN, type Film, type StepFilms } from "@/lib/primaries";
 import { verdictPhrase, verdictOf } from "@/lib/verdict";
 import { PrimaryFilm, SecondaryFilm } from "./StepFilm";
 import { useMakePrimary } from "./useMakePrimary";
+import { useOlder } from "./useOlder";
 
 /** The steps before and after this one in the node tree, and the next one without a Primär (KartaView). */
 export type Around = { prev: string | null; next: string | null; unchosen: string | null };
@@ -81,6 +82,8 @@ function SheetBody({
 }) {
   const { edge, primary, secondaries } = step;
   const { make, saving, lines } = useMakePrimary();
+  // Takes built on a picture that no longer holds (Material decides the pictures; here only marked, with the picture a click away).
+  const older = useOlder();
   const rest = edge.id === REST_EDGE;
   const name = (t: Take) => (rest ? restWord(t) : undefined);
   const named = takeId ? secondaries.findIndex((f) => f.take.id === takeId) : -1;
@@ -121,6 +124,7 @@ function SheetBody({
       onMake={() => void make(f.take)}
       onPick={() => pick(f.take)}
       onOpen={() => view(f.take)}
+      marks={older(f.take.id)}
     />
   );
 
@@ -144,7 +148,7 @@ function SheetBody({
         <section className="flex flex-col gap-2.5" aria-label="Primär">
           <GroupTitle title="Primär" />
           {primary ? (
-            <PrimaryFilm film={primary} edge={edge} name={name(primary.take)} selected={primary.take.id === takeId} onPick={() => pick(primary.take)} onExpand={primary.take.media.video ? () => view(primary.take) : undefined} />
+            <PrimaryFilm film={primary} edge={edge} name={name(primary.take)} selected={primary.take.id === takeId} onPick={() => pick(primary.take)} onExpand={primary.take.media.video ? () => view(primary.take) : undefined} marks={older(primary.take.id)} />
           ) : (
             <div className="flex items-center gap-2 rounded-lg border border-dashed border-line-strong px-3.5 py-3 text-sm text-dim">
               Ingen Primär vald.

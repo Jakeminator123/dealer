@@ -1,9 +1,9 @@
 // The view's calls to the lab server: what is what (GET /api/media), adding a picture (POST /api/media) and Jakob's
-// Godkänn / Underkänn on a candidate (PUT /api/media/<id>/state, tools/order-routes.ts). Errors are lib/api.ts's ApiError
+// choice of a picture by hand (PUT /api/media/<id>/state, tools/order-routes.ts). Errors are lib/api.ts's ApiError
 // with a short Swedish message. In the online copy nothing is written: refused before it leaves.
 import { ApiError, SNAPSHOT_REFUSAL } from "../../lib/api.ts";
 import { labUrl } from "../../lib/lab.ts";
-import { UPLOAD_LIMIT, type Entry, type MediaAnswer, type UploadRole } from "../../lib/media.ts";
+import { UPLOAD_LIMIT, type Entry, type MediaAnswer, type State, type UploadRole } from "../../lib/media.ts";
 import { isSnapshot } from "../../lib/mode.ts";
 
 const kind = (status: number) => (status === 409 ? "conflict" : status === 404 ? "missing" : status === 403 || status === 413 || status === 415 ? "refused" : status >= 500 ? "server" : "invalid");
@@ -33,8 +33,8 @@ export async function getMedia(): Promise<MediaAnswer> {
 
 export type Decided = { entry: Entry; replaced: { id: string; name: string }[]; revision: string };
 
-/** Jakob's Godkänn (gäller) or Underkänn (ersatt) on a picture, against the register's revision as read (PUT /api/media/<id>/state). */
-export async function setPictureState(id: string, state: "gäller" | "ersatt", revision: string): Promise<Decided> {
+/** Jakob's choice on a picture (gäller, ersatt, arkiverad, or kandidat to take an archived one back), against the register's revision as read (PUT /api/media/<id>/state). */
+export async function setPictureState(id: string, state: State, revision: string): Promise<Decided> {
   if (isSnapshot) throw new ApiError(SNAPSHOT_REFUSAL, 403, "refused");
   let response: Response;
   try {

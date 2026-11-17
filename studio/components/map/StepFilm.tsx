@@ -13,6 +13,21 @@ import { isSnapshot } from "@/lib/mode";
 import { edgeName, takeName } from "@/lib/names";
 import { PRAISED_NOTE, type Film, type Seam, type Use, type UseKind } from "@/lib/primaries";
 import { RowStill } from "./RowStill";
+import type { Mark } from "./useOlder";
+
+/** A take built on a picture that no longer holds: one chip per mark, each a link to that picture in Material. Not a verdict. */
+export function OlderMarks({ marks, className }: { marks: readonly Mark[]; className?: string }) {
+  if (!marks.length) return null;
+  return (
+    <span className={cn("flex flex-wrap gap-1", className)}>
+      {marks.map((m) => (
+        <Link key={m.side + m.built} href={m.href} title={m.title} className="inline-flex h-5 items-center rounded-full border border-anmarkning/45 bg-anmarkning/10 px-1.5 text-2xs font-medium text-[#f0b07a] hover:brightness-125">
+          {m.chip}
+        </Link>
+      ))}
+    </span>
+  );
+}
 
 const USE_LOOK: Record<UseKind, { icon: LucideIcon; className: string }> = {
   always: { icon: Play, className: "border-godkand/50 text-[#6cc595] [&_svg]:fill-current" },
@@ -59,9 +74,9 @@ const scene = (edge: Edge, take: Take) => ({ pathname: "/bordet/", query: { lage
 const compare = (edge: Edge, take: Take, other: Take | null) => (other && other.id !== take.id ? { pathname: "/jamfor/", query: { kant: edge.id, a: take.id, b: other.id } } : null);
 
 /** The Primär, large: its film plays in place or over the whole window. */
-export function PrimaryFilm({ film, edge, name, selected, onPick, onExpand }: { film: Film; edge: Edge; name?: string; selected: boolean; onPick: () => void; onExpand?: () => void }) {
+export function PrimaryFilm({ film, edge, name, selected, onPick, onExpand, marks = [] }: { film: Film; edge: Edge; name?: string; selected: boolean; onPick: () => void; onExpand?: () => void; marks?: readonly Mark[] }) {
   return (
-    <div id={`tagning-${film.take.id}`} className="scroll-mt-4">
+    <div id={`tagning-${film.take.id}`} className={cn("scroll-mt-4", marks.length && "opacity-60")}>
       <TakeCard
         take={film.take}
         name={name}
@@ -73,6 +88,7 @@ export function PrimaryFilm({ film, edge, name, selected, onPick, onExpand }: { 
         extra={
           <span className="flex flex-col gap-1.5 pt-0.5">
             <UseChip use={film.use} className="self-start" />
+            <OlderMarks marks={marks} />
             {film.seam ? <SeamLine seam={film.seam} /> : null}
           </span>
         }
@@ -99,6 +115,7 @@ export function SecondaryFilm({
   onMake,
   onPick,
   onOpen,
+  marks = [],
 }: {
   film: Film;
   edge: Edge;
@@ -111,6 +128,8 @@ export function SecondaryFilm({
   onMake: () => void;
   onPick: () => void;
   onOpen: () => void;
+  /** What the take was built on that no longer holds (useOlder): the row is dimmed and says it. */
+  marks?: readonly Mark[];
 }) {
   const { take, use, seam, proposal, praised } = film;
   const title = name ?? takeName(take, edge.takes);
@@ -131,6 +150,7 @@ export function SecondaryFilm({
       aria-label={`${title}: ${use.word}`}
       className={cn(
         "flex scroll-mt-4 gap-3 rounded-lg border bg-surface p-2 pr-3 shadow-inset transition-[border-color] duration-150",
+        marks.length > 0 && "opacity-60",
         selected ? "border-brass/70 shadow-[0_0_0_1px_rgb(217_185_106/0.5)]" : proposal ? "border-brass/30" : "border-line",
       )}
     >
@@ -142,6 +162,7 @@ export function SecondaryFilm({
           <TakeChip take={take} size="sm" />
         </button>
         <UseChip use={use} className="self-start" />
+        <OlderMarks marks={marks} />
         {seam ? <SeamLine seam={seam} /> : null}
         <div className="mt-auto flex flex-wrap items-center gap-1 pt-0.5">
           {isSnapshot ? null : (

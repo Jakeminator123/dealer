@@ -4,7 +4,7 @@
 // is what, per dealer. At the top the chain at a glance (ingångsbild → keystone → ankare 1 → 2.1 → 2.2 → landningar →
 // filmer), then one row per role with large stills, a state chip and how many of the bank's films start or end on each picture; an empty role says what is
 // missing. A click opens the picture over the whole window with its facts on demand (MaterialViewer). Under the chain:
-// references, the rest, and the sources of measures the register lists. Proofs are Granska's Prov, registered by their own
+// references, the rest, the archived pictures (folded, each with Ta tillbaka in the viewer), and the sources of measures the register lists. Proofs are Granska's Prov, registered by their own
 // proof.json, and not listed here. "Lägg till bild" adds a picture (not in the online copy).
 // The dealer is the studio's (the rail's switch, useBank); the address's ?dealer= wins when it names one of Material's dealers,
 // so links into Material keep working (lib/dealer.ts viewDealer). The address holds the open picture. Must be inside
@@ -23,7 +23,7 @@ import { Button, EmptyState, ErrorState, Skeleton } from "../ui";
 import { AddDialog } from "./AddDialog";
 import { getMedia } from "./client.ts";
 import { MaterialViewer } from "./MaterialViewer";
-import { ChainStrip, FilmsRow, Measures, OrderFrom, RoleRow } from "./Rows";
+import { ArchivedRow, ChainStrip, FilmsRow, Measures, OrderFrom, RoleRow } from "./Rows";
 import { takeCount } from "./films.ts";
 
 type State = { status: "loading" } | { status: "ready"; answer: MediaAnswer } | { status: "error"; error: ApiError };
@@ -67,8 +67,12 @@ export function MaterialView() {
   const shownId = answer ? viewDealer(answer.dealers.map((d) => d.id), studioDealer, asked) : null;
   const dealer = answer?.dealers.find((d) => d.id === shownId) ?? null;
   const open = dealer && picture ? (dealer.entries.find((e) => e.id === picture) ?? null) : null;
-  // The viewer browses the open picture's row.
-  const row = useMemo(() => (dealer && open ? dealer.entries.filter((e) => e.role === open.role) : []), [dealer, open]);
+  // The viewer browses the open picture's row: its role's pictures, or the archived ones when it is archived.
+  const row = useMemo(
+    () => (dealer && open ? dealer.entries.filter((e) => (open.state === "arkiverad" ? e.state === "arkiverad" : e.role === open.role && e.state !== "arkiverad")) : []),
+    [dealer, open],
+  );
+  const lineage = answer?.lineage ?? {};
   // The bank's graph is the studio's dealer's: its takes count only for her (a link may show another dealer here).
   const bankTakes = dealer?.films?.from && graph && dealer.id === studioDealer ? takeCount(graph) : 0;
 
@@ -105,7 +109,9 @@ export function MaterialView() {
       </Page>
     );
 
-  const missingRoles = CHAIN.filter((r) => roleStatus(dealer, r, bankTakes) === "saknas");
+  // Archived pictures are out of the lists: the chain, the rows and what a role has are read without them.
+  const live = { ...dealer, entries: dealer.entries.filter((e) => e.state !== "arkiverad") };
+  const missingRoles = CHAIN.filter((r) => roleStatus(live, r, bankTakes) === "saknas");
   const step = (role: Role) => CHAIN.indexOf(role) + 1;
   return (
     <Page
@@ -127,8 +133,8 @@ export function MaterialView() {
     >
       <div className="flex flex-col">
         <div className="flex flex-col gap-3 pb-2">
-          <ChainStrip dealer={dealer} bankTakes={bankTakes} />
-          <OrderFrom dealer={dealer} onOpen={(e) => setParams({ bild: e.id })} />
+          <ChainStrip dealer={live} bankTakes={bankTakes} />
+          <OrderFrom dealer={live} onOpen={(e) => setParams({ bild: e.id })} />
           {answer.unassigned.length ? (
             <p className="text-xs text-[#f0b07a]">{answer.unassigned.length} bilder som filmer börjar eller slutar på saknar roll i registret.</p>
           ) : null}
@@ -136,23 +142,24 @@ export function MaterialView() {
         <div className="divide-y divide-line/70">
           {CHAIN.map((role) =>
             role === "film" ? (
-              <FilmsRow key={role} dealer={dealer} graph={graph} step={step(role)} open={open?.id ?? null} onOpen={(e) => setParams({ bild: e.id })} />
+              <FilmsRow key={role} dealer={live} graph={graph} step={step(role)} open={open?.id ?? null} onOpen={(e) => setParams({ bild: e.id })} lineage={lineage} />
             ) : (
-              <RoleRow key={role} dealer={dealer} role={role} step={step(role)} open={open?.id ?? null} onOpen={(e) => setParams({ bild: e.id })} />
+              <RoleRow key={role} dealer={live} all={dealer.entries} role={role} step={step(role)} open={open?.id ?? null} onOpen={(e) => setParams({ bild: e.id })} />
             ),
           )}
         </div>
         <h2 className="mt-8 border-b border-line pb-2 text-xs font-medium uppercase tracking-[0.08em] text-faint">Bredvid kedjan</h2>
         <div className="divide-y divide-line/70">
           {ROLES.filter((r) => !CHAIN.includes(r)).map((role) =>
-            dealer.entries.some((e) => e.role === role) || dealer.missing?.[role] ? (
-              <RoleRow key={role} dealer={dealer} role={role} step={null} open={open?.id ?? null} onOpen={(e) => setParams({ bild: e.id })} />
+            live.entries.some((e) => e.role === role) || dealer.missing?.[role] ? (
+              <RoleRow key={role} dealer={live} all={dealer.entries} role={role} step={null} open={open?.id ?? null} onOpen={(e) => setParams({ bild: e.id })} />
             ) : null,
           )}
         </div>
+        <ArchivedRow dealer={dealer} open={open?.id ?? null} onOpen={(e) => setParams({ bild: e.id })} />
         <Measures measures={answer.measures} />
       </div>
-      <MaterialViewer entries={row} index={open ? row.indexOf(open) : null} onIndex={(i) => setParams({ bild: i === null ? null : (row[i]?.id ?? null) })} revision={answer.revision} onDecided={() => void read()} />
+      <MaterialViewer entries={row} index={open ? row.indexOf(open) : null} onIndex={(i) => setParams({ bild: i === null ? null : (row[i]?.id ?? null) })} revision={answer.revision} onDecided={() => void read()} dealerEntries={dealer.entries} lineage={lineage} />
       {!isSnapshot ? <AddDialog open={adding} onOpenChange={setAdding} dealers={answer.dealers} dealer={dealer.id} onAdded={added} /> : null}
     </Page>
   );

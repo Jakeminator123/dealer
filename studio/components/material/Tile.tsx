@@ -19,10 +19,11 @@ const STATE: Record<ChipState, { tone: BadgeTone; sign: string; word: string }> 
   finns: { tone: "ok", sign: "✓", word: "finns" },
   kandidat: { tone: "remark", sign: "◐", word: "kandidat" },
   ersatt: { tone: "neutral", sign: "↺", word: "ersatt" },
+  arkiverad: { tone: "neutral", sign: "▣", word: "arkiverad" },
   saknas: { tone: "bad", sign: "✕", word: "saknas" },
 };
 
-/** A state as sign AND colour: gäller ✓, finns ✓, kandidat ◐, ersatt ↺, saknas ✕. */
+/** A state as sign AND colour: gäller ✓, finns ✓, kandidat ◐, ersatt ↺, arkiverad ▣, saknas ✕. */
 export function StateChip({ state, size = "sm", className }: { state: ChipState; size?: "sm" | "md"; className?: string }) {
   const s = STATE[state];
   return (
@@ -84,7 +85,10 @@ function FitChips({ entry }: { entry: EntryAnswer }) {
 export const filmLine = (entry: Pick<EntryAnswer, "frames" | "fps" | "count">): string | null =>
   entry.count ? `${entry.count} filer` : entry.frames && entry.fps ? `${Math.round(entry.frames / entry.fps)} s · ${entry.frames} rutor` : null;
 
-export function Tile({ entry, onOpen, selected = false, line }: { entry: EntryAnswer; onOpen: (entry: EntryAnswer) => void; selected?: boolean; line?: ReactNode }) {
+/** A mark under a tile: a short chip (studio/lib/lineage.ts) that opens the picture it names. */
+export type TileMark = { chip: string; title: string; onClick?: () => void };
+
+export function Tile({ entry, onOpen, selected = false, line, marks = [], quiet, dim = false }: { entry: EntryAnswer; onOpen: (entry: EntryAnswer) => void; selected?: boolean; line?: ReactNode; marks?: readonly TileMark[]; quiet?: string | null; dim?: boolean }) {
   const cover = coverOfEntry(entry);
   // Without a picture to show, a narrow card is enough.
   const width = cover ? tileWidth(entry) : 168;
@@ -92,7 +96,7 @@ export function Tile({ entry, onOpen, selected = false, line }: { entry: EntryAn
   const style: CSSProperties = { width, height: TILE_HEIGHT };
   const frameTag = entry.frame !== undefined ? `ruta ${entry.frame}` : entry.served?.endsWith(".mp4") ? "film" : entry.count ? `${entry.count} filer` : null;
   return (
-    <li className="flex shrink-0 flex-col gap-1.5" style={{ width }}>
+    <li className={cn("flex shrink-0 flex-col gap-1.5", dim && "opacity-55")} style={{ width }}>
       <button
         type="button"
         onClick={() => onOpen(entry)}
@@ -104,7 +108,7 @@ export function Tile({ entry, onOpen, selected = false, line }: { entry: EntryAn
         style={style}
       >
         {cover ? (
-          <ProofStill cover={cover} fps={entry.fps ?? 30} className={cn("absolute inset-0 transition-[filter,opacity] duration-200 group-hover:brightness-110", entry.state === "ersatt" && "opacity-55 saturate-50")} />
+          <ProofStill cover={cover} fps={entry.fps ?? 30} className={cn("absolute inset-0 transition-[filter,opacity] duration-200 group-hover:brightness-110", (entry.state === "ersatt" || entry.state === "arkiverad") && "opacity-55 saturate-50")} />
         ) : entry.inside ? (
           <Placeholder icon={<ImageOff />}>Filen saknas</Placeholder>
         ) : (
@@ -138,6 +142,28 @@ export function Tile({ entry, onOpen, selected = false, line }: { entry: EntryAn
             </Link>
           ) : null}
         </span>
+        {quiet || marks.length ? (
+          <span className="flex flex-wrap gap-1">
+            {quiet ? (
+              <Badge tone="neutral" size="sm">
+                {quiet}
+              </Badge>
+            ) : null}
+            {marks.map((m) =>
+              m.onClick ? (
+                <button key={m.chip + m.title} type="button" onClick={m.onClick} title={m.title} className="rounded-full focus-visible:outline-offset-2">
+                  <Badge tone="remark" size="sm" className="cursor-pointer hover:brightness-125">
+                    {m.chip}
+                  </Badge>
+                </button>
+              ) : (
+                <Badge key={m.chip + m.title} tone="remark" size="sm" title={m.title}>
+                  {m.chip}
+                </Badge>
+              ),
+            )}
+          </span>
+        ) : null}
       </div>
     </li>
   );

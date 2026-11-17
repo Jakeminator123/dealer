@@ -39,7 +39,8 @@ export const ROLE_ABOUT: Record<Role, string> = {
 };
 
 /** A picture's state where it has one. Without one, nothing is said. */
-export const STATES = ["gäller", "kandidat", "ersatt"] as const;
+/** arkiverad: out of the lists, kept in the register with who and when; "Ta tillbaka" makes it a candidate again (2026-11-18). */
+export const STATES = ["gäller", "kandidat", "ersatt", "arkiverad"] as const;
 export type State = (typeof STATES)[number];
 export const isState = (value: unknown): value is State => typeof value === "string" && (STATES as readonly string[]).includes(value);
 
@@ -65,6 +66,8 @@ export type Entry = {
   card?: string;
   node?: string;
   state?: State;
+  /** The entries this picture was made from (a keystone, an anchor), by id, where a receipt says it; empty or missing where nothing does. */
+  builtOn?: string[];
   note?: string;
   source?: Source;
   link?: string;
@@ -142,7 +145,8 @@ export function validateRegister(value: unknown): { register: Register | null; e
       if (e.pattern !== undefined && (typeof e.pattern !== "string" || !isInside(e.pattern.replaceAll("*", "x")) || !e.path)) errors.push(`${where}: ett mönster ska ligga i repot och ha en bild (path) att visa.`);
       if ((e as { proof?: unknown }).proof !== undefined) errors.push(`${where}: proof hör inte hemma här: ett prov registreras av sitt proof.json.`);
       if (e.card !== undefined && (typeof e.card !== "string" || !CARD.test(e.card))) errors.push(`${where}: kortet skrivs som P4.C1 eller D.C2.`);
-      if (e.state !== undefined && !isState(e.state)) errors.push(`${where}: tillståndet ska vara gäller, kandidat eller ersatt.`);
+      if (e.state !== undefined && !isState(e.state)) errors.push(`${where}: tillståndet ska vara gäller, kandidat, ersatt eller arkiverad.`);
+      if (e.builtOn !== undefined && (!Array.isArray(e.builtOn) || e.builtOn.some((b) => typeof b !== "string" || !ID.test(b) || b === e.id))) errors.push(`${where}: builtOn är en lista med andra bilders id.`);
       if (e.note !== undefined && (typeof e.note !== "string" || e.note.length > 400)) errors.push(`${where}: noten är för lång.`);
       if (e.link !== undefined && (typeof e.link !== "string" || !e.link.startsWith("/"))) errors.push(`${where}: en länk börjar med /.`);
       if (e.source !== undefined && (typeof e.source !== "object" || typeof e.source?.from !== "string")) errors.push(`${where}: source ska ha from.`);
@@ -151,6 +155,8 @@ export function validateRegister(value: unknown): { register: Register | null; e
     const out = dealer.outside;
     if (out && (typeof out.path !== "string" || !Array.isArray(out.ledgers))) errors.push(`${at}.outside: path och ledgers krävs.`);
   }
+  // builtOn names pictures of the register itself.
+  for (const [dealerId, dealer] of Object.entries(v.dealers)) for (const e of Array.isArray(dealer?.entries) ? dealer.entries : []) for (const b of Array.isArray(e?.builtOn) ? e.builtOn : []) if (typeof b === "string" && !ids.has(b)) errors.push(`dealers.${dealerId} (${e.id}): builtOn nämner ${b}, som inte finns i registret.`);
   if (!Array.isArray(v.measures)) errors.push("measures saknas.");
   return { register: errors.length ? null : (v as Register), errors };
 }
@@ -259,6 +265,8 @@ export type MediaAnswer = {
   measures: Measure[];
   /** Pictures the job file names that the register gives no role (should be none). */
   unassigned: string[];
+  /** Every take of the bank and the entries its first and last picture were made from (studio/lib/lineage.ts traceTakes). */
+  lineage?: Record<string, { first: string | null; last: string | null }>;
 };
 
 // ── Adding a picture ────────────────────────────────────────────────────────
@@ -323,7 +331,7 @@ export type RoleStatus = "gäller" | "finns" | "kandidat" | "saknas";
  */
 export function roleStatus(dealer: { missing?: Partial<Record<Role, string>>; entries: readonly Pick<Entry, "role" | "state">[] }, role: Role, bankTakes = 0): RoleStatus {
   if (role === "film") return bankTakes > 0 ? "finns" : "saknas";
-  const list = dealer.entries.filter((e) => e.role === role);
+  const list = dealer.entries.filter((e) => e.role === role && e.state !== "arkiverad");
   if (list.some((e) => e.state === "gäller")) return "gäller";
   if (list.some((e) => e.state === "kandidat")) return "kandidat";
   if (dealer.missing?.[role]) return "saknas";

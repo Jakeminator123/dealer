@@ -583,6 +583,25 @@ ritade) och utgångarna (`UTGANG`, `READY>IDLE`, och `UTGANG-2.2`, `READY-B>IDLE
 `STEPS` i `src/order-model.ts`. Hela vägen från bild till färdig dealer, med alla
 format och namn: `tools/dealer-line.md`.
 
+## Material: bilder, tillstånd och vad som bygger på vad
+
+`data/media-roles.json` ger varje bild en roll (`studio/lib/media.ts`). En bild kan ha ett tillstånd: `gäller`, `kandidat`,
+`ersatt` eller `arkiverad` (sedan 2026-11-18); utan tillstånd räknas den som en kandidat. Jakob väljer för hand i
+Material, för den dealer som är vald i studion (reglerna i `studio/components/material/state.ts`, skrivna av
+`setState` i `tools/media-roles.ts` mot registrets revision): vilken bild som helst kan göras till den som gäller, också en
+som var ersatt, och de andra på samma plats (roll, nod och kort; en keystone också samma hållning) blir ersatta; en bild
+läggs åt sidan (`ersatt`) eller arkiveras (`arkiverad`: ur listorna, kvar i registret med vem och när, aldrig raderad;
+att flytta filer till arkivdisken är städrutinens sak); en arkiverad bild kommer tillbaka som kandidat. Varje ändring får
+en rad i `stateBy` med vem, när och var; ett verktyg eller en agent anger `who` och `where`, så att inget ser ut som
+hans. Bilden väljs bara i Material; Karta visar märkena och länkar dit, och Primär för ett klipp väljs bara i Karta.
+
+Vad som bygger på vad (`studio/lib/lineage.ts`): labbet spårar varje tagning till de bilder dess första och sista bild
+gjordes av (jobbfilens `first`/`last` per sökväg eller ruta, en beställnings `pictures[].from.entry`, eller samma sha256),
+och svarar med det i `GET /api/media` (`lineage`). En tagning vars bild inte längre gäller på sin plats märks som äldre i
+Karta och i Materials filmrader ("äldre ankare 2.2") med bilden ett klick bort; den spelas som förut tills Jakob väljer
+annat. Bara ett led: en bild som gjorts av en annan har `builtOn` (id:n, där ett kvitto säger det) och får själv märket
+"från äldre keystone" när den bilden inte längre gäller, men dess klipp märks inte för det.
+
 ## Klippbank och nodnotation
 
 Studions vy **Karta** (`/studio/karta/`; `/studio/primara/` leder hit med samma val) visar nodträdet och för varje steg

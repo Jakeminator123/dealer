@@ -12,11 +12,12 @@ import path from 'node:path';
 import {StoreError} from './placement-store.ts';
 import {parseEdge, nodeName, formatEdge} from '../src/clip-graph.ts';
 import {
- entryKey, isInside, isUploadRole, kindOfPath, readFit, uploadTarget, unassigned, usesOf, validateRegister,
+ entryKey, isInside, isState, isUploadRole, kindOfPath, readFit, uploadTarget, unassigned, usesOf, validateRegister,
  NAME, NAME_LIMIT, TITLE_LIMIT, UPLOAD_LIMIT, ROLE_LABEL,
  type DealerAnswer, type Entry, type EntryAnswer, type Fit, type Found, type ImageType, type JobLike, type MediaAnswer, type Register, type UploadRole,
 } from '../studio/lib/media.ts';
 import {allowed, isDecidable, replacedBy, stateLine} from '../studio/components/material/state.ts';
+import {traceTakes, type OrderPicture, type TakeLike} from '../studio/lib/lineage.ts';
 import {ANCHOR_NODE} from '../src/order-model.ts';
 
 /** The node an anchor stands for (ankare-2.1 → READY); an order finds the anchor that holds by role and node. */
@@ -168,12 +169,30 @@ export function mediaRoles(root: string) {
   try { value = JSON.parse(text); } catch { return {text, register: null, errors: ['data/media-roles.json är inte giltig JSON.']}; }
   return {text, ...validateRegister(value)};
  }
- async function readJobs(): Promise<{jobs: JobLike[]; derived: number; edits: number}> {
+ async function readJobs(): Promise<{jobs: JobLike[]; derived: number; edits: number; takes: TakeLike[]}> {
   try {
-   const file = JSON.parse(await readFile(jobFile, 'utf8'));
-   const jobs = (Array.isArray(file?.jobs) ? file.jobs : []).filter((j: {id?: unknown}) => typeof j?.id === 'string');
-   return {jobs, derived: Array.isArray(file?.derived) ? file.derived.length : 0, edits: Array.isArray(file?.edits) ? file.edits.length : 0};
-  } catch { return {jobs: [], derived: 0, edits: 0}; }
+   const file = JSON.parse(await readFile(jobFile, 'utf8')), named = (v: unknown) => (Array.isArray(v) ? v : []).filter((j: {id?: unknown}) => typeof j?.id === 'string');
+   const jobs = named(file?.jobs);
+   return {jobs, derived: Array.isArray(file?.derived) ? file.derived.length : 0, edits: Array.isArray(file?.edits) ? file.edits.length : 0, takes: [...jobs, ...named(file?.derived), ...named(file?.edits)]};
+  } catch { return {jobs: [], derived: 0, edits: 0, takes: []}; }
+ }
+ /** Every order's pictures (data/orders/<id>.json pictures[]): where each lies, its hash and the entry it was made from. */
+ async function readOrderPictures(): Promise<OrderPicture[]> {
+  const dir = path.join(root, 'data/orders'), out: OrderPicture[] = [];
+  for (const name of await readdir(dir).catch(() => [] as string[])) if (name.endsWith('.json')) { try { const o = JSON.parse(await readFile(path.join(dir, name), 'utf8')); if (Array.isArray(o?.pictures)) out.push(...o.pictures); } catch {} }
+  return out;
+ }
+ /** The sha256 of an entry's own picture (not a frame of a film), kept while its size and time are the same. */
+ const hashes = new Map<string, {stamp: string; sha256: string}>();
+ async function hashOf(entry: Entry): Promise<string | null> {
+  if (!entry.path || entry.frame !== undefined || kindOfPath(entry.path) !== 'image' || !isInside(entry.path)) return null;
+  const file = path.join(root, ...entry.path.split('/')), s = await stat(file).catch(() => null);
+  if (!s?.isFile()) return null;
+  const stamp = `${s.size}:${s.mtimeMs}`, known = hashes.get(file);
+  if (known?.stamp === stamp) return known.sha256;
+  const sha256 = createHash('sha256').update(await readFile(file)).digest('hex');
+  hashes.set(file, {stamp, sha256});
+  return sha256;
  }
 
  /** How each entry fits today's card plan and standard (data/media-fit.json, tools/media-audit.ts); a missing or unreadable file is no fit data, never an error. */
@@ -217,7 +236,7 @@ export function mediaRoles(root: string) {
 
  /** GET /api/media: every dealer's entries with what was found, and the measures. */
  async function answer(): Promise<MediaAnswer> {
-  const {text, register, errors} = await readRegister(), {jobs, derived, edits} = await readJobs();
+  const {text, register, errors} = await readRegister(), {jobs, derived, edits, takes} = await readJobs();
   if (!register) return {schemaVersion: 1, readable: false, revision: text ? revisionOf(text) : null, problems: errors, dealers: [], measures: [], unassigned: []};
   const uses = usesOf(jobs), dealers: DealerAnswer[] = [], fits = await readFits();
   for (const [id, dealer] of Object.entries(register.dealers)) {
@@ -229,7 +248,9 @@ export function mediaRoles(root: string) {
    const prefix = dealer.films?.prefix, mine = (list: {id: string}[]) => prefix ? list.filter(j => j.id.startsWith(prefix)).length : 0;
    dealers.push({...dealer, id, entries, bank: {jobs: mine(jobs), derived: prefix ? derived : 0, edits: prefix ? edits : 0}});
   }
-  return {schemaVersion: 1, readable: true, revision: revisionOf(text!), problems: [], dealers, measures: register.measures, unassigned: unassigned(register, jobs)};
+  const all = Object.values(register.dealers).flatMap(d => d.entries), hashed = await Promise.all(all.map(async e => ({...e, sha256: await hashOf(e)})));
+  const lineage = traceTakes(hashed, takes, await readOrderPictures());
+  return {schemaVersion: 1, readable: true, revision: revisionOf(text!), problems: [], dealers, measures: register.measures, unassigned: unassigned(register, jobs), lineage};
  }
 
  /** A file the lab may hand out for the view: named by the register (a picture, a film, or a pattern's picture), inside the repo, no link out. */
@@ -309,7 +330,7 @@ export function mediaRoles(root: string) {
   */
  async function setState(input: {id: string; state: unknown; expected: string | undefined; who?: string; where?: string; now?: Date}) {
   const {id, expected} = input, to = input.state, now = input.now ?? new Date(), who = input.who ?? 'Jakob', where = input.where ?? 'Material';
-  if (to !== 'gäller' && to !== 'ersatt') throw new StoreError(400, 'Tillståndet ska vara gäller eller ersatt.');
+  if (!isState(to)) throw new StoreError(400, 'Tillståndet ska vara gäller, ersatt, arkiverad eller kandidat (ta tillbaka).');
   const task = queue.then(async () => {
    const {text, register, errors} = await readRegister();
    if (!register || !text) throw new StoreError(500, `Registret håller inte: ${errors.join('; ')}`);
@@ -319,10 +340,10 @@ export function mediaRoles(root: string) {
    if (!owner) throw new StoreError(404, 'Bilden finns inte i registret.');
    const next = structuredClone(register), dealer = next.dealers[owner[0]], entry = dealer.entries.find(e => e.id === id)!;
    if (!isDecidable(entry)) throw new StoreError(400, 'Bara en bild (inte en hel film) kan godkännas här.');
-   if (!allowed(entry.state, to)) throw new StoreError(409, `${entry.name} är ${entry.state ?? 'utan tillstånd'}: bara kandidat → gäller, kandidat → ersatt och gäller → ersatt.`);
+   if (!allowed(entry.state, to)) throw new StoreError(409, `${entry.name} är ${entry.state ?? 'utan tillstånd'}: det går inte att ändra till ${to} härifrån.`);
    const replaced = to === 'gäller' ? replacedBy(dealer.entries, entry) : [];
    for (const other of replaced) Object.assign(other, {state: 'ersatt', stateBy: stateLine(who, now, other.state ?? 'kandidat', 'ersatt', `${entry.name} godkändes${where === 'Material' ? ' i Material' : `, ${where}`}`)});
-   Object.assign(entry, {state: to, stateBy: stateLine(who, now, entry.state!, to, where)});
+   Object.assign(entry, {state: to, stateBy: stateLine(who, now, entry.state ?? 'kandidat', to, where)});
    const out = JSON.stringify(next, null, 2) + '\n';
    if (validateRegister(JSON.parse(out)).errors.length) throw new StoreError(400, 'Ändringen gick inte att föra in i registret.');
    await mkdir(path.join(root, '.runtime'), {recursive: true});

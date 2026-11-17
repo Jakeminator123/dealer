@@ -135,7 +135,7 @@ export function roleClaims(roles: {dealers?: Record<string, {entries?: Record<st
     if (!p) continue;
     const clip = /^assets\/motions\/([^/]+)\//.exec(p)?.[1];
     if (role === 'referens') out.push({path: p, use: 'referens', why: `${at} (roll referens)`});
-    else if (state === 'ersatt') out.push({path: p, use: 'bara registrerad', why: `${at} (${role}, ersatt)`});
+    else if (state === 'ersatt' || state === 'arkiverad') out.push({path: p, use: 'bara registrerad', why: `${at} (${role}, ${state})`});
     else if (role === 'film') out.push({path: p, use: clip && played.has(clip) ? 'spelas' : 'bara registrerad', why: `${at} (roll film${typeof e.note === 'string' ? ': ' + e.note.slice(0, 60) : ''})`});
     else if (role === 'arbetsmaterial') out.push({path: p, use: 'bara registrerad', why: `${at} (arbetsmaterial)`});
     else out.push({path: p, use: 'visas', why: `${at} (${role}${state ? ', ' + state : ''})`});
