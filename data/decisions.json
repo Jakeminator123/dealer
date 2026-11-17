@@ -23,22 +23,6 @@
       "answer": null
     },
     {
-      "id": "github-betalning",
-      "kind": "gora",
-      "question": "GitHub-kontot är låst på en betalfråga: öppna Settings, Billing.",
-      "leads": "Tills den är löst körs inte GitHubs egen kontroll av det som pushas.",
-      "link": "github.com/settings/billing",
-      "chips": [
-        {
-          "value": "klart",
-          "label": "Klart"
-        }
-      ],
-      "asked": "2026-11-17",
-      "from": "huvudagenten",
-      "answer": null
-    },
-    {
       "id": "rygg-tatueringar-prov-2",
       "kind": "beslut",
       "question": "Tatueringar på ryggen i trailerns början: ett andra prov?",
@@ -188,7 +172,11 @@
       "asked": "2026-11-17",
       "from": "huvudagenten",
       "cost": "kostar per fråga",
-      "answer": null
+      "answer": {
+        "value": "ja",
+        "note": "Vilkne är botten?",
+        "at": "2026-11-17T16:59:08.610Z"
+      }
     }
   ]
 }
