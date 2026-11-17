@@ -219,6 +219,11 @@ kl. 21.46 och 21.58 (Jakobs besked, "Ett labb"), av underagenter till huvudagent
   `src/table-lens.ts`, `planLens` i `src/card-plan.ts`), och talet bredvid säger vad dealerns kort blir (75 bildpunkter
   vid 96 %, 64 vid 91 %, 54 vid 87 %). Värdet sparas i hans plan när han trycker Spara; utan värde gäller den verkliga
   kameran. V6:s utseende ligger utanför familjen. Inte gjort i en webbläsare: att dra reglaget för hand och Spara.
+  **Görs om** (hans öga på 87 %-bilden, natten till 2026-11-18: "Kortet i skon är större än korten som ligger närmare
+  oss […] DC1 kanske 65% av storleken av kortet i skon […] Är det perspektivet som är fel"): han vill ha djup i kortens
+  form men storlekar som stämmer med skon och med varandra, och det ger ingen lins. Regeln som byggs: storlek och plats
+  alltid ur den verkliga kameran, och Perspektiv ändrar bara formen (hur mycket smalare bortre kanten ritas), ett värde
+  för alla kort, med hans plans 87 % som förval.
 - **Pågår hos Bordets underagent** (hans ord cirka kl. 00.00: "valde från dator till mobil […] vi fick ett gammalt prov
   av Pamela, även fast jag har ikryssat PAO […] Jag trodde att ingenting skulle göras dubbelt för mobilen. Generellt
   förstår jag inte varför vi automatiskt kan komma in till Pamela. Om hon används som referens borde hon rimligtvis
