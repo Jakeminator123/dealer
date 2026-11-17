@@ -425,6 +425,13 @@ miljövariabeln ensam flyttar inget. Original och pågående review bevaras.
 slask medan katalogen refererar dit. Katalogen innehåller bara sökvägar/hashar, inga uppladdade filmer; diagnostiska
 beslut hämtas från motions-registret.
 
+**Vad en mapp i `assets/` eller `output/` är och om något använder den:** `node tools/media-audit.ts [--json] [<mapp>]`
+(bara läsning). Per film, ankare, beställning eller prov: vad det är, storlek, datum, vilket register som nämner det och
+användningen `spelas` (banken enligt `buildGraph`, talfilmer, munlappar, filmen före spelet), `visas` (Material,
+beställningar, scenen, och allt som Beslut, kopian, ett dokument eller en instruktion nämner med sitt exakta id), `referens` (V6, manifestet,
+`evidence/`), `bara registrerad` eller `okänd`, med fil och fält som säger det. Det som varken spelas, visas eller är
+referens arkiveras till `D:/dealer-archive/`, raderas inte, om det är gjort med betalda krediter.
+
 Det tidigare projektet (snyggare-dealer, arkivet) är fullständigt arkiverat på `D:/dealer-archive/snyggare-dealer`, och C:-originalet är borttaget utan fel
 enligt [arkivkvittot](../evidence/archive-move.json). Efter kontrollerad serverstopp omfattade det 194 531 filer och 163
 182 601 679 logiska byte. Varje vanlig fil SHA-256-jämfördes på båda sidor; katalogstruktur, Git-historik/index, 34
