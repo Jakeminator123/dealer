@@ -25,6 +25,7 @@ import {
   ownSteps,
   readDealerAddress,
   readDealerRegister,
+  viewDealer,
   withDealer,
   withoutDealer,
 } from "../lib/dealer.ts";
@@ -117,6 +118,21 @@ test("the address wins, then a take it names, then the memory, then the first de
   assert.deepEqual(chooseDealer({ address: at("dealer=Paow"), remembered: "gone", known, owners }), { id: "paow", from: "default" });
   assert.deepEqual(chooseDealer({ address: at("dealer=nyn"), remembered: null, known: null, owners: {} }), { id: "nyn", from: "address" });
   assert.deepEqual(chooseDealer({ address: null, remembered: null, known: null, owners: {} }), { id: "paow", from: "default" });
+});
+
+test("Material shows the studio's dealer; the address's word wins when it names one of Material's dealers", () => {
+  const material = ["pamela", "paow", "petra"];
+  // Jakob with Paow chosen in the rail and no word in the address (the first dealer's addresses carry none): Paow, not the register's first.
+  assert.equal(viewDealer(material, "paow", null), "paow");
+  assert.equal(viewDealer(material, "paow", new URLSearchParams("bild=paow-vila-ung-2").get("dealer")), "paow");
+  // A link into Material with ?dealer= keeps working, also for a dealer the bank has no take of.
+  assert.equal(viewDealer(material, "paow", "pamela"), "pamela");
+  assert.equal(viewDealer(material, "paow", "petra"), "petra");
+  // An unknown or malformed word changes nothing: the studio's dealer.
+  assert.equal(viewDealer(material, "paow", "nobody"), "paow");
+  assert.equal(viewDealer(material, "pamela", "Paow"), "pamela");
+  // A studio dealer Material has no entries for: Material's first.
+  assert.equal(viewDealer(material, "nyn", null), "pamela");
 });
 
 test("the address keeps the dealer: set, replaced or taken out, every other word as it was written", () => {

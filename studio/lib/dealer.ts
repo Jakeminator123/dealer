@@ -96,6 +96,17 @@ export function chooseDealer(input: { address: DealerAddress | null; remembered:
   return { id: !input.known || input.known.includes(DEFAULT_DEALER) ? DEFAULT_DEALER : BANK_DEALER, from: "default" };
 }
 
+/**
+ * The dealer a view with its own list of dealers shows (Material: data/media-roles.json's): the address's word when it names
+ * one of the view's dealers (a link into Material with ?dealer= keeps working, also for a dealer the bank has no take of), else
+ * the studio's dealer (useBank().dealer, the rail's switch), else the view's first. An unknown word changes nothing.
+ */
+export function viewDealer(ids: readonly string[], studio: string, asked: string | null | undefined): string {
+  const word = dealerId(asked?.trim());
+  if (word && ids.includes(word)) return word;
+  return ids.includes(studio) || !ids.length ? studio : ids[0];
+}
+
 // ── The address ─────────────────────────────────────────────────────────────
 /**
  * A query ("?a=1&b=2", "a=1" or "") with the dealer's word set to `dealer`, or taken out for null: "?…" or "". The other

@@ -6,8 +6,33 @@ import assert from "node:assert/strict";
 import { buildGraph, type BankData, type BankJob, type MotionRecord } from "../../src/clip-graph.ts";
 import { seatGroups, takeCount } from "../components/material/films.ts";
 import {
-  CHAIN, ROLES, UPLOAD_ROLES, folderName, isInside, kindOfPath, roleStatus, sizeWarning, sizeWords, slugName, uploadTarget, usedWords,
+  CHAIN, ROLES, UPLOAD_ROLES, fitChip, folderName, isInside, kindOfPath, readFit, referenceChips, roleStatus, sizeWarning, sizeWords, slugName, uploadTarget, usedWords, validateRegister,
 } from "../lib/media.ts";
+
+test("a proof is not a role in Material: it is registered by its own proof.json", () => {
+  assert.equal((ROLES as readonly string[]).includes("prov"), false);
+  const register = (entries: unknown[]) => ({ schemaVersion: 1, dealers: { pamela: { name: "Pamela", entries } }, measures: [] });
+  const old = validateRegister(register([{ id: "pamela-prov-x", role: "prov", name: "Ett prov", proof: "x" }]));
+  assert.equal(old.register, null);
+  assert.ok(old.errors.some((e) => e.includes("rollen prov finns inte längre: ett prov registreras av sitt proof.json")), old.errors.join(" | "));
+  assert.ok(old.errors.some((e) => e.includes("proof hör inte hemma här")));
+  assert.deepEqual(validateRegister(register([{ id: "pamela-vila", role: "ankare-1", name: "Vila", path: "assets/anchors/pamela-vila/anchor.png" }])).errors, []);
+  assert.ok(validateRegister(register([{ id: "pamela-tom", role: "referens", name: "Utan fil" }])).errors.some((e) => e.includes("ingen fil")));
+});
+
+test("the fit chip: nothing when it fits or was not measured; a reference says what it is for and when nothing uses it", () => {
+  const fit = (verdict: string, more: Record<string, unknown> = {}) => readFit({ verdict, words: "Kortet ligger 23 px från platsen.", usedBy: [], ...more });
+  assert.equal(fitChip(null), null);
+  assert.equal(fitChip(fit("stämmer")), null);
+  assert.equal(fitChip(fit("äldre plan")), "äldre plan");
+  assert.equal(fitChip(fit("annan kamera")), "annan kamera");
+  assert.equal(readFit({ verdict: "kanske" }), null, "a verdict the page does not know is no fit");
+  assert.deepEqual(readFit({ verdict: "går inte att mäta" }), { verdict: "går inte att mäta", words: "", for: null, usedBy: [] });
+  assert.deepEqual(referenceChips(fit("annan kamera", { for: "utseende" })), ["utseende", "används inte"]);
+  assert.deepEqual(referenceChips(fit("stämmer", { for: "kontroll", usedBy: ["tools/verify.ts läser den"] })), ["kontroll"]);
+  assert.deepEqual(referenceChips(fit("stämmer", { for: "flyg" })), ["används inte"], "an unknown purpose is not shown");
+  assert.deepEqual(referenceChips(null), []);
+});
 
 test("the chain is Jakob's order, and only the first five roles take a picture from the studio", () => {
   assert.deepEqual(CHAIN, ["ingangsbild", "keystone", "ankare-1", "ankare-2.1", "ankare-2.2", "landning", "film"]);

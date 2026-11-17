@@ -1,0 +1,1634 @@
+{
+  "schemaVersion": 1,
+  "about": "Whether each picture and film fits today's rules: written by node tools/media-audit.ts --fit --write; Material shows it. The card against planCardQuad (src/card-plan.ts), an anchor against data/dealer-standard.json, a reference by its camera. Jakob's states are not touched.",
+  "made": "2026-11-17T22:59:07.566Z",
+  "rule": {
+    "placePx": 15,
+    "sizeShare": 0.12,
+    "handsPx": 8
+  },
+  "entries": {
+    "pamela-vila": {
+      "verdict": "stämmer",
+      "words": "Skons kort och händerna som standarden (data/dealer-standard.json).",
+      "measured": {
+        "leftInPicture": 0,
+        "rightInPicture": 0
+      }
+    },
+    "pamela-vila-oppen-sko": {
+      "verdict": "avviker",
+      "words": "Skons kort ligger 56 px från ankare 1:s. Höger hand (i bild) 56 px från standardens.",
+      "measured": {
+        "shoeOffPx": 56,
+        "leftInPicture": 2,
+        "rightInPicture": 56
+      }
+    },
+    "pamela-idle-p1-c1-plan-01": {
+      "verdict": "äldre plan",
+      "words": "Kortet ligger 19 px från platsen P1.C1 och är 24 % mindre än kortet dagens plan ritar (planCardQuad).",
+      "measured": {
+        "card": {
+          "distancePx": 19.4,
+          "size": 0.761,
+          "card": "P1.C1"
+        }
+      }
+    },
+    "pamela-idle-p2-c1-plan-01": {
+      "verdict": "äldre plan",
+      "words": "Kortet ligger 10 px från platsen P2.C1 och är 22 % mindre än kortet dagens plan ritar (planCardQuad).",
+      "measured": {
+        "card": {
+          "distancePx": 9.5,
+          "size": 0.777,
+          "card": "P2.C1"
+        }
+      }
+    },
+    "pamela-idle-p3-c1-plan-01": {
+      "verdict": "äldre plan",
+      "words": "Kortet ligger 9 px från platsen P3.C1 och är 21 % mindre än kortet dagens plan ritar (planCardQuad).",
+      "measured": {
+        "card": {
+          "distancePx": 9,
+          "size": 0.793,
+          "card": "P3.C1"
+        }
+      }
+    },
+    "pamela-idle-p4-c1-plan-01": {
+      "verdict": "äldre plan",
+      "words": "Kortet ligger 7 px från platsen P4.C1 och är 13 % mindre än kortet dagens plan ritar (planCardQuad).",
+      "measured": {
+        "card": {
+          "distancePx": 6.9,
+          "size": 0.869,
+          "card": "P4.C1"
+        }
+      }
+    },
+    "pamela-idle-p5-c1-plan-01": {
+      "verdict": "äldre plan",
+      "words": "Kortet ligger 14 px från platsen P5.C1 och är 18 % mindre än kortet dagens plan ritar (planCardQuad).",
+      "measured": {
+        "card": {
+          "distancePx": 13.9,
+          "size": 0.823,
+          "card": "P5.C1"
+        }
+      }
+    },
+    "pamela-idle-p6-c1-plan-01": {
+      "verdict": "äldre plan",
+      "words": "Kortet ligger 12 px från platsen P6.C1 och är 20 % mindre än kortet dagens plan ritar (planCardQuad).",
+      "measured": {
+        "card": {
+          "distancePx": 12,
+          "size": 0.797,
+          "card": "P6.C1"
+        }
+      }
+    },
+    "pamela-idle-p7-c1-plan-01": {
+      "verdict": "äldre plan",
+      "words": "Kortet ligger 30 px från platsen P7.C1 och är 33 % mindre än kortet dagens plan ritar (planCardQuad).",
+      "measured": {
+        "card": {
+          "distancePx": 30.3,
+          "size": 0.671,
+          "card": "P7.C1"
+        }
+      }
+    },
+    "pamela-idleb-p4-c1-plan-01": {
+      "verdict": "äldre plan",
+      "words": "Kortet ligger 7 px från platsen P4.C1 och är 13 % mindre än kortet dagens plan ritar (planCardQuad).",
+      "measured": {
+        "card": {
+          "distancePx": 6.8,
+          "size": 0.869,
+          "card": "P4.C1"
+        }
+      }
+    },
+    "pamela-ruta-d-c2-dolt": {
+      "verdict": "äldre plan",
+      "words": "Kortet ligger 67 px från platsen D.C2 och är 11 % större än kortet dagens plan ritar (planCardQuad).",
+      "measured": {
+        "card": {
+          "distancePx": 66.6,
+          "size": 1.11,
+          "card": "D.C2"
+        }
+      }
+    },
+    "pamela-ruta-d-c2-vant": {
+      "verdict": "äldre plan",
+      "words": "Kortet ligger 62 px från platsen D.C2 och är 10 % större än kortet dagens plan ritar (planCardQuad).",
+      "measured": {
+        "card": {
+          "distancePx": 62.4,
+          "size": 1.098,
+          "card": "D.C2"
+        }
+      }
+    },
+    "pamela-idle-p2-c1-std-01": {
+      "verdict": "äldre plan",
+      "words": "Kortet ligger 3 px från platsen P2.C1 och är 24 % mindre än kortet dagens plan ritar (planCardQuad).",
+      "measured": {
+        "card": {
+          "distancePx": 2.7,
+          "size": 0.762,
+          "card": "P2.C1"
+        }
+      }
+    },
+    "pamela-idle-p6-c1-std-01": {
+      "verdict": "äldre plan",
+      "words": "Kortet ligger 8 px från platsen P6.C1 och är 22 % mindre än kortet dagens plan ritar (planCardQuad).",
+      "measured": {
+        "card": {
+          "distancePx": 8.1,
+          "size": 0.781,
+          "card": "P6.C1"
+        }
+      }
+    },
+    "pamela-idle-d-c1-std-01": {
+      "verdict": "äldre plan",
+      "words": "Kortet ligger 30 px från platsen D.C1 och är 41 % mindre än kortet dagens plan ritar (planCardQuad).",
+      "measured": {
+        "card": {
+          "distancePx": 30.1,
+          "size": 0.592,
+          "card": "D.C1"
+        }
+      }
+    },
+    "pamela-idle-wink-01": {
+      "verdict": "stämmer",
+      "words": "Skons kort och händerna som standarden (data/dealer-standard.json).",
+      "measured": {
+        "shoeOffPx": 0,
+        "leftInPicture": 0,
+        "rightInPicture": 0
+      }
+    },
+    "pamela-idle-stern-02": {
+      "verdict": "stämmer",
+      "words": "Skons kort och händerna som standarden (data/dealer-standard.json).",
+      "measured": {
+        "shoeOffPx": 0,
+        "leftInPicture": 0,
+        "rightInPicture": 0
+      }
+    },
+    "pamela-gamla-vila-kort-p4": {
+      "verdict": "äldre plan",
+      "words": "Kortet ligger 58 px från platsen P4.C1 och är 5 % mindre än kortet dagens plan ritar (planCardQuad).",
+      "measured": {
+        "card": {
+          "distancePx": 58.3,
+          "size": 0.948,
+          "card": "P4.C1"
+        }
+      }
+    },
+    "pamela-gamla-vila-station": {
+      "verdict": "annan kamera",
+      "words": "Inte bankens ruta (1536 × 1024, bordskanten på rad 756).",
+      "measured": {
+        "width": 1536,
+        "height": 1024,
+        "edgeRow": 756
+      }
+    },
+    "pamela-nyp": {
+      "verdict": "stämmer",
+      "words": "Skons kort och händerna som standarden (data/dealer-standard.json).",
+      "measured": {}
+    },
+    "pamela-ready-p1-c1-plan-01": {
+      "verdict": "äldre plan",
+      "words": "Kortet ligger 19 px från platsen P1.C1 och är 24 % mindre än kortet dagens plan ritar (planCardQuad).",
+      "measured": {
+        "card": {
+          "distancePx": 19.4,
+          "size": 0.761,
+          "card": "P1.C1"
+        }
+      }
+    },
+    "pamela-ready-p2-c1-plan-01": {
+      "verdict": "äldre plan",
+      "words": "Kortet ligger 10 px från platsen P2.C1 och är 22 % mindre än kortet dagens plan ritar (planCardQuad).",
+      "measured": {
+        "card": {
+          "distancePx": 9.5,
+          "size": 0.777,
+          "card": "P2.C1"
+        }
+      }
+    },
+    "pamela-ready-p3-c1-plan-01": {
+      "verdict": "äldre plan",
+      "words": "Kortet ligger 9 px från platsen P3.C1 och är 21 % mindre än kortet dagens plan ritar (planCardQuad).",
+      "measured": {
+        "card": {
+          "distancePx": 9,
+          "size": 0.793,
+          "card": "P3.C1"
+        }
+      }
+    },
+    "pamela-ready-p4-c1-plan-01": {
+      "verdict": "äldre plan",
+      "words": "Kortet ligger 7 px från platsen P4.C1 och är 13 % mindre än kortet dagens plan ritar (planCardQuad).",
+      "measured": {
+        "card": {
+          "distancePx": 6.9,
+          "size": 0.869,
+          "card": "P4.C1"
+        }
+      }
+    },
+    "pamela-ready-p5-c1-plan-01": {
+      "verdict": "äldre plan",
+      "words": "Kortet ligger 14 px från platsen P5.C1 och är 18 % mindre än kortet dagens plan ritar (planCardQuad).",
+      "measured": {
+        "card": {
+          "distancePx": 13.9,
+          "size": 0.823,
+          "card": "P5.C1"
+        }
+      }
+    },
+    "pamela-ready-p6-c1-plan-01": {
+      "verdict": "äldre plan",
+      "words": "Kortet ligger 12 px från platsen P6.C1 och är 20 % mindre än kortet dagens plan ritar (planCardQuad).",
+      "measured": {
+        "card": {
+          "distancePx": 12,
+          "size": 0.797,
+          "card": "P6.C1"
+        }
+      }
+    },
+    "pamela-ready-p7-c1-plan-01": {
+      "verdict": "äldre plan",
+      "words": "Kortet ligger 30 px från platsen P7.C1 och är 33 % mindre än kortet dagens plan ritar (planCardQuad).",
+      "measured": {
+        "card": {
+          "distancePx": 30.3,
+          "size": 0.671,
+          "card": "P7.C1"
+        }
+      }
+    },
+    "pamela-ready-p2-c1-std-01": {
+      "verdict": "äldre plan",
+      "words": "Kortet ligger 3 px från platsen P2.C1 och är 24 % mindre än kortet dagens plan ritar (planCardQuad).",
+      "measured": {
+        "card": {
+          "distancePx": 2.7,
+          "size": 0.762,
+          "card": "P2.C1"
+        }
+      }
+    },
+    "pamela-ready-p6-c1-std-01": {
+      "verdict": "äldre plan",
+      "words": "Kortet ligger 8 px från platsen P6.C1 och är 22 % mindre än kortet dagens plan ritar (planCardQuad).",
+      "measured": {
+        "card": {
+          "distancePx": 8.1,
+          "size": 0.781,
+          "card": "P6.C1"
+        }
+      }
+    },
+    "pamela-ready-d-c1-std-01": {
+      "verdict": "äldre plan",
+      "words": "Kortet ligger 30 px från platsen D.C1 och är 41 % mindre än kortet dagens plan ritar (planCardQuad).",
+      "measured": {
+        "card": {
+          "distancePx": 30.1,
+          "size": 0.592,
+          "card": "D.C1"
+        }
+      }
+    },
+    "pamela-gamla-nyp-kort-p4": {
+      "verdict": "äldre plan",
+      "words": "Kortet ligger 58 px från platsen P4.C1 och är 5 % mindre än kortet dagens plan ritar (planCardQuad).",
+      "measured": {
+        "card": {
+          "distancePx": 58.3,
+          "size": 0.948,
+          "card": "P4.C1"
+        }
+      }
+    },
+    "pamela-gamla-redo-station": {
+      "verdict": "annan kamera",
+      "words": "Inte bankens ruta (1536 × 1024, bordskanten på rad 725).",
+      "measured": {
+        "width": 1536,
+        "height": 1024,
+        "edgeRow": 725
+      }
+    },
+    "pamela-slap": {
+      "verdict": "stämmer",
+      "words": "Skons kort och händerna som standarden (data/dealer-standard.json).",
+      "measured": {}
+    },
+    "pamela-slap-bild": {
+      "verdict": "stämmer",
+      "words": "Skons kort och händerna som standarden (data/dealer-standard.json).",
+      "measured": {}
+    },
+    "pamela-readyb-p4-c1-plan-01": {
+      "verdict": "äldre plan",
+      "words": "Kortet ligger 7 px från platsen P4.C1 och är 13 % mindre än kortet dagens plan ritar (planCardQuad).",
+      "measured": {
+        "card": {
+          "distancePx": 6.9,
+          "size": 0.869,
+          "card": "P4.C1"
+        }
+      }
+    },
+    "pamela-p1-c1-plan-land-02": {
+      "verdict": "äldre plan",
+      "words": "Kortet ligger 39 px från platsen P1.C1 och är 46 % mindre än kortet dagens plan ritar (planCardQuad).",
+      "measured": {
+        "card": {
+          "distancePx": 38.7,
+          "size": 0.538,
+          "card": "P1.C1"
+        }
+      }
+    },
+    "pamela-p1-c1-plan-land-03": {
+      "verdict": "äldre plan",
+      "words": "Kortet ligger 39 px från platsen P1.C1 och är 40 % mindre än kortet dagens plan ritar (planCardQuad).",
+      "measured": {
+        "card": {
+          "distancePx": 38.7,
+          "size": 0.596,
+          "card": "P1.C1"
+        }
+      }
+    },
+    "pamela-p1-c1-plan-land-b-01": {
+      "verdict": "äldre plan",
+      "words": "Kortet ligger 39 px från platsen P1.C1 och är 40 % mindre än kortet dagens plan ritar (planCardQuad).",
+      "measured": {
+        "card": {
+          "distancePx": 38.7,
+          "size": 0.596,
+          "card": "P1.C1"
+        }
+      }
+    },
+    "pamela-ruta-p1-c1-plan-deal-02-112": {
+      "verdict": "äldre plan",
+      "words": "Kortet ligger 40 px från platsen P1.C1 och är 42 % mindre än kortet dagens plan ritar (planCardQuad).",
+      "measured": {
+        "card": {
+          "distancePx": 40.3,
+          "size": 0.581,
+          "card": "P1.C1"
+        }
+      }
+    },
+    "pamela-ruta-p1-c1-plan-deal-03-110": {
+      "verdict": "äldre plan",
+      "words": "Kortet ligger 36 px från platsen P1.C1 och är 41 % mindre än kortet dagens plan ritar (planCardQuad).",
+      "measured": {
+        "card": {
+          "distancePx": 35.7,
+          "size": 0.59,
+          "card": "P1.C1"
+        }
+      }
+    },
+    "pamela-ruta-p1-c1-drawn-deal-01-108": {
+      "verdict": "äldre plan",
+      "words": "Kortet ligger 34 px från platsen P1.C1 och är 38 % mindre än kortet dagens plan ritar (planCardQuad).",
+      "measured": {
+        "card": {
+          "distancePx": 33.8,
+          "size": 0.62,
+          "card": "P1.C1"
+        }
+      }
+    },
+    "pamela-p2-c1-plan-land-01": {
+      "verdict": "äldre plan",
+      "words": "Kortet ligger 7 px från platsen P2.C1 och är 27 % mindre än kortet dagens plan ritar (planCardQuad).",
+      "measured": {
+        "card": {
+          "distancePx": 7,
+          "size": 0.73,
+          "card": "P2.C1"
+        }
+      }
+    },
+    "pamela-p2-c1-plan-land-b-01": {
+      "verdict": "äldre plan",
+      "words": "Kortet ligger 7 px från platsen P2.C1 och är 27 % mindre än kortet dagens plan ritar (planCardQuad).",
+      "measured": {
+        "card": {
+          "distancePx": 7,
+          "size": 0.73,
+          "card": "P2.C1"
+        }
+      }
+    },
+    "pamela-p2-c1-std-land-02": {
+      "verdict": "äldre plan",
+      "words": "Kortet ligger 6 px från platsen P2.C1 och är 29 % mindre än kortet dagens plan ritar (planCardQuad).",
+      "measured": {
+        "card": {
+          "distancePx": 6.1,
+          "size": 0.707,
+          "card": "P2.C1"
+        }
+      }
+    },
+    "pamela-ruta-p2-c1-drawn-deal-01-108": {
+      "verdict": "äldre plan",
+      "words": "Kortet ligger 16 px från platsen P2.C1 och är 7 % mindre än kortet dagens plan ritar (planCardQuad).",
+      "measured": {
+        "card": {
+          "distancePx": 15.5,
+          "size": 0.93,
+          "card": "P2.C1"
+        }
+      }
+    },
+    "pamela-p3-c1-plan-land-01": {
+      "verdict": "äldre plan",
+      "words": "Kortet ligger 8 px från platsen P3.C1 och är 21 % mindre än kortet dagens plan ritar (planCardQuad).",
+      "measured": {
+        "card": {
+          "distancePx": 7.7,
+          "size": 0.792,
+          "card": "P3.C1"
+        }
+      }
+    },
+    "pamela-p3-c1-plan-land-b-01": {
+      "verdict": "äldre plan",
+      "words": "Kortet ligger 8 px från platsen P3.C1 och är 21 % mindre än kortet dagens plan ritar (planCardQuad).",
+      "measured": {
+        "card": {
+          "distancePx": 7.7,
+          "size": 0.792,
+          "card": "P3.C1"
+        }
+      }
+    },
+    "pamela-ruta-p3-c1-plan-deal-01-112": {
+      "verdict": "äldre plan",
+      "words": "Kortet ligger 26 px från platsen P3.C1 och är 20 % större än kortet dagens plan ritar (planCardQuad).",
+      "measured": {
+        "card": {
+          "distancePx": 26.3,
+          "size": 1.202,
+          "card": "P3.C1"
+        }
+      }
+    },
+    "pamela-p4-c1-plan-hover-02": {
+      "verdict": "äldre plan",
+      "words": "Kortet ligger 9 px från platsen P4.C1 och är 17 % mindre än kortet dagens plan ritar (planCardQuad).",
+      "measured": {
+        "card": {
+          "distancePx": 8.9,
+          "size": 0.826,
+          "card": "P4.C1"
+        }
+      }
+    },
+    "pamela-p4-c1-plan-hover-03": {
+      "verdict": "äldre plan",
+      "words": "Kortet ligger 7 px från platsen P4.C1 och är 13 % mindre än kortet dagens plan ritar (planCardQuad).",
+      "measured": {
+        "card": {
+          "distancePx": 6.9,
+          "size": 0.869,
+          "card": "P4.C1"
+        }
+      }
+    },
+    "pamela-ruta-p4-c1-plan-deal-02-105": {
+      "verdict": "stämmer",
+      "words": "Kortet ligger 8 px från platsen P4.C1 och är 12 % mindre än kortet dagens plan ritar (planCardQuad).",
+      "measured": {
+        "card": {
+          "distancePx": 8.4,
+          "size": 0.881,
+          "card": "P4.C1"
+        }
+      }
+    },
+    "pamela-ruta-p4-c1-source-turn-80": {
+      "verdict": "äldre plan",
+      "words": "Kortet ligger 63 px från platsen P4.C1 och är 5 % mindre än kortet dagens plan ritar (planCardQuad).",
+      "measured": {
+        "card": {
+          "distancePx": 63.4,
+          "size": 0.947,
+          "card": "P4.C1"
+        }
+      }
+    },
+    "pamela-p4-c1-plan-land-b-01": {
+      "verdict": "stämmer",
+      "words": "Kortet ligger 8 px från platsen P4.C1 och är 12 % mindre än kortet dagens plan ritar (planCardQuad).",
+      "measured": {
+        "card": {
+          "distancePx": 8.4,
+          "size": 0.881,
+          "card": "P4.C1"
+        }
+      }
+    },
+    "pamela-ruta-p4-c1-drawn-deal-01-112": {
+      "verdict": "äldre plan",
+      "words": "Kortet ligger 5 px från platsen P4.C1 och är 12 % mindre än kortet dagens plan ritar (planCardQuad).",
+      "measured": {
+        "card": {
+          "distancePx": 4.5,
+          "size": 0.877,
+          "card": "P4.C1"
+        }
+      }
+    },
+    "pamela-p4-c1-k165-land-01": {
+      "verdict": "äldre plan",
+      "words": "Kortet ligger 14 px från platsen P4.C1 och är 49 % större än kortet dagens plan ritar (planCardQuad).",
+      "measured": {
+        "card": {
+          "distancePx": 13.5,
+          "size": 1.485,
+          "card": "P4.C1"
+        }
+      }
+    },
+    "pamela-p4-c2-plan-land-01": {
+      "verdict": "äldre plan",
+      "words": "Kortet ligger 26 px från platsen P4.C2 och är 11 % större än kortet dagens plan ritar (planCardQuad).",
+      "measured": {
+        "card": {
+          "distancePx": 26.2,
+          "size": 1.111,
+          "card": "P4.C2"
+        }
+      }
+    },
+    "pamela-p5-c1-plan-land-01": {
+      "verdict": "äldre plan",
+      "words": "Kortet ligger 14 px från platsen P5.C1 och är 18 % mindre än kortet dagens plan ritar (planCardQuad).",
+      "measured": {
+        "card": {
+          "distancePx": 13.8,
+          "size": 0.824,
+          "card": "P5.C1"
+        }
+      }
+    },
+    "pamela-p5-c1-plan-land-b-02": {
+      "verdict": "äldre plan",
+      "words": "Kortet ligger 14 px från platsen P5.C1 och är 18 % mindre än kortet dagens plan ritar (planCardQuad).",
+      "measured": {
+        "card": {
+          "distancePx": 13.8,
+          "size": 0.824,
+          "card": "P5.C1"
+        }
+      }
+    },
+    "pamela-ruta-p5-c1-plan-deal-01-108": {
+      "verdict": "äldre plan",
+      "words": "Kortet ligger 29 px från platsen P5.C1 och är 33 % större än kortet dagens plan ritar (planCardQuad).",
+      "measured": {
+        "card": {
+          "distancePx": 28.5,
+          "size": 1.328,
+          "card": "P5.C1"
+        }
+      }
+    },
+    "pamela-ruta-p5-c1-drawn-deal-02-108": {
+      "verdict": "äldre plan",
+      "words": "Kortet ligger 7 px från platsen P5.C1 och är 19 % mindre än kortet dagens plan ritar (planCardQuad).",
+      "measured": {
+        "card": {
+          "distancePx": 6.5,
+          "size": 0.808,
+          "card": "P5.C1"
+        }
+      }
+    },
+    "pamela-p6-c1-plan-land-01": {
+      "verdict": "äldre plan",
+      "words": "Kortet ligger 12 px från platsen P6.C1 och är 20 % mindre än kortet dagens plan ritar (planCardQuad).",
+      "measured": {
+        "card": {
+          "distancePx": 12,
+          "size": 0.797,
+          "card": "P6.C1"
+        }
+      }
+    },
+    "pamela-p6-c1-std-land-02": {
+      "verdict": "äldre plan",
+      "words": "Kortet ligger 10 px från platsen P6.C1 och är 23 % mindre än kortet dagens plan ritar (planCardQuad).",
+      "measured": {
+        "card": {
+          "distancePx": 9.6,
+          "size": 0.767,
+          "card": "P6.C1"
+        }
+      }
+    },
+    "pamela-p6-c1-k165-land-01": {
+      "verdict": "äldre plan",
+      "words": "Kortet ligger 15 px från platsen P6.C1 och är 27 % större än kortet dagens plan ritar (planCardQuad).",
+      "measured": {
+        "card": {
+          "distancePx": 15.3,
+          "size": 1.271,
+          "card": "P6.C1"
+        }
+      }
+    },
+    "pamela-p7-c1-plan-land-03": {
+      "verdict": "äldre plan",
+      "words": "Kortet ligger 33 px från platsen P7.C1 och är 48 % mindre än kortet dagens plan ritar (planCardQuad).",
+      "measured": {
+        "card": {
+          "distancePx": 32.6,
+          "size": 0.518,
+          "card": "P7.C1"
+        }
+      }
+    },
+    "pamela-p7-c1-plan-land-04": {
+      "verdict": "äldre plan",
+      "words": "Kortet ligger 24 px från platsen P7.C1 och är 42 % mindre än kortet dagens plan ritar (planCardQuad).",
+      "measured": {
+        "card": {
+          "distancePx": 23.9,
+          "size": 0.577,
+          "card": "P7.C1"
+        }
+      }
+    },
+    "pamela-ruta-p7-c1-plan-deal-01-105": {
+      "verdict": "äldre plan",
+      "words": "Kortet ligger 29 px från platsen P7.C1 och är 54 % mindre än kortet dagens plan ritar (planCardQuad).",
+      "measured": {
+        "card": {
+          "distancePx": 28.9,
+          "size": 0.458,
+          "card": "P7.C1"
+        }
+      }
+    },
+    "pamela-p7-c1-std-land-02": {
+      "verdict": "äldre plan",
+      "words": "Kortet ligger 24 px från platsen P7.C1 och är 51 % mindre än kortet dagens plan ritar (planCardQuad).",
+      "measured": {
+        "card": {
+          "distancePx": 23.6,
+          "size": 0.488,
+          "card": "P7.C1"
+        }
+      }
+    },
+    "pamela-d-c1-std-land-02": {
+      "verdict": "äldre plan",
+      "words": "Kortet ligger 29 px från platsen D.C1 och är 48 % mindre än kortet dagens plan ritar (planCardQuad).",
+      "measured": {
+        "card": {
+          "distancePx": 28.6,
+          "size": 0.517,
+          "card": "D.C1"
+        }
+      }
+    },
+    "pamela-v6-filmen": {
+      "verdict": "annan kamera",
+      "for": "kontroll",
+      "usedBy": [
+        "Referensfilmer i rundväljaren (studio/lib/rounds.ts)",
+        "tools/verify.ts och tools/render.ts (V6)"
+      ],
+      "measured": {
+        "width": 1762,
+        "height": 1174,
+        "edgeRow": null
+      },
+      "words": "En annan kamera än bankens (1762 × 1174, bordskanten på rad ? mot 831.5): en referens för kontroll av V6, inte för mått eller platser."
+    },
+    "pamela-hel-giv-16": {
+      "verdict": "stämmer",
+      "for": "rörelse",
+      "usedBy": [
+        "Referensfilmer i rundväljaren (studio/lib/rounds.ts)"
+      ],
+      "measured": {
+        "width": 1764,
+        "height": 1174,
+        "edgeRow": null
+      },
+      "words": "Bankens kamera (1764 × 1174, bordskanten på rad null): duger som referens för rörelse."
+    },
+    "pamela-hel-giv-17": {
+      "verdict": "stämmer",
+      "for": "rörelse",
+      "usedBy": [
+        "Referensfilmer i rundväljaren (studio/lib/rounds.ts)"
+      ],
+      "measured": {
+        "width": 1764,
+        "height": 1174,
+        "edgeRow": null
+      },
+      "words": "Bankens kamera (1764 × 1174, bordskanten på rad null): duger som referens för rörelse."
+    },
+    "pamela-hel-giv-14": {
+      "verdict": "annan kamera",
+      "for": "utseende",
+      "usedBy": [
+        "Referensfilmer i rundväljaren (studio/lib/rounds.ts)"
+      ],
+      "measured": {
+        "width": 1762,
+        "height": 1174,
+        "edgeRow": null
+      },
+      "words": "En annan kamera än bankens (1762 × 1174, bordskanten på rad ? mot 831.5): en referens för utseende, inte för mått eller platser."
+    },
+    "pamela-p4-original": {
+      "verdict": "stämmer",
+      "for": "rörelse",
+      "usedBy": [
+        "första eller sista bild i bankens jobb"
+      ],
+      "measured": {
+        "width": 1764,
+        "height": 1174,
+        "edgeRow": 411
+      },
+      "words": "Bankens kamera (1764 × 1174, bordskanten på rad 411): duger som referens för rörelse."
+    },
+    "pamela-v6-ra-vila": {
+      "verdict": "annan kamera",
+      "for": "kontroll",
+      "usedBy": [
+        "tools/verify.ts och tools/render.ts (V6)"
+      ],
+      "measured": {
+        "width": 1762,
+        "height": 1174,
+        "edgeRow": 866
+      },
+      "words": "En annan kamera än bankens (1762 × 1174, bordskanten på rad 866 mot 831.5): en referens för kontroll av V6, inte för mått eller platser."
+    },
+    "pamela-v6-ra-fram": {
+      "verdict": "annan kamera",
+      "for": "kontroll",
+      "usedBy": [
+        "tools/verify.ts och tools/render.ts (V6)"
+      ],
+      "measured": {
+        "width": 1762,
+        "height": 1174,
+        "edgeRow": 830
+      },
+      "words": "En annan kamera än bankens (1762 × 1174, bordskanten på rad 830 mot 831.5): en referens för kontroll av V6, inte för mått eller platser."
+    },
+    "pamela-v6-ra-giv": {
+      "verdict": "annan kamera",
+      "for": "kontroll",
+      "usedBy": [
+        "tools/verify.ts och tools/render.ts (V6)"
+      ],
+      "measured": {
+        "width": 1762,
+        "height": 1174,
+        "edgeRow": 411
+      },
+      "words": "En annan kamera än bankens (1762 × 1174, bordskanten på rad 411 mot 831.5): en referens för kontroll av V6, inte för mått eller platser."
+    },
+    "pamela-v6-ra-tillbaka": {
+      "verdict": "annan kamera",
+      "for": "kontroll",
+      "usedBy": [
+        "tools/verify.ts och tools/render.ts (V6)"
+      ],
+      "measured": {
+        "width": 1762,
+        "height": 1174,
+        "edgeRow": 411
+      },
+      "words": "En annan kamera än bankens (1762 × 1174, bordskanten på rad 411 mot 831.5): en referens för kontroll av V6, inte för mått eller platser."
+    },
+    "pamela-v6-aterskapad": {
+      "verdict": "annan kamera",
+      "for": "kontroll",
+      "usedBy": [
+        "tools/verify.ts och tools/render.ts (V6)"
+      ],
+      "measured": {
+        "width": 1762,
+        "height": 1174,
+        "edgeRow": null
+      },
+      "words": "En annan kamera än bankens (1762 × 1174, bordskanten på rad ? mot 831.5): en referens för kontroll av V6, inte för mått eller platser."
+    },
+    "pamela-v6-rutor": {
+      "verdict": "annan kamera",
+      "for": "kontroll",
+      "usedBy": [
+        "tools/verify.ts och tools/render.ts (V6)"
+      ],
+      "measured": {
+        "width": 1762,
+        "height": 1174,
+        "edgeRow": null
+      },
+      "words": "En annan kamera än bankens (1762 × 1174, bordskanten på rad ? mot 831.5): en referens för kontroll av V6, inte för mått eller platser."
+    },
+    "pamela-v6-rarutor": {
+      "verdict": "annan kamera",
+      "for": "kontroll",
+      "usedBy": [
+        "tools/verify.ts och tools/render.ts (V6)"
+      ],
+      "measured": {
+        "width": 1762,
+        "height": 1174,
+        "edgeRow": 411
+      },
+      "words": "En annan kamera än bankens (1762 × 1174, bordskanten på rad 411 mot 831.5): en referens för kontroll av V6, inte för mått eller platser."
+    },
+    "pamela-drawn-01": {
+      "verdict": "går inte att mäta",
+      "words": "Övrigt: inget att mäta mot planen.",
+      "usedBy": [
+        "första eller sista bild i bankens jobb"
+      ]
+    },
+    "pamela-ruta-drawn-20": {
+      "verdict": "går inte att mäta",
+      "words": "Övrigt: inget att mäta mot planen.",
+      "usedBy": [
+        "första eller sista bild i bankens jobb"
+      ]
+    },
+    "pamela-ruta-tomt-bord": {
+      "verdict": "går inte att mäta",
+      "words": "Övrigt: inget att mäta mot planen.",
+      "usedBy": [
+        "första eller sista bild i bankens jobb"
+      ]
+    },
+    "pamela-wide-seated-01": {
+      "verdict": "går inte att mäta",
+      "words": "Övrigt: inget att mäta mot planen.",
+      "usedBy": [
+        "första eller sista bild i bankens jobb"
+      ]
+    },
+    "pamela-p1-giv-keyframes-02-kalla": {
+      "verdict": "går inte att mäta",
+      "words": "Övrigt: inget att mäta mot planen.",
+      "usedBy": [
+        "första eller sista bild i bankens jobb"
+      ]
+    },
+    "pamela-p2-mid-arc-02-kalla": {
+      "verdict": "går inte att mäta",
+      "words": "Övrigt: inget att mäta mot planen.",
+      "usedBy": [
+        "första eller sista bild i bankens jobb"
+      ]
+    },
+    "pamela-p3-c2-mid-01-kalla": {
+      "verdict": "går inte att mäta",
+      "words": "Övrigt: inget att mäta mot planen.",
+      "usedBy": [
+        "första eller sista bild i bankens jobb"
+      ]
+    },
+    "pamela-p6-c2-mid-01-kalla": {
+      "verdict": "går inte att mäta",
+      "words": "Övrigt: inget att mäta mot planen.",
+      "usedBy": [
+        "första eller sista bild i bankens jobb"
+      ]
+    },
+    "paow-vila-ung-2": {
+      "verdict": "stämmer",
+      "words": "Skons kort och händerna som standarden (data/dealer-standard.json).",
+      "measured": {
+        "leftInPicture": 4,
+        "rightInPicture": 5
+      }
+    },
+    "paow-vila-tatuerad": {
+      "verdict": "avviker",
+      "words": "Vänster hand (i bild) 11 px från standardens.",
+      "measured": {
+        "shoeOffPx": 0,
+        "leftInPicture": 11,
+        "rightInPicture": 8
+      }
+    },
+    "paow-vila-linne": {
+      "verdict": "avviker",
+      "words": "Vänster hand (i bild) 22 px från standardens. Höger hand (i bild) 21 px från standardens.",
+      "measured": {
+        "shoeOffPx": 0,
+        "leftInPicture": 22,
+        "rightInPicture": 21
+      }
+    },
+    "paow-nyp-linne": {
+      "verdict": "stämmer",
+      "words": "Skons kort och händerna som standarden (data/dealer-standard.json).",
+      "measured": {}
+    },
+    "paow-slap-linne": {
+      "verdict": "stämmer",
+      "words": "Skons kort och händerna som standarden (data/dealer-standard.json).",
+      "measured": {}
+    },
+    "paow-landning-p4-giv-t2": {
+      "verdict": "stämmer",
+      "words": "Kortet ligger 4 px från platsen P4.C1 och är 6 % mindre än kortet dagens plan ritar (planCardQuad).",
+      "measured": {
+        "card": {
+          "distancePx": 3.9,
+          "size": 0.941,
+          "card": "P4.C1"
+        }
+      }
+    },
+    "paow-profil-kavaj": {
+      "verdict": "går inte att mäta",
+      "words": "Övrigt: inget att mäta mot planen.",
+      "usedBy": []
+    },
+    "paow-profil-linne": {
+      "verdict": "går inte att mäta",
+      "words": "Övrigt: inget att mäta mot planen.",
+      "usedBy": []
+    },
+    "paow-nyp-ung-1": {
+      "verdict": "stämmer",
+      "words": "Skons kort och händerna som standarden (data/dealer-standard.json).",
+      "measured": {}
+    },
+    "paow-nyp-ung-1-lagad": {
+      "verdict": "stämmer",
+      "words": "Skons kort och händerna som standarden (data/dealer-standard.json).",
+      "measured": {}
+    },
+    "paow-film-intro-noir-3-startruta": {
+      "verdict": "går inte att mäta",
+      "words": "Övrigt: inget att mäta mot planen.",
+      "usedBy": [
+        "spelet laddar den"
+      ]
+    },
+    "paow-ankare-2-2-t1": {
+      "verdict": "stämmer",
+      "words": "Skons kort och händerna som standarden (data/dealer-standard.json).",
+      "measured": {}
+    }
+  },
+  "takes": {
+    "pamela-p4-c1-deal-calm-01": {
+      "verdict": "äldre plan",
+      "words": "Kortet ligger 62 px från platsen P4.C1 och är 6 % mindre än kortet dagens plan ritar (planCardQuad).",
+      "measured": {
+        "distancePx": 61.7,
+        "size": 0.938,
+        "card": "P4.C1"
+      },
+      "approved": true,
+      "played": true
+    },
+    "pamela-p4-c1-plan-deal-01": {
+      "verdict": "går inte att mäta",
+      "words": "Filmen har inget kortspår med ett liggande kort.",
+      "approved": false,
+      "played": false
+    },
+    "pamela-p1-c1-plan-deal-01": {
+      "verdict": "äldre plan",
+      "words": "Kortet ligger 27 px från platsen P1.C1 och är 33 % mindre än kortet dagens plan ritar (planCardQuad).",
+      "measured": {
+        "distancePx": 26.7,
+        "size": 0.668,
+        "card": "P1.C1"
+      },
+      "approved": true,
+      "played": true
+    },
+    "pamela-p7-c1-plan-deal-01": {
+      "verdict": "går inte att mäta",
+      "words": "Filmen har inget kortspår med ett liggande kort.",
+      "approved": false,
+      "played": false
+    },
+    "pamela-p4-c1-plan-deal-02": {
+      "verdict": "äldre plan",
+      "words": "Kortet ligger 3 px från platsen P4.C1 och är 12 % mindre än kortet dagens plan ritar (planCardQuad).",
+      "measured": {
+        "distancePx": 3.4,
+        "size": 0.878,
+        "card": "P4.C1"
+      },
+      "approved": true,
+      "played": true
+    },
+    "pamela-p1-c1-plan-deal-02": {
+      "verdict": "går inte att mäta",
+      "words": "Filmen har inget kortspår med ett liggande kort.",
+      "approved": false,
+      "played": false
+    },
+    "pamela-p7-c1-plan-deal-02": {
+      "verdict": "går inte att mäta",
+      "words": "Filmen har inget kortspår med ett liggande kort.",
+      "approved": true,
+      "played": true
+    },
+    "pamela-p4-c2-plan-deal-01": {
+      "verdict": "går inte att mäta",
+      "words": "Filmen har inget kortspår med ett liggande kort.",
+      "approved": true,
+      "played": true
+    },
+    "pamela-p1-c1-plan-deal-03": {
+      "verdict": "äldre plan",
+      "words": "Kortet ligger 47 px från platsen P1.C1 och är 59 % mindre än kortet dagens plan ritar (planCardQuad).",
+      "measured": {
+        "distancePx": 47.3,
+        "size": 0.408,
+        "card": "P1.C1"
+      },
+      "approved": false,
+      "played": false
+    },
+    "pamela-p4-c1-readyb-deal-01": {
+      "verdict": "äldre plan",
+      "words": "Kortet ligger 18 px från platsen P4.C1 och är 12 % större än kortet dagens plan ritar (planCardQuad).",
+      "measured": {
+        "distancePx": 17.9,
+        "size": 1.119,
+        "card": "P4.C1"
+      },
+      "approved": true,
+      "played": true
+    },
+    "pamela-p2-c1-plan-deal-01": {
+      "verdict": "går inte att mäta",
+      "words": "Filmen har inget kortspår med ett liggande kort.",
+      "approved": true,
+      "played": true
+    },
+    "pamela-p3-c1-plan-deal-01": {
+      "verdict": "går inte att mäta",
+      "words": "Filmen har inget kortspår med ett liggande kort.",
+      "approved": false,
+      "played": false
+    },
+    "pamela-p5-c1-plan-deal-01": {
+      "verdict": "går inte att mäta",
+      "words": "Filmen har inget kortspår med ett liggande kort.",
+      "approved": true,
+      "played": true
+    },
+    "pamela-p6-c1-plan-deal-01": {
+      "verdict": "går inte att mäta",
+      "words": "Filmen har inget kortspår med ett liggande kort.",
+      "approved": false,
+      "played": false
+    },
+    "pamela-p4-c1-drawn-deal-01": {
+      "verdict": "äldre plan",
+      "words": "Kortet ligger 4 px från platsen P4.C1 och är 12 % mindre än kortet dagens plan ritar (planCardQuad).",
+      "measured": {
+        "distancePx": 4.2,
+        "size": 0.876,
+        "card": "P4.C1"
+      },
+      "approved": true,
+      "played": true
+    },
+    "pamela-p1-c1-drawn-deal-01": {
+      "verdict": "äldre plan",
+      "words": "Kortet ligger 48 px från platsen P1.C1 och är 59 % mindre än kortet dagens plan ritar (planCardQuad).",
+      "measured": {
+        "distancePx": 47.6,
+        "size": 0.41,
+        "card": "P1.C1"
+      },
+      "approved": true,
+      "played": true
+    },
+    "pamela-p2-c1-drawn-deal-01": {
+      "verdict": "går inte att mäta",
+      "words": "Filmen har inget kortspår med ett liggande kort.",
+      "approved": true,
+      "played": true
+    },
+    "pamela-p3-c1-drawn-deal-01": {
+      "verdict": "går inte att mäta",
+      "words": "Filmen har inget kortspår med ett liggande kort.",
+      "approved": false,
+      "played": false
+    },
+    "pamela-p5-c1-drawn-deal-02": {
+      "verdict": "äldre plan",
+      "words": "Kortet ligger 14 px från platsen P5.C1 och är 18 % mindre än kortet dagens plan ritar (planCardQuad).",
+      "measured": {
+        "distancePx": 14.3,
+        "size": 0.825,
+        "card": "P5.C1"
+      },
+      "approved": true,
+      "played": true
+    },
+    "pamela-p4-c1-drawn-deal-02": {
+      "verdict": "går inte att mäta",
+      "words": "Filmen har inget kortspår med ett liggande kort.",
+      "approved": true,
+      "played": true
+    },
+    "pamela-p4-c1-drawn-deal-slow-01": {
+      "verdict": "äldre plan",
+      "words": "Kortet ligger 4 px från platsen P4.C1 och är 14 % mindre än kortet dagens plan ritar (planCardQuad).",
+      "measured": {
+        "distancePx": 4.1,
+        "size": 0.86,
+        "card": "P4.C1"
+      },
+      "approved": false,
+      "played": false
+    },
+    "pamela-p3-c1-plan-deal-02": {
+      "verdict": "äldre plan",
+      "words": "Kortet ligger 42 px från platsen P3.C1 och är 21 % större än kortet dagens plan ritar (planCardQuad).",
+      "measured": {
+        "distancePx": 41.6,
+        "size": 1.206,
+        "card": "P3.C1"
+      },
+      "approved": false,
+      "played": false
+    },
+    "pamela-p5-c1-plan-deal-02": {
+      "verdict": "äldre plan",
+      "words": "Kortet ligger 30 px från platsen P5.C1 och är 35 % större än kortet dagens plan ritar (planCardQuad).",
+      "measured": {
+        "distancePx": 29.5,
+        "size": 1.351,
+        "card": "P5.C1"
+      },
+      "approved": false,
+      "played": false
+    },
+    "pamela-p1-c1-readyb-deal-01": {
+      "verdict": "går inte att mäta",
+      "words": "Filmen har inget kortspår med ett liggande kort.",
+      "approved": false,
+      "played": false
+    },
+    "pamela-p2-c1-readyb-deal-01": {
+      "verdict": "äldre plan",
+      "words": "Kortet ligger 22 px från platsen P2.C1 och är 2 % mindre än kortet dagens plan ritar (planCardQuad).",
+      "measured": {
+        "distancePx": 22.1,
+        "size": 0.984,
+        "card": "P2.C1"
+      },
+      "approved": true,
+      "played": true
+    },
+    "pamela-p5-c1-readyb-deal-01": {
+      "verdict": "går inte att mäta",
+      "words": "Filmen har inget kortspår med ett liggande kort.",
+      "approved": false,
+      "played": false
+    },
+    "pamela-p2-c1-handover-01": {
+      "verdict": "går inte att mäta",
+      "words": "Filmen har inget kortspår med ett liggande kort.",
+      "approved": false,
+      "played": false
+    },
+    "pamela-arkiv-d-c1-redo-join": {
+      "verdict": "äldre plan",
+      "words": "Kortet ligger 27 px från platsen D.C1 och är 11 % större än kortet dagens plan ritar (planCardQuad).",
+      "measured": {
+        "distancePx": 26.9,
+        "size": 1.114,
+        "card": "D.C1"
+      },
+      "approved": true,
+      "played": true
+    },
+    "pamela-arkiv-d-c2-hole-join": {
+      "verdict": "äldre plan",
+      "words": "Kortet ligger 55 px från platsen D.C2 och är 11 % större än kortet dagens plan ritar (planCardQuad).",
+      "measured": {
+        "distancePx": 55.4,
+        "size": 1.106,
+        "card": "D.C2"
+      },
+      "approved": false,
+      "played": true
+    },
+    "pamela-arkiv-d-c3-third-join": {
+      "verdict": "går inte att mäta",
+      "words": "Planen har ingen plats D.C3.",
+      "approved": false,
+      "played": true
+    },
+    "pamela-arkiv-p3-c1-join": {
+      "verdict": "går inte att mäta",
+      "words": "Filmen har inget kortspår med ett liggande kort.",
+      "approved": true,
+      "played": true
+    },
+    "pamela-arkiv-p5-c1-center-arc-01": {
+      "verdict": "äldre plan",
+      "words": "Kortet ligger 23 px från platsen P5.C1 och är 1 % mindre än kortet dagens plan ritar (planCardQuad).",
+      "measured": {
+        "distancePx": 23.1,
+        "size": 0.987,
+        "card": "P5.C1"
+      },
+      "approved": true,
+      "played": true
+    },
+    "pamela-arkiv-p6-c1-join": {
+      "verdict": "går inte att mäta",
+      "words": "Filmen har inget kortspår med ett liggande kort.",
+      "approved": true,
+      "played": true
+    },
+    "paow-giv-p4-01": {
+      "verdict": "går inte att mäta",
+      "words": "Filmen har inget kortspår med ett liggande kort.",
+      "approved": false,
+      "played": false
+    },
+    "paow-giv-p4-02": {
+      "verdict": "stämmer",
+      "words": "Kortet ligger 1 px från platsen P4.C1 och är lika stort som kortet dagens plan ritar (planCardQuad).",
+      "measured": {
+        "distancePx": 0.8,
+        "size": 1.003,
+        "card": "P4.C1"
+      },
+      "approved": true,
+      "played": false
+    },
+    "paow-giv-2-1-p4-04-01": {
+      "verdict": "stämmer",
+      "words": "Kortet ligger 1 px från platsen P4.C1 och är 1 % mindre än kortet dagens plan ritar (planCardQuad).",
+      "measured": {
+        "distancePx": 0.7,
+        "size": 0.991,
+        "card": "P4.C1"
+      },
+      "approved": true,
+      "played": true
+    },
+    "paow-giv-2-1-p1-01-01": {
+      "verdict": "går inte att mäta",
+      "words": "Filmen har inget kortspår med ett liggande kort.",
+      "approved": false,
+      "played": true
+    },
+    "paow-giv-2-1-p4-12-01": {
+      "verdict": "går inte att mäta",
+      "words": "Filmen har inget kortspår med ett liggande kort.",
+      "approved": false,
+      "played": false
+    },
+    "paow-giv-2-1-p4-13-01": {
+      "verdict": "går inte att mäta",
+      "words": "Filmen har inget kortspår med ett liggande kort.",
+      "approved": false,
+      "played": false
+    },
+    "paow-giv-2-1-p4-07-01": {
+      "verdict": "går inte att mäta",
+      "words": "Filmen har inget kortspår med ett liggande kort.",
+      "approved": false,
+      "played": true
+    },
+    "paow-giv-2-1-p4-08-01": {
+      "verdict": "stämmer",
+      "words": "Kortet ligger 1 px från platsen P4.C1 och är 1 % mindre än kortet dagens plan ritar (planCardQuad).",
+      "measured": {
+        "distancePx": 1,
+        "size": 0.992,
+        "card": "P4.C1"
+      },
+      "approved": true,
+      "played": false
+    },
+    "paow-giv-2-1-p4-09-01": {
+      "verdict": "går inte att mäta",
+      "words": "Filmen har inget kortspår med ett liggande kort.",
+      "approved": false,
+      "played": false
+    },
+    "paow-giv-2-1-p4-10-01": {
+      "verdict": "stämmer",
+      "words": "Kortet ligger 1 px från platsen P4.C1 och är lika stort som kortet dagens plan ritar (planCardQuad).",
+      "measured": {
+        "distancePx": 1,
+        "size": 1.003,
+        "card": "P4.C1"
+      },
+      "approved": true,
+      "played": false
+    },
+    "paow-giv-2-1-p4-11-01": {
+      "verdict": "stämmer",
+      "words": "Kortet ligger 1 px från platsen P4.C1 och är lika stort som kortet dagens plan ritar (planCardQuad).",
+      "measured": {
+        "distancePx": 0.7,
+        "size": 0.997,
+        "card": "P4.C1"
+      },
+      "approved": true,
+      "played": true
+    },
+    "paow-giv-2-1-p3-02-01": {
+      "verdict": "stämmer",
+      "words": "Kortet ligger 0 px från platsen P3.C1 och är 9 % mindre än kortet dagens plan ritar (planCardQuad).",
+      "measured": {
+        "distancePx": 0.2,
+        "size": 0.912,
+        "card": "P3.C1"
+      },
+      "approved": true,
+      "played": true
+    },
+    "paow-giv-2-1-p4-14-02": {
+      "verdict": "går inte att mäta",
+      "words": "Filmen har inget kortspår med ett liggande kort.",
+      "approved": false,
+      "played": false
+    },
+    "paow-giv-2-1-p3-01-01": {
+      "verdict": "går inte att mäta",
+      "words": "Filmen har inget kortspår med ett liggande kort.",
+      "approved": false,
+      "played": false
+    },
+    "paow-giv-2-1-p5-01-01": {
+      "verdict": "går inte att mäta",
+      "words": "Filmen har inget kortspår med ett liggande kort.",
+      "approved": false,
+      "played": false
+    },
+    "paow-giv-2-1-p1-04-01": {
+      "verdict": "äldre plan",
+      "words": "Kortet ligger 0 px från platsen P1.C1 och är 25 % mindre än kortet dagens plan ritar (planCardQuad).",
+      "measured": {
+        "distancePx": 0.3,
+        "size": 0.754,
+        "card": "P1.C1"
+      },
+      "approved": true,
+      "played": false
+    },
+    "paow-giv-2-1-p1-05-01": {
+      "verdict": "går inte att mäta",
+      "words": "Filmen har inget kortspår med ett liggande kort.",
+      "approved": false,
+      "played": false
+    },
+    "paow-giv-2-1-p1-06-01": {
+      "verdict": "äldre plan",
+      "words": "Kortet ligger 1 px från platsen P1.C1 och är 23 % mindre än kortet dagens plan ritar (planCardQuad).",
+      "measured": {
+        "distancePx": 0.8,
+        "size": 0.766,
+        "card": "P1.C1"
+      },
+      "approved": true,
+      "played": true
+    },
+    "paow-giv-2-1-p7-03-01": {
+      "verdict": "går inte att mäta",
+      "words": "Filmen har inget kortspår med ett liggande kort.",
+      "approved": false,
+      "played": true
+    },
+    "paow-giv-2-1-p7-04-01": {
+      "verdict": "äldre plan",
+      "words": "Kortet ligger 1 px från platsen P7.C1 och är 25 % mindre än kortet dagens plan ritar (planCardQuad).",
+      "measured": {
+        "distancePx": 1,
+        "size": 0.755,
+        "card": "P7.C1"
+      },
+      "approved": true,
+      "played": true
+    },
+    "paow-giv-2-1-p1-08-01": {
+      "verdict": "går inte att mäta",
+      "words": "Filmen har inget kortspår med ett liggande kort.",
+      "approved": false,
+      "played": false
+    },
+    "paow-giv-2-1-p1-08-02": {
+      "verdict": "äldre plan",
+      "words": "Kortet ligger 1 px från platsen P1.C1 och är 25 % mindre än kortet dagens plan ritar (planCardQuad).",
+      "measured": {
+        "distancePx": 1.1,
+        "size": 0.752,
+        "card": "P1.C1"
+      },
+      "approved": true,
+      "played": false
+    },
+    "paow-giv-2-1-p1-07-02": {
+      "verdict": "går inte att mäta",
+      "words": "Filmen har inget kortspår med ett liggande kort.",
+      "approved": false,
+      "played": false
+    },
+    "paow-giv-2-1-p2-03-01": {
+      "verdict": "äldre plan",
+      "words": "Kortet ligger 1 px från platsen P2.C1 och är 18 % mindre än kortet dagens plan ritar (planCardQuad).",
+      "measured": {
+        "distancePx": 1,
+        "size": 0.817,
+        "card": "P2.C1"
+      },
+      "approved": true,
+      "played": true
+    },
+    "paow-giv-2-1-d-01-01": {
+      "verdict": "äldre plan",
+      "words": "Kortet ligger 1 px från platsen D.C1 och är 37 % mindre än kortet dagens plan ritar (planCardQuad).",
+      "measured": {
+        "distancePx": 1.2,
+        "size": 0.629,
+        "card": "D.C1"
+      },
+      "approved": true,
+      "played": true
+    },
+    "paow-giv-2-1-p5-03-01": {
+      "verdict": "stämmer",
+      "words": "Kortet ligger 0 px från platsen P5.C1 och är 9 % mindre än kortet dagens plan ritar (planCardQuad).",
+      "measured": {
+        "distancePx": 0.3,
+        "size": 0.909,
+        "card": "P5.C1"
+      },
+      "approved": true,
+      "played": true
+    },
+    "paow-giv-2-1-p6-03-01": {
+      "verdict": "äldre plan",
+      "words": "Kortet ligger 0 px från platsen P6.C1 och är 17 % mindre än kortet dagens plan ritar (planCardQuad).",
+      "measured": {
+        "distancePx": 0.4,
+        "size": 0.834,
+        "card": "P6.C1"
+      },
+      "approved": false,
+      "played": false
+    },
+    "paow-giv-2-1-p6-04-01": {
+      "verdict": "äldre plan",
+      "words": "Kortet ligger 1 px från platsen P6.C1 och är 17 % mindre än kortet dagens plan ritar (planCardQuad).",
+      "measured": {
+        "distancePx": 1,
+        "size": 0.826,
+        "card": "P6.C1"
+      },
+      "approved": false,
+      "played": false
+    },
+    "paow-giv-2-1-d-c2-03-01": {
+      "verdict": "äldre plan",
+      "words": "Kortet ligger 0 px från platsen D.C2 och är 34 % mindre än kortet dagens plan ritar (planCardQuad).",
+      "measured": {
+        "distancePx": 0.2,
+        "size": 0.661,
+        "card": "D.C2"
+      },
+      "approved": false,
+      "played": true
+    },
+    "paow-giv-2-1-p2-04-02": {
+      "verdict": "går inte att mäta",
+      "words": "Filmen har inget kortspår med ett liggande kort.",
+      "approved": true,
+      "played": true
+    },
+    "paow-giv-2-1-p7-06-01": {
+      "verdict": "äldre plan",
+      "words": "Kortet ligger 1 px från platsen P7.C1 och är 25 % mindre än kortet dagens plan ritar (planCardQuad).",
+      "measured": {
+        "distancePx": 0.7,
+        "size": 0.753,
+        "card": "P7.C1"
+      },
+      "approved": false,
+      "played": true
+    },
+    "paow-giv-2-1-p6-05-01": {
+      "verdict": "går inte att mäta",
+      "words": "Filmen har inget kortspår med ett liggande kort.",
+      "approved": false,
+      "played": false
+    },
+    "paow-giv-2-1-p6-07-02": {
+      "verdict": "äldre plan",
+      "words": "Kortet ligger 1 px från platsen P6.C1 och är 17 % mindre än kortet dagens plan ritar (planCardQuad).",
+      "measured": {
+        "distancePx": 1.2,
+        "size": 0.833,
+        "card": "P6.C1"
+      },
+      "approved": false,
+      "played": false
+    },
+    "paow-giv-2-1-p6-07-01": {
+      "verdict": "äldre plan",
+      "words": "Kortet ligger 1 px från platsen P6.C1 och är 16 % mindre än kortet dagens plan ritar (planCardQuad).",
+      "measured": {
+        "distancePx": 0.7,
+        "size": 0.842,
+        "card": "P6.C1"
+      },
+      "approved": false,
+      "played": true
+    },
+    "paow-giv-2-2-p4-01-01": {
+      "verdict": "stämmer",
+      "words": "Kortet ligger 1 px från platsen P4.C1 och är 1 % större än kortet dagens plan ritar (planCardQuad).",
+      "measured": {
+        "distancePx": 0.8,
+        "size": 1.015,
+        "card": "P4.C1"
+      },
+      "approved": true,
+      "played": true
+    },
+    "paow-giv-2-2-p6-01-01": {
+      "verdict": "går inte att mäta",
+      "words": "Filmen har inget kortspår med ett liggande kort.",
+      "approved": true,
+      "played": true
+    },
+    "paow-giv-2-2-p6-02-01": {
+      "verdict": "äldre plan",
+      "words": "Kortet ligger 1 px från platsen P6.C1 och är 15 % mindre än kortet dagens plan ritar (planCardQuad).",
+      "measured": {
+        "distancePx": 0.9,
+        "size": 0.851,
+        "card": "P6.C1"
+      },
+      "approved": false,
+      "played": true
+    },
+    "paow-giv-2-2-p6-03-01": {
+      "verdict": "äldre plan",
+      "words": "Kortet ligger 1 px från platsen P6.C1 och är 15 % mindre än kortet dagens plan ritar (planCardQuad).",
+      "measured": {
+        "distancePx": 1.4,
+        "size": 0.846,
+        "card": "P6.C1"
+      },
+      "approved": false,
+      "played": false
+    }
+  }
+}

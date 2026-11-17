@@ -7,7 +7,9 @@
 
 // ── Roles ───────────────────────────────────────────────────────────────────
 /** Jakob's chain, in its order: from the first picture of a new dealer to the films, then what stands beside it. */
-export const ROLES = ["ingangsbild", "keystone", "ankare-1", "ankare-2.1", "ankare-2.2", "landning", "film", "referens", "prov", "arbetsmaterial"] as const;
+// A proof is not a role: it is registered by its own assets/proofs/<id>/proof.json and shown in Granska's Prov (until
+// 2026-11-17 Material listed the proof folders a second time, as the role prov).
+export const ROLES = ["ingangsbild", "keystone", "ankare-1", "ankare-2.1", "ankare-2.2", "landning", "film", "referens", "arbetsmaterial"] as const;
 export type Role = (typeof ROLES)[number];
 export const isRole = (value: unknown): value is Role => typeof value === "string" && (ROLES as readonly string[]).includes(value);
 
@@ -20,7 +22,6 @@ export const ROLE_LABEL: Record<Role, string> = {
   landning: "Landningar",
   film: "Filmer",
   referens: "Referenser",
-  prov: "Prov",
   arbetsmaterial: "Övrigt",
 };
 
@@ -34,7 +35,6 @@ export const ROLE_ABOUT: Record<Role, string> = {
   landning: "Kortet på sin plats: givar slutar här, returer börjar här.",
   film: "Bankens filmer: ett steg mellan två ankare.",
   referens: "Färdiga filmer att jämföra mot.",
-  prov: "Provmappar om dealern.",
   arbetsmaterial: "Annat som filmer börjar eller slutar på, och mellanbilder.",
 };
 
@@ -49,7 +49,7 @@ export type Source = { from: string; when?: string };
 /**
  * One thing with a role. path: the file (relative to the repo, "assets/…" or "output/…"; an absolute path names a file
  * outside the repo, which the lab never hands out). frame: one frame of the film at path (fps given, 30 when not).
- * pattern: many files ("assets/frames/*\/*.png"), with path as the one picture shown. proof: a proof folder's id.
+ * pattern: many files ("assets/frames/*\/*.png"), with path as the one picture shown.
  * still: for a whole film, the frame its tile shows. card: the card on the table ("P4.C1"). node: the graph's node the
  * picture stands for ("IDLE", "READY-B", "LAND(P4.C1)"). link: a page of the studio that plays it ("/?runda=v6-filmen").
  */
@@ -62,7 +62,6 @@ export type Entry = {
   fps?: number;
   still?: number;
   pattern?: string;
-  proof?: string;
   card?: string;
   node?: string;
   state?: State;
@@ -130,20 +129,21 @@ export function validateRegister(value: unknown): { register: Register | null; e
       if (typeof e.id !== "string" || !ID.test(e.id)) errors.push(`${where}: id ska vara a–z, 0–9 och bindestreck.`);
       else if (ids.has(e.id)) errors.push(`${where}: id finns redan.`);
       else ids.add(e.id);
-      if (!isRole(e.role)) errors.push(`${where}: okänd roll ${String(e.role)}.`);
+      if ((e.role as string) === "prov") errors.push(`${where}: rollen prov finns inte längre: ett prov registreras av sitt proof.json.`);
+      else if (!isRole(e.role)) errors.push(`${where}: okänd roll ${String(e.role)}.`);
       if (typeof e.name !== "string" || !e.name.trim() || e.name.length > 80) errors.push(`${where}: namnet saknas eller är för långt.`);
       if (e.path !== undefined && (typeof e.path !== "string" || (!isInside(e.path) && !OUTSIDE.test(e.path)))) errors.push(`${where}: sökvägen ska ligga under assets/ eller output/, eller vara en hel sökväg utanför repot.`);
       if (e.frame !== undefined && (!Number.isInteger(e.frame) || e.frame < 0 || !e.path || kindOfPath(e.path) !== "video")) errors.push(`${where}: en ruta ska vara ett heltal ≥ 0 i en film.`);
       if (e.fps !== undefined && (typeof e.fps !== "number" || !(e.fps > 0) || e.fps > 240)) errors.push(`${where}: fps ska vara ett tal över 0.`);
       if (e.still !== undefined && (!Number.isInteger(e.still) || e.still < 0 || e.frame !== undefined || !e.path || kindOfPath(e.path) !== "video")) errors.push(`${where}: still är rutan en hel film visas med.`);
       if (e.pattern !== undefined && (typeof e.pattern !== "string" || !isInside(e.pattern.replaceAll("*", "x")) || !e.path)) errors.push(`${where}: ett mönster ska ligga i repot och ha en bild (path) att visa.`);
-      if (e.proof !== undefined && (typeof e.proof !== "string" || !ID.test(e.proof))) errors.push(`${where}: proof ska vara en provmapps namn.`);
+      if ((e as { proof?: unknown }).proof !== undefined) errors.push(`${where}: proof hör inte hemma här: ett prov registreras av sitt proof.json.`);
       if (e.card !== undefined && (typeof e.card !== "string" || !CARD.test(e.card))) errors.push(`${where}: kortet skrivs som P4.C1 eller D.C2.`);
       if (e.state !== undefined && !isState(e.state)) errors.push(`${where}: tillståndet ska vara gäller, kandidat eller ersatt.`);
       if (e.note !== undefined && (typeof e.note !== "string" || e.note.length > 400)) errors.push(`${where}: noten är för lång.`);
       if (e.link !== undefined && (typeof e.link !== "string" || !e.link.startsWith("/"))) errors.push(`${where}: en länk börjar med /.`);
       if (e.source !== undefined && (typeof e.source !== "object" || typeof e.source?.from !== "string")) errors.push(`${where}: source ska ha from.`);
-      if (!e.path && !e.proof && e.role !== "film") errors.push(`${where}: varken fil (path) eller prov (proof).`);
+      if (!e.path && e.role !== "film") errors.push(`${where}: ingen fil (path).`);
     });
     const out = dealer.outside;
     if (out && (typeof out.path !== "string" || !Array.isArray(out.ledgers))) errors.push(`${at}.outside: path och ledgers krävs.`);
@@ -164,7 +164,7 @@ export function pictureKey(picture: JobPicture): string | null {
   return null;
 }
 
-/** The same key for an entry of the register (null for a proof folder or a pattern without a picture of its own). */
+/** The same key for an entry of the register (null for an entry without a file, or a pattern without a picture of its own). */
 export function entryKey(entry: Pick<Entry, "path" | "frame" | "pattern">): string | null {
   if (!entry.path || entry.pattern) return null;
   return entry.frame !== undefined ? `frame:${entry.path}#${entry.frame}` : `file:${entry.path}`;
@@ -210,7 +210,39 @@ export type Found = {
   count: number | null;
   /** The jobs of the bank that start or end on this picture. edge: the graph's edge id, for a link to the map. */
   usedBy: (Use & { edge: string })[];
+  /** How the picture fits today's card plan and standard, measured by tools/media-audit.ts (data/media-fit.json); null when not measured. */
+  fit?: Fit | null;
 };
+
+// ── Fit with today's plan (data/media-fit.json, written by tools/media-audit.ts) ──
+export const FIT_VERDICTS = ["stämmer", "äldre plan", "annan kamera", "går inte att mäta", "avviker"] as const;
+export type FitVerdict = (typeof FIT_VERDICTS)[number];
+/** What a reference is a reference for: the look, the movement, or a check (V6 recreated byte for byte). */
+export const FIT_FOR = ["utseende", "rörelse", "kontroll"] as const;
+export type FitFor = (typeof FIT_FOR)[number];
+/** One entry's fit: the verdict, the numbers in words, what a reference is for, and what uses it today ([] = nothing). */
+export type Fit = { verdict: FitVerdict; words: string; for: FitFor | null; usedBy: string[] };
+
+/** Reads one entry of data/media-fit.json; anything that is not a fit is null. */
+export function readFit(value: unknown): Fit | null {
+  const v = value as Partial<Record<keyof Fit, unknown>> | null;
+  if (!v || typeof v !== "object" || !(FIT_VERDICTS as readonly unknown[]).includes(v.verdict)) return null;
+  return {
+    verdict: v.verdict as FitVerdict,
+    words: typeof v.words === "string" ? v.words : "",
+    for: (FIT_FOR as readonly unknown[]).includes(v.for) ? (v.for as FitFor) : null,
+    usedBy: Array.isArray(v.usedBy) ? v.usedBy.filter((s): s is string => typeof s === "string") : [],
+  };
+}
+
+/** The chip a tile shows for its fit: nothing when it fits or was not measured, else the verdict in a word or two. */
+export const fitChip = (fit: Fit | null | undefined): string | null => (!fit || fit.verdict === "stämmer" ? null : fit.verdict);
+
+/** The chips of a reference: what it is a reference for, and "används inte" when nothing uses it today. */
+export function referenceChips(fit: Fit | null | undefined): string[] {
+  if (!fit) return [];
+  return [...(fit.for ? [fit.for] : []), ...(fit.usedBy.length ? [] : ["används inte"])];
+}
 /** An entry with what was found; fps is the film's own as read from the file, else the register's. */
 export type EntryAnswer = Omit<Entry, "fps"> & Found;
 export type DealerAnswer = Omit<Dealer, "entries"> & { id: string; entries: EntryAnswer[]; bank: { jobs: number; derived: number; edits: number } };

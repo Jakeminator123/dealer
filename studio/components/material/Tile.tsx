@@ -2,11 +2,12 @@
 
 // <Tile entry={e} onOpen={…} />: one picture of the register as a large still: the picture itself, a frame of a film drawn
 // once (ProofStill), or a quiet panel when the file lies outside the lab or is gone. Under it its short name and how many
-// of the bank's films start or end on it; its state as a chip on the picture. A replaced picture is drawn dimmer.
+// of the bank's films start or end on it; its state as a chip on the picture, and top right how it fits today's card plan
+// when it does not (and what a reference is for). A replaced picture is drawn dimmer.
 import { Film, HardDrive, ImageOff, Play } from "lucide-react";
 import Link from "next/link";
 import type { CSSProperties, ReactNode } from "react";
-import { sizeWords, usedWords, type EntryAnswer, type State } from "../../lib/media.ts";
+import { fitChip, referenceChips, sizeWords, usedWords, type EntryAnswer, type State } from "../../lib/media.ts";
 import { ProofStill, type Cover } from "../proofs";
 import { Badge, buttonClasses, cn, type BadgeTone } from "../ui";
 
@@ -53,6 +54,32 @@ function Placeholder({ icon, children }: { icon: ReactNode; children: ReactNode 
   );
 }
 
+/** How a fit verdict looks: an older plan or a deviation is a remark, the rest is quiet. */
+const FIT_TONE: Record<string, BadgeTone> = { "äldre plan": "remark", avviker: "remark", "annan kamera": "neutral", "går inte att mäta": "neutral" };
+
+/**
+ * Top right on the picture: how it fits today's card plan when it does not (tools/media-audit.ts, data/media-fit.json), and
+ * for a reference what it is a reference for and "används inte" when nothing uses it today. The numbers are in the detail.
+ */
+function FitChips({ entry }: { entry: EntryAnswer }) {
+  const verdict = fitChip(entry.fit), extra = entry.role === "referens" ? referenceChips(entry.fit) : [];
+  if (!verdict && !extra.length) return null;
+  return (
+    <span className="pointer-events-none absolute right-1.5 top-1.5 flex flex-col items-end gap-1" title={entry.fit?.words || undefined}>
+      {verdict ? (
+        <Badge tone={FIT_TONE[verdict] ?? "neutral"} size="sm" className="bg-[#0b0f0d]/85 backdrop-blur-sm">
+          {verdict}
+        </Badge>
+      ) : null}
+      {extra.map((word) => (
+        <Badge key={word} tone="neutral" size="sm" className="bg-[#0b0f0d]/85 backdrop-blur-sm">
+          {word}
+        </Badge>
+      ))}
+    </span>
+  );
+}
+
 /** The second line under a film of the references: its length. */
 export const filmLine = (entry: Pick<EntryAnswer, "frames" | "fps" | "count">): string | null =>
   entry.count ? `${entry.count} filer` : entry.frames && entry.fps ? `${Math.round(entry.frames / entry.fps)} s · ${entry.frames} rutor` : null;
@@ -87,6 +114,7 @@ export function Tile({ entry, onOpen, selected = false, line }: { entry: EntryAn
           </Placeholder>
         )}
         {entry.state ? <StateChip state={entry.state} className="absolute left-1.5 top-1.5 bg-[#0b0f0d]/85 backdrop-blur-sm" /> : null}
+        <FitChips entry={entry} />
         {frameTag ? (
           <span className="pointer-events-none absolute bottom-1.5 left-1.5 inline-flex items-center gap-1 rounded-xs bg-black/65 px-1.5 py-0.5 text-2xs font-medium text-ink backdrop-blur-sm">
             {entry.served?.endsWith(".mp4") ? <Film className="size-3" /> : null}

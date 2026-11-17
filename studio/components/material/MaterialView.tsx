@@ -1,25 +1,29 @@
 "use client";
 
-// Material (/material/?dealer=paow&bild=<id>): the one place where Jakob sees what is what, per dealer. At the top the
-// chain at a glance (ingångsbild → keystone → ankare 1 → 2.1 → 2.2 → landningar → filmer), then one row per role with
-// large stills, a state chip and how many of the bank's films start or end on each picture; an empty role says what is
+// Material (/material/?bild=<id>, ?dealer=pamela for another dealer than the first): the one place where Jakob sees what
+// is what, per dealer. At the top the chain at a glance (ingångsbild → keystone → ankare 1 → 2.1 → 2.2 → landningar →
+// filmer), then one row per role with large stills, a state chip and how many of the bank's films start or end on each picture; an empty role says what is
 // missing. A click opens the picture over the whole window with its facts on demand (MaterialViewer). Under the chain:
-// references, proofs, the rest, and the three sources of measures. "Lägg till bild" adds a picture (not in the online
-// copy). The address holds the dealer and the open picture. Must be inside <Suspense> (useSearchParams).
+// references, the rest, and the sources of measures the register lists. Proofs are Granska's Prov, registered by their own
+// proof.json, and not listed here. "Lägg till bild" adds a picture (not in the online copy).
+// The dealer is the studio's (the rail's switch, useBank); the address's ?dealer= wins when it names one of Material's dealers,
+// so links into Material keep working (lib/dealer.ts viewDealer). The address holds the open picture. Must be inside
+// <Suspense> (useSearchParams).
 import { ImagePlus } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { asApiError, getProofs, type ApiError, type Proof } from "../../lib/api.ts";
+import { asApiError, type ApiError } from "../../lib/api.ts";
 import { useBank } from "../../lib/bank.ts";
+import { DEALER_PARAM, viewDealer } from "../../lib/dealer.ts";
 import { useViewContext } from "../../lib/context.ts";
-import { CHAIN, ROLES, roleStatus, type Entry, type EntryAnswer, type MediaAnswer, type Role } from "../../lib/media.ts";
+import { CHAIN, ROLES, roleStatus, type Entry, type MediaAnswer, type Role } from "../../lib/media.ts";
 import { isSnapshot } from "../../lib/mode.ts";
 import { Page } from "../shell";
-import { Button, EmptyState, ErrorState, SegmentedControl, Skeleton } from "../ui";
+import { Button, EmptyState, ErrorState, Skeleton } from "../ui";
 import { AddDialog } from "./AddDialog";
 import { getMedia } from "./client.ts";
 import { MaterialViewer } from "./MaterialViewer";
-import { ChainStrip, FilmsRow, Measures, OrderFrom, ProofRow, RoleRow } from "./Rows";
+import { ChainStrip, FilmsRow, Measures, OrderFrom, RoleRow } from "./Rows";
 import { takeCount } from "./films.ts";
 
 type State = { status: "loading" } | { status: "ready"; answer: MediaAnswer } | { status: "error"; error: ApiError };
@@ -35,16 +39,13 @@ function setParams(next: Record<string, string | null>) {
   window.history.replaceState(null, "", `${window.location.pathname}${q ? `?${q}` : ""}`);
 }
 
-const VIEWABLE = (e: EntryAnswer) => e.role !== "prov";
-
 export function MaterialView() {
   const params = useSearchParams();
-  const asked = params.get("dealer");
+  const asked = params.get(DEALER_PARAM);
   const picture = params.get("bild");
   const [state, setState] = useState<State>({ status: "loading" });
-  const [proofs, setProofs] = useState<Proof[] | null>(null);
   const [adding, setAdding] = useState(false);
-  const { graph } = useBank();
+  const { graph, dealer: studioDealer, setDealer } = useBank();
 
   const read = useCallback(async () => {
     try {
@@ -57,26 +58,25 @@ export function MaterialView() {
 
   useEffect(() => {
     void read();
-    void getProofs().then(
-      (list) => setProofs(Array.isArray(list.proofs) ? list.proofs : []),
-      () => setProofs([]),
-    );
     const seen = () => document.visibilityState === "visible" && void read();
     document.addEventListener("visibilitychange", seen);
     return () => document.removeEventListener("visibilitychange", seen);
   }, [read]);
 
   const answer = state.status === "ready" ? state.answer : null;
-  const dealer = answer?.dealers.find((d) => d.id === asked) ?? answer?.dealers[0] ?? null;
-  const open = dealer && picture ? (dealer.entries.find((e) => e.id === picture && VIEWABLE(e)) ?? null) : null;
+  const shownId = answer ? viewDealer(answer.dealers.map((d) => d.id), studioDealer, asked) : null;
+  const dealer = answer?.dealers.find((d) => d.id === shownId) ?? null;
+  const open = dealer && picture ? (dealer.entries.find((e) => e.id === picture) ?? null) : null;
   // The viewer browses the open picture's row.
-  const row = useMemo(() => (dealer && open ? dealer.entries.filter((e) => e.role === open.role && VIEWABLE(e)) : []), [dealer, open]);
-  const bankTakes = dealer?.films?.from && graph ? takeCount(graph) : 0;
+  const row = useMemo(() => (dealer && open ? dealer.entries.filter((e) => e.role === open.role) : []), [dealer, open]);
+  // The bank's graph is the studio's dealer's: its takes count only for her (a link may show another dealer here).
+  const bankTakes = dealer?.films?.from && graph && dealer.id === studioDealer ? takeCount(graph) : 0;
 
   useViewContext({ vy: "Material", val: { dealer: dealer?.name, bild: open?.name } });
 
   const added = (entry: Entry, owner: string) => {
-    setParams({ dealer: owner, bild: entry.id });
+    if (owner !== dealer?.id) setDealer(owner);
+    setParams({ bild: entry.id });
     void read();
   };
 
@@ -117,7 +117,6 @@ export function MaterialView() {
       }
       actions={
         <>
-          <SegmentedControl label="Dealer" value={dealer.id} onChange={(id) => setParams({ dealer: id, bild: null })} options={answer.dealers.map((d) => ({ value: d.id, label: d.name }))} />
           {!isSnapshot ? (
             <Button variant="primary" size="md" icon={<ImagePlus />} onClick={() => setAdding(true)}>
               Lägg till bild
@@ -146,9 +145,7 @@ export function MaterialView() {
         <h2 className="mt-8 border-b border-line pb-2 text-xs font-medium uppercase tracking-[0.08em] text-faint">Bredvid kedjan</h2>
         <div className="divide-y divide-line/70">
           {ROLES.filter((r) => !CHAIN.includes(r)).map((role) =>
-            role === "prov" ? (
-              <ProofRow key={role} dealer={dealer} proofs={proofs} />
-            ) : dealer.entries.some((e) => e.role === role) || dealer.missing?.[role] ? (
+            dealer.entries.some((e) => e.role === role) || dealer.missing?.[role] ? (
               <RoleRow key={role} dealer={dealer} role={role} step={null} open={open?.id ?? null} onOpen={(e) => setParams({ bild: e.id })} />
             ) : null,
           )}

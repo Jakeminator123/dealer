@@ -48,7 +48,7 @@ test('the checkout: the register holds, and every first and last picture of the 
  const {errors} = validateRegister(register);
  assert.deepEqual(errors, []);
  assert.deepEqual(unassigned(register as Register, jobs), [], 'a picture of data/clip-jobs.json has no role in data/media-roles.json');
- // Pamela and Paow come first; a dealer added later (Petra, a separate track with proofs only, 2026-11-13) follows them.
+ // Pamela and Paow come first; a dealer added later (Petra, a separate track of 2026-11-13 whose proofs are Granska's) follows them.
  assert.deepEqual(Object.keys(register.dealers).slice(0, 2), ['pamela', 'paow']);
  // Today's facts: Pamela has no ingångsbild and no keystone in high resolution, and says so; her three anchors hold, one each.
  const pamela = register.dealers.pamela;
@@ -88,7 +88,7 @@ test('the register is checked: roles, states, paths, frames and unique ids', () 
   entry({id: 'f', path: 'assets/f.png', state: 'kanske'}), entry({id: 'g', path: 'assets/g.png', card: 'P8.C1'}), entry({id: 'h'}),
  ]));
  assert.equal(bad.register, null);
- for (const word of ['id finns redan', 'okänd roll kant', 'sökvägen', 'en ruta ska', 'tillståndet', 'kortet skrivs', 'varken fil']) assert.ok(bad.errors.some(e => e.includes(word)), word);
+ for (const word of ['id finns redan', 'okänd roll kant', 'sökvägen', 'en ruta ska', 'tillståndet', 'kortet skrivs', 'ingen fil']) assert.ok(bad.errors.some(e => e.includes(word)), word);
  assert.ok(validateRegister({schemaVersion: 1}).errors.length);
 });
 
@@ -112,11 +112,11 @@ test('answer: found on disk, its size, the films that start or end on it, and on
   entry({id: 'pamela-b', role: 'landning', path: 'assets/anchors/pamela-b/anchor.png', card: 'P4.C1'}),
   entry({id: 'pamela-gone', path: 'assets/anchors/pamela-gone/anchor.png'}),
   entry({id: 'pamela-ute', path: 'Q:/nowhere/at/all.png'}),
-  entry({id: 'pamela-prov', role: 'prov', proof: 'some-proof'}),
  ], {films: {from: 'data/clip-jobs.json', prefix: 'pamela-', note: ''}}), jobs);
  await mkdir(path.join(root, 'assets/anchors/pamela-a'), {recursive: true});
  await writeFile(path.join(root, 'assets/anchors/pamela-a/anchor.png'), png(1764, 1174));
- await mkdir(path.join(root, 'assets/proofs/some-proof'), {recursive: true});
+ // data/media-fit.json (tools/media-audit.ts): a fit per entry; one that is not a fit is left out.
+ await writeFile(path.join(root, 'data/media-fit.json'), JSON.stringify({schemaVersion: 1, entries: {'pamela-b': {verdict: 'äldre plan', words: 'Kortet ligger 23 px från platsen.', for: null, usedBy: []}, 'pamela-gone': {verdict: 'kanske'}}}));
  await writeFile(path.join(root, 'assets/secret.png'), png(10, 10));
  const store = mediaRoles(root), answer = await store.answer();
  assert.equal(answer.readable, true);
@@ -128,7 +128,9 @@ test('answer: found on disk, its size, the films that start or end on it, and on
  assert.equal(by('pamela-b').usedBy[0].side, 'last');
  assert.equal(by('pamela-gone').exists, false);
  assert.deepEqual([by('pamela-ute').exists, by('pamela-ute').inside, by('pamela-ute').served], [false, false, null]);
- assert.equal(by('pamela-prov').exists, true);
+ assert.deepEqual(by('pamela-b').fit, {verdict: 'äldre plan', words: 'Kortet ligger 23 px från platsen.', for: null, usedBy: []});
+ assert.equal(by('pamela-a').fit, null, 'not measured');
+ assert.equal(by('pamela-gone').fit, null, 'not a verdict the page knows');
  assert.equal(await store.servable('assets/anchors/pamela-a/anchor.png'), true);
  assert.equal(await store.servable('assets/secret.png'), false, 'a file the register does not name');
  assert.equal(await store.servable('assets/anchors/pamela-a/../../secret.png'), false);

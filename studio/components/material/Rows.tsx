@@ -1,21 +1,18 @@
 "use client";
 
 // The rows of the view Material: the chain at a glance (ChainStrip), one row per role with its pictures (RoleRow), the
-// films as counts per seat (FilmsRow), the proof folders (ProofRow), and the three sources of measures (Measures).
-import { proofHref } from "../../lib/proofs.ts";
-import { ArrowRight, ArrowUpRight, ChevronRight, CircleAlert, FolderOpen } from "lucide-react";
+// films as counts per seat (FilmsRow), and the sources of measures as the register lists them (Measures). Proofs are not
+// listed here: a proof is registered by its own proof.json and shown in Granska's Prov.
+import { ArrowRight, ChevronRight, CircleAlert, FolderOpen } from "lucide-react";
 import Link from "next/link";
 import { useState, type ReactNode } from "react";
 import type { Graph } from "../../../src/clip-graph.ts";
-import type { Proof } from "../../lib/api.ts";
 import { BUCKET_SIGN, BUCKET_WORD, BUCKETS } from "../../lib/edge-stats.ts";
 import { CHAIN, ROLE_ABOUT, ROLE_LABEL, roleStatus, sizeWords, type DealerAnswer, type EntryAnswer, type Measure, type Role, type RoleStatus } from "../../lib/media.ts";
-import { coverOf, proofTitle } from "../../lib/proofs.ts";
-import { splitLabel } from "../../lib/verdict.ts";
 import { ProofStill } from "../proofs";
 import { buttonClasses, cn } from "../ui";
 import { seatGroups, takeCount } from "./films.ts";
-import { StateChip, TILE_HEIGHT, Tile, coverOfEntry, filmLine } from "./Tile";
+import { StateChip, Tile, coverOfEntry, filmLine } from "./Tile";
 
 const rowId = (role: Role) => `roll-${role.replace(".", "-")}`;
 const scrollTo = (role: Role) => document.getElementById(rowId(role))?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -281,36 +278,7 @@ export function FilmsRow({ dealer, graph, step, open, onOpen }: { dealer: Dealer
   );
 }
 
-/** The dealer's proof folders as cards: their own picture, the title, a link to the proof room. */
-export function ProofRow({ dealer, proofs }: { dealer: DealerAnswer; proofs: readonly Proof[] | null }) {
-  const list = dealer.entries.filter((e) => e.role === "prov");
-  return (
-    <RowFrame role="prov" step={null} status={null} count={`${list.length} provmappar`}>
-      <Strip>
-        {list.map((e) => {
-          const proof = proofs?.find((p) => p.id === e.proof) ?? null;
-          const cover = proof ? coverOf(proof) : null;
-          const title = proof ? splitLabel(proofTitle(proof)).name : e.name;
-          return (
-            <li key={e.id} className="flex shrink-0 flex-col gap-1.5" style={{ width: 210 }}>
-              <Link href={proofHref(e.proof!)} className="group relative overflow-hidden rounded-md border border-line bg-well hover:border-line-strong" style={{ height: TILE_HEIGHT }}>
-                <ProofStill cover={cover} fps={proof?.fps ?? 30} className="absolute inset-0 transition-[filter] duration-200 group-hover:brightness-110" />
-                <span className="absolute bottom-1.5 right-1.5 inline-flex items-center gap-1 rounded-xs bg-black/65 px-1.5 py-0.5 text-2xs text-ink backdrop-blur-sm">
-                  Prov <ArrowUpRight className="size-3" />
-                </span>
-              </Link>
-              <span className="line-clamp-2 px-0.5 text-sm font-medium leading-5 text-ink" title={title}>
-                {e.name}
-              </span>
-            </li>
-          );
-        })}
-      </Strip>
-    </RowFrame>
-  );
-}
-
-/** Measures and coordinates: three sources, one line each, with what each decides. */
+/** Measures and coordinates: the register's sources (data/media-roles.json measures), one line each, with what each decides. */
 export function Measures({ measures }: { measures: readonly Measure[] }) {
   return (
     <section className="mt-6 rounded-lg border border-line bg-surface px-5 py-4">

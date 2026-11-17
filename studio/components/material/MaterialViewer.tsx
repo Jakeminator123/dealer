@@ -48,7 +48,7 @@ function Picture({ entry, close }: { entry: EntryAnswer; close: boolean }) {
         <div className="flex max-w-md flex-col items-center gap-3 text-dim [&_svg]:size-7">
           {entry.inside ? <ImageOff /> : <HardDrive />}
           <p className="text-md text-ink">{entry.inside ? "Filen saknas på den här datorn." : "Filen ligger utanför labbet, så den visas inte här."}</p>
-          <p className="break-all font-mono text-xs text-faint">{entry.path ?? entry.proof}</p>
+          <p className="break-all font-mono text-xs text-faint">{entry.path}</p>
         </div>
       </div>
     );
@@ -129,6 +129,21 @@ function Uses({ entry }: { entry: EntryAnswer }) {
   );
 }
 
+/** How it fits today's card plan (tools/media-audit.ts): the numbers in words, and for a reference what it is for and what uses it. */
+function FitFact({ entry }: { entry: EntryAnswer }) {
+  const fit = entry.fit;
+  if (!fit) return null;
+  const label = entry.role === "referens" ? `Referens för ${fit.for ?? "inget som mäts"}` : `Mot dagens plan: ${fit.verdict}`;
+  const used = entry.role === "referens" || entry.role === "arbetsmaterial" ? (fit.usedBy.length ? fit.usedBy.join(" · ") : "Inget använder den i dag.") : null;
+  if (!fit.words && !used) return null;
+  return (
+    <Fact label={label}>
+      {fit.words ? <span className="block">{fit.words}</span> : null}
+      {used ? <span className="mt-1 block text-xs leading-5 text-dim">{used}</span> : null}
+    </Fact>
+  );
+}
+
 function Facts({ entry }: { entry: EntryAnswer }) {
   const where = [entry.card ? `kort ${entry.card}` : null, entry.node ? nodeName(entry.node) : null].filter(Boolean).join(" · ");
   const size = sizeWords(entry.width, entry.height);
@@ -140,9 +155,10 @@ function Facts({ entry }: { entry: EntryAnswer }) {
           {where ? <span className="text-dim"> · {where}</span> : null}
         </Fact>
         {entry.note ? <Fact label="Om bilden">{entry.note}</Fact> : null}
+        <FitFact entry={entry} />
         {(entry as { stateBy?: string }).stateBy ? <Fact label="Dom">{(entry as { stateBy?: string }).stateBy}</Fact> : null}
         <Fact label="Var den ligger">
-          <span className="break-all font-mono text-xs leading-5 text-dim">{entry.pattern ?? entry.path ?? `assets/proofs/${entry.proof}`}</span>
+          <span className="break-all font-mono text-xs leading-5 text-dim">{entry.pattern ?? entry.path}</span>
           {entry.frame !== undefined ? (
             <span className="mt-1 block text-sm">
               Ruta {entry.frame}

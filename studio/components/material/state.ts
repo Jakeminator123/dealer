@@ -7,9 +7,9 @@ import { kindOfPath, type Entry, type State } from "../../lib/media.ts";
 export const CHANGES: Readonly<Record<State, readonly State[]>> = { kandidat: ["gäller", "ersatt"], "gäller": ["ersatt"], ersatt: [] };
 export const allowed = (from: State | undefined, to: State): boolean => !!from && CHANGES[from].includes(to);
 
-/** A picture (a file or one frame of a film) with a role in the chain or beside it, not a whole film or a proof folder. */
-export const isDecidable = (e: Pick<Entry, "role" | "path" | "frame" | "proof">): boolean =>
-  e.role !== "film" && e.role !== "prov" && !e.proof && !!e.path && (e.frame !== undefined || kindOfPath(e.path) === "image");
+/** A picture (a file or one frame of a film) with a role in the chain or beside it, not a whole film. */
+export const isDecidable = (e: Pick<Entry, "role" | "path" | "frame">): boolean =>
+  e.role !== "film" && !!e.path && (e.frame !== undefined || kindOfPath(e.path) === "image");
 
 /**
  * The pictures that become ersatt when `entry` is approved: same role, same node, same card, and either still a candidate

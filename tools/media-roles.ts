@@ -12,9 +12,9 @@ import path from 'node:path';
 import {StoreError} from './placement-store.ts';
 import {parseEdge, nodeName, formatEdge} from '../src/clip-graph.ts';
 import {
- entryKey, isInside, isUploadRole, kindOfPath, uploadTarget, unassigned, usesOf, validateRegister,
+ entryKey, isInside, isUploadRole, kindOfPath, readFit, uploadTarget, unassigned, usesOf, validateRegister,
  NAME, NAME_LIMIT, TITLE_LIMIT, UPLOAD_LIMIT, ROLE_LABEL,
- type DealerAnswer, type Entry, type EntryAnswer, type Found, type ImageType, type JobLike, type MediaAnswer, type Register, type UploadRole,
+ type DealerAnswer, type Entry, type EntryAnswer, type Fit, type Found, type ImageType, type JobLike, type MediaAnswer, type Register, type UploadRole,
 } from '../studio/lib/media.ts';
 import {allowed, isDecidable, replacedBy, stateLine} from '../studio/components/material/state.ts';
 import {ANCHOR_NODE} from '../src/order-model.ts';
@@ -176,6 +176,15 @@ export function mediaRoles(root: string) {
   } catch { return {jobs: [], derived: 0, edits: 0}; }
  }
 
+ /** How each entry fits today's card plan and standard (data/media-fit.json, tools/media-audit.ts); a missing or unreadable file is no fit data, never an error. */
+ async function readFits(): Promise<Record<string, Fit>> {
+  try {
+   const file = JSON.parse(await readFile(path.join(root, 'data/media-fit.json'), 'utf8')), out: Record<string, Fit> = {};
+   for (const [id, value] of Object.entries((file?.entries ?? {}) as Record<string, unknown>)) { const fit = readFit(value); if (fit) out[id] = fit; }
+   return out;
+  } catch { return {}; }
+ }
+
  /** The file lies where its name says, inside the repo: no link or junction leads out of it. */
  async function confined(file: string): Promise<boolean> {
   if (!isInside(file)) return false;
@@ -184,10 +193,6 @@ export function mediaRoles(root: string) {
 
  async function look(entry: Entry): Promise<Found> {
   const none: Found = {exists: false, served: null, inside: false, width: null, height: null, bytes: null, fps: null, frames: null, count: null, usedBy: []};
-  if (entry.proof) {
-   const dir = `assets/proofs/${entry.proof}`, exists = await stat(path.join(root, dir)).then(s => s.isDirectory(), () => false);
-   return {...none, exists, inside: true};
-  }
   if (!entry.path) return none;
   const inside = isInside(entry.path), file = inside ? path.join(root, ...entry.path.split('/')) : entry.path;
   const s = await stat(file).catch(() => null);
@@ -214,12 +219,12 @@ export function mediaRoles(root: string) {
  async function answer(): Promise<MediaAnswer> {
   const {text, register, errors} = await readRegister(), {jobs, derived, edits} = await readJobs();
   if (!register) return {schemaVersion: 1, readable: false, revision: text ? revisionOf(text) : null, problems: errors, dealers: [], measures: [], unassigned: []};
-  const uses = usesOf(jobs), dealers: DealerAnswer[] = [];
+  const uses = usesOf(jobs), dealers: DealerAnswer[] = [], fits = await readFits();
   for (const [id, dealer] of Object.entries(register.dealers)) {
    const entries: EntryAnswer[] = await Promise.all(dealer.entries.map(async entry => {
     const found = await look(entry), key = entryKey(entry);
     const usedBy = (key ? uses.get(key) ?? [] : []).map(u => ({...u, edge: edgeOf(u.from, u.to)}));
-    return {...entry, ...found, fps: found.fps ?? entry.fps ?? null, usedBy};
+    return {...entry, ...found, fps: found.fps ?? entry.fps ?? null, usedBy, fit: fits[entry.id] ?? null};
    }));
    const prefix = dealer.films?.prefix, mine = (list: {id: string}[]) => prefix ? list.filter(j => j.id.startsWith(prefix)).length : 0;
    dealers.push({...dealer, id, entries, bank: {jobs: mine(jobs), derived: prefix ? derived : 0, edits: prefix ? edits : 0}});
@@ -312,7 +317,7 @@ export function mediaRoles(root: string) {
    const owner = Object.entries(register.dealers).find(([, d]) => d.entries.some(e => e.id === id));
    if (!owner) throw new StoreError(404, 'Bilden finns inte i registret.');
    const next = structuredClone(register), dealer = next.dealers[owner[0]], entry = dealer.entries.find(e => e.id === id)!;
-   if (!isDecidable(entry)) throw new StoreError(400, 'Bara en bild (inte en film eller en provmapp) kan godkännas här.');
+   if (!isDecidable(entry)) throw new StoreError(400, 'Bara en bild (inte en hel film) kan godkännas här.');
    if (!allowed(entry.state, to)) throw new StoreError(409, `${entry.name} är ${entry.state ?? 'utan tillstånd'}: bara kandidat → gäller, kandidat → ersatt och gäller → ersatt.`);
    const replaced = to === 'gäller' ? replacedBy(dealer.entries, entry) : [];
    for (const other of replaced) Object.assign(other, {state: 'ersatt', stateBy: stateLine(who, now, other.state ?? 'kandidat', 'ersatt', `${entry.name} godkändes i Material`)});

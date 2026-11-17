@@ -432,6 +432,14 @@ beställningar, scenen, och allt som Beslut, kopian, ett dokument eller en instr
 `evidence/`), `bara registrerad` eller `okänd`, med fil och fält som säger det. Det som varken spelas, visas eller är
 referens arkiveras till `D:/dealer-archive/`, raderas inte, om det är gjort med betalda krediter.
 
+**Om en bild eller film passar dagens regler:** `node tools/media-audit.ts --fit [--write]` mäter kortet i varje landning
+och i varje ankare med kort på en plats (gult eller blått som `src/card-track.ts` läser) och det liggande kortet i
+bankens kortspår (`assets/tracking/<tagning>/card-track.json`) mot `planCardQuad` (`src/card-plan.ts`), ett viloankare
+mot `data/dealer-standard.json` och en referens efter kameran (rutans storlek). Svaret per sak är `stämmer`, `äldre plan`
+(mitten mer än 15 px från platsen eller storleken mer än 12 % från regelns kort), `avviker`, `annan kamera` eller `går inte
+att mäta`, med siffrorna. `--write` sparar det i `data/media-fit.json`, som Material visar som en etikett på rutan; kör det
+igen när planen, linsen eller ett ankare ändras. Jakobs tillstånd (gäller, kandidat, ersatt) ändras aldrig av mätningen.
+
 Det tidigare projektet (snyggare-dealer, arkivet) är fullständigt arkiverat på `D:/dealer-archive/snyggare-dealer`, och C:-originalet är borttaget utan fel
 enligt [arkivkvittot](../evidence/archive-move.json). Efter kontrollerad serverstopp omfattade det 194 531 filer och 163
 182 601 679 logiska byte. Varje vanlig fil SHA-256-jämfördes på båda sidor; katalogstruktur, Git-historik/index, 34

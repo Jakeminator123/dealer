@@ -1,7 +1,8 @@
 // tools/media-audit.ts: what a folder of the ignored media is, and whether anything uses it. Pure logic only; no media is read.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {unitOf, unitsOf, rank, roleClaims, playedTakes, judgedBy, pathsIn, idsNamed, whatOf, type Claim} from './media-audit.ts';
+import {unitOf, unitsOf, rank, roleClaims, playedTakes, judgedBy, pathsIn, idsNamed, whatOf, measureCard, cardVerdict, cardWords, cameraOf, findCard, edgeRowOf, boxOff, type Claim, type FitRule} from './media-audit.ts';
+import {classify} from '../src/card-track.ts';
 
 test('a unit is the folder that is one thing, at its top folder\'s depth', () => {
   assert.equal(unitOf('assets/motions/paow-vila-01-01/source.mp4'), 'assets/motions/paow-vila-01-01');
@@ -40,12 +41,11 @@ test('Material: a superseded picture and a film outside the bank are only regist
     {id: 'e', role: 'ankare-1', path: 'assets/anchors/paow-vila-kavaj/anchor.png', state: 'ersatt'},
     {id: 'f', role: 'film', path: 'assets/films/paow/ny-giv/source.mp4', note: 'Utanför banken.'},
     {id: 'g', role: 'film', path: 'assets/motions/paow-vila-01-01/source.mp4'},
-    {id: 'p', role: 'prov', proof: 'paow-runda'},
     {id: 'r', role: 'referens', path: 'assets/reference/v6.mp4'},
   ]}}};
   const by = Object.fromEntries(roleClaims(roles, new Set(['paow-vila-01-01'])).map(c => [c.path, c.use]));
   assert.deepEqual(by, {'assets/keystones/paow-staende/keystone.png': 'visas', 'assets/anchors/paow-vila-ung-2/anchor.png': 'visas', 'assets/anchors/paow-vila-kavaj/anchor.png': 'bara registrerad',
-    'assets/films/paow/ny-giv/source.mp4': 'bara registrerad', 'assets/motions/paow-vila-01-01/source.mp4': 'spelas', 'assets/proofs/paow-runda': 'bara registrerad', 'assets/reference/v6.mp4': 'referens'});
+    'assets/films/paow/ny-giv/source.mp4': 'bara registrerad', 'assets/motions/paow-vila-01-01/source.mp4': 'spelas', 'assets/reference/v6.mp4': 'referens'});
 });
 
 test('the bank plays the main take and a rest with weight, never a rejected take', () => {
@@ -86,4 +86,36 @@ test('every unit says what it is in Swedish', () => {
   assert.match(u('assets/films/pamela/b20-p3-c1-plan-deal-03-ref'), /^Pamelas film utanför banken/);
   assert.match(u('assets/orders/paow-ankare-2-1'), /beställning/);
   assert.match(u('output/v6/take-01'), /V6/);
+});
+
+// ── Fit ─────────────────────────────────────────────────────────────────────
+const RULE: FitRule = {placePx: 15, sizeShare: 0.12, handsPx: 8};
+const square = (x: number, y: number, s: number) => [{x, y}, {x: x + s, y}, {x: x + s, y: y + s}, {x, y: y + s}];
+
+test('a card is measured by how far its middle lies from the rule\'s and by the root of the areas', () => {
+  const m = measureCard(square(110, 110, 80), square(100, 100, 100), 'P7.C1');
+  assert.deepEqual(m, {distancePx: 0, size: 0.8, card: 'P7.C1'}, 'same middle, 80 % of the side');
+  assert.equal(cardVerdict(m, RULE), 'äldre plan', 'a fifth smaller is more than the 12 % allowed');
+  assert.equal(cardWords(m), 'Kortet ligger 0 px från platsen P7.C1 och är 20 % mindre än kortet dagens plan ritar (planCardQuad).');
+  assert.equal(cardVerdict(measureCard(square(108, 100, 100), square(100, 100, 100), 'P4.C1'), RULE), 'stämmer', '8 px off and the same size');
+  assert.equal(cardVerdict(measureCard(square(120, 100, 100), square(100, 100, 100), 'P4.C1'), RULE), 'äldre plan', '20 px off');
+});
+
+test('the camera is told by the frame: the bank\'s 1764 × 1174, V6\'s 1762 × 1174 is another', () => {
+  const bank = {width: 1764, height: 1174};
+  assert.equal(cameraOf(1764, 1174, bank), 'bankens');
+  assert.equal(cameraOf(1762, 1174, bank), 'annan');
+  assert.equal(cameraOf(1536, 1024, bank), 'annan');
+});
+
+test('the card is found by the films\' colours near the rule\'s card, and the table edge where the felt fills the middle', () => {
+  const w = 200, h = 200, rgb = new Uint8Array(w * h * 3);
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) { const i = (y * w + x) * 3, felt = y >= 120, card = x >= 90 && x < 130 && y >= 140 && y < 180;
+    const [r, g, b] = card ? [232, 208, 8] : felt ? [20, 120, 40] : [90, 60, 50]; rgb[i] = r; rgb[i + 1] = g; rgb[i + 2] = b; }
+  const cls = classify(rgb, w * h), found = findCard(cls, w, h, square(95, 140, 40), 30)!;
+  const m = measureCard(found, square(90, 140, 40), 'P4.C1');
+  assert.ok(m.distancePx < 1 && Math.abs(m.size - 1) < 0.05, JSON.stringify(m));
+  assert.equal(edgeRowOf(cls, w, h), 120);
+  assert.equal(findCard(cls, w, h, square(10, 10, 20), 5), null, 'no card there');
+  assert.equal(boxOff([700, 780, 836, 872], [703, 781, 836, 872]), 3);
 });
