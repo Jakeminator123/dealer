@@ -5,15 +5,11 @@
     {
       "id": "lapparna-realtid-storlek",
       "kind": "beslut",
-      "question": "Läpparna i realtid: vilken storlek är hennes, A, B, C eller D?",
-      "leads": "Den du pekar ut blir storleken, och första steget mot realtid på din RunPod byggs med den.",
-      "proof": "paow-realtid-mun-3",
-      "file": "paow-realtid-mun-3-1-stillbild.png",
+      "question": "Läpparna i realtid: vilken är hennes, B, C, E eller F?",
+      "leads": "Den du pekar ut byggs in från början i den egna köraren som sedan läggs på din RunPod.",
+      "proof": "paow-realtid-mun-4",
+      "file": "paow-realtid-mun-4-1-stillbild.png",
       "chips": [
-        {
-          "value": "a",
-          "label": "A"
-        },
         {
           "value": "b",
           "label": "B"
@@ -23,13 +19,17 @@
           "label": "C"
         },
         {
-          "value": "d",
-          "label": "D"
+          "value": "e",
+          "label": "E"
+        },
+        {
+          "value": "f",
+          "label": "F"
         }
       ],
       "asked": "2026-11-17",
       "from": "talbanan",
-      "cost": "RunPod 0,34–0,89 USD per timme; beloppet sägs innan podden startas",
+      "cost": "första provkvällen på din RunPod: högst 5 USD, sägs till innan den startas",
       "answer": null
     },
     {
