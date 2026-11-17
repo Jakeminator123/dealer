@@ -3,66 +3,6 @@
   "about": "What waits for Jakob: one entry per question (kind beslut) or per thing only he can do (kind gora), shown as one card each in the studio's view Beslut (/studio/beslut/, lab only). The list's order is the order of urgency, the most urgent first. An entry: id, kind, question (at most 14 words), leads (one sentence: what his answer leads to), optionally proof (a folder under assets/proofs/) with file, page (an address in the lab, e.g. game.html?table=casino), link (an address outside, shown as text to open on his phone) and cost (free text), chips (two to four {value, label} for beslut, one to four for gora), asked (date), from (the lane that asks) and answer. An agent adds an entry with answer null, changes only its own entries, reads the file right before editing it and keeps the form JSON.stringify gives with two spaces; it closes an entry by taking it out once his answer is carried out, and the commit says what he answered. Only the page writes answer ({value, note, at}, tools/decision-store.ts); no agent sets, changes or clears an answer he has given. The strict reader is tools/decision-register.ts. The repo is public: no secret, personal detail or path of this machine.",
   "decisions": [
     {
-      "id": "lapparna-realtid-storlek",
-      "kind": "beslut",
-      "question": "Läpparna i realtid: vilken är hennes, B, C, E eller F?",
-      "leads": "Den du pekar ut byggs in från början i den egna köraren som sedan läggs på din RunPod.",
-      "proof": "paow-realtid-mun-4",
-      "file": "paow-realtid-mun-4-1-stillbild.png",
-      "chips": [
-        {
-          "value": "b",
-          "label": "B"
-        },
-        {
-          "value": "c",
-          "label": "C"
-        },
-        {
-          "value": "e",
-          "label": "E"
-        },
-        {
-          "value": "f",
-          "label": "F"
-        }
-      ],
-      "asked": "2026-11-17",
-      "from": "talbanan",
-      "cost": "första provkvällen på din RunPod: högst 5 USD, sägs till innan den startas",
-      "answer": null
-    },
-    {
-      "id": "giv-vandning-mall-9",
-      "kind": "beslut",
-      "question": "Vilken vändning menar du: Pamelas eller dagens tagning 2?",
-      "leads": "Den du väljer skrivs in som regeln i varje givbeställning, och nästa provgiv beställs så.",
-      "proof": "pamela-formel",
-      "file": "1-pamelas-vandning-mot-dagens.png",
-      "chips": [
-        {
-          "value": "pamela",
-          "label": "Pamelas (som en nyckel)"
-        },
-        {
-          "value": "tagning2",
-          "label": "Tagning 2 (handflatan upp)"
-        },
-        {
-          "value": "bada",
-          "label": "Båda duger"
-        },
-        {
-          "value": "ingen",
-          "label": "Ingen av dem"
-        }
-      ],
-      "asked": "2026-11-17",
-      "from": "huvudagenten",
-      "cost": "provet kostade cirka 240 krediter",
-      "answer": null
-    },
-    {
       "id": "tatuerade-mindre-hander",
       "kind": "beslut",
       "question": "Tatuerade och mindre händer på dealern?",
