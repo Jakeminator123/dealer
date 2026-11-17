@@ -33,6 +33,32 @@
       "answer": null
     },
     {
+      "id": "giv-vandning-mall-9",
+      "kind": "beslut",
+      "question": "Given med ny text: är vändningen i tagning 2 den du menar?",
+      "leads": "Vid ja blir den vändningen regeln i alla givbeställningar, och nästa prov rättar släpet och det tryckta kortet.",
+      "proof": "bestallning-slap-p4-mall9",
+      "file": "1-tagning-2-vandningen-ruta-for-ruta.png",
+      "chips": [
+        {
+          "value": "ja",
+          "label": "Ja, så ska hon vända"
+        },
+        {
+          "value": "nastan",
+          "label": "Nästan (skriv vad)"
+        },
+        {
+          "value": "nej",
+          "label": "Nej"
+        }
+      ],
+      "asked": "2026-11-17",
+      "from": "huvudagenten",
+      "cost": "provet kostade cirka 240 krediter",
+      "answer": null
+    },
+    {
       "id": "tatuerade-mindre-hander",
       "kind": "beslut",
       "question": "Tatuerade och mindre händer på dealern?",

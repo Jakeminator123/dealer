@@ -3814,6 +3814,13 @@
           "note": "Jakobs egen beställning i Beställ 2026-11-17 (paow-giv-2-2-p4-02, WAN 3, två tagningar, 240 krediter): släp från ankare 2.2 till plats 4 och tillbaka. Ingen av tagningarna gör vändningen rätt: den ena vänder men visar ett tryckt kort, den andra byter färg utan att vändas. Filmerna och ett bildark per tagning."
         },
         {
+          "id": "paow-prov-bestallning-slap-p4-mall9",
+          "role": "prov",
+          "name": "Given till plats 4 med den nya texten",
+          "proof": "bestallning-slap-p4-mall9",
+          "note": "Jakobs giv till plats 4 lagd om 2026-11-17 med mall 9 (paow-giv-2-2-p4-03, WAN 3, två tagningar): i tagning 2 vänder handleden kortet och handen förblir vänd tills det ligger, som han har bett om; kortet får dock en tryckt symbol och lyfts ur skon. Tagning 1 vänder utan handleden. Filmer och bildark."
+        },
+        {
           "id": "paow-prov-keystone-tatuerade-hander",
           "role": "prov",
           "name": "Paows keystone med tatuerade händer",
