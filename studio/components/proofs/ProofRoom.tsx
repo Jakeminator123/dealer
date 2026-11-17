@@ -1,9 +1,10 @@
 "use client";
 
-// <ProofRoom proof={proof} file={name} named={named} onFile={(name) => …} />: one proof open. The film large with its
-// playlist beside it (chapters as marks on the scrub bar, the chapter's name beside the frame count), the pictures in a
-// gallery that opens the viewer, every file by its short name with its verdict chip, the takes the proof names (ProofTakes,
-// one press to Filmer); the rest of a label and the proof's description on demand.
+// <ProofRoom proof={proof} file={name} named={named} notes={notes} onFile={(name) => …} />: one proof open. The film large
+// with its playlist beside it (chapters as marks on the scrub bar, the chapter's name beside the frame count), the pictures
+// in a gallery that opens the viewer, every file by its short name with its review chip where it is a take (lib/verdict.ts),
+// the takes the proof names (ProofTakes, one press to Filmer); the rest of a label and the proof's description on demand.
+// Under the film, under each picture and under the proof's title: Jakob's own word (NoteBar), never in the way of the media.
 import { ChevronDown, Film, Image as ImageIcon } from "lucide-react";
 import { useMemo, useState } from "react";
 import type { Proof } from "../../lib/api.ts";
@@ -14,6 +15,7 @@ import { Fold } from "../review/Fold";
 import { ProofChip } from "../takes";
 import { cn } from "../ui/cn";
 import { ImageViewer } from "./ImageViewer";
+import { NoteBar, type ProofNotes } from "./NoteBar";
 import { ProofStill } from "./ProofStill";
 import { ProofTakes, WaitingLink, type NamedTakes } from "./ProofTakes";
 
@@ -48,7 +50,7 @@ function More({ entry }: { entry: ProofEntry }) {
   );
 }
 
-export function ProofRoom({ proof, file, named, onFile }: { proof: Proof; file: string | null; named: NamedTakes; onFile: (name: string | null) => void }) {
+export function ProofRoom({ proof, file, named, notes, onFile }: { proof: Proof; file: string | null; named: NamedTakes; notes: ProofNotes; onFile: (name: string | null) => void }) {
   const files = useMemo(() => proofFiles(proof), [proof]);
   const { films, pictures } = files;
   const { film, index: viewing } = pickFile(files, file);
@@ -73,6 +75,10 @@ export function ProofRoom({ proof, file, named, onFile }: { proof: Proof; file: 
             {proof.description}
           </Fold>
         ) : null}
+        <div className="mt-1 flex flex-wrap items-start gap-x-3 gap-y-1">
+          <span className="pt-1 text-2xs font-medium text-faint">Om hela provet</span>
+          <NoteBar notes={notes} proof={proof.id} file={null} className="min-w-0 flex-1" />
+        </div>
         <WaitingLink proof={proof} named={named} />
       </div>
 
@@ -94,6 +100,7 @@ export function ProofRoom({ proof, file, named, onFile }: { proof: Proof; file: 
             <div className="flex min-w-0 flex-col gap-1 px-1">
               <FileName entry={film} size="md" />
               <More key={film.file.name} entry={film} />
+              <NoteBar key={`note-${film.file.name}`} notes={notes} proof={proof.id} file={film.file.name} className="mt-1" />
             </div>
           </div>
           {films.length > 1 ? (
@@ -149,8 +156,9 @@ export function ProofRoom({ proof, file, named, onFile }: { proof: Proof; file: 
                   >
                     <ProofStill cover={{ kind: "image", path: p.file.path }} fit="contain" className="aspect-[16/10] transition-transform duration-300 group-hover:scale-[1.015]" />
                   </button>
-                  <figcaption className="px-0.5">
+                  <figcaption className="flex flex-col gap-1.5 px-0.5">
                     <FileName entry={p} />
+                    <NoteBar notes={notes} proof={proof.id} file={p.file.name} />
                   </figcaption>
                 </figure>
               </li>

@@ -102,9 +102,13 @@ const PROOF_TONE: Record<ProofVerdict, { tone: Tone; sign: string }> = {
   unreviewed: { tone: "vantar", sign: "○" },
 };
 
-/** A proof file's verdict (lib/verdict.ts proofVerdict): Användbar ✓ · Med anmärkningar ! · Underkänd ✕ · Inte granskad ○. */
+/**
+ * A take's review in a proof (lib/verdict.ts proofVerdict): Användbar ✓ · Med anmärkningar ! · Underkänd ✕, a reviewer's;
+ * Väntar på granskare ○, dashed: the reviewer's work, not Jakob's. Underlag carries no chip.
+ */
 export function ProofChip({ verdict, size = "md", className }: { verdict: ProofVerdict; size?: "sm" | "md"; className?: string }) {
   const { tone, sign } = PROOF_TONE[verdict];
   const label = PROOF_VERDICT_LABEL[verdict];
-  return <Chip tone={tone} sign={sign} label={label} solid size={size} title={label} className={className} />;
+  const waiting = verdict === "unreviewed";
+  return <Chip tone={tone} sign={sign} label={label} solid={!waiting} size={size} title={waiting ? "En granskare har inte sett den än. Det är inte ditt jobb; säg gärna vad du tycker." : label} className={className} />;
 }

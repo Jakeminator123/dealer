@@ -1,14 +1,17 @@
 "use client";
 
-// <ProofGrid proofs={list} named={named} />: the proof folders newest first as cards (a still, the title, how many films
-// and pictures, the files' verdicts counted, how many takes it names wait for Jakob), a search field, and a last line to
+// <ProofGrid proofs={list} named={named} notes={notes} />: the proof folders newest first as cards (a still, the title, how
+// many films and pictures, the takes' verdicts counted (lib/verdict.ts: underlag is not counted), how many places Jakob has
+// said something about, how many takes it names wait for Jakob), a search field, and a last line to
 // the proof Filmbiblioteket (V6 and the older films) when it is there.
-import { ArrowRight, Film, Search } from "lucide-react";
+import { ArrowRight, Film, MessageSquare, Search } from "lucide-react";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import type { Proof } from "../../lib/api.ts";
 import { countLine, coverOf, matchProof, proofDay, proofHref, proofTitle, sortProofs, verdictTally } from "../../lib/proofs.ts";
 import { PROOF_VERDICT_LABEL, splitLabel, type ProofVerdict } from "../../lib/verdict.ts";
+import { notesOn, type ShownNote } from "../../lib/proof-notes.ts";
+import { isSnapshot } from "../../lib/mode.ts";
 import { EmptyState, TextField, cn } from "../ui";
 import { ProofStill } from "./ProofStill";
 import { waitingIn, type NamedTakes } from "./ProofTakes";
@@ -20,10 +23,10 @@ const TALLY: { verdict: ProofVerdict; sign: string; tone: string }[] = [
   { verdict: "ok", sign: "✓", tone: "text-[#6cc595]" },
   { verdict: "remarks", sign: "!", tone: "text-[#f0b07a]" },
   { verdict: "failed", sign: "✕", tone: "text-[#ef8b8b]" },
-  { verdict: "unreviewed", sign: "○", tone: "text-vantar" },
+  { verdict: "unreviewed", sign: "○", tone: "text-faint" },
 ];
 
-function ProofCard({ proof, waiting }: { proof: Proof; waiting: number }) {
+function ProofCard({ proof, waiting, said }: { proof: Proof; waiting: number; said: number }) {
   const cover = coverOf(proof);
   const films = proof.files.filter((f) => f.kind === "video").length;
   const tally = verdictTally(proof);
@@ -54,6 +57,11 @@ function ProofCard({ proof, waiting }: { proof: Proof; waiting: number }) {
         <span className="mt-auto flex items-center gap-2 text-xs text-faint">
           <span className="truncate">{[countLine(proof), day].filter(Boolean).join(" · ")}</span>
           <span className="ml-auto flex shrink-0 items-center gap-2">
+            {said ? (
+              <span title={`${isSnapshot ? "Jakob har" : "Du har"} sagt något om ${said === 1 ? "en sak" : `${said} saker`} i provet`} className="inline-flex items-center gap-0.5 font-medium tabular-nums text-brass-hi [&_svg]:size-3">
+                <MessageSquare /> {said}
+              </span>
+            ) : null}
             {TALLY.filter((t) => tally[t.verdict]).map((t) => (
               <span key={t.verdict} title={`${PROOF_VERDICT_LABEL[t.verdict]}: ${tally[t.verdict]}`} className={cn("font-medium tabular-nums", t.tone)}>
                 {t.sign} {tally[t.verdict]}
@@ -66,7 +74,7 @@ function ProofCard({ proof, waiting }: { proof: Proof; waiting: number }) {
   );
 }
 
-export function ProofGrid({ proofs, named }: { proofs: readonly Proof[]; named: NamedTakes }) {
+export function ProofGrid({ proofs, named, notes }: { proofs: readonly Proof[]; named: NamedTakes; notes: readonly ShownNote[] }) {
   const [query, setQuery] = useState("");
   const sorted = useMemo(() => sortProofs(proofs), [proofs]);
   const shown = useMemo(() => sorted.filter((p) => matchProof(p, query)), [sorted, query]);
@@ -87,7 +95,7 @@ export function ProofGrid({ proofs, named }: { proofs: readonly Proof[]; named: 
         <ul className="grid grid-cols-[repeat(auto-fill,minmax(260px,1fr))] gap-4">
           {shown.map((p) => (
             <li key={p.id}>
-              <ProofCard proof={p} waiting={waitingIn(p, named)} />
+              <ProofCard proof={p} waiting={waitingIn(p, named)} said={notesOn(notes, p.id)} />
             </li>
           ))}
         </ul>

@@ -753,10 +753,17 @@ IDLE>READY | READY>P1.C1 | P1.C1>READY | READY>D.C1 | D.C1>READY | READY>P1.C2 |
   `assets/tracking/<klipp>/` samt mp4, png och json under `assets/proofs/`. För 3D-scenen (`scene3d.html`) lämnas three.js ut som `/vendor/three.module.js` och `/vendor/three.core.js` ur det låsta beroendet
   `three`, inget annat ur `node_modules`. Vyn Prov (`/studio/prov/?prov=<mapp>`) är granskningsrummet för provmapparna:
   senast ändrade mapp först och sökbar lista, filmen stor med spellista, bilderna i ett galleri med visare. `proof.json`
-  får bära `title`, `description`, `labels`, `chapters` och `verdicts` (per fil: `ok`, `remarks`, `failed` eller
-  `unreviewed`). En etikett skrivs som ett kort namn följt av allt annat (delas vid första parentes, punkt eller kolon):
-  listan visar namnet och en omdömesbricka, resten visas för den valda filen; saknas `verdicts` läses brickan ur
-  etikettens ord (inte användbar, användbar med, bara mätt, användbar). Publika sidan saknar underlaget och visar "finns
+  får bära `title`, `description`, `labels`, `chapters`, `verdicts` (per fil: `ok`, `remarks`, `failed` eller
+  `unreviewed`) och `takes`: listan över provets tagningar, de filer som är en gjord film eller bild som kan användas;
+  allt annat (det som skickades, referenser, mätark, en titt på en sida) är underlag. Bara en tagning bär en
+  omdömesbricka: granskarens (Användbar, Med anmärkningar, Underkänd), annars "Väntar på granskare", streckad, som
+  är granskarens arbete och aldrig Jakobs. Underlag bär ingen bricka, och ett prov utan `takes` räknar bara de filer en
+  granskare har dömt som tagningar (`proofVerdict` i `studio/lib/verdict.ts`). Ett nytt prov skriver `takes` från
+  början. En etikett skrivs som ett kort namn följt av allt annat (delas vid första parentes, punkt eller kolon):
+  listan visar namnet och brickan, resten visas för den valda filen; saknas `verdicts` (eller står `unreviewed`) läses
+  brickan ur etikettens ord (inte användbar, användbar med, bara mätt, användbar, och granskarens ord först i en
+  parentes: "(faller, …", "(håller, …", "(möjlig variant, …"). Under varje film och bild, och under provets titel,
+  säger Jakob Bra eller Inte bra och kommenterar (`data/proof-notes.json`, se README, Register). Publika sidan saknar underlaget och visar "finns
   bara lokalt".
 
 ## Återbruk och införande

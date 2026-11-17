@@ -4,7 +4,7 @@ import assert from "node:assert/strict";
 import { buildGraph, type BankData, type BankJob } from "../../src/clip-graph.ts";
 import { DECISIONS, NOTE_LIMIT as STORE_LIMIT, applyChange, applyProvisional } from "../../tools/review-store.ts";
 import { NOTE_LIMIT, type Decision } from "../lib/api.ts";
-import { SAID_WITHOUT_NOTE, awaitingJakob, chosenDecision, judgedForJakob, primarCount, proofVerdict, provisionalChip, provisionalOf, provisionalWords, reviewStamp, splitLabel, storedNote, verdictOf, verdictPhrase } from "../lib/verdict.ts";
+import { PROOF_VERDICT_LABEL, SAID_WITHOUT_NOTE, awaitingJakob, chosenDecision, judgedForJakob, primarCount, proofVerdict, provisionalChip, provisionalOf, provisionalWords, reviewStamp, splitLabel, storedNote, verdictOf, verdictPhrase } from "../lib/verdict.ts";
 
 type R = Record<string, unknown>;
 const take = (review: R | null, extra: R = {}) => ({
@@ -93,11 +93,37 @@ test("proof files: stated verdict first, then the label's words", () => {
   const proof = { labels: { "a.mp4": "Hemvy (användbar med anmärkning: kanten)", "b.mp4": "Titta runt · inte användbar", "c.png": "Bara mätt, inte granskad", "d.mp4": "Godkänd hemvy" }, verdicts: { "e.mp4": "ok", "f.mp4": "nonsense" } };
   assert.equal(proofVerdict(proof, "a.mp4"), "remarks");
   assert.equal(proofVerdict(proof, "b.mp4"), "failed");
-  assert.equal(proofVerdict(proof, "c.png"), "unreviewed");
+  assert.equal(proofVerdict(proof, "c.png"), null, "without a takes list, a file nobody judged is underlag: no chip");
   assert.equal(proofVerdict(proof, "d.mp4"), "ok");
   assert.equal(proofVerdict(proof, "e.mp4"), "ok");
   assert.equal(proofVerdict(proof, "f.mp4"), null);
   assert.equal(proofVerdict({ labels: null, verdicts: null }, "x.mp4"), null);
+  assert.equal(proofVerdict({ labels: null, verdicts: { "x.png": "unreviewed" } }, "x.png"), null, "a stated unreviewed on underlag says nothing");
+});
+
+test("proof files: a takes list says which files carry a chip; a take nobody judged waits for a reviewer", () => {
+  const proof = {
+    labels: { "a.mp4": "Plats 4 (användbar)", "ark.png": "Kontaktark, användbar", "ref.mp4": "Referensfilmen" },
+    verdicts: { "b.mp4": "failed", "c.mp4": "unreviewed" },
+    takes: ["a.mp4", "b.mp4", "c.mp4", "d.png"],
+  };
+  assert.equal(proofVerdict(proof, "a.mp4"), "ok");
+  assert.equal(proofVerdict(proof, "b.mp4"), "failed");
+  assert.equal(proofVerdict(proof, "c.mp4"), "unreviewed");
+  assert.equal(proofVerdict(proof, "d.png"), "unreviewed", "a take with nothing said waits for a reviewer");
+  assert.equal(proofVerdict(proof, "ark.png"), null, "not in the list: underlag, whatever its label says");
+  assert.equal(proofVerdict(proof, "ref.mp4"), null);
+  const words = {
+    labels: { "f.mp4": "Paow · B tagning 1 (faller, 1/5: vänt vid skon)", "h.mp4": "Paow · C2 (håller, 4/5: en vändning)", "v.mp4": "Paow · E (möjlig variant, 3/5: rätt storlek)", "n.mp4": "Handen håller kortet hela vägen" },
+    verdicts: { "h.mp4": "unreviewed" },
+    takes: ["f.mp4", "h.mp4", "v.mp4", "n.mp4"],
+  };
+  assert.deepEqual(["f.mp4", "h.mp4", "v.mp4", "n.mp4"].map((f) => proofVerdict(words, f)), ["failed", "ok", "remarks", "unreviewed"], "a reviewer's word first in a parenthesis (over a stated unreviewed), not the same word in a sentence");
+  assert.equal(PROOF_VERDICT_LABEL.unreviewed, "Väntar på granskare");
+  assert.doesNotMatch(Object.values(PROOF_VERDICT_LABEL).join(" "), /Inte granskad/);
+});
+
+test("proof labels split into a short name and the rest", () => {
   assert.deepEqual(splitLabel("Titta runt · 3D-salong (exakt)"), { name: "Titta runt · 3D-salong", rest: "(exakt)" });
   assert.deepEqual(splitLabel("Hemvy. Kameran står still"), { name: "Hemvy. Kameran står still", rest: "" });
   assert.deepEqual(splitLabel("Hemvy salong. Kameran står still"), { name: "Hemvy salong", rest: "Kameran står still" });

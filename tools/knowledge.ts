@@ -267,7 +267,7 @@ export function proofSections(proofs: readonly Proof[], onSite: ReadonlySet<stri
     if (TRAILER.test(`${p.id} ${p.title ?? ''}`) || blockedName(JSON.stringify(p), release)) { count(removed, 'avsnitt'); continue; }
     const title = cleanPlain(p.title?.trim() || p.id, release, removed) || p.id;
     const tally: Partial<Record<ProofVerdict, number>> = {};
-    for (const f of p.files) { const v = proofVerdict(p, f.name) ?? 'unreviewed'; tally[v] = (tally[v] ?? 0) + 1; }
+    for (const f of p.files) { const v = proofVerdict(p, f.name); if (v) tally[v] = (tally[v] ?? 0) + 1; }
     const verdicts = Object.entries(tally).map(([v, n]) => `${n} ${PROOF_VERDICT_LABEL[v as ProofVerdict].toLowerCase()}`).join(', ');
     const films = p.files.filter(f => f.kind === 'video').length, pictures = p.files.length - films;
     const description = cleanPlain(p.description ?? '', release, removed);

@@ -76,14 +76,14 @@ export const unwrap = (rest: string): string => {
   return depth === 0 ? inner.trim() : t;
 };
 
-const entry = (proof: Pick<Proof, "labels" | "verdicts">, file: ProofFile): ProofEntry => {
+const entry = (proof: Pick<Proof, "labels" | "verdicts"> & { takes?: Proof["takes"] }, file: ProofFile): ProofEntry => {
   const label = proofLabel(proof, file.name);
   const { name, rest } = splitLabel(label);
   return { file, label, name, rest: unwrap(rest), verdict: proofVerdict(proof, file.name) };
 };
 
 /** Films in the order the proof's labels name them (unnamed ones after, as listed); pictures as listed. */
-export function proofFiles(proof: Pick<Proof, "labels" | "verdicts" | "files">): { films: ProofEntry[]; pictures: ProofEntry[] } {
+export function proofFiles(proof: Pick<Proof, "labels" | "verdicts" | "files"> & { takes?: Proof["takes"] }): { films: ProofEntry[]; pictures: ProofEntry[] } {
   const order = Object.keys(proof.labels ?? {});
   const rank = (name: string) => order.indexOf(name) + 1 || order.length + 1;
   const films = proof.files.filter((f) => f.kind === "video").map((f, i) => ({ f, i })).sort((a, b) => rank(a.f.name) - rank(b.f.name) || a.i - b.i);
@@ -104,7 +104,7 @@ export function countLine(proof: Pick<Proof, "files">): string {
 export const proofDay = (proof: Pick<Proof, "updatedAt">): string | null => formatDay(proof.updatedAt);
 
 /** How many of its files have each verdict (files without one are not counted). */
-export function verdictTally(proof: Pick<Proof, "labels" | "verdicts" | "files">): Record<ProofVerdict, number> {
+export function verdictTally(proof: Pick<Proof, "labels" | "verdicts" | "files"> & { takes?: Proof["takes"] }): Record<ProofVerdict, number> {
   const tally: Record<ProofVerdict, number> = { ok: 0, remarks: 0, failed: 0, unreviewed: 0 };
   for (const f of proof.files) {
     const v = proofVerdict(proof, f.name);

@@ -25,7 +25,8 @@ för servern och för svaret i [`AGENTS.md`](../../../AGENTS.md), "Labbservern" 
 6. **Det som väntar på hans svar är ett kort i Beslut,** en post i `data/decisions.json` med en kort fråga (högst 14 ord) och
    en bild ur ett prov (`proof`, `file`); agenter lägger till och tar bort poster, bara sidan skriver hans svar (README, Register;
    reglerna i huvudet på `tools/decision-register.ts`). Läs hans svar och anteckningar där innan du svarar honom, och ta ut kortet när det är
-   utfört.
+   utfört. Hans ord i Prov (Bra, Inte bra, kommentarer) läses med `node tools/proof-notes.ts` före svaret och besvaras
+   med `--answer` eller markeras med `--read` (README, Register).
 7. **Prov och effekter först i labbet;** spelet (`game.html`) får bara det han har godkänt där (HANDOFF, "Jakobs besked
    som gäller", Labbet först).
 8. **En headless-titt är inte hans skärm.** Sidorna ses under det delade låset med `node tools/lab-look.ts`; ett fel på

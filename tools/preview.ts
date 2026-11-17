@@ -8,6 +8,7 @@ import path from 'node:path';
 import {placementStore,StoreError} from './placement-store.ts';
 import {reviewStore} from './review-store.ts';
 import {decisionStore,ANSWER_BYTES} from './decision-store.ts';
+import {proofNotesStore,NOTE_BYTES} from './proof-notes-store.ts';
 import {lipsyncAnswer} from './lipsync-store.ts';
 import {scenePresetStore} from './scene-preset-store.ts';
 import {PRESET_BYTES} from '../studio/lib/scene-presets.ts';
@@ -86,7 +87,7 @@ if(has('--restart')){
  // build of the online copy reads too (tools/build-studio-snapshot.ts), so that the copy serves exactly what this server serves.
  // Table props made by tools/prop-glb.ts: assets/props/<id>.glb, and only where the file really lies in that folder.
  const propFile=async(file:string)=>{const m=/^assets\/props\/([a-z0-9]+(?:-[a-z0-9]+)*\.glb)$/.exec(file);if(!m)return false;try{return await realpath(file)===path.join(await realpath('assets/props'),m[1]);}catch{return false;}};
- const placements=placementStore(process.cwd()),reviews=reviewStore(process.cwd()),presets=scenePresetStore(process.cwd()),media=mediaRoles(process.cwd()),decisions=decisionStore(process.cwd());
+ const placements=placementStore(process.cwd()),reviews=reviewStore(process.cwd()),presets=scenePresetStore(process.cwd()),media=mediaRoles(process.cwd()),decisions=decisionStore(process.cwd()),proofNotes=proofNotesStore(process.cwd());
  const library=async()=>{try{const data=JSON.parse(await readFile('data/library.json','utf8'));data.items=await Promise.all(data.items.filter((item:{path:string})=>typeof item.path==='string'&&/^(assets\/|output\/v6\/)/.test(item.path)&&path.posix.normalize(item.path)===item.path&&!item.path.includes('\\')&&item.path.endsWith('.mp4')).map(async(item:{motionRef?:string})=>{if(item.motionRef&&/^motions\/[a-z0-9-]+\.json$/.test(item.motionRef)){try{const motion=JSON.parse(await readFile(item.motionRef,'utf8'));return {...item,reviewDecision:motion.review?.decision??'PENDING'};}catch{return {...item,reviewDecision:'UNKNOWN'};}}return item;}));return data;}catch{return {schemaVersion:1,items:[]};}};
  // Read-only clip bank for the lab: the tracked jobs and review decisions plus a fixed, non-secret
  // projection of each local receipt. Task ids, balances and credentials never leave this process.
@@ -116,13 +117,15 @@ if(has('--restart')){
  // Mouth patches (src/speech-patch.ts): assets/speech/<dealer>/patches/<id>/ with patch.json, mouth.webp or mouth.png and line.wav, and only where the file really lies there.
  const patchMedia=/^assets\/speech\/([a-z0-9]+(?:-[a-z0-9]+)*)\/patches\/([a-z0-9]+(?:-[a-z0-9]+)*)\/(patch\.json|mouth\.webp|mouth\.png|line\.wav)$/;
  const patchFile=async(file:string)=>{const m=patchMedia.exec(file);if(!m)return false;try{return await realpath(file)===path.join(await realpath('assets/speech'),m[1],'patches',m[2],m[3]);}catch{return false;}};
+ // A proof's takes (proof.json takes): the files it names as produced films or pictures that may be used; the rest is underlag.
+ const proofTakes=(value:unknown)=>Array.isArray(value)?value.filter((name):name is string=>typeof name==='string'&&/^[a-z0-9][a-z0-9._-]*\.(?:mp4|png|jpg)$/.test(name)):null;
  const proofs=async()=>{
   const list:unknown[]=[];
   for(const dir of await readdir('assets/proofs',{withFileTypes:true}).catch(()=>[])){
    if(!dir.isDirectory()||!clipId.test(dir.name))continue;
    const base=`assets/proofs/${dir.name}`,info=await readJson(`${base}/proof.json`),files:unknown[]=[];let changed=0;
    for(const entry of await readdir(base,{withFileTypes:true}).catch(()=>[])){const file=`${base}/${entry.name}`;if(entry.isFile()&&/\.(?:mp4|png|jpg)$/.test(entry.name)&&await proofPath(file)){const s=await stat(file);changed=Math.max(changed,s.mtimeMs);files.push({name:entry.name,path:file,kind:entry.name.endsWith('.mp4')?'video':'image',bytes:s.size});}}
-   list.push({id:dir.name,title:typeof info?.title==='string'?info.title:null,description:typeof info?.description==='string'?info.description:null,labels:info?.labels&&typeof info.labels==='object'?info.labels:null,verdicts:info?.verdicts&&typeof info.verdicts==='object'?info.verdicts:null,updatedAt:Math.round(changed)||null,chapters:Array.isArray(info?.chapters)?info.chapters:null,fps:Number(info?.film?.fps)||30,files});
+   list.push({id:dir.name,title:typeof info?.title==='string'?info.title:null,description:typeof info?.description==='string'?info.description:null,labels:info?.labels&&typeof info.labels==='object'?info.labels:null,verdicts:info?.verdicts&&typeof info.verdicts==='object'?info.verdicts:null,takes:proofTakes(info?.takes),updatedAt:Math.round(changed)||null,chapters:Array.isArray(info?.chapters)?info.chapters:null,fps:Number(info?.film?.fps)||30,files});
   }
   return {schemaVersion:1,proofs:list};
  };
@@ -258,6 +261,21 @@ if(has('--restart')){
     return;
    }
    if(url.pathname==='/api/proofs'&&req.method==='GET'){res.setHeader('Content-Type','application/json; charset=utf-8');res.end(JSON.stringify(await proofs()));return;}
+   // Jakob's own word on the proofs (data/proof-notes.json, tools/proof-notes-store.ts) for Granska, part Prov. Any page
+   // reads it; his word is written from this lab only, one note at a time, against that note's revision.
+   if(url.pathname==='/api/proof-notes'){
+    res.setHeader('Content-Type','application/json; charset=utf-8');
+    try{
+     if(req.method==='GET'){res.end(JSON.stringify(await proofNotes.answer()));return;}
+     if(req.method!=='PUT'){res.writeHead(405).end();return;}
+     if(req.headers.origin!==origin){res.writeHead(403).end(JSON.stringify({error:'Skriv från det lokala labbet.'}));return;}
+     if(!req.headers['content-type']?.startsWith('application/json')){res.writeHead(415).end(JSON.stringify({error:'JSON krävs.'}));return;}
+     if(Number(req.headers['content-length']??0)>NOTE_BYTES){res.writeHead(413).end(JSON.stringify({error:'Texten är för lång.'}));return;}
+     let size=0;const chunks:Buffer[]=[];for await(const chunk of req){size+=chunk.length;if(size>NOTE_BYTES)throw new StoreError(413,'Texten är för lång.');chunks.push(chunk);}
+     let body:unknown;try{body=JSON.parse(Buffer.concat(chunks).toString('utf8'));}catch{throw new StoreError(400,'Ordet är inte giltig JSON.');}
+     res.end(JSON.stringify(await proofNotes.save(body,typeof req.headers['if-match']==='string'?req.headers['if-match']:undefined)));
+    }catch(error){res.writeHead(error instanceof StoreError?error.status:400).end(JSON.stringify({error:(error as Error).message}));}return;
+   }
    // What waits for Jakob (data/decisions.json, tools/decision-store.ts) for the studio's view Beslut. Any page of the lab
    // reads it; his answer is written from this lab only, to the answer block of one entry, against that entry's revision.
    if(url.pathname==='/api/decisions'||url.pathname.startsWith('/api/decisions/')){

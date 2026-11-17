@@ -16,6 +16,7 @@ import { GranskaFrame, replaceParams } from "../review/GranskaFrame";
 import { EmptyState, ErrorState, Skeleton, buttonClasses } from "../ui";
 import { ProofGrid } from "./ProofGrid";
 import { ProofRoom } from "./ProofRoom";
+import { useProofNotes } from "./NoteBar";
 import { useNamedTakes } from "./ProofTakes";
 
 type State = { status: "loading" } | { status: "ready"; proofs: Proof[] } | { status: "error"; error: ApiError };
@@ -26,6 +27,7 @@ export function ProofsView() {
   const file = params.get("fil");
   const [state, setState] = useState<State>({ status: "loading" });
   const named = useNamedTakes();
+  const notes = useProofNotes();
 
   const read = useCallback(async () => {
     try {
@@ -71,7 +73,7 @@ export function ProofsView() {
   if (!id)
     return (
       <GranskaFrame part="prov" status={`${state.proofs.length} prov`}>
-        {state.proofs.length ? <ProofGrid proofs={state.proofs} named={named} /> : <EmptyState title="Inga prov ännu">Prov läggs under assets/proofs/.</EmptyState>}
+        {state.proofs.length ? <ProofGrid proofs={state.proofs} named={named} notes={notes.notes} /> : <EmptyState title="Inga prov ännu">Prov läggs under assets/proofs/.</EmptyState>}
       </GranskaFrame>
     );
 
@@ -87,7 +89,7 @@ export function ProofsView() {
 
   return (
     <GranskaFrame part="prov" status={splitLabel(proofTitle(proof)).name} actions={back}>
-      <ProofRoom key={proof.id} proof={proof} file={file} named={named} onFile={(name) => replaceParams({ fil: name })} />
+      <ProofRoom key={proof.id} proof={proof} file={file} named={named} notes={notes} onFile={(name) => replaceParams({ fil: name })} />
     </GranskaFrame>
   );
 }

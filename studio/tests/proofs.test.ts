@@ -11,7 +11,7 @@ import { PROOFS_HREF, chapterAt, chaptersOf, countLine, coverOf, formatBytes, fr
 import { partOf } from "../lib/review.ts";
 
 const file = (name: string, bytes = 1258291) => ({ name, path: `assets/proofs/x/${name}`, kind: (name.endsWith(".mp4") ? "video" : "image") as "video" | "image", bytes });
-const proof = (extra: Partial<Proof> = {}): Proof => ({ id: "x", title: null, description: null, labels: null, verdicts: null, updatedAt: null, chapters: null, fps: 30, files: [], ...extra });
+const proof = (extra: Partial<Proof> = {}): Proof => ({ id: "x", title: null, description: null, labels: null, verdicts: null, takes: null, updatedAt: null, chapters: null, fps: 30, files: [], ...extra });
 
 test("newest first, and the title falls back to the folder", () => {
   const list = [proof({ id: "b", updatedAt: 10 }), proof({ id: "a", updatedAt: 30 }), proof({ id: "c", updatedAt: null }), proof({ id: "d", updatedAt: 30 })];

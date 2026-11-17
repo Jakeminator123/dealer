@@ -42,7 +42,7 @@ test("Jämför: the film and the pair", () => {
 });
 
 test("Prov: the proof's title and the file's short name", () => {
-  const proofs = [{ id: "v6-referens", title: "V6-referens", description: null, labels: { "kortstorlek.png": "Kortstorlek (mätt mot bordet)" }, verdicts: null, updatedAt: 0, chapters: null, fps: 30, files: [{ name: "kortstorlek.png", path: "x", kind: "image", bytes: 1 }] }] as Proof[];
+  const proofs = [{ id: "v6-referens", title: "V6-referens", description: null, labels: { "kortstorlek.png": "Kortstorlek (mätt mot bordet)" }, verdicts: null, takes: null, updatedAt: 0, chapters: null, fps: 30, files: [{ name: "kortstorlek.png", path: "x", kind: "image", bytes: 1 }] }] as Proof[];
   assert.deepEqual(describeProv(proofs, q("prov=v6-referens&fil=kortstorlek.png")), { prov: "V6-referens", fil: "Kortstorlek" });
   assert.deepEqual(describeProv(null, q("prov=v6-referens")), { prov: "v6-referens" });
   assert.deepEqual(describeProv(proofs, q("")), {});

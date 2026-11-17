@@ -37,7 +37,7 @@ import {buildGraph, resolveRound, roundSequence, type BankData, type Graph} from
 import {judgedBank} from '../src/game-director.ts';
 import {SCRIPTS, VENDOR, SCENE_FILES, PAGES, forBrowser} from './lab-routes.ts';
 import {STUDIO_TYPES} from './studio-files.ts';
-import {readRelease, releaseDealers, gameTakes, pickTakes, freezeBank, pickProofs, graphShape, roundShape, scrub, findLeaks, findTextLeaks, blockedPath, safeRelative, prefetchAlias, objectName, namedAssets, engineSource, forEngine, copyGamePage, ENGINE_ENTRY, MEDIA_TYPES, type Proof, type Left, type Picked} from './studio-freeze.ts';
+import {readRelease, releaseDealers, gameTakes, pickTakes, freezeBank, pickProofs, pickNotes, graphShape, roundShape, scrub, findLeaks, findTextLeaks, blockedPath, safeRelative, prefetchAlias, objectName, namedAssets, engineSource, forEngine, copyGamePage, ENGINE_ENTRY, MEDIA_TYPES, type Proof, type Left, type Picked} from './studio-freeze.ts';
 import {PRESET_NAME} from '../studio/lib/scene-presets.ts';
 import type {MediaMap} from '../cloud/studio/gate.ts';
 import {buildKnowledge, BOT_FUNCTION_FILES} from './build-knowledge.ts';
@@ -375,7 +375,7 @@ for (const name of asked) {
   if (name.startsWith('data/') && !(name in dataFiles)) {
     if (/^data\/(?:scene-[a-z-]+|props)\.json$/.test(name) && await localFile(name)) dataFiles[name] = await frozenJson(name);
     else notInCopy.push(name);
-  } else if (name.startsWith('api/') && !['api/clip-bank', 'api/proofs', 'api/placements', 'api/library', ...(release.presets ? ['api/scene-presets'] : [])].includes(name.replace(/\?.*$/, '')) && !isBotPath(`/${name.replace(/\?.*$/, '')}`)) notInCopy.push(name);
+  } else if (name.startsWith('api/') && !['api/clip-bank', 'api/proofs', 'api/proof-notes', 'api/placements', 'api/library', ...(release.presets ? ['api/scene-presets'] : [])].includes(name.replace(/\?.*$/, '')) && !isBotPath(`/${name.replace(/\?.*$/, '')}`)) notInCopy.push(name);
 }
 
 // ── The frozen answers of the read routes ───────────────────────────────────
@@ -383,6 +383,8 @@ const placements = scrub(JSON.parse((await lab('/api/placements')).toString('utf
 const answers: Record<string, unknown> = {
   'api/clip-bank.json': frozenBank,
   'api/proofs.json': {schemaVersion: 1, proofs: proofs.proofs},
+  // Jakob's word on the proofs that go up (shown, never written, in the copy).
+  'api/proof-notes.json': pickNotes(JSON.parse((await lab('/api/proof-notes')).toString('utf8')), proofs.proofs),
   'api/placements.json': placements,
   'api/library.json': release.library ? scrub(JSON.parse((await lab('/api/library')).toString('utf8')), release) : {schemaVersion: 1, items: []},
   ...presetAnswers,
@@ -488,7 +490,73 @@ const config = {
     {src: '^/$', status: 308, headers: {Location: '/studio/'}},
     {src: '^/studio$', status: 308, headers: {Location: '/studio/'}},
     {src: '^/lab\\.html$', status: 308, headers: {Location: '/studio/'}},
-    {src: '^/api/(clip-bank|proofs|placements|library)$', dest: '/api/$1.json'},
+    {src: '^/api/(clip-bank|proofs|proof-notes|placements|library)
+    // The scene's presets: the list, and one by name as the game page asks for it (api/scene-presets/<name>).
+    {src: '^/api/scene-presets/?$', dest: '/api/scene-presets.json'},
+    {src: '^/api/scene-presets/([a-z0-9]+(?:-[a-z0-9]+)*)$', dest: '/api/scene-presets/$1.json'},
+    // The bot's one function answers the draft and the inbox too (cloud/studio/bot.ts routeOf reads ?vag=…).
+    {src: '^/api/utkast/?$', dest: '/api/bot?vag=utkast'},
+    {src: '^/api/onskemal(?:/([^/]+?)(/bild)?)?/?$', dest: '/api/bot?vag=onskemal&id=$1&del=$2'},
+    {src: '^/studio/((?:[^/]+/)*)$', dest: '/studio/$1index.html'},
+    {handle: 'filesystem'},
+    {src: '^/studio/((?:[^/.]+/)*[^/.]+)$', status: 308, headers: {Location: '/studio/$1/'}},
+    {src: '^/(.*)$', status: 404, dest: '/404.html'},
+  ],
+};
+await writeFile(path.join(output, 'config.json'), JSON.stringify(config, null, 2));
+await writeFile(path.join(deploy, 'package.json'), JSON.stringify({private: true, name: 'dealer-studio-output', version: '1.0.0'}));
+await writeFile(path.join(deploy, 'vercel.json'), JSON.stringify({framework: null, buildCommand: null, installCommand: null}, null, 2));
+
+// The input must not have changed while the copy was made (Jakob may click in the lab meanwhile). Of the proofs only the
+// ones that go up count: other agents add proofs of their own all the time.
+const bankAfter = await bankRead();
+const proofsAfter = pickProofs((JSON.parse((await lab('/api/proofs')).toString('utf8')) as {proofs: Proof[]}).proofs, raw, release).proofs;
+if (bankAfter !== bankText || json(proofsAfter) !== json(proofs.proofs)) {
+  await rm(output, {recursive: true, force: true});
+  throw Error(`${bankAfter !== bankText ? 'Klippbanken' : 'Ett av proven'} ändrades medan kopian byggdes. Bygg om.`);
+}
+const staticBytes = written.reduce((sum, w) => sum + w.bytes, 0), blobBytes = [...blob.values()].reduce((sum, f) => sum + f.bytes, 0);
+if (staticBytes > release.limits.staticBytes) throw Error(`De statiska filerna väger ${MB(staticBytes)} MB, över gränsen ${MB(release.limits.staticBytes)} MB.`);
+if (blobBytes > release.limits.blobBytes) throw Error(`Filerna till Blob väger ${MB(blobBytes)} MB, över gränsen ${MB(release.limits.blobBytes)} MB.`);
+const missing = Object.values(media).filter(m => !m.url).length;
+const plan = [...blob.values()].map(({path: p, sha256, bytes, type, object, group}) => ({path: p, sha256, bytes, type, object, group}));
+// A trial's plan says so: tools/sync-studio-media.ts uploads nothing from it.
+await writeFile(path.join(deploy, 'media-plan.json'), JSON.stringify({schemaVersion: 1, builtAt: meta.builtAt, sourceCommit, ...(trial ? {trial: true} : {}), files: plan}, null, 2));
+const perDealer = Object.fromEntries([...parts].map(([dealer, p]) => [dealer, {takes: p.picked.length, groups: p.picked.reduce((m: Record<string, number>, t) => (m[t.group] = (m[t.group] ?? 0) + 1, m), {}), game: p.game.size,
+  roundGaps: p.round.filter(s => !s.video).map(s => s.id)}]));
+await writeFile(path.join(deploy, 'build.json'), JSON.stringify({builtAt: meta.builtAt, sourceCommit, sourceDirty, from: {checkout: root, home, lab: LAB}, trial, codeLeaks, bankSha256: digest(bankText), proofsSha256: digest(proofsText), release: digest(await readFile(path.join(root, 'data/studio-release.json'))),
+  deployable: !trial && missing === 0, filmsWithoutUpload: missing, staticBytes, blobBytes, dealers: perDealer, casino: release.casino, presets: Object.keys(presetAnswers).length - (release.presets ? 1 : 0), static: written, blob: plan,
+  bot: {knowledgeBytes: knowledgeReport.bytes, core: knowledgeReport.karna, searched: knowledgeReport.rest, views: knowledgeReport.vyer, missingSources: knowledgeReport.saknas, removed: knowledgeReport.borttaget,
+    files: Object.fromEntries(Object.entries(botTexts).map(([name, text]) => [name, {bytes: Buffer.byteLength(text), sha256: digest(text)}]))},
+  leftOut: {takes: takes.left, proofs: proofs.left, notInCopy, named: namedLeft, patches: patchLeft}}, null, 2));
+
+// ── The table ───────────────────────────────────────────────────────────────
+const rows = new Map<string, {where: string; files: number; bytes: number}>();
+for (const w of written) { const r = rows.get(`static:${w.group}`) ?? {where: 'statisk', files: 0, bytes: 0}; r.files++; r.bytes += w.bytes; rows.set(`static:${w.group}`, r); }
+for (const f of blob.values()) { const r = rows.get(`blob:${f.group}`) ?? {where: 'Blob', files: 0, bytes: 0}; r.files++; r.bytes += f.bytes; rows.set(`blob:${f.group}`, r); }
+console.log('\nGår upp');
+console.log('  grupp                plats      filer        MB');
+for (const [key, r] of [...rows].sort((a, b) => a[1].where.localeCompare(b[1].where) || b[1].bytes - a[1].bytes)) console.log(`  ${key.split(':')[1].padEnd(20)} ${r.where.padEnd(9)} ${String(r.files).padStart(6)} ${MB(r.bytes).padStart(9)}`);
+console.log(`  ${'summa'.padEnd(20)} ${'statisk'.padEnd(9)} ${String(written.length).padStart(6)} ${MB(staticBytes).padStart(9)}`);
+console.log(`  ${'summa'.padEnd(20)} ${'Blob'.padEnd(9)} ${String(blob.size).padStart(6)} ${MB(blobBytes).padStart(9)}`);
+const tally = (list: Left[]) => [...list.reduce((m, l) => m.set(l.why, (m.get(l.why) ?? 0) + 1), new Map<string, number>())].map(([why, n]) => `${n} ${why}`).join(', ');
+console.log('\nPer dealer');
+for (const [dealer, d] of Object.entries(perDealer)) console.log(`  ${dealer.padEnd(8)} ${String(d.takes).padStart(4)} tagningar (${Object.entries(d.groups).map(([g, n]) => `${n} ${g}`).join(', ')})${d.game ? `; spelet kan spela ${d.game}` : ''}; rundans luckor: ${d.roundGaps.join(', ') || 'inga'}`);
+console.log(`  förval: ${release.presets ? Object.keys(presetAnswers).filter(k => k !== 'api/scene-presets.json').map(k => k.replace(/^api\/scene-presets\/|\.json$/g, '')).join(', ') : 'av (studions tre inbyggda)'}; Casino: ${release.casino.on ? `på, ${release.casino.dealers.join(' och ')}` : 'av'}`);
+console.log('\nLämnas utanför');
+console.log(`  tagningar: ${tally(takes.left) || 'inga'}`);
+console.log(`  prov: ${tally(proofs.left) || 'inga'}`);
+if (namedLeft.length) console.log(`  filer modulerna nämner: ${namedLeft.join(', ')}`);
+if (patchLeft.length) console.log(`  munlappar: ${patchLeft.join(', ')}`);
+if (notInCopy.length) console.log(`  studion frågar efter, finns inte i kopian: ${notInCopy.join(', ')}`);
+if (codeLeaks.length) console.log(`\nPROVBYGGE, får inte publiceras. I modulernas kod:\n  ${codeLeaks.join('\n  ')}`);
+console.log('\nBoten (functions/api/bot.func, kunskapen bara där)');
+console.log(`  kunskapen: ${MB(knowledgeReport.bytes)} MB; kärnan ${knowledgeReport.karna.avsnitt} avsnitt, cirka ${knowledgeReport.karna.tokens} token; sökbart ${knowledgeReport.rest.avsnitt} avsnitt, cirka ${knowledgeReport.rest.tokens} token (skattat)`);
+console.log(`  vyerna ur ${knowledgeReport.vyer === 'guide' ? 'studio/lib/guide.ts' : 'botens egna texter'}; borttaget: ${Object.entries(knowledgeReport.borttaget).map(([k, n]) => `${n} ${k}`).join(', ') || 'inget'}`);
+if (knowledgeReport.saknas.length) console.log(`  källor som saknas: ${knowledgeReport.saknas.join(', ')}`);
+console.log(`\n${output}`);
+console.log(trial ? 'Provbygge: repeteras med node tools/serve-studio-snapshot.ts --prov; publiceras aldrig.' : missing ? `Inte klar att publicera: ${missing} filer saknar Blob-adress (node tools/sync-studio-media.ts).` : 'Alla filer har en verifierad Blob-adress.');
+, dest: '/api/$1.json'},
     // The scene's presets: the list, and one by name as the game page asks for it (api/scene-presets/<name>).
     {src: '^/api/scene-presets/?$', dest: '/api/scene-presets.json'},
     {src: '^/api/scene-presets/([a-z0-9]+(?:-[a-z0-9]+)*)$', dest: '/api/scene-presets/$1.json'},

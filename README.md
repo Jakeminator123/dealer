@@ -52,6 +52,11 @@ Arkivet är det tidigare projektet på D: (snyggare-dealer). Sidorna har kvar si
 - `data/decisions.json` är det som väntar på Jakobs svar, ett kort per sak i studions Beslut. Agenter lägger till och tar
   bort poster; bara sidan skriver hans svar (`tools/decision-store.ts`, läsaren och reglerna i
   `tools/decision-register.ts`).
+- `data/proof-notes.json` är Jakobs egna ord om proven (Granska, del Prov): Bra, Inte bra och en kommentar per film, bild
+  eller prov, och huvudagentens svar. Bara sidan skriver hans ord, på hans klick (`tools/proof-notes-store.ts`, reglerna
+  i `tools/proof-notes-register.ts`). Det han har sagt läses före ett svar till honom: `node tools/proof-notes.ts` visar
+  det olästa, nyast först; `--answer <nr> "<text>"` svarar (visas under hans ord som Huvudagenten), `--read <nr>`
+  markerar läst.
 - `data/lipsync.json` är fakta om läppsynken (hur munnen görs och hur ett jobb kommer dit, vad som gäller per dealer, vad en
   ny film eller dealer kräver, grundbilder, kedjan med format och skalor, inställningar, prov, licenser och det som är
   öppet), visad i studions Lipsync och som text i `docs/TAL.md`; läsaren och reglerna i

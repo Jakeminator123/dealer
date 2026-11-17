@@ -30,6 +30,8 @@ export type Proof = {
   description: string | null;
   labels: Record<string, string> | null;
   verdicts: Record<string, string> | null;
+  /** The files the proof names as takes (produced films or pictures that may be used); the rest is underlag. */
+  takes: string[] | null;
   updatedAt: number | null;
   chapters: { label: string; frame: number }[] | null;
   fps: number;

@@ -142,25 +142,47 @@ export function primarCount(graph: Graph): { set: number; total: number } {
 }
 
 // ── Proofs ──────────────────────────────────────────────────────────────────
-// A proof file's verdict (assets/proofs/<id>/proof.json: verdicts[file] = ok | remarks | failed | unreviewed), or, when
-// the proof does not state one, read from the words of its label.
+// A proof's files are takes (produced films or pictures that may be used: proof.json takes, a list of file names) or
+// underlag (what was sent, a reference film, a measuring sheet, a look at a page). Only a take carries a review chip: the
+// reviewer's verdict (proof.json verdicts[file] = ok | remarks | failed, or read from the words of its label), else
+// "Väntar på granskare", which is the reviewer's work, never Jakob's. A proof without a takes list counts as takes only the
+// files a reviewer has judged; every other file carries no chip.
 export type ProofVerdict = "ok" | "remarks" | "failed" | "unreviewed";
-export const PROOF_VERDICT_LABEL: Record<ProofVerdict, string> = { ok: "Användbar", remarks: "Med anmärkningar", failed: "Underkänd", unreviewed: "Inte granskad" };
+export const PROOF_VERDICT_LABEL: Record<ProofVerdict, string> = { ok: "Användbar", remarks: "Med anmärkningar", failed: "Underkänd", unreviewed: "Väntar på granskare" };
 
-type ProofLike = Pick<Proof, "labels" | "verdicts">;
+type ProofLike = Pick<Proof, "labels" | "verdicts"> & { takes?: readonly string[] | null };
 
 /** A file's label as the proof gives it, else its name in words: "titta-runt.mp4" → "titta runt". */
 export const proofLabel = (proof: ProofLike, file: string): string => proof.labels?.[file] ?? file.replace(/\.(?:mp4|png)$/, "").replaceAll("-", " ");
 
-export function proofVerdict(proof: ProofLike, file: string): ProofVerdict | null {
+/** What the proof says of a file: its stated verdict, else the one its label's words give, else nothing. */
+function statedVerdict(proof: ProofLike, file: string): ProofVerdict | null {
   const given = proof.verdicts?.[file];
-  if (given && Object.hasOwn(PROOF_VERDICT_LABEL, given)) return given as ProofVerdict;
-  const t = proofLabel(proof, file).toLowerCase();
-  if (/inte användbar|underkän|not usable/.test(t)) return "failed";
-  if (/användbar med|med anmärkning|som variant/.test(t)) return "remarks";
+  // A stated "unreviewed" is no verdict: where the label carries the reviewer's word, the word counts.
+  if (given && given !== "unreviewed" && Object.hasOwn(PROOF_VERDICT_LABEL, given)) return given as ProofVerdict;
+  return fromWords(proofLabel(proof, file).toLowerCase()) ?? (given === "unreviewed" ? "unreviewed" : null);
+}
+
+/** The verdict a label's words give. */
+function fromWords(t: string): ProofVerdict | null {
+  // A reviewer's word first in a parenthesis is a verdict too: "(faller, 1/5: …)", "(håller, 4/5: …)", "(möjlig variant, 3/5)".
+  if (/inte användbar|underkän|not usable|\((?:faller|föll)[,:)]/.test(t)) return "failed";
+  if (/användbar med|med anmärkning|som variant|\(möjlig variant[,:)]/.test(t)) return "remarks";
   if (/bara mätt|inte (?:rut)?granskad|inte rättad|ej granskad/.test(t)) return "unreviewed";
-  if (/användbar|godkän/.test(t)) return "ok";
+  if (/användbar|godkän|\(håller[,:)]/.test(t)) return "ok";
   return null;
+}
+
+/** Whether a file of the proof is a take: named in its takes list; without a list, judged by a reviewer. */
+export function isProofTake(proof: ProofLike, file: string): boolean {
+  if (Array.isArray(proof.takes)) return proof.takes.includes(file);
+  const v = statedVerdict(proof, file);
+  return v !== null && v !== "unreviewed";
+}
+
+/** A file's review chip: a take's verdict, "unreviewed" (Väntar på granskare) for a take without one, null for underlag. */
+export function proofVerdict(proof: ProofLike, file: string): ProofVerdict | null {
+  return isProofTake(proof, file) ? (statedVerdict(proof, file) ?? "unreviewed") : null;
 }
 
 /** A label is one short name and then everything known about the file: "Hemvy · salong (exakt, 4 s)" → name + rest. */

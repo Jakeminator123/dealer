@@ -226,7 +226,7 @@ export const roundShape = (round: Segment[]) => round.map(s => ({id: s.id, take:
 
 // ── Proofs ──────────────────────────────────────────────────────────────────
 export type ProofFile = {name: string; path: string; kind: 'video' | 'image'; bytes: number};
-export type Proof = {id: string; title: string | null; description: string | null; labels: Record<string, string> | null; verdicts: Record<string, string> | null; updatedAt: number | null; chapters: unknown[] | null; fps: number; files: ProofFile[]};
+export type Proof = {id: string; title: string | null; description: string | null; labels: Record<string, string> | null; verdicts: Record<string, string> | null; takes?: string[] | null; updatedAt: number | null; chapters: unknown[] | null; fps: number; files: ProofFile[]};
 
 /**
  * The proofs that go up (GET /api/proofs): those the register names, in its order, each with only its listed files. A proof
@@ -244,10 +244,20 @@ export function pickProofs(all: Proof[], raw: Map<string, string>, release: Rele
     const files = wanted.files ? proof.files.filter(f => wanted.files!.includes(f.name)) : proof.files;
     if (wanted.files && files.length !== wanted.files.length) { refused.push({id: proof.id, why: 'en fil i registret finns inte i provet'}); continue; }
     const named = new Set(files.map(f => f.name)), only = (record: Record<string, string> | null) => record ? Object.fromEntries(Object.entries(record).filter(([name]) => named.has(name))) : null;
-    proofs.push(scrub({...proof, labels: only(proof.labels), verdicts: only(proof.verdicts), files}, release));
+    proofs.push(scrub({...proof, labels: only(proof.labels), verdicts: only(proof.verdicts), ...(proof.takes !== undefined ? {takes: proof.takes ? proof.takes.filter(name => named.has(name)) : null} : {}), files}, release));
   }
   for (const proof of all) if (!release.proofs.some(p => p.id === proof.id)) left.push({id: proof.id, why: blockedPath(proof.id, release) ? 'spärrad' : 'inte vald i registret'});
   return {proofs, refused, left};
+}
+
+/**
+ * Jakob's word on the proofs as the copy shows it (GET /api/proof-notes, frozen): only notes on the proofs that go up, and on
+ * their files that go up or on the proof as a whole; the main agent's read mark is left out. answer: the lab's GET answer.
+ */
+export function pickNotes(answer: {notes?: unknown}, proofs: readonly Pick<Proof, 'id' | 'files'>[]): {schemaVersion: 1; newRevision: null; notes: Record<string, unknown>[]} {
+  const up = new Map(proofs.map(p => [p.id, new Set(p.files.map(f => f.name))]));
+  const notes = (Array.isArray(answer.notes) ? answer.notes : []).filter((n): n is Record<string, unknown> => !!n && typeof n === 'object' && up.has(String(n.proof)) && (n.file === null || up.get(String(n.proof))!.has(String(n.file))));
+  return {schemaVersion: 1, newRevision: null, notes: notes.map(({read: _read, revision: _revision, ...rest}) => rest)};
 }
 
 // ── Paths of the copy ───────────────────────────────────────────────────────
