@@ -115,7 +115,7 @@ skrivs på skrivbordet när allt har ett utfall. Här står bara det som inte ä
 
 ## Nästa steg
 
-**Börja här (läget 2026-11-17 kl. 23.15; huvudagenten bytte chatt kl. 21.45).** Labbet byggs om på Jakobs ord från
+**Börja här (läget 2026-11-17 kl. 23.35; huvudagenten bytte chatt kl. 21.45).** Labbet byggs om på Jakobs ord från
 kl. 21.46 och 21.58 (Jakobs besked, "Ett labb"), av underagenter till huvudagenten:
 
 - **Inne i `main` och sett i headless Chrome:** vyn **Bordet**, första versionen (`82258f3`: `/studio/bordet/` med
@@ -139,10 +139,18 @@ kl. 21.46 och 21.58 (Jakobs besked, "Ett labb"), av underagenter till huvudagent
   leder dit med adressens alla ord; skalen är borta (1 403 rader mindre); botens kunskap, README, SYSTEM, DRIFT och
   ordlistan beskriver den nya menyn; raderna i Beställ visar bevisat samma text som utkastet får. Inte sett: kopian i
   en webbläsare (bara byggd). Ny beställning ritar ännu sin egen bild (`order/Stage.tsx`).
-- **Hans ja kl. 23.02 på kortet i Beslut** (`kortplanen-verkligt-perspektiv`): kortplanen ska ritas i verkligt perspektiv
-  (plats 4 som i dag, korten närmare dealern större). Inte utfört än: linsen (3D-banans mätning, Kända brister) ska in
-  som en ren funktion i `src/`, planens kort i Bordets Kortplan och sista bilden i en beställning ritas med den, och
-  spelets liggande kort följer sedan samma lins (först visat för honom i labbet). Kortet tas ut när det är gjort.
+- **Kortplanen i verkligt perspektiv är inne** (`918e7f4`; hans ja kl. 23.02 på kortet i Beslut, som är uttaget, och
+  hans "kör vi 1.0" kl. 23.22): där planen säger Plant bord (hans plan gör det) ritas varje kort som ett verkligt kort
+  (63 × 88 mm, storlek 1,00) genom linsen som ger dealern människostorlek (`src/table-lens.ts`, 3D-banans funktion
+  ordagrant; `src/card-plan.ts` `planCardQuad` är den enda regeln). Samma fyrhörningar i Bordets Kortplan, kortbanans
+  landning, Ny beställnings bild, "Det här skickas" och en ny beställnings sista bild; sparade beställningar behåller
+  sitt ritade kort, och planfilen är inte skriven. Kortplan har inget storleksreglage: storleken justeras i Efterarbete
+  (V6:s kort mäter cirka 1,38 av ett verkligt, skattat). Före och efter: Prov `kortplanen-verkligt-perspektiv`.
+  **Kvar:** spelets liggande kort (`src/game-table.ts` ritar med `flatQuad`, pålägget i `card-overlay-view`, och
+  3D-scenen ställer korten med kontraktets kamera, k = 2, som är en annan kamera än linsen): de ska följa samma regel,
+  visat för honom i labbet först; labbservern startas om när spelet importerar `src/card-plan.ts`. Kvar på den gamla
+  regeln med flit: `tools/build-anchor.ts` (frysta hashar), `tools/card-coverage.ts`, `tools/placement-backdrop.ts`.
+  Bordets bild zoomar inte längre ut förbi hela bilden, och `preview.ts --open` klarar en adress med flera ord.
 - **Skills och rutinverktyg är inne** (`c9a8509`): sju skills i `.claude/skills/` (AGENTS, "Läs först", punkt 4), och
   tre verktyg med tester: `node tools/push-clean.ts` (pushen från ett rent träd), `node tools/lab-look.ts` (skärmbilder av
   labbsidor under låset) och `node tools/studio-from-commit.ts` (studion byggd ur en commit i ett rent träd och inbytt
@@ -184,8 +192,7 @@ kl. 21.46 och 21.58 (Jakobs besked, "Ett labb"), av underagenter till huvudagent
   kanske ska kunna justera just som sånt här." Alltså: kortplanen ritar ett verkligt kort (1,00) med linsen, utan eget
   storleksreglage; storleken justeras bara i Efterarbete (de ritade kortens "Kortens storlek"), som är hans överlägg.
 - **Vakten på hans kö** (`vakta-kon.mjs`) går i huvudagentens chatt i halvtimmar och måste startas om; godkänner han en
-  beställning startar huvudagenten beställningsagenten (`tools/order-clerk.md`). `node tools/preview.ts --open` klarar
-  inte en adress med `&` (resten av raden körs som ett eget kommando): att rätta.
+  beställning startar huvudagenten beställningsagenten (`tools/order-clerk.md`).
 - **Att göra:** körarens kod för munnen ligger bara på D: (`D:/dealer-scratch/tmp/tal/korare/`) och bör in i repot
   efter städning av två skript; `data/lipsync.json` hålls av huvudagenten tills en ny talsession finns; granskarens
   andra fynd, som inte är kontrollerat här: spelets ritade kort följer inte planens kortstorlek (planen 43, 87 och 130
