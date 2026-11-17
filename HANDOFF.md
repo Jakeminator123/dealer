@@ -115,7 +115,7 @@ skrivs på skrivbordet när allt har ett utfall. Här står bara det som inte ä
 
 ## Nästa steg
 
-**Börja här (läget 2026-11-17 kl. 22.50; huvudagenten bytte chatt kl. 21.45).** Labbet byggs om på Jakobs ord från
+**Börja här (läget 2026-11-17 kl. 22.55; huvudagenten bytte chatt kl. 21.45).** Labbet byggs om på Jakobs ord från
 kl. 21.46 och 21.58 (Jakobs besked, "Ett labb"), av underagenter till huvudagenten:
 
 - **Inne i `main` och sett i headless Chrome:** vyn **Bordet**, första versionen (`82258f3`: `/studio/bordet/` med
@@ -357,9 +357,8 @@ Ett besked per ämne, med det nyaste ordet och dess datum. Ett besked han har er
   stillbild blir korten stela och har olika format, och framförallt är skons kort alldeles för stort." och "Se till att
   gammalt skit tar bort också och att strukturen blir tydlig i projektet!" Huvudagentens läsning, som han inte har
   bekräftat: en vy (Bordet) med en ram, där bilden är antingen kortplanen eller den levande 3D-scenen och allt ändras
-  i högerspalten; beställningen är en lista av filmer i samma vy; gamla labbet tas bort nu. Mätt av bygget samma kväll:
-  skons kort är för stort redan i ankarna (cirka 111 bildpunkter långt, mot 55 för dealerns kort på ungefär samma
-  djup), och rättas då först med nya ankare, i samma omgång som de tatuerade händerna. Kl. 21.58, om menyn: "Inte 3D
+  i högerspalten; beställningen är en lista av filmer i samma vy; gamla labbet tas bort nu. Om skons kort: se Kända brister, "Kortens storlek och
+  perspektiv" (det mesta av skillnaden ligger i planen, inte i skon). Kl. 21.58, om menyn: "Inte 3D
   leder bara till greenscreenen, så den borde heta något annat"; "Spela i `casino` bör rimligtvis vara samma som i
   `casino`, alltså som det är i `runtime`"; "Den vänstra knappen där det står beställ ska också ingå i den
   huvudsakliga menyn som nu till stor del handlar om knappen scen. Detsamma gäller knappen placering."; "Karta och
@@ -517,6 +516,20 @@ Ett besked per ämne, med det nyaste ordet och dess datum. Ett besked han har er
   kortets högra ände, en tunn linje medan kortet står på kant och en taggig fingerkant. Pålägget fick 3/5 och är inte i
   spelet; `kort=liggande` finns kvar för hans öga; reglage för `cardBack` och `cardFace` i Scen finns inte. Stegen:
   `D:/dealer-scratch/tmp/kortbyggare/`, utredningen `D:/dealer-scratch/tmp/kortutredning/RAPPORT.md`.
+- **Kortens storlek och perspektiv** (3D-banans mätning 2026-11-17, ren räkning på Paows film och ankare;
+  `D:/dealer-scratch/tmp/dealer-3d/kalibrering.txt`, talen i grenen `dealer-3d`, `dealer3d/src/world.ts`). Planens kort
+  och dealerns kropp hör till två linser: planens avsmalning 0,87 hör till en brännvidd på cirka 800 bildpunkter, där
+  hon vore dubbelt så stor som en människa; linsen som ger henne verklig storlek har brännvidd cirka 2 334 (bildvinkel
+  28°), och under den smalnar ett verkligt kort bara till 0,956. Mot ett verkligt kort är planens kort 0,97 vid P4,
+  1,04 vid P3 och P5, 1,11 vid P2 och P6, 1,19 vid P1 och P7 och **1,34 gånger för små vid dealern**; skons kort i
+  filmerna (111 × 58 bildpunkter) är 1,15–1,27 gånger för långt. Det Jakob ser som att skons kort är dubbelt så stort
+  kommer alltså mest ur planens krympning nära dealern. Spelets liggande kort läser aldrig planens storlek: det är
+  kontraktets kort gånger `cardScale` 1,2, och planen ger bara platsen (`restingQuad` i `src/card-overlay.ts`), så
+  planens bredd och höjd ändrar inget i spelet (en utomstående granskares fynd, bekräftat i koden). Tre mått för samma
+  kort (planen, spelets kontrakt, filmens lins) ska bli ett: 3D-banan gör en bild åt honom (Prov `dealer-3d-kamera`),
+  och frågan till honom blir om kortplanen ska ritas med verkligt perspektiv (P4 oförändrad, korten närmare dealern
+  större). Inget ankare krymps innan dess. Osäkert i mätningen: axlar, pupiller och skons fot är lästa för ögat (±10
+  bildpunkter); brännvidd 2 000–2 300 ger samma slutsatser.
 - **Orden för kortets sidor** är öppna. Jakob 2026-11-13: "Baksida kan betyda olika saker, som baksidan på ett kort, men
   det kan också referera till undersidan." Mall 9 säger slätt kort med "back" och "face" (`PLAIN_CARD`).
 - **Kortbanan** är omgjord efter filmerna 2026-11-17 (`ccd9c52`, Prov `kortbanan-efter-filmerna`; Jakob 2026-11-12:
