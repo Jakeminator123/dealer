@@ -5,17 +5,17 @@ utdelning. Rörelserna är korta filmklipp mellan fasta ankare (vila, redo, kort
 väg genom klippen, och samma rundor spelas i labbet, i 3D-scenen och i spelet. V6 är Jakobs valda visuella referens och
 återskapas byteidentiskt. Scoutgaming äger regler, slump och kortvärden.
 
-Mapparna (omstruktureringens steg 1; resten flyttas i senare steg):
+Mapparna:
 
 ```
 START.cmd STOPP.cmd STATUS.cmd   starta, stoppa och fråga labbservern på 127.0.0.1:4319
 README.md AGENTS.md HANDOFF.md   läs först
 studio/       studion: Jakobs arbetsyta i webbläsaren (Next.js)
 old-lab/      gamla labbets sidor (labbet, 3D-scen, Modeller, Ljud, Runway-underlaget), tills studion ersatt dem
-game/         spelet: Scouts regler oförändrade; spelsidan i game/page/ (reglerna flyttar till game/core/)
-src/          den delade motorn och sidornas kod: 3D-scen, klippgraf, kort, placering (byter namn i nästa steg)
-tools/        kommandon, labbservern (preview.ts) och testerna (*.test.ts); server och tester flyttar ut i nästa steg
-cloud/        studions onlinekopia: lås och bot (byter namn i nästa steg)
+game/         spelet: den fristående spelmotorn med Scouts regler oförändrade i sak; spelsidan i game/page/
+src/          den delade motorn och sidornas kod: 3D-scen, klippgraf, kort, placering, beställningar
+tools/        kommandon, labbservern (preview.ts), instruktionerna (*.md) och testerna (*.test.ts)
+cloud/        studions onlinekopia: lås och bot
 materials/    kort- och markerprov
 data/         register: manifest.json (filernas SHA-256), klippjobb, scenkontrakt, filmkatalog
 motions/      en post per film med Jakobs dom
@@ -70,13 +70,15 @@ Dokumenten länkar till dessa i stället för att föra egna statusregister. Med
   eller blir tom där webbläsaren inte låter en sida stänga sin flik. Rutinen:
   [DRIFT](docs/DRIFT.md#labbservern-och-fliken). Servern står kvar tills `STOPP.cmd` körs.
 - [Studion](http://127.0.0.1:4319/studio/) är skalet (`/` och `lab.html` leder dit): en Next.js-app i `studio/` som
-  byggs med `npm --prefix studio run build` och lämnas ut av samma server. Vyerna: **Scen**, **Karta** (kanter och
-  tagningar), **Primära**, **Granska** (Jakobs domar, som skrivs i `motions/`), **Prov** (provmappar under
-  `assets/proofs/`, `/studio/prov/?prov=<mapp>`), **Placering** (kortplanen: 16 kortplatser och sko; sparning ändrar
-  bara placeringsutkastet), **Material** (vilka bilder som gäller), **Beställ** (filmbeställningar), **Casino**,
-  **Protokoll**, **Beslut** (det som väntar på Jakobs svar, bara i labbet) och **Lipsync** (vad läppsynken använder och i
-  vilka skalor, skrivskyddad, bara i labbet). Gamla labbet nås med `lab.html?gamla=1` tills Modeller och Ljud har flyttats
-  ([SYSTEM](docs/SYSTEM.md)).
+  byggs med `npm --prefix studio run build` och lämnas ut av samma server. Menyn (`studio/components/shell/Rail.tsx`)
+  har vyerna **Scen**, **Karta** (kanter och tagningar), **Primära**, **Granska** (Jakobs domar, som skrivs i
+  `motions/`), **Prov** (provmappar under `assets/proofs/`, `/studio/prov/?prov=<mapp>`), **Placering** (kortplanen: 16
+  kortplatser och sko; sparning skriver bara `placements/default.json` och beställer inget), **Material** (vilka bilder
+  som gäller), **Lipsync** (vad läppsynken använder och i vilka skalor, skrivskyddad), **Beställ** (bild- och
+  filmbeställningar) och **Casino**, och i foten **Beslut** (det som väntar på Jakobs svar). Lipsync, Beställ och Beslut finns bara i labbet; kopian på nätet har
+  i stället **Önskemål** och boten (Fråga). **Protokoll** (en rad per tagning och metod) nås från Beställ, och
+  **Jämför** (två tagningar av samma steg sida vid sida) från en tagning i Granska, Karta och Primära. Gamla labbet nås
+  längst ned i menyn eller med `lab.html?gamla=1` tills Modeller och Ljud har flyttats ([SYSTEM](docs/SYSTEM.md)).
 - Filmgranskningen har steg ±1 bildruta, kapitel och hastighet 0,25×/0,5×/1×. URL-parametrarna `clip` och `frame` pekar
   ut klipp och granskningsruta.
 - `npm test` kör offlinetesterna (placeringar, klippbank, kortspår, scen, spelmotor, labbserver och publiceringsskydd).
@@ -103,11 +105,11 @@ Publikt källrepo: [Jakeminator123/dealer](https://github.com/Jakeminator123/dea
 hemligheter. Scout-integration, deploy och betald generering är separata uppdrag.
 
 [Det publika labbet](https://dealer-delta-eosin.vercel.app/) visar ett äldre läge (release i
-[evidence/public-release.json](evidence/public-release.json)). Den publika sidan sparar utkast i den egna webbläsaren,
-lokal preview till placeringsfilen på datorn; export/import flyttar ett utkast mellan dem. Publicerade granskningsfilmer
+[evidence/public-release.json](evidence/public-release.json)). Den publika sidan sparar kortplanen i den egna
+webbläsaren, lokal preview i placeringsfilen på datorn; export/import flyttar en plan mellan dem. Publicerade granskningsfilmer
 ligger i separat Vercel Blob, inte i Git eller webbpaketet.
 
-Behåll JSON-register, manifest och webbläsarutkast. [Lagringsbedömningen](evidence/storage-choice-review.json)
+Behåll JSON-register, manifest och planerna som sparas i webbläsaren. [Lagringsbedömningen](evidence/storage-choice-review.json)
 rekommenderar ingen SQLite- eller annan ny databas nu; framtida Scout-import är ett separat införande.
 
 ## Historiskt underlag

@@ -191,19 +191,13 @@ fallit: [handboken](../tools/film-prompting.md); hur den läggs, hämtas och eft
 förs in i handbokens tabeller, inte här. Vad som skickades och hur det gick: studions vy Protokoll
 (`node tools/order-ledger.ts`).
 
-- **En väg: Beställ** (sedan 2026-11-13). Utkast i studions vy Beställ (`data/orders/<id>.json`), godkänt med Jakobs
-  klick eller av huvudagenten på hans uppdrag (`tools/order-approve.ts`) inom `data/order-policy.json`, lagt och hämtat
-  av en beställningsagent genom Runways MCP-server på appkontot. Betalda anrop utanför Beställ rapporteras till
-  huvudagenten med belopp (HANDOFF, "Vem äger vad").
-- **Äldre vägar, används inte:** API-vägen (developer-API:t med `RUNWAY_API_KEY`: `tools/clip-job.ts` och
-  `tools/clip-edit.ts` togs bort 2026-11-13, och verktygets enda rättade kopia står kvar under `edits`; jobben och taket `budget.maximumCredits` 5 162 i
-  `data/clip-jobs.json`, helt intecknat 2026-11-12) och orderfilerna på D: (`filmagent/mcp/order-*.json`,
-  `clerk-brief.md`, `register-mcp.mjs`; Paows `paow/order/` och liggarna `paow/bestallningar-*.json`). Deras kvitton och
-  liggare är källbevis och står kvar; ett osäkert API-anrop beställs aldrig om, och `request.lock` eller SUBMITTING tas
-  aldrig bort. Pamelas ankare byggdes med `tools/build-anchor.ts` ur riktiga videorutor (bara kortpixlar ändrade, mot
-  fryst plan); engångsverktygen från 2026-11-10 (`generate-p4-control`, `generate-p7-direct`, `collect-pilot`,
-  `closed-card-review`, `render-p4-placement` med `src/p4-placement-retarget.ts`) togs bort ur repot 2026-11-13 eftersom
-  inget anropade dem; de finns i Git-historiken, och deras kvitton står kvar i `motions/` och `evidence/`. Bakgrund:
+- **En väg: Beställ.** Utkast i studions vy Beställ (`data/orders/<id>.json`), godkänt med Jakobs klick eller av
+  huvudagenten på hans uppdrag (`tools/order-approve.ts`) inom `data/order-policy.json`, lagt och hämtat av en
+  beställningsagent genom Runways MCP-server på appkontot. Betalda anrop utanför Beställ rapporteras till huvudagenten
+  med belopp (HANDOFF, "Vem äger vad").
+- **Kvitton från äldre vägar** (API-jobben i `data/clip-jobs.json`, orderfilerna och liggarna på D:) är källbevis och
+  står kvar; ett osäkert anrop beställs aldrig om, och `request.lock` eller SUBMITTING tas aldrig bort. Pamelas ankare
+  byggdes med `tools/build-anchor.ts` ur riktiga videorutor (bara kortpixlar ändrade, mot fryst plan). Bakgrund:
   [metodgranskningen](../evidence/generation-method-audit.json) och
   [API-/MCP-kontraktet](../evidence/runway-production-contract.json).
 - **Inkorgen:** en tagning från en order förs in med `review.inbox: true` och spelas bara där steget saknar annan film
@@ -230,8 +224,7 @@ beställningsagentens instruktion; här står det som rör banken, uppspelningen
   givfilmerna har texten hittills sagt att den andra handen vilar.
 - **Föremål** som inte finns i första bilden växer fram ur filten; en mugg måste finnas i bilden från början.
 - **Kostnad för en hel dealer:** skattat 2026-11-12 cirka 5 000 krediter för en uppsättning med ett utdelningssätt (16
-  kort och omtagningar); Paow hade 2026-11-13 kostat cirka 5 400 utan att vara färdig (räknat ur kvittona, se löpande
-  bandet).
+  kort och omtagningar); Paow hade 2026-11-13 kostat cirka 5 400 utan att vara färdig (räknat ur kvittona).
 
 ## Publik granskningssida och Blob
 

@@ -1,8 +1,8 @@
 # Oberoende granskning av en levererad film
 
-Mall för den agent som granskar en film från en beställning, innan Jakob dömer den. Byggd ur `granska-giv.md`,
-`granska-vila.md` och `granska-helfigur.md` (`D:/dealer-scratch/tmp/filmagent/mcp/`), med tre nya delar: fellistan med
-lagningar, kortets storlek och vändningens anatomi.
+Instruktion för den agent som granskar en film från en beställning, innan Jakob dömer den. Granskaren prövar det som
+beställningens text ber om (läs den, se Underlaget): handleden, släpet, det släta kortet, rätt sida upp och kortets
+storlek, och därutöver skarvarna, fingrarna, handens väg och det gröna.
 
 Du är en oberoende granskare. Bedöm bara det du ser och mäter i rutorna, och var inte generös: tidigare grova
 granskningar missade en fingertopp genom kortet, en vändning som ingen kunde se och ett lyft som lästes som ett släp,
@@ -29,18 +29,25 @@ Låst kamera; dealern bakom ett grönt bord; en svart sko till höger med ett gu
 grönt, som nycklas bort mot varje rutas egen grönnivå. **Gult är kortets baksida, blått dess framsida.** Handen som ger
 står i beställningen (`motion.hand`, vänster hand syns till höger i bilden).
 
-- **Giv** (READY till en plats): ett kort lämnar skon, bärs till platsen och läggs plant med en fingertopp vilande på
-  det, slutar på sista bilden. Kortet rör bordet en gång, utom när beställningen säger att det förs fram längs filten.
+- **Giv** (från ankare 2.1 eller ankare 2.2 (släp) till en plats): ett kort lämnar skon, förs till platsen och läggs
+  plant med en fingertopp vilande på det, slutar på sista bilden. Greppet står i `motion.grip`. Från ankare 2.1
+  (`PINCH`) nyper handen kortet ur fönstret. Från ankare 2.2 (`DRAG`) dras kortet ut ur fönstret och längs filten under
+  fingertopparna, och ett släp förblir ett släp: kortet lyfts inte ur skon; i en öppen giv tar tummen och fingrarna det
+  i kanten först på vägen. Kortet rör bordet en gång, utom när beställningen säger att det förs fram längs filten.
   Landar det stängt (`motion.side` BACK) vänds det inte och förblir gult; landar det öppet (FRONT) vänds det från gult
   till blått genom en verklig, synlig vändning (kortet ses på kant i någon ruta), där beställningen säger: vid platsen
-  efter att ha förts fram med baksidan upp (`flipAxis` AT_PLACE), som en hand kan på vägen (FREE) eller rullat kring
-  långsidan på vägen (LONG_EDGE). Kortet är enfärgat hela vägen; ett tryckt spelkort är ett fel.
-- **Retur** (plats till READY eller IDLE): fingrarna lyfter rakt från kortet och handen går lugnt och lågt tillbaka till
-  skons grepp eller till vila, utan att röra kortet igen, utan upplyft öppen handflata eller knytnäve. Kortet på bordet
-  rör sig inte, byter inte storlek eller färg.
+  efter att ha förts fram med baksidan upp (`flipAxis` AT_PLACE), med en vridning av handleden på vägen (FREE) eller
+  rullat kring långsidan på vägen som en nyckel (LONG_EDGE). En vändning på vägen görs med handleden: den vrider över
+  kortet, och handen är kvar vriden tills kortet ligger; den vrids inte tillbaka innan kortet är lagt. Rätt sida, den
+  blå, kommer upp mot spelaren, och kortet har den storlek som sista bilden visar (punkt 3 i rapporten nedan). Kortet
+  är slätt, en platt färg på varje sida, och likaså nästa kort i skons fönster: inget tryck, ingen symbol, ram eller
+  ljus kant syns på något av dem. Ett tryckt spelkort är ett fel.
+- **Retur** (från platsen till ankare 2.1, 2.2 eller 1): fingrarna lyfter rakt från kortet och handen går lugnt och
+  lågt tillbaka till skons grepp eller till vila, utan att röra kortet igen, utan upplyft öppen handflata eller
+  knytnäve. Kortet på bordet rör sig inte, byter inte storlek eller färg.
 - **Tur och retur** (`ROUND_TRIP`): giv och retur i samma film. Ange **delningsrutan**: första rutan i returen, den ruta
   där fingrarna lämnar kortet. Den behövs för att föra in filmen som två tagningar.
-- **Ingång, vila** (samma bild först och sist) och **helfigur** (hon reser sig och går, eller kommer och sätter sig): se
+- **Vila** (samma bild först och sist) och **helfigur** (hon reser sig och går, eller kommer och sätter sig): se
   tilläggen sist.
 
 Spelaren klipper mellan filmer på exakta rutor: de första rutorna ska stämma med första bilden och de sista med sista
@@ -93,22 +100,34 @@ Märk varje påstående **[M]** mätt eller **[S]** sett med ögat.
    bildens pose före slutet, och från vilken ruta står den still?
 2. **Kortet, ruta för ruta i full upplösning** för varje ruta där det är utanför skon **[M + S]:** rutan det lämnar
    skon; hur det hålls (nyp, platta fingrar); om det läggs ned och tas upp igen, skjuts eller släps längs filten
-   (skuggan och avståndet till filten skiljer "på filten" från "i luften"); landningsrutan; tryck, prickar, siffror
-   eller tvåfärgade ytor; ett andra kort; kortet som är kvar i skon.
+   (skuggan och avståndet till filten skiljer "på filten" från "i luften"); för ett släp: rutan där kortet lämnar
+   filten, och om det lyfts redan ur skon; landningsrutan; tryck, prickar, siffror, symboler, en ram, en ljus kant
+   eller tvåfärgade ytor, på kortet och på nästa kort i fönstret; ett andra kort; kortet som är kvar i skon.
 3. **Kortets storlek [M]:** kortets långsida och kortsida i bildpunkter var femte ruta från skon till bordet (ur
    kortspårets fyrhörningar, längd och bredd längs huvudaxlarna som `src/flip-axis.ts` läser dem, eller mätt i rutorna).
    Storleken ska hålla sig inom ungefär **±10 %** av sin median över de öppet synliga rutorna; ange varje ruta utanför
    och hur mycket, särskilt de sista 15 rutorna (ett kort som krymper eller växer i handen). Det landade kortet
    (`restQuad` i spåret, eller mätt i sista rutan) jämförs med planens kort i sista bilden (`drawn.quad` och
-   `drawn.measured` i beställningen): sidor och yta inom ±10 %, och mittpunktens avstånd i bildpunkter. Jakob har sett
-   kortet mindre i vissa filmer och större i andra; det är ett fel även när rörelsen är fin.
-4. **Vändningen [M + S]:** kunde en mänsklig hand göra den? Säg vilken kant kortet vänds kring (`tools/flip-axis.ts`:
-   KORTSIDAN, LÅNGSIDAN eller OKLART, med rutorna) och bedöm sedan anatomin, inte kanten: samma hand håller kortet hela
-   vändningen; handleden och fingrarna roterar så som en hand kan (ingen handled som vrids bortom det naturliga, inget
-   kort som vrider sig självt mellan stilla fingrar, inga fingrar genom kortet); kortet förblir styvt, gult och blått på
-   var sin sida; kantläget syns i minst en ruta. Båda kanterna duger om rörelsen är naturlig (Jakob 2026-11-12:
-   "variation … men bara det följer naturlagar och anatomi från en mänsklig hand"). Har beställningen `flipAxis`
-   SHORT_EDGE eller LONG_EDGE, säg om filmen följer den. Ett färgbyte utan vändning är ingen vändning.
+   `drawn.measured` i beställningen; det är planens storlek, eller den som valts för ordern i `motion.cardScale`): sidor
+   och yta inom ±10 %, och mittpunktens avstånd i bildpunkter. Jakob har sett kortet mindre i vissa filmer och större i
+   andra; det är ett fel även när rörelsen är fin.
+4. **Vändningen [M + S]:** Jakobs regel, 2026-11-17: "Oavsett om hon nyper eller släpar ut kortet, alltså om hon
+   kommer från ankaret 2.1 eller 2.2, måste hon vrida över handleden." och "Båda dessa två sätt är giltiga […] Altså
+   både vrida som en nyckel samt den andra. Huvudsaken är att rätt sida kommer upp mot spelaren och att korten har
+   symetriskt samma storkel som de rimligen borde ha, och/eller som välj si labbet och att det är gult till blått som
+   görs." Pröva därför i varje öppen giv:
+   - **Handleden:** vrider handleden över kortet så att kortet följer med handen, eller vänder fingrarna kortet medan
+     handen står still? Ett kort som vrider sig självt mellan stilla fingrar är ett fel.
+   - **Handen stannar vriden:** är handen kvar vriden tills kortet ligger, eller vrids den tillbaka innan kortet är
+     lagt? Ange rutan där den vrids tillbaka; det fäller vändningen.
+   - **Kanten:** vilken kant kortet vänds kring (`tools/flip-axis.ts`: KORTSIDAN, LÅNGSIDAN eller OKLART, med rutorna).
+     Båda sätten att vrida är giltiga: Pamelas nyckelvridning, där hand och kort vrids tillsammans kring långsidan
+     (handboken 3.3, vändning B), och vridningen där handflatan går från nedåt till uppåt; säg vilket filmen gör. Har
+     beställningen `flipAxis` LONG_EDGE eller AT_PLACE, säg om filmen följer det.
+   - **Gult till blått, rätt sida upp:** kortet vänds en gång genom kantläget (minst en kantruta), från gult till blått,
+     och den blå sidan kommer upp mot spelaren. Ett färgbyte utan vändning är ingen vändning.
+   - **Anatomin:** samma hand håller kortet hela vändningen, ingen handled vrids bortom det naturliga, inga fingrar går
+     genom kortet, och kortet förblir styvt med en färg på var sin sida. Storleken mäts i punkt 3.
 5. **Fingrarna [S]:** fingertopp genom eller sammanväxt med kortet, sammanvuxna eller extra fingrar, med rutnummer; var
    fingertoppen vilar i slutet.
 6. **Handens väg [M]:** handens höjd över bordskanten över tid; omväg, svävande, stopp (rutor där den står still: ange
@@ -165,7 +184,7 @@ och `fix-strip-<k>.png` bredvid originalet, som aldrig ändras.
 ## Mjuka aldrig upp domen
 
 Domen gäller filmen som den levererades; att ett fel är lagbart höjer den inte. En rättad kopia är en egen film: den
-granskas på nytt med hela denna mall i full upplösning, med kvittot och remsan som underlag, och bedöms på vad den
+granskas på nytt med hela denna instruktion i full upplösning, med kvittot och remsan som underlag, och bedöms på vad den
 visar, inte på vad lagningen skulle göra. Säg rent ut vad du inte kunde kontrollera.
 
 ## Tillägg per sorts film
@@ -176,7 +195,7 @@ visar, inte på vad lagningen skulle göra. Säg rent ut vad du inte kunde kontr
   en rörlig hand tillbaka till samma plats [M]? De sista 8 rutorna stilla i ankarets pose?
 - **Helfigur** (hon reser sig och går, eller kommer och sätter sig): sista ruta med fingertopparna på bordskanten och
   första rena ruta (inget av henne under kantraden inom bordet), stegets jämnhet ruta för ruta, storleken (huvudets
-  bredd och hjässa–haka sittande, stående, mitt i gången), skor och byxben under gången, och för en ingång de sista
+  bredd och hjässa–haka sittande, stående, mitt i gången), skor och byxben under gången, och när hon kommer: de sista
   rutorna mot vilans ankare.
 
 ## Sist

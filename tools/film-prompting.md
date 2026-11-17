@@ -134,24 +134,39 @@ Orden står i `SAY`; här står vad som har hållit och varför.
 Nyp, Dra, För fram, Vrid, Vänd upp, Lägg: kortet ligger gult upp mot filten hela vägen och vänds först vid platsen. 22
 tagningar har beställts så; fyra vände vid platsen (V): `p4-07` (Jakob: "gör två vridningsmoment … återigen fel färg"),
 `p1-07` t2 (WAN 3, underkänd), och `p1-08` t1 och t2 (Kling 4 med referens till samma plats: 2 av 2; t2 godkänd). Utan
-referens, WAN 3 i omgång 5: 1 av 5 (P7 0 av 2; till D.C1 vändes kortet i luften). Metodregistret beställer givar från
-2.1 med vändning vid platsen och referens till samma plats (`data/order-methods.json`, status `prov`); planen säger "i
-luften" på alla 16 kort, så förvalet i Beställ (`defaultFlip`) är fri vändning (V). Två vändningar en vänsterhand kan
-göra (S, inte prövade som bild):
+referens, WAN 3 i omgång 5: 1 av 5 (P7 0 av 2; till D.C1 vändes kortet i luften). Metodregistret
+(`data/order-methods.json`) beställer i dag givar från ankare 2.1 till spelarplatserna med Kling 4, kort text, fri
+vändning (handleden på vägen), tur och retur och ingen referensfilm, dealerns kort med vändningen som planen säger, och
+givar från ankare 2.2 (släp) med WAN 3, kort text, tur och retur och vändningen som planen säger; alla med status
+`prov`. Vändningen
+vid platsen beställs bara där planen säger det för kortet: planen säger "i luften" på alla 16 kort, så förvalet i
+Beställ (`defaultFlip`) är fri vändning (V). Två vändningar en vänsterhand kan göra:
 
-**Vändning A, "tummen lyfter, kortet fälls över" (Jakobs skiss, `SAY.turnAtPlace`).** Kortets långsidor pekar mot
-spelaren. Vänsterhanden kommer från skon med handflatan ned; tummen ligger vid kortets inre långsida, pek- och
+**Vändning A, "tummen lyfter, kortet fälls över" (Jakobs skiss, `SAY.turnAtPlace`; S, inte prövad som bild).**
+Kortets långsidor pekar mot spelaren. Vänsterhanden kommer från skon med handflatan ned; tummen ligger vid kortets inre långsida, pek- och
 långfinger på baksidan. Tummen glider in under den inre långsidan och lyfter den; underarmen roterar utåt (tummen
 uppåt); den yttre långsidan ligger kvar mot filten som gångjärn. Kortet står på kant med tummen på den blå sidan; tummen
 fäller kortet över gångjärnet och följer med ned på framsidan. Greppet är inte fast: fingrarna lämnar kortet en stund
 medan det står på kant.
 
-**Vändning B, "nyckelvridning lågt vid platsen" (närmast bankens).** Tumme och pekfinger håller kortets närmaste
-kortsida, lyfter det en handsbredd, handleden rullar en gång, och kortet läggs ned med fingertopparna på dess närmaste
-kant, som Pamelas godkända giv till P4 slutar (V, ruta 76–112).
-```
-At the place she lifts the card a little by its short end between thumb and forefinger, rolls her wrist once so the card turns over about its long side, and lays it down blue side up under her fingertips.
-```
+**Vändning B, Pamelas nyckelvridning (bankens), giltig.** Jakob fick 2026-11-17 välja mellan Pamelas vändning och en
+tagning där handleden vrids så att handflatan går uppåt, och svarade: "Båda dessa två sätt är
+giltiga […] Altså både vrida som en nyckel samt den andra. Huvudsaken är att rätt sida kommer upp mot spelaren och att
+korten har symetriskt samma storkel som de rimligen borde ha, och/eller som välj si labbet och att det är gult till
+blått som görs." Belägget för nyckeln är granskningen av Pamelas vändningar
+(`D:/dealer-scratch/tmp/pamela-formel/RAPPORT.md`, nio bra vändningar sedda i full upplösning, V). Formeln:
+1. Korta filmer med en handling var: Pamelas givar var WAN 3-filmer på 4–6 s, bara dit, och returen en egen film (V).
+2. Kortet hålls i sin kortända mellan tumme och fingrar, som en förlängning av handen, med den breda sidan mot
+   kameran (V).
+3. Hand och kort vänds tillsammans, en gång, kring kortets långa axel, som när man vrider om en nyckel: gult smalnar
+   till en tunn ljus kant i 2–5 rutor och blått öppnar sig mot kameran (V).
+4. Handen stannar vriden: greppet behålls tills kortet ligger, och handflatan pekar aldrig uppåt när kortet läggs (V).
+5. Kortet syns slätt redan i första bilden: varje giv började på samma verkliga nyp-ruta (V); att det hjälper är
+   skattat (S).
+6. Texten säger det kameran ser ("the broad yellow back is seen, then the thin pale edge, then the broad plain blue
+   face"); att den meningen ger kanten är skattat (S).
+Rapporten har en provorder med formeln och vad den ska klara, och den säger var formeln skiljer sig från dagens mall.
+
 **Vad en bild av varje ögonblick visar (A):** *Före:* kortet gult och plant en kortbredd mot hennes mitt från
 landningsplatsen, handflatan ned, två fingertoppar på baksidan. *På kant:* kortet upprätt på sin yttre långsida, en smal
 ljus remsa framifrån; tummen på den blå sidan. *Efter:* kortet blått och plant på planens plats; tumtoppen på framsidan,

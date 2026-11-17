@@ -13,15 +13,15 @@ Detaljerna står där de hör hemma och kopieras inte hit:
 - `data/order-methods.json`: metoden som beställs per steg;
 - `HANDOFF.md`: läget nu och vem som äger vad.
 
-Skriven 2026-11-13 ur kod, register och kvitton. (V) = läst i kod, data eller kvitto; (S) = skattat.
+Skriven ur kod, register och kvitton. (V) = läst i kod, data eller kvitto; (S) = skattat.
 
 ## Den enda vägen, kort
 
 1. Lägg in dealern: en post i `data/dealers.json` och en dealer i `data/media-roles.json` (huvudagenten).
 2. Ingångsbild: studions Material, Lägg till bild, roll `ingangsbild`; Jakob väljer.
 3. Keystone stående och sittande: Nano Banana Pro 4K med ingångsbilden; Material, roll `keystone`; Jakob sätter `gäller`.
-4. Ankare 1: redigering med `tools/texts/ankare-1.txt`, efterarbete enligt `tools/order-clerk.md` §5; Jakob `gäller`.
-5. Ankare 2.1: Beställ, steg `ANKARE-2.1`, samma efterarbete; Material, Jakob sätter `gäller`.
+4. Ankare 1: redigering med mallen `tools/texts/ankare-1.txt` (utseende och händer fylls i), efterarbete enligt `tools/order-clerk.md` §5; Jakob `gäller`.
+5. Ankare 2.1 och 2.2: Beställ, steg `ANKARE-2.1` och `ANKARE-2.2`, samma efterarbete; Material, Jakob sätter `gäller`.
 6. Se vad som saknas för en runda: `node tools/produce.ts <dealer>`, eller blocket "Det här saknas för en runda" i Beställ.
 7. Välj metoden efter Jakobs egna domar: `node tools/verdicts-per-method.ts <dealer>`; skriv den i `data/order-methods.json`.
 8. Gör utkasten: `node tools/produce.ts <dealer> --draft` (ett prov: `--draft --trial <steg|plats>`), eller i Beställ.
@@ -65,16 +65,26 @@ ankare som pose (`D:/dealer-scratch/tmp/paow/order/order-b18.json`, texterna `p-
 
 **4. Ankare 1 (vila, nod `IDLE`).** En redigering, inte en ny person i en annans ruta: b23 (ny person i bankrutan) gav
 vaxig hud och kroppen 58 rader för kort, b24 (redigering) höll (`D:/dealer-scratch/tmp/paow/order/order-b24.json`) (V).
-Nano Banana Pro 4K 4:3 med `@anchor` = ett ankare 1 i bankens ruta (sko, grönt, pose) och `@woman` = dealerns bild;
-texten är `tools/texts/ankare-1.txt`, den som gjorde Paows ankare 1. För en tredje dealer är `@anchor` ett ankare 1
-som gäller, till exempel `paow-vila-ung-2` (S). Inget steg i Beställ: ordern skrivs för hand och läggs genom Runways
-verktyg (V). Efterarbete: [order-clerk.md §5](order-clerk.md), stillbild. Oberoende granskning, Material (`ankare-1`,
+Nano Banana Pro 4K 4:3 med `@anchor` = ett ankare 1 i bankens ruta (sko, grönt, pose) och `@woman` = dealerns bild.
+Texten är mallen `tools/texts/ankare-1.txt`: receptet som gjorde Paows ankare 1, med platser för kläderna, utseendet och
+händerna, och under mallen Paows ifyllda text som exempel. Händernas storlek väljs per uppsättning; mallen säger hur
+de hålls eller ändras. För en tredje dealer, eller en ny uppsättning av samma, är `@anchor` ett ankare 1 som gäller,
+till exempel `paow-vila-ung-2` (S). Inget steg i Beställ: ordern skrivs för hand och läggs genom Runways verktyg (V).
+Efterarbete: [order-clerk.md §5](order-clerk.md), stillbild. Oberoende granskning, Material (`ankare-1`,
 `assets/anchors/<dealer>-<namn>/anchor.png`), Jakob sätter `gäller`. 40 per bild, två bilder.
 
 **5. Ankare 2.1 (nyp, `READY`).** Beställ, steg `ANKARE-2.1`: Nano Banana Pro 4K 4:3, `@anchor` = ankare 1 som
 gäller, `@pose` = en annan dealers utklippta underarm och hand (ruta 16 ur `pamela-p4-c1-plan-deal-02`) (V). Två
 tagningar, 80 krediter. Sedan station 9–12; stillbilden blir `kandidat` i Material och Jakob sätter `gäller`. Paow: höll
-i första ordern (4/5, Jakob godkände). Ankare 2.2 (släp) är inte på vägen: se "Vad bandet inte kan än".
+i första ordern (4/5, Jakob godkände).
+
+**5b. Ankare 2.2 (släp, `READY-B`).** Beställ, steg `ANKARE-2.2`: samma modell som 2.1 och `@anchor` = ankare 1 som
+gäller, men handen ligger över kortet vid skons öppning; posebilden är den andra dealerns utklippta underarm och hand
+lagd på dealerns egen sko och kort ur ankaret (`poseOnShoe` i `tools/order-images.ts`) (V). Paows ankare 2.2 gäller (`paow-ankare-2-2-t1` i
+Material, nod `READY-B`), men bara 1 av 6 tagningar i tre ordrar höll, och bara efter skolagning och lokala lagningar:
+bildmodellen ritade om skon varje gång (handboken 3.7) (V). Från ankare 2.2 ges en plats i rundan när ingången, given,
+returen och utgången från 2.2 är dömda (`SEAT_HUB` i `src/game-director.ts`, SYSTEM); för Paow är det plats 6, med
+`paow-giv-2-2-p6-02` (V).
 
 **6. Landningsbild per plats (nod `LAND(<plats>)`).** Handen vid kortet på planens plats. Krävs bara för en retur som
 egen film och för en giv "bara dit": roll `landning`, nod `LAND(<plats>)`, `card`, `gäller` (`landingOf` i
@@ -89,22 +99,15 @@ kort) står i `data/order-methods.json` med status `gäller`, `prov` eller `sakn
 metod efter Jakobs domar: `node tools/verdicts-per-method.ts <dealer>` räknar dem per modell, vändning, referensfilm och
 mall (V).
 
-**8. Komponera i Beställ** (`/studio/bestall/`). Stegen: `INGANG-2.1`, `INGANG-2.2`, `GIV-2.1`, `GIV-2.2` (tur och
-retur eller bara dit; `GIV-2.1` också till hålkortet `D.C2`, som landar stängt), `RETUR-2.1`, `RETUR-2.2`, `RETUR-1`,
-`UTGANG` (`READY>IDLE`), `HALKORT` (`IDLE>REVEAL(D.C2)`) och `VILA` (`STEPS`, `SEAT_TARGETS`) (V).
+**8. Komponera i Beställ** (`/studio/bestall/`). Stegen som kan beställas, med förvald modell, längd och de stilar
+texten kan skrivas i, står i `STEPS` i `src/order-model.ts`, och de kort en giv kan gå till i `SEAT_TARGETS`; en giv
+är tur och retur eller bara dit, och `GIV-2.1` går också till hålkortet `D.C2`, som landar stängt (V). Hålkortets
+vändning (`HALKORT`, `IDLE>REVEAL(D.C2)`) har bara hålkortet ritat på sina bilder (V).
 `node tools/produce.ts <dealer> --draft` gör utkast där metoden gäller, `--draft --trial <steg|plats>` ett provutkast;
 den godkänner aldrig (V). Utkastet blir `data/orders/<id>.json` med bilderna i `assets/orders/<id>/`. Texten skrivs av
-`promptFor` (`src/order-prompts.ts`), aldrig för hand. Mall 8 (`TEMPLATE_VERSION`, orden i `SAY`) (V):
-
-- en giv slutar åter på "The other hand rests on the felt.": mall 7:s mening om att hon rör sig medan hon delar ut gav
-  rörelse men förstörde kortet i 15 av 18 tagningar (`c81c548`); hur hon rör sig är en öppen fråga (handboken §5);
-- efter ett handbyte går den arm som är ute tillbaka och handen som gav kortet går till skon (`SAY.backPass`);
-- en stängd giv från nypet läggs plant framför skon och skjuts till platsen (`SAY.layAndSlide`);
-- kortets sidor heter "its back is yellow and its face is blue" (`SAY.colours`); mall 6:s ord efter färg förlorade båda
-  paren i omgång 6 och gäller bara ordrar med version 6;
-- hålkortets vändning (`HALKORT`) har bara hålkortet ritat på sina bilder.
-
-En order lagrad med en äldre version återges med sina egna ord. Hur texten och bilderna väljs: handboken §2–3.
+`promptFor` (`src/order-prompts.ts`) med dagens mall, aldrig för hand; orden står i `SAY`, och vilken mall som gäller
+och vad den ändrade står bara i handboken §2 och §5. En order lagrad med en äldre mall återges med sina egna ord. Hur
+texten och bilderna väljs: handboken §2–3.
 
 **9. Godkänn.** Jakobs "Godkänn och lägg i kön" i Beställ, eller `node tools/order-approve.ts <id> --mandate "<vems ord
 och när>"`. Prövas mot `data/order-policy.json`: 400 krediter per order, golvet på saldot och dagstaket. Båda sätts av
@@ -135,9 +138,9 @@ returen 1/5" så att Protokoll läser den (`reviewerNote`, `scoresOf` i `studio/
 tagning i `data/clip-jobs.json`, och en kopia blir `kandidat` i Material (`assets/films/<dealer>/<namn>/`). Tur och retur
 delas vid granskarens delningsruta. En stillbild blir `kandidat` i Material under den roll ordern gör. Status INFÖRD
 sätts när granskarens dom finns på tagningen (eller med `--inford`) (V). Kortspåret per tagning:
-`node tools/track-card.ts <klipp>` skriver `assets/tracking/<klipp>/card-track.json` (V). Skrivs 2026-11-13:
-`register-order.ts` skriver i posten vilken hand som tar kortet och vilken som lägger det (`motion.takeHand`,
-`motion.releaseHand`), så att rundan väljer en retur som kommer tillbaka med den hand som är ute (`src/clip-graph.ts`).
+`node tools/track-card.ts <klipp>` skriver `assets/tracking/<klipp>/card-track.json` (V). `register-order.ts` skriver i
+posten vilken hand som tar kortet och vilken som lägger det (`motion.takeHand`, `motion.releaseHand`), så att rundan
+väljer en retur som kommer tillbaka med den hand som är ute (`src/clip-graph.ts`) (V).
 
 **14. Jakobs dom.** Granska (`/studio/granska/?dealer=<id>`): Primär, Godkänd, Variant eller Underkänd med hans ord,
 skrivet bara i `review` i `motions/<klipp>.json` (`tools/review-store.ts`). Bilder: Material, `gäller` eller `ersatt`.
@@ -151,12 +154,12 @@ och tas bort av hans eget beslut (V, `8e9664c`).
 och Jakobs ord, och en rad per metod (V). Den som har provat för in raden i handbokens tabeller (§5) och ändrar
 metoden i `data/order-methods.json` med belägg; ingen dagbok.
 
-**16. Spelet.** Skrivs 2026-11-13 (koden ligger i arbetsträdet): spelet erbjuder Paow i konsolens Dealer-meny och med
-`game.html?dealer=paow`, och studions Casino skickar sitt `?dealer=` vidare; varje dealer spelar bara sina egna dömda
-tagningar (Jakobs eller en preliminär dom). Efter en giv väljs en retur av samma hand som lade kortet
-(`motion.releaseHand`). Där en film saknas spelas en ersättare per dealer ur `STAND_IN_FILM` i `src/game-director.ts`,
-och den viker av sig själv när en dömd tagning finns; i dag läggs bara plats 6:s kort och ett tredje och fjärde dealerkort
-utan hand. Korten ritas hela vägen, också i hennes hand (SYSTEM, "Ritade kort"; filmens eget kort i handen och i skon
+**16. Spelet.** Spelet erbjuder Paow i konsolens Dealer-meny och med `game.html?dealer=paow`, och studions Casino
+skickar sitt `?dealer=` vidare; varje dealer spelar bara sina egna dömda tagningar (Jakobs eller en preliminär dom).
+Efter en giv väljs en retur av samma hand som lade kortet (`motion.releaseHand`). Där en film saknas spelas en
+ersättare per dealer ur `STAND_IN_FILM` i `src/game-director.ts`, och den viker av sig själv när en dömd tagning finns.
+En plats i `SEAT_HUB` ges från ankare 2.2 när dess fyra filmer är dömda (station 5b). Ett tredje och fjärde dealerkort
+läggs utan hand (V). Korten ritas hela vägen, också i hennes hand (SYSTEM, "Ritade kort"; filmens eget kort i handen och i skon
 finns som adressordet `kort=liggande`). Brytaren Ritade kort (nyckeln `cards`, förval på) slår av allt ritat, också de
 liggande korten.
 
@@ -170,30 +173,28 @@ I spelet säger dealern sina fasta repliker med talfilm och ljud, och chatten sv
 
 ### Ordningen per dealer, och när hon är färdig
 
-Ankare 1 → 2.1 → ingång 1 → 2.1 → vila → en giv till en ytterplats (P1 eller P7) i metodprov → samma metod till alla
-platser → returer → dealerns kort, hålkortet och dess vändning → utgången. Färdig för en runda är hon när
+Ankare 1 → ankare 2.1 (och 2.2 när en plats ska ges därifrån) → ingången 1 → 2.1 → vila → en giv till en ytterplats
+(P1 eller P7) i metodprov → samma metod till alla platser → returer → dealerns kort, hålkortet och dess vändning →
+utgången. Färdig för en runda är hon när
 produktionslistan säger att de 21 steg en runda kräver är klara; hela banken är 33 filmer (`summary.films` i
 `buildGraph`, `src/clip-graph.ts`): 6 utan kort (`IDLE>READY`, `READY>IDLE`, `IDLE>IDLE`, `IDLE>REVEAL(D.C2)`,
-`AWAY>IDLE`, `IDLE>AWAY`), 3 per plats P1–P7 och 3 var för `D.C1` och `D.C2` (V). Paow 2026-11-13 klockan 08:36: 23 av
-33 klara, varav 9 preliminärt dömda, och 19 av de 21 som en runda kräver; kvar är given till plats 6 och hålkortets
-retur till vila (`node tools/produce.ts paow`, V).
+`AWAY>IDLE`, `IDLE>AWAY`), 3 per plats P1–P7 och 3 var för `D.C1` och `D.C2` (V). Grafens 54 kanter blir 33 filmer
+eftersom en spelarplats andra kort spelar platsens första korts filmer (SYSTEM, "Klippbank och nodnotation"). Hur
+långt en dealer har kommit, och vad som är kvar för en runda, räknar `node tools/produce.ts <dealer>`.
 
 ## Vad bandet inte kan än
 
 - **Ett tredje eller fjärde kort.** Planen har sexton platser, så ordermodellen vägrar `D.C3` och en plats tredje kort
   (`tools/order-store.ts`: platsen måste finnas i `placements/default.json`) (V). Jakob bad 2026-11-13 om ett tredje och
   fjärde dealerkort; platsen lägger han själv i Placering när modellen har den.
-- **Plats 6** är det enda giv-steg som saknas för en runda: fjorton tagningar har fallit med samma mönster (kort väg, kortet
-  vänds i ett sudd eller byter sida utan kantruta). Prövat och inte prövat: handboken §5. I spelet läggs kortet utan hand.
 - **Hur hon rör sig** utan att det kostar kortet är en öppen fråga (handboken §5).
 - **Helfiguren** (hon kommer in och sätter sig, `AWAY>IDLE`; hon reser sig och går, `IDLE>AWAY`) har inget steg i
   Beställ; receptet finns i handboken 3.9, och Paows par är gjort så (`paow-table-arrive-wide-01`,
   `paow-table-leave-wide-01`, 552 krediter) (V).
-- **Ankare 2.2** (släp): föll i tre ordrar (`paow-ankare-2-2`, `-01`, `-02`), bildmodellen flyttade skon varje gång (V);
-  kvar är en ruta ur en film som börjar på ankare 2.1 (S, oprövat). Varje giv börjar på 2.1.
 - **Landningsbild, keystone och ankare 1** har inget steg i Beställ; de beställs med handskrivna ordrar eller väljs som
   ruta i Material (V, `STEPS`).
-- **Retur till vila från en plats** (`RETUR-1`) och retur som egen film har ingen metod (`saknas`) (V).
+- **Retur som egen film** (`RETUR-2.1`, `RETUR-2.2`, `RETUR-1`, också retur till vila från en plats) har ingen metod
+  (`saknas` i `data/order-methods.json`) (V).
 - **Python för MediaPipe:** passningen av en stillbild, skolagningen och händer och kropp per ruta (`tools/python/`) (V).
 - **Kling 4:s färger** läses som Python läste dem: BT.709-märkt film som BT.601, så att resultatet blir som de godkända
   tagningarna; en korrekt avkodning skulle flytta färgerna något, och det är inte avgjort (`tools/film-after.ts`) (V).
@@ -209,8 +210,8 @@ retur till vila (`node tools/produce.ts paow`, V).
 - **En plats, och den svåraste, före alla.** Omgång 3 och 3b gick till alla sju platser från plats 4: 12 av 14 föll, 1 960
   krediter. Omgång 4 med platsen i ord: handen nådde P1 eller P7 i 4 av 5, 677 krediter (kvittona, V).
 - **En ändring per omgång, mot ett recept som har hållit,** med samma bilder och längd. Omgång 4 ändrade både plats och
-  vändsätt, och fyra av fem fel gällde kortet i luften; omgång 6 ställde mall 5 mot mall 6 i två par (handboken §5, V).
-- **En tagning per metodprov, två per klipp när metoden är vald,** en tredje bara om båda faller (HANDOFF).
+  vändsätt, och fyra av fem fel gällde kortet i luften; omgång 6 ställde två mallar mot varandra i två par (handboken §5, V).
+- **Antalet tagningar** per metodprov och per klipp står i handboken §2; fler beställs bara när de som finns har fallit.
 - **Varje omgång granskas oberoende innan nästa bygger på den,** och kostnaden berättas efter omgången (HANDOFF).
 - **Det som föll beställs inte om:** hela rundan i en tagning (0 av 7, cirka 3 500 krediter), Motion Control, mellanbild i
   Kling 4, Aleph och video-till-video, 4K-filmmodell, bildmodellen som flyttar kameran, stängd giv till en spelares plats
@@ -236,12 +237,12 @@ Där en källa bara är text eller ett skript utanför repot står det "inget i 
 | Keystone | Hög upplösning, stående och sittande, på vitt (Paow 3584 × 4800 och 4800 × 3584) | text i `order` i `data/dealer-standard.json`; inget i repot vägrar |
 | Grönt | Ingen fast färg: nyckeln läser varje rutas hörn (`keyLo` 0,12, `keyHi` 0,9). Konvention: RGB 0, 237, 44 (Pamelas viloruta, Paows ankare) | shadern i `src/scene3d-film.ts`; `SCREEN`, `CORNER` i `src/film-fix.ts`; `anchors.mustAgree` |
 | Bordskantsraden | 831,5; kroppen slutar på rad 825–831; inget 10 nivåer mörkare än grönt ovanför | `dealerEdgeImageRow` i scenkontraktet; `FRAME_FIX`; `edgeCheck`, `EDGE` i `src/film-after.ts`; inget i repot vägrar |
-| Kortets färger | Baksida gul, framsida blå, enfärgade; i texten "its back is yellow and its face is blue" | `card.colours` i standarden; `SAY.colours`; spårarens `is.yellow`, `is.blue` |
+| Kortets färger | Baksida gul, framsida blå, båda släta (en platt färg per sida), likaså nästa kort i fönstret; meningen i texten är `PLAIN_CARD` | `card.colours` i standarden; `PLAIN_CARD` i `src/order-prompts.ts`; spårarens `is.yellow`, `is.blue` |
 | Kortets storlek | Planens kort (P4 86,6 × 71,8 px); i flykten inom ±10 %; landat inom ±10 % yta och 5 px | `placements/default.json`; ±10 % och 5 px är granskningens regel, inget i repot vägrar |
-| Mall | `film-giv-kort@8` = stil och version; i dag 8; Utförlig är mall 3 | `TEMPLATE_VERSION`, `LONG_VERSION`, `PromptInput.version` i `src/order-prompts.ts` |
+| Mall | `<sort>-<stil>@<version>`, till exempel `film-giv-kort@…`; Utförlig skrivs utan stil (`film-giv@…`). Vilken mall som gäller: handboken §2 | `templateOf`, `TEMPLATE_VERSION`, `LONG_VERSION`, `PromptInput.version` i `src/order-prompts.ts` |
 | Order-id | `<dealer>-<steg>-<plats>-<nn>`, till exempel `paow-giv-2-1-p4-15`, `paow-halkort-02` | `nextId` i `tools/order-store.ts` |
 | Klipp-id | `<order-id>-<tagning nn>`; tur och retur ger `…-deal` och `…-return-ready` (eller `-idle`); rättad kopia `…-fix-<k>` | `clipIdOf` i `tools/register-order.ts` |
-| Kant och nod | `A>B`; `IDLE` ankare 1, `READY` 2.1, `READY-B` 2.2, `P1.C1` … `P7.C2`, `D.C1`, `D.C2`, `LAND(P4.C1)`, `REVEAL(D.C2)`, `AWAY` | `parseEdge` i `src/clip-graph.ts`; `ANCHOR_NODE`, `edgeOf` i `src/order-model.ts` |
+| Kant och nod | `A>B`; `IDLE` ankare 1, `READY` ankare 2.1 (nyp), `READY-B` ankare 2.2 (släp), `P1.C1` … `P7.C2`, `D.C1`, `D.C2`, `LAND(P4.C1)`, `REVEAL(D.C2)`, `AWAY` | `parseEdge` i `src/clip-graph.ts`; `ANCHOR_NODE`, `edgeOf` i `src/order-model.ts` |
 | Orderstatus | UTKAST, GODKÄND (fryst), AVBRUTEN | `OrderStatus` i `src/order-model.ts` |
 | Tagningsstatus | GODKÄND → LAGD → KLAR → HÄMTAD → EFTERARBETAD → MÄTT → GRANSKAD (granskarens) → INFÖRD; OSÄKER (läggs aldrig om), MISSLYCKAD, AVBRUTEN | `TAKE_FLOW` i `src/order-model.ts` |
 | Domord i banken | Primär (`MAIN`), Godkänd (`ACCEPTED`), Variant (`VARIANT`), Underkänd (`REJECTED`), Väntar (`PENDING`); preliminär dom = `review.provisional`, `userAccepted: false`, i studion "dömd åt dig" (väntar inte i hans kö); `review.inbox` = från en order, inte dömd | `DECISIONS`, `applyProvisional` i `tools/review-store.ts` |
