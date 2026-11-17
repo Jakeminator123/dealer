@@ -97,12 +97,15 @@ Märk varje påstående **[M]** mätt eller **[S]** sett med ögat.
 1. **Skarvar [M]:** ruta 3 och ruta 0 mot första bilden, ruta (antal−3) och sista rutan mot sista bilden: medelavvikelse
    på motivet (allt som inte är grönt, bakgrundstest G − max(R, B) över 40), antal bildpunkter som skiljer mer än 24
    nivåer, och förflyttningen i bildpunkter för given hand, andra handen, huvudet, skon och kortet. Når filmen sista
-   bildens pose före slutet, och från vilken ruta står den still?
+   bildens pose före slutet, och från vilken ruta står den still? Säg om första rutan är ljusare eller mörkare än första
+   bilden och med hur många nivåer (WAN 3 har börjat ljusare, Kling 4 mörkare).
 2. **Kortet, ruta för ruta i full upplösning** för varje ruta där det är utanför skon **[M + S]:** rutan det lämnar
    skon; hur det hålls (nyp, platta fingrar); om det läggs ned och tas upp igen, skjuts eller släps längs filten
    (skuggan och avståndet till filten skiljer "på filten" från "i luften"); för ett släp: rutan där kortet lämnar
    filten, och om det lyfts redan ur skon; landningsrutan; tryck, prickar, siffror, symboler, en ram, en ljus kant
-   eller tvåfärgade ytor, på kortet och på nästa kort i fönstret; ett andra kort; kortet som är kvar i skon.
+   eller tvåfärgade ytor, på kortet och på nästa kort i fönstret; en blek yta (hela kortets färg bleknar, inte bara en
+   kant: ange rutorna och färgen mot sista bildens); ett kort som rör sig eller vrider sig på bordet utan att ett finger
+   håller det (det fäller tagningen); ett andra kort; kortet som är kvar i skon.
 3. **Kortets storlek [M]:** kortets långsida och kortsida i bildpunkter var femte ruta från skon till bordet (ur
    kortspårets fyrhörningar, längd och bredd längs huvudaxlarna som `src/flip-axis.ts` läser dem, eller mätt i rutorna).
    Storleken ska hålla sig inom ungefär **±10 %** av sin median över de öppet synliga rutorna; ange varje ruta utanför
@@ -110,7 +113,11 @@ Märk varje påstående **[M]** mätt eller **[S]** sett med ögat.
    (`restQuad` i spåret, eller mätt i sista rutan) jämförs med planens kort i sista bilden (`drawn.quad` och
    `drawn.measured` i beställningen; det är planens storlek, eller den som valts för ordern i `motion.cardScale`): sidor
    och yta inom ±10 %, och mittpunktens avstånd i bildpunkter. Jakob har sett kortet mindre i vissa filmer och större i
-   andra; det är ett fel även när rörelsen är fin.
+   andra; det är ett fel även när rörelsen är fin. Pröva formen också, inte bara storleken: ett kort (63 × 88 mm) med
+   planens kortsida visar som mest en långsida på kortsidan × 88/63 när det hålls med bredsidan mot kameran (för P4.C1
+   cirka 121 bildpunkter; en härledning, inte en mätning), och kortet i handen är längre bort än platsen och bör se
+   mindre ut. En längre långsida än så är ett för stort eller för avlångt kort, också när kortsidan stämmer: ange
+   långsidan och förhållandet mellan sidorna i handen.
 4. **Vändningen [M + S]:** Jakobs regel, 2026-11-17: "Oavsett om hon nyper eller släpar ut kortet, alltså om hon
    kommer från ankaret 2.1 eller 2.2, måste hon vrida över handleden." och "Båda dessa två sätt är giltiga […] Altså
    både vrida som en nyckel samt den andra. Huvudsaken är att rätt sida kommer upp mot spelaren och att korten har
@@ -125,15 +132,18 @@ Märk varje påstående **[M]** mätt eller **[S]** sett med ögat.
      (handboken 3.3, vändning B), och vridningen där handflatan går från nedåt till uppåt; säg vilket filmen gör. Har
      beställningen `flipAxis` LONG_EDGE eller AT_PLACE, säg om filmen följer det.
    - **Gult till blått, rätt sida upp:** kortet vänds en gång genom kantläget (minst en kantruta), från gult till blått,
-     och den blå sidan kommer upp mot spelaren. Ett färgbyte utan vändning är ingen vändning.
+     och den blå sidan kommer upp mot spelaren. Ett färgbyte utan vändning är ingen vändning. Kortet får inte gå på
+     kant och tillbaka till gult före den riktiga vändningen, och inte läggas gult på platsen och vändas efteråt.
    - **Anatomin:** samma hand håller kortet hela vändningen, ingen handled vrids bortom det naturliga, inga fingrar går
      genom kortet, och kortet förblir styvt med en färg på var sin sida. Storleken mäts i punkt 3.
 5. **Fingrarna [S]:** fingertopp genom eller sammanväxt med kortet, sammanvuxna eller extra fingrar, med rutnummer; var
    fingertoppen vilar i slutet.
 6. **Handens väg [M]:** handens höjd över bordskanten över tid; omväg, svävande, stopp (rutor där den står still: ange
-   intervallen), upplyft handflata eller knytnäve; för en retur handens högsta punkt och dess ruta.
+   intervallen), upplyft handflata eller knytnäve; för en retur handens högsta punkt och dess ruta. I en giv: släpper
+   handen det lagda kortet och läggs ned igen i slutet (ange rutorna), och står handen still före sista rutan?
 7. **Frysta eller dubblerade rutor, hack och ojämn rörelse [M]** med rutnummer (WAN 3 har tagit ett större steg var
-   femte ruta).
+   femte ruta). Ange filmens rutor per sekund och antal rutor (Kling 4 har levererat 24 per sekund, WAN 3 30); banken
+   klipper på rutor.
 8. **Grönt [M]:** medel-RGB i hörnet uppe till vänster (x 20..260, y 20..260) i ruta 0, 1, 2, 3, 5, 10, 30, mitten,
    antal−10, antal−3 och de tre sista, och i första och sista bilden; drift och hopp. Är båda vänstra hörnen tomma och
    gröna i varje ruta? Inget mörkt ovanför bordskanten utanför henne och skon (kantkoll i `after.json`, `edgeCheck` i

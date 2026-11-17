@@ -132,24 +132,36 @@ planförslagen, markering av avgjorda prov).
   Prov `pamela-formel`: i nio av nio bra vändningar vrids hand och kort ihop som en nyckel kring långsidan och handen
   förblir vänd; WAN 3, 4 s, bara dit, kortet slätt i startbilden). Vändningen är besvarad: båda sätten gäller (Jakobs
   besked, "Kortets vändning"). Mall 9 står kvar tills provet nedan är läst.
-- **Prov av beställningstexter, i gång i kväll** (Jakob: "Men jag vill nu du testar vilka av våra instruktioner som
+- **Provet av beställningstexter** (Jakob: "Men jag vill nu du testar vilka av våra instruktioner som
   fungerar bäst. Ta det bästa från Pamela och det bästa från det vi har idag. I och med att vi redan har tillbakagången
   från respetive A3 så kanske vi bara kan producera några filmer som är själva utgiven. Du får fria händer att skriva om
   instruktionerna. Kanske om du vill lägga till en bild eller beskrivning för hur korten ska vara storleksmässigt
   med."): givar bara dit för Paow, ankare 2.1
-  till P4.C1, med texter på Pamelas sätt, på dagens och en blandning; taket 900 krediter. Arbetsmappen är
-  `D:/dealer-scratch/tmp/giv-experiment/`, rapporten blir `RAPPORT.md` där. Vinnaren blir nästa mall; inget är avgjort.
-  Föreslaget till honom, inte byggt: Beställ visar hur den valda kombinationen har gått förut och förväljer den som höll.
+  till P4.C1, tio tagningar, 820 krediter (`D:/dealer-scratch/tmp/giv-experiment/RAPPORT.md`, Prov `giv-experiment`).
+  **Förlagefilmen gör jobbet, inte texten:** Kling 4 (1080p, 4 s) med Pamelas godkända giv
+  `pamela-p4-c1-plan-deal-02` som förlagefilm vände kortet genom kantläget i fyra av fyra tagningar, med text A (Pamelas
+  sätt) eller C (blandningen) lika; den oberoende granskaren släpper igenom tre av de fyra (4/5) och fäller den fjärde
+  (kortet vrider sig på bordet utan fingrar). Ingen av sex WAN 3-tagningar utan förlagefilm håller (kortet 19–41 % för
+  långt i handen i fyra, färgbyte utan vändning i en, två vändningar i en). Att rätta i nästa mall: handen släpper det
+  lagda kortet och läggs platt igen i slutet, eftersom sista bilden inte slutar som förlagefilmen, och en ljus kant på
+  1–1,5 bildpunkter syns på kortets tjocklek. Ingen instruktion om vit kant har någonsin skickats (alla 98 ordrar lästa).
+  Väntar på hans svar i Beslut (`givprovet-forlagefilm`); nästa mall (text C, förlagefilm och Kling 4 som förval för en
+  giv) skrivs när bygget av kortbanan har släppt orderfilerna. Föreslaget till honom, inte byggt: Beställ visar hur den
+  valda kombinationen har gått förut och förväljer den som höll.
 - **Nya händer** (hans ja i Beslut 2026-11-17: "starta upp nya filmer från "ankare 2.2 där hon har aningen indre händer
   och även taueringarna. […] men också får till rätt beställningsmetod"; hela anteckningen i `data/decisions.json`,
   `tatuerade-mindre-hander`). De nuvarande filmerna ligger kvar och en ny uppsättning byggs bredvid; händerna syns i
   varje film, så den tar över först när den är komplett. Att måla tatueringar i färdiga filmer har fallit två gånger
-  (2 av 5). Första steget, keystonebilderna med tatuerade händer 10 % mindre och utan skuggan under underarmarna, väntar
-  på hans svar i Beslut.
+  (2 av 5). Första steget, keystonebilderna med tatuerade händer 10 % mindre och utan skuggan under underarmarna, har
+  hans ja (Beslut 2026-11-17 kl. 19.13); trailersessionen lägger dem som kandidater i Material (han sätter gäller) och
+  tar fram händernas punkter och ett nytt ankare 1 för hans öga.
 - **Trailern:** rollblad 4 (tatuerade händer i alla bilder) har hans ja 2026-11-17 kl. 19.40 ("Ja hennes 5-faldiga
   bilder:er är nu bra"). Trailersessionen gör trappans tagning som en ny film ur de bilderna, med dagens film som
-  förlaga för rörelsen (cirka 280–320 krediter); inget byts i trailern före hans ja till filmen. Att måla tatueringar i
-  den färdiga filmen har fallit två gånger (2/5), därav den nya filmen. Ingen har lyssnat på trailern. Filmen före
+  förlaga för rörelsen: tre tagningar, alla föll i granskningen (2/5, 2,5/5, 2/5; ryggtatueringen håller, men händerna
+  är bara den första sekunden och ryggen är platt), 342 krediter. **Pausat på hans ord** samma kväll ("Om allt med
+  videon är dåligt.. Låt mig titta, mne strunt i det och pausa det sålänge"): provet ligger i `trailer-noir-3`, inget
+  beställs och inget byts i trailern tills han säger till. Fortsätter vägen måste också gränd-glimten och de tre
+  scenerna efter trappan göras om (de har den gamla ryggtatueringen). Ingen har lyssnat på trailern. Filmen före
   spelet är `assets/films/intro/noir-3/film-2.mp4` (nytt namn, eftersom kopian svarar med ett dygns lagringstid; den
   förra ligger bredvid som `film-v4.mp4`).
 - **Läpparna i realtid** (målet; Jakobs besked, "Läpparna"). Kvällens prov (`paow-realtid-mun` till `-4`, hela modellens
@@ -157,8 +169,17 @@ planförslagen, markering av avgjorda prov).
   bli något större", och av storlekarna B, C, E och F valde han F. Samma kväll: munnen är "tillräckligt bra för att
   godkännas", men "området runt hennes mouth [är] fortfarande lite utdraget och ser överjusterat ut. Skulle det vara
   möjligt att få just de ytorna omkring hennes mouth att bli mindre animerade?" Talbanans svar är provet
-  `paow-realtid-mun-5` (bara läpparna läggs in, storlek F kvar; huden runt är vilofilmens), som väntar på hans svar i
-  Beslut. Scouts renderer har ett avsiktligt lås mot ändrade
+  `paow-realtid-mun-5` (bara läpparna läggs in, storlek F kvar; huden runt är vilofilmens). Hans svar i Beslut:
+  "Ändra": "Just när hon säger detta lägger jag insatser, tack, så ska hon förmodligen ha en lite mindre öppen mun. […]
+  Utifrån hur hennes mun ser ut när den är stängd ska den max kunna gå upp så här, men den ska kunna gå upp lite mindre
+  och hon ska visa mindre tänder. […] Nu ser det nästan lite överdrivet ut."; och i chatten att näsan inte ska påverkas
+  och att området runt munnen får röra sig lite. Talbanan gör nästa prov (mindre utslag för vanligt tal, dagens som
+  tak, hakan följer mjukt). Den egna köraren går lokalt (0 kr): 14–15 rutor per sekund på hans RTX 3060 mot 24 för
+  realtid, modellerna läses in på 33–41 s; `bbox_shift` ger inte större läppar (storleken kommer ur inläggningen).
+  Nästa: köraren som tjänst med inläggningen inbyggd, sedan provkvällen på podden. Talbanans uppslagning, inte
+  kontrollerad mot licenstexten: ansiktsmaskens vikt i MuseTalk (BiSeNet) är tränad på bilder för icke-kommersiell
+  forskning och står i Scouts renderers lås; vår körare använder den inte; sagt till Jakob som en fråga för rendererns
+  ägare. Scouts renderer har ett avsiktligt lås mot ändrade
   filer, som vi inte går förbi; talbanan bygger en egen körare av MuseTalk ur öppen källkod
   (`D:/dealer-scratch/tmp/tal/korare/`, licenserna läses först), och en provkväll på hans pod är godkänd till högst 5 USD
   när köraren går här. Planen: `D:/dealer-scratch/tmp/tal/realtid/PLAN.md`. Studions vy **Lipsync** (`6f97879`) visar
@@ -209,7 +230,15 @@ Ett besked per ämne, med det nyaste ordet och dess datum. Ett besked han har er
   till färdigt material - fast som är tillordnat kanske just ett företag som önskar sin företagsloggo eller liknande"),
   med prov av läppsynk under samma del. Vilket kort det är bestäms när rundan spelas, så valören ritas då; hur korten
   ser ut bestäms i efterarbetet (huvudagentens svar, som han inte har sagt emot). Om det nya Placering: "Nu ser allt
-  mycket bättre ut angående placeringen i det nya."
+  mycket bättre ut angående placeringen i det nya." Skisserna (Prov `labbets-grund`: Bordet med fyra steg, Efterarbete
+  för sig) har hans ja i Beslut kl. 19.22, "Ja bygg men med anmärkning": "angående det som är till för att beskriva det
+  som ska gå till runway, så ska bara instruktioner som faktist ska komma med till runway - finnas som är tänmkt att
+  beskriva just detta, så att inte olika beskrivningar i nya labbet skapas som finns bara för att beskriva för
+  användaren saker som ändå inte kommer komma med till runway", och om skons kort i labbets bild: "Den gulaktiga
+  kortsiluetten är cirka 50 grader för tiltat nedåt från ovansidan och ska vändas innot (så man ser mindre) […] Jämför
+  bara mot kortet i en bild från en video eller bild". Kortets efterarbete görs i förväg per film, inte av spelet medan
+  filmen spelas: "Det är bättre att vi gör detta i en post- eller efterkonstruktion. […] om det behövs, ta ruta för
+  ruta och måla ut ett kort som ser riktigt bra ut", med det ritade kortet "något procent större än kortet".
 - **Kortbanan ska stämma med filmerna** (2026-11-17, "VIKTIGT"): det som används som instruktion eller material för
   kortets vändning ("kortbana" i Rörelse) "måste stämma med hur rörelserna är i antingen filmen om det görs postumt
   eller som det är tänkt att vara utifrån om dealern släpar eller nyper kortet och sedan öppnar upp det till själva
@@ -234,7 +263,8 @@ Ett besked per ämne, med det nyaste ordet och dess datum. Ett besked han har er
   tagningar per klipp när metoden är vald; varje omgång oberoende granskad innan nästa bygger på den; kostnaden berättas
   efter varje omgång. Hans är domarna i Granska och Material och allt utanför filmbeställning (publicering, Scout).
 - **Budgeten** (2026-11-13 cirka 15.13): "Nej du får obegränsat i budget!", och kl. 16.37 "inga tak idag". Dagstaket och
-  golvet är borttagna i praktiken; 400 per beställning står som skydd mot ett misstag. Saldot sätter gränsen tills han
+  golvet är borttagna i praktiken. 2026-11-17: "Vi ska inte ha någon limit på 400 krediter.. Höjj till 2k åtminstonde.";
+  taket per beställning är 2 000 (`data/order-policy.json`) och står som skydd mot ett misstag. Saldot sätter gränsen tills han
   fyller på, och påfyllningen gör bara han.
 - **Klicket är kön** (2026-11-13): "jag vill ju kunna klicka bara i stället för att säga lägg kön, så görs det per
   automatik." Huvudagenten startar beställningsagenten (`tools/order-clerk.md`) så snart en godkänd order har en
