@@ -1,15 +1,15 @@
 "use client";
 
 // The inspector's panels for the chosen place: Plats (where it lies and the card's three measures: riktning, lutning,
-// perspektiv), Rörelse (how the dealer takes, turns and lays it) and Bordet (what holds for every card: the flat table, one
+// perspektiv; on the real perspective the table's one "Perspektiv" for every card instead), Rörelse (how the dealer takes, turns and lays it) and Bordet (what holds for every card: the flat table, one
 // size for all, the files). Every change goes to the draft as one step (a slider's drag is one step); nothing is saved here.
 import { Crosshair, Download, Grid2x2, RotateCcw, Square, Upload, Users } from "lucide-react";
 import { useRef, useState, type ReactNode } from "react";
 import { FLIP_AXES, FLIP_LABEL } from "../../../src/order-model.ts";
-import { planCardQuad, throughLens } from "../../../src/card-plan.ts";
+import { dealerCards, planCardQuad, throughLens } from "../../../src/card-plan.ts";
 import {
   CARD_COLOUR, CARD_SCALE, PLANE_HEADINGS, PLAYER_TARGETS, SHOE, TARGETS, TECHNIQUES, applyTechnique, copyChoices, dealerAngle, editIntent, editPlace, otherHand,
-  resetPlace, scaleCards, setTableProjection, snapPlace, straightenPlayers, techniqueOf, toPixels,
+  TABLE_PERSPECTIVE, resetPlace, scaleCards, setTablePerspective, setTableProjection, snapPlace, straightenPlayers, techniqueOf, toPixels,
   type Intent, type Place, type PlacementPlan, type Technique, type View,
 } from "../../../src/placement-model.ts";
 import { GRIP_LABEL, VIEW_WORD, decimal, editFlip, flipOf, handWord, motionSteps, placeCode, quadSize } from "../../lib/placement.ts";
@@ -54,6 +54,55 @@ const download = (name: string, text: string) => {
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 };
 
+// ── Bordets perspektiv ──
+// One number for the whole plan on the real perspective (src/card-plan.ts planLens; Jakob 2026-11-17: "Om alla kort är exakt
+// lika stora, blir de väldigt tvådimensionella"): how much seat 4's card narrows toward its far edge, from the real camera's 96 %
+// down to 85 %; seat 4's card keeps its size and place, the cards further off shrink faster. The slider's top is the real
+// camera itself (the value is taken out of the plan). His earlier plan's projective plane narrowed every card to 0.87. No V6
+// mark: V6's look is larger cards from another camera, outside this family (larger cards are Efterarbete's).
+const DEPTH_MARKS = [
+  { value: 0.87, label: "Din tidigare plan" },
+  { value: TABLE_PERSPECTIVE.max, label: "Verkligt" },
+];
+const percent = (v: number) => `${Math.round(v * 100)} %`;
+const withDepth = (p: PlacementPlan, v: number) => setTablePerspective(p, v >= TABLE_PERSPECTIVE.max ? null : v);
+function TableDepth({ plan, off }: { plan: PlacementPlan; off: boolean }) {
+  const value = plan.tableProjection?.perspective ?? TABLE_PERSPECTIVE.max;
+  const span = TABLE_PERSPECTIVE.max - TABLE_PERSPECTIVE.min;
+  const dealer = dealerCards(plan);
+  return (
+    <div className="flex flex-col gap-1.5">
+      <OneStep disabled={off}>
+        <Slider label="Perspektiv" value={value} min={TABLE_PERSPECTIVE.min} max={TABLE_PERSPECTIVE.max} step={TABLE_PERSPECTIVE.step} format={percent} disabled={off} onChange={(v) => draftActions.move((p) => withDepth(p, v))} />
+      </OneStep>
+      <div aria-hidden className="relative mx-[7px] -mt-1 h-1.5">
+        {DEPTH_MARKS.map((m) => (
+          <span key={m.label} className="absolute top-0 h-1.5 w-px bg-faint" style={{ left: `${((m.value - TABLE_PERSPECTIVE.min) / span) * 100}%` }} />
+        ))}
+      </div>
+      <div className="relative mx-[7px] h-4">
+        {DEPTH_MARKS.map((m) => (
+          <button
+            key={m.label}
+            type="button"
+            disabled={off}
+            aria-pressed={Math.abs(value - m.value) < 0.005}
+            onClick={() => draftActions.edit((p) => withDepth(p, m.value))}
+            // under its tick: the real camera's at the right end, ending there; the others starting just left of theirs
+            style={m.value >= TABLE_PERSPECTIVE.max ? { right: "-7px" } : { left: `calc(${((m.value - TABLE_PERSPECTIVE.min) / span) * 100}% - 0.75rem)` }}
+            className="absolute top-0 whitespace-nowrap rounded-sm px-1 text-2xs text-dim underline decoration-dotted underline-offset-2 hover:text-ink disabled:opacity-45 aria-pressed:text-ink aria-pressed:no-underline"
+          >
+            {`${m.label} ${percent(m.value)}`}
+          </button>
+        ))}
+      </div>
+      <p className="text-xs tabular-nums text-dim" title="Dealerns två kort mot det verkliga perspektivets, mätt på den närmaste kanten">
+        {`dealerns kort 100 % → ${percent(dealer.share)} (${Math.round(dealer.px)} px)`}
+      </p>
+    </div>
+  );
+}
+
 // ── Plats ──
 export function PlacePanel({ plan, view, id, editable, onTable }: { plan: PlacementPlan; view: View; id: Place; editable: boolean; onTable: () => void }) {
   const [snap, setSnap] = useState("10");
@@ -84,6 +133,7 @@ export function PlacePanel({ plan, view, id, editable, onTable }: { plan: Placem
   const g = t.geometry[view];
   const flat = plan.tableProjection?.mode === "flat";
   const shape = off || flat;
+  const lens = throughLens(plan, view);
   const size = quadSize(planCardQuad(plan, id, view));
   return (
     <>
@@ -104,12 +154,13 @@ export function PlacePanel({ plan, view, id, editable, onTable }: { plan: Placem
       <Section title="Kortets mått">
         {flat ? (
           <p className="text-xs text-[#f0b07a]">
-            {throughLens(plan, view) ? "Verkligt perspektiv: följer P4C1." : "Plant bord: följer P4C1."}{" "}
+            {lens ? "Verkligt perspektiv: följer P4C1." : "Plant bord: följer P4C1."}{" "}
             <button type="button" onClick={onTable} className="underline decoration-dotted underline-offset-2 hover:text-ink">
               Alla kort
             </button>
           </p>
         ) : null}
+        {lens ? <TableDepth plan={plan} off={off} /> : null}
         <div className="flex flex-col gap-2">
           <OneStep disabled={shape}>
             <Slider label="Riktning" value={g.angle} min={-180} max={180} step={1} format={(v) => `${Math.round(v)}°`} disabled={shape} onChange={(angle) => draftActions.move((p) => editPlace(p, id, view, { angle }))} />
@@ -133,7 +184,7 @@ export function PlacePanel({ plan, view, id, editable, onTable }: { plan: Placem
             plant
           </span>
         </div>
-        <div className="flex flex-col gap-2">
+        <div className={cn("flex flex-col gap-2", lens && "hidden")}>
           <OneStep disabled={shape}>
             <Slider label="Perspektiv" value={g.taper} min={0.4} max={1.6} step={0.01} format={(v) => `${Math.round(v * 100)} %`} disabled={shape} onChange={(taper) => draftActions.move((p) => editPlace(p, id, view, { taper }))} />
           </OneStep>
@@ -279,7 +330,13 @@ export function TablePanel({ plan, view, id, editable }: { plan: PlacementPlan; 
           disabled={off}
           onChange={(on) => draftActions.edit((p) => setTableProjection(p, { mode: on ? "flat" : "individual", heading: projection.heading }))}
           label="Verkligt perspektiv"
-          hint={flat ? "Alla kort som verkliga kort genom samma kamera som dealern." : "Varje kort med egen riktning och perspektiv."}
+          hint={
+            !flat
+              ? "Varje kort med egen riktning och perspektiv."
+              : projection.perspective === undefined
+                ? "Alla kort som verkliga kort genom samma kamera som dealern."
+                : `Alla kort som verkliga kort, bordets perspektiv ${percent(projection.perspective)}.`
+          }
         />
         {flat ? (
           <div className="flex items-end gap-2">

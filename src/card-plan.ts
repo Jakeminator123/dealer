@@ -4,11 +4,14 @@
 // table's lens (src/table-lens.ts, the 3D lane's), so cards nearer the dealer are larger than the plan's old projective plane
 // drew them and a card narrows to 0.956 at its far edge, not 0.87. The plan says where a card lies and which way it points;
 // its size and shape follow from the lens. How large the game draws its cards is afterwork (Efterarbete's "Kortens storlek").
+// How deep the table looks is one number of the plan (tableProjection.perspective, Kortplan's "Perspektiv"; Jakob 2026-11-17:
+// "Om alla kort är exakt lika stora, blir de väldigt tvådimensionella"): the lens of the family (lensForTaper) under which seat
+// 4's card narrows so, its near edge and place held; absent, the real camera.
 // The rule every drawing of the plan in the lab and in an order uses: Bordet's Kortplan and card path, Ny beställning's
 // picture, an order's last picture (tools/order-images.ts). The game keeps src/placement-model.ts flatQuad until its lying
 // card is changed in a step of its own. Pure; tests in tools/card-plan.test.ts.
 import { planQuad, quad, toPixels, type Geometry, type PlacementPlan, type View } from './placement-model.ts';
-import { FILM, TABLE_LENS, realCardQuad, type Lens, type Pixel } from './table-lens.ts';
+import { FILM, TABLE_LENS, lensForTaper, realCardQuad, type Lens, type Pixel } from './table-lens.ts';
 
 /** The plan's Dator view is 1762 wide and the film 1764: a plan pixel's x times 1763/1761 is the film's (the game's FILM_X). */
 const PLAN_X = 1761, FILM_X = FILM.width - 1;
@@ -17,12 +20,20 @@ export const filmToPlan = (p: Pixel): Pixel => ({ x: (p.x * PLAN_X) / FILM_X, y:
 /** The card's turn on the felt: the table's direction (tableProjection.heading) and P4C1's own riktning, in radians. */
 const headingOf = (plan: PlacementPlan, reference: Geometry) => (((plan.tableProjection?.heading ?? 0) + reference.angle) * Math.PI) / 180;
 
+/**
+ * The lens the plan's cards are seen through: the real camera (TABLE_LENS) unless the plan names a perspective
+ * (tableProjection.perspective, Kortplan's "Perspektiv"): then the lens of the family under which seat 4's card narrows so.
+ */
+export const planLens = (plan: Pick<PlacementPlan, 'tableProjection'>): Lens => {
+  const p = plan.tableProjection?.perspective;
+  return p === undefined ? TABLE_LENS : lensForTaper(p);
+};
 /** Whether the plan's cards are drawn through the lens: the table is "Plant bord" (every card follows P4C1) and the view is Dator. */
 export const throughLens = (plan: Pick<PlacementPlan, 'tableProjection'>, view: View) => view === 'native' && plan.tableProjection?.mode === 'flat';
 
 /**
  * A card of the plan as the lab and an order draw it, in the view's pixels, corners far left, far right, near right, near
- * left: through the table's lens where the table is "Plant bord" in Dator (a real card at the card's own place, turned as
+ * left: through the plan's lens where the table is "Plant bord" in Dator (a real card at the card's own place, turned as
  * the table), else the plan's own rule (planQuad: the card's stored measures; Mobil keeps its
  * projective plane, since the lens is the film's).
  */
@@ -30,8 +41,20 @@ export function planCardQuad(plan: PlacementPlan, id: string, view: View): Pixel
   if (!throughLens(plan, view)) return planQuad(plan, id, view);
   const g = plan.targets[id]?.geometry.native;
   if (!g) throw Error(`Okänd kortplats ${id}.`);
-  const q = realCardQuad(planToFilm(toPixels(g, 'native')), headingOf(plan, plan.targets['P4.C1'].geometry.native));
+  const q = realCardQuad(planToFilm(toPixels(g, 'native')), headingOf(plan, plan.targets['P4.C1'].geometry.native), 1, planLens(plan));
   return q ? q.map(filmToPlan) : quad(g, 'native');
+}
+
+/** A card's near edge on screen (plan px) at its place of the plan, under a lens; NaN where the lens does not see it. */
+function nearEdge(plan: PlacementPlan, id: string, lens: Lens): number {
+  const q = realCardQuad(planToFilm(toPixels(plan.targets[id].geometry.native, 'native')), headingOf(plan, plan.targets['P4.C1'].geometry.native), 1, lens);
+  return q ? screenMeasure(q.map(filmToPlan)).near : NaN;
+}
+/** The dealer's two cards' width (near edge, plan px) under the plan's lens and under the real camera's: Kortplan's "dealerns kort 100 % → 78 %". */
+export function dealerCards(plan: PlacementPlan): { px: number; realPx: number; share: number } {
+  const ids = ['D.C1', 'D.C2'], at = (lens: Lens) => ids.reduce((s, id) => s + nearEdge(plan, id, lens), 0) / ids.length;
+  const realPx = at(TABLE_LENS), px = at(planLens(plan));
+  return { px, realPx, share: px / realPx };
 }
 
 /**

@@ -147,3 +147,51 @@ export function shoeCardQuad(centre: Pixel | null = null, grow = 1, lens: Lens =
   const q = cardInSpace(at, card.up, card.across, grow).map(p => see(eye, p)!), area = q.reduce((s, p, i) => { const n = q[(i + 1) % 4]; return s + p.x * n.y - n.x * p.y; }, 0);
   return area >= 0 ? q : [q[1], q[0], q[3], q[2]]; // clockwise on screen (y runs down), the upper short side first
 }
+
+// ---- the family of lenses ---------------------------------------------------------------------------------------
+// The card lying at seat 4 has its film size and shape under a whole family of lenses, from a wide one close by to a long
+// one far away; the focal length alone decides how much a card narrows toward its far edge and how fast the cards shrink
+// away from the camera. TABLE_LENS is the member that draws the dealer at her real size (a card narrows to 0.956);
+// Kortplan lets Jakob choose another by the taper at seat 4 (Jakob 2026-11-17: "Om alla kort är exakt lika stora, blir de
+// väldigt tvådimensionella"), seat 4's card unchanged. drawnCard and lensForFocal are lifted word for word from
+// dealer3d/src/camera.ts (with the type of their card named here); the card is world.ts MEASURED.restingCard.
+
+/** The card lying at seat 4 in paow-giv-2-1-p4-11-01, frame 120: its centre pixel, near edge and depth (dealer3d/src/world.ts, MEASURED.restingCard). */
+export type FilmCard = {centre: Pixel; nearPx: number; depthPx: number};
+export const SEAT_FOUR_CARD: FilmCard = {centre: {x: 857, y: 1102}, nearPx: 84.5, depthPx: 72};
+/** A card lying flat with its centre at a pixel, as a lens draws it (its measures on screen), or null out of sight. */
+export function drawnCard(l: Lens, centre: Pixel) {
+  const eye = filmEye(l), at = onPlane(eye, centre.x, centre.y); if (!at) return null;
+  const q = cardCorners(at).map(p => see(eye, p)); return q.every(Boolean) ? quadMeasure(q as Pixel[]) : null;
+}
+/**
+ * The one lens of a given focal length under which the flat card has its film size and shape: the shape on screen (depth
+ * over near edge) fixes the pitch and the size fixes the height, each by bisection. The focal length stays free: the card's
+ * size and shape alone leave a family of lenses, from a wide one close by to a long one far away.
+ */
+export function lensForFocal(card: FilmCard, focalPx: number): Lens {
+  const want = card.depthPx / card.nearPx, cy = (FILM.height - 1) / 2;
+  const sized = (pitch: number): Lens => { // the height at which the near edge has its film length
+    let lo = 0.05, hi = 8; for (let i = 0; i < 60; i++) { const h = (lo + hi) / 2, m = drawnCard({focalPx, pitch, height: h}, card.centre); if (!m || m.near > card.nearPx) lo = h; else hi = h; }
+    return {focalPx, pitch, height: (lo + hi) / 2};
+  };
+  let lo = -Math.atan((card.centre.y - cy) / focalPx) + 0.02, hi = 1.4; // from just under the card's own line of sight to steeply down
+  for (let i = 0; i < 60; i++) { const pitch = (lo + hi) / 2, m = drawnCard(sized(pitch), card.centre); if (!m || m.depth / m.near < want) lo = pitch; else hi = pitch; }
+  return sized((lo + hi) / 2);
+}
+/** How much a card at seat 4 narrows toward its far edge under a lens (far over near; 0.956 under TABLE_LENS). */
+export const seatFourTaper = (lens: Lens = TABLE_LENS): number => drawnCard(lens, SEAT_FOUR_CARD.centre)!.taper;
+const byTaper = new Map<number, Lens>();
+/**
+ * The lens of the family under which the seat-4 card narrows to `taper` (far over near; the plan's range is 0.85 to 0.96): its focal
+ * length by bisection (a longer lens narrows less), seat 4's card keeping its film size and shape.
+ */
+export function lensForTaper(taper: number, card: FilmCard = SEAT_FOUR_CARD): Lens {
+  const key = Math.round(taper * 10000) / 10000, known = card === SEAT_FOUR_CARD ? byTaper.get(key) : undefined;
+  if (known) return known;
+  let lo = 150, hi = 20000;
+  for (let i = 0; i < 24; i++) { const f = Math.sqrt(lo * hi), m = drawnCard(lensForFocal(card, f), card.centre); if (!m || m.taper < key) lo = f; else hi = f; }
+  const lens = lensForFocal(card, Math.sqrt(lo * hi));
+  if (card === SEAT_FOUR_CARD) byTaper.set(key, lens);
+  return lens;
+}

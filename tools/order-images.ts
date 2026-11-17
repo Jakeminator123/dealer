@@ -174,13 +174,14 @@ export function drawCard(base: Rgb, texture: Texture, plan: PlacementPlan, planF
   const measured = measureChange(base, rgb);
   const r = (v: number) => Math.round(v * 10) / 10;
   const centre: Pt = [to.reduce((s, p) => s + p[0], 0) / 4, to.reduce((s, p) => s + p[1], 0) / 4];
-  const lens = throughLens(plan, 'native');
+  const lens = throughLens(plan, 'native'), depth = plan.tableProjection?.perspective;
   return {
     rgb,
     drawn: {
       target,
       side,
-      as: lens ? 'verkligt perspektiv: ett verkligt kort genom bordets lins (src/card-plan.ts)' : 'kortets egen fyrhörning (quad)',
+      as: !lens ? 'kortets egen fyrhörning (quad)' : depth === undefined ? 'verkligt perspektiv: ett verkligt kort genom bordets lins (src/card-plan.ts)'
+        : `verkligt perspektiv: ett verkligt kort genom bordets lins, perspektiv ${Math.round(depth * 100)} % (src/card-plan.ts)`,
       plan: { ...planFile, updatedAt: plan.updatedAt },
       texture: texture.source,
       quad: to.map(([x, y]) => [r(x), r(y)] as [number, number]),

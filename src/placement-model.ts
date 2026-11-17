@@ -21,7 +21,18 @@ export const TURN_AXES: readonly TurnAxis[] = ['FREE','LONG_EDGE'];
 // Plans saved before grip, turnAt or flipAxis existed lack them; validatePlan fills these in when a plan is read.
 export const INTENT_DEFAULTS: Readonly<Pick<Intent,'grip'|'turnAt'|'flipAxis'>> = Object.freeze({grip:'PINCH',turnAt:'AIR',flipAxis:'FREE'});
 export type Target = { geometry: Record<View, Geometry>; intent: Intent; material: { bend: number; gloss: number } };
-export type TableProjection = { mode:'flat'|'individual'; heading:number };
+// perspective: on "Plant bord" the cards are real cards seen through one lens of the table's family (src/table-lens.ts), and
+// perspective is how much a card at seat 4 narrows toward its far edge under it (far over near, 0.85 to 0.96); absent, the
+// real camera's (0.956). One number for the whole plan (Jakob 2026-11-17: "Om alla kort är exakt lika stora, blir de väldigt
+// tvådimensionella"); the game does not read it yet.
+export type TableProjection = { mode:'flat'|'individual'; heading:number; perspective?:number };
+/**
+ * The table's perspective on "Plant bord": its limits and step. 0.96 is the real camera (0.956); his earlier plan's plane
+ * narrowed every card to 0.87; below 0.85 the lens holding seat 4's card comes so close to the felt that the dealer's cards
+ * shrink to half and less (V6's 0.74 draws them a quarter as wide, and V6's look is larger cards from another camera, which
+ * Efterarbete sets).
+ */
+export const TABLE_PERSPECTIVE = { min: .85, max: .96, step: .01 } as const;
 export type PlacementPlan = { schemaVersion: 1; id: 'pamela-table'; space: 'image-normalized-bottom-up'; updatedAt: string | null; shoe: Record<View, Point>; targets: Record<string, Target>; tableProjection?:TableProjection };
 export const PLANE_HEADINGS=[-90,-45,-15,0,15,45,90] as const;
 export const VIEWS = { native: { width: 1762, height: 1174, label: 'Dator', profileId: 'v6-native', background: 'assets/lab/native.jpg' }, portrait: { width: 1080, height: 1920, label: 'Mobil', profileId: 'v6-portrait', background: 'assets/lab/portrait.jpg' } } as const;
@@ -197,11 +208,19 @@ export function editMaterial(plan: PlacementPlan, id: string, patch: Partial<Tar
  if (typeof patch.gloss === 'number') m.gloss = Math.min(1, Math.max(0, patch.gloss));
  return next;
 }
-/** The table's projection (flat from P4.C1 with a heading, or card by card). Every place in both views is then unchecked. */
+/** The table's projection (flat from P4.C1 with a heading, or card by card), its perspective kept. Every place in both views is then unchecked. */
 export function setTableProjection(plan: PlacementPlan, projection: TableProjection): PlacementPlan {
  if (!['flat','individual'].includes(projection.mode) || !PLANE_HEADINGS.includes(projection.heading as typeof PLANE_HEADINGS[number])) throw Error('Ogiltigt bordperspektiv eller riktning.');
- const next = structuredClone(plan); next.tableProjection = {mode: projection.mode, heading: projection.heading};
+ const perspective = projection.perspective ?? plan.tableProjection?.perspective;
+ const next = structuredClone(plan); next.tableProjection = {mode: projection.mode, heading: projection.heading, ...(perspective !== undefined ? {perspective} : {})};
  for (const t of Object.values(next.targets)) for (const v of ['native','portrait'] as View[]) t.geometry[v].reviewed = false;
+ return next;
+}
+/** The table's perspective on "Plant bord" (one number for the whole plan), or null for the real camera's. */
+export function setTablePerspective(plan: PlacementPlan, perspective: number | null): PlacementPlan {
+ if (perspective !== null && (!Number.isFinite(perspective) || perspective < TABLE_PERSPECTIVE.min || perspective > TABLE_PERSPECTIVE.max)) throw Error(`Välj ett perspektiv mellan ${TABLE_PERSPECTIVE.min} och ${TABLE_PERSPECTIVE.max}.`);
+ const next = structuredClone(plan), t = next.tableProjection ?? {mode: 'flat' as const, heading: 0};
+ next.tableProjection = {mode: t.mode, heading: t.heading, ...(perspective === null ? {} : {perspective: Math.round(perspective * 1000) / 1000})};
  return next;
 }
 /** Every player card's angle to 0° in one view (the dealer's two cards are left), unchecked and kept inside the picture. */
@@ -245,8 +264,9 @@ function number(v:unknown,lo:number,hi:number){if(typeof v!=='number'||!Number.i
 export function validatePlan(value: unknown): asserts value is PlacementPlan {
  keys(value,['schemaVersion','id','space','updatedAt','shoe','targets',...(object(value)&&Object.hasOwn(value,'tableProjection')?['tableProjection']:[])]);
  if(Object.hasOwn(value,'tableProjection')){
-  keys(value.tableProjection,['mode','heading']);
+  keys(value.tableProjection,['mode','heading',...(object(value.tableProjection)&&Object.hasOwn(value.tableProjection,'perspective')?['perspective']:[])]);
   if(!['flat','individual'].includes(value.tableProjection.mode as string)||!PLANE_HEADINGS.includes(value.tableProjection.heading as typeof PLANE_HEADINGS[number]))throw Error('Ogiltigt bordperspektiv eller riktning.');
+  if(Object.hasOwn(value.tableProjection,'perspective'))number(value.tableProjection.perspective,TABLE_PERSPECTIVE.min,TABLE_PERSPECTIVE.max);
  }
  if(value.schemaVersion!==1||value.id!=='pamela-table'||value.space!=='image-normalized-bottom-up'||!(value.updatedAt===null||(typeof value.updatedAt==='string'&&value.updatedAt.length<40&&Number.isFinite(Date.parse(value.updatedAt)))))throw Error('Okänd placering eller bildrymd.');
  keys(value.shoe,['native','portrait']);keys(value.targets,[...TARGETS]);

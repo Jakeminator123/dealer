@@ -406,7 +406,10 @@ inte en kalibrerad 3D-projektion.
 (`-90,-45,-15,0,15,45,90`). Plant bord med 0° är standard. Äldre schema-v1-filer utan fältet accepteras; editorn
 erbjuder att spara standardinställningen utan att flytta koordinater. Planändringen går att ångra. Läget/riktningen
 följer med i export/import och publicerade webbläsarutkast. Plant bord beräknas från P4.C1 och är fortfarande inte en
-uppmätt fysisk kamera. Riktning i bordplanet är skild från kamerans lutning och kortets böjning. Utdelningsteknik i
+uppmätt fysisk kamera. Valfria `perspective` (0,85–0,96, sedan 2026-11-17) är Kortplans reglage Perspektiv: hur smal den
+bortre kanten är på ett kort vid plats 4 genom bordets lins, vald ur linsfamiljen i `src/table-lens.ts` (`lensForTaper`)
+så att plats 4:s kort behåller storlek och plats; utan fältet gäller den verkliga kameran (`TABLE_LENS`, 0,956). Regeln
+`src/card-plan.ts` läser det för labbet och beställningarnas bilder; spelet läser det inte. Riktning i bordplanet är skild från kamerans lutning och kortets böjning. Utdelningsteknik i
 `intent` (2026-11-11): `grip` är `PINCH` (nyp i skons fönster och lyft, ankare 2 läge 1; standard) eller `DRAG`
 (fingertopparna på kortet i skons öppning, släp längs filten, läge 2); `turnAt` är `AIR` (standard) eller `PLACE` (vid
 platsen på filten) och gäller bara när `turn` är sant. Vänds senare är inget eget värde: `turn=false` och landning på
