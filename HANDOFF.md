@@ -111,8 +111,8 @@ skrivs på skrivbordet när allt har ett utfall. Här står bara det som inte ä
 
 ## Nästa steg
 
-**Börja här (läget 2026-11-17 kl. 22.40; huvudagenten bytte chatt kl. 21.45).** Fem underagenter till huvudagenten
-bygger om labbet på Jakobs ord från kl. 21.46 och 22.20 (Jakobs besked, "Ett labb"). Inget av det är incheckat i
+**Börja här (läget 2026-11-17 kl. 22.10; huvudagenten bytte chatt kl. 21.45).** Fem underagenter till huvudagenten
+bygger om labbet på Jakobs ord från kl. 21.46 och 21.58 (Jakobs besked, "Ett labb"). Inget av det är incheckat i
 `main` förrän de har rapporterat och huvudagenten har sett det:
 
 - (a) **vyn Bordet, första versionen**, byggs i huvudträdet (ny adress `/studio/bordet/` bredvid Placering, Beställ och
@@ -319,7 +319,7 @@ Ett besked per ämne, med det nyaste ordet och dess datum. Ett besked han har er
   bekräftat: en vy (Bordet) med en ram, där bilden är antingen kortplanen eller den levande 3D-scenen och allt ändras
   i högerspalten; beställningen är en lista av filmer i samma vy; gamla labbet tas bort nu. Skattat, mäts av bygget:
   skons kort är för stort redan i ankarna (cirka 111 bildpunkter långt, mot 55 för dealerns kort på ungefär samma
-  djup), och rättas då först med nya ankare, i samma omgång som de tatuerade händerna. Kl. 22.20, om menyn: "Inte 3D
+  djup), och rättas då först med nya ankare, i samma omgång som de tatuerade händerna. Kl. 21.58, om menyn: "Inte 3D
   leder bara till greenscreenen, så den borde heta något annat"; "Spela i `casino` bör rimligtvis vara samma som i
   `casino`, alltså som det är i `runtime`"; "Den vänstra knappen där det står beställ ska också ingå i den
   huvudsakliga menyn som nu till stor del handlar om knappen scen. Detsamma gäller knappen placering."; "Karta och
