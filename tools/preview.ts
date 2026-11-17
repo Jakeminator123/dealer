@@ -12,7 +12,7 @@ import {lipsyncAnswer} from './lipsync-store.ts';
 import {scenePresetStore} from './scene-preset-store.ts';
 import {PRESET_BYTES} from '../studio/lib/scene-presets.ts';
 import {createSession,SessionError,type Session,type SessionOptions} from '../game/session.ts';
-import {tabRegistry,localPath,type Tab,type Reason} from './tab-registry.ts';
+import {tabRegistry,localPath,openAddress,type Tab,type Reason} from './tab-registry.ts';
 import {resolveStudio} from './studio-files.ts';
 import {SCRIPTS as scripts,VENDOR as vendor,PAGES as pages,forBrowser,studioAddress} from './lab-routes.ts';
 import {mediaRoles} from './media-roles.ts';
@@ -62,8 +62,10 @@ if(has('--restart')){
 }else if(has('--open')){
  // The one way to put a lab page in front of Jakob: node tools/preview.ts --open "/studio/prov/?prov=<id>" (START.cmd does
  // this with the studio). The server is started if it is not running, the page is shown in the lab tab that is
- // already open, and only when there is none is a tab opened. Opening the address itself adds a tab every time.
- const wanted=args[args.indexOf('--open')+1],target=localPath(wanted&&!wanted.startsWith('--')?wanted:'/studio/',origin);
+ // already open, and only when there is none is a tab opened. Opening the address itself adds a tab every time. A page
+ // with several words is safest given as words of their own (… --open /studio/granska/ prov=x fil=a.mp4; openAddress):
+ // a shell on Windows runs what follows an unquoted & as a command of its own.
+ const target=openAddress(args,origin);
  if(!target)throw Error('Ange en sida i studion, till exempel /studio/prov/?prov=<id>');
  let alive=await health();
  if(alive&&(alive.name!=='dealer'||!sameRoot(alive.root,process.cwd())))throw Error('Preview identity differs');

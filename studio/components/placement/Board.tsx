@@ -3,7 +3,8 @@
 // Bordet's picture (Kortplan, Beställ), as large as the area allows, with the cards on it and the handles on the chosen one.
 // Under the cards lies a still in the view's own pixels (the neutral backdrop, or the V6 picture) or a film at a frame. A card
 // is drawn as the films show it, a plain yellow back (closed) or a plain blue face (open), over the quads (placement-model
-// planQuad, CARD_COLOUR); how the game prints it is afterwork. Over that lies one SVG in the view's own pixels with the handles:
+// src/card-plan.ts planCardQuad: real cards through the table's lens on "Verkligt perspektiv", CARD_COLOUR); how the game
+// prints it is afterwork. Over that lies one SVG in the view's own pixels with the handles:
 //   drag a card or the shoe: move it · the round handle beyond the far edge: riktning (Shift: 15°) · a near corner: size
 //   (Shift: same shape) · a far corner: perspektiv. Arrow keys: a pixel (Shift ten); on the round handle a degree (Shift 15).
 // On a flat table (Plant bord) only moving is possible: size, riktning and perspektiv follow P4C1.
@@ -14,7 +15,8 @@
 // step for Ångra; nothing is saved from here.
 import { Focus, Maximize, Minus, Plus } from "lucide-react";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type KeyboardEvent, type PointerEvent as ReactPointerEvent, type RefObject, type SVGProps } from "react";
-import { CARD_COLOUR, SHOE, SHOE_CARD, TARGETS, VIEWS, WINDOW_CARD, angleToward, defaultPlan, editPlace, fromPixels, planQuad, toPixels, type Intent, type Place, type PlacementPlan, type Side, type View } from "../../../src/placement-model.ts";
+import { CARD_COLOUR, SHOE, SHOE_CARD, TARGETS, VIEWS, WINDOW_CARD, angleToward, defaultPlan, editPlace, fromPixels, toPixels, type Intent, type Place, type PlacementPlan, type Side, type View } from "../../../src/placement-model.ts";
+import { planCardQuad } from "../../../src/card-plan.ts";
 import { actualCamera, cardPath, clampCamera, closeUp, fitCamera, panBy, pictureOrigin, scaleWords, zoomAt, type Camera } from "../../lib/bordet.ts";
 import { centreOf, nudged, placeCode, sideWord, sizeFromCorner, taperFromCorner, turnHandle, type Pt } from "../../lib/placement.ts";
 import { PATH_SECONDS, pathFrame, type PathPhase } from "../../lib/placement-path.ts";
@@ -253,7 +255,7 @@ export function Board({
   // ── what is drawn ──
   const shown = TARGETS.filter((id) => allCards || id === selected);
   const target = selected === SHOE ? null : plan.targets[selected];
-  const q = target ? planQuad(plan, selected, view) : null;
+  const q = target ? planCardQuad(plan, selected, view) : null;
   const shoe = toPixels(plan.shoe[view], view);
   const r = 6 * unit;
   const handles = editable && q && target;
@@ -314,14 +316,14 @@ export function Board({
             ? shown
                 .filter((id) => changed.has(id) && other.targets[id])
                 .map((id) => (
-                  <path key={`was-${id}`} d={cardPath(planQuad(other, id, view))} fill="none" stroke="#d9b96a" strokeOpacity={0.75} strokeWidth={1.25} strokeDasharray="4 3" vectorEffect="non-scaling-stroke" pointerEvents="none" />
+                  <path key={`was-${id}`} d={cardPath(planCardQuad(other, id, view))} fill="none" stroke="#d9b96a" strokeOpacity={0.75} strokeWidth={1.25} strokeDasharray="4 3" vectorEffect="non-scaling-stroke" pointerEvents="none" />
                 ))
             : null}
           {marked?.size
             ? [...marked]
                 .filter((id) => id !== SHOE && plan.targets[id])
                 .map((id) => {
-                  const quad = planQuad(plan, id, view);
+                  const quad = planCardQuad(plan, id, view);
                   const c = centreOf(quad);
                   const reach = Math.max(...quad.map((p) => Math.hypot(p.x - c.x, p.y - c.y)));
                   return <circle key={`mark-${id}`} data-marked={id} cx={c.x} cy={c.y} r={reach * 1.6} fill="none" stroke={MARKED} strokeWidth={2} strokeDasharray="6 4" vectorEffect="non-scaling-stroke" pointerEvents="none" />;
@@ -329,7 +331,7 @@ export function Board({
             : null}
           {shown.map((id) => {
             const t = plan.targets[id];
-            const quad = planQuad(plan, id, view);
+            const quad = planCardQuad(plan, id, view);
             const c = toPixels(t.geometry[view], view);
             const on = id === selected;
             return (
@@ -501,7 +503,7 @@ function PathLayer({ plan, id, view, speed, onPhase }: { plan: PlacementPlan; id
     return () => cancelAnimationFrame(frame);
   }, []);
   const intent: Intent = plan.targets[id].intent;
-  const f = pathFrame(t, windowCard(plan, view), planQuad(plan, id, view), intent);
+  const f = pathFrame(t, windowCard(plan, view), planCardQuad(plan, id, view), intent);
   useEffect(() => {
     told.current(f.phase);
   }, [f.phase]);

@@ -28,9 +28,12 @@ export const ZOOM_MAX = 6;
 export const fitScale = (area: Size, picture: Size): number => (area.w > 0 && area.h > 0 ? Math.min(area.w / picture.w, area.h / picture.h) : 1);
 /** The whole picture, in the middle of the stage. */
 export const fitCamera = (area: Size, picture: Size): Camera => ({ scale: fitScale(area, picture), x: picture.w / 2, y: picture.h / 2 });
-/** The smallest scale: half the fitted one (so that the picture can be seen whole with room round it). */
-export const minScale = (area: Size, picture: Size) => fitScale(area, picture) / 2;
-/** A camera kept sane: its scale within half the fit and ZOOM_MAX, its middle on the picture. */
+/**
+ * The smallest scale: the fitted one ("Anpassa"). The picture is a still with nothing round it, so zooming out past the whole
+ * picture would only show the stage's black (Jakob 2026-11-17: "det är bara svart omkring, ska det vara så?").
+ */
+export const minScale = (area: Size, picture: Size) => fitScale(area, picture);
+/** A camera kept sane: its scale within the fit and ZOOM_MAX, its middle on the picture. */
 export function clampCamera(c: Camera, area: Size, picture: Size): Camera {
   const scale = Math.min(ZOOM_MAX, Math.max(minScale(area, picture), c.scale));
   // Smaller than the stage in a direction: the picture stays in the middle there; larger: its edge never leaves the stage's.

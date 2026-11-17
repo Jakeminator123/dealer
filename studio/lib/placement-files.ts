@@ -1,7 +1,8 @@
 // Kortplan's files on Jakob's own disk, never the lab's: the draft as a placement file (once "Exportera
 // placeringsfil" and "Läs in placeringsfil") and the flat table's comparison ("Exportera jämförelse"). A file read in only
 // replaces the draft; it reaches placements/default.json when he presses Spara. Pure; tests in studio/tests/placement-files.test.ts.
-import { TARGETS, planQuad, toPixels, validatePlan, type PlacementPlan, type View } from "../../src/placement-model.ts";
+import { TARGETS, toPixels, validatePlan, type PlacementPlan, type View } from "../../src/placement-model.ts";
+import { planCardQuad } from "../../src/card-plan.ts";
 
 export const DRAFT_FILE = "pamela-placeringar.json";
 /** The largest placement file read in (the lab server's own limit for a save). */
@@ -33,7 +34,7 @@ export function planeComparison(plan: PlacementPlan, view: View) {
     referenceGeometry: plan.targets["P4.C1"].geometry[view],
     heading: plan.tableProjection?.heading ?? 0,
     calibrated: false,
-    targets: Object.fromEntries(TARGETS.map((id) => [id, { centre: toPixels(plan.targets[id].geometry[view], view), corners: planQuad(plan, id, view) }])),
+    targets: Object.fromEntries(TARGETS.map((id) => [id, { centre: toPixels(plan.targets[id].geometry[view], view), corners: planCardQuad(plan, id, view) }])),
   };
 }
 export const planeFile = (view: View) => `plant-bord-${view}.json`;

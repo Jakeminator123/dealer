@@ -13,6 +13,23 @@ export const localPath=(value:unknown,origin:string):string|null=>{
  try{const url=new URL(value,origin+'/');return url.origin===origin?url.pathname+url.search+url.hash:null;}catch{return null;}
 };
 
+/**
+ * The page asked for by `node tools/preview.ts --open <page> [name=value …]`: the page, and every following word of the form
+ * name=value added to its question. A shell on Windows runs what follows an unquoted & as a command of its own, so a page
+ * with several words can be given without one: --open /studio/granska/ prov=x fil=a.mp4 is /studio/granska/?prov=x&fil=a.mp4
+ * (a quoted "…?prov=x&fil=a.mp4" works as before). Without a page, the studio. Null for a page outside the lab.
+ */
+export const openAddress=(args:readonly string[],origin:string):string|null=>{
+ const at=args.indexOf('--open');if(at<0)return null;
+ const rest:string[]=[];for(let i=at+1;i<args.length&&!args[i].startsWith('--');i++)rest.push(args[i]);
+ const [page,...words]=rest.length&&!/^[^/?]*=/.test(rest[0])?rest:['/studio/',...rest];
+ const target=localPath(page,origin);if(!target)return null;
+ if(!words.length)return target;
+ const url=new URL(target,origin+'/');
+ for(const word of words){const m=/^([A-Za-z0-9_.-]+)=(.*)$/.exec(word);if(!m)return null;url.searchParams.append(m[1],m[2]);}
+ return localPath(url.pathname+url.search+url.hash,origin);
+};
+
 export const tabRegistry=(now:()=>number=Date.now)=>{
  let current:Tab|null=null,lastSeen=now();
  return {

@@ -35,10 +35,10 @@ test("the wheel zooms towards the pointer: the picture's point under it stays", 
   assert.ok(Math.abs(after.top + point.y * z.scale - at.y) < 1e-6);
 });
 
-test("the camera stays sane: scale between half the fit and the most, the picture never pans out of the stage", () => {
+test("the camera stays sane: scale between the fit and the most (never smaller than Anpassa), the picture never pans out of the stage", () => {
   const c = fitCamera(area, picture);
   assert.equal(clampCamera({ ...c, scale: 100 }, area, picture).scale, ZOOM_MAX);
-  assert.ok(Math.abs(clampCamera({ ...c, scale: 0.01 }, area, picture).scale - c.scale / 2) < 1e-9);
+  assert.ok(Math.abs(clampCamera({ ...c, scale: 0.01 }, area, picture).scale - c.scale) < 1e-9);
   const big = actualCamera(c, area, picture);
   assert.equal(big.scale, 1);
   const far = panBy(big, 100000, 100000, area, picture);

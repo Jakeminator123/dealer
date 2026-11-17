@@ -1,7 +1,8 @@
 // The Placering view's files (studio/lib/placement-files.ts). Run: node --test "studio/tests/placement-files.test.ts"
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { TARGETS, defaultPlan, flatQuad, toPixels } from "../../src/placement-model.ts";
+import { TARGETS, defaultPlan, toPixels } from "../../src/placement-model.ts";
+import { planCardQuad } from "../../src/card-plan.ts";
 import { FILE_LIMIT, draftText, planeComparison, planeFile, readDraftText } from "../lib/placement-files.ts";
 
 test("a draft written as a file reads back as the same plan, checked as strictly as a save", () => {
@@ -21,7 +22,7 @@ test("a draft written as a file reads back as the same plan, checked as strictly
   assert.equal(readDraftText(JSON.stringify(old)).targets["P1.C1"].intent.grip, "PINCH");
 });
 
-test("the flat table's comparison has every card's centre and drawn corners, as the old tab exported it", () => {
+test("the flat table's comparison has every card's centre and its corners as drawn (through the table lens since 2026-11-17)", () => {
   const plan = defaultPlan();
   const c = planeComparison(plan, "native");
   assert.equal(c.kind, "flat-plane-comparison");
@@ -29,6 +30,6 @@ test("the flat table's comparison has every card's centre and drawn corners, as 
   assert.equal(c.calibrated, false);
   assert.equal(Object.keys(c.targets).length, TARGETS.length);
   assert.deepEqual(c.targets["P2.C2"].centre, toPixels(plan.targets["P2.C2"].geometry.native, "native"));
-  assert.deepEqual(c.targets["P2.C2"].corners, flatQuad(plan.targets["P2.C2"].geometry.native, plan.targets["P4.C1"].geometry.native, "native", 0));
+  assert.deepEqual(c.targets["P2.C2"].corners, planCardQuad(plan, "P2.C2", "native"));
   assert.equal(planeFile("portrait"), "plant-bord-portrait.json");
 });

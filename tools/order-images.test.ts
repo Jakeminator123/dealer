@@ -99,7 +99,7 @@ test("a pose on the dealer's own shoe: only the forearm and hand, moved by the c
 });
 
 const media = existsSync('assets/motions/pamela-p4-c1-plan-return-idle-01/source.mp4') && existsSync('assets/anchors/pamela-idle-p4-c1-plan-01/receipt.json');
-test('the card is drawn where the plan says, at the plan size, from real card pixels', { skip: !media && 'the bank films are not on this machine' }, async () => {
+test('the card is drawn where the plan says, at the plan size (through the table lens since 2026-11-17: within 5 px, the texture edge grown), from real card pixels', { skip: !media && 'the bank films are not on this machine' }, async () => {
   const root = process.cwd();
   const { plan, file } = await readPlan(root);
   const texture = await cardTexture(root);
@@ -110,7 +110,7 @@ test('the card is drawn where the plan says, at the plan size, from real card pi
     assert.ok(drawn.measuredOffsetPx! < 2, `${target}: ${drawn.measuredOffsetPx} px from the plan`);
     assert.equal(drawn.measured!.changedElsewhere, 0);
     const q = planQuad(plan, target), wide = Math.max(...q.map((p) => p[0])) - Math.min(...q.map((p) => p[0]));
-    assert.ok(Math.abs(drawn.measured!.box[0] - wide) < 4, `${target}: ${drawn.measured!.box[0]} px wide against the plan's ${wide.toFixed(1)}`);
+    assert.ok(Math.abs(drawn.measured!.box[0] - wide) < 5, `${target}: ${drawn.measured!.box[0]} px wide against the plan's ${wide.toFixed(1)}`);
     // Real pixels: the card's blue varies, a flat fill would not.
     const blues = new Set<number>();
     const [cx, cy] = drawn.centre.map(Math.round);

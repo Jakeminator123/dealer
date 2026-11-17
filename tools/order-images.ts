@@ -2,7 +2,7 @@
 // register is copied byte for byte when it is a PNG file, or decoded from its film when it is a frame. The hole card's
 // turn draws the dealer's two cards on both its pictures (drawCards: one card after the other). The last picture
 // of a deal is the first picture with ONE card drawn where the placement plan says, by the plan's own drawing rule
-// (flatQuad from P4.C1 when the table is flat, as the lab draws it) and with real card pixels, not flat colour: the bank's
+// (through the table's lens when the table is flat, as the lab draws it: src/card-plan.ts) and with real card pixels, not flat colour: the bank's
 // seat-4 card from the last frame of pamela-p4-c1-plan-return-idle-01, whose outline is the quad its last picture was
 // painted with (assets/anchors/pamela-idle-p4-c1-plan-01/receipt.json). The same recipe as
 // D:/dealer-scratch/tmp/paow/skript/plan-till-order-2.py (lines 75–109), ported; the drawn card is then measured
@@ -20,7 +20,8 @@ import { execFileSync } from 'node:child_process';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import sharp from 'sharp';
-import { flatQuad, quad, validatePlan, type PlacementPlan } from '../src/placement-model.ts';
+import { validatePlan, type PlacementPlan } from '../src/placement-model.ts';
+import { planCardQuad, throughLens } from '../src/card-plan.ts';
 import { scaleQuad, type Drawn } from '../src/order-model.ts';
 
 export const W = 1764, H = 1174, N = W * H;
@@ -117,13 +118,13 @@ export async function cardTexture(root: string): Promise<Texture> {
   return { rgb, mask, quad: q, source: { video: TEXTURE.video, frame: TEXTURE.frame, sha256: sha(await readFile(video)), quadFrom: TEXTURE.quadFrom } };
 }
 
-/** The card as the lab draws it, in film pixels (the lab's picture is 1762 wide, the film 1764). */
+/**
+ * The card as the lab draws it (src/card-plan.ts planCardQuad: through the table's lens on "Plant bord", else the card's own
+ * measures), in film pixels (the lab's picture is 1762 wide, the film 1764). An order keeps the quad it was drawn with.
+ */
 export function planQuad(plan: PlacementPlan, target: string): Pt[] {
-  const g = plan.targets[target]?.geometry.native;
-  if (!g) throw Error(`Planen har inget kort ${target}.`);
-  const flat = plan.tableProjection?.mode === 'flat';
-  const q = flat ? flatQuad(g, plan.targets['P4.C1'].geometry.native, 'native', plan.tableProjection?.heading ?? 0) : quad(g, 'native');
-  return q.map((p) => [(p.x * (W - 1)) / 1761, p.y]);
+  if (!plan.targets[target]?.geometry.native) throw Error(`Planen har inget kort ${target}.`);
+  return planCardQuad(plan, target, 'native').map((p) => [(p.x * (W - 1)) / 1761, p.y]);
 }
 
 const sample = (img: ArrayLike<number>, channels: number, c: number, x: number, y: number) => {
@@ -173,13 +174,13 @@ export function drawCard(base: Rgb, texture: Texture, plan: PlacementPlan, planF
   const measured = measureChange(base, rgb);
   const r = (v: number) => Math.round(v * 10) / 10;
   const centre: Pt = [to.reduce((s, p) => s + p[0], 0) / 4, to.reduce((s, p) => s + p[1], 0) / 4];
-  const flat = plan.tableProjection?.mode === 'flat';
+  const lens = throughLens(plan, 'native');
   return {
     rgb,
     drawn: {
       target,
       side,
-      as: flat ? 'flatQuad från P4.C1 (planens plana bord, som labbet ritar)' : 'kortets egen fyrhörning (quad)',
+      as: lens ? 'verkligt perspektiv: ett verkligt kort genom bordets lins (src/card-plan.ts)' : 'kortets egen fyrhörning (quad)',
       plan: { ...planFile, updatedAt: plan.updatedAt },
       texture: texture.source,
       quad: to.map(([x, y]) => [r(x), r(y)] as [number, number]),

@@ -6,9 +6,10 @@
 import { Crosshair, Download, Grid2x2, RotateCcw, Square, Upload, Users } from "lucide-react";
 import { useRef, useState, type ReactNode } from "react";
 import { FLIP_AXES, FLIP_LABEL } from "../../../src/order-model.ts";
+import { planCardQuad, throughLens } from "../../../src/card-plan.ts";
 import {
   CARD_COLOUR, CARD_SCALE, PLANE_HEADINGS, PLAYER_TARGETS, SHOE, TARGETS, TECHNIQUES, applyTechnique, copyChoices, dealerAngle, editIntent, editPlace, otherHand,
-  planQuad, resetPlace, scaleCards, setTableProjection, snapPlace, straightenPlayers, techniqueOf, toPixels,
+  resetPlace, scaleCards, setTableProjection, snapPlace, straightenPlayers, techniqueOf, toPixels,
   type Intent, type Place, type PlacementPlan, type Technique, type View,
 } from "../../../src/placement-model.ts";
 import { GRIP_LABEL, VIEW_WORD, decimal, editFlip, flipOf, handWord, motionSteps, placeCode, quadSize } from "../../lib/placement.ts";
@@ -83,7 +84,7 @@ export function PlacePanel({ plan, view, id, editable, onTable }: { plan: Placem
   const g = t.geometry[view];
   const flat = plan.tableProjection?.mode === "flat";
   const shape = off || flat;
-  const size = quadSize(planQuad(plan, id, view));
+  const size = quadSize(planCardQuad(plan, id, view));
   return (
     <>
       <Section title="Sida vid landning">
@@ -103,9 +104,9 @@ export function PlacePanel({ plan, view, id, editable, onTable }: { plan: Placem
       <Section title="Kortets mått">
         {flat ? (
           <p className="text-xs text-[#f0b07a]">
-            Plant bord: följer P4C1.{" "}
+            {throughLens(plan, view) ? "Verkligt perspektiv: följer P4C1." : "Plant bord: följer P4C1."}{" "}
             <button type="button" onClick={onTable} className="underline decoration-dotted underline-offset-2 hover:text-ink">
-              Bordet
+              Alla kort
             </button>
           </p>
         ) : null}
@@ -265,8 +266,10 @@ export function TablePanel({ plan, view, id, editable }: { plan: PlacementPlan; 
   const projection = plan.tableProjection ?? { mode: "flat" as const, heading: 0 };
   const flat = projection.mode === "flat";
   const card = id === SHOE ? "P4.C2" : id;
-  const now = quadSize(planQuad(plan, card, view)).text;
-  const after = factor !== 1 ? quadSize(planQuad(scaleCards(plan, view, factor).plan, card, view)).text : null;
+  const now = quadSize(planCardQuad(plan, card, view)).text;
+  const after = factor !== 1 ? quadSize(planCardQuad(scaleCards(plan, view, factor).plan, card, view)).text : null;
+  // On the real perspective a card's size and shape follow from the lens: the plan's sizes draw nothing there.
+  const lens = throughLens(plan, view);
   const checked = TARGETS.filter((t) => plan.targets[t].geometry[view].reviewed).length;
   return (
     <>
@@ -275,8 +278,8 @@ export function TablePanel({ plan, view, id, editable }: { plan: PlacementPlan; 
           checked={flat}
           disabled={off}
           onChange={(on) => draftActions.edit((p) => setTableProjection(p, { mode: on ? "flat" : "individual", heading: projection.heading }))}
-          label="Plant bord"
-          hint={flat ? "Alla kort i P4C1:s form. Kameran är inte kalibrerad." : "Varje kort med egen riktning och perspektiv."}
+          label="Verkligt perspektiv"
+          hint={flat ? "Alla kort som verkliga kort genom samma kamera som dealern." : "Varje kort med egen riktning och perspektiv."}
         />
         {flat ? (
           <div className="flex items-end gap-2">
@@ -296,7 +299,7 @@ export function TablePanel({ plan, view, id, editable }: { plan: PlacementPlan; 
         ) : null}
         <p className="text-2xs text-faint">Byte av bord avmarkerar alla platser.</p>
       </Section>
-      <Section title="Kortstorlek, alla kort" aside={<span className="text-xs tabular-nums text-faint">{VIEW_WORD[view]}</span>}>
+      <Section title="Kortstorlek, alla kort" aside={<span className="text-xs tabular-nums text-faint">{VIEW_WORD[view]}</span>} className={lens ? "hidden" : undefined}>
         <div className="flex items-end gap-2">
           <NumberField label="Faktor" value={factor} digits={2} min={CARD_SCALE.min} max={CARD_SCALE.max} step={CARD_SCALE.step} disabled={off} onCommit={setFactor} className="w-24" />
           <Button
@@ -310,7 +313,7 @@ export function TablePanel({ plan, view, id, editable }: { plan: PlacementPlan; 
               toast({
                 tone: "ok",
                 title: `Alla 16 kort ×${decimal(factor, 2)} i ${VIEW_WORD[view]}`,
-                detail: `${placeCode(card)}: ${before} → ${quadSize(planQuad(result.plan, card, view)).text}.${result.limited.length ? ` ${result.limited.map(placeCode).join(", ")} ${factor > 1 ? "nådde kanten eller största storlek" : "nådde minsta storlek"}.` : ""} Ångra tar tillbaka.`,
+                detail: `${placeCode(card)}: ${before} → ${quadSize(planCardQuad(result.plan, card, view)).text}.${result.limited.length ? ` ${result.limited.map(placeCode).join(", ")} ${factor > 1 ? "nådde kanten eller största storlek" : "nådde minsta storlek"}.` : ""} Ångra tar tillbaka.`,
               });
             }}
           >

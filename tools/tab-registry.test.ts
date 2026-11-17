@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {tabRegistry,localPath,type Tab,type TabEvent} from './tab-registry.ts';
+import {tabRegistry,localPath,openAddress,type Tab,type TabEvent} from './tab-registry.ts';
 
 const origin='http://127.0.0.1:4319';
 const page=(id:string,path='/lab.html')=>{const got:TabEvent[]=[];const tab:Tab={id,page:path,send:event=>{got.push(event);}};return {tab,got};};
@@ -63,4 +63,18 @@ test('only pages of this lab can be asked for',()=>{
  assert.equal(localPath('http://127.0.0.1:4319/scene3d.html?room=skog#x',origin),'/scene3d.html?room=skog#x');
  for(const refused of ['//example.com/lab.html','https://example.com/','http://127.0.0.1:4320/lab.html','http://localhost:4319/lab.html','lab.html?a=b c','..\\lab.html','',null,42,'x'.repeat(601)])
   assert.equal(localPath(refused,origin),null,String(refused));
+});
+
+test('--open: the page and its words, so that no & has to pass a Windows shell; a quoted & works as before', () => {
+  const origin = 'http://127.0.0.1:4319';
+  assert.equal(openAddress(['--open'], origin), '/studio/');
+  assert.equal(openAddress(['--open', '--x'], origin), '/studio/');
+  assert.equal(openAddress(['--open', '/studio/granska/?prov=x&fil=a.mp4'], origin), '/studio/granska/?prov=x&fil=a.mp4');
+  assert.equal(openAddress(['--open', '/studio/granska/', 'prov=x', 'fil=a.mp4'], origin), '/studio/granska/?prov=x&fil=a.mp4');
+  assert.equal(openAddress(['--open', '/studio/granska/?prov=x', 'fil=a b.mp4'], origin), '/studio/granska/?prov=x&fil=a+b.mp4');
+  assert.equal(openAddress(['--open', 'lage=scen'], origin), '/studio/?lage=scen');
+  assert.equal(openAddress(['--open', '/studio/bordet/', 'lage=scen', '--then'], origin), '/studio/bordet/?lage=scen');
+  assert.equal(openAddress(['--open', 'https://example.com/x'], origin), null);
+  assert.equal(openAddress(['--open', '/studio/', 'not a word'], origin), null);
+  assert.equal(openAddress(['--stop'], origin), null);
 });
