@@ -115,7 +115,7 @@ skrivs på skrivbordet när allt har ett utfall. Här står bara det som inte ä
 
 ## Nästa steg
 
-**Börja här (läget 2026-11-17 kl. 22.55; huvudagenten bytte chatt kl. 21.45).** Labbet byggs om på Jakobs ord från
+**Börja här (läget 2026-11-17 kl. 23.00; huvudagenten bytte chatt kl. 21.45).** Labbet byggs om på Jakobs ord från
 kl. 21.46 och 21.58 (Jakobs besked, "Ett labb"), av underagenter till huvudagenten:
 
 - **Inne i `main` och sett i headless Chrome:** vyn **Bordet**, första versionen (`82258f3`: `/studio/bordet/` med
@@ -131,8 +131,10 @@ kl. 21.46 och 21.58 (Jakobs besked, "Ett labb"), av underagenter till huvudagent
   läget Beställ har Filmer och Kön, där Kön är hela förra Beställ med godkännandet; en rad som beställts förut visar
   tagningarna som kom bredvid det som skickades (Granska filmen); Placerings Material ligger i Efterarbete och Kortplan
   har Dator och Mobil; `/bestall/` och `/placering/` leder till Bordet i labbet. Menyn i labbet: Bordet, Karta, Granska,
-  Material, Lipsync, Casino. "Alla sju" skickar nu varje plats egen vändning. Inte tryckt i en webbläsare: Skapa utkast
-  och Godkänn i Bordet (bevisade i tester).
+  Material, Lipsync, Casino. "Alla sju" skickar nu varje plats egen vändning. "Skapa utkast" i Bordet är tryckt en gång
+  i headless Chrome kl. 22.53 och gav ett riktigt utkast (borttaget igen); Godkänn i Bordet är inte tryckt. Radens
+  förval är ännu metodregistrets gamla recept för en giv (Kling 4, 7 s, tur och retur, ingen referensfilm): kvällens
+  recept blir förvalet först med mall 10 (filmmetodens plan, nedan).
 - **Pågår i huvudträdet, ocommittat:** Bordets tredje steg (samma underagent): Scens adresser leder till Bordets läge
   Scen och studion öppnar på Bordet; Bordet i kopian på nätet, bara läsning, så att kopian får samma meny; skalen för
   Placering, Beställ och Scen tas bort; och alla texter som beskriver den gamla menyn rättas (botens kunskap i
@@ -521,14 +523,15 @@ Ett besked per ämne, med det nyaste ordet och dess datum. Ett besked han har er
   och dealerns kropp hör till två linser: planens avsmalning 0,87 hör till en brännvidd på cirka 800 bildpunkter, där
   hon vore dubbelt så stor som en människa; linsen som ger henne verklig storlek har brännvidd cirka 2 334 (bildvinkel
   28°), och under den smalnar ett verkligt kort bara till 0,956. Mot ett verkligt kort är planens kort 0,97 vid P4,
-  1,04 vid P3 och P5, 1,11 vid P2 och P6, 1,19 vid P1 och P7 och **1,34 gånger för små vid dealern**; skons kort i
-  filmerna (111 × 58 bildpunkter) är 1,15–1,27 gånger för långt. Det Jakob ser som att skons kort är dubbelt så stort
-  kommer alltså mest ur planens krympning nära dealern. Spelets liggande kort läser aldrig planens storlek: det är
+  1,04 vid P3 och P5, 1,11 vid P2 och P6, 1,19 vid P1 och P7 och **1,34 gånger för små vid dealern**. Kortet som står i
+  skons fönster är rätt stort (51 × 92 bildpunkter på ruta 120 mot 48 × 96 för ett verkligt kort, 0,96); bara i nypet
+  (ankare 2.1) är det 8–15 % för långt. Det Jakob ser som att skons kort är dubbelt så stort kommer alltså ur planens
+  krympning nära dealern, inte ur skon. Spelets liggande kort läser aldrig planens storlek: det är
   kontraktets kort gånger `cardScale` 1,2, och planen ger bara platsen (`restingQuad` i `src/card-overlay.ts`), så
   planens bredd och höjd ändrar inget i spelet (en utomstående granskares fynd, bekräftat i koden). Tre mått för samma
-  kort (planen, spelets kontrakt, filmens lins) ska bli ett: 3D-banan gör en bild åt honom (Prov `dealer-3d-kamera`),
-  och frågan till honom blir om kortplanen ska ritas med verkligt perspektiv (P4 oförändrad, korten närmare dealern
-  större). Inget ankare krymps innan dess. Osäkert i mätningen: axlar, pupiller och skons fot är lästa för ögat (±10
+  kort (planen, spelets kontrakt, filmens lins) ska bli ett: bilden ligger i Prov `dealer-3d-kamera`, och frågan står
+  som kort i Beslut (`kortplanen-verkligt-perspektiv`): ska kortplanen ritas med verkligt perspektiv (P4 oförändrad,
+  korten närmare dealern större)? Inget ankare krymps för skons skull. Osäkert i mätningen: axlar, pupiller och skons fot är lästa för ögat (±10
   bildpunkter); brännvidd 2 000–2 300 ger samma slutsatser.
 - **Orden för kortets sidor** är öppna. Jakob 2026-11-13: "Baksida kan betyda olika saker, som baksidan på ett kort, men
   det kan också referera till undersidan." Mall 9 säger slätt kort med "back" och "face" (`PLAIN_CARD`).
