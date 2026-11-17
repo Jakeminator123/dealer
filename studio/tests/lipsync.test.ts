@@ -5,11 +5,14 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
-import { DIRECTION_WORD, dayWord, direction, groupSettings, isEstimated, isNone, isOurs, isTrial, measureWord, outcomeTone, ownerWord, proofHref, readScale, scaleHeadline, scaleParts, whoOf } from "../lib/lipsync.ts";
+import { DIRECTION_WORD, codeParts, commercialTone, dayWord, direction, forDealer, groupChecks, groupSettings, isEstimated, isNone, isOurs, isTrial, measureWord, outcomeTone, ownerWord, proofHref, readScale, scaleHeadline, scaleParts, speechWord, voiceWord, whoOf } from "../lib/lipsync.ts";
 
 const facts = JSON.parse(readFileSync(fileURLToPath(new URL("../../data/lipsync.json", import.meta.url)), "utf8")) as {
   steps: { n: number; scale: string; by: string; in: string; out: string }[];
   settings: { group: string; name: string }[];
+  ways: { send: string[] }[];
+  dealers: { dealer: string; checks: { what: string; answer: "ja" | "nej" | "okänt"; note: string; where: string }[] }[];
+  whenNew: { film: string[]; dealer: string[] };
 };
 
 test("who does a step, with the words in brackets as a note; the other team's renderer and its model are sealed", () => {
@@ -95,4 +98,36 @@ test("estimates, settings by group, owners, days, outcomes and the way to Prov",
   assert.equal(measureWord(undefined), "–");
   assert.equal(proofHref("paow-realtid-mun-3"), "/prov/?prov=paow-realtid-mun-3");
   assert.equal(proofHref("paow-realtid-mun-3", "paow-realtid-mun-3-2-stillbild.png"), "/prov/?prov=paow-realtid-mun-3&fil=paow-realtid-mun-3-2-stillbild.png");
+});
+
+test("per dealer: her entries and those for every dealer; checks under Stämmer, Inte än and Okänt", () => {
+  const entries = [{ id: 1, dealer: "paow" }, { id: 2 }, { id: 3, dealer: "pamela" }];
+  assert.deepEqual(forDealer(entries, "paow").map((e) => e.id), [1, 2]);
+  assert.deepEqual(forDealer(entries, "pamela").map((e) => e.id), [2, 3]);
+  const check = (what: string, answer: "ja" | "nej" | "okänt") => ({ what, answer, note: "", where: "x" });
+  assert.deepEqual(groupChecks([check("a", "nej"), check("b", "ja"), check("c", "nej")]).map((g) => [g.title, g.checks.map((c) => c.what)]), [["Stämmer", ["b"]], ["Inte än", ["a", "c"]]]);
+  for (const d of facts.dealers) assert.equal(groupChecks(d.checks).reduce((n, g) => n + g.checks.length, 0), d.checks.length, `every check of ${d.dealer} has its heading`);
+});
+
+test("the speech register's word for a dealer: the value, inte gjort where it names her not, okänt where it could not be read", () => {
+  const set = { bankId: "paow-v2", rest: "paow-vila-01-01", language: "sv", voice: { name: "Paow", provider: "elevenlabs", model: "eleven_multilingual_v2", languages: ["en"] } };
+  assert.deepEqual(speechWord({ paow: set }, "paow", (s) => s.bankId), { text: "paow-v2", known: true });
+  assert.deepEqual(speechWord({ paow: set }, "pamela", (s) => s.bankId), { text: "inte gjort", known: false });
+  assert.deepEqual(speechWord(null, "paow", (s) => s.bankId), { text: "okänt", known: false });
+  assert.equal(voiceWord(set), "Paow · elevenlabs · eleven_multilingual_v2");
+  assert.deepEqual(speechWord({ paow: { ...set, voice: null } }, "paow", voiceWord), { text: "inte gjort", known: false });
+  assert.equal(commercialTone("ja, uttryckligen"), "ok");
+  assert.equal(commercialTone("nej enligt uppslagningen"), "bad");
+  assert.equal(commercialTone("osäkert"), "neutral");
+});
+
+test("a way's step: the command as it is typed in code, the words around it as text, and nothing lost", () => {
+  assert.deepEqual(codeParts("En gång per dealer och vilofilm: node tools/speech.ts bank --dealer paow"), [
+    { text: "En gång per dealer och vilofilm: ", code: false },
+    { text: "node tools/speech.ts bank --dealer paow", code: true },
+  ]);
+  assert.deepEqual(codeParts("En replik: POST /rita med klipp").map((p) => [p.text, p.code]), [["En replik: ", false], ["POST /rita", true], [" med klipp", false]]);
+  assert.deepEqual(codeParts("node --env-file=.env.local tools/speech.ts say --dealer paow --line placebets (rösten)").map((p) => p.code), [true, false]);
+  assert.deepEqual(codeParts("Inget kommando här"), [{ text: "Inget kommando här", code: false }]);
+  for (const text of [...facts.ways.flatMap((w) => w.send), ...facts.whenNew.film, ...facts.whenNew.dealer]) assert.equal(codeParts(text).map((p) => p.text).join(""), text);
 });

@@ -1,11 +1,10 @@
-// The four sections of Lipsync after the chain. <Settings />: every setting by its group, with its value, whose it is and
-// a lock where it sits in the other team's sealed renderer (the file's lockNote says what that means), read-only.
-// <Runs />: where it runs today and on his RunPod. <Proofs />: the proofs in order with his own words, the outcome and the
-// way into Prov. <OpenPoints />: what is open and what it holds up.
-import { CircleDashed, Cloud, CornerDownRight, FlaskConical, Lock, Monitor } from "lucide-react";
+// The sections of Lipsync after the chain. <Settings />: every setting by its group, with its value, whose it is and a
+// lock where it sits in the other team's sealed renderer (the file's lockNote says what that means), read-only.
+// <Proofs />: the chosen dealer's proofs in order with his own words, the outcome and the way into Prov (where they run
+// today is in Ways.tsx). <OpenPoints />: what is open and what it holds up.
+import { CornerDownRight, FlaskConical, Lock } from "lucide-react";
 import Link from "next/link";
-import type { ReactNode } from "react";
-import { dayWord, groupSettings, isOurs, outcomeTone, ownerWord, proofHref, type LipsyncAnswer, type OpenPoint, type ProofFact, type Runs as RunsFacts, type Setting, type Still } from "../../lib/lipsync.ts";
+import { dayWord, forDealer, groupSettings, isOurs, outcomeTone, ownerWord, proofHref, type LipsyncAnswer, type OpenPoint, type ProofFact, type Setting, type Still } from "../../lib/lipsync.ts";
 import { Badge } from "../ui/Badge";
 import { Card, Panel } from "../ui/Card";
 import { SEALED, StillView, Where } from "./parts";
@@ -52,63 +51,6 @@ export function Settings({ facts }: { facts: LipsyncAnswer }) {
   );
 }
 
-function Row({ label, children }: { label: string; children: ReactNode }) {
-  return (
-    <>
-      <dt className="text-xs text-faint">{label}</dt>
-      <dd className="min-w-0 text-sm text-ink">{children}</dd>
-    </>
-  );
-}
-
-export function Runs({ runs }: { runs: RunsFacts }) {
-  const { today, runpod } = runs;
-  return (
-    <div className="grid items-start gap-4 md:grid-cols-2">
-      <Card className="flex flex-col gap-3 p-4">
-        <h3 className="flex items-center gap-2 text-md font-semibold text-ink">
-          <Monitor aria-hidden className="size-4 text-dim" />I dag, på din dator
-        </h3>
-        <dl className="grid grid-cols-[auto_minmax(0,1fr)] items-baseline gap-x-4 gap-y-2">
-          <Row label="Var">{today.where}</Row>
-          <Row label="Grafikkort">{today.gpu}</Row>
-          <Row label="Fart">{today.speed}</Row>
-          <Row label="Realtid">
-            <Badge tone={today.realtime ? "ok" : "neutral"} size="md">
-              {today.realtime ? "Ja" : "Nej"}
-            </Badge>
-          </Row>
-        </dl>
-        <Where>{today.source}</Where>
-      </Card>
-      <Card className="flex flex-col gap-3 p-4">
-        <h3 className="flex items-center gap-2 text-md font-semibold text-ink">
-          <Cloud aria-hidden className="size-4 text-dim" />
-          Din RunPod
-        </h3>
-        <dl className="grid grid-cols-[auto_minmax(0,1fr)] items-baseline gap-x-4 gap-y-2">
-          <Row label="Mätt">{runpod.measured}</Row>
-          <Row label="Pris per timme">{runpod.pricePerHour}</Row>
-        </dl>
-        {runpod.notBuilt.length ? (
-          <div className="flex flex-col gap-1.5">
-            <p className="text-2xs font-semibold uppercase tracking-[0.06em] text-faint">Inte byggt</p>
-            <ul className="flex flex-col gap-1">
-              {runpod.notBuilt.map((thing) => (
-                <li key={thing} className="flex items-start gap-2 text-sm text-ink">
-                  <CircleDashed aria-hidden className="mt-0.5 size-3.5 shrink-0 text-faint" />
-                  {thing}
-                </li>
-              ))}
-            </ul>
-          </div>
-        ) : null}
-        <Where>{runpod.source}</Where>
-      </Card>
-    </div>
-  );
-}
-
 function ProofRow({ n, proof, still }: { n: number; proof: ProofFact; still: Still | null }) {
   const href = proofHref(proof.id, still?.name);
   return (
@@ -149,10 +91,12 @@ function ProofRow({ n, proof, still }: { n: number; proof: ProofFact; still: Sti
   );
 }
 
-export function Proofs({ facts }: { facts: LipsyncAnswer }) {
+export function Proofs({ facts, dealer, name }: { facts: LipsyncAnswer; dealer: string; name: string }) {
+  const proofs = forDealer(facts.proofs, dealer);
+  if (!proofs.length) return <p className="text-sm text-faint">Inga prov för {name}: inte gjort.</p>;
   return (
     <ol className="flex flex-col gap-3">
-      {facts.proofs.map((proof, i) => (
+      {proofs.map((proof, i) => (
         <ProofRow key={proof.id} n={i + 1} proof={proof} still={facts.stills.proofs[proof.id] ?? null} />
       ))}
     </ol>

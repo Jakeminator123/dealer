@@ -1,5 +1,6 @@
-// Lipsync (/lipsync/): what the lip-sync model actually uses, at which scales, with which settings, where it runs, the
-// proofs and what is open (components/lipsync), read-only. Only in the local lab: the online copy shows a word instead, and
+// Lipsync (/lipsync/): for the dealer chosen in the rail, where her mouth is made and how a job gets there, what is set and
+// what holds; then what the lip-sync model uses, at which scales, with which settings, the proofs, the licences and what is
+// open (components/lipsync), read-only. Only in the local lab: the online copy shows a word instead, and
 // its rail leaves the view out.
 import { LipsyncView } from "@/components/lipsync";
 import { Page } from "@/components/shell";

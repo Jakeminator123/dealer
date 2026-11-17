@@ -49,8 +49,9 @@ Arkivet är det tidigare projektet på D: (snyggare-dealer). Sidorna har kvar si
 - `data/decisions.json` är det som väntar på Jakobs svar, ett kort per sak i studions Beslut. Agenter lägger till och tar
   bort poster; bara sidan skriver hans svar (`tools/decision-store.ts`, läsaren och reglerna i
   `tools/decision-register.ts`).
-- `data/lipsync.json` är fakta om läppsynken (grundbilder, kedjan med format och skalor, inställningar, var det körs, prov
-  och det som är öppet), skriven av talbanan och visad i studions Lipsync; läsaren och reglerna i
+- `data/lipsync.json` är fakta om läppsynken (hur munnen görs och hur ett jobb kommer dit, vad som gäller per dealer, vad en
+  ny film eller dealer kräver, grundbilder, kedjan med format och skalor, inställningar, prov, licenser och det som är
+  öppet), visad i studions Lipsync och som text i `docs/TAL.md`; läsaren och reglerna i
   `tools/lipsync-register.ts`, labbserverns svar i `tools/lipsync-store.ts`.
 - `data/manifest.json` registrerar filproveniens och SHA-256 (sökvägarna i den räknas från repots rot); `evidence/`
   innehåller verifieringskvitton.
@@ -76,7 +77,7 @@ Dokumenten länkar till dessa i stället för att föra egna statusregister. Med
   Jakobs domar som skrivs i `motions/`, och Prov, provmapparna under `assets/proofs/` på `/studio/granska/?prov=<mapp>`;
   den gamla adressen `/studio/prov/?prov=<mapp>` leder dit), **Placering** (kortplanen: 16
   kortplatser och sko; sparning skriver bara `placements/default.json` och beställer inget), **Material** (vilka bilder
-  som gäller), **Lipsync** (vad läppsynken använder och i vilka skalor, skrivskyddad), **Beställ** (bild- och
+  som gäller), **Lipsync** (för vald dealer: var munnen görs, på hans dator eller hans RunPod, vad som är inställt och vad som stämmer; skrivskyddad), **Beställ** (bild- och
   filmbeställningar) och **Casino**, och i foten **Beslut** (det som väntar på Jakobs svar). Lipsync, Beställ och Beslut finns bara i labbet; kopian på nätet har
   i stället **Önskemål** och boten (Fråga). **Protokoll** (en rad per tagning och metod) nås från Beställ, och
   **Jämför** (två tagningar av samma steg sida vid sida) från en tagning i Granska och Karta. Längst ned i

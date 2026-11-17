@@ -1,10 +1,13 @@
-// The lip-sync facts (data/lipsync.json): which pictures the lip-sync model (MuseTalk, inside Scoutgaming's renderer) has
-// as its reference and which it does not, the lips as measured, the chain from the rest film to the picture in the game with
-// each step's format in and out and its scale, the settings and whose they are, where it runs, the evening's proofs and what
-// is open. The speech lane writes and keeps it (docs/TAL.md); the studio's view Lipsync (/studio/lipsync/) shows it
-// read-only through the lab server (GET /api/lipsync, tools/lipsync-store.ts). Nothing on a page writes it.
-// Every fact says in `where` (in `runs`: `source`) where it stands or how it was measured; a value the speech lane only
-// estimated says so in its own words ("cirka", "skattat"), and the view shows it as estimated.
+// The lip-sync facts (data/lipsync.json): the ways her mouth is made and how a job gets to each (`ways`: Scoutgaming's
+// renderer for the bank's line films, the own runner on his computer, the same runner on his RunPod), what is set and what
+// is true or not yet per dealer (`dealers`), what a new film or a new dealer needs (`whenNew`), which pictures the lip-sync
+// model has as its reference and which it does not, the lips as measured, the chain from the rest film to the picture in
+// the game with each step's format in and out and its scale, the settings and whose they are, where it runs, the proofs,
+// the licences and what is open. The text of the same knowledge is docs/TAL.md; the studio's view Lipsync
+// (/studio/lipsync/) shows it read-only through the lab server (GET /api/lipsync, tools/lipsync-store.ts). Nothing on a
+// page writes it. Every fact says in `where` (in `runs` and `ways`: `source`) where it stands or how it was measured; a
+// value only estimated says so in its own words ("cirka", "skattat"), and what is not done or not known says that, never a
+// guess. An entry with `dealer` is that dealer's; one without holds for every dealer.
 // The repo is public: no secret, no personal detail and no path of this machine in any text.
 // This is the strict reader: every problem of the file is named at once, and a file with any problem is not used.
 // Pure: no files, no network. Tests: tools/lipsync-register.test.ts.
@@ -15,10 +18,10 @@ export const LIPSYNC_FILE = 'data/lipsync.json';
 const LIMIT = {about: 1000, text: 400, short: 120, list: 50} as const;
 
 export type BaseImage = {dealer: string; bank: string; use: string; film: string; frames: string; size: string; sha256: string; built: string; reference?: string; where: string};
-export type NotUsed = {what: string; note: string; where: string};
+export type NotUsed = {dealer?: string; what: string; note: string; where: string};
 /** One measured mouth: the three measures in pixels of the film, or a note when it could not be measured. */
 export type LipRow = {what: string; width?: number; upperLip?: number; lowerLip?: number; note?: string};
-export type LipsMeasured = {note: string; where: string; rows: LipRow[]; conclusion: string};
+export type LipsMeasured = {dealer?: string; note: string; where: string; rows: LipRow[]; conclusion: string};
 /** One step of the chain. in, out and scale are the speech lane's words ("1764 × 1174", "cirka × 1,3 in (skattat)"); "-" is none. */
 export type Step = {n: number; what: string; in: string; out: string; scale: string; by: string; where: string};
 export type Setting = {group: string; name: string; value: string; owner: string; locked: boolean; where: string};
@@ -30,10 +33,36 @@ export type Runs = {
 };
 /** One part the runner is built from, and whether its licence allows commercial use, in the speech lane's words. */
 export type Licence = {what: string; licence: string; commercial: string; where: string};
-export type ProofFact = {id: string; date: string; what: string; ownerSaid: string; outcome: string};
+export type ProofFact = {id: string; dealer?: string; date: string; what: string; ownerSaid: string; outcome: string};
 export type OpenPoint = {what: string; blocks: string};
+
+/** How far a way has come: works (made and tried), built (built, not tried), notBuilt. */
+export const WAY_STATES = ['works', 'built', 'notBuilt'] as const;
+export type WayState = typeof WAY_STATES[number];
+/** The entry of `runs` that holds a way's measurements. */
+export const RUN_KEYS = ['today', 'runpod', 'ownRunner'] as const;
+/**
+ * One way her mouth is made: where it runs, how a job gets there (send: the steps in order, commands as they are typed),
+ * what it gives, what it costs, what preparing a new film costs, and which entry of `runs` holds what was measured.
+ */
+export type Way = {id: string; name: string; state: WayState; where: string; send: string[]; gives: string; cost: string; prepare: string; runs: typeof RUN_KEYS[number]; note?: string; source: string};
+/** The mouth with his yes for a dealer: in words, the recipe as it is given, his word, the day and the proof he answered. */
+export type DealerMouth = {value: string; recipe: string; ownerSaid: string; date: string; proof: string; where: string};
+/** How the dealer's line films in the game are laid. */
+export type DealerLines = {value: string; where: string};
+/** A film whose clip the own runner has prepared. */
+export type RunnerClip = {film: string; clip: string; prepared: string; where: string};
+export const ANSWERS = ['ja', 'nej', 'okänt'] as const;
+/** One statement about a dealer and whether it holds: ja, nej, or okänt where no source says. */
+export type Check = {what: string; answer: typeof ANSWERS[number]; note: string; where: string};
+/** What is set and what is true for one dealer; mouth and lines are null where nothing is made. */
+export type DealerFacts = {dealer: string; summary: string; mouth: DealerMouth | null; lines: DealerLines | null; runner: RunnerClip[]; checks: Check[]};
+/** What a new film and a new dealer need before she can speak over it. */
+export type WhenNew = {film: string[]; dealer: string[]; where: string};
+
 export type Lipsync = {
   schemaVersion: 1; about: string; updated: string;
+  ways?: Way[]; dealers?: DealerFacts[]; whenNew?: WhenNew;
   baseImages: BaseImage[]; notUsedAsBase: NotUsed[]; lipsMeasured: LipsMeasured; steps: Step[];
   settings: Setting[]; lockNote: string; runs: Runs; proofs: ProofFact[]; open: OpenPoint[]; licences?: Licence[];
 };
@@ -90,15 +119,80 @@ function reader(problems: string[]) {
     if (typeof value !== 'number' || !Number.isFinite(value) || value < 0 || value > 10000) problems.push(`${at}: ett mått i bildpunkter`);
     return Number(value);
   };
-  return {text, shape, list, day, flag, measure};
+  /** An id as the repo writes them (a dealer, a proof, a way): small letters, digits and hyphens. */
+  const id = (at: string, value: unknown, what: string): string => {
+    if (typeof value !== 'string' || value.length > 60 || !ID.test(value)) problems.push(`${at}: ${what} (små bokstäver, siffror och bindestreck)`);
+    return String(value);
+  };
+  /** One of the given words. */
+  const oneOf = <T extends string>(at: string, value: unknown, words: readonly T[]): T => {
+    if (typeof value !== 'string' || !(words as readonly string[]).includes(value)) problems.push(`${at}: ett av ${words.join(', ')}`);
+    return value as T;
+  };
+  /** The optional dealer of an entry, copied only where the file gives it. */
+  const dealerOf = (at: string, v: Record<string, unknown>): {dealer?: string} => ('dealer' in v ? {dealer: id(`${at}.dealer`, v.dealer, 'en dealers id')} : {});
+  return {text, shape, list, day, flag, measure, id, oneOf, dealerOf};
+}
+
+/** The ways, the dealers and what a new film or dealer needs; checked against the runs and the proofs the file holds. */
+function readPerDealer(json: Record<string, unknown>, r: ReturnType<typeof reader>, problems: string[], runs: Runs, proofs: ProofFact[]) {
+  const {text, shape, list, day, id, oneOf} = r;
+  const lines = (at: string, value: unknown, least = 0) => list(at, value, (a, v) => text(a, v), least);
+
+  const ways = 'ways' in json ? list('ways', json.ways, (at, v): Way | null => {
+    if (!shape(at, v, ['id', 'name', 'state', 'where', 'send', 'gives', 'cost', 'prepare', 'runs', 'source'], ['note'])) return null;
+    const way: Way = {id: id(`${at}.id`, v.id, 'ett id'), name: text(`${at}.name`, v.name, LIMIT.short), state: oneOf(`${at}.state`, v.state, WAY_STATES),
+      where: text(`${at}.where`, v.where), send: lines(`${at}.send`, v.send, 1), gives: text(`${at}.gives`, v.gives), cost: text(`${at}.cost`, v.cost),
+      prepare: text(`${at}.prepare`, v.prepare), runs: oneOf(`${at}.runs`, v.runs, RUN_KEYS), source: text(`${at}.source`, v.source)};
+    // A way's measurements are an entry of runs that the file really has.
+    if ((RUN_KEYS as readonly string[]).includes(String(v.runs)) && !runs[way.runs]) problems.push(`${at}.runs: runs.${way.runs} finns inte i filen`);
+    if ('note' in v) way.note = text(`${at}.note`, v.note);
+    return way;
+  }) : null;
+
+  const proofDealer = new Map(proofs.map(p => [p.id, p.dealer]));
+  const dealers = 'dealers' in json ? list('dealers', json.dealers, (at, v): DealerFacts | null => {
+    if (!shape(at, v, ['dealer', 'summary', 'mouth', 'lines', 'runner', 'checks'])) return null;
+    const dealer = id(`${at}.dealer`, v.dealer, 'en dealers id');
+    let mouth: DealerMouth | null = null;
+    if (v.mouth !== null && shape(`${at}.mouth`, v.mouth, ['value', 'recipe', 'ownerSaid', 'date', 'proof', 'where'])) {
+      const m = v.mouth as Record<string, unknown>;
+      mouth = {value: text(`${at}.mouth.value`, m.value), recipe: text(`${at}.mouth.recipe`, m.recipe), ownerSaid: text(`${at}.mouth.ownerSaid`, m.ownerSaid, LIMIT.text, true),
+        date: day(`${at}.mouth.date`, m.date), proof: id(`${at}.mouth.proof`, m.proof, 'en provmapp under assets/proofs/ (dess id)'), where: text(`${at}.mouth.where`, m.where)};
+      // The proof he answered is one of the file's proofs, and not another dealer's.
+      if (!proofDealer.has(mouth.proof)) problems.push(`${at}.mouth.proof: ${mouth.proof} står inte bland proofs`);
+      else if (proofDealer.get(mouth.proof) && proofDealer.get(mouth.proof) !== dealer) problems.push(`${at}.mouth.proof: ${mouth.proof} är en annan dealers prov`);
+    }
+    let dealerLines: DealerLines | null = null;
+    if (v.lines !== null && shape(`${at}.lines`, v.lines, ['value', 'where'])) {
+      const l = v.lines as Record<string, unknown>;
+      dealerLines = {value: text(`${at}.lines.value`, l.value), where: text(`${at}.lines.where`, l.where)};
+    }
+    const runner = list(`${at}.runner`, v.runner, (a, c): RunnerClip | null => shape(a, c, ['film', 'clip', 'prepared', 'where'])
+      ? {film: text(`${a}.film`, c.film, LIMIT.short), clip: text(`${a}.clip`, c.clip), prepared: text(`${a}.prepared`, c.prepared), where: text(`${a}.where`, c.where)} : null, 0);
+    const checks = list(`${at}.checks`, v.checks, (a, c): Check | null => shape(a, c, ['what', 'answer', 'note', 'where'])
+      ? {what: text(`${a}.what`, c.what, LIMIT.short), answer: oneOf(`${a}.answer`, c.answer, ANSWERS), note: text(`${a}.note`, c.note, LIMIT.text, true), where: text(`${a}.where`, c.where)} : null);
+    return {dealer, summary: text(`${at}.summary`, v.summary), mouth, lines: dealerLines, runner, checks};
+  }) : null;
+
+  let whenNew: WhenNew | null = null;
+  if ('whenNew' in json && shape('whenNew', json.whenNew, ['film', 'dealer', 'where'])) {
+    const w = json.whenNew as Record<string, unknown>;
+    whenNew = {film: lines('whenNew.film', w.film, 1), dealer: lines('whenNew.dealer', w.dealer, 1), where: text('whenNew.where', w.where)};
+  }
+  for (const [name, values] of [['ways', (ways ?? []).map(w => w.id)], ['dealers', (dealers ?? []).map(d => d.dealer)]] as const) {
+    const seen = new Set<string>();
+    for (const value of values) { if (seen.has(value)) problems.push(`${name}: ${value} står två gånger`); seen.add(value); }
+  }
+  return {...(ways ? {ways} : {}), ...(dealers ? {dealers} : {}), ...(whenNew ? {whenNew} : {})};
 }
 
 /** The facts as a checked copy (keys in the file's order where they are given), or a LipsyncError that names every problem. */
 export function readLipsync(json: unknown): Lipsync {
   const problems: string[] = [];
   if (!object(json)) throw new LipsyncError(['filen ska vara ett objekt']);
-  const {text, shape, list, day, flag, measure} = reader(problems);
-  shape('filen', json, TOP, ['licences']);
+  const r = reader(problems), {text, shape, list, day, flag, measure, id, dealerOf} = r;
+  shape('filen', json, TOP, ['licences', 'ways', 'dealers', 'whenNew']);
   if (json.schemaVersion !== 1) problems.push('schemaVersion ska vara 1');
 
   const baseImages = list('baseImages', json.baseImages, (at, v): BaseImage | null => {
@@ -113,12 +207,13 @@ export function readLipsync(json: unknown): Lipsync {
     return out;
   });
   const notUsedAsBase = list('notUsedAsBase', json.notUsedAsBase, (at, v): NotUsed | null =>
-    shape(at, v, ['what', 'note', 'where']) ? {what: text(`${at}.what`, v.what, LIMIT.short), note: text(`${at}.note`, v.note), where: text(`${at}.where`, v.where)} : null, 0);
+    shape(at, v, ['what', 'note', 'where'], ['dealer']) ? {...dealerOf(at, v), what: text(`${at}.what`, v.what, LIMIT.short), note: text(`${at}.note`, v.note), where: text(`${at}.where`, v.where)} : null, 0);
 
   let lipsMeasured: LipsMeasured = {note: '', where: '', rows: [], conclusion: ''};
-  if (shape('lipsMeasured', json.lipsMeasured, ['note', 'where', 'rows', 'conclusion'])) {
+  if (shape('lipsMeasured', json.lipsMeasured, ['note', 'where', 'rows', 'conclusion'], ['dealer'])) {
     const m = json.lipsMeasured as Record<string, unknown>;
     lipsMeasured = {
+      ...dealerOf('lipsMeasured', m),
       note: text('lipsMeasured.note', m.note), where: text('lipsMeasured.where', m.where),
       rows: list('lipsMeasured.rows', m.rows, (at, v): LipRow | null => {
         if (!shape(at, v, ['what'], ['width', 'upperLip', 'lowerLip', 'note'])) return null;
@@ -169,9 +264,9 @@ export function readLipsync(json: unknown): Lipsync {
   }
 
   const proofs = list('proofs', json.proofs, (at, v): ProofFact | null => {
-    if (!shape(at, v, ['id', 'date', 'what', 'ownerSaid', 'outcome'])) return null;
-    if (typeof v.id !== 'string' || v.id.length > 60 || !ID.test(v.id)) problems.push(`${at}.id: en provmapp under assets/proofs/ (dess id)`);
-    return {id: String(v.id), date: day(`${at}.date`, v.date), what: text(`${at}.what`, v.what), ownerSaid: text(`${at}.ownerSaid`, v.ownerSaid, LIMIT.text, true), outcome: text(`${at}.outcome`, v.outcome)};
+    if (!shape(at, v, ['id', 'date', 'what', 'ownerSaid', 'outcome'], ['dealer'])) return null;
+    return {id: id(`${at}.id`, v.id, 'en provmapp under assets/proofs/ (dess id)'), ...dealerOf(at, v), date: day(`${at}.date`, v.date), what: text(`${at}.what`, v.what),
+      ownerSaid: text(`${at}.ownerSaid`, v.ownerSaid, LIMIT.text, true), outcome: text(`${at}.outcome`, v.outcome)};
   }, 0);
   const seen = new Set<string>();
   for (const p of proofs) { if (seen.has(p.id)) problems.push(`proofs: ${p.id} står två gånger`); seen.add(p.id); }
@@ -182,9 +277,10 @@ export function readLipsync(json: unknown): Lipsync {
     shape(at, v, ['what', 'licence', 'commercial', 'where']) ? {what: text(`${at}.what`, v.what), licence: text(`${at}.licence`, v.licence, LIMIT.short),
       commercial: text(`${at}.commercial`, v.commercial), where: text(`${at}.where`, v.where)} : null, 0) : null;
 
+  const perDealer = readPerDealer(json, r, problems, runs, proofs);
   const about = text('about', json.about, LIMIT.about), updated = day('updated', json.updated);
   if (problems.length) throw new LipsyncError(problems);
-  return {schemaVersion: 1, about, updated, baseImages, notUsedAsBase, lipsMeasured, steps, settings, lockNote, runs, proofs, open, ...(licences ? {licences} : {})};
+  return {schemaVersion: 1, about, updated, ...perDealer, baseImages, notUsedAsBase, lipsMeasured, steps, settings, lockNote, runs, proofs, open, ...(licences ? {licences} : {})};
 }
 
 /**
@@ -198,4 +294,12 @@ export function pickStill(names: readonly string[], labels: Record<string, unkno
   const sorted = [...files].sort((a, b) => rank(a) - rank(b) || a.localeCompare(b));
   const first = sorted.find(name => !name.endsWith('.mp4')) ?? sorted[0];
   return first ? {name: first, kind: first.endsWith('.mp4') ? 'video' : 'image'} : null;
+}
+
+/** A proof's first film in the order its labels name them (the speech lane's proofs put the one at the game's size first), or null. */
+export function pickFilm(names: readonly string[], labels: Record<string, unknown> | null): string | null {
+  const films = names.filter(name => /^[a-z0-9][a-z0-9._-]*\.mp4$/.test(name));
+  const order = Object.keys(labels ?? {});
+  const rank = (name: string) => (order.indexOf(name) + 1) || order.length + 1;
+  return [...films].sort((a, b) => rank(a) - rank(b) || a.localeCompare(b))[0] ?? null;
 }

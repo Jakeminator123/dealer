@@ -3,7 +3,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {LipsyncError, pickStill, readLipsync} from './lipsync-register.ts';
+import {LipsyncError, pickFilm, pickStill, readLipsync} from './lipsync-register.ts';
 
 const tracked = () => JSON.parse(readFileSync('data/lipsync.json', 'utf8'));
 const problems = (value: unknown): string[] => { try { readLipsync(value); return []; } catch (error) { assert.ok(error instanceof LipsyncError); assert.equal((error as LipsyncError).status, 422); return (error as LipsyncError).problems; } };
@@ -79,7 +79,52 @@ test('the own runner and the licences are read where the file has them, and are 
   assert.ok(facts.runs.ownRunner && facts.runs.ownRunner.what.length > 0 && Array.isArray(facts.runs.ownRunner.notBuilt));
   assert.ok(facts.licences && facts.licences.length >= 4 && facts.licences.every(l => l.what && l.licence && l.commercial && l.where));
   const without = structuredClone(tracked); delete without.licences; delete without.runs.ownRunner;
+  // A way whose measurements stand in the own runner's entry cannot be read without it.
+  has(problems(without), 'ways[1].runs: runs.ownRunner finns inte i filen');
+  delete without.ways;
   const plain = readLipsync(without); assert.equal(plain.licences, undefined); assert.equal(plain.runs.ownRunner, undefined);
   const bad = structuredClone(tracked); bad.runs.ownRunner.extra = 1; bad.licences[0].licence = 5;
   assert.throws(() => readLipsync(bad), (e: unknown) => /runs\.ownRunner: okända fält extra/.test((e as {problems: string[]}).problems.join('|')) && /licences\[0\]\.licence/.test((e as {problems: string[]}).problems.join('|')));
+});
+
+test('the three ways the mouth is made: each with its state, its steps, and its measurements in an entry of runs', () => {
+  const facts = readLipsync(tracked());
+  assert.deepEqual(facts.ways?.map(w => [w.id, w.state, w.runs]), [['renderer', 'works', 'today'], ['runner', 'works', 'ownRunner'], ['pod', 'notBuilt', 'runpod']]);
+  assert.ok(facts.ways?.every(w => w.send.length > 0 && w.cost && w.prepare && w.source));
+  has(changed(f => { f.ways[0].state = 'klar'; }), 'ways[0].state: ett av works, built, notBuilt');
+  has(changed(f => { f.ways[0].runs = 'imorgon'; }), 'ways[0].runs: ett av today, runpod, ownRunner');
+  has(changed(f => { f.ways[0].send = []; }), 'ways[0].send: 1 till 50 poster');
+  has(changed(f => { f.ways[1].id = f.ways[0].id; }), 'ways: renderer står två gånger');
+  has(changed(f => { f.ways[2].send[0] = 'kopiera från D:/dealer-scratch/tmp/tal/korare'; }), 'ways[2].send[0]: en sökväg på datorn');
+  assert.deepEqual(changed(f => { delete f.ways[2].note; }), [], 'a way\'s note is optional');
+});
+
+test('per dealer: what is set and what holds, with his yes tied to a proof of hers, and every answer ja, nej or okänt', () => {
+  const facts = readLipsync(tracked());
+  const paow = facts.dealers?.find(d => d.dealer === 'paow'), pamela = facts.dealers?.find(d => d.dealer === 'pamela');
+  assert.ok(paow && pamela);
+  assert.equal(paow.mouth?.proof, 'paow-realtid-mun-6');
+  assert.equal(facts.proofs.find(p => p.id === paow.mouth?.proof)?.ownerSaid, paow.mouth?.ownerSaid, 'his word on the mouth is his word on its proof');
+  assert.ok(paow.checks.some(c => c.answer === 'ja') && paow.checks.some(c => c.answer === 'nej'));
+  // Nothing of the lip sync is made for Pamela, and the file says so instead of leaving her out.
+  assert.equal(pamela.mouth, null); assert.equal(pamela.lines, null); assert.deepEqual(pamela.runner, []);
+  assert.ok(pamela.checks.length > 0 && pamela.checks.every(c => c.answer === 'nej'));
+  has(changed(f => { f.dealers[0].mouth.proof = 'paow-finns-inte'; }), 'dealers[0].mouth.proof: paow-finns-inte står inte bland proofs');
+  has(changed(f => { f.proofs.find((p: {id: string}) => p.id === 'paow-realtid-mun-6').dealer = 'pamela'; }), 'är en annan dealers prov');
+  has(changed(f => { f.dealers[0].checks[0].answer = 'kanske'; }), 'dealers[0].checks[0].answer: ett av ja, nej, okänt');
+  has(changed(f => { f.dealers[1].dealer = 'Pamela'; }), 'dealers[1].dealer: en dealers id');
+  has(changed(f => { f.dealers[1].dealer = 'paow'; }), 'dealers: paow står två gånger');
+  has(changed(f => { f.dealers[1].mouth = {value: 'x'}; }), 'dealers[1].mouth: recipe saknas');
+  has(changed(f => { f.dealers[0].checks = []; }), 'dealers[0].checks: 1 till 50 poster');
+  has(changed(f => { f.whenNew.film = []; }), 'whenNew.film: 1 till 50 poster');
+  has(changed(f => { f.proofs[0].dealer = 'Paow'; }), 'proofs[0].dealer');
+  assert.deepEqual(changed(f => { delete f.proofs[0].dealer; delete f.lipsMeasured.dealer; delete f.notUsedAsBase[0].dealer; }), [], 'an entry without dealer holds for every dealer');
+  const plain = tracked(); delete plain.ways; delete plain.dealers; delete plain.whenNew;
+  const read = readLipsync(plain); assert.equal(read.ways, undefined); assert.equal(read.dealers, undefined); assert.equal(read.whenNew, undefined);
+});
+
+test('a proof\'s film: the first in the labels\' order, else the first by name', () => {
+  assert.equal(pickFilm(['b.mp4', 'a.mp4', 'c.png'], {'b.mp4': 'B', 'c.png': 'C'}), 'b.mp4');
+  assert.equal(pickFilm(['b.mp4', 'a.mp4'], null), 'a.mp4');
+  assert.equal(pickFilm(['c.png', 'Bad Name.mp4'], null), null);
 });

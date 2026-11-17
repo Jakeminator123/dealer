@@ -4,13 +4,13 @@
 // estimated. The words themselves are shown as the file has them; these only decide colour, size and order.
 // Only in the lab: the online copy reads nothing here (app/lipsync/page.tsx shows a word instead, the rail leaves the
 // view out). Read-only: nothing here writes. Tests: studio/tests/lipsync.test.ts.
-import type { BaseImage, LipRow, Lipsync, LipsMeasured, NotUsed, OpenPoint, ProofFact, Runs, Setting, Step } from "../../tools/lipsync-register.ts";
-import type { LipsyncAnswer, Still } from "../../tools/lipsync-store.ts";
+import type { BaseImage, Check, DealerFacts, Licence, LipRow, Lipsync, LipsMeasured, NotUsed, OpenPoint, ProofFact, Runs, Setting, Step, Way, WayState, WhenNew } from "../../tools/lipsync-register.ts";
+import type { LipsyncAnswer, SpeechSet, SpeechSets, Still } from "../../tools/lipsync-store.ts";
 import { ApiError } from "./api.ts";
 import { labUrl } from "./lab.ts";
 import { isSnapshot, swedishMoment } from "./mode.ts";
 
-export type { BaseImage, LipRow, Lipsync, LipsMeasured, LipsyncAnswer, NotUsed, OpenPoint, ProofFact, Runs, Setting, Step, Still };
+export type { BaseImage, Check, DealerFacts, Licence, LipRow, Lipsync, LipsMeasured, LipsyncAnswer, NotUsed, OpenPoint, ProofFact, Runs, Setting, SpeechSet, SpeechSets, Step, Still, Way, WayState, WhenNew };
 
 // ── The call ────────────────────────────────────────────────────────────────
 const NOT_UP = "Labbet svarar inte. Starta det med START.cmd.";
@@ -154,6 +154,58 @@ export function outcomeTone(outcome: string): "brass" | "bad" | "ok" | "neutral"
 
 /** A measure in pixels in Swedish: 7.4 → "7,4". */
 export const measureWord = (value: number | undefined): string => (value === undefined ? "–" : String(value).replace(".", ","));
+
+// ── Per dealer ──────────────────────────────────────────────────────────────
+/** The entries that hold for a dealer: hers, and those that name no dealer (they hold for every dealer). */
+export const forDealer = <T extends { dealer?: string }>(entries: readonly T[], dealer: string): T[] => entries.filter((e) => !e.dealer || e.dealer === dealer);
+
+/** A way's state in his words, and its colour. */
+export const STATE_WORD: Record<WayState, string> = { works: "Fungerar", built: "Byggd, inte prövad", notBuilt: "Inte byggd" };
+export const STATE_TONE: Record<WayState, "ok" | "wait" | "neutral"> = { works: "ok", built: "wait", notBuilt: "neutral" };
+
+/** A check's answer as the heading it stands under, in the order the view shows them. */
+export const ANSWER_GROUPS = [
+  { answer: "ja", title: "Stämmer" },
+  { answer: "nej", title: "Inte än" },
+  { answer: "okänt", title: "Okänt" },
+] as const;
+
+/** The checks under each heading; a heading without checks is left out. */
+export function groupChecks(checks: readonly Check[]): { answer: Check["answer"]; title: string; checks: Check[] }[] {
+  return ANSWER_GROUPS.map((g) => ({ ...g, checks: checks.filter((c) => c.answer === g.answer) })).filter((g) => g.checks.length > 0);
+}
+
+/**
+ * What the speech register says of one setting for a dealer: the value, "okänt" when the register could not be read, and
+ * "inte gjort" when it names no such dealer.
+ */
+export function speechWord(speech: SpeechSets, dealer: string, pick: (set: SpeechSet) => string | null): { text: string; known: boolean } {
+  if (speech == null) return { text: "okänt", known: false }; // also a lab server older than the speech field
+  const set = speech[dealer];
+  const value = set ? pick(set) : null;
+  return value ? { text: value, known: true } : { text: "inte gjort", known: false };
+}
+
+/** A voice in a few words: "Paow · elevenlabs · eleven_multilingual_v2". */
+export const voiceWord = (set: SpeechSet): string | null => (set.voice ? [set.voice.name, set.voice.provider, set.voice.model].join(" · ") : null);
+
+/** Whether a licence allows commercial use, as the file says it: ja, nej, or neither. */
+export function commercialTone(word: string): "ok" | "bad" | "neutral" {
+  if (/^ja\b/i.test(word.trim())) return "ok";
+  if (/^nej\b/i.test(word.trim())) return "bad";
+  return "neutral";
+}
+
+/** A step of a way split for drawing: a command as it is typed ("node tools/speech.ts bank --dealer paow", "POST /rita") in code, the rest as text. */
+export type TextPart = { text: string; code: boolean };
+const COMMAND = /(node(?: [\w./=-]+)+|(?:GET|POST) \/\w+)/;
+export function codeParts(text: string): TextPart[] {
+  // split with one capturing group: the commands stand at the odd places.
+  return text
+    .split(COMMAND)
+    .map((part, i) => ({ text: part, code: i % 2 === 1 }))
+    .filter((part) => part.text !== "");
+}
 
 /** Where a proof opens in the Prov room, on the file the view shows. */
 export function proofHref(proof: string, file?: string | null): string {

@@ -1,11 +1,12 @@
-// <Bases facts={facts} />: Grundbilder. What the lip-sync model has as its reference for her lips: a still with the rest
-// film's own mouth first (when its proof is on this machine), one card per base picture (the film, the frames, its size, the
+// <Bases facts={facts} dealer="paow" name="Paow" />: Grundbilder, for the chosen dealer. What the lip-sync model has as its
+// reference for her lips: a still with the rest film's own mouth first (when its proof is hers and on this machine), one
+// card per base picture (the film, the frames, its size, the
 // day it was made), what is plainly not used (keystone, anchor, his own picture), and the lips as measured with the speech
 // lane's conclusion.
 import { Ban } from "lucide-react";
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { dayWord, measureWord, proofHref, type BaseImage, type LipsyncAnswer, type LipsMeasured, type NotUsed, type Still } from "../../lib/lipsync.ts";
+import { dayWord, forDealer, measureWord, proofHref, type BaseImage, type LipsyncAnswer, type LipsMeasured, type NotUsed, type Still } from "../../lib/lipsync.ts";
 import { Card, Panel } from "../ui/Card";
 import { StillView, Where } from "./parts";
 
@@ -119,18 +120,29 @@ function Measured({ m }: { m: LipsMeasured }) {
   );
 }
 
-export function Bases({ facts }: { facts: LipsyncAnswer }) {
+export function Bases({ facts, dealer, name }: { facts: LipsyncAnswer; dealer: string; name: string }) {
+  const images = forDealer(facts.baseImages, dealer);
+  const notUsed = forDealer(facts.notUsedAsBase, dealer);
+  const measured = forDealer([facts.lipsMeasured], dealer)[0] ?? null;
+  // The base still is a proof's: shown only where that proof is the chosen dealer's (or names none).
+  const baseProof = facts.proofs.find((p) => p.id === facts.stills.base?.proof);
+  const still = facts.stills.base && (!baseProof?.dealer || baseProof.dealer === dealer) ? facts.stills.base : null;
+  if (!images.length && !notUsed.length && !measured) return <p className="text-sm text-faint">Inga grundbilder och inga mått för {name}: inte gjort.</p>;
   return (
     <div className="flex flex-col gap-4">
-      {facts.stills.base ? <BaseStill still={facts.stills.base} /> : null}
-      <ul aria-label="Grundbilderna" className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-        {facts.baseImages.map((image) => (
-          <BaseCard key={image.bank} image={image} />
-        ))}
-      </ul>
+      {still ? <BaseStill still={still} /> : null}
+      {images.length ? (
+        <ul aria-label="Grundbilderna" className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+          {images.map((image) => (
+            <BaseCard key={image.bank} image={image} />
+          ))}
+        </ul>
+      ) : (
+        <p className="text-sm text-faint">Ingen grundbild för {name}: inte gjort.</p>
+      )}
       <div className="grid items-start gap-4 lg:grid-cols-2">
-        <NotUsedPanel list={facts.notUsedAsBase} />
-        <Measured m={facts.lipsMeasured} />
+        {notUsed.length ? <NotUsedPanel list={notUsed} /> : null}
+        {measured ? <Measured m={measured} /> : null}
       </div>
     </div>
   );

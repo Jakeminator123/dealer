@@ -1,6 +1,6 @@
 # Tal: hur dealern får tal, och vart det är på väg
 
-Skriven 2026-11-13 av banan Tal. Sidan säger vad som finns i dag, hur en replik och en ny dealer görs, vad provet med tal under en giv visar, och vad fritt tal ur en chatt skulle kräva. Det som är mätt står som mätt; det som är skattat står som skattat. Kontraktet för själva filmen står i koden (`src/speech-plan.ts`, `tools/speech.ts`), registret är `data/speech.json`.
+Skriven 2026-11-13 av banan Tal. Sidan säger vad som finns i dag, på vilka sätt munnen görs och hur ett jobb kommer dit (på hans dator eller på hans RunPod), vad som gäller per dealer, hur en replik och en ny dealer görs, vad provet med tal under en giv visar, och vad fritt tal ur en chatt skulle kräva. Det som är mätt står som mätt; det som är skattat står som skattat. Kontraktet för själva filmen står i koden (`src/speech-plan.ts`, `tools/speech.ts`), registret är `data/speech.json`, och fakta om läppsynken per dealer står i `data/lipsync.json`, som studions vy Lipsync visar för den dealer som är vald i menyn.
 
 ## Vad som finns i dag
 
@@ -14,6 +14,72 @@ Munnen ritas av samma renderer som Scoutgamings dealers har (`services/moving-gp
 - **Provet** `paow-tal` i studions Prov visar allt i dealerns egen röst, med ljud: demofilmen först, sedan tal under en giv, de tio replikerna och chattens svar. Filmer i en annan röst (ett tidigare val, ett prov) ligger kvar där de gjordes och visas inte. Provet `paow-rost` är röstjämförelsen från 13 november: samma replik på fyra sätt.
 
 För Paow finns 2026-11-13: de tio replikerna och femton chattsvar i hennes egen röst, en demofilm på 34 s, och prov av tal lagt över en annan film än vilan. Nattens första omgång med rösten Jessica ligger kvar som egna mappar och tagningar, så att rösterna går att jämföra. Bankens id är `paow-v2`, eftersom Scoutgaming redan har en äldre dealer som heter PAOW.
+
+## Munnen: tre sätt, och vad som gäller per dealer
+
+Jakob 2026-11-17: "Jag vill ju kunna använda mig av min runpod framgent för att skapa realtidslipsynk. Det är det som är huvudmålet. hennes talade replikklipp är av mindre relevans, även fast dessa också ska sitta såklart." Samma kväll byggde talbanan en egen körare för munnen, och den gör att ett jobb kan gå till två ställen: hans dator eller hans RunPod. Det här avsnittet säger hur, och vad som gäller för varje dealer. Samma uppgifter står i `data/lipsync.json` (`ways`, `dealers`, `whenNew`) och syns i studions vy Lipsync; ändras något här ändras det där också.
+
+| Sätt | Var | Läge | Kostar |
+| --- | --- | --- | --- |
+| **Replikfilmerna** genom Scoutgamings renderer | hans dator: Scoutgamings image i Docker i WSL, RTX 3060, utan nät | fungerar; det är så spelets talfilmer och munlappar är gjorda | 0 kr för grafikkortet; rösten per tecken hos ElevenLabs |
+| **Köraren** på hans dator | hans dator: egen image `dealer-korare:0.2` i Docker i WSL, RTX 3060 | fungerar som tjänst, prövad på vilan; inte i spelet | 0 kr |
+| **Köraren** på hans RunPod | en 4090-podd på hans eget RunPod-konto | inte byggd, inte startad | 0,34–0,89 USD per timme; provkvällen högst 5 USD |
+
+### Replikfilmerna genom Scoutgamings renderer
+
+Det sätt som resten av sidan beskriver: `tools/speech.ts` bygger en bank per film (`bank`, eller `over` som gör sin egen), läser repliken hos ElevenLabs och låter Scoutgamings renderer rita munnen i förväg; munnen läggs tillbaka i filmens egna rutor med spelets recept (Kvaliteten). Kommandona står i Göra en replik. Renderern är förseglad: den kontrollerar sina egna filer inför varje jobb och ritar inte om en av dem är ändrad, så dess inställningar (`bbox_shift`, utjämningen) går inte att ändra här, och vi går inte förbi det. Den är för långsam för realtid här (cirka 10 rutor per sekund) och används för det som görs i förväg.
+
+### Köraren på hans dator
+
+**Vad det är.** MuseTalk 1.5 ur dess öppna källkod (MIT, samma commit som Scoutgamings renderer) plus egen kod, i en egen image; ingenting ur Scoutgamings renderer. Masken för munnens område ritas ur MediaPipes landmärken i stället för med ansiktssegmenteringen BiSeNet (Licenserna nedan). Munnen läggs in som Jakob valde den (storlek F, bara läpparna), bara medan hon hörs (grinden). Koden ligger bara på slaskdisken, i inget Git: `D:/dealer-scratch/tmp/tal/korare/` (`kod/korare.py` förbereder och ritar, `kod/tjanst.py` är tjänsten, `kod/inlaggning.py` lägger in munnen, `kod/ansikte.py` gör landmärken och mask, `kod/vikter.json` listar vikterna med källa och SHA-256; läs `korare/README.md`). Vikterna (3,7 GB) ligger i `korare/modeller/` och hämtas igen med `korare/hamta-vikter.sh`.
+
+**Så skickas ett jobb.** Allt som använder grafikkortet går genom det delade låset (`D:/dealer-scratch/tmp/tal/skript/med-las.sh`: väntar medan låsfilen `D:/dealer-scratch/tmp/gpu-och-headless.lock` finns och är yngre än 20 minuter, skriver sitt namn, kör, tar bort låset), ett jobb i taget; samma lås gäller headless-inspelningar av spelet.
+
+```
+bash D:/dealer-scratch/tmp/tal/korare/bygg.sh
+bash D:/dealer-scratch/tmp/tal/korare/skript/tjanst-prov.sh "<vad, hur länge>" ut/tjanst/fragor-1.jsonl ut/tjanst/svar-1.jsonl
+```
+
+Det första bygger imagen en gång. Det andra startar tjänsten genom låset, väntar tills den svarar, skickar frågorna i filen (en JSON per rad) och stänger den; svaren hamnar i svarsfilen. Tjänsten svarar på `GET /halsa`, `POST /forbered` (läser ett klipp och dess förberedelse till minnet, och förbereder om det behövs), `POST /rita` (en replik) och `POST /stang`. En fråga till `/rita` har klippet, repliken som ljudfil, planen genom klippets rutor och receptet:
+
+```
+{"klipp":"/in/bank/sources/sources/<klippets id>.mp4","ljud":"/in/paow-tal-placebets-sv-13/tts.mp3","plan":"0..23,23..0","ljud_start":5280,"recept":{"opening":[0.55,26,3,0.55],"reach":[70,60],"lipsOnly":[5,6,44]},"ut":"/arbete/ut/tjanst/<namn>/film.mp4"}
+```
+
+Svaret är en rad JSON per händelse medan repliken ritas (vilka rutor som är färdiga och efter hur många millisekunder) och sist en sammanfattning; med `ut` skrivs en film i klippets storlek med ljud och ett kvitto. Övriga fält står överst i `kod/tjanst.py`. Två saker är fasta i dag och gäller den som skickar: skriptet monterar Paows mapp (`assets/speech/paow`) som `/in`, så en annan dealer kräver att den raden ändras; och tjänsten ritar i 24 rutor per sekund. Imagen behöver inte byggas om för kodändringar, eftersom skripten monterar `kod/` över imagens kod; imagen `dealer-korare:0.2` är också provkörd med sin egen kod.
+
+**Receptet med hans ja.** Tjänstens eget förval är storlek F utan `opening`. Munnen han sa ja till (provet `paow-realtid-mun-6`, Beslut 2026-11-17 kl. 21.38) är F plus `{"opening":[0.55,26,3,0.55],"reach":[70,60],"lipsOnly":[5,6,44]}`: läpparna förs mot varandra över tänderna i vanligt tal (en liten öppning behåller 55 % av sin höjd, en på 26 bildpunkter hela), den största öppningen är kvar som tak, och hakan följer mjukt. Tills förvalet byts ges det i varje fråga, som ovan. Rattarna för munnen i realtid finns bara i `kod/inlaggning.py`, inte i `src/speech-plan.ts`.
+
+**Mätt** (RTX 3060, en replik om 48 rutor, varm tjänst, 2026-11-17): start en gång 37 s för modellerna och 29 s uppvärmning; första frågan för ett klipp läser klippet på 5,8 s; per replik de första 12 rutorna efter 1,5–2,5 s och hela repliken efter 3,8–5,0 s, 12–13 rutor per sekund i hela kedjan. Realtid kräver 24, så realtid går inte på den här datorn. Förberedelsen av ett klipp tog 13–19 s för 112 rutor och ligger på disken som cirka 4,5 MB per klipp och inställning (`korare/prep/`). Inläggningen ger på samma indata samma grind och samma färgskifte som förlagan i talbanans klon; bildskillnaden i de lagda rutorna är 0,66 nivåer mot 0,69 i de orörda. `bbox_shift` (−8, 0, +8, +16) ger inte hennes egna läppar; storleken kommer ur inläggningen. Bara vilofilmens klipp är prövat, och bara talbanans blick har sett tjänstens bild och provet -6.
+
+**Inte byggt:** munnen strömmad till spelet medan hon talar (i dag skriver tjänsten en film eller behåller rutorna), ljud in som PCM i stället för en fil, tester.
+
+### Köraren på hans RunPod
+
+Inte startad, och inget är förberett hos RunPod. Så som den är tänkt (läst i RunPods dokumentation 2026-11-17, inte prövat): en podd kan inte köra `docker build`, så podden startas ur RunPods image `runpod/pytorch:1.0.2-cu1281-torch280-ubuntu2404` (samma torch och Ubuntu som `korare/docker/Dockerfile`) och Dockerfilens steg körs där som ett skript, som inte är skrivet; vikterna hämtas från källorna i `korare/kod/vikter.json`. Vilofilmens klipp (24 MB) och replikernas ljud förs till podden; det är media som lämnar datorn, och det sägs till huvudagenten före. Sedan skickas samma frågor till tjänsten som på datorn. Villkoren för första provkvällen: högst 5 USD, besked samma dag före start (belopp och hur länge), podden stängs samma kväll och kostnaden rapporteras; inget konto för ett register och inget publikt. Den mäter rutor per sekund på en 4090, tiden till de första rutorna och förberedelsen per film. Pris enligt RunPods lista 2026-11-17: 4090 som podd 0,34 (Community) eller 0,89 (Secure) USD per timme.
+
+Mätningen hos RunPod 13 november (Tal i rörligt spel, nedan) gällde Scoutgamings renderer på serverless, inte köraren.
+
+### Vad som gäller per dealer
+
+**Paow.** Bank `paow-v2` av vilofilmen `paow-vila-01-01`, och egna banker för munlapparna över ingången, given till plats 4 och hålkortet. Rösten Paow hos ElevenLabs (`eleven_multilingual_v2`), svenska. Replikfilmerna i spelet är lagda med spelets recept (lyftet med ritad underläpp; Kvaliteten). Munnen i realtid har hans ja: storlek F, bara läpparna, mindre öppning i vanligt tal med dagens som tak, hakan följer mjukt. Köraren har förberett vilans klipp (fyra inställningar av `bbox_shift`; tjänsten använder 0). Inte än: tjänstens förval är inte munnen han godkände, munnen i realtid är inte i spelet, köraren går inte på podden, replikfilmerna är inte lagda med munnen i realtid (det finns bara i talbanans olämnade gren `tal21`, `D:/dealer-scratch/tmp/tal/stabilt/tal21-ej-lamnad.diff`), och tal över filmer i 30 rutor per sekund går inte.
+
+**Pamela.** Ingenting av läppsynken finns för henne: ingen rad i `data/speech.json`, ingen röst, ingen bank, inga repliker, ingen förberedelse i köraren och inget prov. Hon är pausad (Jakob 2026-11-12).
+
+### Vid en ny film eller en ny dealer
+
+En **ny film** som hon ska tala över:
+
+1. Den ska gå i 24 rutor per sekund. En film i 30 (WAN 3) kan inte bära tal än, varken i verktyget eller i köraren (Gränser, i Munlagret).
+2. Replikfilmer och munlappar: en bank per film (`bank`, eller `over` som gör sin egen; 80–150 s på grafikkortet), sedan en lapp per replik och film; huvudagenten för in lapparna i spelets register (`node tools/speech-patch.ts register`).
+3. Köraren: filmens klipp förbereds en gång (`POST /forbered`, 13–19 s för 112 rutor), sedan ritas varje replik över det. I dag är klippet bankens (`assets/speech/<dealer>/bank/sources/sources/<id>.mp4`, som `bank` skriver); andra klipp är inte prövade.
+4. En ny film med tal granskas som en tagning, och hans ja behövs innan något byts i spelet.
+
+En **ny dealer**: en godkänd vilofilm i bankens ruta; en rad under `dealers` i `data/speech.json` (bank-id, vilofilm, röst, språk); en röst i ett ElevenLabs-konto (registret namnger raden med kontots nyckel, aldrig nyckeln); `bank` en gång och sedan `say` per replik (Göra en replik). För munnen i realtid: hennes recept prövat och godkänt av Jakob (Paows är inte prövat på någon annan), och skriptets mapp för `/in` satt till hennes. Sist en post för henne under `dealers` i `data/lipsync.json`, så att Lipsync visar vad som finns och inte.
+
+### Licenserna
+
+Uppslagna 2026-11-17 (`D:/dealer-scratch/tmp/tal/korare/LICENSER.md`; raderna i `data/lipsync.json`, `licences`): MuseTalks kod och 1.5-vikter MIT, kommersiellt bruk uttryckligen tillåtet; bildkodaren sd-vae-ft-mse MIT; whisper-tiny Apache-2.0; MediaPipe Apache-2.0; ffmpeg i imagen GPL, vilket bara spelar roll om imagen sprids till andra. Ansiktssegmenteringen BiSeNet (`79999_iter.pth`) används inte: den är enligt uppslagningen tränad på CelebAMask-HQ, som bara får användas för icke-kommersiell forskning (datasetets egen licenstext är inte läst). Scoutgamings renderer listar samma vikt i sitt lås; det är en fråga för Jakob och rendererns ägare.
 
 ## Hur spelet väljer en replik
 
@@ -197,6 +263,8 @@ Vad det säger: ett bakjobb hos RunPod (22–24 s) är inte snabbare än den var
 1. Bygg munlagret och förrendera de fasta replikerna över ingången och givarna (väg 1 och 2): det ger tal under given utan GPU i spelet och utan nya filmer att döma.
 2. Låt chatten svara med de fasta svaren, och med en nyrenderad text vid nästa vila när den varma renderern går (15–40 s).
 3. Bygg inte strömmande tal här. När Paow ska tala fritt under spel är det Scoutgamings väg som gäller, och där är den byggd: det är ett skäl att flytta henne dit, inte att bygga den en gång till.
+
+Punkt 3 gäller inte längre: 2026-11-17 gjorde Jakob munnen i realtid på hans egen RunPod till huvudmålet, med en egen körare i stället för Scoutgamings renderer (Munnen: tre sätt, ovan).
 
 ## Kvaliteten
 
