@@ -3821,6 +3821,13 @@
           "note": "Jakobs giv till plats 4 lagd om 2026-11-17 med mall 9 (paow-giv-2-2-p4-03, WAN 3, två tagningar): i tagning 2 vänder handleden kortet och handen förblir vänd tills det ligger, som han har bett om; kortet får dock en tryckt symbol och lyfts ur skon. Tagning 1 vänder utan handleden. Filmer och bildark."
         },
         {
+          "id": "paow-prov-kort-bojning-glans",
+          "role": "prov",
+          "name": "Kortets böjning och glans",
+          "proof": "kort-bojning-glans",
+          "note": "Samma rutor ur en giv till plats 4 med bara kortets material ändrat (böjning 0, i dag, max; glans 0, i dag, max) och filmens eget kort bredvid. Gjort 2026-11-17 på Jakobs fråga om böjningen är felet: kanten flyttar sig inte, och skillnaden syns knappt. Det som syns är hur det ritade kortet sitter i handen på baksidan."
+        },
+        {
           "id": "pamela-prov-vandningens-formel",
           "role": "prov",
           "name": "Pamelas vändning: formeln",
