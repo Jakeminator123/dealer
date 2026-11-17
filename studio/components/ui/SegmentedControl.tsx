@@ -1,6 +1,6 @@
 "use client";
 
-// <SegmentedControl label="Visning" value={v} onChange={setV} options={[{value: "3d", label: "3D"}, {value: "flat", label: "Inte 3D"}]} />
+// <SegmentedControl label="Visning" value={v} onChange={setV} options={[{value: "3d", label: "3D"}, {value: "flat", label: "Råfilm"}]} />
 // A row of mutually exclusive choices (a radio group): arrow keys move the choice, size="sm|md".
 import { useRef, type KeyboardEvent, type ReactNode } from "react";
 import { cn } from "./cn";

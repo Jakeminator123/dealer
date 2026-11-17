@@ -99,7 +99,7 @@ export function FilmStrip({
 
 function Row({ row, dealer, on, made, onChoose, onRemove }: { row: FilmRow; dealer: string; on: boolean; made: string | null; onChoose: () => void; onRemove: () => void }) {
   const cell: ReactNode = made ? (
-    <Link href={`/bestall/?order=${encodeURIComponent(made)}`} className="text-xs text-brass-hi hover:underline">
+    <Link href={`/bordet/?lage=bestall&ko=1&order=${encodeURIComponent(made)}`} className="text-xs text-brass-hi hover:underline">
       Utkast · Det här skickas
     </Link>
   ) : row.why && row.method?.status !== "saknas" ? (

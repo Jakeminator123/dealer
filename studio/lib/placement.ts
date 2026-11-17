@@ -1,4 +1,4 @@
-// The Placering view's thin helpers: places in Jakob's words, the draft with its undo and what differs from the saved plan,
+// The thin helpers of Bordet's Kortplan (the plan on the picture): places in Jakob's words, the draft with its undo and what differs from the saved plan,
 // the handles' arithmetic, numbers with a decimal comma, the view's address, what the cards can be laid over (the neutral
 // backdrop, the V6 picture, the films). The plan's own rules (where a card is drawn, how an edit
 // is made) are src/placement-model.ts. Pure: no DOM, no network; tests in studio/tests/placement.test.ts.
@@ -55,7 +55,7 @@ const withProjection = (plan: PlacementPlan): PlacementPlan => (plan.tableProjec
 
 /**
  * A draft of the plan as read. A plan saved before the table projection existed gets the flat table in the draft, as the old
- * lab gives it (src/lab-ui.ts load): the draft then differs from the file until it is saved, and says so.
+ * lab gave it: the draft then differs from the file until it is saved, and says so.
  */
 export function openDraft(saved: PlacementPlan, revision: string): Draft {
   return { saved, revision, plan: withProjection(structuredClone(saved)), past: [], gesture: null };
@@ -81,7 +81,7 @@ export const end = (d: Draft): Draft => (d.gesture ? { ...d, gesture: null } : d
 export const undo = (d: Draft): Draft => (d.past.length ? { ...d, plan: d.past[d.past.length - 1], past: d.past.slice(0, -1), gesture: null } : d);
 /** Back to the saved plan, as one step that Ångra takes back. */
 export const toSaved = (d: Draft): Draft => commit(d, withProjection(structuredClone(d.saved)));
-/** After a save: the server's plan (with its new updatedAt) is both the saved plan and the draft; the undo list is cleared, as in the old lab. */
+/** After a save: the server's plan (with its new updatedAt) is both the saved plan and the draft; the undo list is cleared. */
 export const afterSave = (saved: PlacementPlan, revision: string): Draft => ({ saved, revision, plan: structuredClone(saved), past: [], gesture: null });
 
 /** The places whose data differ between two plans (geometry in either view, motion, material), and whether the table's projection does. */
@@ -145,7 +145,7 @@ export function turnHandle(q: readonly Pt[], reach: number): { from: Pt; at: Pt 
 
 const ARROWS: Record<string, [number, number]> = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] };
 /**
- * An arrow key on a place, as the old tab took it: one pixel (Shift: ten) in the arrow's direction, or with `turn` one degree
+ * An arrow key on a place: one pixel (Shift: ten) in the arrow's direction, or with `turn` one degree
  * (Shift: fifteen), → and ↑ clockwise. null when the key is no arrow. The shoe only moves.
  */
 export function nudged(plan: PlacementPlan, id: Place, view: View, key: string, shift: boolean, turn: boolean): PlacementPlan | null {
@@ -164,7 +164,7 @@ export function nudged(plan: PlacementPlan, id: Place, view: View, key: string, 
 // ── The motion, in his words ────────────────────────────────────────────────
 /** The shoe anchor a card is taken from: A2.1 nyp (pinched in the window) or A2.2 släp (slid out of the mouth). */
 export const anchorOf = (intent: Pick<Intent, "grip">) => (intent.grip === "DRAG" ? "A2.2" : "A2.1");
-/** The grip by its label, the same in Placering's "Grepp vid skon" and where Beställ says how a step and the plan differ. */
+/** The grip by its label, the same in Kortplan's "Grepp vid skon" and where Beställ says how a step and the plan differ. */
 export const GRIP_LABEL: Record<Intent["grip"], string> = { PINCH: "A2.1 nyp", DRAG: "A2.2 släp" };
 /**
  * How a card of the plan is turned, in the order's one word (src/order-model.ts FlipAxis, the same labels FLIP_LABEL in
@@ -217,10 +217,8 @@ export const stillsOf = (view: View): Still[] => (NEUTRAL[view] ? ["neutral", "v
 export const defaultStill = (view: View): Still => stillsOf(view)[0];
 /** The picture of a still in a view (a path from the lab server's root). */
 export const stillPath = (still: Still, view: View): string => (still === "neutral" && NEUTRAL[view]) || VIEWS[view].background;
-/** The choice in the list under the picture: "Neutral · studions bord", "V6-bild · dator". */
-export const stillChoice = (still: Still, view: View): string => (still === "neutral" ? "Neutral · studions bord" : `V6-bild · ${VIEW_WORD[view].toLowerCase()}`);
-/** The chip on the picture: what it is. */
-export const stillLabel = (still: Still): string => (still === "neutral" ? "Neutral · studions bord" : "V6 · visuell referens");
+/** A still by his word (Ordlista): Siluett (the neutral backdrop), V6-bild. */
+export const stillWord = (still: Still): string => (still === "neutral" ? "Siluett" : "V6-bild");
 export type Shown = { kind: "still"; still: Still; path: string } | { kind: "film"; film: Film };
 /**
  * What lies under the cards in a view: the film the address names when it is known and has the view's shape, the still it
@@ -244,7 +242,7 @@ export function backdropForView(view: View, backdrop: string | null, films: read
 
 // ── The address ─────────────────────────────────────────────────────────────
 // /placering/?vy=mobil&plats=p4c2&bakgrund=<film id | v6 | neutral>&ruta=40: the view, the chosen place, and what to lay the
-// cards over (a film with its frame, or a still). Nothing chosen is the default: Dator, P4C2 (the old lab's first place), the
+// cards over (a film with its frame, or a still). Nothing chosen is the default: Dator, P4C2 (the first place), the
 // view's default still. "robot" belongs to every lab page (src/preview-ui.ts) and is kept as it stands.
 export type PlacementAddress = { view: View; place: Place; backdrop: string | null; frame: number };
 type Params = { get(name: string): string | null };
@@ -260,24 +258,10 @@ export function readPlacementAddress(params: Params): PlacementAddress {
     frame: Number.isSafeInteger(frame) && frame > 0 ? frame : 0,
   };
 }
-/** The address's question for a state, with the lab's own word (robot) kept from `keep`. */
-export function placementQuery(a: PlacementAddress, keep?: Params): string {
-  const p = new URLSearchParams();
-  if (a.view === "portrait") p.set("vy", "mobil");
-  if (a.place !== START_PLACE) p.set("plats", placeCode(a.place).toLowerCase());
-  if (a.backdrop && a.backdrop !== defaultStill(a.view)) {
-    p.set("bakgrund", a.backdrop);
-    if (!isStill(a.backdrop) && a.frame > 0) p.set("ruta", String(a.frame));
-  }
-  const robot = keep?.get("robot");
-  if (robot !== null && robot !== undefined) p.set("robot", robot);
-  const text = p.toString();
-  return text ? `?${text}` : "";
-}
 
 // ── Films to lay the cards over ─────────────────────────────────────────────
-// The old tab's "Visa grön film" opened the film library on the green P4C2 film; the library holds the clip bank's current
-// takes first and the older proofs and references after (src/lab-ui.ts openLibrary, kbFilms). Here any of them can lie
+// The films that can lie under the cards: the clip bank's current takes first and the older proofs and references after
+// (the film library, data/library.json), the green P4C2 film among them. Here any of them can lie
 // under the cards, in the view whose shape it has. start: the frame the take begins on in its film (a take cut from a longer
 // film, as all of Paow's deals and returns are, begins inside it); target: the card the take deals or comes back from.
 export type Film = { id: string; title: string; path: string; width: number; height: number; frames: number; fps: number; group: "bank" | "older"; start: number; target: string | null };

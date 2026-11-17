@@ -1,13 +1,13 @@
-// The Scen view's address (app/page.tsx): the round and the look in one question, so that either can be sent as a link.
+// The scene's address (Bordet's Scen, Råfilm and Efterarbete; components/bordet/SceneBody.tsx): the round and the look in one question, so that either can be sent as a link.
 //   /?runda=<his notation>&vy=platt&forval=levande&dust=0.8
 // The round's words (runda, kant, tagning, vy: lib/rounds.ts) and the look's (forval and the scene's keys:
 // lib/scene-presets.ts) share the address, and each part is read and written by its own rules; "robot" belongs to every lab
 // page (src/preview-ui.ts) and is kept as it stands. A look that names no preset is Levande here, the look Jakob remembers
 // of the 3D lab (2026-11-12), so the view always writes forval. The old Scen view's address (/scen/…) meant basgrund when it
-// named none: its page sends such a link on with basgrund named (fromOldScen). Pure: tests in studio/tests/scene-address.test.ts.
+// named none (app/scen/page.tsx). Pure: tests in studio/tests/scene-address.test.ts.
 import type { SceneState } from "../../../src/scene3d-view.ts";
 import { SCENE_KEYS, encodeValue } from "../../lib/scene-keys.ts";
-import { BASE, differences, readAddress } from "../../lib/scene-presets.ts";
+import { differences, readAddress } from "../../lib/scene-presets.ts";
 
 /** The look of an address that names no preset. */
 export const START_LOOK = "levande";
@@ -57,11 +57,4 @@ export function askedPart(look: Pick<LookAsk, "forval" | "patch">): string {
 export function joinParts(...parts: string[]): string {
   const text = parts.filter(Boolean).join("&");
   return text ? `?${text}` : "";
-}
-
-/** Where an address of the old Scen view (/scen/?…) leads now: the same question at /, with basgrund named when it named no preset. */
-export function fromOldScen(params: Params): string {
-  const rest = new URLSearchParams();
-  params.forEach((value, key) => rest.append(key, value));
-  return `/${joinParts(rest.has("forval") ? "" : `forval=${BASE}`, rest.toString())}`;
 }

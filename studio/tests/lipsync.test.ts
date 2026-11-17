@@ -96,8 +96,8 @@ test("estimates, settings by group, owners, days, outcomes and the way to Prov",
   assert.equal(outcomeTone("utgångsläge"), "neutral");
   assert.equal(measureWord(7.4), "7,4");
   assert.equal(measureWord(undefined), "–");
-  assert.equal(proofHref("paow-realtid-mun-3"), "/prov/?prov=paow-realtid-mun-3");
-  assert.equal(proofHref("paow-realtid-mun-3", "paow-realtid-mun-3-2-stillbild.png"), "/prov/?prov=paow-realtid-mun-3&fil=paow-realtid-mun-3-2-stillbild.png");
+  assert.equal(proofHref("paow-realtid-mun-3"), "/granska/?prov=paow-realtid-mun-3");
+  assert.equal(proofHref("paow-realtid-mun-3", "paow-realtid-mun-3-2-stillbild.png"), "/granska/?prov=paow-realtid-mun-3&fil=paow-realtid-mun-3-2-stillbild.png");
 });
 
 test("per dealer: her entries and those for every dealer; checks under Stämmer, Inte än and Okänt", () => {

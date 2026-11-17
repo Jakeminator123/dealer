@@ -7,7 +7,7 @@
 // instead the bot is there: the view
 // Önskemål (with the answers from Jakob not yet seen) and "Fråga", which opens and closes the panel (components/bot).
 // In the lab Beslut stands first in the foot, with the number of things waiting for his answer (components/decisions).
-import { Box, Clapperboard, Images, Inbox, LayoutPanelLeft, ListChecks, MessageCircleQuestion, ScanEye, Spade, Speech, SquareDashedMousePointer, Volume2, Workflow } from "lucide-react";
+import { Box, Images, Inbox, LayoutPanelLeft, ListChecks, MessageCircleQuestion, ScanEye, Spade, Speech, Volume2, Workflow } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useMemo, type ComponentType } from "react";
@@ -27,32 +27,27 @@ import { Glossary } from "./Glossary";
 type View = { href: string; label: string; hint: string; icon: ComponentType<{ className?: string }> };
 
 export const VIEWS: readonly View[] = [
-  // Bordet (2026-11-17): the lab's one view of the table. Its modes hold what Placering (Kortplan), Scen (Scen, Råfilm,
-  // Efterarbete) and a new order (Beställ) were, so in the lab those two views are no longer in the rail (COPY_ONLY).
+  // Bordet (2026-11-17): the one view of the table, in the lab and in the copy. Its parts hold what Placering (Kortplan), Scen
+  // (Scen, Råfilm, Efterarbete) and Beställ were; their old addresses lead there (/, /scen/, /placering/, /bestall/).
   { href: "/bordet/", label: "Bordet", hint: "Bordet: kortplan, beställning, scen, råfilm och efterarbete i en vy", icon: LayoutPanelLeft },
-  // Scen and the old Spela are one view since 2026-11-12 (Jakob): /scen/ leads to /.
-  { href: "/", label: "Scen", hint: "Scenen: spela en runda och ändra allt", icon: Clapperboard },
   // Karta holds Primära too since 2026-11-17 (each step with its Primär and secondary films); /primara/ leads there.
   { href: "/karta/", label: "Karta", hint: "Nodträdet: Primär och sekundära filmer per steg, och hur spelet använder dem", icon: Workflow },
   // Granska holds the proofs too since 2026-11-17 (its part Prov); /prov/ leads there.
   { href: "/granska/", label: "Granska", hint: "Filmer som väntar på ditt beslut, och proven", icon: ScanEye },
-  { href: "/placering/", label: "Placering", hint: "Var korten och skon ligger: flytta, rikta och spara", icon: SquareDashedMousePointer },
   { href: "/material/", label: "Material", hint: "Per dealer: ingångsbild, keystone, ankare, filmer och referenser", icon: Images },
   { href: "/lipsync/", label: "Lipsync", hint: "Läppsynken per dealer: var munnen görs, vad som är inställt och vad som stämmer", icon: Speech },
   { href: "/game/", label: "Casino", hint: "Spela blackjack som i casinot: spelmotorn, marker och reglage, med valt förval", icon: Spade },
 ];
 
 /**
- * The views the rail shows. The online copy orders nothing and saves no plan, so Bordet and Beställ are only in the lab, and
- * it carries no lip-sync facts, so neither is Lipsync; Casino plays there too (the game page runs the engine itself). In the
- * lab Bordet holds Scen and Placering (Jakob 2026-11-17: they are to be part of the main view), so those two stand in the
- * rail only in the copy, which has no Bordet; their addresses keep working in the lab (/?runda=…, /placering/?plats=…).
+ * The views the rail shows: the same list in the lab and in the online copy, minus what the copy lacks. The copy carries no
+ * lip-sync facts, so it has no Lipsync; Bordet is there read-only (no Beställ, no saving), and Casino plays there too (the
+ * game page runs the engine itself).
  */
-const LAB_ONLY: readonly string[] = ["/bordet/", "/lipsync/"];
-const COPY_ONLY: readonly string[] = ["/", "/placering/"];
-const SHOWN: readonly View[] = VIEWS.filter((view) => !(isSnapshot ? LAB_ONLY : COPY_ONLY).includes(view.href));
+const LAB_ONLY: readonly string[] = ["/lipsync/"];
+const SHOWN: readonly View[] = isSnapshot ? VIEWS.filter((view) => !LAB_ONLY.includes(view.href)) : VIEWS;
 /** Where the mark at the top leads: the first view of the rail. */
-const HOME = isSnapshot ? "/" : "/bordet/";
+const HOME = "/bordet/";
 
 /** The view of requests to Jakob: only where the bot is (the online copy). */
 export const REQUESTS_VIEW: View = { href: "/onskemal/", label: "Önskemål", hint: "Önskemål till Jakob, med status och hans svar", icon: Inbox };
@@ -164,7 +159,7 @@ export function Rail() {
     // frame taller than the window, which would cut off the foot of every view.
     <nav aria-label="Vyer" className="flex h-full min-h-0 w-[76px] flex-col border-r border-line bg-surface">
       <Tooltip content="Dealer Studio" side="right">
-        <Link href={dealerHref(HOME, dealer)} aria-label={isSnapshot ? "Dealer Studio, till Scen" : "Dealer Studio, till Bordet"} className="mx-auto mb-1.5 mt-3 grid size-11 place-items-center rounded-lg text-brass transition-colors hover:bg-raised/60">
+        <Link href={dealerHref(HOME, dealer)} aria-label="Dealer Studio, till Bordet" className="mx-auto mb-1.5 mt-3 grid size-11 place-items-center rounded-lg text-brass transition-colors hover:bg-raised/60">
           <Mark />
         </Link>
       </Tooltip>

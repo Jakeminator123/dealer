@@ -4,9 +4,9 @@
 // kort och bord"). On top his notation for what is ordered ("A2.2 → P3C2 → A2.2", lib/orders.ts routeOf) with one plain
 // sentence under it; then, large, the picture the film starts from with every card place of the plan drawn on it and the
 // ordered card where the plan lays it (yellow closed, blue open, at the order's size), ringed and named. A press on a place
-// chooses that card, as the seat field does (Enter or Space on a focused place too). "Flytta kortets plats" opens Placering
-// at that card, with the way back to this order. "Bordet" lays the same places over Placering's neutral picture (the
-// studio's table with a figure) to see where the card lies on the table, for every step (one without a card shows the table
+// chooses that card, as the seat field does (Enter or Space on a focused place too). "Flytta kortets plats" opens Bordet's
+// Kortplan at that card. "Siluett" lays the same places over Kortplan's neutral picture (the studio's table with a
+// figure), to see where the card lies on the table, for every step (one without a card shows the table
 // and the figure alone); what is sent is always the dealer's own picture.
 import { Clock, Move } from "lucide-react";
 import Link from "next/link";
@@ -66,7 +66,7 @@ export function Stage({
   onPick: (target: string) => void;
   /** Placering at the ordered card, or null where the step has no card. */
   move: string | null;
-  /** "Ankaret" or "Bordet", offered for every step: a step without a card shows the table and the figure without places. */
+  /** "Dealerns bild" or "Siluett", offered for every step: a step without a card shows the table and the figure without places. */
   look: StageLook;
   onLook: (look: StageLook) => void;
   caption: ReactNode;
@@ -170,8 +170,8 @@ export function Stage({
           value={look}
           onChange={onLook}
           options={[
-            { value: "ankare", label: "Ankaret", title: "Dealerns egen bild, den som skickas" },
-            { value: "bord", label: "Bordet", title: "Studions bord med en siluett, som i Placering" },
+            { value: "ankare", label: "Dealerns bild", title: "Dealerns egen bild, den som skickas" },
+            { value: "bord", label: "Siluett", title: "Studions bord med en siluett, som i Kortplan" },
           ]}
         />
       </div>

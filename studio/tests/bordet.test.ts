@@ -9,7 +9,7 @@ import { methodFor, readMethods, type Method } from "../../src/order-methods.ts"
 import { INTENT_DEFAULTS, SHOE, defaultPlan, planQuad } from "../../src/placement-model.ts";
 import { draftOf } from "../../tools/produce.ts";
 import {
-  OTHER_STEPS, ZOOM_MAX, actualCamera, bordetOrderAddress, cardPath, cardWishes, clampCamera, closeUp, filmRow, fitCamera, lastOrder, orderBody, otherWishes, panBy, pictureOrigin, referenceName, sendsOf, straightReference, sumWords, wishKey, withChoice, zoomAt,
+  OTHER_STEPS, ZOOM_MAX, actualCamera, bordetOrderAddress, bordetSceneAddress, sceneWords, cardPath, cardWishes, clampCamera, closeUp, filmRow, fitCamera, lastOrder, orderBody, otherWishes, panBy, pictureOrigin, referenceName, sendsOf, straightReference, sumWords, wishKey, withChoice, zoomAt,
 } from "../lib/bordet.ts";
 
 const picture = { w: 1762, h: 1174 };
@@ -194,4 +194,16 @@ test("Granska filmen: a film's last order is the newest of the same dealer, step
   assert.equal(lastOrder(list, "paow", { step: "RETUR-1", target: "P4.C1" }), null);
   // the newest that brought a film comes before a newer one still on its way
   assert.equal(lastOrder(list, "paow", { step: "GIV-2.1", target: "P4.C1" }, (id) => id === "x1")?.order.id, "x1");
+});
+
+test("Scen's addresses lead to Bordet's Scen or Råfilm with the same round and look; the studio opens on Bordet", () => {
+  const q = (text: string) => new URLSearchParams(text);
+  assert.equal(bordetSceneAddress(q("")), "/bordet/");
+  assert.equal(bordetSceneAddress(q("dealer=paow&robot=1")), "/bordet/?dealer=paow&robot=1");
+  assert.equal(bordetSceneAddress(q("runda=A2.1+-+P4C1+-+A2.1&forval=levande&dust=0.8")), "/bordet/?lage=scen&runda=A2.1+-+P4C1+-+A2.1&forval=levande&dust=0.8");
+  assert.equal(bordetSceneAddress(q("kant=READY%3EP2.C1&tagning=paow-giv-2-1-p2-01")), "/bordet/?lage=scen&kant=READY%3EP2.C1&tagning=paow-giv-2-1-p2-01");
+  assert.equal(bordetSceneAddress(q("runda=v6-filmen&vy=platt")), "/bordet/?lage=rafilm&runda=v6-filmen");
+  assert.equal(bordetSceneAddress(q("forval=levande&room=la&dust=0.8&sway=0&zoom=1.1")), "/bordet/?lage=scen&forval=levande&room=la&dust=0.8&sway=0&zoom=1.1");
+  // none of Bordet's own words is a word of the scene
+  for (const own of ["lage", "plats", "ko", "order", "ny", "som", "dealer", "steg", "modell"]) assert.equal(sceneWords.has(own), false, own);
 });

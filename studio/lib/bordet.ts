@@ -15,6 +15,7 @@ import { promptFor, type Prompt } from "../../src/order-prompts.ts";
 import type { Intent, Place, Side } from "../../src/placement-model.ts";
 import { SHOE } from "../../src/placement-model.ts";
 import { anchorFor, type NewOrderInput } from "./orders.ts";
+import { SCENE_KEYS } from "./scene-keys.ts";
 import { nodeCode } from "./names.ts";
 
 // ── The camera ──────────────────────────────────────────────────────────────
@@ -365,4 +366,30 @@ export function kortplanHref(place: string, view: "native" | "portrait" = "nativ
 export function lastOrder<A extends { order: { id: string; dealer: string; status: string; created: string; step: { key: string }; motion?: { target: string | null } | null } }>(orders: readonly A[], dealer: string, wish: FilmWish, delivered: (id: string) => boolean = () => false): A | null {
   const mine = [...orders].filter((a) => a.order.dealer === dealer && a.order.step.key === wish.step && (a.order.motion?.target ?? null) === wish.target && a.order.status !== "AVBRUTEN").sort((a, b) => b.order.created.localeCompare(a.order.created));
   return mine.find((a) => delivered(a.order.id)) ?? mine[0] ?? null;
+}
+
+/**
+ * The words of the scene's address (the view Scen's before 2026-11-17, now Bordet's Scen, Råfilm and Efterarbete): the round
+ * (runda, kant, tagning, vy), the look (forval and every key of the scene, lib/scene-keys.ts) and the lab's own (robot).
+ * None of them is one of Bordet's own words (lage, plats, ko, order, ny, …).
+ */
+export const sceneWords: ReadonlySet<string> = new Set(["runda", "kant", "tagning", "vy", "robot", "forval", ...SCENE_KEYS.map((s) => s.key as string)]);
+
+/**
+ * Bordet's scene with the same thing on screen, for an address of the view Scen (/, /scen/): the round and the look kept,
+ * vy=platt as the mode Råfilm, anything else as the mode Scen; with no round and no look, Bordet as it opens (Kortplan).
+ * /?runda=A2.1%20-%20P4C1&vy=platt leads to /bordet/?lage=rafilm&runda=A2.1+-+P4C1.
+ */
+export function bordetSceneAddress(params: { forEach(fn: (value: string, key: string) => void): void; get(name: string): string | null }): string {
+  const rest: [string, string][] = [];
+  let scene = false;
+  params.forEach((value, key) => {
+    if (key === "vy" || key === "lage") return;
+    if (sceneWords.has(key) && key !== "robot") scene = true;
+    rest.push([key, value]);
+  });
+  const platt = params.get("vy") === "platt";
+  const p = new URLSearchParams(scene || platt ? [["lage", platt ? "rafilm" : "scen"], ...rest] : rest);
+  const q = p.toString();
+  return `/bordet/${q ? `?${q}` : ""}`;
 }

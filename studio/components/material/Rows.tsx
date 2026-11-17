@@ -2,6 +2,7 @@
 
 // The rows of the view Material: the chain at a glance (ChainStrip), one row per role with its pictures (RoleRow), the
 // films as counts per seat (FilmsRow), the proof folders (ProofRow), and the three sources of measures (Measures).
+import { proofHref } from "../../lib/proofs.ts";
 import { ArrowRight, ArrowUpRight, ChevronRight, CircleAlert, FolderOpen } from "lucide-react";
 import Link from "next/link";
 import { useState, type ReactNode } from "react";
@@ -292,7 +293,7 @@ export function ProofRow({ dealer, proofs }: { dealer: DealerAnswer; proofs: rea
           const title = proof ? splitLabel(proofTitle(proof)).name : e.name;
           return (
             <li key={e.id} className="flex shrink-0 flex-col gap-1.5" style={{ width: 210 }}>
-              <Link href={`/prov/?${new URLSearchParams({ prov: e.proof! }).toString()}`} className="group relative overflow-hidden rounded-md border border-line bg-well hover:border-line-strong" style={{ height: TILE_HEIGHT }}>
+              <Link href={proofHref(e.proof!)} className="group relative overflow-hidden rounded-md border border-line bg-well hover:border-line-strong" style={{ height: TILE_HEIGHT }}>
                 <ProofStill cover={cover} fps={proof?.fps ?? 30} className="absolute inset-0 transition-[filter] duration-200 group-hover:brightness-110" />
                 <span className="absolute bottom-1.5 right-1.5 inline-flex items-center gap-1 rounded-xs bg-black/65 px-1.5 py-0.5 text-2xs text-ink backdrop-blur-sm">
                   Prov <ArrowUpRight className="size-3" />

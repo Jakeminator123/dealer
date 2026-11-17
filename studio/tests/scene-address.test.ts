@@ -3,7 +3,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { DEFAULTS, type SceneState } from "../../src/scene3d-view.ts";
-import { START_LOOK, askedPart, fromOldScen, joinParts, lookPart, readLook, roundPart } from "../components/scene-editor/address.ts";
+import { START_LOOK, askedPart, joinParts, lookPart, readLook, roundPart } from "../components/scene-editor/address.ts";
 import { readAddress as readRound } from "../lib/rounds.ts";
 import { SHIPPED, effective } from "../lib/scene-presets.ts";
 
@@ -53,11 +53,6 @@ test("the parts join into one question", () => {
   assert.equal(joinParts("", "forval=levande"), "?forval=levande");
 });
 
-test("the old Scen view's address leads to / with the same question, basgrund named when it named none", () => {
-  assert.equal(fromOldScen(q("forval=levande&dust=0.8")), "/?forval=levande&dust=0.8");
-  assert.equal(fromOldScen(q("dust=0.8")), "/?forval=basgrund&dust=0.8");
-  assert.equal(fromOldScen(q("")), "/?forval=basgrund");
-  // what the Casino view's link to Scen writes (lib/casino.ts scenHref) arrives unchanged
-  assert.equal(fromOldScen(q("forval=levande&room=la&dust=0.8&sway=0&zoom=1.1")), "/?forval=levande&room=la&dust=0.8&sway=0&zoom=1.1");
+test("a look named in an address is read as named", () => {
   assert.equal(readLook(q("forval=basgrund&dust=0.8")).forval, "basgrund");
 });

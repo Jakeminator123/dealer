@@ -261,7 +261,7 @@ export default function Kit() {
                   onChange={setMode}
                   options={[
                     { value: "3d", label: "3D" },
-                    { value: "flat", label: "Inte 3D" },
+                    { value: "flat", label: "Råfilm" },
                   ]}
                 />
                 <SegmentedControl

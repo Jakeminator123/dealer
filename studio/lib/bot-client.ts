@@ -194,7 +194,7 @@ type FakeAnswer = { kallor: Kalla[]; text: string };
 const K = {
   lage: { id: "handoff-lage", titel: "HANDOFF › Läget just nu" },
   bank: { id: "bank-steg", titel: "Klippbanken › Tagningarna per steg" },
-  primara: { id: "guide-primara", titel: "Studion › Primära" },
+  primara: { id: "guide-karta", titel: "Studion › Karta" },
   scout: { id: "readme-mal", titel: "README › Slutmålet Scoutgaming" },
   drift: { id: "drift-regler", titel: "DRIFT › Vad som inte flyttas från Scout" },
   ord: { id: "guide-ord", titel: "Studion › Jakobs ord för ankarna" },
@@ -218,7 +218,7 @@ function fakeText(question: string, vy: Vy | null): FakeAnswer {
         "- **Godkända:** plats 1, 4 och 5 har en giv och en retur som Jakob har godkänt [2].\n" +
         "- **Varianter:** given till plats 2, 3, 6 och 7 spelar en variant just nu.\n" +
         "- **Lucka:** dealerns andra kort (A2.1 → DC2) har ingen spelbar tagning; allt där är underkänt [2].\n\n" +
-        "Ingen film har en Primär ännu. Det väljer Jakob själv i vyn Primära [3].",
+        "Ingen film har en Primär ännu. Det väljer Jakob själv i Karta [3].",
     };
   if (/väntar|jakob/.test(q))
     return {
@@ -301,7 +301,7 @@ function fakeSeed(): Post[] {
       typ: "ide",
       rubrik: "Kan dealern le lite mellan givarna?",
       text: "Hon ser väldigt allvarlig ut när hon väntar vid skon. Ett litet leende ibland hade känts mer välkomnande.",
-      vy: { namn: "Spela", adress: "/studio/", val: { runda: "A1 - A2.1 - P4C1 - A1" } },
+      vy: { namn: "Bordet", adress: "/studio/bordet/?lage=scen", val: { läge: "Scen", runda: "A1 - A2.1 - P4C1 - A1" } },
       sammanfattning: "Önskar en mjukare min hos dealern i vilan mellan givarna.",
       forslag: "Pröva en vila med ett kort leende som variant.",
       harBild: false,

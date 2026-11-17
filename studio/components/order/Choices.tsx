@@ -93,7 +93,7 @@ export function ModelChoice({ models, value, own, what, onChange, disabled }: { 
   );
 }
 
-/** How the card turns (only when it lands open); `plan` is what Placering's Rörelse says for the card (null: no plan). */
+/** How the card turns (only when it lands open); `plan` is what Kortplan's Rörelse says for the card (null: no plan). */
 export function FlipChoice({ value, onChange, disabled, plan }: { value: FlipAxis; onChange: (axis: FlipAxis) => void; disabled?: boolean; plan: FlipAxis | null }) {
   return (
     <div role="radiogroup" aria-label="Hur kortet vänds" className="flex flex-col gap-1.5">

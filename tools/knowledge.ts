@@ -247,7 +247,7 @@ export function bankSections(graph: Graph, release: Blocked, removed: Removed): 
     }
     const waitingHere = e.takes.filter(t => waiting.includes(t));
     if (waitingHere.length) lines.push(`- Väntar på Jakobs ord: ${waitingHere.map(n).join(', ')}.`);
-    lines.push('Syns i vyn Karta (klicka på linjen) och i Primära.');
+    lines.push('Syns i vyn Karta (klicka på linjen): stegets Primär och de andra tagningarna.');
     const text = cleanPlain(lines.join('\n'), release, removed);
     if (text) detail.push({id: `banken/${slug(e.id)}`, titel: `Banken › ${edgeName(e)}`, text, prio: null, tokens: roughTokens(text)});
   }
@@ -276,22 +276,20 @@ export function proofSections(proofs: readonly Proof[], onSite: ReadonlySet<stri
       const label = cleanPlain(p.labels?.[f.name] ?? '', release, removed), v = proofVerdict(p, f.name);
       return `- ${f.name}${label ? `: ${short(label, 220)}` : ''}${v ? ` (${PROOF_VERDICT_LABEL[v].toLowerCase()})` : ''}`;
     });
-    const text = [`Provet ${title} (${p.id}), ${onSite.has(p.id) ? 'finns i kopian under vyn Prov' : 'finns bara i Jakobs labb, inte i kopian'}.`, short(description, 1500), ...files].filter(Boolean).join('\n');
+    const text = [`Provet ${title} (${p.id}), ${onSite.has(p.id) ? 'finns i kopian i Granska, delen Prov' : 'finns bara i Jakobs labb, inte i kopian'}.`, short(description, 1500), ...files].filter(Boolean).join('\n');
     detail.push({id: `prov/${slug(p.id)}`, titel: `Prov › ${title}`, text, prio: null, tokens: roughTokens(text)});
   }
-  const text = ['Alla prov (jämförelsefilmer och bilder från arbetet), med domar per fil och om provet finns i kopian (vyn Prov):', ...list].join('\n');
+  const text = ['Alla prov (jämförelsefilmer och bilder från arbetet), med domar per fil och om provet finns i kopian (Granska, delen Prov):', ...list].join('\n');
   return [{id: 'prov/lista', titel: 'Prov › Alla prov', text, prio: 5, tokens: roughTokens(text)}, ...detail];
 }
 
 // ── The studio's views ──────────────────────────────────────────────────────
 /** Five lines of the builder's own about each view, used when studio/lib/guide.ts gives none. */
 export const OWN_VIEWS: {namn: string; adress: string; text: string}[] = [
-  {namn: 'Scen', adress: '/studio/', text: 'Spelar en runda i 3D-scenen eller som vanliga filmer, och ändrar rum, ljus, bord, kort och kamera med förval. Rundan skrivs med Jakobs ord, till exempel A1 - A2.1 - P4C1 - A1.'},
-  {namn: 'Karta', adress: '/studio/karta/', text: 'Nodkartan: ankarna (A1 vila, A2.1 nyp, A2.2 hand över) och kortplatserna, med en linje per steg. Klicka på en linje för stegets tagningar och domar.'},
-  {namn: 'Primära', adress: '/studio/primara/', text: 'En rad per steg i rundan: vad som spelas nu mot bästa tagning Jakob godkänt. Jakob väljer själv en primär tagning per steg.'},
+  {namn: 'Bordet', adress: '/studio/bordet/', text: 'En vy med delarna Kortplan (var korten ligger), Scen (en runda i 3D-scenen, med rum, ljus, bord, kort och kamera och förval), Råfilm (filmerna som de är) och Efterarbete (det som läggs över filmen). Rundan skrivs med Jakobs ord, till exempel A1 - A2.1 - P4C1 - A1.'},
+  {namn: 'Karta', adress: '/studio/karta/', text: 'Nodkartan: ankarna (A1 vila, A2.1 nyp, A2.2 släp) och kortplatserna, med en linje per steg. Klicka på en linje för stegets Primär (det som spelas, som bara Jakob väljer), de andra tagningarna och domarna.'},
   {namn: 'Jämför', adress: '/studio/jamfor/', text: 'Två tagningar sida vid sida på samma ruta, eller på samma plats, med beslutet för kandidaten under.'},
-  {namn: 'Granska', adress: '/studio/granska/', text: 'Tagningar som väntar på Jakobs dom, en i taget. I kopian sparas inga beslut.'},
-  {namn: 'Prov', adress: '/studio/prov/', text: 'Prov från arbetet, nyast först: filmer och bilder med en dom per fil.'},
+  {namn: 'Granska', adress: '/studio/granska/', text: 'Tagningar som väntar på Jakobs dom, en i taget, och delen Prov: prov från arbetet, nyast först, med en dom per fil. I kopian sparas inga beslut.'},
 ];
 export type ViewText = {namn: string; adress: string; text: string};
 export function viewSection(views: readonly ViewText[], release: Blocked, removed: Removed): Built {

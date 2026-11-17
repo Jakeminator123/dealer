@@ -21,7 +21,7 @@ test("the addresses written from a look: forval always, keys in the catalogue's 
   assert.equal(casinoSearch(look), "?forval=levande&room=la&dust=0.8&sway=0&zoom=1.1&table=casino-k3x9qa");
   assert.equal(casinoAddress("basgrund"), "/game/?forval=basgrund");
   assert.equal(gameSrc(look), "/game.html?forval=levande&inbaddad=1&room=la&dust=0.8&sway=0&zoom=1.1&table=casino-k3x9qa");
-  assert.equal(scenHref(look), "/scen/?forval=levande&room=la&dust=0.8&sway=0&zoom=1.1");
+  assert.equal(scenHref(look), "/bordet/?lage=scen&forval=levande&room=la&dust=0.8&sway=0&zoom=1.1");
   // text is written so that it reads back the same
   const logo = { forval: "basgrund", patch: { logo: "Kväll & dag" }, table: CASINO_TABLE };
   assert.deepEqual(readCasino(params(casinoSearch(logo).slice(1))), { ...logo, ignored: [] });
@@ -32,8 +32,10 @@ test("a look goes round: the view's address, the game's frame and the Scen view 
   assert.deepEqual(readCasino(params(casinoSearch(look).slice(1))), { ...look, ignored: [] });
   const game = new URL(gameSrc(look), "http://127.0.0.1:4319").searchParams;
   assert.deepEqual(readLook(game), { asked: "rumsstudien", forval: "rumsstudien", keys: look.patch, ignored: [] });
-  const scen = readAddress(new URL(scenHref(look), "http://127.0.0.1:4319").searchParams);
-  assert.deepEqual(scen, { forval: "rumsstudien", patch: look.patch, ignored: [] });
+  const at = new URL(scenHref(look), "http://127.0.0.1:4319").searchParams;
+  assert.equal(at.get("lage"), "scen", "Bordet's Scen");
+  at.delete("lage");
+  assert.deepEqual(readAddress(at), { forval: "rumsstudien", patch: look.patch, ignored: [] });
 });
 
 test("casinoAddress, from another view: the active preset and only the keys that differ from it", () => {

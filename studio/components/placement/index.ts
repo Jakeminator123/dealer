@@ -1,2 +1,2 @@
-// The Placering view (app/placering/page.tsx): the old lab's Placering tab in the studio. See PlacementView.tsx.
-export { PlacementView } from "./PlacementView";
+// The plan on the picture (Board, its panels and the draft), drawn in Bordet's Kortplan and Beställ (components/bordet).
+export { Board } from "./Board";

@@ -1,14 +1,12 @@
 "use client";
 
-// The picture, as large as the area allows, with the cards on it and the handles on the chosen one. Under the cards lies a
-// still in the view's own pixels (the neutral backdrop, or the V6 picture) or a film at a frame. The cards are drawn three
-// ways: "Färg" (the default) and "Kontur" draw a card as the films show it, a plain yellow back (closed) and a plain blue
-// face (open), filled or as an outline, over the quads (placement-model planQuad, CARD_COLOUR); "Efterarbete: spelets kort"
-// lays the playback's own rendered cards with their print (cardLayer.ts), what the game draws afterwards. Over that lies one SVG in the
-// view's own pixels with the handles:
+// Bordet's picture (Kortplan, Beställ), as large as the area allows, with the cards on it and the handles on the chosen one.
+// Under the cards lies a still in the view's own pixels (the neutral backdrop, or the V6 picture) or a film at a frame. A card
+// is drawn as the films show it, a plain yellow back (closed) or a plain blue face (open), over the quads (placement-model
+// planQuad, CARD_COLOUR); how the game prints it is afterwork. Over that lies one SVG in the view's own pixels with the handles:
 //   drag a card or the shoe: move it · the round handle beyond the far edge: riktning (Shift: 15°) · a near corner: size
 //   (Shift: same shape) · a far corner: perspektiv. Arrow keys: a pixel (Shift ten); on the round handle a degree (Shift 15).
-// On a flat table (Plant bord) only moving is possible, as in the old tab: size, riktning and perspektiv follow P4C1.
+// On a flat table (Plant bord) only moving is possible: size, riktning and perspektiv follow P4C1.
 // The stage (lib/bordet.ts camera): it opens with the whole picture laid in it ("Anpassa"); the wheel zooms towards the
 // pointer, a drag where there is no card pans, and the control in the corner has Anpassa, 100 % and Närbild (the chosen card
 // in the middle). The cards are one shape (CardShape: rounded corners a share of the card's own side) in the picture's
@@ -22,10 +20,8 @@ import { centreOf, nudged, placeCode, sideWord, sizeFromCorner, taperFromCorner,
 import { PATH_SECONDS, pathFrame, type PathPhase } from "../../lib/placement-path.ts";
 import { IconButton } from "../ui";
 import { cn } from "../ui/cn";
-import { createCardLayer, stillSource, type CardLayer, type Face, type Source } from "./cardLayer.ts";
 import { draftActions } from "./useDraft.ts";
 
-export type Look = "kort" | "farg" | "kontur";
 export type Backdrop = { kind: "still"; src: string } | { kind: "film"; src: string; fps: number; frame: number };
 /** The card path playing: for which card, at which speed (1, or 0.5 half speed), and the step name shown by the picture. */
 export type PathRun = { id: string; key: number; speed: number; step: string | null };
@@ -41,23 +37,11 @@ type Grip = "move" | "turn" | "size" | "taper";
 /**
  * Every card on the stage, one shape: plain yellow (closed) or plain blue (open), the films' own colours (CARD_COLOUR), with
  * rounded corners and no rim (Jakob 2026-11-17). `grow` widens it by that many picture pixels all round (the shoe's card,
- * to cover the backdrop's pale window edge); `outline` draws it as a dashed outline over a faint fill (Placering's Kontur).
+ * to cover the backdrop's pale window edge).
  */
-export function CardShape({ quad, side, grow = 0, outline = false, hidden = false, ...rest }: { quad: readonly Pt[]; side: Side; grow?: number; outline?: boolean; hidden?: boolean } & Omit<SVGProps<SVGPathElement>, "d" | "fill" | "stroke">) {
+export function CardShape({ quad, side, grow = 0, ...rest }: { quad: readonly Pt[]; side: Side; grow?: number } & Omit<SVGProps<SVGPathElement>, "d" | "fill" | "stroke">) {
   const colour = COLOUR[side];
-  return (
-    <path
-      d={cardPath(quad)}
-      fill={hidden ? "transparent" : colour}
-      fillOpacity={outline ? 0.1 : 1}
-      stroke={hidden ? "transparent" : outline || grow ? colour : "none"}
-      strokeWidth={outline ? 2 : grow * 2}
-      strokeLinejoin="round"
-      strokeDasharray={outline ? "5 3" : undefined}
-      vectorEffect={outline ? "non-scaling-stroke" : undefined}
-      {...rest}
-    />
-  );
+  return <path d={cardPath(quad)} fill={colour} stroke={grow ? colour : "none"} strokeWidth={grow * 2} strokeLinejoin="round" {...rest} />;
 }
 
 /** Arrow keys over a run of presses are one step: the run ends after a short pause. */
@@ -83,17 +67,14 @@ export function Board({
   selected,
   onSelect,
   editable,
-  look,
   allCards,
   grid,
   changed,
   backdrop,
   shoeCard,
   onBackdropMissing,
-  face,
   path,
   onPhase,
-  onCardsFailed,
   videoRef,
   label,
   marked,
@@ -106,22 +87,19 @@ export function Board({
   selected: Place;
   onSelect: (id: Place) => void;
   editable: boolean;
-  look: Look;
   allCards: boolean;
   grid: boolean;
   changed: ReadonlySet<Place>;
   backdrop: Backdrop;
   /**
-   * Paint the card in the shoe's window plain yellow (Färg, Kontur): on the V6 picture over the game's own back there, on the
-   * neutral picture over its film card and the window's pale edge; null under a film, whose own card is lifted out.
+   * Paint the card in the shoe's window plain yellow: on the V6 picture over the game's own back there, on the neutral
+   * picture over its film card and the window's pale edge; null under a film, which shows its own card.
    */
   shoeCard: "v6" | "neutral" | null;
   /** The still could not be read (not on this machine): the view shows another. */
   onBackdropMissing?: () => void;
-  face: Face;
   path: PathRun | null;
   onPhase: (phase: PathPhase) => void;
-  onCardsFailed: () => void;
   videoRef: RefObject<HTMLVideoElement | null>;
   /** A short name of what lies under the cards, shown in the picture's corner. */
   label: string;
@@ -134,9 +112,6 @@ export function Board({
   const flat = plan.tableProjection?.mode === "flat";
   const wrap = useRef<HTMLDivElement>(null);
   const svg = useRef<SVGSVGElement>(null);
-  const host = useRef<HTMLDivElement>(null);
-  const layer = useRef<CardLayer | null>(null);
-  const source = useRef<Source | null>(null);
   const [area, setArea] = useState({ w: 0, h: 0 });
 
   // ── the stage's camera: null is "Anpassa" (the whole picture, following the stage's size); else zoomed and panned ──
@@ -189,84 +164,21 @@ export function Board({
   const boxH = H * camera.scale;
   const unit = 1 / Math.max(1e-6, camera.scale); // the view's pixels per screen pixel: handles keep their size on screen
 
-  // ── the playback's cards ──
-  const ids = allCards ? TARGETS : TARGETS.filter((id) => id === selected);
-  const want = useRef({ plan, view, ids, face, look });
-  want.current = { plan, view, ids, face, look };
-  const failed = useRef(onCardsFailed);
-  failed.current = onCardsFailed;
-  const pending = useRef(0);
-  const schedule = useCallback(() => {
-    if (pending.current) return;
-    pending.current = requestAnimationFrame(() => {
-      pending.current = 0;
-      const w = want.current;
-      if (w.look !== "kort" || !source.current || !layer.current) {
-        layer.current?.clear();
-        return;
-      }
-      void layer.current.draw(source.current, w.plan, w.view, w.ids, w.face).then((ok) => {
-        if (!ok) failed.current();
-      });
-    });
-  }, []);
-  useEffect(() => {
-    layer.current = createCardLayer(host.current!);
-    return () => {
-      cancelAnimationFrame(pending.current);
-      pending.current = 0;
-      layer.current?.dispose();
-      layer.current = null;
-    };
-  }, []);
-  const idsKey = ids.join();
-  useEffect(schedule, [plan, view, idsKey, face, look, schedule]);
-
-  // A new picture or film under the cards: nothing is drawn on the old one meanwhile. (Before any load event can come.)
+  // ── a film under the cards: at its frame when loaded; afterwards the film bar moves it ──
   const backdropKey = `${backdrop.kind}:${backdrop.src}`;
-  useLayoutEffect(() => {
-    source.current = null;
-    layer.current?.clear();
-  }, [backdropKey]);
-
-  // ── a film under the cards: its frame, and the cards drawn again whenever the picture changes ──
   useEffect(() => {
     if (backdrop.kind !== "film") return;
     const video = videoRef.current;
     if (!video) return;
-    let callback = 0;
-    const ready = () => {
-      if (video.videoWidth) {
-        source.current = video;
-        schedule();
-      }
-    };
-    const loop = () => {
-      schedule();
-      if (!video.paused) callback = video.requestVideoFrameCallback(loop);
-    };
-    const play = () => {
-      callback = video.requestVideoFrameCallback(loop);
-    };
     const meta = () => {
       if (backdrop.frame > 0 && Math.abs(video.currentTime * backdrop.fps - backdrop.frame) > 0.5) video.currentTime = (backdrop.frame + 0.001) / backdrop.fps;
     };
     video.addEventListener("loadedmetadata", meta);
-    video.addEventListener("loadeddata", ready);
-    video.addEventListener("seeked", ready);
-    video.addEventListener("play", play);
     if (video.readyState >= 1) meta();
-    if (video.readyState >= 2) ready();
-    return () => {
-      video.removeEventListener("loadedmetadata", meta);
-      video.removeEventListener("loadeddata", ready);
-      video.removeEventListener("seeked", ready);
-      video.removeEventListener("play", play);
-      if (callback) video.cancelVideoFrameCallback(callback);
-    };
+    return () => video.removeEventListener("loadedmetadata", meta);
     // the frame is read once when the film is loaded; afterwards the film bar moves it
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [backdropKey, schedule, videoRef]);
+  }, [backdropKey, videoRef]);
 
   // ── gestures ──
   const drag = useRef<{ grip: Grip; id: Place; du: number; dv: number } | null>(null);
@@ -367,17 +279,12 @@ export function Board({
             src={backdrop.src}
             alt=""
             draggable={false}
-            onLoad={(e) => {
-              source.current = stillSource(e.currentTarget);
-              schedule();
-            }}
             onError={onBackdropMissing}
             className="absolute inset-0 size-full select-none object-fill"
           />
         ) : (
           <video key={backdrop.src} ref={videoRef} src={backdrop.src} muted playsInline preload="auto" disablePictureInPicture className="absolute inset-0 size-full object-fill" />
         )}
-        <div ref={host} className={cn("absolute inset-0", look !== "kort" && "hidden")} />
         <svg
           ref={svg}
           viewBox={`0 0 ${W} ${H}`}
@@ -396,7 +303,7 @@ export function Board({
             </pattern>
           </defs>
           {grid ? <rect width="100%" height="100%" fill="url(#placering-grid)" pointerEvents="none" /> : null}
-          {look !== "kort" && shoeCard ? (
+          {shoeCard ? (
             // the card standing in the shoe's window, plain yellow as in the films with no pale rim round it: the V6 picture's own
             // card (SHOE_CARD) there, the films' card (WINDOW_CARD) on the neutral picture, where it hides the picture's pale window edge
             <CardShape quad={shoeCard === "v6" ? SHOE_CARD[view] : windowCard(plan, view)} side="BACK" grow={2} pointerEvents="none">
@@ -431,8 +338,6 @@ export function Board({
                 <CardShape
                   quad={quad}
                   side={t.intent.endSide}
-                  outline={look === "kontur" && !on}
-                  hidden={look === "kort"}
                   data-place={id}
                   data-grip="move"
                   tabIndex={0}

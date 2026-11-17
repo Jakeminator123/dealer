@@ -1,6 +1,6 @@
 "use client";
 
-// <FlatStage onEngine={(engine) => …} />: "Inte 3D". The film as it is, on its own green, in its own shape (1764 × 1174),
+// <FlatStage onEngine={(engine) => …} />: Råfilm. The film as it is, on its own green, in its own shape (1764 × 1174),
 // as large as the area allows: two stacked <video> elements that play a round's parts frame by frame (engines.ts
 // createFlatEngine); the next part waits decoded underneath and is raised on the cut. The engine is handed out on mount
 // and taken back (null) on unmount; the Stage drives it.

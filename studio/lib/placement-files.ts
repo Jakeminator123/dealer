@@ -1,4 +1,4 @@
-// The Placering view's files on Jakob's own disk, never the lab's: the draft as a placement file (the old tab's "Exportera
+// Kortplan's files on Jakob's own disk, never the lab's: the draft as a placement file (once "Exportera
 // placeringsfil" and "Läs in placeringsfil") and the flat table's comparison ("Exportera jämförelse"). A file read in only
 // replaces the draft; it reaches placements/default.json when he presses Spara. Pure; tests in studio/tests/placement-files.test.ts.
 import { TARGETS, planQuad, toPixels, validatePlan, type PlacementPlan, type View } from "../../src/placement-model.ts";

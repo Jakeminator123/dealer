@@ -1,8 +1,8 @@
 "use client";
 
 // The cards' bend and gloss. They are no keys of the scene: each card has its own in Jakob's placement plan
-// (placements/default.json, targets[id].material, read by the rendered cards in src/scene3d-deal.ts), and the old lab sets
-// them "to all cards" (src/lab-ui.ts). Here two sliders set all sixteen at once. The plan is his file: it is written only
+// (placements/default.json, targets[id].material, read by the rendered cards in src/scene3d-deal.ts), and one bend and one
+// gloss go to all sixteen cards. Here two sliders set all sixteen at once; it is the one writer of them (Bordet's Efterarbete). The plan is his file: it is written only
 // when he presses "Spara till planen" and confirms, through /api/placements against the revision read, and the game reads
 // the same plan. The scene shows a change before it is saved because it hands out the plan it was built with (the third
 // argument of SceneCanvas's onReady, passed on by the Stage's onScene); without it the change shows on the next build.

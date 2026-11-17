@@ -82,3 +82,34 @@ test("the card's part of a body: tur och retur or bara dit only for a deal, the 
   assert.deepEqual(cardBody({ chosenFlip: null, shape: "ONE_WAY", deal: false, cardScale: 1 }), {});
   assert.deepEqual(cardBody({ chosenFlip: "FREE", shape: "ROUND_TRIP", deal: true, cardScale: 1.25 }), { flipAxis: "FREE", shape: "ROUND_TRIP", cardScale: 1.25 });
 });
+
+// (the hole card is left out: its pictures are drawn from a bank film that the temporary lab does not have)
+test("what a row of Bordet shows as the text is, word for word, the text the store writes into the draft", async (t) => {
+  const { call } = await lab(t);
+  const { readMethods } = await import("../../src/order-methods.ts");
+  const { orderBody, sendsOf, withChoice } = await import("../lib/bordet.ts");
+  const register = readMethods(JSON.parse(await readFile(path.join(repo, "data/order-methods.json"), "utf8"))).register!;
+  const { methodFor } = await import("../../src/order-methods.ts");
+  const before = (await call("GET", "/api/orders")).json as { dealers: { id: string; name: string; look: string }[]; plan: Parameters<typeof sendsOf>[0]["plan"] };
+  const paow = before.dealers.find((d) => d.id === "paow")!;
+  const cases: { step: string; target: string | null; choice?: Record<string, unknown> }[] = [
+    { step: "GIV-2.1", target: "P4.C1" },
+    { step: "GIV-2.1", target: "P1.C1" },
+    { step: "GIV-2.1", target: "P2.C1", choice: { side: "BACK", hand: "PASS", extra: "Slowly." } },
+    { step: "GIV-2.2", target: "P3.C1", choice: { flipAxis: "AT_PLACE", style: "MINIMAL", cardScale: 1.25 } },
+    { step: "INGANG-2.1", target: null },
+    { step: "VILA", target: null },
+  ];
+  let compared = 0;
+  for (const c of cases) {
+    const wish = { step: c.step as never, target: c.target };
+    const body = withChoice("paow", wish, orderBody("paow", wish, methodFor(register, wish.step, wish.target)), (c.choice ?? {}) as never);
+    assert.ok(body, `${c.step} ${c.target}: a body`);
+    const shown = sendsOf({ dealer: { id: "paow", name: paow.name, look: paow.look }, body: body!, entries: [], plan: before.plan })!;
+    const made = await call("POST", "/api/orders", body);
+    assert.equal(made.status, 201, `${c.step} ${c.target}: ${JSON.stringify(made.json).slice(0, 300)}`);
+    assert.equal(shown.prompt!.text, made.json.order.prompt.text, `${c.step} ${c.target}: the text shown is the text stored`);
+    compared++;
+  }
+  assert.equal(compared, cases.length);
+});

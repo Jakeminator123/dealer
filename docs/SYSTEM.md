@@ -242,10 +242,10 @@ Spelet med flera dealers (2026-11-13):
     `cards=1`, och ordet `kort`: `kort=hand` (som spelet gör utan ordet), `kort=liggande` eller `kort=matt` (filmens
     kort omfärgat i handen). Vem som bestämmer om kort ritas (`cardsChoice` i `src/game-film.ts`): adressens ord först
     (en inspelning med ordet ändras aldrig av det en webbläsare minns), sedan spelarens val i menyn (minns i
-    webbläsaren), annars på. Ett förval i Scen har inget att säga till om, och Casino-vyn har ingen egen knapp: med två
+    webbläsaren), annars på. Ett förval i Bordets Scen har inget att säga till om, och Casino-vyn har ingen egen knapp: med två
     brytare kunde den ena säga på medan spelet var av. Scen och labbsidorna, som inte säger något bärsätt, följer
     samma linje (`carryOf` i `src/scene3d-deal.ts`).
-  - Med skomodellen (Sko i 3D i Scen, där filmens sko inte ritas) ritas det givna kortet först två rutor efter att
+  - Med skomodellen (Sko i 3D i Bordets Scen, där filmens sko inte ritas) ritas det givna kortet först två rutor efter att
     det har lämnat skon (`leavesShoe` i spåret), så att det inte står ovanpå modellen som ett klistermärke. Kortet i
     skons fönster ritas som förut. Provet klipper fortfarande bort hennes hand i skons ruta.
   - Sätten jämförda på samma rutor: Prov `kort-tre-satt` (`assets/proofs/kort-tre-satt/`).
@@ -412,25 +412,26 @@ uppmätt fysisk kamera. Riktning i bordplanet är skild från kamerans lutning o
 platsen på filten) och gäller bara när `turn` är sant. Vänds senare är inget eget värde: `turn=false` och landning på
 startsidan. Äldre filer utan nycklarna läses överallt: `validatePlan` fyller i standardvärdena när planen godkänts, så
 sparning och export skriver dem. Sekvensen skriver `DRAG(LH,BACK)` och `TURN(LH,BACK>FRONT,PLACE)`; ritningen och
-kortbaneanimeringen är oförändrade. I Placering: listan Kortplatser väljer kortet som panelen till höger ändrar; Rörelse
-har Grepp vid skon, Var kortet vänds, tre tekniker med ett klick (`TECHNIQUES`; hand och handbyte står kvar) och Använd
-rörelsen på alla spelarkort (de 14); Placering har Kortstorlek, alla kort (`scaleCards`: en faktor 0,50–2,50 kring varje
-korts mitt, stopp vid bildkanten och storleksgränserna; med Plant bord ritas alla kort i P4.C1:s storlek); Material har
-Använd materialet på alla kort. Allt går genom Ångra och når disken med Spara placeringar. Grundmaterialet i utkastet är
+kortbaneanimeringen är oförändrade. I Bordets Kortplan: listan Kortplatser väljer kortet som kolumnen till höger ändrar;
+steg 2, Hur det kommer dit, har Grepp vid skon, Var kortet vänds, tre tekniker med ett klick (`TECHNIQUES`; hand och
+handbyte står kvar) och Använd rörelsen på alla spelarkort (de 14); steg 1:s Alla kort har Kortstorlek, alla kort
+(`scaleCards`: en faktor 0,50–2,50 kring varje korts mitt, stopp vid bildkanten och storleksgränserna; med Plant bord ritas
+alla kort i P4.C1:s storlek). Kortens böjning och glans ändras på ett ställe, Bordets Efterarbete (alla 16 på en gång).
+Allt i Kortplan går genom Ångra och når disken med Spara i kortplanen. Grundmaterialet i utkastet är
 böjning 0,14 (av 0,18) och glans 0,35. Kortet i skons fönster målas gult på scenen (`SHOE_CARD`, hörnen mätta i
 `assets/lab/native.jpg` och `portrait.jpg`): bilden visar spelets svarta baksida där, men ett stängt kort är gult i
 filmerna och planen; bilden och filmerna är orörda. Förslag bredvid utkastet ligger i `placements/proposals/<namn>.json`
 (i dag `forslag` och `forslag-slump`, K = 1,65): servern läser dem med `api/placements?plan=<namn>` och skriver aldrig
-till dem, bara 3D-scenen visar dem (`scene3d.html?plan=forslag&kort=1.65`), och Placering visar dem inte, eftersom den
-sparar till utkastet. **Placering i studion: bakgrunden.** Dator öppnar på en neutral bild (Jakob 2026-11-13: ingen
+till dem, bara 3D-scenen visar dem (`scene3d.html?plan=forslag&kort=1.65`), och Kortplan visar dem inte, eftersom den
+sparar till utkastet. **Kortplan: bakgrunden.** Dator öppnar på en neutral bild (Jakob 2026-11-13: ingen
 dealers bild, och studions eget bord): 3D-scenens bord i hemvyn med filmen dold, en grå figur med händerna där
 `data/dealer-standard.json` lägger dem (ingen kontur av en dealer) och bankens sko. I hemvyn är filmrutan hela duken, en
 rektangel utan skevning, så bilden ligger i filmpixlar (1764 → 1762 ger planens). `node tools/placement-backdrop.ts`
 bygger `assets/lab/placement-backdrop/native.jpg` med `receipt.json` (källor med SHA-256, figurens mått och passningen:
 filmens kort i scenen mot samma ruta ur filmen 0,2–0,3 px, bordet under filmen lika pixel för pixel); bilden byggs om
 när bordet, skon eller grundstandarden ändras. V6-bilden (`bakgrund=v6`) och filmerna är kvar i listan; Mobil har ingen
-hemvy i sina pixlar och behåller V6-bilden. I labbet är Placering Bordets Kortplan (`/placering/` leder dit) och en film
-till platsen beställs i Bordets Beställ.
+hemvy i sina pixlar och behåller V6-bilden. Placering är Bordets Kortplan (`/placering/` leder dit) och en film till
+platsen beställs i Bordets Beställ.
 
 En analys av de nuvarande separata native-/mobilprojektionerna finns i
 [table-projection-review](../evidence/table-projection-review.md). Den flyttar inga sparade punkter och ändrar inte V6.
@@ -490,8 +491,8 @@ källbevis: den nyare P4.C2-källan stöder BACK→EDGE→FRONT, medan dess loka
 
 - `motions/<clip-id>.json` är ensam källa för rörelsens klassning/beslut. Hand, pose, fysisk sida, spelstatus, mål och
   variant hålls separata.
-- `data/library.json` är visningskatalogen utan mediekopior (Prov-mappen Filmbiblioteket, bilden under korten i Placering,
-  Referens i Scen). Original, historiska sekvenser och diagnostiska överlägg
+- `data/library.json` är visningskatalogen utan mediekopior (Prov-mappen Filmbiblioteket, bilden under korten i Bordets
+  Kortplan, Referens i Bordets Scen och Råfilm). Original, historiska sekvenser och diagnostiska överlägg
   hålls isär; beslut hämtas från `motionRef`. P4-gulprovet och de återställda native-sekvenserna är 1764×1174 i
   källrymd, inte V6:s native-vy 1762×1174.
 - `data/public-media.json` binder publicerade katalogfilmer till Blob-URL:er med samma SHA-256. Nya lokala poster kan
@@ -525,7 +526,7 @@ hashreferenser. En framtida beställd Scout-import får ett uttryckligt kontrakt
 
 ## Vad labbet skickar till genereringen
 
-Placeringsvyn visar målgeometri och avsikt. Blå/gul i editorn hjälper granskaren att skilja avsedd fram-/baksida; rosa
+Bordets Kortplan visar målgeometri och avsikt. Blå/gul i editorn hjälper granskaren att skilja avsedd fram-/baksida; rosa
 behövs inte där. Rosa i en källfilm är en hjälp för att senare hitta och ersätta kortytan. Det avgör inte vilken fysisk
 sida som syns. Kortmaterialet ritas ovanpå filmen i labbet och i 3D-scenen (Renderade kort) men bakas aldrig in i en
 film.
@@ -539,7 +540,7 @@ efter Jakobs sex steg nyp, dra, för fram, vrid, vänd upp, lägg, förvalet fö
 (`defaultFlip`: `PLACE` ger `AT_PLACE`, annars `FREE`); `FREE` handleden vrider över kortet på vägen och är kvar
 vriden tills kortet ligger; `LONG_EDGE` kortet rullas kring långsidan på vägen, som en nyckel; `FLIP_LABEL` och
 `FLIP_ABOUT` i `src/order-model.ts` har orden Beställ visar). Förvalen kommer från planens kort, och `fromPlan` säger
-om valen är planens. Vyn Beställ föreslår handbyte där kortet landar mer än ett halvt kort till vänster
+om valen är planens. Ny beställning föreslår handbyte där kortet landar mer än ett halvt kort till vänster
 om hennes mitt (mitten mellan dealerns två kort), alltså P1–P3 i dagens plan. "Alla sju" gör ett utkast per plats med
 samma `group`. Texten skrivs av `promptFor` i `src/order-prompts.ts` (dagens mall i `TEMPLATE_VERSION`, och vilken
 den är står i handboken §2; en order återges med sin egen version; orden i `SAY`, reglerna i `tools/film-prompting.md`),
@@ -566,7 +567,7 @@ ur GRANSKAD-noten), bankens `motions`-poster och Materials bilder, och per metod
 omdömen (`studio/lib/ledger.ts`); granskarens dom kan också föras in bredvid en tagning från HÄMTAD utan att läget
 flyttas (`order-put.ts review`), och `tools/order-bring.ts` för en levererad tagning till bankens inkorg och Material.
 Metoden per steg och platsklass står i `data/order-methods.json` (`gäller`, `prov`, `saknas`; `src/order-methods.ts`),
-och produktionslistan (`node tools/produce.ts <dealer>`, överst i Beställ, `GET /api/production`) säger för vart och ett
+och produktionslistan (`node tools/produce.ts <dealer>`, överst i Bordets Beställ, Kön, `GET /api/production`) säger för vart och ett
 av grafens 33 steg vad som spelas (samma funktion som Kartan), vad som är på väg, om en runda kräver det, vad det väntar
 på och dess metod, och gör utkast där metoden gäller (`--draft`, knappen; aldrig ett godkännande); hålkortets giv
 (`GIV-2.1` till `D.C2`), dess vändning från vila (`HALKORT`, `IDLE>REVEAL(D.C2)`; bara hålkortet är ritat på båda

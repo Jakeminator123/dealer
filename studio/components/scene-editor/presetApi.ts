@@ -1,4 +1,4 @@
-// The Scen view's talk with the lab server: presets of the scene (/api/scene-presets, tools/scene-preset-store.ts) and the
+// The scene's talk with the lab server (Bordet's Scen and Efterarbete): presets of the scene (/api/scene-presets, tools/scene-preset-store.ts) and the
 // one write to Jakob's placement plan it can make, the cards' bend and gloss (/api/placements), only on his click. In the
 // online copy nothing is written, and the presets are the three that ship with the studio when the copy has none.
 import { TARGETS, validatePlan, type PlacementPlan } from "../../../src/placement-model.ts";
@@ -66,7 +66,7 @@ export function cardLookOf(plan: PlacementPlan): { look: CardLook; even: boolean
   const gloss = span("gloss");
   return { look: { bend: all[0]?.bend ?? 0.07, gloss: all[0]?.gloss ?? 0.35 }, even: bend[0] === bend[1] && gloss[0] === gloss[1], range: { bend, gloss } };
 }
-/** The plan with one bend and gloss on every card (lab-ui.ts "Materialet gäller alla 16 kort"); the given plan is left alone. */
+/** The plan with one bend and gloss on every card ("Materialet gäller alla 16 kort"); the given plan is left alone. */
 export function withCardLook(plan: PlacementPlan, look: CardLook): PlacementPlan {
   const next = structuredClone(plan);
   for (const id of TARGETS) if (next.targets[id]) next.targets[id].material = { bend: look.bend, gloss: look.gloss };

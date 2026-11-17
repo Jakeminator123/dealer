@@ -1,6 +1,6 @@
 "use client";
 
-// const editor = useSceneEditor(firstLook): the scene editor of the Scen view (app/page.tsx), without a scene of its own.
+// const editor = useSceneEditor(firstLook): the scene editor of Bordet's Scen, Råfilm and Efterarbete (components/bordet/SceneBody.tsx), without a scene of its own.
 // The view's stage builds the one scene and hands it here (editor.onScene); the editor drives that same object: every key
 // of its state as a control (studio/lib/scene-keys.ts) in the panel, presets and his ten numbered places (Profilval 1–10)
 // in the bar over the scene (PresetBar) with basgrund, what the game shows today, as the baseline (a key that differs from

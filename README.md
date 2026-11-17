@@ -73,19 +73,25 @@ Dokumenten länkar till dessa i stället för att föra egna statusregister. Med
   eller blir tom där webbläsaren inte låter en sida stänga sin flik. Rutinen:
   [DRIFT](docs/DRIFT.md#labbservern-och-fliken). Servern står kvar tills `STOPP.cmd` körs.
 - [Studion](http://127.0.0.1:4319/studio/) är skalet (`/` och `lab.html` leder dit): en Next.js-app i `studio/` som
-  byggs med `npm --prefix studio run build` och lämnas ut av samma server. Menyn (`studio/components/shell/Rail.tsx`)
-  har vyerna **Bordet** (delarna Kortplan, Beställ, Scen, Råfilm och Efterarbete i en ram; `/studio/placering/` och
-  `/studio/bestall/` leder dit i labbet), **Scen**, **Karta** (nodträdet: varje stegs Primär och dess sekundära filmer, med hur spelet använder var
-  och en; `/studio/primara/` leder hit), **Granska** (två delar i sidans huvud: Filmer, med
-  Jakobs domar som skrivs i `motions/`, och Prov, provmapparna under `assets/proofs/` på `/studio/granska/?prov=<mapp>`;
-  den gamla adressen `/studio/prov/?prov=<mapp>` leder dit), **Placering** (bara på kopian: kortplanen, 16
-  kortplatser och sko), **Material** (vilka bilder
-  som gäller), **Lipsync** (för vald dealer: var munnen görs, på hans dator eller hans RunPod, vad som är inställt och vad som stämmer; skrivskyddad), och **Casino**, och i foten **Beslut** (det som väntar på Jakobs svar). Bordet (där bild- och filmbeställningarna
-  görs, med det som skickas till Runway för varje film), Lipsync och Beslut finns bara i labbet; kopian på nätet har
-  i stället **Önskemål** och boten (Fråga). **Protokoll** (en rad per tagning och metod) nås från Bordets Beställ, Kön, och
-  **Jämför** (två tagningar av samma steg sida vid sida) från en tagning i Granska och Karta. Längst ned i
-  menyn finns också sidorna **Ljud** och **Modeller**, och Scens knapp **3D-sidan** öppnar utvecklarens 3D-sida med samma
-  look ([SYSTEM](docs/SYSTEM.md)).
+  byggs med `npm --prefix studio run build` och lämnas ut av samma server. Den öppnar på Bordet. Menyn
+  (`studio/components/shell/Rail.tsx`) har vyerna:
+  - **Bordet**: bordet i en ram, med delarna **Kortplan** (kortplanen på bilden: var kortet landar och hur det kommer dit;
+    Spara skriver bara `placements/default.json`), **Beställ** (filmerna att beställa, med det som skickas till Runway för
+    var och en, och Kön: Det här skickas, godkännandet och Protokoll), **Scen** (en runda i 3D-scenen och scenens
+    reglage), **Råfilm** (filmerna som de är, på sin gröna) och **Efterarbete** (det som läggs över filmen: korten och
+    markerna). De gamla adresserna `/studio/` med runda och look, `/studio/scen/`, `/studio/placering/` och
+    `/studio/bestall/` leder dit.
+  - **Karta**: nodträdet, varje stegs Primär och dess sekundära filmer, med hur spelet använder var och en
+    (`/studio/primara/` leder hit).
+  - **Granska**: Filmer, med Jakobs domar som skrivs i `motions/`, och Prov, provmapparna under `assets/proofs/`
+    (`/studio/granska/?prov=<mapp>`; `/studio/prov/` leder dit).
+  - **Material** (vilka bilder som gäller), **Lipsync** (var munnen görs och vad som är inställt, skrivskyddad) och
+    **Casino** (spelet med vald look).
+  - I foten **Beslut** (det som väntar på Jakobs svar) och **Ordlista**, och sidorna bredvid studion: **Ljud**,
+    **Modeller** och Scens knapp **3D-sidan** (utvecklarens 3D-sida med samma look, [SYSTEM](docs/SYSTEM.md)).
+
+  **Jämför** (två tagningar av samma steg sida vid sida) nås från en tagning i Granska och Karta. Kopian på nätet har
+  samma meny utan Lipsync, Bordet utan Beställ och utan sparning, och i stället för Beslut **Önskemål** och boten (Fråga).
 - Filmgranskningen har steg ±1 bildruta, kapitel och hastighet 0,25×/0,5×/1×. URL-parametrarna `clip` och `frame` pekar
   ut klipp och granskningsruta.
 - `npm test` kör offlinetesterna (placeringar, klippbank, kortspår, scen, spelmotor, labbserver och publiceringsskydd).

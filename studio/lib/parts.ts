@@ -6,7 +6,7 @@ import { labUrl } from "./lab.ts";
 
 /** How long a step without a film shows its card while a round plays (seconds at speed 1). */
 export const GAP_SECONDS = 1.5;
-/** The films' own shape, 1764 × 1174 (FILM in src/scene3d-geometry.ts): the 3D scene's home view and "Inte 3D" alike. */
+/** The films' own shape, 1764 × 1174 (FILM in src/scene3d-geometry.ts): the 3D scene's home view and Råfilm alike. */
 export const FILM_ASPECT = 1764 / 1174;
 
 /**

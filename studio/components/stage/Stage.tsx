@@ -3,12 +3,12 @@
 // <Stage parts={parts} mode="3d|platt" initial={look} onScene={(scene, defaults, plan) => …} clock={clock} ref={stageRef}>
 //   {what lies over the picture}
 // </Stage>
-// The one surface for playback: the round's parts in the lab's 3D scene or as plain films ("Inte 3D"), with one transport for
+// The one surface for playback: the round's parts in the lab's 3D scene or as plain films (Råfilm), with one transport for
 // both. Switching mode keeps the place (same step, same frame) and whether it plays. The scene is built the first time 3D is
 // shown and then kept (stopped while the flat films are on screen), so switching back is at once. Space plays and pauses,
 // the arrow keys step one frame, also across a cut. A step without a film shows a card for a moment and the round goes on.
 // The stage does not choose the scene's look: it is built with `initial`, and onScene hands the scene out, so that a view
-// can change it (the Scen view's editor drives this same object: one scene, never a second canvas).
+// can change it (the scene editor drives this same object: one scene, never a second canvas).
 import { useEffect, useImperativeHandle, useMemo, useRef, useState, type ReactNode, type Ref } from "react";
 import type { PlacementPlan } from "../../../src/placement-model.ts";
 import { GAP_LABEL } from "../../../src/clip-graph.ts";

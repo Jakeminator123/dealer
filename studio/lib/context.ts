@@ -3,12 +3,12 @@
 // What the view on screen shows, for the bot's panel (components/bot): the view's name, its address and what is chosen
 // there in Jakob's words. Each view says it with ONE line:
 //
-//   useViewContext({vy: "scen", val: {rum: "Salong", grupp: "Ljus"}})          in a client component (a hook)
+//   useViewContext({vy: "bordet", val: {läge: "Scen", runda: "A2.1 - P4C1 - A2.1"}})   in a client component (a hook)
 //   useViewContext({vy: "spela", val: {...}, live: () => ({steg: "2/3"})})      live: read when a question is asked
 //   <ViewContext vy="karta" />                                                  in a page: reads the view's own address
 //
-// <ViewContext> knows the views that keep their choice in the address (karta, granska, jamfor, prov: inside the page's
-// <Suspense>, since it reads useSearchParams) and primara (nothing chosen). The panel reads it all with useCurrentView()
+// <ViewContext> knows the views that keep their choice in the address (karta, granska and its part prov, jamfor: inside the
+// page's <Suspense>, since it reads useSearchParams) and onskemal (nothing chosen). The panel reads it all with useCurrentView()
 // and readView(). In the local studio nothing reads it; it costs one small object per view.
 import { useSearchParams } from "next/navigation";
 import { createElement, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
@@ -19,7 +19,7 @@ import type { Vy } from "./bot-client.ts";
 
 export { stepFacts } from "../components/bot/describe.ts";
 
-export type ViewKey = "spela" | "karta" | "primara" | "jamfor" | "granska" | "prov" | "scen" | "onskemal";
+export type ViewKey = "karta" | "jamfor" | "granska" | "prov" | "onskemal";
 type Loose = Record<string, string | null | undefined>;
 export type ViewInput = { vy: ViewKey | (string & {}); val?: Loose; live?: () => Loose };
 

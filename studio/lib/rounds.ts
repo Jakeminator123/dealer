@@ -1,10 +1,10 @@
-// Rounds for the Scen view (the studio's start): a round built as a path through the nodes (what can follow a node, and
+// Rounds for Bordet's scene: a round built as a path through the nodes (what can follow a node, and
 // whether the bank has a film for that step), the ready-made ones as examples, the one his notation or the address asks
 // for, a take played in its context, and the card places the bank needs to say how far a seat's second card is moved.
 // Pure: no DOM, no network; tests in studio/tests/rounds.test.ts.
 //
 // A reference (film) is not a round of the bank: one finished, composited film (room, table, rendered cards) played as it
-// is, in "Inte 3D" only (in the 3D scene it would be keyed and projected, which is wrong for a finished picture).
+// is, in Råfilm only (in the 3D scene it would be keyed and projected, which is wrong for a finished picture).
 // The V6 film is one: Jakob's chosen visual reference (data/library.json v6-native-reference). It is listed apart, under
 // "Referens", so that it is never mistaken for the bank's films played in the order of V6's deal ("Plats 4 · två kort").
 // The old public page's whole deals to all seven are others (16 and 17 cards, the older 14), kept here before that page
@@ -372,7 +372,7 @@ export function referenceParts(film: ReferenceFilm): PlayPart[] {
 /** The parts of a round: a reference film's (one per chapter), else one per step the bank resolved. */
 export const roundParts = (round: Round | null, segments: readonly Segment[]): PlayPart[] => (isReference(round) ? referenceParts(round.film) : partsOf(segments));
 
-/** The view a round can be shown in: a reference only as the film it is ("Inte 3D"); anything else as asked. */
+/** The view a round can be shown in: a reference only as the film it is (Råfilm); anything else as asked. */
 export const viewFor = (round: Round | null, asked: View): View => (isReference(round) ? "platt" : asked);
 
 /** Why 3D cannot be chosen for this round, in a few words for the control; null when it can. */
@@ -415,7 +415,7 @@ export function contextRound(graph: Graph, edgeId: string, takeId: string | null
 
 // ── The address ─────────────────────────────────────────────────────────────
 // /?runda=<his notation or the graph's sequence, or a reference's key: v6-filmen> · /?kant=<edge id>&tagning=<take id> ·
-// &vy=platt starts in "Inte 3D".
+// &vy=platt starts in Råfilm.
 export type View = "3d" | "platt";
 export type Asked = { kind: "runda"; text: string } | { kind: "kant"; edge: string; take: string | null } | { kind: "none" };
 

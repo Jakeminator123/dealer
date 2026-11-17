@@ -2,6 +2,7 @@
 // answers. The view's calls to the lab server and the pure words and order it shows. Only in the lab: the online copy reads
 // and writes nothing here (app/beslut/page.tsx shows a word instead, the rail leaves the view out). Tests:
 // studio/tests/decisions.test.ts.
+import { proofHref as proofAt } from "./proofs.ts";
 import type { Answer, Chip, Kind } from "../../tools/decision-register.ts";
 import type { DecisionsAnswer, Saved, Shown, ShownDecision } from "../../tools/decision-store.ts";
 import { ApiError, SNAPSHOT_REFUSAL } from "./api.ts";
@@ -104,9 +105,5 @@ export function askedDay(day: string): string {
   return moment ? moment.replace(/\s\d{2}:\d{2}$/, "") : day;
 }
 
-/** Where a proof opens in the Prov room, on the file the card shows. */
-export function proofHref(proof: string, file?: string | null): string {
-  const query = new URLSearchParams({ prov: proof });
-  if (file) query.set("fil", file);
-  return `/prov/?${query.toString()}`;
-}
+/** Where a proof opens: Granska's part Prov, on the file shown (lib/proofs.ts proofHref, the one way). */
+export const proofHref = (proof: string, file?: string | null): string => proofAt(proof, file);

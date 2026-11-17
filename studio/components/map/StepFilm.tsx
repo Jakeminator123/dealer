@@ -55,7 +55,7 @@ export function SeamLine({ seam, className }: { seam: Seam; className?: string }
 }
 
 const QUIET = buttonClasses({ variant: "quiet", size: "sm" });
-const scene = (edge: Edge, take: Take) => ({ pathname: "/", query: { kant: edge.id, tagning: take.id } });
+const scene = (edge: Edge, take: Take) => ({ pathname: "/bordet/", query: { lage: "scen", kant: edge.id, tagning: take.id } });
 const compare = (edge: Edge, take: Take, other: Take | null) => (other && other.id !== take.id ? { pathname: "/jamfor/", query: { kant: edge.id, a: take.id, b: other.id } } : null);
 
 /** The Primär, large: its film plays in place or over the whole window. */

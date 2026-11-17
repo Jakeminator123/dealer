@@ -4,6 +4,7 @@
 // estimated. The words themselves are shown as the file has them; these only decide colour, size and order.
 // Only in the lab: the online copy reads nothing here (app/lipsync/page.tsx shows a word instead, the rail leaves the
 // view out). Read-only: nothing here writes. Tests: studio/tests/lipsync.test.ts.
+import { proofHref as proofAt } from "./proofs.ts";
 import type { BaseImage, Check, DealerFacts, Licence, LipRow, Lipsync, LipsMeasured, NotUsed, OpenPoint, ProofFact, Runs, Setting, Step, Way, WayState, WhenNew } from "../../tools/lipsync-register.ts";
 import type { LipsyncAnswer, SpeechSet, SpeechSets, Still } from "../../tools/lipsync-store.ts";
 import { ApiError } from "./api.ts";
@@ -207,9 +208,5 @@ export function codeParts(text: string): TextPart[] {
     .filter((part) => part.text !== "");
 }
 
-/** Where a proof opens in the Prov room, on the file the view shows. */
-export function proofHref(proof: string, file?: string | null): string {
-  const query = new URLSearchParams({ prov: proof });
-  if (file) query.set("fil", file);
-  return `/prov/?${query.toString()}`;
-}
+/** Where a proof opens: Granska's part Prov, on the file shown (lib/proofs.ts proofHref, the one way). */
+export const proofHref = (proof: string, file?: string | null): string => proofAt(proof, file);

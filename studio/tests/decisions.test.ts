@@ -47,6 +47,6 @@ test("an entry's page, outside address and proof as addresses", () => {
   assert.equal(pageHref("game.html?table=casino&dealer=paow"), "/game.html?table=casino&dealer=paow");
   assert.equal(linkHref("dealer-lake.vercel.app/trailer"), "https://dealer-lake.vercel.app/trailer");
   assert.equal(linkHref("https://github.com/settings/billing"), "https://github.com/settings/billing");
-  assert.equal(proofHref("paow-mun", "paow-mun-1-lycka-till.mp4"), "/prov/?prov=paow-mun&fil=paow-mun-1-lycka-till.mp4");
-  assert.equal(proofHref("monaco-liv-2"), "/prov/?prov=monaco-liv-2");
+  assert.equal(proofHref("paow-mun", "paow-mun-1-lycka-till.mp4"), "/granska/?prov=paow-mun&fil=paow-mun-1-lycka-till.mp4");
+  assert.equal(proofHref("monaco-liv-2"), "/granska/?prov=monaco-liv-2");
 });

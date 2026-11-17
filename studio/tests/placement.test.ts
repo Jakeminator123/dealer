@@ -5,8 +5,8 @@ import { buildGraph, type BankData } from "../../src/clip-graph.ts";
 import { NEUTRAL_BACKDROP, SHOE, VIEWS, defaultPlan, editPlace, quad, sequence, toPixels, validatePlan, INTENT_DEFAULTS, type Geometry } from "../../src/placement-model.ts";
 import {
   GREEN_FILM, HISTORY, PLACES, START_PLACE, afterSave, amend, backdropForView, bankFilms, begin, changedPlaces, commit, decimal, defaultStill, editFlip, end, filmGoesTo, filmView, flipOf,
-  gameDealNotes, isDirty, isStill, libraryFilms, motionSteps, nudged, openDraft, parseDecimal, placeCode, placeFromCode, placeName, placementQuery,
-  quadSize, readPlacementAddress, shownBackdrop, signature, sizeFromCorner, stillChoice, stillLabel, stillPath, stillsOf, taperFromCorner, toLocal, toSaved, turnHandle, undo, type Film,
+  gameDealNotes, isDirty, isStill, libraryFilms, motionSteps, nudged, openDraft, parseDecimal, placeCode, placeFromCode, placeName,
+  quadSize, readPlacementAddress, shownBackdrop, signature, sizeFromCorner, stillPath, stillWord, stillsOf, taperFromCorner, toLocal, toSaved, turnHandle, undo, type Film,
 } from "../lib/placement.ts";
 import { FLIP_AXES, FLIP_LABEL } from "../../src/order-model.ts";
 import { SEAT_HUB } from "../../src/game-director.ts";
@@ -167,20 +167,14 @@ test("where the game deals a card from anchor 2.2 while the plan says nyp, Place
   assert.deepEqual(gameDealNotes(dragged, "P6.C1"), [], "a plan that drags there agrees with the game");
 });
 
-test("the address: view, place and a film with its frame or a still; defaults are left out and robot is kept", () => {
+test("Placering's old address: view, place and a film with its frame or a still (it leads to Bordet's Kortplan)", () => {
   const none = { get: () => null };
   assert.deepEqual(readPlacementAddress(none), { view: "native", place: START_PLACE, backdrop: null, frame: 0 });
   const p = new URLSearchParams("vy=mobil&plats=dc1&bakgrund=pamela-p4-c2-source-turn&ruta=40&robot=1");
   const a = readPlacementAddress(p);
   assert.deepEqual(a, { view: "portrait", place: "D.C1", backdrop: GREEN_FILM, frame: 40 });
-  assert.equal(placementQuery(a, p), "?vy=mobil&plats=dc1&bakgrund=pamela-p4-c2-source-turn&ruta=40&robot=1");
-  assert.equal(placementQuery({ view: "native", place: START_PLACE, backdrop: null, frame: 12 }), "");
   assert.equal(readPlacementAddress(new URLSearchParams("bakgrund=../x&ruta=-3")).backdrop, null);
   assert.equal(readPlacementAddress(new URLSearchParams("plats=zz")).place, START_PLACE);
-  // a still: V6 is written where it is not the default (Dator), the view's own default never, and a still has no frame
-  assert.equal(placementQuery({ view: "native", place: START_PLACE, backdrop: "v6", frame: 9 }), "?bakgrund=v6");
-  assert.equal(placementQuery({ view: "native", place: START_PLACE, backdrop: "neutral", frame: 0 }), "");
-  assert.equal(placementQuery({ view: "portrait", place: START_PLACE, backdrop: "v6", frame: 0 }), "?vy=mobil");
   assert.equal(readPlacementAddress(new URLSearchParams("bakgrund=v6")).backdrop, "v6");
 });
 
@@ -203,7 +197,7 @@ test("under the cards: Dator opens on the neutral backdrop, Mobil on its V6 pict
   assert.equal(backdropForView("portrait", "pamela-p4-c1-plan-deal-02", films), null);
   assert.equal(backdropForView("native", "pamela-p4-c1-plan-deal-02", films), "pamela-p4-c1-plan-deal-02");
   assert.equal(defaultStill("native"), "neutral");
-  assert.deepEqual([stillChoice("neutral", "native"), stillChoice("v6", "native"), stillLabel("neutral"), stillLabel("v6")], ["Neutral · studions bord", "V6-bild · dator", "Neutral · studions bord", "V6 · visuell referens"]);
+  assert.deepEqual([stillWord("neutral"), stillWord("v6")], ["Siluett", "V6-bild"]);
   assert.ok(isStill("v6") && isStill("neutral") && !isStill(GREEN_FILM));
   assert.equal(stillPath("neutral", "portrait"), VIEWS.portrait.background);
 });

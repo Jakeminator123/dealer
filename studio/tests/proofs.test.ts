@@ -113,8 +113,11 @@ test("the old /prov/ addresses open the same proof and file on /granska/", () =>
   assert.equal(fromProvAddress("prov=kort-matt-ur-filmen&fil=1-bord.mp4"), "/granska/?prov=kort-matt-ur-filmen&fil=1-bord.mp4");
   assert.equal(fromProvAddress("?dealer=paow"), "/granska/?vy=prov&dealer=paow");
   assert.equal(fromProvAddress("?prov=x&dealer=paow&vy=alla"), "/granska/?prov=x&dealer=paow", "a stray vy is not Prov's");
-  // The links the studio's other views still write (Beslut's cards, Lipsync) arrive on the proof and the file they name.
-  for (const old of [decisionProofHref("paow-mun", "paow-mun-1-lycka-till.mp4"), lipsyncProofHref("paow-realtid-mun-3", "paow-realtid-mun-3-2-stillbild.png"), "/prov/?prov=monaco-liv-2"]) {
+  // The links the studio's other views write (Beslut's cards, Lipsync) go straight to Granska's part Prov; an old /prov/
+  // link arrives on the proof and the file it names.
+  assert.equal(decisionProofHref("paow-mun", "paow-mun-1-lycka-till.mp4"), "/granska/?prov=paow-mun&fil=paow-mun-1-lycka-till.mp4");
+  assert.equal(lipsyncProofHref("paow-realtid-mun-3"), "/granska/?prov=paow-realtid-mun-3");
+  for (const old of ["/prov/?prov=paow-mun&fil=paow-mun-1-lycka-till.mp4", "/prov/?prov=paow-realtid-mun-3&fil=paow-realtid-mun-3-2-stillbild.png", "/prov/?prov=monaco-liv-2"]) {
     assert.ok(old.startsWith("/prov/?"), old);
     const to = fromProvAddress(old.slice("/prov/".length));
     const asked = new URLSearchParams(old.split("?")[1]);

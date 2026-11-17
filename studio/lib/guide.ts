@@ -20,17 +20,16 @@ export type GuideView = {
 
 export const GUIDE: readonly GuideView[] = [
   {
-    // One view since 2026-11-12: the old Spela and Scen. The view names itself "scen" (app/page.tsx).
-    vy: "scen",
-    namn: "Scen",
-    adress: "/studio/",
-    kort: "Spela en runda",
+    // Bordet since 2026-11-17: the one view of the table, holding what Placering and Scen were (and, in the lab, Beställ).
+    vy: "bordet",
+    namn: "Bordet",
+    adress: "/studio/bordet/",
+    kort: "Bordet och scenen",
     text:
-      "Scenen: här spelas en runda med dealern, i 3D-scenen eller som vanliga filmer (Inte 3D), och här ändras scenen. Panelen " +
-      "till höger har två flikar. Runda: välj en färdig runda, till exempel Plats 4 eller Alla platser, eller skriv en egen som " +
-      "Jakob skriver den: ”A2.1 - P4C1 - A2.1”. Scen: rum, rörelser, ljus, bord, kort och kamera, med förval att utgå från. " +
-      "Remsan under bilden visar varje steg, vilken tagning som spelas och varför. Mellanslag spelar och pausar, pilarna stegar " +
-      "en bildruta.",
+      "Bordet: en vy med delarna Kortplan, Scen, Råfilm och Efterarbete (i Jakobs labb också Beställ). Kortplan visar var korten " +
+      "ligger och hur kortet kommer dit, med kortbanan som en skiss. Scen spelar en runda i 3D-scenen, Råfilm som filmerna är " +
+      "på sin gröna bakgrund, och Efterarbete visar det som läggs över filmen, som korten och markerna. Rundan skrivs som Jakob " +
+      "skriver den: ”A2.1 - P4C1 - A2.1”. Remsan under bilden visar varje steg; mellanslag spelar och pausar.",
   },
   {
     vy: "karta",
@@ -38,18 +37,9 @@ export const GUIDE: readonly GuideView[] = [
     adress: "/studio/karta/",
     kort: "Se alla filmer på kartan",
     text:
-      "Nodkartan över allt som är filmat, upplagd som bordet: ankarna vid skon (A1 vila, A2.1 nyp, A2.2 hand över), platserna P1 " +
-      "till P7 i en båge och dealern överst. Varje linje är ett steg mellan två lägen, till exempel steget A2.1 → P4C1, och visar " +
-      "vilken tagning som spelas där. Klicka på en linje för att se alla tagningar av steget, med Jakobs omdöme på varje.",
-  },
-  {
-    vy: "primara",
-    namn: "Primära",
-    adress: "/studio/primara/",
-    kort: "Vad som spelas nu",
-    text:
-      "För varje steg i en hel runda: tagningen som spelas nu bredvid den bästa som Jakob har godkänt rakt av, och skarven mellan " +
-      "giv och retur. En Primär är tagningen som spelas först i sitt steg; den väljer bara Jakob.",
+      "Nodkartan över allt som är filmat, upplagd som bordet: ankarna vid skon (A1 vila, A2.1 nyp, A2.2 släp), platserna P1 " +
+      "till P7 i en båge och dealern överst. Varje linje är ett steg mellan två lägen, till exempel steget A2.1 → P4C1, med sin " +
+      "Primär (tagningen som spelas, som bara Jakob väljer) och de andra tagningarna, med Jakobs omdöme på varje.",
   },
   {
     vy: "granska",
@@ -58,16 +48,17 @@ export const GUIDE: readonly GuideView[] = [
     kort: "Tagningar som väntar",
     text:
       "Tagningarna som väntar på Jakobs beslut, en i taget och stort, med kön bredvid. ”Alla” listar varje tagning med filter. " +
-      "I kopian på nätet går inget att ändra: man kan titta och jämföra, besluten är Jakobs.",
+      "Delen Prov har proven. I kopian på nätet går inget att ändra: man kan titta och jämföra, besluten är Jakobs.",
   },
   {
+    // Granska's part Prov (/granska/?vy=prov); /prov/ leads there.
     vy: "prov",
     namn: "Prov",
-    adress: "/studio/prov/",
+    adress: "/studio/granska/?vy=prov",
     kort: "Se proven",
     text:
-      "Provrummet: jämförelsefilmer och kontaktark från arbetet, nyast först. Öppna ett prov för att se dess filmer och bilder, " +
-      "var och en med sitt omdöme (användbar, med anmärkningar, underkänd).",
+      "Granskas del Prov: jämförelsefilmer och kontaktark från arbetet, nyast först. Öppna ett prov för att se dess filmer och " +
+      "bilder, var och en med sitt omdöme (användbar, med anmärkningar, underkänd).",
   },
   {
     vy: "jamfor",

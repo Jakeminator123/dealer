@@ -212,7 +212,7 @@ fallit: [handboken](../tools/film-prompting.md); hur den läggs, hämtas och eft
 förs in i handbokens tabeller, inte här. Vad som skickades och hur det gick: studions vy Protokoll
 (`node tools/order-ledger.ts`).
 
-- **En väg: Beställ.** Utkast i studions vy Beställ (`data/orders/<id>.json`), godkänt med Jakobs klick eller av
+- **En väg: Beställ.** Utkast i Bordets Beställ (`data/orders/<id>.json`), godkänt med Jakobs klick eller av
   huvudagenten på hans uppdrag (`tools/order-approve.ts`) inom `data/order-policy.json`, lagt och hämtat av en
   beställningsagent genom Runways MCP-server på appkontot. Betalda anrop utanför Beställ rapporteras till huvudagenten
   med belopp (HANDOFF, "Vem äger vad").
@@ -278,8 +278,10 @@ Allt går att läsa och spela, inget går att ändra, och inga kostnader visas.
 
 - **Adresser:** `https://dealer-lake.vercel.app` (den Jakob känner) och `https://dealer-studio-one.vercel.app` (projektets
   egen), båda produktionsadresser för `dealer-studio`. Lösenordet är `john` (även `jon`, som Jakob skrev 2026-11-13). Efter
-  lösenordet kommer studion med vänsterspalten: Scen, Karta, Primära, Granska, Prov, Placering, Material, Casino och
-  Önskemål. Publicerad 2026-11-13: `e7c006d` kl. 16.35, `26dc99b` kl. 17.12 (med `tools/publish-studio.ts`).
+  lösenordet kommer studion med vänsterspalten: Bordet (Kortplan, Scen, Råfilm och Efterarbete; inget sparas och inget
+  beställs), Karta, Granska (med Prov), Material, Casino och Önskemål. Det gäller från nästa publicering; den publicerade
+  kopian (`aee87ca`) visar ännu den äldre menyn med Scen, Primära, Prov och Placering. Publicerad 2026-11-13: `e7c006d` kl.
+  16.35, `26dc99b` kl. 17.12 (med `tools/publish-studio.ts`).
 - **v0:s projekt `dealer`** (skapat 2026-11-13 kl. 05.41 i samma team, kopplat till GitHub-repot och byggt vid varje push,
   utan miljövariabler och store, med bara `dealer-lake.vercel.app`, som gav 404) togs bort 2026-11-13 kl. 17.20 på Jakobs
   ja; adressen flyttades till `dealer-studio`.

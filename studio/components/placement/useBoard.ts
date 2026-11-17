@@ -1,6 +1,6 @@
 "use client";
 
-// What a view that shows the plan on the picture needs beside <Board>, shared by Placering and Bordet: what lies under the
+// What Bordet's Kortplan and Beställ need beside <Board>: what lies under the
 // cards (a still or a film, and the list to choose from), the card path's playing state ("Spela kortbanan"), and the keys
 // (Ctrl+Z ångra, X Ändrat | Sparat, the arrows nudge the chosen place, Esc stops the path).
 import { useCallback, useEffect, useMemo, useRef, useState, type RefObject } from "react";
@@ -10,7 +10,7 @@ import { labUrl } from "../../lib/lab.ts";
 import { readLibrary } from "../../lib/placement-api.ts";
 import type { PathPhase } from "../../lib/placement-path.ts";
 import {
-  GREEN_FILM, backdropForView, bankFilms, defaultStill, filmGoesTo, filmView, libraryFilms, motionSteps, nudged, shownBackdrop, stillChoice, stillLabel, stillsOf, type Film, type Still,
+  GREEN_FILM, backdropForView, bankFilms, defaultStill, filmGoesTo, filmView, libraryFilms, motionSteps, nudged, shownBackdrop, stillWord, stillsOf, type Film,
 } from "../../lib/placement.ts";
 import type { Backdrop, PathRun } from "./Board";
 import { useKeyRun } from "./Board";
@@ -22,10 +22,10 @@ export const pathCard = (place: Place) => (place === SHOE ? "P4.C1" : place);
 
 /**
  * What lies under the cards in a view: the address's choice to start with, the films (the bank's takes, then the library's),
- * what is shown, the list to choose from (the stills, then the films of the view's shape, the films to `place` first) and
- * the words for a still (`words`: the list's and the picture's; Placering's own by default).
+ * what is shown, and the list to choose from (the stills by his words, then the films of the view's shape, the films to
+ * `place` first).
  */
-export function useUnder(view: View, place: Place, first: { backdrop: string | null; frame: number }, words?: { choice: (s: Still) => string; label: (s: Still) => string }) {
+export function useUnder(view: View, place: Place, first: { backdrop: string | null; frame: number }) {
   const [backdrop, setBackdrop] = useState<string | null>(first.backdrop);
   const [neutralMissing, setNeutralMissing] = useState(false);
   const [frame, setFrame] = useState(first.frame);
@@ -40,9 +40,8 @@ export function useUnder(view: View, place: Place, first: { backdrop: string | n
   const film = shown.kind === "film" ? shown.film : null;
   const under: Backdrop = film ? { kind: "film", src: labUrl(film.path), fps: film.fps, frame } : { kind: "still", src: labUrl(shown.kind === "still" ? shown.path : VIEWS[view].background) };
   const runCard = pathCard(place);
-  const choice = words?.choice ?? ((s: Still) => stillChoice(s, view));
   const options = [
-    ...stillsOf(view).map((s) => ({ value: s as string, label: choice(s), hint: s === "neutral" ? "förval" : undefined })),
+    ...stillsOf(view).map((s) => ({ value: s as string, label: stillWord(s), hint: s === "neutral" ? "förval" : undefined })),
     ...films
       .filter((f) => filmView(f) === view)
       .sort((a, b) => Number(b.id === GREEN_FILM) - Number(a.id === GREEN_FILM) || Number(filmGoesTo(b, runCard)) - Number(filmGoesTo(a, runCard)))
@@ -66,7 +65,7 @@ export function useUnder(view: View, place: Place, first: { backdrop: string | n
     },
     /** Another view: a film of the other shape, or a still the view lacks, gives way to its default. */
     toView: (v: View) => setBackdrop((was) => backdropForView(v, was, films)),
-    label: film ? filmLabel(film) : shown.kind === "still" ? (words?.label ?? stillLabel)(shown.still) : "",
+    label: film ? filmLabel(film) : shown.kind === "still" ? stillWord(shown.still) : "",
     shoeCard: shown.kind === "still" ? shown.still : null,
     onMissing: shown.kind === "still" && shown.still === "neutral" ? () => setNeutralMissing(true) : undefined,
     /** The neutral picture was asked for (or is the default) and is not on this machine. */

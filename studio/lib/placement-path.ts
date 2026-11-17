@@ -1,4 +1,4 @@
-// The schematic card path of Placering's "Spela kortbanan": the card from the shoe's window to its place and the hand back,
+// The schematic card path of Kortplan's "Spela kortbanan": the card from the shoe's window to its place and the hand back,
 // drawn after the films (Jakob 2026-11-17: what is used as the instruction for the turn must agree with how the films move).
 // A diagram to read a card's motion choices by, not a film and not a proof that a film holds the motion. Pure: one frame for a
 // time t in 0…1 of one run. Tests in studio/tests/placement-path.test.ts.

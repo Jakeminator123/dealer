@@ -1,7 +1,7 @@
 // The Casino view's addresses. Its own, /game/?forval=levande&dust=0.8&table=casino-k3x9qa, carries the look (a preset and
-// the keys that differ from it, as the Scen view writes them: lib/scene-presets.ts) and the table, so a calibrated look can
+// the keys that differ from it, as Bordet's Scen writes them: lib/scene-presets.ts) and the table, so a calibrated look can
 // be sent as a link. From it: the game in the frame (/game.html?forval=…&inbaddad=1&…&table=…, read by src/game-look.ts)
-// and the same look in the Scen view (/scen/?forval=…&…). Another view reaches the Casino with casinoAddress(preset, keys).
+// and the same look in Bordet's Scen (/bordet/?lage=scen&forval=…&…). Another view reaches the Casino with casinoAddress(preset, keys).
 // Pure: no DOM, no network; tests in studio/tests/casino.test.ts.
 import type { SceneState } from "../../src/scene3d-view.ts";
 import { SCENE_KEYS, encodeValue } from "./scene-keys.ts";
@@ -53,9 +53,9 @@ export function gameSrc(look: Pick<CasinoLook, "forval" | "patch" | "table">): s
   return `/game.html?${join([["forval", look.forval], ["inbaddad", "1"], ...keyPairs(look.patch), ["table", look.table]])}`;
 }
 
-/** The same look in the Scen view, to calibrate it further. */
+/** The same look in Bordet's Scen, to calibrate it further. */
 export function scenHref(look: Pick<CasinoLook, "forval" | "patch">): string {
-  return `/scen/?${join([["forval", look.forval], ...keyPairs(look.patch)])}`;
+  return `/bordet/?${join([["lage", "scen"], ["forval", look.forval], ...keyPairs(look.patch)])}`;
 }
 
 /** A fresh table name: a new game session on the lab server, with a new balance and shoe. */

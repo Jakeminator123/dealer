@@ -1,6 +1,6 @@
 "use client";
 
-// The stage's one transport, the same for 3D and "Inte 3D": the scrub bar with the cuts marked (a step without a film is
+// The stage's one transport, the same for 3D and Råfilm: the scrub bar with the cuts marked (a step without a film is
 // hatched), play/pause, one frame back and on (also across a cut), speed, loop, and where it is ("steg 2/3 · ruta 88/104").
 import { Pause, Play, Repeat, StepBack, StepForward } from "lucide-react";
 import { useMemo, useRef } from "react";

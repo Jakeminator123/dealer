@@ -1,4 +1,4 @@
-// The Placering view's talk with the lab server: Jakob's plan (GET /api/placements), its one write (PUT /api/placements,
+// Kortplan's talk with the lab server: Jakob's plan (GET /api/placements), its one write (PUT /api/placements,
 // against the revision read, tools/placement-store.ts) and the film library's list (GET /api/library). The write is made only
 // from his click on Spara; in the online copy it is refused before anything leaves the page (lib/mode.ts).
 import { validatePlan, type PlacementPlan } from "../../src/placement-model.ts";

@@ -3,8 +3,8 @@
 // A new order, all on one sheet with defaults for everything. It opens on the picture (Stage, Jakob 2026-11-17): his
 // notation for what is ordered ("A2.2 → P3C2 → A2.2") and one plain sentence, over the picture the film starts from with
 // every card place of the plan on it and the ordered card drawn where the plan lays it; a press on a place chooses that
-// card (a seat's second card too), "Flytta kortets plats" opens Bordet's Kortplan at it, and "Bordet" shows
-// the places on Placering's neutral table instead. Under the picture, what the choices turn into, changing as he sets
+// card (a seat's second card too), "Flytta kortets plats" opens Bordet's Kortplan at it, and "Siluett" shows
+// the places on Kortplan's neutral table (Siluett) instead. Under the picture, what the choices turn into, changing as he sets
 // them: the order's line in Swedish, the pictures that are sent (first, last with the card drawn where the plan says, or
 // the dealer's picture and the pose) each with whose it is, the cost of all of it against the limits, and the exact text
 // with the parts a choice made marked (from promptFor, the function the store writes the draft's text with). Beside it
@@ -95,7 +95,7 @@ export function NewOrder({ open, onOpenChange, all, preset, onCreated }: { open:
   const [refChoice, setRef] = useState<string | null>(r?.reference ?? null);
   const [scaleChoice, setScale] = useState(r?.cardScale ?? 1);
   const [shownSeat, setShownSeat] = useState<string | null>(null);
-  // The picture under the places: the dealer's own (what is sent) or Placering's neutral table.
+  // The picture under the places: the dealer's own (what is sent) or Kortplan's neutral table (Siluett).
   const [stageLook, setStageLook] = useState<StageLook>("ankare");
   const [busy, setBusy] = useState(false);
   const toast = useToast();
@@ -139,7 +139,7 @@ export function NewOrder({ open, onOpenChange, all, preset, onCreated }: { open:
   const shownSide = side ?? (planSides.length === 1 ? planSides[0] : null);
   const shownHand: HandChoice = hand ?? (planHands.length === 1 ? planHands[0] : "LH");
   const open_ = targets.some((t) => sideAt(t) === "FRONT");
-  // How the card turns: what Placering's Rörelse says for the (first) card, unless chosen here.
+  // How the card turns: what Kortplan's Rörelse says for the (first) card, unless chosen here.
   // Each seat turns as the plan says for it unless one turn is chosen for the whole order; only a chosen one is sent, so that
   // with "Alla sju" every seat keeps its own (the store takes each seat's from the plan when the order names none).
   const chosenFlip = flip?.key === key ? flip.axis : null;
@@ -248,7 +248,7 @@ export function NewOrder({ open, onOpenChange, all, preset, onCreated }: { open:
   };
   const route = routeOf(step, targets, shape, dealerName);
   const places = step.card && plan ? Object.values(plan.seats).filter((s) => orderableCard(s.target)) : [];
-  // "Bordet" can be chosen for every step: a step without a card shows the table and the figure without places.
+  // "Siluett" can be chosen for every step: a step without a card shows the table and the figure without places.
   const onTable = stageLook === "bord";
   // The picture the film starts from: the anchor; a return's landing picture (or, where none holds, the anchor it ends on);
   // a still's dealer's picture.
