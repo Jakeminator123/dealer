@@ -68,15 +68,18 @@ export function spots(plan: Plan, lens: Lens): Spot[] {
 export const dealerEdge = (lens: Lens): Vec3 => onPlane(filmEye(lens), (FILM.width - 1) / 2, MEASURED.dealerEdgeRow)!;
 
 /**
- * The eye of a seat. Seat 4 is the film camera itself (that is the view the bank was filmed from); every other seat is that
- * camera carried around the dealer, by the angle between seat 4's first card and the seat's own as seen from the middle of
- * the dealer's edge. So each seat looks at the dealer from where its own cards lie, at the film's distance and height.
+ * The eye of a seat. Seat 4 is the film camera itself (that is the view the bank was filmed from). Every other seat's eye
+ * stands to its own first card as the bank's camera stands to seat 4's: as far behind it, as high over the felt, looking
+ * as steeply down, and turned round the table by the angle between the two cards as seen from the middle of the dealer's
+ * edge. So a player's own card lands at the same spot of the picture from every seat, and only the side the dealer is
+ * seen from differs. (Carried round the dealer's edge instead, as it was first, seat 1's own card fell below the picture:
+ * that seat's cards lie farther from the dealer than seat 4's.)
  */
 export function seatEye(seat: number, plan: Plan, lens: Lens): Eye {
   const all = spots(plan, lens), own = all.find(s => s.id === `P${seat}.C1`), four = all.find(s => s.id === 'P4.C1'), pivot = dealerEdge(lens);
   if (!own || !four) throw Error(`The plan has no first card for seat ${seat}.`);
-  const bearing = (p: Vec3) => Math.atan2(p[0] - pivot[0], p[2] - pivot[2]);
-  return orbit(filmEye(lens), pivot, bearing(own.at) - bearing(four.at));
+  const bearing = (p: Vec3) => Math.atan2(p[0] - pivot[0], p[2] - pivot[2]), turned = orbit(filmEye(lens), four.at, bearing(own.at) - bearing(four.at));
+  return {...turned, position: [turned.position[0] + own.at[0] - four.at[0], turned.position[1], turned.position[2] + own.at[2] - four.at[2]]};
 }
 
 /** A real card lying at a pixel of the felt, as the film camera draws it: near and far edge, depth and taper in pixels. */

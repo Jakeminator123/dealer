@@ -36,11 +36,15 @@ test('a real card keeps its size in the world and only its picture changes with 
   assert.ok(Math.abs(seen(1).near - seen(4).near) > 3, 'seat 1 sees the same card with another outline');
 });
 
-test('every seat stands as far from the dealer as the film camera, seat 1 to the left and seat 7 to the right', () => {
-  const pivot = dealerEdge(lens), far = (seat: number) => length(sub(seatEye(seat, plan, lens).position, pivot));
-  for (let seat = 1; seat <= 7; seat++) near(far(seat), far(4), 1e-9, `seat ${seat}`);
-  assert.ok(seatEye(1, plan, lens).position[0] < -1 && seatEye(7, plan, lens).position[0] > 1);
-  near(length(sub(orbit(filmEye(lens), pivot, 0).position, filmEye(lens).position)), 0, 1e-12, 'no turn, no move');
+test('every seat sees its own first card where the bank\'s camera sees seat 4\'s: as far off, as high, as steeply down', () => {
+  const pivot = dealerEdge(lens), all = spots(plan, lens), place = (seat: number) => all.find(s => s.id === `P${seat}.C1`)!.at, bank = filmEye(lens), four = see(bank, place(4))!;
+  for (let seat = 1; seat <= 7; seat++) { const eye = seatEye(seat, plan, lens), own = see(eye, place(seat))!;
+    near(own.x, four.x, 1e-6, `seat ${seat}: its card's column`); near(own.y, four.y, 1e-6, `seat ${seat}: its card's row`);
+    near(eye.position[1], bank.position[1], 1e-12, `seat ${seat}: height`); near(eye.forward[1], bank.forward[1], 1e-12, `seat ${seat}: how steeply it looks down`);
+    near(length(sub(eye.position, place(seat))), length(sub(bank.position, place(4))), 1e-9, `seat ${seat}: distance to its card`); }
+  for (const k of [0, 1, 2]) near(seatEye(4, plan, lens).position[k], bank.position[k], 1e-12, 'seat 4 is the bank\'s camera');
+  assert.ok(seatEye(1, plan, lens).position[0] < -1 && seatEye(7, plan, lens).position[0] > 1, 'seat 1 to the left and seat 7 to the right');
+  near(length(sub(orbit(bank, pivot, 0).position, bank.position)), 0, 1e-12, 'no turn, no move');
 });
 
 test('the card starts in the shoe, lands on the plan\'s place face up, and never goes under the felt', () => {

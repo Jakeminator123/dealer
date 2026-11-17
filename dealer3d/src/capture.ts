@@ -187,6 +187,34 @@ export function perform(lens: Lens, marks: Landmarks, track: Track, options: {aw
   return {film: marks.film, fps: marks.fps, frameCount: n, leavesShoe: leaves, edge, folds, rests, handSize: {L: size, R: size}, palm, moments};
 }
 
+/** An arm of two bones from a shoulder to a wrist, bent toward `pole`, stretched together only if the wrist is out of reach. */
+function byPole(shoulder: Vec3, wrist: Vec3, pole: Vec3, points: Vec3[]): ArmPose {
+  const far = length(sub(wrist, shoulder)), stretch = Math.max(1, far / ((BODY.upperArm + BODY.forearm) * 0.985)), a = BODY.upperArm * stretch, b = BODY.forearm * stretch, dir = unit(sub(wrist, shoulder));
+  const along = (a * a - b * b + far * far) / (2 * far), out = Math.sqrt(Math.max(0, a * a - along * along)), side = unit(sub(pole, mul(dir, dot(pole, dir))));
+  return {shoulder, elbow: add(add(shoulder, mul(dir, along)), mul(side, out)), wrist, stretch, points};
+}
+
+/**
+ * Her resting hand, let loose. In the film read from, her right hand lies still through the whole deal (its wrist goes
+ * 7 mm in four seconds), and the bank's orders end "The other hand rests on the felt." Nothing in a deal asks for that,
+ * and Jakob has asked for her right arm to move a little more while her left one deals (2026-11-13, and again
+ * 2026-11-18: no hand of hers is to be stiff in every film). So this is a model and not a reading: while the card is on
+ * its way the hand is drawn `back` toward her own shoulder along the felt and its heel lifts `lift`, the hand turning as
+ * one piece about the line of its fingertips, which stay down. It is furthest when the card is on edge, and lies as it
+ * lay `settled` frames after the card lies, so a film still ends on the anchor's resting hand. The fingers keep the
+ * shape they were read with, and the arm is bent anew to the side its elbow was on.
+ */
+export const LOOSE = {back: 0.04, lift: 0.026, settled: 4};
+export function loosened<P extends Performance>(p: P, amount = 1): P {
+  const peak = (p.edge[0] + p.edge[1]) / 2, end = p.rests + LOOSE.settled, flat = (v: Vec3): Vec3 => [v[0], 0, v[2]];
+  return {...p, moments: p.moments.map((m, i) => {
+    const w = amount * (i <= peak ? smooth((i - p.leavesShoe) / (peak - p.leavesShoe)) : 1 - smooth((i - peak) / (end - peak))); if (w <= 0) return m;
+    const was = m.R.points, tips = mul([8, 12, 16, 20].reduce((s, k) => add(s, was[k]), [0, 0, 0] as Vec3), 0.25), heel = flat(sub(was[0], tips)), axis = cross(unit(heel), [0, 1, 0]), tip = Math.asin(Math.min(0.5, LOOSE.lift * w / length(heel)));
+    const tipped = was.map(q => add(tips, turned(sub(q, tips), axis, tip))), sunk = Math.max(0, Math.min(...was.map(q => q[1])) - Math.min(...tipped.map(q => q[1]))); // no point lower than the hand's lowest was
+    const by = add(mul(unit(flat(sub(m.R.shoulder, was[0]))), LOOSE.back * w), [0, sunk, 0]), points = tipped.map(q => add(q, by));
+    return {...m, R: byPole(m.R.shoulder, points[0], sub(m.R.elbow, m.R.shoulder), points)}; })};
+}
+
 /**
  * The same deal to another place. The dealing hand and the card are the read ones, carried sideways: nothing at the shoe,
  * the whole way from the film's place to `to` by the time the card is over its place. How the fingers are bent and how
@@ -202,10 +230,6 @@ export function perform(lens: Lens, marks: Landmarks, track: Track, options: {aw
  */
 export function moved(lens: Lens, p: Performance, to: Vec3, swingDeg?: number): Performance & {swing: number} {
   const frame = standing(lens), last = p.moments[p.frameCount - 1].card.centre, shift: Vec3 = [to[0] - last[0], 0, to[2] - last[2]], arrive = Math.round(p.edge[1] + (p.rests - p.edge[1]) * 0.5);
-  const byPole = (shoulder: Vec3, wrist: Vec3, pole: Vec3, points: Vec3[]): ArmPose => { // two bones bent toward `pole`, stretched together only if the wrist is out of reach
-    const far = length(sub(wrist, shoulder)), stretch = Math.max(1, far / ((BODY.upperArm + BODY.forearm) * 0.985)), a = BODY.upperArm * stretch, b = BODY.forearm * stretch, dir = unit(sub(wrist, shoulder));
-    const along = (a * a - b * b + far * far) / (2 * far), out = Math.sqrt(Math.max(0, a * a - along * along)), side = unit(sub(pole, mul(dir, dot(pole, dir))));
-    return {shoulder, elbow: add(add(shoulder, mul(dir, along)), mul(side, out)), wrist, stretch, points}; };
   const round = (v: Vec3, angle: number): Vec3 => { const c = Math.cos(angle), s = Math.sin(angle); return [v[0] * c + v[2] * s, v[1], -v[0] * s + v[2] * c]; };
   const build = (swing: number): Moment[] => p.moments.map((m, i) => {
     const w = smooth((i - p.leavesShoe) / (arrive - p.leavesShoe)), by = mul(shift, w), grip = lerp(m.L.points[4], m.L.points[8], 0.5);

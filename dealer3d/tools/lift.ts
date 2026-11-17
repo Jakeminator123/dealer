@@ -1,12 +1,13 @@
 // Lays a film's hands and body into the room and writes the deal as numbers the page and the tests read.
-//   node dealer3d/tools/lift.ts --marks <landmarks.json from tools/python/landmarks.py> --track <card-track.json> --out dealer3d/data/<name>.json [--to P1.C1]
+//   node dealer3d/tools/lift.ts --marks <landmarks.json from tools/python/landmarks.py> --track <card-track.json> --out dealer3d/data/<name>.json [--to P1.C1] [--loose 1]
 // Reads both files (and, with --to, placements/default.json, never writing it) and writes one: per frame the card, both
 // arms and the 21 points of each hand, in metres (rounded to a tenth of a millimetre). --to moves the read deal to another
-// card place of the plan. Prints what it measured: the size of her hands, how far every joint goes, and how the card in
+// card place of the plan. --loose lets her resting hand go with the deal (a model, capture.ts: loosened; 1 is its full
+// size, and without it the hand is the film's own, which lies still). Prints what it measured: the size of her hands, how far every joint goes, and how the card in
 // her fingers agrees with the film's own card.
 import {readFile, writeFile} from 'node:fs/promises';
 import {TABLE_LENS, filmEye, length, see, sub} from '../../src/table-lens.ts';
-import {LIMITS, joints, moved, perform, throughShoe, type Landmarks, type Track} from '../src/capture.ts';
+import {LIMITS, LOOSE, joints, loosened, moved, perform, throughShoe, type Landmarks, type Track} from '../src/capture.ts';
 import {spots, type Plan} from '../src/world.ts';
 import {sideSeen} from '../src/deal.ts';
 
@@ -15,11 +16,12 @@ const marksPath = arg('--marks'), trackPath = arg('--track'), out = arg('--out')
 const marks = JSON.parse(await readFile(marksPath, 'utf8')) as Landmarks, track = JSON.parse(await readFile(trackPath, 'utf8')) as Track, lens = TABLE_LENS, eye = filmEye(lens);
 const read = perform(lens, marks, track, {away: arg('--away') ? Number(arg('--away')) : undefined});
 const place = to ? spots(JSON.parse(await readFile(new URL('../../placements/default.json', import.meta.url), 'utf8')) as Plan, lens).find(s => s.id === to) : null; if (to && !place) throw Error(`The plan has no place ${to}.`);
-const p = place ? moved(lens, read, place.at) : read;
+const loose = Number(arg('--loose') ?? 0), set = place ? moved(lens, read, place.at) : read, p = loose > 0 ? loosened(set, loose) : set;
 const span = (v: number[]) => `${Math.min(...v).toFixed(0)} till ${Math.max(...v).toFixed(0)}`, f1 = (n: number) => n.toFixed(1), lines: string[] = [];
 const unwrap = (v: number[]) => { const o = [v[0]]; for (let i = 1; i < v.length; i++) { let d = v[i] - v[i - 1]; while (d > 180) d -= 360; while (d < -180) d += 360; o.push(o[i - 1] + d); } return o; };
 
 lines.push(`${p.film}${to ? `, flyttad till ${to} (handen svängd ${(p as {swing?: number}).swing?.toFixed(0)}° kring sitt grepp)` : ''}: ${p.frameCount} rutor, ${p.fps} per sekund. Kortet lämnar skon ruta ${p.leavesShoe}, står på kant ruta ${p.edge[0]}–${p.edge[1]}, fälls från ruta ${p.folds}, ligger från ruta ${p.rests}.`);
+if (loose > 0) lines.push(`Den vilande handen är släppt fri (modell, inte avläst): dras högst ${(LOOSE.back * loose * 1000).toFixed(0)} mm mot henne och handloven lyfts högst ${(LOOSE.lift * loose * 1000).toFixed(0)} mm, mest när kortet står på kant, och ligger som förut från ruta ${p.rests + LOOSE.settled}.`);
 lines.push(`Handens storlek mot MediaPipes: vänster ${p.handSize.L.toFixed(2)}, höger ${p.handSize.R.toFixed(2)}. Handflatans håll: ${p.palm}.`);
 for (const [side, sign] of [['L', p.palm], ['R', -p.palm]] as const) {
   const j = p.moments.map(m => joints(m[side], sign)), twist = unwrap(j.filter(x => x.twist !== null).map(x => x.twist as number)), hand = p.moments.map(m => m[side].points);
@@ -45,6 +47,6 @@ if (!to) lines.push(`Spårets sidor:                                            
 console.log(lines.join('\n'));
 
 const r = (v: number[]) => v.map(x => Math.round(x * 10000) / 10000), armOut = (a: (typeof p.moments)[number]['L']) => ({s: r(a.shoulder), e: r(a.elbow), w: r(a.wrist), k: Math.round(a.stretch * 1000) / 1000, p: a.points.map(r)});
-await writeFile(out, JSON.stringify({about: 'One deal laid into the room by dealer3d/tools/lift.ts from MediaPipe landmarks and the card track of the film named' + (to ? `, and moved to the card place ${to} of the plan (hand and card as read, arm and body a model)` : '') + '. Metres in the table lens\'s world (x toward image right, y up from the felt, z toward the camera). Per frame: card (c centre, l long side toward the held end, n the way its face looks), L her left arm and hand (the dealing one), R her right: s shoulder, e elbow, w wrist, k how many times the arm is stretched, p the 21 points of the hand in MediaPipe\'s order; h head, and hip once.',
-  film: p.film, to: to ?? null, fps: p.fps, frameCount: p.frameCount, leavesShoe: p.leavesShoe, edge: p.edge, folds: p.folds, rests: p.rests, handSize: p.handSize, palm: p.palm, throughShoe: shoeFrames.length, hip: r(p.moments[0].hip),
+await writeFile(out, JSON.stringify({about: 'One deal laid into the room by dealer3d/tools/lift.ts from MediaPipe landmarks and the card track of the film named' + (to ? `, and moved to the card place ${to} of the plan (hand and card as read, arm and body a model)` : '') + (loose > 0 ? ', her resting hand let loose (a model: capture.ts, loosened)' : '') + '. Metres in the table lens\'s world (x toward image right, y up from the felt, z toward the camera). Per frame: card (c centre, l long side toward the held end, n the way its face looks), L her left arm and hand (the dealing one), R her right: s shoulder, e elbow, w wrist, k how many times the arm is stretched, p the 21 points of the hand in MediaPipe\'s order; h head, and hip once.',
+  film: p.film, to: to ?? null, loose, fps: p.fps, frameCount: p.frameCount, leavesShoe: p.leavesShoe, edge: p.edge, folds: p.folds, rests: p.rests, handSize: p.handSize, palm: p.palm, throughShoe: shoeFrames.length, hip: r(p.moments[0].hip),
   frames: p.moments.map(m => ({card: {c: r(m.card.centre), l: r(m.card.long), n: r(m.card.normal)}, L: armOut(m.L), R: armOut(m.R), h: r(m.head)}))}) + '\n');

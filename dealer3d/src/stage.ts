@@ -138,7 +138,10 @@ export function createStage(canvas: HTMLCanvasElement, plan: Plan, options: {loo
     const mid: Vec3 = [(body.shoulders[0][0] + body.shoulders[1][0]) / 2, (body.shoulders[0][1] + body.shoulders[1][1]) / 2, (body.shoulders[0][2] + body.shoulders[1][2]) / 2];
     const x = v3(body.shoulders[1]).sub(v3(body.shoulders[0])), wide = x.length(); x.normalize(); const y = v3(mid).sub(v3(body.hip)), tall = y.length(); y.normalize(); const z = new T.Vector3().crossVectors(x, y).normalize(); y.crossVectors(z, x);
     torso.matrix.makeBasis(x.multiplyScalar(wide * 0.47), y.multiplyScalar(tall * 0.56), z.multiplyScalar(0.095)).setPosition(v3(body.hip).lerp(v3(mid), 0.52)); torso.matrixWorldNeedsUpdate = true;
-    head.position.copy(v3(body.head)); const gaze = v3(c.centre).lerp(new T.Vector3(body.head[0], body.head[1] - 0.25, body.head[2] + 1.2), now < (read ? moments.lands : MOMENTS.lets) ? 0.45 : 0.8); head.lookAt(gaze);
+    // Her eyes are on the card from the shoe until it lies, all through the turn (Jakob 2026-11-18: "Hon ska följa korten
+    // oftast, och alltid när det vänds över"); when it lies she looks up toward the players, over two thirds of a second.
+    const lies = read ? moments.lands : MOMENTS.lands, up = Math.max(0, Math.min(1, (now - lies) / 0.65)), eased = up * up * (3 - 2 * up);
+    head.position.copy(v3(body.head)); const gaze = v3(c.centre).lerp(new T.Vector3(body.head[0], body.head[1] - 0.25, body.head[2] + 1.2), 0.75 * eased); head.lookAt(gaze);
   }
   const cameraOf = (eye: Eye) => { const cam = new T.PerspectiveCamera(fovYDeg(eye.focalPx), FILM.width / FILM.height, 0.2, 30); cam.position.copy(v3(eye.position)); cam.lookAt(v3(eye.position).add(v3(eye.forward))); cam.updateMatrixWorld(); return cam; };
   const eyeOf = (view: View): Eye => view === 'film' ? filmEye(lens) : seatEye(view, plan, lens);

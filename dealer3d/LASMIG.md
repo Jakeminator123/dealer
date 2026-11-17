@@ -13,9 +13,9 @@ använder repots låsta `three` och `sharp`.
 | --- | --- |
 | `../src/table-lens.ts` (repots `src/`) | **Bordets lins**, skriven här och lyft till `src/` 2026-11-17: en fysisk kamera för bankens bild (1764 × 1174) i verkliga meter, linsen som tal (`TABLE_LENS`), `realCardQuad` (plats i bankens bildpunkter och riktning in, ett verkligt korts fyra hörn ut) och `shoeCardQuad` (kortet som står i skons fönster). Kortplanen ritas med den (`src/card-plan.ts`); testet är `tools/table-lens.test.ts`. |
 | `src/camera.ts` | Passningen: linsfamiljen `lensForFocal` (alla linser som ger kortet vid plats 4 dess storlek och form i filmen) och vad en lins gör av en sträcka i bilden. Lämnar vidare allt ur `src/table-lens.ts`. Ren räkning. |
-| `src/world.ts` | Det filmen visar (`MEASURED`) och det som antas (`ASSUMED`); `filmLens()`, passningen som väljer den lins som ritar dealerns kropp i verklig storlek (ett test håller den lika med `TABLE_LENS`); planens kortplatser på filten; stolarnas ögon. Ren räkning. |
+| `src/world.ts` | Det filmen visar (`MEASURED`) och det som antas (`ASSUMED`); `filmLens()`, passningen som väljer den lins som ritar dealerns kropp i verklig storlek (ett test håller den lika med `TABLE_LENS`); planens kortplatser på filten; stolarnas ögon (`seatEye`: varje stols öga står till stolens eget första kort som bankens kamera står till plats 4:s, lika högt, lika brant och lika långt bakom, så det egna kortet landar på samma bildpunkt från varje stol; buret runt dealerkantens mitt, som först, hamnade plats 1:s kort under bildkanten). Ren räkning. |
 | `src/capture.ts` | **En verklig giv lagd i rummet:** händernas 21 punkter och kroppens leder, avlästa ur en film, sätts under linsen punkt för punkt (varje punkt på siktlinjen genom sin egen bildpunkt), kortet följer filmens eget kortspår med sin hållna ände vid fingrarna, och `joints` och `LIMITS` säger vad en arm och en hand kan göra. Ren räkning. |
-| `data/giv-pamela-p4.json`, `-p1`, `-p3`, `-p5` | Given lagd i rummet som tal: `pamela-p4-c1-plan-deal-02`, 120 rutor, per ruta kortet, båda armarna och händernas punkter i meter; och samma giv flyttad till plats 1, 3 och 5 (`--to P3.C1`). Skrivna av `tools/lift.ts`; sidan och testerna läser dem. Plats 6 och 7 finns inte: där går handen genom skon. |
+| `data/giv-pamela-p4.json`, `-p1`, `-p3`, `-p5` | Given lagd i rummet som tal: `pamela-p4-c1-plan-deal-02`, 120 rutor, per ruta kortet, båda armarna och händernas punkter i meter; och samma giv flyttad till plats 1, 3 och 5 (`--to P3.C1`). Skrivna av `tools/lift.ts`; sidan och testerna läser dem. Plats 6 och 7 finns inte: där går handen genom skon. `giv-pamela-p4-los.json` och `-p1-los.json` är samma två med högerhanden släppt fri (`--loose 1`, en modell). |
 | `src/deal.ts` | Den första given, ritad för hand, som tidslinje: kortets läge och vridning och handens grepp för varje tidpunkt, till vilken kortplats som helst. Bana och tempo ur Paows giv till plats 4. Jakob dömde ut handens rörelse (2026-11-17); den avlästa given ersätter den i proven, och den här står kvar för jämförelse och för platser som ingen film går till. Ren räkning. |
 | `src/body.ts` | Den handritade givens skelett, löst ur var händerna ska vara: hon böjer sig från höften och vrider fram axeln så långt armen behöver. Ren räkning. |
 | `src/stage.ts` | Ritningen i three.js: bord, sko, ett kort med två sidor och provdockan, sedda genom flera ögon samtidigt. Två utseenden: `room` (filtbord) och `plain` (vit docka på grått, för en förlagefilm). Två källor för rörelsen: en avläst giv (handen ritas av sina 21 punkter) eller den handritade. |
@@ -52,6 +52,15 @@ använder repots låsta `three` och `sharp`.
   och kropp är där en modell: hon böjer sig från höften och vrider fram axeln (`solveBody`), armbågen hänger åt sin
   sida. Utfall för plats 1: armbåge 27–131°, handled 24–59°, underarmens vridning 68°, armen aldrig sträckt, kortet
   på planens P1.C1 inom 0,1 bildpunkt. Hennes vänsterarm går då över den vilande högerhanden.
+- **Högerhanden släppt fri** (`loosened` i `capture.ts`, `lift.ts --loose 1`; filerna `-los`): i filmen ligger
+  högerhanden still hela given (handleden går 7 mm), och bankens ordertexter slutar "The other hand rests on the felt."
+  Jakob vill att hon rör höger arm mer när vänster delar (2026-11-13 och 2026-11-18). Det här är en modell, inte en
+  avläsning: medan kortet är på väg dras handen 40 mm mot hennes axel och handloven lyfts 26 mm kring fingertopparnas
+  linje, mest när kortet står på kant, och handen ligger som i filmen igen fyra rutor efter att kortet ligger (så en
+  film slutar fortfarande på ankarets vilande hand). Lederna håller: handled 6–21°, armbåge 108–121°. Förlagefilmerna
+  "-2" är gjorda UTAN detta; en förlaga med fri hand görs först när Jakob har sett den.
+- **Blicken** (`stage.ts`): huvudet ser på kortet från skon, genom vändningen och tills det ligger, och lyfts sedan
+  under 0,65 s. Också en modell: huvudets plats är avläst (det går 24 mm i filmen), vart det ser är det inte.
 - **Inte gjort:** Paows egen giv (`paow-giv-2-1-p4-11-01`, 169 rutor med återgång till skon) är avläst men inte lagd i
   rummet: handens djup på vägen tillbaka har ingen fästpunkt än.
 

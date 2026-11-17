@@ -7,7 +7,7 @@ import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import {CARD, TABLE_LENS, filmEye, length, see, sub, type Vec3} from '../../src/table-lens.ts';
-import {LIMITS, TIPS, joints, placeHand, type ArmPose, type HandMarks} from '../src/capture.ts';
+import {LIMITS, LOOSE, TIPS, joints, placeHand, type ArmPose, type HandMarks} from '../src/capture.ts';
 import {sideSeen, type CardPose} from '../src/deal.ts';
 
 type Limb = {s: Vec3; e: Vec3; w: Vec3; k: number; p: Vec3[]};
@@ -16,7 +16,8 @@ const load = async (name: string) => JSON.parse(await readFile(new URL(`../data/
 // Where the card must lie at the end, in the bank's pixels: the film's own resting card for the deal as read, and for each
 // moved deal the first card's place of that seat in the plan of 2026-11-17. Seats 6 and 7 are not here: moved there, the
 // hand goes through the shoe (lift.ts says so), and such a deal is not kept.
-const PLACES: [string, string | null, number, number][] = [['giv-pamela-p4', null, 853.3, 1101.5], ['giv-pamela-p1', 'P1.C1', 236.7, 980.1], ['giv-pamela-p3', 'P3.C1', 643.5, 1056.9], ['giv-pamela-p5', 'P5.C1', 1074.0, 1056.9]];
+const PLACES: [string, string | null, number, number][] = [['giv-pamela-p4', null, 853.3, 1101.5], ['giv-pamela-p1', 'P1.C1', 236.7, 980.1], ['giv-pamela-p3', 'P3.C1', 643.5, 1056.9], ['giv-pamela-p5', 'P5.C1', 1074.0, 1056.9],
+  ['giv-pamela-p4-los', null, 853.3, 1101.5], ['giv-pamela-p1-los', 'P1.C1', 236.7, 980.1]]; // the same two with her resting hand let loose (lift.ts --loose 1)
 const DEALS = await Promise.all(PLACES.map(async ([name, to, x, y]) => ({name, to, data: await load(name), lies: {x, y}})));
 const eye = filmEye(TABLE_LENS), arm = (a: Limb): ArmPose => ({shoulder: a.s, elbow: a.e, wrist: a.w, stretch: a.k, points: a.p});
 const cross = (a: Vec3, b: Vec3): Vec3 => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
@@ -65,6 +66,14 @@ for (const {name, data, lies} of DEALS) {
 
 test('in the film as read, the dealing forearm turns with the card (more than a quarter turn) and the resting one hardly at all', () => {
   const data = DEALS[0].data; assert.ok(turning(data, 'L', data.palm) > 60, `dealing forearm ${turning(data, 'L', data.palm).toFixed(0)}`); assert.ok(turning(data, 'R', -data.palm) < 25, `resting forearm ${turning(data, 'R', -data.palm).toFixed(0)}`);
+});
+
+test('let loose, her resting hand goes with the deal and lies as it lay when the card lies; the dealing hand and the card are untouched', () => {
+  for (const [stiff, loose] of [[DEALS[0].data, DEALS[4].data], [DEALS[1].data, DEALS[5].data]]) { const turn = Math.round((stiff.edge[0] + stiff.edge[1]) / 2), gone = (i: number) => length(sub(loose.frames[i].R.w, stiff.frames[i].R.w));
+    assert.ok(gone(turn) > 0.04 && gone(turn) < 0.06, `as the card turns the wrist is ${(gone(turn) * 1000).toFixed(0)} mm from where it lay`); assert.ok(loose.frames[turn].R.w[1] > stiff.frames[turn].R.w[1] + 0.02, 'its heel is lifted');
+    for (const i of [0, stiff.leavesShoe, stiff.rests + LOOSE.settled, 119]) assert.ok(gone(i) < 1e-9, `frame ${i}: the hand lies where the film has it`);
+    for (let i = 1; i < 120; i++) assert.ok(length(sub(loose.frames[i].R.w, loose.frames[i - 1].R.w)) < 0.006, `frame ${i}: the wrist jumps`);
+    stiff.frames.forEach((f, i) => { assert.deepEqual(loose.frames[i].L, f.L); assert.deepEqual(loose.frames[i].card, f.card); assert.deepEqual(loose.frames[i].h, f.h); }); }
 });
 
 test('moved to seat 1, the hand and the card are the read ones carried across: the same fingers, the same card turning, another place', () => {
