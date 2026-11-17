@@ -3814,6 +3814,13 @@
           "note": "Jakobs egen beställning i Beställ 2026-11-17 (paow-giv-2-2-p4-02, WAN 3, två tagningar, 240 krediter): släp från ankare 2.2 till plats 4 och tillbaka. Ingen av tagningarna gör vändningen rätt: den ena vänder men visar ett tryckt kort, den andra byter färg utan att vändas. Filmerna och ett bildark per tagning."
         },
         {
+          "id": "paow-prov-keystone-tatuerade-hander",
+          "role": "prov",
+          "name": "Paows keystone med tatuerade händer",
+          "proof": "paow-keystone-tatuerade-hander",
+          "note": "Trailersessionens två kandidater 2026-11-17 på Jakobs ord om att keystonebilderna ska ha tatueringarna: sittande och stående med tatuerade händer (ros på handryggen, tecken på fingrarna), allt annat orört. Händerna före och efter. De blev inte tydligt mindre. 80 krediter."
+        },
+        {
           "id": "paow-prov-jamnat-ljus",
           "role": "prov",
           "name": "Jämnat ljus mellan filmer, och ren kant runt håret",

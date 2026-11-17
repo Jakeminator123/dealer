@@ -29,6 +29,32 @@
       "answer": null
     },
     {
+      "id": "keystone-tatuerade-hander",
+      "kind": "beslut",
+      "question": "Keystone med tatuerade händer: är händerna rätt?",
+      "leads": "Vid ja läggs de två bilderna som kandidater i Material, och ett nytt ankare görs ur dem för din blick.",
+      "proof": "paow-keystone-tatuerade-hander",
+      "file": "1-sittande-handerna-fore-efter.jpg",
+      "chips": [
+        {
+          "value": "ja",
+          "label": "Ja"
+        },
+        {
+          "value": "mindre",
+          "label": "Mindre händer"
+        },
+        {
+          "value": "nej",
+          "label": "Nej"
+        }
+      ],
+      "asked": "2026-11-17",
+      "from": "trailersessionen",
+      "cost": "ett försök till med mindre händer: 40–80 krediter",
+      "answer": null
+    },
+    {
       "id": "trailer-pa-telefonen",
       "kind": "gora",
       "question": "Prova trailern på telefonen. Syns filmen?",
