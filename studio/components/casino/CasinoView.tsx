@@ -51,7 +51,7 @@ function Casino() {
   // The look the address asks for. A choice here writes the address, and the look and the frame follow it.
   const look = useMemo(() => readCasino(new URLSearchParams(query)), [query]);
   const [dropped] = useState(() => readCasino(new URLSearchParams(query)).ignored);
-  const go = (next: CasinoLook) => write(casinoSearch({ ...next, geometri: look.geometri })); // the geometry word stays through a choice
+  const go = (next: CasinoLook) => write(casinoSearch({ ...next, geometri: look.geometri, playback: look.playback })); // geometry and playback survive a look or table choice
   // The address says it all (preset, keys, table) from the start, so that it can be sent as it stands.
   useEffect(() => {
     const want = casinoSearch(look);
