@@ -72,6 +72,20 @@ Innehåll: Kortet · Filmerna och banken · Läpparna och rösten · Spelet och 
   (`9a09570`); knapparna Arkivera och Ta tillbaka är inte tryckta av en hand. Stänger: valet av referensfilm och
   klippruta hoppar över arkiverade klipp (`referenceCandidates`, `cutFrameOf` i `src/order-model.ts`; filmstandardens
   andra del).
+- **Ingen väg in i banken för en tagning beställd utanför Beställ.** Syns: ingångsfilmen till ankare 2.3 och de fyra
+  givarna till plats 5 (2026-11-18, gjorda i en spegelrot på slaskdisken) finns bara som Prov, inte i Karta, Granska
+  eller Råfilm. `tools/order-bring.ts` och `register-order.ts` kräver en godkänd order i `data/orders/` och ett
+  kvitto som bara `order-put.ts` skriver, med tiden nu; beställningsflödet kan inte återge en handskriven text eller
+  en egenbyggd sista bild; och `film-fix.ts` har ingen fartändring (ingången ska in i dubbel fart). Prövat: inget
+  är skrivet för hand i registren. Stänger: ett läge som tar in en tagning ur dess liggare (modell, text, bilder,
+  referens, uppdrag, belopp, vem som godkände), och fart som en lagning i `film-fix`.
+- **Given från ankare 2.3 saknar slutbild, och en landningsbild vet inte vilken hand som lade kortet.** Syns: Bordets
+  rad för `GIV-2.3` säger "ingen slutbild för platsen med höger hand vid kortet" för varje plats, och raden har
+  inget val för en första tagning utan sista bild. Blir en landningsbild gällande för en plats skulle den också bli
+  sista bild för givarna från 2.1 och 2.2 dit, som läggs med vänster hand. Prövat: receptet som höll för plats 5
+  byggde sista bilden ur en första tagnings slutruta ([lage/matning.md](lage/matning.md)). Stänger: slutbilden
+  registreras per plats och hand, raden får undantaget "utan sista bild" för en plats första tagning, och steget
+  som bygger slutbilden ur en tagning blir ett verktyg i repot.
 - **Det bandet inte kan än** ([tools/dealer-line.md](../tools/dealer-line.md)). Syns: i Beställ. Ankare 2.1 och 2.2 är
   steg (`STEPS` i `src/order-model.ts`), men landningsbild, keystone och ankare 1 är det inte, och ett tredje eller
   fjärde dealerkort går inte att beställa, eftersom planen har sexton platser (`TARGETS` i `src/placement-model.ts`).

@@ -9,8 +9,8 @@ gäller nu; varje prov och dess utfall står i handboken (`tools/film-prompting.
   undantag går 8 av 61 kombinationer att beställa; de andra säger varför (slutbild saknas, eller dockans film).
 - Metoden som håller: en giv bara dit på Kling 4 med första och sista bild och 3D-banans dockfilm som referensfilm, i
   UTDRAGEN takt (given över drygt 2 s, en obruten rörelse). I den riktiga dealerns takt tappar Kling vändningen.
-- Ankare 2.3 (båda händerna vid skon, blicken ned) gäller på Jakobs ja. Stegen `INGANG-2.3` och `GIV-2.3` finns men
-  går att beställa först när dockans filmer står i `data/rendered-references.json`.
+- Ankare 2.3 (båda händerna vid skon, blicken ned) gäller på Jakobs ja. Ingången dit (`INGANG-2.3`) går att beställa
+  genom Bordet med dockans film; given därifrån (`GIV-2.3`) väntar på en slutbild per plats med höger hand vid kortet.
 - Given från 2.3 till P5.C1, Jakobs beställning: fyra tagningar i Prov `giv-fran-2-3-p5` (256 krediter). Tagning 4
   (dockan "-d") går igenom den automatiska kontrollen och är enligt granskaren bäst (3/5; mitten är trög, och det
   gula kortet har en vit kant ruta 22–30). Sidan av tagning 3 ligger i samma prov.
@@ -25,15 +25,14 @@ gäller nu; varje prov och dess utfall står i handboken (`tools/film-prompting.
 **Nästa steg.**
 1. Starta vakten på Jakobs kö i Beställ (`vakta-kon.mjs`; den dör med chatten), och anslut Runway (`/mcp`) på ett
    nytt konto. Godkänner han en order startas beställningsagenten (`tools/order-clerk.md`).
-2. Läs hans svar i Beslut: farten på ingångsfilmen (han valde 1,5 gånger av misstag: fråga) och tagningen till plats
-   5. För sedan in ingångsfilmen och den valda tagningen i banken som kandidater (`tools/register-order.ts`).
-3. Gör stegen från 2.3 beställbara: dockans filmer till `assets/references/docka/<id>/source.mp4` och in i
-   `data/rendered-references.json` (id-mönstret står i `dealer3d/LASMIG.md`).
-4. En tagning per återstående plats (1, 2, 3, 4, 6, 7 och dealerns kort) på en långsam dockfilm, 64 krediter per
-   tagning; en oberoende granskare bara när den automatiska kontrollen släpper igenom tagningen.
+2. In i banken: ingångsfilmen i dubbel fart och tagning 4 till plats 5 (hans Bra i Prov). Vägen saknas för en
+   tagning beställd utanför Beställ, och `film-fix` kan inte ändra fart ([BRISTER](../BRISTER.md)): bygg den först.
+3. Given från 2.3 till plats 4 och plats 1 (hans ord): dockans filmer "-e" in som referensfilmer, en slutbild per
+   plats med höger hand (plats 4 ur plats 5:s slutbild, plats 1 ur en första tagning utan sista bild; 64 krediter
+   per tagning), sedan beställningen genom Bordet. Runway ansluts först (`/mcp`).
+4. Sedan en tagning per återstående plats (2, 3, 6, 7 och dealerns kort) på en långsam dockfilm.
 5. Raka linjens rester ([BRISTER](../BRISTER.md)): `tools/produce.ts` läser inte `data/cut-frames.json`.
-6. Fem kameravinklar är hans mål ([BESKED](../BESKED.md), "Flera kameravinklar"): hans egen bild 35° från sidan som
-   styrande stillbild, och en kamera per film i `/vinklar.html` (sidofilmens kamera står lägre än bankens).
+6. Fem kameravinklar ([BESKED](../BESKED.md)): hans bild 35° från sidan som styrande stillbild, och `/vinklar.html`.
 7. Senare: ankare 2.1 och 2.2 med tatuerade händer, hålkortet (vänds inte) och andra kortet ovanpå det första
    (`yt-referens/ut/giv-resten.md`), returer till vila, dealerns tredje kort, och Jakobs önskemål i BESKED.
 
