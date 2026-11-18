@@ -22,21 +22,22 @@ gäller nu; varje prov och dess utfall står i handboken (`tools/film-prompting.
   har de äldre händerna och spelas än. Ankare 2.2 föll i tre försök i bildmodellen och görs om som 2.3.
 - Saldot var 5 105 den 2026-11-18 (`whoami` före en beställning); taket är 2 000 per order.
 
-**Nästa steg.**
-1. Starta vakten på Jakobs kö i Beställ (`vakta-kon.mjs`; den dör med chatten), och anslut Runway (`/mcp`) på ett
-   nytt konto. Godkänner han en order startas beställningsagenten (`tools/order-clerk.md`).
-2. Ingången till 2.3 ([BESKED](../BESKED.md), "Ingången på halva tiden"): klipp det stilla slutet så att filmen är
-   cirka 2 s (`tools/film-fix.ts` kortar i dag högst tre rutor: bygg ut), eller pröva hans förslag, EN film från
-   ankare 1 via 2.3 till platsens A3 som klipps i två (dockans posfilm b och giv f i följd som referensfilm).
-3. Givarna: först en dockfilm (3D-banan) där tumme och fingrar håller kortet genom hela vändningen och handleden
-   vrider det, sedan en ny tagning till plats 4 mot samma A3 (64 krediter). Plats 1 (hans ord i Prov): ansiktet ser
-   annorlunda ut (A3 · P1 är gjord med nano-banana-pro: gör om den med modellen som lämnar ansiktet orört), och
-   vägen tillbaka från den framåtlutade slutbilden kräver en egen idé. Resten av bordet först när en giv har hans ja.
-4. Fem kameravinklar ([BESKED](../BESKED.md)): hans bild 35° från sidan som styrande stillbild, och `/vinklar.html`.
-5. Senare: ankare 2.1 och 2.2 med tatuerade händer, hålkortet (vänds inte) och andra kortet ovanpå det första
-   (`yt-referens/ut/giv-resten.md`), returer till vila och dealerns tredje kort.
+**Nästa steg.** Ett mål i taget: EN giv med Jakobs ja.
+1. Vakten på hans kö: `node tools/order-watch.ts` (dör med chatten); Runway ansluts med `/mcp` på ett nytt konto.
+   Godkänner han en order startas beställningsagenten (`tools/order-clerk.md`).
+2. Hans svar på kortet i Beslut väljer väg. Pröva: en film till plats 4 med ankaret som första och sista bild, kortet
+   plant med baksidan upp och ingen vändning (cirka 64 krediter); släpprutan och kortets fyra hörn mäts, och kortet
+   ritas därifrån (`src/card-overlay.ts`). Löses först: bordet är med i Paows film, så filmens eget kort täcks efter
+   släppet med en bit ren filt ur ankarbilden.
+3. Nej: en dockfilm (3D-banan) där tumme och fingrar håller kortet genom vändningen och handleden vrider det, sedan
+   en ny tagning till plats 4 mot samma A3.
+4. Plats 1 (hans ord i Prov): A3 · P1 görs om med modellen som lämnar ansiktet orört, och vägen tillbaka från den
+   framåtlutade slutbilden kräver en egen idé. Ingången till 2.3 klipps till cirka 2 s (`tools/film-fix.ts` kortar
+   högst tre rutor: bygg ut) eller görs som EN film från ankare 1 via 2.3 till platsens A3 ([BESKED](../BESKED.md)).
+5. Väntar tills en giv har hans ja: resten av bordet, fem kameravinklar (`/vinklar.html`), ankare 2.1 och 2.2 med
+   tatuerade händer, hålkortet, andra kortet (`yt-referens/ut/giv-resten.md`), returer och dealerns tredje kort.
 
-**Väntar på Jakob.** I Beslut: får kortet ritas i 3D från en uppmätt släppruta, så att filmen slipper vända det? Ingen ny giv beställs före svaret. Granskningen av local-studio: `assets/references/local-studio-granskning.md`.
+**Väntar på Jakob.** I Beslut: duger en giv där kortet vänds först efter släppet? Granskningen: `assets/references/local-studio-granskning.md`; Görans runda spelas ur kopian `D:/dealer-scratch/tmp/goran-visning/`.
 
 **Var saker ligger.** Vägen för en ny dealer i [tools/dealer-line.md](../../tools/dealer-line.md), handboken i
 [tools/film-prompting.md](../../tools/film-prompting.md), granskningen i `tools/film-review.md`, läget per dealer med
@@ -45,7 +46,7 @@ gäller nu; varje prov och dess utfall står i handboken (`tools/film-prompting.
 `data/media-roles.json`, `data/cut-frames.json` och `data/order-policy.json`. På slaskdisken, under
 `D:/dealer-scratch/tmp/`, med en liggare (`bestallningar.json`) i varje: `giv-fran-2-3-p5/` och `ankare-2-3/` (MODEL),
 `sidovinkel-v2v/`, `stol-1/` (provens tak på 2 000), `bestall/`, `giv-experiment-2/`, `yt-referens/` (den filmen går
-aldrig in i Git, `assets/` eller ett Prov), `dealer-3d/ut/` (dockans filmer) och `huvudagent11/look/` (`vakta-kon.mjs`).
+aldrig in i Git, `assets/` eller ett Prov) och `dealer-3d/ut/` (dockans filmer).
 
 **Fällor.**
 - Referensfilmen ska sluta som sista bilden, och blicken måste stå i texten eller bilderna: Kling tar handens och

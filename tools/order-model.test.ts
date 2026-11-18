@@ -2,7 +2,8 @@
 // from the price table, the policy check, the hash an approval freezes, and the status a person sees. No media needed.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readFile, readdir } from 'node:fs/promises';
+import { readFile } from 'node:fs/promises';
+import { committedFiles, committedText } from './committed.ts';
 import { createHash } from 'node:crypto';
 import {
   ALL_SEVEN, CARD_SCALES, cutFrameOf, cutFrameWords, endsOnOf, FLIP_AXES, FLIP_LABEL, HAND_LABEL, LANDS_LABEL, SHAPE_LABEL, MODELS, SEAT_TARGETS, STEPS, TEXT_STYLES, plannedDiffers, plannedOf, bodyLine, canonical, checkPolicy, costOf, crossesBody, cutIntoOf, dayOf, defaultFlip, defaultStyle, draftProblems, edgeOf, genitive, groupBudget, handChoiceOf, handsOf, hashInput, isArchived, cutCheckKey, readCutChecks, landingMissing, landingOf, lengthFor, lengthOfReference, modelFor, modelsFor, paramsOf, priceOf, referenceCandidates, requestOf, scaleQuad, scaleWords, seatEndMissing, seatEndOf, seatEndWords, seatList, seatWords, shownOf, spentOn, stepOf, styleOf, stylesFor, summaryOf, takeStates, tidyMotion, validateOrder, verdictOf, waitWords,
@@ -15,7 +16,8 @@ const sha = (s: string) => createHash('sha256').update(s).digest('hex');
 const policy = async () => JSON.parse(await readFile('data/order-policy.json', 'utf8')) as Policy;
 async function drafts(): Promise<Order[]> {
   const out: Order[] = [];
-  for (const name of (await readdir('data/orders').catch(() => [] as string[])).filter((f) => f.endsWith('.json'))) out.push(JSON.parse(await readFile(`data/orders/${name}`, 'utf8')));
+  // The orders the repo holds: a draft of Jakob's that is not committed yet is his, and the lab judges it (tools/committed.ts).
+  for (const file of committedFiles('data/orders').filter((f) => f.endsWith('.json'))) out.push(JSON.parse(await readFile(file, 'utf8')));
   return out;
 }
 
@@ -263,7 +265,7 @@ test('the hand: left, right or handbyte (left to right), stored as the plan stor
 });
 
 test('the seats where the left hand would cross her body, from the plan alone', async () => {
-  const plan = JSON.parse(await readFile('placements/default.json', 'utf8'));
+  const plan = JSON.parse(committedText('placements/default.json'));
   // The plan's points in film pixels (the order's own drawing is tested in tools/order-routes.test.ts).
   const x = (t: string) => plan.targets[t].geometry.native.u * 1763;
   const centres = Object.fromEntries(Object.keys(plan.targets).map((t) => [t, [x(t), 0] as [number, number]]));

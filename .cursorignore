@@ -30,6 +30,30 @@ assets/timeline.json
 # folder is to be taken out of Git.
 evidence/
 
+# Models and other binaries wherever they land, lock files and the 3D dummy's motion data (Jakob 2026-11-18: "glb-modeller
+# och andra stora filer ignoreras för att spara pengar"). The same lines stand in .ignore.
+*.glb
+*.gltf
+*.bin
+*.fbx
+*.obj
+*.blend
+*.usdz
+*.ply
+*.stl
+*.ktx2
+*.hdr
+*.exr
+*.onnx
+*.task
+*.safetensors
+*.wasm
+package-lock.json
+dealer3d/data/
+
+# The paused dealer's film registers (Pamela, paused 2026-11-12); see .ignore.
+motions/pamela-*
+
 # Library code that is not the project's own and is far too long to read: the three.js library as it was brought in with
 # the card material study, and the two built pages of that study (each is three.js plus about 300 lines of ours, packed
 # by webpack). They are used as they are and never edited; the study's own source is materials/source/src/.

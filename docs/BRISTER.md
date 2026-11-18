@@ -93,7 +93,7 @@ Innehåll: Kortet · Filmerna och banken · Läpparna och rösten · Spelet och 
   tagning är GRANSKAD eller INFÖRD (`IN_FLIGHT`, `tools/produce.ts:55`). Prövat: inget. Stänger: en tagning med dom i
   kvittot räknas som avslutad.
 - **Kön läggs bara när en huvudagentchatt är öppen.** Syns: en beställning Jakob godkänner med ett klick ligger olagd om
-  ingen vakt går. Prövat: vakten `D:/dealer-scratch/tmp/huvudagent11/look/vakta-kon.mjs`, som går i huvudagentens chatt
+  ingen vakt går. Prövat: vakten `node tools/order-watch.ts`, som går i huvudagentens chatt
   i halvtimmar och måste startas av varje ny huvudagent. Stänger: en vakt som inte behöver en öppen chatt; ingen väg vald.
 - **Paow har ingen användbar landningsbild.** Syns: `paow-landning-p4-giv-t2` står som `gäller` i
   `data/media-roles.json` men visar handryggen och duger inte för en vändning, och alla hennes returer är andra halvan

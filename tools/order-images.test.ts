@@ -7,6 +7,7 @@ import { existsSync } from 'node:fs';
 import path from 'node:path';
 import { H, TEXTURE, W, apply, armAlone, cardOutline, cardTexture, components, drawCard, drawCards, greenOf, homography, matchGreen, planQuad, pngOf, poseOnShoe, readPlan, type Pt } from './order-images.ts';
 import { ARM_ALONE, SHOE_AT_ANCHOR, SLEEVE_AT_SHOE } from './order-store.ts';
+import { committedText } from './committed.ts';
 
 test('the homography maps the four corners onto the four corners', () => {
   const from: Pt[] = [[0, 0], [10, 0], [10, 10], [0, 10]], to: Pt[] = [[100, 200], [180, 205], [190, 280], [95, 270]];
@@ -163,7 +164,8 @@ test('several cards drawn one after the other, each where the plan says; the hol
   const lab = await mkdtemp(path.join(base, 'order-images-'));
   t.after(() => rm(lab, { recursive: true, force: true }));
   // The step's recipe comes from the method register since the straight line (a step without one has no default).
-  for (const f of ['data/order-policy.json', 'data/order-methods.json', 'data/dealers.json', 'placements/default.json', TEXTURE.video, TEXTURE.quadFrom]) { await mkdir(path.dirname(path.join(lab, f)), { recursive: true }); await copyFile(f, path.join(lab, f)); }
+  for (const f of ['data/order-policy.json', 'data/order-methods.json', 'data/dealers.json', TEXTURE.video, TEXTURE.quadFrom]) { await mkdir(path.dirname(path.join(lab, f)), { recursive: true }); await copyFile(f, path.join(lab, f)); }
+  await mkdir(path.join(lab, 'placements'), { recursive: true }); await writeFile(path.join(lab, 'placements/default.json'), committedText('placements/default.json')); // his plan as committed (tools/committed.ts)
   await mkdir(path.join(lab, 'assets/anchors/paow-vila'), { recursive: true });
   await writeFile(path.join(lab, 'assets/anchors/paow-vila/anchor.png'), await pngOf(green));
   await writeFile(path.join(lab, 'data/clip-jobs.json'), '{"jobs": []}');

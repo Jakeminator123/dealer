@@ -12,6 +12,7 @@ import os from 'node:os';
 import path from 'node:path';
 import sharp from 'sharp';
 import { orderRoutes } from './order-routes.ts';
+import { committedText } from './committed.ts';
 import { ARM_ALONE, ARM_AT_SHOE, POSE_ARM_WHAT, POSE_WHAT, SHOE_AT_ANCHOR, SLEEVE_AT_SHOE, orderStore, orderHash } from './order-store.ts';
 import { promptFor } from '../src/order-prompts.ts';
 import { mediaRoles } from './media-roles.ts';
@@ -50,7 +51,8 @@ async function lab(t: { after(fn: () => Promise<void> | void): void }) {
   const root = await mkdtemp(path.join(base, 'order-routes-'));
   t.after(() => rm(root, { recursive: true, force: true }));
   for (const dir of ['data', 'placements']) await mkdir(path.join(root, dir), { recursive: true });
-  for (const file of ['data/order-policy.json', 'data/dealers.json', 'data/order-methods.json', 'placements/default.json']) await copyFile(file, path.join(root, file));
+  for (const file of ['data/order-policy.json', 'data/dealers.json', 'data/order-methods.json']) await copyFile(file, path.join(root, file));
+  await writeFile(path.join(root, 'placements/default.json'), committedText('placements/default.json')); // his plan as committed, not as he last saved it (tools/committed.ts)
   await writeFile(path.join(root, 'data/media-roles.json'), JSON.stringify(register(), null, 2) + '\n');
   await writeFile(path.join(root, 'data/clip-jobs.json'), '{"jobs": []}');
   const files: Record<string, Buffer> = {};

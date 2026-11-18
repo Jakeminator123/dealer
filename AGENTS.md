@@ -26,6 +26,11 @@ Allt annat slås upp när arbetet kräver det, ETT AVSNITT i taget (sök på rub
   andra sessioner, en ny dealer, publicera kopian) har en skill i `.claude/skills/<namn>/SKILL.md`: läs den som gäller
   innan du börjar. Den säger vilka regler som oftast bryts och pekar på dokumentet med rutinen, som den aldrig skriver om.
 
+Sökningen ser inte allt, med avsikt: `.ignore` och `.cursorignore` döljer maskindata, binärer, `evidence/`, dockans
+rörelsedata och pausade Pamelas filmregister (Jakob 2026-11-18, för att spara tokens). Filerna finns kvar och läses med
+sin sökväg; en tom sökträff där betyder inte att filen saknas. `.claude/settings.json` nekar läsning av modeller,
+film, ljud och låsfiler.
+
 Läs inte för att komma igång: chatthistorik, äldre överlämningar, Git-historiken, eller rapporter och anteckningar
 på slaskdisken. En underagent läser den här filens regler och det dess uppdrag namnger; uppdraget bär själv det den
 behöver veta och namnger högst tre filer eller avsnitt att läsa.

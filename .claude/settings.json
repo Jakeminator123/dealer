@@ -1,0 +1,29 @@
+{
+  "permissions": {
+    "deny": [
+      "Read(**/*.glb)",
+      "Read(**/*.gltf)",
+      "Read(**/*.bin)",
+      "Read(**/*.fbx)",
+      "Read(**/*.obj)",
+      "Read(**/*.blend)",
+      "Read(**/*.usdz)",
+      "Read(**/*.onnx)",
+      "Read(**/*.task)",
+      "Read(**/*.safetensors)",
+      "Read(**/*.hdr)",
+      "Read(**/*.exr)",
+      "Read(**/*.mp4)",
+      "Read(**/*.mov)",
+      "Read(**/*.webm)",
+      "Read(**/*.wav)",
+      "Read(**/*.mp3)",
+      "Read(**/*.zip)",
+      "Read(**/package-lock.json)",
+      "Read(**/node_modules/**)",
+      "Read(materials/kortmaterial.js)",
+      "Read(materials/markermaterial.js)",
+      "Read(materials/source/references/card-materials/vendor/three.module.js)"
+    ]
+  }
+}

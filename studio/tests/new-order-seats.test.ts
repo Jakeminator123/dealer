@@ -9,6 +9,7 @@ import assert from "node:assert/strict";
 import http from "node:http";
 import { copyFile, mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { existsSync } from "node:fs";
+import { committedText } from "../../tools/committed.ts";
 import os from "node:os";
 import path from "node:path";
 import sharp from "sharp";
@@ -24,7 +25,7 @@ async function lab(t: { after(fn: () => Promise<void> | void): void }) {
   for (const dir of ["data", "placements", "assets/anchors/paow-vila"]) await mkdir(path.join(root, dir), { recursive: true });
   for (const file of ["data/order-policy.json", "data/dealers.json", "data/order-methods.json"]) await copyFile(path.join(repo, file), path.join(root, file));
   // The plan: P1 turned at its place, P2 rolled about the long side on the way, P3 the wrist (the plan's own default).
-  const plan = JSON.parse(await readFile(path.join(repo, "placements/default.json"), "utf8"));
+  const plan = JSON.parse(committedText("placements/default.json", repo)); // as committed, not as he last saved it
   for (const id of ["P1.C1", "P2.C1", "P3.C1"]) Object.assign(plan.targets[id].intent, { startSide: "BACK", endSide: "FRONT", turn: true });
   Object.assign(plan.targets["P1.C1"].intent, { turnAt: "PLACE" });
   Object.assign(plan.targets["P2.C1"].intent, { turnAt: "AIR", flipAxis: "LONG_EDGE" });

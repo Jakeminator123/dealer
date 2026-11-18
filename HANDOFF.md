@@ -7,7 +7,8 @@ Git, och en rad som inte längre gäller ersätts.
 ## Läget
 
 - Målet är en trovärdig utdelning i spelet i studion: två kort till plats 1–7 och två eller tre till dealern, med
-  returer till redo och vila. Paow är dealern; Pamela är pausad. Scoutgaming är slutmålet på sikt.
+  returer till redo och vila. Paow är dealern; Pamela är pausad (namnet bär också dockans rörelser `giv-pamela-*` och en scenfilm: skriv
+  vilken du menar). Scoutgaming är slutmålet på sikt.
 - Labbet är en vy, Bordet, där en film beställs längs en rak linje: steget och kortets plats, receptet ger resten.
 - Den tatuerade uppsättningen är hans förstahandsval, och ankare 2.3 gäller. Vägen från det finns (ett slutbildsankare,
   A3, per plats; beställt genom Bordet), men givarna till plats 4 och 1 fick hans Inte bra och ingången hans nej.
@@ -17,15 +18,17 @@ Git, och en rad som inte längre gäller ersätts.
 
 ## Nästa steg
 
+Ett mål i taget: EN giv med Jakobs ja ([film](docs/lage/film.md)). Inget annat beställs och ingen ny bana öppnas före det.
+
 1. Skriv din egen adress på raden nedan. På ett nytt konto har varje session en ny adress, inget minne följer med
-   och Runway ansluts på nytt (`/mcp`): allt som gäller står i repot. Starta vakten på hans kö i Beställ, och läs
-   hans anteckningar (`node tools/proof-notes.ts`) och svaren i Beslut före första svaret till honom.
+   och Runway ansluts på nytt (`/mcp`): allt som gäller står i repot. Starta vakten på hans kö
+   (`node tools/order-watch.ts`), och läs hans anteckningar (`node tools/proof-notes.ts`) och svaren i Beslut före
+   första svaret till honom.
 2. Se att fjärren är i kapp med `main` och att inget arbetsträd bär arbete som inte är inne (`git worktree list`).
-3. Filmerna först ([film](docs/lage/film.md)): ingången klipps eller görs som en film genom hela rörelsen (hans ord),
-   och givarna görs om efter hans svar i Beslut.
-4. Räddningsuppdraget ([BESKED](docs/BESKED.md), "Räddningsuppdraget"): det som återstår av dess kontrollpunkter står
-   i [BRISTER](docs/BRISTER.md); störst är att spelet och labbet delar kortgeometri först bakom `geometri=lins`.
-5. Fem kameravinklar (`/vinklar.html`, film-lägesfilen), kopians tre fel före nästa publicering, och korten i Beslut.
+3. Given: hans svar på kortet i Beslut väljer väg, kortet vänt först efter släppet (local-studios sätt) eller i
+   handen som i dag. Stegen för båda står i film-lägesfilen.
+4. Väntar på given: räddningsuppdraget ([BESKED](docs/BESKED.md), "Räddningsuppdraget"; det som återstår står i
+   [BRISTER](docs/BRISTER.md)), fem kameravinklar, kopians tre fel och talet ([spelet](docs/lage/spelet.md)).
 
 Äldre frågor till honom som inte är kort än: `D:/dealer-scratch/tmp/handoff-nytt/forslag-kort.md`.
 
