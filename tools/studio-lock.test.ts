@@ -1,5 +1,9 @@
-import test from 'node:test';
+import test, {type TestContext} from 'node:test';
 import assert from 'node:assert/strict';
+import {spawnSync} from 'node:child_process';
+import {copyFileSync, existsSync, mkdirSync, mkdtempSync, readdirSync, realpathSync, rmSync, utimesSync, writeFileSync} from 'node:fs';
+import {tmpdir} from 'node:os';
+import {basename, dirname, join} from 'node:path';
 import {secrets, passwordsOf, signCookie, verifyCookie, samePassword, passwordScope, signGameCookie, cookieScope, readCookies, TryLimit, MAX_AGE, COOKIE, TRIES, WINDOW} from '../cloud/studio/lock.ts';
 import {gate, openOf, GAME_HOME, TRAILER_HOME, type GateContext, type MediaMap} from '../cloud/studio/gate.ts';
 import {loginPage, safeNext} from '../cloud/studio/login-page.ts';
@@ -7,6 +11,68 @@ import {loginPage, safeNext} from '../cloud/studio/login-page.ts';
 // Throwaway values for the tests only; the real ones live in the Vercel project's environment.
 const key = 'k'.repeat(40), env = {DEALER_LOSEN: 'prov-losen', DEALER_KAKNYCKEL: key};
 const now = 1_800_000_000; // seconds
+
+function studioBuildFixture(t: TestContext) {
+  const parent = realpathSync(tmpdir()), prefix = 'dealer-studio-lock-';
+  const cwd = mkdtempSync(join(parent, prefix)), lock = join(cwd, '.next-build.lock');
+  t.after(() => {
+    const dir = realpathSync(cwd);
+    assert.equal(dirname(dir), parent);
+    assert.ok(basename(dir).startsWith(prefix));
+    rmSync(dir, {recursive: true});
+  });
+  copyFileSync(new URL('../studio/scripts/build.mjs', import.meta.url), join(cwd, 'build.mjs'));
+  const bin = join(cwd, 'node_modules', 'next', 'dist', 'bin');
+  mkdirSync(bin, {recursive: true});
+  writeFileSync(join(bin, 'next'), `
+    console.log(JSON.stringify({pid: process.pid, owner: require('node:fs').readdirSync('.next-build.lock')[0],
+      mode: process.env.NEXT_PUBLIC_DEALER_MODE ?? null, total: process.env.CIRCLE_NODE_TOTAL, args: process.argv.slice(2)}));
+    process.exit(process.argv.length === 3 ? 0 : 17);
+  `);
+  const run = (args: string[] = [], timeout = 5000) => spawnSync(process.execPath, ['build.mjs', ...args], {
+    cwd, timeout, encoding: 'utf8', env: {...process.env, NEXT_PUBLIC_DEALER_MODE: 'stray', CIRCLE_NODE_TOTAL: '30'},
+  });
+  return {lock, run};
+}
+
+test('local and snapshot builds cap workers and recover an identified exited owner', t => {
+  const {lock, run} = studioBuildFixture(t);
+  const local = run();
+  assert.equal(local.status, 0, local.error?.message ?? local.stderr);
+  const first = JSON.parse(local.stdout);
+  assert.match(first.owner, new RegExp(`^owner-${local.pid}-`));
+  assert.equal(first.pid, local.pid, 'the process building Next owns the lock');
+  assert.deepEqual([first.total, first.mode, first.args], ['5', null, ['build']]);
+  assert.equal(existsSync(lock), false, 'the Next CLI can exit directly and still release its lock');
+
+  mkdirSync(lock);
+  writeFileSync(join(lock, first.owner), '');
+  const snapshot = run(['--snapshot']);
+  assert.equal(snapshot.status, 0, snapshot.error?.message ?? snapshot.stderr);
+  const second = JSON.parse(snapshot.stdout.trim().split(/\r?\n/).at(-1)!);
+  assert.match(second.owner, new RegExp(`^owner-${snapshot.pid}-`));
+  assert.deepEqual([second.total, second.mode, second.args], ['5', 'snapshot', ['build']]);
+  assert.equal(existsSync(lock), false);
+});
+
+test('an old studio build lock stays occupied when its owner is alive or unknown', t => {
+  const {lock, run} = studioBuildFixture(t);
+  mkdirSync(lock);
+  const old = new Date(2000, 0, 1);
+  utimesSync(lock, old, old);
+  const unknown = run([], 1400);
+  assert.equal((unknown.error as NodeJS.ErrnoException | undefined)?.code, 'ETIMEDOUT', unknown.stderr);
+  assert.match(unknown.stdout, /Väntar på min tur/);
+  assert.deepEqual(readdirSync(lock), []);
+
+  const active = `owner-${process.pid}-12345678-1234-1234-1234-123456789abc`;
+  writeFileSync(join(lock, active), '');
+  utimesSync(lock, old, old);
+  const live = run([], 1400);
+  assert.equal((live.error as NodeJS.ErrnoException | undefined)?.code, 'ETIMEDOUT', live.stderr);
+  assert.match(live.stdout, /Väntar på min tur/);
+  assert.deepEqual(readdirSync(lock), [active]);
+});
 
 test('the lock stays shut without a password or with a short signing key', async () => {
   assert.equal(await secrets({DEALER_KAKNYCKEL: key}), null);
