@@ -59,9 +59,6 @@ test("a pinned film carry trial uses the plan and keeps the same source handoff 
   assert.notEqual(partsKey(parts), partsKey(source), "the stage refreshes when only the card options changed");
   const separate = segments.map((s, i) => i === 3 ? { ...s, video: video("different") } : s);
   assert.equal(withSceneCardTrial(partsOf(separate), separate, plan, "contract", words!)[3].cards?.filmContinuesDeal, undefined);
-  const unpinned = resolveRound(graph, steps.map(({ from, to }) => ({ from, to })));
-  const unpinnedParts = partsOf(unpinned);
-  assert.equal(withSceneCardTrial(unpinnedParts, unpinned, plan, "contract", words!), unpinnedParts);
 });
 
 test("the scene engine gives both playback and frame loading the part's card options", async () => {
@@ -110,6 +107,31 @@ const seatFour = round([
   { from: "READY", to: "P4.C1", take: "pamela-p4-c1-plan-deal-02" },
   { from: "P4.C1", to: "IDLE", take: "pamela-p4-c1-plan-return-idle-01" },
 ]);
+
+test("film carry applies to a resolved Primary deal and main return without locked takes", () => {
+  const dealId = "pamela-p4-c1-plan-deal-02", backId = "pamela-p4-c1-plan-return-ready-01";
+  const bankWithPrimary = { ...bank, motions: { ...bank.motions,
+    [dealId]: { ...bank.motions?.[dealId], review: { decision: "ACCEPTED", acceptedAs: "MAIN" } },
+  } };
+  const segments = resolveRound(buildGraph(bankWithPrimary), [{ from: "READY", to: "P4.C1" }, { from: "P4.C1", to: "READY" }]);
+  assert.deepEqual(segments.map(s => [s.take?.id, s.why]), [[dealId, "PRIMARY"], [backId, "MAIN"]]);
+
+  const params = new URLSearchParams("kort=liggande&cardBack=dark&cardFace=paper");
+  const source = partsOf(segments), plan = defaultPlan(), words = readSceneCardTrial(params)!;
+  const trial = withSceneCardTrial(source, segments, plan, "contract", words);
+  assert.deepEqual(trial.map(p => [p.take, p.cards?.carry, p.cards?.back, p.cards?.face]), [
+    [dealId, "film", "dark", "paper"], [backId, "film", "dark", "paper"],
+  ]);
+  assert.equal(trial[1].cards?.returning, true);
+  assert.equal(trial[1].cards?.filmContinuesDeal, undefined, "a separate source film keeps its ordinary return");
+
+  const loneDeal = partsOf(segments.slice(0, 1));
+  assert.equal(withSceneCardTrial(loneDeal, segments.slice(0, 1), plan, "contract", words), loneDeal);
+  const missing = [segments[0], { ...segments[1], video: null }], missingParts = partsOf(missing);
+  assert.equal(withSceneCardTrial(missingParts, missing, plan, "contract", words), missingParts);
+  assert.equal(readSceneCardTrial(new URLSearchParams()), null);
+  assert.ok(source.every(p => p.cards === undefined), "default parts have no trial card options");
+});
 
 test("segments become parts: path from the root, frames end exclusive, the deal cut where its return starts", () => {
   assert.deepEqual(

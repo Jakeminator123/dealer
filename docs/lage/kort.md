@@ -5,7 +5,7 @@ bara det som gäller nu; kontraktet står i `docs/SYSTEM.md`, "Ritade kort".
 
 **Läget.**
 - Spelets underlägg (`UNDER` i `src/card-overlay.ts`) är förval sedan 2026-11-14. Kortens fjärde steg (`33b164a`) fick 3,75/5 blint.
-- Provet `kort=liggande&cardMethod=film` behåller filmkortet i 2D; `scene` färgar med `cardBack=dark&cardFace=paper`, även i Bordets låsta par.
+- Provet `kort=liggande&cardMethod=film` behåller filmkortet i 2D; `scene` färgar med `cardBack=dark&cardFace=paper`, även i Bordets giv–retur-par.
 - Om samma film fortsätter efter givens klippgräns väntar det liggande kortet till uppmätt vila/färdig toning, även i RETURN.
 - Kortplanen ritas i verkligt perspektiv (`918e7f4`): där planen säger Plant bord ritas varje kort som ett verkligt
   kort (63 × 88 mm, storlek 1,00) genom linsen som ger dealern människostorlek (`src/table-lens.ts`). `planCardQuad` i
@@ -27,9 +27,9 @@ bara det som gäller nu; kontraktet står i `docs/SYSTEM.md`, "Ritade kort".
   visar det som en bricka ("äldre plan", "annan kamera", "avviker").
 
 **Nästa steg.**
-1. Granska låst cykel02 i Bordets scen med `kort=liggande&cardBack=dark&cardFace=paper`, särskilt ruta 46–51 och 65–66,
-   sedan tre slingor. Den gamla bankens ytterplatser/dealerkort avviker fortfarande från planen; nya givar behövs.
-   Visa linsregeln i rörelse för Jakob; hans ja byter förvalet (`docs/SYSTEM.md`, "Ritade kort").
+1. Cykel02 är sedd i scenen, även 46–51, 65–66 och tre slingor; Prov `paow-cycle02-scene-20261118`. P1:s kort ligger
+   kvar under P7 i Prov `paow-outer-filmcard-20261118`, men P1 har dubbelkant vid landning. Andrakort/split återbrukar
+   fel landningsplats; lös det och hålkortets vändning före kortförvalet. Linsförvalet kräver fortfarande Jakobs ja.
 2. När hans sparade plan checkas in, skriv om `data/media-fit.json` med `node tools/media-audit.ts --fit --write`.
    Gör samma mätning när planens regel, linsen eller ett ankare ändras.
 3. Kortets sidor i efterarbetet, efter filmerna: gul rygg (SG får stå kvar) och blå framsida, lika i labbet och spelet.

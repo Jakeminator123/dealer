@@ -27,8 +27,8 @@ gäller nu; varje prov och dess utfall står i handboken (`tools/film-prompting.
 **Nästa steg.** Ett mål i taget: EN dokumenterat granskad giv enligt Jakobs mandat.
 1. Huvudagenten styr en granskad pilot enligt räddningsmandatet i BESKED. Anslutning och workspace verifieras med
    Runway-MCP; egen kostnad bokförs per order och samordnas i skrivbordets DISKMASKIN.TXT.
-2. H24-03 är Variant 4/5; Cykel01 föll på färger men gav retur Variant 4/5. Oberoende bevis följer tagningarna.
-   Cykel02: Variant (giv 3/5, retur 4/5, split65), gult skokort, blekt blått. Totalt 234 krediter; spelmaskning/skarv oprövade.
+2. H24-03 och Cykel01 är dömda med bevis vid tagningarna. Cykel02: giv Variant 3/5, retur 4/5.
+   Scenprov med tre slingor finns; framsidan bleknar. 234 krediter, ingen serie; ytterplatser/hel giv och Kling 4-skrivschema återstår.
 3. Alternativet med plant kort och vändning först efter släpp är fortfarande ett separat förslag i Beslut;
    det är inte en godkänd metod. En godkänd kodkontroll gör inte en film visuellt godkänd.
 4. Plats 1 (hans ord i Prov): A3 · P1 görs om med modellen som lämnar ansiktet orört, och vägen tillbaka från den

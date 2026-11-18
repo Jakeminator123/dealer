@@ -42,6 +42,7 @@ belägget.
 | Metod | Belägg (V) | Status |
 |---|---|---|
 | H24: obrutet grepp, låg armbåge, referens i 24 fps; Kling 4, MINIMAL, 3 s | `paow-giv-2-3-p4-h24-03` t1, 64 krediter: given 4/5, Variant dömd åt Jakob. Högsta fyrfasmedian 1,063; rosa fläck finns även i A3. Bevis och mätmetod vid tagningen i `take-1/review/` | en pilot håller som Variant; orsaken till bättre takt är inte isolerad, ytterplatser och helkedja återstår |
+| H24-cykel: giv och låg återgång i samma 4 s, referens i 24 fps | `paow-giv-2-3-p4-h24-cykel-01` föll på färger; `-02` med slutbild håller skokortet gult, giv Variant 3/5 och retur 4/5, men blått bleknar 46–51. Scenprov `paow-cycle02-scene-20261118`: färgat filmkort i handen, ritning vid vila och tre observerade slingor; stillbildsgranskare 4/5 | prov, inte serierecept; blankt till tryckt kort, ytterplatser och hel giv återstår. Beställningar och bevis finns vid respektive tagning |
 | Lång, kort eller minimal text | Jakobs godkända givar: Utförlig 2 av 4, Kort 8 av 16, Minimal 1 av 2 | våra domar skiljer inte; §1 står |
 | Öppen giv, Kling 4, utan referens | P4: `paow-giv-p4` t2, `p4-04` (Primär), `p4-10` godkända, `p4-07`, `paow-giv-p4` t1 underkända; P1: `p1-04` godkänd (skjutet 790 px); P7: `p7-04` lyft 171 px, ej dömd | oavgjort |
 | Vändning vid platsen utan referens, WAN 3 | `p4-08` godkänd (bytet vid platsen utan kantruta); `p3-02` (3b) Variant: "Riktigt rolig variant … fungerar utmärkt som en godkänd eller primär"; `p1-07` t2 vände vid platsen · underkänd; P7 0 av 2 | oavgjort |

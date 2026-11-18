@@ -22,7 +22,8 @@ Rädda befintligt repo till en sammanhängande lokal väg från underlag till sp
 Kodens samband och verifiering rättas parallellt; filmproduktionen börjar med EN trovärdig giv ([film](docs/lage/film.md)).
 
 1. Bevara Jakobs ändrade kortplan och oincheckade orderutkast. Läs nya anteckningar med `node tools/proof-notes.ts`.
-2. Granska cykel02 med filmens kort i handen, scenens färgning och tre hela giv–retur-skarvar ([kort](docs/lage/kort.md)).
+2. Cykel02 och kvarliggande kort mellan P1 och P7 är synprovade. Lös återbrukade andrakorts fel plats och hålkortets
+   vändning före byte av spelets kortförval ([kort](docs/lage/kort.md)); P1 har också en dubbelkant vid landningen.
 3. Använd automatiska testkvitton och det återbyggbara SQLite-indexet ([evidens](tools/evidence.md)); inga medieblobs.
 4. Munproven är lokala jämförelser; inget byte i banken före Jakobs val i Beslut. Körarens kod finns nu i repot.
 5. Testa, pusha och verifiera fjärrens SHA. Sessionens tio GPT-meddelanden är förbrukade; färdiga granskningsfynd är

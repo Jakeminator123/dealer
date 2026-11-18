@@ -10,14 +10,14 @@ export function readSceneCardTrial(params: Pick<URLSearchParams, "get">): CardWo
   return params.get("kort") === "liggande" ? cardWords(params) : null;
 }
 
-/** Give explicit deal/return pairs in a lab round the same card options as a game part. */
+/** Give playable deal/return pairs resolved by the lab round the same card options as a game part. */
 export function withSceneCardTrial(parts: PlayPart[], segments: readonly Segment[], plan: PlacementPlan, geometry: TableGeometry, words: CardWords): PlayPart[] {
   type Own = { label: string; shoeDraw: number; slot: Slot };
   const ownByStep = new Map<number, Own>(), ownByTarget = new Map<string, Own>();
   const table: TableCards = { hands: [], dealer: [] }, records: CardRecord[] = [];
   for (let i = 0; i + 1 < segments.length; i++) {
     const deal = segments[i], back = segments[i + 1], label = deal.edge?.target ?? "";
-    if (deal.kind !== "DEAL" || back.kind !== "RETURN" || back.from !== label || deal.why !== "LOCKED" || back.why !== "LOCKED" || !parts[i]?.path || !parts[i + 1]?.path) continue;
+    if (deal.kind !== "DEAL" || back.kind !== "RETURN" || back.from !== label || !parts[i]?.path || !parts[i + 1]?.path) continue;
     const target = /^(D|P([1-7]))\.C([1-3])$/.exec(label);
     if (!target) continue;
     let own = ownByTarget.get(label);

@@ -374,10 +374,10 @@
       "lastPicture": "platsens-slutbild",
       "extra": null,
       "evidence": {
-        "orders": [],
-        "reviewer": [],
+        "orders": ["paow-giv-2-3-p4-h24-03", "paow-giv-2-3-p4-h24-cykel-01", "paow-giv-2-3-p4-h24-cykel-02"],
+        "reviewer": ["H24-03: giv Variant 4/5. Cykel01: giv underkänd, retur Variant 4/5. Cykel02: giv Variant 3/5, retur Variant 4/5. Detaljer och bildbevis ligger vid tagningarna."],
         "owner": [],
-        "note": "Giv med två händer från ankare 2.3: vänster stryker ut kortet, höger tar det, vänder det en gång i luften och lägger det. Oprövat: ingen beställning finns. Mätt på en riktig dealer av sessionen MODEL (ett kort per 0,75–0,9 s, vändning i luften). Steget väntar på ankarets bild, på dockans film till platsen och på en slutbild för platsen där högerhanden ligger vid kortet (bankens snittrutor är lagda med vänster)."
+        "note": "Giv med två händer från ankare 2.3. Receptet är fortfarande prov: H24-03 (3 s, MINIMAL) gav Variant 4/5, och undantaget H24-cykel02 (4 s, giv och retur) gav Variant 3/5 respektive 4/5. Det är inte belägg för seriereceptet ovan. Cykelns skokort håller gult med slutbild, framsidan bleknar; färgat filmkort är synprovat i scenen. Orderspecifika inställningar och bevis finns i respektive order, sammanvägningen i tools/film-prov.md. Ytterplatser och hela given återstår."
       },
       "setBy": "huvudagentens underagent (rak linje), på Jakobs ord 2026-11-18 om för många val; ur handboken §5 och de tidigare raderna",
       "setAt": "2026-11-18"
