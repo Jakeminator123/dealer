@@ -27,17 +27,17 @@ gäller nu; varje prov och dess utfall står i handboken (`tools/film-prompting.
    Godkänner han en order startas beställningsagenten (`tools/order-clerk.md`).
 2. Hans svar på kortet i Beslut väljer väg. Pröva: en film till plats 4 med ankaret som första och sista bild, kortet
    plant med baksidan upp och ingen vändning (cirka 64 krediter); släpprutan och kortets fyra hörn mäts, och kortet
-   ritas därifrån (`src/card-overlay.ts`). Löses först: bordet är med i Paows film, så filmens eget kort täcks efter
-   släppet med en bit ren filt ur ankarbilden.
+   ritas därifrån (`src/card-overlay.ts`). Filmens eget kort klipps bort ur rutan från släpprutan (grönt i dess
+   fyrhörning), som local-studio gör.
 3. Nej: en dockfilm (3D-banan) där tumme och fingrar håller kortet genom vändningen och handleden vrider det, sedan
    en ny tagning till plats 4 mot samma A3.
 4. Plats 1 (hans ord i Prov): A3 · P1 görs om med modellen som lämnar ansiktet orört, och vägen tillbaka från den
-   framåtlutade slutbilden kräver en egen idé. Ingången till 2.3 klipps till cirka 2 s (`tools/film-fix.ts` kortar
-   högst tre rutor: bygg ut) eller görs som EN film från ankare 1 via 2.3 till platsens A3 ([BESKED](../BESKED.md)).
+   framåtlutade slutbilden kräver en egen idé. Ingången till 2.3 ligger klippt i Prov `ingang-2-3-klippt` (1,9 och
+   1,7 s, mätt stilla från ruta 42): hans Bra för in den som ett utsnitt (derived) av samma film, utan omkodning.
 5. Väntar tills en giv har hans ja: resten av bordet, fem kameravinklar (`/vinklar.html`), ankare 2.1 och 2.2 med
    tatuerade händer, hålkortet, andra kortet (`yt-referens/ut/giv-resten.md`), returer och dealerns tredje kort.
 
-**Väntar på Jakob.** I Beslut: duger en giv där kortet vänds först efter släppet? Granskningen: `assets/references/local-studio-granskning.md`; Görans runda spelas ur kopian `D:/dealer-scratch/tmp/goran-visning/`.
+**Väntar på Jakob.** Prov `ingang-2-3-klippt`, och i Beslut: duger en giv där kortet vänds först efter släppet? Granskningen: `assets/references/local-studio-granskning.md`; Görans runda spelas ur kopian `D:/dealer-scratch/tmp/goran-visning/`.
 
 **Var saker ligger.** Vägen för en ny dealer i [tools/dealer-line.md](../../tools/dealer-line.md), handboken i
 [tools/film-prompting.md](../../tools/film-prompting.md), granskningen i `tools/film-review.md`, läget per dealer med

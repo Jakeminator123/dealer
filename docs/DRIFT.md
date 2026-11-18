@@ -57,6 +57,10 @@ inte med av misstag. Git-push är separat från webbdeploy, mediauppladdning och
   gång med `git worktree add --detach <mapp på D:> main` (förvalet är `D:/dealer-scratch/tmp/huvudagent11/push-trad`)
   och står kvar mellan pusharna; verktyget vägrar huvudträdet och ett träd ur ett annat repo. Det som pushas är
   incheckade commits, aldrig någons öppna filer.
+- **Testerna läser Jakobs arbetsfiler som de är incheckade** (2026-11-18). Hans kortplan (`placements/default.json`)
+  och ett utkast i `data/orders/` som inte är incheckat ändras när han sparar i labbet. Ett test som behöver dem tar
+  dem ur HEAD med `tools/committed.ts`, så att `npm test` säger samma sak i huvudträdet som i ett rent träd. Rött i
+  huvudträdet är därmed ett verkligt fel, inte hans osparade arbete.
 - **Rött:** stoppa, undersök orsak och rätta innan nytt försök. **Gult:** granska och åtgärda eller förklara kvarvarande
   begränsning kort i `docs/BRISTER.md` före push/PR. Varningarna visas i agentens terminal och som CI-annoteringar. Granska även
   hook/testens relevans och falsklarm; vid verkligt kontrollfel, rätta med ett avgränsat regressionstest. Hoppa inte
