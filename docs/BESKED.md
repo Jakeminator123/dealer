@@ -221,7 +221,8 @@ Innehåll: [Arbetet och dokumenten](#arbetet-och-dokumenten) · [Labbet och stud
   arbetar med händerna för att skapa ett ankare som är 2.3. […] Hon ska gå från ankare 1 till ankare 2.3 och titta ner
   mot sin hand eller den som hon ska fösa ur kortet med. Skapa en film som går dit." Ankare 2.3 är båda händerna vid
   skon precis före draget, tatuerade som i ankare 1, med blicken ned mot handen som föser ut kortet. MODEL gör det, med
-  en tagning inom huvudagentens tak.
+  en tagning inom huvudagentens tak. Kandidaten, händerna, ansiktet och bilden i spelets storlek märkte han som Bra i
+  Prov `paow-ankare-2-3` 2026-11-18, kl. 02.24.
 - **Landningar per plats, eller inga** (2026-11-18, kl. 01.54, om Materials station Landningar): "Jag undrar också om
   det som kallas landningar alltid har en referensbild för kortplats nummer ett och spelare fyra. Detta bör rimligtvis
   tas bort helt, eller så bör vi skapa nya bilder för respektive position." Huvudagentens val: en giv slutar på

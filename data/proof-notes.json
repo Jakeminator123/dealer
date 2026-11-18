@@ -209,6 +209,64 @@
         "at": "2026-11-18T00:07:04.742Z"
       },
       "read": "2026-11-18T00:07:04.742Z"
+    },
+    {
+      "id": 17,
+      "proof": "paow-ankare-2-3",
+      "file": "2-ankare-2-3-kandidat.png",
+      "choice": "bra",
+      "text": "",
+      "at": "2026-11-18T01:24:10.488Z",
+      "answer": {
+        "text": "Läst: posen gäller. Ankaret registreras som ankare 2.3 när efterarbetet (ton och skuggkant) är omgjort och granskat; sedan beställs given därifrån.",
+        "at": "2026-11-18T01:32:33.832Z"
+      },
+      "read": "2026-11-18T01:32:33.832Z"
+    },
+    {
+      "id": 18,
+      "proof": "paow-ankare-2-3",
+      "file": "1-ankare-1.png",
+      "choice": "bra",
+      "text": "",
+      "at": "2026-11-18T01:24:15.497Z",
+      "read": "2026-11-18T01:32:34.058Z"
+    },
+    {
+      "id": 19,
+      "proof": "paow-ankare-2-3",
+      "file": "4-handerna.jpg",
+      "choice": "bra",
+      "text": "",
+      "at": "2026-11-18T01:24:19.203Z",
+      "read": "2026-11-18T01:32:34.309Z"
+    },
+    {
+      "id": 20,
+      "proof": "paow-ankare-2-3",
+      "file": "5-ansiktet-ankare-1-kandidaten.jpg",
+      "choice": "bra",
+      "text": "",
+      "at": "2026-11-18T01:24:26.867Z",
+      "read": "2026-11-18T01:32:34.575Z"
+    },
+    {
+      "id": 21,
+      "proof": "paow-ankare-2-3",
+      "file": "6-spelstorlek-ankare-1-kandidaten.jpg",
+      "choice": "bra",
+      "text": "",
+      "at": "2026-11-18T01:24:39.241Z",
+      "read": "2026-11-18T01:32:34.866Z"
+    },
+    {
+      "id": 22,
+      "proof": "paow-ankare-2-3",
+      "file": "7-dockan-mot-kandidaten.jpg",
+      "choice": "bra",
+      "text": "",
+      "at": "2026-11-18T01:24:47.264Z",
+      "read": "2026-11-18T01:32:35.127Z"
     }
   ]
 }

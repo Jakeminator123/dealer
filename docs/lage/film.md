@@ -16,7 +16,7 @@ gäller nu; varje prov och dess utfall står i handboken (`tools/film-prompting.
 - Dockans filmer "-2" och "-3" har den äldre vändningen av kortet; "-4" (en enda vridning) gäller. C5 med "-4" gav
   den renaste vändningen hittills men kortet hoppar när det läggs (3/5): nästa förlaga ska sänka kortet jämnt ruta 60–80.
 - Nya ankare tas ur en film som dockan styr. Ankare 2.3 (båda händerna vid skon, blicken ned mot kortet): MODEL:s
-  tagning från ankare 1 är levererad (Prov `paow-ankare-2-3`, 85 krediter) och väntar på granskaren och på Jakobs ja.
+  tagning från ankare 1 är levererad (Prov `paow-ankare-2-3`, 85 krediter); posen har Jakobs Bra, efterarbetet görs om.
   MODEL mätte en riktig dealer: två händer, ett kort per 0,75–0,9 s, vändning i luften, kameran lägre än bankens.
 - Läs saldot hos Runway (`whoami`) före en beställning; talet i `data/order-policy.json` är gammalt. Taket är 2 000.
   Trailern är pausad på Jakobs ord: inget beställs och inget byts i den förrän han säger till.
@@ -24,10 +24,10 @@ gäller nu; varje prov och dess utfall står i handboken (`tools/film-prompting.
 **Nästa steg.**
 1. Starta vakten på Jakobs kö i Beställ (`vakta-kon.mjs`): den går i huvudagentens chatt i halvtimmar och dör med
    chatten. Godkänner han en beställning startar huvudagenten beställningsagenten (`tools/order-clerk.md`).
-2. Ankare 2.3: efter granskarens omdöme och Jakobs ja kopieras ankaret in ur `ankare-2-3/lamna/` och rollen
-   registreras. Sedan given därifrån ([BESKED](../BESKED.md), "Kortare givar"): 3 s till plats 4, och en film på högst
-   15 s med kort ett till alla platser. 3D gör dockfilmerna, MODEL tiderna (`yt-referens/ut/`), och den beställs genom
-   Bordet när grenen `rak-linje` är inne.
+2. Ankare 2.3: när granskaren har godkänt det omgjorda efterarbetet kopieras ankaret in ur `ankare-2-3/lamna/` och
+   rollen registreras. Sedan given därifrån ([BESKED](../BESKED.md), "Kortare givar"), i den riktiga dealerns takt
+   (0,77 s per kort; `yt-referens/ut/giv-fran-2-3.md`): ett kort till plats 4 i en film på 3 s som klipps efteråt, och
+   kort ett till alla platser i ett svep på 8 s. 3D gör dockfilmerna; beställs genom Bordet när `rak-linje` är inne.
 3. Utfallet av proven från 2026-11-18 in i handboken: C5 (`giv-experiment-2/c5/`), stol 1 (`stol-1/`; kortet i Beslut
    tas ut när provet är visat) och Jakobs order `paow-giv-2-1-p4-16` (`bestall/`, Prov `bestallning-handbyte-p4-16`).
 4. Filmstandardens andra del: grenen `rak-linje` (bär `film-standard-register`), efter listan i mappen `film-standard`.
