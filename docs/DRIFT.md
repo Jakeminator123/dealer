@@ -1,7 +1,8 @@
 # Drift, anslutningar och återbruk
 
-Rutiner och anslutningar. Genomgånget 2026-11-12; avsnitten om arkiv, publicering och molnmiljö kontrollerades
-2026-11-10. Läget och ägare står i HANDOFF och i banornas lägesfiler (`docs/lage/`), beslut per film i `motions/`.
+Rutiner och anslutningar. Genomgånget 2026-11-18 mot koden och diskarna; det som rör Vercel och Blob är inte
+kontrollerat mot tjänsterna sedan 2026-11-13. Läget och ägare står i HANDOFF och i banornas lägesfiler (`docs/lage/`),
+beslut per film i `motions/`.
 
 ## Identitet och ansvar
 
@@ -17,10 +18,9 @@ Rutiner och anslutningar. Genomgånget 2026-11-12; avsnitten om arkiv, publiceri
 Huvudagenten äger commits, taggar, push och styrdokumenten; vem det är och vem som äger vilka filer står i HANDOFF. En
 skribent per fil; samordna index och commit.
 
-Jakobs uppdrag 2026-11-10 godkänner publikt GitHub-upplägg, anslutningskontroller, nödvändig lokal env-återanvändning
-och D:-slask. Deploy, Scout-integration och databasändringar är separata uppdrag; för betald generering gäller AGENTS,
-"Det som skyddar Jakob" (huvudagenten godkänner inom `data/order-policy.json`). GitHub-repot är källförvaring, inte en
-publicerad studio eller webbplats.
+Vad som kräver Jakobs uttryckliga ord (deploy, mediauppladdning, databasändring, Scout-integration) och vad som gäller
+betald generering står i AGENTS, "Det som skyddar Jakob". GitHub-repot är källförvaring, inte en publicerad studio
+eller webbplats.
 
 ## Git och kontroller
 
@@ -45,7 +45,7 @@ inte med av misstag. Git-push är separat från webbdeploy, mediauppladdning och
 - `.github/workflows/check.yml` kör samma kontroll på push och PR med Node 24.21.0, `npm ci`, enbart läsbehörighet och
   versionslåsta Actions; kontrollen kör alla tester i `TESTS`, så CI kör hela `npm test`. I en ren checkout utan media
   och utan FFmpeg (som CI) hoppas de tester över som gör en liten film med FFmpeg eller läser bankens filmer och
-  kortspår (`tools/order-images.test.ts`, `tools/card-overlay.test.ts`); 2026-11-13 var det 14 av 824. Studions tester behöver inte
+  kortspår (`tools/order-images.test.ts`, `tools/card-overlay.test.ts`). Studions tester behöver inte
   `studio/node_modules`. Före PR kör agenten `npm run check`. GitHub-kontrollen kör efter push och är inte ett
   serversidigt pushförbud eller aktiverat mergekrav.
 - **Push medan andra skriver** (2026-11-13). I huvudträdet stoppar kontrollen så länge någon sessions testindata
@@ -67,18 +67,10 @@ inte med av misstag. Git-push är separat från webbdeploy, mediauppladdning och
   kompatibiliteten vid ändrat API/Node, utan att stänga av varningar generellt.
 - **Grenar.** `main` är den enda långlivade grenen. En kortlivad gren (till exempel en worktree för ett avgränsat
   arbete) slås ihop i `main` av huvudagenten och tas sedan bort, lokalt och på GitHub.
-- **Etapper (Jakobs önskemål 2026-11-11).** Ett stabilt läge som Jakob har sett får en lätt tagg `jakob-N` på den
-  pushade commiten: `git tag jakob-N` direkt efter push, sedan `git push origin jakob-N`. Hooken släpper bara igenom
-  utcheckad HEAD, så taggen sätts på HEAD och inte i efterhand. Titta på en etapp med `git switch --detach jakob-N`;
-  fortsätt därifrån på en ny branch. Ingen force-push och inga flyttade taggar. Media ligger utanför Git och följer inte
-  med en etapp.
-- Etapperna hittills (allt pushas sedan 2026-11-13 till `main`, GitHubs förvalda gren; de äldre grenarna `jakob/test`
-  och `claude/deal-clips` bar samma historia och är borttagna på GitHub 2026-11-13): `a5821f1` (`jakob/test`, före
-  klippbanken) och `26e41f6` (lokala taggen `scene3d-v1`, 3D-scenen v1) utan tagg på GitHub; `jakob-3` (`d1e5c65`)
-  3D-scenen i labbet med fokus, fläktskugga och ingångsklippet; `jakob-4` (`8c01aaa`) en film per plats, rundan vila
-  till vila och renderade kort i 3D-scenen; `jakob-5` (`9a6ca01`) klippen ur arkivet, Jakobs första domar och
-  spårning för alla filmer; `jakob-6` (`784f231`) grundfilmerna, vilan med väljare och variant B; `jakob-7` (`f4b3ee3`)
-  spelet i 3D-scenen med Scouts kärna i `game/` och vändningen av hålkortet; Jakob: "skitsnyggt".
+- **Taggar.** Ett läge som ska gå att komma tillbaka till får en tagg på den pushade commiten, satt på utcheckad HEAD
+  (hooken släpper bara igenom den) och aldrig flyttad; media ligger utanför Git och följer inte med. Etapptaggarna
+  `jakob-3` till `jakob-7` (2026-11-11) står kvar i historiken men rutinen används inte längre; det som gäller är
+  återställningsbara versioner.
 - **Återställningsbara versioner** (Jakob 2026-11-13: "Spara dock nuläget efter push som typ "Återställningsbart
   version 2" för allt är bra"). En tagg på den pushade commiten, och i `D:/dealer-archive/<namn>/` en bundle av hela
   historiken och en kopia av allt som ligger utanför Git (`assets/`, `output/`, `.runtime/` utan hemligheter), jämförd
@@ -90,8 +82,7 @@ inte med av misstag. Git-push är separat från webbdeploy, mediauppladdning och
   (kontrakt) och DRIFT (rutiner, anslutningar). Saknas ett av dem stoppar kontrollen (rött; listan `CANONICAL` i
   `tools/publication-check.ts`). Längden mäts bara för HANDOFF och banornas lägesfiler i `docs/lage/`, som har tak
   (`tools/handoff.test.ts`); en ny sida under `docs/` eller en arbetsinstruktion i `tools/`
-  är välkommen när ett ämne behöver en egen (sedan 2026-11-13; förut gav riktvärden i rader och varje nytt dokument gul
-  signal, och dokumenten höll gränsen genom allt längre rader). Uppdatera på plats när beteende eller ansvar ändras, och
+  är välkommen när ett ämne behöver en egen. Uppdatera på plats när beteende eller ansvar ändras, och
   länka till befintliga JSON-register och kvitton i stället för att kopiera dem.
 
 ## Labbservern och fliken
@@ -107,9 +98,9 @@ inte med av misstag. Git-push är separat från webbdeploy, mediauppladdning och
   servern startar). En halvfärdig ändring i en sessions fil syns alltså direkt för alla, Jakobs flik också. En ny
   modul under `src/` görs i den här ordningen: filen på plats utan att något importerar den, raden i listan,
   omstart (`node tools/preview.ts --restart`, huvudagenten, i en lucka utan tagning), och först därefter importen.
-  Importen före listan ger 404 för modulen, och då laddar varken spelet eller Scen i någon webbläsare; det hände två
-  gånger 2026-11-13 (15.20–15.34 och 15.34–15.46). `node --test tools/lab-modules.test.ts` läser varje utlämnad
-  moduls importer och säger vilken granne som saknas, utan webbläsare; kör det efter en ny import och före en
+  Importen före listan ger 404 för modulen, och då laddar varken spelet eller Scen i någon webbläsare (det har hänt
+  två gånger). `node --test tools/lab-modules.test.ts` läser varje utlämnad moduls importer och säger vilken granne
+  som saknas eller vilken listad modul som inte är skriven, utan webbläsare; kör det efter en ny import och före en
   tagning.
 - **En inspelning säger varje nyckel som kan ändras.** Scenens förval ändras ibland samma dag som en film spelas in;
   en tagning som utelämnar en nyckel får det trädet säger i den minut sidan laddas. Skriv ut nycklarna i tagningens
@@ -117,11 +108,10 @@ inte med av misstag. Git-push är separat från webbdeploy, mediauppladdning och
 - **En labbflik** (2026-11-12): varje labbsida håller en ström öppen mot servern (`src/preview-ui.ts`, `/tab/events`).
   Den nyaste sidan är labbfliken; en äldre stänger sig själv, eller blir tom där webbläsaren vägrar.
   `node tools/preview.ts --open "<sida>"` visar en sida i den öppna fliken och öppnar en ny bara när ingen finns. Öppna
-  aldrig en labbadress med `Start-Process` eller `start`: äldre sessioner gjorde det och lämnade Jakob med cirka 20
-  flikar, och ingen agent kan stänga en flik i hans webbläsare.
-- Servern står kvar tills den stoppas med `STOPP.cmd` eller `--stop` (sedan 2026-11-12; förut slutade den 60 s efter
-  sista fliken, och då nekades varje länk Jakob fick). Före en länk till Jakob: `node tools/preview.ts --ensure` startar
-  servern om den inte går, utan att öppna eller flytta någon flik. Stäng inte arkivets eller andra projekts
+  aldrig en labbadress med `Start-Process` eller `start` (AGENTS, "Labbservern": ingen agent kan stänga en flik i hans
+  webbläsare).
+- Servern står kvar tills den stoppas med `STOPP.cmd` eller `--stop`. Före en länk till Jakob: `node tools/preview.ts
+  --ensure` startar servern om den inte går, utan att öppna eller flytta någon flik. Stäng inte andra projekts
   servrar, och stoppa aldrig via processnamn eller port.
 - **Studion byggd ur det incheckade** (2026-11-17). Servern lämnar ut huvudträdets `studio/out`, och ett bygge där bär
   med sig varje sessions halvfärdiga studiofiler till Jakobs flik. `node tools/studio-from-commit.ts [<commit>] [--trad
@@ -129,8 +119,9 @@ inte med av misstag. Git-push är separat från webbdeploy, mediauppladdning och
   paketlista har ändrats eller `node_modules` saknas, `npm --prefix studio run build`) och byter in resultatet i
   huvudträdets `studio/out` först när bygget har lyckats: kopian läggs bredvid som `out.ny`, den gamla mappen flyttas
   undan och den nya in. Ett bygge eller en flytt som faller lämnar det som visas orört, och `studio/out/bygge.json`
-  säger vilken commit som visas. Trädet görs en gång med `git worktree add --detach <mapp på D:> main` (förvalet är
-  `D:/dealer-scratch/tmp/huvudagent11/studio-trad`); loggarna ligger i `studio-logg` bredvid. Servern startas inte om.
+  säger vilken commit som visas. Trädet görs en gång med `git worktree add --detach <mapp på D:> main`; det som finns
+  och används är `D:/dealer-scratch/tmp/granska-prov/trad`, som ges med `--trad` (verktygets förval,
+  `huvudagent11/studio-trad`, finns inte). Loggarna ligger i `studio-logg` bredvid. Servern startas inte om.
 - **En titt på labbsidor** (2026-11-17): `node tools/lab-look.ts <lista.json> <utmapp> [--vad "<vad>"] [--vem <namn>]`
   tar en skärmbild per sida i listan (`[{name, url, wait, width, height, clicks, facts}]`, adresserna efter
   `http://127.0.0.1:4319`) i en egen headless Chrome (egen profil, port 9591), aldrig i Jakobs flik: varje adress får
@@ -148,7 +139,8 @@ inte med av misstag. Git-push är separat från webbdeploy, mediauppladdning och
 Skript, beställningsfiler, liggare, mallar och startprompter ligger kvar på D: tills de förs in i repot eller avvecklas;
 bilder och filmer som används eller kan användas ligger i `assets/` (AGENTS). Sökvägarna gäller under
 `D:/dealer-scratch/tmp/` om inget annat sägs.
-- **Film (MCP-vägen):** `filmagent/register-mcp.mjs`; i `filmagent/mcp/` orderfilerna, `clerk-brief.md`, liggaren
+- **Film, vägen före Beställ** (källbevis och förlagor; dagens väg står under Filmbeställning):
+  `filmagent/register-mcp.mjs`; i `filmagent/mcp/` orderfilerna, `clerk-brief.md`, liggaren
   `bestallningar.json`, mallarna `granska-giv.md`, `granska-vila.md` och `granska-helfigur.md`, `slab-to-bg.mjs` och
   `spegla.sh`; Paows kopia i `paow/order/` med liggarna `paow/bestallningar-*.json`; äldre startprompter och
   överlämningar för roller som inte finns längre, arkiverade i `D:/dealer-archive/review-20261113/`.
@@ -174,16 +166,12 @@ bilder och filmer som används eller kan användas ligger i `assets/` (AGENTS). 
 | GitHub connector + CLI | Båda autentiserade som `Jakeminator123`; repo skapat privat, därefter ändrat till publikt av Jakob och bekräftat 2026-11-10. |
 | Runway connector | Autentiserad workspace `Jakob`, ID `67037521`. |
 | Runway MCP-server | `runway` (`https://mcp.runwayml.com/mcp`), inloggad med `claude mcp login runway`; drar appkontots krediter (workspace `Jakob`). Verktygen finns bara i en session som startats efter att servern lagts till. `https://dev.runwayml.com/mcp/claude` är en annan server (utvecklarportalen), inte för generering. |
-| Direkt API | Arkivets `RUNWAY_API_KEY` gav HTTP 200 för `GET https://api.dev.runwayml.com/v1/organization`, API-version `2024-11-06`. Nyckeln drar developer-projektets krediter, en annan pott än appkontots. |
-| Lokal nyckel | Endast `RUNWAY_API_KEY` kopierad till Git-ignorerade dealer/.env.local efter uttryckligt godkännande. Sanitiserat kvitto: `.runtime/connection-check.json`. |
-| Identitetsgräns | API-svaret ger inte projekt/workspace-ID. Samma nyckelkälla bevisar inte att developer-API och connector har samma workspace eller saldo. |
+| Direkt API | Ingen kod anropar Runways API längre; allt beställs genom MCP-servern. `RUNWAY_API_KEY` ligger kvar i den Git-ignorerade `.env.local` och drar developer-projektets krediter, en annan pott än appkontots; API-svaret ger inget projekt- eller workspace-ID, så nyckeln bevisar inte samma saldo. Kvitto från 2026-11-10: `.runtime/connection-check.json`. |
 
-Endpoint/header följer [Runway API-referensen](https://docs.dev.runwayml.com/api/). Äldre identitetskontroll i gamla
-labbets `.runtime/runway-identity-check.json` lästes 2026-11-10; inte heller den gav ett verifierat org-ID. Modell
-kontrolleras per tags plan/kvitto, inte från tillgängliga modeller eller filnamn. V6-källan samt P7/P6/rosa proven från
-2026-11-10 använder `wan3` via developer-API. [Promptjämförelsen](../evidence/prompt-comparison.json) visar
-skillnaderna: gamla centerklippet använder LH→RH-handbyte, P7-provet begär samma LH. Återanvänd inte centerinstruktionen
-som om den beskrev en vänsterhandsutdelning till P7.
+V6-källan och proven från 2026-11-10 (P7, P6, rosa) gjordes med `wan3` genom developer-API:t; vilken modell en film har
+läses i dess kvitto, inte i filnamnet. [Promptjämförelsen](../evidence/prompt-comparison.json) visar skillnaden: det gamla
+centerklippet byter hand (LH→RH), P7-provet begär samma vänsterhand. Återanvänd inte centerinstruktionen som om den
+beskrev en vänsterhandsutdelning till P7.
 
 Nycklar skrivs aldrig i Git, manifest, dokument eller loggar. Blob/databas-/andra inloggningsuppgifter kopieras inte
 utan ett konkret integrationsbehov. GitHub CLI använder sin befintliga inloggning; ingen tokenfil behövs här.
@@ -196,9 +184,8 @@ sekvens-/källgranskning](../evidence/sequence-reuse-audit.json) binder rätt k�
 vid ruta 3296, i två format, utan ny API-generering.
 
 `.env.local` laddas inte automatiskt av befintliga Node-kommandon. Verktyg som behöver den körs uttryckligen med
-`node --env-file=.env.local <verktyg.ts>`. `DEALER_SCRATCH_ROOT=D:/dealer-scratch` och
-`DEALER_REMOTE_GENERATION_ENABLED=false` är deklarerad konfiguration; renderern läser dem ännu inte. Flaggan är alltså
-inte en implementerad generationsspärr.
+`node --env-file=.env.local <verktyg.ts>`. `DEALER_SCRATCH_ROOT` och `DEALER_REMOTE_GENERATION_ENABLED` står i filen men
+ingen kod läser dem: flaggan spärrar ingen generering. Spärren är `enabled` i `data/order-policy.json`.
 
 Sökning i Codex på Windows: välj `rg.exe` vars sökväg matchar `*\OpenAI\Codex\bin\*\rg.exe` (`Get-Command rg.exe -All`)
 och lägg dess mapp först i processens PATH, annars `Select-String`; ändra inte bestående PATH. (Flyttad från AGENTS
@@ -267,11 +254,8 @@ beställningsagentens instruktion; här står det som rör banken, uppspelningen
   besökarens webbläsare, aldrig på datorn; export/import flyttar en plan till Placering. Att ta ned sidan är en
   deploy-åtgärd och Jakobs beslut. Studions publicerade kopia är [den låsta kopian](#den-låsta-kopian-på-nätet).
 - Aliaset `dealer-scoutgaming.vercel.app` är skyddat och ska inte delas som publik länk. Senaste deployment och den
-  gamla sidans avveckling står i [slutkvittot](../evidence/public-release.json).
-- Gamla `scoutgaming/scout-dealerlab` (`prj_mQwHzspK3GrrJA04eFOorFxth0d5`) är borttaget efter verifierad ersättning och
-  Jakobs delegerade beslut. API och gammal domän ger 404; nya projektet och sju Blob-filer är verifierat kvar. Inget
-  separat gammalt GitHub-repo identifierades. Specialvyerna för äldre bildrute-/kortkontaktgranskning är bevarade i
-  D:-arkivet.
+  gamla sidans avveckling (också det borttagna projektet `scoutgaming/scout-dealerlab`) står i
+  [slutkvittot](../evidence/public-release.json).
 
 ## Den låsta kopian på nätet
 
@@ -279,14 +263,10 @@ Studion som låst kopia för Jakobs chef (Jakob 2026-11-12 och 2026-11-13: löse
 Allt går att läsa och spela, inget går att ändra, och inga kostnader visas.
 
 - **Adresser:** `https://dealer-lake.vercel.app` (den Jakob känner) och `https://dealer-studio-one.vercel.app` (projektets
-  egen), båda produktionsadresser för `dealer-studio`. Lösenordet skrivs inte ut här (två stavningar av samma ord gäller, den andra som Jakob skrev 2026-11-13). Efter
-  lösenordet kommer studion med vänsterspalten: Bordet (Kortplan, Scen, Råfilm och Efterarbete; inget sparas och inget
-  beställs), Karta, Granska (med Prov), Material, Casino och Önskemål. Det gäller från nästa publicering; den publicerade
-  kopian (`aee87ca`) visar ännu den äldre menyn med Scen, Primära, Prov och Placering. Publicerad 2026-11-13: `e7c006d` kl.
-  16.35, `26dc99b` kl. 17.12 (med `tools/publish-studio.ts`).
-- **v0:s projekt `dealer`** (skapat 2026-11-13 kl. 05.41 i samma team, kopplat till GitHub-repot och byggt vid varje push,
-  utan miljövariabler och store, med bara `dealer-lake.vercel.app`, som gav 404) togs bort 2026-11-13 kl. 17.20 på Jakobs
-  ja; adressen flyttades till `dealer-studio`.
+  egen), båda produktionsadresser för `dealer-studio`. Lösenordet skrivs inte ut här (nytt sedan 2026-11-18; det gamla
+  nekas). Efter lösenordet kommer studion med vänsterspalten: Bordet (Kortplan, Scen, Råfilm och Efterarbete; inget sparas
+  och inget beställs), Karta, Granska (med Prov), Material, Casino och Önskemål. Vilken commit kopian bär säger
+  `/meta.json` på kopian, och läget står i [lägesfilen](lage/spelet.md).
 - **Vercel:** team `jakeminator123s-projects` (Pro), projekt `dealer-studio`, utan Git-
   koppling: varje version läggs upp färdigbyggd. Projektets och teamets id står bara i länken
   `.runtime/studio-deploy/.vercel/project.json` (utanför Git). Skydd: Vercels standard (förhandsversioner och de genererade
@@ -359,9 +339,9 @@ bygget, uppladdning av de filmer och bilder som är nya (oförändrade objekt sk
 låset får adresserna, `vercel deploy --prebuilt --prod` från `.runtime/studio-deploy` och kontrollen utifrån: utan kaka ska
 varje sida, svar och film ge inloggningssidan; med `DEALER_LOSEN_PROV` loggar den in och prövar första sidan, en film med
 Range och att kopian säger rätt commit. Bygget stannar om arbetskopian inte är ren, om en modul har en maskinsökväg eller
-ett spärrat namn, om klippbanken ändras under bygget eller om Blob-delen går över gränsen i registret. Första
-publiceringen 2026-11-13 tog cirka 40 minuter, mest uppladdningen (1,7 GB); den andra (`26dc99b`) tog 6 minuter, varav 3
-för studions npm-paket, och skickade en ny film.
+ett spärrat namn, om klippbanken ändras under bygget eller om Blob-delen går över gränsen i registret. En första
+publicering tar cirka 40 minuter, mest uppladdningen (1,7 GB); en senare med få nya filmer cirka 6, varav 3 för
+studions npm-paket.
 
 **Det som ska finnas på plats** innan `--kor` (verktyget stannar med ett besked om något saknas):
 
@@ -402,9 +382,8 @@ för studions npm-paket, och skickade en ny film.
   omläggning av replikerna lade till lika många filmer som hon har repliker). Taket står kvar; av en repliks filmer går
   nu bara den upp som spelet säger (`gameTakes` i `tools/studio-freeze.ts`, samma fråga som spelsidan ställer:
   `spokenFilms` med spelets röst) och de han själv har godkänt. En ersatt tagning står kvar i kopians klippbank utan film.
-- **Storen rymmer** (2026-11-13 kl. 17.12) 234 objekt, 1 736 MB: Paows filmer för spelet och rundan med 51 talfilmer,
-  Pamelas runda, godkända och varianter, sex prov och tre filmer för scenen. Objekt som en senare kopia inte längre visar
-  ligger kvar i storen (de skrivs aldrig över och tas inte bort av verktyget); kvittot listar dem.
+- **Vad storen rymmer** står i kvittot (`.runtime/studio-blob/studio-media.json`). Objekt som en senare kopia inte
+  längre visar ligger kvar i storen: de skrivs aldrig över och tas inte bort av verktyget.
 
 - Provbygge utan publicering: `node tools/build-studio-snapshot.ts --prov` och `node tools/serve-studio-snapshot.ts
   --prov` (port 4330, med påhittat lösenord och nyckel), se verktygens huvuden.
@@ -416,12 +395,8 @@ för studions npm-paket, och skickade en ny film.
 
 ## D: och städning
 
-Slaskmapparna är skapade. Efter arkivraderingen 2026-11-10 hade C: cirka 106,2 GiB ledigt. Diskflytt frigör diskutrymme,
-inte RAM i sig. Ändra inte global TEMP/PATH och skapa inga nya runtime-junctions. Tillfälliga jobb kan få processlokal
-`TEMP`/`TMP` mot `D:/dealer-scratch/tmp`.
-
-V6-renderern skriver fortfarande till dealer/output/v6. Utdataflytt måste implementeras/verifieras av verktygsägaren;
-miljövariabeln ensam flyttar inget. Original och pågående review bevaras.
+Ändra inte global TEMP/PATH och skapa inga nya runtime-junctions. Tillfälliga jobb kan få processlokal `TEMP`/`TMP` mot
+`D:/dealer-scratch/tmp`. V6-renderern skriver till `output/v6` i repot; ingen miljövariabel flyttar det.
 
 `data/library.json` refererar till den bevarade porträttreproduktionen i `output/v6/take-01`. Den får inte rensas som
 slask medan katalogen refererar dit. Katalogen innehåller bara sökvägar/hashar, inga uppladdade filmer; diagnostiska
@@ -446,22 +421,11 @@ mot `data/dealer-standard.json` och en referens efter kameran (rutans storlek). 
 att mäta`, med siffrorna. `--write` sparar det i `data/media-fit.json`, som Material visar som en etikett på rutan; kör det
 igen när planen, linsen eller ett ankare ändras. Jakobs tillstånd (gäller, kandidat, ersatt) ändras aldrig av mätningen.
 
-Det tidigare projektet (snyggare-dealer, arkivet) är fullständigt arkiverat på `D:/dealer-archive/snyggare-dealer`, och C:-originalet är borttaget utan fel
-enligt [arkivkvittot](../evidence/archive-move.json). Efter kontrollerad serverstopp omfattade det 194 531 filer och 163
-182 601 679 logiska byte. Varje vanlig fil SHA-256-jämfördes på båda sidor; katalogstruktur, Git-historik/index, 34
-ändrade tracked filer och 410 individuella untracked filer bevarades. Den tidigare inventeringens uppgift om noll
-tracked ändringar var felaktig.
-
-Windows lediga C:-utrymme ökade under själva raderingen med 94 016 409 600 byte (cirka 94,02 GB / 87,56 GiB). Logiska
-fillängder är inte fysisk diskanvändning; äldre verktyg skapade hårdlänkar och det fanns mycket upprepat innehåll.
-Ursprungliga filers fysiska allokering/länkantal mättes inte, så 163,18 GB får inte rapporteras som faktiskt frigjort
-utrymme.
-
-Gamla servern 4318 stoppades via kontrollkanalen och process/port kontrollerades. Den enda interna junctionen kopierades
-inte genom traversal: arkivlänken återställdes till motsvarande interna D:-mål, och C:-länken togs bort före rekursiv
-källradering. Inga länkar från nya dealer till arkivet skapades. Fullständiga inventeringar, filhashar, Git-jämförelser
-och raderingskvitton finns under `D:/dealer-archive/receipts/20261110-snyggare-dealer`. Arkivet är läsreferens;
-historiska C:-sökvägar där inne är proveniens och har inte massändrats.
+Det tidigare projektet (snyggare-dealer, arkivet) ligger i sin helhet på `D:/dealer-archive/snyggare-dealer` och är
+borttaget från C: sedan 2026-11-10: 194 531 filer, varje fil SHA-256-jämförd på båda sidor, med Git-historik, ändrade
+och ospårade filer bevarade ([arkivkvittot](../evidence/archive-move.json); inventeringar, filhashar och
+raderingskvitton under `D:/dealer-archive/receipts/20261110-snyggare-dealer`). Arkivet är läsreferens; C:-sökvägarna
+där inne är proveniens och har inte ändrats. Inga länkar går från dealer till arkivet.
 
 Före arkivflytt: registrera exakta käll-/målrot, ägare, worktrees, untracked/ignorerade filer, reparse-mål och
 processidentitet. Stoppa bara verifierat ägda tjänster via kontrollkanal. Kopiera till ett nytt avgränsat arkivmål utan
@@ -469,11 +433,11 @@ att följa junctions; jämför filantal/byte/SHA-256 och verifiera återläsning
 frigöra C:. Befintliga D:-delarkiv får inte skrivas över.
 
 Rensning kräver ett kandidatbeslut med källa, ägare, referenser och verifierad ersättning. Filnamnslikhet eller inaktiv
-process räcker inte. Osäkert material stannar för granskning. Endast det uttryckligen beställda gamla projektet togs
-bort från C:. Nya dealer, preview 4319, ChatGPT, Utforskaren och andra projekt bevarades.
+process räcker inte. Osäkert material stannar för granskning.
 
-**Städverktyget** (2026-11-12). `npm run stada` (`tools/scratch-clean.ts`) är en torrkörning: rapport per regel, inget
-ändras; `-- --lista` visar varje träff och `-- --forklara <sökväg>` varför något lämnas. `-- --kor` utför. RADERA tar
+**Städverktyget.** `npm run stada` (`tools/scratch-clean.ts`) är en torrkörning: rapport per regel, inget ändras. Det
+körs från huvudträdet; ett arbetsträd på slaskdisken vägras, eftersom slasken, arkivet och repot måste ligga isär.
+`-- --lista` visar varje träff och `-- --forklara <sökväg>` varför något lämnas. `-- --kor` utför. RADERA tar
 bara det som går att göra om: headless Chrome-profiler, `node_modules`, Nodes och Pythons cacher, Chromes `scoped_dir*`,
 lösa `*.tmp` och loggar äldre än en vecka. ARKIVERA flyttar skärmbilder och rutdumpar äldre än en vecka till
 `D:/dealer-archive/slask/<år-månad>/<samma sökväg under dealer-scratch>`. Varje flytt och radering skrivs i
@@ -487,30 +451,17 @@ en arbetsmapp på slaskdisken som ska leva kvar namnges därför i banans läges
 fil direkt i en sessionsmapp skyddar bara sig själv. Namnge därför undermappen, inte hela sessionen, när bara den ska
 leva kvar; mappar med beställningsliggare eller kvitto (`bestallningar*`, `order-*`, `uploads-*`, `tasks-*`, `*kvitto*`,
 `request.lock`); `chrome-meshy`, Python-miljöer, mappar som en körande process namnger och mappar med länkar; film och
-ljud, som aldrig raderas, och allt utanför `D:/dealer-scratch`. 2026-11-12 togs 1,3 GB slask bort för hand (17 headless
-Chrome-profiler och en `node_modules`). Labbservern kör `--kor --tyst` en gång per start; utfallet står i
-`.runtime/stada.log`. Samma dag kopierades bilder och filmer som används eller kan användas från D: till `assets/` (0,74
-GB, SHA-256-kontrollerat, inget flyttat eller raderat på D:); rapporten
-`D:/dealer-scratch/tmp/huvudagent/import/RAPPORT.md` säger vad som ligger kvar och varför.
+ljud, som aldrig raderas, och allt utanför `D:/dealer-scratch`. Labbservern kör `--kor --tyst` en gång per start;
+utfallet står i `.runtime/stada.log`. Vad som låg kvar på D: när bilder och filmer kopierades till `assets/` 2026-11-12
+säger rapporten `D:/dealer-scratch/tmp/huvudagent/import/RAPPORT.md`.
 
-Två lokala kopior av arkivets inventeringskvitton har därefter tagits bort efter SHA-256-kontroll mot bevarade
-D:-original och processkontroll: 81 609 952 logiska byte; fysisk frigörelse mättes inte. [Städkvitto och
-coachtriage](../evidence/coach-production-triage.json). Behåll befintliga JSON-register nu; ingen SQLite, lokal Postgres
-eller ny Neon-miljö har skapats. [Lagringsbedömningen](../evidence/storage-choice-review.json) anger övergång till
-Scouts befintliga Postgres-adapter när delade skrivare och atomisk historik behövs. Hela gamla chatthistoriker ska inte
-följa med en handoff; ge aktuell HANDOFF och de få relevanta registren.
+Registren är JSON-filer. [Lagringsbedömningen](../evidence/storage-choice-review.json) anger Scouts befintliga
+Postgres-adapter som nästa steg först när delade skrivare och atomisk historik behövs; ingen databas är skapad.
 
 ## Molnmiljö
 
-Codex stöder sparade molnmiljöer via **Settings → Codex Cloud → Environments**, med repo, verktyg och
-nätverkskonfiguration. Detta är separat körning, inte mer RAM till den lokala chatten. Se [OpenAI Docs: Cloud
-environments](https://learn.chatgpt.com/docs/environments/cloud-environments).
-
-Livekontroll: en sparad miljö `scoutgaming` finns, `status=ready` men `runnable=false`; ingen dealer-miljö finns i den
-tillgängliga listan. Ingen miljö skapad eller startad här. Den befintliga Scout-miljön återanvänds inte för dealer utan
-uttrycklig projektbindning.
-
-Förbered en privat dealer-miljö med detta repo, Node 24.21.0 och `npm ci`. GitHub saknar media, så full
-V6-verifiering/rendering kräver separat registrerade assets, FFmpeg/FFprobe och högst fyra arbetare. Källhashar ska
-verifieras före rendering. Runway kan vid behov tillföras som HTTP-hemlighet begränsad till `api.dev.runwayml.com`;
-kopiera inte hela gamla env. Kontoåtkomst, mediaöverföring och eventuell kostnad behöver vara konkreta innan start.
+En kopia av repot i en molnmiljö (Codex Cloud eller en annan sandlåda ur GitHub) är en separat körning utan media och
+inte säkert med rätt Node: där går bara de tester som klarar sig utan media, och ingenting döms där. Ingen sådan miljö
+är uppsatt för dealer (senast kontrollerat 2026-11-10), och Scouts miljö återanvänds inte utan uttrycklig
+projektbindning. Den som sätter upp en behöver repot, Node 24.21.0 och `npm ci`; V6-verifiering och rendering kräver
+dessutom registrerad media, FFmpeg/FFprobe och högst fyra arbetare. Kopiera aldrig hela `.env.local` dit.

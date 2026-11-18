@@ -273,6 +273,3 @@ scene.rebuild(); scene.start();
 const ready = scene.players.load(partsOf(first)).then(() => true, error => fail((error as Error).message));
 // For the proof recorder and for debugging from the console; not an interface for other pages.
 Object.assign(window, {scene3d: {scene, ready, clips, rounds}});
-// The card trials have a file of their own (src/scene3d-cardlab.ts, the film agent's): when it exists it gets the scene and the
-// panel and adds what it needs there. reloadTracks makes the lab read the clips' card tracks again.
-void import('./scene3d-cardlab.ts').then(m => m.mountCardLab?.({scene, panel, reloadTracks() { tracks.clear(); trackedPath = ''; }}), () => {});

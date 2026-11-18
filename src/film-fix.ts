@@ -242,7 +242,6 @@ function upscale(field: Float32Array, sw: number, sh: number, w: number, h: numb
  * pamela-p4-c1-plan-deal-02 against its landing anchor: the narrow field of efterarbete.py stamped the anchor's hand shadow onto the
  * table of every frame, 58 levels deep.
  */
-export const levelField = (reference: Uint8Array, frame: Uint8Array, w: number, h: number): Float32Array => fieldOf(eighth(reference, w, h), eighth(frame, w, h), w, h);
 function fieldOf(a: ReturnType<typeof eighth>, b: ReturnType<typeof eighth>, w: number, h: number): Float32Array {
   const n = a.sw * a.sh, weight = new Float32Array(n), sum = new Float32Array(n * 3), mean = [0, 0, 0];
   let count = 0;

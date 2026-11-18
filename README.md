@@ -46,8 +46,8 @@ Arkivet är det tidigare projektet på D: (snyggare-dealer). Sidorna har kvar si
 ## Register
 
 - `motions/<clip-id>.json` är ensam källa för en films klassning och Jakobs beslut.
-- `data/clip-jobs.json` är klippbankens register: ankare, jobb (den gamla API-vägen, används inte), härledda tagningar
-  (bland dem allt från Beställ) och API-vägens kredittak. `data/orders/<id>.json` är studions beställningar;
+- `data/clip-jobs.json` är klippbankens register: ankare, jobb (filmerna som gjordes genom Runways API; inga nya läggs
+  där), härledda tagningar (bland dem allt från Beställ) och API-tidens kredittak. `data/orders/<id>.json` är studions beställningar;
   `data/dealers.json` och `data/media-roles.json` säger vilka dealers som finns och vilka bilder som gäller;
   `data/order-methods.json` är metoden som beställs per steg, och `data/order-policy.json` taken för betald generering.
 - `placements/default.json` är Jakobs kortplan (16 kortplatser) och sparas från studions Bordet, del Kortplan (på kopian
@@ -123,31 +123,20 @@ begränsningar för fingermask, rörelsekanter och källskarvar kvarstår.
 markerprov; TS-materialkällorna har inte återbyggts till de frysta JS-bundlarna. Labbet och 3D-scenen läser
 kortmaterialets TS-källa direkt; det ändrar inte V6-filmen eller de historiska bundlarna.
 
-Publikt källrepo: [Jakeminator123/dealer](https://github.com/Jakeminator123/dealer). GitHub innehåller inte media eller
-hemligheter. Scout-integration och deploy görs bara på Jakobs uttryckliga ord, och betald generering bara inom
-`data/order-policy.json`: [AGENTS](AGENTS.md), "Det som skyddar Jakob".
-
-[Det publika labbet](https://dealer-delta-eosin.vercel.app/) visar gamla labbet som det var vid den senaste
-publiceringen (release i [evidence/public-release.json](evidence/public-release.json)) och byggs inte längre härifrån;
-att ta ned det är Jakobs beslut. Sidan sparar kortplanen i besökarens webbläsare; export/import flyttar en plan till
-Placering. Publicerade granskningsfilmer
-ligger i separat Vercel Blob, inte i Git eller webbpaketet.
-
-Behåll JSON-register, manifest och planerna som sparas i webbläsaren. [Lagringsbedömningen](evidence/storage-choice-review.json)
-rekommenderar ingen SQLite- eller annan ny databas nu; framtida Scout-import är ett separat införande.
+Publikt källrepo: [Jakeminator123/dealer](https://github.com/Jakeminator123/dealer), utan media och hemligheter. Vad som
+kräver Jakobs uttryckliga ord står i [AGENTS](AGENTS.md), "Det som skyddar Jakob". Den äldre publika sidan
+(`dealer-delta-eosin.vercel.app`, gamla labbet som det var när det publicerades sist) byggs inte längre härifrån:
+[DRIFT](docs/DRIFT.md#publik-granskningssida-och-blob).
 
 ## Historiskt underlag
 
-- Fyra hela historiska sekvenser, `pamela-sequence-{16,17}-{native,portrait}-r2`, är återställda som alternativ (Jakob:
-  fel koordinater och format; produktionsacceptans PENDING): [återbruk](evidence/sequence-reuse-audit.json),
-  [produktionskvitto](evidence/sequence-review-production.json), SYSTEM "Återbruk och införande".
-- P4.C2:s nyare original visar BACK→EDGE→FRONT; den gula `review-v04` bevisar inte CLOSED→CLOSED: [färggranskningens
-  p4Followup](evidence/anchor-color-audit.json).
-- Promptar, start- och slutbilder och resultat för kontrollproven 10 november: Prov-mappen **Runway-underlaget 10
-  november** (`/studio/prov/?prov=runway-underlaget-10-nov`); alla parametrar i
-  [data/p4-generation-review.json](data/p4-generation-review.json). P4.C1-kontrollproven (`pamela-p4-c1-color-control-01` med WAN 3,
-  `pamela-p4-c1-kling-control-01` med Kling 3.0 Pro) är underkända för fysisk vändning; besluten står i `motions/`.
-- Placeringslabbets grundkontroller: [evidence/placement-lab.json](evidence/placement-lab.json); vy- och nodkontroller:
-  [evidence/plane-and-nodemap.json](evidence/plane-and-nodemap.json). V6:s små skuggor och fingermasker, och den senare
-  bankens maskrättningar: [Astra-granskningen](evidence/astra-archive-mask-audit.json). Fynd från den externa
-  granskningen: [granskningskvittot](evidence/external-review-triage.json).
+Kvittona från V6-tiden och arkivet ligger i `evidence/`, ett per fråga, och det som följer av dem står i SYSTEM,
+"Återbruk och införande"; beslut per film står i `motions/`. Runway-underlaget från 10 november (promptar, start- och
+slutbilder, resultat) är Prov-mappen `runway-underlaget-10-nov`, med alla parametrar i
+[data/p4-generation-review.json](data/p4-generation-review.json); dit hör kontrollproven `pamela-p4-c1-color-control-01`
+och `pamela-p4-c1-kling-control-01`. Kvitton som inget annat dokument pekar på: placeringslabbets grundkontroller
+([placement-lab](evidence/placement-lab.json)), vy- och nodkontroller
+([plane-and-nodemap](evidence/plane-and-nodemap.json)), V6:s skuggor och fingermasker
+([astra-archive-mask-audit](evidence/astra-archive-mask-audit.json)), den externa granskningen
+([external-review-triage](evidence/external-review-triage.json)) och städkvittot från arkivflytten
+([coach-production-triage](evidence/coach-production-triage.json)).

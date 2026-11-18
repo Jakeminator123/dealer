@@ -40,8 +40,8 @@ test('importsOf reads static, dynamic and re-exported neighbours as the browser 
 test('every neighbour that a module of the lab server imports is handed out too', () => {
   const missing: string[] = [];
   for (const [address, file] of Object.entries(SCRIPTS)) {
-    // A listed module that has not been written is answered with an empty module (tools/preview.ts), so it breaks nothing.
-    if (!existsSync(path.join(repo, file))) continue;
+    // A listed module that has not been written answers 404 and stops the page that imports it.
+    if (!existsSync(path.join(repo, file))) { missing.push(`${file} is listed in SCRIPTS (tools/lab-routes.ts) but is not written`); continue; }
     for (const spec of importsOf(forBrowser(readFileSync(path.join(repo, file), 'utf8')))) {
       const want = asked(address, spec);
       if (!handedOut(want)) missing.push(`${file} imports ${spec}, and the server has nothing at ${want}: add the module to SCRIPTS in tools/lab-routes.ts and restart the lab server`);

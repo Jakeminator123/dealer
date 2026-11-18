@@ -3,9 +3,7 @@
 Kontrakt: koordinater, register, scen, spel och klippbank. Engelska systemord, svensk förklaring. Två uppspelningar
 finns. Klippbankens rundor (`resolveRound` i `src/clip-graph.ts`) spelas i studion, i 3D-scenen och i spelet. V6:s
 bildrutetidslinje (`assets/timeline.json`, `tools/render.ts`) återskapar V6 byteidentiskt och används inte för andra
-filmer. Beslutet 2026-11-10 (med TILLBAKA-2) att V6:s tidslinje är enda uppspelningsgrund gäller inte längre i
-praktiken; vilken väg som ska gälla är ett öppet val hos Jakob. Sekvenssträngar och nodvy är presentation av
-samma metadata, aldrig en andra motor. Nodvyn visar planerad avsikt; den fastställer inte en källfilms händelser.
+filmer. Sekvenssträngar och nodvy är presentation av samma metadata, aldrig en andra motor. Nodvyn visar planerad avsikt; den fastställer inte en källfilms händelser.
 
 ## V6: tre ytor, två format
 
@@ -30,8 +28,7 @@ granskning.
 
 Pamelas film visas i ett tredimensionellt rum med ett tredimensionellt bord. Fristående TypeScript-moduler som
 webbläsaren läser direkt, typavskalade av `tools/preview.ts`, med three.js 0.180.0 via importmappen. Ingen React, ingen
-React Three Fiber, ingen bundler, inget byggsteg. Byggd av bakgrundsagenten (avslutad 2026-11-11); ägaren står i
-HANDOFF. `scene3d.html` är utvecklarens sida med alla reglage; `game.html` bygger samma scen utan panel. Första tabellen
+React Three Fiber, ingen bundler, inget byggsteg. Ägaren står i HANDOFF. `scene3d.html` är utvecklarens sida med alla reglage; `game.html` bygger samma scen utan panel. Första tabellen
 är lagren bakifrån och fram. Den andra är funktionerna: nycklar i `SceneState` (`scene.set({...})`, och adressparametrar
 på `scene3d.html`, t.ex. `?room=skog&dust=0.7&ui=0`), med förval inom parentes; allt utöver kontrollpunkt v1 är avstängt
 från start. D = bör nå demospelaren som val eller fast förval i spelet, U = utvecklarens reglage.
@@ -40,7 +37,7 @@ från start. D = bör nå demospelaren som val eller fast förval i spelet, U = 
 | --- | --- | --- |
 | Rum | Byggd salong, 360°-panoraman ur rumsregistret, V6-plåten som kuliss eller fast i rutan, och en spelhall som byggs av en egen modul och hämtas första gången den visas (`BuiltRoom`; 73 spelautomater utan varumärken, bar, neon och låg rök som tätnar med `dust`, allt rörligt ur tiden; 11 ritanrop; byggd av en underagent 2026-11-11, Prov "spelhall"). Halv upplösning, oskarpt efter avstånd. Här bor också de tre rörelserna. | `src/scene3d-room.ts`, `src/scene3d-hall.ts` |
 | Bord och rekvisita | Filten är en platt bild sedd uppifrån (linjer, kortrutor och insatsringar ur placeringsplanen, logga); reling och sarg är geometri. Rekvisita är sådant händerna vilar på eller passerar över och ritas före filmen, så att händerna hamnar överst: markerbrädet ligger försänkt i ett urtag i filten (`TRAY`, `table.build(edgeZ, scale, notch)`), och spelets föremål läggs dit med `scene.addProp`. Skon som föremål (prov, panelen Bord eller `?sko=3d`): `loadShoe` i `src/game3d-props.ts` ställer Jakobs skomodell på filmskons fot (`FILM_SHOE`, `shoeFit`) och `scene.hideFilm` låter filmens sko vara oritad; en hand som sträcks in i rutan klipps med. I relingen finns mugghållare i guld mellan platserna, försänkta i lädret som riktiga hål (`cupAngles`, nyckeln `cups`, av som förval); ljuslinjen som stod där togs bort 2026-11-11 (Jakob: inte naturligt ljus), ljus på bordet kommer ur rummet. Underredet har två utföranden (`base`): pelaren som var, och två ben i fotograferat trä med mässingsfötter, tvärslå, fotstöd i mässing och bordets skugga på golvet, efter rumsstudien 2026-11-07 (kartorna är lokal media, `data/scene-materials.json`). Ytan har också två utföranden (`surface`): målad som förut (filten en obelyst bild, bordet speglar ett målat rum), eller rumsstudiens "fotomaterial på 3D": filten är ett belyst tyg med fotograferad väv, och filt, läder, trä och mässing tar ljus och speglingar ur det rum som visas (panoramat, förfiltrerat en gång per rum; `table.setEnvironment`, styrka `roomLight`). | `src/scene3d-table.ts`, `src/scene3d-props.ts`, `src/scene3d-rail.ts` |
-| Film | Nycklas i shadern mot rutans egen gröna nivå, läst i övre och nedre vänstra hörnet (skuggor blir svart med delalfa), och projiceras från filmkameran på ett lodrätt plan på bordets bakkant och på bordsskivan. Filmkö för spelet. En film med egen ruta (`Part.frame`, i filmens post `motion.frame = {scale, anchor, layer, shadow}`) visar dealern i annan skala på större yta: punkten (881,5; 831,5) i standardrutan, dealerkantens mitt, ligger på `anchor` i filmen, och med `layer: "BEHIND_TABLE"` ritas hela rutan på ett plan bakom bordskanten, djuptestat, så att 3D-bordet skymmer henne (när hon kommer och när hon går; prövat med `assets/proofs/helkropp-prov/`); med `behindFrom` (rutnummer i filmen) gäller det först från den rutan och filmen ritas dessförinnan i de vanliga två lagren, så att filmen där hon går kan börja i vilans pose med händerna på bordet (`frameAt`; kräver att bordet fram till den rutan ligger där en vanlig film har det). Filmen där hon går prövas i labbet, panelen Film (`src/scene3d-exit.ts`): kameran backar längs sin siktlinje medan hon reser sig (`exitView`). Kortprov i labbet: ett klipp med ett andra spår bredvid sitt eget (`card-track-grip.json`, samma format; en ruta får också säga `film`, filmens eget kort när kortet ritas någon annanstans, och `held`, 1 i handen och 0 när kortet ligger) spelas med det när panelen Kort eller `?spar=grepp` säger så, och `src/scene3d-cardlab.ts` (filmagentens fil, läses in om den finns) får scenen och panelen genom `mountCardLab`. En filmdel kan bära en munlapp (`Part.mouth`, `src/scene3d-mouth.ts`): lappens ruta för den ruta som visas blandas in i filmens färg före nyckeln, och repliken spelas med Web Audio i takt med rutorna; en del med lapp spelas i takt 1 och skyndas aldrig på (docs/TAL.md, munlagret). | `src/scene3d-film.ts`, `src/scene3d-mouth.ts` |
+| Film | Nycklas i shadern mot rutans egen gröna nivå, läst i övre och nedre vänstra hörnet (skuggor blir svart med delalfa), och projiceras från filmkameran på ett lodrätt plan på bordets bakkant och på bordsskivan. Filmkö för spelet. En film med egen ruta (`Part.frame`, i filmens post `motion.frame = {scale, anchor, layer, shadow}`) visar dealern i annan skala på större yta: punkten (881,5; 831,5) i standardrutan, dealerkantens mitt, ligger på `anchor` i filmen, och med `layer: "BEHIND_TABLE"` ritas hela rutan på ett plan bakom bordskanten, djuptestat, så att 3D-bordet skymmer henne (när hon kommer och när hon går; prövat med `assets/proofs/helkropp-prov/`); med `behindFrom` (rutnummer i filmen) gäller det först från den rutan och filmen ritas dessförinnan i de vanliga två lagren, så att filmen där hon går kan börja i vilans pose med händerna på bordet (`frameAt`; kräver att bordet fram till den rutan ligger där en vanlig film har det). Filmen där hon går prövas i labbet, panelen Film (`src/scene3d-exit.ts`): kameran backar längs sin siktlinje medan hon reser sig (`exitView`). Kortprov i labbet: ett klipp med ett andra spår bredvid sitt eget (`card-track-grip.json`, samma format; en ruta får också säga `film`, filmens eget kort när kortet ritas någon annanstans, och `held`, 1 i handen och 0 när kortet ligger) spelas med det när panelen Kort eller `?spar=grepp` säger så. En filmdel kan bära en munlapp (`Part.mouth`, `src/scene3d-mouth.ts`): lappens ruta för den ruta som visas blandas in i filmens färg före nyckeln, och repliken spelas med Web Audio i takt med rutorna; en del med lapp spelas i takt 1 och skyndas aldrig på (docs/TAL.md, munlagret). | `src/scene3d-film.ts`, `src/scene3d-mouth.ts` |
 | Renderade kort | Se "Ritade kort" under Spelet. | `src/scene3d-deal.ts`, `src/card-overlay.ts`, `src/scene3d-matte.ts` |
 | Ljus och bild | Fläktskuggan multipliceras ovanpå film, bord och rekvisita (`lit`); filmens eget ljus går inte att ändra, men rummet som syns bakom dealern kan läggas som ett svagt ljus längs hennes kontur (`wrap`, `film.setWrap`) så att hon står i rummet och inte framför det. Vykamera, oskärpa, fokus, slutkomposit och gränssnittet utåt. | `src/scene3d-light.ts`, `src/scene3d-view.ts` |
 
@@ -632,7 +629,7 @@ IDLE>READY | READY>P1.C1 | P1.C1>READY | READY>D.C1 | D.C1>READY | READY>P1.C2 |
   startpose, visad som variant-start och spelad bara när rundan skriver den så. Jobb med andra noder (`READY-B>DRAWN`,
   `DRAWN>P4.C1`) tappas aldrig: de bildar gruppen Experiment utanför de 54, med samma detaljvy och som egna kedjor att
   jämföra med modellens väg.
-- Fliken är presentation, inget eget statusregister. `src/clip-graph.ts` räknar grafen ur `data/clip-jobs.json`, lokala
+- Kartan är presentation, inget eget statusregister. `src/clip-graph.ts` räknar grafen ur `data/clip-jobs.json`, lokala
   kvitton (förberedd/renderas/klar) och `motions/<id>.json` (beslut), och läser om var fjärde sekund. Huvudtagning är
   godkänd före ogranskad och, bland lika, den senaste som har en passande retur. Underkända tagningar väljs aldrig; de
   och ersatta tagningar ligger hopfällda per kant och i den skrivskyddade städlistan. `review.acceptedAs: "MAIN"` går
@@ -812,11 +809,8 @@ en läsbar syskonreferens, inte ett runtime-beroende. Namnen Pamela/Göran i äl
 filhash/proveniens innan identitet antas. Nya läsningar från arkivet registreras; inga gamla node_modules eller
 junctions importeras.
 
-Underlag: `Dealer_sekvensguide_2026-11-10.md` och `Dealer_studio_skiss_2026-11-10.html` i Jakobs Downloads samt bifogad
-diskussion `2363882c-7e08-4c16-98fc-37620eb14bf9/Inklistrad text.txt`. De är referensförslag. Guidens semantik har
-sammanvägts här; HTML-skissen är inte installerad och texten är inte behörighet att ändra runtime. Källsökvägar/hashar
-finns i `.runtime/documentation-sources.json`. Nästa steg för de äldre sekvenserna: identifiera den efterfrågade äldre
-sekvensen och granska P4.C2-originalet och kontrollprovet; r2-filmerna förblir alternativa underlag. Bind därefter en
-accepterad rörelse till vald placeringsrevision. Full acceptans kräver obruten tvåkortsutdelning till alla åtta platser
-i båda format, verifierad kontakt/mask och bevarad V6-referens. V6-reproduktionskvitton och återställda sekvensfiler
-bevisar olika saker; inget av dem ersätter aktuell visuell acceptans eller Scoutintegration.
+Underlaget från 2026-11-10 (`Dealer_sekvensguide_2026-11-10.md` och `Dealer_studio_skiss_2026-11-10.html` ur Jakobs
+Downloads) är referensförslag, inte behörighet att ändra runtime; källsökvägar och hashar står i
+`.runtime/documentation-sources.json`. Den äldre sekvens han efterfrågade var inte identifierad då, och r2-filmerna
+förblir alternativa underlag. V6-reproduktionskvitton och återställda sekvensfiler bevisar olika saker; inget av dem ersätter
+aktuell visuell acceptans eller Scoutintegration.

@@ -5,7 +5,6 @@ import {readFile, readdir} from 'node:fs/promises';
 import * as graph from '../src/clip-graph.ts';
 import type {BankData, BankJob, MotionRecord} from '../src/clip-graph.ts';
 import {TARGETS as PLAN_TARGETS, defaultPlan, toPixels} from '../src/placement-model.ts';
-import {validateJob} from '../src/clip-job.ts';
 import {applyChange} from './review-store.ts';
 
 const sha = 'a'.repeat(64), ready = {file: {path: 'assets/motions/pamela-p4-c1-color-control-01/start.png', sha256: sha}};
@@ -123,8 +122,7 @@ test('a job outside the model becomes an experiment with its own takes; nothing 
   const shoe = g.edge['READY-B>READY-B'];
   assert.equal(shoe.main?.id, 'pamela-ready-b-shoe-plate-02'); assert.deepEqual(shoe.takes.map(t => graph.takeRole(shoe, t)), ['REJECTED', 'MAIN']);
   assert.equal(g.takes['pamela-ready-b-shoe-plate-01'].edge, 'READY-B>READY-B');
-  // An experiment has no recipe to draft from. It can be played in a chain, but only under a name the graph knows.
-  assert.equal(graph.draftJob(g, 'READY-B>READY-B'), null);
+  // An experiment can be played in a chain, but only under a name the graph knows.
   assert.deepEqual(graph.resolveRound(g, [{from: 'READY-B', to: 'READY-B'}, {from: 'READY-B', to: 'NOWHERE'}]).map(s => [s.take?.id ?? null, s.gap]), [['pamela-ready-b-shoe-plate-02', 'LOCAL_ONLY'], [null, 'INVALID']]);
   const known = (id: string) => !!g.edge[id]?.experiment;
   assert.deepEqual(graph.parseSequence('ready-b>ready-b | land(p1.c1)>p2c1 | ready-b>nowhere', known), {steps: [{from: 'READY-B', to: 'READY-B'}, {from: 'P1.C1', to: 'P2.C1'}], errors: ['ready-b>nowhere']});
@@ -365,40 +363,6 @@ test('anchor rule: a return from the landing anchor follows every take of the de
   assert.match(graph.resolveRound(both, [{from: 'READY', to: 'P2.C1'}, {from: 'P2.C1', to: 'IDLE-B'}])[1].notes.join(' '), /annat landningsankare/);
 });
 
-test('a job draft for a missing edge has the job file shape, the next free id and seat wording', () => {
-  const g = graph.buildGraph(bank());
-  const deal = graph.draftJob(g, 'READY>P2.C1')!;
-  assert.deepEqual(Object.keys(deal.job), ['id', 'kind', 'target', 'from', 'to', 'model', 'duration', 'ratio', 'audio', 'promptText', 'first', 'last', 'purpose']);
-  assert.deepEqual([deal.job.id, deal.job.kind, deal.job.target, deal.job.from, deal.job.to, deal.job.model, deal.job.duration, deal.job.ratio, deal.job.audio],
-    ['pamela-p2-c1-plan-deal-01', 'DEAL', 'P2.C1', 'READY', 'LAND(P2.C1)', 'wan3', 4, 'auto_1080p', false]);
-  assert.equal(deal.basedOn, 'pamela-p1-c1-plan-deal-02'); // nearest seat with a main take
-  assert.match(deal.job.promptText, /four-second deal to the left side of the image\./); assert.doesNotMatch(deal.job.promptText, /centred in the image/);
-  assert.deepEqual(deal.job.first, ready);
-  assert.equal(deal.job.last.file?.path, 'assets/anchors/pamela-p2-c1-plan-land-01/anchor.png');
-  // An anchor that does not exist yet keeps a visible TODO, so an unfinished draft cannot be frozen.
-  assert.throws(() => validateJob(deal.job), /file reference/);
-  const back = graph.draftJob(g, 'P7.C1>IDLE')!;
-  assert.deepEqual([back.job.id, back.job.kind, back.job.from, back.job.to, back.job.duration], ['pamela-p7-c1-plan-return-idle-01', 'RETURN', 'LAND(P7.C1)', 'IDLE', 3]);
-  // Anchor rule: a new return starts from the deal's own end image, so it follows every take of that deal.
-  assert.deepEqual(back.job.first.file, g.edge['READY>P7.C1'].main!.job.last.file); assert.equal(back.job.first.frame, undefined);
-  assert.match(back.job.promptText, /on the table at the right side of the image, just in front of the shoe\./);
-  const early = graph.draftJob(graph.buildGraph({}), 'P3.C1>READY')!;
-  assert.equal(early.job.first.file?.path, 'assets/anchors/pamela-p3-c1-plan-land-01/anchor.png'); assert.match(early.notes.join(' '), /Ingen giv med landningsankare/);
-  // A retake of an existing edge reuses its recorded inputs and is a valid job as it stands.
-  const retake = graph.draftJob(g, 'P4.C1>READY')!;
-  assert.equal(retake.job.id, 'pamela-p4-c1-plan-return-ready-02'); assert.deepEqual(retake.job.first.file, g.takes['pamela-p4-c1-plan-deal-02'].job.last.file);
-  assert.equal(retake.job.promptText, g.edge['P4.C1>READY'].main!.job.promptText);
-  assert.doesNotThrow(() => validateJob(retake.job));
-  // The hole card is dealt closed unless the round says otherwise; hub clips have their own templates.
-  assert.match(graph.draftJob(g, 'READY>D.C2')!.job.promptText, /never turned/);
-  assert.match(graph.draftJob(g, 'READY>D.C2', {holeCardDown: false})!.job.promptText, /four-second deal to her own dealer position/);
-  assert.deepEqual(['IDLE>READY', 'READY>IDLE', 'IDLE>IDLE'].map(id => { const d = graph.draftJob(g, id)!.job; return [d.id, d.kind, d.target, d.duration]; }),
-    [['pamela-idle-ready-entry-01', 'ENTRY', null, 3], ['pamela-ready-idle-exit-01', 'RETURN', null, 3], ['pamela-idle-loop-01', 'IDLE', null, 4]]);
-  assert.equal(graph.draftJob(graph.buildGraph({}), 'READY>P4.C1')!.basedOn, null);
-  assert.equal(graph.draftJob(g, 'P1.C1>P2.C1'), null);
-  for (const e of g.edges) assert.ok(graph.draftJob(g, e.id)!.job.promptText.length <= 2000, e.id);
-});
-
 test('the tree is laid out like the table: P1 far left, P7 far right, the dealer above', () => {
   const plan = defaultPlan(), points = Object.fromEntries(PLAN_TARGETS.map(id => [id, toPixels(plan.targets[id].geometry.native, 'native')]));
   for (const layout of [graph.tableLayout(points), graph.tableLayout(null), graph.tableLayout({'P1.C1': {x: NaN, y: 0}})]) {
@@ -582,11 +546,6 @@ test('the turn of the hole card is an edge of the model: from rest, back to rest
   assert.deepEqual(graph.roundSequence({seats: ['P4'], reveal: true, thirdDealerCard: true}).map(e => e.id).slice(-5), ['D.C2>IDLE', 'IDLE>REVEAL(D.C2)', 'IDLE>READY', 'READY>D.C3', 'D.C3>IDLE']);
   assert.ok(!graph.roundSequence({seats: ['P4']}).some(e => e.kind === 'REVEAL')); assert.ok(!graph.roundSequence({seats: ['P4'], cards: 1, reveal: true}).some(e => e.kind === 'REVEAL'));
   assert.deepEqual(graph.parseSequence('D.C2>IDLE | IDLE>REVEAL(D.C2) | IDLE>READY').errors, []);
-  // The draft is a job the order tool accepts once its images are real: four seconds, from rest to rest.
-  const draft = graph.draftJob(empty, graph.REVEAL_EDGE)!;
-  assert.deepEqual([draft.job.id, draft.job.kind, draft.job.target, draft.job.from, draft.job.to, draft.job.duration], ['pamela-d-c2-reveal-01', 'REVEAL', 'D.C2', 'IDLE', 'REVEAL(D.C2)', 4]);
-  assert.match(draft.job.promptText, /turns it over once/); assert.ok(draft.job.promptText.length <= 2000);
-  assert.equal(validateJob({...draft.job, first: ready, last: ready}).kind, 'REVEAL');
 });
 
 test('she comes to the table and leaves it: two edges with rest as their fixed end, and AWAY as the picture without her', () => {
@@ -610,12 +569,6 @@ test('she comes to the table and leaves it: two edges with rest as their fixed e
   assert.deepEqual([a.kind, a.take?.id, a.start, a.end, a.side, a.gap], ['ARRIVE', 'arrive-01', 3, 147, null, null]);
   assert.equal(b.take?.id, 'entry-01'); assert.deepEqual(b.notes, []);
   assert.deepEqual([c.kind, c.take?.id, c.start, c.end], ['LEAVE', 'leave-01', 3, 147]);
-  // The drafts: leaving has no last image, arriving ends on the frame the idle clips start on.
-  const out = graph.draftJob(empty, graph.LEAVE_EDGE)!, back = graph.draftJob(empty, graph.ARRIVE_EDGE)!;
-  assert.deepEqual([out.job.id, out.job.kind, out.job.target, out.job.from, out.job.to, out.job.duration, 'last' in out.job], ['pamela-table-leave-01', 'LEAVE', null, 'IDLE', 'AWAY', 5, false]);
-  assert.deepEqual([back.job.id, back.job.kind, back.job.from, back.job.to, back.job.duration, !!back.job.last], ['pamela-table-arrive-01', 'ARRIVE', 'AWAY', 'IDLE', 5, true]);
-  assert.match(out.job.promptText, /stands up/); assert.match(back.job.promptText, /sits down/);
-  assert.equal(validateJob({...out.job, first: ready}).kind, 'LEAVE'); assert.equal(validateJob({...back.job, first: ready, last: ready}).kind, 'ARRIVE');
 });
 
 test('the real job file in seat mode: 33 needed films, every entry placed, and each shared second card follows its seat', async () => {
@@ -960,29 +913,6 @@ test('a Paow take, even one Jakob made Primär, does not move Pamela\'s main tak
   const round = (g: graph.Graph) => graph.resolveRound(g, steps).map(s => [s.id, s.take?.id ?? null, s.why, s.start, s.end, s.cut, s.gap, s.notes]);
   assert.deepEqual(mains(mixed), mains(alone)); assert.deepEqual(round(mixed), round(alone)); assert.deepEqual(mixed.summary, alone.summary);
   assert.deepEqual(mixed.takes['pamela-p4-c1-plan-deal-02'].landingFrame, alone.takes['pamela-p4-c1-plan-deal-02'].landingFrame);
-});
-
-test('a job draft is written for the graph\'s dealer: her ids, her anchors, her own takes as wording, her name and look in the text', () => {
-  const look = 'a young, slim, petite woman with a platinum-blonde chin-length bob, in a black tailored blazer over a cream V-neck top';
-  const g = graph.buildGraph(twoDealers(), {dealer: 'paow'}), profile = {id: 'paow', name: 'Paow', look, prefix: 'paow-'};
-  const deal = graph.draftJob(g, 'READY>P2.C1', {dealer: profile})!;
-  assert.deepEqual([deal.job.id, deal.job.dealer, deal.basedOn], ['paow-p2-c1-plan-deal-01', 'paow', 'paow-p1-c1-plan-deal-01']);
-  assert.deepEqual(deal.job.first, paowReady); assert.equal(deal.job.last?.file?.path, 'assets/anchors/paow-p2-c1-plan-land-01/anchor.png');
-  assert.equal(graph.draftJob(g, 'P4.C1>IDLE', {dealer: profile})!.job.id, 'paow-p4-c1-plan-return-idle-01');
-  // Without a profile the graph's dealer still decides: her id as her name, no look, her anchors.
-  const entry = graph.draftJob(g, 'IDLE>READY')!;
-  assert.equal(entry.job.id, 'paow-idle-ready-entry-01'); assert.equal(entry.job.dealer, 'paow');
-  assert.match(entry.job.promptText, /^Locked camera on the same Paow, green felt and fixed shoe\./); assert.doesNotMatch(entry.job.promptText, /Pamela/);
-  assert.deepEqual([entry.job.first.file?.path, entry.job.last?.file?.path], ['assets/anchors/paow-idle-empty-01/anchor.png', paowReady.file.path]);
-  assert.match(graph.draftJob(g, 'IDLE>READY', {dealer: profile})!.job.promptText, /^Locked camera on the same Paow, a young, slim, petite woman .* V-neck top, green felt and fixed shoe\./);
-  for (const id of ['READY>D.C2', 'IDLE>REVEAL(D.C2)', 'AWAY>IDLE', 'IDLE>AWAY', 'IDLE>IDLE', 'READY>IDLE']) {
-    const d = graph.draftJob(g, id, {dealer: profile})!.job;
-    assert.ok(d.id.startsWith('paow-'), id); assert.doesNotMatch(d.promptText, /Pamela/, id);
-    for (const ref of [d.first, d.last]) if (ref?.file) assert.match(ref.file.path, /^assets\/anchors\/paow-/, id);
-  }
-  // Pamela's drafts are what they were: no dealer field, her own words.
-  const hers = graph.draftJob(graph.buildGraph(twoDealers()), 'IDLE>READY')!;
-  assert.deepEqual([hers.job.id, hers.job.dealer], ['pamela-idle-ready-entry-01', undefined]); assert.match(hers.job.promptText, /^Locked camera on the same Pamela, black suit, green felt/);
 });
 
 // ── The inbox ───────────────────────────────────────────────────────────────

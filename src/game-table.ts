@@ -15,7 +15,6 @@ export type Slot = {owner: 'P' | 'D'; seat: number; hand: number; hands: number;
 export type TableHand = {seat: number; cards: number[]};
 export type TableCards = {hands: TableHand[]; dealer: number[]};
 
-export const SEAT_COUNT = 7;
 // Pixels in the film frame. FAN: step between cards from the third on. SPLIT: step between the hands of one seat.
 // Both are first values to be judged by eye in motion; the seat films were only tried to about 45–50 px from their own card.
 export const FAN = 24, SPLIT = 66;
