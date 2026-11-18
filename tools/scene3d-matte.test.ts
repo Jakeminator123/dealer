@@ -287,6 +287,31 @@ test('the paper face ("pålägg: framsidan"): the blue face of the film goes pap
   assert.ok(deal.includes("const faceOf = (choice: Choice, extra: Extra, carry: Carry): 'film' | 'paper' => extra.face ?? choice.face ?? (carry === 'object' ? UNDER.face : FACE);") && deal.includes('face: paper ? PAPER_FACE.field : null'), 'the face by its own word, else what the carry itself answers');
 });
 
+test('paper tint leaves green shadow while retaining blue shadow and the mixed edge', () => {
+  const video = (rgb: number[]) => rgb.map(v => v / 255);
+  for (const key of [video([0, 237, 41]), video([0, 201, 38])]) {
+    const paper = (rgb: number[], rim = false) => darkBackOf(rgb, key, {side: 'face', rim});
+    // P1 f113–114, P7 f73/77 and the cycle f46: screen shaded by the hand or card.
+    for (const rgb of [[6, 173, 50], [4, 189, 52], [4, 196, 54], [3, 190, 34], [0, 115, 2], [0, 198, 30]]) {
+      const raw = video(rgb);
+      assert.deepEqual(paper(raw, true), {card: 0, finger: 0, colour: raw}, `${rgb} remains green even beside the card`);
+    }
+    // P7 f73: dark blue card under the hand, including its tip with more green than blue.
+    for (const [rgb, floor] of [[[4, 72, 72], 0.99], [[7, 58, 62], 0.9], [[5, 50, 51], 0.47], [[1, 45, 40], 0.13]] as const) {
+      const raw = video([...rgb]), tinted = paper(raw);
+      assert.ok(tinted.card >= floor, `${rgb} remains a card`);
+      assert.notDeepEqual(tinted.colour, raw);
+    }
+    const skin = video([226, 156, 132]);
+    assert.deepEqual(paper(skin, true).colour, skin);
+    const blend = (share: number) => key.map((v, i) => v * (1 - share) + PAPER_FACE.card[i] * share);
+    const faint = blend(0.1), mid = paper(blend(0.35)), half = paper(blend(0.5));
+    assert.deepEqual(paper(faint).colour, faint, 'weak blends keep the source pixel for the key');
+    assert.ok(mid.card > 0 && mid.card < half.card && half.card > 0.99, 'paper comes in gradually across a mixed edge');
+    assert.ok(half.colour[1] > Math.max(half.colour[0], half.colour[2]), 'the original screen part remains available to the key');
+  }
+});
+
 test('a card carried without a drawn one leaves the card seated in the shoe window in the drawn back\'s field: the window as dark as in every film', async () => {
   // seat 2's and seat 1's deals carry the film's card recoloured (hand false) in the field lifted towards the print (backDark); the
   // window's card took it too and lit up by about 20 levels at the cut into those deals (granskning 6: 34.90, 41.97, 83.90, 90.97 s)

@@ -268,7 +268,8 @@ test('at P1 rest the paper tint covers the blue card while preserving green shad
   const shadow = unitRgb([4, 196, 54]), card = unitRgb([1, 137, 182]), finger = unitRgb([226, 156, 132]);
   // These samples are clear of the shader's soft boundary, so the tint is fully on or off.
   const paper = (polygon: Pt[], x: number, y: number, rgb: number[]) => inside(polygon, x, y) ? darkBackOf(rgb, key, {side: 'face'}).colour : rgb;
-  assert.notDeepEqual(paper(wide, 312, 968, shadow), shadow, 'the old zone bleaches the shadow');
+  assert.ok(inside(wide, 312, 968) && !inside(zone, 312, 968), 'the resting zone excludes the hand shadow inside the broad zone');
+  assert.deepEqual(paper(wide, 312, 968, shadow), shadow, 'paper tint leaves the shadow alone even inside the broad zone');
   assert.deepEqual(paper(zone, 312, 968, shadow), shadow);
   assert.notDeepEqual(paper(zone, 252, 972, card), card, 'the blue film face still becomes paper');
   assert.deepEqual(paper(zone, 281, 938, finger), finger);

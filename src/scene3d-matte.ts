@@ -400,7 +400,13 @@ vec3 ${name}Side(vec3 c, vec2 px, vec3 key, float zone, float shoe, vec3 field, 
     for (int k = 0; k < 8; k++) { vec3 s = filmAt(map, px + BACK_AROUND[k]);
       float n1 = ${name}CardOf(s, toCard, t), n2 = ${name}FingerOf(s, toFinger, t); sum += n1; blur = max(blur, n2 * (1. - n1)); }
     if (blur > .3) w1 = sum / 9.; }
-${name === 'face' ? `  if (backUnder > .5) w1 *= smoothstep(.4, .7, u.x); // beneath the drawn card a blue rim blended into the felt reads as felt: only a solid share goes paper
+${name === 'face' ? `  // A green shadow can fit the unmix as a little blue. Fade paper in by blue/green chromaticity, from the
+  // least reliable card mix to equal parts card and screen. Dim blue keeps its hue and can still go paper.
+  if (key.g > key.b) {
+    vec3 weak = mix(key, ${C}, ${f(D.share)}), halfCard = mix(key, ${C}, .5);
+    w1 *= smoothstep(weak.b / weak.g, halfCard.b / halfCard.g, c.b / max(c.g, .01));
+  }
+  if (backUnder > .5) w1 *= smoothstep(.4, .7, u.x); // beneath the drawn card a blue rim blended into the felt reads as felt: only a solid share goes paper
 ` : ''}  w2 *= (1. - w1); w1 *= zone; w2 *= zone; w = w1 + w2; if (w <= 0.) return c;
   float green = (c.g - max(c.r, c.b)) / max(key.g - max(key.r, key.b), .05), screen = max(u.y, 0.) * smoothstep(${f(D.noise[0])}, ${f(D.noise[1])}, u.y) * smoothstep(0., ${f(D.green)}, green);
   float l = dot(c - screen * key, BACK_LUMA);${name === 'face' ? `
@@ -449,6 +455,10 @@ export function darkBackOf(c: number[], key: number[], o: {shoe?: boolean; skin?
     return step(0, D.share, u[0]) * Math.max(step(D.screen[0], D.screen[1], u[1]), low * step(D.shade[0], D.shade[1], u[1])) * step(D.white[0], D.white[1], u[2]) * (1 - step(D.pale[0], D.pale[1], u[2] / Math.max(u[0], 1e-3))) * (1 - skin) * dimOk; };
   const u = solve3([D.card, key, [1, 1, 1]], c), v = solve3([D.card, D.finger, [1, 1, 1]], c);
   let w1 = cardOf(u); if (o.rim && w1 < 0.7) w1 = Math.max(w1, step(0, D.share, u[0]) * step(D.rim[0], D.rim[1], u[1]) * (1 - step(D.rimPale[0], D.rimPale[1], u[2] / Math.max(u[0], 1e-3))) * (1 - skin));
+  if (o.side === 'face' && key[1] > key[2]) {
+    const chromaAt = (share: number) => (key[2] * (1 - share) + D.card[2] * share) / (key[1] * (1 - share) + D.card[1] * share);
+    w1 *= step(chromaAt(D.share), chromaAt(0.5), c[2] / Math.max(c[1], 0.01));
+  }
   const w2 = o.shoe || o.side === 'face' ? 0 : step(0.3, 0.7, o.skin ?? 0) * step(0, D.share, v[0]) * step(-D.tolerance, 0, v[1]) * step(D.fingerWhite[0], D.fingerWhite[1], v[2]) * (1 - step(D.pale[0], D.pale[1], v[2] / Math.max(v[0], 1e-3))) * (1 - w1);
   const green = (c[1] - Math.max(c[0], c[2])) / Math.max(key[1] - Math.max(key[0], key[2]), 0.05), screen = Math.max(u[1], 0) * step(D.noise[0], D.noise[1], u[1]) * step(0, D.green, green), light = Math.min(D.bright, Math.max(0, lumaOf(c.map((x, i) => x - screen * key[i])) / lying) ** response), card = field.map((x, i) => x * light + screen * key[i]);
   const part = D.card.map(x => Math.max(v[0], 0) * x + Math.max(v[2], 0)), dim = Math.min(D.bright, Math.max(0, lumaOf(part) / lying) ** response), finger = c.map((x, i) => Math.min(1, Math.max(0, x - part[i] + field[i] * dim)));
