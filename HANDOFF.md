@@ -9,8 +9,8 @@ Git, och en rad som inte längre gäller ersätts.
 - Målet är en trovärdig utdelning i spelet i studion: två kort till plats 1–7 och två eller tre till dealern, med
   returer till redo och vila. Paow är dealern; Pamela är pausad. Scoutgaming är slutmålet på sikt.
 - Labbet är en vy, Bordet, där en film beställs längs en rak linje: steget och kortets plats, receptet ger resten.
-- Den tatuerade uppsättningen är hans förstahandsval, och ankare 2.3 gäller. Given därifrån håller i en tagning
-  till plats 5; de andra platserna är inte prövade. En sidovinkel görs av en färdig film i Runways videoredigerare.
+- Den tatuerade uppsättningen är hans förstahandsval, och ankare 2.3 gäller. Vägen från det finns (ett slutbildsankare,
+  A3, per plats; beställt genom Bordet), men givarna till plats 4 och 1 fick hans Inte bra och ingången hans nej.
 - Kortplanen ritar verkliga kort genom en lins; spelet kan följa den bakom ett val som är av (`geometri=lins`).
 - Kopian på nätet är sekundär och publiceras bara på hans ord; senast 2026-11-18 från `2e3967c`, med nytt lösenord.
 - Kontrollen före en push körs bara på datorn. Kontots tokengräns delas av alla sessioner: få underagenter.
@@ -21,8 +21,8 @@ Git, och en rad som inte längre gäller ersätts.
    och Runway ansluts på nytt (`/mcp`): allt som gäller står i repot. Starta vakten på hans kö i Beställ, och läs
    hans anteckningar (`node tools/proof-notes.ts`) och svaren i Beslut före första svaret till honom.
 2. Se att fjärren är i kapp med `main` och att inget arbetsträd bär arbete som inte är inne (`git worktree list`).
-3. Filmerna först ([film](docs/lage/film.md)): given från 2.3 till plats 4 och plats 1 (hans ord), ingången och den
-   bästa tagningen in i banken, och stegen från 2.3 beställbara genom Bordet.
+3. Filmerna först ([film](docs/lage/film.md)): ingången klipps eller görs som en film genom hela rörelsen (hans ord),
+   och givarna görs om efter hans svar i Beslut.
 4. Räddningsuppdraget ([BESKED](docs/BESKED.md), "Räddningsuppdraget"): det som återstår av dess kontrollpunkter står
    i [BRISTER](docs/BRISTER.md); störst är att spelet och labbet delar kortgeometri först bakom `geometri=lins`.
 5. Fem kameravinklar (`/vinklar.html`, film-lägesfilen), kopians tre fel före nästa publicering, och korten i Beslut.

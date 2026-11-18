@@ -9,30 +9,30 @@ gäller nu; varje prov och dess utfall står i handboken (`tools/film-prompting.
   undantag går 8 av 61 kombinationer att beställa; de andra säger varför (slutbild saknas, eller dockans film).
 - Metoden som håller: en giv bara dit på Kling 4 med första och sista bild och 3D-banans dockfilm som referensfilm, i
   UTDRAGEN takt (given över drygt 2 s, en obruten rörelse). I den riktiga dealerns takt tappar Kling vändningen.
-- Ankare 2.3 (båda händerna vid skon, blicken ned) gäller på Jakobs ja. Ingången dit (`INGANG-2.3`) går att beställa
-  genom Bordet med dockans film; given därifrån (`GIV-2.3`) väntar på en slutbild per plats med höger hand vid kortet.
-- Given från 2.3 till P5.C1, Jakobs beställning: fyra tagningar i Prov `giv-fran-2-3-p5` (256 krediter). Tagning 4
-  (dockan "-d") går igenom den automatiska kontrollen och är enligt granskaren bäst (3/5; mitten är trög, och det
-  gula kortet har en vit kant ruta 22–30). Sidan av tagning 3 ligger i samma prov.
-  Ingångsfilmen vila → 2.3 ligger i Prov `paow-ankare-2-3` i tre farter. Inget av det är infört i banken.
+- Ankare 2.3 (båda händerna vid skon, blicken ned) gäller på Jakobs ja. En giv därifrån (`GIV-2.3`) slutar på platsens
+  A3, en slutbild per kortplats och hand (`tools/landing-make.ts`), och går att beställa genom Bordet till varje plats
+  som har ett A3 och en dockfilm. A3 finns som kandidat för plats 1, 4 och 5 (Prov `a3-slutbilder`).
+- Nya filmer 2026-11-18, genom linjen och den automatiska kontrollen: given till plats 4 och plats 1 (Prov
+  `giv-fran-2-3-p4-p1`) fick Jakobs Inte bra, utan skäl än (kortet i Beslut frågar), och ingången
+  (`paow-ingang-2-3-01`) underkände han: stilla från ruta 45. Tagning 4 till plats 5 ligger i banken som kandidat.
 - En sidovinkel görs av en färdig film i Runways videoredigerare (`edit_video`), inte av nya stillbilder: plats 4
   cirka 40° (Prov `sidovinkel-ur-film`, Jakob: "mycket bra") och plats 5 cirka 25–30°. Vinkeln och kortets plats
   träffas inte exakt. Provsidan `/vinklar.html` binder ihop två vinklar i en scen.
 - Den tatuerade uppsättningen är förstahandsvalet (keystone, ankare 1 och 2.3); ankare 2.1 och 2.2 och hela banken
   har de äldre händerna och spelas än. Ankare 2.2 föll i tre försök i bildmodellen och görs om som 2.3.
-- Saldot var 5 392 den 2026-11-18 (`whoami` före en beställning); taket är 2 000 per order. Trailern är pausad.
+- Saldot var 5 105 den 2026-11-18 (`whoami` före en beställning); taket är 2 000 per order. Trailern är pausad.
 
 **Nästa steg.**
 1. Starta vakten på Jakobs kö i Beställ (`vakta-kon.mjs`; den dör med chatten), och anslut Runway (`/mcp`) på ett
    nytt konto. Godkänner han en order startas beställningsagenten (`tools/order-clerk.md`).
-2. In i banken: tagning 4 till plats 5 (hans Bra), genom vägen för en tagning beställd utanför Beställ, som byggs
-   (`tools/order-import.ts`). Ingångsfilmen till 2.3 görs om på hans ord (fortare, mjukare, mindre lutning) genom Bordet.
-3. Given från 2.3 till plats 4 och plats 1 (hans ord): dockans filmer "-e" in som referensfilmer, en slutbild per
-   plats med höger hand (plats 4 ur plats 5:s slutbild, plats 1 ur en första tagning utan sista bild; 64 krediter
-   per tagning), sedan beställningen genom Bordet. Runway ansluts först (`/mcp`).
-4. Sedan en tagning per återstående plats (2, 3, 6, 7 och dealerns kort) på en långsam dockfilm.
-5. Fem kameravinklar ([BESKED](../BESKED.md)): hans bild 35° från sidan som styrande stillbild, och `/vinklar.html`.
-6. Senare: ankare 2.1 och 2.2 med tatuerade händer, hålkortet (vänds inte) och andra kortet ovanpå det första
+2. Ingången till 2.3 ([BESKED](../BESKED.md), "Ingången på halva tiden"): klipp det stilla slutet så att filmen är
+   cirka 2 s (`tools/film-fix.ts` kortar i dag högst tre rutor: bygg ut), eller pröva hans förslag, EN film från
+   ankare 1 via 2.3 till platsens A3 som klipps i två (dockans posfilm b och giv f i följd som referensfilm).
+3. Givarna: läs hans svar på kortet i Beslut före en ny tagning. Resten av bordet (A3 för plats 2, 3, 6, 7 och
+   dealerns kort, 25 krediter per plats med ideogram-4.5-precise-edit; giv 64 per tagning) först när en giv har hans
+   ja. Plats 1 kräver en docka som kan resa sig ([dealer3d/LASMIG.md](../../dealer3d/LASMIG.md)).
+4. Fem kameravinklar ([BESKED](../BESKED.md)): hans bild 35° från sidan som styrande stillbild, och `/vinklar.html`.
+5. Senare: ankare 2.1 och 2.2 med tatuerade händer, hålkortet (vänds inte) och andra kortet ovanpå det första
    (`yt-referens/ut/giv-resten.md`), returer till vila, dealerns tredje kort, och Jakobs önskemål i BESKED.
 
 **Väntar på Jakob.** Inget utanför Beslut.

@@ -3,37 +3,33 @@
   "about": "What waits for Jakob: one entry per question (kind beslut) or per thing only he can do (kind gora), shown as one card each in the studio's view Beslut (/studio/beslut/, lab only). The list's order is the order of urgency, the most urgent first. An entry: id, kind, question (at most 14 words), leads (one sentence: what his answer leads to), optionally proof (a folder under assets/proofs/) with file, page (an address in the lab, e.g. game.html?table=casino), link (an address outside, shown as text to open on his phone) and cost (free text), chips (two to four {value, label} for beslut, one to four for gora), asked (date), from (the lane that asks) and answer. An agent adds an entry with answer null, changes only its own entries, reads the file right before editing it and keeps the form JSON.stringify gives with two spaces; it closes an entry by taking it out once his answer is carried out, and the commit says what he answered. Only the page writes answer ({value, note, at}, tools/decision-store.ts); no agent sets, changes or clears an answer he has given. The strict reader is tools/decision-register.ts. The repo is public: no secret, personal detail or path of this machine.",
   "decisions": [
     {
-      "id": "ingangen-till-2-3-fart",
+      "id": "givarna-vad-stor",
       "kind": "beslut",
-      "question": "Filmen från vila till ankare 2.3: vilken fart är rätt?",
-      "leads": "Samma film i tre farter ligger i provet (4, 2,5 och 2 sekunder); den du väljer blir bankens ingång till ankare 2.3, och ingen ny tagning behövs.",
-      "proof": "paow-ankare-2-3",
-      "file": "3b-filmen-1-till-2-3-fart-1-5.mp4",
+      "question": "Givarna till plats 4 och 1 är inte bra: vad stör mest?",
+      "leads": "Ditt svar styr nästa tagning, så att den ändrar det som stör och inget annat.",
+      "proof": "giv-fran-2-3-p4-p1",
+      "file": "1-plats-4-tagning-1.mp4",
       "chips": [
         {
-          "value": "1-5",
-          "label": "1,5 gånger (2,5 s)"
+          "value": "takten",
+          "label": "Takten: för sakta eller stannar"
         },
         {
-          "value": "2",
-          "label": "2 gånger (2 s)"
+          "value": "vandningen",
+          "label": "Vändningen av kortet"
         },
         {
-          "value": "original",
-          "label": "Som den är (4 s)"
+          "value": "handerna",
+          "label": "Händerna eller armen"
         },
         {
-          "value": "andra",
-          "label": "Ändra (skriv vad)"
+          "value": "annat",
+          "label": "Annat (skriv vad)"
         }
       ],
       "asked": "2026-11-18",
       "from": "filmbanan",
-      "answer": {
-        "value": "andra",
-        "note": "Det går för sakta, och är för hackigt och hon lutar sig för mkt",
-        "at": "2026-11-18T03:31:04.154Z"
-      }
+      "answer": null
     },
     {
       "id": "repliker-som-munlappar",

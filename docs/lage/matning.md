@@ -14,15 +14,12 @@ given från 2.3 till plats 5 har fyra tagningar, där den fjärde håller i den 
   Saldot hos Runway var 5 392 när banan stängdes.
 
 **Nästa steg.** I den här ordningen:
-1. När Jakob har valt fart på ingångsfilmen och tagning av given: för in dem i banken som kandidater (huvudagenten).
-   Rollen `ankare-2.3` (noden `READY-C`) och stegen `INGANG-2.3` och `GIV-2.3` finns sedan `babd05d`; de går att
-   beställa genom Bordet först när dockans filmer står i `data/rendered-references.json` ([film](film.md)).
+1. Gjort 2026-11-18: A3 per plats och hand, vägen in i banken för en tagning beställd utanför Beställ, och ingången
+   omgjord genom Bordet ([film](film.md)). Kvar: oberoende granskning av de tre nya filmerna.
 2. En tagning per återstående plats med samma recept, på en långsam docka från 3D-banan per plats.
 3. Kortet i skons fönster har en ljus överkant i ankare 1 och 2.3 (bankens platta): rättas i ankarbilden.
 
-**Väntar på Jakob.** Inget utanför Beslut: korten `ingangen-till-2-3-fart` (Prov `paow-ankare-2-3`) och
-`giv-fran-2-3-som-mall` (Prov `giv-fran-2-3-p5`: tagning 4 överst, tagning 3 granskad 3/5, tagning 1 och 2 fallna).
-Vilken vändning som gäller i banken har han lämnat fritt: kravet är en hel vändning.
+**Väntar på Jakob.** Inget utanför Beslut.
 
 **Var saker ligger.**
 - Mätningen: `D:/dealer-scratch/tmp/yt-referens/LASMIG.md`, talen i `ut/` (`matt.json`, `giv-fran-2-3.md`,

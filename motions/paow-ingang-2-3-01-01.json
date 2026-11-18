@@ -21,13 +21,13 @@
     "basis": "SOURCE_FRAME_REVIEW"
   },
   "review": {
-    "decision": "PENDING",
-    "inbox": true,
+    "decision": "REJECTED",
     "basis": "Inte granskad av Jakob: förd in från beställningen paow-ingang-2-3-01, tagning 1 (tools/register-order.ts). Oberoende rutgranskning: tools/film-review.md.",
     "limitations": "I inkorgen: spelas bara där steget inte har någon annan film, tills Jakob dömer den.",
     "colorDoesNotProvePhysicalSide": true,
     "userAccepted": false,
-    "productionReady": false
+    "productionReady": false,
+    "userReview": "Jakob 2026-11-18: Från ruta 45 är hon i samma possition hela tiden. Rimligen ska denna göras på halva tiden, eller görqas utifrån A1 till A2.3 och till sedan A3P'n' som sedan klipps eller nått"
   },
   "order": {
     "id": "paow-ingang-2-3-01",

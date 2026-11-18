@@ -403,6 +403,28 @@
       "text": "",
       "at": "2026-11-18T02:55:52.247Z",
       "read": "2026-11-18T03:11:06.211Z"
+    },
+    {
+      "id": 36,
+      "proof": "giv-fran-2-3-p4-p1",
+      "file": "1-plats-4-tagning-1.mp4",
+      "choice": "inte-bra",
+      "text": "",
+      "at": "2026-11-18T04:13:03.185Z",
+      "answer": {
+        "text": "Läst: Inte bra på båda givarna. Säg gärna på kortet i Beslut vad som stör mest, så ändrar nästa tagning just det.",
+        "at": "2026-11-18T04:14:17.946Z"
+      },
+      "read": "2026-11-18T04:14:17.946Z"
+    },
+    {
+      "id": 37,
+      "proof": "giv-fran-2-3-p4-p1",
+      "file": "2-plats-1-tagning-1.mp4",
+      "choice": "inte-bra",
+      "text": "",
+      "at": "2026-11-18T04:13:05.023Z",
+      "read": "2026-11-18T04:14:18.164Z"
     }
   ]
 }

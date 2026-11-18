@@ -74,20 +74,13 @@ Innehåll: Kortet · Filmerna och banken · Läpparna och rösten · Spelet och 
   (`9a09570`); knapparna Arkivera och Ta tillbaka är inte tryckta av en hand. Stänger: valet av referensfilm och
   klippruta hoppar över arkiverade klipp (`referenceCandidates`, `cutFrameOf` i `src/order-model.ts`; filmstandardens
   andra del).
-- **Ingen väg in i banken för en tagning beställd utanför Beställ.** Syns: ingångsfilmen till ankare 2.3 och de fyra
-  givarna till plats 5 (2026-11-18, gjorda i en spegelrot på slaskdisken) finns bara som Prov, inte i Karta, Granska
-  eller Råfilm. `tools/order-bring.ts` och `register-order.ts` kräver en godkänd order i `data/orders/` och ett
-  kvitto som bara `order-put.ts` skriver, med tiden nu; beställningsflödet kan inte återge en handskriven text eller
-  en egenbyggd sista bild; och `film-fix.ts` har ingen fartändring (ingången ska in i dubbel fart). Prövat: inget
-  är skrivet för hand i registren. Stänger: ett läge som tar in en tagning ur dess liggare (modell, text, bilder,
-  referens, uppdrag, belopp, vem som godkände), och fart som en lagning i `film-fix`.
-- **Given från ankare 2.3 saknar slutbild, och en landningsbild vet inte vilken hand som lade kortet.** Syns: Bordets
-  rad för `GIV-2.3` säger "ingen slutbild för platsen med höger hand vid kortet" för varje plats, och raden har
-  inget val för en första tagning utan sista bild. Blir en landningsbild gällande för en plats skulle den också bli
-  sista bild för givarna från 2.1 och 2.2 dit, som läggs med vänster hand. Prövat: receptet som höll för plats 5
-  byggde sista bilden ur en första tagnings slutruta ([lage/matning.md](lage/matning.md)). Stänger: slutbilden
-  registreras per plats och hand, raden får undantaget "utan sista bild" för en plats första tagning, och steget
-  som bygger slutbilden ur en tagning blir ett verktyg i repot.
+- **Fyra platser och dealerns kort saknar A3, och plats 1 är svag.** Syns: Bordets rad för `GIV-2.3` går bara att
+  beställa till plats 1, 4 och 5, och i given till plats 1 far armen från mitten till platsen på en tredjedels
+  sekund (dockan kan inte resa sig från stolen). Prövat: vägen finns (`tools/landing-make.ts`); av tre bildmodeller
+  lämnade bara ideogram-4.5-precise-edit allt utom armen orört. Stänger: ett A3 per plats (25 krediter var), och en
+  docka som kan resa sig för plats 1 och 2. Dessutom: mallens text säger att kortet vänds ände över ände medan
+  dockans film "-f" rullar det kring långsidan; en plats första tagning utan sista bild kräver en ny mall; och
+  `film-fix` kortar ett stilla slut med högst tre rutor, så den nya ingången står stilla 1,3 s i slutet.
 - **Det bandet inte kan än** ([tools/dealer-line.md](../tools/dealer-line.md)). Syns: i Beställ. Ankare 2.1 och 2.2 är
   steg (`STEPS` i `src/order-model.ts`), men landningsbild, keystone och ankare 1 är det inte, och ett tredje eller
   fjärde dealerkort går inte att beställa, eftersom planen har sexton platser (`TARGETS` i `src/placement-model.ts`).

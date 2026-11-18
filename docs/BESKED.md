@@ -336,6 +336,12 @@ Innehåll: [Arbetet och dokumenten](#arbetet-och-dokumenten) · [Labbet och stud
   modell än Nao Banana användas elelr använder vi någon annan?" Varje kortplats får ett ankare 3 (A3 · P1 till P7 och
   dealerns kort): bilden en giv slutar på, med handen som lade kortet vid kortet, registrerad per plats och hand och
   använd av varje giv dit. Bildmodellen väljs efter ett prov med flera modeller på en plats, inte av vana.
+- **Ingången på halva tiden, eller en film genom hela rörelsen** (Granska 2026-11-18, cirka kl. 05.13, hans dom
+  Underkänd på den omgjorda ingången `paow-ingang-2-3-01`): "Från ruta 45 är hon i samma possition hela tiden.
+  Rimligen ska denna göras på halva tiden, eller görqas utifrån A1 till A2.3 och till sedan A3P'n' som sedan klipps
+  eller nått". En film slutar när rörelsen är klar, utan ett stilla slut; hans andra väg är en enda film från vila
+  via 2.3 till platsens slutbild, klippt i två. Samma stund märkte han givarna till plats 4 och plats 1 som Inte bra
+  i Prov, utan skäl.
 - **Flera kameravinklar ur samma film** (2026-11-18, kl. 03.10 och 03.25). Först: "Kna du itne bara prova att
   förenkla.. Typ skicka filemn för när PAOW dealar till P4C1 och sedan säger du att samma video ska genereras med säg
   35% från sida". Om provet `sidovinkel-ur-film`: "Det här är mycket bra, jag vet inte hur du gjorde. Det kanske är
