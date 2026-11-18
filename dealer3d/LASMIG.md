@@ -1,8 +1,41 @@
 # dealer3d: dealern som verklig geometri
 
 3D-banans arbetsmapp (startad 2026-11-17 på Jakobs ord: en dealer i 3D, så att olika stolar ser samma giv från sin
-egen vinkel, "avskilt i en egen undermapp" tills delarna är värda att lyfta in). Vem som äger banan och vad som väntar
-på Jakob står i [HANDOFF](../HANDOFF.md); här står bara vad mappen innehåller och hur den körs.
+egen vinkel, "avskilt i en egen undermapp" tills delarna är värda att lyfta in).
+
+## Överlämning (läs det här först; resten av sidan är uppslagsverk)
+
+Skriven 2026-11-18 kl. 01.30 av sessionen som startade banan, som avslutar sitt pass. Högst en skärm: det som inte
+ryms här står i avsnitten nedan, i commitmeddelandena eller i proven.
+
+**Läget.**
+- Vita dockan delar ut ett kort som en människa: händer och kropp avlästa ur Pamelas godkända giv till plats 4, alla
+  leder inom vad en arm klarar (test), kortet ett verkligt kort. Den går att se från vilken stol som helst.
+- Som förlaga åt Kling 4 (dockans film + första och sista bild) håller den på plats 4: 4/5 två gånger. Plats 5 är
+  oavgjord (3/5), plats 3 föll (1/5, en tagning). Kling tar handens och kortets rörelse ur dockan, och den vilande
+  handens liv, men inte huvudet: blicken måste stå i bilderna.
+- Jakob 2026-11-18: ja till blicken och den friare högerhanden; NEJ till att bygga vidare på Meshy-modellen ("vita
+  dockan räcker"; koden ligger kvar, lägg inget arbete där); ja till ett betalt prov från stol 1.
+- Kortets vändning är sedan kl. 01.10 EN vridning kring en axel (Jakob såg en "konstig halvrotation" i de äldre
+  filmerna). Förlagan med den heter "-4" och är inte prövad i Kling.
+
+**Nästa steg, i ordning.**
+1. Stol 1: huvudagenten beställer två bilder och en tagning med underlaget i provet `dealer-3d-vinkel-stol-1` (film 5,
+   bild 6–9). Läs utfallet mot dockans film innan något mer görs för andra stolar.
+2. En tagning med "-4" mot samma bilder som C3/C4, för att veta om den nya vändningen håller.
+3. Släpet (ankare 2.2) ur `pamela-p4-c1-drawn-deal-01`: påbörjat, se "Släpet" under Kvar.
+
+**Väntar på Jakob.** Inget utanför Beslut.
+
+**Var saker ligger.** Koden här; grenen `dealer-3d` i arbetsträdet `D:/dealer-scratch/tmp/dealer-3d/trad` (huvudagenten
+slår ihop den i `main`); inspelningsskript, förlagor och mellanlager i `D:/dealer-scratch/tmp/dealer-3d/` (`ut/forlagor-4/`,
+`ut/vinkel-stol-1-b/`, `rorelse/`); proven i `assets/proofs/dealer-3d-*`.
+
+**Fällor.**
+- Headless Chrome bara under låset: `bash D:/dealer-scratch/tmp/dealer-3d/under-las.sh <minuter> "<vad>" <kommando>`.
+- Banan skriver bara i `dealer3d/` och i sina provmappar; betalt beställer huvudagenten.
+- Titta på bilden innan ett tal skickas vidare: spårets fyrhörn är brus när kortet är en strimma, och en hel arm kan
+  vara "inom gränserna" och ändå se ur led ut om överarmens rullning är fel.
 
 Mappen rör inget annat i repot. Den läser `placements/default.json` (aldrig skriver) och `src/placement-model.ts`, och
 använder repots låsta `three` och `sharp`.
@@ -83,6 +116,16 @@ använder repots låsta `three` och `sharp`.
   ur tre av MediaPipes punkter och är osäkert när handen ses från kanten, så filmens egna rutor avgör om ord och tal
   skulle skilja sig. Den första, handritade given (`deal.ts`) slutade med handflatan
   uppåt och handen borta från kortet och är pensionerad som förlaga.
+- **Vändningen är en vridning** (`turnBetween` i `capture.ts`, 2026-11-18). Nära rutorna där kortet är en linje är
+  spårets fyrhörn en strimma, och åt vilket håll en sida på några bildpunkter pekar är brus. Läst ruta för ruta rullade
+  kortet över sin långsida och snurrade sedan 53° i sitt eget plan på EN ruta (ruta 57) och 16° på nästa: det Jakob såg
+  som "en konstig halvrotation" runt ruta 55–59. Nu vrids kortet kring en enda axel i jämn takt från sista rutan där
+  baksidan syns väl (51) till första där framsidan gör det (59): 18° per ruta kring långsidan och 14° kring kortsidan,
+  0° i sitt plan, den hållna änden kvar vid fingrarna. Filmens kort byter också riktning i vändningen (långsidan längs
+  bildens linje före, 105 bildpunkter, och kortsidan efter, 82), så riktningsbytet är Pamelas; ryckigheten var dockans.
+  Det som INTE stämmer med filmen: dockans kort står på kant mot kameran ruta 52–53 (filmen 53–55) och visar sedan
+  framsidan brett ruta 54–58, där filmens kort är en smal strimma. En stel kropp kan inte göra båda; filmens kort är
+  inte stelt där. Hur Kling tar den nya vändningen är oprövat (förlagan "-4").
 - **Inte gjort:** Paows egen giv (`paow-giv-2-1-p4-11-01`, 169 rutor med återgång till skon) är avläst men inte lagd i
   rummet: handens djup på vägen tillbaka har ingen fästpunkt än.
 
@@ -158,6 +201,14 @@ stänger sin Chrome och sin filserver själv. En hel omgång (stillbilder, två 
   skon (plats 7 i 25 rutor, plats 6 i en), eftersom skon står mellan henne och de platserna och den avlästa handen går
   lågt över filten. `lift.ts` säger det (`throughShoe` i `capture.ts`), och testet kräver att en sparad giv går fri.
   De platserna behöver en egen avläst film (en giv som går över eller framför skon).
+- **Släpet** (ankare 2.2: platt hand på kortet vid skons mynning, kortet dras på filten, lyfts och vänds, läggs).
+  Påbörjat 2026-11-18, inget incheckat. Filmen `pamela-p4-c1-drawn-deal-01` är avläst (punkterna i
+  `D:/dealer-scratch/tmp/dealer-3d/rorelse/`, 120 av 120 rutor), och `lift.ts` som den är ger händer och leder inom
+  gränserna (armbåge 79–117°, handled 4–37°). Kortet håller inte: under draget (ruta 0 till cirka 34) täcker handen
+  kortets bortre del, så spårets fyrhörn är bara den synliga biten (56 × 55 mm lagd på filten) och läses som ett lutat
+  kort; och kortet börjar som "stående i skon", vilket det inte gör i ett släp. Det som behövs: ett eget läge i
+  `perform` där kortet ligger plant på filten med verklig storlek, lagt efter sin bara närkant, tills det lyfts (cirka
+  ruta 36–55), och sedan spåras som i en buren giv. Mått och ark: `slap-matt.ts` och `rorelse/slap-ark.png` på slasket.
 - **En annan vinkel** (2026-11-18, prov `dealer-3d-vinkel-stol-1`, inget betalt). Paows registrerade keystonebilder
   och ankare är alla tagna framifrån (bankens kamera). Ett prov från sidan finns sedan 2026-11-13
   (`assets/proofs/paow-fran-sidan/`, ett öga 40° åt vänster): nyckelbilden gjordes ur frontankaret, omprojicerat med

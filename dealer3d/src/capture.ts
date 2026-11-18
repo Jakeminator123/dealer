@@ -118,6 +118,19 @@ function trackedCard(lens: Lens, quad: number[][], side: string, gripDepth: numb
   const centre = cam.at((quad[0][0] + quad[1][0] + quad[2][0] + quad[3][0]) / 4, (quad[0][1] + quad[1][1] + quad[2][1] + quad[3][1]) / 4, gripDepth - dot(long, cam.forward) * reach);
   return {centre, long, normal, across: cross(normal, long)};
 }
+/** A card's outline is well seen when its narrower drawn side is at least this share of what the wider one would make it (a card seen flat on is 1). */
+export const TURN = {wellSeen: 0.33};
+/**
+ * The single turn that carries one card pose into another: an axis and an angle. A turn-over is about half a turn, and
+ * half a turn can go either way round its axis; of the two, the one is taken that goes on the way the card is already
+ * turning (`going`, a small turn as a vector).
+ */
+function turnBetween(a: CardPose, b: CardPose, going: Vec3): {axis: Vec3; angle: number} {
+  const A = [a.long, a.normal, a.across], B = [b.long, b.normal, b.across], R = [0, 1, 2].map(r => [0, 1, 2].map(c => A.reduce((s, ak, k) => s + B[k][r] * ak[c], 0)));
+  const angle = Math.acos(Math.max(-1, Math.min(1, (R[0][0] + R[1][1] + R[2][2] - 1) / 2))), anti: Vec3 = [R[2][1] - R[1][2], R[0][2] - R[2][0], R[1][0] - R[0][1]];
+  let axis: Vec3; if (length(anti) > 1e-6) axis = unit(anti); else { const j = [0, 1, 2].reduce((m, k) => R[k][k] > R[m][m] ? k : m, 0); axis = unit([R[0][j] + (j === 0 ? 1 : 0), R[1][j] + (j === 1 ? 1 : 0), R[2][j] + (j === 2 ? 1 : 0)]); } // at exactly half a turn the axis is read off R + 1
+  return angle > 2.6 && dot(axis, going) < 0 ? {axis: mul(axis, -1), angle: 2 * Math.PI - angle} : {axis, angle};
+}
 const squared = (centre: Vec3, longRaw: Vec3, toward: Vec3): CardPose => { const long = unit(longRaw), normal = unit(sub(toward, mul(long, dot(toward, long)))); return {centre, long, normal, across: cross(normal, long)}; };
 const between = (a: CardPose, b: CardPose, t: number): CardPose => squared(lerp(a.centre, b.centre, t), lerp(a.long, b.long, t), lerp(a.normal, b.normal, t));
 
@@ -165,6 +178,21 @@ export function perform(lens: Lens, marks: Landmarks, track: Track, options: {aw
   const grips = Array.from({length: n}, (_, i) => lerp(handsL[4][i], handsL[8][i], 0.5)), seenAt: (CardPose | null)[] = Array.from({length: n}, (_, i) => { const f = track.frames[i];
     return f?.quad?.length === 4 && (f.side === 'BACK' || f.side === 'FRONT') && i >= leaves ? trackedCard(lens, f.quad, f.side, cam.depthOf(grips[i]), see(eye, grips[i])!) : null; });
   // The frames where the card is a line: carried across from the last frame with its back to the camera to the first with its face, the face coming up and over.
+  // The turn-over. Close to the frames where the card is a line, its outline is a sliver: one pair of its sides is drawn a
+  // few pixels long, and which way such a side points is the tracker's noise. Read frame by frame, the card then rolled
+  // over about its long side and, on the first frame its face was well seen, spun 53 degrees in its own plane in one
+  // frame (Jakob, 2026-11-18: "runt ruta 55 görs en konstig halvrotation"). The film's card does swing its long side
+  // through the turn, from across the picture to toward the player, but as one movement of the wrist. So from the last
+  // frame where the back is well seen to the first where the face is, the card is turned about ONE axis at an even rate:
+  // the single turn that carries the one pose into the other, the way round it was already going, its held end with her fingers.
+  const drawn = (i: number) => { const q = track.frames[i]?.quad; if (q?.length !== 4) return 0; const side = (a: number, b: number) => Math.hypot(q[b][0] - q[a][0], q[b][1] - q[a][1]), long = (side(1, 2) + side(0, 3)) / 2 / CARD.height, short = (side(0, 1) + side(3, 2)) / 2 / CARD.width; return Math.min(long, short) / Math.max(long, short); };
+  const wellSeen = (i: number, side: string) => !!seenAt[i] && track.frames[i].side === side && drawn(i) >= TURN.wellSeen;
+  let turnFrom = edge[0] - 1, turnTo = edge[1] + 1; while (turnFrom > leaves && !wellSeen(turnFrom, 'BACK')) turnFrom--; while (turnTo < rests && !wellSeen(turnTo, 'FRONT')) turnTo++;
+  const turns = wellSeen(turnFrom, 'BACK') && wellSeen(turnTo, 'FRONT');
+  if (turns) { const a = seenAt[turnFrom]!, b = seenAt[turnTo]!, reach = CARD.height / 2 - HAND.inFromEdge, off = (c: CardPose, i: number) => sub(c.centre, sub(grips[i], mul(c.long, reach))), offA = off(a, turnFrom), offB = off(b, turnTo);
+    const earlier = seenAt[Math.max(leaves, turnFrom - 3)] ?? a, going = add(add(cross(earlier.long, a.long), cross(earlier.normal, a.normal)), cross(earlier.across, a.across)); // the way it is turning as the turn begins
+    const {axis, angle} = turnBetween(a, b, going);
+    for (let i = turnFrom + 1; i < turnTo; i++) { const t = (i - turnFrom) / (turnTo - turnFrom), long = turned(a.long, axis, angle * t), normal = turned(a.normal, axis, angle * t); seenAt[i] = {centre: add(sub(grips[i], mul(long, reach)), lerp(offA, offB, t)), long, normal, across: cross(normal, long)}; } }
   const known = seenAt.map((c, i) => c ? i : -1).filter(i => i >= 0), cards: CardPose[] = [];
   for (let i = 0; i < n; i++) { if (seenAt[i]) { cards.push(seenAt[i]!); continue; }
     const before = [...known].reverse().find(k => k < i), after = known.find(k => k > i); if (before === undefined && after === undefined) { cards.push(standing); continue; } if (before === undefined) { cards.push(seenAt[after!]!); continue; } if (after === undefined) { cards.push(seenAt[before]!); continue; }
