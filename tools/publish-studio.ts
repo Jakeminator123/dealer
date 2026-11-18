@@ -6,6 +6,7 @@
 //   node tools/publish-studio.ts --kor              build that commit, upload new media, build again, deploy, check
 //   … --commit <ref>                                another commit than origin/main (fetched first)
 //   … --worktree <absolute path>                     reuse another clean worktree of this repository
+//   … --bara-bygge                                   build locally; no media upload or deployment
 //   … --utan-deploy                                 stop after the upload and the second build
 //
 // The code is never this checkout's working tree, where other sessions have unfinished files: the commit is checked out,
@@ -32,7 +33,7 @@ import {fileURLToPath} from 'node:url';
 
 const home = path.resolve(fileURLToPath(new URL('../', import.meta.url)));
 if (path.resolve(process.cwd()) !== home) throw Error('Kör från dealer-katalogen (Jakobs utcheckning).');
-const args = process.argv.slice(2), run = args.includes('--kor'), noDeploy = args.includes('--utan-deploy');
+const args = process.argv.slice(2), run = args.includes('--kor'), noDeploy = args.includes('--utan-deploy'), onlyBuild = args.includes('--bara-bygge');
 const option = (name: string) => { const at = args.indexOf(name); if (at < 0) return null; const v = args[at + 1]; if (!v || v.startsWith('--')) throw Error(`${name} saknar värde.`); return v; };
 
 const suppliedWorktree = option('--worktree');
@@ -127,12 +128,32 @@ delete env.BLOB_READ_WRITE_TOKEN;
 const LAB = `http://127.0.0.1:${LAB_PORT}`;
 let server: ChildProcess | null = null;
 const health = async () => { try { const r = await fetch(`${LAB}/health`, {signal: AbortSignal.timeout(1500)}); return r.ok ? await r.json() as {name?: string; root?: string} : null; } catch { return null; } };
+const waitForExit = (child: ChildProcess, milliseconds: number): Promise<boolean> => {
+  if (child.exitCode !== null || child.signalCode !== null) return Promise.resolve(true);
+  return new Promise(resolve => {
+    const done = () => { clearTimeout(timer); resolve(true); };
+    const timer = setTimeout(() => { child.removeListener('exit', done); resolve(false); }, milliseconds);
+    child.once('exit', done);
+  });
+};
 const stopServer = async () => {
   if (!server) return;
-  const token = await readFile(path.join(WORKTREE, '.runtime', 'preview.json'), 'utf8').then(t => JSON.parse(t).token as string).catch(() => '');
-  await fetch(`${LAB}/stop`, {method: 'POST', headers: {'x-dealer-token': token}}).catch(() => null);
-  for (let i = 0; i < 20 && await health(); i++) await new Promise(r => setTimeout(r, 250));
-  if (await health()) server.kill();
+  const owned = server;
+  const exited = () => owned.exitCode !== null || owned.signalCode !== null;
+  if (exited()) { server = null; return; }
+  const state = await readFile(path.join(WORKTREE, '.runtime', 'preview.json'), 'utf8').then(t => JSON.parse(t)).catch(() => null);
+  // Another run may have replaced this shared file after our child exited. Never send that run's stop token.
+  if (exited()) { server = null; return; }
+  if (state?.pid === owned.pid && state.parent === process.pid && state.script === 'tools/preview.ts' &&
+      sameDir(String(state.root), WORKTREE) && sameDir(String(state.executable), process.execPath) && typeof state.token === 'string') {
+    await fetch(`${LAB}/stop`, {method: 'POST', headers: {'x-dealer-token': state.token}, signal: AbortSignal.timeout(2000)})
+      .then(response => response.body?.cancel()).catch(() => null);
+  }
+  // A failed health request does not prove exit. Wait for this exact child, then stop only that child if necessary.
+  if (!await waitForExit(owned, 5000)) {
+    owned.kill();
+    if (!await waitForExit(owned, 2000)) throw Error(`Arbetskopians hjälpserver (PID ${owned.pid}) avslutades inte; kontrollera den före nästa körning.`);
+  }
   server = null;
 };
 const build = () => step('Kopian byggs', process.execPath, ['tools/build-studio-snapshot.ts', '--lab', LAB, '--hem', home], WORKTREE, env);
@@ -145,15 +166,18 @@ try {
     if (alive?.name !== 'dealer' || !sameDir(String(alive.root), WORKTREE)) throw Error('Arbetskopians labbserver startade inte.');
   }
   build();
-  step('Nya filmer och bilder till Blob', process.execPath, ['tools/sync-studio-media.ts', '--upload', '--store', store], home, env);
-  build();
+  if (!onlyBuild) {
+    step('Nya filmer och bilder till Blob', process.execPath, ['tools/sync-studio-media.ts', '--upload', '--store', store], home, env);
+    build();
+  }
   await stopServer();
+  if (onlyBuild) { say(run ? '\nStannar efter lokalt bygge; inget har laddats upp eller publicerats (--bara-bygge).' : '\nPlan: bara lokalt bygge; ingen uppladdning eller deploy.'); process.exit(0); }
   if (run) {
     const built = JSON.parse(readFileSync(path.join(deployDir, 'build.json'), 'utf8'));
     if (!built.deployable || built.trial || built.sourceCommit !== commit || built.sourceDirty || built.codeLeaks?.length) throw Error(`Bygget går inte att publicera: ${JSON.stringify({deployable: built.deployable, trial: built.trial, commit: built.sourceCommit, dirty: built.sourceDirty, leaks: built.codeLeaks})}`);
     say(`   Bygget: ${built.static.length} statiska filer, ${built.blob.length} i Blob, commit ${commit.slice(0, 7)}.`);
   }
-  if (noDeploy) { say('\nStannar före deploy (--utan-deploy).'); process.exit(0); }
+  if (noDeploy) { await stopServer(); say('\nStannar före deploy (--utan-deploy).'); process.exit(0); }
   step('Deploy', 'vercel', ['deploy', '--prebuilt', '--prod', '--yes', '--scope', TEAM], deployDir, env);
 } finally { await stopServer(); }
 

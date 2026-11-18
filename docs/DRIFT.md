@@ -367,6 +367,8 @@ studions npm-paket.
 
 `--worktree <absolut sökväg>` återanvänder ett befintligt rent arbetsträd av Dealer. Huvudträdet och andra repos
 nekas. Använd samma val för planen och körningen; kör inget annat bygge i det trädet under publiceringen.
+`--kor --bara-bygge` gör bara det lokala snapshotbygget och dess medieplan. Inga media laddas upp och ingen deploy görs;
+använd planen för att granska exakt publiceringsinnehåll först. `--utan-deploy` laddar däremot fortfarande upp media.
 
 **Det som ska finnas på plats** innan `--kor` (verktyget stannar med ett besked om något saknas):
 

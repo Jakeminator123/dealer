@@ -165,6 +165,7 @@ Innehåll: [Arbetet och dokumenten](#arbetet-och-dokumenten) · [Labbet och stud
   huvudagenten förnyar det tidsatta ordermandatet inför konkreta beställningar utan att nollställa journalen.
   "Kvalitet före kvantitet, men om allt sitter, får du gärna gå vidare och skapa mycket material så länge det är bra."
   En granskad pilot föregår serien. 3D-Dealer har ett eget repo; saldot samordnas i skrivbordets DISKMASKIN.TXT.
+  Senare samma dag: "max 2000 mer idag" gäller hans möjliga påfyllning; saldot räknas inte upp före ett kvitto.
 
 - **Domar åt honom, och ingen kö** (2026-11-13): "jag måste sova och du får granska och godkänna alla klipp", och kl.
   15.50, på väg ut: "jag vill nu för jag ska iväg att du godkänner allt videomaterial som innehåller de där kriterierna
@@ -477,6 +478,9 @@ Innehåll: [Arbetet och dokumenten](#arbetet-och-dokumenten) · [Labbet och stud
 
 ## Kopian och nätet
 
+- **Mobilkopia och slut på arbetspasset** (2026-11-18, senare på kvällen): "Skcika - bara om möjligt - ngonting till vercel
+  som jag kan klla in från mobilen" och "Avsluta när du känner att det är nog bra. Eller om högst 4h."
+  Det ger mandat att förbereda och publicera Dealer-kopian i detta arbetspass; den befintliga åtkomsten bevaras.
 - **Allt på nätet är sekundärt** (2026-11-17, sent): "Allt på nätet är sekundärt". Inget arbete läggs på kopian, och
   `cloud/` står orörd tills han säger att den ska bort. En publicering görs bara på hans uttryckliga ord (AGENTS och
   skillen `publicera-kopian`).

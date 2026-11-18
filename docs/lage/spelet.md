@@ -1,7 +1,6 @@
 # Läget: spelet
 
-Huvudagentens bana: spelet (`game.html`), 3D-scenens filmlager, kopian på nätet och det de stängda banorna Tal, Scen
-och Trailer lämnade. Här står bara det som gäller nu; kontraktet står i `docs/SYSTEM.md`, "Spelet".
+Huvudagentens bana: spelet, scenens filmlager, nätkopian och stängda banor. Kontrakt: `docs/SYSTEM.md`, "Spelet".
 
 **Läget.**
 - Spelet i studion är ett mellansteg mot Scoutgaming, som äger regler, slump och kortvärden; den fristående spelmotorn
@@ -22,7 +21,8 @@ och Trailer lämnade. Här står bara det som gäller nu; kontraktet står i `do
 - Filmkortsprovet behåller filmens kort vid eget mål och ritar återbruk till C2/split på spelplatsen. Spår måste täcka
   landning/övertoning genom returskarven. `paow-game-carry-20261118`: native split 18/17 mot 17, saldo 1005; C2-kant högst 1 px vid två gränser. Full rörelsedom återstår.
 - Kopian på nätet är sekundär och står på `2e3967c` (publicerad 2026-11-18 på Jakobs ja, med nytt lösenord).
-  `cloud/` bevaras tills Jakob säger annat.
+  Mobilkopians tre kända fel är rättade i `9ffa4b0`: lokal snapshot 19/19, native hand 20 mot 17, saldo 1005.
+  Bevis: `assets/proofs/paow-mobile-studio-20261118`. Stående beskär ytterplatser; liggande visar alla sju.
 - Filmen till hans chef ligger på hans skrivbord (`paow-runda-6-till-chefen-spelet.mp4` och `-scenen.mp4`, 124 s,
   blint granskad 3,75/5). Ingen granskare har hört ljudet, och `paow-runda-2-` till `-5-` ska inte skickas.
 - Filmen före spelet (`/trailer`) är `assets/films/intro/noir-3/film-2.mp4`.
@@ -33,7 +33,7 @@ och Trailer lämnade. Här står bara det som gäller nu; kontraktet står i `do
 2. Repliker som munlappar över vila (`repliker-som-munlappar`) kan provas efter Jakobs ja till realtidsmunnen 2026-11-17.
 3. En ny runda till chefen när läpparna är inne (`node alla.mjs <namn>`, blind granskning mot `chef-jakob-1-1x-v10`).
    Jakob lyssnar innan han skickar.
-4. Kopian publiceras igen först på Jakobs ord, efter att dess tre fel är rättade ([BRISTER](../BRISTER.md)).
+4. Mobilpublicering väntar på särskilt ja till sju filmer (Beslut); därefter kontrolleras nätkopian och fysisk telefon.
 
 **Väntar på Jakob.** Inget utanför Beslut.
 

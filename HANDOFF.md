@@ -12,7 +12,8 @@ Läs AGENTS.md, den här sidan och EN lägesfil för din bana. Ersätt inaktuell
 - Den tatuerade uppsättningen är hans förstahandsval, och ankare 2.3 gäller. Vägen från det finns (ett slutbildsankare,
   A3, per plats; beställt genom Bordet), men givarna till plats 4 och 1 fick hans Inte bra och ingången hans nej.
 - Kortplanen ritar verkliga kort genom en lins; spelet kan följa den bakom ett val som är av (`geometri=lins`).
-- Kopian på nätet är sekundär och publiceras bara på hans ord; senast 2026-11-18 från `2e3967c`, med nytt lösenord.
+- Jakob bad om en mobilkopia 2026-11-18. Den byggda kopian är lokalt verifierad; nätet står ännu på `2e3967c`.
+  Automatisk granskning stoppade sju nya filmuppladdningar; den konkreta frågan finns i Beslut.
 - Kontrollen före en push körs bara på datorn. Kontots tokengräns delas av alla sessioner: få underagenter.
 
 ## Nästa steg
@@ -26,9 +27,9 @@ Sammanhängande lokal väg från underlag till spelbar Blackjack (Jakob 2026-11-
 4. Munproven är lokala jämförelser; inget byte i banken före Jakobs val i Beslut. Körarens kod finns nu i repot.
 5. Testa, pusha och verifiera fjärrens SHA. Sessionens tio GPT-meddelanden är förbrukade; färdiga granskningsfynd är
    rättade. Fem Runway-filmer kostade 404 krediter; lokal Claude-MCP fungerar. Inget anrop eller KÖR pågår.
-6. Hålkortets värde följer visad ruta (60→61). Filmkortsprovet använder ritade kort vid återbruk till C2/split.
-   Native split är klar; mätta kortkanter hoppar högst 1 px. READY-C:s lokala tvåkortsprov har kvarliggande kort
-   och jämn skofärg efter rättat inpass. Grepp, tempo, mask och rörelse återstår ([film](docs/lage/film.md)).
+6. Hålkort, native split och READY-C:s tvåkortsprov är kontrollerade inom sina avgränsade prov. Grepp, tempo,
+   mask och hela rörelsen återstår ([film](docs/lage/film.md)); C2/split använder ännu ritade kort vid återbruk.
+7. Mobilkopians tre kända fel är rättade; lokal spelhand och snapshotrepetition är verifierade ([spelet](docs/lage/spelet.md)).
 
 Äldre frågor till honom som inte är kort än: `D:/dealer-scratch/tmp/handoff-nytt/forslag-kort.md`.
 

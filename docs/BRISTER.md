@@ -275,13 +275,14 @@ Innehåll: Kortet · Filmerna och banken · Läpparna och rösten · Spelet och 
   stora filer här (repot är publikt och 16 MB): det som kostar på kontot är ett annat repos automatiska kontroller
   (`D:/dealer-scratch/tmp/github-kostnad/siffror.txt`, förslagen bredvid). Stänger: bara han, under Settings, Billing
   and licensing.
-- **Kopian på nätet, som en ny besökare möter den** (kontrollen 2026-11-18 efter publiceringen från `2e3967c`; bilder
-  och rapport i `D:/dealer-scratch/tmp/kopian-1118/`). På en dator fungerar den: Bordet, Scen, Granska, Prov och en
-  hel hand i Casino med Paow. Fel: Material i menyn ger en felruta (kopian bär inte `api/media`); Bordet visar ingen
-  bild i telefonstorlek (fast högerpanel på 380 punkter i `BordetView.tsx`); boten och Önskemål säger "du har loggats
-  ut" till den som aldrig loggat in, och ingen länk leder till inloggningen; `/api/onskemal` ger 401 i konsolen på
-  varje sida. Kontrollskripten i `huvudagent11/look/` loggar in med det gamla ordet och ska inte köras; de nya utan
-  inloggning ligger i `kopian-1118/`. Prövat: inget. Stänger: rättas före nästa publicering, som är hans ord.
+- **Mobilkopian är byggd men ännu inte publicerad.** Nätet står på `2e3967c`: Material saknar `api/media`, Bordets
+  fasta panel skymmer bilden på telefon och bot/Önskemål saknar en tydlig inloggningsväg. Rättat i `9ffa4b0`:
+  fryst Material-register, staplat Bordet, sessionskontroll och inloggningslänkar; ett inboxfel stoppar inte senare försök.
+  Prövat: lokal snapshot 19/19 (även cookies, skyddad inbox och filmsökning), native Chrome 390 × 844 och 844 × 390,
+  hand 20 mot 17 och saldo 1005. Bevis: `assets/proofs/paow-mobile-studio-20261118`. En fysisk telefon och ljud är
+  inte prövade; stående spel beskär ytterplatserna. Automatisk granskning stoppade sju nya filmuppladdningar;
+  den konkreta frågan ligger i Beslut. Stänger: verifierad ny nätkopia och telefonprov. De äldre kontrollskripten
+  i `huvudagent11/look/` använder ett ersatt lösenord och ska inte köras.
 
 ## Pamela
 

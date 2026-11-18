@@ -134,13 +134,10 @@ export function BankProvider({ children, every = 4000 }: { children: ReactNode; 
       if (document.visibilityState === "visible" && !busy.current) void read();
     };
     const timer = window.setInterval(tick, every);
-    const seen = () => {
-      if (document.visibilityState === "visible") void read();
-    };
-    document.addEventListener("visibilitychange", seen);
+    document.addEventListener("visibilitychange", tick);
     return () => {
       window.clearInterval(timer);
-      document.removeEventListener("visibilitychange", seen);
+      document.removeEventListener("visibilitychange", tick);
     };
   }, [read, every]);
 

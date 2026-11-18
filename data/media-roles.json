@@ -4152,6 +4152,19 @@
             "from": "Lokal Dealer · native Chrome och oberoende granskning",
             "when": "2026-11-18"
           }
+        },
+        {
+          "id": "paow-mobile-studio-20261118",
+          "role": "arbetsmaterial",
+          "name": "Mobil studio · lokal spelhand",
+          "path": "assets/proofs/paow-mobile-studio-20261118/casino-390-result.png",
+          "pattern": "assets/proofs/paow-mobile-studio-20261118/*",
+          "state": "kandidat",
+          "note": "Lokal Chrome i 390 × 844 och 844 × 390. Hand 20 mot 17, saldo 1005. Snapshot 19/19 kontroller; ingen ny Vercel-publicering eller fysisk telefonkontroll.",
+          "source": {
+            "from": "Lokal Dealer · native Chrome och snapshotrepetition",
+            "when": "2026-11-18"
+          }
         }
       ]
     },
