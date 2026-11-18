@@ -4102,6 +4102,19 @@
           }
         },
         {
+          "id": "paow-game-carry-20261118",
+          "role": "arbetsmaterial",
+          "name": "Filmkort · verifierad splitrunda och C2-skarv",
+          "path": "assets/proofs/paow-game-carry-20261118/round-result.png",
+          "pattern": "assets/proofs/paow-game-carry-20261118/*",
+          "state": "kandidat",
+          "note": "Native split 18/17 mot 17, saldo 1005. C2-kant median 0, högst 1 skärmpixel vid två gränser. Full rörelsedom återstår; återbruk använder ritade kort och D.C3 saknar filmhand.",
+          "source": {
+            "from": "Lokal Dealer · native Chrome och oberoende kantmätning",
+            "when": "2026-11-18"
+          }
+        },
+        {
           "id": "paow-c2-continuous-clock-20261118",
           "role": "arbetsmaterial",
           "name": "C2 · lokalt tidsprov av omgrepp",

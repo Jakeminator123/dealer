@@ -19,7 +19,7 @@ och Trailer lämnade. Här står bara det som gäller nu; kontraktet står i `do
 - `diagnos=1` på `/game.html` ger paus/stegning. Hålkortets värde följer visad ruta: native-provet
   `paow-game-frame-20261118` höll 8 i över 22 s paus; ruta 60 visade 8, ruta 61 visade 13. Maskens kvalitet bedöms separat.
 - Filmkortsprovet behåller filmens kort vid eget mål och ritar återbruk till C2/split på spelplatsen. Spår måste täcka
-  landning/övertoning genom returskarven. `paow-game-carry-20261118` styrker bankvalen; native splitprov återstår.
+  landning/övertoning genom returskarven. `paow-game-carry-20261118`: native split 18/17 mot 17, saldo 1005; C2-kant högst 1 px vid två gränser. Full rörelsedom återstår.
 - Kopian på nätet är sekundär och står på `2e3967c` (publicerad 2026-11-18 på Jakobs ja, med nytt lösenord).
   `cloud/` bevaras tills Jakob säger annat.
 - Filmen till hans chef ligger på hans skrivbord (`paow-runda-6-till-chefen-spelet.mp4` och `-scenen.mp4`, 124 s,

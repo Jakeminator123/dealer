@@ -28,7 +28,7 @@ Sammanhängande lokal väg från underlag till spelbar Blackjack (Jakob 2026-11-
    rättade. Fem Runway-filmer kostade 404 krediter; lokal Claude-MCP fungerar. Inget anrop eller KÖR pågår.
 6. Hålkortets värde följer visad filmruta, även pausat: native-provet `paow-game-frame-20261118` visar gränsen 60→61.
    Filmkortsprovet använder ritade kort vid återbruk till C2/split och följer spåret genom tidiga returskarvar.
-   Verklig bank och regressioner är kontrollerade; native splitprov återstår. Blå restkant, grepp, tempo,
+   Native splitrunda är klar; kortkanterna hoppar högst 1 px vid två mätta gränser. Blå restkant, grepp, tempo,
    full mask- och rörelsedom samt godkänt READY-C-inpass/utpass är fortfarande öppna.
 
 Äldre frågor till honom som inte är kort än: `D:/dealer-scratch/tmp/handoff-nytt/forslag-kort.md`.

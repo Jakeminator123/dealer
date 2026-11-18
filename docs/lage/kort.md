@@ -7,7 +7,7 @@ bara det som gäller nu; kontraktet står i `docs/SYSTEM.md`, "Ritade kort".
 - Spelets underlägg (`UNDER` i `src/card-overlay.ts`) är förval sedan 2026-11-14. Kortens fjärde steg (`33b164a`) fick 3,75/5 blint.
 - Provet `kort=liggande&cardMethod=film` behåller filmkortet i 2D; `scene` färgar med `cardBack=dark&cardFace=paper`, även i Bordets giv–retur-par.
 - Vid uppmätt vila består kortet och senaste belagda sida även utan markör; masken kräver aktuell ruta. Toning börjar bara på FRONT.
-- Filmkortsprovet ritar återbrukade C2/split till deras spelplats och fortsätter genom tidig retur fram till vila. Verklig bank är kontrollerad; native splitprov återstår.
+- Filmkortsprovet ritar återbrukade C2/split till spelplatsen genom returen. Native splitrunda klar; C2-kant högst 1 px vid två gränser (`paow-game-carry-20261118`). Full rörelsedom återstår.
 - P4.C2 har egna filmer/spår: vila55, släpp64 i Cykel01/65 i Cykel02. Det svagare omtaget är arkiverat med bevis kvar.
 - Kortplanen ritas i verkligt perspektiv (`918e7f4`): där planen säger Plant bord ritas varje kort som ett verkligt
   kort (63 × 88 mm, storlek 1,00) genom linsen som ger dealern människostorlek (`src/table-lens.ts`). `planCardQuad` i

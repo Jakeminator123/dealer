@@ -11,7 +11,7 @@ Innehåll: Kortet · Filmerna och banken · Läpparna och rösten · Spelet och 
 
 - **Återbrukade andrakort/split kräver fortfarande ritade kort.** `kort=liggande` behåller filmkort vid eget mål men
   ritar återbruket till spelplatsen; tidiga returskarvar följs fram till uppmätt vila. Bankprov `paow-game-carry-20261118`
-  och regressioner täcker valet, inte native-rörelsen. Mätningen `paow-game-frame-20261118/coverage.json` ger 9/16 egna
+  visar en färdig native splitrunda och C2-kant högst 1 px vid två gränser; full rörelsedom återstår. `paow-game-frame-20261118/coverage.json` ger 9/16 egna
   målfilmer; sju C2 behöver 39–51 px förskjutning. Extra kort/split når cirka 100 px, och D.C3+ saknar filmhand. Scenproven
   `paow-cycle02-scene-20261118` och `paow-outer-filmcard-20261118`
   visar kvarliggande kort mellan två olika platser, men inte detta återbruk. P1:s blekta skugga vid ruta 114 är rättad:
