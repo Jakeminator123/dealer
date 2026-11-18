@@ -24,7 +24,10 @@ Innehåll: Kortet · Filmerna och banken · Läpparna och rösten · Spelet och 
   skjuvat), plats 4 90 × 74 mot 84,5 × 72, dealerns kort 61 × 35 mot 75 × 57; en marker (39 mm) är 106 px bred vid
   plats 4, bredare än kortet. Prövat: med valet på ger kortplan, spel, vilande kort och scenens projektion samma
   fyrhörning inom 0,01 px, också med annan lins och bildstorlek (`tools/card-plan.test.ts`); bilder utan webbläsare
-  i `D:/dealer-scratch/tmp/raddning-geometri/bilder/`. Inte sett i en webbläsare. Stänger: kontrollen i
+  i `D:/dealer-scratch/tmp/raddning-geometri/bilder/`. Sett i en webbläsare 2026-11-18 som stillbild
+  (`raddning-geometri/titt/`): korten stämmer med talen och är upprätta, men rummet är borta, hela bordet med reling
+  syns, insatsringarna är hälften så stora (47 mot 87 px) och dealerns kort ligger över loggan; rörelsen och
+  `scene3d.html` är inte sedda. Det är inte visningsbart än. Stänger: de fyra felen rättas, sedan kontrollen i
   webbläsaren, Jakobs ja i labbet, bytet av `TABLE_GEOMETRY` och borttagningen som `docs/SYSTEM.md`, "Ritade kort",
   räknar upp. Med flit kvar på den gamla regeln: `tools/build-anchor.ts` (frysta hashar), `tools/card-coverage.ts`
   och `tools/placement-backdrop.ts`.

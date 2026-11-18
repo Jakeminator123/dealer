@@ -14,7 +14,7 @@ bara det som gäller nu; kontraktet står i `docs/SYSTEM.md`, "Ritade kort".
   ett värde för alla kort, 80–96 %, med märken vid Din plan (87 %) och Verkligt (96 %). Utan sparat värde ritas 87 %.
 - Spelet och scenen kan följa samma regel och lins bakom ett val (`geometri=lins`; `TABLE_GEOMETRY` i
   `src/card-plan.ts`, förval `contract` = dagens bild): liggande kort, extra kort, split, det ritade kortets vila och
-  scenens filmkamera. Testerna håller kortplan = spel = scen inom 0,01 px; inget av det är sett i en webbläsare.
+  scenens filmkamera. Testerna håller kortplan = spel = scen inom 0,01 px; i en webbläsare stämmer korten, men bilden runt dem gör det inte än ([BRISTER](../BRISTER.md)).
 - Kortplan har en vy: valet Dator | Mobil och adressordet `vy=mobil` är borta, eftersom inget som körs läste mobilvyn.
   Behövs en mobilvy härleds den ur samma kort och lins, aldrig som en andra inställning.
 - Labbet visar släta gula och blå kort (`CARD_COLOUR` i `src/placement-model.ts`), och spelets rygg med SG står kvar:
