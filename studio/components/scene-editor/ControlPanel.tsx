@@ -7,7 +7,7 @@
 import { ChevronRight, Search, X } from "lucide-react";
 import { useMemo, useState, type ReactNode } from "react";
 import type { SceneState } from "../../../src/scene3d-view.ts";
-import { GROUPS, formatValue, inUse, keySpec, searchKeys, type GroupId, type KeySpec, type SceneKey } from "../../lib/scene-keys.ts";
+import { GROUPS, inUse, keySpec, searchKeys, type GroupId, type KeySpec, type SceneKey } from "../../lib/scene-keys.ts";
 import { IconButton, ScrollArea, TextField, cn } from "../ui";
 import { KeyControl } from "./KeyControl";
 import { RoomGrid, type RoomItem } from "./RoomGrid";
@@ -160,5 +160,3 @@ export function ControlPanel({
   );
 }
 
-/** A key's value in words, for the header and the address line. */
-export const valueText = (key: SceneKey, value: unknown, roomName?: (id: string) => string | undefined) => formatValue(keySpec(key)!, value, roomName);

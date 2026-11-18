@@ -15,7 +15,6 @@ export const METHOD_STATUS_LABEL: Record<MethodStatus, string> = { gäller: 'gä
 /** The classes of seats whose evidence differs: the middle seats, the far seats, the dealer's own cards. */
 export const SEAT_CLASSES = ['mitten', 'ytter', 'dealer'] as const;
 export type SeatClass = (typeof SEAT_CLASSES)[number];
-export const SEAT_CLASS_LABEL: Record<SeatClass, string> = { mitten: 'mittplatserna P3–P5', ytter: 'ytterplatserna P1, P2, P6, P7', dealer: 'dealerns kort' };
 /**
  * A reference film rule: none; a film of the bank that shows the same step to the same seat, approved straight by Jakob (any
  * dealer's); the dummy's rendered film for the seat, read off a real deal (from trial 2C2, 2026-11-18), else such a film of
@@ -188,6 +187,20 @@ export function recipeFor(register: Pick<MethodRegister, 'methods'> | null, step
   const m = methodFor(register, step, target);
   if (!m || m.status === 'saknas' || !m.model || !m.style || !m.takes) return null;
   return { method: m, model: m.model, resolution: m.resolution, seconds: m.seconds, takes: m.takes, style: m.style, template: m.template ?? TEMPLATE_VERSION, shape: m.shape, turn: m.turn && m.turn !== 'plan' ? m.turn : null, hand: m.hand === 'LH' || m.hand === 'RH' ? m.hand : null, reference: m.reference, lastPicture: m.lastPicture, extra: m.extra };
+}
+
+/**
+ * The hands of a film where the one who orders says nothing about them: Bordet's row (studio/lib/bordet.ts lineOf), the
+ * store's draft (tools/order-store.ts create) and the production list (tools/produce.ts) all take them from here. From
+ * anchor 2.3 the hand at the shoe strokes the card out and the other hand lays it; a deal takes the recipe's hand all the
+ * way; else what Placering says for the card (its hand, and a handbyte only where the plan says one and the recipe names
+ * no hand). `lays` is the hand that lays the card: what a reference film and a cut frame must have been laid with.
+ */
+export function recipeHands(step: Pick<StepDef, 'card' | 'start' | 'grip'>, recipe: Pick<Recipe, 'hand'> | null, seat: { hand?: 'LH' | 'RH'; pass?: boolean } | null): { hand: 'LH' | 'RH'; pass: boolean; lays: 'LH' | 'RH' } {
+  if (step.grip === 'TWO_HANDS') return { hand: 'LH', pass: false, lays: 'RH' };
+  if (step.card && step.start !== 'LAND' && recipe?.hand) return { hand: recipe.hand, pass: false, lays: recipe.hand };
+  const pass = !!step.card && !!seat?.pass, hand = pass ? 'LH' : (seat?.hand ?? 'LH');
+  return { hand, pass, lays: pass ? 'RH' : hand };
 }
 
 /**

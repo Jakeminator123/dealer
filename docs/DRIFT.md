@@ -119,8 +119,7 @@ inte med av misstag. Git-push är separat från webbdeploy, mediauppladdning och
   huvudträdets `studio/out` först när bygget har lyckats: kopian läggs bredvid som `out.ny`, den gamla mappen flyttas
   undan och den nya in. Ett bygge eller en flytt som faller lämnar det som visas orört, och `studio/out/bygge.json`
   säger vilken commit som visas. Trädet görs en gång med `git worktree add --detach <mapp på D:> main`; det som finns
-  och används är `D:/dealer-scratch/tmp/granska-prov/trad`, som ges med `--trad` (verktygets förval,
-  `huvudagent11/studio-trad`, finns inte). Loggarna ligger i `studio-logg` bredvid. Servern startas inte om.
+  och används är `D:/dealer-scratch/tmp/granska-prov/trad`, verktygets förval (`--trad` ger ett annat). Loggarna ligger i `studio-logg` bredvid. Servern startas inte om.
 - **En titt på labbsidor** (2026-11-17): `node tools/lab-look.ts <lista.json> <utmapp> [--vad "<vad>"] [--vem <namn>]`
   tar en skärmbild per sida i listan (`[{name, url, wait, width, height, clicks, facts}]`, adresserna efter
   `http://127.0.0.1:4319`) i en egen headless Chrome (egen profil, port 9591), aldrig i Jakobs flik: varje adress får

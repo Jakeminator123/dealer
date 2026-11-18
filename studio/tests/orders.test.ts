@@ -6,7 +6,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFile, readdir } from "node:fs/promises";
 import {
-  HANDOVER, PRESET_PARAMS, SHOWN_CHIP, anchorFor, cardOf, costWords, firstLacking, goesWords, gripAgainstPlan, markOf, motionWords, offsetWords, orderableCard, ownerWords, paramRows, picturesInOrder, plannedWords, presetAddress, presetOf, recipeOf,
+  HANDOVER, PRESET_PARAMS, SHOWN_CHIP, anchorFor, cardOf, dealAnchor, costWords, firstLacking, goesWords, gripAgainstPlan, markOf, motionWords, offsetWords, orderableCard, ownerWords, paramRows, picturesInOrder, plannedWords, presetAddress, presetOf, recipeOf,
   referenceWords, routeOf, seatKey, sections, shownWords, storedParts, styleWords, withCard, type Order, type OrderAnswer,
 } from "../lib/orders.ts";
 import { parseJakob } from "../lib/names.ts";
@@ -100,12 +100,14 @@ test("a new order starts from the anchor that holds, else from what the dealer l
   assert.equal(firstLacking([...paow, e("n", "ankare-2.1", "READY", "gäller"), e("s", "ankare-2.2", "READY-B", "gäller")]), "GIV-2.1");
 });
 
-test("a new order asked for by address: dealer, step and seat, or the seat's planned grip, or all seven", async () => {
-  const { plan, file } = await readPlan(process.cwd());
-  const p = planAnswerOf(plan, file);
-  const q = (s: string) => presetOf(new URLSearchParams(s), p);
+test("a new order asked for by address: dealer, step and seat, or the deal the game deals the seat from, or all seven", async () => {
+  const q = (s: string) => presetOf(new URLSearchParams(s));
   assert.deepEqual(q("ny=1&dealer=paow&steg=GIV-2.2&plats=P4.C1"), { dealer: "paow", step: "GIV-2.2", target: "P4.C1", all: false, model: null });
-  assert.deepEqual(q("ny=1&plats=P3.C1"), { dealer: null, step: p.seats["P3.C1"].grip === "DRAG" ? "GIV-2.2" : "GIV-2.1", target: "P3.C1", all: false, model: null }, "the grip Placering plans the card with");
+  // A seat without a step: the anchor the game deals it from (dealPose), never the plan's grip; Paow's seat 6 from 2.2.
+  assert.deepEqual(q("ny=1&plats=P3.C1"), { dealer: null, step: "GIV-2.1", target: "P3.C1", all: false, model: null });
+  assert.equal(q("ny=1&plats=P6.C1")?.step, "GIV-2.2", "Paow, the sheet's dealer, deals seat 6 from anchor 2.2");
+  assert.equal(q("ny=1&dealer=paow&plats=P6.C1")?.step, `GIV-${dealAnchor("paow", "P6.C1")}`);
+  assert.equal(q("ny=1&dealer=pamela&plats=P6.C1")?.step, "GIV-2.1", "Pamela deals every seat from 2.1");
   assert.deepEqual(q("ny=1&dealer=paow&steg=giv-2.2&plats=alla"), { dealer: "paow", step: "GIV-2.2", target: null, all: true, model: null });
   assert.deepEqual(q("ny=1&dealer=paow&steg=INGANG-2.1&modell=kling-3-4k"), { dealer: "paow", step: "INGANG-2.1", target: null, all: false, model: "kling-3-4k" }, "a model chosen by address");
   assert.equal(q("ny=1&steg=INGANG-2.1&modell=gen-9")?.model, null, "a model that does not exist is not chosen");
@@ -195,15 +197,15 @@ test("a new order like an old one: every choice of it, never its pictures", asyn
   // An order written before template 4 (no style: the long text) gives Kort: no new order is written Utförlig. The turn
   // and every other choice follow the old order.
   assert.equal(film.prompt.style, undefined);
-  assert.deepEqual(recipeOf(film), { dealer: "paow", step: "GIV-2.1", target: "P4.C1", hand: "LH", side: "FRONT", flipAxis: "AT_PLACE", style: "KORT", longText: true, model: "kling-4", duration: 7, takes: 2, extra: "", reference: null, shape: "ROUND_TRIP", cardScale: 1 });
+  assert.deepEqual(recipeOf(film), { dealer: "paow", step: "GIV-2.1", target: "P4.C1", hand: "LH", side: "FRONT", style: "KORT", longText: true, model: "kling-4", duration: 7, takes: 2, extra: "", reference: null, shape: "ROUND_TRIP", cardScale: 1 });
   const rest = all.find((o) => o.id === "paow-vila-03")!;
   const r = recipeOf(rest);
   assert.deepEqual([r.step, r.target, r.hand, r.style, r.longText, r.model, r.duration, r.takes], ["VILA", null, null, "KORT", true, "wan3", 4, 1]);
   assert.match(r.extra, /warm, friendly smile/);
-  // One stored with the style UTFÖRLIG (an aborted one of the first series) gives Kort too, its turn kept.
+  // One stored with the style UTFÖRLIG (an aborted one of the first series) gives Kort too; its turn is not carried over (the recipe's).
   const aborted = all.find((o) => o.id === "paow-giv-2-1-p4-01")!;
   assert.equal(aborted.prompt.style, "UTFÖRLIG");
-  assert.deepEqual([recipeOf(aborted).style, recipeOf(aborted).longText, recipeOf(aborted).flipAxis], ["KORT", true, aborted.motion!.flipAxis]);
+  assert.deepEqual([recipeOf(aborted).style, recipeOf(aborted).longText, "flipAxis" in recipeOf(aborted)], ["KORT", true, false]);
   for (const o of all) assert.notEqual(recipeOf(o).style, "UTFÖRLIG", `${o.id}: a new order like it is not written in the long text`);
   const trial = { ...film, prompt: { ...film.prompt, style: "KORT" as const }, motion: { ...film.motion!, hand: "LH" as const, pass: true, cardScale: 1.5 }, reference: { status: "FINNS" as const, clips: ["pamela-p4-c1-plan-deal-02"], path: "assets/orders/x/reference.mp4", sha256: "a".repeat(64), seconds: 4, goesTo: "P4.C1", approvedStraight: true, dealer: "pamela" } };
   assert.deepEqual([recipeOf(trial).hand, recipeOf(trial).style, recipeOf(trial).longText, recipeOf(trial).reference, recipeOf(trial).cardScale], ["PASS", "KORT", false, "pamela-p4-c1-plan-deal-02", 1.5]);

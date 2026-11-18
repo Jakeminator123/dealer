@@ -107,7 +107,7 @@ mall (V).
 
 **8. Komponera i Bordet, Beställ** (`/studio/bordet/?lage=bestall`; `/studio/bestall/` leder dit). En rak linje: välj
 steget (som säger ankaret) och kortets plats; allt annat är stegets enda recept i `data/order-methods.json`, visat som
-det som kommer att skickas, och ett avsteg görs medvetet under "Undantag från receptet" (handboken §2). Stegen som kan
+det som kommer att skickas, och ett avsteg görs medvetet under "Receptet · gör ett undantag" (handboken §2). Stegen som kan
 beställas står i `STEPS` i `src/order-model.ts` (vad en film går mellan, aldrig hur den beställs), och de kort en giv kan
 gå till i `SEAT_TARGETS`; en giv är bara dit, och `GIV-2.1` går också till hålkortet `D.C2`, som landar stängt (V).
 Ankare 2.3 har två steg: ingången `INGANG-2.3` (ankare 1 → 2.3) och given med två händer `GIV-2.3`; given väntar på en

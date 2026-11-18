@@ -24,8 +24,8 @@ import { existsSync, realpathSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { SEATS, bankEdges, buildGraph, parseEdge, roundSequence, type BankData, type EdgeKind, type Graph } from '../src/clip-graph.ts';
-import { ANCHOR_NODE, ANCHOR_ROLE, LANDING_ROLE, MODELS, SHOWN_LABEL, landingNode, seatEndOf, seatWords, stepOf, type Anchor as AnchorKey, type BankFacts, type Order, type Shown, type StepKey } from '../src/order-model.ts';
-import { methodFor, readMethods, recipeWords, referenceByRule, referenceWaits, type Method, type MethodRegister } from '../src/order-methods.ts';
+import { ANCHOR_NODE, ANCHOR_ROLE, LANDING_ROLE, MODELS, SHOWN_LABEL, landingNode, readCutChecks, seatEndOf, seatWords, stepOf, type Anchor as AnchorKey, type BankFacts, type Order, type Shown, type StepKey } from '../src/order-model.ts';
+import { methodFor, readMethods, recipeFor, recipeHands, recipeWords, referenceByRule, referenceWaits, type Method, type MethodRegister } from '../src/order-methods.ts';
 import { bankSummary, hubAnchor, playing, type Hubs, type Summary } from '../studio/lib/edge-stats.ts';
 import { hubDeals } from '../src/game-director.ts';
 import { VERDICT_LABEL, verdictOf, verdictPhrase, type Verdict } from '../studio/lib/verdict.ts';
@@ -100,8 +100,8 @@ export type ProductionInput = {
   /** The dealer's entries in Material (data/media-roles.json). */
   entries: readonly Entry[];
   orders: readonly OrderLike[];
-  /** Each card's side as the plan lays it (Placering): what the pictures draw. */
-  sides?: Readonly<Record<string, 'FRONT' | 'BACK'>>;
+  /** Each card as the plan lays it (Placering, the store's plan answer): its side, what the pictures draw, and its hands, what the store takes when a draft says none. */
+  seats?: Readonly<Record<string, { side: 'FRONT' | 'BACK'; hand?: 'LH' | 'RH'; pass?: boolean }>>;
   createdBy?: string;
   /** What the dealer's round deals from another pose at the shoe, by the game's rule (hubDeals in src/game-director.ts); none: every step as its edge plays. */
   hubs?: Hubs;
@@ -193,7 +193,7 @@ export function draftOf(input: Pick<ProductionInput, 'dealer' | 'createdBy'>, ro
 export function productionList(input: ProductionInput): Production {
   const { graph, entries, dealer } = input;
   const needed = new Set(roundFilms(graph));
-  const sides = input.sides ?? {};
+  const seats = input.seats ?? {};
   const mine = input.orders.filter((o) => o.order.dealer === dealer.id && o.order.status !== 'AVBRUTEN');
   const flightOf = (o: OrderLike): InFlight => ({ id: o.order.id, title: o.order.title, shown: o.shown, approved: !!o.order.approval, delivered: DELIVERED.includes(o.shown) });
   const edgesOfOrder = (o: OrderLike) => (o.order.step.cutInto?.length ? o.order.step.cutInto : o.order.step.edge ? [o.order.step.edge] : []).map((e) => parseEdge(e)?.base ?? e);
@@ -212,6 +212,10 @@ export function productionList(input: ProductionInput): Production {
     const at = stepFor(edge);
     const method = at ? methodFor(input.methods, at.step, at.target) : null;
     const def = at ? stepOf(at.step) : null;
+    // The shape and the laying hand as the store derives them for a draft that names nothing but the step and the card.
+    const recipe = at ? recipeFor(input.methods, at.step, at.target) : null;
+    const shape = def?.kind !== 'FILM' ? null : def.card && def.start !== 'LAND' ? (recipe?.shape ?? 'ONE_WAY') : 'ONE_WAY';
+    const lays = def ? recipeHands(def, recipe, at!.target ? (seats[at!.target] ?? null) : null).lays : 'LH';
     // What must hold first: the anchors the step's pictures are made from, a landing picture for a return.
     const needs: string[] = [];
     if (def) {
@@ -219,7 +223,7 @@ export function productionList(input: ProductionInput): Production {
       for (const a of anchors) if (!anchorHolding(entries, a)) needs.push(anchorWords(a));
       if (def.start === 'LAND' && !landingHolding(entries, at!.target)) needs.push(`landningsbild på ${cardWords(at!.target!)}`);
       // A deal bara dit ends on the seat's own end picture: its landing picture, else the cut frame of the bank's film there.
-      if (def.card && def.start !== 'LAND' && method?.shape === 'ONE_WAY' && !seatEndOf(entries, input.bank, { dealer: dealer.id, step: def, target: at!.target })) needs.push(`slutbild för ${cardWords(at!.target!)}`);
+      if (def.card && def.start !== 'LAND' && shape === 'ONE_WAY' && !seatEndOf(entries, input.bank, { dealer: dealer.id, step: def, target: at!.target, hand: lays })) needs.push(`slutbild för ${cardWords(at!.target!)}${lays === 'RH' ? ' med höger hand vid kortet' : ''}`);
     } else if (edge.kind === 'ARRIVE' || edge.kind === 'LEAVE') {
       needs.push('en bild av bordet utan henne (ingen roll i Material än)');
       const standing = entries.some((e) => e.role === 'keystone' && e.state === 'gäller' && isStanding(e));
@@ -229,7 +233,7 @@ export function productionList(input: ProductionInput): Production {
     let reference: string | null = null;
     const wantsRef = !!method && method.status !== 'saknas' && method.reference !== 'ingen';
     if (wantsRef && at && def) {
-      reference = referenceByRule(input.bank, method!.reference, { dealer: dealer.id, step: def, target: at.target, model: method!.model ? MODELS[method!.model] : null, shape: method!.shape })?.take ?? null;
+      reference = referenceByRule(input.bank, method!.reference, { dealer: dealer.id, step: def, target: at.target, model: method!.model ? MODELS[method!.model] : null, shape, lays })?.take ?? null;
       if (!reference) needs.push(referenceWaits(method!.reference, def).replace(/^väntar på /, ''));
     }
     // A return to 2.1 comes with its deal while the deal's method goes tur och retur and the deal is not there yet.
@@ -260,7 +264,7 @@ export function productionList(input: ProductionInput): Production {
     // view loads no film for it.
     const shownAnchor = def ? (def.start === 'LAND' ? (def.to ?? def.from) : edge.kind === 'ENTRY' ? '2.1' : def.kind === 'FILM' && def.to && !def.card && !def.cards ? def.to : def.from) : null;
     const anchor = shownAnchor ? anchorHolding(entries, shownAnchor) : null;
-    const cards = def?.cards ? def.cards.map((c) => ({ target: c.target, side: c.after })) : edge.target && edge.kind !== 'REVEAL' ? [{ target: edge.target, side: sides[edge.target] ?? (edge.target === 'D.C2' ? 'BACK' : 'FRONT') }] : [];
+    const cards = def?.cards ? def.cards.map((c) => ({ target: c.target, side: c.after })) : edge.target && edge.kind !== 'REVEAL' ? [{ target: edge.target, side: seats[edge.target]?.side ?? (edge.target === 'D.C2' ? 'BACK' : 'FRONT') }] : [];
     const picture: RowPicture = anchor && anchor.frame === undefined
       ? { path: anchor.path ?? null, frame: null, waits: null, cards }
       : { path: null, frame: null, waits: def ? anchorWords(shownAnchor!) : 'bild utan henne', cards };
@@ -339,11 +343,10 @@ export async function readProduction(root: string, dealerId: string, options: { 
   if (!register) problems.push(`Registret håller inte: ${errors.join('; ')}`);
   const all = await store.list();
   problems.push(...all.problems);
-  const sides = Object.fromEntries(Object.entries(all.plan?.seats ?? {}).map(([t, s]) => [t, s.side]));
   return {
     input: {
-      dealer: { id: known.id, name: known.name }, graph, bank: { ...(bank as BankFacts), rendered: all.rendered ?? [] }, methods: methodsRead.register, hubs: hubDeals(bank, dealerId),
-      entries: register?.dealers[dealerId]?.entries ?? [], orders: all.orders.map((a) => ({ order: a.order, shown: a.shown })), sides, createdBy: options.createdBy,
+      dealer: { id: known.id, name: known.name }, graph, bank: { ...(bank as BankFacts), rendered: all.rendered ?? [], cutChecks: readCutChecks(await readJson(path.join(root, 'data', 'cut-frames.json'))) }, methods: methodsRead.register, hubs: hubDeals(bank, dealerId),
+      entries: register?.dealers[dealerId]?.entries ?? [], orders: all.orders.map((a) => ({ order: a.order, shown: a.shown })), seats: all.plan?.seats ?? {}, createdBy: options.createdBy,
     },
     problems,
   };

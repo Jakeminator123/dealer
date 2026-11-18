@@ -225,9 +225,6 @@ export type Graph = {
 };
 
 export const STATUSES: Status[] = ['ACCEPTED', 'UNREVIEWED', 'VARIANT', 'ORDERED', 'PREPARED', 'REJECTED', 'MISSING'];
-export const STATUS_LABEL: Record<Status, string> = {MISSING: 'saknas', PREPARED: 'förberedd', ORDERED: 'renderas', UNREVIEWED: 'klar, ogranskad', ACCEPTED: 'godkänd', VARIANT: 'bara variant', REJECTED: 'underkänd'};
-export const STAGE_LABEL: Record<Stage, string> = {WRITTEN: 'jobb skrivet', PREPARED: 'förberedd', ORDERED: 'renderas', DONE: 'klar', FAILED: 'misslyckad'};
-export const DECISION_LABEL: Record<string, string> = {PENDING: 'väntar på granskning', ACCEPTED: 'godkänd', REJECTED: 'underkänd', SECONDARY: 'sekundärt alternativ'};
 const CREDITS_PER_SECOND: Record<string, number> = {auto_1080p: 20, auto_720p: 10, auto_480p: 5};
 
 // The 54 edges of the bank (entry, exit, the idle clip, the turn of the hole card, her coming to the table and her leaving
@@ -240,6 +237,15 @@ export const clipOfVideo = (video: unknown): string | null => typeof video === '
 // A take Jakob has archived never plays: its step falls back on the next take by the same rule, and on none when there is none.
 // Nothing is chosen in its place: an archived Primär leaves the step without a Primär.
 export const playable = (take: Take) => take.stage === 'DONE' && take.decision !== 'REJECTED' && !take.archived;
+/**
+ * The one rule for what may be played has two steps, and this is the second: of what playable allows, the game plays only a take
+ * with a verdict (not waiting in the inbox, not PENDING), or a talk film played on request (src/game-director.ts judgedBank keeps
+ * the bank's takes by it, and the game's graph then applies playable). The lab's graph (Bordet's Scen, the 3D page, the production
+ * list) applies playable alone, so that a delivery waiting for Jakob can be seen there before it is judged; it never becomes the
+ * game's. Takes a take's record (Take.motion, or the bank's motions[id]).
+ */
+export const judgedRecord = (record: Pick<MotionRecord, 'review' | 'motion'> | null | undefined): boolean =>
+  (record?.review?.inbox !== true && String(record?.review?.decision ?? 'PENDING').toUpperCase() !== 'PENDING') || record?.motion?.idle?.onRequest === true;
 // Does this return continue that deal take without a jump? A return cut from a frame fits the clip it was cut
 // from. A return from a landing anchor fits every deal that ends on that same anchor image: variant B deals
 // end on their own anchor, so their returns do not fit the model's deals and the other way round.

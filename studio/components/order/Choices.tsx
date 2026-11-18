@@ -8,8 +8,8 @@
 // (data/order-methods.json). Shared by the sheet "Ny beställning" and the draft's "Ändra utkastet".
 import { useState, type ReactNode } from "react";
 import {
-  CARD_SCALES, FLIP_AXES, FLIP_LABEL, HAND_LABEL, LANDS_LABEL, REF_MATCH_LABEL, REF_VERDICT_LABEL, SHAPE_LABEL, STYLE_ABOUT, STYLE_LABEL, genitive, scaleWords, secondsWords,
-  type FlipAxis, type HandChoice, type ModelDef, type RefCandidate, type Shape, type TextStyle,
+  CARD_SCALES, HAND_LABEL, LANDS_LABEL, REF_MATCH_LABEL, REF_VERDICT_LABEL, SHAPE_LABEL, STYLE_ABOUT, STYLE_LABEL, genitive, scaleWords, secondsWords,
+  type HandChoice, type ModelDef, type RefCandidate, type Shape, type TextStyle,
 } from "../../../src/order-model.ts";
 import { labUrl } from "../../lib/lab.ts";
 import { Badge, SegmentedControl, Switch, cn } from "../ui";
@@ -92,17 +92,6 @@ export function ModelChoice({ models, value, recipe, what, onChange, disabled }:
           badge={m.id === recipe ? <RecipeBadge /> : null}
           onClick={() => onChange(m.id)}
         />
-      ))}
-    </div>
-  );
-}
-
-/** How the card turns (only when it lands open); `recipe` is the recipe's turn, `plan` what Kortplan's Rörelse says where the recipe leaves it to Placering. */
-export function FlipChoice({ value, onChange, disabled, plan, recipe = null }: { value: FlipAxis; onChange: (axis: FlipAxis) => void; disabled?: boolean; plan: FlipAxis | null; recipe?: FlipAxis | null }) {
-  return (
-    <div role="radiogroup" aria-label="Hur kortet vänds" className="flex flex-col gap-1.5">
-      {FLIP_AXES.map((axis) => (
-        <ChoiceCard key={axis} on={value === axis} disabled={disabled} title={FLIP_LABEL[axis]} badge={recipe === axis ? <RecipeBadge /> : !recipe && plan === axis ? <PlanBadge /> : null} onClick={() => onChange(axis)} />
       ))}
     </div>
   );

@@ -143,10 +143,10 @@ test("his exceptions on a row go under the keys the store reads, and only those 
   const routes = readFileSync(new URL("../../tools/order-routes.ts", import.meta.url), "utf8");
   const allowed = JSON.parse(/const NEW_KEYS = (\[[^\]]+\])/.exec(routes)![1].replace(/'/g, '"')) as string[];
   const wish = { step: "GIV-2.1" as const, target: "P4.C1" };
-  const chosen = orderBody("paow", wish, { model: "wan3", duration: 6, takes: 2, style: "MINIMAL", shape: "ROUND_TRIP", reference: null, hand: "PASS", side: "BACK", flipAxis: "LONG_EDGE", cardScale: 1.25, extra: " Slowly. " })!;
+  const chosen = orderBody("paow", wish, { model: "wan3", duration: 6, takes: 2, style: "MINIMAL", shape: "ROUND_TRIP", reference: null, hand: "PASS", side: "BACK", cardScale: 1.25, extra: " Slowly. " })!;
   for (const key of Object.keys(chosen)) assert.ok(allowed.includes(key), `${key} tas inte av POST /api/orders`);
   assert.deepEqual([chosen.model, chosen.duration, chosen.takes, chosen.style, chosen.shape, chosen.reference], ["wan3", 6, 2, "MINIMAL", "ROUND_TRIP", null]);
-  assert.deepEqual([chosen.hand, chosen.pass, chosen.side, chosen.flipAxis, chosen.extra, chosen.cardScale], ["LH", true, "BACK", "LONG_EDGE", "Slowly.", 1.25]);
+  assert.deepEqual([chosen.hand, chosen.pass, chosen.side, "flipAxis" in chosen, chosen.extra, chosen.cardScale], ["LH", true, "BACK", false, "Slowly.", 1.25]);
   assert.deepEqual(orderBody("paow", wish, {}), { dealer: "paow", step: "GIV-2.1", target: "P4.C1" });
   assert.equal("cardScale" in orderBody("paow", wish, { cardScale: 1 })!, false);
   // a step without a method cannot be sent until the model and the length are said, as an exception

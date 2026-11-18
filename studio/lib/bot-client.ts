@@ -140,8 +140,6 @@ export function httpProblem(status: number, body: unknown): BotFel {
   return { kod: "server", text: FALLBACK.server };
 }
 
-export const felText = (kod: FelKod): string => FALLBACK[kod];
-
 /** A thrown error from a call, with its words. */
 export class BotError extends Error {
   readonly fel: BotFel;

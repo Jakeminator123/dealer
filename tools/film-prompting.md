@@ -57,7 +57,7 @@ tagningar, textens stil och mall, form, vändning, regeln för referensfilmen, v
 `recipeFor` i `src/order-methods.ts`. Lagret fyller i receptet (`tools/order-store.ts`), och Bordets rad, Ny
 beställning och produktionslistan visar samma sak ur samma funktioner; `studio/tests/line-same.test.ts` håller raden och
 lagret lika för varje steg och kort. Det ett utkast säger emot receptet är ett medvetet undantag: det skickas bara när
-det är satt (i studion under "Undantag från receptet"), och utkastets anteckningar nämner det. Ett steg utan metod har
+det är satt (i studion under "Receptet · gör ett undantag"), och utkastets anteckningar nämner det. Ett steg utan metod har
 inget förval alls, och där receptets regel inte hittar någon referensfilm beställs inget. Stegen i `STEPS`
 (`src/order-model.ts`) säger bara vad en film går mellan, aldrig hur den beställs.
 

@@ -29,9 +29,13 @@ Proceduren står på ett ställe och skrivs inte om här: ingången och station 
    föll beställs inte om** (bandet, "Regler som kostar pengar när de bryts"; handboken, "Det som föll").
 7. **Metoden väljs efter Jakobs domar,** `node tools/verdicts-per-method.ts <dealer>`, inte efter granskarens poäng
    (bandet, station 7; handboken §5).
-8. **Två tagningar per klipp,** en tredje bara om båda faller; varje omgång granskas oberoende innan nästa bygger på
-   den, och kostnaden berättas efter omgången (`docs/BESKED.md`, "Domar, beställningar och pengar").
-9. **Signerade adresser i skriptfiler,** aldrig `node -e`, och en värdadress hamnar aldrig i `data/` eller `assets/`
+8. **Receptet ger tagningarna:** en för ett prov, två där metoden gäller (`data/order-methods.json`), en till bara om
+   alla faller; varje omgång granskas oberoende innan nästa bygger på den, och kostnaden berättas efter omgången
+   (`docs/BESKED.md`, "Domar, beställningar och pengar").
+9. **Receptet ger resten också:** en giv bara dit på Kling 4 med referensfilm, aldrig handbyte som förval, och
+   vändningen är inget val. Ett avsteg görs under "Receptet · gör ett undantag" och står i utkastets anteckningar
+   (handboken §2).
+10. **Signerade adresser i skriptfiler,** aldrig `node -e`, och en värdadress hamnar aldrig i `data/` eller `assets/`
    (`order-clerk.md`, Tools och §2).
 
 ## När det är klart

@@ -119,7 +119,6 @@ export type OrderStatus = 'UTKAST' | 'GODKÄND' | 'AVBRUTEN';
 /** A take after approval, in the receipt (assets/orders/<id>/receipt.json, written only by tools/order-put.ts). */
 export const TAKE_FLOW = ['GODKÄND', 'LAGD', 'KLAR', 'HÄMTAD', 'EFTERARBETAD', 'MÄTT', 'GRANSKAD', 'INFÖRD'] as const;
 export type TakeStatus = (typeof TAKE_FLOW)[number] | 'OSÄKER' | 'MISSLYCKAD' | 'AVBRUTEN';
-export const TAKE_STATUSES: readonly TakeStatus[] = [...TAKE_FLOW, 'OSÄKER', 'MISSLYCKAD', 'AVBRUTEN'];
 /** What a person sees for an order: before approval the draft's state, after it how its takes stand. */
 export type Shown = 'UTKAST' | 'VÄNTAR' | 'KLAR_ATT_TRYCKA' | TakeStatus;
 export const SHOWN_LABEL: Record<Shown, string> = {
@@ -142,7 +141,7 @@ export const SHOWN_LABEL: Record<Shown, string> = {
 // ── The order (data/orders/<id>.json) ───────────────────────────────────────
 /** A picture that is not made yet: a role of the register that must hold (gäller), or one entry that must. */
 export type Waits = { dealer: string; label: string; role?: string; node?: string; entry?: string };
-/** The card drawn on a picture where the placement plan says (the plan's own drawing rule, flatQuad). */
+/** The card drawn on a picture where the placement plan says (as the lab draws it, src/card-plan.ts planCardQuad; `as` names the rule). */
 export type Drawn = {
   target: string;
   side: 'FRONT' | 'BACK';

@@ -20,7 +20,7 @@ import { useBank } from "../../lib/bank.ts";
 import { labUrl } from "../../lib/lab.ts";
 import type { DealerAnswer, EntryAnswer, MediaAnswer } from "../../lib/media.ts";
 import {
-  SECOND_CARD, SECOND_CARD_WORDS, anchorFor, cardBody, cardOf, createOrder, seatFlip, firstLacking, gripAgainstPlan, orderableCard, recipeOf, routeOf, seatKey, stepGroups, withCard,
+  SECOND_CARD, SECOND_CARD_WORDS, SHEET_DEALER, anchorFor, cardBody, cardOf, createOrder, seatFlip, firstLacking, gripAgainstPlan, orderableCard, recipeOf, routeOf, seatKey, stepGroups, withCard,
   type OrderAnswer, type OrdersAnswer, type Preset, type StepKey,
 } from "../../lib/orders.ts";
 import { kortplanHref } from "../../lib/bordet.ts";
@@ -29,7 +29,7 @@ import methodsFile from "../../../data/order-methods.json";
 import {
   ALL_SEVEN, FLIP_LABEL, HAND_LABEL, LANDS_LABEL, SEAT_TARGETS, SHAPE_LABEL, STEPS, STYLE_LABEL, TAKES_MAX,
   costOf, credits, genitive, groupBudget, handChoiceOf, handsOf, landingMissing, landingOf, lengthFor, modelFor, modelsFor, paramsOf, readCutChecks, referenceCandidates, scaleQuad, scaleWords, seatEndMissing, seatEndOf, seatList, seatWords, stepOf, stylesFor,
-  type BankFacts, type FlipAxis, type HandChoice, type ModelDef, type Owner, type SeatPlan, type Shape, type TextStyle,
+  type BankFacts, type HandChoice, type ModelDef, type Owner, type SeatPlan, type Shape, type TextStyle,
 } from "../../../src/order-model.ts";
 import { METHOD_STATUS_LABEL, recipeFor, recipeWords, referenceByRule, referenceWaits, secondsOf, type MethodRegister } from "../../../src/order-methods.ts";
 import { promptFor, wordCount } from "../../../src/order-prompts.ts";
@@ -73,7 +73,7 @@ export function NewOrder({ open, onOpenChange, all, preset, onCreated }: { open:
   const like = preset?.like ? (all.orders.find((a) => a.order.id === preset.like)?.order ?? null) : null;
   const r = like ? recipeOf(like) : null;
   const [media, setMedia] = useState<MediaAnswer | null>(null);
-  const [dealerId, setDealerId] = useState(r?.dealer ?? preset?.dealer ?? "paow");
+  const [dealerId, setDealerId] = useState(r?.dealer ?? preset?.dealer ?? SHEET_DEALER);
   const [stepKey, setStepKey] = useState<StepKey | null>(r?.step ?? preset?.step ?? null);
   const [target, setTarget] = useState(r?.target ?? preset?.target ?? "P4.C1");
   const [allSeven, setAllSeven] = useState(preset?.all ?? false);
@@ -81,7 +81,6 @@ export function NewOrder({ open, onOpenChange, all, preset, onCreated }: { open:
   const [side, setSide] = useState<"FRONT" | "BACK" | null>(r?.side ?? null);
   const [hand, setHand] = useState<HandChoice | null>(r?.hand ?? null);
   const [passEverywhere, setPassEverywhere] = useState(false);
-  const [flip, setFlip] = useState<{ key: string; axis: FlipAxis } | null>(r?.flipAxis ? { key: r.step, axis: r.flipAxis } : null);
   const [duration, setDuration] = useState<{ key: string; seconds: number } | null>(r?.duration ? { key: r.step, seconds: r.duration } : null);
   // The model chosen for a step (key null: asked for by address, for whatever step the sheet opens on).
   const [modelChoice, setModelChoice] = useState<{ key: string | null; id: string } | null>(r ? { key: r.step, id: r.model } : preset?.model ? { key: preset.step, id: preset.model } : null);
@@ -147,9 +146,7 @@ export function NewOrder({ open, onOpenChange, all, preset, onCreated }: { open:
   // How the card turns: what Kortplan's Rörelse says for the (first) card, unless chosen here.
   // Each seat turns as the plan says for it unless one turn is chosen for the whole order; only a chosen one is sent, so that
   // with "Alla sju" every seat keeps its own (the store takes each seat's from the plan when the order names none).
-  const chosenFlip = flip?.key === key ? flip.axis : null;
-  const flipAt = (t: string) => seatFlip(key, seatOf(t), chosenFlip ?? recipe?.turn ?? null);
-  const planFlips = [...new Set(targets.map((t) => seatFlip(key, seatOf(t), recipe?.turn ?? null)))];
+  const flipAt = (t: string) => seatFlip(key, seatOf(t), recipe?.turn ?? null);
   // The grip is the step's; where Placering plans the card(s) with the other one, the sheet says so.
   const gripLine = gripAgainstPlan(step, targets.map(seatOf));
   const focus = step.card ? (shownSeat && targets.includes(shownSeat) ? shownSeat : targets[0]) : null;
@@ -326,7 +323,7 @@ export function NewOrder({ open, onOpenChange, all, preset, onCreated }: { open:
         ...(step.kind === "FILM" && (!recipe || duration?.key === key) ? { duration: seconds } : {}),
         ...(refChoice !== undefined && model.videos ? { reference } : {}),
       };
-      const card = step.card ? cardBody({ chosenFlip, shape: !recipe || (deal && shape !== recipe.shape) ? shape : null, deal: !!deal, cardScale }) : {};
+      const card = step.card ? cardBody({ shape: !recipe || (deal && shape !== recipe.shape) ? shape : null, deal: !!deal, cardScale }) : {};
       // The hand and the side only where he chose them: without a choice the store takes what Placering says for each card.
       const seatOwn = (t: string) => ({ ...(hand !== null ? handsAt(t) : {}), ...(side !== null ? { side: sideAt(t) } : {}) });
       const made = !step.card

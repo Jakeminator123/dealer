@@ -15,7 +15,7 @@
 // A card on the dealer's SEAT_HUB is dealt from that other pose at the shoe (READY-B) when the films for it can be played, and the
 // chain goes through rest around it: IDLE>READY-B, the deal, the return to READY-B and READY-B>IDLE (roundSequence in the clip bank
 // does the same).
-import {REVEAL_NODE, buildGraph, dealersOf, dealHub, parseEdge, resolveRound, type BankData, type Graph, type Segment, type Step, type Why} from './clip-graph.ts';
+import {REVEAL_NODE, buildGraph, dealersOf, dealHub, judgedRecord, parseEdge, resolveRound, type BankData, type Graph, type Segment, type Step, type Why} from './clip-graph.ts';
 import {slotOf, slotFilm, slotLabel, type Slot, type TableCards} from './game-table.ts';
 
 // The signals this file reads; everything else in the engine's list is for the overlay.
@@ -155,13 +155,11 @@ export function cardRecords(table: TableCards, faces: CardFace[]): {shoeDraw: nu
 // A take Jakob has archived (review.archived, written by tools/review-store.ts from Karta) is left out whatever its verdict, a
 // talk film played on request too: nothing in the game can play it or fall back on it until he takes it back. A stopgap it
 // had pushed out stands in again meanwhile.
-const unjudged = (review: {decision?: string; inbox?: boolean} | undefined) => review?.inbox === true || String(review?.decision ?? 'PENDING').toUpperCase() === 'PENDING';
-const onRequest = (motion: {motion?: {idle?: {onRequest?: boolean}}} | undefined) => motion?.motion?.idle?.onRequest === true;
 const stopgap = (record: unknown) => (record as {motion?: {stopgap?: unknown}} | undefined)?.motion?.stopgap === true;
 const archived = (review: {archived?: unknown} | undefined) => !!review?.archived;
 /** The bank as the game reads it: every take without a verdict left out, except takes played on request; no archived take; a stopgap only where nothing judged stands beside it. */
 export function judgedBank(bank: BankData): BankData {
-  const motions = bank.motions ?? {}, keep = (item: {id?: unknown} | null | undefined) => { const m = motions[String(item?.id)]; return !archived(m?.review) && (!unjudged(m?.review) || onRequest(m)); };
+  const motions = bank.motions ?? {}, keep = (item: {id?: unknown} | null | undefined) => { const m = motions[String(item?.id)]; return !archived(m?.review) && judgedRecord(m); };
   const kept = {jobs: (bank.jobs ?? []).filter(keep), derived: (bank.derived ?? []).filter(keep), edits: (bank.edits ?? []).filter(keep)}, owner = dealersOf(bank);
   const edgeOf = (t: {id: string; from?: string; to?: string}) => { const ref = parseEdge(`${t.from}>${t.to}`); return `${owner[t.id]}|${ref ? `${ref.base}|${ref.hub ?? ''}` : `${t.from}>${t.to}`}`; };
   const real = new Set([...kept.jobs, ...kept.derived].filter(t => !stopgap(motions[t.id]) && String(motions[t.id]?.review?.decision ?? '').toUpperCase() !== 'REJECTED').map(edgeOf));

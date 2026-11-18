@@ -595,7 +595,9 @@ stängt, FRONT öppet; kortet lämnar skon stängt, så `turn` följer av sidan)
 efter Jakobs sex steg nyp, dra, för fram, vrid, vänd upp, lägg, förvalet följer planens "Var kortet vänds"
 (`defaultFlip`: `PLACE` ger `AT_PLACE`, annars `FREE`); `FREE` handleden vrider över kortet på vägen och är kvar
 vriden tills kortet ligger; `LONG_EDGE` kortet rullas kring långsidan på vägen, som en nyckel; `FLIP_LABEL` och
-`FLIP_ABOUT` i `src/order-model.ts` har orden Beställ visar). Förvalen kommer från planens kort, och `fromPlan` säger
+`FLIP_ABOUT` i `src/order-model.ts` har orden Beställ visar). Förvalen kommer från stegets recept (`recipeFor`,
+`data/order-methods.json`): en giv tar receptets hand hela vägen och receptets vändning, planens kort ger bara det
+receptet lämnar åt Placering, ett handbyte är aldrig förval och vändningen är inget val i studion; `fromPlan` säger
 om valen är planens. Ny beställning föreslår handbyte där kortet landar mer än ett halvt kort till vänster
 om hennes mitt (mitten mellan dealerns två kort), alltså P1–P3 i dagens plan. "Alla sju" gör ett utkast per plats med
 samma `group`. Texten skrivs av `promptFor` i `src/order-prompts.ts` (dagens mall i `TEMPLATE_VERSION`, och vilken
@@ -606,8 +608,8 @@ förbud), Minimal (Jakobs prov) eller Utförlig (den långa texten från tiden f
 till ett ankare, och en giv kan beställas "bara dit" (`step.shape: ONE_WAY`) till
 landningsbilden; en Kling 4-order kan bära en referensfilm ur banken (`reference`, kopierad med hash, en annan dealers
 film tillåten och namngiven), kortets storlek kan provas per order (`motion.cardScale`, planen orörd), och ett val som
-inte gäller lagras inte (`flipAxis` null för ett kort som inte vänds). Ett filmsteg har sin modell som förval men kan
-beställas med varje modell i `MODELS` som tar första och sista bild (`modelsFor`, värdena ur `paramsOf`; i dag WAN 3 och
+inte gäller lagras inte (`flipAxis` null för ett kort som inte vänds). Ett filmsteg har receptets modell, längd och
+tagningar som förval (en giv bara dit på Kling 4, 3 s, en tagning för ett prov) men kan som undantag beställas med varje modell i `MODELS` som tar första och sista bild (`modelsFor`, värdena ur `paramsOf`; i dag WAN 3 och
 Kling 4; Kling 3.0 4K läses för den levererade ordern men beställs inte längre, `off`); en ny modell är en post i
 `MODELS` och ett pris i `data/order-policy.json`. Ett utkast följer det ankare som gäller i Material (`picture.replaced`
 säger vad bilden var) och posebildens gröna görs som ankarets (`cut.matched`); ankare 2.2:s posebild är bara den andra

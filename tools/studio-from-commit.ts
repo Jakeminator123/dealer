@@ -8,7 +8,7 @@
 //
 //   node tools/studio-from-commit.ts [<commit>] [--trad <mapp>] [--ut <mapp>]
 //     <commit>   what is built (default main)
-//     --trad     the clean tree (default D:/dealer-scratch/tmp/huvudagent11/studio-trad; made once with
+//     --trad     the clean tree (default D:/dealer-scratch/tmp/granska-prov/trad, the one in use; made once with
 //                git worktree add --detach <mapp> main)
 //     --ut       the folder swapped (default the main checkout's studio/out); a trial gives a folder of its own
 import {cpSync, existsSync, mkdirSync, readdirSync, renameSync, rmSync, writeFileSync} from 'node:fs';
@@ -16,7 +16,7 @@ import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {Stop, cleanAt, clock, commitOf, commonDirOf, exec, mainCheckout, needsCi, tail, type Exec, type Say} from './clean-tree.ts';
 
-export const DEFAULT_TREE = 'D:/dealer-scratch/tmp/huvudagent11/studio-trad';
+export const DEFAULT_TREE = 'D:/dealer-scratch/tmp/granska-prov/trad';
 export type Options = {commit: string; tree: string; out?: string};
 
 export function parseArgs(argv: string[]): Options {

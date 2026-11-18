@@ -9,7 +9,7 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import { FLIP_AXES, MODELS, STEPS, stepOf, stylesFor, type BankFacts, type FlipAxis } from '../src/order-model.ts';
-import { METHOD_STATUSES, lastPictureOf, methodFor, readMethods, recipeFor, recipeWords, referenceByRule, referenceWaits, seatClass, secondsOf, type Method, type MethodRegister } from '../src/order-methods.ts';
+import { METHOD_STATUSES, lastPictureOf, methodFor, readMethods, recipeFor, recipeHands, recipeWords, referenceByRule, referenceWaits, seatClass, secondsOf, type Method, type MethodRegister } from '../src/order-methods.ts';
 import { TEMPLATE_VERSION } from '../src/order-prompts.ts';
 
 const register = async () => JSON.parse(await readFile('data/order-methods.json', 'utf8'));
@@ -211,4 +211,19 @@ test('a register that names what does not exist, or lacks a recipe or a source, 
 
 test('the class of a seat: the middle seats, the far seats, the dealer\'s cards', () => {
   assert.deepEqual(['P1.C1', 'P2.C1', 'P3.C1', 'P4.C2', 'P5.C1', 'P6.C1', 'P7.C1', 'D.C1', 'D.C2', null].map(seatClass), ['ytter', 'ytter', 'mitten', 'mitten', 'mitten', 'ytter', 'ytter', 'dealer', 'dealer', null]);
+});
+
+test('the hands of a line where nothing is said: one rule for Bordet, the store and the production list (recipeHands)', () => {
+  const step = (key: string) => stepOf(key as never)!;
+  const lh = { hand: 'LH' as const }, none = { hand: null };
+  // From anchor 2.3 the other hand lays the card, whatever the plan or the recipe says.
+  assert.deepEqual(recipeHands(step('GIV-2.3'), lh, { hand: 'LH', pass: true }), { hand: 'LH', pass: false, lays: 'RH' });
+  // A deal takes the recipe's hand all the way: never a handbyte by default, also where the plan has one for the card.
+  assert.deepEqual(recipeHands(step('GIV-2.1'), lh, { hand: 'LH', pass: true }), { hand: 'LH', pass: false, lays: 'LH' });
+  assert.deepEqual(recipeHands(step('GIV-2.1'), { hand: 'RH' }, null), { hand: 'RH', pass: false, lays: 'RH' });
+  // Without a hand in the recipe: what Placering says for the card; a handbyte goes from the left hand to the right.
+  assert.deepEqual(recipeHands(step('GIV-2.1'), none, { hand: 'LH', pass: true }), { hand: 'LH', pass: true, lays: 'RH' });
+  assert.deepEqual(recipeHands(step('GIV-2.1'), null, { hand: 'RH', pass: false }), { hand: 'RH', pass: false, lays: 'RH' });
+  // A step without a card has no handbyte, and the left hand where nothing is said.
+  assert.deepEqual(recipeHands(step('VILA'), null, { pass: true }), { hand: 'LH', pass: false, lays: 'LH' });
 });

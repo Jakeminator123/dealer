@@ -101,7 +101,7 @@ export function OrderView() {
         open={creating}
         onOpenChange={setCreating}
         all={all}
-        preset={presetOf(params, all.plan)}
+        preset={presetOf(params)}
         onCreated={(answer) => {
           saved(answer);
           setOpened(false);

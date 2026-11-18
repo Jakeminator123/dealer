@@ -19,7 +19,8 @@ import os from "node:os";
 import path from "node:path";
 import sharp from "sharp";
 import { orderRoutes } from "../../tools/order-routes.ts";
-import { STEPS, type BankFacts } from "../../src/order-model.ts";
+import { STEPS, readCutChecks, type BankFacts } from "../../src/order-model.ts";
+import { productionList, readProduction } from "../../tools/produce.ts";
 import { readMethods, recipeFor } from "../../src/order-methods.ts";
 import { filmRow, sendsOf } from "../lib/bordet.ts";
 
@@ -32,13 +33,19 @@ test("Bordet's row and the store make the same order of the same line, for every
   const root = await mkdtemp(path.join(base, "line-same-"));
   t.after(() => rm(root, { recursive: true, force: true }));
   for (const dir of ["data", "placements", "motions", "assets/anchors/paow-bild"]) await mkdir(path.join(root, dir), { recursive: true });
-  for (const file of ["data/order-policy.json", "data/dealers.json", "data/order-methods.json", "placements/default.json"]) await copyFile(path.join(repo, file), path.join(root, file));
-  // Material: every anchor of Paow holds (2.3 too), and every seat has its own landing picture (one small file serves them all).
+  for (const file of ["data/order-policy.json", "data/dealers.json", "data/order-methods.json"]) await copyFile(path.join(repo, file), path.join(root, file));
+  // The plan's places as they are, its hands and turns fixed here (the pinch, the left hand, no handbyte), so that what Jakob
+  // has set for a card in Kortplan does not change what this test compares.
+  const plan = JSON.parse(await readFile(path.join(repo, "placements/default.json"), "utf8"));
+  for (const [card, target] of Object.entries(plan.targets as Record<string, { intent: object }>)) target.intent = { takeHand: "LH", startSide: "BACK", endSide: card === "D.C2" ? "BACK" : "FRONT", pass: false, turn: card !== "D.C2", grip: "PINCH", turnAt: "AIR" };
+  await writeFile(path.join(root, "placements/default.json"), JSON.stringify(plan, null, 2) + "\n");
+  // Material: every anchor of Paow holds (2.3 too), and every seat but the dealer's first card has its own landing picture
+  // (one small file serves them all); the dealer's first card ends on a cut frame of Paow's own film, or on none.
   const still = "assets/anchors/paow-bild/anchor.png";
   await writeFile(path.join(root, still), await sharp({ create: { width: 1764, height: 1174, channels: 3, background: { r: 0, g: 236, b: 45 } } }).png().toBuffer());
   const entries = [
     ...([["ankare-1", "IDLE"], ["ankare-2.1", "READY"], ["ankare-2.2", "READY-B"], ["ankare-2.3", "READY-C"]] as const).map(([role, node]) => ({ id: `paow-${role}`, role, name: role, path: still, node, state: "gäller" })),
-    ...SEATS.map((card) => ({ id: `paow-landning-${card.toLowerCase().replace(".", "-")}`, role: "landning", name: `Landning ${card}`, path: still, node: `LAND(${card})`, card, state: "gäller" })),
+    ...SEATS.filter((card) => card !== "D.C1").map((card) => ({ id:`paow-landning-${card.toLowerCase().replace(".", "-")}`, role: "landning", name: `Landning ${card}`, path: still, node: `LAND(${card})`, card, state: "gäller" })),
   ];
   await writeFile(path.join(root, "data/media-roles.json"), JSON.stringify({ schemaVersion: 1, dealers: { paow: { name: "Paow", entries } }, measures: [] }, null, 2) + "\n");
   // The bank: what a rule must tell apart.
@@ -57,6 +64,7 @@ test("Bordet's row and the store make the same order of the same line, for every
     { id: "pamela-p3-c1-hoger", from: "READY", to: "LAND(P3.C1)" },                 // laid with the right hand
     { id: "pamela-d-c1-deal", from: "READY", to: "LAND(D.C1)" },                    // the dealer's first card
     { id: "paow-giv-2-1-p2-03-01", from: "READY", to: "READY", dealer: "paow" },    // Paow's own round trip to seat 2
+    { id: "paow-giv-2-1-d-01-01", from: "READY", to: "READY", dealer: "paow" },     // Paow's own round trip to the dealer's first card
   ];
   await film("pamela-p4-c1-plan-deal-02", 4);
   await film("pamela-p4-c1-drawn-deal-01", 5);
@@ -64,9 +72,17 @@ test("Bordet's row and the store make the same order of the same line, for every
   await film("pamela-p3-c1-hoger", 4, { motion: { releaseHand: "RH" } });
   await film("pamela-d-c1-deal", 4);
   await film("paow-giv-2-1-p2-03-01", 7, { review: {} });
-  const derived = [{ id: "paow-giv-2-1-p2-03-01-deal", from: "READY", to: "P2.C1", clip: "paow-giv-2-1-p2-03-01", frames: [0, 124], dealer: "paow" }, { id: "paow-giv-2-1-p2-03-01-return", from: "P2.C1", to: "READY", clip: "paow-giv-2-1-p2-03-01", frames: [125, 209], dealer: "paow" }];
+  await film("paow-giv-2-1-d-01-01", 7, { review: {} });
+  const derived = [
+    { id: "paow-giv-2-1-p2-03-01-deal", from: "READY", to: "P2.C1", clip: "paow-giv-2-1-p2-03-01", frames: [0, 124], dealer: "paow" }, { id: "paow-giv-2-1-p2-03-01-return", from: "P2.C1", to: "READY", clip: "paow-giv-2-1-p2-03-01", frames: [125, 209], dealer: "paow" },
+    { id: "paow-giv-2-1-d-01-01-deal", from: "READY", to: "D.C1", clip: "paow-giv-2-1-d-01-01", frames: [0, 99], dealer: "paow" }, { id: "paow-giv-2-1-d-01-01-return-ready", from: "D.C1", to: "READY", clip: "paow-giv-2-1-d-01-01", frames: [100, 209], dealer: "paow" },
+  ];
   for (const d of derived) await writeFile(path.join(root, "motions", `${d.id}.json`), JSON.stringify({ review: straight }));
   await writeFile(path.join(root, "data/clip-jobs.json"), JSON.stringify({ jobs, derived }));
+  // The cut frame where that film's return begins lies off the plan's card (data/cut-frames.json): it is no end picture, so
+  // the dealer's first card has none, for the row, the store and the production list alike.
+  const cutFrames = { frames: [{ clip: "paow-giv-2-1-d-01-01", frame: 99, target: "D.C1", holds: false, problems: ["kortet ligger utanför planens kort"], windowPrinted: false, offFromPlan: 40 }] };
+  await writeFile(path.join(root, "data/cut-frames.json"), JSON.stringify(cutFrames));
   // The dummy's rendered films: the pinch to seat 1 (a far seat takes nothing else) and to seat 4, the entry to anchor 2.3,
   // and the deal with two hands to seat 4 (laid with the right hand).
   const rendered: { id: string; edge: string; path: string; sha256: string; seconds: number; lays?: "RH" }[] = [];
@@ -98,7 +114,10 @@ test("Bordet's row and the store make the same order of the same line, for every
   const motions: NonNullable<BankFacts["motions"]> = {};
   for (const id of [...jobs.map((j) => j.id), ...derived.map((d) => d.id)]) motions[id] = JSON.parse(await readFile(path.join(root, "motions", `${id}.json`), "utf8"));
   for (const d of derived) motions[d.id] = { ...motions[d.id], source: motions[d.clip]!.source };
-  const bank: BankFacts = { jobs, derived: derived as BankFacts["derived"], motions, rendered: all.rendered };
+  const bank: BankFacts = { jobs, derived: derived as BankFacts["derived"], motions, rendered: all.rendered, cutChecks: readCutChecks(cutFrames) };
+  // The production list (node tools/produce.ts), read from the lab as the command reads a checkout, before any draft exists.
+  const production = productionList((await readProduction(root, "paow")).input);
+  let listed = 0;
   const shown = entries.map((e) => ({ ...e, served: e.path }));
   const paow = all.dealers.find((d) => d.id === "paow")!;
 
@@ -108,12 +127,21 @@ test("Bordet's row and the store make the same order of the same line, for every
   for (const step of STEPS.filter((s) => s.kind === "FILM" && !s.cards?.length)) for (const target of step.card ? SEATS : [null]) {
     const wish = { step: step.key, target }, key = `${step.key}${target ? ` ${target}` : ""}`;
     const row = filmRow("paow", wish, register, all.policy, { bank, entries: shown, plan: all.plan });
+    // The production list's row for the same step and card says the same: it can be ordered exactly where the row can be
+    // sent, and with the same reference film.
+    const inList = production.rows.find((r) => r.step === step.key && r.target === target);
+    if (inList) {
+      listed++;
+      assert.equal(inList.orderable !== null, !row.why, `${key}: the row says "${row.why ?? "it can be sent"}", the production list says "${inList.words}"`);
+      if (!row.why) assert.equal(inList.method?.reference ?? null, row.reference?.take ?? null, `${key}: the production list's reference film`);
+    }
     const answer = await call("POST", "/api/orders", { dealer: "paow", step: step.key, ...(target ? { target } : {}) });
     if (row.why) {
       // What the row cannot send, the store refuses, and for the same reason.
       assert.equal(answer.status, 400, `${key}: the row says "${row.why}", and the store made a draft`);
       assert.equal(row.body, null, key);
-      const words = row.why.startsWith("ingen metod") ? /har ingen metod än/ : row.why.startsWith("väntar på") ? new RegExp(row.why.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")) : row.why.startsWith("ingen landningsbild") ? /Ingen landningsbild gäller/ : /har ingen slutbild/;
+      // A return from a card without a landing picture: the store names the missing picture before the missing method.
+      const words = row.why.startsWith("ingen metod") ? (step.start === "LAND" && target === "D.C1" ? /Ingen landningsbild gäller/ : /har ingen metod än/) : row.why.startsWith("väntar på") ? new RegExp(row.why.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")) : row.why.startsWith("ingen landningsbild") ? /Ingen landningsbild gäller/ : /har ingen slutbild/;
       assert.match(answer.json.error, words, key);
       refused[key] = row.why;
       continue;
@@ -133,14 +161,18 @@ test("Bordet's row and the store make the same order of the same line, for every
     made[key] = stored;
     compared++;
   }
-  // Three entries, two ways out and rest; the pinch to seat 1, seat 4 and the dealer's first card; the drag and the two-hand deal to seat 4.
-  assert.equal(compared, 11, `${compared} orders compared`);
-  assert.equal(Object.keys(refused).length, 9 * 3 - 5 + 3 * 9, "every other card waits or has no method, in the row and in the store alike");
+  // Three entries, two ways out and rest; the pinch to seat 1 and seat 4; the drag and the two-hand deal to seat 4.
+  assert.equal(compared, 10, `${compared} orders compared`);
+  assert.equal(Object.keys(refused).length, 9 * 3 - 4 + 3 * 9, "every other card waits or has no method, in the row and in the store alike");
+  // The dealer's first card: its only cut frame does not hold, and it has no landing picture.
+  assert.match(refused["GIV-2.1 D.C1"] ?? "", /^ingen slutbild för platsen/);
+  // Every step the production list has a row for is compared (the dealer's graph: the steps of 2.1 and 2.2, rest and the ways out).
+  assert.ok(listed >= 20, `${listed} steps compared with the production list`);
   // What the rule chose, said once here so that a change of rule is seen: the dummy's film first, the deal alone from the
   // bank else; the far seats only the dummy's; the drag only a drag; the two-hand deal only a film laid with the right hand.
   assert.deepEqual(
-    { "GIV-2.1 P1.C1": made["GIV-2.1 P1.C1"], "GIV-2.1 P4.C1": made["GIV-2.1 P4.C1"], "GIV-2.1 D.C1": made["GIV-2.1 D.C1"], "GIV-2.2 P4.C1": made["GIV-2.2 P4.C1"], "GIV-2.3 P4.C1": made["GIV-2.3 P4.C1"], "INGANG-2.3": made["INGANG-2.3"], "INGANG-2.1": made["INGANG-2.1"] },
-    { "GIV-2.1 P1.C1": "docka-giv-p1-4", "GIV-2.1 P4.C1": "docka-giv-p4-4", "GIV-2.1 D.C1": "pamela-d-c1-deal", "GIV-2.2 P4.C1": "pamela-p4-c1-drawn-deal-01", "GIV-2.3 P4.C1": "docka-giv-2-3-p4", "INGANG-2.3": "docka-till-2-3", "INGANG-2.1": null },
+    { "GIV-2.1 P1.C1": made["GIV-2.1 P1.C1"], "GIV-2.1 P4.C1": made["GIV-2.1 P4.C1"], "GIV-2.2 P4.C1": made["GIV-2.2 P4.C1"], "GIV-2.3 P4.C1": made["GIV-2.3 P4.C1"], "INGANG-2.3": made["INGANG-2.3"], "INGANG-2.1": made["INGANG-2.1"] },
+    { "GIV-2.1 P1.C1": "docka-giv-p1-4", "GIV-2.1 P4.C1": "docka-giv-p4-4", "GIV-2.2 P4.C1": "pamela-p4-c1-drawn-deal-01", "GIV-2.3 P4.C1": "docka-giv-2-3-p4", "INGANG-2.3": "docka-till-2-3", "INGANG-2.1": null },
   );
   // And what it did not take: Paow's own round trip to seat 2 (the whole film would go, and it ends at the shoe), the variant
   // to seat 5, the film laid with the right hand to seat 3.

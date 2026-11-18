@@ -12,7 +12,6 @@ import { nodeCode } from "./names.ts";
 // ── Places ──────────────────────────────────────────────────────────────────
 export const PLACES: readonly Place[] = [...TARGETS, SHOE];
 export const SEATS = ["P1", "P2", "P3", "P4", "P5", "P6", "P7", "D"] as const;
-export const isPlace = (value: unknown): value is Place => typeof value === "string" && PLACES.includes(value);
 
 /** "Plats 4 · kort 2", "Dealern · kort 1", "Skon". */
 export function placeName(id: Place): string {

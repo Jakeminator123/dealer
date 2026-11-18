@@ -58,7 +58,7 @@ const TUR = { reference: null, duration: 7 };
 
 test("several seats without a chosen turn: no turn is sent, and each seat gets its recipe's turn, whatever the plan says", async (t) => {
   const { call, plan } = await lab(t);
-  const card = cardBody({ chosenFlip: null, shape: "ROUND_TRIP", deal: true, cardScale: 1 });
+  const card = cardBody({ shape: "ROUND_TRIP", deal: true, cardScale: 1 });
   assert.equal("flipAxis" in card, false, "the body names no turn");
   const made = await call("POST", "/api/orders", { dealer: "paow", step: "GIV-2.1", seats, takes: 1, ...card, ...TUR });
   assert.equal(made.status, 201, JSON.stringify(made.json));
@@ -74,20 +74,19 @@ test("several seats without a chosen turn: no turn is sent, and each seat gets i
   assert.deepEqual(["P1.C1", "P2.C1", "P3.C1"].map((id) => seatFlip("GIV-2.1", seatPlan(id), null)), ["AT_PLACE", "LONG_EDGE", "FREE"]);
 });
 
-test("several seats with a chosen turn: that turn for every seat", async (t) => {
+test("several seats in an order that names a turn (the store's exception, not offered in the studio): that turn for every seat", async (t) => {
   const { call } = await lab(t);
-  const card = cardBody({ chosenFlip: "LONG_EDGE", shape: "ROUND_TRIP", deal: true, cardScale: 1 });
-  assert.equal(card.flipAxis, "LONG_EDGE");
-  assert.equal((await call("POST", "/api/orders", { dealer: "paow", step: "GIV-2.1", seats, takes: 1, ...card, ...TUR })).status, 201);
+  const card = cardBody({ shape: "ROUND_TRIP", deal: true, cardScale: 1 });
+  assert.equal((await call("POST", "/api/orders", { dealer: "paow", step: "GIV-2.1", seats, takes: 1, ...card, flipAxis: "LONG_EDGE", ...TUR })).status, 201);
   const orders = ((await call("GET", "/api/orders")).json.orders as Stored[]).filter((a) => a.order.group);
   assert.deepEqual(orders.map((a) => a.order.motion.flipAxis).sort(), ["LONG_EDGE", "LONG_EDGE", "LONG_EDGE"]);
   assert.equal(seatFlip("GIV-2.1", { turnAt: "PLACE", flipAxis: "FREE" }, "LONG_EDGE"), "LONG_EDGE");
 });
 
 test("the card's part of a body: tur och retur or bara dit only for a deal, the trial scale only when not 1", () => {
-  assert.deepEqual(cardBody({ chosenFlip: null, shape: "ONE_WAY", deal: true, cardScale: 1 }), { shape: "ONE_WAY" });
-  assert.deepEqual(cardBody({ chosenFlip: null, shape: "ONE_WAY", deal: false, cardScale: 1 }), {});
-  assert.deepEqual(cardBody({ chosenFlip: "FREE", shape: "ROUND_TRIP", deal: true, cardScale: 1.25 }), { flipAxis: "FREE", shape: "ROUND_TRIP", cardScale: 1.25 });
+  assert.deepEqual(cardBody({ shape: "ONE_WAY", deal: true, cardScale: 1 }), { shape: "ONE_WAY" });
+  assert.deepEqual(cardBody({ shape: "ONE_WAY", deal: false, cardScale: 1 }), {});
+  assert.deepEqual(cardBody({ shape: "ROUND_TRIP", deal: true, cardScale: 1.25 }), { shape: "ROUND_TRIP", cardScale: 1.25 });
 });
 
 // (the hole card is left out: its pictures are drawn from a bank film that the temporary lab does not have)
@@ -104,7 +103,7 @@ test("what a row of Bordet shows as the text is, word for word, the text the sto
     { step: "GIV-2.1", target: "P4.C1", choice: round },
     { step: "GIV-2.1", target: "P1.C1", choice: round },
     { step: "GIV-2.1", target: "P2.C1", choice: { ...round, side: "BACK", hand: "PASS", extra: "Slowly." } },
-    { step: "GIV-2.2", target: "P3.C1", choice: { ...round, flipAxis: "LONG_EDGE", style: "MINIMAL", cardScale: 1.25 } },
+    { step: "GIV-2.2", target: "P3.C1", choice: { ...round, style: "MINIMAL", cardScale: 1.25 } },
     // the line itself: the dealer and the step, the recipe's text (rest with the recipe's own addition)
     { step: "INGANG-2.1", target: null },
     { step: "UTGANG", target: null },

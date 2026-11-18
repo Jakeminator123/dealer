@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {parseEdge, formatEdge, buildGraph, resolveRound} from '../src/clip-graph.ts';
+import {parseEdge, formatEdge, buildGraph, resolveRound, playable, judgedRecord} from '../src/clip-graph.ts';
 import {defaultPlan} from '../src/placement-model.ts';
 import {slotOf, slotFilm, slotLabel, slotImprovised, createLayout, FAN, FAN_AT, SPLIT, DEALER_THIRD, type TableCards} from '../src/game-table.ts';
 import {planBeats, lyingAfter, cardRecords, judgedBank, unjudgedTakes, speakMoments, talkOn, REVEAL_NODE, SEAT_HUB, STAND_IN_FILM} from '../src/game-director.ts';
@@ -199,6 +199,22 @@ test('without the films for READY-B, or with a map that does not name the seat, 
         assert.deepEqual(planBeats(table, lying, list, filmless, toRest, STAND_IN_FILM.paow, hubs, () => true), planBeats(table, lying, list, filmless, toRest, STAND_IN_FILM.paow));
   // Pamela has no map: her seat 6 is dealt from READY.
   assert.deepEqual(edges(planBeats(six, [], signals.slice(0, 1), () => false, () => true, {}, SEAT_HUB.pamela, () => true)), ['IDLE>READY', 'READY>P6.C1', 'P6.C1>IDLE']);
+});
+
+test('one rule for what may be played: the game plays what the lab may play (playable) that has a verdict (judgedRecord)', () => {
+  const take = (id: string) => ({id, kind: 'DEAL', target: null, from: 'READY', to: 'P4.C1', model: 'x', duration: 4, ratio: '', audio: false, promptText: '', first: {file: {path: 'a.png', sha256: 'a'}}, purpose: ''});
+  const ids = ['judged', 'pending', 'inbox', 'rejected', 'archived', 'provisional', 'variant'];
+  const bank = {jobs: ids.map(take), derived: [{id: 'tal', from: 'IDLE', to: 'IDLE', clip: 'tal', frames: [0, 40] as [number, number]}, {id: 'vila', from: 'IDLE', to: 'IDLE', clip: 'vila', frames: [0, 40] as [number, number]}],
+    motions: {judged: {review: {decision: 'ACCEPTED'}}, pending: {review: {decision: 'PENDING'}}, inbox: {review: {decision: 'ACCEPTED', inbox: true}}, rejected: {review: {decision: 'REJECTED'}},
+      archived: {review: {decision: 'ACCEPTED', archived: {by: 'Jakob'}}}, provisional: {review: {decision: 'ACCEPTED', provisional: {by: 'huvudagenten'}}}, variant: {review: {decision: 'ACCEPTED', acceptedAs: 'VARIANT'}},
+      tal: {review: {decision: 'PENDING', inbox: true}, motion: {idle: {onRequest: true}}}, vila: {review: {decision: 'PENDING', inbox: true}, motion: {idle: {calm: true}}}},
+    media: Object.fromEntries([...ids, 'tal', 'vila'].map(id => [id, {video: `assets/motions/${id}/source.mp4`}]))};
+  const lab = buildGraph(bank as never), game = buildGraph(judgedBank(bank as never));
+  const plays = (g: typeof lab) => Object.values(g.takes).filter(playable).map(t => t.id).sort();
+  assert.deepEqual(plays(game), Object.values(lab.takes).filter(t => playable(t) && judgedRecord(t.motion)).map(t => t.id).sort());
+  // What the lab may show that the game does not: deliveries without a verdict (PENDING, the inbox), never a rejected or archived take.
+  assert.deepEqual(plays(game), ['judged', 'provisional', 'tal', 'variant']);
+  assert.deepEqual(plays(lab), ['inbox', 'judged', 'pending', 'provisional', 'tal', 'variant', 'vila']);
 });
 
 test('the game\'s bank: takes without a verdict are left out, except a talk film on request; a provisional verdict counts', () => {

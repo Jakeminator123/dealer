@@ -123,7 +123,6 @@ export async function readBank(): Promise<{ text: string; data: ClipBankResponse
     throw new ApiError("Klippbanken gick inte att läsa (inte JSON).", 200, "server");
   }
 }
-export const getBank = async (): Promise<ClipBankResponse> => (await readBank()).data;
 
 /** Jakob's placement plan and its revision (GET /api/placements). */
 export const getPlacements = (): Promise<Placements> => read<Placements>("api/placements", "Placeringsplanen");
@@ -187,5 +186,3 @@ export async function putArchive(id: string, archived: boolean, revision: string
   }
 }
 
-/** A film or picture of the lab as an address the page can use: "assets/motions/x/source.mp4" → "/assets/motions/x/source.mp4". */
-export const mediaUrl = (path: string | null | undefined): string | null => (path ? labUrl(path) : null);

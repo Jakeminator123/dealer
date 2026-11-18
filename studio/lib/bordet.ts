@@ -7,15 +7,14 @@
 // price, and the body of POST /api/orders: the dealer, the step and the card, and over them only his deliberate exceptions.
 // Nothing here composes an order: the store does, as for every draft. No DOM, no network; tests in studio/tests/bordet.test.ts.
 import {
-  ANCHOR_NODE, STEPS, costOf, credits, defaultFlip, genitive, handsOf, landingOf, modelFor, paramsOf, referenceCandidates, scaleQuad, seatEndOf, seatWords, stepOf,
+  ANCHOR_NODE, costOf, credits, defaultFlip, genitive, handsOf, landingOf, modelFor, paramsOf, referenceCandidates, scaleQuad, seatEndOf, seatWords, stepOf,
   type Anchor, type BankFacts, type FlipAxis, type HandChoice, type ModelDef, type PlanAnswer, type Policy, type RefCandidate, type SeatEnd, type Shape, type StepDef, type StepKey, type TextStyle,
 } from "../../src/order-model.ts";
-import { methodFor, recipeFor, recipeWords, referenceByRule, referenceWaits, secondsOf, type Method, type MethodRegister, type Recipe } from "../../src/order-methods.ts";
+import { methodFor, recipeFor, recipeHands, recipeWords, referenceByRule, referenceWaits, secondsOf, type Method, type MethodRegister, type Recipe } from "../../src/order-methods.ts";
 import { promptFor, type Prompt } from "../../src/order-prompts.ts";
-import { dealPose } from "../../src/game-director.ts";
 import type { Place, Side } from "../../src/placement-model.ts";
 import { SHOE } from "../../src/placement-model.ts";
-import { anchorFor, type NewOrderInput } from "./orders.ts";
+import { anchorFor, dealAnchor, type NewOrderInput } from "./orders.ts";
 import { SCENE_KEYS } from "./scene-keys.ts";
 import { nodeCode } from "./names.ts";
 
@@ -102,12 +101,6 @@ export function cardPath(quad: readonly { x: number; y: number }[], corner = COR
 /** One film on the list: a step, and the card it is about (null for a step without one). */
 export type FilmWish = { step: StepKey; target: string | null };
 export const wishKey = (w: FilmWish) => `${w.step}@${w.target ?? ""}`;
-/**
- * The anchor a card's deal starts on: the one the game deals it from for this dealer (src/game-director.ts dealPose, SEAT_HUB:
- * Paow's seat 6 from anchor 2.2, Jakob 2026-11-13), as Karta and the game have it. Until 2026-11-18 it was the plan's grip, so the
- * lab played seat 6 from anchor 2.1, where she has no film, while the game played it from 2.2 (the rescue lane Kedjan, finding 1).
- */
-export const dealAnchor = (dealer: string, card: string): Anchor => (["2.1", "2.2", "2.3"] as const).find((a) => ANCHOR_NODE[a] === dealPose(dealer, card)) ?? "2.1";
 
 /**
  * The films a card can have, as one click each: its deal from the anchor the game deals it from (dealAnchor), the return to that
@@ -147,7 +140,7 @@ export const wishLine = (step: StepDef, target: string | null, shape: Shape | nu
  * the text's style, tur och retur, another reference film or none, the hand, the side, the turn, the trial card scale) and
  * his own addition. Only what is chosen is sent; everything else is the recipe's, which the store fills in.
  */
-export type RowChoice = Partial<{ model: string; duration: number; takes: number; style: TextStyle; shape: Shape; reference: string | null; hand: HandChoice; side: Side; flipAxis: FlipAxis; cardScale: number; extra: string }>;
+export type RowChoice = Partial<{ model: string; duration: number; takes: number; style: TextStyle; shape: Shape; reference: string | null; hand: HandChoice; side: Side; cardScale: number; extra: string }>;
 
 type EntryLike = { id: string; role: string; state?: string; node?: string; card?: string; served: string | null; name?: string; frame?: number; fps?: number | null };
 
@@ -164,7 +157,7 @@ export type Line = {
   style: TextStyle;
   /** A deal's shape; every other film is one way. */
   shape: Shape | null;
-  /** The turn the draft gets: his own, else the recipe's; null: what Placering says for the card (the store takes it). */
+  /** The turn the draft gets: the recipe's (no choice); null: what Placering says for the card (the store takes it). */
   flipAxis: FlipAxis | null;
   hands: { hand: "LH" | "RH"; pass: boolean };
   side: Side;
@@ -185,7 +178,8 @@ export function lineOf(input: { dealer: string; wish: FilmWish; methods: Pick<Me
   const seat = wish.target ? (input.plan?.seats[wish.target] ?? null) : null;
   const twoHands = def.grip === "TWO_HANDS";
   // The hand: his exception, else the recipe's (the hand at the shoe all the way), else what Placering says for the card.
-  const hands = twoHands ? { hand: "LH" as const, pass: false } : c.hand ? handsOf(c.hand) : deal && recipe?.hand ? { hand: recipe.hand, pass: false } : { hand: seat?.hand ?? ("LH" as const), pass: seat?.pass ?? false };
+  const byLine = recipeHands(def, recipe, seat);
+  const hands = twoHands ? { hand: "LH" as const, pass: false } : c.hand ? handsOf(c.hand) : { hand: byLine.hand, pass: byLine.pass };
   const lays: "LH" | "RH" = twoHands || hands.pass ? "RH" : hands.hand;
   const side: Side = c.side ?? seat?.side ?? "FRONT";
   const oneWayDeal = deal && shape === "ONE_WAY";
@@ -202,7 +196,7 @@ export function lineOf(input: { dealer: string; wish: FilmWish; methods: Pick<Me
     : oneWayDeal && !end ? `ingen slutbild för platsen${lays === "RH" ? " med höger hand vid kortet" : ""}`
     : byRule && !reference ? `${referenceWaits(recipe!.reference, def)}${lays === "RH" && !twoHands ? ", lagd med höger hand" : ""}`
     : null;
-  return { recipe, model, seconds, takes: c.takes ?? recipe?.takes ?? 1, style: c.style ?? recipe?.style ?? "KORT", shape, flipAxis: c.flipAxis ?? recipe?.turn ?? null, hands, side, reference, wanted: byRule, end, why };
+  return { recipe, model, seconds, takes: c.takes ?? recipe?.takes ?? 1, style: c.style ?? recipe?.style ?? "KORT", shape, flipAxis: recipe?.turn ?? null, hands, side, reference, wanted: byRule, end, why };
 }
 
 export type FilmRow = {
@@ -246,7 +240,6 @@ export function orderBody(dealer: string, wish: FilmWish, c: RowChoice = {}): Ne
   if (c.reference !== undefined) out.reference = c.reference || null;
   if (c.hand !== undefined) Object.assign(out, c.hand === "PASS" ? { hand: "LH", pass: true } : { hand: c.hand, pass: false });
   if (c.side !== undefined) out.side = c.side;
-  if (c.flipAxis !== undefined) out.flipAxis = c.flipAxis;
   if (c.cardScale !== undefined && c.cardScale !== 1) out.cardScale = c.cardScale;
   if (c.extra !== undefined) out.extra = c.extra.trim() || null;
   return out;
@@ -346,10 +339,6 @@ export function sumWords(rows: readonly Pick<FilmRow, "cost">[]): string {
   if (!rows.length) return "Inga filmer";
   return `${films} · ${credits(total)} krediter${priced.length < rows.length ? ` · ${rows.length - priced.length} utan pris` : ""}`;
 }
-
-/** The steps the list knows, so that an address or a stored list can be read back (only real steps). */
-export const isWish = (value: unknown): value is FilmWish =>
-  !!value && typeof value === "object" && STEPS.some((s) => s.key === (value as FilmWish).step) && ((value as FilmWish).target === null || typeof (value as FilmWish).target === "string");
 
 /**
  * Bordet's Beställ with the queue shown and Beställ's own words kept, for Beställ's old address (app/bestall/page.tsx):

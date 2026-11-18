@@ -30,6 +30,7 @@ const posix = (p: string) => p.replaceAll('\\', '/');
 
 test('the arguments, with the documented default tree and no target until the main checkout is known', () => {
   assert.deepEqual(parseArgs([]), {commit: 'main', tree: DEFAULT_TREE});
+  assert.equal(DEFAULT_TREE, 'D:/dealer-scratch/tmp/granska-prov/trad', 'the tree that exists and is used (docs/DRIFT.md)');
   assert.deepEqual(parseArgs(['abc', '--trad', 'D:/t', '--ut', 'D:/o']), {commit: 'abc', tree: 'D:/t', out: 'D:/o'});
   assert.throws(() => parseArgs(['--ut']), /--ut kräver en mapp/);
   assert.throws(() => parseArgs(['--snabbt']), /okänd flagga/);

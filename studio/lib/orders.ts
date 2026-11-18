@@ -15,6 +15,7 @@ import {
   type Anchor, type FlipAxis, type Grip, type HandChoice, type Order, type OrderAnswer, type OrdersAnswer, type Owner, type Picture, type PlanAnswer, type SeatPlan, type Shape, type Shown, type StepDef, type StepKey, type TextStyle,
 } from "../../src/order-model.ts";
 import { orderPrompt, wordCount, type Choice, type Part } from "../../src/order-prompts.ts";
+import { dealPose } from "../../src/game-director.ts";
 
 export type { Order, OrderAnswer, OrdersAnswer, Picture, Shown, FlipAxis, StepKey, HandChoice, Owner, Part, Choice, Shape, TextStyle };
 
@@ -57,7 +58,6 @@ export type NewOrderInput = {
   pass?: boolean;
   side?: "FRONT" | "BACK";
   seats?: SeatInput[];
-  flipAxis?: FlipAxis;
   /** Sent only when it is not the recipe's model (an exception). */
   model?: string;
   duration?: number;
@@ -76,7 +76,7 @@ export type NewOrderInput = {
 };
 /** The first draft made, and every draft made (seven for "Alla sju"). */
 export const createOrder = (input: NewOrderInput) => call<OrderAnswer & { made?: string[] }>("api/orders", "Utkastet", send("POST", input));
-export type OrderChange = { title?: string; takes?: number; flipAxis?: FlipAxis; extra?: string | null; duration?: number; hand?: "LH" | "RH"; pass?: boolean; side?: "FRONT" | "BACK" };
+export type OrderChange = { title?: string; takes?: number; extra?: string | null; duration?: number; hand?: "LH" | "RH"; pass?: boolean; side?: "FRONT" | "BACK" };
 export const changeOrder = (id: string, change: OrderChange, revision: string) => call<OrderAnswer>(`api/orders/${id}`, "Ändringen", send("PUT", change, revision));
 export const approveOrder = (id: string, revision: string) => call<OrderAnswer>(`api/orders/${id}/approve`, "Godkännandet", send("POST", undefined, revision));
 export const refreshOrder = (id: string, revision: string) => call<OrderAnswer>(`api/orders/${id}/refresh`, "Bilderna", send("POST", undefined, revision));
@@ -172,9 +172,6 @@ export function paramRows(order: Order): ParamRow[] {
   if (model?.tool === "generate_video" && model.shape && !("ratio" in args)) rows.push({ name: "ratio", value: "skickas inte", note: model.shape });
   return rows;
 }
-
-/** "Handleden vänder kortet på vägen", or nothing for a step without a turn. */
-export const turnWords = (order: Pick<Order, "motion">): string | null => (order.motion?.turn && order.motion.flipAxis ? FLIP_LABEL[order.motion.flipAxis] : null);
 
 /** "1,1 px från planen". */
 export const offsetWords = (px: number | null | undefined): string | null => (px === null || px === undefined ? null : `${String(px).replace(".", ",")} px från planen`);
@@ -274,26 +271,36 @@ export function orderLine(order: Pick<Order, "step" | "motion">): string | null 
 
 // ── A seat's turn, and the card's part of a new order ───────────────────────
 /**
- * A seat's turn in a new order: the one Jakob chose for the whole order, else what the plan says for that seat, which is what
- * the store takes when the order names none (tools/order-store.ts create: input.flipAxis ?? defaultFlip(…)).
+ * A seat's turn in a new order: the recipe's (no choice in the studio), else what the plan says for that seat, which is what
+ * the store takes when the order names none (tools/order-store.ts create: input.flipAxis ?? recipe.turn ?? defaultFlip(…)).
  */
 export const seatFlip = (step: string, seat: Pick<SeatPlan, "turnAt" | "flipAxis"> | null | undefined, chosen: FlipAxis | null): FlipAxis => chosen ?? defaultFlip(step, seat?.turnAt, seat?.flipAxis);
 /**
- * The card's part of a new order's body (Ny beställning): the turn only when Jakob chose one, so that with several seats
- * ("Alla sju") each seat keeps its own from the plan; tur och retur or bara dit for a deal; the trial card scale when not 1.
+ * The card's part of a new order's body (Ny beställning): never a turn, so that each seat gets its recipe's (with several
+ * seats, "Alla sju", each its own); tur och retur or bara dit for a deal; the trial card scale when not 1.
  */
-export function cardBody(v: { chosenFlip: FlipAxis | null; shape: Shape | null; deal: boolean; cardScale: number }): Pick<NewOrderInput, "flipAxis" | "shape" | "cardScale"> {
-  return { ...(v.chosenFlip ? { flipAxis: v.chosenFlip } : {}), ...(v.deal && v.shape ? { shape: v.shape } : {}), ...(v.cardScale !== 1 ? { cardScale: v.cardScale } : {}) };
+export function cardBody(v: { shape: Shape | null; deal: boolean; cardScale: number }): Pick<NewOrderInput, "shape" | "cardScale"> {
+  return { ...(v.deal && v.shape ? { shape: v.shape } : {}), ...(v.cardScale !== 1 ? { cardScale: v.cardScale } : {}) };
 }
 
 // ── A new order from the address ────────────────────────────────────────────
 /**
+ * The anchor a card's deal starts on: the one the game deals it from for this dealer (src/game-director.ts dealPose, SEAT_HUB:
+ * Paow's seat 6 from anchor 2.2, Jakob 2026-11-13), as Karta and the game have it. Bordet's row, its default round and Ny
+ * beställning ask it here. Until 2026-11-18 it was the plan's grip, so the lab played seat 6 from anchor 2.1, where she has no
+ * film, while the game played it from 2.2 (the rescue lane Kedjan, finding 1).
+ */
+export const dealAnchor = (dealer: string, card: string): Exclude<Anchor, "1"> => (["2.1", "2.2", "2.3"] as const).find((a) => ANCHOR_NODE[a] === dealPose(dealer, card)) ?? "2.1";
+/** The dealer Ny beställning opens on when the address names none. */
+export const SHEET_DEALER = "paow";
+
+/**
  * What /bestall/?ny=1&dealer=paow&steg=GIV-2.2&plats=P4.C1 asks for (plats=alla: the first card to every player;
  * plats=P3.C2: a seat's second card; modell=kling-3-4k: that model, when it can make the step). A seat without a step gets
- * the deal its card is planned with in Placering (nyp → GIV-2.1, släp → GIV-2.2). Null without ny=1.
+ * the deal from the anchor the game deals that card from (dealAnchor; with plats=alla the first seat's). Null without ny=1.
  */
 export type Preset = { dealer: string | null; step: StepKey | null; target: string | null; all: boolean; model: string | null; like?: string | null };
-export function presetOf(params: { get(name: string): string | null }, plan: Pick<PlanAnswer, "seats"> | null | undefined): Preset | null {
+export function presetOf(params: { get(name: string): string | null }): Preset | null {
   if (params.get("ny") !== "1") return null;
   // som=<id>: every choice of that order (recipeOf); the sheet reads them from the order itself.
   const like = params.get("som")?.toLowerCase() ?? null;
@@ -305,7 +312,7 @@ export function presetOf(params: { get(name: string): string | null }, plan: Pic
   const all = plats === "ALLA";
   const target = plats && orderableCard(plats) ? plats : null;
   let step = asked && stepOf(asked) && !stepOf(asked)!.off ? (asked as StepKey) : null;
-  if (!step && (target || all)) step = plan?.seats[target ?? "P1.C1"]?.grip === "DRAG" ? "GIV-2.2" : "GIV-2.1";
+  if (!step && (target || all)) step = `GIV-${dealAnchor(dealer ?? SHEET_DEALER, target ?? "P1.C1")}`;
   return { dealer, step, target, all, model: modell && Object.hasOwn(MODELS, modell) ? modell : null };
 }
 /** The address params a new order is asked with, removed when the sheet closes. */
@@ -324,21 +331,21 @@ export function presetAddress(v: { dealer: string; step: StepKey; target: string
 
 /**
  * Every choice of an order, so that "Ny beställning som den här" opens the sheet with them chosen and one change gives a
- * clean comparison: dealer, step, seat, hand and handbyte, closed or open, the turn, the text's style, model, seconds,
+ * clean comparison: dealer, step, seat, hand and handbyte, closed or open, the text's style, model, seconds,
  * takes, Jakob's addition, the reference film, tur och retur or bara dit, the card's size. An order written in the long
  * text (Utförlig, every order before template 4) gives Kort, since no new order is written Utförlig (longText says so, for
  * the sheet's line). The text is always written with today's template. The pictures are never taken from it: a new draft
  * fetches what holds now.
  */
 export type Recipe = {
-  dealer: string; step: StepKey; target: string | null; hand: HandChoice | null; side: "FRONT" | "BACK" | null; flipAxis: FlipAxis | null;
+  dealer: string; step: StepKey; target: string | null; hand: HandChoice | null; side: "FRONT" | "BACK" | null;
   style: TextStyle; longText: boolean; model: string; duration: number | null; takes: number; extra: string; reference: string | null; shape: Shape | null; cardScale: number;
 };
 export function recipeOf(order: Order): Recipe {
   const m = order.motion, d = order.generation.params.duration, style = styleOf(order.prompt);
   return {
     dealer: order.dealer, step: order.step.key, target: m?.target ?? null,
-    hand: m ? handChoiceOf(m) : null, side: m?.side ?? null, flipAxis: m?.flipAxis ?? null,
+    hand: m ? handChoiceOf(m) : null, side: m?.side ?? null,
     style: style === "UTFÖRLIG" ? "KORT" : style, longText: style === "UTFÖRLIG", model: order.generation.model, duration: typeof d === "number" ? d : null, takes: order.takes,
     extra: order.prompt.extra ?? "", reference: order.reference.status === "FINNS" ? (order.reference.clips[0] ?? null) : null,
     shape: order.step.shape, cardScale: m?.cardScale ?? 1,

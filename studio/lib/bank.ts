@@ -8,7 +8,7 @@
 // The online copy (lib/mode.ts) never changes: there the bank is read once, and the graph carries no cost.
 import { Suspense, createContext, createElement, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useSearchParams } from "next/navigation";
-import { buildGraph, dealersOf, type BankData, type Edge, type Graph, type Take } from "../../src/clip-graph.ts";
+import { buildGraph, dealersOf, type BankData, type Graph } from "../../src/clip-graph.ts";
 import { ApiError, asApiError, readBank, type ClipBankResponse } from "./api.ts";
 import {
   DEALER_MEMORY,
@@ -226,15 +226,3 @@ export function useBank(): BankState {
 
 /** The bank when there is a provider, else null: for pieces that also work without one. */
 export const useOptionalBank = (): BankState | null => useContext(BankContext);
-
-/** One take by id, or null while the bank is read or when it does not exist. */
-export function useTake(id: string | null | undefined): Take | null {
-  const { graph } = useBank();
-  return id && graph ? (graph.takes[id] ?? null) : null;
-}
-
-/** One edge by id ("READY>P4.C1"), or null. */
-export function useEdge(id: string | null | undefined): Edge | null {
-  const { graph } = useBank();
-  return id && graph ? (graph.edge[id] ?? null) : null;
-}

@@ -254,7 +254,7 @@ const ANCHOR_22 = "READY-B";
 const shoePoses = (graph: Pick<Graph, "edges"> | null): string[] => ["READY", ...new Set([ANCHOR_22, ...(graph?.edges ?? []).flatMap((e) => e.hubVariants)].sort())];
 
 /** The anchors in the order "Nästa steg" shows them: the poses at the shoe first (where a step from rest goes), then A1, DC2 upp, Borta. */
-export const roundAnchors = (graph: Pick<Graph, "edges"> | null): string[] => [...shoePoses(graph), "IDLE", REVEAL_NODE, AWAY];
+const roundAnchors = (graph: Pick<Graph, "edges"> | null): string[] => [...shoePoses(graph), "IDLE", REVEAL_NODE, AWAY];
 
 /** Every node a round can pass: the anchors, then the 16 card places and the dealer's third card. The experiments' own poses are not his notation. */
 export const roundNodes = (graph: Pick<Graph, "edges"> | null): string[] => [...roundAnchors(graph), ...CARDS, ...OPTIONAL_TARGETS];

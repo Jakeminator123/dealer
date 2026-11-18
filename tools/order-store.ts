@@ -44,7 +44,7 @@ import {
   bodyLine, checkPolicy, costOf, crossesBody, cutFrameOf, cutFrameWords, cutIntoOf, tidyMotion, dayOf, defaultFlip, defaultStyle, draftProblems, edgeOf, genitive, hashInput, landingMissing, landingOf, modelFor, modelsFor, paramsOf, plannedOf, readCutChecks, referenceCandidates, seatEndMissing, seatList, seatWords, secondsWords, shownOf, spentOn, stepOf, stylesFor, summaryOf, validateOrder, waitingOf,
   type Anchor, type BankFacts, type CutFrame, type Drawn, type FlipAxis, type Motion, type Order, type OrderAnswer, type OrdersAnswer, type Owner, type Picture, type PlanAnswer, type Policy, type PoseAnswer, type Receipt, type RefCandidate, type Reference, type RenderedReference, type SeatPlan, type Shape, type StepDef, type StepKey, type TextStyle, type Waits,
 } from '../src/order-model.ts';
-import { readMethods, recipeFor, referenceByRule, referenceWaits, secondsOf, type MethodRegister } from '../src/order-methods.ts';
+import { readMethods, recipeFor, recipeHands, referenceByRule, referenceWaits, secondsOf, type MethodRegister } from '../src/order-methods.ts';
 import { handsIn, orderPrompt } from '../src/order-prompts.ts';
 import { checkCutFrame, patchShoe } from '../src/cut-frame.ts';
 import { CUT, H, LAY, W, armAlone, cardTexture, cutFigure, drawCard, drawCards, matchGreen, pictureBytes, planQuad, pngOf, poseOnShoe, readPlan, readRgb, type CardOutline, type Pt, type Texture } from './order-images.ts';
@@ -527,9 +527,11 @@ export function orderStore(root: string, options: StoreOptions = {}) {
     // what Placering says for the card. A handbyte is never a default, also where the plan says it for the card: it is an
     // exception a draft has to say. From anchor 2.3 the hand at the shoe strokes the card out and the other hand lays it.
     const twoHands = step.grip === 'TWO_HANDS';
-    const said = input.pass !== undefined || input.hand !== undefined, byRecipe = deal && !said ? (recipe?.hand ?? null) : null;
-    const pass = !step.card || !intent || twoHands || byRecipe ? false : (input.pass ?? (input.hand === undefined ? intent.pass : false));
-    const hand: 'LH' | 'RH' = pass || twoHands ? 'LH' : (input.hand ?? byRecipe ?? intent?.takeHand ?? 'LH');
+    // Nothing said: the one rule Bordet's row and the production list take too (recipeHands).
+    const said = input.pass !== undefined || input.hand !== undefined;
+    const byLine = recipeHands(step, recipe, intent ? { hand: intent.takeHand, pass: intent.pass } : null);
+    const pass = !said ? byLine.pass : !step.card || !intent || twoHands ? false : (input.pass ?? false);
+    const hand: 'LH' | 'RH' = !said ? byLine.hand : pass || twoHands ? 'LH' : (input.hand ?? intent?.takeHand ?? 'LH');
     if (pass && input.hand === 'RH') throw new StoreError(400, 'Handbyte går från vänster hand till höger: vänster tar kortet ur skon.');
     const lays: 'LH' | 'RH' = twoHands ? 'RH' : handsIn({ hand, pass }).lays;
     const bank = step.kind === 'FILM' ? await readBank() : null;

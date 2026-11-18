@@ -6,8 +6,8 @@
 // in Material, what it was before; then the exact text in full (selectable; the parts a choice made, Jakob's addition and
 // the bans marked, from the same function the text was written with), every argument of the call by its name with what the
 // model is known and not known to do (a 4K film: that it is scaled to the bank's frame), the takes and the cost against
-// the day's cap and the balance. A draft can change its hand, how the card lands and turns, takes and
-// free addition here, and fetch its pictures again when something has changed; "Godkänn och lägg i kön" freezes it (its
+// the day's cap and the balance. A draft can change its hand, how the card lands, takes and free addition here (the
+// turn is the recipe's, no choice), and fetch its pictures again when something has changed; "Godkänn och lägg i kön" freezes it (its
 // hash in approval), after which nothing in it changes. Writes only on Jakob's click.
 import { ArrowLeft, Check, ClipboardCopy, CopyPlus, RefreshCw, TriangleAlert } from "lucide-react";
 import Link from "next/link";
@@ -16,10 +16,10 @@ import { asApiError } from "../../lib/api.ts";
 import { labUrl } from "../../lib/lab.ts";
 import { swedishMoment } from "../../lib/mode.ts";
 import { approveOrder, changeOrder, costWords, motionWords, orderLine, paramRows, picturesInOrder, plannedWords, referenceWords, refreshOrder, storedParts, styleWords, type OrderAnswer, type OrdersAnswer } from "../../lib/orders.ts";
-import { MODELS, REF_VERDICT_LABEL, approvalWords, SHAPE_LABEL, TAKES_MAX, credits, defaultFlip, genitive, groupBudget, handChoiceOf, handsOf, requestOf, scaleWords, seatWords, stepOf, takeStates, waitWords } from "../../../src/order-model.ts";
+import { MODELS, REF_VERDICT_LABEL, approvalWords, SHAPE_LABEL, TAKES_MAX, credits, genitive, groupBudget, handChoiceOf, handsOf, requestOf, scaleWords, seatWords, stepOf, takeStates, waitWords } from "../../../src/order-model.ts";
 import { Page } from "../shell";
 import { Badge, Button, Dialog, SegmentedControl, TextArea, cn, useToast } from "../ui";
-import { FlipChoice, HandChoiceRow, LandsChoice } from "./Choices";
+import { HandChoiceRow, LandsChoice } from "./Choices";
 import { PictureCard, StatusChip } from "./Pictures";
 import { PromptText } from "./PromptText";
 
@@ -66,12 +66,6 @@ function Edit({ answer, all, onSaved }: { answer: OrderAnswer; all: OrdersAnswer
             <HandChoiceRow value={handChoiceOf(m)} plan={seat ? handChoiceOf({ hand: seat.hand, pass: seat.pass }) : null} disabled={busy} onChange={(c) => c !== handChoiceOf(m) && void save(handsOf(c))} />
             {seat?.crosses && handChoiceOf(m) !== "PASS" ? <p className="text-sm text-brass-hi">Förslag: handbyte. På {seatWords(m.target)} måste vänsterhanden från skon korsa kroppen.</p> : null}
           </div>
-          {m.side === "FRONT" && m.turn && m.flipAxis ? (
-            <div className="flex flex-col gap-2">
-              <span className="text-sm text-dim">Hur kortet vänds</span>
-              <FlipChoice value={m.flipAxis} plan={seat ? defaultFlip(order.step.key, seat.turnAt, seat.flipAxis) : null} disabled={busy} onChange={(axis) => axis !== m.flipAxis && void save({ flipAxis: axis })} />
-            </div>
-          ) : null}
         </>
       ) : null}
       <div className="flex items-center gap-3">
