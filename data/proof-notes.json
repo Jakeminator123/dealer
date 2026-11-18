@@ -293,6 +293,37 @@
         "at": "2026-11-18T02:07:17.628Z"
       },
       "read": "2026-11-18T02:07:17.628Z"
+    },
+    {
+      "id": 25,
+      "proof": "bestallning-handbyte-p4-16",
+      "file": "first.png",
+      "choice": "inte-bra",
+      "text": "",
+      "at": "2026-11-18T02:16:19.447Z",
+      "read": "2026-11-18T02:17:31.416Z"
+    },
+    {
+      "id": 26,
+      "proof": "bestallning-handbyte-p4-16",
+      "file": "t2-stillbild.png",
+      "choice": "inte-bra",
+      "text": "",
+      "at": "2026-11-18T02:16:49.890Z",
+      "read": "2026-11-18T02:17:31.135Z"
+    },
+    {
+      "id": 27,
+      "proof": "bestallning-handbyte-p4-16",
+      "file": "t1-stillbild.png",
+      "choice": "inte-bra",
+      "text": "",
+      "at": "2026-11-18T02:16:57.456Z",
+      "answer": {
+        "text": "Läst: tagningarna med handbyte underkänns. Den oberoende granskaren sade samma sak (ett målat bord som byter färg, ett tryckt kort). Handbytet görs i stället som given från ankare 2.3, där vänster hand ger kortet till höger.",
+        "at": "2026-11-18T02:17:30.886Z"
+      },
+      "read": "2026-11-18T02:17:30.886Z"
     }
   ]
 }

@@ -302,6 +302,11 @@ Innehåll: [Arbetet och dokumenten](#arbetet-och-dokumenten) · [Labbet och stud
   vridning som inte fullföljs vilket bara ser konstigt ut.. annars kanske bra." En vändning är en hel rörelse, aldrig
   påbörjad och avbruten; sättet (handleden, nyckeln kring långsidan eller ände över ände som den riktiga dealern)
   väljs efter vad som blir bäst i filmen.
+- **Takten: ingången fortare, given i ett svep** (2026-11-18, kl. 03.15, om proven `paow-ankare-2-3` och
+  `giv-fran-2-3-p5`): "Ankare 2.3 går för sakta. Given 2.3 är för upphackad och borde bli mer naturlig.. Den stannar
+  lixom upp i mitten typ. Sista videon är okej men hon har ett bord som ändrar färger och ett ort som visar textur av
+  vitt". Filmen från vila till ankare 2.3 ska gå fortare. En giv är en sammanhängande rörelse, utan stopp med kortet
+  rest. Bordets gröna är densamma genom hela filmen, och kortet är slätt, utan vitt eller mönster.
 - **Givens sex steg från ankare 2.1** (2026-11-13, hans skiss, inte underlag i repot): Nyp, Dra (ned på filten,
   baksidan upp), För fram (lågt längs filten, inte vänt i luften), Vrid (kortet reser sig på långsidan), Vänd upp,
   Lägg. Det är valet Vänd vid platsen (`AT_PLACE`), som planen väljer per kort i Bordets Kortplan; förvalet för en ny
