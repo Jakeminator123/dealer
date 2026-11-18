@@ -16,7 +16,7 @@ import { BankStatus, Page } from "@/components/shell";
 import { Button, ErrorState, IconButton, Skeleton, Switch } from "@/components/ui";
 import { getPlacements } from "@/lib/api";
 import { useBank } from "@/lib/bank";
-import { bankSummary, edgeInfo, isSecondary, type EdgeInfo, type Summary } from "@/lib/edge-stats";
+import { bankSummary, edgeInfo, isSecondary, primaryOf, type EdgeInfo, type Summary } from "@/lib/edge-stats";
 import { mapLayout, type PlanPoints } from "@/lib/map-layout";
 import { stepFilms, treeOrder } from "@/lib/primaries";
 import { primarCount } from "@/lib/verdict";
@@ -136,7 +136,8 @@ function Karta() {
   const info = edgeId ? (infos.get(edgeId) ?? (graph && played ? edgeInfo(played.edge[edgeId] ? played : graph, edgeId, hubs, true) : null)) : null;
   const at = edgeId ? order.indexOf(edgeId) : -1;
   // The steps still without a Primär that have a film of his to choose from, in the tree's order: "Nästa utan Primär" walks them.
-  const open = useMemo(() => (graph && game ? order.filter((id) => !graph.edge[id].takes.some((t) => t.explicitMain) && graph.edge[id].takes.some((t) => isSecondary(t, game))) : []), [order, graph, game]);
+  // A step whose Primär he has archived is one of them (primaryOf).
+  const open = useMemo(() => (graph && game ? order.filter((id) => !primaryOf(graph.edge[id]) && graph.edge[id].takes.some((t) => isSecondary(t, game))) : []), [order, graph, game]);
   const unchosen = open.find((id) => order.indexOf(id) > at) ?? open[0] ?? null;
   const around = { prev: at > 0 ? order[at - 1] : null, next: at >= 0 && at < order.length - 1 ? order[at + 1] : null, unchosen: unchosen !== edgeId ? unchosen : null };
   const sheetOpen = !!step;

@@ -23,7 +23,10 @@ export type MotionRecord = {
   // provisional: a verdict the main agent and a reviewer gave in his place (tools/review-put.ts); it plays as its decision says,
   // is never his (no userReview, userAccepted false) and does not wait for him in Granska, which lists it as judged for him; his
   // decision takes it away.
-  review?: {decision?: string; acceptedAs?: string; basis?: string; limitations?: string; userReview?: string; userAccepted?: boolean; inbox?: boolean; provisional?: {by?: string; at?: string; mandate?: string; note?: string}};
+  // archived: Jakob archived the take by hand (who, when and from where; tools/review-store.ts saveArchive). It is out of play and
+  // out of the lists, with its film, its record and his verdict kept; taking it back removes the field.
+  review?: {decision?: string; acceptedAs?: string; basis?: string; limitations?: string; userReview?: string; userAccepted?: boolean; inbox?: boolean; provisional?: {by?: string; at?: string; mandate?: string; note?: string};
+    archived?: {by?: string; at?: string; where?: string}};
 };
 export type Receipt = {status?: string; estimatedCredits?: number; requestedAt?: string; completedAt?: string; output?: {bytes?: number; fps?: number; frames?: number; width?: number; height?: number} | null};
 // track and overrides: the card track from tools/track-card.ts and hand-written occlusion overrides, when they exist locally.
@@ -185,6 +188,7 @@ export type Take = {
   speed: number;           // the speed the film is meant to be watched at (a clip generated in slow motion says 2); frame numbers stay the file's
   dealer: string;          // whose take it is; every take of a graph is its dealer's
   inbox: boolean;          // came in from an order and waits for Jakob: it plays only where its step has nothing else to play
+  archived?: boolean;      // Jakob archived it (review.archived): never played or counted, listed only where it can be taken back (Karta); his verdict is kept
   // The hand that lays the card (a deal) or comes back from it (a return): its record's motion.releaseHand; a return without one
   // has the hand of the deal it was cut from. null: not known.
   releaseHand: Hand | null;
@@ -233,7 +237,9 @@ export function bankEdges(): EdgeRef[] {
 }
 
 export const clipOfVideo = (video: unknown): string | null => typeof video === 'string' ? /^assets\/motions\/([a-z0-9-]+)\/source\.mp4$/.exec(video)?.[1] ?? null : null;
-export const playable = (take: Take) => take.stage === 'DONE' && take.decision !== 'REJECTED';
+// A take Jakob has archived never plays: its step falls back on the next take by the same rule, and on none when there is none.
+// Nothing is chosen in its place: an archived Primär leaves the step without a Primär.
+export const playable = (take: Take) => take.stage === 'DONE' && take.decision !== 'REJECTED' && !take.archived;
 // Does this return continue that deal take without a jump? A return cut from a frame fits the clip it was cut
 // from. A return from a landing anchor fits every deal that ends on that same anchor image: variant B deals
 // end on their own anchor, so their returns do not fit the model's deals and the other way round.
@@ -322,16 +328,16 @@ export function buildGraph(data: BankData, options: {mode?: FilmMode; holeCardDo
       credits: receipt?.estimatedCredits ?? job.duration * (CREDITS_PER_SECOND[job.ratio] ?? 0), startsOn, anchorStart, landingFrame: null, landingConflict: false, segment, revision: data.revisions?.[job.id] ?? null,
       endsOn: e.kind === 'DEAL' && typeof motion?.motion?.endsOn?.clip === 'string' && Number.isInteger(motion.motion.endsOn.frame) ? {clip: motion.motion.endsOn.clip, frame: motion.motion.endsOn.frame!} : null,
       idle: e.id === 'IDLE>IDLE' ? idleOf(job.id, motion) : null, editOf: editOf.get(job.id) ?? null, speed: Number(job.playbackSpeed) >= 0.25 && Number(job.playbackSpeed) <= 4 ? Number(job.playbackSpeed) : 1,
-      dealer, inbox: motion?.review?.inbox === true, releaseHand: handWord(motion?.motion?.releaseHand), motion, receipt, media};
+      dealer, inbox: motion?.review?.inbox === true, archived: !!motion?.review?.archived, releaseHand: handWord(motion?.motion?.releaseHand), motion, receipt, media};
     takes[job.id] = take; e.takes.push(take);
   });
   const all = Object.values(takes);
   // A return that says no hand comes back with the hand that laid the card in the deal it was cut from.
   for (const back of all.filter(t => t.kind === 'RETURN' && !t.releaseHand)) back.releaseHand = all.find(d => d.kind === 'DEAL' && d.releaseHand && cutFrom(back, d))?.releaseHand ?? null;
   // A deal's landing/cut frame is the frame its returns start on. An explicit motion.landingFrame wins. Returns in the inbox count
-  // only when no other return was cut from the deal.
+  // only when no other return was cut from the deal, and rejected, failed or archived ones only when nothing else was.
   for (const deal of all.filter(t => t.kind === 'DEAL')) {
-    const returns = all.filter(r => r !== deal && cutFrom(r, deal)), kept = returns.filter(r => r.decision !== 'REJECTED' && r.stage !== 'FAILED'), known = kept.filter(r => !r.inbox);
+    const returns = all.filter(r => r !== deal && cutFrom(r, deal)), kept = returns.filter(r => r.decision !== 'REJECTED' && r.stage !== 'FAILED' && !r.archived), known = kept.filter(r => !r.inbox);
     const frames = (known.length ? known : kept.length ? kept : returns).map(r => r.startsOn!.frame), explicit = deal.motion?.motion?.landingFrame;
     const counts = new Map<number, number>(); for (const f of frames) counts.set(f, (counts.get(f) ?? 0) + 1);
     deal.landingFrame = Number.isInteger(explicit) ? explicit! : [...counts].sort((a, b) => b[1] - a[1])[0]?.[0] ?? null;
@@ -360,9 +366,10 @@ export function buildGraph(data: BankData, options: {mode?: FilmMode; holeCardDo
     e.hasVariant = e.variants.length > 0;
     e.inProgress = own.filter(t => t.stage === 'WRITTEN' || t.stage === 'PREPARED' || t.stage === 'ORDERED').length;
     e.rendering = e.takes.filter(t => t.stage === 'ORDERED').length;
+    // A step whose only finished films are archived is missing its film, not rejected.
     e.status = e.main ? (e.main.variant ? 'VARIANT' : e.main.decision === 'ACCEPTED' ? 'ACCEPTED' : 'UNREVIEWED')
       : own.some(t => t.stage === 'ORDERED') ? 'ORDERED' : own.some(t => t.stage === 'PREPARED' || t.stage === 'WRITTEN') ? 'PREPARED'
-      : own.some(t => t.stage === 'DONE') ? 'REJECTED' : 'MISSING';
+      : own.some(t => t.stage === 'DONE' && !t.archived) ? 'REJECTED' : 'MISSING';
   }
   const count = (list: Edge[]): Count => ({total: list.length, done: list.filter(e => e.main).length,
     byStatus: Object.fromEntries(STATUSES.map(s => [s, list.filter(e => e.status === s).length])) as Record<Status, number>});
@@ -380,8 +387,8 @@ export function buildGraph(data: BankData, options: {mode?: FilmMode; holeCardDo
 
 // The returns that can follow one deal take: those cut to one of its frames and those starting from the landing anchor.
 export function returnsOf(graph: Graph, deal: Take): {frame: Take[]; anchor: Take[]} {
-  // Every return that leaves the card this deal lands on, in the model or among the experiments.
-  const card = graph.edge[deal.edge]?.to, list = Object.values(graph.takes).filter(r => r.kind === 'RETURN' && graph.edge[r.edge].from === card && r.decision !== 'REJECTED' && r.stage !== 'FAILED');
+  // Every return that leaves the card this deal lands on, in the model or among the experiments; never a rejected, failed or archived one.
+  const card = graph.edge[deal.edge]?.to, list = Object.values(graph.takes).filter(r => r.kind === 'RETURN' && graph.edge[r.edge].from === card && r.decision !== 'REJECTED' && r.stage !== 'FAILED' && !r.archived);
   return {frame: list.filter(r => !r.anchorStart && returnFits(r, deal)), anchor: list.filter(r => r.anchorStart && returnFits(r, deal))};
 }
 
@@ -590,7 +597,8 @@ export function resolveRound(graph: Graph, steps: Step[], options: {holeCardDown
       if (take && main && take !== main && !sameHand(main)) notes.push(`${main.explicitMain ? 'Primär' : 'Huvud'}returen ${main.id} kommer tillbaka med ${main.releaseHand === 'RH' ? 'höger' : 'vänster'} hand; given ${after.id} lade kortet med ${after.releaseHand === 'RH' ? 'höger' : 'vänster'}.`);
     }
     if (!take && main) { take = main; why = asMain(main); if (after && !sameHand(main)) notes.push(`Fel hand: returen ${main.id} kommer tillbaka med ${main.releaseHand === 'RH' ? 'höger' : 'vänster'} hand, och ingen retur med ${after.releaseHand === 'RH' ? 'höger' : 'vänster'} kan spelas.`); }
-    if (!take) { seg.gap = pool.some(t => t.stage === 'ORDERED' || t.stage === 'PREPARED' || t.stage === 'WRITTEN') ? 'WAITING' : pool.some(t => t.stage === 'DONE') ? 'REJECTED' : 'MISSING'; return; }
+    // Nothing to play: work on its way, only rejected films, or no film at all (a step whose films are all archived has none).
+    if (!take) { seg.gap = pool.some(t => t.stage === 'ORDERED' || t.stage === 'PREPARED' || t.stage === 'WRITTEN') ? 'WAITING' : pool.some(t => t.stage === 'DONE' && !t.archived) ? 'REJECTED' : 'MISSING'; return; }
     seg.take = take; seg.why = why; seg.fps = take.fps ?? 30; seg.video = take.media.video ?? null;
     if (take.segment) { seg.start = take.segment.start; seg.end = take.frames !== null && take.segment.end >= take.frames - 1 ? null : take.segment.end + 1; } // a derived take shows only its own frames
     // A turn runs from rest to rest like an idle clip, and her coming and leaving have rest at one end: a generated film is brighter in its first frames and jumps in its last two, so they are not played.

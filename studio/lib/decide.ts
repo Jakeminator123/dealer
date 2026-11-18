@@ -13,11 +13,14 @@ export type Decided = { lowered: string[]; failed: string[] };
 
 /**
  * Writes one decision with its note. For Primär, every other Primär on the take's edge then becomes plain accepted with its
- * own note kept; a failed lowering is reported in `failed`, not thrown. Without a graph (no bank read yet) nothing is lowered.
- * Throws what the first write throws (a 409 among them): then nothing else has been written.
+ * own note kept (one he has archived too: a step has one Primär); a failed lowering is reported in `failed`, not thrown.
+ * Without a graph (no bank read yet) nothing is lowered. A take he has archived cannot be made Primär before it is taken
+ * back: it cannot play, and the step's playing Primär would be lowered for it. Throws what the first write throws (a 409
+ * among them): then nothing else has been written.
  */
 export async function decide(take: Take, decision: Decision, note: string, graph: Graph | null, put: Put): Promise<Decided> {
   if (!take.revision) throw new Error("Tagningen har ingen post i motions/ ännu, så beslutet kan inte sparas.");
+  if (decision === "MAIN" && take.archived) throw new Error("Tagningen är arkiverad. Ta tillbaka den i Karta först, så kan den bli Primär.");
   await put(take.id, decision, decision === "PENDING" ? "" : note, take.revision);
   const lowered: string[] = [];
   const failed: string[] = [];

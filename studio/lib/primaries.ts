@@ -246,7 +246,8 @@ export type Film = { take: Take; use: Use; seam: Seam | null; proposal: boolean;
  * primary: his Primär. secondaries: the approved takes that are not Primär, the proposal first (the best take he accepted
  * outright, when no Primär is chosen), then those the game plays, his own before a reviewer's, the newest last; the page
  * shows three and folds the rest. elsewhere: how many of the step's takes are not on this page (rejected, waiting,
- * replaced): they are in Granska.
+ * replaced): they are in Granska. A take he has archived is none of these: it is neither Primär nor secondary (playable
+ * says no), and the panel folds it under Arkiverade (lib/archive.ts) instead of counting it elsewhere.
  */
 export type StepFilms = { edge: Edge; role: Role; now: Playing; primary: Film | null; secondaries: Film[]; proposal: Take | null; elsewhere: number };
 export const SHOWN = 3;
@@ -290,7 +291,7 @@ export function stepFilms(bank: BankData, graph: Graph, game: Graph, edgeId: str
         b.take.order - a.take.order,
     );
   const primary = main ? { ...film(main, false), seam: seamNow(edge, now, main) } : null;
-  return { edge, role: roleOf(edge), now, primary, secondaries, proposal, elsewhere: edge.takes.length - secondaries.length - (primary ? 1 : 0) };
+  return { edge, role: roleOf(edge), now, primary, secondaries, proposal, elsewhere: edge.takes.filter((t) => !t.archived).length - secondaries.length - (primary ? 1 : 0) };
 }
 
 // ── The one write ───────────────────────────────────────────────────────────

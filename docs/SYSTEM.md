@@ -611,7 +611,8 @@ gissat (`usesOf` i `studio/lib/primaries.ts`): banken som spelet läser den (`ju
 steget i (given före returen till A2.1 och före den till A1, returen efter given), vilans lugna filmer och gester efter
 vikt, det som bara spelas när det väljs och platserna som ges från ankare 2.2 (`SEAT_HUB`). Utan Primär föreslås den bästa
 tagning Jakob godkänt rakt av, med vad den skulle göra med skarven, och Primär sätts bara med hans klick (Gör primär).
-Underkända, ogranskade och ersatta tagningar finns i Granska. Noderna är ankarposer: `IDLE`, `READY` och ett
+Underkända, ogranskade och ersatta tagningar finns i Granska; en tagning han har arkiverat ligger hopfälld under
+Arkiverade i stegets panel. Noderna är ankarposer: `IDLE`, `READY` och ett
 landningsankare per kort (`P4.C1`,
 `D.C2`). Varje klipp är en kant `A>B` med en enda handling; en runda är kanter i följd:
 
@@ -740,6 +741,13 @@ IDLE>READY | READY>P1.C1 | P1.C1>READY | READY>D.C1 | D.C1>READY | READY>P1.C2 |
   honom: chippet är streckat med domens eget namn och "åt dig", och Granska visar sådana tagningar i Alla under Dömda
   åt dig. Hans nästa beslut (också en återställning) tar bort blocket. En tagning som bär hans
   dom tar inte emot en preliminär.
+- En tagning arkiveras för hand i Kartans stegpanel (Arkivera; Ta tillbaka under Arkiverade; Jakob 2026-11-18):
+  `PUT /api/clip-bank/archive/<id>` med `{archived: true|false}` sätter eller tar bort `review.archived {by, at, where}`
+  (hans klick: Jakob, Karta) med samma skydd som en dom (`saveArchive` i `tools/review-store.ts`); inget verktyg skriver
+  fältet i hans namn. Inget annat i posten rörs och ingen fil flyttas: domen står kvar och kommer tillbaka med
+  tagningen. En arkiverad tagning spelas aldrig och räknas inte (`playable` i `src/clip-graph.ts`, `judgedBank` i
+  `src/game-director.ts`), och dess film går inte upp till kopian; en arkiverad Primär lämnar steget utan Primär tills
+  han väljer en, och ett steg vars alla filmer är arkiverade saknar film.
 - En post kan bära `motion.takeHand` och `motion.releaseHand` (`LH`, `RH`): handen som tar kortet ur skon och handen
   som lägger det, eller på en retur handen som kommer tillbaka. Rundan väljer en retur som kommer tillbaka med den hand
   som lade kortet, och en retur utan uppgift ärver givens (`releaseHand` i `src/clip-graph.ts`). `tools/register-order.ts`

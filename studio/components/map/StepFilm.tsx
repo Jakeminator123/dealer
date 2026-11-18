@@ -1,14 +1,15 @@
 "use client";
 
 // The films of one step in its panel on Karta (lib/primaries.ts stepFilms): the Primär large, and each secondary film as a
-// row (still, name, verdict, how the game uses it, and for the proposal the seam a Primär would give), with "Gör primär" on
-// his click only, "Jämför" and "I scenen". UseChip says the use in a word or two; its tooltip says it in a sentence.
-import { Ban, Columns2, Heart, MessageSquare, Play, Repeat, Shuffle, Star, type LucideIcon } from "lucide-react";
+// row (still, name, verdict, how the game uses it, and for the proposal the seam a Primär would give), with "Gör primär" and
+// "Arkivera" on his click only, "Jämför" and "I scenen". UseChip says the use in a word or two; its tooltip says it in a sentence.
+import { Archive, Ban, Columns2, Heart, MessageSquare, Play, Repeat, Shuffle, Star, type LucideIcon } from "lucide-react";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import type { Edge, Take } from "../../../src/clip-graph.ts";
 import { TakeCard, TakeChip } from "@/components/takes";
 import { Button, buttonClasses, cn } from "@/components/ui";
+import { ARCHIVE_ACTION } from "@/lib/archive";
 import { isSnapshot } from "@/lib/mode";
 import { edgeName, takeName } from "@/lib/names";
 import { PRAISED_NOTE, type Film, type Seam, type Use, type UseKind } from "@/lib/primaries";
@@ -74,7 +75,7 @@ const scene = (edge: Edge, take: Take) => ({ pathname: "/bordet/", query: { lage
 const compare = (edge: Edge, take: Take, other: Take | null) => (other && other.id !== take.id ? { pathname: "/jamfor/", query: { kant: edge.id, a: take.id, b: other.id } } : null);
 
 /** The Primär, large: its film plays in place or over the whole window. */
-export function PrimaryFilm({ film, edge, name, selected, onPick, onExpand, marks = [] }: { film: Film; edge: Edge; name?: string; selected: boolean; onPick: () => void; onExpand?: () => void; marks?: readonly Mark[] }) {
+export function PrimaryFilm({ film, edge, name, selected, onPick, onExpand, onArchive, marks = [] }: { film: Film; edge: Edge; name?: string; selected: boolean; onPick: () => void; onExpand?: () => void; onArchive?: () => void; marks?: readonly Mark[] }) {
   return (
     <div id={`tagning-${film.take.id}`} className={cn("scroll-mt-4", marks.length && "opacity-60")}>
       <TakeCard
@@ -93,13 +94,27 @@ export function PrimaryFilm({ film, edge, name, selected, onPick, onExpand, mark
           </span>
         }
         actions={
-          <Link href={scene(edge, film.take)} className={QUIET}>
-            <Play />
-            I scenen
-          </Link>
+          <>
+            <Link href={scene(edge, film.take)} className={QUIET}>
+              <Play />
+              I scenen
+            </Link>
+            <ArchiveButton onArchive={onArchive} />
+          </>
         }
       />
     </div>
+  );
+}
+
+/** Arkivera on a film of the step (lib/archive.ts, ArchiveTake.tsx): it opens the confirm; nothing is written before his yes. Never in the online copy. */
+function ArchiveButton({ onArchive }: { onArchive?: () => void }) {
+  if (!onArchive || isSnapshot) return null;
+  return (
+    <button type="button" onClick={onArchive} className={QUIET} title={ARCHIVE_ACTION.archive.hint}>
+      <Archive />
+      {ARCHIVE_ACTION.archive.button}
+    </button>
   );
 }
 
@@ -115,6 +130,7 @@ export function SecondaryFilm({
   onMake,
   onPick,
   onOpen,
+  onArchive,
   marks = [],
 }: {
   film: Film;
@@ -128,6 +144,8 @@ export function SecondaryFilm({
   onMake: () => void;
   onPick: () => void;
   onOpen: () => void;
+  /** Arkivera (lib/archive.ts, ArchiveTake.tsx): out of play and out of the lists, back with Ta tillbaka. */
+  onArchive?: () => void;
   /** What the take was built on that no longer holds (useOlder): the row is dimmed and says it. */
   marks?: readonly Mark[];
 }) {
@@ -178,6 +196,7 @@ export function SecondaryFilm({
               Gör primär
             </Button>
           )}
+          <ArchiveButton onArchive={onArchive} />
           {versus ? (
             <Link href={versus} className={QUIET} title={`Jämför med ${takeName(against!, edge.takes)}`}>
               <Columns2 />

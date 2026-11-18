@@ -1,12 +1,12 @@
 // The online copy (lib/mode.ts, NEXT_PUBLIC_DEALER_MODE=snapshot) never writes a decision: decide() through putDecision
-// refuses before any request leaves the page. A file of its own because the mode is read once, when lib/mode.ts loads.
+// refuses before any request leaves the page, and so does putArchive (a clip is archived in the lab only). A file of its own because the mode is read once, when lib/mode.ts loads.
 // Also Granska's tab rules for the copy (components/review/copy.ts). Run: node --test "studio/tests/decide-copy.test.ts"
 import { test } from "node:test";
 import assert from "node:assert/strict";
 
 process.env.NEXT_PUBLIC_DEALER_MODE = "snapshot";
 const { buildGraph } = await import("../../src/clip-graph.ts");
-const { putDecision } = await import("../lib/api.ts");
+const { putArchive, putDecision } = await import("../lib/api.ts");
 const { decide } = await import("../lib/decide.ts");
 const { isSnapshot } = await import("../lib/mode.ts");
 const { tabOf, vyFor, waitingInCopy } = await import("../components/review/copy.ts");
@@ -29,6 +29,8 @@ test("in the copy every decision is refused before a request is made", async () 
   try {
     for (const decision of ["MAIN", "ACCEPTED", "VARIANT", "REJECTED", "PENDING"] as const)
       await assert.rejects(decide(graph.takes["pamela-p1-c1-plan-deal-01"], decision, "", graph, putDecision), (e: Error & { kind?: string }) => e.kind === "refused");
+    // Archiving a take and taking it back are his in the lab only, as a decision is.
+    for (const archived of [true, false]) await assert.rejects(putArchive("pamela-p1-c1-plan-deal-01", archived, '"r"'), (e: Error & { kind?: string }) => e.kind === "refused");
     assert.equal(asked, 0);
   } finally {
     globalThis.fetch = real;

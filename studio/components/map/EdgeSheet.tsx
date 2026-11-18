@@ -5,7 +5,8 @@
 // (lib/primaries.ts stepFilms): at most three, the rest behind "Visa fler", each with how the game uses it. Rejected,
 // waiting and replaced takes are not here: one link says how many there are and leads to Granska. A take the address names
 // that is not on this page says so and links there. Every still plays (in place, or over the whole window: FilmViewer, ‹ ›
-// through the panel's films). The one write is "Gör primär" (useMakePrimary), on his click only.
+// through the panel's films). The writes are "Gör primär" (useMakePrimary) and "Arkivera" with "Ta tillbaka" (ArchiveTake.tsx:
+// a take he has archived is out of play and folded under "Arkiverade" at the panel's foot), on his click only.
 import { ArrowUpRight, ChevronDown, ChevronLeft, ChevronRight, Lock } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -21,12 +22,13 @@ import { SHOWN, type Film, type StepFilms } from "@/lib/primaries";
 import { verdictPhrase, verdictOf } from "@/lib/verdict";
 import { PrimaryFilm, SecondaryFilm } from "./StepFilm";
 import { useMakePrimary } from "./useMakePrimary";
+import { ArchivedTakes, useArchive } from "./ArchiveTake";
 import { useOlder } from "./useOlder";
 
 /** The steps before and after this one in the node tree, and the next one without a Primär (KartaView). */
 export type Around = { prev: string | null; next: string | null; unchosen: string | null };
 
-// Wide enough for a secondary film's still and its three buttons on one row.
+// Wide enough for a secondary film's still and three of its buttons on one row; the fourth (Arkivera was added) wraps under them.
 export const SHEET_W = 540;
 
 /** Where the round's words for a step come from: "huvudtagning", "passar given före", … */
@@ -82,6 +84,8 @@ function SheetBody({
 }) {
   const { edge, primary, secondaries } = step;
   const { make, saving, lines } = useMakePrimary();
+  // Arkivera beside Gör primär, and the step's archived takes folded at its foot with Ta tillbaka (ArchiveTake.tsx).
+  const archive = useArchive();
   // Takes built on a picture that no longer holds (Material decides the pictures; here only marked, with the picture a click away).
   const older = useOlder();
   const rest = edge.id === REST_EDGE;
@@ -124,6 +128,7 @@ function SheetBody({
       onMake={() => void make(f.take)}
       onPick={() => pick(f.take)}
       onOpen={() => view(f.take)}
+      onArchive={() => archive.ask(f.take, true)}
       marks={older(f.take.id)}
     />
   );
@@ -132,7 +137,11 @@ function SheetBody({
     <div className="flex flex-col gap-5">
       <AroundNav around={around} onPickEdge={onPickEdge} />
       <NowBlock graph={graph} edge={edge} info={info} onPickEdge={onPickEdge} />
-      {away ? (
+      {away?.archived ? (
+        <p className="-mt-2 text-xs text-dim">
+          {takeName(away, graph.edge[away.edge]?.takes)} är arkiverad och spelas inte.{isSnapshot ? "" : " Den ligger under Arkiverade längst ned, där den går att ta tillbaka."}
+        </p>
+      ) : away ? (
         <p className="-mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-dim">
           <span>
             {takeName(away, graph.edge[away.edge]?.takes)} är {verdictPhrase(verdictOf(away))} och visas inte här.
@@ -148,7 +157,7 @@ function SheetBody({
         <section className="flex flex-col gap-2.5" aria-label="Primär">
           <GroupTitle title="Primär" />
           {primary ? (
-            <PrimaryFilm film={primary} edge={edge} name={name(primary.take)} selected={primary.take.id === takeId} onPick={() => pick(primary.take)} onExpand={primary.take.media.video ? () => view(primary.take) : undefined} marks={older(primary.take.id)} />
+            <PrimaryFilm film={primary} edge={edge} name={name(primary.take)} selected={primary.take.id === takeId} onPick={() => pick(primary.take)} onExpand={primary.take.media.video ? () => view(primary.take) : undefined} onArchive={() => archive.ask(primary.take, true)} marks={older(primary.take.id)} />
           ) : (
             <div className="flex items-center gap-2 rounded-lg border border-dashed border-line-strong px-3.5 py-3 text-sm text-dim">
               Ingen Primär vald.
@@ -187,6 +196,8 @@ function SheetBody({
         </section>
       ) : null}
 
+      <ArchivedTakes key={away?.archived ? away.id : "arkiverade"} edge={edge} open={!!away?.archived} onRestore={(t) => archive.ask(t, false)} />
+      {archive.dialog}
       {step.elsewhere ? (
         <Link
           href={{ pathname: "/granska/", query: { vy: "alla" } }}

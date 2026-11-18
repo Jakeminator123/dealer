@@ -216,3 +216,38 @@ test('with a queue that queues, the next rest is asked for while the film before
   // a film played since: what the old turn would have asked for ahead is not asked for
   film.rest({cut: true}); const n = asked.length; film.rest({cut: true}); await wait(320); assert.equal(asked.length, n + 2, 'only the turn that stands asks ahead');
 });
+
+// Jakob archives a take by hand in Karta (review.archived): it is out of the game's bank whatever its verdict (judgedBank).
+test('a round with an archived Primär plays the step\'s other take; with no take left the card is laid without a hand and the game says so', async () => {
+  const archived = {by: 'Jakob', at: '2026-11-18T01:00:00.000Z', where: 'Karta'}, four = {hands: [{seat: 4, cards: [2]}], dealer: []};
+  const round = (data: BankData) => playRound(judgedBank(data), four, [2]);
+  // Two deals to seat 4: his Primär and another approved take.
+  const data = bank();
+  data.jobs!.push(job('p4-deal-2', 'READY', 'P4.C1', 'wan3')); data.motions!['p4-deal-2'] = record('wan3'); data.receipts!['p4-deal-2'] = {status: 'SUCCEEDED'}; data.media!['p4-deal-2'] = {video: video('p4-deal-2')};
+  data.motions!['p4-deal'] = record('wan3', {review: {decision: 'ACCEPTED', acceptedAs: 'MAIN', userAccepted: true, userReview: 'Jakob 2026-11-17: bäst'}});
+  const before = await round(data);
+  assert.deepEqual([before.clips, before.gaps], [['in', 'p4-deal', 'p4-rest'], []], 'his Primär plays');
+  // He archives the Primär: the round is whole, the other take in its place, and nothing is made Primär for him.
+  data.motions!['p4-deal'].review = {...data.motions!['p4-deal'].review, archived};
+  const after = await round(data);
+  assert.deepEqual([after.clips, after.gaps, after.beats.map(b => b.kind)], [['in', 'p4-deal-2', 'p4-rest'], [], ['ENTRY', 'DEAL', 'RETURN']]);
+  assert.deepEqual([data.motions!['p4-deal'].review!.acceptedAs, data.motions!['p4-deal'].review!.userReview, data.motions!['p4-deal-2'].review!.acceptedAs], ['MAIN', 'Jakob 2026-11-17: bäst', undefined], 'his verdict stays on the archived take');
+  // He takes it back: the game plays his Primär again.
+  const {archived: _gone, ...verdict} = data.motions!['p4-deal'].review!;
+  assert.deepEqual((await round({...data, motions: {...data.motions, 'p4-deal': {...data.motions!['p4-deal'], review: verdict}}})).clips, ['in', 'p4-deal', 'p4-rest']);
+  // He archives the other take too: nothing can deal to seat 4, so the card is laid without a hand, at once, and the game says it.
+  data.motions!['p4-deal-2'].review = {...data.motions!['p4-deal-2'].review, archived};
+  const queue = players(), film = createFilm(queue.players, buildGraph(judgedBank(data), {dealer: 'paow'}), createLayout(defaultPlan()), async () => null, () => 0);
+  const landed: string[] = [];
+  const none = await film.play([{type: 'deal', shoeDraw: 2}] as never, {table: four, records: [{shoeDraw: 2, target: 'P4.C1', r: 'A', s: 'spades'}]}, beat => landed.push(beat.kind));
+  assert.deepEqual([none.gaps, none.beats.map(b => b.kind), landed], [['P4.C1: ingen spelbar film, kortet läggs utan hand'], ['PLACE'], ['PLACE']]);
+  await new Promise(r => setTimeout(r, 0));
+  assert.equal(queue.parts.at(-1)![0].path, video('vila'), 'and she rests on, as after any step');
+  // An archived talk film is not said, and an archived rest is never picked: the loop goes on with what is left, and stops plainly with nothing.
+  assert.ok(film.talkPart('tal'), 'her line has its film');
+  data.motions!.tal.review = {...data.motions!.tal.review, archived}; data.motions!.vila.review = {...data.motions!.vila.review, archived};
+  const quiet = players(), silent = createFilm(quiet.players, buildGraph(judgedBank(data), {dealer: 'paow'}), createLayout(defaultPlan()), async () => null, () => 0);
+  assert.equal(silent.talkPart('tal'), null);
+  silent.rest(); await new Promise(r => setTimeout(r, 0));
+  assert.deepEqual(quiet.parts, [], 'no rest film is left to play (the fixture\'s other rest has weight 0)');
+});

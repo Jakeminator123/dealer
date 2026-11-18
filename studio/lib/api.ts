@@ -168,5 +168,24 @@ export async function putDecision(id: string, decision: Decision, note: string, 
   }
 }
 
+/**
+ * Archives a take or takes it back (PUT /api/clip-bank/archive/<id>), against the take's revision like a decision. The lab
+ * writes it as Jakob's, from Karta. Only call this from his click; the online copy refuses.
+ */
+export async function putArchive(id: string, archived: boolean, revision: string): Promise<DecisionResult> {
+  if (isSnapshot) throw new ApiError(SNAPSHOT_REFUSAL, 403, "refused");
+  if (!revision) throw new ApiError("Tagningen har ingen post i motions/ ännu, så den kan inte arkiveras.", 428, "precondition");
+  const text = await send(`api/clip-bank/archive/${encodeURIComponent(id)}`, archived ? "Arkiveringen" : "Ta tillbaka", {
+    method: "PUT",
+    headers: { "content-type": "application/json", "if-match": revision },
+    body: JSON.stringify({ archived }),
+  });
+  try {
+    return JSON.parse(text) as DecisionResult;
+  } catch {
+    throw new ApiError("Det sparades men svaret gick inte att läsa. Läs om klippbanken.", 200, "server");
+  }
+}
+
 /** A film or picture of the lab as an address the page can use: "assets/motions/x/source.mp4" → "/assets/motions/x/source.mp4". */
 export const mediaUrl = (path: string | null | undefined): string | null => (path ? labUrl(path) : null);

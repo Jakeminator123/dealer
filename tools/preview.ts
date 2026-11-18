@@ -241,6 +241,21 @@ if(has('--restart')){
      res.end(JSON.stringify(await reviews.save(id,JSON.parse(Buffer.concat(chunks).toString('utf8')),typeof req.headers['if-match']==='string'?req.headers['if-match']:undefined)));
     }catch(error){res.writeHead(error instanceof StoreError?error.status:400).end(JSON.stringify({error:(error as Error).message}));}return;
    }
+   // Archiving a take, or taking it back: his click in Karta's step panel (by Jakob, where Karta), the same guards as a verdict.
+   if(url.pathname.startsWith('/api/clip-bank/archive/')){
+    const id=url.pathname.slice('/api/clip-bank/archive/'.length);
+    res.setHeader('Content-Type','application/json; charset=utf-8');
+    if(req.method!=='PUT'){res.writeHead(405).end();return;}
+    if(req.headers.origin!==origin){res.writeHead(403).end(JSON.stringify({error:'Spara från det lokala labbet.'}));return;}
+    if(!req.headers['content-type']?.startsWith('application/json')){res.writeHead(415).end(JSON.stringify({error:'JSON krävs.'}));return;}
+    if(Number(req.headers['content-length']??0)>1024){res.writeHead(413).end(JSON.stringify({error:'För stort.'}));return;}
+    try{
+     const {clips,derived}=await clipJobs();
+     if(!clips.some(job=>job.id===id)&&!derived.some(take=>take.id===id))throw new StoreError(404,'Klippet finns inte i jobbfilen.');
+     let size=0;const chunks:Buffer[]=[];for await(const chunk of req){size+=chunk.length;if(size>1024)throw new StoreError(413,'För stort.');chunks.push(chunk);}
+     res.end(JSON.stringify(await reviews.saveArchive(id,JSON.parse(Buffer.concat(chunks).toString('utf8')),typeof req.headers['if-match']==='string'?req.headers['if-match']:undefined,'Jakob','Karta')));
+    }catch(error){res.writeHead(error instanceof StoreError?error.status:400).end(JSON.stringify({error:(error as Error).message}));}return;
+   }
    // The game: local single-player blackjack sessions, kept in this process only (game/session.ts). Rules, shuffle, card
    // values and money live there; the page sends commands and plays what comes back. GET reads the state, POST /command
    // plays one command, POST /new starts over (a balance and, for demos, a seeded or stacked shoe). From this page only.

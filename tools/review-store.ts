@@ -5,6 +5,7 @@
 // his hand-over ("dömd åt dig"): it plays as its decision says, never carries his words (userReview) or his acceptance
 // (userAccepted), does not wait in his queue (studio/lib/verdict.ts awaitingJakob), and his next decision through
 // applyChange, a reset included, replaces it.
+// Archiving a take by hand (applyArchive, from Karta) sets or removes review.archived and touches nothing else.
 import {readFile, writeFile, mkdir, rename} from 'node:fs/promises';
 import {createHash, randomUUID} from 'node:crypto';
 import path from 'node:path';
@@ -86,6 +87,33 @@ export function applyProvisional(review: unknown, change: ProvisionalChange, at:
   return next;
 }
 
+// ── Archiving a take ────────────────────────────────────────────────────────
+// Jakob 2026-11-18: "så jag får välja de som är primära eller radera eller arkivera". An archived take is out of play and out
+// of the lists (src/clip-graph.ts playable, src/game-director.ts judgedBank) but keeps its film, its record and his verdict,
+// which come back with it. review.archived {by, at, where} says who archived it, when and from where (his click in Karta:
+// by Jakob, where Karta); taking it back removes the field. Archiving is never a deletion: no file is moved or removed.
+// Nothing else of the block is touched, and a later decision (applyChange, applyProvisional) leaves the field as it is.
+export type Archived = {by: string; at: string; where: string};
+export const ARCHIVE_TEXT_LIMIT = 200;
+/** The body of an archive request: archived true or false and nothing else. Who and where are never taken from the body. */
+export function validateArchive(value: unknown): {archived: boolean} {
+  if (!object(value) || Object.keys(value).some(key => key !== 'archived') || typeof value.archived !== 'boolean') throw new StoreError(400, 'Ange bara archived: true eller false.');
+  return {archived: value.archived};
+}
+/** The review block after archiving (archived: true) or taking back (false). Refuses to archive twice or take back what is not archived. */
+export function applyArchive(review: unknown, archived: boolean, at: string, by: string, where: string): Record<string, unknown> {
+  const next: Record<string, unknown> = {...(object(review) ? review : {})};
+  if (archived) {
+    if (next.archived) throw new StoreError(409, 'Tagningen är redan arkiverad.');
+    if (typeof by !== 'string' || typeof where !== 'string' || !by.trim() || !where.trim() || by.length > ARCHIVE_TEXT_LIMIT || where.length > ARCHIVE_TEXT_LIMIT) throw new StoreError(400, 'Arkivering kräver vem och var.');
+    next.archived = {by: by.trim(), at, where: where.trim()} satisfies Archived;
+  } else {
+    if (!next.archived) throw new StoreError(409, 'Tagningen är inte arkiverad.');
+    delete next.archived;
+  }
+  return next;
+}
+
 export function reviewStore(root: string, today: () => string = () => new Date().toISOString().slice(0, 10), now: () => string = () => new Date().toISOString()) {
   let queue: Promise<unknown> = Promise.resolve();
   const fileOf = (id: string) => { if (typeof id !== 'string' || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(id)) throw new StoreError(400, 'Ogiltigt klipp-id.'); return path.join(root, 'motions', `${id}.json`); };
@@ -108,6 +136,16 @@ export function reviewStore(root: string, today: () => string = () => new Date()
     const change = validateProvisional(value);
     return write(id, expected, review => applyProvisional(review, change, now()));
   }
+  /**
+   * Archives a take or takes it back, against the revision read like a verdict. The lab's route is the one caller (PUT
+   * /api/clip-bank/archive/<id>, his click in Karta: by Jakob, where Karta); no tool writes it in his name. Should his word
+   * ever come another way, the caller says who carried it out and where the word came from (by, where), as setState does
+   * for Material's pictures.
+   */
+  async function saveArchive(id: string, value: unknown, expected: string | undefined, by: string, where: string) {
+    const {archived} = validateArchive(value);
+    return write(id, expected, review => applyArchive(review, archived, now(), by, where));
+  }
   async function write(id: string, expected: string | undefined, next: (review: unknown) => Record<string, unknown>) {
     fileOf(id);
     const task = queue.then(async () => {
@@ -126,5 +164,5 @@ export function reviewStore(root: string, today: () => string = () => new Date()
     queue = task.then(() => {}, () => {});
     return task;
   }
-  return {load, save, saveProvisional, revisionOf};
+  return {load, save, saveProvisional, saveArchive, revisionOf};
 }

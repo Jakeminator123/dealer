@@ -389,7 +389,7 @@ export function contextSteps(graph: Graph, edgeId: string, takeId: string | null
   const edge = graph.edge[edgeId] ?? graph.edge[parseEdge(edgeId)?.base ?? ""] ?? (take ? graph.edge[take.edge] : undefined);
   if (!edge) return { steps: [], error: `Kanten ”${edgeId}” finns inte i klippbanken.` };
   if (takeId && !take) return { steps: [], error: `Tagningen ”${takeId}” finns inte i klippbanken.` };
-  if (take && !playable(take)) return { steps: [], error: `${takeName(take)} på ${edgeName(edge)} kan inte spelas (underkänd eller inte klar).` };
+  if (take && !playable(take)) return { steps: [], error: `${takeName(take)} på ${edgeName(edge)} kan inte spelas (${take.archived ? "arkiverad: ta tillbaka den i Karta" : "underkänd eller inte klar"}).` };
   const pin = take ? { take: take.id } : {};
   if (edge.kind === "DEAL" && edge.target && !edge.experiment) {
     const card = edge.to;

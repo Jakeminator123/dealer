@@ -6,7 +6,7 @@ import {mkdtemp, mkdir, readFile, writeFile, readdir, rm, copyFile} from 'node:f
 import {existsSync} from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import {reviewStore, applyChange, validateChange, applyProvisional, validateProvisional, refusesProvisional, DECISIONS, NOTE_LIMIT} from './review-store.ts';
+import {reviewStore, applyChange, validateChange, applyProvisional, validateProvisional, refusesProvisional, applyArchive, validateArchive, DECISIONS, NOTE_LIMIT} from './review-store.ts';
 
 const base = existsSync('D:/dealer-scratch/tmp') ? 'D:/dealer-scratch/tmp' : os.tmpdir();
 async function temp(t: {after(fn: () => Promise<void>): void}) {
@@ -126,4 +126,36 @@ test('a provisional verdict (judged for him) plays like a decision but is never 
   const his = await store.save('pamela-test-01', {decision: 'REJECTED', note: 'nej'}, saved.revision);
   assert.equal(his.review.provisional, undefined); assert.equal(his.review.userReview, 'Jakob 2026-11-13: nej');
   await assert.rejects(store.saveProvisional('pamela-test-01', change('ACCEPTED'), his.revision), fails(409));
+});
+
+test('archiving a take sets review.archived with who, when and where and nothing else; his verdict stays, and taking it back removes only the field', async t => {
+  const root = await temp(t), verdict = {decision: 'ACCEPTED', acceptedAs: 'MAIN', userAccepted: true, userReview: 'Jakob 2026-11-12: bäst'};
+  const before = await put(root, {...record(), review: verdict} as never), file = path.join(root, 'motions/pamela-test-01.json');
+  const store = reviewStore(root, () => '2026-11-18', () => '2026-11-18T01:00:00.000Z');
+  const read = await store.load('pamela-test-01');
+  const archived = await store.saveArchive('pamela-test-01', {archived: true}, read.revision, 'Jakob', 'Karta');
+  assert.deepEqual(archived.review, {...verdict, archived: {by: 'Jakob', at: '2026-11-18T01:00:00.000Z', where: 'Karta'}});
+  // Only the review block differs in the file, and the block before is kept for one step back, as with a verdict.
+  assert.equal(await readFile(file, 'utf8'), JSON.stringify({...JSON.parse(before), review: archived.review}, null, 2) + '\n');
+  assert.deepEqual(JSON.parse(await readFile(path.join(root, '.runtime/review-previous.json'), 'utf8')), {id: 'pamela-test-01', review: verdict});
+  assert.notEqual(archived.revision, read.revision);
+  // The same guards as a verdict: the revision that was read, and no second archiving.
+  await assert.rejects(store.saveArchive('pamela-test-01', {archived: true}, archived.revision, 'Jakob', 'Karta'), fails(409), 'already archived');
+  await assert.rejects(store.saveArchive('pamela-test-01', {archived: false}, read.revision, 'Jakob', 'Karta'), fails(409), 'a revision read before the change is refused');
+  await assert.rejects(store.saveArchive('pamela-test-01', {archived: false}, undefined, 'Jakob', 'Karta'), fails(428));
+  await assert.rejects(store.saveArchive('okand-tagning', {archived: true}, archived.revision, 'Jakob', 'Karta'), fails(404));
+  // A request names nothing but archived: who and where come from the caller (the lab's route: Jakob, Karta), never from the body.
+  for (const bad of [{archived: 'yes'}, {archived: true, by: 'agent'}, {archived: true, where: 'chatten'}, {}, null, true]) assert.throws(() => validateArchive(bad), fails(400));
+  for (const [by, where] of [['', 'Karta'], ['Jakob', ' '], ['x'.repeat(201), 'Karta']]) assert.throws(() => applyArchive({}, true, 'now', by, where), fails(400), 'who and where are required');
+  assert.equal(await readFile(file, 'utf8'), JSON.stringify({...JSON.parse(before), review: archived.review}, null, 2) + '\n', 'nothing was written by a refused request');
+  // His decisions and a verdict given for him leave the field as it is: the take stays archived until it is taken back.
+  const said = await store.save('pamela-test-01', {decision: 'ACCEPTED', note: 'inte primär längre'}, archived.revision);
+  assert.deepEqual(said.review, {decision: 'ACCEPTED', userAccepted: true, userReview: 'Jakob 2026-11-18: inte primär längre', archived: archived.review.archived});
+  assert.deepEqual(applyProvisional({decision: 'PENDING', archived: {by: 'Jakob', at: 'x', where: 'Karta'}}, validateProvisional({decision: 'ACCEPTED', by: 'huvudagenten', mandate: 'm', note: 'n'}), 'now').archived, {by: 'Jakob', at: 'x', where: 'Karta'});
+  // Taking it back removes the field and nothing else.
+  const back = await store.saveArchive('pamela-test-01', {archived: false}, said.revision, 'Jakob', 'Karta');
+  assert.deepEqual(back.review, {decision: 'ACCEPTED', userAccepted: true, userReview: 'Jakob 2026-11-18: inte primär längre'});
+  await assert.rejects(store.saveArchive('pamela-test-01', {archived: false}, back.revision, 'Jakob', 'Karta'), fails(409), 'not archived');
+  assert.deepEqual(applyArchive({decision: 'ACCEPTED', archived: true}, false, 'now', 'Jakob', 'Karta'), {decision: 'ACCEPTED'}, 'whatever the readers take for archived can be taken back');
+  assert.deepEqual(applyArchive(undefined, true, 'now', ' Jakob ', 'Karta'), {archived: {by: 'Jakob', at: 'now', where: 'Karta'}}, 'a record without a review block can be archived');
 });

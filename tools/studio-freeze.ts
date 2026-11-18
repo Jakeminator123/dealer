@@ -167,12 +167,14 @@ export function gameTakes(bank: BankData, dealer: string): Set<string> {
  * The takes whose films go up, by the register's rule: the takes the round plays, the takes accepted outright, the variants,
  * the takes the game can play (game: gameTakes, for a dealer of casino.dealers), and (off by default) the takes that wait for
  * Jakob. Every other take is named in left with the reason. A take whose id or film names a blocked rule is never picked;
- * when the rule would pick it, the build is stopped instead (refused).
+ * when the rule would pick it, the build is stopped instead (refused). A take Jakob has archived (review.archived) is never
+ * picked, whatever its verdict: its film does not go up, and the copy lists it without one.
  */
 export function pickTakes(graph: Graph, round: Segment[], release: Release, game: ReadonlySet<string> = new Set()): {picked: Picked[]; left: Left[]; refused: Left[]} {
   const inRound = new Set(round.flatMap(s => s.take ? [s.take.id] : []));
   const picked: Picked[] = [], left: Left[] = [], refused: Left[] = [];
   for (const take of Object.values(graph.takes).sort((a, b) => a.order - b.order)) {
+    if (take.archived) { left.push({id: take.id, why: 'arkiverad'}); continue; }
     const playable = take.stage === 'DONE' && take.decision !== 'REJECTED';
     const group: Picked['group'] | null = release.takes.round && inRound.has(take.id) ? 'runda'
       : release.takes.variants && playable && take.variant ? 'variant'

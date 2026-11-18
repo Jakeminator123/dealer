@@ -146,19 +146,23 @@ export function cardRecords(table: TableCards, faces: CardFace[]): {shoeDraw: nu
 // A stopgap (its record says motion.stopgap: a film made of another, as her entry played backwards for the exit) gives way by
 // itself: it is left out wherever the same dealer has another judged take, not rejected, on the same edge. The same edge includes
 // its pose at the shoe: an exit from READY-B is another film than the exit from READY, and never pushes out READY's stopgap.
+// A take Jakob has archived (review.archived, written by tools/review-store.ts from Karta) is left out whatever its verdict, a
+// talk film played on request too: nothing in the game can play it or fall back on it until he takes it back. A stopgap it
+// had pushed out stands in again meanwhile.
 const unjudged = (review: {decision?: string; inbox?: boolean} | undefined) => review?.inbox === true || String(review?.decision ?? 'PENDING').toUpperCase() === 'PENDING';
 const onRequest = (motion: {motion?: {idle?: {onRequest?: boolean}}} | undefined) => motion?.motion?.idle?.onRequest === true;
 const stopgap = (record: unknown) => (record as {motion?: {stopgap?: unknown}} | undefined)?.motion?.stopgap === true;
-/** The bank as the game reads it: every take without a verdict left out, except takes played on request; a stopgap only where nothing judged stands beside it. */
+const archived = (review: {archived?: unknown} | undefined) => !!review?.archived;
+/** The bank as the game reads it: every take without a verdict left out, except takes played on request; no archived take; a stopgap only where nothing judged stands beside it. */
 export function judgedBank(bank: BankData): BankData {
-  const motions = bank.motions ?? {}, keep = (item: {id?: unknown} | null | undefined) => { const m = motions[String(item?.id)]; return !unjudged(m?.review) || onRequest(m); };
+  const motions = bank.motions ?? {}, keep = (item: {id?: unknown} | null | undefined) => { const m = motions[String(item?.id)]; return !archived(m?.review) && (!unjudged(m?.review) || onRequest(m)); };
   const kept = {jobs: (bank.jobs ?? []).filter(keep), derived: (bank.derived ?? []).filter(keep), edits: (bank.edits ?? []).filter(keep)}, owner = dealersOf(bank);
   const edgeOf = (t: {id: string; from?: string; to?: string}) => { const ref = parseEdge(`${t.from}>${t.to}`); return `${owner[t.id]}|${ref ? `${ref.base}|${ref.hub ?? ''}` : `${t.from}>${t.to}`}`; };
   const real = new Set([...kept.jobs, ...kept.derived].filter(t => !stopgap(motions[t.id]) && String(motions[t.id]?.review?.decision ?? '').toUpperCase() !== 'REJECTED').map(edgeOf));
   const gives = (t: {id: string; from?: string; to?: string}) => !(stopgap(motions[t.id]) && real.has(edgeOf(t)));
   return {...bank, jobs: kept.jobs.filter(gives), derived: kept.derived.filter(gives), edits: kept.edits};
 }
-/** The ids judgedBank leaves out, for the page to say. */
+/** The ids judgedBank leaves out (unjudged, archived, a stopgap that gave way), for the page to say. */
 export const unjudgedTakes = (bank: BankData): string[] => { const kept = new Set([...(judgedBank(bank).jobs ?? []), ...(judgedBank(bank).derived ?? []), ...(judgedBank(bank).edits ?? [])].map(x => x.id));
   return [...(bank.jobs ?? []), ...(bank.derived ?? []), ...(bank.edits ?? [])].map(x => x.id).filter(id => !kept.has(id)); };
 

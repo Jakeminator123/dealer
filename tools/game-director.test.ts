@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {parseEdge, formatEdge} from '../src/clip-graph.ts';
+import {parseEdge, formatEdge, buildGraph, resolveRound} from '../src/clip-graph.ts';
 import {defaultPlan} from '../src/placement-model.ts';
 import {slotOf, slotFilm, slotLabel, slotImprovised, createLayout, FAN, FAN_AT, SPLIT, DEALER_THIRD, type TableCards} from '../src/game-table.ts';
 import {planBeats, lyingAfter, cardRecords, judgedBank, unjudgedTakes, speakMoments, talkOn, REVEAL_NODE, SEAT_HUB, STAND_IN_FILM} from '../src/game-director.ts';
@@ -228,4 +228,27 @@ test('what she says in a step: the lines before its first card and after its las
   assert.deepEqual(speakMoments([{type: 'speak', line: 'double'} as never, deal(8), {type: 'reveal', shoeDraw: 7}, deal(9), {type: 'speak', line: 'win'} as never]), {before: ['double'], after: ['win']});
   assert.deepEqual(speakMoments([{type: 'speak', line: 'placebets'} as never, {type: 'idle'}]), {before: ['placebets'], after: []});
   assert.equal(talkOn('av'), false); assert.equal(talkOn('repliker'), true); assert.equal(talkOn(undefined), true);
+});
+
+test('the game\'s bank leaves out a take Jakob has archived, whatever its verdict: his Primär, a talk film on request, and a take that had pushed a stopgap out', () => {
+  const archived = {by: 'Jakob', at: '2026-11-18T01:00:00.000Z', where: 'Karta'};
+  const take = (id: string) => ({id, kind: 'DEAL', target: null, from: 'READY', to: 'P4.C1', model: 'x', duration: 4, ratio: '', audio: false, promptText: '', first: {file: {path: 'a.png', sha256: 'a'}}, purpose: '', dealer: 'paow'});
+  const exit = (id: string) => ({id, from: 'READY', to: 'IDLE', clip: id, frames: [0, 90] as [number, number], dealer: 'paow'});
+  const bank = {jobs: [take('primar'), take('annan')], derived: [{id: 'tal', from: 'IDLE', to: 'IDLE', clip: 'tal', frames: [0, 40] as [number, number], dealer: 'paow'}, exit('baklanges'), exit('paow-exit')],
+    media: {primar: {video: 'p.mp4'}, annan: {video: 'a.mp4'}},
+    motions: {primar: {review: {decision: 'ACCEPTED', acceptedAs: 'MAIN', userAccepted: true, userReview: 'Jakob 2026-11-17: bäst', archived}}, annan: {review: {decision: 'ACCEPTED'}},
+      tal: {review: {decision: 'ACCEPTED', archived}, motion: {idle: {onRequest: true}}}, baklanges: {review: {decision: 'ACCEPTED'}, motion: {stopgap: true}}, 'paow-exit': {review: {decision: 'ACCEPTED', archived}}}};
+  const kept = judgedBank(bank);
+  assert.deepEqual([...kept.jobs!, ...kept.derived!].map(t => t.id), ['annan', 'baklanges'], 'the stopgap stands in again while the film that replaced it is archived');
+  assert.deepEqual(unjudgedTakes(bank), ['primar', 'tal', 'paow-exit']);
+  assert.equal(kept.motions!.primar.review!.acceptedAs, 'MAIN', 'the record and his verdict are left as they were');
+  // The step plays its other take, and with that one archived too it is a gap, said as missing.
+  const step = [{from: 'READY', to: 'P4.C1'}], played = (data: typeof bank) => resolveRound(buildGraph(judgedBank(data), {dealer: 'paow'}), step)[0];
+  assert.equal(played(bank).take?.id, 'annan');
+  const gap = played({...bank, motions: {...bank.motions, annan: {review: {decision: 'ACCEPTED', archived}} as never}});
+  assert.deepEqual([gap.take, gap.gap], [null, 'MISSING']);
+  // Taken back (the field removed), everything plays as it did: his Primär, his line, and the real exit in the stopgap's place.
+  const back = judgedBank({...bank, motions: {primar: {review: {decision: 'ACCEPTED', acceptedAs: 'MAIN', userAccepted: true}}, annan: bank.motions.annan, tal: {review: {decision: 'ACCEPTED'}, motion: {idle: {onRequest: true}}}, baklanges: bank.motions.baklanges, 'paow-exit': {review: {decision: 'ACCEPTED'}}}} as never);
+  assert.deepEqual([...back.jobs!, ...back.derived!].map(t => t.id), ['primar', 'annan', 'tal', 'paow-exit']);
+  assert.equal(resolveRound(buildGraph(back, {dealer: 'paow'}), step)[0].take?.id, 'primar');
 });

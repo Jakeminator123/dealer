@@ -1069,3 +1069,54 @@ test('a film from an order enters as frames of its own clip with what it was ord
   const a = graph.buildGraph(alone, {dealer: 'paow'});
   assert.equal(a.takes['paow-p4-back-01'].anchorStart, 'assets/orders/o-2/last.png'); assert.ok(graph.returnFits(a.takes['paow-p4-back-01'], a.takes['paow-p4-deal-01']));
 });
+
+// Jakob archives a take by hand (review.archived, tools/review-store.ts): out of play, kept in the graph with its verdict.
+const archivedBy = {by: 'Jakob', at: '2026-11-18T01:00:00.000Z', where: 'Karta'};
+test('an archived take never plays: the step falls back on its next take by the same rule, a round that names it too, and his Primär mark stays on it', () => {
+  const data = bank();
+  data.motions!['pamela-p4-c1-plan-deal-02'].review = {decision: 'ACCEPTED', acceptedAs: 'MAIN', userAccepted: true, archived: archivedBy};
+  const g = graph.buildGraph(data), deal = g.edge['READY>P4.C1'], gone = g.takes['pamela-p4-c1-plan-deal-02'];
+  assert.equal(gone.archived, true); assert.equal(graph.playable(gone), false);
+  assert.equal(gone.explicitMain, true, 'his verdict is untouched');
+  assert.equal(deal.takes.includes(gone), true, 'it stays listed on its step, where it can be taken back');
+  // Nothing is chosen in its place: the next take by the graph's own rule plays, and no take is made Primär.
+  assert.equal(deal.main?.id, 'pamela-p4-c1-deal-calm-01'); assert.equal(deal.takes.some(t => t.explicitMain && graph.playable(t)), false);
+  assert.equal(graph.buildGraph(bank()).edge['READY>P4.C1'].main?.id, 'pamela-p4-c1-plan-deal-02', 'and without the archive it plays as before');
+  const [locked] = graph.resolveRound(g, [{from: 'READY', to: 'P4.C1', take: 'pamela-p4-c1-plan-deal-02'}]);
+  assert.equal(locked.take?.id, 'pamela-p4-c1-deal-calm-01'); assert.match(locked.notes.join(' '), /Låst tagning pamela-p4-c1-plan-deal-02 kan inte spelas här/);
+  for (const s of graph.resolveRound(g, graph.roundSequence({seats: ['P4', 'P1'], dealer: false, cards: 1}))) assert.notEqual(s.take?.id, 'pamela-p4-c1-plan-deal-02', s.id);
+  assert.equal(graph.pickIdle([{...gone, idle: {weight: 20, calm: true, onRequest: false, label: '', cut: true}}], [], 0.5), null, 'the rest never picks an archived film');
+});
+
+test('a step whose only films are archived has no film: it is missing, not rejected, and a round says so plainly', () => {
+  const data = bank();
+  for (const id of ['pamela-p7-c1-plan-deal-01', 'pamela-p7-c1-plan-deal-02']) data.motions![id].review = {...data.motions![id].review, archived: archivedBy};
+  const g = graph.buildGraph(data), e = g.edge['READY>P7.C1'];
+  assert.equal(e.main, null); assert.deepEqual(e.variants, []); assert.equal(e.status, 'MISSING'); assert.equal(e.takes.length, 2);
+  const [gap] = graph.resolveRound(g, [{from: 'READY', to: 'P7.C1'}]);
+  assert.equal(gap.take, null); assert.equal(gap.gap, 'MISSING'); assert.equal(graph.GAP_LABEL[gap.gap!], 'saknas');
+  // A rejected film beside the archived ones is still what the step says of itself.
+  data.motions!['pamela-p7-c1-plan-deal-01'].review = {decision: 'REJECTED'};
+  assert.equal(graph.buildGraph(data).edge['READY>P7.C1'].status, 'REJECTED');
+  assert.equal(graph.resolveRound(graph.buildGraph(data), [{from: 'READY', to: 'P7.C1'}])[0].gap, 'REJECTED');
+  // One film per seat: the seat's second card has no film either, as it plays the first card's.
+  assert.equal(graph.resolveRound(g, [{from: 'READY', to: 'P7.C2'}])[0].gap, 'MISSING');
+  assert.equal(graph.buildGraph(data).summary.films.missing, graph.buildGraph(bank()).summary.films.missing + 1, 'the count of missing films follows');
+});
+
+test('an archived return neither follows a deal nor decides where it is cut while another return can', () => {
+  const data = bank();
+  // Two returns cut from the same deal on different frames: the archived one has no say while the other is there.
+  data.jobs!.push(job('pamela-p4-c1-plan-return-idle-02', 'LAND(P4.C1)', 'IDLE', from('pamela-p4-c1-plan-deal-02', 108)));
+  data.motions!['pamela-p4-c1-plan-return-idle-02'] = done('ACCEPTED'); data.media!['pamela-p4-c1-plan-return-idle-02'] = {video: video('pamela-p4-c1-plan-return-idle-02')};
+  for (const id of ['pamela-p4-c1-plan-return-ready-01', 'pamela-p4-c1-plan-return-idle-01']) data.motions![id].review = {decision: 'ACCEPTED', archived: archivedBy};
+  const g = graph.buildGraph(data), deal = g.takes['pamela-p4-c1-plan-deal-02'];
+  assert.equal(deal.landingFrame, 108); assert.equal(deal.landingConflict, false);
+  assert.deepEqual(graph.returnsOf(g, deal).frame.map(t => t.id), ['pamela-p4-c1-plan-return-idle-02']);
+  assert.equal(g.edge['P4.C1>IDLE'].main?.id, 'pamela-p4-c1-plan-return-idle-02'); assert.equal(g.edge['P4.C1>READY'].main?.id, 'pamela-p4-c1-return-ready-calm-01');
+  // With every return of the deal archived, the frame they were cut on is still known (as with rejected ones): the deal is not played past its landing.
+  data.motions!['pamela-p4-c1-plan-return-idle-02'].review = {decision: 'ACCEPTED', archived: archivedBy};
+  const none = graph.buildGraph(data);
+  assert.equal(none.takes['pamela-p4-c1-plan-deal-02'].landingFrame, 105); assert.deepEqual(graph.returnsOf(none, none.takes['pamela-p4-c1-plan-deal-02']), {frame: [], anchor: []});
+  assert.equal(none.edge['P4.C1>IDLE'].main, null); assert.equal(none.edge['P4.C1>IDLE'].status, 'MISSING');
+});

@@ -135,10 +135,13 @@ export function judgedForJakob(takes: readonly Take[]): Take[] {
   return takes.filter((t) => verdictOf(t).provisional);
 }
 
-/** The films the round needs (graph.summary.films.required) and how many of them have a Primär: the count beside Primära. */
+/**
+ * The films the round needs (graph.summary.films.required) and how many of them have a Primär: the count beside Primära.
+ * A Primär he has archived does not count: its step has no Primär until he chooses one or takes it back.
+ */
 export function primarCount(graph: Graph): { set: number; total: number } {
   const required = graph.summary.films.required.map((id) => graph.edge[id]).filter(Boolean);
-  return { set: required.filter((e) => e.takes.some((t) => t.explicitMain)).length, total: required.length };
+  return { set: required.filter((e) => e.takes.some((t) => t.explicitMain && !t.archived)).length, total: required.length };
 }
 
 // ── Proofs ──────────────────────────────────────────────────────────────────

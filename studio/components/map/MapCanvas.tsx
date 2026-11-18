@@ -148,7 +148,7 @@ export function MapCanvas(view: MapView) {
         return node;
       }
       const loopInfo = n.node === "IDLE" ? infos.get("IDLE>IDLE") : null;
-      const starts = n.node === "READY-B" ? Object.values(graph.takes).filter((t) => t.hub).length : 0;
+      const starts = n.node === "READY-B" ? Object.values(graph.takes).filter((t) => t.hub && !t.archived).length : 0; // an archived take is not counted
       const node: HubNodeType = {
         ...base,
         type: "hub",

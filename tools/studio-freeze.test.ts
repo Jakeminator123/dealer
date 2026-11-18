@@ -153,6 +153,27 @@ test('the rule picks the round, the accepted takes and the variants, and names w
   assert.deepEqual(pickTakes(graph, round, {...release, ...rules, takes: {...release.takes, waiting: true}}).picked.map(p => p.group), ['runda', 'väntar']);
 });
 
+test('a take Jakob has archived is never picked: its film does not go up, whatever its verdict, and the copy still decides as the lab', () => {
+  const bank = fixture(), archived = {by: 'Jakob', at: '2026-11-18T01:00:00.000Z', where: 'Karta'}, rule = {...release, ...rules, takes: {round: true, accepted: true, variants: true, waiting: true}};
+  // A second deal he accepted outright and a variant, both of which the rule would send up, and both archived; the round plays the first deal.
+  for (const [id, review] of [['pamela-p4-c1-deal-02', {decision: 'ACCEPTED', userAccepted: true, archived}], ['pamela-p4-c1-deal-03', {decision: 'ACCEPTED', acceptedAs: 'VARIANT', userAccepted: true, archived}]] as [string, object][]) {
+    bank.jobs!.push({...bank.jobs![0], id}); bank.motions![id] = {source: {fps: 30, frames: 90}, review}; bank.media![id] = {video: `assets/motions/${id}/source.mp4`};
+  }
+  const graph = buildGraph(bank), steps = [{from: 'READY', to: 'P4.C1'}], round = resolveRound(graph, steps);
+  assert.equal(round[0].take?.id, 'pamela-p4-c1-deal-01');
+  const out = pickTakes(graph, round, rule, new Set(['pamela-p4-c1-deal-01']));
+  assert.deepEqual(out.picked.map(p => p.id), ['pamela-p4-c1-deal-01', 'pamela-p4-c1-return-ready-01']);
+  assert.deepEqual(out.left, [{id: 'pamela-p4-c1-deal-02', why: 'arkiverad'}, {id: 'pamela-p4-c1-deal-03', why: 'arkiverad'}]);
+  assert.deepEqual(out.refused, []);
+  // The frozen bank lists them without a film, with the field, so the copy's graph leaves them out of play as the lab's does.
+  const shown = new Map([['assets/motions/pamela-p4-c1-deal-01/source.mp4', 'assets/motions/pamela-p4-c1-deal-01/source.mp4']]);
+  const frozen = freezeBank(bank, shown, new Set(out.picked.map(p => p.id)), rule, digest), copy = buildGraph(frozen);
+  assert.deepEqual([frozen.media!['pamela-p4-c1-deal-02'].video, frozen.media!['pamela-p4-c1-deal-03'].video, copy.takes['pamela-p4-c1-deal-02'].archived], [null, null, true]);
+  assert.deepEqual(graphShape(copy), graphShape(graph));
+  assert.deepEqual(roundShape(resolveRound(copy, steps)), roundShape(round));
+  assert.deepEqual(findLeaks(frozen, rule), [], 'who archived it and when is no cost, path or blocked name');
+});
+
 // ── Paths of the output ─────────────────────────────────────────────────────
 test('the output writer takes only plain relative paths', () => {
   for (const good of ['studio/index.html', 'studio/_next/static/chunks/a_1.js', 'assets/motions/x/first.webp', 'studio/karta/__next.karta/__PAGE__.txt']) assert.equal(safeRelative(good), true, good);
