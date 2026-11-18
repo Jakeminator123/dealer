@@ -13,7 +13,7 @@ const FOLDERS = ['pages', 'game/page'];
 const pageFiles = (folder: string) => readdirSync(path.join(root, folder)).filter(name => /\.(?:html|css)$/.test(name)).map(name => `${folder}/${name}`);
 
 test('every page of the map lies on disk, in one of the two folders, under the name of its address', () => {
-  assert.deepEqual(Object.keys(PAGES).sort(), ['/game.css', '/game.html', '/props.css', '/props.html', '/scene3d.html', '/sound.css', '/sound.html']);
+  assert.deepEqual(Object.keys(PAGES).sort(), ['/game.css', '/game.html', '/props.css', '/props.html', '/scene3d.html', '/sound.css', '/sound.html', '/vinklar.html']);
   for (const [address, file] of Object.entries(PAGES)) {
     assert.ok(statSync(path.join(root, file)).isFile(), `${address}: ${file} is missing`);
     assert.ok(FOLDERS.includes(path.posix.dirname(file)), `${address}: ${file} lies outside ${FOLDERS.join(' and ')}`);
