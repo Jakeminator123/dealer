@@ -29,8 +29,8 @@ Git, och en rad som inte längre gäller ersätts.
 5. Utför de besvarade korten i Beslut och ta ut dem. Låt en oberoende granskare ge sitt omdöme om tagningarna som
    väntar i Prov, eller märk avgjorda prov som avgjorda ([labbet](docs/lage/labbet-och-studion.md)).
 
-Frågor till honom ur den äldre överlämningen som inte är kort än ligger i
-`D:/dealer-scratch/tmp/handoff-nytt/forslag-kort.md`; huvudagenten väljer några åt gången.
+Äldre frågor till honom som inte är kort än: `D:/dealer-scratch/tmp/handoff-nytt/forslag-kort.md`; huvudagenten
+väljer några åt gången.
 
 ## Vem äger vad
 
