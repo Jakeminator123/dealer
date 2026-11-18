@@ -50,8 +50,16 @@ export type Place = {id: string; at: Vec3; real: RealCard};
  * left hand takes back to the shoe after the last card. `elbows`: where her elbows are to be when the film ends (those of
  * the film in the real tempo, so that the two films end on one and the same picture; where an elbow ends is otherwise a
  * matter of the way it came).
+ * `meeting` (with flowing; the fourth take, 2026-11-18): her right hand meets the card. The card does not come to rest at the
+ * hand change: it is taken while it still moves, the hand closing about its long side as it arrives, and is stood up from
+ * that moment while the hand change goes on toward the place (not toward the real dealer's point, which lay back the way the
+ * card came). The card is stood up ever faster and falls fastest first, so it is near upright for four frames and not eight.
+ * `push`: metres the card is pushed once it lies flat, in place of the real dealer's four centimetres. `swing`: degrees the
+ * card is turned about the plumb line through her grip on top of everything else, most a little way into the fall and none
+ * when the turn is done: its outline then changes in every frame while it is near upright (the real dealer's card does turn
+ * so, the reading says 45 to 60 degrees in all; the card here is already 40 off square when the hands change).
  */
-export type Pace = {flowing?: boolean; leftBack?: number; elbows?: {L: Vec3; R: Vec3}};
+export type Pace = {flowing?: boolean; leftBack?: number; elbows?: {L: Vec3; R: Vec3}; meeting?: boolean; push?: number; swing?: number};
 
 export const TWO_HAND = {
   // Where her right hand has the card, metres from the short side it turns about (`up`) and in from its long side on her right (`in`):
@@ -191,29 +199,34 @@ export function twoHandDeal(lens: Lens, start: Still, places: Place[], lead: num
     const toward = unit([place.at[0] - hip[0], 0, place.at[2] - hip[2]]), sway: Vec3 = [rad(M.sway) * Math.max(-1, Math.min(1, place.at[0] / 0.5)), rad(6) * clamp(-place.at[0] / 0.5), 0];
     let share = 0, more = sway; for (; share <= 1.0001; share += 0.05) { more = add(sway, [toward[0] * rad(M.lean) * share, rad(M.twist) * share * clamp((place.at[0] + 0.1) / 0.3), toward[2] * rad(M.lean) * share]); if (length(sub(wrist, bodyAt(more).shoulders[0])) <= M.reach) break; }
     if (share > 1.0001) throw Error(`${place.id}: the right arm does not reach (${length(sub(wrist, bodyAt(more).shoulders[0])).toFixed(3)} m from the shoulder with all the body gives).`);
-    const seat = {centre, grip, yaw, axes, wrist, more, share};
+    const seat = {centre, grip, yaw, axes, wrist, more, share}, meet = !!(pace.meeting && pace.flowing);
+    if (meet) { const on = unit([grip[0] - take[0], 0, grip[2] - take[2]]); go[0] = take[0] + on[0] * 0.05; go[2] = take[2] + on[2] * 0.05; }
 
     // Out of the shoe and along the felt to the hand change: one movement, at rest at both ends.
-    const handOver = centreOf(take, flatAxes, M.grip.taken), far = length(sub(handOver, clearCard.centre)), way = through([[b.b, 0], ...(b.d - b.c >= 1 ? [[b.c, out] as [number, number]] : []), [b.d, out + far]]); // (a card that is taken as it comes out has no moment of its own for being out)
+    const handOver = centreOf(take, flatAxes, M.grip.taken), far = length(sub(handOver, clearCard.centre)), way = through([[b.b, 0], ...(b.d - b.c >= 1 ? [[b.c, out] as [number, number]] : []), [b.d, out + far], ...(meet ? [[b.d + 3, out + far + 0.018] as [number, number]] : [])]); // (a card that is taken as it comes out has no moment of its own for being out)
     const sliding = (i: number) => { const a = way(i); if (a <= out) return leaving(a); const s = (a - out) / (far || 1), yawNow = yawOut + (yawHand - yawOut) * smooth(s), axes = cardAxes(yawNow, 0, false);
       return {centre: lerp(clearCard.centre, handOver, smooth(s) * 0.5 + s * 0.5), long: axes.long, normal: axes.normal}; };
     // From the hand change on, the point her right fingertips hold (the corner of the card that ends nearest her): along the
     // felt from `take` to `go` while the card is stood up, then to where the card meets the felt, and pushed to the place.
-    const meets: Vec3 = [grip[0], lying, grip[2] - M.push], gx = through([[b.d, take[0]], [b.l, go[0]], [b.g, meets[0]], [b.h, grip[0]]]), gz = through([[b.d, take[2]], [b.l, go[2]], [b.g, meets[2]], [b.h, grip[2]]]);
+    // (meeting: a key before the hand change, on the way the card came, so that the point is already moving as the hand takes the card; the tracks are only read from the hand change on)
+    const before: Vec3 = sub(take, mul(unit(sub(handOver, clearCard.centre)), 0.02)), early = (j: number): [number, number][] => meet ? [[b.d - 3, before[j]]] : [];
+    const meets: Vec3 = [grip[0], lying, grip[2] - (pace.push ?? M.push)], gx = through([...early(0), [b.d, take[0]], [b.l, go[0]], [b.g, meets[0]], [b.h, grip[0]]]), gz = through([...early(2), [b.d, take[2]], [b.l, go[2]], [b.g, meets[2]], [b.h, grip[2]]]);
     // Stood up about the short side nearest the players: that side stays on the felt, so the held corner is as high as the card's lean puts it, and a little more as her left hand lets go.
     // (flowing: a key beyond the moment her left hand lets go keeps the card turning as that moment is passed; the track is only read up to it)
-    const raised = through([[b.d, 0], ...(b.l - b.e > 0.4 ? [[b.e, rad(M.raise.stands)] as [number, number]] : []), [b.l, rad(M.raise.lets)], ...(pace.flowing && b.l - b.e > 0.4 ? [[2 * b.l - b.e, rad(2 * M.raise.lets - M.raise.stands)] as [number, number]] : [])]), standsAt = (i: number) => lying + M.grip.taken.up * Math.sin(raised(i)) + M.lift * smooth((i - b.d) / (b.l - b.d));
-    const carried = through([[b.l, standsAt(b.l)], [(b.l + b.turned) / 2, M.heights.carry], [b.turned, M.heights.turned], [b.g, lying]]), held = (i: number): Vec3 => [gx(i), i <= b.l ? standsAt(i) : carried(i), gz(i)];
+    const raised = meet ? through([[b.d - 3, -rad(12)], [b.d, 0], [b.e, rad(60)], [b.l, rad(M.raise.lets)], [b.l + 2, rad(M.raise.lets + 26)]]) : through([[b.d, 0], ...(b.l - b.e > 0.4 ? [[b.e, rad(M.raise.stands)] as [number, number]] : []), [b.l, rad(M.raise.lets)], ...(pace.flowing && b.l - b.e > 0.4 ? [[2 * b.l - b.e, rad(2 * M.raise.lets - M.raise.stands)] as [number, number]] : [])]), standsAt = (i: number) => lying + M.grip.taken.up * Math.sin(raised(i)) + M.lift * smooth((i - b.d) / (b.l - b.d));
+    const carried = through([[b.l, standsAt(b.l)], [(b.l + b.turned) / 2, M.heights.carry], [b.turned, M.heights.turned], [b.g, lying]]), held = (i: number): Vec3 => i <= b.d ? take : [gx(i), i <= b.l ? standsAt(i) : carried(i), gz(i)];
     const upAt = through([[b.l, M.grip.taken.up], [b.turned, M.grip.laid.up]]), inAt = through([[b.l + (b.turned - b.l) * 0.6, M.grip.taken.in], [b.g, M.grip.laid.in]]), has = (i: number) => ({up: upAt(i), in: inAt(i)}); // her hand slides down the long side to the corner while the card falls
     const slopeAt = through([[b.turned, -rad(M.slope)], [b.g, 0]]), turnFrom = pace.flowing ? b.l : b.l + (b.turned - b.l) * M.upright, even = pace.flowing ? 0.9 : 0.4, stood = cardAxes(yawHand, -rad(M.raise.lets), false), faceUp = cardAxes(0, -rad(M.slope), true), turn = turnOf(stood, faceUp);
+    const swing = pace.swing ? through([[b.d + (b.e - b.d) * 0.5, 0], [b.l + (b.turned - b.l) * 0.45, -rad(pace.swing)], [b.turned, 0]]) : () => 0;
     /** The card at a moment: standing in the shoe, leaving it, slid along the felt, stood up, falling forward in the air, lowered, pushed, lying on its place. */
     const card = (i: number): {centre: Vec3; long: Vec3; normal: Vec3} => {
       if (i <= b.d) return sliding(i); if (i >= b.h) return {centre: seat.centre, long: lyingAxes.long, normal: lyingAxes.normal};
       let axes: CardAxes;
       if (i <= b.l) axes = cardAxes(yawHand, -raised(i), false);
       else if (i <= turnFrom) axes = stood;
-      else if (i < b.turned) { const u = (i - turnFrom) / (b.turned - turnFrom), w = (1 - even) * smooth(u) + even * u, long = turned(stood.long, turn.axis, turn.angle * w), normal = turned(stood.normal, turn.axis, turn.angle * w); axes = {long, normal, across: cross(normal, long)}; }
+      else if (i < b.turned) { const u = (i - turnFrom) / (b.turned - turnFrom), w = meet ? 1 - Math.pow(1 - u, 1.8) : (1 - even) * smooth(u) + even * u, long = turned(stood.long, turn.axis, turn.angle * w), normal = turned(stood.normal, turn.axis, turn.angle * w); axes = {long, normal, across: cross(normal, long)}; }
       else axes = cardAxes(0, i < b.g ? slopeAt(i) : 0, true);
+      if (i < b.turned && swing(i) !== 0) { const long = turned(axes.long, UP, swing(i)), normal = turned(axes.normal, UP, swing(i)); axes = {long, normal, across: cross(normal, long)}; }
       const centre = centreOf(held(i), axes, has(i)), floor = lying + H / 2 * Math.abs(axes.long[1]) + CARD.width / 2 * Math.abs(axes.across[1]);
       return {centre: centre[1] < floor ? [centre[0], floor, centre[2]] : centre, long: axes.long, normal: axes.normal}; };
     // Her right hand on this card: how it comes to it (a little closed, the back of the hand up; the first card: as it lay), and its angles while it has it.
@@ -222,12 +235,12 @@ export function twoHandDeal(lens: Lens, start: Still, places: Place[], lead: num
     // long side and then turns palm down, its fingers going round the long edge onto the face, and slides down to the corner nearest her.
     const came = k === 0 ? {yaw: rest.yaw, bend: 0} : {yaw: yawTo(take), bend: M.loose};
     const aimed = rad(M.inward) + (Math.max(rad(-20), Math.min(rad(M.inward), yaw)) - rad(M.inward)) * 0.5, inward = Math.max(aimed, Math.acos(clamp((take[2] - edgeZ + M.behindEdge) / 0.17))), fall = (share: number) => b.l + (b.turned - b.l) * share;
-    const handYaw = through([[b.d, came.yaw], [b.l, inward], [fall(M.turnsFirst), inward + (yaw - inward) * 0.8], [b.g, yaw], [b.h, yaw]]), dip = through([[b.d, rest.dip], [b.l, rest.dip + rad(M.dip)], [b.g, rest.dip]]);
-    const roll = through([[b.d, rest.roll], ...(b.l - b.e > 0.4 ? [[b.e, rest.roll + rad(M.roll)] as [number, number]] : []), [b.l, rest.roll + rad(M.roll)], [fall(M.rollHeld), rest.roll + rad(M.roll)], [b.turned, rest.roll + rad(M.roll) * 0.12], [b.g, rest.roll]]), bend = through([[b.d, came.bend], ...(b.l - b.e > 0.4 ? [[b.e, 1] as [number, number]] : []), [b.l, 1], [fall(M.rollHeld), 1], [b.turned, 0.5], [b.g, 0]]);
+    const handYaw = through([[b.d, came.yaw], [meet ? b.e : b.l, inward], [fall(M.turnsFirst), inward + (yaw - inward) * 0.8], [b.g, yaw], [b.h, yaw]]), dip = through([[b.d, rest.dip], [b.l, rest.dip + rad(M.dip)], [b.g, rest.dip]]);
+    const roll = through([...(meet ? [[b.d - 3, rest.roll - rad(10)] as [number, number]] : []), [b.d, rest.roll], ...(b.l - b.e > 0.4 ? [[b.e, rest.roll + rad(meet ? 62 : M.roll)] as [number, number]] : []), [b.l, rest.roll + rad(M.roll)], [fall(M.rollHeld), rest.roll + rad(M.roll)], [b.turned, rest.roll + rad(M.roll) * 0.12], [b.g, rest.roll]]), bend = through([...(meet ? [[b.d - 5, came.bend] as [number, number], [b.d, came.bend + (1 - came.bend) * 0.4] as [number, number], [b.d + (b.e - b.d) * 0.4, 1] as [number, number]] : [[b.d, came.bend] as [number, number]]), ...(b.l - b.e > 0.4 ? [[b.e, 1] as [number, number]] : []), [b.l, 1], [fall(M.rollHeld), 1], [b.turned, 0.5], [b.g, 0]]);
     const handAt = (yawNow: number, dipNow: number, rollNow: number, bendNow: number, grip: Vec3) => { const shape = shapeBetween(flatR, gripR, bendNow), axes = axesAt(yawNow, dipNow, rollNow), at = sub(grip, outOf(padOf(shape), axes)), low = Math.min(...placed(shape, axes, at).map(q => q[1]));
       const wrist: Vec3 = low < M.floor ? [at[0], at[1] + M.floor - low, at[2]] : at; return {wrist, points: placed(shape, axes, wrist), axes, shape}; }; // a hand turned on its side beside the card is lifted clear of the felt, its fingers then a little higher up the card's side
-    const right = (i: number) => handAt(handYaw(i), dip(i), roll(i), bend(i), held(i)), comes = handAt(came.yaw, rest.dip, rest.roll, came.bend, take);
-    return {b, seat, take, go, card, right, comes, turn, far}; });
+    const right = (i: number) => i <= b.d ? handAt(came.yaw, rest.dip, rest.roll, bend(i), take) : handAt(handYaw(i) + swing(i), dip(i), roll(i), bend(i), held(i)), comes = handAt(came.yaw, rest.dip, rest.roll, came.bend, take);
+    return {b, seat, take, go, card, right, comes, turn, far, closes: meet ? b.d - 5 : b.d}; });
 
   // ---- her left hand ---------------------------------------------------------------------------------------------
   // Its fingertips ride on the card from the shoe to the hand change, falling a little behind its middle, the thumb coming
@@ -251,7 +264,7 @@ export function twoHandDeal(lens: Lens, start: Still, places: Place[], lead: num
   const active = (i: number) => { let k = 0; while (k < cards.length - 1 && i >= cards[k + 1].b.b) k++; return k; };
   /** Her right hand at frame i: null while it lies as it lay at the start. */
   const rightAt = (i: number): {wrist: Vec3; points: Vec3[]} | null => { for (const [k, c] of cards.entries()) { const b = c.b, until = b.i ?? N;
-    if (i > b.d && i <= until) return i >= b.h ? {wrist: c.seat.wrist, points: placed(flatR, c.seat.axes, c.seat.wrist)} : c.right(i);
+    if (i > c.closes && i <= until) return i >= b.h ? {wrist: c.seat.wrist, points: placed(flatR, c.seat.axes, c.seat.wrist)} : c.right(i);
     if (b.i !== null && i > b.i && i <= cards[k + 1].b.d) { const next = cards[k + 1].comes, u = smooth((i - b.i) / (cards[k + 1].b.d - b.i)), shape = shapeBetween(flatR, next.shape, u), axes = between(c.seat.axes, next.axes, u), wrist = add(lerp(c.seat.wrist, next.wrist, u), [0, M.arc.right * Math.sin(Math.PI * u), 0]); return {wrist, points: placed(shape, axes, wrist)}; } }
     return null; };
   // What the body adds: nothing until the first card moves, then what each place asks while the card is laid on it, going straight from one place's to the next's.

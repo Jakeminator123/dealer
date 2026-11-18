@@ -27,10 +27,11 @@ const pose = JSON.parse(await readFile(new URL('../data/till-ankare-2-3.json', i
 const last = pose.frames[pose.frameCount - 1], all = spots(plan, lens), spot = (id: string) => { const s = all.find(s => s.id === id); if (!s) throw Error(`The plan has no place ${id}.`); return s.at; };
 // The real dealer's S1 is the seat at her left, by the shoe: the plan's seat 7. Her own card is the plan's D.C1.
 const realOf = (id: string) => { const m = /^P([1-7])\.C1$/.exec(id); return REAL_DEAL[id === 'D.C1' ? 7 : m ? 7 - Number(m[1]) : -1] ?? (() => { throw Error(`No real card to take the moments of for ${id}.`); })(); };
+// --meet 1, --push <metres>, --swing <degrees> (with --beats): see Pace in dealer3d/src/two-hand.ts.
 // --beats: the film's own moments in frames, for a film slower than the real dealer (b,c,d,e,l,f,g,h as in dealer3d/src/real-deal.ts; a is frame 0). Where the hands
 // change is still the real card's; the card does not stand still between being stood up and falling, and the left hand goes back to the shoe as much slower as the film is.
 const paced = (r: RealCard): {real: RealCard; pace: Pace} => { if (!own) return {real: r, pace: {}}; const [b, c, d, e, l, f, g, h] = own.map(x => x / FPS), slower = (h - b) / (Math.max(r.h, r.g + TWO_HAND.settle) - r.b);
-  return {real: {...r, a: 0, b, c, d, e, l, f, g, h, i: h + 0.2}, pace: {flowing: true, leftBack: Math.round(TWO_HAND.leftBack * slower * 1000) / 1000}}; };
+  return {real: {...r, a: 0, b, c, d, e, l, f, g, h, i: h + 0.2}, pace: {flowing: true, leftBack: Math.round(TWO_HAND.leftBack * slower * 1000) / 1000, ...(arg('--meet') === '1' ? {meeting: true} : {}), ...(arg('--push') ? {push: Number(arg('--push'))} : {}), ...(arg('--swing') ? {swing: Number(arg('--swing'))} : {})}}; };
 const ids = to === 'all' ? ['P7.C1', 'P6.C1', 'P5.C1', 'P4.C1', 'P3.C1', 'P2.C1', 'P1.C1', 'D.C1'] : to.split(','), places: Place[] = ids.map(id => ({id, at: spot(id), real: paced(realOf(id)).real})), pace = paced(realOf(ids[0])).pace;
 // --right-at: her right hand as the approved anchor picture has it, where that differs from the pose film (the middle fingertip's pixel in the bank's picture, and the way the hand points).
 const rightAt = arg('--right-at')?.split(',').map(Number) ?? null, posed: Still = {L: last.L, R: last.R, h: last.h}, start = rightAt ? startOnAnchor(lens, posed, {x: rightAt[0], y: rightAt[1]}, rightAt[2]) : posed;

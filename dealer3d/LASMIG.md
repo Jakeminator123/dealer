@@ -5,59 +5,72 @@ egen vinkel, "avskilt i en egen undermapp" tills delarna är värda att lyfta in
 
 ## Överlämning (läs det här först; resten av sidan är uppslagsverk)
 
-Skriven 2026-11-18 kl. 03.28 av sessionen som gjorde tvåhandsgiven (underagent åt huvudagenten). Högst en skärm: det som
-inte ryms här står i avsnitten nedan, i commitmeddelandena och i varje filmmapps LASMIG.txt på slasket.
+Skriven 2026-11-18 kl. 04.00 av sessionen 3D, som avslutar sitt pass på Jakobs ord. En ny session behöver bara den
+här sidan och `AGENTS.md`; det som inte ryms står i avsnitten nedan, i commitmeddelandena och i varje filmmapps
+`LASMIG.txt` och `KLAR-*.txt` på slaskdisken.
 
 **Läget.**
-- Dockan delar på två sätt. (1) Den avlästa given från ankare 2.1 (Pamelas hand, nyckelvridning; `capture.ts`,
-  `data/giv-pamela-*.json`): som förlaga åt Kling 4 höll den på plats 4 (4/5 två gånger), plats 5 oavgjord, plats 3
-  föll; förlagan "-4" gav i C5 en ren vändning men kortet hoppade från upprätt till liggande (3/5). (2) **Tvåhandsgiven
-  från pose 2.3** (`two-hand.ts`), nattens arbete på Jakobs beställning: en riktig dealers giv i hennes egen takt.
-  Vänster hand stryker ut kortet och för det till höger hand, som griper om kortets långsida; båda reser det på
-  kortsidan; höger bär det och låter det falla framåt, ÄNDE ÖVER ÄNDE; fingertopparna kvar på hörnet närmast henne.
-  Tiderna och handbytets punkter är MODEL:s avläsning (`real-deal.ts`); vägen, greppet och kroppen är en modell.
-- Jakob 2026-11-18: ja till ankare 2.3 (`assets/anchors/paow-ankare-2-3-a/`; filmerna börjar på dess händer,
-  `--right-at 1180,887,83`); "se bara till att alla vridningar blir bra", vilken vändning är mindre viktigt; sidan ska
-  vara "kameran i mitten flyttad åt sidan", cirka 35 grader (`?eyes=runt35`); NEJ till Meshy-modellen.
-- Filmerna, alla 1764 x 1174 och 30 rutor/s, i `D:/dealer-scratch/tmp/dealer-3d/ut/` (varje mapp: film, ark, närbild av
-  vändningen, slutläge, LASMIG.txt med tider, slutläge i meter, leder, vad som är avläst och modell, kommandot):
-  - `giv-fran-2-3-p5/`: plats 5, 3,0 s. Film b (hennes takt, klar ruta 32), film c (långsam, klar ruta 68, kortet står
-    aldrig stilla mellan uppresning och fall; samma första och sista bild), från sidan 35 grader och från stol 1:s öga,
-    stillbilder från båda, och jämförelsen av ögonen (stol 1:s öga har bankens höjd, lutning och lins). KLAR-*.txt
-    säger vad som lämnades när.
-  - `giv-fran-2-3-p4/`: plats 4, 3,0 s, hennes takt.
-  - `giv-fran-2-3-alla/`: svepet plats 7-1 och dealerns kort, 8,0 s, hennes takt. Plats 6 och 7, som föll med
-    enhandsgiven, håller: höger hand går framför skon och kroppen lutar sig dit (test).
-- Betalt (huvudagenten, Kling 4, plats 5): Kling följer tvåhandsgiven och tog greppet efter film b, men i hennes takt
-  stannar den med kortet stående och gör vändningen på två-tre rutor. Film c är gjord för det; utfallet var inte läst
-  när det här skrevs.
+- Dockan delar på två sätt. Den äldre: den avlästa given från ankare 2.1 (Pamelas hand, nyckelvridning; `src/capture.ts`,
+  `data/giv-pamela-*.json`), som höll som förlaga på plats 4. Den nya, nattens arbete på Jakobs beställning:
+  **tvåhandsgiven från pose 2.3** (`src/two-hand.ts`, tiderna ur sessionen MODEL:s mätning av en riktig dealer i
+  `src/real-deal.ts`). Vänster hand stryker ut kortet och för det till höger hand, som tar långsidan; båda reser det
+  på kortsidan; höger bär det och låter det falla framåt, ÄNDE ÖVER ÄNDE; fingertopparna ligger kvar på hörnet.
+- Plats 5 från bankens kamera finns i fyra versioner i `D:/dealer-scratch/tmp/dealer-3d/ut/giv-fran-2-3-p5/`, alla
+  1764 × 1174, 90 rutor, 3,0 s, samma första och sista bild. **-b**: den riktiga dealerns takt (given klar ruta 32);
+  Kling tog greppet men stannade med kortet stående och vände på två–tre rutor. **-c**: långsam (klar ruta 68, fallet
+  13 rutor); tagning 3 höll i den automatiska kontrollen, med ett litet dröjande där dockans ruta 36–39 liknar
+  varandra. **-d**: som -c, men höger hand möter kortet i rörelse (`--meet 1`), kortet står rest fyra rutor i stället
+  för åtta, vrids 20° i sidled under resningen (`--swing 20`) och läggs på platsen utan glidning (`--push 0.008`).
+  Tagning 4 lades på -d och höll bäst enligt huvudagenten; utfallet står i `docs/lage/film.md` och i Prov, inte läst här.
+- Från sidan: ögat är bankens kamera buren runt henne, samma höjd (1,110 m), lutning (25,1°), lins och avstånd
+  (2,024 m): `?eyes=runt35` i `src/stage.ts`, vinkeln är ett tal. Vald sida: 35° åt hennes vänster, där handbytet står
+  fritt från skon. Stol 1:s öga (`seatEye`) har samma höjd och lutning, så bilderna "ovanifrån" i provet var
+  bildmodellens. Jakob godkände sedan en sidofilm gjord ur bankens egen film; dockans sidofilmer är facit för kameran.
+- Plats 4 (3,0 s) och svepet till plats 7–1 och dealern (8,0 s) finns bara i den riktiga dealerns takt
+  (`ut/giv-fran-2-3-p4/`, `ut/giv-fran-2-3-alla/`). Plats 6 och 7 håller i lederna med tvåhandsgiven (test).
+- Allt är inne i `main` till och med -c; -d ligger på grenen `dealer-3d`. Inget betalt är lagt av banan.
 
-**Nästa steg, i ordning.**
-1. Läs tagningen på film c mot `narbild-fallet-c.png`: höll vändningen när kortet aldrig står stilla? Om ja: gör
-   plats 4 och svepet i samma takt (`deal-film.ts --beats` tar i dag ETT kort; svepet behöver att varje korts tider
-   dras ut, det vill säga `paced` i verktyget för alla platser).
-2. Det som ser fel ut i dockan och som Kling kan ta efter: fingrarna byter sida om kortets kant på två rutor (ritat,
-   inte löst; tummen når kortets plan men trycker inte); dockans hand är kupad och 4-5 cm kortare i bild än ankarets
-   platta hand; i svepet lutar hon sig långt för plats 7, och underarmen pekar mot kameran i ett par rutor för plats
-   3-1. Bankens sko håller kortet stående där den riktiga håller det liggande, så kortet svängs 30 grader på filten.
-3. Den äldre vägen: stol 1 (`D:/dealer-scratch/tmp/stol-1/RAPPORT.md`), förlagan "-5" för nyckelvridningen (sänk kortet
-   jämnt ruta 60-80; `folds` till `rests` i `perform`) och släpet (ankare 2.2, se "Släpet" under Kvar) är inte rörda i natt.
+**Nästa steg, i ordning.** Vänta på Jakobs ord om tagning 4 innan något görs.
+1. Plats 4 i samma långsamma takt och med samma rörelse som -d.
+2. Svepet i två halvor (plats 7–4, sedan 3–1 och dealern) i en mellantakt med minst tio rutor per fall, och mindre
+   lutning för plats 7 (hellre en längre arm än en fälld bål). `tools/deal-film.ts --beats` tar i dag ETT kort: bygg
+   ut det för flera först då.
+3. En dockfilm per återstående plats (1, 2, 3, 6, 7 och dealerns kort) när metoden är vald.
+4. `tests/two-hand.test.ts` (svepet, P6.C1) faller i huvudträdet, där Jakobs sparade plan flyttar plats 6 tre
+   bildpunkter: gör testet och datafilen oberoende av `placements/default.json`.
+5. Dockans filmer in i `data/rendered-references.json` gör huvudagenten. Föreslaget id-mönster: `docka-vila-till-2-3-a`
+   (posfilmen, `IDLE>READY-C`) och `docka-2-3-p5c1-d` (kanten och versionens bokstav); en film som görs om får en ny
+   bokstav, aldrig samma id. `lays`: höger hand.
+6. Den äldre vägen är orörd: stol 1 (`D:/dealer-scratch/tmp/stol-1/`), förlagan "-5" och släpet (se "Kvar").
 
-**Väntar på Jakob.** Vilken vändning banken ska ha (ände över ände eller nyckelvridningen): hans val, när han har sett tagningarna.
+**Väntar på Jakob.** Inget utanför Beslut. Vilken vändning banken ska ha (ände över ände eller nyckelvridningen) är
+hans val; huvudagenten frågar när tagningarna är sedda.
 
-**Var saker ligger.** Koden här; grenen `dealer-3d` i arbetsträdet `D:/dealer-scratch/tmp/dealer-3d/trad` (huvudagenten
-slår ihop den i `main`); inspelningsskript (`spela-in-giv23.sh`, `prov-giv23.sh`), ögats mätning (`ogon-matt.ts`,
-`ogon-jamfor-3.ts`), filmer och mellanlager i `D:/dealer-scratch/tmp/dealer-3d/`; proven i `assets/proofs/dealer-3d-*`.
+**Var saker ligger.** Koden här, grenen `dealer-3d` i arbetsträdet `D:/dealer-scratch/tmp/dealer-3d/trad`
+(huvudagenten slår ihop den). En dockfilm görs i två steg från arbetsträdet:
+`node dealer3d/tools/deal-film.ts --to P5.C1 --seconds 3 --right-at 1180,887,83 --beats 5.5,17.5,22.5,33.5,35.7,47.1,55.7,58.7 --meet 1 --push 0.008 --swing 20 --out dealer3d/data/<namn>.json`
+(talen i `--beats` är rutor från 0: börjar ut, ute, höger hand tar, står, vänster släpper, framsidan, i filten,
+ligger), sedan inspelningen under det delade låset:
+`env SUF=-d bash D:/dealer-scratch/tmp/dealer-3d/spela-in-giv23.sh <namn> 3 <utmapp> <filnamn> 4x4 <arkets rutor>`.
+Skripten (`spela-in-giv23.sh`, `under-las.sh`, `ogon-matt.ts`) ligger BARA på slaskdisken, inte i Git; filmerna
+hamnar i `D:/dealer-scratch/tmp/dealer-3d/ut/<utmapp>/` med ark, närbild, slutläge och `KLAR-*.txt`.
+Räddningsuppdraget från samma natt (tre banor, alla inne i `main`): `D:/dealer-scratch/tmp/raddning/` (`UPPDRAG.md`,
+`LAGE.md`, `rak-linje-lasare.md`), banornas lägesfiler i `raddning-spelkarna/LASMIG.md`, `raddning-geometri/LASMIG.md`
+och `raddning-kedja/LASMIG.md`, fyndlistan i `raddning-kedja/FYND.md`, bilderna i `raddning-geometri/bilder/` och
+webbläsartitten i `raddning-spelkarna/titt/` och `raddning-geometri/titt/`.
 
 **Fällor.**
 - Headless Chrome bara under låset: `bash D:/dealer-scratch/tmp/dealer-3d/under-las.sh <minuter> "<vad>" <kommando>`.
-- Banan skriver bara i `dealer3d/` och i sina mappar på slasket; betalt beställer huvudagenten.
-- Titta på bilden innan ett tal skickas vidare. "Inom gränserna" räckte inte två gånger i natt: kortet stod för sig
-  självt intill en platt hand, och armbågen gick genom bröstet där ingen led var utanför sin gräns (nu säger verktyget
-  till: "ARMBÅGEN HAR INGEN FRI PLATS").
-- En levererad film ska gå att göra om: `giv-fran-2-3-p5.json` och `-p4.json` är ruta för ruta det som film b och
-  plats 4-filmen spelades in från; ändra modellen bakom en växel (som `Pace`) hellre än för alla filmer.
-- Verktyget räknar rutor från 0, arken från 1 (ruta 1 är filmens första bild).
+- Banan skriver bara i `dealer3d/` och på slaskdisken; betalt beställer huvudagenten eller MODEL.
+- Titta på närbilden innan ett tal skickas vidare: "inom gränserna" räckte inte tre gånger (kortet stod för sig
+  självt intill en platt hand, armbågen gick genom bröstet, fyra rutor liknade varandra och lästes som en paus).
+- Kling tar efter dockans fel. Kvar i dockan: fingrarna byter sida om kortets kant på två rutor (ritat, inte löst);
+  i -d är höger hand synligt sluten om långsidan först ruta 31–32; dockans hand är kupad och 4–5 cm kortare än
+  ankarets; bankens sko håller kortet stående, så kortet svängs 30° på filten.
+- Första bilden i en beställning är ankaret (`assets/anchors/paow-ankare-2-3-a/anchor.png`), aldrig dockans ruta.
+- Verktyget räknar rutor från 0, arken från 1. En levererad film görs inte om under samma namn.
+- Inte sett i en webbläsare efter räddningen: plats 6 i Bordets Scen och Beställ, ett dealerbyte i spelet, rörelsen
+  med `geometri=lins` (stillbilden har fel: rummet borta, ringarna halva; `docs/BRISTER.md`), och `scene3d.html`.
 
 Mappen rör inget annat i repot. Den läser `placements/default.json` (aldrig skriver) och `src/placement-model.ts`, och
 använder repots låsta `three` och `sharp`.

@@ -17,11 +17,11 @@ import {track} from '../src/hand-pose.ts';
 
 type Limb = {s: Vec3; e: Vec3; w: Vec3; k: number; p: Vec3[]};
 type Beat = {to: string; a: number; b: number; c: number; d: number; e: number; l: number; turned: number; f: number; g: number; h: number; i: number | null};
-type Deal = {to: string[]; rightAt: {x: number; y: number; yaw: number} | null; pace: {real: RealCard; flowing: boolean; leftBack: number; elbows: {L: Vec3; R: Vec3}} | null; elbowForced: string[]; fps: number; frameCount: number; palm: number; throughShoe: number; beats: Beat[]; turns: {axis: Vec3; angle: number}[]; laid: {from: number; c: Vec3; l: Vec3; n: Vec3}[]; frames: {card: {c: Vec3; l: Vec3; n: Vec3; id: number}; L: Limb; R: Limb; h: Vec3; g: Vec3}[]};
+type Deal = {to: string[]; rightAt: {x: number; y: number; yaw: number} | null; pace: {real: RealCard; flowing: boolean; leftBack: number; elbows: {L: Vec3; R: Vec3}; meeting?: boolean; push?: number; swing?: number} | null; elbowForced: string[]; fps: number; frameCount: number; palm: number; throughShoe: number; beats: Beat[]; turns: {axis: Vec3; angle: number}[]; laid: {from: number; c: Vec3; l: Vec3; n: Vec3}[]; frames: {card: {c: Vec3; l: Vec3; n: Vec3; id: number}; L: Limb; R: Limb; h: Vec3; g: Vec3}[]};
 const load = async (name: string) => JSON.parse(await readFile(new URL(`../data/${name}.json`, import.meta.url), 'utf8'));
 const pose = await load('till-ankare-2-3'), start = pose.frames[pose.frameCount - 1], plan = JSON.parse(await readFile(new URL('../../placements/default.json', import.meta.url), 'utf8'));
-const DEALS: [string, Deal][] = [['giv-fran-2-3-p5', await load('giv-fran-2-3-p5')], ['giv-fran-2-3-p5-langsam', await load('giv-fran-2-3-p5-langsam')], ['giv-fran-2-3-p4', await load('giv-fran-2-3-p4')], ['giv-fran-2-3-alla', await load('giv-fran-2-3-alla')]];
-const ONE: Record<string, string> = {'giv-fran-2-3-p5': 'P5.C1', 'giv-fran-2-3-p5-langsam': 'P5.C1', 'giv-fran-2-3-p4': 'P4.C1'};
+const DEALS: [string, Deal][] = [['giv-fran-2-3-p5', await load('giv-fran-2-3-p5')], ['giv-fran-2-3-p5-langsam', await load('giv-fran-2-3-p5-langsam')], ['giv-fran-2-3-p5-langsam-d', await load('giv-fran-2-3-p5-langsam-d')], ['giv-fran-2-3-p4', await load('giv-fran-2-3-p4')], ['giv-fran-2-3-alla', await load('giv-fran-2-3-alla')]];
+const ONE: Record<string, string> = {'giv-fran-2-3-p5': 'P5.C1', 'giv-fran-2-3-p5-langsam': 'P5.C1', 'giv-fran-2-3-p5-langsam-d': 'P5.C1', 'giv-fran-2-3-p4': 'P4.C1'};
 const eye = filmEye(TABLE_LENS), all = spots(plan, TABLE_LENS), arm = (a: Limb): ArmPose => ({shoulder: a.s, elbow: a.e, wrist: a.w, stretch: a.k, points: a.p});
 const cross = (a: Vec3, b: Vec3): Vec3 => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]], dot = (a: Vec3, b: Vec3) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
 const card = (c: {c: Vec3; l: Vec3; n: Vec3}): CardPose => ({centre: c.c, long: c.l, normal: c.n, across: cross(c.n, c.l)});
@@ -48,6 +48,19 @@ test('the slow film to seat 5 is the same deal drawn out, and the card never sta
   assert.ok(edge.length >= 2 && edge.length <= 5 && edge[edge.length - 1] - edge[0] === edge.length - 1, `on edge in frames ${edge}`);
 });
 
+test('the slow film in which her right hand meets the card: taken while it moves, near upright for four frames at most, laid on its place, ending on the last frame of the fast film', () => {
+  const met = DEALS.find(([n]) => n === 'giv-fran-2-3-p5-langsam-d')![1], own = DEALS.find(([n]) => n === 'giv-fran-2-3-p5')![1], b = met.beats[0], N = met.frameCount, moved = (i: number) => length(sub(met.frames[i].card.c, met.frames[i - 1].card.c));
+  assert.ok(met.pace?.meeting && met.pace.flowing); assert.deepEqual(met.frames[N - 1], own.frames[own.frameCount - 1], 'the same last frame, to the last number');
+  // From the frame it begins to leave the shoe until it meets the felt, the card moves at least 3 mm in every frame: it never lies still on the felt.
+  for (let i = Math.ceil(b.b) + 3; i < b.g; i++) assert.ok(moved(i) >= 0.003, `frame ${i}: the card moves ${(moved(i) * 1000).toFixed(1)} mm`);
+  // Her right hand is closing as the card arrives: its forefinger already bending in the frame of the hand change and closed four frames on, while the far edge is still coming up.
+  const at = Math.ceil(b.d), bentAt = (i: number) => Math.max(...joints(arm(met.frames[i].R), 1).fingers[1]); assert.ok(bentAt(at) > bentAt(0) + 4 && bentAt(at + 4) > bentAt(0) + 12, 'the forefinger is bending as the card arrives');
+  // Near upright (within 25 degrees of plumb) in four frames at most.
+  const upright = met.frames.filter((f, i) => i > b.d && i < b.g && f.card.l[1] < -Math.cos(25 * Math.PI / 180)).length; assert.ok(upright >= 2 && upright <= 4, `near upright in ${upright} frames`);
+  // Laid on its place: when it meets the felt it is within 12 mm of where it lies, flat.
+  const down = met.frames[Math.ceil(b.g)].card; assert.ok(length(sub(down.c, met.frames[N - 1].card.c)) < 0.012 && down.n[1] > 0.999, `it meets the felt ${(length(sub(down.c, met.frames[N - 1].card.c)) * 1000).toFixed(0)} mm from its place`);
+});
+
 test('a track goes through its keys, rests at its ends and never overshoots between two keys', () => {
   const t = track([[0, 0], [2, 1], [3, 5], [6, 5.5]]); for (const [x, y] of [[0, 0], [2, 1], [3, 5], [6, 5.5], [-1, 0], [9, 5.5]]) assert.ok(Math.abs(t(x) - y) < 1e-12);
   for (let x = 0; x < 6; x += 0.05) assert.ok(t(x + 0.05) >= t(x) - 1e-12, `falls at ${x}`); assert.ok(Math.abs(t(0.01)) < 1e-3 && Math.abs(t(5.99) - 5.5) < 1e-3, 'at rest at both ends');
@@ -57,7 +70,7 @@ for (const [name, data] of DEALS) {
   const N = data.frameCount, last = data.beats[data.beats.length - 1], stillFrom = Math.ceil(Math.max(last.h, last.l + 0.3 * data.fps)) + 4, of = (k: number) => data.frames.map((f, i) => f.card.id === k ? i : -1).filter(i => i >= 0);
 
   test(`${name}: the file is what the code lays today`, () => {
-    const real = (id: string) => REAL_DEAL[id === 'D.C1' ? 7 : 7 - Number(id[1])], posed = {L: start.L, R: start.R, h: start.h}, laid = twoHandDeal(TABLE_LENS, data.rightAt ? startOnAnchor(TABLE_LENS, posed, data.rightAt, data.rightAt.yaw) : posed, data.to.map(id => ({id, at: all.find(s => s.id === id)!.at, real: data.pace?.real ?? real(id)})), data.beats[0].a, data.fps, N, data.pace ? {flowing: data.pace.flowing, leftBack: data.pace.leftBack, elbows: data.pace.elbows} : {});
+    const real = (id: string) => REAL_DEAL[id === 'D.C1' ? 7 : 7 - Number(id[1])], posed = {L: start.L, R: start.R, h: start.h}, laid = twoHandDeal(TABLE_LENS, data.rightAt ? startOnAnchor(TABLE_LENS, posed, data.rightAt, data.rightAt.yaw) : posed, data.to.map(id => ({id, at: all.find(s => s.id === id)!.at, real: data.pace?.real ?? real(id)})), data.beats[0].a, data.fps, N, data.pace ? {...data.pace} : {});
     assert.deepEqual(laid.forced, data.elbowForced);
     assert.equal(laid.frames.length, N); for (const i of [0, Math.round(last.d), Math.round(last.l) + 1, Math.round(last.g), N - 1]) { const a = laid.frames[i], b = data.frames[i];
       for (const [x, y] of [[a.card.c, b.card.c], [a.card.l, b.card.l], [a.R.w, b.R.w], [a.R.e, b.R.e], [a.L.w, b.L.w], [a.R.p[8], b.R.p[8]], [a.L.p[12], b.L.p[12]], [a.h, b.h], [a.g, b.g]] as [Vec3, Vec3][]) assert.ok(length(sub(x, y)) < 1e-4, `frame ${i} differs: lay the file again with dealer3d/tools/deal-film.ts`); }
@@ -105,9 +118,9 @@ for (const [name, data] of DEALS) {
       const stands = poses[mine.indexOf(Math.round(b.l))]; for (const i of mine.filter(i => i >= b.c && i <= b.d)) assert.ok(card(data.frames[i].card).normal[1] < -0.999, `frame ${i}: flat on the felt with its back up until the hands change`); const raising = mine.filter(i => i > b.d && i <= b.l), short = card(data.frames[raising[0]].card).across; assert.ok(card(data.frames[raising[0]].card).long[2] > 0.5, 'a short side toward the players');
       assert.ok(stands.long[1] < -Math.cos(12 * Math.PI / 180), `stands ${(Math.acos(-stands.long[1]) * 180 / Math.PI).toFixed(0)} degrees off plumb`); assert.ok(stands.normal[2] < -0.6, 'its back toward the players');
       // While it is stood up its lower edge is on the felt (at most 15 mm up), and the turn is about its short side: `across` does not move.
-      for (const i of raising) { const c = card(data.frames[i].card), low = c.centre[1] - CARD.height / 2 * Math.abs(c.long[1]) - CARD.width / 2 * Math.abs(c.across[1]); assert.ok(low < 0.015, `frame ${i}: the lower edge ${(low * 1000).toFixed(0)} mm up`); assert.ok(dot(c.across, short) > 0.999, `frame ${i}: not about the short side`); }
+      for (const i of raising) { const c = card(data.frames[i].card), low = c.centre[1] - CARD.height / 2 * Math.abs(c.long[1]) - CARD.width / 2 * Math.abs(c.across[1]); assert.ok(low < 0.015, `frame ${i}: the lower edge ${(low * 1000).toFixed(0)} mm up`); assert.ok(data.pace?.swing || dot(c.across, short) > 0.999, `frame ${i}: not about the short side`); }
       // In the air: every step of the turn is about the one axis the file names.
-      const inAir = mine.filter(i => i - 1 > b.l + (b.turned - b.l) * 0.1 && i < b.turned); for (const i of inAir) { const step = turnBetween(card(data.frames[i - 1].card), card(data.frames[i].card)); if (step.angle > 2) assert.ok(dot(step.axis, data.turns[k].axis) > 0.995, `frame ${i}: turns about another axis`); }
+      const inAir = mine.filter(i => i - 1 > b.l + (b.turned - b.l) * 0.1 && i < b.turned); for (const i of inAir) { const step = turnBetween(card(data.frames[i - 1].card), card(data.frames[i].card)); if (step.angle > 2 && !data.pace?.swing) assert.ok(dot(step.axis, data.turns[k].axis) > 0.995, `frame ${i}: turns about another axis`); }
       assert.ok(data.turns[k].angle > 70 && data.turns[k].angle < 110, `the turn in the air is ${data.turns[k].angle} degrees`);
       // The bank's camera sees the back, then the face, changing once; and the top falls toward the players (the held end ends nearest her).
       const seen = poses.map(c => sideSeen(c, eye.position, 0)), changes = seen.filter((s, j) => j > 0 && s !== seen[j - 1]).length; assert.equal(seen[0], 'BACK'); assert.equal(seen[seen.length - 1], 'FRONT'); assert.equal(changes, 1, 'the side changes once');
