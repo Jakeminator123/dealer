@@ -166,9 +166,15 @@ Innehåll: [Arbetet och dokumenten](#arbetet-och-dokumenten) · [Labbet och stud
 - **Meshy och annat betalt utanför Beställ:** Meshy bara på hans eget ja; varje betalt anrop utanför Beställ rapporteras
   till huvudagenten med belopp.
 - **GitHubs kostnad** (Beslut 2026-11-18, kl. 01.47, på kortet om den låsta betalningen): "Fixat. undersök vad som
-  kostar så mkt och gör så att det som kostar inte kostar så mycket". Betalningen är löst av honom. Vad som kostar på
-  kontot utreds, och det som går att sänka härifrån sänks; det som hör till ett annat repo eller till kontots
-  inställningar föreslås för honom.
+  kostar så mkt och gör så att det som kostar inte kostar så mycket". Vad som kostar på kontot är utrett
+  ([BRISTER.md](BRISTER.md), "Labbet och verktygen"). Kl. 02.41, på kortet om ett tak: "Gör saker mycket enklare med
+  kontroller och se till att detta repo har minimalt. […] Altså om allt detta görs på github ska det inte göras, utan
+  göras lokalt gällande om det är för "dealer"", och på kortet om låset: "Vi ska inte behöva licens och radera massa
+  skit om sådant finns". Det här repot kör därför ingen kontroll hos GitHub: kontrollen är pre-push och `push-clean`
+  på datorn. Det som hör till ett annat repo eller till kontots inställningar föreslås för honom och ändras inte härifrån.
+- **Två tusen krediter för proven** (2026-11-18, cirka kl. 02.45, om provet från en annan vinkel och givarna från
+  ankare 2.3): "du får 2000 krediter att använda om du vill.. Ändra där det står 260 krediter som gräns.." Taket för de
+  proven är 2 000 krediter i stället för 260; varje anrop står i en liggare, och kostnaden berättas efter varje omgång.
 
 ## Dealern och ankarna
 
@@ -222,7 +228,11 @@ Innehåll: [Arbetet och dokumenten](#arbetet-och-dokumenten) · [Labbet och stud
   mot sin hand eller den som hon ska fösa ur kortet med. Skapa en film som går dit." Ankare 2.3 är båda händerna vid
   skon precis före draget, tatuerade som i ankare 1, med blicken ned mot handen som föser ut kortet. MODEL gör det, med
   en tagning inom huvudagentens tak. Kandidaten, händerna, ansiktet och bilden i spelets storlek märkte han som Bra i
-  Prov `paow-ankare-2-3` 2026-11-18, kl. 02.24.
+  Prov `paow-ankare-2-3` 2026-11-18, kl. 02.24, och i Beslut kl. 02.39 svarade han "Ja, registrera" på bilden med
+  omgjort efterarbete (`assets/anchors/paow-ankare-2-3-a/`).
+- **Dealern från en annan stol** (Prov `dealer-fran-stol-1`, 2026-11-18, kl. 02.46): första bilden "Ser "okej" ut som
+  referensmaterial till en tagning från första s isidan typ". Vägen med en stillbild från sidan och dockans film från
+  samma öga får fortsätta.
 - **Landningar per plats, eller inga** (2026-11-18, kl. 01.54, om Materials station Landningar): "Jag undrar också om
   det som kallas landningar alltid har en referensbild för kortplats nummer ett och spelare fyra. Detta bör rimligtvis
   tas bort helt, eller så bör vi skapa nya bilder för respektive position." Huvudagentens val: en giv slutar på
@@ -278,6 +288,15 @@ Innehåll: [Arbetet och dokumenten](#arbetet-och-dokumenten) · [Labbet och stud
   angående utdelning till de olika positionerna. Alternativt kan du skapa en 15-sekunders film där hon delar ut till
   kort nummer ett i alla positioner." En giv beställs på 3 s (det kortaste Kling 4 tar), och filmen med kort ett till
   alla platser prövas som en tagning.
+- **Given från 2.3 till plats 5, från två håll** (2026-11-18, cirka kl. 02.45): "Skapa en video när den här dealen går
+  till plats nummer fem, kort ett. Jag vill ha en tagning från ankare 2.3 till den här positionen, eller
+  kortpositionen ett, och spelare fem. Jag vill se detta från en sidovinkel och en rakt fram." Två tagningar av samma
+  giv till P5.C1: en från bankens kamera och en från sidan.
+- **Vilken vändning som helst, bara den blir bra** (2026-11-18, samma meddelande): "SE BARA TILL ATT ALLA VRIDNINGAR
+  BLIR BRA, LITEW SKITSAMMA VILKEN VRIDNING SOM GJÖRS i övrigt", och om tagningen från stol 1: "i ruta 34 påbörjas en
+  vridning som inte fullföljs vilket bara ser konstigt ut.. annars kanske bra." En vändning är en hel rörelse, aldrig
+  påbörjad och avbruten; sättet (handleden, nyckeln kring långsidan eller ände över ände som den riktiga dealern)
+  väljs efter vad som blir bäst i filmen.
 - **Givens sex steg från ankare 2.1** (2026-11-13, hans skiss, inte underlag i repot): Nyp, Dra (ned på filten,
   baksidan upp), För fram (lågt längs filten, inte vänt i luften), Vrid (kortet reser sig på långsidan), Vänd upp,
   Lägg. Det är valet Vänd vid platsen (`AT_PLACE`), som planen väljer per kort i Bordets Kortplan; förvalet för en ny

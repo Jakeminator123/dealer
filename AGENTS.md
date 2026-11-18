@@ -74,7 +74,8 @@ Jakob äger projektet; han är inte programmerare, så förklara val i vanliga o
 - Installera kontrollen en gång per checkout: `npm run hooks:install` (pre-push kör då publiceringskontrollen,
   `tools/publication-check.ts`).
 - Avsluta färdigt arbete så här: `npm test`, uttrycklig staging av egna filer, commit, `npm run check`, push, och
-  kontrollera fjärrens SHA och GitHub-kontrollen. Samma kontroll före en PR.
+  kontrollera fjärrens SHA. Kontrollen körs på den här datorn; GitHub kör ingen egen (Jakob 2026-11-18). Samma
+  kontroll före en PR.
 - Ingen force-push, ingen `--no-verify`, ingen filbevakare och ingen automatisk commit av utkast.
 - Rött i kontrollen stoppar; utred orsaken och rätta den. Sänk aldrig en kontroll eller ändra en referens bara för att
   få grönt. En verklig kvarvarande begränsning skrivs kort i `docs/BRISTER.md`.

@@ -3,6 +3,29 @@
   "about": "What waits for Jakob: one entry per question (kind beslut) or per thing only he can do (kind gora), shown as one card each in the studio's view Beslut (/studio/beslut/, lab only). The list's order is the order of urgency, the most urgent first. An entry: id, kind, question (at most 14 words), leads (one sentence: what his answer leads to), optionally proof (a folder under assets/proofs/) with file, page (an address in the lab, e.g. game.html?table=casino), link (an address outside, shown as text to open on his phone) and cost (free text), chips (two to four {value, label} for beslut, one to four for gora), asked (date), from (the lane that asks) and answer. An agent adds an entry with answer null, changes only its own entries, reads the file right before editing it and keeps the form JSON.stringify gives with two spaces; it closes an entry by taking it out once his answer is carried out, and the commit says what he answered. Only the page writes answer ({value, note, at}, tools/decision-store.ts); no agent sets, changes or clears an answer he has given. The strict reader is tools/decision-register.ts. The repo is public: no secret, personal detail or path of this machine.",
   "decisions": [
     {
+      "id": "scoutgaming-kontroller",
+      "kind": "beslut",
+      "question": "Stänga av de automatiska kontrollerna i scoutgaming hos GitHub tills vidare?",
+      "leads": "Körningarna där startas av dina egna agenter vid varje push och pull request och är det som kostar; avstängda kostar de inget, och de slås på igen med ett kommando.",
+      "chips": [
+        {
+          "value": "ja",
+          "label": "Ja, stäng av"
+        },
+        {
+          "value": "nej",
+          "label": "Nej, låt dem gå"
+        },
+        {
+          "value": "andra",
+          "label": "Ändra (skriv vad)"
+        }
+      ],
+      "asked": "2026-11-18",
+      "from": "huvudagenten",
+      "answer": null
+    },
+    {
       "id": "ankare-2-3",
       "kind": "beslut",
       "question": "Ankare 2.3: registrera den här bilden, eller en tagning till med öppnare ögon?",
@@ -26,77 +49,10 @@
       ],
       "asked": "2026-11-18",
       "from": "filmbanan",
-      "answer": null
-    },
-    {
-      "id": "github-fortfarande-last",
-      "kind": "gora",
-      "question": "GitHub nekar fortfarande kontrollen: kontot är låst. Kan du se efter igen?",
-      "leads": "Kontrollen nekades igen 2026-11-18 efter ditt Fixat, med samma ord som förut; låset syns under Settings, Billing and licensing.",
-      "chips": [
-        {
-          "value": "klart",
-          "label": "Klart, kör om kontrollen"
-        },
-        {
-          "value": "senare",
-          "label": "Senare"
-        }
-      ],
-      "asked": "2026-11-18",
-      "from": "huvudagenten",
-      "answer": null
-    },
-    {
-      "id": "github-tak",
-      "kind": "gora",
-      "question": "Sätta ett tak för GitHubs automatiska kontroller, så att kostnaden inte kan skena?",
-      "leads": "Det som kostar är kontrollerna i ett annat, privat repo, inte det här; taket sätter du själv under Budgets and alerts, och förslagen för det repot går till dess egen agent.",
-      "chips": [
-        {
-          "value": "tak",
-          "label": "Jag sätter ett tak"
-        },
-        {
-          "value": "forslagen",
-          "label": "Skicka förslagen till det repots agent"
-        },
-        {
-          "value": "nej",
-          "label": "Nej, inte nu"
-        }
-      ],
-      "asked": "2026-11-18",
-      "from": "huvudagenten",
-      "answer": null
-    },
-    {
-      "id": "dealer-fran-stol-1",
-      "kind": "beslut",
-      "question": "Dealern sedd från stol 1: pröva två bilder och en tagning?",
-      "leads": "Vid ja görs två riktiga bilder ur modellens rutor och en tagning med dockans film från stol 1 (cirka 170 krediter); ett äldre prov från sidan finns i Prov paow-fran-sidan.",
-      "proof": "dealer-3d-vinkel-stol-1",
-      "file": "2-dockan-kortet-vands.png",
-      "chips": [
-        {
-          "value": "ja",
-          "label": "Ja, pröva"
-        },
-        {
-          "value": "nej",
-          "label": "Nej, inte nu"
-        },
-        {
-          "value": "andra",
-          "label": "Ändra (skriv vad)"
-        }
-      ],
-      "asked": "2026-11-18",
-      "from": "3D-banan",
       "answer": {
         "value": "ja",
         "note": "",
-        "at": "2026-11-18T00:03:59.931Z"
+        "at": "2026-11-18T01:39:10.579Z"
       }
     },
     {

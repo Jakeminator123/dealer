@@ -267,6 +267,27 @@
       "text": "",
       "at": "2026-11-18T01:24:47.264Z",
       "read": "2026-11-18T01:32:35.127Z"
+    },
+    {
+      "id": 23,
+      "proof": "dealer-fran-stol-1",
+      "file": "1-forsta-bild.png",
+      "choice": null,
+      "text": "Ser \"okej\" ut som referensmaterial till en tagning från första s isidan typ",
+      "at": "2026-11-18T01:46:09.068Z",
+      "answer": {
+        "text": "Läst. Stillbilden från sidan används som underlag för nästa tagning: given från ankare 2.3 till plats 5, sedd från sidan.",
+        "at": "2026-11-18T01:49:06.806Z"
+      },
+      "read": "2026-11-18T01:49:06.806Z"
+    },
+    {
+      "id": 24,
+      "proof": "dealer-fran-stol-1",
+      "file": "2-sista-bild.png",
+      "choice": null,
+      "text": "Kanske kan funka som komplement förr att visa vilken sida som sllt ska vara från. Men tänk på att detta är ovanifrån och inte från samam vinkel, heller inte \"Första bilden\" i jämförelse med possitionen som används (tror jag i alla fakll) från \"mitten\"",
+      "at": "2026-11-18T01:47:30.573Z"
     }
   ]
 }

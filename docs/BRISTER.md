@@ -185,17 +185,21 @@ Innehåll: Kortet · Filmerna och banken · Läpparna och rösten · Spelet och 
 - **Filmer kan se utfrätta ut i Jakobs flik.** Syns: hos honom, troligen på hans skärm och inte i filerna. Prövat:
   inget. Stänger: lägg alltid en stillbild bredvid en film han ska döma.
 - **Testerna utan FFmpeg:** elva hoppas över där FFmpeg saknas, tre i `tools/order-images.test.ts` kräver bankens filmer
-  och ett i `tools/card-overlay.test.ts` kortspåren. Syns: GitHubs kontroll kör dem inte; den här datorn gör det.
-  Prövat: inget. Stänger: ingen väg vald.
-- **GitHubs kontroll går inte** ("The job was not started because your account is locked due to a billing issue").
-  Syns: GitHubs bock är röd på varje push; kontrollen går grön på datorn, så inget är stoppat. Kontot låstes mellan
-  2026-11-14 och 2026-11-15 (mätt på ett annat repos körningar), och det märktes här först 2026-11-17. Prövat: Jakob
-  svarade "Fixat" 2026-11-18 kl. 01.47, men pushen kl. 02.19 och en omkörning kl. 02.20 nekades med samma ord. Det här
-  repot är publikt och kostar inget; vad som kostar på kontot står i `D:/dealer-scratch/tmp/github-kostnad/siffror.txt`.
-  Stänger: kontot låses upp hos GitHub (Settings, Billing and licensing); kör sedan om kontrollen med `gh run rerun`.
-- **Kopian på nätet är inte sedd av en människa med den nya menyn.** Syns: kopian är publicerad från `2e3967c`
-  (2026-11-18, med nytt lösenord) och öppnar på Bordet; publiceringens egen kontroll gick igenom. Prövat: en underagent
-  frågar den som ny besökare i telefonstorlek. Stänger: det den hittar rättas, eller punkten stryks.
+  och ett i `tools/card-overlay.test.ts` kortspåren. Syns: en ren checkout utan media kör dem inte; den här datorn
+  gör det. Prövat: inget. Stänger: ingen väg vald.
+- **Jakobs GitHub-konto är låst av en betalningsfråga** ("your account is locked due to a billing issue"), sedan
+  mellan 2026-11-14 och 2026-11-15; ännu 2026-11-18 kl. 02.46 efter hans två svar att det är ordnat. Syns: inte i det
+  här repot längre, som inte kör något hos GitHub (DRIFT, "Git och kontroller"). Felet är varken en licens eller
+  stora filer här (repot är publikt och 16 MB): det som kostar på kontot är ett annat repos automatiska kontroller
+  (`D:/dealer-scratch/tmp/github-kostnad/siffror.txt`, förslagen bredvid). Stänger: bara han, under Settings, Billing
+  and licensing.
+- **Kopian på nätet, som en ny besökare möter den** (kontrollen 2026-11-18 efter publiceringen från `2e3967c`; bilder
+  och rapport i `D:/dealer-scratch/tmp/kopian-1118/`). På en dator fungerar den: Bordet, Scen, Granska, Prov och en
+  hel hand i Casino med Paow. Fel: Material i menyn ger en felruta (kopian bär inte `api/media`); Bordet visar ingen
+  bild i telefonstorlek (fast högerpanel på 380 punkter i `BordetView.tsx`); boten och Önskemål säger "du har loggats
+  ut" till den som aldrig loggat in, och ingen länk leder till inloggningen; `/api/onskemal` ger 401 i konsolen på
+  varje sida. Kontrollskripten i `huvudagent11/look/` loggar in med det gamla ordet och ska inte köras; de nya utan
+  inloggning ligger i `kopian-1118/`. Prövat: inget. Stänger: rättas före nästa publicering, som är hans ord.
 
 ## Pamela
 

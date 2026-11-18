@@ -42,12 +42,11 @@ inte med av misstag. Git-push är separat från webbdeploy, mediauppladdning och
   testfil i `tools/` som ingen lista namnger) med högst fyra arbetare, utan Runway, media eller deploy; tester som gör
   en liten film med FFmpeg hoppas över där FFmpeg saknas. En ny testfil ska in i både `test`-skriptet i `package.json`
   och `TESTS`.
-- `.github/workflows/check.yml` kör samma kontroll på push och PR med Node 24.21.0, `npm ci`, enbart läsbehörighet och
-  versionslåsta Actions; kontrollen kör alla tester i `TESTS`, så CI kör hela `npm test`. I en ren checkout utan media
-  och utan FFmpeg (som CI) hoppas de tester över som gör en liten film med FFmpeg eller läser bankens filmer och
-  kortspår (`tools/order-images.test.ts`, `tools/card-overlay.test.ts`). Studions tester behöver inte
-  `studio/node_modules`. Före PR kör agenten `npm run check`. GitHub-kontrollen kör efter push och är inte ett
-  serversidigt pushförbud eller aktiverat mergekrav.
+- GitHub kör ingen kontroll för det här repot (Jakob 2026-11-18: det som gäller dealer görs lokalt, inte på GitHub;
+  arbetsflödet `.github/workflows/check.yml` är borttaget). Kontrollen är pre-push-hooken och `push-clean`, på den här
+  datorn. I en ren checkout utan media och utan FFmpeg hoppas de tester över som gör en liten film med FFmpeg eller
+  läser bankens filmer och kortspår (`tools/order-images.test.ts`, `tools/card-overlay.test.ts`). Studions tester
+  behöver inte `studio/node_modules`. Före PR kör agenten `npm run check`.
 - **Push medan andra skriver** (2026-11-13). I huvudträdet stoppar kontrollen så länge någon sessions testindata
   skiljer sig från HEAD eller en ospårad `.ts`-fil ligger där, och det gör den nästan alltid en dag med flera
   sessioner. Huvudagenten pushar då från ett eget rent arbetsträd på slaskdisken med `node tools/push-clean.ts
@@ -56,8 +55,8 @@ inte med av misstag. Git-push är separat från webbdeploy, mediauppladdning och
   origin HEAD:main`, och sist lokal och fjärrens SHA. Verktyget stannar vid första steg som faller med en rad som börjar
   STOPP och lägger varje stegs logg i `push-logg` bredvid trädet; `--dry-run` gör allt utom `git push`. Trädet görs en
   gång med `git worktree add --detach <mapp på D:> main` (förvalet är `D:/dealer-scratch/tmp/huvudagent11/push-trad`)
-  och står kvar mellan pusharna; verktyget vägrar huvudträdet och ett träd ur ett annat repo. GitHub-kontrollen läses
-  efteråt. Det som pushas är incheckade commits, aldrig någons öppna filer.
+  och står kvar mellan pusharna; verktyget vägrar huvudträdet och ett träd ur ett annat repo. Det som pushas är
+  incheckade commits, aldrig någons öppna filer.
 - **Rött:** stoppa, undersök orsak och rätta innan nytt försök. **Gult:** granska och åtgärda eller förklara kvarvarande
   begränsning kort i `docs/BRISTER.md` före push/PR. Varningarna visas i agentens terminal och som CI-annoteringar. Granska även
   hook/testens relevans och falsklarm; vid verkligt kontrollfel, rätta med ett avgränsat regressionstest. Hoppa inte

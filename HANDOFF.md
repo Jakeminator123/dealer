@@ -13,7 +13,7 @@ Git, och en rad som inte längre gäller ersätts.
   (2.3, sedan 2.2) tas ur en film som 3D-banans docka styr.
 - Kortplanen ritar verkliga kort genom en lins; spelets liggande kort följer den inte än.
 - Kopian på nätet är sekundär och publiceras bara på hans ord; senast 2026-11-18 från `2e3967c`, med nytt lösenord.
-- GitHubs kontroll nekas än av kontots betalningslås, fast han har betalat ([BRISTER](docs/BRISTER.md)).
+- Kontrollen före en push körs bara på datorn; GitHub kör ingen (hans ord 2026-11-18).
 
 ## Nästa steg
 
@@ -80,7 +80,7 @@ ett kort där (skillen `visa-for-jakob`), och kortet tas ut när svaret är utf�
 Rutinen står i skillen `avsluta-arbete`. I korthet:
 
 1. Vänta in eller stoppa egna underagenter. Inget ocommittat får ligga kvar utom `placements/default.json`.
-2. `npm test`, uttrycklig staging av egna filer, commit, `npm run check`, push, och läs GitHub-kontrollens resultat.
+2. `npm test`, uttrycklig staging av egna filer, commit, `npm run check`, push, och kontrollera fjärrens SHA.
 3. Skriv läget där det hör hemma, och ersätt i stället för att lägga till: banans läge i lägesfilen, ett nytt besked
    i BESKED, en ny brist i BRISTER, en fråga till Jakob som kort i Beslut. Den här sidan ändras bara där en rad inte
    längre gäller.

@@ -14,7 +14,8 @@ Rutinen står i [`AGENTS.md`](../../../AGENTS.md), "Git och samarbete", och i
 1. **Bara huvudagenten committar, taggar och pushar** (vem det är: HANDOFF, "Vem äger vad"). En annan session eller
    underagent lämnar en fillista eller en kort gren till huvudagenten (AGENTS, "Git och samarbete").
 2. **Ordningen:** `npm test`, uttrycklig staging av egna filer med namn (aldrig `git add -A` eller `.`), commit,
-   `npm run check`, push, och sedan fjärrens SHA och GitHub-kontrollen (AGENTS; DRIFT).
+   `npm run check`, push, och sedan fjärrens SHA (AGENTS; DRIFT). Kontrollen körs bara på den här datorn; GitHub kör
+   ingen egen.
 3. **Push medan andra skriver** görs från ett rent arbetsträd: `node tools/push-clean.ts` (`--dry-run` gör allt utom
    `git push`). Det som pushas är incheckade commits, aldrig någons öppna filer (DRIFT, "Push medan andra skriver").
 4. **Ingen force-push, ingen `--no-verify`, ingen automatisk commit av utkast** (AGENTS). "Try running Pull first" i
