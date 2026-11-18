@@ -42,7 +42,7 @@ import { mediaRoles } from './media-roles.ts';
 import { readMandateBudget } from './order-mandate.ts';
 import {
   ANCHOR_NODE, ANCHOR_ROLE, CARD_SCALES, EXTRA_LIMIT, MODELS, FILE_NAME, FLIP_AXES, ORDER_ID, RETURN_23_BLOCK, SEAT_TARGETS, SHORT_TWO_HAND_TURN_HELP, TAKES_MAX, scaleWords, shortTwoHandTurnProblem,
-  bodyLine, canonical, checkPolicy, costOf, crossesBody, cutFrameOf, cutFrameWords, cutIntoOf, tidyMotion, dayOf, defaultFlip, defaultStyle, draftProblems, edgeOf, genitive, hashInput, landingMissing, landingOf, a3Candidates, a3Name, modelFor, modelsFor, paramsOf, plannedOf, readCutChecks, referenceCandidates, seatEndMissing, seatList, seatWords, secondsWords, shownOf, spentOn, stepOf, stylesFor, summaryOf, twoHandDealSideProblem, validateOrder, waitingOf,
+  bodyLine, canonical, checkPolicy, costOf, crossesBody, cutFrameOf, cutFrameWords, cutIntoOf, tidyMotion, dayOf, defaultFlip, defaultStyle, draftProblems, edgeOf, genitive, hashInput, landingMissing, landingOf, a3Candidates, a3Name, archivedReferenceIds, isArchived, modelFor, modelsFor, paramsOf, plannedOf, readCutChecks, referenceCandidates, seatEndMissing, seatList, seatWords, secondsWords, shownOf, spentOn, stepOf, stylesFor, summaryOf, twoHandDealSideProblem, validateOrder, waitingOf,
   type Anchor, type BankFacts, type CutFrame, type Drawn, type FlipAxis, type Motion, type Order, type OrderAnswer, type OrdersAnswer, type Owner, type Picture, type PlanAnswer, type Policy, type PoseAnswer, type Receipt, type RefCandidate, type Reference, type RenderedReference, type SeatPlan, type Shape, type StepDef, type StepKey, type TextStyle, type Waits,
 } from '../src/order-model.ts';
 import { readMethods, recipeFor, recipeHands, referenceByRule, referenceWaits, secondsOf, type MethodRegister } from '../src/order-methods.ts';
@@ -1215,6 +1215,28 @@ export function orderStore(root: string, options: StoreOptions = {}) {
     return out;
   }
 
+  /** Draft copies are checked against the bank again before the order freezes. */
+  async function archivedSourceProblems(order: Order): Promise<string[]> {
+    const reference = order.reference.status === 'FINNS' ? order.reference : null;
+    const cuts = order.pictures.flatMap((p) => p.from?.cut ? [p.from.cut] : []);
+    if (!reference && !cuts.length) return [];
+    const bank = await readBank();
+    const derived = bank.derived ?? [], problems: string[] = [];
+    if (reference) {
+      const archived = archivedReferenceIds(bank);
+      const ids = new Set(reference.clips ?? []);
+      if (reference.from?.film) ids.add(reference.from.film);
+      if ([...ids].some((id) => archived.has(id))) {
+        problems.push('Referensfilmen har en arkiverad källa eller del. Gör ett nytt utkast med en annan referensfilm.');
+      }
+    }
+    for (const { clip, frame, ret } of cuts) {
+      const fromArchivedTake = derived.some((d) => d.clip === clip && d.frames[0] <= frame && frame <= d.frames[1] && isArchived(bank, d.id));
+      if (isArchived(bank, clip) || isArchived(bank, ret) || fromArchivedTake) problems.push('Snittrutan kommer från en arkiverad tagning eller har en arkiverad retur. Gör ett nytt utkast med en annan slutbild.');
+    }
+    return problems;
+  }
+
   /**
    * Whose each picture is. A whole picture of another dealer never lies in a dealer's draft (Jakob 2026-11-12); only the
    * cut-out of her arm at the shoe may, as the pose of a still. Such a mix-up keeps the order from being approved.
@@ -1316,6 +1338,8 @@ export function orderStore(root: string, options: StoreOptions = {}) {
       const mandateBudget = await readMandateBudget(root, policy.mandate, () => now().toISOString());
       const check = checkPolicy(order, { ...policy, mandateBudget }, spentOn(others, dayOf(at, zone), zone), balance);
       if (!check.ok) throw new StoreError(403, check.refusals.join(' '));
+      const archived = await archivedSourceProblems(order);
+      if (archived.length) throw new StoreError(409, archived.join(' '));
       const approval: Order['approval'] = who ? { by: 'huvudagent', at, orderSha256: orderHash(order), mandate: who.mandate.trim() } : { by: 'jakob', at, orderSha256: orderHash(order) };
       const next: Order = { ...order, status: 'GODKÄND', approval };
       return { order: next, revision: await write(next), check };

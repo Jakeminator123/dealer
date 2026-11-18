@@ -3875,6 +3875,19 @@
             "from": "dealer3d: p4-grepp-pilot-h24-20261118-1040; renderkvitto.json och receipt.json bredvid filmen",
             "when": "2026-11-18"
           }
+        },
+        {
+          "id": "docka-2-3-p4c1-h24-cykel",
+          "role": "referens",
+          "name": "Docka H24 · P4.C1 · giv och retur",
+          "path": "assets/references/docka/docka-2-3-p4c1-h24-cykel/source.mp4",
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Fyra sekunder i 24 bilder/s: H-giv med kontakt till plant kort, sedan låg RH-retur till startställningen. Oberoende bildgranskad för ett pilotprov. Väljs uttryckligen; F förblir förval. Källrörelse, plan, bildbevis och granskning ligger bredvid filmen.",
+          "source": {
+            "from": "dealer3d: giv-fran-2-3-p4-grepp-pilot-h-cykel.json; renderkvitto.json och receipt.json bredvid filmen",
+            "when": "2026-11-18"
+          }
         }
       ]
     },

@@ -121,7 +121,13 @@ export function receipts(root: string, options: { now?: () => Date } = {}) {
     if (!Number.isInteger(n) || n < 1 || n > order.takes) throw new StoreError(400, `Tagningen ska vara 1–${order.takes}.`);
     return n;
   };
-  const step = (t: Take, status: TakeStatus, note?: string): Take => ({ ...t, status, history: [...t.history, { at: now(), status, ...(note ? { note } : {}) }] });
+  const step = (t: Take, status: TakeStatus, note?: string): Take => {
+    const at = now();
+    return {
+      ...t, status, history: [...t.history, { at, status, ...(note ? { note } : {}) }],
+      ...(status === 'GRANSKAD' && note?.trim() ? { review: { at, note } } : {}),
+    };
+  };
 
   /** Before the call: requestedAt. Refused when the take was begun before, whatever came of it. Returns the exact call. */
   async function begin(id: string, takeValue: unknown) {

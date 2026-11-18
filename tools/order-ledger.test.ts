@@ -6,7 +6,7 @@ import assert from 'node:assert/strict';
 import { mkdtemp, mkdir, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import { filterRows, ledgerOf, methodChips, methodOf, scoresOf, sharedFacts, styleOf, summarize, type LedgerInput } from '../studio/lib/ledger.ts';
+import { filterRows, ledgerOf, methodChips, methodOf, reviewerNote, scoresOf, sharedFacts, styleOf, summarize, type LedgerInput } from '../studio/lib/ledger.ts';
 import { readLedger, serveLedger } from './order-ledger.ts';
 
 const order = (id: string, extra: Record<string, unknown> = {}) => ({
@@ -48,6 +48,22 @@ test('the text\'s style: the order\'s own word, a style word in the template, el
   assert.equal(styleOf({ template: 'film-giv-utforlig@4' }), 'Utförlig');
   assert.equal(styleOf({ template: 'film-giv@3' }), 'film-giv@3');
   assert.equal(styleOf({}), 'okänd mall');
+});
+
+test('reviewer notes use instants, then the last nonblank history entry if neither time is known', () => {
+  const grade = { status: 'GRANSKAD', note: 'history note' }, beside = { note: 'attached note' };
+  const picked = (gradedAt: string | undefined, attachedAt: string | undefined) => reviewerNote([{ ...grade, at: gradedAt }], { ...beside, at: attachedAt });
+  assert.equal(picked('2026-11-18T10:01:00Z', '2026-11-18T10:01:00.100Z'), beside.note);
+  assert.equal(picked('2026-11-18T10:01:00.100Z', '2026-11-18T10:01:00Z'), grade.note);
+  assert.equal(picked('2026-11-18T10:01:00Z', '2026-11-18T09:01:00-01:00'), beside.note);
+  assert.equal(picked('2026-11-18T09:30:00-01:00', '2026-11-18T10:01:00Z'), grade.note);
+  assert.equal(picked('unknown', '2026-11-18T10:01:00Z'), beside.note);
+  assert.equal(picked('2026-11-18T10:01:00Z', 'unknown'), grade.note);
+  assert.equal(picked(undefined, 'unknown'), grade.note);
+  assert.equal(reviewerNote([], beside), beside.note);
+  assert.equal(reviewerNote([grade, { ...grade, note: ' ' }], beside), grade.note);
+  assert.equal(reviewerNote([{ ...grade, at: '2026-11-18T11:00:00Z' }, { ...grade, at: '2026-11-18T09:00:00Z' }],
+    { ...beside, at: '2026-11-18T10:00:00Z' }), beside.note);
 });
 
 test('a method as plain facts: model, length, text, ban list, turn, hand, landing, reference and pictures', () => {

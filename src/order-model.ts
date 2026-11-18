@@ -513,6 +513,29 @@ const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 /** A take the bank has set aside for good (review.archived, written from Karta): never a reference film, never a last frame. */
 export const isArchived = (bank: Pick<BankFacts, 'motions'>, id: string): boolean => !!bank.motions?.[id]?.review?.archived;
 
+/** A reference sends the whole file, so an archived segment blocks its source and the source's corrected copies. */
+export function archivedReferenceIds(bank: Pick<BankFacts, 'motions' | 'derived' | 'edits'>): Set<string> {
+  const ids = new Set(Object.keys(bank.motions ?? {}).filter((id) => isArchived(bank, id)));
+  const dependents = new Map<string, string[]>();
+  const link = (source: string, id: string) => {
+    const children = dependents.get(source);
+    if (children) children.push(id);
+    else dependents.set(source, [id]);
+  };
+  for (const take of bank.derived ?? []) {
+    if (isArchived(bank, take.id)) ids.add(take.clip);
+    link(take.clip, take.id);
+  }
+  for (const edit of bank.edits ?? []) {
+    if (typeof edit.source?.clip === 'string') link(edit.source.clip, edit.id);
+  }
+  // The set visits newly added ids once, even if edit provenance contains a cycle.
+  for (const id of ids) {
+    for (const dependent of dependents.get(id) ?? []) ids.add(dependent);
+  }
+  return ids;
+}
+
 /** "ruta 126 ur paow-giv-2-2-p4-01-01, där returen börjar (Jakobs ja: …)". */
 export const cutFrameWords = (c: Pick<CutFrame, 'clip' | 'frame' | 'words'>) => `ruta ${c.frame} ur ${c.clip}, där returen börjar${c.words ? ` (Jakob: ”${c.words}”)` : ''}`;
 
@@ -760,14 +783,15 @@ export function wantedEdge(step: StepDef, target: string | null): string | null 
 /**
  * The bank's takes a reference film can be chosen from for a step: takes of the same step and seat first, then the same
  * seat from another grip, then the same step to another seat. Within that a take Jakob has rejected comes last, the
- * dealer's own before another dealer's, then by his verdict. One per film (the best placed take names it). A take he has
- * archived is never offered.
+ * dealer's own before another dealer's, then by his verdict. One per film (the best placed take names it). A film with an
+ * archived take is never offered because the whole file goes out.
  */
 export function referenceCandidates(bank: BankFacts, want: { dealer: string; step: StepDef; target: string | null; model?: Pick<ModelDef, 'referenceSeconds'> | null }): RefCandidate[] {
   const w = parseEdge(wantedEdge(want.step, want.target) ?? '');
   if (!w) return [];
   const owners = dealersOf(bank as never);
   const jobs = bank.jobs ?? [], derived = bank.derived ?? [], edits = bank.edits ?? [];
+  const archived = archivedReferenceIds(bank);
   const byId = new Map(jobs.map((j) => [j.id, j]));
   const takes = [
     ...jobs.map((j) => ({ id: j.id, from: j.from, to: j.to, film: j.id, frames: null as [number, number] | null })),
@@ -783,8 +807,7 @@ export function referenceCandidates(bank: BankFacts, want: { dealer: string; ste
     const match = e.id === w.id ? 0 : e.base === w.base ? 1 : e.kind === w.kind && sameHub && w.target && e.target && e.target !== w.target ? 2 : null;
     if (match === null) continue;
     if (bank.media && t.id in bank.media && !bank.media[t.id]?.video) continue;
-    // An archived take is out of play (Karta, 2026-11-18), and so is every take cut from an archived film.
-    if (isArchived(bank, t.id) || isArchived(bank, t.film)) continue;
+    if (archived.has(t.id) || archived.has(t.film)) continue;
     const record = bank.motions?.[t.id], source = record?.source ?? bank.motions?.[t.film]?.source;
     const seconds = source?.frames && source.fps ? Math.round((source.frames / source.fps) * 1000) / 1000 : (byId.get(t.film)?.duration ?? null);
     const whole = !t.frames || !source?.frames || (t.frames[0] <= 0 && t.frames[1] >= source.frames - 1);

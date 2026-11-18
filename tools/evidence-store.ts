@@ -4,6 +4,7 @@ import { lstatSync, mkdirSync, readFileSync, readdirSync, renameSync, rmSync, st
 import path from 'node:path';
 import { DatabaseSync } from 'node:sqlite';
 import { traceTakes, type OrderPicture, type TakeLike } from '../studio/lib/lineage.ts';
+import { currentReviewerEntry, reviewInstant } from '../studio/lib/ledger.ts';
 import type { Entry, JobPicture } from '../studio/lib/media.ts';
 import { parseReviewEvidence } from '../src/review-evidence.ts';
 
@@ -192,7 +193,7 @@ function drawingOf(value: unknown): string | null {
 
 function reviewEvidence(review: Obj, prefix: string) {
   const evidence = parseReviewEvidence(review.evidence, prefix);
-  return timestamp(review.at) && typeof review.note === 'string' && evidence ? {film: evidence.film, artifacts: evidence.files} : null;
+  return Number.isFinite(reviewInstant(review.at)) && typeof review.note === 'string' && review.note.trim() && evidence ? {film: evidence.film, artifacts: evidence.files} : null;
 }
 
 function materialLinks(root: string, unreadable: Set<string>): Link[] {
@@ -269,6 +270,7 @@ function materialLinks(root: string, unreadable: Set<string>): Link[] {
         unreadable.add(localSource);
         continue;
       }
+      if (currentReviewerEntry(entry.history, review) !== review) continue;
       // The review names its own film version. The current take file may be the original or a later edit.
       add(localSource, key, 'reviewed-film', null, { ...evidence.film, take });
       for (const file of evidence.artifacts) add(localSource, key, 'review-artifact', null, { ...file, take });

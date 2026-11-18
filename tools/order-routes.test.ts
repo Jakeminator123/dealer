@@ -1012,6 +1012,56 @@ test('the line: a deal says its anchor, its seat and its card, and the recipe gi
   assert.deepEqual((await readdir(path.join(root, 'data/orders'))).sort(), orderFiles);
   assert.deepEqual((await readdir(path.join(root, 'assets/orders'))).sort(), assetFolders);
 
+  const frozenAddress = `/api/orders/${again.id}`;
+  const earlier = await call('GET', frozenAddress);
+  const frozen = await call('POST', `${frozenAddress}/approve`, { match: earlier.json.revision });
+  assert.equal(frozen.status, 200, frozen.json.error);
+  const frozenFile = path.join(root, `data/orders/${again.id}.json`);
+  const frozenBytes = await readFile(frozenFile);
+  const archive = { by: 'Jakob', at: '2026-11-18T00:00:00Z', where: 'Karta' };
+  for (const id of [last.from.cut.ret, last.from.cut.clip, `${last.from.cut.clip}-deal`]) {
+    const file = path.join(root, `motions/${id}.json`);
+    const previous = await readFile(file).catch(() => null);
+    await writeFile(file, JSON.stringify({ ...(previous ? JSON.parse(previous.toString()) : {}), review: { ...straight, archived: archive } }));
+    const blocked = await call('POST', `/api/orders/${c.id}/approve`, { match: cut.json.revision });
+    if (previous) await writeFile(file, previous); else await rm(file);
+    assert.equal(blocked.status, 409, `cut-frame provenance ${id}`);
+    assert.match(blocked.json.error, /snittrutan.*arkiverad/i);
+  }
+  const bankFile = path.join(root, 'data/clip-jobs.json'), bankBefore = await readFile(bankFile, 'utf8');
+  const bank = JSON.parse(bankBefore), referencePart = 'pamela-archived-return';
+  const correctedId = 'pamela-p4-c1-plan-deal-02-fixed';
+  bank.edits = [...(bank.edits ?? []), {id: correctedId, source: {clip: f.reference.from.film}, dealer: 'pamela'}];
+  const correctedPath = path.join(root, 'assets/motions', correctedId, 'source.mp4');
+  const correctedFilm = Buffer.from('a corrected copy of the four-second film');
+  await mkdir(path.dirname(correctedPath), {recursive: true});
+  await writeFile(correctedPath, correctedFilm);
+  await writeFile(path.join(root, `motions/${correctedId}.json`), JSON.stringify({source: {frames: 120, fps: 30, sha256: sha(correctedFilm)}}));
+  await writeFile(bankFile, JSON.stringify(bank));
+  const correctedInput = {dealer: 'paow', step: 'GIV-2.1', target: 'P4.C1', reference: correctedId};
+  const correctedBefore = await call('POST', '/api/orders', {body: correctedInput});
+  assert.equal(correctedBefore.status, 201, correctedBefore.json.error);
+  const alreadyFrozen = await call('POST', `/api/orders/${correctedBefore.json.order.id}/approve`, {match: correctedBefore.json.revision});
+  assert.equal(alreadyFrozen.status, 200, alreadyFrozen.json.error);
+  const correctedFrozenPath = path.join(root, `data/orders/${correctedBefore.json.order.id}.json`);
+  const correctedFrozenBytes = await readFile(correctedFrozenPath);
+  const pendingCorrection = await call('POST', '/api/orders', {body: correctedInput});
+  assert.equal(pendingCorrection.status, 201, pendingCorrection.json.error);
+  bank.derived.push({ id: referencePart, clip: f.reference.from.film, from: 'P4.C1', to: 'READY', frames: [80, 119], dealer: 'pamela' });
+  await writeFile(bankFile, JSON.stringify(bank));
+  await writeFile(path.join(root, `motions/${referencePart}.json`), JSON.stringify({ review: { archived: archive } }));
+  const stalePart = await call('POST', `/api/orders/${f.id}/approve`, { match: line.json.revision });
+  assert.equal(stalePart.status, 409);
+  assert.match(stalePart.json.error, /referensfilmen.*arkiverad/i);
+  const staleCorrection = await call('POST', `/api/orders/${pendingCorrection.json.order.id}/approve`, {match: pendingCorrection.json.revision});
+  assert.equal(staleCorrection.status, 409);
+  assert.match(staleCorrection.json.error, /referensfilmen.*arkiverad/i);
+  const blockedCorrection = await request('POST', '/api/orders/preview', {body: correctedInput});
+  assert.equal(blockedCorrection.status, 400);
+  assert.match(blockedCorrection.json.error, /finns inte bland bankens tagningar/);
+  assert.deepEqual(await readFile(correctedFrozenPath), correctedFrozenBytes, 'an already-approved copy stays frozen');
+  await writeFile(bankFile, bankBefore);
+
   // Where no cut frame holds as a picture, the draft is refused with what each lacks; and an archived take gives none.
   frames.of = async () => frame(40);
   assert.match((await call('POST', '/api/orders', { body: { dealer: 'paow', step: 'GIV-2.1', target: 'P4.C1' } })).json.error, /^Plats 4 har ingen slutbild som håller: paow-giv-2-1-p4-04-01 ruta 108: kortet ligger 40 px från planens; paow-giv-2-1-p4-08-01 ruta 133: kortet ligger 40 px från planens\.$/);
@@ -1019,6 +1069,19 @@ test('the line: a deal says its anchor, its seat and its card, and the recipe gi
   assert.match((await call('POST', '/api/orders', { body: { dealer: 'paow', step: 'GIV-2.1', target: 'P4.C1' } })).json.error, /^Plats 4 har ingen slutbild för Paows giv från ankare 2\.1/);
   // An archived take is no reference film either.
   await writeFile(path.join(root, 'motions/pamela-p4-c1-plan-deal-02.json'), JSON.stringify({ source: { frames: 120, fps: 30, sha256: sha(film) }, review: { ...straight, archived: { by: 'Jakob', where: 'Karta' } } }));
+  const staleReference = await call('POST', `/api/orders/${f.id}/approve`, { match: line.json.revision });
+  assert.equal(staleReference.status, 409, staleReference.json.error);
+  assert.match(staleReference.json.error, /referensfilmen.*arkiverad/i);
+  const draftFile = path.join(root, `data/orders/${f.id}.json`), { from, ...legacyReference } = f.reference;
+  for (const reference of [{ ...legacyReference, from: { ...from, path: 'assets/references/docka/lookalike/source.mp4' } }, legacyReference]) {
+    await writeFile(draftFile, JSON.stringify({ ...f, reference }));
+    const draft = await call('GET', `/api/orders/${f.id}`);
+    const denied = await call('POST', `/api/orders/${f.id}/approve`, { match: draft.json.revision });
+    assert.equal(denied.status, 409, 'the source id is checked with a misleading path and with only the legacy clip ids');
+    assert.match(denied.json.error, /referensfilmen.*arkiverad/i);
+  }
+  assert.deepEqual((await call('GET', frozenAddress)).json.order, frozen.json.order);
+  assert.deepEqual(await readFile(frozenFile), frozenBytes, 'archiving a source preserves an already-approved order');
   register.dealers.paow.entries.find((e: { id: string }) => e.id === 'paow-landning-p4').state = 'gäller';
   await writeFile(path.join(root, 'data/media-roles.json'), JSON.stringify(register, null, 2));
   assert.match((await call('POST', '/api/orders', { body: { dealer: 'paow', step: 'GIV-2.1', target: 'P4.C1' } })).json.error, /väntar på dockans film till platsen eller en rakt godkänd giv dit/);
@@ -1039,6 +1102,9 @@ test('the line: a deal says its anchor, its seat and its card, and the recipe gi
   const d = withDocka.json.order;
   assert.deepEqual([d.reference.clips, d.reference.dealer, d.reference.sha256, d.reference.seconds, d.generation.params.duration, d.reference.from.path], [['docka-giv-p4-4'], 'docka', sha(docka), 3.967, 4, 'assets/references/docka/docka-giv-p4-4/source.mp4']);
   assert.equal((await call('GET', `/${d.reference.path}`)).bytes!.equals(docka), true);
+  await writeFile(path.join(root, 'motions/pamela-p4-c1-plan-deal-02.json'), JSON.stringify({ review: { archived: archive } }));
+  const approvedDocka = await call('POST', `/api/orders/${d.id}/approve`, { match: withDocka.json.revision });
+  assert.equal(approvedDocka.status, 200, approvedDocka.json.error);
 });
 
 test("whose each picture is: the dealer's own, the other dealer's arm only, never another dealer's whole picture", async (t) => {

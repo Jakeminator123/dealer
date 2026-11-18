@@ -6,6 +6,7 @@ import { readFile } from 'node:fs/promises';
 import { committedFiles, committedText } from './committed.ts';
 import { createHash } from 'node:crypto';
 import {
+  archivedReferenceIds,
   ALL_SEVEN, CARD_SCALES, cutFrameOf, cutFrameWords, endsOnOf, FLIP_AXES, FLIP_LABEL, HAND_LABEL, LANDS_LABEL, SHAPE_LABEL, MODELS, SEAT_TARGETS, STEPS, TEXT_STYLES, plannedDiffers, plannedOf, bodyLine, canonical, checkPolicy, costOf, crossesBody, cutIntoOf, dayOf, defaultFlip, defaultStyle, draftProblems, edgeOf, genitive, groupBudget, handChoiceOf, handsOf, hashInput, isArchived, cutCheckKey, readCutChecks, landingMissing, landingOf, lengthFor, lengthOfReference, modelFor, modelsFor, paramsOf, priceOf, referenceCandidates, requestOf, scaleQuad, scaleWords, seatEndMissing, seatEndOf, seatEndWords, seatList, seatWords, shownOf, spentOn, stepOf, styleOf, stylesFor, summaryOf, takeStates, tidyMotion, validateOrder, verdictOf, waitWords,
   type BankFacts, type Order, type Policy, type Receipt,
 } from '../src/order-model.ts';
@@ -374,6 +375,30 @@ test('a deal bara dit ends on THAT seat\'s own end picture: its landing picture,
   assert.equal(seatEndMissing('Paow', 'P4.C1', '2.1', 'RH'), 'Plats 4 har ingen slutbild för Paows giv från ankare 2.1 med höger hand vid kortet: ingen landningsbild för höger hand gäller för platsen, och banken har ingen egen film dit, lagd med höger hand, vars retur du har godkänt rakt. Gör en landningsbild för platsen med höger hand vid kortet gällande i Material, eller godkänn en sådan retur från platsen i Granska.');
 });
 
+test('a reference cannot send an archived segment through corrected copies, without archiving through the edit in reverse', () => {
+  const archive = {review: {archived: {by: 'Jakob'}}};
+  const source = {id: 'whole', from: 'READY', to: 'P4.C1', duration: 4};
+  const bank: BankFacts = {
+    jobs: [source, {...source, id: 'other-source'}],
+    derived: [
+      {id: 'live-segment', clip: source.id, from: 'READY', to: 'P4.C1', frames: [0, 89]},
+      {id: 'retired-segment', clip: source.id, from: 'P4.C1', to: 'READY', frames: [90, 119]},
+    ],
+    edits: [
+      {id: 'fixed-again', source: {clip: 'fixed'}},
+      {id: 'fixed', source: {clip: source.id}},
+      {id: 'other-fixed', source: {clip: 'other-source'}},
+      {id: 'cycle-a', source: {clip: 'cycle-b'}},
+      {id: 'cycle-b', source: {clip: 'cycle-a'}},
+    ],
+    motions: {'retired-segment': archive, 'other-fixed': archive, 'cycle-a': archive},
+  };
+  const want = {dealer: 'paow', step: stepOf('GIV-2.1')!, target: 'P4.C1'};
+  assert.ok(referenceCandidates({...bank, motions: {}}, want).some(candidate => candidate.film === 'fixed'));
+  assert.deepEqual(referenceCandidates(bank, want).map(candidate => candidate.film), ['other-source']);
+  assert.deepEqual([...archivedReferenceIds(bank)].sort(), ['cycle-a', 'cycle-b', 'fixed', 'fixed-again', 'live-segment', 'other-fixed', 'retired-segment', 'whole']);
+});
+
 test('a reference film from the bank: the same step and seat first, the dealer\'s own before another\'s, a rejected take last; length against the model', () => {
   const review = (decision: string, extra: Record<string, unknown> = {}) => ({ review: { decision, ...extra } });
   const source = (frames: number, fps: number) => ({ source: { frames, fps, sha256: 'f'.repeat(64) } });
@@ -419,6 +444,10 @@ test('a reference film from the bank: the same step and seat first, the dealer\'
   assert.deepEqual(entry.map((c) => [c.take, c.seconds, c.fits]), [['pamela-idle-ready-entry-01', 2, false]]);
   // A return: the return to the same anchor and seat.
   assert.deepEqual(referenceCandidates(bank, { dealer: 'paow', step: stepOf('RETUR-2.1')!, target: 'P4.C1' }).map((c) => c.take), ['paow-giv-p4-02-return-ready']);
+  const archivedReturn = { ...bank, motions: { ...bank.motions, 'paow-giv-p4-02-return-ready': { review: { archived: { by: 'Jakob' } } } } };
+  const withoutArchivedContent = referenceCandidates(archivedReturn, { dealer: 'paow', step: stepOf('GIV-2.1')!, target: 'P4.C1' });
+  assert.equal(withoutArchivedContent.some((c) => c.film === 'paow-giv-p4-02'), false, 'the active deal would send the archived return with the whole source film');
+  assert.ok(withoutArchivedContent.some((c) => c.film === 'pamela-p4-c1-plan-deal-02'), 'an independent source can still be used');
   // A film the lab does not have is not offered.
   assert.equal(referenceCandidates({ ...bank, media: { 'paow-giv-p4-02-deal': { video: null } } }, { dealer: 'paow', step: stepOf('GIV-2.1')!, target: 'P4.C1' })[0].take, 'pamela-p4-c1-plan-deal-02');
   assert.deepEqual(verdictOf({ decision: 'ACCEPTED', acceptedAs: 'VARIANT', userAccepted: true }), { verdict: 'VARIANT', straight: false, words: null });

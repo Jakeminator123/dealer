@@ -232,17 +232,28 @@ export function scoresOf(note: string | null | undefined): Scores {
   return out;
 }
 
-/**
- * The reviewer's note of a take: the verdict kept beside it (review, tools/order-put.ts review) or the last GRANSKAD step,
- * whichever is newer; else a note that is the independent reviewer's.
- */
-export function reviewerNote(history: unknown, review?: unknown): string | null {
+/** Review timestamps need an explicit zone so the index and browser agree on the instant. */
+export function reviewInstant(at: unknown): number {
+  return typeof at === "string" && /^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d(?:\.\d{1,3})?(?:Z|[+-]\d\d:?\d\d)$/i.test(at) ? Date.parse(at) : NaN;
+}
+
+/** Select the actual entry so consumers can distinguish separate reviews with identical notes. */
+export function currentReviewerEntry(history: unknown, review?: unknown): Obj | null {
   const steps = list(history).filter(isObj);
-  const graded = steps.filter((h) => h.status === "GRANSKAD" && str(h.note)).pop();
+  const graded = steps.findLast((h) => h.status === "GRANSKAD" && str(h.note));
   const beside = isObj(review) && str(review.note) ? review : null;
-  if (beside && (!graded || String(beside.at ?? "") >= String(graded.at ?? ""))) return str(beside.note);
-  const note = str(graded?.note) ?? str(steps.filter((h) => /oberoende granskare/i.test(String(h.note ?? ""))).pop()?.note);
-  return note;
+  if (beside) {
+    if (!graded) return beside;
+    const attachedAt = reviewInstant(beside.at), gradedAt = reviewInstant(graded.at);
+    if (Number.isFinite(attachedAt) && (!Number.isFinite(gradedAt) || attachedAt >= gradedAt)) return beside;
+    // A dated history entry wins over an undated one; if neither can be dated, keep the last written GRANSKAD.
+    return graded;
+  }
+  return graded ?? steps.findLast((h) => /oberoende granskare/i.test(String(h.note ?? ""))) ?? null;
+}
+
+export function reviewerNote(history: unknown, review?: unknown): string | null {
+  return str(currentReviewerEntry(history, review)?.note);
 }
 
 // ── Jakob ───────────────────────────────────────────────────────────────────

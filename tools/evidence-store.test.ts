@@ -129,6 +129,42 @@ test('order and cut traces find the reviewed film version and artifacts without 
   assert.ok(legacy.links.some(link => link.relation === 'order-take'));
 });
 
+test('the evidence index follows the current reviewer note', t => {
+  const { root, write } = fixture(t);
+  const grade = { status: 'GRANSKAD', at: '2026-11-18T10:01:00.000Z', note: 'Version 2' };
+  const brought = { status: 'INFÖRD', at: '2026-11-18T10:02:00.000Z', note: 'Införd i banken' };
+  const cases = [
+    { name: 'a later history review supersedes the package', beside: review, history: [grade], count: 0 },
+    { name: 'repeating the same words still supersedes the package', beside: review, history: [{ ...grade, note: review.note }], count: 0 },
+    { name: 'a later attached review wins', beside: { ...review, at: brought.at }, history: [grade], count: 3 },
+    { name: 'bringing a take does not supersede its attached review', beside: review, history: [brought], count: 3 },
+    { name: 'a tie prefers the attached review', beside: { ...review, at: grade.at }, history: [grade, brought], count: 3 },
+    { name: 'a blank history note is skipped', beside: review, history: [{ ...grade, note: '  ' }], count: 3 },
+    { name: 'the last written review is used even if history is out of time order', beside: review,
+      history: [grade, { ...grade, at: sample.startedAt }], count: 3 },
+    { name: 'attached milliseconds are later than a whole second', beside: { ...review, at: '2026-11-18T10:01:00.100Z' },
+      history: [{ ...grade, at: '2026-11-18T10:01:00Z' }], count: 3 },
+    { name: 'history milliseconds supersede a whole-second review', beside: { ...review, at: '2026-11-18T10:01:00Z' },
+      history: [{ ...grade, at: '2026-11-18T10:01:00.100Z' }], count: 0 },
+    { name: 'an attached review with an offset wins at the same instant', beside: { ...review, at: '2026-11-18T09:01:00-01:00' },
+      history: [grade], count: 3 },
+    { name: 'a history offset can make the clock time earlier', beside: review,
+      history: [{ ...grade, at: '2026-11-18T10:30:00+01:00' }], count: 3 },
+    { name: 'a history offset can make the clock time later', beside: review,
+      history: [{ ...grade, at: '2026-11-18T09:30:00-01:00' }], count: 0 },
+    { name: 'a dated review wins over invalid legacy history', beside: review, history: [{ ...grade, at: 'unknown' }], count: 3 },
+    { name: 'an attached package with invalid time gains no evidence links', beside: { ...review, at: 'unknown' },
+      history: [grade], count: 0, badTime: true },
+  ];
+  for (const { name, beside, history, count, badTime } of cases) {
+    write(orderReceipt, { takes: [{ take: 1, file: reviewedFilm.path, sha256: digest, review: beside, history }] });
+    const found = traceEvidence(root, 'example-order');
+    assert.deepEqual(found.unreadable, badTime ? [orderReceipt] : [], name);
+    assert.equal(found.links.filter(link => link.relation === 'reviewed-film' || link.relation === 'review-artifact').length, count, name);
+    assert.ok(found.links.some(link => link.relation === 'order-take' && link.path === reviewedFilm.path), name);
+  }
+});
+
 test('invalid review evidence is reported and produces no partial review links', t => {
   const { root, write } = fixture(t);
   const invalid = [

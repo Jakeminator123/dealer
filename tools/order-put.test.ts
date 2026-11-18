@@ -240,6 +240,39 @@ test('review evidence binds actual after-work bytes and rejects changed, duplica
   assert.equal(replaced.take.review?.evidence, undefined);
 });
 
+test('a GRANSKAD note replaces older review evidence, but a later INFÖRD status preserves the review', async (t) => {
+  const { root, r, setTime } = await approved(t);
+  const id = 'prov-ett', prefix = `assets/orders/${id}/take-1/`;
+  await r.begin(id, 1);
+  await r.placed(id, 1, 'b90b9362-7a13-4b80-b498-c324f02c41f8');
+  await mkdir(path.join(root, prefix), {recursive: true});
+  const save = async (name: string, bytes: string) => {
+    const file = prefix + name;
+    await writeFile(path.join(root, file), bytes);
+    return {path: file, sha256: createHash('sha256').update(bytes).digest('hex')};
+  };
+  const evidence = {film: await save('source.png', 'film bytes'), files: [await save('review.md', 'proof bytes')]};
+  await r.advance(id, 1, 'HÄMTAD', {file: evidence.film.path});
+  await r.advance(id, 1, 'MÄTT');
+  setTime('2026-11-12T22:01:00Z');
+  await r.review(id, 1, 'Older review', evidence);
+
+  setTime('2026-11-12T22:02:00Z');
+  await r.advance(id, 1, 'GRANSKAD', {note: 'New review without evidence'});
+  const graded = (await r.read(id))!.takes[0];
+  const { reviewerNote } = await import('../studio/lib/ledger.ts');
+  assert.equal(graded.status, 'GRANSKAD');
+  assert.equal(reviewerNote(graded.history, graded.review), 'New review without evidence');
+  assert.deepEqual(graded.review, {at: graded.history.at(-1)!.at, note: 'New review without evidence'});
+
+  setTime('2026-11-12T22:03:00Z');
+  const fresh = await r.review(id, 1, 'Review with new evidence', evidence);
+  const imported = await r.advance(id, 1, 'INFÖRD', {note: 'Införd i banken'});
+  assert.equal(imported.take.status, 'INFÖRD');
+  assert.deepEqual(imported.take.review, fresh.take.review);
+  assert.deepEqual(imported.take.review?.evidence, evidence);
+});
+
 test('nothing is placed for an order that changed after approval or whose picture changed on disk', async (t) => {
   const { root, r } = await approved(t);
   const file = path.join(root, 'data/orders/prov-ett.json');

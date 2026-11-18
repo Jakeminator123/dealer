@@ -73,11 +73,10 @@ Innehåll: Kortet · Filmerna och banken · Läpparna och rösten · Spelet och 
   intill skon finns även i det frysta A3-slutankaret. Lokal lagning blev inte säker. Ingång, retur och nycklad spelbild
   är inte godkända som kedja. Bevis: `assets/orders/paow-giv-2-3-p4-h24-03/take-1/review/review.md`.
 
-- **Ett arkiverat klipp kan ännu väljas som referensfilm eller ge sista bilden i en ny giv,** och Granska listar det.
-  Syns: i Beställ och Granska. Prövat: spelet, scenen, Karta och produktionslistan hoppar över arkiverade klipp
-  (`9a09570`); knapparna Arkivera och Ta tillbaka är inte tryckta av en hand. Stänger: valet av referensfilm och
-  klippruta hoppar över arkiverade klipp (`referenceCandidates`, `cutFrameOf` i `src/order-model.ts`; filmstandardens
-  andra del).
+- **Arkiveringens knappar och visning behöver handprovas.** Urvalet spärrar arkiverad referensfilm och snittruta,
+  även när en aktiv del annars skulle skicka hela filmen med en arkiverad systerdel. Sparade utkast kontrolleras igen
+  före godkännande; frysta order bevaras. Detta är kodprövat. Arkivera/Ta tillbaka och visningen i Granska återstår att
+  prova i webbläsaren; spelet, scenen, Karta och produktionslistan filtrerar redan arkiverade klipp (`9a09570`).
 - **Fyra platser och dealerns kort saknar A3, och plats 1 är svag.** Syns: Bordets rad för `GIV-2.3` går bara att
   beställa till plats 1, 4 och 5, och i given till plats 1 far armen från mitten till platsen på en tredjedels
   sekund (dockan kan inte resa sig från stolen). Prövat: vägen finns (`tools/landing-make.ts`); av tre bildmodeller
