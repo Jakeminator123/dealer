@@ -25,7 +25,7 @@ Git, och en rad som inte längre gäller ersätts.
 3. Filmerna först: ankare 2.3 (MODEL:s tagning är levererad; kandidaten läggs som Prov för honom), sedan given från
    2.3 på 3 s och filmen med kort ett till alla platser (3D gör dockfilmerna), sedan ankare 2.2
    ([film](docs/lage/film.md)).
-4. Läs vad besökarkontrollen av kopian fann (BRISTER), och för förslagen som sänker GitHubs kostnad till honom.
+4. Rätta kopians tre fel före nästa publicering ([BRISTER](docs/BRISTER.md), "Kopian på nätet").
 5. Utför de besvarade korten i Beslut och ta ut dem. Låt en oberoende granskare ge sitt omdöme om tagningarna som
    väntar i Prov, eller märk avgjorda prov som avgjorda ([labbet](docs/lage/labbet-och-studion.md)).
 
@@ -43,8 +43,9 @@ väljer några åt gången.
 - **Huvudagentens banor:** film, kort, labbet och studion, och spelet. Filerna de äger står under Var saker ligger i varje lägesfil.
   Banorna Scen, Tal och Trailer är stängda; deras filer hålls av huvudagenten ([spelet](docs/lage/spelet.md)).
 - **3D-banan:** mappen `dealer3d/` på grenen `dealer-3d`, i arbetsträdet `D:/dealer-scratch/tmp/dealer-3d/trad`. Den
-  skriver bara där och i sina prov (`assets/proofs/dealer-3d-<namn>/`). Sessionen `3D` gör dockfilmerna för given
-  från ankare 2.3; en ny session börjar från [dealer3d/LASMIG.md](dealer3d/LASMIG.md).
+  skriver bara där och i sina prov (`assets/proofs/dealer-3d-<namn>/`). Sessionen `3D` gör dockfilmerna från
+  ankare 2.3 och, på hans ord, tre grenar `raddning-*` (`D:/dealer-scratch/tmp/raddning/`); en ny session börjar från
+  [dealer3d/LASMIG.md](dealer3d/LASMIG.md).
 - **Mått ur en riktig dealers film och ankare 2.3 (MODEL):** skriver bara i `D:/dealer-scratch/tmp/yt-referens/` och
   `D:/dealer-scratch/tmp/ankare-2-3/`, inget i repot.
 - **Jakobs egna:** planen `placements/default.json` och hans domar i `motions/` (`review`), som skrivs från Granska och
