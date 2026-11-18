@@ -8,7 +8,6 @@ import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import {CARD, TABLE_LENS, filmEye, length, see, sub, type Vec3} from '../../src/table-lens.ts';
-import {spots} from '../src/world.ts';
 import {FINGERS, LIMITS, joints, type ArmPose} from '../src/capture.ts';
 import {sideSeen, type CardPose} from '../src/deal.ts';
 import {REAL_DEAL, type RealCard} from '../src/real-deal.ts';
@@ -17,12 +16,13 @@ import {track} from '../src/hand-pose.ts';
 
 type Limb = {s: Vec3; e: Vec3; w: Vec3; k: number; p: Vec3[]};
 type Beat = {to: string; a: number; b: number; c: number; d: number; e: number; l: number; turned: number; f: number; g: number; h: number; i: number | null};
-type Deal = {to: string[]; rightAt: {x: number; y: number; yaw: number} | null; pace: {real: RealCard; flowing: boolean; leftBack: number; elbows: {L: Vec3; R: Vec3}; meeting?: boolean; push?: number; swing?: number} | null; elbowForced: string[]; fps: number; frameCount: number; palm: number; throughShoe: number; beats: Beat[]; turns: {axis: Vec3; angle: number}[]; laid: {from: number; c: Vec3; l: Vec3; n: Vec3}[]; frames: {card: {c: Vec3; l: Vec3; n: Vec3; id: number}; L: Limb; R: Limb; h: Vec3; g: Vec3}[]};
+type Deal = {to: string[]; places?: {id: string; at: Vec3; pixel: {x: number; y: number}}[]; rightAt: {x: number; y: number; yaw: number} | null; pace: {real: RealCard; flowing: boolean; leftBack: number; elbows: {L: Vec3; R: Vec3}; meeting?: boolean; push?: number; swing?: number} | null; elbowForced: string[]; fps: number; frameCount: number; palm: number; throughShoe: number; beats: Beat[]; turns: {axis: Vec3; angle: number}[]; laid: {from: number; c: Vec3; l: Vec3; n: Vec3}[]; frames: {card: {c: Vec3; l: Vec3; n: Vec3; id: number}; L: Limb; R: Limb; h: Vec3; g: Vec3}[]};
 const load = async (name: string) => JSON.parse(await readFile(new URL(`../data/${name}.json`, import.meta.url), 'utf8'));
-const pose = await load('till-ankare-2-3'), start = pose.frames[pose.frameCount - 1], plan = JSON.parse(await readFile(new URL('../../placements/default.json', import.meta.url), 'utf8'));
+// Each file carries the places it was laid for (dealer3d/tools/deal-film.ts writes them), so the tests do not read placements/default.json, which Jakob's saved plan changes.
+const pose = await load('till-ankare-2-3'), start = pose.frames[pose.frameCount - 1];
 const DEALS: [string, Deal][] = [['giv-fran-2-3-p5', await load('giv-fran-2-3-p5')], ['giv-fran-2-3-p5-langsam', await load('giv-fran-2-3-p5-langsam')], ['giv-fran-2-3-p5-langsam-d', await load('giv-fran-2-3-p5-langsam-d')], ['giv-fran-2-3-p4', await load('giv-fran-2-3-p4')], ['giv-fran-2-3-alla', await load('giv-fran-2-3-alla')]];
 const ONE: Record<string, string> = {'giv-fran-2-3-p5': 'P5.C1', 'giv-fran-2-3-p5-langsam': 'P5.C1', 'giv-fran-2-3-p5-langsam-d': 'P5.C1', 'giv-fran-2-3-p4': 'P4.C1'};
-const eye = filmEye(TABLE_LENS), all = spots(plan, TABLE_LENS), arm = (a: Limb): ArmPose => ({shoulder: a.s, elbow: a.e, wrist: a.w, stretch: a.k, points: a.p});
+const eye = filmEye(TABLE_LENS), placeOf = (data: Deal, id: string): {at: Vec3; pixel: {x: number; y: number}} => { const p = data.places?.find(p => p.id === id); if (!p) throw Error(`The file has no place ${id}: lay it again with dealer3d/tools/deal-film.ts.`); return p; }, arm = (a: Limb): ArmPose => ({shoulder: a.s, elbow: a.e, wrist: a.w, stretch: a.k, points: a.p});
 const cross = (a: Vec3, b: Vec3): Vec3 => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]], dot = (a: Vec3, b: Vec3) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
 const card = (c: {c: Vec3; l: Vec3; n: Vec3}): CardPose => ({centre: c.c, long: c.l, normal: c.n, across: cross(c.n, c.l)});
 const unwrap = (v: number[]) => { const o = [v[0]]; for (let i = 1; i < v.length; i++) { let d = v[i] - v[i - 1]; while (d > 180) d -= 360; while (d < -180) d += 360; o.push(o[i - 1] + d); } return o; };
@@ -66,11 +66,21 @@ test('a track goes through its keys, rests at its ends and never overshoots betw
   for (let x = 0; x < 6; x += 0.05) assert.ok(t(x + 0.05) >= t(x) - 1e-12, `falls at ${x}`); assert.ok(Math.abs(t(0.01)) < 1e-3 && Math.abs(t(5.99) - 5.5) < 1e-3, 'at rest at both ends');
 });
 
+// Versions -e and -f (one turn in her right hand alone; -f rolled about the long side, seat 1 with the body turned): the files are what the code lays today, and the card never stands still from the hand change until it meets the felt.
+for (const name of ['giv-fran-2-3-p4-e', 'giv-fran-2-3-p1-e', ...['p1', 'p2', 'p3', 'p4', 'p5', 'p6', 'p7', 'd'].map(p => `giv-fran-2-3-${p}-f`)]) { const data: Deal = await load(name), N = data.frameCount, b = data.beats[0];
+  test(`${name}: the file is what the code lays today, and the card moves or turns in every frame from the hand change until it meets the felt`, () => {
+    const posed = {L: start.L, R: start.R, h: start.h}, laid = twoHandDeal(TABLE_LENS, data.rightAt ? startOnAnchor(TABLE_LENS, posed, data.rightAt, data.rightAt.yaw) : posed, data.to.map(id => ({id, at: placeOf(data, id).at, real: data.pace!.real})), data.beats[0].a, data.fps, N, {...data.pace!});
+    assert.deepEqual(laid.forced, data.elbowForced);
+    for (let i = 0; i < N; i++) { const x = laid.frames[i], y = data.frames[i]; for (const [p, q] of [[x.card.c, y.card.c], [x.R.w, y.R.w], [x.R.e, y.R.e], [x.L.w, y.L.w]] as [Vec3, Vec3][]) assert.ok(length(sub(p, q)) < 1e-4, `frame ${i} differs: lay the file again with dealer3d/tools/deal-film.ts`); }
+    for (let i = Math.ceil(b.d) + 1; i <= Math.floor(b.g); i++) { const p = data.frames[i - 1].card, q = data.frames[i].card; assert.ok(length(sub(p.c, q.c)) > 0.0005 || Math.abs(Math.abs(p.n[0] * q.n[0] + p.n[1] * q.n[1] + p.n[2] * q.n[2]) - 1) > 1e-5, `the card stands still at frame ${i}`); }
+  });
+}
+
 for (const [name, data] of DEALS) {
   const N = data.frameCount, last = data.beats[data.beats.length - 1], stillFrom = Math.ceil(Math.max(last.h, last.l + 0.3 * data.fps)) + 4, of = (k: number) => data.frames.map((f, i) => f.card.id === k ? i : -1).filter(i => i >= 0);
 
   test(`${name}: the file is what the code lays today`, () => {
-    const real = (id: string) => REAL_DEAL[id === 'D.C1' ? 7 : 7 - Number(id[1])], posed = {L: start.L, R: start.R, h: start.h}, laid = twoHandDeal(TABLE_LENS, data.rightAt ? startOnAnchor(TABLE_LENS, posed, data.rightAt, data.rightAt.yaw) : posed, data.to.map(id => ({id, at: all.find(s => s.id === id)!.at, real: data.pace?.real ?? real(id)})), data.beats[0].a, data.fps, N, data.pace ? {...data.pace} : {});
+    const real = (id: string) => REAL_DEAL[id === 'D.C1' ? 7 : 7 - Number(id[1])], posed = {L: start.L, R: start.R, h: start.h}, laid = twoHandDeal(TABLE_LENS, data.rightAt ? startOnAnchor(TABLE_LENS, posed, data.rightAt, data.rightAt.yaw) : posed, data.to.map(id => ({id, at: placeOf(data, id).at, real: data.pace?.real ?? real(id)})), data.beats[0].a, data.fps, N, data.pace ? {...data.pace} : {});
     assert.deepEqual(laid.forced, data.elbowForced);
     assert.equal(laid.frames.length, N); for (const i of [0, Math.round(last.d), Math.round(last.l) + 1, Math.round(last.g), N - 1]) { const a = laid.frames[i], b = data.frames[i];
       for (const [x, y] of [[a.card.c, b.card.c], [a.card.l, b.card.l], [a.R.w, b.R.w], [a.R.e, b.R.e], [a.L.w, b.L.w], [a.R.p[8], b.R.p[8]], [a.L.p[12], b.L.p[12]], [a.h, b.h], [a.g, b.g]] as [Vec3, Vec3][]) assert.ok(length(sub(x, y)) < 1e-4, `frame ${i} differs: lay the file again with dealer3d/tools/deal-film.ts`); }
@@ -127,7 +137,7 @@ for (const [name, data] of DEALS) {
       // Lowered evenly: from the frame the turn is done the card is within 15 degrees of flat, so the frame before it lies it is not upright; and no step is more than 50 degrees.
       mine.forEach((i, j) => { if (i >= b.turned && i > 0) assert.ok(tilt[j] <= 15, `frame ${i}: ${tilt[j].toFixed(0)} degrees from flat after the turn`); if (j > 0) assert.ok(turnBetween(poses[j - 1], poses[j]).angle <= 50, `frame ${i}: the card turns ${turnBetween(poses[j - 1], poses[j]).angle.toFixed(0)} degrees in one frame`); });
       // It lies flat, face up, on the plan's place, from the frame the file says.
-      const lies = card(data.frames[Math.ceil(b.h)].card), place = all.find(s => s.id === b.to)!.pixel, at = see(eye, lies.centre)!; assert.ok(Math.abs(lies.centre[1] - CARD.thickness / 2) < 1e-4 && lies.normal[1] > 0.9999 && lies.long[2] < -0.9999, 'lying face up, its long side toward the player');
+      const lies = card(data.frames[Math.ceil(b.h)].card), place = placeOf(data, b.to).pixel, at = see(eye, lies.centre)!; assert.ok(Math.abs(lies.centre[1] - CARD.thickness / 2) < 1e-4 && lies.normal[1] > 0.9999 && lies.long[2] < -0.9999, 'lying face up, its long side toward the player');
       assert.ok(Math.hypot(at.x - place.x, at.y - place.y) < 2, `lies at (${at.x.toFixed(1)}, ${at.y.toFixed(1)}), not at (${place.x.toFixed(1)}, ${place.y.toFixed(1)})`);
       if (k < data.laid.length) { assert.deepEqual(data.laid[k].c, data.frames[Math.ceil(b.h)].card.c); assert.ok(data.laid[k].from >= data.beats[k + 1].b - 0.06 && data.laid[k].from < data.beats[k + 1].b + 1.06, 'it is counted as lying from the frame the next card moves'); }
     });

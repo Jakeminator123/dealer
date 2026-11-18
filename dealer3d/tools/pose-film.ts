@@ -1,6 +1,10 @@
 // A film of the figure going from rest to a pose and standing still in it, as numbers the page plays (the format of
 // dealer3d/data/giv-*.json). Made for an anchor that no film shows yet: the reference film an anchor picture is taken from.
 //   node dealer3d/tools/pose-film.ts --pose 2.3 --out dealer3d/data/till-ankare-2-3.json
+//   node dealer3d/tools/pose-film.ts --pose 2.3 --frames 90 --goes 3,48 --looks 8,48 --ease 5 --passes 8 --out dealer3d/data/till-ankare-2-3-b.json
+// (version b, on Jakob's word of 2026-11-18 that the film to 2.3 was too slow, jerky and leaned too much: 3.0 s, the move done
+// at 1.6 s, a gentler ease (--ease 5: the fifth-degree one, whose speed and acceleration both start and end at nought) and the
+// elbow smoothed over more frames. The pose it ends in is the same to the last digit, and the body leans only toward it.)
 // Reads dealer3d/data/giv-pamela-p4.json (the resting hand as read off the film, the card standing in the shoe, the hip)
 // and writes one file. Prints what the pose asks of the body.
 //
@@ -19,7 +23,8 @@ import {LIMITS, joints, type ArmPose} from '../src/capture.ts';
 
 const arg = (name: string) => { const i = process.argv.indexOf(name); return i > 0 ? process.argv[i + 1] : undefined; };
 const out = arg('--out'); if (!out || arg('--pose') !== '2.3') throw Error('usage: pose-film.ts --pose 2.3 --out <json>');
-const FPS = 30, N = 120, GOES = [15, 84], LOOKS = [30, 84]; // frames: at rest to 0.5 s, on the way to 2.8 s, still from there; her eyes go down from 1.0 s
+const pair = (name: string, d: number[]) => arg(name)?.split(',').map(Number) ?? d;
+const FPS = 30, N = Number(arg('--frames') ?? 120), GOES = pair('--goes', [15, 84]), LOOKS = pair('--looks', [30, 84]), PASSES = Number(arg('--passes') ?? 3), EASE5 = arg('--ease') === '5'; // frames: at rest to 0.5 s, on the way to 2.8 s, still from there; her eyes go down from 1.0 s
 const POSE = {lean: 10, twist: 8, wristAtShoe: SHOE.frontHeight, beforeShoe: 0.11, thumb: 35, arcL: 0.05, arcR: 0.035}; // degrees and metres
 
 const read = JSON.parse(await readFile(new URL('../data/giv-pamela-p4.json', import.meta.url), 'utf8')), first = read.frames[0], lens = TABLE_LENS, frame = standing(lens);
@@ -69,7 +74,8 @@ const reach = (shoulder: Vec3, points: Vec3[], sign: number, side: number): ArmP
 
 const standingCard = first.card, lookUp = (head: Vec3): Vec3 => [head[0], head[1] - 0.25, head[2] + 1.2], frames = [];
 let asked = {L: 0, R: 0, elbowL: [180, 0], elbowR: [180, 0], far: {L: 0, R: 0}};
-for (let i = 0; i < N; i++) { const s = smooth((i - GOES[0]) / (GOES[1] - GOES[0])), look = smooth((i - LOOKS[0]) / (LOOKS[1] - LOOKS[0]));
+const ease = (t: number) => EASE5 ? (t <= 0 ? 0 : t >= 1 ? 1 : t * t * t * (10 - 15 * t + 6 * t * t)) : smooth(t);
+for (let i = 0; i < N; i++) { const s = ease((i - GOES[0]) / (GOES[1] - GOES[0])), look = ease((i - LOOKS[0]) / (LOOKS[1] - LOOKS[0]));
   const handAt = (shape0: Vec3[], shape1: Vec3[], a0: Axes, a1: Axes, w0: Vec3, w1: Vec3, arc: number): Vec3[] => placed(shape0.map((q, k) => lerp(q, shape1[k], s)), between(a0, a1, s), add(lerp(w0, w1, s), [0, arc * Math.sin(Math.PI * s), 0]));
   const L = handAt(flatL, spreadL, axL0, endL.axes, restL[0], endL.wrist, POSE.arcL), R = handAt(flatR, flatR, axR0, endR.axes, restR[0], endR.wrist, POSE.arcR);
   const sR = posed(frame.shoulders[0], s), sL = posed(frame.shoulders[1], s), aL = reach(sL, L, -1, 1), aR = reach(sR, R, 1, -1), head = posed(frame.head, s, 0.85);
@@ -77,7 +83,7 @@ for (let i = 0; i < N; i++) { const s = smooth((i - GOES[0]) / (GOES[1] - GOES[0
   const r = (v: number[]) => v.map(x => Math.round(x * 10000) / 10000), limb = (a: ArmPose) => ({s: r(a.shoulder), e: r(a.elbow), w: r(a.wrist), k: 1, p: a.points.map(r)});
   frames.push({card: standingCard, L: limb(aL), R: limb(aR), h: r(head), g: r(lerp(lookUp(head), inShoe.centre, look))}); }
 // The elbow is chosen anew in every frame; smooth it over time so that it does not hop between two equally good places.
-for (const side of ['L', 'R'] as const) for (let pass = 0; pass < 3; pass++) for (let i = 1; i < N - 1; i++) { const e = [0, 1, 2].map(k => (frames[i - 1][side].e[k] + 2 * frames[i][side].e[k] + frames[i + 1][side].e[k]) / 4) as Vec3, sh = frames[i][side].s as Vec3, w = frames[i][side].w as Vec3; frames[i][side].e = arm(sh, w, sub(e, sh)).elbow.map(x => Math.round(x * 10000) / 10000); }
+for (const side of ['L', 'R'] as const) for (let pass = 0; pass < PASSES; pass++) for (let i = 1; i < N - 1; i++) { const e = [0, 1, 2].map(k => (frames[i - 1][side].e[k] + 2 * frames[i][side].e[k] + frames[i + 1][side].e[k]) / 4) as Vec3, sh = frames[i][side].s as Vec3, w = frames[i][side].w as Vec3; frames[i][side].e = arm(sh, w, sub(e, sh)).elbow.map(x => Math.round(x * 10000) / 10000); }
 
 const tipsR = endR.points[12], beforeFoot = length(sub([tipsR[0], 0, tipsR[2]], [mouth[0], 0, mouth[2]]));
 console.log([`Pose 2.3, ${N} rutor, ${FPS} per sekund: vila till ruta ${GOES[0]}, på väg till ruta ${GOES[1]}, stilla därefter.`,
