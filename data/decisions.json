@@ -3,6 +3,32 @@
   "about": "What waits for Jakob: one entry per question (kind beslut) or per thing only he can do (kind gora), shown as one card each in the studio's view Beslut (/studio/beslut/, lab only). The list's order is the order of urgency, the most urgent first. An entry: id, kind, question (at most 14 words), leads (one sentence: what his answer leads to), optionally proof (a folder under assets/proofs/) with file, page (an address in the lab, e.g. game.html?table=casino), link (an address outside, shown as text to open on his phone) and cost (free text), chips (two to four {value, label} for beslut, one to four for gora), asked (date), from (the lane that asks) and answer. An agent adds an entry with answer null, changes only its own entries, reads the file right before editing it and keeps the form JSON.stringify gives with two spaces; it closes an entry by taking it out once his answer is carried out, and the commit says what he answered. Only the page writes answer ({value, note, at}, tools/decision-store.ts); no agent sets, changes or clears an answer he has given. The strict reader is tools/decision-register.ts. The repo is public: no secret, personal detail or path of this machine.",
   "decisions": [
     {
+      "id": "giv-fran-2-3-som-mall",
+      "kind": "beslut",
+      "question": "Given till plats 5, tagning 4: godkänd som mall för de andra platserna?",
+      "leads": "Vid ja görs en tagning per återstående plats och för dealerns kort på samma sätt, och tagningen förs in i banken som kandidat.",
+      "proof": "giv-fran-2-3-p5",
+      "file": "0-a-giv-p5-tagning-4.mp4",
+      "cost": "64 krediter per tagning, cirka 600 för alla platser",
+      "chips": [
+        {
+          "value": "ja",
+          "label": "Ja, samma sätt för alla"
+        },
+        {
+          "value": "tre",
+          "label": "Hellre tagning 3"
+        },
+        {
+          "value": "andra",
+          "label": "Ändra (skriv vad)"
+        }
+      ],
+      "asked": "2026-11-18",
+      "from": "filmbanan",
+      "answer": null
+    },
+    {
       "id": "ingangen-till-2-3-fart",
       "kind": "beslut",
       "question": "Filmen från vila till ankare 2.3: vilken fart är rätt?",
@@ -33,36 +59,6 @@
         "value": "1-5",
         "note": "",
         "at": "2026-11-18T02:26:20.259Z"
-      }
-    },
-    {
-      "id": "ankare-2-3",
-      "kind": "beslut",
-      "question": "Ankare 2.3: registrera den här bilden, eller en tagning till med öppnare ögon?",
-      "leads": "Vid ja blir bilden ankare 2.3 och given därifrån beställs; en tagning till kan ge öppnare ögon, fingertopparna mitt på kortet och handen på filten snett mot kameran.",
-      "proof": "paow-ankare-2-3",
-      "file": "2-ankare-2-3-kandidat.png",
-      "cost": "En tagning till: cirka 85 krediter",
-      "chips": [
-        {
-          "value": "ja",
-          "label": "Ja, registrera"
-        },
-        {
-          "value": "tagning",
-          "label": "En tagning till"
-        },
-        {
-          "value": "andra",
-          "label": "Ändra (skriv vad)"
-        }
-      ],
-      "asked": "2026-11-18",
-      "from": "filmbanan",
-      "answer": {
-        "value": "ja",
-        "note": "",
-        "at": "2026-11-18T01:39:10.579Z"
       }
     },
     {

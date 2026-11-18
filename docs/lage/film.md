@@ -4,57 +4,57 @@ Huvudagentens bana: vägen från bild till dealer, Beställ, efterarbetet, banke
 gäller nu; varje prov och dess utfall står i handboken (`tools/film-prompting.md` §5) och det som hänt i Git.
 
 **Läget.**
-- Filmstandardens första del är inne (`553d254`): mall 10 skriver en öppen giv, den automatiska kontrollen
-  (`src/deal-check.ts`) fäller det Jakob underkänner på synen, sista bilden i en giv bara dit är rutan där bankens
-  godkända retur börjar (`src/cut-frame.ts`), och en renderad referensfilm (3D-banans docka) bjuds först.
-- Metoden som håller är en giv bara dit på Kling 4 med första och sista bild och en referensfilm. Med dockans film
-  håller plats 4 (4/5), plats 5 är oavgjord (3/5) och plats 3 föll (1/5); släpet från ankare 2.2 till plats 4 håller med
-  Pamelas släp som referens. Prov `giv-forlagefilm-2`, oberoende granskat; inget är dömt av Jakob eller infört i banken.
-- Den tatuerade uppsättningen är Jakobs förstahandsval: keystone sittande och stående och ankare 1 gäller (`f8e3f6c`,
-  `b0a03f3`); ankare 2.1 finns inte med de händerna. Bankens filmer har otatuerade, större händer och spelas än.
-- Ankare 2.2 föll i tre försök med utsnitt i bildmodellen (2/5; Prov `paow-ankare-2-2-blick`, kandidat A står kvar).
-- Dockans filmer "-2" och "-3" har den äldre vändningen av kortet; "-4" (en enda vridning) gäller. C5 med "-4" gav
-  den renaste vändningen hittills men kortet hoppar när det läggs (3/5): nästa förlaga ska sänka kortet jämnt ruta 60–80.
-- Nya ankare tas ur en film som dockan styr. Ankare 2.3 (båda händerna vid skon, blicken ned mot kortet) har Jakobs
-  ja och ligger i `assets/anchors/paow-ankare-2-3-a/` (Prov `paow-ankare-2-3`); rollen registreras med `rak-linje`.
-  MODEL mätte en riktig dealer: två händer, 0,77 s per kort, kortet vänt ände över ände, kameran lägre än bankens.
-- Läs saldot hos Runway (`whoami`) före en beställning; talet i `data/order-policy.json` är gammalt. Taket är 2 000.
-  Trailern är pausad på Jakobs ord: inget beställs och inget byts i den förrän han säger till.
+- En film beställs längs en rak linje (`babd05d`): i Bordets Beställ väljs steget och kortets plats, och receptet i
+  `data/order-methods.json` ger resten (en giv: Kling 4, 3 s, bara dit, första och sista bild, referensfilm). Utan
+  undantag går 8 av 61 kombinationer att beställa; de andra säger varför (slutbild saknas, eller dockans film).
+- Metoden som håller: en giv bara dit på Kling 4 med första och sista bild och 3D-banans dockfilm som referensfilm, i
+  UTDRAGEN takt (given över drygt 2 s, en obruten rörelse). I den riktiga dealerns takt tappar Kling vändningen.
+- Ankare 2.3 (båda händerna vid skon, blicken ned) gäller på Jakobs ja. Stegen `INGANG-2.3` och `GIV-2.3` finns men
+  går att beställa först när dockans filmer står i `data/rendered-references.json`.
+- Given från 2.3 till P5.C1, Jakobs beställning: fyra tagningar i Prov `giv-fran-2-3-p5` (256 krediter). Tagning 4
+  (dockan "-d") går igenom den automatiska kontrollen och är enligt granskaren bäst (3/5; mitten är trög, och det
+  gula kortet har en vit kant ruta 22–30). Sidan av tagning 3 ligger i samma prov.
+  Ingångsfilmen vila → 2.3 ligger i Prov `paow-ankare-2-3` i tre farter. Inget av det är infört i banken.
+- En sidovinkel görs av en färdig film i Runways videoredigerare (`edit_video`), inte av nya stillbilder: plats 4
+  cirka 40° (Prov `sidovinkel-ur-film`, Jakob: "mycket bra") och plats 5 cirka 25–30°. Vinkeln och kortets plats
+  träffas inte exakt. Provsidan `/vinklar.html` binder ihop två vinklar i en scen.
+- Den tatuerade uppsättningen är förstahandsvalet (keystone, ankare 1 och 2.3); ankare 2.1 och 2.2 och hela banken
+  har de äldre händerna och spelas än. Ankare 2.2 föll i tre försök i bildmodellen och görs om som 2.3.
+- Saldot var 5 392 den 2026-11-18 (`whoami` före en beställning); taket är 2 000 per order. Trailern är pausad.
 
 **Nästa steg.**
-1. Starta vakten på Jakobs kö i Beställ (`vakta-kon.mjs`): den går i huvudagentens chatt i halvtimmar och dör med
-   chatten. Godkänner han en beställning startar huvudagenten beställningsagenten (`tools/order-clerk.md`).
-2. Jakobs beställning 2026-11-18 ([BESKED](../BESKED.md), "Given från 2.3 till plats 5"): given från 2.3 till P5.C1
-   från bankens kamera (MODEL lägger tagningen, tak 300) och från sidan (stol 1:s öga, efter 3D:s figur därifrån).
-   3D gör dockfilmerna i den riktiga dealerns takt (`yt-referens/ut/`) i en film på 3 s; vändningen är fri, bara den är
-   hel och ren. Taket för proven är 2 000 krediter (`stol-1/bestallningar.json`). Sedan plats 4 och svepet på 8 s.
-3. Utfallet av proven från 2026-11-18 in i handboken: stol 1 (`stol-1/RAPPORT.md`, Prov `dealer-fran-stol-1`; C5 och
-   Jakobs order `paow-giv-2-1-p4-16` står redan där på grenen `rak-linje`).
-4. Filmstandardens andra del: grenen `rak-linje` (bär `film-standard-register`), efter listan i mappen `film-standard`.
-5. Ankare 2.2 samma väg som 2.3 (3D-banans förlaga för släpet), sedan med tatuerade händer: ankare 2.1, ingången
-   till 2.2, landningsbilder för plats 3–5 där handen slutar som dockans, och en tagning till på plats 3.
-6. Senare, inget beställt: fler kort än två på en plats, split, dealerns tredje och fjärde kort, returer till vila,
-   plats 6 utan omväg, byte vid skon (`plan-runda-via-2-2.md`) och hans önskemål ([BESKED](../BESKED.md)).
+1. Starta vakten på Jakobs kö i Beställ (`vakta-kon.mjs`; den dör med chatten), och anslut Runway (`/mcp`) på ett
+   nytt konto. Godkänner han en order startas beställningsagenten (`tools/order-clerk.md`).
+2. Läs hans svar i Beslut: farten på ingångsfilmen (han valde 1,5 gånger av misstag: fråga) och tagningen till plats
+   5. För sedan in ingångsfilmen och den valda tagningen i banken som kandidater (`tools/register-order.ts`).
+3. Gör stegen från 2.3 beställbara: dockans filmer till `assets/references/docka/<id>/source.mp4` och in i
+   `data/rendered-references.json` (id-mönstret står i `dealer3d/LASMIG.md`).
+4. En tagning per återstående plats (1, 2, 3, 4, 6, 7 och dealerns kort) på en långsam dockfilm, 64 krediter per
+   tagning; en oberoende granskare bara när den automatiska kontrollen släpper igenom tagningen.
+5. Raka linjens rester ([BRISTER](../BRISTER.md)): `tools/produce.ts` läser inte `data/cut-frames.json`.
+6. Fem kameravinklar är hans mål ([BESKED](../BESKED.md), "Flera kameravinklar"): hans egen bild 35° från sidan som
+   styrande stillbild, och en kamera per film i `/vinklar.html` (sidofilmens kamera står lägre än bankens).
+7. Senare: ankare 2.1 och 2.2 med tatuerade händer, hålkortet (vänds inte) och andra kortet ovanpå det första
+   (`yt-referens/ut/giv-resten.md`), returer till vila, dealerns tredje kort, och Jakobs önskemål i BESKED.
 
 **Väntar på Jakob.** Inget utanför Beslut.
 
 **Var saker ligger.** Vägen för en ny dealer i [tools/dealer-line.md](../../tools/dealer-line.md), handboken i
-[tools/film-prompting.md](../../tools/film-prompting.md), granskningen i `tools/film-review.md`, metoden per steg i
-`data/order-methods.json`, läget per dealer med `node tools/produce.ts paow`. Banans kod: `src/order-*.ts`,
-`tools/order-*.ts`, `tools/film-after.ts`, `tools/still-after.ts`, `tools/python/`, `tools/register-order.ts`, `motions/`
-och registren `data/media-roles.json`, `data/dealers.json` och `data/order-policy.json`. På slaskdisken, under
-`D:/dealer-scratch/tmp/`: `film-standard/` (listan för andra delen, `referenskontroll.tsv`), `giv-experiment/` och
-`giv-experiment-2/` (texter, rapport, `ledger.json`), `ankare-2-2-blick/`, `ankare-2-3/` och `yt-referens/` (MODEL; den
-filmen går aldrig in i Git, `assets/` eller ett Prov), `huvudagent11/look/` (`vakta-kon.mjs`, `ko-nu.mjs`),
-`huvudagent11/nya-filmer/plan-runda-via-2-2.md`, `giv-utredning/RAPPORT.md` och `pamela-formel/RAPPORT.md`. Trailern:
-`dealer-1e/LASMIG-OVERLAMNING-2026-11-17.md`, `trailer-3b/`, `dealer-1e/intro/`, provet `trailer-noir-3`.
+[tools/film-prompting.md](../../tools/film-prompting.md), granskningen i `tools/film-review.md`, läget per dealer med
+`node tools/produce.ts paow`. Banans kod: `src/order-*.ts`, `tools/order-*.ts`, `tools/film-after.ts`,
+`tools/still-after.ts`, `tools/python/`, `tools/register-order.ts`, `motions/` och registren `data/order-methods.json`,
+`data/media-roles.json`, `data/cut-frames.json` och `data/order-policy.json`. På slaskdisken, under
+`D:/dealer-scratch/tmp/`, med en liggare (`bestallningar.json`) i varje: `giv-fran-2-3-p5/` och `ankare-2-3/` (MODEL),
+`sidovinkel-v2v/`, `stol-1/` (provens tak på 2 000), `bestall/`, `giv-experiment-2/`, `yt-referens/` (den filmen går
+aldrig in i Git, `assets/` eller ett Prov), `dealer-3d/ut/` (dockans filmer) och `huvudagent11/look/` (`vakta-kon.mjs`).
 
 **Fällor.**
-- Referensfilmen ska sluta som sista bilden (handens sida och fingrarna på kortet), annars hittar Kling på slutet.
-- Blicken måste stå i ankaret och i sista bilden: Kling tar handens och kortets rörelse ur referensfilmen, inte huvudet.
-- En referens väljs efter vad den visar, inte bara efter Jakobs dom, och mäts innan den används: Pamelas giv till
-  plats 1 faller. Dockfilmer finns för plats 3–5; plats 6 och 7 går genom skon och plats 1 korsar kroppen.
-- WAN 3 utan referensfilm, Kling 3.0 Motion Control och mall 7:s ord om mer rörelse faller (handboken §5). Jakobs
-  utkast `paow-giv-2-1-p6-11` (oincheckat) är det äldre förvalet: säg det till honom före ett godkännande.
-- Det nya ankarets handpunkter förs inte in i `data/dealer-standard.json`, som är bankens vilobild för alla dealers.
+- Referensfilmen ska sluta som sista bilden, och blicken måste stå i texten eller bilderna: Kling tar handens och
+  kortets rörelse ur referensfilmen, inte huvudet. Utan sista bild blev kortet i skons fönster vitt.
+- En dockfilm i den riktiga dealerns takt (given klar på 1 s, sedan stilla) ger ett stopp med kortet rest och en
+  vändning på två rutor; dra ut given och låt kortet aldrig stå stilla.
+- Den automatiska kontrollen skrivs bara när orderns steg börjar med `GIV-`, räknar kortets yta på mättat blått och
+  ser inte ett tryckt kort eller ett målat bord: läs storleken som ett golv.
+- WAN 3 utan referensfilm faller också för handbyte (Jakobs order p4-16, 0 av 2). Hans utkast `paow-giv-2-1-p6-11`
+  ligger oincheckat och är det äldre förvalet: säg det till honom före ett godkännande.
 - Hans ord om filmerna: [BESKED](../BESKED.md), "Filmerna och given"; det som inte går än: [BRISTER](../BRISTER.md).

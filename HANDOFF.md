@@ -8,29 +8,25 @@ Git, och en rad som inte längre gäller ersätts.
 
 - Målet är en trovärdig utdelning i spelet i studion: två kort till plats 1–7 och två eller tre till dealern, med
   returer till redo och vila. Paow är dealern; Pamela är pausad. Scoutgaming är slutmålet på sikt.
-- Labbet är en vy, Bordet. Material kan ställas för hand, och Prov bär Jakobs egna anteckningar.
-- Filmstandardens första del (mall 10) är inne, och den tatuerade uppsättningen är hans förstahandsval. Nya ankare
-  (2.3, sedan 2.2) tas ur en film som 3D-banans docka styr.
-- Kortplanen ritar verkliga kort genom en lins; spelets liggande kort följer den inte än.
+- Labbet är en vy, Bordet, där en film beställs längs en rak linje: steget och kortets plats, receptet ger resten.
+- Den tatuerade uppsättningen är hans förstahandsval, och ankare 2.3 gäller. Given därifrån håller i en tagning
+  till plats 5; de andra platserna är inte prövade. En sidovinkel görs av en färdig film i Runways videoredigerare.
+- Kortplanen ritar verkliga kort genom en lins; spelet kan följa den bakom ett val som är av (`geometri=lins`).
 - Kopian på nätet är sekundär och publiceras bara på hans ord; senast 2026-11-18 från `2e3967c`, med nytt lösenord.
-- Kontrollen före en push körs bara på datorn; GitHub kör ingen (hans ord 2026-11-18).
+- Kontrollen före en push körs bara på datorn. Kontots tokengräns delas av alla sessioner: få underagenter.
 
 ## Nästa steg
 
-1. Byt adressraden nedan till din egen, starta vakten på hans kö i Beställ, och läs hans anteckningar
-   (`node tools/proof-notes.ts`) och svaren i Beslut före första svaret till honom.
+1. Skriv din egen adress på raden nedan. På ett nytt konto har varje session en ny adress, inget minne följer med
+   och Runway ansluts på nytt (`/mcp`): allt som gäller står i repot. Starta vakten på hans kö i Beställ, och läs
+   hans anteckningar (`node tools/proof-notes.ts`) och svaren i Beslut före första svaret till honom.
 2. Se att fjärren är i kapp med `main` och att inget arbetsträd bär arbete som inte är inne (`git worktree list`).
-   Grenen `rak-linje` (beställningen i en rak linje, med `film-standard-register`) granskas och slås ihop av
-   huvudagenten. Slaskdiskens inventering väntar på huvudagentens val (`D:/dealer-scratch/tmp/stad-1118/`).
-3. Filmerna först: ankare 2.3 (MODEL:s tagning är levererad; kandidaten läggs som Prov för honom), sedan given från
-   2.3 på 3 s och filmen med kort ett till alla platser (3D gör dockfilmerna), sedan ankare 2.2
-   ([film](docs/lage/film.md)).
-4. Rätta kopians tre fel före nästa publicering ([BRISTER](docs/BRISTER.md), "Kopian på nätet").
-5. Utför de besvarade korten i Beslut och ta ut dem. Låt en oberoende granskare ge sitt omdöme om tagningarna som
-   väntar i Prov, eller märk avgjorda prov som avgjorda ([labbet](docs/lage/labbet-och-studion.md)).
+3. Filmerna först ([film](docs/lage/film.md)): hans val av fart och tagning in i banken, dockans filmer som
+   referensfilmer så att stegen från 2.3 går att beställa, sedan en tagning per återstående plats.
+4. Fem kameravinklar är hans mål: provsidan `/vinklar.html` och det som återstår står i film-lägesfilen.
+5. Rätta kopians tre fel före nästa publicering ([BRISTER](docs/BRISTER.md)), och utför de besvarade korten i Beslut.
 
-Äldre frågor till honom som inte är kort än: `D:/dealer-scratch/tmp/handoff-nytt/forslag-kort.md`; huvudagenten
-väljer några åt gången.
+Äldre frågor till honom som inte är kort än: `D:/dealer-scratch/tmp/handoff-nytt/forslag-kort.md`.
 
 ## Vem äger vad
 
@@ -42,12 +38,11 @@ väljer några åt gången.
   till när ett steg är grönt, med en fillista. Ingen bana skriver i en annans filer.
 - **Huvudagentens banor:** film, kort, labbet och studion, och spelet. Filerna de äger står under Var saker ligger i varje lägesfil.
   Banorna Scen, Tal och Trailer är stängda; deras filer hålls av huvudagenten ([spelet](docs/lage/spelet.md)).
-- **3D-banan:** mappen `dealer3d/` på grenen `dealer-3d`, i arbetsträdet `D:/dealer-scratch/tmp/dealer-3d/trad`. Den
-  skriver bara där och i sina prov (`assets/proofs/dealer-3d-<namn>/`). Sessionen `3D` gör dockfilmerna från
-  ankare 2.3 och, på hans ord, tre grenar `raddning-*` (`D:/dealer-scratch/tmp/raddning/`); en ny session börjar från
-  [dealer3d/LASMIG.md](dealer3d/LASMIG.md).
-- **Mått ur en riktig dealers film och ankare 2.3 (MODEL):** skriver bara i `D:/dealer-scratch/tmp/yt-referens/` och
-  `D:/dealer-scratch/tmp/ankare-2-3/`, inget i repot.
+- **3D-banan:** mappen `dealer3d/` (dockan som styr filmerna) på grenen `dealer-3d`, i arbetsträdet
+  `D:/dealer-scratch/tmp/dealer-3d/trad`. Sessionen avslutade sitt pass 2026-11-18; en ny börjar från
+  [dealer3d/LASMIG.md](dealer3d/LASMIG.md), där också räddningsuppdragets filer står.
+- **Mätning och ankare 2.3 (MODEL):** skriver bara på slaskdisken och i sina prov. Sessionen avslutade sitt pass
+  2026-11-18; en ny börjar från [docs/lage/matning.md](docs/lage/matning.md).
 - **Jakobs egna:** planen `placements/default.json` och hans domar i `motions/` (`review`), som skrivs från Granska och
   aldrig skrivs över av ett verktyg. En dom som getts åt honom (`node tools/review-put.ts`) är aldrig hans.
 - **En ny session** arbetar i ett eget arbetsträd på en kort gren och skriver först till huvudagenten vilka filer den
@@ -68,7 +63,7 @@ ett kort där (skillen `visa-for-jakob`), och kortet tas ut när svaret är utf�
   - [docs/lage/kort.md](docs/lage/kort.md): det ritade kortet och kortplanens regel.
   - [docs/lage/labbet-och-studion.md](docs/lage/labbet-och-studion.md): Bordet, Material, Prov, Beslut och verktygen.
   - [docs/lage/spelet.md](docs/lage/spelet.md): spelet, kopian på nätet, läpparna och de stängda banornas arbete.
-  - [dealer3d/LASMIG.md](dealer3d/LASMIG.md), avsnittet Överlämning: 3D-banan.
+  - [docs/lage/matning.md](docs/lage/matning.md): mätningen av en riktig dealer och receptet från ankare 2.3.
 - Kontrakt och ordlista: [docs/SYSTEM.md](docs/SYSTEM.md). Rutiner, kopian och slaskdisken:
   [docs/DRIFT.md](docs/DRIFT.md). Talet: [docs/TAL.md](docs/TAL.md).
 - Handböckerna: [tools/dealer-line.md](tools/dealer-line.md) (en ny dealer eller en film),
