@@ -84,4 +84,4 @@ Rutinen står i skillen `avsluta-arbete`. I korthet:
 3. Skriv läget där det hör hemma, och ersätt i stället för att lägga till: banans läge i lägesfilen, ett nytt besked
    i BESKED, en ny brist i BRISTER, en fråga till Jakob som kort i Beslut. Den här sidan ändras bara där en rad inte
    längre gäller.
-4. Städa `D:/dealer-scratch` med `npm run stada`, läs rapporten och kör `npm run stada -- --kor`.
+4. Städa `D:/dealer-scratch` med `npm run stada` från huvudträdet, läs rapporten och kör `npm run stada -- --kor`.

@@ -19,7 +19,8 @@ samarbete", "Labbservern" och "Kod"; rutinerna i [`docs/DRIFT.md`](../../../docs
    -b <gren> main`, och grenen lämnas till huvudagenten, som slår ihop den (AGENTS, "Git och samarbete"; DRIFT, "Grenar").
 3. **Labbservern lämnar ut huvudträdets filer:** en halvfärdig fil där syns genast i Jakobs flik. En ny modul under
    `src/` görs i ordningen fil, rad i `SCRIPTS` (`tools/lab-routes.ts`), omstart av huvudagenten, import; kör `node
-   --test tools/lab-modules.test.ts` efter en ny import (DRIFT, "Labbservern och fliken").
+   --test tools/lab-modules.test.ts` efter en ny import (DRIFT, "Labbservern och fliken"). En rad i `SCRIPTS` för en
+   fil som inte är skriven ger 404 och stoppar sidan som importerar den.
 4. **Starta ingen egen labbserver** och stoppa aldrig en server via processnamn eller port; andra projekts och sessioners
    servrar rörs inte (AGENTS, "Labbservern"; DRIFT, portarna).
 5. **Headless Chrome och grafikkortet under det delade låset** `D:/dealer-scratch/tmp/gpu-och-headless.lock`, en körning

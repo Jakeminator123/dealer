@@ -162,6 +162,12 @@ Innehåll: Kortet · Filmerna och banken · Läpparna och rösten · Spelet och 
 
 ## Labbet och verktygen
 
+- **Städningen av slaskdisken ser inget gammalt före 2026-11-20.** Syns: `npm run stada` skyddar 26,75 GB som
+  nyändrat, och den säkra körningen 2026-11-18 tog 0,4 MB. 221 mappar fick sin egen tid satt 2026-11-17 kl. 23.13
+  (samma minut som den kvällens stora rensning tog bort filer i dem), och verktyget räknar mappens tid, så regeln om
+  14 dygn börjar om. Prövat: inventeringen av de största mapparna med förslag
+  (`D:/dealer-scratch/tmp/stad-1118/`); inget är raderat eller flyttat. Stänger: verktyget räknar filernas tid och
+  inte mappens egen, eller så tas mapparna efter listan. Verktyget körs från huvudträdet; ett arbetsträd på D: vägras.
 - **Beskrivningar som inte skickas till Runway står kvar i Beställ**, mot Jakobs anmärkning (BESKED, "Labbet och
   studion"). Syns: `FLIP_ABOUT`, `HAND_ABOUT`, `SHAPE_ABOUT`, `LANDS_ABOUT`, `startWords` och sammanfattningsraden
   `dealWords` i `src/order-model.ts`, visade i `Choices.tsx`, `NewOrder.tsx`, `SendScreen.tsx`, `OrderList.tsx` och
