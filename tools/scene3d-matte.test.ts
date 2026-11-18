@@ -312,6 +312,41 @@ test('paper tint leaves green shadow while retaining blue shadow and the mixed e
   }
 });
 
+test('paper repairs a screened blue face beside solid blue across the old rim cutoff', () => {
+  const video = (rgb: number[]) => rgb.map(v => v / 255), key = video([0, 236, 41]);
+  const paper = (rgb: number[], rim = false) => darkBackOf(video(rgb), key, {side: 'face', rim});
+  // C2 f51: one pixel already got full paper through the rim. Pixels above
+  // the cutoff kept their blue. The late patch is from f53.
+  const belowCutoff = [110, 142, 236], patch = [109, 144, 235], latePatch = [92, 131, 225];
+  assert.ok(paper(belowCutoff).card < 0.7);
+  assert.equal(paper(belowCutoff, true).card, 1);
+  for (const rgb of [patch, latePatch]) {
+    assert.ok(paper(rgb).card >= 0.7 && paper(rgb).card < 0.99, `${rgb} needs nearby colour evidence`);
+    assert.equal(paper(rgb, true).card, 1, `${rgb} reaches paper with the same nearby blue`);
+  }
+  for (const rgb of [[0, 173, 27], [246, 185, 195], [226, 156, 132]]) {
+    assert.deepEqual(paper(rgb, true), {card: 0, finger: 0, colour: video(rgb)}, `${rgb} stays unchanged`);
+  }
+  const warmBlend = [130, 121, 175]; // synthetic, inside the red roll-off
+  assert.ok(paper(warmBlend).card > 0.7 && paper(warmBlend).card < 0.99);
+  assert.deepEqual(paper(warmBlend, true), paper(warmBlend));
+  // P7 f73: the dark card tip relies on the existing rim even with low luminance.
+  assert.equal(paper([1, 45, 40], true).card, 1);
+  assert.equal(paper([7, 58, 62], true).card, paper([7, 58, 62]).card);
+});
+
+test('paper rim repair retains weak face evidence at the screen threshold', () => {
+  const video = (rgb: number[]) => rgb.map(v => v / 255), key = video([20, 180, 50]);
+  const weights = (rim: boolean) => [222, 223, 224, 225]
+    .map(g => darkBackOf(video([230, g, 255]), key, {side: 'face', rim}).card);
+  const base = weights(false), repaired = weights(true);
+  assert.ok(base.every(weight => weight > 0.7), 'samples exercise repair above the old cutoff');
+  for (let i = 1; i < repaired.length; i++) {
+    assert.ok(Math.abs(repaired[i] - repaired[i - 1]) < 0.03, `one green level: ${repaired}`);
+  }
+  assert.ok(repaired.every((weight, i) => weight >= base[i] && weight <= base[i] + 0.01), `only the screen loss can be repaired: ${repaired}`);
+});
+
 test('a card carried without a drawn one leaves the card seated in the shoe window in the drawn back\'s field: the window as dark as in every film', async () => {
   // seat 2's and seat 1's deals carry the film's card recoloured (hand false) in the field lifted towards the print (backDark); the
   // window's card took it too and lit up by about 20 levels at the cut into those deals (granskning 6: 34.90, 41.97, 83.90, 90.97 s)

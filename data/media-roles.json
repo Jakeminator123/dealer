@@ -3995,6 +3995,45 @@
             "from": "Lokal Dealer-studio · skärmbilder från CUA",
             "when": "2026-11-18"
           }
+        },
+        {
+          "id": "paow-c2-paper-rim-20261118",
+          "role": "arbetsmaterial",
+          "name": "C2 · jämn pappersfärg",
+          "path": "assets/proofs/paow-c2-paper-rim-20261118/c2-fore-efter.png",
+          "pattern": "assets/proofs/paow-c2-paper-rim-20261118/*",
+          "state": "kandidat",
+          "note": "Fem native stillbildspar med oberoende synkontroll. Blå kant vid vändningen kvarstår.",
+          "source": {
+            "from": "Lokal Dealer-studio · native skärmbilder",
+            "when": "2026-11-18"
+          }
+        },
+        {
+          "id": "paow-c2-rig-laydown-20261118-v2",
+          "role": "arbetsmaterial",
+          "name": "C2 · lokal nedvinkling",
+          "path": "assets/proofs/paow-c2-rig-laydown-20261118-v2/referens.mp4",
+          "pattern": "assets/proofs/paow-c2-rig-laydown-20261118-v2/*",
+          "state": "kandidat",
+          "note": "Lokalt rörelseprov: tidig skillnad för liten för ny betald film.",
+          "source": {
+            "from": "Lokal Dealer-docka · källbunden rendering",
+            "when": "2026-11-18"
+          }
+        },
+        {
+          "id": "paow-c2-rig-regrip-20261118",
+          "role": "arbetsmaterial",
+          "name": "C2 · tidigare nedläggning",
+          "path": "assets/proofs/paow-c2-rig-regrip-20261118/referens.mp4",
+          "pattern": "assets/proofs/paow-c2-rig-regrip-20261118/*",
+          "state": "kandidat",
+          "note": "Lokalt omgreppsprov, inte beställningsreferens eller godkänd film.",
+          "source": {
+            "from": "Lokal Dealer-docka · källbunden rendering",
+            "when": "2026-11-18"
+          }
         }
       ]
     },

@@ -26,9 +26,9 @@ Sammanhängande lokal väg från underlag till spelbar Blackjack (Jakob 2026-11-
 4. Munproven är lokala jämförelser; inget byte i banken före Jakobs val i Beslut. Körarens kod finns nu i repot.
 5. Testa, pusha och verifiera fjärrens SHA. Sessionens tio GPT-meddelanden är förbrukade; färdiga granskningsfynd är
    rättade. Fyra Runway-filmer kostade 319 krediter; lokal Claude-MCP fungerar. Inget anrop eller KÖR pågår.
-6. P1/P7 har verifierad maskjämförelse i Prov `paow-air-paper-chroma-verified-20261118`; grön skugga blir inte vit kortyta.
-   Prov `paow-c1-c2-scene-20261118` visar C1 kvar genom C2 och båda korten efter returen. C2 är fortsatt Variant:
-   förbättra grepp, vändning och färg före en serie. READY-C saknar godkänt inpass och utpass.
+6. Prov `paow-c1-c2-scene-20261118` visar C1 kvar genom C2. `paow-c2-paper-rim-20261118` visar jämnare sen kortfärg
+   med P1/P7 intakta. C2 är fortsatt Variant: blå vändkant och grepp återstår. Ett lokalt omgreppsprov finns i
+   `paow-c2-rig-regrip-20261118`; ingen beställning. READY-C saknar godkänt inpass och utpass.
 
 Äldre frågor till honom som inte är kort än: `D:/dealer-scratch/tmp/handoff-nytt/forslag-kort.md`.
 

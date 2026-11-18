@@ -389,9 +389,15 @@ vec3 ${name}Side(vec3 c, vec2 px, vec3 key, float zone, float shoe, vec3 field, 
     for (int k = 0; k < 8; k++) { float a = float(k) * .7854; vec2 d = vec2(cos(a), sin(a)); skin = max(skin, backSkin(filmAt(map, px + ${f(D.skinNear)} * d)));
       if (far > .5) for (int j = 0; j < 2; j++) { vec3 s = filmAt(map, px + (j == 0 ? ${f(D.blurredSkin.reach[0])} : ${f(D.blurredSkin.reach[1])}) * d); skin = max(skin, smoothstep(${f(D.blurredSkin.red[0])}, ${f(D.blurredSkin.red[1])}, s.r - s.g) * smoothstep(${f(D.blurredSkin.blue[0])}, ${f(D.blurredSkin.blue[1])}, s.b / max(s.g, .01))); } }
     w2 *= smoothstep(.3, .7, skin); }
-  // the film card's pale rim and its edge blended with the screen, beside surely card
+  // The pale rim beside solid card. Above the old cutoff, the face can recover
+  // only the weight lost to the screen split, retaining the other evidence.
   float rim = ${name}RimOf(c, u);
-  if (w1 < .7 && rim > 0.) { float near = 0.;
+${S.red ? `  if (w1 >= .7) {
+    float screen = smoothstep(${f(S.screen[0])}, ${f(S.screen[1])}, u.y); // at least w1 here
+    float cool = 1. - smoothstep(0., ${f(S.red[0])}, c.r - c.g);
+    rim = mix(w1, min(rim, w1 / screen), cool);
+  }
+  if (rim > w1)` : '  if (w1 < .7 && rim > 0.)'} { float near = 0.;
     for (int k = 0; k < 16; k++) { float a = float(k) * .7854 + (k < 8 ? 0. : .3927); if (${name}CardOf(filmAt(map, px + (k < 8 ? ${f(D.near[0])} : ${f(D.near[1])}) * vec2(cos(a), sin(a))), toCard, t) > .7) { near = 1.; break; } }
     w1 = max(w1, near * rim); }
   // the video's blocks where the card is blurred over a finger: there the card's weight is the mean of the 3 x 3 pixels round it, so
@@ -454,7 +460,15 @@ export function darkBackOf(c: number[], key: number[], o: {shoe?: boolean; skin?
   const cardOf = (u: number[]) => { const low = shade ? 1 - step(D.blue[0], D.blue[1], c[2] / Math.max(c[1], 0.01)) : 0;
     return step(0, D.share, u[0]) * Math.max(step(D.screen[0], D.screen[1], u[1]), low * step(D.shade[0], D.shade[1], u[1])) * step(D.white[0], D.white[1], u[2]) * (1 - step(D.pale[0], D.pale[1], u[2] / Math.max(u[0], 1e-3))) * (1 - skin) * dimOk; };
   const u = solve3([D.card, key, [1, 1, 1]], c), v = solve3([D.card, D.finger, [1, 1, 1]], c);
-  let w1 = cardOf(u); if (o.rim && w1 < 0.7) w1 = Math.max(w1, step(0, D.share, u[0]) * step(D.rim[0], D.rim[1], u[1]) * (1 - step(D.rimPale[0], D.rimPale[1], u[2] / Math.max(u[0], 1e-3))) * (1 - skin));
+  let w1 = cardOf(u);
+  if (o.rim) {
+    const rim = step(0, D.share, u[0]) * step(D.rim[0], D.rim[1], u[1]) * (1 - step(D.rimPale[0], D.rimPale[1], u[2] / Math.max(u[0], 1e-3))) * (1 - skin);
+    if (w1 < 0.7) w1 = Math.max(w1, rim);
+    else if (o.side === 'face') {
+      const screen = step(D.screen[0], D.screen[1], u[1]), cool = 1 - step(0, PAPER_FACE.red[0], c[0] - c[1]);
+      w1 += Math.max(0, Math.min(rim, w1 / screen) - w1) * cool;
+    }
+  }
   if (o.side === 'face' && key[1] > key[2]) {
     const chromaAt = (share: number) => (key[2] * (1 - share) + D.card[2] * share) / (key[1] * (1 - share) + D.card[1] * share);
     w1 *= step(chromaAt(D.share), chromaAt(0.5), c[2] / Math.max(c[1], 0.01));
