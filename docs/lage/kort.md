@@ -14,8 +14,10 @@ bara det som gäller nu; kontraktet står i `docs/SYSTEM.md`, "Ritade kort".
   ett värde för alla kort, 80–96 %, med märken vid Din plan (87 %) och Verkligt (96 %). Utan sparat värde ritas 87 %.
 - Kortplan har en vy: valet Dator | Mobil och adressordet `vy=mobil` är borta, eftersom inget som körs läste mobilvyn.
   Behövs en mobilvy härleds den ur samma kort och lins, aldrig som en andra inställning.
-- Labbet visar släta gula och blå kort (`CARD_COLOUR` i `src/placement-model.ts`); det tryckta kortet med SG är ett val
-  märkt som efterarbete.
+- Labbet visar släta gula och blå kort (`CARD_COLOUR` i `src/placement-model.ts`), och spelets rygg med SG står kvar:
+  inget trycks på korten före efterarbetet ([BESKED](../BESKED.md), "Kortets sidor"; kortet i Beslut är uttaget).
+- Jakob sparade planen från Bordet 2026-11-18 kl. 01.30 (handbyte på ett kort, avsmalning 0,90, ett mindre kort). Filen
+  ligger oincheckad i huvudträdet och checkas in på hans ord.
 - `data/media-fit.json` säger för varje bild, ankare, giv och referens om den stämmer med dagens kortplan, och Material
   visar det som en bricka ("äldre plan", "annan kamera", "avviker").
 
@@ -23,10 +25,10 @@ bara det som gäller nu; kontraktet står i `docs/SYSTEM.md`, "Ritade kort".
 1. Spelets liggande kort ska följa `planCardQuad`: `src/game-table.ts` ritar med `flatQuad`, pålägget ligger i
    `card-overlay-view`, och 3D-scenen ställer korten med kontraktets kamera (k = 2), som är en annan kamera än linsen.
    Visa det för Jakob i labbet först.
-2. Kortets baksida (kortet `kortets-baksida` i Beslut): gul rygg med SG och blå framsida, gjort i efterarbetet och
-   lika i labbet och spelet; sedan tas kortet ur Beslut.
-3. Skriv om `data/media-fit.json` med `node tools/media-audit.ts --fit --write` när planens regel, linsen eller ett
-   ankare ändras, också när Jakob sparar ett nytt Perspektiv; det sker inte automatiskt.
+2. När hans sparade plan checkas in: skriv om `data/media-fit.json` med `node tools/media-audit.ts --fit --write`, och
+   gör testerna i `tools/order-routes.test.ts` oberoende av vad han har sparat (tre faller i huvudträdet med hans plan).
+   Samma mätning körs när planens regel, linsen eller ett ankare ändras; det sker inte automatiskt.
+3. Kortets sidor i efterarbetet, efter filmerna: gul rygg (SG får stå kvar) och blå framsida, lika i labbet och spelet.
 4. Ta bort kravet på två vyer i planfilen (`validatePlan` kräver ännu båda), utan att planfilen skrivs av en agent.
 5. Efter filmerna: kortets efterarbete per film, ruta för ruta (kortet i handen och det som är kvar av kortens fjärde
    steg; [BRISTER](../BRISTER.md)).

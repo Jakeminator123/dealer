@@ -9,27 +9,29 @@ Git, och en rad som inte längre gäller ersätts.
 - Målet är en trovärdig utdelning i spelet i studion: två kort till plats 1–7 och två eller tre till dealern, med
   returer till redo och vila. Paow är dealern; Pamela är pausad. Scoutgaming är slutmålet på sikt.
 - Labbet är en vy, Bordet. Material kan ställas för hand, och Prov bär Jakobs egna anteckningar.
-- Filmstandardens första del (mall 10) är inne. Den tatuerade uppsättningen är hans förstahandsval. Ankare 2.2 föll
-  i tre försök; det och det beställda ankaret 2.3 tas nu ur en film som 3D-banans docka styr.
+- Filmstandardens första del (mall 10) är inne, och den tatuerade uppsättningen är hans förstahandsval. Nya ankare
+  (2.3, sedan 2.2) tas ur en film som 3D-banans docka styr.
 - Kortplanen ritar verkliga kort genom en lins; spelets liggande kort följer den inte än.
-- GitHub är låst av en betalningsfråga, men kontrollen går grön på datorn och inget arbete är stoppat. Kopian på nätet
-  är sekundär; dess nya lösenord ligger i `.env.local` men är inte satt på nätet än.
+- Kopian på nätet är sekundär och publiceras bara på hans ord; hans ja från 2026-11-18 utförs nu (nytt lösenord,
+  kortet `kopians-losenord`).
+- GitHubs betalning är löst; vad som kostar där utreds på hans ord.
 
 ## Nästa steg
 
 1. Byt adressraden nedan till din egen, starta vakten på hans kö i Beställ, och läs hans anteckningar
    (`node tools/proof-notes.ts`) och svaren i Beslut före första svaret till honom.
 2. Se att fjärren är i kapp med `main` och att inget arbetsträd bär arbete som inte är inne (`git worktree list`).
-   Grenen `film-standard-register` har arbete kvar ([film](docs/lage/film.md)).
-3. Filmerna först, på hans ord: ankare 2.3 (sessionen MODEL lägger den enda tagningen; beställ den inte själv),
-   utfallet av de två betalda proven från 2026-11-18, sedan ankare 2.2 ([film](docs/lage/film.md)).
-4. Sätt kopians nya lösenord på nätet och publicera, bara på hans uttryckliga ord (skillen `publicera-kopian`).
+   Två underagenters grenar granskas och slås ihop av huvudagenten: `rak-linje` (beställningen i en rak linje, med
+   `film-standard-register`) och `stad-1118` (städning).
+3. Filmerna först: ankare 2.3 (MODEL:s tagning är levererad; kandidaten läggs som Prov för honom), sedan given från
+   2.3 på 3 s och filmen med kort ett till alla platser (3D gör dockfilmerna), sedan ankare 2.2
+   ([film](docs/lage/film.md)).
+4. Fråga kopian som en ny besökare efter publiceringen (skillen `publicera-kopian`).
 5. Utför de besvarade korten i Beslut och ta ut dem. Låt en oberoende granskare ge sitt omdöme om tagningarna som
    väntar i Prov, eller märk avgjorda prov som avgjorda ([labbet](docs/lage/labbet-och-studion.md)).
 
-Förra huvudagentens överlämning från natten till 2026-11-18 ligger i
-`D:/dealer-scratch/tmp/huvudagent11/OVERLAMNING-2026-11-18.md`. Läs den en gång, för in det som saknas i lägesfilerna
-och ta sedan bort det här stycket.
+Frågor till honom ur den äldre överlämningen som inte är kort än ligger i
+`D:/dealer-scratch/tmp/handoff-nytt/forslag-kort.md`; huvudagenten väljer några åt gången.
 
 ## Vem äger vad
 
@@ -42,8 +44,8 @@ och ta sedan bort det här stycket.
 - **Huvudagentens banor:** film, kort, labbet och studion, och spelet. Filerna de äger står under Var saker ligger i varje lägesfil.
   Banorna Scen, Tal och Trailer är stängda; deras filer hålls av huvudagenten ([spelet](docs/lage/spelet.md)).
 - **3D-banan:** mappen `dealer3d/` på grenen `dealer-3d`, i arbetsträdet `D:/dealer-scratch/tmp/dealer-3d/trad`. Den
-  skriver bara där och i sina prov (`assets/proofs/dealer-3d-<namn>/`). Sessionen som startade banan avslutade
-  sitt pass natten till 2026-11-18; en ny börjar från [dealer3d/LASMIG.md](dealer3d/LASMIG.md).
+  skriver bara där och i sina prov (`assets/proofs/dealer-3d-<namn>/`). Sessionen `3D` gör dockfilmerna för given
+  från ankare 2.3; en ny session börjar från [dealer3d/LASMIG.md](dealer3d/LASMIG.md).
 - **Mått ur en riktig dealers film och ankare 2.3 (MODEL):** skriver bara i `D:/dealer-scratch/tmp/yt-referens/` och
   `D:/dealer-scratch/tmp/ankare-2-3/`, inget i repot.
 - **Jakobs egna:** planen `placements/default.json` och hans domar i `motions/` (`review`), som skrivs från Granska och

@@ -52,6 +52,10 @@ Innehåll: [Arbetet och dokumenten](#arbetet-och-dokumenten) · [Labbet och stud
   och även instruktioner. Allt ska vara 4./5."
   Därför är `HANDOFF.md` en startsida med ett tak som ett test håller, och resten står här, i
   [BRISTER.md](BRISTER.md) och i lägesfilerna under `docs/lage/`.
+- **Huvudagenten orkestrerar** (2026-11-18, kl. 01.54): "När du är klar med ditt arbete, försök att sätta en eller ett
+  par underagenter i arbete. Du ska mest orkestrera. Se till att du får en städagent som rensar upp, samt en agent som
+  stramar upp så att allt följer en rak linje." och "Delegera och använd underagenter elelr sidocahttar". Huvudagenten
+  delar ut arbetet till underagenter och sidochattar och gör själv granskningen, sammanslagningen och svaren till honom.
 
 ## Labbet och studion
 
@@ -130,6 +134,10 @@ Innehåll: [Arbetet och dokumenten](#arbetet-och-dokumenten) · [Labbet och stud
   skulle göras dubbelt för mobilen. Generellt förstår jag inte varför vi automatiskt kan komma in till Pamela".
   Kortplan har en vy; behövs en mobilvy härleds den ur samma kort och lins. Paow står först, och en pausad dealer
   visas bara när en adress nämner den.
+- **Färre val när en film beställs** (2026-11-18, kl. 01.54): "Trots att mycket har blivit tajtare finns det
+  fortfarande för många val som kan leda till överlappande instruktioner för att skapa videos." En film beställs längs
+  en rak linje: från vilket ankare och till vilken plats. Resten är stegets recept (`data/order-methods.json`), och
+  texten som skickas säger varje sak en gång.
 
 ## Domar, beställningar och pengar
 
@@ -157,6 +165,10 @@ Innehåll: [Arbetet och dokumenten](#arbetet-och-dokumenten) · [Labbet och stud
   inte.
 - **Meshy och annat betalt utanför Beställ:** Meshy bara på hans eget ja; varje betalt anrop utanför Beställ rapporteras
   till huvudagenten med belopp.
+- **GitHubs kostnad** (Beslut 2026-11-18, kl. 01.47, på kortet om den låsta betalningen): "Fixat. undersök vad som
+  kostar så mkt och gör så att det som kostar inte kostar så mycket". Betalningen är löst av honom. Vad som kostar på
+  kontot utreds, och det som går att sänka härifrån sänks; det som hör till ett annat repo eller till kontots
+  inställningar föreslås för honom.
 
 ## Dealern och ankarna
 
@@ -205,8 +217,15 @@ Innehåll: [Arbetet och dokumenten](#arbetet-och-dokumenten) · [Labbet och stud
   vill att du skapar ett nytt ankare, ankare 2.3, och inget annat. Ankare 2.3 ska göra ett undantag, där ankare 1 får
   gå till ankare 2.3. Ankare 1 ska nu vara paushänder som är tatuerade, om du kan hitta det. En videofilm ska
   genereras från ankare 1, det nya, till 2.3. Där ska hon försöka ha sitt nya ankare 2.3, som de i din granskade film
-  har skapat, med händerna precis vid utdelningen." Ankare 2.3 är båda händerna vid skon precis före draget. MODEL gör
-  det, med en tagning inom huvudagentens tak.
+  har skapat, med händerna precis vid utdelningen." Till huvudagenten kl. 01.54: "Jag vill att du inspireras av hur hon
+  arbetar med händerna för att skapa ett ankare som är 2.3. […] Hon ska gå från ankare 1 till ankare 2.3 och titta ner
+  mot sin hand eller den som hon ska fösa ur kortet med. Skapa en film som går dit." Ankare 2.3 är båda händerna vid
+  skon precis före draget, tatuerade som i ankare 1, med blicken ned mot handen som föser ut kortet. MODEL gör det, med
+  en tagning inom huvudagentens tak.
+- **Landningar per plats, eller inga** (2026-11-18, kl. 01.54, om Materials station Landningar): "Jag undrar också om
+  det som kallas landningar alltid har en referensbild för kortplats nummer ett och spelare fyra. Detta bör rimligtvis
+  tas bort helt, eller så bör vi skapa nya bilder för respektive position." Huvudagentens val: en giv slutar på
+  platsens egen slutbild, en per plats, och den ensamma bilden för plats 4 ställs undan.
 - **3D-dockan** (Beslut 2026-11-18, kl. 01.04): ja till blicken och den friare vilande handen, nej till att bygga
   vidare på Meshy-modellen av Paow, och ja till ett betalt prov av dealern sedd från stol 1.
 - **Ett tredje och fjärde dealerkort** (2026-11-13): "Skapa då ett tredje och fjärde till dealer". Inte byggt: planen
@@ -252,6 +271,12 @@ Innehåll: [Arbetet och dokumenten](#arbetet-och-dokumenten) · [Labbet och stud
   "nyckelvridning" av kortet ske i allmänhet utan att hon ska "lyfta kortet efter det släpats" eller tryckts ut".
   Handen vänds en gång, i luften, och aldrig i slutet; ordningen per ankare står i handboken
   (`tools/film-prompting.md` §5).
+- **Kortare givar, och en film till alla platser** (2026-11-18, kl. 01.54, om nästa film efter ankare 2.3): "Utifrån
+  det kan vi prova att göra en film efter en förenkling av hur man skapar filmer från menyvalet bordet. En beställning
+  ska läggas, och jag vill att vi kortar ner till endast två eller tre sekunder, eller vad YouTube-filmen säger
+  angående utdelning till de olika positionerna. Alternativt kan du skapa en 15-sekunders film där hon delar ut till
+  kort nummer ett i alla positioner." En giv beställs på 3 s (det kortaste Kling 4 tar), och filmen med kort ett till
+  alla platser prövas som en tagning.
 - **Givens sex steg från ankare 2.1** (2026-11-13, hans skiss, inte underlag i repot): Nyp, Dra (ned på filten,
   baksidan upp), För fram (lågt längs filten, inte vänt i luften), Vrid (kortet reser sig på långsidan), Vänd upp,
   Lägg. Det är valet Vänd vid platsen (`AT_PLACE`), som planen väljer per kort i Bordets Kortplan; förvalet för en ny
@@ -289,7 +314,9 @@ Innehåll: [Arbetet och dokumenten](#arbetet-och-dokumenten) · [Labbet och stud
   något annat som vi kommer överens om, vilket hör till efterarbetet. […] Allt ska ju gjöras sen gällande fram och
   baksida", och samma kväll att korten ska vara utan vit kant, "bara … blåa, med rundade kanter". Bordet visar släta
   gula och blå kort; det tryckta kortet med SG är ett val märkt som efterarbete. Vilken variant som visas avgör
-  huvudagenten ("Du får ta det sista beslutet").
+  huvudagenten ("Du får ta det sista beslutet"). Tillagt på kortet 2026-11-18, kl. 01.44: "Du kan behålla SG-ryggen.
+  men so msagt vill jag allt ska vara rent tills efterarbete gjörs". Spelets rygg med SG står alltså kvar, och inget
+  trycks på korten före efterarbetet.
 - **Ett kortformat:** kortet på plats 4 är standard och allt annat anpassar sig ("Storleken är inte problemet, utan att
   det finns olika format"; `docs/SYSTEM.md`).
 - **En film per plats** (2026-11-11): platsens andra kort spelar första kortets filmer med det ritade kortet flyttat.
@@ -361,7 +388,8 @@ Innehåll: [Arbetet och dokumenten](#arbetet-och-dokumenten) · [Labbet och stud
   skillen `publicera-kopian`).
 - **Kopians lösenord** (2026-11-18, kl. 01.10): "Lösenordet ska sättas i .env.local eller om det är .env." Inget
   lösenord skrivs i någon fil som Git följer. Det gamla ordet har stått i repots historik och ska bytas: ett nytt ord
-  i `.env.local` och sedan en publicering, som är hans ord.
+  i `.env.local` och sedan en publicering, som är hans ord. Hans ord kom i Beslut 2026-11-18, kl. 01.47, på kortet
+  `kopians-losenord`: "Ja, publicera". Det gällde den publiceringen; nästa kräver hans ord igen.
 - **Kopian till chefen** (2026-11-13): "Sedan valet att spela i casinot eller komma till studio/labbet … Eller bara
   samma radda av alternativ som finns på vänsterspalten". Kopian har samma meny som studion.
 - **Kopian är öppen för läsning** (2026-11-14): "Se till att den inte är lösenordsskyddad." Boten och önskemålslådan
