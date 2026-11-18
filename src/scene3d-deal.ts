@@ -492,8 +492,8 @@ export function createDealLayer(o: Options) {
       // that frame, the film's own yellow card showed in the shoe window as the rest film began (the boss film at 6.40 and 143.27).
       if (video.readyState < 2) return false;
       const camera = o.camera(), solved = solveCamera(camera), track = trackIn as CardTrack | null, options = (extraIn ?? {}) as Extra;
-      const carry = carryOf(options), continues = !alwaysMatte && carry === 'film' && options.returning && options.filmContinuesDeal;
-      const fadeEnd = continues && track ? restFade(track)?.to : undefined;
+      const carry = carryOf(options), continues = !alwaysMatte && carry !== 'matte' && options.returning && options.filmContinuesDeal;
+      const fadeEnd = continues && carry === 'film' && track ? restFade(track)?.to : undefined;
       const extra = continues && !returnAfterFilmLanding(track, frame, options, fadeEnd) ? {...options, returning: false} : options;
       lens.lens.value.set((FILM.width - 1) / 2, (FILM.height - 1) / 2, camera.focalPx, solved.pitch); lens.eye.value.set(0, camera.heightM, 0); lens.edgeRow.value = camera.edgeRow; lens.edgeZ.value = o.edgeZ();
       // Returns look up the exact marker frame. Only carried cards use the last track frame past its end.

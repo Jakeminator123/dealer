@@ -299,7 +299,10 @@ test('film carry follows the measured landing across an early cut into the same 
     assert.equal(returnAfterFilmLanding(track, rest - 1, returning, rest + 2), false, 'the scene keeps the film carry before rest');
     assert.equal(returnAfterFilmLanding(track, rest + 1, returning, rest + 2), false, 'the scene can finish its fade after rest');
     assert.equal(returnAfterFilmLanding(track, rest + 2, returning, rest + 2), true);
-    assert.equal(returnAfterFilmLanding(track, cut, {...returning, carry: 'object'}), true);
+    assert.equal(returnAfterFilmLanding(track, cut, {...returning, carry: 'object'}), false, 'a borrowed film keeps its drawn card moving before rest');
+    assert.equal(returnAfterFilmLanding(track, rest, {...returning, carry: 'object'}, rest + 2), true, 'the drawn card needs no film fade after landing');
+    assert.equal(returnAfterFilmLanding(track, cut, {...returning, carry: 'object', filmContinuesDeal: false}), true, 'an ordinary drawn return is unchanged');
+    assert.equal(returnAfterFilmLanding(track, cut, {...returning, carry: 'matte'}), true);
     assert.equal(returnAfterFilmLanding({...track, restFrom: null}, cut, returning), true, 'an unmeasured landing does not delay a return');
   }
 });

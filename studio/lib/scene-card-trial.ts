@@ -1,7 +1,7 @@
 import type { TableGeometry } from "../../src/card-plan.ts";
 import type { CardRecord } from "../../src/card-overlay.ts";
 import type { Segment } from "../../src/clip-graph.ts";
-import { cardOptions, cardWords, continuesCardFilm, type CardWords } from "../../src/game-film.ts";
+import { cardOptions, cardWords, continuesCardSource, type CardWords } from "../../src/game-film.ts";
 import { createLayout, type Slot, type TableCards } from "../../src/game-table.ts";
 import type { PlacementPlan } from "../../src/placement-model.ts";
 import type { PlayPart } from "./parts.ts";
@@ -47,7 +47,8 @@ export function withSceneCardTrial(parts: PlayPart[], segments: readonly Segment
     const cards = cardOptions({ own, lying, kind: returning ? "RETURN" : own ? "DEAL" : undefined }, table, records, layout, "film", words);
     if (returning) {
       const deal = segments[i - 1];
-      if (deal.film?.target === own.label && continuesCardFilm(deal, segments[i], parts[i - 1].track, part.track)) cards.filmContinuesDeal = true;
+      // The studio plans with track paths; the renderer reads the actual landing after loading them.
+      if (deal.film?.target === own.label && continuesCardSource(deal, segments[i], parts[i - 1].track, part.track)) cards.filmContinuesDeal = true;
       placed.add(own.shoeDraw);
     }
     return { ...part, cards };

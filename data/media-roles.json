@@ -4100,6 +4100,19 @@
             "from": "Lokal Dealer · native Chrome",
             "when": "2026-11-18"
           }
+        },
+        {
+          "id": "paow-c2-continuous-clock-20261118",
+          "role": "arbetsmaterial",
+          "name": "C2 · lokalt tidsprov av omgrepp",
+          "path": "assets/proofs/paow-c2-continuous-clock-20261118/jamforelse.mp4",
+          "pattern": "assets/proofs/paow-c2-continuous-clock-20261118/*",
+          "state": "kandidat",
+          "note": "76 ms tidigare tumsläpp, samma 4 s. Oberoende granskning avstår nytt betalt prov på enbart denna skillnad.",
+          "source": {
+            "from": "Lokal Dealer · återgiven rörelsereferens",
+            "when": "2026-11-18"
+          }
         }
       ]
     },

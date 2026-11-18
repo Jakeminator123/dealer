@@ -192,7 +192,7 @@ export function restOf(track: CardTrack): {from: number; quad: Pt[]; assumed: bo
 // shadow, which show beside the film's card, came on in one frame when it was there in full from the fade's first frame (seat 4).
 export const REST_FADE = {still: 2, before: 8, after: 6, card: 0.3};
 /** The frames over which the film's lying card is keyed away (restShare), or null where nothing fades: no rest, a card that lies from the clip's first frame (a return, drawn in full since the deal before it), or a card that comes to rest back up. */
-export function restFade(track: CardTrack): {from: number; to: number} | null {
+export function restFade(track: CardTrack, lastSourceFrame = track.frames.length - 1): {from: number; to: number} | null {
   const rest = restOf(track); if (!rest || rest.from <= 0 || filmMarkerAt(track, rest.from)?.side !== 'FRONT') return null;
   const near = (i: number) => {
     const q = track.frames[i]?.quad;
@@ -200,7 +200,7 @@ export function restFade(track: CardTrack): {from: number; to: number} | null {
       && q.reduce((sum, p, k) => sum + Math.hypot(p[0] - rest.quad[k].x, p[1] - rest.quad[k].y), 0) / 4 <= REST_FADE.still;
   };
   let from = rest.from; while (from > 0 && rest.from - from < REST_FADE.before && near(from - 1)) from--;
-  return {from, to: Math.min(Math.max(rest.from, from + REST_FADE.after), Math.max(rest.from, track.frames.length - 1))};
+  return {from, to: Math.min(Math.max(rest.from, from + REST_FADE.after), Math.max(rest.from, lastSourceFrame))};
 }
 /**
  * A frame of the hand-over: how far the drawn card has come in under the film's card (card: its opacity and its contact shadow) and how
@@ -258,12 +258,14 @@ export function restingFilmPaperZone(track: CardTrack, frame: number, paper: boo
   return marker?.side === 'FRONT' ? grown(marker.quad, RIM) : null;
 }
 
-/** Only a return cut from adjacent frames of the deal can keep that deal's film card until it rests. */
+/** An adjacent return cut continues the carried card until it rests. Film carry also finishes its fade. */
 export function returnAfterFilmLanding(track: CardTrack | null, frame: number, options: {carry?: 'object' | 'film' | 'matte'; returning?: boolean; filmContinuesDeal?: boolean}, fadeEnd?: number): boolean {
   if (!options.returning) return false;
-  if (options.carry !== 'film' || !options.filmContinuesDeal) return true;
+  if (options.carry === 'matte' || !options.filmContinuesDeal) return true;
   const landing = filmLandingFrame(track);
-  return landing === null || Math.round(frame) >= Math.max(landing, fadeEnd ?? landing);
+  if (landing === null) return true;
+  const handoff = options.carry === 'film' ? Math.max(landing, fadeEnd ?? landing) : landing;
+  return Math.round(frame) >= handoff;
 }
 
 /**

@@ -8,9 +8,6 @@ och Trailer lämnade. Här står bara det som gäller nu; kontraktet står i `do
   ligger i `game/`. Paow är dealern och Pamela är pausad. Spelets nödlösningar (en ersättare där en film saknas,
   utgången baklänges) ger vika när banken har egna filmer (`src/game-director.ts`). Kärnans gräns mot sidan är prövad
   (`docs/SYSTEM.md`, "Gränsen mellan kärnan och presentationen"; `de1883c`) och sedd i en webbläsare 2026-11-18.
-- Banorna Tal, Scen och Trailer stängdes 2026-11-17. Deras filer (bordet, rummet och ljuset i `src/scene3d-*.ts` och
-  `data/scene-*.json`; talet i `tools/speech.ts`, `src/speech-*.ts` och `data/lipsync.json`; `src/game-intro.ts`)
-  hålls av huvudagenten tills en ny bana får dem.
 - Realtidsmunnen har Jakobs ja (`paow-realtid-mun-6`, F). Koden och profilhashen finns i `tools/python/mouth-runner`.
   Tre lokala GPU-prov 2026-11-18 använde samma hash; varm fart 5,6–6,7 rutor/s med fyra CPU:er, under realtidens 24.
 - Jakob såg clownmun 2026-11-18. Jämförelserna `assets/proofs/paow-mouth-neutral-trio-20261118` och
@@ -21,6 +18,8 @@ och Trailer lämnade. Här står bara det som gäller nu; kontraktet står i `do
   dealerkort efter returen. Mjukhet och övergång i rörelse återstår att bedöma.
 - `diagnos=1` på `/game.html` ger paus/stegning. Hålkortets värde följer visad ruta: native-provet
   `paow-game-frame-20261118` höll 8 i över 22 s paus; ruta 60 visade 8, ruta 61 visade 13. Maskens kvalitet bedöms separat.
+- Filmkortsprovet behåller filmens kort vid eget mål och ritar återbruk till C2/split på spelplatsen. Spår måste täcka
+  landning/övertoning genom returskarven. `paow-game-carry-20261118` styrker bankvalen; native splitprov återstår.
 - Kopian på nätet är sekundär och står på `2e3967c` (publicerad 2026-11-18 på Jakobs ja, med nytt lösenord).
   `cloud/` bevaras tills Jakob säger annat.
 - Filmen till hans chef ligger på hans skrivbord (`paow-runda-6-till-chefen-spelet.mp4` och `-scenen.mp4`, 124 s,

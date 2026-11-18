@@ -4,8 +4,9 @@ import assert from 'node:assert/strict';
 import {buildGraph, effectOf, type BankData, type BankJob, type MotionRecord} from '../src/clip-graph.ts';
 import {defaultPlan} from '../src/placement-model.ts';
 import {createLayout} from '../src/game-table.ts';
-import {cardOptions, cardsChoice, cardWords, createFilm, effectPart, faceFrame, filmModel, type FilmPart, type FilmPlayers} from '../src/game-film.ts';
-import {returnCardAt} from '../src/card-overlay.ts';
+import {cardOptions, cardsChoice, cardWords, continuesCardFilm, continuesCardSource, createFilm, effectPart, faceFrame, filmModel, type FilmPart, type FilmPlayers} from '../src/game-film.ts';
+import {restOf, returnAfterFilmLanding, returnCardAt, type CardTrack} from '../src/card-overlay.ts';
+import {frameCardsForView} from '../src/card-overlay-view.ts';
 import {judgedBank, REVEAL_NODE} from '../src/game-director.ts';
 import {partPlaybackRate} from '../src/scene3d-film.ts';
 import type {MouthPatch} from '../src/speech-patch.ts';
@@ -147,6 +148,7 @@ test('a final C2 uses its own compatible pair via READY if the exit can play', a
     if (mode === 'missing exit') data.media!.ut = {video: null};
     if (mode === 'rejected exit') data.motions!.ut = record('kling-4', {review: {decision: 'REJECTED'}});
     const film = createFilm(queue.players, buildGraph(judgedBank(data), {dealer: 'paow'}), createLayout(defaultPlan()), async () => null, () => 0);
+    film.carry = 'film';
     film.set({table, records, lying: [1]});
     const spoken: string[] = [], talk = film.talkPart('tal');
     const round = film.play([{type: 'deal', shoeDraw: 2}], {table, records}, undefined, {
@@ -166,6 +168,7 @@ test('a final C2 uses its own compatible pair via READY if the exit can play', a
   assert.deepEqual(own.gaps, []);
   assert.equal(own.chain[2].end, 105);
   assert.equal(own.chain[3].cards?.returning, true);
+  assert.deepEqual(own.chain.slice(2, 4).map(p => p.cards?.carry), ['film', 'film'], 'a real C2 pair can carry film');
   const placed = (part: FilmPart) => (part.cards?.placed as {shoeDraw: number}[]).map(card => card.shoeDraw);
   assert.deepEqual(own.chain.map(placed), [[1], [1], [1], [1], [1, 2], [1, 2]]);
   assert.deepEqual((await play('direct')).paths, ['tal', 'in', deal, back, 'tal'].map(video));
@@ -180,30 +183,113 @@ test('a final C2 uses its own compatible pair via READY if the exit can play', a
   }
 });
 
-test('the film queue continues a carry only into adjacent source frames for the same target', async () => {
+test('a planned cut can match unloaded track paths without claiming a complete game handoff', () => {
+  const deal = {video: video('p4-source'), fps: 24, end: 110}, back = {...deal, start: 110};
+  const path = 'assets/tracking/p4-source/card-track.json';
+  assert.equal(continuesCardSource(deal, back, path, path), true);
+  assert.equal(continuesCardSource(deal, back, ' ', ' '), false);
+  assert.equal(continuesCardSource(deal, back, path, 'other-card-track.json'), false);
+  assert.equal(continuesCardFilm(deal, back, path, path), false);
+});
+
+test('the film queue keeps the film card only at its filmed target and continues it only across an adjacent cut', async () => {
   const table = {hands: [{seat: 4, cards: [1, 2, 3]}], dealer: []};
   const records = [1, 2, 3].map((shoeDraw) => ({shoeDraw, target: `P4.C${shoeDraw}`, r: 'A', s: 'spades'}));
-  const clip = 'p4-shared-source', track = `${clip}/card-track.json`;
-  async function play(backClip: string, backStart: number) {
+  const clip = 'p4-shared-source', trackPath = `${clip}/card-track.json`;
+  const restFrom = 118, restQuad = [[865, 1056], [943, 1056], [949, 1127], [865, 1127]];
+  const track: CardTrack = {width: 1764, height: 1174, restFrom, restQuad, edgeWindow: null, frames: Array.from({length: 120}, (_, frame) => ({
+    frame, side: frame < 90 ? 'BACK' : frame <= restFrom ? 'FRONT' : 'NONE', edge: null,
+    quad: frame > restFrom ? null : restQuad.map(([x, y]) => [x + (restFrom - frame) * 2, y - (restFrom - frame) * 1.5]),
+  }))};
+  async function play(backClip: string, backStart: number, slots = table,
+    {sourceTrack = track, carry = 'film', backLast = 119}: {sourceTrack?: unknown; carry?: 'film' | 'object' | null; backLast?: number} = {}) {
     const data = bank(), queue = players();
     data.jobs = data.jobs!.filter(j => !['p4-deal', 'p4-back', 'p4-rest'].includes(j.id));
     data.derived = [
-      {id: 'p4-deal', kind: 'DEAL', from: 'READY', to: 'P4.C1', clip, frames: [0, 108], dealer: 'paow'},
-      {id: 'p4-back', kind: 'RETURN', from: 'P4.C1', to: 'READY', clip: backClip, frames: [backStart, 119], dealer: 'paow'},
+      {id: 'p4-deal', kind: 'DEAL', from: 'READY', to: 'P4.C1', clip, frames: [0, 109], dealer: 'paow'},
+      {id: 'p4-back', kind: 'RETURN', from: 'P4.C1', to: 'READY', clip: backClip, frames: [backStart, backLast], dealer: 'paow'},
     ];
-    data.media!['p4-deal'] = {video: video(clip), track};
+    data.media!['p4-deal'] = {video: video(clip), track: trackPath};
     data.media!['p4-back'] = {video: video(backClip), track: `${backClip}/card-track.json`};
-    const film = createFilm(queue.players, buildGraph(data, {dealer: 'paow'}), createLayout(defaultPlan()), async () => ({restFrom: 118}), () => 0);
-    film.carry = 'film';
-    const round = film.play([1, 2, 3].map(shoeDraw => ({type: 'deal', shoeDraw})), {table, records});
+    const film = createFilm(queue.players, buildGraph(data, {dealer: 'paow'}), createLayout(defaultPlan()), async () => sourceTrack, () => 0);
+    if (carry) film.carry = carry;
+    const round = film.play([1, 2, 3].map(shoeDraw => ({type: 'deal', shoeDraw})), {table: slots, records});
     await new Promise(resolve => setTimeout(resolve, 0)); queue.end(); await round;
-    return queue.parts[0].filter(part => part.cards?.returning);
+    assert.deepEqual(film.lying, [1, 2, 3], 'all three game cards are laid when the chain ends');
+    return queue.parts[0].filter(part => part.cards?.target);
   }
-  const same = await play(clip, 109);
-  assert.deepEqual(same.map(p => [p.cards?.target, p.start, p.cards?.filmContinuesDeal]), [['P4.C1', 109, true], ['P4.C2', 109, undefined], ['P4.C3', 109, undefined]]);
-  assert.deepEqual((same[2].cards?.placed as {shoeDraw: number}[]).map(p => p.shoeDraw), [1, 2], 'the current card is not in the placed list');
-  assert.equal((await play('p4-separate-return', 109))[0].cards?.filmContinuesDeal, undefined);
-  assert.equal((await play(clip, 110))[0].cards?.filmContinuesDeal, undefined);
+  const same = await play(clip, 110);
+  assert.ok(same.every(p => p.path === video(clip)), 'all three slots use the same actual P4.C1 film');
+  assert.deepEqual(same.map(p => [p.cards?.target, p.start, p.cards?.carry, p.cards?.filmContinuesDeal]), [
+    ['P4.C1', 0, 'film', undefined], ['P4.C1', 110, 'film', true],
+    ['P4.C2', 0, 'object', undefined], ['P4.C2', 110, 'object', true],
+    ['P4.C3', 0, 'object', undefined], ['P4.C3', 110, 'object', true],
+  ]);
+  const ret = same[3];
+  assert.equal(same[2].end, ret.start, 'the last displayed DEAL frame is 109, followed by RETURN frame 110');
+  const view = (part: FilmPart, frame: number) => frameCardsForView(part.track as CardTrack, frame, null,
+    {...part.cards, scale: 1} as Parameters<typeof frameCardsForView>[3]);
+  const lastDeal = view(same[2], 109), firstReturn = view(ret, 110);
+  assert.ok(lastDeal.pose && lastDeal.pose.resting < 1);
+  assert.ok(firstReturn.pose && firstReturn.pose.resting < 1 && !firstReturn.returning, 'the object keeps moving during the first return frame');
+  assert.deepEqual(firstReturn.pose, view(same[2], 110).pose, 'render the same pose that the deal would have rendered on this source frame');
+  assert.equal(view(ret, 117).returning, false);
+  const landed = view(ret, 118);
+  assert.equal(landed.returning, true);
+  assert.deepEqual(landed.placed.map(card => card.shoeDraw), [1, 2], 'the returned C2 lies beside C1 exactly once');
+  assert.deepEqual(view(ret, 119).placed, landed.placed, 'the last frame needs no marker to keep the card');
+  const options = (part: FilmPart) => part.cards as Parameters<typeof returnAfterFilmLanding>[2];
+  assert.equal(returnAfterFilmLanding(track, 118, options(ret), 119), true, 'object mode does not wait for paper fade');
+  assert.equal(returnAfterFilmLanding(track, 118, options(same[1]), 119), false, 'film mode still waits for the fade');
+  assert.deepEqual((ret.cards?.placed as {shoeDraw: number}[]).map(p => p.shoeDraw), [1], 'the returning C2 is not in the placed list');
+  assert.deepEqual(landed.placed[1].quad, view(same[4], 0).placed[1].quad, 'the next beat keeps the C2 resting quad');
+  assert.notDeepEqual(ret.cards?.land, same[1].cards?.land, 'the reused film lays its game card in the C2 slot');
+  assert.deepEqual((same[4].cards?.placed as {shoeDraw: number}[]).map(p => p.shoeDraw), [1, 2], 'the next deal gets each laid card once');
+  assert.equal((await play('p4-separate-return', 110))[1].cards?.filmContinuesDeal, undefined);
+  assert.equal((await play(clip, 111))[1].cards?.filmContinuesDeal, undefined);
+  for (const sourceTrack of [{restFrom}, {frames: []}, {...track, frames: track.frames.slice(0, 110)}, {...track, frames: track.frames.slice(0, 111)}]) {
+    const parts = await play(clip, 110, table, {sourceTrack});
+    assert.ok(parts.every(p => !p.cards?.filmContinuesDeal), 'both seam frames are insufficient without the recorded rest');
+    assert.ok(parts.every(p => p.track === null), 'a broken track is never passed to the deal or return renderer');
+  }
+  const corruptFrame = (patch: Record<string, unknown>) => ({...track, frames: track.frames.map(f => f.frame === 110 ? {...f, ...patch} : f)});
+  for (const [sourceTrack, issue] of [
+    [corruptFrame({quad: [null, null, null, null]}), 'malformed quad'],
+    [corruptFrame({film: [...restQuad.slice(0, 3), [Infinity, 0]]}), 'non-finite film quad'],
+    [corruptFrame({edge: [[0, 0], [1, 1], [2, 2]]}), 'wrong edge length'],
+    [{...track, restFrom: '118'}, 'string rest frame'],
+  ] as const) {
+    const parts = await play(clip, 110, table, {sourceTrack});
+    assert.equal(parts.length, 6, issue);
+    assert.ok(parts.every(p => p.track === null && !p.cards?.filmContinuesDeal), issue);
+  }
+  const overlong = {...track, frames: [...track.frames, {...track.frames[119], frame: 120}]};
+  for (const restQuad of [track.restQuad, [null, null, null, null]]) {
+    const unmeasured = await play(clip, 110, table, {sourceTrack: {...track, restFrom: undefined, restQuad}});
+    assert.equal(unmeasured.length, 6);
+    for (const part of unmeasured) {
+      assert.equal((part.track as CardTrack).restFrom, null, 'missing rest is normalised, never treated as frame zero');
+      assert.equal((part.track as CardTrack).restQuad, null, 'unmeasured rest coordinates are unused');
+      assert.equal(restOf(part.track as CardTrack), null, 'the final marker-free frame cannot imply a landing');
+      assert.equal(part.cards?.filmContinuesDeal, undefined);
+    }
+  }
+  const beyondSource = await play(clip, 110, table, {sourceTrack: overlong});
+  assert.ok(beyondSource.every(p => !p.cards?.filmContinuesDeal), '121 track frames exceed the 120-frame source');
+  const noFade = await play(clip, 110, table, {sourceTrack: {...track, frames: track.frames.slice(0, 119)}});
+  assert.equal(noFade[1].cards?.filmContinuesDeal, undefined, 'the film track reaches rest but not the end of its fade');
+  assert.equal(noFade[3].cards?.filmContinuesDeal, true, 'object mode needs only the measured rest');
+  const cutShort = await play(clip, 110, table, {backLast: 117});
+  assert.ok(cutShort.every(p => !p.cards?.filmContinuesDeal), 'the return cut ends before the recorded rest');
+  for (const carry of [null, 'object'] as const) {
+    const ordinary = await play(clip, 110, table, {carry});
+    assert.ok(ordinary.every(p => p.cards?.carry === 'object' && !p.cards?.filmContinuesDeal));
+    assert.equal(view(ordinary[3], 110).returning, true, 'the ordinary return starts as before');
+  }
+  const split = await play(clip, 110, {hands: [{seat: 4, cards: [1, 2]}, {seat: 4, cards: [3]}], dealer: []});
+  assert.deepEqual(split.map(p => p.cards?.target), ['P4.H1.C1', 'P4.H1.C1', 'P4.H1.C2', 'P4.H1.C2', 'P4.H2.C1', 'P4.H2.C1']);
+  assert.ok(split.every(p => p.cards?.carry === 'object' && !!p.cards?.filmContinuesDeal === !!p.cards?.returning));
+  assert.equal(view(split[3], 110).returning, false, 'split continues the same hand motion into the return');
 });
 
 test('the game card keeps its own gloss through an untracked return and appears once as placed in later beats', async () => {
@@ -272,15 +358,27 @@ test('a paused or stalled reveal hides the total until its displayed source fram
     data.media!.turn = {video: video('turn'), track: 'turn-track.json'};
     const calls: {parts: FilmPart[]; options: NonNullable<Parameters<FilmPlayers['play']>[1]>}[] = [];
     const shown: string[] = [];
-    const track = tracked ? {frames: Array.from({length: 120}, (_, i) => ({side: i < 2 ? 'BACK' : i < 6 ? 'EDGE' : 'FRONT'}))} : null;
+    const quad = [[1020, 1040], [1090, 1041], [1097, 1110], [1020, 1111]];
+    const track: CardTrack | null = tracked ? {
+      width: 1764, height: 1174, restFrom: 86, restQuad: quad, edgeWindow: [2, 5],
+      frames: Array.from({length: 120}, (_, frame) => {
+        const side = frame < 2 ? 'BACK' : frame < 6 ? 'EDGE' : 'FRONT';
+        return {frame, side, quad: side === 'EDGE' ? null : quad, edge: side === 'EDGE' ? [[1050, 1040], [1051, 1110]] : null};
+      }),
+    } : null;
     const film = createFilm({play(parts, options = {}) { calls.push({parts, options}); }, hurry() {}}, buildGraph(data, {dealer: 'paow'}), createLayout(defaultPlan()), async () => track, () => 0);
-    const round = film.play([{type: 'reveal', shoeDraw: 2}], {
-      table: {hands: [], dealer: [1, 2]},
-      records: [{shoeDraw: 1, target: 'D.C1', r: '6', s: 'hearts'}, {shoeDraw: 2, target: 'D.C2', r: 'K', s: 'spades', faceDown: false}],
-    }, beat => shown.push(beat.kind), {before: [{part: {path: 'spoken-lead.mp4', sound: true}, begin() {}}]});
+    const table = {hands: [], dealer: [1, 2]};
+    const records = [{shoeDraw: 1, target: 'D.C1', r: '6', s: 'hearts'}, {shoeDraw: 2, target: 'D.C2', r: 'K', s: 'spades', faceDown: false}];
+    film.carry = 'film';
+    film.set({table, records: [records[0], {...records[1], r: null, s: null, faceDown: true}], lying: [1, 2]});
+    const round = film.play([{type: 'reveal', shoeDraw: 2}], {table, records}, beat => shown.push(beat.kind), {before: [{part: {path: 'spoken-lead.mp4', sound: true}, begin() {}}]});
     await new Promise(resolve => setImmediate(resolve));
     const {parts, options} = calls[0], index = parts.findIndex(part => part.path === video('turn'));
     assert.equal(index, 1); assert.equal(parts[index].fps, 24);
+    const placed = (part: FilmPart) => (part.cards?.placed as {shoeDraw: number; back: boolean}[]).map(({shoeDraw, back}) => [shoeDraw, back]);
+    assert.deepEqual(placed(parts[0]), [[1, false], [2, true]], 'the lead-in has one closed hole card');
+    assert.deepEqual(placed(parts[index]), [[1, false]], 'only the reveal itself carries the hole card');
+    assert.equal(parts[index].cards?.carry, 'film');
     options.onPart?.(0);
     options.onFrame?.(index, 6);
     assert.deepEqual(shown, [], 'preloaded reveal cannot expose a card during the spoken lead-in');
@@ -293,6 +391,8 @@ test('a paused or stalled reveal hides the total until its displayed source fram
     assert.deepEqual(shown, tracked ? ['REVEAL'] : [], 'a real face frame reveals once; unknown tracking waits for the part to end');
     options.onEnd?.(); await round;
     assert.deepEqual(shown, ['REVEAL'], 'end-of-part fallback still completes the engine beat exactly once');
+    await new Promise(resolve => setImmediate(resolve));
+    assert.deepEqual(placed(calls[1].parts[0]), [[1, false], [2, false]], 'at rest the revealed card is placed exactly once');
   }
 });
 

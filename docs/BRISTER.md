@@ -9,9 +9,10 @@ Innehåll: Kortet · Filmerna och banken · Läpparna och rösten · Spelet och 
 
 ## Kortet
 
-- **Filmkort som förval kan flytta återbrukade andrakort.** `kort=liggande` låter filmens kort nå filmens egen plats;
-  Faktisk bankmätning `paow-game-frame-20261118/coverage.json` ger 9/16 egna målfilmer i helgiven; sju C2 återbrukar C1
-  med 39–51 px förskjutning. Extra kort/split når cirka 100 px, och D.C3+ saknar filmhand. Scenproven
+- **Återbrukade andrakort/split kräver fortfarande ritade kort.** `kort=liggande` behåller filmkort vid eget mål men
+  ritar återbruket till spelplatsen; tidiga returskarvar följs fram till uppmätt vila. Bankprov `paow-game-carry-20261118`
+  och regressioner täcker valet, inte native-rörelsen. Mätningen `paow-game-frame-20261118/coverage.json` ger 9/16 egna
+  målfilmer; sju C2 behöver 39–51 px förskjutning. Extra kort/split når cirka 100 px, och D.C3+ saknar filmhand. Scenproven
   `paow-cycle02-scene-20261118` och `paow-outer-filmcard-20261118`
   visar kvarliggande kort mellan två olika platser, men inte detta återbruk. P1:s blekta skugga vid ruta 114 är rättad:
   Prov `paow-rest-paper-zone-20261118` visar före/efter och P7. Eget kompatibelt C2-par prioriteras före C1-delning,
@@ -22,6 +23,8 @@ Innehåll: Kortet · Filmerna och banken · Läpparna och rösten · Spelet och 
   synkontroll av fem bildpar. `paow-c2-contact-20261118` minskar blåspill vid fingret med starkt lokalt hud- och kortstöd;
   en blå kant kvarstår. Violett nagellack intill båda färgerna kan inte säkert särskiljas med enbart färg.
   Omgreppsfilmen `paow-c2-film-regrip-20261118` behåller tvekan och har längre blekning; Cykel01 är starkare.
+  Det lokala tidsprovet `paow-c2-continuous-clock-20261118` tidigarelägger tumsläpp 76 ms (en renderad ruta);
+  oberoende granskning bedömer det för litet som enda skäl till en ny betald tagning.
   Full rörelseacceptans återstår. Stänger: egna landningar eller verifierat återbruk, hålkortets
   vändning och en hel giv i båda renderlägena. Spelets förval är därför kvar; inget Primär-val har ändrats.
 - **Forkens hela giv är ett separat metodprov.** Prov `paow-fork-round-review-20261118`: 14 kort ligger kvar och

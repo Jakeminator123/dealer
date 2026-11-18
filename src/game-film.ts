@@ -8,7 +8,7 @@
 // What she says: a talk film (a rest take on request, with sound) is played whole at rest, before a step's chain of cards or after
 // it (speakMoments), or between rounds (say). A line without a film is said at the same moment, in the chat only.
 import {ARRIVE_EDGE, LEAVE_EDGE, dealHub, resolveRound, pickIdle, idleRange, idleExit, effectOf, IDLE_RULE, type FilmEffect, type Graph, type Take, type Segment} from './clip-graph.ts';
-import {CARRY, type CardRecord} from './card-overlay.ts';
+import {CARRY, plausible, restFade, restOf, type CardRecord, type CardTrack} from './card-overlay.ts';
 import type {OverlayOptions} from './card-overlay-view.ts';
 import {slotOf, slotLabel, slotFilm, type Layout, type Pt, type TableCards} from './game-table.ts';
 import {hubChain, planBeats, SEAT_HUB, STAND_IN_FILM, type Beat, type FilmSignal} from './game-director.ts';
@@ -102,9 +102,46 @@ export function cardOptions(beat: Pick<Beat, 'own' | 'lying'> & Partial<Pick<Bea
   return {...base, ...(beat.kind === 'RETURN' ? {returning: true} : {}), land: layout.quad(beat.own.slot), target: beat.own.label, shoeDraw: beat.own.shoeDraw, bend: material.bend, gloss: material.gloss};
 }
 
-/** The same source and track continue at the next source frame, even though the bank names a new part. */
-export function continuesCardFilm(deal: Pick<Segment, 'video' | 'fps' | 'end'> | null | undefined, back: Pick<Segment, 'video' | 'fps' | 'start'>, dealTrack: unknown, backTrack: unknown): boolean {
-  return !!deal?.video && deal.video === back.video && deal.fps === back.fps && deal.end === back.start && !!backTrack && backTrack === dealTrack;
+function hasCoordinates(value: unknown, count: number): boolean {
+  return Array.isArray(value) && value.length === count && value.every(point =>
+    Array.isArray(point) && point.length === 2 && Number.isFinite(point[0]) && Number.isFinite(point[1]));
+}
+
+function cardTrackOrNull(value: unknown): CardTrack | null {
+  const track = value as CardTrack | null;
+  if (!Array.isArray(track?.frames) || !track.frames.length || !track.frames.every((frame, i) =>
+    frame?.frame === i
+    && (frame.quad == null || hasCoordinates(frame.quad, 4))
+    && (frame.film == null || hasCoordinates(frame.film, 4))
+    && (frame.edge == null || hasCoordinates(frame.edge, 2)))) return null;
+  const {restFrom, restQuad} = track;
+  if (restFrom != null && (!Number.isInteger(restFrom) || !track.frames[restFrom] || !hasCoordinates(restQuad, 4))) return null;
+  return restFrom == null ? {...track, restFrom: null, restQuad: null} : track;
+}
+
+/** A planned cut can compare track identities before the track itself has been loaded. */
+export function continuesCardSource(deal: Pick<Segment, 'video' | 'fps' | 'end'> | null | undefined,
+  back: Pick<Segment, 'video' | 'fps' | 'start'>, dealTrackKey: unknown, backTrackKey: unknown): boolean {
+  const hasTrack = typeof backTrackKey === 'string' ? backTrackKey.trim() !== '' : backTrackKey !== null && typeof backTrackKey === 'object';
+  return hasTrack && backTrackKey === dealTrackKey && !!deal?.video && deal.video === back.video && deal.fps === back.fps && deal.end === back.start;
+}
+
+/** One physical deal continues into its return only if the source and track cover the whole handoff. */
+export function continuesCardFilm(deal: Pick<Segment, 'video' | 'fps' | 'end'> | null | undefined,
+  back: Pick<Segment, 'video' | 'fps' | 'start'> & {end?: number | null; take?: Pick<Take, 'frames'> | null},
+  dealTrack: unknown, backTrack: unknown, carry: Carry = 'film'): boolean {
+  if (!continuesCardSource(deal, back, dealTrack, backTrack)) return false;
+  const track = cardTrackOrNull(backTrack);
+  if (!track) return false;
+  const {frames} = track, sourceEnd = back.take?.frames ?? Infinity;
+  if (frames.length > sourceEnd || frames[back.start - 1]?.frame !== back.start - 1 || frames[back.start]?.frame !== back.start) return false;
+  const rest = restOf(track);
+  if (!rest || !plausible(rest.quad) || (rest.assumed && rest.from + 1 !== sourceEnd)) return false;
+  const landing = rest.assumed ? rest.from : track.restFrom ?? rest.from;
+  // Measure the required fade against the source duration. A truncated track cannot shorten its own requirement.
+  const fade = carry === 'film' ? restFade(track, sourceEnd - 1) : null;
+  const through = Math.max(back.start, landing, fade?.to ?? landing);
+  return frames[through]?.frame === through && through < Math.min(back.end ?? Infinity, sourceEnd);
 }
 
 // A line she says in a step: its talk film (null: text only) and what is done when she begins it (the page writes it in the chat).
@@ -115,11 +152,11 @@ export type Said = {part: FilmPart | null; begin(): void; key?: string; beat?: B
 export function createFilm(players: FilmPlayers, bank: Graph, layout: Layout, readJson: (path: string) => Promise<unknown>, random: () => number = Math.random) {
   let graph = bank; // whose films: another dealer at the table is another graph (use)
   let table: TableCards = {hands: [], dealer: []}, records: CardRecord[] = [], lying: number[] = [];
-  let token = 0, resting: Take | null = null, carry: Carry = CARRY, words: CardWords = {}, calmOnly = false, heldRest: number | null = null; const played: string[] = [], tracks = new Map<string, Promise<unknown>>();
+  let token = 0, resting: Take | null = null, carry: Carry = CARRY, words: CardWords = {}, calmOnly = false, heldRest: number | null = null; const played: string[] = [], tracks = new Map<string, Promise<CardTrack | null>>();
   let dealTempo = 1;
   let mouths: () => Mouth[] = () => []; // the mouth patches the page has read and may lay now, asked for as a step begins
   const modelOf = (take: Take | null | undefined) => { const model = filmModel(take, graph.takes); return model ? {model} : {}; };
-  const trackOf = (take: Take | null) => { const path = take?.media.track; if (!path) return Promise.resolve(null); let hit = tracks.get(path); if (!hit) { hit = readJson(path).catch(() => null); tracks.set(path, hit); } return hit; };
+  const trackOf = (take: Take | null) => { const path = take?.media.track; if (!path) return Promise.resolve(null); let hit = tracks.get(path); if (!hit) { hit = readJson(path).then(cardTrackOrNull, () => null); tracks.set(path, hit); } return hit; };
   // Each plan card's centre in film pixels: the clip bank uses them to say how far a shared seat film's card is moved.
   const places: Record<string, Pt> = {};
   for (let seat = 0; seat <= 7; seat++) for (const index of [0, 1]) places[`${seat ? `P${seat}` : 'D'}.C${index + 1}`] = layout.centre({owner: seat ? 'P' : 'D', seat, hand: 0, hands: 1, index});
@@ -234,11 +271,13 @@ export function createFilm(players: FilmPlayers, bank: Graph, layout: Layout, re
     const closed = hole === null ? records : records.map(r => r.shoeDraw === hole ? {...r, r: null, s: null, faceDown: true} : r);
     const parts: FilmPart[] = [], beatOf: number[] = [], shows: (number | null)[] = [];
     segments.forEach((s, i) => { if (!s?.video) return; beatOf.push(i);
-      const beat = beats[i], prev = beats[i - 1], deal = segments[i - 1];
-      // The cut can divide one physical deal before the card lies. Only adjacent source frames with the same track and slot share that handoff.
+      const beat = beats[i], prev = beats[i - 1], deal = segments[i - 1], target = s.film?.target;
+      // A borrowed film lands at its own slot. Only the drawn card can follow a different slot on the game table.
+      const partCarry = carry === 'film' && beat.own && target !== beat.own.label ? 'object' : carry;
+      // The cut can divide one deal before the card lies, even when that film is borrowed for a different slot.
       const filmContinuesDeal = carry === 'film' && beat.kind === 'RETURN' && prev?.kind === 'DEAL' && beat.own && prev.own?.shoeDraw === beat.own.shoeDraw &&
-        deal?.film?.target === beat.own.label && continuesCardFilm(deal, s, loaded[i - 1], loaded[i]);
-      const cards = cardOptions(beat, table, i < turn ? closed : records, layout, carry, words);
+        !!target && deal?.film?.target === target && continuesCardFilm(deal, s, loaded[i - 1], loaded[i], partCarry);
+      const cards = cardOptions(beat, table, i < turn ? closed : records, layout, partCarry, words);
       if (filmContinuesDeal) cards.filmContinuesDeal = true;
       // the hole card's turn lands (its value and the dealer's total are shown) when its face shows in the film, not when the film ends
       const face = beat.kind === 'REVEAL' ? faceFrame(loaded[i]) : null;
