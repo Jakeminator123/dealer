@@ -126,6 +126,11 @@ skrivs på skrivbordet när allt har ett utfall. Här står bara det som inte ä
 
 ## Nästa steg
 
+**Nyast: huvudagenten lämnade över rollen natten till 2026-11-18.** Överlämningen ligger i
+`D:/dealer-scratch/tmp/huvudagent11/OVERLAMNING-2026-11-18.md` och är nyare än avsnittet nedan för allt efter kl. 00.45
+(det som står som "Pågår" nedan är till största delen inne). Sessionen 3D skriver om hela överlämningssystemet på grenen
+`handoff-nytt` (Jakobs PRIO 1); den här filen ersätts när den grenen slås ihop.
+
 **Börja här (läget 2026-11-18 kl. 00.47; huvudagenten bytte chatt kl. 21.45).** Labbet byggs om på Jakobs ord från
 kl. 21.46 och 21.58 (Jakobs besked, "Ett labb"), av underagenter till huvudagenten:
 
