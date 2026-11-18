@@ -42,7 +42,8 @@ export function withSceneCardTrial(parts: PlayPart[], segments: readonly Segment
   const layout = createLayout(plan, { geometry }), placed = new Set<number>();
   return parts.map((part, i) => {
     const own = ownByStep.get(i) ?? null;
-    if (!part.path || (!own && !placed.size)) return part;
+    // The entry has no dealt card yet, but the shoe window must already use the round's carry mode and colours.
+    if (!part.path) return part;
     const returning = own && segments[i].kind === "RETURN", lying = [...placed].filter(n => n !== own?.shoeDraw);
     const cards = cardOptions({ own, lying, kind: returning ? "RETURN" : own ? "DEAL" : undefined }, table, records, layout, "film", words);
     if (returning) {

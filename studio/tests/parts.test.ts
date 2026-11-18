@@ -108,6 +108,24 @@ const seatFour = round([
   { from: "P4.C1", to: "IDLE", take: "pamela-p4-c1-plan-return-idle-01" },
 ]);
 
+test("a film carry round keeps the shoe's appearance through the entry without placing a card early", () => {
+  const segments = resolveRound(graph, [
+    { from: "IDLE", to: "READY", take: "pamela-idle-ready-entry-01" },
+    { from: "READY", to: "P4.C1", take: "pamela-p4-c1-plan-deal-02" },
+    { from: "P4.C1", to: "IDLE", take: "pamela-p4-c1-plan-return-idle-01" },
+  ]);
+  const source = partsOf(segments), plan = defaultPlan(), words = { back: "dark", face: "paper" } as const;
+  const trial = withSceneCardTrial(source, segments, plan, "contract", words);
+  assert.deepEqual(trial.map(p => [p.cards?.carry, p.cards?.back, p.cards?.face]),
+    Array.from({ length: 3 }, () => ["film", "dark", "paper"]));
+  assert.deepEqual(trial[0].cards?.placed, []);
+  assert.equal(trial[0].cards?.target, undefined);
+  assert.equal(trial[0].cards?.land, undefined);
+  assert.ok(source.every(p => p.cards === undefined), "the ordinary scene parts remain unchanged");
+  const gapped = [{ ...source[0], path: null }, ...source.slice(1)];
+  assert.equal(withSceneCardTrial(gapped, segments, plan, "contract", words)[0], gapped[0], "a missing film stays a gap");
+});
+
 test("film carry applies to a resolved Primary deal and main return without locked takes", () => {
   const dealId = "pamela-p4-c1-plan-deal-02", backId = "pamela-p4-c1-plan-return-ready-01";
   const bankWithPrimary = { ...bank, motions: { ...bank.motions,
