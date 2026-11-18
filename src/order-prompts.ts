@@ -821,18 +821,22 @@ export function orderPrompt(
     motion: (DealMotion & { target?: string | null; cardScale?: number }) | null;
     generation: { model: string };
     pictures: readonly { goesAs: string; drawn?: { centre: [number, number] } | null }[];
-    prompt: { extra: string | null; style?: TextStyle | null; template?: string };
+    prompt: { extra: string | null; style?: TextStyle | null; template?: string; place?: readonly [number, number] | null };
     reference?: { status: string } | null;
   },
   dealer: Dealer,
   planPlace: { x: number; y: number } | null,
-  /** asStored: with the version in the order's own template name (an approved order is reproduced, not rewritten). */
+  /**
+   * asStored: with the version in the order's own template name and the plan's point the order stored (prompt.place)
+   * before the plan of now (an approved order is reproduced, not rewritten).
+   */
   options: { asStored?: boolean } = {},
 ): Prompt {
   const at = (order.prompt.template ?? '').lastIndexOf('@');
   const stored = options.asStored && at >= 0 ? Number(order.prompt.template!.slice(at + 1)) || undefined : undefined;
   const drawn = order.pictures.find((p) => p.goesAs === 'endFrame')?.drawn ?? null;
-  const place = drawn ? { x: drawn.centre[0], y: drawn.centre[1] } : planPlace;
+  const kept = options.asStored ? order.prompt.place ?? null : null;
+  const place = drawn ? { x: drawn.centre[0], y: drawn.centre[1] } : kept ? { x: kept[0], y: kept[1] } : planPlace;
   const m = order.motion;
   const deal = order.step.key === 'GIV-2.1' || order.step.key === 'GIV-2.2' || order.step.key === 'GIV-2.3';
   return promptFor({

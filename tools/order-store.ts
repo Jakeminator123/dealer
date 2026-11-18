@@ -473,14 +473,16 @@ export function orderStore(root: string, options: StoreOptions = {}) {
 
   /**
    * The draft's text from its choices: the dealer's look, the step, the motion, and where the card lands: where the last
-   * picture draws it, or before that picture exists the plan's own point for the card.
+   * picture draws it, or the plan's own point for the card (before that picture exists, or where it draws no card of its
+   * own: an A3). The plan's point is stored with the text (prompt.place), so that the sent words reproduce whatever the
+   * plan says later.
    */
   async function textOf(order: Pick<Order, 'step' | 'motion' | 'generation' | 'pictures' | 'prompt' | 'reference'>, dealer: DealerInfo, extra: string | null): Promise<Order['prompt']> {
     const drawn = order.pictures.find((p) => p.goesAs === 'endFrame')?.drawn ?? null;
     const target = order.motion?.target ?? stepOf(order.step.key)?.target ?? null;
     const planPlace = !drawn && target ? planCentre((await readPlan(root)).plan, target) : null;
     const { template, style, text } = orderPrompt({ ...order, prompt: { ...order.prompt, extra } }, dealer, planPlace);
-    return { template, style, text, sha256: sha(text), extra, middle: false };
+    return { template, style, text, sha256: sha(text), extra, middle: false, ...(planPlace ? { place: [planPlace.x, planPlace.y] as [number, number] } : {}) };
   }
 
   async function create(input: NewOrder): Promise<{ order: Order; revision: string }> {
@@ -550,7 +552,7 @@ export function orderStore(root: string, options: StoreOptions = {}) {
     if (input.end && !named) throw new StoreError(400, `${input.end} är ingen A3-kandidat för ${seatWords(target)} med ${lays === 'RH' ? 'höger' : 'vänster'} hand vid kortet.`);
     const seatLanding = named ?? (oneWayDeal ? landingEntry(register, dealer.id, target, lays) : null);
     const cuts = oneWayDeal && !seatLanding ? cutFrameOf(bank!, { dealer: dealer.id, step, target, hand: lays }) : [];
-    if (oneWayDeal && !seatLanding && !cuts.length) throw new StoreError(400, `${seatEndMissing(dealer.name, target, step.from)}${lays === 'RH' && twoHands ? ` Från ankare 2.3 lägger höger hand kortet: platsen behöver sin A3 (${a3Name(target!)}) med höger hand vid kortet (node tools/landing-make.ts).` : ''}`);
+    if (oneWayDeal && !seatLanding && !cuts.length) throw new StoreError(400, `${seatEndMissing(dealer.name, target, step.from, lays)}${lays === 'RH' && twoHands ? ` Från ankare 2.3 lägger höger hand kortet: platsen behöver sin A3 (${a3Name(target!)}) med höger hand vid kortet (node tools/landing-make.ts).` : ''}`);
     if (input.reference !== undefined && input.reference !== null && typeof input.reference !== 'string') throw new StoreError(400, 'Referensfilmen ska vara en tagnings id.');
     const cardScale = input.cardScale ?? 1;
     if (!(CARD_SCALES as readonly unknown[]).includes(cardScale)) throw new StoreError(400, `Kortets storlek ska vara ${CARD_SCALES.map((f) => scaleWords(f)).join(', ')}.`);

@@ -81,6 +81,8 @@ Innehåll: Kortet · Filmerna och banken · Läpparna och rösten · Spelet och 
   docka som kan resa sig för plats 1 och 2. Dessutom: mallens text säger att kortet vänds ände över ände medan
   dockans film "-f" rullar det kring långsidan; en plats första tagning utan sista bild kräver en ny mall; och
   `film-fix` kortar ett stilla slut med högst tre rutor, så den nya ingången står stilla 1,3 s i slutet.
+  Skälet "ingen slutbild" säger handen i lagret men inte i Ny beställning (`NewOrder.tsx` anropar `seatEndMissing`
+  utan hand), och vänsterhandens text blir lika fel om bara ett A3 för höger hand gäller på platsen.
 - **Det bandet inte kan än** ([tools/dealer-line.md](../tools/dealer-line.md)). Syns: i Beställ. Ankare 2.1 och 2.2 är
   steg (`STEPS` i `src/order-model.ts`), men landningsbild, keystone och ankare 1 är det inte, och ett tredje eller
   fjärde dealerkort går inte att beställa, eftersom planen har sexton platser (`TARGETS` i `src/placement-model.ts`).

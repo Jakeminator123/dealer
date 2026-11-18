@@ -493,10 +493,20 @@ test('the line: a deal says its anchor, its seat and its card, and the recipe gi
   const waits = await call('POST', '/api/orders', { body: { dealer: 'paow', step: 'GIV-2.1', target: 'P1.C1' } });
   assert.equal(waits.status, 400);
   assert.match(waits.json.error, /^Nyp, ett kort till platsen till plats 1 väntar på dockans film till platsen \(receptet giv-2\.1-ytter i data\/order-methods\.json\)\. Inget beställs utan den; välj en referensfilm själv eller ingen, som ett undantag\.$/);
-  // A handbyte is no exception of its own: the bank's one-hand deal is no reference for it, so it waits too.
+  // A handbyte lays the card with the right hand, and a landing picture holds for one hand: seat 4's is for the left, so the
+  // seat has no end picture for it, and the refusal says the hand.
   const pass = await call('POST', '/api/orders', { body: { dealer: 'paow', step: 'GIV-2.1', target: 'P4.C1', pass: true } });
   assert.equal(pass.status, 400);
-  assert.match(pass.json.error, /väntar på dockans film till platsen eller en rakt godkänd giv dit, lagd med höger hand/);
+  assert.equal(pass.json.error, 'Plats 4 har ingen slutbild för Paows giv från ankare 2.1 med höger hand vid kortet: ingen landningsbild för höger hand gäller för platsen, och banken har ingen egen film dit, lagd med höger hand, vars retur du har godkänt rakt. Gör en landningsbild för platsen med höger hand vid kortet gällande i Material, eller godkänn en sådan retur från platsen i Granska.');
+  // With one for the right hand, a handbyte is still no exception of its own: the bank's one-hand deal is no reference for
+  // it, so it waits too.
+  register.dealers.paow.entries.push({ id: 'paow-landning-p4-rh', role: 'landning', name: 'Plats 4, landning, höger hand', path: 'assets/anchors/paow-landning-p4/anchor.png', node: 'LAND(P4.C1)', card: 'P4.C1', hand: 'RH', state: 'gäller' });
+  await writeFile(path.join(root, 'data/media-roles.json'), JSON.stringify(register, null, 2));
+  const passRef = await call('POST', '/api/orders', { body: { dealer: 'paow', step: 'GIV-2.1', target: 'P4.C1', pass: true } });
+  assert.equal(passRef.status, 400);
+  assert.match(passRef.json.error, /^Nyp, ett kort till platsen till plats 4 väntar på dockans film till platsen eller en rakt godkänd giv dit, lagd med höger hand \(receptet giv-2\.1-mitten i data\/order-methods\.json\)\. Inget beställs utan den; välj en referensfilm själv eller ingen, som ett undantag\.$/);
+  register.dealers.paow.entries.pop();
+  await writeFile(path.join(root, 'data/media-roles.json'), JSON.stringify(register, null, 2));
 
   // The exceptions, each said in the draft: no reference film (then the recipe's 3 s), another model, tur och retur.
   const none = (await call('POST', '/api/orders', { body: { dealer: 'paow', step: 'GIV-2.1', target: 'P4.C1', reference: null } })).json.order;

@@ -8,6 +8,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile, readdir } from 'node:fs/promises';
+import { createHash } from 'node:crypto';
 import { BANS_FILM, BANS_STILL, LONG_VERSION, SAY, TEMPLATE_VERSION, bansFor, handsIn, orderPrompt, placeWords, promptFor, turnSentence, whereShort, wordCount, type DealMotion } from '../src/order-prompts.ts';
 import { STEPS, TEXT_STYLES, type StepKey, type TextStyle } from '../src/order-model.ts';
 
@@ -156,6 +157,10 @@ test('a stored order gets its text from the same function as the sheet: the draw
   assert.equal(orderPrompt(order, paow, { x: 236.4, y: 979.8 }).text, sheet.text);
   const drawn = { ...order, pictures: [{ goesAs: 'endFrame', drawn: { centre: [236.4, 979.8] as [number, number] } }] };
   assert.equal(orderPrompt(drawn, paow, null).text, sheet.text);
+  // The plan's point the text was written from is stored with it: a sent text reproduces whatever the plan says later.
+  const kept = { ...order, prompt: { extra: null, place: [236.4, 979.8] as [number, number] } }, moved = { x: 1074.3, y: 1057.6 };
+  assert.equal(orderPrompt(kept, paow, moved, { asStored: true }).text, sheet.text, 'reproduced from its own point');
+  assert.notEqual(orderPrompt(kept, paow, moved).text, sheet.text, 'a draft written anew follows the plan of now');
   assert.equal(orderPrompt({ ...order, motion: { ...motion, pass: undefined as unknown as boolean } }, paow, null).text.includes('takes the same card by its edges'), false, 'an older order without pass is read as left all the way');
 });
 
@@ -258,13 +263,28 @@ test('the minimal text, the returns, the entry and the rest in the new styles', 
   assert.doesNotMatch(nod.text, /looks gently around|hands stay where they are/);
 });
 
+// The two deals that end on an A3 and were approved before an order stored the plan's point its place words came from
+// (prompt.place): their approval freezes them, so the point stands here, as the A3's own receipt drew the card
+// (assets/anchors/paow-a3-p1 and -p4/receipt.json, plan dbb55821…). No other order may lack it: the list never grows.
+const sha = (text: string) => createHash('sha256').update(text).digest('hex');
+const PLACE_BEFORE_IT_WAS_STORED: Record<string, { x: number; y: number }> = {
+  'paow-giv-2-3-p1-01': { x: 236, y: 980.7 },
+  'paow-giv-2-3-p4-01': { x: 856.6, y: 1102.2 },
+};
+
 test('every order on disk keeps reproducing its text and template: the long text is Utförlig and unchanged', async () => {
   const { dealers } = JSON.parse(await readFile('data/dealers.json', 'utf8'));
   for (const name of (await readdir('data/orders')).filter((f) => f.endsWith('.json'))) {
     const order = JSON.parse(await readFile(`data/orders/${name}`, 'utf8'));
     if (order.kind === 'STILL' && order.approval) continue; // a still approved on an older wording keeps its frozen text
+    // Placed outside Beställ (tools/order-import.ts): the text that was sent, never promptFor's, with no template to come from.
+    if (order.outside) { assert.deepEqual([order.prompt.template, order.prompt.sha256], [null, sha(order.prompt.text)], `${order.id}: its own text`); continue; }
     const dealer = dealers.find((d: { id: string }) => d.id === order.dealer);
-    const p = orderPrompt(order, dealer, null, { asStored: true }); // with the version it was written with (template 4, 5 or 6)
+    const short = order.prompt.style === 'KORT' || order.prompt.style === 'MINIMAL';
+    const fromPlan = short && /^GIV-/.test(order.step.key) && !order.pictures.some((x: { drawn?: unknown }) => x.drawn);
+    if (fromPlan && !order.prompt.place) assert.ok(PLACE_BEFORE_IT_WAS_STORED[order.id], `${order.id}: a short deal whose last picture draws no card stores the plan's point (prompt.place)`);
+    // With the version it was written with (template 4, 5 or 6), and never the plan of now.
+    const p = orderPrompt(order, dealer, fromPlan && !order.prompt.place ? PLACE_BEFORE_IT_WAS_STORED[order.id] : null, { asStored: true });
     assert.equal(p.template, order.prompt.template, `${order.id}: template`);
     assert.equal(p.style, order.prompt.style ?? 'UTFÖRLIG', `${order.id}: style`);
     // The place words come from the drawn card; a deal without one (bara dit) is checked in the studio's test with the plan.

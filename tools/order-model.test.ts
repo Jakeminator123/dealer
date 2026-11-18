@@ -367,6 +367,8 @@ test('a deal bara dit ends on THAT seat\'s own end picture: its landing picture,
   assert.equal(seatEndWords(cut), 'ruta 108 ur paow-giv-2-1-p4-04-01, där returen börjar (Jakob: ”bra”)');
   assert.equal(seatEndWords(null), 'ingen slutbild');
   assert.equal(seatEndMissing('Paow', 'P5.C1', '2.1'), 'Plats 5 har ingen slutbild för Paows giv från ankare 2.1: ingen landningsbild gäller för platsen, och banken har ingen egen film dit vars retur du har godkänt rakt. Gör en landningsbild för platsen gällande i Material, eller godkänn en retur från platsen i Granska.');
+  // Laid with the right hand (a handbyte, or from anchor 2.3): a landing picture for the left hand may hold, so the hand is said.
+  assert.equal(seatEndMissing('Paow', 'P4.C1', '2.1', 'RH'), 'Plats 4 har ingen slutbild för Paows giv från ankare 2.1 med höger hand vid kortet: ingen landningsbild för höger hand gäller för platsen, och banken har ingen egen film dit, lagd med höger hand, vars retur du har godkänt rakt. Gör en landningsbild för platsen med höger hand vid kortet gällande i Material, eller godkänn en sådan retur från platsen i Granska.');
 });
 
 test('a reference film from the bank: the same step and seat first, the dealer\'s own before another\'s, a rejected take last; length against the model', () => {

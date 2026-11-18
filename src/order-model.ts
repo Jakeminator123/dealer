@@ -279,7 +279,12 @@ export type Order = {
   reference: Reference;
   generation: Generation;
   /** style: absent on orders made before template 4 (read as Utförlig, styleOf). */
-  prompt: { template: string; style?: TextStyle; text: string; sha256: string; extra: string | null; middle: boolean };
+  /**
+   * place: the plan's point for the card that the place words were written from, where the last picture draws no card of
+   * its own (an A3, a bank film's frame): a sent text is history, so it is reproduced from this and never from the plan of
+   * now (tools/order-store.ts textOf, src/order-prompts.ts orderPrompt). Absent on orders written before 2026-11-18.
+   */
+  prompt: { template: string; style?: TextStyle; text: string; sha256: string; extra: string | null; middle: boolean; place?: [number, number] | null };
   takes: number;
   cost: { perTake: number; total: number; worstPerTake: number; worstTotal: number; basis: string };
   limits: { maxCredits: number; stopBelowCredits: number };
@@ -491,9 +496,15 @@ export function seatEndOf<E extends { id?: string; role: string; node?: string; 
   const cut = bank ? cutFrameOf(bank, want)[0] : null;
   return cut ? { kind: 'SNITTRUTA', cut } : null;
 }
-/** Why a deal bara dit cannot be ordered to a seat without an end picture, and the two ways to get one, in Jakob's words. */
-export const seatEndMissing = (dealerName: string, target: string | null | undefined, from: Anchor) =>
-  `${cap(seatWords(target))} har ingen slutbild för ${genitive(dealerName)} giv från ankare ${from}: ingen landningsbild gäller för platsen, och banken har ingen egen film dit vars retur du har godkänt rakt. Gör en landningsbild för platsen gällande i Material, eller godkänn en retur från platsen i Granska.`;
+/**
+ * Why a deal bara dit cannot be ordered to a seat without an end picture, and the two ways to get one, in Jakob's words.
+ * Both are for the hand that lays the card (landingOf, cutFrameOf): laid with the right hand, the words say so, since a
+ * landing picture for the left hand may well hold for the seat.
+ */
+export const seatEndMissing = (dealerName: string, target: string | null | undefined, from: Anchor, lays: 'LH' | 'RH' = 'LH') =>
+  lays === 'RH'
+    ? `${cap(seatWords(target))} har ingen slutbild för ${genitive(dealerName)} giv från ankare ${from} med höger hand vid kortet: ingen landningsbild för höger hand gäller för platsen, och banken har ingen egen film dit, lagd med höger hand, vars retur du har godkänt rakt. Gör en landningsbild för platsen med höger hand vid kortet gällande i Material, eller godkänn en sådan retur från platsen i Granska.`
+    : `${cap(seatWords(target))} har ingen slutbild för ${genitive(dealerName)} giv från ankare ${from}: ingen landningsbild gäller för platsen, och banken har ingen egen film dit vars retur du har godkänt rakt. Gör en landningsbild för platsen gällande i Material, eller godkänn en retur från platsen i Granska.`;
 /** "landningsbilden Plats 4, landning" or "ruta 126 ur paow-giv-2-2-p4-01-01, där returen börjar": a seat's end picture in words. */
 export const seatEndWords = (end: SeatEnd<{ name?: string }> | null): string => (!end ? 'ingen slutbild' : end.kind === 'LANDNING' ? `landningsbilden${end.entry.name ? ` ${end.entry.name}` : ''}` : cutFrameWords(end.cut));
 const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
