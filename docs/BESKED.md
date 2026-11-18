@@ -328,7 +328,7 @@ Innehåll: [Arbetet och dokumenten](#arbetet-och-dokumenten) · [Labbet och stud
   plats nummer 4. Men från samma ankare." Tagning 4 märkte han Bra. Ingångsfilmen: 2 gånger farten Bra, 1,5 gånger
   "hackar och långsam" (hans svar 1,5 på kortet i Beslut var ett misstag, sade han). Nästa filmer är given från 2.3
   till plats 4 och till plats 1, utan att den andra handen tippar kortet; ingången går in i banken i dubbel fart.
-- **Ett slutbildsankare per plats, en gång för alla** (2026-11-18, kl. 04.50, om att given från 2.3 saknade slutbild):
+- **Ett slutbildsankare per plats, en gång för alla** (2026-11-18, cirka kl. 04.25, om att given från 2.3 saknade slutbild):
   "kan du inte skapa som en bra och logisk slutbildsankare (A3P'n') för respektive possition som sätts in på något
   sätt? Kan du inte bara lösa detta en gång för alla! Lös allt och ta oss vidare. VIll se nya filmer. Ska inte bättre
   modell än Nao Banana användas elelr använder vi någon annan?" Varje kortplats får ett ankare 3 (A3 · P1 till P7 och
