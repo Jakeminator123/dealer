@@ -124,6 +124,32 @@ const playRound = async (data: BankData, table: {hands: {seat: number; cards: nu
   return {gaps, beats, chain, clips: chain.map(part => part.path.split('/')[2])};
 };
 
+test('the film queue continues a carry only into adjacent source frames for the same target', async () => {
+  const table = {hands: [{seat: 4, cards: [1, 2, 3]}], dealer: []};
+  const records = [1, 2, 3].map((shoeDraw) => ({shoeDraw, target: `P4.C${shoeDraw}`, r: 'A', s: 'spades'}));
+  const clip = 'p4-shared-source', track = `${clip}/card-track.json`;
+  async function play(backClip: string, backStart: number) {
+    const data = bank(), queue = players();
+    data.jobs = data.jobs!.filter(j => !['p4-deal', 'p4-back', 'p4-rest'].includes(j.id));
+    data.derived = [
+      {id: 'p4-deal', kind: 'DEAL', from: 'READY', to: 'P4.C1', clip, frames: [0, 108], dealer: 'paow'},
+      {id: 'p4-back', kind: 'RETURN', from: 'P4.C1', to: 'READY', clip: backClip, frames: [backStart, 119], dealer: 'paow'},
+    ];
+    data.media!['p4-deal'] = {video: video(clip), track};
+    data.media!['p4-back'] = {video: video(backClip), track: `${backClip}/card-track.json`};
+    const film = createFilm(queue.players, buildGraph(data, {dealer: 'paow'}), createLayout(defaultPlan()), async () => ({restFrom: 118}), () => 0);
+    film.carry = 'film';
+    const round = film.play([1, 2, 3].map(shoeDraw => ({type: 'deal', shoeDraw})), {table, records});
+    await new Promise(resolve => setTimeout(resolve, 0)); queue.end(); await round;
+    return queue.parts[0].filter(part => part.cards?.returning);
+  }
+  const same = await play(clip, 109);
+  assert.deepEqual(same.map(p => [p.cards?.target, p.start, p.cards?.filmContinuesDeal]), [['P4.C1', 109, true], ['P4.C2', 109, undefined], ['P4.C3', 109, undefined]]);
+  assert.deepEqual((same[2].cards?.placed as {shoeDraw: number}[]).map(p => p.shoeDraw), [1, 2], 'the current card is not in the placed list');
+  assert.equal((await play('p4-separate-return', 109))[0].cards?.filmContinuesDeal, undefined);
+  assert.equal((await play(clip, 110))[0].cards?.filmContinuesDeal, undefined);
+});
+
 test('the game card keeps its own gloss through an untracked return and appears once as placed in later beats', async () => {
   const table = {hands: [{seat: 6, cards: [2]}, {seat: 4, cards: [3]}], dealer: []};
   const plan = defaultPlan();

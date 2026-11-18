@@ -4,7 +4,7 @@
 // and how large comes from src/card-overlay.ts.
 import * as THREE from '../materials/source/references/card-materials/vendor/three.module.js';
 import {CARD, RANKS, SUITS, createCardGeometry, createCardPrint, paperMaterialParameters, applyCardLights, validateCard, type CardValue} from '../materials/source/src/card-material-study.ts';
-import {poseAt, restOf, restingQuad, returnCardAt, cardToImage, projectionOf, regionOf, readMatte, filmZone, strayBoxes, plausible, plausibleEdge, cardRecord, cardFace, CARD_RANKS, CARD_SUITS, BESIDE, RIM, type CardRecord, type CardTrack, type Scene, type Pose} from './card-overlay.ts';
+import {poseAt, filmLandingFrame, restingQuad, returnCardAt, returnAfterFilmLanding, cardToImage, projectionOf, regionOf, readMatte, filmZone, strayBoxes, plausible, plausibleEdge, cardRecord, cardFace, CARD_RANKS, CARD_SUITS, BESIDE, RIM, type CardRecord, type CardTrack, type Scene, type Pose} from './card-overlay.ts';
 import {signedArea, inside, clockwise, grown, is, type Pt} from './card-track.ts';
 import {SHOE_BOX} from './scene3d-matte.ts';
 
@@ -20,7 +20,7 @@ const PAPER_EXPOSURE = 3;
 type PlacedCard = {quad: Pt[]; back: boolean; target?: string | null; shoeDraw?: number | null; gloss?: number};
 type FilmRegion = (x: number, y: number) => boolean;
 export type OverlayOptions = {scale: number; split: boolean; card: CardValue; side: 'TRACK' | 'BACK' | 'FRONT'; bend: number; gloss: number; inFront: boolean;
-  shift?: Pt | null; land?: Pt[] | null; returning?: boolean; placed?: PlacedCard[]; carry?: 'object' | 'film' | 'matte';
+  shift?: Pt | null; land?: Pt[] | null; returning?: boolean; placed?: PlacedCard[]; carry?: 'object' | 'film' | 'matte'; filmContinuesDeal?: boolean;
   // A value per card (optional): the records of the dealt cards, and which of them the card of this film is, by draw number or by
   // target. Each resting card names its own in `placed`. A card without a record keeps the artwork in `card`.
   cards?: CardRecord[] | null; target?: string | null; shoeDraw?: number | null};
@@ -32,12 +32,11 @@ export function placedCardsForView(placed: readonly PlacedCard[], returning: Pla
 }
 
 /** In film carry, the moving card stays in the original pixels until the tracked landing. */
-export function frameCardsForView(track: CardTrack | null, frame: number, scene: Scene | null, options: Pick<OverlayOptions, 'carry' | 'scale' | 'shift' | 'land' | 'returning' | 'placed' | 'target' | 'shoeDraw' | 'gloss'>) {
-  const returning = returnCardAt(track, frame, options), marker = returning?.marker;
-  const filmCarry = options.carry === 'film' && !options.returning && (!!track || options.land?.length === 4);
-  const rest = filmCarry && track && restOf(track);
-  // A deal with a measured landing uses that frame. Bad quads near its centre must not move the handoff earlier.
-  const keepFilmCard = filmCarry && Math.round(frame) < (rest ? track?.restFrom ?? rest.from : Infinity);
+export function frameCardsForView(track: CardTrack | null, frame: number, scene: Scene | null, options: Pick<OverlayOptions, 'carry' | 'scale' | 'shift' | 'land' | 'returning' | 'placed' | 'target' | 'shoeDraw' | 'gloss' | 'filmContinuesDeal'>) {
+  const afterLanding = returnAfterFilmLanding(track, frame, options), returning = afterLanding ? returnCardAt(track, frame, options) : null, marker = returning?.marker;
+  const filmCarry = options.carry === 'film' && !afterLanding && (!!track || options.land?.length === 4);
+  // A measured landing takes precedence. Bad quads near its centre must not move the handoff earlier.
+  const keepFilmCard = filmCarry && Math.round(frame) < (filmLandingFrame(track) ?? Infinity);
   // During a return only the marker is tracked. The game card is laid just as it will be in the next beat.
   const pose: Pose | null = returning
     ? marker ? {frame: marker.frame, side: marker.side, quad: null, edge: null, film: grown(marker.quad, RIM), resting: 1, turned: false} : null
@@ -74,7 +73,11 @@ if (RANKS.join() !== CARD_RANKS.join() || SUITS.join() !== CARD_SUITS.join()) co
 
 // One WebGL scene for every overlay on the page: the study's card, lit as in the study, seen straight on.
 // A homography then places that view on the card's quad in the film, so its perspective is the table's.
-type Studio = {canvas: HTMLCanvasElement; renderer: any; scene: any; camera: any; mesh: any; front: any; back: any; hidden: any; flat: any; bent: any; bend: number; gloss: number; face: string};
+// The vendored r167 JavaScript infers a single default material, but Mesh also accepts a material per geometry group.
+type CardMaterial = InstanceType<typeof THREE.MeshPhysicalMaterial> | InstanceType<typeof THREE.MeshBasicMaterial>;
+const CardMesh = THREE.Mesh as unknown as new (geometry: ReturnType<typeof createCardGeometry>, materials: CardMaterial[]) =>
+  Omit<InstanceType<typeof THREE.Mesh>, 'material'> & {material: CardMaterial[]; position: InstanceType<typeof THREE.Vector3>};
+type Studio = {canvas: HTMLCanvasElement; renderer: any; scene: any; camera: any; mesh: InstanceType<typeof CardMesh>; front: any; back: any; hidden: any; flat: any; bent: any; bend: number; gloss: number; face: string};
 let studio: Studio | null = null;
 const faces = new Map<string, any>(); // one print per card value, kept: at most 52
 const texture = (value?: CardValue) => { const t = new THREE.CanvasTexture(createCardPrint(value)); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8; return t; };
@@ -86,10 +89,10 @@ function open(options: OverlayOptions): Studio {
     key.position.set(-3.5, 7, 5); fill.position.set(4, 3, -3); applyCardLights('neutral', key, fill, hemisphere); scene.add(hemisphere, key, fill);
     const paper = paperMaterialParameters(options.gloss), card = validateCard(options.card);
     faces.set(`${card.rank}/${card.suit}`, texture(card));
-    const front: any = new THREE.MeshPhysicalMaterial({...paper, map: faces.get(`${card.rank}/${card.suit}`), depthTest: false}), back: any = new THREE.MeshPhysicalMaterial({...paper, map: texture(), depthTest: false});
-    const hidden: any = new THREE.MeshBasicMaterial({visible: false}), flat = createCardGeometry(0), bent = createCardGeometry(options.bend);
+    const front = new THREE.MeshPhysicalMaterial({...paper, map: faces.get(`${card.rank}/${card.suit}`), depthTest: false}), back = new THREE.MeshPhysicalMaterial({...paper, map: texture(), depthTest: false});
+    const hidden = new THREE.MeshBasicMaterial({visible: false}), flat = createCardGeometry(0), bent = createCardGeometry(options.bend);
     // Only the surface towards the eye is drawn; which print it carries is chosen per frame.
-    const mesh: any = new THREE.Mesh(flat, [front, hidden, hidden]); mesh.position.set(0, 0, -8); mesh.frustumCulled = false; scene.add(mesh);
+    const mesh = new CardMesh(flat, [front, hidden, hidden]); mesh.position.set(0, 0, -8); mesh.frustumCulled = false; scene.add(mesh);
     studio = {canvas, renderer, scene, camera: new THREE.PerspectiveCamera(35, 1, 0.1, 40), mesh, front, back, hidden, flat, bent, bend: options.bend, gloss: options.gloss, face: `${card.rank}/${card.suit}`};
   }
   const s = studio, face = `${options.card.rank}/${options.card.suit}`;

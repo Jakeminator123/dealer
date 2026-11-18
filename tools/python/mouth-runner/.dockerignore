@@ -1,0 +1,12 @@
+**
+!docker/
+!docker/Dockerfile
+!docker/requirements.txt
+!kod/
+!kod/*.py
+!kod/vikter.json
+!kod/profiler/
+!kod/profiler/paow-realtid-mun-6@1.json
+!licenses/
+!licenses/MuseTalk.LICENSE
+!LICENSER.md

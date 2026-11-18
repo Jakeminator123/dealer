@@ -1,5 +1,9 @@
 # Python-skripten i efterarbetet
 
+Den egna MuseTalk-köraren finns i [mouth-runner](mouth-runner/README.md). Dess MediaPipe-mask, versionerade munprofil
+och källproveniens följer med repot; modellvikter och lokala förberedelser gör det inte. Profilens regressioner körs
+även av `npm test` när Python 3 finns, annars redovisas just den kontrollen som överhoppad.
+
 Fem skript som det löpande bandet ([dealer-line.md](../dealer-line.md), [order-clerk.md](../order-clerk.md) §5–6,
 [handboken](../film-prompting.md)) fortfarande kör i Python. Fyra hittar händer, ögon, axlar eller ansikten med
 MediaPipe eller OpenCV:s ansiktsmodeller, som repots TypeScript inte har; det femte (`forlang-plagg.py`) är inte

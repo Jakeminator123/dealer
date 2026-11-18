@@ -11,15 +11,15 @@ och Trailer lämnade. Här står bara det som gäller nu; kontraktet står i `do
 - Banorna Tal, Scen och Trailer stängdes 2026-11-17. Deras filer (bordet, rummet och ljuset i `src/scene3d-*.ts` och
   `data/scene-*.json`; talet i `tools/speech.ts`, `src/speech-*.ts` och `data/lipsync.json`; `src/game-intro.ts`)
   hålls av huvudagenten tills en ny bana får dem.
-- Realtidsmunnen har Jakobs ja (`paow-realtid-mun-6`, storlek F, mindre öppning och mjuk haka). Köraren gör lokalt
-  12–13 rutor/s mot 24 för realtid. Spelets repliker använder lyftet med ritad underläpp (`src/speech-plan.ts`).
-- Jakob såg clownmun 2026-11-18. Tre neutrala `lips=null`-prov finns i `assets/proofs/paow-mouth-candidate-20261118`
-  och `paow-mouth-neutral-{hej09,goodluck14}-20261118`. Originalens ljud är byteidentiskt; aktiv bank är oförändrad.
-  Canvas visar normala färger under tal där HTML-video överexponeras. Mindre mungipor syns; samlad rörelsegranskning återstår.
+- Realtidsmunnen har Jakobs ja (`paow-realtid-mun-6`, F). Koden och profilhashen finns i `tools/python/mouth-runner`.
+  Tre lokala GPU-prov 2026-11-18 använde samma hash; varm fart 5,6–6,7 rutor/s med fyra CPU:er, under realtidens 24.
+- Jakob såg clownmun 2026-11-18. Jämförelserna `assets/proofs/paow-mouth-neutral-trio-20261118` och
+  `paow-approved-f-game-20261118` har tre repliker med samma ljud som aktiv bank, som är oförändrad.
+  Båda har spelats till slut i Chrome med `canvas=1`; neutral dämpar V-konturen i stills, F öppnar större. Jakobs val återstår.
 - `dealTempo` är ett prov med standard 1 och intervallet 1–1,15. Bara tysta givar och returer ändrar takt efter
   munlappsvalet. I Chrome verifierades tredje P6-kortet vid filmruta 86 och 1,12×, samt tre P6-kort och två
   dealerkort efter returen. Mjukhet och övergång i rörelse återstår att bedöma.
-- `diagnos=1` ger paus och stegning ±1 ruta. Långsam sökning märks tydligt; bildkontroll av blinkrättningen återstår.
+- `diagnos=1` ger paus och stegning ±1 ruta. Chrome visade sökstatus, sedan ruta 128→129 med bordskorten kvar.
 - Kopian på nätet är sekundär och står på `2e3967c` (publicerad 2026-11-18 på Jakobs ja, med nytt lösenord).
   `cloud/` bevaras tills Jakob säger annat.
 - Filmen till hans chef ligger på hans skrivbord (`paow-runda-6-till-chefen-spelet.mp4` och `-scenen.mp4`, 124 s,
@@ -27,8 +27,8 @@ och Trailer lämnade. Här står bara det som gäller nu; kontraktet står i `do
 - Filmen före spelet (`/trailer`) är `assets/films/intro/noir-3/film-2.mp4`.
 
 **Nästa steg.**
-1. En ny talsession börjar från överlämningen med strömning till spelet och sedan ett podprov. Taket är 5 USD med
-   besked till Jakob samma dag före start. Podskriptet saknas. Städa två skript i `tal/korare/` på D: före incheckning.
+1. Använd den versionerade köraren; ny Docker-image, strömning till spelet och podprov återstår. Podtaket är 5 USD med
+   besked till Jakob före start. Original på D: bevaras, men de gamla startskripten med delat containernamn används inte.
 2. Repliker som munlappar över vila (`repliker-som-munlappar`) kan provas efter Jakobs ja till realtidsmunnen 2026-11-17.
 3. En ny runda till chefen när läpparna är inne (`node alla.mjs <namn>`, blind granskning mot `chef-jakob-1-1x-v10`).
    Jakob lyssnar innan han skickar.

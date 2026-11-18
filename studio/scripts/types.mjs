@@ -1,5 +1,5 @@
-// Type check the studio's own files. Findings in its dependencies outside the studio (such as ../src) are counted separately.
-// An optional list of paths restricts the check to those files and directories. Compiler and project errors always fail it.
+// Check the studio and its imported files. An optional list restricts which studio files are reported.
+// Project, compiler and imported-file errors always fail the check.
 import {spawnSync} from 'node:child_process';
 import {createRequire} from 'node:module';
 import {isAbsolute, relative, resolve, sep} from 'node:path';
@@ -28,8 +28,8 @@ function main() {
   const output = [run.stdout, run.stderr].filter(Boolean).join('\n');
   const studioRoot = process.cwd();
   const scopes = process.argv.slice(2).map((scope) => resolve(studioRoot, scope));
-  const own = [], project = [];
-  let others = 0, external = 0;
+  const own = [], project = [], external = [];
+  let others = 0;
   for (const line of output.split(/\r?\n/)) {
     const location = /^(.*)\(\d+,\d+\): error TS\d+:/.exec(line);
     if (!location) {
@@ -37,20 +37,21 @@ function main() {
       continue;
     }
     const file = resolve(studioRoot, location[1]);
-    if (!contains(studioRoot, file)) external++;
+    if (!contains(studioRoot, file)) external.push(line);
     else if (!scopes.length || scopes.some((scope) => contains(scope, file))) own.push(line);
     else others++;
   }
 
-  if (run.status !== 0 && !own.length && !project.length && !others && !external) {
+  if (run.status !== 0 && !own.length && !project.length && !others && !external.length) {
     console.error(`TypeScript-kontrollen avslutades med kod ${run.status} utan läsbara fel från kompilatorn.`);
     if (output.trim()) console.error(output.trim());
     return 1;
   }
   for (const line of project) console.error(line);
   for (const line of own) console.log(line);
-  console.log(`${own.length} fel i ${scopes.length ? 'dina filer' : 'studions filer'}. ${others} i andras studiofiler. ${external} anmärkningar utanför studion (räknas inte).`);
-  return own.length || project.length ? 1 : 0;
+  for (const line of external) console.log(line);
+  console.log(`${own.length} fel i ${scopes.length ? 'dina filer' : 'studions filer'}. ${others} i andra studiofiler. ${external.length} fel i importerade filer utanför studion.`);
+  return own.length || project.length || external.length ? 1 : 0;
 }
 
 process.exitCode = main();

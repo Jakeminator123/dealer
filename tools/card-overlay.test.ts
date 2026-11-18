@@ -3,7 +3,7 @@
 import test, {type TestContext} from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile, readdir} from 'node:fs/promises';
-import {sceneOf, restingQuad, restOf, poseAt, returnCardAt, cardToImage, projectionOf, regionOf, readMatte, filmZone, shiftShare, placedCard, landing, leakCount, strayBoxes, ranges, cardRecord, cardFace, CARD_RANKS, CARD_SUITS, MARGIN, STRAY, type CardRecord, overridesOf, cardInFront, describeTrack, RIM, plausible, keystone, skirtSound, turnOf, restFade, restShare, PLAUSIBLE, HOLD, REST_FADE, type CardTrack, type Scene} from '../src/card-overlay.ts';
+import {sceneOf, restingQuad, restOf, poseAt, returnCardAt, returnAfterFilmLanding, cardToImage, projectionOf, regionOf, readMatte, filmZone, shiftShare, placedCard, landing, leakCount, strayBoxes, ranges, cardRecord, cardFace, CARD_RANKS, CARD_SUITS, MARGIN, STRAY, type CardRecord, overridesOf, cardInFront, describeTrack, RIM, plausible, keystone, skirtSound, turnOf, restFade, restShare, PLAUSIBLE, HOLD, REST_FADE, type CardTrack, type Scene} from '../src/card-overlay.ts';
 import {signedArea, centre, dist, sound, type Pt} from '../src/card-track.ts';
 import {cameraFromContract, solveCamera, squareToQuad, onSquare, filmToScene} from '../src/scene3d-geometry.ts';
 import {filmCarryProtection, frameCardsForView, placedCardsForView, protectFilmPixels} from '../src/card-overlay-view.ts';
@@ -222,6 +222,50 @@ test('a deal without a track keeps the source card while laid game cards remain 
   assert.equal(view.pose, null);
   assert.equal(view.placed[0].shoeDraw, 1);
   assert.equal(frameCardsForView(null, 10, scene, {carry: 'film', scale: 1, placed}).keepFilmCard, false, 'an idle beat has no moving card');
+});
+
+test('film carry follows the measured landing across an early cut into the same film', () => {
+  // The current Paow bank's exclusive DEAL end and tracked restFrom for these four seats.
+  for (const [id, cut, rest] of [['P1.C1', 113, 114], ['P4.C1', 109, 118], ['P7.C1', 84, 90], ['D.C1', 166, 181]] as const) {
+    const track = {...deal(), restFrom: rest, frames: Array.from({length: rest + 10}, (_, frame) => ({frame, side: frame < rest - 8 ? 'BACK' as const : 'FRONT' as const,
+      edge: null, quad: frame < rest - 8 ? shift(P4_FILM, -100, -200) : frame < rest + 2 ? P4_FILM : null}))};
+    const landedQuad = pts(P4_FILM), earlier = [{quad: pts(shift(P4_FILM, -110, 0)), back: false, shoeDraw: 1}];
+    const returning = {carry: 'film', scale: 1.8, returning: true, filmContinuesDeal: true, land: landedQuad, target: id, shoeDraw: 2, placed: earlier} as const;
+    for (const frame of [cut - 1, cut, rest - 1]) {
+      const view = frameCardsForView(track, frame, scene, {...returning, returning: frame >= cut});
+      assert.equal(view.keepFilmCard, true, `${id} f${frame}: the film still carries the card`);
+      assert.equal(view.pose, null);
+      assert.deepEqual(view.placed.map(p => p.shoeDraw), [1], 'the earlier game card stays and the current card has no double');
+    }
+    const atRest = frameCardsForView(track, rest, scene, returning);
+    const later = frameCardsForView(track, rest + 4, scene, returning);
+    assert.equal(atRest.keepFilmCard, false);
+    assert.equal(atRest.returning, true);
+    assert.deepEqual(later.placed, atRest.placed, 'the current game card stays after the film marker disappears');
+    assert.deepEqual(atRest.placed.map(p => p.shoeDraw), [1, 2]);
+    const separate = frameCardsForView(track, cut, scene, {...returning, filmContinuesDeal: false});
+    assert.deepEqual(separate.placed, atRest.placed, 'a separate return starts with its already placed game card');
+    assert.equal(returnAfterFilmLanding(track, rest - 1, returning, rest + 2), false, 'the scene keeps the film carry before rest');
+    assert.equal(returnAfterFilmLanding(track, rest + 1, returning, rest + 2), false, 'the scene can finish its fade after rest');
+    assert.equal(returnAfterFilmLanding(track, rest + 2, returning, rest + 2), true);
+    assert.equal(returnAfterFilmLanding(track, cut, {...returning, carry: 'object'}), true);
+    assert.equal(returnAfterFilmLanding({...track, restFrom: null}, cut, returning), true, 'an unmeasured landing does not delay a return');
+  }
+});
+
+test('a continuous return waits for inferred rest when a deal has no measured rest', () => {
+  const rest = 118, cut = 109, track = {...deal(), restFrom: null, restQuad: null,
+    frames: Array.from({length: rest + 1}, (_, frame) => ({frame, side: frame < 80 ? 'BACK' as const : 'FRONT' as const,
+      edge: null, quad: frame < rest ? shift(P4_FILM, 0, -40) : P4_FILM}))};
+  const options = {carry: 'film', scale: 1, land: pts(P4_FILM), shoeDraw: 7, returning: true, filmContinuesDeal: true} as const;
+  assert.equal(restOf(track)?.from, rest);
+  assert.equal(frameCardsForView(track, cut - 1, scene, {...options, returning: false}).keepFilmCard, true);
+  assert.equal(frameCardsForView(track, cut, scene, options).keepFilmCard, true);
+  assert.equal(frameCardsForView(track, rest - 1, scene, options).placed.length, 0);
+  assert.deepEqual(frameCardsForView(track, rest, scene, options).placed.map(card => card.shoeDraw), [7]);
+  const noRest = {...track, frames: track.frames.map(frame => ({...frame, side: 'FRONT' as const}))};
+  assert.equal(restOf(noRest), null);
+  assert.deepEqual(frameCardsForView(noRest, cut, scene, options).placed.map(card => card.shoeDraw), [7]);
 });
 
 test('the projection puts the model card exactly on its quad', () => {

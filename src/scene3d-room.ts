@@ -11,7 +11,9 @@ import * as T from 'three';
 import {FILM, clockAngles, solveCamera, type FilmCamera} from './scene3d-geometry.ts';
 
 // The built rooms by name; a panorama room is named by its entry in the register.
-export type RoomId = 'salong' | 'panorama' | 'la' | 'skog' | 'hall' | 'kuliss' | 'plat' | (string & {});
+type BuiltRoomId = 'salong' | 'hall' | 'kuliss' | 'plat';
+export type RoomId = BuiltRoomId | 'panorama' | 'la' | 'skog' | (string & {});
+type RoomRegister<T> = Record<BuiltRoomId, T> & Record<string, T>;
 const BUILT = ['salong', 'hall', 'kuliss', 'plat'];
 // A room that a module of its own builds (src/scene3d-hall.ts). Dealer metres around the middle of the dealer-side table edge:
 // the felt is y = 0, the floor and ceiling as FLOOR and CEILING below, -z is away from the camera, behind the dealer. update
@@ -244,7 +246,8 @@ export function createRooms(scene: T.Scene, urls: {plate: string; panorama: stri
   const spheres = panoramas.map(look => ({look, mesh: sphereOf(null)})), later = new Map(spheres.map(s => [s.look.id, s]));
   const lights = new Map(panoramas.map(p => [p.id, p.light]));
   const backdrop = new T.Mesh(new T.PlaneGeometry(1, 1), new T.MeshBasicMaterial({map: plate, color: 0x959595, fog: false}));
-  const rooms: Record<RoomId, Room> = {
+  // The built rooms are always present. Panorama keys come from the supplied room register.
+  const rooms: RoomRegister<Room> = {
     salong: {group: salon, plate: null, follow: false, hasDepth: true, blur: 11, exposure: 1, fog: new T.Fog(0x0f0906, 8, 30), turn: 0, mirror: false},
     ...Object.fromEntries(spheres.map(({look, mesh}) => [look.id, {group: mesh, plate: null, follow: true, hasDepth: false, blur: look.blur, exposure: look.exposure, fog: null, turn: look.turn, mirror: look.mirror}])),
     hall: {group: hallBox, plate: null, follow: false, hasDepth: true, blur: 11, exposure: 1, fog: new T.Fog(0x0b0710, 8, 30), turn: 0, mirror: false},
@@ -262,7 +265,7 @@ export function createRooms(scene: T.Scene, urls: {plate: string; panorama: stri
   const hallFog = () => { const own = hall?.fog ?? {color: 0x0b0710, near: 8, far: 30}, fog = rooms.hall.fog!; fog.color.set(own.color); fog.near = own.near * k; fog.far = own.far * k; };
   // tint of the dust per room: [behind the dealer (linear, may exceed 1), in front of her (as shown)], and how much of it is leaves
   // (a panorama's from its entry)
-  const AIR: Record<RoomId, {back: number[]; front: number[]; leaves: number}> = {
+  const AIR: RoomRegister<{back: number[]; front: number[]; leaves: number}> = {
     salong: {back: [1.5, 1.23, 0.85], front: [0.95, 0.83, 0.66], leaves: 0}, hall: {back: [1.3, 1.1, 1.25], front: [0.85, 0.78, 0.82], leaves: 0},
     kuliss: {back: [1.5, 1.23, 0.85], front: [0.95, 0.83, 0.66], leaves: 0}, plat: {back: [0, 0, 0], front: [0.95, 0.83, 0.66], leaves: 0},
     ...Object.fromEntries(panoramas.map(p => [p.id, {back: p.tint.back, front: p.tint.front, leaves: p.air === 'leaves' ? 1 : 0}]))};

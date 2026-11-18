@@ -142,10 +142,11 @@ Innehåll: Kortet · Filmerna och banken · Läpparna och rösten · Spelet och 
   Prövat: inget. Stänger: Jakob lyssnar själv innan något med ljud skickas vidare.
 - **Munnen i realtid når inte realtid på hans dator.** Syns: den egna köraren ger 12–13 rutor per sekund i hela kedjan
   på hans RTX 3060 mot 24 för realtid, och de första rutorna av en replik kommer efter 1,3–2,5 s. Prövat: `bbox_shift`
-  ger inte större läppar (storleken kommer ur inläggningen). Stänger: provkvällen på hans pod; en podd kan inte bygga en
+  ger inte större läppar (storleken kommer ur inläggningen). Tre profilprov 2026-11-18 med fyra CPU:er gav 5,6–6,7 rutor/s
+  varmt; det är en annan begränsad körning, inte ett nytt mått på maxfart. Stänger: provkvällen på hans pod; en podd kan inte bygga en
   image, så Dockerfilens steg måste köras där som ett skript, som inte är skrivet.
-- **Körarens kod för munnen ligger bara på D:** (`D:/dealer-scratch/tmp/tal/korare/`). Syns: en städning av
-  slaskdisken tar den. Prövat: inget. Stänger: koden in i repot efter städning av två skript.
+- **Körarens nya Dockerbygge är inte prövat.** Koden, profil, licenser och ursprung finns i `tools/python/mouth-runner`;
+  tre GPU-prov använder dess kod monterad över befintlig image. Stänger: bygg från den pinnade Dockerfilen och jämför samma prov.
 - **Rösten.** Syns: spelet väljer talfilmerna med rösten Paow (`data/speech.json`), och 25 med rösten Jessica spelas
   inte; rösten ligger i Kevins ElevenLabs-konto, och registret namnger nyckelraden, aldrig nyckeln
   ([TAL.md](TAL.md), "Rösten"). Jakobs första röst-id är inte färdigtränat hos ElevenLabs. Prövat: inget. Stänger: bara

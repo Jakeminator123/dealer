@@ -233,6 +233,20 @@ export function returnCardAt(track: CardTrack | null, frame: number, options: {r
   };
 }
 
+/** The film card hands over at the recorded rest, or at the final rest inferred by restOf. */
+export function filmLandingFrame(track: CardTrack | null): number | null {
+  const rest = track && restOf(track);
+  return rest ? (rest.assumed ? rest.from : track!.restFrom ?? rest.from) : null;
+}
+
+/** Only a return cut from adjacent frames of the deal can keep that deal's film card until it rests. */
+export function returnAfterFilmLanding(track: CardTrack | null, frame: number, options: {carry?: 'object' | 'film' | 'matte'; returning?: boolean; filmContinuesDeal?: boolean}, fadeEnd?: number): boolean {
+  if (!options.returning) return false;
+  if (options.carry !== 'film' || !options.filmContinuesDeal) return true;
+  const landing = filmLandingFrame(track);
+  return landing === null || Math.round(frame) >= Math.max(landing, fadeEnd ?? landing);
+}
+
 /**
  * The rendered card in one frame. In the hand it follows the film's quad. From `restFrom` on it is
  * the constant-size card on the table. Over the last `ease` frames before that its size moves

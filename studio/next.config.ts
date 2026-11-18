@@ -18,9 +18,6 @@ const nextConfig: NextConfig = {
   basePath: "/studio",
   trailingSlash: true,
   images: { unoptimized: true },
-  // The modules in ../src are written for Node's type stripping and have never been through a type checker; the
-  // studio's own files are checked with `npm run types`.
-  typescript: { ignoreBuildErrors: true },
   ...(dev
     ? {
         // Like the lab server, the bare origin leads to the studio.

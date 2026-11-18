@@ -1,0 +1,83 @@
+{
+  "schemaVersion": 1,
+  "origin": "Dealer, lokal körarkälla tal/korare 0.2",
+  "textNormalization": "README, provenance och den fullständiga MuseTalk-licensen har LF-radbrytningar utan avslutande blanksteg; licensens text är oförändrad. originalSha256 gäller originalets byte.",
+  "files": [
+    {
+      "original": "kod/korare.py",
+      "path": "kod/korare.py",
+      "originalSha256": "708525e75d73c4566da9423f2ccea34e7bdf93735a7e37054c6dcd622017a431"
+    },
+    {
+      "original": "kod/tjanst.py",
+      "path": "kod/tjanst.py",
+      "originalSha256": "f359d4f1c603f51020ca5fa0b9b22e7cd8b2db63da2f283fd0c3d653c0af2fb2"
+    },
+    {
+      "original": "kod/inlaggning.py",
+      "path": "kod/inlaggning.py",
+      "originalSha256": "47e19345f2a7b3af9c31025573a9a39f0e262b9bc5f6395f13e91422cef5379b"
+    },
+    {
+      "original": "kod/ansikte.py",
+      "path": "kod/ansikte.py",
+      "originalSha256": "f0b0f48c87ded763e5b225c54ae377236e85e0b2b80cb03524a71b68832f3196"
+    },
+    {
+      "original": "kod/vikter.json",
+      "path": "kod/vikter.json",
+      "originalSha256": "6695e3dbce5b98bd80613f87793b9b2f817d8848ed7e2c66bed6c21ad8cb40fb"
+    },
+    {
+      "original": "docker/Dockerfile",
+      "path": "docker/Dockerfile",
+      "originalSha256": "f03cebead9dab2be59a1074417852c9e0b255289ce747eebd7663e4a3dbf3596"
+    },
+    {
+      "original": "docker/requirements.txt",
+      "path": "docker/requirements.txt",
+      "originalSha256": "aa57b5171da04ca8515a7d52c046d3418e4805b452c0707fbb7991e75d42e5d6"
+    },
+    {
+      "original": ".dockerignore",
+      "path": ".dockerignore",
+      "originalSha256": "c82e5fae2787f7b35acbece829302f47fcbee6481dad76a03c1f4b5118385c04"
+    },
+    {
+      "original": "README.md",
+      "path": "README.md",
+      "originalSha256": "36c1d2840d965fb7ab02e0068063d09af263faa84468a92b956fb621fba9391c"
+    },
+    {
+      "original": "LICENSER.md",
+      "path": "LICENSER.md",
+      "originalSha256": "e05f261ab0e3ff76522a4a2268c1464549e423f68f28d0b3830a7a90ffa221c9"
+    },
+    {
+      "original": "musetalk/LICENSE",
+      "path": "licenses/MuseTalk.LICENSE",
+      "originalSha256": "858c5fdc07b8d71e1c88b64337bbc2c32a70a621733ab19809140ec9e19e6904"
+    }
+  ],
+  "upstream": {
+    "repository": "https://github.com/TMElyralab/MuseTalk",
+    "commit": "0a89dec45a0192b824e3cf4daf96c239440c5ed8",
+    "license": "MIT",
+    "copyright": "Copyright (c) 2024 Tencent Music Entertainment Group",
+    "licenseFile": "licenses/MuseTalk.LICENSE"
+  },
+  "code": {
+    "kod/korare.py": "Dealer-körare utifrån MuseTalk scripts/realtime_inference.py.",
+    "kod/tjanst.py": "Dealers tjänst för en replik i taget, ur lokala talbanans körare.",
+    "kod/inlaggning.py": "Dealer-omskrivning av layMouth och layBack i src/speech-plan.ts och tools/speech.ts (tal21).",
+    "kod/ansikte.py": "Dealer-landmärken med MediaPipe. Anpassar MuseTalk musetalk/utils/preprocessing.py och återanvänder MIT-kod från musetalk/utils/face_parsing/__init__.py."
+  },
+  "adaptedAfterCopy": [
+    ".dockerignore",
+    "README.md",
+    "LICENSER.md",
+    "docker/Dockerfile",
+    "kod/tjanst.py",
+    "kod/inlaggning.py"
+  ]
+}

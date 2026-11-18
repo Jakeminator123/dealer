@@ -9,6 +9,7 @@
 // it (speakMoments), or between rounds (say). A line without a film is said at the same moment, in the chat only.
 import {ARRIVE_EDGE, LEAVE_EDGE, resolveRound, pickIdle, idleRange, idleExit, effectOf, IDLE_RULE, type FilmEffect, type Graph, type Take, type Segment} from './clip-graph.ts';
 import {CARRY, type CardRecord} from './card-overlay.ts';
+import type {OverlayOptions} from './card-overlay-view.ts';
 import {slotOf, slotLabel, slotFilm, type Layout, type Pt, type TableCards} from './game-table.ts';
 import {hubChain, planBeats, SEAT_HUB, STAND_IN_FILM, type Beat, type FilmSignal} from './game-director.ts';
 import {placeLines, type MouthPatch} from './speech-patch.ts';
@@ -74,6 +75,7 @@ export type Carry = 'object' | 'film' | 'matte';
 // The film card's own colours recoloured in its pixels (src/scene3d-deal.ts backOf, faceOf: lab trials, "pålägg" and "underlägg"), as a
 // word in the address asks for them: cardBack=dark, cardFace=paper. Without a word the part says nothing and the card layer's line holds.
 export type CardWords = {back?: 'dark' | 'film'; face?: 'paper' | 'film'};
+export type GameCardOptions = Partial<OverlayOptions> & CardWords;
 const oneOf = <T extends string>(value: string | null, words: readonly T[]): T | null => words.includes(value as T) ? value as T : null;
 export const cardWords = (q: {get(name: string): string | null}): CardWords => { const back = oneOf(q.get('cardBack'), ['dark', 'film'] as const), face = oneOf(q.get('cardFace'), ['paper', 'film'] as const);
   return {...(back ? {back} : {}), ...(face ? {face} : {})}; };
@@ -92,12 +94,17 @@ export function cardsChoice(o: {address?: boolean; kort?: string | null; memory?
   return {cards: o.address ?? (word ? true : undefined) ?? remembered ?? true, carry: word ?? CARRY};
 }
 /** What the card layer needs for one beat: the lying cards, every card's value, and for the film's own card where it lands and how it is carried. */
-export function cardOptions(beat: Pick<Beat, 'own' | 'lying'> & Partial<Pick<Beat, 'kind'>>, table: TableCards, records: CardRecord[], layout: Layout, carry: Carry = CARRY, words: CardWords = {}): Record<string, unknown> {
+export function cardOptions(beat: Pick<Beat, 'own' | 'lying'> & Partial<Pick<Beat, 'kind'>>, table: TableCards, records: CardRecord[], layout: Layout, carry: Carry = CARRY, words: CardWords = {}): GameCardOptions {
   // carry goes with every part, also one that carries no card (a rest, a line, a return): the shoe's window is shown by it too
   const base = {placed: placedCards(table, records, beat.lying, layout), cards: records, carry, ...words};
   if (!beat.own) return base;
   const material = layout.material(beat.own.slot);
   return {...base, ...(beat.kind === 'RETURN' ? {returning: true} : {}), land: layout.quad(beat.own.slot), target: beat.own.label, shoeDraw: beat.own.shoeDraw, bend: material.bend, gloss: material.gloss};
+}
+
+/** The same source and track continue at the next source frame, even though the bank names a new part. */
+export function continuesCardFilm(deal: Pick<Segment, 'video' | 'fps' | 'end'> | null | undefined, back: Pick<Segment, 'video' | 'fps' | 'start'>, dealTrack: unknown, backTrack: unknown): boolean {
+  return !!deal?.video && deal.video === back.video && deal.fps === back.fps && deal.end === back.start && !!backTrack && backTrack === dealTrack;
 }
 
 // A line she says in a step: its talk film (null: text only) and what is done when she begins it (the page writes it in the chat).
@@ -198,8 +205,14 @@ export function createFilm(players: FilmPlayers, bank: Graph, layout: Layout, re
     const closed = hole === null ? records : records.map(r => r.shoeDraw === hole ? {...r, r: null, s: null, faceDown: true} : r);
     const parts: FilmPart[] = [], beatOf: number[] = [], shows: (number | null)[] = [];
     segments.forEach((s, i) => { if (!s?.video) return; beatOf.push(i);
+      const beat = beats[i], prev = beats[i - 1], deal = segments[i - 1];
+      // The cut can divide one physical deal before the card lies. Only adjacent source frames with the same track and slot share that handoff.
+      const filmContinuesDeal = carry === 'film' && beat.kind === 'RETURN' && prev?.kind === 'DEAL' && beat.own && prev.own?.shoeDraw === beat.own.shoeDraw &&
+        deal?.film?.target === beat.own.label && continuesCardFilm(deal, s, loaded[i - 1], loaded[i]);
+      const cards = cardOptions(beat, table, i < turn ? closed : records, layout, carry, words);
+      if (filmContinuesDeal) cards.filmContinuesDeal = true;
       // the hole card's turn lands (its value and the dealer's total are shown) when its face shows in the film, not when the film ends
-      const face = beats[i].kind === 'REVEAL' ? faceFrame(loaded[i]) : null; shows.push(face !== null && face > s.start && (s.end === null || face < s.end) ? (face - s.start) / (s.fps || 30) : null); parts.push({path: s.video, start: s.start, end: s.end, track: loaded[i], cards: cardOptions(beats[i], table, i < turn ? closed : records, layout, carry, words), frame: frameOf(s.take), ...fpsOf(s.take), ...modelOf(s.take)}); });
+      const face = beat.kind === 'REVEAL' ? faceFrame(loaded[i]) : null; shows.push(face !== null && face > s.start && (s.end === null || face < s.end) ? (face - s.start) / (s.fps || 30) : null); parts.push({path: s.video, start: s.start, end: s.end, track: loaded[i], cards, frame: frameOf(s.take), ...fpsOf(s.take), ...modelOf(s.take)}); });
     let done = 0; // beats landed so far, in order
     const land = (upTo: number) => { for (; done < upTo; done++) { const beat = beats[done]; if (beat.own && beat.kind !== 'DEAL' && !lying.includes(beat.own.shoeDraw)) lying = [...lying, beat.own.shoeDraw]; landed(beat, done); } };
     // What she says before the cards and after them: the talk films around the chain, each line begun as its film begins.

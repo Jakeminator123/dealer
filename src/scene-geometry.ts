@@ -32,7 +32,7 @@ export function solve(A: number[][], b: number[]): number[] {
 }
 // Jacobi rotations; eigenvectors are the columns of `vectors`.
 export function symmetricEigen(S: number[][]): {values: number[]; vectors: number[][]} {
-  const n = S.length, a = S.map(r => [...r]), v = a.map((_, i) => a.map((_, j) => i === j ? 1 : 0));
+  const n = S.length, a = S.map(r => [...r]), v: number[][] = a.map((_, i) => a.map((_, j) => i === j ? 1 : 0));
   for (let sweep = 0; sweep < 80; sweep++) {
     let off = 0, diag = 0; for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) if (i === j) diag += a[i][i] ** 2; else off += a[i][j] ** 2;
     if (off <= 1e-30 * diag) break;

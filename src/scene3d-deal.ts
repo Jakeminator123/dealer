@@ -16,7 +16,7 @@
 // no card object is drawn while a film shows its card; the passes that make the matte run here, on targets of the film's size.
 // The cards lying since earlier films are drawn as objects either way: a film lays one card, and later films do not show it.
 import * as T from 'three';
-import {poseAt, restOf, restFade, restShare, restingQuad, returnCardAt, sceneOf, planScene, cardRecord, cardFace, overridesOf, cardInFront, plausible, skirtSound, firstDrawn, turnOf, BACK, CARRY, FACE, UNDER, RIM, MARGIN, PLAUSIBLE, EASE, HOLD, type CardTrack, type CardRecord} from './card-overlay.ts';
+import {poseAt, restOf, restFade, restShare, restingQuad, returnCardAt, returnAfterFilmLanding, sceneOf, planScene, cardRecord, cardFace, overridesOf, cardInFront, plausible, skirtSound, firstDrawn, turnOf, BACK, CARRY, FACE, UNDER, RIM, MARGIN, PLAUSIBLE, EASE, HOLD, type CardTrack, type CardRecord} from './card-overlay.ts';
 import {centre, clockwise, grown, signedArea, sound, type Pt} from './card-track.ts';
 import {FILM, edgeQuad, heldScale, solveCamera, squareToQuad, type FilmCamera} from './scene3d-geometry.ts';
 import type {TableGeometry} from './card-plan.ts';
@@ -137,7 +137,7 @@ type Placed = {quad: Pt[]; back: boolean; target?: string | null; shoeDraw?: num
 // while carried for every take, the object from the same frame on); 'film' (the film's own card while carried, the object from
 // the frame it lies: "Bara liggande"). The cards already lying are objects whatever carry says.
 export type Carry = 'object' | 'matte' | 'film';
-type Extra = {shift?: Pt | null; land?: Pt[] | null; returning?: boolean; placed?: Placed[]; cards?: CardRecord[] | null; target?: string | null; shoeDraw?: number | null; gloss?: number; carry?: Carry; back?: 'film' | 'dark'; face?: 'film' | 'paper'};
+type Extra = {shift?: Pt | null; land?: Pt[] | null; returning?: boolean; placed?: Placed[]; cards?: CardRecord[] | null; target?: string | null; shoeDraw?: number | null; gloss?: number; carry?: Carry; back?: 'film' | 'dark'; face?: 'film' | 'paper'; filmContinuesDeal?: boolean};
 // What carry is where the page says nothing: the game's line (CARRY in src/card-overlay.ts), so that Scen and the lab pages show a
 // round as the game does.
 const carryOf = (extra: Extra): Carry => extra.carry ?? CARRY;
@@ -486,7 +486,10 @@ export function createDealLayer(o: Options) {
       // A film element between two frames (seeking, at the change to a new part) keeps the cards as they were drawn: turned off for
       // that frame, the film's own yellow card showed in the shoe window as the rest film began (the boss film at 6.40 and 143.27).
       if (video.readyState < 2) return false;
-      const camera = o.camera(), solved = solveCamera(camera), track = trackIn as CardTrack | null, extra = (extraIn ?? {}) as Extra;
+      const camera = o.camera(), solved = solveCamera(camera), track = trackIn as CardTrack | null, options = (extraIn ?? {}) as Extra;
+      const carry = carryOf(options), continues = !alwaysMatte && carry === 'film' && options.returning && options.filmContinuesDeal;
+      const fadeEnd = continues && track ? restFade(track)?.to : undefined;
+      const extra = continues && !returnAfterFilmLanding(track, frame, options, fadeEnd) ? {...options, returning: false} : options;
       lens.lens.value.set((FILM.width - 1) / 2, (FILM.height - 1) / 2, camera.focalPx, solved.pitch); lens.eye.value.set(0, camera.heightM, 0); lens.edgeRow.value = camera.edgeRow; lens.edgeZ.value = o.edgeZ();
       // Returns look up the exact marker frame. Only carried cards use the last track frame past its end.
       const at = !extra.returning && track?.frames?.length ? Math.max(0, Math.min(track.frames.length - 1, Math.round(frame))) : -1;
@@ -496,7 +499,7 @@ export function createDealLayer(o: Options) {
       else {
         // While the card is carried and is not drawn as an object (carry), the film's card is recoloured in place, or (carry 'film')
         // left as the film has it; the object comes in where poseAt starts drawing (firstDrawn).
-        const carry = carryOf(extra), late = !extra.returning && !!track && (carry !== 'object' || track.hand === false), landed = late ? restOf(track!) : null;
+        const late = !extra.returning && !!track && (carry !== 'object' || track.hand === false), landed = late ? restOf(track!) : null;
         const drawn = late ? {...track!, drawnFrom: landed ? (carry === 'film' ? landed.from : landed.from - EASE) : Infinity} : track;
         // Under the line the drawn card takes over by a fade (restFade): from the first still frame before the rest it lies under the
         // film's card, which is keyed away a little more each frame, so it comes up under the film's card and under her fingers.

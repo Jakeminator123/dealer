@@ -2,6 +2,11 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { buildGraph, resolveRound, type BankData, type BankJob, type Step } from "../../src/clip-graph.ts";
+import { createLayout } from "../../src/game-table.ts";
+import { defaultPlan } from "../../src/placement-model.ts";
+import type { Part } from "../../src/scene3d-film.ts";
+import { createSceneEngine, type Scene } from "../components/stage/engines.ts";
+import { readSceneCardTrial, withSceneCardTrial } from "../lib/scene-card-trial.ts";
 import {
   GAP_SECONDS,
   atEnd,
@@ -27,6 +32,51 @@ const job = (id: string, kind: string, from: string, to: string, extra: Partial<
   id, kind, target: null, from, to, model: "wan3", duration: 4, ratio: "auto_720p", audio: false, promptText: "", first: {}, purpose: "", ...extra,
 });
 const startsOn = (clip: string, index: number) => ({ first: { frame: { video: video(clip), videoSha256: "", index } } });
+
+test("a pinned film carry trial uses the plan and keeps the same source handoff into the return", () => {
+  const clips = [["P1.C1", "earlier"], ["P4.C1", "trial"]] as const;
+  const derived = clips.flatMap(([to, clip]): NonNullable<BankData["derived"]> => [
+    { id: `${clip}-deal`, kind: "DEAL", from: "READY-C", to, clip, frames: [0, 64], dealer: "paow" },
+    { id: `${clip}-back`, kind: "RETURN", from: to, to: "READY-C", clip, frames: [65, 96], dealer: "paow" },
+  ]);
+  const graph = buildGraph({ derived,
+    media: Object.fromEntries(derived.map(d => [d.id, { video: video(d.clip), track: `assets/tracking/${d.clip}/card-track.json` }])),
+    motions: Object.fromEntries(derived.map(d => [d.id, { source: { fps: 24, frames: 97 }, review: { decision: "ACCEPTED", acceptedAs: "VARIANT" } }])),
+  }, { dealer: "paow" });
+  const steps = derived.map(d => ({ from: d.from, to: d.to, take: d.id })), segments = resolveRound(graph, steps), source = partsOf(segments);
+  const words = readSceneCardTrial(new URLSearchParams("kort=liggande&cardBack=dark&cardFace=paper"));
+  assert.deepEqual(words, { back: "dark", face: "paper" });
+  assert.equal(readSceneCardTrial(new URLSearchParams("cardBack=dark&cardFace=paper")), null);
+  const plan = defaultPlan(), parts = withSceneCardTrial(source, segments, plan, "contract", words!);
+  const [,, deal, back] = parts;
+  assert.deepEqual([deal.start, deal.end, back.start, back.end], [0, 65, 65, 97]);
+  assert.deepEqual(deal.cards?.land, createLayout(plan).quad({ owner: "P", seat: 4, hand: 0, hands: 1, index: 0 }));
+  assert.deepEqual([deal.cards?.carry, deal.cards?.back, deal.cards?.face], ["film", "dark", "paper"]);
+  assert.equal(back.cards?.returning, true);
+  assert.equal(back.cards?.filmContinuesDeal, true);
+  assert.deepEqual(back.cards?.land, deal.cards?.land);
+  assert.deepEqual(back.cards?.placed?.map(card => card.target), ["P1.C1"], "the own card is drawn once and earlier cards stay on the table");
+  assert.notEqual(partsKey(parts), partsKey(source), "the stage refreshes when only the card options changed");
+  const separate = segments.map((s, i) => i === 3 ? { ...s, video: video("different") } : s);
+  assert.equal(withSceneCardTrial(partsOf(separate), separate, plan, "contract", words!)[3].cards?.filmContinuesDeal, undefined);
+  const unpinned = resolveRound(graph, steps.map(({ from, to }) => ({ from, to })));
+  const unpinnedParts = partsOf(unpinned);
+  assert.equal(withSceneCardTrial(unpinnedParts, unpinned, plan, "contract", words!), unpinnedParts);
+});
+
+test("the scene engine gives both playback and frame loading the part's card options", async () => {
+  const played: Part[][] = [], loaded: Part[][] = [];
+  const scene = { start() {}, onFrame() { return () => {}; }, players: {
+    play(parts: Part[]) { played.push(parts); }, toggle() {}, async load(parts: Part[]) { loaded.push(parts); },
+  } } as unknown as Scene;
+  const engine = createSceneEngine(scene), cards = { returning: true, carry: "film", filmContinuesDeal: true } as const;
+  const part: PlayPart = { step: 0, edge: "P4.C1>READY-C", from: "P4.C1", to: "READY-C", take: "trial", path: video("trial"), start: 65, end: 97, fps: 24, speed: 1, track: null, gap: null, known: true, cards };
+  engine.play([part], 66, 0.5, { onStep() {}, onEnd() {}, onError(error) { throw error; } });
+  await engine.show(part, 65);
+  assert.deepEqual(played, [[{ path: part.path, start: 66, end: 97, fps: 24, rate: 0.5, cards }]]);
+  assert.deepEqual(loaded, [[{ path: part.path, start: 65, end: 97, fps: 24, cards }]]);
+  engine.dispose();
+});
 
 // The round Jakob liked, as the bank holds it today (entry 60 frames, deal 120 cut at 105 where its return starts, return 90),
 // a slow-motion deal to P2 (speed 2), and nothing playable to the dealer's hole card.

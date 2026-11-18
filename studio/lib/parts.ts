@@ -2,6 +2,7 @@
 // it (a step and a source frame), so that the 3D scene and the plain films play the same parts, cut on the same frames and
 // keep the same place when Jakob switches between them. Pure: no DOM, no network; tests in studio/tests/parts.test.ts.
 import type { Gap, Segment } from "../../src/clip-graph.ts";
+import type { GameCardOptions } from "../../src/game-film.ts";
 import { labUrl } from "./lab.ts";
 
 /** How long a step without a film shows its card while a round plays (seconds at speed 1). */
@@ -27,6 +28,7 @@ export type PlayPart = {
   fps: number;
   speed: number;
   track: string | null;
+  cards?: GameCardOptions;
   gap: Gap | null;
   known: boolean;
 };
@@ -61,7 +63,7 @@ export const partSeconds = (part: PlayPart) => (playable(part) ? (part.end - par
 /** The films' time of the round (gap cards left out). */
 export const roundSeconds = (parts: readonly PlayPart[]) => parts.filter(playable).reduce((sum, p) => sum + partSeconds(p), 0);
 /** A key that changes only when what is played changes (not when a note or a verdict does). */
-export const partsKey = (parts: readonly PlayPart[]) => parts.map((p) => `${p.path ?? p.gap}:${p.start}-${p.end}x${p.speed}@${p.fps}`).join("|");
+export const partsKey = (parts: readonly PlayPart[]) => parts.map((p) => `${p.path ?? p.gap}:${p.start}-${p.end}x${p.speed}@${p.fps}${p.cards ? `#${JSON.stringify(p.cards)}` : ""}`).join("|");
 
 /** Where a round starts: the first frame of its first step. */
 export const firstPosition = (parts: readonly PlayPart[]): Position | null => (parts.length ? { step: 0, frame: parts[0].start } : null);

@@ -409,6 +409,7 @@ export function useSceneEditor(firstLook: () => LookAsk) {
     /** The same look on the 3D page (scene3d.html). */
     scenePage: current && defaults ? scenePageAddress(current, defaults, { shoe: want.shoe }) : null,
     /** Card places from Jakob's plan for the round; read: the plan has been read, or could not be. */
+    plan: card.plan,
     places,
     placesRead: card.read,
     bar,

@@ -60,16 +60,23 @@ test("a scoped check matches a file or directory on path boundaries", async (t) 
   assert.equal(result.status, 1);
   assert.match(result.stdout, /selected folder/);
   assert.match(result.stdout, /selected file/);
-  assert.match(result.stdout, /2 fel i dina filer\. 2 i andras studiofiler\. 1 anmärkningar utanför studion/);
-  assert.doesNotMatch(result.stdout, /prefix folder|prefixed filename|external file/);
+  assert.match(result.stdout, /2 fel i dina filer\. 2 i andra studiofiler\. 1 fel i importerade filer utanför studion/);
+  assert.doesNotMatch(result.stdout, /prefix folder|prefixed filename/);
 });
 
-test("recognized diagnostics outside the requested scope are counted but do not fail it", async (t) => {
-  const scoped = await check(t, errorRows, "components/game");
+test("other studio diagnostics are counted without failing a scoped check", async (t) => {
+  const scoped = await check(t, 'console.log("components/other.ts(1,2): error TS2322: outside scope"); process.exitCode = 2;', "components/game");
   assert.equal(scoped.status, 0);
-  assert.match(scoped.stdout, /0 fel i dina filer\. 4 i andras studiofiler\. 1 anmärkningar utanför studion/);
+  assert.match(scoped.stdout, /0 fel i dina filer\. 1 i andra studiofiler\. 0 fel i importerade filer utanför studion/);
+  assert.doesNotMatch(scoped.stdout, /outside scope/);
+});
 
-  const studio = await check(t, 'console.log("../src/order-model.ts(5,6): error TS2345: external file"); process.exitCode = 2;');
-  assert.equal(studio.status, 0);
-  assert.match(studio.stdout, /0 fel i studions filer\. 0 i andras studiofiler\. 1 anmärkningar utanför studion/);
+test("diagnostics from imported code fail and are shown with or without a studio scope", async (t) => {
+  const compiler = 'console.log("../src/order-model.ts(5,6): error TS2345: imported file"); process.exitCode = 2;';
+  for (const scope of [[], ["components/game"]]) {
+    const result = await check(t, compiler, ...scope);
+    assert.equal(result.status, 1);
+    assert.match(result.stdout, /\.\.\/src\/order-model\.ts\(5,6\): error TS2345: imported file/);
+    assert.match(result.stdout, /1 fel i importerade filer utanför studion/);
+  }
 });

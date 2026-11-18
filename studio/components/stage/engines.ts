@@ -12,6 +12,10 @@ import { frameOfTime } from "../../lib/sync.ts";
 export type Scene = ReturnType<typeof createScene>;
 export type RunCalls = { onStep(step: number): void; onEnd(): void; onError(error: Error): void };
 
+const scenePart = (part: PlayPart, start: number) => ({
+  path: part.path!, start, end: part.end, ...(part.fps !== 30 ? { fps: part.fps } : {}), ...(part.cards ? { cards: part.cards } : {}),
+});
+
 export type Engine = {
   /** Plays parts that follow each other without a gap, from `frame` of the first; onStep when a part comes on screen, onEnd after the last. */
   play(run: PlayPart[], frame: number, speed: number, calls: RunCalls): void;
@@ -114,7 +118,7 @@ export function createSceneEngine(scene: Scene): Engine {
       loaded = null;
       waiting = null;
       scene.start();
-      const parts = run.map((p, i) => ({ path: p.path!, start: i === 0 ? frame : p.start, end: p.end, rate: speed * p.speed, ...(p.fps !== 30 ? { fps: p.fps } : {}) }));
+      const parts = run.map((p, i) => ({ ...scenePart(p, i === 0 ? frame : p.start), rate: speed * p.speed }));
       players.play(parts, {
         cut: true,
         onPart: (i) => {
@@ -162,7 +166,7 @@ export function createSceneEngine(scene: Scene): Engine {
         if (loaded === p && players.path === p.path && players.count === 1) await players.seek(0, (frame + 0.5) / p.fps);
         else {
           loaded = p;
-          await players.load([{ path: p.path!, start: frame, end: p.end, ...(p.fps !== 30 ? { fps: p.fps } : {}) }]);
+          await players.load([scenePart(p, frame)]);
         }
       } finally {
         if (my === token) waiting = null;

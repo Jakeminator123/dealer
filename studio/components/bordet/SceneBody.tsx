@@ -21,6 +21,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { resolveRound } from "../../../src/clip-graph.ts";
+import { tableGeometry } from "../../../src/card-plan.ts";
 import { sceneWords } from "../../lib/bordet.ts";
 import { useBank } from "../../lib/bank.ts";
 import { readGeometryWord, withGeometry } from "../../lib/casino.ts";
@@ -30,6 +31,7 @@ import { isSnapshot } from "../../lib/mode.ts";
 import { formatJakob } from "../../lib/names.ts";
 import { addressOf, contextRound, isReference, no3d, readAddress, readyRounds, roundFacts, roundFromText, roundParts, viewFor, type Round } from "../../lib/rounds.ts";
 import { BASE } from "../../lib/scene-presets.ts";
+import { readSceneCardTrial, withSceneCardTrial } from "../../lib/scene-card-trial.ts";
 import { RoundPicker, RoundStrip } from "../round";
 import { joinParts, readLook, roundPart, useSceneEditor } from "../scene-editor";
 import { Stage, createClock, type StageHandle } from "../stage";
@@ -49,7 +51,8 @@ function scenePart(all: URLSearchParams): URLSearchParams {
 export function SceneBody({ kind, toolbar, roundText: cardRound }: { kind: SceneKind; toolbar: ReactNode; roundText: string }) {
   const search = useSearchParams();
   const geometri = readGeometryWord(search);
-  const query = scenePart(new URLSearchParams(search.toString())).toString();
+  const searchText = search.toString();
+  const query = scenePart(new URLSearchParams(searchText)).toString();
   const params = useMemo(() => new URLSearchParams(query), [query]);
   const toast = useToast();
   const { graph, status, error, reload, dealer, dealers, owners } = useBank();
@@ -89,12 +92,15 @@ export function SceneBody({ kind, toolbar, roundText: cardRound }: { kind: Scene
     return openingRound(graph, rounds, owners) ?? own;
   }, [chosen, address, graph, rounds, owners, cardRound]);
 
-  const { places, placesRead } = editor;
+  const { plan, places, placesRead } = editor;
   const segments = useMemo(
     () => (graph && placesRead && round?.steps.length ? resolveRound(graph, ownSteps(round.steps, graph.dealer, owners), { holeCardDown: true, places }) : []),
     [graph, placesRead, round, places, owners],
   );
-  const parts = useMemo(() => roundParts(round, segments), [round, segments]);
+  const parts = useMemo(() => {
+    const parts = roundParts(round, segments), words = readSceneCardTrial(new URLSearchParams(searchText));
+    return words && plan ? withSceneCardTrial(parts, segments, plan, tableGeometry(searchText), words) : parts;
+  }, [round, segments, plan, searchText]);
   const notation = isReference(round) ? round.name : round?.steps.length ? formatJakob(round.steps) : "";
   const mode = viewFor(round, kind === "rafilm" ? "platt" : "3d");
   const flat = mode === "platt";

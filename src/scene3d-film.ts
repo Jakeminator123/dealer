@@ -7,6 +7,8 @@ import {FILM} from './scene3d-geometry.ts';
 import {FAN_GLSL} from './scene3d-light.ts';
 import {FILM_CARD_GLSL, MATTE_GLSL} from './scene3d-matte.ts';
 import type {FilmEffect} from './clip-graph.ts';
+import type {CardTrack} from './card-overlay.ts';
+import type {GameCardOptions} from './game-film.ts';
 import {MOUTH_GLSL, mouthUniforms, putMouth, type MouthPart, type MouthShown} from './scene3d-mouth.ts';
 
 const VERTEX = `varying vec4 vFilm; varying vec3 vWorld; uniform mat4 filmVP;
@@ -505,7 +507,7 @@ export function createFilmLayers(filmVP: T.Matrix4, light: Record<string, {value
 // made the film (its record's source.model), for the key filmEven; a part without it is drawn as it is. `rest`: a rest film, which
 // keeps its speed under the key filmTempo, as a spoken line does. `mouth`: a spoken line laid on the part from a mouth patch
 // (src/scene3d-mouth.ts); the part plays at its own speed, neither tempo nor hurry changes it, so that mouth and sound stay with it.
-export type Part = {path: string; start?: number; end?: number | null; rate?: number; absoluteRate?: boolean; track?: CardTrack | null; cards?: Partial<OverlayOptions> | null; frame?: FilmFrame | null; fps?: number; sound?: boolean; model?: string; rest?: boolean; effect?: PartEffect | null; mouth?: MouthPart | null};
+export type Part = {path: string; start?: number; end?: number | null; rate?: number; absoluteRate?: boolean; track?: CardTrack | null; cards?: GameCardOptions | null; frame?: FilmFrame | null; fps?: number; sound?: boolean; model?: string; rest?: boolean; effect?: PartEffect | null; mouth?: MouthPart | null};
 // A film's effect on the scene (a record's motion.effect, carried on the part). room-flash, lightning: for `seconds` of the film's
 // own time from `at` the room is another (`room`, an id of the register), and with `mono` the whole picture is black and white,
 // table, cards and dealer too. A white flash takes the picture there and a softer one takes it back (roomFlashAt).
@@ -593,7 +595,7 @@ export function createPlayers(onShow: (texture: T.Texture, path: string) => void
   const make = (part: Part): Player => {
     const video = document.createElement('video'); video.muted = !(part.sound === true && globalThis.navigator?.userActivation?.hasBeenActive === true); video.playsInline = true; video.preload = 'auto'; video.src = part.path;
     const texture = new T.VideoTexture(video); texture.colorSpace = T.NoColorSpace; texture.minFilter = texture.magFilter = T.LinearFilter; texture.generateMipmaps = false;
-    if (video.requestVideoFrameCallback) { const note = (_now: number, frame: {mediaTime: number}) => { presented.set(video, frame.mediaTime); frameCall(video, note); }; frameCall(video, note); }
+    if (typeof video.requestVideoFrameCallback === 'function') { const note = (_now: number, frame: {mediaTime: number}) => { presented.set(video, frame.mediaTime); frameCall(video, note); }; frameCall(video, note); }
     return {part, path: part.path, start: part.start ?? 0, end: part.end ?? null, fps: part.fps ?? FPS, video, texture};
   };
   // The part on screen is done: stop it where it is and bring in the next one on its first decoded frame.
@@ -601,7 +603,7 @@ export function createPlayers(onShow: (texture: T.Texture, path: string) => void
     if (gone || paused || list !== players || current !== i) return;
     const n = (i + 1) % list.length, next = list[n]; list[i].video.pause(); moveTo(next.video, startTime(next));
     const swap = () => { if (list === players) show(n); };
-    if (next.video.requestVideoFrameCallback) frameCall(next.video, swap); else later(swap, 40);
+    if (typeof next.video.requestVideoFrameCallback === 'function') frameCall(next.video, swap); else later(swap, 40);
     next.video.play().catch(() => {});
   }
   async function load(parts: Part[]) {
@@ -613,7 +615,7 @@ export function createPlayers(onShow: (texture: T.Texture, path: string) => void
       listen(p.video, 'ended', () => advance(list, i));
       if (p.end === null) return;
       const last = p.end - 1, reached = (seconds: number) => frameAtTime(seconds, p.fps) >= last;
-      if (p.video.requestVideoFrameCallback) { const watch = (_now: number, frame: {mediaTime: number}) => { if (list !== players) return; if (reached(frame.mediaTime)) advance(list, i); frameCall(p.video, watch); }; frameCall(p.video, watch); }
+      if (typeof p.video.requestVideoFrameCallback === 'function') { const watch = (_now: number, frame: {mediaTime: number}) => { if (list !== players) return; if (reached(frame.mediaTime)) advance(list, i); frameCall(p.video, watch); }; frameCall(p.video, watch); }
       else listen(p.video, 'timeupdate', () => { if (reached(p.video.currentTime)) advance(list, i); });
     });
     // After dispose() neither listener is left, and the promise stays open: nothing waits on a queue that is gone.
@@ -625,7 +627,7 @@ export function createPlayers(onShow: (texture: T.Texture, path: string) => void
     if (gone) return;
     const player = players[i]; if (!player) return;
     paused = true; players.forEach(p => p.video.pause()); const v = player.video;
-    await new Promise<void>(resolve => { const done = () => { if (v.requestVideoFrameCallback) { const fallback = later(resolve, 250); frameCall(v, () => { clearTimeout(fallback); timers.delete(fallback); resolve(); }); } else later(resolve, 60); };
+    await new Promise<void>(resolve => { const done = () => { if (typeof v.requestVideoFrameCallback === 'function') { const fallback = later(resolve, 250); frameCall(v, () => { clearTimeout(fallback); timers.delete(fallback); resolve(); }); } else later(resolve, 60); };
       if (Math.abs(v.currentTime - seconds) < 1e-4 && v.readyState >= 2) done(); else { listen(v, 'seeked', done, true); moveTo(v, seconds); } });
     if (gone || players[i] !== player) return;
     player.texture.needsUpdate = true; show(i);
@@ -655,7 +657,7 @@ export function createPlayers(onShow: (texture: T.Texture, path: string) => void
     const free = pool.find(m => m.path === path && !m.busy && !m.broken); if (free) { free.busy = true; free.used = ++used; return free; }
     const made = make({path}), m: Media = {path, video: made.video, texture: made.texture, busy: true, used: ++used, hook: null, fail: null, broken: false}, v = m.video;
     listen(v, 'ended', () => m.hook?.(null)); listen(v, 'error', () => { m.broken = true; m.fail?.(); }); // an error before the part is entered is remembered for then
-    if (v.requestVideoFrameCallback) { const watch = (_now: number, frame: {mediaTime: number}) => { if (!pool.includes(m)) return; m.hook?.(frame.mediaTime); frameCall(v, watch); }; frameCall(v, watch); }
+    if (typeof v.requestVideoFrameCallback === 'function') { const watch = (_now: number, frame: {mediaTime: number}) => { if (!pool.includes(m)) return; m.hook?.(frame.mediaTime); frameCall(v, watch); }; frameCall(v, watch); }
     else listen(v, 'timeupdate', () => m.hook?.(v.currentTime));
     pool.push(m); if (strict && inTouch()) open(v);
     for (const spare of pool.filter(p => !p.busy).sort((a, b) => a.used - b.used)) { if (pool.length <= POOL) break; discard(spare); }
@@ -708,7 +710,7 @@ export function createPlayers(onShow: (texture: T.Texture, path: string) => void
     if (m.broken) { m.fail(); return; }
     // A frame request that has waited long on a paused video is no longer polled by the browser, and the first frame after
     // play() then arrives a quarter of a second late with the frames in between dropped. A fresh request sets that right.
-    if (v.requestVideoFrameCallback) frameCall(v, () => {});
+    if (typeof v.requestVideoFrameCallback === 'function') frameCall(v, () => {});
     // A pooled element is made for its path alone (media), so whether it is heard is decided here, each time a part starts:
     // a spoken line (part.sound) once the page has been touched, everything else muted. Without this line a talk film in
     // a chain was always muted: she moved her mouth in the game and said nothing.
@@ -728,7 +730,7 @@ export function createPlayers(onShow: (texture: T.Texture, path: string) => void
     if (v.readyState >= 2 && !v.seeking) { m.texture.needsUpdate = true; swap(); if (globalThis.requestAnimationFrame) globalThis.requestAnimationFrame(start); later(start, START_MS); }
     // Otherwise it runs from here and is shown on the first frame it presents: an element that is not ready stays so while it
     // stands still (tried: shown standing, a new element's first frame came 0.9 s after the last frame of the part before).
-    else { start(); m.hook = swap; if (!v.requestVideoFrameCallback) later(swap, 40); }
+    else { start(); m.hook = swap; if (typeof v.requestVideoFrameCallback !== 'function') later(swap, 40); }
   }
   function finish(c: Chain, i: number) {
     if (waiting) return enter(waiting, 0, true);

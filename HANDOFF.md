@@ -22,11 +22,11 @@ Rädda befintligt repo till en sammanhängande lokal väg från underlag till sp
 Kodens samband och verifiering rättas parallellt; filmproduktionen börjar med EN trovärdig giv ([film](docs/lage/film.md)).
 
 1. Bevara Jakobs ändrade kortplan och oincheckade orderutkast. Läs nya anteckningar med `node tools/proof-notes.ts`.
-2. Verifiera geometrival och scenens förval genom vybyten; lås beställningens visade underlag mot det som sparas.
+2. Granska cykel02 med filmens kort i handen, scenens färgning och tre hela giv–retur-skarvar ([kort](docs/lage/kort.md)).
 3. Använd automatiska testkvitton och det återbyggbara SQLite-indexet ([evidens](tools/evidence.md)); inga medieblobs.
-4. Verifiera en pilot från referens och giv till retur och spelmotor; redovisa visuella luckor separat från tester.
-5. Testa, pusha och begär avgränsad GPT Pro-granskning av exakt pushad commit. Läs svaret efter 5–10 minuter och
-   kontrollera fynden lokalt. Nya Runway-anrop får kosta högst 800 krediter per rullande timme och 2 500 totalt.
+4. Munproven är lokala jämförelser; inget byte i banken före Jakobs val i Beslut. Körarens kod finns nu i repot.
+5. Testa, pusha och verifiera fjärrens SHA. Sessionens tio GPT-meddelanden är förbrukade; färdiga granskningsfynd är
+   rättade. Tre Runway-filmer kostade 234 krediter; inga beställningar eller giltiga KÖR återstår.
 
 Äldre frågor till honom som inte är kort än: `D:/dealer-scratch/tmp/handoff-nytt/forslag-kort.md`.
 
@@ -36,8 +36,8 @@ Kodens samband och verifiering rättas parallellt; filmproduktionen börjar med 
   Kontrollera med ListAgents före meddelanden. Huvudagenten äger commits, taggar och push, studion,
   labbservern, spelet och 3D-scenens filmlager, `src/clip-graph.ts` och styrdokumenten.
 - **Avgränsade uppdrag:** `/root/geometry`, `/root/order_snapshot` och `/root/evidence_audit` har lämnat över
-  order-, retur-, kort- och evidensändringarna till huvudagenten. Han äger nu integration, register och körjournal;
-  ett nytt underagentuppdrag måste ange egna filer innan någon skriver.
+  typkontroll, kortens landning och munprov. Huvudagenten äger nu integration, register och körjournal;
+  nya underagentuppdrag måste ange egna filer innan någon skriver.
 - **Jakob talar bara med huvudagenten**, som håller ihop sessionerna. Varje bana får sin kö av huvudagenten och säger
   till när ett steg är grönt, med en fillista. Ingen bana skriver i en annans filer.
 - **Huvudagentens banor:** film, kort, labbet och studion, och spelet. Filerna de äger står under Var saker ligger i varje lägesfil.

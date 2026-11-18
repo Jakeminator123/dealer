@@ -5,8 +5,8 @@ bara det som gäller nu; kontraktet står i `docs/SYSTEM.md`, "Ritade kort".
 
 **Läget.**
 - Spelets underlägg (`UNDER` i `src/card-overlay.ts`) är förval sedan 2026-11-14. Kortens fjärde steg (`33b164a`) fick 3,75/5 blint.
-- Provet `kort=liggande&cardMethod=film` behåller filmens kort i luften i 2D. I 3D-läget `scene` kan filmytan
-  färgas med `cardBack=dark` och `cardFace=paper`. Båda kräver ett aktivt val; spårlös giv kan lämna gamla markörer ([brist](../BRISTER.md)).
+- Provet `kort=liggande&cardMethod=film` behåller filmkortet i 2D; `scene` färgar med `cardBack=dark&cardFace=paper`, även i Bordets låsta par.
+- Om samma film fortsätter efter givens klippgräns väntar det liggande kortet till uppmätt vila/färdig toning, även i RETURN.
 - Kortplanen ritas i verkligt perspektiv (`918e7f4`): där planen säger Plant bord ritas varje kort som ett verkligt
   kort (63 × 88 mm, storlek 1,00) genom linsen som ger dealern människostorlek (`src/table-lens.ts`). `planCardQuad` i
   `src/card-plan.ts` är den enda regeln, och samma fyrhörningar används i Bordets Kortplan, kortbanans landning, Ny
@@ -27,9 +27,9 @@ bara det som gäller nu; kontraktet står i `docs/SYSTEM.md`, "Ritade kort".
   visar det som en bricka ("äldre plan", "annan kamera", "avviker").
 
 **Nästa steg.**
-1. Kontrollera `game.html?geometri=lins` i webbläsaren och visa det för Jakob i rörelse. Bankens givar följer den
-   äldre planen, så det ritade kortet ligger inte på filmens eget vid ytterplatserna och hos dealern förrän givarna
-   är nya. Hans ja byter förvalet (en rad); `docs/SYSTEM.md`, "Ritade kort", säger vad som då tas bort.
+1. Granska låst cykel02 i Bordets scen med `kort=liggande&cardBack=dark&cardFace=paper`, särskilt ruta 46–51 och 65–66,
+   sedan tre slingor. Den gamla bankens ytterplatser/dealerkort avviker fortfarande från planen; nya givar behövs.
+   Visa linsregeln i rörelse för Jakob; hans ja byter förvalet (`docs/SYSTEM.md`, "Ritade kort").
 2. När hans sparade plan checkas in, skriv om `data/media-fit.json` med `node tools/media-audit.ts --fit --write`.
    Gör samma mätning när planens regel, linsen eller ett ankare ändras.
 3. Kortets sidor i efterarbetet, efter filmerna: gul rygg (SG får stå kvar) och blå framsida, lika i labbet och spelet.
