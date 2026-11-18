@@ -365,6 +365,11 @@ export const PAPER_FACE = {
   // print comes in at rest.
   field: [0.916, 0.902, 0.877],
 };
+/** Stop airborne recovery when the scene first presents its resting card, including an early fade. */
+export function paperAirBeforeRest(frame: Pick<CardTrack['frames'][number], 'frame' | 'side'> | undefined,
+  rest: {from: number} | null, fade: {from: number} | null): boolean {
+  return !!frame && frame.frame >= 0 && frame.side === 'FRONT' && !!rest && frame.frame < Math.min(rest.from, fade?.from ?? rest.from);
+}
 // A blue card blurred into the gripping finger can be purple (C2 f34), where
 // making it paper would paint the finger white. Remove only the excess blue,
 // with both unambiguous skin and blue card nearby; red and green stay put.

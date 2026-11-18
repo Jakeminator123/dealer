@@ -3,9 +3,9 @@
 // edge; where the passes run; which quad lays the face print and how a film pixel finds its place on it.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {BACK_ZONE, CLASS_GLSL, CLASSIFY_FRAGMENT, DARK_BACK, FILM_CARD_GLSL, LIT, MATTE, MATTE_GLSL, MORPH_FRAGMENT, PAPER_FACE, PLANE, PLANE_GLSL, RULES, SHADE_FRAGMENT, SHOE_BOX, backZone, bodyOf, darkBackOf, matteBox, matteZone, meanLinear, paleZone, planeLight, printQuad, toPrint, turnZone, unmix, paperContactOf} from '../src/scene3d-matte.ts';
+import {BACK_ZONE, CLASS_GLSL, CLASSIFY_FRAGMENT, DARK_BACK, FILM_CARD_GLSL, LIT, MATTE, MATTE_GLSL, MORPH_FRAGMENT, PAPER_FACE, PLANE, PLANE_GLSL, RULES, SHADE_FRAGMENT, SHOE_BOX, backZone, bodyOf, darkBackOf, matteBox, matteZone, meanLinear, paleZone, planeLight, printQuad, toPrint, turnZone, unmix, paperContactOf, paperAirBeforeRest} from '../src/scene3d-matte.ts';
 import {is} from '../src/card-track.ts';
-import {BACK, CARRY, FACE, UNDER} from '../src/card-overlay.ts';
+import {BACK, CARRY, FACE, UNDER, restOf, restFade, type CardTrack} from '../src/card-overlay.ts';
 import {squareToQuad, onSquare} from '../src/scene3d-geometry.ts';
 import {DEFAULTS} from '../src/scene3d-view.ts';
 import {readFile} from 'node:fs/promises';
@@ -310,6 +310,25 @@ test('paper tint leaves green shadow while retaining blue shadow and the mixed e
     assert.ok(mid.card > 0 && mid.card < half.card && half.card > 0.99, 'paper comes in gradually across a mixed edge');
     assert.ok(half.colour[1] > Math.max(half.colour[0], half.colour[2]), 'the original screen part remains available to the key');
   }
+});
+
+test('airborne paper stops at the scene rest or early handoff, even before recorded restFrom', () => {
+  const quad = [[100, 100], [164, 100], [164, 140], [100, 140]];
+  const track: CardTrack = {width: 1764, height: 1174, edgeWindow: null, restFrom: 4, restQuad: quad,
+    frames: Array.from({length: 14}, (_, frame) => ({frame, side: 'FRONT', quad, edge: null}))};
+  const rest = restOf(track), fade = restFade(track);
+  assert.equal(rest?.from, 0, 'the return already lies flat from its first frame');
+  for (const frame of track.frames) assert.equal(paperAirBeforeRest(frame, rest, fade), false);
+  const approach = {...track, restFrom: 10, frames: track.frames.map(frame => ({...frame,
+    quad: quad.map(([x, y]) => [x + (frame.frame < 4 ? 80 : frame.frame < 10 ? 1 : 0), y])}))};
+  const atRest = restOf(approach), handoff = restFade(approach);
+  assert.equal(atRest?.from, 10);
+  assert.equal(handoff?.from, 4, 'the scene starts its resting card before the measured release');
+  assert.equal(paperAirBeforeRest(approach.frames[3], atRest, handoff), true);
+  for (const frame of approach.frames.slice(4)) assert.equal(paperAirBeforeRest(frame, atRest, handoff), false);
+  assert.equal(paperAirBeforeRest(approach.frames[3], null, null), false, 'unknown landing supplies no airborne recovery');
+  assert.equal(paperAirBeforeRest(undefined, atRest, handoff), false);
+  assert.equal(paperAirBeforeRest({...approach.frames[3], side: 'BACK'}, atRest, handoff), false);
 });
 
 test('carried paper recovers coherent blue in the shadow of the P7 card', () => {

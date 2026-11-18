@@ -16,7 +16,7 @@
 // no card object is drawn while a film shows its card; the passes that make the matte run here, on targets of the film's size.
 // The cards lying since earlier films are drawn as objects either way: a film lays one card, and later films do not show it.
 import * as T from 'three';
-import {poseAt, restOf, restFade, restShare, restingQuad, restingFilmPaperZone, filmLandingFrame, returnCardAt, returnAfterFilmLanding, filmMarkerAt, sceneOf, planScene, cardRecord, cardFace, overridesOf, cardInFront, plausible, skirtSound, firstDrawn, turnOf, BACK, CARRY, FACE, UNDER, RIM, MARGIN, PLAUSIBLE, EASE, HOLD, type CardTrack, type CardRecord} from './card-overlay.ts';
+import {poseAt, restOf, restFade, restShare, restingQuad, restingFilmPaperZone, returnCardAt, returnAfterFilmLanding, filmMarkerAt, sceneOf, planScene, cardRecord, cardFace, overridesOf, cardInFront, plausible, skirtSound, firstDrawn, turnOf, BACK, CARRY, FACE, UNDER, RIM, MARGIN, PLAUSIBLE, EASE, HOLD, type CardTrack, type CardRecord} from './card-overlay.ts';
 import {centre, clockwise, grown, signedArea, sound, type Pt} from './card-track.ts';
 import {FILM, edgeQuad, heldScale, solveCamera, squareToQuad, type FilmCamera} from './scene3d-geometry.ts';
 import type {TableGeometry} from './card-plan.ts';
@@ -24,7 +24,7 @@ import type {PlacementPlan} from './placement-model.ts';
 import {CARD_GLSL, type BackKey, type CardKey, type MatteKey} from './scene3d-film.ts';
 import {FAN_GLSL} from './scene3d-light.ts';
 import {roomReflection} from './scene3d-table.ts';
-import {CLASSIFY_FRAGMENT, DARK_BACK, MATTE, PAPER_FACE, MORPH_FRAGMENT, PASS_VERTEX, PLANE_GLSL, SHADE_FRAGMENT, SHOE_BOX, backZone, matteBox, matteZone, meanLinear, paleZone, printQuad, toPrint, turnZone, type MatteTrack} from './scene3d-matte.ts';
+import {CLASSIFY_FRAGMENT, DARK_BACK, MATTE, PAPER_FACE, MORPH_FRAGMENT, PASS_VERTEX, PLANE_GLSL, SHADE_FRAGMENT, SHOE_BOX, backZone, matteBox, matteZone, meanLinear, paleZone, paperAirBeforeRest, printQuad, toPrint, turnZone, type MatteTrack} from './scene3d-matte.ts';
 
 // The card material study, for its print, outline and paper. Imported as an instance of its own (the query): the import map in
 // scene3d.html binds that instance's three.js to the scene's, so the page holds one three.js. The canvas method
@@ -528,11 +528,9 @@ export function createDealLayer(o: Options) {
           const current = at >= 0 && at === Math.round(frame);
           const restingZone = current && track && carry === 'film' ? restingFilmPaperZone(track, at, paper) : undefined;
           const zone = restingZone === undefined ? (current ? backZone(track as unknown as MatteTrack, at) : null) : restingZone && pts(restingZone);
-          // Dark-blue recovery belongs to a known airborne face; the resting paper keeps its measured zone and colour rule.
-          const landing = current && track && carry === 'film' && paper ? filmLandingFrame(track) : null;
           o.film.setBack({zone, seat: grown(clockwise(seat.map(([x, y]) => ({x, y}))), 2).map(p => [p.x, p.y]), shoe: track?.shoeWindow?.box ?? SHOE_BOX,
             back: dark ? DARK_BACK.field : null, face: paper ? PAPER_FACE.field : null, lying: [LYING.BACK, LYING.FRONT], under: carry !== 'film',
-            air: landing !== null && at < landing && track?.frames[at]?.side === 'FRONT'}); }
+            air: current && carry === 'film' && paper && paperAirBeforeRest(track?.frames[at], landed, fade)}); }
         else o.film.setBack(null);
       }
       // cards dealt by earlier films of the round, which this film does not show: lying flat where they landed, in the size the dealt
