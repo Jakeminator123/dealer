@@ -89,7 +89,11 @@ export const namesPaow = (text: string) => /(?<![a-z])paow(?![a-z])/i.test(plain
 // ── Words that may not go up ────────────────────────────────────────────────
 // Costs in any wording the records use (credits, krediter, what something cost or was charged), and paths of this machine.
 export const COST = /(?<![\p{L}])(?:credits?|krediter(?:na)?|kredit\w*|kostn\w*|kostade|kostar|cost(?:s|ing)?|charged|paid|debiter\w*|betal\w*|budget\w*|pris(?:et)?|price[ds]?)(?![\p{L}])|\$\s?\d|\d\s?(?:usd|dollar|sek|kr)(?![\p{L}])/iu;
-export const PRIVATE_PATH = /(?:\b[A-Za-z]:[\\/](?=[\w.-])|\\\\[A-Za-z0-9][A-Za-z0-9._-]*\\[A-Za-z0-9._$-]|(?<![\w.])\/(?:Users|home|mnt|tmp|var|private)\/)(?:[^\s"'()<>,;]*[^\s"'()<>,;.])?/g;
+// A drive letter, a share or a home folder. One thing that looks like a drive is not one: in built code a one-letter
+// name before the else-branch of a choice that begins with a pattern, `s=i:/höjd/i.test(a)`; a slash whose text up to
+// the next slash is followed by flags and .test( or .exec( is that pattern, never a path. A backslash may stand doubled,
+// as a path does inside a string of code.
+export const PRIVATE_PATH = /(?:\b[A-Za-z]:(?:\\{1,2}|\/(?!(?:[^\/\\\s"'\x60]|\\.)*\/[dgimsuvy]*\.(?:test|exec)\())(?=[\w.-])|\\\\[A-Za-z0-9][A-Za-z0-9._-]*\\[A-Za-z0-9._$-]|(?<![\w.])\/(?:Users|home|mnt|tmp|var|private)\/)(?:[^\s"'()<>,;]*[^\s"'()<>,;.])?/g;
 /** Keys that are a cost, a ceiling, an order time or a handle on the generation service, wherever they stand. */
 export const FORBIDDEN_KEY = /^(?:estimatedCredits|maximumCredits|credits|budget|requestedAt|completedAt|task|taskId|tasks|cost|costs|price|balance|token|apiKey)$/i;
 

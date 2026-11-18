@@ -100,7 +100,7 @@ test('the snapshot\'s check reads the knowledge decoded: "mål:" at the end of a
   assert.ok(findTextLeaks(JSON.stringify(fine), release).length, 'read as JSON text, the escape looks like a path');
   assert.deepEqual(knowledgeLeaks(fine, release, textLeaks), []);
   assert.ok(knowledgeLeaks(k('Ligger i C:\\Users\\x\\y.'), release, textLeaks).some(f => f.includes('lokal sökväg')));
-  assert.ok(!findTextLeaks(JSON.stringify(k('Ligger i C:\\Users\\x\\y.')), release).length, 'read as JSON text, a backslash path hides');
+  assert.ok(findTextLeaks(JSON.stringify(k('Ligger i C:\\Users\\x\\y.')), release).length, 'read as JSON text, a backslash path is found too: the rule takes the doubled backslash of a string in code');
   assert.ok(knowledgeLeaks({...fine, kallor: ['D:/dealer-archive/x']}, release, textLeaks).length, 'the sources are checked too');
 });
 

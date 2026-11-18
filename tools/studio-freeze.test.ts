@@ -72,6 +72,12 @@ test('costs, blocked names and machine paths leave the texts; his stamp stays', 
   assert.deepEqual(findTextLeaks('new URL(e,"x:/") https://example.com/a', rules), []);
   assert.deepEqual(findTextLeaks('const _RESERVED_CHARS_RE = "\\\\[\\\\]\\\\.:\\\\/";', rules), []);
   assert.deepEqual(findTextLeaks('see D:/dealer-scratch/x', rules), ['lokal sökväg']);
+  // Built code: a one-letter name before a pattern in the else-branch of a choice is not a drive (studio/lib/lipsync.ts
+  // became this, and the copy could not be published 2026-11-18). A real path beside it, in any dress, still is.
+  assert.deepEqual(findTextLeaks('/bredd/i.test(a)?s=i:/höjd/i.test(a)?t=i:0===l&&(s=t=i)', rules), []);
+  assert.deepEqual(findTextLeaks('x?y:/a\\/b+/.exec(c)', rules), []);
+  for (const real of ['root=D:/x/y', '"C:\\\\Users\\\\jakem"', 'e?s=i:/höjd/i.test(a):"D:/dealer-scratch/tmp"', 'D:/a/i.testfile', 'c:/i.test/x', 'file:///C:/Users/jakem/x'])
+    assert.deepEqual(findTextLeaks(real, rules), ['lokal sökväg'], real);
 });
 
 test('scrub drops forbidden keys anywhere and findLeaks finds what is left', () => {
