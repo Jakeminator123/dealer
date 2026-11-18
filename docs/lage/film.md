@@ -32,7 +32,7 @@ gäller nu; varje prov och dess utfall står i handboken (`tools/film-prompting.
 2. C1 ligger kvar genom C2. Omgreppsprovet i `paow-c2-film-regrip-20261118` förbättrade inte tempot eller färgen:
    ingen serie på detta underlag. READY-C-provet nedan är begränsat till labbet. Vändning efter släpp ligger i Beslut.
 3. Plats 1 kräver nytt A3 med ansiktet orört och retur från framåtlutad pose. Prov `paow-ready-c-chain-20261118`
-   kedjar 1,667 s inpass, egen C1/C2 och omvänd reserv. Två kort består genom utpasset, men tonen hoppar vid C1.
+   kedjar 1,667 s inpass, egen C1/C2 och omvänd reserv. Två kort består; skofärgens hopp är rättat (37,02 → 0,85 nivåer).
    Bara labbvarianter, utan väntkö eller nytt spelval. Full rörelsedom återstår; originalets nej består.
 4. Efter en visuellt godkänd pilot enligt mandatet: resten av bordet, fem kameravinklar (`/vinklar.html`), ankare 2.1 och 2.2 med
    tatuerade händer, hålkortet, andra kortet (`yt-referens/ut/giv-resten.md`), returer och dealerns tredje kort.

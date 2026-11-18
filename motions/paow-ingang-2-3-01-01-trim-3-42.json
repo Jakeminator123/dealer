@@ -28,17 +28,17 @@
   },
   "review": {
     "decision": "ACCEPTED",
-    "basis": "Main agent and independent geometry reviewer; source trim and six native stills. Explicit lab-only variant.",
-    "limitations": "Shoe-window luminance jumps about +37 levels at C1 entry. Continuous motion unverified. Original user rejection unchanged.",
+    "basis": "Main agent and independent geometry reviewer; source trim and six native stills. Entry shoe appearance corrected and remeasured. Explicit lab-only variant.",
+    "limitations": "Continuous motion unverified. Original user rejection unchanged. The prior shoe-window jump is corrected in Studio (37.02 to -0.85 luminance levels).",
     "userAccepted": false,
     "productionReady": false,
     "labOnly": true,
     "acceptedAs": "VARIANT",
     "provisional": {
       "by": "Codex huvudagent + oberoende geometry-granskare",
-      "at": "2026-11-18T19:01:58.453Z",
+      "at": "2026-11-18T19:38:41.933Z",
       "mandate": "Jakob 2026-11-18: fria privilegier att fortsätta; självständig granskning av avgränsade lokala prov.",
-      "note": "Endast labbprov: källruta 3–42, 1,667 s. Startgest och READY-C finns kvar. Synligt tonhopp i skofönstret (+37 nivåer) vid C1. Kontinuerlig rörelse ej slutdömd; originalets nej består."
+      "note": "Endast labbprov: källruta 3–42, 1,667 s. Startgest och READY-C finns kvar. Skofärgens hopp rättat i Studio: +37,02 till −0,85 nivåer; hud och ram granskade. Kontinuerlig rörelse ej slutdömd; originalets nej består."
     }
   },
   "localDerivation": {

@@ -28,7 +28,7 @@ Sammanhängande lokal väg från underlag till spelbar Blackjack (Jakob 2026-11-
    rättade. Fem Runway-filmer kostade 404 krediter; lokal Claude-MCP fungerar. Inget anrop eller KÖR pågår.
 6. Hålkortets värde följer visad ruta (60→61). Filmkortsprovet använder ritade kort vid återbruk till C2/split.
    Native split är klar; mätta kortkanter hoppar högst 1 px. READY-C:s lokala tvåkortsprov har kvarliggande kort
-   men tonhopp vid C1. Grepp, tempo, mask och rörelse återstår ([film](docs/lage/film.md)).
+   och jämn skofärg efter rättat inpass. Grepp, tempo, mask och rörelse återstår ([film](docs/lage/film.md)).
 
 Äldre frågor till honom som inte är kort än: `D:/dealer-scratch/tmp/handoff-nytt/forslag-kort.md`.
 

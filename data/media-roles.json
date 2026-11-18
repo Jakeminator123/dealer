@@ -4131,10 +4131,10 @@
           "id": "paow-ready-c-chain-20261118",
           "role": "arbetsmaterial",
           "name": "READY-C · lokalt tvåkortsprov",
-          "path": "assets/proofs/paow-ready-c-chain-20261118/exit-end.png",
+          "path": "assets/proofs/paow-ready-c-chain-20261118/fixed-exit-end.png",
           "pattern": "assets/proofs/paow-ready-c-chain-20261118/*",
           "state": "kandidat",
-          "note": "Klippt inpass och omvänd reserv, endast labbvarianter. Två kort består med 0 px kantändring i granskade bilder. Tonhopp +37 nivåer vid C1; kontinuerlig rörelse inte slutdömd.",
+          "note": "Klippt inpass och omvänd reserv, endast labbvarianter. Två kort består med 0 px kantändring i granskade bilder. Skofärgens hopp rättat: +37,02 till −0,85 nivåer. Kontinuerlig rörelse inte slutdömd.",
           "source": {
             "from": "Lokal Dealer · native Chrome och oberoende granskning",
             "when": "2026-11-18"
