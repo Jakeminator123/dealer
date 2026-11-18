@@ -20,8 +20,8 @@ Git, och en rad som inte längre gäller ersätts.
 1. Byt adressraden nedan till din egen, starta vakten på hans kö i Beställ, och läs hans anteckningar
    (`node tools/proof-notes.ts`) och svaren i Beslut före första svaret till honom.
 2. Se att fjärren är i kapp med `main` och att inget arbetsträd bär arbete som inte är inne (`git worktree list`).
-   Två underagenters grenar granskas och slås ihop av huvudagenten: `rak-linje` (beställningen i en rak linje, med
-   `film-standard-register`) och `stad-1118` (städning).
+   Grenen `rak-linje` (beställningen i en rak linje, med `film-standard-register`) granskas och slås ihop av
+   huvudagenten. Slaskdiskens inventering väntar på huvudagentens val (`D:/dealer-scratch/tmp/stad-1118/`).
 3. Filmerna först: ankare 2.3 (MODEL:s tagning är levererad; kandidaten läggs som Prov för honom), sedan given från
    2.3 på 3 s och filmen med kort ett till alla platser (3D gör dockfilmerna), sedan ankare 2.2
    ([film](docs/lage/film.md)).
