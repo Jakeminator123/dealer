@@ -101,7 +101,7 @@ test('no heading carries a date or a clock time: what happened stands in the com
 
 test('the main agent\'s address stands on one line, under "Vem äger vad"', () => {
   const text = read('HANDOFF.md');
-  const address = /^- \*\*Huvudagentens adress: `[a-z0-9-]+`\.\*\*/;
+  const address = /^- \*\*Huvudagentens adress: `[a-z0-9/_-]+`\.\*\*/;
   assert.equal(lines(text).filter(line => address.test(line)).length, 1, 'HANDOFF.md: exactly one line that begins "- **Huvudagentens adress: `<adress>`.**"');
   assert.equal(lines(section(text, 'Vem äger vad')).filter(line => address.test(line)).length, 1, 'HANDOFF.md: the address line stands under "## Vem äger vad"');
 });

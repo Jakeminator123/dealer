@@ -23,6 +23,7 @@ import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { resolveRound } from "../../../src/clip-graph.ts";
 import { sceneWords } from "../../lib/bordet.ts";
 import { useBank } from "../../lib/bank.ts";
+import { readGeometryWord, withGeometry } from "../../lib/casino.ts";
 import { stepFacts, useViewContext } from "../../lib/context.ts";
 import { BANK_DEALER, filmsLine, openingRound, ownSteps, withDealer } from "../../lib/dealer.ts";
 import { isSnapshot } from "../../lib/mode.ts";
@@ -47,6 +48,7 @@ function scenePart(all: URLSearchParams): URLSearchParams {
 
 export function SceneBody({ kind, toolbar, roundText: cardRound }: { kind: SceneKind; toolbar: ReactNode; roundText: string }) {
   const search = useSearchParams();
+  const geometri = readGeometryWord(search);
   const query = scenePart(new URLSearchParams(search.toString())).toString();
   const params = useMemo(() => new URLSearchParams(query), [query]);
   const toast = useToast();
@@ -152,7 +154,7 @@ export function SceneBody({ kind, toolbar, roundText: cardRound }: { kind: Scene
           ) : null}
           <div className="ml-auto flex shrink-0 items-center gap-1.5">
             <Tooltip content="Spelet med spelmotorn och marker, i den här looken">
-              <Link href={editor.casino} className={buttonClasses({ variant: "secondary", size: "sm" })}>
+              <Link href={withGeometry(editor.casino, geometri)} className={buttonClasses({ variant: "secondary", size: "sm" })}>
                 <Spade />
                 Spela i Casino
               </Link>
@@ -160,7 +162,7 @@ export function SceneBody({ kind, toolbar, roundText: cardRound }: { kind: Scene
             <IconButton label="Kopiera länken: samma runda och look" icon={<Copy />} variant="quiet" size="sm" onClick={copyLink} />
             {!isSnapshot && editor.scenePage ? (
               <Tooltip content="Samma look på 3D-sidan, med alla reglage">
-                <a href={editor.scenePage} className={buttonClasses({ variant: "quiet", size: "sm" })}>
+                <a href={withGeometry(editor.scenePage, geometri)} className={buttonClasses({ variant: "quiet", size: "sm" })}>
                   <ExternalLink />
                   3D-sidan
                 </a>
@@ -176,7 +178,8 @@ export function SceneBody({ kind, toolbar, roundText: cardRound }: { kind: Scene
           <ErrorState className="min-h-0 flex-1" title="Klippbanken kunde inte läsas" error={error} onRetry={() => void reload()} />
         ) : (
           <div className="flex min-h-0 flex-1 flex-col" {...editor.pointer}>
-            <Stage ref={stage} className="min-h-0 flex-1" parts={parts} mode={mode} clock={clock} initial={editor.initial} onScene={editor.onScene} onSceneChange={editor.onSceneChange}>
+            {/* The renderer reads the geometry when the scene is created. */}
+            <Stage key={geometri} ref={stage} className="min-h-0 flex-1" parts={parts} mode={mode} clock={clock} initial={editor.initial} onScene={editor.onScene} onSceneChange={editor.onSceneChange}>
               {editor.comparing && !flat ? (
                 <div className="pointer-events-none absolute left-1/2 top-4 -translate-x-1/2 rounded-full border border-brass/50 bg-black/70 px-4 py-1.5 text-sm font-semibold text-brass-hi shadow-pop backdrop-blur-sm">Basgrund</div>
               ) : null}

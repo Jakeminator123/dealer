@@ -15,6 +15,13 @@ Innehåll: [Arbetet och dokumenten](#arbetet-och-dokumenten) · [Labbet och stud
 
 ## Arbetet och dokumenten
 
+- **Sammanhängande lokal räddning** (2026-11-18, Codex): "Styr upp det här och gör det så bra som möjligt för att spela
+  upp Black Jack"; "Samordna arbetet så att vi har kontroll, även med flera metoder." Jakob gav fria händer för lokala
+  ändringar, underagenter efter behov, kompakt lagring (gärna SQLite) och smart dokumentation. Arbetet fortsätter i
+  befintligt repo. Han begärde återkommande push och GPT-browser-granskningar under fem timmar, med avläsning efter
+  5–10 minuter. Sol 6.2 används för kvantitativa deluppgifter. Underlagets råd prövas mot aktuell kod; original,
+  användarbedömningar och kortplan bevaras. Lokal kod/publicering till GitHub innebär ingen webbdeploy.
+
 - **Målet** (2026-11-13): "nu ska vi skapa en bättre version av blackjackspelet". Arbetet gäller spelet i studion
   först; Scoutgaming är slutmålet på sikt och äger regler, slump och kortvärden.
 - **Den enda vägen** (2026-11-13, kl. 07.45): "Se till att verkligen ha denna 'enda bästa väg' när jag vaknar imorgon",
@@ -152,6 +159,9 @@ Innehåll: [Arbetet och dokumenten](#arbetet-och-dokumenten) · [Labbet och stud
   texten som skickas säger varje sak en gång.
 
 ## Domar, beställningar och pengar
+
+- **Denna räddningsomgångs budget** (2026-11-18, Codex): "Högst 1 000 krediter totalt" för nya betalda Runway-försök
+  under femtimmarsarbetet. Det är ett totalt tak för omgången, även om orderpolicyn medger mer per order och dag.
 
 - **Domar åt honom, och ingen kö** (2026-11-13): "jag måste sova och du får granska och godkänna alla klipp", och kl.
   15.50, på väg ut: "jag vill nu för jag ska iväg att du godkänner allt videomaterial som innehåller de där kriterierna

@@ -2,10 +2,11 @@
 // The game page's side, reading the same address, is tested in tools/game-look.test.ts.
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import { tableGeometry } from "../../src/card-plan.ts";
 import { DEFAULTS } from "../../src/scene3d-view.ts";
 import { readLook } from "../../src/game-look.ts";
-import { CASINO_TABLE, casinoAddress, casinoSearch, freshTable, gameSrc, readCasino, scenHref } from "../lib/casino.ts";
-import { SHIPPED, effective, patchOf, readAddress } from "../lib/scene-presets.ts";
+import { CASINO_TABLE, casinoAddress, casinoSearch, freshTable, gameSrc, readCasino, readGeometryWord, scenHref, withGeometry } from "../lib/casino.ts";
+import { SHIPPED, effective, patchOf, readAddress, scenePageAddress } from "../lib/scene-presets.ts";
 
 const params = (text: string) => new URLSearchParams(text);
 
@@ -36,6 +37,29 @@ test("a look goes round: the view's address, the game's frame and the Scen view 
   assert.equal(at.get("lage"), "scen", "Bordet's Scen");
   at.delete("lage");
   assert.deepEqual(readAddress(at), { forval: "rumsstudien", patch: look.patch, ignored: [] });
+});
+
+test("Casino, Scen and the lab links retain the explicit geometry with the selected look", () => {
+  const lab = "http://127.0.0.1:4319";
+  for (const [word, mode] of [["lins", "lens"], ["kontrakt", "contract"]] as const) {
+    const original = readCasino(params(`forval=levande&cardHand=standard&pitch=-12&zoom=0.95&geometri=${word}`));
+    const scen = new URL(scenHref(original), lab);
+    assert.equal(scen.search, `?lage=scen&forval=levande&cardHand=standard&pitch=-12&zoom=0.95&geometri=${word}`);
+    const geometri = readGeometryWord(scen.searchParams);
+    const game = new URL(withGeometry(casinoAddress(original.forval, original.patch), geometri), lab);
+    const roundTrip = readCasino(game.searchParams);
+    assert.deepEqual(roundTrip, original);
+    const frame = new URL(gameSrc(roundTrip), lab);
+    assert.equal(tableGeometry(frame.search), mode);
+    assert.deepEqual(readLook(frame.searchParams).keys, original.patch);
+
+    const scene = new URL(withGeometry(scenePageAddress(effective(DEFAULTS, original.patch), DEFAULTS), geometri), lab);
+    assert.equal(scene.search, `?cardHand=standard&pitch=-12&zoom=0.95&geometri=${word}`);
+    assert.equal(tableGeometry(scene.search), mode);
+    assert.equal(withGeometry("/scene3d.html", geometri), `/scene3d.html?geometri=${word}`);
+  }
+  assert.equal(withGeometry("/scene3d.html", readGeometryWord(params("geometri=annat"))), "/scene3d.html");
+  assert.equal(withGeometry("/scene3d.html?geometri=kontrakt#bordet", "lins"), "/scene3d.html?geometri=lins#bordet");
 });
 
 test("casinoAddress, from another view: the active preset and only the keys that differ from it", () => {

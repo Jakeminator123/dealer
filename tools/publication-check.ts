@@ -43,13 +43,11 @@ export function parsePush(input:string):Array<{local:string;remote:string}> {
   }).filter(row=>!zero.test(row.local)); // A ref deletion introduces no objects.
 }
 
-// The studio (studio/) has its own package, type check and build, and its builders work in it while other steps are
-// pushed: an uncommitted file there does not stop a push by itself. Its own tests (studio/tests/) run with the others
-// since 2026-11-13 (they stood outside every run until then, and two were red unseen), so a red studio test stops the
-// push; a green one may have run against a working copy that differs from HEAD, which is weaker evidence than for
-// src/ and tools/. Its files are checked like all others once they are committed.
+// The gate claims to test HEAD, including studio code, fixtures and register/document checks. A test may import any
+// tracked source or read JSON/Markdown, so an extension whitelist cannot establish that claim. Only Jakob's card plan
+// has the explicit committed-input exception. While another session or the UI writes, use push-clean's clean checkout.
 export function dirtyTestInputs(names:string[]):string[] {
-  return names.filter(name=>!name.startsWith('studio/')).filter(name=>/\.(?:ts|tsx|js|mjs|cjs|css|html)$/.test(name)||/^package(?:-lock)?\.json$/.test(name)||name.startsWith('.githooks/')||name.startsWith('.github/'));
+  return names.filter(name=>name!=='placements/default.json');
 }
 
 export function scanRange(root:string,head:string,base:string):Finding[] {

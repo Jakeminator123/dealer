@@ -41,10 +41,13 @@ test('the canonical documents, whose absence stops a push, are all in the reposi
   assert.deepEqual(CANONICAL.filter(name=>!existsSync(name)),[]);
 });
 
-test('user placement drafts are not test inputs',()=>{
-  assert.deepEqual(dirtyTestInputs(['placements/default.json','HANDOFF.md']),[]);
+test('the HEAD gate includes studio, registers and documents, with only the user card plan exempt',()=>{
+  assert.deepEqual(dirtyTestInputs(['placements/default.json','HANDOFF.md']),['HANDOFF.md']);
   assert.deepEqual(dirtyTestInputs(['src/sound.ts','package-lock.json','placements/default.json']),['src/sound.ts','package-lock.json']);
-  assert.deepEqual(dirtyTestInputs(['studio/app/page.tsx','studio/package.json','studio/lib/api.ts','src/studio/x.ts']),['src/studio/x.ts']);
+  const studio=['studio/app/page.tsx','studio/package.json','studio/lib/api.ts','src/studio/x.ts'];
+  assert.deepEqual(dirtyTestInputs(studio),studio);
+  const inputs=['data/order-methods.json','data/orders/new-draft.json','motions/example.json','tools/texts/prompt.txt','.gitignore'];
+  assert.deepEqual(dirtyTestInputs(inputs),inputs);
 });
 
 test('pre-push parses new branches and multiple refs; deletion adds no objects',()=>{

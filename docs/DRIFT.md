@@ -35,8 +35,9 @@ inte med av misstag. Git-push är separat från webbdeploy, mediauppladdning och
   tagits bort. Lokala media/env-mappar, binärt material, filer över 5 MiB och vissa tokenmönster stoppar push.
   Mönsterkontrollen är ett extra skydd, ingen garanti att alla hemligheter upptäcks; granska alltid diffen.
 - Testerna ska avse exakt HEAD. Ändrade, nya eller ospårade kod- och testfiler stoppar kontrollen tills ägaren samordnat
-  dem; undantaget är `studio/`, som har eget paket, typkontroll och bygge och granskas som alla andra filer när den
-  committas (`da805da`). `placements/default.json` är ett separat användarutkast och inkluderas inte automatiskt.
+  dem. Studions kod, register och dokument omfattas också: annars kan testet bli grönt på andra filer än de som
+  pushas. `placements/default.json` är det uttryckliga undantaget för användarutkast och inkluderas inte automatiskt.
+  Ett oincheckat orderutkast bevaras; kör kontroll och push från ett rent träd med `push-clean` i det fallet.
   Kontrollen kör testfilerna i `TESTS` i `tools/publication-check.ts` (bland dem
   `studio/tests/*.test.ts`; `npm test` kör samma lista, och ett vakttest i `tools/publication-check.test.ts` fäller en
   testfil i `tools/` som ingen lista namnger) med högst fyra arbetare, utan Runway, media eller deploy; tester som gör

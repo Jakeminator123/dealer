@@ -18,26 +18,26 @@ Git, och en rad som inte längre gäller ersätts.
 
 ## Nästa steg
 
-Ett mål i taget: EN giv med Jakobs ja ([film](docs/lage/film.md)). Inget annat beställs och ingen ny bana öppnas före det.
+Rädda befintligt repo till en sammanhängande lokal väg från underlag till spelbar Blackjack (Jakob 2026-11-18).
+Kodens samband och verifiering rättas parallellt; filmproduktionen börjar med EN trovärdig giv ([film](docs/lage/film.md)).
 
-1. Skriv din egen adress på raden nedan. På ett nytt konto har varje session en ny adress, inget minne följer med
-   och Runway ansluts på nytt (`/mcp`): allt som gäller står i repot. Starta vakten på hans kö
-   (`node tools/order-watch.ts`), och läs hans anteckningar (`node tools/proof-notes.ts`) och svaren i Beslut före
-   första svaret till honom.
-2. Se att fjärren är i kapp med `main` och att inget arbetsträd bär arbete som inte är inne (`git worktree list`).
-3. Given: hans svar på kortet i Beslut väljer väg, kortet vänt först efter släppet (local-studios sätt) eller i
-   handen som i dag. Stegen för båda står i film-lägesfilen.
-4. Väntar på given: räddningsuppdraget ([BESKED](docs/BESKED.md), "Räddningsuppdraget"; det som återstår står i
-   [BRISTER](docs/BRISTER.md)), fem kameravinklar, kopians tre fel och talet ([spelet](docs/lage/spelet.md)).
+1. Bevara Jakobs ändrade kortplan och oincheckade orderutkast. Läs nya anteckningar med `node tools/proof-notes.ts`.
+2. Rätta geometrival genom vybyten och lås beställningens visade underlag mot det som sparas.
+3. Samla körningars underlag och verifiering lokalt, utan att dubblera domar eller lagra media i databasen.
+4. Verifiera en pilot från referens och giv till retur och spelmotor; redovisa visuella luckor separat från tester.
+5. Testa, pusha och begär avgränsad GPT Pro-granskning av exakt pushad commit. Läs svaret efter 5–10 minuter och
+   kontrollera fynden lokalt. Jakobs mandat gäller denna arbetsomgång; nya Runway-anrop får totalt kosta 1 000 krediter.
 
 Äldre frågor till honom som inte är kort än: `D:/dealer-scratch/tmp/handoff-nytt/forslag-kort.md`.
 
 ## Vem äger vad
 
-- **Huvudagentens adress: `dealer-62`.** Adressen är det andra sessioner skriver till med SendMessage, och den står bara
-  på den här raden; rubriken Jakob ser på chatten betyder inget. Byter rollen session, ändras den här raden och inget
-  annat. Kontrollera med ListAgents före ett meddelande. Huvudagenten äger commits, taggar och push, studion,
+- **Huvudagentens adress: `/root`.** Codex-chatten `01a1edac-d516-70e2-8aef-64bcf687f6d5` samordnar arbetet.
+  Kontrollera med ListAgents före meddelanden. Huvudagenten äger commits, taggar och push, studion,
   labbservern, spelet och 3D-scenens filmlager, `src/clip-graph.ts` och styrdokumenten.
+- **Avgränsade uppdrag:** `/root/geometry` äger geometrilänkar i Casino och deras tester; `/root/order_snapshot` äger
+  beställningens förhandsvisning, lagring och tester. Båda arbetar i egna träd. `/root/evidence_audit` läser enbart
+  register och kontrollernas täckning. Huvudagenten integrerar deras namngivna filer och äger testlistorna.
 - **Jakob talar bara med huvudagenten**, som håller ihop sessionerna. Varje bana får sin kö av huvudagenten och säger
   till när ett steg är grönt, med en fillista. Ingen bana skriver i en annans filer.
 - **Huvudagentens banor:** film, kort, labbet och studion, och spelet. Filerna de äger står under Var saker ligger i varje lägesfil.

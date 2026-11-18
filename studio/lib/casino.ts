@@ -15,11 +15,16 @@ export const CASINO_TABLE = "casino";
 
 /**
  * geometri: the page's own word for the table's geometry (src/card-plan.ts: geometri=lins or geometri=kontrakt), when the
- * address has it. It is no look key: the Casino keeps it in its own address and carries it on to the game in the frame, so
- * that the Casino shows the same geometry as game.html with the word.
+ * address has it. It is no look key: the Casino keeps it in its address, the game in the frame and the link to Scen.
  */
 export type CasinoLook = { forval: string; patch: Partial<SceneState>; table: string; ignored: string[]; geometri?: string | null };
 type Params = { get(name: string): string | null; forEach(fn: (value: string, key: string) => void): void };
+
+/** The explicit geometry word in a lab address, if it is one the game knows. */
+export function readGeometryWord(params: Pick<Params, "get">): string | undefined {
+  const word = params.get(GEOMETRY_WORD);
+  return word !== null && Object.hasOwn(GEOMETRY_WORDS, word) ? word : undefined;
+}
 
 /** The look and table an address asks for. Words that are no key, or values that do not fit, are left out and named. */
 export function readCasino(params: Params, rooms?: readonly string[]): CasinoLook {
@@ -29,8 +34,8 @@ export function readCasino(params: Params, rooms?: readonly string[]): CasinoLoo
     if (key !== "table" && key !== "robot" && key !== GEOMETRY_WORD) keys.append(key, value);
   });
   const { forval, patch, ignored } = readAddress(keys, rooms);
-  const asked = params.get("table") ?? "", geometri = params.get(GEOMETRY_WORD);
-  return { forval, patch, ignored, table: TABLE_NAME.test(asked) ? asked : CASINO_TABLE, ...(geometri !== null && Object.hasOwn(GEOMETRY_WORDS, geometri) ? { geometri } : {}) };
+  const asked = params.get("table") ?? "", geometri = readGeometryWord(params);
+  return { forval, patch, ignored, table: TABLE_NAME.test(asked) ? asked : CASINO_TABLE, ...(geometri ? { geometri } : {}) };
 }
 
 /** The keys as an address writes them, in the catalogue's order. */
@@ -39,6 +44,16 @@ function keyPairs(patch: Partial<SceneState>): [string, string][] {
 }
 const join = (pairs: [string, string][]) => new URLSearchParams(pairs).toString();
 const geometryPair = (look: Pick<CasinoLook, "geometri">): [string, string][] => (look.geometri ? [[GEOMETRY_WORD, look.geometri]] : []);
+
+/** Carry the geometry of the current page to a lab link with its own look. */
+export function withGeometry(href: string, geometri: string | undefined): string {
+  if (!geometri || !Object.hasOwn(GEOMETRY_WORDS, geometri)) return href;
+  const hashAt = href.indexOf("#"), hash = hashAt < 0 ? "" : href.slice(hashAt), base = hashAt < 0 ? href : href.slice(0, hashAt);
+  const queryAt = base.indexOf("?"), pathname = queryAt < 0 ? base : base.slice(0, queryAt);
+  const query = new URLSearchParams(queryAt < 0 ? "" : base.slice(queryAt + 1));
+  query.set(GEOMETRY_WORD, geometri);
+  return `${pathname}?${query}${hash}`;
+}
 
 /** "?forval=levande&dust=0.8&table=casino": the view's own question; forval always, so the link says which preset. */
 export function casinoSearch(look: Pick<CasinoLook, "forval" | "patch" | "geometri"> & { table?: string | null }): string {
@@ -61,8 +76,8 @@ export function gameSrc(look: Pick<CasinoLook, "forval" | "patch" | "table" | "g
 }
 
 /** The same look in Bordet's Scen, to calibrate it further. */
-export function scenHref(look: Pick<CasinoLook, "forval" | "patch">): string {
-  return `/bordet/?${join([["lage", "scen"], ["forval", look.forval], ...keyPairs(look.patch)])}`;
+export function scenHref(look: Pick<CasinoLook, "forval" | "patch" | "geometri">): string {
+  return `/bordet/?${join([["lage", "scen"], ["forval", look.forval], ...keyPairs(look.patch), ...geometryPair(look)])}`;
 }
 
 /** A fresh table name: a new game session on the lab server, with a new balance and shoe. */
