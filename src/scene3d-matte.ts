@@ -375,12 +375,19 @@ const SIDES: Record<'back' | 'face', Side> = {back: {card: DARK_BACK.card, pale:
 // pixel with the side's colour taken as the card and `w`, how far it was.
 const sideGlsl = (name: 'back' | 'face', S: Side) => { const D = DARK_BACK, C = `${name.toUpperCase()}_CARD`;
   return `const vec3 ${C} = ${v3(S.card)};
-float ${name}CardOf(vec3 c, mat3 toCard, out vec3 u){
-  u = toCard * c; float low = ${S.shade ? `1. - smoothstep(${f(D.blue[0])}, ${f(D.blue[1])}, c.b / max(c.g, .01))` : '0.'};
+float ${name}${S.dim ? 'CardWeight(vec3 c, vec3 u, float dim)' : 'CardOf(vec3 c, mat3 toCard, out vec3 u)'}{
+  ${S.dim ? '' : 'u = toCard * c; '}float low = ${S.shade ? `1. - smoothstep(${f(D.blue[0])}, ${f(D.blue[1])}, c.b / max(c.g, .01))` : '0.'};
   float screen = max(smoothstep(${f(S.screen[0])}, ${f(S.screen[1])}, u.y), low * smoothstep(${f(D.shade[0])}, ${f(D.shade[1])}, u.y));
   float white = smoothstep(${f(D.white[0])}, ${f(D.white[1])}, u.z) * (1. - smoothstep(${f(S.pale[0])}, ${f(S.pale[1])}, u.z / max(u.x, 1e-3)));
-  return smoothstep(0., ${f(D.share)}, u.x) * screen * white * (1. - backSkin(c))${S.dim ? ` * smoothstep(${f(S.dim[0])}, ${f(S.dim[1])}, dot(c, BACK_LUMA))` : ''}${S.red ? ` * (1. - smoothstep(${f(S.red[0])}, ${f(S.red[1])}, c.r - c.g))` : ''};
+  return smoothstep(0., ${f(D.share)}, u.x) * screen * white * (1. - backSkin(c))${S.dim ? ' * dim' : ''}${S.red ? ` * (1. - smoothstep(${f(S.red[0])}, ${f(S.red[1])}, c.r - c.g))` : ''};
 }
+${S.dim ? `float ${name}CardOf(vec3 c, mat3 toCard, out vec3 u){
+  u = toCard * c;
+  return ${name}CardWeight(c, u, smoothstep(${f(S.dim[0])}, ${f(S.dim[1])}, dot(c, BACK_LUMA)));
+}
+float faceChroma(vec3 c, vec2 range){ return smoothstep(range.x, range.y, c.b / max(c.g, .01)); }
+float faceAirSupport(vec3 c, vec2 range){ return faceChroma(c, range) * max(0., 1. - c.r / max(c.g, .01)); }
+` : ''}
 float ${name}RimOf(vec3 c, vec3 u){ return smoothstep(0., ${f(D.share)}, u.x) * smoothstep(${f(D.rim[0])}, ${f(D.rim[1])}, u.y) * (1. - smoothstep(${f(S.rimPale[0])}, ${f(S.rimPale[1])}, u.z / max(u.x, 1e-3))) * (1. - backSkin(c)); }
 float ${name}FingerOf(vec3 c, mat3 toFinger, out vec3 v){
   v = toFinger * c;
@@ -414,7 +421,20 @@ ${name === 'face' ? `  // A green shadow can fit the unmix as a little blue. Fad
   // least reliable card mix to equal parts card and screen. Dim blue keeps its hue and can still go paper.
   if (key.g > key.b) {
     vec3 weak = mix(key, ${C}, ${f(D.share)}), halfCard = mix(key, ${C}, .5);
-    w1 *= smoothstep(weak.b / weak.g, halfCard.b / halfCard.g, c.b / max(c.g, .01));
+    vec2 range = vec2(weak.b / weak.g, halfCard.b / halfCard.g);
+    if (faceAir > .5 && backUnder < .5 && shoe < .5) {
+      // Restore the paper weight lost to dim in a coherent blue patch. The original
+      // faceCardOf still supplies the rim and contact evidence.
+      float base = faceCardWeight(c, u, 1.), support = faceAirSupport(c, range);
+      if (base * support > w1) {
+        for (int k = 0; k < 4; k++) {
+          vec2 d = ${f(PAPER_FACE.smooth)} * vec2(k == 0 ? 1. : k == 1 ? -1. : 0., k == 2 ? 1. : k == 3 ? -1. : 0.);
+          support = min(support, faceAirSupport(filmAt(map, px + d), range));
+        }
+        w1 = max(w1, base * support);
+      }
+    }
+    w1 *= faceChroma(c, range);
   }
   if (backUnder > .5) w1 *= smoothstep(.4, .7, u.x); // beneath the drawn card a blue rim blended into the felt reads as felt: only a solid share goes paper
 ` : ''}  w2 *= (1. - w1); w1 *= zone; w2 *= zone; w = w1 + w2; if (w <= 0.) return c;
@@ -431,7 +451,7 @@ ${name === 'back' ? `  // beneath the drawn card the card blurred into skin goes
   return c * (1. - w1 - w2) + w1 * card + w2 * finger;
 }`; };
 /** filmCard(c, px, key): the film pixel c at film pixel px (y down) with the film card's back dark (backOn) and its face paper (faceOn); needs scene3d-film.ts CARD_GLSL (quadIn, filmAt) and the film shader's map and colour evening (evenOn, even, evenGain, evenLift). */
-export const FILM_CARD_GLSL = `uniform float backOn, faceOn, backLying, faceLying, backUnder; uniform vec2 backZone[4], backSeat[4]; uniform vec4 backShoe; uniform vec3 backFieldLit, faceFieldLit;
+export const FILM_CARD_GLSL = `uniform float backOn, faceOn, backLying, faceLying, backUnder, faceAir; uniform vec2 backZone[4], backSeat[4]; uniform vec4 backShoe; uniform vec3 backFieldLit, faceFieldLit;
 const vec3 BACK_FINGER = ${v3(DARK_BACK.finger)}, BACK_LUMA = vec3(.2126, .7152, .0722);
 const vec2 BACK_AROUND[8] = vec2[8](vec2(-1., -1.), vec2(0., -1.), vec2(1., -1.), vec2(-1., 0.), vec2(1., 0.), vec2(-1., 1.), vec2(0., 1.), vec2(1., 1.));
 float backSkin(vec3 c){ return smoothstep(${f(DARK_BACK.skinRed[0])}, ${f(DARK_BACK.skinRed[1])}, c.r - c.g) * smoothstep(${f(DARK_BACK.skinBlue[0])}, ${f(DARK_BACK.skinBlue[1])}, c.b / max(c.g, .01)); }
@@ -477,13 +497,15 @@ export function paperContactOf(source: number[], painted: number[], blue: number
 }
 /**
  * darkBack in the shader for one pixel, for the tests: c the film's colour and key the screen's (0-1), shoe whether it lies in the shoe
- * window or within DARK_BACK.shoeRoom of it, skin how much skin lies within DARK_BACK.skinNear of it (0 to 1), rim whether surely card lies within DARK_BACK.near of it. The neighbourhood's mean over a blurred finger is left out. card
+ * window or within DARK_BACK.shoeRoom of it, skin how much skin lies within DARK_BACK.skinNear of it (0 to 1), rim whether surely card lies within DARK_BACK.near of it. For a face in the air, neighbours are the four samples at PAPER_FACE.smooth.
+ * The neighbourhood's mean over a blurred finger is left out. card
  * and finger: how far the pixel is taken as the card and as the card blurred with a finger; colour: what the film then shows.
  */
-export function darkBackOf(c: number[], key: number[], o: {shoe?: boolean; skin?: number; rim?: boolean; field?: number[]; lying?: number; side?: 'back' | 'face'} = {}): {card: number; finger: number; colour: number[]} {
-  const D = {...DARK_BACK, ...(o.side === 'face' ? {card: PAPER_FACE.card, pale: PAPER_FACE.pale, rimPale: SIDES.face.rimPale, screen: PAPER_FACE.screen, bright: PAPER_FACE.bright} : {})}, dimOk = o.side === 'face' ? step(PAPER_FACE.dim[0], PAPER_FACE.dim[1], lumaOf(c)) * (1 - step(PAPER_FACE.red[0], PAPER_FACE.red[1], c[0] - c[1])) : 1, response = o.side === 'face' ? PAPER_FACE.response : 1, field = o.field ?? (o.side === 'face' ? PAPER_FACE.field : DARK_BACK.field), lying = o.lying ?? (o.side === 'face' ? PAPER_FACE.lying : 0.835), shade = o.side !== 'face', skin = step(D.skinRed[0], D.skinRed[1], c[0] - c[1]) * step(D.skinBlue[0], D.skinBlue[1], c[2] / Math.max(c[1], 0.01));
-  const cardOf = (u: number[]) => { const low = shade ? 1 - step(D.blue[0], D.blue[1], c[2] / Math.max(c[1], 0.01)) : 0;
-    return step(0, D.share, u[0]) * Math.max(step(D.screen[0], D.screen[1], u[1]), low * step(D.shade[0], D.shade[1], u[1])) * step(D.white[0], D.white[1], u[2]) * (1 - step(D.pale[0], D.pale[1], u[2] / Math.max(u[0], 1e-3))) * (1 - skin) * dimOk; };
+export function darkBackOf(c: number[], key: number[], o: {shoe?: boolean; skin?: number; rim?: boolean; field?: number[]; lying?: number; side?: 'back' | 'face'; air?: boolean; neighbours?: readonly (readonly number[])[]} = {}): {card: number; finger: number; colour: number[]} {
+  const D = {...DARK_BACK, ...(o.side === 'face' ? {card: PAPER_FACE.card, pale: PAPER_FACE.pale, rimPale: SIDES.face.rimPale, screen: PAPER_FACE.screen, bright: PAPER_FACE.bright} : {})}, response = o.side === 'face' ? PAPER_FACE.response : 1, field = o.field ?? (o.side === 'face' ? PAPER_FACE.field : DARK_BACK.field), lying = o.lying ?? (o.side === 'face' ? PAPER_FACE.lying : 0.835), shade = o.side !== 'face', skin = step(D.skinRed[0], D.skinRed[1], c[0] - c[1]) * step(D.skinBlue[0], D.skinBlue[1], c[2] / Math.max(c[1], 0.01));
+  const dim = o.side === 'face' ? step(PAPER_FACE.dim[0], PAPER_FACE.dim[1], lumaOf(c)) : 1, red = o.side === 'face' ? 1 - step(PAPER_FACE.red[0], PAPER_FACE.red[1], c[0] - c[1]) : 1;
+  const cardOf = (u: number[], light = dim) => { const low = shade ? 1 - step(D.blue[0], D.blue[1], c[2] / Math.max(c[1], 0.01)) : 0;
+    return step(0, D.share, u[0]) * Math.max(step(D.screen[0], D.screen[1], u[1]), low * step(D.shade[0], D.shade[1], u[1])) * step(D.white[0], D.white[1], u[2]) * (1 - step(D.pale[0], D.pale[1], u[2] / Math.max(u[0], 1e-3))) * (1 - skin) * (light * red); };
   const u = solve3([D.card, key, [1, 1, 1]], c), v = solve3([D.card, D.finger, [1, 1, 1]], c);
   let w1 = cardOf(u);
   if (o.rim) {
@@ -496,11 +518,16 @@ export function darkBackOf(c: number[], key: number[], o: {shoe?: boolean; skin?
   }
   if (o.side === 'face' && key[1] > key[2]) {
     const chromaAt = (share: number) => (key[2] * (1 - share) + D.card[2] * share) / (key[1] * (1 - share) + D.card[1] * share);
-    w1 *= step(chromaAt(D.share), chromaAt(0.5), c[2] / Math.max(c[1], 0.01));
+    const weak = chromaAt(D.share), half = chromaAt(0.5), chroma = (rgb: readonly number[]) => step(weak, half, rgb[2] / Math.max(rgb[1], 0.01));
+    if (o.air && !o.shoe && o.neighbours?.length === 4) {
+      const support = (rgb: readonly number[]) => chroma(rgb) * Math.max(0, 1 - rgb[0] / Math.max(rgb[1], 0.01));
+      w1 = Math.max(w1, cardOf(u, 1) * Math.min(support(c), ...o.neighbours.map(support)));
+    }
+    w1 *= chroma(c);
   }
   const w2 = o.shoe || o.side === 'face' ? 0 : step(0.3, 0.7, o.skin ?? 0) * step(0, D.share, v[0]) * step(-D.tolerance, 0, v[1]) * step(D.fingerWhite[0], D.fingerWhite[1], v[2]) * (1 - step(D.pale[0], D.pale[1], v[2] / Math.max(v[0], 1e-3))) * (1 - w1);
   const green = (c[1] - Math.max(c[0], c[2])) / Math.max(key[1] - Math.max(key[0], key[2]), 0.05), screen = Math.max(u[1], 0) * step(D.noise[0], D.noise[1], u[1]) * step(0, D.green, green), light = Math.min(D.bright, Math.max(0, lumaOf(c.map((x, i) => x - screen * key[i])) / lying) ** response), card = field.map((x, i) => x * light + screen * key[i]);
-  const part = D.card.map(x => Math.max(v[0], 0) * x + Math.max(v[2], 0)), dim = Math.min(D.bright, Math.max(0, lumaOf(part) / lying) ** response), finger = c.map((x, i) => Math.min(1, Math.max(0, x - part[i] + field[i] * dim)));
+  const part = D.card.map(x => Math.max(v[0], 0) * x + Math.max(v[2], 0)), fingerLight = Math.min(D.bright, Math.max(0, lumaOf(part) / lying) ** response), finger = c.map((x, i) => Math.min(1, Math.max(0, x - part[i] + field[i] * fingerLight)));
   return {card: w1, finger: w2, colour: c.map((x, i) => x * (1 - w1 - w2) + w1 * card[i] + w2 * finger[i])};
 }
 /**

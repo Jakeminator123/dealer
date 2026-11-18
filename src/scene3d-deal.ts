@@ -16,7 +16,7 @@
 // no card object is drawn while a film shows its card; the passes that make the matte run here, on targets of the film's size.
 // The cards lying since earlier films are drawn as objects either way: a film lays one card, and later films do not show it.
 import * as T from 'three';
-import {poseAt, restOf, restFade, restShare, restingQuad, restingFilmPaperZone, returnCardAt, returnAfterFilmLanding, filmMarkerAt, sceneOf, planScene, cardRecord, cardFace, overridesOf, cardInFront, plausible, skirtSound, firstDrawn, turnOf, BACK, CARRY, FACE, UNDER, RIM, MARGIN, PLAUSIBLE, EASE, HOLD, type CardTrack, type CardRecord} from './card-overlay.ts';
+import {poseAt, restOf, restFade, restShare, restingQuad, restingFilmPaperZone, filmLandingFrame, returnCardAt, returnAfterFilmLanding, filmMarkerAt, sceneOf, planScene, cardRecord, cardFace, overridesOf, cardInFront, plausible, skirtSound, firstDrawn, turnOf, BACK, CARRY, FACE, UNDER, RIM, MARGIN, PLAUSIBLE, EASE, HOLD, type CardTrack, type CardRecord} from './card-overlay.ts';
 import {centre, clockwise, grown, signedArea, sound, type Pt} from './card-track.ts';
 import {FILM, edgeQuad, heldScale, solveCamera, squareToQuad, type FilmCamera} from './scene3d-geometry.ts';
 import type {TableGeometry} from './card-plan.ts';
@@ -528,8 +528,11 @@ export function createDealLayer(o: Options) {
           const current = at >= 0 && at === Math.round(frame);
           const restingZone = current && track && carry === 'film' ? restingFilmPaperZone(track, at, paper) : undefined;
           const zone = restingZone === undefined ? (current ? backZone(track as unknown as MatteTrack, at) : null) : restingZone && pts(restingZone);
+          // Dark-blue recovery belongs to a known airborne face; the resting paper keeps its measured zone and colour rule.
+          const landing = current && track && carry === 'film' && paper ? filmLandingFrame(track) : null;
           o.film.setBack({zone, seat: grown(clockwise(seat.map(([x, y]) => ({x, y}))), 2).map(p => [p.x, p.y]), shoe: track?.shoeWindow?.box ?? SHOE_BOX,
-            back: dark ? DARK_BACK.field : null, face: paper ? PAPER_FACE.field : null, lying: [LYING.BACK, LYING.FRONT], under: carry !== 'film'}); }
+            back: dark ? DARK_BACK.field : null, face: paper ? PAPER_FACE.field : null, lying: [LYING.BACK, LYING.FRONT], under: carry !== 'film',
+            air: landing !== null && at < landing && track?.frames[at]?.side === 'FRONT'}); }
         else o.film.setBack(null);
       }
       // cards dealt by earlier films of the round, which this film does not show: lying flat where they landed, in the size the dealt

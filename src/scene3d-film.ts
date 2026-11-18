@@ -392,7 +392,7 @@ export type MatteKey = {box: number[]; cover: T.Texture; shade: T.Texture; print
 // tint off fingers: the window and a card blurred with a finger are left, the back's colour beside skin is de-yellowed instead of
 // darkened and the face goes paper only where it is solid card (with the dark back the window's gold frame went dark and her hand took
 // black stains; with the paper face the drawn face card took a white rim).
-export type BackKey = {zone: number[][] | null; seat: number[][]; shoe: number[]; back: number[] | null; face: number[] | null; lying: number[]; under?: boolean};
+export type BackKey = {zone: number[][] | null; seat: number[][]; shoe: number[]; back: number[] | null; face: number[] | null; lying: number[]; under?: boolean; air?: boolean};
 export function createFilmLayers(filmVP: T.Matrix4, light: Record<string, {value: unknown}>) {
   // One frame, grade and card key for both layers; the rendered cards (scene3d-deal.ts) read the same frame and grade.
   const map = {value: null as T.Texture | null}, grade = {value: new T.Vector3(1, 1, 1)}, quad = () => [0, 1, 2, 3].map(() => new T.Vector2());
@@ -408,7 +408,7 @@ export function createFilmLayers(filmVP: T.Matrix4, light: Record<string, {value
   const matte = {matteOn: {value: 0}, matteFaceBack: {value: 0}, matteZoneOn: {value: 0}, matteBox: {value: new T.Vector4(0, 0, -1, -1)}, matteShoe: {value: new T.Vector4(0, 0, -1, -1)}, matteLying: {value: new T.Vector2(1, 1)}, matteZone: {value: quad()},
     matteBack: {value: new T.Vector3()}, mattePaper: {value: new T.Vector3(1, 1, 1)}, matteToPrint: {value: new T.Matrix3()}, matteSeatOn: {value: 0}, matteSeatQ: {value: quad()}, matteSeat: {value: new T.Vector3()},
     matteCover: {value: null as T.Texture | null}, matteShade: {value: null as T.Texture | null}, mattePrint: {value: null as T.Texture | null}};
-  const back = {backOn: {value: 0}, faceOn: {value: 0}, backUnder: {value: 0}, backLying: {value: 0.835}, faceLying: {value: 0.44}, backZone: {value: quad()}, backSeat: {value: quad()}, backShoe: {value: new T.Vector4(0, 0, -1, -1)}, backFieldLit: {value: new T.Vector3()}, faceFieldLit: {value: new T.Vector3()}};
+  const back = {backOn: {value: 0}, faceOn: {value: 0}, faceAir: {value: 0}, backUnder: {value: 0}, backLying: {value: 0.835}, faceLying: {value: 0.44}, backZone: {value: quad()}, backSeat: {value: quad()}, backShoe: {value: new T.Vector4(0, 0, -1, -1)}, backFieldLit: {value: new T.Vector3()}, faceFieldLit: {value: new T.Vector3()}};
   const mouth = mouthUniforms(); // a spoken line's mouth over the film (src/scene3d-mouth.ts)
   const material = (refUv: T.Vector2) => new T.ShaderMaterial({vertexShader: VERTEX, fragmentShader: FRAGMENT, transparent: true, depthWrite: false, side: T.DoubleSide,
     blending: T.CustomBlending, blendSrc: T.OneFactor, blendDst: T.OneMinusSrcAlphaFactor, blendSrcAlpha: T.OneFactor, blendDstAlpha: T.OneMinusSrcAlphaFactor,
@@ -455,7 +455,8 @@ export function createFilmLayers(filmVP: T.Matrix4, light: Record<string, {value
     },
     // The film card's back dark and its face paper (BackKey), or null: the film as it is.
     setBack(b: BackKey | null) {
-      back.backOn.value = b?.back ? 1 : 0; back.faceOn.value = b?.face ? 1 : 0; if (!b) return;
+      back.backOn.value = b?.back ? 1 : 0; back.faceOn.value = b?.face ? 1 : 0;
+      back.faceAir.value = b?.face && b.air && !b.under ? 1 : 0; if (!b) return;
       const put = (to: T.Vector2[], q: number[][]) => q.forEach((p, i) => to[i].set(p[0], p[1]));
       put(back.backZone.value, b.zone ?? [[-9, -9], [-8, -9], [-8, -8], [-9, -8]]); put(back.backSeat.value, b.seat); back.backShoe.value.set(b.shoe[0], b.shoe[1], b.shoe[2], b.shoe[3]);
       if (b.back) back.backFieldLit.value.set(b.back[0], b.back[1], b.back[2]); if (b.face) back.faceFieldLit.value.set(b.face[0], b.face[1], b.face[2]); back.backUnder.value = b.under ? 1 : 0; back.backLying.value = b.lying[0]; back.faceLying.value = b.lying[1];

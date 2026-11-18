@@ -253,7 +253,7 @@ test('the dark back ("pålägg"): the film\'s yellow back goes dark in the film\
   assert.ok(deal.includes("const dark = backOf(choice, extra, carry) === 'dark', paper = faceOf(choice, extra, carry) === 'paper';"));
   // beneath the drawn card the shoe window is the matte's and a card blurred with a finger is the key's: neither is recoloured there
   const matteSrc = await readFile('src/scene3d-matte.ts', 'utf8');
-  assert.ok(deal.includes("under: carry !== 'film'}); }") && film.includes('back.backUnder.value = b.under ? 1 : 0;') && matteSrc.includes('if (backUnder > .5 && shoe > .5) return c;') && matteSrc.includes('(1. - shoe) * (1. - backUnder)'), 'beneath the drawn card: not the window, not fingers');
+  assert.ok(deal.includes("under: carry !== 'film'") && film.includes('back.backUnder.value = b.under ? 1 : 0;') && matteSrc.includes('if (backUnder > .5 && shoe > .5) return c;') && matteSrc.includes('(1. - shoe) * (1. - backUnder)'), 'beneath the drawn card: not the window, not fingers');
   // ... and beside skin the back's share is de-yellowed, not darkened, and the face goes paper only where it is solid card
   const glsl = (await import('../src/scene3d-matte.ts')).FILM_CARD_GLSL, backFn = glsl.slice(glsl.indexOf('vec3 backSide'), glsl.indexOf('float faceCardOf')), faceFn = glsl.slice(glsl.indexOf('vec3 faceSide'), glsl.indexOf('vec3 beforeEven'));
   assert.ok(backFn.includes('card = mix(card, vec3(c.r, c.g, max(c.b, .8 * c.g)), near);') && !faceFn.includes('card = mix(card, vec3(c.r'), 'beside skin the back is de-yellowed');
@@ -309,6 +309,43 @@ test('paper tint leaves green shadow while retaining blue shadow and the mixed e
     assert.deepEqual(paper(faint).colour, faint, 'weak blends keep the source pixel for the key');
     assert.ok(mid.card > 0 && mid.card < half.card && half.card > 0.99, 'paper comes in gradually across a mixed edge');
     assert.ok(half.colour[1] > Math.max(half.colour[0], half.colour[2]), 'the original screen part remains available to the key');
+  }
+});
+
+test('carried paper recovers coherent blue in the shadow of the P7 card', () => {
+  const video = (rgb: readonly number[]) => rgb.map(v => v / 255), key = video([0, 235.39, 41.84]);
+  // P7 f73 and f74. Each set is the source pixel and four interpolated axial samples 1.5 px away.
+  const samples = [
+    {pixel: [4, 50, 46], nearby: [[2.5, 47.5, 46.5], [5, 49.5, 47.5], [4.5, 52.5, 52.5], [1.5, 46.5, 41]], old: 0.436, air: 0.899},
+    {pixel: [1, 45, 40], nearby: [[0, 45.5, 32.5], [4.5, 47, 43.5], [4, 43, 42], [1.5, 55, 34]], old: 0.134, air: 0.748},
+    {pixel: [5, 48, 48], nearby: [[6, 46, 47], [3.5, 47.5, 47], [2.5, 50.5, 50.5], [3, 44, 42.5]], old: 0.359, air: 0.870},
+    {pixel: [1, 37, 25], nearby: [[0.5, 36.5, 21.5], [1, 37, 25], [1.5, 40, 27], [0, 35.5, 21]], old: 0, air: 0.371},
+  ];
+  const light = (c: number[]) => 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
+  const lit = darkBackOf(video([4, 72, 72]), key, {side: 'face'});
+  for (const sample of samples) {
+    const c = video(sample.pixel), neighbours = sample.nearby.map(video);
+    const previous = darkBackOf(c, key, {side: 'face'});
+    const current = darkBackOf(c, key, {side: 'face', air: true, neighbours});
+    assert.ok(Math.abs(previous.card - sample.old) < 0.002, `${sample.pixel} old shade ${previous.card}`);
+    assert.ok(Math.abs(current.card - sample.air) < 0.002, `${sample.pixel} coherent shade ${current.card}`);
+    assert.ok(light(current.colour) > light(previous.colour) && light(current.colour) < light(lit.colour), 'the shadow goes paper but stays shaded');
+    assert.deepEqual(darkBackOf(c, key, {side: 'face', air: false, neighbours}), previous, 'resting paper keeps its old colour');
+    assert.deepEqual(darkBackOf(c, key, {side: 'face', air: true, neighbours: neighbours.slice(1)}), previous, 'all four samples are required');
+    assert.deepEqual(darkBackOf(c, key, {side: 'face', air: true, shoe: true, neighbours}), previous, 'the shoe keeps its old colour');
+    assert.deepEqual(darkBackOf(c, key, {side: 'face', air: true, neighbours: [...neighbours.slice(1), video([3, 190, 34])]}), previous, 'a green neighbour leaves the old edge');
+  }
+  const tip = video(samples[1].pixel), neighbours = samples[1].nearby.map(video);
+  assert.deepEqual(darkBackOf(tip, key, {side: 'face', rim: true, air: true, neighbours}), darkBackOf(tip, key, {side: 'face', rim: true}));
+  assert.deepEqual(darkBackOf(tip, key, {side: 'back', air: true, neighbours}), darkBackOf(tip, key, {side: 'back'}));
+});
+
+test('carried paper leaves the P7 hand, jacket, felt and green shadows beside a blue patch', () => {
+  const video = (rgb: number[]) => rgb.map(v => v / 255), key = video([0, 235.39, 41.84]);
+  const neighbours = [[2, 47, 46], [5, 49, 47], [4, 52, 52], [1, 46, 41]].map(video);
+  for (const rgb of [[229, 159, 153], [163, 116, 107], [28, 22, 17], [34, 27, 27], [0, 238, 42], [3, 190, 34], [0, 162, 22], [2, 146, 23]]) {
+    const c = video(rgb);
+    assert.deepEqual(darkBackOf(c, key, {side: 'face', air: true, neighbours}), {card: 0, finger: 0, colour: c}, `${rgb} keeps its source colour`);
   }
 });
 
