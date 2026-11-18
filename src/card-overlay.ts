@@ -126,7 +126,8 @@ export function sceneOf(contract: unknown): Scene | null {
  * takes the more horizontal sides of a foreshortened card as top and bottom, so a card that really
  * lies sideways arrives a quarter turn off, and is turned back here so the footprint is covered.
  */
-export function restingQuad(scene: Scene, film: Pt[], scale: number): {quad: Pt[]; turned: boolean} {
+export function restingQuad(scene: Scene | null, film: Pt[], scale: number): {quad: Pt[]; turned: boolean} {
+  if (!scene) return {quad: about(grown(film, RIM), scale), turned: false};
   if (scene.rule) return planRest(scene.rule, film, scale);
   const t = film.map(p => apply(scene.toTable, p)), c = centre(t), mid = (a: Pt, b: Pt): Pt => ({x: (a.x + b.x) / 2, y: (a.y + b.y) / 2});
   let up = {x: mid(t[0], t[1]).x - mid(t[3], t[2]).x, y: mid(t[0], t[1]).y - mid(t[3], t[2]).y}, right = {x: mid(t[1], t[2]).x - mid(t[0], t[3]).x, y: mid(t[1], t[2]).y - mid(t[0], t[3]).y};
@@ -269,7 +270,7 @@ function rawPose(track: CardTrack, scene: Scene | null, at: number, scale: numbe
   // At rest it is the constant-size card on the table: at the plan's place and direction, else where the film laid it (moved by the
   // shift). Its shape is the table's, whatever the film's card looks like under the hand.
   const from = landed?.from ?? Infinity, rest = landed ? goal ?? landed.quad.map(p => ({x: p.x + d.x, y: p.y + d.y})) : null;
-  const still = rest ? scene ? restingQuad(scene, rest, scale) : {quad: about(grown(rest, RIM), scale), turned: false} : null;
+  const still = rest ? restingQuad(scene, rest, scale) : null;
   if (still && at >= from) return {...none, quad: still.quad, film, resting: 1, turned: still.turned};
   // A quad in the hand that is no card (crossed, folded, empty, larger than any card a film holds, a sliver or a wedge: plausible)
   // is not drawn: one bad quad must never smear the card across the picture.

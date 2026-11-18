@@ -22,3 +22,9 @@ En smutsig arbetsyta markeras uttryckligen och är inte en reproducerbar commit 
 när en tillfällig arbetsyta tas bort. Koden och indata i kvittot kommer fortfarande från trädet som faktiskt testades.
 
 Varje sökning uppdaterar .runtime/evidence/index.sqlite från kvittona och från befintlig order-, rörelse-, material- och evidensmetadata. Vid versionsskillnad visas den inspelade orderhashen och att motsvarande version saknas. Historiska omnämnanden visar var ett ID eller en filväg står. En träff bekräftar materialets ursprung bara när den anger en sådan relation. För tillgång, längd och innehåll behövs en pilotkontroll mot mediafilerna.
+
+Granskarens rapport och bevisbilder binds med `node tools/order-put.ts review <order> <tagning> --note "…" --evidence <json>`.
+JSON anger `film: {path, sha256}` och `files: [{path, sha256}]`, 1–32 unika bevisfiler under tagningens egen
+`assets/orders/<order>/take-<n>/`. Skrivaren verifierar verkliga filer och hashar innan kvittot ersätts. `trace` visar sedan
+`reviewed-film` och `review-artifact` utan att öppna media. Hasharna anger den granskade versionen vid skrivningen;
+sökningen intygar varken dagens filinnehåll eller Jakobs dom. En ny granskningsnot utan paket ärver inte ett gammalt paket.

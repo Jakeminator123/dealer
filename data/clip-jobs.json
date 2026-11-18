@@ -8441,6 +8441,40 @@
         "id": "paow-giv-2-3-p1-01",
         "take": 1
       }
+    },
+    {
+      "id": "paow-giv-2-3-p4-h24-03-01",
+      "kind": "DEAL",
+      "from": "READY-C",
+      "to": "P4.C1",
+      "clip": "paow-giv-2-3-p4-h24-03-01",
+      "frames": [
+        0,
+        72
+      ],
+      "purpose": "Beställning paow-giv-2-3-p4-h24-03, tagning 1: Paow · P4 · H24 med kontakt till landning.",
+      "dealer": "paow",
+      "model": "kling-4",
+      "duration": 3,
+      "promptText": "Locked camera. Video 1 shows only the movement: she moves like the dealer in video 1, with the same timing. The card is blank, solid yellow on one side and solid blue on the other, each colour reaching right out to its corners, and the next card in the window is the same blank yellow. One card goes from the shoe to where the last frame shows it.",
+      "first": {
+        "file": {
+          "path": "assets/orders/paow-giv-2-3-p4-h24-03/first.png",
+          "sha256": "340842ba3b6af20bdf36646b517d20501163496b426c154d1dd798b488f75542"
+        },
+        "note": "Första bilden i beställningen paow-giv-2-3-p4-h24-03."
+      },
+      "last": {
+        "file": {
+          "path": "assets/orders/paow-giv-2-3-p4-h24-03/last.png",
+          "sha256": "2a70b556c6110db541c7f379a8b464fad1362ce16e694efb111977405565f8b6"
+        },
+        "note": "Sista bilden i beställningen paow-giv-2-3-p4-h24-03."
+      },
+      "order": {
+        "id": "paow-giv-2-3-p4-h24-03",
+        "take": 1
+      }
     }
   ],
   "edits": [

@@ -8,6 +8,7 @@
 // no network, no hashing (the caller hashes hashInput()); the studio builds it in.
 // Tests: tools/order-model.test.ts.
 import { dealersOf, parseEdge } from './clip-graph.ts';
+import type {ReviewEvidence} from './review-evidence.ts';
 
 // ── Words ───────────────────────────────────────────────────────────────────
 export const ORDER_ID = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
@@ -984,6 +985,7 @@ export function waitWords(waits: readonly Waits[]): string {
   const labels = [...new Set(waits.map((w) => w.label))];
   return labels.length <= 1 ? (labels[0] ?? '') : `${labels.slice(0, -1).join(', ')} och ${labels[labels.length - 1]}`;
 }
+export type {ReviewEvidence} from './review-evidence.ts';
 export type Receipt = {
   schemaVersion: 1;
   order: string;
@@ -992,7 +994,7 @@ export type Receipt = {
    * review: the independent reviewer's verdict recorded beside the take's state, at any state from HÄMTAD on, without
    * moving it (node tools/order-put.ts review); the protocol reads it as the reviewer's note when it is the newest.
    */
-  takes: { take: number; status: TakeStatus; requestedAt: string | null; taskId: string | null; reservation?: { mandateId: string; credits: number }; creditsRemainingAfter?: number | null; error?: string | null; file?: string | null; sha256?: string | null; review?: { at: string; note: string } | null; history: { at: string; status: TakeStatus; note?: string }[] }[];
+  takes: { take: number; status: TakeStatus; requestedAt: string | null; taskId: string | null; reservation?: { mandateId: string; credits: number }; creditsRemainingAfter?: number | null; error?: string | null; file?: string | null; sha256?: string | null; review?: { at: string; note: string; evidence?: ReviewEvidence } | null; history: { at: string; status: TakeStatus; note?: string }[] }[];
 };
 /** The takes of an approved order as they stand: a take the receipt does not name waits in the queue. */
 export function takeStates(order: Pick<Order, 'takes'>, receipt: Receipt | null): TakeStatus[] {

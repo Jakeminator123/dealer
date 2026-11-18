@@ -5,6 +5,7 @@ import path from 'node:path';
 import { DatabaseSync } from 'node:sqlite';
 import { traceTakes, type OrderPicture, type TakeLike } from '../studio/lib/lineage.ts';
 import type { Entry, JobPicture } from '../studio/lib/media.ts';
+import { parseReviewEvidence } from '../src/review-evidence.ts';
 
 const indexDir = '.runtime/evidence';
 const runsDir = indexDir + '/runs';
@@ -189,6 +190,11 @@ function drawingOf(value: unknown): string | null {
   return 'other';
 }
 
+function reviewEvidence(review: Obj, prefix: string) {
+  const evidence = parseReviewEvidence(review.evidence, prefix);
+  return timestamp(review.at) && typeof review.note === 'string' && evidence ? {film: evidence.film, artifacts: evidence.files} : null;
+}
+
 function materialLinks(root: string, unreadable: Set<string>): Link[] {
   const links: Link[] = [];
   const fromPath = new Map<string, Set<string>>();
@@ -251,9 +257,21 @@ function materialLinks(root: string, unreadable: Set<string>): Link[] {
     const localSource = 'assets/orders/' + key + '/receipt.json';
     const local = readMetadata(root, localSource, unreadable, true);
     for (const raw of array(local?.takes)) {
-      const entry = object(raw);
-      if (natural(entry.take) === null) continue;
-      add(localSource, key, 'order-take', null, { take: entry.take, path: entry.file, sha256: entry.sha256 });
+      const entry = object(raw), take = natural(entry.take), review = object(entry.review);
+      if (take !== null) add(localSource, key, 'order-take', null, { take, path: entry.file, sha256: entry.sha256 });
+      if (review.evidence === undefined) continue;
+      if (!take || (local?.order !== undefined && local.order !== key)) {
+        unreadable.add(localSource);
+        continue;
+      }
+      const evidence = reviewEvidence(review, `assets/orders/${key}/take-${take}/`);
+      if (!evidence) {
+        unreadable.add(localSource);
+        continue;
+      }
+      // The review names its own film version. The current take file may be the original or a later edit.
+      add(localSource, key, 'reviewed-film', null, { ...evidence.film, take });
+      for (const file of evidence.artifacts) add(localSource, key, 'review-artifact', null, { ...file, take });
     }
   }
 

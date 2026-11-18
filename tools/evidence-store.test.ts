@@ -92,6 +92,68 @@ test('the index follows cuts to orders, anchors and historical mentions without 
   assert.ok(!changed.links.some(row => row.relation === 'order-picture'));
 });
 
+const orderReceipt = 'assets/orders/example-order/receipt.json';
+const reviewTake = 'assets/orders/example-order/take-1';
+const reviewedFilm = { path: `${reviewTake}/after.mp4`, sha256: digest };
+const reviewFiles = [
+  { path: `${reviewTake}/review/review.md`, sha256: plan },
+  { path: `${reviewTake}/review/turn.png`, sha256: orderVersion },
+];
+const review = { at: sample.finishedAt, note: 'private-review-note', evidence: { film: reviewedFilm, files: reviewFiles } };
+
+test('order and cut traces find the reviewed film version and artifacts without reading media', t => {
+  const { root, write } = fixture(t);
+  const original = { take: 1, file: `${reviewTake}/source.mp4`, sha256: plan };
+  const expected = [
+    ...reviewFiles.map(file => ({ ...file, relation: 'review-artifact' })),
+    { ...reviewedFilm, relation: 'reviewed-film' },
+  ];
+  const reviewLinks = ({ links }: ReturnType<typeof traceEvidence>) => links.filter(link => String(link.relation).startsWith('review'));
+  write(orderReceipt, { order: 'example-order', takes: [{ ...original, review }] });
+  const first = traceEvidence(root, 'example-order');
+  assert.deepEqual(first.unreadable, []);
+  assert.deepEqual(reviewLinks(first).map(link => ({ ...link })), expected.map(file => ({
+    id: 'example-order', relation: file.relation, related_id: null, source: orderReceipt,
+    path: file.path, sha256: file.sha256, take: 1, plan_sha256: null, drawing: null,
+  })));
+  assert.deepEqual(reviewLinks(traceEvidence(root, 'example-cut')), reviewLinks(first));
+  assert.ok(first.links.some(link => link.relation === 'order-take' && link.path === original.file && link.sha256 === plan));
+  assert.doesNotMatch(JSON.stringify(first), /private-review-note/);
+  reindexEvidence(root);
+  assert.deepEqual(traceEvidence(root, 'example-order'), first);
+
+  write(orderReceipt, { takes: [{ ...original, review: { at: review.at, note: review.note } }] });
+  const legacy = traceEvidence(root, 'example-order');
+  assert.deepEqual(legacy.unreadable, []);
+  assert.deepEqual(reviewLinks(legacy), []);
+  assert.ok(legacy.links.some(link => link.relation === 'order-take'));
+});
+
+test('invalid review evidence is reported and produces no partial review links', t => {
+  const { root, write } = fixture(t);
+  const invalid = [
+    { ...review.evidence, film: { ...reviewedFilm, sha256: 'abcd' } },
+    { ...review.evidence, film: { ...reviewedFilm, sha256: digest.toUpperCase() } },
+    { ...review.evidence, film: { ...reviewedFilm, path: reviewedFilm.path.replace('example-order', 'different-order') } },
+    { ...review.evidence, film: { ...reviewedFilm, path: reviewedFilm.path.replace('take-1/', 'take-11/') } },
+    { ...review.evidence, files: [reviewFiles[0], { ...reviewFiles[1], path: `${reviewTake}/../take-2/turn.png` }] },
+    { ...review.evidence, files: [{ ...reviewFiles[0], path: reviewFiles[0].path.replaceAll('/', '\\') }] },
+    { ...review.evidence, files: [reviewedFilm] },
+    { ...review.evidence, files: [reviewFiles[0], reviewFiles[0]] },
+    { ...review.evidence, files: [] },
+    { ...review.evidence, files: Array.from({ length: 33 }, (_, i) => ({ path: `${reviewTake}/review/${i}.png`, sha256: digest })) },
+    { ...review.evidence, files: null },
+    null,
+  ];
+  for (const evidence of invalid) {
+    write(orderReceipt, { takes: [{ take: 1, file: reviewedFilm.path, sha256: digest, review: { ...review, evidence } }] });
+    const found = traceEvidence(root, 'example-order');
+    assert.deepEqual(found.unreadable, [orderReceipt], JSON.stringify(evidence));
+    assert.ok(found.links.some(link => link.relation === 'order-take'));
+    assert.ok(!found.links.some(link => String(link.relation).startsWith('review')));
+  }
+});
+
 test('sensitive, nonrelative and invalid metadata is rejected before writing', t => {
   const { root, write } = fixture(t);
   for (const log of ['https://example.test/x?key=topsecret', '../outside', 'C:\\outside.txt', '.env.local', 'private/key.txt']) {

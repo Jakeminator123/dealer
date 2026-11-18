@@ -69,6 +69,10 @@ Innehåll: Kortet · Filmerna och banken · Läpparna och rösten · Spelet och 
 
 ## Filmerna och banken
 
+- **H24-P4 är en Variant, ingen färdig helkedja.** Given fick 4/5 av huvudagent och oberoende granskare; en rosa fläck
+  intill skon finns även i det frysta A3-slutankaret. Lokal lagning blev inte säker. Ingång, retur och nycklad spelbild
+  är inte godkända som kedja. Bevis: `assets/orders/paow-giv-2-3-p4-h24-03/take-1/review/review.md`.
+
 - **Ett arkiverat klipp kan ännu väljas som referensfilm eller ge sista bilden i en ny giv,** och Granska listar det.
   Syns: i Beställ och Granska. Prövat: spelet, scenen, Karta och produktionslistan hoppar över arkiverade klipp
   (`9a09570`); knapparna Arkivera och Ta tillbaka är inte tryckta av en hand. Stänger: valet av referensfilm och
@@ -78,8 +82,8 @@ Innehåll: Kortet · Filmerna och banken · Läpparna och rösten · Spelet och 
   beställa till plats 1, 4 och 5, och i given till plats 1 far armen från mitten till platsen på en tredjedels
   sekund (dockan kan inte resa sig från stolen). Prövat: vägen finns (`tools/landing-make.ts`); av tre bildmodeller
   lämnade bara ideogram-4.5-precise-edit allt utom armen orört. Stänger: ett A3 per plats (25 krediter var), och en
-  docka som kan resa sig för plats 1 och 2. Dessutom: mallens text säger att kortet vänds ände över ände medan
-  dockans film "-f" rullar det kring långsidan; en plats första tagning utan sista bild kräver en ny mall; och
+  docka som kan resa sig för plats 1 och 2. KORT-mallens historiska kortändevändning spärrar nu motstridiga val;
+  H24 använder MINIMAL. En plats första tagning utan sista bild kräver en ny mall; och
   `film-fix` kortar ett stilla slut med högst tre rutor, så den nya ingången står stilla 1,3 s i slutet.
   Skälet "ingen slutbild" säger handen i lagret men inte i Ny beställning (`NewOrder.tsx` anropar `seatEndMissing`
   utan hand), och vänsterhandens text blir lika fel om bara ett A3 för höger hand gäller på platsen.

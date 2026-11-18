@@ -170,6 +170,8 @@ not review your own takes as the final word. After the review: `node tools/order
 in one line>"` keeps it beside the take wherever it stands from HÄMTAD on (often INFÖRD already), without moving its state;
 at MÄTT, `status … GRANSKAD --note "…"` does the same and moves it. Write the scores "given 3/5, returen 1/5": the protocol
 reads the newer of the two notes.
+Keep a compact report and selected proof pictures beside the take. Bind their actual paths and SHA-256 to the reviewed
+film with `review … --note "…" --evidence <json>` ([evidence.md](evidence.md)); the rebuildable index then finds the evidence.
 
 ## 9. Into the bank or Material: not yours
 A film goes into the bank's inbox by the main agent or on its word (`tools/order-bring.ts`, §6), never over Jakob's

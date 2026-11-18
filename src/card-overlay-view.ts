@@ -4,7 +4,7 @@
 // and how large comes from src/card-overlay.ts.
 import * as THREE from '../materials/source/references/card-materials/vendor/three.module.js';
 import {CARD, RANKS, SUITS, createCardGeometry, createCardPrint, paperMaterialParameters, applyCardLights, validateCard, type CardValue} from '../materials/source/src/card-material-study.ts';
-import {poseAt, returnCardAt, cardToImage, projectionOf, regionOf, readMatte, filmZone, strayBoxes, cardRecord, cardFace, CARD_RANKS, CARD_SUITS, BESIDE, RIM, type CardRecord, type CardTrack, type Scene, type Pose} from './card-overlay.ts';
+import {poseAt, restingQuad, returnCardAt, cardToImage, projectionOf, regionOf, readMatte, filmZone, strayBoxes, cardRecord, cardFace, CARD_RANKS, CARD_SUITS, BESIDE, RIM, type CardRecord, type CardTrack, type Scene, type Pose} from './card-overlay.ts';
 import {signedArea, inside, clockwise, grown, is, type Pt} from './card-track.ts';
 
 export {RANKS, SUITS};
@@ -22,6 +22,13 @@ export type OverlayOptions = {scale: number; split: boolean; card: CardValue; si
   // A value per card (optional): the records of the dealt cards, and which of them the card of this film is, by draw number or by
   // target. Each resting card names its own in `placed`. A card without a record keeps the artwork in `card`.
   cards?: CardRecord[] | null; target?: string | null; shoeDraw?: number | null};
+
+/** Cards from the table layout use the same resting projection as the dealt card. */
+export function placedCardsForView(placed: readonly PlacedCard[], returning: PlacedCard | null, scene: Scene | null, scale: number): PlacedCard[] {
+  const cards = returning ? [...placed, returning] : placed;
+  return cards.map(card => ({...card, quad: restingQuad(scene, card.quad, scale).quad}));
+}
+
 if (RANKS.join() !== CARD_RANKS.join() || SUITS.join() !== CARD_SUITS.join()) console.warn('Card values in src/card-overlay.ts differ from the card material study.');
 
 // One WebGL scene for every overlay on the page: the study's card, lit as in the study, seen straight on.
@@ -129,9 +136,7 @@ export function createCardOverlay(canvas: HTMLCanvasElement) {
       ? marker ? {frame: marker.frame, side: marker.side, quad: null, edge: null, film: grown(marker.quad, RIM), resting: 1, turned: false} : null
       : track ? poseAt(track, scene, frame, options.scale, 12, options.shift ?? null, options.land ?? null) : null;
     const box = pose ? regionOf(pose, width, height) : null;
-    const placed = returning
-      ? [...(options.placed ?? []), returning.card]
-      : options.placed ?? [];
+    const placed = placedCardsForView(options.placed ?? [], returning?.card ?? null, scene, options.scale);
     canvas.dataset.frame = String(pose?.frame ?? Math.round(frame)); // which film frame the layer was drawn for
     canvas.dataset.cards = String(placed.length + (pose?.quad || pose?.edge ? 1 : 0)); // how many rendered cards it carries
     // Wipe strays found in this video frame before applying the finer tracked mask. Returns need the shoe window marked before

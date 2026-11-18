@@ -100,7 +100,7 @@ test('a round trip enters the bank as two takes of its own clip under the order\
   const dealRecord = await read(root, `motions/${clip}-deal.json`), backRecord = await read(root, `motions/${clip}-return-ready.json`), clipRecord = await read(root, `motions/${clip}.json`);
   for (const r of [dealRecord, backRecord]) { assert.equal(r.dealer, 'paow'); assert.equal(r.review.decision, 'PENDING'); assert.equal(r.review.inbox, true); assert.equal(r.source.frames, 12); }
   // The order says the left hand takes and lays the card: the deal and the return cut from it carry it, the return as the hand that comes back.
-  for (const r of [dealRecord, backRecord]) assert.deepEqual([r.motion.takeHand, r.motion.releaseHand], ['LH', 'LH']);
+  for (const r of [dealRecord, backRecord]) assert.deepEqual([r.motion.takeHand, r.motion.releaseHand, r.motion.pass], ['LH', 'LH', false]);
   assert.deepEqual(backRecord.motion.startsOn, {clip: `${clip}-deal`, frame: 6}); assert.equal(clipRecord.review, undefined); assert.deepEqual(clipRecord.cutInto, [`${clip}-deal`, `${clip}-return-ready`]);
   // In Paow's graph: placed, unreviewed, the return continuing the deal on frame 6. Pamela's graph is as it was.
   const paow = await graphOf(root, 'paow'), d = paow.takes[`${clip}-deal`], r = paow.takes[`${clip}-return-ready`];
@@ -119,8 +119,23 @@ test('with a hand switch in the order the other hand lays the card, and the retu
   switched.motion = {...switched.motion, pass: true};
   await writeFile(path.join(root, `data/orders/${ORDER}.json`), JSON.stringify(switched, null, 2));
   await collectTake(root, ORDER, 1, {from: film});
-  const plan = await planRegistration(root, ORDER, 1, {split: 6}), hands = (id: string) => (plan.records[id] as {motion: {takeHand: string; releaseHand: string}}).motion;
-  assert.deepEqual(plan.takes.map(x => [x.id, hands(x.id).takeHand, hands(x.id).releaseHand]), [['paow-giv-p4-01-deal', 'LH', 'RH'], ['paow-giv-p4-01-return-ready', 'LH', 'RH']]);
+  const plan = await planRegistration(root, ORDER, 1, {split: 6});
+  assert.deepEqual(plan.takes.map(({id, kind}) => {
+    const {motion} = plan.records[id] as {motion: {takeHand: string; releaseHand: string; pass: boolean}};
+    return [kind, motion.takeHand, motion.releaseHand, motion.pass];
+  }), [['DEAL', 'LH', 'RH', true], ['RETURN', 'LH', 'RH', false]]);
+});
+
+test('the two-hand recipe records the filmed hand switch without an extra order choice', needsFfmpeg, async t => {
+  const {root, film} = await bank(t), sample = order(ORDER);
+  const twoHands = {...sample, step: {...sample.step, key: 'GIV-2.3', edge: 'READY-C>P4.C1', shape: 'ONE_WAY', cutInto: ['READY-C>P4.C1']},
+    motion: {...sample.motion, grip: 'TWO_HANDS', pass: false}};
+  await writeFile(path.join(root, `data/orders/${ORDER}.json`), JSON.stringify(twoHands, null, 2));
+  await collectTake(root, ORDER, 1, {from: film});
+  const plan = await planRegistration(root, ORDER, 1);
+  assert.deepEqual(plan.records[plan.clip].motion, {
+    kind: 'DEAL', from: 'READY-C', to: 'P4.C1', takeHand: 'LH', releaseHand: 'RH', pass: true, basis: 'SOURCE_FRAME_REVIEW',
+  });
 });
 
 test('a take Jakob has decided on is never written over, and an order that is not his to place is not registered', needsFfmpeg, async t => {

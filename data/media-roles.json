@@ -3737,6 +3737,20 @@
           }
         },
         {
+          "id": "paow-film-giv-2-3-p4-h24-03-t1",
+          "role": "film",
+          "name": "H24 P4 · grepp och 24 fps",
+          "path": "assets/films/paow/giv-2-3-p4-h24-03-t1/source.mp4",
+          "still": 40,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Variant 4/5, given. Oberoende rutgranskning: grepp, långkantsvändning och landning håller; rosa fläck finns även i A3-slutankaret. 73 rutor/24 fps, 64 krediter. Se take-1/review/review.md. Ingen godkänd retur eller helkedja.",
+          "source": {
+            "from": "beställningen paow-giv-2-3-p4-h24-03, tagning 1 (studions vy Beställ)",
+            "when": "2026-11-18"
+          }
+        },
+        {
           "id": "paow-film-intro-noir-3-startruta",
           "role": "arbetsmaterial",
           "name": "Startrutan till filmen före spelet",

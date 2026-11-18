@@ -138,8 +138,10 @@ export async function planRegistration(root: string, id: string, take: number, o
   // From anchor 2.3 (grip TWO_HANDS) the hand at the shoe strokes the card out and the other hand lays it (recipeHands).
   const other = (h: 'LH' | 'RH') => (h === 'LH' ? 'RH' : 'LH');
   const hands = hand ? {takeHand: hand, releaseHand: order.motion?.pass === true || order.motion?.grip === 'TWO_HANDS' ? other(hand) : hand} : {};
+  // An order's pass is an extra choice. The film records the change of hands in the deal, including with TWO_HANDS.
+  const switched = !!hands.takeHand && hands.takeHand !== hands.releaseHand;
   const record = (t: Entry, extra: Record<string, unknown> = {}) => ({schemaVersion: 1, id: t.id, dealer: order.dealer, source: facts2,
-    motion: {kind: t.kind, from: t.from, to: t.to, ...hands, pass: false, basis: 'SOURCE_FRAME_REVIEW', ...(t.id !== target ? {segment: {clip: target, frames: t.frames}} : {}), ...extra},
+    motion: {kind: t.kind, from: t.from, to: t.to, ...hands, pass: t.kind === 'DEAL' && switched, basis: 'SOURCE_FRAME_REVIEW', ...(t.id !== target ? {segment: {clip: target, frames: t.frames}} : {}), ...extra},
     review, order: orderRef, ...(fix ? {fix} : {}), postProcessing: fix ? `tools/film-fix.ts, ${fix.receipt}` : 'none', generationRef: `assets/motions/${target}/generation.json`, jobRef: 'data/clip-jobs.json', scoutIntegrated: false, published: false});
   for (const t of takes) records[t.id] = record(t, records[t.id] ?? {});
   // The clip's own record when the film is split: its facts, read by the bank for both halves (tools/preview.ts clipBank).

@@ -3,14 +3,15 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
-import { mkdtemp, mkdir, readFile, writeFile, rm, copyFile } from 'node:fs/promises';
+import { createHash } from 'node:crypto';
+import { mkdtemp, mkdir, readFile, writeFile, rm, copyFile, symlink } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import sharp from 'sharp';
 import { ARM_AT_SHOE, POSE_WHAT, orderStore } from './order-store.ts';
 import { committedText } from './committed.ts';
-import { receipts } from './order-put.ts';
+import { receipts, reviewFromCommand } from './order-put.ts';
 
 const base = existsSync('D:/dealer-scratch/tmp') ? 'D:/dealer-scratch/tmp' : os.tmpdir();
 
@@ -167,6 +168,76 @@ test('the reviewer\'s verdict is kept beside a take from HÄMTAD on without movi
   // A later GRANSKAD note is newer than the one kept beside, and the other way round.
   assert.equal(reviewerNote([{ at: '2026-11-13T01:00:00Z', status: 'GRANSKAD', note: 'Oberoende granskare: 4/5' }], { at: '2026-11-12T22:00:00Z', note: 'Oberoende granskare: 1/5' }), 'Oberoende granskare: 4/5');
   assert.equal(reviewerNote([{ at: '2026-11-12T21:00:00Z', status: 'GRANSKAD', note: 'Oberoende granskare: 4/5' }], { at: '2026-11-12T22:00:00Z', note: 'Oberoende granskare: 1/5' }), 'Oberoende granskare: 1/5');
+});
+
+test('review evidence binds actual after-work bytes and rejects changed, duplicate or foreign proof without replacing the verdict', async (t) => {
+  const { root, r } = await approved(t);
+  await r.begin('prov-ett', 1);
+  await r.placed('prov-ett', 1, 'b90b9362-7a13-4b80-b498-c324f02c41f8');
+  const prefix = 'assets/orders/prov-ett/take-1/';
+  await mkdir(path.join(root, prefix, 'review'), {recursive: true});
+  const file = async (name: string, bytes: string) => {
+    const relative = prefix + name;
+    await writeFile(path.join(root, relative), bytes);
+    return {path: relative, sha256: createHash('sha256').update(bytes).digest('hex')};
+  };
+  const original = await file('source.png', 'original'), film = await file('after.png', 'after-worked');
+  const report = await file('review/review.md', 'independent review'), image = await file('review/proof.png', 'proof pixels');
+  await r.advance('prov-ett', 1, 'HÄMTAD', {file: original.path});
+  const evidence = {film, files: [report, image]};
+  const saved = await r.review('prov-ett', 1, 'Variant 4/5, local evidence', evidence);
+  assert.deepEqual(saved.take.review?.evidence, evidence);
+  assert.equal(saved.take.status, 'HÄMTAD');
+  assert.equal(saved.take.sha256, original.sha256, 'download identity stays separate from the reviewed version');
+  const receiptPath = path.join(root, 'assets/orders/prov-ett/receipt.json');
+  const before = await readFile(receiptPath, 'utf8');
+  for (const invalid of [
+    {film: {...film, sha256: '0'.repeat(64)}, files: [report]},
+    {film, files: [{...report, sha256: '0'.repeat(64)}]},
+    {film, files: [{...report, path: prefix + 'review/missing.md'}]},
+    {film, files: [{...report, path: prefix + '../take-2/review.md'}]},
+    {film, files: [{...report, path: report.path.replace('take-1', 'take-2')}]},
+    {film, files: [{...report, path: report.path.replace('prov-ett', 'another-order')}]},
+    {film, files: [report, report]},
+    {film, files: [report, {...report, path: report.path.replace('review.md', 'REVIEW.md')}]},
+    {film, files: [film]},
+    {film, files: [{...report, path: prefix + 'review/.env'}]},
+    {film, files: [{...report, path: prefix + 'review/private/report.md'}]},
+    {film, files: [{...report, path: prefix + 'review/trailing.'}]},
+    {film, files: [{...report, path: prefix + 'review/with%escape.md'}]},
+    {film, files: []},
+    {film, files: Array.from({length: 33}, () => report)},
+  ]) {
+    await assert.rejects(r.review('prov-ett', 1, 'must not replace', invalid), /Granskningsunderlag/);
+    assert.equal(await readFile(receiptPath, 'utf8'), before);
+  }
+  // Even a canonical lexical path cannot read proof from another take through a directory junction.
+  const elsewhere = path.join(root, 'elsewhere');
+  await mkdir(elsewhere);
+  await writeFile(path.join(elsewhere, 'proof.md'), 'independent review');
+  await symlink(elsewhere, path.join(root, prefix, 'linked'), process.platform === 'win32' ? 'junction' : 'dir');
+  await assert.rejects(r.review('prov-ett', 1, 'must not replace', {film, files: [{...report, path: prefix + 'linked/proof.md'}]}), /länk lämnar/);
+  assert.equal(await readFile(receiptPath, 'utf8'), before);
+  await symlink(path.join(root, prefix, 'review'), path.join(root, prefix, 'alias'), process.platform === 'win32' ? 'junction' : 'dir');
+  await assert.rejects(r.review('prov-ett', 1, 'must not replace', {film, files: [report, {...report, path: prefix + 'alias/review.md'}]}), /samma verkliga fil/);
+  assert.equal(await readFile(receiptPath, 'utf8'), before);
+  const packet = path.join(root, 'packet.json');
+  await writeFile(packet, JSON.stringify(evidence));
+  for (const args of [
+    ['--note', 'new note', '--evidence=packet.json'],
+    ['--note', '--evidence', 'packet.json'],
+    ['--note', 'new note', '--evidence'],
+    ['--note', 'new note', '--note', 'another note'],
+    ['--note', 'new note', '--evidence', 'packet.json', '--evidence', 'packet.json'],
+  ]) {
+    await assert.rejects(reviewFromCommand(root, 'prov-ett', 1, args), /flagga|saknar|mer än en gång/);
+    assert.equal(await readFile(receiptPath, 'utf8'), before, 'CLI argument errors leave the complete receipt byte-identical');
+  }
+  const fromCLI = await reviewFromCommand(root, 'prov-ett', 1, ['--note', 'CLI review', '--evidence', 'packet.json']);
+  assert.deepEqual(fromCLI.take.review?.evidence, evidence);
+  // A new note alone must not silently inherit evidence for an earlier review.
+  const replaced = await r.review('prov-ett', 1, 'Later note without proof');
+  assert.equal(replaced.take.review?.evidence, undefined);
 });
 
 test('nothing is placed for an order that changed after approval or whose picture changed on disk', async (t) => {

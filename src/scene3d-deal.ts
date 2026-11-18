@@ -130,14 +130,14 @@ const COMPOSITE_FRAGMENT = 'uniform sampler2D sum; uniform vec2 size; void main(
 // back, face: how the film's own back and face show under the line (BACK and FACE in src/card-overlay.ts; 'dark' and 'paper' the trials
 // "pålägg"), a page's words.
 type Choice = {rank: string; suit: string; scale: number; hand?: 'film' | 'standard'; back?: 'film' | 'dark'; face?: 'film' | 'paper'};
-type Placed = {quad: Pt[]; back: boolean; target?: string | null; shoeDraw?: number | null};
+type Placed = {quad: Pt[]; back: boolean; target?: string | null; shoeDraw?: number | null; gloss?: number};
 // carry: how the card the film carries is shown while it is in her hand (the page's choice, src/game-film.ts; where the page says
 // nothing, the game's line: carryOf): 'object' (the card object, except where the track does not hold the card in the hand, CardTrack.hand false, where the film's own card is
 // recoloured in place, the matte, until the object takes over EASE frames before it lies); 'matte' (the film's card recoloured
 // while carried for every take, the object from the same frame on); 'film' (the film's own card while carried, the object from
 // the frame it lies: "Bara liggande"). The cards already lying are objects whatever carry says.
 export type Carry = 'object' | 'matte' | 'film';
-type Extra = {shift?: Pt | null; land?: Pt[] | null; returning?: boolean; placed?: Placed[]; cards?: CardRecord[] | null; target?: string | null; shoeDraw?: number | null; carry?: Carry; back?: 'film' | 'dark'; face?: 'film' | 'paper'};
+type Extra = {shift?: Pt | null; land?: Pt[] | null; returning?: boolean; placed?: Placed[]; cards?: CardRecord[] | null; target?: string | null; shoeDraw?: number | null; gloss?: number; carry?: Carry; back?: 'film' | 'dark'; face?: 'film' | 'paper'};
 // What carry is where the page says nothing: the game's line (CARRY in src/card-overlay.ts), so that Scen and the lab pages show a
 // round as the game does.
 const carryOf = (extra: Extra): Carry => extra.carry ?? CARRY;
@@ -407,7 +407,7 @@ export function createDealLayer(o: Options) {
     const face = cardFace(cardRecord(extra.cards, p), p.back, art(choice), Array.isArray(extra.cards));
     const quad = scene && p.quad.length === 4 ? restingQuad(scene, p.quad, choice.scale).quad : p.quad;
     const q = pts(quad);
-    lay(card, q, {print: face.back ? print() : print(face.art), contact: 1, gloss: p.target ? targets[p.target]?.material?.gloss : undefined});
+    lay(card, q, {print: face.back ? print() : print(face.art), contact: 1, gloss: p.gloss ?? (p.target ? targets[p.target]?.material?.gloss : undefined)});
     return q;
   }
 
@@ -455,7 +455,7 @@ export function createDealLayer(o: Options) {
       const own4 = shown!.film?.length === 4 ? shown!.film : shown!.quad, q = now.q, core = own4?.length === 4 ? own4 : null;
       // the back's print comes in over PRINT.in frames from the first frame the card is drawn after the shoe (inShoe), smoothly
       const since = filmSeat(extra) && typeof track!.leavesShoe === 'number' ? at - (track!.leavesShoe + 2) + 1 : Infinity, t = Math.max(0, Math.min(1, since / (PRINT.in + 1)));
-      lay(dealt, q, {print: face.back ? print() : print(face.art), edge, printIn: t * t * (3 - 2 * t), bend: (material?.bend ?? BEND) * held, tilt: TILT * held, gloss: material?.gloss,
+      lay(dealt, q, {print: face.back ? print() : print(face.art), edge, printIn: t * t * (3 - 2 * t), bend: (material?.bend ?? BEND) * held, tilt: TILT * held, gloss: extra.gloss ?? material?.gloss,
         shade: core && !edge ? {core, colour: COLOUR[side], lying: LYING[side], local: carryOf(extra) !== 'film'} : null, contact: share.card * (measured ? 1 - inHand : Math.max(0, Math.min(1, (pose.resting - 0.3) / 0.6))), shown: share.card});
       // moving fast: drawn along its path over the shutter time instead, like the film's hand
       const path = pose.resting < 1 ? shutter(now, drawnAt(track!, at - 1, choice, extra), drawnAt(track!, at + 1, choice, extra)) : [q];

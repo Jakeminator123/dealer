@@ -41,6 +41,7 @@ belägget.
 
 | Metod | Belägg (V) | Status |
 |---|---|---|
+| H24: obrutet grepp, låg armbåge, referens i 24 fps; Kling 4, MINIMAL, 3 s | `paow-giv-2-3-p4-h24-03` t1, 64 krediter: given 4/5, Variant dömd åt Jakob. Högsta fyrfasmedian 1,063; rosa fläck finns även i A3. Bevis och mätmetod vid tagningen i `take-1/review/` | en pilot håller som Variant; orsaken till bättre takt är inte isolerad, ytterplatser och helkedja återstår |
 | Lång, kort eller minimal text | Jakobs godkända givar: Utförlig 2 av 4, Kort 8 av 16, Minimal 1 av 2 | våra domar skiljer inte; §1 står |
 | Öppen giv, Kling 4, utan referens | P4: `paow-giv-p4` t2, `p4-04` (Primär), `p4-10` godkända, `p4-07`, `paow-giv-p4` t1 underkända; P1: `p1-04` godkänd (skjutet 790 px); P7: `p7-04` lyft 171 px, ej dömd | oavgjort |
 | Vändning vid platsen utan referens, WAN 3 | `p4-08` godkänd (bytet vid platsen utan kantruta); `p3-02` (3b) Variant: "Riktigt rolig variant … fungerar utmärkt som en godkänd eller primär"; `p1-07` t2 vände vid platsen · underkänd; P7 0 av 2 | oavgjort |

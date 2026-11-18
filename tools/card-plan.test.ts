@@ -14,7 +14,7 @@ import { VIEWS, flatQuad, quad } from '../src/placement-model.ts';
 import { CARD, FILM, SEAT_FOUR_CARD, cardCorners, feltToPixel, inFrame, lensForFocal, pixelToFelt, planPixel, type Lens, type Vec3 } from '../src/table-lens.ts';
 import { PLAN_CARD_SIZE, TABLE_GEOMETRY, cardGrow, cardPlace, keystone, planCardAt, planCardFrom, planShape, tableGeometry } from '../src/card-plan.ts';
 import { planScene, poseAt, restingQuad, sceneOf, type CardTrack } from '../src/card-overlay.ts';
-import { placedCards } from '../src/game-film.ts';
+import { cardOptions, placedCards } from '../src/game-film.ts';
 import { createLayout, slotLabel, type Slot, type TableCards } from '../src/game-table.ts';
 import { BET, betSpots, cameraFromContract, cardSpots, edgeRowOf, filmPixel, filmToTable, lensCamera, ringOffset, solveCamera, spotToScene, viewUnder, type FilmCamera } from '../src/scene3d-geometry.ts';
 import { REAL_TABLE, TABLE, TABLE_SIZE, sized, tableUnder } from '../src/scene3d-table.ts';
@@ -277,6 +277,25 @@ test('card one lies unchanged when card two comes, and after a third card and a 
       const track: CardTrack = {width: 1764, height: 1174, edgeWindow: null, restFrom: 20, restQuad: film, frames: Array.from({length: 30}, (_, i) => ({frame: i, side: i < 8 ? 'BACK' as const : 'FRONT' as const, quad: i >= 20 ? film : film.map(([x, y]) => [x + (20 - i) * 9, y - (20 - i) * 6]), edge: null, confidence: 0.9}))};
       outlines(poseAt(track, scene, 25, scale, 12, null, land)!.quad!, drawn(one[0]), `${geometry}, size ${scale}: the dealt card at rest is the lying card of the next film`, 1e-6);
     }
+  }
+});
+
+test('the game sends the layout gloss for a split hand and a third card', () => {
+  const plan = testPlan(0.9);
+  plan.targets['P4.C1'].material.gloss = 0;
+  plan.targets['P4.C2'].material.gloss = 0.83;
+  const layout = createLayout(plan, {geometry: 'lens'});
+  const cards = [1, 5, 9].map(shoeDraw => ({shoeDraw, target: 'P4', r: '7', s: 'hearts'}));
+  for (const {hands, shoeDraw, slot, target, gloss} of [
+    {hands: [{seat: 4, cards: [1]}, {seat: 4, cards: [5, 9]}], shoeDraw: 1, slot: {owner: 'P', seat: 4, hand: 0, hands: 2, index: 0}, target: 'P4.H1.C1', gloss: 0},
+    {hands: [{seat: 4, cards: [1, 5, 9]}], shoeDraw: 9, slot: {owner: 'P', seat: 4, hand: 0, hands: 1, index: 2}, target: 'P4.C3', gloss: 0.83},
+  ] as const) {
+    assert.equal(plan.targets[target], undefined, 'a lookup by the dynamic target cannot supply the gloss');
+    const table = {hands: hands.map(hand => ({seat: hand.seat, cards: [...hand.cards]})), dealer: []};
+    const [placed] = placedCards(table, cards, [shoeDraw], layout);
+    const moving = cardOptions({own: {shoeDraw, slot, label: slotLabel(slot)}, lying: []}, table, cards, layout);
+    assert.deepEqual([placed.target, placed.gloss], [target, gloss]);
+    assert.deepEqual([moving.target, moving.gloss], [target, gloss]);
   }
 });
 

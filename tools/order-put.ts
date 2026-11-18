@@ -13,16 +13,19 @@
 //                                                            INFÖRD; MISSLYCKAD (Runway failed it); AVBRUTEN (never begun)
 //   node tools/order-put.ts review <id> <take> --note "<verdict>"   the independent reviewer's verdict, beside the take
 //                                                            from HÄMTAD on, its state unchanged (the protocol reads it)
+//                  [--evidence <json>]                       film + files, each with relative path and SHA-256;
+//                                                            checked against this take's actual local bytes before writing
 //   node tools/order-put.ts show <id>                        the receipt
 // A take placed outside Beställ is recorded once with imported (tools/order-import.ts writes the order and calls it).
-import { readFile, writeFile, mkdir, rename, rm, open } from 'node:fs/promises';
+import { readFile, writeFile, mkdir, rename, rm, open, realpath } from 'node:fs/promises';
 import { createHash, randomUUID } from 'node:crypto';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { StoreError } from './placement-store.ts';
 import { orderHash, orderStore } from './order-store.ts';
 import { readMandateBudget, withMandateLock } from './order-mandate.ts';
-import { TAKE_FLOW, approvalWords, mandateRefusal, priceOf, requestOf, type Order, type Policy, type Receipt, type TakeStatus } from '../src/order-model.ts';
+import { parseReviewEvidence } from '../src/review-evidence.ts';
+import { TAKE_FLOW, approvalWords, mandateRefusal, priceOf, requestOf, type Order, type Policy, type Receipt, type TakeStatus, type ReviewEvidence } from '../src/order-model.ts';
 
 const sha = (b: Buffer | string) => createHash('sha256').update(b).digest('hex');
 type Take = Receipt['takes'][number];
@@ -31,6 +34,33 @@ const MIME: Record<string, string> = { png: 'image/png', jpg: 'image/jpeg', mp4:
 function reservationCost(order: Order, policy: Policy): number {
   const priced = Array.isArray(policy.prices) ? priceOf(order.generation, policy.prices)?.worstPerTake : undefined;
   return priced !== undefined ? Math.ceil(Math.max(priced, order.cost.worstPerTake)) : NaN;
+}
+
+/** A report describes the exact reviewed version, which may be an after-worked film rather than the downloaded one. */
+async function checkedReviewEvidence(root: string, id: string, take: number, value: unknown): Promise<ReviewEvidence> {
+  const prefix = `assets/orders/${id}/take-${take}/`;
+  const evidence = parseReviewEvidence(value, prefix);
+  if (!evidence) throw new StoreError(400, `Granskningsunderlaget kräver film och 1–32 unika bevisfiler med relativa sökvägar under ${prefix} och full SHA-256.`);
+  const canonicalRoot = await realpath(root);
+  const takeRoot = path.join(canonicalRoot, ...prefix.split('/'));
+  const actualFiles = new Set<string>();
+  const checked = async (file: ReviewEvidence['film']): Promise<ReviewEvidence['film']> => {
+    let actual: string;
+    try { actual = await realpath(path.join(root, ...file.path.split('/'))); }
+    catch { throw new StoreError(409, `Granskningsunderlaget saknas: ${file.path}.`); }
+    const relative = path.relative(takeRoot, actual);
+    if (!relative || relative === '..' || relative.startsWith(`..${path.sep}`) || path.isAbsolute(relative)) {
+      throw new StoreError(400, 'Granskningsunderlagets länk lämnar tagningens egen mapp.');
+    }
+    const identity = process.platform === 'win32' ? actual.toLowerCase() : actual;
+    if (actualFiles.has(identity)) throw new StoreError(400, 'Granskningsunderlaget pekar på samma verkliga fil mer än en gång.');
+    actualFiles.add(identity);
+    if (sha(await readFile(actual)) !== file.sha256) throw new StoreError(409, `Granskningsunderlaget har ändrats: ${file.path} (sha256 skiljer).`);
+    return {path: file.path, sha256: file.sha256};
+  };
+  const film = await checked(evidence.film), files: ReviewEvidence['files'] = [];
+  for (const file of evidence.files) files.push(await checked(file));
+  return {film, files};
 }
 
 export function receipts(root: string, options: { now?: () => Date } = {}) {
@@ -165,13 +195,14 @@ export function receipts(root: string, options: { now?: () => Date } = {}) {
    * The independent reviewer's verdict, kept beside the take (review: when and the note) at any state from HÄMTAD on,
    * without moving the state: a take is often in the bank (INFÖRD) before the review is back. A later verdict replaces it.
    */
-  async function review(id: string, takeValue: unknown, note: string) {
+  async function review(id: string, takeValue: unknown, note: string, evidence?: unknown) {
     const text = String(note ?? '').trim();
     if (!text || text.length > 2000) throw new StoreError(400, 'Granskarens dom ska vara en text på högst 2000 tecken (--note "…").');
-    return update(id, (receipt, order) => {
+    return update(id, async (receipt, order) => {
       const take = takeNumber(order, takeValue), t = receipt.takes.find((x) => x.take === take);
       if (!t || TAKE_FLOW.indexOf(t.status as (typeof TAKE_FLOW)[number]) < TAKE_FLOW.indexOf('HÄMTAD')) throw new StoreError(409, `${id} tagning ${take} är ${t?.status ?? 'inte lagd'}: granskarens dom förs in först när filmen är hämtad (HÄMTAD eller senare).`);
-      return { ...t, review: { at: now(), note: text } };
+      const verified = evidence === undefined ? undefined : await checkedReviewEvidence(root, id, take, evidence);
+      return { ...t, review: { at: now(), note: text, ...(verified ? {evidence: verified} : {}) } };
     });
   }
   /**
@@ -199,6 +230,21 @@ export function receipts(root: string, options: { now?: () => Date } = {}) {
   return { read, check, begin, placed, failed, advance, review, imported };
 }
 
+/** Strict CLI boundary: a misspelled evidence flag must never become a note-only replacement. */
+export async function reviewFromCommand(root: string, id: string, take: unknown, args: readonly string[]) {
+  const values = new Map<string, string>();
+  for (let i = 0; i < args.length; i += 2) {
+    const flag = args[i], value = args[i + 1];
+    if (flag !== '--note' && flag !== '--evidence') throw new StoreError(400, `Okänd granskningsflagga: ${flag}. Använd --note och valfritt --evidence med separata värden.`);
+    if (values.has(flag)) throw new StoreError(400, `${flag} angavs mer än en gång.`);
+    if (!value || value.startsWith('--')) throw new StoreError(400, `${flag} saknar värde.`);
+    values.set(flag, value);
+  }
+  const evidenceFile = values.get('--evidence');
+  const evidence = evidenceFile ? JSON.parse(await readFile(path.resolve(root, evidenceFile), 'utf8')) : undefined;
+  return receipts(root).review(id, take, values.get('--note') ?? '', evidence);
+}
+
 // ── On the command line ─────────────────────────────────────────────────────
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const root = path.resolve(fileURLToPath(new URL('../', import.meta.url)));
@@ -218,7 +264,7 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
     else if (command === 'failed') out((await r.failed(id, take, rest.join(' '))).take);
     else if (command === 'status') out((await r.advance(id, take, rest[0], { file: flag('--file'), note: flag('--note') })).take);
     else if (command === 'show') out(await r.read(id));
-    else if (command === 'review') out((await r.review(id, take, flag('--note') ?? '')).take);
+    else if (command === 'review') out((await reviewFromCommand(root, id, take, rest)).take);
     else { console.log('Använd: node tools/order-put.ts check|begin|placed|failed|status|review|show <id> [tagning] …'); process.exitCode = 2; }
   } catch (error) { console.error(`[RÖD] ${(error as Error).message}`); process.exitCode = 1; }
 }

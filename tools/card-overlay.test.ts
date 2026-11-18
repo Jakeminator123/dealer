@@ -6,6 +6,10 @@ import {readFile, readdir} from 'node:fs/promises';
 import {sceneOf, restingQuad, restOf, poseAt, returnCardAt, cardToImage, projectionOf, regionOf, readMatte, filmZone, shiftShare, placedCard, landing, leakCount, strayBoxes, ranges, cardRecord, cardFace, CARD_RANKS, CARD_SUITS, MARGIN, STRAY, type CardRecord, overridesOf, cardInFront, describeTrack, RIM, plausible, keystone, skirtSound, turnOf, restFade, restShare, PLAUSIBLE, HOLD, REST_FADE, type CardTrack, type Scene} from '../src/card-overlay.ts';
 import {signedArea, centre, dist, sound, type Pt} from '../src/card-track.ts';
 import {cameraFromContract, solveCamera, squareToQuad, onSquare, filmToScene} from '../src/scene3d-geometry.ts';
+import {placedCardsForView} from '../src/card-overlay-view.ts';
+import {cardOptions} from '../src/game-film.ts';
+import {createLayout, slotOf} from '../src/game-table.ts';
+import {defaultPlan} from '../src/placement-model.ts';
 
 const contract = JSON.parse(await readFile('data/scene-contract.json', 'utf8')), scene = sceneOf(contract)!;
 async function mediaTrack(clip: string, t: TestContext): Promise<CardTrack | null> {
@@ -114,6 +118,30 @@ test('a return keeps the game card at its landing when the measured film marker 
   assert.deepEqual(returnCardAt({...track, frames: [first]}, 88, options), onlyGameCard);
   assert.deepEqual(returnCardAt(null, 88, options), onlyGameCard);
   assert.equal(returnCardAt(track, 0, {...options, returning: false}), null);
+});
+
+test('the 2D game card has one size at the end of the deal, on the return, and in the next clip', () => {
+  const table = {hands: [{seat: 4, cards: [2]}], dealer: []};
+  const cards: CardRecord[] = [{shoeDraw: 2, target: 'P4.C1', faceDown: true}];
+  const layout = createLayout(defaultPlan());
+  const own = {slot: slotOf(table, 2)!, label: 'P4.C1', shoeDraw: 2};
+  const out = cardOptions({kind: 'DEAL', own, lying: []}, table, cards, layout);
+  const back = cardOptions({kind: 'RETURN', own, lying: []}, table, cards, layout);
+  const next = cardOptions({kind: 'EXIT', own: null, lying: [2]}, table, cards, layout);
+  const land = out.land as Pt[];
+  const alreadyPlaced = next.placed as Parameters<typeof placedCardsForView>[0];
+  const returning = returnCardAt(null, 88, back as Parameters<typeof returnCardAt>[2])!.card;
+  const track = deal();
+  for (const contract of [scene, null]) for (const scale of [0.65, 1.8]) {
+    const give = poseAt(track, contract, track.frames.length - 1, scale, undefined, null, land)!;
+    const [inReturn] = placedCardsForView([], returning, contract, scale);
+    const [inNext] = placedCardsForView(alreadyPlaced, null, contract, scale);
+    assert.deepEqual(inReturn.quad, give.quad);
+    assert.deepEqual(inNext.quad, give.quad);
+    const sizeRatio = area(inReturn.quad) / area(land);
+    assert.ok(scale < 1 ? sizeRatio < 0.75 : sizeRatio > 2, `raw layout quad used at scale ${scale}`);
+    assert.deepEqual([inNext.shoeDraw, inNext.gloss, inNext.back], [inReturn.shoeDraw, inReturn.gloss, true]);
+  }
 });
 
 test('the projection puts the model card exactly on its quad', () => {
