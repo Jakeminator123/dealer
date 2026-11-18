@@ -1,6 +1,6 @@
 # Dealer — överlämning
 
-Startsidan för en ny session: läs den här sidan och sedan EN lägesfil (din banas), så kan du börja. Sidan är ingen
+Startsidan för en ny session: läs AGENTS.md, den här sidan och EN lägesfil (din banas), och börja. Läs inte mer. Sidan är ingen
 dagbok och inget arkiv: högst 120 rader och 900 ord, och `tools/handoff.test.ts` håller taket. Det som har hänt står i
 Git, och en rad som inte längre gäller ersätts.
 

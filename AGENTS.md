@@ -6,16 +6,29 @@ Jakob äger projektet; han är inte programmerare, så förklara val i vanliga o
 
 ## Läs först
 
-1. `README.md`: vad repot är, mapparna och hur det körs.
+En ny session läser TRE filer innan den börjar, och inget mer (Jakob 2026-11-18: en avlämning ska vara normal, och
+den långa inläsningen ska inte göras om):
+
+1. Den här filen.
 2. `HANDOFF.md`: startsidan, en sida: läget i korthet, nästa steg, vem som äger vad och pekarna vidare.
-3. Din banas lägesfil, `docs/lage/<bana>.md` (3D-banan: `dealer3d/LASMIG.md`, "Överlämning"). En räcker.
-4. Det ämne du arbetar med: `docs/SYSTEM.md` (kontrakt: koordinater, register, notation, ordlista), `docs/DRIFT.md`
-   (rutiner: Git, kontrollen, labbservern, Runway, publicering, slaskdisken) och arbetsinstruktionerna i `tools/*.md`
-   (`tools/dealer-line.md` är ingången för en ny dealer eller en filmbeställning). Jakobs besked slås upp per ämne i
-   `docs/BESKED.md` när ett besked är i fråga, kända brister i `docs/BRISTER.md`.
-5. Ett arbetsmoment som återkommer (beställa eller granska en film, visa Jakob något, avsluta och pusha, arbeta bredvid
-   andra sessioner, en ny dealer, publicera kopian) har en skill i `.claude/skills/<namn>/SKILL.md`: läs den som gäller
-   innan du börjar. Den säger vilka regler som oftast bryts och pekar på dokumentet med rutinen, som den aldrig skriver om.
+3. EN lägesfil, din banas: `docs/lage/<bana>.md` (3D-banan: bara avsnittet "Överlämning" i `dealer3d/LASMIG.md`).
+
+Tillsammans är det under 3 500 ord; `tools/handoff.test.ts` håller taken. Saknas något du behöver för att börja är
+det ett fel i överlämningen: rätta det där, i stället för att läsa mer.
+
+Allt annat slås upp när arbetet kräver det, ETT AVSNITT i taget (sök på rubriken), aldrig ett helt dokument:
+
+- Jakobs besked per ämne i `docs/BESKED.md` när ett beslut är i fråga, och kända brister i `docs/BRISTER.md`.
+- `docs/SYSTEM.md` (kontrakt: koordinater, register, notation, ordlista), `docs/DRIFT.md` (rutiner: Git, kontrollen,
+  labbservern, Runway, publicering, slaskdisken), `README.md` (mapparna, registren, hur det körs) och
+  arbetsinstruktionerna i `tools/*.md` (`tools/dealer-line.md` är ingången för en ny dealer eller en filmbeställning).
+- Ett arbetsmoment som återkommer (beställa eller granska en film, visa Jakob något, avsluta och pusha, arbeta bredvid
+  andra sessioner, en ny dealer, publicera kopian) har en skill i `.claude/skills/<namn>/SKILL.md`: läs den som gäller
+  innan du börjar. Den säger vilka regler som oftast bryts och pekar på dokumentet med rutinen, som den aldrig skriver om.
+
+Läs inte för att komma igång: chatthistorik, äldre överlämningar, Git-historiken, eller rapporter och anteckningar
+på slaskdisken. En underagent läser den här filens regler och det dess uppdrag namnger; uppdraget bär själv det den
+behöver veta och namnger högst tre filer eller avsnitt att läsa.
 
 ## Var kunskap står
 

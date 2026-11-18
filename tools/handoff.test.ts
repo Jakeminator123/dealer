@@ -20,6 +20,10 @@ const root = path.resolve(fileURLToPath(new URL('../', import.meta.url)));
 export const HANDOFF_LINES = 120;
 export const HANDOFF_WORDS = 900;
 export const LANE_LINES = 60;
+/** What a new session reads before it starts: AGENTS.md, HANDOFF.md and ONE lane file, and no more (AGENTS.md, "Läs först").
+ *  Jakob 2026-11-18: a hand-over is to be normal, and the long reading-in is not to be done again by new agents. */
+export const AGENTS_WORDS = 1400;
+export const START_WORDS = 3500;
 /** Words too: a cap on lines alone is kept by writing longer lines, as the documents once did (docs/DRIFT.md). */
 export const LANE_WORDS = 800;
 /** HANDOFF's sections, in this order and no others. */
@@ -131,4 +135,17 @@ test('HANDOFF.md links the decisions, the defects and every lane file under "Lä
   const linked = links(section(read('HANDOFF.md'), 'Läs för ditt ämne')).map(target => resolved('HANDOFF.md', target));
   const wanted = ['docs/BESKED.md', 'docs/BRISTER.md', ...new Set([...LANES.map(lane => `${LANE_FOLDER}/${lane}.md`), ...laneFiles()])];
   assert.deepEqual(wanted.filter(file => !linked.includes(file)), [], 'HANDOFF.md, "Läs för ditt ämne": pages without a link');
+});
+
+test('the start reading is three files and under 3 500 words: AGENTS.md, HANDOFF.md and the longest lane file', () => {
+  const agents = read('AGENTS.md');
+  assert.ok(words(agents) <= AGENTS_WORDS, `AGENTS.md has ${words(agents)} words, at most ${AGENTS_WORDS}: it is read whole by every new session, so a routine goes to docs/DRIFT.md or a skill, not here`);
+  const longest = Math.max(...laneFiles().map(file => words(read(file))));
+  const start = words(agents) + words(read('HANDOFF.md')) + longest;
+  assert.ok(start <= START_WORDS, `the three start files have ${start} words together, at most ${START_WORDS}`);
+  // The rule itself stands where every session reads it, and names the three files.
+  const first = agents.slice(agents.indexOf('## Läs först'), agents.indexOf('## Var kunskap står'));
+  assert.match(first, /TRE filer/, 'AGENTS.md, "Läs först": a new session reads three files');
+  assert.match(first, /aldrig ett helt dokument/, 'AGENTS.md, "Läs först": everything else is looked up one section at a time');
+  assert.match(first, /högst tre filer eller avsnitt/, 'AGENTS.md, "Läs först": a brief to a subagent names at most three files or sections');
 });
