@@ -6,6 +6,7 @@
 // the takes the proof names (ProofTakes, one press to Filmer); the rest of a label and the proof's description on demand.
 // Under the film, under each picture and under the proof's title: Jakob's own word (NoteBar), never in the way of the media.
 import { ChevronDown, Film, Image as ImageIcon } from "lucide-react";
+import { useSearchParams } from "next/navigation";
 import { useMemo, useState } from "react";
 import type { Proof } from "../../lib/api.ts";
 import { chapterAt, chaptersOf, countLine, formatBytes, pickFile, proofDay, proofFiles, proofTitle, unwrap, type ProofEntry } from "../../lib/proofs.ts";
@@ -51,6 +52,7 @@ function More({ entry }: { entry: ProofEntry }) {
 }
 
 export function ProofRoom({ proof, file, named, notes, onFile }: { proof: Proof; file: string | null; named: NamedTakes; notes: ProofNotes; onFile: (name: string | null) => void }) {
+  const drawToCanvas = useSearchParams().get("canvas") === "1";
   const files = useMemo(() => proofFiles(proof), [proof]);
   const { films, pictures } = files;
   const { film, index: viewing } = pickFile(files, file);
@@ -91,6 +93,7 @@ export function ProofRoom({ proof, file, named, notes, onFile }: { proof: Proof;
               fps={proof.fps}
               marks={marks}
               audio
+              drawToCanvas={drawToCanvas}
               keys={viewing === null}
               counter={(f) => chapterAt(chapters, f)?.label ?? null}
               label={`Film: ${film.name}`}

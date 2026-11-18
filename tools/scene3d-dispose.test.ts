@@ -3,6 +3,7 @@
 // gone, its texture is freed, and nothing the queue does afterwards reaches the page. Also where a part of a chain ends and starts.
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import {Texture} from 'three';
 
 let readyAtStart = 2; // readyState of a new element: 2 = its first frame is decoded
 let refuse: string | null = null; // the name of the error a film with sound is refused with when it is started, as a browser does
@@ -33,6 +34,7 @@ class FakeVideo extends BareVideo {
 let made: BareVideo[] = [], withFrameCalls = true;
 (globalThis as {document?: unknown}).document = {createElement: (tag: string) => { assert.equal(tag, 'video'); const v = withFrameCalls ? new FakeVideo() : new BareVideo(); made.push(v); return v; }};
 const {createPlayers} = await import('../src/scene3d-film.ts');
+const {createFilmTextureSelector} = await import('../src/scene3d-view.ts');
 
 function queue(hooks: Parameters<typeof createPlayers>[2] = {}) {
   made = []; const seen = {shows: 0, changes: 0, textures: [] as {addEventListener(type: string, call: () => void): void}[]};
@@ -124,7 +126,63 @@ test('every frame start in whole microseconds reads as its own frame, by the one
   a.currentTime = at(58); players.toggle(true); const stepped = players.step(1);
   assert.equal(a.currentTime, (59 + 0.5) / 30, 'a step goes from frame 58, not 57');
   a.dispatchEvent(new Event('seeked')); a.present(); await stepped; assert.equal(players.frame(), 59);
+  a.present(at(57)); a.currentTime = at(58);
+  assert.equal(players.frame(), 57, 'the presented frame is one behind the video clock');
+  const previous = players.step(-1), requested = a.currentTime;
+  a.dispatchEvent(new Event('seeked')); a.present(); await previous;
+  assert.equal(requested, (56 + 0.5) / 30, 'a step starts at the frame visible on screen');
+  assert.equal(players.frame(), 56);
   players.dispose();
+});
+
+test('a seek holds the drawn cards through decoding only for the same player and card settings', async t => {
+  const {players} = queue(); t.after(() => players.dispose());
+  const part = {path: 'a.mp4'}, select = createFilmTextureSelector(), texture = new Texture();
+  players.play([part], {cut: true}); await settle();
+  const video = made[0], first = players.current!;
+  const drawn: number[] = [], layer = {texture, update: (_video: HTMLVideoElement, frame: number) => { drawn.push(frame); return true; }};
+  const choice = {rank: 'A', suit: 'spades', scale: 1.8, hand: 'film'} as const, track = {}, cards = {};
+  const draw = (frame: number) => select(players.current, layer, frame, track, {...choice}, cards, true);
+
+  assert.equal(draw(18), texture);
+  video.seeking = true;
+  assert.equal(draw(17), texture, 'a seek keeps the composited image even before the decoder lowers its ready state');
+  video.seeking = false; video.readyState = 1;
+  assert.equal(draw(17), texture, 'the composited image also holds while the decoder has no frame');
+  assert.deepEqual(drawn, [18], 'old video pixels are never redrawn at the requested frame number');
+  video.readyState = 2;
+  assert.equal(draw(17), texture);
+  assert.deepEqual(drawn, [18, 17], 'the decoded target replaces the held frame');
+
+  const rejectOld = (drawChanged: () => Texture | null) => {
+    video.readyState = 2; assert.equal(draw(17), texture);
+    video.readyState = 1; assert.equal(drawChanged(), first.texture);
+  };
+  rejectOld(() => select(players.current, layer, 16, track, {...choice, scale: 0.65}, cards, true));
+  rejectOld(() => select(players.current, layer, 16, track, {...choice, hand: 'standard'}, cards, true));
+  rejectOld(() => select(players.current, layer, 16, track, choice, {...cards}, true));
+  rejectOld(() => select(players.current, layer, 16, {}, choice, cards, true));
+  rejectOld(() => select(players.current, null, 16, track, choice, cards, true));
+
+  video.readyState = 2; assert.equal(draw(16), texture);
+  // No render of the intervening clip: a cache keyed by video, track and cards alone would still match.
+  players.play([{path: 'b.mp4'}], {cut: true}); await settle();
+  players.play([part], {cut: true}); await settle();
+  assert.equal(players.current!.video, first.video, 'the same video element is reused');
+  assert.notEqual(players.current!.identity, first.identity, 'the next use of the clip has a new player identity');
+  video.readyState = 1;
+  assert.equal(draw(0), first.texture, 'the new part cannot inherit the old composited image');
+});
+
+test('an old seek does not show a new clip under its own completion', async t => {
+  const {players, seen} = queue(); t.after(() => players.dispose());
+  players.play([{path: 'a.mp4'}], {cut: true}); await settle();
+  const video = made[0], step = players.step(1);
+  players.play([{path: 'b.mp4'}], {cut: true}); await settle();
+  assert.equal(players.path, 'b.mp4');
+  const before = seen.shows;
+  video.dispatchEvent(new Event('seeked')); video.present(); await step;
+  assert.equal(seen.shows, before, 'the completed seek did not show another clip');
 });
 
 test('a chain loaded with load() is taken down too, and a load that is still waiting never shows', async () => {

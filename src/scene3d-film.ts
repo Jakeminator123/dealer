@@ -623,11 +623,12 @@ export function createPlayers(onShow: (texture: T.Texture, path: string) => void
   }
   async function seek(i: number, seconds: number) {
     if (gone) return;
-    paused = true; players.forEach(p => p.video.pause()); const v = players[i].video;
+    const player = players[i]; if (!player) return;
+    paused = true; players.forEach(p => p.video.pause()); const v = player.video;
     await new Promise<void>(resolve => { const done = () => { if (v.requestVideoFrameCallback) { const fallback = later(resolve, 250); frameCall(v, () => { clearTimeout(fallback); timers.delete(fallback); resolve(); }); } else later(resolve, 60); };
       if (Math.abs(v.currentTime - seconds) < 1e-4 && v.readyState >= 2) done(); else { listen(v, 'seeked', done, true); moveTo(v, seconds); } });
-    if (gone) return;
-    players[i].texture.needsUpdate = true; show(i);
+    if (gone || players[i] !== player) return;
+    player.texture.needsUpdate = true; show(i);
   }
 
   // ---- a queue for a game: chains that follow each other without a blank frame -----------------------------------
@@ -787,10 +788,10 @@ export function createPlayers(onShow: (texture: T.Texture, path: string) => void
     },
     // Half a frame past the frame start, so the decoder lands on that frame and not the one before it.
     // Stays inside the part on screen.
-    step(frames: number) { const p = players[current]; if (!p) return Promise.resolve(); const last = (p.end ?? Math.max(1, Math.round(p.video.duration * p.fps))) - 1, frame = Math.max(p.start, Math.min(last, frameAtTime(p.video.currentTime, p.fps) + frames)); return seek(current, (frame + 0.5) / p.fps); },
+    step(frames: number) { const p = players[current]; if (!p) return Promise.resolve(); const last = (p.end ?? Math.max(1, Math.round(p.video.duration * p.fps))) - 1, frame = Math.max(p.start, Math.min(last, frameAtTime(shownAt(p.video), p.fps) + frames)); return seek(current, (frame + 0.5) / p.fps); },
     get paused() { return paused; }, get path() { return players[current]?.path ?? ''; },
-    // The video on screen and its texture, for a layer that draws on the film frame (rendered cards).
-    get current() { const p = players[current]; return p ? {video: p.video, texture: p.texture} : null; }, get count() { return players.length; },
+    // Identity changes with each part on screen, even when its video and texture came from the pool.
+    get current() { const p = players[current]; return p ? {identity: p as object, video: p.video, texture: p.texture} : null; }, get count() { return players.length; },
     // The chain as source frame ranges, end exclusive; for stepping through it frame by frame from outside.
     get parts() { return players.map(p => ({path: p.path, start: p.start, end: p.end ?? Math.round(p.video.duration * p.fps)})); },
     // Source frame of the clip on screen, by the queue's one rule (frameAtTime): card tracks are indexed by it. The frame the element

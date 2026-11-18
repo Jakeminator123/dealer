@@ -119,6 +119,29 @@ ${SHIMMER_GLSL}
 void main(){
   vec2 bent; vec4 over = shimmerOver(vUv, bent); vec3 c = texture2D(map, bent).rgb * exposure * (1. - over.a) + over.rgb; ${OUT_TAIL}`;
 
+type CardChoice = {rank: string; suit: string; scale: number; hand: SceneState['cardHand']};
+type CardLayer = {texture: T.Texture; update(video: HTMLVideoElement, frame: number, track: unknown, choice: CardChoice, extra?: object | null): boolean; off?(): void; dispose?(): void};
+type OnScreenFilm = ReturnType<typeof createPlayers>['current'];
+
+export function createFilmTextureSelector() {
+  let previous: {identity: object; layer: CardLayer; track: unknown; choice: CardChoice; cards: Part['cards']} | null = null;
+  return (playing: OnScreenFilm, layer: CardLayer | null, frame: number, track: unknown, choice: CardChoice, cards: Part['cards'], holdComposite: boolean) => {
+    if (playing && layer) {
+      const {video, identity} = playing;
+      // The film layer owns the full composited picture. Keep its last draw through a seek of that same part with the same cards.
+      if (holdComposite && (video.seeking || video.readyState < 2)) {
+        if (previous?.identity === identity && previous.layer === layer && previous.track === track && previous.cards === cards &&
+            previous.choice.rank === choice.rank && previous.choice.suit === choice.suit && previous.choice.scale === choice.scale && previous.choice.hand === choice.hand) return layer.texture;
+      } else if (layer.update(video, frame, track, choice, cards)) {
+        previous = holdComposite ? {identity, layer, track, choice, cards} : null;
+        return layer.texture;
+      }
+    }
+    previous = null;
+    return playing?.texture ?? null;
+  };
+}
+
 export function createScene(canvas: HTMLCanvasElement, host: HTMLElement, data: SceneData) {
   const state: SceneState = {...DEFAULTS};
   const renderer = new T.WebGLRenderer({canvas, antialias: true, preserveDrawingBuffer: true}); renderer.autoClear = false;
@@ -144,7 +167,7 @@ export function createScene(canvas: HTMLCanvasElement, host: HTMLElement, data: 
   // the card into the film frame (scene3d-cards.ts), the earlier way, kept to compare; 'matte' (a trial) draws over the film's own
   // card in place, with the film's card as the matte (scene3d-deal.ts and scene3d-matte.ts). A way's module is fetched the first
   // time it is used and cards are switched off again if it cannot be read. update() returning true means "show my texture as the film".
-  type CardLayer = {texture: T.Texture; update(video: HTMLVideoElement, frame: number, track: unknown, choice: {rank: string; suit: string; scale: number}, extra?: object | null): boolean; off?(): void; dispose?(): void};
+  const selectFilmTexture = createFilmTextureSelector();
   // Things another page adds: props lying on the table (built with the table, drawn under the film) and a call after every drawn frame.
   type Prop = {group: T.Object3D; build(edgeZ: number, scale: number): void};
   const props: Prop[] = [], frameCalls = new Set<() => void>(); let built = false, ownNotch: {x0: number; x1: number; s1: number} | null = null;
@@ -369,7 +392,9 @@ export function createScene(canvas: HTMLCanvasElement, host: HTMLElement, data: 
     // A film with a frame of its own has no shoe and no card places in its picture: the rendered cards (the one seated in the shoe window among them) stay out of it.
     evenFilm(playing?.video ?? null, part, seconds); film.setLife(state.dealerLife, seconds);
     const cardsOn = state.cards && !part?.frame; if (!cardsOn) cardLayer?.off?.();
-    if (playing) film.setTexture(cardsOn && cardLayer?.update(playing.video, players.frame(), track, {rank: state.cardRank, suit: state.cardSuit, scale: state.cardMethod === 'film' ? state.cardScale : cardGrow(state.cardScale, geometry), hand: state.cardHand}, part?.cards) ? cardLayer.texture : playing.texture);
+    const filmCards = state.cardMethod === 'film';
+    const texture = selectFilmTexture(playing, cardsOn ? cardLayer : null, players.frame(), track, {rank: state.cardRank, suit: state.cardSuit, scale: filmCards ? state.cardScale : cardGrow(state.cardScale, geometry), hand: state.cardHand}, part?.cards, filmCards);
+    if (texture) film.setTexture(texture);
     const focusOn = state.focus !== 'off', u = blurMat.uniforms, scale = canvas.width / W;
     light.update(seconds, state.fan, state.fanStrength, state.fanPeriod);
     if (focusOn) { const goal = focusTarget(seconds), dt = Math.max(0, Math.min(0.2, seconds - lastSeconds)); focusWhat = goal.what;

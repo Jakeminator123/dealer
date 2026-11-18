@@ -70,6 +70,8 @@ export type FilmPlayerProps = {
   keys?: boolean;
   /** The film has sound: a sound button, and it plays with sound. */
   audio?: boolean;
+  /** Opt-in diagnostic view of decoded frames from this same video element. */
+  drawToCanvas?: boolean;
   /** Width / height of the picture before the film says (default 3:2). */
   aspect?: number;
   /** Shown after the frame count, for the frame on screen: a chapter's name. */
@@ -113,6 +115,7 @@ export function FilmPlayer({
   onToggle,
   keys = false,
   audio = false,
+  drawToCanvas = false,
   aspect: aspectGiven,
   counter,
   overlay,
@@ -127,6 +130,9 @@ export function FilmPlayer({
 }: FilmPlayerProps) {
   const fps = fpsGiven && fpsGiven > 0 ? fpsGiven : 30;
   const video = useRef<HTMLVideoElement>(null);
+  const canvas = useRef<HTMLCanvasElement>(null);
+  const drawFrame = useRef<((frame: number) => void) | null>(null);
+  const [canvasSource, setCanvasSource] = useState<string | null>(null);
   const [measured, setMeasured] = useState<{ src: string; frames: number; aspect: number } | null>(null);
   const known = measured && measured.src === src ? measured : null;
   const frames = framesGiven ?? known?.frames ?? null;
@@ -262,6 +268,26 @@ export function FilmPlayer({
     if (video.current) video.current.muted = muted;
   }, [muted, src]);
 
+  useEffect(() => {
+    setCanvasSource(null);
+    const v = video.current, surface = canvas.current;
+    if (!drawToCanvas || !src || !v || !surface) return;
+    const context = surface.getContext("2d");
+    if (!context) return;
+    let last: number | null = null;
+    const draw = (f: number) => {
+      if (f === last || v.seeking || v.readyState < HTMLMediaElement.HAVE_CURRENT_DATA || v.currentSrc !== v.src || !v.videoWidth || !v.videoHeight) return;
+      if (surface.width !== v.videoWidth) surface.width = v.videoWidth;
+      if (surface.height !== v.videoHeight) surface.height = v.videoHeight;
+      context.drawImage(v, 0, 0);
+      if (last === null) setCanvasSource(src);
+      last = f;
+    };
+    drawFrame.current = draw;
+    draw(frameOfTime(v.currentTime, live.current.fps));
+    return () => { drawFrame.current = null; };
+  }, [drawToCanvas, src]);
+
   // The video's own events, and the frame on screen.
   useEffect(() => {
     const v = video.current;
@@ -301,6 +327,7 @@ export function FilmPlayer({
       lastCallback = performance.now();
       const f = frameOfMediaTime(meta.mediaTime, live.current.fps);
       if (!seeking.current && target.current === null) report(f);
+      if (!seeking.current) drawFrame.current?.(f);
       keepInside(f);
       handle = v.requestVideoFrameCallback(onVideoFrame);
     };
@@ -311,6 +338,7 @@ export function FilmPlayer({
       if (!v.paused && !seeking.current && performance.now() - lastCallback > 150) {
         const f = frameOfTime(v.currentTime, live.current.fps);
         report(f);
+        drawFrame.current?.(f);
         keepInside(f);
       }
       poll = requestAnimationFrame(watch);
@@ -341,6 +369,7 @@ export function FilmPlayer({
         report(f);
       }
       target.current = v.paused ? target.current : null;
+      drawFrame.current?.(f);
       settle();
     };
     const onPlay = () => {
@@ -366,7 +395,10 @@ export function FilmPlayer({
         report(r?.end ?? frameOfTime(v.currentTime, live.current.fps));
       }
     };
-    const onData = () => setLoaded(true);
+    const onData = () => {
+      setLoaded(true);
+      drawFrame.current?.(frameOfTime(v.currentTime, live.current.fps));
+    };
     const onError = () => setFailed(true);
     v.addEventListener("loadedmetadata", onMeta);
     v.addEventListener("loadeddata", onData);
@@ -421,12 +453,14 @@ export function FilmPlayer({
 
   const empty = !src;
   const click = onToggle ?? toggle;
+  const canvasReady = drawToCanvas && loaded && !failed && src !== null && canvasSource === src;
   return (
     <div
       role="group"
       aria-label={label ?? "Film"}
       data-frame={frame}
       data-playing={playing || undefined}
+      data-presentation={drawToCanvas ? (canvasReady ? "canvas" : "video") : undefined}
       className={cn("flex min-h-0 min-w-0 flex-col gap-2", className)}
     >
       <div className={cn("relative grid min-h-0 flex-1 place-items-center [container-type:size]", stageClassName)}>
@@ -443,8 +477,11 @@ export function FilmPlayer({
               muted={muted}
               disablePictureInPicture
               onClick={click}
-              className={cn("absolute inset-0 size-full cursor-pointer object-contain transition-opacity duration-200", loaded ? "opacity-100" : "opacity-0")}
+              className={cn("absolute inset-0 size-full cursor-pointer object-contain", !drawToCanvas && "transition-opacity duration-200", loaded && !canvasReady ? "opacity-100" : "opacity-0")}
             />
+          ) : null}
+          {src && drawToCanvas ? (
+            <canvas ref={canvas} aria-hidden="true" className={cn("pointer-events-none absolute inset-0 size-full object-contain", !canvasReady && "invisible")} />
           ) : null}
           {!loaded && !failed && !empty ? (
             <div aria-hidden className="absolute inset-0 animate-shimmer bg-[linear-gradient(90deg,#0d1210_0%,#151c18_45%,#0d1210_90%)] bg-[length:200%_100%]" />

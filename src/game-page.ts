@@ -463,4 +463,8 @@ Object.assign(window, {game: {scene, film, page, state: () => snapshot, dealer: 
 if (query.get('diagnos') === '1') void import('./game-diagnosis.ts').then(m => m.createDiagnosis(stage, canvas, () => { const q = scene.players.diagnosis();
   return [`film före spelet ${introOn ? 'på' : 'av'} · ${page.stage}${page.busy ? ' upptagen' : ''} · hållen vila ${film.held ? 'ja' : 'nej'} · luckor ${gaps.length}`,
     `kö: ${q.paused ? 'står' : 'går'} · sträng ${q.strict ? 'JA' : 'nej'} · nekade ${q.stuck} · element ${q.pool}`, `på skärmen: ${q.onScreen ?? 'INGEN FILM'}`, ...(q.awaited ? [`väntad: ${q.awaited}`] : []),
-    ...q.elements, ...q.events.slice(-10)]; })).catch(() => null);
+    ...q.elements, ...q.events.slice(-10)]; }, {
+  playback: () => { const video = scene.players.current?.video; return video ? {clip: scene.players.path, frame: scene.players.frame(), rate: video.playbackRate, paused: scene.players.paused} : null; },
+  toggle: () => scene.players.toggle(),
+  step: direction => scene.players.step(direction),
+})).catch(() => null);
