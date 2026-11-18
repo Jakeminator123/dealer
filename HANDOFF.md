@@ -1,8 +1,7 @@
 # Dealer — överlämning
 
-Startsidan för en ny session: läs AGENTS.md, den här sidan och EN lägesfil (din banas), och börja. Läs inte mer. Sidan är ingen
-dagbok och inget arkiv: högst 120 rader och 900 ord, och `tools/handoff.test.ts` håller taket. Det som har hänt står i
-Git, och en rad som inte längre gäller ersätts.
+Läs AGENTS.md, den här sidan och EN lägesfil för din bana. Ersätt inaktuell status; historiken finns i Git.
+`tools/handoff.test.ts` håller taket: 120 rader och 900 ord.
 
 ## Läget
 
@@ -18,16 +17,18 @@ Git, och en rad som inte längre gäller ersätts.
 
 ## Nästa steg
 
-Rädda befintligt repo till en sammanhängande lokal väg från underlag till spelbar Blackjack (Jakob 2026-11-18).
-Kodens samband och verifiering rättas parallellt; filmproduktionen börjar med EN trovärdig giv ([film](docs/lage/film.md)).
+Sammanhängande lokal väg från underlag till spelbar Blackjack (Jakob 2026-11-18), med EN trovärdig giv först ([film](docs/lage/film.md)).
 
 1. Bevara Jakobs ändrade kortplan och oincheckade orderutkast. Läs nya anteckningar med `node tools/proof-notes.ts`.
-2. Eget C2-par prioriteras före C1-återbruk. P4.C2:s granskade cykel har ett obetalt utkast; dealerfilmen saknas.
+2. Eget C2-par prioriteras före C1-återbruk. P4.C2:s film är införd som Variant (giv 3/5, retur 4/5), split 64 och eget spår.
    Lös övriga andrakort och hålkortets vändning före kortförvalet ([kort](docs/lage/kort.md)); P1:s landningsslöja är rättad.
 3. Använd automatiska testkvitton och det återbyggbara SQLite-indexet ([evidens](tools/evidence.md)); inga medieblobs.
 4. Munproven är lokala jämförelser; inget byte i banken före Jakobs val i Beslut. Körarens kod finns nu i repot.
 5. Testa, pusha och verifiera fjärrens SHA. Sessionens tio GPT-meddelanden är förbrukade; färdiga granskningsfynd är
-   rättade. Tre Runway-filmer kostade 234 krediter; C2-utkastet väntar på fungerande MCP och förnyad policy, inget KÖR gäller.
+   rättade. Fyra Runway-filmer kostade 319 krediter; lokal Claude-MCP fungerar. Inget anrop eller KÖR pågår.
+6. P1/P7 har verifierad maskjämförelse i Prov `paow-air-paper-chroma-verified-20261118`; grön skugga blir inte vit kortyta.
+   Prov `paow-c1-c2-scene-20261118` visar C1 kvar genom C2 och båda korten efter returen. C2 är fortsatt Variant:
+   förbättra grepp, vändning och färg före en serie. READY-C saknar godkänt inpass och utpass.
 
 Äldre frågor till honom som inte är kort än: `D:/dealer-scratch/tmp/handoff-nytt/forslag-kort.md`.
 

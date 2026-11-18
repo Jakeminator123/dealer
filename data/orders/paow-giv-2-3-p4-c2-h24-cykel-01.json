@@ -171,8 +171,13 @@
     "Undantag från receptet: tur och retur i stället för bara dit; texten MINIMAL i stället för KORT; vändningen LONG_EDGE i stället för FREE."
   ],
   "createdBy": "Jakob, studions vy Beställ",
-  "approval": null,
-  "status": "UTKAST",
+  "approval": {
+    "by": "huvudagent",
+    "at": "2026-11-18T15:27:38.659Z",
+    "orderSha256": "112373042838e279b323a6f192f3d16234f398fc4650837b6b906738b0c777a1",
+    "mandate": "Jakob 2026-11-18: Ja du får generera tills kontot är typ tomta. 800 krediter/timme gäller. Huvudagenten godkänner en oberoende granskad C2-pilot, Kling 4, 4 s, högst 94 krediter. Tidigare 234 bevaras; ingen serie före granskning."
+  },
+  "status": "GODKÄND",
   "id": "paow-giv-2-3-p4-c2-h24-cykel-01",
   "created": "2026-11-18T14:58:52.537Z"
 }

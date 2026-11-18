@@ -13,8 +13,10 @@ Innehåll: Kortet · Filmerna och banken · Läpparna och rösten · Spelet och 
   C2/C3 och split kan ha ett annat spelmål. Scenproven `paow-cycle02-scene-20261118` och `paow-outer-filmcard-20261118`
   visar kvarliggande kort mellan två olika platser, men inte detta återbruk. P1:s blekta skugga vid ruta 114 är rättad:
   Prov `paow-rest-paper-zone-20261118` visar före/efter och P7. Eget kompatibelt C2-par prioriteras före C1-delning,
-  även via ett komplett godkänt ankare. Utkastet `paow-giv-2-3-p4-c2-h24-cykel-01` har granskat underlag;
-  dealerfilmen saknas. Stänger: egna landningar eller verifierad annan lösning för återbruket, hålkortets
+  även via ett komplett godkänt ankare. `paow-giv-2-3-p4-c2-h24-cykel-01` har egen film och eget spår, Variant giv 3/5,
+  retur 4/5. Prov `paow-c1-c2-scene-20261118` visar C1 kvar genom C2:s giv, släpp och returände. Maskjämförelsen
+  `paow-air-paper-chroma-verified-20261118` visar minskad vitfärgning av grön skugga vid P1 ruta 113 och bevarat kort
+  vid P7 ruta 73; full rörelseacceptans återstår. Stänger: egna landningar eller verifierat återbruk, hålkortets
   vändning och en hel giv i båda renderlägena. Spelets förval är därför kvar; inget Primär-val har ändrats.
 - **Forkens hela giv är ett separat metodprov.** Prov `paow-fork-round-review-20261118`: 14 kort ligger kvar och
   13 skarvpar matchar i oberoende bildgranskning. Kamera och startpose skiljer sig från Dealer 2.3; blank yta byts
@@ -212,11 +214,11 @@ Innehåll: Kortet · Filmerna och banken · Läpparna och rösten · Spelet och 
 
 ## Labbet och verktygen
 
-- **Codex kan ännu inte skicka Kling 4 via sin anslutning** (kontrollerat 2026-11-18). Pluginet är inloggat men
-  avvisar `kling-4` och tar bort `referenceVideos` i förvalideringen; den separata lokala MCP-klienten är inte
-  inloggad. H24-02 fick inget taskId och ingen debitering; dess reservation ligger kvar konservativt i kvittot.
-  Stänger: aktuell MCP-inloggning och ett skrivschema som bevarar den frysta begäran. Ändra inte modell eller
-  parameterfält för att pressa ett anrop genom ett gammalt schema, och återförsök inte den avslutade tagningen.
+- **Codex-pluginets skrivschema saknar Kling 4 och `referenceVideos`** (kontrollerat 2026-11-18), trots inloggat konto.
+  Den lokala Claude-klientens Runway-MCP fungerar: C2-piloten levererades med exakt frysta argument, ett anrop och
+  85 krediter (orderns kvitto). Reservvägen står i DRIFT, Anslutningar och miljö. H24-02 fick inget taskId eller
+  debitering; dess reservation ligger kvar konservativt. Stänger: Codex-pluginets schema uppdateras. Ändra inte
+  modell eller parameterfält för att passa ett gammalt schema, och återförsök inte den avslutade tagningen.
 
 - **En ordergrupp är inte en filsystemtransaktion.** Förhandsvisningens källor valideras före första skrivningen,
   labbets Material- och orderskrivningar delar kö och sparomtag returnerar samma ID:n. Ett processavbrott mitt i

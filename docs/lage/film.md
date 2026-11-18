@@ -4,9 +4,8 @@ Huvudagentens bana: vägen från bild till dealer, Beställ, efterarbetet, banke
 gäller nu; varje prov och dess utfall står i handboken (`tools/film-prompting.md` §5) och det som hänt i Git.
 
 **Läget.**
-- En film beställs längs en rak linje (`babd05d`): i Bordets Beställ väljs steget och kortets plats, och receptet i
-  `data/order-methods.json` ger resten (en giv: Kling 4, 3 s, bara dit, första och sista bild, referensfilm). Utan
-  undantag går 8 av 61 kombinationer att beställa; de andra säger varför (slutbild saknas, eller dockans film).
+- I Bordets Beställ väljs steg och kortplats. Receptet i `data/order-methods.json` ger Kling 4, 3 s, bara giv,
+  ändbilder och dockreferens. Av 61 kombinationer går 8 att beställa utan undantag.
 - Metoden som håller: en giv bara dit på Kling 4 med första och sista bild och 3D-banans dockfilm som referensfilm, i
   UTDRAGEN takt (given över drygt 2 s, en obruten rörelse). I den riktiga dealerns takt tappar Kling vändningen.
 - Ankare 2.3 (båda händerna vid skon, blicken ned) gäller på Jakobs ja. En giv därifrån (`GIV-2.3`) slutar på platsens
@@ -15,26 +14,26 @@ gäller nu; varje prov och dess utfall står i handboken (`tools/film-prompting.
 - Nya filmer 2026-11-18, genom linjen och den automatiska kontrollen: given till plats 4 och plats 1 (Prov
   `giv-fran-2-3-p4-p1`) fick Jakobs Inte bra: kortet flippar utanpå fingrarna, så dockan måste hålla kortet genom
   vändningen. Ingången (`paow-ingang-2-3-01`) underkände han: stilla från ruta 45. Tagning 4 till plats 5 är kandidat.
+- H24-03 och Cykel01 har granskningsbevis vid tagningarna. Cykel02 fick Variant 3/5 för given och 4/5 för returen.
+- P4.C2 `paow-giv-2-3-p4-c2-h24-cykel-01`: helfilm, giv, retur och kortspår är registrerade för granskning. 97 rutor
+  vid 24 fps, 85 krediter. Giv Variant 3/5 med färgblekning, retur 4/5. Delning vid första säkra släpp i ruta 64.
 - En sidovinkel görs av en färdig film i Runways videoredigerare (`edit_video`), inte av nya stillbilder: plats 4
   cirka 40° (Prov `sidovinkel-ur-film`, Jakob: "mycket bra") och plats 5 cirka 25–30°. Vinkeln och kortets plats
   träffas inte exakt.
 - Den tatuerade uppsättningen är förstahandsvalet (keystone, ankare 1 och 2.3); ankare 2.1 och 2.2 och hela banken
   har de äldre händerna och spelas än. Ankare 2.2 föll i tre försök i bildmodellen och görs om som 2.3.
-- Läs aktuellt saldo med `whoami` före beställning; kontot delas med 3D-Dealer. Jakob har utökat totalmandatet
-  (BESKED); timtaket är 800. Den tidigare tidsatta orderpolicyn har löpt ut och måste förnyas före nästa start,
-  med samma journal så att redan förbrukade 234 krediter räknas. Inga nya anrop pågår.
+- Jakob har tillåtit arbete tills kontot nästan är tomt. Orderpolicyn gäller 18 november till kl. 17.30 UTC med 800
+  krediter per rullande timme och en konservativ totalgräns på 2 500. Dealer har använt 319 på fyra filmer. Senaste
+  delade saldot var 2 042. Läs aktuellt saldo före beställning.
 
 **Nästa steg.** Ett mål i taget: EN dokumenterat granskad giv enligt Jakobs mandat.
-1. Huvudagenten styr en granskad pilot enligt räddningsmandatet i BESKED. Anslutning och workspace verifieras med
-   Runway-MCP; egen kostnad bokförs per order och samordnas i skrivbordets DISKMASKIN.TXT.
-2. H24-03 och Cykel01 är dömda med bevis vid tagningarna. Cykel02: giv Variant 3/5, retur 4/5.
-   Cykel02:s framsida bleknar. C2-utkast `paow-giv-2-3-p4-c2-h24-cykel-01`: granskad referens, obetalt. Kling 4-MCP återstår.
-3. Alternativet med plant kort och vändning först efter släpp är fortfarande ett separat förslag i Beslut;
-   det är inte en godkänd metod. En godkänd kodkontroll gör inte en film visuellt godkänd.
-4. Plats 1 (hans ord i Prov): A3 · P1 görs om med modellen som lämnar ansiktet orört, och vägen tillbaka från den
+1. Före nästa beställning, verifiera arbetsytan med Runway-MCP och samordna kostnaden i DISKMASKIN.TXT.
+2. C1 ligger kvar genom C2 i Prov `paow-c1-c2-scene-20261118`. Förbättra grepp/vändning/färg före serie; READY-C saknar godkänt inpass och utpass.
+   Plant kort med vändning efter släpp ligger som förslag i Beslut.
+3. Plats 1 (hans ord i Prov): A3 · P1 görs om med modellen som lämnar ansiktet orört, och vägen tillbaka från den
    framåtlutade slutbilden kräver en egen idé. Ingången till 2.3 ligger klippt i Prov `ingang-2-3-klippt` (1,9 och
    1,7 s, mätt stilla från ruta 42): hans Bra för in den som ett utsnitt (derived) av samma film, utan omkodning.
-5. Efter en visuellt godkänd pilot enligt mandatet: resten av bordet, fem kameravinklar (`/vinklar.html`), ankare 2.1 och 2.2 med
+4. Efter en visuellt godkänd pilot enligt mandatet: resten av bordet, fem kameravinklar (`/vinklar.html`), ankare 2.1 och 2.2 med
    tatuerade händer, hålkortet, andra kortet (`yt-referens/ut/giv-resten.md`), returer och dealerns tredje kort.
 
 **Väntar på Jakob.** Aktuella frågor finns i Beslut; filmdomar lämnas i Granska.

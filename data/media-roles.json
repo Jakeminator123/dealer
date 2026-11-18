@@ -3779,6 +3779,20 @@
           }
         },
         {
+          "id": "paow-film-giv-2-3-p4-c2-h24-cykel-01-t1",
+          "role": "film",
+          "name": "P4.C2 · egen H24-cykel · variant",
+          "path": "assets/films/paow/giv-2-3-p4-c2-h24-cykel-01-t1/source.mp4",
+          "still": 53,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Variant, given 3/5, returen 4/5. Blåblekning f50–53, upprätt tvekan f44–49. Split64: första säkra glipan. C1 ligger kvar genom C2 i Prov paow-c1-c2-scene-20261118; full rörelseacceptans återstår. Huvudagent och oberoende granskare, ingen Jakobsdom eller Primär.",
+          "source": {
+            "from": "beställningen paow-giv-2-3-p4-c2-h24-cykel-01, tagning 1 (studions vy Beställ)",
+            "when": "2026-11-18"
+          }
+        },
+        {
           "id": "paow-film-intro-noir-3-startruta",
           "role": "arbetsmaterial",
           "name": "Startrutan till filmen före spelet",
@@ -3940,6 +3954,45 @@
           "note": "Byteidentisk granskningskopia av 3D-Dealers 14-kortsfilm. Separat kamera/redo-ställning; inte en ersättare i Dealer 2.3. Källa och SHA står i proof.json bredvid filmen.",
           "source": {
             "from": "3d-dealer: cykel-nyp-1-0-spelaren-t1-och-13-till_spelaren_balsal_runda-paulina.mp4",
+            "when": "2026-11-18"
+          }
+        },
+        {
+          "id": "paow-c2-film-cycle-20261118",
+          "role": "referens",
+          "name": "P4.C2 · egen dealerfilm · pilot",
+          "path": "assets/proofs/paow-c2-film-cycle-20261118/film.mp4",
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Fristående granskning av C2-pilot; samma bytes som orderns after.mp4. Ingen Primär eller produktionsaktivering.",
+          "source": {
+            "from": "assets/orders/paow-giv-2-3-p4-c2-h24-cykel-01/take-1/after.mp4",
+            "when": "2026-11-18"
+          }
+        },
+        {
+          "id": "paow-air-paper-chroma-verified-20261118",
+          "role": "arbetsmaterial",
+          "name": "Kortmask · före och efter",
+          "path": "assets/proofs/paow-air-paper-chroma-verified-20261118/p1-fore-efter.png",
+          "pattern": "assets/proofs/paow-air-paper-chroma-verified-20261118/*.png",
+          "state": "kandidat",
+          "note": "P1 och P7 med verifierad källversion. QA-bilder, ingen ny film.",
+          "source": {
+            "from": "Lokal Dealer-studio · skärmbilder från CUA",
+            "when": "2026-11-18"
+          }
+        },
+        {
+          "id": "paow-c1-c2-scene-20261118",
+          "role": "arbetsmaterial",
+          "name": "P4 · C1 och C2 · scenprov",
+          "path": "assets/proofs/paow-c1-c2-scene-20261118/kort-och-skarvar.png",
+          "pattern": "assets/proofs/paow-c1-c2-scene-20261118/*.png",
+          "state": "kandidat",
+          "note": "Kvarliggande kort, släpp och retur i den sammansatta scenen. Variant, ingen Primär.",
+          "source": {
+            "from": "Lokal Dealer-studio · skärmbilder från CUA",
             "when": "2026-11-18"
           }
         }

@@ -6,14 +6,14 @@
   "mandate": {
     "id": "codex-dealer-20261118",
     "startsAt": "2026-11-18T08:01:31Z",
-    "endsAt": "2026-11-18T13:01:31Z",
+    "endsAt": "2026-11-18T17:30:00Z",
     "rollingHourCredits": 800,
     "totalCredits": 2500
   },
   "maxPerOrder": 2000,
   "minBalance": 0,
   "timeZone": "Europe/Stockholm",
-  "balance": { "credits": 7606, "at": "2026-11-17", "source": "trailersessionens avläsning efter kvällens sista anrop (givprovet 820, trappans tre tagningar 342)" },
+  "balance": { "credits": 2127, "at": "2026-11-18T15:24:00Z", "source": "Runway whoami i Codex och den lokala Claude-MCP-klienten: Jakob, workspace 67037521, båda 2127. Jakob gav fortsatt genereringstillstånd; samma mandat och tidigare förbrukning bevaras. Ett granskat C2-prov, denna order högst 94 krediter; ingen serie före granskning." },
   "prices": [
     { "model": "kling-4", "resolution": "1080p", "perSecond": 21.3, "listedPerSecond": 23.5, "source": "Liggarna b19 och b20: 7 s i 1080p = 149 krediter; listpris 23,5 per s i verktyget generate_video 2026-11-12." },
     { "model": "kling-4", "resolution": "720p", "perSecond": 15.7, "listedPerSecond": 15.7, "source": "Listpris i verktyget generate_video 2026-11-12; inte mätt i någon liggare." },

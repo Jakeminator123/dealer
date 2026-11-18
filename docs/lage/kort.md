@@ -7,6 +7,7 @@ bara det som gäller nu; kontraktet står i `docs/SYSTEM.md`, "Ritade kort".
 - Spelets underlägg (`UNDER` i `src/card-overlay.ts`) är förval sedan 2026-11-14. Kortens fjärde steg (`33b164a`) fick 3,75/5 blint.
 - Provet `kort=liggande&cardMethod=film` behåller filmkortet i 2D; `scene` färgar med `cardBack=dark&cardFace=paper`, även i Bordets giv–retur-par.
 - Om samma film fortsätter efter givens klippgräns väntar det liggande kortet till uppmätt vila/färdig toning, även i RETURN.
+- P4.C2 har egen dealerfilm och kortspår. Kortet ligger plant från ruta 55. Returen börjar vid första säkra släpp i ruta 64.
 - Kortplanen ritas i verkligt perspektiv (`918e7f4`): där planen säger Plant bord ritas varje kort som ett verkligt
   kort (63 × 88 mm, storlek 1,00) genom linsen som ger dealern människostorlek (`src/table-lens.ts`). `planCardQuad` i
   `src/card-plan.ts` är den enda regeln, och samma fyrhörningar används i Bordets Kortplan, kortbanans landning, Ny
@@ -27,9 +28,8 @@ bara det som gäller nu; kontraktet står i `docs/SYSTEM.md`, "Ritade kort".
   visar det som en bricka ("äldre plan", "annan kamera", "avviker").
 
 **Nästa steg.**
-1. Cykel02 och P1→P7 är synprovade ([bevis](../BRISTER.md#kortet)); P1:s blekta skugga är rättad. Andrakort/split återbrukar
-   fel landningsplats när egen film saknas. Eget C2-par prioriteras; P4.C2:s dockcykel finns i Prov `paow-c2-rig-cycle-20261118`.
-   Dealerfilmen och hålkortets vändning återstår före kortförvalet. Linsförvalet kräver hans ja.
+1. C1 ligger kvar genom P4.C2 i Prov `paow-c1-c2-scene-20261118`; P1/P7:s mask har versionsjämförts ([bevis](../BRISTER.md#kortet)).
+   Vändningen har kvar blå kant. Övriga andrakort/split kan hamna fel utan egen film. Hålkortets vändning och Jakobs linsval återstår.
 2. När hans sparade plan checkas in, skriv om `data/media-fit.json` med `node tools/media-audit.ts --fit --write`.
    Gör samma mätning när planens regel, linsen eller ett ankare ändras.
 3. Kortets sidor i efterarbetet, efter filmerna: gul rygg (SG får stå kvar) och blå framsida, lika i labbet och spelet.
