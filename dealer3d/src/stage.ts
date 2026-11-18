@@ -13,7 +13,7 @@ import type {Figure} from './figure-model.ts';
 export type Look = 'room' | 'plain';
 type Limb = {s: number[]; e: number[]; w: number[]; k: number; p: number[][]};
 /** A deal read off a film and laid into the room by dealer3d/tools/lift.ts (dealer3d/data/*.json). */
-export type Read = {film: string; fps: number; frameCount: number; leavesShoe: number; edge: number[]; folds: number; rests: number; hip: number[]; frames: {card: {c: number[]; l: number[]; n: number[]}; L: Limb; R: Limb; h: number[]}[]};
+export type Read = {film: string; fps: number; frameCount: number; leavesShoe: number; edge: number[]; folds: number; rests: number; hip: number[]; frames: {card: {c: number[]; l: number[]; n: number[]}; L: Limb; R: Limb; h: number[]; g?: number[]}[]}; // g: where she looks in that frame, if the film says (dealer3d/tools/pose-film.ts); without it her eyes follow the card
 export type View = 'film' | number; // the bank's camera, or a seat 1-7 (seat 4 is the bank's camera)
 const COLOUR = {
   room: {ground: 0x101214, felt: 0x1f7045, rail: 0x3a2417, wood: 0x2a1a10, figure: 0xe6e1d8, shoe: 0x1b1c1f, mark: 0xd8c27a, fog: 0x101214},
@@ -144,7 +144,9 @@ export function createStage(canvas: HTMLCanvasElement, plan: Plan, options: {loo
     // Her eyes are on the card from the shoe until it lies, all through the turn (Jakob 2026-11-18: "Hon ska följa korten
     // oftast, och alltid när det vänds över"); when it lies she looks up toward the players, over two thirds of a second.
     const lies = read ? moments.lands : MOMENTS.lands, up = Math.max(0, Math.min(1, (now - lies) / 0.65)), eased = up * up * (3 - 2 * up);
-    head.position.copy(v3(body.head)); const gaze = v3(c.centre).lerp(new T.Vector3(body.head[0], body.head[1] - 0.25, body.head[2] + 1.2), 0.75 * eased); head.lookAt(gaze);
+    head.position.copy(v3(body.head)); let gaze = v3(c.centre).lerp(new T.Vector3(body.head[0], body.head[1] - 0.25, body.head[2] + 1.2), 0.75 * eased);
+    if (read?.frames[0].g) { const at = Math.min(read.frameCount - 1, now * read.fps), i = Math.min(read.frameCount - 2, Math.floor(at)); gaze = v3(mix(read.frames[i].g!, read.frames[i + 1].g!, at - i)); } // a film that says where she looks
+    head.lookAt(gaze);
     if (figure) {
       // Each hand as a whole, since the model has no fingers to move: from the wrist toward the middle of the middle finger
       // (half way between its knuckle and its tip, so that a stiff hand points between the palm and the bent fingers), the

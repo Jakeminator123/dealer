@@ -17,13 +17,22 @@ ryms här står i avsnitten nedan, i commitmeddelandena eller i proven.
 - Jakob 2026-11-18: ja till blicken och den friare högerhanden; NEJ till att bygga vidare på Meshy-modellen ("vita
   dockan räcker"; koden ligger kvar, lägg inget arbete där); ja till ett betalt prov från stol 1.
 - Kortets vändning är sedan kl. 01.10 EN vridning kring en axel (Jakob såg en "konstig halvrotation" i de äldre
-  filmerna). Förlagan med den heter "-4" och är inte prövad i Kling.
+  filmerna). Förlagorna "-2" och "-3" har den äldre vändningen; "-4" är den som gäller från nu. Två betalda prov på
+  den beställdes kl. 01.30 av huvudagenten: C5 (plats 4, bankens kamera; Prov `giv-forlagefilm-2`, c5-*) och stol 1
+  (Prov `dealer-fran-stol-1`). Utfallet var inte läst när det här skrevs.
 
 **Nästa steg, i ordning.**
-1. Stol 1: huvudagenten beställer två bilder och en tagning med underlaget i provet `dealer-3d-vinkel-stol-1` (film 5,
-   bild 6–9). Läs utfallet mot dockans film innan något mer görs för andra stolar.
-2. En tagning med "-4" mot samma bilder som C3/C4, för att veta om den nya vändningen håller.
-3. Släpet (ankare 2.2) ur `pamela-p4-c1-drawn-deal-01`: påbörjat, se "Släpet" under Kvar.
+1. Läs utfallet av stol 1 (`D:/dealer-scratch/tmp/stol-1/RAPPORT.md`) mot dockans film innan något mer görs för andra
+   stolar: höll hennes utseende från sidan, och följde filmen dockans rörelse?
+2. Läs C5 (`D:/dealer-scratch/tmp/giv-experiment-2/c5/RAPPORT.md`): blev vändningen renare med "-4", och bärs det gula
+   kortet fortfarande längre än dockans (C3 16 %, C4 22 %)? Om "-4" är sämre än "-2": de äldre givarna finns i
+   commit cb403bc.
+3. Ankare 2.3 (Jakobs beställning hos MODEL, som är stängd): dockfilmen finns (`tools/pose-film.ts --pose 2.3`,
+   `data/till-ankare-2-3.json`, prov `dealer-3d-till-ankare-2-3`; filen och en LASMIG.txt med alla tal i
+   `D:/dealer-scratch/tmp/dealer-3d/ut/ankare-2-3/`). Vad som görs med den står i
+   `D:/dealer-scratch/tmp/yt-referens/LASMIG-OVERLAMNING-2026-11-18.md`, avsnitt 2. Öppet: tummen pekar ned mot filten,
+   inte upp (min läsning av närbilden), och filmen har inget test än.
+4. Släpet (ankare 2.2) ur `pamela-p4-c1-drawn-deal-01`: påbörjat, se "Släpet" under Kvar.
 
 **Väntar på Jakob.** Inget utanför Beslut.
 
