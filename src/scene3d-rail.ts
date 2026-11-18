@@ -10,7 +10,7 @@
 // (A line of light along the felt edge stood here until 2026-11-11; Jakob turned it down as not natural light. Light on the
 // table comes from the room: the table's surface 'photo' and roomLight.)
 import * as T from 'three';
-import {RAIL, TABLE, railPoint, roomReflection, sized, type RailLink} from './scene3d-table.ts';
+import {RAIL, TABLE, railPoint, roomReflection, sized, type RailLink, type TableSize} from './scene3d-table.ts';
 
 /**
  * Where cup holders sit along the rail: the angle on the players' arc (0 at the +x end, π at the -x end) of one between
@@ -26,7 +26,7 @@ export function cupAngles(seats: {x: number; s: number}[]): number[] {
   return out.filter(t => t > 0.12 && t < Math.PI - 0.12);
 }
 /** The middle of the leather roll's top at arc angle t: [x, y, z] in the table's own metres (z from the dealer-side edge toward the players), for a table of `size` (sized). */
-export function railTop(t: number, size = 1): number[] {
+export function railTop(t: number, size: TableSize = 1): number[] {
   const {a, b} = sized(size), l = Math.hypot(b * Math.cos(t), a * Math.sin(t));
   return [a * Math.cos(t) + RAIL.centre * b * Math.cos(t) / l, RAIL.top, b * Math.sin(t) + RAIL.centre * a * Math.sin(t) / l];
 }
@@ -71,7 +71,7 @@ const wobble = (q: number) => 0.6 * Math.sin(3 * q + 1.1) + 0.4 * Math.sin(5 * q
  * corner and bottom; shade = how much of the room it sees through the opening), the rim, the leather drawn down round the rim
  * (the roll's texture coordinates; shade = the dark line where it meets the rim) and the cover over all of it at the roll's surface.
  */
-export function cupParts(angles: number[], size = 1) {
+export function cupParts(angles: number[], size: TableSize = 1) {
   const well = part(), lip = part(), collar = part(), cover = part(), {radius: R, depth, corner, lip: L, bend, sink} = CUP, rim = R + L.width, {a, b} = sized(size);
   for (const t of angles) {
     const [cx, , cz] = railTop(t, size), l = Math.hypot(b * Math.cos(t), a * Math.sin(t)), m = Math.hypot(a * Math.sin(t), b * Math.cos(t));
@@ -162,7 +162,7 @@ export function createRailExtras(lit: <M extends T.Material>(material: M) => M =
   const cups = new T.Group(); group.add(cups); cups.visible = false;
   // The table followed (its room lights the gold), and what the cups are to be built from: made when they are first shown after a
   // build, so a scene with the cups off does not build them.
-  let followed: RailLink | null = null, wanted: {seats: {x: number; s: number}[]; size: number; table: RailLink | null} | null = null;
+  let followed: RailLink | null = null, wanted: {seats: {x: number; s: number}[]; size: TableSize; table: RailLink | null} | null = null;
   function make({seats, size, table}: NonNullable<typeof wanted>) {
     for (const child of [...cups.children]) { cups.remove(child); (child as T.Mesh).geometry.dispose(); }
     const parts = cupParts(cupAngles(seats), size);
@@ -177,7 +177,7 @@ export function createRailExtras(lit: <M extends T.Material>(material: M) => M =
   return {
     group,
     /** Built with the table: the same place, scale and size, and the seats' bet rings for where the cups go. */
-    build(edgeZ: number, scale: number, seats: {x: number; s: number}[], size = 1) {
+    build(edgeZ: number, scale: number, seats: {x: number; s: number}[], size: TableSize = 1) {
       group.position.set(0, 0, edgeZ); group.scale.setScalar(scale);
       // the table built just before, beside this group: its leather for the collar, and its room for the gold
       const table = (group.parent?.children.find(o => o !== group && o.userData.rail)?.userData.rail ?? null) as RailLink | null;

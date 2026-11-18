@@ -79,7 +79,7 @@ export function createCardOverlay(canvas: HTMLCanvasElement) {
   // table there (a hand or sleeve passing, or the film's own card), the hand matte of that spot keeps the film's hand in front.
   const lying = new Map<string, {image: HTMLCanvasElement; x: number; y: number}>(), peek = document.createElement('canvas'), pctx = peek.getContext('2d', {willReadFrequently: true})!;
   function lay(video: HTMLVideoElement, card: {quad: {x: number; y: number}[]; back: boolean}, options: OverlayOptions, width: number, height: number, own: {x: number; y: number}[] | null) {
-    const face = cardFace(cardRecord(options.cards, card), card.back, options.card), key = JSON.stringify([card.quad.map(p => [Math.round(p.x * 4), Math.round(p.y * 4)]), face.back, face.art, options.gloss]);
+    const face = cardFace(cardRecord(options.cards, card), card.back, options.card, Array.isArray(options.cards)), key = JSON.stringify([card.quad.map(p => [Math.round(p.x * 4), Math.round(p.y * 4)]), face.back, face.art, options.gloss]);
     let hit = lying.get(key);
     if (!hit) {
       const xs = card.quad.map(p => p.x), ys = card.quad.map(p => p.y), x = Math.max(0, Math.floor(Math.min(...xs)) - 3), y = Math.max(0, Math.floor(Math.min(...ys)) - 3);
@@ -151,7 +151,7 @@ export function createCardOverlay(canvas: HTMLCanvasElement) {
     for (const card of placed) lay(video, card, options, width, height, own);
     layer.width = bw; layer.height = bh;
     if (pose.quad) {
-      const side = options.side === 'TRACK' ? pose.side : options.side, face = cardFace(cardRecord(options.cards, options), side === 'BACK', options.card), card = render(pose.quad, face.back, pose.resting, {...options, card: face.art}, width, height);
+      const side = options.side === 'TRACK' ? pose.side : options.side, face = cardFace(cardRecord(options.cards, options), side === 'BACK', options.card, Array.isArray(options.cards)), card = render(pose.quad, face.back, pose.resting, {...options, card: face.art}, width, height);
       if (card) lctx.drawImage(card, box.x, box.y, box.width, box.height, 0, 0, box.width, box.height);
     } else if (pose.edge) { // edge-on: the paper edge, a thin light line with a soft dark side
       const [a, b] = pose.edge; lctx.lineCap = 'round';

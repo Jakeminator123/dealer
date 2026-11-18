@@ -8,7 +8,7 @@
 // The cup holders set into the roll are src/scene3d-rail.ts; they are built on the roll as it is drawn here (railPoint) and take the
 // roll's leather and the room's light from the table's group (userData.rail).
 import * as T from 'three';
-import {BET, spotToScene, tableToFilm, type FilmCamera, type Spot} from './scene3d-geometry.ts';
+import {BET, ringOffset, spotToScene, tableToFilm, type FilmCamera, type Spot} from './scene3d-geometry.ts';
 
 export const FELTS: Record<string, [string, string]> = {green: ['#134232', '#0a2a20'], blue: ['#16325e', '#0b1c38'], vin: ['#571a26', '#330d15'], svart: ['#23272a', '#101214']};
 export const TABLE = {a: 0.95, b: 0.6, rail: 0.1}; // half width, depth toward the players, rail width
@@ -24,7 +24,23 @@ export const SHELF = {deep: 0.4, inner: 0.27, thick: 0.035};
 // deals: a larger table has more plain felt round it. Below 1 the outer bet rings reach the rail; above 1.4 the felt image ends.
 export const TABLE_SIZE = {min: 0.9, max: 1.4};
 /** The felt's half width and depth at a size (held within TABLE_SIZE; anything that is no number is 1). */
-export function sized(size = 1): {a: number; b: number} { const k = Number.isFinite(size) ? Math.min(TABLE_SIZE.max, Math.max(TABLE_SIZE.min, size)) : 1; return {a: TABLE.a * k, b: TABLE.b * k}; }
+// A size is one number for the whole oval, or the oval's width and depth each by itself: under the table's lens (src/table-lens.ts)
+// the world is in real metres, and the table is as wide as TABLE and as deep as a real blackjack table (REAL_TABLE, tableUnder).
+export type TableSize = number | {wide: number; deep: number};
+export function sized(size: TableSize = 1): {a: number; b: number} {
+  const within = (v: number) => Number.isFinite(v) ? Math.min(TABLE_SIZE.max, Math.max(TABLE_SIZE.min, v)) : 1;
+  return typeof size === 'number' ? {a: TABLE.a * within(size), b: TABLE.b * within(size)} : {a: TABLE.a * within(size.wide), b: TABLE.b * within(size.wide) * (size.deep > 0 ? size.deep : 1)};
+}
+/**
+ * How deep the table is in real metres. TABLE's 0.6 m is half a real table: it was drawn for the contract's camera, which in the
+ * dealer's own metres stands 0.25 m over the felt and 0.76 m from her edge, just past that table's rail, so the felt fills the
+ * picture. The lens stands where the films were taken from, 1.11 m up and 1.84 m away, and sees past a table 0.6 m deep to its rail
+ * and the floor. No film shows the players' edge, so nothing measures the depth: it is set to a real table's, 1.15 m from the
+ * dealer's edge to the players', which is also what keeps the felt under the whole of the game's picture.
+ */
+export const REAL_TABLE = {depth: 1.15};
+/** The table's size under a film camera: under the lens as wide as asked and a real table's depth, else the size as it is. */
+export const tableUnder = (camera: {source: string}, size: number): TableSize => camera.source === 'lens' ? {wide: size, deep: REAL_TABLE.depth / TABLE.b} : size;
 // What the table stands on. column: the first base, one thick leg on a brass foot; it was never meant to be seen, and from a
 // camera that has backed away it is ugly (Jakob, 2026-11-11). legs: two tapered legs of photographed wood on brass plinths with
 // a stretcher between them, a brass foot rail on the players' side, a board that closes the underside, and the table's shadow
@@ -229,6 +245,9 @@ export const BASE ={floor: -0.95, under: -0.15, legX: 0.58, legZ: 0.25, rail: -0
 const PRINT = {width: 2.8, depth: 1.4, back: 0.1, pxW: 4096, pxH: 2048}; // the felt image covers width x depth metres and starts `back` behind the dealer edge
 export const FELT_PX_PER_M = PRINT.pxW / PRINT.width; // what a cloth tile is stored at, to be drawn into the felt image as it is
 const GOLD = '#d8b665';
+// The print under the lens, real metres: a card's length, how far the logo's middle lies past the near edge of the dealer's cards,
+// the logo's and the text's letter heights, and how far past the arc the text's middle lies.
+const REAL_PRINT = {card: 0.088, logoClear: 0.022, logo: 0.03, text: 0.02, textClear: 0.022};
 
 // ---- the rail's cross-sections, dealer metres: [out from the felt edge, height above the felt] ------------------------------------
 // `shade(v)` is how open a point of the section is (1) or how deep in a crease (toward 0), with v the fraction of the way round it.
@@ -272,7 +291,7 @@ const APRON = section([[0.0985, -0.006], [0.0993, -0.018], [0.1, -0.03], [0.1, -
 // section shrinks toward `core` while it moves `length` on. u runs along the arc in tiles of `tile` metres (the length along that line
 // of the section, so the grain does not stretch round the ends); v runs once round the section, 0 to 1, so textures can follow it.
 type Cap = {length: number; core: number[]; steps: number};
-export function sweep(sec: Section, rings: number, tile: number, cap: Cap | null, size = 1) {
+export function sweep(sec: Section, rings: number, tile: number, cap: Cap | null, size: TableSize = 1) {
   const {a, b} = sized(size), M = sec.points.length, K = cap ? cap.steps : 0, position: number[] = [], uv: number[] = [], index: number[] = [];
   const list: {t: number; push: number; shrink: number}[] = [];
   for (let k = K; k >= 1; k--) list.push({t: 0, push: cap!.length * Math.sin(k / K * Math.PI / 2), shrink: Math.cos(k / K * Math.PI / 2)});
@@ -305,7 +324,7 @@ export function sweep(sec: Section, rings: number, tile: number, cap: Cap | null
 // leather's texture.
 const ROLL_RINGS = 128;
 /** The leather roll round the players' arc with its rounded ends past the dealer's edge, as build() draws it for a table of `size`. */
-export const rollGeometry = (size = 1) => sweep(ROLL, ROLL_RINGS, ROLL.length, {length: 0.036, core: CORE, steps: 9}, size);
+export const rollGeometry = (size: TableSize = 1) => sweep(ROLL, ROLL_RINGS, ROLL.length, {length: 0.036, core: CORE, steps: 9}, size);
 // The top half of the roll's section, out from the felt edge, with each point's normal as the mesh has it: computeVertexNormals adds
 // the faces' normals, each as long as its face is large, so a point's normal is the sum of its two segments' normals, each as long
 // as its segment. [out, up].
@@ -315,13 +334,13 @@ const ROLL_TOP = ROLL.points.flatMap((p, j, points) => {
   const l = Math.hypot(x, y) || 1; return [{o: p[0], y: p[1], v: ROLL.v[j], n: [x / l, y / l]}];
 });
 // The arc's length at each of the roll's rings for a table's size, summed as sweep sums it.
-const RING_ALONG = new Map<number, Float64Array>();
-function ringAlong(size: number): Float64Array {
-  const {a, b} = sized(size); let along = RING_ALONG.get(a); if (along) return along; along = new Float64Array(ROLL_RINGS + 1);
+const RING_ALONG = new Map<string, Float64Array>();
+function ringAlong(size: TableSize): Float64Array {
+  const {a, b} = sized(size), key = `${a}:${b}`; let along = RING_ALONG.get(key); if (along) return along; along = new Float64Array(ROLL_RINGS + 1);
   for (let i = 1; i <= ROLL_RINGS; i++) { const t0 = Math.PI * (i - 1) / ROLL_RINGS, t1 = Math.PI * i / ROLL_RINGS; let s = along[i - 1];
     for (let k = 0; k < 8; k++) { const p = t0 + (t1 - t0) * k / 8, q = t0 + (t1 - t0) * (k + 1) / 8; s += Math.hypot(a * (Math.cos(q) - Math.cos(p)), b * (Math.sin(q) - Math.sin(p))); }
     along[i] = s; }
-  RING_ALONG.set(a, along); return along;
+  RING_ALONG.set(key, along); return along;
 }
 /**
  * Where a point of the table's plan (x across, z toward the players, table metres as the table's group has them) lies on the rail's
@@ -330,7 +349,7 @@ function ringAlong(size: number): Float64Array {
  * coordinates (u, v, as sweep gives them) and its normal [x, y, z]. For points over the top half of the roll (o from about 0.01 to
  * 0.1); beyond it the top's last segment goes on.
  */
-export function railPoint(x: number, z: number, size = 1, near = Math.PI / 2) {
+export function railPoint(x: number, z: number, size: TableSize = 1, near = Math.PI / 2) {
   const {a, b} = sized(size); let t = near;
   for (let i = 0; i < 8; i++) { const c = Math.cos(t), s = Math.sin(t), dx = x - a * c, dz = z - b * s; t -= (dz * b * c - dx * a * s) / (-(a * a * s * s + b * b * c * c) - dx * a * c - dz * b * s); }
   const normalAt = (q: number) => { const l = Math.hypot(b * Math.cos(q), a * Math.sin(q)); return [b * Math.cos(q) / l, a * Math.sin(q) / l]; };
@@ -450,7 +469,7 @@ export function roomReflection() {
 
 // camera: the film camera in use, through which V6's cloth is laid flat; marks: the kinds of print drawn (feltMarks; absent = all).
 // size: the table's size (sized); the rail's shadow on the felt follows the felt's edge.
-export type FeltPrint = {spots: Spot[]; logo: string; felt: string; scale: number; marks?: string; cloth?: TableCloth; camera?: FilmCamera; size?: number};
+export type FeltPrint = {spots: Spot[]; logo: string; felt: string; scale: number; marks?: string; cloth?: TableCloth; camera?: FilmCamera; size?: TableSize};
 // What the table offers what is set into its rail (createTable's group.userData.rail).
 export type RailLink = {leather: T.Material; follow(material: T.MeshStandardMaterial, own: number): void};
 export function createTable(lit: <M extends T.Material>(material: M) => M = m => m) {
@@ -576,19 +595,24 @@ export function createTable(lit: <M extends T.Material>(material: M) => M = m =>
       g.beginPath(); g.ellipse(X(0), Y(0), (edge.a + width) * k, (edge.b + width) * k, 0, 0, 2 * Math.PI); g.stroke(); }
     g.restore();
     const seats = print.spots.filter(p => /^P\d\.C1$/.test(p.id)), row = seats.length ? seats.reduce((t, p) => t + p.s, 0) / seats.length : 0.35, span = Math.max(0.3, ...seats.map(p => Math.abs(p.x))) * 1.5;
-    if (on.has('arc')) { g.strokeStyle = GOLD; g.lineWidth = 3; g.globalAlpha = 0.5; g.beginPath(); g.ellipse(X(0), Y(0), span * k * 1.015, row * 0.83 * k, 0, 0.1 * Math.PI, 0.9 * Math.PI); g.stroke(); g.globalAlpha = 1; }
+    // Under the lens the cards are real cards, 88 mm long where the contract's are 35 mm in the dealer's metres, and the dealer's own
+    // lie nearer her edge: the print is laid in the order her cards, the logo, the arc, the text, the seats' cards, each clear of the
+    // next (REAL_PRINT), where the contract's print has the logo and the text above the arc.
+    const real = print.camera?.source === 'lens', dealers = print.spots.filter(p => p.id[0] === 'D'), arcAt = row * 0.83;
+    const logoAt = real && dealers.length ? Math.max(...dealers.map(p => p.s)) + REAL_PRINT.card / 2 + REAL_PRINT.logoClear : row * 0.44;
+    if (on.has('arc')) { g.strokeStyle = GOLD; g.lineWidth = 3; g.globalAlpha = 0.5; g.beginPath(); g.ellipse(X(0), Y(0), span * k * 1.015, arcAt * k, 0, 0.1 * Math.PI, 0.9 * Math.PI); g.stroke(); g.globalAlpha = 1; }
     // text along an arc that opens toward the dealer, upright for the players
-    if (on.has('text')) { const text = 'BLACKJACK PAYS 3 TO 2', size = Math.round(0.024 * k), rx = span * 0.95, ry = row * 0.7;
+    if (on.has('text')) { const text = 'BLACKJACK PAYS 3 TO 2', size = Math.round((real ? REAL_PRINT.text : 0.024) * k), rx = span * 0.95, ry = real ? arcAt + REAL_PRINT.textClear : row * 0.7;
       g.save(); g.font = `600 ${size}px Georgia, 'Times New Roman', serif`; g.fillStyle = GOLD; g.globalAlpha = 0.8; g.textAlign = 'center'; g.textBaseline = 'middle';
       const widths = [...text].map(ch => g.measureText(ch).width + size * 0.12); let run = -widths.reduce((a, b) => a + b, 0) / 2;
       for (let i = 0; i < text.length; i++) { const phi = (run + widths[i] / 2) / ((rx + ry) / 2 * k); run += widths[i]; g.save(); g.translate(X(rx * Math.sin(phi)), Y(ry * Math.cos(phi))); g.rotate(-phi); g.fillText(text[i], 0, 0); g.restore(); }
       g.restore(); }
-    if (on.has('logo')) { const logo = print.logo.toUpperCase(), logoY = Y(row * 0.44);
-      g.save(); g.fillStyle = GOLD; g.globalAlpha = 0.9; g.textAlign = 'center'; g.textBaseline = 'middle'; g.font = `700 ${Math.round(0.034 * k)}px Georgia, 'Times New Roman', serif`; g.fillText(logo, X(0), logoY);
+    if (on.has('logo')) { const logo = print.logo.toUpperCase(), logoY = Y(logoAt);
+      g.save(); g.fillStyle = GOLD; g.globalAlpha = 0.9; g.textAlign = 'center'; g.textBaseline = 'middle'; g.font = `700 ${Math.round((real ? REAL_PRINT.logo : 0.034) * k)}px Georgia, 'Times New Roman', serif`; g.fillText(logo, X(0), logoY);
       const half = g.measureText(logo).width / 2; g.lineWidth = 2; g.strokeStyle = GOLD; g.globalAlpha = 0.6; for (const d of [-1, 1]) { g.beginPath(); g.moveTo(X(0) + d * (half + 24), logoY); g.lineTo(X(0) + d * (half + 110), logoY); g.stroke(); }
       g.restore(); }
     // card places from the placement plan, at the plan's own card width; a bet circle in front of each seat's first card, with the seat's number
-    const cardW = 0.063 / print.scale * k, cardH = 0.07 / print.scale * k, betOffset = BET.offset * k, betRadius = BET.radius * k;
+    const cardW = 0.063 / print.scale * k, cardH = (real ? REAL_PRINT.card : 0.07) / print.scale * k, betOffset = (print.camera ? ringOffset(print.camera) : BET.offset) * k, betRadius = BET.radius * k;
     for (const p of print.spots) { const first = p.id.endsWith('C1'); g.save(); g.translate(X(p.x), Y(p.s)); g.strokeStyle = GOLD; g.globalAlpha = first ? 0.6 : 0.25; g.lineWidth = 3;
       if (on.has('boxes')) { g.beginPath(); g.roundRect(-cardW / 2, -cardH / 2, cardW, cardH, 8); g.stroke(); }
       if (first && p.id[0] === 'P') { g.globalAlpha = 0.5; if (on.has('rings')) { g.beginPath(); g.arc(0, betOffset, betRadius, 0, 7); g.stroke(); }
@@ -601,7 +625,7 @@ export function createTable(lit: <M extends T.Material>(material: M) => M = m =>
   // s1 = how far it reaches toward the players; dealer metres). A notch, not a hole: a hole this close to the edge is
   // triangulated shut by ShapeGeometry.
   // `size`: the table's size (sized): the felt, the rail round it and the base under it; 1 is TABLE as it stands.
-  function build(edgeZ: number, scale: number, notch?: {x0: number; x1: number; s1: number}, base: TableBase = 'column', surface: TableSurface = 'painted', size = 1) {
+  function build(edgeZ: number, scale: number, notch?: {x0: number; x1: number; s1: number}, base: TableBase = 'column', surface: TableSurface = 'painted', size: TableSize = 1) {
     for (const child of [...group.children]) { group.remove(child); (child as T.Mesh).geometry?.dispose(); }
     group.position.set(0, 0, edgeZ); group.scale.setScalar(scale); setLamp(lampStrength);
     const N = 96, {a, b} = sized(size), grown = a / TABLE.a, {rail} = TABLE, uvOf = (x: number, s: number) => [(x + PRINT.width / 2) / PRINT.width, 1 - (s + PRINT.back) / PRINT.depth];

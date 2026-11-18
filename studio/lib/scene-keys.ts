@@ -135,7 +135,7 @@ export const SCENE_KEYS: readonly KeySpec[] = [
   spec("cards", "kort", "D", "Renderade kort", toggle, "Spelkort ritas i stället för filmens färgade kort; spelet har dem på."),
   spec("cardMethod", "kort", "U", "Ritsätt", choice(["scene", "I scenen"], ["film", "I filmrutan"], ["matte", "Filmens matt"]), "I scenen: ett föremål under filmen. I filmrutan: det äldre sättet. Filmens matt (prov): filmens eget kort färgas om."),
   spec("cardHand", "kort", "U", "Kortet i handen", choice(["film", "Filmens storlek"], ["standard", "Standard"]), "Standard: kortet har vilans storlek hela vägen."),
-  spec("cardScale", "kort", "U", "Kortens storlek", slider(0.8, 2, 0.05, "×"), "Alla ritade kort: 1 är kontraktets kort (63 × 88 mm på bordet), förval 1,2. Planens kort är i dag 1,10–1,16 av det."),
+  spec("cardScale", "kort", "U", "Kortens storlek", slider(0.8, 2, 0.05, "×"), "Alla ritade kort: 1 är kontraktets kort, förval 1,2. Med geometri=lins är 1,2 ett verkligt kort (63 × 88 mm)."),
   spec("cardRank", "kort", "U", "Valör", choice(...["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"].map((r): [string, string] => [r, r])), "Bara för provet: i spelet bestämmer Scout."),
   spec("cardSuit", "kort", "U", "Kortets färg", choice(["spades", "Spader"], ["hearts", "Hjärter"], ["diamonds", "Ruter"], ["clubs", "Klöver"]), "Bara för provet: i spelet bestämmer Scout."),
   spec("chipGloss", "kort", "U", "Markernas glans", slider(0, 1, 0.01), "Markernas glans; 0,50 är deras utseende förut. Syns när insatser ligger."),
@@ -155,7 +155,7 @@ export const SCENE_KEYS: readonly KeySpec[] = [
   spec("format", "kamera", "D", "Format", choice(["desk", "Dator"], ["mob", "Mobil"], ["fill", "Fyll"]), "Bildens form: filmens 1764 × 1174, mobil 9:16, eller hela ytan som spelet."),
   // ── Avancerat: kalibrering ──
   spec("panoramaTurn", "avancerat", "U", "Panoramats vridning", slider(0, 360, 1, "°"), "Hur 360°-bilden är vriden; 90 lägger bildens mitt bakom dealern."),
-  spec("lens", "avancerat", "U", "Filmkamera", choice(["plan", "Planens"], ["estimate", "Dealerns lins"]), "Planens kamera passar kortrutorna; dealerns lins är en skattning."),
+  spec("lens", "avancerat", "U", "Filmkamera", choice(["plan", "Planens"], ["estimate", "Dealerns lins"]), "Planens kamera passar kortrutorna; dealerns lins är en skattning. Med geometri=lins: bordets lins, verkliga meter."),
   spec("scale", "avancerat", "U", "Skala k", { kind: "slider", min: 1, max: 2.6, step: 0.05, unit: "×", special: { value: 0, label: "kontraktets" } }, "Hur mycket större dealerns värld är än planens kort; 0 är kontraktets egen."),
   spec("keyLo", "avancerat", "U", "Nyckel låg", slider(0, 0.5, 0.01), "Nyckelns nedre gräns mot filmens gröna."),
   spec("keyHi", "avancerat", "U", "Nyckel hög", slider(0.5, 1.2, 0.01), "Nyckelns övre gräns mot filmens gröna."),

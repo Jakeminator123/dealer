@@ -9,7 +9,7 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {DEFAULTS} from '../src/scene3d-view.ts';
 import {lookState, presetFrom} from '../src/game-look.ts';
-import {CASINO_TABLE, gameSrc, readCasino} from '../studio/lib/casino.ts';
+import {CASINO_TABLE, casinoSearch, gameSrc, readCasino} from '../studio/lib/casino.ts';
 import {BASE, SHIPPED} from '../studio/lib/scene-presets.ts';
 
 const page = readFileSync('src/game-page.ts', 'utf8');
@@ -51,6 +51,16 @@ test('the Casino opens on basgrund, its own table and the rail\'s dealer when it
   assert.equal(src.searchParams.get('table'), CASINO_TABLE);
   assert.deepEqual([...src.searchParams.keys()].sort(), ['forval', 'inbaddad', 'table'], 'no key of an experiment rides along by default');
   assert.match(readFileSync('studio/components/casino/CasinoView.tsx', 'utf8'), /const src = `\$\{gameSrc\(look\)\}&\$\{new URLSearchParams\(\{ \[DEALER_PARAM\]: dealer \}\)\}`;/, 'the rail\'s dealer is passed on');
+});
+
+test('the Casino carries the geometry word on to the game in the frame, and keeps it in its own address', () => {
+  const look = readCasino(new URLSearchParams('geometri=lins&table=prov'));
+  assert.equal(look.geometri, 'lins'); assert.deepEqual(look.ignored, [], 'the word is the page\'s own, not a look key that failed');
+  const src = new URL(gameSrc(look), 'http://lab');
+  assert.equal(src.searchParams.get('geometri'), 'lins'); assert.equal(src.searchParams.get('table'), 'prov');
+  assert.equal(new URLSearchParams(casinoSearch(look)).get('geometri'), 'lins');
+  const other = readCasino(new URLSearchParams('geometri=annat'));
+  assert.equal(other.geometri, undefined, 'only the words the game page knows'); assert.equal(new URL(gameSrc(other), 'http://lab').searchParams.has('geometri'), false);
 });
 
 test('Bordet\'s Scen starts from the same preset as the Casino when its address names no look', () => {

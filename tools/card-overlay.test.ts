@@ -241,6 +241,10 @@ test('a value per card: each card has its own record by draw number or target, a
   assert.equal(cardFace({shoeDraw: 5, target: 'D.C2', r: 'Q', s: 'hearts', faceDown: true}, false, chosen).back, true);
   // No record, or a value the study cannot print: the artwork chosen in the panel, and it says so.
   assert.deepEqual(cardFace(null, false, chosen), {art: chosen, back: false, own: false});
+  // in a game (a list of records was given) a card the list does not know shows its back, never the lab's chosen card
+  assert.deepEqual(cardFace(null, false, chosen, true), {art: chosen, back: true, own: false});
+  assert.equal(cardFace({shoeDraw: 9, target: 'P4.C1', r: 'Z', s: 'hearts'}, false, chosen, true).back, true, 'values that cannot be printed neither');
+  assert.deepEqual(cardFace(cardRecord(cards, {shoeDraw: 1}), false, chosen, true), {art: {rank: 'K', suit: 'hearts'}, back: false, own: true});
   for (const bad of [{r: '1', s: 'hearts'}, {r: 'T', s: 'hearts'}, {r: 'K', s: 'h'}, {r: 'K'}, {s: 'hearts'}]) assert.deepEqual(cardFace({shoeDraw: 1, target: 'P4.C1', ...bad}, false, chosen), {art: chosen, back: false, own: false});
   // Every value the study prints is accepted: 13 ranks and 4 suits.
   assert.deepEqual([...CARD_RANKS], ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K']); assert.deepEqual([...CARD_SUITS], ['spades', 'hearts', 'diamonds', 'clubs']);

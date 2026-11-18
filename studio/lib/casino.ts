@@ -6,13 +6,19 @@
 import type { SceneState } from "../../src/scene3d-view.ts";
 import { SCENE_KEYS, encodeValue } from "./scene-keys.ts";
 import { readAddress } from "./scene-presets.ts";
+import { GEOMETRY_WORD, GEOMETRY_WORDS } from "../../src/card-plan.ts";
 
 /** A table name as the lab server takes it (tools/preview.ts tableName): one game session per name. */
 export const TABLE_NAME = /^[a-z0-9-]{1,40}$/;
 /** The table when the address names none: the Casino's own, apart from the plain game's ("main"). */
 export const CASINO_TABLE = "casino";
 
-export type CasinoLook = { forval: string; patch: Partial<SceneState>; table: string; ignored: string[] };
+/**
+ * geometri: the page's own word for the table's geometry (src/card-plan.ts: geometri=lins or geometri=kontrakt), when the
+ * address has it. It is no look key: the Casino keeps it in its own address and carries it on to the game in the frame, so
+ * that the Casino shows the same geometry as game.html with the word.
+ */
+export type CasinoLook = { forval: string; patch: Partial<SceneState>; table: string; ignored: string[]; geometri?: string | null };
 type Params = { get(name: string): string | null; forEach(fn: (value: string, key: string) => void): void };
 
 /** The look and table an address asks for. Words that are no key, or values that do not fit, are left out and named. */
@@ -20,11 +26,11 @@ export function readCasino(params: Params, rooms?: readonly string[]): CasinoLoo
   const keys = new URLSearchParams();
   // "table" is the Casino's own word, and "robot" belongs to every lab page (src/preview-ui.ts); neither is a look key.
   params.forEach((value, key) => {
-    if (key !== "table" && key !== "robot") keys.append(key, value);
+    if (key !== "table" && key !== "robot" && key !== GEOMETRY_WORD) keys.append(key, value);
   });
   const { forval, patch, ignored } = readAddress(keys, rooms);
-  const asked = params.get("table") ?? "";
-  return { forval, patch, ignored, table: TABLE_NAME.test(asked) ? asked : CASINO_TABLE };
+  const asked = params.get("table") ?? "", geometri = params.get(GEOMETRY_WORD);
+  return { forval, patch, ignored, table: TABLE_NAME.test(asked) ? asked : CASINO_TABLE, ...(geometri !== null && Object.hasOwn(GEOMETRY_WORDS, geometri) ? { geometri } : {}) };
 }
 
 /** The keys as an address writes them, in the catalogue's order. */
@@ -32,11 +38,12 @@ function keyPairs(patch: Partial<SceneState>): [string, string][] {
   return SCENE_KEYS.filter((s) => patch[s.key] !== undefined).map((s) => [s.key, encodeValue(s, patch[s.key])]);
 }
 const join = (pairs: [string, string][]) => new URLSearchParams(pairs).toString();
+const geometryPair = (look: Pick<CasinoLook, "geometri">): [string, string][] => (look.geometri ? [[GEOMETRY_WORD, look.geometri]] : []);
 
 /** "?forval=levande&dust=0.8&table=casino": the view's own question; forval always, so the link says which preset. */
-export function casinoSearch(look: Pick<CasinoLook, "forval" | "patch"> & { table?: string | null }): string {
+export function casinoSearch(look: Pick<CasinoLook, "forval" | "patch" | "geometri"> & { table?: string | null }): string {
   const table: [string, string][] = look.table ? [["table", look.table]] : [];
-  return `?${join([["forval", look.forval], ...keyPairs(look.patch), ...table])}`;
+  return `?${join([["forval", look.forval], ...keyPairs(look.patch), ...table, ...geometryPair(look)])}`;
 }
 
 /**
@@ -49,8 +56,8 @@ export function casinoAddress(forval: string, keys: Partial<SceneState> = {}, ta
 }
 
 /** The game in the frame: the lab's own page, with the look, the frame's mark and the table. */
-export function gameSrc(look: Pick<CasinoLook, "forval" | "patch" | "table">): string {
-  return `/game.html?${join([["forval", look.forval], ["inbaddad", "1"], ...keyPairs(look.patch), ["table", look.table]])}`;
+export function gameSrc(look: Pick<CasinoLook, "forval" | "patch" | "table" | "geometri">): string {
+  return `/game.html?${join([["forval", look.forval], ["inbaddad", "1"], ...keyPairs(look.patch), ["table", look.table], ...geometryPair(look)])}`;
 }
 
 /** The same look in Bordet's Scen, to calibrate it further. */

@@ -92,7 +92,7 @@ test('game.html without a look reads no look module and sets what it set before'
   // dealer: whose films the game plays (?dealer=paow, which the Casino view passes on), no look; intro: a film before the game
   // (src/game-intro.ts), read only when the address names one; diagnos: the browser's own account on the picture
   // (src/game-diagnosis.ts), read only with the word
-  assert.match(page, /const OWN_WORDS = \['table', 'tema', 'bricka', 'chatt', 'robot', 'inbaddad', 'dealer', 'intro', 'diagnos'\]/);
+  assert.match(page, /const OWN_WORDS = \['table', 'tema', 'bricka', 'chatt', 'robot', 'inbaddad', 'dealer', 'intro', 'diagnos', 'geometri'\]/);
   assert.match(page, /if \(query\.get\('diagnos'\) === '1'\) void import\('\.\/game-diagnosis\.ts'\)/);
   assert.match(page, /if \(introAsked\) void import\('\.\/game-intro\.ts'\)/);
   // and the look is laid only when there is one

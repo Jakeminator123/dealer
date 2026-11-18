@@ -13,7 +13,7 @@
 import {DEALER, FIRST_DEALER, buildGraph, effectOf, type Graph} from './clip-graph.ts';
 import {createScene, DEFAULTS, type SceneState} from './scene3d-view.ts';
 import {readRegister} from './scene3d-room.ts';
-import {filmToScene, sceneToSpot, solveCamera, type FilmCamera} from './scene3d-geometry.ts';
+import {FILM, cameraFromContract, filmPixel, filmToScene, sceneToSpot, solveCamera, spotToScene, viewUnder, type FilmCamera} from './scene3d-geometry.ts';
 import {createLayout, slotOf} from './game-table.ts';
 import {cardRecords, judgedBank, speakMoments, talkOn} from './game-director.ts';
 import {cardsChoice, cardWords, createFilm, type FilmPlayers, type Said} from './game-film.ts';
@@ -59,7 +59,7 @@ const table = /^[a-z0-9-]{1,40}$/.test(query.get('table') ?? '') ? `?table=${que
 // so the page without them reads and does exactly what it did before. ?inbaddad=1 (the Casino view shows the game in a
 // frame) hides nothing: the frame shows none of what this page shows, and src/preview-ui.ts keeps a framed page from
 // taking the lab tab by itself.
-const OWN_WORDS = ['table', 'tema', 'bricka', 'chatt', 'robot', 'inbaddad', 'dealer', 'intro', 'diagnos'], forval = query.get('forval');
+const OWN_WORDS = ['table', 'tema', 'bricka', 'chatt', 'robot', 'inbaddad', 'dealer', 'intro', 'diagnos', 'geometri'], forval = query.get('forval');
 const lookAsked = [...query.keys()].some(word => !OWN_WORDS.includes(word) && !['kort', 'cardBack', 'cardFace'].includes(word)); // kort, cardBack, cardFace: how the card in her hand is shown (below), not a look
 
 const [contract, placements, bank, first, register, lookCode, presetAnswer] = await Promise.all([read('data/scene-contract.json', 'Scenkontraktet'), read('api/placements', 'Placeringsplanen'), read('api/clip-bank', 'Klippbanken'), read(`api/game${table}`, 'Spelet'), read('data/scene-rooms.json', 'Rumsregistret'),
@@ -388,14 +388,16 @@ const render = () => { const view = tableView(snapshot, page);
 
 // ── where things are in the picture ──
 // A film pixel on the felt as the scene's own table point (dealer metres: x across, s from the dealer's edge).
-const TOTAL_LEFT = 0.036; // dealer metres from the first card's centre to the total, a little more than a card's width
+// Under the table's lens a card is a real one, 63 mm wide where the contract's is 31.5 mm in the dealer's metres, so the same step is twice as long.
+// The dealer's total stands beside the far half of her card there (DEALER_TOTAL_FAR), between the tray and the logo, which under the lens lies just past her cards.
+const TOTAL_LEFT = 0.036, TOTAL_LEFT_REAL = 0.072, DEALER_TOTAL_FAR = 0.03; // dealer metres from the first card's centre to the total, a little more than a card's width
 const spotOf = (camera: FilmCamera, px: number, py: number) => { const p = filmToScene(camera, px, py); return sceneToSpot(camera, p[0], p[2]); };
 function anchors(): Anchors {
   const camera = scene.status().camera, out: Anchors = {bets: {}, hands: {}}, table = tableCards(snapshot);
   for (const spot of scene.spots().bets) { const at = scene.project(spot.x, spot.s); if (at.visible) out.bets[Number(spot.id.slice(1))] = {x: at.x, y: at.y, ring: spot.radius * 2 * at.pxPerM}; }
   // A hand's total stands just left of its first card: the cards fan out to the right, so it is never under them.
-  const pin = (key: string, shoeDraw: number | undefined) => {
-    const slot = shoeDraw === undefined ? null : slotOf(table, shoeDraw), centre = slot && layout.centre(slot), spot = centre && spotOf(camera, centre.x, centre.y), at = spot && scene.project(spot.x - TOTAL_LEFT, spot.s);
+  const lens = camera.source === 'lens', pin = (key: string, shoeDraw: number | undefined) => {
+    const slot = shoeDraw === undefined ? null : slotOf(table, shoeDraw), centre = slot && layout.centre(slot), spot = centre && spotOf(camera, centre.x, centre.y), at = spot && scene.project(spot.x - (lens ? TOTAL_LEFT_REAL : TOTAL_LEFT), spot.s - (lens && key === DEALER_KEY ? DEALER_TOTAL_FAR : 0));
     if (at?.visible) out.hands[key] = {x: at.x, y: at.y};
   };
   const counts = new Map<number, number>();
@@ -406,7 +408,14 @@ function anchors(): Anchors {
 // Standing: the view turns toward a seat (most of the way, so the dealer stays in the picture) and eases there.
 function aimAt(seat: number | null) {
   const spot = seat === null ? null : scene.spots().bets.find(b => b.id === `P${seat}`), camera = scene.status().camera;
-  aimed = !tall || !spot ? home.yaw : Math.max(-FRAMING.turnLimit, Math.min(FRAMING.turnLimit, Math.atan2(-spot.x * camera.scale, solveCamera(camera).edgeDistance - spot.s * camera.scale) * 180 / Math.PI * FRAMING.turnShare));
+  if (!tall || !spot) { aimed = home.yaw; return; }
+  let turn = Math.atan2(-spot.x * camera.scale, solveCamera(camera).edgeDistance - spot.s * camera.scale) * 180 / Math.PI * FRAMING.turnShare;
+  // Under the table's lens the view turns about the film camera's own upright (src/scene3d-view.ts updateView), so the angle to the
+  // seat is the one its ring has in the film, and the scene reads a yaw as written for the contract's camera (viewUnder), so the
+  // turn is given as that camera's: the film then moves as far sideways in the picture as it does today (373 px against 383 at seat 7).
+  if (camera.source === 'lens') { const at = filmPixel(camera, spotToScene(camera, spot.x, spot.s)), real = at ? Math.atan2(-(at.x - (FILM.width - 1) / 2), camera.focalPx) * 180 / Math.PI * FRAMING.turnShare : 0;
+    turn = viewUnder(cameraFromContract(contract), camera, {yaw: real, pitch: 0, dx: 0, dy: 0, dz: 0}).yaw; }
+  aimed = Math.max(-FRAMING.turnLimit, Math.min(FRAMING.turnLimit, turn));
 }
 // A sideways drag on the picture turns the view by hand (standing: to reach the outer seats; lying: to look around); a double click turns it back.
 // shot: the view while a whole-body film is on (the dealer leaving): the camera backs away as she rises (src/scene3d-exit.ts).

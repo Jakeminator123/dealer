@@ -184,10 +184,13 @@ export function cloudLevel(seconds: number, every: number, strength: number): nu
 
 // Bet rings: one per player seat, a little past the seat's first card toward the player. The felt prints them from
 // this and a game reads the same list, so print and game cannot drift apart. Dealer metres, seats in order.
-export const BET = {offset: 0.068, radius: 0.027};
+// `real`: the offset under the table's lens, where the card is a real one, 88 mm long (in the dealer's metres the contract's card is
+// 35 mm): half a card, the ring's radius and 12 mm of felt between them, so that the ring lies clear of the card as it does today.
+export const BET = {offset: 0.068, radius: 0.027, real: 0.083};
+export const ringOffset = (c: FilmCamera): number => c.source === 'lens' ? BET.real : BET.offset;
 export type BetSpot = {id: string; x: number; s: number; radius: number};
 export function betSpots(plan: Parameters<typeof cardSpots>[0], c: FilmCamera): BetSpot[] {
-  return cardSpots(plan, c).filter(p => /^P[0-9]+[.]C1$/.test(p.id)).map(p => ({id: p.id.split('.')[0], x: p.x, s: p.s + BET.offset, radius: BET.radius}))
+  return cardSpots(plan, c).filter(p => /^P[0-9]+[.]C1$/.test(p.id)).map(p => ({id: p.id.split('.')[0], x: p.x, s: p.s + ringOffset(c), radius: BET.radius}))
     .sort((a, b) => Number(a.id.slice(1)) - Number(b.id.slice(1)));
 }
 // A point in dealer metres (x across the table, s from the dealer-side edge toward the players, y above the felt) as a

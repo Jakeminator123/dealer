@@ -372,7 +372,7 @@ export function createDealLayer(o: Options) {
     const film = o.film.shared.map.value; if (!film) { o.film.setMatte(null); return; }
     // in the turn the turn's colours count over the whole of it, and the passes run there too (its edge lines may lie anywhere across the card)
     const own = track as unknown as MatteTrack, shoe = track?.shoeWindow?.box ?? SHOE_BOX, turn = at >= 0 ? turnZone(own, at) : null, near = at >= 0 && !turn ? paleZone(own, at) : null;
-    const box = windowOnly ? matteBox(null, at, shoe) : widened(matteBox(own, at, shoe), turn?.zone ?? null), face = cardFace(cardRecord(extra.cards, extra), false, art(choice));
+    const box = windowOnly ? matteBox(null, at, shoe) : widened(matteBox(own, at, shoe), turn?.zone ?? null), face = cardFace(cardRecord(extra.cards, extra), false, art(choice), Array.isArray(extra.cards));
     // the print is laid by this frame's quad when that is a card, else by the last frame's that is, for at most HOLD frames (as poseAt
     // keeps a pose): one wedge frame then shows the printed face, not the border colour (seat 1, paow-giv-2-1-p1-06-01 frame 81)
     const printed = (i: number) => { const q = i >= 0 ? printQuad(own, i, (track as {print?: Parameters<typeof printQuad>[2]} | null)?.print) : null; return q && plausible(q.map(([x, y]) => ({x, y})), 2.5 * PLAUSIBLE.size) ? q : null; };
@@ -426,7 +426,7 @@ export function createDealLayer(o: Options) {
     composite.visible = false;
     if (now && pose && f) {
       const edge = !!now.line, side = pose.side === 'BACK' || pose.side === 'FRONT' ? pose.side : sideNear(track!, pose.frame);
-      const face = cardFace(cardRecord(extra.cards, extra), side === 'BACK', art(choice)), material = extra.target ? targets[extra.target]?.material : undefined;
+      const face = cardFace(cardRecord(extra.cards, extra), side === 'BACK', art(choice), Array.isArray(extra.cards)), material = extra.target ? targets[extra.target]?.material : undefined;
       // in the shoe the card lies in the stack, flat; it bends once it is drawn out, and lies flat again once it rests
       // a track that has measured when the card is in the hand (held) says so itself; else the frames before its rest stand for it
       const inHand = typeof f.held === 'number' ? Math.max(0, Math.min(1, f.held)) : 1 - pose.resting, measured = typeof f.held === 'number';
@@ -503,7 +503,7 @@ export function createDealLayer(o: Options) {
       // card plan's rule (geometry 'lens') the plan's quad is the card at 1.
       const placed = extra.placed ?? [];
       placed.forEach((p, i) => {
-        const c = lying[i] ?? (lying[i] = card()), face = cardFace(cardRecord(extra.cards, p), p.back, art(choice)), quad = scene && p.quad.length === 4 ? restingQuad(scene, p.quad, choice.scale).quad : p.quad;
+        const c = lying[i] ?? (lying[i] = card()), face = cardFace(cardRecord(extra.cards, p), p.back, art(choice), Array.isArray(extra.cards)), quad = scene && p.quad.length === 4 ? restingQuad(scene, p.quad, choice.scale).quad : p.quad;
         lay(c, pts(quad), {print: face.back ? print() : print(face.art), contact: 1, gloss: p.target ? targets[p.target]?.material?.gloss : undefined});
       });
       for (let i = placed.length; i < lying.length; i++) hide(lying[i]);

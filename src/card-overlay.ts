@@ -464,10 +464,12 @@ export function cardRecord(cards: CardRecord[] | null | undefined, which: {shoeD
  * the face is the record's rank and suit; a card without a record, or with values the study cannot print, keeps the artwork
  * given as fallback (`own` is then false).
  */
-export function cardFace(record: CardRecord | null, back: boolean, fallback: CardArt): {art: CardArt; back: boolean; own: boolean} {
+export function cardFace(record: CardRecord | null, back: boolean, fallback: CardArt, dealt = false): {art: CardArt; back: boolean; own: boolean} {
   const rank = String(record?.r ?? '').trim().toUpperCase(), suit = String(record?.s ?? '').trim().toLowerCase();
   const known = (CARD_RANKS as readonly string[]).includes(rank) && (CARD_SUITS as readonly string[]).includes(suit);
-  return {art: known ? {rank, suit} as CardArt : fallback, back: record?.faceDown === true || back, own: known};
+  // `dealt`: the cards come from a game (a list of records was given). A card the list does not know then shows its back: the
+  // fallback is the lab's own chosen card, and a game never shows a card nobody dealt.
+  return {art: known ? {rank, suit} as CardArt : fallback, back: record?.faceDown === true || back || dealt && !known, own: known};
 }
 
 export type Override = {from: number; to: number; note: string};

@@ -6,7 +6,7 @@
 // her hands lie in it as hands on a table do, and nothing of it is drawn across her body. Sizes are dealer metres on the table as
 // src/scene3d-table.ts has them (x across, z from the dealer's edge toward the players).
 import * as T from 'three';
-import {TABLE, sized} from './scene3d-table.ts';
+import {TABLE, sized, type TableSize} from './scene3d-table.ts';
 
 // heights of the sheets over the felt and each one's share; reach: how far past the felt's edge the smoke goes, in table halves
 // (1 = the felt's edge); thin: its share in the middle of the table; drift: metres a second the pattern slides; strength: its
@@ -43,7 +43,7 @@ export function createSmoke() {
   return {
     group,
     /** Placed with the table: the same edge, scale and size. The sheets are made when they are first wanted. */
-    build(edgeZ: number, scale: number, size = 1) {
+    build(edgeZ: number, scale: number, size: TableSize = 1) {
       group.position.set(0, 0, edgeZ); group.scale.setScalar(scale); const {a, b} = sized(size), key = `${a}:${b}`; if (key === built) return; built = key;
       for (const child of [...group.children]) { group.remove(child); (child as T.Mesh).geometry.dispose(); }
       const wide = a * SMOKE.reach, deep = (b * 0.5 + TABLE.rail) * SMOKE.reach + b * 0.5;

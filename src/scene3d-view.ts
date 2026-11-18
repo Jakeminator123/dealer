@@ -11,7 +11,7 @@ import {createFanLight} from './scene3d-light.ts';
 import {createChipTray, TRAY} from './scene3d-props.ts';
 import {createRooms, type Panorama, type RoomId} from './scene3d-room.ts';
 import {CHANGE_FRAGMENT, SHIMMER_GLSL, readyFrom, retake, roomChange, shiftProgress, shimmerLevel} from './scene3d-shift.ts';
-import {createTable, lightFromAbove, sized, type TableBase, type TableCloth, type TableSurface} from './scene3d-table.ts';
+import {createTable, lightFromAbove, sized, tableUnder, type TableBase, type TableCloth, type TableSurface} from './scene3d-table.ts';
 import {createRailExtras} from './scene3d-rail.ts';
 import {createSmoke} from './scene3d-smoke.ts';
 import {createMouthLayer} from './scene3d-mouth.ts';
@@ -122,6 +122,9 @@ void main(){
 export function createScene(canvas: HTMLCanvasElement, host: HTMLElement, data: SceneData) {
   const state: SceneState = {...DEFAULTS};
   const renderer = new T.WebGLRenderer({canvas, antialias: true, preserveDrawingBuffer: true}); renderer.autoClear = false;
+  // roomCam, roomSeen: the camera the room behind her is drawn through (updateView). It is the view itself, except under the table's lens.
+  const roomCam = new T.PerspectiveCamera(40, W / H, 0.05, 200);
+  let roomSeen: {camera: T.PerspectiveCamera; edge: number; scale: number; focus: number} | null = null;
   const bg = new T.Scene(), fg = new T.Scene(), view = new T.PerspectiveCamera(40, W / H, 0.05, 200), filmCam = new T.PerspectiveCamera(40, W / H, 0.05, 200), filmVP = new T.Matrix4();
   const light = createFanLight(), film = createFilmLayers(filmVP, light.uniforms), table = createTable(light.hook), tray = createChipTray(light.hook), rail = createRailExtras(light.hook), smoke = createSmoke(), rooms = createRooms(bg, data.urls, data.onMissingRoom, data.rooms);
   const sun = new T.DirectionalLight(0xfff1dd, 1.6); sun.position.set(-1.5, 3, 2.5);
@@ -226,9 +229,9 @@ export function createScene(canvas: HTMLCanvasElement, host: HTMLElement, data: 
     if (gone) return; camera = filmCamera(); const solved = solveCamera(camera); pitch = solved.pitch; edgeZ = -solved.edgeDistance;
     filmCam.fov = solved.fovYDeg; filmCam.aspect = W / H; filmCam.position.set(0, camera.heightM, 0); filmCam.rotation.set(-pitch, 0, 0, 'YXZ'); filmCam.updateProjectionMatrix(); filmCam.updateMatrixWorld(true);
     filmVP.multiplyMatrices(filmCam.projectionMatrix, filmCam.matrixWorldInverse);
-    table.build(edgeZ, camera.scale, ownNotch ?? (state.tray ? TRAY : undefined), state.base, state.surface, state.tableSize); tray.group.visible = state.tray && !ownNotch; if (tray.group.visible) tray.build(edgeZ, camera.scale); rail.build(edgeZ, camera.scale, betSpots(data.plan, camera), state.tableSize); smoke.build(edgeZ, camera.scale, state.tableSize); drawFelt(); rooms.place(camera); light.place(camera); buildGuides(); focusNow = NaN; built = true; for (const prop of props) prop.build(edgeZ, camera.scale); apply();
+    table.build(edgeZ, camera.scale, ownNotch ?? (state.tray ? TRAY : undefined), state.base, state.surface, tableUnder(camera, state.tableSize)); tray.group.visible = state.tray && !ownNotch; if (tray.group.visible) tray.build(edgeZ, camera.scale); rail.build(edgeZ, camera.scale, betSpots(data.plan, camera), tableUnder(camera, state.tableSize)); smoke.build(edgeZ, camera.scale, tableUnder(camera, state.tableSize)); drawFelt(); rooms.place(camera.source === 'lens' ? written() : camera); light.place(camera); buildGuides(); focusNow = NaN; built = true; for (const prop of props) prop.build(edgeZ, camera.scale); apply();
   }
-  const drawFelt = () => table.draw({spots: cardSpots(data.plan, camera), logo: state.logo, felt: state.felt, scale: camera.scale, marks: state.marks, cloth: state.cloth, camera, size: state.tableSize});
+  const drawFelt = () => table.draw({spots: cardSpots(data.plan, camera), logo: state.logo, felt: state.felt, scale: camera.scale, marks: state.marks, cloth: state.cloth, camera, size: tableUnder(camera, state.tableSize)});
   function apply() {
     if (gone) return; if (!rooms.rooms[state.room]) state.room = 'salong'; // a room the scene does not have (an old address, a room taken out of the register)
     useCards(); rooms.show(state.room); rail.set({cups: state.cups}); film.place(edgeZ, state.fold, state.focus !== 'off', camera.scale); film.setKey({lo: state.keyLo, hi: state.keyHi, shadow: state.shadow, above: state.shadowAbove}); film.setGrade(state.filmBright, state.filmWarm); film.setEdge(state.edgeClean); players.tempo(state.filmTempo);
@@ -246,11 +249,26 @@ export function createScene(canvas: HTMLCanvasElement, host: HTMLElement, data: 
     let {yaw, pitch: tilt, dx, dy, dz} = state;
     if (state.sway) { if (state.mode === 'look') { yaw += 9 * Math.sin(seconds * 0.55); tilt += 2.5 * Math.sin(seconds * 0.37); } else { dx += 0.13 * Math.sin(seconds * 0.6); dy += 0.035 * Math.sin(seconds * 0.43); } }
     // Under the table's lens the same settings give the same picture: they were written for the contract's camera (viewUnder).
-    if (camera.source === 'lens') ({yaw, pitch: tilt, dx, dy, dz} = viewUnder(camera, written(), {yaw, pitch: tilt, dx, dy, dz}));
+    const asWritten = {yaw, pitch: tilt, dx, dy, dz}, lens = camera.source === 'lens';
+    if (lens) ({yaw, pitch: tilt, dx, dy, dz} = viewUnder(camera, written(), asWritten));
     const base = filmCam.position; view.position.set(base.x + dx, base.y + dy, base.z + dz); moved = !!(dx || dy || dz);
-    let ry = yaw * RAD, rx = -pitch + tilt * RAD;
-    if (state.aim && moved) { const fix = aimCorrection(base.toArray(), view.position.toArray(), [0, 0.3, edgeZ]); ry += fix.yaw; rx += fix.pitch; }
-    view.rotation.set(rx, ry, 0, 'YXZ'); view.aspect = canvas.width / canvas.height; view.fov = viewFovDeg(camera, view.aspect, state.zoom); view.updateProjectionMatrix(); view.updateMatrixWorld(true);
+    let ry = yaw * RAD, rx = -pitch + tilt * RAD; const fix = state.aim && moved ? aimCorrection(base.toArray(), view.position.toArray(), [0, 0.3, edgeZ]) : {yaw: 0, pitch: 0};
+    if (!lens) { ry += fix.yaw; rx += fix.pitch; view.rotation.set(rx, ry, 0, 'YXZ'); }
+    // Under the lens the film camera looks 25 degrees down where the contract's looks 2.5: a turn about the room's upright would lean
+    // her and the table's edge in the picture (4.6 degrees at a turn of 11). The view turns about the film camera's own upright instead,
+    // so that a turn moves the film sideways in the picture as it does today; with no turn it is the same rotation as before.
+    else { const X = new T.Vector3(1, 0, 0), Y = new T.Vector3(0, 1, 0), q = (axis: T.Vector3, angle: number) => new T.Quaternion().setFromAxisAngle(axis, angle);
+      view.quaternion.copy(q(Y, fix.yaw)).multiply(q(X, -pitch)).multiply(q(Y, ry)).multiply(q(X, tilt * RAD + fix.pitch)); }
+    view.aspect = canvas.width / canvas.height; view.fov = viewFovDeg(camera, view.aspect, state.zoom); view.updateProjectionMatrix(); view.updateMatrixWorld(true);
+    // The room is a picture laid behind a film taken against a screen: nothing in the film measures it. Seen through the lens, which
+    // looks 25 degrees down with its horizon 500 rows above the frame, a room is its floor and nothing else. So under the lens the room
+    // keeps the camera its pictures were composed for, the contract's, with the view's settings as they are written: the room behind
+    // her is the one the game shows today, and it turns and zooms with the view as it does today.
+    if (!lens) roomSeen = {camera: view, edge: -edgeZ, scale: camera.scale, focus: 1};
+    else { const w = written(), s = solveCamera(w), home = [0, w.heightM, 0]; roomCam.position.set(asWritten.dx, w.heightM + asWritten.dy, asWritten.dz);
+      const turn = state.aim && moved ? aimCorrection(home, roomCam.position.toArray(), [0, 0.3, -s.edgeDistance]) : {yaw: 0, pitch: 0};
+      roomCam.rotation.set(-s.pitch + asWritten.pitch * RAD + turn.pitch, asWritten.yaw * RAD + turn.yaw, 0, 'YXZ'); roomCam.aspect = view.aspect; roomCam.fov = viewFovDeg(w, view.aspect, state.zoom); roomCam.updateProjectionMatrix(); roomCam.updateMatrixWorld(true);
+      roomSeen = {camera: roomCam, edge: s.edgeDistance, scale: w.scale, focus: s.edgeDistance / -edgeZ}; }
   }
   // Distance from the view camera, along its axis, of what should be sharp.
   // In "follow" the card stays the subject for a moment after its track lets go: the deal is cut at its landing frame
@@ -277,12 +295,12 @@ export function createScene(canvas: HTMLCanvasElement, host: HTMLElement, data: 
   // One room into the half-size targets, blurred. The first target takes the room and its depth; `ping` and `pong` are the
   // blur's two, and the picture ends in `pong`, or stays in the first when there is no blur.
   function drawRoom(look: Look, seconds: number, ping: Target, pong: Target): Picture {
-    const room = rooms.rooms[look.room], focusOn = state.focus !== 'off', u = blurMat.uniforms, scale = canvas.width / W, a = half[0];
-    rooms.followCamera(look.room, view.position, look.panoramaTurn); const dim = ambient(look.room, seconds);
+    const room = rooms.rooms[look.room], focusOn = state.focus !== 'off', u = blurMat.uniforms, scale = canvas.width / W, a = half[0], seen = roomSeen ?? {camera: view, edge: -edgeZ, scale: camera.scale, focus: 1};
+    rooms.followCamera(look.room, seen.camera.position, look.panoramaTurn); const dim = ambient(look.room, seconds);
     renderer.setRenderTarget(a); renderer.setClearColor(0x050403, 1); renderer.clear();
     if (room.plate) { const image = 1536 / 1024, frame = canvas.width / canvas.height; plateMat.uniforms.map.value = room.plate; (plateMat.uniforms.scale.value as T.Vector2).set(frame > image ? 1 : frame / image, frame > image ? image / frame : 1); pass(plateMat, a); }
-    else renderer.render(bg, view);
-    u.near.value = view.near; u.far.value = view.far; u.start.value = -edgeZ + 0.25 * camera.scale; u.range.value = look.dofRange * camera.scale; u.focus.value = focusOn ? focusNow : 1; u.tol.value = state.tolerance;
+    else renderer.render(bg, seen.camera);
+    u.near.value = seen.camera.near; u.far.value = seen.camera.far; u.start.value = seen.edge + 0.25 * seen.scale; u.range.value = look.dofRange * seen.scale; u.focus.value = focusOn ? focusNow * seen.focus : 1; u.tol.value = state.tolerance;
     u.depthMap.value = a.depthTexture; u.mode.value = focusOn ? 2 : look.depthBlur && room.hasDepth ? 1 : 0;
     return {target: blur(a, ping, pong, look.blur * scale / 2), exposure: look.exposure * room.exposure * dim};
   }
@@ -503,7 +521,7 @@ export function createScene(canvas: HTMLCanvasElement, host: HTMLElement, data: 
       const box = canvas.getBoundingClientRect(), nx = (clientX - box.left) / box.width * 2 - 1, ny = 1 - (clientY - box.top) / box.height * 2; if (Math.abs(nx) > 1 || Math.abs(ny) > 1) return null;
       const dir = new T.Vector3(nx, ny, 0.5).unproject(view).sub(view.position).normalize(); if (dir.y > -1e-6) return null;
       const t = -view.position.y / dir.y, spot = sceneToSpot(camera, view.position.x + dir.x * t, view.position.z + dir.z * t);
-      const felt = sized(state.tableSize); // the felt as large as the table is built
+      const felt = sized(tableUnder(camera, state.tableSize)); // the felt as large as the table is built
       return spot.s >= 0 && (spot.x / felt.a) ** 2 + (spot.s / felt.b) ** 2 <= 1 ? spot : null;
     },
     // What the picture is right now: the film itself, the film turned (still exact) or the film seen from another place (approximate).

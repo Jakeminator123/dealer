@@ -16,7 +16,8 @@ import { PLAN_CARD_SIZE, TABLE_GEOMETRY, cardGrow, cardPlace, keystone, planCard
 import { planScene, poseAt, restingQuad, sceneOf, type CardTrack } from '../src/card-overlay.ts';
 import { placedCards } from '../src/game-film.ts';
 import { createLayout, slotLabel, type Slot, type TableCards } from '../src/game-table.ts';
-import { BET, betSpots, cameraFromContract, cardSpots, edgeRowOf, filmPixel, filmToTable, lensCamera, solveCamera, spotToScene, viewUnder } from '../src/scene3d-geometry.ts';
+import { BET, betSpots, cameraFromContract, cardSpots, edgeRowOf, filmPixel, filmToTable, lensCamera, ringOffset, solveCamera, spotToScene, viewUnder, type FilmCamera } from '../src/scene3d-geometry.ts';
+import { REAL_TABLE, TABLE, TABLE_SIZE, sized, tableUnder } from '../src/scene3d-table.ts';
 
 const near = (a: number, b: number, tolerance: number, what: string) => assert.ok(Math.abs(a - b) <= tolerance, `${what}: ${a} is not within ${tolerance} of ${b}`);
 const plan = (): PlacementPlan => { const p = defaultPlan(); validatePlan(p); return p; };
@@ -185,7 +186,26 @@ test('pixel and metre, in one place: the scene\'s film camera from the lens is t
   for (const id of ['P1.C1', 'P4.C1', 'P7.C2', 'D.C1']) { const spot = spots.find(s => s.id === id)!, felt = pixelToFelt(planPixel(plan.targets[id].geometry.native))!;
     assert.ok(Math.hypot(spot.x - felt[0], spot.s - (felt[2] - edge)) < 1e-9, id); }
   const bet = betSpots(plan, camera).find(b => b.id === 'P4')!, card = spots.find(s => s.id === 'P4.C1')!;
-  assert.ok(Math.abs(bet.s - card.s - BET.offset) < 1e-12 && bet.x === card.x);
+  // under the lens the ring's offset is the one for a real card (BET.real): the ring lies clear of the card's near edge
+  assert.ok(Math.abs(bet.s - card.s - BET.real) < 1e-12 && bet.x === card.x);
+  assert.ok(BET.real - BET.radius - 0.088 / 2 >= 0.01, 'at least a centimetre of felt between a real card and the ring');
+});
+
+test('under the lens the table is a real table\'s depth and the ring lies clear of a real card; the contract\'s are as they were', () => {
+  const lens = lensCamera(TABLE_LENS, EDGE_ROW), contract: FilmCamera = {focalPx: 886, horizonRow: 547.8, edgeRow: EDGE_ROW, heightM: 0.493, scale: 2, source: 'contract'};
+  assert.equal(tableUnder(contract, 1), 1); assert.deepEqual(sized(tableUnder(contract, 1.2)), sized(1.2));
+  const real = sized(tableUnder(lens, 1)); assert.equal(real.a, TABLE.a); assert.ok(Math.abs(real.b - REAL_TABLE.depth) < 1e-12);
+  assert.deepEqual(sized(1), {a: TABLE.a, b: TABLE.b}); assert.deepEqual(sized(9), sized(TABLE_SIZE.max), 'a number is held within the control as before');
+  // the game's lying framing reaches about film row 1410 under the lens: the felt goes past it in the middle, which the 0.6 m table did not
+  assert.ok(filmPixel(lens, spotToScene(lens, 0, real.b))!.y > 1700); assert.ok(filmPixel(lens, spotToScene(lens, 0, TABLE.b))!.y < 1300);
+  const plan = testPlan(), at = (c: FilmCamera) => betSpots(plan, c).find(b => b.id === 'P4')!.s - cardSpots(plan, c).find(s => s.id === 'P4.C1')!.s;
+  assert.ok(Math.abs(at(contract) - BET.offset) < 1e-12); assert.equal(ringOffset(contract), 0.068); assert.equal(ringOffset(lens), BET.real);
+});
+
+test('a turn given as the lens reads it comes back as the contract writes it', () => {
+  const lens = lensCamera(TABLE_LENS, EDGE_ROW), contract: FilmCamera = {focalPx: 886, horizonRow: 547.8, edgeRow: EDGE_ROW, heightM: 0.493, scale: 2, source: 'contract'};
+  const written = viewUnder(contract, lens, {yaw: 9, pitch: 0, dx: 0, dy: 0, dz: 0}), back = viewUnder(lens, contract, written);
+  assert.ok(Math.abs(back.yaw - 9) < 1e-9); assert.ok(written.yaw > 22 && written.yaw < 23, `9 degrees under the lens is ${written.yaw.toFixed(2)} as written`);
 });
 
 test('the same plan and the same card: card plan, game, drawn card at rest and the scene\'s projection give one outline', () => {

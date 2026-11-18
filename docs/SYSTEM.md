@@ -247,14 +247,35 @@ Spelet med flera dealers (2026-11-13):
     Uppmätt 2026-11-18 på samma plan: på plats 1 skiljer geometrierna 28 px i kortets hörn, och dealerns kort är
     25 % smalare och 45 % grundare med `contract`. Bankens givar har kort som följer den äldre planen (beställningens
     sista bild ritades med den), så med `lens` ligger det ritade kortet inte på filmens eget kort vid ytterplatserna
-    och hos dealern förrän givarna är nya. Bytet av förval är därför Jakobs, efter att han sett det i labbet; inget
-    av `lens` är sett i en webbläsare än.
+    och hos dealern förrän givarna är nya. Bytet av förval är därför Jakobs, efter att han sett det i labbet.
+    Det som inte går att mäta i filmen, och hur bilden runt korten hålls lik dagens med `lens` (sett som stillbild i
+    en webbläsare 2026-11-18, dator och stående telefon; rörelsen är inte sedd):
+    - **Rummet** ritas genom kontraktets kamera också med `lens` (`roomSeen` i `src/scene3d-view.ts`). Linsen ser 25°
+      nedåt med horisonten 500 rader ovanför bilden, så ett rum sett genom den är bara sitt golv; rummet är en bild
+      bakom en film tagen mot en skärm, och inget i filmen mäter det.
+    - **Bordet** är lika brett som förut och 1,15 m djupt, ett verkligt bords djup (`REAL_TABLE`, `tableUnder` i
+      `src/scene3d-table.ts`; en storlek kan ha eget djup, `TableSize`). Kontraktets 0,6 m är ritat för en kamera som
+      i dealerns meter står 0,25 m över filten strax utanför relingen; genom linsen syntes hela bordet med reling.
+    - **Insatsringen** ligger en verklig korts halva längd, ringens radie och 12 mm filt framför kortets mitt
+      (`BET.real`, `ringOffset` i `src/scene3d-geometry.ts`). Ring och marker är verkliga mått (54 och 39 mm) och
+      därmed mindre mot kortet än i dag, där en marker är bredare än kortet. Filtens tryck läggs i ordningen dealerns
+      kort, loggan, bågen, texten, platsernas kort (`REAL_PRINT`), och kortrutan är ett verkligt kort.
+    - **Vyn** vrids kring filmkamerans egen lodlinje, så att hon inte lutar när vyn vrids (4,6° vid 11° annars), och
+      `aimAt` i `src/game-page.ts` ger vridningen som kontraktets kamera läser den. En hands summa står ett verkligt
+      korts bredd från kortet, dealerns bredvid kortets bortre halva.
+    - Casinot bär `geometri` vidare till `game.html` i ramen (`studio/lib/casino.ts`).
+    Oberoende av valet: ett kort som spelet inte har någon post för visar baksidan, aldrig labbets valda kort
+    (`cardFace` i `src/card-overlay.ts`, `dealt`).
     **När förvalet byts** (en rad, `TABLE_GEOMETRY`) blir detta över och tas bort: grenen `contract` i `createLayout`
     (`src/game-table.ts`, med importen av `flatQuad` och `quad`); `cameraFromContract` och `DEALER_LENS_ESTIMATE` i
     scenens `filmCamera` med nyckeln `lens` (`src/scene3d-view.ts`; `cameraFromContract` själv behålls så länge
     Modeller, `src/props-stage.ts`, och `tools/scene-material.ts` läser den); `viewUnder`, när spelets inramning
     (`FRAMING` i `src/game-page.ts`) och sparade vyer har skrivits om för linsen; `cardGrow` och `PLAN_CARD_SIZE`, när
     Kortens storlek har skrivits om så att 1 är ett verkligt kort; och adressordet, om vägen tillbaka inte behövs.
+    Därtill kontraktets gren på dessa ställen: `ringOffset` med `BET.offset` (`src/scene3d-geometry.ts`), `tableUnder`
+    och tryckets äldre ordning och kortruta i `draw` (`src/scene3d-table.ts`), vridningen kring rummets lodlinje i
+    `updateView` (`src/scene3d-view.ts`), samt `TOTAL_LEFT` och den äldre vinkeln i `aimAt` (`src/game-page.ts`).
+    Rummets kamera (`roomSeen`) behåller kontraktets kamera också efter bytet: `cameraFromContract` behövs kvar för den.
     Kvar med flit på den äldre regeln: `restingQuad`s kontraktsgren med `sceneOf` (för `tools/card-coverage.ts` och det
     äldre kortsättet `film`, `src/scene3d-cards.ts`), `tools/build-anchor.ts` och `tools/placement-backdrop.ts`.
   - Hålkortets valör och dealerns summa visas när kortets framsida syns i vändningsfilmen, inte när filmen slutar.
