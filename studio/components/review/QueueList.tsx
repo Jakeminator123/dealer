@@ -5,7 +5,7 @@
 // sitting stay, ticked. The open one is marked in brass.
 import { Check } from "lucide-react";
 import { useEffect, useRef } from "react";
-import { edgeName, takeNames } from "../../lib/names.ts";
+import { takeEdgeName, takeNames } from "../../lib/names.ts";
 import type { QueueItem } from "../../lib/review.ts";
 import { TakeChip, TakeThumb } from "../takes";
 import { cn } from "../ui/cn";
@@ -52,7 +52,7 @@ export function QueueList({ items, current, onOpen }: { items: readonly QueueIte
                 <span className={cn("truncate text-sm font-medium", on ? "text-ink" : "text-ink/90")}>{name}</span>
                 <span className="flex min-w-0 items-center gap-1.5">
                   <TakeChip take={item.take} size="sm" />
-                  <span className="truncate text-2xs text-faint">{edgeName(item.edge)}</span>
+                  <span className="truncate text-2xs text-faint">{takeEdgeName(item.take)}</span>
                 </span>
               </span>
             </button>

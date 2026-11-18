@@ -4,7 +4,7 @@
 // clip it corrects. The words of the job's notes and prompt stay as the bank has them (they were written in English).
 // Pure: no DOM; tests in studio/tests/made-from.test.ts. The fold that shows it is Origin.tsx.
 import { clipOfVideo, type Graph, type ImageRef, type Take } from "../../../src/clip-graph.ts";
-import { edgeName, formatSeconds, modelName, takeName } from "../../lib/names.ts";
+import { takeEdgeName, formatSeconds, modelName, takeName } from "../../lib/names.ts";
 
 /** One end of the take: the picture to show (a still of the bank, or a frame of a film), its words and the job's note. */
 export type OriginPicture = {
@@ -34,7 +34,7 @@ export type Origin = {
 export function clipWords(graph: Pick<Graph, "takes" | "edge"> | null, clip: string): string {
   const take = graph?.takes[clip];
   if (!take) return clip.replace(/^pamela-/, "");
-  return `${edgeName(take.edge)} · ${takeName(take, graph?.edge[take.edge]?.takes)}`;
+  return `${takeEdgeName(take)} · ${takeName(take, graph?.edge[take.edge]?.takes)}`;
 }
 
 /** Where a picture of a job came from, in words. */

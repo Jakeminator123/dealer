@@ -11,7 +11,7 @@ import { ChevronLeft, ChevronRight, Maximize, Minimize, X } from "lucide-react";
 import { useEffect, useRef, useState, type KeyboardEvent } from "react";
 import type { Take } from "../../../src/clip-graph.ts";
 import { useOptionalBank } from "../../lib/bank.ts";
-import { edgeName, factsLine, takeFacts, takeName } from "../../lib/names.ts";
+import { takeEdgeName, factsLine, takeFacts, takeName } from "../../lib/names.ts";
 import { FilmPlayer, type FilmPlayerHandle } from "../player";
 import { IconButton, Kbd } from "../ui";
 import { usePlaySlot } from "./play-slot.ts";
@@ -74,7 +74,7 @@ export function FilmViewer({ takes, index, onIndex }: { takes: readonly Take[]; 
           {take ? (
             <>
               <div className="flex shrink-0 flex-wrap items-center gap-x-3 gap-y-1 border-b border-line px-4 py-2.5">
-                <span className="font-display text-md font-medium text-dim">{edgeName(take.edge)}</span>
+                <span className="font-display text-md font-medium text-dim">{takeEdgeName(take)}</span>
                 <RD.Title className="min-w-0 truncate font-display text-lg font-semibold text-ink" title={take.id}>
                   {name}
                 </RD.Title>

@@ -13,7 +13,7 @@ import { useMemo, useState } from "react";
 import { buildGraph, type Edge, type Take } from "../../../src/clip-graph.ts";
 import { useBank } from "../../lib/bank.ts";
 import { bankDealers, dealerHref, nameOf } from "../../lib/dealer.ts";
-import { edgeName, takeNames } from "../../lib/names.ts";
+import { takeEdgeName, takeNames } from "../../lib/names.ts";
 import { takesNamed } from "../../lib/proofs.ts";
 import type { Proof } from "../../lib/api.ts";
 import { awaitingJakob } from "../../lib/verdict.ts";
@@ -99,7 +99,7 @@ export function ProofTakes({ proof, named }: { proof: Proof; named: NamedTakes }
               onSelect={() => router.push(takeHref(t))}
               extra={
                 <span className="flex items-center gap-1.5">
-                  <span className="truncate">{[t.dealer !== dealer ? (dealers.find((d) => d.id === t.dealer)?.name ?? nameOf(t.dealer)) : null, edgeName(t.edge)].filter(Boolean).join(" · ")}</span>
+                  <span className="truncate">{[t.dealer !== dealer ? (dealers.find((d) => d.id === t.dealer)?.name ?? nameOf(t.dealer)) : null, takeEdgeName(t)].filter(Boolean).join(" · ")}</span>
                   {t.waiting ? (
                     <span className="ml-auto inline-flex shrink-0 items-center gap-1 font-medium text-brass-hi">
                       Döm i Filmer <ArrowRight className="size-3.5" />

@@ -38,6 +38,13 @@ const splitEdge = (id: string): [string, string] => {
   return cut < 0 ? [id, ""] : [id.slice(0, cut), id.slice(cut + 1)];
 };
 
+/** The take's actual anchor variant on an edge that the graph stores under READY. */
+export function takeEdgeName(take: Pick<Take, "edge" | "hub">): string {
+  if (!take.hub) return edgeName(take.edge);
+  const [from, to] = splitEdge(take.edge);
+  return edgeName({ from: from === "READY" ? take.hub : from, to: to === "READY" ? take.hub : to });
+}
+
 // ── Takes ───────────────────────────────────────────────────────────────────
 // A take's short name is read from its id within its edge: "pamela-p4-c1-plan-deal-02" on READY>P4.C1 is "Giv 02".
 // Rule: drop "pamela", the card the edge is about (p4-c1) and the words that only repeat the edge (plan, deal, return,

@@ -4,7 +4,7 @@
 // no films of the takes that wait for Jakob, so instead of a player without a film it says what waits: how many, their
 // names and edges, and a still where the copy has one. A take whose film the copy does carry opens as in the lab.
 import { Lock } from "lucide-react";
-import { edgeName, takeNames } from "../../lib/names.ts";
+import { takeEdgeName, takeNames } from "../../lib/names.ts";
 import type { QueueItem } from "../../lib/review.ts";
 import { TakeCard } from "../takes";
 import { Button, EmptyState } from "../ui";
@@ -48,7 +48,7 @@ export function WaitingInCopy({ items, onOpen, onAll }: { items: readonly QueueI
                     name={name}
                     still="auto"
                     onSelect={film ? () => onOpen(item.take.id) : undefined}
-                    extra={edgeName(item.edge)}
+                    extra={takeEdgeName(item.take)}
                     className="h-full"
                   />
                 </li>

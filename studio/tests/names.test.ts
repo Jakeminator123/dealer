@@ -2,7 +2,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { resolveRound, buildGraph, type EdgeKind } from "../../src/clip-graph.ts";
-import { edgeName, factsLine, formatJakob, modelName, nodeCode, nodeName, parseJakob, takeName, takeNames } from "../lib/names.ts";
+import { edgeName, factsLine, formatJakob, modelName, nodeCode, nodeName, parseJakob, takeEdgeName, takeName, takeNames } from "../lib/names.ts";
 
 test("anchors and cards have his names", () => {
   assert.equal(nodeName("IDLE"), "A1 vila");
@@ -22,6 +22,27 @@ test("an edge reads anchor → anchor", () => {
   assert.equal(edgeName("IDLE>REVEAL(D.C2)"), "A1 → DC2 upp");
   assert.equal(edgeName("READY-B>P1.C1"), "A2.2 → P1C1");
   assert.equal(edgeName("AWAY>IDLE"), "Borta → A1");
+});
+
+test("a take names its actual anchor on an edge stored under READY", () => {
+  const cases = [
+    ["IDLE", "READY-C", "A1 → A2.3"],
+    ["READY-C", "P4.C1", "A2.3 → P4C1"],
+    ["P4.C1", "READY-C", "P4C1 → A2.3"],
+    ["READY-C", "IDLE", "A2.3 → A1"],
+    ["READY-B", "P6.C1", "A2.2 → P6C1"],
+    ["READY", "P7.C1", "A2.1 → P7C1"],
+    ["IDLE", "REVEAL(D.C2)", "A1 → DC2 upp"],
+    ["READY-C", "DRAWN", "A2.3 → DRAWN"],
+  ];
+  const graph = buildGraph({
+    derived: cases.map(([from, to], i) => ({ id: `take-${i}`, clip: "source", from, to, frames: [0, 20] })),
+  });
+  cases.forEach(([from, to, expected], i) => {
+    assert.equal(takeEdgeName(graph.takes[`take-${i}`]), expected, `${from}>${to}`);
+  });
+  assert.equal(graph.takes["take-7"].hub, null, "the experiment uses its own literal edge");
+  assert.equal(edgeName(graph.takes["take-0"].edge), "A1 → A2.1", "the general edge still uses its own label");
 });
 
 const t = (id: string, edge: string, kind: EdgeKind | null) => ({ id, edge, kind });

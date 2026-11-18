@@ -10,7 +10,7 @@ import Link from "next/link";
 import { useMemo, useRef, type Ref } from "react";
 import { describeEdge, type Edge, type Take } from "../../../src/clip-graph.ts";
 import type { Decision } from "../../lib/api.ts";
-import { edgeName, factsLine, takeFacts, takeNames } from "../../lib/names.ts";
+import { takeEdgeName, factsLine, takeFacts, takeNames } from "../../lib/names.ts";
 import { comparePair, playableFilm, reviewerNotes } from "../../lib/review.ts";
 import { VERDICT_LABEL, provisionalOf, provisionalWords, verdictOf, type Verdict } from "../../lib/verdict.ts";
 import { compareHref } from "../compare/ChoiceList";
@@ -71,7 +71,7 @@ export function TakeReview({
       <div className="flex min-w-0 flex-wrap items-center gap-x-4 gap-y-2">
         <div className="flex min-w-0 flex-col gap-0.5">
           <div className="flex min-w-0 items-center gap-2.5">
-            <span className="shrink-0 font-display text-lg font-medium text-dim">{edgeName(edge)}</span>
+            <span className="shrink-0 font-display text-lg font-medium text-dim">{takeEdgeName(take)}</span>
             <h2 className="min-w-0 truncate font-display text-xl font-semibold tracking-[-0.01em] text-ink" title={take.id}>
               {name}
             </h2>

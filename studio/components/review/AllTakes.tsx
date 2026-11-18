@@ -6,7 +6,7 @@
 // decision; its ⤢ button opens the film over the whole window (FilmViewer, ‹ › through the list as filtered).
 import { useMemo, useState } from "react";
 import type { Graph } from "../../../src/clip-graph.ts";
-import { edgeName, takeNames } from "../../lib/names.ts";
+import { takeEdgeName, takeNames } from "../../lib/names.ts";
 import { filterTakes, inReviewOrder, reviewGroup, seatOptions, verdictCounts } from "../../lib/review.ts";
 import { JUDGED_FOR_YOU, VERDICTS, judgedForJakob, type Verdict } from "../../lib/verdict.ts";
 import { TakeCard, VerdictChip } from "../takes";
@@ -126,7 +126,7 @@ export function AllTakes({ graph, onOpen }: { graph: Graph; onOpen: (id: string)
                       still="film"
                       onSelect={() => onOpen(id)}
                       onExpand={t.media.video ? () => setViewing(withFilm.indexOf(t)) : undefined}
-                      extra={edgeName(graph.edge[t.edge])}
+                      extra={takeEdgeName(t)}
                       className="h-full"
                     />
                   </li>
