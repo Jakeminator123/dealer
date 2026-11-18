@@ -318,13 +318,22 @@ Innehåll: [Arbetet och dokumenten](#arbetet-och-dokumenten) · [Labbet och stud
   `giv-fran-2-3-p5`): "Ankare 2.3 går för sakta. Given 2.3 är för upphackad och borde bli mer naturlig.. Den stannar
   lixom upp i mitten typ. Sista videon är okej men hon har ett bord som ändrar färger och ett ort som visar textur av
   vitt". Filmen från vila till ankare 2.3 ska gå fortare. En giv är en sammanhängande rörelse, utan stopp med kortet
-  rest. Bordets gröna är densamma genom hela filmen, och kortet är slätt, utan vitt eller mönster.
+  rest. Bordets gröna är densamma genom hela filmen, och kortet är slätt, utan vitt eller mönster. Om ingångsfilmen i
+  Beslut kl. 04.31, efter att ha sett farterna: "Det går för sakta, och är för hackigt och hon lutar sig för mkt".
+  Ingången till 2.3 beställs om: kortare, i en mjuk rörelse utan borttagna rutor, och utan att hon lutar sig längre
+  än ankaret gör; ingen av de tre farterna förs in i banken.
 - **Två givar till från ankare 2.3, och ingången i dubbel fart** (Prov 2026-11-18, kl. 03.30–03.55). Om tagning 3
   till plats 5: "Kan vara bra. men hon gör verkligen en konstig vridning med andra handen som tippar över kortet i
   mitten av videon. men kanske kan vi följa upp på detta och skapa två till voideos, en för kort plats nummer 1 och
   plats nummer 4. Men från samma ankare." Tagning 4 märkte han Bra. Ingångsfilmen: 2 gånger farten Bra, 1,5 gånger
   "hackar och långsam" (hans svar 1,5 på kortet i Beslut var ett misstag, sade han). Nästa filmer är given från 2.3
   till plats 4 och till plats 1, utan att den andra handen tippar kortet; ingången går in i banken i dubbel fart.
+- **Ett slutbildsankare per plats, en gång för alla** (2026-11-18, kl. 04.50, om att given från 2.3 saknade slutbild):
+  "kan du inte skapa som en bra och logisk slutbildsankare (A3P'n') för respektive possition som sätts in på något
+  sätt? Kan du inte bara lösa detta en gång för alla! Lös allt och ta oss vidare. VIll se nya filmer. Ska inte bättre
+  modell än Nao Banana användas elelr använder vi någon annan?" Varje kortplats får ett ankare 3 (A3 · P1 till P7 och
+  dealerns kort): bilden en giv slutar på, med handen som lade kortet vid kortet, registrerad per plats och hand och
+  använd av varje giv dit. Bildmodellen väljs efter ett prov med flera modeller på en plats, inte av vana.
 - **Flera kameravinklar ur samma film** (2026-11-18, kl. 03.10 och 03.25). Först: "Kna du itne bara prova att
   förenkla.. Typ skicka filemn för när PAOW dealar till P4C1 och sedan säger du att samma video ska genereras med säg
   35% från sida". Om provet `sidovinkel-ur-film`: "Det här är mycket bra, jag vet inte hur du gjorde. Det kanske är

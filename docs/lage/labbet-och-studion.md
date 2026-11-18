@@ -9,7 +9,7 @@ Beslut, labbservern och rutinverktygen. Här står bara det som gäller nu; det 
   Bordet, Karta (med Primära), Granska (med Prov), Material, Lipsync, Casino, och i foten Beslut, Ordlista, Ljud och
   Modeller.
 - Beställ är en rak linje (`babd05d`): plats och kort, sedan steget; receptet ger resten och visas ord för ord, och
-  avsteg ligger under "Undantag från receptet" ([film.md](film.md)). Material visar ankare 2.3 och en bricka per plats
+  avsteg ligger under "Receptet · gör ett undantag" ([film.md](film.md)). Material visar ankare 2.3 och en bricka per plats
   för landningar. Studion Jakob ser är byggd ur `39e05a0`; provsidan `/vinklar.html` binder två kameravinklar i en scen.
 - Material för hand (`da339a5`): Jakob kan göra vilken bild som helst gällande, lägga den åt sidan, arkivera den och ta
   tillbaka den, och klipp byggda på en äldre bild mörkas. I Karta (`9a09570`) arkiveras ett klipp för hand och tas
@@ -27,9 +27,8 @@ Beslut, labbservern och rutinverktygen. Här står bara det som gäller nu; det 
 1. En oberoende granskares omdöme om de 96 tagningarna som väntar (listan `waiting-list.txt`), eller märk avgjorda
    prov som avgjorda, så att inget ligger i Jakobs kö.
 2. Steget Granska filmen i Bordet, efter byggordningen i `labbgrund/grund/RAPPORT.md`.
-3. Raka linjens rester: "Ändra utkastet" (`SendScreen.tsx`) bjuder ännu vändningen, Ny beställning med en plats utan
-   steg tar planens grepp (`studio/lib/orders.ts`), och `docs/SYSTEM.md` 555–569 beskriver det äldre sättet. Slaskdiskens
-   inventering med förslag väntar på huvudagentens val (`D:/dealer-scratch/tmp/stad-1118/`).
+3. Slaskdisken: inventeringen med förslag väntar på huvudagentens val (`D:/dealer-scratch/tmp/stad-1118/`), och
+   städverktyget räknar ännu mappens egen tid ([BRISTER](../BRISTER.md)).
 4. Efterarbete, där Scen ligger: kortets förarbete per film och "Rå | renderad" på en tagning. Det kommer efter
    filmerna. Panelen Vila saknas också sedan gamla labbet togs bort.
 5. Sidornas ord: 72 ställen säger annat än ordlistan (`stadning/ord/ORD.md`, del c, med fil, rad och förslag);

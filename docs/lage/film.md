@@ -25,15 +25,14 @@ gäller nu; varje prov och dess utfall står i handboken (`tools/film-prompting.
 **Nästa steg.**
 1. Starta vakten på Jakobs kö i Beställ (`vakta-kon.mjs`; den dör med chatten), och anslut Runway (`/mcp`) på ett
    nytt konto. Godkänner han en order startas beställningsagenten (`tools/order-clerk.md`).
-2. In i banken: ingångsfilmen i dubbel fart och tagning 4 till plats 5 (hans Bra i Prov). Vägen saknas för en
-   tagning beställd utanför Beställ, och `film-fix` kan inte ändra fart ([BRISTER](../BRISTER.md)): bygg den först.
+2. In i banken: tagning 4 till plats 5 (hans Bra), genom vägen för en tagning beställd utanför Beställ, som byggs
+   (`tools/order-import.ts`). Ingångsfilmen till 2.3 görs om på hans ord (fortare, mjukare, mindre lutning) genom Bordet.
 3. Given från 2.3 till plats 4 och plats 1 (hans ord): dockans filmer "-e" in som referensfilmer, en slutbild per
    plats med höger hand (plats 4 ur plats 5:s slutbild, plats 1 ur en första tagning utan sista bild; 64 krediter
    per tagning), sedan beställningen genom Bordet. Runway ansluts först (`/mcp`).
 4. Sedan en tagning per återstående plats (2, 3, 6, 7 och dealerns kort) på en långsam dockfilm.
-5. Raka linjens rester ([BRISTER](../BRISTER.md)): `tools/produce.ts` läser inte `data/cut-frames.json`.
-6. Fem kameravinklar ([BESKED](../BESKED.md)): hans bild 35° från sidan som styrande stillbild, och `/vinklar.html`.
-7. Senare: ankare 2.1 och 2.2 med tatuerade händer, hålkortet (vänds inte) och andra kortet ovanpå det första
+5. Fem kameravinklar ([BESKED](../BESKED.md)): hans bild 35° från sidan som styrande stillbild, och `/vinklar.html`.
+6. Senare: ankare 2.1 och 2.2 med tatuerade händer, hålkortet (vänds inte) och andra kortet ovanpå det första
    (`yt-referens/ut/giv-resten.md`), returer till vila, dealerns tredje kort, och Jakobs önskemål i BESKED.
 
 **Väntar på Jakob.** Inget utanför Beslut.

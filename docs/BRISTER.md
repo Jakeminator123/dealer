@@ -204,10 +204,6 @@ Innehåll: Kortet · Filmerna och banken · Läpparna och rösten · Spelet och 
   14 dygn börjar om. Prövat: inventeringen av de största mapparna med förslag
   (`D:/dealer-scratch/tmp/stad-1118/`); inget är raderat eller flyttat. Stänger: verktyget räknar filernas tid och
   inte mappens egen, eller så tas mapparna efter listan. Verktyget körs från huvudträdet; ett arbetsträd på D: vägras.
-- **Beskrivningar som inte skickas till Runway står kvar i Beställ**, mot Jakobs anmärkning (BESKED, "Labbet och
-  studion"). Syns: `FLIP_ABOUT`, `HAND_ABOUT`, `SHAPE_ABOUT`, `LANDS_ABOUT`, `startWords` och sammanfattningsraden
-  `dealWords` i `src/order-model.ts`, visade i `Choices.tsx`, `NewOrder.tsx`, `SendScreen.tsx`, `OrderList.tsx` och
-  `Stage.tsx`. Prövat: inget. Stänger: texterna tas bort, så att sidan bara visar det som går till Runway.
 - **Ny beställning ritar ännu sin egen bild** (`studio/components/order/Stage.tsx`) i stället för Bordets. Syns: två
   ritningar av samma bord. Prövat: inget. Stänger: Ny beställning använder Bordets bild.
 - **Borta ur labbet tills det nya har dem:** "Rå | renderad" på en tagning (hör till Efterarbete) och panelen Vila.
