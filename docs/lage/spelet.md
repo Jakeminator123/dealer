@@ -6,7 +6,8 @@ och Trailer lämnade. Här står bara det som gäller nu; kontraktet står i `do
 **Läget.**
 - Spelet i studion är ett mellansteg mot Scoutgaming, som äger regler, slump och kortvärden; den fristående spelmotorn
   ligger i `game/`. Paow är dealern och Pamela är pausad. Spelets nödlösningar (en ersättare där en film saknas,
-  utgången baklänges) ger vika när banken har egna filmer (`src/game-director.ts`).
+  utgången baklänges) ger vika när banken har egna filmer (`src/game-director.ts`). Kärnans gräns mot sidan är prövad
+  (`docs/SYSTEM.md`, "Gränsen mellan kärnan och presentationen"; `de1883c`), inte sedd i en webbläsare än.
 - Banorna Tal, Scen och Trailer stängdes 2026-11-17. Deras filer (bordet, rummet och ljuset i `src/scene3d-*.ts` och
   `data/scene-*.json`; talet i `tools/speech.ts`, `src/speech-*.ts` och `data/lipsync.json`; `src/game-intro.ts`)
   hålls av huvudagenten tills en ny bana får dem.
@@ -29,8 +30,7 @@ och Trailer lämnade. Här står bara det som gäller nu; kontraktet står i `do
    avgjord, är uppfyllt sedan hans ja 2026-11-17.
 4. En ny runda till chefen när läpparna är inne (`node alla.mjs <namn>`, blind granskning mot `chef-jakob-1-1x-v10`);
    Jakob lyssnar innan han skickar.
-5. Kopian publiceras igen först när Jakob säger till. Efter varje publicering frågas den som en ny besökare i
-   telefonstorlek (kontrollen efter 2026-11-18: [BRISTER](../BRISTER.md), "Labbet och verktygen").
+5. Kopian publiceras igen först på Jakobs ord, efter att dess tre fel är rättade ([BRISTER](../BRISTER.md)).
 
 **Väntar på Jakob.** Inget utanför Beslut.
 

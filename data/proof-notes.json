@@ -324,6 +324,22 @@
         "at": "2026-11-18T02:17:30.886Z"
       },
       "read": "2026-11-18T02:17:30.886Z"
+    },
+    {
+      "id": 28,
+      "proof": "bestallning-handbyte-p4-16",
+      "file": "last.png",
+      "choice": "bra",
+      "text": "",
+      "at": "2026-11-18T02:17:50.397Z"
+    },
+    {
+      "id": 29,
+      "proof": "bestallning-handbyte-p4-16",
+      "file": "kortet-pa-platsen.png",
+      "choice": null,
+      "text": "Tagnig 2 är bra antar ajg",
+      "at": "2026-11-18T02:18:05.945Z"
     }
   ]
 }

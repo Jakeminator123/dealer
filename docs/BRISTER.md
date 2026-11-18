@@ -149,6 +149,13 @@ Innehåll: Kortet · Filmerna och banken · Läpparna och rösten · Spelet och 
   och sidan slutar rita i 0,35–0,57 s; på en stående telefon syns filmens övre kant som en svag linje över hennes hjässa.
   Prövat: orsaken till uppehållet är inte funnen. Stänger: ingen väg vald. Filmen spelas in på nytt när spelets vilobild
   ändras ([SYSTEM.md](SYSTEM.md), "En film före spelet").
+- **Ett svar som går förlorat på vägen låser spelet** (nätet, en omstartad server). Syns: sidan visar motorns engelska
+  "The session is at version N; reload and resend", och varje nytt tryck nekas tills sidan laddas om; inget dras
+  eller betalas två gånger. Prövat: motorn svarar en omsändning med samma `requestId` ur sitt kvitto (testat), men
+  sidan gör ett nytt `requestId` per tryck. Stänger: sidan sänder om samma kommando med samma `requestId`, och motorns
+  fel får svensk text på sidan.
+- **En omladdning i kopian är ett nytt bord** (saldo 1000, en pågående runda borta), och labbserverns bord lever bara
+  så länge servern går. Avsiktligt (en spelare i minnet). Stänger: först med Scoutgaming.
 - **Spelet.** Syns: 3D-skon klipper handen i givarna; helkroppsfilmerna har ingen sko; utfallsskyltarna ligger över
   insatsbrickorna när alla sju platser spelar; dubbling och försäkring är inte sedda ([SYSTEM.md](SYSTEM.md),
   "Spelet"). Prövat: inget. Stänger: var och en i ett eget steg i spelets bana.
