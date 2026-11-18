@@ -3,25 +3,6 @@
   "about": "What waits for Jakob: one entry per question (kind beslut) or per thing only he can do (kind gora), shown as one card each in the studio's view Beslut (/studio/beslut/, lab only). The list's order is the order of urgency, the most urgent first. An entry: id, kind, question (at most 14 words), leads (one sentence: what his answer leads to), optionally proof (a folder under assets/proofs/) with file, page (an address in the lab, e.g. game.html?table=casino), link (an address outside, shown as text to open on his phone) and cost (free text), chips (two to four {value, label} for beslut, one to four for gora), asked (date), from (the lane that asks) and answer. An agent adds an entry with answer null, changes only its own entries, reads the file right before editing it and keeps the form JSON.stringify gives with two spaces; it closes an entry by taking it out once his answer is carried out, and the commit says what he answered. Only the page writes answer ({value, note, at}, tools/decision-store.ts); no agent sets, changes or clears an answer he has given. The strict reader is tools/decision-register.ts. The repo is public: no secret, personal detail or path of this machine.",
   "decisions": [
     {
-      "id": "namnet-paulina",
-      "kind": "beslut",
-      "question": "Ska hon heta Paulina i studion och spelet, i stället för Paow?",
-      "leads": "Vid ja byts bara namnet som visas, medan filernas namn står kvar; räddningsuppdraget säger Paulina, och i repot heter hon Paow sedan du valde bort trailerns Paulina.",
-      "chips": [
-        {
-          "value": "paulina",
-          "label": "Ja, Paulina"
-        },
-        {
-          "value": "paow",
-          "label": "Nej, Paow"
-        }
-      ],
-      "asked": "2026-11-18",
-      "from": "huvudagenten",
-      "answer": null
-    },
-    {
       "id": "ingangen-till-2-3-fart",
       "kind": "beslut",
       "question": "Filmen från vila till ankare 2.3: vilken fart är rätt?",

@@ -197,6 +197,8 @@ Innehåll: [Arbetet och dokumenten](#arbetet-och-dokumenten) · [Labbet och stud
 - **Paow är dealern, Pamela är pausad** (2026-11-12): "Vi pausar Pamela när vi är klara. Sedan går vi vidare med Paow."
   och om Paows utseende "jag vill ha de yngre och nättare bilderna". Om Pamelas filmer på sajten (2026-11-17): "Jag
   vill ha kvar dem." Pamelas öppna frågor tas upp först när han häver pausen.
+- **Namnet är Paow** (Beslut 2026-11-18, kl. 04.39): på frågan om hon ska heta Paulina i studion och spelet, som
+  räddningsuppdraget skriver, svarade han "Nej, Paow". Inget döps om; Paulina är trailerversionen han valde bort.
 - **Ingångsbild och keystone** (2026-11-12): ingångsbilden är det vi börjar från för en ny dealer, "vilken bild som
   helst"; av den görs keystone, förlagan i hög upplösning, som aldrig spelas upp. Hans tanke är att ankaret tas ur en
   video av keystone, "så att inte keystonebilder kommer in i videosekvenser"; Paows ankare är redigerade stillbilder,

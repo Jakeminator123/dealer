@@ -24,10 +24,12 @@ Innehåll: Kortet · Filmerna och banken · Läpparna och rösten · Spelet och 
   skjuvat), plats 4 90 × 74 mot 84,5 × 72, dealerns kort 61 × 35 mot 75 × 57; en marker (39 mm) är 106 px bred vid
   plats 4, bredare än kortet. Prövat: med valet på ger kortplan, spel, vilande kort och scenens projektion samma
   fyrhörning inom 0,01 px, också med annan lins och bildstorlek (`tools/card-plan.test.ts`); bilder utan webbläsare
-  i `D:/dealer-scratch/tmp/raddning-geometri/bilder/`. Sett i en webbläsare 2026-11-18 som stillbild
-  (`raddning-geometri/titt/`): korten stämmer med talen och är upprätta, men rummet är borta, hela bordet med reling
-  syns, insatsringarna är hälften så stora (47 mot 87 px) och dealerns kort ligger över loggan; rörelsen och
-  `scene3d.html` är inte sedda. Det är inte visningsbart än. Stänger: de fyra felen rättas, sedan kontrollen i
+  i `D:/dealer-scratch/tmp/raddning-geometri/bilder/`. Sett i en webbläsare 2026-11-18 som stillbild, dator och
+  stående telefon (`D:/dealer-scratch/tmp/en-geometri/titt/efter/`): rummet, inramningen, ringen fri från kortet och
+  loggan fri från dealerns kort är rättade (`f649793`). Kvar: rörelsen är inte sedd; på telefon är ringen 25 px och
+  insatsbrickan ligger delvis över markerna, och nedre tredjedelen är tom filt (`FRAMING` är inte omskrivet);
+  kortsättet `film` står kvar på kontraktets kort; Casinot i studion är inte sett; att bilden utan ordet är oförändrad
+  är hållet av tal och tester, inte av en bild. Stänger: de sakerna, sedan kontrollen i
   webbläsaren, Jakobs ja i labbet, bytet av `TABLE_GEOMETRY` och borttagningen som `docs/SYSTEM.md`, "Ritade kort",
   räknar upp. Med flit kvar på den gamla regeln: `tools/build-anchor.ts` (frysta hashar), `tools/card-coverage.ts`
   och `tools/placement-backdrop.ts`.
