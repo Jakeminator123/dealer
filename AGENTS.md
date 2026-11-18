@@ -21,7 +21,7 @@ Jakob äger projektet; han är inte programmerare, så förklara val i vanliga o
 
 - Startsidan `HANDOFF.md` (läget, nästa steg, ägare, pekare) är högst 120 rader och 900 ord; `tools/handoff.test.ts`
   håller taket. Ersätt det som inte längre gäller; ingen dagbok per körning.
-- Läget per bana: `docs/lage/<bana>.md` i fast form, högst 60 rader. Jakobs gällande besked med hans ord och datum:
+- Läget per bana: `docs/lage/<bana>.md` i fast form, högst 60 rader och 800 ord. Jakobs gällande besked med hans ord och datum:
   `docs/BESKED.md` (ett ersatt besked flyttas till "Ersatta besked", aldrig bort). Kända brister: `docs/BRISTER.md`.
 - Det som väntar på Jakob står bara som kort i Beslut (`data/decisions.json`), aldrig som en lista i ett dokument.
 - Kontrakt och format: `docs/SYSTEM.md`. Rutiner, anslutningar och sådant som gäller en viss dator eller ett visst

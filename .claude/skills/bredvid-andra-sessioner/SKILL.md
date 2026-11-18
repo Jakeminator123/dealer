@@ -29,6 +29,6 @@ samarbete", "Labbservern" och "Kod"; rutinerna i [`docs/DRIFT.md`](../../../docs
 6. **Högst fyra render- eller testarbetare samtidigt** på hela datorn (AGENTS, "Kod").
 7. **Jakob talar bara med huvudagenten;** det som bara han kan svara på blir ett kort i Beslut genom huvudagenten
    (HANDOFF, "Vem äger vad").
-8. **Betalt utanför Beställ** rapporteras till huvudagenten med belopp (AGENTS; HANDOFF).
+8. **Betalt utanför Beställ** rapporteras till huvudagenten med belopp (AGENTS; `docs/BESKED.md`, "Domar, beställningar och pengar").
 9. **Arbetsfiler på slaskdisken** under `D:/dealer-scratch/tmp/<bana>/`; bilder och filmer som kan användas hör hemma i
    `assets/` med en roll (AGENTS, "Det som skyddar Jakob"; DRIFT, "Arbetsskript utanför repot").

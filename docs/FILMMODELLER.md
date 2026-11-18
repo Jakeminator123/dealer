@@ -94,7 +94,7 @@ efterarbetet ur `TREATMENTS` i `src/film-after.ts` (M). Ljuset över filmen är 
 | Kavajen | koksgrå (Ö); mätt i första rutan cirka 3 nivåer ljusare än Kling 4 i rött och grönt, 1 i blått | blåsvart (Ö) | – | som vilan |
 | Kortet (Ö) | utan referensfilm ofta tryckt spelkort; byter färg utan kantruta | följer referensfilmens väg och takt; byter färg halvvägs, kapas, mjukt i vändningen | – | – |
 | Kortet landat, medel (M, MÄTT-noter) | 1,4 px från planen (10) | 0,6 px (14) | – | – |
-| Granskarens medel för given (M) | 1,2/5 (19) | 2,0/5 (10) | ingången 3/5 (1) | 3/5 (HANDOFF) |
+| Granskarens medel för given (M) | 1,2/5 (19) | 2,0/5 (10) | ingången 3/5 (1) | 3/5 (äldre HANDOFF, i Git) |
 
 Övrigt per modell:
 

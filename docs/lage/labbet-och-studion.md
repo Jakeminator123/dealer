@@ -24,7 +24,8 @@ Beslut, labbservern och rutinverktygen. Här står bara det som gäller nu; det 
   med Spara till planen.
 
 **Nästa steg.**
-1. Granskare åt de 96 tagningarna som väntar (listan `waiting-list.txt`), så att inget ligger i Jakobs kö.
+1. En oberoende granskares omdöme om de 96 tagningarna som väntar (listan `waiting-list.txt`), eller märk avgjorda
+   prov som avgjorda, så att inget ligger i Jakobs kö.
 2. Steget Granska filmen i Bordet, efter byggordningen i `labbgrund/grund/RAPPORT.md`.
 3. Ta bort beskrivningarna av rörelsen som inte skickas till Runway: `FLIP_ABOUT`, `HAND_ABOUT`, `SHAPE_ABOUT`,
    `LANDS_ABOUT`, `startWords` och `dealWords` i `src/order-model.ts`, visade i `Choices.tsx`, `NewOrder.tsx`,

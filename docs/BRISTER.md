@@ -26,11 +26,12 @@ Innehåll: Kortet · Filmerna och banken · Läpparna och rösten · Spelet och 
   alla ritningar följer regeln (`918e7f4`, `f8c637f`). Stänger: spelet och 3D-scenen läser samma regel, visat för Jakob i
   labbet först. Med flit kvar på den gamla regeln: `tools/build-anchor.ts` (frysta hashar), `tools/card-coverage.ts` och
   `tools/placement-backdrop.ts`.
-- **Skons kort är dubbelt så långt i bild som dealerns kort i filmerna** (111 mot 55 bildpunkter), vilket Jakob tyckte
-  såg konstigt ut. Syns: i bankens filmer och ankare. Prövat: 3D-banans mätning (`D:/dealer-scratch/tmp/dealer-3d/kalibrering.txt`)
+- **Kortet i nypet (ankare 2.1) är 8–13 % för långt.** Det Jakob såg som ett dubbelt så långt skokort (111 mot 55
+  bildpunkter) kom mest ur den äldre planens krympning nära dealern, som är rättad i labbet (`918e7f4`, `f469450`).
+  Syns: i bankens ankare 2.1 och givarna därifrån. Prövat: 3D-banans mätning (`D:/dealer-scratch/tmp/dealer-3d/kalibrering.txt`)
   säger att kortet i skons fönster är i stort sett rätt (51 × 92 bildpunkter mot 49 × 98 för ett verkligt kort, 0,94)
   och att det bara i nypet (ankare 2.1) är 8–13 % för långt; axlar, pupiller och skons fot är lästa för ögat (±10
-  bildpunkter). Labbets ritade skokort är rättat (`f469450`). Stänger: bara nya ankare; inget ankare krymps för skons
+  bildpunkter). Stänger: bara nya ankare; inget ankare krymps för skons
   skull.
 - **Kortbanan i Bordet** (Jakob 2026-11-12: "utgångspunkten skulle vara att kortet låg på bredsida, vilket är fel").
   Syns: den ritade handen pekar ut från kortets ände och inte från hennes arm, kortet vänds något högre i bilden än i
@@ -58,6 +59,11 @@ Innehåll: Kortet · Filmerna och banken · Läpparna och rösten · Spelet och 
 
 ## Filmerna och banken
 
+- **Ett arkiverat klipp kan ännu väljas som referensfilm eller ge sista bilden i en ny giv,** och Granska listar det.
+  Syns: i Beställ och Granska. Prövat: spelet, scenen, Karta och produktionslistan hoppar över arkiverade klipp
+  (`9a09570`); knapparna Arkivera och Ta tillbaka är inte tryckta av en hand. Stänger: valet av referensfilm och
+  klippruta hoppar över arkiverade klipp (`referenceCandidates`, `cutFrameOf` i `src/order-model.ts`; filmstandardens
+  andra del).
 - **Det bandet inte kan än** ([tools/dealer-line.md](../tools/dealer-line.md)). Syns: i Beställ. Ankare 2.1 och 2.2 är
   steg (`STEPS` i `src/order-model.ts`), men landningsbild, keystone och ankare 1 är det inte, och ett tredje eller
   fjärde dealerkort går inte att beställa, eftersom planen har sexton platser (`TARGETS` i `src/placement-model.ts`).

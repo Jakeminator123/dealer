@@ -34,7 +34,7 @@ Arkivet är det tidigare projektet på D: (snyggare-dealer). Sidorna har kvar si
 | --- | --- |
 | [AGENTS](AGENTS.md) | Arbetsregler för agenter. |
 | [HANDOFF](HANDOFF.md) | Startsidan, en sida (högst 120 rader och 900 ord, `tools/handoff.test.ts`): läget i korthet, nästa steg, vem som äger vad och pekarna vidare. Läs den först. |
-| [Läget per bana](docs/lage/) | En lägesfil per bana i fast form (Läget, Nästa steg, Väntar på Jakob, Var saker ligger, Fällor), högst 60 rader: [film](docs/lage/film.md), [kort](docs/lage/kort.md), [labbet och studion](docs/lage/labbet-och-studion.md), [spelet](docs/lage/spelet.md); 3D-banans är [dealer3d/LASMIG.md](dealer3d/LASMIG.md). |
+| [Läget per bana](docs/lage/) | En lägesfil per bana i fast form (Läget, Nästa steg, Väntar på Jakob, Var saker ligger, Fällor), högst 60 rader och 800 ord: [film](docs/lage/film.md), [kort](docs/lage/kort.md), [labbet och studion](docs/lage/labbet-och-studion.md), [spelet](docs/lage/spelet.md); 3D-banans är [dealer3d/LASMIG.md](dealer3d/LASMIG.md). |
 | [Jakobs besked](docs/BESKED.md) | Hans gällande besked per ämne, med datum och hans egna ord; ersatta besked står kvar sist. Slås upp när ett besked är i fråga. |
 | [Kända brister](docs/BRISTER.md) | Varje känd brist: var den syns, vad som är prövat och vad som stänger den. |
 | [SYSTEM](docs/SYSTEM.md) | Kontrakt: koordinater, register, 3D-scenen, spelet, klippbanken och ordlistan. |

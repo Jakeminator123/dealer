@@ -31,7 +31,7 @@ bara det som gäller nu; kontraktet står i `docs/SYSTEM.md`, "Ritade kort".
 5. Efter filmerna: kortets efterarbete per film, ruta för ruta (kortet i handen och det som är kvar av kortens fjärde
    steg; [BRISTER](../BRISTER.md)).
 
-**Väntar på Jakob.** Kortet `kortets-baksida` i Beslut är besvarat ("ny") och inte utfört; inget annat väntar.
+**Väntar på Jakob.** Inget utanför Beslut.
 
 **Var saker ligger.** Koden i `src/card-plan.ts`, `src/table-lens.ts`, `src/card-overlay.ts` och `src/card-track.ts`
 med `tools/track-card.ts`; mätningen mot planen i `tools/media-audit.ts` (rutinen i `docs/DRIFT.md`, "D: och

@@ -24,7 +24,7 @@ Rutinen står i [`AGENTS.md`](../../../AGENTS.md), "Git och samarbete", och i
 6. **En ny testfil** ska in i både `test` i `package.json` och `TESTS` i `tools/publication-check.ts`; vakttestet fäller
    en testfil i `tools/` som ingen lista namnger (DRIFT, "Git och kontroller").
 7. **HANDOFF är en startsida med tak** (högst 120 rader och 900 ord; `tools/handoff.test.ts` håller det): läget skrivs
-   i banans lägesfil (`docs/lage/<bana>.md`, fem delar, högst 60 rader), och i båda ersätts det som inte längre gäller;
+   i banans lägesfil (`docs/lage/<bana>.md`, fem delar, högst 60 rader och 800 ord), och i båda ersätts det som inte längre gäller;
    inget läggs till som dagbok. Det som väntar på Jakob blir ett kort i Beslut, ett nytt besked av honom en punkt i
    `docs/BESKED.md`, en ny brist en punkt i `docs/BRISTER.md`; vad som hände och varför står i commitmeddelandet
    (AGENTS, "Var kunskap står"; HANDOFF, "Före avslut").

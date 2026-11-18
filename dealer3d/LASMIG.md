@@ -14,8 +14,8 @@ ryms här står i avsnitten nedan, i commitmeddelandena eller i proven.
 - Som förlaga åt Kling 4 (dockans film + första och sista bild) håller den på plats 4: 4/5 två gånger. Plats 5 är
   oavgjord (3/5), plats 3 föll (1/5, en tagning). Kling tar handens och kortets rörelse ur dockan, och den vilande
   handens liv, men inte huvudet: blicken måste stå i bilderna.
-- Jakob 2026-11-18: ja till blicken och den friare högerhanden; NEJ till att bygga vidare på Meshy-modellen ("vita
-  dockan räcker"; koden ligger kvar, lägg inget arbete där); ja till ett betalt prov från stol 1.
+- Jakob 2026-11-18: ja till blicken och den friare högerhanden; NEJ till att bygga vidare på Meshy-modellen (kortets
+  val "Nej, vita dockan räcker"; koden ligger kvar, lägg inget arbete där); ja till ett betalt prov från stol 1.
 - Kortets vändning är sedan kl. 01.10 EN vridning kring en axel (Jakob såg en "konstig halvrotation" i de äldre
   filmerna). Förlagorna "-2" och "-3" har den äldre vändningen; "-4" är den som gäller från nu. Två betalda prov på
   den beställdes kl. 01.30 av huvudagenten. C5 (plats 4, bankens kamera; Prov `giv-forlagefilm-2`, c5-*) är läst: 3/5.

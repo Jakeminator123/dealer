@@ -23,8 +23,7 @@ och Trailer lämnade. Här står bara det som gäller nu; kontraktet står i `do
 1. En ny talsession börjar från talbanans överlämning: munnen strömmad till spelet, och sedan provkvällen på Jakobs
    pod (högst 5 USD, besked till honom samma dag före start; Dockerfilens steg körs där som ett skript, som inte är
    skrivet).
-2. Körarens kod för munnen ligger bara på D: (`tal/korare/`) och ska in i repot efter städning av två skript; vyn
-   Lipsync ska sedan visa körarens rad och licenserna (`runs.ownRunner` och `licences` i `data/lipsync.json`).
+2. Körarens kod för munnen ligger bara på D: (`tal/korare/`) och ska in i repot efter städning av två skript.
 3. Replikerna som munlappar över en vilofilm (kortet `repliker-som-munlappar`): villkoret, att läpparnas väg är
    avgjord, är uppfyllt sedan hans ja 2026-11-17.
 4. En ny runda till chefen när läpparna är inne (`node alla.mjs <namn>`, blind granskning mot `chef-jakob-1-1x-v10`);
@@ -32,7 +31,7 @@ och Trailer lämnade. Här står bara det som gäller nu; kontraktet står i `do
 5. När Jakob säger till: nytt ord för kopian och en publicering. Efter varje publicering frågas kopian som en ny
    besökare i telefonstorlek.
 
-**Väntar på Jakob.** Kortet `repliker-som-munlappar` i Beslut är besvarat ("prova") och inte utfört; inget annat väntar.
+**Väntar på Jakob.** Inget utanför Beslut.
 
 **Var saker ligger.** Kopians adresser, lås och publicering i [docs/DRIFT.md](../DRIFT.md), "Den låsta kopian på
 nätet", och i skillen `publicera-kopian`; `/meta.json` på kopian säger vilken commit den bär. Den äldre publika sajten

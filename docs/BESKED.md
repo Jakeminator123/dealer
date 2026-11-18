@@ -3,7 +3,8 @@
 Slå upp ditt ämne här när ett beslut är i fråga; sidan läses per ämne, inte i sin helhet. Ett besked per punkt: datum,
 hans ord inom citattecken precis som han skrev dem (stavfelen är hans och rättas aldrig), och vad det betyder i
 arbetet. Ett besked som han har ersatt flyttas till "Ersatta besked" med vad som ersatte det; inget tas bort. Ett nytt
-besked skrivs in här samma dag, under sitt ämne. Det som väntar på hans svar står inte här utan som kort i Beslut
+besked skrivs in här samma dag, under sitt ämne. En punkt utan datum bar inget datum i den äldre överlämningen. Det
+som väntar på hans svar står inte här utan som kort i Beslut
 (`data/decisions.json`).
 
 Innehåll: [Arbetet och dokumenten](#arbetet-och-dokumenten) · [Labbet och studion](#labbet-och-studion) ·
@@ -40,12 +41,15 @@ Innehåll: [Arbetet och dokumenten](#arbetet-och-dokumenten) · [Labbet och stud
   3D-visualiseringen av det som idag är 2D". Banan arbetar avskilt i `dealer3d/` och lämnar sin gren till huvudagenten.
 - **Mått ur en riktig dealers film** (natten till 2026-11-18, till sessionen som mäter filmen): den ska se filmen, ta
   hennes handrörelser, bordets bilder, kortens storlek "och annat", bygga en modell, och "komplettera framförallt den
-  som äger checkout med mått på saker samt vinklar". Hans plan är ett ankare "A3 (eller kanske A2.2 ...)" och flera
-  filmer; sessionen beställer inget förrän han säger det, och filmen går aldrig in i Git, `assets/` eller ett prov.
+  som äger checkout med mått på saker samt vinklar". Hans plan är ett ankare "A3 (eller kanske A2.2 ...)" (återgivet av
+  huvudagenten) och flera filmer; sessionen beställde inget förrän han sade det, vilket han gjorde med ankare 2.3
+  (Dealern och ankarna), och filmen går aldrig in i Git, `assets/` eller ett prov.
 - **Svaren till honom:** korta, i punktform, med procent och poäng (AGENTS). Filmer kan se utfrätta ut i hans flik
   (troligen hans skärm, inte filerna): lägg alltid en stillbild bredvid en film han ska döma.
-- **Överlämningen** (2026-11-18, kl. 01.10): "Det ska i grunden göras omett system så handoffsen blir rimligare sch
-  smartare eller itne användas allt, eller hälst som best practice. Detta är PRIO 1 nu." och "Allt ska vara 4./5."
+- **Överlämningen** (2026-11-18, kl. 01.10): den gamla filen "ska raderas, elelr summerqas till några % bara av vad
+  den faktistär. Det ska i grunden göras omett system så handoffsen blir rimligare sch
+  smartare eller itne användas allt, eller hälst som best practice. Detta är PRIO 1 nu." och "Se till att ordna motsägelser
+  och även instruktioner. Allt ska vara 4./5."
   Därför är `HANDOFF.md` en startsida med ett tak som ett test håller, och resten står här, i
   [BRISTER.md](BRISTER.md) och i lägesfilerna under `docs/lage/`.
 
@@ -96,7 +100,7 @@ Innehåll: [Arbetet och dokumenten](#arbetet-och-dokumenten) · [Labbet och stud
   `casino` bör rimligtvis vara samma som i `casino`, alltså som det är i `runtime`"; "Den vänstra knappen där det står
   beställ ska också ingå i den huvudsakliga menyn som nu till stor del handlar om knappen scen. Detsamma gäller knappen
   placering."; "prov och granska […] slås ihop till en knapp". Menyn är Bordet (lägena Kortplan, Beställ, Scen, Råfilm
-  och Efterarbete), Karta, Granska, Material, Lipsync och Casino, med Beslut och Ordlista i foten.
+  och Efterarbete), Karta, Granska, Material, Lipsync och Casino, med Beslut, Ordlista, Ljud och Modeller i foten.
 - **Karta med Primära** (2026-11-17, kl. 21.58): "Karta och primära ska bli en och samma typ av sida, så att man kan
   följa nodträdet och se vilka som är primära och sekundära klipp och hur de sekundära klippen används […] vi ska
   högst ha några stycken videor för respektive". Kartan visar Primär och högst tre sekundära per steg.
@@ -196,7 +200,13 @@ Innehåll: [Arbetet och dokumenten](#arbetet-och-dokumenten) · [Labbet och stud
   ska vara så att hon tittar mot kortet/skon/handen […] Just hennes ankare 2.2 är dåligt i alla fall på grund av att
   hon inte har en "styvare" handhållning för att "stryka/dra trycka ut kortet ur skon, och att hennes blick inte är
   just mot skon"". Ett nytt ankare 2.2 görs; hans två anteckningar om kandidaterna (lyft armbågen; händerna lika stora
-  och tummen synlig) står i Prov `paow-ankare-2-2-blick`. Han väljer bland kandidaterna.
+  och tummen synlig) står i Prov `paow-ankare-2-2-blick`. Kandidaterna föll ([film](lage/film.md)); nästa försök tas ur en film.
+- **Ankare 2.3** (2026-11-18, cirka kl. 01.10, till sessionen MODEL; hans ord som MODEL:s rapport återger dem): "Jag
+  vill att du skapar ett nytt ankare, ankare 2.3, och inget annat. Ankare 2.3 ska göra ett undantag, där ankare 1 får
+  gå till ankare 2.3. Ankare 1 ska nu vara paushänder som är tatuerade, om du kan hitta det. En videofilm ska
+  genereras från ankare 1, det nya, till 2.3. Där ska hon försöka ha sitt nya ankare 2.3, som de i din granskade film
+  har skapat, med händerna precis vid utdelningen." Ankare 2.3 är båda händerna vid skon precis före draget. MODEL gör
+  det, med en tagning inom huvudagentens tak.
 - **3D-dockan** (Beslut 2026-11-18, kl. 01.04): ja till blicken och den friare vilande handen, nej till att bygga
   vidare på Meshy-modellen av Paow, och ja till ett betalt prov av dealern sedd från stol 1.
 - **Ett tredje och fjärde dealerkort** (2026-11-13): "Skapa då ett tredje och fjärde till dealer". Inte byggt: planen

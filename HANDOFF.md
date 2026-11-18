@@ -21,11 +21,11 @@ Git, och en rad som inte längre gäller ersätts.
    (`node tools/proof-notes.ts`) och svaren i Beslut före första svaret till honom.
 2. Se att fjärren är i kapp med `main` och att inget arbetsträd bär arbete som inte är inne (`git worktree list`).
    Grenen `film-standard-register` har arbete kvar ([film](docs/lage/film.md)).
-3. Filmerna först, på hans ord: ankare 2.3 (en tagning, allt ligger klart), utfallet av nattens två betalda prov,
-   sedan ankare 2.2 ([film](docs/lage/film.md)).
+3. Filmerna först, på hans ord: ankare 2.3 (sessionen MODEL lägger den enda tagningen; beställ den inte själv),
+   utfallet av de två betalda proven från 2026-11-18, sedan ankare 2.2 ([film](docs/lage/film.md)).
 4. Sätt kopians nya lösenord på nätet och publicera, bara på hans uttryckliga ord (skillen `publicera-kopian`).
-5. Utför de besvarade korten i Beslut och ta ut dem, och låt en oberoende granskare döma tagningarna som väntar i
-   Prov ([labbet](docs/lage/labbet-och-studion.md)), så att ingen kö står till honom.
+5. Utför de besvarade korten i Beslut och ta ut dem. Låt en oberoende granskare ge sitt omdöme om tagningarna som
+   väntar i Prov, eller märk avgjorda prov som avgjorda ([labbet](docs/lage/labbet-och-studion.md)).
 
 Förra huvudagentens överlämning från natten till 2026-11-18 ligger i
 `D:/dealer-scratch/tmp/huvudagent11/OVERLAMNING-2026-11-18.md`. Läs den en gång, för in det som saknas i lägesfilerna
@@ -35,12 +35,11 @@ och ta sedan bort det här stycket.
 
 - **Huvudagentens adress: `dealer-32`.** Adressen är det andra sessioner skriver till med SendMessage, och den står bara
   på den här raden; rubriken Jakob ser på chatten betyder inget. Byter rollen session, ändras den här raden och inget
-  annat. Alla sessioner fick nya adresser när Jakob bytte konto 2026-11-17; äldre adresser i commitmeddelanden gäller
-  inte. Kontrollera med ListAgents före ett meddelande. Huvudagenten äger commits, taggar och push, studion,
+  annat. Kontrollera med ListAgents före ett meddelande. Huvudagenten äger commits, taggar och push, studion,
   labbservern, spelet och 3D-scenens filmlager, `src/clip-graph.ts` och styrdokumenten.
 - **Jakob talar bara med huvudagenten**, som håller ihop sessionerna. Varje bana får sin kö av huvudagenten och säger
   till när ett steg är grönt, med en fillista. Ingen bana skriver i en annans filer.
-- **Huvudagentens banor:** film, kort, labbet och studion, och spelet. Filerna de äger står överst i varje lägesfil.
+- **Huvudagentens banor:** film, kort, labbet och studion, och spelet. Filerna de äger står under Var saker ligger i varje lägesfil.
   Banorna Scen, Tal och Trailer är stängda; deras filer hålls av huvudagenten ([spelet](docs/lage/spelet.md)).
 - **3D-banan:** mappen `dealer3d/` på grenen `dealer-3d`, i arbetsträdet `D:/dealer-scratch/tmp/dealer-3d/trad`. Den
   skriver bara där och i sina prov (`assets/proofs/dealer-3d-<namn>/`). Sessionen som startade banan avslutade
@@ -54,7 +53,7 @@ och ta sedan bort det här stycket.
 
 ## Väntar på Jakob
 
-Korten i Beslut är allt som väntar på honom. Läs dem i studions vy Beslut (`/studio/beslut/`) eller i
+Det som väntar på honom är kort i Beslut. Läs dem i studions vy Beslut (`/studio/beslut/`) eller i
 registret `data/decisions.json`: fältet `answer` bär hans val och hans anteckning. En fråga till honom ställs bara som
 ett kort där (skillen `visa-for-jakob`), och kortet tas ut när svaret är utfört.
 

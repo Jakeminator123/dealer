@@ -228,7 +228,7 @@ Spelet med flera dealers (2026-11-13):
     än så länge"). Under det ritade kortet lämnas skons fönster åt matten och hud orörd. Adressorden `cardBack=film`
     och `cardFace=film` visar filmens färger bredvid det ritade kortet igen, och `cardBack=dark`, `cardFace=paper`
     slår på omfärgningen också där filmens eget kort är kortet i handen (`cardWords` i `src/game-film.ts`). Utredningen
-    och granskningarna ligger på slaskdisken (`docs/BRISTER.md`, Korten).
+    och granskningarna ligger på slaskdisken (`docs/BRISTER.md`, Kortet).
     `kort=liggande` finns kvar för hans eget öga. Där rörs filmens kort inte medan hon håller det, kortet i skons
     fönster lämnas som filmen har det i alla filmer, och det ritade kortet tonas fram under filmens när kortet lägger
     sig (`restFade`, `restShare` i `src/card-overlay.ts`): från första rutan där spårets kort ligger inom 2 px från sin

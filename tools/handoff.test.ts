@@ -6,7 +6,7 @@
 //   HANDOFF.md              at most 120 lines and 900 words, six fixed sections, the main agent's address on one line
 //   docs/BESKED.md          Jakob's standing decisions, looked up by topic (may be long)
 //   docs/BRISTER.md         the known defects (may be long)
-//   docs/lage/<bana>.md     one lane's state in a fixed form of five labelled parts, at most 60 lines
+//   docs/lage/<bana>.md     one lane's state in a fixed form of five labelled parts, at most 60 lines and 800 words
 // What happened and why stands in commit messages only, so no heading carries a date or a clock time (a dated heading is
 // a diary entry). What waits for Jakob stands only as cards in Beslut (data/decisions.json), not in these pages.
 // A test that goes red here is answered by moving text to where it belongs, never by raising a number.
@@ -20,6 +20,8 @@ const root = path.resolve(fileURLToPath(new URL('../', import.meta.url)));
 export const HANDOFF_LINES = 120;
 export const HANDOFF_WORDS = 900;
 export const LANE_LINES = 60;
+/** Words too: a cap on lines alone is kept by writing longer lines, as the documents once did (docs/DRIFT.md). */
+export const LANE_WORDS = 800;
 /** HANDOFF's sections, in this order and no others. */
 export const SECTIONS = ['Läget', 'Nästa steg', 'Vem äger vad', 'Väntar på Jakob', 'Läs för ditt ämne', 'Före avslut'];
 /** A lane file's five parts, each a line that begins with the label in bold ("**Läget.**"), in this order. */
@@ -100,12 +102,14 @@ test('the main agent\'s address stands on one line, under "Vem äger vad"', () =
   assert.equal(lines(section(text, 'Vem äger vad')).filter(line => address.test(line)).length, 1, 'HANDOFF.md: the address line stands under "## Vem äger vad"');
 });
 
-test('every lane has its state file, in the fixed form of five parts and at most 60 lines', () => {
+test('every lane has its state file, in the fixed form of five parts, at most 60 lines and 800 words', () => {
   const problems: string[] = [];
   for (const lane of LANES) if (!exists(`${LANE_FOLDER}/${lane}.md`)) problems.push(`${LANE_FOLDER}/${lane}.md: the file does not exist`);
   for (const file of laneFiles()) {
     const all = lines(read(file));
     if (all.length > LANE_LINES) problems.push(`${file}: ${all.length} lines, at most ${LANE_LINES} (one screen)`);
+    const w = words(all.join('\n'));
+    if (w > LANE_WORDS) problems.push(`${file}: ${w} words, at most ${LANE_WORDS}: say each thing once, and link to docs/BESKED.md, docs/BRISTER.md or a handbook instead of repeating them`);
     const bold = all.filter(line => line.startsWith('**'));
     const labels = bold.map(line => /^\*\*([^*]+?)[.:]?\*\*/.exec(line)?.[1] ?? line);
     if (JSON.stringify(labels) !== JSON.stringify(LABELS)) problems.push(`${file}: the lines that begin with ** are [${labels.join(' | ')}], and must be exactly [${LABELS.join(' | ')}] in that order`);
