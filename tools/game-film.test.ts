@@ -7,6 +7,8 @@ import {createLayout} from '../src/game-table.ts';
 import {cardOptions, cardsChoice, cardWords, createFilm, effectPart, faceFrame, filmModel, type FilmPart} from '../src/game-film.ts';
 import {returnCardAt} from '../src/card-overlay.ts';
 import {judgedBank} from '../src/game-director.ts';
+import {partPlaybackRate} from '../src/scene3d-film.ts';
+import type {MouthPatch} from '../src/speech-patch.ts';
 
 const sha = 'a'.repeat(64), first = {file: {path: 'assets/anchors/paow-ready-01/anchor.png', sha256: sha}};
 const video = (id: string) => `assets/motions/${id}/source.mp4`;
@@ -31,6 +33,53 @@ function players() {
   return {parts, end() { const o = last; last = {}; o.onEnd?.(); },
     players: {play(list: FilmPart[], options: {onPart?(index: number): void; onEnd?(): void} = {}) { parts.push(list); last = options; list.forEach((_, i) => options.onPart?.(i)); }, hurry() {}, preload() {}}};
 }
+
+test('the deal tempo trial preserves cards and cuts and never speeds up speech', async () => {
+  const table = {hands: [{seat: 4, cards: [2]}], dealer: []};
+  const records = [{shoeDraw: 2, target: 'P4.C1', r: 'A', s: 'spades'}];
+  const patch: MouthPatch = {
+    schemaVersion: 1, kind: 'mouth-patch', id: 'paow-mun-test', dealer: 'paow',
+    film: {id: 'p4-deal', path: video('p4-deal'), sha256: sha, fps: 30, frames: 120, width: 1764, height: 1174},
+    line: {key: 'goodluck', language: 'sv', text: 'Lycka till!', voice: 'Paow'},
+    box: {x: 768, y: 208, w: 184, h: 176}, feather: 24, first: 10, count: 20, weights: new Array(20).fill(1),
+    strip: {path: 'mouth.webp', type: 'image/webp', lossless: true, columns: 4, rows: 5, width: 736, height: 880, colour: 'bt709-tv', sha256: sha},
+    sound: {path: 'line.wav', type: 'audio/wav', rate: 24000, channels: 1, samples: 24000, startsAtSeconds: 0.6, endsAtSeconds: 1.6, sha256: sha},
+    made: {by: 'test', at: '2026-11-13T00:00:00Z', from: {path: 'x', sha256: sha}},
+  };
+  async function play(tempo?: number, withMouth = false) {
+    const queue = players();
+    const film = createFilm(queue.players, buildGraph(bank(), {dealer: 'paow'}), createLayout(defaultPlan()), async () => null, () => 0);
+    if (tempo !== undefined) film.dealTempo = tempo;
+    if (withMouth) film.mouths = () => [{patch, base: 'assets/speech/paow/patches/test/'}];
+    const part = film.talkPart('tal');
+    assert.ok(part?.sound);
+    const round = film.play([{type: 'deal', shoeDraw: 2}], {table, records}, undefined, {before: [{key: 'goodluck', part, begin() {}}]});
+    await new Promise(resolve => setTimeout(resolve, 0));
+    queue.end();
+    const {beats} = await round;
+    const chain = queue.parts.find(list => list.some(p => p.path === video('p4-deal')))!;
+    const rest = queue.parts.find(list => list[0]?.rest)?.[0];
+    return {chain, rest, beats, lying: film.lying};
+  }
+  const baseline = await play(), trial = await play(1.12);
+  assert.ok(baseline.chain.every(part => part.rate === undefined));
+  assert.deepEqual(trial.chain.map(p => [p.path, p.rate]), [
+    [video('tal'), undefined], [video('in'), undefined], [video('p4-deal'), 1.12], [video('p4-rest'), 1.12],
+  ]);
+  assert.deepEqual(trial.chain.map(({rate, absoluteRate, ...part}) => part), baseline.chain);
+  assert.deepEqual(trial.beats, baseline.beats);
+  assert.deepEqual(trial.lying, [2]);
+  assert.equal(trial.rest?.rate, undefined);
+  assert.deepEqual(trial.chain.map(p => partPlaybackRate(p, true, 2)), [1, 2, 1.12, 1.12], 'the global tempo never multiplies the trial');
+  assert.equal(partPlaybackRate(trial.rest!, true, 2), 1);
+
+  const patched = await play(1.4, true);
+  const talkedOver = patched.chain.find(p => p.path === video('p4-deal'))!;
+  assert.equal(talkedOver.mouth?.patch, patch);
+  assert.equal(talkedOver.rate, undefined);
+  assert.equal(partPlaybackRate(talkedOver, true, 2), 1);
+  assert.equal(patched.chain.find(p => p.path === video('p4-rest'))?.rate, 1.15);
+});
 
 test('the film model: the film\'s own record, not the order\'s cut; a talk film carries its rest film\'s; unknown is left out', async () => {
   const graph = buildGraph(bank(), {dealer: 'paow'}), takes = graph.takes;

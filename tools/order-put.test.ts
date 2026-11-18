@@ -11,7 +11,7 @@ import path from 'node:path';
 import sharp from 'sharp';
 import { ARM_AT_SHOE, POSE_WHAT, orderStore } from './order-store.ts';
 import { committedText } from './committed.ts';
-import { receipts, reviewFromCommand } from './order-put.ts';
+import { placedFromCommand, receipts, reviewFromCommand } from './order-put.ts';
 
 const base = existsSync('D:/dealer-scratch/tmp') ? 'D:/dealer-scratch/tmp' : os.tmpdir();
 
@@ -145,6 +145,27 @@ test('requestedAt before, task id after, and a begun take is never begun again',
   const receipt = JSON.parse(await readFile(path.join(root, 'assets/orders/prov-ett/receipt.json'), 'utf8'));
   assert.deepEqual(receipt.takes.map((x: { take: number; status: string }) => [x.take, x.status]), [[1, 'HÄMTAD'], [2, 'MISSLYCKAD']]);
   assert.deepEqual(receipt.takes[0].history.map((h: { status: string }) => h.status), ['OSÄKER', 'LAGD', 'HÄMTAD']);
+});
+
+test('placed rejects invalid balances before changing the receipt', async (t) => {
+  const { root, r } = await approved(t);
+  const id = 'prov-ett', task = 'b90b9362-7a13-4b80-b498-c324f02c41f8';
+  await r.begin(id, 1);
+  const file = path.join(root, 'assets/orders', id, 'receipt.json');
+  const before = await readFile(file);
+  for (const balance of [NaN, Infinity, -1, '2904', true]) {
+    await assert.rejects(r.placed(id, 1, task, balance as number), /saldo/i);
+    assert.deepEqual(await readFile(file), before);
+  }
+  for (const args of [[task, '--credits', '2904'], [task, '--credits'], ['--credits', '2904'], [task, '2904', 'extra'],
+    [task, ''], [task, 'NaN'], [task, 'Infinity'], [task, '-1'], []]) {
+    await assert.rejects(async () => placedFromCommand(root, id, 1, args), /saldo/i);
+    assert.deepEqual(await readFile(file), before);
+  }
+  const saved = await placedFromCommand(root, id, 1, [task, '2904']);
+  assert.deepEqual([saved.take.status, saved.take.taskId, saved.take.creditsRemainingAfter], ['LAGD', task, 2904]);
+  await r.begin(id, 2);
+  assert.equal((await placedFromCommand(root, id, 2, [task])).take.creditsRemainingAfter, null);
 });
 
 test('the reviewer\'s verdict is kept beside a take from HÄMTAD on without moving its state, and the protocol reads it', async (t) => {

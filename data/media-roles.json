@@ -3751,6 +3751,20 @@
           }
         },
         {
+          "id": "paow-film-giv-2-3-p4-h24-cykel-01-t1",
+          "role": "film",
+          "name": "H24 cykel 01 – underkänd giv, separat returvariant",
+          "path": "assets/films/paow/giv-2-3-p4-h24-cykel-01-t1/source.mp4",
+          "still": 53,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Huvudagent + oberoende granskare: heltagningen underkänd; given 3/5, returen 4/5 som separat variant. Vitt skokort f8–20, blå framsida bleknar f42–52. Delning 64, första säkert fria ruta. Handbyte, vändning och låg återgång håller. Tre spelade cykler oprövade. Ingen Jakobsdom eller Primär.",
+          "source": {
+            "from": "beställningen paow-giv-2-3-p4-h24-cykel-01, tagning 1 (studions vy Beställ)",
+            "when": "2026-11-18"
+          }
+        },
+        {
           "id": "paow-film-intro-noir-3-startruta",
           "role": "arbetsmaterial",
           "name": "Startrutan till filmen före spelet",

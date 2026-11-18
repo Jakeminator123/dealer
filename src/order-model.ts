@@ -525,6 +525,8 @@ export function archivedReferenceIds(bank: Pick<BankFacts, 'motions' | 'derived'
   for (const take of bank.derived ?? []) {
     if (isArchived(bank, take.id)) ids.add(take.clip);
     link(take.clip, take.id);
+    // register-order --fixed names the original segment, but a reference sends the whole corrected file.
+    if (typeof take.editOf === 'string') link(take.editOf, take.clip);
   }
   for (const edit of bank.edits ?? []) {
     if (typeof edit.source?.clip === 'string') link(edit.source.clip, edit.id);

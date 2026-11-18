@@ -6,7 +6,7 @@ import {readFile, readdir} from 'node:fs/promises';
 import {sceneOf, restingQuad, restOf, poseAt, returnCardAt, cardToImage, projectionOf, regionOf, readMatte, filmZone, shiftShare, placedCard, landing, leakCount, strayBoxes, ranges, cardRecord, cardFace, CARD_RANKS, CARD_SUITS, MARGIN, STRAY, type CardRecord, overridesOf, cardInFront, describeTrack, RIM, plausible, keystone, skirtSound, turnOf, restFade, restShare, PLAUSIBLE, HOLD, REST_FADE, type CardTrack, type Scene} from '../src/card-overlay.ts';
 import {signedArea, centre, dist, sound, type Pt} from '../src/card-track.ts';
 import {cameraFromContract, solveCamera, squareToQuad, onSquare, filmToScene} from '../src/scene3d-geometry.ts';
-import {placedCardsForView} from '../src/card-overlay-view.ts';
+import {frameCardsForView, placedCardsForView} from '../src/card-overlay-view.ts';
 import {cardOptions} from '../src/game-film.ts';
 import {createLayout, slotOf} from '../src/game-table.ts';
 import {defaultPlan} from '../src/placement-model.ts';
@@ -141,6 +141,46 @@ test('the 2D game card has one size at the end of the deal, on the return, and i
     const sizeRatio = area(inReturn.quad) / area(land);
     assert.ok(scale < 1 ? sizeRatio < 0.75 : sizeRatio > 2, `raw layout quad used at scale ${scale}`);
     assert.deepEqual([inNext.shoeDraw, inNext.gloss, inNext.back], [inReturn.shoeDraw, inReturn.gloss, true]);
+  }
+});
+
+test('2D film carry ignores poor moving quads and keeps the settled card through the next deal', () => {
+  const table = {hands: [{seat: 1, cards: [1]}, {seat: 4, cards: [2]}, {seat: 7, cards: [3]}], dealer: []};
+  const cards: CardRecord[] = [{shoeDraw: 1, target: 'P1.C1'}, {shoeDraw: 2, target: 'P4.C1'}, {shoeDraw: 3, target: 'P7.C1'}];
+  const layout = createLayout(defaultPlan());
+  const own = {slot: slotOf(table, 2)!, label: 'P4.C1', shoeDraw: 2};
+  const next = {slot: slotOf(table, 3)!, label: 'P7.C1', shoeDraw: 3};
+  const words = {back: 'film', face: 'film'} as const;
+  const track = deal();
+  const bad = {...track, frames: track.frames.map(f => [13, 29].includes(f.frame) ? {...f, quad: [[20, 20], [600, 600], [600, 20], [20, 600]]} : f)};
+  const crossed = [P4_FILM[0], P4_FILM[2], P4_FILM[1], P4_FILM[3]];
+  const falseRest = {...track, frames: track.frames.map(f => f.frame < 30 ? {...f, side: 'FRONT' as const, quad: crossed} : f)};
+  for (const scale of [0.65, 1.8]) {
+    const view = (track: CardTrack, at: number, options: Record<string, unknown>) =>
+      frameCardsForView(track, at, scene, {...options, scale} as Parameters<typeof frameCardsForView>[3]);
+    const filmed = cardOptions({kind: 'DEAL', own, lying: [1]}, table, cards, layout, 'film', words);
+    const object = cardOptions({kind: 'DEAL', own, lying: [1]}, table, cards, layout, 'object');
+    for (const at of [12, 13, 14, 15, 29]) {
+      const previous = view(bad, at, filmed);
+      assert.equal(previous.keepFilmCard, true, `frame ${at}: neither draw nor erase the moving card`);
+      assert.equal(previous.pose, null);
+      assert.equal(previous.placed[0].shoeDraw, 1);
+      assert.deepEqual(previous, view(track, at, filmed), 'bad air quads cannot change film carry');
+    }
+    assert.equal(view(falseRest, 14, filmed).keepFilmCard, true, 'crossed air quads at the landing centre must not move the handoff earlier');
+    assert.ok(view(track, 12, object).pose?.quad, 'the normal hand mode still replaces the tracked card');
+    const landed = view(bad, 30, filmed);
+    assert.equal(landed.keepFilmCard, false);
+    assert.equal(landed.pose?.resting, 1);
+    assert.deepEqual(landed.pose?.quad, view(track, 39, object).pose?.quad);
+    const back = view(bad, 31, cardOptions({kind: 'RETURN', own, lying: [1]}, table, cards, layout, 'film', words));
+    const following = view(bad, 0, cardOptions({kind: 'DEAL', own: next, lying: [1, 2]}, table, cards, layout, 'film', words));
+    assert.equal(back.keepFilmCard, false);
+    assert.equal(back.returning, true);
+    assert.equal(following.keepFilmCard, true);
+    assert.deepEqual(back.placed.map(p => p.shoeDraw), [1, 2]);
+    assert.deepEqual(following.placed.map(p => p.shoeDraw), [1, 2]);
+    assert.deepEqual([back.placed[1].quad, following.placed[1].quad], [landed.pose?.quad, landed.pose?.quad]);
   }
 });
 

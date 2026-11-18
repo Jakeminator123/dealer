@@ -156,14 +156,17 @@ export function receipts(root: string, options: { now?: () => Date } = {}) {
     });
   }
   /** After the call: the task id. Only for a take that was begun and has none. */
-  async function placed(id: string, takeValue: unknown, taskId: string, creditsRemaining?: number | null) {
+  async function placed(id: string, takeValue: unknown, taskId: string, creditsRemaining: number | null = null) {
     if (!/^[A-Za-z0-9-]{8,80}$/.test(taskId ?? '')) throw new StoreError(400, 'Ogiltigt task-id.');
+    if (creditsRemaining !== null && (typeof creditsRemaining !== 'number' || !Number.isFinite(creditsRemaining) || creditsRemaining < 0)) {
+      throw new StoreError(400, 'Saldot efter anropet ska vara ett ändligt tal på minst 0 eller null.');
+    }
     return update(id, (receipt, order) => {
       const take = takeNumber(order, takeValue), t = receipt.takes.find((x) => x.take === take);
       if (!t?.requestedAt) throw new StoreError(409, `${id} tagning ${take} är inte begärd: kör begin först, före anropet.`);
       if (t.taskId) throw new StoreError(409, `${id} tagning ${take} har redan task-id ${t.taskId}.`);
       if (t.status !== 'OSÄKER') throw new StoreError(409, `${id} tagning ${take} är ${t.status}.`);
-      return { ...step(t, 'LAGD', `task ${taskId}`), taskId, creditsRemainingAfter: typeof creditsRemaining === 'number' && Number.isFinite(creditsRemaining) ? creditsRemaining : null };
+      return { ...step(t, 'LAGD', `task ${taskId}`), taskId, creditsRemainingAfter: creditsRemaining };
     });
   }
   /** The call answered with an error and no task: nothing was made. The take is not placed again by a tool. */
@@ -236,6 +239,16 @@ export function receipts(root: string, options: { now?: () => Date } = {}) {
   return { read, check, begin, placed, failed, advance, review, imported };
 }
 
+/** Pass only the task id and optional positional balance from the CLI. */
+export function placedFromCommand(root: string, id: string, take: unknown, args: readonly string[]) {
+  const [taskId, balance] = args;
+  if (!taskId || taskId.startsWith('-') || args.length > 2 || balance?.startsWith('--')) {
+    throw new StoreError(400, 'Använd: placed <id> <tagning> <task-id> [saldo]. Saldot anges som ett tal utan flagga.');
+  }
+  if (balance !== undefined && !balance.trim()) throw new StoreError(400, 'Saldot efter anropet saknar värde.');
+  return receipts(root).placed(id, take, taskId, balance === undefined ? null : Number(balance));
+}
+
 /** Strict CLI boundary: a misspelled evidence flag must never become a note-only replacement. */
 export async function reviewFromCommand(root: string, id: string, take: unknown, args: readonly string[]) {
   const values = new Map<string, string>();
@@ -266,7 +279,7 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
       const refusal = mandateRefusal(budget, reservationCost(order, policy));
       out({ ok: true, id, title: order.title, approvedBy: `${approvalWords(order.approval!)}${order.approval!.mandate ? `: ${order.approval!.mandate}` : ''}`, orderSha256: order.approval!.orderSha256, takes: Array.from({ length: order.takes }, (_, i) => { const t = receipt?.takes.find((x) => x.take === i + 1); return { take: i + 1, status: t?.status ?? 'GODKÄND', mayBegin: !t && !refusal }; }), mandate: { ...budget, refusal }, stopBelowCredits: order.limits.stopBelowCredits, files });
     } else if (command === 'begin') out(await r.begin(id, take));
-    else if (command === 'placed') out((await r.placed(id, take, rest[0], rest[1] !== undefined ? Number(rest[1]) : null)).take);
+    else if (command === 'placed') out((await placedFromCommand(root, id, take, rest)).take);
     else if (command === 'failed') out((await r.failed(id, take, rest.join(' '))).take);
     else if (command === 'status') out((await r.advance(id, take, rest[0], { file: flag('--file'), note: flag('--note') })).take);
     else if (command === 'show') out(await r.read(id));

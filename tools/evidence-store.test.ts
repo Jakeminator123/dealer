@@ -155,6 +155,12 @@ test('the evidence index follows the current reviewer note', t => {
     { name: 'a dated review wins over invalid legacy history', beside: review, history: [{ ...grade, at: 'unknown' }], count: 3 },
     { name: 'an attached package with invalid time gains no evidence links', beside: { ...review, at: 'unknown' },
       history: [grade], count: 0, badTime: true },
+    { name: 'an impossible attached calendar date gains no evidence links', beside: { ...review, at: '2026-02-30T10:00:00Z' },
+      history: [], count: 0, badTime: true },
+    { name: 'an impossible history date does not supersede a real attached review', beside: { ...review, at: '2026-02-28T10:00:00.000Z' },
+      history: [{ ...grade, at: '2026-02-29T11:00:00Z' }], count: 3 },
+    { name: 'valid writer milliseconds on a leap day yield evidence links', beside: { ...review, at: '2028-02-29T10:00:00.000Z' },
+      history: [], count: 3 },
   ];
   for (const { name, beside, history, count, badTime } of cases) {
     write(orderReceipt, { takes: [{ take: 1, file: reviewedFilm.path, sha256: digest, review: beside, history }] });

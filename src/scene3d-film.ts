@@ -505,7 +505,7 @@ export function createFilmLayers(filmVP: T.Matrix4, light: Record<string, {value
 // made the film (its record's source.model), for the key filmEven; a part without it is drawn as it is. `rest`: a rest film, which
 // keeps its speed under the key filmTempo, as a spoken line does. `mouth`: a spoken line laid on the part from a mouth patch
 // (src/scene3d-mouth.ts); the part plays at its own speed, neither tempo nor hurry changes it, so that mouth and sound stay with it.
-export type Part = {path: string; start?: number; end?: number | null; rate?: number; track?: CardTrack | null; cards?: Partial<OverlayOptions> | null; frame?: FilmFrame | null; fps?: number; sound?: boolean; model?: string; rest?: boolean; effect?: PartEffect | null; mouth?: MouthPart | null};
+export type Part = {path: string; start?: number; end?: number | null; rate?: number; absoluteRate?: boolean; track?: CardTrack | null; cards?: Partial<OverlayOptions> | null; frame?: FilmFrame | null; fps?: number; sound?: boolean; model?: string; rest?: boolean; effect?: PartEffect | null; mouth?: MouthPart | null};
 // A film's effect on the scene (a record's motion.effect, carried on the part). room-flash, lightning: for `seconds` of the film's
 // own time from `at` the room is another (`room`, an id of the register), and with `mono` the whole picture is black and white,
 // table, cards and dealer too. A white flash takes the picture there and a softer one takes it back (roomFlashAt).
@@ -535,6 +535,12 @@ const FPS = 30;
  * thousandth of a frame reads it as 58, and stays far below the half frame that a seek or a playing clock sits past a frame start.
  */
 export const frameAtTime = (seconds: number, fps = FPS): number => Math.floor(seconds * fps + 1e-3);
+/** The round's global tempo can multiply a part's rate, unless the part asks for an absolute rate. */
+export function partPlaybackRate(part: Pick<Part, 'rate' | 'absoluteRate' | 'sound' | 'rest' | 'mouth'>, queued: boolean, tempo: number): number {
+  if (part.mouth || !queued) return 1;
+  return (part.rate ?? 1) * (part.sound === true || part.rest === true || part.absoluteRate === true ? 1 : tempo);
+}
+
 // One or more parts played as a chain, each on its own video element so the next one is decoded before it is shown.
 // hooks.refused: a film with sound was refused its start by the browser and now plays muted (enter); the page can say the line
 // another way (src/scene3d-voice.ts). Called with the part and its video element, once per refused start.
@@ -544,7 +550,7 @@ export function createPlayers(onShow: (texture: T.Texture, path: string) => void
   // a spoken line does not take it (its sound is in the film), nor does a rest film (hurried, her breathing and blinking look
   // wound forward), and a chain from load(), a take played by itself to be looked at, is never hurried. Card tracks and the end of
   // a part are counted in the film's own frames, so they follow.
-  const speedOf = (part: Part, queued: boolean) => part.mouth || !queued ? 1 : (part.rate ?? 1) * (part.sound === true || part.rest === true ? 1 : tempo);
+  const speedOf = (part: Part, queued: boolean) => partPlaybackRate(part, queued, tempo);
   // What dispose() has to reach: every listener hangs on one signal, and every frame request and timer is kept until it fires,
   // so that a queue that is taken down leaves nothing behind that could call back into it.
   const ending = new AbortController(), asked = new Map<HTMLVideoElement, Set<number>>(), timers = new Set<ReturnType<typeof setTimeout>>();

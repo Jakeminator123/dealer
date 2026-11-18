@@ -59,7 +59,7 @@ const table = /^[a-z0-9-]{1,40}$/.test(query.get('table') ?? '') ? `?table=${que
 // so the page without them reads and does exactly what it did before. ?inbaddad=1 (the Casino view shows the game in a
 // frame) hides nothing: the frame shows none of what this page shows, and src/preview-ui.ts keeps a framed page from
 // taking the lab tab by itself.
-const OWN_WORDS = ['table', 'tema', 'bricka', 'chatt', 'robot', 'inbaddad', 'dealer', 'intro', 'diagnos', 'geometri'], forval = query.get('forval');
+const OWN_WORDS = ['table', 'tema', 'bricka', 'chatt', 'robot', 'inbaddad', 'dealer', 'intro', 'diagnos', 'geometri', 'dealTempo'], forval = query.get('forval');
 const lookAsked = [...query.keys()].some(word => !OWN_WORDS.includes(word) && !['kort', 'cardBack', 'cardFace'].includes(word)); // kort, cardBack, cardFace: how the card in her hand is shown (below), not a look
 
 const [contract, placements, bank, first, register, lookCode, presetAnswer] = await Promise.all([read('data/scene-contract.json', 'Scenkontraktet'), read('api/placements', 'Placeringsplanen'), read('api/clip-bank', 'Klippbanken'), read(`api/game${table}`, 'Spelet'), read('data/scene-rooms.json', 'Rumsregistret'),
@@ -152,6 +152,8 @@ const swayIn = () => { if (swayAsked > 0 && swayFrom === null && scene.state.dea
 scene.rebuild(); scene.start();
 new ResizeObserver(frame).observe(stage); frame();
 const film = createFilm(scene.players as unknown as FilmPlayers, graph, layout, path => fetch(path).then(res => res.ok ? res.json() : null));
+// A bounded local A/B trial for silent card moves; speech and idle keep their own timing.
+if (query.has('dealTempo')) film.dealTempo = Number(query.get('dealTempo'));
 film.calm = introOn; // under the film before the game she only rests calmly: the film ends with her at rest
 // How the card in her hand is shown (src/game-film.ts Carry) is a word in the address only, for the lab and for recordings:
 // kort=hand (the drawn card in her hand: what the game does without the word), kort=liggande (the film's own card in her hand, the

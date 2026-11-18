@@ -22,7 +22,7 @@ import {placeLines, type MouthPatch} from './speech-patch.ts';
 // when it could not be laid (its text then stands in the chat).
 // effect: what the scene does while the part plays, from the film's record (FilmEffect in src/clip-graph.ts): a rest film's only.
 export type Mouth = {patch: MouthPatch; base: string};
-export type FilmPart = {path: string; start?: number; end?: number | null; rate?: number; track?: unknown; cards?: Record<string, unknown>; frame?: unknown; fps?: number; sound?: boolean; model?: string; rest?: boolean; mouth?: Mouth & {begin?: (said: boolean) => void}; effect?: FilmEffect};
+export type FilmPart = {path: string; start?: number; end?: number | null; rate?: number; absoluteRate?: boolean; track?: unknown; cards?: Record<string, unknown>; frame?: unknown; fps?: number; sound?: boolean; model?: string; rest?: boolean; mouth?: Mouth & {begin?: (said: boolean) => void}; effect?: FilmEffect};
 /** A take's effect as a part carries it; nothing when the record asks for none. */
 export const effectPart = (take: Take | null | undefined): {effect?: FilmEffect} => { const effect = effectOf(take?.motion); return effect ? {effect} : {}; };
 const frameOf = (take: Take | null | undefined) => (take?.motion?.motion as {frame?: unknown} | undefined)?.frame ?? null;
@@ -109,6 +109,7 @@ export function createFilm(players: FilmPlayers, bank: Graph, layout: Layout, re
   let graph = bank; // whose films: another dealer at the table is another graph (use)
   let table: TableCards = {hands: [], dealer: []}, records: CardRecord[] = [], lying: number[] = [];
   let token = 0, resting: Take | null = null, carry: Carry = CARRY, words: CardWords = {}, calmOnly = false, heldRest: number | null = null; const played: string[] = [], tracks = new Map<string, Promise<unknown>>();
+  let dealTempo = 1;
   let mouths: () => Mouth[] = () => []; // the mouth patches the page has read and may lay now, asked for as a step begins
   const modelOf = (take: Take | null | undefined) => { const model = filmModel(take, graph.takes); return model ? {model} : {}; };
   const trackOf = (take: Take | null) => { const path = take?.media.track; if (!path) return Promise.resolve(null); let hit = tracks.get(path); if (!hit) { hit = readJson(path).catch(() => null); tracks.set(path, hit); } return hit; };
@@ -178,7 +179,7 @@ export function createFilm(players: FilmPlayers, bank: Graph, layout: Layout, re
    * a playable film lands at once, in order. Resolves when the chain has played; the rest loop then goes on with the new table.
    */
   async function play(signals: FilmSignal[], next: {table: TableCards; records: CardRecord[]}, landed: (beat: Beat, index: number) => void = () => {}, said: {before?: Said[]; after?: Said[]} = {}): Promise<{gaps: string[]; beats: Beat[]}> {
-    const mine = ++token, leaving = resting; resting = null;
+    const mine = ++token, leaving = resting, rate = dealTempo; resting = null;
     const standIn = STAND_IN_FILM[graph.dealer] ?? {}, beats = planBeats(next.table, lying, signals, filmless, toRest, standIn, SEAT_HUB[graph.dealer] ?? {}, fromHub);
     table = next.table; records = next.records;
     // PLACE beats have no edge; the others are resolved as one chain, so each deal is cut where its return begins.
@@ -210,6 +211,13 @@ export function createFilm(players: FilmPlayers, bank: Graph, layout: Layout, re
     const due = (t: Said) => ({key: t.key ?? '', from: t.beat ? Math.max(0, beatOf.findIndex(b => beats[b].kind === t.beat)) : 0});
     if (ready.length) placeLines(before.map(due), chain, ready.map(m => m.patch)).forEach((at, k) => { if (!at) return; const t = before[k], m = ready.find(x => x.patch === at.patch)!;
       parts[at.part] = {...parts[at.part], mouth: {...m, begin: () => t.begin()}}; over.add(t); });
+    if (rate > 1) parts.forEach((part, i) => {
+      const kind = beats[beatOf[i]].kind;
+      if ((kind === 'DEAL' || kind === 'RETURN') && !part.mouth && !part.sound && !part.rest) {
+        part.rate = rate;
+        part.absoluteRate = true;
+      }
+    });
     const talkBefore = before.filter(t => t.part && !over.has(t)), talkAfter = after.filter(t => t.part);
     for (const t of talkBefore) t.part = {...t.part!, cards: cardOptions({own: null, lying}, table, turn >= 0 ? closed : records, layout, carry, words)};
     for (const t of talkAfter) t.part = {...t.part!, cards: cardOptions({own: null, lying: [...new Set([...lying, ...beats.filter(b => b.own).map(b => b.own!.shoeDraw)])]}, table, records, layout, carry, words)};
@@ -280,6 +288,9 @@ export function createFilm(players: FilmPlayers, bank: Graph, layout: Layout, re
     set words(next: CardWords) { words = next; }, get words() { return words; },
     /** Only calm rest films from the next pick on (true), or the whole rotation with its gestures (false). */
     set calm(next: boolean) { calmOnly = next; }, get calm() { return calmOnly; },
+    /** A trial rate for silent deals and returns from the next step on. */
+    set dealTempo(next: number) { dealTempo = Number.isFinite(next) ? Math.max(1, Math.min(1.15, next)) : 1; },
+    get dealTempo() { return dealTempo; },
     /** The mouth patches that may be laid on a step's films, asked for as each step begins (the page's, read and ready). */
     set mouths(next: () => Mouth[]) { mouths = next; },
     /** Another dealer's films from now on (she has come to the table); rest goes on with hers. */

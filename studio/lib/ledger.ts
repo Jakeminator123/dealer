@@ -234,7 +234,15 @@ export function scoresOf(note: string | null | undefined): Scores {
 
 /** Review timestamps need an explicit zone so the index and browser agree on the instant. */
 export function reviewInstant(at: unknown): number {
-  return typeof at === "string" && /^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d(?:\.\d{1,3})?(?:Z|[+-]\d\d:?\d\d)$/i.test(at) ? Date.parse(at) : NaN;
+  if (typeof at !== "string") return NaN;
+  const date = /^(\d{4})-(\d\d)-(\d\d)T\d\d:\d\d:\d\d(?:\.\d{1,3})?(?:Z|[+-]\d\d:?\d\d)$/i.exec(at);
+  if (!date) return NaN;
+  const year = Number(date[1]), month = Number(date[2]), day = Number(date[3]);
+  if (month < 1 || month > 12 || day < 1) return NaN;
+  const leap = year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0);
+  const days = [31, leap ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+  // Date.parse can roll an impossible day into the next month.
+  return day <= days[month - 1] ? Date.parse(at) : NaN;
 }
 
 /** Select the actual entry so consumers can distinguish separate reviews with identical notes. */

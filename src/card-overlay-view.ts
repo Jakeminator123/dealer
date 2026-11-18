@@ -4,7 +4,7 @@
 // and how large comes from src/card-overlay.ts.
 import * as THREE from '../materials/source/references/card-materials/vendor/three.module.js';
 import {CARD, RANKS, SUITS, createCardGeometry, createCardPrint, paperMaterialParameters, applyCardLights, validateCard, type CardValue} from '../materials/source/src/card-material-study.ts';
-import {poseAt, restingQuad, returnCardAt, cardToImage, projectionOf, regionOf, readMatte, filmZone, strayBoxes, cardRecord, cardFace, CARD_RANKS, CARD_SUITS, BESIDE, RIM, type CardRecord, type CardTrack, type Scene, type Pose} from './card-overlay.ts';
+import {poseAt, restOf, restingQuad, returnCardAt, cardToImage, projectionOf, regionOf, readMatte, filmZone, strayBoxes, cardRecord, cardFace, CARD_RANKS, CARD_SUITS, BESIDE, RIM, type CardRecord, type CardTrack, type Scene, type Pose} from './card-overlay.ts';
 import {signedArea, inside, clockwise, grown, is, type Pt} from './card-track.ts';
 
 export {RANKS, SUITS};
@@ -18,7 +18,7 @@ const PAPER_EXPOSURE = 3;
 // placed: cards dealt by earlier films of the round, which this film does not show; they lie where they landed.
 type PlacedCard = {quad: Pt[]; back: boolean; target?: string | null; shoeDraw?: number | null; gloss?: number};
 export type OverlayOptions = {scale: number; split: boolean; card: CardValue; side: 'TRACK' | 'BACK' | 'FRONT'; bend: number; gloss: number; inFront: boolean;
-  shift?: Pt | null; land?: Pt[] | null; returning?: boolean; placed?: PlacedCard[];
+  shift?: Pt | null; land?: Pt[] | null; returning?: boolean; placed?: PlacedCard[]; carry?: 'object' | 'film' | 'matte';
   // A value per card (optional): the records of the dealt cards, and which of them the card of this film is, by draw number or by
   // target. Each resting card names its own in `placed`. A card without a record keeps the artwork in `card`.
   cards?: CardRecord[] | null; target?: string | null; shoeDraw?: number | null};
@@ -27,6 +27,21 @@ export type OverlayOptions = {scale: number; split: boolean; card: CardValue; si
 export function placedCardsForView(placed: readonly PlacedCard[], returning: PlacedCard | null, scene: Scene | null, scale: number): PlacedCard[] {
   const cards = returning ? [...placed, returning] : placed;
   return cards.map(card => ({...card, quad: restingQuad(scene, card.quad, scale).quad}));
+}
+
+/** In film carry, the moving card stays in the original pixels until the tracked landing. */
+export function frameCardsForView(track: CardTrack | null, frame: number, scene: Scene | null, options: Pick<OverlayOptions, 'carry' | 'scale' | 'shift' | 'land' | 'returning' | 'placed' | 'target' | 'shoeDraw' | 'gloss'>) {
+  const returning = returnCardAt(track, frame, options), marker = returning?.marker;
+  const filmTrack = options.carry === 'film' && !options.returning ? track : null;
+  const rest = filmTrack && restOf(filmTrack);
+  // A deal with a measured landing uses that frame. Bad quads near its centre must not move the handoff earlier.
+  const keepFilmCard = !!filmTrack && Math.round(frame) < (rest ? filmTrack.restFrom ?? rest.from : Infinity);
+  // During a return only the marker is tracked. The game card is laid just as it will be in the next beat.
+  const pose: Pose | null = returning
+    ? marker ? {frame: marker.frame, side: marker.side, quad: null, edge: null, film: grown(marker.quad, RIM), resting: 1, turned: false} : null
+    : track && !keepFilmCard ? poseAt(track, scene, frame, options.scale, 12, options.shift ?? null, options.land ?? null) : null;
+  const placed = placedCardsForView(options.placed ?? [], returning?.card ?? null, scene, options.scale);
+  return {pose, placed, returning: !!returning, keepFilmCard};
 }
 
 if (RANKS.join() !== CARD_RANKS.join() || SUITS.join() !== CARD_SUITS.join()) console.warn('Card values in src/card-overlay.ts differ from the card material study.');
@@ -86,7 +101,7 @@ export function createCardOverlay(canvas: HTMLCanvasElement) {
   // A card dealt by an earlier film: rendered once and kept, then only laid over the frame. Where the film shows anything but
   // table there (a hand or sleeve passing, or the film's own card), the hand matte of that spot keeps the film's hand in front.
   const lying = new Map<string, {image: HTMLCanvasElement; x: number; y: number}>(), peek = document.createElement('canvas'), pctx = peek.getContext('2d', {willReadFrequently: true})!;
-  function lay(video: HTMLVideoElement, card: PlacedCard, options: OverlayOptions, width: number, height: number, own: Pt[] | null) {
+  function lay(video: HTMLVideoElement, card: PlacedCard, options: OverlayOptions, width: number, height: number, own: Pt[] | null, keepFilmCard = false) {
     const face = cardFace(cardRecord(options.cards, card), card.back, options.card, Array.isArray(options.cards)), gloss = card.gloss ?? options.gloss;
     const key = JSON.stringify([card.quad.map(p => [Math.round(p.x * 4), Math.round(p.y * 4)]), face.back, face.art, gloss]);
     let hit = lying.get(key);
@@ -105,6 +120,8 @@ export function createCardOverlay(canvas: HTMLCanvasElement) {
     if (bare) { out.drawImage(image, x, y); return; }
     read.width = w; read.height = h; rctx.drawImage(video, x, y, w, h, 0, 0, w, h);
     const matte = readMatte(rctx.getImageData(0, 0, w, h).data, w, h, own ? (px, py) => inside(own, x + px + 0.5, y + py + 0.5) : undefined);
+    // In film carry, the source hand and card can pass over a card already on the table.
+    if (keepFilmCard) for (let i = 0; i < matte.card.length; i++) if (matte.card[i]) matte.hand[i] = 1;
     layer.width = w; layer.height = h; lctx.drawImage(image, 0, 0); stamp(matte.hand, w, h, 'destination-out'); out.drawImage(layer, x, y);
   }
   // Every other card the film shows (one lying since an earlier deal, or the film's card where the track lost it) is painted with
@@ -129,21 +146,15 @@ export function createCardOverlay(canvas: HTMLCanvasElement) {
     if (canvas.width !== width || canvas.height !== height) { canvas.width = width; canvas.height = height; }
     out.clearRect(0, 0, width, height);
     if (options.split) out.drawImage(video, 0, 0, width, height); // beside the raw film the layer needs its own copy of the frame
-    const returning = returnCardAt(track, frame, options);
-    const marker = returning?.marker;
-    // During a return only the marker is tracked. The game card is laid just as it will be in the next beat.
-    const pose: Pose | null = returning
-      ? marker ? {frame: marker.frame, side: marker.side, quad: null, edge: null, film: grown(marker.quad, RIM), resting: 1, turned: false} : null
-      : track ? poseAt(track, scene, frame, options.scale, 12, options.shift ?? null, options.land ?? null) : null;
+    const {pose, placed, returning, keepFilmCard} = frameCardsForView(track, frame, scene, options);
     const box = pose ? regionOf(pose, width, height) : null;
-    const placed = placedCardsForView(options.placed ?? [], returning?.card ?? null, scene, options.scale);
     canvas.dataset.frame = String(pose?.frame ?? Math.round(frame)); // which film frame the layer was drawn for
     canvas.dataset.cards = String(placed.length + (pose?.quad || pose?.edge ? 1 : 0)); // how many rendered cards it carries
     // Wipe strays found in this video frame before applying the finer tracked mask. Returns need the shoe window marked before
     // a frame-wide wipe, so the card in the shoe stays visible even when there is no usable marker track on the felt.
     const shoe = track?.shoeWindow?.box;
-    if (track && (!returning || shoe)) wipe(video, width, height, shoe ? [shoe] : []);
-    if (!pose || !box) { for (const card of placed) lay(video, card, options, width, height, null); return pose; }
+    if (track && !keepFilmCard && (!returning || shoe)) wipe(video, width, height, shoe ? [shoe] : []);
+    if (!pose || !box) { for (const card of placed) lay(video, card, options, width, height, null, keepFilmCard); return pose; }
     // What the film shows here: hand and sleeve stay in front, the film's own card must go.
     const bw = box.width, bh = box.height;
     read.width = bw; read.height = bh; rctx.drawImage(video, box.x, box.y, bw, bh, 0, 0, bw, bh);

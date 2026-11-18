@@ -5,7 +5,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import http from 'node:http';
-import { mkdtemp, mkdir, readFile, readdir, writeFile, rm, copyFile } from 'node:fs/promises';
+import { mkdtemp, mkdir, readFile, readdir, writeFile, rm, rmdir, copyFile } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import os from 'node:os';
@@ -1028,6 +1028,12 @@ test('the line: a deal says its anchor, its seat and its card, and the recipe gi
     assert.equal(blocked.status, 409, `cut-frame provenance ${id}`);
     assert.match(blocked.json.error, /snittrutan.*arkiverad/i);
   }
+  const cutSource = path.join(root, `motions/${last.from.cut.ret}.json`), cutSourceBefore = await readFile(cutSource);
+  await writeFile(cutSource, '{');
+  const unreadableCut = await call('POST', `/api/orders/${c.id}/approve`, { match: cut.json.revision });
+  assert.equal(unreadableCut.status, 409);
+  assert.match(unreadableCut.json.error, /Arkivstatus.*snittrutan/i);
+  await writeFile(cutSource, cutSourceBefore);
   const bankFile = path.join(root, 'data/clip-jobs.json'), bankBefore = await readFile(bankFile, 'utf8');
   const bank = JSON.parse(bankBefore), referencePart = 'pamela-archived-return';
   const correctedId = 'pamela-p4-c1-plan-deal-02-fixed';
@@ -1105,6 +1111,75 @@ test('the line: a deal says its anchor, its seat and its card, and the recipe gi
   await writeFile(path.join(root, 'motions/pamela-p4-c1-plan-deal-02.json'), JSON.stringify({ review: { archived: archive } }));
   const approvedDocka = await call('POST', `/api/orders/${d.id}/approve`, { match: withDocka.json.revision });
   assert.equal(approvedDocka.status, 200, approvedDocka.json.error);
+});
+
+test('corrected full films inherit archived originals and unreadable provenance prevents approval', async (t) => {
+  const { root, call, request } = await lab(t);
+  const media = register(), landing = {id: 'paow-landning-p4', role: 'landning', name: 'Landning 4', path: 'assets/anchors/paow-nyp-ny/anchor.png', node: 'LAND(P4.C1)', card: 'P4.C1', state: 'gäller'};
+  media.dealers.paow.entries[3].state = 'gäller';
+  media.dealers.paow.entries.push(landing);
+  await writeFile(path.join(root, 'data/media-roles.json'), JSON.stringify(media));
+  const parent = 'paow-original', fixed = `${parent}-fix-1`;
+  const film = Buffer.from('a four-second round trip');
+  const derived = [parent, fixed].flatMap(clip => [
+    {id: `${clip}-deal`, clip, from: 'READY', to: 'P4.C1', frames: [0, 79], ...(clip === fixed ? {editOf: `${parent}-deal`} : {})},
+    {id: `${clip}-return`, clip, from: 'P4.C1', to: 'READY', frames: [80, 119], ...(clip === fixed ? {editOf: `${parent}-return`} : {})},
+  ]);
+  const registry = path.join(root, 'data/clip-jobs.json'), registryData = JSON.stringify({jobs: [], derived});
+  const motion = (id: string) => path.join(root, `motions/${id}.json`);
+  await mkdir(path.join(root, 'motions'));
+  await writeFile(registry, registryData);
+  for (const clip of [parent, fixed]) {
+    const asset = path.join(root, `assets/motions/${clip}/source.mp4`);
+    await mkdir(path.dirname(asset), {recursive: true});
+    await writeFile(asset, film);
+    await writeFile(motion(clip), JSON.stringify({source: {frames: 120, fps: 30, sha256: sha(film)}}));
+  }
+  const input = (reference: string) => ({dealer: 'paow', step: 'GIV-2.1', target: 'P4.C1', reference});
+  const preview = (reference: string) => request('POST', '/api/orders/preview', {body: input(reference)});
+  const archive = JSON.stringify({review: {archived: {by: 'Jakob', where: 'Karta'}}});
+  const fixedReturn = motion(`${fixed}-return`), originalReturn = motion(`${parent}-return`);
+  await writeFile(fixedReturn, archive);
+  assert.equal((await preview(parent)).status, 200, 'archiving a corrected copy does not block the original');
+  await rm(fixedReturn);
+  const pending = await call('POST', '/api/orders', {body: input(`${fixed}-deal`)});
+  assert.equal(pending.status, 201, pending.json.error);
+  const address = `/api/orders/${pending.json.order.id}`;
+  const approve = () => call('POST', `${address}/approve`, {match: pending.json.revision});
+
+  await writeFile(originalReturn, archive);
+  const blocked = await approve();
+  assert.equal(blocked.status, 409, blocked.json.error);
+  assert.match(blocked.json.error, /referensfilmen.*arkiverad/i);
+  for (const reference of [fixed, `${fixed}-deal`]) assert.equal((await preview(reference)).status, 400, reference);
+  await rm(originalReturn);
+
+  for (const invalid of ['{', 'null', '{"jobs": [], "derived": "unreadable"}']) {
+    await writeFile(registry, invalid);
+    const denied = await approve();
+    assert.equal(denied.status, 409);
+    assert.match(denied.json.error, /Arkivstatus.*clip-jobs\.json/i);
+  }
+  await rm(registry);
+  const missingRegistry = await approve();
+  assert.equal(missingRegistry.status, 409);
+  assert.match(missingRegistry.json.error, /Arkivstatus.*clip-jobs\.json/i);
+  await writeFile(registry, registryData);
+  await writeFile(originalReturn, '{');
+  const invalidMotion = await approve();
+  assert.equal(invalidMotion.status, 409);
+  assert.match(invalidMotion.json.error, /Arkivstatus.*referensfilmen/i);
+  await rm(originalReturn);
+  await mkdir(originalReturn);
+  const unreadableMotion = await approve();
+  assert.equal(unreadableMotion.status, 409);
+  assert.match(unreadableMotion.json.error, /Arkivstatus.*referensfilmen/i);
+  await rmdir(originalReturn);
+  // Missing records can mean there has never been a review. An unrelated unreadable record is not the draft's source.
+  await writeFile(registry, JSON.stringify({jobs: [{id: 'unrelated', from: 'IDLE', to: 'READY'}], derived}));
+  await writeFile(motion('unrelated'), '{');
+  const accepted = await approve();
+  assert.equal(accepted.status, 200, accepted.json.error);
 });
 
 test("whose each picture is: the dealer's own, the other dealer's arm only, never another dealer's whole picture", async (t) => {

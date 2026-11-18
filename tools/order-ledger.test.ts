@@ -6,7 +6,7 @@ import assert from 'node:assert/strict';
 import { mkdtemp, mkdir, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import { filterRows, ledgerOf, methodChips, methodOf, reviewerNote, scoresOf, sharedFacts, styleOf, summarize, type LedgerInput } from '../studio/lib/ledger.ts';
+import { filterRows, ledgerOf, methodChips, methodOf, reviewerNote, reviewInstant, scoresOf, sharedFacts, styleOf, summarize, type LedgerInput } from '../studio/lib/ledger.ts';
 import { readLedger, serveLedger } from './order-ledger.ts';
 
 const order = (id: string, extra: Record<string, unknown> = {}) => ({
@@ -59,11 +59,23 @@ test('reviewer notes use instants, then the last nonblank history entry if neith
   assert.equal(picked('2026-11-18T09:30:00-01:00', '2026-11-18T10:01:00Z'), grade.note);
   assert.equal(picked('unknown', '2026-11-18T10:01:00Z'), beside.note);
   assert.equal(picked('2026-11-18T10:01:00Z', 'unknown'), grade.note);
+  assert.equal(picked('2026-02-28T12:00:00Z', '2026-02-30T10:00:00Z'), grade.note);
+  assert.equal(picked('2026-02-29T12:00:00Z', '2026-02-28T10:00:00Z'), beside.note);
   assert.equal(picked(undefined, 'unknown'), grade.note);
   assert.equal(reviewerNote([], beside), beside.note);
   assert.equal(reviewerNote([grade, { ...grade, note: ' ' }], beside), grade.note);
   assert.equal(reviewerNote([{ ...grade, at: '2026-11-18T11:00:00Z' }, { ...grade, at: '2026-11-18T09:00:00Z' }],
     { ...beside, at: '2026-11-18T10:00:00Z' }), beside.note);
+});
+
+test('review timestamps reject impossible calendar dates and accept leap days and zoned writer times', () => {
+  for (const invalid of ['2026-02-30T10:00:00Z', '1900-02-29T10:00:00+01:00', '2026-04-31T10:00:00Z',
+    '2026-01-00T10:00:00Z', '2026-00-10T10:00:00Z', '2026-13-01T10:00:00Z']) {
+    assert.equal(reviewInstant(invalid), NaN, invalid);
+  }
+  assert.equal(reviewInstant('2000-02-29T10:00:00Z'), Date.UTC(2000, 1, 29, 10));
+  assert.equal(reviewInstant('2028-02-29T10:00:00.001+0100'), Date.UTC(2028, 1, 29, 9, 0, 0, 1));
+  assert.equal(reviewInstant('2026-11-18T10:00:00.000Z'), Date.UTC(2026, 10, 18, 10));
 });
 
 test('a method as plain facts: model, length, text, ban list, turn, hand, landing, reference and pictures', () => {

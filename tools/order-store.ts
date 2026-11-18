@@ -315,6 +315,16 @@ export function orderStore(root: string, options: StoreOptions = {}) {
     await watch?.(file);
     try { return JSON.parse(await readFile(file, 'utf8')) as T; } catch { return null; }
   }
+  async function readArchiveInput<T>(relativeFile: string, optional = false): Promise<T | null> {
+    try {
+      const value = JSON.parse(await readFile(path.join(root, relativeFile), 'utf8'));
+      if (!value || typeof value !== 'object' || Array.isArray(value)) throw new Error('Invalid metadata');
+      return value as T;
+    } catch (error) {
+      if (optional && (error as NodeJS.ErrnoException).code === 'ENOENT') return null;
+      throw new StoreError(409, `Arkivstatus kan inte verifieras: ${relativeFile} kan inte läsas som ett register.`);
+    }
+  }
   async function readPolicy(watch?: WatchSource): Promise<Policy | null> { const p = await readJson<Policy>(path.join(root, 'data/order-policy.json'), watch); return p?.schemaVersion === 1 && Array.isArray(p.prices) ? p : null; }
   async function readDealers(watch?: WatchSource): Promise<DealerInfo[]> { return (await readJson<{ dealers: DealerInfo[] }>(path.join(root, 'data/dealers.json'), watch))?.dealers ?? []; }
   async function readRegister(watch?: WatchSource): Promise<Register> {
@@ -328,17 +338,33 @@ export function orderStore(root: string, options: StoreOptions = {}) {
    * The bank as a reference film needs it, read as the lab's GET /api/clip-bank reads it (tools/preview.ts clipBank): the
    * job file's takes, each take's record (a derived take's own review, its film's facts) from motions/<id>.json.
    */
-  async function readBank(watch?: WatchSource): Promise<BankFacts> {
-    const file = await readJson<{ jobs?: unknown[]; derived?: unknown[]; edits?: unknown[] }>(path.join(root, 'data/clip-jobs.json'), watch);
+  async function readBank(watch?: WatchSource, archive?: { sourceIds: Set<string>; unreadable: Set<string> }): Promise<BankFacts> {
+    type Lists = { jobs?: unknown[]; derived?: unknown[]; edits?: unknown[] };
+    const file = archive ? await readArchiveInput<Lists>('data/clip-jobs.json') : await readJson<Lists>(path.join(root, 'data/clip-jobs.json'), watch);
     const named = <T>(list: unknown): T[] => (Array.isArray(list) ? list : []).filter((x) => typeof (x as { id?: unknown })?.id === 'string' && ORDER_ID.test((x as { id: string }).id)) as T[];
     const jobs = named<NonNullable<BankFacts['jobs']>[number]>(file?.jobs), edits = named<NonNullable<BankFacts['edits']>[number]>(file?.edits);
     const derived = named<NonNullable<BankFacts['derived']>[number]>(file?.derived).filter((d) => typeof d.clip === 'string' && ORDER_ID.test(d.clip));
+    const holdsList = (raw: unknown, length: number) => Array.isArray(raw) && raw.length === length;
+    if (archive && (!holdsList(file?.jobs, jobs.length) || (file?.edits !== undefined && !holdsList(file.edits, edits.length)) ||
+      (file?.derived !== undefined && !holdsList(file.derived, derived.length)) ||
+      derived.some((d) => !Array.isArray(d.frames) || d.frames.length !== 2 || !d.frames.every(Number.isInteger) || (d.editOf != null && (typeof d.editOf !== 'string' || !ORDER_ID.test(d.editOf)))) ||
+      edits.some((e) => e.source?.clip != null && (typeof e.source.clip !== 'string' || !ORDER_ID.test(e.source.clip))))) {
+      throw new StoreError(409, 'Arkivstatus kan inte verifieras: data/clip-jobs.json har ogiltiga källposter.');
+    }
     const motions: NonNullable<BankFacts['motions']> = {};
     type Fact = NonNullable<NonNullable<BankFacts['motions']>[string]>;
-    const record = (id: string) => readJson<{ source?: Fact['source']; review?: Fact['review']; motion?: Fact['motion'] }>(path.join(root, 'motions', `${id}.json`), watch);
+    const record = async (id: string) => {
+      const relativeFile = `motions/${id}.json`;
+      if (!archive) return readJson<Fact>(path.join(root, relativeFile), watch);
+      try { return await readArchiveInput<Fact>(relativeFile, true); }
+      catch { archive.unreadable.add(id); return null; }
+    };
     for (const j of [...jobs, ...edits]) motions[j.id] = await record(j.id);
     // A derived take: its own verdict (an archive too) and the hand that laid the card, its film's facts; the film itself too.
     for (const d of derived) { const own = await record(d.id), clip = await record(d.clip); motions[d.id] = { source: clip?.source, review: own?.review, motion: own?.motion }; if (!(d.clip in motions)) motions[d.clip] = clip; }
+    const sources = [...(archive?.sourceIds ?? []), ...derived.map((d) => d.editOf), ...edits.map((e) => e.source?.clip)];
+    for (const id of sources) if (typeof id === 'string' && ORDER_ID.test(id) && !(id in motions)) motions[id] = await record(id);
+    if (archive) return { jobs, derived, edits, motions };
     // The picture checks of cut frames as they are written down (data/cut-frames.json): what Material and Bordet read too.
     return { jobs, derived, edits, motions, rendered: await readRendered(watch), cutChecks: readCutChecks(await readJson(path.join(root, 'data/cut-frames.json'), watch)) };
   }
@@ -1220,19 +1246,27 @@ export function orderStore(root: string, options: StoreOptions = {}) {
     const reference = order.reference.status === 'FINNS' ? order.reference : null;
     const cuts = order.pictures.flatMap((p) => p.from?.cut ? [p.from.cut] : []);
     if (!reference && !cuts.length) return [];
-    const bank = await readBank();
+    const ids = new Set<string>(Array.isArray(reference?.clips) ? reference.clips : []);
+    if (reference?.from?.film) ids.add(reference.from.film);
+    const sourceIds = new Set([...ids, ...cuts.flatMap(({ clip, ret }) => [clip, ret])]);
+    // An absent optional motion may mean no verdict was written. An unreadable record could hide one.
+    const unreadable = new Set<string>();
+    const bank = await readBank(undefined, { sourceIds, unreadable });
     const derived = bank.derived ?? [], problems: string[] = [];
     if (reference) {
       const archived = archivedReferenceIds(bank);
-      const ids = new Set(reference.clips ?? []);
-      if (reference.from?.film) ids.add(reference.from.film);
-      if ([...ids].some((id) => archived.has(id))) {
+      // The same dependency chain identifies whose archive status must be available.
+      const unavailable = archivedReferenceIds({ ...bank, motions: Object.fromEntries([...unreadable].map((id) => [id, { review: { archived: true } }])) });
+      if ([...ids].some((id) => unavailable.has(id))) {
+        problems.push('Arkivstatus kan inte verifieras för referensfilmen: ett källregister under motions/ kan inte läsas.');
+      } else if ([...ids].some((id) => archived.has(id))) {
         problems.push('Referensfilmen har en arkiverad källa eller del. Gör ett nytt utkast med en annan referensfilm.');
       }
     }
     for (const { clip, frame, ret } of cuts) {
-      const fromArchivedTake = derived.some((d) => d.clip === clip && d.frames[0] <= frame && frame <= d.frames[1] && isArchived(bank, d.id));
-      if (isArchived(bank, clip) || isArchived(bank, ret) || fromArchivedTake) problems.push('Snittrutan kommer från en arkiverad tagning eller har en arkiverad retur. Gör ett nytt utkast med en annan slutbild.');
+      const sources = [clip, ret, ...derived.filter((d) => d.clip === clip && d.frames[0] <= frame && frame <= d.frames[1]).map((d) => d.id)];
+      if (sources.some((id) => unreadable.has(id))) problems.push('Arkivstatus kan inte verifieras för snittrutan: ett källregister under motions/ kan inte läsas.');
+      else if (sources.some((id) => isArchived(bank, id))) problems.push('Snittrutan kommer från en arkiverad tagning eller har en arkiverad retur. Gör ett nytt utkast med en annan slutbild.');
     }
     return problems;
   }
