@@ -7,13 +7,22 @@ import assert from "node:assert/strict";
 import { readFile, readdir } from "node:fs/promises";
 import {
   HANDOVER, PRESET_PARAMS, SHOWN_CHIP, anchorFor, cardOf, dealAnchor, costWords, firstLacking, goesWords, gripAgainstPlan, markOf, motionWords, offsetWords, orderableCard, ownerWords, paramRows, picturesInOrder, plannedWords, presetAddress, presetOf, recipeOf,
-  referenceWords, routeOf, seatKey, sections, shownWords, storedParts, styleWords, withCard, type Order, type OrderAnswer,
+  referenceWords, routeOf, seatKey, sections, shownWords, storedParts, styleWords, withCard, orderSaveFailure, type Order, type OrderAnswer,
 } from "../lib/orders.ts";
+import { ApiError } from "../lib/api.ts";
 import { parseJakob } from "../lib/names.ts";
 import { ALL_SEVEN, MODELS, SHOWN_LABEL, STEPS, cutIntoOf, stepOf, type StepKey } from "../../src/order-model.ts";
 import { planAnswerOf } from "../../tools/order-store.ts";
 import { readPlan } from "../../tools/order-images.ts";
 import { orderPrompt } from "../../src/order-prompts.ts";
+
+test("a lost or unreadable save response requires retrying the same frozen preview", () => {
+  for (const error of [new ApiError("offline", 0, "network"), new ApiError("server", 500, "server"), new SyntaxError("truncated JSON")]) {
+    assert.equal(orderSaveFailure(error).retrySave, true, error.message);
+  }
+  assert.equal(orderSaveFailure(new ApiError("underlaget har ändrats", 409, "conflict")).retrySave, false);
+  assert.equal(orderSaveFailure(new ApiError("förhandsvisningen har gått ut", 428, "precondition")).retrySave, false);
+});
 
 async function drafts(): Promise<Order[]> {
   const names = (await readdir("data/orders")).filter((f) => f.endsWith(".json")).sort();

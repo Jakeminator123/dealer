@@ -132,7 +132,7 @@ test('rest hands use the held image for each dealer and require a measurable ref
   writeFileSync(path.join(root, 'data/media-roles.json'), JSON.stringify({dealers: {
     pamela: {entries: [entry('pamela-proposal', 'kandidat'), entry('pamela-holds', 'gäller')]},
     paow: {entries: [entry('paow-too-far', 'kandidat'), entry('paow-holds', 'gäller', 'ankare-1', 17), entry('paow-good', 'kandidat'),
-      entry('paow-one-hand', 'kandidat'), entry('paow-at-shoe', 'gäller', 'ankare-2.1')]},
+      entry('paow-one-hand', 'kandidat'), entry('paow-swapped', 'kandidat'), entry('paow-at-shoe', 'gäller', 'ankare-2.1')]},
     missing: {entries: [entry('missing-holds', 'gäller'), entry('missing-proposal', 'kandidat')]},
   }}));
   writeFileSync(path.join(root, 'data/dealer-standard.json'), JSON.stringify({
@@ -140,19 +140,20 @@ test('rest hands use the held image for each dealer and require a measurable ref
     shoe: {box: [500, 300, 580, 340]},
   }));
   const sourceBytes = Buffer.from('synthetic reference source');
-  for (const id of ['pamela-holds', 'paow-holds']) {
-    const folder = path.join(root, 'assets/anchors', id);
-    mkdirSync(folder, {recursive: true});
-    writeFileSync(path.join(folder, 'image.png'), sourceBytes);
-  }
   const poses: Record<string, number[]> = {
     'pamela-holds': [300, 410], 'pamela-proposal': [303, 413], 'paow-holds': [325, 435], 'paow-good': [329, 439],
-    'paow-too-far': [343, 453], 'paow-one-hand': [329], 'paow-at-shoe': [325, 435], 'missing-proposal': [302, 412],
+    'paow-too-far': [343, 453], 'paow-one-hand': [329], 'paow-swapped': [329, 439], 'paow-at-shoe': [325, 435], 'missing-proposal': [302, 412],
   };
+  for (const id of Object.keys(poses)) {
+    const folder = path.join(root, 'assets/anchors', id);
+    mkdirSync(folder, {recursive: true});
+    writeFileSync(path.join(folder, 'image.png'), id.endsWith('-holds') ? sourceBytes : Buffer.from(id));
+  }
   const {entries} = await fitAll(root, async (_repo, file, frame) => {
     const name = file.split('/')[2], hands = poses[name];
     if (!hands) return null;
     if (name === 'paow-holds') assert.equal(frame, 17);
+    if (name === 'paow-swapped') writeFileSync(path.join(root, file), 'replacement source');
     const w = 1764, h = 1174, rgb = new Uint8Array(w * h * 3);
     for (const left of hands) for (let y = 300; y < 325; y++) for (let x = left; x < left + 25; x++) {
       const i = (y * w + x) * 3;
@@ -170,6 +171,11 @@ test('rest hands use the held image for each dealer and require a measurable ref
   assert.equal(entries['paow-good'].verdict, 'stämmer');
   assert.equal(entries['paow-good'].measured?.leftInPicture, 4);
   assert.equal(entries['paow-good'].measured?.rightInPicture, 4);
+  assert.deepEqual(entries['paow-good'].measured?.source, {
+    path: 'assets/anchors/paow-good/image.png', frame: null, sha256: createHash('sha256').update('paow-good').digest('hex'),
+  });
+  assert.equal(entries['paow-swapped'].verdict, 'går inte att mäta');
+  assert.match(entries['paow-swapped'].words, /Bildversionen/);
   assert.deepEqual(entries['paow-good'].measured?.calibration, {
     dealer: 'paow', role: 'ankare-1', entry: 'paow-holds', path: 'assets/anchors/paow-holds/image.png', frame: 17,
     sha256: createHash('sha256').update(sourceBytes).digest('hex'),

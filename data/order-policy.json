@@ -1,8 +1,15 @@
 {
-  "about": "Limits for orders approved in the studio's view Beställ (tools/order-routes.ts refuses an approval beyond them) and the price table the cost is computed from (src/order-model.ts priceOf). The worst case counts: the tool's listed price where it is higher than what the ledgers show. Set enabled to false to stop every approval. The balance is the last one known; a receipt's creditsRemainingAfter is newer when there is one.",
+  "about": "Limits for orders approved in the studio's view Beställ (tools/order-routes.ts refuses an approval beyond them) and the price table the cost is computed from (src/order-model.ts priceOf). The worst case counts: the tool's listed price where it is higher than what the ledgers show. The current mandate separately bounds paid calls by a rolling hour and the fixed session window. Set enabled to false to stop every approval. The balance is the last one known; a receipt's creditsRemainingAfter is newer when there is one.",
   "schemaVersion": 1,
   "enabled": true,
   "dailyCapCredits": 1000000,
+  "mandate": {
+    "id": "codex-dealer-20261118",
+    "startsAt": "2026-11-18T08:01:31Z",
+    "endsAt": "2026-11-18T13:01:31Z",
+    "rollingHourCredits": 800,
+    "totalCredits": 2500
+  },
   "maxPerOrder": 2000,
   "minBalance": 0,
   "timeZone": "Europe/Stockholm",

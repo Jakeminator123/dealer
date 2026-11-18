@@ -25,6 +25,10 @@ async function lab(t: { after(fn: () => Promise<void>): void }) {
   t.after(() => rm(root, { recursive: true, force: true }));
   for (const dir of ['data', 'placements', 'motions', 'assets/anchors/a', 'assets/anchors/b', 'assets/proofs/natten']) await mkdir(path.join(root, dir), { recursive: true });
   for (const file of ['data/order-policy.json', 'data/dealers.json', 'data/order-methods.json']) await copyFile(file, path.join(root, file));
+  const policy = await read(root, 'data/order-policy.json');
+  await writeFile(path.join(root, 'data/order-policy.json'), JSON.stringify({...policy,
+    mandate: {...policy.mandate, startsAt: '2026-11-13T05:00:00Z', endsAt: '2026-11-13T10:00:00Z'},
+  }));
   await writeFile(path.join(root, 'placements/default.json'), committedText('placements/default.json')); // his plan as committed, not as he last saved it (tools/committed.ts)
   const png = await sharp({ create: { width: 1764, height: 1174, channels: 3, background: { r: 0, g: 237, b: 44 } } }).png().toBuffer();
   await writeFile(path.join(root, 'assets/anchors/a/anchor.png'), png);

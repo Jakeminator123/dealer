@@ -42,13 +42,14 @@ export async function mediaFileSha256(file: string, stamp: string): Promise<stri
 
 type FitReport = {schemaVersion?: unknown; entries?: Record<string, unknown>};
 
-function fitFor(report: FitReport | null, dealer: string, entry: EntryAnswer, reference: EntryAnswer | undefined, referenceSha: string | null): Fit | null {
+async function fitFor(report: FitReport | null, dealer: string, entry: EntryAnswer, reference: EntryAnswer | undefined, referenceSha: string | null, hashSource: (entry: EntryAnswer) => Promise<string | null>): Promise<Fit | null> {
  const value = report?.entries?.[entry.id], fit = readFit(value);
  if (!fit || entry.card || !entry.role.startsWith('ankare-') || (fit.verdict !== 'stämmer' && fit.verdict !== 'avviker')) return fit;
 
  // Older anchor reports could mark a hand against a different dealer, or mark an anchor without hand measurements as a fit.
- const measured = (value as {measured?: {leftInPicture?: unknown; rightInPicture?: unknown; calibration?: Record<string, unknown>}}).measured;
- const calibration = measured?.calibration;
+ const measured = (value as {measured?: {leftInPicture?: unknown; rightInPicture?: unknown;
+  calibration?: Record<string, unknown>; source?: Record<string, unknown>}}).measured;
+ const calibration = measured?.calibration, source = measured?.source;
  const distance = (n: unknown) => typeof n === 'number' && Number.isFinite(n) && n >= 0;
  if (report?.schemaVersion === 2 && entry.role === 'ankare-1' && entry.exists && entry.width && entry.height
   && reference?.exists && reference.width && reference.height
@@ -56,8 +57,10 @@ function fitFor(report: FitReport | null, dealer: string, entry: EntryAnswer, re
   && calibration.entry === reference.id && calibration.path === reference.path
   && calibration.frame === (reference.frame ?? reference.still ?? null)
   && referenceSha !== null && calibration.sha256 === referenceSha
-  && distance(measured?.leftInPicture) && distance(measured?.rightInPicture)) return fit;
- return {...fit, verdict: 'går inte att mäta', words: 'Aktuella handmått saknas för dealerns gällande ankare 1.'};
+  && source?.path === entry.path && source?.frame === (entry.frame ?? entry.still ?? null)
+  && typeof source?.sha256 === 'string' && distance(measured?.leftInPicture) && distance(measured?.rightInPicture)
+  && source.sha256 === (entry === reference ? referenceSha : await hashSource(entry))) return fit;
+ return {...fit, verdict: 'går inte att mäta', words: 'Aktuella handmått saknas för bilden och dealerns gällande ankare 1.'};
 }
 
 // ── Headers of pictures and films (pure) ────────────────────────────────────
@@ -286,9 +289,10 @@ export function mediaRoles(root: string) {
    }));
    const held = entries.filter(e => e.role === 'ankare-1' && !e.card && e.state === 'gäller');
    const reference = held.length === 1 ? held[0] : undefined;
-   const referenceSha = fits?.schemaVersion === 2 && reference?.exists && reference.inside && reference.path && reference.width && reference.height
-    ? await hashPath(path.join(root, reference.path)) : null;
-   for (const entry of entries) entry.fit = fitFor(fits, id, entry, reference, referenceSha);
+   const hashSource = async (entry: EntryAnswer) => entry.exists && entry.inside && entry.path && entry.width && entry.height
+    ? hashPath(path.join(root, entry.path)) : null;
+   const referenceSha = fits?.schemaVersion === 2 && reference ? await hashSource(reference) : null;
+   for (const entry of entries) entry.fit = await fitFor(fits, id, entry, reference, referenceSha, hashSource);
    const prefix = dealer.films?.prefix, mine = (list: {id: string}[]) => prefix ? list.filter(j => j.id.startsWith(prefix)).length : 0;
    dealers.push({...dealer, id, entries, bank: {jobs: mine(jobs), derived: prefix ? derived : 0, edits: prefix ? edits : 0}});
   }

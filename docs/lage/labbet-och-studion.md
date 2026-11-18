@@ -9,7 +9,7 @@ Beslut, labbservern och rutinverktygen. Här står bara det som gäller nu; det 
   Bordet, Karta (med Primära), Granska (med Prov), Material, Lipsync, Casino, och i foten Beslut, Ordlista, Ljud och
   Modeller.
 - Beställ är en rak linje: plats och kort, sedan steget. Förhandsvisa visar serverns text, medier, pris och värden före
-  sparning; ändrat underlag kräver ny förhandsvisning. Avsteg görs i Receptet ([film.md](film.md)). Material visar ankare 2.3 och en bricka per plats
+  sparning; ändrat underlag kräver ny förhandsvisning, tappat sparsvar återanvänder samma. A3-kandidat väljs under Undantag. Material visar ankare 2.3 och en bricka per plats
   för landningar. Studiobyggets fulla SHA står i `studio/out/bygge.json`; `/vinklar.html` binder två kameravinklar i en scen.
 - Material för hand (`da339a5`): Jakob kan göra vilken bild som helst gällande, lägga den åt sidan, arkivera den och ta
   tillbaka den, och klipp byggda på en äldre bild mörkas. I Karta (`9a09570`) arkiveras ett klipp för hand och tas
@@ -29,8 +29,8 @@ Beslut, labbservern och rutinverktygen. Här står bara det som gäller nu; det 
 1. En oberoende granskares omdöme om de 96 tagningarna som väntar (listan `waiting-list.txt`), eller märk avgjorda
    prov som avgjorda, så att inget ligger i Jakobs kö.
 2. Steget Granska filmen i Bordet, efter byggordningen i `labbgrund/grund/RAPPORT.md`.
-3. Slaskdisken: inventeringen med förslag väntar på huvudagentens val (`D:/dealer-scratch/tmp/stad-1118/`), och
-   städverktyget räknar ännu mappens egen tid ([BRISTER](../BRISTER.md)).
+3. Slaskdisken: gamla inventeringsförslag behöver ny kontroll av ägare och filernas tid före varje ingrepp
+   ([BRISTER](../BRISTER.md)); labbstart städar inte.
 4. Efterarbete, där Scen ligger: kortets förarbete per film och "Rå | renderad" på en tagning. Det kommer efter
    filmerna. Panelen Vila saknas också sedan gamla labbet togs bort.
 5. Sidornas ord: 72 ställen säger annat än ordlistan (`stadning/ord/ORD.md`, del c, med fil, rad och förslag);

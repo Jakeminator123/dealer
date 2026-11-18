@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { MODELS, credits } from "../../../src/order-model.ts";
 import { asApiError } from "../../lib/api.ts";
 import { labUrl } from "../../lib/lab.ts";
-import { createOrder, previewOrder, type CreatedOrders, type Order, type OrderPreview as Preview, type OrderPreviewInput } from "../../lib/orders.ts";
+import { createOrder, orderSaveFailure, previewOrder, type CreatedOrders, type Order, type OrderPreview as Preview, type OrderPreviewInput } from "../../lib/orders.ts";
 import { Button, Sheet } from "../ui";
 import { PictureCard } from "./Pictures";
 
@@ -35,18 +35,19 @@ export function OrderPreview({ input, onClose, onCreated }: { input: OrderPrevie
   const [reload, setReload] = useState(0);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<{message: string; retrySave: boolean} | null>(null);
 
   useEffect(() => {
     let active = true;
     void previewOrder(input).then(
       (answer) => { if (active) { setPreview(answer); setLoading(false); } },
-      (cause) => { if (active) { setError(asApiError(cause, "Förhandsvisningen").message); setLoading(false); } },
+      (cause) => { if (active) { setError({message: asApiError(cause, "Förhandsvisningen").message, retrySave: false}); setLoading(false); } },
     );
     return () => { active = false; };
   }, [input, reload]);
 
   const refresh = () => {
+    if (error?.retrySave) return;
     if (preview) setPrevious(preview);
     setPreview(null);
     setError(null);
@@ -55,12 +56,13 @@ export function OrderPreview({ input, onClose, onCreated }: { input: OrderPrevie
   };
 
   const save = async () => {
-    if (!preview || error) return;
+    if (!preview || saving || (error && !error.retrySave)) return;
     setSaving(true);
+    setError(null);
     try {
       onCreated(await createOrder(input, preview.revision));
     } catch (cause) {
-      setError(asApiError(cause, "Utkastet").message);
+      setError(orderSaveFailure(cause));
     } finally {
       setSaving(false);
     }
@@ -78,15 +80,15 @@ export function OrderPreview({ input, onClose, onCreated }: { input: OrderPrevie
       footer={
         <>
           <Button variant="quiet" disabled={saving} onClick={onClose}>Tillbaka</Button>
-          {error ? <Button variant="secondary" onClick={refresh}>Hämta ny förhandsvisning</Button> : null}
-          <Button variant="primary" disabled={!count || loading || saving || !!error} loading={saving} onClick={() => void save()}>
-            {count > 1 ? `Skapa ${count} utkast` : "Skapa utkast"}
+          {error && !error.retrySave ? <Button variant="secondary" onClick={refresh}>Hämta ny förhandsvisning</Button> : null}
+          <Button variant="primary" disabled={!count || loading || saving || (!!error && !error.retrySave)} loading={saving} onClick={() => void save()}>
+            {error?.retrySave ? "Försök spara samma utkast igen" : count > 1 ? `Skapa ${count} utkast` : "Skapa utkast"}
           </Button>
         </>
       }
     >
       {loading ? <p role="status" className="text-sm text-dim">Hämtar text, bilder och värden från labbservern …</p> : null}
-      {error ? <p role="alert" className="mb-4 text-sm text-[#f0b07a]">{error}</p> : null}
+      {error ? <p role="alert" className="mb-4 text-sm text-[#f0b07a]">{error.message}{error.retrySave ? " Svaret saknas; utkastet kan redan vara sparat. Försök igen med samma underlag för att få tillbaka resultatet." : ""}</p> : null}
       <div className="flex flex-col gap-8">
         {preview?.orders.map((order, i) => {
           const before = previous?.orders[i];

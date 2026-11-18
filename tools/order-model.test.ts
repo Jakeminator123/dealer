@@ -561,3 +561,24 @@ test('a rendered reference film (the dummy, read off a real deal) is offered fir
   // Another seat's rendered film is not offered for this one.
   assert.ok(!list.some((c) => c.take === 'docka-giv-p3-01'));
 });
+
+test('the studio prioritizes the rolling mandate over the ordinary daily cap and keeps both safeguards', async () => {
+  const p = await policy();
+  assert.ok(p.mandate);
+  const cost = { perTake: 80, total: 80, worstPerTake: 100, worstTotal: 100, basis: '' };
+  const mandateBudget = {
+    status: 'active' as const, mandate: p.mandate, at: p.mandate.startsAt, available: 150,
+    hourlyReserved: 650, totalReserved: 900,
+  };
+  const active = { ...p, mandateBudget };
+  const budget = groupBudget(cost, 2, active, 0, 7000);
+  assert.equal(budget.fitToday, 1);
+  assert.match(budget.words[0], /150 av 800 kvar denna rullande timme/);
+  assert.match(budget.words[0], /1 600 av 2 500 kvar totalt/);
+  assert.doesNotMatch(budget.words.join(' '), /Ryms i dagens tak/);
+  assert.equal(checkPolicy({cost}, {...active, dailyCapCredits: 90}, 0, 7000).ok, false);
+  const expired = { ...active, mandateBudget: {...mandateBudget, status: 'expired' as const, available: 0} };
+  assert.equal(groupBudget(cost, 2, expired, 0, 7000).fitToday, 0);
+  assert.match(groupBudget(cost, 2, expired, 0, 7000).words[0], /Mandatet löpte ut/);
+  assert.equal(checkPolicy({cost}, expired, 0, 7000).ok, false);
+});

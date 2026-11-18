@@ -22,13 +22,13 @@ import {
 import { kortplanHref } from "../../lib/bordet.ts";
 import {
   ALL_SEVEN, FLIP_LABEL, HAND_LABEL, LANDS_LABEL, SEAT_TARGETS, SHAPE_LABEL, STEPS, TAKES_MAX,
-  costOf, credits, genitive, groupBudget, handChoiceOf, handsOf, landingMissing, landingOf, lengthFor, modelFor, modelsFor, paramsOf, referenceCandidates, scaleQuad, scaleWords, seatEndMissing, seatEndOf, seatList, seatWords, stepOf, stylesFor,
+  a3Candidates, costOf, credits, genitive, groupBudget, handChoiceOf, handsOf, landingMissing, landingOf, lengthFor, modelFor, modelsFor, paramsOf, referenceCandidates, scaleQuad, scaleWords, seatEndMissing, seatEndOf, seatList, seatWords, stepOf, stylesFor,
   type BankFacts, type HandChoice, type ModelDef, type SeatPlan, type Shape, type TextStyle,
 } from "../../../src/order-model.ts";
-import { METHOD_STATUS_LABEL, recipeFor, recipeWords, referenceByRule, referenceWaits, secondsOf } from "../../../src/order-methods.ts";
+import { METHOD_STATUS_LABEL, recipeFor, recipeHands, recipeWords, referenceByRule, referenceWaits, secondsOf } from "../../../src/order-methods.ts";
 import { NEUTRAL_BACKDROP } from "../../../src/placement-model.ts";
 import { getMedia } from "../material/client.ts";
-import { Badge, Button, SegmentedControl, Sheet, TextArea, cn } from "../ui";
+import { Badge, Button, SegmentedControl, Select, Sheet, TextArea, cn } from "../ui";
 import { HandChoiceRow, LandsChoice, ModelChoice, ReferenceChoice, ScaleChoice, ShapeChoice, TextChoice } from "./Choices";
 import { OrderPreview } from "./OrderPreview";
 import { Stage, type StageBase, type StageCard, type StageLook } from "./Stage";
@@ -74,6 +74,7 @@ export function NewOrder({ open, onOpenChange, all, preset, onCreated }: { open:
   // Every exception starts unset (null, and for the reference film undefined): the recipe's value is then what is ordered.
   const [takesChoice, setTakes] = useState<number | null>(r?.takes ?? null);
   const [base, setBase] = useState<{ key: string; id: string } | null>(null);
+  const [endChoice, setEndChoice] = useState<{ key: string; id: string } | null>(null);
   const [extraChoice, setExtra] = useState<string | null>(r ? r.extra : null);
   const [styleChoice, setStyle] = useState<TextStyle | null>(r?.style ?? null);
   const [shapeChoice, setShape] = useState<Shape | null>(r?.shape ?? null);
@@ -145,10 +146,19 @@ export function NewOrder({ open, onOpenChange, all, preset, onCreated }: { open:
   // The bank with the dummy's rendered films (the lab's clip bank does not list them; the store's answer does).
   const bankFacts: BankFacts | null = bank ? { ...(bank as BankFacts), rendered: all.rendered ?? [], cutChecks: all.cutChecks } : null;
   // The hand that lays the card: from anchor 2.3 always the other hand; else the one chosen or the plan's.
-  const laysAt = (t: string): "LH" | "RH" => (step.grip === "TWO_HANDS" || handsAt(t).pass ? "RH" : handsAt(t).hand);
+  const laysAt = (t: string): "LH" | "RH" => {
+    if (step.grip === "TWO_HANDS") return "RH";
+    const hands = hand === null ? recipeHands(step, recipe, seatOf(t)) : handsAt(t);
+    return hands.pass ? "RH" : hands.hand;
+  };
   // A deal bara dit ends on the seat's own end picture (its landing picture, else the cut frame of the bank's film to the
-  // seat), and a return starts on the seat's landing picture: every seat ordered must have its own.
-  const endAt = (t: string) => seatEndOf(entries, bankFacts, { dealer: dealerId, step, target: t, hand: laysAt(t) });
+  // seat), or a named A3 candidate for an individual seat. A return starts on its seat's landing picture.
+  const endHand = laysAt(target);
+  const endKey = `${dealerId}:${key}:${target}:${endHand}`;
+  const endChoices = oneWay && !seven ? a3Candidates(entries, target, endHand) : [];
+  const chosenEnd = endChoice?.key === endKey ? endChoices.find((entry) => entry.id === endChoice.id) ?? null : null;
+  if (endChoice && !chosenEnd) setEndChoice(null);
+  const endAt = (t: string) => seatEndOf(entries, bankFacts, { dealer: dealerId, step, target: t, hand: laysAt(t), chosen: t === target ? chosenEnd?.id : undefined });
   const landing = step.card ? landingOf(entries, focus) : null;
   const lacking = oneWay ? targets.filter((t) => !endAt(t)) : step.start === "LAND" ? targets.filter((t) => !landingOf(entries, t)) : [];
   const landingWhy = lacking.length ? (oneWay ? seatEndMissing(dealerName, lacking[0], step.from) : landingMissing(dealerName, lacking[0])) + (lacking.length > 1 ? ` (saknas för ${seatList(lacking)})` : "") : null;
@@ -254,7 +264,7 @@ export function NewOrder({ open, onOpenChange, all, preset, onCreated }: { open:
       ? { ...common, ...(step.kind === "STILL" && !start.holds && startEntry ? { base: startEntry.id } : {}) }
       : seven
         ? { ...common, ...card, seats: targets.map((t) => ({ target: t, ...seatOwn(t) })) }
-        : { ...common, ...card, target, ...seatOwn(target) });
+        : { ...common, ...card, target, ...seatOwn(target), ...(chosenEnd ? { end: chosenEnd.id } : {}) });
   };
 
   return (
@@ -430,6 +440,19 @@ export function NewOrder({ open, onOpenChange, all, preset, onCreated }: { open:
               {deal ? (
                 <Step n={next()} title="Bara dit eller tur och retur">
                   <ShapeChoice value={shape ?? "ONE_WAY"} recipe={recipe?.shape ?? null} missing={oneWay && lacking.length ? landingWhy : null} onChange={setShape} />
+                </Step>
+              ) : null}
+              {oneWay && seven ? (
+                <p className="px-8 text-xs text-dim">Välj en plats i taget för att använda en A3-kandidat som sista bild.</p>
+              ) : endChoices.length ? (
+                <Step n={next()} title="Sista bild">
+                  <Select
+                    size="sm"
+                    aria-label="Sista bild"
+                    value={chosenEnd?.id ?? ""}
+                    onChange={(id) => { setEndChoice(id ? { key: endKey, id } : null); setPending(null); }}
+                    options={[{ value: "", label: "Platsens egen (receptet)" }, ...endChoices.map((entry) => ({ value: entry.id, label: entry.name, hint: "kandidat, undantag" }))]}
+                  />
                 </Step>
               ) : null}
               <Step n={next()} title={step.start === "LAND" ? "Hur kortet ligger på platsen" : "Hur kortet landar"}>

@@ -1,5 +1,6 @@
+import { execFileSync } from 'node:child_process';
 import { randomUUID } from 'node:crypto';
-import { mkdirSync, readFileSync, readdirSync, renameSync, rmSync, statSync, writeFileSync } from 'node:fs';
+import { lstatSync, mkdirSync, readFileSync, readdirSync, renameSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { DatabaseSync } from 'node:sqlite';
 import { traceTakes, type OrderPicture, type TakeLike } from '../studio/lib/lineage.ts';
@@ -116,13 +117,30 @@ function checkedReceipt(value: RunReceiptInput, id: string): Receipt {
   };
 }
 
-/** Write a receipt independently of the SQLite cache and return its repository-relative path. */
+
+/** Run receipts, material registers and the cache belong to the primary checkout. */
+function evidenceRoot(root: string): string {
+  const checkout = path.resolve(root);
+  const dotGit = lstatSync(path.join(checkout, '.git'), {throwIfNoEntry: false});
+  if (!dotGit || dotGit.isDirectory()) return checkout;
+  const env = {...process.env};
+  for (const name of ['GIT_DIR', 'GIT_WORK_TREE', 'GIT_INDEX_FILE', 'GIT_COMMON_DIR', 'GIT_OBJECT_DIRECTORY', 'GIT_ALTERNATE_OBJECT_DIRECTORIES']) delete env[name];
+  const common = execFileSync('git', ['rev-parse', '--path-format=absolute', '--git-common-dir'], {
+    cwd: checkout, env, encoding: 'utf8', windowsHide: true, stdio: ['ignore', 'pipe', 'pipe'],
+  }).trim();
+  if (!path.isAbsolute(common) || path.basename(common).toLowerCase() !== '.git') {
+    throw new Error('Evidensjournalen kräver huvudcheckoutens gemensamma .git-katalog.');
+  }
+  return path.dirname(common);
+}
+
+/** Write a receipt independently of the SQLite cache and return its path relative to the primary checkout. */
 export function writeRunReceipt(root: string, receipt: RunReceiptInput): string {
   const id = randomUUID();
   const contents = JSON.stringify(checkedReceipt(receipt, id)) + '\n';
   if (Buffer.byteLength(contents) > maximumReceiptBytes) throw new Error('Körkvittot överstiger 256 KiB.');
   const name = runsDir + '/' + id + '.json';
-  const target = path.join(root, name);
+  const target = path.join(evidenceRoot(root), name);
   const temp = target + '.tmp';
   mkdirSync(path.dirname(target), { recursive: true });
   try {
@@ -305,7 +323,7 @@ function openIndex(root: string) {
   return new DatabaseSync(path.join(root, indexDir, 'index.sqlite'), { timeout: 5000 });
 }
 
-export function reindexEvidence(root: string): { schemaVersion: number; runs: number; links: number; unreadable: string[] } {
+function rebuildIndex(root: string): { schemaVersion: number; runs: number; links: number; unreadable: string[] } {
   mkdirSync(path.join(root, indexDir), { recursive: true });
   const db = openIndex(root);
   const unreadable = new Set<string>();
@@ -366,9 +384,14 @@ export function reindexEvidence(root: string): { schemaVersion: number; runs: nu
   }
 }
 
+export function reindexEvidence(root: string) {
+  return rebuildIndex(evidenceRoot(root));
+}
+
 export function evidenceStatus(root: string) {
-  const summary = reindexEvidence(root);
-  const db = openIndex(root);
+  const primary = evidenceRoot(root);
+  const summary = rebuildIndex(primary);
+  const db = openIndex(primary);
   try {
     const latest = db.prepare('SELECT * FROM runs ORDER BY finished_at DESC, id DESC LIMIT 10').all();
     return { ...summary, latest };
@@ -379,8 +402,9 @@ export function evidenceStatus(root: string) {
 
 export function traceEvidence(root: string, key: string) {
   if (!identifier(key)) throw new Error('Ange ett order- eller material-ID.');
-  const summary = reindexEvidence(root);
-  const db = openIndex(root);
+  const primary = evidenceRoot(root);
+  const summary = rebuildIndex(primary);
+  const db = openIndex(primary);
   try {
     const links = db.prepare([
       'WITH RECURSIVE origins(id) AS (',

@@ -52,6 +52,11 @@ async function lab(t: { after(fn: () => Promise<void> | void): void }) {
   t.after(() => rm(root, { recursive: true, force: true }));
   for (const dir of ['data', 'placements']) await mkdir(path.join(root, dir), { recursive: true });
   for (const file of ['data/order-policy.json', 'data/dealers.json', 'data/order-methods.json']) await copyFile(file, path.join(root, file));
+  // Route tests have a fixed historical clock; their mandate belongs to that fixture, not today's live session.
+  const policyFile = path.join(root, 'data/order-policy.json');
+  const policy = JSON.parse(await readFile(policyFile, 'utf8'));
+  policy.mandate = {id: 'test-route-mandate', startsAt: '2026-11-12T00:00:00Z', endsAt: '2026-11-13T00:00:00Z', rollingHourCredits: 800, totalCredits: 2500};
+  await writeFile(policyFile, JSON.stringify(policy));
   await writeFile(path.join(root, 'placements/default.json'), committedText('placements/default.json')); // his plan as committed, not as he last saved it (tools/committed.ts)
   await writeFile(path.join(root, 'data/media-roles.json'), JSON.stringify(register(), null, 2) + '\n');
   await writeFile(path.join(root, 'data/clip-jobs.json'), '{"jobs": []}');

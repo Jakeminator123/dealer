@@ -18,6 +18,14 @@ async function approved(t: { after(fn: () => Promise<void>): void }) {
   t.after(() => rm(root, { recursive: true, force: true }));
   for (const dir of ['data', 'placements', 'assets/anchors/a', 'assets/anchors/b']) await mkdir(path.join(root, dir), { recursive: true });
   for (const file of ['data/order-policy.json', 'data/dealers.json', 'data/order-methods.json']) await copyFile(file, path.join(root, file));
+  const policyFile = path.join(root, 'data/order-policy.json');
+  const policy = JSON.parse(await readFile(policyFile, 'utf8'));
+  const mandate = {id: 'fixture-mandate', startsAt: '2026-11-12T21:00:00Z', endsAt: '2026-11-13T03:00:00Z', rollingHourCredits: 800, totalCredits: 2500};
+  const writeMandate = (override = {}) => writeFile(policyFile, JSON.stringify({...policy, mandate: {...mandate, ...override}}));
+  await writeMandate();
+  let instant = '2026-11-12T22:00:00Z';
+  const setTime = (at: string) => { instant = at; };
+  const now = () => new Date(instant);
   await writeFile(path.join(root, 'placements/default.json'), committedText('placements/default.json')); // his plan as committed, not as he last saved it (tools/committed.ts)
   const png = await sharp({ create: { width: 1764, height: 1174, channels: 3, background: { r: 0, g: 237, b: 44 } } }).png().toBuffer();
   await writeFile(path.join(root, 'assets/anchors/a/anchor.png'), png);
@@ -27,12 +35,12 @@ async function approved(t: { after(fn: () => Promise<void>): void }) {
     pamela: { name: 'Pamela', entries: [{ id: 'pamela-nyp', role: 'ankare-2.1', name: 'Nyp', path: 'assets/anchors/b/anchor.png', node: 'READY', state: 'gäller' }] },
     paow: { name: 'Paow', entries: [{ id: 'paow-vila', role: 'ankare-1', name: 'Vila', path: 'assets/anchors/a/anchor.png', node: 'IDLE', state: 'gäller' }] },
   } }));
-  const store = orderStore(root);
+  const store = orderStore(root, { now });
   const draft = await store.create({ dealer: 'paow', step: 'ANKARE-2.1', takes: 2, id: 'prov-ett', pose: { entry: 'pamela-nyp', keep: ARM_AT_SHOE, what: POSE_WHAT } });
-  const r = receipts(root, { now: () => new Date('2026-11-12T22:00:00Z') });
+  const r = receipts(root, { now });
   await assert.rejects(r.begin('prov-ett', 1), /inte godkänd/);
   await store.approve('prov-ett', draft.revision);
-  return { root, r, store };
+  return { root, r, store, setTime, writeMandate };
 }
 
 test('requestedAt before, task id after, and a begun take is never begun again', async (t) => {
@@ -128,4 +136,79 @@ test('the main agent approves on Jakob\'s mandate with the same checks; check ta
   assert.equal(aside.status, 'AVBRUTEN');
   assert.match(String((aside.setAside as { why: string }).why), /körs inte/);
   await assert.rejects(approveCommand(root, ['prov-ett', '--set-aside', 'x']), /godkänd/);
+});
+
+test('the rolling hour is shared across orders, and uncertain calls keep their reservation', async t => {
+  const {root, r, store, setTime, writeMandate} = await approved(t);
+  const draft = await store.create({ dealer: 'paow', step: 'ANKARE-2.1', takes: 1, id: 'prov-andra',
+    pose: { entry: 'pamela-nyp', keep: ARM_AT_SHOE, what: POSE_WHAT } });
+  await store.approve(draft.order.id, draft.revision);
+  const credits = (await store.load('prov-ett')).order.cost.worstPerTake;
+  const hourlyLimit = Math.floor(credits * 1.5), totalLimit = credits * 2;
+  await writeMandate({rollingHourCredits: hourlyLimit, totalCredits: totalLimit});
+
+  const orders = ['prov-ett', 'prov-andra'];
+  const attempts = await Promise.allSettled(orders.map(id => r.begin(id, 1)));
+  assert.equal(attempts.filter(result => result.status === 'fulfilled').length, 1,
+    attempts.map(result => result.status === 'fulfilled' ? result.status : String(result.reason)).join(' | '));
+  const winner = orders[attempts.findIndex(result => result.status === 'fulfilled')];
+  const loser = orders[attempts.findIndex(result => result.status === 'rejected')];
+  assert.equal((await r.read(winner))?.takes[0]?.reservation?.credits, credits);
+  assert.equal(await r.read(loser), null);
+  assert.deepEqual((await store.list()).policy?.mandateBudget?.available, hourlyLimit - credits);
+
+  setTime('2026-11-12T23:00:00Z');
+  await assert.rejects(r.begin(loser, 1), /ryms inte/);
+  await r.placed(winner, 1, 'b90b9362-7a13-4b80-b498-c324f02c41f8');
+  setTime('2026-11-12T23:59:59Z');
+  await assert.rejects(r.begin(loser, 1), /ryms inte/);
+  setTime('2026-11-13T00:00:00Z');
+  assert.equal((await r.begin(loser, 1)).take.reservation?.credits, credits);
+  const closed = (await store.list()).policy?.mandateBudget;
+  assert.deepEqual([closed?.hourlyReserved, closed?.totalReserved, closed?.available], [credits, totalLimit, 0]);
+});
+
+test('a Dealer run imported from outside Beställ uses the order cost and blocks a new paid start', async t => {
+  const {root, r, store, setTime} = await approved(t);
+  const id = 'eget-importerat';
+  const folder = path.join(root, 'assets/orders', id);
+  const requestedAt = '2026-11-12T23:00:00+01:00';
+  await mkdir(folder, {recursive: true});
+  await writeFile(path.join(root, 'data/orders', id + '.json'), JSON.stringify({cost: {worstPerTake: 900}}));
+  await writeFile(path.join(folder, 'receipt.json'), JSON.stringify({
+    schemaVersion: 1, order: id, orderSha256: 'a'.repeat(64), takes: [{
+      take: 1, status: 'HÄMTAD', requestedAt, taskId: 'imported-pilot-001', outside: true, creditsRemainingAfter: 10000,
+      history: [{at: requestedAt, status: 'LAGD'}],
+    }],
+  }));
+  const blocked = (await store.list()).policy?.mandateBudget;
+  assert.deepEqual([blocked?.status, blocked?.hourlyReserved, blocked?.totalReserved, blocked?.available], ['active', 900, 900, 0]);
+  await assert.rejects(r.begin('prov-ett', 1), /ryms inte/);
+  assert.equal(await r.read('prov-ett'), null);
+
+  setTime('2026-11-12T23:00:00Z');
+  const later = (await store.list()).policy?.mandateBudget;
+  assert.deepEqual([later?.hourlyReserved, later?.totalReserved, later?.available], [0, 900, 800]);
+});
+
+test('only the fixed mandate window opens new paid starts, and leaving it preserves existing orders and receipts', async t => {
+  const {root, r, store, setTime} = await approved(t);
+  setTime('2026-11-12T20:59:59.999Z');
+  await assert.rejects(r.begin('prov-ett', 1), /Mandatet börjar/);
+  setTime('2026-11-12T21:00:00Z');
+  assert.equal((await r.begin('prov-ett', 1)).validUntil, '2026-11-13T03:00:00Z');
+  setTime('2026-11-13T03:00:00Z');
+  await assert.rejects(r.begin('prov-ett', 2), /Mandatet löpte ut/);
+  const snapshot = await store.list();
+  assert.equal(snapshot.policy?.mandateBudget?.status, 'expired');
+  assert.equal(snapshot.orders.find(item => item.order.id === 'prov-ett')?.receipt?.takes[0]?.status, 'OSÄKER');
+  await r.placed('prov-ett', 1, 'b90b9362-7a13-4b80-b498-c324f02c41f8');
+  assert.equal((await r.read('prov-ett'))?.takes[0]?.status, 'LAGD');
+
+  const file = path.join(root, 'data/order-policy.json');
+  const policy = JSON.parse(await readFile(file, 'utf8'));
+  delete policy.mandate;
+  await writeFile(file, JSON.stringify(policy));
+  await assert.rejects(r.begin('prov-ett', 2), /Inget giltigt beställningsmandat/);
+  assert.equal((await r.read('prov-ett'))?.takes.length, 1);
 });

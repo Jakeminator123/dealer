@@ -817,12 +817,31 @@ export const secondsWords = (s: number | null | undefined) => (s === null || s =
 
 // ── Policy and prices (data/order-policy.json) ──────────────────────────────
 export type Price = { model: string; resolution?: string; imageSize?: string; perSecond?: number; perImage?: number; listedPerSecond?: number; source: string };
+export type OrderMandate = {
+  id: string;
+  startsAt: string;
+  endsAt: string;
+  rollingHourCredits: number;
+  totalCredits: number;
+};
+export type MandateBudget = {
+  status: 'active' | 'before-start' | 'expired' | 'missing' | 'unreadable';
+  mandate: OrderMandate | null;
+  at: string;
+  hourlyReserved: number;
+  totalReserved: number;
+  available: number;
+};
+
 export type Policy = {
   schemaVersion: 1;
   enabled: boolean;
   dailyCapCredits: number;
   maxPerOrder: number;
   minBalance: number;
+  mandate?: OrderMandate;
+  /** Live values from this checkout's own reservations. This is only set on the server's policy response. */
+  mandateBudget?: MandateBudget;
   timeZone: string;
   balance: { credits: number; at: string; source: string };
   prices: Price[];
@@ -860,12 +879,32 @@ export function spentOn(orders: readonly Pick<Order, 'approval' | 'cost' | 'stat
 }
 
 export type PolicyCheck = { ok: boolean; refusals: string[]; spentToday: number; afterToday: number; balance: number; balanceAfter: number };
+function mandateWords(budget: MandateBudget): string {
+  if (budget.status === 'missing') return 'Inget giltigt beställningsmandat. Nya betalda anrop är spärrade.';
+  if (budget.status === 'unreadable') return 'Mandatet eller dess orderkvitton kunde inte verifieras. Nya betalda anrop är spärrade.';
+  const mandate = budget.mandate!;
+  if (budget.status === 'before-start') return `Mandatet börjar ${mandate.startsAt}. Nya betalda anrop är spärrade fram till dess.`;
+  if (budget.status === 'expired') return `Mandatet löpte ut ${mandate.endsAt}. Nya betalda anrop är spärrade.`;
+  return `Mandat: ${credits(Math.max(0, mandate.rollingHourCredits - budget.hourlyReserved))} av ${credits(mandate.rollingHourCredits)} kvar denna rullande timme · ${credits(Math.max(0, mandate.totalCredits - budget.totalReserved))} av ${credits(mandate.totalCredits)} kvar totalt · till ${mandate.endsAt}.`;
+}
+
+export function mandateRefusal(budget: MandateBudget, cost: number): string | null {
+  if (budget.status !== 'active') return mandateWords(budget);
+  return Number.isFinite(cost) && cost > 0 && cost <= budget.available
+    ? null
+    : `Kostnaden ${credits(cost)} krediter ryms inte. ${mandateWords(budget)}`;
+}
+
 /** Whether the policy lets this order be approved now. The worst-case cost counts. */
 export function checkPolicy(order: Pick<Order, 'cost'>, policy: Policy, spentToday: number, balance: number): PolicyCheck {
   const cost = order.cost.worstTotal, refusals: string[] = [];
   if (!policy.enabled) refusals.push('Beställningar är avstängda (enabled: false i data/order-policy.json).');
   if (cost > policy.maxPerOrder) refusals.push(`Beställningen kostar upp till ${cost} krediter; taket per beställning är ${policy.maxPerOrder}.`);
   if (spentToday + cost > policy.dailyCapCredits) refusals.push(`I dag är ${spentToday} av ${policy.dailyCapCredits} krediter intecknade; den här skulle ta det till ${spentToday + cost}.`);
+  if (policy.mandateBudget) {
+    const refusal = mandateRefusal(policy.mandateBudget, cost);
+    if (refusal) refusals.push(refusal);
+  }
   if (balance - cost < policy.minBalance) refusals.push(`Saldot ${balance} minus ${cost} går under golvet ${policy.minBalance}.`);
   return { ok: refusals.length === 0, refusals, spentToday, afterToday: spentToday + cost, balance, balanceAfter: balance - cost };
 }
@@ -876,14 +915,20 @@ export function checkPolicy(order: Pick<Order, 'cost'>, policy: Policy, spentTod
  * (data/order-policy.json); this only says where a group stands against them.
  */
 export type GroupBudget = { count: number; total: number; worstTotal: number; overPerOrder: boolean; fitToday: number; fitBalance: number; words: string[] };
-export function groupBudget(cost: Pick<Order['cost'], 'total' | 'worstTotal'>, count: number, policy: Pick<Policy, 'enabled' | 'dailyCapCredits' | 'maxPerOrder' | 'minBalance'>, spentToday: number, balance: number): GroupBudget {
+export function groupBudget(cost: Pick<Order['cost'], 'total' | 'worstTotal'>, count: number, policy: Pick<Policy, 'enabled' | 'dailyCapCredits' | 'maxPerOrder' | 'minBalance' | 'mandateBudget'>, spentToday: number, balance: number): GroupBudget {
   const worst = cost.worstTotal, overPerOrder = worst > policy.maxPerOrder;
   const fit = (room: number) => (worst > 0 ? Math.max(0, Math.min(count, Math.floor(room / worst))) : count);
-  const fitToday = !policy.enabled || overPerOrder ? 0 : fit(policy.dailyCapCredits - spentToday);
+  const dayFit = fit(policy.dailyCapCredits - spentToday);
+  const mandate = policy.mandateBudget;
+  const fitToday = !policy.enabled || overPerOrder ? 0 : mandate ? Math.min(dayFit, fit(mandate.available)) : dayFit;
   const fitBalance = fit(balance - policy.minBalance);
   const words: string[] = [];
   if (!policy.enabled) words.push('Beställningar är avstängda (enabled: false i data/order-policy.json): inget kan godkännas.');
   else if (overPerOrder) words.push(`Varje utkast kostar upp till ${credits(worst)} krediter; taket per beställning är ${credits(policy.maxPerOrder)}, så inget av dem kan godkännas.`);
+  else if (mandate) {
+    words.push(mandateWords(mandate));
+    if (mandate.status === 'active' && fitToday < count) words.push(`Utrymmet räcker till ${fitToday} av ${count} utkast.`);
+  }
   else if (fitToday < count) words.push(`Dagens tak är ${credits(policy.dailyCapCredits)} krediter (${credits(spentToday)} intecknade): räcker till ${fitToday} av ${count} i dag; resten kan godkännas en annan dag.`);
   else words.push(`Ryms i dagens tak: ${credits(spentToday + worst * count)} av ${credits(policy.dailyCapCredits)} krediter.`);
   if (policy.enabled && fitBalance < count) words.push(`Saldot ${credits(balance)} räcker till ${fitBalance} av ${count} över golvet ${credits(policy.minBalance)}.`);
@@ -946,7 +991,7 @@ export type Receipt = {
    * review: the independent reviewer's verdict recorded beside the take's state, at any state from HÄMTAD on, without
    * moving it (node tools/order-put.ts review); the protocol reads it as the reviewer's note when it is the newest.
    */
-  takes: { take: number; status: TakeStatus; requestedAt: string | null; taskId: string | null; creditsRemainingAfter?: number | null; error?: string | null; file?: string | null; sha256?: string | null; review?: { at: string; note: string } | null; history: { at: string; status: TakeStatus; note?: string }[] }[];
+  takes: { take: number; status: TakeStatus; requestedAt: string | null; taskId: string | null; reservation?: { mandateId: string; credits: number }; creditsRemainingAfter?: number | null; error?: string | null; file?: string | null; sha256?: string | null; review?: { at: string; note: string } | null; history: { at: string; status: TakeStatus; note?: string }[] }[];
 };
 /** The takes of an approved order as they stand: a take the receipt does not name waits in the queue. */
 export function takeStates(order: Pick<Order, 'takes'>, receipt: Receipt | null): TakeStatus[] {

@@ -11,6 +11,7 @@
 // Reads dealer3d/data/till-ankare-2-3.json (its last frame is where this film begins) and placements/default.json.
 // Prints the beats, what each card asks of the body, and what to look for before a film is made of it.
 import {readFile, writeFile} from 'node:fs/promises';
+import {createHash} from 'node:crypto';
 import {CARD, TABLE_LENS, filmEye, length, see, sub, cross, type Vec3} from '../../src/table-lens.ts';
 import {spots} from '../src/world.ts';
 import {LIMITS, joints, type ArmPose} from '../src/capture.ts';
@@ -20,10 +21,14 @@ import {TWO_HAND, shoeHolds, startOnAnchor, twoHandDeal, type Limb, type Pace, t
 import type {RealCard} from '../src/real-deal.ts';
 
 const arg = (name: string, fallback?: string) => { const i = process.argv.indexOf(name); return i > 0 ? process.argv[i + 1] : fallback; };
-const out = arg('--out'), to = arg('--to'); if (!out || !to) throw Error('usage: deal-film.ts --to <P4.C1 | all> --seconds <n> [--lead <frames>] --out <json>');
+const out = arg('--out'), to = arg('--to'); if (!out || !to) throw Error('usage: deal-film.ts --to <P4.C1 | all> --seconds <n> [--lead <frames>] [--plan <plan.json>] --out <json>');
 const FPS = 30, N = Math.round(Number(arg('--seconds', '3')) * FPS), own = arg('--beats')?.split(',').map(Number) ?? null, lead = own ? 0 : Number(arg('--lead', '2')), lens = TABLE_LENS, eye = filmEye(lens);
 if (own && (own.length !== 8 || to === 'all' || to.includes(','))) throw Error('--beats takes eight frames (b,c,d,e,l,f,g,h) and one place');
-const pose = JSON.parse(await readFile(new URL('../data/till-ankare-2-3.json', import.meta.url), 'utf8')), plan = JSON.parse(await readFile(new URL('../../placements/default.json', import.meta.url), 'utf8'));
+const planPath = arg('--plan');
+if (process.argv.includes('--plan') && (!planPath || planPath.startsWith('--'))) throw Error('--plan needs a placement JSON file.');
+const pose = JSON.parse(await readFile(new URL('../data/till-ankare-2-3.json', import.meta.url), 'utf8'));
+const planBytes = await readFile(planPath ?? new URL('../../placements/default.json', import.meta.url));
+const plan = JSON.parse(planBytes.toString('utf8').replace(/^\uFEFF/, ''));
 const last = pose.frames[pose.frameCount - 1], all = spots(plan, lens), spot = (id: string) => { const s = all.find(s => s.id === id); if (!s) throw Error(`The plan has no place ${id}.`); return s.at; };
 // The real dealer's S1 is the seat at her left, by the shoe: the plan's seat 7. Her own card is the plan's D.C1.
 const realOf = (id: string) => { const m = /^P([1-7])\.C1$/.exec(id); return REAL_DEAL[id === 'D.C1' ? 7 : m ? 7 - Number(m[1]) : -1] ?? (() => { throw Error(`No real card to take the moments of for ${id}.`); })(); };
@@ -33,6 +38,14 @@ const realOf = (id: string) => { const m = /^P([1-7])\.C1$/.exec(id); return REA
 const paced = (r: RealCard): {real: RealCard; pace: Pace} => { if (!own) return {real: r, pace: {}}; const [b, c, d, e, l, f, g, h] = own.map(x => x / FPS), slower = (h - b) / (Math.max(r.h, r.g + TWO_HAND.settle) - r.b);
   return {real: {...r, a: 0, b, c, d, e, l, f, g, h, i: h + 0.2}, pace: {flowing: true, leftBack: Math.round(TWO_HAND.leftBack * slower * 1000) / 1000, ...(arg('--meet') === '1' ? {meeting: true} : {}), ...(arg('--push') ? {push: Number(arg('--push'))} : {}), ...(arg('--swing') ? {swing: Number(arg('--swing'))} : {}), ...(arg('--single') === '1' ? {single: true} : {}), ...(arg('--real-take') === '1' ? {realTake: true} : {}), ...(arg('--reach') ? {reach: Number(arg('--reach'))} : {}), ...(arg('--carry') ? {carry: Number(arg('--carry'))} : {}), ...(arg('--turned-at') ? {turnedAt: Number(arg('--turned-at'))} : {}), ...(arg('--roll') === '1' ? {roll: true} : {}), ...(arg('--grip-bend') ? {gripBend: Number(arg('--grip-bend'))} : {}), ...(arg('--hand-over-yaw') ? {handOverYaw: Number(arg('--hand-over-yaw'))} : {}), ...(arg('--body') ? {body: arg('--body')!.split(',').map(Number) as [number, number, number]} : {}), ...(arg('--tuck') ? {tuck: Number(arg('--tuck'))} : {})}}; };
 const ids = to === 'all' ? ['P7.C1', 'P6.C1', 'P5.C1', 'P4.C1', 'P3.C1', 'P2.C1', 'P1.C1', 'D.C1'] : to.split(','), places: Place[] = ids.map(id => ({id, at: spot(id), real: paced(realOf(id)).real})), pace = paced(realOf(ids[0])).pace;
+// --contact-grip 1 is the original P4 contact pilot. The landing variant keeps its index on the card through release.
+if (process.argv.includes('--contact-grip')) {
+  const contactMode = arg('--contact-grip');
+  if (!(contactMode === '1' || contactMode === 'landing') || !own || to !== 'P4.C1' || !pace.single || !pace.meeting || !pace.roll) {
+    throw Error('--contact-grip 1|landing requires --to P4.C1, --beats, --meet 1, --single 1 and --roll 1.');
+  }
+  pace.contactGrip = contactMode === 'landing' ? 'landing' : true;
+}
 // --right-at: her right hand as the approved anchor picture has it, where that differs from the pose film (the middle fingertip's pixel in the bank's picture, and the way the hand points).
 const rightAt = arg('--right-at')?.split(',').map(Number) ?? null, posed: Still = {L: last.L, R: last.R, h: last.h}, start = rightAt ? startOnAnchor(lens, posed, {x: rightAt[0], y: rightAt[1]}, rightAt[2]) : posed;
 // A film in its own tempo ends on the picture the film in the real tempo ends on: that film is laid first, for its elbows.
@@ -70,6 +83,10 @@ console.log(lines.join('\n'));
 const r4 = (v: number[]) => v.map(x => Math.round(x * 10000) / 10000), limb = (a: Limb) => ({s: r4(a.s), e: r4(a.e), w: r4(a.w), k: 1, p: a.p.map(r4)}), r1 = (x: number | null) => x === null ? null : Math.round(x * 10) / 10;
 const turnsAt = (k: number) => { const i = frames.findIndex((f, j) => j > 0 && f.card.id === k && frames[j - 1].card.id === k && sides[j] !== sides[j - 1]); return i < 0 ? Math.round(beats[k].turned) : i; };
 await writeFile(out, JSON.stringify({about: 'The two-hand deal from pose 2.3, laid by dealer3d/tools/deal-film.ts (dealer3d/src/two-hand.ts). A model in a real dealer\'s tempo: the moments of each card and where the hands change are read off a film of a real dealer (dealer3d/src/real-deal.ts), the hands\' shapes and the start are the pose film\'s, everything between is drawn. Same frame and fields as the read deals; card.id says which card is in play, laid lists the cards that lie and from which frame, beats the moments of every card in frames.',
+  ...(pace.contactGrip ? {
+    planSha256: createHash('sha256').update(planBytes).digest('hex'),
+    actualIntent: {takeHand: 'LH', startSide: 'BACK', endSide: 'FRONT', pass: true, turn: true, grip: 'DRAG', turnAt: 'AIR', flipAxis: 'LONG_EDGE'},
+  } : {}),
   film: 'tvahandsgiv-modell', pose: 'from-2.3', places: ids.map(id => ({id, at: spot(id), pixel: all.find(s => s.id === id)!.pixel})), pace: own ? {real: places[0].real, ...pace} : null, rightAt: rightAt ? {x: rightAt[0], y: rightAt[1], yaw: rightAt[2]} : null, to: ids, loose: 0, fps: FPS, frameCount: N, leavesShoe: Math.round(beats[0].c), edge: [turnsAt(0), turnsAt(0)], folds: Math.round(beats[0].g), rests: Math.ceil(beats[0].h), handSize: pose.handSize, palm: pose.palm, throughShoe: through.length, elbowForced: deal.forced, hip: pose.hip,
   beats: beats.map(b => ({to: b.to, a: r1(b.a), b: r1(b.b), c: r1(b.c), d: r1(b.d), e: r1(b.e), l: r1(b.l), turned: r1(b.turned), f: r1(b.f), g: r1(b.g), h: r1(b.h), i: r1(b.i)})), turns: deal.cards.map(c => ({axis: r4(c.turn.axis), angle: Math.round(c.turn.angle * 10) / 10})),
-  laid: deal.laid.map(c => ({from: c.from, c: r4(c.c), l: r4(c.l), n: r4(c.n)})), frames: frames.map(f => ({card: {c: r4(f.card.c), l: r4(f.card.l), n: r4(f.card.n), id: f.card.id}, L: limb(f.L), R: limb(f.R), h: r4(f.h), g: r4(f.g)}))}) + '\n');
+  laid: deal.laid.map(c => ({from: c.from, c: r4(c.c), l: r4(c.l), n: r4(c.n)})), frames: frames.map(f => ({card: {c: r4(f.card.c), l: r4(f.card.l), n: r4(f.card.n), id: f.card.id}, L: limb(f.L), R: limb(f.R), h: r4(f.h), g: r4(f.g)}))}) + '\n', pace.contactGrip ? {flag: 'wx'} : undefined);

@@ -7,11 +7,11 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
-import {CARD, TABLE_LENS, filmEye, length, see, sub, type Vec3} from '../../src/table-lens.ts';
+import {CARD, TABLE_LENS, add, filmEye, length, mul, see, sub, type Vec3} from '../../src/table-lens.ts';
 import {FINGERS, LIMITS, joints, type ArmPose} from '../src/capture.ts';
 import {sideSeen, type CardPose} from '../src/deal.ts';
 import {REAL_DEAL, type RealCard} from '../src/real-deal.ts';
-import {shoeHolds, startOnAnchor, twoHandDeal} from '../src/two-hand.ts';
+import {shoeHolds, startOnAnchor, twoHandDeal, type Pace} from '../src/two-hand.ts';
 import {track} from '../src/hand-pose.ts';
 
 type Limb = {s: Vec3; e: Vec3; w: Vec3; k: number; p: Vec3[]};
@@ -30,6 +30,131 @@ const unwrap = (v: number[]) => { const o = [v[0]]; for (let i = 1; i < v.length
 const turnBetween = (a: CardPose, b: CardPose) => { const A = [a.long, a.normal, a.across], B = [b.long, b.normal, b.across], R = [0, 1, 2].map(r => [0, 1, 2].map(c => A.reduce((s, ak, k) => s + B[k][r] * ak[c], 0)));
   const anti: Vec3 = [R[2][1] - R[1][2], R[0][2] - R[2][0], R[1][0] - R[0][1]], n = length(anti) || 1; return {axis: [anti[0] / n, anti[1] / n, anti[2] / n] as Vec3, angle: Math.acos(Math.max(-1, Math.min(1, (R[0][0] + R[1][1] + R[2][2] - 1) / 2))) * 180 / Math.PI}; };
 const bones = (p: Vec3[]) => FINGERS.flatMap(c => [0, 1, 2].map(k => length(sub(p[c[k + 1]], p[c[k]])))).concat([length(sub(p[5], p[0])), length(sub(p[17], p[0])), length(sub(p[5], p[17]))]);
+
+const pilot: Deal & {planSha256: string; actualIntent: unknown} = await load('giv-fran-2-3-p4-grepp-pilot-g');
+const landingPilot: typeof pilot = await load('giv-fran-2-3-p4-grepp-pilot-h');
+const pilotBeats = pilot.beats[0], closed = Math.ceil(pilotBeats.l + 5), firstContact = Math.floor(pilotBeats.g);
+// pointHand in stage.ts draws spheres at the joints and cylinders along the bones. The file stores coordinates to 0.1 mm.
+const sphereRadius = (i: number) => i === 0 ? 0.0125 : [1, 5, 9, 13, 17].includes(i) ? 0.0105 : 0.0082;
+const boneRadius = (finger: number, segment: number) => finger === 0 ? 0.0088 - segment * 0.0006 : 0.0078 - segment * 0.0007;
+const tolerance = 0.00025;
+const cardCoordinates = (p: Vec3, c: CardPose): Vec3 => {
+  const d = sub(p, c.centre);
+  return [dot(d, c.long), dot(d, c.normal), dot(d, c.across)];
+};
+const distanceToCard = (p: Vec3) => Math.hypot(
+  Math.max(0, Math.abs(p[0]) - CARD.height / 2),
+  Math.max(0, Math.abs(p[1]) - CARD.thickness / 2),
+  Math.max(0, Math.abs(p[2]) - CARD.width / 2),
+);
+/** Minimise the convex distance from the axis of the rendered bone to the card box. */
+function closestBone(a: Vec3, b: Vec3): number {
+  const span = sub(b, a), distance = (t: number) => distanceToCard(add(a, mul(span, t)));
+  let min = 0, max = 1;
+  for (let i = 0; i < 30; i++) {
+    const one = (2 * min + max) / 3, two = (min + 2 * max) / 3;
+    if (distance(one) < distance(two)) max = two;
+    else min = one;
+  }
+  return Math.min(distance(0), distance(1), distance((min + max) / 2));
+}
+
+for (const [name, film, grip] of [['G', pilot, true], ['H', landingPilot, 'landing']] as const) {
+  test(`P4 pilot ${name} reproduces from its recorded place and pace`, () => {
+    assert.deepEqual(film.to, ['P4.C1']);
+    assert.equal(film.planSha256, 'dbb558211411ad4a2a45ee1047e9794ab39912084a0ad6717a020e443d2f7e7c');
+    assert.deepEqual(film.actualIntent, {takeHand: 'LH', startSide: 'BACK', endSide: 'FRONT', pass: true, turn: true, grip: 'DRAG', turnAt: 'AIR', flipAxis: 'LONG_EDGE'});
+    const pace = film.pace as (Pace & {real: RealCard}) | null;
+    assert.equal(pace?.contactGrip, grip);
+    assert.ok(pace && film.rightAt);
+    const anchored = startOnAnchor(TABLE_LENS, start, film.rightAt, film.rightAt.yaw);
+    const laid = twoHandDeal(TABLE_LENS, anchored, [{id: 'P4.C1', at: placeOf(film, 'P4.C1').at, real: pace.real}], film.beats[0].a, film.fps, film.frameCount, pace);
+    assert.deepEqual(laid.forced, []);
+    assert.equal(film.frames.length, laid.frames.length);
+    for (const [i, was] of film.frames.entries()) {
+      const now = laid.frames[i];
+      const points = (f: typeof was) => [f.card.c, f.card.l, f.card.n, f.h, f.g, f.L.s, f.L.e, f.L.w, ...f.L.p, f.R.s, f.R.e, f.R.w, ...f.R.p];
+      const expected = points(was);
+      points(now).forEach((p, j) => assert.ok(length(sub(p, expected[j])) <= 0.0001, `frame ${i}, point ${j} no longer matches the pilot`));
+    }
+  });
+}
+
+function assertCardClearance(points: Vec3[], at: string, pinching: boolean) {
+  points.forEach((p, j) => {
+    if (j !== 8 && !(pinching && j === 4)) assert.ok(distanceToCard(p) + tolerance >= sphereRadius(j), `${at}: free joint ${j} cuts through the card`);
+  });
+  FINGERS.forEach((finger, j) => {
+    for (let k = 0; k < 3; k++) assert.ok(closestBone(points[finger[k]], points[finger[k + 1]]) + tolerance >= boneRadius(j, k),
+      `${at}: bone ${finger[k]}–${finger[k + 1]} cuts through the card`);
+  });
+}
+
+test('P4 thumb and index pads stay on opposite card surfaces through the turn and first felt contact', () => {
+  assert.ok(closed <= 29 && firstContact >= 45, 'the measured interval includes the visible turn');
+  for (let i = closed; i <= firstContact; i++) {
+    const f = pilot.frames[i], c = card(f.card), at = `frame ${i}`;
+    assert.ok(Math.abs(length(c.long) - 1) < 0.0002 && Math.abs(length(c.normal) - 1) < 0.0002 && Math.abs(dot(c.long, c.normal)) < 0.0002, `${at}: rigid card axes`);
+    const local = f.R.p.map(p => cardCoordinates(p, c));
+    for (const [tip, side] of [[4, 1], [8, -1]]) {
+      const [along, normal, across] = local[tip], expected = CARD.thickness / 2 + sphereRadius(tip);
+      assert.ok(Math.abs(normal * side - expected) < tolerance, `${at}: fingertip ${tip} is off its surface or through it`);
+      assert.ok(Math.abs(along - (CARD.height / 2 - 0.005)) < tolerance && Math.abs(across) < tolerance, `${at}: fingertip ${tip} slid off its place at the edge`);
+    }
+    assertCardClearance(local, at, true);
+  }
+  assert.ok(pilot.frames[closed].card.n[1] < -0.99, 'face down when the grip closes');
+  const touchdown = card(pilot.frames[firstContact].card);
+  const lowest = touchdown.centre[1] - (CARD.height * Math.abs(touchdown.long[1]) + CARD.width * Math.abs(touchdown.across[1]) + CARD.thickness * Math.abs(touchdown.normal[1])) / 2;
+  assert.ok(Math.abs(lowest) <= tolerance && touchdown.normal[1] > 0.8, 'the far edge meets the felt with the face up and the grip still closed');
+  assert.deepEqual(pilot.frames.at(-1)!.card.n, [0, 1, 0]);
+});
+
+test('P4 H keeps the index at the same point through release and flat landing, with a low elbow', () => {
+  const beat = landingPilot.beats[0], begin = Math.ceil(beat.l + 5), flat = Math.ceil(beat.h);
+  const atFelt = Math.floor(beat.g), tipHeight = CARD.thickness / 2 + sphereRadius(8);
+  for (let i = begin; i <= flat; i++) {
+    const frame = landingPilot.frames[i], c = card(frame.card), at = `H frame ${i}`;
+    const local = frame.R.p.map(p => cardCoordinates(p, c));
+    const [along, side, across] = local[8];
+    assert.ok(Math.abs(side - tipHeight) < tolerance && Math.abs(along - (CARD.height / 2 - 0.005)) < tolerance &&
+      Math.abs(across + 0.012) < tolerance, `${at}: index lost its contact with the card's face`);
+    if (i <= atFelt) assert.ok(Math.abs(local[4][1] + tipHeight) < tolerance, `${at}: thumb is off the underside`);
+    assertCardClearance(local, at, i <= atFelt);
+    assert.ok(frame.R.e[1] <= 0.085, `${at}: elbow lifts beyond 8.5 cm above the felt`);
+    assert.ok(length(sub(frame.R.e, landingPilot.frames[i - 1].R.e)) <= 0.03, `${at}: elbow jumps more than 3 cm in one frame`);
+  }
+  const clear = landingPilot.frames[atFelt + 3], clearThumb = cardCoordinates(clear.R.p[4], card(clear.card));
+  assert.ok(clearThumb[0] > CARD.height / 2 + sphereRadius(4), 'thumb moves outside the short edge before rising');
+  const flatPose = card(landingPilot.frames[flat].card);
+  assert.deepEqual(flatPose.normal, [0, 1, 0]);
+  assert.ok(Math.abs(flatPose.centre[1] - CARD.thickness / 2) < tolerance, 'the card lies flat on the felt');
+});
+
+for (const [name, film] of [['G', pilot], ['H', landingPilot]] as const) test(`P4 ${name} keeps hand sizes, arm limits and clearances`, () => {
+  const rightInsideShoe = shoeHolds(TABLE_LENS);
+  for (const [side, sign] of [['L', -1], ['R', 1]] as const) {
+    const sizes = bones(start[side].p), twists: number[] = [];
+    for (const [i, f] of film.frames.entries()) {
+      const hand = f[side], j = joints(arm(hand), sign), at = `${side} frame ${i}`;
+      assert.ok(j.wrist <= LIMITS.wrist && j.elbow <= LIMITS.elbow, `${at}: wrist or elbow out of range`);
+      assert.ok(j.fingers.flat().every(bend => bend >= -LIMITS.fingerBack && bend <= LIMITS.fingerBend), `${at}: finger out of range`);
+      assert.equal(hand.k, 1);
+      assert.ok(Math.abs(length(sub(hand.s, hand.e)) - 0.29) < tolerance && Math.abs(length(sub(hand.e, hand.w)) - 0.26) < tolerance, `${at}: the arm changed size`);
+      bones(hand.p).forEach((size, k) => assert.ok(Math.abs(size - sizes[k]) < tolerance, `${at}: bone ${k} changed length`));
+      if (j.twist !== null) twists.push(j.twist);
+      if (i >= closed) hand.p.forEach((p, k) => assert.ok(p[1] + tolerance >= sphereRadius(k), `${at}: joint ${k} goes under the felt`));
+      if (side === 'R') {
+        assert.ok(!hand.p.some(rightInsideShoe), `${at}: right hand hits the shoe`);
+        for (const [k, p] of hand.p.entries()) for (const [m, q] of f.L.p.entries()) {
+          assert.ok(length(sub(p, q)) + tolerance >= sphereRadius(k) + sphereRadius(m), `${at}: hands intersect at joints ${k},${m}`);
+        }
+      }
+    }
+    const turn = unwrap(twists);
+    assert.ok(Math.max(...turn) - Math.min(...turn) <= LIMITS.twistSpan, `${side} forearm turned beyond its range`);
+  }
+});
 
 test('the real dealer\'s moments are whole: every card in the order a to i, a hand change every 0.58 to 0.82 s, the next card moving before the last is let go', () => {
   assert.deepEqual(REAL_DEAL.map(r => r.place), ['S1', 'S2', 'S3', 'S4', 'S5', 'S6', 'S7', 'D']);

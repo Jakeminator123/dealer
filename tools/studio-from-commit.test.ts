@@ -6,10 +6,12 @@ import path from 'node:path';
 import {parseArgs, studioFromCommit, swapInto, DEFAULT_TREE, type Options} from './studio-from-commit.ts';
 import type {Exec} from './clean-tree.ts';
 import type {RunReceiptInput} from './evidence-store.ts';
+import type {captureRunContext} from './evidence-context.ts';
 
 const ROOT = 'C:/repo', TREE = 'D:/scratch/studio-trad', SHA = 'c'.repeat(40);
 type Answer = {code?: number; out?: string};
-function world(answers: Record<string, Answer> = {}, present = (_: string) => true, installed = (_: string): string | null => SHA) {
+const cleanContext = () => ({revision: SHA, dirtyInputs: [] as string[], inputs: [] as {path: string; sha256: string}[], studioRevision: null, studioNote: null, fingerprint: 'clean-inputs', storageRoot: ROOT});
+function world(answers: Record<string, Answer> = {}, present = (_: string) => true, installed = (_: string): string | null => SHA, context: typeof captureRunContext = cleanContext) {
   const calls: string[] = [], said: string[] = [], swaps: Array<[string, string]> = [], receipts: {root: string; outcome: RunReceiptInput}[] = [];
   const run: Exec = (cmd, args, cwd) => {
     const key = `${cmd} ${args.join(' ')}`, where = `${cwd === ROOT ? 'repo' : 'tree'}: ${key}`;
@@ -30,6 +32,7 @@ function world(answers: Record<string, Answer> = {}, present = (_: string) => tr
     swap: (built, target) => { calls.push('swap'); swaps.push([built, target]); return 7; },
     installedRevision: target => { calls.push('verify-output'); return installed(target); },
     receipt: (root, outcome) => { calls.push('receipt'); receipts.push({root, outcome}); },
+    context,
   });
   return {calls, said, swaps, receipts, go, text: () => said.join('\n')};
 }
@@ -99,6 +102,30 @@ test('a verified trial output is journaled in the main checkout without claiming
   const [{root, outcome}] = w.receipts;
   assert.equal(posix(root), ROOT);
   assert.deepEqual([outcome.status, outcome.revision, outcome.studioRevision, outcome.notes], ['pass', SHA, null, ['verified-output', 'trial-output']]);
+});
+
+test('source changes with an unchanged HEAD cannot be installed or receive a green build receipt', () => {
+  let reads = 0;
+  const w = world({}, undefined, undefined, () => ++reads === 1 ? cleanContext() : {
+    ...cleanContext(), dirtyInputs: ['studio/app/page.tsx'], fingerprint: 'modified-inputs',
+  });
+  assert.equal(w.go(), 1);
+  assert.match(w.text(), /filer ändrades under bygget/);
+  assert.deepEqual(w.swaps, []);
+  const [{outcome}] = w.receipts;
+  assert.equal(outcome.revision, SHA);
+  assert.equal(outcome.status, 'fail');
+  assert.equal(outcome.studioRevision, null);
+  assert.deepEqual(outcome.dirtyInputs, ['studio/app/page.tsx']);
+  assert.deepEqual(outcome.notes, ['build-tree-inputs']);
+});
+
+test('changes caused by package installation stop before building', () => {
+  const w = world({}, undefined, undefined, () => ({...cleanContext(), dirtyInputs: ['studio/package.json']}));
+  assert.equal(w.go(), 1);
+  assert.match(w.text(), /ändrades före bygget/);
+  assert.ok(!w.calls.some(call => call.includes('run build')));
+  assert.deepEqual(w.swaps, []);
 });
 
 test('npm ci runs per package where node_modules is missing or the list changed', () => {

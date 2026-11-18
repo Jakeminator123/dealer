@@ -39,6 +39,7 @@ import { createHash, randomUUID } from 'node:crypto';
 import path from 'node:path';
 import { StoreError } from './placement-store.ts';
 import { mediaRoles } from './media-roles.ts';
+import { readMandateBudget } from './order-mandate.ts';
 import {
   ANCHOR_NODE, ANCHOR_ROLE, CARD_SCALES, EXTRA_LIMIT, MODELS, FILE_NAME, FLIP_AXES, ORDER_ID, SEAT_TARGETS, TAKES_MAX, scaleWords,
   bodyLine, canonical, checkPolicy, costOf, crossesBody, cutFrameOf, cutFrameWords, cutIntoOf, tidyMotion, dayOf, defaultFlip, defaultStyle, draftProblems, edgeOf, genitive, hashInput, landingMissing, landingOf, a3Candidates, a3Name, modelFor, modelsFor, paramsOf, plannedOf, readCutChecks, referenceCandidates, seatEndMissing, seatList, seatWords, secondsWords, shownOf, spentOn, stepOf, stylesFor, summaryOf, validateOrder, waitingOf,
@@ -1188,7 +1189,8 @@ export function orderStore(root: string, options: StoreOptions = {}) {
 
   async function list(): Promise<OrdersAnswer> {
     const problems: string[] = [];
-    const policy = await readPolicy();
+    const configured = await readPolicy();
+    const policy = configured ? { ...configured, mandateBudget: await readMandateBudget(root, configured.mandate, () => now().toISOString()) } : null;
     if (!policy) problems.push('data/order-policy.json kunde inte läsas.');
     const register = await media.readRegister().then((r) => r.register);
     const dealers = await readDealers();
@@ -1248,7 +1250,8 @@ export function orderStore(root: string, options: StoreOptions = {}) {
       const at = now().toISOString(), zone = policy.timeZone ?? 'Europe/Stockholm';
       const receipts = await Promise.all(others.map((o) => readReceipt(o.id)));
       const balance = (await balanceNow(policy, receipts))?.credits ?? 0;
-      const check = checkPolicy(order, policy, spentOn(others, dayOf(at, zone), zone), balance);
+      const mandateBudget = await readMandateBudget(root, policy.mandate, () => now().toISOString());
+      const check = checkPolicy(order, { ...policy, mandateBudget }, spentOn(others, dayOf(at, zone), zone), balance);
       if (!check.ok) throw new StoreError(403, check.refusals.join(' '));
       const approval: Order['approval'] = who ? { by: 'huvudagent', at, orderSha256: orderHash(order), mandate: who.mandate.trim() } : { by: 'jakob', at, orderSha256: orderHash(order) };
       const next: Order = { ...order, status: 'GODKÄND', approval };

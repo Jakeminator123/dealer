@@ -384,8 +384,8 @@ export async function fitAll(repo: string, loadPixels = pixels): Promise<{rule: 
       }
       if (e.role === 'film') { const clip = /^assets\/motions\/([^/]+)\//.exec(e.path)?.[1], t = clip ? takes[clip] : undefined; if (t) entries[e.id] = {verdict: t.verdict, words: t.words, measured: t.measured}; continue; }
       if (e.role === 'arbetsmaterial') { entries[e.id] = {verdict: 'går inte att mäta', words: 'Övrigt: inget att mäta mot planen.', usedBy: users(e.path)}; continue; }
-      const referenceFile = e === reference ? path.join(repo, e.path) : null;
-      const referenceStat = referenceFile ? await stat(referenceFile).catch(() => null) : null;
+      const sourceFile = e.role === 'ankare-1' && !e.card ? path.join(repo, e.path) : null;
+      const sourceStat = sourceFile ? await stat(sourceFile).catch(() => null) : null;
       const px = await loadPixels(repo, e.path, e.frame ?? e.still).catch(() => null);
       if (!px) { entries[e.id] = {verdict: 'går inte att mäta', words: existsSync(path.join(repo, e.path)) ? 'Bilden gick inte att läsa.' : 'Filen finns inte här.', ...(e.role === 'referens' ? {for: null, usedBy: users(e.path)} : {})}; continue; }
       const cls = classify(px.rgb, px.w * px.h), edge = edgeRowOf(cls, px.w, px.h), camera = cameraOf(px.w, px.h, BANK);
@@ -406,14 +406,15 @@ export async function fitAll(repo: string, loadPixels = pixels): Promise<{rule: 
       if (e.role === 'ankare-1' && !e.card) {
         const hands = restHandsOf(cls, px.w, px.h, standard?.hands);
         const shoe = shoeCardOf(cls, px.w, px.h, standard?.shoe?.box);
-        if (referenceFile && referenceStat?.isFile()) {
-          const sha256 = await mediaFileSha256(referenceFile, mediaFileStamp(referenceStat));
-          if (sha256) rest = {hands, shoe, sha256};
-        }
-        // The standard supplies search areas and tolerance. Only this dealer's own held rest image supplies zero.
-        if (!reference || !rest) {
+        const sha256 = sourceFile && sourceStat?.isFile() ? await mediaFileSha256(sourceFile, mediaFileStamp(sourceStat)) : null;
+        if (e === reference && sha256) rest = {hands, shoe, sha256};
+        // Both the measured image and the held calibration image must match the source used for the measurement.
+        if (!sha256) {
+          parts.push('Bildversionen kunde inte verifieras för handmåttet.');
+        } else if (!reference || !rest) {
           parts.push('Handmått saknas för dealerns gällande ankare 1.');
         } else {
+          measured.source = {path: e.path, frame: e.frame ?? e.still ?? null, sha256};
           measured.calibration = {
             dealer, role: reference.role, entry: reference.id, path: reference.path,
             frame: reference.frame ?? reference.still ?? null, sha256: rest.sha256,

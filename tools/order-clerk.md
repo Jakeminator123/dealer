@@ -37,8 +37,10 @@ Run everything from the repo root.
    agent with a mandate), whose content has
    changed since (its hash against `approval.orderSha256`), whose pictures on disk are not the approved ones (sha256), or
    when `enabled` is false. A refusal means: do not place it, report it verbatim.
-3. Its answer lists the takes: `mayBegin: true` = never begun, may be placed now. Any other status is left alone. A take that
+3. Its answer lists the takes: `mayBegin: true` = never begun and within the current mandate, may be placed now. Any other status is left alone. A take that
    is **OSÄKER** (begun, no task id: the call may have gone) is NEVER placed again; report it.
+   The policy's dated mandate bounds the rolling hour and the whole session. Own receipts reserve worst-case cost;
+   the shared Runway balance does not measure our spend. An absent, unreadable or expired mandate stops new calls.
 
 ## 2. Upload the pictures, once per order
 For each file in `check`'s `files` (name, path, mimeType, bytes):
@@ -53,6 +55,8 @@ For each file in `check`'s `files` (name, path, mimeType, bytes):
 For take n of an order:
 1. **Before the call:** `node tools/order-put.ts begin <id> <n>`. It writes `requestedAt` and prints `request`: the tool and its
    exact arguments, with `"$file:<name>"` wherever an uploaded address goes. If it refuses, do not call Runway.
+   It reserves the worst cost under the main checkout's shared lock. Call before `validUntil`; do not send a delayed
+   request after that time. Uncertain and failed attempts keep their reservation until their charge is established.
 2. Replace every `"$file:<name>"` with that file's hosted address, verbatim. Add a short truthful `rationale` ("green-screen
    picture of a blackjack dealer for the user's clip bank, approved by the owner"). Change nothing else: no argument added,
    removed or altered, no other model, no shortened text. The call is:

@@ -21,9 +21,10 @@ gäller nu; varje prov och dess utfall står i handboken (`tools/film-prompting.
 - Den tatuerade uppsättningen är förstahandsvalet (keystone, ankare 1 och 2.3); ankare 2.1 och 2.2 och hela banken
   har de äldre händerna och spelas än. Ankare 2.2 föll i tre försök i bildmodellen och görs om som 2.3.
 - Läs aktuellt saldo med `whoami` före beställning; kontot delas med 3D-Dealer. Denna Codex-omgång har högst
-  800 krediter per rullande timme och 2 500 totalt, även om orderpolicyn medger mer (BESKED).
+  800 krediter per rullande timme och 2 500 totalt. Det tidsatta mandatet i orderpolicyn spärrar nya starter vid taket
+  eller efter sluttiden; egna orderkvitton reserverar värsta kostnaden (BESKED).
 
-**Nästa steg.** Ett mål i taget: EN giv med Jakobs ja.
+**Nästa steg.** Ett mål i taget: EN dokumenterat granskad giv enligt Jakobs mandat.
 1. Huvudagenten styr en granskad pilot enligt räddningsmandatet i BESKED. Anslutning och workspace verifieras med
    Runway-MCP; egen kostnad bokförs per order och samordnas i skrivbordets DISKMASKIN.TXT.
 2. Förbättra dockfilmens grepp: tumme och fingrar håller kortet genom vändningen. Kontrollera både mått och fulla
@@ -36,7 +37,7 @@ gäller nu; varje prov och dess utfall står i handboken (`tools/film-prompting.
 5. Väntar tills en giv har hans ja: resten av bordet, fem kameravinklar (`/vinklar.html`), ankare 2.1 och 2.2 med
    tatuerade händer, hålkortet, andra kortet (`yt-referens/ut/giv-resten.md`), returer och dealerns tredje kort.
 
-**Väntar på Jakob.** Prov `ingang-2-3-klippt`, och i Beslut: duger en giv där kortet vänds först efter släppet? Granskningen: `assets/references/local-studio-granskning.md`; Görans runda spelas ur kopian `D:/dealer-scratch/tmp/goran-visning/`.
+**Väntar på Jakob.** Aktuella frågor finns i Beslut; filmdomar lämnas i Granska.
 
 **Var saker ligger.** Vägen för en ny dealer i [tools/dealer-line.md](../../tools/dealer-line.md), handboken i
 [tools/film-prompting.md](../../tools/film-prompting.md), granskningen i `tools/film-review.md`, läget per dealer med

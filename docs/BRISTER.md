@@ -200,12 +200,14 @@ Innehåll: Kortet · Filmerna och banken · Läpparna och rösten · Spelet och 
   gruppen kan lämna några utkast på disk; externa skribenter efter sista källkontrollen omfattas inte av kön.
   Stänger: en återhämtningsbar gruppjournal om flera samtidiga skribenter eller avbrott ska stödjas.
 
-- **Städningen av slaskdisken ser inget gammalt före 2026-11-20.** Syns: `npm run stada` skyddar 26,75 GB som
-  nyändrat, och den säkra körningen 2026-11-18 tog 0,4 MB. 221 mappar fick sin egen tid satt 2026-11-17 kl. 23.13
-  (samma minut som den kvällens stora rensning tog bort filer i dem), och verktyget räknar mappens tid, så regeln om
-  14 dygn börjar om. Prövat: inventeringen av de största mapparna med förslag
-  (`D:/dealer-scratch/tmp/stad-1118/`); inget är raderat eller flyttat. Stänger: verktyget räknar filernas tid och
-  inte mappens egen, eller så tas mapparna efter listan. Verktyget körs från huvudträdet; ett arbetsträd på D: vägras.
+- **Kreditspärren bevakar Dealers beställningsliggare.** `begin` reserverar innan MCP-anropet, även egna importer
+  räknas; en annan vanlig klon har en annan liggare. Verkställaren måste skicka exakt en gång före `validUntil`.
+  Prövat: samtidiga starter, osäkert utfall, import och utgånget mandat. Direkta MCP-anrop utanför linjen omfattas
+  inte av kodspärren; de ska bokföras och får aldrig användas för att kringgå mandatet.
+
+- **Äldre slaskinventering behöver omprövas.** Listan `D:/dealer-scratch/tmp/stad-1118/` föregår den nya spärren
+  med exakt sökväg och verifierad ägare. Verktyget kontrollerar filernas ändringstid vid körning och städar inte
+  när labbet startar. Inga gamla förslag verkställs automatiskt; välj och verifiera ett eget avslutat arbete i taget.
 - **Ny beställning ritar ännu sin egen bild** (`studio/components/order/Stage.tsx`) i stället för Bordets. Syns: två
   ritningar av samma bord. Prövat: inget. Stänger: Ny beställning använder Bordets bild.
 - **Borta ur labbet tills det nya har dem:** "Rå | renderad" på en tagning (hör till Efterarbete) och panelen Vila.

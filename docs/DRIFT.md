@@ -136,7 +136,8 @@ inte med av misstag. Git-push är separat från webbdeploy, mediauppladdning och
   säger vilken commit som visas. Trädet görs en gång med `git worktree add --detach <mapp på D:> main`; det som finns
   och används är `D:/dealer-scratch/tmp/huvudagent11/push-trad`, verktygets förval (`--trad` ger ett annat).
   Push och bygge använder trädet i turordning. Loggarna ligger i `studio-logg` bredvid; ett körkvitto med full SHA
-  sparas i huvudträdets journal efter varje påbörjat bygge. Servern startas inte om.
+  sparas i huvudträdets journal efter varje påbörjat bygge. Renhet och indata kontrolleras direkt före och efter
+  bygget; ändrade filer stoppar bytet även om HEAD är oförändrad. Servern startas inte om.
 - **En titt på labbsidor** (2026-11-17): `node tools/lab-look.ts <lista.json> <utmapp> [--vad "<vad>"] [--vem <namn>]`
   tar en skärmbild per sida i listan (`[{name, url, wait, width, height, clicks, facts}]`, adresserna efter
   `http://127.0.0.1:4319`) i en egen headless Chrome (egen profil, port 9591), aldrig i Jakobs flik: varje adress får

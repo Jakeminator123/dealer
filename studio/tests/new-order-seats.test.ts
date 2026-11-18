@@ -13,7 +13,10 @@ import { committedText } from "../../tools/committed.ts";
 import os from "node:os";
 import path from "node:path";
 import sharp from "sharp";
+import { a3Candidates, landingNode, stepOf } from "../../src/order-model.ts";
+import { recipeHands } from "../../src/order-methods.ts";
 import { orderRoutes } from "../../tools/order-routes.ts";
+import type { Entry, Register } from "../lib/media.ts";
 import { cardBody, seatFlip } from "../lib/orders.ts";
 
 const repo = path.resolve(import.meta.dirname, "../..");
@@ -57,7 +60,7 @@ async function lab(t: { after(fn: () => Promise<void> | void): void }) {
     }
     return request(method, address, body);
   }
-  return { call, request, plan };
+  return { root, call, request, plan };
 }
 
 type Stored = { order: { group: { id: string } | null; motion: { target: string; flipAxis: string | null } } };
@@ -96,6 +99,49 @@ test("the card's part of a body: tur och retur or bara dit only for a deal, the 
   assert.deepEqual(cardBody({ shape: "ONE_WAY", deal: true, cardScale: 1 }), { shape: "ONE_WAY" });
   assert.deepEqual(cardBody({ shape: "ONE_WAY", deal: false, cardScale: 1 }), {});
   assert.deepEqual(cardBody({ shape: "ROUND_TRIP", deal: true, cardScale: 1.25 }), { shape: "ROUND_TRIP", cardScale: 1.25 });
+});
+
+test("a named A3 follows the selected place and the hand that lays the card", async (t) => {
+  const { root, request } = await lab(t);
+  const mediaFile = path.join(root, "data/media-roles.json");
+  const media = JSON.parse(await readFile(mediaFile, "utf8")) as Register;
+  const candidate = (id: string, target: string, hand: "LH" | "RH"): Entry => ({
+    id, name: id, role: "landning", path: `assets/anchors/${id}/anchor.png`, state: "kandidat", node: landingNode(target), card: target, hand,
+  });
+  const p4 = candidate("paow-a3-p4-rh", "P4.C1", "RH");
+  const p5 = candidate("paow-a3-p5-rh", "P5.C1", "RH");
+  const otherDealer = candidate("pamela-a3-p4-rh", "P4.C1", "RH");
+  const entries = [p4, p5, candidate("paow-a3-p4-lh", "P4.C1", "LH"), candidate("paow-a3-p4-c2-rh", "P4.C2", "RH")];
+  media.dealers.paow.entries.push(...entries);
+  media.dealers.pamela = { name: "Pamela", entries: [otherDealer] };
+  for (const entry of [...entries, otherDealer]) {
+    const output = path.join(root, entry.path!);
+    await mkdir(path.dirname(output), { recursive: true });
+    await copyFile(path.join(root, "assets/anchors/paow-vila/anchor.png"), output);
+  }
+  await writeFile(mediaFile, JSON.stringify(media));
+
+  const step = stepOf("GIV-2.3")!;
+  const lays = recipeHands(step, null, { hand: "LH" }).lays;
+  assert.equal(lays, "RH");
+  assert.deepEqual(a3Candidates(media.dealers.paow.entries, "P4.C1", lays).map((entry) => entry.id), [p4.id]);
+  assert.deepEqual(a3Candidates(media.dealers.paow.entries, "P5.C1", lays).map((entry) => entry.id), [p5.id]);
+  const input = { dealer: "paow", step: step.key, target: "P4.C1", end: p4.id, reference: null };
+  const preview = await request("POST", "/api/orders/preview", input);
+  assert.equal(preview.status, 200);
+  assert.equal(preview.json.orders[0].pictures[1].from.entry, p4.id);
+
+  const stale = await request("POST", "/api/orders/preview", { ...input, target: "P5.C1" });
+  assert.equal(stale.status, 400);
+  assert.match(stale.json.error, /ingen A3-kandidat för plats 5/);
+  const changed = { ...input, target: "P5.C1", end: p5.id };
+  assert.equal((await request("POST", "/api/orders", changed, preview.json.revision)).status, 409);
+  const current = await request("POST", "/api/orders/preview", changed);
+  assert.equal(current.status, 200);
+  assert.equal(current.json.orders[0].pictures[1].from.entry, p5.id);
+  const saved = await request("POST", "/api/orders", changed, current.json.revision);
+  assert.equal(saved.status, 201);
+  assert.equal(saved.json.order.pictures[1].from.entry, p5.id);
 });
 
 // (the hole card is left out: its pictures are drawn from a bank film that the temporary lab does not have)

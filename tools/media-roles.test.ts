@@ -152,13 +152,15 @@ test('answer only presents hand measurements against the unique readable anchor 
  const original = moov(1764, 1174, 30000, 1000, 90);
  const hash = (bytes: Uint8Array) => createHash('sha256').update(bytes).digest('hex');
  await writeFile(heldFile, original);
- await writeFile(path.join(root, 'assets/other.png'), png(1764, 1174));
+ const otherFile = path.join(root, 'assets/other.png'), candidate = png(1764, 1174);
+ await writeFile(otherFile, candidate);
  const store = mediaRoles(root), resultFile = path.join(root, 'data/media-fit.json');
  const calibration = {dealer: 'paow', role: 'ankare-1', entry: 'paow-held', path: 'assets/held.mp4', frame: 17, sha256: hash(original)};
  const oldMeasure = {verdict: 'avviker', words: 'Vänster hand (i bild) 11 px från standardens.'};
- const newMeasure = (identity: Record<string, unknown>) => ({
+ const source = {path: 'assets/other.png', frame: null, sha256: hash(candidate)};
+ const newMeasure = (identity: Record<string, unknown>, sample = source) => ({
   verdict: 'stämmer', words: 'Mätt mot gällande ankare 1 (paow-held).',
-  measured: {calibration: identity, leftInPicture: 3, rightInPicture: 4},
+  measured: {calibration: identity, source: sample, leftInPicture: 3, rightInPicture: 4},
  });
  const fits = async (schemaVersion: number, rest: unknown) => {
   await writeFile(resultFile, JSON.stringify({schemaVersion, entries: {
@@ -177,6 +179,14 @@ test('answer only presents hand measurements against the unique readable anchor 
  assert.equal(historical['paow-card']?.verdict, 'äldre plan');
  assert.equal(historical['paow-camera']?.verdict, 'annan kamera');
  assert.equal((await fits(2, newMeasure(calibration)))['paow-other']?.verdict, 'stämmer');
+ const withoutSource = {verdict: 'stämmer', measured: {calibration, leftInPicture: 3, rightInPicture: 4}};
+ assert.equal((await fits(2, withoutSource))['paow-other']?.verdict, 'går inte att mäta');
+ const changedCandidate = new Uint8Array(candidate);
+ changedCandidate[changedCandidate.length - 1] = 1;
+ await writeFile(otherFile, changedCandidate);
+ assert.equal((await fits(2, newMeasure(calibration)))['paow-other']?.verdict, 'går inte att mäta', 'same path and frame, changed candidate bytes');
+ assert.equal((await fits(2, newMeasure(calibration, {...source, sha256: hash(changedCandidate)})))['paow-other']?.verdict, 'stämmer');
+ await writeFile(otherFile, candidate);
 
  for (const [key, stale] of Object.entries({dealer: 'pamela', role: 'ankare-2.1', entry: 'old-held', path: 'assets/older.mp4', frame: 16})) {
   assert.equal((await fits(2, newMeasure({...calibration, [key]: stale})))['paow-other']?.verdict, 'går inte att mäta', key);

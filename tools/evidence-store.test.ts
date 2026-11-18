@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
-import { mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
+import { execFileSync } from 'node:child_process';
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
@@ -105,4 +106,26 @@ test('sensitive, nonrelative and invalid metadata is rejected before writing', t
   const status = reindexEvidence(root);
   assert.deepEqual(status.unreadable, ['.runtime/evidence/runs/invalid.json']);
   assert.equal(status.runs, 0);
+});
+
+test('a linked worktree writes and queries the primary checkout journal and registers', t => {
+  const {root, write} = fixture(t);
+  const env = {...process.env};
+  for (const name of ['GIT_DIR', 'GIT_WORK_TREE', 'GIT_INDEX_FILE', 'GIT_COMMON_DIR', 'GIT_OBJECT_DIRECTORY', 'GIT_ALTERNATE_OBJECT_DIRECTORIES']) delete env[name];
+  const git = (...args: string[]) => execFileSync('git', args, {cwd: root, env, windowsHide: true, stdio: 'pipe'});
+  git('init', '-q');
+  git('add', '.');
+  git('-c', 'user.name=Test', '-c', 'user.email=test@example.invalid', 'commit', '-qm', 'fixture');
+  const linked = path.join(root, 'linked');
+  git('worktree', 'add', '--detach', linked, 'HEAD');
+  write('linked/data/orders/example-order.json', {id: 'different-order'});
+  const receipt = writeRunReceipt(root, sample);
+  assert.deepEqual(evidenceStatus(linked), evidenceStatus(root));
+  assert.equal(evidenceStatus(linked).latest[0]?.receipt, receipt);
+  assert.ok(traceEvidence(linked, 'example-film').links.some(row => row.relation === 'order-plan' && row.sha256 === plan));
+  const linkedReceipt = writeRunReceipt(linked, {...sample, finishedAt: '2026-11-18T10:00:07.000Z'});
+  assert.ok(existsSync(path.join(root, linkedReceipt)));
+  assert.equal(reindexEvidence(linked).runs, 2);
+  assert.equal(evidenceStatus(root).latest[0]?.receipt, linkedReceipt);
+  assert.equal(existsSync(path.join(linked, '.runtime')), false);
 });

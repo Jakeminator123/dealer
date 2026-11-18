@@ -21,11 +21,17 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { StoreError } from './placement-store.ts';
 import { orderHash, orderStore } from './order-store.ts';
-import { TAKE_FLOW, approvalWords, requestOf, type Order, type Receipt, type TakeStatus } from '../src/order-model.ts';
+import { readMandateBudget, withMandateLock } from './order-mandate.ts';
+import { TAKE_FLOW, approvalWords, mandateRefusal, priceOf, requestOf, type Order, type Policy, type Receipt, type TakeStatus } from '../src/order-model.ts';
 
 const sha = (b: Buffer | string) => createHash('sha256').update(b).digest('hex');
 type Take = Receipt['takes'][number];
 const MIME: Record<string, string> = { png: 'image/png', jpg: 'image/jpeg', mp4: 'video/mp4' };
+
+function reservationCost(order: Order, policy: Policy): number {
+  const priced = Array.isArray(policy.prices) ? priceOf(order.generation, policy.prices)?.worstPerTake : undefined;
+  return priced !== undefined ? Math.ceil(Math.max(priced, order.cost.worstPerTake)) : NaN;
+}
 
 export function receipts(root: string, options: { now?: () => Date } = {}) {
   const now = () => (options.now ?? (() => new Date()))().toISOString();
@@ -38,14 +44,14 @@ export function receipts(root: string, options: { now?: () => Date } = {}) {
   }
 
   /** The order may be placed: approved by Jakob, unchanged since, its files the approved ones, ordering switched on. */
-  async function check(id: string): Promise<{ order: Order; receipt: Receipt | null; files: { name: string; path: string; sha256: string; bytes: number; mimeType: string; tag?: string; goesAs: string }[] }> {
+  async function check(id: string): Promise<{ order: Order; receipt: Receipt | null; policy: Policy; files: { name: string; path: string; sha256: string; bytes: number; mimeType: string; tag?: string; goesAs: string }[] }> {
     const { order } = await store.load(id);
     if (order.status !== 'GODKÄND' || !order.approval) throw new StoreError(409, `${id} är inte godkänd (av Jakob eller av huvudagenten på hans uppdrag).`);
     // Jakob's click, or the main agent on his mandate (2026-11-13); the latter only with the mandate it acts on.
     if (order.approval.by === 'huvudagent' ? !order.approval.mandate?.trim() : order.approval.by !== 'jakob') throw new StoreError(409, order.approval.by === 'huvudagent' ? `${id}: huvudagentens godkännande saknar uppdrag (mandate); lägg den inte.` : `${id}: godkännandet är varken Jakobs eller huvudagentens på hans uppdrag.`);
     if (orderHash(order) !== order.approval.orderSha256) throw new StoreError(409, `${id} har ändrats efter godkännandet (hashen stämmer inte). Lägg den inte.`);
     if (sha(order.prompt.text) !== order.prompt.sha256) throw new StoreError(409, `${id}: textens hash stämmer inte.`);
-    const policy = JSON.parse(await readFile(path.join(root, 'data/order-policy.json'), 'utf8'));
+    const policy = JSON.parse(await readFile(path.join(root, 'data/order-policy.json'), 'utf8')) as Policy;
     if (policy?.enabled !== true) throw new StoreError(403, 'Beställningar är avstängda (enabled: false i data/order-policy.json).');
     const files = [];
     const all = [...order.pictures.map((p) => ({ name: p.name, path: p.path, sha256: p.sha256, tag: p.tag, goesAs: p.goesAs as string })), ...(order.reference.status === 'FINNS' ? [{ name: order.reference.path.split('/').pop()!, path: order.reference.path, sha256: order.reference.sha256, tag: undefined, goesAs: 'referenceVideo' }] : [])];
@@ -56,12 +62,12 @@ export function receipts(root: string, options: { now?: () => Date } = {}) {
       if (sha(bytes) !== f.sha256) throw new StoreError(409, `${id}: ${f.path} är inte den godkända filen (sha256 skiljer).`);
       files.push({ name: f.name, path: f.path, sha256: f.sha256, bytes: bytes.length, mimeType: MIME[f.name.split('.').pop()!] ?? 'application/octet-stream', ...(f.tag ? { tag: f.tag } : {}), goesAs: f.goesAs });
     }
-    return { order, receipt: await read(id), files };
+    return { order, receipt: await read(id), files, policy };
   }
 
   /** Changes the receipt under a lock file, so that two agents never write it at once. */
-  async function update(id: string, change: (receipt: Receipt, order: Order) => Take): Promise<{ receipt: Receipt; take: Take }> {
-    const { order } = await check(id);
+  async function update(id: string, change: (receipt: Receipt, order: Order, policy: Policy) => Take | Promise<Take>): Promise<{ receipt: Receipt; take: Take }> {
+    const { order, policy } = await check(id);
     await mkdir(folderOf(id), { recursive: true });
     const lock = path.join(folderOf(id), '.receipt.lock');
     let handle;
@@ -69,7 +75,7 @@ export function receipts(root: string, options: { now?: () => Date } = {}) {
     try {
       const receipt: Receipt = (await read(id)) ?? { schemaVersion: 1, order: id, orderSha256: order.approval!.orderSha256, takes: [] };
       if (receipt.orderSha256 !== order.approval!.orderSha256) throw new StoreError(409, `${id}: kvittot hör till en annan version av beställningen.`);
-      const take = change(receipt, order);
+      const take = await change(receipt, order, policy);
       receipt.takes = [...receipt.takes.filter((t) => t.take !== take.take), take].sort((a, b) => a.take - b.take);
       const temporary = path.join(folderOf(id), `.${randomUUID()}.tmp`);
       await writeFile(temporary, JSON.stringify(receipt, null, 2) + '\n', { flag: 'wx' });
@@ -89,16 +95,29 @@ export function receipts(root: string, options: { now?: () => Date } = {}) {
 
   /** Before the call: requestedAt. Refused when the take was begun before, whatever came of it. Returns the exact call. */
   async function begin(id: string, takeValue: unknown) {
-    let request: ReturnType<typeof requestOf> | null = null;
-    const result = await update(id, (receipt, order) => {
-      const take = takeNumber(order, takeValue);
-      const old = receipt.takes.find((t) => t.take === take);
-      if (old) throw new StoreError(409, `${id} tagning ${take} är redan ${old.status}${old.requestedAt ? ` (begärd ${old.requestedAt})` : ''}: den läggs aldrig igen av ett verktyg.`);
-      request = requestOf(order, take);
-      const at = now();
-      return { take, status: 'OSÄKER', requestedAt: at, taskId: null, creditsRemainingAfter: null, error: null, file: null, sha256: null, history: [{ at, status: 'OSÄKER', note: 'begärd: anropet är på väg' }] };
+    return withMandateLock(root, async () => {
+      let request: ReturnType<typeof requestOf> | null = null;
+      let validUntil = '';
+      const result = await update(id, async (receipt, order, policy) => {
+        const take = takeNumber(order, takeValue);
+        const old = receipt.takes.find((t) => t.take === take);
+        if (old) throw new StoreError(409, `${id} tagning ${take} är redan ${old.status}${old.requestedAt ? ` (begärd ${old.requestedAt})` : ''}: den läggs aldrig igen av ett verktyg.`);
+        const credits = reservationCost(order, policy);
+        const budget = await readMandateBudget(root, policy.mandate, now);
+        const refusal = mandateRefusal(budget, credits);
+        if (refusal) throw new StoreError(403, refusal);
+        const mandate = budget.mandate!;
+        request = requestOf(order, take);
+        validUntil = mandate.endsAt;
+        const at = budget.at;
+        return {
+          take, status: 'OSÄKER', requestedAt: at, reservation: { mandateId: mandate.id, credits }, taskId: null,
+          creditsRemainingAfter: null, error: null, file: null, sha256: null,
+          history: [{ at, status: 'OSÄKER', note: 'begärd: anropet är på väg' }],
+        };
+      });
+      return { ...result, request: request!, validUntil };
     });
-    return { ...result, request: request! };
   }
   /** After the call: the task id. Only for a take that was begun and has none. */
   async function placed(id: string, takeValue: unknown, taskId: string, creditsRemaining?: number | null) {
@@ -190,8 +209,10 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
     if (path.resolve(process.cwd()).toLowerCase() !== root.toLowerCase()) throw new StoreError(400, 'Kör från dealer-katalogen.');
     const r = receipts(root);
     if (command === 'check') {
-      const { order, receipt, files } = await r.check(id);
-      out({ ok: true, id, title: order.title, approvedBy: `${approvalWords(order.approval!)}${order.approval!.mandate ? `: ${order.approval!.mandate}` : ''}`, orderSha256: order.approval!.orderSha256, takes: Array.from({ length: order.takes }, (_, i) => { const t = receipt?.takes.find((x) => x.take === i + 1); return { take: i + 1, status: t?.status ?? 'GODKÄND', mayBegin: !t }; }), stopBelowCredits: order.limits.stopBelowCredits, files });
+      const { order, receipt, files, policy } = await r.check(id);
+      const budget = await readMandateBudget(root, policy.mandate, () => new Date().toISOString());
+      const refusal = mandateRefusal(budget, reservationCost(order, policy));
+      out({ ok: true, id, title: order.title, approvedBy: `${approvalWords(order.approval!)}${order.approval!.mandate ? `: ${order.approval!.mandate}` : ''}`, orderSha256: order.approval!.orderSha256, takes: Array.from({ length: order.takes }, (_, i) => { const t = receipt?.takes.find((x) => x.take === i + 1); return { take: i + 1, status: t?.status ?? 'GODKÄND', mayBegin: !t && !refusal }; }), mandate: { ...budget, refusal }, stopBelowCredits: order.limits.stopBelowCredits, files });
     } else if (command === 'begin') out(await r.begin(id, take));
     else if (command === 'placed') out((await r.placed(id, take, rest[0], rest[1] !== undefined ? Number(rest[1]) : null)).take);
     else if (command === 'failed') out((await r.failed(id, take, rest.join(' '))).take);

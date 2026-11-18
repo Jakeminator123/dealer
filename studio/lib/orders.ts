@@ -5,7 +5,7 @@
 // order can be asked for by address (presetOf, and back again with presetAddress); whose each picture is is said in words
 // (ownerWords); what an order makes in Jakob's notation, "A2.2 → P3C2 → A2.2", with one plain sentence (routeOf).
 // In the online copy nothing is asked for or written. Tests: studio/tests/orders.test.ts.
-import { ApiError } from "./api.ts";
+import { ApiError, asApiError } from "./api.ts";
 import { labUrl } from "./lab.ts";
 import { isSnapshot } from "./mode.ts";
 import { nodeCode } from "./names.ts";
@@ -82,6 +82,12 @@ export type CreatedOrders = OrderAnswer & { made: string[] };
 export const previewOrder = (input: OrderPreviewInput) => call<OrderPreview>("api/orders/preview", "Förhandsvisningen", send("POST", input));
 /** The first draft and the ids of all drafts, in the same order as the preview. */
 export const createOrder = (input: OrderPreviewInput, revision: string) => call<CreatedOrders>("api/orders", "Utkastet", send("POST", input, revision));
+/** An uncertain save must reuse its frozen revision: the server may already have created the drafts. */
+export function orderSaveFailure(cause: unknown): { message: string; retrySave: boolean } {
+  const error = asApiError(cause, "Utkastet");
+  const refusedBeforeSaving = [400, 403, 404, 409, 413, 415, 422, 428].includes(error.status);
+  return {message: error.message, retrySave: !refusedBeforeSaving};
+}
 export type OrderChange = { title?: string; takes?: number; extra?: string | null; duration?: number; hand?: "LH" | "RH"; pass?: boolean; side?: "FRONT" | "BACK" };
 export const changeOrder = (id: string, change: OrderChange, revision: string) => call<OrderAnswer>(`api/orders/${id}`, "Ändringen", send("PUT", change, revision));
 export const approveOrder = (id: string, revision: string) => call<OrderAnswer>(`api/orders/${id}/approve`, "Godkännandet", send("POST", undefined, revision));

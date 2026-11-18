@@ -16,6 +16,7 @@ import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {Stop, cleanAt, clock, commitOf, commonDirOf, exec, mainCheckout, needsCi, tail, type Exec, type Say} from './clean-tree.ts';
 import type {RunReceiptInput} from './evidence-store.ts';
+import {captureRunContext} from './evidence-context.ts';
 
 export const DEFAULT_TREE = 'D:/dealer-scratch/tmp/huvudagent11/push-trad';
 export type Options = {commit: string; tree: string; out?: string};
@@ -72,6 +73,7 @@ export type Io = {
   swap?: typeof swapInto;
   installedRevision?: (target: string) => string | null;
   receipt?: (root: string, result: RunReceiptInput) => void;
+  context?: typeof captureRunContext;
 };
 
 function installedRevision(target: string): string | null {
@@ -87,7 +89,8 @@ function installedRevision(target: string): string | null {
 export function studioFromCommit(root: string, options: Options, io: Io): number {
   const {run, say, log} = io, exists = io.exists ?? existsSync;
   const step = (name: string, args: string[]) => { const r = run('npm', args, options.tree); log(name, r.out); return r; };
-  let attempt: {root: string; revision: string; startedAt: string; served: boolean} | null = null;
+  const context = io.context ?? captureRunContext;
+  let attempt: {root: string; revision: string; startedAt: string; served: boolean; inputs: RunReceiptInput['inputs']; dirtyInputs: string[]} | null = null;
   let status = 'fail';
   let note = 'npm-build';
   try {
@@ -106,11 +109,19 @@ export function studioFromCommit(root: string, options: Options, io: Io): number
     }
     const revision = commitOf(options.tree, 'HEAD', run);
     if (revision !== sha) throw new Stop(`STOPP: byggträdet står på ${revision}, väntade ${sha}`);
-    attempt = {root: checkout, revision, startedAt: new Date().toISOString(), served: path.relative(studio, target) === ''};
+    const before = context(options.tree);
+    if (before.revision !== revision || before.dirtyInputs.length) throw new Stop(`STOPP: byggträdet ändrades före bygget; ${target} är orört`);
+    attempt = {root: checkout, revision, startedAt: new Date().toISOString(), served: path.relative(studio, target) === '', inputs: before.inputs, dirtyInputs: []};
     const build = step('studio-build.log', ['--prefix', 'studio', 'run', 'build']);
     if (build.code !== 0) throw new Stop([`STOPP: bygget föll (kod ${build.code}); ${target} är orört`, ...tail(build.out, 20)].join('\n'));
     note = 'build-tree-revision';
     if (commitOf(options.tree, 'HEAD', run) !== revision) throw new Stop(`STOPP: byggträdet bytte commit under bygget; ${target} är orört`);
+    note = 'build-tree-inputs';
+    const after = context(options.tree);
+    attempt.dirtyInputs = after.dirtyInputs;
+    if (after.revision !== revision || after.dirtyInputs.length || after.fingerprint !== before.fingerprint) {
+      throw new Stop(`STOPP: byggträdets filer ändrades under bygget; ${target} är orört`);
+    }
     note = 'missing-build-index';
     const built = path.join(options.tree, 'studio', 'out');
     if (!exists(path.join(built, 'index.html'))) throw new Stop(`STOPP: bygget gav ingen ${built}/index.html; ${target} är orört`);
@@ -137,8 +148,8 @@ export function studioFromCommit(root: string, options: Options, io: Io): number
         finishedAt: new Date().toISOString(),
         revision: attempt.revision,
         studioRevision: status === 'pass' && attempt.served ? attempt.revision : null,
-        inputs: [],
-        dirtyInputs: [],
+        inputs: attempt.inputs,
+        dirtyInputs: attempt.dirtyInputs,
         counts: {pass: 0, fail: 0, skip: 0, todo: 0, cancelled: 0},
         notes: [note, ...(!attempt.served ? ['trial-output'] : [])],
       });
