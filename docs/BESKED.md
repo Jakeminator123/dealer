@@ -56,6 +56,10 @@ Innehåll: [Arbetet och dokumenten](#arbetet-och-dokumenten) · [Labbet och stud
   par underagenter i arbete. Du ska mest orkestrera. Se till att du får en städagent som rensar upp, samt en agent som
   stramar upp så att allt följer en rak linje." och "Delegera och använd underagenter elelr sidocahttar". Huvudagenten
   delar ut arbetet till underagenter och sidochattar och gör själv granskningen, sammanslagningen och svaren till honom.
+- **Spara tokens** (2026-11-18, kl. 03.42): "Kan du på något sätt se till att vi inte spenderar så mycket tokens? Det
+  går snabbt med den här femtimmarsgrejen som körs". Kontots gräns delas av alla sessioner. En underagent startas bara
+  för det han har beställt, en oberoende granskare bara för en tagning som den automatiska kontrollen släpper igenom,
+  mekaniskt arbete går till en mindre modell, och en session skriver till huvudagenten en gång per färdig sak.
 
 ## Labbet och studion
 
