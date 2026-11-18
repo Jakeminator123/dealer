@@ -15,21 +15,21 @@ gäller nu; varje prov och dess utfall står i handboken (`tools/film-prompting.
 - Ankare 2.2 föll i tre försök med utsnitt i bildmodellen (2/5; Prov `paow-ankare-2-2-blick`, kandidat A står kvar).
 - Dockans filmer "-2" och "-3" har den äldre vändningen av kortet; "-4" (en enda vridning) gäller. C5 med "-4" gav
   den renaste vändningen hittills men kortet hoppar när det läggs (3/5): nästa förlaga ska sänka kortet jämnt ruta 60–80.
-- Nya ankare tas ur en film som dockan styr. Ankare 2.3 (båda händerna vid skon, blicken ned mot kortet): MODEL:s
-  tagning från ankare 1 är levererad (Prov `paow-ankare-2-3`, 85 krediter); posen har Jakobs Bra, efterarbetet görs om.
-  MODEL mätte en riktig dealer: två händer, ett kort per 0,75–0,9 s, vändning i luften, kameran lägre än bankens.
+- Nya ankare tas ur en film som dockan styr. Ankare 2.3 (båda händerna vid skon, blicken ned mot kortet) har Jakobs
+  ja och ligger i `assets/anchors/paow-ankare-2-3-a/` (Prov `paow-ankare-2-3`); rollen registreras med `rak-linje`.
+  MODEL mätte en riktig dealer: två händer, 0,77 s per kort, kortet vänt ände över ände, kameran lägre än bankens.
 - Läs saldot hos Runway (`whoami`) före en beställning; talet i `data/order-policy.json` är gammalt. Taket är 2 000.
   Trailern är pausad på Jakobs ord: inget beställs och inget byts i den förrän han säger till.
 
 **Nästa steg.**
 1. Starta vakten på Jakobs kö i Beställ (`vakta-kon.mjs`): den går i huvudagentens chatt i halvtimmar och dör med
    chatten. Godkänner han en beställning startar huvudagenten beställningsagenten (`tools/order-clerk.md`).
-2. Ankare 2.3: när granskaren har godkänt det omgjorda efterarbetet kopieras ankaret in ur `ankare-2-3/lamna/` och
-   rollen registreras. Sedan given därifrån ([BESKED](../BESKED.md), "Kortare givar"), i den riktiga dealerns takt
-   (0,77 s per kort; `yt-referens/ut/giv-fran-2-3.md`): ett kort till plats 4 i en film på 3 s som klipps efteråt, och
-   kort ett till alla platser i ett svep på 8 s. 3D gör dockfilmerna; beställs genom Bordet när `rak-linje` är inne.
-3. Utfallet av proven från 2026-11-18 in i handboken: C5 (`giv-experiment-2/c5/`), stol 1 (`stol-1/`; kortet i Beslut
-   tas ut när provet är visat) och Jakobs order `paow-giv-2-1-p4-16` (`bestall/`, Prov `bestallning-handbyte-p4-16`).
+2. Jakobs beställning 2026-11-18 ([BESKED](../BESKED.md), "Given från 2.3 till plats 5"): given från 2.3 till P5.C1
+   från bankens kamera (MODEL lägger tagningen, tak 300) och från sidan (stol 1:s öga, efter 3D:s figur därifrån).
+   3D gör dockfilmerna i den riktiga dealerns takt (`yt-referens/ut/`) i en film på 3 s; vändningen är fri, bara den är
+   hel och ren. Taket för proven är 2 000 krediter (`stol-1/bestallningar.json`). Sedan plats 4 och svepet på 8 s.
+3. Utfallet av proven från 2026-11-18 in i handboken: stol 1 (`stol-1/RAPPORT.md`, Prov `dealer-fran-stol-1`; C5 och
+   Jakobs order `paow-giv-2-1-p4-16` står redan där på grenen `rak-linje`).
 4. Filmstandardens andra del: grenen `rak-linje` (bär `film-standard-register`), efter listan i mappen `film-standard`.
 5. Ankare 2.2 samma väg som 2.3 (3D-banans förlaga för släpet), sedan med tatuerade händer: ankare 2.1, ingången
    till 2.2, landningsbilder för plats 3–5 där handen slutar som dockans, och en tagning till på plats 3.
