@@ -124,6 +124,62 @@ const playRound = async (data: BankData, table: {hands: {seat: number; cards: nu
   return {gaps, beats, chain, clips: chain.map(part => part.path.split('/')[2])};
 };
 
+test('a final C2 uses its own compatible pair via READY if the exit can play', async () => {
+  const table = {hands: [{seat: 4, cards: [1, 2]}], dealer: []};
+  const records = [1, 2].map(shoeDraw => ({shoeDraw, target: `P4.C${shoeDraw}`, r: 'A', s: 'spades'}));
+  const deal = 'p4-second-deal', back = 'p4-second-back';
+  async function play(mode: 'own' | 'direct' | 'missing exit' | 'rejected exit' | 'bad return' | 'other hub' |
+    'complete hub' | 'variant entry' | 'variant deal' | 'rejected entry' | 'pending exit') {
+    const completeHub = ['complete hub', 'variant entry', 'variant deal', 'rejected entry', 'pending exit'].includes(mode);
+    const data = bank(), queue = players(), hub = completeHub || mode === 'other hub' ? 'READY-C' : 'READY';
+    const cut = {frame: {video: video(mode === 'bad return' ? 'different' : deal), videoSha256: sha, index: 105}};
+    data.jobs!.push(job(deal, hub, 'P4.C2', 'wan3', {kind: 'DEAL'}), job(back, 'P4.C2', mode === 'direct' ? 'IDLE' : hub, 'wan3', {first: cut}));
+    for (const id of [deal, back]) { data.motions![id] = record('wan3'); data.media![id] = {video: video(id)}; }
+    if (completeHub) {
+      data.jobs!.push(job('in-c', 'IDLE', hub, 'wan3', {kind: 'ENTRY'}), job('ut-c', hub, 'IDLE', 'wan3'));
+      for (const id of ['in-c', 'ut-c']) { data.motions![id] = record('wan3'); data.media![id] = {video: video(id)}; }
+    }
+    if (mode === 'variant entry') data.motions!['in-c'].review!.acceptedAs = 'VARIANT';
+    if (mode === 'variant deal') data.motions![deal].review!.acceptedAs = 'VARIANT';
+    if (mode === 'rejected entry') data.motions!['in-c'].review!.decision = 'REJECTED';
+    if (mode === 'pending exit') data.motions!['ut-c'].review!.decision = 'PENDING';
+    data.motions!['p4-rest'].review!.acceptedAs = 'MAIN';
+    if (mode === 'missing exit') data.media!.ut = {video: null};
+    if (mode === 'rejected exit') data.motions!.ut = record('kling-4', {review: {decision: 'REJECTED'}});
+    const film = createFilm(queue.players, buildGraph(judgedBank(data), {dealer: 'paow'}), createLayout(defaultPlan()), async () => null, () => 0);
+    film.set({table, records, lying: [1]});
+    const spoken: string[] = [], talk = film.talkPart('tal');
+    const round = film.play([{type: 'deal', shoeDraw: 2}], {table, records}, undefined, {
+      before: [{key: 'goodluck', part: talk, begin() { spoken.push('before'); }}],
+      after: [{key: 'outcome', part: talk, begin() { spoken.push('after'); }}],
+    });
+    await new Promise(resolve => setTimeout(resolve, 0)); queue.end();
+    const {beats, gaps} = await round, chain = queue.parts[0];
+    assert.deepEqual(spoken, ['before', 'after']);
+    assert.deepEqual(film.lying, [1, 2]);
+    return {chain, gaps, beats, paths: chain.map(part => part.path)};
+  }
+
+  const own = await play('own');
+  assert.deepEqual(own.paths, ['tal', 'in', deal, back, 'ut', 'tal'].map(video));
+  assert.deepEqual(own.beats.map(b => b.kind), ['ENTRY', 'DEAL', 'RETURN', 'EXIT']);
+  assert.deepEqual(own.gaps, []);
+  assert.equal(own.chain[2].end, 105);
+  assert.equal(own.chain[3].cards?.returning, true);
+  const placed = (part: FilmPart) => (part.cards?.placed as {shoeDraw: number}[]).map(card => card.shoeDraw);
+  assert.deepEqual(own.chain.map(placed), [[1], [1], [1], [1], [1, 2], [1, 2]]);
+  assert.deepEqual((await play('direct')).paths, ['tal', 'in', deal, back, 'tal'].map(video));
+  const alternate = await play('complete hub');
+  assert.deepEqual(alternate.paths, ['tal', 'in-c', deal, back, 'ut-c', 'tal'].map(video));
+  assert.deepEqual(alternate.gaps, []);
+  assert.deepEqual(alternate.chain.map(placed), own.chain.map(placed));
+  for (const mode of ['missing exit', 'rejected exit', 'bad return', 'other hub', 'variant entry', 'variant deal', 'rejected entry', 'pending exit'] as const) {
+    const fallback = await play(mode);
+    assert.deepEqual(fallback.paths, ['tal', 'in', 'p4-deal', 'p4-rest', 'tal'].map(video), mode);
+    assert.deepEqual(fallback.gaps, [], mode);
+  }
+});
+
 test('the film queue continues a carry only into adjacent source frames for the same target', async () => {
   const table = {hands: [{seat: 4, cards: [1, 2, 3]}], dealer: []};
   const records = [1, 2, 3].map((shoeDraw) => ({shoeDraw, target: `P4.C${shoeDraw}`, r: 'A', s: 'spades'}));

@@ -12,7 +12,8 @@ Innehåll: Kortet · Filmerna och banken · Läpparna och rösten · Spelet och 
 - **Filmkort som förval kan flytta återbrukade andrakort.** `kort=liggande` låter filmens kort nå filmens egen plats;
   C2/C3 och split kan ha ett annat spelmål. Scenproven `paow-cycle02-scene-20261118` och `paow-outer-filmcard-20261118`
   visar kvarliggande kort mellan två olika platser, men inte detta återbruk. P1:s ruta 114 har dessutom en grå dubbelkant
-  under övergången, borta vid 120. Stänger: egna landningar eller verifierad annan lösning för återbruket, hålkortets
+  under övergången, borta vid 120. Eget kompatibelt C2-par prioriteras nu före C1-delning, även via ett komplett godkänt
+  ankare. P4.C2:s egen dockcykel finns i Prov `paow-c2-rig-cycle-20261118`; dealerfilmen saknas. Stänger: egna landningar eller verifierad annan lösning för återbruket, hålkortets
   vändning och en hel giv i båda renderlägena. Spelets förval är därför kvar; inget Primär-val har ändrats.
 - **Filmcarry behöver ett giltigt kortspår för full markörrensning.** Syns i 2D-provet `cardMethod=film` när ett
   givspår saknas eller är ogiltigt: filmkortet skyddas, men äldre färgmarkörer kan också synas. Med giltigt spår

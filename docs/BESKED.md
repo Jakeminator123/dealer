@@ -160,10 +160,11 @@ Innehåll: [Arbetet och dokumenten](#arbetet-och-dokumenten) · [Labbet och stud
 
 ## Domar, beställningar och pengar
 
-- **Denna räddningsomgångs budget** (2026-11-18, Codex): "du har totalt 800 krediter per timme och 2500 krediter för att generera filmer."
-  Taket ersätter tidigare 1 000 totalt. Codex använder en rullande timme och högst 2 500 för omgången, även om
-  orderpolicyn medger mer. "Kvalitet före kvantitet, men om allt sitter, får du gärna gå vidare och skapa mycket material så länge det är bra."
-  En granskad pilot föregår serien. 3D-Dealer har ett eget repo; det gemensamma saldot samordnas i skrivbordets DISKMASKIN.TXT.
+- **Utökat totalmandat för filmer** (2026-11-18, senare svar på frågan om H24-cykel-01): "Ja du får generera tills kontot är typ tomta!"
+  Det ersätter totalsumman 2 500, inte kravet på granskad kvalitet. Tidigare 800 krediter per timme gäller fortsatt;
+  huvudagenten förnyar det tidsatta ordermandatet inför konkreta beställningar utan att nollställa journalen.
+  "Kvalitet före kvantitet, men om allt sitter, får du gärna gå vidare och skapa mycket material så länge det är bra."
+  En granskad pilot föregår serien. 3D-Dealer har ett eget repo; saldot samordnas i skrivbordets DISKMASKIN.TXT.
 
 - **Domar åt honom, och ingen kö** (2026-11-13): "jag måste sova och du får granska och godkänna alla klipp", och kl.
   15.50, på väg ut: "jag vill nu för jag ska iväg att du godkänner allt videomaterial som innehåller de där kriterierna
@@ -494,6 +495,9 @@ Innehåll: [Arbetet och dokumenten](#arbetet-och-dokumenten) · [Labbet och stud
   (`docs/DRIFT.md`).
 
 ## Ersatta besked
+
+- **Tidigare budget i räddningsomgången** (2026-11-18, ersatt av senare totalmandat ovan): "du har totalt 800 krediter per timme och 2500 krediter för att generera filmer."
+  Det ersatte tidigare svaret "Högst 1 000 krediter totalt". Timtaket 800 gäller fortfarande.
 
 - **Räddningsomgångens första budget** (2026-11-18, Codex): "Högst 1 000 krediter totalt" för nya betalda Runway-försök
   under femtimmarsarbetet. Ersatt samma dag av 800 per timme och 2 500 totalt (Domar, beställningar och pengar).

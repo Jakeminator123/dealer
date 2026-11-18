@@ -17,7 +17,7 @@ import {spots} from '../src/world.ts';
 import {LIMITS, joints, type ArmPose} from '../src/capture.ts';
 import {sideSeen} from '../src/deal.ts';
 import {REAL_DEAL} from '../src/real-deal.ts';
-import {TWO_HAND, shoeHolds, startOnAnchor, twoHandDeal, type Limb, type Pace, type Place, type Still} from '../src/two-hand.ts';
+import {TWO_HAND, contactGripFits, shoeHolds, startOnAnchor, twoHandDeal, type Limb, type Pace, type Place, type Still} from '../src/two-hand.ts';
 import type {RealCard} from '../src/real-deal.ts';
 
 const arg = (name: string, fallback?: string) => { const i = process.argv.indexOf(name); return i > 0 ? process.argv[i + 1] : fallback; };
@@ -30,8 +30,11 @@ const pose = JSON.parse(await readFile(new URL('../data/till-ankare-2-3.json', i
 const planBytes = await readFile(planPath ?? new URL('../../placements/default.json', import.meta.url));
 const plan = JSON.parse(planBytes.toString('utf8').replace(/^\uFEFF/, ''));
 const last = pose.frames[pose.frameCount - 1], all = spots(plan, lens), spot = (id: string) => { const s = all.find(s => s.id === id); if (!s) throw Error(`The plan has no place ${id}.`); return s.at; };
+const contactMode = arg('--contact-grip'), secondCardPilot = to === 'P4.C2';
+if (secondCardPilot && contactMode !== 'landing') throw Error('--to P4.C2 needs --contact-grip landing.');
 // The real dealer's S1 is the seat at her left, by the shoe: the plan's seat 7. Her own card is the plan's D.C1.
-const realOf = (id: string) => { const m = /^P([1-7])\.C1$/.exec(id); return REAL_DEAL[id === 'D.C1' ? 7 : m ? 7 - Number(m[1]) : -1] ?? (() => { throw Error(`No real card to take the moments of for ${id}.`); })(); };
+// The second card at P4 borrows the S4 timing and handover only. Its own plan spot is passed to the solver.
+const realOf = (id: string) => { const timing = secondCardPilot && id === 'P4.C2' ? 'P4.C1' : id, m = /^P([1-7])\.C1$/.exec(timing); return REAL_DEAL[timing === 'D.C1' ? 7 : m ? 7 - Number(m[1]) : -1] ?? (() => { throw Error(`No real card to take the moments of for ${id}.`); })(); };
 // --meet 1, --push <metres>, --swing <degrees>, and for version -e --single 1, --real-take 1, --reach <metres>, --carry <metres>, --turned-at <metres>, and for version -f --roll 1, --grip-bend <0-1>, --hand-over-yaw <degrees>, --body <side,twist,forward degrees>, --tuck <weight> (with --beats): see Pace in dealer3d/src/two-hand.ts.
 // --beats: the film's own moments in frames, for a film slower than the real dealer (b,c,d,e,l,f,g,h as in dealer3d/src/real-deal.ts; a is frame 0). Where the hands
 // change is still the real card's; the card does not stand still between being stood up and falling, and the left hand goes back to the shoe as much slower as the film is.
@@ -40,17 +43,23 @@ const paced = (r: RealCard): {real: RealCard; pace: Pace} => { if (!own) return 
 const ids = to === 'all' ? ['P7.C1', 'P6.C1', 'P5.C1', 'P4.C1', 'P3.C1', 'P2.C1', 'P1.C1', 'D.C1'] : to.split(','), places: Place[] = ids.map(id => ({id, at: spot(id), real: paced(realOf(id)).real})), pace = paced(realOf(ids[0])).pace;
 // --contact-grip 1 is the original P4 contact pilot. The landing variant keeps its index on the card through release.
 if (process.argv.includes('--contact-grip')) {
-  const contactMode = arg('--contact-grip');
-  if (!(contactMode === '1' || contactMode === 'landing') || !own || to !== 'P4.C1' || !pace.single || !pace.meeting || !pace.roll) {
-    throw Error('--contact-grip 1|landing requires --to P4.C1, --beats, --meet 1, --single 1 and --roll 1.');
+  if (!(contactMode === '1' || contactMode === 'landing') || !own || !contactGripFits(to, contactMode === 'landing' ? 'landing' : true) || !pace.single || !pace.meeting || !pace.roll) {
+    throw Error('--contact-grip 1|landing requires --to P4.C1 (or P4.C2 with landing), --beats, --meet 1, --single 1 and --roll 1.');
   }
   pace.contactGrip = contactMode === 'landing' ? 'landing' : true;
+}
+// At C2 the elbows are solved through the release. Pulling them toward the ordinary deal's last pose overbends the wrist.
+if (secondCardPilot) {
+  const yaw = Number(arg('--hand-over-yaw', '180'));
+  if (yaw !== 180) throw Error('P4.C2 needs --hand-over-yaw 180 for its long-edge turn.');
+  pace.handOverYaw = yaw;
+  pace.body ??= [0, 0, 2];
 }
 // --right-at: her right hand as the approved anchor picture has it, where that differs from the pose film (the middle fingertip's pixel in the bank's picture, and the way the hand points).
 const rightAt = arg('--right-at')?.split(',').map(Number) ?? null, posed: Still = {L: last.L, R: last.R, h: last.h}, start = rightAt ? startOnAnchor(lens, posed, {x: rightAt[0], y: rightAt[1]}, rightAt[2]) : posed;
 // A film in its own tempo ends on the picture the film in the real tempo ends on: that film is laid first, for its elbows.
 // --end-elbows 0: the elbows are not brought to those of the film in the real tempo at the end (that film's elbow can stand out from her side, as for D.C1).
-if (own && arg('--end-elbows') !== '0') { const real = twoHandDeal(lens, start, ids.map(id => ({id, at: spot(id), real: realOf(id)})), 2, FPS, N).frames[N - 1]; pace.elbows = {L: real.L.e, R: real.R.e}; }
+if (own && arg('--end-elbows', secondCardPilot ? '0' : '1') !== '0') { const real = twoHandDeal(lens, start, ids.map(id => ({id, at: spot(id), real: realOf(id)})), 2, FPS, N).frames[N - 1]; pace.elbows = {L: real.L.e, R: real.R.e}; }
 const deal = twoHandDeal(lens, start, places, lead, FPS, N, pace), {frames, beats} = deal;
 
 // ---- what it asks, and what to look for --------------------------------------------------------------------------
@@ -63,6 +72,7 @@ for (const [k, b] of beats.entries()) { const c = deal.cards[k];
 const asked: Record<string, {wrist: number; elbow: number[]; twist: number; fingers: number[]; far: number}> = {};
 for (const [side, sign] of [['L', -1], ['R', 1]] as const) { const j = frames.map(f => joints(armOf(f[side]), sign)), twist = unwrap(j.map(x => x.twist).filter(v => v !== null) as number[]), bends = j.flatMap(x => x.fingers.flat());
   asked[side] = {wrist: Math.max(...j.map(x => x.wrist)), elbow: [Math.min(...j.map(x => x.elbow)), Math.max(...j.map(x => x.elbow))], twist: Math.max(...twist) - Math.min(...twist), fingers: [Math.min(...bends), Math.max(...bends)], far: Math.max(...frames.map(f => length(sub(f[side].w, f[side].s))))}; }
+if (secondCardPilot && Math.max(asked.L.wrist, asked.R.wrist) > LIMITS.wrist) throw Error(`P4.C2: the wrist exceeds ${LIMITS.wrist}° (left ${asked.L.wrist.toFixed(2)}°, right ${asked.R.wrist.toFixed(2)}°).`);
 for (const [side, name] of [['L', 'Vänster'], ['R', 'Höger']] as const) { const a = asked[side]; lines.push(`${name} arm: handled högst ${a.wrist.toFixed(0)}° (gräns ${LIMITS.wrist}), armbåge ${a.elbow.map(n => n.toFixed(0)).join('–')}° (gräns ${LIMITS.elbow}), underarmens vridning ${a.twist.toFixed(0)}° (gräns ${LIMITS.twistSpan}), fingerleder ${a.fingers.map(n => n.toFixed(0)).join(' till ')}° (gräns −${LIMITS.fingerBack} till ${LIMITS.fingerBend}), som längst ${(a.far * 100).toFixed(0)} cm från axeln (armen 55).`); }
 const inside = shoeHolds(lens), mixed = (a: Vec3, b: Vec3, t: number): Vec3 => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t];
 const through = frames.map((f, i) => f.R.p.some(inside) || [0.2, 0.4, 0.6, 0.8].some(t => inside(mixed(f.R.e, f.R.w, t))) ? i : -1).filter(i => i >= 0);
@@ -86,6 +96,8 @@ await writeFile(out, JSON.stringify({about: 'The two-hand deal from pose 2.3, la
   ...(pace.contactGrip ? {
     planSha256: createHash('sha256').update(planBytes).digest('hex'),
     actualIntent: {takeHand: 'LH', startSide: 'BACK', endSide: 'FRONT', pass: true, turn: true, grip: 'DRAG', turnAt: 'AIR', flipAxis: 'LONG_EDGE'},
+    ...(secondCardPilot ? {trial: {timingTarget: 'P4.C1', placementTarget: 'P4.C2', planIntent: plan.targets[to].intent ?? null,
+      ik: {body: pace.body, endElbows: !!pace.elbows, wristDegrees: {L: r1(asked.L.wrist), R: r1(asked.R.wrist)}, wristLimitDegrees: LIMITS.wrist}}} : {}),
   } : {}),
   film: 'tvahandsgiv-modell', pose: 'from-2.3', places: ids.map(id => ({id, at: spot(id), pixel: all.find(s => s.id === id)!.pixel})), pace: own ? {real: places[0].real, ...pace} : null, rightAt: rightAt ? {x: rightAt[0], y: rightAt[1], yaw: rightAt[2]} : null, to: ids, loose: 0, fps: FPS, frameCount: N, leavesShoe: Math.round(beats[0].c), edge: [turnsAt(0), turnsAt(0)], folds: Math.round(beats[0].g), rests: Math.ceil(beats[0].h), handSize: pose.handSize, palm: pose.palm, throughShoe: through.length, elbowForced: deal.forced, hip: pose.hip,
   beats: beats.map(b => ({to: b.to, a: r1(b.a), b: r1(b.b), c: r1(b.c), d: r1(b.d), e: r1(b.e), l: r1(b.l), turned: r1(b.turned), f: r1(b.f), g: r1(b.g), h: r1(b.h), i: r1(b.i)})), turns: deal.cards.map(c => ({axis: r4(c.turn.axis), angle: Math.round(c.turn.angle * 10) / 10})),

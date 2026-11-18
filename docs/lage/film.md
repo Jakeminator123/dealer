@@ -20,15 +20,15 @@ gäller nu; varje prov och dess utfall står i handboken (`tools/film-prompting.
   träffas inte exakt.
 - Den tatuerade uppsättningen är förstahandsvalet (keystone, ankare 1 och 2.3); ankare 2.1 och 2.2 och hela banken
   har de äldre händerna och spelas än. Ankare 2.2 föll i tre försök i bildmodellen och görs om som 2.3.
-- Läs aktuellt saldo med `whoami` före beställning; kontot delas med 3D-Dealer. Denna Codex-omgång har högst
-  800 krediter per rullande timme och 2 500 totalt. Det tidsatta mandatet i orderpolicyn spärrar nya starter vid taket
-  eller efter sluttiden; egna orderkvitton reserverar värsta kostnaden (BESKED).
+- Läs aktuellt saldo med `whoami` före beställning; kontot delas med 3D-Dealer. Jakob har utökat totalmandatet
+  (BESKED); timtaket är 800. Den tidigare tidsatta orderpolicyn har löpt ut och måste förnyas före nästa start,
+  med samma journal så att redan förbrukade 234 krediter räknas. Inga nya anrop pågår.
 
 **Nästa steg.** Ett mål i taget: EN dokumenterat granskad giv enligt Jakobs mandat.
 1. Huvudagenten styr en granskad pilot enligt räddningsmandatet i BESKED. Anslutning och workspace verifieras med
    Runway-MCP; egen kostnad bokförs per order och samordnas i skrivbordets DISKMASKIN.TXT.
 2. H24-03 och Cykel01 är dömda med bevis vid tagningarna. Cykel02: giv Variant 3/5, retur 4/5.
-   Scenprov med tre slingor finns; framsidan bleknar. 234 krediter, ingen serie; ytterplatser/hel giv och Kling 4-skrivschema återstår.
+   Cykel02:s framsida bleknar. P4.C2:s dockcykel finns i Prov `paow-c2-rig-cycle-20261118`. Inga fler order; Kling 4-skrivschema/inloggning återstår.
 3. Alternativet med plant kort och vändning först efter släpp är fortfarande ett separat förslag i Beslut;
    det är inte en godkänd metod. En godkänd kodkontroll gör inte en film visuellt godkänd.
 4. Plats 1 (hans ord i Prov): A3 · P1 görs om med modellen som lämnar ansiktet orört, och vägen tillbaka från den

@@ -7,7 +7,7 @@
 //
 // What she says: a talk film (a rest take on request, with sound) is played whole at rest, before a step's chain of cards or after
 // it (speakMoments), or between rounds (say). A line without a film is said at the same moment, in the chat only.
-import {ARRIVE_EDGE, LEAVE_EDGE, resolveRound, pickIdle, idleRange, idleExit, effectOf, IDLE_RULE, type FilmEffect, type Graph, type Take, type Segment} from './clip-graph.ts';
+import {ARRIVE_EDGE, LEAVE_EDGE, dealHub, resolveRound, pickIdle, idleRange, idleExit, effectOf, IDLE_RULE, type FilmEffect, type Graph, type Take, type Segment} from './clip-graph.ts';
 import {CARRY, type CardRecord} from './card-overlay.ts';
 import type {OverlayOptions} from './card-overlay-view.ts';
 import {slotOf, slotLabel, slotFilm, type Layout, type Pt, type TableCards} from './game-table.ts';
@@ -169,11 +169,40 @@ export function createFilm(players: FilmPlayers, bank: Graph, layout: Layout, re
 
   // A card whose deal has no film that can be played (none made, or the only take rejected) is laid without a hand.
   const filmless = (target: string) => !resolveRound(graph, [{from: 'READY', to: target}], {places})[0]?.video;
+  const playsOwn = (route: Segment[] | null) => !!route && route.every(s => !!s.video && s.film === s.edge);
+  function ownReadyRoute(film: string): Segment[] | null {
+    const deal = {from: 'READY', to: film}, direct = resolveRound(graph, [deal, {from: film, to: 'IDLE'}], {places});
+    if (playsOwn(direct)) return direct;
+    const viaReady = resolveRound(graph, [deal, {from: film, to: 'READY'}, {from: 'READY', to: 'IDLE'}], {places});
+    return playsOwn(viaReady) ? viaReady : null;
+  }
   // A seat film whose return to rest has no film: the hand goes back to the shoe and from there to rest (planBeats).
-  const toRest = (film: string) => !!resolveRound(graph, [{from: film, to: 'IDLE'}], {places})[0]?.video;
+  function toRest(film: string): boolean {
+    const own = graph.edge[`READY>${film}`]?.shares ? ownReadyRoute(film) : null;
+    if (own) return own.length === 2;
+    return !!resolveRound(graph, [{from: film, to: 'IDLE'}], {places})[0]?.video;
+  }
   // A card on the dealer's SEAT_HUB is dealt from that pose only when its four films can be played (hubChain). The game's graph
   // holds judged takes only (judgedBank), so these are judged too.
   const fromHub = (hub: string, film: string) => !!hubChain(graph, hub, film, places);
+  function seatHubs() {
+    const hubs = {...SEAT_HUB[graph.dealer]};
+    for (const edge of graph.edges) {
+      const target = edge.target;
+      if (edge.kind !== 'DEAL' || !edge.shares || !target || !/^P[1-7]\.C2$/.test(target) || hubs[target] || !edge.hubVariants.length) continue;
+      // The existing route keeps its own pair. Before sharing C1, look for all four approved films at C2's pose.
+      const current = dealHub(target, hubs);
+      if (playsOwn(current === 'READY' ? ownReadyRoute(target) : hubChain(graph, current, target, places))) continue;
+      const alternatives = edge.hubVariants.flatMap(hub => {
+        const chain = hubChain(graph, hub, target, places);
+        if (!chain || !playsOwn(chain) || !chain.every(s => s.take?.decision === 'ACCEPTED' && !s.take.variant && !s.take.inbox)) return [];
+        return [{hub, primary: chain.slice(1, 3).filter(s => s.take?.explicitMain).length}];
+      });
+      const chosen = alternatives.sort((a, b) => b.primary - a.primary || a.hub.localeCompare(b.hub))[0];
+      if (chosen) hubs[target] = chosen.hub;
+    }
+    return hubs;
+  }
   /** A talk film as a part of the queue: the whole film, at rest, with the cards lying as they lie, and with sound. */
   function talkPart(clip: string): FilmPart | null {
     const take = graph.takes[clip];
@@ -187,7 +216,7 @@ export function createFilm(players: FilmPlayers, bank: Graph, layout: Layout, re
    */
   async function play(signals: FilmSignal[], next: {table: TableCards; records: CardRecord[]}, landed: (beat: Beat, index: number) => void = () => {}, said: {before?: Said[]; after?: Said[]} = {}): Promise<{gaps: string[]; beats: Beat[]}> {
     const mine = ++token, leaving = resting, rate = dealTempo; resting = null;
-    const standIn = STAND_IN_FILM[graph.dealer] ?? {}, beats = planBeats(next.table, lying, signals, filmless, toRest, standIn, SEAT_HUB[graph.dealer] ?? {}, fromHub);
+    const standIn = STAND_IN_FILM[graph.dealer] ?? {}, beats = planBeats(next.table, lying, signals, filmless, toRest, standIn, seatHubs(), fromHub);
     table = next.table; records = next.records;
     // PLACE beats have no edge; the others are resolved as one chain, so each deal is cut where its return begins.
     const filmed = beats.map((b, i) => b.step ? i : -1).filter(i => i >= 0), resolved: Segment[] = resolveRound(graph, filmed.map(i => beats[i].step!), {places});

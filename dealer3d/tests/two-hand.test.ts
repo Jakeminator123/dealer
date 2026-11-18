@@ -6,7 +6,12 @@
 // card. And that the data files are what the code lays today. Needs no media.
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {readFile} from 'node:fs/promises';
+import {execFileSync} from 'node:child_process';
+import {createHash} from 'node:crypto';
+import {mkdtemp, readFile, rm, writeFile} from 'node:fs/promises';
+import {tmpdir} from 'node:os';
+import {join} from 'node:path';
+import {fileURLToPath} from 'node:url';
 import {CARD, TABLE_LENS, add, filmEye, length, mul, see, sub, type Vec3} from '../../src/table-lens.ts';
 import {FINGERS, LIMITS, joints, type ArmPose} from '../src/capture.ts';
 import {sideSeen, type CardPose} from '../src/deal.ts';
@@ -129,6 +134,65 @@ test('P4 H keeps the index at the same point through release and flat landing, w
   const flatPose = card(landingPilot.frames[flat].card);
   assert.deepEqual(flatPose.normal, [0, 1, 0]);
   assert.ok(Math.abs(flatPose.centre[1] - CARD.thickness / 2) < tolerance, 'the card lies flat on the felt');
+});
+
+test('the H timing can lay its own P4.C2 card with independent IK and a frozen placement plan', async t => {
+  const temp = await mkdtemp(join(tmpdir(), 'dealer-p4c2-'));
+  t.after(() => rm(temp, {recursive: true, force: true}));
+  const target = (u: number, v: number, pass: boolean) => ({
+    geometry: {native: {u, v, width: 0.0492, height: 0.0612, angle: 0, taper: 0.87}},
+    intent: {takeHand: 'LH', startSide: 'BACK', endSide: 'FRONT', pass, turn: true, grip: 'PINCH', turnAt: 'AIR', flipAxis: 'FREE'},
+  });
+  const first = target(0.4858844998096943, 0.06106632779165577, true);
+  const second = target(0.5141155001903057, 0.07022096973605096, false);
+  const bytes = JSON.stringify({targets: {'P4.C1': first, 'P4.C2': second}}), plan = join(temp, 'plan.json'), out = join(temp, 'c2.json');
+  await writeFile(plan, bytes);
+  const cli = fileURLToPath(new URL('../tools/deal-film.ts', import.meta.url));
+  const args = [cli, '--to', 'P4.C2', '--plan', plan, '--seconds', '4', '--beats', '4,15,20,36,22,45,58,70',
+    '--right-at', '1180,887,83', '--meet', '1', '--push', '0.004', '--single', '1', '--carry', '0.045', '--turned-at', '0.01',
+    '--roll', '1', '--tuck', '300', '--out', out];
+  execFileSync(process.execPath, [...args, '--contact-grip', 'landing']);
+  const result = JSON.parse(await readFile(out, 'utf8')) as typeof pilot & {trial: {
+    timingTarget: string; placementTarget: string; planIntent: typeof second.intent;
+    ik: {body: Vec3; endElbows: boolean; wristDegrees: {L: number; R: number}; wristLimitDegrees: number};
+  }};
+  assert.deepEqual(result.to, ['P4.C2']);
+  assert.deepEqual(result.beats[0], {...landingPilot.beats[0], to: 'P4.C2'});
+  assert.equal(result.pace?.real.place, 'S4');
+  assert.deepEqual(result.frames[0], landingPilot.frames[0]);
+  assert.deepEqual(result.actualIntent, landingPilot.actualIntent);
+  assert.equal(result.trial.timingTarget, 'P4.C1');
+  assert.equal(result.trial.placementTarget, 'P4.C2');
+  assert.deepEqual(result.trial.planIntent, second.intent);
+  assert.deepEqual(result.trial.ik.body, [0, 0, 2]);
+  assert.equal(result.trial.ik.endElbows, false);
+  assert.equal(result.trial.ik.wristLimitDegrees, LIMITS.wrist);
+  assert.equal(await readFile(plan, 'utf8'), bytes);
+  assert.equal(result.planSha256, createHash('sha256').update(bytes).digest('hex'));
+
+  const beat = result.beats[0], center = placeOf(result, 'P4.C2').at;
+  const beforeTurn = result.frames[Math.ceil(beat.l + 5)].card;
+  assert.ok(Math.abs(Math.abs(dot(result.turns[0].axis, beforeTurn.l)) - 1) < tolerance, 'default yaw gives a long-edge turn');
+  assert.ok(length(sub(center, placeOf(landingPilot, 'P4.C1').at)) > 0.04);
+  assert.deepEqual(result.frames.at(-1)?.card, result.frames[beat.h].card);
+  assert.ok(length(sub(result.frames[beat.h].card.c, [center[0], CARD.thickness / 2, center[2]])) < tolerance);
+  assert.deepEqual(result.elbowForced, []);
+  assert.equal(result.throughShoe, 0);
+  for (const [i, frame] of result.frames.entries()) {
+    for (const [side, sign] of [['L', -1], ['R', 1]] as const) {
+      const j = joints(arm(frame[side]), sign);
+      assert.ok(j.wrist <= LIMITS.wrist && j.elbow <= LIMITS.elbow, `${side} frame ${i}: wrist or elbow out of range`);
+    }
+    if (i < Math.ceil(beat.l + 5) || i > Math.ceil(beat.h)) continue;
+    const points = frame.R.p.map(p => cardCoordinates(p, card(frame.card)));
+    const [along, height, across] = points[8];
+    assert.ok(Math.abs(along - (CARD.height / 2 - 0.005)) < tolerance && Math.abs(height - (CARD.thickness / 2 + sphereRadius(8))) < tolerance &&
+      Math.abs(across + 0.012) < tolerance, `frame ${i}: index lost contact`);
+    assertCardClearance(points, `C2 frame ${i}`, i <= Math.floor(beat.g));
+    assert.ok(frame.R.e[1] <= 0.085 && length(sub(frame.R.e, result.frames[i - 1].R.e)) <= 0.03, `frame ${i}: elbow too high or abrupt`);
+  }
+  assert.throws(() => execFileSync(process.execPath, [...args, '--contact-grip', 'landing', '--end-elbows', '1'], {stdio: 'pipe'}), /wrist exceeds 95/);
+  assert.throws(() => execFileSync(process.execPath, [...args, '--contact-grip', 'landing', '--hand-over-yaw', '140'], {stdio: 'pipe'}), /needs --hand-over-yaw 180/);
 });
 
 for (const [name, film] of [['G', pilot], ['H', landingPilot]] as const) test(`P4 ${name} keeps hand sizes, arm limits and clearances`, () => {

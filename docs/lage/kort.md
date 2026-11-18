@@ -27,9 +27,9 @@ bara det som gäller nu; kontraktet står i `docs/SYSTEM.md`, "Ritade kort".
   visar det som en bricka ("äldre plan", "annan kamera", "avviker").
 
 **Nästa steg.**
-1. Cykel02 är sedd i scenen, även 46–51, 65–66 och tre slingor; Prov `paow-cycle02-scene-20261118`. P1:s kort ligger
-   kvar under P7 i Prov `paow-outer-filmcard-20261118`, men P1 har dubbelkant vid landning. Andrakort/split återbrukar
-   fel landningsplats; lös det och hålkortets vändning före kortförvalet. Linsförvalet kräver fortfarande Jakobs ja.
+1. Cykel02 och P1→P7 är synprovade ([bevis](../BRISTER.md#kortet)); P1 har dubbelkant vid landning. Andrakort/split återbrukar
+   fel landningsplats när egen film saknas. Eget C2-par prioriteras; P4.C2:s dockcykel finns i Prov `paow-c2-rig-cycle-20261118`.
+   Dealerfilmen och hålkortets vändning återstår före kortförvalet. Linsförvalet kräver hans ja.
 2. När hans sparade plan checkas in, skriv om `data/media-fit.json` med `node tools/media-audit.ts --fit --write`.
    Gör samma mätning när planens regel, linsen eller ett ankare ändras.
 3. Kortets sidor i efterarbetet, efter filmerna: gul rygg (SG får stå kvar) och blå framsida, lika i labbet och spelet.

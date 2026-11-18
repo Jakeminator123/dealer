@@ -467,7 +467,7 @@ test('one film per seat is the default: a second card shares the first card\'s f
   assert.equal(open.edge['READY>D.C2'].shares, 'READY>D.C1'); assert.equal(open.summary.films.total, 29); assert.ok(!open.summary.films.required.includes('IDLE>REVEAL(D.C2)'));
 });
 
-test('in a round a second card plays the seat film with the card shifted; a film of its own is used only when the step names it', () => {
+test('a second card without a matching own pair shares the seat films; explicit locks still choose a take', () => {
   const g = graph.buildGraph(seatBank()), places = {'P4.C1': {x: 850, y: 1100}, 'P4.C2': {x: 890, y: 1084}, 'D.C1': {x: 800, y: 700}, 'D.C2': {x: 848, y: 700}};
   const steps = graph.parseSequence('READY>P4.C1 | P4.C1>READY | READY>P4.C2 | P4.C2>IDLE').steps, round = graph.resolveRound(g, steps, {places});
   // The first card is unchanged. The second card's steps keep their own name and play the seat's films.
@@ -492,6 +492,65 @@ test('in a round a second card plays the seat film with the card shifted; a film
   // One film per card: the same step plays the card's own film or is a gap, never the seat's.
   const card = graph.buildGraph(seatBank(), {mode: 'CARD'}), each = graph.resolveRound(card, graph.parseSequence('READY>P4.C2 | P4.C2>IDLE').steps, {places});
   assert.deepEqual(each.map(s => [s.film?.id, s.take?.id ?? null, s.shift, s.gap]), [['READY>P4.C2', 'p4-second-01', null, null], ['P4.C2>IDLE', null, null, 'MISSING']]);
+});
+
+test('a second card automatically uses a playable own deal with its own compatible return', () => {
+  const data = seatBank(), deal = 'p4-second-01', back = 'p4-second-back-01';
+  data.jobs!.push(job(back, 'P4.C2', 'READY', from(deal, 101)));
+  data.motions![deal] = done('ACCEPTED', {review: {decision: 'ACCEPTED', acceptedAs: 'MAIN'}});
+  data.motions![back] = done('ACCEPTED'); data.media![back] = {video: video(back)};
+  const steps = [{from: 'READY', to: 'P4.C2'}, {from: 'P4.C2', to: 'READY'}];
+  const g = graph.buildGraph(data), round = graph.resolveRound(g, steps);
+  assert.deepEqual(round.map(s => [s.take?.id, s.film?.id, s.shift, s.why]), [[deal, 'READY>P4.C2', null, 'PRIMARY'], [back, 'P4.C2>READY', null, 'MAIN']]);
+  assert.equal(round[0].end, 101);
+  assert.ok(round.every(s => !s.notes.length && !s.gap));
+  assert.equal(graph.resolveRound(g, [steps[0]])[0].take?.id, deal, 'an availability probe sees the own deal');
+
+  const pinned = graph.resolveRound(g, [{...steps[0], take: 'p4-deal-01'}, steps[1]]);
+  assert.deepEqual(pinned.map(s => [s.take?.id, s.why]), [['p4-deal-01', 'LOCKED'], ['p4-back-ready-01', 'SHARED']]);
+
+  const unknownLocks = graph.resolveRound(g, [{...steps[0], take: 'wrong-deal'}, {...steps[1], take: 'wrong-return'}]);
+  assert.deepEqual(unknownLocks.map(s => s.take?.id), [deal, back]);
+  assert.match(unknownLocks[0].notes.join(' '), /Låst tagning wrong-deal/);
+  assert.match(unknownLocks[1].notes.join(' '), /Låst tagning wrong-return/);
+
+  for (const mode of ['rejected', 'archived', 'missing', 'wrong frame', 'wrong hub', 'wrong hand']) {
+    const changed: BankData = {...data, jobs: [...data.jobs!], motions: {...data.motions}, media: {...data.media}};
+    if (mode === 'rejected') changed.motions![deal] = done('REJECTED');
+    if (mode === 'archived') changed.motions![back] = done('ACCEPTED', {review: {decision: 'ACCEPTED', archived: {by: 'Jakob', at: '2026-11-18T00:00:00Z'}}});
+    if (mode === 'missing') changed.media![deal] = {video: null};
+    if (mode === 'wrong frame') changed.jobs![changed.jobs!.length - 1] = job(back, 'P4.C2', 'READY', from('another-deal', 101));
+    if (mode === 'wrong hub') changed.jobs![changed.jobs!.length - 1] = job(back, 'P4.C2', 'READY-B', from(deal, 101));
+    if (mode === 'wrong hand') {
+      changed.motions![deal] = done('ACCEPTED', {motion: {releaseHand: 'LH'}});
+      changed.motions![back] = done('ACCEPTED', {motion: {releaseHand: 'RH'}});
+    }
+    assert.deepEqual(graph.resolveRound(graph.buildGraph(changed), steps).map(s => s.take?.id), ['p4-deal-01', 'p4-back-ready-01'], mode);
+  }
+});
+
+test('an optional dealer third card resolves its own deal and return on the requested hub', () => {
+  const data = seatBank(), deal = 'd-third-readyc', back = 'd-third-back-readyc';
+  data.jobs!.push(job(deal, 'READY-C', 'D.C3'), job(back, 'D.C3', 'READY-C', from(deal, 98)));
+  for (const id of [deal, back]) { data.motions![id] = done('ACCEPTED'); data.media![id] = {video: video(id)}; }
+  const g = graph.buildGraph(data);
+  const steps = [{from: 'READY-C', to: 'D.C3'}, {from: 'D.C3', to: 'READY-C'}];
+  assert.deepEqual(graph.resolveRound(g, steps).map(s => [s.take?.id, s.shift, s.gap]), [[deal, null, null], [back, null, null]]);
+  assert.equal(graph.resolveRound(g, [{from: 'READY', to: 'D.C3'}])[0].gap, 'MISSING');
+});
+
+test('own C2 at READY-C requires that hub and the landing anchor of its own deal', () => {
+  const data = seatBank(), deal = 'p4-second-readyc', back = 'p4-second-back-readyc';
+  const landing = {file: {path: 'assets/anchors/p4-second-landing/anchor.png', sha256: 'b'.repeat(64)}};
+  data.jobs!.push(job(deal, 'READY-C', 'P4.C2', {last: landing}), job(back, 'P4.C2', 'READY-C', {first: landing}));
+  for (const id of [deal, back]) { data.motions![id] = done('ACCEPTED'); data.media![id] = {video: video(id)}; }
+  const steps = [{from: 'READY-C', to: 'P4.C2'}, {from: 'P4.C2', to: 'READY-C'}];
+  const g = graph.buildGraph(data);
+  assert.deepEqual(graph.resolveRound(g, steps).map(s => [s.take?.id, s.cut, s.gap]), [[deal, 'END', null], [back, null, null]]);
+  const wrongLock = graph.resolveRound(g, [{from: 'READY', to: 'P4.C2', take: deal}])[0];
+  assert.equal(wrongLock.take?.id, 'p4-deal-01'); assert.match(wrongLock.notes.join(' '), /Låst tagning/);
+  data.jobs![data.jobs!.length - 1] = job(back, 'P4.C2', 'READY-C');
+  assert.deepEqual(graph.resolveRound(graph.buildGraph(data), steps).map(s => [s.take, s.gap]), [[null, 'MISSING'], [null, 'MISSING']]);
 });
 
 test('an idle loop that starts on frame 0 of the entry clip, and a deal that ends on a frame of an earlier deal, cut and reorder nothing', () => {

@@ -206,6 +206,23 @@ För att upprepa en körning, använd `rorelse.json` med `--motion`, `kortplan.j
 i `renderkvitto.json` med samma kod och verktyg. Kvittot anger de färdiga filernas SHA-256. `ofullstandig.txt` markerar
 en avbruten eller misslyckad körning. En vidare körning behöver en ny mapp. Lås först vid direkt användning av `shoot.ts`.
 
+### En giv och retur i samma cykel
+
+P4.C2-provet använder H:s takt men C2:s egen plats. `--contact-grip landing` håller pekfingret vid kortet till
+landning. C2 väljer 180° handbyte, 2° framåtlutning och lösta armbågar; annan handbytesvinkel avvisas. Kvittot
+redovisar både planens avsikt och provets verkliga handbyte. C1:s befintliga H-data ska vara byteidentiska.
+
+```powershell
+node dealer3d/tools/deal-film.ts --to P4.C2 --seconds 4 --beats 4,15,20,36,22,45,58,70 --right-at 1180,887,83 --meet 1 --push 0.004 --single 1 --carry 0.045 --turned-at 0.01 --roll 1 --tuck 300 --contact-grip landing --out <ny-giv.json>
+node dealer3d/tools/return-cycle.ts <ny-giv.json> <ny-cykel.json> --hold 76 --ready 116 --duration 4 --lift 0.022
+node dealer3d/tools/render-reference.ts --motion <ny-cykel.json> --out <ny-mapp> --seconds 4 --fps 24
+```
+
+Cykelverktyget bevarar given till och med ruta 76, lyfter handen 22 mm och återgår till exakt startruta från 116.
+Kortet ligger kvar. Källans SHA-256 följer med; utfilen måste vara ny. För kort retur, kort som inte ligger plant
+och stilla samt armpositioner som inte kan nås avvisas. Punktförflyttningen begränsas till 2 m/s. Detta är en ny,
+reproducerbar returbana, inte en återställning av den äldre H24-svansen. Granska filmen före betald generering.
+
 ## Kvar
 
 - Dockan är en provdocka av klot och rör. Den vita dockan står kvar som egen väg för förlagefilmer (en modell som

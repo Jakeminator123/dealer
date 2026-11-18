@@ -22,8 +22,8 @@ Rädda befintligt repo till en sammanhängande lokal väg från underlag till sp
 Kodens samband och verifiering rättas parallellt; filmproduktionen börjar med EN trovärdig giv ([film](docs/lage/film.md)).
 
 1. Bevara Jakobs ändrade kortplan och oincheckade orderutkast. Läs nya anteckningar med `node tools/proof-notes.ts`.
-2. Cykel02 och kvarliggande kort mellan P1 och P7 är synprovade. Lös återbrukade andrakorts fel plats och hålkortets
-   vändning före byte av spelets kortförval ([kort](docs/lage/kort.md)); P1 har också en dubbelkant vid landningen.
+2. Eget C2-par prioriteras nu före C1-återbruk. P4.C2:s dockcykel är synprovad, dealerfilmen saknas. Lös övriga
+   andrakort och hålkortets vändning före kortförvalet ([kort](docs/lage/kort.md)); P1 har en dubbelkant vid landningen.
 3. Använd automatiska testkvitton och det återbyggbara SQLite-indexet ([evidens](tools/evidence.md)); inga medieblobs.
 4. Munproven är lokala jämförelser; inget byte i banken före Jakobs val i Beslut. Körarens kod finns nu i repot.
 5. Testa, pusha och verifiera fjärrens SHA. Sessionens tio GPT-meddelanden är förbrukade; färdiga granskningsfynd är
@@ -37,7 +37,7 @@ Kodens samband och verifiering rättas parallellt; filmproduktionen börjar med 
   Kontrollera med ListAgents före meddelanden. Huvudagenten äger commits, taggar och push, studion,
   labbservern, spelet och 3D-scenens filmlager, `src/clip-graph.ts` och styrdokumenten.
 - **Avgränsade uppdrag:** `/root/geometry`, `/root/order_snapshot` och `/root/evidence_audit` har lämnat över
-  typkontroll, kortens landning och munprov. Huvudagenten äger nu integration, register och körjournal;
+  C2-valet, egen C2-landning och reproducerbar cykelretur. Huvudagenten äger nu integration, register och körjournal;
   nya underagentuppdrag måste ange egna filer innan någon skriver.
 - **Jakob talar bara med huvudagenten**, som håller ihop sessionerna. Varje bana får sin kö av huvudagenten och säger
   till när ett steg är grönt, med en fillista. Ingen bana skriver i en annans filer.

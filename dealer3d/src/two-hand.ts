@@ -41,6 +41,10 @@ export type DealFrame = {card: CardAt; L: Limb; R: Limb; h: Vec3; g: Vec3};
 /** The moments of one card in the film's own frames (not whole numbers), named as in src/real-deal.ts; `turned`: the turn in the air is done. `i` null: her hand stays on the card to the end. */
 export type Beat = {to: string; a: number; b: number; c: number; d: number; e: number; l: number; turned: number; f: number; g: number; h: number; i: number | null};
 export type Place = {id: string; at: Vec3; real: RealCard};
+
+/** P4.C2 uses the landing grip only. The original closed-grip pilot stays at P4.C1. */
+export const contactGripFits = (target: string, grip: NonNullable<Rolled['contactGrip']>): boolean =>
+  target === 'P4.C1' || (target === 'P4.C2' && grip === 'landing');
 /**
  * For a film in another tempo than the real dealer's (the moments it is given are then its own). `flowing`: the card does
  * not stand still between being stood up and falling: the raising goes straight over into the fall. In her own tempo the
@@ -260,7 +264,7 @@ export function twoHandDeal(lens: Lens, start: Still, places: Place[], lead: num
   // between the way it lies when the hands change and the way it lies on its place (with handOverYaw 180 that is its own
   // long side), the edge on her left going up: seen from the bank it is never drawn larger than lying.
   const rolling = single && !!pace.roll, rollFlat = cardAxes(yawHand + Math.PI, 0, false), rollTaken = {up: 0.012, in: W / 2};
-  if (pace.contactGrip && (!rolling || places.length !== 1 || places[0].id !== 'P4.C1')) throw Error('Contact grip is a single P4.C1 roll pilot.');
+  if (pace.contactGrip && (!rolling || places.length !== 1 || !contactGripFits(places[0].id, pace.contactGrip))) throw Error('Contact grip needs one P4.C1 roll, or a landing grip at P4.C2.');
   const supportsLanding = pace.contactGrip === 'landing', pinched = pace.contactGrip ? contactGripOf(flatR, supportsLanding) : null;
   const cards = places.map((place, k) => { const b = beats[k], r = place.real, step = (s: [number, number]): Vec3 => [shoe.front[0] + s[0], lying, shoe.front[2] + s[1]];
     // The first card is taken where her right hand waits (or, realTake, where the real dealer's hands change); every other where the real dealer's hands change, counted from the shoe's mouth.

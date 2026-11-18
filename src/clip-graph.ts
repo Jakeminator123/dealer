@@ -554,15 +554,38 @@ export type Segment = {index: number; id: string; from: string; to: string; kind
 
 // What a step chooses from: its edge, the edge whose film it plays, the takes of its READY pose, their main take, and the take the
 // step names when that one can be played. A model edge in any spelling, or an experiment edge under the exact name the graph gave it.
-function choices(graph: Graph, step: Step) {
+function choices(graph: Graph, step: Step, ownCard = false) {
   const id = formatEdge(step.from, step.to), ref = parseEdge(id), found = graph.edge[ref?.base ?? id], e = found && (ref || found.experiment) ? found : null;
   if (!e) return null;
-  // Seat mode: the step plays the seat's film unless it names a film of its own card.
-  const film = e.shares && !(step.take && e.takes.some(t => t.id === step.take && playable(t))) ? graph.edge[e.shares] : e;
   // A step written with a READY variant only uses takes made from that pose; a plain step never does. A take in the inbox is chosen
   // only where the step has no other film it may play; a round that names it still plays it.
-  const hub = ref?.hub ?? null, own = film.takes.filter(t => t.hub === hub), pool = own.some(t => playable(t) && !t.inbox) ? own.filter(t => !t.inbox) : own, main = hub ? best(pool, rank) : film.main;
-  return {e, film, pool, main, locked: step.take ? film.takes.find(t => t.id === step.take && playable(t)) ?? null : null};
+  const hub = ref?.hub ?? null, shared = e.shares ? graph.edge[e.shares] : null;
+  const lockOn = (edge: Edge | null) => step.take ? edge?.takes.find(t => t.id === step.take && t.hub === hub && playable(t)) ?? null : null;
+  const ownLock = lockOn(e), sharedLock = lockOn(shared);
+  const film = ownLock || (ownCard && !sharedLock) ? e : shared ?? e;
+  const own = film.takes.filter(t => t.hub === hub), pool = own.some(t => playable(t) && !t.inbox) ? own.filter(t => !t.inbox) : own, main = hub ? best(pool, rank) : film.main;
+  return {e, film, pool, main, locked: ownLock ?? sharedLock};
+}
+
+const sameReleaseHand = (deal: Take, back: Take) => !deal.releaseHand || !back.releaseHand || deal.releaseHand === back.releaseHand;
+
+// Use the second card's own films together when they can play this exact route. A valid lock or Primär still has its say.
+function ownCardPair(graph: Graph, step: Step, next: Step, side: Side | null): {deal: Take; back: Take} | null {
+  const deal = choices(graph, step, true), back = choices(graph, next, true);
+  if (!deal || !back || deal.film !== deal.e || back.film !== back.e || back.e.kind !== 'RETURN' || back.e.target !== deal.e.target) return null;
+  const local = (t: Take) => playable(t) && !!t.media.video;
+  const deals = (deal.locked ? [deal.locked] : deal.pool).filter(t => local(t) && (!t.endSide || !side || t.endSide === side));
+  const returns = (back.locked ? [back.locked] : back.pool).filter(local);
+  const primaryDeal = deal.main?.explicitMain && deals.includes(deal.main) ? deal.main : null;
+  const primaryBack = back.main?.explicitMain && returns.includes(back.main) ? back.main : null;
+  const pairs = new Map<Take, Take>();
+  for (const take of primaryDeal ? [primaryDeal] : deals) {
+    const candidates = primaryBack && sameReleaseHand(take, primaryBack) ? [primaryBack] : returns;
+    const chosen = best(candidates.filter(r => sameReleaseHand(take, r) && returnFits(r, take)), rank);
+    if (chosen) pairs.set(take, chosen);
+  }
+  const chosen = best([...pairs.keys()], t => t === deal.main ? 1 : 0, rank);
+  return chosen ? {deal: chosen, back: pairs.get(chosen)!} : null;
 }
 
 // Chooses one take per step and the frame range to play. A named take plays; then a Primär take plays on its edge, also a return
@@ -572,29 +595,49 @@ function choices(graph: Graph, step: Step) {
 // places: each card's centre in film pixels (the placement plan); it gives a shared step its shift.
 export function resolveRound(graph: Graph, steps: Step[], options: {holeCardDown?: boolean; places?: Record<string, {x: number; y: number}> | null} = {}): Segment[] {
   const out: Segment[] = [];
+  let followingOwnReturn: Take | null = null;
   steps.forEach((step, index) => {
-    const id = formatEdge(step.from, step.to), at = choices(graph, step), e = at?.e ?? null, prev = out[index - 1], notes: string[] = [];
+    const id = formatEdge(step.from, step.to), ordinary = choices(graph, step), e = ordinary?.e ?? null, prev = out[index - 1], next = steps[index + 1], notes: string[] = [];
     // The turn of the hole card ends in rest, so a step from IDLE continues it.
     if (prev && prev.to !== step.from && !(hubOf(prev.to) === 'IDLE' && hubOf(step.from) === 'IDLE')) notes.push(`Bryter kedjan: föregående steg slutar i ${prev.to}.`);
     const seg: Segment = {index, id, from: step.from, to: step.to, kind: e?.kind ?? null, edge: e, film: e, shift: null, take: null, video: null, fps: 30, start: 0, end: null, cut: null, gap: null, side: null, why: 'GAP', notes};
     out.push(seg);
-    if (!at || !e) { seg.gap = 'INVALID'; notes.push('Kanten finns inte i klippbanken.'); return; }
+    if (!ordinary || !e) { seg.gap = 'INVALID'; notes.push('Kanten finns inte i klippbanken.'); return; }
     seg.side = e.kind === 'REVEAL' ? 'FRONT' : e.kind === 'DEAL' && e.target ? wantedSide(e.target, options.holeCardDown !== false) : null;
+    let preferred = followingOwnReturn;
+    followingOwnReturn = null;
+    if (e.kind === 'DEAL' && e.shares) {
+      // A single-step query also probes whether this card has a playable deal. Check its return routes before reporting it.
+      let pair = next?.from === step.to ? ownCardPair(graph, step, next, seg.side) : null;
+      if (steps.length === 1) {
+        pair = ownCardPair(graph, step, {from: step.to, to: step.from}, seg.side);
+        if (!pair && parseNode(step.from) === 'READY') pair = ownCardPair(graph, step, {from: step.to, to: 'IDLE'}, seg.side);
+      }
+      if (pair) { preferred = pair.deal; if (next) followingOwnReturn = pair.back; }
+    }
+    const at = preferred ? choices(graph, step, true)! : ordinary;
     const {film, pool, main} = at;
     if (film !== e) { seg.film = film; const a = options.places?.[film.target!], b = options.places?.[e.target!];
       if (a && b && [a.x, a.y, b.x, b.y].every(Number.isFinite)) seg.shift = {x: b.x - a.x, y: b.y - a.y}; else notes.push('Kortets flytt är okänd utan placeringsplan: det renderade kortet ritas där filmens kort ligger.'); }
     const after = prev?.take && prev.kind === 'DEAL' && prev.to === step.from ? prev.take : null, asMain = (t: Take): Why => t.explicitMain ? 'PRIMARY' : film !== e ? 'SHARED' : 'MAIN';
-    let take = at.locked, why: Why = 'LOCKED';
-    if (step.take && !take) notes.push(`Låst tagning ${step.take} kan inte spelas här; huvudtagningen används.`);
+    let take = at.locked ?? preferred, why: Why = 'LOCKED';
+    if (preferred && !at.locked) {
+      why = asMain(preferred);
+      if (preferred !== main && !preferred.explicitMain) {
+        if (e.kind === 'RETURN') why = 'FITS_DEAL';
+        else if (followingOwnReturn?.explicitMain) why = 'FITS_PRIMARY_RETURN';
+      }
+    }
+    if (step.take && !at.locked) notes.push(`Låst tagning ${step.take} kan inte spelas här; en annan tagning väljs om det går.`);
     // Look-ahead: when the next step is a return from this card and plays a Primär take, a deal that is neither named nor Primär itself
     // is one that return continues, the best of them, unless the main deal already is one. A deal on the wrong side of the card never is.
-    const next = steps[index + 1], ahead = !take && e.kind === 'DEAL' && !main?.explicitMain && next?.from === step.to ? choices(graph, next) : null, primary = ahead?.e.kind === 'RETURN' ? ahead.locked ?? ahead.main : null;
+    const ahead = !take && e.kind === 'DEAL' && !main?.explicitMain && next?.from === step.to ? choices(graph, next) : null, primary = ahead?.e.kind === 'RETURN' ? ahead.locked ?? ahead.main : null;
     if (primary?.explicitMain) { const fits = pool.filter(t => returnFits(primary, t) && !(t.endSide && seg.side && t.endSide !== seg.side)); if (!(main && fits.includes(main))) { take = best(fits, rank); why = 'FITS_PRIMARY_RETURN'; } }
     if (!take && e.kind === 'DEAL' && main?.endSide && main.endSide !== seg.side) { take = best(pool.filter(t => t.endSide === seg.side), rank); why = 'SIDE'; }
     // After a deal the hand that comes back is the hand that laid the card (Jakob 2026-11-13: when she deals with one arm, the
     // return must be that arm's). A return of the other hand is never chosen while one of the right hand can play: a known hand of
     // either take that differs rules it out; an unknown one rules out nothing.
-    const sameHand = (t: Take) => !after?.releaseHand || !t.releaseHand || t.releaseHand === after.releaseHand;
+    const sameHand = (t: Take) => !after || sameReleaseHand(after, t);
     // A Primär return of the right hand plays on its edge also right after a deal it does not continue; the seam is then named below.
     // Else the return that continues the deal, then the main take, then the best return of the right hand.
     if (!take && after && !(main?.explicitMain && sameHand(main))) {
