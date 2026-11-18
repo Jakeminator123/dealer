@@ -29,8 +29,9 @@ gäller nu; varje prov och dess utfall står i handboken (`tools/film-prompting.
    cirka 2 s (`tools/film-fix.ts` kortar i dag högst tre rutor: bygg ut), eller pröva hans förslag, EN film från
    ankare 1 via 2.3 till platsens A3 som klipps i två (dockans posfilm b och giv f i följd som referensfilm).
 3. Givarna: först en dockfilm (3D-banan) där tumme och fingrar håller kortet genom hela vändningen och handleden
-   vrider det, sedan en ny tagning till plats 4 mot samma A3 (64 krediter). Resten av bordet (A3 för plats 2, 3, 6, 7
-   och dealerns kort, 25 krediter per plats med ideogram-4.5-precise-edit) först när en giv har hans ja.
+   vrider det, sedan en ny tagning till plats 4 mot samma A3 (64 krediter). Plats 1 (hans ord i Prov): ansiktet ser
+   annorlunda ut (A3 · P1 är gjord med nano-banana-pro: gör om den med modellen som lämnar ansiktet orört), och
+   vägen tillbaka från den framåtlutade slutbilden kräver en egen idé. Resten av bordet först när en giv har hans ja.
 4. Fem kameravinklar ([BESKED](../BESKED.md)): hans bild 35° från sidan som styrande stillbild, och `/vinklar.html`.
 5. Senare: ankare 2.1 och 2.2 med tatuerade händer, hålkortet (vänds inte) och andra kortet ovanpå det första
    (`yt-referens/ut/giv-resten.md`), returer till vila, dealerns tredje kort, och Jakobs önskemål i BESKED.

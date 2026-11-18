@@ -422,9 +422,13 @@
       "proof": "giv-fran-2-3-p4-p1",
       "file": "2-plats-1-tagning-1.mp4",
       "choice": "inte-bra",
-      "text": "",
-      "at": "2026-11-18T04:13:05.023Z",
-      "read": "2026-11-18T04:14:18.164Z"
+      "text": "Den här lösningen kanske kan fungera, men om hon landar på det här sättet när hon tittar mot kortet, ska hennes nästa rörelse då vara att hon bara flyttar huvud och arm tillbaka? Det skulle kunna gå, men då måste du ha en riktigt bra idé. Jag tycker att hennes ansikte ser annorlunda ut jämfört med hur det brukar vara.",
+      "at": "2026-11-18T04:17:38.753Z",
+      "answer": {
+        "text": "Läst. Ansiktet: slutbilden för plats 1 gjordes med en bildmodell som ritade om ansiktet något; den görs om med modellen som lämnar ansiktet orört. Vägen tillbaka från den framåtlutade slutbilden är inte löst: den blir en egen film från slutbilden till ankare 2.3, och jag visar dig en idé innan något beställs.",
+        "at": "2026-11-18T04:35:45.023Z"
+      },
+      "read": "2026-11-18T04:35:45.023Z"
     }
   ]
 }
