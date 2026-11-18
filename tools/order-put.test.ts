@@ -2,6 +2,7 @@
 // take never begun again, nothing for an order that is not approved or has changed since, files checked against their hash.
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { spawn } from 'node:child_process';
 import { mkdtemp, mkdir, readFile, writeFile, rm, copyFile } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import os from 'node:os';
@@ -41,6 +42,76 @@ async function approved(t: { after(fn: () => Promise<void>): void }) {
   await assert.rejects(r.begin('prov-ett', 1), /inte godkänd/);
   await store.approve('prov-ett', draft.revision);
   return { root, r, store, setTime, writeMandate };
+}
+
+
+type BeginResult =
+  | {ok: true; status: string; credits: number}
+  | {ok: false; status: number; message: string};
+
+const beginProbe = `
+  const [moduleUrl, id] = process.argv.slice(1);
+  const root = process.cwd();
+  if (!/(?:^|[\\\\/])order-put-[^\\\\/]+$/.test(root)) throw Error('A receipt probe needs its fixture.');
+  const {receipts} = await import(moduleUrl);
+  process.once('message', async () => {
+    let result;
+    try {
+      const {take} = await receipts(root, {now: () => new Date('2026-11-12T22:00:00Z')}).begin(id, 1);
+      result = {ok: true, status: take.status, credits: take.reservation?.credits};
+    } catch (error) {
+      result = {ok: false, status: error.status, message: error.message};
+    }
+    process.send({result}, () => process.disconnect());
+  });
+  process.send({ready: true});
+`;
+
+// The IPC barrier starts independent Node processes together, after both have loaded the real receipt writer.
+async function beginProcesses(root: string, ids: string[]): Promise<BeginResult[]> {
+  const moduleUrl = new URL('./order-put.ts', import.meta.url).href;
+  const env = {...process.env};
+  delete env.NODE_TEST_CONTEXT;
+  const probes = ids.map(id => {
+    const child = spawn(process.execPath, ['--input-type=module', '-e', beginProbe, moduleUrl, id], {
+      cwd: root, env, windowsHide: true, stdio: ['ignore', 'ignore', 'pipe', 'ipc'],
+    });
+    let result: BeginResult | undefined;
+    let output = '';
+    child.stderr?.on('data', data => { output = (output + String(data)).slice(-4000); });
+    child.on('error', error => { output += error.message; });
+    child.on('message', message => { const reply = (message as {result?: BeginResult}).result; if (reply) result = reply; });
+    const ready = new Promise<void>(resolve => {
+      child.once('message', message => { if ((message as {ready?: boolean}).ready) resolve(); });
+    });
+    const closed = new Promise<{code: number | null; result?: BeginResult; output: string}>(resolve => {
+      child.once('close', code => resolve({code, result, output}));
+    });
+    return {child, ready, closed};
+  });
+  const stop = () => {
+    for (const {child} of probes) if (child.exitCode === null && child.signalCode === null) child.kill();
+  };
+  const timeout = setTimeout(stop, 15000);
+  try {
+    await Promise.race([
+      Promise.all(probes.map(probe => probe.ready)),
+      ...probes.map(probe => probe.closed.then(({code, output}) => {
+        throw new Error('Receipt probe exited before ready (' + code + '). ' + output);
+      })),
+    ]);
+    for (const {child} of probes) child.send('begin');
+    const completed = await Promise.all(probes.map(probe => probe.closed));
+    return completed.map(({code, result, output}) => {
+      assert.equal(code, 0, output);
+      assert.ok(result, output);
+      return result;
+    });
+  } finally {
+    clearTimeout(timeout);
+    stop();
+    await Promise.all(probes.map(probe => probe.closed));
+  }
 }
 
 test('requestedAt before, task id after, and a begun take is never begun again', async (t) => {
@@ -138,7 +209,7 @@ test('the main agent approves on Jakob\'s mandate with the same checks; check ta
   await assert.rejects(approveCommand(root, ['prov-ett', '--set-aside', 'x']), /godkänd/);
 });
 
-test('the rolling hour is shared across orders, and uncertain calls keep their reservation', async t => {
+test('the rolling hour is shared across Node processes and uncertain calls keep their reservation', async t => {
   const {root, r, store, setTime, writeMandate} = await approved(t);
   const draft = await store.create({ dealer: 'paow', step: 'ANKARE-2.1', takes: 1, id: 'prov-andra',
     pose: { entry: 'pamela-nyp', keep: ARM_AT_SHOE, what: POSE_WHAT } });
@@ -148,11 +219,14 @@ test('the rolling hour is shared across orders, and uncertain calls keep their r
   await writeMandate({rollingHourCredits: hourlyLimit, totalCredits: totalLimit});
 
   const orders = ['prov-ett', 'prov-andra'];
-  const attempts = await Promise.allSettled(orders.map(id => r.begin(id, 1)));
-  assert.equal(attempts.filter(result => result.status === 'fulfilled').length, 1,
-    attempts.map(result => result.status === 'fulfilled' ? result.status : String(result.reason)).join(' | '));
-  const winner = orders[attempts.findIndex(result => result.status === 'fulfilled')];
-  const loser = orders[attempts.findIndex(result => result.status === 'rejected')];
+  const attempts = await beginProcesses(root, orders);
+  assert.equal(attempts.filter(result => result.ok).length, 1, JSON.stringify(attempts));
+  const winner = orders[attempts.findIndex(result => result.ok)];
+  const loser = orders[attempts.findIndex(result => !result.ok)];
+  const refused = attempts.find(result => !result.ok);
+  assert.ok(refused && (refused.status === 409 || refused.status === 403), JSON.stringify(attempts));
+  assert.match(refused.message, /reserverar krediter|ryms inte/);
+  assert.equal(existsSync(path.join(root, '.runtime/order-mandate.lock')), false);
   assert.equal((await r.read(winner))?.takes[0]?.reservation?.credits, credits);
   assert.equal(await r.read(loser), null);
   assert.deepEqual((await store.list()).policy?.mandateBudget?.available, hourlyLimit - credits);
@@ -166,6 +240,19 @@ test('the rolling hour is shared across orders, and uncertain calls keep their r
   assert.equal((await r.begin(loser, 1)).take.reservation?.credits, credits);
   const closed = (await store.list()).policy?.mandateBudget;
   assert.deepEqual([closed?.hourlyReserved, closed?.totalReserved, closed?.available], [credits, totalLimit, 0]);
+});
+
+test('a lock left by an interrupted process refuses a new start and remains in place', async t => {
+  const {root, r} = await approved(t);
+  const lock = path.join(root, '.runtime/order-mandate.lock');
+  const abandoned = 'fixture: previous process exited before removing its lock';
+  await writeFile(lock, abandoned, {flag: 'wx'});
+  const [blocked] = await beginProcesses(root, ['prov-ett']);
+  assert.ok(!blocked.ok, JSON.stringify(blocked));
+  assert.equal(blocked.status, 409);
+  assert.match(blocked.message, /reserverar krediter/);
+  assert.equal(await r.read('prov-ett'), null);
+  assert.equal(await readFile(lock, 'utf8'), abandoned);
 });
 
 test('a Dealer run imported from outside Beställ uses the order cost and blocks a new paid start', async t => {

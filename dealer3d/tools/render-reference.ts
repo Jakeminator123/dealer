@@ -10,15 +10,15 @@ import {parseArgs} from 'node:util';
 import {LOCK, lockLine, releaseLock, takeLock} from '../../tools/lab-look.ts';
 
 const ROOT = fileURLToPath(new URL('../../', import.meta.url));
-const FPS = 30, WIDTH = 1764, HEIGHT = 1174;
+const DEFAULT_FPS = 30, WIDTH = 1764, HEIGHT = 1174;
 const FONT = path.join(process.env.SystemRoot ?? 'C:/Windows', 'Fonts', 'arial.ttf');
 const INCOMPLETE = 'ofullstandig.txt';
 const RECEIPT = 'renderkvitto.json';
-const USAGE = 'node dealer3d/tools/render-reference.ts --motion <motion.json> --out <new folder> [--plan <plan.json>] [--eye film|1–7] [--seconds 3] [--sheet 1,8,15,...] [--columns 4] [--closeup 17,20,22 --crop 560:440:760:560]';
+const USAGE = 'node dealer3d/tools/render-reference.ts --motion <motion.json> --out <new folder> [--plan <plan.json>] [--eye film|1–7] [--seconds 3] [--fps 24|30] [--sheet 1,8,15,...] [--columns 4] [--closeup 17,20,22 --crop 560:440:760:560]';
 
 const options = {
   motion: {type: 'string'}, out: {type: 'string'}, plan: {type: 'string'}, eye: {type: 'string'},
-  seconds: {type: 'string'}, sheet: {type: 'string'}, columns: {type: 'string'},
+  seconds: {type: 'string'}, fps: {type: 'string'}, sheet: {type: 'string'}, columns: {type: 'string'},
   closeup: {type: 'string'}, crop: {type: 'string'}, help: {type: 'boolean'},
 } as const;
 type Values = Partial<Record<Exclude<keyof typeof options, 'help'>, string>>;
@@ -35,8 +35,10 @@ export function renderSettings(values: Values, motion: {fps?: number; frameCount
   if (!Number.isFinite(motion.fps) || motion.fps! <= 0 || !Number.isInteger(motion.frameCount) || motion.frameCount !== motion.frames?.length || !motion.frameCount) {
     throw Error('Rörelsedata saknar giltig fps, frameCount eller frames.');
   }
+  if (values.fps !== undefined && values.fps !== '24' && values.fps !== '30') throw Error('--fps ska vara 24 eller 30.');
+  const fps = values.fps === '24' ? 24 : DEFAULT_FPS;
   const seconds = values.seconds === undefined ? motion.frameCount / motion.fps! : Number(values.seconds);
-  const frameCount = Math.round(seconds * FPS);
+  const frameCount = Math.round(seconds * fps);
   if (!Number.isFinite(seconds) || frameCount < 1 || seconds > 30) throw Error('Filmlängden måste ge minst en ruta och vara högst 30 sekunder.');
   const eye = values.eye ?? 'film';
   if (!/^(film|[1-7])$/.test(eye)) throw Error('--eye ska vara film eller en stol 1–7.');
@@ -55,7 +57,18 @@ export function renderSettings(values: Values, motion: {fps?: number; frameCount
     if (width < 1 || height < 1 || x + width > WIDTH || y + height > HEIGHT) throw Error('--crop måste ligga inom filmrutan.');
     closeup = {frames: frameList(values.closeup, frameCount, '--closeup'), crop};
   }
-  return {eye, frameCount, lastTime: (frameCount - 1) / FPS, sheet, columns, closeup};
+  return {eye, fps, frameCount, lastTime: (frameCount - 1) / fps, sheet, columns, closeup};
+}
+
+type Capture = {chrome?: string; query?: {motion?: string}; film?: {fps?: number; from?: number; to?: number}; times?: unknown};
+/** Verify that Chrome rendered the requested instants before turning the PNG sequence into a video. */
+export function verifyCapture(shot: Capture, motion: string, {fps, frameCount, lastTime}: Pick<ReturnType<typeof renderSettings>, 'fps' | 'frameCount' | 'lastTime'>): void {
+  if (typeof shot.chrome !== 'string' || shot.query?.motion !== motion) throw Error('Inspelningen saknar rätt rörelse eller Chrome-kvitto.');
+  const {film, times} = shot;
+  if (film?.fps !== fps || film.from !== 0 || film.to !== lastTime ||
+      !Array.isArray(times) || times.length !== frameCount || !times.every((time, frame) => time === frame / fps)) {
+    throw Error('Inspelningens tidsprover avviker från vald bildfrekvens.');
+  }
 }
 
 /** Reserve the final directory exclusively. An interrupted attempt also keeps its name and its files. */
@@ -69,11 +82,12 @@ export async function reserveOutput(out: string): Promise<void> {
   await writeFile(path.join(out, INCOMPLETE), 'Renderingen påbörjades. Det färdiga kvittot skrivs sist.\n', {flag: 'wx'});
 }
 
-type ProbeStream = {codec_name?: string; width?: number; height?: number; pix_fmt?: string; r_frame_rate?: string; nb_frames?: string; duration?: string};
-export function verifyVideo(stream: ProbeStream | undefined, frames: number): void {
+type ProbeStream = {codec_name?: string; width?: number; height?: number; pix_fmt?: string; r_frame_rate?: string; avg_frame_rate?: string; nb_frames?: string; duration?: string};
+export function verifyVideo(stream: ProbeStream | undefined, frames: number, fps = DEFAULT_FPS): void {
+  const rate = `${fps}/1`;
   if (!stream || stream.codec_name !== 'h264' || stream.width !== WIDTH || stream.height !== HEIGHT || stream.pix_fmt !== 'yuv420p' ||
-      stream.r_frame_rate !== '30/1' || Number(stream.nb_frames) !== frames || !Number.isFinite(Number(stream.duration)) ||
-      Math.abs(Number(stream.duration) - frames / FPS) > 0.001) throw Error('ffprobe bekräftade inte väntat format, rutantal och längd.');
+      stream.r_frame_rate !== rate || stream.avg_frame_rate !== rate || Number(stream.nb_frames) !== frames || !Number.isFinite(Number(stream.duration)) ||
+      Math.abs(Number(stream.duration) - frames / fps) > 0.001) throw Error('ffprobe bekräftade inte väntat format, rutantal och längd.');
 }
 
 const command = (program: string, args: string[]) =>
@@ -122,13 +136,14 @@ function makeSheet(ffmpeg: (args: string[]) => Promise<void>, filenames: string[
 
 async function main(argv: string[]): Promise<void> {
   const {values} = parseArgs({args: argv, options});
-  if (values.help) { console.log(USAGE); return; }
+  if (values.help) { console.log(USAGE + '\nStandard är 30 fps. --sheet och --closeup använder den valda bildfrekvensens rutnummer.'); return; }
   if (!values.motion || !values.out) throw Error(USAGE);
   const motion = path.resolve(values.motion), out = path.resolve(values.out), plan = path.resolve(values.plan ?? path.join(ROOT, 'placements/default.json'));
   const name = path.basename(motion, '.json');
   if (!/^[\w-]+$/.test(name) || path.extname(motion) !== '.json') throw Error('--motion ska vara en namngiven .json-fil.');
   const [motionBytes, planBytes] = await Promise.all([readFile(motion), readFile(plan)]);
-  const settings = renderSettings(values, parseJson(motionBytes));
+  const sourceMotion = parseJson(motionBytes);
+  const settings = renderSettings(values, sourceMotion);
   parseJson(planBytes);
   await reserveOutput(out);
 
@@ -147,7 +162,8 @@ async function main(argv: string[]): Promise<void> {
     const motionCopy = path.join(out, snapshots.motion), planCopy = path.join(out, snapshots.plan);
     await writeFile(motionCopy, motionBytes, {flag: 'wx'});
     await writeFile(planCopy, planBytes, {flag: 'wx'});
-    const input = {motion: {file: snapshots.motion, sha256: await sha256(motionCopy)}, plan: {file: snapshots.plan, sha256: await sha256(planCopy)}};
+    const input = {motion: {file: snapshots.motion, sha256: await sha256(motionCopy), fps: sourceMotion.fps, frameCount: sourceMotion.frameCount},
+      plan: {file: snapshots.plan, sha256: await sha256(planCopy)}};
     const revision = command('git', ['rev-parse', 'HEAD']), sources = await renderedSources();
     const versions = {node: process.version, three: (await readJson(path.join(ROOT, threePath, 'package.json'))).version,
       sheetFont: {name: path.basename(FONT), sha256: await sha256(FONT)},
@@ -158,23 +174,24 @@ async function main(argv: string[]): Promise<void> {
     if (!await takeLock(LOCK, line, {sleep: ms => delay(ms, undefined, {signal: signal.signal})})) throw Error('GPU-låset är upptaget.');
     try {
       signal.signal.throwIfAborted();
+      // Request 1/fps intervals directly from the scene; the stage interpolates motion between source frames.
       await run(process.execPath, ['dealer3d/tools/shoot.ts', '--out', record, '--motion', name, '--motion-file', motionCopy, '--plan', planCopy,
-        '--eyes', settings.eye, '--look', 'plain', '--tags', '0', '--film', String(FPS), '0', String(settings.lastTime), '--size', `${WIDTH}x${HEIGHT}`]);
+        '--eyes', settings.eye, '--look', 'plain', '--tags', '0', '--film', String(settings.fps), '0', String(settings.lastTime), '--size', `${WIDTH}x${HEIGHT}`]);
     } finally { if (!releaseLock(LOCK, line)) console.error('GPU-låsets ägare ändrades under körningen.'); }
     signal.signal.throwIfAborted();
 
     const shot = await readJson(path.join(record, 'ruta.json'));
-    if (shot.chrome === undefined || shot.times?.length !== settings.frameCount || shot.query?.motion !== name) throw Error('Inspelningen saknar väntade rutor eller Chrome-kvitto.');
+    verifyCapture(shot, name, settings);
     if (JSON.stringify(sources) !== JSON.stringify(await renderedSources()) || revision !== command('git', ['rev-parse', 'HEAD'])) {
       throw Error('Renderkoden ändrades under inspelningen.');
     }
     if (input.motion.sha256 !== await sha256(motionCopy) || input.plan.sha256 !== await sha256(planCopy)) throw Error('De frysta indatafilerna ändrades.');
     const video = path.join(out, 'referens.mp4');
-    await ffmpeg(['-framerate', String(FPS), '-threads', '1', '-i', path.join(record, 'ruta-%04d.png'), '-c:v', 'libx264', '-crf', '14',
+    await ffmpeg(['-framerate', String(settings.fps), '-threads', '1', '-i', path.join(record, 'ruta-%04d.png'), '-c:v', 'libx264', '-crf', '14',
       '-threads', '4', '-pix_fmt', 'yuv420p', '-movflags', '+faststart', video]);
     const media = JSON.parse(command(ffprobeProgram, ['-v', 'error', '-select_streams', 'v:0', '-show_entries',
-      'stream=codec_name,width,height,pix_fmt,r_frame_rate,nb_frames,duration', '-of', 'json', video])).streams?.[0];
-    verifyVideo(media, settings.frameCount);
+      'stream=codec_name,width,height,pix_fmt,r_frame_rate,avg_frame_rate,nb_frames,duration', '-of', 'json', video])).streams?.[0];
+    verifyVideo(media, settings.frameCount, settings.fps);
     const framesAt = (frames: number[]) => frames.map(frame => path.join(record, frameName(frame)));
     await makeSheet(ffmpeg, framesAt(settings.sheet), settings.sheet, settings.columns, undefined, path.join(out, 'ark.png'));
     await copyFile(path.join(record, frameName(settings.frameCount)), path.join(out, 'slutruta.png'), fsConstants.COPYFILE_EXCL);
@@ -190,7 +207,7 @@ async function main(argv: string[]): Promise<void> {
     const receipt = {revision, sources, versions: {...versions, chrome: shot.chrome, devtools: shot.protocol}, input, settings, camera: shot.page, media, output};
     await writeFile(path.join(out, RECEIPT), JSON.stringify(receipt, null, 2) + '\n', {flag: 'wx'});
     await unlink(path.join(out, INCOMPLETE));
-    console.log(`${video} – ${media.nb_frames} rutor, ${media.duration} s, SHA-256 ${output[0].sha256}`);
+    console.log(`${video} – ${media.nb_frames} rutor, ${settings.fps} fps, ${media.duration} s, SHA-256 ${output[0].sha256}`);
   } catch (error) {
     await writeFile(path.join(out, INCOMPLETE), `Ofullständig rendering. ${String(error)}\n`).catch(() => {});
     throw error;

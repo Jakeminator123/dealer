@@ -537,6 +537,15 @@ export function orderStore(root: string, options: StoreOptions = {}) {
     return { template, style, text, sha256: sha(text), extra, middle: false, ...(planPlace ? { place: [planPlace.x, planPlace.y] as [number, number] } : {}) };
   }
 
+  /** The short two-hand prompt turns a face-up deal over the short end (template 11). */
+  function fixedTwoHandTurn(step: StepKey, style: TextStyle | undefined, turn: boolean, selected?: FlipAxis | null, recipe?: ReturnType<typeof recipeFor>): 'FREE' | null {
+    if (step !== 'GIV-2.3' || style !== 'KORT' || !turn) return null;
+    const help = 'KORT för GIV-2.3 vänder över kortänden. Välj MINIMAL för att låta referensfilmen styra vändningen.';
+    if (selected && selected !== 'FREE') throw new StoreError(400, `Vald vändning är ${selected}. ${help}`);
+    if (recipe?.turn && recipe.turn !== 'FREE') throw new StoreError(400, `Recept ${recipe.method.id} anger ${recipe.turn}. ${help}`);
+    return 'FREE';
+  }
+
   async function prepare(input: NewOrder, watch?: WatchSource): Promise<PreparedOrder> {
     const step = stepOf(input.step);
     if (!step) throw new StoreError(400, 'Okänt steg.');
@@ -573,12 +582,15 @@ export function orderStore(root: string, options: StoreOptions = {}) {
     const extra = (input.extra === undefined ? recipe?.extra : input.extra)?.trim() || null;
     if (extra && extra.length > EXTRA_LIMIT) throw new StoreError(400, `Tillägget får vara högst ${EXTRA_LIMIT} tecken (det här har ${extra.length}).`);
     const intent = target ? plan.targets[target].intent : null;
-    // The turn: the order's own, else the recipe's, else what Placering says for the card.
-    const flipAxis = input.flipAxis ?? recipe?.turn ?? defaultFlip(step.key, intent?.turnAt, intent?.flipAxis);
-    if (!FLIP_AXES.includes(flipAxis)) throw new StoreError(400, 'Okänd vändning.');
     if (input.hand !== undefined && input.hand !== 'LH' && input.hand !== 'RH') throw new StoreError(400, 'Handen ska vara LH eller RH.');
     if (input.pass !== undefined && typeof input.pass !== 'boolean') throw new StoreError(400, 'Handbyte ska vara sant eller falskt.');
     if (input.side !== undefined && input.side !== 'FRONT' && input.side !== 'BACK') throw new StoreError(400, 'Kortet landar FRONT (öppet) eller BACK (stängt).');
+    const side: 'FRONT' | 'BACK' = input.side ?? intent?.endSide ?? 'FRONT';
+    // Every card leaves the shoe closed; in a return it lies where it was laid and is not turned.
+    const turn = step.start !== 'LAND' && !!intent && side !== intent.startSide;
+    const chosenAxis = input.flipAxis ?? recipe?.turn ?? defaultFlip(step.key, intent?.turnAt, intent?.flipAxis);
+    if (!FLIP_AXES.includes(chosenAxis)) throw new StoreError(400, 'Okänd vändning.');
+    const flipAxis = fixedTwoHandTurn(step.key, style, turn, input.flipAxis, recipe) ?? chosenAxis;
     const deal = step.card && step.start !== 'LAND';
     if (input.shape !== undefined && input.shape !== 'ROUND_TRIP' && input.shape !== 'ONE_WAY') throw new StoreError(400, 'En giv är ONE_WAY (bara dit) eller ROUND_TRIP (tur och retur).');
     if (input.shape !== undefined && !deal && input.shape !== 'ONE_WAY') throw new StoreError(400, 'Bara en giv kan gå tur och retur.');
@@ -682,15 +694,12 @@ export function orderStore(root: string, options: StoreOptions = {}) {
       return { name, label, goesAs, ...(await save(name, bytes)), width: 1764, height: 1174, from, waits: null };
     };
     const landingWords = `${genitive(dealer.name)} landning på ${seatWords(target)}`;
-    const side: 'FRONT' | 'BACK' = input.side ?? intent?.endSide ?? 'FRONT';
     let motion: Order['motion'] = null;
     if (step.kind === 'FILM' && step.cards?.length) pictures.push(...(await cardPictures(save, step, register, dealer, snapshot, watch)));
     else if (step.kind === 'FILM') {
       const first = step.start === 'LAND' ? { picture: await landingPicture(landing!, 'first.png', `Första bild · ${landingWords}`, 'startFrame'), bytes: null } : await anchorPicture('first.png', (w) => `Första bild · ${w}`, 'startFrame', step.from);
       pictures.push(first.picture);
       if (step.card && intent) {
-        // Every card leaves the shoe closed; in a return it lies where it was laid and is not turned.
-        const turn = step.start === 'LAND' ? false : side !== intent.startSide;
         motion = { grip: step.grip ?? 'PINCH', hand, pass, turn, flipAxis: turn ? flipAxis : null, target, side, fromPlan: false, ...(cardScale !== 1 ? { cardScale } : {}) };
         motion.fromPlan = fromPlanOf(plan, motion);
         // What Placering said for the card's grip and turn, kept with a deal so that where it differs stays said.
@@ -977,9 +986,17 @@ export function orderStore(root: string, options: StoreOptions = {}) {
       const next: Order = structuredClone(order);
       if (changes.title !== undefined) next.title = changes.title.trim();
       if (changes.takes !== undefined) next.takes = changes.takes;
+      const editsPose = changes.hand !== undefined || changes.pass !== undefined || changes.side !== undefined;
+      // In a return the card lies where it was laid and is not turned.
+      const turn = editsPose
+        ? stepOf(next.step.key)?.start !== 'LAND' && (changes.side ?? next.motion?.side) !== 'BACK'
+        : next.motion?.turn ?? false;
+      const fixedAxis = editsPose || changes.flipAxis !== undefined
+        ? fixedTwoHandTurn(next.step.key, next.prompt.style, turn, changes.flipAxis ?? next.motion?.flipAxis)
+        : null;
       if (changes.flipAxis !== undefined) { if (!next.motion?.turn) throw new StoreError(400, 'Kortet vänds inte i det här utkastet.'); next.motion.flipAxis = changes.flipAxis; }
       if (changes.duration !== undefined) { if (next.kind !== 'FILM') throw new StoreError(400, 'En bild har ingen längd.'); next.generation.params.duration = changes.duration; }
-      if (changes.hand !== undefined || changes.pass !== undefined || changes.side !== undefined) {
+      if (editsPose) {
         if (!next.motion) throw new StoreError(400, 'Steget har ingen hand eller sida att välja.');
         // The last picture of a deal bara dit is the seat's end picture, which shows a hand and a side: they follow it.
         if (next.step.shape === 'ONE_WAY' && !next.pictures.some((p) => p.goesAs === 'endFrame' && p.from?.built)) throw new StoreError(400, 'Sista bilden är platsens slutbild, som visar handen och kortets sida: de ändras inte i utkastet. Gör ett nytt utkast.');
@@ -987,10 +1004,8 @@ export function orderStore(root: string, options: StoreOptions = {}) {
         const hand = changes.hand ?? (pass ? 'LH' : next.motion.hand);
         if (pass && hand !== 'LH') throw new StoreError(400, 'Handbyte går från vänster hand till höger: vänster tar kortet ur skon.');
         const side = changes.side ?? next.motion.side, redraw = side !== next.motion.side;
-        // In a return the card lies where it was laid and is not turned.
-        const turn = stepOf(next.step.key)?.start === 'LAND' ? false : side !== 'BACK';
         const intent = next.motion.target ? (await readPlan(root)).plan.targets[next.motion.target]?.intent : null;
-        Object.assign(next.motion, { hand, pass, side, turn, flipAxis: turn ? (next.motion.flipAxis ?? defaultFlip(next.step.key, intent?.turnAt, intent?.flipAxis)) : null });
+        Object.assign(next.motion, { hand, pass, side, turn, flipAxis: turn ? (fixedAxis ?? next.motion.flipAxis ?? defaultFlip(next.step.key, intent?.turnAt, intent?.flipAxis)) : null });
         const { plan } = await readPlan(root);
         next.motion.fromPlan = fromPlanOf(plan, next.motion);
         await labelLast(next);

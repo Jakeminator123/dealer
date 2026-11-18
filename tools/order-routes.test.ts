@@ -47,7 +47,9 @@ const register = () => ({
 const TUR = { shape: 'ROUND_TRIP', reference: null, duration: 7 } as const;
 const TUR_WAN = { shape: 'ROUND_TRIP', reference: null, model: 'wan3', duration: 6, takes: 2 } as const;
 
-async function lab(t: { after(fn: () => Promise<void> | void): void }) {
+type SaveTransport = { dropNext: boolean; dropped: number; revisions: (string | undefined)[] };
+
+async function lab(t: { after(fn: () => Promise<void> | void): void }, transport?: SaveTransport) {
   const root = await mkdtemp(path.join(base, 'order-routes-'));
   t.after(() => rm(root, { recursive: true, force: true }));
   for (const dir of ['data', 'placements']) await mkdir(path.join(root, dir), { recursive: true });
@@ -68,7 +70,24 @@ async function lab(t: { after(fn: () => Promise<void> | void): void }) {
   }
   let origin = '';
   const handle = { fn: null as null | ReturnType<typeof orderRoutes> };
-  const server = http.createServer(async (req, res) => { const url = new URL(req.url ?? '/', origin); if (!(await handle.fn!(req, res, url))) res.writeHead(404).end('not mine'); });
+  const server = http.createServer(async (req, res) => {
+    const url = new URL(req.url ?? '/', origin);
+    if (transport && req.method === 'POST' && url.pathname === '/api/orders') {
+      transport.revisions.push(req.headers['if-match']);
+      const end = res.end;
+      res.end = (...args: unknown[]) => {
+        if (transport.dropNext && res.statusCode === 201) {
+          transport.dropNext = false;
+          transport.dropped++;
+          // The route has persisted the draft and prepared the response. Lose it before clients receive any bytes.
+          res.destroy();
+          return res;
+        }
+        return Reflect.apply(end, res, args);
+      };
+    }
+    if (!(await handle.fn!(req, res, url))) res.writeHead(404).end('not mine');
+  });
   await new Promise<void>((done) => server.listen(0, '127.0.0.1', done));
   origin = `http://127.0.0.1:${(server.address() as { port: number }).port}`;
   // A frame out of a film, for a cut frame as last picture: the test's films are not films, so a test sets what a frame is.
@@ -185,6 +204,44 @@ test('retrying a successful save returns the same order IDs without writing more
     assert.equal(released.status, 404);
     assert.equal(released.cache, 'no-store');
   }
+});
+
+test('after a saved draft loses its HTTP response the studio retries the same save', async (t) => {
+  const transport: SaveTransport = {dropNext: true, dropped: 0, revisions: []};
+  const { root, origin } = await lab(t, transport);
+  const originalFetch = globalThis.fetch;
+  const previousMode = process.env.NEXT_PUBLIC_DEALER_MODE;
+  t.after(() => {
+    t.mock.restoreAll();
+    if (previousMode === undefined) delete process.env.NEXT_PUBLIC_DEALER_MODE;
+    else process.env.NEXT_PUBLIC_DEALER_MODE = previousMode;
+  });
+  process.env.NEXT_PUBLIC_DEALER_MODE = 'lab';
+  const { createOrder, orderSaveFailure, previewOrder } = await import('../studio/lib/orders.ts');
+  t.mock.method(globalThis, 'fetch', (address: string, init?: RequestInit) => {
+    const headers = new Headers(init?.headers);
+    headers.set('origin', origin);
+    return originalFetch(new URL(address, origin), { ...init, headers });
+  });
+
+  const input = { dealer: 'pamela', step: 'VILA' } as const;
+  const preview = await previewOrder(input);
+  const save = () => createOrder(input, preview.revision);
+  await assert.rejects(save, (error: unknown) => {
+    assert.equal(orderSaveFailure(error).retrySave, true);
+    return true;
+  });
+  assert.equal(transport.dropped, 1);
+  const directory = path.join(root, 'data/orders');
+  const files = await readdir(directory);
+  assert.equal(files.length, 1, 'the first POST has already written a draft');
+  const persisted = JSON.parse(await readFile(path.join(directory, files[0]), 'utf8'));
+  const retry = await save();
+  assert.deepEqual(transport.revisions, [preview.revision, preview.revision]);
+  assert.deepEqual(retry.made, [persisted.id]);
+  assert.equal(retry.order.id, persisted.id);
+  assert.deepEqual(await readdir(directory), files);
+  assert.deepEqual(await readdir(path.join(root, 'assets/orders')), [persisted.id]);
 });
 
 test('an evicted preview cannot be saved or served, and a new preview can be saved', async (t) => {
@@ -512,6 +569,91 @@ test("the turn is the recipe's, the plan's where the recipe leaves it to Placeri
   await writeFile(file, JSON.stringify(plan, null, 2) + '\n');
   const again = (await call('PUT', `/api/orders/${key.id}`, { body: { hand: 'RH' }, match: made.revision })).json.order;
   assert.deepEqual([again.motion.hand, again.motion.flipAxis, again.motion.planned.flipAxis], ['RH', 'FREE', 'LONG_EDGE']);
+});
+
+test('the KORT two-hand deal keeps its short-end turn in preview and draft changes', async (t) => {
+  const { root, call, request } = await lab(t);
+  const planFile = path.join(root, 'placements/default.json');
+  const plan = JSON.parse(await readFile(planFile, 'utf8'));
+  Object.assign(plan.targets['P4.C1'].intent, { turnAt: 'AIR', flipAxis: 'LONG_EDGE' });
+  await writeFile(planFile, JSON.stringify(plan));
+
+  const methodFile = path.join(root, 'data/order-methods.json');
+  const methods = JSON.parse(await readFile(methodFile, 'utf8'));
+  const method = methods.methods.find((entry: { step: string }) => entry.step === 'GIV-2.3');
+  method.turn = null;
+  await writeFile(methodFile, JSON.stringify(methods));
+
+  const input = { dealer: 'paow', step: 'GIV-2.3', target: 'P4.C1', ...TUR };
+  for (const flipAxis of ['LONG_EDGE', 'AT_PLACE']) {
+    const rejected = await request('POST', '/api/orders/preview', { body: { ...input, flipAxis } });
+    assert.equal(rejected.status, 400);
+    assert.match(rejected.json.error, /vänder över kortänden.*Välj MINIMAL/);
+  }
+  method.turn = 'AT_PLACE';
+  await writeFile(methodFile, JSON.stringify(methods));
+  const badRecipe = await request('POST', '/api/orders/preview', { body: input });
+  assert.equal(badRecipe.status, 400);
+  assert.match(badRecipe.json.error, /Recept giv-2\.3 anger AT_PLACE/);
+  assert.equal(existsSync(path.join(root, 'data/orders')), false);
+
+  method.turn = null;
+  await writeFile(methodFile, JSON.stringify(methods));
+  const preview = await request('POST', '/api/orders/preview', { body: input });
+  assert.equal(preview.status, 200, preview.json.error);
+  const shown = preview.json.orders[0];
+  assert.deepEqual([shown.prompt.style, shown.motion.flipAxis, shown.motion.planned.flipAxis], ['KORT', 'FREE', 'LONG_EDGE']);
+  assert.match(shown.prompt.text, /short end/);
+  const saved = await request('POST', '/api/orders', { body: input, match: preview.json.revision });
+  assert.equal(saved.status, 201);
+  const { order, revision } = saved.json;
+  assert.deepEqual([order.motion, order.prompt], [shown.motion, shown.prompt]);
+  const orderFile = path.join(root, 'data/orders', `${order.id}.json`);
+  const draftBefore = await readFile(orderFile);
+  for (const flipAxis of ['LONG_EDGE', 'AT_PLACE']) {
+    const rejected = await call('PUT', `/api/orders/${order.id}`, { body: { flipAxis }, match: revision });
+    assert.equal(rejected.status, 400);
+    assert.match(rejected.json.error, /vänder över kortänden/);
+  }
+  assert.deepEqual(await readFile(orderFile), draftBefore);
+
+  const closed = await call('PUT', `/api/orders/${order.id}`, { body: { side: 'BACK' }, match: revision });
+  assert.equal(closed.status, 200);
+  assert.equal(closed.json.order.motion.flipAxis, null);
+  const closedBefore = await readFile(orderFile);
+  const forbiddenOpening = await call('PUT', `/api/orders/${order.id}`, { body: { side: 'FRONT', flipAxis: 'LONG_EDGE' }, match: closed.json.revision });
+  assert.equal(forbiddenOpening.status, 400);
+  assert.match(forbiddenOpening.json.error, /vänder över kortänden/);
+  assert.deepEqual(await readFile(orderFile), closedBefore);
+  const reopened = await call('PUT', `/api/orders/${order.id}`, { body: { side: 'FRONT' }, match: closed.json.revision });
+  assert.equal(reopened.status, 200);
+  assert.deepEqual([reopened.json.order.motion.flipAxis, reopened.json.order.motion.planned.flipAxis], ['FREE', 'LONG_EDGE']);
+});
+
+test('the MINIMAL two-hand deal accepts the H24 long-edge reference', async (t) => {
+  const { root, call, files } = await lab(t);
+  const media = register();
+  const a3 = { id: 'paow-a3-p4', role: 'landning', name: 'A3 · P4', path: 'assets/anchors/paow-a3-p4/anchor.png', node: 'LAND(P4.C1)', card: 'P4.C1', hand: 'RH', state: 'kandidat' };
+  media.dealers.paow.entries.push(a3);
+  await writeFile(path.join(root, 'data/media-roles.json'), JSON.stringify(media));
+  await mkdir(path.dirname(path.join(root, a3.path)), { recursive: true });
+  await writeFile(path.join(root, a3.path), files['paow-nyp-ny']);
+  const id = 'docka-2-3-p4c1-h24';
+  const ref = `assets/references/docka/${id}/source.mp4`;
+  const film = Buffer.from('a three-second long-edge reference');
+  await mkdir(path.dirname(path.join(root, ref)), { recursive: true });
+  await writeFile(path.join(root, ref), film);
+  await writeFile(path.join(root, 'data/rendered-references.json'), JSON.stringify({
+    schemaVersion: 1, films: [{ id, edge: 'READY-C>P4.C1', path: ref, sha256: sha(film), seconds: 3, lays: 'RH', check: null }],
+  }));
+  const result = await call('POST', '/api/orders', {
+    body: { dealer: 'paow', step: 'GIV-2.3', target: 'P4.C1', style: 'MINIMAL', flipAxis: 'LONG_EDGE', reference: id, end: a3.id },
+  });
+  assert.equal(result.status, 201, result.json.error);
+  const { order } = result.json;
+  assert.deepEqual([order.prompt.style, order.motion.flipAxis, order.reference.clips, order.reference.sha256], ['MINIMAL', 'LONG_EDGE', [id], sha(film)]);
+  assert.doesNotMatch(order.prompt.text, /short end/);
+  assert.deepEqual(await readFile(path.join(root, order.reference.path)), film);
 });
 
 test('a film made with another model: the 4K model for the entry, its parameters, title and price; a model the step cannot use is refused', async (t) => {

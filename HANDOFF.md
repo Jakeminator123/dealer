@@ -35,10 +35,9 @@ Kodens samband och verifiering rättas parallellt; filmproduktionen börjar med 
 - **Huvudagentens adress: `/root`.** Codex-chatten `01a1edac-d516-70e2-8aef-64bcf687f6d5` samordnar arbetet.
   Kontrollera med ListAgents före meddelanden. Huvudagenten äger commits, taggar och push, studion,
   labbservern, spelet och 3D-scenens filmlager, `src/clip-graph.ts` och styrdokumenten.
-- **Avgränsade uppdrag:** `/root/geometry` äger dockans grepp i eget träd. `/root/evidence_audit` skriver mandatets
-  budgetspärr i order-policy, order-model, order-store, order-put och deras tester i huvudträdet.
-  `/root/order_snapshot` granskar film skrivskyddat; dess A3-val i NewOrder är överlämnat. Huvudagenten äger
-  förhandsvisningens återförsök, byggkvitton, integration, körjournal och testlistor.
+- **Avgränsade uppdrag:** `/root/geometry` äger nästa returprov i order-model, order-prompts, order-store,
+  order-methods och order-routes.test i huvudträdet. `/root/evidence_audit` granskar MCP-anslutningen skrivskyddat.
+  `/root/order_snapshot` har lämnat över A3-valet och vändningsspärren. Huvudagenten äger integration och körjournal.
 - **Jakob talar bara med huvudagenten**, som håller ihop sessionerna. Varje bana får sin kö av huvudagenten och säger
   till när ett steg är grönt, med en fillista. Ingen bana skriver i en annans filer.
 - **Huvudagentens banor:** film, kort, labbet och studion, och spelet. Filerna de äger står under Var saker ligger i varje lägesfil.

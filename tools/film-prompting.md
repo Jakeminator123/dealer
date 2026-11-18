@@ -69,6 +69,9 @@ deras egna ordrar); reglerna och recepten står här. Kort är receptets stil, M
 jämförelse. Skiljer orden sig från reglerna här, rättas orden. Format, filer och priser:
 [dealer-line.md](dealer-line.md), "Format och namn".
 
+GIV-2.3 med KORT har en fast kortändevändning i mall 11. Ett uttryckligt val av LONG_EDGE eller AT_PLACE avvisas före
+sparning; MINIMAL låter referensfilmen beskriva vändningen. Den frysta placeringsplanens avsikt behålls separat.
+
 **Varje sak sägs en gång** (Jakob 2026-11-18: "för många val som kan leda till överlappande instruktioner").
 `tools/order-line.test.ts` bygger texten för varje kombination linjen tillåter (receptet för varje steg och kort, och
 varje undantag) och faller när ett ämne skrivs två gånger (kameran, referensfilmen, greppet, vägen, vändningen,
