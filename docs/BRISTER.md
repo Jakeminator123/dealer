@@ -195,6 +195,12 @@ Innehåll: Kortet · Filmerna och banken · Läpparna och rösten · Spelet och 
 
 ## Labbet och verktygen
 
+- **Codex kan ännu inte skicka Kling 4 via sin anslutning** (kontrollerat 2026-11-18). Pluginet är inloggat men
+  avvisar `kling-4` och tar bort `referenceVideos` i förvalideringen; den separata lokala MCP-klienten är inte
+  inloggad. H24-02 fick inget taskId och ingen debitering; dess reservation ligger kvar konservativt i kvittot.
+  Stänger: aktuell MCP-inloggning och ett skrivschema som bevarar den frysta begäran. Ändra inte modell eller
+  parameterfält för att pressa ett anrop genom ett gammalt schema, och återförsök inte den avslutade tagningen.
+
 - **En ordergrupp är inte en filsystemtransaktion.** Förhandsvisningens källor valideras före första skrivningen,
   labbets Material- och orderskrivningar delar kö och sparomtag returnerar samma ID:n. Ett processavbrott mitt i
   gruppen kan lämna några utkast på disk; externa skribenter efter sista källkontrollen omfattas inte av kön.

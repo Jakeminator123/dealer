@@ -1,0 +1,139 @@
+{
+  "schemaVersion": 1,
+  "title": "Paow · P4 · H24 med kontakt till landning",
+  "summary": "Gör en film av Paow: ett kort från ankare 2.3 till plats 4, bara dit.",
+  "group": null,
+  "dealer": "paow",
+  "kind": "FILM",
+  "step": {
+    "key": "GIV-2.3",
+    "label": "Två händer, ett kort till platsen",
+    "edge": "READY-C>P4.C1",
+    "shape": "ONE_WAY",
+    "cutInto": [
+      "READY-C>P4.C1"
+    ],
+    "makes": null
+  },
+  "motion": {
+    "grip": "TWO_HANDS",
+    "hand": "LH",
+    "pass": false,
+    "turn": true,
+    "flipAxis": "LONG_EDGE",
+    "target": "P4.C1",
+    "side": "FRONT",
+    "fromPlan": false,
+    "planned": {
+      "grip": "PINCH",
+      "flipAxis": "AT_PLACE"
+    }
+  },
+  "pictures": [
+    {
+      "name": "first.png",
+      "label": "Första bild · Paows ankare 2.3",
+      "goesAs": "startFrame",
+      "path": "assets/orders/paow-giv-2-3-p4-h24-03/first.png",
+      "sha256": "340842ba3b6af20bdf36646b517d20501163496b426c154d1dd798b488f75542",
+      "width": 1764,
+      "height": 1174,
+      "from": {
+        "entry": "paow-ankare-2-3-a",
+        "path": "assets/anchors/paow-ankare-2-3-a/anchor.png",
+        "note": "Ankare 2.3, båda händerna vid skon före första kortet (A) (gäller)"
+      },
+      "waits": null
+    },
+    {
+      "name": "last.png",
+      "label": "Sista bild · A3 · P4, kandidat (inte gällande)",
+      "goesAs": "endFrame",
+      "path": "assets/orders/paow-giv-2-3-p4-h24-03/last.png",
+      "sha256": "2a70b556c6110db541c7f379a8b464fad1362ce16e694efb111977405565f8b6",
+      "width": 1764,
+      "height": 1174,
+      "from": {
+        "entry": "paow-a3-p4",
+        "path": "assets/anchors/paow-a3-p4/anchor.png",
+        "note": "A3 · P4 (kandidat)"
+      },
+      "waits": null
+    }
+  ],
+  "reference": {
+    "status": "FINNS",
+    "clips": [
+      "docka-2-3-p4c1-h24"
+    ],
+    "path": "assets/orders/paow-giv-2-3-p4-h24-03/reference.mp4",
+    "sha256": "b7af14fc311d21a922941ca1d40f7211e405fc7a391cfdf853c9b8e78e059818",
+    "seconds": 3,
+    "goesTo": "P4.C1",
+    "approvedStraight": false,
+    "dealer": "docka",
+    "from": {
+      "film": "docka-2-3-p4c1-h24",
+      "path": "assets/references/docka/docka-2-3-p4c1-h24/source.mp4",
+      "sha256": "b7af14fc311d21a922941ca1d40f7211e405fc7a391cfdf853c9b8e78e059818",
+      "edge": "READY-C>P4.C1",
+      "verdict": "EJ_DÖMD",
+      "words": null,
+      "frames": null,
+      "also": []
+    }
+  },
+  "generation": {
+    "provider": "runway-app",
+    "tool": "generate_video",
+    "model": "kling-4",
+    "params": {
+      "resolution": "1080p",
+      "duration": 3
+    }
+  },
+  "prompt": {
+    "template": "film-giv-minimal@11",
+    "style": "MINIMAL",
+    "text": "Locked camera. Video 1 shows only the movement: she moves like the dealer in video 1, with the same timing. The card is blank, solid yellow on one side and solid blue on the other, each colour reaching right out to its corners, and the next card in the window is the same blank yellow. One card goes from the shoe to where the last frame shows it.",
+    "sha256": "8b739c3aaa0ca9958ba1ccab5552352186104f06bd6d95e737adbbee08081490",
+    "extra": null,
+    "middle": false,
+    "place": [
+      856.6,
+      1102.2
+    ]
+  },
+  "takes": 1,
+  "cost": {
+    "perTake": 64,
+    "total": 64,
+    "worstPerTake": 71,
+    "worstTotal": 71,
+    "basis": "21,3 krediter per s × 3 s. Liggarna b19 och b20: 7 s i 1080p = 149 krediter; listpris 23,5 per s i verktyget generate_video 2026-11-12."
+  },
+  "limits": {
+    "maxCredits": 71,
+    "stopBelowCredits": 0
+  },
+  "notes": [
+    "Ett begränsat metodprov före fler filmer. H24 är en kandidat, visuellt granskad av huvudagenten och en oberoende granskare; ingen Jakobsdom eller automatisk referensdom tillskrivs den.",
+    "MINIMAL väljs medvetet: KORT i mall 11 för tvåhandssteget säger kortände oavsett vald axel och motsäger H24. MINIMAL låter den granskade referensen beskriva grepp och långkantsroll. Utkast h24-01 stoppades före godkännande och betalt anrop.",
+    "H24 visar DRAG med överlämning från vänster till höger hand, låg armbåge och pekfingerkontakt tills kortet ligger plant. Vändningen LONG_EDGE/AIR är ett avsiktligt avsteg från kortplanens PINCH/PLACE/FREE. GIV-2.3 beskriver handbytet genom sitt tvåhandssteg.",
+    "Samma frysta kortplan som referensen: sha256 dbb558211411ad4a2a45ee1047e9794ab39912084a0ad6717a020e443d2f7e7c. Referensen har 72 rutor, 24 bilder/s, 3 sekunder; sha256 b7af14fc311d21a922941ca1d40f7211e405fc7a391cfdf853c9b8e78e059818.",
+    "Mandat codex-dealer-20261118: högst 800 krediter per rullande timme och 2500 totalt till 2026-11-18T13:01:31Z. Inga automatiska omtagningar.",
+    "Ny separat order efter att h24-02 avvisats i Codex-pluginets förvalidering före Runway, utan taskId eller debitering. Samma oförändrade prompt, parametrar och tre bild-/filmkällor. Verkställs exakt en gång genom den inloggade lokala MCP-servern; ingen automatisk omtagning.",
+    "Recept giv-2.3 (prov) ur data/order-methods.json.",
+    "Undantag från receptet: texten MINIMAL i stället för KORT; vändningen LONG_EDGE i stället för FREE; med kandidaten som sista bild: A3 · P4 (paow-a3-p4), en kandidat som Jakob inte har gjort gällande."
+  ],
+  "createdBy": "Codex huvudagent på Jakobs mandat 2026-11-18",
+  "approval": {
+    "by": "huvudagent",
+    "at": "2026-11-18T10:26:27.118Z",
+    "orderSha256": "d602b9ffe8f7cd506c3f22bc51b9c0146dad57c34c7f30752e7fbfa2394a1e35",
+    "mandate": "Jakobs uttryckliga Dealer-mandat 2026-11-18: 800 krediter per rullande timme, 2500 totalt. Ett H24-prov, högst 71 krediter, genom lokal Runway-MCP."
+  },
+  "status": "GODKÄND",
+  "id": "paow-giv-2-3-p4-h24-03",
+  "created": "2026-11-18T10:26:27.065Z"
+}

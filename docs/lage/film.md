@@ -27,8 +27,8 @@ gäller nu; varje prov och dess utfall står i handboken (`tools/film-prompting.
 **Nästa steg.** Ett mål i taget: EN dokumenterat granskad giv enligt Jakobs mandat.
 1. Huvudagenten styr en granskad pilot enligt räddningsmandatet i BESKED. Anslutning och workspace verifieras med
    Runway-MCP; egen kostnad bokförs per order och samordnas i skrivbordets DISKMASKIN.TXT.
-2. H24:s grepp är granskat i 24 bilder/s. Order `paow-giv-2-3-p4-h24-02` provar den mot samma A3 med MINIMAL;
-   KORT-mallens kortändevändning motsäger H24:s långkantsroll och spärras. Referensen finns i Material, inga nya filmdomar.
+2. H24:s grepp är granskat i 24 bilder/s och referensen finns i Material. H24-03 är beställd med MINIMAL (64 krediter).
+   Ingen filmdom än. H24-02 stoppades av anslutningens schemafel; KORT-mallens motstridiga kortändevändning spärras.
 3. Alternativet med plant kort och vändning först efter släpp är fortfarande ett separat förslag i Beslut;
    det är inte en godkänd metod. En godkänd kodkontroll gör inte en film visuellt godkänd.
 4. Plats 1 (hans ord i Prov): A3 · P1 görs om med modellen som lämnar ansiktet orört, och vägen tillbaka från den

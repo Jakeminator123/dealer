@@ -313,7 +313,7 @@ export const approvalWords = (a: Pick<Approval, 'by'>) => (a.by === 'huvudagent'
 export type Anchor = '1' | '2.1' | '2.2' | '2.3';
 /** How the card leaves the shoe: PINCH from 2.1, DRAG from 2.2; TWO_HANDS from 2.3 (the hand at the shoe strokes it out, the other takes, turns and lays it). */
 export type Grip = 'PINCH' | 'DRAG' | 'TWO_HANDS';
-export type StepKey = 'INGANG-2.1' | 'INGANG-2.2' | 'INGANG-2.3' | 'GIV-2.1' | 'GIV-2.2' | 'GIV-2.3' | 'RETUR-2.1' | 'RETUR-2.2' | 'RETUR-1' | 'UTGANG' | 'UTGANG-2.2' | 'HALKORT' | 'VILA' | 'ANKARE-2.1' | 'ANKARE-2.2';
+export type StepKey = 'INGANG-2.1' | 'INGANG-2.2' | 'INGANG-2.3' | 'GIV-2.1' | 'GIV-2.2' | 'GIV-2.3' | 'RETUR-2.1' | 'RETUR-2.2' | 'RETUR-2.3' | 'RETUR-1' | 'UTGANG' | 'UTGANG-2.2' | 'HALKORT' | 'VILA' | 'ANKARE-2.1' | 'ANKARE-2.2';
 /**
  * A step says what a film or still is between: its anchors, whether it carries a card and with which grip, and for a still
  * the picture it makes. How it is ordered (model, resolution, seconds, shape, takes, reference film, last picture, template)
@@ -363,6 +363,7 @@ export const STEPS: readonly StepDef[] = [
   // It can be ordered where a landing picture holds for the seat (landingMissing says what is lacking otherwise).
   { key: 'RETUR-2.1', group: 'Retur från landningen', label: 'Tillbaka till nypet (2.1)', kind: 'FILM', from: '2.1', to: '2.1', start: 'LAND', card: true, grip: 'PINCH' },
   { key: 'RETUR-2.2', group: 'Retur från landningen', label: 'Tillbaka över skon (2.2)', kind: 'FILM', from: '2.2', to: '2.2', start: 'LAND', card: true, grip: 'DRAG' },
+  { key: 'RETUR-2.3', group: 'Retur från landningen', label: 'Prov: höger hand tillbaka till 2.3', kind: 'FILM', from: '2.3', to: '2.3', start: 'LAND', card: true, styles: ['KORT'], off: 'Provet förbereds via Beställs API med namngiven A3 och giv.' },
   { key: 'RETUR-1', group: 'Retur från landningen', label: 'Tillbaka till vila (1)', kind: 'FILM', from: '1', to: '1', start: 'LAND', card: true, grip: 'PINCH' },
   // The steps a round needs that Beställ could not order before 2026-11-13 (the dealer's second card is GIV-2.1 to D.C2):
   // the hand leaving the shoe for rest (READY>IDLE), and the hole card turned open from rest and the hand back to rest
@@ -1009,8 +1010,26 @@ export function shownOf(order: Order, problems: readonly string[], receipt: Rece
 }
 
 /** What keeps a draft from being approved, in words (pictures waiting, files missing, text missing). Pure part only. */
+export const RETURN_23_BLOCK = 'Returprovet kan inte godkännas ännu: sista styrbilden är ankare 2.3 utan det utdelade kortet. Först måste det visas att kortet ligger kvar genom returen.';
+export const SHORT_TWO_HAND_TURN_HELP = 'KORT för GIV-2.3 vänder över kortänden. Välj MINIMAL för att låta referensfilmen styra vändningen.';
+
+export function shortTwoHandTurnProblem(step: StepKey, style: TextStyle | undefined, turn: boolean | undefined, axis: FlipAxis | null | undefined): string | null {
+  if (step !== 'GIV-2.3' || style !== 'KORT' || !turn || !axis || axis === 'FREE') return null;
+  return `Vald vändning är ${axis}. ${SHORT_TWO_HAND_TURN_HELP}`;
+}
+
+export function twoHandDealSideProblem({ step, motion }: Pick<Order, 'step' | 'motion'>): string | null {
+  if (step.key !== 'GIV-2.3' || !motion || motion.turn === (motion.side === 'FRONT')) return null;
+  return 'GIV-2.3 börjar med ett gult kort i skon. Vändningen stämmer inte med sidan i slutbilden. Gör ett nytt utkast.';
+}
+
 export function draftProblems(order: Order): string[] {
   const out: string[] = [];
+  if (order.step.key === 'RETUR-2.3') out.push(RETURN_23_BLOCK);
+  if (order.status === 'UTKAST') {
+    const problem = twoHandDealSideProblem(order) ?? shortTwoHandTurnProblem(order.step.key, order.prompt.style, order.motion?.turn, order.motion?.flipAxis);
+    if (problem) out.push(problem);
+  }
   const waits = waitingOf(order);
   if (waits.length) out.push(`Väntar på ${waitWords(waits)}.`);
   for (const p of order.pictures) if (!p.waits && (!p.path || !p.sha256)) out.push(`${p.label} saknas.`);
@@ -1095,6 +1114,7 @@ export function validateOrder(value: unknown): { order: Order | null; errors: st
   else if (o.approval && o.approval.by === 'huvudagent' && (typeof o.approval.mandate !== 'string' || !o.approval.mandate.trim() || o.approval.mandate.length > 300)) errors.push('approval: huvudagentens godkännande bär sitt uppdrag (mandate: vems ord och när).');
   if (o.setAside != null && (!isObject(o.setAside) || typeof o.setAside.why !== 'string' || !o.setAside.why.trim() || typeof o.setAside.at !== 'string' || o.status !== 'AVBRUTEN')) errors.push('setAside: en avbruten beställning säger när och varför (why).');
   if (o.status === 'GODKÄND' && !o.approval) errors.push('En godkänd beställning måste ha approval.');
+  if (o.status === 'GODKÄND' && o.step?.key === 'RETUR-2.3') errors.push(RETURN_23_BLOCK);
   if (o.status === 'UTKAST' && o.approval) errors.push('Ett utkast har ingen approval.');
   if (!Array.isArray(o.notes)) errors.push('notes ska vara en lista.');
   return { order: errors.length ? null : (o as Order), errors };

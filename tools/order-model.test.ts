@@ -194,8 +194,9 @@ test('the steps: defaults from the plan, edges in the graph notation, and an ord
   assert.deepEqual([stepOf('INGANG-2.3')?.from, stepOf('INGANG-2.3')?.to, edgeOf(stepOf('INGANG-2.3')!, null)], ['1', '2.3', 'IDLE>READY-C']);
   assert.deepEqual([stepOf('GIV-2.3')?.from, stepOf('GIV-2.3')?.grip, edgeOf(stepOf('GIV-2.3')!, 'P4.C1'), cutIntoOf(stepOf('GIV-2.3')!, 'P4.C1', 'ONE_WAY')], ['2.3', 'TWO_HANDS', 'READY-C>P4.C1', ['READY-C>P4.C1']]);
   assert.deepEqual([model.ANCHOR_NODE['2.3'], model.ANCHOR_ROLE['2.3']], ['READY-C', 'ankare-2.3']);
-  assert.deepEqual(STEPS.map((s) => s.key).filter((k) => stepOf(k)?.off), [], 'nothing is switched off now');
-  assert.deepEqual(['RETUR-2.1', 'RETUR-2.2', 'RETUR-1'].map((k) => edgeOf(stepOf(k)!, 'P4.C1')), ['P4.C1>READY', 'P4.C1>READY-B', 'P4.C1>IDLE']);
+  assert.deepEqual(STEPS.filter((s) => s.off).map((s) => s.key), ['RETUR-2.3'], 'only the return trial requires sources unavailable in the normal form');
+  assert.match(stepOf('RETUR-2.3')?.off ?? '', /Beställs API med namngiven A3 och giv/);
+  assert.deepEqual(['RETUR-2.1', 'RETUR-2.2', 'RETUR-2.3', 'RETUR-1'].map((k) => edgeOf(stepOf(k)!, 'P4.C1')), ['P4.C1>READY', 'P4.C1>READY-B', 'P4.C1>READY-C', 'P4.C1>IDLE']);
   assert.deepEqual(cutIntoOf(stepOf('GIV-2.1')!, 'P4.C1', 'ROUND_TRIP'), ['READY>P4.C1', 'P4.C1>READY']);
   assert.deepEqual(cutIntoOf(stepOf('GIV-2.1')!, 'P4.C1', 'ONE_WAY'), ['READY>P4.C1'], 'bara dit: the deal alone');
   assert.deepEqual(cutIntoOf(stepOf('RETUR-2.2')!, 'P4.C1', 'ONE_WAY'), ['P4.C1>READY-B']);

@@ -3,7 +3,7 @@
 import test, {type TestContext} from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile, readdir} from 'node:fs/promises';
-import {sceneOf, restingQuad, restOf, poseAt, cardToImage, projectionOf, regionOf, readMatte, filmZone, shiftShare, placedCard, landing, leakCount, strayBoxes, ranges, cardRecord, cardFace, CARD_RANKS, CARD_SUITS, MARGIN, STRAY, type CardRecord, overridesOf, cardInFront, describeTrack, RIM, plausible, keystone, skirtSound, turnOf, restFade, restShare, PLAUSIBLE, HOLD, REST_FADE, type CardTrack, type Scene} from '../src/card-overlay.ts';
+import {sceneOf, restingQuad, restOf, poseAt, returnCardAt, cardToImage, projectionOf, regionOf, readMatte, filmZone, shiftShare, placedCard, landing, leakCount, strayBoxes, ranges, cardRecord, cardFace, CARD_RANKS, CARD_SUITS, MARGIN, STRAY, type CardRecord, overridesOf, cardInFront, describeTrack, RIM, plausible, keystone, skirtSound, turnOf, restFade, restShare, PLAUSIBLE, HOLD, REST_FADE, type CardTrack, type Scene} from '../src/card-overlay.ts';
 import {signedArea, centre, dist, sound, type Pt} from '../src/card-track.ts';
 import {cameraFromContract, solveCamera, squareToQuad, onSquare, filmToScene} from '../src/scene3d-geometry.ts';
 
@@ -91,6 +91,29 @@ test('in the hand the card follows the film, at rest it has its own size, and th
   // Without the contract the resting card is the film's card enlarged about its centre: still constant, still covering.
   const bare = poseAt(track, null, 36, 2)!; assert.ok(Math.abs(Math.sqrt(area(bare.quad!) / area(bare.film!)) - 2) < 0.01); assert.ok(dist(centre(bare.quad!), centre(bare.film!)) < 1e-6);
   assert.equal(poseAt({...track, frames: []}, scene, 0, 2), null);
+});
+
+test('a return keeps the game card at its landing when the measured film marker goes away', () => {
+  const actual = shift(P4_FILM, 9, -6);
+  const first = {frame: 0, side: 'FRONT' as const, quad: P4_FILM, film: actual, edge: null, confidence: 0.85};
+  const track: CardTrack = {
+    width: 1764, height: 1174, edgeWindow: null,
+    frames: [
+      first,
+      {...first, frame: 1, side: 'NONE', quad: null, film: null},
+      {...first, frame: 2, side: 'BACK', shoeShare: 1},
+    ],
+  };
+  const options = {returning: true, land: pts(P4_FILM), target: 'P4.C1', shoeDraw: 2, gloss: 0.62};
+  const shown = returnCardAt(track, 0, options)!;
+  assert.deepEqual(shown.marker, {frame: 0, side: 'FRONT', quad: pts(actual), confidence: 0.85});
+  assert.deepEqual(shown.card, {quad: pts(P4_FILM), back: false, target: 'P4.C1', shoeDraw: 2, gloss: 0.62});
+  const onlyGameCard = {card: shown.card, marker: null};
+  assert.deepEqual(returnCardAt(track, 1, options), onlyGameCard);
+  assert.deepEqual(returnCardAt(track, 2, options), onlyGameCard);
+  assert.deepEqual(returnCardAt({...track, frames: [first]}, 88, options), onlyGameCard);
+  assert.deepEqual(returnCardAt(null, 88, options), onlyGameCard);
+  assert.equal(returnCardAt(track, 0, {...options, returning: false}), null);
 });
 
 test('the projection puts the model card exactly on its quad', () => {

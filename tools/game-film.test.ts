@@ -5,6 +5,7 @@ import {buildGraph, effectOf, type BankData, type BankJob, type MotionRecord} fr
 import {defaultPlan} from '../src/placement-model.ts';
 import {createLayout} from '../src/game-table.ts';
 import {cardOptions, cardsChoice, cardWords, createFilm, effectPart, faceFrame, filmModel, type FilmPart} from '../src/game-film.ts';
+import {returnCardAt} from '../src/card-overlay.ts';
 import {judgedBank} from '../src/game-director.ts';
 
 const sha = 'a'.repeat(64), first = {file: {path: 'assets/anchors/paow-ready-01/anchor.png', sha256: sha}};
@@ -66,13 +67,36 @@ function viaHub(pending: string[] = [], missing: string[] = []): BankData {
   for (const j of hubJobs) { data.jobs!.push(j); data.motions![j.id] = record('wan3', pending.includes(j.id) ? {review: {decision: 'PENDING', inbox: true}} : {}); data.receipts![j.id] = {status: 'SUCCEEDED'}; data.media![j.id] = {video: video(j.id)}; }
   return judgedBank(data);
 }
-const playRound = async (data: BankData, table: {hands: {seat: number; cards: number[]}[]; dealer: number[]}, draws: number[]) => {
-  const queue = players(), film = createFilm(queue.players, buildGraph(data, {dealer: 'paow'}), createLayout(defaultPlan()), async () => null, () => 0);
+const playRound = async (data: BankData, table: {hands: {seat: number; cards: number[]}[]; dealer: number[]}, draws: number[], layout = createLayout(defaultPlan())) => {
+  const queue = players(), film = createFilm(queue.players, buildGraph(data, {dealer: 'paow'}), layout, async () => null, () => 0);
   const records = draws.map(n => ({shoeDraw: n, target: '', r: 'A', s: 'spades'}));
   const round = film.play(draws.map(n => ({type: 'deal', shoeDraw: n})) as never, {table, records}); await new Promise(r => setTimeout(r, 0)); queue.end();
   const {gaps, beats} = await round, chain = queue.parts.find(list => list.some(part => !part.rest))!;
   return {gaps, beats, chain, clips: chain.map(part => part.path.split('/')[2])};
 };
+
+test('the game card keeps its own gloss through an untracked return and appears once as placed in later beats', async () => {
+  const table = {hands: [{seat: 6, cards: [2]}, {seat: 4, cards: [3]}], dealer: []};
+  const plan = defaultPlan();
+  plan.targets['P6.C1'].material.gloss = 0.62;
+  plan.targets['P4.C1'].material.gloss = 0.12;
+  const {chain} = await playRound(viaHub(), table, [2, 3], createLayout(plan));
+  const [deal, back, exit, nextDeal] = ['p6-deal-b', 'p6-back-b', 'ut-b', 'p4-deal'].map(id => chain.find(part => part.path === video(id))!);
+  assert.equal(deal.cards?.returning, undefined);
+  assert.equal(back.track, null);
+  assert.equal(back.cards?.returning, true);
+  assert.deepEqual(back.cards?.placed, [], 'the returning card is not drawn twice');
+  const options = back.cards as Parameters<typeof returnCardAt>[2];
+  const end = returnCardAt(null, 88, options);
+  assert.equal(end?.card.shoeDraw, deal.cards?.shoeDraw);
+  assert.deepEqual(end?.card.quad, deal.cards?.land);
+  assert.equal(end?.card.gloss, 0.62);
+  assert.equal(exit.cards?.returning, undefined);
+  assert.equal(exit.cards?.gloss, undefined, 'the exit carries no card of its own');
+  assert.deepEqual(exit.cards?.placed, [end?.card]);
+  assert.equal(nextDeal.cards?.gloss, 0.12);
+  assert.deepEqual(nextDeal.cards?.placed, [end?.card], 'the next deal cannot change a lying card’s gloss');
+});
 
 test('a round deals Paow\'s seat 6 from anchor 2.2 when its four films have a verdict, and as before when one has none', async () => {
   // Seat 6 first, then seat 4: from rest to 2.2, the deal and its return, out to rest, and the plain entry for seat 4.

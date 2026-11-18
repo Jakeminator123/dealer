@@ -435,6 +435,32 @@
       "setAt": "2026-11-17"
     },
     {
+      "id": "retur-2.3",
+      "step": "RETUR-2.3",
+      "seats": null,
+      "status": "prov",
+      "model": "kling-4",
+      "resolution": "1080p",
+      "style": "KORT",
+      "template": 11,
+      "seconds": 3,
+      "takes": 1,
+      "turn": null,
+      "hand": null,
+      "shape": "ONE_WAY",
+      "reference": "ingen",
+      "lastPicture": "ankare",
+      "extra": null,
+      "evidence": {
+        "orders": [],
+        "reviewer": [],
+        "owner": [],
+        "note": "Lokalt provunderlag. Börjar byte för byte på en godkänd 2.3-givs frysta slutbild med namngiven A3-kandidat och högerhand vid kortet. Slutar på gällande ankare 2.3. Godkännande spärrat tills det är visat hur kortet ligger kvar genom returen även om ankaret saknar det."
+      },
+      "setBy": "huvudagentens underagent",
+      "setAt": "2026-11-18"
+    },
+    {
       "id": "retur-1",
       "step": "RETUR-1",
       "seats": null,

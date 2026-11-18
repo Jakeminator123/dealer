@@ -46,7 +46,7 @@ export type FilmPlayers = {
   /** The scene's queue: a chain played without cut waits for the part on screen, is read ahead, and is shown on its first frame when that part ends. */
   queues?: boolean;
 };
-export type Placed = {quad: Pt[]; back: boolean; target: string; shoeDraw: number};
+export type Placed = {quad: Pt[]; back: boolean; target: string; shoeDraw: number; gloss: number};
 /**
  * The frame from which a turned card shows its face, by its track: the first face-up frame after the last face-down one (the edge-on
  * frames between them still hide it). Null without a track, or when the track never turns the card face up.
@@ -59,7 +59,12 @@ export function faceFrame(track: unknown): number | null {
 
 /** The lying cards as the card layer takes them: each on its own place in the layout, closed if its record says so. */
 export function placedCards(table: TableCards, records: CardRecord[], lying: number[], layout: Layout): Placed[] {
-  return lying.flatMap(shoeDraw => { const slot = slotOf(table, shoeDraw); return slot ? [{quad: layout.quad(slot), back: records.find(r => r.shoeDraw === shoeDraw)?.faceDown === true, target: slotLabel(slot), shoeDraw}] : []; });
+  return lying.flatMap(shoeDraw => {
+    const slot = slotOf(table, shoeDraw);
+    if (!slot) return [];
+    const back = records.find(r => r.shoeDraw === shoeDraw)?.faceDown === true;
+    return [{quad: layout.quad(slot), back, target: slotLabel(slot), shoeDraw, gloss: layout.material(slot).gloss}];
+  });
 }
 // How the card the film carries is shown while it is in her hand (src/scene3d-deal.ts, carry): 'object' (the drawn card in her hand:
 // what the game does, CARRY in src/card-overlay.ts; the address's kort=hand), 'film' (the film's own card while carried, the drawn
@@ -87,12 +92,12 @@ export function cardsChoice(o: {address?: boolean; kort?: string | null; memory?
   return {cards: o.address ?? (word ? true : undefined) ?? remembered ?? true, carry: word ?? CARRY};
 }
 /** What the card layer needs for one beat: the lying cards, every card's value, and for the film's own card where it lands and how it is carried. */
-export function cardOptions(beat: Pick<Beat, 'own' | 'lying'>, table: TableCards, records: CardRecord[], layout: Layout, carry: Carry = CARRY, words: CardWords = {}): Record<string, unknown> {
+export function cardOptions(beat: Pick<Beat, 'own' | 'lying'> & Partial<Pick<Beat, 'kind'>>, table: TableCards, records: CardRecord[], layout: Layout, carry: Carry = CARRY, words: CardWords = {}): Record<string, unknown> {
   // carry goes with every part, also one that carries no card (a rest, a line, a return): the shoe's window is shown by it too
   const base = {placed: placedCards(table, records, beat.lying, layout), cards: records, carry, ...words};
   if (!beat.own) return base;
   const material = layout.material(beat.own.slot);
-  return {...base, land: layout.quad(beat.own.slot), target: beat.own.label, shoeDraw: beat.own.shoeDraw, bend: material.bend, gloss: material.gloss};
+  return {...base, ...(beat.kind === 'RETURN' ? {returning: true} : {}), land: layout.quad(beat.own.slot), target: beat.own.label, shoeDraw: beat.own.shoeDraw, bend: material.bend, gloss: material.gloss};
 }
 
 // A line she says in a step: its talk film (null: text only) and what is done when she begins it (the page writes it in the chat).

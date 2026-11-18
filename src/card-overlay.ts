@@ -215,6 +215,23 @@ export type Pose = {
   at?: [Pt, Pt] | null;   // edge-on frames of a shifted card: where the film's own edge is, which is what must be covered
   kept?: number;          // set when this is an earlier frame's pose kept for frame `kept`, whose own card was not plausible
 };
+
+function returnMarkerAt(track: CardTrack | null, frame: number): {frame: number; side: 'FRONT' | 'BACK'; quad: Pt[]; confidence: number} | null {
+  const at = Math.round(frame), item = track?.frames?.[at];
+  if (!item || (item.side !== 'FRONT' && item.side !== 'BACK') || (item.shoeShare ?? 0) >= 0.9) return null;
+  const quad = pts(item.film?.length === 4 ? item.film : item.quad ?? []);
+  return plausible(quad) ? {frame: at, side: item.side, quad: clockwise(quad), confidence: item.confidence ?? 1} : null;
+}
+
+/** Keep the game card on the table throughout a return. A film marker can be keyed only in the frame where it was measured. */
+export function returnCardAt(track: CardTrack | null, frame: number, options: {returning?: boolean; land?: Pt[] | null; target?: string | null; shoeDraw?: number | null; gloss?: number}) {
+  if (!options.returning || options.land?.length !== 4) return null;
+  return {
+    card: {quad: options.land, back: false, target: options.target, shoeDraw: options.shoeDraw, gloss: options.gloss},
+    marker: returnMarkerAt(track, frame),
+  };
+}
+
 /**
  * The rendered card in one frame. In the hand it follows the film's quad. From `restFrom` on it is
  * the constant-size card on the table. Over the last `ease` frames before that its size moves

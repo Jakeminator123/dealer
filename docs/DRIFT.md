@@ -180,8 +180,8 @@ bilder och filmer som används eller kan användas ligger i `assets/` (AGENTS). 
 | Kontroll | Resultat / bevisgräns |
 | --- | --- |
 | GitHub connector + CLI | Båda autentiserade som `Jakeminator123`; repo skapat privat, därefter ändrat till publikt av Jakob och bekräftat 2026-11-10. |
-| Runway connector | Autentiserad workspace `Jakob`, ID `67037521`. |
-| Runway MCP-server | `runway` (`https://mcp.runwayml.com/mcp`), inloggad med `claude mcp login runway`; drar appkontots krediter (workspace `Jakob`). Verktygen finns bara i en session som startats efter att servern lagts till. `https://dev.runwayml.com/mcp/claude` är en annan server (utvecklarportalen), inte för generering. |
+| Runway connector | Autentiserad workspace `Jakob`, ID `67037521`. Inloggning och skrivschema kontrolleras var för sig; modellistan från `whoami` bevisar inte att klienten kan skicka modellens parametrar. |
+| Runway MCP-server | `https://mcp.runwayml.com/mcp`, appkontots krediter (workspace `Jakob`). Claude har servern som `runway`, Codex som `Runway`; inloggningen tillhör respektive klient och är inte gemensam. Kontrollera den aktuella sessionen före beställning. `https://dev.runwayml.com/mcp/claude` är en annan server (utvecklarportalen), inte för generering. |
 | Direkt API | Ingen kod anropar Runways API längre; allt beställs genom MCP-servern. `RUNWAY_API_KEY` ligger kvar i den Git-ignorerade `.env.local` och drar developer-projektets krediter, en annan pott än appkontots; API-svaret ger inget projekt- eller workspace-ID, så nyckeln bevisar inte samma saldo. Kvitto från 2026-11-10: `.runtime/connection-check.json`. |
 
 V6-källan och proven från 2026-11-10 (P7, P6, rosa) gjordes med `wan3` genom developer-API:t; vilken modell en film har

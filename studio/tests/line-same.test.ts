@@ -1,5 +1,5 @@
 // One recipe, one choice: Bordet's row and the store give the SAME order from the SAME line (the dealer, the step and the
-// card), for every step a recipe is written for and every card of the plan. Where the reference film is chosen: in ONE
+// card), for every step available on the standard line and every card of the plan. Where the reference film is chosen: in ONE
 // place, referenceByRule in src/order-methods.ts. The store calls it when a draft names no reference film
 // (tools/order-store.ts create), the studio calls it to show the row before a draft exists (studio/lib/bordet.ts lineOf, and
 // Ny beställning), and the production list calls it (tools/produce.ts); none of them has a filter of its own. This test
@@ -22,14 +22,14 @@ import { orderRoutes } from "../../tools/order-routes.ts";
 import { STEPS, readCutChecks, type BankFacts, type OrdersAnswer } from "../../src/order-model.ts";
 import { productionList, readProduction } from "../../tools/produce.ts";
 import { recipeFor } from "../../src/order-methods.ts";
-import { filmRow } from "../lib/bordet.ts";
+import { cardWishes, filmRow } from "../lib/bordet.ts";
 
 const repo = path.resolve(import.meta.dirname, "../..");
 const base = existsSync("D:/dealer-scratch/tmp") ? "D:/dealer-scratch/tmp" : os.tmpdir();
 const sha = (b: Buffer) => createHash("sha256").update(b).digest("hex");
 const SEATS = ["P1.C1", "P2.C1", "P3.C1", "P4.C1", "P5.C1", "P6.C1", "P7.C1", "D.C1", "D.C2"];
 
-test("Bordet's row and the store make the same order of the same line, for every step with a recipe and every card", async (t) => {
+test("Bordet's row and the store agree for every standard step and card, and the return trial needs its named source", async (t) => {
   const root = await mkdtemp(path.join(base, "line-same-"));
   t.after(() => rm(root, { recursive: true, force: true }));
   for (const dir of ["data", "placements", "motions", "assets/anchors/paow-bild"]) await mkdir(path.join(root, dir), { recursive: true });
@@ -127,16 +127,25 @@ test("Bordet's row and the store make the same order of the same line, for every
   // The hole card's turn is left out: its pictures are drawn from a bank film that the temporary lab does not have.
   for (const step of STEPS.filter((s) => s.kind === "FILM" && !s.cards?.length)) for (const target of step.card ? SEATS : [null]) {
     const wish = { step: step.key, target }, key = `${step.key}${target ? ` ${target}` : ""}`;
+    const input = { dealer: "paow", step: step.key, ...(target ? { target } : {}) };
+    const inList = production.rows.find((r) => r.step === step.key && r.target === target);
+    if (step.key === "RETUR-2.3") {
+      assert.ok(step.off, `${key}: disabled in Beställ's form`);
+      assert.ok(!cardWishes(target!, {}, "paow").some((w) => w.step === step.key), `${key}: absent from Bordet's card choices`);
+      assert.equal(inList, undefined, `${key}: absent from the standard production list`);
+      const preview = await call("POST", "/api/orders/preview", input);
+      assert.equal(preview.status, 400, key);
+      assert.match(preview.json.error, /namngiven A3-kandidat/, key);
+      continue;
+    }
     const row = filmRow("paow", wish, register, all.policy, { bank, entries: shown, plan: all.plan ?? null });
     // The production list's row for the same step and card says the same: it can be ordered exactly where the row can be
     // sent, and with the same reference film.
-    const inList = production.rows.find((r) => r.step === step.key && r.target === target);
     if (inList) {
       listed++;
       assert.equal(inList.orderable !== null, !row.why, `${key}: the row says "${row.why ?? "it can be sent"}", the production list says "${inList.words}"`);
       if (!row.why) assert.equal(inList.method?.reference ?? null, row.reference?.take ?? null, `${key}: the production list's reference film`);
     }
-    const input = { dealer: "paow", step: step.key, ...(target ? { target } : {}) };
     const preview = await call("POST", "/api/orders/preview", input);
     if (row.why) {
       // What the row cannot send, the store refuses, and for the same reason.

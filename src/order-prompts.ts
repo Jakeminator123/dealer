@@ -644,10 +644,19 @@ function minimalDeal(input: PromptInput): Prompt {
  * hand at the card lifts off it and glides back low and open. The hand that laid the card is the one that returns.
  * Written Kort or Minimal only: there was no return in template 3, and asked for the long text it is written Kort.
  */
-function returnText(input: PromptInput, to: '1' | '2.1' | '2.2', style: TextStyle): Prompt {
+function returnText(input: PromptInput, to: '1' | '2.1' | '2.2' | '2.3', style: TextStyle): Prompt {
   const m: DealMotion = input.motion ?? DEFAULT_MOTION;
   const { lays } = handsIn(m);
   const colour = m.side === 'BACK' ? 'yellow' : 'blue';
+  if (to === '2.3') {
+    const parts: Part[] = [
+      { text: SAY.camera, from: [] },
+      { text: `Her right fingertips lift off the ${colour} card. The card stays where it lies.`, from: ['side'] },
+      { text: 'Her open right hand glides back low over the felt, palm down, and settles beside her left hand at the shoe as in the last frame. Her left hand stays at the shoe.', from: [] },
+      extraPart(input),
+    ];
+    return { template: templateOf('film-retur', 'KORT'), style: 'KORT', text: joined(parts), parts };
+  }
   if (style === 'MINIMAL') {
     const colours = byColour(input);
     const card = colours ? SAY.v6.cardIs(m.side === 'BACK' ? SAY.v6.sides.liesClosed : SAY.v6.sides.liesOpen) : cardColours(input);
@@ -788,6 +797,8 @@ function written(input: PromptInput): Prompt {
       return returnText(input, '2.1', style);
     case 'RETUR-2.2':
       return returnText(input, '2.2', style);
+    case 'RETUR-2.3':
+      return returnText(input, '2.3', style);
     case 'RETUR-1':
       return returnText(input, '1', style);
     case 'INGANG-2.1':
